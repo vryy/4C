@@ -482,7 +482,7 @@ void DRT::ELEMENTS::XFluid3Surface::IntegrateSurfaceFlow(
 
   for (int gpid=0; gpid<intpoints.nquad; gpid++)
   {
-    BlitzVec2 xi_gp;
+    LINALG::Matrix<2,1> xi_gp;
     xi_gp(0) = intpoints.qxg[gpid][0];
     xi_gp(1) = intpoints.qxg[gpid][1];
 
@@ -501,8 +501,7 @@ void DRT::ELEMENTS::XFluid3Surface::IntegrateSurfaceFlow(
     const LINALG::Matrix<3,1> gpvelnp = XFLUID::interpolateVectorFieldToIntPoint(evelnp, funct, iel);
     
     // get normal vector (in x coordinates) to surface element at integration point
-    BlitzVec3 n;
-    n = 0.0;
+    LINALG::Matrix<3,1> n(true);
     GEO::computeNormalToSurfaceElement(this, xyze, xi_gp, n);
 
     // flowrate = u_i * n_i

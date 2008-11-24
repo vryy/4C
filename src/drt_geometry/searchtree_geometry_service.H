@@ -57,9 +57,9 @@ namespace GEO
   \param currentpositions     current nodal positions in discretization
   \return  XAxisAlignedBoundingBox 
    */
-  BlitzMat3x2 getXAABBofDis(
-    const DRT::Discretization&            dis,               
-    const std::map<int,BlitzVec3>&        currentpositions  
+  LINALG::Matrix<3,2> getXAABBofDis(
+    const DRT::Discretization&                  dis,               
+    const std::map<int,LINALG::Matrix<3,1> >&   currentpositions  
     );
 
   
@@ -69,7 +69,7 @@ namespace GEO
   \param dis                  discretization 
   \return  XAxisAlignedBoundingBox 
    */
-  BlitzMat3x2 getXAABBofDis(
+  LINALG::Matrix<3,2> getXAABBofDis(
       const DRT::Discretization& dis
       );
   
@@ -81,10 +81,10 @@ namespace GEO
   \param elementList          map of int = label and set of element ids
   \return  AxisAlignedBoundingBox as BlitzMat3x2
    */
-  std::vector< BlitzMat3x2 > computeXAABBForLabeledStructures(
-      const DRT::Discretization&              dis,
-      const std::map<int,BlitzVec3>&          currentpositions,
-      const std::map< int, std::set<int> >&   elementList
+  std::vector< LINALG::Matrix<3,2> > computeXAABBForLabeledStructures(
+      const DRT::Discretization&                  dis,
+      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
+      const std::map< int, std::set<int> >&       elementList
       );
   
   
@@ -97,10 +97,10 @@ namespace GEO
   \return                     label
    */
   int getXFEMLabel(
-      const DRT::Discretization&              dis, 		
-      const std::map<int,BlitzVec3>&          currentpositions, 	
-      const BlitzVec3&                        querypoint,
-      const std::map<int, std::set<int> >&    elementList
+      const DRT::Discretization&                  dis, 		
+      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions, 	
+      const LINALG::Matrix<3,1>&                  querypoint,
+      const std::map<int, std::set<int> >&        elementList
       );  	
 
   
@@ -114,11 +114,11 @@ namespace GEO
   \return                     label
    */
   int getXFEMLabelAndNearestObject(
-      const DRT::Discretization&              dis,              
-      const std::map<int,BlitzVec3>&          currentpositions, 
-      const BlitzVec3&                        querypoint,      
-      const std::map<int, std::set<int> >&    elementList,     
-      GEO::NearestObject&                     nearestObject
+      const DRT::Discretization&                dis,              
+      const std::map<int,LINALG::Matrix<3,1> >& currentpositions, 
+      const LINALG::Matrix<3,1>&                querypoint,      
+      const std::map<int, std::set<int> >&      elementList,     
+      GEO::NearestObject&                       nearestObject
       );
   
   
@@ -133,12 +133,12 @@ namespace GEO
   \return                     label
    */
   std::map<int,std::set<int> > getElementsInRadius(
-      const DRT::Discretization&              dis,    
-      const std::map<int,BlitzVec3>&          currentpositions,   
-      const BlitzVec3&                        querypoint,
-      const double                            radius,
-      const int                               label,
-      std::map<int, std::set<int> >&          elementList
+      const DRT::Discretization&                  dis,    
+      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,   
+      const LINALG::Matrix<3,1>&                  querypoint,
+      const double                                radius,
+      const int                                   label,
+      std::map<int, std::set<int> >&              elementList
       );
   
   
@@ -152,10 +152,10 @@ namespace GEO
   \return                     label
    */
   std::vector<int> getIntersectionElements(
-      const DRT::Discretization&              dis,    
-      const std::map<int,BlitzVec3>&          currentpositions,   
-      DRT::Element*                           element,
-      std::map<int, std::set<int> >&          elementList);
+      const DRT::Discretization&                  dis,    
+      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,   
+      DRT::Element*                               element,
+      std::map<int, std::set<int> >&              elementList);
   
   
   /*!
@@ -166,8 +166,8 @@ namespace GEO
   \return true if the XAABBs intersect or false otherwise
    */
   bool intersectionOfXAABB2D(  
-      const BlitzMat3x2&     slaveXAABB, 
-      const BlitzMat3x2&     masterXAABB);
+      const LINALG::Matrix<3,2>&     slaveXAABB, 
+      const LINALG::Matrix<3,2>&     masterXAABB);
   
   
   /*!
@@ -177,9 +177,9 @@ namespace GEO
   \param xyze           (in)  nodal position array (3,numnode)
   \return extended axis-aligned bounding box (XAABB) as BlitzMat3x2
    */
-  BlitzMat3x2 computeContactXAABB( 
+  LINALG::Matrix<3,2> computeContactXAABB( 
       DRT::Element*       element,
-      const BlitzMat&     xyze);
+      const LINALG::SerialDenseMatrix&     xyze);
   
   
   /*!
@@ -194,10 +194,10 @@ namespace GEO
    */
   int nearestObjectInNode(
       const DRT::Discretization&                  dis,  
-      const std::map<int,BlitzVec3>&              currentpositions,
+      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
       const std::map<int, std::set<int> >&        elementList,
-      const BlitzVec3&                            point,
-      BlitzVec3&                                  minDistanceVec,
+      const LINALG::Matrix<3,1>&                  point,
+      LINALG::Matrix<3,1>&                        minDistanceVec,
       GEO::NearestObject&                         nearestObject
       );
 
@@ -213,9 +213,9 @@ namespace GEO
    */
   bool getDistanceToSurface(
       const DRT::Element*                         surfaceElement,
-      const std::map<int,BlitzVec3>&              currentpositions,
-      const BlitzVec3&                            point,
-      BlitzVec3&                                  x_surface_phys,
+      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
+      const LINALG::Matrix<3,1>&                  point,
+      LINALG::Matrix<3,1>&                        x_surface_phys,
       double&                                     distance
       );
 
@@ -231,9 +231,9 @@ namespace GEO
   */
   bool getDistanceToLine(
       const DRT::Element*                         lineElement,
-      const std::map<int,BlitzVec3>&              currentpositions,
-      const BlitzVec3&                            point,
-      BlitzVec3&                                  x_line_phys,
+      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
+      const LINALG::Matrix<3,1>&                  point,
+      LINALG::Matrix<3,1>&                        x_line_phys,
       double&                                     distance
       );
 
@@ -247,8 +247,8 @@ namespace GEO
    */
   void getDistanceToPoint(
       const DRT::Node*                            node,
-      const std::map<int,BlitzVec3>&              currentpositions,
-      const BlitzVec3&                            point,
+      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
+      const LINALG::Matrix<3,1>&                  point,
       double&                                     distance
       );
 
@@ -261,9 +261,9 @@ namespace GEO
   \param nearestObject        info about nearest object
   \return normal vector in physical coordinates 
    */
-  BlitzVec3 getNormalAtSurfacePoint(
+  LINALG::Matrix<3,1> getNormalAtSurfacePoint(
       const DRT::Discretization&                  dis,
-      const std::map<int,BlitzVec3>&              currentpositions,
+      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
       GEO::NearestObject&                         nearestObject
       );
 
@@ -287,8 +287,8 @@ namespace GEO
   \return true, if a point lies with in a node box, false otherwise 
    */
   bool  pointInTreeNode(
-      const BlitzVec3&              point,
-      const BlitzMat3x2&            nodeBox
+      const LINALG::Matrix<3,1>&              point,
+      const LINALG::Matrix<3,2>&            nodeBox
       );
 
   
@@ -302,10 +302,10 @@ namespace GEO
   \return true if nearest point lies within a circle around the query point to a wall of the tree node box with minimum distance
    */
   bool  pointInMinCircleInTreeNode(
-    const BlitzVec3&                    nearestpoint,
-    const BlitzVec3&                    querypoint,
-    const BlitzMat3x2&                  nodeBox,
-    const bool                          rootNode
+    const LINALG::Matrix<3,1>&                nearestpoint,
+    const LINALG::Matrix<3,1>&                querypoint,
+    const LINALG::Matrix<3,2>&                nodeBox,
+    const bool                                rootNode
     ); 
   
   
@@ -315,9 +315,9 @@ namespace GEO
   \param AABB2          axis - aligned bounding box 2
   \return merged axis-aligned bounding box
    */
-  BlitzMat3x2 mergeAABB(
-      const BlitzMat3x2&                      AABB1, 
-      const BlitzMat3x2&                      AABB2  
+  LINALG::Matrix<3,2> mergeAABB(
+      const LINALG::Matrix<3,2>&                      AABB1, 
+      const LINALG::Matrix<3,2>&                      AABB2  
       );
 
   
@@ -329,9 +329,9 @@ namespace GEO
   \return true if both AABB's are in node box
    */
   bool inSameNodeBox(
-      const BlitzMat3x2&  AABB_old, 
-      const BlitzMat3x2&  AABB_new,
-      const BlitzMat3x2&  nodeBox
+      const LINALG::Matrix<3,2>&  AABB_old, 
+      const LINALG::Matrix<3,2>&  AABB_new,
+      const LINALG::Matrix<3,2>&  nodeBox
       );
 
   
@@ -344,8 +344,8 @@ namespace GEO
    */ 
   void checkRoughGeoType(
       const DRT::Element*                     element,      
-      const BlitzMat                          xyze_element, 
-      GEO::EleGeoType&                       eleGeoType  
+      const LINALG::SerialDenseMatrix         xyze_element, 
+      GEO::EleGeoType&                        eleGeoType  
       );
   
   
@@ -358,10 +358,10 @@ namespace GEO
   \return                     label
    */
   std::vector<int> getIntersectionCandidates(    
-      const DRT::Discretization&              dis,     
-      const std::map<int,BlitzVec3>&          currentpositions,   
-      DRT::Element*                           xfemElement,
-      std::map<int, std::set<int> >&          elementList
+      const DRT::Discretization&                  dis,     
+      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,   
+      DRT::Element*                               xfemElement,
+      std::map<int, std::set<int> >&              elementList
       );
 
 

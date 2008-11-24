@@ -46,6 +46,7 @@ Maintainer: Michael Gee
 #include <EpetraExt_MatrixMatrix.h>
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_RefCountPtr.hpp>
+#include <iterator>
 
 
 /*----------------------------------------------------------------------*
@@ -1182,8 +1183,7 @@ void LINALG::SparseMatrix::Dump(std::string filename)
       if (err)
         dserror("ExtractMyRowView failed: err=%d", err);
       off << NumEntries << "\n";
-      std::copy(Indices,Indices+NumEntries,
-                std::ostream_iterator<int>(idx," "));
+      std::copy(Indices,Indices+NumEntries, std::ostream_iterator<int>(idx," "));
       idx << "\n";
       val.write(reinterpret_cast<char*>(Values),NumEntries*sizeof(double));
     }

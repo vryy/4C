@@ -13,7 +13,6 @@ Maintainer: Ursula Mayer
 #ifdef CCADISCRET
 
 #include <vector>
-#include <blitz/array.h>
 
 #include "carreauyasuda.H"
 
@@ -62,35 +61,5 @@ void MAT::CarreauYasuda::Unpack(const vector<char>& data)
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
 }
 
-
-void MAT::CarreauYasuda::Evaluate(const blitz::Array<double,2>& 	velderiv,
-                                  double& 							visc_caryas)
-{
-	
-  // get material parameters
-  double nu_0 	= matdata_->m.carreauyasuda->nu_0;          // parameter for zero-shear viscosity
-  double nu_inf = matdata_->m.carreauyasuda->nu_inf;      	// parameter for infinite-shear viscosity
-  double lambda = matdata_->m.carreauyasuda->lambda;      	// parameter for characteristic time
-  double a 		= matdata_->m.carreauyasuda->a_param;  		// constant parameter
-  double b 		= matdata_->m.carreauyasuda->b_param;  		// constant parameter
-
-  // compute shear rate 
-  double rateofshear = 0.0;
-  blitz::firstIndex i;    // Placeholder for the first index
-  blitz::secondIndex j;   // Placeholder for the second index
-  blitz::Array<double,2> epsilon(3,3,blitz::ColumnMajorArray<2>());   // strain rate tensor
-  epsilon = 0.5 * ( velderiv(i,j) + velderiv(j,i) );
-  
-  for(int rr=0;rr<3;rr++)
-    for(int mm=0;mm<3;mm++)
-    	rateofshear += epsilon(rr,mm)*epsilon(rr,mm);                 
- 
-  rateofshear = sqrt(2.0*rateofshear);
-  
-  // compute viscosity according to the Carreau-Yasuda model for shear-thinning fluids
-  // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
-  const double tmp = pow(lambda*rateofshear,b);
-  visc_caryas = nu_inf + ((nu_0 - nu_inf)/pow((1 + tmp),a));
-}
 
 #endif

@@ -916,7 +916,7 @@ bool CONTACT::Interface::EvaluateContactSearchOctree()
   /**********************************************************************/
   
   //create map of current positions
-  map<int,BlitzVec3> currentpositions;
+  map<int,LINALG::Matrix<3,1> > currentpositions;
   
   for (int i=0; i<mnodefullmapnobound_->NumMyElements();++i)
   {
@@ -925,7 +925,7 @@ bool CONTACT::Interface::EvaluateContactSearchOctree()
     if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
     CNode* mnode = static_cast<CNode*>(node);
     
-    BlitzVec3 pos;
+    LINALG::Matrix<3,1> pos;
     for (int j=0;j<3;++j)
       pos(j) = mnode->xspatial()[j];
     
@@ -939,7 +939,7 @@ bool CONTACT::Interface::EvaluateContactSearchOctree()
     if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
     CNode* snode = static_cast<CNode*>(node);
     
-    BlitzVec3 pos;
+    LINALG::Matrix<3,1> pos;
     for (int j=0;j<3;++j)
       pos(j) = snode->xspatial()[j];
     

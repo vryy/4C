@@ -15,7 +15,6 @@ Maintainer: Ursula Mayer
 *--------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#include <blitz/array.h>
 #include "drt_potential_manager.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/linalg_utils.H"
@@ -89,7 +88,7 @@ UTILS::PotentialManager::PotentialManager(
   importer_ = rcp(new Epetra_Import(idisp_total_->Map(),idisp_onproc_->Map()));
 
   // set up tree
-  const BlitzMat3x2 rootBox = GEO::getXAABBofDis(*boundarydis_);
+  const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofDis(*boundarydis_);
   octTree_      = rcp(new GEO::SearchTree(8));
   CollectElementsByPotentialCouplingLabel(elementsByLabel_);
   octTree_->initializeTree(rootBox, elementsByLabel_, GEO::TreeType(GEO::OCTTREE));
@@ -149,7 +148,7 @@ void UTILS::PotentialManager::StiffnessAndInternalForcesLJPotential(
   for(int i = 0; i < DRT::UTILS::getNumberOfElementCornerNodes(element->Shape()); i++)
   {
     const DRT::Node* node = element->Nodes()[i];
-    const BlitzVec3 x_node = currentboundarypositions_.find(node->Id())->second;
+    const LINALG::Matrix<3,1> x_node = currentboundarypositions_.find(node->Id())->second;
     // octtree search
     octTreeSearchElementsInCutOffRadius(x_node, potentialElementIds, cutOff, label);
     // serial search
@@ -210,7 +209,7 @@ void UTILS::PotentialManager::UpdateDisplacementsOfBoundaryDiscretization(
       // extract global dof ids
       boundarydis_->Dof(node, lm);
       vector<double> mydisp(3);
-      BlitzVec3 currpos(3);
+      LINALG::Matrix<3,1> currpos;
       DRT::UTILS::ExtractMyValues(*idisp_total_,mydisp,lm);
       currpos(0) = node->X()[0] + mydisp[0];
       currpos(1) = node->X()[1] + mydisp[1];
@@ -220,7 +219,7 @@ void UTILS::PotentialManager::UpdateDisplacementsOfBoundaryDiscretization(
   }
   
   // reinitialize search tree
-  const BlitzMat3x2 rootBox = GEO::getXAABBofDis(*boundarydis_, currentboundarypositions_);
+  const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofDis(*boundarydis_, currentboundarypositions_);
   octTree_->initializeTree(rootBox, elementsByLabel_, GEO::TreeType(GEO::OCTTREE));
 }
 
@@ -235,7 +234,7 @@ void UTILS::PotentialManager::UpdateDisplacementsOfBoundaryDiscretization(
 | in this case the element ids of adjacent elements are stored       |
 *--------------------------------------------------------------------*/
 void UTILS::PotentialManager::searchElementsInCutOffRadius(
-    const BlitzVec3&                  point,
+    const LINALG::Matrix<3,1>&        point,
     std::map<int,std::set<int> >&     potentialElementIds,
     const double                      radius)
 {
@@ -246,7 +245,7 @@ const double tol =  1e-7;
   for (int lid = 0; lid < boundarydis_->NumMyColNodes(); ++lid)
   {
     // compute distance between point and node
-    const BlitzVec3 currpos = currentboundarypositions_[lid];
+    const LINALG::Matrix<3,1> currpos = currentboundarypositions_[lid];
     double distance = 0;
     for(int k = 0; k < 3; k++)
     {
@@ -278,7 +277,7 @@ const double tol =  1e-7;
 | in this case the element ids of adjacent elements are stored       |
 *--------------------------------------------------------------------*/
 void UTILS::PotentialManager::octTreeSearchElementsInCutOffRadius(
-    const BlitzVec3&                  point,
+    const LINALG::Matrix<3,1>&        point,
     std::map<int,std::set<int> >&     potentialElementIds,
     const double                      radius,
     const int                         label)
@@ -492,7 +491,7 @@ void UTILS::PotentialManager::computeFandK(
     const int numnode = actEle->NumNode();
     LINALG::SerialDenseVector   funct(numnode);
     LINALG::SerialDenseMatrix   deriv(2,numnode);
-    BlitzVec3                   x_gp = 0.0;
+    LINALG::Matrix<3,1>         x_gp(true);
    
     const double fac = ComputeFactor(actEle, funct, deriv, intpoints, gp, x_gp, curvefac);
     //----------------------------------------------------------------------
@@ -539,39 +538,39 @@ void UTILS::PotentialManager::computeFandK(
            const int numnode_pot = element_pot->NumNode();
            LINALG::SerialDenseVector  funct_pot(numnode_pot);
            LINALG::SerialDenseMatrix  deriv_pot(2,numnode_pot);
-           BlitzVec3                  x_pot_gp = 0.0;
+           LINALG::Matrix<3,1>        x_pot_gp(true);
            
            const double fac_pot = ComputeFactor(element_pot, funct_pot, deriv_pot, intpoints_pot, 
                                                 gp_pot, x_pot_gp, curvefac);
            
             // evaluate Lennard Jones potential and its derivatives    
-            BlitzVec3     potderiv1;
-            BlitzMat3x3   potderiv2;
-            EvaluateLennardJonesPotential(depth, rootDist, x_gp, x_pot_gp, potderiv1, potderiv2);
+           LINALG::Matrix<3,1>     potderiv1;
+           LINALG::Matrix<3,3>  potderiv2;
+           EvaluateLennardJonesPotential(depth, rootDist, x_gp, x_pot_gp, potderiv1, potderiv2);
             //cout << "potderiv1 = " << potderiv1 << endl;
             //cout << "potderiv2 = " << potderiv2 << endl;
           
-            const int numdof = 3;
+           const int numdof = 3;
             
-            // computation of internal forces (possibly with non-local values)
-            for (int inode = 0; inode < numnode; inode++)
-              for(int dim = 0; dim < 3; dim++)    
-                  F_int[inode*numdof+dim] += funct(inode)*beta*fac*(beta*potderiv1(dim)*fac_pot);
+           // computation of internal forces (possibly with non-local values)
+           for (int inode = 0; inode < numnode; inode++)
+             for(int dim = 0; dim < 3; dim++)    
+               F_int[inode*numdof+dim] += funct(inode)*beta*fac*(beta*potderiv1(dim)*fac_pot);
                          
-            // computation of stiffness matrix (possibly with non-local values)
-            for (int inode = 0;inode < numnode; ++inode)
-              for(int dim = 0; dim < 3; dim++)
-              {
-                // k,ii
-                for (int jnode = 0; jnode < numnode; ++jnode)
-                  for(int dim_pot = 0; dim_pot < 3; dim_pot++)
-                    K_surf(inode*numdof+dim, jnode*numdof+dim_pot) += 
-                      funct(inode)*beta*fac*(beta*potderiv2(dim,dim_pot)*funct(jnode)*fac_pot);
+           // computation of stiffness matrix (possibly with non-local values)
+           for (int inode = 0;inode < numnode; ++inode)
+             for(int dim = 0; dim < 3; dim++)
+             {
+               // k,ii
+               for (int jnode = 0; jnode < numnode; ++jnode)
+                 for(int dim_pot = 0; dim_pot < 3; dim_pot++)
+                   K_surf(inode*numdof+dim, jnode*numdof+dim_pot) += 
+                     funct(inode)*beta*fac*(beta*potderiv2(dim,dim_pot)*funct(jnode)*fac_pot);
                 
-                // k,ij
-                for (int jnode = 0;jnode < numnode_pot; ++jnode)
-                  for(int dim_pot = 0; dim_pot < 3; dim_pot++)
-                    K_surf(inode*numdof+dim, GetLocalIndex(lm,lmpot[jnode*numdof+dim_pot]) ) += 
+               // k,ij
+               for (int jnode = 0;jnode < numnode_pot; ++jnode)
+                 for(int dim_pot = 0; dim_pot < 3; dim_pot++)
+                   K_surf(inode*numdof+dim, GetLocalIndex(lm,lmpot[jnode*numdof+dim_pot]) ) += 
                       funct(inode)*beta*fac*(beta*(-1)*potderiv2(dim,dim_pot)*funct_pot(jnode)*fac_pot);
           
               }
@@ -592,19 +591,19 @@ void UTILS::PotentialManager::computeFandK(
 | from solid discretization                                          |
 *--------------------------------------------------------------------*/
 void UTILS::PotentialManager::EvaluateLennardJonesPotential(
-    const double        depth,
-    const double        rootDist,
-    const BlitzVec3&    x,
-    const BlitzVec3&    y,
-    BlitzVec3&          potderiv1,
-    BlitzMat3x3&        potderiv2)
+    const double                  depth,
+    const double                  rootDist,
+    const LINALG::Matrix<3,1>&    x,
+    const LINALG::Matrix<3,1>&    y,
+    LINALG::Matrix<3,1>&          potderiv1,
+    LINALG::Matrix<3,3>&          potderiv2)
 {
 
   // evaluate distance related stuff
   double          distance      = 0.0;
-  BlitzVec3       distance_vec  = 0.0;
-  BlitzVec3       distance_unit = 0.0;
-  BlitzMat3x3     du_tensor_du;
+  LINALG::Matrix<3,1>       distance_vec(true);
+  LINALG::Matrix<3,1>       distance_unit(true);
+  LINALG::Matrix<3,3>       du_tensor_du;
   computeDistance(x,y, du_tensor_du, distance_vec, distance_unit, distance);
 
   //----------------------------------------------------------------------
@@ -639,12 +638,12 @@ void UTILS::PotentialManager::EvaluateLennardJonesPotential(
 | and r_unit tensorproduct r_unit                                    |
 *--------------------------------------------------------------------*/
 void UTILS::PotentialManager::computeDistance(
-    const BlitzVec3&  x,
-    const BlitzVec3&  y,
-    BlitzMat3x3&      du_tensor_du,
-    BlitzVec3&        dist_vec,
-    BlitzVec3&        dist_unit,
-    double&           distance)
+    const LINALG::Matrix<3,1>&  x,
+    const LINALG::Matrix<3,1>&  y,
+    LINALG::Matrix<3,3>&        du_tensor_du,
+    LINALG::Matrix<3,1>&        dist_vec,
+    LINALG::Matrix<3,1>&        dist_unit,
+    double&                     distance)
 {
   // compute distance vector
   dist_vec(0) = x(0) - y(0);
@@ -652,7 +651,7 @@ void UTILS::PotentialManager::computeDistance(
   dist_vec(2) = x(2) - y(2);
 
   // compute distance
-  distance = GEO::Norm2(dist_vec);
+  distance = dist_vec.Norm2();
 
   // compute distance unit vector
   dist_unit(0) = dist_vec(0)/distance;
@@ -773,7 +772,7 @@ double UTILS::PotentialManager::ComputeFactor(
     LINALG::SerialDenseMatrix&              deriv, 
     const DRT::UTILS::IntegrationPoints2D&  intpoints,
     const int                               gp,
-    BlitzVec3&                              x_gp,
+    LINALG::Matrix<3,1>&                    x_gp,
     const double                            curve_fac)
 {
   

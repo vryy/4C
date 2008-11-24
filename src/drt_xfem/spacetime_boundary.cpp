@@ -62,12 +62,12 @@ XFEM::SpaceTimeBoundaryCell::SpaceTimeBoundaryCell() :
 //    return;   
 //}
         
-BlitzMat XFEM::SpaceTimeBoundaryCell::getLinearPositionArray(
+LINALG::SerialDenseMatrix XFEM::SpaceTimeBoundaryCell::getLinearPositionArray(
     const LINALG::SerialDenseMatrix&      posnp,
     const LINALG::SerialDenseMatrix&      posn
     ) const
 {
-  BlitzMat xyzt(3,8);
+  LINALG::SerialDenseMatrix xyzt(3,8);
   for (int inode = 0; inode != 4; ++inode) // fill n   position
   {
     for (int isd = 0; isd != 3; ++isd)

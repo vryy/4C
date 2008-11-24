@@ -43,11 +43,11 @@ inline double XSIGN(const double a, const double b)
 */ 
 template <int n, int m>
 static void svdcmp(
-        blitz::TinyMatrix<double,m,n>&  A, 
-        blitz::TinyVector<double,n>&  W, 
-        blitz::TinyMatrix<double,n,n>&  V)
+        LINALG::Matrix<m,n>&  A, 
+        LINALG::Matrix<n,1>&  W, 
+        LINALG::Matrix<n,n>&  V)
 {
-    static blitz::TinyVector<double,n> rv1;
+    static LINALG::Matrix<n,1> rv1;
 
     //Householder reduction to bidiagonal form.
     double g = 0.0;
@@ -313,15 +313,15 @@ static void svdcmp(
     */
     template<int dim>
     inline bool solveLinearSystemWithSVD(
-        blitz::TinyMatrix<double,dim,dim>&    U,  ///< (in/out)        : system matrix / matrix U
-        const blitz::TinyVector<double,dim>&  b,  ///< (in)            : right-hand-side
-        blitz::TinyVector<double,dim>&        x,  ///< (out)           : solution vector
-        const double                          tol ///< (in)            : tolerance
+        LINALG::Matrix<dim,dim>&      U,  ///< (in/out)        : system matrix / matrix U
+        const LINALG::Matrix<dim,1>&  b,  ///< (in)            : right-hand-side
+        LINALG::Matrix<dim,1>&        x,  ///< (out)           : solution vector
+        const double                  tol ///< (in)            : tolerance
         )
     {
-        static blitz::TinyMatrix<double,dim,dim> V;
-        static blitz::TinyMatrix<double,dim,dim> A;
-        static blitz::TinyVector<double,dim>     W;
+        static LINALG::Matrix<dim,dim> V;
+        static LINALG::Matrix<dim,dim> A;
+        static LINALG::Matrix<dim, 1>  W;
         
         // initialize vectors and matrices
         W = 0.0;
@@ -388,12 +388,12 @@ static void svdcmp(
     \param dim  (in)        : dimension
     */            
     void test_svdcmp(
-            BlitzMat&   A,
-            BlitzMat&   U,
-            BlitzVec&   W,
-            BlitzMat&   V,
-            int dim
-            );
+        LINALG::Matrix<3,3>&   A,
+        LINALG::Matrix<3,3>&   U,
+        LINALG::Matrix<3,1>&   W,
+        LINALG::Matrix<3,3>&   V,
+        int dim
+        );
         
         
     /*!
@@ -456,7 +456,7 @@ static void svdcmp(
                     /* copy pivot row to current row */
                     if (pivot != k)
                     {
-                        blitz::TinyVector<double,4> tmp;    // check changed
+                        LINALG::Matrix<4,1> tmp;    // check changed
                         for (int j=0;j<dim;j++)
                             tmp(j) = A(pivot,j);
                         tmp(dim) = b(pivot);

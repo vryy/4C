@@ -120,7 +120,7 @@ private:
           based ones needed for calculations again.
    */
   void searchElementsInCutOffRadius(
-    const BlitzVec3&                  point,
+    const LINALG::Matrix<3,1>&        point,
     std::map<int,std::set<int> >&     potentialElementIds,
     const double                      radius
     );
@@ -132,7 +132,7 @@ private:
           based ones needed for calculations again.
    */
   void octTreeSearchElementsInCutOffRadius(
-      const BlitzVec3&                point,
+      const LINALG::Matrix<3,1>&      point,
       std::map<int,std::set<int> >&   potentialElementIds,
       const double                    radius,
       const int                       label
@@ -182,12 +182,12 @@ private:
   \brief  compute first and second derivative of the Lennard-Jones potential
    */
   void EvaluateLennardJonesPotential(
-      const double        depth,
-      const double        rootDist,
-      const BlitzVec3&    x,
-      const BlitzVec3&    y,
-      BlitzVec3&          potderiv1,
-      BlitzMat3x3&        potderiv2
+      const double                depth,
+      const double                rootDist,
+      const LINALG::Matrix<3,1>&  x,
+      const LINALG::Matrix<3,1>&  y,
+      LINALG::Matrix<3,1>&        potderiv1,
+      LINALG::Matrix<3,3>&        potderiv2
       );
   
   
@@ -195,12 +195,12 @@ private:
   \brief  computes distance related structures
    */
   void computeDistance(
-      const BlitzVec3&  x,
-      const BlitzVec3&  y,
-      BlitzMat3x3&      du_tensor_du,
-      BlitzVec3&        dist_vec,
-      BlitzVec3&        dist_unit,
-      double&           distance
+      const LINALG::Matrix<3,1>&  x,
+      const LINALG::Matrix<3,1>&  y,
+      LINALG::Matrix<3,3>&        du_tensor_du,
+      LINALG::Matrix<3,1>&        dist_vec,
+      LINALG::Matrix<3,1>&        dist_unit,
+      double&                     distance
       );
   
   
@@ -239,7 +239,7 @@ private:
       LINALG::SerialDenseMatrix&              deriv, 
       const DRT::UTILS::IntegrationPoints2D&  intpoints,
       const int                               gp,
-      BlitzVec3&                              x_gp,
+      LINALG::Matrix<3,1>&                    x_gp,
       const double                            curve_fac
       );
  
@@ -255,7 +255,7 @@ private:
   Teuchos::RCP<GEO::SearchTree>  octTree_;
 
   //! current position of boundary elements
-  std::map<int,BlitzVec3 > currentboundarypositions_;
+  std::map<int,LINALG::Matrix<3,1> > currentboundarypositions_;
 
   //! for each potential condition label there is a set of boundary elements
  std::map<int,std::set<int> >            elementsByLabel_;

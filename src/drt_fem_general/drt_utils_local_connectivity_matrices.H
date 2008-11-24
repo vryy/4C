@@ -55,7 +55,6 @@ The surface mapping gives the node numbers such that the 2D shape functions can 
 #ifndef DRT_UTILS_LOCAL_CONNECTIVITY_MATRICES_H
 #define DRT_UTILS_LOCAL_CONNECTIVITY_MATRICES_H
 
-#include "../drt_geometry/vector_definitions.H"
 #include "../drt_lib/drt_element.H"
 
 namespace DRT
@@ -447,7 +446,7 @@ namespace UTILS
 
   \return map of reference coordinates for all nodes
   */
-  vector< vector< double > > getEleNodeNumbering_nodes_reference(
+  vector< LINALG::Matrix<3,1> > getEleNodeNumbering_nodes_reference(
     const DRT::Element::DiscretizationType      distype     ///< discretization type
     );
 
@@ -456,7 +455,7 @@ namespace UTILS
   \      is lying on for each discretization type
   */
   vector<int> getSurfaces(
-    const BlitzVec3&                            rst,        ///< point in reference coordinates
+    const LINALG::Matrix<3,1>&                  rst,        ///< point in reference coordinates
     const DRT::Element::DiscretizationType      distype     ///< discretization type
     );
 
@@ -466,7 +465,7 @@ namespace UTILS
    \      is lying on for each discretization type
    */
   vector<int> getLines(
-      const BlitzVec3&                            rst,      ///< point in reference coordinates
+      const LINALG::Matrix<3,1>&                  rst,      ///< point in reference coordinates
       const DRT::Element::DiscretizationType      distype   ///< discretization type
       );
 
@@ -475,7 +474,7 @@ namespace UTILS
    \      is lying on for each discretization type
    */
   int getNode(
-      const BlitzVec3&                            rst,      ///< point in reference coordinates
+      const LINALG::Matrix<3,1>&                  rst,      ///< point in reference coordinates
       const DRT::Element::DiscretizationType      distype   ///< discretization type
       );
 
@@ -484,7 +483,7 @@ namespace UTILS
   \brief Returns a vector with coordinates in reference system of the cutter element
   \      according to the node Id for each discretization type
   */
-  vector<double> getNodeCoordinates(
+  LINALG::Matrix<3,1> getNodeCoordinates(
     const int                                   nodeId,     ///< node Id
     const DRT::Element::DiscretizationType      distype     ///< discretization type
     );
@@ -493,7 +492,7 @@ namespace UTILS
   \brief Returns a with coordinates in reference system of the cutter element
   \      according to the line Id for each discretization type
   */
-  vector<double> getLineCoordinates(
+  LINALG::Matrix<3,1> getLineCoordinates(
     const int                                   lineId,     ///< line ID
     const double                                lineCoord,  ///< line coordinate
     const DRT::Element::DiscretizationType      distype     ///< discretization type

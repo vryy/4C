@@ -68,21 +68,21 @@ void COMBUST::InterfaceHandleCombust::toGmsh(const int step) const
 }
 
 //! implement this function if needed for combustion!
-int COMBUST::InterfaceHandleCombust::PositionWithinConditionNP(const BlitzVec3& x_in) const
+int COMBUST::InterfaceHandleCombust::PositionWithinConditionNP(const LINALG::Matrix<3,1>& x_in) const
 {
   dserror("not implemented");
   return 0;
 }
 
 //! implement this function if needed for combustion!
-int COMBUST::InterfaceHandleCombust::PositionWithinConditionN(const BlitzVec3& x_in) const
+int COMBUST::InterfaceHandleCombust::PositionWithinConditionN(const LINALG::Matrix<3,1>& x_in) const
 {
   dserror("not implemented");
   return 0;
 }
 
 //! implement this function if needed for combustion!
-int COMBUST::InterfaceHandleCombust::PositionWithinConditionNP(const BlitzVec3&     x_in,
+int COMBUST::InterfaceHandleCombust::PositionWithinConditionNP(const LINALG::Matrix<3,1>&     x_in,
                               GEO::NearestObject&  nearestobject) const
 {
   dserror("not implemented");
@@ -90,7 +90,7 @@ int COMBUST::InterfaceHandleCombust::PositionWithinConditionNP(const BlitzVec3& 
 }
 
 //! implement this function if needed for combustion!
-int COMBUST::InterfaceHandleCombust::PositionWithinConditionN(const BlitzVec3&     x_in,
+int COMBUST::InterfaceHandleCombust::PositionWithinConditionN(const LINALG::Matrix<3,1>&     x_in,
                              GEO::NearestObject&  nearestobject) const
 {
   dserror("not implemented");

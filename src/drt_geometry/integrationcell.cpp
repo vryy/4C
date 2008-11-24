@@ -48,7 +48,7 @@ static void ComputePhysicalCoordinates(
         LINALG::SerialDenseMatrix& physicalCoordinates
         )
 {
-  const BlitzMat eleCoord(GEO::InitialPositionArrayBlitz(&ele));
+  const LINALG::SerialDenseMatrix eleCoord(GEO::InitialPositionArrayBlitz(&ele));
   //DRT::UTILS::fillInitialPositionArray(&ele, eleCoord);
   const LINALG::SerialDenseMatrix* nodalPosXiDomain = cell.NodalPosXiDomain();
   

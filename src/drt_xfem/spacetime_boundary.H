@@ -53,7 +53,7 @@ public:
 //      return ref;
 //    };
     
-    BlitzMat get_xyzt() const {return xyzt_;};
+    LINALG::SerialDenseMatrix get_xyzt() const {return xyzt_;};
     
     int getBeleId() const {return bele_id_;};
     
@@ -65,10 +65,10 @@ private:
   int           bele_id_;           ///< boundary element id we want to track
   LINALG::SerialDenseMatrix      posnp_;             ///< nodal positions at n+1
   LINALG::SerialDenseMatrix      posn_;              ///< nodal positions at n
-  BlitzMat      xyzt_;              ///< nodal positions at (x,y,z,tnp,tn)
+  LINALG::SerialDenseMatrix      xyzt_;              ///< nodal positions at (x,y,z,tnp,tn)
   
   //! from surface positions at two time steps, create prism element (e.g. hex)
-  BlitzMat getLinearPositionArray(
+  LINALG::SerialDenseMatrix getLinearPositionArray(
       const LINALG::SerialDenseMatrix&      posnp,                 ///< nodal positions at n+1
       const LINALG::SerialDenseMatrix&      posn                   ///< nodal positions at n
       ) const;

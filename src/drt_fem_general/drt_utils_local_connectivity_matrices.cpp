@@ -652,12 +652,12 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumbering_nodes_surfaces(
  |  Fills a vector< vector<double> > with positions in reference coordinates
  |                                                           u.may 08/07|
  *----------------------------------------------------------------------*/
-vector< vector<double> > DRT::UTILS::getEleNodeNumbering_nodes_reference(
+vector< LINALG::Matrix<3,1> > DRT::UTILS::getEleNodeNumbering_nodes_reference(
     const DRT::Element::DiscretizationType      distype)
 {
     const int nNode = getNumberOfElementNodes(distype);
     const int dim = getDimension(distype);
-    vector< vector<double> >   map(nNode, vector<double>(dim,0.0));
+    vector< LINALG::Matrix<3,1> >   map(nNode, LINALG::Matrix<3,1>(true));
 
     switch(distype)
     {
@@ -666,7 +666,7 @@ vector< vector<double> > DRT::UTILS::getEleNodeNumbering_nodes_reference(
             for(int inode = 0; inode < nNode; inode++)
             {
                 for(int isd = 0; isd < dim; isd++)
-                    map[inode][isd] = eleNodeNumbering_quad9_nodes_reference[inode][isd];
+                    map[inode](isd) = eleNodeNumbering_quad9_nodes_reference[inode][isd];
             }
             break;
         }
@@ -675,7 +675,7 @@ vector< vector<double> > DRT::UTILS::getEleNodeNumbering_nodes_reference(
             for(int inode = 0; inode < nNode; inode++)
             {
                 for(int isd = 0; isd < dim; isd++)
-                    map[inode][isd] = eleNodeNumbering_quad9_nodes_reference[inode][isd];
+                    map[inode](isd) = eleNodeNumbering_quad9_nodes_reference[inode][isd];
             }
             break;
         }
@@ -684,7 +684,7 @@ vector< vector<double> > DRT::UTILS::getEleNodeNumbering_nodes_reference(
             for(int inode = 0; inode < nNode; inode++)
             {
                 for(int isd = 0; isd < dim; isd++)
-                    map[inode][isd] = eleNodeNumbering_quad9_nodes_reference[inode][isd];
+                    map[inode](isd) = eleNodeNumbering_quad9_nodes_reference[inode][isd];
             }
             break;
         }
@@ -693,7 +693,7 @@ vector< vector<double> > DRT::UTILS::getEleNodeNumbering_nodes_reference(
             for(int inode = 0; inode < nNode; inode++)
             {
                 for(int isd = 0; isd < dim; isd++)
-                    map[inode][isd] = eleNodeNumbering_tri6_nodes_reference[inode][isd];
+                    map[inode](isd) = eleNodeNumbering_tri6_nodes_reference[inode][isd];
             }
             break;
         }
@@ -702,7 +702,7 @@ vector< vector<double> > DRT::UTILS::getEleNodeNumbering_nodes_reference(
             for(int inode = 0; inode < nNode; inode++)
             {
                 for(int isd = 0; isd < dim; isd++)
-                    map[inode][isd] = eleNodeNumbering_tri6_nodes_reference[inode][isd];
+                    map[inode](isd) = eleNodeNumbering_tri6_nodes_reference[inode][isd];
             }
             break;
         }
@@ -711,7 +711,7 @@ vector< vector<double> > DRT::UTILS::getEleNodeNumbering_nodes_reference(
             for(int inode = 0; inode < nNode; inode++)
             {
                 for(int isd = 0; isd < dim; isd++)
-                    map[inode][isd] = eleNodeNumbering_hex27_nodes_reference[inode][isd];
+                    map[inode](isd) = eleNodeNumbering_hex27_nodes_reference[inode][isd];
             }
             break;
         }
@@ -720,7 +720,7 @@ vector< vector<double> > DRT::UTILS::getEleNodeNumbering_nodes_reference(
             for(int inode = 0; inode < nNode; inode++)
             {
                 for(int isd = 0; isd < dim; isd++)
-                    map[inode][isd] = eleNodeNumbering_hex27_nodes_reference[inode][isd];
+                    map[inode](isd) = eleNodeNumbering_hex27_nodes_reference[inode][isd];
             }
             break;
         }
@@ -729,7 +729,7 @@ vector< vector<double> > DRT::UTILS::getEleNodeNumbering_nodes_reference(
             for(int inode = 0; inode < nNode; inode++)
             {
                 for(int isd = 0; isd < dim; isd++)
-                    map[inode][isd] = eleNodeNumbering_hex27_nodes_reference[inode][isd];
+                    map[inode](isd) = eleNodeNumbering_hex27_nodes_reference[inode][isd];
             }
             break;
         }
@@ -738,7 +738,7 @@ vector< vector<double> > DRT::UTILS::getEleNodeNumbering_nodes_reference(
             for(int inode = 0; inode < nNode; inode++)
             {
                 for(int isd = 0; isd < dim; isd++)
-                    map[inode][isd] = eleNodeNumbering_tet10_nodes_reference[inode][isd];
+                    map[inode](isd) = eleNodeNumbering_tet10_nodes_reference[inode][isd];
             }
             break;
         }
@@ -747,7 +747,7 @@ vector< vector<double> > DRT::UTILS::getEleNodeNumbering_nodes_reference(
             for(int inode = 0; inode < nNode; inode++)
             {
                 for(int isd = 0; isd < dim; isd++)
-                    map[inode][isd] = eleNodeNumbering_tet10_nodes_reference[inode][isd];
+                    map[inode](isd) = eleNodeNumbering_tet10_nodes_reference[inode][isd];
             }
             break;
         }
@@ -765,7 +765,7 @@ vector< vector<double> > DRT::UTILS::getEleNodeNumbering_nodes_reference(
  |  for each discretization type                                        |
  *----------------------------------------------------------------------*/
 vector<int> DRT::UTILS::getSurfaces(
-    const blitz::TinyVector<double,3>&          rst,
+    const LINALG::Matrix<3,1>&                  rst,
     const DRT::Element::DiscretizationType      distype)
 {
     const double TOL = 1e-7;
@@ -800,7 +800,7 @@ vector<int> DRT::UTILS::getSurfaces(
  |  for each discretization type                                        |
  *----------------------------------------------------------------------*/
 vector<int> DRT::UTILS::getLines(
-    const blitz::TinyVector<double,3>&          rst,
+    const LINALG::Matrix<3,1>&                  rst,
     const DRT::Element::DiscretizationType      distype)
 {
 
@@ -847,7 +847,7 @@ vector<int> DRT::UTILS::getLines(
  |  for each discretization type                                        |
  *----------------------------------------------------------------------*/
 int DRT::UTILS::getNode(
-    const blitz::TinyVector<double,3>&          rst,
+    const LINALG::Matrix<3,1>&                  rst,
     const DRT::Element::DiscretizationType      distype)
 {
     const double TOL = 1e-7;
@@ -880,11 +880,11 @@ int DRT::UTILS::getNode(
  |  system of the cutter element                                        |
  |  according to the node ID for each discretization type               |
  *----------------------------------------------------------------------*/
-vector<double> DRT::UTILS::getNodeCoordinates(  const int                                   nodeId,
-                                                const DRT::Element::DiscretizationType      distype)
+LINALG::Matrix<3,1> DRT::UTILS::getNodeCoordinates(   const int                                   nodeId,
+                                                      const DRT::Element::DiscretizationType      distype)
 {
 
-    vector<double> coord(3,0.0);
+  LINALG::Matrix<3,1> coord(true);
 
     if(distype == DRT::Element::quad4 ||  distype == DRT::Element::quad8 || distype == DRT::Element::quad9)
     {
@@ -892,32 +892,32 @@ vector<double> DRT::UTILS::getNodeCoordinates(  const int                       
         {
             case 0:
             {
-                coord[0] = -1.0;
-                coord[1] = -1.0;
+                coord(0) = -1.0;
+                coord(1) = -1.0;
                 break;
             }
             case 1:
             {
-                coord[0] =  1.0;
-                coord[1] = -1.0;
+                coord(0) =  1.0;
+                coord(1) = -1.0;
                 break;
             }
             case 2:
             {
-                coord[0] =  1.0;
-                coord[1] =  1.0;
+                coord(0) =  1.0;
+                coord(1) =  1.0;
                 break;
             }
             case 3:
             {
-                coord[0] = -1.0;
-                coord[1] =  1.0;
+                coord(0) = -1.0;
+                coord(1) =  1.0;
                 break;
             }
             default:
                 dserror("node number not correct");
         }
-        coord[2] = 0.0;
+        coord(2) = 0.0;
     }
     else if(distype == DRT::Element::tri3 ||  distype == DRT::Element::tri6)
     {
@@ -925,26 +925,26 @@ vector<double> DRT::UTILS::getNodeCoordinates(  const int                       
         {
             case 0:
             {
-                coord[0] = 0.0;
-                coord[1] = 0.0;
+                coord(0) = 0.0;
+                coord(1) = 0.0;
                 break;
             }
             case 1:
             {
-                coord[0] =  1.0;
-                coord[1] =  0.0;
+                coord(0) =  1.0;
+                coord(1) =  0.0;
                 break;
             }
             case 2:
             {
-                coord[0] =  0.0;
-                coord[1] =  1.0;
+                coord(0) =  0.0;
+                coord(1) =  1.0;
                 break;
             }
             default:
                 dserror("node number not correct");
         }
-        coord[2] = 0.0;
+        coord(2) = 0.0;
     }
     else dserror("discretizationtype is not yet implemented");
 
@@ -958,13 +958,13 @@ vector<double> DRT::UTILS::getNodeCoordinates(  const int                       
  |  system of the cutter element                                        |
  |  according to the line ID for each discretization type               |
  *----------------------------------------------------------------------*/
-vector<double> DRT::UTILS::getLineCoordinates(
+LINALG::Matrix<3,1> DRT::UTILS::getLineCoordinates(
     const int                                   lineId,
     const double                                lineCoord,
     const DRT::Element::DiscretizationType      distype)
 {
 
-  vector<double> coord(3,0.0);
+  LINALG::Matrix<3,1> coord(true);
   if(distype == DRT::Element::quad4 ||  distype == DRT::Element::quad8 || distype == DRT::Element::quad9)
   {
     // change minus sign if you change the line numbering
@@ -972,32 +972,32 @@ vector<double> DRT::UTILS::getLineCoordinates(
     {
       case 0:
       {
-        coord[0] = lineCoord;
-        coord[1] = -1.0;
+        coord(0) = lineCoord;
+        coord(1) = -1.0;
         break;
       }
       case 1:
       {
-        coord[0] = 1.0;
-        coord[1] = lineCoord;
+        coord(0) = 1.0;
+        coord(1) = lineCoord;
         break;
       }
       case 2:
       {
-        coord[0] =  -lineCoord;
-        coord[1] =  1.0;
+        coord(0) =  -lineCoord;
+        coord(1) =  1.0;
         break;
       }
       case 3:
       {
-        coord[0] = -1.0;
-        coord[1] = -lineCoord;
+        coord(0) = -1.0;
+        coord(1) = -lineCoord;
         break;
       }
       default:
           dserror("node number not correct");
     }
-    coord[2] =  0.0;
+    coord(2) =  0.0;
   }
   else if(distype == DRT::Element::tri3 ||  distype == DRT::Element::tri6)
   {
@@ -1006,27 +1006,27 @@ vector<double> DRT::UTILS::getLineCoordinates(
     {
       case 0:
       {
-        coord[0] = (lineCoord+1)*0.5;
-        coord[1] = 0.0;
+        coord(0) = (lineCoord+1)*0.5;
+        coord(1) = 0.0;
         break;
       }
       case 1:
       {
-        coord[0] = 1.0;
-        coord[1] = (lineCoord+1)*0.5;
+        coord(0) = 1.0;
+        coord(1) = (lineCoord+1)*0.5;
         break;
       }
       case 2:
       {
-        coord[0] =  1.0 - (lineCoord+1)*0.5;
-        coord[1] =  (lineCoord+1)*0.5;
+        coord(0) =  1.0 - (lineCoord+1)*0.5;
+        coord(1) =  (lineCoord+1)*0.5;
         break;
       }
       default:
         dserror("node number not correct");
 
       }
-      coord[2] =  0.0;
+      coord(2) =  0.0;
   }
   else
     dserror("discretization type not yet implemented");

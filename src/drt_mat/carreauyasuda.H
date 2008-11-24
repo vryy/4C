@@ -83,9 +83,7 @@ namespace MAT
       support different materials in fluid as well.
      */
     MATERIAL* MaterialData() const { return matdata_; }
-    
-    void Evaluate(	const blitz::Array<double,2>&	velderiv,
-        			double& 						visc_caryas);
+  
 
   private:
 

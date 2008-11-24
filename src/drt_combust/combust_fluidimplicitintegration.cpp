@@ -32,6 +32,7 @@ Maintainer: Axel Gerstenberger
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_io/io_gmsh.H"
 #include <Teuchos_TimeMonitor.hpp>
+#include "../drt_geometry/vector_definitions.H"
 
 
 extern "C" /* stuff which is c and is accessed from c++ */
@@ -1249,7 +1250,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
         const DRT::Element* actele = discret_->lColElement(i);
         const int elegid = actele->Id();
 
-        BlitzMat xyze_xfemElement(GEO::InitialPositionArrayBlitz(actele));
+        LINALG::SerialDenseMatrix xyze_xfemElement = GEO::InitialPositionArrayBlitz(actele);
 
         const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(COMBUST::getElementAnsatz(actele->Shape()));
 
@@ -1607,8 +1608,8 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
         const DRT::Element* actele = discret_->lColElement(i);
         const int elegid = actele->Id();
 
-        BlitzMat xyze_xfemElement(GEO::InitialPositionArrayBlitz(actele));
-
+        LINALG::SerialDenseMatrix xyze_xfemElement = GEO::InitialPositionArrayBlitz(actele);
+                      
         const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(COMBUST::getElementAnsatz(actele->Shape()));
 
         // create local copy of information about dofs
@@ -1684,7 +1685,8 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 //            XFEM::computeVectorCellNodeValues(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
 //                              cell, XFEM::PHYSICS::Velx, elementvalues, elevalues);
 
-            const BlitzMat xyze_ele(GEO::InitialPositionArrayBlitz(actele));
+            LINALG::SerialDenseMatrix xyze_ele = GEO::InitialPositionArrayBlitz(actele);
+                  
             gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
                 actele->Shape(), elevalues, xyze_ele) << endl;
           }

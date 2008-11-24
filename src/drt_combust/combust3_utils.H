@@ -15,6 +15,7 @@ Maintainer: Florian Henke
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_xfem/dof_management_element.H"
 #include <Epetra_SerialDenseSolver.h>
+#include "../drt_geometry/vector_definitions.H"
 
 
 // little helper function for transition to fixed size arrays

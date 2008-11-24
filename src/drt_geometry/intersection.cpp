@@ -42,7 +42,6 @@ Maintainer: Ursula Mayer
 #include "../drt_io/io_gmsh.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_io/io_control.H"
-#include "../drt_lib/drt_globalproblem.H"
 
 
 /*----------------------------------------------------------------------*
@@ -54,7 +53,7 @@ Maintainer: Ursula Mayer
 void GEO::Intersection::computeIntersection(
     const Teuchos::RCP<DRT::Discretization>        xfemdis,
     const Teuchos::RCP<DRT::Discretization>        cutterdis,
-    const std::map<int,BlitzVec3>&                 currentcutterpositions,
+    const std::map<int,LINALG::Matrix<3,1> >&      currentcutterpositions,
     std::map< int, DomainIntCells >&               domainintcells,
     std::map< int, BoundaryIntCells >&             boundaryintcells)
 {
@@ -64,13 +63,11 @@ void GEO::Intersection::computeIntersection(
   std::cout << std::endl << "GEO::Intersection:";
   flush(std::cout);
   
-  static int timestepcounter_ = -1;
-  timestepcounter_++;
   countMissedPoints_ = 0;
   const double t_start = ds_cputime();
   
   // initialize tree for intersection candidates search
-  const BlitzMat3x2 rootBox = GEO::getXAABBofDis(*cutterdis, currentcutterpositions);
+  const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofDis(*cutterdis, currentcutterpositions);
   Teuchos::RCP<GEO::SearchTree> octTree = rcp(new GEO::SearchTree(8));
   octTree->initializeTree(rootBox, *cutterdis, GEO::TreeType(GEO::OCTTREE));
   
@@ -90,17 +87,17 @@ void GEO::Intersection::computeIntersection(
     DRT::Element* xfemElement = xfemdis->lColElement(k);
     initializeXFEM(k, xfemElement);
     // initial positions, since the xfem element does not move
-    const BlitzMat xyze_xfemElement(GEO::InitialPositionArrayBlitz(xfemElement));
+    const LINALG::SerialDenseMatrix xyze_xfemElement(GEO::InitialPositionArrayBlitz(xfemElement));
     checkGeoType(xfemElement, xyze_xfemElement, xfemGeoType);
     // const BlitzMat3x2 xfemXAABB = computeFastXAABB(xfemElement, xyze_xfemElement, xfemGeoType);
     
     startPointList();
 
     // serial search
-    // std::vector<int> cutterElementIds = serialIntersectionCandidateSearch(cutterdis, currentcutterpositions, xfemElement);
+    std::vector<int> cutterElementIds = serialIntersectionCandidateSearch(cutterdis, currentcutterpositions, xfemElement);
     
     // tree search for intersection candidates
-    std::vector<int> cutterElementIds = octTree->queryIntersectionCandidates(*cutterdis, currentcutterpositions, xfemElement, xyze_xfemElement);
+    // std::vector<int> cutterElementIds = octTree->queryIntersectionCandidates(*cutterdis, currentcutterpositions, xfemElement, xyze_xfemElement);
   
     // debugIntersection(xfemElement, cutterElements);
     const vector<RCP<DRT::Element> > xfemElementSurfaces = xfemElement->Surfaces();
@@ -114,13 +111,13 @@ void GEO::Intersection::computeIntersection(
       cutterDistype_ = cutterElement->Shape();
 
       if(cutterElement == NULL) dserror("cutter element is null\n");
-      const BlitzMat xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentcutterpositions));
+      const LINALG::SerialDenseMatrix xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentcutterpositions));
       EleGeoType cutterGeoType = HIGHERORDER;
       checkGeoType(cutterElement, xyze_cutterElement, cutterGeoType);
       const vector<RCP<DRT::Element> > cutterElementLines = cutterElement->Lines();
       const DRT::Node*const* cutterElementNodes = cutterElement->Nodes();
 
-      // debugIntersectionOfSingleElements(xfemElement, cutterElement, currentcutterpositions);
+      debugIntersectionOfSingleElements(xfemElement, cutterElement, currentcutterpositions);
 
       vector< InterfacePoint >  interfacePoints;
 
@@ -137,11 +134,9 @@ void GEO::Intersection::computeIntersection(
         //printf("cutsurf = %d\t xfemline = %d\n", countCutter, m);
         const bool doSVD = decideSVD(cutterGeoType, xfemGeoType);
         const DRT::Element* xfemElementLine = xfemElementLines[m].get();
-        const BlitzMat xyze_xfemElementLine(GEO::InitialPositionArrayBlitz(xfemElementLine));
+        const LINALG::SerialDenseMatrix xyze_xfemElementLine(GEO::InitialPositionArrayBlitz(xfemElementLine));
         if(collectIntersectionPoints(   xfemElement, cutterElement, xyze_cutterElement,
-            xfemElementLine, xyze_xfemElementLine,
-            interfacePoints, 0, m, 
-            false, doSVD))
+                                        xfemElementLine, xyze_xfemElementLine, interfacePoints, 0, m, false, doSVD))
         {
           storeIntersectedCutterElement(cutterElement);
         }
@@ -154,13 +149,11 @@ void GEO::Intersection::computeIntersection(
           //printf("cutline = %d\t xfemsurf = %d\n", m , p);
           const bool doSVD = decideSVD(xfemGeoType, cutterGeoType);
           const DRT::Element* xfemElementSurface = xfemElementSurfaces[p].get();
-          const BlitzMat xyze_xfemElementSurface(GEO::InitialPositionArrayBlitz(xfemElementSurface));
+          const LINALG::SerialDenseMatrix xyze_xfemElementSurface(GEO::InitialPositionArrayBlitz(xfemElementSurface));
           const DRT::Element* cutterElementLine = cutterElementLines[m].get();
-          const BlitzMat xyze_cutterElementLine(GEO::getCurrentNodalPositions(cutterElementLine, currentcutterpositions));
+          const LINALG::SerialDenseMatrix xyze_cutterElementLine(GEO::getCurrentNodalPositions(cutterElementLine, currentcutterpositions));
           if(collectIntersectionPoints(   xfemElement, xfemElementSurface, xyze_xfemElementSurface,
-              cutterElementLine, xyze_cutterElementLine,
-              interfacePoints,
-              p, m, true, doSVD))
+                                          cutterElementLine, xyze_cutterElementLine, interfacePoints, p, m, true, doSVD))
           {
             storeIntersectedCutterElement(cutterElement);
           }
@@ -172,8 +165,7 @@ void GEO::Intersection::computeIntersection(
       if( interfacePoints.size() > 0)
       {
 #ifdef QHULL
-        preparePLC(xfemElement, xyze_xfemElement, cutterElement, xyze_cutterElement, 
-            interfacePoints);
+        preparePLC(xfemElement, xyze_xfemElement, cutterElement, xyze_cutterElement, interfacePoints);
         interfacePoints.clear();
 #else
         dserror("Set QHULL flag to use XFEM intersections!!!");
@@ -186,7 +178,7 @@ void GEO::Intersection::computeIntersection(
     {
       completePLC();
       //debugTetgenDataStructure(xfemElement);
-      computeCDT(xfemElement, xyze_xfemElement, currentcutterpositions, domainintcells, boundaryintcells, timestepcounter_);
+      computeCDT(xfemElement, xyze_xfemElement, currentcutterpositions, domainintcells, boundaryintcells);
     }
 
   }// for-loop over all  actdis->NumMyColElements()
@@ -218,11 +210,6 @@ void GEO::Intersection::initializeXFEM(
 
   numXFEMCornerNodes_  = DRT::UTILS::getNumberOfElementCornerNodes(xfemDistype);
   
-  
-  blitz::TinyVector<int, 2> size; 
-  size(0) = 3;
-  size(1) = xfemElement->NumNode();
-  xyze_xfemElement_.resize(size);
   xyze_xfemElement_ = GEO::InitialPositionArrayBlitz(xfemElement);
   
   eleLinesSurfaces_     = DRT::UTILS::getEleNodeNumbering_lines_surfaces(xfemDistype);
@@ -256,14 +243,14 @@ void GEO::Intersection::initializeXFEM(
  *----------------------------------------------------------------------*/
 std::vector<int> GEO::Intersection::serialIntersectionCandidateSearch(
     const Teuchos::RCP<DRT::Discretization>         cutterdis,
-    const std::map<int,BlitzVec3>&                  currentcutterpositions,
+    const std::map<int,LINALG::Matrix<3,1> >&       currentcutterpositions,
     DRT::Element*                                   xfemElement)
 {
   
-  const BlitzMat xyze_xfemElement(GEO::InitialPositionArrayBlitz(xfemElement));
+  const LINALG::SerialDenseMatrix xyze_xfemElement(GEO::InitialPositionArrayBlitz(xfemElement));
   EleGeoType xfemGeoType = HIGHERORDER;
   checkGeoType(xfemElement, xyze_xfemElement, xfemGeoType);
-  const BlitzMat3x2 xfemXAABB = computeFastXAABB(xfemElement, xyze_xfemElement, xfemGeoType);
+  const LINALG::Matrix<3,2> xfemXAABB = computeFastXAABB(xfemElement, xyze_xfemElement, xfemGeoType);
       
   std::vector<int> cutterElementIds;
   // search for intersection candidates
@@ -272,10 +259,10 @@ std::vector<int> GEO::Intersection::serialIntersectionCandidateSearch(
     DRT::Element*  cutterElement = cutterdis->lColElement(kk);
     if(cutterElement == NULL) dserror("geometry does not obtain elements");
 
-    const BlitzMat xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentcutterpositions));
+    const LINALG::SerialDenseMatrix xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentcutterpositions));
     EleGeoType cutterGeoType = HIGHERORDER;
     checkGeoType(cutterElement, xyze_cutterElement, cutterGeoType);
-    const BlitzMat3x2    cutterXAABB(computeFastXAABB(cutterElement, xyze_cutterElement, cutterGeoType));
+    const LINALG::Matrix<3,2>    cutterXAABB(computeFastXAABB(cutterElement, xyze_cutterElement, cutterGeoType));
 
     const bool intersected = intersectionOfXAABB(cutterXAABB, xfemXAABB);
 
@@ -294,21 +281,21 @@ std::vector<int> GEO::Intersection::serialIntersectionCandidateSearch(
  |          and lie within an xfem element                              |
  *----------------------------------------------------------------------*/
 bool GEO::Intersection::collectInternalPoints(
-    const DRT::Element*             xfemElement,
-    DRT::Element*                   cutterElement,
-    const BlitzMat&                 xyze_cutterElement,
-    const DRT::Node*                cutterNode,
-    const map<int,BlitzVec3>&       currentcutterpositions,
-    std::vector< InterfacePoint >&  interfacePoints,
-    const int                       elemId,
-    const int                       nodeId)
+    const DRT::Element*                   xfemElement,
+    DRT::Element*                         cutterElement,
+    const LINALG::SerialDenseMatrix&      xyze_cutterElement,
+    const DRT::Node*                      cutterNode,
+    const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,
+    std::vector< InterfacePoint >&        interfacePoints,
+    const int                             elemId,
+    const int                             nodeId)
 {
   // current nodal position
-  static BlitzVec3 xsi;
+  static LINALG::Matrix<3,1> xsi;
         
   if(nodemap_.find(cutterNode->Id()) == nodemap_.end())
   {  
-    const BlitzVec3 x = currentcutterpositions.find(cutterNode->Id())->second;
+    const LINALG::Matrix<3,1> x = currentcutterpositions.find(cutterNode->Id())->second;
     xsi = currentToVolumeElementCoordinatesExact(xfemElement->Shape(), xyze_xfemElement_, x, TOL7);
     nodemap_[cutterNode->Id()] = xsi;
   }
@@ -347,7 +334,7 @@ bool GEO::Intersection::collectInternalPoints(
  *----------------------------------------------------------------------*/
 void GEO::Intersection::setBoundaryPointBoundaryStatus(
     const DRT::Element::DiscretizationType  xfemDistype,
-    const BlitzVec3&                        xsi,
+    const LINALG::Matrix<3,1>&              xsi,
     InterfacePoint&                         ip) const
 {
   bool onSurface = false;
@@ -392,7 +379,7 @@ void GEO::Intersection::setBoundaryPointBoundaryStatus(
  *----------------------------------------------------------------------*/
 bool GEO::Intersection::setInternalPointBoundaryStatus(
     const DRT::Element::DiscretizationType  xfemDistype,
-    const BlitzVec3&                        xsi,
+    const LINALG::Matrix<3,1>&              xsi,
     InterfacePoint&                         ip) const
 {
   bool onSurface = false;
@@ -441,16 +428,13 @@ bool GEO::Intersection::setInternalPointBoundaryStatus(
 void GEO::Intersection::setIntersectionPointBoundaryStatus( 
     const DRT::Element*                     xfemElement,
     const DRT::Element*                     surfaceElement,
-    const BlitzMat&                         xyze_surfaceElement,
-    const BlitzVec3&                        xsiSurface,
+    const LINALG::SerialDenseMatrix&        xyze_surfaceElement,
+    const LINALG::Matrix<3,1>&              xsiSurface,
     InterfacePoint&                         ip) const
 {
 
-  BlitzVec3 xsi;
-  xsi = 0.0;
-
-  BlitzVec3 x;
-  x = 0.0;
+  LINALG::Matrix<3,1> xsi(true);
+  LINALG::Matrix<3,1> x(true);
 
   // surface element is an xfem surface
   elementToCurrentCoordinates(surfaceElement, xyze_surfaceElement, xsiSurface, x);
@@ -491,29 +475,29 @@ void GEO::Intersection::setIntersectionPointBoundaryStatus(
  |          and a surface                                               |
  *----------------------------------------------------------------------*/
 bool GEO::Intersection::collectIntersectionPoints(
-    const DRT::Element*             xfemElement,
-    const DRT::Element*             surfaceElement,
-    const BlitzMat&                 xyze_surfaceElement,
-    const DRT::Element*             lineElement,
-    const BlitzMat&                 xyze_lineElement,
-    std::vector<InterfacePoint>&    interfacePoints,
-    const int                       surfaceId,
-    const int                       lineId,
-    const bool                      lines,
-    const bool                      doSVD
+    const DRT::Element*               xfemElement,
+    const DRT::Element*               surfaceElement,
+    const LINALG::SerialDenseMatrix&  xyze_surfaceElement,
+    const DRT::Element*               lineElement,
+    const LINALG::SerialDenseMatrix&  xyze_lineElement,
+    std::vector<InterfacePoint>&      interfacePoints,
+    const int                         surfaceId,
+    const int                         lineId,
+    const bool                        lines,
+    const bool                        doSVD
 ) const
 {
 
   bool intersected = true;
-  static BlitzVec3 xsi;
+  static LINALG::Matrix<3,1> xsi;
   xsi = 0.0;
 
-  static BlitzVec3 upLimit;
-  static BlitzVec3 loLimit;
+  static LINALG::Matrix<3,1> upLimit;
+  static LINALG::Matrix<3,1> loLimit;
 
   // for hex elements
-  upLimit  =  1.0;
-  loLimit  = -1.0;
+  upLimit.PutScalar(1.0);
+  loLimit.PutScalar(-1.0);
 
   
   if(!doSVD)
@@ -562,17 +546,16 @@ bool GEO::Intersection::decideSVD(
  |                                                                      |
  *----------------------------------------------------------------------*/
 bool GEO::Intersection::checkIfLineInSurface(
-    const DRT::Element*             surfaceElement,
-    const BlitzMat&                 xyze_surfaceElement,
-    const BlitzMat&                 xyze_lineElement) const
+    const DRT::Element*                 surfaceElement,
+    const LINALG::SerialDenseMatrix&    xyze_surfaceElement,
+    const LINALG::SerialDenseMatrix&    xyze_lineElement) const
 {
   bool        inSurface = true;
   double      distance = 1000.0;
-  BlitzVec3   physCoord;
-  BlitzVec3   normal;
-  BlitzVec2   xsi; 
-  normal = 0.0;
-  xsi = 0.0;
+  LINALG::Matrix<3,1>   physCoord(true);
+  LINALG::Matrix<3,1>   normal(true);
+  LINALG::Matrix<2,1>   xsi(true); 
+
 
   for(int i = 0; i < 2; i++)
   {
@@ -598,18 +581,18 @@ bool GEO::Intersection::checkIfLineInSurface(
 template< DRT::Element::DiscretizationType surftype,
           DRT::Element::DiscretizationType linetype >
 void updateAForCSI(
-    BlitzMat3x3&                      A,                   ///< system matrix
-    const BlitzVec3&                  xsi,                 ///< vector of element coordinates (r,s,t)
-    const BlitzMat&                   xyze_surfaceElement, ///< nodal positions of surface element
-    const BlitzMat&                   xyze_lineElement     ///< nodal positions of line element
+    LINALG::Matrix<3,3>&              A,                   ///< system matrix
+    const LINALG::Matrix<3,1>&        xsi,                 ///< vector of element coordinates (r,s,t)
+    const LINALG::SerialDenseMatrix&  xyze_surfaceElement, ///< nodal positions of surface element
+    const LINALG::SerialDenseMatrix&  xyze_lineElement     ///< nodal positions of line element
 )
 {
   const int numNodesSurface = DRT::UTILS::DisTypeToNumNodePerEle<surftype>::numNodePerElement;
   const int numNodesLine = DRT::UTILS::DisTypeToNumNodePerEle<linetype>::numNodePerElement;
 
-  A = 0.0;
+  A.Clear();
 
-  BlitzMat surfaceDeriv1(2, numNodesSurface);
+  Epetra_SerialDenseMatrix surfaceDeriv1(2, numNodesSurface);
   DRT::UTILS::shape_function_2D_deriv1(surfaceDeriv1, xsi(0), xsi(1), surftype);
   for(int inode=0; inode<numNodesSurface; inode++)
   {
@@ -620,7 +603,7 @@ void updateAForCSI(
     }
   }
 
-  static BlitzMat lineDeriv1(2, numNodesLine);
+  static Epetra_SerialDenseMatrix lineDeriv1(2, numNodesLine);
   DRT::UTILS::shape_function_1D_deriv1(lineDeriv1, xsi(2), linetype);
   for(int inode=0; inode<numNodesLine; inode++)
   {
@@ -640,18 +623,18 @@ void updateAForCSI(
 template<DRT::Element::DiscretizationType surftype,
          DRT::Element::DiscretizationType linetype>
 void updateRHSForCSI(
-    BlitzVec3&           b,                   ///< right-hand-side
-    const BlitzVec3&     xsi,                 ///< vector of element coordinates (r,s,t)
-    const BlitzMat&      xyze_surfaceElement, ///< nodal positions of surface element
-    const BlitzMat&      xyze_lineElement     ///< nodal positions of line element
+    LINALG::Matrix<3,1>&              b,                   ///< right-hand-side
+    const LINALG::Matrix<3,1>&        xsi,                 ///< vector of element coordinates (r,s,t)
+    const LINALG::SerialDenseMatrix&  xyze_surfaceElement, ///< nodal positions of surface element
+    const LINALG::SerialDenseMatrix&  xyze_lineElement     ///< nodal positions of line element
     )
 {
   const int numNodesSurface = DRT::UTILS::DisTypeToNumNodePerEle<surftype>::numNodePerElement;
   const int numNodesLine = DRT::UTILS::DisTypeToNumNodePerEle<linetype>::numNodePerElement;
 
-  b = 0.0;
+  b.Clear();
 
-  static BlitzVec surfaceFunct(numNodesSurface);
+  static LINALG::SerialDenseVector surfaceFunct(numNodesSurface);
   DRT::UTILS::shape_function_2D(surfaceFunct, xsi(0), xsi(1), surftype);
   for(int i=0; i<numNodesSurface; i++)
   {
@@ -659,7 +642,7 @@ void updateRHSForCSI(
       b(dim) -= xyze_surfaceElement(dim,i) * surfaceFunct(i);
   }
 
-  static BlitzVec lineFunct(numNodesLine);
+  static LINALG::SerialDenseVector lineFunct(numNodesLine);
   DRT::UTILS::shape_function_1D(lineFunct, xsi(2), linetype);
   for(int i=0; i<numNodesLine; i++)
   {
@@ -677,18 +660,18 @@ void updateRHSForCSI(
 template<DRT::Element::DiscretizationType surftype,
          DRT::Element::DiscretizationType linetype>
 bool computeSingularCSI(
-    BlitzVec3&           xsi,                 ///< vector of element coordinates (r,s,t)
-    const BlitzMat&      xyze_surfaceElement, ///< nodal positions of surface element
-    const BlitzMat&      xyze_lineElement     ///< nodal positions of line element
+    LINALG::Matrix<3,1>&                  xsi,                 ///< vector of element coordinates (r,s,t)
+    const LINALG::SerialDenseMatrix&      xyze_surfaceElement, ///< nodal positions of surface element
+    const LINALG::SerialDenseMatrix&      xyze_lineElement     ///< nodal positions of line element
     )
 {
   bool singular = true;
   int iter = 0;
   const int maxiter = 5;
   double residual = 1.0;
-  static BlitzMat3x3 A;
-  static BlitzVec3   b;
-  static BlitzVec3   dx;
+  static LINALG::Matrix<3,3> A;
+  static LINALG::Matrix<3,1>   b;
+  static LINALG::Matrix<3,1>   dx;
 
   updateRHSForCSI<surftype,linetype>( b, xsi, xyze_surfaceElement, xyze_lineElement);
 
@@ -705,7 +688,7 @@ bool computeSingularCSI(
 
     xsi += dx;
     updateRHSForCSI<surftype,linetype>( b, xsi, xyze_surfaceElement, xyze_lineElement);
-    residual = GEO::Norm2(b);
+    residual = b.Norm2();
     iter++;
 
     if(iter >= maxiter )
@@ -738,12 +721,12 @@ template<DRT::Element::DiscretizationType surftype,
          DRT::Element::DiscretizationType linetype>
 bool computeCurveSurfaceIntersectionT(
     const DRT::Element*               surfaceElement,
-    const BlitzMat&                   xyze_surfaceElement,
+    const LINALG::SerialDenseMatrix&  xyze_surfaceElement,
     const DRT::Element*               lineElement,
-    const BlitzMat&                   xyze_lineElement,
-    BlitzVec3&                        xsi,
-    const BlitzVec3&                  upLimit,
-    const BlitzVec3&                  loLimit,
+    const LINALG::SerialDenseMatrix&  xyze_lineElement,
+    LINALG::Matrix<3,1>&              xsi,
+    const LINALG::Matrix<3,1>&        upLimit,
+    const LINALG::Matrix<3,1>&        loLimit,
     const bool                        doSVD,
     const double                      tol
 )
@@ -756,9 +739,9 @@ bool computeCurveSurfaceIntersectionT(
   int iter = 0;
   const int maxiter = 20;
   double residual = 1.0;
-  static BlitzMat3x3 A;
-  static BlitzVec3   b;
-  static BlitzVec3   dx;
+  static LINALG::Matrix<3,3> A;
+  static LINALG::Matrix<3,1> b;
+  static LINALG::Matrix<3,1> dx;
 
 
   updateRHSForCSI<surftype,linetype>( b, xsi, xyze_surfaceElement, xyze_lineElement);
@@ -780,13 +763,13 @@ bool computeCurveSurfaceIntersectionT(
         intersection = false;
         iter = maxiter + 1;
       }          
-      dx = 0.0;
+      dx.Clear();
     }
 
     //cout << "SINGULAR << endl;
     xsi += dx;
     updateRHSForCSI<surftype,linetype>( b, xsi, xyze_surfaceElement, xyze_lineElement);
-    residual = GEO::Norm2(b);
+    residual = b.Norm2();
     iter++;
 
     //printf("xsi = %20.16f   %20.16f   %20.16f  iter = %d res = %20.16f\n", xsi(0), xsi(1), xsi(2), iter, residual  );
@@ -817,12 +800,12 @@ bool computeCurveSurfaceIntersectionT(
  *----------------------------------------------------------------------*/
 bool GEO::Intersection::computeCurveSurfaceIntersection(
     const DRT::Element*               surfaceElement,
-    const BlitzMat&                   xyze_surfaceElement,
+    const LINALG::SerialDenseMatrix&  xyze_surfaceElement,
     const DRT::Element*               lineElement,
-    const BlitzMat&                   xyze_lineElement,
-    const BlitzVec3&                  upLimit,
-    const BlitzVec3&                  loLimit,
-    BlitzVec3&                        xsi,
+    const LINALG::SerialDenseMatrix&  xyze_lineElement,
+    const LINALG::Matrix<3,1>&        upLimit,
+    const LINALG::Matrix<3,1>&        loLimit,
+    LINALG::Matrix<3,1>&              xsi,
     const bool                        doSVD,
     const double                      tol
 ) const
@@ -878,21 +861,21 @@ bool GEO::Intersection::computeCurveSurfaceIntersection(
 int GEO::Intersection::computeNewStartingPoint(
     const DRT::Element*                xfemElement,
     const DRT::Element*                surfaceElement,
-    const BlitzMat&                    xyze_surfaceElement,
+    const LINALG::SerialDenseMatrix&   xyze_surfaceElement,
     const DRT::Element*                lineElement,
-    const BlitzMat&                    xyze_lineElement,
+    const LINALG::SerialDenseMatrix&   xyze_lineElement,
     const int                          surfaceId,
     const int                          lineId,
-    const BlitzVec3&                   xsiOld,
-    const BlitzVec3&                   upLimit,
-    const BlitzVec3&                   loLimit,
+    const LINALG::Matrix<3,1>&         xsiOld,
+    const LINALG::Matrix<3,1>&         upLimit,
+    const LINALG::Matrix<3,1>&         loLimit,
     std::vector<InterfacePoint>&       interfacePoints,
     const bool                         lines,
     const bool                         doSVD) const
 {
   bool interval = true;
   int numInterfacePoints = 0;
-  static BlitzVec3 xsi;
+  static LINALG::Matrix<3,1> xsi;
 
   //printf("xsi = %f   %f   %f\n", fabs(xsi(0)), fabs(xsi(1)), fabs(xsi(2)) );
   //printf("lolimit = %f   %f   %f\n", fabs(loLimit(0)), fabs(loLimit(1)), fabs(loLimit(2)) );
@@ -901,9 +884,10 @@ int GEO::Intersection::computeNewStartingPoint(
   if(comparePoints<3>(upLimit, loLimit))
     interval = false;
 
-  xsi = upLimit;
-  xsi += loLimit;
-  xsi *= 0.5;
+  //xsi = upLimit;
+  //xsi += loLimit;
+  //xsi *= 0.5;
+  xsi.Update(0.5, upLimit, 0.5, loLimit);
 
   bool intersected = computeCurveSurfaceIntersection(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, 
       upLimit, loLimit, xsi, doSVD, GEO::TOL7);
@@ -926,24 +910,24 @@ int GEO::Intersection::computeNewStartingPoint(
  |          list of interface points                       			    |
  *----------------------------------------------------------------------*/
 int GEO::Intersection::addIntersectionPoint(
-    const DRT::Element*             xfemElement,
-    const DRT::Element*             surfaceElement,
-    const BlitzMat&                 xyze_surfaceElement,
-    const DRT::Element*             lineElement,
-    const BlitzMat&                 xyze_lineElement,
-    const BlitzVec3&                xsi,
-    const BlitzVec3&                upLimit,
-    const BlitzVec3&                loLimit,
-    std::vector<InterfacePoint>&    interfacePoints,
-    const int                       surfaceId,
-    const int                       lineId,
-    const bool                      lines,
-    const bool                      doSVD) const
+    const DRT::Element*               xfemElement,
+    const DRT::Element*               surfaceElement,
+    const LINALG::SerialDenseMatrix&  xyze_surfaceElement,
+    const DRT::Element*               lineElement,
+    const LINALG::SerialDenseMatrix&  xyze_lineElement,
+    const LINALG::Matrix<3,1>&        xsi,
+    const LINALG::Matrix<3,1>&        upLimit,
+    const LINALG::Matrix<3,1>&        loLimit,
+    std::vector<InterfacePoint>&      interfacePoints,
+    const int                         surfaceId,
+    const int                         lineId,
+    const bool                        lines,
+    const bool                        doSVD) const
 {
 
   int numInterfacePoints = 0;
   InterfacePoint ip;
-  vector<double> coord(3,0.0);
+  LINALG::Matrix<3,1> coord(true);
 
   // cutter line with xfem surface
   if(lines)
@@ -971,9 +955,9 @@ int GEO::Intersection::addIntersectionPoint(
       ip.setNodeId(nodeId);
       ip.setLineId(eleNodesLines_[nodeId]);
       ip.setSurfaceId(eleNodesSurfaces_[nodeId]);
-      coord[0] = xsi(0);
-      coord[1] = xsi(1);
-      coord[2] = 0.0;
+      coord(0) = xsi(0);
+      coord(1) = xsi(1);
+      coord(2) = 0.0;
       ip.setCoord(coord);
     }
     else
@@ -982,9 +966,9 @@ int GEO::Intersection::addIntersectionPoint(
       vector<int> lineVec(1,lineId);
       ip.setLineId(lineVec);
       ip.setSurfaceId(eleLinesSurfaces_[lineId]);
-      coord[0] = xsi(0);
-      coord[1] = xsi(1);
-      coord[2] = 0.0;
+      coord(0) = xsi(0);
+      coord(1) = xsi(1);
+      coord(2) = 0.0;
       ip.setCoord(coord);
     }
   }
@@ -1001,8 +985,8 @@ int GEO::Intersection::addIntersectionPoint(
 
   if(!alreadyInList)
   {
-    vector< BlitzVec3 >  upperLimits(8, BlitzVec3(0.0));
-    vector< BlitzVec3 >  lowerLimits(8, BlitzVec3(0.0));
+    vector< LINALG::Matrix<3,1> >  upperLimits(8, LINALG::Matrix<3,1>(true));
+    vector< LINALG::Matrix<3,1> >  lowerLimits(8, LINALG::Matrix<3,1>(true));
     createNewLimits(xsi, upLimit, loLimit, upperLimits, lowerLimits);
 
     interfacePoints.push_back(ip);
@@ -1028,11 +1012,11 @@ int GEO::Intersection::addIntersectionPoint(
  |          computation of all intersection points                      |
  *----------------------------------------------------------------------*/
 void GEO::Intersection::createNewLimits(
-    const BlitzVec3&        xsi,
-    const BlitzVec3&        upLimit,
-    const BlitzVec3&        loLimit,
-    vector< BlitzVec3 >&    upperLimits,
-    vector< BlitzVec3 >&    lowerLimits) const
+    const LINALG::Matrix<3,1>&        xsi,
+    const LINALG::Matrix<3,1>&        upLimit,
+    const LINALG::Matrix<3,1>&        loLimit,
+    vector< LINALG::Matrix<3,1> >&    upperLimits,
+    vector< LINALG::Matrix<3,1> >&    lowerLimits) const
     {
 
 
@@ -1099,11 +1083,11 @@ void GEO::Intersection::createNewLimits(
  |          all interface points are lying on this surface              |
  *----------------------------------------------------------------------*/
 int GEO::Intersection::findCommonSurfaceID(
-    const DRT::Element*     xfemElement,
-    const BlitzMat&         xyze_xfemElement,
-    const DRT::Element*     cutterElement,
-    const BlitzMat&         xyze_cutterElement,
-    const vector<int>&      positions)
+    const DRT::Element*                 xfemElement,
+    const LINALG::SerialDenseMatrix&    xyze_xfemElement,
+    const DRT::Element*                 cutterElement,
+    const LINALG::SerialDenseMatrix&    xyze_cutterElement,
+    const vector<int>&                  positions)
 {
   int surfId = -1;
 
@@ -1131,7 +1115,7 @@ int GEO::Intersection::findCommonSurfaceID(
       for(unsigned int j = 0; j < xfemSurfPoints[i].size(); j++ )
       {
         for(int k = 0; k < 3; k++)
-          cout << "point        " << pointList_[(int) xfemSurfPoints[i][j]].getCoord()[k];
+          cout << "point        " << pointList_[(int) xfemSurfPoints[i][j]].getCoord()(k);
 
         cout << endl;
       }
@@ -1159,33 +1143,29 @@ int GEO::Intersection::findCommonSurfaceID(
  |          xfem surface                                                |
  *----------------------------------------------------------------------*/
 bool GEO::Intersection::checkIfCutterOnXFEMSurface(
-    const DRT::Element*             xfemElement,
-    const BlitzMat&                 xyze_xfemElement,
-    const DRT::Element*             cutterElement,
-    const BlitzMat&                 xyze_cutterElement,
-    const vector<int>&              positions) 
+    const DRT::Element*               xfemElement,
+    const LINALG::SerialDenseMatrix&  xyze_xfemElement,
+    const DRT::Element*               cutterElement,
+    const LINALG::SerialDenseMatrix&  xyze_cutterElement,
+    const vector<int>&                positions) 
 {
   bool onSurface = false;
 
-  BlitzVec3 xsi;
-  xsi = 0;
-  BlitzVec3 x_phys;
-  x_phys = 0;
+  LINALG::Matrix<3,1> xsi(true);
+  LINALG::Matrix<3,1> x_phys(true);
 
   // midpoint is computed in element coordinates of the xfem element
   InterfacePoint midpoint = computeMidpoint(positions);
 
   // transform to physical coordinates
   for(int i = 0; i < 3; i++)
-    xsi(i) = midpoint.getCoord()[i];
+    xsi(i) = midpoint.getCoord()(i);
 
   elementToCurrentCoordinates(xfemElement, xyze_xfemElement, xsi, x_phys);
 
   // check if midpoint lies on cutter element
-  BlitzVec2 xsiCut;
-  xsiCut = 0;
-  BlitzVec3 normal;
-  normal = 0;
+  LINALG::Matrix<2,1> xsiCut(true);
+  LINALG::Matrix<3,1> normal(true);
   double distance = 0.0;
   searchForNearestPointOnSurface(cutterElement, xyze_cutterElement, x_phys, xsiCut, normal, distance);
 
@@ -1202,15 +1182,15 @@ bool GEO::Intersection::checkIfCutterOnXFEMSurface(
  *----------------------------------------------------------------------*/
 #ifdef QHULL
 void GEO::Intersection::preparePLC(
-    const DRT::Element*     xfemElement,
-    const BlitzMat&         xyze_xfemElement,
-    const DRT::Element*     cutterElement,
-    const BlitzMat&         xyze_cutterElement,
-    vector<InterfacePoint>& interfacePoints)
+    const DRT::Element*                       xfemElement,
+    const LINALG::SerialDenseMatrix&          xyze_xfemElement,
+    const DRT::Element*                       cutterElement,
+    const LINALG::SerialDenseMatrix&          xyze_cutterElement,
+    vector<InterfacePoint>&                   interfacePoints)
 {
 
-  InterfacePoint              midpoint;
-  vector< vector<double> >    vertices;
+  InterfacePoint                    midpoint;
+  vector< LINALG::Matrix<3,1> >     vertices;
   // for more then two interface points compute the convex hull
   // and store ordered points in vertices
 
@@ -1223,18 +1203,18 @@ void GEO::Intersection::preparePLC(
   {
     for(vector<InterfacePoint>::iterator ipoint = interfacePoints.begin(); ipoint != interfacePoints.end(); ++ipoint)
     {
-      vector<double> vertex(3,0);
+      LINALG::Matrix<3,1> vertex(true);
       // transform interface points into xfem element coordinates and store in structure vertices
       {
-        static BlitzVec2  eleCoordSurf;
+        static LINALG::Matrix<2,1>  eleCoordSurf;
         for(int j = 0; j < 2; j++)
-          eleCoordSurf(j)  = ipoint->getCoord()[j];
-        static BlitzVec3 curCoordVol;
+          eleCoordSurf(j)  = ipoint->getCoord()(j);
+        static LINALG::Matrix<3,1> curCoordVol;
         elementToCurrentCoordinates(cutterElement, xyze_cutterElement, eleCoordSurf, curCoordVol);
-        const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement->Shape(), xyze_xfemElement_, curCoordVol, TOL7));
+        const LINALG::Matrix<3,1> eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement->Shape(), xyze_xfemElement_, curCoordVol, TOL7));
         for(int j = 0; j < 3; j++)
         {
-          vertex[j] = eleCoordVol(j);
+          vertex(j) = eleCoordVol(j);
         }
         ipoint->setCoord(vertex);
       }
@@ -1272,12 +1252,12 @@ void GEO::Intersection::preparePLC(
  |          segments and triangles for the use with Tetgen (CDT)        |
  *----------------------------------------------------------------------*/
 void GEO::Intersection::computeConvexHull(
-          const DRT::Element*           xfemElement,
-          const DRT::Element*           cutterElement,
-          const BlitzMat&               xyze_cutterElement,
-          vector<InterfacePoint>&       interfacePoints,
-          vector< vector<double> >&     vertices,
-          InterfacePoint&               midpoint)   
+          const DRT::Element*                 xfemElement,
+          const DRT::Element*                 cutterElement,
+          const LINALG::SerialDenseMatrix&    xyze_cutterElement,
+          vector<InterfacePoint>&             interfacePoints,
+          vector< LINALG::Matrix<3,1> >&      vertices,
+          InterfacePoint&                     midpoint)   
 {
   //compute midpoint
 
@@ -1289,12 +1269,12 @@ void GEO::Intersection::computeConvexHull(
   midpoint = computeMidpoint(interfacePoints);
   // transform it into current coordinates
   {
-    static BlitzVec2    eleCoordSurf;
+    static LINALG::Matrix<2,1>    eleCoordSurf;
     for(int j = 0; j < 2; j++)
-      eleCoordSurf(j)  = midpoint.getCoord()[j];
-    static BlitzVec3 curCoordVol;
+      eleCoordSurf(j)  = midpoint.getCoord()(j);
+    static LINALG::Matrix<3,1> curCoordVol;
     elementToCurrentCoordinates(cutterElement, xyze_cutterElement, eleCoordSurf, curCoordVol);
-    const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement->Shape(), xyze_xfemElement_, curCoordVol, TOL14));
+    const LINALG::Matrix<3,1> eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement->Shape(), xyze_xfemElement_, curCoordVol, TOL14));
     for(int j = 0; j < 3; j++)
       midpoint.setSingleCoord(j,eleCoordVol(j));
   }
@@ -1311,19 +1291,19 @@ void GEO::Intersection::computeConvexHull(
   {
     for(int j = 0; j < 2; j++)
     {
-      coordinates[fill++] = ipoint->getCoord()[j];
+      coordinates[fill++] = ipoint->getCoord()(j);
       //printf("coord = %f\t", ipoint->getCoord()[j]);
     }
     //cout << endl;
 
     // transform interface points into current coordinates
     {
-      static BlitzVec2  eleCoordSurf;
+      static LINALG::Matrix<2,1>  eleCoordSurf;
       for(int j = 0; j < 2; j++)
-        eleCoordSurf(j)  = ipoint->getCoord()[j];
-      static BlitzVec3 curCoordVol;
+        eleCoordSurf(j)  = ipoint->getCoord()(j);
+      static LINALG::Matrix<3,1> curCoordVol;
       elementToCurrentCoordinates(cutterElement, xyze_cutterElement, eleCoordSurf, curCoordVol);
-      const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement->Shape(), xyze_xfemElement_, curCoordVol, TOL7));
+      const LINALG::Matrix<3,1> eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement->Shape(), xyze_xfemElement_, curCoordVol, TOL7));
       for(int j = 0; j < 3; j++)
         ipoint->setSingleCoord(j,eleCoordVol(j));
     }
@@ -1339,19 +1319,19 @@ void GEO::Intersection::computeConvexHull(
   {
     for(int j = 0; j < 2; j++)
     {
-      vector<double> vertex(3,0);
+      LINALG::Matrix<3,1> vertex(true);
       double* point  = SETelemt_(facet->vertices, j, vertexT)->point;
       for(int k = 0; k < 2; k++)
-        vertex[k] = point[k];
+        vertex(k) = point[k];
       {
-        static BlitzVec2  eleCoordSurf;
+        static LINALG::Matrix<2,1>  eleCoordSurf;
         for(int m = 0; m < 2; m++)
-          eleCoordSurf(m)  = vertex[m];
-        static BlitzVec3 curCoordVol;
+          eleCoordSurf(m)  = vertex(m);
+        static LINALG::Matrix<3,1> curCoordVol;
         elementToCurrentCoordinates(cutterElement, xyze_cutterElement, eleCoordSurf, curCoordVol);
-        const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement->Shape(), xyze_xfemElement_, curCoordVol, TOL7));
+        const LINALG::Matrix<3,1> eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement->Shape(), xyze_xfemElement_, curCoordVol, TOL7));
         for(int m = 0; m < 3; m++)
-          vertex[m] = eleCoordVol(m);
+          vertex(m) = eleCoordVol(m);
       }
       vertices.push_back(vertex);
     }
@@ -1383,12 +1363,12 @@ void GEO::Intersection::computeConvexHull(
  |          for a xfem and a cutter element                             |
  *----------------------------------------------------------------------*/
 void GEO::Intersection::storePLC(
-    const DRT::Element*             xfemElement,
-    const DRT::Element*             cutterElement,
-    const BlitzMat&                 xyze_cutterElement,
-    const int                       surfId,
-    vector<int>&                    positions,
-    InterfacePoint&                 midpoint)   
+    const DRT::Element*               xfemElement,
+    const DRT::Element*               cutterElement,
+    const LINALG::SerialDenseMatrix&  xyze_cutterElement,
+    const int                         surfId,
+    vector<int>&                      positions,
+    InterfacePoint&                   midpoint)   
 { 
   
     // NOTE: postion is filled in the order points appear in vertices to
@@ -1485,15 +1465,15 @@ void GEO::Intersection::completePLC(
  |          and returns the point different form the searchpoint        |
  *----------------------------------------------------------------------*/
 void GEO::Intersection::findNextSegment(
-    vector< vector<double> >&   vertices,
-    vector<double>&             searchPoint) const
+    vector< LINALG::Matrix<3,1> >&   vertices,
+    LINALG::Matrix<3,1>&             searchPoint) const
 {
   bool pointfound = false;
 
-  if(vertices.size()==0 || searchPoint.size()==0)
+  if(vertices.size()==0 || !searchPoint.IsInitialized())
     dserror("one or both vectors are empty");
 
-  for(vector< vector<double> >::iterator it = vertices.begin(); it != vertices.end(); it=it+2 )
+  for(vector< LINALG::Matrix<3,1> >::iterator it = vertices.begin(); it != vertices.end(); it=it+2 )
   {
     if(comparePoints<3>(searchPoint, *it))
     {
@@ -1570,11 +1550,10 @@ bool GEO::Intersection::checkIfCDT(
  *----------------------------------------------------------------------*/
 void GEO::Intersection::computeCDT(
         const DRT::Element*                     xfemElement,
-        const BlitzMat&                         xyze_xfemElement,
-        const map<int,BlitzVec3>&               currentcutterpositions,
+        const LINALG::SerialDenseMatrix&        xyze_xfemElement,
+        const map<int,LINALG::Matrix<3,1> >&    currentcutterpositions,
         map< int, DomainIntCells >&             domainintcells,
-        map< int, BoundaryIntCells >&           boundaryintcells,
-        int                                     timestepcounter_)
+        map< int, BoundaryIntCells >&           boundaryintcells)
 {
   const int dim = 3; 
   tetgenio in;
@@ -1594,7 +1573,7 @@ void GEO::Intersection::computeCDT(
   for(int i = 0; i <  in.numberofpoints; i++)
     for(int j = 0; j < dim; j++)
     {
-      in.pointlist[fill] = (REAL) (pointList_[i].getCoord()[j] * scalefactor);
+      in.pointlist[fill] = (REAL) (pointList_[i].getCoord()(j) * scalefactor);
       fill++;
     }
 
@@ -1689,18 +1668,9 @@ void GEO::Intersection::computeCDT(
   for(int i = 0; i < in.numberoffacets; i ++)
       in.facetmarkerlist[i] = faceMarker_[i] + facetMarkerOffset_;
 
+  //in.save_nodes("tetin");
+  //in.save_poly("tetin");
 
-  {
-    const std::string fbase = DRT::Problem::Instance()->OutputControlFile()->FileName()
-                            + ".tetin";
-    const int fbaselen = fbase.length();
-    char* fbasech = new char[fbaselen+1];
-    fbase.copy(fbasech, fbaselen, 0);
-    fbasech[fbaselen] = '\0';
-    in.save_nodes(fbasech);
-    in.save_poly(fbasech);
-    delete [] fbasech;
-  }
   //  Tetrahedralize the PLC. Switches are chosen to read a PLC (p),
   //  do quality mesh generation (q) with a specified quality bound
   //  (1.414), and apply a maximum volume constraint (a0.1)
@@ -1713,7 +1683,7 @@ void GEO::Intersection::computeCDT(
   //for(int i = 3; i<4; i++)
   //   elementIds.push_back(xfemElement->Id());
 
-  //debugTetgenOutput(in, out, xfemElement, elementIds, timestepcounter_);
+  //debugTetgenOutput(in, out, xfemElement, elementIds);
   //printTetViewOutputPLC( element, element->Id(), in);
 
   // store interface triangles (+ recovery of higher order meshes)
@@ -1781,12 +1751,12 @@ void GEO::Intersection::startPointList(
  |          for an intersection between a single cutter and xfem element|
  *----------------------------------------------------------------------*/
 void GEO::Intersection::storePointList(
-    vector< vector<double> >&       vertices,
+    vector< LINALG::Matrix<3,1> >&  vertices,
     vector<int>&                    positions,
     vector<InterfacePoint>&         interfacePoints
     )
 {  
-  vector<double>              searchPoint(3,0);
+  LINALG::Matrix<3,1>              searchPoint(true);
   
   // round points an vertices with TOL3 on xfem surface
   // has to be fixed within tetgen
@@ -1821,7 +1791,7 @@ void GEO::Intersection::storePointList(
  |          Constrained Delauney Triangulation                          |
  *----------------------------------------------------------------------*/
 void GEO::Intersection::storePoint(
-    const vector<double>&             point,
+    const LINALG::Matrix<3,1>&        point,
     vector<InterfacePoint>&           interfacePoints,
     vector<int>&                      positions)
 {
@@ -1910,12 +1880,11 @@ bool GEO::Intersection::roundPointsOnXFEMBoundary(
     {
       for(unsigned int i = 0; i < interfacePoints.size(); i++)
       {
-        BlitzVec3 xsi;
-        xsi = 0;
+        LINALG::Matrix<3,1> xsi(true);
         round = false;
         for(int j = 0; j < 3; j++)
         {
-          xsi(j) = interfacePoints[i].getCoord()[j];
+          xsi(j) = interfacePoints[i].getCoord()(j);
           if( fabs( fabs(xsi(j)) - 1.0 ) < tol && xsi(j) < 0.0)    
           {
             xsi(j) = -1.0;
@@ -1955,7 +1924,7 @@ bool GEO::Intersection::roundPointsOnXFEMBoundary(
  |          should be used with TOL3 to make tetgen happy               |
  *----------------------------------------------------------------------*/
 void GEO::Intersection::roundVerticesOnXFEMBoundary(
-    vector< vector<double> >&         vertices,
+    vector< LINALG::Matrix<3,1> >&    vertices,
     const double                      tol)
 {
   switch(xfemDistype_)
@@ -1965,14 +1934,14 @@ void GEO::Intersection::roundVerticesOnXFEMBoundary(
       for(unsigned int i = 0; i < vertices.size(); i++)
         for(int j = 0; j < 3; j++)
         {
-          double coord = vertices[i][j];
+          double coord = vertices[i](j);
           if( fabs( fabs(coord) - 1.0 ) < tol && coord < 0.0)    
           {
-            vertices[i][j] = -1.0;
+            vertices[i](j) = -1.0;
           }
           if( fabs( fabs(coord) - 1.0) < tol &&  coord > 0.0)
           {
-            vertices[i][j] =  1.0;   
+            vertices[i](j) =  1.0;   
           }   
         }
       
@@ -1998,14 +1967,14 @@ GEO::InterfacePoint GEO::Intersection::computeMidpoint(
     ) const
 { 
    InterfacePoint ip;
-   vector<double> coord(3,0.0);
+   LINALG::Matrix<3,1> coord(true);
 
    for(unsigned int i = 0; i < interfacePoints.size(); i++)
       for(int j = 0; j < 3 ; j++)
-        coord[j] += interfacePoints[i].getCoord()[j];
+        coord(j) += interfacePoints[i].getCoord()(j);
 
    for(int i = 0; i < 3 ; i++)
-     coord[i] = coord[i]/((double)interfacePoints.size());
+     coord(i) = coord(i)/((double)interfacePoints.size());
    
    ip.setPointType(INTERNAL);
    ip.setCoord(coord);
@@ -2024,14 +1993,14 @@ GEO::InterfacePoint GEO::Intersection::computeMidpoint(
     const vector<int>&  positions) const
 {
   InterfacePoint ip;
-  vector<double> coord(3,0.0);
+  LINALG::Matrix<3,1> coord(true);
 
   for(unsigned int i = 0; i < positions.size() ; i++)
     for(int j = 0; j < 3 ; j++)
-      coord[j] += pointList_[positions[i]].getCoord()[j];
+      coord(j) += pointList_[positions[i]].getCoord()(j);
 
   for(int i = 0; i < 3 ; i++)
-    coord[i] = coord[i]/((double) positions.size());
+    coord(i) = coord(i)/((double) positions.size());
 
   ip.setPointType(INTERNAL);
   ip.setCoord(coord);
@@ -2377,8 +2346,8 @@ void GEO::Intersection::storeIntersectedCutterElement(
  *----------------------------------------------------------------------*/
 void GEO::Intersection::recoverCurvedInterface(
         const DRT::Element*             xfemElement,
-        const BlitzMat&                 xyze_xfemElement,
-        const map<int,BlitzVec3>&       currentcutterpositions,
+        const LINALG::SerialDenseMatrix&                 xyze_xfemElement,
+        const map<int,LINALG::Matrix<3,1> >&       currentcutterpositions,
         map< int, BoundaryIntCells >&   boundaryintcells,
         tetgenio&                       out,
         bool							recovery
@@ -2410,7 +2379,7 @@ void GEO::Intersection::recoverCurvedInterface(
             //printf("tetIndex = %d\n", tetIndex);
             vector<int>             order(3,0);
             vector<int>             tetraCornerIndices(4,0);
-            vector<BlitzVec>        tetraCornerNodes(4, BlitzVec(3));
+            vector<LINALG::Matrix<3,1> >        tetraCornerNodes(4, LINALG::Matrix<3,1>(true));
             getTetrahedronInformation(tetIndex, i, tetraCornerIndices, order, out );
             getTetrahedronNodes(tetraCornerNodes, tetraCornerIndices, xfemElement, xyze_xfemElement, out);
 
@@ -2463,11 +2432,11 @@ void GEO::Intersection::recoverCurvedInterface(
  |                               										                    |
  *----------------------------------------------------------------------*/
 void GEO::Intersection::storeIntCells(
-    const DRT::Element*             xfemElement,
-    const BlitzMat&                 xyze_xfemElement,
-    const map<int,BlitzVec3>&       currentcutterpositions,
-    map< int, BoundaryIntCells >&   boundaryintcells,
-    tetgenio&                       out)
+    const DRT::Element*                   xfemElement,
+    const LINALG::SerialDenseMatrix&      xyze_xfemElement,
+    const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,
+    map< int, BoundaryIntCells >&         boundaryintcells,
+    tetgenio&                             out)
 {
 
   BoundaryIntCells  listBoundaryICPerElement;
@@ -2512,11 +2481,11 @@ void GEO::Intersection::storeIntCells(
  |          lying on xfem surfaces                                      |
  *----------------------------------------------------------------------*/
 void GEO::Intersection::storeSurfaceIntCells(
-    const bool                      higherorder,
-    const DRT::Element*             xfemElement,
-    const BlitzMat&                 xyze_xfemElement,
-    const map<int,BlitzVec3>&       currentcutterpositions,
-    BoundaryIntCells&               listBoundaryICPerElement)
+    const bool                            higherorder,
+    const DRT::Element*                   xfemElement,
+    const LINALG::SerialDenseMatrix&      xyze_xfemElement,
+    const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,
+    BoundaryIntCells&                     listBoundaryICPerElement)
 {
   vector<vector<double> > domainCoord(3, std::vector<double>(3,0.0));
   vector<vector<double> > boundaryCoord(3, std::vector<double>(3,0.0));
@@ -2549,13 +2518,13 @@ void GEO::Intersection::storeSurfaceIntCells(
  |          if not corner points is recovered on the surface element    |
  *----------------------------------------------------------------------*/
 void GEO::Intersection::liftAllSteinerPoints(
-        const DRT::Element*                             xfemElement,
-        const BlitzMat&                                 xyze_xfemElement,
-        const map<int,BlitzVec3>&                       currentcutterpositions,
-        tetgenio&                                       out)
+        const DRT::Element*                     xfemElement,
+        const LINALG::SerialDenseMatrix&        xyze_xfemElement,
+        const map<int,LINALG::Matrix<3,1> >&    currentcutterpositions,
+        tetgenio&                               out)
 {
-    BlitzVec edgePoint(3);      edgePoint = 0.0;
-    BlitzVec oppositePoint(3);  oppositePoint = 0.0;
+    LINALG::Matrix<3,1> edgePoint(true);     
+    LINALG::Matrix<3,1> oppositePoint(true);  
     vector< vector<int> > adjacentFacesList;
     vector< vector<int> > adjacentFacemarkerList;
     
@@ -2661,26 +2630,26 @@ void GEO::Intersection::locateSteinerPoints(
  |          the cutter element or on one of its edges                   |
  *----------------------------------------------------------------------*/
 GEO::SteinerType GEO::Intersection::decideSteinerCase(
-        const int                       steinerIndex,
-        int&                            lineIndex,
-        int&                            cutterIndex,
-        const vector< vector<int> >&    adjacentFacesList,
-        const vector< vector<int> >&    adjacentFacemarkerList,
-        const map<int,BlitzVec3>&       currentcutterpositions,
-        BlitzVec&                       edgePoint,
-        BlitzVec&                       oppositePoint,
-        const DRT::Element*             xfemElement,
-        const BlitzMat&                 xyze_xfemElement,
-        const tetgenio&                 out
+        const int                             steinerIndex,
+        int&                                  lineIndex,
+        int&                                  cutterIndex,
+        const vector< vector<int> >&          adjacentFacesList,
+        const vector< vector<int> >&          adjacentFacemarkerList,
+        const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,
+        LINALG::Matrix<3,1>&                  edgePoint,
+        LINALG::Matrix<3,1>&                  oppositePoint,
+        const DRT::Element*                   xfemElement,
+        const LINALG::SerialDenseMatrix&      xyze_xfemElement,
+        const tetgenio&                       out
         ) const
 {
     const int pointIndex = adjacentFacesList[steinerIndex][0];
 
-    static BlitzVec3    x;
+    static LINALG::Matrix<3,1> x;
     for(int k=0; k<3; k++)
         x(k)   = out.pointlist[pointIndex*3 + k];
 
-    static BlitzVec3    xsi;
+    static LINALG::Matrix<3,1>    xsi;
     // check exact TODO
     xsi = currentToVolumeElementCoordinatesExact(xfemElement->Shape(), xyze_xfemElement_, x, TOL7);
     //currentToVolumeElementCoordinates(xfemElement, x, xsi);
@@ -2729,28 +2698,27 @@ GEO::SteinerType GEO::Intersection::decideSteinerCase(
  |          within a cutter element                                     |
  *----------------------------------------------------------------------*/
 void GEO::Intersection::liftSteinerPointOnSurface(
-        const int                       steinerIndex,
-        const vector< vector<int> >&    adjacentFacesList,
-        const vector< vector<int> >&    adjacentFacemarkerList,
-        const map<int,BlitzVec3>&       currentcutterpositions,
-        const DRT::Element*             xfemElement,
-        const BlitzMat&                 xyze_xfemElement,
-        tetgenio&                       out
+        const int                             steinerIndex,
+        const vector< vector<int> >&          adjacentFacesList,
+        const vector< vector<int> >&          adjacentFacemarkerList,
+        const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,
+        const DRT::Element*                   xfemElement,
+        const LINALG::SerialDenseMatrix&      xyze_xfemElement,
+        tetgenio&                             out
         )
 {
     // get Steiner point coordinates
-    BlitzVec    Steinerpoint(3);
+    LINALG::Matrix<3,1>   Steinerpoint;
     for(int j=0; j<3; ++j)
     {
         Steinerpoint(j) = out.pointlist[adjacentFacesList[steinerIndex][0]*3 + j];
     }
     elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement, Steinerpoint);
 
-    BlitzVec    averageNormal(3);
-    averageNormal = 0.0;
+    LINALG::Matrix<3,1>  averageNormal(true);
 
     const int length = (int) ( ( (double) (adjacentFacesList[steinerIndex].size()-1))*0.5 );
-    vector<BlitzVec> normals;
+    vector< LINALG::Matrix<3,1> > normals;
     normals.reserve(length);
 
     for(int j = 0; j < length; ++j)
@@ -2758,8 +2726,8 @@ void GEO::Intersection::liftSteinerPointOnSurface(
         const int pointIndex1 = adjacentFacesList[steinerIndex][1 + 2*j];
         const int pointIndex2 = adjacentFacesList[steinerIndex][1 + 2*j + 1];
 
-        BlitzVec    p1(3);
-        BlitzVec    p2(3);
+        LINALG::Matrix<3,1>    p1;
+        LINALG::Matrix<3,1>    p2;
         for(int k = 0; k < 3; ++k)
         {
             p1(k) =  out.pointlist[pointIndex1*3 + k];
@@ -2768,27 +2736,33 @@ void GEO::Intersection::liftSteinerPointOnSurface(
         elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement, p1);
         elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement, p2);
 
-        const BlitzVec n1(p1 - Steinerpoint);
-        const BlitzVec n2(p2 - Steinerpoint);
+        LINALG::Matrix<3,1> n1(true); 
+        n1.Update(1.0, p1, -1.0, Steinerpoint);
+        LINALG::Matrix<3,1> n2(true); 
+        n2.Update(1.0, p2, -1.0, Steinerpoint);
 
-        BlitzVec normal(computeCrossProduct(n1, n2));
-        normalizeVectorInPLace(normal);
-
+        LINALG::Matrix<3,1> normal = computeCrossProduct(n1, n2);
+        //normalizeVectorInPLace(normal);
+        normal.Scale(1.0/normal.Norm2());
         averageNormal += normal;
 
         normals.push_back(normal);
     }
 
-    averageNormal /= ((double)length);
+    averageNormal.Scale(1.0/((double)length));
 
     const int faceMarker = adjacentFacemarkerList[steinerIndex][0];
     DRT::Element* cutterElement =  intersectingCutterElements_[faceMarker];
-    const BlitzMat xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentcutterpositions));
+    const LINALG::SerialDenseMatrix xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentcutterpositions));
 
-    BlitzVec3 xsi;
-    vector<BlitzVec> plane;
-    plane.push_back(BlitzVec(Steinerpoint + averageNormal));
-    plane.push_back(BlitzVec(Steinerpoint - averageNormal));
+    LINALG::Matrix<3,1> xsi(true);
+    vector< LINALG::Matrix<3,1> > plane;
+    LINALG::Matrix<3,1> normalNode(true);
+    normalNode.Update(1.0, Steinerpoint, 1.0, averageNormal);
+    plane.push_back(normalNode);
+    normalNode.Update(1.0, Steinerpoint, -1.0, averageNormal);
+    plane.push_back(normalNode);
+    
     bool intersected = computeRecoveryNormal( xsi, plane, cutterElement, xyze_cutterElement, false);
     if(intersected)
     {
@@ -2799,12 +2773,14 @@ void GEO::Intersection::liftSteinerPointOnSurface(
     {
       intersected = false;
       // loop over all individual normals
-      vector<BlitzVec>::const_iterator normalptr;
+      vector< LINALG::Matrix<3,1> >::const_iterator normalptr;
       for(normalptr = normals.begin(); normalptr != normals.end(); ++normalptr )
       {
-        vector<BlitzVec> plane;
-        plane.push_back(BlitzVec(Steinerpoint + (*normalptr)));
-        plane.push_back(BlitzVec(Steinerpoint - (*normalptr)));
+        vector< LINALG::Matrix<3,1> > plane;
+        normalNode.Update(1.0, Steinerpoint, 1.0, (*normalptr));
+        plane.push_back(normalNode);
+        normalNode.Update(1.0, Steinerpoint, -1.0, (*normalptr));
+        plane.push_back(normalNode);
         intersected = computeRecoveryNormal( xsi, plane, cutterElement, xyze_cutterElement, false);
         if(intersected)
         {
@@ -2828,19 +2804,19 @@ void GEO::Intersection::liftSteinerPointOnSurface(
  |          on the edge of a  cutter element                            |
  *----------------------------------------------------------------------*/
 void GEO::Intersection::liftSteinerPointOnEdge(
-    const int                         steinerIndex,
-    int                               lineIndex,     // no const because line index is changed in computeRecoveryPlane !!
-    const int                         cutterIndex,
-    BlitzVec&                         edgePoint,
-    BlitzVec&                         oppositePoint,
-    const vector< vector<int> >&      adjacentFacesList,
-    const map<int,BlitzVec3>&         currentcutterpositions,
-    const DRT::Element*               xfemElement,
-    const BlitzMat&                   xyze_xfemElement,
-    tetgenio&                         out)
+    const int                             steinerIndex,
+    int                                   lineIndex,     // no const because line index is changed in computeRecoveryPlane !!
+    const int                             cutterIndex,
+    LINALG::Matrix<3,1>&                  edgePoint,
+    LINALG::Matrix<3,1>&                  oppositePoint,
+    const vector< vector<int> >&          adjacentFacesList,
+    const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,
+    const DRT::Element*                   xfemElement,
+    const LINALG::SerialDenseMatrix&      xyze_xfemElement,
+    tetgenio&                             out)
 {
     // get Steiner point coordinates
-    BlitzVec    Steinerpoint(3);
+    LINALG::Matrix<3,1>    Steinerpoint(true);
     for(int j=0; j<3; j++)
         Steinerpoint(j) = out.pointlist[adjacentFacesList[steinerIndex][0]*3 + j];
 
@@ -2848,25 +2824,35 @@ void GEO::Intersection::liftSteinerPointOnEdge(
     elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement, edgePoint);
     elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement, oppositePoint);
 
-    const BlitzVec r1(edgePoint - Steinerpoint);
-    const BlitzVec r2(oppositePoint - Steinerpoint);
-
-    BlitzVec n1(computeCrossProduct( r1, r2));
-    BlitzVec n2(computeCrossProduct( r1, n1));
-
-    normalizeVectorInPLace(n1);
-    normalizeVectorInPLace(n2);
-
-    vector<BlitzVec> plane;
-    plane.push_back(BlitzVec(Steinerpoint + n1));
-    plane.push_back(BlitzVec(Steinerpoint - n1));
-    plane.push_back(BlitzVec(plane[1] + n2));
-    plane.push_back(BlitzVec(plane[0] + n2));
+    LINALG::Matrix<3,1> r1; r1.Update(1.0, edgePoint, -1.0, Steinerpoint);
+    LINALG::Matrix<3,1> r2; r2.Update(1.0, oppositePoint, -1.0, Steinerpoint);
     
-    static BlitzVec3 xsi;
+    LINALG::Matrix<3,1> n1 = computeCrossProduct( r1, r2);
+    LINALG::Matrix<3,1> n2 = computeCrossProduct( r1, n1);
+
+    //normalizeVectorInPLace(n1);
+    //normalizeVectorInPLace(n2);  
+    n1.Scale(1.0/n1.Norm2());
+    n2.Scale(1.0/n2.Norm2());
+
+    vector< LINALG::Matrix<3,1> > plane;
+    LINALG::Matrix<3,1> planeNode(true);
+    planeNode.Update(1.0, Steinerpoint, 1.0, n1);
+    plane.push_back(planeNode);
+    
+    planeNode.Update(1.0,Steinerpoint, -1.0, n1);
+    plane.push_back(planeNode);
+    
+    planeNode.Update(1.0,plane[1], 1.0, n2);
+    plane.push_back(planeNode);
+    
+    planeNode.Update(1.0,plane[0], 1.0, n2);
+    plane.push_back(planeNode);
+    
+    static LINALG::Matrix<3,1> xsi;
     xsi = 0.0;
     DRT::Element* cutterElement = intersectingCutterElements_[cutterIndex];
-    const BlitzMat xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentcutterpositions));  
+    const LINALG::SerialDenseMatrix xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentcutterpositions));  
     const bool intersected = computeRecoveryPlane( lineIndex, currentcutterpositions, xsi, plane, cutterElement, xyze_cutterElement);
    
     if(intersected)
@@ -2887,13 +2873,13 @@ void GEO::Intersection::liftSteinerPointOnEdge(
  |          on the boundary of the xfem element                         |
  *----------------------------------------------------------------------*/
 void GEO::Intersection::liftSteinerPointOnBoundary(
-        const int                         steinerIndex,
-        const vector< vector<int> >&      adjacentFacesList,
-        const vector< vector<int> >&      adjacentFacemarkerList,
-        const map<int,BlitzVec3>&         currentcutterpositions,
-        const DRT::Element*               xfemElement,
-        const BlitzMat&                   xyze_xfemElement,
-        tetgenio&                         out
+        const int                             steinerIndex,
+        const vector< vector<int> >&          adjacentFacesList,
+        const vector< vector<int> >&          adjacentFacemarkerList,
+        const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,
+        const DRT::Element*                   xfemElement,
+        const LINALG::SerialDenseMatrix&      xyze_xfemElement,
+        tetgenio&                             out
         )
 {
     int edgeIndex = 0;
@@ -2946,15 +2932,15 @@ void GEO::Intersection::liftSteinerPointOnBoundary(
     
     
     // compute normal through Steiner point lying in the boundary triangle
-    vector<BlitzVec> plane;
+    vector<LINALG::Matrix<3,1> > plane;
     computeIntersectionNormalC( adjacentFacesList[steinerIndex][0], edgeIndex, oppositeIndex, plane,
                                xfemElement, out);
 
    
     // compute intersection normal on boundary
-    static BlitzVec3 xsi;
+    static LINALG::Matrix<3,1> xsi;
     DRT::Element* cutterElement = intersectingCutterElements_[faceIndex];
-    const BlitzMat xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentcutterpositions));   
+    const LINALG::SerialDenseMatrix xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentcutterpositions));   
     const bool intersected = computeRecoveryNormal(xsi, plane, cutterElement, xyze_cutterElement, true);
    
     if(intersected)
@@ -3018,10 +3004,10 @@ void GEO::Intersection::getTetrahedronInformation(
  |          of the xfem-element                                         |
  *----------------------------------------------------------------------*/
 void GEO::Intersection::getTetrahedronNodes(
-        vector<BlitzVec>&                       tetraCornerNodes,
+        vector<LINALG::Matrix<3,1> >&           tetraCornerNodes,
         const vector<int>&                      tetraCornerIndices,
         const DRT::Element*                     xfemElement,
-        const BlitzMat&                         xyze_xfemElement,
+        const LINALG::SerialDenseMatrix&        xyze_xfemElement,
         const tetgenio&                         out
         ) const
 {
@@ -3048,11 +3034,11 @@ void GEO::Intersection::computeHigherOrderPoint(
         const int                                 faceMarker,
         const int                                 globalHigherOrderIndex,
         const vector<int>&                        tetraCornerIndices,
-        const vector<BlitzVec>&                   tetraCornerNodes,
+        const vector<LINALG::Matrix<3,1> >&       tetraCornerNodes,
         const DRT::Element*                       xfemElement,
-        const BlitzMat&                           xyze_xfemElement,
-        const map<int,BlitzVec3>&                 currentcutterpositions,
-        tetgenio&                           out
+        const LINALG::SerialDenseMatrix&          xyze_xfemElement,
+        const map<int,LINALG::Matrix<3,1> >&      currentcutterpositions,
+        tetgenio&                                 out
         )
 {
 
@@ -3061,7 +3047,7 @@ void GEO::Intersection::computeHigherOrderPoint(
     int                                     lineIndex               = -1;
     int                                     adjacentFaceMarker      = -1;
     int                                     adjacentFaceIndex       = -1;
-    static BlitzVec3 xsi;
+    static LINALG::Matrix<3,1> xsi;
     xsi = 0.0;
 
     findAdjacentFace(  tetraCornerIndices[index1], tetraCornerIndices[index2],
@@ -3071,7 +3057,7 @@ void GEO::Intersection::computeHigherOrderPoint(
     // edge lies within the xfem element
     if(adjacentFaceMarker  > -1)
     {
-        vector<BlitzVec>        plane;
+        vector<LINALG::Matrix<3,1> >  plane;
         computeIntersectionNormalB(   tetraCornerIndices[index1], tetraCornerIndices[index2], faceIndex,
                                       adjacentFaceIndex, globalHigherOrderIndex, plane, xfemElement, out);
 
@@ -3079,7 +3065,7 @@ void GEO::Intersection::computeHigherOrderPoint(
         if(adjacentFaceMarker == faceMarker)
         {
             DRT::Element* cutterElement = intersectingCutterElements_[faceMarker];
-            const BlitzMat xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentcutterpositions));
+            const LINALG::SerialDenseMatrix xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentcutterpositions));
             intersected = computeRecoveryNormal(xsi, plane, cutterElement, xyze_cutterElement, false);
             intersectionNormal = true;
         }
@@ -3092,7 +3078,7 @@ void GEO::Intersection::computeHigherOrderPoint(
             if(lineIndex != -1)
             {
                 DRT::Element* cutterElement = intersectingCutterElements_[cutterIndex];
-                const BlitzMat xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentcutterpositions));
+                const LINALG::SerialDenseMatrix xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentcutterpositions));
                 intersected = computeRecoveryPlane( lineIndex, currentcutterpositions, xsi, plane, cutterElement, xyze_cutterElement);
                 intersectionNormal = false;
             }
@@ -3107,9 +3093,9 @@ void GEO::Intersection::computeHigherOrderPoint(
         //printf("oppo = %d\n", oppositeIndex);
 
         DRT::Element* cutterElement = intersectingCutterElements_[faceMarker];
-        const BlitzMat xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentcutterpositions));
+        const LINALG::SerialDenseMatrix xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentcutterpositions));
         
-        vector<BlitzVec>     plane;
+        vector<LINALG::Matrix<3,1> >  plane;
 
         computeIntersectionNormalA(  true,  index1, index2, oppositeIndex, globalHigherOrderIndex,
                                     tetraCornerIndices, tetraCornerNodes, plane, xfemElement, out);
@@ -3175,11 +3161,11 @@ vector<int> GEO::Intersection::getPointIndices(
  |          line and a surface                                          |
  *----------------------------------------------------------------------*/
 bool GEO::Intersection::computeRecoveryNormal(
-    BlitzVec3&                                  xsi,
-    const vector<BlitzVec>&                     normal,
-    const DRT::Element*                         cutterElement,
-    const BlitzMat&                             xyze_cutterElement,
-    const bool                                  onBoundary
+    LINALG::Matrix<3,1>&                      xsi,
+    const vector<LINALG::Matrix<3,1> >&       normal,
+    const DRT::Element*                       cutterElement,
+    const LINALG::SerialDenseMatrix&          xyze_cutterElement,
+    const bool                                onBoundary
     ) const
 {
     bool                        intersection = true;
@@ -3187,9 +3173,9 @@ bool GEO::Intersection::computeRecoveryNormal(
     int                         countSingular = 0;
     const int                   maxiter = 20;
     double                      residual = 1.0;
-    static BlitzMat3x3 A;
-    static BlitzVec3   b;
-    static BlitzVec3   dx;
+    static LINALG::Matrix<3,3> A;
+    static LINALG::Matrix<3,1> b;
+    static LINALG::Matrix<3,1> dx;
     b = 0.0;
     dx = 0.0;
 
@@ -3218,7 +3204,7 @@ bool GEO::Intersection::computeRecoveryNormal(
         }
 
         updateRHSForRCINormal( b, xsi, normal, cutterElement, xyze_cutterElement, onBoundary);
-        residual = Norm2(b);
+        residual = b.Norm2();
         iter++;
    
     }
@@ -3243,18 +3229,18 @@ bool GEO::Intersection::computeRecoveryNormal(
  |          (line-surface intersection)                                 |
  *----------------------------------------------------------------------*/
 void GEO::Intersection::updateAForRCINormal(
-    BlitzMat3x3&                                A,
-    const BlitzVec3&                            xsi,
-    const vector<BlitzVec>&                     normal,
+    LINALG::Matrix<3,3>&                        A,
+    const LINALG::Matrix<3,1>&                  xsi,
+    const vector<LINALG::Matrix<3,1> >&         normal,
     const DRT::Element*                         surfaceElement,
-    const BlitzMat&                             xyze_surfaceElement,
+    const LINALG::SerialDenseMatrix&            xyze_surfaceElement,
     const bool                                  onBoundary
     ) const
 {
     const int numNodesSurface = surfaceElement->NumNode();
 
     A = 0.0;
-    BlitzMat surfaceDeriv1(2,numNodesSurface);
+    LINALG::SerialDenseMatrix surfaceDeriv1(2,numNodesSurface);
     DRT::UTILS::shape_function_2D_deriv1(surfaceDeriv1, xsi(0), xsi(1), surfaceElement->Shape());
 
     if(!onBoundary)
@@ -3275,7 +3261,7 @@ void GEO::Intersection::updateAForRCINormal(
     else
     {
         const int numNodesLine = 3;
-        BlitzMat lineDeriv1(1,numNodesLine);
+        LINALG::SerialDenseMatrix lineDeriv1(1,numNodesLine);
         DRT::UTILS::shape_function_1D_deriv1(lineDeriv1, xsi(2), DRT::Element::line3);
 
         for(int i=0; i<numNodesSurface; i++)
@@ -3306,16 +3292,16 @@ void GEO::Intersection::updateAForRCINormal(
  |          (line-surface intersection)                                 |
  *----------------------------------------------------------------------*/
 void GEO::Intersection::updateRHSForRCINormal(
-    BlitzVec3&                  b,
-    const BlitzVec3&            xsi,
-    const vector<BlitzVec>&     normal,
-    const DRT::Element*                         surfaceElement,
-    const BlitzMat&                             xyze_surfaceElement,
-    const bool                                  onBoundary
+    LINALG::Matrix<3,1>&                  b,
+    const LINALG::Matrix<3,1>&            xsi,
+    const vector<LINALG::Matrix<3,1> >&   normal,
+    const DRT::Element*                   surfaceElement,
+    const LINALG::SerialDenseMatrix&      xyze_surfaceElement,
+    const bool                            onBoundary
     ) const
 {
     const int numNodesSurface = surfaceElement->NumNode();
-    BlitzVec surfaceFunct(numNodesSurface);
+    LINALG::SerialDenseVector surfaceFunct(numNodesSurface);
     DRT::UTILS::shape_function_2D(surfaceFunct, xsi(0), xsi(1), surfaceElement->Shape());
 
     b = 0.0;
@@ -3334,7 +3320,7 @@ void GEO::Intersection::updateRHSForRCINormal(
     else
     {
         const int numNodesLine = 3;
-        BlitzVec lineFunct(numNodesLine);
+        LINALG::SerialDenseVector lineFunct(numNodesLine);
         DRT::UTILS::shape_function_1D(lineFunct, xsi(2), DRT::Element::line3);
 
         for(int i=0; i<numNodesSurface; i++)
@@ -3363,11 +3349,11 @@ void GEO::Intersection::updateRHSForRCINormal(
  *----------------------------------------------------------------------*/
 bool GEO::Intersection::computeRecoveryPlane(
         int&                                        lineIndex,
-        const map<int,BlitzVec3>&                   currentcutterpositions,
-        BlitzVec3&                                  xsi,
-        const vector<BlitzVec>&                     plane,
+        const map<int,LINALG::Matrix<3,1> >&        currentcutterpositions,
+        LINALG::Matrix<3,1> &                       xsi,
+        const vector<LINALG::Matrix<3,1> >&         plane,
         DRT::Element*                               cutterElement,
-        const BlitzMat&                             xyze_cutterElement
+        const LINALG::SerialDenseMatrix&            xyze_cutterElement
         ) const
 {
   const int     numLines = cutterElement->NumLine();
@@ -3393,11 +3379,11 @@ bool GEO::Intersection::computeRecoveryPlane(
     double                      residual = 1.0;
     const vector<RCP<DRT::Element> > cutterElementLines = cutterElement->Lines();
     DRT::Element*               lineElement = (cutterElementLines[i]).get();
-    const BlitzMat xyze_lineElement(GEO::getCurrentNodalPositions(lineElement, currentcutterpositions));
+    const LINALG::SerialDenseMatrix xyze_lineElement(GEO::getCurrentNodalPositions(lineElement, currentcutterpositions));
     
-    static BlitzMat3x3 A;
-    static BlitzVec3   b;
-    static BlitzVec3   dx;  dx = 0.0;
+    static LINALG::Matrix<3,3> A;
+    static LINALG::Matrix<3,1> b;
+    static LINALG::Matrix<3,1> dx;  dx = 0.0;
 
     intersection = true;
     xsi = 0.0;
@@ -3423,7 +3409,7 @@ bool GEO::Intersection::computeRecoveryPlane(
       xsi += dx;
       
       updateRHSForRCIPlane( b, xsi, plane, lineElement, xyze_lineElement);
-      residual = Norm2(b);
+      residual = b.Norm2();
       iter++;
       //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi(0), xsi(1), xsi(2), residual, TOL14);
     }
@@ -3452,21 +3438,21 @@ bool GEO::Intersection::computeRecoveryPlane(
  |          (curve-plane intersection)                                  |
  *----------------------------------------------------------------------*/
 void GEO::Intersection::updateAForRCIPlane(
-        BlitzMat3x3&                A,
-        const BlitzVec3&            xsi,
-        const vector<BlitzVec>&     plane,
-        const DRT::Element*         lineElement,
-        const BlitzMat&             xyze_lineElement,
-        const DRT::Element*         surfaceElement,
-        const BlitzMat&             xyze_surfaceElement
+        LINALG::Matrix<3,3>&                  A,
+        const LINALG::Matrix<3,1>&            xsi,
+        const vector<LINALG::Matrix<3,1> >&   plane,
+        const DRT::Element*                   lineElement,
+        const LINALG::SerialDenseMatrix&      xyze_lineElement,
+        const DRT::Element*                   surfaceElement,
+        const LINALG::SerialDenseMatrix&      xyze_surfaceElement
         ) const
 {
     const int numNodesLine = lineElement->NumNode();
     const int numNodesSurface = 4;
 
-    BlitzMat surfaceDeriv(2,numNodesSurface);
+    LINALG::SerialDenseMatrix surfaceDeriv(2,numNodesSurface);
     DRT::UTILS::shape_function_2D_deriv1(surfaceDeriv, xsi(0),  xsi(1), DRT::Element::quad4);
-    BlitzMat lineDeriv(1,numNodesLine);
+    LINALG::SerialDenseMatrix lineDeriv(1,numNodesLine);
     DRT::UTILS::shape_function_1D_deriv1(lineDeriv, xsi(2), lineElement->Shape());
 
     dsassert((int)plane.size() >= numNodesSurface, "plane array has to have size numNodesSurface ( = 4)!");
@@ -3495,19 +3481,19 @@ void GEO::Intersection::updateAForRCIPlane(
  |          (curve-plane intersection)                                  |
  *----------------------------------------------------------------------*/
 void GEO::Intersection::updateRHSForRCIPlane(
-    BlitzVec3&                  b,
-    const BlitzVec3&            xsi,
-    const vector<BlitzVec>&     plane,
-    const DRT::Element*         lineElement,
-    const BlitzMat&             xyze_lineElement
+    LINALG::Matrix<3,1>&                  b,
+    const LINALG::Matrix<3,1>&            xsi,
+    const vector<LINALG::Matrix<3,1> >&   plane,
+    const DRT::Element*                         lineElement,
+    const LINALG::SerialDenseMatrix&            xyze_lineElement
     ) const
 {
     const int numNodesLine    = lineElement->NumNode();
     const int numNodesSurface = 4;
 
-    BlitzVec surfaceFunct(numNodesSurface);
+    LINALG::SerialDenseVector surfaceFunct(numNodesSurface);
     DRT::UTILS::shape_function_2D(surfaceFunct, xsi(0), xsi(1), DRT::Element::quad4 );
-    BlitzVec lineFunct(numNodesLine);
+    LINALG::SerialDenseVector lineFunct(numNodesLine);
     DRT::UTILS::shape_function_1D(lineFunct, xsi(2), lineElement->Shape());
 
     dsassert((int)plane.size() >= numNodesSurface, "plane array has to have size numNodesSurface ( = 4)!");
@@ -3535,15 +3521,15 @@ void GEO::Intersection::computeIntersectionNormalA(
     const int                               oppositePointIndex,
     const int                               globalHigherOrderIndex,
     const vector<int>&                      tetraCornerIndices,
-    const vector<BlitzVec>&                 tetraCornerNodes,
-    vector<BlitzVec>&                       plane,
+    const vector<LINALG::Matrix<3,1> >&     tetraCornerNodes,
+    vector<LINALG::Matrix<3,1> >&           plane,
     const DRT::Element*                     xfemElement,
     const tetgenio&                         out) const
 {
 
-    BlitzVec  p1(3);
-    BlitzVec  p2(3);
-    BlitzVec  p3(3);
+    LINALG::Matrix<3,1>  p1;
+    LINALG::Matrix<3,1>  p2;
+    LINALG::Matrix<3,1>  p3;
 
 
     if(!onBoundary)
@@ -3566,19 +3552,21 @@ void GEO::Intersection::computeIntersectionNormalA(
     }
 
     // compute direction vectors of the plane
-    const BlitzVec  r1(p1 - p2);
-    const BlitzVec  r2(p3 - p2);
+    LINALG::Matrix<3,1>  r1; r1.Update(1.0, p1, -1.0, p2);
+    LINALG::Matrix<3,1>  r2; r2.Update(1.0, p3, -1.0, p2);
 
     // normal of the plane
-    BlitzVec  n(computeCrossProduct(r1, r2));
-    normalizeVectorInPLace(n);
+    LINALG::Matrix<3,1>  n = computeCrossProduct(r1, r2);
+    //normalizeVectorInPLace(n);
+    n.Scale(1.0/n.Norm2());
 
     // direction vector of the intersection line
-    BlitzVec  r(computeCrossProduct(n, r2));
-    normalizeVectorInPLace(r);
+    LINALG::Matrix<3,1>  r = computeCrossProduct(n, r2);
+    //normalizeVectorInPLace(r);
+    r.Scale(1.0/r.Norm2());
 
     // computes the start point of the line
-    BlitzVec  midpoint(3);
+    LINALG::Matrix<3,1>  midpoint(true);
 
     if(!onBoundary)
       midpoint = computeLineMidpoint(p2, p3);
@@ -3591,10 +3579,15 @@ void GEO::Intersection::computeIntersectionNormalA(
     // compute nodes of the normal to the interface edge of the tetrahedron
     plane.clear();
     plane.reserve(5);
-    plane.push_back(BlitzVec(midpoint + r));
-    plane.push_back(BlitzVec(midpoint - r));
-    plane.push_back(BlitzVec(plane[1] + n));
-    plane.push_back(BlitzVec(plane[0] + n));
+    LINALG::Matrix<3,1> planeNode;
+    planeNode.Update(1.0, midpoint,  1.0, r);
+    plane.push_back(planeNode);
+    planeNode.Update(1.0, midpoint, -1.0, r);
+    plane.push_back(planeNode);
+    planeNode.Update(1.0, plane[1],  1.0, n);
+    plane.push_back(planeNode);
+    planeNode.Update(1.0, plane[0],  1.0, n); // check sign
+    plane.push_back(planeNode);
 
 
     if(onBoundary)
@@ -3619,7 +3612,7 @@ void GEO::Intersection::computeIntersectionNormalB(
         const int                                 faceIndex,
         const int                                 adjacentFaceIndex,
         const int                                 globalHigherOrderIndex,
-        vector<BlitzVec>&                         plane,
+        vector<LINALG::Matrix<3,1> >&             plane,
         const DRT::Element*                       xfemElement,
         const tetgenio&                           out
         ) const
@@ -3643,10 +3636,10 @@ void GEO::Intersection::computeIntersectionNormalB(
         }
 
     // compute averageNormal of two faces
-    BlitzVec p1(3);
-    BlitzVec p2(3);
-    BlitzVec p3(3);
-    BlitzVec p4(3);
+    LINALG::Matrix<3,1> p1;
+    LINALG::Matrix<3,1> p2;
+    LINALG::Matrix<3,1> p3;
+    LINALG::Matrix<3,1> p4;
 
     for(int i=0; i<3; i++)
     {
@@ -3661,24 +3654,27 @@ void GEO::Intersection::computeIntersectionNormalB(
     elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement_, p3);
     elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement_, p4);
 
-    const BlitzVec r1(p1 - p2);
-    const BlitzVec r2(p3 - p2);
-    const BlitzVec r3(p4 - p2);
+    LINALG::Matrix<3,1> r1; r1.Update(1.0, p1, -1.0, p2);
+    LINALG::Matrix<3,1> r2; r2.Update(1.0, p3, -1.0, p2);
+    LINALG::Matrix<3,1> r3; r3.Update(1.0, p4, -1.0, p2);
 
-    BlitzVec n1(computeCrossProduct(r2, r1));
-    BlitzVec n2(computeCrossProduct(r1, r3));
+    LINALG::Matrix<3,1> n1 = computeCrossProduct(r2, r1);
+    LINALG::Matrix<3,1> n2 = computeCrossProduct(r1, r3);
 
-    BlitzVec averageNormal(n1 + n2);
-    BlitzVec rPlane(computeCrossProduct(n1, r1));
+    LINALG::Matrix<3,1> averageNormal; averageNormal.Update(1.0, n1, 1.0, n2);
+    LINALG::Matrix<3,1> rPlane = computeCrossProduct(n1, r1);
 
 //    for(int i = 0; i < 3; i++)
 //        averageNormal(i) = 0.5*averageNormal(i);
-    averageNormal *= 0.5;
+    averageNormal.Scale(0.5);
 
-    normalizeVectorInPLace(averageNormal);
-    normalizeVectorInPLace(rPlane);
+    //normalizeVectorInPLace(averageNormal);
+    //normalizeVectorInPLace(rPlane);
+    
+    averageNormal.Scale(1.0/averageNormal.Norm2());
+    rPlane.Scale(1.0/rPlane.Norm2());
 
-    BlitzVec midpoint(3);
+    LINALG::Matrix<3,1> midpoint;
     for(int i = 0; i < 3; i++)
       midpoint(i) = out.pointlist[globalHigherOrderIndex*3+i];
 
@@ -3687,10 +3683,16 @@ void GEO::Intersection::computeIntersectionNormalB(
     // compute nodes of the normal to the interface edge of the tetrahedron
     plane.clear();
     plane.reserve(4);
-    plane.push_back(BlitzVec(midpoint + averageNormal));
-    plane.push_back(BlitzVec(midpoint - averageNormal));
-    plane.push_back(BlitzVec(plane[1] + rPlane));
-    plane.push_back(BlitzVec(plane[0] + rPlane));
+    LINALG::Matrix<3,1> planeNode;
+    planeNode.Update(1.0, midpoint,  1.0, averageNormal);
+    plane.push_back(planeNode);
+    planeNode.Update(1.0, midpoint, -1.0, averageNormal);
+    plane.push_back(planeNode);
+    planeNode.Update(1.0, plane[1],  1.0, rPlane);
+    plane.push_back(planeNode);
+    planeNode.Update(1.0, plane[0],  1.0, rPlane); //TODO check signs
+    plane.push_back(planeNode);
+    
 
    /* for(int i = 0; i < 4; i++)
     {
@@ -3712,14 +3714,14 @@ void GEO::Intersection::computeIntersectionNormalC(
     const int                               steinerIndex,
     const int                               edgeIndex,
     const int                               oppositeIndex,
-    vector<BlitzVec>&                       plane,
+    vector<LINALG::Matrix<3,1> >&           plane,
     const DRT::Element*                     xfemElement,
     const tetgenio&                         out) const
 {
 
-    BlitzVec  p1(3);
-    BlitzVec  p2(3);
-    BlitzVec  p3(3);
+    LINALG::Matrix<3,1>  p1;
+    LINALG::Matrix<3,1>  p2;
+    LINALG::Matrix<3,1>  p3;
 
 
     for(int i=0; i<3; i++)
@@ -3730,24 +3732,31 @@ void GEO::Intersection::computeIntersectionNormalC(
     }
 
     // compute direction vectors of the plane
-    BlitzVec  r1(p1 - p2);
-    BlitzVec  r2(p3 - p2);
+    LINALG::Matrix<3,1>  r1;  r1.Update(1.0, p1, -1.0,  p2);
+    LINALG::Matrix<3,1>  r2;  r2.Update(1.0, p3, -1.0,  p2);
 
     // normal of the plane
-    BlitzVec  n(computeCrossProduct(r1, r2));
-    normalizeVectorInPLace(n);
-
+    LINALG::Matrix<3,1>  n = computeCrossProduct(r1, r2);
+    //normalizeVectorInPLace(n);
+    n.Scale(1.0/n.Norm2());
     // direction vector of the intersection line
-    BlitzVec  r(computeCrossProduct(n, r2));
-    normalizeVectorInPLace(r);
+    LINALG::Matrix<3,1>  r = computeCrossProduct(n, r2);
+    //normalizeVectorInPLace(r);
+    r.Scale(1.0/r.Norm2());
 
     // compute nodes of the normal to the interface edge of the tetrahedron
     plane.clear();
     plane.reserve(5);
-    plane.push_back(BlitzVec(p2 + r));
-    plane.push_back(BlitzVec(p2 - r));
-    plane.push_back(BlitzVec(plane[1] + n));
-    plane.push_back(BlitzVec(plane[0] + n));
+    LINALG::Matrix<3,1> planeNode;
+    planeNode.Update(1.0, p2,  1.0, r);
+    plane.push_back(planeNode);
+    planeNode.Update(1.0, p2, -1.0, r);
+    plane.push_back(planeNode);
+    planeNode.Update(1.0, plane[1],  1.0, n);
+    plane.push_back(planeNode);
+    planeNode.Update(1.0, plane[0],  1.0, n); //TODO check signs
+    plane.push_back(planeNode);
+
 
     for(int i = 0; i < 4; i++)
       elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement_, plane[i]);
@@ -3762,14 +3771,15 @@ void GEO::Intersection::computeIntersectionNormalC(
 /*----------------------------------------------------------------------*
  |  RCI:    computes the midpoint of a line                  u.may 08/07|
  *----------------------------------------------------------------------*/
-BlitzVec GEO::Intersection::computeLineMidpoint(
-    const BlitzVec& p1,
-    const BlitzVec& p2) const
+LINALG::Matrix<3,1> GEO::Intersection::computeLineMidpoint(
+    const LINALG::Matrix<3,1>& p1,
+    const LINALG::Matrix<3,1>& p2) const
 {
-    BlitzVec midpoint(3);
-
-    for(int i=0; i<3; i++)
-        midpoint(i) = (p1(i) + p2(i))*0.5;
+    LINALG::Matrix<3,1> midpoint;
+    midpoint.Update(0.5, p1, 0.5, p2);
+    
+    //for(int i=0; i<3; i++)
+    //    midpoint(i) = (p1(i) + p2(i))*0.5;
 
     return midpoint;
 }
@@ -3857,8 +3867,8 @@ bool GEO::Intersection::findCommonFaceEdge(
         const int                           faceIndex1,
         const int                           faceIndex2,
         const vector<int>&                  adjacentFacesList,
-        BlitzVec&                           edgePoint,
-        BlitzVec&                           oppositePoint,
+        LINALG::Matrix<3,1>&                edgePoint,
+        LINALG::Matrix<3,1>&                oppositePoint,
         const tetgenio&                     out
         ) const
 {
@@ -3898,7 +3908,7 @@ bool GEO::Intersection::findCommonFaceEdge(
  |          of face 1 and facet 2                                       |
  *----------------------------------------------------------------------*/
 bool GEO::Intersection::findCommonCutterLine(
-    const map<int,BlitzVec3>&                       currentcutterpositions,
+    const map<int,LINALG::Matrix<3,1> >&            currentcutterpositions,
     const int                                       faceIndex1,
     const int                                       faceIndex2,
     int&                                            lineIndex,
@@ -3923,8 +3933,8 @@ bool GEO::Intersection::findCommonCutterLine(
             {
                 const DRT::Node* node1 = lines1[i]->Nodes()[k];
                 const DRT::Node* node2 = lines2[j]->Nodes()[k];
-                BlitzVec3 pos1 = currentcutterpositions.find(node1->Id())->second;
-                BlitzVec3 pos2 = currentcutterpositions.find(node2->Id())->second;
+                LINALG::Matrix<3,1> pos1 = currentcutterpositions.find(node1->Id())->second;
+                LINALG::Matrix<3,1> pos2 = currentcutterpositions.find(node2->Id())->second;
                 if(!comparePoints<3>(pos1, pos2))
                 {
                     comparison = false;
@@ -3941,8 +3951,8 @@ bool GEO::Intersection::findCommonCutterLine(
                     {
                         const DRT::Node* node1 = lines1[i]->Nodes()[k];
                         const DRT::Node* node2 = lines2[j]->Nodes()[k];
-                        BlitzVec3 pos1 = currentcutterpositions.find(node1->Id())->second;
-                        BlitzVec3 pos2 = currentcutterpositions.find(node2->Id())->second;
+                        LINALG::Matrix<3,1> pos1 = currentcutterpositions.find(node1->Id())->second;
+                        LINALG::Matrix<3,1> pos2 = currentcutterpositions.find(node2->Id())->second;
                         if(!comparePoints<3>(pos1, pos2))
                             comparison = false;
                     }
@@ -3950,8 +3960,8 @@ bool GEO::Intersection::findCommonCutterLine(
                     {
                         const DRT::Node* node1 = lines1[i]->Nodes()[k];
                         const DRT::Node* node2 = lines2[j]->Nodes()[1-k];
-                        BlitzVec3 pos1 = currentcutterpositions.find(node1->Id())->second;
-                        BlitzVec3 pos2 = currentcutterpositions.find(node2->Id())->second;
+                        LINALG::Matrix<3,1> pos1 = currentcutterpositions.find(node1->Id())->second;
+                        LINALG::Matrix<3,1> pos2 = currentcutterpositions.find(node2->Id())->second;
                         if(!comparePoints<3>(pos1, pos2))
                             comparison = false;
                     }
@@ -3983,20 +3993,20 @@ bool GEO::Intersection::findCommonCutterLine(
  *----------------------------------------------------------------------*/
 int GEO::Intersection::findIntersectingSurfaceEdge(
         const DRT::Element*                       xfemElement,
-        const BlitzMat&                           xyze_xfemElement,
+        const LINALG::SerialDenseMatrix&          xyze_xfemElement,
         DRT::Element*                             cutterElement,
-        const map<int,BlitzVec3>&                 currentcutterpositions,
-        const BlitzVec&                           edgeNode1,
-        const BlitzVec&                           edgeNode2
+        const map<int,LINALG::Matrix<3,1> >&      currentcutterpositions,
+        const LINALG::Matrix<3,1>&                edgeNode1,
+        const LINALG::Matrix<3,1>&                edgeNode2
         ) const
 {
     dserror("to be improved");
     int lineIndex = -1;
-    static BlitzVec3 x1;
-    static BlitzVec3 x2;
+    static LINALG::Matrix<3,1> x1;
+    static LINALG::Matrix<3,1> x2;
 
-    BlitzVec node1 = edgeNode1;
-    BlitzVec node2 = edgeNode2;
+    LINALG::Matrix<3,1> node1 = edgeNode1;
+    LINALG::Matrix<3,1> node2 = edgeNode2;
 
     elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement, node1);
     elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement, node2);
@@ -4043,31 +4053,31 @@ void GEO::Intersection::storeHigherOrderNode(
     const bool                                  normal,
     const int                                   globalHigherOrderIndex,
     const int                                   lineIndex,
-    BlitzVec3&                                  xsi,
+    LINALG::Matrix<3,1>&                        xsi,
     DRT::Element*                               cutterElement,
-    const map<int,BlitzVec3>&                   currentcutterpositions,
+    const map<int,LINALG::Matrix<3,1> >&        currentcutterpositions,
     const DRT::Element*                         xfemElement,
     tetgenio&                                   out
     ) const
 {
-    static BlitzVec3 curr;
+    static LINALG::Matrix<3,1> curr;
 
     if(normal)
     {
-        BlitzVec2 xsiSurf;
+        LINALG::Matrix<2,1> xsiSurf;
         xsiSurf(0) = xsi(0);
         xsiSurf(1) = xsi(1);
         
-        const BlitzMat xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentcutterpositions));
+        const LINALG::SerialDenseMatrix xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentcutterpositions));
         elementToCurrentCoordinates(cutterElement, xyze_cutterElement, xsiSurf, curr);
     }
     else
     {
-        BlitzVec1 xsiLine;
+        LINALG::Matrix<1,1> xsiLine;
         xsiLine(0) = xsi(2);
         const vector<RCP<DRT::Element> > cutterElementLines = cutterElement->Lines();
         const DRT::Element* lineele = cutterElementLines[lineIndex].get();
-        const BlitzMat xyze_lineElement(GEO::getCurrentNodalPositions(lineele, currentcutterpositions));
+        const LINALG::SerialDenseMatrix xyze_lineElement(GEO::getCurrentNodalPositions(lineele, currentcutterpositions));
         elementToCurrentCoordinates(lineele, xyze_lineElement, xsiLine, curr);
     }
     xsi = currentToVolumeElementCoordinatesExact(xfemElement->Shape(), xyze_xfemElement_, curr, TOL7);
@@ -4090,7 +4100,7 @@ void GEO::Intersection::addCellsToDomainIntCellsMap(
         const DRT::Element*             xfemElement,
         map< int, DomainIntCells >&     domainintcells,
         const tetgenio&                 out,
-        bool 							higherorder
+        bool 							              higherorder
         ) const
 {
 
@@ -4129,11 +4139,11 @@ void GEO::Intersection::addCellsToBoundaryIntCellsMap(
     const int                         		cornerIndex,
     const int                         		globalHigherOrderIndex,
     const int                         		faceMarker,
-    const map<int,BlitzVec3>&             currentcutterpositions,
+    const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,
     vector<vector<double> >&              domainCoord,
     vector<vector<double> >&              boundaryCoord,
     const DRT::Element*						        xfemElement,
-    const BlitzMat&                       xyze_xfemElement,
+    const LINALG::SerialDenseMatrix&      xyze_xfemElement,
     const tetgenio&               			  out
     ) const
 {
@@ -4149,7 +4159,7 @@ void GEO::Intersection::addCellsToBoundaryIntCellsMap(
 
     // store corner node
     {
-    static BlitzVec3 eleCoordDomainCorner;
+    static LINALG::Matrix<3,1> eleCoordDomainCorner;
     for(int k = 0; k < 3; k++)
         eleCoordDomainCorner(k) = out.pointlist[(out.trifacelist[trifaceIndex*3+cornerIndex])*3+k];
 
@@ -4157,15 +4167,15 @@ void GEO::Intersection::addCellsToBoundaryIntCellsMap(
     domainCoord[cornerIndex][1] = eleCoordDomainCorner(1);
     domainCoord[cornerIndex][2] = eleCoordDomainCorner(2);
 
-    static BlitzVec3 physCoordCorner;
+    static LINALG::Matrix<3,1> physCoordCorner;
     elementToCurrentCoordinates(xfemElement, xyze_xfemElement, eleCoordDomainCorner, physCoordCorner);
 
     //domainCoord.push_back(trinodes);
 
     const DRT::Element* cutterElement = intersectingCutterElements_[faceMarker];
-    const BlitzMat xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentcutterpositions));
+    const LINALG::SerialDenseMatrix xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentcutterpositions));
     
-    BlitzVec2 eleCoordBoundaryCorner;
+    LINALG::Matrix<2,1> eleCoordBoundaryCorner;
 //    cout << *cutterElement << endl;
 //    cout << "xyze_cutterElement: " << xyze_cutterElement << endl;
     CurrentToSurfaceElementCoordinates(cutterElement->Shape(), xyze_cutterElement, physCoordCorner, eleCoordBoundaryCorner);
@@ -4183,7 +4193,7 @@ void GEO::Intersection::addCellsToBoundaryIntCellsMap(
     if(globalHigherOrderIndex > -1)
     {
         // store higher order node
-        static BlitzVec3 eleCoordDomaninHO;
+        static LINALG::Matrix<3,1> eleCoordDomaninHO;
         for(int k = 0; k < 3; k++)
             eleCoordDomaninHO(k) = out.pointlist[globalHigherOrderIndex*3+k];
 
@@ -4193,14 +4203,14 @@ void GEO::Intersection::addCellsToBoundaryIntCellsMap(
         domainCoord[cornerIndex+3][1] = eleCoordDomaninHO(1);
         domainCoord[cornerIndex+3][2] = eleCoordDomaninHO(2);
 
-        static BlitzVec3 physCoordHO;
+        static LINALG::Matrix<3,1> physCoordHO;
         elementToCurrentCoordinates(xfemElement, xyze_xfemElement, eleCoordDomaninHO, physCoordHO);
 
         //domainCoord.push_back(trinodes);
 
         const DRT::Element* cutterElement = intersectingCutterElements_[faceMarker];
-        const BlitzMat xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentcutterpositions));
-        BlitzVec2 eleCoordBoundaryHO;
+        const LINALG::SerialDenseMatrix xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentcutterpositions));
+        LINALG::Matrix<2,1> eleCoordBoundaryHO;
         CurrentToSurfaceElementCoordinates(cutterElement->Shape(), xyze_cutterElement, physCoordHO, eleCoordBoundaryHO);
 
 //        std::cout << "physcood = " << physCoordHO << "    ";
@@ -4226,30 +4236,30 @@ void GEO::Intersection::addXFEMSurfaceCellsToBoundaryIntCellsMap(
     const int                             index1,
     const int                             index2,
     const int                             cutterPos,
-    const map<int,BlitzVec3>&             currentcutterpositions,
+    const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,
     vector<vector<double> >&              domainCoord,
     vector<vector<double> >&              boundaryCoord,
     const DRT::Element*                   xfemElement,
-    const BlitzMat&                       xyze_xfemElement
+    const LINALG::SerialDenseMatrix&      xyze_xfemElement
     ) const
 {
     // store corner node
     {
-    static BlitzVec3 eleCoordDomainCorner;
+    static LINALG::Matrix<3,1> eleCoordDomainCorner;
     for(int k = 0; k < 3; k++)
-        eleCoordDomainCorner(k) = pointList_[index1].getCoord()[k];
+        eleCoordDomainCorner(k) = pointList_[index1].getCoord()(k);
 
     domainCoord[cornerIndex][0] = eleCoordDomainCorner(0);
     domainCoord[cornerIndex][1] = eleCoordDomainCorner(1);
     domainCoord[cornerIndex][2] = eleCoordDomainCorner(2);
 
-    static BlitzVec3 physCoordCorner;
+    static LINALG::Matrix<3,1> physCoordCorner;
     elementToCurrentCoordinates(xfemElement, xyze_xfemElement, eleCoordDomainCorner, physCoordCorner);
 
     const DRT::Element* cutterElement = intersectingCutterElements_[cutterPos];
-    const BlitzMat xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentcutterpositions));
+    const LINALG::SerialDenseMatrix xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentcutterpositions));
     
-    BlitzVec2 eleCoordBoundaryCorner;
+    LINALG::Matrix<2,1> eleCoordBoundaryCorner;
     CurrentToSurfaceElementCoordinates(cutterElement->Shape(), xyze_cutterElement, physCoordCorner, eleCoordBoundaryCorner);
 
     boundaryCoord[cornerIndex][0] = eleCoordBoundaryCorner(0);
@@ -4261,13 +4271,13 @@ void GEO::Intersection::addXFEMSurfaceCellsToBoundaryIntCellsMap(
     if(higherorder)
     {
       // store higher order node
-      static BlitzVec3 eleCoordDomaninCorner1;
-      static BlitzVec3 eleCoordDomaninCorner2;
-      static BlitzVec3 eleCoordDomaninHO;
+      static LINALG::Matrix<3,1> eleCoordDomaninCorner1;
+      static LINALG::Matrix<3,1> eleCoordDomaninCorner2;
+      static LINALG::Matrix<3,1> eleCoordDomaninHO;
       for(int k = 0; k < 3; k++)
       {
-        eleCoordDomaninCorner1(k) = pointList_[index1].getCoord()[k];
-        eleCoordDomaninCorner2(k) = pointList_[index2].getCoord()[k];
+        eleCoordDomaninCorner1(k) = pointList_[index1].getCoord()(k);
+        eleCoordDomaninCorner2(k) = pointList_[index2].getCoord()(k);
         eleCoordDomaninHO(k) = 0.5*(eleCoordDomaninCorner1(0) + eleCoordDomaninCorner2(0));
       }   
 
@@ -4275,12 +4285,12 @@ void GEO::Intersection::addXFEMSurfaceCellsToBoundaryIntCellsMap(
       domainCoord[cornerIndex+3][1] = eleCoordDomaninHO(1);
       domainCoord[cornerIndex+3][2] = eleCoordDomaninHO(2);
 
-      static BlitzVec3 physCoordHO;
+      static LINALG::Matrix<3,1> physCoordHO;
       elementToCurrentCoordinates(xfemElement, xyze_xfemElement, eleCoordDomaninHO, physCoordHO);
 
       const DRT::Element* cutterElement = intersectingCutterElements_[cutterPos];
-      const BlitzMat xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentcutterpositions));
-      BlitzVec2 eleCoordBoundaryHO;
+      const LINALG::SerialDenseMatrix xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentcutterpositions));
+      LINALG::Matrix<2,1> eleCoordBoundaryHO;
       CurrentToSurfaceElementCoordinates(cutterElement->Shape(), xyze_cutterElement, physCoordHO, eleCoordBoundaryHO);
 
       boundaryCoord[cornerIndex+3][0] = eleCoordBoundaryHO(0);
@@ -4294,8 +4304,8 @@ void GEO::Intersection::addXFEMSurfaceCellsToBoundaryIntCellsMap(
  |  DB:     Debug only                                       u.may 06/07|
  *----------------------------------------------------------------------*/
 void GEO::Intersection::debugXAABBIntersection(
-        const BlitzMat3x2 cutterXAABB,
-        const BlitzMat3x2 xfemXAABB,
+        const LINALG::Matrix<3,2>& cutterXAABB,
+        const LINALG::Matrix<3,2>& xfemXAABB,
         const DRT::Element* cutterElement,
         const DRT::Element* xfemElement,
         const int noC,
@@ -4359,20 +4369,19 @@ void GEO::Intersection::debugXAABBIntersection(
  |  DB:     Debug only                                       u.may 06/07|
  *----------------------------------------------------------------------*/
 void GEO::Intersection::debugNodeWithinElement(
-        const DRT::Element* xfemElement,
-        const DRT::Node* node,
-        const BlitzVec& xsi,
-        const int noE,
-        const int noN,
-        const bool within
+        const DRT::Element*         xfemElement,
+        const DRT::Node*            node,
+        const LINALG::Matrix<3,1>&  xsi,
+        const int                   noE,
+        const int                   noN,
+        const bool                  within
         ) const
 {
+    dserror("fix");
     const int numnodes = xfemElement->NumNode();
     vector<int> actParams(1,0);
-    BlitzVec funct(numnodes);
-    BlitzMat emptyM;
-    BlitzVec emptyV;
-    BlitzVec x(3);
+    LINALG::SerialDenseVector funct(numnodes);
+    LINALG::Matrix<3,1> x(true);
     DRT::Discretization dummyDis("dummy discretization", null);
     ParameterList params;
 
@@ -4381,9 +4390,6 @@ void GEO::Intersection::debugNodeWithinElement(
 
     dserror("we don't use Evaluate anymore, so thius function does not make sence!");
     //element->Evaluate(params, dummyDis, actParams, emptyM, emptyM , funct, xsi, emptyV);
-
-    for(int dim=0; dim<3; dim++)
-        x(dim) = 0.0;
 
     for(int dim=0; dim<3; dim++)
         for(int i=0; i<numnodes; i++)
@@ -4416,7 +4422,7 @@ void GEO::Intersection::debugNodeWithinElement(
     std::cout << endl;
     std::cout << endl;
     std::cout << "CURRENT COORDINATES :";
-    std::cout << "   x = " << x[0] << "     y = " <<  x[1] << "     z = "  << x[2] << endl;
+    std::cout << "   x = " << x(0) << "     y = " <<  x(1) << "     z = "  << x(2) << endl;
     std::cout << endl;
     std::cout << endl;
     if(within) std::cout << "NODE LIES WITHIN ELEMENT" << endl;
@@ -4444,12 +4450,12 @@ void GEO::Intersection::debugTetgenDataStructure(
     std::cout << endl;
     std::cout << "POINT LIST " << " :" << endl;
     std::cout << endl;
-    BlitzVec xsi(3);
+    LINALG::Matrix<3,1> xsi(true);
     for(unsigned int i = 0; i < pointList_.size(); i++)
     {
         for(int j = 0; j< 3; j++)
         {
-            xsi[j] = pointList_[i].getCoord()[j];
+            xsi(j) = pointList_[i].getCoord()(j);
         }
         elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement_, xsi);
 
@@ -4457,7 +4463,7 @@ void GEO::Intersection::debugTetgenDataStructure(
         for(int j = 0; j< 3; j++)
         {
             //cout << setprecision(10) << pointList_[i].coord[j] << "\t";
-             printf("%20.16f\t", pointList_[i].getCoord()[j] );
+             printf("%20.16f\t", pointList_[i].getCoord()(j) );
         }
         std::cout << endl;
         std::cout << endl;
@@ -4519,11 +4525,12 @@ void GEO::Intersection::debugTetgenDataStructure(
 /*----------------------------------------------------------------------*
  |  Debug only                                               u.may 06/07|
  *----------------------------------------------------------------------*/
-void GEO::Intersection::debugTetgenOutput( 	tetgenio& in,
-										tetgenio& out,
-										const DRT::Element*   xfemElement,
-    									vector<int>& elementIds,
-    									int timestepcounter) const
+void GEO::Intersection::debugTetgenOutput( 	
+    tetgenio& in,
+    tetgenio& out,
+    const DRT::Element*   xfemElement,
+    vector<int>& elementIds,
+    int timestepcounter) const
 {
 	std::string tetgenIn = "tetgenPLC";
 	std::string tetgenOut = "tetgenMesh";
@@ -4602,7 +4609,7 @@ void GEO::Intersection::printTetViewOutputPLC(
 
     FILE *outFile;
     char filename[100];
-    BlitzVec xsi(3);
+    LINALG::Matrix<3,1> xsi(true);
 
     sprintf(filename, "tetgenPLC%d.node", index);
 
@@ -4613,7 +4620,7 @@ void GEO::Intersection::printTetViewOutputPLC(
     {
 
         for(int j = 0; j < 3; j++)
-            xsi[j] = in.pointlist[i*3 + j];
+            xsi(j) = in.pointlist[i*3 + j];
 
         elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement_, xsi);
 
@@ -4634,8 +4641,8 @@ void GEO::Intersection::printTetViewOutputPLC(
 
 
 void GEO::Intersection::debugFaceMarker(
-		const int 						eleId,
-		tetgenio&						out) const
+		const int       eleId,
+		tetgenio&			  out) const
 {
 
   ofstream f_system("element_faceMarker.pos");
@@ -4647,7 +4654,7 @@ void GEO::Intersection::debugFaceMarker(
 
     if(trifaceMarker > -2)
     {
-      BlitzMat triface(3,3);
+      LINALG::Matrix<3,3> triface;
       for(int inode = 0; inode < 3; inode++)
         for(int isd = 0; isd < 3; isd++)
           triface(isd,inode) = out.pointlist[out.trifacelist[iface*3+inode]*3 + isd];
@@ -4711,7 +4718,7 @@ void GEO::Intersection::debugIntersection(
 void GEO::Intersection::debugIntersectionOfSingleElements(
     const DRT::Element*                         xfemElement,
     const DRT::Element*                         cutterElement,
-    const std::map<int,BlitzVec3>&              currentcutterpositions) const
+    const std::map<int,LINALG::Matrix<3,1> >&   currentcutterpositions) const
 {
   ofstream f_system("intersectionOfSingleElements.pos");
   f_system << "View \" IntersectionOfSingleElements" << " \" {" << endl;
@@ -4725,8 +4732,8 @@ void GEO::Intersection::debugIntersectionOfSingleElements(
 
 //! return Gmsh representation of a bounding box
 static std::string XAABBToString(
-    const double scalar,
-    const vector<vector<double> >& XAABB)
+    const double                    scalar,
+    const vector<vector<double> >&  XAABB)
 {
   const DRT::Element::DiscretizationType distype = DRT::Element::hex8;
   const int numnode = IO::GMSH::distypeToGmshNumNode(distype);
@@ -4762,8 +4769,8 @@ static std::string XAABBToString(
 
 void GEO::Intersection::debugXAABBs(
     const int id,
-    const BlitzMat& cutterXAABB,
-    const BlitzMat& xfemXAABB) const
+    const LINALG::SerialDenseMatrix& cutterXAABB,
+    const LINALG::SerialDenseMatrix& xfemXAABB) const
 {
   char filename[100];
   sprintf(filename, "element_XAABB%d.pos", id);

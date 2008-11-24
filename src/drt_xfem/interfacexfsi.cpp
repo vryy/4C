@@ -30,15 +30,6 @@ Maintainer: Axel Gerstenberger
 #include "../drt_fem_general/drt_utils_integration.H"
 
 
-//! take a LINALG::Matrix of length 3,1 and convert it to a blitz TinyVector of length 3
-static inline BlitzVec3 toBlitzArray(const LINALG::Matrix<3,1>& x)
-{
-  BlitzVec3 blitz_x;
-  blitz_x(0) = x(0);
-  blitz_x(1) = x(1);
-  blitz_x(2) = x(2);
-  return blitz_x;
-}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -82,6 +73,8 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
   
   elementalDomainIntCells_.clear();
   elementalBoundaryIntCells_.clear();
+
+  
   GEO::Intersection is;
   is.computeIntersection(xfemdis, cutterdis, cutterposnp_, elementalDomainIntCells_, elementalBoundaryIntCells_);
   
@@ -94,9 +87,9 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
   labelPerElementId_.clear();
   XFEM::InvertElementsByLabel(elementsByLabel_, labelPerElementId_);
 
-  const BlitzMat3x2 cutterAABB = GEO::getXAABBofDis(*cutterdis,cutterposnp_);
-  const BlitzMat3x2 xfemAABB =GEO::getXAABBofDis(*xfemdis);
-  const BlitzMat3x2 AABB = GEO::mergeAABB(cutterAABB, xfemAABB);
+  const LINALG::Matrix<3,2> cutterAABB = GEO::getXAABBofDis(*cutterdis,cutterposnp_);
+  const LINALG::Matrix<3,2> xfemAABB =GEO::getXAABBofDis(*xfemdis);
+  const LINALG::Matrix<3,2> AABB = GEO::mergeAABB(cutterAABB, xfemAABB);
 //  octTreenp_ = rcp( new GEO::SearchTree(5));
   octTreenp_->initializeTree(AABB, elementsByLabel_, GEO::TreeType(GEO::OCTTREE));
   //octTreen_ = rcp( new GEO::SearchTree(5));
@@ -126,7 +119,7 @@ XFEM::InterfaceHandleXFSI::~InterfaceHandleXFSI()
 void XFEM::InterfaceHandleXFSI::FillCurrentCutterPositionMap(
     const Teuchos::RCP<DRT::Discretization>  cutterdis,
     const Epetra_Vector&                     idispcol,
-    std::map<int,BlitzVec3>&                 currentcutterpositions
+    std::map<int,LINALG::Matrix<3,1> >&      currentcutterpositions
     ) const
 {
   currentcutterpositions.clear();
@@ -139,7 +132,7 @@ void XFEM::InterfaceHandleXFSI::FillCurrentCutterPositionMap(
     cutterdis->Dof(node, lm);
     vector<double> mydisp(3);
     DRT::UTILS::ExtractMyValues(idispcol,mydisp,lm);
-    BlitzVec3 currpos;
+    LINALG::Matrix<3,1> currpos;
     currpos(0) = node->X()[0] + mydisp[0];
     currpos(1) = node->X()[1] + mydisp[1];
     currpos(2) = node->X()[2] + mydisp[2];
@@ -335,9 +328,9 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool XFEM::InterfaceHandleXFSI::FindSpaceTimeLayerCell(
-    const BlitzVec3&                  querypos,
+    const LINALG::Matrix<3,1>&        querypos,
     XFEM::SpaceTimeBoundaryCell&      stcell,
-    BlitzVec3&                        rst
+    LINALG::Matrix<3,1>&              rst
 ) const
 {
   bool in_spacetimecell = false;
@@ -345,15 +338,15 @@ bool XFEM::InterfaceHandleXFSI::FindSpaceTimeLayerCell(
   for (std::map<int,XFEM::SpaceTimeBoundaryCell>::const_iterator slabiter = stlayer_.begin(); slabiter != stlayer_.end(); ++slabiter)
   {
     const XFEM::SpaceTimeBoundaryCell slabitem = slabiter->second;
-    BlitzVec3 xsi;
-    xsi = 0.0;
+    LINALG::Matrix<3,1> xsi(true);
+
     in_spacetimecell = GEO::currentToVolumeElementCoordinates(DRT::Element::hex8, slabitem.get_xyzt(), querypos, xsi);
     in_spacetimecell = GEO::checkPositionWithinElementParameterSpace(xsi, DRT::Element::hex8);
     if (in_spacetimecell)
     {
       stcell = XFEM::SpaceTimeBoundaryCell(slabitem);
 //      cout << "slabitem " << slabitem.toString() << endl;
-      rst = xsi;
+      rst = xsi;    
       return true;
     }
   }
@@ -366,13 +359,13 @@ bool XFEM::InterfaceHandleXFSI::FindSpaceTimeLayerCell(
   return false;
 }
 
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 int XFEM::InterfaceHandleXFSI::PositionWithinConditionNP(
-    const BlitzVec3&                  x_in
+    const LINALG::Matrix<3,1>&        x_in
 ) const
 {
+  
   TEUCHOS_FUNC_TIME_MONITOR(" - search - InterfaceHandle::PositionWithinConditionNP");
   return octTreenp_->queryXFEMFSIPointType(*(cutterdis_), cutterposnp_, x_in);
 }
@@ -380,9 +373,10 @@ int XFEM::InterfaceHandleXFSI::PositionWithinConditionNP(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 int XFEM::InterfaceHandleXFSI::PositionWithinConditionN(
-    const BlitzVec3&                  x_in
+    const LINALG::Matrix<3,1>&        x_in
 ) const
 {
+  
   TEUCHOS_FUNC_TIME_MONITOR(" - search - InterfaceHandle::PositionWithinConditionN");
   return octTreen_->queryXFEMFSIPointType(*(cutterdis_), cutterposn_, x_in);
 }
@@ -390,27 +384,7 @@ int XFEM::InterfaceHandleXFSI::PositionWithinConditionN(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 int XFEM::InterfaceHandleXFSI::PositionWithinConditionNP(
-    const LINALG::Matrix<3,1>&        x_in
-) const
-{
-  TEUCHOS_FUNC_TIME_MONITOR(" - search - InterfaceHandle::PositionWithinConditionNP");
-  return octTreenp_->queryXFEMFSIPointType(*(cutterdis_), cutterposnp_, toBlitzArray(x_in));
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-int XFEM::InterfaceHandleXFSI::PositionWithinConditionN(
-    const LINALG::Matrix<3,1>&        x_in
-) const
-{
-  TEUCHOS_FUNC_TIME_MONITOR(" - search - InterfaceHandle::PositionWithinConditionN");
-  return octTreen_->queryXFEMFSIPointType(*(cutterdis_), cutterposn_, toBlitzArray(x_in));
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-int XFEM::InterfaceHandleXFSI::PositionWithinConditionNP(
-    const BlitzVec3&                  x_in,
+    const LINALG::Matrix<3,1>&        x_in,
     GEO::NearestObject&               nearestobject
 ) const
 {
@@ -421,7 +395,7 @@ int XFEM::InterfaceHandleXFSI::PositionWithinConditionNP(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 int XFEM::InterfaceHandleXFSI::PositionWithinConditionN(
-    const BlitzVec3&                  x_in,
+    const LINALG::Matrix<3,1>&        x_in,
     GEO::NearestObject&               nearestobject
 ) const
 {
@@ -432,9 +406,9 @@ int XFEM::InterfaceHandleXFSI::PositionWithinConditionN(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void XFEM::InterfaceHandleXFSI::GenerateSpaceTimeLayer(
-    const Teuchos::RCP<DRT::Discretization>  cutterdis,
-    const std::map<int,BlitzVec3>&           cutterposnp,
-    const std::map<int,BlitzVec3>&           cutterposn
+    const Teuchos::RCP<DRT::Discretization>             cutterdis,
+    const std::map<int,LINALG::Matrix<3,1> >&           cutterposnp,
+    const std::map<int,LINALG::Matrix<3,1> >&           cutterposn
 )
 {
  
@@ -446,7 +420,7 @@ void XFEM::InterfaceHandleXFSI::GenerateSpaceTimeLayer(
     for (int inode = 0; inode != 4; ++inode) // fill n+1 position
     {
       const int nodeid = nodeids[inode];
-      const BlitzVec3 nodexyz = cutterposnp.find(nodeid)->second;
+      const LINALG::Matrix<3,1> nodexyz = cutterposnp.find(nodeid)->second;
       for (int isd = 0; isd != 3; ++isd)
       {
         posnp(isd,inode) = nodexyz(isd);
@@ -456,7 +430,7 @@ void XFEM::InterfaceHandleXFSI::GenerateSpaceTimeLayer(
     for (int inode = 0; inode != 4; ++inode) // fill n   position
     {
       const int nodeid = nodeids[inode];
-      const BlitzVec3 nodexyz = cutterposn.find(nodeid)->second;
+      const LINALG::Matrix<3,1> nodexyz = cutterposn.find(nodeid)->second;
       for (int isd = 0; isd != 3; ++isd)
       {
         posn(isd,inode) = nodexyz(isd);

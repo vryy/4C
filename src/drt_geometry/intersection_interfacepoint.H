@@ -21,6 +21,7 @@ Maintainer: Ursula Mayer
 #endif
 
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/linalg_fixedsizematrix.H"
 #include <vector>
 
 
@@ -55,11 +56,11 @@ class InterfacePoint
     \param coordinates          (in)        : coordinates of the interface points
     */
     InterfacePoint(
-      GEO::pointType     pType,
-      int                 nodeId,
-      std::vector<int>    lineId,
-      std::vector<int>    surfId,
-      std::vector<double> coordinates
+      GEO::pointType&         pType,
+      int                     nodeId,
+      std::vector<int>&       lineId,
+      std::vector<int>&       surfId,
+      LINALG::Matrix<3,1>&    coordinates
       );
     
     
@@ -122,7 +123,7 @@ class InterfacePoint
     \param coordinates            (in)        : coordinates of interface point
     */
     void setCoord(
-      const std::vector<double>&    coordinates
+      const LINALG::Matrix<3,1>&    coordinates
       );
 
     /*!
@@ -196,7 +197,7 @@ class InterfacePoint
     /*!
       \brief Return coordinates the interface points
      */
-    inline std::vector<double> getCoord() const { return coord_;}
+    inline LINALG::Matrix<3,1> getCoord() const { return coord_;}
     
     /*!
     \brief Return point type the interface point ( NOTYPE INTERNAL SURFACE LINE NODE  )
@@ -230,7 +231,7 @@ class InterfacePoint
     std::vector<int>      surfId_;
     
     //! coordinates of interface points
-    std::vector<double>   coord_;
+    LINALG::Matrix<3,1>   coord_;
     
     
 };

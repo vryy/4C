@@ -45,7 +45,7 @@ Maintainer: Ursula Mayer
 #define SEARCHTREE_NEARESTOBJECT_H_
 
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_geometry/vector_definitions.H"
+#include "../drt_lib/linalg_fixedsizematrix.H"
 
 
 namespace GEO
@@ -89,7 +89,7 @@ class NearestObject
     void setNodeObjectType(
           const int nodeId, 
           const int label,
-          const BlitzVec3& physcoord
+          const LINALG::Matrix<3,1>& physcoord
           );
    
     /*!
@@ -103,7 +103,7 @@ class NearestObject
           const int lineId,
           const int surfId, 
           const int label,
-          const BlitzVec3& physcoord
+          const LINALG::Matrix<3,1>& physcoord
           );
     
     /*!
@@ -115,7 +115,7 @@ class NearestObject
     void setSurfaceObjectType(
           const int surfId, 
           const int label,
-          const BlitzVec3& physcoord
+          const LINALG::Matrix<3,1>& physcoord
           );  
     
     /*!
@@ -155,7 +155,7 @@ class NearestObject
     /*!
     \brief Return vector of physical coordinates
      */
-    inline BlitzVec3 getPhysCoord() const {
+    inline LINALG::Matrix<3,1> getPhysCoord() const {
       if(objectType_ == NOTYPE_OBJECT)
         dserror("no object type and physical coordinates are set");
       return physcoord_;}
@@ -165,22 +165,22 @@ class NearestObject
   private:
   
     //! ObjectType NOTYPE SURFACE LINE NODE 
-    ObjectType            objectType_;
+    ObjectType                        objectType_;
   
     //! id of node
-    int                   nodeId_;
+    int                               nodeId_;
   
     //! id of line 
-    int                   lineId_;
+    int                               lineId_;
     
     //! id of surface
-    int                   surfId_;
+    int                               surfId_;
     
     //! label of object
-    int                   label_;
+    int                               label_;
     
     //! physical coordinates of point on nearest object
-    BlitzVec3             physcoord_;
+    LINALG::Matrix<3,1>   physcoord_;
 
 };
 

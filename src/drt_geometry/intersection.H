@@ -67,11 +67,11 @@ class Intersection
    * representing the curved interface.
    */
   void computeIntersection(
-      const RCP<DRT::Discretization>         xfemdis,                 ///< xfem discretization
-      const RCP<DRT::Discretization>         cutterdis,               ///< cutter discretization
-      const std::map<int,BlitzVec3>&         currentcutterpositions,  ///< current positions of all cutter nodes
-      map< int, DomainIntCells >&            domainintcells,          ///< domainintegrationcells for each intersected element
-      map< int, BoundaryIntCells >&          boundaryintcells         ///< boundaryintegrationcells for each intersected element
+      const RCP<DRT::Discretization>              xfemdis,                 ///< xfem discretization
+      const RCP<DRT::Discretization>              cutterdis,               ///< cutter discretization
+      const std::map<int,LINALG::Matrix<3,1> >&   currentcutterpositions,  ///< current positions of all cutter nodes
+      map< int, DomainIntCells >&                 domainintcells,          ///< domainintegrationcells for each intersected element
+      map< int, BoundaryIntCells >&               boundaryintcells         ///< boundaryintegrationcells for each intersected element
       );
 
 
@@ -94,7 +94,7 @@ class Intersection
   int                                   numXFEMCornerNodes_;
 
   //! current nodal coordinates of the XFEM element
-  BlitzMat                              xyze_xfemElement_;
+  LINALG::SerialDenseMatrix             xyze_xfemElement_;
     
   //! counts missed points during the recovery
   int                                   countMissedPoints_;
@@ -115,7 +115,7 @@ class Intersection
   vector<vector<int> >                  eleLinesSurfaces_;
 
   //! nodal element coordinate
-  vector<vector<double> >               eleRefCoordinates_;
+  vector< LINALG::Matrix<3,1> >         eleRefCoordinates_;
 
   //! list of interface points to be stored in the Tetgen data structure
   vector<InterfacePoint >               pointList_;
@@ -139,10 +139,10 @@ class Intersection
   vector<int>                           faceMarker_;
   
   //! store internal points when computed per xfem element
-  map< int, BlitzVec3 >                 nodemap_;
+  map< int, LINALG::Matrix<3,1> >       nodemap_;
   
   //! store intersection points for faster access
-  std::map< std::vector<int>, std::vector< BlitzVec3> > intersectionpointmap_;
+  std::map< std::vector<int>, std::vector< LINALG::Matrix<3,1> > > intersectionpointmap_;
   
   /*!
   \brief initializes the private members of the xfem element
@@ -166,7 +166,7 @@ class Intersection
   
   std::vector<int> serialIntersectionCandidateSearch(    
       const Teuchos::RCP<DRT::Discretization>         cutterdis,
-      const std::map<int,BlitzVec3>&                  currentcutterpositions,
+      const std::map<int,LINALG::Matrix<3,1> >&       currentcutterpositions,
       DRT::Element*                                   xfemElement
       );
 
@@ -186,14 +186,14 @@ class Intersection
   \return true if the node lies within the xfemElement, false otherwise
   */
   bool collectInternalPoints(
-    const DRT::Element*             xfemElement,             
-    DRT::Element*                   cutterElement,           
-    const BlitzMat&                 xyze_cutterElement,      
-    const DRT::Node*                cutterNode,              
-    const map<int,BlitzVec3>&       currentcutterpositions,  
-    std::vector<InterfacePoint>&    interfacePoints,
-    const int                       elemId,
-    const int                       nodeId
+    const DRT::Element*                     xfemElement,             
+    DRT::Element*                           cutterElement,           
+    const LINALG::SerialDenseMatrix&        xyze_cutterElement,      
+    const DRT::Node*                        cutterNode,              
+    const map<int,LINALG::Matrix<3,1> >&    currentcutterpositions,  
+    std::vector<InterfacePoint>&            interfacePoints,
+    const int                               elemId,
+    const int                               nodeId
     );
 
 
@@ -207,7 +207,7 @@ class Intersection
   */
   void setBoundaryPointBoundaryStatus(
     const DRT::Element::DiscretizationType  xfemDistype,
-    const BlitzVec3&                        xsi,
+    const LINALG::Matrix<3,1>&              xsi,
     InterfacePoint&                         ip
     ) const;
   
@@ -223,7 +223,7 @@ class Intersection
   */
   bool setInternalPointBoundaryStatus(
     const DRT::Element::DiscretizationType  xfemDistype, 
-    const BlitzVec3&                        xsi,
+    const LINALG::Matrix<3,1>&              xsi,
     InterfacePoint&                         ip
     ) const;
         
@@ -242,8 +242,8 @@ class Intersection
   void setIntersectionPointBoundaryStatus(
     const DRT::Element*                     xfemElement,
     const DRT::Element*                     surfaceElement,
-    const BlitzMat&                         xyze_surfaceElement,
-    const BlitzVec3&                        xsiSurface,
+    const LINALG::SerialDenseMatrix&        xyze_surfaceElement,
+    const LINALG::Matrix<3,1>&              xsiSurface,
     InterfacePoint&                         ip
     ) const;
 
@@ -262,16 +262,16 @@ class Intersection
   \param doSVD                    (in)        : compute SVD if not Cartesian surface element and linear line elments present
   */
   bool collectIntersectionPoints(
-    const DRT::Element*             xfemElement,
-    const DRT::Element*             surfaceElement,
-    const BlitzMat&                 xyze_surfaceElement,
-    const DRT::Element*             lineElement,
-    const BlitzMat&                 xyze_lineElement,
-    std::vector<InterfacePoint>&    interfacePoints,
-    const int                       surfaceId,
-    const int                       lineId,
-    const bool                      lines,
-    const bool                      doSVD
+    const DRT::Element*               xfemElement,
+    const DRT::Element*               surfaceElement,
+    const LINALG::SerialDenseMatrix&  xyze_surfaceElement,
+    const DRT::Element*               lineElement,
+    const LINALG::SerialDenseMatrix&  xyze_lineElement,
+    std::vector<InterfacePoint>&      interfacePoints,
+    const int                         surfaceId,
+    const int                         lineId,
+    const bool                        lines,
+    const bool                        doSVD
     ) const;
 
   
@@ -296,9 +296,9 @@ class Intersection
   \param lineElement              (in)        : line element
   */
   bool checkIfLineInSurface(
-    const DRT::Element*             surfaceElement,
-    const BlitzMat&                 xyze_surfaceElement,
-    const BlitzMat&                 xyze_lineElement
+    const DRT::Element*                 surfaceElement,
+    const LINALG::SerialDenseMatrix&    xyze_surfaceElement,
+    const LINALG::SerialDenseMatrix&    xyze_lineElement
     )const;
 
   
@@ -322,19 +322,19 @@ class Intersection
   \return number of interface points
   */
   int computeNewStartingPoint(
-    const DRT::Element*             xfemElement,
-    const DRT::Element*             surfaceElement,
-    const BlitzMat&                 xyze_surfaceElement,
-    const DRT::Element*             lineElement,
-    const BlitzMat&                 xyze_lineElement,
-    const int                       surfaceId,
-    const int                       lineId,
-    const BlitzVec3&                xsiOld,
-    const BlitzVec3&                upLimit,
-    const BlitzVec3&                loLimit,
-    std::vector<InterfacePoint>&    interfacePoints,
-    const bool                      lines,
-    const bool                      doSVD
+    const DRT::Element*               xfemElement,
+    const DRT::Element*               surfaceElement,
+    const LINALG::SerialDenseMatrix&  xyze_surfaceElement,
+    const DRT::Element*               lineElement,
+    const LINALG::SerialDenseMatrix&  xyze_lineElement,
+    const int                         surfaceId,
+    const int                         lineId,
+    const LINALG::Matrix<3,1>&        xsiOld,
+    const LINALG::Matrix<3,1>&        upLimit,
+    const LINALG::Matrix<3,1>&        loLimit,
+    std::vector<InterfacePoint>&      interfacePoints,
+    const bool                        lines,
+    const bool                        doSVD
     ) const;
 
 
@@ -356,12 +356,12 @@ class Intersection
   */
   bool computeCurveSurfaceIntersection(
     const DRT::Element*                 surfaceElement,
-    const BlitzMat&                     xyze_surfaceElement,
+    const LINALG::SerialDenseMatrix&    xyze_surfaceElement,
     const DRT::Element*                 lineElement,
-    const BlitzMat&                     xyze_lineElement,
-    const BlitzVec3&                    upLimit,
-    const BlitzVec3&                    loLimit,
-    BlitzVec3&                          xsi,
+    const LINALG::SerialDenseMatrix&    xyze_lineElement,
+    const LINALG::Matrix<3,1>&          upLimit,
+    const LINALG::Matrix<3,1>&          loLimit,
+    LINALG::Matrix<3,1>&                xsi,
     const bool                          doSVD,
     const double                        tol
     ) const;
@@ -387,12 +387,12 @@ class Intersection
   int addIntersectionPoint(
     const DRT::Element*                 xfemElement,
     const DRT::Element*                 surfaceElement,
-    const BlitzMat&                     xyze_surfaceElement,
+    const LINALG::SerialDenseMatrix&    xyze_surfaceElement,
     const DRT::Element*                 lineElement,
-    const BlitzMat&                     xyze_lineElement,
-    const BlitzVec3&                    xsi,
-    const BlitzVec3&                    upLimit,
-    const BlitzVec3&                    loLimit,
+    const LINALG::SerialDenseMatrix&    xyze_lineElement,
+    const LINALG::Matrix<3,1>&          xsi,
+    const LINALG::Matrix<3,1>&          upLimit,
+    const LINALG::Matrix<3,1>&          loLimit,
     std::vector<InterfacePoint>& 	      interfacePoints,
     const int                      	    surfaceId,
     const int                           lineId,
@@ -411,11 +411,11 @@ class Intersection
   \param lowerLimits      (out)       : list of lower limits of new ranges
   */
   void createNewLimits(
-    const BlitzVec3&        xsi,
-    const BlitzVec3&        upLimit,
-    const BlitzVec3&        loLimit,
-    vector<BlitzVec3>&      upperLimits,
-    vector<BlitzVec3>&      lowerLimits
+    const LINALG::Matrix<3,1>&        xsi,
+    const LINALG::Matrix<3,1>&        upLimit,
+    const LINALG::Matrix<3,1>&        loLimit,
+    vector< LINALG::Matrix<3,1> >&    upperLimits,
+    vector< LINALG::Matrix<3,1> >&    lowerLimits
     ) const;
 
         
@@ -431,11 +431,11 @@ class Intersection
   \return                                 returns -1 or the surface id
   */
   int findCommonSurfaceID(
-    const DRT::Element*     xfemElement,
-    const BlitzMat&         xyze_xfemElement,
-    const DRT::Element*     cutterElement,
-    const BlitzMat&         xyze_cutterElement,
-    const vector<int>&      positions
+    const DRT::Element*                 xfemElement,
+    const LINALG::SerialDenseMatrix&    xyze_xfemElement,
+    const DRT::Element*                 cutterElement,
+    const LINALG::SerialDenseMatrix&    xyze_cutterElement,
+    const vector<int>&                  positions
     );
       
   
@@ -451,11 +451,11 @@ class Intersection
   \return                                 returns true if on surface
   */
   bool checkIfCutterOnXFEMSurface(
-    const DRT::Element*             xfemElement,
-    const BlitzMat&                 xyze_xfemElement,
-    const DRT::Element*             cutterElement,
-    const BlitzMat&                 xyze_cutterElement,
-    const vector<int>&              positions
+    const DRT::Element*               xfemElement,
+    const LINALG::SerialDenseMatrix&  xyze_xfemElement,
+    const DRT::Element*               cutterElement,
+    const LINALG::SerialDenseMatrix&  xyze_cutterElement,
+    const vector<int>&                positions
     ); 
   
   
@@ -470,11 +470,11 @@ class Intersection
   \param interfacePoints          (in)    : list of interface points
   */
   void preparePLC(
-    const DRT::Element*         xfemElement,
-    const BlitzMat&             xyze_xfemElement,
-    const DRT::Element*         cutterElement,
-    const BlitzMat&             xyze_cutterElement,
-    vector<InterfacePoint>&     interfacePoints
+    const DRT::Element*                     xfemElement,
+    const LINALG::SerialDenseMatrix&        xyze_xfemElement,
+    const DRT::Element*                     cutterElement,
+    const LINALG::SerialDenseMatrix&        xyze_cutterElement,
+    vector<InterfacePoint>&                 interfacePoints
     );
 
         
@@ -490,12 +490,12 @@ class Intersection
   \param midpoint                 (in/out)  : midpoint
   */
   void computeConvexHull(
-    const DRT::Element*           xfemElement,
-    const DRT::Element*           cutterElement,
-    const BlitzMat&               xyze_cutterElement,
-    vector<InterfacePoint>&       interfacePoints,
-    vector< vector<double> >&     vertices,
-    InterfacePoint&               midpoint
+    const DRT::Element*                 xfemElement,
+    const DRT::Element*                 cutterElement,
+    const LINALG::SerialDenseMatrix&    xyze_cutterElement,
+    vector<InterfacePoint>&             interfacePoints,
+    vector< LINALG::Matrix<3,1> >&      vertices,
+    InterfacePoint&                     midpoint
     );   
         
         
@@ -512,12 +512,12 @@ class Intersection
   
   */
   void storePLC(
-    const DRT::Element*             xfemElement,
-    const DRT::Element*             cutterElement,
-    const BlitzMat&                 xyze_cutterElement,
-    const int                       surfId,
-    vector<int>&                    positions,
-    InterfacePoint&                 midpoint
+    const DRT::Element*               xfemElement,
+    const DRT::Element*               cutterElement,
+    const LINALG::SerialDenseMatrix&  xyze_cutterElement,
+    const int                         surfId,
+    vector<int>&                      positions,
+    InterfacePoint&                   midpoint
     ); 
        
   
@@ -537,8 +537,8 @@ class Intersection
                                         facet/the new point of the next facet
   */
   void findNextSegment(
-    vector< vector<double> >&   vertices,
-    vector<double>&             searchPoint
+    vector< LINALG::Matrix<3,1> >&    vertices,
+    LINALG::Matrix<3,1>&              searchPoint
     ) const;
 
   
@@ -559,15 +559,13 @@ class Intersection
   \param currentcutterpositions   (in)    : current cutter node positions
   \param domainintcells           (out)   : list of domainintegrationcells for each intersected element
   \param boundaryintcells         (out)   : list of boundaryintegrationcells for each intersected element
-  \param timestepcounter_         (out)   : time step counter
   */
   void computeCDT(
     const DRT::Element*                     xfemElement,
-    const BlitzMat&                         xyze_xfemElement,
-    const map<int,BlitzVec3>&               currentcutterpositions,  
+    const LINALG::SerialDenseMatrix&        xyze_xfemElement,
+    const map<int,LINALG::Matrix<3,1> >&    currentcutterpositions,  
     map< int, DomainIntCells >&             domainintcells,
-    map< int, BoundaryIntCells >&           boundaryintcells,
-    int                                     timestepcounter_
+    map< int, BoundaryIntCells >&           boundaryintcells
     );
 
 
@@ -588,7 +586,7 @@ class Intersection
   \param positions        (in/out)    :   vector of interface points
   */
   void storePointList(
-    vector< vector<double> >&       vertices,
+    vector< LINALG::Matrix<3,1> >&  vertices,
     vector<int>&                    positions,
     vector<InterfacePoint>&         interfacePoints
     );
@@ -603,7 +601,7 @@ class Intersection
   \param positions        (in/out)    :   positions
   */
   void storePoint(
-    const vector<double>&             point,
+    const LINALG::Matrix<3,1>&        point,
     vector<InterfacePoint>&           interfacePoints,
     vector<int>&                      positions
     );
@@ -645,7 +643,7 @@ class Intersection
   \return true if point was rounded on xfem surface
   */ 
   void roundVerticesOnXFEMBoundary(
-      vector< vector<double> >&         vertices,
+      vector< LINALG::Matrix<3,1> >&    vertices,
       const double                      tol
       );
   
@@ -810,8 +808,8 @@ class Intersection
   */
   void recoverCurvedInterface(
     const DRT::Element*             xfemElement,
-    const BlitzMat&                 xyze_xfemElement,
-    const map<int,BlitzVec3>&       currentcutterpositions,  
+    const LINALG::SerialDenseMatrix&                 xyze_xfemElement,
+    const map<int,LINALG::Matrix<3,1> >&       currentcutterpositions,  
     map< int, BoundaryIntCells >&   boundaryintcells,
     tetgenio&                       out,
     bool 							              recovery
@@ -829,8 +827,8 @@ class Intersection
   */
   void storeIntCells(
     const DRT::Element*             xfemElement,
-    const BlitzMat&                 xyze_xfemElement,
-    const map<int,BlitzVec3>&       currentcutterpositions,  ///< current positions of all cutter nodes
+    const LINALG::SerialDenseMatrix&                 xyze_xfemElement,
+    const map<int,LINALG::Matrix<3,1> >&       currentcutterpositions,  ///< current positions of all cutter nodes
     map< int, BoundaryIntCells >&   boundaryintcells,
     tetgenio&                       out
     );
@@ -848,8 +846,8 @@ class Intersection
 	void storeSurfaceIntCells(
     const bool                      higherorder,
     const DRT::Element*             xfemElement,
-    const BlitzMat&                 xyze_xfemElement,
-    const map<int,BlitzVec3>&       currentcutterpositions,
+    const LINALG::SerialDenseMatrix&                 xyze_xfemElement,
+    const map<int,LINALG::Matrix<3,1> >&       currentcutterpositions,
     BoundaryIntCells&               listBoundaryICPerElement
     );
   	
@@ -865,8 +863,8 @@ class Intersection
   */
   void liftAllSteinerPoints(
     const DRT::Element*                   xfemElement,
-    const BlitzMat&                       xyze_xfemElement,
-    const map<int,BlitzVec3>&             currentcutterpositions,  
+    const LINALG::SerialDenseMatrix&      xyze_xfemElement,
+    const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,  
     tetgenio&                             out
     );
 
@@ -903,17 +901,17 @@ class Intersection
   \return steiner type S_SURAFCE S_EDGE S_BOUNDARY
   */
   GEO::SteinerType decideSteinerCase(
-    const int                         steinerIndex,
-    int&                              lineIndex,
-    int&                              cutterIndex,
-    const vector< vector<int> >&      adjacentFacesList,
-    const vector< vector<int> >&      adjacentFacemarkerList,
-    const map<int,BlitzVec3>&         currentcutterpositions,  
-    BlitzVec&                         edgePoint,
-    BlitzVec&                         oppositePoint,
-    const DRT::Element*               xfemElement,
-    const BlitzMat&                   xyze_xfemElement,
-    const tetgenio&                   out
+    const int                             steinerIndex,
+    int&                                  lineIndex,
+    int&                                  cutterIndex,
+    const vector< vector<int> >&          adjacentFacesList,
+    const vector< vector<int> >&          adjacentFacemarkerList,
+    const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,  
+    LINALG::Matrix<3,1>&                  edgePoint,
+    LINALG::Matrix<3,1>&                  oppositePoint,
+    const DRT::Element*                   xfemElement,
+    const LINALG::SerialDenseMatrix&      xyze_xfemElement,
+    const tetgenio&                       out
     ) const;
 
 
@@ -929,13 +927,13 @@ class Intersection
   \param out                      (in)     :   output data structure of TetGen
   */
   void liftSteinerPointOnSurface(
-    const int                     steinerIndex,
-    const vector<vector<int> >&   adjacentFacesList,
-    const vector<vector<int> >&   adjacentFacemarkerList,
-    const map<int,BlitzVec3>&     currentcutterpositions,  
-    const DRT::Element*           xfemElement,
-    const BlitzMat&               xyze_xfemElement,
-    tetgenio&                     out
+    const int                             steinerIndex,
+    const vector<vector<int> >&           adjacentFacesList,
+    const vector<vector<int> >&           adjacentFacemarkerList,
+    const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,  
+    const DRT::Element*                   xfemElement,
+    const LINALG::SerialDenseMatrix&      xyze_xfemElement,
+    tetgenio&                             out
     );
 
 
@@ -955,16 +953,16 @@ class Intersection
   \param out                      (in/out) :   output data structure of TetGen
   */
   void liftSteinerPointOnEdge(
-    const int                         steinerIndex,
-    int                               lineIndex, 
-    const int                         cutterIndex,
-    BlitzVec&                         edgePoint,
-    BlitzVec&                         oppositePoint,
-    const vector<vector<int> >&       adjacentFacesList,
-    const map<int,BlitzVec3>&         currentcutterpositions,  
-    const DRT::Element*               xfemElement,
-    const BlitzMat&                   xyze_xfemElement,
-    tetgenio&                         out
+    const int                             steinerIndex,
+    int                                   lineIndex, 
+    const int                             cutterIndex,
+    LINALG::Matrix<3,1>&                  edgePoint,
+    LINALG::Matrix<3,1>&                  oppositePoint,
+    const vector<vector<int> >&           adjacentFacesList,
+    const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,  
+    const DRT::Element*                   xfemElement,
+    const LINALG::SerialDenseMatrix&      xyze_xfemElement,
+    tetgenio&                             out
     );
 
 
@@ -980,13 +978,13 @@ class Intersection
   \param out                      (in/out)    :   output data structure of TetGen
   */
   void liftSteinerPointOnBoundary(
-    const int                         steinerIndex,
-    const vector<vector<int> >&       adjacentFacesList,
-    const vector<vector<int> >&       adjacentFacemarkerList,
-    const map<int,BlitzVec3>&         currentcutterpositions,  
-    const DRT::Element*               xfemElement,
-    const BlitzMat&                   xyze_xfemElement,
-    tetgenio&                         out
+    const int                             steinerIndex,
+    const vector<vector<int> >&           adjacentFacesList,
+    const vector<vector<int> >&           adjacentFacemarkerList,
+    const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,  
+    const DRT::Element*                   xfemElement,
+    const LINALG::SerialDenseMatrix&      xyze_xfemElement,
+    tetgenio&                             out
     );
 
 
@@ -1021,11 +1019,11 @@ class Intersection
   \param out                  (in)    : output data structure of TetGen
   */
   void getTetrahedronNodes(
-    vector<BlitzVec>&       tetraCornerNodes,
-    const vector<int>&      tetraCornerIndices,
-    const DRT::Element*     xfemElement,
-    const BlitzMat&         xyze_xfemElement,
-    const tetgenio&         out
+    vector<LINALG::Matrix<3,1> >&       tetraCornerNodes,
+    const vector<int>&                  tetraCornerIndices,
+    const DRT::Element*                 xfemElement,
+    const LINALG::SerialDenseMatrix&    xyze_xfemElement,
+    const tetgenio&                     out
     ) const;
 
 
@@ -1044,17 +1042,17 @@ class Intersection
    \param out                      (in)    :   output data structure of TetGen
    */
   void computeHigherOrderPoint(
-    const int                   index1, 
-    const int                   index2,
-    const int                   faceIndex, 
-    const int                   faceMarker,
-    const int                   globalHigherOrderIndex, 
-    const vector<int>&          tetraCornerIndices,
-    const vector<BlitzVec>&     tetraCornerNodes,
-    const DRT::Element*         xfemElement, 
-    const BlitzMat&             xyze_xfemElement,
-    const map<int,BlitzVec3>&   currentcutterpositions, 
-    tetgenio&                   out
+    const int                             index1, 
+    const int                             index2,
+    const int                             faceIndex, 
+    const int                             faceMarker,
+    const int                             globalHigherOrderIndex, 
+    const vector<int>&                    tetraCornerIndices,
+    const vector<LINALG::Matrix<3,1> >&   tetraCornerNodes,
+    const DRT::Element*                   xfemElement, 
+    const LINALG::SerialDenseMatrix&      xyze_xfemElement,
+    const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions, 
+    tetgenio&                             out
     );
 
 
@@ -1088,10 +1086,10 @@ class Intersection
   \return true if normal intersects with cutter element or false otherwise
   */
   bool computeRecoveryNormal(
-    BlitzVec3&                                  xsi,
-    const vector<BlitzVec>&                     normal,
+    LINALG::Matrix<3,1>&                        xsi,
+    const vector< LINALG::Matrix<3,1> >&        normal,
     const DRT::Element*                         cutterElement,
-    const BlitzMat&                             xyze_cutterElement,
+    const LINALG::SerialDenseMatrix&            xyze_cutterElement,
     const bool                                  onBoundary
     ) const;
 
@@ -1110,12 +1108,12 @@ class Intersection
                                               element boundary
   */
   void updateAForRCINormal(
-    BlitzMat3x3&                A,
-    const BlitzVec3&            xsi,
-    const vector<BlitzVec>&     normal,
-    const DRT::Element*         surfaceElement,
-    const BlitzMat&             xyze_surfaceElement,
-    const bool                  onBoundary
+    LINALG::Matrix<3,3>&                    A,
+    const LINALG::Matrix<3,1>&              xsi,
+    const vector<LINALG::Matrix<3,1> >&     normal,
+    const DRT::Element*                     surfaceElement,
+    const LINALG::SerialDenseMatrix&        xyze_surfaceElement,
+    const bool                              onBoundary
     ) const;
 
 
@@ -1133,12 +1131,12 @@ class Intersection
                                               element boundary
   */
   void updateRHSForRCINormal(
-    BlitzVec3&                b,
-    const BlitzVec3&          xsi,
-    const vector<BlitzVec>&   normal,
-    const DRT::Element*       surfaceElement,
-    const BlitzMat&           xyze_surfaceElement,
-    const bool                onBoundary
+    LINALG::Matrix<3,1>&                  b,
+    const LINALG::Matrix<3,1>&            xsi,
+    const vector<LINALG::Matrix<3,1> >&   normal,
+    const DRT::Element*                   surfaceElement,
+    const LINALG::SerialDenseMatrix&      xyze_surfaceElement,
+    const bool                            onBoundary
     ) const;
 
 
@@ -1158,11 +1156,11 @@ class Intersection
   */
   bool computeRecoveryPlane(
     int&                                        lineIndex,
-    const map<int,BlitzVec3>&                   currentcutterpositions, 
-    BlitzVec3&                                  xsi,
-    const vector<BlitzVec>&                     plane,
+    const map<int,LINALG::Matrix<3,1> >&        currentcutterpositions, 
+    LINALG::Matrix<3,1>&                        xsi,
+    const vector<LINALG::Matrix<3,1> >&         plane,
     DRT::Element*                               cutterElement,
-    const BlitzMat&                             xyze_cutterElement
+    const LINALG::SerialDenseMatrix&            xyze_cutterElement
     ) const;
 
 
@@ -1180,13 +1178,13 @@ class Intersection
   \param xyze_surfaceElement      (in)        :   nodal coordinates of surface element
   */
   void updateAForRCIPlane(
-    BlitzMat3x3&                A,
-    const BlitzVec3&            xsi,
-    const vector<BlitzVec>&     plane,
-    const DRT::Element*         lineElement,
-    const BlitzMat&             xyze_lineElement,
-    const DRT::Element*         surfaceElement,
-    const BlitzMat&             xyze_surfaceElement
+    LINALG::Matrix<3,3>&                  A,
+    const LINALG::Matrix<3,1>&            xsi,
+    const vector<LINALG::Matrix<3,1> >&   plane,
+    const DRT::Element*                   lineElement,
+    const LINALG::SerialDenseMatrix&      xyze_lineElement,
+    const DRT::Element*                   surfaceElement,
+    const LINALG::SerialDenseMatrix&      xyze_surfaceElement
     ) const;
 
 
@@ -1203,11 +1201,11 @@ class Intersection
   \param xyze_lineElement       (in)          :   nodal coordinates of line element
   */
   void updateRHSForRCIPlane(
-    BlitzVec3&                  b,
-    const BlitzVec3&            xsi,
-    const vector<BlitzVec>&     plane,
-    const DRT::Element*         lineElement,
-    const BlitzMat&             xyze_lineElement
+    LINALG::Matrix<3,1>&                    b,
+    const LINALG::Matrix<3,1>&              xsi,
+    const vector<LINALG::Matrix<3,1> >&     plane,
+    const DRT::Element*                     lineElement,
+    const LINALG::SerialDenseMatrix&        xyze_lineElement
     ) const;
 
 
@@ -1236,8 +1234,8 @@ class Intersection
     const int                               oppositePointIndex,
     const int                               globalHigherOrderIndex,
     const vector<int>&                      tetraCornerIndices,
-    const vector<BlitzVec>&                 tetraCornerNodes,
-    vector<BlitzVec>&                       plane,
+    const vector<LINALG::Matrix<3,1> >&     tetraCornerNodes,
+    vector<LINALG::Matrix<3,1> >&           plane,
     const DRT::Element*                     xfemElement,
     const tetgenio&                         out
     ) const;
@@ -1261,7 +1259,7 @@ class Intersection
     const int                                 faceIndex,
     const int                                 adjacentFaceIndex,
     const int                                 globalHigherOrderIndex,
-    vector<BlitzVec>&                         plane,
+    vector<LINALG::Matrix<3,1> >&             plane,
     const DRT::Element*                       xfemElement,
     const tetgenio&                           out
     ) const;
@@ -1282,7 +1280,7 @@ class Intersection
     const int                               steinerIndex,
     const int                               edgeIndex,
     const int                               oppositeIndex,
-    vector<BlitzVec>&                       plane,
+    vector<LINALG::Matrix<3,1> >&           plane,
     const DRT::Element*                     xfemElement,
     const tetgenio&                         out
     ) const;
@@ -1295,9 +1293,9 @@ class Intersection
   \param p2       (in)    : point 2
   \return mid point of a line
   */
-  BlitzVec computeLineMidpoint(
-    const BlitzVec& p1,
-    const BlitzVec& p2
+  LINALG::Matrix<3,1> computeLineMidpoint(
+    const LINALG::Matrix<3,1>& p1,
+    const LINALG::Matrix<3,1>& p2
     ) const;
 
 
@@ -1339,8 +1337,8 @@ class Intersection
     const int                     faceIndex1,
     const int                     faceIndex2,
     const vector<int>&            adjacentFacesList,
-    BlitzVec&                     edgePoint,
-    BlitzVec&                     oppositePoint,
+    LINALG::Matrix<3,1>&          edgePoint,
+    LINALG::Matrix<3,1>&          oppositePoint,
     const tetgenio&               out
     ) const;
 
@@ -1357,7 +1355,7 @@ class Intersection
   \return true if common line element was found, false otherwise
   */
   bool findCommonCutterLine(
-    const map<int,BlitzVec3>&                       currentcutterpositions,  
+    const map<int,LINALG::Matrix<3,1> >&            currentcutterpositions,  
     const int                                       faceIndex1,
     const int                                       faceIndex2,
     int&                                            lineIndex,
@@ -1397,12 +1395,12 @@ class Intersection
   \return the line index of the intersection line element of the given cutter element
   */
   int findIntersectingSurfaceEdge(
-    const DRT::Element*                 xfemElement,
-    const BlitzMat&                     xyze_xfemElement,
-    DRT::Element*                       cutterElement,
-    const map<int,BlitzVec3>&           currentcutterpositions,  
-    const BlitzVec&                     edgeNode1,
-    const BlitzVec&                     edgeNode2
+    const DRT::Element*                   xfemElement,
+    const LINALG::SerialDenseMatrix&      xyze_xfemElement,
+    DRT::Element*                         cutterElement,
+    const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,  
+    const LINALG::Matrix<3,1>&            edgeNode1,
+    const LINALG::Matrix<3,1>&            edgeNode2
     ) const;
 
 
@@ -1424,9 +1422,9 @@ class Intersection
     const bool                                  normal,
     const int                                   globalHigherOrderIndex,
     const int                                   lineIndex,
-    BlitzVec3&                                  xsi,
+    LINALG::Matrix<3,1>&                        xsi,
     DRT::Element*                               cutterElement,
-    const map<int,BlitzVec3>&                   currentcutterpositions,  
+    const map<int,LINALG::Matrix<3,1> >&        currentcutterpositions,  
     const DRT::Element*                         xfemElement,
     tetgenio&                                   out
     ) const;
@@ -1463,16 +1461,16 @@ class Intersection
   \param out                      (in)        :   tetgenio output data structure
   */
   void addCellsToBoundaryIntCellsMap(
-  	const int                        trifaceIndex,
-  	const int                        cornerIndex,
-  	const int                        globalHigherOrderIndex,
-  	const int                        faceMarker,
-  	const map<int,BlitzVec3>&        currentcutterpositions,  
-  	vector<vector<double> >&         domainCoord,
-  	vector<vector<double> >&         boundaryCoord,
-  	const DRT::Element*              xfemElement,
-  	const BlitzMat&                  xyze_xfemElement,
-  	const tetgenio&                	 out
+  	const int                            trifaceIndex,
+  	const int                            cornerIndex,
+  	const int                            globalHigherOrderIndex,
+  	const int                            faceMarker,
+  	const map<int,LINALG::Matrix<3,1> >& currentcutterpositions,  
+  	vector<vector<double> >&             domainCoord,
+  	vector<vector<double> >&             boundaryCoord,
+  	const DRT::Element*                  xfemElement,
+  	const LINALG::SerialDenseMatrix&     xyze_xfemElement,
+  	const tetgenio&                	     out
     ) const;
 
         
@@ -1496,11 +1494,11 @@ class Intersection
     const int                             index1,
     const int                             index2,
     const int                             cutterPos,
-    const map<int,BlitzVec3>&             currentcutterpositions,
+    const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,
     vector<vector<double> >&              domainCoord,
     vector<vector<double> >&              boundaryCoord,
     const DRT::Element*                   xfemElement,
-    const BlitzMat&                       xyze_xfemElement
+    const LINALG::SerialDenseMatrix&      xyze_xfemElement
     ) const;
 
         
@@ -1515,8 +1513,8 @@ class Intersection
   \param noX               (in)    : id of the xfem element
   */
   void debugXAABBIntersection(
-    const BlitzMat3x2                 cutterXAABB,
-    const BlitzMat3x2                 xfemXAABB,
+    const LINALG::Matrix<3,2>&        cutterXAABB,
+    const LINALG::Matrix<3,2>&        xfemXAABB,
     const DRT::Element*               cutterElement,
     const DRT::Element*               xfemElement,
     const int                         noC,
@@ -1537,7 +1535,7 @@ class Intersection
   void debugNodeWithinElement(
     const DRT::Element*               xfemElement,
     const DRT::Node*                  node,
-    const BlitzVec&                   xsi,
+    const LINALG::Matrix<3,1>&        xsi,
     const int                         noE,
     const int                         noN,
     const bool                        within
@@ -1557,7 +1555,7 @@ class Intersection
   void debugCurveSurfaceIntersection(
     const DRT::Element*         surfaceElement,
     const DRT::Element*         lineElement,
-    BlitzVec&                   xsi,
+    LINALG::Matrix<3,1>&        xsi,
     int                         noSE,
     int                         noLE,
     bool                        within
@@ -1620,8 +1618,8 @@ class Intersection
   */
   void printTetViewOutputPLC(
     const DRT::Element*   xfemElement,
-    int             index,
-    tetgenio&       in
+    int                   index,
+    tetgenio&             in
     ) const;
 
 
@@ -1671,7 +1669,7 @@ class Intersection
   void debugIntersectionOfSingleElements(
     const DRT::Element*                         xfemElement,
     const DRT::Element*                         cutterElement,
-    const std::map<int,BlitzVec3>&              currentcutterpositions
+    const std::map<int,LINALG::Matrix<3,1> >&   currentcutterpositions
      ) const;
        
   
@@ -1684,8 +1682,8 @@ class Intersection
   */
   void debugXAABBs(
     const int							              id,
-    const BlitzMat&                     cutterXAABB,
-    const BlitzMat&                     xfemXAABB
+    const LINALG::SerialDenseMatrix&    cutterXAABB,
+    const LINALG::SerialDenseMatrix&    xfemXAABB
      ) const;
 
 };

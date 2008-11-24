@@ -51,20 +51,6 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
 }
 
 //! implement this member function in derived classes!
-int XFEM::InterfaceHandle::PositionWithinConditionNP(const BlitzVec3& x_in) const
-{
-  dserror("not implemented for the InterfaceHandle base class");
-  return 0;
-}
-
-//! implement this member function in derived classes!
-int XFEM::InterfaceHandle::PositionWithinConditionN(const BlitzVec3& x_in) const
-{
-  dserror("not implemented for the InterfaceHandle base class");
-  return 0;
-}
-
-//! implement this member function in derived classes!
 int XFEM::InterfaceHandle::PositionWithinConditionNP(const LINALG::Matrix<3,1>& x_in) const
 {
   dserror("not implemented for the InterfaceHandle base class");
@@ -78,8 +64,9 @@ int XFEM::InterfaceHandle::PositionWithinConditionN(const LINALG::Matrix<3,1>& x
   return 0;
 }
 
+
 //! implement this member function in derived classes!
-int XFEM::InterfaceHandle::PositionWithinConditionNP(const BlitzVec3&     x_in,
+int XFEM::InterfaceHandle::PositionWithinConditionNP(const LINALG::Matrix<3,1>&     x_in,
                                                      GEO::NearestObject&  nearestobject) const
 {
   dserror("not implemented for the InterfaceHandle base class");
@@ -87,7 +74,7 @@ int XFEM::InterfaceHandle::PositionWithinConditionNP(const BlitzVec3&     x_in,
 }
 
 //! implement this member function in derived classes!
-int XFEM::InterfaceHandle::PositionWithinConditionN(const BlitzVec3&     x_in,
+int XFEM::InterfaceHandle::PositionWithinConditionN(const LINALG::Matrix<3,1>&     x_in,
                                                     GEO::NearestObject&  nearestobject) const
 {
   dserror("not implemented for the InterfaceHandle base class");

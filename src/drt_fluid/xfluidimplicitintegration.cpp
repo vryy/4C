@@ -1270,7 +1270,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh()
         const DRT::Element* actele = discret_->lColElement(i);
         const int elegid = actele->Id();
 
-        BlitzMat xyze_xfemElement(GEO::InitialPositionArrayBlitz(actele));
+        LINALG::SerialDenseMatrix xyze_xfemElement(GEO::InitialPositionArrayBlitz(actele));
 
         const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(XFLUID::getElementAnsatz(actele->Shape()));
 
@@ -1625,7 +1625,7 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
         const DRT::Element* actele = discret_->lColElement(i);
         const int elegid = actele->Id();
 
-        BlitzMat xyze_xfemElement(GEO::InitialPositionArrayBlitz(actele));
+        LINALG::SerialDenseMatrix xyze_xfemElement(GEO::InitialPositionArrayBlitz(actele));
 
         const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(XFLUID::getElementAnsatz(actele->Shape()));
 
@@ -1696,7 +1696,7 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
           {
             LINALG::SerialDenseMatrix elevalues(3, DRT::UTILS::getNumberOfElementNodes(actele->Shape()),true);
             const GEO::DomainIntCell cell(actele->Shape());
-            const BlitzMat xyze_ele(GEO::InitialPositionArrayBlitz(actele));
+            const LINALG::SerialDenseMatrix xyze_ele(GEO::InitialPositionArrayBlitz(actele));
             gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
                 actele->Shape(), elevalues, xyze_ele) << "\n";
           }

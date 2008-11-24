@@ -16,6 +16,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/dof_management_element.H"
 #include "../drt_xfem/xfem_enums.H"
 #include <Epetra_SerialDenseSolver.h>
+#include "../drt_geometry/vector_definitions.H"
 
 // little helper function for transition to fixed size arrays
 template<int dim>

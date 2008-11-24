@@ -46,6 +46,7 @@ Maintainer: Ursula Mayer
 
 #include "../drt_geometry/searchtree_geometry_service.H"
 
+
 namespace GEO
 {
 
@@ -91,14 +92,14 @@ private:
   GEO::NearestObject nearestObject_;
   
   //! axis aligned bounding box of this tree node 
-  const BlitzMat3x2 nodeBox_;
+  const LINALG::Matrix<3,2> nodeBox_;
     
   //! x-coord of the center of this treenode
   const double xPlaneCoordinate_;
-
+  
   //! y-coord of the center of this treenode
   const double yPlaneCoordinate_;
-
+    
   //! z-coord of the center of this treenode
   const double zPlaneCoordinate_;
 
@@ -114,7 +115,7 @@ private:
    \param childIndex           index of child node
    \return returns node box
    */
-  BlitzMat3x2 getChildNodeBox(
+  LINALG::Matrix<3,2> getChildNodeBox(
       const int childIndex                      
       ) const;
 
@@ -125,7 +126,7 @@ private:
    \return index
    */ 
   const int classifyPoint(
-      const BlitzVec3&    point
+      const LINALG::Matrix<3,1>&  point
       ) const;
 
 
@@ -135,7 +136,7 @@ private:
    \return vector of childen indices
    */
   std::vector<int> classifyXAABB(
-      const BlitzMat3x2&    AABB
+      const LINALG::Matrix<3,2>&    AABB
       ) const;
 
 
@@ -146,8 +147,8 @@ private:
    \return vector of children ids 
    */
   std::vector<int> classifyElement(
-      const DRT::Element*               element,
-      const std::map< int,BlitzVec3 >&  currentpositions
+      const DRT::Element*                           element,
+      const std::map< int,LINALG::Matrix<3,1> >&    currentpositions
       ) const; 
   
   
@@ -158,8 +159,8 @@ private:
    \return vector of children ids 
    */
   std::vector<int> classifyElement(
-      const DRT::Element*               element,
-      const BlitzMat&                   xyze_element    
+      const DRT::Element*                 element,
+      const LINALG::SerialDenseMatrix&    xyze_element    
       ) const; 
   
   
@@ -170,8 +171,8 @@ private:
    \return child index
    */
   std::vector<int> classifyRadius(
-      const double        radius,
-      const BlitzVec3&    point
+      const double                  radius,
+      const LINALG::Matrix<3,1>&    point
       ) const;
   
   
@@ -181,8 +182,8 @@ private:
    \param currentpositions     current nodal positions in discretization
    */
   void createChildren(
-      const DRT::Discretization&          dis,    
-      const std::map<int, BlitzVec3 >&    currentpositions
+      const DRT::Discretization&                    dis,    
+      const std::map<int, LINALG::Matrix<3,1> >&    currentpositions
       );
   
   
@@ -192,8 +193,8 @@ private:
    \param currentpositions     current nodal positions in discretization
    */
   void setXFEMLabelOfEmptyChildren(
-      const DRT::Discretization&        dis,
-      const std::map<int,BlitzVec3>&    currentpositions
+      const DRT::Discretization&                  dis,
+      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions
       );
   
   
@@ -203,8 +204,8 @@ private:
    \param currentpositions     current nodal positions in discretization
    */
   void setXFEMLabelAndNearestObjectOfEmptyChildren(
-      const DRT::Discretization&        dis,
-      const std::map<int,BlitzVec3>&    currentpositions
+      const DRT::Discretization&                  dis,
+      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions
       );
   
   
@@ -217,10 +218,10 @@ public:
    \param parent     pointer to parent element
    */
   TreeNode(
-      const TreeNode* const   parent,
-      const int               depth,              
-      const BlitzMat3x2&      nodeBox,
-      const TreeType          treeType
+      const TreeNode* const         parent,
+      const int                     depth,              
+      const LINALG::Matrix<3,2>&    nodeBox,
+      const TreeType                treeType
       );
 
   //! destructor
@@ -310,14 +311,14 @@ public:
    \brief returns the center of this tree node
    \return returns the center of this tree node
    */
-  const BlitzVec3 getCenterCoord() const;
+  const LINALG::Matrix<3,1> getCenterCoord() const;
 
 
   /*!
    \brief returns the node box of the tree node 
    \return returns the node box of the tree node 
    */
-  const BlitzMat3x2& getNodeBox() const;
+  const LINALG::Matrix<3,2>& getNodeBox() const;
 
 
   /*!
@@ -344,8 +345,8 @@ public:
    \param AABB_new             AABB_new
    */
   void updateTreeNode(
-      const BlitzMat3x2& AABB_old, 
-      const BlitzMat3x2& AABB_new
+      const LINALG::Matrix<3,2>& AABB_old, 
+      const LINALG::Matrix<3,2>& AABB_new
       );
 
   
@@ -358,10 +359,10 @@ public:
   \return 0->fluid 1..n->Solid with XFEM-Coupling condition
    */
   int queryFSINearestObject(
-      const DRT::Discretization&        dis,
-      const std::map<int,BlitzVec3>&    currentpositions,
-      const BlitzVec3&                  point,
-      GEO::NearestObject&               nearestobject
+      const DRT::Discretization&                  dis,
+      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
+      const LINALG::Matrix<3,1>&                  point,
+      GEO::NearestObject&                         nearestobject
       );
   
   
@@ -373,9 +374,9 @@ public:
   \return 0->fluid 1..n->Solid with XFEM-Coupling condition
    */
   int queryXFEMFSIPointType(
-      const DRT::Discretization&        dis,
-      const std::map<int,BlitzVec3>&    currentpositions,
-      const BlitzVec3&                  point
+      const DRT::Discretization&                    dis,
+      const std::map<int,LINALG::Matrix<3,1> >&     currentpositions,
+      const LINALG::Matrix<3,1>&                    point
       );
   
   
@@ -389,11 +390,11 @@ public:
   \return set of node gids
    */
   std::map<int,std::set<int> > searchElementsInRadius(
-      const DRT::Discretization&       dis,
-      const std::map<int,BlitzVec3>&   currentpositions, 
-      const BlitzVec3&                 point,
-      const double                     radius,
-      const int                        label
+      const DRT::Discretization&                  dis,
+      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions, 
+      const LINALG::Matrix<3,1>&                  point,
+      const double                                radius,
+      const int                                   label
       );
   
   
@@ -407,10 +408,10 @@ public:
   \return set of node gids
    */
   std::vector<int> queryIntersectionCandidates(
-      const DRT::Discretization&        dis,
-      const std::map<int,BlitzVec3>&    currentpositions, 
-      DRT::Element*                     element,
-      const BlitzMat&                   xyze_element    
+      const DRT::Discretization&                  dis,
+      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions, 
+      DRT::Element*                               element,
+      const LINALG::SerialDenseMatrix&            xyze_element    
       );
   
   
@@ -423,9 +424,9 @@ public:
   \return vector of master contact element gids
    */
   std::vector<int> searchIntersectionElements(
-      const DRT::Discretization&        dis,
-      const std::map<int,BlitzVec3>&    currentpositions, 
-      DRT::Element*                     element
+      const DRT::Discretization&                  dis,
+      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions, 
+      DRT::Element*                               element
       );
     
   /*!
@@ -480,9 +481,9 @@ public:
   \param treetype             octtree or quadtree
    */
   void initializeTree(
-      const BlitzMat3x2&                    nodeBox,
-      const std::map<int,std::set<int> >&   elementsByLabel,
-      const TreeType                        treetype
+      const LINALG::Matrix<3,2>&                nodeBox,
+      const std::map<int,std::set<int> >&       elementsByLabel,
+      const TreeType                            treetype
       );
 
 
@@ -495,9 +496,9 @@ public:
   \param treetype             octtree or quadtree
    */
   void initializeTree(
-      const BlitzMat3x2&  		          nodeBox,
-      const DRT::Discretization&        dis,
-      const TreeType                    treetype
+      const LINALG::Matrix<3,2>&  nodeBox,
+      const DRT::Discretization&  dis,
+      const TreeType              treetype
       );
 
 
@@ -509,9 +510,9 @@ public:
   \param currentpositions_new     new current nodal positions in discretization
    */
   void updateTree(
-      const DRT::Discretization& 	      dis,
-      const std::map<int,BlitzVec3>& 	  currentpositions_old, 
-      const std::map<int,BlitzVec3>& 	  currentpositions_new
+      const DRT::Discretization& 	                dis,
+      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions_old, 
+      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions_new
       ); 
 
 
@@ -524,10 +525,10 @@ public:
    \return 0->fluid 1..n->Solid with XFEM-Coupling condition
   */
   int queryFSINearestObject(
-      const DRT::Discretization&      dis,
-      const std::map<int,BlitzVec3>&  currentpositions,
-      const BlitzVec3&                point,
-      GEO::NearestObject&             nearestobject
+      const DRT::Discretization&                  dis,
+      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
+      const LINALG::Matrix<3,1>&                  point,
+      GEO::NearestObject&                         nearestobject
       );
   
   
@@ -539,9 +540,9 @@ public:
     \return 0->fluid 1..n->Solid with XFEM-Coupling condition
      */
     int queryXFEMFSIPointType(
-        const DRT::Discretization&      dis,
-        const std::map<int,BlitzVec3>&  currentpositions,
-        const BlitzVec3&                point
+        const DRT::Discretization&                  dis,
+        const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
+        const LINALG::Matrix<3,1>&                  point
         );
 
   /*!
@@ -554,11 +555,11 @@ public:
   \return set of node gids
    */
   std::map<int,std::set<int> > searchElementsInRadius(
-      const DRT::Discretization&        dis,
-      const std::map<int,BlitzVec3>&    currentpositions, 
-      const BlitzVec3&                  point,
-      const double                      radius,
-      const int                         label
+      const DRT::Discretization&                  dis,
+      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions, 
+      const LINALG::Matrix<3,1>&                  point,
+      const double                                radius,
+      const int                                   label
       );
   
   
@@ -572,10 +573,10 @@ public:
   \return set of node gids
    */
   std::vector<int> queryIntersectionCandidates(
-      const DRT::Discretization&        dis,
-      const std::map<int,BlitzVec3>&    currentpositions, 
-      DRT::Element*                     element,
-      const BlitzMat&                   xyze_element
+      const DRT::Discretization&                  dis,
+      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions, 
+      DRT::Element*                               element,
+      const LINALG::SerialDenseMatrix&            xyze_element
       );
   
   
@@ -588,9 +589,9 @@ public:
   \return vector of master contact element gids
    */
   std::vector<int> searchIntersectionElements(
-      const DRT::Discretization&        dis,
-      const std::map<int,BlitzVec3>&    currentpositions, 
-      DRT::Element*                     element
+      const DRT::Discretization&                  dis,
+      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions, 
+      DRT::Element*                               element
       );
     
   /*!

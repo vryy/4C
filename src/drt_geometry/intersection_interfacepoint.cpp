@@ -42,11 +42,11 @@ nsurf_(0)
  |  ctor (public)                                            u.may 07/08|
  *----------------------------------------------------------------------*/
 GEO::InterfacePoint::InterfacePoint(
-  GEO::pointType     pType,
-  int                 nodeId,
-  std::vector<int>    lineId,
-  std::vector<int>    surfId,
-  std::vector<double> coordinates
+  GEO::pointType&       pType,
+  int                   nodeId,
+  std::vector<int>&     lineId,
+  std::vector<int>&     surfId,
+  LINALG::Matrix<3,1>&  coordinates
   ):
 pType_(pType),
 nodeId_(nodeId),
@@ -185,14 +185,11 @@ void GEO::InterfacePoint::setSurfaceId(
  |  set coordinates of the interface point                   u.may 07/08|                                         
  *----------------------------------------------------------------------*/
 void GEO::InterfacePoint::setCoord(
-      const std::vector<double>&    coordinates
+      const LINALG::Matrix<3,1>&    coordinates
       )
 {
-  if((int) coordinates.size() != 3)
+  if(!coordinates.IsInitialized())
     dserror("dimension of coordinates is not correct");
-  
-  if(!coord_.empty()) 
-    coord_.clear();
   
   coord_ = coordinates;
 } 
@@ -206,10 +203,10 @@ void GEO::InterfacePoint::setCoordX(
       const double    coordX
       )
 {
-  if((int) coord_.size() != 3)
+  if(!coord_.IsInitialized())
     dserror("coordinates not yet initialized");
   
-  coord_[0] = coordX;
+  coord_(0) = coordX;
 } 
 
 
@@ -221,10 +218,10 @@ void GEO::InterfacePoint::setCoordY(
       const double    coordY
       )
 {
-  if((int) coord_.size() != 3)
+  if(!coord_.IsInitialized())
     dserror("coordinates not yet initialized");
   
-  coord_[1] = coordY;
+  coord_(1) = coordY;
 } 
 
 
@@ -236,10 +233,10 @@ void GEO::InterfacePoint::setCoordZ(
       const double    coordZ
       )
 {
-  if((int) coord_.size() != 3)
+  if(!coord_.IsInitialized())
     dserror("coordinates not yet initialized");
   
-  coord_[2] = coordZ;
+  coord_(2) = coordZ;
 } 
 
 
@@ -251,12 +248,12 @@ void GEO::InterfacePoint::setSingleCoord(
       const double    coord
       )
 {
-  if((int) coord_.size() != 3)
+  if(!coord_.IsInitialized())
     dserror("coordinates not yet initialized");
   if(index > 2)
     dserror("index out of range");
 
-  coord_[index] = coord;
+  coord_(index) = coord;
 } 
 
 

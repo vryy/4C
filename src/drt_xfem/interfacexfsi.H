@@ -44,10 +44,11 @@ namespace XFEM
     const Teuchos::RCP<DRT::Discretization> cutterdis() const {return cutterdis_;};
     
     //! returns pointer to map with (current) nodal positions per node of the cutter discretization 
-    const std::map<int,BlitzVec3>& cutterposnp() const {return cutterposnp_;};
+    const std::map<int,LINALG::Matrix<3,1> >& cutterposnp() const {return cutterposnp_;};
     
     //! returns pointer to map with (current) nodal positions per node of the cutter discretization 
-    const std::map<int,BlitzVec3>& cutterposn()  const {return cutterposn_;};
+    const std::map<int,LINALG::Matrix<3,1> >& cutterposn()  const {return cutterposn_;};
+
 
     //! check surface element size to prevent too small elements
     //! that might conflict with tolerances in the intersection routines
@@ -74,16 +75,6 @@ namespace XFEM
 
     //! get domain information at x_in at timestep n+1
     int PositionWithinConditionNP(
-        const BlitzVec3&                  x_in
-    ) const;
-
-    //! get domain information at x_in at timestep n
-    int PositionWithinConditionN(
-        const BlitzVec3&                  x_in
-    ) const;
-    
-    //! get domain information at x_in at timestep n+1
-    int PositionWithinConditionNP(
         const LINALG::Matrix<3,1>&        x_in
     ) const;
 
@@ -94,22 +85,22 @@ namespace XFEM
     
     //! get domain information at x_in at timestep n+1
     int PositionWithinConditionNP(
-        const BlitzVec3&                  x_in,
+        const LINALG::Matrix<3,1>&        x_in,
         GEO::NearestObject&               nearestobject
     ) const;
 
     //! get domain information at x_in at timestep n
     int PositionWithinConditionN(
-        const BlitzVec3&                  x_in,
+        const LINALG::Matrix<3,1>&        x_in,
         GEO::NearestObject&               nearestobject
     ) const;
 
 
     
     bool FindSpaceTimeLayerCell(
-        const BlitzVec3&                  querypos,
+        const LINALG::Matrix<3,1>&        querypos,
         XFEM::SpaceTimeBoundaryCell&      slab,
-        BlitzVec3&                        rst
+        LINALG::Matrix<3,1>&              rst
     ) const;
 
   private:
@@ -124,7 +115,7 @@ namespace XFEM
     void FillCurrentCutterPositionMap(
         const Teuchos::RCP<DRT::Discretization>  cutterdis,              ///< dis containing nodes
         const Epetra_Vector&                     idispcol,               ///< vector with displacements
-        std::map<int,BlitzVec3>&                 currentcutterpositions  ///< map to be filled with positions
+        std::map<int,LINALG::Matrix<3,1> >&      currentcutterpositions  ///< map to be filled with positions
         ) const;
 
     //! for difficult cases during intersection, do sanity checks and create list of redundant integration cells 
@@ -132,19 +123,19 @@ namespace XFEM
 
     //! from surface element, create 3d volume space-time cells
     void GenerateSpaceTimeLayer(
-        const Teuchos::RCP<DRT::Discretization>  cutterdis,   ///< discretization with boundary elements
-        const std::map<int,BlitzVec3>&           cutterposnp, ///< nodal displacements at n+1
-        const std::map<int,BlitzVec3>&           cutterposn   ///< nodal displacements at n
+        const Teuchos::RCP<DRT::Discretization>  	cutterdis,   ///< discretization with boundary elements
+        const std::map<int,LINALG::Matrix<3,1> >&       cutterposnp, ///< nodal displacements at n+1
+        const std::map<int,LINALG::Matrix<3,1> >&       cutterposn   ///< nodal displacements at n
     );
 
     //! discretization that intersects the xfemdis_ -> should be a boundary discretization (e.g. surface of structure)
     const Teuchos::RCP<DRT::Discretization> cutterdis_;
     
     //! current positions of all cutter nodes at n+1
-    std::map<int,BlitzVec3>                 cutterposnp_;
+    std::map<int,LINALG::Matrix<3,1> >      cutterposnp_;
     
     //! current positions of all cutter nodes at n
-    std::map<int,BlitzVec3>                 cutterposn_;
+    std::map<int,LINALG::Matrix<3,1> >      cutterposn_;
 
     std::map<int,XFEM::SpaceTimeBoundaryCell>     stlayer_;
 

@@ -30,15 +30,15 @@ Maintainer: Ursula Mayer
 
 
 void GEO::test_svdcmp(
-    BlitzMat&   A,
-    BlitzMat&   U,
-    BlitzVec&   W,
-    BlitzMat&   V,
+    LINALG::Matrix<3,3>&   A,
+    LINALG::Matrix<3,3>&   U,
+    LINALG::Matrix<3,1>&   W,
+    LINALG::Matrix<3,3>&   V,
     int dim)
 {
 
-    BlitzMat H1(3,3);
-    BlitzMat H2(3,3);
+    LINALG::Matrix<3,3>   H1;
+    LINALG::Matrix<3,3>   H2;
     
     printf("W U\n");
     for(int i = 0 ; i < dim; i++)

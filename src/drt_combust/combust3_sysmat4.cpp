@@ -100,7 +100,7 @@ using namespace XFEM::PHYSICS;
       LINALG::Matrix<3,1>&                       gpaccn
       )
   {
-    BlitzVec3 posx_gp;
+    LINALG::Matrix<3,1> posx_gp;
     GEO::elementToCurrentCoordinates(ele, xyze, posXiDomain, posx_gp);
     
     const bool is_in_fluid = (labelnp == 0);
@@ -118,7 +118,7 @@ using namespace XFEM::PHYSICS;
     if (in_space_time_slab_area)
     {
       XFEM::SpaceTimeBoundaryCell slab;
-      BlitzVec3 rst;
+      LINALG::Matrix<3,1> rst;
       
       const bool found_cell = ih->FindSpaceTimeLayerCell(posx_gp,slab,rst);
       
@@ -1460,7 +1460,8 @@ static void SysmatBoundary4(
 //        cout << "numnode_boundary: " << numnode_boundary << endl;
         
         // get current node coordinates
-        const std::map<int,BlitzVec3 >& positions = ih->cutterposnp();
+        const std::map<int,LINALG::Matrix<3,1> >& positions = ih->cutterposnp();
+
         LINALG::SerialDenseMatrix xyze_boundary(3,numnode_boundary);
         GEO::fillCurrentNodalPositions(boundaryele, positions, xyze_boundary);
         
@@ -1634,10 +1635,10 @@ static void SysmatBoundary4(
             }
             
             // get normal vector (in physical coordinates) to surface element at integration point
-            BlitzVec3 normalvec_solid;
-            GEO::computeNormalToSurfaceElement(boundaryele, xyze_boundary, toBlitzArray<2>(posXiBoundary), normalvec_solid);
+            LINALG::Matrix<3,1> normalvec_solid;
+            GEO::computeNormalToSurfaceElement(boundaryele, xyze_boundary, posXiBoundary, normalvec_solid);
 //            cout << "normalvec " << normalvec << ", " << endl;
-            BlitzVec3 normalvec_fluid = 0.0;
+            LINALG::Matrix<3,1> normalvec_fluid(true);
             normalvec_fluid -= normalvec_solid;
 //            cout << "normalvec : ";
 //            cout << normalvec_fluid << endl;

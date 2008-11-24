@@ -12,7 +12,6 @@ Maintainer: Axel Gerstenberger
  */
 #ifdef CCADISCRET
 
-#include "../drt_geometry/vector_definitions.H"
 #include "dof_management.H"
 #include "xdofmapcreation.H"
 #include "enrichment_utils.H"

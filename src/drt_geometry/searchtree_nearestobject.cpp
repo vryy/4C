@@ -25,7 +25,7 @@ lineId_(-1),
 surfId_(-1),
 label_(-1)
 {
-  physcoord_ = 0.0;
+  physcoord_ .PutScalar(0.0);
   return;
 }
 
@@ -52,7 +52,7 @@ physcoord_(old.physcoord_)
 void GEO::NearestObject::setNodeObjectType(
       const int nodeId, 
       const int label,
-      const BlitzVec3& physcoord)
+      const LINALG::Matrix<3,1>& physcoord)
 {
   objectType_ = NODE_OBJECT;
   nodeId_ = nodeId;
@@ -72,7 +72,7 @@ void GEO::NearestObject::setLineObjectType(
       const int lineId,
       const int surfId, 
       const int label,
-      const BlitzVec3& physcoord)
+      const LINALG::Matrix<3,1>& physcoord)
 {
   objectType_ = LINE_OBJECT;
   lineId_ = lineId;
@@ -92,7 +92,7 @@ void GEO::NearestObject::setLineObjectType(
 void GEO::NearestObject::setSurfaceObjectType(
       const int surfId, 
       const int label,
-      const BlitzVec3& physcoord)
+      const LINALG::Matrix<3,1>& physcoord)
 {
   objectType_ = SURFACE_OBJECT;
   surfId_ = surfId;

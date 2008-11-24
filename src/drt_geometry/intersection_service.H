@@ -47,7 +47,9 @@ Maintainer: Ursula Mayer
 #include "../drt_lib/drt_discret.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "blitz_tiny_operation.H"
+#include "../drt_lib/linalg_serialdensevector.H"
+#include "../drt_lib/linalg_serialdensematrix.H"
+#include "../drt_lib/linalg_fixedsizematrix.H"
 
 
 namespace GEO
@@ -93,74 +95,23 @@ namespace GEO
     
     
     /*!
-    \brief computes the cross product of two BlitzVecs a x b
+    \brief computes the cross product of two LINALG::Matrix<3,1> a x b
     \param a (in) : arbitrary BlitzVec     
     \param b (in) : arbitrary BlitzVec
     \return cross product of two BlitzVecs a x b
     */
-    BlitzVec computeCrossProduct(
-        const BlitzVec& a,
-        const BlitzVec& b
+    LINALG::Matrix<3,1> computeCrossProduct(
+        const LINALG::Matrix<3,1>& a,
+        const LINALG::Matrix<3,1>& b
         );
-    
-    
-    /*!
-    \brief calculate quadratic norm
-    \param v (in) : BlitzVec
-    \return normalized BlitzVec 
-    */   
-    inline double Norm2(   
-        const BlitzVec&     v)
-    {
-        blitz::firstIndex i;
-        return std::sqrt(blitz::sum(v(i)*v(i)));
-    }
-     
-    
-    /*!
-    \brief calculate quadratic norm
-    \param v (in) : BlitzVec
-    \return normalized BlitzVec 
-    */   
-    inline double Norm2(   
-        const blitz::TinyVector<double,1>&     v)
-    {
-        return abs(v(0));
-    }
-
-    
-    /*!
-    \brief calculate quadratic norm
-    \param v (in) : BlitzVec
-    \return normalized BlitzVec 
-    */   
-    inline double Norm2(   
-        const blitz::TinyVector<double,3>&     v)
-    {
-        return sqrt(v(0)*v(0) + v(1)*v(1) + v(2)*v(2));
-    }
-    
-    
-    /*!
-    \brief normalizes a vector, such that the resulting length is 1
-    \param v (in/out) : BlitzVec
-    */   
-    inline void normalizeVectorInPLace(
-        BlitzVec&     v 
-        )
-    {
-        v /= Norm2(v);
-        return;
-    }
-    
     
     /*!
     \brief sum up the absolute value of all entries of a vector
-    \param v (in) : BlitzVec
+    \param v (in) : LINALG::Matrix<3,1>
     \return sum
     */   
     inline double SumOfFabsEntries(
-        const BlitzVec3&     v  
+        const LINALG::Matrix<3,1>&     v  
         )
     {
         return abs(v(0)) + abs(v(1)) + abs(v(2));
@@ -289,31 +240,8 @@ namespace GEO
      */
      template <int length>
      bool comparePoints(    
-         const BlitzVec&     point1,
-         const BlitzVec&     point2) 
-     {   
-         dsassert(point1.size() == length, "not of proper length!");
-         dsassert(point2.size() == length, "not of proper length!");
-         for(int i = 0; i < length ; i++)
-             if(fabs(point1(i) - point2(i)) > TOL7)
-             {
-                 return false;
-             }
-         return true;
-     }
-     
-     
-     /*!
-     \brief compares two points (overloaded method)
- 
-     \param point1       (in)    : first point   (BlitzVec)
-     \param point2       (in)    : second point  (BlitzVec)
-     \return true if both points equal each other, false otherwise
-     */
-     template <int length>
-     bool comparePoints(    
-         const blitz::TinyVector<double,length>&     point1,
-         const blitz::TinyVector<double,length>&     point2) 
+         const LINALG::Matrix<length,1>&     point1,
+         const LINALG::Matrix<length,1>&     point2) 
      {   
          for(int i = 0; i < length ; i++)
              if(fabs(point1(i) - point2(i)) > TOL7)
@@ -333,8 +261,8 @@ namespace GEO
     \return true if node is within the XAABB or false otherwise
     */
     bool isPositionWithinXAABB(
-            const BlitzVec3&                   pos,    
-            const BlitzMat3x2&                 XAABB   
+            const LINALG::Matrix<3,1>&                  pos,    
+            const LINALG::Matrix<3,2>&                  XAABB   
             );
     
     
@@ -347,9 +275,9 @@ namespace GEO
     \return true if node is within the XAABB or false otherwise
     */
     bool isLineWithinXAABB(
-            const BlitzVec3&                   pos1, 
-            const BlitzVec3&                   pos2, 
-            const BlitzMat3x2&                 XAABB 
+            const LINALG::Matrix<3,1>&                    pos1, 
+            const LINALG::Matrix<3,1>&                    pos2, 
+            const LINALG::Matrix<3,2>&                    XAABB 
             );
     
     
@@ -361,10 +289,10 @@ namespace GEO
     \param eleGeoType     (in)  element geometric type CARTESIAN LINEAR or HIGHERORDER
     \return extended axis-aligned bounding box  (XAABB) for an element
      */
-    BlitzMat3x2 computeFastXAABB( 
-        const DRT::Element*   element,    ///< element for which one wants to have a boundaing box
-        const BlitzMat&       xyze,       ///< nodal position array (3,numnode)
-        const EleGeoType      eleGeoType  ///< element geometric type CARTESIAN LINEAR or HIGHERORDER
+    LINALG::Matrix<3,2> computeFastXAABB( 
+        const DRT::Element*                 element,    ///< element for which one wants to have a boundaing box
+        const LINALG::SerialDenseMatrix&    xyze,       ///< nodal position array (3,numnode)
+        const EleGeoType                    eleGeoType  ///< element geometric type CARTESIAN LINEAR or HIGHERORDER
         );
 
 
@@ -376,8 +304,8 @@ namespace GEO
     \return true if the XAABB's intersect or false otherwise
      */
     bool intersectionOfXAABB(
-        const BlitzMat3x2&    cutterXAABB,
-        const BlitzMat3x2&    xfemXAABB
+        const LINALG::Matrix<3,2>&    cutterXAABB,
+        const LINALG::Matrix<3,2>&    xfemXAABB
         );
 
 
@@ -389,9 +317,9 @@ namespace GEO
     \param eleGeoType     (out)        : element geometric type CARTESIAN LINEAR or HIGHERORDER
      */
     void checkGeoType(
-        DRT::Element*                element,
-        const BlitzMat               xyze_element,
-        EleGeoType&                  eleGeoType
+        DRT::Element*                       element,
+        const LINALG::SerialDenseMatrix&    xyze_element,
+        EleGeoType&                         eleGeoType
         );
 
     
@@ -404,8 +332,8 @@ namespace GEO
     */  
     bool checkPositionWithinElement(  
         const DRT::Element*                 element,
-        const BlitzMat&                     xyze,
-        const BlitzVec3&                    x
+        const LINALG::SerialDenseMatrix&    xyze,
+        const LINALG::Matrix<3,1>&          x
         );   
     
     
@@ -456,10 +384,10 @@ namespace GEO
         const DRT::Element*  element,  
         const M&             xyze,    
         const V&             xsi,      
-        BlitzVec3&           x      )
+        LINALG::Matrix<3,1>& x      )
     {
         const int numNodes = element->NumNode();
-        BlitzVec funct(numNodes);
+        Epetra_SerialDenseVector funct(numNodes);
         
         switch(DRT::UTILS::getDimension(element->Shape()))
         {
@@ -481,8 +409,9 @@ namespace GEO
             default:
                 dserror("dimension of the element is not correct");
         }          
-            
-        x = 0.0;
+         
+        // set to zero
+        x.Clear();
         for(int i=0; i<numNodes; i++)
         {
             for(int j=0; j<3; j++)
@@ -501,9 +430,9 @@ namespace GEO
     \param eleCoord             (out)       : element coordinates
     */
     void elementToCurrentCoordinatesInPlace(   
-        const DRT::Element*  element,   
-        const BlitzMat&      xyze,       
-        BlitzVec&            eleCoord   
+        const DRT::Element*                   element,   
+        const LINALG::SerialDenseMatrix&      xyze,       
+        LINALG::Matrix<3,1>&                  eleCoord
         );
 
     
@@ -520,9 +449,9 @@ namespace GEO
     */  
     bool currentToVolumeElementCoordinates(
         const DRT::Element::DiscretizationType  distype,
-        const BlitzMat&                         xyze,
-        const BlitzVec3&                        x,
-        BlitzVec3&                              xsi
+        const LINALG::SerialDenseMatrix&        xyze,
+        const LINALG::Matrix<3,1>&              x,
+        LINALG::Matrix<3,1>&                    xsi
         );
     
     
@@ -536,10 +465,10 @@ namespace GEO
     \param tol                  (in)        : tolerance
     \return                                   vector of element coordinates
     */
-    BlitzVec3 currentToVolumeElementCoordinatesExact(
+    LINALG::Matrix<3,1> currentToVolumeElementCoordinatesExact(
             const DRT::Element::DiscretizationType  distype,
-            const BlitzMat&                         xyze,
-            const BlitzVec3&                        x,
+            const LINALG::SerialDenseMatrix&        xyze,
+            const LINALG::Matrix<3,1>&              x,
             const double                            tol
             );
     
@@ -553,25 +482,19 @@ namespace GEO
     */  
     template<DRT::Element::DiscretizationType DISTYPE, class M1, class M2>
     inline void computeNormalToSurfaceElementViaShape(
-            const M1&       deriv,  
-            const M2&       xyze,     
-            BlitzVec3&      unrm)
+            const M1&                 deriv,  
+            const M2&                 xyze,     
+            LINALG::Matrix<3,1>&      unrm)
     {
         const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
           
         // compute dXYZ / drs
-        static BlitzMat3x2 dxyzdrs;
-        for (int i = 0; i < 3; ++i)
-        {
-            for (int j = 0; j < 2; ++j)
-            {
-                dxyzdrs(i,j) = 0.0;
-                for (int k = 0; k < numnode; ++k)
-                {
+        static LINALG::Matrix<3,2> dxyzdrs;
+        dxyzdrs = 0.0;
+        for (int i = 0; i < 3; i++)
+            for (int j = 0; j < 2; j++)
+                for (int k = 0; k < numnode; k++)
                     dxyzdrs(i,j) += xyze(i,k)*deriv(j,k);
-                }
-            }
-        }
 
         /* compute covariant metric tensor G for surface element
         **                        | g11   g12 |
@@ -583,9 +506,18 @@ namespace GEO
         ** g11 = ---- o ----    g12 = ---- o ----    g22 = ---- o ----
         **        dr     dr            dr     ds            ds     ds
         */
-        static BlitzMat2x2 metrictensor;
+        static LINALG::Matrix<2,2> metrictensor;
+        metrictensor = 0.0;
+        //metrictensor.Multiply('N','T',1.0,dxyzdrs,dxyzdrs,0.0);
+        
+        for (int i = 0; i < 2; ++i)
+          for (int j = 0; j < 2; ++j)
+            for (int k = 0; k < 3; ++k)
+              metrictensor(i,j) += dxyzdrs(k,i)*dxyzdrs(k,j);
+                
+        
         //metrictensor = blitz::sum(dxyzdrs(k,i)*dxyzdrs(k,j),k);
-        BLITZTINY::MtM_product<2,2,3>(dxyzdrs,dxyzdrs,metrictensor);
+        //BLITZTINY::MtM_product<2,2,3>(dxyzdrs,dxyzdrs,metrictensor);
         
         unrm(0) = dxyzdrs(1,0) * dxyzdrs(2,1) - dxyzdrs(2,0) * dxyzdrs(1,1);
         unrm(1) = dxyzdrs(2,0) * dxyzdrs(0,1) - dxyzdrs(0,0) * dxyzdrs(2,1);
@@ -594,7 +526,7 @@ namespace GEO
         // scale
         const double inv_length = 1.0 / sqrt(unrm(0)*unrm(0) + unrm(1)*unrm(1) + unrm(2)*unrm(2));
 
-        unrm *= inv_length;
+        unrm.Scale(inv_length);
         
         return;
     }
@@ -608,12 +540,12 @@ namespace GEO
     */
     template<DRT::Element::DiscretizationType DISTYPE, class M>
     inline void computeNormalToSurfaceElementT(
-        const M&                 xyze_surfaceElement,               
-        const BlitzVec2&         eleCoord,               
-        BlitzVec3&               unitnormalvec)
+        const M&                      xyze_surfaceElement,               
+        const LINALG::Matrix<2,1>&    eleCoord,               
+        LINALG::Matrix<3,1>&          unitnormalvec)
     {
       const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-      static blitz::TinyMatrix<double,2,numnode> deriv_boundary;
+      Epetra_SerialDenseMatrix deriv_boundary(2,numnode);
       DRT::UTILS::shape_function_2D_deriv1(deriv_boundary,eleCoord(0),eleCoord(1),DISTYPE);
       
       computeNormalToSurfaceElementViaShape<DISTYPE>(deriv_boundary, xyze_surfaceElement, unitnormalvec);
@@ -630,10 +562,10 @@ namespace GEO
     */
     template <class M>
     inline void computeNormalToSurfaceElement(
-        const DRT::Element*      surfaceElement,    
-        const M&                 xyze_surfaceElement,                
-        const BlitzVec2&         eleCoord,               
-        BlitzVec3&               unitnormalvec)
+        const DRT::Element*           surfaceElement,    
+        const M&                      xyze_surfaceElement,                
+        const LINALG::Matrix<2,1>&    eleCoord,               
+        LINALG::Matrix<3,1>&          unitnormalvec)
     {
       switch (surfaceElement->Shape())
       {
@@ -673,10 +605,10 @@ namespace GEO
     */         
     bool searchForNearestPointOnSurface(
             const DRT::Element*                     surfaceElement,  
-            const BlitzMat&                         xyze_surfaceElement,     
-            const BlitzVec3&                        physCoord,       
-            BlitzVec2&                              eleCoord,        
-            BlitzVec3&                              normal,          
+            const LINALG::SerialDenseMatrix&        xyze_surfaceElement,     
+            const LINALG::Matrix<3,1>&              physCoord,       
+            LINALG::Matrix<2,1>&                    eleCoord,        
+            LINALG::Matrix<3,1>&                    normal,          
             double&                                 distance        
             );
     
@@ -691,9 +623,9 @@ namespace GEO
      */  
     void CurrentToSurfaceElementCoordinates(
         const DRT::Element::DiscretizationType  distype,
-        const BlitzMat&                         xyze_surfaceElement,
-        const BlitzVec3&                        physCoord,
-        BlitzVec2&                              eleCoord
+        const LINALG::SerialDenseMatrix&        xyze_surfaceElement,
+        const LINALG::Matrix<3,1>&              physCoord,
+        LINALG::Matrix<2,1>&                    eleCoord
         );
 
 
@@ -707,9 +639,9 @@ namespace GEO
     */
     void CurrentToLineElementCoordinates(
             const DRT::Element::DiscretizationType  distype,
-            const BlitzMat&                         xyze_lineElement,
-            const BlitzVec3&                        physCoord,
-            BlitzVec1&                              eleCoord
+            const LINALG::SerialDenseMatrix&        xyze_lineElement,
+            const LINALG::Matrix<3,1>&              physCoord,
+            LINALG::Matrix<1,1>&                    eleCoord
             );
     
     /*!
@@ -722,7 +654,7 @@ namespace GEO
      * \author a.ger
      * \date 02/08
      */
-    BlitzMat InitialPositionArrayBlitz(
+    LINALG::SerialDenseMatrix InitialPositionArrayBlitz(
             const DRT::Element* ele           ///< pointer to element, whose nodes we evaluate for their position
             );
 
@@ -770,9 +702,9 @@ namespace GEO
      * \author a.ger
      * \date 02/08
      */
-    BlitzMat getCurrentNodalPositions(
-        const DRT::Element*          ele,                   ///< element with nodal pointers
-        const map<int,BlitzVec3 >&   currentcutterpositions ///< current positions of all cutter nodes
+    LINALG::SerialDenseMatrix getCurrentNodalPositions(
+        const DRT::Element*                     ele,                   ///< element with nodal pointers
+        const map<int,LINALG::Matrix<3,1> >&    currentcutterpositions ///< current positions of all cutter nodes
         );
     
     /*!
@@ -785,16 +717,16 @@ namespace GEO
      */
     template<class M>
     void fillCurrentNodalPositions(
-        const DRT::Element*         ele,                      ///< element with nodal pointers
-        const map<int,BlitzVec3 >&  currentpositions,   ///< current positions of all cutter nodes
-        M&                          xyze                      ///< position array (3,numnode) to be filled
+        const DRT::Element*                   ele,                ///< element with nodal pointers
+        const map<int,LINALG::Matrix<3,1> >&  currentpositions,   ///< current positions of all cutter nodes
+        M&                                    xyze                ///< position array (3,numnode) to be filled
         )
     {
         const int numnode = ele->NumNode();
         const int* nodeids = ele->NodeIds();
         for (int inode = 0; inode < numnode; ++inode)
         {
-          const BlitzVec3 x(currentpositions.find(nodeids[inode])->second);
+          const LINALG::Matrix<3,1> x(currentpositions.find(nodeids[inode])->second);
           xyze(0,inode) = x(0);
           xyze(1,inode) = x(1);
           xyze(2,inode) = x(2);

@@ -16,7 +16,6 @@
 #ifdef CCADISCRET
 
 #include "../drt_lib/drt_discret.H"
-#include "../drt_geometry/vector_definitions.H"
 
 namespace IO
 {
@@ -157,9 +156,9 @@ namespace IO
 
     //! take an entire DRT::Element and print it with constant scalar value at the given pusition
     std::string elementAtCurrentPositionToString(
-        const double                scalar,                 ///< scalar value for the entire element
-        const DRT::Element*         ele,                    ///< element to print
-        const map<int,BlitzVec3>&   currentelepositions     ///< nodal position array
+        const double                            scalar,                 ///< scalar value for the entire element
+        const DRT::Element*                     ele,                    ///< element to print
+        const map<int,LINALG::Matrix<3,1> >&    currentelepositions     ///< nodal position array
     );
 
     //! take an array (numnode) and translate it to the scalar value section of an Gmsh element entry
@@ -252,7 +251,7 @@ namespace IO
         const std::string&                         s,
         const double                               scalar,
         const Teuchos::RCP<DRT::Discretization>    dis,
-        std::map<int,BlitzVec3>                    currentpositions);
+        const std::map<int,LINALG::Matrix<3,1> >&  currentpositions);
 
   }
 }

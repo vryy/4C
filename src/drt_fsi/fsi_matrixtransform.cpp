@@ -2,7 +2,7 @@
 #ifdef CCADISCRET
 
 #include <vector>
-
+#include <iterator>
 #include "fsi_matrixtransform.H"
 
 #include "../drt_lib/drt_dserror.H"

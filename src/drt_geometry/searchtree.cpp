@@ -42,7 +42,7 @@ GEO::SearchTree::~SearchTree(){}
  | discretization, elements are sorted according to the given map       |
  *----------------------------------------------------------------------*/
 void GEO::SearchTree::initializeTree(
-    const BlitzMat3x2&                    nodeBox,
+    const LINALG::Matrix<3,2>&            nodeBox,
     const std::map<int,std::set<int> >&   elementsByLabel,
     const TreeType                        treetype) 
 {
@@ -66,9 +66,9 @@ void GEO::SearchTree::initializeTree(
  | discretization, elements are taken unsorted from discretization      |
  *----------------------------------------------------------------------*/
 void GEO::SearchTree::initializeTree(
-    const BlitzMat3x2&              nodeBox,
-    const DRT::Discretization&      dis,
-    const TreeType                  treetype) 
+    const LINALG::Matrix<3,2>&  nodeBox,
+    const DRT::Discretization&  dis,
+    const TreeType              treetype) 
 {
 
   treeRoot_ = Teuchos::null;
@@ -87,14 +87,14 @@ void GEO::SearchTree::initializeTree(
  *----------------------------------------------------------------------*/
 void GEO::SearchTree::updateTree(
     const DRT::Discretization& 	dis,
-    const std::map<int,BlitzVec3>& 	currentpositions_old, 
-    const std::map<int,BlitzVec3>& 	currentpositions_new) 
+    const std::map<int,LINALG::Matrix<3,1> >& 	currentpositions_old, 
+    const std::map<int,LINALG::Matrix<3,1> >& 	currentpositions_new) 
 {
   if(treeRoot_ == Teuchos::null)
     dserror("tree is not yet initialized !!!");
   
-  std::vector< BlitzMat3x2 > AABBs_old = GEO::computeXAABBForLabeledStructures(dis, currentpositions_old, treeRoot_->getElementList());
-  std::vector< BlitzMat3x2 > AABBs_new = GEO::computeXAABBForLabeledStructures(dis, currentpositions_new, treeRoot_->getElementList());
+  std::vector< LINALG::Matrix<3,2> > AABBs_old = GEO::computeXAABBForLabeledStructures(dis, currentpositions_old, treeRoot_->getElementList());
+  std::vector< LINALG::Matrix<3,2> > AABBs_new = GEO::computeXAABBForLabeledStructures(dis, currentpositions_new, treeRoot_->getElementList());
 
   for(unsigned int i = 0; i < AABBs_new.size(); i++)
     treeRoot_->updateTreeNode(AABBs_old[i], AABBs_new[i]);
@@ -106,10 +106,10 @@ void GEO::SearchTree::updateTree(
  | returns xfem label and nearest object to point            u.may 07/08|
  *----------------------------------------------------------------------*/
 int GEO::SearchTree::queryFSINearestObject(
-    const DRT::Discretization&       dis,
-    const std::map<int,BlitzVec3>&   currentpositions,
-    const BlitzVec3&                 point,
-    GEO::NearestObject&              nearestobject)
+    const DRT::Discretization&                  dis,
+    const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
+    const LINALG::Matrix<3,1>&                  point,
+    GEO::NearestObject&                         nearestobject)
 {
   
   TEUCHOS_FUNC_TIME_MONITOR("GEO::SearchTree - queryTime");
@@ -129,9 +129,9 @@ int GEO::SearchTree::queryFSINearestObject(
  | returns xfem label of point                               u.may 07/08|
  *----------------------------------------------------------------------*/
 int GEO::SearchTree::queryXFEMFSIPointType(
-    const DRT::Discretization&       dis,
-    const std::map<int,BlitzVec3>&   currentpositions,
-    const BlitzVec3&                 point)
+    const DRT::Discretization&                  dis,
+    const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
+    const LINALG::Matrix<3,1>&                  point)
 {
   
   TEUCHOS_FUNC_TIME_MONITOR("GEO::SearchTree - queryTime");
@@ -151,11 +151,11 @@ int GEO::SearchTree::queryXFEMFSIPointType(
  | returns nodes in the radius of a given point              u.may 07/08|
  *----------------------------------------------------------------------*/
 std::map<int,std::set<int> > GEO::SearchTree::searchElementsInRadius(
-    const DRT::Discretization& 	     dis,
-    const std::map<int,BlitzVec3>&   currentpositions, 
-    const BlitzVec3& 		             point,
-    const double                     radius, 
-    const int                        label) 
+    const DRT::Discretization& 	                dis,
+    const std::map<int,LINALG::Matrix<3,1> >&   currentpositions, 
+    const LINALG::Matrix<3,1>&                  point,
+    const double                                radius, 
+    const int                                   label) 
 {
   TEUCHOS_FUNC_TIME_MONITOR("SearchTree - queryTime");
 
@@ -179,10 +179,10 @@ std::map<int,std::set<int> > GEO::SearchTree::searchElementsInRadius(
  | intersecting with the XAABB of a given volume element                |
  *----------------------------------------------------------------------*/
 std::vector<int> GEO::SearchTree::queryIntersectionCandidates(
-    const DRT::Discretization&       dis,
-    const std::map<int,BlitzVec3>&   currentpositions, 
-    DRT::Element*                    element,
-    const BlitzMat&                  xyze_element) 
+    const DRT::Discretization&                  dis,
+    const std::map<int,LINALG::Matrix<3,1> >&   currentpositions, 
+    DRT::Element*                               element,
+    const LINALG::SerialDenseMatrix&            xyze_element) 
 {
   TEUCHOS_FUNC_TIME_MONITOR("SearchTree - queryTime");
 
@@ -203,9 +203,9 @@ std::vector<int> GEO::SearchTree::queryIntersectionCandidates(
  | returns intersection elements (CONTACT)                    popp 07/08|
  *----------------------------------------------------------------------*/
 std::vector<int> GEO::SearchTree::searchIntersectionElements(
-    const DRT::Discretization&       dis,
-    const std::map<int,BlitzVec3>&   currentpositions, 
-    DRT::Element*                    element) 
+    const DRT::Discretization&                  dis,
+    const std::map<int,LINALG::Matrix<3,1> >&   currentpositions, 
+    DRT::Element*                               element) 
 {
   TEUCHOS_FUNC_TIME_MONITOR("SearchTree - queryTime");
 
@@ -285,7 +285,7 @@ void GEO::SearchTree::evaluateTreeMetrics(
 GEO::SearchTree::TreeNode::TreeNode(
     const TreeNode* const                       parent,
     const int                                   depth, 
-    const BlitzMat3x2&                          nodeBox,
+    const LINALG::Matrix<3,2> &                 nodeBox,
     const TreeType                              treeType):
     parent_(parent),
     treedepth_(depth),
@@ -436,9 +436,14 @@ const GEO::SearchTree::TreeNode* const GEO::SearchTree::TreeNode::getParent() co
 /*----------------------------------------------------------------------*
  | get center of treenode                                  peder   07/08|
  *----------------------------------------------------------------------*/
-const BlitzVec3 GEO::SearchTree::TreeNode::getCenterCoord() const
+const LINALG::Matrix<3,1> GEO::SearchTree::TreeNode::getCenterCoord() const
 {
-  return BlitzVec3(this->xPlaneCoordinate_, this->yPlaneCoordinate_, this->zPlaneCoordinate_);
+  LINALG::Matrix<3,1> centerCoord;
+
+  centerCoord(0) = this->xPlaneCoordinate_;
+  centerCoord(1) = this->yPlaneCoordinate_;
+  centerCoord(2) = this->zPlaneCoordinate_;
+  return centerCoord;
 }
 
 
@@ -476,7 +481,7 @@ const GEO::TreeType GEO::SearchTree::TreeNode::getTreeType() const
 /*----------------------------------------------------------------------*
  | get node box                                            peder   07/08|
  *----------------------------------------------------------------------*/
-const BlitzMat3x2& GEO::SearchTree::TreeNode::getNodeBox() const
+const LINALG::Matrix<3,2>& GEO::SearchTree::TreeNode::getNodeBox() const
 {
   return nodeBox_;
 }
@@ -515,10 +520,10 @@ const Teuchos::RCP<GEO::SearchTree::TreeNode> GEO::SearchTree::TreeNode::getChil
 /*----------------------------------------------------------------------*
  | get node box of a child specified by index              peder   07/08|
  *----------------------------------------------------------------------*/
-BlitzMat3x2 GEO::SearchTree::TreeNode::getChildNodeBox(
+LINALG::Matrix<3,2> GEO::SearchTree::TreeNode::getChildNodeBox(
 	const int index) const
 {
-  BlitzMat3x2 childNodeBox;
+  LINALG::Matrix<3,2> childNodeBox;
   
   // determine x-coordinates
   if ((index==1) || (index==3) || (index==5) || (index==7))
@@ -585,8 +590,8 @@ void GEO::SearchTree::TreeNode::insertElement(
  | create children                                         u.may   08/08|
  *----------------------------------------------------------------------*/
 void GEO::SearchTree::TreeNode::createChildren(
-    const DRT::Discretization&      	dis,
-    const std::map<int,BlitzVec3>& 	  currentpositions)
+    const DRT::Discretization&      	             dis,
+    const std::map<int,LINALG::Matrix<3,1> >& 	   currentpositions)
 {
   // create empty children
   for(int index = 0; index < getNumChildren(); index++)
@@ -614,15 +619,15 @@ void GEO::SearchTree::TreeNode::createChildren(
  | set XFEM label of empty children                        u.may   08/08|
  *----------------------------------------------------------------------*/
 void GEO::SearchTree::TreeNode::setXFEMLabelOfEmptyChildren(
-    const DRT::Discretization&        dis,
-    const std::map<int,BlitzVec3>&    currentpositions)
+    const DRT::Discretization&                    dis,
+    const std::map<int,LINALG::Matrix<3,1> >&     currentpositions)
 {    
   for(int index = 0; index < getNumChildren(); index++)
   {
     // if one of the created children is empty, set label immediately
     if ((children_[index]->getElementList()).empty())
     {
-      const BlitzVec3 childNodeCenter(children_[index]->getCenterCoord());
+      const LINALG::Matrix<3,1>  childNodeCenter(children_[index]->getCenterCoord());
       // xfem label has to be computed on this level because child is empty
       children_[index]->setLabel(getXFEMLabel(dis, currentpositions, childNodeCenter, elementList_));
     }
@@ -635,15 +640,15 @@ void GEO::SearchTree::TreeNode::setXFEMLabelOfEmptyChildren(
  | set XFEM label and nearest object of empty children     u.may   08/08|
  *----------------------------------------------------------------------*/
 void GEO::SearchTree::TreeNode::setXFEMLabelAndNearestObjectOfEmptyChildren(
-    const DRT::Discretization&        dis,
-    const std::map<int,BlitzVec3>&    currentpositions)
+    const DRT::Discretization&                    dis,
+    const std::map<int,LINALG::Matrix<3,1> >&     currentpositions)
 {    
   for(int index = 0; index < getNumChildren(); index++)
   {
     // if one of the created children is empty, set label immediately
     if ((children_[index]->getElementList()).empty())
     {
-      const BlitzVec3 childNodeCenter(children_[index]->getCenterCoord());
+      const LINALG::Matrix<3,1> childNodeCenter(children_[index]->getCenterCoord());
       // xfem label has to be computed on this level because child is empty
       GEO::NearestObject nearestObject;
       int label = getXFEMLabelAndNearestObject(dis, currentpositions, childNodeCenter, elementList_, nearestObject);
@@ -659,7 +664,7 @@ void GEO::SearchTree::TreeNode::setXFEMLabelAndNearestObjectOfEmptyChildren(
  | classifiy point in node                                  peder   07/08|
  *----------------------------------------------------------------------*/
 const int GEO::SearchTree::TreeNode::classifyPoint(
-    const BlitzVec3&   point) const
+    const LINALG::Matrix<3,1>&   point) const
 {
   
   int childIndex = 0;
@@ -680,7 +685,7 @@ const int GEO::SearchTree::TreeNode::classifyPoint(
  | classifiy AABB in node                                  u.may   07/08|
  *----------------------------------------------------------------------*/
 std::vector<int> GEO::SearchTree::TreeNode::classifyXAABB(
-    const BlitzMat3x2&   AABB
+    const LINALG::Matrix<3,2>&   AABB
     ) const 
 {
   
@@ -779,14 +784,14 @@ std::vector<int> GEO::SearchTree::TreeNode::classifyXAABB(
  | classifiy element in node                               peder   07/08|
  *----------------------------------------------------------------------*/
 std::vector<int> GEO::SearchTree::TreeNode::classifyElement(
-    const DRT::Element*       		  element,
-    const std::map<int,BlitzVec3>& 	currentpositions
+    const DRT::Element*       		              element,
+    const std::map<int,LINALG::Matrix<3,1> >& 	currentpositions
     ) const
 {
-  const BlitzMat xyze(GEO::getCurrentNodalPositions(element,currentpositions));
+  const LINALG::SerialDenseMatrix xyze(GEO::getCurrentNodalPositions(element,currentpositions));
   GEO::EleGeoType eleGeoType(GEO::HIGHERORDER);
   GEO::checkRoughGeoType(element, xyze, eleGeoType);
-  const BlitzMat3x2 elemXAABB(GEO::computeFastXAABB(element, xyze, eleGeoType));  
+  const LINALG::Matrix<3,2> elemXAABB(GEO::computeFastXAABB(element, xyze, eleGeoType));  
   return classifyXAABB(elemXAABB);
 }
 
@@ -797,12 +802,12 @@ std::vector<int> GEO::SearchTree::TreeNode::classifyElement(
  *----------------------------------------------------------------------*/
 std::vector<int> GEO::SearchTree::TreeNode::classifyElement(
         const DRT::Element*               element,
-        const BlitzMat&                   xyze_element    
+        const LINALG::SerialDenseMatrix&  xyze_element    
         ) const 
 {
   GEO::EleGeoType eleGeoType(GEO::HIGHERORDER);
   GEO::checkRoughGeoType(element, xyze_element , eleGeoType);
-  const BlitzMat3x2 elemXAABB(GEO::computeFastXAABB(element, xyze_element , eleGeoType));  
+  const LINALG::Matrix<3,2> elemXAABB(GEO::computeFastXAABB(element, xyze_element , eleGeoType));  
   return classifyXAABB(elemXAABB);
 }
 
@@ -812,11 +817,11 @@ std::vector<int> GEO::SearchTree::TreeNode::classifyElement(
  | classifiy element in node                               u.may   08/08|
  *----------------------------------------------------------------------*/
 std::vector<int> GEO::SearchTree::TreeNode::classifyRadius(
-    const double      radius,
-    const BlitzVec3&	point
+    const double                radius,
+    const LINALG::Matrix<3,1>&	point
     ) const
 {
-  BlitzMat3x2 radiusXAABB;  
+  LINALG::Matrix<3,2> radiusXAABB;  
 
   for(int dim = 0; dim < 3; dim++)
   {
@@ -839,8 +844,8 @@ std::vector<int> GEO::SearchTree::TreeNode::classifyRadius(
  | update tree node                                        u.may   08/08|
  *----------------------------------------------------------------------*/
 void GEO::SearchTree::TreeNode::updateTreeNode(
-   const BlitzMat3x2& AABB_old, 
-   const BlitzMat3x2& AABB_new)
+   const LINALG::Matrix<3,2>& AABB_old, 
+   const LINALG::Matrix<3,2>& AABB_new)
 {
   for(int i = 0; i < getNumChildren(); i++)
   {
@@ -861,10 +866,10 @@ void GEO::SearchTree::TreeNode::updateTreeNode(
  | and nearest object                                                   |
  *----------------------------------------------------------------------*/
 int GEO::SearchTree::TreeNode::queryFSINearestObject(
-    const DRT::Discretization&          dis,
-    const std::map<int,BlitzVec3>&      currentpositions, 
-    const BlitzVec3&                    point,
-    GEO::NearestObject&                 nearestObject
+    const DRT::Discretization&                      dis,
+    const std::map<int,LINALG::Matrix<3,1> >&       currentpositions, 
+    const LINALG::Matrix<3,1>&                      point,
+    GEO::NearestObject&                             nearestObject
     ) 
 {
   switch (treeNodeType_) 
@@ -920,9 +925,9 @@ int GEO::SearchTree::TreeNode::queryFSINearestObject(
  | return xfem label for point (interface method)          u.may   07/08|
  *----------------------------------------------------------------------*/
 int GEO::SearchTree::TreeNode::queryXFEMFSIPointType(
-    const DRT::Discretization&       dis,
-    const std::map<int,BlitzVec3>&   currentpositions, 
-    const BlitzVec3&                 point
+    const DRT::Discretization&                    dis,
+    const std::map<int,LINALG::Matrix<3,1> >&     currentpositions, 
+    const LINALG::Matrix<3,1>&                    point
     ) 
 { 
   switch (treeNodeType_) 
@@ -976,11 +981,11 @@ int GEO::SearchTree::TreeNode::queryXFEMFSIPointType(
  | returns nodes in the radius of a given point              u.may 08/08|
  *----------------------------------------------------------------------*/
 std::map<int,std::set<int> > GEO::SearchTree::TreeNode::searchElementsInRadius(
-    const DRT::Discretization& 	     dis,
-    const std::map<int,BlitzVec3>&   currentpositions, 
-    const BlitzVec3& 		             point,
-    const double                     radius, 
-    const int 			                 label) 
+    const DRT::Discretization& 	                  dis,
+    const std::map<int,LINALG::Matrix<3,1> >&     currentpositions, 
+    const LINALG::Matrix<3,1>&                    point,
+    const double                                  radius, 
+    const int                                     label) 
 {  
   std::map<int,std::set<int> > eleMap;
 
@@ -1033,10 +1038,10 @@ std::map<int,std::set<int> > GEO::SearchTree::TreeNode::searchElementsInRadius(
  | intersecting with the XAABB of a given volume element                |
  *----------------------------------------------------------------------*/
 std::vector<int> GEO::SearchTree::TreeNode::queryIntersectionCandidates(
-    const DRT::Discretization&        dis,
-    const std::map<int,BlitzVec3>&    currentpositions, 
-    DRT::Element*                     element,
-    const BlitzMat&                   xyze_element)
+    const DRT::Discretization&                  dis,
+    const std::map<int,LINALG::Matrix<3,1> >&   currentpositions, 
+    DRT::Element*                               element,
+    const LINALG::SerialDenseMatrix&            xyze_element)
 {
   std::vector< int > elementset;
   
@@ -1090,9 +1095,9 @@ std::vector<int> GEO::SearchTree::TreeNode::queryIntersectionCandidates(
  | returns intersection elements (CONTACT)                    popp 07/08|
  *----------------------------------------------------------------------*/
 std::vector<int> GEO::SearchTree::TreeNode::searchIntersectionElements(
-    const DRT::Discretization&       dis,
-    const std::map<int,BlitzVec3>&   currentpositions, 
-    DRT::Element*                    element) 
+    const DRT::Discretization&                  dis,
+    const std::map<int,LINALG::Matrix<3,1> >&   currentpositions, 
+    DRT::Element*                               element) 
 {
   std::vector<int> elementset;
   
@@ -1150,7 +1155,7 @@ void GEO::SearchTree::TreeNode::printTreeNode(
 {
   if(treedepth_== max_depth)
   {
-    BlitzMat printBox(3,8);
+    LINALG::Matrix<3,8> printBox(true);
     printBox(0,0) = nodeBox_(0,0); printBox(1,0) = nodeBox_(1,0); printBox(2,0) = nodeBox_(2,0);
     printBox(0,1) = nodeBox_(0,0); printBox(1,1) = nodeBox_(1,1); printBox(2,1) = nodeBox_(2,0);
     printBox(0,2) = nodeBox_(0,0); printBox(1,2) = nodeBox_(1,1); printBox(2,2) = nodeBox_(2,1);
@@ -1179,7 +1184,7 @@ void GEO::SearchTree::TreeNode::printTreeNode(
       factor = 1; // fluid octant
     else
       factor = 2; // solid octant
-    BlitzMat printBox(3,8);
+    LINALG::Matrix<3,8> printBox(true);
     printBox(0,0) = nodeBox_(0,0); printBox(1,0) = nodeBox_(1,0); printBox(2,0) = nodeBox_(2,0);
     printBox(0,1) = nodeBox_(0,0); printBox(1,1) = nodeBox_(1,1); printBox(2,1) = nodeBox_(2,0);
     printBox(0,2) = nodeBox_(0,0); printBox(1,2) = nodeBox_(1,1); printBox(2,2) = nodeBox_(2,1);

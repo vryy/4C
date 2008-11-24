@@ -169,19 +169,23 @@ std::string IO::GMSH::elementAtInitialPositionToString(const double scalar, cons
 }
 
 
+
 std::string IO::GMSH::elementAtCurrentPositionToString(
-    const double                   scalar, 
-    const DRT::Element*            ele,
-    const map<int,BlitzVec3>&      currentelepositions)
+    const double                            scalar, 
+    const DRT::Element*                     ele,
+    const map<int,LINALG::Matrix<3,1> >&    currentelepositions)
 {
 
   const DRT::Element::DiscretizationType distype = ele->Shape();
+  
   std::stringstream gmshfilecontent;
   gmshfilecontent << IO::GMSH::cellWithScalarToString(
       distype, scalar, GEO::getCurrentNodalPositions(ele,currentelepositions)
       ) << "\n";
   return gmshfilecontent.str();
 }
+
+
 
 std::string text3dToString(
     const LINALG::Matrix<3,1>&            xyz,      ///< 3d Position of text
@@ -219,18 +223,19 @@ std::string IO::GMSH::disToString(
 }
 
 std::string IO::GMSH::disToString(
-    const std::string& s,
-    const double scalar,
-    const Teuchos::RCP<DRT::Discretization> dis,
-    std::map<int,BlitzVec3> currentpositions)
+    const std::string&                      	s,
+    const double                            	scalar,
+    const Teuchos::RCP<DRT::Discretization> 	dis,
+    const std::map<int,LINALG::Matrix<3,1> >& 	currentpositions)
 {
   std::stringstream gmshfilecontent;
   gmshfilecontent << "View \" " << s << " Elements \" {\n";
+
   for (int i=0; i<dis->NumMyColElements(); ++i)
   {
     const DRT::Element* actele = dis->lColElement(i);
     gmshfilecontent << IO::GMSH::cellWithScalarToString(actele->Shape(),
-        scalar, GEO::getCurrentNodalPositions(actele, currentpositions)) << "\n";
+        scalar, GEO::getCurrentNodalPositions(actele,currentpositions) ) << "\n";
   };
   gmshfilecontent << "};\n";
   return gmshfilecontent.str();

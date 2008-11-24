@@ -98,23 +98,17 @@ namespace XFEM
             ) const;
 
     //! get domain information at x_in at timestep n+1
-    virtual int PositionWithinConditionNP(const BlitzVec3& x_in) const;
-
-    //! get domain information at x_in at timestep n
-    virtual int PositionWithinConditionN(const BlitzVec3& x_in) const;
-    
-    //! get domain information at x_in at timestep n+1
     virtual int PositionWithinConditionNP(const LINALG::Matrix<3,1>& x_in) const;
 
     //! get domain information at x_in at timestep n
     virtual int PositionWithinConditionN(const LINALG::Matrix<3,1>& x_in) const;
 
     //! get domain information at x_in at timestep n+1
-    virtual int PositionWithinConditionNP(const BlitzVec3&     x_in,
+    virtual int PositionWithinConditionNP(const LINALG::Matrix<3,1>&     x_in,
                                           GEO::NearestObject&  nearestobject) const;
 
     //! get domain information at x_in at timestep n
-    virtual int PositionWithinConditionN(const BlitzVec3&     x_in,
+    virtual int PositionWithinConditionN(const LINALG::Matrix<3,1>&     x_in,
                                          GEO::NearestObject&  nearestobject) const;
 
   protected:

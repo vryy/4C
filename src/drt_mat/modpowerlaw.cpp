@@ -13,7 +13,6 @@ Maintainer: Ursula Mayer
 #ifdef CCADISCRET
 
 #include <vector>
-#include <blitz/array.h>
 
 #include "modpowerlaw.H"
 
@@ -62,33 +61,5 @@ void MAT::ModPowerLaw::Unpack(const vector<char>& data)
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
 }
 
-
-void MAT::ModPowerLaw::Evaluate(const blitz::Array<double,2>& 	velderiv,
-                                double& 						visc_power)
-{
-	
-  // get material parameters
-  double m  	= matdata_->m.modpowerlaw->m_cons;      // consistency constant 
-  double delta 	= matdata_->m.modpowerlaw->delta;       // safety factor
-  double a      = matdata_->m.modpowerlaw->a_exp;      	// exponent
- 
-
-  // compute shear rate 
-  double rateofshear = 0.0;
-  blitz::firstIndex i;    // Placeholder for the first index
-  blitz::secondIndex j;   // Placeholder for the second index
-  blitz::Array<double,2> epsilon(3,3,blitz::ColumnMajorArray<2>());   // strain rate tensor
-  epsilon = 0.5 * ( velderiv(i,j) + velderiv(j,i) );
-  
-  for(int rr=0;rr<3;rr++)
-    for(int mm=0;mm<3;mm++)
-    	rateofshear += epsilon(rr,mm)*epsilon(rr,mm);                 
- 
-  rateofshear = sqrt(2.0*rateofshear);
-  
-  // compute viscosity according to a modified power law model for shear-thinning fluids
-  // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
-  visc_power = m * pow((delta + rateofshear), (-1)*a);
-}
 
 #endif

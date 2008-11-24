@@ -18,7 +18,6 @@ Maintainer: Ulrich Kuettler
 #include "adapter_structure_strugenalpha.H"
 #include "adapter_structure_timint.H"
 #include "adapter_structure_constrained.H"
-#include "adapter_structure_bromotion.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -82,6 +81,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure(const Teuchos::ParameterLis
     SetupTimIntImpl(prbdyn);  // <-- here is the show
     break;
   case STRUCT_DYNAMIC::ab2 :
+//  case STRUCT_DYNAMIC::euma :
     dserror("explicitly no");
     break;
   default :
@@ -120,7 +120,6 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
   const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
   const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
-  const Teuchos::ParameterList& bromop   = DRT::Problem::Instance()->BrownianMotionParams();
 
   //const Teuchos::ParameterList& size     = DRT::Problem::Instance()->ProblemSizeParams();
 
@@ -286,15 +285,8 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
     }
   }
   
-  // brownian motion
-  genalphaparams->set<bool>  ("bro_motion",Teuchos::getIntegralValue<int>(bromop,"BROWNIAN_MOTION"));
-  bool bromotion = genalphaparams->get("bro_motion",false);
-
   RCP<Structure> tmpstr;
-  if(bromotion)
-    tmpstr = rcp(new StructureBroMotion(genalphaparams,actdis,solver,output));
-  else
-    tmpstr = rcp(new StructureGenAlpha(genalphaparams,actdis,solver,output));
+    tmpstr = Teuchos::rcp(new StructureGenAlpha(genalphaparams,actdis,solver,output));
   
   if (tmpstr->HaveConstraint())
   {

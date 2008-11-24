@@ -47,17 +47,17 @@ namespace COMBUST
     void toGmsh(const int step) const;
 
     //! implement this function if needed for combustion!
-    int PositionWithinConditionNP(const BlitzVec3& x_in) const;
+    int PositionWithinConditionNP(const LINALG::Matrix<3,1>& x_in) const;
 
     //! implement this function if needed for combustion!
-    int PositionWithinConditionN(const BlitzVec3& x_in) const;
+    int PositionWithinConditionN(const LINALG::Matrix<3,1>& x_in) const;
 
     //! implement this function if needed for combustion!
-    int PositionWithinConditionNP(const BlitzVec3&     x_in,
+    int PositionWithinConditionNP(const LINALG::Matrix<3,1>&     x_in,
                                   GEO::NearestObject&  nearestobject) const;
 
     //! implement this function if needed for combustion!
-    int PositionWithinConditionN(const BlitzVec3&     x_in,
+    int PositionWithinConditionN(const LINALG::Matrix<3,1>&     x_in,
                                  GEO::NearestObject&  nearestobject) const;
 
   private:

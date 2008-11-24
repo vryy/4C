@@ -84,8 +84,6 @@ namespace MAT
      */
     MATERIAL* MaterialData() const { return matdata_; }
     
-    void Evaluate(	const blitz::Array<double,2>&	velderiv,
-        			double& 						visc_power);
 
   private:
 
