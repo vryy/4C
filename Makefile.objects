@@ -222,8 +222,7 @@ OBJS_DRT_CONTACT_LIB = \
 #----------------------------------------------------- drt version statmech
 OBJS_DRT_STATMECH = \
                 src/drt_statmech/statmech_time.o \
-                src/drt_statmech/statmech_manager.o \
-                src/drt_statmech/bromotion_timeint.o            
+                src/drt_statmech/statmech_manager.o           
 #----------------------------------------------------- drt version statmech
 OBJS_DRT_STATMECH_LIB = src/drt_statmech/bromotion_manager.o 
 #--------------------------------------------------- condif3 (drt version)
@@ -302,7 +301,6 @@ OBJS_DRT_ADAPT= src/drt_adapter/ale_dyn.o \
                 src/drt_adapter/adapter_structure.o \
                 src/drt_adapter/adapter_structure_strugenalpha.o \
                 src/drt_adapter/adapter_structure_timint.o \
-                src/drt_adapter/adapter_structure_bromotion.o \
                 src/drt_adapter/adapter_structure_constrained.o \
                 src/drt_adapter/adapter_fluid_base_algorithm.o \
                 src/drt_adapter/adapter_fluid_ale.o \
@@ -1246,9 +1244,7 @@ OBJS_INTERSECTION = src/drt_xfem/physics.o \
                     src/drt_xfem/spacetime_boundary.o \
                     src/drt_xfem/xfem_condition.o \
                     src/drt_xfem/enrichment_utils.o \
-                    src/drt_xfem/xdofmapcreation.o \
-                    src/drt_xfem/xfsi_searchtree.o \
-                    src/drt_xfem/geometry_service.o
+                    src/drt_xfem/xdofmapcreation.o 
 #               inverse analysis
 OBJS_INV_ANALYSIS = src/drt_inv_analysis/inv_analysis.o 
 #               low-Mach-number flow
