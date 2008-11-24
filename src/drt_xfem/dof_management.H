@@ -46,27 +46,27 @@ namespace XFEM
       int NumNodalDof() const;
 
       //! return set with enriched fields for requested node
-      const std::set<FieldEnr> getNodeDofSet(
+      const std::set<FieldEnr>& getNodeDofSet(
           const int gid      ///< global node id
           ) const
       {
         std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator entry = nodalDofSet_.find(gid);
         if (entry == nodalDofSet_.end())
         {
-          return std::set<XFEM::FieldEnr>();
+          return emptyset_;
         }
         return entry->second;
       };
       
       //! return set with enriched fields for requested element
-      const std::set<XFEM::FieldEnr> getElementDofSet(
+      const std::set<XFEM::FieldEnr>& getElementDofSet(
           const int gid      ///< global element id
           ) const
       {
         std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator entry = elementalDofs_.find(gid);
         if (entry == elementalDofs_.end())
         {
-          return std::set<XFEM::FieldEnr>();
+          return emptyset_;
         }
         return entry->second;
       };
@@ -115,6 +115,10 @@ namespace XFEM
        * same as above, see getElementDofSet()
        */
       std::map<int, const std::set<XFEM::FieldEnr> > elementalDofs_;
+      
+      /// when returning a reference to a set, this set can be used when an empty set is needed
+      /// avoids creating a lot of empty sets -> speed
+      const std::set<XFEM::FieldEnr>   emptyset_;
       
   };
 

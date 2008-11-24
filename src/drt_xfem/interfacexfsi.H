@@ -41,13 +41,13 @@ namespace XFEM
     void toGmsh(const int step) const;
 
     //! return pointer to the intersecting discretization
-    Teuchos::RCP<DRT::Discretization> cutterdis() const {return cutterdis_;};
+    const Teuchos::RCP<DRT::Discretization> cutterdis() const {return cutterdis_;};
     
     //! returns pointer to map with (current) nodal positions per node of the cutter discretization 
-    const std::map<int,BlitzVec3>* cutterposnp() const {return &cutterposnp_;};
+    const std::map<int,BlitzVec3>& cutterposnp() const {return cutterposnp_;};
     
     //! returns pointer to map with (current) nodal positions per node of the cutter discretization 
-    const std::map<int,BlitzVec3>* cutterposn()  const {return &cutterposn_;};
+    const std::map<int,BlitzVec3>& cutterposn()  const {return cutterposn_;};
 
     //! check surface element size to prevent too small elements
     //! that might conflict with tolerances in the intersection routines

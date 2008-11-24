@@ -143,7 +143,7 @@ void XFEM::createDofMap(
   std::map<int, std::set<XFEM::FieldEnr> >  elementalDofs;
 
   // get elements for each coupling label
-  const std::map<int,std::set<int> >& elementsByLabel = *ih.elementsByLabel(); 
+  const std::map<int,std::set<int> >& elementsByLabel = ih.elementsByLabel(); 
 
   // invert collection
   std::map<int,int> labelPerElementId;

@@ -138,7 +138,7 @@ void XFEM::DofManager::toGmsh(
     if (screen_out) std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"..."<<flush;
     std::ofstream f_system(filename.str().c_str());
     //f_system << IO::GMSH::disToString("Fluid", 0.0, ih->xfemdis(), ih->elementalDomainIntCells());
-    //f_system << IO::GMSH::disToString("Solid", 1.0, ih->cutterdis(), *ih->cutterposnp());
+    //f_system << IO::GMSH::disToString("Solid", 1.0, ih->cutterdis(), ih->cutterposnp());
     {
       // draw elements with associated gid
       std::stringstream gmshfilecontent;
@@ -479,8 +479,7 @@ Teuchos::RCP<Epetra_Vector> XFEM::DofManager::fillPhysicalOutputVector(
           const XFEM::PHYSICS::Field fielditer = fieldenr->getField(); 
           if (fielditer == *field_out)
           {
-            const XFEM::Enrichment enr = fieldenr->getEnrichment();
-            const double enrval = enr.EnrValue(actpos, *ih_, XFEM::Enrichment::approachUnknown);
+            const double enrval = fieldenr->getEnrichment().EnrValue(actpos, *ih_, XFEM::Enrichment::approachUnknown);
             const XFEM::DofKey<XFEM::onNode> dofkey(gid,*fieldenr);
             const int origpos = nodalDofDistributionMap.find(dofkey)->second;
             //cout << origpos << endl;

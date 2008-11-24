@@ -1460,9 +1460,9 @@ static void SysmatBoundary4(
 //        cout << "numnode_boundary: " << numnode_boundary << endl;
         
         // get current node coordinates
-        const std::map<int,BlitzVec3 >* positions = ih->cutterposnp();
+        const std::map<int,BlitzVec3 >& positions = ih->cutterposnp();
         LINALG::SerialDenseMatrix xyze_boundary(3,numnode_boundary);
-        GEO::fillCurrentNodalPositions(boundaryele, *positions, xyze_boundary);
+        GEO::fillCurrentNodalPositions(boundaryele, positions, xyze_boundary);
         
         // get interface velocities at the boundary element nodes
         BlitzMat vel_boundary(3,numnode_boundary);

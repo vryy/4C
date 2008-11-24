@@ -400,7 +400,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
         // nodal dofs for ele
         eleDofManager_uncondensed_ = 
-          rcp(new XFEM::ElementDofManager(*this, *eleDofManager_->getNodalDofSet(), enrfieldset, element_ansatz));
+          rcp(new XFEM::ElementDofManager(*this, eleDofManager_->getNodalDofSet(), enrfieldset, element_ansatz));
 
         const int nd = eleDofManager_uncondensed_->NumNodeDof();
         const int na = eleDofManager_uncondensed_->NumElemDof();

@@ -27,7 +27,7 @@ static XFEM::Enrichment genAlternativeEnrichment(
         const RCP<XFEM::DofManager>  dofman
         )
 {
-    std::set<XFEM::FieldEnr> fieldset = dofman->getNodeDofSet(gnodeid);
+    const std::set<XFEM::FieldEnr>& fieldset(dofman->getNodeDofSet(gnodeid));
     for (std::set<XFEM::FieldEnr>::const_iterator fieldenriter = fieldset.begin(); fieldenriter != fieldset.end(); ++fieldenriter)
     {
         const XFEM::PHYSICS::Field physvar = fieldenriter->getField();

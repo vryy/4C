@@ -47,15 +47,15 @@ public:
                 oldElementalDofDistrib_(oldElementalDofDistrib),
                 newElementalDofDistrib_(newElementalDofDistrib)
     {
-        // derive information for dofkeys per node
-        map<DofKey<onNode>, DofPos>::const_iterator dofkeyiter;
-        for (dofkeyiter = oldNodalDofDistrib.begin(); dofkeyiter != oldNodalDofDistrib.end(); ++dofkeyiter)
-        {
-          const DofKey<onNode> dofkey = dofkeyiter->first;
-          const int gid = dofkey.getGid();
-          const XFEM::FieldEnr fieldenr = dofkey.getFieldEnr();
-          oldEnrFieldSetNode_[gid].insert(fieldenr);
-        }
+//        // derive information for dofkeys per node
+//        map<DofKey<onNode>, DofPos>::const_iterator dofkeyiter;
+//        for (dofkeyiter = oldNodalDofDistrib.begin(); dofkeyiter != oldNodalDofDistrib.end(); ++dofkeyiter)
+//        {
+//          const DofKey<onNode> dofkey = dofkeyiter->first;
+//          const int gid = dofkey.getGid();
+//          const XFEM::FieldEnr fieldenr = dofkey.getFieldEnr();
+//          oldEnrFieldSetNode_[gid].insert(fieldenr);
+//        }
         return;
     }
             
@@ -103,7 +103,7 @@ private:
     const map<DofKey<onNode>, DofPos>    newNodalDofDistrib_;      ///< new positions of dof in Epetra Vector per nodal dofkey
     const map<DofKey<onElem>, DofPos>    oldElementalDofDistrib_;  ///< old positions of dof in Epetra Vector per element dofkey
     const map<DofKey<onElem>, DofPos>    newElementalDofDistrib_;  ///< new positions of dof in Epetra Vector per element dofkey
-    map<int,std::set<XFEM::FieldEnr> >   oldEnrFieldSetNode_;      ///< old enriched fields per node 
+//    map<int,std::set<XFEM::FieldEnr> >   oldEnrFieldSetNode_;      ///< old enriched fields per node 
 };
 
 } // namespace XFEM

@@ -52,9 +52,9 @@ namespace XFEM
     Teuchos::RCP<DRT::Discretization> xfemdis() const {return xfemdis_;}
 
     //! get pointer to map with all domain integration cells on this proc
-    const std::map<int,GEO::DomainIntCells>* elementalDomainIntCells() const {return &elementalDomainIntCells_;}
+    const std::map<int,GEO::DomainIntCells>& elementalDomainIntCells() const {return elementalDomainIntCells_;}
     //! get pointer to map with all boundary integration cells on this proc
-    const std::map<int,GEO::BoundaryIntCells>* elementalBoundaryIntCells() const {return &elementalBoundaryIntCells_;}
+    const std::map<int,GEO::BoundaryIntCells>& elementalBoundaryIntCells() const {return elementalBoundaryIntCells_;}
 
     //! get pointer to oct tree
     Teuchos::RCP<GEO::SearchTree> getSearchTree() const {return octTreenp_;}
@@ -67,7 +67,7 @@ namespace XFEM
     }
 
     //! get pointer to elementsByLabel_
-    const std::map<int,std::set<int> >* elementsByLabel() const {return &elementsByLabel_;}
+    const std::map<int,std::set<int> >& elementsByLabel() const {return elementsByLabel_;}
 
     /*! tell me, whether the element is intersected or not
      * \return true, if element is intersected

@@ -105,9 +105,9 @@ namespace XFEM
       };
       
       //! function that returns dofs for each node of this particular element
-      const std::map<int, const std::set<XFEM::FieldEnr> >* getNodalDofSet() const
+      const std::map<int, const std::set<XFEM::FieldEnr> >& getNodalDofSet() const
       {
-        return &nodalDofSet_;
+        return nodalDofSet_;
       };
       
       /*! return number of dofs on this element for a given field. E.g., if we have 4 nodes with
@@ -158,11 +158,11 @@ namespace XFEM
         return xlabelset;
       }
       
-      //! access to map
-      std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> getDisTypePerFieldMap() const
-      {
-        return DisTypePerElementField_;
-      }
+//      //! access to map
+//      std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> getDisTypePerFieldMap() const
+//      {
+//        return DisTypePerElementField_;
+//      }
       
       //! access to map
       DRT::Element::DiscretizationType getDisTypePerField(XFEM::PHYSICS::Field field) const
@@ -171,7 +171,7 @@ namespace XFEM
       }
       
       //! access to map
-      const std::set<XFEM::FieldEnr> getEnrichedFieldsPerEleField(XFEM::PHYSICS::Field field) const
+      const std::set<XFEM::FieldEnr>& getEnrichedFieldsPerEleField(XFEM::PHYSICS::Field field) const
       {
         return enrichedFieldperPhysField_.find(field)->second;
       }

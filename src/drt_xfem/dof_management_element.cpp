@@ -157,7 +157,7 @@ XFEM::ElementDofManager::ElementDofManager(
   }
   
   // element dofs for ele
-  std::set<XFEM::FieldEnr> enrfieldset(dofman.getElementDofSet(ele.Id()));
+  const std::set<XFEM::FieldEnr>& enrfieldset(dofman.getElementDofSet(ele.Id()));
   
   ComputeDependendInfo(ele, nodalDofSet_, enrfieldset, element_ansatz);
 }

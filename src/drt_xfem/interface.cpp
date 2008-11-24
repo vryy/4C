@@ -186,7 +186,7 @@ bool XFEM::InterfaceHandle::ElementHasLabel(
     const int label
 ) const
 {
-  const GEO::BoundaryIntCells& bcells = elementalBoundaryIntCells()->find(element_gid)->second;
+  const GEO::BoundaryIntCells& bcells = elementalBoundaryIntCells().find(element_gid)->second;
   bool has_label = false;
   for (GEO::BoundaryIntCells::const_iterator bcell = bcells.begin(); bcell != bcells.end(); ++bcell)
   {
@@ -208,7 +208,7 @@ std::set<int> XFEM::InterfaceHandle::LabelsPerElement(
 ) const
 {
   std::set<int> labelset;
-  const GEO::BoundaryIntCells& bcells = elementalBoundaryIntCells()->find(element_gid)->second;
+  const GEO::BoundaryIntCells& bcells = elementalBoundaryIntCells().find(element_gid)->second;
   for (GEO::BoundaryIntCells::const_iterator bcell = bcells.begin(); bcell != bcells.end(); ++bcell)
   {
     labelset.insert(bcell->GetSurfaceEleGid());
