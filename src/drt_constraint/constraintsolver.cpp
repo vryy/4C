@@ -82,26 +82,19 @@ void UTILS::ConstraintSolver::Setup
   // them to new lists. This copy mechanism does not improve the
   // data.
   // Thus we need this exception handler to getting along.
-  
-  int algochoice;
+
+  // different setup for 
+  INPAR::STR::ConSolveAlgo algochoice;
   try
   {
     // for StruGenAlpha
-    isadapttol_ = params.get<bool>("ADAPTCONV",true);
-    algochoice = params.get<int>("UZAWAALGO");
+    algochoice = params.get<INPAR::STR::ConSolveAlgo>("UZAWAALGO");
   }
   catch (const Teuchos::Exceptions::InvalidParameterType)
   {
     // for STR::TimIntImpl
-    isadapttol_ = true;
-    isadapttol_ = (Teuchos::getIntegralValue<int>(params,"ADAPTCONV") == 1);
-    algochoice = (int) getIntegralValue<INPAR::STR::ConSolveAlgo>(params,"UZAWAALGO");
+    algochoice = getIntegralValue<INPAR::STR::ConSolveAlgo>(params,"UZAWAALGO");
   }
-  adaptolbetter_ = params.get<double>("ADAPTCONV_BETTER", 0.01);
-  uzawaparam_ = params.get<double>("UZAWAPARAM", 1);
-  minparam_ = uzawaparam_*1E-3;
-  uzawatol_ = params.get<double>("UZAWATOL", 1E-8);
-  
   switch (algochoice)
   {
   case (INPAR::STR::consolve_iterative):
@@ -116,6 +109,27 @@ void UTILS::ConstraintSolver::Setup
   default:
     dserror("Unknown type of constraint solver algorithm. Can be 'iterative' or 'direct'!");
   }
+
+  // different setup for #adapttol_
+  try
+  {
+    // for StruGenAlpha
+    isadapttol_ = params.get<bool>("ADAPTCONV",true);
+  }
+  catch (const Teuchos::Exceptions::InvalidParameterType)
+  {
+    // for STR::TimIntImpl
+    isadapttol_ = true;
+    isadapttol_ = (Teuchos::getIntegralValue<int>(params,"ADAPTCONV") == 1);
+  }
+
+  // simple parameters
+  adaptolbetter_ = params.get<double>("ADAPTCONV_BETTER", 0.01);
+  uzawaparam_ = params.get<double>("UZAWAPARAM", 1);
+  minparam_ = uzawaparam_*1E-3;
+  uzawatol_ = params.get<double>("UZAWATOL", 1E-8);
+  
+
   counter_ = 0;
   return;
 }

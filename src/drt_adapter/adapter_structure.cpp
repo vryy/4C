@@ -25,7 +25,7 @@ Maintainer: Ulrich Kuettler
 
 // further includes for StructureBaseAlgorithm:
 #include "../drt_inpar/inpar_fsi.H"
-#include "../drt_inpar/drt_validparameters.H"
+#include "../drt_inpar/inpar_structure.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 
@@ -254,7 +254,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   genalphaparams->set<double>("UZAWAPARAM",sdyn.get<double>("UZAWAPARAM"));
   genalphaparams->set<double>("UZAWATOL",sdyn.get<double>("UZAWATOL"));
   genalphaparams->set<int>   ("UZAWAMAXITER",sdyn.get<int>("UZAWAMAXITER"));
-  genalphaparams->set<int>   ("UZAWAALGO",getIntegralValue<int>(sdyn,"UZAWAALGO"));
+  genalphaparams->set<INPAR::STR::ConSolveAlgo>("UZAWAALGO",getIntegralValue<INPAR::STR::ConSolveAlgo>(sdyn,"UZAWAALGO"));
 
   // sanity checks and default flags
   if (genprob.probtyp == prb_fsi)
