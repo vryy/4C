@@ -66,7 +66,7 @@ void stru_static_drt()
 
   // detect if contact is present
   bool contact = false;
-  switch (Teuchos::getIntegralValue<int>(scontact,"CONTACT"))
+  switch (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(scontact,"CONTACT"))
   {
     case INPAR::CONTACT::contact_none:
       contact = false;
