@@ -257,15 +257,6 @@ GEO::BoundaryIntCell::BoundaryIntCell(
             nodalpos_xi_domain_(ConvertPosArrayToLINALG<3>(domainCoordinates, distype)),
             nodalpos_xi_boundary_(ConvertPosArrayToLINALG<2>(boundaryCoordinates, distype))
 {
-//    if (abs(blitz::sum(nodalpos_xi_boundary_blitz_)) < 1.0e-7 )
-//    {
-//      for(int ii=0; ii < boundaryCoordinates.size(); ii++)
-//          for(int jj=0; jj < 3; jj++)
-//                  printf("boundary = %f\n",boundaryCoordinates[ii][jj]);
-//      cout << "Surface Ele Id: " << surface_ele_gid << endl;
-//      cout << DRT::DistypeToString(distype) << endl;
-//      dserror("something went wrong! A");
-//    }
   return;
 }
 
