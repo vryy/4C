@@ -63,7 +63,6 @@ extern "C"
 #include <set>
 #include <map>
 #include <string>
-#include <blitz/array.h>
 
 #include "linalg_utils.H"
 #include "linalg_mapextractor.H"

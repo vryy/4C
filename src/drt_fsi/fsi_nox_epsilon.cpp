@@ -13,7 +13,6 @@
 #include <NOX_Epetra_Vector.H>
 
 #include <vector>
-#include <blitz/array.h>
 
 // debug output
 #if 0

@@ -12,7 +12,6 @@
 #include <NOX_Epetra_Vector.H>
 
 #include <vector>
-#include <blitz/array.h>
 
 #include <Epetra_Comm.h>
 #include <Epetra_Time.h>

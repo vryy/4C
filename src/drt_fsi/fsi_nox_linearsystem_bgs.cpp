@@ -11,8 +11,6 @@
 #include <Epetra_VbrMatrix.h>
 #include <Epetra_Vector.h>
 
-#include <blitz/array.h>
-
 #include "../drt_lib/linalg_sparsematrix.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_fsi.H"
