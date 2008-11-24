@@ -94,10 +94,10 @@ void GEO::Intersection::computeIntersection(
     startPointList();
 
     // serial search
-    std::vector<int> cutterElementIds = serialIntersectionCandidateSearch(cutterdis, currentcutterpositions, xfemElement);
+    // std::vector<int> cutterElementIds = serialIntersectionCandidateSearch(cutterdis, currentcutterpositions, xfemElement);
     
     // tree search for intersection candidates
-    // std::vector<int> cutterElementIds = octTree->queryIntersectionCandidates(*cutterdis, currentcutterpositions, xfemElement, xyze_xfemElement);
+    std::vector<int> cutterElementIds = octTree->queryIntersectionCandidates(*cutterdis, currentcutterpositions, xfemElement, xyze_xfemElement);
   
     // debugIntersection(xfemElement, cutterElements);
     const vector<RCP<DRT::Element> > xfemElementSurfaces = xfemElement->Surfaces();
@@ -117,7 +117,7 @@ void GEO::Intersection::computeIntersection(
       const vector<RCP<DRT::Element> > cutterElementLines = cutterElement->Lines();
       const DRT::Node*const* cutterElementNodes = cutterElement->Nodes();
 
-      debugIntersectionOfSingleElements(xfemElement, cutterElement, currentcutterpositions);
+      // debugIntersectionOfSingleElements(xfemElement, cutterElement, currentcutterpositions);
 
       vector< InterfacePoint >  interfacePoints;
 
@@ -1700,8 +1700,7 @@ void GEO::Intersection::computeCDT(
 
   if(higherorder)
   {
-    std::cout << "lifting of Steinerpoints" << endl;
-    dserror("hu");
+    std::cout << "DO RECOVERY " << endl;
     recoverCurvedInterface(xfemElement, xyze_xfemElement, currentcutterpositions, boundaryintcells, out, recovery);
   }
   else
