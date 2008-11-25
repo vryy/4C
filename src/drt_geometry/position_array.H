@@ -80,6 +80,100 @@ namespace GEO
     }
     return;
   }
+  
+  
+  /*!
+   * a common task is to get an array of the positions of all nodes of this element
+   *
+   * template version
+   *
+   * \note array is defined as (3,numnode)
+   *
+   * \return Array with 3 dimensional position of all element nodes in the coordinate system of the nodes
+   *
+   * \author a.ger
+   * \date 02/08
+   */
+  template <DRT::Element::DiscretizationType distype, class M>
+  void fillInitialPositionArray(
+          const DRT::Element*      ele,
+          M&                       xyze
+          )
+  {
+      dsassert(distype == ele->Shape(), "mismatch in distype");
+      const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+
+      const DRT::Node*const* nodes = ele->Nodes();
+      dsassert(nodes != NULL, "element has no nodal pointers, so getting a position array doesn't make sense!");
+
+      for (int inode=0; inode<numnode; inode++)
+      {
+          const double* x = nodes[inode]->X();
+          xyze(0,inode) = x[0];
+          xyze(1,inode) = x[1];
+          xyze(2,inode) = x[2];
+      }
+      return;
+  }
+  
+  
+  /*!
+    * a common task is to get an array of the positions of all nodes of this element
+    *
+    * \note array is defined as (3,numnode)
+    *
+    * \return Array with 3 dimensional position of all element nodes in the coordinate system of the nodes
+    *
+    * \author a.ger
+    * \date 02/08
+    */
+   LINALG::SerialDenseMatrix InitialPositionArray(
+       const DRT::Element* ele           ///< pointer to element, whose nodes we evaluate for their position
+       );
+
+  
+  /*!
+   * fill array with current nodal positions
+   *
+   * \note array is defined as (3,numnode)
+   *
+   * \return Array with 3 dimensional position of all element nodes in the coordinate system of the nodes
+   *
+   * \author a.ger
+   * \date 02/08
+   */
+  LINALG::SerialDenseMatrix getCurrentNodalPositions(
+      const DRT::Element*                     ele,                   ///< element with nodal pointers
+      const map<int,LINALG::Matrix<3,1> >&    currentcutterpositions ///< current positions of all cutter nodes
+      );
+  
+  
+  /*!
+   * fill array with current nodal positions
+   * 
+   * \note array is defined as (3,numnode)
+   * 
+   * \author a.ger
+   * \date 11/08
+   */
+  template<class M>
+  void fillCurrentNodalPositions(
+      const DRT::Element*                   ele,                ///< element with nodal pointers
+      const map<int,LINALG::Matrix<3,1> >&  currentpositions,   ///< current positions of all cutter nodes
+      M&                                    xyze                ///< position array (3,numnode) to be filled
+      )
+  {
+      const int numnode = ele->NumNode();
+      const int* nodeids = ele->NodeIds();
+      for (int inode = 0; inode < numnode; ++inode)
+      {
+        const LINALG::Matrix<3,1> x(currentpositions.find(nodeids[inode])->second);
+        xyze(0,inode) = x(0);
+        xyze(1,inode) = x(1);
+        xyze(2,inode) = x(2);
+      }
+  }
+  
 }
 
 

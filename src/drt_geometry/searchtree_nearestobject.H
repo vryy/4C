@@ -180,7 +180,7 @@ class NearestObject
     int                               label_;
     
     //! physical coordinates of point on nearest object
-    LINALG::Matrix<3,1>   physcoord_;
+    LINALG::Matrix<3,1>               physcoord_;
 
 };
 

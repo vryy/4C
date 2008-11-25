@@ -140,7 +140,7 @@ int GEO::getXFEMLabel(
   int label = nearestObjectInNode(dis, currentpositions, elementList, querypoint, minDistanceVec, nearestObject);  	
  
   // compute normal in the point found on or in the object 
-  LINALG::Matrix<3,1> normal= getNormalAtSurfacePoint(dis, currentpositions, nearestObject);  
+  LINALG::Matrix<3,1> normal = getNormalAtSurfacePoint(dis, currentpositions, nearestObject);  
 
   // compare normals and set label 
   const double scalarproduct = minDistanceVec(0)*normal(0) + minDistanceVec(1)*normal(1) + minDistanceVec(2)*normal(2);
@@ -477,10 +477,8 @@ int GEO::nearestObjectInNode(
     }
 
   // compute distance vector pointing away from the surface element
-  // scalarproduct with element normal > 0 means fluid
-  minDistanceVec(0) = point(0) - nearestObject.getPhysCoord()(0);
-  minDistanceVec(1) = point(1) - nearestObject.getPhysCoord()(1);
-  minDistanceVec(2) = point(2) - nearestObject.getPhysCoord()(2);
+  minDistanceVec.Update(1.0, point, -1.0, nearestObject.getPhysCoord());
+
 
   return nearestObject.getLabel();
 }
@@ -508,11 +506,9 @@ bool GEO::getDistanceToSurface(
 
   if(GEO::checkPositionWithinElementParameterSpace(elecoord, surfaceElement->Shape()))
   { 
-    GEO::elementToCurrentCoordinates(surfaceElement, xyze_surfaceElement, elecoord, x_surface_phys);
+    GEO::elementToCurrentCoordinates(surfaceElement->Shape(), xyze_surfaceElement, elecoord, x_surface_phys);
     // normal pointing away from the surface towards point
-    distance_vector(0) = point(0) - x_surface_phys(0);
-    distance_vector(1) = point(1) - x_surface_phys(1);
-    distance_vector(2) = point(2) - x_surface_phys(2);
+    distance_vector.Update(1.0, point, -1.0, x_surface_phys);
     distance = distance_vector.Norm2();
     min_distance = distance;
     pointFound = true;
@@ -536,11 +532,9 @@ bool GEO::getDistanceToSurface(
       if( GEO::checkPositionWithinElementParameterSpace(elecoord, surfaceElement->Shape()) )
       { 
         LINALG::Matrix<3,1> physcoord(true);
-        GEO::elementToCurrentCoordinates(surfaceElement, xyze_surfaceElement, elecoord, physcoord);
+        GEO::elementToCurrentCoordinates(surfaceElement->Shape(), xyze_surfaceElement, elecoord, physcoord);
         // normal pointing away from the surface towards point
-        distance_vector(0) = point(0) - physcoord(0);
-        distance_vector(1) = point(1) - physcoord(1);
-        distance_vector(2) = point(2) - physcoord(2);
+        distance_vector.Update(1.0, point, -1.0, physcoord);
         distance = distance_vector.Norm2();
         if(distance < min_distance)
         {
@@ -578,11 +572,9 @@ bool GEO::getDistanceToLine(
   
   if(GEO::checkPositionWithinElementParameterSpace(elecoord, lineElement->Shape()))
   { 
-    GEO::elementToCurrentCoordinates(lineElement, xyze_lineElement, elecoord, x_line_phys);
+    GEO::elementToCurrentCoordinates(lineElement->Shape(), xyze_lineElement, elecoord, x_line_phys);
     // normal pointing away from the line towards point
-    distance_vector(0) = point(0) - x_line_phys(0);
-    distance_vector(1) = point(1) - x_line_phys(1);
-    distance_vector(2) = point(2) - x_line_phys(2);
+    distance_vector.Update(1.0, point, -1.0, x_line_phys);
     distance = distance_vector.Norm2();
     min_distance = distance;
     pointFound = true;
@@ -605,11 +597,9 @@ bool GEO::getDistanceToLine(
       if(GEO::checkPositionWithinElementParameterSpace(elecoord, lineElement->Shape()) )
       { 
         LINALG::Matrix<3,1> physcoord(true);
-        GEO::elementToCurrentCoordinates(lineElement, xyze_lineElement, elecoord, physcoord);
+        GEO::elementToCurrentCoordinates(lineElement->Shape(), xyze_lineElement, elecoord, physcoord);
         // normal pointing away from the line towards point
-        distance_vector(0) = point(0) - physcoord(0);
-        distance_vector(1) = point(1) - physcoord(1);
-        distance_vector(2) = point(2) - physcoord(2);
+        distance_vector.Update( 1.0, point, -1.0, physcoord);
         distance = distance_vector.Norm2();
         if(distance < min_distance)
         {
@@ -636,15 +626,13 @@ void GEO::getDistanceToPoint(
     double&                                     distance)
 {
 
-  LINALG::Matrix<3,1> distance_vector(true);
+  
   // node position in physical coordinates
-
   const LINALG::Matrix<3,1> x_node = currentpositions.find(node->Id())->second;
 
+  LINALG::Matrix<3,1> distance_vector;
   // vector pointing away from the node towards physCoord
-  distance_vector(0) = point(0) - x_node(0);
-  distance_vector(1) = point(1) - x_node(1);
-  distance_vector(2) = point(2) - x_node(2);
+  distance_vector.Update(1.0, point, -1.0, x_node);
 
   // absolute distance between point and node
   distance = distance_vector.Norm2();
@@ -796,12 +784,9 @@ bool  GEO::pointInMinCircleInTreeNode(
   }
   
   // distance querypoint - nearest point
-  LINALG::Matrix<3,1> distance_vector(true);
-  
-  distance_vector(0) = querypoint(0) - nearestpoint(0);
-  distance_vector(1) = querypoint(1) - nearestpoint(1);
-  distance_vector(2) = querypoint(2) - nearestpoint(2);
-
+  LINALG::Matrix<3,1> distance_vector;
+  distance_vector.Update(1.0, querypoint, -1.0, nearestpoint);
+ 
   // absolute distance between point and node
   if(distance_vector.Norm2() < minRadius)
     return true;
@@ -891,7 +876,7 @@ std::vector<int> GEO::getIntersectionCandidates(
   
   // create XAABB for query xfem  element
   GEO::EleGeoType xfemGeoType = HIGHERORDER;
-  const LINALG::SerialDenseMatrix xyze_xfemElement(GEO::InitialPositionArrayBlitz(xfemElement));
+  const LINALG::SerialDenseMatrix xyze_xfemElement(GEO::InitialPositionArray(xfemElement));
   GEO::checkGeoType(xfemElement, xyze_xfemElement, xfemGeoType);
   const LINALG::Matrix<3,2> xfemXAABB(GEO::computeFastXAABB(xfemElement, xyze_xfemElement, xfemGeoType));
   
@@ -901,7 +886,6 @@ std::vector<int> GEO::getIntersectionCandidates(
       elementIter != (elementList.begin()->second).end(); elementIter++)
   {
     DRT::Element*  cutterElement = dis.gElement(*elementIter);
-    
     const LINALG::SerialDenseMatrix xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentpositions));
     GEO::EleGeoType cutterGeoType = HIGHERORDER;
     GEO::checkGeoType(cutterElement, xyze_cutterElement, cutterGeoType);

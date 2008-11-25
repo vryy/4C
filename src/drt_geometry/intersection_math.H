@@ -16,9 +16,10 @@ Maintainer: Ursula Mayer
 #ifndef INTERSECTION_MATH_H_
 #define INTERSECTION_MATH_H_
 
-#include "intersection_service.H"
+#include "../drt_lib/linalg_fixedsizematrix.H"
 #include "Epetra_SerialDenseSolver.h"
-
+#include "Epetra_SerialDenseVector.h"
+#include <math.h>
 
 namespace GEO
 {
@@ -28,6 +29,69 @@ inline double XSIGN(const double a, const double b)
 {
     return (b >= 0.0 ? fabs(a) : -fabs(a));
 }
+
+
+
+/*!
+\brief calculate a*a
+\param a
+\return a^2
+ */
+template <typename T>
+inline T sqr(const T a)
+{
+    return a * a;
+}
+
+
+
+/*!
+\brief  computes the Theorem of Pythagoras
+        (a^2 + b^2)^(1/2)
+        (modified from NUMERICAL RECIPES)
+               
+\param a    (in)        : a
+\param b    (in)        : b
+\return result of the Theorem of Pythagoras
+*/    
+inline double pythagoras(
+    const double  a, 
+    const double  b
+    )
+{
+    //note: sqrt(0.0) is properly defined and returns 0.0 as expected
+    //      no check for zero needed
+    return sqrt(sqr(a)+sqr(b));
+}
+
+
+
+/*!
+\brief sum up the absolute value of all entries of a vector
+\param v (in) : LINALG::Matrix<3,1>
+\return sum
+*/   
+inline double SumOfFabsEntries(
+    const LINALG::Matrix<3,1>&     v  
+    )
+{
+    return fabs(v(0)) + fabs(v(1)) + fabs(v(2));
+}
+
+
+
+/*!
+\brief computes the cross product of two LINALG::Matrix<3,1> a x b
+\param a (in) : arbitrary vector
+\param b (in) : arbitrary vector
+\return cross product of two BlitzVecs a x b
+*/
+LINALG::Matrix<3,1> computeCrossProduct(
+    const LINALG::Matrix<3,1>& a,
+    const LINALG::Matrix<3,1>& b
+    );
+
+
 
 /*!
 \brief  Given a matrix A[1..m][1..n], this method computes its 

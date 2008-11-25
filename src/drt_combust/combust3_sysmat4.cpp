@@ -81,7 +81,7 @@ struct Shp
       )
   {
     LINALG::Matrix<3,1> posx_gp;
-    GEO::elementToCurrentCoordinates(ele, xyze, posXiDomain, posx_gp);
+    GEO::elementToCurrentCoordinates(ele->Shape(), xyze, posXiDomain, posx_gp);
     
     const bool is_in_fluid = (labelnp == 0);
     

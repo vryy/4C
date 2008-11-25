@@ -16,8 +16,7 @@ Maintainer: Ursula Mayer
 
 #ifdef CCADISCRET
 
-#include "intersection_service.H"
-#include "intersection_math.H"
+#include "../drt_geometry/intersection_math.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "Epetra_SerialDenseMatrix.h"
@@ -25,7 +24,7 @@ Maintainer: Ursula Mayer
 #include <string.h>
 #include <limits.h>
 #include <stdlib.h>
-#include <math.h>
+
 
 
 
