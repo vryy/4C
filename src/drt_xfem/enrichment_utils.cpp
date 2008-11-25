@@ -33,7 +33,7 @@ XFEM::ElementEnrichmentValues::ElementEnrichmentValues(
           dofman_(dofman) 
 {
     enrvals_.clear();
-    const std::set<XFEM::Enrichment>& enrset = dofman.getUniqueEnrichments();
+    const std::set<XFEM::Enrichment>& enrset(dofman.getUniqueEnrichments());
     //TODO: achtung: bei mehreren enrichments ist approach from plus nicht mehr so einfach
     for (std::set<XFEM::Enrichment>::const_iterator enriter =
         enrset.begin(); enriter != enrset.end(); ++enriter)
@@ -43,70 +43,6 @@ XFEM::ElementEnrichmentValues::ElementEnrichmentValues(
         enrvals_[*enriter] = enrval;
     }
     return;
-}
-
-
-
-//
-// For a given situation compute the enriched shape functions
-// 
-void XFEM::ElementEnrichmentValues::ComputeEnrichedElementShapefunction(
-        const XFEM::PHYSICS::Field            field,
-        const LINALG::SerialDenseVector&      funct,
-        LINALG::SerialDenseVector&            enr_funct
-        ) const
-{
-    int dofcounter = 0;
-    
-    const std::set<XFEM::FieldEnr>& enrfieldset(dofman_.getEnrichedFieldsPerEleField(field));
-    const DRT::Element::DiscretizationType distype = dofman_.getDisTypePerField(field);
-    const int numvirtualnode = DRT::UTILS::getNumberOfElementNodes(distype);
-    dsassert(enrfieldset.size() > 0, "empty enrfieldset not allowed at this point!");
-    for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
-            enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
-    {
-      for (int inode = 0; inode < numvirtualnode; ++inode)
-      {
-        const double enrval = enrvals_.find(enrfield->getEnrichment())->second;
-        enr_funct(dofcounter) = funct(inode) * enrval;
-        dofcounter += 1;
-      }
-    }
-    dsassert(dofcounter == dofman_.NumDofPerField(field), "mismatch in information from eledofmanager!");
-}
-
-//
-// For a given situation compute the enriched shape functions
-// 
-void XFEM::ElementEnrichmentValues::ComputeEnrichedElementShapefunction(
-        const XFEM::PHYSICS::Field                 field,
-        const LINALG::SerialDenseVector&           funct,
-        const LINALG::SerialDenseMatrix&           derxy,
-        LINALG::SerialDenseVector&                 enr_funct,
-        LINALG::SerialDenseMatrix&                 enr_derxy
-        ) const
-{
-    int dofcounter = 0;
-
-    const std::set<XFEM::FieldEnr>& enrfieldset(dofman_.getEnrichedFieldsPerEleField(field));
-    const DRT::Element::DiscretizationType distype = dofman_.getDisTypePerField(field);
-    const int numvirtualnode = DRT::UTILS::getNumberOfElementNodes(distype);
-    dsassert(enrfieldset.size() > 0, "empty enrfieldset not allowed at this point!");
-    for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
-            enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
-    {
-      for (int inode = 0; inode < numvirtualnode; ++inode)
-      {
-        const double enrval = enrvals_.find(enrfield->getEnrichment())->second;
-        enr_funct(dofcounter) = funct(inode) * enrval;
-        for (int isd = 0; isd < 3; ++isd)
-        {
-          enr_derxy(isd,dofcounter) = derxy(isd,inode) * enrval;
-        }
-        dofcounter += 1;
-      }
-    }
-    dsassert(dofcounter == dofman_.NumDofPerField(field), "mismatch in information from eledofmanager!");
 }
 
 void XFEM::computeScalarCellNodeValuesFromNodalUnknowns(
@@ -119,7 +55,7 @@ void XFEM::computeScalarCellNodeValuesFromNodalUnknowns(
   LINALG::SerialDenseVector&      cellvalues
   )
 {
-  const LINALG::SerialDenseMatrix* nodalPosXiDomain(cell.NodalPosXiDomain());
+  const LINALG::SerialDenseMatrix& nodalPosXiDomain(cell.NodalPosXiDomain());
 
   // if cell node is on the interface, the value is not defined for a jump.
   // however, we approach the interface from one particular side and therefore,
@@ -139,9 +75,9 @@ void XFEM::computeScalarCellNodeValuesFromNodalUnknowns(
     LINALG::SerialDenseVector funct(ele.NumNode());
     // fill shape functions
     DRT::UTILS::shape_function_3D(funct,
-      (*nodalPosXiDomain)(0,inen),
-      (*nodalPosXiDomain)(1,inen),
-      (*nodalPosXiDomain)(2,inen),
+      nodalPosXiDomain(0,inen),
+      nodalPosXiDomain(1,inen),
+      nodalPosXiDomain(2,inen),
       ele.Shape());
 
     const int numparam  = dofman.NumDofPerField(field);
@@ -167,7 +103,7 @@ void XFEM::computeScalarCellNodeValuesFromElementUnknowns(
   LINALG::SerialDenseVector&      cellvalues
   )
 {
-  const LINALG::SerialDenseMatrix* nodalPosXiDomain(cell.NodalPosXiDomain());
+  const LINALG::SerialDenseMatrix& nodalPosXiDomain(cell.NodalPosXiDomain());
 
   // if cell node is on the interface, the value is not defined for a jump.
   // however, we approach the interface from one particular side and therefore,
@@ -197,9 +133,9 @@ void XFEM::computeScalarCellNodeValuesFromElementUnknowns(
     LINALG::SerialDenseVector funct(numparam);
     // fill shape functions
     DRT::UTILS::shape_function_3D(funct,
-      (*nodalPosXiDomain)(0,incn),
-      (*nodalPosXiDomain)(1,incn),
-      (*nodalPosXiDomain)(2,incn),
+      nodalPosXiDomain(0,incn),
+      nodalPosXiDomain(1,incn),
+      nodalPosXiDomain(2,incn),
       eleval_distype);
 
     LINALG::SerialDenseVector enr_funct(numparam);
@@ -224,7 +160,7 @@ void XFEM::computeTensorCellNodeValuesFromElementUnknowns(
   LINALG::SerialDenseMatrix&       cellvalues
   )
 {
-  const LINALG::SerialDenseMatrix* nodalPosXiDomain(cell.NodalPosXiDomain());
+  const LINALG::SerialDenseMatrix& nodalPosXiDomain(cell.NodalPosXiDomain());
 
   // if cell node is on the interface, the value is not defined for a jump.
   // however, we approach the interface from one particular side and therefore,
@@ -254,9 +190,9 @@ void XFEM::computeTensorCellNodeValuesFromElementUnknowns(
     LINALG::SerialDenseVector funct(numparam);
     // fill shape functions
     DRT::UTILS::shape_function_3D(funct,
-      (*nodalPosXiDomain)(0,incn),
-      (*nodalPosXiDomain)(1,incn),
-      (*nodalPosXiDomain)(2,incn),
+      nodalPosXiDomain(0,incn),
+      nodalPosXiDomain(1,incn),
+      nodalPosXiDomain(2,incn),
       eleval_distype);
 
     LINALG::SerialDenseVector enr_funct(numparam);
@@ -288,7 +224,7 @@ void XFEM::computeVectorCellNodeValues(
   const int numparam  = dofman.NumDofPerField(field);
   const int nsd = 3;
 
-  const LINALG::SerialDenseMatrix* nodalPosXiDomain(cell.NodalPosXiDomain());
+  const LINALG::SerialDenseMatrix& nodalPosXiDomain(cell.NodalPosXiDomain());
   
   LINALG::SerialDenseMatrix xyz_cell(3,nen_cell);
   cell.NodalPosXYZ(ele, xyz_cell);
@@ -315,9 +251,9 @@ void XFEM::computeVectorCellNodeValues(
   {
     // fill shape functions
     DRT::UTILS::shape_function_3D(funct,
-      (*nodalPosXiDomain)(0,inen),
-      (*nodalPosXiDomain)(1,inen),
-      (*nodalPosXiDomain)(2,inen),
+      nodalPosXiDomain(0,inen),
+      nodalPosXiDomain(1,inen),
+      nodalPosXiDomain(2,inen),
       ele.Shape());
     enrvals.ComputeEnrichedNodalShapefunction(field, funct, enr_funct);
     // interpolate value
@@ -346,7 +282,7 @@ void XFEM::computeVectorCellNodeValues(
   const int numparam  = dofman.NumDofPerField(field);
   const int nsd = 3;
 
-  const LINALG::SerialDenseMatrix* nodalPosXiDomain(cell.NodalPosXiDomain());
+  const LINALG::SerialDenseMatrix& nodalPosXiDomain(cell.NodalPosXiDomain());
 
   // if cell node is on the interface, the value is not defined for a jump.
   // however, we approach the interface from one particular side and therefore,
@@ -370,9 +306,9 @@ void XFEM::computeVectorCellNodeValues(
   {
     // fill shape functions
     DRT::UTILS::shape_function_3D(funct,
-      (*nodalPosXiDomain)(0,inen),
-      (*nodalPosXiDomain)(1,inen),
-      (*nodalPosXiDomain)(2,inen),
+      nodalPosXiDomain(0,inen),
+      nodalPosXiDomain(1,inen),
+      nodalPosXiDomain(2,inen),
       ele.Shape());
 
     enrvals.ComputeEnrichedNodalShapefunction(field, funct, enr_funct);
@@ -561,7 +497,7 @@ double BoundaryCoverageRatioT(
     // gaussian points
     const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule);
     
-    const LINALG::SerialDenseMatrix* nodalpos_xi_domain = cell->NodalPosXiDomain();
+    const LINALG::SerialDenseMatrix& nodalpos_xi_domain(cell->NodalPosXiDomain());
     const int numnode_cell = cell->NumNode();
     
     // integration loop
@@ -572,11 +508,8 @@ double BoundaryCoverageRatioT(
       pos_eta_boundary(0) = intpoints.qxg[iquad][0];
       pos_eta_boundary(1) = intpoints.qxg[iquad][1];
       
-      //            cout << pos_eta_boundary << endl;
       LINALG::Matrix<3,1> posXiDomain;
       mapEtaBToXiD(*cell, pos_eta_boundary, posXiDomain);
-      //            cout << cell->toString() << endl;
-      //            cout << posXiDomain << endl;
       
       // shape functions and their first derivatives
       LINALG::SerialDenseVector funct_boundary(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
@@ -585,35 +518,20 @@ double BoundaryCoverageRatioT(
       DRT::UTILS::shape_function_2D_deriv1(deriv_boundary, pos_eta_boundary(0),pos_eta_boundary(1),cell->Shape());
       
       // shape functions and their first derivatives
-      static LINALG::SerialDenseVector funct(DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement);
+      static LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement,1> funct;
       DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
       
       // get jacobian matrix d x / d \xi  (3x2)
-      static LINALG::Matrix<3,2> dxyzdrs;
       // dxyzdrs = xyze_boundary(i,k)*deriv_boundary(j,k);
-      for (int isd = 0; isd < 3; ++isd)
-      {
-        for (int j = 0; j < 2; ++j)
-        {
-          dxyzdrs(isd,j) = 0.0;
-          for (int k = 0; k < numnode_cell; ++k)
-          {
-            dxyzdrs(isd,j) += (*nodalpos_xi_domain)(isd,k)*deriv_boundary(j,k);
-          }
-        }
-      }
+      static LINALG::Matrix<3,2> dxyzdrs;
+      nodalpos_xi_domain.GEMM('N','T',3,2,numnode_cell,1.0,nodalpos_xi_domain.A(),nodalpos_xi_domain.LDA(),deriv_boundary.A(),deriv_boundary.LDA(),0.0,dxyzdrs.A(),dxyzdrs.M());
       
       // compute covariant metric tensor G for surface element (2x2)
-      static LINALG::Matrix<2,2> metric;
       // metric = dxyzdrs(k,i)*dxyzdrs(k,j);
+      static LINALG::Matrix<2,2> metric;
       metric.MultiplyTN(dxyzdrs,dxyzdrs);
       
       const double detmetric = sqrt(metric.Determinant());
-      if (detmetric < 0.0)
-      {
-        cout << endl << "detmetric = " << detmetric << endl;
-        dserror("negative detmetric! should be a bug!");
-      }
       
       const double fac = intpoints.qwgt[iquad]*detmetric;//*detcell;
       if (fac < 0.0)

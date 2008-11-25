@@ -38,7 +38,7 @@ namespace GEO
       )
   {   
     // get cell node coordinates
-    const LINALG::SerialDenseMatrix* xyze_cell(cell.NodalPosXiDomain());
+    const LINALG::SerialDenseMatrix& xyze_cell(cell.NodalPosXiDomain());
     
     // create shape function vectors
     //LINALG::SerialDenseVector funct(DRT::UTILS::getNumberOfElementNodes(cell.Shape()));
@@ -52,7 +52,7 @@ namespace GEO
       pos_xsi_domain(isd) = 0.0;
       for (int j = 0; j < numnodes; ++j)
       {
-        pos_xsi_domain(isd) += funct(j)*(*xyze_cell)(isd,j);
+        pos_xsi_domain(isd) += funct(j)*xyze_cell(isd,j);
       }
     }
     return;
@@ -80,7 +80,7 @@ namespace GEO
       )
   {   
     // get node coordinates
-    const LINALG::SerialDenseMatrix* xyze_cell(cell.NodalPosXiDomain());
+    const LINALG::SerialDenseMatrix& xyze_cell(cell.NodalPosXiDomain());
     
     const int numnode = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
     
@@ -97,7 +97,7 @@ namespace GEO
         xjm(i,j) = 0.0;
         for (int inode = 0; inode < numnode; ++inode)
         {
-          xjm(i,j) += deriv(i,inode)*(*xyze_cell)(j,inode);
+          xjm(i,j) += deriv(i,inode)*xyze_cell(j,inode);
         }
       }
     }
@@ -121,24 +121,24 @@ namespace GEO
   //! map position from eta^boundary to xi^boundary space
   inline void mapEtaBToXiB(
       const GEO::BoundaryIntCell& cell,
-      const LINALG::Matrix<2,1>&  pos_eta,
-      LINALG::Matrix<2,1>&         pos_xsi_boundary
+      const LINALG::Matrix<2,1>&  pos_eta_boundary,
+      LINALG::Matrix<2,1>&        pos_xsi_boundary
   )
   {   
     const int numnodecell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
     
     // get cell node coordinates
-    const LINALG::SerialDenseMatrix* xyze_cell(cell.NodalPosXiBoundary());
+    const LINALG::SerialDenseMatrix& xyze_cell(cell.NodalPosXiBoundary());
     
     // create shape function vectors
     LINALG::SerialDenseVector funct(numnodecell);
-    DRT::UTILS::shape_function_2D(funct,pos_eta(0),pos_eta(1),cell.Shape());
+    DRT::UTILS::shape_function_2D(funct,pos_eta_boundary(0),pos_eta_boundary(1),cell.Shape());
     
     // translate position into from cell coordinates to element coordinates
     // pos_xsi_boundary = xyze_cell(i,j) * funct(j);
     if (numnodecell != 3) dserror("numnode of integrationcell is not 3");
     //GEO::PosXiBoundary pos_xsi_boundary;
-    BLITZTINY::MV_product<2,3>(*xyze_cell, funct, pos_xsi_boundary);
+    BLITZTINY::MV_product<2,3>(xyze_cell, funct, pos_xsi_boundary);
     return;
   }
   
@@ -152,7 +152,7 @@ namespace GEO
     const int numnodecell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
     
     // get cell node coordinates in xi_domain
-    const LINALG::SerialDenseMatrix* xyze_cell(cell.NodalPosXiDomain());
+    const LINALG::SerialDenseMatrix& xyze_cell(cell.NodalPosXiDomain());
     
     // create shape function vectors
     LINALG::SerialDenseVector funct(numnodecell);
@@ -161,7 +161,7 @@ namespace GEO
     // translate position into from cell coordinates to element coordinates
     //const LINALG::SerialDenseVector pos_xsi_boundary = xyze_cell(i,j)*funct(j);
     if (numnodecell != 3) dserror("numnode of integrationcell is not 3");
-    BLITZTINY::MV_product<3,3>(*xyze_cell, funct, pos_xsi_domain);
+    BLITZTINY::MV_product<3,3>(xyze_cell, funct, pos_xsi_domain);
 //    elevec1.GEMV('N', 3, numnodecell, 1.0, xyze_cell.A(), xyze_cell.LDA(), fa.A(), 1.0, elevec1.A());
     
     return;
@@ -175,7 +175,7 @@ namespace GEO
       const LINALG::Matrix<2,1>&  pos_eta_boundary)
   {   
     // get node coordinates
-    const LINALG::SerialDenseMatrix* xiBe_cell(cell.NodalPosXiBoundary());
+    const LINALG::SerialDenseMatrix& xiBe_cell(cell.NodalPosXiBoundary());
     
     const int numnode = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
     
@@ -192,7 +192,7 @@ namespace GEO
         xjm(i,j) = 0.0;
         for (int k = 0; k < numnode; ++k)
         {
-          xjm(i,j) += deriv(i, k)*(*xiBe_cell)(j, k);
+          xjm(i,j) += deriv(i, k)*xiBe_cell(j, k);
         }
       }
     }

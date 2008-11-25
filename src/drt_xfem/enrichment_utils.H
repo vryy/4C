@@ -176,11 +176,31 @@ namespace XFEM
     * -> no chain rule, since enrichment function derivative is zero
     * TODO: if enrichment function has derivatives not equal to zero, we need the chain rule here
     */
+    template<class VI, class VO>
     void ComputeEnrichedElementShapefunction(
         const XFEM::PHYSICS::Field field,
-        const LINALG::SerialDenseVector& funct,
-        LINALG::SerialDenseVector& enr_funct
-    ) const;
+        const VI&                  funct,
+        VO&                        enr_funct
+    ) const
+    {
+        int dofcounter = 0;
+        
+        const std::set<XFEM::FieldEnr>& enrfieldset(dofman_.getEnrichedFieldsPerEleField(field));
+        const DRT::Element::DiscretizationType distype = dofman_.getDisTypePerField(field);
+        const int numvirtualnode = DRT::UTILS::getNumberOfElementNodes(distype);
+        dsassert(enrfieldset.size() > 0, "empty enrfieldset not allowed at this point!");
+        for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
+                enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
+        {
+          for (int inode = 0; inode < numvirtualnode; ++inode)
+          {
+            const double enrval = enrvals_.find(enrfield->getEnrichment())->second;
+            enr_funct(dofcounter) = funct(inode) * enrval;
+            dofcounter += 1;
+          }
+        }
+        dsassert(dofcounter == dofman_.NumDofPerField(field), "mismatch in information from eledofmanager!");
+    }
     
     /*!
     * \brief For a given situation compute the enriched shape functions
@@ -189,13 +209,37 @@ namespace XFEM
     * -> no chain rule, since enrichment function derivative is zero
     * TODO: if enrichment function has derivatives not equal to zero, we need the chain rule here
     */
+    template<class VI, class MI1, class VO, class MO1>
     void ComputeEnrichedElementShapefunction(
         const XFEM::PHYSICS::Field field,
-        const LINALG::SerialDenseVector& funct,
-        const LINALG::SerialDenseMatrix& derxy,
-        LINALG::SerialDenseVector& enr_funct,
-        LINALG::SerialDenseMatrix& enr_derxy
-    ) const;
+        const VI&                  funct,
+        const MI1&                 derxy,
+        VO&                        enr_funct,
+        MO1&                       enr_derxy
+    ) const
+    {
+        int dofcounter = 0;
+
+        const std::set<XFEM::FieldEnr>& enrfieldset(dofman_.getEnrichedFieldsPerEleField(field));
+        const DRT::Element::DiscretizationType distype = dofman_.getDisTypePerField(field);
+        const int numvirtualnode = DRT::UTILS::getNumberOfElementNodes(distype);
+        dsassert(enrfieldset.size() > 0, "empty enrfieldset not allowed at this point!");
+        for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
+                enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
+        {
+          for (int inode = 0; inode < numvirtualnode; ++inode)
+          {
+            const double enrval = enrvals_.find(enrfield->getEnrichment())->second;
+            enr_funct(dofcounter) = funct(inode) * enrval;
+            for (int isd = 0; isd < 3; ++isd)
+            {
+              enr_derxy(isd,dofcounter) = derxy(isd,inode) * enrval;
+            }
+            dofcounter += 1;
+          }
+        }
+        dsassert(dofcounter == dofman_.NumDofPerField(field), "mismatch in information from eledofmanager!");
+    }
     
   private:
     

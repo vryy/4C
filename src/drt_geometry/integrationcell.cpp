@@ -50,7 +50,7 @@ static void ComputePhysicalCoordinates(
 {
   const LINALG::SerialDenseMatrix eleCoord(GEO::InitialPositionArrayBlitz(&ele));
   //DRT::UTILS::fillInitialPositionArray(&ele, eleCoord);
-  const LINALG::SerialDenseMatrix* nodalPosXiDomain = cell.NodalPosXiDomain();
+  const LINALG::SerialDenseMatrix& nodalPosXiDomain(cell.NodalPosXiDomain());
   
   const int nen_cell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
   
@@ -62,9 +62,9 @@ static void ComputePhysicalCoordinates(
   {
     // shape functions
     DRT::UTILS::shape_function_3D(funct,
-        (*nodalPosXiDomain)(0, inen),
-        (*nodalPosXiDomain)(1, inen),
-        (*nodalPosXiDomain)(2, inen),
+        nodalPosXiDomain(0, inen),
+        nodalPosXiDomain(1, inen),
+        nodalPosXiDomain(2, inen),
         ele.Shape());
     
     for (int j = 0; j < nen_ele; ++j)

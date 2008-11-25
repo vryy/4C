@@ -109,7 +109,7 @@ public:
 
      \return cells nodal coordinates  
      */
-    const LINALG::SerialDenseMatrix* NodalPosXiDomain() const {return &nodalpos_xi_domain_;};
+    const LINALG::SerialDenseMatrix& NodalPosXiDomain() const {return nodalpos_xi_domain_;};
     
     //! fills an array with the coordinates of the integration cell in physical coordinates
     void NodalPosXYZ(
@@ -180,14 +180,14 @@ public:
 
      \return cells nodal coordinates  
      */
-    const LINALG::SerialDenseMatrix* NodalPosXiDomain() const {return &nodalpos_xi_domain_;};
+    const LINALG::SerialDenseMatrix& NodalPosXiDomain() const {return nodalpos_xi_domain_;};
     
     /*!
      \brief returns the coordinates of the integration cell in domain element coordinates
 
      \return cells nodal coordinates  
      */
-    const LINALG::SerialDenseMatrix* NodalPosXiBoundary() const {return &nodalpos_xi_boundary_;};
+    const LINALG::SerialDenseMatrix& NodalPosXiBoundary() const {return nodalpos_xi_boundary_;};
     
     //! return "parent" cutter element id (global id)
     int GetSurfaceEleGid() const {return surface_ele_gid_;}
