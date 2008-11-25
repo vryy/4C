@@ -35,7 +35,6 @@ using namespace Teuchos;
 #include "../drt_lib/linalg_fixedsizematrix.H"
 //including random number library of blitz for statistical forces
 #include <random/normal.h>
-#include "../drt_geometry/blitz_tiny_operation.H"
 
 
 

@@ -639,6 +639,9 @@ void DRT::ELEMENTS::Beam2::b2_nlnstiffmass( ParameterList& params,
   //calculating tangential stiffness matrix in global coordinates
   if (stiffmatrix != NULL)
   {
+    //declaration of fixed size matrix for global tiffness
+    LINALG::Matrix<6,6> stiff_glob;
+    
     //linear elastic part including rotation
     for(int id_col=0; id_col<6; id_col++)
     {
@@ -646,23 +649,32 @@ void DRT::ELEMENTS::Beam2::b2_nlnstiffmass( ParameterList& params,
       aux_CB(1,id_col) = Bcurr(1,id_col) * (ym*mominer_/lrefe_);
       aux_CB(2,id_col) = Bcurr(2,id_col) * (sm*crosssecshear_/lrefe_);
     }
-    BLITZTINY::MtM_product<6,6,3>(aux_CB,Bcurr,*stiffmatrix);
+    
+    stiff_glob.MultiplyTN(aux_CB,Bcurr);
 
     //adding geometric stiffness by shear force
     double aux_Q_fac = force_loc(2)*lrefe_ / pow(lcurr,2);
     for(int id_lin=0; id_lin<6; id_lin++)
         for(int id_col=0; id_col<6; id_col++)
         {
-          (*stiffmatrix)(id_lin,id_col) -= aux_Q_fac * rcurr(id_lin) * zcurr(id_col);
-          (*stiffmatrix)(id_lin,id_col) -= aux_Q_fac * rcurr(id_col) * zcurr(id_lin);
+          stiff_glob(id_lin,id_col) -= aux_Q_fac * rcurr(id_lin) * zcurr(id_col);
+          stiff_glob(id_lin,id_col) -= aux_Q_fac * rcurr(id_col) * zcurr(id_lin);
         }
 
     //adding geometric stiffness by axial force
     double aux_N_fac = force_loc(0)/lcurr;
     for(int id_lin=0; id_lin<6; id_lin++)
         for(int id_col=0; id_col<6; id_col++)
-            (*stiffmatrix)(id_lin,id_col) += aux_N_fac * zcurr(id_lin) * zcurr(id_col);
+          stiff_glob(id_lin,id_col) += aux_N_fac * zcurr(id_lin) * zcurr(id_col);
+    
+    //shfting values from fixed size matrix to epetra matrix *stiffmatrix
+    for(int i = 0; i < 6; i++)
+      for(int j = 0; j < 6; j++)
+        (*stiffmatrix)(i,j) = stiff_glob(i,j);
+    
   }
+  
+
 
   //calculating mass matrix (local version = global version)
   if (massmatrix != NULL)
