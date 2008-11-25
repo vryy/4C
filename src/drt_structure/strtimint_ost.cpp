@@ -190,7 +190,7 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual()
   }
   fres_->Update(1.0, *finertt_, 1.0);
 
-  //cout << TimIntVector::CalculateNorm(vectornorm_l2, fextn_) << endl;
+  //cout << STR::AUX::CalculateVectorNorm(vectornorm_l2, fextn_) << endl;
 
   // build tangent matrix : effective dynamic stiffness matrix
   //    K_{Teffdyn} = 1/(theta*dt^2) M

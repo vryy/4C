@@ -21,6 +21,7 @@ Maintainer: Burkhard Bornemann
 
 #include "strtimint.H"
 #include "strtimint_impl.H"
+#include "str_aux.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -144,7 +145,7 @@ void STR::TimIntImpl::Predict()
   dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
 
   // determine residual norm of predictor
-  normfres_ = TimIntVector::CalculateNorm(iternorm_, fres_);
+  normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
 
   // determine characteristic norms
   // we set the minumum of CalcRefNormForce() and #tolfres_, because
@@ -387,9 +388,9 @@ void STR::TimIntImpl::NewtonFull()
     dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
 
     // build residual force norm
-    normfres_ = TimIntVector::CalculateNorm(iternorm_, fres_);
+    normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
     // build residual displacement norm
-    normdisi_ = TimIntVector::CalculateNorm(iternorm_, disi_);
+    normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
 
     // print stuff
     PrintNewtonIter();
@@ -543,9 +544,9 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
     dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
 
     // build residual force norm
-    normfres_ = TimIntVector::CalculateNorm(iternorm_, fres_);
+    normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
     // build residual displacement norm
-    normdisi_ = TimIntVector::CalculateNorm(iternorm_, disi_);
+    normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
     // build residual Lagrange multiplier norm
     normcon_ = conman_->GetErrorNorm();
 

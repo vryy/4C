@@ -22,6 +22,7 @@ Maintainer: Burkhard Bornemann
 
 #include "../drt_io/io_ostream0.H"
 #include "../drt_inpar/inpar_structure.H"
+#include "str_aux.H"
 
 #include "strtimada.H"
 
@@ -242,7 +243,7 @@ void STR::TimAda::Indicate
 )
 {
   // norm of local discretisation error vector
-  double norm = TimIntVector::CalculateNorm(errnorm_, locerrdisn_); 
+  double norm = STR::AUX::CalculateVectorNorm(errnorm_, locerrdisn_); 
 
   // check if acceptable
   accepted = (norm < errtol_);
