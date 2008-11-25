@@ -1,4 +1,4 @@
-/*!----------------------------------------------------------------------
+#/*!----------------------------------------------------------------------
 \file fluid2_line_evaluate.cpp
 \brief
 
@@ -173,8 +173,10 @@ int DRT::ELEMENTS::Fluid2Line::Evaluate(        ParameterList&            params
       // get value for boundary condition
       const vector<double>* val = (*wdbc_cond).Get<vector<double> >("val");
 
-      // get time integration parameter
-      double afgdt = params.get<double>("afgdt");
+      // get time integration parameters
+      const double afgdt = params.get<double>("afgdt");
+
+      const double gdt   = params.get<double>("gdt");
 
       //--------------------------------------------------
       // get parent elements location vector and ownerships
@@ -205,12 +207,19 @@ int DRT::ELEMENTS::Fluid2Line::Evaluate(        ParameterList&            params
       RefCountPtr<const Epetra_Vector> velaf 
 	=
 	discretization.GetState("u and p (n+alpha_F,trial)");
-      if (velaf==null)
+      RefCountPtr<const Epetra_Vector> velnp 
+	=
+	discretization.GetState("u and p (n+1      ,trial)");
+
+      if (velaf==null || velnp==null)
       {
-        dserror("Cannot get state vector 'velaf'");
+        dserror("Cannot get state vector 'velaf', 'velnp'");
       }
       vector<double> mypvelaf((*plm).size());
       DRT::UTILS::ExtractMyValues(*velaf,mypvelaf,*plm);
+
+      vector<double> mypvelnp((*plm).size());
+      DRT::UTILS::ExtractMyValues(*velnp,mypvelnp,*plm);
 
       // create blitz matrix object for convenience
       const int numnode = parent_->NumNode();
@@ -218,11 +227,21 @@ int DRT::ELEMENTS::Fluid2Line::Evaluate(        ParameterList&            params
 				      numnode,
 				      blitz::ColumnMajorArray<2>());
 
+      blitz::Array<double, 2> pevelnp(2,
+				      numnode,
+				      blitz::ColumnMajorArray<2>());
+
+      blitz::Array<double, 1> peprenp(numnode);
+
       // extract velocities
       for (int i=0;i<numnode;++i)
       {
 	pevelaf(0,i) = mypvelaf[0+(i*3)];
 	pevelaf(1,i) = mypvelaf[1+(i*3)];
+
+	pevelnp(0,i) = mypvelnp[0+(i*3)];
+	pevelnp(1,i) = mypvelnp[1+(i*3)];
+        peprenp(i)   = mypvelnp[2+(i*3)];
       }
 
       // call the special evaluation method
@@ -231,12 +250,15 @@ int DRT::ELEMENTS::Fluid2Line::Evaluate(        ParameterList&            params
 			    elemat1       ,
 			    elevec1       ,
 			    pevelaf       ,
+			    pevelnp       ,
+                            peprenp       ,
 			    *val          ,
 			    functions     ,
 			    curvefac      ,
 			    Cb            ,
 			    wd_gamma      ,
-			    afgdt         );
+			    afgdt         ,
+                            gdt           );
 
       break;
     }
@@ -978,17 +1000,21 @@ void DRT::ELEMENTS::Fluid2Line::EvaluateWeakDirichlet(
   Epetra_SerialDenseMatrix&  elemat        ,
   Epetra_SerialDenseVector&  elevec        ,
   blitz::Array<double,2>&    pevelaf       ,
+  blitz::Array<double,2>&    pevelnp       ,
+  blitz::Array<double,1>&    peprenp       ,
   vector<double>             val           ,
   const vector<int>*         functions     ,
   double                     curvefac      ,
   double                     Cb            ,
   double                     wd_gamma      ,
-  double                     afgdt
+  const double               afgdt         ,
+  const double               gdt
   )
 {
   //--------------------------------------------------
   // gausspoint quantites
   blitz::Array<double,1> velintaf(2);
+  blitz::Array<double,1> velintnp(2);
   blitz::Array<double,2> vderxyaf(2,2,blitz::ColumnMajorArray<2>());
 
   blitz::Array<double,2> pxji(2,2,blitz::ColumnMajorArray<2>());
@@ -1014,6 +1040,7 @@ void DRT::ELEMENTS::Fluid2Line::EvaluateWeakDirichlet(
   // allocate arrays for shapefunctions and derivatives
   blitz::Array<double,1> pfunct(  parent_->NumNode());
   blitz::Array<double,2> pderiv(2,parent_->NumNode());
+  blitz::Array<double,2> pderxy(2,parent_->NumNode());
 
   //--------------------------------------------------
   // get material of volume element this surface belongs to
@@ -1387,6 +1414,17 @@ void DRT::ELEMENTS::Fluid2Line::EvaluateWeakDirichlet(
     pxji(1,0) = (-pxjm(1,0))/pdet;
     pxji(1,1) = ( pxjm(0,0))/pdet;
 
+
+    // compute global derivates
+    {
+      pderxy = 0.0;
+      blitz::firstIndex  i;   // Placeholder for the first index
+      blitz::secondIndex j;   // Placeholder for the second index
+      blitz::thirdIndex  k;   // Placeholder for the third index
+     
+      pderxy = blitz::sum(pxji(i,k)*pderiv(k,j),k);
+
+    }
     
     /*          +-           -+   +-           -+   +-           -+
 		|             |   |             |   |             |
@@ -1424,6 +1462,31 @@ void DRT::ELEMENTS::Fluid2Line::EvaluateWeakDirichlet(
 			     n(1)*G(1,1)*n(1));
 
 
+
+    double pcoordgp[2];
+    pcoordgp[0]=0.0;
+    pcoordgp[1]=0.0;
+    for (int i = 0; i< piel; i++)
+    {
+      pcoordgp[0]+=pxye(0,i)*pfunct(i);
+      pcoordgp[1]+=pxye(1,i)*pfunct(i);
+    }
+
+    // get pressure (n+1,i) at integration point
+    //
+    //                +-----
+    //       n+1       \                  n+1
+    //    pre   (x) =   +      N (x) * pre
+    //                 /        i         i
+    //                +-----
+    //                node i
+    //
+    double pres  = 0;
+    for(int j=0;j<piel;++j)
+    {
+      pres+=pfunct(j)*peprenp(j);
+    }
+
     // get velocities (n+alpha_F,i) at integration point
     //
     //                 +-----
@@ -1440,6 +1503,22 @@ void DRT::ELEMENTS::Fluid2Line::EvaluateWeakDirichlet(
       velintaf(1)+=pfunct(j)*pevelaf(1,j);
     }
 
+    // get velocities (n+1,i) at integration point
+    //
+    //                +-----
+    //       n+1       \                  n+1
+    //    vel   (x) =   +      N (x) * vel
+    //                 /        j         j
+    //                +-----
+    //                node j
+    //
+    velintnp=0;
+    for(int j=0;j<piel;++j)
+    {
+      velintnp(0)+=pfunct(j)*pevelnp(0,j);
+      velintnp(1)+=pfunct(j)*pevelnp(1,j);
+    }
+
     // get velocity (n+alpha_F,i) derivatives at integration point
     //
     //       n+af      +-----  dN (x)
@@ -1451,14 +1530,42 @@ void DRT::ELEMENTS::Fluid2Line::EvaluateWeakDirichlet(
     //
     // j : direction of derivative x/y/z
     //
+
     vderxyaf=0;
     for(int k=0;k<piel;++k)
     {
       for (int j=0;j<2;++j)
       {
-	vderxyaf(0,j)+=pderiv(j,k)*pevelaf(0,k);
-	vderxyaf(1,j)+=pderiv(j,k)*pevelaf(1,k);
+	vderxyaf(0,j)+=pderxy(j,k)*pevelaf(0,k);
+	vderxyaf(1,j)+=pderxy(j,k)*pevelaf(1,k);
       }
+    }
+
+    //--------------------------------------------------
+    // partially integrated pressure term
+    /*
+    // factor: 1.0
+    //
+    //             /            \
+    //            |              |
+    //          + |  v , Dp * n  |
+    //            |              |
+    //             \            / boundaryele
+    //
+    */
+    for (int ui=0; ui<piel; ++ui) 
+    {
+      for (int vi=0; vi<piel; ++vi) 
+      {
+        elemat(vi*3  ,ui*3+2) += dr*wquad*pfunct(vi)*pfunct(ui)*n(0);
+        elemat(vi*3+1,ui*3+2) += dr*wquad*pfunct(vi)*pfunct(ui)*n(1);
+      }
+    }
+
+    for (int vi=0; vi<piel; ++vi) 
+    {
+      elevec[vi*3    ] -= dr*wquad*pfunct(vi)*n(0)*pres;
+      elevec[vi*3 + 1] -= dr*wquad*pfunct(vi)*n(1)*pres;
     }
 
     //--------------------------------------------------
@@ -1477,14 +1584,10 @@ void DRT::ELEMENTS::Fluid2Line::EvaluateWeakDirichlet(
     {
       for (int vi=0; vi<piel; ++vi) 
       {
-	elemat[vi*3    ][ui*3    ] -= dr*wquad*2.0*visc*afgdt*pfunct(vi)*
-	  (pderiv(0,ui)*n(0)+0.5*pderiv(1,ui)*n(1));
-        elemat[vi*3    ][ui*3 + 1] -= dr*wquad*2.0*visc*afgdt*pfunct(vi)*
-	  (0.5*pderiv(0,ui)*n(1));
-	elemat[vi*3 + 1][ui*3    ] -= dr*wquad*2.0*visc*afgdt*pfunct(vi)*
-	  (0.5*pderiv(1,ui)*n(0));
-	elemat[vi*3 + 1][ui*3 + 1] -= dr*wquad*2.0*visc*afgdt*pfunct(vi)*
-	  (0.5*pderiv(0,ui)*n(0)+pderiv(1,ui)*n(1));
+	elemat(vi*3  ,ui*3  ) -= dr*wquad*2.0*visc*afgdt*pfunct(vi)*(0.5*pderxy(1,ui)*n(1)+pderxy(0,ui)*n(0));
+        elemat(vi*3  ,ui*3+1) -= dr*wquad*2.0*visc*afgdt*pfunct(vi)*(0.5*pderxy(0,ui)*n(1));
+	elemat(vi*3+1,ui*3  ) -= dr*wquad*2.0*visc*afgdt*pfunct(vi)*(0.5*pderxy(1,ui)*n(0));
+        elemat(vi*3+1,ui*3+1) -= dr*wquad*2.0*visc*afgdt*pfunct(vi)*(0.5*pderxy(0,ui)*n(0)+pderxy(1,ui)*n(1));
       }
     }
     /*
@@ -1499,19 +1602,50 @@ void DRT::ELEMENTS::Fluid2Line::EvaluateWeakDirichlet(
     */
     for (int vi=0; vi<piel; ++vi) 
     {
-      elevec[vi*3    ] += dr*wquad*2.0*visc*pfunct(vi)*
-	(vderxyaf(0,0)*n(0)
-	 +
-	 0.5*(vderxyaf(0,1)+vderxyaf(1,0))*n(1));
-      elevec[vi*3 + 1] += dr*wquad*2.0*visc*pfunct(vi)*
-	(0.5*(vderxyaf(0,1)+vderxyaf(1,0))*n(0)
-	 +
-	 vderxyaf(1,1)*n(1));
+      elevec[vi*3    ] += dr*wquad*2.0*visc*pfunct(vi)*(vderxyaf(0,0)*n(0)+0.5*(vderxyaf(0,1)+vderxyaf(1,0))*n(1));
+      elevec[vi*3 + 1] += dr*wquad*2.0*visc*pfunct(vi)*(0.5*(vderxyaf(0,1)+vderxyaf(1,0))*n(0)+vderxyaf(1,1)*n(1));
     }
 
     //--------------------------------------------------
-    // (adjoint) consistency term, viscous part
+    // adjoint consistency term, pressure/continuity part
+    /*
+    // factor: gdt
+    //
+    //             /              \
+    //            |                |
+    //          - |  q , Dacc * n  |
+    //            |                |
+    //             \              / boundaryele
+    //
+    */
+    for (int ui=0; ui<piel; ++ui) 
+    {
+      for (int vi=0; vi<piel; ++vi) 
+      { 
+        elemat(vi*3+2,ui*3  ) -= dr*wquad*gdt*pfunct(vi)*pfunct(ui)*n(0);
+        elemat(vi*3+2,ui*3+1) -= dr*wquad*gdt*pfunct(vi)*pfunct(ui)*n(1);
+      }
+    }
 
+    /*
+    // factor: 1.0
+    //
+    //             /                       \
+    //            |       / n+1     \       |
+    //          + |  q , | u   - u   | * n  |
+    //            |       \ (i)   B /       |
+    //             \                       / boundaryele
+    //
+    */
+    for (int vi=0; vi<piel; ++vi) 
+    {
+      elevec[vi*3 + 2] += dr*wquad*pfunct(vi)*((velintnp(0)-val[0]*functionfac[0]*curvefac)*n(0)
+                                               +
+                                               (velintnp(1)-val[1]*functionfac[1]*curvefac)*n(1));
+    }
+
+    //--------------------------------------------------
+    // adjoint consistency term, viscous part
     /*
     // factor: 2*nu*gamma_wd*afgdt
     //
@@ -1526,16 +1660,13 @@ void DRT::ELEMENTS::Fluid2Line::EvaluateWeakDirichlet(
     {
       for (int vi=0; vi<piel; ++vi) 
       {
-	elemat[vi*3    ][ui*3    ] -= dr*wquad*2.0*visc*wquad*wd_gamma*afgdt*
-	  (pderiv(0,vi)*n(0)+0.5*pderiv(1,vi)*n(1))*pfunct(ui);
-        elemat[vi*3    ][ui*3 + 1] -= dr*wquad*2.0*visc*wquad*wd_gamma*afgdt*
-	  (0.5*pderiv(1,vi)*n(0)                  )*pfunct(ui);
-	elemat[vi*3 + 1][ui*3    ] -= dr*wquad*2.0*visc*wquad*wd_gamma*afgdt*
-	  (0.5*pderiv(0,vi)*n(1)                  )*pfunct(ui);
-	elemat[vi*3 + 1][ui*3 + 1] -= dr*wquad*2.0*visc*wquad*wd_gamma*afgdt*
-	  (0.5*pderiv(0,vi)*n(0)+pderiv(1,vi)*n(1))*pfunct(ui);
+	elemat(vi*3  ,ui*3  ) -= dr*wquad*2.0*visc*wd_gamma*afgdt*(pderxy(0,vi)*n(0)+0.5*pderxy(1,vi)*n(1))*pfunct(ui);
+        elemat(vi*3  ,ui*3+1) -= dr*wquad*2.0*visc*wd_gamma*afgdt*(0.5*pderxy(1,vi)*n(0)                  )*pfunct(ui);
+        elemat(vi*3+1,ui*3  ) -= dr*wquad*2.0*visc*wd_gamma*afgdt*(0.5*pderxy(0,vi)*n(1)                  )*pfunct(ui);
+        elemat(vi*3+1,ui*3+1) -= dr*wquad*2.0*visc*wd_gamma*afgdt*(0.5*pderxy(0,vi)*n(0)+pderxy(1,vi)*n(1))*pfunct(ui);
       }
     }
+
     /*
     // factor: 2*nu*gamma_wd
     //
@@ -1548,15 +1679,87 @@ void DRT::ELEMENTS::Fluid2Line::EvaluateWeakDirichlet(
     */
     for (int vi=0; vi<piel; ++vi) 
     {
-      elevec[vi*3    ] += dr*wquad*2.0*visc*wquad*wd_gamma*
-	((pderiv(0,vi)*n(0)+0.5*pderiv(1,vi)*n(1))*(velintaf(0)-val[0]*functionfac[0]*curvefac)
+      elevec[vi*3    ] += dr*wquad*2.0*visc*wd_gamma*
+	((pderxy(0,vi)*n(0)+0.5*pderxy(1,vi)*n(1))*(velintaf(0)-val[0]*functionfac[0]*curvefac)
 	 +
-	 (0.5*pderiv(1,vi)*n(0)                  )*(velintaf(1)-val[1]*functionfac[1]*curvefac));
+	 (0.5*pderxy(1,vi)*n(0)                  )*(velintaf(1)-val[1]*functionfac[1]*curvefac));
 
-      elevec[vi*3 + 1] += dr*wquad*2.0*visc*wquad*wd_gamma*
-	((0.5*pderiv(0,vi)*n(1)                  )*(velintaf(0)-val[0]*functionfac[0]*curvefac)
+      elevec[vi*3 + 1] += dr*wquad*2.0*visc*wd_gamma*
+	((0.5*pderxy(0,vi)*n(1)                  )*(velintaf(0)-val[0]*functionfac[0]*curvefac)
 	 +
-	 (0.5*pderiv(0,vi)*n(0)+pderiv(1,vi)*n(1))*(velintaf(1)-val[1]*functionfac[1]*curvefac));
+	 (0.5*pderxy(0,vi)*n(0)+pderxy(1,vi)*n(1))*(velintaf(1)-val[1]*functionfac[1]*curvefac));
+    }
+
+    //--------------------------------------------------
+    // adjoint consistency term, convective part 
+    double flux=velintaf(0)*n(0)+velintaf(1)*n(1);
+
+    if(flux>0)
+    {
+      /*
+	// This linearisation has only to be included if
+	// u*n is negative --- otherwise it's nonesense
+	//
+	// factor: afgdt
+	//
+	//    /                             \
+	//   |    /        \       n+af      |
+	// - |   | Dacc * n | w , u    - u   |
+	//   |    \        /              b  |
+	//    \                             / boundaryele, inflow
+	//               
+      */
+
+      for (int ui=0; ui<piel; ++ui) 
+      {
+	for (int vi=0; vi<piel; ++vi) 
+	{
+	  elemat(vi*3  ,ui*3  ) -= afgdt*dr*wquad*(velintaf(0)-val[0]*functionfac[0]*curvefac)*pfunct(ui)*n(0)*pfunct(vi);
+	  elemat(vi*3  ,ui*3+1) -= afgdt*dr*wquad*(velintaf(0)-val[0]*functionfac[0]*curvefac)*pfunct(ui)*n(1)*pfunct(vi);
+	  elemat(vi*3+1,ui*3  ) -= afgdt*dr*wquad*(velintaf(1)-val[1]*functionfac[1]*curvefac)*pfunct(ui)*n(0)*pfunct(vi);
+          elemat(vi*3+1,ui*3+1) -= afgdt*dr*wquad*(velintaf(1)-val[1]*functionfac[1]*curvefac)*pfunct(ui)*n(1)*pfunct(vi);
+	}
+      }
+
+      /*
+      // factor: afgdt
+      //
+      //    /                       \
+      //   |    / n+af   \           |
+      // - |   | u    * n | w , Dacc |
+      //   |    \        /           |
+      //    \  |          |         / boundaryele, inflow
+      //       +----------+
+      //           <0
+      */
+
+      for (int ui=0; ui<piel; ++ui) 
+      {
+        for (int vi=0; vi<piel; ++vi) 
+        {
+          elemat(vi*3  ,ui*3  ) -= afgdt*dr*wquad*flux*pfunct(ui)*pfunct(vi);
+          elemat(vi*3+1,ui*3+1) -= afgdt*dr*wquad*flux*pfunct(ui)*pfunct(vi);
+        }
+      }
+
+
+      /*
+      // factor: 1
+      //
+      //    /                             \
+      //   |    / n+af   \       n+af      |
+      // - |   | u    * n | w , u    - u   |
+      //   |    \        /              b  |
+      //    \  |          |               / boundaryele, inflow
+      //       +----------+
+      //           <0
+      */
+
+      for (int vi=0; vi<piel; ++vi) 
+      {
+        elevec[vi*3    ] += dr*wquad*pfunct(vi)*flux*(velintaf(0)-val[0]*functionfac[0]*curvefac);
+        elevec[vi*3 + 1] += dr*wquad*pfunct(vi)*flux*(velintaf(1)-val[1]*functionfac[1]*curvefac);
+      }
     }
 
     //--------------------------------------------------
@@ -1577,8 +1780,8 @@ void DRT::ELEMENTS::Fluid2Line::EvaluateWeakDirichlet(
     {
       for (int vi=0; vi<piel; ++vi) 
       {
-	elemat[vi*3    ][ui*3    ] += afgdt*dr*wquad*Cb*visc/h*pfunct(ui)*pfunct(vi);
-	elemat[vi*3 + 1][ui*3 + 1] += afgdt*dr*wquad*Cb*visc/h*pfunct(ui)*pfunct(vi);
+	elemat(vi*3  ,ui*3  ) += dr*wquad*afgdt*Cb*visc/h*pfunct(ui)*pfunct(vi);
+	elemat(vi*3+1,ui*3+1) += dr*wquad*afgdt*Cb*visc/h*pfunct(ui)*pfunct(vi);
       }
     }
 
@@ -1587,7 +1790,7 @@ void DRT::ELEMENTS::Fluid2Line::EvaluateWeakDirichlet(
     //
     //    /                \
     //   |        n+af      |
-    // + |   w , u    - u   |
+    // - |   w , u    - u   |
     //   |               b  |
     //    \                / boundaryele
     //
@@ -1597,83 +1800,6 @@ void DRT::ELEMENTS::Fluid2Line::EvaluateWeakDirichlet(
     {
       elevec[vi*3    ] -= dr*wquad*Cb*visc/h*pfunct(vi)*(velintaf(0)-val[0]*functionfac[0]*curvefac);
       elevec[vi*3 + 1] -= dr*wquad*Cb*visc/h*pfunct(vi)*(velintaf(1)-val[1]*functionfac[1]*curvefac);
-    }
-
-    //--------------------------------------------------
-    // adjoint consistency term, convective part 
-    
-    double flux=velintaf(0)*n(0)+velintaf(1)*n(1);
-
-    if(flux>0)
-    {
-      flux=0;
-    }
-    else
-    {
-      /*
-	// This linearisation has only to be included if
-	// u*n is negative --- otherwise it's nonesense
-	//
-	// factor: afgdt
-	//
-	//    /                             \
-	//   |    /        \       n+af      |
-	// - |   | Dacc * n | w , u    - u   |
-	//   |    \        /              b  |
-	//    \                             / boundaryele, inflow
-	//               
-      */
-
-      for (int ui=0; ui<piel; ++ui) 
-      {
-	for (int vi=0; vi<piel; ++vi) 
-	{
-	  elemat[vi*3    ][ui*3    ] -= afgdt*dr*wquad*(velintaf(0)-val[0]*functionfac[0]*curvefac)*pfunct(ui)*n(0)*pfunct(vi);
-	  elemat[vi*3    ][ui*3 + 1] -= afgdt*dr*wquad*(velintaf(0)-val[0]*functionfac[0]*curvefac)*pfunct(ui)*n(1)*pfunct(vi);
-	  elemat[vi*3 + 1][ui*3    ] -= afgdt*dr*wquad*(velintaf(1)-val[1]*functionfac[1]*curvefac)*pfunct(ui)*n(0)*pfunct(vi);
-	  elemat[vi*3 + 1][ui*3 + 1] -= afgdt*dr*wquad*(velintaf(1)-val[1]*functionfac[1]*curvefac)*pfunct(ui)*n(1)*pfunct(vi);
-	}
-      }
-    }
-
-    /*
-    // factor: afgdt
-    //
-    //    /                       \
-    //   |    / n+af   \           |
-    // - |   | u    * n | w , Dacc |
-    //   |    \        /           |
-    //    \  |          |         / boundaryele, inflow
-    //       +----------+
-    //           <0
-    */
-
-
-    for (int ui=0; ui<piel; ++ui) 
-    {
-      for (int vi=0; vi<piel; ++vi) 
-      {
-	elemat[vi*3    ][ui*3    ] -= afgdt*dr*wquad*flux*pfunct(ui)*pfunct(vi);
-	elemat[vi*3 + 1][ui*3 + 1] -= afgdt*dr*wquad*flux*pfunct(ui)*pfunct(vi);
-      }
-    }
-
-    /*
-    // factor: 1
-    //
-    //    /                             \
-    //   |    / n+af   \       n+af      |
-    // - |   | u    * n | w , u    - u   |
-    //   |    \        /              b  |
-    //    \  |          |               / boundaryele, inflow
-    //       +----------+
-    //           <0
-    */
-
-    for (int vi=0; vi<piel; ++vi) 
-    {
-      elevec[vi*3    ] += dr*wquad*pfunct(vi)*flux*(velintaf(0)-val[0]*functionfac[0]*curvefac);
-      elevec[vi*3 + 1] += dr*wquad*pfunct(vi)*flux*(velintaf(1)-val[1]*functionfac[1]*curvefac);
     }
 
   } // end the gausspointloop

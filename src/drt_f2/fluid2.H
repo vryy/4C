@@ -766,6 +766,8 @@ private:
     \param elevec    (out) : element vector contribution
     \param pevelaf   (in)  : current intermediate velocities on the
                              parent elements node array
+    \param pevelnp   (in)  : current new velocities on the
+                             parent elements node array
     \param val       (in)  : values for weak DBC
     \param functions (in)  : spatial functions to multiply weak
                              Dirichlet condition value with
@@ -773,7 +775,8 @@ private:
     \param Cb        (in)  : shape funtion dependent parameter
                              for penalty term
     \param wd_gamma  (in)  : switch between adjoint-(in)consistent
-    \param afgdt     (in)  : time integration dependent factor
+    \param afgdt     (in)  : time integration dependent factor, alphaF*gamma*dt
+    \param gdt       (in)  : time integration dependent factor, gamma*dt
 
   */
   void EvaluateWeakDirichlet(
@@ -782,13 +785,15 @@ private:
     Epetra_SerialDenseMatrix&  elemat        ,
     Epetra_SerialDenseVector&  elevec        ,
     blitz::Array<double,2>&    pevelaf       ,
+    blitz::Array<double,2>&    pevelnp       ,
+    blitz::Array<double,1>&    eprenp        ,
     vector<double>             val           ,
     const vector<int>*         functions     ,
     double                     curvefac      ,
     double                     Cb            ,
     double                     wd_gamma      ,
-    double                     afgdt
-    );
+    const double               afgdt         ,
+    const double               gdt           );
 
 
 }; // class Fluid2Line

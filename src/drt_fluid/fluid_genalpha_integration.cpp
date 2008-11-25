@@ -1223,9 +1223,10 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
     ParameterList weakdbcparams;
 
     // set action for elements
-    weakdbcparams.set("action","enforce_weak_dbc");
-    weakdbcparams.set("afgdt",alphaF_*gamma_*dt_);
-    weakdbcparams.set("total time",time_);
+    weakdbcparams.set("action"    ,"enforce_weak_dbc");
+    weakdbcparams.set("gdt"       ,gamma_*dt_        );
+    weakdbcparams.set("afgdt"     ,alphaF_*gamma_*dt_);
+    weakdbcparams.set("total time",time_             );
 
     // set the only required state vectors
     discret_->SetState("u and p (n+alpha_F,trial)",velaf_);
