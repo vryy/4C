@@ -622,14 +622,21 @@ void DRT::ELEMENTS::Beam2::b2_nlnstiffmass( ParameterList& params,
   //local internal shear force   
   force_loc(2) = -sm*crosssecshear_*( (xcurr(2,1)+xcurr(2,0))/2 - beta - beta0_); 
   
-  //calculation of global internal forces from force = B_transposed*force_loc 
   if (force != NULL)
-    BLITZTINY::MtV_product<6,3>(Bcurr,force_loc,*force);
+  {
+  //declaration of global internal force
+  LINALG::Matrix<6,1> force_glob;
+  //calculation of global internal forces from force = B_transposed*force_loc 
+  force_glob.MultiplyTN(Bcurr,force_loc);
+  
+    for(int k = 0; k<6; k++)
+      (*force)(k) = force_glob(k);
+  }
 
 
   //calculating tangential stiffness matrix in global coordinates
   if (stiffmatrix != NULL)
-  {  
+  {     
     //linear elastic part including rotation     
     for(int id_col=0; id_col<6; id_col++)
     {
