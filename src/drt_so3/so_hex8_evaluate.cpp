@@ -92,7 +92,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
       for (unsigned i=0; i<mydisp.size(); ++i) mydisp[i] = 0.0;
       vector<double> myres(lm.size());
       for (unsigned i=0; i<myres.size(); ++i) myres[i] = 0.0;
-      soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params);
+      soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params,
+                        INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     break;
 
@@ -111,9 +112,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
       if (elemat1.IsInitialized()) matptr = &elemat1;
 
 #ifndef INVERSEDESIGNCREATE
-      soh8_nlnstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params);
+      soh8_nlnstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
+                        INPAR::STR::stress_none,INPAR::STR::strain_none);
 #else
-      invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params);
+      invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
+                                    INPAR::STR::stress_none,INPAR::STR::strain_none);
 #endif
     }
     break;
@@ -131,7 +134,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> myemat(true);
-      soh8_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params);
+      soh8_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params,
+                        INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     break;
 
@@ -153,9 +157,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
 #ifndef INVERSEDESIGNCREATE
-      soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params);
+      soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
+                        INPAR::STR::stress_none,INPAR::STR::strain_none);
 #else
-      invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params);
+      invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
+                                    INPAR::STR::stress_none,INPAR::STR::strain_none);
 #endif
       if (act==calc_struct_nlnstifflmass) soh8_lumpmass(&elemat2);
     }
@@ -177,13 +183,12 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> stress;
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> strain;
-      bool cauchy = params.get<bool>("cauchy", false);
-      string iostrain = params.get<string>("iostrain", "none");
-      bool ea = (iostrain == "euler_almansi");
+      INPAR::STR::StressType iostress = params.get<INPAR::STR::StressType>("iostress", INPAR::STR::stress_none);
+      INPAR::STR::StrainType iostrain = params.get<INPAR::STR::StrainType>("iostrain", INPAR::STR::strain_none);
 #ifndef INVERSEDESIGNCREATE
-      soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,cauchy,ea);
+      soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
 #else
-      invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,cauchy,ea);
+      invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
 #endif
       AddtoPack(*stressdata, stress);
       AddtoPack(*straindata, strain);
@@ -640,8 +645,8 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,   // stresses at GP
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,   // strains at GP
       ParameterList&            params,         // algorithmic parameters e.g. time
-      const bool                cauchy,         // stress output option
-      const bool                euler_almansi)  // strain output option
+      const INPAR::STR::StressType   iostress,  // stress output option
+      const INPAR::STR::StrainType   iostrain)  // strain output option
 {
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
@@ -866,45 +871,53 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     } // ------------------------------------------------------------------ EAS
 
     // return gp strains (only in case of stress/strain output)
-    if (elestrain != NULL)
+    switch (iostrain)
     {
-      if (!euler_almansi)
-      {
-        for (int i = 0; i < 3; ++i)
-          (*elestrain)(gp,i) = glstrain(i);
-        for (int i = 3; i < 6; ++i)
-          (*elestrain)(gp,i) = 0.5 * glstrain(i);
-      }
-      else
-      {
-        // rewriting Green-Lagrange strains in matrix format
-        LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> gl;
-        gl(0,0) = glstrain(0);
-        gl(0,1) = 0.5*glstrain(3);
-        gl(0,2) = 0.5*glstrain(5);
-        gl(1,0) = gl(0,1);
-        gl(1,1) = glstrain(1);
-        gl(1,2) = 0.5*glstrain(4);
-        gl(2,0) = gl(0,2);
-        gl(2,1) = gl(1,2);
-        gl(2,2) = glstrain(2);
+    case INPAR::STR::strain_gl:
+    {
+      if (elestrain == NULL) dserror("strain data not available");
+      for (int i = 0; i < 3; ++i)
+        (*elestrain)(gp,i) = glstrain(i);
+      for (int i = 3; i < 6; ++i)
+        (*elestrain)(gp,i) = 0.5 * glstrain(i);
+    }
+    break;
+    case INPAR::STR::strain_ea:
+    {
+      if (elestrain == NULL) dserror("strain data not available");
+      // rewriting Green-Lagrange strains in matrix format
+      LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> gl;
+      gl(0,0) = glstrain(0);
+      gl(0,1) = 0.5*glstrain(3);
+      gl(0,2) = 0.5*glstrain(5);
+      gl(1,0) = gl(0,1);
+      gl(1,1) = glstrain(1);
+      gl(1,2) = 0.5*glstrain(4);
+      gl(2,0) = gl(0,2);
+      gl(2,1) = gl(1,2);
+      gl(2,2) = glstrain(2);
 
-        // inverse of deformation gradient
-        LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> invdefgrd;
-        invdefgrd.Invert(defgrd);
+      // inverse of deformation gradient
+      LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> invdefgrd;
+      invdefgrd.Invert(defgrd);
 
-        LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> temp;
-        LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> euler_almansi;
-        temp.Multiply(gl,invdefgrd);
-        euler_almansi.MultiplyTN(invdefgrd,temp);
+      LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> temp;
+      LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> euler_almansi;
+      temp.Multiply(gl,invdefgrd);
+      euler_almansi.MultiplyTN(invdefgrd,temp);
 
-        (*elestrain)(gp,0) = euler_almansi(0,0);
-        (*elestrain)(gp,1) = euler_almansi(1,1);
-        (*elestrain)(gp,2) = euler_almansi(2,2);
-        (*elestrain)(gp,3) = euler_almansi(0,1);
-        (*elestrain)(gp,4) = euler_almansi(1,2);
-        (*elestrain)(gp,5) = euler_almansi(0,2);
-      }
+      (*elestrain)(gp,0) = euler_almansi(0,0);
+      (*elestrain)(gp,1) = euler_almansi(1,1);
+      (*elestrain)(gp,2) = euler_almansi(2,2);
+      (*elestrain)(gp,3) = euler_almansi(0,1);
+      (*elestrain)(gp,4) = euler_almansi(1,2);
+      (*elestrain)(gp,5) = euler_almansi(0,2);
+    }
+    break;
+    case INPAR::STR::strain_none:
+      break;
+    default:
+      dserror("requested strain type not available");
     }
 
     /* non-linear B-operator (may so be called, meaning
@@ -963,40 +976,48 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses
-    if (elestress != NULL) // return 2nd Piola-Kirchhoff stresses
+    switch (iostress)
     {
-      if (!cauchy)
-      {
-        for (int i = 0; i < NUMSTR_SOH8; ++i)
-          (*elestress)(gp,i) = stress(i);
-      }
-      else // return Cauchy stresses
-      {
-        const double detF = defgrd.Determinant();
+    case INPAR::STR::stress_2pk:
+    {
+      if (elestress == NULL) dserror("stress data not available");
+      for (int i = 0; i < NUMSTR_SOH8; ++i)
+        (*elestress)(gp,i) = stress(i);
+    }
+    break;
+    case INPAR::STR::stress_cauchy:
+    {
+      if (elestress == NULL) dserror("stress data not available");
+      const double detF = defgrd.Determinant();
 
-        LINALG::Matrix<3,3> pkstress;
-        pkstress(0,0) = stress(0);
-        pkstress(0,1) = stress(3);
-        pkstress(0,2) = stress(5);
-        pkstress(1,0) = pkstress(0,1);
-        pkstress(1,1) = stress(1);
-        pkstress(1,2) = stress(4);
-        pkstress(2,0) = pkstress(0,2);
-        pkstress(2,1) = pkstress(1,2);
-        pkstress(2,2) = stress(2);
+      LINALG::Matrix<3,3> pkstress;
+      pkstress(0,0) = stress(0);
+      pkstress(0,1) = stress(3);
+      pkstress(0,2) = stress(5);
+      pkstress(1,0) = pkstress(0,1);
+      pkstress(1,1) = stress(1);
+      pkstress(1,2) = stress(4);
+      pkstress(2,0) = pkstress(0,2);
+      pkstress(2,1) = pkstress(1,2);
+      pkstress(2,2) = stress(2);
 
-        LINALG::Matrix<3,3> temp;
-        LINALG::Matrix<3,3> cauchystress;
-        temp.Multiply(1.0/detF,defgrd,pkstress,0.0);
-        cauchystress.MultiplyNT(temp,defgrd);
+      LINALG::Matrix<3,3> temp;
+      LINALG::Matrix<3,3> cauchystress;
+      temp.Multiply(1.0/detF,defgrd,pkstress,0.0);
+      cauchystress.MultiplyNT(temp,defgrd);
 
-        (*elestress)(gp,0) = cauchystress(0,0);
-        (*elestress)(gp,1) = cauchystress(1,1);
-        (*elestress)(gp,2) = cauchystress(2,2);
-        (*elestress)(gp,3) = cauchystress(0,1);
-        (*elestress)(gp,4) = cauchystress(1,2);
-        (*elestress)(gp,5) = cauchystress(0,2);
-      }
+      (*elestress)(gp,0) = cauchystress(0,0);
+      (*elestress)(gp,1) = cauchystress(1,1);
+      (*elestress)(gp,2) = cauchystress(2,2);
+      (*elestress)(gp,3) = cauchystress(0,1);
+      (*elestress)(gp,4) = cauchystress(1,2);
+      (*elestress)(gp,5) = cauchystress(0,2);
+    }
+    break;
+    case INPAR::STR::stress_none:
+      break;
+    default:
+      dserror("requested stress type not available");
     }
 
     double detJ_w = detJ*gpweights[gp];

@@ -25,6 +25,7 @@ using namespace Teuchos;
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_node.H"
 #include "so_hex8.H"
+#include "../drt_inpar/inpar_structure.H"
 
 
 // forward declarations
@@ -227,7 +228,8 @@ private:
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,      ///< stresses at GP
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,      ///< strains at GP
       ParameterList&            params,         ///< algorithmic parameters e.g. time
-      const bool      cauchy=false);            ///< stress output option
+      const INPAR::STR::StressType  iostress,   ///< stress output option
+      const INPAR::STR::StrainType  iostrain);  ///< strain output option
 
   //! Evaluate all ANS related data at the ANS sampling points
   void sosh8_anssetup(

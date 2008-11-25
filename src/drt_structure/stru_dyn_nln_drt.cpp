@@ -27,6 +27,7 @@ Maintainer: Michael Gee
 #include "strudyn_direct.H"
 #include "../drt_contact/contactstrugenalpha.H"
 #include "../drt_io/io.H"
+#include "../drt_io/io_control.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_statmech.H"
@@ -35,7 +36,6 @@ Maintainer: Michael Gee
 
 #include "../drt_inv_analysis/inv_analysis.H"
 #include "../drt_statmech/statmech_time.H"
-
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -174,39 +174,13 @@ void dyn_nlnstructural_drt()
       genalphaparams.set<bool>  ("ADAPTCONV",getIntegralValue<int>(sdyn,"ADAPTCONV")==1);
       genalphaparams.set<double>("ADAPTCONV_BETTER",sdyn.get<double>("ADAPTCONV_BETTER"));
 
-      switch (Teuchos::getIntegralValue<STRUCT_STRESS_TYP>(ioflags,"STRUCT_STRESS"))
-      {
-      case struct_stress_none:
-        genalphaparams.set<string>("io structural stress", "none");
-      break;
-      case struct_stress_cauchy:
-        genalphaparams.set<string>("io structural stress", "cauchy");
-      break;
-      case struct_stress_pk:
-        genalphaparams.set<string>("io structural stress", "2PK");
-      break;
-      default:
-        genalphaparams.set<string>("io structural stress", "none");
-      break;
-      }
+      INPAR::STR::StressType iostress = Teuchos::getIntegralValue<INPAR::STR::StressType>(ioflags,"STRUCT_STRESS");
+      genalphaparams.set<INPAR::STR::StressType>("io structural stress", iostress);
 
       genalphaparams.set<int>   ("io stress every nstep",sdyn.get<int>("RESEVRYSTRS"));
 
-      switch (Teuchos::getIntegralValue<STRUCT_STRAIN_TYP>(ioflags,"STRUCT_STRAIN"))
-      {
-      case struct_strain_none:
-        genalphaparams.set<string>("io structural strain", "none");
-      break;
-      case struct_strain_ea:
-        genalphaparams.set<string>("io structural strain", "euler_almansi");
-      break;
-      case struct_strain_gl:
-        genalphaparams.set<string>("io structural strain", "green_lagrange");
-      break;
-      default:
-        genalphaparams.set<string>("io structural strain", "none");
-      break;
-      }
+      INPAR::STR::StrainType iostrain = Teuchos::getIntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_STRAIN");
+      genalphaparams.set<INPAR::STR::StrainType>("io structural strain", iostrain);
 
       genalphaparams.set<int>   ("restart",probtype.get<int>("RESTART"));
       genalphaparams.set<int>   ("write restart every",sdyn.get<int>("RESTARTEVRY"));
@@ -244,7 +218,7 @@ void dyn_nlnstructural_drt()
           genalphaparams.set<string>("equilibrium iteration","newtonlinuzawa");
         break;
         case INPAR::STR::soltech_newtonuzawanonlin:
-          genalphaparams.set<string>("equilibrium iteration","augmentedlagrange");              
+          genalphaparams.set<string>("equilibrium iteration","augmentedlagrange");
         break;
         default:
           genalphaparams.set<string>("equilibrium iteration","full newton");
@@ -288,7 +262,7 @@ void dyn_nlnstructural_drt()
           dserror("Cannot cope with choice of contact type");
           break;
       }
-      
+
       // detect whether thermal bath is present
       bool thermalbath = false;
       switch (Teuchos::getIntegralValue<INPAR::STATMECH::ThermalBathType>(statmech,"THERMALBATH"))
@@ -306,7 +280,7 @@ void dyn_nlnstructural_drt()
           dserror("Cannot cope with choice of thermal bath");
           break;
       }
-      
+
       // create the time integrator
       bool inv_analysis = genalphaparams.get("inv_analysis",false);
       RCP<StruGenAlpha> tintegrator;

@@ -17,6 +17,7 @@ Maintainer: Michael Gee
 #include "strugenalpha.H"
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_inpar/inpar_structure.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 03/07|
@@ -154,7 +155,7 @@ fsisurface_(NULL)
   // dynamic force residual at mid-time R_{n+1-alpha}
   // also known as out-of-balance-force
   fresm_ = LINALG::CreateVector(*dofrowmap,false);
-  
+
   // -------------------------------------------------------------------
   // do surface stress and constraints manager and stresses due to potentials
   // -------------------------------------------------------------------
@@ -176,8 +177,8 @@ fsisurface_(NULL)
     // if potential conditions exist, the stiffness matrix has to be based on an Epetra_FECrsMatrix
     // and savegraph_ has to be set false
     stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,true,false, LINALG::SparseMatrix::FE_MATRIX));
-  }  
-  
+  }
+
   // -------------------------------------------------------------------
   // check whether we have locsys B.C. and create locsys manager if so
   // -------------------------------------------------------------------
@@ -185,7 +186,7 @@ fsisurface_(NULL)
   vector<DRT::Condition*> locsysconditions(0);
   discret_.GetCondition("Locsys",locsysconditions);
   if (locsysconditions.size()) locsysmanager_ = rcp(new DRT::UTILS::LocsysManager(discret_));
-  
+
   //-------------------------------------------- calculate external forces
   {
     ParameterList p;
@@ -239,7 +240,7 @@ fsisurface_(NULL)
   // close mass matrix
   mass_->Complete();
 
-  
+
   // build damping matrix if desired
   if (damping and (!dynkindstat))
   {
@@ -248,7 +249,7 @@ fsisurface_(NULL)
     damp_->Add(*mass_,false,mdamp,1.0);
     damp_->Complete();
   }
-  
+
 
   //--------------------------- calculate consistent initial accelerations
   if (!dynkindstat)
@@ -1121,13 +1122,13 @@ void StruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
 #endif
         surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,stiff_);
       }
-      
+
       if (pot_man_!=null)
       {
         p.set("pot_man", pot_man_);
         pot_man_->EvaluatePotential(p,dism_,fint_,stiff_);
       }
-      
+
       if (constrMan_->HaveConstraint())
       {
         ParameterList pcon;
@@ -1246,7 +1247,7 @@ void StruGenAlpha::FullNewton()
   timer.ResetStartTime();
   bool print_unconv = true;
 
-  
+
   while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) and numiter<=maxiter)
   {
     //------------------------------------------- effective rhs is fresm
@@ -1269,12 +1270,12 @@ void StruGenAlpha::FullNewton()
 #endif
       }
     }
-    
+
     stiff_->Complete();
 
     //-----------------------------transform to local coordinate systems
     if (locsysmanager_ != null) locsysmanager_->RotateGlobalToLocal(stiff_,fresm_);
-    
+
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
@@ -1286,13 +1287,13 @@ void StruGenAlpha::FullNewton()
       double worst = fresmnorm;
       double wanted = tolres;
       solver_.AdaptTolerance(wanted,worst,adaptolbetter);
-    }   
+    }
     solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,numiter==0);
     solver_.ResetTolerance();
-    
+
     //----------------------- transform back to global coordinate system
     if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(disi_);
-    
+
     //---------------------------------- update mid configuration values
     // displacements
     // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
@@ -1353,7 +1354,7 @@ void StruGenAlpha::FullNewton()
     {
       // zero out stiffness
       stiff_->Zero();
-      
+
       // create the parameters for the discretization
       ParameterList p;
       // action for elements
@@ -1514,7 +1515,7 @@ void StruGenAlpha::FullNewton()
   }
 
   params_.set<int>("num iterations",numiter);
-  
+
   return;
 } // StruGenAlpha::FullNewton()
 
@@ -1974,7 +1975,7 @@ void StruGenAlpha::ModifiedNewton()
 #endif
       surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,stiff_);
       }
-      
+
       if (pot_man_!=null)
       {
         p.set("pot_man", pot_man_);
@@ -2863,9 +2864,6 @@ void StruGenAlpha::Update()
 
   const bool dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
 
-  string iostress      = params_.get<string>("io structural stress"   ,"none");
-  string iostrain      = params_.get<string>("io structural strain"   ,"none");
-
   bool   printerr      = params_.get<bool>  ("print to err"           ,true);
   FILE*  errfile       = params_.get<FILE*> ("err file"               ,NULL);
   if (!errfile) printerr = false;
@@ -2989,13 +2987,13 @@ void StruGenAlpha::Update()
   {
     surf_stress_man_->Update();
   }
-  
+
   //----------------- update constraint manager
   if (constrMan_->HaveConstraint())
   {
     constrMan_->Update();
   }
-  
+
 }
 
 /*----------------------------------------------------------------------*
@@ -3015,9 +3013,9 @@ void StruGenAlpha::Output()
 
   bool   iodisp        = params_.get<bool>  ("io structural disp"     ,true);
   int    updevrydisp   = params_.get<int>   ("io disp every nstep"    ,10);
-  string iostress      = params_.get<string>("io structural stress"   ,"none");
+  INPAR::STR::StressType iostress = params_.get<INPAR::STR::StressType>("io structural stress",INPAR::STR::stress_none);
   int    updevrystress = params_.get<int>   ("io stress every nstep"  ,10);
-  string iostrain      = params_.get<string>("io structural strain"   ,"none");
+  INPAR::STR::StrainType iostrain      = params_.get<INPAR::STR::StrainType>("io structural strain",INPAR::STR::strain_none);
 
   int    writeresevry  = params_.get<int>   ("write restart every"    ,0);
 
@@ -3091,7 +3089,7 @@ void StruGenAlpha::Output()
   }
 
   //------------------------------------- do stress calculation and output
-  if (updevrystress and !(istep%updevrystress) and iostress!="none")
+  if (updevrystress and !(istep%updevrystress) and iostress!=INPAR::STR::stress_none)
   {
     // create the parameters for the discretization
     ParameterList p;
@@ -3104,15 +3102,8 @@ void StruGenAlpha::Output()
     Teuchos::RCP<std::vector<char> > stress = Teuchos::rcp(new std::vector<char>());
     Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
     p.set("stress", stress);
+    p.set("iostress", iostress);
     p.set("strain", strain);
-    if (iostress == "cauchy")   // output of Cauchy stresses instead of 2PK stresses
-    {
-      p.set("cauchy", true);
-    }
-    else
-    {
-      p.set("cauchy", false);
-    }
     p.set("iostrain", iostrain);
     // set vector values needed by elements
     discret_.ClearState();
@@ -3123,24 +3114,33 @@ void StruGenAlpha::Output()
     discret_.ClearState();
     if (!isdatawritten) output_.NewStep(istep, timen);
     isdatawritten = true;
-    if (iostress == "cauchy")
+
+    switch (iostress)
     {
+    case INPAR::STR::stress_cauchy:
       output_.WriteVector("gauss_cauchy_stresses_xyz",*stress,*discret_.ElementColMap());
-    }
-    else
-    {
+      break;
+    case INPAR::STR::stress_2pk:
       output_.WriteVector("gauss_2PK_stresses_xyz",*stress,*discret_.ElementColMap());
+      break;
+    case INPAR::STR::stress_none:
+      break;
+    default:
+      dserror ("requested stress type not supported");
     }
-    if (iostrain != "none")
+
+    switch (iostrain)
     {
-      if (iostrain == "euler_almansi")
-      {
-        output_.WriteVector("gauss_EA_strains_xyz",*strain,*discret_.ElementColMap());
-      }
-      else
-      {
-        output_.WriteVector("gauss_GL_strains_xyz",*strain,*discret_.ElementColMap());
-      }
+    case INPAR::STR::strain_ea:
+      output_.WriteVector("gauss_EA_strains_xyz",*strain,*discret_.ElementColMap());
+      break;
+    case INPAR::STR::strain_gl:
+      output_.WriteVector("gauss_GL_strains_xyz",*strain,*discret_.ElementColMap());
+      break;
+    case INPAR::STR::strain_none:
+      break;
+    default:
+      dserror("requested strain type not supported");
     }
   }
 
@@ -3411,9 +3411,9 @@ void StruGenAlpha::SetDefaults(ParameterList& params)
   params.set<double>("tolerance displacements",1.0e-07);
   params.set<bool>  ("io structural disp"     ,false);
   params.set<int>   ("io disp every nstep"    ,10);
-  params.set<string>("io structural stress"   ,"none");
+  params.set<INPAR::STR::StressType>("io structural stress",INPAR::STR::stress_none);
   params.set<int>   ("io disp every nstep"    ,10);
-  params.set<bool>  ("io structural strain"   ,false);
+  params.set<INPAR::STR::StrainType>("io structural strain",INPAR::STR::strain_none);
   params.set<int>   ("restart"                ,0);
   params.set<int>   ("write restart every"    ,0);
   params.set<bool>  ("contact"                ,false);

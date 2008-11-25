@@ -20,6 +20,7 @@ Maintainer: Lena Wiechert
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_inpar/inpar_structure.H"
+#include "../drt_inpar/inpar_structure.H"
 
 #include "../drt_stru_multi/microstatic.H"
 
@@ -273,39 +274,12 @@ void MAT::MicroMaterialGP::SetUpMicroStatic()
   params->set<bool>  ("io structural disp",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_DISP"));
   params->set<int>   ("io disp every nstep",sdyn.get<int>("RESEVRYDISP"));
 
-  switch (Teuchos::getIntegralValue<STRUCT_STRESS_TYP>(ioflags,"STRUCT_STRESS"))
-  {
-  case struct_stress_none:
-    params->set<string>("io structural stress", "none");
-    break;
-  case struct_stress_cauchy:
-    params->set<string>("io structural stress", "cauchy");
-    break;
-  case struct_stress_pk:
-    params->set<string>("io structural stress", "2PK");
-    break;
-  default:
-    params->set<string>("io structural stress", "none");
-    break;
-  }
-
+  INPAR::STR::StressType iostress = Teuchos::getIntegralValue<INPAR::STR::StressType>(ioflags,"STRUCT_STRESS");
+  params->set<INPAR::STR::StressType>("io structural stress", iostress);
   params->set<int>   ("io stress every nstep",sdyn.get<int>("RESEVRYSTRS"));
 
-  switch (Teuchos::getIntegralValue<STRUCT_STRAIN_TYP>(ioflags,"STRUCT_STRAIN"))
-  {
-  case struct_strain_none:
-    params->set<string>("io structural strain", "none");
-    break;
-  case struct_strain_ea:
-    params->set<string>("io structural strain", "euler_almansi");
-    break;
-  case struct_strain_gl:
-    params->set<string>("io structural strain", "green_lagrange");
-    break;
-  default:
-    params->set<string>("io structural strain", "none");
-    break;
-  }
+  INPAR::STR::StrainType iostrain = Teuchos::getIntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_STRAIN");
+  params->set<INPAR::STR::StrainType>("io structural strain", iostrain);
 
   params->set<int>   ("restart",probtype.get<int>("RESTART"));
   params->set<int>   ("write restart every",sdyn.get<int>("RESTARTEVRY"));

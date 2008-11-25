@@ -25,6 +25,7 @@ Maintainer: Lena Wiechert
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io.H"
+#include "../drt_inpar/inpar_structure.H"
 
 //#include "../drt_fsi/fsi_debug.H"
 
@@ -515,9 +516,9 @@ void STRUMULTI::MicroStatic::Output(RefCountPtr<DiscretizationWriter> output,
 
   bool   iodisp        = params_->get<bool>  ("io structural disp"     ,true);
   int    updevrydisp   = params_->get<int>   ("io disp every nstep"    ,1);
-  string iostress      = params_->get<string>("io structural stress"   ,"none");
+  INPAR::STR::StressType iostress = params_->get<INPAR::STR::StressType>("io structural stress",INPAR::STR::stress_none);
   int    updevrystress = params_->get<int>   ("io stress every nstep"  ,10);
-  string iostrain      = params_->get<string>("io structural strain"   ,"none");
+  INPAR::STR::StrainType iostrain      = params_->get<INPAR::STR::StrainType>("io structural strain",INPAR::STR::strain_none);
   int    writeresevry  = params_->get<int>   ("write restart every"    ,0);
 
   bool isdatawritten = false;
@@ -572,7 +573,7 @@ void STRUMULTI::MicroStatic::Output(RefCountPtr<DiscretizationWriter> output,
   }
 
   //------------------------------------- do stress calculation and output
-  if (updevrystress and !(istep%updevrystress) and iostress!="none")
+  if (updevrystress and !(istep%updevrystress) and iostress!=INPAR::STR::stress_none)
   {
     // create the parameters for the discretization
     ParameterList p;
@@ -585,14 +586,7 @@ void STRUMULTI::MicroStatic::Output(RefCountPtr<DiscretizationWriter> output,
     Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
     p.set("stress", stress);
     p.set("strain", strain);
-    if (iostress == "cauchy")   // output of Cauchy stresses instead of 2PK stresses
-    {
-      p.set("cauchy", true);
-    }
-    else
-    {
-      p.set("cauchy", false);
-    }
+    p.set("iostress", iostress);
     p.set("iostrain", iostrain);
     // set vector values needed by elements
     discret_->ClearState();
@@ -602,24 +596,33 @@ void STRUMULTI::MicroStatic::Output(RefCountPtr<DiscretizationWriter> output,
     discret_->ClearState();
     if (!isdatawritten) output->NewStep(istep, time);
     isdatawritten = true;
-    if (iostress == "cauchy")
+
+    switch (iostress)
     {
+    case INPAR::STR::stress_cauchy:
       output->WriteVector("gauss_cauchy_stresses_xyz",*stress,*discret_->ElementColMap());
-    }
-    else
-    {
+      break;
+    case INPAR::STR::stress_2pk:
       output->WriteVector("gauss_2PK_stresses_xyz",*stress,*discret_->ElementColMap());
+      break;
+    case INPAR::STR::stress_none:
+      break;
+    default:
+      dserror ("requested stress type not supported");
     }
-    if (iostrain != "none")
+
+    switch (iostrain)
     {
-      if (iostrain == "euler_almansi")
-      {
-        output->WriteVector("gauss_EA_strains_xyz",*strain,*discret_->ElementColMap());
-      }
-      else
-      {
-        output->WriteVector("gauss_GL_strains_xyz",*strain,*discret_->ElementColMap());
-      }
+    case INPAR::STR::strain_ea:
+      output->WriteVector("gauss_EA_strains_xyz",*strain,*discret_->ElementColMap());
+      break;
+    case INPAR::STR::strain_gl:
+      output->WriteVector("gauss_GL_strains_xyz",*strain,*discret_->ElementColMap());
+      break;
+    case INPAR::STR::strain_none:
+      break;
+    default:
+      dserror("requested strain type not supported");;
     }
   }
 
@@ -651,8 +654,8 @@ void STRUMULTI::MicroStatic::SetDefaults(ParameterList& params)
   params.set<double>("tolerance displacements",1.0e-07);
   params.set<bool>  ("io structural disp"     ,true);
   params.set<int>   ("io disp every nstep"    ,1);
-  params.set<string>("io structural stress"   ,"none");
-  params.set<bool>  ("io structural strain"   ,false);
+  params.set<INPAR::STR::StressType>("io structural stress",INPAR::STR::stress_none);
+  params.set<INPAR::STR::StrainType>("io structural strain",INPAR::STR::strain_none);
   params.set<int>   ("restart"                ,0);
   params.set<int>   ("write restart every"    ,0);
   // takes values "constant" consistent"

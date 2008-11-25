@@ -83,7 +83,8 @@ int DRT::ELEMENTS::So_shw6::Evaluate(ParameterList& params,
       for (int i=0; i<(int)mydisp.size(); ++i) mydisp[i] = 0.0;
       vector<double> myres(lm.size());
       for (int i=0; i<(int)myres.size(); ++i) myres[i] = 0.0;
-      soshw6_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params);
+      soshw6_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params,
+                          INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     break;
 
@@ -97,7 +98,8 @@ int DRT::ELEMENTS::So_shw6::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      soshw6_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params);
+      soshw6_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params,
+                          INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     break;
 
@@ -114,7 +116,8 @@ int DRT::ELEMENTS::So_shw6::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
       LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6> myemat(true);
-      soshw6_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params);
+      soshw6_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params,
+                          INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     break;
 
@@ -135,7 +138,8 @@ int DRT::ELEMENTS::So_shw6::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      soshw6_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params);
+      soshw6_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
+                          INPAR::STR::stress_none,INPAR::STR::strain_none);
       if (act==calc_struct_nlnstifflmass) sow6_lumpmass(&elemat2);
     }
     break;
@@ -155,10 +159,9 @@ int DRT::ELEMENTS::So_shw6::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6> stress;
       LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6> strain;
-      bool cauchy = params.get<bool>("cauchy", false);
-      string iostrain = params.get<string>("iostrain", "none");
-      if (iostrain!="euler_almansi") soshw6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,cauchy);
-      else dserror("requested option not yet implemented for solidshw6");
+      INPAR::STR::StressType iostress = params.get<INPAR::STR::StressType>("iostress", INPAR::STR::stress_none);
+      INPAR::STR::StrainType iostrain = params.get<INPAR::STR::StrainType>("iostrain", INPAR::STR::strain_none);
+      soshw6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
       AddtoPack(*stressdata, stress);
       AddtoPack(*straindata, strain);
     }
@@ -339,7 +342,8 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
       LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestress,   // stresses at GP
       LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestrain,   // strains at GP
       ParameterList&            params,         // algorithmic parameters e.g. time
-      const bool                cauchy)         // stress output option
+      const INPAR::STR::StressType             iostress,       // stress output option
+      const INPAR::STR::StrainType             iostrain)       // strain output option
 {
 
 /* ============================================================================*
@@ -601,14 +605,27 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
       LINALG::DENSEFUNCTIONS::multiply<NUMSTR_WEG6,soshw6_easpoisthick,1>(1.0,glstrain.A(),1.0,M.A(),(*alpha).A());
     } // ------------------------------------------------------------------ EAS
 
-    // return gp strains (only in case of stress/strain output)
-    if (elestress != NULL){
+    // return gp GL strains (only possible option) if necessary
+    switch (iostrain)
+    {
+    case INPAR::STR::strain_gl:
+    {
+      if (elestress == NULL) dserror("no strain data available");
       for (int i = 0; i < 3; ++i) {
         (*elestrain)(gp,i) = glstrain(i);
       }
       for (int i = 3; i < 6; ++i) {
         (*elestrain)(gp,i) = 0.5 * glstrain(i);
       }
+    }
+    break;
+    case INPAR::STR::strain_ea:
+      dserror("no Euler-Almansi strains available for soshw6");
+    break;
+    case INPAR::STR::strain_none:
+      break;
+    default:
+      dserror("requested strain type not available");
     }
 
     /* call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -645,15 +662,23 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses
-    if (elestress != NULL){
-      if (!cauchy) {                       // return 2nd Piola-Kirchhoff stresses
-        for (int i = 0; i < NUMSTR_WEG6; ++i) {
-          (*elestress)(gp,i) = stress(i);
-        }
+    switch (iostress)
+    {
+    case INPAR::STR::stress_2pk:
+    {
+      if (elestress == NULL) dserror("no stress data available");
+      for (int i = 0; i < NUMSTR_WEG6; ++i) {
+        (*elestress)(gp,i) = stress(i);
       }
-      else {                               // return Cauchy stresses
+    }
+    break;
+    case INPAR::STR::stress_cauchy:
         dserror("output of Cauchy stresses not supported for solid shell wedge6");
-      }
+    break;
+    case INPAR::STR::stress_none:
+      break;
+    default:
+      dserror("requested stress type not available");
     }
 
     double detJ_w = detJ*gpweights[gp];
@@ -1047,7 +1072,7 @@ int DRT::ELEMENTS::So_shw6::soshw6_findoptparmap()
     edgevecs.at(1)[i] = this->Nodes()[2]->X()[i] - this->Nodes()[0]->X()[i]; //b
     edgevecs.at(2)[i] = this->Nodes()[2]->X()[i] - this->Nodes()[1]->X()[i]; //c
   }
-  
+
   // normalize
   for (int i=0; i<3; ++i){
     double d = 0.;
@@ -1062,15 +1087,15 @@ int DRT::ELEMENTS::So_shw6::soshw6_findoptparmap()
     bc += edgevecs.at(1)[i] * edgevecs.at(2)[i];
     ac += edgevecs.at(0)[i] * edgevecs.at(2)[i];
   }
-  
+
   // find min(ab,bc,ac)
   if ( (abs(ab)<=abs(bc)) && (abs(ab)<=abs(ac)) ) return 1; // = ab
   else if ( abs(bc)<=abs(ac) ) return 3; // = bc
   else return 2; // =ac
-  
+
   // impossible case
   dserror("Could not find optimal map!");
-  return 0; 
+  return 0;
 }
 
 
@@ -1084,17 +1109,17 @@ int DRT::ELEMENTS::Soshw6Register::Initialize(DRT::Discretization& dis)
     if (dis.lColElement(i)->Type() != DRT::Element::element_so_shw6) continue;
     DRT::ELEMENTS::So_shw6* actele = dynamic_cast<DRT::ELEMENTS::So_shw6*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_shw6* failed");
-    
+
     // check whether we should align the material space optimally with the parameter space.
     // The idea is that elimination of shear-locking works best if the origin of the
     // triangle-parameter space coincides with the node where the angle between the edges
     // is closest to 90 degree.
     if ((actele->optimal_parameterspace_map_) && (!actele->nodes_rearranged_)) {
-      
+
       int originnode = actele->soshw6_findoptparmap();
 
       int new_nodeids[NUMNOD_WEG6];
-      
+
       switch (originnode){
       case 1: {
         // no resorting necessary, already aligned with FIRST node

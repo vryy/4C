@@ -30,6 +30,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/linalg_sparsematrix.H"
 #include "stru_resulttest.H"
 #include "Teuchos_TimeMonitor.hpp"
+#include "../drt_inpar/inpar_structure.H"
 
 
 /*----------------------------------------------------------------------*
@@ -236,39 +237,10 @@ void stru_static_drt()
 
   //---------------------------------------------- do "stress" calculation
   int mod_stress = istep % statvar->resevry_stress;
-  string iostress;
-  switch (Teuchos::getIntegralValue<STRUCT_STRESS_TYP>(ioflags,"STRUCT_STRESS"))
-  {
-  case struct_stress_none:
-    iostress = "none";
-    break;
-  case struct_stress_cauchy:
-    iostress = "cauchy";
-    break;
-  case struct_stress_pk:
-    iostress = "2PK";
-    break;
-  default:
-    iostress = "none";
-    break;
-  }
-  string iostrain;
-  switch (Teuchos::getIntegralValue<STRUCT_STRAIN_TYP>(ioflags,"STRUCT_STRAIN"))
-  {
-  case struct_strain_none:
-    iostrain = "none";
-    break;
-  case struct_strain_ea:
-    iostrain = "euler_almansi";
-    break;
-  case struct_strain_gl:
-    iostrain = "green_lagrange";
-    break;
-  default:
-    iostrain = "none";
-    break;
-  }
-  if (!mod_stress && iostress!="none")
+  INPAR::STR::StressType iostress = Teuchos::getIntegralValue<INPAR::STR::StressType>(ioflags,"STRUCT_STRESS");
+  INPAR::STR::StrainType iostrain = Teuchos::getIntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_STRAIN");
+
+  if (!mod_stress && iostress!=INPAR::STR::stress_none)
   {
     // create the parameters for the discretization
     ParameterList p;
@@ -281,14 +253,7 @@ void stru_static_drt()
     Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
     p.set("stress", stress);
     p.set("strain", strain);
-    if (iostress == "cauchy")   // output of Cauchy stresses instead of 2PK stresses
-    {
-      p.set("cauchy", true);
-    }
-    else
-    {
-      p.set("cauchy", false);
-    }
+    p.set("iostress", iostress);
     p.set("iostrain", iostrain);
     // set vector values needed by elements
     actdis->ClearState();
@@ -296,24 +261,33 @@ void stru_static_drt()
     actdis->SetState("displacement",dis);
     actdis->Evaluate(p,null,null,null,null,null);
     actdis->ClearState();
-    if (iostress == "cauchy")
+
+    switch (iostress)
     {
+    case INPAR::STR::stress_cauchy:
       output.WriteVector("gauss_cauchy_stresses_xyz",*stress,*(actdis->ElementColMap()));
-    }
-    else
-    {
+      break;
+    case INPAR::STR::stress_2pk:
       output.WriteVector("gauss_2PK_stresses_xyz",*stress,*(actdis->ElementColMap()));
+      break;
+    case INPAR::STR::stress_none:
+      break;
+    default:
+      dserror ("requested stress type not supported");
     }
-    if (iostrain != "none")
+
+    switch (iostrain)
     {
-      if (iostrain == "euler_almansi")
-      {
-        output.WriteVector("gauss_EA_strains_xyz",*strain,*(actdis->ElementColMap()));
-      }
-      else
-      {
-        output.WriteVector("gauss_GL_strains_xyz",*strain,*(actdis->ElementColMap()));
-      }
+    case INPAR::STR::strain_ea:
+      output.WriteVector("gauss_EA_strains_xyz",*strain,*(actdis->ElementColMap()));
+      break;
+    case INPAR::STR::strain_gl:
+      output.WriteVector("gauss_GL_strains_xyz",*strain,*(actdis->ElementColMap()));
+      break;
+    case INPAR::STR::strain_none:
+      break;
+    default:
+      dserror ("requested strain type not supported");
     }
   }
 
@@ -513,40 +487,10 @@ void stru_static_drt()
 
     //---------------------------------------------- do stress calculation
     int mod_stress = istep % statvar->resevry_stress;
-    string iostress;
-    switch (Teuchos::getIntegralValue<STRUCT_STRESS_TYP>(ioflags,"STRUCT_STRESS"))
-    {
-    case struct_stress_none:
-      iostress = "none";
-      break;
-    case struct_stress_cauchy:
-      iostress = "cauchy";
-      break;
-    case struct_stress_pk:
-      iostress = "2PK";
-      break;
-    default:
-      iostress = "none";
-      break;
-    }
-    string iostrain;
-    switch (Teuchos::getIntegralValue<STRUCT_STRAIN_TYP>(ioflags,"STRUCT_STRAIN"))
-    {
-    case struct_strain_none:
-      iostrain = "none";
-      break;
-    case struct_strain_ea:
-      iostrain = "euler_almansi";
-      break;
-    case struct_strain_gl:
-      iostrain = "green_lagrange";
-      break;
-    default:
-      iostrain = "none";
-      break;
-    }
+    INPAR::STR::StressType iostress = Teuchos::getIntegralValue<INPAR::STR::StressType>(ioflags,"STRUCT_STRESS");
+    INPAR::STR::StrainType iostrain = Teuchos::getIntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_STRAIN");
 
-    if (!mod_stress && iostress!="none")
+    if (!mod_stress && iostress!=INPAR::STR::stress_none)
     {
       // create the parameters for the discretization
       ParameterList p;
@@ -559,14 +503,7 @@ void stru_static_drt()
       Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
       p.set("stress", stress);
       p.set("strain", strain);
-      if (iostress=="cauchy")   // output of Cauchy stresses instead of 2PK stresses
-      {
-        p.set("cauchy", true);
-      }
-      else
-      {
-        p.set("cauchy", false);
-      }
+      p.set("iostress", iostress);
       p.set("iostrain", iostrain);
       // set vector values needed by elements
       actdis->ClearState();
@@ -576,24 +513,31 @@ void stru_static_drt()
       actdis->ClearState();
       if (!isdatawritten) output.NewStep(istep, timen);
       isdatawritten = true;
-      if (iostress=="cauchy")
+
+      switch (iostress)
       {
+      case INPAR::STR::stress_cauchy:
         output.WriteVector("gauss_cauchy_stresses_xyz",*stress,*(actdis->ElementColMap()));
-      }
-      else
-      {
+        break;
+      case INPAR::STR::stress_2pk:
         output.WriteVector("gauss_2PK_stresses_xyz",*stress,*(actdis->ElementColMap()));
+        break;
+      default:
+        dserror ("requested stress type not supported");
+        break;
       }
-      if (iostrain != "none")
+
+      switch (iostrain)
       {
-        if (iostrain == "euler_almansi")
-        {
-          output.WriteVector("gauss_EA_strains_xyz",*strain,*(actdis->ElementColMap()));
-        }
-        else
-        {
-          output.WriteVector("gauss_GL_strains_xyz",*strain,*(actdis->ElementColMap()));
-        }
+      case INPAR::STR::strain_ea:
+        output.WriteVector("gauss_EA_strains_xyz",*strain,*(actdis->ElementColMap()));
+        break;
+      case INPAR::STR::strain_gl:
+        output.WriteVector("gauss_GL_strains_xyz",*strain,*(actdis->ElementColMap()));
+        break;
+      case INPAR::STR::strain_none:
+      default:
+        break;
       }
     }
 
@@ -635,7 +579,7 @@ void stru_static_drt()
   DRT::ResultTestManager testmanager(actdis->Comm());
   testmanager.AddFieldTest(rcp(new StruResultTest(actdis,dis,null,null)));
   testmanager.TestAll();
-  
+
   TimeMonitor::summarize();
 
   //----------------------------- this is the end my lonely friend the end

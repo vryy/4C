@@ -34,6 +34,7 @@ using namespace Teuchos;
 
 #include "so_surface.H"
 #include "so_line.H"
+#include "../drt_inpar/inpar_structure.H"
 
 #include "../drt_lib/linalg_fixedsizematrix.H"
 
@@ -314,22 +315,9 @@ protected:
     so_tet4_totlag,
     so_tet4_updlag
   };
-  //! stress evaluation types of so_tet10
-  enum StressType
-  {
-    so_tet4_stress_none,
-    so_tet4_stress_gpxyz,
-    so_tet4_stress_gprst,
-    so_tet4_stress_gp123,
-    so_tet4_stress_ndxyz,
-    so_tet4_stress_ndrst,
-    so_tet4_stress_nd123
-  };
 
   //! kinematic type
   KinematicType                                                            kintype_;
-  //! type of stress evaluation
-  StressType                                                               stresstype_;
   //! no. gaussian points in each spatial dimension
   int                                                                      ngp_[3];
   //! number of the material law
@@ -375,14 +363,14 @@ protected:
   virtual void so_tet4_nlnstiffmass(vector<int>&              lm,
                                  vector<double>&           disp,
                                  vector<double>&           residual,
-                                 LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* stiffmatrix,
-                                 LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* massmatrix,
-                                 LINALG::Matrix<NUMDOF_SOTET4,1>* force,
-                                 LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* stresses,
-                                 LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestrain,
-                                 struct _MATERIAL*         material,
-                                 bool                      cauchy = false,
-                                 bool                      ea = false);
+                                    LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* stiffmatrix,
+                                    LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* massmatrix,
+                                    LINALG::Matrix<NUMDOF_SOTET4,1>* force,
+                                    LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* stresses,
+                                    LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestrain,
+                                    struct _MATERIAL*         material,
+                                    const INPAR::STR::StressType     iostress,
+                                    const INPAR::STR::StrainType     iostrain);
 
   //! lump mass matrix (bborn 07/08)
   void so_tet4_lumpmass(LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* emass);  //!< element mass matrix

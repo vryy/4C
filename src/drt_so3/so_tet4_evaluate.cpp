@@ -127,7 +127,8 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
       for (unsigned i=0; i<mydisp.size(); ++i) mydisp[i] = 0.0;
       vector<double> myres(lm.size());
       for (unsigned i=0; i<myres.size(); ++i) myres[i] = 0.0;
-      so_tet4_nlnstiffmass(lm,mydisp,myres, &elemat1, NULL, &elevec1, NULL,NULL,actmat);
+      so_tet4_nlnstiffmass(lm,mydisp,myres, &elemat1, NULL, &elevec1, NULL,NULL,actmat,
+                           INPAR::STR::stress_none,INPAR::STR::strain_none);
    }
     break;
 
@@ -143,9 +144,11 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
 #ifndef INVERSEDESIGNCREATE
-      so_tet4_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,actmat);
+      so_tet4_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,actmat,
+                           INPAR::STR::stress_none,INPAR::STR::strain_none);
 #else
-      invdesign_->so_tet4_nlnstiffmass(this,lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,actmat);
+      invdesign_->so_tet4_nlnstiffmass(this,lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,actmat,
+                                       INPAR::STR::stress_none,INPAR::STR::strain_none);
 #endif
     }
     break;
@@ -163,7 +166,8 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
       LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4> myemat(true); // to zero
-      so_tet4_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,actmat);
+      so_tet4_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,actmat,
+                           INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     break;
 
@@ -180,9 +184,11 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
 #ifndef INVERSEDESIGNCREATE
-      so_tet4_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat);
+      so_tet4_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat,
+                           INPAR::STR::stress_none,INPAR::STR::strain_none);
 #else
-      invdesign_->so_tet4_nlnstiffmass(this,lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat);
+      invdesign_->so_tet4_nlnstiffmass(this,lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat,
+                                       INPAR::STR::stress_none,INPAR::STR::strain_none);
 #endif
       if (act==calc_struct_nlnstifflmass) so_tet4_lumpmass(&elemat2);
     }
@@ -204,13 +210,12 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4> stress(true); // set to zero
       LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4> strain(true);
-      bool cauchy = params.get<bool>("cauchy", false);
-      string iostrain = params.get<string>("iostrain", "none");
-      bool ea = (iostrain == "euler_almansi");
+      INPAR::STR::StressType iostress = params.get<INPAR::STR::StressType>("iostress", INPAR::STR::stress_none);
+      INPAR::STR::StrainType iostrain = params.get<INPAR::STR::StrainType>("iostrain", INPAR::STR::strain_none);
 #ifndef INVERSEDESIGNCREATE
-      so_tet4_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,actmat,cauchy,ea);
+      so_tet4_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,actmat,iostress,iostrain);
 #else
-      invdesign_->so_tet4_nlnstiffmass(this,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,actmat,cauchy,ea);
+      invdesign_->so_tet4_nlnstiffmass(this,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,actmat,iostress,iostrain);
 #endif
       AddtoPack(*stressdata, stress);
       AddtoPack(*straindata, strain);
@@ -590,8 +595,8 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
       LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestress,      // stresses at GP
       LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestrain,      // strains at GP
       struct _MATERIAL*         material,       // element material data
-      const bool                cauchy,         // stress output options
-      const bool                ea)             // strain output options
+      const INPAR::STR::StressType                 iostress,         // stress output options
+      const INPAR::STR::StrainType                 iostrain)         // strain output options
 {
 /* =============================================================================*
 ** CONST DERIVATIVES and WEIGHTS for TET_4  with 1 GAUSS POINTS*
@@ -720,47 +725,56 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
     glstrain(5) = cauchygreen(2,0);
 
     // return gp strains (only in case of stress/strain output)
-    if (elestrain != NULL)
+    switch (iostrain)
     {
-      if (!ea) // output Green-Lagrange strains
-      {
-        for (int i = 0; i < 3; ++i)
-          (*elestrain)(gp,i) = glstrain(i);
-        for (int i = 3; i < 6; ++i)
-          (*elestrain)(gp,i) = 0.5 * glstrain(i);
-      }
-      else
-      {
-        // rewriting Green-Lagrange strains in matrix format
-        LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> gl;
-        gl(0,0) = glstrain(0);
-        gl(0,1) = 0.5*glstrain(3);
-        gl(0,2) = 0.5*glstrain(5);
-        gl(1,0) = gl(0,1);
-        gl(1,1) = glstrain(1);
-        gl(1,2) = 0.5*glstrain(4);
-        gl(2,0) = gl(0,2);
-        gl(2,1) = gl(1,2);
-        gl(2,2) = glstrain(2);
+    case INPAR::STR::strain_gl:
+    {
+      if (elestrain == NULL) dserror("no strain data available");
+      for (int i = 0; i < 3; ++i)
+        (*elestrain)(gp,i) = glstrain(i);
+      for (int i = 3; i < 6; ++i)
+        (*elestrain)(gp,i) = 0.5 * glstrain(i);
+    }
+    break;
+    case INPAR::STR::strain_ea:
+    {
+      if (elestrain == NULL) dserror("no strain data available");
 
-        // inverse of deformation gradient
-        //Epetra_SerialDenseMatrix invdefgrd(defgrd); // make a copy here otherwise defgrd is destroyed!
-        //LINALG::NonsymInverse3x3(invdefgrd);
-        LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> invdefgrd;
-        invdefgrd.Invert(defgrd);
+      // rewriting Green-Lagrange strains in matrix format
+      LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> gl;
+      gl(0,0) = glstrain(0);
+      gl(0,1) = 0.5*glstrain(3);
+      gl(0,2) = 0.5*glstrain(5);
+      gl(1,0) = gl(0,1);
+      gl(1,1) = glstrain(1);
+      gl(1,2) = 0.5*glstrain(4);
+      gl(2,0) = gl(0,2);
+      gl(2,1) = gl(1,2);
+      gl(2,2) = glstrain(2);
 
-        LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> temp;
-        LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> euler_almansi;
-        temp.Multiply(gl,invdefgrd);
-        euler_almansi.MultiplyTN(invdefgrd,temp);
+      // inverse of deformation gradient
+      //Epetra_SerialDenseMatrix invdefgrd(defgrd); // make a copy here otherwise defgrd is destroyed!
+      //LINALG::NonsymInverse3x3(invdefgrd);
+      LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> invdefgrd;
+      invdefgrd.Invert(defgrd);
 
-        (*elestrain)(gp,0) = euler_almansi(0,0);
-        (*elestrain)(gp,1) = euler_almansi(1,1);
-        (*elestrain)(gp,2) = euler_almansi(2,2);
-        (*elestrain)(gp,3) = euler_almansi(0,1);
-        (*elestrain)(gp,4) = euler_almansi(1,2);
-        (*elestrain)(gp,5) = euler_almansi(0,2);
-      }
+      LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> temp;
+      LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> euler_almansi;
+      temp.Multiply(gl,invdefgrd);
+      euler_almansi.MultiplyTN(invdefgrd,temp);
+
+      (*elestrain)(gp,0) = euler_almansi(0,0);
+      (*elestrain)(gp,1) = euler_almansi(1,1);
+      (*elestrain)(gp,2) = euler_almansi(2,2);
+      (*elestrain)(gp,3) = euler_almansi(0,1);
+      (*elestrain)(gp,4) = euler_almansi(1,2);
+      (*elestrain)(gp,5) = euler_almansi(0,2);
+    }
+    break;
+    case INPAR::STR::strain_none:
+      break;
+    default:
+      dserror("requested strain option not available");
     }
 
     /*----------------------------------------------------------------------*
@@ -822,41 +836,48 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
     so_tet4_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, gp);
 
     // return gp stresses
-    if (elestress != NULL)
-    { // return 2nd Piola-Kirchhoff stresses
-      if (!cauchy)
-      {
-        for (int i = 0; i < NUMSTR_SOTET4; ++i)
-          (*elestress)(gp,i) = stress(i);
-      }
-      else
-      {
-        // return Cauchy stresses
-        double detF = defgrd.Determinant();
+    switch (iostress)
+    {
+    case INPAR::STR::stress_2pk:
+    {
+      if (elestress == NULL) dserror("no stress data available");
+      for (int i = 0; i < NUMSTR_SOTET4; ++i)
+        (*elestress)(gp,i) = stress(i);
+    }
+    break;
+    case INPAR::STR::stress_cauchy:
+    {
+      if (elestress == NULL) dserror("no stress data available");
+      double detF = defgrd.Determinant();
 
-        LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> pkstress;
-        pkstress(0,0) = stress(0);
-        pkstress(0,1) = stress(3);
-        pkstress(0,2) = stress(5);
-        pkstress(1,0) = pkstress(0,1);
-        pkstress(1,1) = stress(1);
-        pkstress(1,2) = stress(4);
-        pkstress(2,0) = pkstress(0,2);
-        pkstress(2,1) = pkstress(1,2);
-        pkstress(2,2) = stress(2);
+      LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> pkstress;
+      pkstress(0,0) = stress(0);
+      pkstress(0,1) = stress(3);
+      pkstress(0,2) = stress(5);
+      pkstress(1,0) = pkstress(0,1);
+      pkstress(1,1) = stress(1);
+      pkstress(1,2) = stress(4);
+      pkstress(2,0) = pkstress(0,2);
+      pkstress(2,1) = pkstress(1,2);
+      pkstress(2,2) = stress(2);
 
-        LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> temp;
-        LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> cauchystress;
-        temp.Multiply(1.0/detF,defgrd,pkstress,0.);
-        cauchystress.MultiplyNT(temp,defgrd);
+      LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> temp;
+      LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> cauchystress;
+      temp.Multiply(1.0/detF,defgrd,pkstress,0.);
+      cauchystress.MultiplyNT(temp,defgrd);
 
-        (*elestress)(gp,0) = cauchystress(0,0);
-        (*elestress)(gp,1) = cauchystress(1,1);
-        (*elestress)(gp,2) = cauchystress(2,2);
-        (*elestress)(gp,3) = cauchystress(0,1);
-        (*elestress)(gp,4) = cauchystress(1,2);
-        (*elestress)(gp,5) = cauchystress(0,2);
-      }
+      (*elestress)(gp,0) = cauchystress(0,0);
+      (*elestress)(gp,1) = cauchystress(1,1);
+      (*elestress)(gp,2) = cauchystress(2,2);
+      (*elestress)(gp,3) = cauchystress(0,1);
+      (*elestress)(gp,4) = cauchystress(1,2);
+      (*elestress)(gp,5) = cauchystress(0,2);
+    }
+    break;
+    case INPAR::STR::stress_none:
+      break;
+    default:
+      dserror("requested stress type not available");
     }
 
     if (force != NULL && stiffmatrix != NULL)

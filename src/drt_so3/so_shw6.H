@@ -166,7 +166,7 @@ private:
 
   //! in case of changed nodal order this is true
   bool nodes_rearranged_;
-  
+
   //! don't want = operator
   So_shw6& operator = (const So_shw6& old);
 
@@ -216,7 +216,8 @@ private:
           LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestress,   // stresses at GP
           LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestrain,   // strains at GP
           ParameterList&            params,         // algorithmic parameters e.g. time
-          const bool                cauchy=false);         // stress output option
+          const INPAR::STR::StressType             iostress,    // stress output option
+          const INPAR::STR::StrainType             iostrain);   // strain output option
 
   static const int num_sp = 5;       ///< number of ANS sampling points
   static const int num_ans = 3;      ///< number of modified ANS strains (E_rt,E_st,E_tt)

@@ -110,8 +110,6 @@ void DRT::ELEMENTS::So_tet4::Pack(vector<char>& data) const
   //AddtoPack(data,ngp_,3*sizeof(int));
   // material_
   AddtoPack(data,material_);
-  // stresstype_
-  AddtoPack(data,stresstype_);
   // kintype_
   AddtoPack(data,kintype_);
 
@@ -159,8 +157,6 @@ void DRT::ELEMENTS::So_tet4::Unpack(const vector<char>& data)
   //ExtractfromPack(position,data,ngp_,3*sizeof(int));
   // material_
   ExtractfromPack(position,data,material_);
-  // stresstype_
-  ExtractfromPack(position,data,stresstype_);
   // kintype_
   ExtractfromPack(position,data,kintype_);
   // data_

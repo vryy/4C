@@ -24,60 +24,6 @@ Maintainer: Burkhard Bornemann
 #include "strtimint.H"
 
 /*----------------------------------------------------------------------*/
-/* Map stress input string to enum */
-enum STR::TimInt::StressEnum STR::TimInt::MapStressStringToEnum
-(
-  const std::string name  //!< identifier
-)
-{
-  if ( (name == "cauchy") or (name == "Cauchy") )
-  {
-    return stress_cauchy;
-  }
-  else if ( (name == "2pk") or (name == "2PK")
-            or (name == "Yes") or (name == "yes") or (name == "YES") )
-  {
-    return stress_pk2;
-  }
-  else if ( (name == "No") or (name == "NO") or (name == "No") )
-  {
-    return stress_none;
-  }
-  else
-  {
-    dserror("Cannot handle (output) stress type %s", name.c_str());
-    return stress_none;
-  }
-}
-
-/*----------------------------------------------------------------------*/
-/* Map strain input string to enum */
-enum STR::TimInt::StrainEnum STR::TimInt::MapStrainStringToEnum
-(
-  const std::string name  //!< identifier
-)
-{
-  if ( (name == "ea") or (name == "EA") )
-  {
-    return strain_ea;
-  }
-  else if ( (name == "gl") or (name == "GL")
-            or (name == "Yes") or (name == "yes") or (name == "YES") )
-  {
-    return strain_gl;
-  }
-  else if ( (name == "No") or (name == "NO") or (name == "No") )
-  {
-    return strain_none;
-  }
-  else
-  {
-    dserror("Cannot handle (output) strain type %s", name.c_str());
-    return strain_none;
-  }
-}
-
-/*----------------------------------------------------------------------*/
 /* provide string for identifying enum */
 std::string STR::TimInt::MapNameEnumToString
 (
@@ -151,8 +97,8 @@ STR::TimInt::TimInt
   writestate_((bool) Teuchos::getIntegralValue<int>(ioparams,"STRUCT_DISP")),
   writestateevery_(sdynparams.get<int>("RESEVRYDISP")),
   writestrevery_(sdynparams.get<int>("RESEVRYSTRS")),
-  writestress_(MapStressStringToEnum(ioparams.get<std::string>("STRUCT_STRESS"))),
-  writestrain_(MapStrainStringToEnum(ioparams.get<std::string>("STRUCT_STRAIN"))),
+  writestress_(ioparams.get<INPAR::STR::StressType>("STRUCT_STRESS")),
+  writestrain_(ioparams.get<INPAR::STR::StrainType>("STRUCT_STRAIN")),
   writeenergyevery_(sdynparams.get<int>("RESEVRYERGY")),
   energyfile_(NULL),
   damping_(Teuchos::getIntegralValue<INPAR::STR::DampKind>(sdynparams,"DAMPING")),
@@ -211,11 +157,11 @@ STR::TimInt::TimInt
   {
     Teuchos::ParameterList p;
     p.set("total time", timen_);
-    discret_->EvaluateDirichlet(p, zeros_, Teuchos::null, Teuchos::null, 
+    discret_->EvaluateDirichlet(p, zeros_, Teuchos::null, Teuchos::null,
                                 Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0); // just in case of change
   }
-  
+
   // displacements D_{n}
   dis_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, dofrowmap_, true));
   // velocities V_{n}
@@ -246,7 +192,7 @@ STR::TimInt::TimInt
     consolv_ = Teuchos::rcp(new UTILS::ConstraintSolver(discret_,
                                                         *solver_,
                                                         dbcmaps_,
-                                                        sdynparams)); 
+                                                        sdynparams));
   }
   // fix pointer to #dofrowmap_, which has not really changed, but is
   // located at different place
@@ -397,7 +343,7 @@ void STR::TimInt::UpdateStepTime()
   // update time and step
   time_->UpdateSteps(timen_);  // t_{n} := t_{n+1}, etc
   step_ = stepn_;  // n := n+1
-  // 
+  //
   timen_ += (*dt_)[0];
   stepn_ += 1;
 
@@ -545,8 +491,8 @@ void STR::TimInt::OutputStep()
 
   // output stress & strain
   if ( writestrevery_
-       and ( (writestress_ != stress_none)
-             or (writestrain_ != strain_none) )
+       and ( (writestress_ != INPAR::STR::stress_none)
+             or (writestrain_ != INPAR::STR::strain_none) )
        and (step_%writestrevery_ == 0) )
   {
     OutputStressStrain(datawritten);
@@ -666,39 +612,15 @@ void STR::TimInt::OutputStressStrain
   p.set("total time", (*time_)[0]);
   p.set("delta time", (*dt_)[0]);
 
-  // stress
-  if (writestress_ == stress_cauchy)
-  {
-    // output of Cauchy stresses instead of 2PK stresses
-    p.set("cauchy", true);
-  }
-  else
-  {
-    // this will produce 2nd PK stress ????
-    p.set("cauchy", false);
-  }
   Teuchos::RCP<std::vector<char> > stressdata
     = Teuchos::rcp(new std::vector<char>());
   p.set("stress", stressdata);
+  p.set("iostress", writestress_);
 
-  // strain
-  if (writestrain_ == strain_ea)
-  {
-    p.set("iostrain", "euler_almansi");
-  }
-  else if (writestrain_ == strain_gl)
-  {
-    // WILL THIS CAUSE TROUBLE ????
-    // THIS STRING DOES NOT EXIST IN SO3
-    p.set("iostrain", "green_lagrange");
-  }
-  else
-  {
-    p.set("iostrain", "none");
-  }
   Teuchos::RCP<std::vector<char> > straindata
     = Teuchos::rcp(new std::vector<char>());
   p.set("strain", straindata);
+  p.set("iostrain", writestrain_);
 
   // set vector values needed by elements
   discret_->ClearState();
@@ -716,32 +638,40 @@ void STR::TimInt::OutputStressStrain
   datawritten = true;
 
   // write stress
-  if (writestress_ != stress_none)
+  if (writestress_ != INPAR::STR::stress_none)
   {
     std::string stresstext = "";
-    if (writestress_ == stress_cauchy)
+    if (writestress_ == INPAR::STR::stress_cauchy)
     {
       stresstext = "gauss_cauchy_stresses_xyz";
     }
-    else if (writestress_ == stress_pk2)
+    else if (writestress_ == INPAR::STR::stress_2pk)
     {
       stresstext = "gauss_2PK_stresses_xyz";
+    }
+    else
+    {
+      dserror("requested stress type not supported");
     }
     output_->WriteVector(stresstext, *stressdata,
                          *(discret_->ElementColMap()));
   }
 
   // write strain
-  if (writestrain_ != strain_none)
+  if (writestrain_ != INPAR::STR::strain_none)
   {
     std::string straintext = "";
-    if (writestrain_ == strain_ea)
+    if (writestrain_ == INPAR::STR::strain_ea)
     {
       straintext = "gauss_EA_strains_xyz";
     }
-    else
+    else if (writestrain_ == INPAR::STR::strain_gl)
     {
       straintext = "gauss_GL_strains_xyz";
+    }
+    else
+    {
+      dserror("requested strain type not supported");
     }
     output_->WriteVector(straintext, *straindata,
                          *(discret_->ElementColMap()));

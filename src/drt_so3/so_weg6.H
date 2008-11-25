@@ -34,6 +34,7 @@ using namespace Teuchos;
 #include "../drt_mat/material.H"
 #include "so_surface.H"
 #include "so_line.H"
+#include "../drt_inpar/inpar_structure.H"
 
 #include "../drt_lib/linalg_fixedsizematrix.H"
 
@@ -406,8 +407,8 @@ protected:
                                  LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestress,
                                  LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestrain,
                                  ParameterList&            params,         // algorithmic parameters e.g. time
-                                 const bool                cauchy = false,
-                                 const bool                euler_almansi = false);
+                                 const INPAR::STR::StressType             iostress,
+                                 const INPAR::STR::StrainType             iostrain);
 
   //! material selection for sow6
   void sow6_mat_sel(Epetra_SerialDenseVector* stress,

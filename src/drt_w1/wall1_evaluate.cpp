@@ -95,7 +95,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
       for (int i=0; i<(int)mydisp.size(); ++i) mydisp[i] = 0.0;
       vector<double> myres(lm.size());
       for (int i=0; i<(int)myres.size(); ++i) myres[i] = 0.0;
-      w1_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat);
+      w1_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat,
+                      INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     break;
     case Wall1::calc_struct_nlnstiffmass:
@@ -109,7 +110,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      w1_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat);
+      w1_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat,
+                      INPAR::STR::stress_none,INPAR::STR::strain_none);
       if (act==calc_struct_nlnstifflmass) w1_lumpmass(&elemat2);
     }
     break;
@@ -124,7 +126,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      w1_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,actmat);
+      w1_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,actmat,
+                      INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     break;
     case Wall1::calc_struct_internalforce:
@@ -141,7 +144,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
       // This matrix is not utterly useless. It is used to apply EAS-stuff in a linearised manner
       // onto the internal force vector.
       Epetra_SerialDenseMatrix myemat(lm.size(),lm.size());
-      w1_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,actmat);
+      w1_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,actmat,
+                      INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     break;
     case Wall1::calc_struct_nlnstiff_gemm:
@@ -158,7 +162,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      FintStiffMassGEMM(params,lm,mydispo,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,actmat);
+      FintStiffMassGEMM(params,lm,mydispo,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,actmat,
+                        INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     break;
     case calc_struct_update_istep:
@@ -218,10 +223,9 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
       const DRT::UTILS::IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule_);
       Epetra_SerialDenseMatrix stress(intpoints.nquad,Wall1::numstr_);
       Epetra_SerialDenseMatrix strain(intpoints.nquad,Wall1::numstr_);
-      bool cauchy = params.get<bool>("cauchy", false);
-      string iostrain = params.get<string>("iostrain", "none");
-      if (iostrain!="euler_almansi") w1_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,actmat,cauchy);
-      else dserror("requested strain output option not yet available for wall1");
+      INPAR::STR::StressType iostress = params.get<INPAR::STR::StressType>("iostress", INPAR::STR::stress_none);
+      INPAR::STR::StrainType iostrain = params.get<INPAR::STR::StrainType>("iostrain", INPAR::STR::strain_none);
+      w1_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,actmat,iostress,iostrain);
       AddtoPack(*stressdata, stress);
       AddtoPack(*straindata, strain);
     }
@@ -491,7 +495,8 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
                                            Epetra_SerialDenseMatrix* elestress,
                                            Epetra_SerialDenseMatrix* elestrain,
                                            struct _MATERIAL*         material,
-                                           const bool                cauchy)
+                                           const INPAR::STR::StressType iostress,
+                                           const INPAR::STR::StrainType iostrain)
 
 {
   const int numnode = NumNode();
@@ -667,27 +672,45 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
       /* call material law----------------------------------------------------*/
       w1_call_matgeononl(strain,stress,C,numeps,material);
 
-       // return gp strains (only in case of stress/strain output)
-       if (elestrain != NULL)
-       {
-         for (int i = 0; i < Wall1::numstr_; ++i)
-           (*elestrain)(ip,i) = strain(i);
-       }
+      // return gp strains (only in case of strain output)
+      switch (iostrain)
+      {
+      case INPAR::STR::strain_gl:
+      {
+        if (elestrain == NULL) dserror("no strain data available");
+        for (int i = 0; i < Wall1::numstr_; ++i)
+          (*elestrain)(ip,i) = strain(i);
+      }
+      break;
+      case INPAR::STR::strain_none:
+        break;
+      case INPAR::STR::strain_ea:
+      default:
+        dserror("requested strain type not supported");
+      }
 
-       // return gp stresses (only in case of stress/strain output)
-       if (elestress != NULL)
-       {
-         if (cauchy)
-         {
-           StressCauchy(ip, F_tot(0,0), F_tot(1,1), F_tot(0,2), F_tot(1,2), stress, elestress);
-         }
-         else
-         {
-           (*elestress)(ip,0) = stress(0,0);
-           (*elestress)(ip,1) = stress(1,1);
-           (*elestress)(ip,2) = stress(0,2);
-         }
-       }
+      // return gp stresses (only in case of stress output)
+      switch (iostress)
+      {
+      case INPAR::STR::stress_2pk:
+      {
+        if (elestress == NULL) dserror("no stress data available");
+        (*elestress)(ip,0) = stress(0,0);
+        (*elestress)(ip,1) = stress(1,1);
+        (*elestress)(ip,2) = stress(0,2);
+      }
+      break;
+      case INPAR::STR::stress_cauchy:
+      {
+        if (elestress == NULL) dserror("no stress data available");
+        StressCauchy(ip, F_tot(0,0), F_tot(1,1), F_tot(0,2), F_tot(1,2), stress, elestress);
+      }
+      break;
+      case INPAR::STR::stress_none:
+        break;
+      default:
+        dserror("requested stress type not supported");
+      }
 
       /*-----first piola-kirchhoff stress vector------------------------------*/
       w1_stress_eas(stress,F_tot,p_stress);
@@ -706,26 +729,44 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
    {
      w1_call_matgeononl(strain,stress,C,numeps,material);
 
-     // return gp strains (only in case of stress/strain output)
-     if (elestress != NULL)
+     // return gp strains (only in case of strain output)
+     switch (iostrain)
      {
+     case INPAR::STR::strain_gl:
+     {
+       if (elestrain == NULL) dserror("no strain data available");
        for (int i = 0; i < Wall1::numstr_; ++i)
          (*elestrain)(ip,i) = strain(i);
      }
+     break;
+     case INPAR::STR::strain_none:
+        break;
+     case INPAR::STR::strain_ea:
+     default:
+        dserror("requested strain type not supported");
+     }
 
-     // return gp stresses (only in case of stress/strain output)
-     if (elestress != NULL)
+     // return gp stresses (only in case of stress output)
+     switch (iostress)
      {
-       if (cauchy)
-       {
-         StressCauchy(ip, F[0], F[1], F[2], F[3], stress, elestress);
-       }
-       else
-       {
-         (*elestress)(ip,0) = stress(0,0);
-         (*elestress)(ip,1) = stress(1,1);
-         (*elestress)(ip,2) = stress(0,2);
-       }
+     case INPAR::STR::stress_2pk:
+     {
+       if (elestress == NULL) dserror("no stress data available");
+       (*elestress)(ip,0) = stress(0,0);
+       (*elestress)(ip,1) = stress(1,1);
+       (*elestress)(ip,2) = stress(0,2);
+     }
+     break;
+     case INPAR::STR::stress_cauchy:
+     {
+       if (elestress == NULL) dserror("no stress data available");
+       StressCauchy(ip, F_tot(0,0), F_tot(1,1), F_tot(0,2), F_tot(1,2), stress, elestress);
+     }
+     break;
+     case INPAR::STR::stress_none:
+       break;
+     default:
+       dserror("requested stress type not supported");
      }
 
      /*---------------------- geometric part of stiffness matrix kg ---*/

@@ -88,7 +88,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure(const Teuchos::ParameterLis
     dserror("unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());
     break;
   }
-  
+
 }
 
 /*----------------------------------------------------------------------*/
@@ -165,23 +165,11 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   genalphaparams->set<bool>  ("io structural disp",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_DISP"));
   genalphaparams->set<int>   ("io disp every nstep",prbdyn.get<int>("UPRES"));
 
-  switch (Teuchos::getIntegralValue<STRUCT_STRESS_TYP>(ioflags,"STRUCT_STRESS"))
-  {
-  case struct_stress_none:
-    genalphaparams->set<string>("io structural stress", "none");
-    break;
-  case struct_stress_cauchy:
-    genalphaparams->set<string>("io structural stress", "cauchy");
-    break;
-  case struct_stress_pk:
-    genalphaparams->set<string>("io structural stress", "2PK");
-    break;
-  default:
-    genalphaparams->set<string>("io structural stress", "none");
-    break;
-  }
-
+  INPAR::STR::StressType iostress = Teuchos::getIntegralValue<INPAR::STR::StressType>(ioflags,"STRUCT_STRESS");
+  genalphaparams->set<INPAR::STR::StressType>("io structural stress", iostress);
   genalphaparams->set<int>   ("io stress every nstep",sdyn.get<int>("RESEVRYSTRS"));
+  INPAR::STR::StrainType iostrain = Teuchos::getIntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_STRAIN");
+  genalphaparams->set<INPAR::STR::StrainType>("io structural strain", iostrain);
 
   genalphaparams->set<int>   ("restart",probtype.get<int>("RESTART"));
   genalphaparams->set<int>   ("write restart every",prbdyn.get<int>("RESTARTEVRY"));
@@ -211,29 +199,12 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
     genalphaparams->set<string>("equilibrium iteration","newtonlinuzawa");
   break;
   case INPAR::STR::soltech_newtonuzawanonlin:
-    genalphaparams->set<string>("equilibrium iteration","augmentedlagrange"); 
+    genalphaparams->set<string>("equilibrium iteration","augmentedlagrange");
     break;
   default:
     genalphaparams->set<string>("equilibrium iteration","full newton");
     break;
   }
-
-  switch (Teuchos::getIntegralValue<STRUCT_STRAIN_TYP>(ioflags,"STRUCT_STRAIN"))
-  {
-  case struct_strain_none:
-    genalphaparams->set<string>("io structural strain", "none");
-  break;
-  case struct_strain_ea:
-    genalphaparams->set<string>("io structural strain", "euler_almansi");
-  break;
-  case struct_strain_gl:
-    genalphaparams->set<string>("io structural strain", "green_lagrange");
-  break;
-  default:
-    genalphaparams->set<string>("io structural strain", "none");
-  break;
-  }
-
 
   // set predictor (takes values "constant" "consistent")
   switch (Teuchos::getIntegralValue<INPAR::STR::PredEnum>(sdyn,"PREDICT"))
@@ -251,7 +222,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
     dserror("Cannot cope with choice of predictor");
     break;
   }
-  
+
   genalphaparams->set<double>("UZAWAPARAM",sdyn.get<double>("UZAWAPARAM"));
   genalphaparams->set<double>("UZAWATOL",sdyn.get<double>("UZAWATOL"));
   genalphaparams->set<int>   ("UZAWAMAXITER",sdyn.get<int>("UZAWAMAXITER"));
@@ -286,10 +257,10 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
 #endif
     }
   }
-  
+
   RCP<Structure> tmpstr;
     tmpstr = Teuchos::rcp(new StructureGenAlpha(genalphaparams,actdis,solver,output));
-  
+
   if (tmpstr->HaveConstraint())
   {
     structure_ = rcp(new StructureConstrained(tmpstr));
@@ -303,7 +274,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
 void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterList& prbdyn)
 {
   // this is not exactly a one hundred meter race, but we need timing
-  Teuchos::RCP<Teuchos::Time> t 
+  Teuchos::RCP<Teuchos::Time> t
     = Teuchos::TimeMonitor::getNewTimer("ADAPTER::StructureTimIntBaseAlgorithm::SetupStructure");
   Teuchos::TimeMonitor monitor(*t);
 
@@ -320,11 +291,11 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
   output->WriteMesh(0, 0.0);
 
   // get input parameter lists and copy them, because a few parameters are overwritten
-  //const Teuchos::ParameterList& probtype 
+  //const Teuchos::ParameterList& probtype
   //  = DRT::Problem::Instance()->ProblemTypeParams();
-  Teuchos::RCP<Teuchos::ParameterList> ioflags 
+  Teuchos::RCP<Teuchos::ParameterList> ioflags
     = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->IOParams()));
-  Teuchos::RCP<Teuchos::ParameterList> sdyn 
+  Teuchos::RCP<Teuchos::ParameterList> sdyn
     = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->StructuralDynamicParams()));
   //const Teuchos::ParameterList& size
   //  = DRT::Problem::Instance()->ProblemSizeParams();
@@ -334,7 +305,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
     DRT::INPUT::PrintDefaultParameters(std::cout, *sdyn);
 
   // add extra parameters (a kind of work-around)
-  Teuchos::RCP<Teuchos::ParameterList> xparams 
+  Teuchos::RCP<Teuchos::ParameterList> xparams
     = Teuchos::rcp(new Teuchos::ParameterList());
   xparams->set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
 
@@ -348,14 +319,14 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
   if (genprob.probtyp == prb_fsi)
   {
     // FSI input parameters
-    const Teuchos::ParameterList& fsidyn 
+    const Teuchos::ParameterList& fsidyn
       = DRT::Problem::Instance()->FSIDynamicParams();
 
     // Robin flags
     INPAR::FSI::PartitionedCouplingMethod method
       = Teuchos::getIntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
     xparams->set<bool>("structrobin",
-                       ( (method==INPAR::FSI::DirichletRobin) 
+                       ( (method==INPAR::FSI::DirichletRobin)
                          or (method==INPAR::FSI::RobinRobin) ));
 
     // THIS SHOULD GO, OR SHOULDN'T IT?
@@ -376,7 +347,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
   }
 
   // create a solver
-  Teuchos::RCP<ParameterList> solveparams 
+  Teuchos::RCP<ParameterList> solveparams
     = Teuchos::rcp(new ParameterList());
   Teuchos::RCP<LINALG::Solver> solver
     = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->StructSolverParams(),
@@ -393,7 +364,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
     structure_ = rcp(new StructureConstrained(tmpstr));
   else
     structure_ = tmpstr;
-  
+
   // see you
   return;
 }

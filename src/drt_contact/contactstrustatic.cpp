@@ -6,11 +6,11 @@
 -------------------------------------------------------------------------
                         BACI Contact library
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -19,11 +19,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 </pre>
@@ -55,6 +55,7 @@ Maintainer: Alexander Popp
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/linalg_sparsematrix.H"
 #include "../drt_structure/stru_resulttest.H"
+#include "../drt_inpar/inpar_structure.H"
 
 
 
@@ -90,7 +91,7 @@ void contact_stru_static_drt()
           "Please use Dynamics with Generalized-Alpha instead and set\n"
           "DYNAMICTYP = Static, ALPHA_M = ALPHA_F = 0.0 and DAMPING = No!");
   //**********************************************************************
-  
+
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
@@ -113,7 +114,7 @@ void contact_stru_static_drt()
 
   // get information on primal-dual active set strategy
   bool semismooth = (contactmanager->Params()).get<bool>("semismooth newton",false);
-  
+
   // -------------------------------------------------------------------
   // get a communicator and myrank
   // -------------------------------------------------------------------
@@ -219,12 +220,12 @@ void contact_stru_static_drt()
     RCP<Epetra_Vector> activetoggle =rcp(new Epetra_Vector(*(contactmanager->SlaveRowNodes())));
     reader.ReadVector(zold,"lagrmultold");
     reader.ReadVector(activetoggle,"activetoggle");
-    
+
     // set old Lagrange multipliers for contact restart
     *(contactmanager->LagrMultOld())=*zold;
     contactmanager->StoreNodalQuantities(Manager::lmold);
     contactmanager->ReadRestart(activetoggle);
-      
+
     // override current time and step with values from file
     time = rtime;
     istep = rstep;
@@ -265,7 +266,7 @@ void contact_stru_static_drt()
   //----------------------- save Dirichlet B.C. status in Contact Manager
   // all CNodes on all interfaces then know if D.B.C.s are applied on their dofs
   contactmanager->StoreNodalQuantities(Manager::dirichlet,dirichtoggle);
-    
+
   //------------------------------------------------- output initial state
   output.NewStep(istep, time);
   output.WriteVector("displacement", dis);
@@ -273,39 +274,10 @@ void contact_stru_static_drt()
 
   //---------------------------------------------- do "stress" calculation
   int mod_stress = istep % statvar->resevry_stress;
-  string iostress;
-  switch (Teuchos::getIntegralValue<STRUCT_STRESS_TYP>(ioflags,"STRUCT_STRESS"))
-  {
-  case struct_stress_none:
-    iostress = "none";
-    break;
-  case struct_stress_cauchy:
-    iostress = "cauchy";
-    break;
-  case struct_stress_pk:
-    iostress = "2PK";
-    break;
-  default:
-    iostress = "none";
-    break;
-  }
-  string iostrain;
-  switch (Teuchos::getIntegralValue<STRUCT_STRAIN_TYP>(ioflags,"STRUCT_STRAIN"))
-  {
-  case struct_strain_none:
-    iostrain = "none";
-    break;
-  case struct_strain_gl:
-    iostrain = "green_lagrange";
-    break;
-  case struct_strain_ea:
-    iostrain = "euler_almansi";
-    break;
-  default:
-    iostrain = "none";
-    break;
-  }
-  if (!mod_stress && iostress!="none")
+  INPAR::STR::StressType iostress = Teuchos::getIntegralValue<INPAR::STR::StressType>(ioflags,"STRUCT_STRESS");
+  INPAR::STR::StressType iostrain = Teuchos::getIntegralValue<INPAR::STR::StressType>(ioflags,"STRUCT_STRAIN");
+
+  if (!mod_stress && iostress!=INPAR::STR::stress_none)
   {
     // create the parameters for the discretization
     ParameterList p;
@@ -318,14 +290,7 @@ void contact_stru_static_drt()
     Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
     p.set("stress", stress);
     p.set("strain", strain);
-    if (iostress == "cauchy")   // output of Cauchy stresses instead of 2PK stresses
-    {
-      p.set("cauchy", true);
-    }
-    else
-    {
-      p.set("cauchy", false);
-    }
+    p.set("iostress", iostress);
     p.set("iostrain", iostrain);
     // set vector values needed by elements
     actdis->ClearState();
@@ -333,20 +298,33 @@ void contact_stru_static_drt()
     actdis->SetState("displacement",dis);
     actdis->Evaluate(p,null,null,null,null,null);
     actdis->ClearState();
-    if (iostress == "cauchy")
-      output.WriteVector("gauss_cauchy_stresses_xyz",*stress,*(actdis->ElementColMap()));
-    else
-      output.WriteVector("gauss_2PK_stresses_xyz",*stress,*(actdis->ElementColMap()));
-    if (iostrain != "none")
+
+    switch (iostress)
     {
-      if (iostrain == "euler_almansi")
-      {
-        output.WriteVector("gauss_EA_strains_xyz",*strain,*(actdis->ElementColMap()));
-      }
-      else
-      {
-        output.WriteVector("gauss_GL_strains_xyz",*strain,*(actdis->ElementColMap()));
-      }
+    case INPAR::STR::stress_cauchy:
+      output.WriteVector("gauss_cauchy_stresses_xyz",*stress,*(actdis->ElementColMap()));
+      break;
+    case INPAR::STR::stress_2pk:
+      output.WriteVector("gauss_2PK_stresses_xyz",*stress,*(actdis->ElementColMap()));
+      break;
+    case INPAR::STR::stress_none:
+      break;
+    default:
+      dserror("requested stress type not supported");
+    }
+
+    switch (iostrain)
+    {
+    case INPAR::STR::strain_ea:
+      output.WriteVector("gauss_EA_strains_xyz",*strain,*(actdis->ElementColMap()));
+      break;
+    case INPAR::STR::strain_gl:
+      output.WriteVector("gauss_GL_strains_xyz",*strain,*(actdis->ElementColMap()));
+      break;
+    case INPAR::STR::strain_none:
+      break;
+    default:
+      dserror ("requested strain type not supported");
     }
   }
 
@@ -372,7 +350,7 @@ void contact_stru_static_drt()
     // 1) SEMI-SMOOTH NEWTON
     // 2) FIXED-POINT APPROACH
     //********************************************************************
-    
+
     //********************************************************************
     // 1) SEMI-SMOOTH NEWTON
     // The search for the correct active set (=contact nonlinearity) and
@@ -426,38 +404,38 @@ void contact_stru_static_drt()
 
     // keep a copy of fresm for contact forces / equilibrium check
     RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm));
-    
-    // friction  
+
+    // friction
     // reset displacement jumps (slave dofs)
     RCP<Epetra_Vector> jump = contactmanager->Jump();
-    jump->Scale(0.0); 
+    jump->Scale(0.0);
     contactmanager->StoreNodalQuantities(Manager::jump);
-    
+
     //-------------------------- make contact modifications to lhs and rhs
     fresm->Scale(-1.0);     // rhs = -R = -fresm
     contactmanager->SetState("displacement",disn);
-    
+
     contactmanager->InitializeMortar();
     contactmanager->EvaluateMortar();
-    
+
     contactmanager->Initialize();
     contactmanager->Evaluate(stiff_mat,fresm);
-    
+
     // blank residual at DOFs on Dirichlet BC
     {
       Epetra_Vector fresmdbc(*fresm);
       fresm->Multiply(1.0,*invtoggle,fresmdbc,0.0);
     }
-        
+
     //---------------------------------------------------- contact forces
     // (no resetting of LM necessary for semi-smooth Newton, as there
     // will never be a repetition of a time / load step!)
     contactmanager->ContactForces(fresmcopy);
-    
+
 #ifdef CONTACTGMSH2
     contactmanager->VisualizeGmsh(istep+1,0);
 #endif // #ifdef CONTACTGMSH2
-    
+
     //----------------------------------------------- build res/disi norm
     double norm;
     fresm->Norm2(&norm);
@@ -467,7 +445,7 @@ void contact_stru_static_drt()
 
     // reset Newton iteration counter
     numiter=0;
-    
+
     //===========================================start of equilibrium loop
     // this is a semi-smooth Newton method, as it not only includes the
     // geometrical nonlinearity but also the active set search
@@ -529,37 +507,37 @@ void contact_stru_static_drt()
 
       // keep a copy of fresm for contact forces / equilibrium check
       RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm));
-      
+
       //-------------------------make contact modifications to lhs and rhs
       //-------------------------------------------------update active set
       fresm->Scale(-1.0);     // rhs = -R = -fresm
       contactmanager->SetState("displacement",disn);
-      
+
       contactmanager->InitializeMortar();
       contactmanager->EvaluateMortar();
-      
+
       // this is the correct place to update the active set!!!
       // (on the one hand we need the new weighted gap vector g, which is
       // computed in EvaluateMortar() above and on the other hand we want to
       // run the Evaluate()routine below with the NEW active set already)
       contactmanager->UpdateActiveSetSemiSmooth();
-      
+
       contactmanager->Initialize();
       contactmanager->Evaluate(stiff_mat,fresm);
-      
+
       // blank residual at DOFs on Dirichlet BC
       {
         Epetra_Vector fresmdbc(*fresm);
         fresm->Multiply(1.0,*invtoggle,fresmdbc,0.0);
       }
-          
+
       //--------------------------------------------------- contact forces
       contactmanager->ContactForces(fresmcopy);
-      
+
 #ifdef CONTACTGMSH2
     contactmanager->VisualizeGmsh(istep+1,numiter+1);
 #endif // #ifdef CONTACTGMSH2
-    
+
       //for (int k=0;k<fint->MyLength();++k)
       //  cout << (*fint)[k] << " " << -(*fextn)[k] << " " << (*fc)[k] << endl;
 
@@ -578,7 +556,7 @@ void contact_stru_static_drt()
 
       //--------------------------------- increment equilibrium loop index
       ++numiter;
-      
+
     } //
     //============================================= end equilibrium loop
 
@@ -645,43 +623,43 @@ void contact_stru_static_drt()
 
       // keep a copy of fresm for contact forces / equilibrium check
       RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm));
-      
+
       // reset Lagrange multipliers to last converged state
       // this resetting is necessary due to multiple active set steps
       RCP<Epetra_Vector> z = contactmanager->LagrMult();
       RCP<Epetra_Vector> zold = contactmanager->LagrMultOld();
       z->Update(1.0,*zold,0.0);
       contactmanager->StoreNodalQuantities(Manager::lmcurrent);
-      
-      // friction  
+
+      // friction
       // reset displacement jumps (slave dofs)
       RCP<Epetra_Vector> jump = contactmanager->Jump();
-      jump->Scale(0.0); 
+      jump->Scale(0.0);
       contactmanager->StoreNodalQuantities(Manager::jump);
-           
+
       //-------------------------- make contact modifications to lhs and rhs
       fresm->Scale(-1.0);     // rhs = -R = -fresm
       contactmanager->SetState("displacement",disn);
-      
+
       contactmanager->InitializeMortar();
       contactmanager->EvaluateMortar();
-      
+
       contactmanager->Initialize();
       contactmanager->Evaluate(stiff_mat,fresm);
-      
+
       // blank residual at DOFs on Dirichlet BC
       {
         Epetra_Vector fresmdbc(*fresm);
         fresm->Multiply(1.0,*invtoggle,fresmdbc,0.0);
       }
-          
+
       //---------------------------------------------------- contact forces
       contactmanager->ContactForces(fresmcopy);
-      
+
 #ifdef CONTACTGMSH2
     dserror("Gmsh Output for every iteration only implemented for semi-smooth Newton");
 #endif // #ifdef CONTACTGMSH2
-    
+
       //----------------------------------------------- build res/disi norm
       double norm;
       fresm->Norm2(&norm);
@@ -749,29 +727,29 @@ void contact_stru_static_drt()
 
         // keep a copy of fresm for contact forces / equilibrium check
         RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm));
-           
+
         //-------------------------make contact modifications to lhs and rhs
         fresm->Scale(-1.0);     // rhs = -R = -fresm
         contactmanager->SetState("displacement",disn);
-        
+
         contactmanager->InitializeMortar();
         contactmanager->EvaluateMortar();
-        
+
         contactmanager->Initialize();
         contactmanager->Evaluate(stiff_mat,fresm);
-        
+
         // blank residual at DOFs on Dirichlet BC
         {
           Epetra_Vector fresmdbc(*fresm);
           fresm->Multiply(1.0,*invtoggle,fresmdbc,0.0);
         }
-            
+
         //--------------------------------------------------- contact forces
         contactmanager->ContactForces(fresmcopy);
-              
+
         //for (int k=0;k<fint->MyLength();++k)
         //  cout << (*fint)[k] << " " << -(*fextn)[k] << " " << (*fc)[k] << endl;
-              
+
         //---------------------------------------------- build res/disi norm
         fresm->Norm2(&norm);
         disi->Norm2(&disinorm);
@@ -806,7 +784,7 @@ void contact_stru_static_drt()
     //********************************************************************
     // END: options for primal-dual active set strategy (PDASS)
     //********************************************************************
-  
+
     //---------------------------- determine new end-quantities and update
     // new displacements at t_{n+1} -> t_n
     // D_{n} := D_{n+1}
@@ -829,12 +807,12 @@ void contact_stru_static_drt()
     time += dt;   // load factor / pseudo time  t_n := t_{n+1} = t_n + Delta t
 
     //-------------------------------------------- print contact to screen
-    contactmanager->PrintActiveSet();      
-    
+    contactmanager->PrintActiveSet();
+
 #ifdef CONTACTGMSH1
     contactmanager->VisualizeGmsh(istep);
 #endif // #ifdef CONTACTGMSH1
-  
+
     //-------------------------------- update contact Lagrange multipliers
     RCP<Epetra_Vector> stepz = contactmanager->LagrMult();
     RCP<Epetra_Vector> stepzold = contactmanager->LagrMultOld();
@@ -856,7 +834,7 @@ void contact_stru_static_drt()
       RCP<Epetra_Vector> activetoggle = contactmanager->WriteRestart();
       output.WriteVector("lagrmultold",zold);
       output.WriteVector("activetoggle",activetoggle);
-          
+
       if (!myrank)
       {
         cout << "====== Restart written in step " << istep << endl;
@@ -878,39 +856,10 @@ void contact_stru_static_drt()
 
     //---------------------------------------------- do stress calculation
     int mod_stress = istep % statvar->resevry_stress;
-    string iostress;
-    switch (Teuchos::getIntegralValue<STRUCT_STRESS_TYP>(ioflags,"STRUCT_STRESS"))
-    {
-    case struct_stress_none:
-      iostress = "none";
-      break;
-    case struct_stress_cauchy:
-      iostress = "cauchy";
-      break;
-    case struct_stress_pk:
-      iostress = "2PK";
-      break;
-    default:
-      iostress = "none";
-      break;
-    }
-    string iostrain;
-    switch (Teuchos::getIntegralValue<STRUCT_STRAIN_TYP>(ioflags,"STRUCT_STRAIN"))
-    {
-    case struct_strain_none:
-      iostrain = "none";
-      break;
-    case struct_strain_gl:
-      iostrain = "green_lagrange";
-      break;
-    case struct_strain_ea:
-      iostrain = "euler_almansi";
-      break;
-    default:
-      iostrain = "none";
-      break;
-    }
-    if (!mod_stress && iostress!="none")
+    INPAR::STR::StressType iostress = Teuchos::getIntegralValue<INPAR::STR::StressType>(ioflags,"STRUCT_STRESS");
+    INPAR::STR::StrainType iostrain = Teuchos::getIntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_STRAIN");
+
+    if (!mod_stress && iostress!=INPAR::STR::stress_none)
     {
       // create the parameters for the discretization
       ParameterList p;
@@ -923,14 +872,7 @@ void contact_stru_static_drt()
       Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
       p.set("stress", stress);
       p.set("strain", strain);
-      if (iostress == "cauchy")   // output of Cauchy stresses instead of 2PK stresses
-      {
-        p.set("cauchy", true);
-      }
-      else
-      {
-        p.set("cauchy", false);
-      }
+      p.set("iostress", iostress);
       p.set("iostrain", iostrain);
       // set vector values needed by elements
       actdis->ClearState();
@@ -938,20 +880,33 @@ void contact_stru_static_drt()
       actdis->SetState("displacement",dis);
       actdis->Evaluate(p,null,null,null,null,null);
       actdis->ClearState();
-      if (iostress == "cauchy")
-        output.WriteVector("gauss_cauchy_stresses_xyz",*stress,*(actdis->ElementColMap()));
-      else
-        output.WriteVector("gauss_2PK_stresses_xyz",*stress,*(actdis->ElementColMap()));
-      if (iostrain != "none")
+
+      switch (iostress)
       {
-        if (iostrain == "euler_almansi")
-        {
-          output.WriteVector("gauss_EA_strains_xyz",*strain,*(actdis->ElementColMap()));
-        }
-        else
-        {
-          output.WriteVector("gauss_GL_strains_xyz",*strain,*(actdis->ElementColMap()));
-        }
+      case INPAR::STR::stress_cauchy:
+        output.WriteVector("gauss_cauchy_stresses_xyz",*stress,*(actdis->ElementColMap()));
+        break;
+      case INPAR::STR::stress_2pk:
+        output.WriteVector("gauss_2PK_stresses_xyz",*stress,*(actdis->ElementColMap()));
+        break;
+      case INPAR::STR::stress_none:
+        break;
+      default:
+        dserror("requested stress type not supported");
+      }
+
+      switch (iostrain)
+      {
+      case INPAR::STR::strain_ea:
+        output.WriteVector("gauss_EA_strains_xyz",*strain,*(actdis->ElementColMap()));
+        break;
+      case INPAR::STR::strain_gl:
+        output.WriteVector("gauss_GL_strains_xyz",*strain,*(actdis->ElementColMap()));
+        break;
+      case INPAR::STR::strain_none:
+        break;
+      default:
+        dserror("requested strain type not supported");
       }
     }
 

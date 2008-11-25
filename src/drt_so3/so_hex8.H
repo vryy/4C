@@ -27,6 +27,7 @@ using namespace Teuchos;
 #include "../drt_lib/drt_node.H"
 #include "so_surface.H"
 #include "so_line.H"
+#include "../drt_inpar/inpar_structure.H"
 
 // prestressing object
 #if defined(PRESTRESS) || defined(POSTSTRESS)
@@ -378,18 +379,6 @@ protected:
     soh8_totlag,
     soh8_updlag
   };
-  //! stress evaluation types of so_hex8
-  enum StressType
-  {
-    soh8_stress_none,
-    soh8_stress_gpxyz,
-    soh8_stress_gprst,
-    soh8_stress_gp123,
-    soh8_stress_ndxyz,
-    soh8_stress_ndrst,
-    soh8_stress_nd123,
-    soh8_stress_cxyz     // interpolated element center stresses
-  };
 
   /*!
    * \brief EAS technology enhancement types of so_hex8
@@ -466,8 +455,8 @@ protected:
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,      ///< stresses at GP
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,      ///< strains at GP
       ParameterList&            params,         ///< algorithmic parameters e.g. time
-      const bool                cauchy=false,   ///< stress output option
-      const bool                euler_almansi=false);  ///< strain output option
+      const INPAR::STR::StressType   iostress,  ///< stress output option
+      const INPAR::STR::StrainType   iostrain); ///< strain output option
 
   //! Lump mass matrix (bborn 07/08)
   void soh8_lumpmass(LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* emass);

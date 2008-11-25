@@ -64,24 +64,24 @@ namespace STR
    *
    * <h3> Intention </h3>
    * This front-end for structural dynamics defines an interface to call
-   * several derived time integrators. Thus it describes a plethora of pure 
+   * several derived time integrators. Thus it describes a plethora of pure
    * virtual methods which have to be implemented at the derived integrators.
-   * However, it also offers a few non-empty methods and stores associated 
-   * data. The most important method of this base time integrator object 
+   * However, it also offers a few non-empty methods and stores associated
+   * data. The most important method of this base time integrator object
    * is #Integrate().
    *
-   * #Integrate() performs a time integration (time loop) with constant 
+   * #Integrate() performs a time integration (time loop) with constant
    * time steps and other parameters as set by the user.
    *
    * Although #Integrate is the main interface, this base time integrator
    * allows the public to access a few of its datum objects, for instance
    * the tangent system matrix #stiff_ by #Stiff(). This selective access
    * is needed in environments in which a independent time loop is provided.
-   * This happens e.g. in fluid-structure-interaction. 
+   * This happens e.g. in fluid-structure-interaction.
    *
    * <h3> Responsibilties </h3>
-   * Most importantly the base integrator manages the system state vectors and 
-   * matrices. It also deals with the output to files and offers method to 
+   * Most importantly the base integrator manages the system state vectors and
+   * matrices. It also deals with the output to files and offers method to
    * determine forces and stiffnesses (tangents).
    *
    * \author bborn
@@ -97,35 +97,6 @@ namespace STR
     template <typename T> friend class TimAdaJoint;
 
   public:
-
-    //! Type of stress
-    enum StressEnum
-    {
-      stress_none,  //!< undetermined
-      stress_cauchy,  //!< Cauchy stress
-      stress_pk1,  //!< 1st Piola-Kirchhoff stress
-      stress_pk2  //! 2nd Piola-Kirchhoff stress
-    };
-
-    //! Map stress input string to enum
-    static enum StressEnum MapStressStringToEnum
-    (
-      const std::string name  //!< identifier
-    );
-
-    //! Type of strain
-    enum StrainEnum
-    {
-      strain_none,  //!< undetermined
-      strain_ea,  //!< Euler-Almansi strain
-      strain_gl  //!< Green-Lagrange strain
-    };
-
-    //! Map strain input string to enum
-    static enum StrainEnum MapStrainStringToEnum
-    (
-      const std::string name  //!< identifier
-    );
 
     //! List of all available time integration schemes
     enum NameEnum
@@ -218,7 +189,7 @@ namespace STR
                                         //!< (may be Teuchos::null)
       Teuchos::RCP<Epetra_Vector> acc,  //!< accelerations
                                        //!< (may be Teuchos::null)
-      bool recreatemap  //!< recreate mapextractor/toggle-vector 
+      bool recreatemap  //!< recreate mapextractor/toggle-vector
                         //!< which stores the DOF IDs subjected
                         //!< to Dirichlet BCs
                         //!< This needs to be true if the bounded DOFs
@@ -499,10 +470,10 @@ namespace STR
 
     //! Return current step number map
     double GetTime() { return (*time_)[0]; }
-    
-    //! Return MapExtractor for Dirichlet boundary conditions 
-    const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() const 
-    { 
+
+    //! Return MapExtractor for Dirichlet boundary conditions
+    const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() const
+    {
       return dbcmaps_;
     }
 
@@ -521,9 +492,9 @@ namespace STR
     Teuchos::RCP<LINALG::Solver> solver_;  //!< linear algebraic solver
     bool solveradapttol_;  //!< adapt solver tolerance
     double solveradaptolbetter_;  //!< tolerance to which is adpated ????
-    Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;  //!< map extractor object 
-                                                  //!< containing non-overlapping 
-                                                  //!< map of global DOFs on Dirichlet 
+    Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;  //!< map extractor object
+                                                  //!< containing non-overlapping
+                                                  //!< map of global DOFs on Dirichlet
                                                   //!< boundary conditions
     //@}
 
@@ -540,8 +511,8 @@ namespace STR
     bool writestate_;  //!< write state on/off
     int writestateevery_;  //!< write state every given step
     int writestrevery_;  //!< write stress/strain every given step
-    enum StressEnum writestress_;  //!< stress output type
-    enum StrainEnum writestrain_;  //!< strain output type
+    INPAR::STR::StressType writestress_;  //!< stress output type
+    INPAR::STR::StrainType writestrain_;  //!< strain output type
     int writeenergyevery_;  //!< write system energy every given step
     std::ofstream* energyfile_;  //!< outputfile for energy
     //@}

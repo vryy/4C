@@ -229,16 +229,15 @@ void DRT::ELEMENTS::PtetRegister::PreEvaluate(DRT::Discretization& dis,
       // do nodal integration of stiffness and internal force
       stiff.LightShape(ndofperpatch,ndofperpatch);
       force1.LightSize(ndofperpatch);
-      NodalIntegration(&stiff,&force1,nodepatch,adjele,NULL,NULL,false,false);
+      NodalIntegration(&stiff,&force1,nodepatch,adjele,NULL,NULL,INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     else
     {
-      bool cauchy     = p.get<bool>("cauchy",false);
-      string iostrain = p.get<string>("iostrain","none");
-      bool ea         = (iostrain=="euler_almansi");
+      INPAR::STR::StressType iostress = p.get<INPAR::STR::StressType>("iostress",INPAR::STR::stress_none);
+      INPAR::STR::StrainType iostrain = p.get<INPAR::STR::StrainType>("iostrain",INPAR::STR::strain_none);
       vector<double> nodalstress(6);
       vector<double> nodalstrain(6);
-      NodalIntegration(NULL,NULL,nodepatch,adjele,&nodalstress,&nodalstrain,cauchy,ea);
+      NodalIntegration(NULL,NULL,nodepatch,adjele,&nodalstress,&nodalstrain,iostress,iostrain);
       nodestress_[nodeLid] = nodalstress;
       nodestrain_[nodeLid] = nodalstrain;
     }
@@ -331,8 +330,8 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix*    
                                                    vector<DRT::ELEMENTS::Ptet*>& adjele,
                                                    vector<double>*               nodalstress,
                                                    vector<double>*               nodalstrain,
-                                                   bool                          cauchy,
-                                                   bool                          ea)
+                                                   const INPAR::STR::StressType  iostress,
+                                                   const INPAR::STR::StrainType  iostrain)
 {
   const int nnodeinpatch = (int)nodepatch.size();
   const int ndofinpatch  = nnodeinpatch*3;
@@ -445,43 +444,52 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix*    
   glstrain(4) = cauchygreen(1,2);
   glstrain(5) = cauchygreen(2,0);
 
-  if (nodalstrain)
+  switch (iostrain)
   {
-    if (!ea)
-    {
-      for (int i = 0; i < 3; ++i) (*nodalstrain)[i] = glstrain(i);
-      for (int i = 3; i < 6; ++i) (*nodalstrain)[i] = 0.5 * glstrain(i);
-    }
-    else
-    {
-      // rewriting Green-Lagrange strains in matrix format
-      LINALG::Matrix<3,3> gl;
-      gl(0,0) = glstrain(0);
-      gl(0,1) = 0.5*glstrain(3);
-      gl(0,2) = 0.5*glstrain(5);
-      gl(1,0) = gl(0,1);
-      gl(1,1) = glstrain(1);
-      gl(1,2) = 0.5*glstrain(4);
-      gl(2,0) = gl(0,2);
-      gl(2,1) = gl(1,2);
-      gl(2,2) = glstrain(2);
+  case INPAR::STR::strain_gl:
+  {
+    if (nodalstrain == NULL) dserror("no strain data available");
+    for (int i = 0; i < 3; ++i) (*nodalstrain)[i] = glstrain(i);
+    for (int i = 3; i < 6; ++i) (*nodalstrain)[i] = 0.5 * glstrain(i);
+  }
+  break;
+  case INPAR::STR::strain_ea:
+  {
+    if (nodalstrain == NULL) dserror("no strain data available");
 
-      // inverse of deformation gradient
-      LINALG::Matrix<3,3> invdefgrd;
-      invdefgrd.Invert(FnodeL);
+    // rewriting Green-Lagrange strains in matrix format
+    LINALG::Matrix<3,3> gl;
+    gl(0,0) = glstrain(0);
+    gl(0,1) = 0.5*glstrain(3);
+    gl(0,2) = 0.5*glstrain(5);
+    gl(1,0) = gl(0,1);
+    gl(1,1) = glstrain(1);
+    gl(1,2) = 0.5*glstrain(4);
+    gl(2,0) = gl(0,2);
+    gl(2,1) = gl(1,2);
+    gl(2,2) = glstrain(2);
 
-      LINALG::Matrix<3,3> temp;
-      LINALG::Matrix<3,3> euler_almansi;
-      temp.Multiply(gl,invdefgrd);
-      euler_almansi.MultiplyTN(invdefgrd,temp);
+    // inverse of deformation gradient
+    LINALG::Matrix<3,3> invdefgrd;
+    invdefgrd.Invert(FnodeL);
 
-      (*nodalstrain)[0] = euler_almansi(0,0);
-      (*nodalstrain)[1] = euler_almansi(1,1);
-      (*nodalstrain)[2] = euler_almansi(2,2);
-      (*nodalstrain)[3] = euler_almansi(0,1);
-      (*nodalstrain)[4] = euler_almansi(1,2);
-      (*nodalstrain)[5] = euler_almansi(0,2);
-    }
+    LINALG::Matrix<3,3> temp;
+    LINALG::Matrix<3,3> euler_almansi;
+    temp.Multiply(gl,invdefgrd);
+    euler_almansi.MultiplyTN(invdefgrd,temp);
+
+    (*nodalstrain)[0] = euler_almansi(0,0);
+    (*nodalstrain)[1] = euler_almansi(1,1);
+    (*nodalstrain)[2] = euler_almansi(2,2);
+    (*nodalstrain)[3] = euler_almansi(0,1);
+    (*nodalstrain)[4] = euler_almansi(1,2);
+    (*nodalstrain)[5] = euler_almansi(0,2);
+  }
+  break;
+  case INPAR::STR::strain_none:
+    break;
+  default:
+    dserror("requested strain type not available");
   }
 
   // material law and stresses
@@ -513,37 +521,47 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix*    
     cmat.Scale(1.0/VnodeL);
   }
 
-  if (nodalstress)
+  switch (iostress)
   {
-    if (!cauchy)
-      for (int i = 0; i < NUMSTR_PTET; ++i) (*nodalstress)[i] = stress(i);
-    else
-    {
-      double detF = FnodeL.Determinant();
+  case INPAR::STR::stress_2pk:
+  {
+    if (nodalstress == NULL) dserror("no stress data available");
+    for (int i = 0; i < NUMSTR_PTET; ++i) (*nodalstress)[i] = stress(i);
+  }
+  break;
+  case INPAR::STR::stress_cauchy:
+  {
+    if (nodalstress == NULL) dserror("no stress data available");
+    double detF = FnodeL.Determinant();
 
-      LINALG::Matrix<3,3> pkstress;
-      pkstress(0,0) = stress(0);
-      pkstress(0,1) = stress(3);
-      pkstress(0,2) = stress(5);
-      pkstress(1,0) = pkstress(0,1);
-      pkstress(1,1) = stress(1);
-      pkstress(1,2) = stress(4);
-      pkstress(2,0) = pkstress(0,2);
-      pkstress(2,1) = pkstress(1,2);
-      pkstress(2,2) = stress(2);
+    LINALG::Matrix<3,3> pkstress;
+    pkstress(0,0) = stress(0);
+    pkstress(0,1) = stress(3);
+    pkstress(0,2) = stress(5);
+    pkstress(1,0) = pkstress(0,1);
+    pkstress(1,1) = stress(1);
+    pkstress(1,2) = stress(4);
+    pkstress(2,0) = pkstress(0,2);
+    pkstress(2,1) = pkstress(1,2);
+    pkstress(2,2) = stress(2);
 
-      LINALG::Matrix<3,3> temp;
-      LINALG::Matrix<3,3> cauchystress;
-      temp.Multiply(1.0/detF,FnodeL,pkstress);
-      cauchystress.MultiplyNT(temp,FnodeL);
+    LINALG::Matrix<3,3> temp;
+    LINALG::Matrix<3,3> cauchystress;
+    temp.Multiply(1.0/detF,FnodeL,pkstress);
+    cauchystress.MultiplyNT(temp,FnodeL);
 
-      (*nodalstress)[0] = cauchystress(0,0);
-      (*nodalstress)[1] = cauchystress(1,1);
-      (*nodalstress)[2] = cauchystress(2,2);
-      (*nodalstress)[3] = cauchystress(0,1);
-      (*nodalstress)[4] = cauchystress(1,2);
-      (*nodalstress)[5] = cauchystress(0,2);
-    }
+    (*nodalstress)[0] = cauchystress(0,0);
+    (*nodalstress)[1] = cauchystress(1,1);
+    (*nodalstress)[2] = cauchystress(2,2);
+    (*nodalstress)[3] = cauchystress(0,1);
+    (*nodalstress)[4] = cauchystress(1,2);
+    (*nodalstress)[5] = cauchystress(0,2);
+  }
+  break;
+  case INPAR::STR::stress_none:
+    break;
+  default:
+    dserror("requested stress type not available");
   }
 
 #if 1 // dev stab on cauchy stresses
@@ -569,7 +587,7 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix*    
 #endif
 
   //----------------------------------------------------- internal forces
-  if (force) 
+  if (force)
   {
     Epetra_SerialDenseVector stress_epetra(View,stress.A(),stress.Rows());
     force->Multiply('T','N',VnodeL,bop,stress_epetra,0.0);

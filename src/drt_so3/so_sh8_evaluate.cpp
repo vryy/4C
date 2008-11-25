@@ -91,9 +91,11 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
       for (int i=0; i<(int)myres.size(); ++i) myres[i] = 0.0;
       // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
       if (Type() == DRT::Element::element_sosh8){
-        sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params);
+        sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params,
+                           INPAR::STR::stress_none,INPAR::STR::strain_none);
       } else if (Type() == DRT::Element::element_so_hex8){
-        soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params);
+        soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params,
+                          INPAR::STR::stress_none,INPAR::STR::strain_none);
       }
     }
     break;
@@ -110,9 +112,11 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
       if (Type() == DRT::Element::element_sosh8){
-        sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params);
+        sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params,
+                           INPAR::STR::stress_none,INPAR::STR::strain_none);
       } else if (Type() == DRT::Element::element_so_hex8){
-        soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params);
+        soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params,
+                          INPAR::STR::stress_none,INPAR::STR::strain_none);
       }
     }
     break;
@@ -131,9 +135,11 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> myemat(true);
       // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
       if (Type() == DRT::Element::element_sosh8) {
-        sosh8_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params);
+        sosh8_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params,
+                           INPAR::STR::stress_none,INPAR::STR::strain_none);
       } else if (Type() == DRT::Element::element_so_hex8) {
-        soh8_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params);
+        soh8_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params,
+                          INPAR::STR::stress_none,INPAR::STR::strain_none);
       }
     }
     break;
@@ -156,9 +162,11 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
       if (Type() == DRT::Element::element_sosh8){
-        sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params);
+        sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
+                           INPAR::STR::stress_none,INPAR::STR::strain_none);
       } else if (Type() == DRT::Element::element_so_hex8){
-        soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params);
+        soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
+                          INPAR::STR::stress_none,INPAR::STR::strain_none);
       }
       // lump mass
       if (act==calc_struct_nlnstifflmass) soh8_lumpmass(&elemat2);
@@ -178,18 +186,17 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      bool cauchy = params.get<bool>("cauchy", false);
-      string iostrain = params.get<string>("iostrain", "none");
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> stress;
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> strain;
 
-      if (iostrain == "euler_almansi") dserror ("euler_almansi strains not implemented due to missing defgrd");
+      INPAR::STR::StressType iostress = params.get<INPAR::STR::StressType>("iostress", INPAR::STR::stress_none);
+      INPAR::STR::StrainType iostrain = params.get<INPAR::STR::StrainType>("iostrain", INPAR::STR::strain_none);
 
       // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
       if (Type() == DRT::Element::element_sosh8){
-        sosh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,cauchy);
+        sosh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
       } else if (Type() == DRT::Element::element_so_hex8){
-        soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,cauchy,false);
+        soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
       }
       AddtoPack(*stressdata, stress);
       AddtoPack(*straindata, strain);
@@ -454,7 +461,8 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,   // stresses at GP
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,   // strains at GP
       ParameterList&            params,         // algorithmic parameters e.g. time
-      const bool                cauchy)         // stress output option
+      const INPAR::STR::StressType             iostress,       // stress output option
+      const INPAR::STR::StrainType             iostrain)       // strain output option
 {
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
@@ -708,14 +716,27 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
       LINALG::DENSEFUNCTIONS::multiply<NUMSTR_SOH8,soh8_eassosh8,1>(1.0,glstrain.A(),1.0,M.A(),(*alpha).A());
     } // ------------------------------------------------------------------ EAS
 
-    // return gp strains (only in case of stress/strain output)
-    if (elestrain != NULL){
-      for (int i = 0; i < 3; ++i) {
+    // return gp strains if necessary
+    switch (iostrain)
+    {
+    case INPAR::STR::strain_gl:
+    {
+      if (elestrain == NULL) dserror("strain data not available");
+        for (int i = 0; i < 3; ++i) {
         (*elestrain)(gp,i) = glstrain(i);
       }
       for (int i = 3; i < 6; ++i) {
         (*elestrain)(gp,i) = 0.5 * glstrain(i);
       }
+    }
+    break;
+    case INPAR::STR::strain_ea:
+      dserror("no Euler-Almansi strains available for sosh8");
+    break;
+    case INPAR::STR::strain_none:
+      break;
+    default:
+      dserror("requested strain option not available");
     }
 
     /* call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -751,16 +772,27 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
     soh8_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,params);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
-    // return gp stresses
-    if (elestress != NULL){
-      if (!cauchy) {                 // return 2nd Piola-Kirchhoff stresses
-        for (int i = 0; i < NUMSTR_SOH8; ++i) {
-          (*elestress)(gp,i) = stress(i);
-        }
+    // return gp stresses if necessary
+    switch (iostress)
+    {
+    case INPAR::STR::stress_2pk:
+    {
+      if (elestress == NULL) dserror("stress data not available");
+      for (int i = 0; i < NUMSTR_SOH8; ++i) {
+        (*elestress)(gp,i) = stress(i);
       }
-      else {                         // return Cauchy stresses
-        sosh8_Cauchy(elestress,gp,derivs[gp],xrefe,xcurr,glstrain,stress);
-      }
+    }
+    break;
+    case INPAR::STR::stress_cauchy:
+    {
+      if (elestress == NULL) dserror("stress data not available");
+      sosh8_Cauchy(elestress,gp,derivs[gp],xrefe,xcurr,glstrain,stress);
+    }
+    break;
+    case INPAR::STR::stress_none:
+      break;
+    default:
+      dserror("requested stress option not available");
     }
 
     double detJ_w = detJ*gpweights[gp];

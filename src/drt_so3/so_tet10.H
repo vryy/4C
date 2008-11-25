@@ -31,6 +31,7 @@ using namespace Teuchos;
 #include "../drt_mat/material.H"
 #include "so_surface.H"
 #include "so_line.H"
+#include "../drt_inpar/inpar_structure.H"
 
 #include "../drt_lib/linalg_fixedsizematrix.H"
 
@@ -348,7 +349,8 @@ protected:
                                      LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10>* stresses,
                                      LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10>* elestrain,
                                      struct _MATERIAL*         material,
-                                     bool cauchy = false);
+                                     const INPAR::STR::StressType iostress,
+                                     const INPAR::STR::StrainType iostrain);
 
   //! lump mass matrix (bborn 07/08)
   void so_tet10_lumpmass(LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* emass);
@@ -457,7 +459,7 @@ NOTE: X stands for the number of NODES (and shape functions) in a element
                       LINALG::Matrix<6,1>* glstrain,
                       LINALG::Matrix<3,3>* defgrd,
                       const int gp);
-  
+
   /// material selection
   void so_tet10_mat_sel(Epetra_SerialDenseVector* stress,
                     Epetra_SerialDenseMatrix* cmat,

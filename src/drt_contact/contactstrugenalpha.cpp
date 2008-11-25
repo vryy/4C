@@ -6,11 +6,11 @@
 -------------------------------------------------------------------------
                         BACI Contact library
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -19,11 +19,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 </pre>
@@ -42,6 +42,7 @@ Maintainer: Alexander Popp
 #include "contactdefines.H"
 
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_inpar/inpar_structure.H"
 
 #include <iostream>
 
@@ -1381,9 +1382,6 @@ void CONTACT::ContactStruGenAlpha::Update()
 
   const bool dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
 
-  string iostress      = params_.get<string>("io structural stress"   ,"none");
-  string iostrain      = params_.get<string>("io structural strain"   ,"none");
-
   bool   printerr      = params_.get<bool>  ("print to err"           ,true);
   FILE*  errfile       = params_.get<FILE*> ("err file"               ,NULL);
   if (!errfile) printerr = false;
@@ -1443,7 +1441,7 @@ void CONTACT::ContactStruGenAlpha::Update()
   contactmanager_->StoreDM("old");
 
   // friction
-  // store the displacements to contact nodes 
+  // store the displacements to contact nodes
   contactmanager_->SetState("olddisplacement",dis_);
   contactmanager_->SetState("oldvelocity",vel_);
 
@@ -1523,9 +1521,9 @@ void CONTACT::ContactStruGenAlpha::Output()
 
   bool   iodisp        = params_.get<bool>  ("io structural disp"     ,true);
   int    updevrydisp   = params_.get<int>   ("io disp every nstep"    ,10);
-  string iostress      = params_.get<string>("io structural stress"   ,"none");
+  INPAR::STR::StressType iostress = params_.get<INPAR::STR::StressType>("io structural stress",INPAR::STR::stress_none);
   int    updevrystress = params_.get<int>   ("io stress every nstep"  ,10);
-  string iostrain      = params_.get<string>("io structural strain"   ,"none");
+  INPAR::STR::StrainType iostrain = params_.get<INPAR::STR::StrainType>("io structural strain",INPAR::STR::strain_none);
 
   int    writeresevry  = params_.get<int>   ("write restart every"    ,0);
 
@@ -1578,7 +1576,7 @@ void CONTACT::ContactStruGenAlpha::Output()
   }
 
   //------------------------------------- do stress calculation and output
-  if (updevrystress and !(istep%updevrystress) and iostress!="none")
+  if (updevrystress and !(istep%updevrystress) and iostress!=INPAR::STR::stress_none)
   {
     // create the parameters for the discretization
     ParameterList p;
@@ -1592,14 +1590,7 @@ void CONTACT::ContactStruGenAlpha::Output()
     Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
     p.set("stress", stress);
     p.set("strain", strain);
-    if (iostress == "cauchy")   // output of Cauchy stresses instead of 2PK stresses
-    {
-      p.set("cauchy", true);
-    }
-    else
-    {
-      p.set("cauchy", false);
-    }
+    p.set("iostress", iostress);
     p.set("iostrain", iostrain);
     // set vector values needed by elements
     discret_.ClearState();
@@ -1609,24 +1600,33 @@ void CONTACT::ContactStruGenAlpha::Output()
     discret_.ClearState();
     if (!isdatawritten) output_.NewStep(istep, timen);
     isdatawritten = true;
-    if (iostress == "cauchy")
+
+    switch (iostress)
     {
+    case INPAR::STR::stress_cauchy:
       output_.WriteVector("gauss_cauchy_stresses_xyz",*stress,*discret_.ElementColMap());
-    }
-    else
-    {
+      break;
+    case INPAR::STR::stress_2pk:
       output_.WriteVector("gauss_2PK_stresses_xyz",*stress,*discret_.ElementColMap());
+      break;
+    case INPAR::STR::stress_none:
+      break;
+    default:
+      dserror ("requested stress type not supported");
     }
-    if (iostrain != "none")
+
+    switch (iostrain)
     {
-      if (iostrain == "euler_almansi")
-      {
-        output_.WriteVector("gauss_EA_strains_xyz",*strain,*discret_.ElementColMap());
-      }
-      else
-      {
-        output_.WriteVector("gauss_GL_strains_xyz",*strain,*discret_.ElementColMap());
-      }
+    case INPAR::STR::strain_ea:
+      output_.WriteVector("gauss_EA_strains_xyz",*strain,*discret_.ElementColMap());
+      break;
+    case INPAR::STR::strain_gl:
+      output_.WriteVector("gauss_GL_strains_xyz",*strain,*discret_.ElementColMap());
+      break;
+    case INPAR::STR::strain_none:
+      break;
+    default:
+      dserror ("requested strain type not supported");
     }
   }
 

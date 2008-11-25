@@ -132,8 +132,8 @@ public:
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,      ///< stresses at GP
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,      ///< strains at GP
       ParameterList&            params,         ///< algorithmic parameters e.g. time
-      const bool                cauchy=false,   ///< stress output option
-      const bool                euler_almansi=false);  ///< strain output option
+      const INPAR::STR::StressType iostress,    ///< stress output option
+      const INPAR::STR::StrainType iostrain);   ///< strain output option
 
   /// store material config for hex8 element
   void soh8_StoreMaterialConfiguration(DRT::ELEMENTS::So_hex8* ele,
@@ -152,8 +152,8 @@ void sow6_nlnstiffmass(
       LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestress,      ///< stresses at GP
       LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestrain,      ///< strains at GP
       ParameterList&            params,         ///< algorithmic parameters e.g. time
-      const bool                cauchy=false,         ///< stress output option
-      const bool                euler_almansi=false); ///< strain output option
+      const INPAR::STR::StressType iostress,    ///< stress output option
+      const INPAR::STR::StrainType iostrain);   ///< strain output option
 
   /// store material config for wedge6 element
   void sow6_StoreMaterialConfiguration(DRT::ELEMENTS::So_weg6* ele,
@@ -172,8 +172,8 @@ void so_tet4_nlnstiffmass(
       LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestress,      ///< stresses at GP
       LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestrain,      ///< strains at GP
       struct _MATERIAL*         material,       ///< element material data
-      const bool                cauchy=false,   ///< stress output options
-      const bool                ea=false);
+      const INPAR::STR::StressType iostress,    ///< stress output option
+      const INPAR::STR::StrainType iostrain);   ///< strain output option
 
   /// store material config for wedge6 element
   void sot4_StoreMaterialConfiguration(DRT::ELEMENTS::So_tet4* ele,

@@ -26,6 +26,7 @@ using namespace Teuchos;
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_node.H"
+#include "../drt_inpar/inpar_structure.H"
 
 #include "../drt_mat/material.H"
 
@@ -188,8 +189,8 @@ private:
                         vector<DRT::ELEMENTS::Ptet*>&   adjele,
                         vector<double>*                 nodalstress,
                         vector<double>*                 nodalstrain,
-                        bool                            cauchy,
-                        bool                            ea);
+                        const INPAR::STR::StressType    iostress,
+                        const INPAR::STR::StrainType    iostrain);
 
 
   void SelectMaterial(RCP<MAT::Material> mat,

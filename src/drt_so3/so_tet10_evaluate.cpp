@@ -92,7 +92,8 @@ int DRT::ELEMENTS::So_tet10::Evaluate(ParameterList& params,
       for (unsigned i=0; i<mydisp.size(); ++i) mydisp[i] = 0.0;
       vector<double> myres(lm.size());
       for (unsigned i=0; i<myres.size(); ++i) myres[i] = 0.0;
-      so_tet10_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,actmat);//*
+      so_tet10_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,actmat,
+                            INPAR::STR::stress_none,INPAR::STR::strain_none);//*
 
     }
     break;
@@ -108,7 +109,8 @@ int DRT::ELEMENTS::So_tet10::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      so_tet10_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,actmat);
+      so_tet10_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,actmat,
+                            INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     break;
 
@@ -125,7 +127,8 @@ int DRT::ELEMENTS::So_tet10::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
       LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10> myemat(true); // set to zero
-      so_tet10_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,actmat);
+      so_tet10_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,actmat,
+                            INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     break;
 
@@ -146,7 +149,8 @@ int DRT::ELEMENTS::So_tet10::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      so_tet10_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat);
+      so_tet10_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat,
+                            INPAR::STR::stress_none,INPAR::STR::strain_none);
 
       if (act==calc_struct_nlnstifflmass) so_tet10_lumpmass(&elemat2);
     }
@@ -168,10 +172,9 @@ int DRT::ELEMENTS::So_tet10::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10> stress;
       LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10> strain;
-      bool cauchy = params.get<bool>("cauchy", false);
-      string iostrain = params.get<string>("iostrain", "none");
-      if (iostrain!="euler_almansi") so_tet10_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,actmat,cauchy);
-      else dserror("requested option not yet implemented for tet10");
+      INPAR::STR::StressType iostress = params.get<INPAR::STR::StressType>("iostress", INPAR::STR::stress_none);
+      INPAR::STR::StrainType iostrain = params.get<INPAR::STR::StrainType>("iostrain", INPAR::STR::strain_none);
+      so_tet10_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,actmat,iostress,iostrain);
       AddtoPack(*stressdata, stress);
       AddtoPack(*straindata, strain);
     }
@@ -406,7 +409,8 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
       LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10>* elestress,      // stresses at GP
       LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10>* elestrain,      // strains at GP
       struct _MATERIAL*         material,       // element material data
-      const bool                cauchy)         // stress output option
+      const INPAR::STR::StressType                   iostress,       // stress output option
+      const INPAR::STR::StrainType                   iostrain)       // strain output option
 {
 /* =============================================================================*
 ** CONST DERIVATIVES and WEIGHTS for TET_10 with 4 GAUSS POINTS*
@@ -619,8 +623,12 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
     cout << "glstrain\n" << glstrain;
     #endif //VERBOSE_OUTPUT
 
-    // return gp strains (only in case of stress/strain output)
-    if (elestrain != NULL){
+    // return gp strains if necessary
+    switch (iostrain)
+    {
+    case INPAR::STR::strain_gl:
+    {
+      if (elestrain == NULL) dserror("no strain data available");
       for (int i = 0; i < 3; ++i) {
         (*elestrain)(gp,i) = glstrain(i);
       }
@@ -628,7 +636,15 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
         (*elestrain)(gp,i) = 0.5 * glstrain(i);
       }
     }
-
+    break;
+    case INPAR::STR::strain_ea:
+      dserror("no Euler-Almansi strains available for tet10");
+    break;
+    case INPAR::STR::strain_none:
+      break;
+    default:
+      dserror("requested strain option not available");
+    }
 
     /*----------------------------------------------------------------------*
       the B-operator used is equivalent to the one used in hex8, this needs
@@ -696,41 +712,52 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
     #endif //VERBOSE_OUTPUT
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
-    // return gp stresses
-    if (elestress != NULL){                // return 2nd Piola-Kirchhoff stresses
-      if (!cauchy) {
-        for (int i = 0; i < NUMSTR_SOTET10; ++i) {
-          (*elestress)(gp,i) = stress(i);
-        }
+    // return gp stresses if necessary
+    switch (iostress)
+    {
+    case INPAR::STR::stress_2pk:
+    {
+      if (elestress == NULL) dserror("no stress data available");
+      for (int i = 0; i < NUMSTR_SOTET10; ++i) {
+        (*elestress)(gp,i) = stress(i);
       }
-      else {                               // return Cauchy stresses
-        double detF = defgrd.Determinant();
+    }
+    break;
+    case INPAR::STR::stress_cauchy:
+    {
+      if (elestress == NULL) dserror("no stress data available");
+      double detF = defgrd.Determinant();
 
-        LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10> pkstress;
-        pkstress(0,0) = stress(0);
-        pkstress(0,1) = stress(3);
-        pkstress(0,2) = stress(5);
-        pkstress(1,0) = pkstress(0,1);
-        pkstress(1,1) = stress(1);
-        pkstress(1,2) = stress(4);
-        pkstress(2,0) = pkstress(0,2);
-        pkstress(2,1) = pkstress(1,2);
-        pkstress(2,2) = stress(2);
+      LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10> pkstress;
+      pkstress(0,0) = stress(0);
+      pkstress(0,1) = stress(3);
+      pkstress(0,2) = stress(5);
+      pkstress(1,0) = pkstress(0,1);
+      pkstress(1,1) = stress(1);
+      pkstress(1,2) = stress(4);
+      pkstress(2,0) = pkstress(0,2);
+      pkstress(2,1) = pkstress(1,2);
+      pkstress(2,2) = stress(2);
 
-        LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10> temp;
-        LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10> cauchystress;
-        temp.Multiply(1.0/detF,defgrd,pkstress,0.);
-        //multiply<NUMDIM_SOTET10,NUMDIM_SOTET10,NUMDIM_SOTET10,'N','N'>(0.0,temp,1.0/detF,defgrd,pkstress);
-        cauchystress.MultiplyNT(temp,defgrd);
-        //multiply<NUMDIM_SOTET10,NUMDIM_SOTET10,NUMDIM_SOTET10,'N','T'>(cauchystress,temp,defgrd);
+      LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10> temp;
+      LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10> cauchystress;
+      temp.Multiply(1.0/detF,defgrd,pkstress,0.);
+      //multiply<NUMDIM_SOTET10,NUMDIM_SOTET10,NUMDIM_SOTET10,'N','N'>(0.0,temp,1.0/detF,defgrd,pkstress);
+      cauchystress.MultiplyNT(temp,defgrd);
+      //multiply<NUMDIM_SOTET10,NUMDIM_SOTET10,NUMDIM_SOTET10,'N','T'>(cauchystress,temp,defgrd);
 
-        (*elestress)(gp,0) = cauchystress(0,0);
-        (*elestress)(gp,1) = cauchystress(1,1);
-        (*elestress)(gp,2) = cauchystress(2,2);
-        (*elestress)(gp,3) = cauchystress(0,1);
-        (*elestress)(gp,4) = cauchystress(1,2);
-        (*elestress)(gp,5) = cauchystress(0,2);
-      }
+      (*elestress)(gp,0) = cauchystress(0,0);
+      (*elestress)(gp,1) = cauchystress(1,1);
+      (*elestress)(gp,2) = cauchystress(2,2);
+      (*elestress)(gp,3) = cauchystress(0,1);
+      (*elestress)(gp,4) = cauchystress(1,2);
+      (*elestress)(gp,5) = cauchystress(0,2);
+    }
+    break;
+    case INPAR::STR::stress_none:
+      break;
+    default:
+      dserror("requested stress option not available");
     }
 
     if (force != NULL && stiffmatrix != NULL) {

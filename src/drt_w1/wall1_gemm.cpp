@@ -52,7 +52,8 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
   Epetra_SerialDenseMatrix* elestress,
   Epetra_SerialDenseMatrix* elestrain,
   struct _MATERIAL* material,
-  const bool cauchy
+  const INPAR::STR::StressType iostress,
+  const INPAR::STR::StrainType iostrain
 )
 {
   // constants
@@ -148,8 +149,8 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
     boplin0.Shape(4,edof);
     W0o.Shape(4,edof);
     W0.Shape(4,edof);
-    Go.Shape(4,Wall1::neas_); 
-    G.Shape(4,Wall1::neas_); 
+    Go.Shape(4,Wall1::neas_);
+    G.Shape(4,Wall1::neas_);
     Z.Shape(edof,Wall1::neas_);
     FmCF.Shape(4,4);
     Kda.Shape(edof,Wall1::neas_);
@@ -175,7 +176,7 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
 
     // we need the (residual) displacement at the previous step
     Epetra_SerialDenseVector res_d(edof);
-    for (int i = 0; i < edof; ++i) 
+    for (int i = 0; i < edof; ++i)
     {
       res_d(i) = residual[i];
     }
@@ -282,28 +283,46 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
       dserror("It must be St.Venant-Kirchhoff material.");
 
     // return Gauss point strains (only in case of stress/strain output)
-    if (elestrain)
+    switch (iostrain)
     {
+    case INPAR::STR::strain_gl:
+    {
+      if (elestrain == NULL) dserror("no strain data available");
       for (int i = 0; i < Wall1::numstr_; ++i)
         (*elestrain)(ip,i) = Ev(i);
     }
+    break;
+    case INPAR::STR::strain_none:
+      break;
+    case INPAR::STR::strain_ea:
+    default:
+      dserror("requested strain type not supported");
+    }
 
     // return stresses at Gauss points (only in case of stress/strain output)
-    if (elestress)
+    switch (iostress)
     {
-      if (cauchy)
-      {
-        if (iseas_)
-          StressCauchy(ip, Fm(0,0), Fm(1,1), Fm(1,1), Fm(1,2), Smm, elestress);
-        else
-          StressCauchy(ip, Fuv[0], Fuv[1], Fuv[2], Fuv[3], Smm, elestress);
-      }
+    case INPAR::STR::stress_2pk:
+    {
+      if (elestress == NULL) dserror("no stress data available");
+      (*elestress)(ip,0) = Smm(0,0);  // 2nd Piola-Kirchhoff stress S_{11}
+      (*elestress)(ip,1) = Smm(1,1);  // 2nd Piola-Kirchhoff stress S_{22}
+      (*elestress)(ip,2) = Smm(0,2);  // 2nd Piola-Kirchhoff stress S_{12}
+    }
+    break;
+    case INPAR::STR::stress_cauchy:
+    {
+      if (elestress == NULL) dserror("no stress data available");
+      if (iseas_)
+        StressCauchy(ip, Fm(0,0), Fm(1,1), Fm(1,1), Fm(1,2), Smm, elestress);
       else
-      {
-        (*elestress)(ip,0) = Smm(0,0);  // 2nd Piola-Kirchhoff stress S_{11}
-        (*elestress)(ip,1) = Smm(1,1);  // 2nd Piola-Kirchhoff stress S_{22}
-        (*elestress)(ip,2) = Smm(0,2);  // 2nd Piola-Kirchhoff stress S_{12}
-      }
+        StressCauchy(ip, Fuv[0], Fuv[1], Fuv[2], Fuv[3], Smm, elestress);
+    }
+    break;
+    case INPAR::STR::stress_none:
+      break;
+    default:
+      dserror("requested stress type not supported");
     }
 
     // stiffness and internal force
@@ -313,20 +332,20 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
       w1_stress_eas(Smm, (Fmm), Pvmm);
 
       // stiffness matrix kdd
-      if (stiffmatrix) TangFintByDispGEMM(gemmalphaf, gemmxi, fac, 
-                                          boplin, W0m, W0, Fmm, Fm, C, Smm, 
+      if (stiffmatrix) TangFintByDispGEMM(gemmalphaf, gemmxi, fac,
+                                          boplin, W0m, W0, Fmm, Fm, C, Smm,
                                           FmCF, *stiffmatrix);
       // matrix kda
       TangFintByEnhGEMM(gemmalphaf, gemmxi, fac,
-                        boplin, W0m, FmCF, Smm, G, Z, Pvmm, 
+                        boplin, W0m, FmCF, Smm, G, Z, Pvmm,
                         Kda);
       // matrix kad (this is NOT kda, because GEMM produces non-symmetric tangent!)
       TangEconByDispGEMM(gemmalphaf, gemmxi, fac,
-                         boplin, W0, FmCF, Smm, Gm, Z, Pvmm, 
+                         boplin, W0, FmCF, Smm, Gm, Z, Pvmm,
                          Kad);
       // matrix kaa
-      TangEconByEnhGEMM(gemmalphaf, gemmxi, fac, 
-                        FmCF, Smm, G, Gm, 
+      TangEconByEnhGEMM(gemmalphaf, gemmxi, fac,
+                        FmCF, Smm, G, Gm,
                         Kaa);
       // nodal forces
       if (force) w1_fint_eas(W0m, boplin, Gm, Pvmm, *force, feas, fac);
@@ -418,7 +437,7 @@ void DRT::ELEMENTS::Wall1::TangFintByDispGEMM(
         for(int r=0; r<numeps; r++)
           for(int m=0; m<numeps; m++)
             estif(i,j) += boplin(r,i) * Smm(r,m) * boplin(m,j) * fackg;
-  }  
+  }
 
   // see you
   return;
@@ -448,7 +467,7 @@ void DRT::ELEMENTS::Wall1::TangFintByDispGEMM(
   C_red(1,0) = C(1,0);  C_red(1,1) = C(1,1);  C_red(1,2) = C(1,2);
   C_red(2,0) = C(2,0);  C_red(2,1) = C(2,1);  C_red(2,2) = C(2,2);
 
-  // FdotC (4 x 3) : F_m . C 
+  // FdotC (4 x 3) : F_m . C
   LINALG::SerialDenseMatrix FmC(4,3,true);
   FmC.Multiply('N', 'N', 1.0, Fmm, C_red, 0.0);
 

@@ -315,25 +315,25 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("OUTPUT_BIN","No","",yesnotuple,yesnovalue,&io);
 
   setStringToIntegralParameter<int>("STRUCT_DISP","Yes","",yesnotuple,yesnovalue,&io);
-  setStringToIntegralParameter<STRUCT_STRESS_TYP>("STRUCT_STRESS","No","",
+  setStringToIntegralParameter<INPAR::STR::StressType>("STRUCT_STRESS","No","",
                                tuple<std::string>("No","no","NO",
                                                   "Yes","yes","YES",
                                                   "Cauchy","cauchy",
                                                   "2PK", "2pk"),
-                               tuple<STRUCT_STRESS_TYP>(struct_stress_none,struct_stress_none,struct_stress_none,
-                                                        struct_stress_pk,struct_stress_pk,struct_stress_pk,
-                                                        struct_stress_cauchy,struct_stress_cauchy,
-                                                        struct_stress_pk,struct_stress_pk),
+                               tuple<INPAR::STR::StressType>(INPAR::STR::stress_none,INPAR::STR::stress_none,INPAR::STR::stress_none,
+                                                             INPAR::STR::stress_2pk,INPAR::STR::stress_2pk,INPAR::STR::stress_2pk,
+                                                             INPAR::STR::stress_cauchy,INPAR::STR::stress_cauchy,
+                                                             INPAR::STR::stress_2pk,INPAR::STR::stress_2pk),
                                &io);
-  setStringToIntegralParameter<STRUCT_STRAIN_TYP>("STRUCT_STRAIN","No","",
+  setStringToIntegralParameter<INPAR::STR::StrainType>("STRUCT_STRAIN","No","",
                                tuple<std::string>("No","no","NO",
                                                   "Yes","yes","YES",
                                                   "EA","ea",
                                                   "GL", "gl"),
-                               tuple<STRUCT_STRAIN_TYP>(struct_strain_none,struct_strain_none,struct_strain_none,
-                                                        struct_strain_gl,struct_strain_gl,struct_strain_gl,
-                                                        struct_strain_ea,struct_strain_ea,
-                                                        struct_strain_gl,struct_strain_gl),
+                               tuple<INPAR::STR::StrainType>(INPAR::STR::strain_none,INPAR::STR::strain_none,INPAR::STR::strain_none,
+                                                             INPAR::STR::strain_gl,INPAR::STR::strain_gl,INPAR::STR::strain_gl,
+                                                             INPAR::STR::strain_ea,INPAR::STR::strain_ea,
+                                                             INPAR::STR::strain_gl,INPAR::STR::strain_gl),
                                &io);
   setStringToIntegralParameter<int>("STRUCT_SM_DISP","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("FLUID_SOL","Yes","",yesnotuple,yesnovalue,&io);

@@ -28,8 +28,7 @@ Maintainer: Markus Gitterle
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
-
-
+#include "../drt_inpar/inpar_structure.H"
 
 // forward declarations
 struct _MATERIAL;  ///< material data
@@ -323,7 +322,8 @@ private:
     Epetra_SerialDenseMatrix* elestress,  ///< element stresses
     Epetra_SerialDenseMatrix* elestrain,  ///< element strains
     struct _MATERIAL* material,  ///< element material
-    const bool cauchy = false  ///< if true calculate Cauchy instead of PK2 stresses
+    const INPAR::STR::StressType   iostress,   ///< stress output option
+    const INPAR::STR::StrainType   iostrain    ///< strain output option
   );
 
  // void w1_integration_points(struct _W1_DATA& data);
@@ -593,7 +593,8 @@ private:
     Epetra_SerialDenseMatrix* elestress,  ///< element stresses
     Epetra_SerialDenseMatrix* elestrain,  ///< element strains
     struct _MATERIAL* material,  ///< element material
-    const bool cauchy = false  ///< if true calculate Cauchy instead of PK2 stresses
+    const INPAR::STR::StressType   iostress,   ///< stress output option
+    const INPAR::STR::StrainType   iostrain    ///< strain output option
   );
 
   /// Tangent of internal force vector \f$f_{int;m}\f$ with respect to displacements \f$d_{n+1}\f$

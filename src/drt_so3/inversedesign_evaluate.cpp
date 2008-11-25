@@ -627,8 +627,8 @@ void DRT::ELEMENTS::InvDesign::soh8_nlnstiffmass(
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,      ///< stresses at GP
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,      ///< strains at GP
       ParameterList&            params,         ///< algorithmic parameters e.g. time
-      const bool                cauchy,         ///< stress output option
-      const bool                euler_almansi)  ///< strain output option
+      const INPAR::STR::StressType iostress,    ///< stress output option
+      const INPAR::STR::StrainType iostrain)    ///< strain output option
 {
   const static vector<LINALG::Matrix<NUMNOD_SOH8,1> > shapefcts = ele->soh8_shapefcts();
   const static vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = ele->soh8_derivs();
@@ -769,51 +769,71 @@ void DRT::ELEMENTS::InvDesign::soh8_nlnstiffmass(
     cstress.Multiply(j,IF,stress);
 
     //--------------------------------------- output strains and stresses
-    if (elestrain)
+    switch (iostrain)
     {
-      if (!euler_almansi)
-      {
-        for (int i = 0; i < 3; ++i)
-          (*elestrain)(gp,i) = glstrain(i);
-        for (int i = 3; i < 6; ++i)
-          (*elestrain)(gp,i) = 0.5 * glstrain(i);
-      }
-      else
-      {
-        // rewriting Green-Lagrange strains in matrix format
-        LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> gl;
-        gl(0,0) = glstrain(0);
-        gl(0,1) = 0.5*glstrain(3);
-        gl(0,2) = 0.5*glstrain(5);
-        gl(1,0) = gl(0,1);
-        gl(1,1) = glstrain(1);
-        gl(1,2) = 0.5*glstrain(4);
-        gl(2,0) = gl(0,2);
-        gl(2,1) = gl(1,2);
-        gl(2,2) = glstrain(2);
+    case INPAR::STR::strain_gl:
+    {
+      if (elestrain == NULL) dserror("strain data not available");
+      for (int i = 0; i < 3; ++i)
+        (*elestrain)(gp,i) = glstrain(i);
+      for (int i = 3; i < 6; ++i)
+        (*elestrain)(gp,i) = 0.5 * glstrain(i);
+    }
+    break;
+    case INPAR::STR::strain_ea:
+    {
+      if (elestrain == NULL) dserror("strain data not available");
+      // rewriting Green-Lagrange strains in matrix format
+      LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> gl;
+      gl(0,0) = glstrain(0);
+      gl(0,1) = 0.5*glstrain(3);
+      gl(0,2) = 0.5*glstrain(5);
+      gl(1,0) = gl(0,1);
+      gl(1,1) = glstrain(1);
+      gl(1,2) = 0.5*glstrain(4);
+      gl(2,0) = gl(0,2);
+      gl(2,1) = gl(1,2);
+      gl(2,2) = glstrain(2);
 
-        LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> temp;
-        LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> euler_almansi;
-        temp.Multiply(gl,f);
-        euler_almansi.MultiplyTN(f,temp);
+      LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> temp;
+      LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> euler_almansi;
+      temp.Multiply(gl,f);
+      euler_almansi.MultiplyTN(f,temp);
 
-        (*elestrain)(gp,0) = euler_almansi(0,0);
-        (*elestrain)(gp,1) = euler_almansi(1,1);
-        (*elestrain)(gp,2) = euler_almansi(2,2);
-        (*elestrain)(gp,3) = euler_almansi(0,1);
-        (*elestrain)(gp,4) = euler_almansi(1,2);
-        (*elestrain)(gp,5) = euler_almansi(0,2);
-      }
+      (*elestrain)(gp,0) = euler_almansi(0,0);
+      (*elestrain)(gp,1) = euler_almansi(1,1);
+      (*elestrain)(gp,2) = euler_almansi(2,2);
+      (*elestrain)(gp,3) = euler_almansi(0,1);
+      (*elestrain)(gp,4) = euler_almansi(1,2);
+      (*elestrain)(gp,5) = euler_almansi(0,2);
+    }
+    break;
+    case INPAR::STR::strain_none:
+      break;
+    default:
+      dserror("requested strain type not available");
     }
 
-    if (elestress)
+    switch (iostress)
     {
-      if (!cauchy)
-        for (int i = 0; i < 6; ++i)
-          (*elestress)(gp,i) = stress(i);
-      else
-        for (int i = 0; i < 6; ++i)
-          (*elestress)(gp,i) = cstress(i);
+    case INPAR::STR::stress_2pk:
+    {
+      if (elestress == NULL) dserror("stress data not available");
+      for (int i = 0; i < 6; ++i)
+        (*elestress)(gp,i) = stress(i);
+    }
+    break;
+    case INPAR::STR::stress_cauchy:
+    {
+      if (elestress == NULL) dserror("stress data not available");
+      for (int i = 0; i < 6; ++i)
+        (*elestress)(gp,i) = cstress(i);
+    }
+    break;
+    case INPAR::STR::stress_none:
+      break;
+    default:
+      dserror("requested stress type not available");
     }
 
     //-------------------------------------------- build operator Ypsilon
@@ -958,8 +978,8 @@ void DRT::ELEMENTS::InvDesign::sow6_nlnstiffmass(
       LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestress,      ///< stresses at GP
       LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestrain,      ///< strains at GP
       ParameterList&            params,         ///< algorithmic parameters e.g. time
-      const bool                cauchy,         ///< stress output option
-      const bool                euler_almansi)  ///< strain output option
+      const INPAR::STR::StressType iostress,    ///< stress output option
+      const INPAR::STR::StrainType iostrain)    ///< strain output option
 {
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for Wedge_6 with 6 GAUSS POINTS*
@@ -1115,51 +1135,71 @@ void DRT::ELEMENTS::InvDesign::sow6_nlnstiffmass(
     cstress.Multiply(j,IF,stress);
 
     //--------------------------------------- output strains and stresses
-    if (elestrain)
+    switch (iostrain)
     {
-      if (!euler_almansi)
-      {
-        for (int i = 0; i < 3; ++i)
-          (*elestrain)(gp,i) = glstrain(i);
-        for (int i = 3; i < 6; ++i)
-          (*elestrain)(gp,i) = 0.5 * glstrain(i);
-      }
-      else
-      {
-        // rewriting Green-Lagrange strains in matrix format
-        LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> gl;
-        gl(0,0) = glstrain(0);
-        gl(0,1) = 0.5*glstrain(3);
-        gl(0,2) = 0.5*glstrain(5);
-        gl(1,0) = gl(0,1);
-        gl(1,1) = glstrain(1);
-        gl(1,2) = 0.5*glstrain(4);
-        gl(2,0) = gl(0,2);
-        gl(2,1) = gl(1,2);
-        gl(2,2) = glstrain(2);
+    case INPAR::STR::strain_gl:
+    {
+      if (elestrain == NULL) dserror("strain data not available");
+      for (int i = 0; i < 3; ++i)
+        (*elestrain)(gp,i) = glstrain(i);
+      for (int i = 3; i < 6; ++i)
+        (*elestrain)(gp,i) = 0.5 * glstrain(i);
+    }
+    break;
+    case INPAR::STR::strain_ea:
+    {
+      if (elestrain == NULL) dserror("strain data not available");
+      // rewriting Green-Lagrange strains in matrix format
+      LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> gl;
+      gl(0,0) = glstrain(0);
+      gl(0,1) = 0.5*glstrain(3);
+      gl(0,2) = 0.5*glstrain(5);
+      gl(1,0) = gl(0,1);
+      gl(1,1) = glstrain(1);
+      gl(1,2) = 0.5*glstrain(4);
+      gl(2,0) = gl(0,2);
+      gl(2,1) = gl(1,2);
+      gl(2,2) = glstrain(2);
 
-        LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> temp;
-        LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> euler_almansi;
-        temp.Multiply(gl,f);
-        euler_almansi.MultiplyTN(f,temp);
+      LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> temp;
+      LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> euler_almansi;
+      temp.Multiply(gl,f);
+      euler_almansi.MultiplyTN(f,temp);
 
-        (*elestrain)(gp,0) = euler_almansi(0,0);
-        (*elestrain)(gp,1) = euler_almansi(1,1);
-        (*elestrain)(gp,2) = euler_almansi(2,2);
-        (*elestrain)(gp,3) = euler_almansi(0,1);
-        (*elestrain)(gp,4) = euler_almansi(1,2);
-        (*elestrain)(gp,5) = euler_almansi(0,2);
-      }
+      (*elestrain)(gp,0) = euler_almansi(0,0);
+      (*elestrain)(gp,1) = euler_almansi(1,1);
+      (*elestrain)(gp,2) = euler_almansi(2,2);
+      (*elestrain)(gp,3) = euler_almansi(0,1);
+      (*elestrain)(gp,4) = euler_almansi(1,2);
+      (*elestrain)(gp,5) = euler_almansi(0,2);
+    }
+    break;
+    case INPAR::STR::strain_none:
+      break;
+    default:
+      dserror("requested strain type not available");
     }
 
-    if (elestress)
+    switch (iostress)
     {
-      if (!cauchy)
-        for (int i = 0; i < 6; ++i)
-          (*elestress)(gp,i) = stress(i);
-      else
-        for (int i = 0; i < 6; ++i)
-          (*elestress)(gp,i) = cstress(i);
+    case INPAR::STR::stress_2pk:
+    {
+      if (elestress == NULL) dserror("stress data not available");
+      for (int i = 0; i < 6; ++i)
+        (*elestress)(gp,i) = stress(i);
+    }
+    break;
+    case INPAR::STR::stress_cauchy:
+    {
+      if (elestress == NULL) dserror("stress data not available");
+      for (int i = 0; i < 6; ++i)
+        (*elestress)(gp,i) = cstress(i);
+    }
+    break;
+    case INPAR::STR::stress_none:
+      break;
+    default:
+      dserror("requested stress type not available");
     }
 
     //-------------------------------------------- build operator Ypsilon
@@ -1322,8 +1362,8 @@ void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(
       LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestress,       ///< stresses at GP
       LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestrain,      ///< strains at GP
       struct _MATERIAL*         material,       ///< element material data
-      const bool                cauchy,         ///< stress output options
-      const bool                ea)
+      const INPAR::STR::StressType iostress,    ///< stress output options
+      const INPAR::STR::StrainType iostrain)
 {
 /* =============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for TET_4  with 1 GAUSS POINTS*
@@ -1460,51 +1500,71 @@ void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(
     cstress.Multiply(j,IF,stress);
 
     //--------------------------------------- output strains and stresses
-    if (elestrain)
+    switch (iostrain)
     {
-      if (!ea) // output Green-Lagrange strains
-      {
-        for (int i = 0; i < 3; ++i)
-          (*elestrain)(gp,i) = glstrain(i);
-        for (int i = 3; i < 6; ++i)
-          (*elestrain)(gp,i) = 0.5 * glstrain(i);
-      }
-      else
-      {
-        // rewriting Green-Lagrange strains in matrix format
-        LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> gl;
-        gl(0,0) = glstrain(0);
-        gl(0,1) = 0.5*glstrain(3);
-        gl(0,2) = 0.5*glstrain(5);
-        gl(1,0) = gl(0,1);
-        gl(1,1) = glstrain(1);
-        gl(1,2) = 0.5*glstrain(4);
-        gl(2,0) = gl(0,2);
-        gl(2,1) = gl(1,2);
-        gl(2,2) = glstrain(2);
+    case INPAR::STR::strain_gl:
+    {
+      if (elestrain == NULL) dserror("strain data not available");
+      for (int i = 0; i < 3; ++i)
+        (*elestrain)(gp,i) = glstrain(i);
+      for (int i = 3; i < 6; ++i)
+        (*elestrain)(gp,i) = 0.5 * glstrain(i);
+    }
+    break;
+    case INPAR::STR::strain_ea:
+    {
+      if (elestrain == NULL) dserror("strain data not available");
+      // rewriting Green-Lagrange strains in matrix format
+      LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> gl;
+      gl(0,0) = glstrain(0);
+      gl(0,1) = 0.5*glstrain(3);
+      gl(0,2) = 0.5*glstrain(5);
+      gl(1,0) = gl(0,1);
+      gl(1,1) = glstrain(1);
+      gl(1,2) = 0.5*glstrain(4);
+      gl(2,0) = gl(0,2);
+      gl(2,1) = gl(1,2);
+      gl(2,2) = glstrain(2);
 
-        LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> temp;
-        LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> euler_almansi;
-        temp.Multiply(gl,f);
-        euler_almansi.MultiplyTN(f,temp);
+      LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> temp;
+      LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> euler_almansi;
+      temp.Multiply(gl,f);
+      euler_almansi.MultiplyTN(f,temp);
 
-        (*elestrain)(gp,0) = euler_almansi(0,0);
-        (*elestrain)(gp,1) = euler_almansi(1,1);
-        (*elestrain)(gp,2) = euler_almansi(2,2);
-        (*elestrain)(gp,3) = euler_almansi(0,1);
-        (*elestrain)(gp,4) = euler_almansi(1,2);
-        (*elestrain)(gp,5) = euler_almansi(0,2);
-      }
+      (*elestrain)(gp,0) = euler_almansi(0,0);
+      (*elestrain)(gp,1) = euler_almansi(1,1);
+      (*elestrain)(gp,2) = euler_almansi(2,2);
+      (*elestrain)(gp,3) = euler_almansi(0,1);
+      (*elestrain)(gp,4) = euler_almansi(1,2);
+      (*elestrain)(gp,5) = euler_almansi(0,2);
+    }
+    break;
+     case INPAR::STR::strain_none:
+      break;
+    default:
+      dserror("requested strain type not available");
     }
 
-    if (elestress)
-    { // return 2nd Piola-Kirchhoff stresses
-      if (!cauchy)
-        for (int i = 0; i < NUMSTR_SOTET4; ++i)
-          (*elestress)(gp,i) = stress(i);
-      else
-        for (int i = 0; i < NUMSTR_SOTET4; ++i)
-          (*elestress)(gp,i) = cstress(i);
+    switch (iostress)
+    {
+    case INPAR::STR::stress_2pk:
+    {
+      if (elestress == NULL) dserror("stress data not available");
+      for (int i = 0; i < NUMSTR_SOTET4; ++i)
+        (*elestress)(gp,i) = stress(i);
+    }
+    break;
+    case INPAR::STR::stress_cauchy:
+    {
+      if (elestress == NULL) dserror("stress data not available");
+      for (int i = 0; i < NUMSTR_SOTET4; ++i)
+        (*elestress)(gp,i) = cstress(i);
+    }
+    break;
+    case INPAR::STR::stress_none:
+      break;
+    default:
+      dserror("requested stress type not available");
     }
 
     //-------------------------------------------- build operator Ypsilon
