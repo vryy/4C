@@ -70,11 +70,7 @@ public:
             RCP<Epetra_Vector>&     vector
             ) const
     {
-      LINALG::Matrix<3,1> dummy;
-      dummy(0) = 0.0;
-      dummy(1) = 0.0;
-      dummy(2) = 0.0;
-      mapVectorToNewDofDistribution(vector,dummy);
+      mapVectorToNewDofDistribution(vector,LINALG::Matrix<3,1>(true));
     }
     
     //! switch from old to new dof distribution

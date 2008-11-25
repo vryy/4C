@@ -22,7 +22,6 @@ Maintainer: Axel Gerstenberger
 #include <math.h>
 #include "xfem_enums.H"
 #include "../drt_geometry/integrationcell.H"
-#include "../drt_geometry/blitz_tiny_operation.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
 //! geometry related things
@@ -36,25 +35,25 @@ namespace GEO
       const LINALG::Matrix<3,1>&  pos_eta_domain,
       LINALG::Matrix<3,1>&        pos_xsi_domain
       )
-  {   
+  { 
+    const int maxnodecell = 27;
+    const int numnodecell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
+    if (numnodecell > maxnodecell)
+      dserror("increase maxnodecell");
+    
     // get cell node coordinates
     const LINALG::SerialDenseMatrix& xyze_cell(cell.NodalPosXiDomain());
     
     // create shape function vectors
-    //LINALG::SerialDenseVector funct(DRT::UTILS::getNumberOfElementNodes(cell.Shape()));
-    static LINALG::SerialDenseVector funct(27);
+    static LINALG::Matrix<maxnodecell,1> funct;
     DRT::UTILS::shape_function_3D(funct,pos_eta_domain(0),pos_eta_domain(1),pos_eta_domain(2),cell.Shape());
     
     // translate position into from cell coordinates to element coordinates
-    const int numnodes = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
-    for (int isd = 0; isd < 3; ++isd)
-    {
-      pos_xsi_domain(isd) = 0.0;
-      for (int j = 0; j < numnodes; ++j)
-      {
+    pos_xsi_domain.Clear();
+    for (int j = 0; j < numnodecell; ++j)
+      for (int isd = 0; isd < 3; ++isd)
         pos_xsi_domain(isd) += funct(j)*xyze_cell(isd,j);
-      }
-    }
+
     return;
   }
   //! map position from eta to xi space
@@ -65,9 +64,7 @@ namespace GEO
       LINALG::Matrix<3,1>&        pos_xsi_domain
       )
   {   
-    pos_xsi_domain(0) = pos_eta_domain(0);
-    pos_xsi_domain(1) = pos_eta_domain(1);
-    pos_xsi_domain(2) = pos_eta_domain(2);
+    pos_xsi_domain = pos_eta_domain;
     return;
   }  
   
@@ -78,29 +75,25 @@ namespace GEO
       const GEO::DomainIntCell&   cell,
       const LINALG::Matrix<3,1>&  pos_eta_domain
       )
-  {   
+  { 
+    const int maxnodecell = 27;
+    const int numnodecell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
+    if (numnodecell > maxnodecell)
+      dserror("increase maxnodecell");
+    
     // get node coordinates
     const LINALG::SerialDenseMatrix& xyze_cell(cell.NodalPosXiDomain());
     
-    const int numnode = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
-    
     // get shape function derivative
-    //LINALG::SerialDenseMatrix deriv(DRT::UTILS::getNumberOfElementNodes(cell.Shape()));
-    static LINALG::SerialDenseMatrix deriv(3,27);
+    static LINALG::Matrix<3,maxnodecell> deriv;
     DRT::UTILS::shape_function_3D_deriv1(deriv,pos_eta_domain(0),pos_eta_domain(1),pos_eta_domain(2),cell.Shape());
     // get jacobian matrix ...
-    LINALG::Matrix<3,3> xjm;
-    for (int i = 0; i < 3; ++i)
-    {
-      for (int j = 0; j < 3; ++j)
-      {
-        xjm(i,j) = 0.0;
-        for (int inode = 0; inode < numnode; ++inode)
-        {
+    static LINALG::Matrix<3,3> xjm;
+    xjm.Clear();
+    for (int inode = 0; inode < numnodecell; ++inode)
+      for (int i = 0; i < 3; ++i)
+        for (int j = 0; j < 3; ++j)
           xjm(i,j) += deriv(i,inode)*xyze_cell(j,inode);
-        }
-      }
-    }
 
     // ...and return its determinante
     return xjm.Determinant();
@@ -125,20 +118,24 @@ namespace GEO
       LINALG::Matrix<2,1>&        pos_xsi_boundary
   )
   {   
+    const int maxnodecell = 9;
     const int numnodecell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
+    if (numnodecell > maxnodecell)
+      dserror("increase maxnodecell");
     
     // get cell node coordinates
     const LINALG::SerialDenseMatrix& xyze_cell(cell.NodalPosXiBoundary());
     
     // create shape function vectors
-    LINALG::SerialDenseVector funct(numnodecell);
+    static LINALG::Matrix<maxnodecell,1> funct;
     DRT::UTILS::shape_function_2D(funct,pos_eta_boundary(0),pos_eta_boundary(1),cell.Shape());
     
     // translate position into from cell coordinates to element coordinates
-    // pos_xsi_boundary = xyze_cell(i,j) * funct(j);
-    if (numnodecell != 3) dserror("numnode of integrationcell is not 3");
-    //GEO::PosXiBoundary pos_xsi_boundary;
-    BLITZTINY::MV_product<2,3>(xyze_cell, funct, pos_xsi_boundary);
+    pos_xsi_boundary.Clear();
+    for (int j = 0; j < numnodecell; ++j)
+      for (int i = 0; i < 2; ++i)
+        pos_xsi_boundary(i) += xyze_cell(i,j)*funct(j);
+
     return;
   }
   
@@ -149,20 +146,23 @@ namespace GEO
       LINALG::Matrix<3,1>&         pos_xsi_domain
   )
   {   
+    const int maxnodecell = 9;
     const int numnodecell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
-    
+    if (numnodecell > maxnodecell)
+      dserror("increase maxnodecell");
+        
     // get cell node coordinates in xi_domain
     const LINALG::SerialDenseMatrix& xyze_cell(cell.NodalPosXiDomain());
     
     // create shape function vectors
-    LINALG::SerialDenseVector funct(numnodecell);
+    static LINALG::Matrix<maxnodecell,1> funct;
     DRT::UTILS::shape_function_2D(funct, pos_eta_boundary(0),pos_eta_boundary(1),cell.Shape());
     
     // translate position into from cell coordinates to element coordinates
-    //const LINALG::SerialDenseVector pos_xsi_boundary = xyze_cell(i,j)*funct(j);
-    if (numnodecell != 3) dserror("numnode of integrationcell is not 3");
-    BLITZTINY::MV_product<3,3>(xyze_cell, funct, pos_xsi_domain);
-//    elevec1.GEMV('N', 3, numnodecell, 1.0, xyze_cell.A(), xyze_cell.LDA(), fa.A(), 1.0, elevec1.A());
+    pos_xsi_domain.Clear();
+    for (int j = 0; j < numnodecell; ++j)
+      for (int i = 0; i < 3; ++i)
+        pos_xsi_domain(i) += xyze_cell(i,j)*funct(j);
     
     return;
   }
@@ -174,28 +174,25 @@ namespace GEO
       const GEO::BoundaryIntCell& cell,
       const LINALG::Matrix<2,1>&  pos_eta_boundary)
   {   
+    const int maxnodecell = 9;
+    const int numnodecell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
+    if (numnodecell > maxnodecell)
+      dserror("increase maxnode");
+    
     // get node coordinates
     const LINALG::SerialDenseMatrix& xiBe_cell(cell.NodalPosXiBoundary());
     
-    const int numnode = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
-    
     // get shape function derivative
-    LINALG::SerialDenseMatrix deriv(2,numnode);
+    static LINALG::Matrix<2,maxnodecell> deriv;
     DRT::UTILS::shape_function_2D_deriv1(deriv, pos_eta_boundary(0), pos_eta_boundary(1), cell.Shape());
     
     // get jacobian matrix ...
-    LINALG::Matrix<2,2> xjm;
-    for (int i = 0; i < 2; ++i)
-    {
-      for (int j = 0; j < 2; ++j)
-      {
-        xjm(i,j) = 0.0;
-        for (int k = 0; k < numnode; ++k)
-        {
+    static LINALG::Matrix<2,2> xjm;
+    xjm.Clear();
+    for (int k = 0; k < numnodecell; ++k)
+      for (int i = 0; i < 2; ++i)
+        for (int j = 0; j < 2; ++j)
           xjm(i,j) += deriv(i, k)*xiBe_cell(j, k);
-        }
-      }
-    }
     
     // ...and return its determinante
     return xjm.Determinant();

@@ -14,7 +14,7 @@ Maintainer: Axel Gerstenberger
 #ifdef CCADISCRET
 
 #include "integrationcell.H"
-#include "intersection_service.H"
+#include "position_array.H"
 #include "../drt_lib/linalg_serialdensevector.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
@@ -48,26 +48,30 @@ static void ComputePhysicalCoordinates(
         LINALG::SerialDenseMatrix& physicalCoordinates
         )
 {
-  const LINALG::SerialDenseMatrix eleCoord(GEO::InitialPositionArrayBlitz(&ele));
-  //DRT::UTILS::fillInitialPositionArray(&ele, eleCoord);
+  const int maxnodeele = 27;
+  const int numnodeele = ele.NumNode();
+  if (numnodeele > maxnodeele)
+    dserror("increase maxnodeele");
+  
+  static LINALG::Matrix<3,maxnodeele> eleCoord;
+  GEO::fillInitialPositionArray(&ele,eleCoord);
   const LINALG::SerialDenseMatrix& nodalPosXiDomain(cell.NodalPosXiDomain());
   
   const int nen_cell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
   
   physicalCoordinates.Zero();
   // for each cell node, compute physical position
-  const int nen_ele = ele.NumNode();
-  LINALG::SerialDenseVector funct(nen_ele);
   for (int inen = 0; inen < nen_cell; ++inen)
   {
     // shape functions
+    static LINALG::Matrix<maxnodeele,1> funct;
     DRT::UTILS::shape_function_3D(funct,
         nodalPosXiDomain(0, inen),
         nodalPosXiDomain(1, inen),
         nodalPosXiDomain(2, inen),
         ele.Shape());
     
-    for (int j = 0; j < nen_ele; ++j)
+    for (int j = 0; j < numnodeele; ++j)
     {
       for (int i = 0; i < 3; ++i)
       {
@@ -209,22 +213,22 @@ LINALG::SerialDenseMatrix GEO::DomainIntCell::GetDefaultCoordinates(
 LINALG::Matrix<3,1> GEO::DomainIntCell::GetPhysicalCenterPosition(const DRT::Element& ele) const
 {
   const int nsd = 3;
-  const int maxnode = 27;
+  const int maxnodecell = 27;
   
   const int numnodecell = DRT::UTILS::getNumberOfElementNodes(this->Shape());
   
-  if (numnodecell >= maxnode)
+  if (numnodecell >= maxnodecell)
     dserror("you need to increase size of fixedsize array!");
   
   // physical positions of cell nodes
-  static LINALG::SerialDenseMatrix physcoord(nsd,maxnode);
+  static LINALG::SerialDenseMatrix physcoord(nsd,maxnodecell);
   this->NodalPosXYZ(ele, physcoord);
   
   // center in local coordinates
   const LINALG::Matrix<3,1> localcenterpos(DRT::UTILS::getLocalCenterPosition<3>(this->Shape()));
   
   // shape functions
-  LINALG::Matrix<maxnode,1> funct;
+  static LINALG::Matrix<maxnodecell,1> funct;
   DRT::UTILS::shape_function_3D(funct,
       localcenterpos(0),
       localcenterpos(1),
@@ -294,15 +298,6 @@ std::string GEO::BoundaryIntCell::toString() const
   std::stringstream s;
   s << "BoundaryIntCell" << endl;
   s << nodalpos_xi_domain_ << endl;
-//    MCONST_FOREACH(std::vector< std::vector<double> >, coordinate, nodalpos_xi_domain_)
-//    {
-//        s << "[";
-//        MPFOREACH(std::vector<double>, val, coordinate)
-//        {
-//            s << *val << " ";
-//        };
-//        s << "]" << endl;
-//    };
   return s.str();
 }
 
@@ -323,22 +318,20 @@ void GEO::BoundaryIntCell::NodalPosXYZ(
 LINALG::Matrix<3,1> GEO::BoundaryIntCell::GetPhysicalCenterPosition(const DRT::Element& ele) const
 {
   const int nsd = 3;
-  const int maxnode = 27;
-  
+  const int maxnodecell = 27;
   const int numnodecell = DRT::UTILS::getNumberOfElementNodes(this->Shape());
-  
-  if (numnodecell >= maxnode)
-    dserror("you need to increase size of fixedsize array!");
+  if (numnodecell >= maxnodecell)
+    dserror("increase maxnodecell");
   
   // physical positions of cell nodes
-  static LINALG::SerialDenseMatrix physcoord(nsd,maxnode);
+  static LINALG::SerialDenseMatrix physcoord(nsd,maxnodecell);
   this->NodalPosXYZ(ele, physcoord);
   
   // center in local coordinates
   const LINALG::Matrix<2,1> localcenterpos(DRT::UTILS::getLocalCenterPosition<2>(this->Shape()));
   
   // shape functions
-  LINALG::Matrix<maxnode,1> funct;
+  static LINALG::Matrix<maxnodecell,1> funct;
   DRT::UTILS::shape_function_2D(funct,
       localcenterpos(0),
       localcenterpos(1),
