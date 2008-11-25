@@ -446,14 +446,25 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          true,
                                          DRT::Condition::Line));
 
+  Teuchos::RCP<ConditionDefinition> surfweakdirichlet 
+    =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURFACE WEAK DIRICHLET CONDITIONS",
+                                         "SurfaceWeakDirichlet",
+                                         "SurfaceWeakDirichlet",
+                                         DRT::Condition::SurfaceWeakDirichlet,
+                                         true,
+                                         DRT::Condition::Surface));
+
   // we attach all the components of this condition to this weak line DBC
   for (unsigned i=0; i<weakDirichletcomponents.size(); ++i)
   {
     lineweakdirichlet->AddComponent(weakDirichletcomponents[i]);
+    surfweakdirichlet->AddComponent(weakDirichletcomponents[i]);
   }
 
   // and append it to the list of all conditions
   condlist.push_back(lineweakdirichlet);
+  condlist.push_back(surfweakdirichlet);
 
   /*--------------------------------------------------------------------*/
   // FSI
