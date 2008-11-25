@@ -42,6 +42,7 @@ Maintainer: Alexander Popp
 #include "Epetra_Comm.h"
 #include "drt_celement.H"
 #include "drt_contact_interface.H"
+#include "drt_contact_coupling.H"
 
 using namespace std;
 
@@ -201,6 +202,26 @@ public:
                                            CONTACT::CElement& mele,
                                            double mxia, double mxib);
   
+  /*!
+  \brief Integrate Mortar matrix M on a 2D slave / master integration cell
+         NOTE: This version works in the Auxiliary Plane of 3D Coupling!
+        
+  */
+  RCP<Epetra_SerialDenseMatrix> IntegrateMAuxPlane3D(CONTACT::CElement& sele,
+                                                     CONTACT::CElement& mele,
+                                                     RCP<CONTACT::Intcell> cell,
+                                                     double* auxn);
+  
+  /*!
+  \brief Integrate weighted gap g~ on a 2D slave / master integration cell
+         NOTE: This version works in the Auxiliary Plane of 3D Coupling!
+        
+  */
+  RCP<Epetra_SerialDenseVector> IntegrateGAuxPlane3D(CONTACT::CElement& sele,
+                                                     CONTACT::CElement& mele,
+                                                     RCP<CONTACT::Intcell> cell,
+                                                     double* auxn);
+    
   /*!
   \brief Assemble D contribution of current overlap into slave nodes
   

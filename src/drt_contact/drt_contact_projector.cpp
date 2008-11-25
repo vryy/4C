@@ -43,6 +43,7 @@ Maintainer: Alexander Popp
 #include "drt_celement.H"
 #include "drt_cnode.H"
 #include "contactdefines.H"
+#include "../drt_lib/linalg_utils.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 01/08|
@@ -132,11 +133,7 @@ bool CONTACT::Projector::ProjectNodalNormal(CONTACT::CNode& node,
   } // if (Dim()==2)
   
   else
-  {
-    // three-dimensional version of the problem
-    ok = false;
-    dserror("ERROR: ProjectNodalNormal: 3D version not yet implemented!");
-  }
+    dserror("ERROR: ProjectNodalNormal: Called 2D version for 3D problem!");
   
   return true;
 }
@@ -220,12 +217,8 @@ bool CONTACT::Projector::ProjectElementNormal(CONTACT::CNode& node,
   } // if (Dim()==2)
     
   else
-  {
-    // three-dimensional version of the problem
-    ok = false;
-    dserror("ERROR: ProjectElementNormal: 3D version not yet implemented!");
-  }
-    
+    dserror("ERROR: ProjectElementNormal: Called 2D version for 3D problem!");
+  
   return ok;
 }
 
@@ -326,13 +319,79 @@ bool CONTACT::Projector::ProjectGaussPoint(CONTACT::CElement& gpele,
   } // if (Dim()==2)
   
   else
-  {
-    // three-dimensional version of the problem
-    ok = false;
-    dserror("ERROR: ProjectGaussPoint: 3D version not yet implemented!");
-  }
+    dserror("ERROR: ProjectGaussPoint: Called 2D version for 3D problem!");
   
   return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Project a Gauss point along AuxPlane normal (3D)          popp 11/08|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Projector::ProjectGaussPointAuxn3D(const double* globgp,
+                                                 const double* auxn,
+                                                 CONTACT::CElement& ele,
+                                                 double xi[])
+{
+  // start in the element center
+  DRT::Element::DiscretizationType dt = ele.Shape();
+  double eta[2] = {0.0, 0.0};
+  if (dt==DRT::Element::tri3 || dt==DRT::Element::tri6)
+  {
+    eta[0] = 1/3;
+    eta[1] = 1/3;
+  }
+  
+  // coordinate increment
+  double deta[2] = {0.0, 0.0};
+  
+  // auxiliary variable
+  double alpha = 0.0;
+  double dalpha = 0.0;
+  
+  // function f (vector-valued)
+  double f[3] = {0.0, 0.0, 0.0};
+  
+  // gradient of f (df/deta[0], df/deta[1], df/dalpha)
+  Epetra_SerialDenseMatrix df(3,3);
+  
+  // start iteration
+  int k=0;
+  double conv = 0.0;
+  
+  for (k=0;k<CONTACTMAXITER;++k)
+  {
+    EvaluateFGaussPointAuxn3D(f,globgp,auxn,ele,eta,alpha);
+    conv = sqrt(f[0]*f[0]+f[1]*f[1]+f[2]*f[2]);
+    //cout << "Iteration " << k << ": -> |f|=" << conv << endl;
+    if (conv <= CONTACTCONVTOL) break;
+    EvaluateGradFGaussPointAuxn3D(df,globgp,auxn,ele,eta,alpha);
+    
+    // solve deta = - inv(df) * f
+    LINALG::NonSymmetricInverse(df,3);
+    deta[0] = -df(0,0)*f[0] - df(0,1)*f[1] - df(0,2)*f[2];
+    deta[1] = -df(1,0)*f[0] - df(1,1)*f[1] - df(1,2)*f[2];
+    dalpha  = -df(2,0)*f[0] - df(2,1)*f[1] - df(2,2)*f[2];
+    
+    // update eta and alpha
+    eta[0] += deta[0];
+    eta[1] += deta[1];
+    alpha  += dalpha;
+  }
+      
+  // Newton iteration unconverged
+  if (conv > CONTACTCONVTOL)
+    dserror("ERROR: ProjectGaussPointAuxn3D: Newton unconverged for GP"
+            "at xi = (%f,%f,%f) onto CElementID %i", globgp[0],globgp[1],globgp[2],ele.Id());
+
+  // Newton iteration converged
+  xi[0]=eta[0];
+  xi[1]=eta[1];
+  
+  //cout << "Newton iteration converged in " << k << " steps!" << endl;
+  double glob[3] = {0.0, 0.0, 0.0};
+  ele.LocalToGlobal(xi,glob,0);
+  
+  return true;  
 }
 
 /*----------------------------------------------------------------------*
@@ -360,9 +419,6 @@ double CONTACT::Projector::EvaluateFNodalNormal(CONTACT::CNode& node,
     LINALG::SerialDenseVector val(nnodes);
     LINALG::SerialDenseMatrix deriv(nnodes,1);
     
-    // get shape function values and derivatives at eta
-    ele.EvaluateShape(eta, val, deriv, nnodes);
-  
     // build interpolation of master node coordinates for current eta
     double nx[3] = {0.0, 0.0, 0.0};
     ele.LocalToGlobal(eta,nx,0);
@@ -413,9 +469,6 @@ double CONTACT::Projector::EvaluateGradFNodalNormal(CONTACT::CNode& node,
     LINALG::SerialDenseVector val(nnodes);
     LINALG::SerialDenseMatrix deriv(nnodes,1);
         
-    // get shape function values and derivatives at eta
-    ele.EvaluateShape(eta, val, deriv, nnodes);
-  
     // build interpolation of master node coordinates for current eta
     // use shape function derivatives for interpolation (hence "1")
     double nxeta[3] = {0.0, 0.0, 0.0};
@@ -611,10 +664,7 @@ double CONTACT::Projector::EvaluateFGaussPoint(const double* gpx,
     int nnodes = ele.NumNode();
     LINALG::SerialDenseVector val(nnodes);
     LINALG::SerialDenseMatrix deriv(nnodes,1);
-      
-    // get shape function values and derivatives at eta
-    ele.EvaluateShape(eta, val, deriv, nnodes);
-  
+    
     // build interpolation of master node coordinates for current eta
     double nx[3] = {0.0, 0.0, 0.0};
     ele.LocalToGlobal(eta,nx,0);
@@ -665,10 +715,7 @@ double CONTACT::Projector::EvaluateGradFGaussPoint(const double* gpn,
   int nnodes = ele.NumNode();
   LINALG::SerialDenseVector val(nnodes);
   LINALG::SerialDenseMatrix deriv(nnodes,1);
-      
-  // get shape function values and derivatives at eta
-  ele.EvaluateShape(eta, val, deriv, nnodes);
-
+  
   // build interpolation of master node coordinates for current eta
   // use shape function derivatives for interpolation (hence "1")
   double nxeta[3] = {0.0, 0.0, 0.0};
@@ -682,6 +729,82 @@ double CONTACT::Projector::EvaluateGradFGaussPoint(const double* gpn,
     dserror("ERROR: EvaluateGradFGaussPoint: 3D version not yet implemented!");
       
   return fgrad;
+}
+
+/*----------------------------------------------------------------------*
+ |  Evaluate F for AuxPlane Gauss point case (3D)             popp 11/08|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Projector::EvaluateFGaussPointAuxn3D(
+                              double* f,
+                              const double* globgp,
+                              const double* auxn,
+                              CONTACT::CElement& ele,
+                              const double* eta,
+                              const double& alpha)
+{
+  /* Evaluate the function F(eta,alpha) = Ni * xi - alpha * auxn - globgp
+     which is a vector-valued function with 3 components!
+    
+       Ni      shape functions of element to project on
+       xi      coords of nodes of element to project on
+       globgp  coords of AuxPlaneGP to be projected
+       auxn    normal of AuxPlane along which to project            */
+
+  // collect necessary data
+  int nnodes = ele.NumNode();
+  LINALG::SerialDenseVector val(nnodes);
+  LINALG::SerialDenseMatrix deriv(nnodes,2,true);
+    
+  // build interpolation of ele node coordinates for current eta
+  double nx[3] = {0.0, 0.0, 0.0};
+  ele.LocalToGlobal(eta,nx,0);
+
+  // evaluate function f
+  for (int i=0; i<3; ++i)
+    f[i] = nx[i] - alpha * auxn[i] - globgp[i];
+  
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Evaluate GradF for AuxPlane Gauss point case (3D)         popp 11/08|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Projector::EvaluateGradFGaussPointAuxn3D(
+                              Epetra_SerialDenseMatrix& fgrad,
+                              const double* globgp,
+                              const double* auxn,
+                              CONTACT::CElement& ele,
+                              const double* eta,
+                              const double& alpha)
+{
+  /* Evaluate the gradient of the function F(eta,alpha) = Ni * xi -
+     - alpha * auxn - globgp, which is a (3x3)-matrix!
+    
+       Ni      shape functions of element to project on
+       xi      coords of nodes of element to project on
+       globgp  coords of AuxPlaneGP to be projected
+       auxn    normal of AuxPlane along which to project            */
+  
+  // collect necessary data
+  int nnodes = ele.NumNode();
+  LINALG::SerialDenseVector val(nnodes);
+  LINALG::SerialDenseMatrix deriv(nnodes,2,true);
+    
+  // build interpolation of ele node coordinates for current eta
+  double nxeta1[3] = {0.0, 0.0, 0.0};
+  double nxeta2[3] = {0.0, 0.0, 0.0};
+  ele.LocalToGlobal(eta,nxeta1,1);
+  ele.LocalToGlobal(eta,nxeta2,2);
+  
+  //evaluate function f gradient
+  for (int i=0;i<3;++i)
+  {
+    fgrad(i,0) = nxeta1[i];
+    fgrad(i,1) = nxeta2[i];
+    fgrad(i,2) = -auxn[i];
+  }
+
+  return true;
 }
 
 #endif //#ifdef CCADISCRET

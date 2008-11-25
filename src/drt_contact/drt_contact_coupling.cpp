@@ -47,9 +47,154 @@ Maintainer: Alexander Popp
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
-CONTACT::Coupling::Vertex::Vertex(vector<double> coord, Vertex* next, Vertex* prev,
-                                  bool intersect, bool entryexit, Vertex* neighbor,
-                                  double alpha) :
+CONTACT::Intcell::Intcell(int id, int nvertices,
+    Epetra_SerialDenseMatrix& coords, const DRT::Element::DiscretizationType& shape) :
+id_(id),
+nvertices_(nvertices),
+coords_(coords),
+shape_(shape)
+{
+   // check nvertices_ and shape_
+  if (nvertices_!=3) dserror("ERROR: Integration cell must have 3 vertices");
+  if (shape_!=DRT::Element::tri3) dserror("ERROR: Integration cell must be tri3");
+  
+  // check dimensions of coords_
+  if (coords_.M() != 3) dserror("ERROR: Inconsistent coord matrix");
+  if (coords_.N() != nvertices_) dserror("ERROR: Inconsistent coord matrix");
+  
+  // compute area of Intcell
+  double t1[3] = {0.0, 0.0, 0.0};
+  double t2[3] = {0.0, 0.0, 0.0};
+  for (int k=0;k<3;++k)
+  {
+    t1[k]=Coords()(k,1)-Coords()(k,0);
+    t2[k]=Coords()(k,2)-Coords()(k,0);
+  }
+  
+  double t1xt2[3] = {0.0, 0.0, 0.0};
+  t1xt2[0] = t1[1]*t2[2]-t1[2]*t2[1];
+  t1xt2[1] = t1[2]*t2[0]-t1[0]*t2[2];
+  t1xt2[2] = t1[0]*t2[1]-t1[1]*t2[0]; 
+  area_ = 0.5*sqrt(t1xt2[0]*t1xt2[0]+t1xt2[1]*t1xt2[1]+t1xt2[2]*t1xt2[2]);
+  
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  cctor (public)                                             popp 11/08|
+ *----------------------------------------------------------------------*/
+CONTACT::Intcell::Intcell(const Intcell& old) :
+id_(old.id_),
+nvertices_(old.nvertices_),
+area_(old.area_),
+coords_(old.coords_),
+shape_(old.shape_)
+{
+  // empty copy constructor body
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Get global coords for given local coords (Intcell)        popp 11/08|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Intcell::LocalToGlobal(const double* xi,
+                                               double* globcoord,
+                                               int inttype)
+{
+  // check input
+  if (!xi) dserror("ERROR: LocalToGlobal called with xi=NULL");
+  if (!globcoord) dserror("ERROR: LocalToGlobal called with globcoord=NULL");
+  
+  // collect fundamental data
+  int nnodes = NumVertices();
+  LINALG::SerialDenseVector val(nnodes);
+  LINALG::SerialDenseMatrix deriv(nnodes,2,true);
+  
+  // Evaluate shape, get nodal coords and interpolate global coords
+  EvaluateShape(xi, val, deriv);
+  for (int i=0;i<3;++i) globcoord[i]=0.0;
+  
+  for (int i=0;i<nnodes;++i)
+  {
+    if (inttype==0)
+    {
+      // use shape function values for interpolation
+      globcoord[0]+=val[i]*Coords()(0,i);
+      globcoord[1]+=val[i]*Coords()(1,i);
+      globcoord[2]+=val[i]*Coords()(2,i);
+    }
+    else if (inttype==1)
+    {
+      // use shape function derivatives xi for interpolation
+      globcoord[0]+=deriv(i,0)*Coords()(0,i);
+      globcoord[1]+=deriv(i,0)*Coords()(1,i);
+      globcoord[2]+=deriv(i,0)*Coords()(2,i);
+    }
+    else if (inttype==2)
+    {
+      // use shape function derivatives eta for interpolation
+      globcoord[0]+=deriv(i,1)*Coords()(0,i);
+      globcoord[1]+=deriv(i,1)*Coords()(1,i);
+      globcoord[2]+=deriv(i,1)*Coords()(2,i);
+    }
+    else
+      dserror("ERROR: Invalid interpolation type requested, only 0,1,2!");
+  }
+  
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Evaluate shape functions (Intcell)                        popp 11/08|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Intcell::EvaluateShape(const double* xi,
+    LINALG::SerialDenseVector& val, LINALG::SerialDenseMatrix& deriv)
+{
+  if (!xi)
+    dserror("ERROR: EvaluateShape called with xi=NULL");
+  
+  // 3noded triangular element
+  if(Shape()==DRT::Element::tri3)
+  {
+    val[0] = 1-xi[0]-xi[1]; 
+    val[1] = xi[0];
+    val[2] = xi[1];
+    deriv(0,0) = -1.0; deriv(0,1) = -1.0;
+    deriv(1,0) =  1.0; deriv(1,1) =  0.0;
+    deriv(2,0) =  0.0; deriv(2,1) =  1.0;
+  }
+  
+  // unknown case
+  else dserror("ERROR: EvaluateShape (Intcell) called for type != tri3");
+  
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Evaluate Jacobian determinant (Intcell)                   popp 11/08|
+ *----------------------------------------------------------------------*/
+double CONTACT::Intcell::Jacobian(double* xi)
+{
+  double jac = 0.0;
+  vector<double> gxi(3);
+  vector<double> geta(3);
+    
+  // 2D linear case (2noded line element)
+  if (Shape()==DRT::Element::tri3)
+    jac = Area()*2;
+  
+  // unknown case
+  else dserror("ERROR: Jacobian called for unknown element type!");
+  
+  return jac;
+}
+
+/*----------------------------------------------------------------------*
+ |  ctor (public)                                             popp 11/08|
+ *----------------------------------------------------------------------*/
+CONTACT::Vertex::Vertex(vector<double> coord, Vertex* next, Vertex* prev,
+                        bool intersect, bool entryexit, Vertex* neighbor,
+                        double alpha) :
 coord_(coord),
 next_(next),
 prev_(prev),
@@ -65,7 +210,7 @@ alpha_(alpha)
 /*----------------------------------------------------------------------*
  |  cctor (public)                                            popp 11/08|
  *----------------------------------------------------------------------*/
-CONTACT::Coupling::Vertex::Vertex(const Vertex& old) :
+CONTACT::Vertex::Vertex(const Vertex& old) :
 coord_(old.coord_),
 next_(old.next_),
 prev_(old.prev_),
@@ -135,21 +280,24 @@ contactsegs_(csegs)
     double tol = CONTACTCLIPTOL * min(sminedge,mminedge);
       
     // do clipping in auxiliary plane
-    vector<vector<double> > clip = PolygonClipping(SlaveVertices(),MasterVertices(),tol);
+    Clip() = PolygonClipping3D(SlaveVertices(),MasterVertices(),tol);
+    int clipsize = (int)(Clip().size());
     
-    // proceed only if clipping polygon is not empty
+    // proceed only if clipping polygon is at least triangle
     bool overlap = false;
-    if ((int)clip.size()==0) overlap = true;
-    
-    // do triangulization of clipping polygon
+    if (clipsize>=3) overlap = true;
     if (overlap)
     {
+      // do triangulation of clip polygon
+      Triangulation3D();
       
+      //cout << "\nNo. of integration cells: " << (int)(Cells().size()) << endl;
+      //for (int i=0;i<(int)(Cells().size());++i)
+      //  cout << "->Cell " << i << ": " << endl << Cells()[i]->Coords() << endl;
+      
+      // do integration of integration cells
+      IntegrateCells3D();
     }
-    
-    // do integration of triangles
-    
-    
   }
   
   // invalid cases for dim
@@ -807,29 +955,13 @@ bool CONTACT::Coupling::ProjectMaster3D()
 /*----------------------------------------------------------------------*
  |  Clipping of two polygons                                  popp 11/08|
  *----------------------------------------------------------------------*/
-vector<vector<double> > CONTACT::Coupling::PolygonClipping(
+vector<vector<double> > CONTACT::Coupling::PolygonClipping3D(
     vector<vector<double> > poly1, vector<vector<double> > poly2, double& tol)
 {
   // print to screen
-  cout << "\n\n*****************************************************";
-  cout << "\n*          P O L Y G O N   C L I P P I N G          *";
-  cout << "\n*****************************************************\n\n";
-  
-//  // hard-coded input polygons
-//  poly1.resize(4);
-//  poly1[0][0]= 0.0; poly1[0][1]= 0.0; poly1[0][2]= 0.0;
-//  poly1[1][0]= 1.0; poly1[1][1]= 0.0; poly1[1][2]= 0.0;
-//  poly1[2][0]= 1.0; poly1[2][1]= 1.0; poly1[2][2]= 0.0;
-//  poly1[3][0]= 0.0; poly1[3][1]= 1.0; poly1[3][2]= 0.0;
-//  
-//  poly2.resize(4);
-//  poly2[0][0]= 0.0; poly2[0][1]= 0.0; poly2[0][2]= 0.0;
-//  poly2[1][0]= 0.7; poly2[1][1]= 0.0; poly2[1][2]= 0.0;
-//  poly2[2][0]= 1.0; poly2[2][1]= 0.5; poly2[2][2]= 0.0;
-//  poly2[3][0]= 0.0; poly2[3][1]= 0.5; poly2[3][2]= 0.0;
-//  
-//  // hard-coded auxiliary plane normal
-//  Auxn()[0] = 0.0; Auxn()[1] = 0.0; Auxn()[2] = 1.0; 
+  //cout << "\n\n*****************************************************";
+  //cout << "\n*          P O L Y G O N   C L I P P I N G          *";
+  //cout << "\n*****************************************************\n\n";
   
   //**********************************************************************
   // STEP1: Input check
@@ -857,8 +989,8 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping(
     for (int k=0;k<3;++k)
       center2[k] += poly2[i][k]/((int)poly2.size());
   
-  cout << "Center 1: " << center1[0] << " " << center1[1] << " " << center1[2] << endl;
-  cout << "Center 2: " << center2[0] << " " << center2[1] << " " << center2[2] << endl;
+  //cout << "Center 1: " << center1[0] << " " << center1[1] << " " << center1[2] << endl;
+  //cout << "Center 2: " << center2[0] << " " << center2[1] << " " << center2[2] << endl;
   
   // then we compute the counter-clockwise plane normal
   double diff1[3] = {0.0, 0.0, 0.0};
@@ -895,7 +1027,7 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping(
   // check polygon 2 and reorder in c-clockwise direction
   if (check2<0)
   {
-    cout << "Polygon 2 (master) not ordered counter-clockwise -> reordered!" << endl;
+    //cout << "Polygon 2 (master) not ordered counter-clockwise -> reordered!" << endl;
     vector<vector<double> > newpoly2((int)poly2.size(),vector<double>(3));
     for (int i=0;i<(int)poly2.size();++i)
       newpoly2[(int)poly2.size()-1-i] = poly2[i];
@@ -966,15 +1098,15 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping(
   }
   
   // print final input polygons to screen
-  cout << "\nInput Poylgon 1:";
-  for (int i=0;i<(int)poly1.size();++i)
-    cout << "\nVertex " << i << ":\t" << scientific << poly1[i][0] << "\t" << poly1[i][1] << "\t" << poly1[i][2];
+  //cout << "\nInput Poylgon 1:";
+  //for (int i=0;i<(int)poly1.size();++i)
+  //  cout << "\nVertex " << i << ":\t" << scientific << poly1[i][0] << "\t" << poly1[i][1] << "\t" << poly1[i][2];
  
-  cout << "\nInput Poylgon 2:";
-  for (int i=0;i<(int)poly2.size();++i)
-    cout << "\nVertex " << i << ":\t" << scientific << poly2[i][0] << "\t" << poly2[i][1] << "\t" << poly2[i][2];
+  //cout << "\nInput Poylgon 2:";
+  //for (int i=0;i<(int)poly2.size();++i)
+  //  cout << "\nVertex " << i << ":\t" << scientific << poly2[i][0] << "\t" << poly2[i][1] << "\t" << poly2[i][2];
   
-  cout << endl << endl;
+  //cout << endl << endl;
   
   //**********************************************************************
   // STEP2: Create Vertex data structures
@@ -1073,14 +1205,14 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping(
       // move point away if very close to edge 2
       if (dist > -tol && dist < 0)
       {
-        cout << "Vertex " << i << " on poly1 is very close to edge " << j << " of poly2 -> moved inside!" << endl;
+        //cout << "Vertex " << i << " on poly1 is very close to edge " << j << " of poly2 -> moved inside!" << endl;
         poly1list[i].Coord()[0] -= tol*n2[0];
         poly1list[i].Coord()[1] -= tol*n2[1];
         poly1list[i].Coord()[2] -= tol*n2[2];                                   
       }
       else if (dist < tol && dist >= 0)
       {
-        cout << "Vertex " << i << " on poly1 is very close to edge " << j << " of poly2 -> moved outside!" << endl;
+        //cout << "Vertex " << i << " on poly1 is very close to edge " << j << " of poly2 -> moved outside!" << endl;
         poly1list[i].Coord()[0] += tol*n2[0];
         poly1list[i].Coord()[1] += tol*n2[1];
         poly1list[i].Coord()[2] += tol*n2[2];     
@@ -1125,14 +1257,14 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping(
       // move point away if very close to edge 2
       if (dist > -tol && dist < 0)
       {
-        cout << "Vertex " << i << " on poly2 is very close to edge " << j << " of poly1 -> moved inside!" << endl;
+        //cout << "Vertex " << i << " on poly2 is very close to edge " << j << " of poly1 -> moved inside!" << endl;
         poly2list[i].Coord()[0] -= tol*n1[0];
         poly2list[i].Coord()[1] -= tol*n1[1];
         poly2list[i].Coord()[2] -= tol*n1[2];                                   
       }
       else if (dist < tol && dist >= 0)
       {
-        cout << "Vertex " << i << " on poly2 is very close to edge " << j << " of poly1 -> moved outside!" << endl;
+        //cout << "Vertex " << i << " on poly2 is very close to edge " << j << " of poly1 -> moved outside!" << endl;
         poly2list[i].Coord()[0] += tol*n1[0];
         poly2list[i].Coord()[1] += tol*n1[1];
         poly2list[i].Coord()[2] += tol*n1[2];     
@@ -1189,11 +1321,11 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping(
       double parallel = edge1[0]*n2[0]+edge1[1]*n2[1]+edge1[2]*n2[2];
       if(abs(parallel)<1.0e-12)
       {
-        cout << "WARNING: Detected two parallel edges! (" << i << "," << j << ")" << endl;
+        //cout << "WARNING: Detected two parallel edges! (" << i << "," << j << ")" << endl;
         continue;
       }
       
-      cout << "Searching intersection (" << i << "," << j << ")" << endl;
+      //cout << "Searching intersection (" << i << "," << j << ")" << endl;
       
       // check for intersection of non-parallel edges
       double wec_p1 = 0.0;
@@ -1228,9 +1360,9 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping(
             if (abs(iq[k])<1.0e-12) iq[k] = 0.0;
           }
           
-          cout << "Found intersection! (" << i << "," << j << ") " << alphap << " " << alphaq << endl;
-          cout << "On Polygon 1: " << ip[0] << " " << ip[1] << " " << ip[2] << endl;
-          cout << "On Polygon 2: " << iq[0] << " " << iq[1] << " " << iq[2] << endl;
+          //cout << "Found intersection! (" << i << "," << j << ") " << alphap << " " << alphaq << endl;
+          //cout << "On Polygon 1: " << ip[0] << " " << ip[1] << " " << ip[2] << endl;
+          //cout << "On Polygon 2: " << iq[0] << " " << iq[1] << " " << iq[2] << endl;
           
           intersec1.push_back(Vertex(ip,poly1list[i].Next(),&poly1list[i],true,false,NULL,alphap));
           intersec2.push_back(Vertex(iq,poly2list[j].Next(),&poly2list[j],true,false,NULL,alphaq));
@@ -1284,7 +1416,7 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping(
     
     if (poly1inner==true)
     {
-      cout << "Polygon S lies fully inside polygon M!" << endl; 
+      //cout << "Polygon S lies fully inside polygon M!" << endl; 
       respoly = poly1;
     }
     
@@ -1319,14 +1451,14 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping(
       
       if (poly2inner==true)
       {
-        cout << "Polygon M lies fully inside polygon S!" << endl; 
+        //cout << "Polygon M lies fully inside polygon S!" << endl; 
         respoly = poly2;
       }
       
       // fully adjacent case
       else
       {
-        cout << "Polygons S and M are fully adjacent!" << endl; 
+        //cout << "Polygons S and M are fully adjacent!" << endl; 
         vector<vector<double> > empty(0,vector<double>(3));
         respoly = empty;
       }
@@ -1494,18 +1626,18 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping(
     }
     
     // print intersection points and their status
-    cout << endl;
+    //cout << endl;
     for (int i=0;i<(int)intersec1.size();++i)
     {
-      cout << "Intersec1: " << i << " " << intersec1[i].Coord()[0] << " " << intersec1[i].Coord()[1] << " " << intersec1[i].Coord()[2];
-      cout << " EntryExit: " << intersec1[i].EntryExit() << endl;
+      //cout << "Intersec1: " << i << " " << intersec1[i].Coord()[0] << " " << intersec1[i].Coord()[1] << " " << intersec1[i].Coord()[2];
+      //cout << " EntryExit: " << intersec1[i].EntryExit() << endl;
     }
     
-    cout << endl;
+    //cout << endl;
     for (int i=0;i<(int)intersec2.size();++i)
     {
-      cout << "Intersec2: " << i << " " <<  intersec2[i].Coord()[0] << " " << intersec2[i].Coord()[1] << " " << intersec2[i].Coord()[2];
-      cout << " EntryExit: " << intersec2[i].EntryExit() << endl;
+     // cout << "Intersec2: " << i << " " <<  intersec2[i].Coord()[0] << " " << intersec2[i].Coord()[1] << " " << intersec2[i].Coord()[2];
+      //cout << " EntryExit: " << intersec2[i].EntryExit() << endl;
     }
     
     // create clipped polygon by filtering
@@ -1518,7 +1650,7 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping(
     Vertex* current = &intersec1[0];
     
     // push_back start Vertex coords into result polygon
-    cout << "\nStart loop on Slave at " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << endl;
+    //cout << "\nStart loop on Slave at " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << endl;
     vector<double> coords = current->Coord();
     respoly.push_back(coords);
     
@@ -1526,31 +1658,31 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping(
       // find next Vertex / Vertices (path)
       if (current->EntryExit()==true)
       {
-        cout << "Intersection was Entry, so move to Next() on same polygon!" << endl;
+        //cout << "Intersection was Entry, so move to Next() on same polygon!" << endl;
         do {
           current = current->Next();
-          cout << "Current vertex is " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << endl;
+          //cout << "Current vertex is " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << endl;
           vector<double> coords = current->Coord();
           respoly.push_back(coords);
         } while (current->Intersect()==false);
-        cout << "Found intersection: " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << endl;
+        //cout << "Found intersection: " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << endl;
       }
       else
       {
-        cout << "Intersection was Exit, so move to Prev() on same polygon!" << endl;
+        //cout << "Intersection was Exit, so move to Prev() on same polygon!" << endl;
         do {
           current = current->Prev();
-          cout << "Current vertex is " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << endl;
+          //cout << "Current vertex is " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << endl;
           vector<double> coords = current->Coord();
           respoly.push_back(coords);
         } while (current->Intersect()==false);
-        cout << "Found intersection: " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << endl;
+        //cout << "Found intersection: " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << endl;
       }
       
       // jump to the other input polygon
       current = current->Neighbor();
-      cout << "Jumping to other polygon at intersection: " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << endl;
-      cout << "Length of result list so far: " << (int)respoly.size() << endl;
+      //cout << "Jumping to other polygon at intersection: " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << endl;
+      //cout << "Length of result list so far: " << (int)respoly.size() << endl;
       
     } while (current!=&intersec1[0] && current!=&intersec2[0]);
     
@@ -1591,8 +1723,8 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping(
         
         if (abs(dist) >= tolcollapse && abs(dist2) >= tolcollapse)
           collapsedrespoly.push_back(respoly[i]);
-        else
-          cout << "Collapsed two points in result polygon!" << endl;
+        else {}
+         // cout << "Collapsed two points in result polygon!" << endl;
       }
       
       // standard case
@@ -1606,19 +1738,19 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping(
         
         if (abs(dist) >= tolcollapse)
           collapsedrespoly.push_back(respoly[i]);
-        else
-          cout << "Collapsed two points in result polygon!" << endl;
+        else {}
+          //cout << "Collapsed two points in result polygon!" << endl;
       }
     }
     
     // replace respoly by collapsed respoly
     respoly = collapsedrespoly;
-    cout << "Final length of result list: " << (int)respoly.size() << endl;
+    //cout << "Final length of result list: " << (int)respoly.size() << endl;
         
     // check if respoly collapsed to nothing
     if ((int)collapsedrespoly.size()<3)
     {
-      cout << "Collapsing of result polygon led to < 3 vertices -> no respoly!" << endl;
+     // cout << "Collapsing of result polygon led to < 3 vertices -> no respoly!" << endl;
       vector<vector<double> > empty(0,vector<double>(3));
       respoly = empty;
     }
@@ -1631,7 +1763,7 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping(
       for (int k=0;k<3;++k)
         center[k] += respoly[i][k]/((int)respoly.size());
     
-    cout << "\nCenter ResPoly: " << center[0] << " " << center[1] << " " << center[2] << endl;
+    //cout << "\nCenter ResPoly: " << center[0] << " " << center[1] << " " << center[2] << endl;
     
     // then we compute the clockwise plane normal
     double diff[3] = {0.0, 0.0, 0.0};
@@ -1655,16 +1787,16 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping(
     if (check<0)
     {
       // reorder result polygon in clockwise direction
-      cout << "Result polygon not ordered counter-clockwise -> reordered!" << endl;
+     // cout << "Result polygon not ordered counter-clockwise -> reordered!" << endl;
       for (int i=0;i<(int)respoly.size();++i)
         newrespoly[(int)respoly.size()-1-i] = respoly[i];
       respoly = newrespoly;
     }
     
     // print final input polygons to screen
-      cout << "\nResult Poylgon:";
-      for (int i=0;i<(int)respoly.size();++i)
-        cout << "\nVertex " << i << ":\t" << respoly[i][0] << "\t" << respoly[i][1] << "\t" << respoly[i][2];
+      //cout << "\nResult Poylgon:";
+      //for (int i=0;i<(int)respoly.size();++i)
+      //  cout << "\nVertex " << i << ":\t" << respoly[i][0] << "\t" << respoly[i][1] << "\t" << respoly[i][2];
       
     // check if result polygon is convex
     // a polygon is convex if the scalar product of an edge normal and the
@@ -1698,7 +1830,7 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping(
     }
   }
   
-  cout << "\nRESULT POLYGON FINISHED!!!!!!!!!!!!!!!\n" << endl;
+  //cout << "\nRESULT POLYGON FINISHED!!!!!!!!!!!!!!!\n" << endl;
 
   /*
   // **********************************************************************
@@ -1806,6 +1938,103 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping(
   */
   // return result
   return respoly;
+}
+
+/*----------------------------------------------------------------------*
+ |  Triangulation of clip polygon in auxiliary plane          popp 11/08|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Coupling::Triangulation3D()
+{
+  // find geometric center of clipping polygon
+  // as a first shot we use simple node averaging here
+  vector<double> clipcenter(3);
+  for (int k=0;k<3;++k) clipcenter[k] = 0.0;
+  int clipsize = (int)(Clip().size());
+
+  for (int i=0;i<clipsize;++i)
+    for (int k=0;k<3;++k)
+      clipcenter[k] += (Clip()[i][k] / clipsize);
+ 
+  //cout << "-> This is a hack: WE NEED TO FIND GEOMETRIC CENTER OF CLIP POLYGON..." << endl;
+  //cout << "Clipcenter (simple): " << clipcenter[0] << " " << clipcenter[1] << " " << clipcenter[2] << endl;
+  
+  // do triangulization (create Intcells)
+  vector<Intcell> cells;
+  
+  // easy if clip polygon = triangle: 1 Intcell
+  if (clipsize==3)
+  {
+    // Intcell vertices = clip polygon vertices
+    Epetra_SerialDenseMatrix coords(3,clipsize);
+    for (int i=0;i<clipsize;++i)
+      for (int k=0;k<3;++k)
+        coords(k,i) = Clip()[i][k];
+    
+    // create Intcell object and push back
+    Cells().push_back(rcp(new Intcell(0,3,coords,DRT::Element::tri3)));    
+  }
+  
+  // triangulation if clip polygon > triangle
+  else
+  {
+    // No. of Intcells is equal to no. of clip polygon vertices
+    for (int num=0;num<clipsize;++num)
+    {
+      // the first vertex is always the clip center
+      // the second vertex is always the current clip vertex
+      Epetra_SerialDenseMatrix coords(3,3);
+      for (int k=0;k<3;++k)
+      {
+        coords(k,0) = clipcenter[k];
+        coords(k,1) = Clip()[num][k];
+      }
+      
+      // the third vertex is the next vertex on clip polygon
+      if (num==clipsize-1)
+        for (int k=0;k<3;++k) coords(k,2) = Clip()[0][k];
+      else
+        for (int k=0;k<3;++k) coords(k,2) = Clip()[num+1][k];
+      
+      // create Intcell object and push back
+      Cells().push_back(rcp(new Intcell(num,3,coords,DRT::Element::tri3)));
+    }
+  }
+  
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Integration of cells in aux. plane (3D)                   popp 11/08|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Coupling::IntegrateCells3D()
+{
+  /**********************************************************************/
+  /* INTEGRATION                                                        */
+  /* Integrate the Mortar matrix M and the weighted gap function g~ on  */
+  /* the current integration cell of the slave / master CElement pair   */
+  /**********************************************************************/
+  
+  // create an integrator instance with correct NumGP and Dim
+  // it is sufficient to do this once as all Intcells are triangles
+  CONTACT::Integrator integrator(Cells()[0]->Shape());
+    
+  // loop over all integration cells
+  for (int i=0;i<(int)(Cells().size());++i)
+  {
+    // do the two integrations
+    RCP<Epetra_SerialDenseMatrix> mseg = integrator.IntegrateMAuxPlane3D(sele_,mele_,Cells()[i],Auxn());
+    RCP<Epetra_SerialDenseVector> gseg = integrator.IntegrateGAuxPlane3D(sele_,mele_,Cells()[i],Auxn());
+  
+    // compute directional derivative of M and store into nodes
+    // if CONTACTONEMORTARLOOP defined, then DerivM does linearization of M AND D matrices !!!
+    //integrator.DerivM(sele_,sxia,sxib,mele_,mxia,mxib);
+      
+    // do the two assemblies into the slave nodes
+    // if CONTACTONEMORTARLOOP defined, then AssembleM does M AND D matrices !!!
+    integrator.AssembleM(Comm(),sele_,mele_,*mseg);
+    integrator.AssembleG(Comm(),sele_,*gseg);
+  }
+  return true;
 }
 
 #endif //#ifdef CCADISCRET

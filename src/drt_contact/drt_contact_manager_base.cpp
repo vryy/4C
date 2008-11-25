@@ -2188,12 +2188,10 @@ void CONTACT::ManagerBase::UpdateActiveSet()
       // compute weighted gap
       double wgap = (*g_)[g_->Map().LID(gid)];
       
-      if (cnode->n()[2] != 0.0) dserror("ERROR: UpdateActiveSet: Not yet implemented for 3D!");
-      
       // compute normal part of Lagrange multiplier
       double nz = 0.0;
       double nzold = 0.0;
-      for (int k=0;k<2;++k)
+      for (int k=0;k<3;++k)
       {
         nz += cnode->n()[k] * cnode->lm()[k];
         nzold += cnode->n()[k] * cnode->lmold()[k];
@@ -2465,12 +2463,10 @@ void CONTACT::ManagerBase::UpdateActiveSetSemiSmooth()
       // compute weighted gap
       double wgap = (*g_)[g_->Map().LID(gid)];
       
-      if (cnode->n()[2] != 0.0) dserror("ERROR: UpdateActiveSet: Not yet implemented for 3D!");
-      
       // compute normal part of Lagrange multiplier
       double nz = 0.0;
       double nzold = 0.0;
-      for (int k=0;k<2;++k)
+      for (int k=0;k<3;++k)
       {
         nz += cnode->n()[k] * cnode->lm()[k];
         nzold += cnode->n()[k] * cnode->lmold()[k];
@@ -2669,7 +2665,7 @@ void CONTACT::ManagerBase::ContactForces(RCP<Epetra_Vector> fresm)
   vector<double> gfcm(3);
   vector<double> ggfcm(3);
   int dimcheck = (gsdofrowmap_->NumGlobalElements())/(gsnoderowmap_->NumGlobalElements());
-  if (dimcheck!=2 && dimcheck!=3) dserror("ERROR: ContactForces: Debugging for 3D not implemented yet");
+  if (dimcheck!=2 && dimcheck!=3) dserror("ERROR: ContactForces: Invalid problem dimension");
   
   for (int i=0;i<fcslavetemp->MyLength();++i)
   {
@@ -2904,12 +2900,10 @@ void CONTACT::ManagerBase::PrintActiveSet()
       // compute weighted gap
       double wgap = (*g_)[g_->Map().LID(gid)];
       
-      if (cnode->n()[2] != 0.0) dserror("ERROR: PrintActiveSet: Not yet implemented for 3D!");
-      
       // compute normal part of Lagrange multiplier
       double nz = 0.0;
       double nzold = 0.0;
-      for (int k=0;k<2;++k)
+      for (int k=0;k<3;++k)
       {
         nz += cnode->n()[k] * cnode->lm()[k];
         nzold += cnode->n()[k] * cnode->lmold()[k];

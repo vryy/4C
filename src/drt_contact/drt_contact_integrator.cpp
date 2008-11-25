@@ -1495,6 +1495,244 @@ RCP<Epetra_SerialDenseVector> CONTACT::Integrator::IntegrateG(CONTACT::CElement&
 }
 
 /*----------------------------------------------------------------------*
+ |  Integrate a 2D slave / master integration cell            popp 11/08|
+ |  This method integrates a slave side function (dual shape fct.)      |
+ |  and a master side function (standard shape fct.) on a given tri3    |
+ |  integration cell. This requires projection of the Gauss points onto |
+ |  slave / master and evaluation of the Intcell Jacobian.              |
+ |  NOTE: This version works in the AuxiliaryPlane of 3D Coupling!!!    |
+ |  Output is an Epetra_SerialDenseMatrix holding the int. values       |
+ *----------------------------------------------------------------------*/
+RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateMAuxPlane3D(
+    CONTACT::CElement& sele, CONTACT::CElement& mele,
+    RCP<CONTACT::Intcell> cell, double* auxn)
+{
+  //check for problem dimension
+  if (Dim()!=3) dserror("ERROR: Wrong integration method for 3D problem");
+    
+  // check input data
+  if ((!sele.IsSlave()) || (mele.IsSlave()))
+    dserror("ERROR: IntegrateM called on a wrong type of CElement pair!");
+  if (cell==null)
+    dserror("ERROR: IntegrateMAuxPlane3D called without integration cell");
+  
+  // create empty mseg object and wrap it with RCP
+  int nrow = sele.NumNode();
+  int ncol = mele.NumNode();
+  int ndof = Dim();
+  
+  RCP<Epetra_SerialDenseMatrix> mtemp = rcp(new Epetra_SerialDenseMatrix(nrow,ncol));
+  RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
+  
+  // create empty vectors for shape fct. evaluation
+  LINALG::SerialDenseVector dualval(nrow);
+  LINALG::SerialDenseMatrix dualderiv(nrow,2,true);
+  LINALG::SerialDenseVector mval(ncol);
+  LINALG::SerialDenseMatrix mderiv(ncol,2,true);
+  
+  //cout << "Starting M-integration on cell " << cell->Id() << endl;
+  
+  // loop over all Gauss points for integration
+  for (int gp=0;gp<nGP();++gp)
+  {
+    double eta[2] = {Coordinate(gp,0), Coordinate(gp,1)};
+    double wgt = Weight(gp);
+    double globgp[3] = {0.0, 0.0, 0.0};
+    cell->LocalToGlobal(eta,globgp,0);
+    
+    double sxi[2] = {0.0, 0.0};
+    double mxi[2] = {0.0, 0.0};
+    
+    // project Gauss point onto slave element
+    // project Gauss point onto master element
+    CONTACT::Projector projector(3);
+    projector.ProjectGaussPointAuxn3D(globgp,auxn,sele,sxi);
+    projector.ProjectGaussPointAuxn3D(globgp,auxn,mele,mxi);
+
+    // check GP projection
+    if ((sxi[0]<-1.0) || (sxi[1]<-1.0) || (sxi[0]>1.0) || (sxi[1]>1.0))
+      dserror("ERROR: IntegrateMAuxPlane3D: Gauss point projection failed!");
+
+    if ((mxi[0]<-1.0) || (mxi[1]<-1.0) || (mxi[0]>1.0) || (mxi[1]>1.0))
+      dserror("ERROR: IntegrateMAuxPlane3D: Gauss point projection failed!");
+    
+    // evaluate dual space shape functions (on slave element)
+    sele.EvaluateShapeDual(sxi,dualval,dualderiv,nrow);
+    
+    // evaluate trace space shape functions (on master element)
+    mele.EvaluateShape(mxi,mval,mderiv,ncol);
+    
+    // evaluate the integration cell Jacobian
+    double jac = cell->Jacobian(eta);
+
+    /* loop over all mseg matrix entries
+       nrow represents the slave Lagrange multipliers !!!
+       ncol represents the master dofs !!!
+       (this DOES matter here for mseg, as it might
+       sometimes be rectangular, not quadratic!)              */
+    for (int j=0;j<nrow;++j)
+    {
+      for (int k=0;k<ncol;++k)
+      {
+        // multiply the two shape functions
+        double prod = dualval[j]*mval[k];
+        // add current Gauss point's contribution to mseg  
+        (*mtemp)(j,k) += prod*jac*wgt; 
+      }
+    }  
+  } // for (int gp=0;gp<nGP();++gp)
+  
+  // fill mseg matrix with mtemp matrix entries
+  // (each mtemp value is multiplied with a (dof)-unit-matrix)
+  for (int j=0;j<nrow*ndof;++j)
+  {
+    for (int k=0;k<ncol*ndof;++k)
+    {
+      int jindex = (int)(j/ndof);
+      int kindex = (int)(k/ndof);
+      // isolate the mseg entries to be filled
+      if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
+        (*mseg)(j,k) = (*mtemp)(jindex,kindex);
+    }
+  }
+  
+  return mseg;
+}
+
+/*----------------------------------------------------------------------*
+ |  Integrate gap on a 2D slave / master int. cell            popp 11/08|
+ |  This method integrates a slave side function (dual shape fct.)      |
+ |  and the gap function g = ( ( sx - mx ) * n ) on a given tri3        |
+ |  integration cell. This requires projection of the Gauss points onto |
+ |  slave / master and evaluation of the Intcell Jacobian.              |
+ |  NOTE: This version works in the AuxiliaryPlane of 3D Coupling!!!    |
+ |  Output is an Epetra_SerialDenseVector holding the int. values       |
+ *----------------------------------------------------------------------*/
+RCP<Epetra_SerialDenseVector> CONTACT::Integrator::IntegrateGAuxPlane3D(
+    CONTACT::CElement& sele, CONTACT::CElement& mele,
+    RCP<CONTACT::Intcell> cell, double* auxn)
+{
+  //check for problem dimension
+    if (Dim()!=3) dserror("ERROR: Wrong integration method for 3D problem");
+    
+  // check input data
+  if ((!sele.IsSlave()) || (mele.IsSlave()))
+    dserror("ERROR: IntegrateG called on a wrong type of CElement pair!");
+  if (cell==null)
+      dserror("ERROR: IntegrateMAuxPlane3D called without integration cell");
+  
+  // create empty gseg object and wrap it with RCP
+  int nrow = sele.NumNode();
+  int ncol = mele.NumNode();
+  RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
+  
+  // create empty vectors for shape fct. evaluation
+  LINALG::SerialDenseVector sval(nrow);
+  LINALG::SerialDenseMatrix sderiv(nrow,2,true);
+  LINALG::SerialDenseVector mval(ncol);
+  LINALG::SerialDenseMatrix mderiv(ncol,2,true);
+  LINALG::SerialDenseVector dualval(nrow);
+  LINALG::SerialDenseMatrix dualderiv(nrow,2,true);
+
+  // get slave and master nodal coords for Jacobian / GP evaluation
+  LINALG::SerialDenseMatrix scoord = sele.GetNodalCoords();
+  LINALG::SerialDenseMatrix mcoord = mele.GetNodalCoords();
+  
+  // get slave element nodes themselves for normal evaluation
+  DRT::Node** mynodes = sele.Nodes();
+  if(!mynodes) dserror("ERROR: IntegrateG: Null pointer!");
+  
+  //cout << "Starting G-integration on cell " << cell->Id() << endl;
+  
+  // loop over all Gauss points for integration
+  for (int gp=0;gp<nGP();++gp)
+  {
+    double eta[2] = {Coordinate(gp,0), Coordinate(gp,1)};
+    double wgt = Weight(gp);
+    double globgp[3] = {0.0, 0.0, 0.0};
+    cell->LocalToGlobal(eta,globgp,0);
+    
+    double sxi[2] = {0.0, 0.0};
+    double mxi[2] = {0.0, 0.0};
+    
+    // project Gauss point onto slave element
+    // project Gauss point onto master element
+    CONTACT::Projector projector(3);
+    projector.ProjectGaussPointAuxn3D(globgp,auxn,sele,sxi);
+    projector.ProjectGaussPointAuxn3D(globgp,auxn,mele,mxi);
+
+    // check GP projection
+    if ((sxi[0]<-1.0) || (sxi[1]<-1.0) || (sxi[0]>1.0) || (sxi[1]>1.0))
+      dserror("ERROR: IntegrateMAuxPlane3D: Gauss point projection failed!");
+
+    if ((mxi[0]<-1.0) || (mxi[1]<-1.0) || (mxi[0]>1.0) || (mxi[1]>1.0))
+      dserror("ERROR: IntegrateMAuxPlane3D: Gauss point projection failed!");
+    
+    // evaluate dual space shape functions (on slave element)
+    sele.EvaluateShapeDual(sxi,dualval,dualderiv,nrow);
+    
+    // evaluate trace space shape functions (on both elements)
+    sele.EvaluateShape(sxi,sval,sderiv,nrow);
+    mele.EvaluateShape(mxi,mval,mderiv,ncol);
+    
+    // build interpolation of slave GP normal and coordinates
+    double gpn[3] = {0.0,0.0,0.0};
+    double sgpx[3] = {0.0, 0.0, 0.0};
+    for (int i=0;i<nrow;++i)
+    {
+      CNode* mycnode = static_cast<CNode*> (mynodes[i]);
+      gpn[0]+=sval[i]*mycnode->n()[0];
+      gpn[1]+=sval[i]*mycnode->n()[1];
+      gpn[2]+=sval[i]*mycnode->n()[2];
+            
+      sgpx[0]+=sval[i]*scoord(0,i);
+      sgpx[1]+=sval[i]*scoord(1,i);
+      sgpx[2]+=sval[i]*scoord(2,i);
+    }
+    
+    // normalize interpolated GP normal back to length 1.0 !!!
+    double length = sqrt(gpn[0]*gpn[0]+gpn[1]*gpn[1]+gpn[2]*gpn[2]);
+    if (length<1.0e-12) dserror("ERROR: IntegrateG: Divide by zero!");
+    
+    for (int i=0;i<3;++i)
+      gpn[i]/=length;
+    
+    // build interpolation of master GP coordinates
+    double mgpx[3] = {0.0, 0.0, 0.0};
+    for (int i=0;i<ncol;++i)
+    {
+      mgpx[0]+=mval[i]*mcoord(0,i);
+      mgpx[1]+=mval[i]*mcoord(1,i);
+      mgpx[2]+=mval[i]*mcoord(2,i);
+    }
+    
+    // build normal gap at current GP
+    double gap = 0.0;
+    for (int i=0;i<3;++i)
+      gap+=(mgpx[i]-sgpx[i])*gpn[i];
+    
+#ifdef DEBUG
+    //cout << "GP gap: " << gap << endl;
+#endif // #ifdef DEBUG
+    
+    // evaluate the integration cell Jacobian
+    double jac = cell->Jacobian(eta);
+
+    /* loop over all gseg vector entries
+       nrow represents the slave side dofs !!!  */
+    for (int j=0;j<nrow;++j)
+    {
+      double prod = dualval[j]*gap;
+      // add current Gauss point's contribution to gseg  
+      (*gseg)(j) += prod*jac*wgt; 
+    }
+    
+  } // for (int gp=0;gp<nGP();++gp)
+  
+  return gseg;
+}
+
+/*----------------------------------------------------------------------*
  |  Assemble D contribution                                   popp 01/08|
  |  This method assembles the contrubution of a 1D/2D slave             |
  |  element to the D map of the adjacent slave nodes.                   |
@@ -1580,11 +1818,11 @@ bool CONTACT::Integrator::AssembleD(const Epetra_Comm& comm,
 
 /*----------------------------------------------------------------------*
  |  Assemble M contribution                                   popp 01/08|
- |  This method assembles the contrubution of a 1D slave / master       |
+ |  This method assembles the contrubution of a 1D/2D slave and master  |
  |  overlap pair to the M map of the adjacent slave nodes.              |
  |  IMPORTANT NOTE:                                                     |
  |  If CONTACTONEMORTARLOOP is defined then this method also assembles  |
- |  the contribution of a 1D slave element part to the D map of the     |
+ |  the contribution of a 1D/2D slave element part to the D map of the  |
  |  adjacent slave nodes via the connection D = sum (M)                 |
  *----------------------------------------------------------------------*/
 bool CONTACT::Integrator::AssembleM(const Epetra_Comm& comm,
@@ -1747,7 +1985,7 @@ bool CONTACT::Integrator::AssembleMmod(const Epetra_Comm& comm,
 
 /*----------------------------------------------------------------------*
  |  Assemble g~ contribution                                  popp 01/08|
- |  This method assembles the contribution of a 1D slave / master        |
+ |  This method assembles the contribution of a 1D/2D slave and master  |
  |  overlap pair to the weighted gap of the adjacent slave nodes.       |
  *----------------------------------------------------------------------*/
 bool CONTACT::Integrator::AssembleG(const Epetra_Comm& comm,

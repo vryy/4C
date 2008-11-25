@@ -155,6 +155,25 @@ public:
                           const double* gpeta,
                           CONTACT::CElement& ele,
                           double xi[]);
+   
+   /*!
+   \brief Project a Gauss point onto a CElement along AuxPlane normal (3D)
+     
+   Used to project an AuxPlane GP onto a CElement of the slave or master side
+     
+   This method will compute the coordinates of a projection of a Gauss
+   point in the local coordinate system of a CElement.
+     
+   \param globgp(in): Gauss point to project, given in global coords
+   \param auxn(in)  : Normal of AuxPlane along which to project
+   \param ele (in)  : Slave / master Celement to project on
+   \param xi (out)  : Local coordinates of projection on CElement
+   
+   */
+   bool ProjectGaussPointAuxn3D(const double* globgp,
+                                const double* auxn,
+                                CONTACT::CElement& ele,
+                                double xi[]);
     
   /*!
   \brief Evaluate F for nodal normal projection
@@ -211,6 +230,28 @@ public:
                                  CONTACT::CElement& ele,
                                  const double* eta);  
   
+  /*!
+  \brief Evaluate F for AuxPlane Gauss point projection (3D)
+
+  */
+  bool EvaluateFGaussPointAuxn3D(double* f,
+                                 const double* globgp,
+                                 const double* auxn,
+                                 CONTACT::CElement& ele,
+                                 const double* eta,
+                                 const double& alpha);  
+    
+  /*!
+  \brief Evaluate GradF for AuxPlane Gauss point projection (3D
+
+  */
+  bool EvaluateGradFGaussPointAuxn3D(Epetra_SerialDenseMatrix& fgrad,
+                              const double* globgp,
+                              const double* auxn,
+                              CONTACT::CElement& ele,
+                              const double* eta,
+                              const double& alpha); 
+    
   //@}
       
 protected:

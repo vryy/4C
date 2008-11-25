@@ -558,6 +558,7 @@ void CONTACT::CElement::Metrics(double* xi, vector<double>& gxi,
   
   return;
 }
+
 /*----------------------------------------------------------------------*
  |  Evaluate Jacobian determinant                             popp 12/07|
  *----------------------------------------------------------------------*/

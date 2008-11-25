@@ -55,18 +55,121 @@ namespace CONTACT
 // forward declarations
 
 /*!
-\brief A class representing the framework for mortar coupling of ONE
-       slave element and ONE master element of a contact interface in
-       2D and 3D. Concretely, this class controls projection, overlap
-       detection and finally integration of the mortar coupling matrix M.
+\brief A class representing one Integration Cell after triangulation
+       of the clip polygon of slave and master element from the Coupling
+       class. This class provides some basic funcitonality a CElement would
+       also provide (coords, shape functions and derivatives, Jacobian, ...).
 
 \author popp (popp@lnm.mw.tum.de)
 */
 
-class Coupling{
+class Intcell{
   
-private:
+public:
   
+  /*!
+  \brief Standard constructor
+  
+  Constructs an instance of this class.<br>
+  Note that this is \b not a collective call as coupling is
+  performed in parallel by individual processes.
+  
+  */
+  explicit Intcell(int id, int nvertices, Epetra_SerialDenseMatrix& coords,
+                   const DRT::Element::DiscretizationType& shape);
+  
+  /*!
+  \brief Copy Constructor
+
+  Makes a deep copy of an Intcell
+
+  */
+  Intcell(const Intcell& old);
+  
+  /*!
+  \brief Destructor
+
+  */
+  virtual ~Intcell() {}
+  
+  //! @name Access methods
+  
+  /*!
+  \brief Return ID this intcell
+  
+  */
+  inline int Id() const { return id_; }
+    
+  /*!
+  \brief Return number of vertices of this intcell
+  
+  */
+  inline int NumVertices() const { return nvertices_; }
+  
+  /*!
+  \brief Return current area
+
+  */
+  virtual inline double& Area() { return area_; }
+    
+  /*!
+  \brief Return coordinates of intcell vertices
+  
+  */
+  inline const Epetra_SerialDenseMatrix& Coords() { return coords_; }
+  
+  /*!
+  \brief Get shape type of element
+  
+  */
+  virtual DRT::Element::DiscretizationType Shape() const { return shape_;}
+    
+  //@}
+  
+  //! @name Evaluation methods
+  
+  /*!
+  \brief Interpolate global coordinates for given local intcell coordinates
+  
+  This method interpolates global coordinates for a given local intcell
+  coordinate variable using the intcell vertex coordinates. For interpolation
+  one can choose between shape functions or shape function derivatives!
+  
+  \param xi (in)        : local intcell coordinates
+  \param inttype (in)   : set to 0 for shape function usage,
+                          set to 1 for derivative xi usage
+                          set to 2 for derivative eta usage
+  \param globccord (out): interpolated global coordinates
+  */
+  virtual bool LocalToGlobal(const double* xi, double* globcoord, int inttype);
+  
+  /*!
+  \brief Evaluate shape functions and derivatives
+  
+  */
+  virtual bool EvaluateShape(const double* xi, LINALG::SerialDenseVector& val,
+                             LINALG::SerialDenseMatrix& deriv);
+  
+  /*!
+  \brief Evaluate Jacobian determinant for parameter space integration
+  
+  */
+  virtual double Jacobian(double* xi);
+    
+  //@}
+  
+protected:
+  
+  int                        id_;              // local ID of this intcell
+  int                        nvertices_;       // number of vertices (always 3)
+  double                     area_;            // integration cell area
+  Epetra_SerialDenseMatrix   coords_;          // coords of cell vertices
+  
+  DRT::Element::DiscretizationType   shape_;   // shape of this element (always tri3)
+  
+}; // class Intcell
+
+
 /*!
 \brief A class representing one Vertex during the polygon clipping of
        slave and master element from the Coupling class. Besides the
@@ -194,7 +297,18 @@ protected:
   
 }; // class Vertex
 
-// class Coupling
+
+/*!
+\brief A class representing the framework for mortar coupling of ONE
+       slave element and ONE master element of a contact interface in
+       2D and 3D. Concretely, this class controls projection, overlap
+       detection and finally integration of the mortar coupling matrix M.
+
+\author popp (popp@lnm.mw.tum.de)
+*/
+
+class Coupling{
+  
 public:
   
   /*!
@@ -266,16 +380,28 @@ public:
                                   return auxn_; }
   
   /*!
-  \brief Return vector of slave node coordinates
+  \brief Return vector of projected slave node coordinates in AuxPlane
   
   */
   virtual inline vector<vector<double> >& SlaveVertices() {return svertices_; }
   
   /*!
-  \brief Return vector of master node coordinates
+  \brief Return vector of projected master node coordinates in AuxPlane
   
   */
   virtual inline vector<vector<double> >& MasterVertices() {return mvertices_; }
+  
+  /*!
+  \brief Return vector of clip polygon coordinates
+  
+  */
+  virtual inline vector<vector<double> >& Clip() {return clip_; }
+  
+  /*!
+  \brief Return vector of integration cells
+  
+  */
+  virtual inline vector<RCP<Intcell> >& Cells() {return cells_; }
     
   /*!
   \brief Return matrix of contact segment coordinates
@@ -372,9 +498,33 @@ public:
   \param tol (in): clipping tolerance for close vertices detection 
   
   */
-  virtual vector<vector<double> > PolygonClipping(vector<vector<double> > polygon1,
-                                                  vector<vector<double> > polygon2,
-                                                  double& tol);
+  virtual vector<vector<double> > PolygonClipping3D(vector<vector<double> > polygon1,
+                                                    vector<vector<double> > polygon2,
+                                                    double& tol);
+  
+  /*!
+  \brief Triangulation of clip polygon in aux. plane (3D)
+  
+  This method first finds the center of the clip polygon by simple
+  averaging of vertex coordinates (arithmetic center). Then the clip
+  polygon is triangulated into as many integration cells (tri3) as
+  necessary. The method stores these cells in the class variable cells_.
+  
+  */
+  virtual bool Triangulation3D();
+  
+  /*!
+  \brief Integrate the integration cells in aux. plane (3D)
+  
+  This method creates an integrator object for the cell triangles,
+  then projects the Gauss points back onto slave and master elements
+  in order to evaluate the respective shape functions there. Then
+  entries of the mortar matrix M and the weighted gap g are integrated
+  and assembled into the slave element nodes.
+  
+  */
+  virtual bool IntegrateCells3D();
+    
   //@}
     
       
@@ -395,6 +545,8 @@ protected:
     vector<vector<double> >    svertices_;   // slave node coordinates
     vector<vector<double> >    mvertices_;   // master node coordinates
     vector<vector<double> >    clip_;        // clipped polygon coordinates
+    
+    vector<RCP<Intcell> >      cells_;       // vector of integration cells
     
     Epetra_SerialDenseMatrix&  contactsegs_; // contains coordinates of contact segments (gmsh)
   

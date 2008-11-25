@@ -754,32 +754,6 @@ void CONTACT::Interface::Evaluate()
 #ifndef CONTACTONEMORTARLOOP
     IntegrateSlave(*selement);
 #endif // #ifndef CONTACTONEMORTARLOOP
-  }
-  
-#ifdef DEBUG
-  lComm()->Barrier();
-  if (lComm()->MyPID()==0 && Dim()==3)
-  {
-    cout << "-> Calculated nodal normals and tangents SUCCESSFULLY!" << endl;
-    cout << "-> Integrated mortar matrix D SUCCESSFULLY!" << endl;
-    cout << "-> Linearized nodal normals and tangents SUCCESSFULLY!" << endl;
-    cout << "-> Linearized mortar matrix D SUCCESSFULLY!" << endl;
-  }
-#endif // #ifdef DEBUG
-
-#ifdef CONTACTFDMORTARD
-  // FD check of Mortar matrix D derivatives
-  FDCheckMortarDDeriv();
-#endif // #ifdef CONTACTFDMORTARD
-  
-  // loop over proc's slave elements of the interface for integration
-  // use standard column map to include processor's ghosted elements
-  for (int i=0; i<selecolmap_->NumMyElements();++i)
-  {
-    int gid1 = selecolmap_->GID(i);
-    DRT::Element* ele1 = idiscret_->gElement(gid1);
-    if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
-    CElement* selement = static_cast<CElement*>(ele1);
     
     // loop over the contact candidate master elements of sele_
     // use slave element's candidate list SearchElements !!!
@@ -799,6 +773,11 @@ void CONTACT::Interface::Evaluate()
     }
   }
 
+#ifdef CONTACTFDMORTARD
+  // FD check of Mortar matrix D derivatives
+  FDCheckMortarDDeriv();
+#endif // #ifdef CONTACTFDMORTARD
+  
 #ifdef CONTACTFDMORTARM
   // FD check of Mortar matrix M derivatives
   FDCheckMortarMDeriv();
@@ -1234,7 +1213,8 @@ void CONTACT::Interface::AssembleDMG(LINALG::SparseMatrix& dglobal,
       // else, it cannot be in contact and weighted gap should be positive
       // (otherwise wrong results possible for g~ because of non-positivity
       // of dual shape functions!!!)
-      if (!cnode->HasProj()) gap = 1.0e12;
+      // for 3D contact this check is not (yet) implemented!
+      if (Dim()==2 && !cnode->HasProj()) gap = 1.0e12;
 
       Epetra_SerialDenseVector gnode(1);
       vector<int> lm(1);
@@ -1268,56 +1248,104 @@ void CONTACT::Interface::AssembleNT(LINALG::SparseMatrix& nglobal,
   // loop over all active slave nodes of the interface
   for (int i=0;i<activenodes_->NumMyElements();++i)
   {
-     int gid = activenodes_->GID(i);
-     DRT::Node* node = idiscret_->gNode(gid);
+    int gid = activenodes_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CNode* cnode = static_cast<CNode*>(node);
 
     if (cnode->Owner() != Comm().MyPID())
       dserror("ERROR: AssembleNT: Node ownership inconsistency!");
 
-    // prepare assembly (only 2D so far !!!!)
-    int colsize = cnode->NumDof();
-    vector<int> lmrowN(1);
-    vector<int> lmrowT(1);
-    vector<int> lmrowownerN(1);
-    vector<int> lmrowownerT(1);
-    vector<int> lmcol(colsize);
-
-    lmrowN[0] = activen_->GID(i);
-    lmrowownerN[0] = cnode->Owner();
-    lmrowT[0] = activet_->GID(i);
-    lmrowownerT[0] = cnode->Owner();
-
-    if (colsize==3)
-      dserror("ERROR: AssembleNT: 3D case not yet implemented!");
-
-    /**************************************************** N-matrix ******/
-    Epetra_SerialDenseMatrix Nnode(1,colsize);
-
-    // we need D diagonal entry of this node
-    double wii = (cnode->GetD()[0])[cnode->Dofs()[0]];
-
-    for (int j=0;j<colsize;++j)
-    {
-      lmcol[j] = cnode->Dofs()[j];
-      Nnode(0,j) = wii * cnode->n()[j];
+    if (Dim()==2)
+    { 
+      // prepare assembly
+      int colsize = cnode->NumDof();
+      vector<int> lmrowN(1);
+      vector<int> lmrowT(1);
+      vector<int> lmrowownerN(1);
+      vector<int> lmrowownerT(1);
+      vector<int> lmcol(colsize);
+  
+      lmrowN[0] = activen_->GID(i);
+      lmrowownerN[0] = cnode->Owner();
+      lmrowT[0] = activet_->GID(i);
+      lmrowownerT[0] = cnode->Owner();
+  
+      /**************************************************** N-matrix ******/
+      Epetra_SerialDenseMatrix Nnode(1,colsize);
+  
+      // we need D diagonal entry of this node
+      double wii = (cnode->GetD()[0])[cnode->Dofs()[0]];
+  
+      for (int j=0;j<colsize;++j)
+      {
+        lmcol[j] = cnode->Dofs()[j];
+        Nnode(0,j) = wii * cnode->n()[j];
+      }
+  
+      // assemble into matrix of normal vectors N
+      nglobal.Assemble(-1,Nnode,lmrowN,lmrowownerN,lmcol);
+  
+      /**************************************************** T-matrix ******/
+      Epetra_SerialDenseMatrix Tnode(1,colsize);
+  
+      for (int j=0;j<colsize;++j)
+      {
+        lmcol[j] = cnode->Dofs()[j];
+        Tnode(0,j) = cnode->txi()[j];
+      }
+  
+      // assemble into matrix of normal vectors T
+      tglobal.Assemble(-1,Tnode,lmrowT,lmrowownerT,lmcol);
     }
-
-    // assemble into matrix of normal vectors N
-    nglobal.Assemble(-1,Nnode,lmrowN,lmrowownerN,lmcol);
-
-    /**************************************************** T-matrix ******/
-    Epetra_SerialDenseMatrix Tnode(1,colsize);
-
-    for (int j=0;j<colsize;++j)
+    
+    else if (Dim()==3)
     {
-      lmcol[j] = cnode->Dofs()[j];
-      Tnode(0,j) = cnode->txi()[j];
+      // prepare assembly
+      int colsize = cnode->NumDof();
+      vector<int> lmrowN(1);
+      vector<int> lmrowT(2);
+      vector<int> lmrowownerN(1);
+      vector<int> lmrowownerT(2);
+      vector<int> lmcol(colsize);
+  
+      lmrowN[0] = activen_->GID(i);
+      lmrowownerN[0] = cnode->Owner();
+      lmrowT[0] = activet_->GID(2*i);
+      lmrowT[1] = activet_->GID(2*i+1);
+      lmrowownerT[0] = cnode->Owner();
+      lmrowownerT[1] = cnode->Owner();
+  
+      /**************************************************** N-matrix ******/
+      Epetra_SerialDenseMatrix Nnode(1,colsize);
+  
+      // we need D diagonal entry of this node
+      double wii = (cnode->GetD()[0])[cnode->Dofs()[0]];
+  
+      for (int j=0;j<colsize;++j)
+      {
+        lmcol[j] = cnode->Dofs()[j];
+        Nnode(0,j) = wii * cnode->n()[j];
+      }
+  
+      // assemble into matrix of normal vectors N
+      nglobal.Assemble(-1,Nnode,lmrowN,lmrowownerN,lmcol);
+  
+      /**************************************************** T-matrix ******/
+      Epetra_SerialDenseMatrix Tnode(2,colsize);
+  
+      for (int j=0;j<colsize;++j)
+      {
+        lmcol[j] = cnode->Dofs()[j];
+        Tnode(0,j) = cnode->txi()[j];
+        Tnode(1,j) = cnode->teta()[j];
+      }
+      
+      // assemble into matrix of normal vectors T
+      tglobal.Assemble(-1,Tnode,lmrowT,lmrowownerT,lmcol);
     }
-
-    // assemble into matrix of normal vectors T
-    tglobal.Assemble(-1,Tnode,lmrowT,lmrowownerT,lmcol);
+    else
+      dserror("ERROR: Dim() must be either 2D or 3D");
   }
 
   return;
@@ -1440,6 +1468,10 @@ void CONTACT::Interface::AssembleS(LINALG::SparseMatrix& sglobal)
   if (activenodes_==null)
     return;
 
+  // not yet implemented for 3D
+  if (Dim()==3)
+    return;
+  
   // loop over all active slave nodes of the interface
   for (int i=0;i<activenodes_->NumMyElements();++i)
   {
@@ -1628,6 +1660,10 @@ void CONTACT::Interface::AssembleP(LINALG::SparseMatrix& pglobal)
   // nothing to do if no active nodes
   if (activenodes_==null)
     return;
+  
+  // not yet implemented for 3D
+  if (Dim()==3)
+    return;
 
   // loop over all active slave nodes of the interface
   for (int i=0;i<activenodes_->NumMyElements();++i)
@@ -1691,6 +1727,10 @@ void CONTACT::Interface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
 {
   // get out of here if not participating in interface
   if (!lComm())
+    return;
+  
+  // not yet implemented for 3D
+  if (Dim()==3)
     return;
   
   /********************************************** LinDMatrix **********/
@@ -2036,8 +2076,8 @@ bool CONTACT::Interface::SplitActiveDofs()
   int countN=0;
   int countT=0;
   vector<int> myNgids(activenodes_->NumMyElements());
-  vector<int> myTgids(activenodes_->NumMyElements());
-
+  vector<int> myTgids((Dim()-1)*activenodes_->NumMyElements());
+  
   // dimension check
   double dimcheck =(activedofs_->NumGlobalElements())/(activenodes_->NumGlobalElements());
   if (dimcheck != Dim()) dserror("ERROR: SplitActiveDofs: Nodes <-> Dofs dimension mismatch!");
