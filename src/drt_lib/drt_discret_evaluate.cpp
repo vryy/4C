@@ -700,11 +700,11 @@ void DRT::Discretization::EvaluateCondition
  *----------------------------------------------------------------------*/
 void DRT::Discretization::EvaluateConditionUsingParentData(
   ParameterList&                       params       ,
-  RCP<LINALG::SparseOperator> systemmatrix1,
-  RCP<LINALG::SparseOperator> systemmatrix2,
-  RCP<Epetra_Vector>          systemvector1,
-  RCP<Epetra_Vector>          systemvector2,
-  RCP<Epetra_Vector>          systemvector3,
+  RCP<LINALG::SparseOperator>          systemmatrix1,
+  RCP<LINALG::SparseOperator>          systemmatrix2,
+  RCP<Epetra_Vector>                   systemvector1,
+  RCP<Epetra_Vector>                   systemvector2,
+  RCP<Epetra_Vector>                   systemvector3,
   const string&                        condstring   ,
   const int                            condid       )
 {
