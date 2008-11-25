@@ -23,7 +23,7 @@ namespace XFLUID
 template<class M1, class M2, class M3>
 static void fill_tau(const int numparamtau, const M1&  shp_tau, const M2& etau, M3& tau)
 {
-    tau = 0.0;
+    tau.Clear();
     for (int i = 0; i < numparamtau; ++i)
     {
         const double fac = shp_tau(i);
@@ -239,13 +239,13 @@ LINALG::SerialDenseMatrix BodyForce(DRT::Node** nodes, const double pseudotime)
    |                                          'chainrulerhs'
    |
    *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType DISTYPE, class M1, class M2, class M3, class M4, class M5>
+template<DRT::Element::DiscretizationType DISTYPE>
 void gder2(
-        const M1& xjm,
-        const M2& derxy,
-        const M3& deriv2,
-        const M4& xyze,
-        M5& derxy2)
+        const LINALG::Matrix<3,3>& xjm,
+        const LINALG::Matrix<3,DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>& derxy,
+        const LINALG::Matrix<6,DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>& deriv2,
+        const LINALG::Matrix<3,DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>& xyze,
+        LINALG::Matrix<6,DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>& derxy2)
 {
     const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 

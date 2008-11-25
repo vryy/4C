@@ -178,23 +178,15 @@ struct Shp
         }
         else
         {
-          iveln = 0.0;
-          ivelnm = 0.0;
-          iaccn = 0.0;
+          iveln.Clear();
+          ivelnm.Clear();
+          iaccn.Clear();
         }
       
         //cout << "using space time boundary values " << ele->Id() << endl; 
-        gpveln(0) = iveln(0);
-        gpveln(1) = iveln(1);
-        gpveln(2) = iveln(2);
-        
-        gpvelnm(0) = ivelnm(0);
-        gpvelnm(1) = ivelnm(1);
-        gpvelnm(2) = ivelnm(2);
-        
-        gpaccn(0) = iaccn(0);
-        gpaccn(1) = iaccn(1);
-        gpaccn(2) = iaccn(2);
+        gpveln  = iveln;
+        gpvelnm = ivelnm;
+        gpaccn  = iaccn;
       }
     }
     return true;
@@ -431,13 +423,13 @@ static void SysmatDomain4(
         for (int iquad=0; iquad<intpoints.nquad; ++iquad)
         {
             // coordinates of the current integration point in cell coordinates \eta
-            LINALG::Matrix<3,1> pos_eta_domain;
+            static LINALG::Matrix<3,1> pos_eta_domain;
             pos_eta_domain(0) = intpoints.qxg[iquad][0];
             pos_eta_domain(1) = intpoints.qxg[iquad][1];
             pos_eta_domain(2) = intpoints.qxg[iquad][2];
 
             // coordinates of the current integration point in element coordinates \xi
-            LINALG::Matrix<3,1> posXiDomain;
+            static LINALG::Matrix<3,1> posXiDomain;
             GEO::mapEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain, posXiDomain);
             const double detcell = GEO::detEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain);
             
@@ -494,7 +486,7 @@ static void SysmatDomain4(
             }
             else
             {
-                derxy2 = 0.;
+                derxy2.Clear();
             }
 
             const int shpVecSize       = SizeFac<ASSTYPE>::fac*numnode;
@@ -517,7 +509,7 @@ static void SysmatDomain4(
 //            static ShpVec shp_dzdy;
 //            static ShpVec shp_dzdz;
             
-            static LINALG::Matrix<shpVecSizeStress,1> shp_tau;
+            static LINALG::Matrix<shpVecSizeStress,1>   shp_tau;
             
             if (ASSTYPE == XFEM::xfem_assembly)
             {
@@ -578,7 +570,7 @@ static void SysmatDomain4(
                 }
                 else
                 {
-                  shp_tau = 0.0;
+                  shp_tau.Clear();
                 }
             }
             else
@@ -638,7 +630,7 @@ static void SysmatDomain4(
             // get velocity (np,i) derivatives at integration point
             static LINALG::Matrix<3,3> vderxy;
             //vderxy = enr_derxy(j,k)*evelnp(i,k);
-            vderxy = 0.0;
+            vderxy.Clear();
             for (int iparam = 0; iparam < numparamvelx; ++iparam)
             {
               for (int isd = 0; isd < nsd; ++isd)
@@ -656,7 +648,7 @@ static void SysmatDomain4(
             if (higher_order_ele)
             {
               //vderxy2 = evelnp(i,k)*enr_derxy2(j,k);
-              vderxy2 = 0.0;
+              vderxy2.Clear();
               for (int iparam = 0; iparam < numparamvelx; ++iparam)
               {
                 for (int isd = 0; isd < nsd; ++isd)
@@ -672,13 +664,13 @@ static void SysmatDomain4(
             }
             else
             {
-                vderxy2 = 0.;
+                vderxy2.Clear();
             }
 
             // get pressure gradients
             static LINALG::Matrix<3,1> gradp;
             //gradp = enr_derxy(i,j)*eprenp(j);
-            gradp = 0.0;
+            gradp.Clear();
             for (int iparam = 0; iparam < numparampres; ++iparam)
             {
               gradp(0) += shp.dx(iparam)*eprenp(iparam);
@@ -709,7 +701,7 @@ static void SysmatDomain4(
             }
             else
             {
-              tau = 0.0;
+              tau.Clear();
             }
 
             
@@ -734,7 +726,7 @@ static void SysmatDomain4(
             /*------------------------- evaluate rhs vector at integration point ---*/
             static LINALG::Matrix<3,1> rhsint;
             static LINALG::Matrix<3,1> bodyforce;
-            bodyforce = 0.0;
+            bodyforce.Clear();
             //bodyforce(0) = 1.0;
             for (int isd = 0; isd < nsd; ++isd)
                 rhsint(isd) = histvec(isd) + bodyforce(isd)*timefac;
@@ -768,7 +760,7 @@ static void SysmatDomain4(
              with  N .. form function matrix                                   */
             //const LINALG::SerialDenseVector enr_conv_c_(enr_derxy(j,i)*gpvelnp(j));
             static ShpVec enr_conv_c_;
-            enr_conv_c_ = 0.0;
+            enr_conv_c_.Clear();
             for (int iparam = 0; iparam < numparamvelx; ++iparam)
             {
                 enr_conv_c_(iparam) += shp.dx(iparam)*gpvelnp(0);
@@ -1428,7 +1420,7 @@ static void SysmatBoundary4(
 //        cout << "numnode_boundary: " << numnode_boundary << endl;
         
         // get current node coordinates
-        const std::map<int,LINALG::Matrix<3,1> >& positions = ih->cutterposnp();
+        const std::map<int,LINALG::Matrix<3,1> >& positions(ih->cutterposnp());
 
         LINALG::SerialDenseMatrix xyze_boundary(3,numnode_boundary);
         GEO::fillCurrentNodalPositions(boundaryele, positions, xyze_boundary);
@@ -1449,23 +1441,22 @@ static void SysmatBoundary4(
           }
         }
         
-        LINALG::SerialDenseMatrix force_boundary(3,numnode_boundary);
-        force_boundary.Zero();
+        LINALG::SerialDenseMatrix force_boundary(3,numnode_boundary,true);
 
         // integration loop
         for (int iquad=0; iquad<intpoints.nquad; ++iquad)
         {
             // coordinates of the current integration point in cell coordinates \eta^\boundary
-            LINALG::Matrix<2,1> pos_eta_boundary;
+            static LINALG::Matrix<2,1> pos_eta_boundary;
             pos_eta_boundary(0) = intpoints.qxg[iquad][0];
             pos_eta_boundary(1) = intpoints.qxg[iquad][1];
             
             // coordinates of the current integration point in element coordinates \xi^\boundary
-            LINALG::Matrix<2,1> posXiBoundary;
+            static LINALG::Matrix<2,1> posXiBoundary;
             mapEtaBToXiB(*cell, pos_eta_boundary, posXiBoundary);
             
             // coordinates of the current integration point in element coordinates \xi^\domain
-            LINALG::Matrix<3,1> posXiDomain;
+            static LINALG::Matrix<3,1> posXiDomain;
             mapEtaBToXiD(*cell, pos_eta_boundary, posXiDomain);
 
             const double detcell = fabs(detEtaBToXiB(*cell, pos_eta_boundary)); //TODO: check normals
@@ -1482,17 +1473,18 @@ static void SysmatBoundary4(
             DRT::UTILS::shape_function_2D_deriv1(deriv_boundary, posXiBoundary(0),posXiBoundary(1),boundaryele->Shape());
             
             // shape functions and their first derivatives
-            static LINALG::SerialDenseVector funct(DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement);
+            static LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement,1> funct;
             DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
       
             // stress shape function
             const DRT::Element::DiscretizationType stressdistype = XFLUID::StressInterpolation3D<DISTYPE>::distype;
-            static LINALG::SerialDenseVector funct_stress(DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement);
+            static LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement,1> funct_stress;
             DRT::UTILS::shape_function_3D(funct_stress,posXiDomain(0),posXiDomain(1),posXiDomain(2),stressdistype);
             
             // position of the gausspoint in physical coordinates
             // gauss_pos_xyz = funct_boundary(j)*xyze_boundary(i,j);
-            LINALG::Matrix<3,1> gauss_pos_xyz(true);
+            static LINALG::Matrix<3,1> gauss_pos_xyz;
+            gauss_pos_xyz.Clear();
             for (int inode = 0; inode < numnode_boundary; ++inode)
             {
               for (int isd = 0; isd < 3; ++isd)
@@ -1579,7 +1571,7 @@ static void SysmatBoundary4(
             }
             
             // get normal vector (in physical coordinates) to surface element at integration point
-            LINALG::Matrix<3,1> normalvec_solid;
+            static LINALG::Matrix<3,1> normalvec_solid;
             GEO::computeNormalToSurfaceElement(boundaryele, xyze_boundary, posXiBoundary, normalvec_solid);
 //            cout << "normalvec " << normalvec << ", " << endl;
             LINALG::Matrix<3,1> normalvec_fluid(true);
@@ -1589,31 +1581,19 @@ static void SysmatBoundary4(
       
             // get velocities (n+g,i) at integration point
             // gpvelnp = evelnp(i,j)*shp(j);
-            LINALG::Matrix<3,1> gpvelnp;
-            for (int isd = 0; isd < nsd; ++isd)
-            {
-                gpvelnp(isd) = 0.0;
-                for (int iparam = 0; iparam < numparamvelx; ++iparam)
+            static LINALG::Matrix<3,1> gpvelnp;
+            gpvelnp.Clear();
+            for (int iparam = 0; iparam < numparamvelx; ++iparam)
+                for (int isd = 0; isd < nsd; ++isd)
                     gpvelnp(isd) += evelnp(isd,iparam)*shp(iparam);
-            }
             
             // get interface velocity
-            LINALG::Matrix<3,1> interface_gpvelnp;
-            if (timealgo == timeint_stationary)
-            {
-              interface_gpvelnp = 0.0;
-            }
-            else
-            {
-              for (int isd = 0; isd < 3; ++isd)
-              {
-                  interface_gpvelnp(isd) = 0.0;
-                  for (int inode = 0; inode < numnode_boundary; ++inode)
-                  {
-                      interface_gpvelnp(isd) += vel_boundary(isd,inode)*funct_boundary(inode);
-                  }
-              }
-            }
+            static LINALG::Matrix<3,1> interface_gpvelnp;
+            interface_gpvelnp.Clear();
+            if (timealgo != timeint_stationary)
+                for (int inode = 0; inode < numnode_boundary; ++inode)
+                    for (int isd = 0; isd < 3; ++isd)
+                        interface_gpvelnp(isd) += vel_boundary(isd,inode)*funct_boundary(inode);
 
             // get viscous stress unknowns
             static LINALG::Matrix<3,3> tau;
@@ -1630,63 +1610,61 @@ static void SysmatBoundary4(
             - |  (virt tau) * n^f , Du  |
                \                      */
             
-            const double taue_u_factor = 1.0;
-            assembler.template Matrix<Sigmaxx,Velx>(shp_tau, -taue_u_factor*timefacfac*normalvec_fluid(0), shp);
-            assembler.template Matrix<Sigmaxy,Velx>(shp_tau, -taue_u_factor*timefacfac*normalvec_fluid(1), shp);
-            assembler.template Matrix<Sigmaxz,Velx>(shp_tau, -taue_u_factor*timefacfac*normalvec_fluid(2), shp);
-            assembler.template Matrix<Sigmayx,Vely>(shp_tau, -taue_u_factor*timefacfac*normalvec_fluid(0), shp);
-            assembler.template Matrix<Sigmayy,Vely>(shp_tau, -taue_u_factor*timefacfac*normalvec_fluid(1), shp);
-            assembler.template Matrix<Sigmayz,Vely>(shp_tau, -taue_u_factor*timefacfac*normalvec_fluid(2), shp);
-            assembler.template Matrix<Sigmazx,Velz>(shp_tau, -taue_u_factor*timefacfac*normalvec_fluid(0), shp);
-            assembler.template Matrix<Sigmazy,Velz>(shp_tau, -taue_u_factor*timefacfac*normalvec_fluid(1), shp);
-            assembler.template Matrix<Sigmazz,Velz>(shp_tau, -taue_u_factor*timefacfac*normalvec_fluid(2), shp);
+            assembler.template Matrix<Sigmaxx,Velx>(shp_tau, -timefacfac*normalvec_fluid(0), shp);
+            assembler.template Matrix<Sigmaxy,Velx>(shp_tau, -timefacfac*normalvec_fluid(1), shp);
+            assembler.template Matrix<Sigmaxz,Velx>(shp_tau, -timefacfac*normalvec_fluid(2), shp);
+            assembler.template Matrix<Sigmayx,Vely>(shp_tau, -timefacfac*normalvec_fluid(0), shp);
+            assembler.template Matrix<Sigmayy,Vely>(shp_tau, -timefacfac*normalvec_fluid(1), shp);
+            assembler.template Matrix<Sigmayz,Vely>(shp_tau, -timefacfac*normalvec_fluid(2), shp);
+            assembler.template Matrix<Sigmazx,Velz>(shp_tau, -timefacfac*normalvec_fluid(0), shp);
+            assembler.template Matrix<Sigmazy,Velz>(shp_tau, -timefacfac*normalvec_fluid(1), shp);
+            assembler.template Matrix<Sigmazz,Velz>(shp_tau, -timefacfac*normalvec_fluid(2), shp);
             
-            assembler.template Vector<Sigmaxx>(shp_tau, taue_u_factor*timefacfac*normalvec_fluid(0)*gpvelnp(0));
-            assembler.template Vector<Sigmaxy>(shp_tau, taue_u_factor*timefacfac*normalvec_fluid(1)*gpvelnp(0));
-            assembler.template Vector<Sigmaxz>(shp_tau, taue_u_factor*timefacfac*normalvec_fluid(2)*gpvelnp(0));
-            assembler.template Vector<Sigmayx>(shp_tau, taue_u_factor*timefacfac*normalvec_fluid(0)*gpvelnp(1));
-            assembler.template Vector<Sigmayy>(shp_tau, taue_u_factor*timefacfac*normalvec_fluid(1)*gpvelnp(1));
-            assembler.template Vector<Sigmayz>(shp_tau, taue_u_factor*timefacfac*normalvec_fluid(2)*gpvelnp(1));
-            assembler.template Vector<Sigmazx>(shp_tau, taue_u_factor*timefacfac*normalvec_fluid(0)*gpvelnp(2));
-            assembler.template Vector<Sigmazy>(shp_tau, taue_u_factor*timefacfac*normalvec_fluid(1)*gpvelnp(2));
-            assembler.template Vector<Sigmazz>(shp_tau, taue_u_factor*timefacfac*normalvec_fluid(2)*gpvelnp(2));
+            assembler.template Vector<Sigmaxx>(shp_tau, timefacfac*normalvec_fluid(0)*gpvelnp(0));
+            assembler.template Vector<Sigmaxy>(shp_tau, timefacfac*normalvec_fluid(1)*gpvelnp(0));
+            assembler.template Vector<Sigmaxz>(shp_tau, timefacfac*normalvec_fluid(2)*gpvelnp(0));
+            assembler.template Vector<Sigmayx>(shp_tau, timefacfac*normalvec_fluid(0)*gpvelnp(1));
+            assembler.template Vector<Sigmayy>(shp_tau, timefacfac*normalvec_fluid(1)*gpvelnp(1));
+            assembler.template Vector<Sigmayz>(shp_tau, timefacfac*normalvec_fluid(2)*gpvelnp(1));
+            assembler.template Vector<Sigmazx>(shp_tau, timefacfac*normalvec_fluid(0)*gpvelnp(2));
+            assembler.template Vector<Sigmazy>(shp_tau, timefacfac*normalvec_fluid(1)*gpvelnp(2));
+            assembler.template Vector<Sigmazz>(shp_tau, timefacfac*normalvec_fluid(2)*gpvelnp(2));
             
             
                /*                            \
               |  (virt tau) * n^f , u^\iface  |
                \                            */
             
-            assembler.template Vector<Sigmaxx>(shp_tau, -taue_u_factor*timefacfac*normalvec_fluid(0)*interface_gpvelnp(0));
-            assembler.template Vector<Sigmaxy>(shp_tau, -taue_u_factor*timefacfac*normalvec_fluid(1)*interface_gpvelnp(0));
-            assembler.template Vector<Sigmaxz>(shp_tau, -taue_u_factor*timefacfac*normalvec_fluid(2)*interface_gpvelnp(0));
-            assembler.template Vector<Sigmayx>(shp_tau, -taue_u_factor*timefacfac*normalvec_fluid(0)*interface_gpvelnp(1));
-            assembler.template Vector<Sigmayy>(shp_tau, -taue_u_factor*timefacfac*normalvec_fluid(1)*interface_gpvelnp(1));
-            assembler.template Vector<Sigmayz>(shp_tau, -taue_u_factor*timefacfac*normalvec_fluid(2)*interface_gpvelnp(1));
-            assembler.template Vector<Sigmazx>(shp_tau, -taue_u_factor*timefacfac*normalvec_fluid(0)*interface_gpvelnp(2));
-            assembler.template Vector<Sigmazy>(shp_tau, -taue_u_factor*timefacfac*normalvec_fluid(1)*interface_gpvelnp(2));
-            assembler.template Vector<Sigmazz>(shp_tau, -taue_u_factor*timefacfac*normalvec_fluid(2)*interface_gpvelnp(2));
+            assembler.template Vector<Sigmaxx>(shp_tau, -timefacfac*normalvec_fluid(0)*interface_gpvelnp(0));
+            assembler.template Vector<Sigmaxy>(shp_tau, -timefacfac*normalvec_fluid(1)*interface_gpvelnp(0));
+            assembler.template Vector<Sigmaxz>(shp_tau, -timefacfac*normalvec_fluid(2)*interface_gpvelnp(0));
+            assembler.template Vector<Sigmayx>(shp_tau, -timefacfac*normalvec_fluid(0)*interface_gpvelnp(1));
+            assembler.template Vector<Sigmayy>(shp_tau, -timefacfac*normalvec_fluid(1)*interface_gpvelnp(1));
+            assembler.template Vector<Sigmayz>(shp_tau, -timefacfac*normalvec_fluid(2)*interface_gpvelnp(1));
+            assembler.template Vector<Sigmazx>(shp_tau, -timefacfac*normalvec_fluid(0)*interface_gpvelnp(2));
+            assembler.template Vector<Sigmazy>(shp_tau, -timefacfac*normalvec_fluid(1)*interface_gpvelnp(2));
+            assembler.template Vector<Sigmazz>(shp_tau, -timefacfac*normalvec_fluid(2)*interface_gpvelnp(2));
             
                /*               \
             - |  v , Dtau * n^f  |
                \               */
 
-            const double vtaun_fac = 1.0;
-            assembler.template Matrix<Velx,Sigmaxx>(shp, -vtaun_fac*timefacfac*normalvec_fluid(0), shp_tau);
-            assembler.template Matrix<Velx,Sigmaxy>(shp, -vtaun_fac*timefacfac*normalvec_fluid(1), shp_tau);
-            assembler.template Matrix<Velx,Sigmaxz>(shp, -vtaun_fac*timefacfac*normalvec_fluid(2), shp_tau);
-            assembler.template Matrix<Vely,Sigmayx>(shp, -vtaun_fac*timefacfac*normalvec_fluid(0), shp_tau);
-            assembler.template Matrix<Vely,Sigmayy>(shp, -vtaun_fac*timefacfac*normalvec_fluid(1), shp_tau);
-            assembler.template Matrix<Vely,Sigmayz>(shp, -vtaun_fac*timefacfac*normalvec_fluid(2), shp_tau);
-            assembler.template Matrix<Velz,Sigmazx>(shp, -vtaun_fac*timefacfac*normalvec_fluid(0), shp_tau);
-            assembler.template Matrix<Velz,Sigmazy>(shp, -vtaun_fac*timefacfac*normalvec_fluid(1), shp_tau);
-            assembler.template Matrix<Velz,Sigmazz>(shp, -vtaun_fac*timefacfac*normalvec_fluid(2), shp_tau);
+            assembler.template Matrix<Velx,Sigmaxx>(shp, -timefacfac*normalvec_fluid(0), shp_tau);
+            assembler.template Matrix<Velx,Sigmaxy>(shp, -timefacfac*normalvec_fluid(1), shp_tau);
+            assembler.template Matrix<Velx,Sigmaxz>(shp, -timefacfac*normalvec_fluid(2), shp_tau);
+            assembler.template Matrix<Vely,Sigmayx>(shp, -timefacfac*normalvec_fluid(0), shp_tau);
+            assembler.template Matrix<Vely,Sigmayy>(shp, -timefacfac*normalvec_fluid(1), shp_tau);
+            assembler.template Matrix<Vely,Sigmayz>(shp, -timefacfac*normalvec_fluid(2), shp_tau);
+            assembler.template Matrix<Velz,Sigmazx>(shp, -timefacfac*normalvec_fluid(0), shp_tau);
+            assembler.template Matrix<Velz,Sigmazy>(shp, -timefacfac*normalvec_fluid(1), shp_tau);
+            assembler.template Matrix<Velz,Sigmazz>(shp, -timefacfac*normalvec_fluid(2), shp_tau);
             
-            LINALG::Matrix<3,1> disctau_times_n;
-            BLITZTINY::MV_product<3,3>(tau,normalvec_fluid,disctau_times_n);
+            static LINALG::Matrix<3,1> disctau_times_n;
+            disctau_times_n.Multiply(tau,normalvec_fluid);
             //cout << "sigmaijnj : " << disctau_times_n << endl;
-            assembler.template Vector<Velx>(shp, vtaun_fac*timefacfac*disctau_times_n(0));
-            assembler.template Vector<Vely>(shp, vtaun_fac*timefacfac*disctau_times_n(1));
-            assembler.template Vector<Velz>(shp, vtaun_fac*timefacfac*disctau_times_n(2));
+            assembler.template Vector<Velx>(shp, timefacfac*disctau_times_n(0));
+            assembler.template Vector<Vely>(shp, timefacfac*disctau_times_n(1));
+            assembler.template Vector<Velz>(shp, timefacfac*disctau_times_n(2));
             
             // here the interface force is integrated
             // this is done using test shape functions of the boundary mesh

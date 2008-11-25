@@ -95,21 +95,21 @@ namespace XFLUID
     const DRT::UTILS::IntegrationPoints3D intpoints(integrationrule_stabili);
     
     // shape functions and derivs at element center
-    LINALG::Matrix<3,1> e;
+    static LINALG::Matrix<3,1> e;
     e(0) = intpoints.qxg[0][0];
     e(1) = intpoints.qxg[0][1];
     e(2) = intpoints.qxg[0][2];
     const double wquad = intpoints.qwgt[0];
     
-    LINALG::Matrix<3,numnode> deriv_;
-    DRT::UTILS::shape_function_3D_deriv1(deriv_, e(0), e(1), e(2), DISTYPE);
+    static LINALG::Matrix<3,numnode> deriv;
+    DRT::UTILS::shape_function_3D_deriv1(deriv, e(0), e(1), e(2), DISTYPE);
     
     // get Jacobian matrix and determinant
     // xjm_ = deriv_(i,k)*xyze(j,k);
-    LINALG::Matrix<3,3> xjm_;
-    xjm_.MultiplyNT(deriv_,xyze);
+    static LINALG::Matrix<3,3> xjm;
+    xjm.MultiplyNT(deriv,xyze);
 
-    const double vol = wquad * xjm_.Determinant();
+    const double vol = wquad * xjm.Determinant();
     
     // get element length for tau_Mp/tau_C: volume-equival. diameter/sqrt(3)
     const double hk = pow((6.*vol/PI),(1.0/3.0))/sqrt(3.0);
@@ -117,10 +117,10 @@ namespace XFLUID
     return hk;
   }
   
-  template <class V, class V3>
+  template <class V>
   void computeStabilization(
       const V&       derxy,
-      const V3&      gpvelnp,
+      const LINALG::Matrix<3,1>&      gpvelnp,
       const int   numparamvelx,
       const bool instationary,
       const double visc,
@@ -138,7 +138,7 @@ namespace XFLUID
     const double vel_norm = std::sqrt(gpvelnp(0)*gpvelnp(0)+gpvelnp(1)*gpvelnp(1)+gpvelnp(2)*gpvelnp(2));
 
     // normed velocity at element centre
-    LINALG::Matrix<3,1> velino;
+    static LINALG::Matrix<3,1> velino;
     if (vel_norm>=1e-6)
     {
         for (int isd = 0; isd < nsd; ++isd)
@@ -146,19 +146,17 @@ namespace XFLUID
     }
     else
     {
-        velino = 0.;
+        velino.Clear();
         velino(0) = 1.0;
     }
 
     // get streamlength
     //const double val = sum(abs(velino(j)*derxy(j,i)));
-    LINALG::SerialDenseVector velinoder(numparamvelx);
+    LINALG::SerialDenseVector velinoder(numparamvelx,true);
     for (int iparam = 0; iparam < numparamvelx; ++iparam)
-    {
-        velinoder(iparam) = 0.0;
         for (int isd = 0; isd < nsd; ++isd)
             velinoder(iparam) += velino(isd)*derxy(isd,iparam);
-    }
+    
     double val = 0.0;
     for (int iparam = 0; iparam < numparamvelx; ++iparam)
         val += fabs(velinoder(iparam));
