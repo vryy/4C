@@ -1883,7 +1883,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
       {
         const int tvi   = 3*vi;
         const int tvip  = tvi + 1;
-        const int tvipp = tvi + 2;
+
         const double v = fac*funct_(vi);
         for (int ui=0; ui<numnode; ++ui)
         {
