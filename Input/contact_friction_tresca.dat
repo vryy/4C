@@ -51,7 +51,7 @@ DYNAMICTYP   Gen_Alfa
 EIGEN        0
 RESEVRYDISP  1
 RESEVRYSTRS  1
-RESTARTEVRY  20
+RESTARTEVRY  10
 NLNSOL       fullnewton // fullnewton modnewton nlncg ptc
 TIMESTEP     0.2
 NUMSTEP      20

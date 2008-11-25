@@ -62,7 +62,7 @@ DYNAMICTYP   Static
 EIGEN        0
 RESEVRYDISP  1
 RESEVRYSTRS  1
-RESTARTEVRY  1
+RESTARTEVRY  10
 NLNSOL       fullnewton // fullnewton modnewton matfreenewton nlncg ptc
 TIMESTEP     1.0
 NUMSTEP      1
