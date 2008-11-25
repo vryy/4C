@@ -108,7 +108,6 @@ DRT::ELEMENTS::Fluid3GenalphaResVMMInterface* DRT::ELEMENTS::Fluid3GenalphaResVM
       fp5 = new Fluid3GenalphaResVMM<DRT::Element::pyramid5>();
     return fp5;
   }
-
   default:
     dserror("shape %d (%d nodes) not supported", f3->Shape(), f3->NumNode());
   }
@@ -396,15 +395,15 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
   Fluid3*                                          ele             ,
   std::vector<blitz::Array<double,1> >&            myknots         ,
-  LINALG::Matrix<4*iel,4*iel>& elemat          ,
-  LINALG::Matrix<4*iel,1>&     elevec          ,
-  const LINALG::Matrix<3,iel>& edispnp         ,
-  const LINALG::Matrix<3,iel>& egridvaf        ,
-  const LINALG::Matrix<3,iel>& evelnp          ,
-  const LINALG::Matrix<iel,1>& eprenp          ,
-  const LINALG::Matrix<3,iel>& eaccam          ,
-  const LINALG::Matrix<3,iel>& evelaf          ,
-  const LINALG::Matrix<3,iel>& fsevelaf        ,
+  LINALG::Matrix<4*iel,4*iel>&                     elemat          ,
+  LINALG::Matrix<4*iel,1>&                         elevec          ,
+  const LINALG::Matrix<3,iel>&                     edispnp         ,
+  const LINALG::Matrix<3,iel>&                     egridvaf        ,
+  const LINALG::Matrix<3,iel>&                     evelnp          ,
+  const LINALG::Matrix<iel,1>&                     eprenp          ,
+  const LINALG::Matrix<3,iel>&                     eaccam          ,
+  const LINALG::Matrix<3,iel>&                     evelaf          ,
+  const LINALG::Matrix<3,iel>&                     fsevelaf        ,
   const struct _MATERIAL*                          material        ,
   const double                                     alphaM          ,
   const double                                     alphaF          ,

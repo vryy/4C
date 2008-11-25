@@ -17,6 +17,7 @@ Maintainer: Peter Gamnitzer
 #ifdef CCADISCRET
 
 #include "fluid3.H"
+#include "fluid3_weak_dbc.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_serialdensematrix.H"
 #include "../drt_lib/linalg_serialdensevector.H"
@@ -58,6 +59,8 @@ int DRT::ELEMENTS::Fluid3Surface::Evaluate(     ParameterList&            params
         act = Fluid3Surface::Outletimpedance;
     else if (action == "calc_node_normal")
         act = Fluid3Surface::calc_node_normal;
+    else if (action == "enforce_weak_dbc")
+        act = Fluid3Surface::enforce_weak_dbc;
     else dserror("Unknown type of action for Fluid3_Surface");
 
     switch(act)
@@ -110,6 +113,17 @@ int DRT::ELEMENTS::Fluid3Surface::Evaluate(     ParameterList&            params
         }
       }
       ElementNodeNormal(params,discretization,lm,elevec1,mydispnp);
+      break;
+    }
+    case enforce_weak_dbc:
+    {
+      return DRT::ELEMENTS::Fluid3SurfaceWeakDBCInterface::Impl(this)->EvaluateWeakDBC(
+        this,
+        params,
+        discretization,
+        lm,
+        elemat1,
+        elevec1);
       break;
     }
     default:

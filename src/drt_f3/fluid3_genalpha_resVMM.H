@@ -34,13 +34,12 @@ namespace DRT
   namespace ELEMENTS
   {
 
-
-    /// Interface base class for Fluid3Impl
+    /// Interface base class for Fluid3GenalphaResVMM
     /*!
       This class exists to provide a common interface for all template
-      versions of Fluid3Impl. The only function
+      versions of Fluid3GenalphaResVMM. The only function
       this class actually defines is Impl, which returns a pointer to
-      the appropriate version of Fluid3Impl.
+      the appropriate version of Fluid3GenalphaResVMM.
     */
     class Fluid3GenalphaResVMMInterface
     {
@@ -449,17 +448,17 @@ namespace DRT
       //  \param fsevelaf       (o) fine-scale velocity
 
       void ExtractValuesFromGlobalVectors(
-        const Fluid3::StabilisationAction          fssgv         ,
-        const bool                                 is_ale        ,
-        const DRT::Discretization&                 discretization,
-        const vector<int>&                         lm            ,
-        LINALG::Matrix<iel,1>& eprenp        ,
-        LINALG::Matrix<3,iel>& evelnp        ,
-        LINALG::Matrix<3,iel>& evelaf        ,
-        LINALG::Matrix<3,iel>& eaccam        ,
-        LINALG::Matrix<3,iel>& edispnp       ,
-        LINALG::Matrix<3,iel>& egridvelaf    ,
-        LINALG::Matrix<3,iel>& fsevelaf
+        const Fluid3::StabilisationAction fssgv         ,
+        const bool                        is_ale        ,
+        const DRT::Discretization&        discretization,
+        const vector<int>&                lm            ,
+        LINALG::Matrix<iel,1>&            eprenp        ,
+        LINALG::Matrix<3,iel>&            evelnp        ,
+        LINALG::Matrix<3,iel>&            evelaf        ,
+        LINALG::Matrix<3,iel>&            eaccam        ,
+        LINALG::Matrix<3,iel>&            edispnp       ,
+        LINALG::Matrix<3,iel>&            egridvelaf    ,
+        LINALG::Matrix<3,iel>&            fsevelaf
         );
 
 
@@ -526,7 +525,7 @@ namespace DRT
       // values of non geometrical quantities in gausspoints
       // ---------------------------------------------------
       //! pressure in gausspoint, time n+1
-      double                 prenp_;
+      double                prenp_;
       //! acceleration in gausspoint, time n+am
       LINALG::Matrix<3,1>   accintam_;
       //! velocity in gausspoint, time n+1

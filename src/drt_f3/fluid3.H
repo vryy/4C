@@ -49,6 +49,8 @@ namespace ELEMENTS
 {
 // forward declarations
 class Fluid3Surface;
+  template<DRT::Element::DiscretizationType distype,DRT::Element::DiscretizationType pdistype> class Fluid3SurfaceWeakDBC;
+
 class Fluid3Line;
 template<DRT::Element::DiscretizationType distype> class Fluid3Impl;
 template<DRT::Element::DiscretizationType distype> class Fluid3StationaryImpl;
@@ -836,6 +838,10 @@ public:
 
   friend class Fluid3Line;
 
+  friend class Fluid3SurfaceWeakDBC<DRT::Element::quad4,DRT::Element::hex8>;
+  friend class Fluid3SurfaceWeakDBCInterface;
+
+
   //! @name Constructors and destructors and related methods
 
   /*!
@@ -1040,7 +1046,8 @@ private:
     areacalc,
     flowratecalc,
     Outletimpedance,
-    calc_node_normal
+    calc_node_normal,
+    enforce_weak_dbc
   };
 
   // don't want = operator
