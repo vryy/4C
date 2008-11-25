@@ -200,7 +200,7 @@ STR::TimInt::TimInt
 
   // Check for surface stress conditions due to interfacial phenomena
   {
-    vector<DRT::Condition*> surfstresscond(0);
+    std::vector<DRT::Condition*> surfstresscond(0);
     discret_->GetCondition("SurfaceStress", surfstresscond);
     if (surfstresscond.size())
     {
@@ -210,7 +210,7 @@ STR::TimInt::TimInt
 
   // Check for potential conditions
   {
-    vector<DRT::Condition*> potentialcond(0);
+    std::vector<DRT::Condition*> potentialcond(0);
     discret_->GetCondition("Potential", potentialcond);
     if (potentialcond.size())
     {
