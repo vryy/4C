@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_contact.H
+\file inpar_combust.H
 
 <pre>
 Maintainer: Florian Henke
@@ -18,7 +18,7 @@ Maintainer: Florian Henke
 namespace INPAR
 {
 
-  /// Input parameters for structural contact
+  /// Input parameters for combustion
   namespace COMBUST
   {
     /// Type of reinitialization for level set function (G-function)
