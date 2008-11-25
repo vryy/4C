@@ -108,7 +108,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   discret_->ComputeNullSpaceIfNecessary(solver_.Params(),true);
 
   // ensure that degrees of freedom in the discretization have been set
-  if (!discret_->Filled()) discret_->FillComplete();
+  if (!discret_->Filled() || !actdis->HaveDofs()) discret_->FillComplete();
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching

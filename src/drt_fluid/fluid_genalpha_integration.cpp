@@ -87,7 +87,7 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   discret_->ComputeNullSpaceIfNecessary(solver_.Params(),true);
 
   // ensure that degrees of freedom in the discretization have been set
-  if (!discret_->Filled()) discret_->FillComplete();
+  if (!discret_->Filled() || !actdis->HaveDofs()) discret_->FillComplete();
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
@@ -191,7 +191,6 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
     gridveln_   = LINALG::CreateVector(*dofrowmap,true);
     gridvelaf_  = LINALG::CreateVector(*dofrowmap,true);
   }
-
 
   // Vectors associated to boundary conditions
   // -----------------------------------------
@@ -1208,9 +1207,19 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   statisticsmanager_->StoreElementValues(step_);
 
   //----------------------------------------------------------------------
+  // remember force vector for stress computation
+  //----------------------------------------------------------------------
+  *force_=Epetra_Vector(*residual_);
+  force_->Scale(density_);
+
+  //----------------------------------------------------------------------
   // apply weak Dirichlet boundary conditions to sysmat_ and residual_
   //----------------------------------------------------------------------
   {
+    // vector containing weak dirichlet loads
+
+    RefCountPtr<Epetra_Vector> wdbcloads = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+
     ParameterList weakdbcparams;
 
     // set action for elements
@@ -1218,29 +1227,39 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
     weakdbcparams.set("afgdt",alphaF_*gamma_*dt_);
     weakdbcparams.set("total time",time_);
 
-    // set the only required state vector
+    // set the only required state vectors
     discret_->SetState("u and p (n+alpha_F,trial)",velaf_);
+    discret_->SetState("u and p (n+1      ,trial)",velnp_);
 
-    // evaluate
+    // evaluate all line weak Dirichlet boundary conditions
     discret_->EvaluateConditionUsingParentData
       (weakdbcparams      ,
        sysmat_            ,
        Teuchos::null      ,
-       residual_          ,
+       wdbcloads          ,
        Teuchos::null      ,
        Teuchos::null      ,
        "LineWeakDirichlet");
 
+    // evaluate all surface weak Dirichlet boundary conditions
+    discret_->EvaluateConditionUsingParentData
+      (weakdbcparams      ,
+       sysmat_            ,
+       Teuchos::null      ,
+       wdbcloads          ,
+       Teuchos::null      ,
+       Teuchos::null      ,
+       "SurfaceWeakDirichlet");
+
     // clear state
     discret_->ClearState();
+
+    // update the residual
+    residual_->Update(1.0,*wdbcloads,1.0);
   }
 
   // end time measurement for element call
   tm3_ref_=null;
-
-  // remember force vector for stress computation
-  *force_=Epetra_Vector(*residual_);
-  force_->Scale(density_);
 
   // start time measurement for generation of sparsity pattern
   {
@@ -1252,8 +1271,9 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   }
 
   // -------------------------------------------------------------------
-  // Apply dirichlet boundary conditions to system of equations residual
-  // discplacements are supposed to be zero at boundary conditions
+  // Apply strong Dirichlet boundary conditions to system of equations 
+  // residual displacements are supposed to be zero at boundary 
+  // conditions
   // -------------------------------------------------------------------
   // start time measurement for application of dirichlet conditions
   tm4_ref_ = rcp(new TimeMonitor(*timeapplydirich_));

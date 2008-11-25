@@ -72,7 +72,7 @@ void dyn_fluid_drt()
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
   // -------------------------------------------------------------------
-  if (!actdis->Filled()) actdis->FillComplete();
+  if (!actdis->Filled() || !actdis->HaveDofs()) actdis->FillComplete();
 
   // -------------------------------------------------------------------
   // context for output and restart
