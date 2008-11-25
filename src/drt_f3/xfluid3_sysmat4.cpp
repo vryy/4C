@@ -1505,24 +1505,13 @@ static void SysmatBoundary4(
             }
       
             // get jacobian matrix d x / d \xi  (3x2)
-            static LINALG::Matrix<3,2> dxyzdrs;
             // dxyzdrs(i,j) = xyze_boundary(i,k)*deriv_boundary(j,k);
-//            for (int isd = 0; isd < 3; ++isd)
-//            {
-//                for (int j = 0; j < 2; ++j)
-//                {
-//                    dxyzdrs(isd,j) = 0.0;
-//                    for (int k = 0; k < numnode_boundary; ++k)
-//                    {
-//                        dxyzdrs(isd,j) += xyze_boundary(isd,k)*deriv_boundary(j,k);
-//                    }
-//                }
-//            }
+            static LINALG::Matrix<3,2> dxyzdrs;
             xyze_boundary.GEMM('N','T',3,2,numnode_boundary,1.0,xyze_boundary.A(),xyze_boundary.LDA(),deriv_boundary.A(),deriv_boundary.LDA(),0.0,dxyzdrs.A(),dxyzdrs.M());
             
             // compute covariant metric tensor G for surface element (2x2)
+            // metric = dxyzdrs(k,i)*dxyzdrs(k,j);
             static LINALG::Matrix<2,2> metric;
-            //metric = dxyzdrs(k,i)*dxyzdrs(k,j);
             metric.MultiplyTN(dxyzdrs,dxyzdrs);
             
             // compute global derivates
@@ -1530,11 +1519,6 @@ static void SysmatBoundary4(
             //const LINALG::SerialDenseMatrix derxy_stress(xji(i,k)*deriv_stress(k,j));
             
             const double detmetric = sqrt(metric.Determinant());
-            if (detmetric < 0.0)
-            {
-              cout << "detmetric = " << detmetric << endl;
-              dserror("negative detmetric! should be a bug!");
-            }
             
             const double fac = intpoints.qwgt[iquad]*detmetric*detcell;
             if (fac < 0.0)
@@ -1544,7 +1528,6 @@ static void SysmatBoundary4(
             
             // temporary arrays
             LINALG::SerialDenseVector enr_funct(numparamvelx);
-
             LINALG::SerialDenseVector enr_funct_stress(numparamtauxx);
             
             if (dofman.getUniqueEnrichments().size() > 1)

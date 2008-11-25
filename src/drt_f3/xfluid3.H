@@ -467,11 +467,13 @@ namespace DRT
         const int                    lsurface_;
 
         //!  compute kovariant metric tensor G for fluid surface element
-        void f3_metric_tensor_for_surface(
+        void ComputeMetricTensorForSurface(
+            const int                       numnode,
             const Epetra_SerialDenseMatrix& xyze,
             const Epetra_SerialDenseMatrix& deriv,
-            Epetra_SerialDenseMatrix&       metrictensor,
-            double&                         drs);
+            LINALG::Matrix<2,2>&            metrictensor,
+            double&                         detmetric
+            ) const;
         
         //! integrate shapefunction over surface element
         virtual void IntegrateShapeFunction(
