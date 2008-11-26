@@ -17,7 +17,7 @@ Maintainer: Ursula Mayer
 
 
 #include "../drt_geometry/intersection_interfacepoint.H"
-#include "../drt_geometry/intersection_templates.H"
+// #include "../drt_geometry/intersection_templates.H"
 #include "../drt_geometry/integrationcell.H"
 #include "../drt_geometry/searchtree.H"
 #include "../drt_tetgen/tetgen.h"
