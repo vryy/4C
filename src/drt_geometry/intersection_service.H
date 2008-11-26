@@ -142,7 +142,7 @@ namespace GEO
     \param eleGeoType     (out)        : element geometric type CARTESIAN LINEAR or HIGHERORDER
      */
     void checkGeoType(
-        DRT::Element*                       element,
+        const DRT::Element*                 element,
         const LINALG::SerialDenseMatrix&    xyze_element,
         EleGeoType&                         eleGeoType
         );

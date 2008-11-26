@@ -16,9 +16,9 @@ Maintainer: Ursula Mayer
 #define INTERSECTION_H
 
 
-#include "intersection_interfacepoint.H"
-#include "intersection_math.H"
-#include "integrationcell.H"
+#include "../drt_geometry/intersection_interfacepoint.H"
+#include "../drt_geometry/intersection_templates.H"
+#include "../drt_geometry/integrationcell.H"
 #include "../drt_geometry/searchtree.H"
 #include "../drt_tetgen/tetgen.h"
 
@@ -78,11 +78,39 @@ class Intersection
 
   private:
 
+  class CompareVecInt
+  {
+    public :
+      CompareVecInt() {};
+    
+      // Epetra_IntSerialDenseVector
+    bool operator()(const std::vector<int>& vec1, const std::vector<int>& vec2) const
+    {
+      
+      bool less = true;
+      
+      if(vec1.size() != vec2.size() != 4)
+        dserror("one or both vectors have the same size");
+      for(int i = 0; i < 4; i++)
+        if(!(vec1[i] < vec2[i]))
+        {
+          less = false;
+          break;
+        }
+      
+      return less;
+    }
+  };
+
+  
   //! offset in facet marker list
   static const int                    facetMarkerOffset_ = 11;
 
   //! discretization type of the xfem element
   DRT::Element::DiscretizationType     xfemDistype_;
+  
+  //! discretization type of the previous xfem element
+  DRT::Element::DiscretizationType     xfemOldDistype_;
 
   //! discretization type of the cutter element
   DRT::Element::DiscretizationType     cutterDistype_;
@@ -141,17 +169,22 @@ class Intersection
   //! store internal points when computed per xfem element
   map< int, LINALG::Matrix<3,1> >       nodemap_;
   
+  //! store internal points when computed per xfem element
+  map< int, bool >                      nodeInOut_;
+  
   //! store intersection points for faster access
-  std::map< std::vector<int>, std::vector< LINALG::Matrix<3,1> > > intersectionpointmap_;
+  Teuchos::RCP< std::map< std::vector<int>, std::vector< LINALG::Matrix<3,1> >, CompareVecInt > > intersectionpointmap_;
+  
+  
   
   /*!
   \brief initializes the private members of the xfem element
   
-  \param xfemId        (in) : id of the current xfem element
+  \param xfemId        (in) : local id of the current xfem element
   \param xfemElement   (in) : xfem element
   */
   void initializeXFEM(
-    const int             xfemId,
+    const int             xfemLid,
     const DRT::Element*   xfemElement
     );
   
@@ -175,9 +208,7 @@ class Intersection
   \brief collects points belonging to an interface lying inside xfem elements
          The nonlinear system of equation is solved with help of the Newton-method.
 
-  \param xfemElement              (in)        : xfem element
   \param cutterElement            (in)        : cutter element
-  \param xyze_cutterElement       (in)        : nodal coordinates of the cutter element
   \param cutterNode               (in)        : cutter node
   \param currentcutterpositions   (in)        : current nodal positions of the cutter element
   \param interfacePoints          (in/out)    : vector of interface points
@@ -185,10 +216,8 @@ class Intersection
   \param nodeId                   (in)        : node id
   \return true if the node lies within the xfemElement, false otherwise
   */
-  bool collectInternalPoints(
-    const DRT::Element*                     xfemElement,             
-    DRT::Element*                           cutterElement,           
-    const LINALG::SerialDenseMatrix&        xyze_cutterElement,      
+  bool collectInternalPoints(             
+    DRT::Element*                           cutterElement,                
     const DRT::Node*                        cutterNode,              
     const map<int,LINALG::Matrix<3,1> >&    currentcutterpositions,  
     std::vector<InterfacePoint>&            interfacePoints,
@@ -201,12 +230,10 @@ class Intersection
   \brief  sets the boundary status of a boundary point
           (xfem surface, line or node)          .
 
-  \param xfemDistype          (in)        : discretization type of xfem element
   \param xsi                  (in)        : node in element coordinates
   \param ip                   (in)        : interface point
   */
   void setBoundaryPointBoundaryStatus(
-    const DRT::Element::DiscretizationType  xfemDistype,
     const LINALG::Matrix<3,1>&              xsi,
     InterfacePoint&                         ip
     ) const;
@@ -216,13 +243,11 @@ class Intersection
   \brief  checks if an internal point
           lies on one a xfem surface, line or node or internally          .
 
-  \param xfemDistype          (in)        : discretization type of xfem element
   \param xsi                  (in)        : node in element coordinates
   \param ip                   (in)        : interface point
   \return true if the node is lying on a boundary false otherwise
   */
   bool setInternalPointBoundaryStatus(
-    const DRT::Element::DiscretizationType  xfemDistype, 
     const LINALG::Matrix<3,1>&              xsi,
     InterfacePoint&                         ip
     ) const;
@@ -232,7 +257,6 @@ class Intersection
   \brief  checks if an intersection node
           lies on a xfem surface, line or node          .
 
-  \param xfemElement          (in)        : xfem element
   \param surfaceElement       (in)        : xfem surface element
   \param xyze_surfaceElement  (in)        : nodal coordinates of the surface element
   \param xsi                  (in)        : node in element coordinates
@@ -240,7 +264,6 @@ class Intersection
   \return true if the node is lying on a boundary false otherwise
   */
   void setIntersectionPointBoundaryStatus(
-    const DRT::Element*                     xfemElement,
     const DRT::Element*                     surfaceElement,
     const LINALG::SerialDenseMatrix&        xyze_surfaceElement,
     const LINALG::Matrix<3,1>&              xsiSurface,
@@ -251,7 +274,6 @@ class Intersection
   /*!
   \brief collects all intersection points between a line and a surface
 
-  \param xfemElement              (in)        : xfem element
   \param surfaceElement           (in)        : surface element
   \param xyze_surfaceElement      (in)        : nodal coordinates of surface element
   \param lineElement              (in)        : line element
@@ -262,7 +284,6 @@ class Intersection
   \param doSVD                    (in)        : compute SVD if not Cartesian surface element and linear line elments present
   */
   bool collectIntersectionPoints(
-    const DRT::Element*               xfemElement,
     const DRT::Element*               surfaceElement,
     const LINALG::SerialDenseMatrix&  xyze_surfaceElement,
     const DRT::Element*               lineElement,
@@ -300,13 +321,28 @@ class Intersection
     const LINALG::SerialDenseMatrix&    xyze_surfaceElement,
     const LINALG::SerialDenseMatrix&    xyze_lineElement
     )const;
+  
+  
+  /*!
+  \brief checks if a linear line lies in the plane of a Cartesian surface element
+
+  \param surfaceElement           (in)        : surface element
+  \param xyze_surfaceElement      (in)        : nodal coordinates of surface element
+  \param lineElement              (in)        : line element
+  \param xyze_lineElement         (in)        : nodal coordinates of line element
+  */
+  bool checkLineSurfaceXAABBs(
+      const DRT::Element*               surfaceElement,
+      const LINALG::SerialDenseMatrix&  xyze_surfaceElement,
+      const DRT::Element*               lineElement,
+      const LINALG::SerialDenseMatrix&  xyze_lineElement
+      ) const;
 
   
   /*!
   \brief computes a new starting points for the Newton method recursively
          in order to find all intersection points
 
-  \param xfemElement              (in)    : xfem element
   \param surfaceElement           (in)    : surface element
   \param xyze_surfaceElement      (in)    : nodal coordinates of surface element
   \param lineElement              (in)    : line element
@@ -322,7 +358,6 @@ class Intersection
   \return number of interface points
   */
   int computeNewStartingPoint(
-    const DRT::Element*               xfemElement,
     const DRT::Element*               surfaceElement,
     const LINALG::SerialDenseMatrix&  xyze_surfaceElement,
     const DRT::Element*               lineElement,
@@ -385,7 +420,6 @@ class Intersection
 	\return number of interface points
 	*/
   int addIntersectionPoint(
-    const DRT::Element*                 xfemElement,
     const DRT::Element*                 surfaceElement,
     const LINALG::SerialDenseMatrix&    xyze_surfaceElement,
     const DRT::Element*                 lineElement,
@@ -423,16 +457,12 @@ class Intersection
   \brief  finds th id of the an xfem surface common to all interafce points.
           Returns -1 , if no common surface exists or the surface id
 
-  \param xfemElement              (in)    : xfem element
-  \param xyze_xfemElement         (in)    : nodal coordinates of xfem element
   \param cutterElement            (in)    : cutter element
   \param xyze_cutterElement       (in)    : nodal coordinates of cutter element
   \param postions                 (in)    : vector of interface point positions in pointList_
   \return                                 returns -1 or the surface id
   */
   int findCommonSurfaceID(
-    const DRT::Element*                 xfemElement,
-    const LINALG::SerialDenseMatrix&    xyze_xfemElement,
     const DRT::Element*                 cutterElement,
     const LINALG::SerialDenseMatrix&    xyze_cutterElement,
     const vector<int>&                  positions
@@ -443,16 +473,12 @@ class Intersection
   \brief  finds th id of the an xfem surface common to all interafce points.
           Returns -1 , if no common surface exists or the surface id
 
-  \param xfemElement              (in)    : xfem element
-  \param xyze_xfemElement         (in)    : nodal coordinates of xfem element
   \param cutterElement            (in)    : cutter element
   \param xyze_cutterElement       (in)    : nodal coordinates of cutter element
   \param postions                 (in)    : vector of interface point positions in pointList_
   \return                                 returns true if on surface
   */
   bool checkIfCutterOnXFEMSurface(
-    const DRT::Element*               xfemElement,
-    const LINALG::SerialDenseMatrix&  xyze_xfemElement,
     const DRT::Element*               cutterElement,
     const LINALG::SerialDenseMatrix&  xyze_cutterElement,
     const vector<int>&                positions
@@ -463,15 +489,11 @@ class Intersection
   \brief  prepares a part of the piecewise linear complex for 
           a xfem and a cutter element
 
-  \param xfemElement              (in)    : xfem element
-  \param xyze_xfemElement         (in)    : nodal coordinates of xfem element
   \param cutterElement            (in)    : cutter element
   \param xyze_cutterElement       (in)    : nodal coordinates of cutter element
   \param interfacePoints          (in)    : list of interface points
   */
   void preparePLC(
-    const DRT::Element*                     xfemElement,
-    const LINALG::SerialDenseMatrix&        xyze_xfemElement,
     const DRT::Element*                     cutterElement,
     const LINALG::SerialDenseMatrix&        xyze_cutterElement,
     vector<InterfacePoint>&                 interfacePoints
@@ -482,7 +504,6 @@ class Intersection
   \brief  computes the convex hull of a set of points
           points ordered according to the convex hull are stored in vertices
 
-  \param xfemElement              (in)      : xfem element
   \param cutterElement            (in)      : cutter element
   \param xyze_cutterElement       (in)      : nodal coordinates of cutter element
   \param interfacePoints          (in)      : list of interface points
@@ -490,7 +511,6 @@ class Intersection
   \param midpoint                 (in/out)  : midpoint
   */
   void computeConvexHull(
-    const DRT::Element*                 xfemElement,
     const DRT::Element*                 cutterElement,
     const LINALG::SerialDenseMatrix&    xyze_cutterElement,
     vector<InterfacePoint>&             interfacePoints,
@@ -503,7 +523,6 @@ class Intersection
   \brief  stores a part of the piecewise linear complex for 
           a xfem and a cutter element
 
-  \param xfemElement              (in)      : xfem element
   \param cutterElement            (in)      : cutter element
   \param xyze_cutterElement       (in)      : nodal coordinates of cutter element
   \param surfId                   (in)      : id of xfem element surface
@@ -512,7 +531,6 @@ class Intersection
   
   */
   void storePLC(
-    const DRT::Element*               xfemElement,
     const DRT::Element*               cutterElement,
     const LINALG::SerialDenseMatrix&  xyze_cutterElement,
     const int                         surfId,
@@ -555,14 +573,12 @@ class Intersection
           of an intersected xfem element
 
   \param element                  (in)    : xfem element
-  \param xyze_xfemElement         (in)    : nodal coordinates of xfem element
   \param currentcutterpositions   (in)    : current cutter node positions
   \param domainintcells           (out)   : list of domainintegrationcells for each intersected element
   \param boundaryintcells         (out)   : list of boundaryintegrationcells for each intersected element
   */
   void computeCDT(
     const DRT::Element*                     xfemElement,
-    const LINALG::SerialDenseMatrix&        xyze_xfemElement,
     const map<int,LINALG::Matrix<3,1> >&    currentcutterpositions,  
     map< int, DomainIntCells >&             domainintcells,
     map< int, BoundaryIntCells >&           boundaryintcells

@@ -72,13 +72,13 @@ LINALG::Matrix<3,2> GEO::computeFastXAABB(
       for(int dim=1; dim<nsd; ++dim)
         maxDistance = std::max(maxDistance, fabs(XAABB(dim,1)-XAABB(dim,0)) );
     
-      // subtracts half of the maximal distance to minX, minY, minZ
-      // adds half of the maximal distance to maxX, maxY, maxZ 
-      const double halfMaxDistance = 0.5*maxDistance;
+      // subtracts a certain percent of maximal distance to minX, minY, minZ
+      // adds a certain percent of the maximal distance to maxX, maxY, maxZ 
+      const double extension = 0.2*maxDistance;
       for(int dim=0; dim<nsd; ++dim)
       {
-          XAABB(dim, 0) -= halfMaxDistance;
-          XAABB(dim, 1) += halfMaxDistance;
+          XAABB(dim, 0) -= extension;
+          XAABB(dim, 1) += extension;
       }   
     }
     /*
@@ -215,7 +215,7 @@ bool GEO::intersectionOfXAABB(
  |          HIGHERORDER                                                 |
  *----------------------------------------------------------------------*/
 void GEO::checkGeoType(
-           DRT::Element*                      element,
+           const DRT::Element*                element,
            const LINALG::SerialDenseMatrix&   xyze_element,
            EleGeoType&                        eleGeoType)
 {
@@ -236,7 +236,7 @@ void GEO::checkGeoType(
   if(eleDim == 3)
   {
     const vector< vector<int> > eleNodeNumbering = DRT::UTILS::getEleNodeNumberingSurfaces(distype);
-    vector< RCP<DRT::Element> >surfaces = element->Surfaces();
+    vector< RCP<DRT::Element> >surfaces = (const_cast< DRT::Element* >(element))->Surfaces();
     for(int i = 0; i < element->NumSurface(); i++)
     {      
       CartesianCount = 0;
@@ -263,7 +263,7 @@ void GEO::checkGeoType(
       }
     } // for xfem surfaces
   } // if eleDim == 3
-  else if(eleDim == 2)
+  else if(eleDim == 2 || eleDim == 1)
   {
     CartesianCount = 0;
     for(int k = 0; k < dimCoord; k++)
