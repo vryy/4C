@@ -760,7 +760,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
      case INPAR::STR::stress_cauchy:
      {
        if (elestress == NULL) dserror("no stress data available");
-       StressCauchy(ip, F_tot(0,0), F_tot(1,1), F_tot(0,2), F_tot(1,2), stress, elestress);
+       StressCauchy(ip, F[0], F[1], F[2], F[3], stress, elestress);
      }
      break;
      case INPAR::STR::stress_none:
