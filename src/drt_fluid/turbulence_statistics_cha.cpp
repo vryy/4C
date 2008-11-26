@@ -1743,6 +1743,11 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
     }
  
     // reset working arrays
+    local_vol               = rcp(new vector<double> (presize,0.0));
+
+    local_incrtauC          = rcp(new vector<double> (presize,0.0));
+    local_incrtauM          = rcp(new vector<double> (presize,0.0));
+
     local_incrres           = rcp(new vector<double> (velsize,0.0));
     local_incrres_sq        = rcp(new vector<double> (velsize,0.0));
     local_incrsacc          = rcp(new vector<double> (velsize,0.0));
@@ -1778,6 +1783,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
     eleparams_.set<RefCountPtr<vector<double> > >("incrsacc_sq"      ,local_incrsacc_sq      );
     eleparams_.set<RefCountPtr<vector<double> > >("incrsvelaf"       ,local_incrsvelaf       );
     eleparams_.set<RefCountPtr<vector<double> > >("incrsvelaf_sq"    ,local_incrsvelaf_sq    );
+
     eleparams_.set<RefCountPtr<vector<double> > >("incrresC"         ,local_incrresC         );
     eleparams_.set<RefCountPtr<vector<double> > >("incrresC_sq"      ,local_incrresC_sq      );
     eleparams_.set<RefCountPtr<vector<double> > >("incrspressnp"     ,local_incrspressnp     );
