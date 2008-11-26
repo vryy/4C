@@ -118,6 +118,9 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
         LINALG::SerialDenseMatrix coord(3,nnodes);
         double color = (double)element->IsSlave();
 
+        //local center
+        double xi[2] = {0.0, 0.0};
+        
         // 2D linear case (2noded line elements)
         if (element->Shape()==DRT::Element::line2)
         {
@@ -151,6 +154,8 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
                               << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
                               << coord(2,2) << ")";
           gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "};" << endl;
+          
+          xi[0] = 1/3; xi[1] = 1/3;
         }
         
         // 3D bilinear case (4noded quadrilateral elements)
@@ -165,6 +170,15 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
                               << coord(2,3) << ")";
           gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "," << color << "};" << endl;
         }
+        
+        // plot element number in element center
+        double elec[3];
+        element->LocalToGlobal(xi,elec,0);
+        gmshfilecontent << "T3(" << scientific << elec[0] << "," << elec[1] << "," << elec[2] << "," << 17 << ")";
+        if (element->IsSlave())
+          gmshfilecontent << "{" << "S" << element->Id() << "};" << endl;
+        else
+          gmshfilecontent << "{" << "M" << element->Id() << "};" << endl;
       }
 
       //******************************************************************
