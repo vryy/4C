@@ -47,8 +47,8 @@ Maintainer: Alexander Popp
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
-CONTACT::Intcell::Intcell(int id, int nvertices,
-    Epetra_SerialDenseMatrix& coords, const DRT::Element::DiscretizationType& shape) :
+CONTACT::Intcell::Intcell(int id, int nvertices, Epetra_SerialDenseMatrix& coords,
+                          const DRT::Element::DiscretizationType& shape) :
 id_(id),
 nvertices_(nvertices),
 coords_(coords),
@@ -98,8 +98,8 @@ shape_(old.shape_)
  |  Get global coords for given local coords (Intcell)        popp 11/08|
  *----------------------------------------------------------------------*/
 bool CONTACT::Intcell::LocalToGlobal(const double* xi,
-                                               double* globcoord,
-                                               int inttype)
+                                     double* globcoord,
+                                     int inttype)
 {
   // check input
   if (!xi) dserror("ERROR: LocalToGlobal called with xi=NULL");
@@ -151,7 +151,7 @@ bool CONTACT::Intcell::EvaluateShape(const double* xi,
     LINALG::SerialDenseVector& val, LINALG::SerialDenseMatrix& deriv)
 {
   if (!xi)
-    dserror("ERROR: EvaluateShape called with xi=NULL");
+    dserror("ERROR: EvaluateShape (Intcell) called with xi=NULL");
   
   // 3noded triangular element
   if(Shape()==DRT::Element::tri3)
@@ -184,7 +184,7 @@ double CONTACT::Intcell::Jacobian(double* xi)
     jac = Area()*2;
   
   // unknown case
-  else dserror("ERROR: Jacobian called for unknown element type!");
+  else dserror("ERROR: Jacobian (Intcell) called for unknown ele type!");
   
   return jac;
 }
@@ -238,7 +238,9 @@ contactsegs_(csegs)
   // check sanity of dimension
   if (Dim()!=2 && Dim()!=3) dserror("Dim. must be 2D or 3D!");
   
+  // *********************************************************************
   // the two-dimensional case
+  // *********************************************************************
   if (Dim()==2)
   {
     // prepare overlap integration
@@ -256,7 +258,9 @@ contactsegs_(csegs)
     if (overlap) IntegrateOverlap2D(xiproj);
   }
   
+  // *********************************************************************
   // the three-dimensional case
+  // *********************************************************************
   else if (Dim()==3)
   {
     // check for quadratic elements
@@ -264,7 +268,11 @@ contactsegs_(csegs)
       dserror("ERROR: 3D mortar coupling not yet impl. for quadratic elements");
     if (mele.Shape()!=DRT::Element::tri3 && mele.Shape()!=DRT::Element::quad4)
       dserror("ERROR: 3D mortar coupling not yet impl. for quadratic elements");
-        
+
+    // *******************************************************************
+    // ************ Coupling with or without auxiliary plane *************
+    // *******************************************************************
+#ifdef CONTACTAUXPLANE
     // compute auxiliary plane for 3D coupling
     AuxiliaryPlane3D();
     
@@ -282,8 +290,54 @@ contactsegs_(csegs)
     // do clipping in auxiliary plane
     Clip() = PolygonClipping3D(SlaveVertices(),MasterVertices(),tol);
     int clipsize = (int)(Clip().size());
+#else
+    // get some data
+    int nsnodes = SlaveElement().NumNode();
+    int nmnodes = MasterElement().NumNode();
     
-    // proceed only if clipping polygon is at least triangle
+    // get slave vertices in slave element parameter space (direct)
+    vector<vector<double> > svertices(nsnodes,vector<double>(3));
+    for (int i=0;i<nsnodes;++i)
+    {
+      double xi[2] = {0.0, 0.0};
+      SlaveElement().LocalCoordinatesOfNode(i,xi);
+      svertices[i][0] = xi[0];
+      svertices[i][1] = xi[1];
+    }
+    
+    // get master vertices in slave element parameter space (project)
+    vector<vector<double> > mvertices(nmnodes,vector<double>(3));
+    for (int i=0;i<nmnodes;++i)
+    {
+      int gid = MasterElement().NodeIds()[i];
+      DRT::Node* node = Discret().gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CNode* mnode = static_cast<CNode*>(node);
+      
+      // do the projection
+      double sxi[2] = {0.0, 0.0};
+      CONTACT::Projector projector(3);
+      //cout << "Projecting master node ID: " << mnode->Id() << endl;
+      projector.ProjectElementNormal3D(*mnode,SlaveElement(),sxi);
+      
+      mvertices[i][0] = sxi[0];
+      mvertices[i][1] = sxi[1];
+    }
+    
+    // normal is (0,0,1) in slave element parameter space
+    Auxn()[0] = 0.0; Auxn()[1] = 0.0; Auxn()[2] = 1.0;
+    
+    // tolerance for polygon clipping
+    // minimum edge size in parameter space is 1
+    double tol = CONTACTCLIPTOL;
+      
+    // do clipping in slave element parameter space
+    Clip() = PolygonClipping3D(svertices,mvertices,tol);
+    int clipsize = (int)(Clip().size());
+#endif // #ifdef CONTACTAUXPLANE
+    // *******************************************************************
+    
+    // proceed only if clipping polygon is at least a triangle
     bool overlap = false;
     if (clipsize>=3) overlap = true;
     if (overlap)
@@ -291,16 +345,14 @@ contactsegs_(csegs)
       // do triangulation of clip polygon
       Triangulation3D();
       
-      //cout << "\nNo. of integration cells: " << (int)(Cells().size()) << endl;
-      //for (int i=0;i<(int)(Cells().size());++i)
-      //  cout << "->Cell " << i << ": " << endl << Cells()[i]->Coords() << endl;
-      
       // do integration of integration cells
       IntegrateCells3D();
     }
   }
   
-  // invalid cases for dim
+  // *********************************************************************
+  // invalid cases for dim (other than 2D or 3D)
+  // *********************************************************************
   else dserror("ERROR: Coupling can only be called for 2D or 3D!");
   
   return;
@@ -966,8 +1018,8 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping3D(
   //**********************************************************************
   // STEP1: Input check
   // - input polygons must consist of min. 3 vertices each
-  // - rotation of polygon 1 must be c-clockwise w.r.t. Auxn()
-  // - rotation of polygon 2 is changed to c-clockwise w.r.t. Auxn()
+  // - rotation of poly1 must be c-clockwise w.r.t. (0,0,1) or Auxn()
+  // - rotation of poly 2 changed to c-clockwise w.r.t. (0,0,1) or Auxn()
   // - both input polygons must be convex
   //**********************************************************************
   
@@ -1829,9 +1881,6 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping3D(
       if (check>0) dserror("ERROR: Result polygon not convex!");
     }
   }
-  
-  //cout << "\nRESULT POLYGON FINISHED!!!!!!!!!!!!!!!\n" << endl;
-
   /*
   // **********************************************************************
   // STEP6: Result visualization with GMSH
@@ -1941,22 +1990,65 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping3D(
 }
 
 /*----------------------------------------------------------------------*
- |  Triangulation of clip polygon in auxiliary plane          popp 11/08|
+ |  Triangulation of clip polygon (3D)                        popp 11/08|
  *----------------------------------------------------------------------*/
 bool CONTACT::Coupling::Triangulation3D()
 {
-  // find geometric center of clipping polygon
-  // as a first shot we use simple node averaging here
+  // find center of clipping polygon
   vector<double> clipcenter(3);
   for (int k=0;k<3;++k) clipcenter[k] = 0.0;
   int clipsize = (int)(Clip().size());
-
+  
+  // *********************************************************************
+  // ************* Coupling with or without auxiliary plane **************
+  // *********************************************************************
+#ifdef CONTACTAUXPLANE
+  // as a first shot we use simple node averaging here
+  // arithmetic center, NOT geometric center
   for (int i=0;i<clipsize;++i)
     for (int k=0;k<3;++k)
       clipcenter[k] += (Clip()[i][k] / clipsize);
- 
-  //cout << "-> This is a hack: WE NEED TO FIND GEOMETRIC CENTER OF CLIP POLYGON..." << endl;
   //cout << "Clipcenter (simple): " << clipcenter[0] << " " << clipcenter[1] << " " << clipcenter[2] << endl;
+  
+#else
+  // as an improved version we use centroid formulas here
+  // this really yields the geometric center
+  // (taken from: Moertel package, Trilinos, Sandia NL)
+  double A = 0.0;
+  
+  for (int i=0; i<clipsize; ++i)
+  {
+    // check for 2D clip polygon in parameter space
+    if (abs(Clip()[i][2])>1.0e-12) dserror("ERROR: Clip polygon point with z!=0");
+    double xi_i[2] = {0.0, 0.0};
+    double xi_ip1[2] = {0.0, 0.0};
+    
+    // standard case    
+    if (i<clipsize-1)
+    {
+      xi_i[0] = Clip()[i][0]; xi_i[1] = Clip()[i][1];
+      xi_ip1[0] = Clip()[i+1][0]; xi_ip1[1] = Clip()[i+1][1];
+    }
+    // last vertex of clip polygon
+    else
+    {
+      xi_i[0] = Clip()[clipsize-1][0]; xi_i[1] = Clip()[clipsize-1][1];
+      xi_ip1[0] = Clip()[0][0]; xi_ip1[1] = Clip()[0][1];
+    }
+    
+    // add contribution to area and centroid coords
+    A     += xi_ip1[0]*xi_i[1] - xi_i[0]*xi_ip1[1];
+    clipcenter[0] += (xi_i[0]+xi_ip1[0])*(xi_ip1[0]*xi_i[1]-xi_i[0]*xi_ip1[1]);
+    clipcenter[1] += (xi_i[1]+xi_ip1[1])*(xi_ip1[0]*xi_i[1]-xi_i[0]*xi_ip1[1]);
+  }
+  
+  // final centroid coords
+  clipcenter[0] /= (3.0*A);
+  clipcenter[1] /= (3.0*A);
+  //cout << "Clipcenter (centroid): " << clipcenter[0] << " " << clipcenter[1] << " " << clipcenter[2] << endl;
+  
+#endif // #ifdef CONTACTAUXPLANE
+  // *********************************************************************
   
   // do triangulization (create Intcells)
   vector<Intcell> cells;
@@ -2004,7 +2096,7 @@ bool CONTACT::Coupling::Triangulation3D()
 }
 
 /*----------------------------------------------------------------------*
- |  Integration of cells in aux. plane (3D)                   popp 11/08|
+ |  Integration of cells (3D)                                 popp 11/08|
  *----------------------------------------------------------------------*/
 bool CONTACT::Coupling::IntegrateCells3D()
 {
@@ -2022,8 +2114,17 @@ bool CONTACT::Coupling::IntegrateCells3D()
   for (int i=0;i<(int)(Cells().size());++i)
   {
     // do the two integrations
+    // *******************************************************************
+    // ************ Coupling with or without auxiliary plane *************
+    // *******************************************************************
+#ifdef CONTACTAUXPLANE
     RCP<Epetra_SerialDenseMatrix> mseg = integrator.IntegrateMAuxPlane3D(sele_,mele_,Cells()[i],Auxn());
     RCP<Epetra_SerialDenseVector> gseg = integrator.IntegrateGAuxPlane3D(sele_,mele_,Cells()[i],Auxn());
+#else
+    RCP<Epetra_SerialDenseMatrix> mseg = integrator.IntegrateM3D(sele_,mele_,Cells()[i]);
+    RCP<Epetra_SerialDenseVector> gseg = integrator.IntegrateG3D(sele_,mele_,Cells()[i]);
+#endif // #ifdef CONTACTAUXPLANE
+    // *******************************************************************
   
     // compute directional derivative of M and store into nodes
     // if CONTACTONEMORTARLOOP defined, then DerivM does linearization of M AND D matrices !!!

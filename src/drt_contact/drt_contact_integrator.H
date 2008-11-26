@@ -204,7 +204,15 @@ public:
   
   /*!
   \brief Integrate Mortar matrix M on a 2D slave / master integration cell
-         NOTE: This version works in the Auxiliary Plane of 3D Coupling!
+        
+  */
+  RCP<Epetra_SerialDenseMatrix> IntegrateM3D(CONTACT::CElement& sele,
+                                             CONTACT::CElement& mele,
+                                             RCP<CONTACT::Intcell> cell);
+    
+  /*!
+  \brief Integrate Mortar matrix M on a 2D slave / master integration cell
+         NOTE: This version works with the Auxiliary Plane of 3D Coupling!
         
   */
   RCP<Epetra_SerialDenseMatrix> IntegrateMAuxPlane3D(CONTACT::CElement& sele,
@@ -214,7 +222,15 @@ public:
   
   /*!
   \brief Integrate weighted gap g~ on a 2D slave / master integration cell
-         NOTE: This version works in the Auxiliary Plane of 3D Coupling!
+        
+  */
+  RCP<Epetra_SerialDenseVector> IntegrateG3D(CONTACT::CElement& sele,
+                                             CONTACT::CElement& mele,
+                                             RCP<CONTACT::Intcell> cell);
+    
+  /*!
+  \brief Integrate weighted gap g~ on a 2D slave / master integration cell
+         NOTE: This version works with the Auxiliary Plane of 3D Coupling!
         
   */
   RCP<Epetra_SerialDenseVector> IntegrateGAuxPlane3D(CONTACT::CElement& sele,

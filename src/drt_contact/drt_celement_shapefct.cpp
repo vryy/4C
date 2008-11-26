@@ -1131,49 +1131,49 @@ bool CONTACT::CElement::EvaluateShape(const double* xi, LINALG::SerialDenseVecto
   // 2D linear case (2noded line element)
   case DRT::Element::line2:
   {
-    if (valdim!=2) dserror("ERROR: Inconsisteny in EvluateShape");
+    if (valdim!=2) dserror("ERROR: Inconsistency in EvluateShape");
     ShapeFunctions(CElement::lin1D,xi,val,deriv);
   break;
   }
   // 2D quadratic case (3noded line element)
   case DRT::Element::line3:
   {
-    if (valdim!=3) dserror("ERROR: Inconsisteny in EvluateShape");
+    if (valdim!=3) dserror("ERROR: Inconsistency in EvluateShape");
     ShapeFunctions(CElement::quad1D,xi,val,deriv);
     break;
   }
   // 3D linear case (3noded triangular element)
   case DRT::Element::tri3:
   {
-    if (valdim!=3) dserror("ERROR: Inconsisteny in EvluateShape");
+    if (valdim!=3) dserror("ERROR: Inconsistency in EvluateShape");
     ShapeFunctions(CElement::lin2D,xi,val,deriv);
     break;
   }
   // 3D bilinear case (4noded quadrilateral element)
   case DRT::Element::quad4:
   {
-    if (valdim!=4) dserror("ERROR: Inconsisteny in EvluateShape");
+    if (valdim!=4) dserror("ERROR: Inconsistency in EvluateShape");
     ShapeFunctions(CElement::bilin2D,xi,val,deriv);
     break;
   }
   // 3D quadratic case (6noded triangular element)
   case DRT::Element::tri6:
   {
-    if (valdim!=6) dserror("ERROR: Inconsisteny in EvluateShape");
+    if (valdim!=6) dserror("ERROR: Inconsistency in EvluateShape");
     ShapeFunctions(CElement::quad2D,xi,val,deriv);
     break;
   }
   // 3D serendipity case (8noded quadrilateral element)
   case DRT::Element::quad8:
   {
-    if (valdim!=8) dserror("ERROR: Inconsisteny in EvluateShape");
+    if (valdim!=8) dserror("ERROR: Inconsistency in EvluateShape");
     ShapeFunctions(CElement::serendipity2D,xi,val,deriv);
     break;
   }
   // 3D biquadratic case (9noded quadrilateral element)
   case DRT::Element::quad9:
   {
-    if (valdim!=9) dserror("ERROR: Inconsisteny in EvluateShape");
+    if (valdim!=9) dserror("ERROR: Inconsistency in EvluateShape");
     ShapeFunctions(CElement::biquad2D,xi,val,deriv);
     break;
   }
@@ -1206,7 +1206,7 @@ bool CONTACT::CElement::EvaluateShapeDual(const double* xi, LINALG::SerialDenseV
   // 2D linear case (2noded line element)
   case DRT::Element::line2:
   {
-    if (valdim!=2) dserror("ERROR: Inconsisteny in EvluateShape");
+    if (valdim!=2) dserror("ERROR: Inconsistency in EvluateShape");
     // check for boundary nodes
     CNode* mycnode0 = static_cast<CNode*> (mynodes[0]);
     CNode* mycnode1 = static_cast<CNode*> (mynodes[1]);
@@ -1237,7 +1237,7 @@ bool CONTACT::CElement::EvaluateShapeDual(const double* xi, LINALG::SerialDenseV
   // 2D quadratic case (3noded line element)
   case DRT::Element::line3:
   {
-    if (valdim!=3) dserror("ERROR: Inconsisteny in EvluateShape");
+    if (valdim!=3) dserror("ERROR: Inconsistency in EvluateShape");
     // check for boundary nodes
     CNode* mycnode0 = static_cast<CNode*> (mynodes[0]);
     CNode* mycnode1 = static_cast<CNode*> (mynodes[1]);

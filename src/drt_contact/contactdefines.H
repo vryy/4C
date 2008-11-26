@@ -48,6 +48,7 @@ Maintainer: Alexander Popp
 //#define CONTACTWNORMAL         /* flag for weighted nodal normal calc. */
 //#define CONTACTBOUNDMOD        /* flag for modification of boundary nodes */
 //#define CONTACTONEMORTARLOOP   /* flag for computing D and M in one loop */
+//#define CONTACTAUXPLANE        /* flag for aux plane usage in 3D coupling */
 
 /************************************************************************/
 /* Debugging options                                                    */
@@ -70,7 +71,7 @@ Maintainer: Alexander Popp
 #define CONTACTMAXITER 10        /* max. no. iterations for local Newton */
 #define CONTACTCONVTOL 1.0e-12   /* convergence tolerance for local Newton */
 #define CONTACTCRITDIST 0.5      /* critical distance for potential contact */
-#define CONTACTCLIPTOL 1.0e-6    /* tolerance for polygon clipping in 3D */
+#define CONTACTCLIPTOL 1.0e-12   /* tolerance for polygon clipping in 3D */
 #define CONTACTDEPTHOCTREE 5     /* max. depth for contact search octree */
 
 namespace CONTACT {

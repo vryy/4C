@@ -59,6 +59,11 @@ namespace CONTACT
        of the clip polygon of slave and master element from the Coupling
        class. This class provides some basic funcitonality a CElement would
        also provide (coords, shape functions and derivatives, Jacobian, ...).
+       Note that an Intcell can EITHER live in physical space (this is the
+       case when an auxiliary plane is used for 3D coupling) or in the slave
+       element parameter space (this is the case when 3D coupling is performed
+       on the slave surface without any auxiliary plane). Of course, in the
+       2nd case the third coordinate of all intcell point is zero!
 
 \author popp (popp@lnm.mw.tum.de)
 */
@@ -175,6 +180,11 @@ protected:
        slave and master element from the Coupling class. Besides the
        vertex coordinates this class provides different pointers to
        build up doubly-linked list structures.
+       Note that a Vertex can EITHER live in physical space (this is the
+       case when an auxiliary plane is used for 3D coupling) or in the slave
+       element parameter space (this is the case when 3D coupling is performed
+       on the slave surface without any auxiliary plane). Of course, in the
+       2nd case the third coordinate of all vertices is zero!
 
 \author popp (popp@lnm.mw.tum.de)
 */
@@ -302,7 +312,12 @@ protected:
 \brief A class representing the framework for mortar coupling of ONE
        slave element and ONE master element of a contact interface in
        2D and 3D. Concretely, this class controls projection, overlap
-       detection and finally integration of the mortar coupling matrix M.
+       detection and finally integration of the mortar coupling matrix M
+       and the weighted gap vector g~.
+       Note that 3D Coupling can EITHER be done in physical space (this is
+       the case when an auxiliary plane is used) or in the slave element
+       parameter space (this is the case when everything is done directly
+       on the slave surface without any auxiliary plane).
 
 \author popp (popp@lnm.mw.tum.de)
 */
@@ -482,11 +497,19 @@ public:
   virtual bool ProjectMaster3D();
   
   /*!
-  \brief Clipping of slave and master element in aux. plane (3D)
+  \brief Clipping of slave and master element (3D)
+  
+  Note that PolygonClipping3D can EITHER be done in physical space (this
+  is the case when an auxiliary plane is used for 3D coupling) or in the
+  slave element parameter space (this is the case when 3D coupling is
+  performed on the slave surface without any auxiliary plane).
   
   This method applies a polygon clipping algorithm to find the
   polygon defined by the projection of the slave and master element
-  in the auxiliary plane. As input variables the clipping algorithm
+  in the auxiliary plane (1st case) or defined by the slave element
+  itself and the projection of the master element into the slave
+  parameter space (2nd case). Of course, in the 2nd case the clipping
+  plane has the normal (0,0,1). As input variables the clipping algorithm
   requires two sets of vertices, which define sele_ / mele_ respectively.
   The clipping algorithm is based on doubly linked lists as data structure
   (Greiner, G., Hormann, K. (1998), Efficient Clipping of Arbitrary
@@ -503,22 +526,24 @@ public:
                                                     double& tol);
   
   /*!
-  \brief Triangulation of clip polygon in aux. plane (3D)
+  \brief Triangulation of clip polygon (3D)
   
-  This method first finds the center of the clip polygon by simple
-  averaging of vertex coordinates (arithmetic center). Then the clip
-  polygon is triangulated into as many integration cells (tri3) as
-  necessary. The method stores these cells in the class variable cells_.
+  This method first finds the center of the clip polygon by computing
+  the centroid / geometric center (2nd case) or by simple averaging of
+  vertex coordinates (arithmetic center, 1st case, aux. plane!). Then
+  the clip polygon is triangulated into as many integration cells
+  (tri3) as necessary. The method stores these cells in the variable cells_.
   
   */
   virtual bool Triangulation3D();
-  
+    
   /*!
-  \brief Integrate the integration cells in aux. plane (3D)
+  \brief Integrate the integration cells (3D)
   
   This method creates an integrator object for the cell triangles,
   then projects the Gauss points back onto slave and master elements
-  in order to evaluate the respective shape functions there. Then
+  (1st case, aux. plane) or only back onto the master element (2nd case)
+  in order to evaluate the respective shape function there. Then
   entries of the mortar matrix M and the weighted gap g are integrated
   and assembled into the slave element nodes.
   

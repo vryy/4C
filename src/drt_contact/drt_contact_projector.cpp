@@ -60,7 +60,7 @@ dim_(dim)
  *----------------------------------------------------------------------*/
 bool CONTACT::Projector::ProjectNodalNormal(CONTACT::CNode& node,
                                             CONTACT::CElement& ele,
-                                            double xi[])
+                                            double* xi)
 {
   bool ok = true;
   if (Dim()==2)
@@ -143,7 +143,7 @@ bool CONTACT::Projector::ProjectNodalNormal(CONTACT::CNode& node,
  *----------------------------------------------------------------------*/
 bool CONTACT::Projector::ProjectElementNormal(CONTACT::CNode& node,
                                               CONTACT::CElement& ele,
-                                              double xi[])
+                                              double* xi)
 {
   bool ok = true;
   
@@ -223,12 +223,78 @@ bool CONTACT::Projector::ProjectElementNormal(CONTACT::CNode& node,
 }
 
 /*----------------------------------------------------------------------*
+ |  Project a node along element's normal field (3D)          popp 11/08|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Projector::ProjectElementNormal3D(CONTACT::CNode& node,
+                                                CONTACT::CElement& ele,
+                                                double* xi)
+{
+  // start in the element center
+  DRT::Element::DiscretizationType dt = ele.Shape();
+  double eta[2] = {0.0, 0.0};
+  if (dt==DRT::Element::tri3 || dt==DRT::Element::tri6)
+  {
+    eta[0] = 1/3;
+    eta[1] = 1/3;
+  }
+  
+  // coordinate increment
+  double deta[2] = {0.0, 0.0};
+  
+  // auxiliary variable
+  double alpha = 0.0;
+  double dalpha = 0.0;
+  
+  // function f (vector-valued)
+  double f[3] = {0.0, 0.0, 0.0};
+  
+  // gradient of f (df/deta[0], df/deta[1], df/dalpha)
+  Epetra_SerialDenseMatrix df(3,3);
+  
+  // start iteration
+  int k=0;
+  double conv = 0.0;
+  
+  for (k=0;k<CONTACTMAXITER;++k)
+  {
+    EvaluateFElementNormal3D(f,node,ele,eta,alpha);
+    conv = sqrt(f[0]*f[0]+f[1]*f[1]+f[2]*f[2]);
+    //cout << "Iteration " << k << ": -> |f|=" << conv << endl;
+    if (conv <= CONTACTCONVTOL) break;
+    EvaluateGradFElementNormal3D(df,node,ele,eta,alpha);
+    
+    // solve deta = - inv(df) * f
+    LINALG::NonSymmetricInverse(df,3);
+    deta[0] = -df(0,0)*f[0] - df(0,1)*f[1] - df(0,2)*f[2];
+    deta[1] = -df(1,0)*f[0] - df(1,1)*f[1] - df(1,2)*f[2];
+    dalpha  = -df(2,0)*f[0] - df(2,1)*f[1] - df(2,2)*f[2];
+    
+    // update eta and alpha
+    eta[0] += deta[0];
+    eta[1] += deta[1];
+    alpha  += dalpha;
+  }
+      
+  // Newton iteration unconverged
+  if (conv > CONTACTCONVTOL)
+    dserror("ERROR: ProjectElementNormal3D: Newton unconverged for NodeID %i "
+            "and CElementID %i", node.Id(), ele.Id());
+
+  // Newton iteration converged
+  xi[0]=eta[0];
+  xi[1]=eta[1];
+  //cout << "Newton iteration converged in " << k << " steps!" << endl;
+  
+  return true;  
+}
+
+/*----------------------------------------------------------------------*
  |  Project a Gauss point along its normal (public)           popp 01/08|
  *----------------------------------------------------------------------*/
 bool CONTACT::Projector::ProjectGaussPoint(CONTACT::CElement& gpele,
                                            const double* gpeta,
                                            CONTACT::CElement& ele,
-                                           double xi[])
+                                           double* xi)
 {
   bool ok = true;
   if (Dim()==2)
@@ -325,12 +391,110 @@ bool CONTACT::Projector::ProjectGaussPoint(CONTACT::CElement& gpele,
 }
 
 /*----------------------------------------------------------------------*
+ |  Project a Gauss point along its normal (3D)               popp 11/08|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Projector::ProjectGaussPoint3D(CONTACT::CElement& gpele,
+                                             const double* gpeta,
+                                             CONTACT::CElement& ele,
+                                             double* xi)
+{
+  // collect necessary data (slave side, for GP)
+  int nnodes = gpele.NumNode();
+  LINALG::SerialDenseVector val(nnodes);
+  LINALG::SerialDenseMatrix deriv(nnodes,2,true);
+  LINALG::SerialDenseMatrix coord(3,nnodes);
+  DRT::Node** mynodes = gpele.Nodes();
+  if(!mynodes) dserror("ERROR: ProjectGaussPoint3D: Null pointer!");
+      
+  // get shape function values and derivatives at gpeta
+  gpele.EvaluateShape(gpeta, val, deriv, nnodes);
+
+  // get interpolated GP normal and GP coordinates
+  double gpn[3] = {0.0, 0.0, 0.0};
+  double gpx[3] = {0.0, 0.0, 0.0};
+  for (int i=0;i<nnodes;++i)
+  {
+    CNode* mycnode = static_cast<CNode*> (mynodes[i]);
+    
+    gpn[0]+=val[i]*mycnode->n()[0];
+    gpn[1]+=val[i]*mycnode->n()[1];
+    gpn[2]+=val[i]*mycnode->n()[2];
+    
+    coord(0,i) = mycnode->xspatial()[0];
+    coord(1,i) = mycnode->xspatial()[1];
+    coord(2,i) = mycnode->xspatial()[2];
+    
+    gpx[0]+=val[i]*coord(0,i);
+    gpx[1]+=val[i]*coord(1,i);
+    gpx[2]+=val[i]*coord(2,i);
+  }
+    
+  // start in the element center
+  DRT::Element::DiscretizationType dt = ele.Shape();
+  double eta[2] = {0.0, 0.0};
+  if (dt==DRT::Element::tri3 || dt==DRT::Element::tri6)
+  {
+    eta[0] = 1/3;
+    eta[1] = 1/3;
+  }
+  
+  // coordinate increment
+  double deta[2] = {0.0, 0.0};
+  
+  // auxiliary variable
+  double alpha = 0.0;
+  double dalpha = 0.0;
+  
+  // function f (vector-valued)
+  double f[3] = {0.0, 0.0, 0.0};
+  
+  // gradient of f (df/deta[0], df/deta[1], df/dalpha)
+  Epetra_SerialDenseMatrix df(3,3);
+  
+  // start iteration
+  int k=0;
+  double conv = 0.0;
+  
+  for (k=0;k<CONTACTMAXITER;++k)
+  {
+    EvaluateFGaussPoint3D(f,gpx,gpn,ele,eta,alpha);
+    conv = sqrt(f[0]*f[0]+f[1]*f[1]+f[2]*f[2]);
+    //cout << "Iteration " << k << ": -> |f|=" << conv << endl;
+    if (conv <= CONTACTCONVTOL) break;
+    EvaluateGradFGaussPoint3D(df,gpx,gpn,ele,eta,alpha);
+    
+    // solve deta = - inv(df) * f
+    LINALG::NonSymmetricInverse(df,3);
+    deta[0] = -df(0,0)*f[0] - df(0,1)*f[1] - df(0,2)*f[2];
+    deta[1] = -df(1,0)*f[0] - df(1,1)*f[1] - df(1,2)*f[2];
+    dalpha  = -df(2,0)*f[0] - df(2,1)*f[1] - df(2,2)*f[2];
+    
+    // update eta and alpha
+    eta[0] += deta[0];
+    eta[1] += deta[1];
+    alpha  += dalpha;
+  }
+      
+  // Newton iteration unconverged
+  if (conv > CONTACTCONVTOL)
+    dserror("ERROR: ProjectGaussPoint3D: Newton unconverged for GP at xi = %d,"
+                  " %d from CElementID %i", gpeta[0], gpeta[1], gpele.Id());
+
+  // Newton iteration converged
+  xi[0]=eta[0];
+  xi[1]=eta[1];
+  
+  //cout << "Newton iteration converged in " << k << " steps!" << endl;
+  
+  return true;
+}
+/*----------------------------------------------------------------------*
  |  Project a Gauss point along AuxPlane normal (3D)          popp 11/08|
  *----------------------------------------------------------------------*/
 bool CONTACT::Projector::ProjectGaussPointAuxn3D(const double* globgp,
                                                  const double* auxn,
                                                  CONTACT::CElement& ele,
-                                                 double xi[])
+                                                 double* xi)
 {
   // start in the element center
   DRT::Element::DiscretizationType dt = ele.Shape();
@@ -388,8 +552,6 @@ bool CONTACT::Projector::ProjectGaussPointAuxn3D(const double* globgp,
   xi[1]=eta[1];
   
   //cout << "Newton iteration converged in " << k << " steps!" << endl;
-  double glob[3] = {0.0, 0.0, 0.0};
-  ele.LocalToGlobal(xi,glob,0);
   
   return true;  
 }
@@ -639,6 +801,140 @@ double CONTACT::Projector::EvaluateGradFElementNormal(CONTACT::CNode& node,
 }
 
 /*----------------------------------------------------------------------*
+ |  Evaluate F for element normal case (3D)                   popp 11/08|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Projector::EvaluateFElementNormal3D(
+                              double* f,
+                              CONTACT::CNode& node,
+                              CONTACT::CElement& ele,
+                              const double* eta,
+                              const double& alpha)
+{
+  /* Evaluate the function F(eta,alpha) = Ni * xi + alpha * (Ni * ni) -xm
+     which is a vector-valued function with 3 components!
+    
+       Ni      shape functions of element to project on
+       xi      coords of nodes of element to project on
+       ni      outward normal of nodes of element to project on
+       xm      node to project (master)                                 */
+
+  // collect necessary data
+  int nnodes = ele.NumNode();
+  LINALG::SerialDenseVector val(nnodes);
+  LINALG::SerialDenseMatrix deriv(nnodes,2,true);
+  LINALG::SerialDenseMatrix coord(3,nnodes);
+  DRT::Node** mynodes = ele.Nodes();
+  if(!mynodes) dserror("ERROR: EvaluateFElementNormal3D: Null pointer!");
+      
+  // get shape function values and derivatives at eta
+  ele.EvaluateShape(eta, val, deriv, nnodes);
+
+  // get interpolated normal and proj. coordinates for current eta
+  double nn[3] = {0.0, 0.0, 0.0};
+  double nx[3] = {0.0, 0.0, 0.0};
+  for (int i=0;i<nnodes;++i)
+  {
+    CNode* mycnode = static_cast<CNode*> (mynodes[i]);
+    nn[0]+=val[i]*mycnode->n()[0];
+    nn[1]+=val[i]*mycnode->n()[1];
+    nn[2]+=val[i]*mycnode->n()[2];
+    
+    coord(0,i) = mycnode->xspatial()[0];
+    coord(1,i) = mycnode->xspatial()[1];
+    coord(2,i) = mycnode->xspatial()[2];
+    
+    nx[0]+=val[i]*coord(0,i);
+    nx[1]+=val[i]*coord(1,i);
+    nx[2]+=val[i]*coord(2,i);
+  }
+  
+  // get coords of node to be projected
+  double xm[3] = {0.0, 0.0, 0.0};
+  for (int i=0;i<3;++i)
+    xm[i] = node.xspatial()[i];
+  
+  // evaluate function f
+  for (int i=0;i<3;++i)
+    f[i] = nx[i] + alpha * nn[i] - xm[i];
+  
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Evaluate GradF for element normal case (3D)               popp 11/08|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Projector::EvaluateGradFElementNormal3D(
+                              Epetra_SerialDenseMatrix& fgrad,
+                              CONTACT::CNode& node,
+                              CONTACT::CElement& ele,
+                              const double* eta,
+                              const double& alpha)
+{
+  /* Evaluate the gradient of the function F(eta,alpha) = Ni * xi -
+     + alpha * (Ni * ni) - xm, which is a (3x3)-matrix!
+    
+       Ni      shape functions of element to project on
+       xi      coords of nodes of element to project on
+       ni      outward normal of nodes of element to project on
+       xm      node to project (master)                                 */
+  
+  // collect necessary data
+  int nnodes = ele.NumNode();
+  LINALG::SerialDenseVector val(nnodes);
+  LINALG::SerialDenseMatrix deriv(nnodes,2,true);
+  LINALG::SerialDenseMatrix coord(3,nnodes);
+  DRT::Node** mynodes = ele.Nodes();
+  if(!mynodes) dserror("ERROR: EvaluateGradFElementNormal3D: Null pointer!");
+      
+  // get shape function values and derivatives at eta
+  ele.EvaluateShape(eta, val, deriv, nnodes);
+
+  // get interpolated normal + deriv and proj. coordinates deriv for current eta
+  double nn[3] = {0.0, 0.0, 0.0};
+  double nneta1[3] = {0.0, 0.0, 0.0};
+  double nneta2[3] = {0.0, 0.0, 0.0};
+  double nxeta1[3] = {0.0, 0.0, 0.0};
+  double nxeta2[3] = {0.0, 0.0, 0.0};
+  for (int i=0;i<nnodes;++i)
+  {
+    CNode* mycnode = static_cast<CNode*> (mynodes[i]);
+    nn[0]+=val[i]*mycnode->n()[0];
+    nn[1]+=val[i]*mycnode->n()[1];
+    nn[2]+=val[i]*mycnode->n()[2];
+        
+    nneta1[0]+=deriv(i,0)*mycnode->n()[0];
+    nneta1[1]+=deriv(i,0)*mycnode->n()[1];
+    nneta1[2]+=deriv(i,0)*mycnode->n()[2];
+    
+    nneta2[0]+=deriv(i,1)*mycnode->n()[0];
+    nneta2[1]+=deriv(i,1)*mycnode->n()[1];
+    nneta2[2]+=deriv(i,1)*mycnode->n()[2];
+    
+    coord(0,i) = mycnode->xspatial()[0];
+    coord(1,i) = mycnode->xspatial()[1];
+    coord(2,i) = mycnode->xspatial()[2];
+    
+    nxeta1[0]+=deriv(i,0)*coord(0,i);
+    nxeta1[1]+=deriv(i,0)*coord(1,i);
+    nxeta1[2]+=deriv(i,0)*coord(2,i);
+    
+    nxeta2[0]+=deriv(i,1)*coord(0,i);
+    nxeta2[1]+=deriv(i,1)*coord(1,i);
+    nxeta2[2]+=deriv(i,1)*coord(2,i);
+  }
+  
+  //evaluate function f gradient
+  for (int i=0;i<3;++i)
+  {
+    fgrad(i,0) = nxeta1[i] + alpha*nneta1[i];
+    fgrad(i,1) = nxeta2[i] + alpha*nneta2[i];
+    fgrad(i,2) = nn[i];
+  }
+
+  return true;
+}
+
+/*----------------------------------------------------------------------*
  |  Evaluate F for Gauss point case (public)                  popp 01/08|
  *----------------------------------------------------------------------*/
 double CONTACT::Projector::EvaluateFGaussPoint(const double* gpx,
@@ -729,6 +1025,82 @@ double CONTACT::Projector::EvaluateGradFGaussPoint(const double* gpn,
     dserror("ERROR: EvaluateGradFGaussPoint: 3D version not yet implemented!");
       
   return fgrad;
+}
+
+/*----------------------------------------------------------------------*
+ |  Evaluate F for Gauss point case (3D)                      popp 11/08|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Projector::EvaluateFGaussPoint3D(
+                              double* f,
+                              const double* gpx,
+                              const double* gpn,
+                              CONTACT::CElement& ele,
+                              const double* eta,
+                              const double& alpha)
+{
+  /* Evaluate the function F(eta,alpha) = Ni * xi - alpha * gpn - gpx
+     which is a vector-valued function with 3 components!
+    
+       Ni      shape functions of element to project on
+       xi      coords of nodes of element to project on
+       gpx     coords of GP to be projected
+       gpn     normal of GP along which to project                  */
+
+  // collect necessary data
+  int nnodes = ele.NumNode();
+  LINALG::SerialDenseVector val(nnodes);
+  LINALG::SerialDenseMatrix deriv(nnodes,2,true);
+    
+  // build interpolation of ele node coordinates for current eta
+  double nx[3] = {0.0, 0.0, 0.0};
+  ele.LocalToGlobal(eta,nx,0);
+
+  // evaluate function f
+  for (int i=0; i<3; ++i)
+    f[i] = nx[i] - alpha * gpn[i] - gpx[i];
+  
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Evaluate GradF for Gauss point case (3D)                  popp 11/08|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Projector::EvaluateGradFGaussPoint3D(
+                              Epetra_SerialDenseMatrix& fgrad,
+                              const double* gpx,
+                              const double* gpn,
+                              CONTACT::CElement& ele,
+                              const double* eta,
+                              const double& alpha)
+{
+  /* Evaluate the gradient of the function F(eta,alpha) = Ni * xi -
+     - alpha * gpn - gpx, which is a (3x3)-matrix!
+    
+       Ni      shape functions of element to project on
+       xi      coords of nodes of element to project on
+       gpx     coords of GP to be projected
+       gpn     normal of GP along which to project                  */
+  
+  // collect necessary data
+  int nnodes = ele.NumNode();
+  LINALG::SerialDenseVector val(nnodes);
+  LINALG::SerialDenseMatrix deriv(nnodes,2,true);
+    
+  // build interpolation of ele node coordinates for current eta
+  double nxeta1[3] = {0.0, 0.0, 0.0};
+  double nxeta2[3] = {0.0, 0.0, 0.0};
+  ele.LocalToGlobal(eta,nxeta1,1);
+  ele.LocalToGlobal(eta,nxeta2,2);
+  
+  //evaluate function f gradient
+  for (int i=0;i<3;++i)
+  {
+    fgrad(i,0) = nxeta1[i];
+    fgrad(i,1) = nxeta2[i];
+    fgrad(i,2) = -gpn[i];
+  }
+
+  return true;
 }
 
 /*----------------------------------------------------------------------*

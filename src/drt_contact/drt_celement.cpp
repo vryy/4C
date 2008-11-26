@@ -282,7 +282,7 @@ bool CONTACT::CElement::LocalCoordinatesOfNode(int lid, double* xi)
       dserror("ERROR: LocalCoordinatesOfNode: Node number % in segment % out of range",lid,Id());
   }
   
-  // unknown case (3D not implemented yet)
+  // unknown case
   else
     dserror("ERROR: LocalCoordinatesOfNode called for unknown element type");
     

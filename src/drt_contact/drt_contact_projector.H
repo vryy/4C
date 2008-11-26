@@ -113,7 +113,7 @@ public:
   */
   bool ProjectNodalNormal(CONTACT::CNode& node,
                           CONTACT::CElement& ele,
-                          double xi[]);
+                          double* xi);
   
   /*!
   \brief Project a node onto a Celement along the interpolated
@@ -135,8 +135,29 @@ public:
   */
   bool ProjectElementNormal(CONTACT::CNode& node,
                             CONTACT::CElement& ele,
-                            double xi[]);
+                            double* xi);
  
+  /*!
+  \brief Project a node onto a Celement along the interpolated
+         outward normal field of the Celement (3D)
+    
+  Used to project a master side node onto a Celement of the slave side (3D)
+    
+  This method will compute the coordinates of a projection of a Node in
+  the local coordinate system of a Celement. The projection point will
+  not neccesarily fall inside the Celement. However, if the projection
+  point is far outside the segment's boundaries, problems with the
+  internal nonlinear iteration might occur.
+    
+  \param node (in): Master Node to project
+  \param ele (in) : Slave Celement to project on
+  \param xi (out) : Local coordinates of projection on Celement
+  
+  */
+  bool ProjectElementNormal3D(CONTACT::CNode& node,
+                              CONTACT::CElement& ele,
+                              double* xi);
+    
   /*!
   \brief Project a Gauss point onto a CElement along GP normal
     
@@ -151,29 +172,48 @@ public:
   \param xi (out)  : Local coordinates of projection on CElement
   
   */
-   bool ProjectGaussPoint(CONTACT::CElement& gpele,
-                          const double* gpeta,
-                          CONTACT::CElement& ele,
-                          double xi[]);
+  bool ProjectGaussPoint(CONTACT::CElement& gpele,
+                         const double* gpeta,
+                         CONTACT::CElement& ele,
+                         double* xi);
+  
+  /*!
+  \brief Project a Gauss point onto a CElement along GP normal (3D)
+    
+  Used to project a slave side GP onto a CElement of the master side
+    
+  This method will compute the coordinates of a projection of a Gauss
+  point in the local coordinate system of a CElement.
+    
+  \param gpele (in): Slave CElement containing GP to project
+  \param gpeta (in): Local coordinates of GP on gpele
+  \param ele (in)  : Master Celement to project on
+  \param xi (out)  : Local coordinates of projection on CElement
+  
+  */
+  bool ProjectGaussPoint3D(CONTACT::CElement& gpele,
+                           const double* gpeta,
+                           CONTACT::CElement& ele,
+                           double* xi);
    
-   /*!
-   \brief Project a Gauss point onto a CElement along AuxPlane normal (3D)
+  /*!
+  \brief Project a Gauss point onto a CElement along AuxPlane normal (3D)
+    
+  Used to project an AuxPlane GP onto a CElement of the slave or master side
      
-   Used to project an AuxPlane GP onto a CElement of the slave or master side
+  This method will compute the coordinates of a projection of a Gauss
+  point in the local coordinate system of a CElement.
      
-   This method will compute the coordinates of a projection of a Gauss
-   point in the local coordinate system of a CElement.
-     
-   \param globgp(in): Gauss point to project, given in global coords
-   \param auxn(in)  : Normal of AuxPlane along which to project
-   \param ele (in)  : Slave / master Celement to project on
-   \param xi (out)  : Local coordinates of projection on CElement
+  \param globgp(in): Gauss point to project, given in global coords
+  \param auxn(in)  : Normal of AuxPlane along which to project
+  \param ele (in)  : Slave / master Celement to project on
+  \param xi (out)  : Local coordinates of projection on CElement
    
-   */
-   bool ProjectGaussPointAuxn3D(const double* globgp,
-                                const double* auxn,
-                                CONTACT::CElement& ele,
-                                double xi[]);
+  */
+  bool ProjectGaussPointAuxn3D(const double* globgp,
+                               const double* auxn,
+                               CONTACT::CElement& ele,
+                               double* xi);
     
   /*!
   \brief Evaluate F for nodal normal projection
@@ -212,6 +252,26 @@ public:
                                     const double* eta);
   
   /*!
+  \brief Evaluate F for element normal projection (3D)
+
+  */
+  bool EvaluateFElementNormal3D(double* f,
+                                CONTACT::CNode& node,
+                                CONTACT::CElement& ele,
+                                const double* eta,
+                                const double& alpha);  
+    
+  /*!
+  \brief Evaluate GradF for element normal projection (3D)
+
+  */
+  bool EvaluateGradFElementNormal3D(Epetra_SerialDenseMatrix& fgrad,
+                              CONTACT::CNode& node,
+                              CONTACT::CElement& ele,
+                              const double* eta,
+                              const double& alpha); 
+    
+  /*!
   \brief Evaluate F for Gauss point projection
 
   */
@@ -231,6 +291,28 @@ public:
                                  const double* eta);  
   
   /*!
+  \brief Evaluate F for Gauss point projection (3D)
+
+  */
+  bool EvaluateFGaussPoint3D(double* f,
+                             const double* gpx,
+                             const double* gpn,
+                             CONTACT::CElement& ele,
+                             const double* eta,
+                             const double& alpha);  
+    
+  /*!
+  \brief Evaluate GradF for Gauss point projection (3D)
+
+  */
+  bool EvaluateGradFGaussPoint3D(Epetra_SerialDenseMatrix& fgrad,
+                                 const double* gpx,
+                                 const double* gpn,
+                                 CONTACT::CElement& ele,
+                                 const double* eta,
+                                 const double& alpha); 
+    
+  /*!
   \brief Evaluate F for AuxPlane Gauss point projection (3D)
 
   */
@@ -242,7 +324,7 @@ public:
                                  const double& alpha);  
     
   /*!
-  \brief Evaluate GradF for AuxPlane Gauss point projection (3D
+  \brief Evaluate GradF for AuxPlane Gauss point projection (3D)
 
   */
   bool EvaluateGradFGaussPointAuxn3D(Epetra_SerialDenseMatrix& fgrad,
