@@ -670,8 +670,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::BodyForce(
  |  get the material constants  (private)                      gjb 10/08|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Condif3Impl<distype>::GetMaterialParams
-(
+void DRT::ELEMENTS::Condif3Impl<distype>::GetMaterialParams(
     const struct _MATERIAL*   material,
     const bool&               temperature
 )
@@ -830,8 +829,8 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalTau(
                                i,j
       */
       double G;
-      double normG = 0;
-      double Gnormu = 0;
+      double normG(0.0);
+      double Gnormu(0.0);
       for (int nn=0;nn<3;++nn)
       {
         for (int rr=0;rr<3;++rr)
@@ -1522,13 +1521,13 @@ return;
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Condif3Impl<distype>::CalMatGenAlpha(
-    Epetra_SerialDenseMatrix& estif,
-    Epetra_SerialDenseVector& eforce,
+    Epetra_SerialDenseMatrix&             estif,
+    Epetra_SerialDenseVector&             eforce,
     const vector<LINALG::Matrix<iel,1> >& ephinp,
-    const bool                higher_order_ele,
-    const double&             timefac,
-    const double&             alphaF,
-    const int&                dofindex
+    const bool                            higher_order_ele,
+    const double&                         timefac,
+    const double&                         alphaF,
+    const int&                            dofindex
     )
 {
 static double rhsint;           /* rhs at int. point     */
@@ -2522,12 +2521,12 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalMatElch(
  *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Condif3Impl<distype>::CalErrorComparedToAnalytSolution(
-    const DRT::ELEMENTS::Condif3*                    ele,
-    ParameterList&                                   params,
-    const LINALG::Matrix<iel,2>& ephinp,
-    const LINALG::Matrix<iel,1>& epotnp,
-    Epetra_SerialDenseVector&                        errors,
-    struct _MATERIAL*                                material
+    const DRT::ELEMENTS::Condif3*  ele,
+    ParameterList&                 params,
+    const LINALG::Matrix<iel,2>&   ephinp,
+    const LINALG::Matrix<iel,1>&   epotnp,
+    Epetra_SerialDenseVector&      errors,
+    struct _MATERIAL*              material
 )
 {
   //at the moment, there is only one analytical test problem available!
@@ -2550,8 +2549,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalErrorComparedToAnalytSolution(
   }
 
   // set constants for analytical solution
-  const double t = params.get("total time",-1.0);
-  dsassert (t >= 0.0, "no total time for error calculation");
+  const double t = params.get<double>("total time");
   const double frt = params.get<double>("frt");
 
   // get material constants
@@ -2602,9 +2600,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalErrorComparedToAnalytSolution(
 
     // compute differences between analytical solution and numerical solution
     deltapot = potint - pot;
-
-    deltacon = conint;
-    deltacon -= c;
+    deltacon.Update(1.0,conint,-1.0,c);
 
     // add square to L2 error
     errors[0] += deltacon(0)*deltacon(0)*fac_; // cation concentration
