@@ -80,6 +80,14 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidImpl::Velnp()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidImpl::Velaf()
+{
+  return fluid_.Velaf();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidImpl::Veln()
 {
   return fluid_.Veln();
@@ -507,9 +515,9 @@ void ADAPTER::FluidImpl::SetTimeLomaFields(RCP<const Epetra_Vector> densnp,RCP<c
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidImpl::SetIterLomaFields(RCP<const Epetra_Vector> densnp)
+void ADAPTER::FluidImpl::SetIterLomaFields(RCP<const Epetra_Vector> densnp,RCP<const Epetra_Vector> densdtnp)
 {
-   fluid_.SetIterLomaFields(densnp);
+   fluid_.SetIterLomaFields(densnp,densdtnp);
    return;
 }
 

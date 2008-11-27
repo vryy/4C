@@ -632,21 +632,6 @@ public:
    */
   void LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax);
 
-  /*!
-  \brief set time-step-related fields for low-Mach-number flow
-
-  */
-  void SetTimeLomaFields(RCP<const Epetra_Vector> densnp,
-                         RCP<const Epetra_Vector> densn,
-                         RCP<const Epetra_Vector> densdtn);
-
-  /*!
-  \brief set outer-iteration-related fields for low-Mach-number flow
-
-  */
-  void SetGenAlphaIterLomaFields(RCP<const Epetra_Vector> densnp,
-                                 RCP<const Epetra_Vector> densdtnp);
-
 
 protected:
 
@@ -672,10 +657,7 @@ private:
   //! parallelism --- my processor id
   int                       myrank_ ;
 
-  //! flag for low-Mach-number solver (no: standard incompressible solver)
-  string                    loma_;
-
-  //! fluid density (for incompressible flow)
+  //! fluid density
   double                    density_;
 
   //! @name time integration parameters
@@ -843,10 +825,8 @@ private:
   //! required only for the constant increment predictor
   RCP<Epetra_Vector>        velnm_;
 
-  //! velocities and densities at times n+1, n+alpha_M and n
+  //! velocities and densities at times n+1
   RCP<Epetra_Vector>        vedenp_;
-  RCP<Epetra_Vector>        vedeam_;
-  RCP<Epetra_Vector>        veden_;
 
   //! ALE related stuff: grid displacements, time n+1
   RCP<Epetra_Vector>        dispnp_   ;

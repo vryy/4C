@@ -81,7 +81,7 @@ namespace ADAPTER {
     virtual Teuchos::RCP<const Epetra_Vector> InitialGuess();
     virtual Teuchos::RCP<const Epetra_Vector> RHS();
     virtual Teuchos::RCP<const Epetra_Vector> Velnp();
-    virtual Teuchos::RCP<const Epetra_Vector> Velaf(){ dserror("not implemented"); return null; };
+    virtual Teuchos::RCP<const Epetra_Vector> Velaf();
     virtual Teuchos::RCP<const Epetra_Vector> Veln();
     virtual Teuchos::RCP<const Epetra_Vector> Dispnp();
     virtual Teuchos::RCP<const Epetra_Map>    DofRowMap();
@@ -174,12 +174,8 @@ namespace ADAPTER {
                                    RCP<const Epetra_Vector> densnm);
 
     /// set outer-iteration-related fields for low-Mach-number flow
-    virtual void SetIterLomaFields(RCP<const Epetra_Vector> densnp);
-
-    /// set outer-iteration-related fields for low-Mach-number flow
-    virtual void SetGenAlphaIterLomaFields(RCP<const Epetra_Vector> densnp,
-                                           RCP<const Epetra_Vector> densdtnp){ dserror("not implemented!");
-                                                                     return; };
+    virtual void SetIterLomaFields(RCP<const Epetra_Vector> densnp,
+                                   RCP<const Epetra_Vector> densdtnp);
 
   private:
 

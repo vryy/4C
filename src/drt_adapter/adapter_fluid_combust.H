@@ -135,14 +135,9 @@ namespace ADAPTER
                                                                      return; };
 
     /// set outer-iteration-related fields for low-Mach-number flow
-    virtual void SetIterLomaFields(RCP<const Epetra_Vector> densnp){ dserror("not implemented!");
+    virtual void SetIterLomaFields(RCP<const Epetra_Vector> densnp,
+                                   RCP<const Epetra_Vector> densdtnp){ dserror("not implemented!");
                                                                      return; };
-
-    /// set outer-iteration-related fields for low-Mach-number flow
-    virtual void SetGenAlphaIterLomaFields(RCP<const Epetra_Vector> densnp,
-                                           RCP<const Epetra_Vector> densdtnp){ dserror("not implemented!");
-                                                                     return; };
-
 
     /*--------------------------------------------------------------------------------------------* 
      * group member functions which are implemented and used

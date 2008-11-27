@@ -138,6 +138,9 @@ namespace ELEMENTS
       \param fsevelnp         (i) fine-scale nodal velocities at n+1
       \param eprenp           (i) nodal pressure
       \param edensnp          (i) nodal density
+      \param eaccam           (i) nodal accelerations at n+alpha_M
+      \param ededtam          (i) nodal density derivatives at n+alpha_M
+      \param edensam          (i) nodal densities at n+alpha_M
       \param emhist           (i) time rhs for momentum equation
       \param echist           (i) time rhs for continuity equation
       \param edispnp          (i) nodal displacements (on moving mesh)
@@ -171,23 +174,28 @@ namespace ELEMENTS
                                   damping function and defined on input
       */
     void Sysmat(Fluid3*                                  ele,
-                const LINALG::Matrix<3,iel>&            evelnp_epetra,
-                const LINALG::Matrix<3,iel>&            fsevelnp_epetra,
-                const LINALG::Matrix<iel,1>&            eprenp_epetra,
-                const LINALG::Matrix<iel,1>&            edensnp_epetra,
-                const LINALG::Matrix<3,iel>&            emhist_epetra,
-                const LINALG::Matrix<iel,1>&            echist_epetra,
-                const LINALG::Matrix<3,iel>&            edispnp_epetra,
-                const LINALG::Matrix<3,iel>&            egridv_epetra,
-                LINALG::Matrix<4*iel,4*iel>&                  estif_epetra,
-                LINALG::Matrix<4*iel,4*iel>&                  emesh_epetra,
-                LINALG::Matrix<4*iel,     1>&                  eforce_epetra,
+                const LINALG::Matrix<3,iel>&             evelnp_epetra,
+                const LINALG::Matrix<3,iel>&             fsevelnp_epetra,
+                const LINALG::Matrix<iel,1>&             eprenp_epetra,
+                const LINALG::Matrix<iel,1>&             edensnp_epetra,
+                const LINALG::Matrix<3,iel>&             eaccam_epetra,
+                const LINALG::Matrix<iel,1>&             ededtam_epetra,
+                const LINALG::Matrix<iel,1>&             edensam_epetra,
+                const LINALG::Matrix<3,iel>&             emhist_epetra,
+                const LINALG::Matrix<iel,1>&             echist_epetra,
+                const LINALG::Matrix<3,iel>&             edispnp_epetra,
+                const LINALG::Matrix<3,iel>&             egridv_epetra,
+                LINALG::Matrix<4*iel,4*iel>&             estif_epetra,
+                LINALG::Matrix<4*iel,4*iel>&             emesh_epetra,
+                LINALG::Matrix<4*iel,     1>&            eforce_epetra,
                 struct _MATERIAL*                        material,
                 double                                   time,
                 double                                   dt,
                 double                                   timefac,
+                double                                   timefacrhs,
                 bool                                     newton,
                 bool                                     loma,
+                const bool                               is_genalpha,
                 const bool                               higher_order_ele,
                 const enum Fluid3::StabilisationAction   fssgv,
                 const enum Fluid3::StabilisationAction   pspg,
@@ -290,6 +298,8 @@ namespace ELEMENTS
     LINALG::Matrix<iel,1> funct_;
     //! array for density-weighted shape functions
     LINALG::Matrix<iel,1> densfunct_;
+    //! array for density-weighted shape functions at n+alphaM
+    LINALG::Matrix<iel,1> densamfunct_;
     //! array for shape functions divided by density
     LINALG::Matrix<iel,1> functdens_;
     //! array for shape function derivatives w.r.t r,s,t
@@ -326,6 +336,8 @@ namespace ELEMENTS
     LINALG::Matrix<3,1> fsvelint_;
     //! ale convective velocity in gausspoint, c=u-u_G
     LINALG::Matrix<3,1> convvelint_;
+    //! acceleration vector at n+alphaM in gausspoint
+    LINALG::Matrix<3,1> accintam_;
     //! pressure gradient in gausspoint
     LINALG::Matrix<3,1> gradp_;
     //! the stabilisation parameters

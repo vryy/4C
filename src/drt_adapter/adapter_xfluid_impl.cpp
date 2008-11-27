@@ -773,15 +773,7 @@ void ADAPTER::XFluidImpl::SetTimeLomaFields(RCP<const Epetra_Vector> densnp,RCP<
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::XFluidImpl::SetIterLomaFields(RCP<const Epetra_Vector> densnp)
-{
-   dserror("not implemented!");
-   return;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void ADAPTER::XFluidImpl::SetGenAlphaIterLomaFields(RCP<const Epetra_Vector> densnp, RCP<const Epetra_Vector> densdtnp)
+void ADAPTER::XFluidImpl::SetIterLomaFields(RCP<const Epetra_Vector> densnp,RCP<const Epetra_Vector> densdtnp)
 {
    dserror("not implemented!");
    return;

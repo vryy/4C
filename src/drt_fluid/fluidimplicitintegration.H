@@ -196,6 +196,7 @@ public:
   Teuchos::RCP<Epetra_Vector> Residual() { return residual_; }
   Teuchos::RCP<Epetra_Vector> TrueResidual() { return trueresidual_; }
   Teuchos::RCP<Epetra_Vector> Velnp() { return velnp_; }
+  Teuchos::RCP<Epetra_Vector> Velaf() { return velaf_; }
   Teuchos::RCP<Epetra_Vector> Veln() { return veln_; }
   Teuchos::RCP<Epetra_Vector> GridVel() { return gridv_; }
 
@@ -263,7 +264,8 @@ public:
   \brief set outer-iteration-related fields for low-Mach-number flow
 
   */
-  void SetIterLomaFields(RCP<const Epetra_Vector> densnp);
+  void SetIterLomaFields(RCP<const Epetra_Vector> densnp,
+                         RCP<const Epetra_Vector> densdtnp);
 
   /// introduce free surface extractor object
   /*!
@@ -358,6 +360,9 @@ protected:
   /// whether we do some extrapolation at the begin of each time step
   bool extrapolationpredictor_;
 
+  //! predictor used in nonlinear iteration
+  string  predictor_;
+
   //! @name restart variables
   int uprestart_;
   int upres_;
@@ -367,7 +372,12 @@ protected:
   //! @name time step sizes
   double dta_;
   double dtp_;
+
+  //! @name time-integration-scheme factors
   double theta_;
+  double alphaM_;
+  double alphaF_;
+  double gamma_;
   //@}
 
   //! @name parameters for sampling/dumping period
@@ -421,21 +431,25 @@ protected:
   /// Nonlinear iteration increment vector
   RCP<Epetra_Vector>    incvel_;
 
-  //! @name accelerations at time n and n-1
+  //! @name accelerations and density derivatives at time n+1, n and n+alpha_M
+  RCP<Epetra_Vector>    accnp_;
   RCP<Epetra_Vector>    accn_;
-  RCP<Epetra_Vector>    accnm_;
+  RCP<Epetra_Vector>    accam_;
   //@}
 
-  //! @name velocities and pressures at time n+1, n and n-1
+  //! @name velocities and pressures at time n+1, n, n-1 and n+alpha_F
   RCP<Epetra_Vector>    velnp_;
   RCP<Epetra_Vector>    veln_;
   RCP<Epetra_Vector>    velnm_;
+  RCP<Epetra_Vector>    velaf_;
   //@}
 
-  //! @name velocities and densities at time n+1, n and n-1
+  //! @name velocities and densities at time n+1, n, n-1, n+alpha_M and n+alpha_F
   RCP<Epetra_Vector>    vedenp_;
   RCP<Epetra_Vector>    veden_;
   RCP<Epetra_Vector>    vedenm_;
+  RCP<Epetra_Vector>    vedeam_;
+  RCP<Epetra_Vector>    vedeaf_;
   //@}
 
   //! @name displacemets at time n+1, n and n-1

@@ -122,7 +122,7 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   gamma_  = params_.get<double>("gamma");
 
   // use of predictor
-  predictor_ = params_.get<string>("PREDICTOR","steady_state_predictor");
+  predictor_ = params_.get<string>("predictor","steady_state_predictor");
 
   // parameter for linearisation scheme (fixed point like or newton like)
   newton_    = params_.get<string>("Linearisation");
@@ -134,9 +134,6 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // init some class variables (algorithm)
 
   numdim_ = params_.get<int>("number of velocity degrees of freedom");
-
-  // type of solver: low-Mach-number or incompressible solver
-  loma_ = params_.get<string>("low-Mach-number solver","No");
 
   // -------------------------------------------------------------------
   // create empty system matrix --- stiffness and mass are assembled in
@@ -176,12 +173,9 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
     velnm_        = LINALG::CreateVector(*dofrowmap,true);
   }
 
-  // velocity/density at time n+1, n+alpha_M and n+alpha_F
+  // velocity/density required for Neumann boundary conditions
   vedenp_       = LINALG::CreateVector(*dofrowmap,true);
-  vedeam_       = LINALG::CreateVector(*dofrowmap,true);
-
-  // velocity/density at time n
-  if (loma_ != "No") veden_ = LINALG::CreateVector(*dofrowmap,true);
+  vedenp_->PutScalar(1.0);
 
   // grid displacements and velocities for the ale case
   if (alefluid_)
@@ -308,21 +302,6 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   this->GenAlphaEchoToScreen("print start-up info");
 
   // end time measurement for timeloop
-
-  // get constant density variable for incompressible flow
-  // set various vede-vector values to 1.0 for incompressible flow
-  // set density variable to 1.0 for low-Mach-number flow
-  if (loma_ == "No")
-  {
-    ParameterList eleparams;
-    eleparams.set("action","get_density");
-    discret_->Evaluate(eleparams,null,null,null,null,null);
-    density_ = eleparams.get("density", 1.0);
-    if (density_ <= 0.0) dserror("received illegal density value");
-    vedeam_->PutScalar(1.0);
-    vedenp_->PutScalar(1.0);
-  }
-  else density_ = 1.0;
 
   tm7_ref_ = null;
 
@@ -761,9 +740,6 @@ void FLD::FluidGenAlphaIntegration::GenAlphaApplyDirichletAndNeumann()
   eleparams.set("total time",time_-(1-alphaF_)*dt_);
   eleparams.set("thsl",1.);
 
-  // for low-Mach-number flow, this is an approximation,
-  // for the time being, since density actually would have to be set
-  // at time n+alpha_F not at time n+1.
   discret_->SetState("vedenp",vedenp_);
   neumann_loads_->PutScalar(0.0);
   discret_->EvaluateNeumann(eleparams,*neumann_loads_);
@@ -821,19 +797,11 @@ void FLD::FluidGenAlphaIntegration::GenAlphaComputeIntermediateSol()
 
   accam_->Update((alphaM_),*accnp_,(1.0-alphaM_),*accn_,0.0);
 
-  if (loma_ != "No")
-  {
-    velaf_->Update((alphaF_),*vedenp_,(1.0-alphaF_),*veden_,0.0);
-    vedeam_->Update((alphaM_),*vedenp_,(1.0-alphaM_),*veden_,0.0);
-  }
-  else
-  {
-    //       n+alphaF              n+1                   n
-    //      u         = alpha_F * u     + (1-alpha_F) * u
-    //       (i)                   (i)
+  //       n+alphaF              n+1                   n
+  //      u         = alpha_F * u     + (1-alpha_F) * u
+  //       (i)                   (i)
 
-    velaf_->Update((alphaF_),*velnp_,(1.0-alphaF_),*veln_,0.0);
-  }
+  velaf_->Update((alphaF_),*velnp_,(1.0-alphaF_),*veln_,0.0);
 
   return;
 } // FluidGenAlphaIntegration::GenAlphaComputeIntermediateSol
@@ -1093,9 +1061,8 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   if(outflow_stab_ == "yes_outstab")
   {
     discret_->ClearState();
-    // velocity and density at t_n+aF provided for generalized-alpha
     discret_->SetState("velnp",velaf_);
-    discret_->SetState("vedenp",velaf_);
+    discret_->SetState("vedenp",vedenp_);
     eleparams.set("thsl",1.);
     eleparams.set("outflow stabilization",outflow_stab_);
 
@@ -1147,7 +1114,6 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
 
   // parameters for nonlinear treatment (linearisation) and low-Mach-number solver
   eleparams.set("Linearisation",newton_);
-  eleparams.set("low-Mach-number solver",loma_);
 
   // parameters for stabilisation
   {
@@ -1167,8 +1133,6 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   discret_->SetState("u and p (n+1      ,trial)",velnp_ );
   discret_->SetState("u and p (n+alpha_F,trial)",velaf_ );
   discret_->SetState("acc     (n+alpha_M,trial)",accam_ );
-  discret_->SetState("vedenp"                   ,vedenp_);
-  discret_->SetState("vedeam"                   ,vedeam_);
 
   if (alefluid_)
   {
@@ -1580,7 +1544,6 @@ void FLD::FluidGenAlphaIntegration::AVM3Preparation()
 
   // parameters for nonlinear treatment (linearisation) and low-Mach-number solver
   eleparams.set("Linearisation",newton_);
-  eleparams.set("low-Mach-number solver",loma_);
 
   // parameters for stabilisation
   {
@@ -1600,8 +1563,6 @@ void FLD::FluidGenAlphaIntegration::AVM3Preparation()
   discret_->SetState("u and p (n+1      ,trial)",velnp_ );
   discret_->SetState("u and p (n+alpha_F,trial)",velaf_ );
   discret_->SetState("acc     (n+alpha_M,trial)",accam_ );
-  discret_->SetState("vedenp"                   ,vedenp_);
-  discret_->SetState("vedeam"                   ,vedeam_);
 
   // zero and set fine-scale vector required by element routines
   fsvelaf_->PutScalar(0.0);
@@ -2466,105 +2427,6 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidGenAlphaIntegration::CalcStresses()
   return integratedshapefunc;
 
 } // FluidGenAlphaIntegration::CalcStresses()
-
-
-/*----------------------------------------------------------------------*
- | set time-step-related fields for low-Mach-number flow       vg 08/08 |
- *----------------------------------------------------------------------*/
-void FLD::FluidGenAlphaIntegration::SetTimeLomaFields(
-   RCP<const Epetra_Vector> densnp,
-   RCP<const Epetra_Vector> densn,
-   RCP<const Epetra_Vector> densdtn)
-{
-  // check vector compatibility and determine space dimension
-  int numdim =-1;
-  int numdof =-1;
-  if (veln_->MyLength()== (3* densn->MyLength()))
-  {
-    numdim = 2;
-    numdof = 3;
-  }
-  else if (veln_->MyLength()== (4* densn->MyLength()))
-  {
-    numdim = 3;
-    numdof = 4;
-  }
-  else
-    dserror("velocity/pressure and density vectors do not match in size");
-
-  // get velocity dofs for vede-vectors as copies from vel-vectors
-  vedenp_->Update(1.0,*velnp_,0.0);
-  veden_->Update(1.0,*veln_,0.0);
-
-  vector<int>    Indices(numdof);
-  vector<double> Values(numdof);
-
-  // insert density values in vede-vectors
-  // loop all nodes on the processor
-  for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
-  {
-    Indices[numdim] = lnodeid*numdof + numdim;
-
-    Values[numdim] = (*densnp)[lnodeid];
-    vedenp_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
-
-    Values[numdim] = (*densn)[lnodeid];
-    veden_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
-
-    Values[numdim] = (*densdtn)[lnodeid];
-    accn_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
-  }
-
-  return;
-
-} // FluidGenAlphaIntegration::SetTimeLomaFields
-
-
-/*----------------------------------------------------------------------*
- | set outer-iteration-related fields for low-Mach-number flow vg 08/08 |
- *----------------------------------------------------------------------*/
-void FLD::FluidGenAlphaIntegration::SetGenAlphaIterLomaFields(
-   RCP<const Epetra_Vector> densnp,
-   RCP<const Epetra_Vector> densdtnp)
-{
-  // check vector compatibility and determine space dimension
-  int numdim =-1;
-  int numdof =-1;
-  if (velnp_->MyLength()== (3* densnp->MyLength()))
-  {
-    numdim = 2;
-    numdof = 3;
-  }
-  else if (velnp_->MyLength()== (4* densnp->MyLength()))
-  {
-    numdim = 3;
-    numdof = 4;
-  }
-  else
-    dserror("velocity/pressure and density vectors do not match in size");
-
-  // get velocity dofs for vedenp-vector as copies from velnp-vector
-  vedenp_->Update(1.0,*velnp_,0.0);
-
-  vector<int>    Indices(numdof);
-  vector<double> Values(numdof);
-
-  // insert density values in vedenp-vector
-  // loop all nodes on the processor
-  for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
-  {
-    Indices[numdim] = lnodeid*numdof + numdim;
-
-    Values[numdim] = (*densnp)[lnodeid];
-    vedenp_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
-
-    Values[numdim] = (*densdtnp)[lnodeid];
-    accnp_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
-  }
-
-  return;
-
-} // FluidGenAlphaIntegration::SetGenAlphaIterLomaFields
 
 
 /*----------------------------------------------------------------------*

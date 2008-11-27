@@ -155,7 +155,7 @@ void LOMA::Algorithm::PrepareTimeStep()
     // get density at n-1
     GetDensityNm();
 
-     // set density at n+1 , n and n-1
+     // set density at n+1, n and n-1
     FluidField().SetTimeLomaFields(DensityNp(),DensityN(),DensityNm());
   }
 
@@ -214,15 +214,10 @@ void LOMA::Algorithm::OuterLoop()
 
       // get density time derivative at n+1
       GetDensityDtNp();
+    }
 
-       // set density at n+1 and n as well as density time derivative at n
-      FluidField().SetGenAlphaIterLomaFields(DensityNp(),DensityDtNp());
-    }
-    else
-    {
-      // set current density
-      FluidField().SetIterLomaFields(DensityNp());
-    }
+    // set density (and density time derivative) at n+1
+    FluidField().SetIterLomaFields(DensityNp(),DensityDtNp());
 
     // solve low-Mach-number flow equations
     if (Comm().MyPID()==0) cout<<"\n*********************\n     FLOW SOLVER \n*********************\n";
@@ -262,7 +257,7 @@ void LOMA::Algorithm::Update()
     // get density at n-1
     GetDensityNm();
 
-     // set density at n+1 , n and n-1
+     // set density at n+1, n and n-1
     FluidField().SetTimeLomaFields(DensityNp(),DensityN(),DensityNm());
   }
 

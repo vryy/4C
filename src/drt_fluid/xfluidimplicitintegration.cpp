@@ -388,7 +388,7 @@ void FLD::XFluidImplicitTimeInt::PrepareNonlinearSolve()
     {
       TIMEINT_THETA_BDF2::ExplicitPredictor(
           state_.veln_, state_.velnm_, state_.accn_,
-              dta_, dtp_,
+              timealgo_, dta_, dtp_,
               state_.velnp_);
     }
   }

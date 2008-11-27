@@ -170,14 +170,11 @@ namespace ADAPTER {
     ///  set time-step-related fields for low-Mach-number flow
     virtual void SetTimeLomaFields(RCP<const Epetra_Vector> densnp,
                                    RCP<const Epetra_Vector> densn,
-                                   RCP<const Epetra_Vector> densdtn);
+                                   RCP<const Epetra_Vector> densdtn){ dserror("not implemented!"); return; };
 
     /// set outer-iteration-related fields for low-Mach-number flow
-    virtual void SetGenAlphaIterLomaFields(RCP<const Epetra_Vector> densnp,
-                                           RCP<const Epetra_Vector> densdtnp);
-
-    /// set outer-iteration-related fields for low-Mach-number flow
-    virtual void SetIterLomaFields(RCP<const Epetra_Vector> densnp){ dserror("not implemented!"); return; };
+    virtual void SetIterLomaFields(RCP<const Epetra_Vector> densnp,
+                                   RCP<const Epetra_Vector> densdtnp){ dserror("not implemented!"); return; };
 
   private:
 

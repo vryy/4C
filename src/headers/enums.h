@@ -580,6 +580,7 @@ typedef enum _FLUID_TIMEINTTYPE
 {
   timeint_stationary=0,
   timeint_gen_alpha=1,
+  timeint_afgenalpha=2,
   timeint_one_step_theta=4,
   timeint_bdf2=7,
   timeint_inc_acc_gen_alpha=8,

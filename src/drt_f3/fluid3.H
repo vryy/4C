@@ -379,6 +379,7 @@ private:
     none,
     calc_fluid_systemmat_and_residual,
     calc_fluid_stationary_systemmat_and_residual,
+    calc_fluid_afgenalpha_systemmat_and_residual,
     calc_linear_fluid,
     calc_fluid_genalpha_sysmat_and_residual,
     calc_fluid_genalpha_update_for_subscales,
@@ -840,7 +841,6 @@ public:
 
   friend class Fluid3SurfaceWeakDBC<DRT::Element::quad4,DRT::Element::hex8>;
   friend class Fluid3SurfaceWeakDBCInterface;
-
 
   //! @name Constructors and destructors and related methods
 

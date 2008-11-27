@@ -56,7 +56,7 @@ extern struct _GENPROB     genprob;
  *
  *        o instationary one-step-theta
  *        o instationary BDF2
- *        o instationary generalized-alpha
+ *        o instationary generalized-alpha (two versions)
  *        o stationary
  *
  *----------------------------------------------------------------------*/
@@ -117,53 +117,72 @@ void dyn_fluid_drt()
 
   // -------------------------------------- number of degrees of freedom
   // number of degrees of freedom
-  fluidtimeparams.set<int>              ("number of velocity degrees of freedom" ,probsize.get<int>("DIM"));
+  fluidtimeparams.set<int> ("number of velocity degrees of freedom" ,probsize.get<int>("DIM"));
 
   // ---------------------------- low-Mach-number or incompressible flow
-  fluidtimeparams.set<string>("low-Mach-number solver"   ,fdyn.get<string>("LOWMACH"));
+  fluidtimeparams.set<string> ("low-Mach-number solver"   ,fdyn.get<string>("LOWMACH"));
 
   // ------------------------------------------------ basic scheme, i.e.
   // --------------------- solving nonlinear or linearised flow equation
-  fluidtimeparams.set<int>("type of nonlinear solve" ,
+  fluidtimeparams.set<int> ("type of nonlinear solve" ,
                      Teuchos::getIntegralValue<int>(fdyn,"DYNAMICTYP"));
 
   // -------------------------------------------------- time integration
   // the default time step size
-  fluidtimeparams.set<double>           ("time step size"           ,fdyn.get<double>("TIMESTEP"));
+  fluidtimeparams.set<double> ("time step size"      ,fdyn.get<double>("TIMESTEP"));
   // maximum simulation time
-  fluidtimeparams.set<double>           ("total time"               ,fdyn.get<double>("MAXTIME"));
+  fluidtimeparams.set<double> ("total time"          ,fdyn.get<double>("MAXTIME"));
   // maximum number of timesteps
-  fluidtimeparams.set<int>              ("max number timesteps"     ,fdyn.get<int>("NUMSTEP"));
+  fluidtimeparams.set<int>    ("max number timesteps",fdyn.get<int>("NUMSTEP"));
+
+  // -------- additional parameters in list for generalized-alpha scheme
+#if 1
+  // parameter alpha_M
+  fluidtimeparams.set<double> ("alpha_M", fdyn.get<double>("ALPHA_M"));
+  // parameter alpha_F
+  fluidtimeparams.set<double> ("alpha_F", fdyn.get<double>("ALPHA_F"));
+#else
+  // parameter alpha_M
+  fluidtimeparams.set<double> ("alpha_M", 1.-fdyn.get<double>("ALPHA_M"));
+  // parameter alpha_F
+  fluidtimeparams.set<double> ("alpha_F", 1.-fdyn.get<double>("ALPHA_F"));
+#endif
+  // parameter gamma
+  fluidtimeparams.set<double> ("gamma", fdyn.get<double>("GAMMA"));
+
+  // ------------------------------------------------- type of predictor
+  fluidtimeparams.set<string> ("predictor", fdyn.get<string>("PREDICTOR"));
 
   // ---------------------------------------------- nonlinear iteration
   // set linearisation scheme
-  fluidtimeparams.set<string>          ("Linearisation",fdyn.get<string>("NONLINITER"));
+  fluidtimeparams.set<string>          ("Linearisation", fdyn.get<string>("NONLINITER"));
   // maximum number of nonlinear iteration steps
-  fluidtimeparams.set<int>             ("max nonlin iter steps"     ,fdyn.get<int>("ITEMAX"));
+  fluidtimeparams.set<int>             ("max nonlin iter steps"  ,fdyn.get<int>("ITEMAX"));
   // stop nonlinear iteration when both incr-norms are below this bound
-  fluidtimeparams.set<double>          ("tolerance for nonlin iter" ,fdyn.get<double>("CONVTOL"));
+  fluidtimeparams.set<double>          ("tolerance for nonlin iter"  ,fdyn.get<double>("CONVTOL"));
   // set convergence check
-  fluidtimeparams.set<string>          ("CONVCHECK"  ,fdyn.get<string>("CONVCHECK"));
-  // set adaptoive linear solver tolerance
+  fluidtimeparams.set<string>          ("CONVCHECK" ,fdyn.get<string>("CONVCHECK"));
+  // set adaptive linear solver tolerance
   fluidtimeparams.set<bool>            ("ADAPTCONV",getIntegralValue<int>(fdyn,"ADAPTCONV")==1);
-  fluidtimeparams.set<double>          ("ADAPTCONV_BETTER",fdyn.get<double>("ADAPTCONV_BETTER"));
+  fluidtimeparams.set<double>          ("ADAPTCONV_BETTER", fdyn.get<double>("ADAPTCONV_BETTER"));
 
   // ----------------------------------------------- restart and output
   // restart
-  fluidtimeparams.set                  ("write restart every"       ,fdyn.get<int>("RESTARTEVRY"));
+  fluidtimeparams.set ("write restart every", fdyn.get<int>("RESTARTEVRY"));
   // solution output
-  fluidtimeparams.set                  ("write solution every"      ,fdyn.get<int>("UPRES"));
+  fluidtimeparams.set ("write solution every", fdyn.get<int>("UPRES"));
   // flag for writing stresses
-  fluidtimeparams.set                  ("write stresses"            ,Teuchos::getIntegralValue<int>(ioflags,"FLUID_STRESS"));
+  fluidtimeparams.set ("write stresses"  ,Teuchos::getIntegralValue<int>(ioflags,"FLUID_STRESS"));
+
   // ---------------------------------------------------- lift and drag
-  fluidtimeparams.set<int>("liftdrag",Teuchos::getIntegralValue<int>(fdyn,"LIFTDRAG"));
+  fluidtimeparams.set<int> ("liftdrag", Teuchos::getIntegralValue<int>(fdyn,"LIFTDRAG"));
 
   // -----------evaluate error for test flows with analytical solutions
-  int init = Teuchos::getIntegralValue<int>(fdyn,"INITIALFIELD");
-  fluidtimeparams.set                  ("eval err for analyt sol"   ,init);
+  int init = Teuchos::getIntegralValue<int> (fdyn,"INITIALFIELD");
+  fluidtimeparams.set ("eval err for analyt sol"   ,init);
 
   // ---------------------------- fine-scale subgrid viscosity approach
-  fluidtimeparams.set<string>           ("fs subgrid viscosity"   ,fdyn.get<string>("FSSUGRVISC"));
+  fluidtimeparams.set<string> ("fs subgrid viscosity", fdyn.get<string>("FSSUGRVISC"));
 
   // -----------------------sublist containing stabilization parameters
   fluidtimeparams.sublist("STABILIZATION")=fdyn.sublist("STABILIZATION");
@@ -182,20 +201,22 @@ void dyn_fluid_drt()
   FLUID_TIMEINTTYPE iop = Teuchos::getIntegralValue<FLUID_TIMEINTTYPE>(fdyn,"TIMEINTEGR");
   if(iop == timeint_stationary or
      iop == timeint_one_step_theta or
-     iop == timeint_bdf2
+     iop == timeint_bdf2 or
+     iop == timeint_afgenalpha
     )
   {
     // -----------------------------------------------------------------
-    // set additional parameters in list for OST/BDF2/stationary scheme
+    // set additional parameters in list for
+    // one-step-theta/BDF2/af-generalized-alpha/stationary scheme
     // -----------------------------------------------------------------
     // type of time-integration (or stationary) scheme
     fluidtimeparams.set<FLUID_TIMEINTTYPE>("time int algo",iop);
-    // parameter theta for time-integration schemes
-    fluidtimeparams.set<double>           ("theta"                    ,fdyn.get<double>("THETA"));
-    // number of steps for potential start algorithm
-    fluidtimeparams.set<int>              ("number of start steps"    ,fdyn.get<int>("NUMSTASTEPS"));
-    // parameter theta for potential start algorithm
-    fluidtimeparams.set<double>           ("start theta"              ,fdyn.get<double>("START_THETA"));
+    // parameter theta for one-step-theta time-integration scheme
+    fluidtimeparams.set<double> ("theta", fdyn.get<double>("THETA"));
+    // number of steps for potential start algorithm (currently not implemented)
+    fluidtimeparams.set<int> ("number of start steps", fdyn.get<int>("NUMSTASTEPS"));
+    // parameter theta for potential start algorithm(currently not implemented)
+    fluidtimeparams.set<double> ("start theta", fdyn.get<double>("START_THETA"));
 
     //------------------------------------------------------------------
     // create all vectors and variables associated with the time
@@ -241,25 +262,8 @@ void dyn_fluid_drt()
   else if (iop == timeint_gen_alpha)
   {
     // -------------------------------------------------------------------
-    // set additional parameters in list for generalized-alpha scheme
+    // no additional parameters required for generalized-alpha scheme
     // -------------------------------------------------------------------
-#if 1
-    // parameter alpha_M for for generalized-alpha scheme
-    fluidtimeparams.set<double>           ("alpha_M"                  ,fdyn.get<double>("ALPHA_M"));
-    // parameter alpha_F for for generalized-alpha scheme
-    fluidtimeparams.set<double>           ("alpha_F"                  ,fdyn.get<double>("ALPHA_F"));
-#else
-    // parameter alpha_M for for generalized-alpha scheme
-    fluidtimeparams.set<double>           ("alpha_M"                  ,1.-fdyn.get<double>("ALPHA_M"));
-    // parameter alpha_F for for generalized-alpha scheme
-    fluidtimeparams.set<double>           ("alpha_F"                  ,1.-fdyn.get<double>("ALPHA_F"));
-#endif
-
-    fluidtimeparams.set<double>           ("gamma"                    ,fdyn.get<double>("GAMMA"));
-
-    fluidtimeparams.set<string>           ("PREDICTOR"                ,fdyn.get<string>("PREDICTOR"));
-
-
     // create all vectors and variables associated with the time
     // integration (call the constructor);
     // the only parameter from the list required here is the number of

@@ -70,6 +70,8 @@ DRT::ELEMENTS::Fluid3::ActionType DRT::ELEMENTS::Fluid3::convertStringToActionTy
     act = Fluid3::calc_fluid_stationary_systemmat_and_residual;
   else if (action == "calc_linear_fluid")
     act = Fluid3::calc_linear_fluid;
+  else if (action == "calc_fluid_afgenalpha_systemmat_and_residual")
+    act = Fluid3::calc_fluid_afgenalpha_systemmat_and_residual;
   else if (action == "calc_fluid_genalpha_sysmat_and_residual")
     act = Fluid3::calc_fluid_genalpha_sysmat_and_residual;
   else if (action == "time update for subscales")
@@ -146,12 +148,14 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
 
   switch(act)
   {
-      //--------------------------------------------------
-      //--------------------------------------------------
-      // the standard one-step-theta implementation
-      //--------------------------------------------------
-      //--------------------------------------------------
+      //-----------------------------------------------------------------------
+      //-----------------------------------------------------------------------
+      // the standard one-step-theta + BDF2 implementation as well as
+      // generalized-alpha implementation with continuity equation at n+alpha_F
+      //-----------------------------------------------------------------------
+      //-----------------------------------------------------------------------
       case calc_fluid_systemmat_and_residual:
+      case calc_fluid_afgenalpha_systemmat_and_residual:
       {
         // if not available, define map from string to action
         if(stabstrtoact_.empty())

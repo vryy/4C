@@ -462,20 +462,4 @@ void ADAPTER::FluidGenAlpha::SetInitialFlowField(int whichinitialfield,int start
    return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void ADAPTER::FluidGenAlpha::SetTimeLomaFields(RCP<const Epetra_Vector> densnp,RCP<const Epetra_Vector> densn,RCP<const Epetra_Vector> densdtn)
-{
-   fluid_.SetTimeLomaFields(densnp,densn,densdtn);
-   return;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void ADAPTER::FluidGenAlpha::SetGenAlphaIterLomaFields(RCP<const Epetra_Vector> densnp,RCP<const Epetra_Vector> densdtnp)
-{
-   fluid_.SetGenAlphaIterLomaFields(densnp,densdtnp);
-   return;
-}
-
 #endif  // #ifdef CCADISCRET

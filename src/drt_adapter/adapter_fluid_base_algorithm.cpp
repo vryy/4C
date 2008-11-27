@@ -127,11 +127,31 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // (which also can be fluiddyn itself!)
 
   // the default time step size
-  fluidtimeparams->set<double>           ("time step size"           ,prbdyn.get<double>("TIMESTEP"));
+  fluidtimeparams->set<double> ("time step size"      ,prbdyn.get<double>("TIMESTEP"));
   // maximum simulation time
-  fluidtimeparams->set<double>           ("total time"               ,prbdyn.get<double>("MAXTIME"));
+  fluidtimeparams->set<double> ("total time"          ,prbdyn.get<double>("MAXTIME"));
   // maximum number of timesteps
-  fluidtimeparams->set<int>              ("max number timesteps"     ,prbdyn.get<int>("NUMSTEP"));
+  fluidtimeparams->set<int>    ("max number timesteps",prbdyn.get<int>("NUMSTEP"));
+
+  // -------- additional parameters in list for generalized-alpha scheme
+#if 1
+  // parameter alpha_M
+  fluidtimeparams->set<double> ("alpha_M", fdyn.get<double>("ALPHA_M"));
+  // parameter alpha_F
+  fluidtimeparams->set<double> ("alpha_F", fdyn.get<double>("ALPHA_F"));
+  // parameter gamma
+  fluidtimeparams->set<double> ("gamma",   fdyn.get<double>("GAMMA"));
+#else
+  // parameter alpha_M
+  fluidtimeparams->set<double> ("alpha_M", 1.-prbdyn.get<double>("ALPHA_M"));
+  // parameter alpha_F
+  fluidtimeparams->set<double> ("alpha_F", 1.-prbdyn.get<double>("ALPHA_F"));
+  // parameter gamma
+  fluidtimeparams->set<double> ("gamma",   prbdyn.get<double>("GAMMA"));
+#endif
+
+  // ------------------------------------------------- type of predictor
+  fluidtimeparams->set<string> ("predictor", prbdyn.get<string>("PREDICTOR"));
 
   // ---------------------------------------------- nonlinear iteration
   // set linearisation scheme
@@ -148,11 +168,12 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
   // ----------------------------------------------- restart and output
   // restart
-  fluidtimeparams->set                  ("write restart every"       ,prbdyn.get<int>("RESTARTEVRY"));
+  fluidtimeparams->set ("write restart every", prbdyn.get<int>("RESTARTEVRY"));
   // solution output
-  fluidtimeparams->set                  ("write solution every"      ,prbdyn.get<int>("UPRES"));
+  fluidtimeparams->set ("write solution every", prbdyn.get<int>("UPRES"));
   // flag for writing stresses
-  fluidtimeparams->set                  ("write stresses"            ,Teuchos::getIntegralValue<int>(ioflags,"FLUID_STRESS"));
+  fluidtimeparams->set ("write stresses"  ,Teuchos::getIntegralValue<int>(ioflags,"FLUID_STRESS"));
+
   // ---------------------------------------------------- lift and drag
   fluidtimeparams->set<int>("liftdrag",Teuchos::getIntegralValue<int>(fdyn,"LIFTDRAG"));
 
@@ -243,14 +264,19 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     }
   }
 
-
+  // -------------------------------------------------------------------
+  // additional parameters and algorithm call depending on respective
+  // time-integration (or stationary) scheme
+  // -------------------------------------------------------------------
   if(iop == timeint_stationary or
      iop == timeint_one_step_theta or
-     iop == timeint_bdf2
+     iop == timeint_bdf2 or
+     iop == timeint_afgenalpha
     )
   {
     // -----------------------------------------------------------------
-    // set additional parameters in list for OST/BDF2/stationary scheme
+    // set additional parameters in list for
+    // one-step-theta/BDF2/af-generalized-alpha/stationary scheme
     // -----------------------------------------------------------------
     // type of time-integration (or stationary) scheme
     fluidtimeparams->set<FLUID_TIMEINTTYPE>("time int algo"            ,iop);
@@ -314,32 +340,14 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   }
   else if (iop == timeint_gen_alpha)
   {
-#if 1
     // -------------------------------------------------------------------
-    // set additional parameters in list for generalized-alpha scheme
+    // no additional parameters in list for generalized-alpha scheme
     // -------------------------------------------------------------------
-    // parameter alpha_M for for generalized-alpha scheme
-    fluidtimeparams->set<double>           ("alpha_M"                  ,fdyn.get<double>("ALPHA_M"));
-    // parameter alpha_F for for generalized-alpha scheme
-    fluidtimeparams->set<double>           ("alpha_F"                  ,fdyn.get<double>("ALPHA_F"));
-
-    fluidtimeparams->set<double>           ("gamma"                    ,fdyn.get<double>("GAMMA"));
-#else
-    // -------------------------------------------------------------------
-    // set additional parameters in list for generalized-alpha scheme
-    // -------------------------------------------------------------------
-    // parameter alpha_M for for generalized-alpha scheme
-    fluidtimeparams->set<double>           ("alpha_M"                  ,1.-prbdyn.get<double>("ALPHA_M"));
-    // parameter alpha_F for for generalized-alpha scheme
-    fluidtimeparams->set<double>           ("alpha_F"                  ,1.-prbdyn.get<double>("ALPHA_F"));
-
-    fluidtimeparams->set<double>           ("gamma"                    ,prbdyn.get<double>("GAMMA"));
-#endif
-
     // create all vectors and variables associated with the time
     // integration (call the constructor);
     // the only parameter from the list required here is the number of
     // velocity degrees of freedom
+    //------------------------------------------------------------------
     fluid_ = rcp(new ADAPTER::FluidGenAlpha(actdis, solver, fluidtimeparams, output, isale));
   }
   else

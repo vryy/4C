@@ -169,11 +169,8 @@ namespace ADAPTER {
                                    RCP<const Epetra_Vector> densnm);
 
     /// set outer-iteration-related fields for low-Mach-number flow
-    virtual void SetIterLomaFields(RCP<const Epetra_Vector> densnp);
-
-    /// set outer-iteration-related fields for low-Mach-number flow
-    virtual void SetGenAlphaIterLomaFields(RCP<const Epetra_Vector> densnp,
-                                           RCP<const Epetra_Vector> densdtnp);
+    virtual void SetIterLomaFields(RCP<const Epetra_Vector> densnp,
+                                   RCP<const Epetra_Vector> densdtnp);
 
   private:
 
