@@ -192,6 +192,9 @@ namespace FLD
     {
       flow_=lid_driven_cavity;
 
+      // do the time integration independent setup
+      Setup();
+
       // allocate one instance of the averaging procedure for
       // the flow under consideration
       statistics_ldc_    =rcp(new TurbulenceStatisticsLdc(discret_,params_));
