@@ -150,9 +150,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   fluidtimeparams->set<double> ("gamma",   prbdyn.get<double>("GAMMA"));
 #endif
 
-  // ------------------------------------------------- type of predictor
-  fluidtimeparams->set<string> ("predictor", prbdyn.get<string>("PREDICTOR"));
-
   // ---------------------------------------------- nonlinear iteration
   // set linearisation scheme
   fluidtimeparams->set<string>           ("Linearisation"             ,fdyn.get<string>("NONLINITER"));
