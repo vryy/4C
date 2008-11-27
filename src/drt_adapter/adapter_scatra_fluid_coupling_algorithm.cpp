@@ -69,7 +69,8 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
   }
   case INPAR::SCATRA::timeint_gen_alpha:
   {
-    if (FluidField().TimIntScheme() != timeint_gen_alpha)
+    if (FluidField().TimIntScheme() != timeint_gen_alpha and
+        FluidField().TimIntScheme() != timeint_afgenalpha)
       dserror("Fluid and Scatra time integration schemes do not match");
     break;
   }

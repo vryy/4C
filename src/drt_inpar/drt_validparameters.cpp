@@ -1283,12 +1283,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>(
                                  "Stationary",
                                  "One_Step_Theta",
-                                 "BDF2"
+                                 "BDF2",
+                                 "Af_Gen_Alpha"
                                  ),
                                tuple<FLUID_TIMEINTTYPE>(
                                  timeint_stationary,
                                  timeint_one_step_theta,
-                                 timeint_bdf2
+                                 timeint_bdf2,
+                                 timeint_afgenalpha
                                  ),
                                &lomacontrol);
   IntParameter("NUMSTEP",24,"Total number of time steps",&lomacontrol);
