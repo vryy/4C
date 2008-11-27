@@ -3,8 +3,6 @@
 
 #include "fluid3_weak_dbc.H"
 
-
-
 //-----------------------------------------------------------------
 //-----------------------------------------------------------------
 //
@@ -45,6 +43,7 @@ DRT::ELEMENTS::Fluid3SurfaceWeakDBCInterface* DRT::ELEMENTS::Fluid3SurfaceWeakDB
 
   return NULL;
 }
+
 
 //-----------------------------------------------------------------
 //-----------------------------------------------------------------
@@ -103,6 +102,49 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     dserror("Unknown type of definition for gamma parameter: %s",(*consistency).c_str());
   }
 
+  // initialise Spaldings law with parameters chi=0.4 and B=5.5
+  Fluid3SurfaceWeakDBCSpaldingsLaw::Fluid3SurfaceWeakDBCSpaldingsLaw SpaldingsLaw(0.4,5.5);
+  
+  // decide whether to use it or not
+  const string* deftauB
+    =
+    (*wdbc_cond).Get<string>("Definition of penalty parameter");
+
+  bool spalding=false;
+
+  if(*deftauB=="Spalding")
+  {
+    spalding=true;
+  }
+  else if(*deftauB=="constant")
+  {
+    spalding=false;
+  }
+  else
+  {
+    dserror("Unknown definition of penalty parameter tauB: %s",(*deftauB).c_str());
+  }
+
+  // linearisation of adjoint convective flux
+  const string* linearisation_approach
+    =
+    (*wdbc_cond).Get<string>("Linearisation");
+
+  bool complete_linearisation=false;
+
+  if(*linearisation_approach=="lin_all")
+  {
+     complete_linearisation=true;
+  }
+  else if(*linearisation_approach=="no_lin_conv_inflow")
+  {
+     complete_linearisation=false;
+  }
+  else
+  {
+    dserror("Unknown definition of linearisation approach: %s",(*linearisation_approach).c_str());
+  }
+
   // find out whether we will use a time curve
   bool usetime = true;
   const double time = params.get("total time",-1.0);
@@ -131,6 +173,17 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
   // get value for boundary condition
   const vector<double>* val = (*wdbc_cond).Get<vector<double> >("val");
+
+  if(spalding)
+  {
+    for(int i=0;i<3;++i)
+    {
+      if((*val)[i]*(*val)[i]>1e-9)
+      {
+        dserror("Applying Spaldings law to a wall with nonzero velocity\n");
+      }      
+    }
+  }
 
   // get time integration parameter
   const double afgdt = params.get<double>("afgdt");
@@ -626,7 +679,9 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     // check for degenerated elements
     if (pdet < 0.0)
     {
-      dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", surfele->parent_->Id(), pdet);
+      dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", 
+              surfele->parent_->Id(), 
+              pdet);
     }
 
     //-----------------------------------------------------
@@ -825,6 +880,40 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
           vderxyaf_(rr,mm)+=pderxy_(mm,nn)*pevelaf_(rr,nn);
         }
       }
+    }
+
+    /*
+    // ---------------------------------------------------
+    // define (initial) penalty parameter
+    //
+    //
+    //                         /    \
+    //                        |  nu  |
+    //         tau      = C * | ---- |
+    //            B(,0)    b  |  h   |
+    //                         \  b /
+    */
+    double tau_B = Cb*visc/h;
+
+    // ---------------------------------------------------
+    // update penalty parameter for Spalding law
+    if(spalding)
+    {
+      //                             +--------------------+
+      //                            /  +---+              |
+      //       ||  n+af ||         /    \    n+af    n+af
+      //       || u     ||  =     /      +  u     * u       
+      //                         /      /    j       j   
+      //                      \ /      +---+
+      //                       +       dim j
+
+      const double normu = velintaf_.Norm2();
+
+      SpaldingsLaw.ComputeTauBUsingSpaldingsLaw(tau_B,
+                                                normu,
+                                                h    ,
+                                                Cb   ,
+                                                visc );
     }
 
     //--------------------------------------------------
@@ -1088,7 +1177,9 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
     if(flux<0)
     {
-      /*
+      if(complete_linearisation)
+      {
+        /*
 	// This linearisation has only to be included if
 	// u*n is negative --- otherwise it's nonesense
 	//
@@ -1100,60 +1191,61 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 	//   |    \        /              b  |
 	//    \                             / boundaryele, inflow
 	//               
-      */
-      const double timefac=fac*afgdt;
+        */
+        const double timefac=fac*afgdt;
       
-      for (int ui=0; ui<piel; ++ui) 
-      {
-	for (int vi=0; vi<piel; ++vi) 
-	{
-          elemat(vi*4    ,ui*4    ) -= timefac*pfunct_(vi)*n_(0)*
-            (velintaf_(0)-(*val)[0]*functionfac(0)*curvefac);
-          elemat(vi*4    ,ui*4 + 1) -= timefac*pfunct_(vi)*n_(1)*
-            (velintaf_(0)-(*val)[0]*functionfac(0)*curvefac);
-          elemat(vi*4    ,ui*4 + 2) -= timefac*pfunct_(vi)*n_(2)*
-            (velintaf_(0)-(*val)[0]*functionfac(0)*curvefac);
-
-          elemat(vi*4 + 1,ui*4    ) -= timefac*pfunct_(vi)*n_(0)*
-            (velintaf_(1)-(*val)[1]*functionfac(1)*curvefac);
-          elemat(vi*4 + 1,ui*4 + 1) -= timefac*pfunct_(vi)*n_(1)*
-            (velintaf_(1)-(*val)[1]*functionfac(1)*curvefac);
-          elemat(vi*4 + 1,ui*4 + 2) -= timefac*pfunct_(vi)*n_(2)*
-            (velintaf_(1)-(*val)[1]*functionfac(1)*curvefac);
-          
-          elemat(vi*4 + 2,ui*4    ) -= timefac*pfunct_(vi)*n_(0)*
-            (velintaf_(2)-(*val)[2]*functionfac(2)*curvefac);
-          elemat(vi*4 + 2,ui*4 + 1) -= timefac*pfunct_(vi)*n_(1)*
-            (velintaf_(2)-(*val)[2]*functionfac(2)*curvefac);
-          elemat(vi*4 + 2,ui*4 + 2) -= timefac*pfunct_(vi)*n_(2)*
-            (velintaf_(2)-(*val)[2]*functionfac(2)*curvefac);
-	}
-      }
-
-      /*
-      // factor: afgdt
-      //
-      //    /                       \
-      //   |    / n+af   \           |
-      // - |   | u    * n | w , Dacc |
-      //   |    \        /           |
-      //    \  |          |         / boundaryele, inflow
-      //       +----------+
-      //           <0
-      */
-      
-      const double fluxtimefac =fac*afgdt*flux;
-      
-      for (int ui=0; ui<piel; ++ui) 
-      {
-        for (int vi=0; vi<piel; ++vi) 
+        for (int ui=0; ui<piel; ++ui) 
         {
-          elemat(vi*4    ,ui*4    ) -= fluxtimefac*pfunct_(ui)*pfunct_(vi);
-          elemat(vi*4 + 1,ui*4 + 1) -= fluxtimefac*pfunct_(ui)*pfunct_(vi);
-          elemat(vi*4 + 2,ui*4 + 2) -= fluxtimefac*pfunct_(ui)*pfunct_(vi);
+          for (int vi=0; vi<piel; ++vi) 
+          {
+            elemat(vi*4    ,ui*4    ) -= timefac*pfunct_(vi)*n_(0)*
+              (velintaf_(0)-(*val)[0]*functionfac(0)*curvefac);
+            elemat(vi*4    ,ui*4 + 1) -= timefac*pfunct_(vi)*n_(1)*
+              (velintaf_(0)-(*val)[0]*functionfac(0)*curvefac);
+            elemat(vi*4    ,ui*4 + 2) -= timefac*pfunct_(vi)*n_(2)*
+              (velintaf_(0)-(*val)[0]*functionfac(0)*curvefac);
+            
+            elemat(vi*4 + 1,ui*4    ) -= timefac*pfunct_(vi)*n_(0)*
+              (velintaf_(1)-(*val)[1]*functionfac(1)*curvefac);
+            elemat(vi*4 + 1,ui*4 + 1) -= timefac*pfunct_(vi)*n_(1)*
+              (velintaf_(1)-(*val)[1]*functionfac(1)*curvefac);
+            elemat(vi*4 + 1,ui*4 + 2) -= timefac*pfunct_(vi)*n_(2)*
+              (velintaf_(1)-(*val)[1]*functionfac(1)*curvefac);
+            
+            elemat(vi*4 + 2,ui*4    ) -= timefac*pfunct_(vi)*n_(0)*
+              (velintaf_(2)-(*val)[2]*functionfac(2)*curvefac);
+            elemat(vi*4 + 2,ui*4 + 1) -= timefac*pfunct_(vi)*n_(1)*
+              (velintaf_(2)-(*val)[2]*functionfac(2)*curvefac);
+            elemat(vi*4 + 2,ui*4 + 2) -= timefac*pfunct_(vi)*n_(2)*
+              (velintaf_(2)-(*val)[2]*functionfac(2)*curvefac);
+          }
         }
-      }
-      
+        
+        /*
+        // factor: afgdt
+        //
+        //    /                       \
+        //   |    / n+af   \           |
+        // - |   | u    * n | w , Dacc |
+        //   |    \        /           |
+        //    \  |          |         / boundaryele, inflow
+        //       +----------+
+        //           <0
+        */
+        
+        const double fluxtimefac =fac*afgdt*flux;
+        
+        for (int ui=0; ui<piel; ++ui) 
+        {
+          for (int vi=0; vi<piel; ++vi) 
+          {
+            elemat(vi*4    ,ui*4    ) -= fluxtimefac*pfunct_(ui)*pfunct_(vi);
+            elemat(vi*4 + 1,ui*4 + 1) -= fluxtimefac*pfunct_(ui)*pfunct_(vi);
+            elemat(vi*4 + 2,ui*4 + 2) -= fluxtimefac*pfunct_(ui)*pfunct_(vi);
+          }
+        }
+      } // end if full_linearisation
+
       /*
       // factor: 1
       //
@@ -1191,7 +1283,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       //
       */
 
-      const double penaltytimefac=afgdt*Cb*visc/h*fac;
+      const double penaltytimefac=afgdt*tau_B*fac;
       for (int ui=0; ui<piel; ++ui) 
       {
         for (int vi=0; vi<piel; ++vi) 
@@ -1215,7 +1307,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       //
       */
 
-      const double penaltyfac=Cb*visc/h*fac;
+      const double penaltyfac=tau_B*fac;
       for (int vi=0; vi<piel; ++vi) 
       {
         elevec(vi*4    ) -= penaltyfac*pfunct_(vi)*
@@ -1225,11 +1317,275 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
         elevec(vi*4 + 2) -= penaltyfac*pfunct_(vi)*
           (velintaf_(2)-(*val)[2]*functionfac(2)*curvefac);
       }
-    } // end if flux<0, i.e.
+    } // end if flux<0, i.e. boundary is an inflow boundary
 
   } // end gaussloop
 
   return 0;
+}
+
+//-----------------------------------------------------------------
+//-----------------------------------------------------------------
+//
+//                    SPALDINGS LAW OF THE WALL
+//
+//-----------------------------------------------------------------
+//-----------------------------------------------------------------
+
+
+//-----------------------------------------------------------------
+//                          constructor
+//                                            (public) gammi 11/09
+//-----------------------------------------------------------------
+DRT::ELEMENTS::Fluid3SurfaceWeakDBCSpaldingsLaw::Fluid3SurfaceWeakDBCSpaldingsLaw(
+  const double chi_in, 
+  const double B_in  )
+  :
+  chi_(chi_in),
+  B_  (B_in  )
+{
+  return;
+}
+
+
+//-----------------------------------------------------------------
+// dynamic computation of the penalty paramter using Spaldings law
+//                                            (public) gammi 11/09
+//-----------------------------------------------------------------
+void DRT::ELEMENTS::Fluid3SurfaceWeakDBCSpaldingsLaw::ComputeTauBUsingSpaldingsLaw(
+  double&       tau_B,
+  const double& normu,
+  const double& h    ,
+  const double& Cb   ,
+  const double& visc )
+{
+
+  /*
+  // the penalty term could be interpretaed as a traction 
+  // boundary condition (normally g=0 for wall bounded flows)
+  //
+  //      /                       \
+  //     |             / n+af   \  |
+  //     | v , tau  * | u    - g | |
+  //     |        B    \        /  |
+  //      \                       / boundaryele
+  //
+  //           |                 |
+  //           +-----------------+
+  //                t  /   "
+  //               " W/ rho
+  */
+  
+  /*
+  // this gives rise to the following definition of the 
+  // friction velocity
+  //
+  //                 +---------+     +----------------+
+  //      u    =    / t   /      =  / tau  * || n+af||  
+  //       tau     v   W / rho     v     B   ||u    ||   
+  */
+  
+  /*
+  // and hence the following dimensionless value for y
+  //
+  //                             +-------------+
+  //           h           y *  / tau  * ||u||
+  //            b      +       v     B          
+  //      y = ---- -> y  = ----------------------
+  //           C                     nu
+  //            b
+  //                              +
+  // note that y is constant but y  is depending on tau !
+  //                                                   B
+  //
+  //              +-------------+       +-------------+  
+  //        h *  / tau  * ||u||        / tau  * ||u||    
+  //    +    b  v     B               v     B            
+  //   y  = ---------------------- = ------------------- 
+  //              C  * nu                  tau          
+  //               b                          B,0       
+  */
+  
+  /*
+  // accordingly, we are able to define the dimensioneless velocity
+  //                                            +-------------+ 
+  //                  ||  n+af ||              /  ||  n+af||    
+  //        +         || u     ||             /   || u    ||    
+  //       u  = ---------------------- =     /   -------------  
+  //              +------------------+    \ /        tau        
+  //             / tau  * ||  n+af ||      v            B       
+  //            v     B   || u     || 
+  */
+  
+  // we assume a boundary layer thickness of
+  //
+  //               
+  //                    h   
+  //                     b       nu
+  //               y = ---- = --------
+  //                    C      tau 
+  //                     b        B,0
+  //
+  // (proportional to the grid size normal to the wall)
+  const double y =h/Cb;
+
+  // iterate until the residual of the Spalding equation is 0
+  double res=SpaldingResidual(y,visc,tau_B,normu);
+
+  int count = 0;
+      
+  while(res*res>1e-6)
+  {
+    const double drdtauB=JacobianSpaldingResidual(y,visc,tau_B,normu);
+    
+    if(drdtauB <1e-10)
+    {
+      dserror("(Nearly) singular Jacobian of Spaldings equation");
+    }
+    
+    double inc = res/drdtauB;
+    
+    // do damping to avoid negative values of tau_B (robustness)
+    while(tau_B-inc < 0)
+    {
+      inc/=2.0;
+    }
+    
+    // get jacobian, do damped Newton step
+    tau_B-=inc;
+    
+    // get residual of Spaldings equation (law of the wall)
+    res   = SpaldingResidual(y,visc,tau_B,normu);
+
+    ++count;  
+    if(count>100)
+    {
+      dserror("no convergence in 100 steps in Newton iteration during solution of Spaldings equation\n");
+    }
+  }
+
+  return;
+}
+
+
+
+//-----------------------------------------------------------------
+//             evaluate the residual of Spaldings law of the wall
+//                                           (private) gammi 11/09
+//-----------------------------------------------------------------
+double DRT::ELEMENTS::Fluid3SurfaceWeakDBCSpaldingsLaw::SpaldingResidual(
+  const double y     , 
+  const double visc  ,
+  const double tau_B ,
+  const double normu
+  )
+{
+  // get dimensionless velocity
+  const double up = Uplus(normu,tau_B);
+
+  //      +
+  // get y , a dimensionless boundary layer thickness 
+  const double yp = Yplus(normu,tau_B,visc,y);
+
+  /*
+  // Evaluate Spaldings law of the wall
+  //                                /                                                  \
+  //                               |                           /     +\ 2    /     +\ 3 |
+  //                               |       +                  | chi*u  |    | chi*u  |  |
+  //  +     / +\     +    -chi*B   |  chi*u               +    \      /      \      /   |
+  // y = f | u  | = u  + e       * | e       - 1.0 - chi*u  - ----------- - ----------- |
+  //        \  /                   |                              2.0           6.0     |
+  //                               |                                                    |
+  //                                \                                                  /
+  */
+  return(yp-(up+exp(-chi_*B_)*(exp(chi_*up)-1.0-chi_*up*(1+chi_*up/2.0*(1.0+chi_*up/3.0)))));
+}
+
+//-----------------------------------------------------------------
+//     evaluate the residual of Spaldings law of the wall
+//                                           (private) gammi 11/09
+//-----------------------------------------------------------------
+double DRT::ELEMENTS::Fluid3SurfaceWeakDBCSpaldingsLaw::JacobianSpaldingResidual(
+  const double y    , 
+  const double visc ,
+  const double tau_B,
+  const double normu)
+{
+  // get dimensionless velocity
+  const double up = Uplus(normu,tau_B);
+
+  // compute the derivative of the Spalding residual w.r.t. tau_B
+  double drdtauB = y/(2.0*visc*sqrt(tau_B))*sqrt(normu);
+  
+  drdtauB += (1+chi_*exp(-chi_*B_)*(exp(chi_*up)-1.0-chi_*up*(1.0+0.5*chi_*up)))
+             *0.5*sqrt(normu)/(sqrt(tau_B)*sqrt(tau_B)*sqrt(tau_B));
+
+  return(drdtauB);
+}
+
+
+//-----------------------------------------------------------------
+// compute dimensionless velocity u+
+//                                           (private) gammi 11/09
+//-----------------------------------------------------------------
+double DRT::ELEMENTS::Fluid3SurfaceWeakDBCSpaldingsLaw::Uplus(
+  const double normu, 
+  const double tau_B)
+{
+  /*
+  // define dimensionless velocity
+  //                                            +-------------+ 
+  //                  ||  n+af ||              /  ||  n+af||    
+  //        +         || u     ||             /   || u    ||    
+  //       u  = ---------------------- =     /   -------------  
+  //              +------------------+    \ /        tau        
+  //             / tau  * ||  n+af ||      v            B       
+  //            v     B   || u     || 
+  */
+  return(sqrt(normu/tau_B));
+}
+
+//-----------------------------------------------------------------
+// compute dimensionless thickness of modeled layer y+
+//                                           (private) gammi 11/09
+//-----------------------------------------------------------------
+double DRT::ELEMENTS::Fluid3SurfaceWeakDBCSpaldingsLaw::Yplus(
+  const double normu, 
+  const double tau_B, 
+  const double visc , 
+  const double y    )
+{
+  /*
+  //  +
+  // y  is a dimensionless boundary layer thickness (law of the 
+  // wall is a model for the flow between this point and 0)
+  //
+  //            +-------------+              +-------------+     
+  //           / tau  * ||u||          h *  / tau  * ||u||       
+  //    +     v     B                   b  v     B               
+  //   y  =  ------------------- * y = ---------------------- = 
+  //                 nu                      C  * nu             
+  //                                          b                  
+  //           +-------------+ 
+  //          / tau  * ||u||   
+  //         v     B           
+  //      = -------------------
+  //              tau          
+  //                 B,0
+  //
+  //
+  // note that this means that in the first iteration we initialise 
+  // y+ and u+ as the near wall limit of Spaldings equation
+  //
+  //                     +-------------+ 
+  //                    /  ||  n+af||    
+  //     +    +        /   || u    ||    
+  //    y  = u  =     /   -------------  
+  //               \ /        tau        
+  //                v            B       
+  */
+
+  return((sqrt(tau_B*normu)/visc)*y);
 }
 
 #endif

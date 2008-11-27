@@ -142,7 +142,36 @@ int DRT::ELEMENTS::Fluid2Line::Evaluate(        ParameterList&            params
       {
 	dserror("Unknown type of definition for gamma parameter: %s",(*consistency).c_str());
       }
+      
+      // there is only one definition of tauB available in 2d
+      const string* deftauB
+        =
+        (*wdbc_cond).Get<string>("Definition of penalty parameter");
+      
+      if(*deftauB!="constant")
+      {
+        dserror("Definition of penalty parameter tauB not supported in 2d: %s",(*deftauB).c_str());
+      }
 
+      // linearisation of adjoint convective flux
+      const string* linearisation_approach
+        =
+        (*wdbc_cond).Get<string>("Linearisation");
+      
+      bool complete_linearisation=false;
+      
+      if(*linearisation_approach=="lin_all")
+      {
+        complete_linearisation=true;
+      }
+      else if(*linearisation_approach=="no_lin_conv_inflow")
+      {
+        complete_linearisation=false;
+      }
+      else
+      {
+        dserror("Unknown definition of linearisation approach: %s",(*linearisation_approach).c_str());
+      }
 
       // find out whether we will use a time curve
       bool usetime = true;
@@ -245,20 +274,22 @@ int DRT::ELEMENTS::Fluid2Line::Evaluate(        ParameterList&            params
       }
 
       // call the special evaluation method
-      EvaluateWeakDirichlet(lm            ,
-			    *plm          ,
-			    elemat1       ,
-			    elevec1       ,
-			    pevelaf       ,
-			    pevelnp       ,
-                            peprenp       ,
-			    *val          ,
-			    functions     ,
-			    curvefac      ,
-			    Cb            ,
-			    wd_gamma      ,
-			    afgdt         ,
-                            gdt           );
+      EvaluateWeakDirichlet(lm                    ,
+			    *plm                  ,
+			    elemat1               ,
+			    elevec1               ,
+			    pevelaf               ,
+			    pevelnp               ,
+                            peprenp               ,
+			    *val                  ,
+			    functions             ,
+			    curvefac              ,
+			    Cb                    ,
+			    wd_gamma              ,
+			    afgdt                 ,
+                            gdt                   ,
+                            complete_linearisation
+        );
 
       break;
     }
@@ -995,20 +1026,21 @@ void DRT::ELEMENTS::Fluid2Line::ElementSurfaceTension(ParameterList& params,
   Evaluate weakly imposed Dirichlet conditions
   --------------------------------------------------------------------*/
 void DRT::ELEMENTS::Fluid2Line::EvaluateWeakDirichlet(
-  vector<int>&               lm            ,
-  vector<int>&               plm           ,
-  Epetra_SerialDenseMatrix&  elemat        ,
-  Epetra_SerialDenseVector&  elevec        ,
-  blitz::Array<double,2>&    pevelaf       ,
-  blitz::Array<double,2>&    pevelnp       ,
-  blitz::Array<double,1>&    peprenp       ,
-  vector<double>             val           ,
-  const vector<int>*         functions     ,
-  double                     curvefac      ,
-  double                     Cb            ,
-  double                     wd_gamma      ,
-  const double               afgdt         ,
-  const double               gdt
+  vector<int>&               lm                    ,
+  vector<int>&               plm                   ,
+  Epetra_SerialDenseMatrix&  elemat                ,
+  Epetra_SerialDenseVector&  elevec                ,
+  blitz::Array<double,2>&    pevelaf               ,
+  blitz::Array<double,2>&    pevelnp               ,
+  blitz::Array<double,1>&    peprenp               ,
+  vector<double>             val                   ,
+  const vector<int>*         functions             ,
+  double                     curvefac              ,
+  double                     Cb                    ,
+  double                     wd_gamma              ,
+  const double               afgdt                 ,
+  const double               gdt                   ,
+  const bool                 complete_linearisation
   )
 {
   //--------------------------------------------------

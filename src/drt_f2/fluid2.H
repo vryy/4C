@@ -778,23 +778,25 @@ private:
     \param wd_gamma  (in)  : switch between adjoint-(in)consistent
     \param afgdt     (in)  : time integration dependent factor, alphaF*gamma*dt
     \param gdt       (in)  : time integration dependent factor, gamma*dt
+    \param comp_lin  (in)  : linearisation of adjoint convective fluxes on/off
 
   */
   void EvaluateWeakDirichlet(
-    vector<int>&               lm            ,
-    vector<int>&               plm           ,
-    Epetra_SerialDenseMatrix&  elemat        ,
-    Epetra_SerialDenseVector&  elevec        ,
-    blitz::Array<double,2>&    pevelaf       ,
-    blitz::Array<double,2>&    pevelnp       ,
-    blitz::Array<double,1>&    eprenp        ,
-    vector<double>             val           ,
-    const vector<int>*         functions     ,
-    double                     curvefac      ,
-    double                     Cb            ,
-    double                     wd_gamma      ,
-    const double               afgdt         ,
-    const double               gdt           );
+  vector<int>&               lm       ,
+  vector<int>&               plm      ,
+  Epetra_SerialDenseMatrix&  elemat   ,
+  Epetra_SerialDenseVector&  elevec   ,
+  blitz::Array<double,2>&    pevelaf  ,
+  blitz::Array<double,2>&    pevelnp  ,
+  blitz::Array<double,1>&    peprenp  ,
+  vector<double>             val      ,
+  const vector<int>*         functions,
+  double                     curvefac ,
+  double                     Cb       ,
+  double                     wd_gamma ,
+  const double               afgdt    ,
+  const double               gdt      ,
+  const bool                 comp_lin );
 
 
 }; // class Fluid2Line

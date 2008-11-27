@@ -117,9 +117,9 @@ END NURBSURFACE
 ----------------------------------------------------DESIGN VOLUMES
 -----------------------------DESIGN LINE WEAK DIRICHLET CONDITIONS
 DLINE 3
-E 4 - adjoint-consistent 1.0 0.0 0.0  1   none none 1 0 0
-E 1 - adjoint-consistent 0.0 0.0 0.0 none none none 0 0 0
-E 3 - adjoint-consistent 0.0 0.0 0.0 none none none 0 0 0
+E 4 - adjoint-consistent constant lin_all  1.0 0.0 0.0  1   none none 1 0 0
+E 1 - adjoint-consistent constant lin_all  0.0 0.0 0.0 none none none 0 0 0
+E 3 - adjoint-consistent constant lin_all  0.0 0.0 0.0 none none none 0 0 0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE     332 DNODE 1
 NODE       1 DNODE 2

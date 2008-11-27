@@ -428,11 +428,33 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
         Teuchos::tuple<std::string>("adjoint-consistent","diffusive-optimal"),
         Teuchos::tuple<std::string>("adjoint-consistent","diffusive-optimal"))));
 
+  // the penalty parameter could be computed dynamically (using Spaldings 
+  // law of the wall) or using a fixed value
+  weakDirichletcomponents.push_back(
+    Teuchos::rcp(
+      new StringConditionComponent(
+        "Definition of penalty parameter","constant",
+        Teuchos::tuple<std::string>("constant","Spalding"),
+        Teuchos::tuple<std::string>("constant","Spalding"))));
+
+
+  // linearisation strategies --- the linearisation (i.e. the matrix 
+  // contribution) of the convective term on the inflow could be
+  // suppressed, since the flux is a kink function and including this one
+  // might result in even worse convergence behaviour
+  weakDirichletcomponents.push_back(
+    Teuchos::rcp(
+      new StringConditionComponent(
+        "Linearisation","lin_all",
+        Teuchos::tuple<std::string>("lin_all","no_lin_conv_inflow"),
+        Teuchos::tuple<std::string>("lin_all","no_lin_conv_inflow"))));
+
   // we provide a vector of 3 values for velocities 
   weakDirichletcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val",3)));
 
   // values for curves
   weakDirichletcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("curve",3,true,true)));
+
   // and optional spatial functions
   weakDirichletcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("funct",3,false,false,true)));
 
