@@ -129,9 +129,18 @@ void MonWriter::WriteMonFile(PostProblem& problem, string& infieldtype, int node
   // space dimension of the problem
   int dim = problem.num_dim();
 
+  // get actual results of total problem
+  PostResult result = PostResult(field);
+  
   // global nodal dof numbers
   std::vector<int> gdof;
 
+  // compute offset = datamap.MinAllGID() - field->discretization()->DofRowMap()->MinAllGID().
+  // Note that datamap can only be compute in WriteResult(...), which is pure virtual on
+  // this level. Hence offset is split up intot two parts!
+  // First part:
+  int offset1 = - field->discretization()->DofRowMap()->MinAllGID();
+  
   if (nodeowner_)
   {
     // test, if this node belongs to me
@@ -142,10 +151,14 @@ void MonWriter::WriteMonFile(PostProblem& problem, string& infieldtype, int node
     // pointer to my actual node
     const DRT::Node* mynode = mydiscrete->gNode(node);
 
-
     // global nodal dof numbers
     gdof = mydiscrete->Dof(mynode);
-
+    // set some dummy values
+    for(int i=0;i < gdof.size();i++)
+    {
+      gdof[i]+=offset1;
+    }
+    
     // write header
     WriteHeader(outfile);
     outfile << node << "\n";
@@ -168,8 +181,8 @@ void MonWriter::WriteMonFile(PostProblem& problem, string& infieldtype, int node
     }
   }
 
-  // get actual results of total problem
-  PostResult result = PostResult(field);
+  
+
 
   // this is a loop over all time steps that should be written
   // writing step size is considered
@@ -279,10 +292,13 @@ void FluidMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::vec
   // do output of general time step data
   outfile << "   " << result.step() << "    " << result.time() << "  ";
 
+  //compute second part of offset
+  int offset2 = velmap.MinAllGID();
+  
   // do output for velocity and pressure
   for(unsigned i=0; i < gdof.size(); ++i)
   {
-    int lid = velmap.LID(gdof[i]);
+    int lid = velmap.LID(gdof[i]+offset2);
     outfile << (*resvec)[lid] << "   ";
   }
   outfile << "\n";
@@ -356,13 +372,18 @@ void StructMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::ve
   // get actual result vector displacement
   RCP< Epetra_Vector > resvec = result.read_result("displacement");
   const Epetra_BlockMap& dispmap = resvec->Map();
+  
+  //compute second part of offset
+  int offset2 = dispmap.MinAllGID();
+  
   // do output of general time step data
   outfile << "   " << result.step() << "    " << result.time() << "  ";
 
   // do output for velocity and pressure
   for(unsigned i=0; i < gdof.size(); ++i)
   {
-    int lid = dispmap.LID(gdof[i]);
+    int lid = dispmap.LID(gdof[i]+offset2);
+    if (lid == -1) dserror("illegal gid %d at %d!",gdof[i],i);
     outfile << (*resvec)[lid] << "   ";
   }
 
@@ -370,10 +391,14 @@ void StructMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::ve
   resvec = result.read_result("velocity");
   const Epetra_BlockMap& velmap = resvec->Map();
 
+  //compute second part of offset
+  offset2 = velmap.MinAllGID();
+  
   // do output for velocity
   for(unsigned i=0; i < gdof.size(); ++i)
   {
-    int lid = velmap.LID(gdof[i]);
+    int lid = velmap.LID(gdof[i]+offset2);
+    if (lid == -1) dserror("illegal gid %d at %d!",gdof[i],i);
     outfile << (*resvec)[lid] << "   ";
   }
 
@@ -381,10 +406,14 @@ void StructMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::ve
   resvec = result.read_result("acceleration");
   const Epetra_BlockMap& accmap = resvec->Map();
 
+  //compute second part of offset
+  offset2 = accmap.MinAllGID();
+  
   // do output for acceleration
   for(unsigned i=0; i < gdof.size(); ++i)
   {
-    int lid = accmap.LID(gdof[i]);
+    int lid = accmap.LID(gdof[i]+offset2);
+    if (lid == -1) dserror("illegal gid %d at %d!",gdof[i],i);
     outfile << (*resvec)[lid] << "   ";
   }
 
@@ -462,10 +491,13 @@ void AleMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::vecto
   // do output of general time step data
   outfile << "   " << result.step() << "    " << result.time() << "  ";
 
+  //compute second part of offset
+  int offset2 = dispmap.MinAllGID();
+  
   // do output for velocity and pressure
   for(unsigned i=0; i < gdof.size()-1; ++i)
   {
-    int lid = dispmap.LID(gdof[i]);
+    int lid = dispmap.LID(gdof[i]+offset2);
     outfile << (*resvec)[lid] << "   ";
   }
   outfile << "\n";
@@ -538,9 +570,12 @@ void FsiFluidMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::
   // do output of general time step data
   outfile << "   " << result.step() << "    " << result.time() << "  ";
 
+  //compute second part of offset
+  int offset2 = dispmap.MinAllGID();
+  
   for(unsigned i=0; i < gdof.size()-1; ++i)
   {
-    int lid = dispmap.LID(gdof[i]);
+    int lid = dispmap.LID(gdof[i]+offset2);
     outfile << (*resvec)[lid] << "   ";
   }
 
@@ -549,10 +584,13 @@ void FsiFluidMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::
   resvec = result.read_result("velnp");
   const Epetra_BlockMap& velmap = resvec->Map();
 
+  //compute second part of offset
+  offset2 = velmap.MinAllGID();
+  
   // do output for velocity and pressure
   for(unsigned i=0; i < gdof.size(); ++i)
   {
-    int lid = velmap.LID(gdof[i]);
+    int lid = velmap.LID(gdof[i]+offset2);
     outfile << (*resvec)[lid] << "   ";
   }
   outfile << "\n";
