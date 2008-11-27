@@ -1,8 +1,20 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file 
+\file fluid3_weak_dbc.H
 
-\brief
+\brief weak Dirichlet boundary conditions for fluid problems.
+
+Literature:
+
+    Weak imposition of Dirichlet boundary conditions in fluid mechanics
+    Y. Bazilevs, T.J.R. Hughes
+    Computers & Fluids 36 (2007) 12–26
+
+
+    Weak Dirichlet Boundary Conditions for Wall-Bounded Turbulent Flows
+    Y. Bazilevs, C. Michler, V.M. Calo, and T.J.R. Hughes
+    Computer Methods in Applied Mechanics and Engineering
+    Volume 196, Issues 49-52, 1 November 2007, Pages 4853-4862
 
 <pre>
 Maintainer: Peter Gamnitzer
