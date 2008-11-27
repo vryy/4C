@@ -70,6 +70,9 @@ void DRT::ELEMENTS::So_shw6::Pack(vector<char>& data) const
   AddtoPack(data,eastype_);
   // neas_
   AddtoPack(data,neas_);
+  // reordering
+  AddtoPack(data,optimal_parameterspace_map_);
+  AddtoPack(data,nodes_rearranged_);
 
   return;
 }
@@ -94,6 +97,9 @@ void DRT::ELEMENTS::So_shw6::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,eastype_);
   // neas_
   ExtractfromPack(position,data,neas_);
+  // reordering
+  ExtractfromPack(position,data,optimal_parameterspace_map_);
+  ExtractfromPack(position,data,nodes_rearranged_);
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
