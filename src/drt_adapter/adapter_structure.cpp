@@ -370,4 +370,37 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
 }
 
 /*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::Structure::Integrate()
+{
+  // a few parameters
+  double time = GetTime();
+  const double timeend = GetTimeEnd();
+  const double timestepsize = GetTimeStepSize();
+  int step = GetTimeStep();
+  const int stepend = GetTimeNumStep();
+
+  // loop ahead --- if timestepsize>0
+  while ( (time < timeend) and (step < stepend) )
+  {
+    PrepareTimeStep();
+    Solve();
+
+    // update
+    Update();
+    time +=  timestepsize;
+    step += 1;
+
+    // talk to user
+    std::cout << "Finished:  Step=" << step << ", Time=" << time << std::endl;
+    std::cout <<endl;
+    // talk to disk
+    Output();
+  }
+
+  // Jump you f***ers
+  return;
+}
+
+/*----------------------------------------------------------------------*/
 #endif

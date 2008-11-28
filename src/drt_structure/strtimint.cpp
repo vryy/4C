@@ -383,9 +383,14 @@ void STR::TimInt::ReadRestart
 )
 {
   IO::DiscretizationReader reader(discret_, step);
-  step_ = reader.ReadInt("step");
-  if (step_ != step) dserror("Time step on file not equal to given step");
+  if (step != reader.ReadInt("step")) 
+    dserror("Time step on file not equal to given step");
+
+  step_ = step;
+  stepn_ = step_ + 1;
   time_ = Teuchos::rcp(new TimIntMStep<double>(0, 0, reader.ReadDouble("time")));
+  timen_ = (*time_)[0] + (*dt_)[0];
+
   ReadRestartState();
   ReadRestartForce();
   ReadRestartConstraint();
@@ -839,9 +844,7 @@ void STR::TimInt::ApplyForceInternal
 /* integrate */
 void STR::TimInt::Integrate()
 {
-  // set target time and step
-  timen_ = (*time_)[0] + (*dt_)[0];
-  stepn_ = step_ + 1;
+  // target time #timen_ and step #stepn_ already set 
 
   // time loop
   while ( (timen_ <= timemax_) and (stepn_ <= stepmax_) )

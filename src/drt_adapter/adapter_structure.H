@@ -141,6 +141,26 @@ namespace ADAPTER {
     //@}
 
     //! @name Time step helpers
+    //@{
+
+    /// Get the current time
+    virtual const double GetTime() const = 0;
+    
+    /// Get upper limit of time range of interest
+    virtual const double GetTimeEnd() const = 0;
+
+    /// Get time step size \f$\Delta t_n\f$
+    virtual const double GetTimeStepSize() const = 0;
+
+    /// Get current time step \f$n\f$ (sometimes called \f$k\f$ [but not in Baci])
+    virtual const int GetTimeStep() const = 0;
+
+    /// Get number of time steps
+    virtual const int GetTimeNumStep() const = 0;
+
+    /// Take the time and integrate (time loop)
+    /// \date 11/08
+    void Integrate();
 
     /// start new time step
     virtual void PrepareTimeStep() = 0;
@@ -167,19 +187,17 @@ namespace ADAPTER {
     //! @name Solver calls
 
     /// nonlinear solve
-    /*!
-      Do the nonlinear solve for the time step. All boundary conditions have
-      been set.
-     */
+    ///
+    ///  Do the nonlinear solve for the time step. All boundary conditions have
+    ///  been set.
     virtual void Solve() = 0;
 
     /// linear structure solve with just a interface load
-    /*!
-      The very special solve done in steepest descent relaxation
-      calculation (and matrix free Newton Krylov).
-
-      \note Can only be called after a valid structural solve.
-    */
+    ///
+    ///  The very special solve done in steepest descent relaxation
+    ///  calculation (and matrix free Newton Krylov).
+    ///
+    /// \note Can only be called after a valid structural solve.
     virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> iforce) = 0;
 
     /// get the linear solver object used for this field
@@ -206,12 +224,11 @@ namespace ADAPTER {
     //! @name Apply interface forces
 
     /// apply interface forces to structural solver
-    /*!
-      This prepares a new solve of the structural field within one time
-      step. The middle values are newly created.
-
-      \note This is not yet the most efficient implementation.
-    */
+    ///
+    /// This prepares a new solve of the structural field within one time
+    /// step. The middle values are newly created.
+    ///
+    /// \note This is not yet the most efficient implementation.
     virtual void ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce) = 0;
 
     /// apply robin enhanced interface forces to structural solver

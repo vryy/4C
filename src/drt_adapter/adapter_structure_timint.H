@@ -85,10 +85,24 @@ namespace ADAPTER {
 
     /// IT'S ACTUALLY ALWAYS ZERO AND RATHER POINTLESS, OR?
     Teuchos::RCP<const Epetra_Vector> FRobin();
-    //virtual Teuchos::RCP<Epetra_Vector> FluidCondRHS() const;
-    //virtual Teuchos::RCP<Epetra_Vector> MeshCondRHS() const;
 
-    //Teuchos::RCP<Epetra_Vector> InterfaceDispn();
+    /// @name Time step helpers
+    //@{
+
+    /// Get the current time
+    virtual const double GetTime() const { return structure_->GetTime(); }
+    
+    /// Get upper limit of time range of interest
+    virtual const double GetTimeEnd() const { return structure_->GetTimeEnd(); }
+
+    /// Get time step size \f$\Delta t_n\f$
+    virtual const double GetTimeStepSize() const { return structure_->GetTimeStepSize(); }
+
+    /// Get current time step \f$n\f$ (sometimes called \f$k\f$ [but not in Baci])
+    virtual const int GetTimeStep() const { return structure_->GetStep(); }
+
+    /// Get number of time steps
+    virtual const int GetTimeNumStep() const { return structure_->GetTimeNumStep(); }
 
     /// start new time step
     void PrepareTimeStep();
@@ -101,24 +115,26 @@ namespace ADAPTER {
     /// update at time step end
     void Update();
     
-    //! Update iteration
-    //! Add residual increment to Lagrange multipliers stored in Constraint manager
+    /// Update iteration
+    /// Add residual increment to Lagrange multipliers stored in Constraint manager
     virtual void UpdateIterIncrConstr
     (
-        Teuchos::RCP<Epetra_Vector> lagrincr ///< Lagrange multiplier increment
+      Teuchos::RCP<Epetra_Vector> lagrincr  ///< Lagrange multiplier increment
     )
     {
       structure_->UpdateIterIncrConstr(lagrincr);
     }
     
-    //! Return MapExtractor for Dirichlet boundary conditions 
-    virtual const RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
+    /// Return MapExtractor for Dirichlet boundary conditions 
+    virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
     {
       return structure_->GetDBCMapExtractor();
     }
 
     /// output results
     void Output();
+
+    //@}
 
     /// communication object at the interface
     virtual const LINALG::MapExtractor& Interface() const

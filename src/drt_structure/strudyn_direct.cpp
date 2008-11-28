@@ -35,6 +35,8 @@ Maintainer: Burkhard Bornemann
 #include "stru_resulttest.H"
 #include "../drt_inv_analysis/inv_analysis.H"
 
+#include "../drt_adapter/adapter_structure_timint.H"
+
 #include "strtimint.H"
 #include "strtimint_impl.H"
 #include "strtimint_expl.H"
@@ -110,10 +112,21 @@ void STR::strudyn_direct()
   }
 
   // create marching time integrator
-  Teuchos::RCP<STR::TimInt> sti 
-    = TimIntCreate(ioflags, sdyn, xparams, actdis, solver, output);
-  if (sti == Teuchos::null)
-    dserror("Failed in creating integrator.");
+  Teuchos::RCP<STR::TimInt> sti = Teuchos::null;
+  Teuchos::RCP<ADAPTER::Structure> asti = Teuchos::null;
+  if ((bool) Teuchos::getIntegralValue<int>(sdyn,"ADAPTERDRIVE"))
+  {
+    asti = Teuchos::rcp(new ADAPTER::StructureTimInt(Teuchos::rcp(new Teuchos::ParameterList(ioflags)),
+                                                     Teuchos::rcp(new Teuchos::ParameterList(sdyn)), 
+                                                     Teuchos::rcp(new Teuchos::ParameterList(xparams)), 
+                                                     actdis, solver, output));
+    if (asti == Teuchos::null) dserror("Failed in creating integrator.");
+  }
+  else
+  {
+    sti = TimIntCreate(ioflags, sdyn, xparams, actdis, solver, output);
+    if (sti == Teuchos::null) dserror("Failed in creating integrator.");
+  }
 
   // create auxiliar time integrator
   Teuchos::RCP<STR::TimAda> sta 
@@ -122,13 +135,26 @@ void STR::strudyn_direct()
   // do restart if demanded from input file
   if (genprob.restart)
   {
-    sti->ReadRestart(genprob.restart);
+    if (sti != Teuchos::null)
+      sti->ReadRestart(genprob.restart);
+    else if (asti != Teuchos::null)
+      asti->ReadRestart(genprob.restart);
   }
 
   // write mesh always at beginning of calc or restart
   {
-    const int step = sti->GetStep();
-    const double time = sti->GetTime(); // PROVIDE INPUT PARAMETER IN sdyn
+    int step = 0;
+    double time = 0.0;
+    if (sti != Teuchos::null)
+    {
+      step = sti->GetStep();
+      time = sti->GetTime(); // PROVIDE INPUT PARAMETER IN sdyn
+    }
+    else if (asti != Teuchos::null)
+    {
+      step = asti->GetTimeStep();
+      time = asti->GetTime();
+    }
     output->WriteMesh(step, time);
   }
 
@@ -136,7 +162,10 @@ void STR::strudyn_direct()
   if (sta == Teuchos::null)
   {
     // equidistant steps
-    sti->Integrate();
+    if (sti != Teuchos::null)
+      sti->Integrate();
+    else if (asti != Teuchos::null)
+      asti->Integrate();
   }
   else
   {
@@ -147,7 +176,10 @@ void STR::strudyn_direct()
   // test results
   {
     DRT::ResultTestManager testmanager(actdis->Comm());
-    testmanager.AddFieldTest(Teuchos::rcp(new StruResultTest(*sti)));
+    if (sti != Teuchos::null)
+      testmanager.AddFieldTest(Teuchos::rcp(new StruResultTest(*sti)));
+    else if (asti != Teuchos::null)
+      testmanager.AddFieldTest(asti->CreateFieldTest());
     testmanager.TestAll();
   }
 

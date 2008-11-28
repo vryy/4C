@@ -59,6 +59,24 @@ namespace ADAPTER {
 
     //Teuchos::RCP<Epetra_Vector> InterfaceDispn();
 
+    /// @name Time step helpers
+    //@{
+
+    /// Get the current time
+    virtual const double GetTime() const { dserror("Not impl."); return -1.0; }
+    
+    /// Get upper limit of time range of interest
+    virtual const double GetTimeEnd() const { dserror("Not impl."); return -1.0; }
+
+    /// Get time step size \f$\Delta t_n\f$
+    virtual const double GetTimeStepSize() const { dserror("Not impl."); return -1.0; }
+
+    /// Get current time step \f$n\f$ (sometimes called \f$k\f$ [but not in Baci])
+    virtual const int GetTimeStep() const { dserror("Not impl."); return -1; }
+
+    /// Get number of time steps
+    virtual const int GetTimeNumStep() const { dserror("Not impl."); return -1; }
+
     void PrepareTimeStep();
     void Evaluate(Teuchos::RCP<const Epetra_Vector> disp);
     void Update();
@@ -67,6 +85,8 @@ namespace ADAPTER {
       structure_.UpdateIterIncrConstr(lagrincr);
     }
     void Output();
+    
+    //@}
 
     /// communication object at the interface
     virtual const LINALG::MapExtractor& Interface() const { return interface_; }

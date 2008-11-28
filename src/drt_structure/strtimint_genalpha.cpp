@@ -1,4 +1,4 @@
-/*----------------------------------------------------------------------*/
+ /*----------------------------------------------------------------------*/
 /*!
 \file strtimint_genalpha.cpp
 \brief Structural time integration with generalised-alpha
@@ -512,6 +512,7 @@ void STR::TimIntGenAlpha::UpdateStepState()
 void STR::TimIntGenAlpha::ReadRestartForce()
 {
   IO::DiscretizationReader reader(discret_, step_);
+  // external force
   reader.ReadVector(fext_, "fexternal");
   // determine internal force
   if (midavg_ == INPAR::STR::midavg_trlike)

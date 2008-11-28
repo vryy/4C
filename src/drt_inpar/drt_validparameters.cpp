@@ -397,6 +397,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::STR::dyna_gemm,
                                  INPAR::STR::dyna_ab2),
                                &sdyn);
+  // a temporary flag
+  setStringToIntegralParameter<int>("ADAPTERDRIVE","No",
+                                    "TEMPORARY FLAG: Switch on time integration driver based on ADAPTER::Structure rather than independent implementation",
+                                    yesnotuple,yesnovalue,&sdyn);
 
   // Output type
   IntParameter("EIGEN",0,"EIGEN make eigenanalysis of the initial dynamic system",&sdyn);
