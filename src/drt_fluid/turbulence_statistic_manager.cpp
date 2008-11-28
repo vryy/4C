@@ -341,7 +341,7 @@ namespace FLD
   {
 
     // sampling takes place only in the sampling period
-    if(step>samstart_ && step<=samstop_ && flow_ != no_special_flow)
+    if(step>=samstart_ && step<=samstop_ && flow_ != no_special_flow)
     {
       switch(flow_)
       {
@@ -379,7 +379,7 @@ namespace FLD
 
 
     // sampling takes place only in the sampling period
-    if(step>samstart_ && step<=samstop_ && flow_ != no_special_flow)
+    if(step>=samstart_ && step<=samstop_ && flow_ != no_special_flow)
     {
       double tcpu=ds_cputime();
 

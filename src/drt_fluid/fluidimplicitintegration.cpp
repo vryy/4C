@@ -1541,9 +1541,6 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 
   // set general vector values needed by elements
   discret_->ClearState();
-  discret_->SetState("velnp",velnp_);
-  discret_->SetState("vedenp",vedenp_);
-
   discret_->SetState("hist",hist_ );
   if (alefluid_)
   {
@@ -1552,16 +1549,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   }
 
   // set scheme-specific element parameters and vector values
-  if (timealgo_==timeint_stationary)
-  {
-    eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
-    eleparams.set("using generalized-alpha time integration",false);
-    eleparams.set("total time",time_);
-
-    discret_->SetState("velnp",velnp_);
-    discret_->SetState("vedenp",vedenp_);
-  }
-  else if (timealgo_==timeint_afgenalpha)
+  if (timealgo_==timeint_afgenalpha)
   {
     eleparams.set("action","calc_fluid_afgenalpha_systemmat_and_residual");
     eleparams.set("using generalized-alpha time integration",true);
@@ -2765,8 +2753,8 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
     }
 
     ParameterList eleparams;
-    eleparams.set("action","calc_fluid_systemmat_and_residual");
-    eleparams.set("total time",time_);
+
+    // set general element parameters
     eleparams.set("thsl",theta_*dta_);
     eleparams.set("dt",dta_);
     eleparams.set("Linearisation",newton_);
@@ -2778,13 +2766,34 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
     // parameters for stabilization
     eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
 
-    // set vector values needed by elements
+    // set general vector values needed by elements
     discret_->ClearState();
-    discret_->SetState("velnp",velnp_);
-    discret_->SetState("vedenp",vedenp_);
     discret_->SetState("hist",zeros_ );
     discret_->SetState("dispnp", griddisp);
     discret_->SetState("gridv", zeros_);
+
+    // set scheme-specific element parameters and vector values
+    if (timealgo_==timeint_afgenalpha)
+    {
+      eleparams.set("action","calc_fluid_afgenalpha_systemmat_and_residual");
+      eleparams.set("using generalized-alpha time integration",true);
+      eleparams.set("total time",time_-(1-alphaF_)*dta_);
+      eleparams.set("timefacrhs",alphaM_/(gamma_*dta_));
+
+      discret_->SetState("velnp", velaf_ );
+      discret_->SetState("vedenp",vedeaf_);
+      discret_->SetState("vedeam",vedeam_);
+      discret_->SetState("accam", accam_ );
+    }
+    else
+    {
+      eleparams.set("action","calc_fluid_systemmat_and_residual");
+      eleparams.set("using generalized-alpha time integration",false);
+      eleparams.set("total time",time_);
+
+      discret_->SetState("velnp",velnp_);
+      discret_->SetState("vedenp",vedenp_);
+    }
 
     // call loop over elements
     discret_->Evaluate(eleparams,sysmat_,meshmovematrix_,residual_);
