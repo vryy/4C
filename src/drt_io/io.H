@@ -175,7 +175,7 @@ public:
   */
   virtual void NewStep(const int step, const double time);
 
-  //! write a result double to constrol file
+  //! write a result double to control file
   /*!
     There will be an entry in the current result step in the control
     file that points to this vector
