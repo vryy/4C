@@ -1106,22 +1106,25 @@ int DRT::UTILS::getDimension(const DRT::Element::DiscretizationType distype)
 
     switch(distype)
     {
-        case DRT::Element::line2  : dim = DisTypeToDim<DRT::Element::line2>::dim; break;
-        case DRT::Element::line3  : dim = DisTypeToDim<DRT::Element::line3>::dim; break;
-        case DRT::Element::nurbs2 : dim = DisTypeToDim<DRT::Element::nurbs2>::dim; break;
-        case DRT::Element::nurbs3 : dim = DisTypeToDim<DRT::Element::nurbs3>::dim; break;
-        case DRT::Element::quad4  : dim = DisTypeToDim<DRT::Element::quad4>::dim; break;
-        case DRT::Element::quad8  : dim = DisTypeToDim<DRT::Element::quad8>::dim; break;
-        case DRT::Element::quad9  : dim = DisTypeToDim<DRT::Element::quad9>::dim; break;
-        case DRT::Element::tri3   : dim = DisTypeToDim<DRT::Element::tri3>::dim; break;
-        case DRT::Element::tri6   : dim = DisTypeToDim<DRT::Element::tri6>::dim; break;
-        case DRT::Element::nurbs4 : dim = DisTypeToDim<DRT::Element::nurbs4>::dim; break;
-        case DRT::Element::nurbs9 : dim = DisTypeToDim<DRT::Element::nurbs9>::dim; break;
-        case DRT::Element::hex8   : dim = DisTypeToDim<DRT::Element::hex8>::dim; break;
-        case DRT::Element::hex20  : dim = DisTypeToDim<DRT::Element::hex20>::dim; break;
-        case DRT::Element::hex27  : dim = DisTypeToDim<DRT::Element::hex27>::dim; break;
-        case DRT::Element::tet4   : dim = DisTypeToDim<DRT::Element::tet4>::dim; break;
-        case DRT::Element::tet10  : dim = DisTypeToDim<DRT::Element::tet10>::dim; break;
+        case DRT::Element::line2   : dim = DisTypeToDim<DRT::Element::line2>::dim; break;
+        case DRT::Element::line3   : dim = DisTypeToDim<DRT::Element::line3>::dim; break;
+        case DRT::Element::nurbs2  : dim = DisTypeToDim<DRT::Element::nurbs2>::dim; break;
+        case DRT::Element::nurbs3  : dim = DisTypeToDim<DRT::Element::nurbs3>::dim; break;
+        case DRT::Element::quad4   : dim = DisTypeToDim<DRT::Element::quad4>::dim; break;
+        case DRT::Element::quad8   : dim = DisTypeToDim<DRT::Element::quad8>::dim; break;
+        case DRT::Element::quad9   : dim = DisTypeToDim<DRT::Element::quad9>::dim; break;
+        case DRT::Element::tri3    : dim = DisTypeToDim<DRT::Element::tri3>::dim; break;
+        case DRT::Element::tri6    : dim = DisTypeToDim<DRT::Element::tri6>::dim; break;
+        case DRT::Element::nurbs4  : dim = DisTypeToDim<DRT::Element::nurbs4>::dim; break;
+        case DRT::Element::nurbs9  : dim = DisTypeToDim<DRT::Element::nurbs9>::dim; break;
+        case DRT::Element::hex8    : dim = DisTypeToDim<DRT::Element::hex8>::dim; break;
+        case DRT::Element::hex20   : dim = DisTypeToDim<DRT::Element::hex20>::dim; break;
+        case DRT::Element::hex27   : dim = DisTypeToDim<DRT::Element::hex27>::dim; break;
+        case DRT::Element::tet4    : dim = DisTypeToDim<DRT::Element::tet4>::dim; break;
+        case DRT::Element::tet10   : dim = DisTypeToDim<DRT::Element::tet10>::dim; break;
+        case DRT::Element::wedge6  : dim = DisTypeToDim<DRT::Element::wedge6>::dim; break;
+        case DRT::Element::wedge15 : dim = DisTypeToDim<DRT::Element::wedge15>::dim; break;
+        case DRT::Element::pyramid5: dim = DisTypeToDim<DRT::Element::pyramid5>::dim; break;
         default:
             dserror("discretization type is not yet implemented");
     }

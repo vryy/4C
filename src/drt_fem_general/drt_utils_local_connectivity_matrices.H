@@ -541,6 +541,9 @@ namespace UTILS
   template<> struct DisTypeToDim<DRT::Element::hex27>    {static const int dim = 3;};
   template<> struct DisTypeToDim<DRT::Element::tet4>     {static const int dim = 3;};
   template<> struct DisTypeToDim<DRT::Element::tet10>    {static const int dim = 3;};
+  template<> struct DisTypeToDim<DRT::Element::wedge6>   {static const int dim = 3;};
+  template<> struct DisTypeToDim<DRT::Element::wedge15>  {static const int dim = 3;};
+  template<> struct DisTypeToDim<DRT::Element::pyramid5> {static const int dim = 3;};
 
   /*!
     \brief    Returns the order of an element edges based on its discretization-type
