@@ -91,9 +91,24 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // parameter theta for time-integration schemes
   theta_    = params_.get<double>("theta");
   // af-generalized-alpha parameters: gamma_ = 0.5 + alphaM_ - alphaF_
+  // (may be reset below when starting algorithm is used)
   alphaM_   = params_.get<double>("alpha_M");
   alphaF_   = params_.get<double>("alpha_F");
   gamma_    = params_.get<double>("gamma");
+
+  // number of steps for starting algorithm
+  numstasteps_ = params_.get<int> ("number of start steps");
+  // starting algorithm only for af-generalized-alpha so far
+  // -> check for time-integration scheme and reasonability of number of steps
+  startalgo_ = false;
+  if (numstasteps_ > 0)
+  {
+    if (timealgo_ != timeint_afgenalpha)
+      dserror("no starting algorithm supported for schemes other than af-gen-alpha");
+    else startalgo_= true;
+    if (numstasteps_>stepmax_) 
+      dserror("more steps for starting algorithm than steps overall");
+  }
 
   // parameter for linearization scheme (fixed-point-like or Newton)
   newton_ = params_.get<string>("Linearisation");
@@ -441,9 +456,6 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::FluidImplicitTimeInt::Integrate()
 {
-  // bound for the number of startsteps
-  const int numstasteps = params_.get<int> ("number of start steps");
-
   // output of stabilization details
   if (myrank_==0)
   {
@@ -470,23 +482,9 @@ void FLD::FluidImplicitTimeInt::Integrate()
     cout << "\n";
   }
 
-  if (timealgo_==timeint_stationary)
-    // stationary case
-    SolveStationaryProblem();
-
-  else  // instationary case
-  {
-    // start procedure
-    if (step_<numstasteps)
-    {
-      if (numstasteps>stepmax_) dserror("more startsteps than steps");
-
-      dserror("no starting steps supported");
-    }
-
-    // continue with the final time integration
-    TimeLoop();
-  }
+  // distinguish stationary and instationary case
+  if (timealgo_==timeint_stationary) SolveStationaryProblem();
+  else TimeLoop();
 
   // print the results of time measurements
   //cout<<endl<<endl;
@@ -729,6 +727,42 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
   // -------------------------------------------------------------------
   if (timealgo_==timeint_afgenalpha)
   {
+    // starting algorithm
+    if (startalgo_)
+    {
+      // use backward-Euler-type parameter combination
+      if (step_<=numstasteps_)
+      {
+        alphaM_ = 1.0;
+        alphaF_ = 1.0;
+        gamma_  = 1.0;
+        cout << "alphaM " << alphaM_;
+        printf("\n");
+        cout << "alphaF " << alphaF_;
+        printf("\n");
+        cout << "gamma "  << gamma_;
+        printf("\n");
+        cout << "startalgo " << startalgo_;
+        printf("\n");
+      }
+      else
+      {
+        alphaM_ = params_.get<double>("alpha_M");
+        alphaF_ = params_.get<double>("alpha_F");
+        gamma_  = params_.get<double>("gamma");
+        startalgo_ = false;
+        cout << "alphaM " << alphaM_;
+        printf("\n");
+        cout << "alphaF " << alphaF_;
+        printf("\n");
+        cout << "gamma "  << gamma_;
+        printf("\n");
+        cout << "startalgo " << startalgo_;
+        printf("\n");
+      }
+    }
+
+    // set "pseudo-theta" for af-generalized-alpha scheme
     theta_ = alphaF_*gamma_/alphaM_;
 
     // --------------------------------------------------

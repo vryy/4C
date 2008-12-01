@@ -342,10 +342,12 @@ protected:
   //@}
 
   //! @name time stepping variables
-  double  time_;    ///< physical time
-  int     step_;    ///< timestep
-  int     stepmax_; ///< maximal number of timesteps
-  double  maxtime_; ///< maximal physical computation time
+  double  time_;        ///< physical time
+  int     step_;        ///< timestep
+  int     stepmax_;     ///< maximal number of timesteps
+  double  maxtime_;     ///< maximal physical computation time
+  int     numstasteps_; ///< number of steps for starting algorithm
+  bool    startalgo_;   ///< flag for starting algorithm
   //@}
 
   /// time algorithm flag

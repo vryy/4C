@@ -213,9 +213,12 @@ void dyn_fluid_drt()
     fluidtimeparams.set<FLUID_TIMEINTTYPE>("time int algo",iop);
     // parameter theta for one-step-theta time-integration scheme
     fluidtimeparams.set<double> ("theta", fdyn.get<double>("THETA"));
-    // number of steps for potential start algorithm (currently not implemented)
+    // -----------------------number of steps for potential start algorithm
+    // (currently only implemented for af-generalized-alpha with backward-
+    //  Euler-type parameter combination for starting algorithm)
     fluidtimeparams.set<int> ("number of start steps", fdyn.get<int>("NUMSTASTEPS"));
-    // parameter theta for potential start algorithm(currently not implemented)
+    // parameter theta for potential one-step-theta start algorithm 
+    // (currently not implemented)
     fluidtimeparams.set<double> ("start theta", fdyn.get<double>("START_THETA"));
 
     //------------------------------------------------------------------
