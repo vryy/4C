@@ -685,10 +685,8 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
   {
     ParameterList eleparams;
 
-    // other parameters needed by the elements
+    // total time required for Dirichlet conditions
     eleparams.set("total time",time_);
-    eleparams.set("delta time",dta_);
-    eleparams.set("thsl",theta_*dta_);
 
     // set vector values needed by elements
     discret_->ClearState();
