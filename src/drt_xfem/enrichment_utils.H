@@ -322,6 +322,17 @@ double DomainCoverageRatio(
     );
 
 /*! 
+ * \brief calculates the fraction of an element that is covered by fictitious domains.
+ * \warning should be done separately for each enrichment, but currently it's not done
+ * 
+ * \return ration between fictitious volume and element volume (can be between 0.0 and 1.0)
+ */
+vector<double> DomainCoverageRatioPerNode(
+    const DRT::Element&           ele,           ///< the element whose area ratio we want to compute
+    const XFEM::InterfaceHandle&  ih             ///< interface information
+    );
+
+/*! 
  * \brief calculates the area fraction of an element that is covered by fictitious domains.
  * \warning should be done separately for each enrichment, but currently it's not done
  */
@@ -375,8 +386,8 @@ struct NumParam
 template<int NUMNODE> struct NumParam<NUMNODE,XFEM::standard_assembly>
 {
   static int get(
-      const XFEM::ElementDofManager& dofman,
-      const XFEM::PHYSICS::Field     field
+      const XFEM::ElementDofManager& ,
+      const XFEM::PHYSICS::Field     
       )
   {
     return NUMNODE;
