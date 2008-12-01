@@ -37,13 +37,20 @@ namespace SCATRA
 
 
   //! decide, whether second derivatives are needed  (template version)
+  /*! In convection-diffusion problems, ONLY N,xx , N,yy and N,zz are needed
+   *  to evaluate the laplacian operator for the residual-based stabilization.
+   *  Hence, unlike to the Navier-Stokes equations, hex8, wedge6 and pyramid5 
+   *  return false although they have non-zero MIXED second derivatives.
+  */
   template <DRT::Element::DiscretizationType  DISTYPE>
-  bool is3DHigherOrderElement()
+  bool useSecondDerivatives()
   {
     switch (DISTYPE)
     {
     case DRT::Element::hex8:
     case DRT::Element::tet4:
+    case DRT::Element::wedge6:
+    case DRT::Element::pyramid5:
       return false;
       break;
     case DRT::Element::hex20:
@@ -51,11 +58,8 @@ namespace SCATRA
     case DRT::Element::tet10:
       return true;
       break;
-    case DRT::Element::wedge6:
-    case DRT::Element::pyramid5:
     case DRT::Element::wedge15:
-      //!!!TODO:  wedge und pyramid have 2nd derivatives!!!!!!
-      dserror("wedges and pyramids have second derivatives!");
+      dserror("wedge15 is untested.");
       break;
     default:
       dserror("distype unknown!");
@@ -83,8 +87,14 @@ namespace SCATRA
       case DRT::Element::tet10:
         rule = DRT::UTILS::intrule_tet_5point;
         break;
+      case DRT::Element::wedge6:
+        rule = DRT::UTILS::intrule_wedge_6point;
+        break;
+      case DRT::Element::pyramid5:
+        rule = DRT::UTILS::intrule_pyramid_8point;
+        break;
       default:
-        dserror("unknown number of nodes for gaussrule initialization");
+        dserror("unknown element shape for gaussrule initialization");
     }
     return rule;
   }

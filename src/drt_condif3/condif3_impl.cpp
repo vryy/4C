@@ -537,7 +537,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::Sysmat(
   /*----------------------------------------------------------------------*/
 
   // flag for higher order elements
-  const bool higher_order_ele = SCATRA::is3DHigherOrderElement<distype>();
+  const bool use2ndderiv = SCATRA::useSecondDerivatives<distype>();
 
   // gaussian points
   const DRT::UTILS::IntegrationPoints3D intpoints(SCATRA::get3DOptimalGaussrule<distype>());
@@ -545,7 +545,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::Sysmat(
   // integration loop
   for (int iquad=0; iquad<intpoints.nquad; ++iquad)
   {
-    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,higher_order_ele,ele);
+    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,use2ndderiv,ele);
 
     // density-weighted shape functions
     densfunct_.EMultiply(funct_,edensnp);
@@ -573,19 +573,19 @@ void DRT::ELEMENTS::Condif3Impl<distype>::Sysmat(
           if (not is_stationary)
           {
             if (is_genalpha)
-              CalMatGenAlpha(sys_mat,residual,ephinp,higher_order_ele,timefac,alphaF,k);
+              CalMatGenAlpha(sys_mat,residual,ephinp,use2ndderiv,timefac,alphaF,k);
             else
-              CalMat(sys_mat,residual,higher_order_ele,timefac,k);
+              CalMat(sys_mat,residual,use2ndderiv,timefac,k);
           }
           else
-            CalMatStationary(sys_mat,residual,higher_order_ele,k);
+            CalMatStationary(sys_mat,residual,use2ndderiv,k);
         } // loop over each scalar
       }
       else
-        CalMatInc(sys_mat,residual,ephinp,higher_order_ele,is_stationary,timefac);
+        CalMatInc(sys_mat,residual,ephinp,use2ndderiv,is_stationary,timefac);
     }
     else  // ELCH problems
-     CalMatElch(sys_mat,residual,ephinp,epotnp,higher_order_ele,frt,is_stationary,timefac);
+     CalMatElch(sys_mat,residual,ephinp,epotnp,use2ndderiv,frt,is_stationary,timefac);
 
   } // integration loop
 
@@ -961,7 +961,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Condif3Impl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
     const DRT::UTILS::IntegrationPoints3D& intpoints, ///< integration points
     const int&                             iquad,     ///< id of current Gauss point
-    const bool&                            higher_order_ele,///< are second derivatives needed?
+    const bool&                            use2ndderiv,///< are second derivatives needed?
     const DRT::ELEMENTS::Condif3*          ele        ///< the element
 )
 {
@@ -1007,7 +1007,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
   derxy_.Multiply(xij_,deriv_);
 
   // compute second global derivatives (if needed)
-  if (higher_order_ele)
+  if (use2ndderiv)
     CalSecondDeriv(e1,e2,e3);
   else
     derxy2_.Clear();
@@ -1355,7 +1355,7 @@ dserror("Please check CalSecondDeriv first");
   solver.Solve();
 
   return;
-} //Condif3Impl::CalSecondDeriv
+} //Condif3Impl::Caluse2ndderiv
 
 
 /*----------------------------------------------------------------------*
@@ -1403,7 +1403,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Condif3Impl<distype>::CalMat(
     Epetra_SerialDenseMatrix& estif,
     Epetra_SerialDenseVector& eforce,
-    const bool                higher_order_ele,
+    const bool                use2ndderiv,
     const double&             timefac,
     const int&                dofindex
     )
@@ -1426,7 +1426,7 @@ rhsint = hist_[dofindex] + rhs_[dofindex]*timefac;
 conv_.MultiplyTN(derxy_,velint_);
 
 
-if (higher_order_ele)
+if (use2ndderiv)
 {
   for (int i=0; i<iel; i++)
   {
@@ -1462,7 +1462,7 @@ for (int vi=0; vi<iel; ++vi)
     //estif(vi, ui) += -timetaufac*densfunct_(vi)*conv_[ui] ;
 
     /* diffusive term */
-    //if (higher_order_ele) estif(vi, ui) += timetaufac*densfunct_(vi)*diff[ui] ;
+    //if (use2ndderiv) estif(vi, ui) += timetaufac*densfunct_(vi)*diff[ui] ;
 
     /* 2) convective stabilization */
     /* transient term */
@@ -1473,7 +1473,7 @@ for (int vi=0; vi<iel; ++vi)
   }
 }
 
-if (higher_order_ele)
+if (use2ndderiv)
 {
   for (int vi=0; vi<iel; ++vi)
   {
@@ -1508,7 +1508,7 @@ for (int vi=0; vi<iel; ++vi)
   eforce[vi*numdof+dofindex] += taufac*conv_(vi)*rhsint ;
 
   /* diffusive stabilization of RHS source term */
-  if (higher_order_ele) eforce[vi*numdof+dofindex] += taufac*diff_(vi)*rhsint ;
+  if (use2ndderiv) eforce[vi*numdof+dofindex] += taufac*diff_(vi)*rhsint ;
 }
 
 return;
@@ -1524,7 +1524,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalMatGenAlpha(
     Epetra_SerialDenseMatrix&             estif,
     Epetra_SerialDenseVector&             eforce,
     const vector<LINALG::Matrix<iel,1> >& ephinp,
-    const bool                            higher_order_ele,
+    const bool                            use2ndderiv,
     const double&                         timefac,
     const double&                         alphaF,
     const int&                            dofindex
@@ -1557,7 +1557,7 @@ gradphi_.Multiply(derxy_,ephinp[dofindex]);
 const double convn = velint_.Dot(gradphi_);
 
 double diffn = 0.0;
-if (higher_order_ele)
+if (use2ndderiv)
 {
   for (int i=0; i<iel; i++)
   {
@@ -1599,7 +1599,7 @@ for (int vi=0; vi<iel; ++vi)
     //estif(vi, ui) += -timetaufac*densfunct_(vi)*conv_[ui] ;
 
     /* diffusive term */
-    //if (higher_order_ele) estif(vi, ui) += timetaufac*densfunct_(vi)*diff[ui] ;
+    //if (use2ndderiv) estif(vi, ui) += timetaufac*densfunct_(vi)*diff[ui] ;
 
     /* 2) convective stabilization */
     /* transient term */
@@ -1610,7 +1610,7 @@ for (int vi=0; vi<iel; ++vi)
   }
 }
 
-if (higher_order_ele)
+if (use2ndderiv)
 {
   for (int vi=0; vi<iel; ++vi)
   {
@@ -1654,7 +1654,7 @@ for (int vi=0; vi<iel; ++vi)
   eforce[vi*numdof+dofindex] -= rhstimetaufac*conv_(vi)*convn ;
 }
 
-if (higher_order_ele)
+if (use2ndderiv)
 {
   for (int vi=0; vi<iel; ++vi)
   {
@@ -1718,7 +1718,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Condif3Impl<distype>::CalMatStationary(
     Epetra_SerialDenseMatrix& estif,
     Epetra_SerialDenseVector& eforce,
-    const bool                higher_order_ele,
+    const bool                use2ndderiv,
     const int&                dofindex
     )
 {
@@ -1736,7 +1736,7 @@ rhsint = rhs_[dofindex];
       with  N .. form function matrix */
 conv_.MultiplyTN(derxy_,velint_);
 
-if (higher_order_ele)
+if (use2ndderiv)
 {
   for (int i=0; i<iel; i++)
   {
@@ -1768,7 +1768,7 @@ for (int vi=0; vi<iel; ++vi)
   }
 }
 
-if (higher_order_ele)
+if (use2ndderiv)
 {
   for (int vi=0; vi<iel; ++vi)
   {
@@ -1798,7 +1798,7 @@ for (int vi=0; vi<iel; ++vi)
   eforce[vi*numdof+dofindex] += taufac*conv_(vi)*rhsint ;
 
   /* diffusive stabilization of RHS source term */
-  if (higher_order_ele) eforce[vi*numdof+dofindex] += taufac*diff_(vi)*rhsint ;
+  if (use2ndderiv) eforce[vi*numdof+dofindex] += taufac*diff_(vi)*rhsint ;
 }
 
 return;
@@ -1852,7 +1852,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::InitializeOST(
   /*----------------------------------------------------------------------*/
 
   // flag for higher order elements
-  const bool higher_order_ele = SCATRA::is3DHigherOrderElement<distype>();
+  const bool use2ndderiv = SCATRA::useSecondDerivatives<distype>();
 
   // gaussian points
   const DRT::UTILS::IntegrationPoints3D intpoints(SCATRA::get3DOptimalGaussrule<distype>());
@@ -1860,7 +1860,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::InitializeOST(
   // integration loop
   for (int iquad=0; iquad<intpoints.nquad; ++iquad)
   {
-    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,higher_order_ele,ele);
+    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,use2ndderiv,ele);
 
     // density-weighted shape functions
     densfunct_.EMultiply(funct_,edens0);
@@ -1903,7 +1903,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::InitializeOST(
       /*-------------------------------- evaluate rhs at integration point ---*/
       rhsint = rhs_[k];
 
-      if (higher_order_ele)
+      if (use2ndderiv)
       {
         for (int i=0; i<iel; i++) /* loop over nodes of element */
         {
@@ -1919,7 +1919,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::InitializeOST(
       // -------------------------------------------System matrix
       const double conv_ephi0_k = conv_.Dot(ephi0[k]);
       double diff_ephi0_k(0.0);
-      if (higher_order_ele) diff_ephi0_k = diff_.Dot(ephi0[k]); // only necessary for higher order ele!
+      if (use2ndderiv) diff_ephi0_k = diff_.Dot(ephi0[k]); // only necessary for higher order ele!
 
       for (int vi=0; vi<iel; ++vi)
       {
@@ -1964,7 +1964,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::InitializeOST(
         rhs[vi*numdofpernode_+k] += -(taufac*conv_(vi)*conv_ephi0_k);
       }
 
-      if (higher_order_ele)
+      if (use2ndderiv)
       {
         for (int vi=0; vi<iel; ++vi)
         {
@@ -1996,7 +1996,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::InitializeOST(
         /* convective stabilization of RHS source term */
         rhs[vi*numdofpernode_+k] += taufac*conv_(vi)*rhsint ;
 
-        if (higher_order_ele)
+        if (use2ndderiv)
         {
           /* diffusive stabilization of RHS source term */
           rhs[vi*numdofpernode_+k] += taufac*diff_(vi)*rhsint ;
@@ -2081,7 +2081,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalMatInc(
     Epetra_SerialDenseMatrix&             emat,
     Epetra_SerialDenseVector&             erhs,
     const vector<LINALG::Matrix<iel,1> >& ephinp,
-    const bool&                           higher_order_ele,
+    const bool&                           use2ndderiv,
     const bool&                           is_stationary,
     const double&                         timefac
 )
@@ -2132,7 +2132,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalMatInc(
     // compute gradient of scalar k at integration point
     gradphi_.Multiply(derxy_,ephinp[k]);
 
-    if (higher_order_ele)
+    if (use2ndderiv)
     {
       for (int i=0; i<iel; i++)
       {
@@ -2169,7 +2169,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalMatInc(
       } // for ui
     } // for vi
 
-    if (higher_order_ele)
+    if (use2ndderiv)
     {
       for (int vi=0; vi<iel; ++vi)
       {
@@ -2188,13 +2188,13 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalMatInc(
         } // for ui
       } // for vi
 
-    } // higher_order_ele
+    } // use2ndderiv
 
     // ----------------------------------------------RHS
     const double conv_ephinp_k = conv_.Dot(ephinp[k]);
     const double densfunct_ephinp_k = densfunct_.Dot(ephinp[k]);
     double diff_ephinp_k(0.0);
-    if (higher_order_ele) diff_ephinp_k = diff_.Dot(ephinp[k]); // only necessary for higher order ele!
+    if (use2ndderiv) diff_ephinp_k = diff_.Dot(ephinp[k]); // only necessary for higher order ele!
 
     // compute residual of strong form for stabilization
     double taufacresidual = taufac*rhsint - timetaufac*(conv_ephinp_k + diff_ephinp_k);
@@ -2223,7 +2223,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalMatInc(
 
     } // for vi
 
-    if (higher_order_ele)
+    if (use2ndderiv)
     {
       for (int vi=0; vi<iel; ++vi)
       {
@@ -2233,7 +2233,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalMatInc(
         erhs[vi*numdofpernode_+k] += diff_(vi)*taufacresidual ;
 
       } // for vi
-    } // higher_order_ele
+    } // use2ndderiv
 
     // -----------------------------------INSTATIONARY TERMS
     if (!is_stationary)
@@ -2251,7 +2251,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalMatInc(
           /* transient term */
           emat(vi*numdofpernode_+k, ui*numdofpernode_+k) += taufac*conv_(vi)*densfunct_(ui);
 
-          if (higher_order_ele)
+          if (use2ndderiv)
           {
             /* 2) diffusive stabilization (USFEM assumed here, sign change necessary for GLS) */
             /* transient term */
@@ -2283,7 +2283,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalMatElch(
     Epetra_SerialDenseVector&             erhs,
     const vector<LINALG::Matrix<iel,1> >& ephinp,
     const LINALG::Matrix<iel,1>&          epotnp,
-    const bool&                           higher_order_ele,
+    const bool&                           use2ndderiv,
     const double&                         frt,
     const bool&                           is_stationary,
     const double&                         timefac
@@ -2350,7 +2350,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalMatElch(
     // compute gradient of scalar k at integration point
     gradphi_.Multiply(derxy_,ephinp[k]);
 
-    if (higher_order_ele)
+    if (use2ndderiv)
     {
       for (int i=0; i<iel; i++)
       {
@@ -2402,7 +2402,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalMatElch(
       } // for ui
     } // for vi
 
-    if (higher_order_ele)
+    if (use2ndderiv)
     {
       for (int vi=0; vi<iel; ++vi)
       {
@@ -2421,7 +2421,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalMatElch(
         } // for ui
       } // for vi
 
-    } // higher_order_ele
+    } // use2ndderiv
 
     // ----------------------------------------------RHS
     const double conv_ephinp_k = conv_.Dot(ephinp[k]);
@@ -2429,7 +2429,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalMatElch(
     const double conv_eff_k = conv_ephinp_k + Dkzk_mig_ephinp_k;
     const double densfunct_ephinp_k = densfunct_.Dot(ephinp[k]);
     double diff_ephinp_k(0.0);
-    if (higher_order_ele) diff_ephinp_k = diff_.Dot(ephinp[k]); // only necessary for higher order ele!
+    if (use2ndderiv) diff_ephinp_k = diff_.Dot(ephinp[k]); // only necessary for higher order ele!
 
     // compute residual of strong form for stabilization
     double taufacresidual = taufac*rhsint - timetaufac*(conv_eff_k + diff_ephinp_k);
@@ -2465,7 +2465,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalMatElch(
 
     } // for vi
 
-    if (higher_order_ele)
+    if (use2ndderiv)
     {
       for (int vi=0; vi<iel; ++vi)
       {
@@ -2475,7 +2475,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalMatElch(
         erhs[vi*numdofpernode_+k] += diff_(vi)*taufacresidual ;
 
       } // for vi
-    } // higher_order_ele
+    } // use2ndderiv
 
     // -----------------------------------INSTATIONARY TERMS
     if (!is_stationary)
@@ -2493,7 +2493,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalMatElch(
           /* transient term */
           emat(vi*numdofpernode_+k, ui*numdofpernode_+k) += taufac*(conv_(vi)+diffus_valence_k*mig_(vi))*densfunct_(ui);
 
-          if (higher_order_ele)
+          if (use2ndderiv)
           {
             /* 2) diffusive stabilization (USFEM assumed here, sign change necessary for GLS) */
             /* transient term */
