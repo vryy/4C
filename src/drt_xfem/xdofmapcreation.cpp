@@ -69,6 +69,51 @@ void XFEM::ApplyNodalEnrichments(
   }
 }
 
+
+void XFEM::ApplyNodalEnrichmentsNodeWise(
+    const DRT::Element*                           xfemele,
+    const XFEM::InterfaceHandle&                  ih,
+    const int&                                    label,
+    std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet
+) 
+{
+  const double volumeratiolimit = 1.0e-3;
+  
+  const vector<double> ratios = XFEM::DomainCoverageRatioPerNode(*xfemele,ih);
+  
+  const XFEM::Enrichment voidenr(label, XFEM::Enrichment::typeVoid);
+  
+  const int nen = xfemele->NumNode();
+  const int* nodeidptrs = xfemele->NodeIds();
+  for (int inen = 0; inen<nen; ++inen)
+  {
+    const int node_gid = nodeidptrs[inen];
+    const bool usefull_contribution = (fabs(ratios[inen]) > volumeratiolimit);
+    if ( usefull_contribution)  
+    {      
+      nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Velx, voidenr));
+      nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Vely, voidenr));
+      nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Velz, voidenr));
+      nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Pres, voidenr));
+    }
+    else
+    {
+      cout << "skipped interior void unknowns for element: "<< xfemele->Id() << ", for node: "<< node_gid << ", volumeratio limit: " << std::scientific << volumeratiolimit << ", volumeratio: abs (" << std::scientific << fabs(ratios[inen]) << " )" << endl;
+      const LINALG::Matrix<3,1> nodalpos(ih.xfemdis()->gNode(node_gid)->X());
+      const int label = ih.PositionWithinConditionNP(nodalpos);
+      const bool in_fluid = (label == 0);
+  
+      if (in_fluid)
+      {
+        nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Velx, voidenr));
+        nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Vely, voidenr));
+        nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Velz, voidenr));
+        nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Pres, voidenr));
+      }
+    }
+  };
+}
+
 void XFEM::ApplyElementEnrichments(
     const DRT::Element*                           xfemele,
     const XFEM::InterfaceHandle&                  ih,
@@ -110,7 +155,6 @@ void XFEM::ApplyElementEnrichments(
 void XFEM::ApplyVoidEnrichmentForElement(
     const DRT::Element*                           xfemele,
     const XFEM::InterfaceHandle&                  ih,
-    const std::map<int,int>&                      labelPerElementId,
     const int&                                    label,
     const bool                                    DLM_condensation,
     std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet,
@@ -123,7 +167,9 @@ void XFEM::ApplyVoidEnrichmentForElement(
   {
     if (ih.ElementHasLabel(element_gid, label))
     {
-      ApplyNodalEnrichments(xfemele, ih, label, nodalDofSet); 
+      ApplyNodalEnrichments(xfemele, ih, label, nodalDofSet);
+      
+//      ApplyNodalEnrichmentsNodeWise(xfemele, ih, label, nodalDofSet); 
   
       ApplyElementEnrichments(xfemele, ih, label, DLM_condensation, elementalDofs[element_gid]);
     }
@@ -144,10 +190,6 @@ void XFEM::createDofMap(
   // get elements for each coupling label
   const std::map<int,std::set<int> >& elementsByLabel = ih.elementsByLabel(); 
 
-  // invert collection
-  std::map<int,int> labelPerElementId;
-  XFEM::InvertElementsByLabel(elementsByLabel, labelPerElementId);
-
   // loop condition labels
   for(std::map<int,std::set<int> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
   {
@@ -159,12 +201,12 @@ void XFEM::createDofMap(
       const DRT::Element* xfemele = ih.xfemdis()->lColElement(i);
 
       ApplyVoidEnrichmentForElement(
-          xfemele, ih, labelPerElementId, label, DLM_condensation,
+          xfemele, ih, label, DLM_condensation,
           nodalDofSet, elementalDofs);
     };
   };
 
-  applyStandardEnrichmentNodalBasedApproach(ih, nodalDofSet, elementalDofs);
+  applyStandardEnrichmentNodalBasedApproach(ih, nodalDofSet);
 
   // create const sets from standard sets, so the sets cannot be accidently changed
   // could be removed later, if this is a performance bottleneck
@@ -252,8 +294,7 @@ void XFEM::applyStandardEnrichment(
 
 void XFEM::applyStandardEnrichmentNodalBasedApproach(
     const XFEM::InterfaceHandle&              ih,
-    std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet,
-    std::map<int, std::set<XFEM::FieldEnr> >&     elementalDofs
+    std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet
 )
 {
   const int standard_label = 0;

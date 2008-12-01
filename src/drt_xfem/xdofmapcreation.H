@@ -31,6 +31,14 @@ void ApplyNodalEnrichments(
     std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet
     );
 
+/// apply nodal enrichments to intersected element
+void ApplyNodalEnrichmentsNodeWise(
+    const DRT::Element*                           xfemele,
+    const XFEM::InterfaceHandle&                  ih,
+    const int&                                    label,
+    std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet
+    );
+
 /// apply element enrichments to intersected element
 void ApplyElementEnrichments(
     const DRT::Element*                           xfemele,
@@ -44,7 +52,6 @@ void ApplyElementEnrichments(
 void ApplyVoidEnrichmentForElement(
     const DRT::Element*                           xfemele,
     const XFEM::InterfaceHandle&                  ih,
-    const std::map<int,int>&                      labelPerElementId,
     const int&                                    label,
     const bool                                    DLM_condensation,
     std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet,
@@ -78,8 +85,7 @@ void applyStandardEnrichment(
  */
 void applyStandardEnrichmentNodalBasedApproach(
     const XFEM::InterfaceHandle&                  ih,
-    std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet,
-    std::map<int, std::set<XFEM::FieldEnr> >&     elementalDofs
+    std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet
 );
 
 } // namespace XFEM

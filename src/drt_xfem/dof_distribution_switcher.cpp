@@ -21,7 +21,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_colors.H"
 
 //! try to find another enrichment for this physical field
-static XFEM::Enrichment genAlternativeEnrichment(
+XFEM::Enrichment XFEM::genAlternativeEnrichment(
         const int                    gnodeid,
         const XFEM::PHYSICS::Field   oldphysvar,
         const RCP<XFEM::DofManager>  dofman

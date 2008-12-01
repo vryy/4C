@@ -102,6 +102,13 @@ private:
 //    map<int,std::set<XFEM::FieldEnr> >   oldEnrFieldSetNode_;      ///< old enriched fields per node 
 };
 
+//! try to find another enrichment for this physical field
+XFEM::Enrichment genAlternativeEnrichment(
+        const int                    gnodeid,
+        const XFEM::PHYSICS::Field   oldphysvar,
+        const RCP<XFEM::DofManager>  dofman
+        );
+
 } // namespace XFEM
 
 #endif
