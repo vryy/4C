@@ -736,14 +736,6 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
         alphaM_ = 1.0;
         alphaF_ = 1.0;
         gamma_  = 1.0;
-        cout << "alphaM " << alphaM_;
-        printf("\n");
-        cout << "alphaF " << alphaF_;
-        printf("\n");
-        cout << "gamma "  << gamma_;
-        printf("\n");
-        cout << "startalgo " << startalgo_;
-        printf("\n");
       }
       else
       {
@@ -751,14 +743,6 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
         alphaF_ = params_.get<double>("alpha_F");
         gamma_  = params_.get<double>("gamma");
         startalgo_ = false;
-        cout << "alphaM " << alphaM_;
-        printf("\n");
-        cout << "alphaF " << alphaF_;
-        printf("\n");
-        cout << "gamma "  << gamma_;
-        printf("\n");
-        cout << "startalgo " << startalgo_;
-        printf("\n");
       }
     }
 
