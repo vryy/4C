@@ -189,10 +189,10 @@ public:
   /// Get the gid of all dofs of a node
   virtual vector<int> Dof(const Node* node) const
     {
-      int lid = node->LID();
+      const int lid = node->LID();
       if (lid==-1)
         return vector<int>();
-      int idx = (*idxcolnodes_)[lid];
+      const int idx = (*idxcolnodes_)[lid];
       vector<int> dof((*numdfcolnodes_)[lid]);
       for (unsigned i=0; i<dof.size(); ++i)
         dof[i] = dofcolmap_->GID(idx+i);
@@ -223,6 +223,23 @@ public:
       for (int i=0; i<size; ++i)
         lm.push_back(dofcolmap_->GID(idx+i));
     }
+  
+  /// Get the gid of all dofs of a node
+  virtual void Dof(
+      const Node* node,           ///< node, for which you want the dof positions
+      const unsigned startindex,  ///< first index of vector at which will be written to end 
+      vector<int>& lm             ///< already allocated vector to be filled with dof positions
+      ) const
+  {
+    const int lid = node->LID();
+    if (lid==-1)
+      return;
+    const int idx = (*idxcolnodes_)[lid];
+    const int size = (*numdfcolnodes_)[lid];
+    dsassert(lm.size() >= (startindex+size), "Sorry Dave, I can't do that! Your vector<int> lm is too small!");
+    for (int i=0; i<size; ++i)
+      lm[startindex+i] = dofcolmap_->GID(idx+i);
+  }
 
   /// Get the gid of all dofs of a element
   virtual void Dof(const Element* element, vector<int>& lm) const

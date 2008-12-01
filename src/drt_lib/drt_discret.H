@@ -219,6 +219,20 @@ public:
   { dsassert(havedof_,"no dofs assigned"); dofsets_[currentdofset_]->Dof(element,lm); }
 
   /*!
+  \brief Get the gid of all dofs of a node.
+
+  Ask the current DofSet for the gids of the dofs of this node. The
+  required vector is created and filled on the fly. So better keep it
+  if you need more than one dof gid.
+  - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+  \param node (in)      : the node
+  \param startindex (in): first index of vector at which will be written to end
+  \param lm (in/out)    : lm vector the dofs are appended to
+  */
+  virtual void Dof(const Node* node, const unsigned startindex, vector<int>& lm) const
+  { dsassert(havedof_,"no dofs assigned"); dofsets_[currentdofset_]->Dof(node,startindex,lm); }
+  
+  /*!
   \brief Print this discretization to os (Filled()==true NOT prerequisite)
          (ostream << also supported)
 
