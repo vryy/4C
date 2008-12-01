@@ -673,7 +673,7 @@ void DRT::ELEMENTS::Fluid3::f3_int_beltrami_err(
 
   // gaussian points
   const GaussRule3D gaussrule = getOptimalGaussrule(distype);
-  const IntegrationPoints3D  intpoints = getIntegrationPoints3D(gaussrule);
+  const IntegrationPoints3D  intpoints(gaussrule);
 
   // start loop over integration points
   for (int iquad=0;iquad<intpoints.nquad;iquad++)

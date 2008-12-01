@@ -1001,7 +1001,7 @@ const vector<LINALG::Matrix<NUMNOD_SOTET10,1> >& DRT::ELEMENTS::So_tet10::so_tet
   if (shapefcts_done) return shapefcts;
 
   const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_tet_10point;
-  const DRT::UTILS::IntegrationPoints3D intpoints = getIntegrationPoints3D(gaussrule);
+  const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
   for (int gp=0; gp<num_gp; gp++) {
     const double r = intpoints.qxg[gp][0];
     const double s = intpoints.qxg[gp][1];
@@ -1025,7 +1025,7 @@ const vector<LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> >& DRT::ELEMENTS::So_
   if (derivs_done) return derivs;
 
   const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_tet_10point;
-  const DRT::UTILS::IntegrationPoints3D intpoints = getIntegrationPoints3D(gaussrule);
+  const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
   for (int gp=0; gp<num_gp; gp++) {
     const double r = intpoints.qxg[gp][0];
     const double s = intpoints.qxg[gp][1];
@@ -1049,7 +1049,7 @@ const vector<double>& DRT::ELEMENTS::So_tet10::so_tet10_10gp_weights()
   if (weights_done) return weights;
 
   const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_tet_10point;
-  const DRT::UTILS::IntegrationPoints3D intpoints = getIntegrationPoints3D(gaussrule);
+  const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
   for (int gp=0; gp<num_gp; gp++)
     weights[gp] = intpoints.qwgt[gp];
   weights_done = true;

@@ -184,7 +184,7 @@ bool DRT::ELEMENTS::SoDisp::ReadElement()
 
     numnod_disp_ = NumNode();      // number of nodes
     numdof_disp_ = NumNode() * NODDOF_DISP;     // total dofs per element
-    const DRT::UTILS::IntegrationPoints3D  intpoints = DRT::UTILS::getIntegrationPoints3D(gaussrule_);
+    const DRT::UTILS::IntegrationPoints3D  intpoints(gaussrule_);
     numgpt_disp_ = intpoints.nquad;      // total gauss points per element
 
   return true;

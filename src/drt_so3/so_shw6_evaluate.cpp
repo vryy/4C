@@ -453,7 +453,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
   // (r,s) gp-locations of fully integrated linear 6-node wedge
   // necessary for ANS interpolation
   const DRT::UTILS::GaussRule3D gaussrule_ = DRT::UTILS::intrule_wedge_6point;
-  const DRT::UTILS::IntegrationPoints3D intpoints = getIntegrationPoints3D(gaussrule_);
+  const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule_);
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
@@ -1008,7 +1008,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_eassetup(
           const LINALG::Matrix<NUMNOD_WEG6,NUMDIM_WEG6>& xrefe)    // material element coords
 {
   // shape function derivatives, evaluated at origin (r=s=t=0.0)
-  const DRT::UTILS::IntegrationPoints3D  intpoints = getIntegrationPoints3D(DRT::UTILS::intrule_wedge_1point);
+  const DRT::UTILS::IntegrationPoints3D  intpoints(DRT::UTILS::intrule_wedge_1point);
   LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> df0;
   DRT::UTILS::shape_function_3D_deriv1(df0,intpoints.qxg[0][0],intpoints.qxg[0][1],intpoints.qxg[0][2],DRT::Element::wedge6);
 
@@ -1031,7 +1031,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_eassetup(
     return;
   } else {
     // (r,s,t) gp-locations of fully integrated linear 6-node Wedge
-    const DRT::UTILS::IntegrationPoints3D intpoints = getIntegrationPoints3D(DRT::UTILS::intrule_wedge_6point);
+    const DRT::UTILS::IntegrationPoints3D intpoints(DRT::UTILS::intrule_wedge_6point);
 
     // fill up M at each gp
     if (eastype_ == soshw6_easpoisthick) {

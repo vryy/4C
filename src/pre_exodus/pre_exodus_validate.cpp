@@ -125,7 +125,7 @@ void EXODUS::ValidateElementJacobian(Mesh& mymesh, const DRT::Element::Discretiz
   default:
       dserror("Unknown element type, validation failed!");
   }
-  const DRT::UTILS::IntegrationPoints3D  intpoints = getIntegrationPoints3D(integrationrule_1point);
+  const DRT::UTILS::IntegrationPoints3D  intpoints(integrationrule_1point);
   const int iel = eb->GetEleNodes(0).size();
   // shape functions derivatives
   const int NSD = 3;
@@ -181,7 +181,7 @@ int EXODUS::ValidateElementJacobian_fullgp(Mesh& mymesh, const DRT::Element::Dis
   default:
       dserror("Unknown element type, validation failed!");
   }
-  const DRT::UTILS::IntegrationPoints3D  intpoints = getIntegrationPoints3D(integrationrule);
+  const DRT::UTILS::IntegrationPoints3D  intpoints(integrationrule);
   const int iel = eb->GetEleNodes(0).size();
   // shape functions derivatives
   const int NSD = 3;

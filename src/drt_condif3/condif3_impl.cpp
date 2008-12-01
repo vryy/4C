@@ -748,7 +748,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalTau(
   DRT::UTILS::GaussRule3D intrule_stabili = SCATRA::getIntegrationRuleForStabilization<distype>();
 
   // gaussian points
-  const DRT::UTILS::IntegrationPoints3D  intpoints_tau = getIntegrationPoints3D(intrule_stabili);
+  const DRT::UTILS::IntegrationPoints3D  intpoints_tau(intrule_stabili);
 
   // shape functions and derivs at element center
   const double e1    = intpoints_tau.qxg[0][0];
@@ -2565,7 +2565,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalErrorComparedToAnalytSolution(
 
   // integration points
   const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_hex_27point; // for cos/sin
-  const DRT::UTILS::IntegrationPoints3D  intpoints = getIntegrationPoints3D(gaussrule);
+  const DRT::UTILS::IntegrationPoints3D  intpoints(gaussrule);
 
   // start loop over integration points
   for (int iquad=0;iquad<intpoints.nquad;iquad++)

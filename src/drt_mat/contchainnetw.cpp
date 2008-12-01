@@ -898,7 +898,7 @@ const vector<double> MAT::MatPointCoords(const DRT::Element* actele,const vector
   if (gp==-1) DRT::UTILS::shape_function_3D(funct, 0.0, 0.0, 0.0, distype);
   else{
     const DRT::UTILS::GaussRule3D gaussrule_ = DRT::UTILS::intrule_hex_8point;
-    const DRT::UTILS::IntegrationPoints3D intpoints = getIntegrationPoints3D(gaussrule_);
+    const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule_);
     DRT::UTILS::shape_function_3D(funct, intpoints.qxg[gp][0], intpoints.qxg[gp][1], intpoints.qxg[gp][2], distype);
   }
   Epetra_SerialDenseMatrix point(1,3);

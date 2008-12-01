@@ -229,41 +229,9 @@ struct IntegrationPoints1D
       const GaussRule1D gaussrule   ///< 1d rule
       );
   int           nquad;        ///< number of integration points
-  double        qxg[5];       ///< coordinates */
-  double        qwgt[5];      ///< weights */
+  double        qxg[5];       ///< coordinates
+  double        qwgt[5];      ///< weights
 };
-
-/*!
-\brief return object with 3D integration points and weights
-*/
-inline IntegrationPoints3D getIntegrationPoints3D(
-  const  GaussRule3D gaussrule   ///< used to switch between the implemented integration rules
-  )
-{
-  return IntegrationPoints3D(gaussrule);
-}
-
-/*!
-\brief return object with 2D integration points and weights
-*/
-inline IntegrationPoints2D getIntegrationPoints2D(
-  const  GaussRule2D gaussrule   ///< used to switch between the implemented integration rules
-  )
-{
-  return IntegrationPoints2D(gaussrule);
-}
-
-/*!
-\brief return object with 1D integration points and weights
-*/
-inline IntegrationPoints1D getIntegrationPoints1D(
-  const  GaussRule1D gaussrule   ///< used to switch between the implemented integration rules
-  )
-{
-  return IntegrationPoints1D(gaussrule);
-}
-
-
 
 } // namespace UTILS
 } // namespace DRT

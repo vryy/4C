@@ -789,7 +789,7 @@ const vector<LINALG::Matrix<NUMNOD_WEG6,1> > DRT::ELEMENTS::So_weg6::sow6_shapef
   // (r,s,t) gp-locations of fully integrated linear 6-node Wedge
   // fill up nodal f at each gp
   const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_wedge_6point;
-  const DRT::UTILS::IntegrationPoints3D intpoints = getIntegrationPoints3D(gaussrule);
+  const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
   for (int igp = 0; igp < intpoints.nquad; ++igp) {
     const double r = intpoints.qxg[igp][0];
     const double s = intpoints.qxg[igp][1];
@@ -809,7 +809,7 @@ const vector<LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> > DRT::ELEMENTS::So_weg6::s
   // (r,s,t) gp-locations of fully integrated linear 6-node Wedge
   // fill up df w.r.t. rst directions (NUMDIM) at each gp
   const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_wedge_6point;
-  const DRT::UTILS::IntegrationPoints3D intpoints = getIntegrationPoints3D(gaussrule);
+  const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
   for (int igp = 0; igp < intpoints.nquad; ++igp) {
     const double r = intpoints.qxg[igp][0];
     const double s = intpoints.qxg[igp][1];
@@ -827,7 +827,7 @@ const vector<double> DRT::ELEMENTS::So_weg6::sow6_weights()
 {
   vector<double> weights(NUMGPT_WEG6);
   const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_wedge_6point;
-  const DRT::UTILS::IntegrationPoints3D intpoints = getIntegrationPoints3D(gaussrule);
+  const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
   for (int i = 0; i < NUMGPT_WEG6; ++i) {
     weights[i] = intpoints.qwgt[i];
   }
@@ -861,7 +861,7 @@ void DRT::ELEMENTS::So_weg6::sow6_shapederiv(
     // fill up nodal f at each gp
     // fill up df w.r.t. rst directions (NUMDIM) at each gp
     const DRT::UTILS::GaussRule3D gaussrule_ = DRT::UTILS::intrule_wedge_6point;
-    const DRT::UTILS::IntegrationPoints3D intpoints = getIntegrationPoints3D(gaussrule_);
+    const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule_);
     for (int igp = 0; igp < intpoints.nquad; ++igp) {
       const double r = intpoints.qxg[igp][0];
       const double s = intpoints.qxg[igp][1];

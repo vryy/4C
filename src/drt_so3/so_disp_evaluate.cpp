@@ -383,7 +383,7 @@ void DRT::ELEMENTS::SoDisp::sodisp_shapederiv(
   // (r,s,t) gp-locations of fully integrated linear 6-node Wedge
   // fill up nodal f at each gp
   // fill up df w.r.t. rst directions (NUMDIM) at each gp
-  const DRT::UTILS::IntegrationPoints3D intpoints = getIntegrationPoints3D(gaussrule_);
+  const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule_);
   for (int igp = 0; igp < intpoints.nquad; ++igp) {
     const double r = intpoints.qxg[igp][0];
     const double s = intpoints.qxg[igp][1];
