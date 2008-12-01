@@ -220,7 +220,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      const DRT::UTILS::IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule_);
+      const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
       Epetra_SerialDenseMatrix stress(intpoints.nquad,Wall1::numstr_);
       Epetra_SerialDenseMatrix strain(intpoints.nquad,Wall1::numstr_);
       INPAR::STR::StressType iostress = params.get<INPAR::STR::StressType>("iostress", INPAR::STR::stress_none);
@@ -281,7 +281,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
           dserror("No element stress/strain vector available");
         const Epetra_BlockMap& elemap = elestress->Map();
         int lid = elemap.LID(Id());
-        const DRT::UTILS::IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule_);
+        const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
         if (lid!=-1)
         {
           // 3 independent stresses exist in 2D -> numstr_-1!
@@ -325,7 +325,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
           dserror("No element stress/strain vector available");
         const Epetra_BlockMap elemap = elestress->Map();
         int lid = elemap.LID(Id());
-        const DRT::UTILS::IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule_);
+        const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
         if (lid!=-1) {
           for (int i = 0; i < Wall1::numstr_; ++i)
           {
@@ -411,7 +411,7 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(ParameterList& params,
   const int numdf = 2;
 
   // gaussian points
-  const DRT::UTILS::IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule_);
+  const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
 
   //  vector<double>* thick = data_.Get<vector<double> >("thick");
   //  if (!thick) dserror("Cannot find vector of nodal thickness");
@@ -555,7 +555,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
   const DiscretizationType distype = this->Shape();
 
   // gaussian points
-  const DRT::UTILS::IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule_);
+  const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
 
   /*----------------------------------------------------- geometry update */
   for (int k=0; k<numnode; ++k)
@@ -1171,7 +1171,7 @@ void DRT::ELEMENTS::Wall1::Energy(
   const int edof = numnode * Wall1::noddof_;
   const DiscretizationType distype = Shape();
   // Gaussian points
-  const DRT::UTILS::IntegrationPoints2D intpoints = getIntegrationPoints2D(gaussrule_);
+  const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
 
   // general arrays
   Epetra_SerialDenseVector shpfct(numnode);  // shape functions at Gauss point

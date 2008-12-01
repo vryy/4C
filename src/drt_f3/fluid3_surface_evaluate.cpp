@@ -179,7 +179,7 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
   default:
       dserror("shape type unknown!\n");
   }
-  const IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
+  const IntegrationPoints2D  intpoints(gaussrule);
 
   // allocate vector for shape functions and matrix for derivatives
   Epetra_SerialDenseVector  funct(iel);
@@ -455,7 +455,7 @@ void DRT::ELEMENTS::Fluid3Surface::IntegrateShapeFunction(ParameterList& params,
   /*----------------------------------------------------------------------*
   |               start loop over integration points                     |
   *----------------------------------------------------------------------*/
-  const IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
+  const IntegrationPoints2D  intpoints(gaussrule);
 
   for (int gpid=0; gpid<intpoints.nquad; gpid++)
   {
@@ -573,7 +573,7 @@ void DRT::ELEMENTS::Fluid3Surface::ElementNodeNormal(ParameterList& params,
   /*----------------------------------------------------------------------*
   |               start loop over integration points                     |
   *----------------------------------------------------------------------*/
-  const IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
+  const IntegrationPoints2D  intpoints(gaussrule);
 
   for (int gpid=0; gpid<intpoints.nquad; gpid++)
   {
@@ -688,7 +688,7 @@ void DRT::ELEMENTS::Fluid3Surface::AreaCaculation(ParameterList& params)
     xyze(2,i)=this->Nodes()[i]->X()[2];
   }
 
-  const IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
+  const IntegrationPoints2D  intpoints(gaussrule);
   for (int gpid=0; gpid<intpoints.nquad; gpid++)
   {
     const double e0 = intpoints.qxg[gpid][0];
@@ -803,7 +803,7 @@ void DRT::ELEMENTS::Fluid3Surface::FlowRateParameterCaculation(ParameterList& pa
   for (int i=0; i<3; i++)
     normal[i] = normal[i] / length;
 
-  const IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
+  const IntegrationPoints2D  intpoints(gaussrule);
   for (int gpid=0; gpid<intpoints.nquad; gpid++)
   {
     const double e0 = intpoints.qxg[gpid][0];
@@ -938,7 +938,7 @@ void DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration(ParameterList& params,
   for (int i=0; i<3; i++)
     normal[i] = -normal[i] / length;
 
-  const IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
+  const IntegrationPoints2D  intpoints(gaussrule);
   for (int gpid=0; gpid<intpoints.nquad; gpid++)
   {
     const double e0 = intpoints.qxg[gpid][0];

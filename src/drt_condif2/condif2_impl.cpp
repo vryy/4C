@@ -408,7 +408,7 @@ void DRT::ELEMENTS::Condif2Impl::CalTau(
   }
 
   // gaussian points
-  const DRT::UTILS::IntegrationPoints2D  intpoints_tau = getIntegrationPoints2D(integrationrule_stabili);
+  const DRT::UTILS::IntegrationPoints2D  intpoints_tau(integrationrule_stabili);
 
   // prepare the standard FE stuff for this single integration point
   // we do not need second derivatives for the calculation of tau

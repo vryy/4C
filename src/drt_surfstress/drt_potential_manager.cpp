@@ -480,7 +480,7 @@ void UTILS::PotentialManager::computeFandK(
   // number of atoms (~0.2 nm) per surface area in reference configuration
   // here equal for all bodies in n/µm^2
   const double beta = 25000000;
-  const DRT::UTILS::IntegrationPoints2D intpoints = getIntegrationPoints2D(gaussrule);
+  const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule);
   
   //----------------------------------------------------------------------
   // loop over all gauss points of the actual element
@@ -527,7 +527,7 @@ void UTILS::PotentialManager::computeFandK(
             default:
                dserror("unknown number of nodes for gaussrule initialization");
          }
-         const DRT::UTILS::IntegrationPoints2D intpoints_pot = getIntegrationPoints2D(rule_pot);
+         const DRT::UTILS::IntegrationPoints2D intpoints_pot(rule_pot);
          
          //----------------------------------------------------------------------
          // run over all gauss points of a influencing element

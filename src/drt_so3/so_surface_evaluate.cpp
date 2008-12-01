@@ -139,8 +139,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
   /*----------------------------------------------------------------------*
   |               start loop over integration points                     |
   *----------------------------------------------------------------------*/
-  const DRT::UTILS::IntegrationPoints2D  intpoints =
-                                       getIntegrationPoints2D(gaussrule_);
+  const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
   for (int gp=0; gp<intpoints.nquad; gp++)
   {
     const double e0 = intpoints.qxg[gp][0];
@@ -357,8 +356,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
         /*----------------------------------------------------------------------*
          |               start loop over integration points                     |
          *----------------------------------------------------------------------*/
-        const DRT::UTILS::IntegrationPoints2D  intpoints =
-          getIntegrationPoints2D(gaussrule_);
+        const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
 
         for (int gp=0; gp<intpoints.nquad; gp++)
         {
@@ -449,8 +447,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
           SpatialConfiguration(x,mydism);
         }
 
-        const DRT::UTILS::IntegrationPoints2D  intpoints =
-          getIntegrationPoints2D(gaussrule_);
+        const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
 
         // set up matrices and parameters needed for the evaluation of current
         // interfacial area and its derivatives w.r.t. the displacements
@@ -626,8 +623,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
           }
 
           double areaele=0.0;
-          const DRT::UTILS::IntegrationPoints2D  intpoints =
-                                               getIntegrationPoints2D(gaussrule_);
+          const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
           // allocate matrix for derivatives of shape functions
           LINALG::SerialDenseMatrix  deriv(2,NumNode());
 
@@ -961,8 +957,7 @@ void DRT::ELEMENTS::StructuralSurface::ComputeAreaDeriv(const LINALG::SerialDens
                                                         RCP<Epetra_SerialDenseVector> Adiff,
                                                         RCP<Epetra_SerialDenseMatrix> Adiff2)
 {
-  const DRT::UTILS::IntegrationPoints2D  intpoints =
-    getIntegrationPoints2D(gaussrule_);
+  const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
 
   int ngp = intpoints.nquad;
 

@@ -62,7 +62,7 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
   const int edof = numnode * Wall1::noddof_;
   const DiscretizationType distype = Shape();
   // Gaussian points
-  const DRT::UTILS::IntegrationPoints2D intpoints = getIntegrationPoints2D(gaussrule_);
+  const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
   // GEMM coefficients
   const double gemmalphaf = params.get<double>("alpha f");
   const double gemmxi = params.get<double>("xi");

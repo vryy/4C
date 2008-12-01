@@ -230,7 +230,7 @@ vector<RCP<DRT::Element> >  DRT::ELEMENTS::Wall1::Surfaces()
 void DRT::ELEMENTS::Wall1::w1_expol(Epetra_SerialDenseMatrix& stresses,
                                     Epetra_SerialDenseMatrix& nodalstresses)
 {
-  const DRT::UTILS::IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule_);
+  const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
   const DiscretizationType dt = this->Shape();
   int numgp = intpoints.nquad;
   int numnode = NumNode();

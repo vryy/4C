@@ -337,7 +337,7 @@ int DRT::ELEMENTS::Condif3Surface::EvaluateNeumann(
     dserror("shape type unknown!\n");
   }
 
-  const DRT::UTILS::IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
+  const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule);
 
   // allocate vector for shape functions and matrix for derivatives
   Epetra_SerialDenseVector  funct(iel);
@@ -508,7 +508,7 @@ void DRT::ELEMENTS::Condif3Surface::EvaluateElectrodeKinetics(
   default:
     dserror("shape type unknown!\n");
   }
-  const IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
+  const IntegrationPoints2D  intpoints(gaussrule);
 
   // allocate vector for shape functions and matrix for derivatives
   Epetra_SerialDenseVector  funct(iel);
@@ -703,7 +703,7 @@ void DRT::ELEMENTS::Condif3Surface::NormalFluxIntegral(
     dserror("shape type unknown!\n");
   }
 
-  const DRT::UTILS::IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
+  const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule);
   for (int gpid=0; gpid<intpoints.nquad; gpid++)
   {
     const double e0 = intpoints.qxg[gpid][0];

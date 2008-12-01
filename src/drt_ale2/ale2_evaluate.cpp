@@ -521,7 +521,7 @@ void DRT::ELEMENTS::Ale2::static_ke(vector<int>&              lm,
 
   // gaussian points
   const GaussRule2D gaussrule = getOptimalGaussrule(distype);
-  const IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
+  const IntegrationPoints2D  intpoints(gaussrule);
 
   // integration loops
   for (int iquad=0;iquad<intpoints.nquad;iquad++)

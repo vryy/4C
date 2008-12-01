@@ -1062,7 +1062,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
     LINALG::Matrix<iel,1> funct;
 
     // get the quad9 gaussrule for the in plane integration
-    const IntegrationPoints2D  intpoints = getIntegrationPoints2D(intrule_quad_9point);
+    const IntegrationPoints2D  intpoints(intrule_quad_9point);
 
     // a hex8 element has two levels, the hex20 and hex27 element have three layers to sample
     // (now we allow even more)
@@ -1268,7 +1268,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
       gp(1)=-1.0+rr*2.0/((double)numsublayers);
 
       // get the quad9 gaussrule for the in plane integration
-      const IntegrationPoints2D  intpoints = getIntegrationPoints2D(intrule_quad_9point);
+      const IntegrationPoints2D  intpoints(intrule_quad_9point);
 
       // reset temporary values
       double ubar=0;
