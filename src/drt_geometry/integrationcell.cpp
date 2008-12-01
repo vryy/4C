@@ -22,7 +22,7 @@ Maintainer: Axel Gerstenberger
 
 //! translate between std::vector and blitz array
 template <int dim>
-static LINALG::SerialDenseMatrix ConvertPosArrayToLINALG(
+LINALG::SerialDenseMatrix ConvertPosArrayToLINALG(
         const std::vector<std::vector<double> >&   pos_array,
         const DRT::Element::DiscretizationType     distype
         )
@@ -42,7 +42,7 @@ static LINALG::SerialDenseMatrix ConvertPosArrayToLINALG(
 
 //! create array with physical coordinates based an local coordinates of a parent element
 template<class Cell>
-static void ComputePhysicalCoordinates(
+void ComputePhysicalCoordinates(
         const DRT::Element&        ele,  ///< parent element
         const Cell&                cell, ///< integration cell whose coordinates we'd like to transform
         LINALG::SerialDenseMatrix& physicalCoordinates
@@ -164,7 +164,9 @@ std::string GEO::DomainIntCell::toString() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void GEO::DomainIntCell::NodalPosXYZ(const DRT::Element& ele, LINALG::SerialDenseMatrix& xyz_cell) const
+void GEO::DomainIntCell::NodalPosXYZ(
+    const DRT::Element& ele,
+    LINALG::SerialDenseMatrix& xyz_cell) const
 {
   ComputePhysicalCoordinates(ele, (*this), xyz_cell);
   return;
@@ -212,10 +214,12 @@ LINALG::SerialDenseMatrix GEO::DomainIntCell::GetDefaultCoordinates(
  *----------------------------------------------------------------------*/
 LINALG::Matrix<3,1> GEO::DomainIntCell::GetPhysicalCenterPosition(const DRT::Element& ele) const
 {
+  DRT::Element::DiscretizationType distype = this->Shape();
+  
   const int nsd = 3;
   const int maxnodecell = 27;
   
-  const int numnodecell = DRT::UTILS::getNumberOfElementNodes(this->Shape());
+  const int numnodecell = DRT::UTILS::getNumberOfElementNodes(distype);
   
   if (numnodecell >= maxnodecell)
     dserror("you need to increase size of fixedsize array!");
@@ -225,7 +229,7 @@ LINALG::Matrix<3,1> GEO::DomainIntCell::GetPhysicalCenterPosition(const DRT::Ele
   this->NodalPosXYZ(ele, physcoord);
   
   // center in local coordinates
-  const LINALG::Matrix<3,1> localcenterpos(DRT::UTILS::getLocalCenterPosition<3>(this->Shape()));
+  const LINALG::Matrix<3,1> localcenterpos(DRT::UTILS::getLocalCenterPosition<3>(distype));
   
   // shape functions
   static LINALG::Matrix<maxnodecell,1> funct;
@@ -233,7 +237,7 @@ LINALG::Matrix<3,1> GEO::DomainIntCell::GetPhysicalCenterPosition(const DRT::Ele
       localcenterpos(0),
       localcenterpos(1),
       localcenterpos(2),
-      this->Shape());
+      distype);
   
   //interpolate position to x-space
   LINALG::Matrix<3,1> x_interpol(true);
@@ -315,39 +319,35 @@ void GEO::BoundaryIntCell::NodalPosXYZ(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-LINALG::Matrix<3,1> GEO::BoundaryIntCell::GetPhysicalCenterPosition(const DRT::Element& ele) const
-{
-  const int nsd = 3;
-  const int maxnodecell = 27;
-  const int numnodecell = DRT::UTILS::getNumberOfElementNodes(this->Shape());
-  if (numnodecell >= maxnodecell)
-    dserror("increase maxnodecell");
-  
-  // physical positions of cell nodes
-  static LINALG::SerialDenseMatrix physcoord(nsd,maxnodecell);
-  this->NodalPosXYZ(ele, physcoord);
-  
-  // center in local coordinates
-  const LINALG::Matrix<2,1> localcenterpos(DRT::UTILS::getLocalCenterPosition<2>(this->Shape()));
-  
-  // shape functions
-  static LINALG::Matrix<maxnodecell,1> funct;
-  DRT::UTILS::shape_function_2D(funct,
-      localcenterpos(0),
-      localcenterpos(1),
-      this->Shape());
-  
-  //interpolate position to x-space
-  LINALG::Matrix<3,1> x_interpol(true);
-  for (int inode = 0; inode < numnodecell; ++inode)
-  {
-    for (int isd = 0; isd < 3; ++isd)
-    {
-      x_interpol(isd) += physcoord(isd,inode)*funct(inode);
-    }
-  }
-  
-  return x_interpol;
-}
+//LINALG::Matrix<3,1> GEO::BoundaryIntCell::GetPhysicalCenterPosition(const DRT::Element& ele) const
+//{
+//  const int nsd = 3;
+//  const int maxnodecell = 27;
+//  const int numnodecell = DRT::UTILS::getNumberOfElementNodes(this->Shape());
+//  if (numnodecell >= maxnodecell)
+//    dserror("increase maxnodecell");
+//  
+//  // physical positions of cell nodes
+//  static LINALG::SerialDenseMatrix physcoord(nsd,maxnodecell);
+//  this->NodalPosXYZ(ele, physcoord);
+//  
+//  // center in local coordinates
+//  const LINALG::Matrix<2,1> localcenterpos(DRT::UTILS::getLocalCenterPosition<2>(this->Shape()));
+//  
+//  // shape functions
+//  static LINALG::Matrix<maxnodecell,1> funct;
+//  DRT::UTILS::shape_function_2D(funct,
+//      localcenterpos(0),
+//      localcenterpos(1),
+//      this->Shape());
+//  
+//  //interpolate position to x-space
+//  LINALG::Matrix<3,1> x_interpol(true);
+//  for (int inode = 0; inode < numnodecell; ++inode)
+//    for (int isd = 0; isd < 3; ++isd)
+//      x_interpol(isd) += physcoord(isd,inode)*funct(inode);
+//  
+//  return x_interpol;
+//}
 
 #endif  // #ifdef CCADISCRET
