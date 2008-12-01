@@ -241,11 +241,10 @@ void  DRT::ELEMENTS::XFluid3Surface::ComputeMetricTensorForSurface(
   xyze.GEMM('N','T',3,2,numnode,1.0,xyze.A(),xyze.LDA(),deriv.A(),deriv.LDA(),0.0,dxyzdrs.A(),dxyzdrs.M());
   
   // compute covariant metric tensor G for surface element (2x2)
-  LINALG::Matrix<2,2> metric;
   // metric = dxyzdrs(k,i)*dxyzdrs(k,j);
-  metric.MultiplyTN(dxyzdrs,dxyzdrs);
+  metrictensor.MultiplyTN(dxyzdrs,dxyzdrs);
   
-  detmetric = sqrt(metric.Determinant());
+  detmetric = sqrt(metrictensor.Determinant());
 
   return;
 }
