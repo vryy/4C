@@ -351,7 +351,7 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(ParameterList& params,
   const DiscretizationType distype = this->Shape();
 
   // gaussian points
-  const DRT::UTILS::IntegrationPoints1D intpoints = getIntegrationPoints1D(gaussrule_);
+  const DRT::UTILS::IntegrationPoints1D intpoints(gaussrule_);
 
   //declaration of variable in order to store shape function
   Epetra_SerialDenseVector funct(NumNode());

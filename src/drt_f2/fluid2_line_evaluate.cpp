@@ -333,7 +333,7 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
 
   // Gaussian points
   const GaussRule1D gaussrule = getOptimalGaussrule(distype);
-  const IntegrationPoints1D  intpoints = getIntegrationPoints1D(gaussrule);
+  const IntegrationPoints1D  intpoints(gaussrule);
 
   // --------------------------------------------------
   // Now initialise the nurbs specific stuff
@@ -720,7 +720,7 @@ void DRT::ELEMENTS::Fluid2Line::IntegrateShapeFunction(ParameterList& params,
   // gaussian points
   const DiscretizationType distype = this->Shape();
   const GaussRule1D gaussrule = getOptimalGaussrule(distype);
-  const IntegrationPoints1D  intpoints = getIntegrationPoints1D(gaussrule);
+  const IntegrationPoints1D  intpoints(gaussrule);
 
   // allocate vector for shape functions and for derivatives
   Epetra_SerialDenseVector   funct(iel);
@@ -796,7 +796,7 @@ void DRT::ELEMENTS::Fluid2Line::ElementNodeNormal(ParameterList& params,
   // gaussian points
   const DiscretizationType distype = this->Shape();
   const GaussRule1D gaussrule = getOptimalGaussrule(distype);
-  const IntegrationPoints1D  intpoints = getIntegrationPoints1D(gaussrule);
+  const IntegrationPoints1D  intpoints(gaussrule);
 
   // allocate vector for shape functions and for derivatives
   Epetra_SerialDenseVector   funct(iel);
@@ -894,7 +894,7 @@ void DRT::ELEMENTS::Fluid2Line::ElementSurfaceTension(ParameterList& params,
   // gaussian points
   const DiscretizationType distype = this->Shape();
   const GaussRule1D gaussrule = getOptimalGaussrule(distype);
-  const IntegrationPoints1D  intpoints = getIntegrationPoints1D(gaussrule);
+  const IntegrationPoints1D  intpoints(gaussrule);
 
   // allocate vector for shape functions and for derivatives
   Epetra_SerialDenseVector   funct(iel);

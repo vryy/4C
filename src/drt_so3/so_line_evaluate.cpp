@@ -83,7 +83,7 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(ParameterList&            par
   MaterialConfiguration(x);
   
   // integration parameters
-  const DRT::UTILS::IntegrationPoints1D  intpoints = getIntegrationPoints1D(gaussrule_);
+  const DRT::UTILS::IntegrationPoints1D  intpoints(gaussrule_);
   const int ngp = intpoints.nquad;
   LINALG::SerialDenseVector funct(numnode);
   LINALG::SerialDenseMatrix deriv(1,numnode);

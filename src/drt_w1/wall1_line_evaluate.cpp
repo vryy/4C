@@ -70,7 +70,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(ParameterList& params,
   
   // gaussian points 
   const DRT::UTILS::GaussRule1D gaussrule = getOptimalGaussrule(distype); 
-  const DRT::UTILS::IntegrationPoints1D  intpoints = getIntegrationPoints1D(gaussrule);
+  const DRT::UTILS::IntegrationPoints1D  intpoints(gaussrule);
   
   // allocate vector for shape functions and for derivatives
   LINALG::SerialDenseVector    funct(numnod);

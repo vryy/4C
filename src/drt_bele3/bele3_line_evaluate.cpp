@@ -118,7 +118,7 @@ int DRT::ELEMENTS::Bele3Line::EvaluateNeumann(
 
   // gaussian points
   const DRT::UTILS::GaussRule1D gaussrule = getOptimalGaussrule(distype);
-  const DRT::UTILS::IntegrationPoints1D  intpoints = getIntegrationPoints1D(gaussrule);
+  const DRT::UTILS::IntegrationPoints1D  intpoints(gaussrule);
 
 
   // allocate vector for shape functions and for derivatives
@@ -252,7 +252,7 @@ void DRT::ELEMENTS::Bele3Line::IntegrateShapeFunction(ParameterList& params,
   // gaussian points
   const DiscretizationType distype = this->Shape();
   const DRT::UTILS::GaussRule1D gaussrule = getOptimalGaussrule(distype);
-  const DRT::UTILS::IntegrationPoints1D  intpoints = getIntegrationPoints1D(gaussrule);
+  const DRT::UTILS::IntegrationPoints1D  intpoints(gaussrule);
 
   // allocate vector for shape functions and for derivatives
   Epetra_SerialDenseVector   funct(iel);

@@ -206,7 +206,7 @@ void DRT::ELEMENTS::Condif2Line::NormalFluxIntegral(
 
   const GaussRule1D gaussrule = getOptimalGaussrule(distype);
 
-  const IntegrationPoints1D  intpoints = getIntegrationPoints1D(gaussrule);
+  const IntegrationPoints1D  intpoints(gaussrule);
   for (int iquad=0; iquad<intpoints.nquad; iquad++)
   {
     const double e1 = intpoints.qxg[iquad];
@@ -300,7 +300,7 @@ int DRT::ELEMENTS::Condif2Line::EvaluateNeumann(
 
   // Gaussian points
   const GaussRule1D gaussrule = getOptimalGaussrule(distype);
-  const IntegrationPoints1D  intpoints = getIntegrationPoints1D(gaussrule);
+  const IntegrationPoints1D  intpoints(gaussrule);
 
   // allocate vector for shape functions and matrix for derivatives
   Epetra_SerialDenseVector funct(iel);
