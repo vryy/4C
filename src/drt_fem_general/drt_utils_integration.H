@@ -152,9 +152,9 @@ public:
     }
     
     //! get integration point position
-    inline Vec Position() const { return position_; }
+    Vec Position() const { return position_; }
     //! get integration point weight
-    inline double Weight() const { return weight_; }
+    double Weight() const { return weight_; }
     
 private:
     //! 1d, 2d or 3d position of integration point in element coordinates
