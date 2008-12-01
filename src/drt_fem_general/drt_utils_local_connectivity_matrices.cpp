@@ -662,7 +662,7 @@ vector< LINALG::Matrix<3,1> > DRT::UTILS::getEleNodeNumbering_nodes_reference(
 
     switch(distype)
     {
-        case DRT::Element::quad4:
+        case DRT::Element::quad4: case DRT::Element::quad8: case DRT::Element::quad9:
         {
             for(int inode = 0; inode < nNode; inode++)
             {
@@ -671,25 +671,7 @@ vector< LINALG::Matrix<3,1> > DRT::UTILS::getEleNodeNumbering_nodes_reference(
             }
             break;
         }
-        case DRT::Element::quad8:
-        {
-            for(int inode = 0; inode < nNode; inode++)
-            {
-                for(int isd = 0; isd < dim; isd++)
-                    map[inode](isd) = eleNodeNumbering_quad9_nodes_reference[inode][isd];
-            }
-            break;
-        }
-        case DRT::Element::quad9:
-        {
-            for(int inode = 0; inode < nNode; inode++)
-            {
-                for(int isd = 0; isd < dim; isd++)
-                    map[inode](isd) = eleNodeNumbering_quad9_nodes_reference[inode][isd];
-            }
-            break;
-        }
-        case DRT::Element::tri3:
+        case DRT::Element::tri3: case DRT::Element::tri6:
         {
             for(int inode = 0; inode < nNode; inode++)
             {
@@ -698,16 +680,7 @@ vector< LINALG::Matrix<3,1> > DRT::UTILS::getEleNodeNumbering_nodes_reference(
             }
             break;
         }
-        case DRT::Element::tri6:
-        {
-            for(int inode = 0; inode < nNode; inode++)
-            {
-                for(int isd = 0; isd < dim; isd++)
-                    map[inode](isd) = eleNodeNumbering_tri6_nodes_reference[inode][isd];
-            }
-            break;
-        }
-        case DRT::Element::hex8:
+        case DRT::Element::hex8: case DRT::Element::hex20: case DRT::Element::hex27:
         {
             for(int inode = 0; inode < nNode; inode++)
             {
@@ -716,34 +689,7 @@ vector< LINALG::Matrix<3,1> > DRT::UTILS::getEleNodeNumbering_nodes_reference(
             }
             break;
         }
-        case DRT::Element::hex20:
-        {
-            for(int inode = 0; inode < nNode; inode++)
-            {
-                for(int isd = 0; isd < dim; isd++)
-                    map[inode](isd) = eleNodeNumbering_hex27_nodes_reference[inode][isd];
-            }
-            break;
-        }
-        case DRT::Element::hex27:
-        {
-            for(int inode = 0; inode < nNode; inode++)
-            {
-                for(int isd = 0; isd < dim; isd++)
-                    map[inode](isd) = eleNodeNumbering_hex27_nodes_reference[inode][isd];
-            }
-            break;
-        }
-        case DRT::Element::tet4:
-        {
-            for(int inode = 0; inode < nNode; inode++)
-            {
-                for(int isd = 0; isd < dim; isd++)
-                    map[inode](isd) = eleNodeNumbering_tet10_nodes_reference[inode][isd];
-            }
-            break;
-        }
-        case DRT::Element::tet10:
+        case DRT::Element::tet4: case DRT::Element::tet10:
         {
             for(int inode = 0; inode < nNode; inode++)
             {
