@@ -463,6 +463,11 @@ public:
   virtual double MinEdgeSize();
   
   /*!
+  \brief Evaluate maximal edge size of CElement
+  */
+  virtual double MaxEdgeSize();
+  
+  /*!
   \brief Add CElements to this CElement's potential contact partners
   */
   virtual bool AddSearchElements(const vector<int>& gids);

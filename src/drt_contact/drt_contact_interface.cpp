@@ -709,28 +709,28 @@ void CONTACT::Interface::Evaluate()
 #endif // #ifdef DEBUG
   
   // contact search algorithm
-  lComm()->Barrier();
-  const double t_start = ds_cputime();
+  //lComm()->Barrier();
+  //const double t_start = ds_cputime();
   EvaluateContactSearch();
-  lComm()->Barrier();
-  const double t_end = ds_cputime()-t_start;
-  if (lComm()->MyPID()==0)
-  {
-    cout << "************************************************************\n";
-    cout << "Classical search: " << t_end << " seconds\n";
-  }
+  //lComm()->Barrier();
+  //const double t_end = ds_cputime()-t_start;
+  //if (lComm()->MyPID()==0)
+  // {
+  //  cout << "************************************************************\n";
+  //  cout << "Classical search: " << t_end << " seconds\n";
+  //}
   
   // contact search algorithm (octree)
-  lComm()->Barrier();
-  const double t_start2 = ds_cputime();
-  EvaluateContactSearchOctree();
-  lComm()->Barrier();
-  const double t_end2 = ds_cputime()-t_start2;
-  if (lComm()->MyPID()==0)
-  {
-    cout << "Octree-based search: " << t_end2 << " seconds\n";
-    cout << "************************************************************\n";
-  }
+  //lComm()->Barrier();
+  //const double t_start2 = ds_cputime();
+  //EvaluateContactSearchOctree();
+  //lComm()->Barrier();
+  //const double t_end2 = ds_cputime()-t_start2;
+  //if (lComm()->MyPID()==0)
+  //{
+  //  cout << "Octree-based search: " << t_end2 << " seconds\n";
+  //  cout << "************************************************************\n";
+  //}
   
   // loop over proc's slave elements of the interface for integration
   // use standard column map to include processor's ghosted elements
@@ -1213,8 +1213,8 @@ void CONTACT::Interface::AssembleDMG(LINALG::SparseMatrix& dglobal,
       // else, it cannot be in contact and weighted gap should be positive
       // (otherwise wrong results possible for g~ because of non-positivity
       // of dual shape functions!!!)
-      // for 3D contact this check is not (yet) implemented!
-      if (Dim()==2 && !cnode->HasProj()) gap = 1.0e12;
+      //cout << "Node ID: " << cnode->Id() << " HasProj: " << cnode->HasProj() << endl;
+      if (!cnode->HasProj()) gap = 1.0e12;
 
       Epetra_SerialDenseVector gnode(1);
       vector<int> lm(1);

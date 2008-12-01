@@ -936,10 +936,7 @@ double CONTACT::CElement::MinEdgeSize()
   if (dt==line2 || dt==line3)
   {
     // there is only one edge
-    // (we approximate the quadratic case as linear)
-    double diff[3] = {0.0, 0.0, 0.0};
-    for (int k=0;k<3;++k) diff[k] = coord(k,1)-coord(k,0);
-    minedgesize = sqrt(diff[0]*diff[0]+diff[1]*diff[1]+diff[2]*diff[2]);
+    minedgesize = Area();
   }
   
   // 3D tri case (3noded and 6noded triangular elements)
@@ -986,6 +983,67 @@ double CONTACT::CElement::MinEdgeSize()
   return minedgesize;
 }
 
+/*----------------------------------------------------------------------*
+ |  Compute maximal edge size of CElement                     popp 11/08|
+ *----------------------------------------------------------------------*/
+double CONTACT::CElement::MaxEdgeSize()
+{
+  double maxedgesize = 0.0;
+  DRT::Element::DiscretizationType dt = Shape();
+  
+  // get coordinates of element nodes
+  LINALG::SerialDenseMatrix coord = GetNodalCoords();
+    
+  // 2D case (2noded and 3noded line elements)
+  if (dt==line2 || dt==line3)
+  {
+    // there is only one edge
+    maxedgesize = Area();
+  }
+  
+  // 3D tri case (3noded and 6noded triangular elements)
+  else if (dt==tri3 || dt==tri6)
+  {
+    // there are three edges
+    // (we approximate the quadratic case as linear)
+    for (int edge=0;edge<3;++edge)
+    {
+      double diff[3] = {0.0, 0.0, 0.0};
+      for (int k=0;k<3;++k)
+      {
+        if (edge==2) diff[k] = coord(k,0)-coord(k,edge);
+        else diff[k] = coord(k,edge+1)-coord(k,edge);
+      }
+      double dist = sqrt(diff[0]*diff[0]+diff[1]*diff[1]+diff[2]*diff[2]);
+      if (dist>maxedgesize) maxedgesize = dist;
+    }
+  }
+  
+  // 3D quad case (4noded, 8noded and 9noded quadrilateral elements)
+  else if (dt==quad4 || dt==quad8 || dt==quad9)
+  {
+    // there are four edges
+    // (we approximate the quadratic case as linear)
+    for (int edge=0;edge<4;++edge)
+    {
+      double diff[3] = {0.0, 0.0, 0.0};
+      for (int k=0;k<3;++k)
+      {
+        if (edge==3) diff[k] = coord(k,0)-coord(k,edge);
+        else diff[k] = coord(k,edge+1)-coord(k,edge);
+      }
+      double dist = sqrt(diff[0]*diff[0]+diff[1]*diff[1]+diff[2]*diff[2]);
+      if (dist>maxedgesize) maxedgesize = dist;
+    }
+  }
+  
+  // invalid case
+  else
+    dserror("ERROR: MaxEdgeSize not implemented for this type of CElement");
+  
+  if (maxedgesize==0.0) dserror("ERROR: MaxEdgeSize went wrong...!");
+  return maxedgesize;
+}
 
 /*----------------------------------------------------------------------*
  |  Add CElements to potential contact partners               popp 01/08|

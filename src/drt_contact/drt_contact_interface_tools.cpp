@@ -154,8 +154,7 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
                               << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
                               << coord(2,2) << ")";
           gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "};" << endl;
-          
-          xi[0] = 1/3; xi[1] = 1/3;
+          xi[0] = 1.0/3; xi[1] = 1.0/3;
         }
         
         // 3D bilinear case (4noded quadrilateral elements)

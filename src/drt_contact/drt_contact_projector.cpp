@@ -234,8 +234,8 @@ bool CONTACT::Projector::ProjectElementNormal3D(CONTACT::CNode& node,
   double eta[2] = {0.0, 0.0};
   if (dt==DRT::Element::tri3 || dt==DRT::Element::tri6)
   {
-    eta[0] = 1/3;
-    eta[1] = 1/3;
+    eta[0] = 1.0/3;
+    eta[1] = 1.0/3;
   }
   
   // coordinate increment
@@ -434,8 +434,8 @@ bool CONTACT::Projector::ProjectGaussPoint3D(CONTACT::CElement& gpele,
   double eta[2] = {0.0, 0.0};
   if (dt==DRT::Element::tri3 || dt==DRT::Element::tri6)
   {
-    eta[0] = 1/3;
-    eta[1] = 1/3;
+    eta[0] = 1.0/3;
+    eta[1] = 1.0/3;
   }
   
   // coordinate increment
@@ -501,8 +501,8 @@ bool CONTACT::Projector::ProjectGaussPointAuxn3D(const double* globgp,
   double eta[2] = {0.0, 0.0};
   if (dt==DRT::Element::tri3 || dt==DRT::Element::tri6)
   {
-    eta[0] = 1/3;
-    eta[1] = 1/3;
+    eta[0] = 1.0/3;
+    eta[1] = 1.0/3;
   }
   
   // coordinate increment

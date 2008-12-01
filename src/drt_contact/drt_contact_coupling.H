@@ -469,6 +469,15 @@ public:
   virtual bool IntegrateOverlap2D(vector<double>& xiproj);
   
   /*!
+  \brief Checks roughly whether the two elements are near (3D)
+  
+  This methods computes the distance of the two element centers.
+  If they are not close, then coupling is stopped for the pair.
+        
+  */
+  virtual bool RoughCheck3D();
+  
+  /*!
   \brief Build auxiliary plane from slave element (3D)
   
   This method builds an auxiliary plane based on the possibly
@@ -525,6 +534,15 @@ public:
                                                     vector<vector<double> > polygon2,
                                                     double& tol);
   
+  /*!
+  \brief Check / set projection status of slave nodes (3D)
+  
+  This method checks for all slave nodes if they are part of the clip
+  polygon (equal to any vertex). If so the HasProj status is set true!
+  
+  */
+  virtual bool HasProjStatus3D();
+    
   /*!
   \brief Triangulation of clip polygon (3D)
   

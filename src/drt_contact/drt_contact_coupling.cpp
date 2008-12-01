@@ -269,6 +269,10 @@ contactsegs_(csegs)
     if (mele.Shape()!=DRT::Element::tri3 && mele.Shape()!=DRT::Element::quad4)
       dserror("ERROR: 3D mortar coupling not yet impl. for quadratic elements");
 
+    // rough check whether elements are "near"
+    bool near = RoughCheck3D();
+    if (!near) return;
+    
     // *******************************************************************
     // ************ Coupling with or without auxiliary plane *************
     // *******************************************************************
@@ -342,6 +346,9 @@ contactsegs_(csegs)
     if (clipsize>=3) overlap = true;
     if (overlap)
     {
+      // check / set  projection status of slave nodes
+      HasProjStatus3D();
+      
       // do triangulation of clip polygon
       Triangulation3D();
       
@@ -893,6 +900,40 @@ bool CONTACT::Coupling::IntegrateOverlap2D(vector<double>& xiproj)
 
 
 /*----------------------------------------------------------------------*
+ |  Rough check if elements are near (3D)                     popp 11/08|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Coupling::RoughCheck3D()
+{
+  double sme = SlaveElement().MaxEdgeSize();
+  double mme = MasterElement().MaxEdgeSize(); 
+  double near = 2.0 * max(sme,mme);
+  
+  double loccs[2] = {0.0, 0.0};  
+  DRT::Element::DiscretizationType dts = SlaveElement().Shape();
+  if (dts==CElement::tri3 || dts==CElement::tri6)
+  {
+    loccs[0] = 1.0/3;
+    loccs[1] = 1.0/3;
+  }
+  double loccm[2] = {0.0, 0.0};  
+  DRT::Element::DiscretizationType dtm = MasterElement().Shape();
+  if (dtm==CElement::tri3 || dtm==CElement::tri6)
+  {
+    loccm[0] = 1.0/3;
+    loccm[1] = 1.0/3;
+  }
+  
+  double sc[3] = {0.0, 0.0, 0.0};
+  double mc[3] = {0.0, 0.0, 0.0};
+  SlaveElement().LocalToGlobal(loccs,sc,0);
+  MasterElement().LocalToGlobal(loccm,mc,0);
+  
+  double cdist = sqrt((mc[0]-sc[0])*(mc[0]-sc[0])+(mc[1]-sc[1])*(mc[1]-sc[1])+(mc[2]-sc[2])*(mc[2]-sc[2]));
+  if (cdist>=near) return false;
+  else return true;
+}
+
+/*----------------------------------------------------------------------*
  |  Build auxiliary plane from slave element (public)         popp 11/08|
  *----------------------------------------------------------------------*/
 bool CONTACT::Coupling::AuxiliaryPlane3D()
@@ -905,8 +946,8 @@ bool CONTACT::Coupling::AuxiliaryPlane3D()
   DRT::Element::DiscretizationType dt = SlaveElement().Shape();
   if (dt==CElement::tri3 || dt==CElement::tri6)
   {
-    loccenter[0] = 1/3;
-    loccenter[1] = 1/3;
+    loccenter[0] = 1.0/3;
+    loccenter[1] = 1.0/3;
   }
   else if (dt==CElement::quad4 || dt==CElement::quad8 || dt==CElement::quad9)
   {
@@ -1741,14 +1782,22 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping3D(
     // check if last entry is identical to first entry
     double fldiff[3] = {0.0, 0.0, 0.0};
     bool identical = true;
+    double fldist = 0.0;
     for (int k=0;k<3;++k)
     {
       fldiff[k] = respoly[(int)respoly.size()-1][k] - respoly[0][k];
-      if (abs(fldiff[k]>1.0e-12)) identical = false;
+      fldist += fldiff[k]*fldiff[k];
     }
+    fldist = sqrt(fldist);
+    if (fldist>1.0e-4) identical = false;
+    
     // remove last entry if so, throw dserror if not so
     if (identical) respoly.pop_back();
-    else dserror("ERROR: We did not arrive at the staring point again...?");
+    else
+    {
+      cout << "\nDifference Dist: " << fldist << endl;
+      dserror("ERROR: We did not arrive at the starting point again...?");
+     }
     
     
     // collapse respoly points that are very close
@@ -1771,7 +1820,7 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping3D(
         
         double dist = sqrt(diff[0]*diff[0]+diff[1]*diff[1]+diff[2]*diff[2]);
         double dist2 = sqrt(diff2[0]*diff2[0]+diff2[1]*diff2[1]+diff2[2]*diff2[2]);
-        double tolcollapse = 10*tol;
+        double tolcollapse = 1.0e6*tol;
         
         if (abs(dist) >= tolcollapse && abs(dist2) >= tolcollapse)
           collapsedrespoly.push_back(respoly[i]);
@@ -1987,6 +2036,51 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping3D(
   */
   // return result
   return respoly;
+}
+
+/*----------------------------------------------------------------------*
+ |  Check /set projection status of slave nodes (3D)          popp 11/08|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Coupling::HasProjStatus3D()
+{
+  // check all nodes
+  int nnodes = SlaveElement().NumNode();
+  DRT::Node** mynodes = SlaveElement().Nodes();
+  if (!mynodes) dserror("ERROR: HasProjStatus3D: Null pointer!");
+    
+  // loop over all slave nodes
+  for (int i=0;i<nnodes;++i)
+  {
+    CNode* mycnode = static_cast<CNode*> (mynodes[i]);
+    if (!mycnode) dserror("ERROR: HasProjStatus3D: Null pointer!");
+    
+    // get node position depending on CONTACTAUXPLANE
+    double nodepos[3] = {0.0, 0.0, 0.0};
+#ifdef CONTACTAUXPLANE
+    for (int k=0;k<3;++k) nodepos[k] = mycnode->xspatial()[k];
+#else
+    SlaveElement().LocalCoordinatesOfNode(i,nodepos);
+#endif // #ifdef CONTACTAUXPLANE
+    
+    // loop over all vertices of clip polygon
+    for (int j=0;j<(int)(Clip().size());++j)
+    {
+      // compare node pos and vertex pos
+      double currpos[3] = {Clip()[j][0],Clip()[j][1],Clip()[j][2]};
+      bool identical = true;
+      
+      // this tolerance can be chosen less tight
+      // (its only purpose is to sort out slave nodes which
+      // are not near to any int cell -> problem with g~)
+      for (int k=0;k<3;++k)
+        if (abs(currpos[k]-nodepos[k])>1.0e6*CONTACTCLIPTOL) identical=false;
+      
+      // set hasproj
+      if (identical) mycnode->HasProj()=true;
+    }
+  }
+  
+  return true;
 }
 
 /*----------------------------------------------------------------------*

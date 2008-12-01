@@ -67,7 +67,7 @@ Maintainer: Alexander Popp
 /************************************************************************/
 
 #define CONTACTPROJTOL 0.05      /* projection tol. for overlap decision */
-#define CONTACTPROJLIM 1.0e-8    /* no problems with exact node projections */
+#define CONTACTPROJLIM 1.0e-8    /* no problems with exact projections in 2D */
 #define CONTACTMAXITER 10        /* max. no. iterations for local Newton */
 #define CONTACTCONVTOL 1.0e-12   /* convergence tolerance for local Newton */
 #define CONTACTCRITDIST 0.5      /* critical distance for potential contact */
