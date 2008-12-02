@@ -55,6 +55,9 @@ void WriteDatDesign(const vector<EXODUS::cond_def>& condefs, ostream& dat);
 //! conditions
 void WriteDatConditions(const vector<EXODUS::cond_def>& condefs,const EXODUS::Mesh& mymesh, ostream& dat);
 
+//! special condition SurfLocsys: calculates Normal and Tangent
+vector<double> CalcNormalSurfLocsys(const int ns_id,const EXODUS::Mesh& m);
+
 //! DesignNode - Node Topology
 void WriteDatDesignTopology(const vector<EXODUS::cond_def>& condefs, const EXODUS::Mesh& mymesh, ostream& dat);
 

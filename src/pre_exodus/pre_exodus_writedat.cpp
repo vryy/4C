@@ -17,6 +17,7 @@ Here is everything related with writing a dat-file
 #ifdef D_EXODUS
 #include "pre_exodus_writedat.H"
 #include "pre_exodus_reader.H"
+#include "pre_exodus_soshextrusion.H" // to calculate normal
 #include "../drt_inpar/drt_validconditions.H"
 #include "../drt_lib/drt_conditiondefinition.H"
 
@@ -220,12 +221,71 @@ void EXODUS::WriteDatConditions(const vector<EXODUS::cond_def>& condefs,const EX
           if (pname!="none"){ dat << " " << pname;}
           dat << endl;
         } else if (pname!="none") dat << "// " << pname << endl;
-        dat << "E " << actcon.e_id << " - " << actcon.desc << endl;
+        
+        // write the condition
+        if (actcon.desc != ""){
+          dat << "E " << actcon.e_id << " - " << actcon.desc << endl;
+        } else if ((actcon.sec == "DESIGN SURF LOCSYS CONDITIONS") && (actcon.me==EXODUS::bcns)) {
+          // special case for locsys conditions: calculate normal
+          vector<double> normtang = EXODUS::CalcNormalSurfLocsys(actcon.id,mymesh);
+          dat << "E " << actcon.e_id << " - ";
+          for (unsigned int i = 0; i < normtang.size() ; ++i) dat <<  normtang[i] << " ";
+          dat << endl;
+        } else
+          dat << "E " << actcon.e_id << " - " << actcon.desc << endl;
       }
     }
   }
 
   return;
+}
+
+vector<double> EXODUS::CalcNormalSurfLocsys(const int ns_id,const EXODUS::Mesh& m)
+{
+  vector<double> normaltangent;
+  EXODUS::NodeSet ns = m.GetNodeSet(ns_id);
+  
+  set<int> nodes_from_nodeset = ns.GetNodeSet();
+  set<int>::iterator it;
+
+  // compute normal
+  set<int>::iterator surfit = nodes_from_nodeset.begin();
+  int origin = *surfit;      // get first set node
+  ++surfit;
+  int head1 = *surfit;  // get second set node
+  ++surfit;
+
+  set<int>::iterator thirdnode;
+
+  // find third node such that a proper normal can be computed
+  for(it=surfit;it!=nodes_from_nodeset.end();++it){
+    thirdnode = it;
+    normaltangent = EXODUS::Normal(head1,origin,*thirdnode,m);
+    if (normaltangent.size() != 1) break;
+  }
+  if (normaltangent.size()==1){
+    dserror("Warning! No normal defined for SurfLocsys within nodeset '%s'!",ns.GetName());
+  }
+  
+  // find tangent by Gram-Schmidt
+  vector<double> t(3);
+  t.at(0) = 1.0; t.at(1) = 0.0; t.at(2) = 0.0; // try this one
+  double sp = t[0]*normaltangent[0] + t[1]*normaltangent[1] + t[2]*normaltangent[2]; // scalar product
+  // subtract projection
+  t.at(0) -= normaltangent[0]*sp;
+  t.at(1) -= normaltangent[1]*sp;
+  t.at(2) -= normaltangent[2]*sp;
+  
+  // very unlucky case
+  if (t.at(0) < 1.0E-14){
+    t.at(0) = 0.0; t.at(1) = 1.0; t.at(2) = 0.0; // rather use this
+  }
+  
+  normaltangent.push_back(t.at(0));
+  normaltangent.push_back(t.at(1));
+  normaltangent.push_back(t.at(2));
+  
+  return normaltangent;
 }
 
 void EXODUS::WriteDatDesignTopology(const vector<EXODUS::cond_def>& condefs, const EXODUS::Mesh& mymesh, ostream& dat)
