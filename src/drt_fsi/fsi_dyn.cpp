@@ -112,14 +112,25 @@ void fsi_ale_drt()
   Epetra_SerialComm comm;
 #endif
 
-  RefCountPtr<DRT::Discretization> aledis = DRT::Problem::Instance()->Dis(genprob.numaf,0);
-  if (!aledis->Filled()) aledis->FillComplete();
+  RCP<DRT::Problem> problem = DRT::Problem::Instance();
+
+  // make sure the three discretizations are filled in the right order
+  // this creates dof numbers with
+  //
+  //       structure dof < fluid dof < ale dof
+  //
+  // We rely on this ordering in certain non-intuitive places!
+
+  problem->Dis(genprob.numsf,0)->FillComplete();
+  problem->Dis(genprob.numff,0)->FillComplete();
+  problem->Dis(genprob.numaf,0)->FillComplete();
 
   // create ale elements if the ale discretization is empty
+  RCP<DRT::Discretization> aledis = problem->Dis(genprob.numaf,0);
   if (aledis->NumGlobalNodes()==0)
     DRT::UTILS::CreateAleDiscretization();
 
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn   = problem->FSIDynamicParams();
 
   int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
   switch (coupling)
