@@ -96,8 +96,8 @@ namespace UTILS
     virtual void Evaluate
     ( 
       Teuchos::ParameterList&  params,  ///< parameter list to communicate between elements and discretization
-      Teuchos::RCP<LINALG::SparseOperator> systemmatrix1, ///< sparse matrix that may be filled by assembly of element contributions
-      Teuchos::RCP<LINALG::SparseOperator> systemmatrix2, ///< sparse (rectangular) matrix that may be filled by assembly of element contributions
+      Teuchos::RCP<LINALG::SparseMatrix> systemmatrix1, ///< sparse matrix that may be filled by assembly of element contributions
+      Teuchos::RCP<LINALG::SparseMatrix> systemmatrix2, ///< sparse (rectangular) matrix that may be filled by assembly of element contributions
       Teuchos::RCP<Epetra_Vector> systemvector1, ///< distributed vector that may be filled by assembly of element contributions
       Teuchos::RCP<Epetra_Vector> systemvector2, ///< distributed vector that may be filled by assembly of element contributions
       Teuchos::RCP<Epetra_Vector> systemvector3  ///< distributed vector that may be filled by assembly of element contributions
@@ -123,8 +123,8 @@ namespace UTILS
     ( 
         RCP<DRT::Discretization> disc,  ///< discretization to evaluate
         Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix1, ///< sparse matrix that may be filled by assembly of element contributions
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix2, ///< sparse (rectangular) matrix that may be filled by assembly of element contributions
+        Teuchos::RCP<LINALG::SparseMatrix> systemmatrix1, ///< sparse matrix that may be filled by assembly of element contributions
+        Teuchos::RCP<LINALG::SparseMatrix> systemmatrix2, ///< sparse (rectangular) matrix that may be filled by assembly of element contributions
         Teuchos::RCP<Epetra_Vector>    systemvector1, ///< distributed vector that may be filled by assembly of element contributions
         Teuchos::RCP<Epetra_Vector>    systemvector2, ///< distributed vector that may be filled by assembly of element contributions
         Teuchos::RCP<Epetra_Vector>    systemvector3 ///< distributed vector that may be filled by assembly of element contributions

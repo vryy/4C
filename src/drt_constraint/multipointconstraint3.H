@@ -62,8 +62,8 @@ namespace UTILS
     void Evaluate
     ( 
       ParameterList&  params,  ///< parameter list to communicate between elements and discretization
-      RCP<LINALG::SparseOperator> systemmatrix1, ///< sparse matrix that may be filled by assembly of element contributions
-      RCP<LINALG::SparseOperator> systemmatrix2, ///< sparse (rectangular) matrix that may be filled by assembly of element contributions
+      RCP<LINALG::SparseMatrix> systemmatrix1, ///< sparse matrix that may be filled by assembly of element contributions
+      RCP<LINALG::SparseMatrix> systemmatrix2, ///< sparse (rectangular) matrix that may be filled by assembly of element contributions
       RCP<Epetra_Vector> systemvector1, ///< distributed vector that may be filled by assembly of element contributions
       RCP<Epetra_Vector> systemvector2, ///< distributed vector that may be filled by assembly of element contributions
       RCP<Epetra_Vector> systemvector3  ///< distributed vector that may be filled by assembly of element contributions
@@ -82,8 +82,8 @@ namespace UTILS
     void EvaluateConstraint( 
         RCP<DRT::Discretization> disc,  ///< discretization to evaluate
         ParameterList&        params,  ///< parameter list to communicate between elements and discretization
-        RCP<LINALG::SparseOperator> systemmatrix1, ///< sparse matrix that may be filled by assembly of element contributions
-        RCP<LINALG::SparseOperator> systemmatrix2, ///< sparse (rectangular) matrix that may be filled by assembly of element contributions
+        RCP<LINALG::SparseMatrix> systemmatrix1, ///< sparse matrix that may be filled by assembly of element contributions
+        RCP<LINALG::SparseMatrix> systemmatrix2, ///< sparse (rectangular) matrix that may be filled by assembly of element contributions
         RCP<Epetra_Vector>    systemvector1, ///< distributed vector that may be filled by assembly of element contributions
         RCP<Epetra_Vector>    systemvector2, ///< distributed vector that may be filled by assembly of element contributions
         RCP<Epetra_Vector>    systemvector3); ///< distributed vector that may be filled by assembly of element contributions

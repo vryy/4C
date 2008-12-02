@@ -135,8 +135,8 @@ void UTILS::MPConstraint2::Initialize(
 *-----------------------------------------------------------------------*/
 void UTILS::MPConstraint2::Evaluate(
     ParameterList&        params,
-    RCP<LINALG::SparseOperator> systemmatrix1,
-    RCP<LINALG::SparseOperator> systemmatrix2,
+    RCP<LINALG::SparseMatrix> systemmatrix1,
+    RCP<LINALG::SparseMatrix> systemmatrix2,
     RCP<Epetra_Vector>    systemvector1,
     RCP<Epetra_Vector>    systemvector2,
     RCP<Epetra_Vector>    systemvector3)
@@ -288,8 +288,8 @@ void UTILS::MPConstraint2::ReorderConstraintNodes
  *----------------------------------------------------------------------*/
 void UTILS::MPConstraint2::EvaluateConstraint(RCP<DRT::Discretization> disc,
     ParameterList&        params,
-    RCP<LINALG::SparseOperator> systemmatrix1,
-    RCP<LINALG::SparseOperator> systemmatrix2,
+    RCP<LINALG::SparseMatrix> systemmatrix1,
+    RCP<LINALG::SparseMatrix> systemmatrix2,
     RCP<Epetra_Vector>    systemvector1,
     RCP<Epetra_Vector>    systemvector2,
     RCP<Epetra_Vector>    systemvector3)

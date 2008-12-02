@@ -180,8 +180,8 @@ void UTILS::MPConstraint3::Initialize(
 *-----------------------------------------------------------------------*/
 void UTILS::MPConstraint3::Evaluate(
     ParameterList&        params,
-    RCP<LINALG::SparseOperator> systemmatrix1,
-    RCP<LINALG::SparseOperator> systemmatrix2,
+    RCP<LINALG::SparseMatrix> systemmatrix1,
+    RCP<LINALG::SparseMatrix> systemmatrix2,
     RCP<Epetra_Vector>    systemvector1,
     RCP<Epetra_Vector>    systemvector2,
     RCP<Epetra_Vector>    systemvector3)
@@ -364,8 +364,8 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint3::CreateDiscretizationFro
 void UTILS::MPConstraint3::EvaluateConstraint(
     RCP<DRT::Discretization> disc,
     ParameterList&        params,
-    RCP<LINALG::SparseOperator> systemmatrix1,
-    RCP<LINALG::SparseOperator> systemmatrix2,
+    RCP<LINALG::SparseMatrix> systemmatrix1,
+    RCP<LINALG::SparseMatrix> systemmatrix2,
     RCP<Epetra_Vector>    systemvector1,
     RCP<Epetra_Vector>    systemvector2,
     RCP<Epetra_Vector>    systemvector3)
@@ -403,14 +403,17 @@ void UTILS::MPConstraint3::EvaluateConstraint(
     int eid=actele->Id();
     int condID = eletocondID_.find(eid)->second;
     DRT::Condition* cond=constrcond_[eletocondvecindex_.find(eid)->second];
-     
+    
+    // computation only if time is larger than initialization time for constraint
     if(inittimes_.find(condID)->second<time)
     {
+      // initialize if it is the first time condition is evaluated
       if(activecons_.find(condID)->second==false)
       {
         const string action = params.get<string>("action");
         RCP<Epetra_Vector> displast=params.get<RCP<Epetra_Vector> >("old disp");
         SetConstrState("displacement",displast);
+        // last converged step is used reference
         Initialize(params,systemvector2);
         RCP<Epetra_Vector> disp=params.get<RCP<Epetra_Vector> >("new disp");
         SetConstrState("displacement",disp);

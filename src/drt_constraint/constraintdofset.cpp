@@ -29,15 +29,14 @@ Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
 http://www.lnm.mw.tum.de                   
 
 -------------------------------------------------------------------------
-<\pre>
-
+</pre>
 <pre>
 Maintainer: Thomas Kloeppel
             kloeppel@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15257
-</pre>
 
+</pre>
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 

@@ -181,8 +181,8 @@ void UTILS::Constraint::Initialize
 *-----------------------------------------------------------------------*/
 void UTILS::Constraint::Evaluate(
     ParameterList&        params,
-    RCP<LINALG::SparseOperator> systemmatrix1,
-    RCP<LINALG::SparseOperator> systemmatrix2,
+    RCP<LINALG::SparseMatrix> systemmatrix1,
+    RCP<LINALG::SparseMatrix> systemmatrix2,
     RCP<Epetra_Vector>    systemvector1,
     RCP<Epetra_Vector>    systemvector2,
     RCP<Epetra_Vector>    systemvector3)
@@ -214,8 +214,8 @@ void UTILS::Constraint::Evaluate(
  *----------------------------------------------------------------------*/
 void UTILS::Constraint::EvaluateConstraint(
     ParameterList&        params,
-    RCP<LINALG::SparseOperator> systemmatrix1,
-    RCP<LINALG::SparseOperator> systemmatrix2,
+    RCP<LINALG::SparseMatrix> systemmatrix1,
+    RCP<LINALG::SparseMatrix> systemmatrix2,
     RCP<Epetra_Vector>    systemvector1,
     RCP<Epetra_Vector>    systemvector2,
     RCP<Epetra_Vector>    systemvector3)

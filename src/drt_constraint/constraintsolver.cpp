@@ -102,9 +102,6 @@ void UTILS::ConstraintSolver::Setup
   break;
   case (INPAR::STR::consolve_direct):
     algo_ = UTILS::ConstraintSolver::direct;
-//    #ifdef PARALLEL
-//      dserror("Direct constraint solver is not working in parallel!");
-//    #endif
   break;
   default:
     dserror("Unknown type of constraint solver algorithm. Can be 'iterative' or 'direct'!");
@@ -150,10 +147,15 @@ void UTILS::ConstraintSolver::Solve
   const RCP<Epetra_Vector> rhsconstr
 )
 {
+  const int iterlimit = 20;
   switch (algo_)
   {
     case iterative:
-      SolveIterative(stiff,constr,dispinc,lagrinc,rhsstand,rhsconstr);
+      // use a limit above which, direct solve should be called 
+      if (lagrinc -> GlobalLength() < iterlimit)
+        SolveIterative(stiff,constr,dispinc,lagrinc,rhsstand,rhsconstr);
+      else
+        SolveDirect(stiff,constr,dispinc,lagrinc,rhsstand,rhsconstr);
       break;
     case direct:
       SolveDirect(stiff,constr,dispinc,lagrinc,rhsstand,rhsconstr);
