@@ -5,11 +5,11 @@
 -------------------------------------------------------------------------
                  BACI finite element library subsystem
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -21,11 +21,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 </pre>
@@ -1164,13 +1164,17 @@ void LINALG::SparseMatrix::Dump(std::string filename)
 {
   int MyRow;
   int NumEntries;
+  std::string rowsetname = filename + ".row";
   std::string offsetname = filename + ".off";
   std::string indicesname = filename + ".idx";
   std::string valuesname = filename + ".val";
 
+  std::ofstream row(rowsetname.c_str());
   std::ofstream off(offsetname.c_str());
   std::ofstream idx(indicesname.c_str());
   std::ofstream val(valuesname.c_str());
+
+  const Epetra_Map& rowmap = RowMap();
 
   if (sysmat_->Filled())
   {
@@ -1182,6 +1186,7 @@ void LINALG::SparseMatrix::Dump(std::string filename)
       int err = sysmat_->ExtractMyRowView(MyRow, NumEntries, Values, Indices);
       if (err)
         dserror("ExtractMyRowView failed: err=%d", err);
+      row << rowmap.GID(MyRow) << "\n";
       off << NumEntries << "\n";
       std::copy(Indices,Indices+NumEntries, std::ostream_iterator<int>(idx," "));
       idx << "\n";
@@ -1191,7 +1196,6 @@ void LINALG::SparseMatrix::Dump(std::string filename)
   else
   {
     // Warning: does not write nonlocal values for Epetra_FECrsMatrices
-    const Epetra_Map& rowmap = RowMap();
     for (MyRow=0; MyRow<sysmat_->NumMyRows(); ++MyRow)
     {
       std::vector<double> Values(sysmat_->MaxNumEntries());
@@ -1200,6 +1204,7 @@ void LINALG::SparseMatrix::Dump(std::string filename)
       int err = sysmat_->ExtractGlobalRowCopy(rowmap.GID(MyRow), sysmat_->MaxNumEntries(), NumEntries, &Values[0], &Indices[0]);
       if (err)
         dserror("ExtractGlobalRowCopy failed: err=%d", err);
+      row << rowmap.GID(MyRow) << "\n";
       off << NumEntries << "\n";
       std::copy(&Indices[0],&Indices[NumEntries],
                 std::ostream_iterator<int>(idx," "));
