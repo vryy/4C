@@ -43,7 +43,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
   // get the plane normal direction from the parameterlist
   {
-    string planestring = params_.sublist("TURBULENCE MODEL").get<string>("CHANNEL_HOMPLANE","xz");
+    string planestring = params_.sublist("TURBULENCE MODEL").get<string>("HOMDIR","not_specified");
 
     if(planestring == "xz")
     {

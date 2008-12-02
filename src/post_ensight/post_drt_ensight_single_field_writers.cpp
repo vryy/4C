@@ -54,6 +54,7 @@ void FluidEnsightWriter::WriteAllResults(PostField* field)
   EnsightWriter::WriteResult("residual", "residual", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("dispnp", "displacement", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("traction", "traction", dofbased, field->problem()->num_dim());
+  EnsightWriter::WriteResult("averaged_velnp", "averaged_velocity", dofbased, field->problem()->num_dim());
   WriteElementResults(field);
 }
 

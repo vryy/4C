@@ -122,6 +122,15 @@ namespace FLD
       Setup();
     }
 
+    // allocate one instance of the flow indepedent averaging procedure
+    // providiing colerful output for paraview
+    {
+      ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
+      
+      string homdir = modelparams->get<string>("HOMDIR","not_specified");
+
+      statistics_general_mean_=rcp(new TurbulenceStatisticsGeneralMean(discret_,homdir));
+    }
     return;
     
   }
@@ -229,6 +238,16 @@ namespace FLD
       Setup();
     }
 
+    // allocate one instance of the flow indepedent averaging procedure
+    // providiing colerful output for paraview
+    {
+      ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
+      
+      string homdir = modelparams->get<string>("HOMDIR","not_specified");
+
+      statistics_general_mean_=rcp(new TurbulenceStatisticsGeneralMean(discret_,homdir));
+    }
+
     return;
     
   }
@@ -289,9 +308,14 @@ namespace FLD
 
     if(discret_->Comm().MyPID()==0)
     {
-      string hom_plane
+      string homdir
         =
-        modelparams->get<string>("CHANNEL_HOMPLANE","not specified");
+        modelparams->get<string>("HOMDIR","not_specified");
+
+      if(homdir!="xy" && homdir!="xz" && homdir!="yz")
+      {
+        dserror("need two homogeneous directions to do averaging in plane channel flows\n");
+      }
 
       if (flow_ == channel_flow_of_height_2 or
           flow_ == loma_channel_flow_of_height_2)
@@ -301,7 +325,7 @@ namespace FLD
         cout << "for a turbulent channel flow.\n";
         cout << "                             " ;
         cout << "The solution is averaged over the homogeneous ";
-        cout << hom_plane;
+        cout << homdir;
         cout << " plane and over time.\n";
         cout << "\n";
         cout << "                             " ;
@@ -510,6 +534,10 @@ namespace FLD
         cout << "\n";
       }
 
+      // add vector to general mean value computation
+      statistics_general_mean_->AddToCurrentTimeAverage(dt_,myvelnp_);
+      
+
     } // end step in sampling period
 
     return;
@@ -520,7 +548,7 @@ namespace FLD
     Write (dump) the statistics to a file
 
   ----------------------------------------------------------------------*/
-  void TurbulenceStatisticManager::DoOutput(int step)
+  void TurbulenceStatisticManager::DoOutput(IO::DiscretizationWriter& output, int step)
   {
 
     // sampling takes place only in the sampling period
@@ -624,10 +652,53 @@ namespace FLD
         cout << "XXXXXXXXXXXXXXXXXXXXX";
         cout << "\n\n";
       }
+
+
+      // dump general mean value output in combination with a restart/output
+      {
+        int upres    =params_.get("write solution every", -1);
+        int uprestart=params_.get("write restart every" , -1);
+        
+        if(step%upres == 0 || step%uprestart == 0)
+        {
+          statistics_general_mean_->WriteOldAverageVec(output);
+        }
+      }
     } // end step is in sampling period
 
     return;
-  }
+  } // DoOutput
+
+  /*----------------------------------------------------------------------
+
+  Restart statistics collection
+
+  ----------------------------------------------------------------------*/
+  void TurbulenceStatisticManager::Restart(
+    IO::DiscretizationReader& reader,
+    int                       step
+    )
+  {
+
+    if(discret_->Comm().MyPID()==0)
+    {
+      cout << "XXXXXXXXXXXXXXXXXXXXX              ";
+      cout << "Read gereal mean values            ";
+      cout << "XXXXXXXXXXXXXXXXXXXXX";
+      cout << "\n\n";
+    }
+
+    if(statistics_general_mean_!=Teuchos::null)
+    {
+      if(samstart_<step)
+      {
+        statistics_general_mean_->ReadOldStatistics(reader);
+      }
+    }
+
+    return;
+  } // Restart
+
 
   /*----------------------------------------------------------------------
 

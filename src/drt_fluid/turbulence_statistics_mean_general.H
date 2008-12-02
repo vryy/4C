@@ -50,7 +50,7 @@ public:
   \param (in) the discretisation (containing nodes, dofs etc.)
 
   */
-  TurbulenceStatisticsGeneralMean(RCP<DRT::Discretization> discret);
+  TurbulenceStatisticsGeneralMean(RCP<DRT::Discretization> discret,string homdir);
 
   /*!
   \brief Destructor (public)
@@ -126,6 +126,9 @@ private:
   //! the discretization
   RCP<DRT::Discretization>     discret_      ;
 
+  //! vector containing homogeneous directions
+  vector<int>                  homdir_       ;
+
   //! previous averages, done in time and space
   RCP<Epetra_Vector>           prev_avg_     ;
   //! number of time steps included in the previous average
@@ -144,7 +147,7 @@ private:
   //! compare operator for doubles up to a precision of 1e-8
   struct doublecomp {
     bool operator() (const double& lhs, const double& rhs) const
-      {return lhs<rhs+1e-8;}
+      {return lhs<rhs-1e-8;}
   };
 }; // end class TurbulenceStatisticsGeneralMean
 

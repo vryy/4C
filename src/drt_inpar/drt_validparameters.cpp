@@ -1044,75 +1044,95 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn_turbu = fdyn.sublist("TURBULENCE MODEL",false,"");
 
-  setStringToIntegralParameter<int>("TURBULENCE_APPROACH",
-                               "DNS_OR_RESVMM_LES",
-                               "There are several options to deal with turbulent flows.",
-                               tuple<std::string>(
-                                 "DNS_OR_RESVMM_LES",
-                                 "CLASSICAL_LES",
-                                 "RANS"),
-                               tuple<std::string>(
-                                 "Try to solve flow as an underresolved DNS.\nMind that your stabilisation already acts as a kind of turbulence model!",
-                                 "Perform a classical Large Eddy Simulation adding \naddititional turbulent viscosity. This may be based on various physical models.",
-                                 "Solve Reynolds averaged Navier Stokes using an \nalgebraic, one- or two equation closure.\nNot implemented yet."),
-                               tuple<int>(0,1,2),
-                               &fdyn_turbu);
+  setStringToIntegralParameter<int>(
+    "TURBULENCE_APPROACH",
+    "DNS_OR_RESVMM_LES",
+    "There are several options to deal with turbulent flows.",
+    tuple<std::string>(
+      "DNS_OR_RESVMM_LES",
+      "CLASSICAL_LES",
+      "RANS"),
+    tuple<std::string>(
+      "Try to solve flow as an underresolved DNS.\nMind that your stabilisation already acts as a kind of turbulence model!",
+      "Perform a classical Large Eddy Simulation adding \naddititional turbulent viscosity. This may be based on various physical models.",
+      "Solve Reynolds averaged Navier Stokes using an \nalgebraic, one- or two equation closure.\nNot implemented yet."),
+    tuple<int>(0,1,2),
+    &fdyn_turbu);
 
-  setStringToIntegralParameter<int>("PHYSICAL_MODEL",
-                               "no_model",
-                               "Classical LES approaches require an additional model for\nthe turbulent viscosity.",
-                               tuple<std::string>(
-                                 "no_model",
-                                 "Smagorinsky",
-                                 "Smagorinsky_with_van_Driest_damping",
-                                 "Dynamic_Smagorinsky"),
-                               tuple<std::string>(
-                                 "If classical LES is our turbulence approach, this is a contradiction and should cause a dserror.",
-                                 "Classical constant coefficient Smagorinsky model. Be careful if you \nhave a wall bounded flow domain!",
-                                 "Use an exponential damping function for the turbulent viscosity \nclose to the wall. This is only implemented for a channel geometry of \nheight 2 in y direction. The viscous lengthscale l_tau is \nrequired as additional input.",
-                                 "The solution is filtered and by comparison of the filtered \nvelocity field with the real solution, the Smagorinsky constant is \nestimated in each step --- mind that this procedure includes \nan averaging in the xz plane, hence this implementation will only work \nfor a channel flow."),
-                               tuple<int>(0,1,2,3),
-                               &fdyn_turbu);
-
+  setStringToIntegralParameter<int>(
+    "PHYSICAL_MODEL",
+    "no_model",
+    "Classical LES approaches require an additional model for\nthe turbulent viscosity.",
+    tuple<std::string>(
+      "no_model",
+      "Smagorinsky",
+      "Smagorinsky_with_van_Driest_damping",
+      "Dynamic_Smagorinsky"),
+    tuple<std::string>(
+      "If classical LES is our turbulence approach, this is a contradiction and should cause a dserror.",
+      "Classical constant coefficient Smagorinsky model. Be careful if you \nhave a wall bounded flow domain!",
+      "Use an exponential damping function for the turbulent viscosity \nclose to the wall. This is only implemented for a channel geometry of \nheight 2 in y direction. The viscous lengthscale l_tau is \nrequired as additional input.",
+      "The solution is filtered and by comparison of the filtered \nvelocity field with the real solution, the Smagorinsky constant is \nestimated in each step --- mind that this procedure includes \nan averaging in the xz plane, hence this implementation will only work \nfor a channel flow."),
+    tuple<int>(0,1,2,3),
+    &fdyn_turbu);
+  
   DoubleParameter("C_SMAGORINSKY",0.0,"Constant for the Smagorinsky model. Something between 0.1 to 0.24",&fdyn_turbu);
 
-  setStringToIntegralParameter<int>("CANONICAL_FLOW",
-                               "no",
-                               "Sampling is different for different canonical flows \n--- so specify what kind of flow you've got",
-                               tuple<std::string>(
-                                 "no",
-                                 "channel_flow_of_height_2",
-                                 "lid_driven_cavity",
-                                 "square_cylinder",
-                                 "loma_channel_flow_of_height_2",
-                                 "loma_lid_driven_cavity"),
-                               tuple<std::string>(
-                                 "The flow is not further specified, so spatial averaging \nand hence the standard sampling procedure is not possible",
-                                 "For this flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow.",
-                                 "For this flow, all statistical data are evaluated on the center lines of the xy-midplane, averaged only over time.",
-                                 "For this flow, statistical data are evaluated on various lines of the xy-midplane, averaged only over time.",
-                                 "For this low-Mach-number flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow.",
-                                 "For this low-Mach-number flow, all statistical data are evaluated on the center lines of the xy-midplane, averaged only over time."),
-                               tuple<int>(0,1,2,3,4,5),
-                               &fdyn_turbu);
+  setStringToIntegralParameter<int>(
+    "CANONICAL_FLOW",
+    "no",
+    "Sampling is different for different canonical flows \n--- so specify what kind of flow you've got",
+    tuple<std::string>(
+      "no",
+      "channel_flow_of_height_2",
+      "lid_driven_cavity",
+      "square_cylinder",
+      "loma_channel_flow_of_height_2",
+      "loma_lid_driven_cavity"),
+    tuple<std::string>(
+      "The flow is not further specified, so spatial averaging \nand hence the standard sampling procedure is not possible",
+      "For this flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow.",
+      "For this flow, all statistical data are evaluated on the center lines of the xy-midplane, averaged only over time.",
+      "For this flow, statistical data are evaluated on various lines of the xy-midplane, averaged only over time.",
+      "For this low-Mach-number flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow.",
+      "For this low-Mach-number flow, all statistical data are evaluated on the center lines of the xy-midplane, averaged only over time."),
+    tuple<int>(0,1,2,3,4,5),
+    &fdyn_turbu);
 
-  setStringToIntegralParameter<int>("CHANNEL_HOMPLANE",
-                               "xz",
-                               "Specify the homogenous plane in a channel flow",
-                               tuple<std::string>(
-                                 "xy",
-                                 "xz",
-                                 "yz"),
-                               tuple<std::string>(
-                                 "Wall normal direction is z",
-                                 "Wall normal direction is y (the standard case)",
-                                 "Wall normal direction is x"),
-                               tuple<int>(0,1,2),
-                               &fdyn_turbu);
+  setStringToIntegralParameter<int>(
+    "HOMDIR",
+    "not_specified",
+    "Specify the homogenous direction(s) of a flow",
+    tuple<std::string>(
+      "not_specified",
+      "x"            ,
+      "y"            ,
+      "z"            ,
+      "xy"           ,
+      "xz"           ,
+      "yz"           ),
+    tuple<std::string>(
+      "no homogeneous directions available, averaging is restricted to time averaging",
+      "average along x-direction"                                                     ,
+      "average along y-direction"                                                     ,
+      "average along z-direction"                                                     ,
+      "Wall normal direction is z, average in x and y direction"                      ,
+      "Wall normal direction is y, average in x and z direction (standard case)"      ,
+      "Wall normal direction is x, average in y and z direction"                      ),
+    tuple<int>(0,1,2,3,4,5,6),
+    &fdyn_turbu);
 
-  DoubleParameter("CHANNEL_L_TAU",0.0,"Used for normalisation of the wall normal distance in the Van \nDriest Damping function. May be taken from the output of \nthe apply_mesh_stretching.pl preprocessing script.",&fdyn_turbu);
+  DoubleParameter(
+    "CHANNEL_L_TAU",
+    0.0,
+    "Used for normalisation of the wall normal distance in the Van \nDriest Damping function. May be taken from the output of \nthe apply_mesh_stretching.pl preprocessing script.",
+    &fdyn_turbu);
 
-  DoubleParameter("CHAN_AMPL_INIT_DIST",0.1,"Max. amplitude of the random disturbance in percent of the initial value in mean flow direction.",&fdyn_turbu);
+  DoubleParameter(
+    "CHAN_AMPL_INIT_DIST",
+    0.1,
+    "Max. amplitude of the random disturbance in percent of the initial value in mean flow direction.",
+    &fdyn_turbu);
 
   IntParameter("SAMPLING_START",1,"Time step after when sampling shall be started",&fdyn_turbu);
   IntParameter("SAMPLING_STOP",1,"Time step when sampling shall be stopped",&fdyn_turbu);

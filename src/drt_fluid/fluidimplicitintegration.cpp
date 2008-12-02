@@ -278,7 +278,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   {
     // a canonical flow with homogeneous directions would allow a
     // spatial averaging of data
-    string hom_plane = modelparams->get<string>("CHANNEL_HOMPLANE","not specified");
+    string homdir = modelparams->get<string>("HOMDIR","not_specified");
 
     if (myrank_ == 0)
     {
@@ -315,7 +315,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
         {
           if (special_flow_ != "channel_flow_of_height_2"
               ||
-              hom_plane != "xz")
+              homdir != "xz")
           {
             dserror("The van Driest damping is only implemented for a channel flow with wall \nnormal direction y");
           }
@@ -334,7 +334,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
         {
           if (special_flow_ != "channel_flow_of_height_2"
               ||
-              hom_plane != "xz")
+              homdir != "xz")
           {
             cout << "      no homogeneous directions specified --- so we just use pointwise clipping for Cs\n";
           }
@@ -350,7 +350,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
         cout << "for a turbulent channel flow.\n";
         cout << "                             " ;
         cout << "The solution is averaged over the homogeneous ";
-        cout << hom_plane;
+        cout << homdir;
         cout << " plane and over time.\n";
       }
       cout << &endl;
@@ -1731,7 +1731,7 @@ void FLD::FluidImplicitTimeInt::StatisticsAndOutput()
   // -------------------------------------------------------------------
   //          dumping of turbulence statistics if required
   // -------------------------------------------------------------------
-  statisticsmanager_->DoOutput(step_);
+  statisticsmanager_->DoOutput(output_,step_);
 
   return;
 } // FluidImplicitTimeInt::StatisticsAndOutput

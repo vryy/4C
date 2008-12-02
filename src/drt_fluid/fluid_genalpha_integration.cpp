@@ -956,10 +956,14 @@ void FLD::FluidGenAlphaIntegration::GenAlphaOutput()
         output_.WriteVector("gridveln",gridveln_);
       }
 
+      // dumping of turbulence statistics if required
+      statisticsmanager_->DoOutput(output_,step_);
+
       // write mesh in each restart step --- the elements are required since
       // they contain history variables (the time dependent subscales)
       output_.WriteMesh(step_,time_);
     }
+
   }
   // write restart also when uprestart_ is not a integer multiple of upres_
   else if (step_%uprestart_ == 0)
@@ -984,13 +988,13 @@ void FLD::FluidGenAlphaIntegration::GenAlphaOutput()
      output_.WriteVector("traction",traction);
     }
 
+    // dumping of turbulence statistics if required
+    statisticsmanager_->DoOutput(output_,step_);
+
     // write mesh in each restart step --- the elements are required since
     // they contain history variables (the time dependent subscales)
     output_.WriteMesh(step_,time_);
   }
-
-  // dumping of turbulence statistics if required
-  statisticsmanager_->DoOutput(step_);
 
   return;
 } // FluidGenAlphaIntegration::GenAlphaOutput
@@ -1496,6 +1500,9 @@ void FLD::FluidGenAlphaIntegration::ReadRestart(int step)
 
   // read the previously written elements including the history data
   reader.ReadMesh(step_);
+
+  // read previous averages
+  statisticsmanager_->Restart(reader,step_);
 
   return;
 }
@@ -2097,9 +2104,8 @@ void FLD::FluidGenAlphaIntegration::GenAlphaEchoToScreen(
             =
             modelparams->get<string>("CANONICAL_FLOW","no");
 
-          string hom_plane
-            =
-            modelparams->get<string>("CHANNEL_HOMPLANE","not specified");
+          // get homogeneous directions
+          string homdir = modelparams->get<string>("HOMDIR","not_specified");
 
           // Underresolved DNS, traditional LES (Smagorinsky type), RANS?
           // including consistecy checks
@@ -2133,7 +2139,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaEchoToScreen(
             {
               if (special_flow_ != "channel_flow_of_height_2"
                   ||
-                  hom_plane != "xz")
+                  homdir != "xz")
               {
                 dserror("The van Driest damping is only implemented for a channel flow with wall \nnormal direction y");
               }
@@ -2152,7 +2158,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaEchoToScreen(
             {
               if (special_flow_ != "channel_flow_of_height_2"
                   ||
-                  hom_plane != "xz")
+                  homdir != "xz")
               {
                 cout << "                             ";
                 cout << "+ clipping of negative values\n";

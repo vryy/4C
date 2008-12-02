@@ -22,11 +22,43 @@ Maintainer: Peter Gamnitzer
 //
 //----------------------------------------------------------------------
 FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean(
-  RCP<DRT::Discretization> discret
+  RCP<DRT::Discretization> discret,
+  string                   homdir
   )
   :
   discret_(discret)
 {
+  // get directions to do spacial averaging
+  homdir_.clear();
+
+  if(homdir=="xy")
+  {
+    homdir_.push_back(0);
+    homdir_.push_back(1);
+  }
+  else if(homdir=="xz")
+  {
+    homdir_.push_back(0);
+    homdir_.push_back(2);
+  }
+  else if(homdir=="yz")
+  {
+    homdir_.push_back(1);
+    homdir_.push_back(2);
+  }
+  else if(homdir=="x")
+  {
+    homdir_.push_back(0);
+  }
+  else if(homdir=="y")
+  {
+    homdir_.push_back(1);
+  }
+  else if(homdir=="z")
+  {
+    homdir_.push_back(2);
+  }
+
   // initialise all counters, timers and vectors to zero
   ResetComplete();
 
@@ -68,8 +100,8 @@ void FLD::TurbulenceStatisticsGeneralMean::AddToCurrentTimeAverage(
   //                     t + dt           t  + dt
   */
 
-  const double oldfac = old_time*curr_avg_time_;
-  const double incfac =       dt*curr_avg_time_;
+  const double oldfac = old_time/curr_avg_time_;
+  const double incfac =       dt/curr_avg_time_;
 
   curr_avg_->Update(incfac,*vec,oldfac);
 
@@ -194,6 +226,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
     avgcomm.SumAll(&lnumlines,&numlines,1);
   }
 
+
   // get an empty vector for the averages
   vector<double> avg_u(x.size(),0.0);
   vector<double> avg_v(x.size(),0.0);
@@ -257,6 +290,8 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
         dserror("rblock not empty");
       }
 
+      rblock.clear();
+
       // receive from predecessor
       frompid=(myrank+numprocs-1)%numprocs;
       exporter.ReceiveAny(frompid,tag,rblock,length);
@@ -290,6 +325,9 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
       int size;
       DRT::ParObject::ExtractfromPack(position,rblock,size);
 
+      x    .resize(size,0.0);
+      y    .resize(size,0.0);
+
       count.resize(size,0  );
       avg_u.resize(size,0.0);
       avg_v.resize(size,0.0);
@@ -297,110 +335,126 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
       avg_p.resize(size,0.0);
 
       // x and y
-      DRT::ParObject::ExtractfromPack(position,rblock,&(x[0]),size);
-      DRT::ParObject::ExtractfromPack(position,rblock,&(y[0]),size);
+      DRT::ParObject::ExtractfromPack(position,rblock,x);
+      DRT::ParObject::ExtractfromPack(position,rblock,y);
 
       // counters
-      DRT::ParObject::ExtractfromPack(position,rblock,&(count[0]),size);
+      DRT::ParObject::ExtractfromPack(position,rblock,count);
 
       // avgs
-      DRT::ParObject::ExtractfromPack(position,rblock,&(avg_u[0]),size);
-      DRT::ParObject::ExtractfromPack(position,rblock,&(avg_v[0]),size);
-      DRT::ParObject::ExtractfromPack(position,rblock,&(avg_w[0]),size);
-      DRT::ParObject::ExtractfromPack(position,rblock,&(avg_p[0]),size);
+      DRT::ParObject::ExtractfromPack(position,rblock,avg_u);
+      DRT::ParObject::ExtractfromPack(position,rblock,avg_v);
+      DRT::ParObject::ExtractfromPack(position,rblock,avg_w);
+      DRT::ParObject::ExtractfromPack(position,rblock,avg_p);
 
       rblock.clear();
     }
 
-    // 2) use (x,y) pairs and avg to construct map x->(y->avg)
-    xtoy.clear();
-
-    for(unsigned i=0;i<x.size();++i)
-    {
-      // check whether x is already in the map
-      x_and_y=xtoy.find(x[i]);
-      
-      if(x_and_y!=xtoy.end())
-      {
-        // it is already in the map. This y cannot overwrite 
-        // something since pairs (x,y) are unique
-
-        (x_and_y->second).insert(pair<double,int>(y[i],i));
-      }
-      else
-      {
-        // it's not in the map yet. construct second map with
-        // one initial connection
-        map<double,int,doublecomp> y_to_i_map;
-        y_to_i_map.insert(pair<double,int>(y[i],i));
-
-        xtoy.insert(pair<double,map<double,int,doublecomp> >(x[i],y_to_i_map));
-      }
-    }
-
-    // 3) for each node on this proc: search in map, add 
-    //    value to avg
-    for(int nn=0;nn<discret_->NumMyRowNodes();++nn)
-    {
-      // get the processor local node
-      DRT::Node*  lnode      = discret_->lRowNode(nn);
-      
-      double xodim[2];
-
-      xodim[0]= (lnode->X())[odim[0]];
-
-      x_and_y=xtoy.find(xodim[0]);
-
-      if(x_and_y!=xtoy.end())
-      {
-	xodim[1]= (lnode->X())[odim[1]];
-
-	y_and_i=(x_and_y->second).find(xodim[1]);
-      
-	if(y_and_i!=(x_and_y->second).end())
-	{
-	  int pos = y_and_i->second;
-
-	  // get dofs of vector to average 
-	  int gid;
-	  int lid;
-
-	  // the set of degrees of freedom associated with the node
-	  vector<int> nodedofset = discret_->Dof(lnode);
-
-	  // u velocity
-	  gid = nodedofset[0];
-	  lid = dofrowmap->LID(gid);
-
-	  avg_u[pos]+=(*curr_avg_)[lid];
-
-	  // v velocity
-	  gid = nodedofset[1];
-	  lid = dofrowmap->LID(gid);
-
-	  avg_v[pos]+=(*curr_avg_)[lid];
-
-	  // w velocity
-	  gid = nodedofset[2];
-	  lid = dofrowmap->LID(gid);
-
-	  avg_w[pos]+=(*curr_avg_)[lid];
-
-	  // pressure p
-	  gid = nodedofset[3];
-	  lid = dofrowmap->LID(gid);
-
-	  avg_p[pos]+=(*curr_avg_)[lid];
-
-	  // count nodes
-	  count[pos] +=1;
-	}
-      }
-    }
-
+    
     // in the last step, we keep everything on this proc
-    if(np < numprocs) 
+    if(np < numprocs)
     {
+
+      // 2) use (x,y) pairs and avg to construct map x->(y->avg)
+      xtoy.clear();
+
+      for(unsigned i=0;i<x.size();++i)
+      {
+        // check whether x is already in the map
+        x_and_y=xtoy.find(x[i]);
+      
+        if(x_and_y!=xtoy.end())
+        {
+          // it is already in the map. This y cannot overwrite 
+          // something since pairs (x,y) are unique
+          
+          (x_and_y->second).insert(pair<double,int>(y[i],i));
+        }
+        else
+        {
+          // it's not in the map yet. construct second map with
+          // one initial connection
+          map<double,int,doublecomp> y_to_i_map;
+          y_to_i_map.insert(pair<double,int>(y[i],i));
+          
+          xtoy.insert(pair<double,map<double,int,doublecomp> >(x[i],y_to_i_map));
+        }
+      }
+
+      // 3) for each node on this proc: search in map, add 
+      //    value to avg
+      for(int nn=0;nn<discret_->NumMyRowNodes();++nn)
+      {
+        // get the processor local node
+        DRT::Node*  lnode      = discret_->lRowNode(nn);
+        
+        double xodim[2];
+        
+        xodim[0]= (lnode->X())[odim[0]];
+        
+        x_and_y=xtoy.find(xodim[0]);
+        
+        if(x_and_y!=xtoy.end())
+        {
+          xodim[1]= (lnode->X())[odim[1]];
+          
+          y_and_i=(x_and_y->second).find(xodim[1]);
+          
+          if(y_and_i!=(x_and_y->second).end())
+          {
+            const int pos = y_and_i->second;
+            
+            // get dofs of vector to average 
+            int gid;
+            int lid;
+            
+            // the set of degrees of freedom associated with the node
+            vector<int> nodedofset = discret_->Dof(lnode);
+            
+            // u velocity
+            gid = nodedofset[0];
+            lid = dofrowmap->LID(gid);
+
+            avg_u[pos]+=(*curr_avg_)[lid];
+            
+            // v velocity
+            gid = nodedofset[1];
+            lid = dofrowmap->LID(gid);
+            
+            avg_v[pos]+=(*curr_avg_)[lid];
+            
+            // w velocity
+            gid = nodedofset[2];
+            lid = dofrowmap->LID(gid);
+
+            avg_w[pos]+=(*curr_avg_)[lid];
+
+            // pressure p
+            gid = nodedofset[3];
+            lid = dofrowmap->LID(gid);
+            
+            avg_p[pos]+=(*curr_avg_)[lid];
+            
+            // count nodes
+            count[pos] +=1;
+          }
+          else
+          {
+            if(numprocs==1)
+            {
+              dserror("didn\'t find node %d on single proc\n",lnode->Id());
+            }
+          }
+        }
+        else
+        {
+          if(numprocs==1)
+          {
+            dserror("didn\'t find node %d on single proc\n",lnode->Id());
+          }
+        }
+      }
+
       //--------------------------------------------------
       // Pack block to send
       sblock.clear();
@@ -410,17 +464,17 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
       DRT::ParObject::AddtoPack(sblock,size);
 
       // x and y
-      DRT::ParObject::AddtoPack(sblock,&(x[0]),size);
-      DRT::ParObject::AddtoPack(sblock,&(y[0]),size);
+      DRT::ParObject::AddtoPack(sblock,x);
+      DRT::ParObject::AddtoPack(sblock,y);
 
       // counters
-      DRT::ParObject::AddtoPack(sblock,&(count[0]),size);
+      DRT::ParObject::AddtoPack(sblock,count);
 
       // avgs
-      DRT::ParObject::AddtoPack(sblock,&(avg_u[0]),size);
-      DRT::ParObject::AddtoPack(sblock,&(avg_v[0]),size);
-      DRT::ParObject::AddtoPack(sblock,&(avg_w[0]),size);
-      DRT::ParObject::AddtoPack(sblock,&(avg_p[0]),size);
+      DRT::ParObject::AddtoPack(sblock,avg_u);
+      DRT::ParObject::AddtoPack(sblock,avg_v);
+      DRT::ParObject::AddtoPack(sblock,avg_w);
+      DRT::ParObject::AddtoPack(sblock,avg_p);
 
 #ifdef PARALLEL
       //--------------------------------------------------
@@ -442,6 +496,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
   // divide vectors by number of layers along lines
   for(unsigned i=0;i<x.size();++i)
   {
+    cout << "proc " << myrank << " count[" << i << "]: " << count[i]<< "\n";
     avg_u[i]/=count[i];
     avg_v[i]/=count[i];
     avg_w[i]/=count[i];
@@ -507,17 +562,17 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
       avg_p.resize(size,0.0);
 
       // x and y
-      DRT::ParObject::ExtractfromPack(position,rblock,&(x[0]),size);
-      DRT::ParObject::ExtractfromPack(position,rblock,&(y[0]),size);
+      DRT::ParObject::ExtractfromPack(position,rblock,x);
+      DRT::ParObject::ExtractfromPack(position,rblock,y);
 
       // counters
-      DRT::ParObject::ExtractfromPack(position,rblock,&(count[0]),size);
+      DRT::ParObject::ExtractfromPack(position,rblock,count);
 
       // avgs
-      DRT::ParObject::ExtractfromPack(position,rblock,&(avg_u[0]),size);
-      DRT::ParObject::ExtractfromPack(position,rblock,&(avg_v[0]),size);
-      DRT::ParObject::ExtractfromPack(position,rblock,&(avg_w[0]),size);
-      DRT::ParObject::ExtractfromPack(position,rblock,&(avg_p[0]),size);
+      DRT::ParObject::ExtractfromPack(position,rblock,avg_u);
+      DRT::ParObject::ExtractfromPack(position,rblock,avg_v);
+      DRT::ParObject::ExtractfromPack(position,rblock,avg_w);
+      DRT::ParObject::ExtractfromPack(position,rblock,avg_p);
 
       rblock.clear();
     }
@@ -597,12 +652,17 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
 	  lid = dofrowmap->LID(gid);
 
 	  err += curr_avg_->ReplaceMyValues(1,&(avg_w[pos]),&lid);
-
+          
 	  // pressure p
 	  gid = nodedofset[3];
 	  lid = dofrowmap->LID(gid);
 
 	  err += curr_avg_->ReplaceMyValues(1,&(avg_p[pos]),&lid);
+          
+          if(err>0)
+          {
+            dserror("lid was not on proc %d\n",myrank);
+          }
 	}
       }
     }
@@ -619,17 +679,17 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
       DRT::ParObject::AddtoPack(sblock,size);
 
       // x and y
-      DRT::ParObject::AddtoPack(sblock,&(x[0]),size);
-      DRT::ParObject::AddtoPack(sblock,&(y[0]),size);
+      DRT::ParObject::AddtoPack(sblock,x);
+      DRT::ParObject::AddtoPack(sblock,y);
 
       // counters
-      DRT::ParObject::AddtoPack(sblock,&(count[0]),size);
+      DRT::ParObject::AddtoPack(sblock,count);
 
       // avgs
-      DRT::ParObject::AddtoPack(sblock,&(avg_u[0]),size);
-      DRT::ParObject::AddtoPack(sblock,&(avg_v[0]),size);
-      DRT::ParObject::AddtoPack(sblock,&(avg_w[0]),size);
-      DRT::ParObject::AddtoPack(sblock,&(avg_p[0]),size);
+      DRT::ParObject::AddtoPack(sblock,avg_u);
+      DRT::ParObject::AddtoPack(sblock,avg_v);
+      DRT::ParObject::AddtoPack(sblock,avg_w);
+      DRT::ParObject::AddtoPack(sblock,avg_p);
 
 #ifdef PARALLEL
       //--------------------------------------------------
@@ -673,8 +733,8 @@ void FLD::TurbulenceStatisticsGeneralMean::AddToTotalTimeAverage()
   //                       t    + t                t    + t
   */
 
-  const double oldfac =       old_time*prev_avg_time_;
-  const double incfac = curr_avg_time_*prev_avg_time_;
+  const double oldfac =       old_time/prev_avg_time_;
+  const double incfac = curr_avg_time_/prev_avg_time_;
 
   prev_avg_->Update(incfac,*curr_avg_,oldfac);
 
@@ -700,6 +760,8 @@ void FLD::TurbulenceStatisticsGeneralMean::ReadOldStatistics(
   prev_n_        = input.ReadInt   ("num_steps_in_sample");
   prev_avg_time_ = input.ReadDouble("sampling_time"      );
  
+  input.ReadVector(prev_avg_,"averaged_velnp");
+
   return;
 } // FLD::TurbulenceStatisticsGeneralMean::ReadOldStatistics
 
@@ -713,8 +775,27 @@ void FLD::TurbulenceStatisticsGeneralMean::WriteOldAverageVec(
   IO::DiscretizationWriter&  output
 )
 {
+
+  // loop homogeneous directions, do averaging
+  for(unsigned i=0;i<homdir_.size();++i)
+  {
+    SpaceAverageInOneDirection(homdir_[i]);
+  }
+
+  AddToTotalTimeAverage();
+
+  if(discret_->Comm().MyPID()==0)
+  {
+    cout << "XXXXXXXXXXXXXXXXXXXXX              ";
+    cout << " Wrote averaged vector             ";
+    cout << "XXXXXXXXXXXXXXXXXXXXX";
+    cout << "\n\n";
+  }
+
   output.WriteInt   ("num_steps_in_sample", prev_n_       );
   output.WriteDouble("sampling_time"      , prev_avg_time_);
+
+  output.WriteVector("averaged_velnp",prev_avg_);
 
   return;
 } // FLD::TurbulenceStatisticsGeneralMean::WriteOldAverageVec
