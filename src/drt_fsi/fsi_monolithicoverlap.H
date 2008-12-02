@@ -6,6 +6,7 @@
 #include "fsi_monolithic.H"
 #include "fsi_overlapprec.H"
 #include "fsi_matrixtransform.H"
+#include "../drt_inpar/inpar_fsi.H"
 
 namespace FSI
 {
@@ -129,6 +130,9 @@ namespace FSI
     Teuchos::RCP<Epetra_Vector> scolsum_;
     Teuchos::RCP<Epetra_Vector> arowsum_;
     Teuchos::RCP<Epetra_Vector> acolsum_;
+    
+    /// preconditioned block Krylov or block Gauss-Seidel linear solver
+    INPAR::FSI::LinearBlockSolver linearsolverstrategy_;
 
     //@}
   };

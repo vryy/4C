@@ -19,7 +19,8 @@ FSI::MonolithicOverlap::MonolithicOverlap(Epetra_Comm& comm)
   : BlockMonolithic(comm)
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-
+  linearsolverstrategy_ = Teuchos::getIntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
+  
   SetDefaultParameters(fsidyn,NOXParameterList());
 
   // right now we use matching meshes at the interface
@@ -415,25 +416,34 @@ FSI::MonolithicOverlap::CreateLinearSystem(ParameterList& nlParams,
   const Teuchos::RCP< Epetra_Operator > J = systemmatrix_;
   const Teuchos::RCP< Epetra_Operator > M = systemmatrix_;
 
-#if 1
-  linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams,
-                                                             lsParams,
-                                                             Teuchos::rcp(iJac,false),
-                                                             J,
-                                                             Teuchos::rcp(iPrec,false),
-                                                             M,
-                                                             noxSoln));
-#else
-  linSys = Teuchos::rcp(new NOX::FSI::LinearBGSSolver(printParams,
-                                                      lsParams,
-                                                      Teuchos::rcp(iJac,false),
-                                                      J,
-                                                      noxSoln,
-                                                      StructureField().LinearSolver(),
-                                                      FluidField().LinearSolver(),
-                                                      AleField().LinearSolver()));
-#endif
-
+  switch (linearsolverstrategy_)
+  {
+  case INPAR::FSI::PreconditionedKrylov:
+    linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams,
+                                                               lsParams,
+                                                               Teuchos::rcp(iJac,false),
+                                                               J,
+                                                               Teuchos::rcp(iPrec,false),
+                                                               M,
+                                                               noxSoln));
+    break;
+  case INPAR::FSI::BGSAitken:
+  case INPAR::FSI::BGSVectorExtrapolation:
+  case INPAR::FSI::BGSJacobianFreeNewtonKrylov:
+    linSys = Teuchos::rcp(new NOX::FSI::LinearBGSSolver(printParams,
+                                                        lsParams,
+                                                        Teuchos::rcp(iJac,false),
+                                                        J,
+                                                        noxSoln,
+                                                        StructureField().LinearSolver(),
+                                                        FluidField().LinearSolver(),
+                                                        AleField().LinearSolver(),
+                                                        linearsolverstrategy_));
+    break;
+  default:
+    dserror("unsupported linear block solver strategy: %d", linearsolverstrategy_);
+  }
+  
   return linSys;
 }
 
