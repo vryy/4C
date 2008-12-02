@@ -151,7 +151,7 @@ RCP<LINALG::SparseMatrix> ADAPTER::StructureConstrained::SystemMatrix()
   mergedmatrix -> Add(*constiff,true,1.0,1.0);
   mergedmatrix -> Complete(*dofrowmap_,*dofrowmap_);
   
-  mergedmatrix->ApplyDirichlet( *(structure_->GetDBCMapExtractor()->CondMap()));
+  mergedmatrix -> ApplyDirichlet( *(structure_->GetDBCMapExtractor()->CondMap()));
   
   return mergedmatrix;
 }
