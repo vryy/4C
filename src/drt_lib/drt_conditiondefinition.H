@@ -422,6 +422,16 @@ namespace INPUT
     conddef->AddComponent(Teuchos::rcp(new SeparatorConditionComponent(name)));
     conddef->AddComponent(Teuchos::rcp(new RealConditionComponent     (name)));
   }
+  
+  /// add a separator followed by a single real value
+  /*!
+    The name on the input line becames the name used to put the value into DRT::Condition.
+   */
+  inline void AddNamedVector(Teuchos::RCP<ConditionDefinition> conddef, const std::string name, const int size)
+  {
+    conddef->AddComponent(Teuchos::rcp(new SeparatorConditionComponent(name)));
+    conddef->AddComponent(Teuchos::rcp(new RealVectorConditionComponent(name,size)));
+  }
 }
 }
 

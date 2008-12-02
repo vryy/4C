@@ -773,6 +773,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     surfliftdrag->AddComponent(liftdragcomponents[i]);
   }
 
+  // axis of rotation for angular momentum calculation (only 3D)
+  AddNamedVector(surfliftdrag,"axis",3);
+
   condlist.push_back(lineliftdrag);
   condlist.push_back(surfliftdrag);
 

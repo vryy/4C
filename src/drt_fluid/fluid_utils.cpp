@@ -202,12 +202,11 @@ void FLD::UTILS::LiftDrag(
   RCP<map<int,vector<double> > > liftdragvals
   )
 {
-  
   const int liftdrag = params.get<int>("liftdrag");
   
   if (liftdrag == 0); // do nothing, we don't want lift & drag
   if (liftdrag == 1)
-  dserror("we do not support lift&drag calculation by stresses anymore; use nodal forces!");
+    dserror("we do not support lift&drag calculation by stresses anymore; use nodal forces!");
 
   if (liftdrag == 2)
   {
@@ -215,6 +214,7 @@ void FLD::UTILS::LiftDrag(
 
     std::map< const int, std::set<DRT::Node* > > ldnodemap;
     std::map< const int, const std::vector<double>* > ldcoordmap;
+    std::map< const int, const std::vector<double>* > ldaxismap;
 
     // allocate and initialise LiftDrag conditions
     std::vector<DRT::Condition*> ldconds;
@@ -266,6 +266,15 @@ void FLD::UTILS::LiftDrag(
         // centre coordinates to present label
         ldcoordmap[label] = ldconds[i]->Get<vector<double> >("centerCoord");
 
+        // axis of rotation for present label (only needed for 3D)
+        if(ldconds[i]->Type() == DRT::Condition::SurfLIFTDRAG)
+        {
+          ldaxismap[label] = ldconds[i]->Get<vector<double> >("axis");
+        }
+
+        // centre coordinates to present label
+        ldcoordmap[label] = ldconds[i]->Get<vector<double> >("centerCoord");
+
         /* get pointer to its nodal Ids*/
         const vector<int>* ids = ldconds[i]->Get<vector<int> >("Node Ids");
 
@@ -277,7 +286,7 @@ void FLD::UTILS::LiftDrag(
           const int node_id = (*ids)[j];
           // put it into nodeset of actual label if node is new and mine
           if( dis.HaveGlobalNode(node_id) && dis.gNode(node_id)->Owner()==myrank )
-	  nodes.insert(dis.gNode(node_id));
+            nodes.insert(dis.gNode(node_id));
         }
       } // end loop over conditions
 
@@ -291,20 +300,17 @@ void FLD::UTILS::LiftDrag(
         std::vector<double> values(6,0.0);             // vector with lift&drag forces
 
         // get also pointer to centre coordinates
-        const std::vector<double>* centerCoord = ldcoordmap[label];
+        const std::vector<double>* centerCoordvec = ldcoordmap[label];
+        if (centerCoordvec->size() != 3) dserror("axis vector has not length 3");
+          LINALG::Matrix<3,1> centerCoord(&((*centerCoordvec)[0]),false);
 
         // loop all nodes within my set
         for( std::set<DRT::Node*>::const_iterator actnode = nodes.begin(); actnode != nodes.end(); ++actnode)
         {
-          const double* x = (*actnode)->X(); // pointer to nodal coordinates
+          const LINALG::Matrix<3,1> x((*actnode)->X(),false); // pointer to nodal coordinates
           const Epetra_BlockMap& rowdofmap = trueresidual.Map();
           const std::vector<int> dof = dis.Dof(*actnode);
 
-          std::vector<double> distances (3);
-          for (unsigned j=0; j<3; ++j)
-          {
-            distances[j]= x[j]-(*centerCoord)[j];
-          }
           // get nodal forces
           const double fx = trueresidual[rowdofmap.LID(dof[0])];
           const double fy = trueresidual[rowdofmap.LID(dof[1])];
@@ -313,10 +319,31 @@ void FLD::UTILS::LiftDrag(
           values[1] += fy;
           values[2] += fz;
 
+          // get distance of point to center point
+          LINALG::Matrix<3,1> distances;
+          distances.Update(1.0, x, -1.0, centerCoord);
+
+          // get pointer to axis vector (if available)
+          const std::vector<double>* axisvecptr = ldaxismap[label];
+          // we have to compute the distance of the actual node to the
+          // axis of rotation:
+          if (axisvecptr)
+          {
+            if (axisvecptr->size() != 3) dserror("axis vector has not length 3");
+            const LINALG::Matrix<3,1> axisvec(&((*axisvecptr)[0]),false);
+            double lambda = distances.Dot(axisvec);
+            if (axisvec.Norm2() != 0.0)
+              lambda = lambda / axisvec.Norm2();
+            else 
+              dserror("zero vector is not a valid direction vector for axis of rotation.");
+            distances.Update(lambda,axisvec,1.0);
+          }
+
           // calculate nodal angular momenta
-          values[3] += distances[1]*fz-distances[2]*fy;
-          values[4] += distances[2]*fx-distances[0]*fz;
-          values[5] += distances[0]*fy-distances[1]*fx;
+          values[3] += distances(1)*fz-distances(2)*fy;
+          values[4] += distances(2)*fx-distances(0)*fz;
+          values[5] += distances(0)*fy-distances(1)*fx;
+
         } // end: loop over nodes
 
         // care for the fact that we are (most likely) parallel

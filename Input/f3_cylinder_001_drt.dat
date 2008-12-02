@@ -39,7 +39,7 @@ ALE_DISP          No
 -----------------------------------------------------FLUID DYNAMIC
 DYNAMICTYP       Nlin_Time_Int
 TIMEINTEGR       BDF2
-LIFTDRAG         no
+LIFTDRAG         Yes
 UPPSS            1
 UPOUT            10000
 UPRES            5
@@ -226,10 +226,10 @@ DLINE 0
 ---------------------------------------DESIGN FLUID SURF LIFT&DRAG
 // DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER Z_CENTER ALE_LINE
 DSURF 4
- E 10 -   3 0.5 0.205 0.205 0
- E 11 -   1 0.5 0.205 0.205 0
- E 12 -   2 0.5 0.205 0.205 0
- E 13 -   0 0.5 0.205 0.205 0
+ E 10 -   3 0.5 0.205 0.205 axis 0.0 0.0 0.1
+ E 11 -   1 0.5 0.205 0.205 axis 0.0 0.0 0.1
+ E 12 -   2 0.5 0.205 0.205 axis 0.0 0.0 0.1
+ E 13 -   0 0.5 0.205 0.205 axis 0.0 0.0 0.1
 -----------------------DESIGN FLUID SURFACE STABILISING CONDITIONS
 // DOBJECT STABTYPE IADVEC IPRES IVISC ICONT ISTAPA NORM_P MK IHELEM NINTHS ISTAPC C_LAMB
 DSURF 0
