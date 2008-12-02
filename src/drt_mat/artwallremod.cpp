@@ -432,7 +432,7 @@ void MAT::ArtWallRemod::Evaluate(
   const double fib1 = fib1_tension* 2.*(k1*(J4-1.)*exp1);  // 2 dWf/dJ4
   const double fib2 = fib2_tension* 2.*(k1*(J6-1.)*exp2);  // 2 dWf/dJ6
   Sfiso.Scale(fib1);
-  Sfiso.Update(fib2,A2);
+  Sfiso.Update(fib2,A2,1.0);
 
   const double traceCSfbar =  Sfiso(0)*C(0) + Sfiso(1)*C(1) + Sfiso(2)*C(2)
                  + 1.*(Sfiso(3)*C(3) + Sfiso(4)*C(4) + Sfiso(5)*C(5)); // trace(Sfbar C)
