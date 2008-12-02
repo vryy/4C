@@ -591,12 +591,20 @@ void FSI::OverlappingBlockMatrix::SetupPreconditioner()
   fluidsolver_    ->Setup(sparse_->EpetraMatrix());
 
 #if 0
+  Matrix(0,0).Dump("dump-struct");
+  Matrix(1,1).Dump("dump-fluid");
+  Matrix(2,2).Dump("dump-ale");
+
   static int count;
   count++;
   std::stringstream s;
   s << "dump-" << count;
   cout << "write: " << s.str() << "\n";
   sparse_->Dump(s.str());
+
+//   Epetra_Vector diagonal(sparse_->RowMap());
+//   int err = sparse_->ExtractDiagonalCopy(diagonal);
+//   diagonal.Print(cout);
 #endif
 
 #else
