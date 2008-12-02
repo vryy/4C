@@ -423,7 +423,7 @@ static void SysmatDomain4(
               cellcenter,
               XFEM::Enrichment::approachUnknown);
         
-        const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule(ih->ElementIntersected(ele->Id()),cell->Shape(),ele->Shape());
+        const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape());
         
         // gaussian points
         const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);

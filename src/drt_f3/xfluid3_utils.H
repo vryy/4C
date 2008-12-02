@@ -20,8 +20,9 @@ Maintainer: Axel Gerstenberger
 namespace XFLUID
 {
 
-template<class M1, class M2, class M3>
-static void fill_tau(const int numparamtau, const M1&  shp_tau, const M2& etau, M3& tau)
+template<class M1, class M2>
+void fill_tau(const int numparamtau, const M1&  shp_tau, const M2& etau,
+    LINALG::Matrix<3,3>& tau)
 {
     tau.Clear();
     for (int i = 0; i < numparamtau; ++i)
@@ -451,7 +452,7 @@ void gder2(
         template version
  \return enum with optimal gausrule for this element
  */
-static DRT::UTILS::GaussRule3D getOptimalVelocityGaussrule(DRT::Element::DiscretizationType  distype)
+inline DRT::UTILS::GaussRule3D getOptimalVelocityGaussrule(DRT::Element::DiscretizationType  distype)
 {
     DRT::UTILS::GaussRule3D rule = DRT::UTILS::intrule3D_undefined;
     switch (distype)
@@ -479,14 +480,14 @@ static DRT::UTILS::GaussRule3D getOptimalVelocityGaussrule(DRT::Element::Discret
 
  \return enum with optimal gausrule for this element
  */
-inline DRT::UTILS::GaussRule3D getXFEMGaussrule(
+template<DRT::Element::DiscretizationType XELEDISTYPE, class M>
+DRT::UTILS::GaussRule3D getXFEMGaussrule(
+    const DRT::Element*                     xele,
+    const M&                                xyze_element,
     const bool                              intersected,
-    const DRT::Element::DiscretizationType  celldistype,
-    const DRT::Element::DiscretizationType  xeledistype
+    const DRT::Element::DiscretizationType  celldistype
     )
 {
-  GEO::EleGeoType eleGeoType = GEO::CARTESIAN;
-  
   DRT::UTILS::GaussRule3D rule = DRT::UTILS::intrule3D_undefined;
   if (not intersected)
   {
@@ -494,21 +495,23 @@ inline DRT::UTILS::GaussRule3D getXFEMGaussrule(
   }
   else
   {
+    const GEO::EleGeoType eleGeoType = GEO::checkGeoTypeT<XELEDISTYPE>(xele,xyze_element);
+    
     if (celldistype == DRT::Element::tet4 or celldistype == DRT::Element::tet10)
     {
-      switch (xeledistype)
+      switch (XELEDISTYPE)
       {
         case DRT::Element::hex8:
           if (eleGeoType == GEO::CARTESIAN) // constant jacobian
             rule = DRT::UTILS::intrule_tet_24point;
           else
-            rule = DRT::UTILS::intrule_tet_45point;
+            rule = DRT::UTILS::intrule_tet_24point;
           break;
         case DRT::Element::hex20:
           if (eleGeoType == GEO::CARTESIAN) // constant jacobian
-            rule = DRT::UTILS::intrule_tet_45point;
+            rule = DRT::UTILS::intrule_tet_24point;
           else
-            rule = DRT::UTILS::intrule_tet_125point_peano;
+            rule = DRT::UTILS::intrule_tet_45point;
           break;
         case DRT::Element::hex27:
           rule = DRT::UTILS::intrule_tet_343point_peano;
