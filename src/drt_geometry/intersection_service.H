@@ -147,6 +147,94 @@ namespace GEO
         EleGeoType&                         eleGeoType
         );
 
+    /*!
+    \brief checks if an element is Cartesian, linear or higherorder
+
+    \tparam DISTYPE       (in)         : shape of element
+    \param element        (in)         : element
+    \param xyze_element   (in)         : coordinates of the element
+    \return eleGeoType    (out)        : element geometric type CARTESIAN LINEAR or HIGHERORDER
+     */
+    template<DRT::Element::DiscretizationType DISTYPE, class M>
+    EleGeoType checkGeoTypeT(
+               const DRT::Element*                element,
+               const M&                           xyze_element)
+    {
+      if (element->Shape() != DISTYPE)
+        dserror("shape mismatch!");
+      
+      EleGeoType eleGeoType = HIGHERORDER;
+      bool cartesian = true;
+      int CartesianCount = 0;
+      const int dimCoord = 3;
+      const int eleDim = DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
+      
+      if(DRT::UTILS::DisTypeToEdgeOrder<DISTYPE>::order ==1)
+        eleGeoType = LINEAR;
+      else if(DRT::UTILS::DisTypeToEdgeOrder<DISTYPE>::order==2)
+        eleGeoType = HIGHERORDER;
+      else
+        dserror("order of element shapefunction is not correct");
+      
+      // check if cartesian
+      if(eleDim == 3)
+      {
+        const vector< vector<int> > eleNodeNumbering = DRT::UTILS::getEleNodeNumberingSurfaces(DISTYPE);
+        const vector< RCP<DRT::Element> >surfaces = (const_cast< DRT::Element* >(element))->Surfaces();
+        for(int i = 0; i < element->NumSurface(); i++)
+        {      
+          CartesianCount = 0;
+          const RCP<DRT::Element>& surfaceP = surfaces[i];
+      
+          for(int k = 0; k < dimCoord; k++)
+          { 
+            int nodeId = eleNodeNumbering[i][0];
+            const double nodalcoord =  xyze_element(k,nodeId);
+            for(int j = 1; j < surfaceP->NumNode(); j++)
+            {
+              nodeId = eleNodeNumbering[i][j];
+              if(fabs(nodalcoord - xyze_element(k,nodeId)) > TOL7)
+              {
+                CartesianCount++;
+                break;
+              } 
+            }
+          }
+          if(CartesianCount > 2)  
+          {
+            cartesian = false;
+            break;
+          }
+        } // for xfem surfaces
+      } // if eleDim == 3
+      else if(eleDim == 2 || eleDim == 1)
+      {
+        CartesianCount = 0;
+        for(int k = 0; k < dimCoord; k++)
+        { 
+          const double nodalcoord =  xyze_element(k,0);
+          for(int j = 1; j < element->NumNode(); j++)
+          {
+            if(fabs(nodalcoord - xyze_element(k,j)) > TOL7)
+            {
+              CartesianCount++;
+              break;
+            } 
+          }
+        }
+        if(CartesianCount > 2)  
+          cartesian = false;
+      }
+      else
+        dserror("dimension of element is not correct");
+
+      
+      
+      if(cartesian)
+        eleGeoType = CARTESIAN;
+      
+      return eleGeoType;
+    }
     
     /*!
     \brief checks if a position in current coordinates lies within a certain element           
