@@ -119,7 +119,7 @@ TRANSIENT                       no_transient
 VSTAB                           no_vstab
 -------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 CANONICAL_FLOW                  no
-CHANNEL_HOMPLANE                xz
+HOMDIR                          xz
 CHANNEL_L_TAU                   0
 CHAN_AMPL_INIT_DIST             0.1
 C_SMAGORINSKY                   0
