@@ -102,6 +102,8 @@ namespace XFEM
         XFEM::SpaceTimeBoundaryCell&      slab,
         LINALG::Matrix<3,1>&              rst
     ) const;
+    
+    void PrintStatistics() const;
 
   private:
 

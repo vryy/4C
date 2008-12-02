@@ -80,6 +80,8 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
   
   SanityChecks();
   
+  PrintStatistics();
+  
   elementsByLabel_.clear();
   CollectElementsByXFEMCouplingLabel(*cutterdis, elementsByLabel_);
   
@@ -124,12 +126,11 @@ void XFEM::InterfaceHandleXFSI::FillCurrentCutterPositionMap(
 {
   currentcutterpositions.clear();
   
+  vector<int> lm(3);
   for (int lid = 0; lid < cutterdis->NumMyColNodes(); ++lid)
   {
     const DRT::Node* node = cutterdis->lColNode(lid);
-    vector<int> lm;
-    lm.reserve(3);
-    cutterdis->Dof(node, lm);
+    cutterdis->Dof(node, 0, lm);
     vector<double> mydisp(3);
     DRT::UTILS::ExtractMyValues(idispcol,mydisp,lm);
     LINALG::Matrix<3,1> currpos;
@@ -442,6 +443,28 @@ void XFEM::InterfaceHandleXFSI::GenerateSpaceTimeLayer(
   }
   
   return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void XFEM::InterfaceHandleXFSI::PrintStatistics() const
+{
+
+  // loop intersected elements and count intcells
+  const unsigned numintersectedele = elementalDomainIntCells_.size();
+  
+  if (numintersectedele > 0)
+  {
+    unsigned numcells = 0;
+    std::map<int,GEO::DomainIntCells >::const_iterator entry;
+    for (entry = elementalDomainIntCells_.begin(); entry != elementalDomainIntCells_.end(); ++entry)
+    {
+      const GEO::DomainIntCells cells = entry->second;
+      numcells += cells.size();
+    }
+    const unsigned avgnumcellperele = numcells/numintersectedele;
+    cout << "Avg. Number of DomainIntCells per intersected xfem element: " << avgnumcellperele << endl;
+  }
 }
 
 /*----------------------------------------------------------------------*
