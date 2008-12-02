@@ -91,14 +91,12 @@ Teuchos::RCP<Epetra_Map> LINALG::MultiMapExtractor::MergeMaps(const std::vector<
 {
   if (maps.size()==0)
     dserror("no maps to merge");
-  int maplength = 0;
   for (unsigned i=0; i<maps.size(); ++i)
   {
     if (maps[i]==Teuchos::null)
       dserror("can not merge extractor with null maps");
     if (not maps[i]->UniqueGIDs())
       dserror("map %d not unique", i);
-    maplength += maps[i]->NumMyElements();
   }
   std::set<int> mapentries;
   for (unsigned i=0; i<maps.size(); ++i)
