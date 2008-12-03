@@ -190,6 +190,7 @@ PARTITION         Cut_Elements
 ------------------------------------------------------XFEM GENERAL
 DLM_CONDENSATION                Yes
 GMSH_DEBUG_OUT                  Yes
+EXP_INTERSECTION                YES
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 34
 NDLINE  57
