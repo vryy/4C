@@ -37,10 +37,6 @@ using namespace Teuchos;
 namespace EXODUS
 {
 
-// this minifunction maps exodus ids starting from 1 to store ids starting from 0
-inline const int eid(const int storeid) {return storeid-1;}
-
-
 //forward declaration
 class ElementBlock;
 class NodeSet;
