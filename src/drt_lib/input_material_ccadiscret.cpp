@@ -515,8 +515,8 @@ while(strncmp(fractplace(),"------",6)!=0)
    {
      localmat.mattyp      = m_hyperpolyogden;
      localmat.m.hyper_poly_ogden = new HYPER_POLY_OGDEN();
-     frdouble("YOUNG"   ,&(localmat.m.hyper_poly_ogden->youngs)  ,&ierr);
-     frdouble("NUE"     ,&(localmat.m.hyper_poly_ogden->poisson) ,&ierr);
+     frdouble("KAPPA"   ,&(localmat.m.hyper_poly_ogden->kappa)   ,&ierr);
+     frdouble("BETA"    ,&(localmat.m.hyper_poly_ogden->beta)    ,&ierr);
      frdouble("C"       ,&(localmat.m.hyper_poly_ogden->c)       ,&ierr);
      frdouble("K1"      ,&(localmat.m.hyper_poly_ogden->k1)      ,&ierr);
      frdouble("K2"      ,&(localmat.m.hyper_poly_ogden->k2)      ,&ierr);

@@ -83,11 +83,6 @@ namespace MAT
     virtual MATERIAL_TYP MaterialType() const { return m_hyperpolyogden; }
 
     // THE material routine
-    void Evaluate(const Epetra_SerialDenseVector* glstrain,
-		  Epetra_SerialDenseMatrix* cmat,
-		  Epetra_SerialDenseVector* stress);
-
-    // THE material routine
     void Evaluate(LINALG::Matrix<6,1>* glstrain,
 		  LINALG::Matrix<6,6>* cmat,
 		  LINALG::Matrix<6,1>* stress);

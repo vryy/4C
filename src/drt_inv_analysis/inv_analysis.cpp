@@ -202,7 +202,7 @@ void Inv_analysis::evaluate()
     DRT::Problem::Instance()->Material(0).m.hyper_poly_ogden->c      = (p_(0)*p_(0));
     DRT::Problem::Instance()->Material(0).m.hyper_poly_ogden->k1     = (p_(1)*p_(1));
     DRT::Problem::Instance()->Material(0).m.hyper_poly_ogden->k2     = (p_(2)*p_(2));
-    DRT::Problem::Instance()->Material(0).m.hyper_poly_ogden->youngs = (p_(0)*p_(0));
+    //DRT::Problem::Instance()->Material(0).m.hyper_poly_ogden->youngs = (p_(0)*p_(0));
   }
   return;
 }

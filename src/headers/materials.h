@@ -619,12 +619,12 @@ typedef struct _HYPER_POLYCONVEX
  *----------------------------------------------------------------------*/
 typedef struct _HYPER_POLY_OGDEN
 {
-     DOUBLE                    youngs;        /* Young's modulus */
-     DOUBLE                    poisson;       /* Poisson ratio */
+     DOUBLE                    kappa;         /* bulk modulus*/
+     DOUBLE                    beta;          /* empirical coefficient for volumetric part*/
      DOUBLE                    c;             /* ground substance parameter */
      DOUBLE                    k1;	      /* fiber parameter */
      DOUBLE                    k2;            /* fiber parameter */
-     DOUBLE                    density;        /* material specific weight */
+     DOUBLE                    density;       /* material specific weight */
 } HYPER_POLY_OGDEN;
 /*----------------------------------------------------------------------*
  | hyperelastic polyconvex material based on                   ah 10/07 |
