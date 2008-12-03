@@ -268,7 +268,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
       if (i_layer==layers-1){
         vector<int> ss(3);  // third pos for later eblockid
         ss.at(0) = newele;  // first entry is element id
-        if (newelenodes.size()==8) ss.at(1) = 6 ; // hexcase: top face id = 6 // bottom face ID = 5
+        if (newelenodes.size()==8) ss.at(1) = 5 ; // hexcase: top face id = 6 // bottom face ID = 5
         else if (newelenodes.size()==6) ss.at(1) = 5; // wedgecase: top face id
         else dserror("wrong number of elenodes!");
         newsideset.insert(pair<int,vector<int> >(newele,ss));
@@ -507,7 +507,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
             if (i_layer==layers-1){
               vector<int> ss(3);  // third pos for later eblockid
               ss.at(0) = newele;  // first entry is element id
-              if (newelenodes.size()==8) ss.at(1) = 6; // hexcase: top face id = 6, bottom = 5
+              if (newelenodes.size()==8) ss.at(1) = 5; // hexcase: top face id = 6, bottom = 5
               else if (newelenodes.size()==6) ss.at(1) = 5; // wedgecase: top face id
               else dserror("wrong number of elenodes!");
               newsideset.insert(pair<int,vector<int> >(newele,ss));
@@ -777,14 +777,17 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
       int head1 = *surfit;  // get second set node
       ++surfit;
 
-      set<int>::iterator thirdnode;
-
-      // find third node such that a proper normal can be computed
+      // compute normal
+      vector<double> facenormal;
       for(it=surfit;it!=nodes_from_nodeset.end();++it){
-        thirdnode = it;
-        if (Normal(head1,origin,*it,basemesh).size() != 1) break;
+        // third node such that a proper normal can be computed
+        set<int>::iterator thirdnode = it;
+        facenormal = Normal(head1,origin,*thirdnode,basemesh);
+        // leave for loop if valid normal is found
+        if (facenormal.size() != 1) break;
       }
-      vector<double> facenormal = Normal(head1,origin,*thirdnode,basemesh);
+      
+      // could a normal direction be computed?
       if (facenormal.size()==1){
         cout << "  Warning! No normal defined within flat nodeset '"<< (i_nss->second).GetName() << "', stop flattening" << endl;
       }
@@ -805,7 +808,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
             length = sqrt(length);
             for(int i=0; i<3; ++i) normal[i] /= length;
 
-            // keep this wonderfull flat normal
+            // keep this wonderful flat normal
             node_normals.find(*it)->second = normal;
 
             // correct node coords for all layers
