@@ -374,6 +374,7 @@ protected:
   //! @name time step sizes
   double dta_;
   double dtp_;
+  //@}
 
   //! @name time-integration-scheme factors
   double theta_;
