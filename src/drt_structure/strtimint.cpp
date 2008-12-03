@@ -392,8 +392,8 @@ void STR::TimInt::ReadRestart
   timen_ = (*time_)[0] + (*dt_)[0];
 
   ReadRestartState();
-  ReadRestartForce();
   ReadRestartConstraint();
+  ReadRestartForce();
   ReadRestartSurfstress();
   ReadRestartMultiScale();
   // fix pointer to #dofrowmap_, which has not really changed, but is
@@ -431,6 +431,7 @@ void STR::TimInt::ReadRestartConstraint()
     conman_->SetLagrMultVector(tempvec);
     reader.ReadVector(tempvec, "refconval");
     conman_->SetRefBaseValues(tempvec, (*time_)[0]);
+    
   }
 }
 

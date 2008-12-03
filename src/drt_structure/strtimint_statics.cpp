@@ -275,6 +275,9 @@ void STR::TimIntStatics::ReadRestartForce()
   // set 'initial' internal force vector
   ApplyForceStiffInternal((*time_)[0], (*dt_)[0], (*dis_)(0), zeros_, (*vel_)(0), 
                           fint_, stiff_);
+  
+  ParameterList pcon; //no scaling necessary
+  ApplyForceStiffConstraint((*time_)[0], (*dis_)(0), (*dis_)(0), fint_, stiff_, pcon);
   return;
 }
 

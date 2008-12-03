@@ -521,7 +521,12 @@ void STR::TimIntGenAlpha::ReadRestartForce()
     ApplyForceStiffInternal((*time_)[0], (*dt_)[0],
                             (*dis_)(0), zeros_,  (*vel_)(0), 
                             fint_, stiff_);
+    // for TR scale constraint matrix with the same value fintn_ is scaled with
+    ParameterList pcon;
+    pcon.set("scaleConstrMat", (1.0-alphaf_));
+    ApplyForceStiffConstraint((*time_)[0], (*dis_)(0), (*dis_)(0), fint_, stiff_, pcon);
   }
+  
   // bye 
   return;
 }
