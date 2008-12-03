@@ -47,6 +47,46 @@ namespace INPAR
       dyna_ab2                         ///< Adams-Bashforth 2nd order (explicit)
     };
 
+    /// Map time integrator to string
+    static inline const std::string DynamicTypeString
+    (
+      const enum DynamicType name  ///< enum to convert
+    )
+    {
+      switch (name)
+      {
+      case dyna_gen_alfa :
+        return "Gen_Alfa";
+        break;
+      case dyna_gen_alfa_statics :
+        return "Static";
+      case dyna_centr_diff :
+        return "Centr_Diff";
+        break;
+      case dyna_Gen_EMM :
+        return "Gen_EMM";
+        break;
+      case dyna_statics :
+        return "Statics";
+        break;
+      case dyna_genalpha :
+        return "GenAlpha";
+        break;
+      case dyna_onesteptheta :
+        return "OneStepTheta";
+        break;
+      case dyna_gemm :
+        return "GEMM";
+        break;
+      case dyna_ab2 :
+        return "AdamsBashforth2" ;
+        break;
+      default :
+        dserror("Cannot make string for time integrator %d", name);
+        return "";
+      }
+    }
+
     /// Type of (global) damping
     enum DampKind
     {

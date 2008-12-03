@@ -87,7 +87,10 @@ namespace STR
     //@{
 
     //! Return time integrator name
-    enum TimInt::NameEnum MethodName() { return TimInt::name_ab2; }
+    enum INPAR::STR::DynamicType MethodName() const 
+    { 
+      return INPAR::STR::dyna_ab2;
+    }
 
     //! Provide number of steps, e.g. a single-step method returns 1,
     //! a m-multistep method returns m

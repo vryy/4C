@@ -95,22 +95,6 @@ namespace STR
 
   public:
 
-    //! List of all available time integration schemes
-    enum NameEnum
-    {
-      name_statics,  //!< static analysis
-      name_genalpha,  //!< generalised-alpha
-      name_onesteptheta,  //!< one-step-theta
-      name_gemm,  //!< generalised energy-momentum method
-      name_ab2  //!< Adams-Bashforth 2nd order
-    };
-
-    //! Map name enum term to string
-    static std::string MapNameEnumToString
-    (
-      const enum NameEnum term  //!< the enum
-    );
-
     //! @name Life
     //@{
 
@@ -340,12 +324,12 @@ namespace STR
     //@{
 
     //! Provide Name
-    virtual enum NameEnum MethodName() = 0;
+    virtual enum INPAR::STR::DynamicType MethodName() const = 0;
 
     //! Provide title
-    std::string MethodTitle()
+    std::string MethodTitle() const
     {
-      return MapNameEnumToString(MethodName());
+      return INPAR::STR::DynamicTypeString(MethodName());
     }
 
     //! Return true, if time integrator is implicit

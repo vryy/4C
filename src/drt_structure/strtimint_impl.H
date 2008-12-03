@@ -403,7 +403,7 @@ namespace STR
     //@{
 
     //! Return time integrator name
-    virtual enum NameEnum MethodName() = 0;
+    virtual enum INPAR::STR::DynamicType MethodName() const = 0;
 
     //! These time integrators are all implicit (mark their name)
     bool MethodImplicit() { return true; }

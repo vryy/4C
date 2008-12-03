@@ -70,9 +70,9 @@ namespace STR
     //@{
 
     //! Return name
-    enum TimInt::NameEnum MethodName()
+    enum INPAR::STR::DynamicType MethodName() const
     { 
-      return TimInt::name_statics;
+      return INPAR::STR::dyna_statics;
     }
 
     //! Provide number of steps, a single-step method returns 1

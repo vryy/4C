@@ -24,37 +24,6 @@ Maintainer: Burkhard Bornemann
 #include "strtimint.H"
 
 /*----------------------------------------------------------------------*/
-/* provide string for identifying enum */
-std::string STR::TimInt::MapNameEnumToString
-(
-  const enum NameEnum term  //!< the enum
-)
-{
-  switch (term)
-  {
-  case name_statics :
-    return "Statics";
-    break;
-  case name_genalpha :
-    return "GenAlpha";
-    break;
-  case name_onesteptheta :
-    return "OneStepTheta";
-    break;
-  case name_gemm :
-    return "GEMM";
-    break;
-  case name_ab2 :
-    return "AdamsBashforth2";
-    break;
-  default :
-    dserror("Cannot cope with name enum %d", term);
-    return "";
-    break;
-  }
-}
-
-/*----------------------------------------------------------------------*/
 /* print tea time logo */
 void STR::TimInt::Logo()
 {
@@ -140,7 +109,7 @@ STR::TimInt::TimInt
 
 
   // time state
-  time_ = Teuchos::rcp(new TimIntMStep<double>(0, 0, 0.0));  // HERE SHOULD BE SOMETHING LIKE (sdynparams.get<double>("TIMEINIT")) -- you may not believe it, but time does not always start at zero
+  time_ = Teuchos::rcp(new TimIntMStep<double>(0, 0, 0.0));  // HERE SHOULD BE SOMETHING LIKE (sdynparams.get<double>("TIMEINIT"))
   dt_ = Teuchos::rcp(new TimIntMStep<double>(0, 0, sdynparams.get<double>("TIMESTEP")));
   step_ = 0;
   timen_ = (*time_)[0] + (*dt_)[0];  // set target time to initial time plus step size

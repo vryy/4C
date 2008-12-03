@@ -63,12 +63,12 @@ namespace STR
     //! Map STR::TimInt::NameEnum to STR::TimAda::NameEnum
     enum INPAR::STR::TimAdaKind MapNameTimIntToTimAda
     (
-      const enum TimInt::NameEnum term  //!< input enum term
+      const enum INPAR::STR::DynamicType term  //!< input enum term
     )
     {
       switch (term)
       {
-      case TimInt::name_ab2 :
+      case INPAR::STR::dyna_ab2 :
         return INPAR::STR::timada_kind_ab2;
         break; 
       default : 
