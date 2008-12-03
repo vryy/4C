@@ -15,8 +15,8 @@ Maintainer: Ursula Mayer
 */
 
 #ifdef CCADISCRET
-#ifndef INTERSECTION_H
-#define INTERSECTION_H
+#ifndef INTERSECTION_EXP_H
+#define INTERSECTION_EXP_H
 
 
 #include "../drt_geometry/intersection_interfacepoint.H"
@@ -49,14 +49,13 @@ class DRT::Discretization;
 namespace GEO
 {
 
-//! possible positions of a Stainer point
-enum SteinerType {S_SURFACE, S_EDGE, S_BOUNDARY};
-
-
 //! given 2 discretizations, this class intersects one mesh by the second and return interface information
 class IntersectionExp
 {
 
+  //! possible positions of a Steiner point
+  enum SteinerType {S_SURFACE, S_EDGE, S_BOUNDARY};
+  
   public:
 
   /*!
@@ -959,7 +958,7 @@ class IntersectionExp
   \param out                      (in)     :   output data structure of TetGen
   \return steiner type S_SURAFCE S_EDGE S_BOUNDARY
   */
-  GEO::SteinerType decideSteinerCase(
+  SteinerType decideSteinerCase(
     const int                             steinerIndex,
     int&                                  lineIndex,
     int&                                  cutterIndex,
@@ -1748,6 +1747,6 @@ class IntersectionExp
 };
 }
 
-#endif  // #ifndef INTERSECTION_H
+#endif  // #ifndef INTERSECTION_EXP_H
 #endif  // #ifdef CCADISCRET
 

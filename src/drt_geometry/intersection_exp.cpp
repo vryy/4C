@@ -2710,7 +2710,7 @@ void GEO::IntersectionExp::locateSteinerPoints(
  |  RCI:    checks if the Steiner points lies within         u.may 11/07|
  |          the cutter element or on one of its edges                   |
  *----------------------------------------------------------------------*/
-GEO::SteinerType GEO::IntersectionExp::decideSteinerCase(
+GEO::IntersectionExp::SteinerType GEO::IntersectionExp::decideSteinerCase(
         const int                             steinerIndex,
         int&                                  lineIndex,
         int&                                  cutterIndex,

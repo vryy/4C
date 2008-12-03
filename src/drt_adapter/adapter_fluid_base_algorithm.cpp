@@ -206,6 +206,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     const Teuchos::ParameterList& xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
     fluidtimeparams->set<bool>("DLM_condensation", getIntegralValue<int>(xdyn,"DLM_CONDENSATION")==1 );
     fluidtimeparams->set<bool>("CONDEST", getIntegralValue<int>(xdyn,"CONDEST")==1 );
+    fluidtimeparams->set<bool>("EXP_INTERSECTION", getIntegralValue<int>(xdyn,"EXP_INTERSECTION")==1 );
   }
 
   // --------------------------sublist for combustion-specific fluid parameters

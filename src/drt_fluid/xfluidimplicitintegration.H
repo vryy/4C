@@ -291,12 +291,10 @@ public:
   void ComputeSurfaceFlowrates() const;
 
   /// switch fluid field to block matrix
-  void UseBlockMatrix(
-      Teuchos::RCP<std::set<int> > condelements,
-      const LINALG::MultiMapExtractor& domainmaps,
-      const LINALG::MultiMapExtractor& rangemaps,
-      bool splitmatrix=true
-      );
+  void UseBlockMatrix(Teuchos::RCP<std::set<int> > condelements,
+                      const LINALG::MultiMapExtractor& domainmaps,
+                      const LINALG::MultiMapExtractor& rangemaps,
+                      bool splitmatrix=true);
 
 protected:
 
@@ -338,6 +336,9 @@ protected:
   /// whether we do some extrapolation at the begin of each time step
   bool extrapolationpredictor_;
 
+  //! predictor used in nonlinear iteration
+  string  predictor_;
+
   //! @name restart variables
   const int uprestart_;
   const int upres_;
@@ -347,7 +348,13 @@ protected:
   //! @name time step sizes
   double dta_;
   double dtp_;
+  //@}
+
+  //! @name time-integration-scheme factors
   double theta_;
+  double alphaM_;
+  double alphaF_;
+  double gamma_;
   //@}
 
   //! store dof distribution information for output

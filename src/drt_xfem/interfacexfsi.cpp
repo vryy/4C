@@ -26,6 +26,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_io/io_gmsh.H"
 #include "../drt_io/io_gmsh_xfem_extension.H"
 #include "../drt_geometry/intersection.H"
+#include "../drt_geometry/intersection_exp.H"
 #include "coordinate_transformation.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 
@@ -34,9 +35,10 @@ Maintainer: Axel Gerstenberger
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
-    const Teuchos::RCP<DRT::Discretization>  xfemdis,
-    const Teuchos::RCP<DRT::Discretization>  cutterdis,
-    const int step
+    const Teuchos::RCP<DRT::Discretization>&  xfemdis,
+    const Teuchos::RCP<DRT::Discretization>&  cutterdis,
+    const int step,
+    const bool experimental_intersection
     ) : InterfaceHandle(xfemdis),
         cutterdis_(cutterdis)
 {
@@ -75,8 +77,16 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
   elementalBoundaryIntCells_.clear();
 
   
-  GEO::Intersection is;
-  is.computeIntersection(xfemdis, cutterdis, cutterposnp_, elementalDomainIntCells_, elementalBoundaryIntCells_);
+  if (experimental_intersection)
+  {
+    GEO::IntersectionExp is;
+    is.computeIntersection(xfemdis, cutterdis, cutterposnp_, elementalDomainIntCells_, elementalBoundaryIntCells_);
+  }
+  else
+  {
+    GEO::Intersection is;
+    is.computeIntersection(xfemdis, cutterdis, cutterposnp_, elementalDomainIntCells_, elementalBoundaryIntCells_); 
+  }
   
   SanityChecks();
   
@@ -119,7 +129,7 @@ XFEM::InterfaceHandleXFSI::~InterfaceHandleXFSI()
 
 
 void XFEM::InterfaceHandleXFSI::FillCurrentCutterPositionMap(
-    const Teuchos::RCP<DRT::Discretization>  cutterdis,
+    const Teuchos::RCP<DRT::Discretization>& cutterdis,
     const Epetra_Vector&                     idispcol,
     std::map<int,LINALG::Matrix<3,1> >&      currentcutterpositions
     ) const
@@ -407,7 +417,7 @@ int XFEM::InterfaceHandleXFSI::PositionWithinConditionN(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void XFEM::InterfaceHandleXFSI::GenerateSpaceTimeLayer(
-    const Teuchos::RCP<DRT::Discretization>             cutterdis,
+    const Teuchos::RCP<DRT::Discretization>&            cutterdis,
     const std::map<int,LINALG::Matrix<3,1> >&           cutterposnp,
     const std::map<int,LINALG::Matrix<3,1> >&           cutterposn
 )

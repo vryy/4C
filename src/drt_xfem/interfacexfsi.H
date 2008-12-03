@@ -30,9 +30,10 @@ namespace XFEM
   public:
     //! constructor
     explicit InterfaceHandleXFSI(
-             const Teuchos::RCP<DRT::Discretization>  xfemdis,   ///< discretization that will be intersected
-             const Teuchos::RCP<DRT::Discretization>  cutterdis, ///< discretization with boundary elements
-             const int step                                      ///< counter to control file numbering of gmsh debug output
+             const Teuchos::RCP<DRT::Discretization>&  xfemdis,   ///< discretization that will be intersected
+             const Teuchos::RCP<DRT::Discretization>&  cutterdis, ///< discretization with boundary elements
+             const int step,                                      ///< counter to control file numbering of gmsh debug output
+             const bool experimental_intersection                 ///< choose intersection class
              );
     //! destructor
     ~InterfaceHandleXFSI();
@@ -115,7 +116,7 @@ namespace XFEM
     
     //! put a position into the map for each nodal id
     void FillCurrentCutterPositionMap(
-        const Teuchos::RCP<DRT::Discretization>  cutterdis,              ///< dis containing nodes
+        const Teuchos::RCP<DRT::Discretization>& cutterdis,              ///< dis containing nodes
         const Epetra_Vector&                     idispcol,               ///< vector with displacements
         std::map<int,LINALG::Matrix<3,1> >&      currentcutterpositions  ///< map to be filled with positions
         ) const;
@@ -125,7 +126,7 @@ namespace XFEM
 
     //! from surface element, create 3d volume space-time cells
     void GenerateSpaceTimeLayer(
-        const Teuchos::RCP<DRT::Discretization>  	cutterdis,   ///< discretization with boundary elements
+        const Teuchos::RCP<DRT::Discretization>&        cutterdis,   ///< discretization with boundary elements
         const std::map<int,LINALG::Matrix<3,1> >&       cutterposnp, ///< nodal displacements at n+1
         const std::map<int,LINALG::Matrix<3,1> >&       cutterposn   ///< nodal displacements at n
     );

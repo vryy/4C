@@ -77,16 +77,16 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   // -------------------------------------------------------------------
   // get the basic parameters first
   // -------------------------------------------------------------------
-  if (timealgo_ == timeint_stationary)
-  {
-    dtp_ = dta_ = 1.0;
-    theta_    = 1.0;
-  }
-  else
-  {
-    dtp_ = dta_ = params_.get<double>("time step size");
-    theta_    = params_.get<double>("theta");
-  }
+  // time-step size
+  dtp_ = dta_ = params_.get<double>("time step size");
+
+  // parameter theta for time-integration schemes
+  theta_    = params_.get<double>("theta");
+  // af-generalized-alpha parameters: gamma_ = 0.5 + alphaM_ - alphaF_
+  // (may be reset below when starting algorithm is used)
+  alphaM_   = params_.get<double>("alpha_M");
+  alphaF_   = params_.get<double>("alpha_F");
+  gamma_    = params_.get<double>("gamma");
 
   // create empty cutter discretization
   Teuchos::RCP<DRT::Discretization> emptyboundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(
@@ -95,7 +95,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   emptyboundarydis_->SetState("idispcolnp",tmpdisp);
   emptyboundarydis_->SetState("idispcoln",tmpdisp);
   // intersection with empty cutter will result in a complete fluid domain with no holes or intersections
-  Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih = rcp(new XFEM::InterfaceHandleXFSI(discret_,emptyboundarydis_,0));
+  Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih = rcp(new XFEM::InterfaceHandleXFSI(discret_,emptyboundarydis_,0,params_.get<bool>("EXP_INTERSECTION")));
   // apply enrichments
   Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih,params_.get<bool>("DLM_condensation")));
   // tell elements about the dofs and the integration
@@ -124,7 +124,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   
   if (actdis->Comm().MyPID()==0 and params.get<bool>("DLM_condensation"))
   {
-    std::cout << RED_LIGHT << "DLM_condensation turned on!" << END_COLOR << endl << endl;    
+    std::cout << GREEN_LIGHT << "DLM_condensation turned on!" << END_COLOR << endl << endl;    
   }
   else
   {
@@ -158,8 +158,19 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
 
 
-    /*----------------------------------------------------------------------*/
-    /*----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | Start the time integration. Allows                                   |
+ |                                                                      |
+ |  o starting steps with different algorithms                          |
+ |  o the "standard" time integration                                   |
+ |                                                           gammi 04/07|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::Integrate(
     Teuchos::RCP<DRT::Discretization> cutterdiscret
         )
@@ -174,13 +185,13 @@ void FLD::XFluidImplicitTimeInt::Integrate(
   cout0_ << "                             " << stabparams->get<string>("TDS")<< "\n";
   cout0_ << "\n";
 
-  if(stabparams->get<string>("TDS") == "quasistatic")
-  {
-    if(stabparams->get<string>("TRANSIENT")=="yes_transient")
+    if(stabparams->get<string>("TDS") == "quasistatic")
     {
-      dserror("The quasistatic version of the residual-based stabilization currently does not support the incorporation of the transient term.");
+      if(stabparams->get<string>("TRANSIENT")=="yes_transient")
+      {
+        dserror("The quasistatic version of the residual-based stabilization currently does not support the incorporation of the transient term.");
+      }
     }
-  }
   cout0_ <<  "                             " << "TRANSIENT       = " << stabparams->get<string>("TRANSIENT")      <<"\n";
   cout0_ <<  "                             " << "SUPG            = " << stabparams->get<string>("SUPG")           <<"\n";
   cout0_ <<  "                             " << "PSPG            = " << stabparams->get<string>("PSPG")           <<"\n";
@@ -190,28 +201,12 @@ void FLD::XFluidImplicitTimeInt::Integrate(
   cout0_ <<  "                             " << "REYNOLDS-STRESS = " << stabparams->get<string>("REYNOLDS-STRESS")<<"\n";
   cout0_ << "\n";
 
-  if (timealgo_==timeint_stationary)
-    // stationary case
-    SolveStationaryProblem(cutterdiscret);
-
-  else  // instationary case
-  {
-    // start procedure
-    if (step_<numstasteps)
-    {
-      if (numstasteps>stepmax_)
-      {
-        dserror("more startsteps than steps");
-      }
-
-      dserror("no starting steps supported");
-    }
-
-    // continue with the final time integration
-    TimeLoop(cutterdiscret);
-  }
+  // distinguish stationary and instationary case
+  if (timealgo_==timeint_stationary) SolveStationaryProblem(cutterdiscret);
+  else TimeLoop(cutterdiscret);
 
   // print the results of time measurements
+  //cout<<endl<<endl;
   TimeMonitor::summarize();
 
   return;
@@ -219,8 +214,15 @@ void FLD::XFluidImplicitTimeInt::Integrate(
 
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | contains the time loop                                    gammi 04/07|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::TimeLoop(
     Teuchos::RCP<DRT::Discretization> cutterdiscret
         )
@@ -260,18 +262,22 @@ void FLD::XFluidImplicitTimeInt::TimeLoop(
   {
     PrepareTimeStep();
     // -------------------------------------------------------------------
-    //                         out to screen
+    //                       output to screen
     // -------------------------------------------------------------------
     if (myrank_==0)
     {
       switch (timealgo_)
       {
       case timeint_one_step_theta:
-        printf("TIME: %11.4E/%11.4E  DT = %11.4E  One-Step-Theta  STEP = %4d/%4d \n",
+        printf("TIME: %11.4E/%11.4E  DT = %11.4E   One-Step-Theta    STEP = %4d/%4d \n",
               time_,maxtime_,dta_,step_,stepmax_);
         break;
+      case timeint_afgenalpha:
+        printf("TIME: %11.4E/%11.4E  DT = %11.4E  Generalized-Alpha  STEP = %4d/%4d \n",
+               time_,maxtime_,dta_,step_,stepmax_);
+        break;
       case timeint_bdf2:
-        printf("TIME: %11.4E/%11.4E  DT = %11.4E     BDF2         STEP = %4d/%4d \n",
+        printf("TIME: %11.4E/%11.4E  DT = %11.4E       BDF2          STEP = %4d/%4d \n",
                time_,maxtime_,dta_,step_,stepmax_);
         break;
       default:
@@ -291,7 +297,7 @@ void FLD::XFluidImplicitTimeInt::TimeLoop(
       // -----------------------------------------------------------------
       //                     solve linearised equation
       // -----------------------------------------------------------------
-      //LinearSolve(cutterdiscret,idispcol);
+      //LinearSolve(cutterdiscret);
       break;
     default:
       dserror("Type of dynamics unknown!!");
@@ -326,8 +332,15 @@ void FLD::XFluidImplicitTimeInt::TimeLoop(
 } // FluidImplicitTimeInt::TimeLoop
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | setup the variables to do a new time step                 u.kue 06/07|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::PrepareTimeStep()
 {
   // -------------------------------------------------------------------
@@ -336,6 +349,9 @@ void FLD::XFluidImplicitTimeInt::PrepareTimeStep()
   step_ += 1;
   time_ += dta_;
 
+  // for BDF2, theta is set by the time-step sizes, 2/3 for const. dt
+  if (timealgo_==timeint_bdf2) theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
+
   if (params_.get<FLUID_TIMEINTTYPE>("time int algo") == timeint_stationary)
   {
     timealgo_ = timeint_stationary;
@@ -343,12 +359,6 @@ void FLD::XFluidImplicitTimeInt::PrepareTimeStep()
   }
   else
   {
-    // for bdf2 theta is set  by the timestepsizes, 2/3 for const. dt
-    if (params_.get<FLUID_TIMEINTTYPE>("time int algo")==timeint_bdf2)
-    {
-      theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
-    }
-    
     // do a backward Euler step for the first timestep
     if (step_==1)
     {
@@ -361,6 +371,31 @@ void FLD::XFluidImplicitTimeInt::PrepareTimeStep()
       theta_ = params_.get<double>("theta");
     }
   }
+
+  // -------------------------------------------------------------------
+  //                     do explicit predictor step
+  //
+  //                      +-                                      -+
+  //                      | /     dta \          dta  veln_-velnm_ |
+  // velnp_ = veln_ + dta | | 1 + --- | accn_ - ----- ------------ |
+  //                      | \     dtp /          dtp     dtp       |
+  //                      +-                                      -+
+  //
+  // -------------------------------------------------------------------
+  //
+  // We cannot have a predictor in case of monolithic FSI here. There needs to
+  // be a way to turn this off.
+  if (extrapolationpredictor_)
+  {
+    if (step_>1)
+    {
+      TIMEINT_THETA_BDF2::ExplicitPredictor(
+          state_.veln_, state_.velnm_, state_.accn_,
+          timealgo_, dta_, dtp_,
+          state_.velnp_);
+    }
+  }
+  
 }
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -377,29 +412,12 @@ void FLD::XFluidImplicitTimeInt::PrepareNonlinearSolve()
 //          hist_);
 
   // -------------------------------------------------------------------
-  //                     do explicit predictor step
-  // -------------------------------------------------------------------
-  //
-  // We cannot have a predictor in case of monolithic FSI here. There needs to
-  // be a way to turn this off.
-  if (extrapolationpredictor_)
-  {
-    if (step_>1)
-    {
-      TIMEINT_THETA_BDF2::ExplicitPredictor(
-          state_.veln_, state_.velnm_, state_.accn_,
-              timealgo_, dta_, dtp_,
-              state_.velnp_);
-    }
-  }
-
-  // -------------------------------------------------------------------
-  //         evaluate dirichlet and neumann boundary conditions
+  //         evaluate Dirichlet and Neumann boundary conditions
   // -------------------------------------------------------------------
   {
     ParameterList eleparams;
 
-    // other parameters needed by the elements
+    // total time required for Dirichlet conditions
     eleparams.set("total time",time_);
     eleparams.set("delta time",dta_);
     eleparams.set("thsl",theta_*dta_);
@@ -412,11 +430,21 @@ void FLD::XFluidImplicitTimeInt::PrepareNonlinearSolve()
     discret_->EvaluateDirichlet(eleparams,state_.velnp_,null,null,null,dbcmaps_);
     discret_->ClearState();
 
-    // evaluate Neumann conditions
-    eleparams.set("total time",time_);
-    eleparams.set("thsl",theta_*dta_);
+    // set all parameters and states required for Neumann conditions
+    if (timealgo_==timeint_afgenalpha)
+    {
+      eleparams.set("total time",time_-(1-alphaF_)*dta_);
+      eleparams.set("thsl",1.0);
+    }
+    else
+    {
+      eleparams.set("total time",time_);
+      eleparams.set("thsl",theta_*dta_);
+    }
 
     neumann_loads_->PutScalar(0.0);
+
+    // evaluate Neumann conditions
     discret_->EvaluateNeumann(eleparams,*neumann_loads_);
     discret_->ClearState();
   }
@@ -436,7 +464,7 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   // calling this function multiple times always results in the same solution vectors
 
   // compute Intersection
-  Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih = rcp(new XFEM::InterfaceHandleXFSI(discret_, cutterdiscret,step_));
+  Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih = rcp(new XFEM::InterfaceHandleXFSI(discret_, cutterdiscret,step_,params_.get<bool>("EXP_INTERSECTION")));
   ih->toGmsh(step_);
 
   // apply enrichments
@@ -571,19 +599,27 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | contains the nonlinear iteration loop                     gammi 04/07|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     Teuchos::RCP<DRT::Discretization> cutterdiscret
     )
 {
 
-  ComputeInterfaceAndSetDOFs(cutterdiscret);
-
-  PrepareNonlinearSolve();
-
+  // time measurement: nonlinear iteration
   TEUCHOS_FUNC_TIME_MONITOR("   + nonlin. iteration/lin. solve");
 
+  ComputeInterfaceAndSetDOFs(cutterdiscret);
+  
+  PrepareNonlinearSolve();
+  
   // ---------------------------------------------- nonlinear iteration
   // ------------------------------- stop nonlinear iteration when both
   //                                 increment-norms are below this bound
@@ -715,7 +751,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       else
         eleparams.set("action","calc_fluid_systemmat_and_residual");
 
-      // other parameters that might be needed by the elements
+      // set general element parameters
       //eleparams.set("total time",time_);
       //eleparams.set("thsl",theta_*dta_);
       eleparams.set("timealgo",timealgo_);
@@ -729,7 +765,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       // parameters for stabilization
       eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
 
-      // set vector values needed by elements
+      // set general vector values needed by elements
       discret_->ClearState();
       discret_->SetState("velnp",state_.velnp_);
       discret_->SetState("veln" ,state_.veln_);
@@ -927,6 +963,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       break;
     }
     oldincnorm = incnorm;
+    oldresnorm = resnorm;
     
     // warn if itemax is reached without convergence, but proceed to
     // next timestep...
@@ -998,7 +1035,9 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       dtsolve = ds_cputime()-tcpusolve;
     }
 
-    //------------------------------------------------ update (u,p) trial
+    // -------------------------------------------------------------------
+    // update velocity and pressure values by increments
+    // -------------------------------------------------------------------
     state_.velnp_->Update(1.0,*incvel_,1.0);
     
     //------------------- store nodal increment for element stress update
@@ -1009,13 +1048,24 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
   iforcecolnp->Scale(-1.0);
 
   cutterdiscret->SetState("iforcenp", iforcecolnp);
-
+  
+  if (timealgo_==timeint_stationary)
+  {
+    OutputToGmsh();
+  }
 } // FluidImplicitTimeInt::NonlinearSolve
 
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | build linear system matrix and rhs                        u.kue 11/07|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 {
   sysmat_->Zero();
@@ -1037,14 +1087,7 @@ void FLD::XFluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   // create the parameters for the discretization
   ParameterList eleparams;
 
-  // action for elements
-  if (timealgo_==timeint_stationary)
-    eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
-  else
-    eleparams.set("action","calc_fluid_systemmat_and_residual");
-
-  // other parameters that might be needed by the elements
-  eleparams.set("total time",time_);
+  // set general element parameters
   eleparams.set("thsl",theta_*dta_);
   eleparams.set("dt",dta_);
 
@@ -1054,7 +1097,7 @@ void FLD::XFluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   // parameters for stabilization
   eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
 
-  // set vector values needed by elements
+  // set general vector values needed by elements
   discret_->ClearState();
   discret_->SetState("velnp",state_.velnp_);
   discret_->SetState("veln" ,state_.veln_);
@@ -1078,8 +1121,47 @@ void FLD::XFluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | current solution becomes most recent solution of next timestep       |
+ |                                                                      |
+ | One-step-Theta: (step>1)                                             |
+ |                                                                      |
+ |  accn_  = (velnp_-veln_) / (Theta * dt) - (1/Theta -1) * accn_"(n+1) |
+ |                                                                      |
+ |  velnm_ =veln_                                                       |
+ |  veln_  =velnp_                                                      |
+ |                                                                      |
+ |  BDF2:           (step>1)                                            |
+ |                                                                      |
+ |               2*dt(n)+dt(n-1)              dt(n)+dt(n-1)             |
+ |  accn_   = --------------------- velnp_ - --------------- veln_      |
+ |            dt(n)*[dt(n)+dt(n-1)]           dt(n)*dt(n-1)             |
+ |                                                                      |
+ |                     dt(n)                                            |
+ |           + ----------------------- velnm_                           |
+ |             dt(n-1)*[dt(n)+dt(n-1)]                                  |
+ |                                                                      |
+ |  velnm_ =veln_                                                       |
+ |  veln_  =velnp_                                                      |
+ |                                                                      |
+ |  BDF2 and  One-step-Theta: (step==1)                                 |
+ |                                                                      |
+ |  The given formulas are only valid from the second timestep. In the  |
+ |  first step, the acceleration is calculated simply by                |
+ |                                                                      |
+ |  accn_  = (velnp_-veln_) / (dt)                                      |
+ |                                                                      |
+ |  For low-Mach-number flow, the same is done for density values,      |
+ |  which are located at the "pressure dofs" of "vede"-vectors.         |
+ |                                                                      |
+ |                                                           gammi 04/07|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::TimeUpdate()
 {
   // prev. acceleration becomes (n-1)-accel. of next time step
@@ -1093,13 +1175,13 @@ void FLD::XFluidImplicitTimeInt::TimeUpdate()
           timealgo_, step_, theta_, dta_, dtp_,
           state_.accn_);
 
-  // solution of this step becomes most recent solution of the last step
+  // velocities/pressures of this step become most recent 
+  // velocities/pressures of the last step
   state_.velnm_->Update(1.0,*state_.veln_ ,0.0);
   state_.veln_ ->Update(1.0,*state_.velnp_,0.0);
 
   return;
-}
-
+}// FluidImplicitTimeInt::TimeUpdate
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1139,14 +1221,21 @@ void FLD::XFluidImplicitTimeInt::StatisticsAndOutput()
   // -------------------------------------------------------------------
   //          dumping of turbulence statistics if required
   // -------------------------------------------------------------------
-//  statisticsmanager_->DoOutput(step_);
+//  statisticsmanager_->DoOutput(output_,step_);
 
   return;
 } // FluidImplicitTimeInt::StatisticsAndOutput
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | output of solution vector to binio                        gammi 04/07|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::Output()
 {
 
@@ -1728,8 +1817,15 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
   }
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |  set initial flow field for test cases                    gammi 04/07|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::SetInitialFlowField(
     Teuchos::RCP<DRT::Discretization> cutterdiscret,
     int whichinitialfield,
@@ -1963,8 +2059,15 @@ void FLD::XFluidImplicitTimeInt::SetInitialFlowField(
 } // end SetInitialFlowField
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | evaluate error for test cases with analytical solutions   gammi 04/07|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
 {
 
@@ -2030,8 +2133,15 @@ void FLD::XFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
   return;
 } // end EvaluateErrorComparedToAnalyticalSol
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | solve stationary fluid problem                              gjb 10/07|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::SolveStationaryProblem(
     Teuchos::RCP<DRT::Discretization> cutterdiscret
     )
@@ -2096,7 +2206,7 @@ void FLD::XFluidImplicitTimeInt::SolveStationaryProblem(
     // -------------------------------------------------------------------
     {
       ParameterList eleparams;
-      
+
       // other parameters needed by the elements
       eleparams.set("total time",time_);
       eleparams.set("delta time",origdta);
@@ -2109,7 +2219,7 @@ void FLD::XFluidImplicitTimeInt::SolveStationaryProblem(
       // velnp then also holds prescribed new dirichlet values
       discret_->EvaluateDirichlet(eleparams,state_.velnp_,null,null,null,dbcmaps_);
       discret_->ClearState();
-      
+
       // evaluate Neumann b.c.
       neumann_loads_->PutScalar(0.0);
       discret_->EvaluateNeumann(eleparams,*neumann_loads_);
@@ -2235,12 +2345,10 @@ Teuchos::RCP<Epetra_Vector> FLD::XFluidImplicitTimeInt::IntegrateInterfaceShape(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::XFluidImplicitTimeInt::UseBlockMatrix(
-    Teuchos::RCP<std::set<int> > condelements,
-    const LINALG::MultiMapExtractor& domainmaps,
-    const LINALG::MultiMapExtractor& rangemaps,
-    bool splitmatrix
-    )
+void FLD::XFluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> > condelements,
+                                               const LINALG::MultiMapExtractor& domainmaps,
+                                               const LINALG::MultiMapExtractor& rangemaps,
+                                               bool splitmatrix)
 {
   dserror("not tested");
   Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy> > mat;
