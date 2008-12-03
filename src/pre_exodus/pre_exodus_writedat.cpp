@@ -229,7 +229,7 @@ void EXODUS::WriteDatConditions(const vector<EXODUS::cond_def>& condefs,const EX
           // special case for locsys conditions: calculate normal
           vector<double> normtang = EXODUS::CalcNormalSurfLocsys(actcon.id,mymesh);
           dat << "E " << actcon.e_id << " - ";
-          for (unsigned int i = 0; i < normtang.size() ; ++i) dat <<  normtang[i] << " ";
+          for (unsigned int i = 0; i < normtang.size() ; ++i) dat <<  setprecision (10) << fixed << normtang[i] << " ";
           dat << endl;
         } else
           dat << "E " << actcon.e_id << " - " << actcon.desc << endl;
