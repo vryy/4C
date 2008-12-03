@@ -1,24 +1,21 @@
 /*!----------------------------------------------------------------------
-\file hyperpolyconvex_ogden.H
+\file lung_ogden.H
 \brief
 This file contains the routines required for isotropic nearly
-incompressible soft tissue with particular application to alveolar
-parenchyma.
+incompressible lung tissue
 
 The input line should read
 
-MAT 1 MAT_Struct_HyperPolyconvexOgden YOUNG 8600. NUE 0.499 C 1000. K1 1500. K2 8.5 DENS 0.001
+MAT 1 MAT_Struct_LungOgden C 1000. K1 1500. K2 8.5 KAPPA 1000 BETA -2.0 DENS 0.001
 
 <pre>
-Maintainer: Lena Wiechert
-            wiechert@lnm.mw.tum.de
-            http://www.lnm.mw.tum.delete/Members/wiechert
-            089 - 289-15303
+Maintainer: Lena Wiechert & Sophie Rausch
+            {wiechert,rausch}@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
 </pre>
-
 *----------------------------------------------------------------------*/
-#ifndef HYPERPOLYOGDEN_H_
-#define HYPERPOLYOGDEN_H_
+#ifndef LUNDOGDEN_H_
+#define LUNGOGDEN_H_
 #ifdef CCADISCRET
 
 #include "material.H"
@@ -28,16 +25,16 @@ Maintainer: Lena Wiechert
 
 namespace MAT
 {
-  class HyperPolyOgden : public Material
+  class LungOgden : public Material
   {
 
   public:
 
     // empty constructor
-    HyperPolyOgden();
+    LungOgden();
 
     // constructor with given material parameters
-    HyperPolyOgden(MATERIAL* matdata);
+    LungOgden(MATERIAL* matdata);
 
     //! @name Packing and Unpacking
 
@@ -47,7 +44,7 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return ParObject_HyperPolyOgden; }
+    virtual int UniqueParObjectId() const { return ParObject_LungOgden; }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -80,7 +77,7 @@ namespace MAT
     double Density();
 
     // material type
-    virtual MATERIAL_TYP MaterialType() const { return m_hyperpolyogden; }
+    virtual MATERIAL_TYP MaterialType() const { return m_lung_ogden; }
 
     // THE material routine
     void Evaluate(LINALG::Matrix<6,1>* glstrain,
@@ -95,4 +92,4 @@ namespace MAT
 }
 
 #endif  // CCADISCRET
-#endif  // HYPERPOLYOGDEN_H_
+#endif  // LUNGOGDEN_H_

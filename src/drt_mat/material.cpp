@@ -18,7 +18,6 @@ Maintainer: Lena Wiechert
 #include "newtonianfluid.H"
 #include "stvenantkirchhoff.H"
 #include "micromaterial.H"
-#include "hyperpolyconvex.H"
 #include "neohooke.H"
 #include "aaaneohooke.H"
 #include "convecdiffus.H"
@@ -30,7 +29,8 @@ Maintainer: Lena Wiechert
 #include "artwallremod.H"
 #include "carreauyasuda.H"
 #include "modpowerlaw.H"
-#include "hyperpolyconvex_ogden.H"
+#include "lung_penalty.H"
+#include "lung_ogden.H"
 #include "matlist.H"
 #include "biocell.H"
 #include "ion.H"
@@ -72,10 +72,10 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     return Teuchos::rcp(new StVenantKirchhoff(actmat));
   case m_struct_multiscale:
     return Teuchos::rcp(new MicroMaterial(actmat));
-  case m_hyper_polyconvex:
-    return Teuchos::rcp(new HyperPolyconvex(actmat));
-  case m_hyperpolyogden:
-    return Teuchos::rcp(new HyperPolyOgden(actmat));
+  case m_lung_penalty:
+    return Teuchos::rcp(new LungPenalty(actmat));
+  case m_lung_ogden:
+    return Teuchos::rcp(new LungOgden(actmat));
   case m_anisotropic_balzani:
     return Teuchos::rcp(new AnisotropicBalzani(actmat));
   case m_mooneyrivlin:

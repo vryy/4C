@@ -583,7 +583,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   // Inverse Analysis
   setStringToIntegralParameter<int>("INV_ANALYSIS","No",
-                               "determines the material parameter for the hyperpolyconvex material",
+                               "determines the material parameter for the lung material",
                                yesnotuple,yesnovalue,
                                &iap);
   // Measured displacement/load curve during the experiments  a1*(1-exp(-pow((a2*t), a3)))
@@ -1075,7 +1075,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       "The solution is filtered and by comparison of the filtered \nvelocity field with the real solution, the Smagorinsky constant is \nestimated in each step --- mind that this procedure includes \nan averaging in the xz plane, hence this implementation will only work \nfor a channel flow."),
     tuple<int>(0,1,2,3),
     &fdyn_turbu);
-  
+
   DoubleParameter("C_SMAGORINSKY",0.0,"Constant for the Smagorinsky model. Something between 0.1 to 0.24",&fdyn_turbu);
 
   setStringToIntegralParameter<int>(

@@ -485,42 +485,42 @@ while(strncmp(fractplace(),"------",6)!=0)
    frchk("MAT_DAMAGE_GE",&ierr);
    if (ierr==1)
    {
-      localmat.mattyp      = m_damage_ge;
-      localmat.m.damage_ge = new DAMAGE_GE();
-      frint("EQU"        ,&(localmat.m.damage_ge->equival)    ,&ierr);
-      frint("DAMT"       ,&(localmat.m.damage_ge->damtyp)     ,&ierr);
-      frdouble("CRAD"    ,&(localmat.m.damage_ge->crad)       ,&ierr);
-      frdouble("YOUNG"   ,&(localmat.m.damage_ge->youngs)     ,&ierr);
-      frdouble("NUE"     ,&(localmat.m.damage_ge->nue)        ,&ierr);
-      frdouble("KAPPA_0" ,&(localmat.m.damage_ge->kappa_0)    ,&ierr);
-      frdouble("KAPPA_M" ,&(localmat.m.damage_ge->kappa_m)    ,&ierr);
-      frdouble("ALPHA"   ,&(localmat.m.damage_ge->alpha)      ,&ierr);
-      frdouble("BETA"    ,&(localmat.m.damage_ge->beta)       ,&ierr);
-      frdouble("K_FAC"   ,&(localmat.m.damage_ge->k_fac)      ,&ierr);
+     localmat.mattyp      = m_damage_ge;
+     localmat.m.damage_ge = new DAMAGE_GE();
+     frint("EQU"        ,&(localmat.m.damage_ge->equival)    ,&ierr);
+     frint("DAMT"       ,&(localmat.m.damage_ge->damtyp)     ,&ierr);
+     frdouble("CRAD"    ,&(localmat.m.damage_ge->crad)       ,&ierr);
+     frdouble("YOUNG"   ,&(localmat.m.damage_ge->youngs)     ,&ierr);
+     frdouble("NUE"     ,&(localmat.m.damage_ge->nue)        ,&ierr);
+     frdouble("KAPPA_0" ,&(localmat.m.damage_ge->kappa_0)    ,&ierr);
+     frdouble("KAPPA_M" ,&(localmat.m.damage_ge->kappa_m)    ,&ierr);
+     frdouble("ALPHA"   ,&(localmat.m.damage_ge->alpha)      ,&ierr);
+     frdouble("BETA"    ,&(localmat.m.damage_ge->beta)       ,&ierr);
+     frdouble("K_FAC"   ,&(localmat.m.damage_ge->k_fac)      ,&ierr);
    }
-   frchk("MAT_HYPER_POLYCONVEX",&ierr);
+   frchk("MAT_Struct_LungPenalty",&ierr);
    if (ierr==1)
    {
-      localmat.mattyp      = m_hyper_polyconvex;
-      localmat.m.hyper_polyconvex = new HYPER_POLYCONVEX();
-      frdouble("C"       ,&(localmat.m.hyper_polyconvex->c)       ,&ierr);
-      frdouble("K1"      ,&(localmat.m.hyper_polyconvex->k1)      ,&ierr);
-      frdouble("K2"      ,&(localmat.m.hyper_polyconvex->k2)      ,&ierr);
-      frdouble("EPSILON" ,&(localmat.m.hyper_polyconvex->epsilon) ,&ierr);
-      frdouble("GAMMA"   ,&(localmat.m.hyper_polyconvex->gamma)   ,&ierr);
-      frdouble("DENS"    ,&(localmat.m.hyper_polyconvex->density) ,&ierr);
+     localmat.mattyp         = m_lung_penalty;
+     localmat.m.lung_penalty = new LUNG_PENALTY();
+     frdouble("C"       ,&(localmat.m.lung_penalty->c)       ,&ierr);
+     frdouble("K1"      ,&(localmat.m.lung_penalty->k1)      ,&ierr);
+     frdouble("K2"      ,&(localmat.m.lung_penalty->k2)      ,&ierr);
+     frdouble("EPSILON" ,&(localmat.m.lung_penalty->epsilon) ,&ierr);
+     frdouble("GAMMA"   ,&(localmat.m.lung_penalty->gamma)   ,&ierr);
+     frdouble("DENS"    ,&(localmat.m.lung_penalty->density) ,&ierr);
    }
-   frchk("MAT_Struct_HyperPolyconvexOgden",&ierr);
+   frchk("MAT_Struct_LungOgden",&ierr);
    if (ierr==1)
    {
-     localmat.mattyp      = m_hyperpolyogden;
-     localmat.m.hyper_poly_ogden = new HYPER_POLY_OGDEN();
-     frdouble("KAPPA"   ,&(localmat.m.hyper_poly_ogden->kappa)   ,&ierr);
-     frdouble("BETA"    ,&(localmat.m.hyper_poly_ogden->beta)    ,&ierr);
-     frdouble("C"       ,&(localmat.m.hyper_poly_ogden->c)       ,&ierr);
-     frdouble("K1"      ,&(localmat.m.hyper_poly_ogden->k1)      ,&ierr);
-     frdouble("K2"      ,&(localmat.m.hyper_poly_ogden->k2)      ,&ierr);
-     frdouble("DENS"    ,&(localmat.m.hyper_poly_ogden->density) ,&ierr);
+     localmat.mattyp      = m_lung_ogden;
+     localmat.m.lung_ogden = new LUNG_OGDEN();
+     frdouble("KAPPA"   ,&(localmat.m.lung_ogden->kappa)   ,&ierr);
+     frdouble("BETA"    ,&(localmat.m.lung_ogden->beta)    ,&ierr);
+     frdouble("C"       ,&(localmat.m.lung_ogden->c)       ,&ierr);
+     frdouble("K1"      ,&(localmat.m.lung_ogden->k1)      ,&ierr);
+     frdouble("K2"      ,&(localmat.m.lung_ogden->k2)      ,&ierr);
+     frdouble("DENS"    ,&(localmat.m.lung_ogden->density) ,&ierr);
    }
    // Anisotropic Polyconvex Material Law based on Balzani et. al.
    frchk("MAT_ANISOTROPIC_BALZANI",&ierr);

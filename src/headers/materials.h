@@ -50,8 +50,8 @@ typedef struct _MATERIAL
      struct _INTERF_THERM     *interf_therm; /* themodyn. based interface elasto-damage surface material*/
      struct _DAM_MP           *dam_mp;       /* isotropic damage material (mazars-pijadier-cabot)*/
      struct _DAMAGE_GE        *damage_ge;    /* isotropic gradient enhanced damage material */
-     struct _HYPER_POLYCONVEX *hyper_polyconvex; /* hyperelastic polyconvex energy strain function */
-     struct _HYPER_POLY_OGDEN *hyper_poly_ogden; /* slightly compressible hyperelastic polyconvex energy strain function */
+     struct _LUNG_PENALTY     *lung_penalty; /* lung tissue material model with penalty function for incompressibility constraint */
+     struct _LUNG_OGDEN       *lung_ogden;   /* lung tissue material model with compressible Ogden for volumetric part */
      struct _ITSKOV           *itskov;       /* Itskov material for isotropic case */
      struct _QUADRATIC_ANISO  *quadratic_aniso;       /* Anisotropic quadratic material */
      struct _ANISOTROPIC_BALZANI *anisotropic_balzani; /* anisotropic hyperelastic polyconvex material */
@@ -602,10 +602,10 @@ typedef struct _DAMAGE_GE
      DOUBLE                    k_fac;
 } DAMAGE_GE;
 /*----------------------------------------------------------------------*
- | hyperelastic polyconvex material based on                   br 06/06 |
- | Holzapfel, Balzani, Schroeder 2006 & Roehrnbauer 2006                |
+ | lung tissue material with penalty function ensuring                  |
+ | incompressibility                               br 06/06 sr/lw 12/08 |
  *----------------------------------------------------------------------*/
-typedef struct _HYPER_POLYCONVEX
+typedef struct _LUNG_PENALTY
 {
      DOUBLE                    c;	/* Ground substance */
      DOUBLE                    k1;	/* Fiber */
@@ -613,11 +613,12 @@ typedef struct _HYPER_POLYCONVEX
      DOUBLE                    epsilon; /* Penalty function */
      DOUBLE                    gamma;
      DOUBLE					   density;
-} HYPER_POLYCONVEX;
+} LUNG_PENALTY;
 /*----------------------------------------------------------------------*
- | slightly compressible hyperpolyconvex                     lw 4/08    |
+ | lung tissue material with compressible Ogden for volumetric part     |
+ |                                                          sr/lw 12/08 |
  *----------------------------------------------------------------------*/
-typedef struct _HYPER_POLY_OGDEN
+typedef struct _LUNG_OGDEN
 {
      DOUBLE                    kappa;         /* bulk modulus*/
      DOUBLE                    beta;          /* empirical coefficient for volumetric part*/
@@ -625,7 +626,7 @@ typedef struct _HYPER_POLY_OGDEN
      DOUBLE                    k1;	      /* fiber parameter */
      DOUBLE                    k2;            /* fiber parameter */
      DOUBLE                    density;       /* material specific weight */
-} HYPER_POLY_OGDEN;
+} LUNG_OGDEN;
 /*----------------------------------------------------------------------*
  | hyperelastic polyconvex material based on                   ah 10/07 |
  | Itskov                                                               |

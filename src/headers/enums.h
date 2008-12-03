@@ -280,8 +280,8 @@ typedef enum _MATERIAL_TYP
                        m_interf_therm, /* themodyn. based interface elasto-damage surface material*/
                        m_dam_mp,       /* isotropic damage model -> mazars/pijadier-cabot*/
                        m_damage_ge,    /* isotropic gradient enhanced damage model */
-                       m_hyper_polyconvex, /* hyperelastic polyconvex energy strain function following Holzapfel*/
-                       m_hyperpolyogden,   /* slightly compressible hyperelastic polyconvex energy strain function following Holzapfel*/
+                       m_lung_penalty, /* lung tissue material with penalty function for incompressibility constraint*/
+                       m_lung_ogden,   /* lung tissue material with compressible Ogden for volumetric part */
                        m_itskov,       /* hyperelastic polyconvex energy strain function following Itskov */
                        m_quadratic_aniso, /* hyperelastic polyconvex energy strain function following Itskov */
                        m_anisotropic_balzani,  /* anisotropic polyconvex material*/

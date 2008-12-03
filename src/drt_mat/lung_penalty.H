@@ -1,17 +1,15 @@
 /*!----------------------------------------------------------------------
-\file hyperpolyconvex.H
+\file lung_penalty.H
 \brief
 
 <pre>
-Maintainer: Moritz Frenzel
-            frenzel@lnm.mw.tum.de
+Maintainer: Lena Wiechert & Sophie Rausch
+            {wiechert,rausch}@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15240
 </pre>
-
 *----------------------------------------------------------------------*/
-#ifndef HYPERPOLYCONVEX_H_
-#define HYPERPOLYCONVEX_H_
+#ifndef LUNGPENALTY_H_
+#define LUNGPENALTY_H_
 #ifdef CCADISCRET
 
 #include "material.H"
@@ -23,15 +21,15 @@ namespace MAT
 {
 
   /// Wrapper for hyperelastic polyconvex anisotropic material
-  class HyperPolyconvex : public Material
+  class LungPenalty : public Material
   {
   public:
 
     /// construct empty material object
-    HyperPolyconvex();
+    LungPenalty();
 
     /// construct the material object given material parameters
-    explicit HyperPolyconvex(MATERIAL* matdata);
+    explicit LungPenalty(MATERIAL* matdata);
 
     //! @name Packing and Unpacking
 
@@ -41,7 +39,7 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return ParObject_HyperPolyconvex; }
+    virtual int UniqueParObjectId() const { return ParObject_LungPenalty; }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -72,7 +70,7 @@ namespace MAT
     //@}
 
     /// material type
-    virtual MATERIAL_TYP MaterialType() const { return m_hyper_polyconvex; }
+    virtual MATERIAL_TYP MaterialType() const { return m_lung_penalty; }
 
     // wrapper for less intensive error output information
     void Evaluate(const LINALG::Matrix<6,1>* glstrain,
@@ -84,26 +82,6 @@ namespace MAT
 
 
   private:
-    void hyper_ElastSymTensorMultiply(Epetra_SerialDenseMatrix& C,
-                                     const double ScalarAB,
-                                     const Epetra_SerialDenseMatrix& A,
-                                     const Epetra_SerialDenseMatrix& B,
-                                     const double ScalarThis);
-    void hyper_ElastSymTensorMultiplyAddSym(Epetra_SerialDenseMatrix& C,
-                                     const double ScalarAB,
-                                     const Epetra_SerialDenseMatrix& A,
-                                     const Epetra_SerialDenseMatrix& B,
-                                     const double ScalarThis);
-    void hyper_ElastSymTensor_o_Multiply(Epetra_SerialDenseMatrix& C,
-                                     const double ScalarAB,
-                                     const Epetra_SerialDenseMatrix& A,
-                                     const Epetra_SerialDenseMatrix& B,
-                                     const double ScalarThis);
-//    Epetra_SerialDenseMatrix tensorproduct(const Epetra_SerialDenseMatrix A,
-//                                           const Epetra_SerialDenseMatrix B,
-//                                           const double scalarA,
-//                                           const double scalarB);
-
 
     /// my material parameters
     MATERIAL* matdata_;
@@ -112,4 +90,4 @@ namespace MAT
 }
 
 #endif /*CCADISCRET*/
-#endif /*HYPERPOLYCONVEX_H_*/
+#endif /*LUNGPENALTY_H_*/

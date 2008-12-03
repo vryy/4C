@@ -22,7 +22,8 @@ Maintainer: Michael Gee
 
 #include "../drt_mat/micromaterial.H"
 #include "../drt_mat/stvenantkirchhoff.H"
-#include "../drt_mat/hyperpolyconvex.H"
+#include "../drt_mat/lung_penalty.H"
+#include "../drt_mat/lung_ogden.H"
 #include "../drt_mat/neohooke.H"
 #include "../drt_mat/anisotropic_balzani.H"
 #include "../drt_mat/aaaneohooke.H"
@@ -592,6 +593,24 @@ void DRT::ELEMENTS::Ptet::SelectMaterial(
       density = aaa->Density();
     }
     break;
+    case m_lung_ogden: /* lung tissue material with Ogden for volumetric part */
+    {
+      MAT::LungOgden* lungog = static_cast <MAT::LungOgden*>(mat.get());
+      lungog->Evaluate(&glstrain,&cmat,&stress);
+      density = lungog->Density();
+      return;
+      break;
+    }
+    case m_lung_penalty: /* lung tissue material with penalty function for incompressibility constraint */
+    {
+      MAT::LungPenalty* lungpen = static_cast <MAT::LungPenalty*>(mat.get());
+
+      lungpen->Evaluate(&glstrain,&cmat,&stress);
+
+      density = lungpen->Density();
+      return;
+      break;
+    }
     default:
       dserror("Illegal type %d of material for element Ptet tet4", mat->MaterialType());
     break;

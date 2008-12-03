@@ -448,17 +448,17 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("BETA"    ,&(mat[i].m.damage_ge->beta)       ,&ierr);
       frdouble("K_FAC"   ,&(mat[i].m.damage_ge->k_fac)      ,&ierr);
    }
-   frchk("MAT_HYPER_POLYCONVEX",&ierr);
+   frchk("MAT_Struct_LungPenalty",&ierr);
    if (ierr==1)
    {
-      mat[i].mattyp      = m_hyper_polyconvex;
-      mat[i].m.hyper_polyconvex = (HYPER_POLYCONVEX*)CCACALLOC(1,sizeof(HYPER_POLYCONVEX));
-      frdouble("C"       ,&(mat[i].m.hyper_polyconvex->c)       ,&ierr);
-      frdouble("K1"      ,&(mat[i].m.hyper_polyconvex->k1)     ,&ierr);
-      frdouble("K2"      ,&(mat[i].m.hyper_polyconvex->k2)        ,&ierr);
-      frdouble("EPSILON" ,&(mat[i].m.hyper_polyconvex->epsilon)    ,&ierr);
-      frdouble("GAMMA"   ,&(mat[i].m.hyper_polyconvex->gamma)    ,&ierr);
-      frdouble("DENS"    ,&(mat[i].m.hyper_polyconvex->density)     ,&ierr);
+      mat[i].mattyp      = m_lung_penalty;
+      mat[i].m.lung_penalty = (LUNG_PENALTY*)CCACALLOC(1,sizeof(LUNG_PENALTY));
+      frdouble("C"       ,&(mat[i].m.lung_penalty->c)       ,&ierr);
+      frdouble("K1"      ,&(mat[i].m.lung_penalty->k1)     ,&ierr);
+      frdouble("K2"      ,&(mat[i].m.lung_penalty->k2)        ,&ierr);
+      frdouble("EPSILON" ,&(mat[i].m.lung_penalty->epsilon)    ,&ierr);
+      frdouble("GAMMA"   ,&(mat[i].m.lung_penalty->gamma)    ,&ierr);
+      frdouble("DENS"    ,&(mat[i].m.lung_penalty->density)     ,&ierr);
    }
    frchk("MAT_ITSKOV",&ierr);
    if (ierr==1)

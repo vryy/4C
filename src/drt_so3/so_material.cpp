@@ -34,12 +34,12 @@ Maintainer: Moritz Frenzel
 
 #include "../drt_mat/micromaterial.H"
 #include "../drt_mat/stvenantkirchhoff.H"
-#include "../drt_mat/hyperpolyconvex.H"
 #include "../drt_mat/neohooke.H"
 #include "../drt_mat/anisotropic_balzani.H"
 #include "../drt_mat/aaaneohooke.H"
 #include "../drt_mat/mooneyrivlin.H"
-#include "../drt_mat/hyperpolyconvex_ogden.H"
+#include "../drt_mat/lung_penalty.H"
+#include "../drt_mat/lung_ogden.H"
 #include "../drt_mat/visconeohooke.H"
 #include "../drt_mat/viscoanisotropic.H"
 #include "../drt_mat/contchainnetw.H"
@@ -100,22 +100,21 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       return;
       break;
     }
-    case m_hyperpolyogden: /* slightly compressible hyperelastic polyconvex material for alveoli */
+    case m_lung_ogden: /* lung tissue material with Ogden for volumetric part */
     {
-      MAT::HyperPolyOgden* hpo = static_cast <MAT::HyperPolyOgden*>(mat.get());
-      hpo->Evaluate(glstrain,cmat,stress);
-      *density = hpo->Density();
+      MAT::LungOgden* lungog = static_cast <MAT::LungOgden*>(mat.get());
+      lungog->Evaluate(glstrain,cmat,stress);
+      *density = lungog->Density();
       return;
       break;
     }
-    case m_hyper_polyconvex: /* hyperelastic polyconvex material for alveoli based on penalty function */
+    case m_lung_penalty: /* lung tissue material with penalty function for incompressibility constraint */
     {
-      MAT::HyperPolyconvex* hypo = static_cast <MAT::HyperPolyconvex*>(mat.get());
+      MAT::LungPenalty* lungpen = static_cast <MAT::LungPenalty*>(mat.get());
 
-      //const double time = params.get("total time",-1.0);
-      hypo->Evaluate(glstrain,cmat,stress);
+      lungpen->Evaluate(glstrain,cmat,stress);
 
-      *density = hypo->Density();
+      *density = lungpen->Density();
       return;
       break;
     }
@@ -251,9 +250,11 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
         defgrd->MultiplyNN(R,U_enh);
       }
 
-      const double time = params.get("total time",-1.0);
+      const double time = params.get<double>("total time",-1.0);
+      const double dt = params.get<double>("delta time",-1.0);
 
       micro->Evaluate(defgrd, cmat, stress, density, gp, Id(), time);
+      //micro->Evaluate(defgrd, cmat, stress, density, gp, Id(), time, dt);
       return;
       break;
     }
@@ -324,13 +325,21 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       return;
       break;
     }
-    case m_hyper_polyconvex:
+    case m_lung_ogden: /* lung tissue material with Ogden for volumetric part */
     {
-      MAT::HyperPolyconvex* hypo = static_cast <MAT::HyperPolyconvex*>(mat.get());
+      MAT::LungOgden* lungog = static_cast <MAT::LungOgden*>(mat.get());
+      lungog->Evaluate(glstrain,cmat,stress);
+      *density = lungog->Density();
+      return;
+      break;
+    }
+    case m_lung_penalty: /* lung tissue material with penalty function for incompressibility constraint */
+    {
+      MAT::LungPenalty* lungpen = static_cast <MAT::LungPenalty*>(mat.get());
 
-      hypo->Evaluate(glstrain,cmat,stress);
+      lungpen->Evaluate(glstrain,cmat,stress);
 
-      *density = hypo->Density();
+      *density = lungpen->Density();
       return;
       break;
     }
@@ -405,13 +414,21 @@ void DRT::ELEMENTS::SoDisp::sodisp_mat_sel(
       return;
       break;
     }
-    case m_hyper_polyconvex:
+    case m_lung_ogden: /* lung tissue material with Ogden for volumetric part */
     {
-      MAT::HyperPolyconvex* hypo = static_cast <MAT::HyperPolyconvex*>(mat.get());
+      MAT::LungOgden* lungog = static_cast <MAT::LungOgden*>(mat.get());
+      lungog->Evaluate(glstrain,cmat,stress);
+      *density = lungog->Density();
+      return;
+      break;
+    }
+    case m_lung_penalty: /* lung tissue material with penalty function for incompressibility constraint */
+    {
+      MAT::LungPenalty* lungpen= static_cast <MAT::LungPenalty*>(mat.get());
 
-      hypo->Evaluate(glstrain,cmat,stress);
+      lungpen->Evaluate(glstrain,cmat,stress);
 
-      *density = hypo->Density();
+      *density = lungpen->Density();
       return;
       break;
     }

@@ -6,11 +6,11 @@
 -------------------------------------------------------------------------
                  BACI finite element library subsystem
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -22,11 +22,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 </pre>
@@ -102,8 +102,8 @@ extern "C"
 #include "../drt_mat/micromaterial.H"
 #include "../drt_mat/neohooke.H"
 #include "../drt_mat/aaaneohooke.H"
-#include "../drt_mat/hyperpolyconvex.H"
-#include "../drt_mat/hyperpolyconvex_ogden.H"
+#include "../drt_mat/lung_penalty.H"
+#include "../drt_mat/lung_ogden.H"
 #include "../drt_mat/anisotropic_balzani.H"
 #include "../drt_mat/mooneyrivlin.H"
 #include "../drt_mat/visconeohooke.H"
@@ -555,17 +555,17 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       stvenantk->Unpack(data);
       return stvenantk;
     }
-    case ParObject_HyperPolyconvex:
+    case ParObject_LungPenalty:
     {
-      MAT::HyperPolyconvex* hyperpoly = new MAT::HyperPolyconvex();
-      hyperpoly->Unpack(data);
-      return hyperpoly;
+      MAT::LungPenalty* lungpen = new MAT::LungPenalty();
+      lungpen->Unpack(data);
+      return lungpen;
     }
-    case ParObject_HyperPolyOgden:
+    case ParObject_LungOgden:
     {
-      MAT::HyperPolyOgden* hpo = new MAT::HyperPolyOgden();
-      hpo->Unpack(data);
-      return hpo;
+      MAT::LungOgden* lungog = new MAT::LungOgden();
+      lungog->Unpack(data);
+      return lungog;
     }
     case ParObject_AnisotropicBalzani:
     {
@@ -977,7 +977,7 @@ RefCountPtr<Epetra_CrsGraph> DRT::UTILS::PartGraphUsingMetis(
   // build.
 
 
-  // rowrecv is a fully redundant vector (size of number of nodes) 
+  // rowrecv is a fully redundant vector (size of number of nodes)
   vector<int> rowrecv(rowmap.NumGlobalElements());
 
   // after Allreduce rowrecv contains
@@ -985,8 +985,8 @@ RefCountPtr<Epetra_CrsGraph> DRT::UTILS::PartGraphUsingMetis(
   // *-+-+-    -+-+-*-+-+-    -+-+-*-           -*-+-+-    -+-+-*
   // * | | .... | | * | | .... | | * ..........  * | | .... | | *
   // *-+-+-    -+-+-*-+-+-    -+-+-*-           -*-+-+-    -+-+-*
-  //   gids stored     gids stored                  gids stored 
-  //  on first proc  on second proc                 on last proc 
+  //   gids stored     gids stored                  gids stored
+  //  on first proc  on second proc                 on last proc
   //
   // the ordering of the gids on the procs is arbitrary (as copied
   // from the map)
@@ -1025,7 +1025,7 @@ RefCountPtr<Epetra_CrsGraph> DRT::UTILS::PartGraphUsingMetis(
       idxmap[rowrecv[i]] = i;
     }
 
-    // xadj points from index i to the index of the 
+    // xadj points from index i to the index of the
     // first adjacent node
     vector<int> xadj(tmap.NumMyElements()+1);
 
@@ -1046,10 +1046,10 @@ RefCountPtr<Epetra_CrsGraph> DRT::UTILS::PartGraphUsingMetis(
     //    +-+-+-+-+-+-+-+-+-+-+                -+-+-+
     //    | | | | | | | | | | | ............... | | |      adjncy
     //    +-+-+-+-+-+-+-+-+-+-+                -+-+-+
-    //   
-    //    |       i's       |    (i+1)'s 
+    //
+    //    |       i's       |    (i+1)'s
     //    |    neighbours   |   neighbours           (numbered by equivalent indices)
-    //  
+    //
 
     vector<int> vwgt(tweights.MyLength());
     for (int i=0; i<tweights.MyLength(); ++i) vwgt[i] = (int)tweights[i];
@@ -1406,7 +1406,7 @@ void DRT::UTILS::SetupExtractor(const DRT::Discretization& dis,
                                     unsigned enddim,
                                     LINALG::MapExtractor& extractor)
 {
- 
+
   SetupExtractor(dis,condname,0,genprob.ndim,rcp(new Epetra_Map(*(dis.DofRowMap()))),extractor);
 }
 
@@ -1420,7 +1420,7 @@ void DRT::UTILS::SetupExtractor(const DRT::Discretization& dis,
                                     LINALG::MapExtractor& extractor)
 {
   std::set<int> conddofset;
-  
+
 
   std::vector<DRT::Condition*> conds;
   dis.GetCondition(condname, conds);
@@ -1456,16 +1456,16 @@ void DRT::UTILS::SetupExtractor(const DRT::Discretization& dis,
       }
     }
   }
-  
+
   std::set<int> otherdofset(fullmap->MyGlobalElements(),
                   fullmap->MyGlobalElements() + fullmap->NumMyElements());
-  
+
   std::set<int>::const_iterator conditer;
   for (conditer = conddofset.begin(); conditer != conddofset.end(); ++conditer)
   {
     otherdofset.erase(*conditer);
   }
-  
+
 
   // if there is no such condition, do not waste any more time
   int conddofsetsize = static_cast<int>(conddofset.size());

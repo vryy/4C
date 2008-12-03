@@ -68,7 +68,7 @@ using namespace std;
 #define ParObject_StVenantKirchhoff     (int)45
 #define ParObject_So_sh8                (int)46
 #define ParObject_Fluid3Line            (int)47
-#define ParObject_HyperPolyconvex       (int)48
+#define ParObject_LungPenalty           (int)48
 #define ParObject_NeoHooke              (int)49
 #define ParObject_ConvecDiffus          (int)50
 #define ParObject_So_weg6               (int)51
@@ -110,7 +110,7 @@ using namespace std;
 #define ParObject_StructuralSurface     (int)100
 #define ParObject_StructuralLine        (int)101
 #define ParObject_MooneyRivlin          (int)102
-#define ParObject_HyperPolyOgden        (int)103
+#define ParObject_LungOgden             (int)103
 #define ParObject_ViscoNeoHooke         (int)104
 #define ParObject_Condif3Register       (int)105
 #define ParObject_Condif3               (int)106

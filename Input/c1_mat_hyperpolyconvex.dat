@@ -808,7 +808,7 @@ NODE           27     COORD 1.000000000000000e+00     0.000000000000000e+00     
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------------ALE ELEMENTS
 ---------------------------------------------------------MATERIALS
-MAT       1 MAT_HYPER_POLYCONVEX  C 2.4 K1 3.92 K2 0.441 EPSILON 3. GAMMA 0.35 DENS 2.5E-1 // Shrink
+MAT       1 MAT_Struct_LungPenalty  C 2.4 K1 3.92 K2 0.441 EPSILON 3. GAMMA 0.35 DENS 2.5E-1 // Shrink
 ----------------------------------------------MULTILAYER MATERIALS
 ------------------------------------------------------CONTROL NODE
 NODE 6 DOF 3

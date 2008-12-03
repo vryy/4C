@@ -97,19 +97,19 @@ Inv_analysis::Inv_analysis(ParameterList& params,
   p_.Resize(3);
   p_o_.Resize(3);
   //Which material is used in the input file
-  if (dis.lRowElement(0)->Material()->MaterialType() == m_hyper_polyconvex)
+  if (dis.lRowElement(0)->Material()->MaterialType() == m_lung_penalty)
   {
-    p_(0) = sqrt(DRT::Problem::Instance()->Material(0).m.hyper_polyconvex->c);
-    p_(1) = sqrt(DRT::Problem::Instance()->Material(0).m.hyper_polyconvex->k1);
-    p_(2) = sqrt(DRT::Problem::Instance()->Material(0).m.hyper_polyconvex->k2);
+    p_(0) = sqrt(DRT::Problem::Instance()->Material(0).m.lung_penalty->c);
+    p_(1) = sqrt(DRT::Problem::Instance()->Material(0).m.lung_penalty->k1);
+    p_(2) = sqrt(DRT::Problem::Instance()->Material(0).m.lung_penalty->k2);
   }
-  else if (dis.lRowElement(0)->Material()->MaterialType() == m_hyperpolyogden)
+  else if (dis.lRowElement(0)->Material()->MaterialType() == m_lung_ogden)
   {
-    p_(0) = sqrt(DRT::Problem::Instance()->Material(0).m.hyper_poly_ogden->c);
-    p_(1) = sqrt(DRT::Problem::Instance()->Material(0).m.hyper_poly_ogden->k1);
-    p_(2) = sqrt(DRT::Problem::Instance()->Material(0).m.hyper_poly_ogden->k2);
+    p_(0) = sqrt(DRT::Problem::Instance()->Material(0).m.lung_ogden->c);
+    p_(1) = sqrt(DRT::Problem::Instance()->Material(0).m.lung_ogden->k1);
+    p_(2) = sqrt(DRT::Problem::Instance()->Material(0).m.lung_ogden->k2);
   }
-  else dserror("The inverse analysis is only implemented for the Hyperpolyconfex and the Hyperpolyconvex_Ogden material");
+  else dserror("The inverse analysis is only implemented for the LungOgden and the LungPenalty material");
 
   numb_run_=0;
 }
@@ -191,18 +191,18 @@ void Inv_analysis::evaluate()
 
   numb_run_++;
 
-  if (discret_.lRowElement(0)->Material()->MaterialType() == m_hyper_polyconvex)
+  if (discret_.lRowElement(0)->Material()->MaterialType() == m_lung_penalty)
   {
-    DRT::Problem::Instance()->Material(0).m.hyper_polyconvex->c      = (p_(0)*p_(0));
-    DRT::Problem::Instance()->Material(0).m.hyper_polyconvex->k1     = (p_(1)*p_(1));
-    DRT::Problem::Instance()->Material(0).m.hyper_polyconvex->k2     = (p_(2)*p_(2));
+    DRT::Problem::Instance()->Material(0).m.lung_penalty->c      = (p_(0)*p_(0));
+    DRT::Problem::Instance()->Material(0).m.lung_penalty->k1     = (p_(1)*p_(1));
+    DRT::Problem::Instance()->Material(0).m.lung_penalty->k2     = (p_(2)*p_(2));
   }
-  else if (discret_.lRowElement(0)->Material()->MaterialType() == m_hyperpolyogden)
+  else if (discret_.lRowElement(0)->Material()->MaterialType() == m_lung_ogden)
   {
-    DRT::Problem::Instance()->Material(0).m.hyper_poly_ogden->c      = (p_(0)*p_(0));
-    DRT::Problem::Instance()->Material(0).m.hyper_poly_ogden->k1     = (p_(1)*p_(1));
-    DRT::Problem::Instance()->Material(0).m.hyper_poly_ogden->k2     = (p_(2)*p_(2));
-    //DRT::Problem::Instance()->Material(0).m.hyper_poly_ogden->youngs = (p_(0)*p_(0));
+    DRT::Problem::Instance()->Material(0).m.lung_ogden->c      = (p_(0)*p_(0));
+    DRT::Problem::Instance()->Material(0).m.lung_ogden->k1     = (p_(1)*p_(1));
+    DRT::Problem::Instance()->Material(0).m.lung_ogden->k2     = (p_(2)*p_(2));
+    //DRT::Problem::Instance()->Material(0).m.lung_ogden->youngs = (p_(0)*p_(0));
   }
   return;
 }

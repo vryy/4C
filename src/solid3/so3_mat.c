@@ -341,9 +341,9 @@ void so3_mat_density(MATERIAL *mat,
     case m_stvenpor:
       *density = mat->m.stvenpor->density;
       break;
-    /* hyperelastic polyconvex material */
-    case m_hyper_polyconvex:
-      *density = mat ->m.hyper_polyconvex->density;
+    /* lung tissue material */
+  case m_lung_penalty:
+      *density = mat ->m.lung_penalty->density;
       break;
     /* Robinson's visco-plastic material */
     case m_vp_robinson:

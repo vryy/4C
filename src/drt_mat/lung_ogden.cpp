@@ -1,32 +1,29 @@
 /*!----------------------------------------------------------------------
-\file hyperpolyconvex_ogden.cpp
+\file lung_ogden.cpp
 \brief
 This file contains the routines required for isotropic nearly
-incompressible soft tissue with particular application to alveolar
-parenchyma.
+incompressible lung tissue
 
 The input line should read
 
-MAT 1 MAT_Struct_HyperPolyconvexOgden YOUNG 8600. NUE 0.499 C 1000. K1 1500. K2 8.5 DENS 0.001
+MAT 1 MAT_Struct_LungOgden C 1000. K1 1500. K2 8.5 KAPPA 1000 BETA -2.0 DENS 0.001
 
 <pre>
-Maintainer: Lena Wiechert
-            wiechert@lnm.mw.tum.de
-            http://www.lnm.mw.tum.delete/Members/wiechert
-            089 - 289-15303
+Maintainer: Lena Wiechert & Sophie Rausch
+            {wiechert,rausch}@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
 </pre>
-
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#include "hyperpolyconvex_ogden.H"
+#include "lung_ogden.H"
 
 extern struct _MATERIAL *mat;
 
 /*----------------------------------------------------------------------*
  |  Constructor                                      (public)  lw 04/08 |
  *----------------------------------------------------------------------*/
-MAT::HyperPolyOgden::HyperPolyOgden()
+MAT::LungOgden::LungOgden()
   : matdata_(NULL)
 {
 }
@@ -35,7 +32,7 @@ MAT::HyperPolyOgden::HyperPolyOgden()
 /*----------------------------------------------------------------------*
  |  Copy-Constructor                                (public)   lw 04/08 |
  *----------------------------------------------------------------------*/
-MAT::HyperPolyOgden::HyperPolyOgden(MATERIAL* matdata)
+MAT::LungOgden::LungOgden(MATERIAL* matdata)
   : matdata_(matdata)
 {
 }
@@ -43,7 +40,7 @@ MAT::HyperPolyOgden::HyperPolyOgden(MATERIAL* matdata)
 /*----------------------------------------------------------------------*
  |  Pack                                             (public)  lw 04/08 |
  *----------------------------------------------------------------------*/
-void MAT::HyperPolyOgden::Pack(vector<char>& data) const
+void MAT::LungOgden::Pack(vector<char>& data) const
 {
   data.resize(0);
 
@@ -58,7 +55,7 @@ void MAT::HyperPolyOgden::Pack(vector<char>& data) const
 /*----------------------------------------------------------------------*
  |  Unpack                                           (public)  lw 04/08 |
  *----------------------------------------------------------------------*/
-void MAT::HyperPolyOgden::Unpack(const vector<char>& data)
+void MAT::LungOgden::Unpack(const vector<char>& data)
 {
   int position = 0;
   // extract type
@@ -78,9 +75,9 @@ void MAT::HyperPolyOgden::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Return density                                   (public)  lw 04/08 |
  *----------------------------------------------------------------------*/
-double MAT::HyperPolyOgden::Density()
+double MAT::LungOgden::Density()
 {
-  return matdata_->m.hyper_poly_ogden->density;  // density, returned to evaluate mass matrix
+  return matdata_->m.lung_ogden->density;  // density, returned to evaluate mass matrix
 }
 
 /*----------------------------------------------------------------------*
@@ -100,7 +97,7 @@ double MAT::HyperPolyOgden::Density()
  (based on Holzapfel [1], Ogden [2] and Balzani, Schroeder, Neff [3])
 
  Note: the anisotropic invariant K found in [3] is replaced with
-       1/3*inv here since a fiber dispersion parameter of 1/3 (isotropic
+       1/3*inv*iiinv^(-1/3) here since a fiber dispersion parameter of 1/3 (isotropic
        case) is assumed.
 
 
@@ -135,18 +132,19 @@ double MAT::HyperPolyOgden::Density()
 
 
 */
-void MAT::HyperPolyOgden::Evaluate(LINALG::Matrix<6,1>* glstrain,
-                                   LINALG::Matrix<6,6>* cmat,
-                                   LINALG::Matrix<6,1>* stress)
+
+void MAT::LungOgden::Evaluate(LINALG::Matrix<6,1>* glstrain,
+                              LINALG::Matrix<6,6>* cmat,
+                              LINALG::Matrix<6,1>* stress)
 {
   // material parameters for isochoric part
-  double c  = matdata_->m.hyper_poly_ogden->c;             // parameter for ground substance
-  double k1 = matdata_->m.hyper_poly_ogden->k1;            // parameter for fiber potential
-  double k2 = matdata_->m.hyper_poly_ogden->k2;            // parameter for fiber potential
+  double c  = matdata_->m.lung_ogden->c;             // parameter for ground substance
+  double k1 = matdata_->m.lung_ogden->k1;            // parameter for fiber potential
+  double k2 = matdata_->m.lung_ogden->k2;            // parameter for fiber potential
 
   // material parameters for volumetric part
-  double komp = matdata_->m.hyper_poly_ogden->kappa;       // bulk modulus-like parameter
-  double beta = matdata_->m.hyper_poly_ogden->beta;        // empirical coefficient
+  double komp = matdata_->m.lung_ogden->kappa;       // bulk modulus-like parameter
+  double beta = matdata_->m.lung_ogden->beta;        // empirical coefficient
 
   //--------------------------------------------------------------------------------------
   // build identity tensor I
@@ -168,7 +166,7 @@ void MAT::HyperPolyOgden::Evaluate(LINALG::Matrix<6,1>* glstrain,
 
   double detf;
   if (iiinv < 0.0)
-    dserror("fatal failure in HyperPolyOgden material");
+    dserror("fatal failure in LungOgden material");
   else
     detf = sqrt(iiinv);                   // determinant of deformation gradient
 
