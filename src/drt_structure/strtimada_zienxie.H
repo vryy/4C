@@ -89,37 +89,37 @@ namespace STR
     //@{
 
     //! Provide the name
-    enum INPAR::STR::TimAdaKind MethodName()
+    enum INPAR::STR::TimAdaKind MethodName() const
     {
       return INPAR::STR::timada_kind_zienxie;
     }
 
     //! Provide local order of accuracy
-    int MethodOrderOfAccuracyDis()
+    int MethodOrderOfAccuracyDis() const
     {
       return 3;
     }
 
     //! Provide local order of accuracy
-    int MethodOrderOfAccuracyVel()
+    int MethodOrderOfAccuracyVel() const
     {
       return 2;
     }
 
     //! Return linear error coefficient of displacements
-    double MethodLinErrCoeffDis()
+    double MethodLinErrCoeffDis() const
     {
       return -1.0/24.0;
     }
 
     //! Return linear error coefficient of velocities
-    double MethodLinErrCoeffVel()
+    double MethodLinErrCoeffVel() const
     {
       return -1.0/12.0;
     }
 
     //! Provide type of algorithm
-    enum AdaEnum MethodAdaptDis()
+    enum AdaEnum MethodAdaptDis() const
     {
       return ada_upward;
     }

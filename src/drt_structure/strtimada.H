@@ -216,30 +216,30 @@ namespace STR
     //@{
 
     //! Provide the name
-    virtual enum INPAR::STR::TimAdaKind MethodName() = 0;
+    virtual enum INPAR::STR::TimAdaKind MethodName() const = 0;
 
     //! Provide the name as string
-    std::string MethodTitle()
+    std::string MethodTitle() const
     {
       return MapKindEnumToString(MethodName());
     }
 
     //! Provide local order of accuracy based upon linear test equation 
     //! for displacements
-    virtual int MethodOrderOfAccuracyDis() = 0;
+    virtual int MethodOrderOfAccuracyDis() const = 0;
 
     //! Provide local order of accuracy based upon linear test equation
     //! for velocities
-    virtual int MethodOrderOfAccuracyVel() = 0;
+    virtual int MethodOrderOfAccuracyVel() const = 0;
 
     //! Return linear error coefficient of displacements
-    virtual double MethodLinErrCoeffDis() = 0;
+    virtual double MethodLinErrCoeffDis() const = 0;
 
     //! Return linear error coefficient of velocities
-    virtual double MethodLinErrCoeffVel() = 0;
+    virtual double MethodLinErrCoeffVel() const = 0;
 
     //! Provide type of algorithm
-    virtual enum AdaEnum MethodAdaptDis() = 0;
+    virtual enum AdaEnum MethodAdaptDis() const = 0;
 
     //@}
 

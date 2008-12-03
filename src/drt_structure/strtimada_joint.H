@@ -64,7 +64,7 @@ namespace STR
     enum INPAR::STR::TimAdaKind MapNameTimIntToTimAda
     (
       const enum INPAR::STR::DynamicType term  //!< input enum term
-    )
+    ) const
     {
       switch (term)
       {
@@ -179,37 +179,37 @@ namespace STR
     //@{
 
     //! Provide the name
-    enum INPAR::STR::TimAdaKind MethodName()
+    enum INPAR::STR::TimAdaKind MethodName() const
     {
       return MapNameTimIntToTimAda(sti_->MethodName());
     }
 
     //! Provide local order of accuracy of displacements
-    int MethodOrderOfAccuracyDis()
+    int MethodOrderOfAccuracyDis() const
     {
       return sta_->MethodOrderOfAccuracyDis();
     }
 
     //! Provide local order of accuracy of velocities
-    int MethodOrderOfAccuracyVel()
+    int MethodOrderOfAccuracyVel() const
     {
       return sta_->MethodOrderOfAccuracyVel();
     }
 
     //! Return linear error coefficient of displacements
-    double MethodLinErrCoeffDis()
+    double MethodLinErrCoeffDis() const
     {
       return sta_->MethodLinErrCoeffDis();
     }
 
     //! Return linear error coefficient of velocities
-    double MethodLinErrCoeffVel()
+    double MethodLinErrCoeffVel() const
     {
       return sta_->MethodLinErrCoeffVel();
     }
 
     //! Provide type of algorithm
-    enum AdaEnum MethodAdaptDis()
+    enum AdaEnum MethodAdaptDis() const
     {
       return ada_;
     }
