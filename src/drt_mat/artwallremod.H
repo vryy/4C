@@ -85,7 +85,7 @@ namespace MAT
             Teuchos::ParameterList& params,
             LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> * cmat,
             LINALG::Matrix<NUM_STRESS_3D,1> * stress,
-            const int eleid=0);
+            const LINALG::Matrix<3,3>& defgrd);
 
 
     /// return density
@@ -136,7 +136,7 @@ namespace MAT
       \param gp (in) : current gp
       \param time (int) : current time
     */
-    void Remodel(const int gp, const double time);
+    void Remodel(const int gp, const double time, const LINALG::Matrix<3,3>& defgrd);
 
     /// evaluate fiber directions from locsys and alignment angle
     void EvaluateFiberVecs(const int gp, const double gamma, const Epetra_SerialDenseMatrix& locsys);

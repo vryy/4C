@@ -307,7 +307,7 @@ void MAT::ArtWallRemod::Evaluate(
         Teuchos::ParameterList& params,
         LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> * cmat,
         LINALG::Matrix<NUM_STRESS_3D,1> * stress,
-        const int eleid)
+        const LINALG::Matrix<3,3>& defgrd)
 
 {
   const double mue = matdata_->m.artwallremod->mue;
@@ -394,7 +394,7 @@ void MAT::ArtWallRemod::Evaluate(
   // decide whether its time to remodel
   const double time = params.get("total time",-1.0);
   if ((remtime_->at(gp) != -1.) && (time > remtime_->at(gp))){
-    Remodel(gp,time);
+    Remodel(gp,time,defgrd);
   }
 
   // structural tensors in voigt notation
@@ -465,23 +465,23 @@ void MAT::ArtWallRemod::Evaluate(
     stresses_->at(gp)(1,2) = (*stress)(4); stresses_->at(gp)(2,1) = (*stress)(4);
     stresses_->at(gp)(0,2) = (*stress)(5); stresses_->at(gp)(2,0) = (*stress)(5);
 
-//    // store Cauchy stresses and use those for remodeling driver
-//    double detF = defgrd(0,0)*defgrd(1,1)*defgrd(2,2) +
-//                  defgrd(0,1)*defgrd(1,2)*defgrd(2,0) +
-//                  defgrd(0,2)*defgrd(1,0)*defgrd(2,1) -
-//                  defgrd(0,2)*defgrd(1,1)*defgrd(2,0) -
-//                  defgrd(0,0)*defgrd(1,2)*defgrd(2,1) -
-//                  defgrd(0,1)*defgrd(1,0)*defgrd(2,2);
-//    LINALG::SerialDenseMatrix pk1(3,3);
-//    pk1.Multiply('N','N',1.0,defgrd,stresses_->at(gp),0.);
-//    stresses_->at(gp).Multiply('N','T',1.0/detF,pk1,defgrd,0.);
-
+    // store Cauchy stresses and use those for remodeling driver
+    double detF = defgrd(0,0)*defgrd(1,1)*defgrd(2,2) +
+                  defgrd(0,1)*defgrd(1,2)*defgrd(2,0) +
+                  defgrd(0,2)*defgrd(1,0)*defgrd(2,1) -
+                  defgrd(0,2)*defgrd(1,1)*defgrd(2,0) -
+                  defgrd(0,0)*defgrd(1,2)*defgrd(2,1) -
+                  defgrd(0,1)*defgrd(1,0)*defgrd(2,2);
+    LINALG::Matrix<3,3> pk1(true);
+    //pk1.Multiply('N','N',1.0,defgrd,stresses_->at(gp),0.);
+    LINALG::DENSEFUNCTIONS::multiply<3,3,3>(pk1.A(),defgrd.A(),stresses_->at(gp).A());
+    LINALG::DENSEFUNCTIONS::multiplyNT<3,3,3>(stresses_->at(gp).A(),1./detF,pk1.A(),defgrd.A());
   }
 
   return;
 }
 
-void MAT::ArtWallRemod::Remodel(const int gp, const double time)
+void MAT::ArtWallRemod::Remodel(const int gp, const double time, const LINALG::Matrix<3,3>& defgrd)
 {
   // evaluate eigenproblem based on stress of previous step
   Epetra_SerialDenseVector lambda(3);
@@ -504,6 +504,20 @@ void MAT::ArtWallRemod::Remodel(const int gp, const double time)
 //  }
 
   EvaluateFiberVecs(gp,newgamma,stresses_->at(gp)); // remember! stresses holds eigenvectors
+  
+  // pull-back of new fiber vecs
+  vector<double> a1_0(3);
+  vector<double> a2_0(3);
+  for (int i = 0; i < 3; ++i) {
+    a1_0[i] = defgrd(i,0)*a1_->at(gp)[0] + defgrd(i,1)*a1_->at(gp)[1] + defgrd(i,2)*a1_->at(gp)[2];
+    a2_0[i] = defgrd(i,0)*a2_->at(gp)[0] + defgrd(i,1)*a2_->at(gp)[1] + defgrd(i,2)*a2_->at(gp)[2];
+  }
+  double a1_0norm = sqrt(a1_0[0]*a1_0[0] + a1_0[1]*a1_0[1] + a1_0[2]*a1_0[2]);
+  double a2_0norm = sqrt(a2_0[0]*a2_0[0] + a2_0[1]*a2_0[1] + a2_0[2]*a2_0[2]);
+  for (int i = 0; i < 3; ++i) {
+    a1_->at(gp)[i] = a1_0[i]/a1_0norm;
+    a2_->at(gp)[i] = a2_0[i]/a2_0norm;
+  }
 
   // update
   gamma_->at(gp) = newgamma;
@@ -549,15 +563,15 @@ void MAT::ArtWallRemodOutputToTxt(const Teuchos::RCP<DRT::Discretization> dis,
     ofstream outfile;
     outfile.open(filename.str().c_str(),ios_base::app);
     int nele = dis->NumMyColElements();
-    int endele = nele;
-    for (int iele=0; iele<endele; ++iele) //++iele) iele+=10)
+    int endele = 100; //nele;
+    for (int iele=0; iele<endele; iele+=10) //++iele) iele+=10)
     {
       const DRT::Element* actele = dis->lColElement(iele);
       RefCountPtr<MAT::Material> mat = actele->Material();
       if (mat->MaterialType() != m_artwallremod) return;
       MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(mat.get());
       int ngp = remo->Geta1()->size();
-      int endgp = ngp; //ngp;
+      int endgp = 1; //ngp;
       for (int gp = 0; gp < endgp; ++gp){
         double gamma = remo->Getgammas()->at(gp);
         double remtime = remo->Getremtimes()->at(gp);
