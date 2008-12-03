@@ -518,9 +518,9 @@ void STR::TimIntGenAlpha::ReadRestartForce()
   if (midavg_ == INPAR::STR::midavg_trlike)
   {
     fint_->PutScalar(0.0);
-    ApplyForceStiffInternal((*time_)[0], (*dt_)[0],
-                            (*dis_)(0), zeros_,  (*vel_)(0), 
-                            fint_, stiff_);
+    // Set dt to 0, since we do not propagate in time.
+    // No time integration on material level
+    ApplyForceInternal((*time_)[0], 0.0, (*dis_)(0), zeros_, (*vel_)(0), fint_);
     // for TR scale constraint matrix with the same value fintn_ is scaled with
     ParameterList pcon;
     pcon.set("scaleConstrMat", (1.0-alphaf_));
