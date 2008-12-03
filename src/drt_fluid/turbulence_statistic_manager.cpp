@@ -114,6 +114,13 @@ namespace FLD
       // the flow under consideration
       statistics_sqc_    =rcp(new TurbulenceStatisticsSqc(discret_,params_));
     }
+    else if(fluid.special_flow_=="square_cylinder_nurbs")
+    {
+      flow_=square_cylinder_nurbs;
+
+      // do the time integration independent setup
+      Setup();
+    }
     else
     {
       flow_=no_special_flow;
@@ -230,6 +237,13 @@ namespace FLD
       // the flow under consideration
       statistics_sqc_    =rcp(new TurbulenceStatisticsSqc(discret_,params_));
     }
+    else if(fluid.special_flow_=="square_cylinder_nurbs")
+    {
+      flow_=square_cylinder_nurbs;
+
+      // do the time integration independent setup
+      Setup();
+    }
     else
     {
       flow_=no_special_flow;
@@ -308,18 +322,19 @@ namespace FLD
 
     if(discret_->Comm().MyPID()==0)
     {
-      string homdir
-        =
-        modelparams->get<string>("HOMDIR","not_specified");
-
-      if(homdir!="xy" && homdir!="xz" && homdir!="yz")
-      {
-        dserror("need two homogeneous directions to do averaging in plane channel flows\n");
-      }
 
       if (flow_ == channel_flow_of_height_2 or
           flow_ == loma_channel_flow_of_height_2)
       {
+        string homdir
+          =
+          modelparams->get<string>("HOMDIR","not_specified");
+        
+        if(homdir!="xy" && homdir!="xz" && homdir!="yz")
+        {
+          dserror("need two homogeneous directions to do averaging in plane channel flows\n");
+        }
+
         cout << "Additional output          : " ;
         cout << "Turbulence statistics are evaluated ";
         cout << "for a turbulent channel flow.\n";
@@ -683,7 +698,7 @@ namespace FLD
     if(discret_->Comm().MyPID()==0)
     {
       cout << "XXXXXXXXXXXXXXXXXXXXX              ";
-      cout << "Read gereal mean values            ";
+      cout << "Read general mean values           ";
       cout << "XXXXXXXXXXXXXXXXXXXXX";
       cout << "\n\n";
     }

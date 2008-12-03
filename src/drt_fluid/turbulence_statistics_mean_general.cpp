@@ -496,7 +496,6 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
   // divide vectors by number of layers along lines
   for(unsigned i=0;i<x.size();++i)
   {
-    cout << "proc " << myrank << " count[" << i << "]: " << count[i]<< "\n";
     avg_u[i]/=count[i];
     avg_v[i]/=count[i];
     avg_w[i]/=count[i];
