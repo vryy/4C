@@ -1659,19 +1659,22 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
   {
     // compute accelerations and density time derivatives
     TIMEINT_THETA_BDF2::CalculateAcceleration(
-        vedenp_, veden_, vedenm_, accnp_,
-        timealgo_, step_, theta_, dta_, dtp_,
-        accn_);
+        vedenp_, veden_, vedenm_, accn_,
+        timealgo_, step_, theta_, gamma_, dta_, dtp_,
+        accnp_);
   }
   else
   {
     // compute accelerations
     TIMEINT_THETA_BDF2::CalculateAcceleration(
-        velnp_, veln_, velnm_, accnp_,
-        timealgo_, step_, theta_, dta_, dtp_,
-        accn_);
+        velnp_, veln_, velnm_, accn_,
+        timealgo_, step_, theta_, gamma_, dta_, dtp_,
+        accnp_);
   }
 
+  // update old acceleration
+  accn_->Update(1.0,*accnp_,0.0);
+  
   // velocities/pressures of this step become most recent 
   // velocities/pressures of the last step
   velnm_->Update(1.0,*veln_ ,0.0);

@@ -124,13 +124,14 @@ void FLD::TIMEINT_THETA_BDF2::CalculateAcceleration(
     const Teuchos::RCP<Epetra_Vector>&   velnp,
     const Teuchos::RCP<Epetra_Vector>&   veln,
     const Teuchos::RCP<Epetra_Vector>&   velnm,
-    const Teuchos::RCP<Epetra_Vector>&   accnp,
+    const Teuchos::RCP<Epetra_Vector>&   accn,
     const FLUID_TIMEINTTYPE              timealgo,
     const int                            step,
     const double                         theta,
+    const double                         gamma,
     const double                         dta,
     const double                         dtp,
-    Teuchos::RCP<Epetra_Vector>&         accn
+    Teuchos::RCP<Epetra_Vector>&         accnp
 )
 {
   if (step == 1)
@@ -139,19 +140,20 @@ void FLD::TIMEINT_THETA_BDF2::CalculateAcceleration(
     {
       case timeint_stationary: /* no accelerations for stationary problems*/
       {
-        accn->PutScalar(0.0);
+        accnp->PutScalar(0.0);
         break;
       }
       case timeint_one_step_theta: /* One step Theta time integration */
       case timeint_bdf2:    /* 2nd order backward differencing BDF2 */
       {
         // do just a linear interpolation within the first timestep
-        accn->Update( 1.0/dta,*velnp,-1.0/dta,*veln, 0.0);
+        accnp->Update( 1.0/dta,*velnp,-1.0/dta,*veln, 0.0);
         break;
       }
       case timeint_afgenalpha: /* Af-generalized-alpha time integration */
       {
-        accn->Update(1.0,*accnp,0.0); //just update acceleration
+        accnp->Update(1.0,*velnp,-1.0,*veln,0.0);
+        accnp->Update((gamma-1.0)/gamma,*accn,1.0/(gamma*dta));
         break;
       }
       default:
@@ -189,7 +191,7 @@ void FLD::TIMEINT_THETA_BDF2::CalculateAcceleration(
     {
       case timeint_stationary: /* no accelerations for stationary problems*/
       {
-        accn->PutScalar(0.0);
+        accnp->PutScalar(0.0);
         break;
       }
       case timeint_one_step_theta: /* One-step-theta time integration */
@@ -197,12 +199,22 @@ void FLD::TIMEINT_THETA_BDF2::CalculateAcceleration(
         const double fact1 = 1.0/(theta*dta);
         const double fact2 =-1.0/theta +1.0;   /* = -1/Theta + 1 */
 
-        accn->Update(fact1,*velnp,-fact1,*veln ,fact2);
+        accnp->Update( fact1,*velnp,0.0);
+        accnp->Update(-fact1,*veln ,1.0);
+        accnp->Update( fact2,*accn,1.0);
         break;
       }
       case timeint_afgenalpha: /* Af-generalized-alpha time integration */
       {
-        accn->Update(1.0,*accnp,0.0); //just update acceleration
+        //
+        //                                  n+1     n
+        //                               vel   - vel
+        //       n+1      n  gamma-1.0      (0)
+        //    acc    = acc * --------- + ------------
+        //       (0)           gamma      gamma * dt
+        //
+        accnp->Update(1.0,*velnp,-1.0,*veln,0.0);
+        accnp->Update((gamma-1.0)/gamma,*accn,1.0/(gamma*dta));
         break;
       }
       case timeint_bdf2:    /* 2nd order backward differencing BDF2 */
@@ -210,8 +222,8 @@ void FLD::TIMEINT_THETA_BDF2::CalculateAcceleration(
         if (dta*dtp < EPS15) dserror("Zero time step size!!!!!");
         const double sum = dta + dtp;
 
-        accn->Update((2.0*dta+dtp)/(dta*sum),*velnp, -sum/(dta*dtp),*veln ,0.0);
-        accn->Update(dta/(dtp*sum),*velnm,1.0);
+        accnp->Update((2.0*dta+dtp)/(dta*sum),*velnp, -sum/(dta*dtp),*veln ,0.0);
+        accnp->Update(dta/(dtp*sum),*velnm,1.0);
         break;
       }
       default:

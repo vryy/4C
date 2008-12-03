@@ -68,6 +68,11 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   timealgo_ = params_.get<FLUID_TIMEINTTYPE>("time int algo");
   dtp_ = dta_ = params_.get<double>("time step size");
   theta_    = params_.get<double>("theta");
+  // af-generalized-alpha parameters: gamma_ = 0.5 + alphaM_ - alphaF_
+  // (may be reset below when starting algorithm is used)
+  alphaM_   = params_.get<double>("alpha_M");
+  alphaF_   = params_.get<double>("alpha_F");
+  gamma_    = params_.get<double>("gamma");
 
   // not needed for COMBUST: create empty cutter discretization
 //  Teuchos::RCP<DRT::Discretization> emptyboundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(
@@ -332,6 +337,9 @@ void FLD::CombustFluidImplicitTimeInt::PrepareTimeStep()
     {
       timealgo_ = params_.get<FLUID_TIMEINTTYPE>("time int algo");
       theta_ = params_.get<double>("theta");
+
+      // for BDF2, theta is set by the time-step sizes, 2/3 for const. dt
+      if (timealgo_==timeint_bdf2) theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
     }
   }
 }
@@ -463,6 +471,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(Teuchos::RCP<COMBUST
   // --------------------------------------------
 
   // accelerations at time n and n-1
+  dofswitch.mapVectorToNewDofDistribution(state_.accnp_);
   dofswitch.mapVectorToNewDofDistribution(state_.accn_);
 
   // velocities and pressures at time n+1, n and n-1
@@ -990,18 +999,17 @@ void FLD::CombustFluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector
 void FLD::CombustFluidImplicitTimeInt::TimeUpdate()
 {
 
-  // prev. acceleration becomes (n-1)-accel. of next time step
-  const Teuchos::RCP<Epetra_Vector> accn_tmp = rcp(new Epetra_Vector(*state_.accn_));
-
   // compute acceleration
-  // note a(n+1) is directly stored in a(n),
-  // hence we use a(n-1) as a(n) to save a vector copy (see line above)
   TIMEINT_THETA_BDF2::CalculateAcceleration(
-      state_.velnp_, state_.veln_, state_.velnm_, accn_tmp,
-          timealgo_, step_, theta_, dta_, dtp_,
-          state_.accn_);
+      state_.velnp_, state_.veln_, state_.velnm_, state_.accn_,
+          timealgo_, step_, theta_, gamma_, dta_, dtp_,
+          state_.accnp_);
 
-  // solution of this step becomes most recent solution of the last step
+  // update old acceleration
+  state_.accn_->Update(1.0,*state_.accnp_,0.0);
+  
+  // velocities/pressures of this step become most recent 
+  // velocities/pressures of the last step
   state_.velnm_->Update(1.0,*state_.veln_ ,0.0);
   state_.veln_ ->Update(1.0,*state_.velnp_,0.0);
 

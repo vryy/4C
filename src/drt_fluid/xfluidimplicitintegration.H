@@ -407,6 +407,7 @@ protected:
     XFEM::ElementalDofPosMap   elementalDofDistributionMap_;
     
     //! @name accelerations
+    Teuchos::RCP<Epetra_Vector>    accnp_;  ///< accelerations at time n+1
     Teuchos::RCP<Epetra_Vector>    accn_;   ///< accelerations at time n
     //@}
 

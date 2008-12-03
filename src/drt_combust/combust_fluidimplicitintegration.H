@@ -333,7 +333,13 @@ protected:
   //! @name time step sizes
   double dta_;
   double dtp_;
+  //@}
+
+  //! @name time-integration-scheme factors
   double theta_;
+  double alphaM_;
+  double alphaF_;
+  double gamma_;
   //@}
 
   //! store dof distribution information for output
@@ -386,6 +392,7 @@ protected:
     XFEM::ElementalDofPosMap   elementalDofDistributionMap_;
     
     //! @name accelerations
+    Teuchos::RCP<Epetra_Vector>    accnp_;  ///< accelerations at time n+1
     Teuchos::RCP<Epetra_Vector>    accn_;   ///< accelerations at time n
     //@}
 
