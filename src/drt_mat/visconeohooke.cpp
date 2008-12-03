@@ -200,8 +200,11 @@ void MAT::ViscoNeoHooke::Evaluate(const LINALG::Matrix<NUM_STRESS_3D,1>* glstrai
   const double theta= matdata_->m.visconeohooke->theta;
 
   // get time algorithmic parameters
-  double dt = params.get("delta time",-1.0);
-
+  // NOTE: dt can be zero (in restart of STI) for Generalized Maxwell model 
+  // there is no special treatment required. Adaptation for Kelvin-Voigt were necessary.
+  double dt = params.get<double>("delta time");
+  
+  // compute algorithmic relaxation time
   double tau1=tau;
   //check for meaningful values
   if (E_f>E_s)
@@ -251,13 +254,25 @@ void MAT::ViscoNeoHooke::Evaluate(const LINALG::Matrix<NUM_STRESS_3D,1>* glstrai
   mue = E_s / (2.0*(1.0+nue));
   kappa = lambda + 2.0/3.0 * mue;
 
-  // evaluate sclars to compute
-  // Q^(n+1) = tau/(theta*dt) [(-dt+theta*dt)/tau Q + S^(n+1) - S^n]
-  artscalar1=(-dt+theta*dt)/tau;
-  artscalar2=tau/(theta*dt);
+  // do we have to propagate in time?
+  if (dt >0.0)
+  {
+    // evaluate scalars to compute
+    // Q^(n+1) = tau/(theta*dt) [(-dt+theta*dt)/tau Q + S^(n+1) - S^n]
+    artscalar1=(-dt+theta*dt)/tau;
+    artscalar2=tau/(theta*dt);
 
-  // factor to calculate visco stiffness matrix from elastic stiffness matrix
-  scalarvisco = 1.0+tau/(theta*dt);
+    // factor to calculate visco stiffness matrix from elastic stiffness matrix
+    scalarvisco = 1.0+tau/(theta*dt);
+  }
+  else
+  {
+    // in case we do not want to propagate in time, Q^{n+1} = Q^{n}
+    artscalar1 = 1.0;
+    artscalar2 = 1.0;
+    // factor to calculate visco stiffness matrix from elastic stiffness matrix
+    scalarvisco = 2.0;
+  }
   
 #endif
 
