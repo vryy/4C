@@ -37,7 +37,7 @@ namespace XFEM
     */
     explicit ElementEnrichmentValues(
         const DRT::Element&                   ele,
-        const RCP<XFEM::InterfaceHandle>      ih,               ///< interface onformation
+        const RCP<XFEM::InterfaceHandle>&     ih,               ///< interface information
         const XFEM::ElementDofManager&        dofman,
         const LINALG::Matrix<3,1>&            actpos,           ///< a 3d position
         const XFEM::Enrichment::ApproachFrom  approachdirection ///< is location with respect to interface is known or not

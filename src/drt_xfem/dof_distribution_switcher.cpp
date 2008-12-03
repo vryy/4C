@@ -24,7 +24,7 @@ Maintainer: Axel Gerstenberger
 XFEM::Enrichment XFEM::genAlternativeEnrichment(
         const int                    gnodeid,
         const XFEM::PHYSICS::Field   oldphysvar,
-        const RCP<XFEM::DofManager>  dofman
+        const RCP<XFEM::DofManager>& dofman
         )
 {
     const std::set<XFEM::FieldEnr>& fieldset(dofman->getNodeDofSet(gnodeid));

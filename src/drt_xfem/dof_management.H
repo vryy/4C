@@ -29,7 +29,7 @@ namespace XFEM
       //! default constructor
       explicit DofManager();
       //! constructor
-      explicit DofManager(const RCP<XFEM::InterfaceHandle> ih, const bool DLM_condensation);
+      explicit DofManager(const RCP<XFEM::InterfaceHandle>& ih, const bool DLM_condensation);
       //! copy constructor
       explicit DofManager(const XFEM::DofManager& dofman);
       //! destructor

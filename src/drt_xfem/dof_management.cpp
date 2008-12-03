@@ -30,7 +30,7 @@ Maintainer: Axel Gerstenberger
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-XFEM::DofManager::DofManager(const RCP<XFEM::InterfaceHandle> ih, const bool DLM_condensation) :
+XFEM::DofManager::DofManager(const RCP<XFEM::InterfaceHandle>& ih, const bool DLM_condensation) :
   ih_(ih)
 {
   XFEM::createDofMap(*ih, nodalDofSet_, elementalDofs_, DLM_condensation);

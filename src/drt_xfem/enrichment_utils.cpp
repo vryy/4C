@@ -24,7 +24,7 @@ Maintainer: Axel Gerstenberger
 
 XFEM::ElementEnrichmentValues::ElementEnrichmentValues(
         const DRT::Element&                   ele,
-        const RCP<XFEM::InterfaceHandle>      ih,               ///< interface information
+        const RCP<XFEM::InterfaceHandle>&     ih,               ///< interface information
         const XFEM::ElementDofManager&        dofman,
         const LINALG::Matrix<3,1>&            actpos,
         const XFEM::Enrichment::ApproachFrom  approachdirection
