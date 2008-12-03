@@ -273,8 +273,8 @@ void STR::TimIntStatics::ReadRestartForce()
   // set 'initial' external force
   reader.ReadVector(fext_, "fexternal");
   // set 'initial' internal force vector
-  ApplyForceStiffInternal((*time_)[0], (*dt_)[0], (*dis_)(0), zeros_, (*vel_)(0), 
-                          fint_, stiff_);
+  // Set dt to 0, since we do not propagate in time.
+  ApplyForceInternal((*time_)[0], 0.0, (*dis_)(0), zeros_, (*vel_)(0), fint_);
   
   ParameterList pcon; //no scaling necessary
   ApplyForceStiffConstraint((*time_)[0], (*dis_)(0), (*dis_)(0), fint_, stiff_, pcon);
