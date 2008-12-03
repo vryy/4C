@@ -1013,16 +1013,18 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
 
   stressn.Multiply(Tnew,epsilonn);
 
-
-  //lamda is the derivative of current velocity with respect to current displacement
-  double lamda = params.get<double>("gamma",0.581) / (params.get<double>("delta time",0.01)*params.get<double>("beta",0.292));
-
   //turning bending strain epsilonm into bending stress stressm
   epsilonm = curvnew_;
   epsilonm(0) *= sm*Irr_;
   epsilonm(1) *= ym*Iyy_;
   epsilonm(2) *= ym*Izz_;
   stressm.Multiply(Tnew,epsilonm);
+  
+  if(Id() > 29)
+  {
+    std::cout<<"\nepsilonn\n"<<epsilonn;
+    std::cout<<"\nepsilonm\n"<<epsilonm;
+  }
 
 
   //computing global internal forces, Crisfield Vol. 2, equation (17.79)
@@ -1133,6 +1135,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
       }
     }
     */
+
 
 
 
