@@ -60,7 +60,7 @@ void FLD::TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(
   {
     case timeint_stationary: /* Stationary algorithm */
     case timeint_afgenalpha: /* Af-generalized-alpha time integration */
-      hist->Scale(0.0);
+      hist->PutScalar(0.0);
       break;
 
     case timeint_one_step_theta: /* One step Theta time integration */
