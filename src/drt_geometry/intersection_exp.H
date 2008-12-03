@@ -1,5 +1,5 @@
 /*!
-\file intersection.H
+\file intersection_exp.H
 
 \brief collection of intersection tools
 

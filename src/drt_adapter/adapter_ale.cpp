@@ -1,5 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
+ * \file adapter_ale.cpp
+ * 
 \brief ALE base implementation
 
 <pre>

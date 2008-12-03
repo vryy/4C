@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
-\file fluid3_input.cpp
-\brief
+\file xfluid3_input.cpp
+\brief input stuff
 
 <pre>
 Maintainer: Axel Gerstenberger

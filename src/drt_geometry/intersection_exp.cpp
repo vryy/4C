@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file intersection.cpp
+\file intersection_exp.cpp
 
 \brief  collection of intersection tools for the computation of the
         intersection of two arbitrary discretizations
@@ -1579,7 +1579,7 @@ void GEO::IntersectionExp::computeCDT(
   if (xfemElement->Shape() == DRT::Element::hex8)
     switchstring = "pnnQR";
   else if (xfemElement->Shape() == DRT::Element::hex20)
-    switchstring = "pnnQY";
+    switchstring = "pnnQR";
 
   const int switchlen = switchstring.length();
   char* switches = new char[switchlen+1];
