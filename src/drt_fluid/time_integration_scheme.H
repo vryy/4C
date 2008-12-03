@@ -95,14 +95,14 @@ namespace TIMEINT_THETA_BDF2
       const Teuchos::RCP<Epetra_Vector>&   velnp,    ///< velocity at     n+1
       const Teuchos::RCP<Epetra_Vector>&   veln,     ///< velocity at     n
       const Teuchos::RCP<Epetra_Vector>&   velnm,    ///< velocity at     n-1
-      const Teuchos::RCP<Epetra_Vector>&   accnp,    ///< current acceleration
+      const Teuchos::RCP<Epetra_Vector>&   accn ,    ///< acceleration at n-1
       const FLUID_TIMEINTTYPE              timealgo, ///< time integration id
       const int                            step,     ///< time step
       const double                         theta,    ///< factor for OST method
       const double                         gamma,    ///< factor for Af-generalized-alpha method
-      const double                         dta,      ///< time step size (delta t)
-      const double                         dtp,
-      Teuchos::RCP<Epetra_Vector>&         accn     ///< acceleration at n
+      const double                         dta,      ///< time step size (delta t) n
+      const double                         dtp,      ///< previous time step size (delta t) n-1
+      Teuchos::RCP<Epetra_Vector>&         accnp     ///< acceleration at n+1
   );
 
 }
