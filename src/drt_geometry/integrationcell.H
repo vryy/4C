@@ -125,7 +125,7 @@ public:
 
 private:
     
-    //! coordinates of the nodes in the parent domain element coordinates xi_domain
+    //! coordinates of the nodes in the parent element coordinates system ( xi_domain )
     LINALG::SerialDenseMatrix nodalpos_xi_domain_;
     
     //! hide default constructor
