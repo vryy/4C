@@ -36,7 +36,7 @@ namespace XFEM
 
     //! constructor
     explicit InterfaceHandle(
-            const Teuchos::RCP<DRT::Discretization>  xfemdis   ///< discretization that will be intersected
+            const Teuchos::RCP<DRT::Discretization>&  xfemdis   ///< discretization that will be intersected
             );
 
     //! destructor

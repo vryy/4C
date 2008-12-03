@@ -314,7 +314,7 @@ void DRT::ELEMENTS::XFluid3Surface::IntegrateShapeFunction(
     xyze(2,i)=this->Nodes()[i]->X()[2];
   }
 
-  if (edispnp.size()!=0)
+  if (not edispnp.empty())
   {
     for (int i=0;i<iel;i++)
     {

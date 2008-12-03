@@ -296,7 +296,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
 #if 0
           const XFEM::BoundaryIntCells&  boundaryIntCells(ih_->GetBoundaryIntCells(this->Id()));
-          if ((assembly_type == XFEM::xfem_assembly) and (boundaryIntCells.size() > 0))
+          if ((assembly_type == XFEM::xfem_assembly) and (not boundaryIntCells.empty()))
           {
               const int entry = 4; // line in stiffness matrix to compare
               const double disturbance = 1.0e-4;

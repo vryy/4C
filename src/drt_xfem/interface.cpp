@@ -28,7 +28,7 @@ Maintainer: Axel Gerstenberger
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 XFEM::InterfaceHandle::InterfaceHandle(
-    const Teuchos::RCP<DRT::Discretization>  xfemdis 
+    const Teuchos::RCP<DRT::Discretization>&  xfemdis 
     ) :
       xfemdis_(xfemdis),
       octTreenp_(rcp( new GEO::SearchTree(20))),
