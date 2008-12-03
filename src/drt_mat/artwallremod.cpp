@@ -151,7 +151,6 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
         ExtractfromPack(position,data,tmp);
         vector<double> a;
         ExtractfromPack(position,data,a);
-        remtime_->at(gp) = matdata_->m.artwallremod->rembegt; // overwrite restart data with input when switching
       }
     }
     if (position != (int)data.size())
