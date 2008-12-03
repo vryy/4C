@@ -191,7 +191,7 @@ ML_DAMPMED        1.0       // damping med grids
 ML_DAMPCOARSE     1.0       // damping coarse grid
 PARTITION         Cut_Elements
 -------------------------------------------------------XFEM GENERAL
-EXP_INTERSECTION                Yes
+EXP_INTERSECTION                No
 DLM_CONDENSATION                Yes
 GMSH_DEBUG_OUT                  Yes
 ------------------------------------------------DESIGN DESCRIPTION
