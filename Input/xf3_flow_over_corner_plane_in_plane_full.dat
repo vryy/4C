@@ -73,7 +73,7 @@ RESSTEP          -1
 STARTFUNCNO      2
 TIMEINTEGR       Stationary
 STARTINGALGO     One_Step_Theta
-NONLINITER       fixed_point_like //Newton
+NONLINITER       Newton
 ITEMAX           20
 CONVCHECK        L_2_norm
 CONVTOL          1.0E-6

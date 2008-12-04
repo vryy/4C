@@ -83,8 +83,9 @@ CROSS-STRESS          no_cross
 REYNOLDS-STRESS       no_reynolds
 -------------------------------------------------------FSI DYNAMIC
 ------------------------------------------------------XFEM GENERAL
+EXP_INTERSECTION  Yes
 GMSH_DEBUG_OUT    Yes
-DLM_CONDENSATION  Yes
+DLM_CONDENSATION  No
 -------------------------------------------------------SSI DYNAMIC
 -------------------------------------------------------ALE DYNAMIC
 -------------------------------------------------------TSI DYNAMIC

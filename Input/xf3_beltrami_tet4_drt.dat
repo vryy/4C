@@ -40,7 +40,7 @@ MAXTIME      0.1
 NUMSTEP      4
 TIMESTEP     0.00625
 THETA        0.80
-NONLINITER   fixed_point_like
+NONLINITER   Newton
 ITEMAX       10
 CONVCHECK    L_2_norm
 CONVTOL      1.0E-10
