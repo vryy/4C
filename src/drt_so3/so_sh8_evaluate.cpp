@@ -745,28 +745,19 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
     ** every necessary data must be passed.
     */
     double density = 0.0;
-    // Caution!! the defgrd can not be modified with ANS to remedy locking
-    // therefore it is empty and passed only for compatibility reasons
-    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd; // Caution!! empty!!
-//#define disp_based_F
-#ifdef disp_based_F
-    Epetra_SerialDenseMatrix defgrd_epetra(View,defgrd->A(),defgrd->Rows(),defgrd->Rows(),defgrd->Columns());
-    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> invJ;
-    invJ.Multiply(derivs[gp],xrefe);
-    invJ.Invert();
+    /* Caution!! the defgrd can not be modified with ANS to remedy locking
+       To get the consistent F a spectral decomposition would be necessary, see sosh8_Cauchy.
+       However if one only maps e.g. stresses from current to material configuration,
+       I have never noticed any difference to applying just the disp_based F
+       which is therefore computed and passed here (no significant add. computation time).  */
+    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd; // Caution!! disp_based!
     LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> N_XYZ;
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 * N_rst
-    N_XYZ.Multiply(invJ,derivs[gp]);
+    N_XYZ.Multiply(invJ_[gp],derivs[gp]);
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd;
     defgrd.MultiplyTT(xcurr,N_XYZ);
-    for (int i = 0; i < NUMDIM_SOH8; ++i) {
-      for (int j = 0; j < NUMDIM_SOH8; ++j) {
-        defgrd_epetra(i,j) = defgrd(i,j);
-      }
-    }
-#endif
+    // 
     LINALG::Matrix<NUMSTR_SOH8,NUMSTR_SOH8> cmat(true);
     LINALG::Matrix<NUMSTR_SOH8,1> stress(true);
     soh8_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,params);
@@ -1292,6 +1283,15 @@ int DRT::ELEMENTS::Sosh8Register::Initialize(DRT::Discretization& dis)
   // fill complete again to reconstruct element-node pointers,
   // but without element init, etc.
   dis.FillComplete(false,false,false);
+
+  // loop again to init Jacobian for Sosh8's
+  for (int i=0; i<dis.NumMyColElements(); ++i)
+  {
+    if (dis.lColElement(i)->Type() != DRT::Element::element_sosh8) continue;
+    DRT::ELEMENTS::So_sh8* actele = dynamic_cast<DRT::ELEMENTS::So_sh8*>(dis.lColElement(i));
+    if (!actele) dserror("cast to So_sh8* failed");
+    actele->InitJacobianMapping();
+  }
 
   // **************** debug printout ot gmesh **********************************
   //sosh8_gmshplotdis(dis);
