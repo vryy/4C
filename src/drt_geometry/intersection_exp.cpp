@@ -1579,7 +1579,7 @@ void GEO::IntersectionExp::computeCDT(
   if (xfemElement->Shape() == DRT::Element::hex8)
     switchstring = "pnnQR";
   else if (xfemElement->Shape() == DRT::Element::hex20)
-    switchstring = "pnnQR";
+    switchstring = "pnnQ";
 
   const int switchlen = switchstring.length();
   char* switches = new char[switchlen+1];

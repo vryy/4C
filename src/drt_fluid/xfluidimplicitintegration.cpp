@@ -1014,7 +1014,8 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       const int sign_digits = (int)floor(tmp);
       cout0_ << " cond est: " << scientific << cond_number << ", max.sign.digits: " << sign_digits;
     }
-    cout0_ << endl;
+    if (myrank_ == 0)
+      cout << endl;
     
     //-------solve for residual displacements to correct incremental displacements
     {
@@ -1053,7 +1054,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
   cutterdiscret->SetState("iforcenp", iforcecolnp);
   
-  if (timealgo_==timeint_stationary)
+  if (timealgo_==timeint_stationary and discret_->Comm().NumProc() == 1)
   {
     OutputToGmsh();
   }
