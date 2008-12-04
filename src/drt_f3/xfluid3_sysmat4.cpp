@@ -1638,7 +1638,7 @@ static void SysmatBoundary4(
             static LINALG::Matrix<3,1> normalvec_solid;
             GEO::computeNormalToSurfaceElement(boundaryele, xyze_boundary, posXiBoundary, normalvec_solid);
 //            cout << "normalvec " << normalvec << ", " << endl;
-            static LINALG::Matrix<3,1> normalvec_fluid(true);
+            LINALG::Matrix<3,1> normalvec_fluid(true);
             normalvec_fluid.Update(-1.0,normalvec_solid,0.0);
 //            cout << "normalvec : ";
 //            cout << normalvec_fluid << endl;

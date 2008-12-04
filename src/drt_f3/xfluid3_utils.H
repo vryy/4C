@@ -584,7 +584,7 @@ bool isHigherOrderElement()
 
 //! interpolate from nodal vector array to integration point vector using the shape function
 template <class M, class VS>
-static LINALG::Matrix<3,1> interpolateVectorFieldToIntPoint(
+LINALG::Matrix<3,1> interpolateVectorFieldToIntPoint(
     const M&  eleVectorField,       ///< array with nodal vector values
     const VS& shp,                  ///< array with nodal shape function
     const int numparam              ///< number of parameters
