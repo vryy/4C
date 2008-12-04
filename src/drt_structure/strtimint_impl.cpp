@@ -764,6 +764,7 @@ void STR::TimIntImpl::PrintNewtonConv()
   // print constraint manager
   if (conman_->HaveMonitor())
   {
+    conman_->ComputeMonitorValues(disn_);
     conman_->PrintMonitorValues();
   }
 

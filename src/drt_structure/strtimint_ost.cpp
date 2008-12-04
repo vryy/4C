@@ -140,7 +140,7 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual()
 
   // build new external forces
   fextn_->PutScalar(0.0);
-  ApplyForceExternal(timen_, disn_, veln_, fextn_);
+  ApplyForceExternal(timen_, (*dis_)(0), (*vel_)(0), fextn_);
 
   // interface forces to external forces
   if (fsisurface_)
