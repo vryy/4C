@@ -2335,27 +2335,18 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
               |       \      /         \ /   |
                \                            /
             */
-
             elevec[ui*3    ] -= fac_visceff*
                                 (derxy_(0,ui)*vderxyaf_(0,0)*2.0
                                  +
                                  derxy_(1,ui)*vderxyaf_(0,1)
                                  +
-                                 derxy_(1,ui)*vderxyaf_(1,0)
-                                 +
-                                 derxy_(2,ui)*vderxyaf_(0,2)
-                                 +
-                                 derxy_(2,ui)*vderxyaf_(2,0)) ;
+                                 derxy_(1,ui)*vderxyaf_(1,0)) ;
             elevec[ui*3 + 1] -= fac_visceff*
                                 (derxy_(0,ui)*vderxyaf_(0,1)
                                  +
                                  derxy_(0,ui)*vderxyaf_(1,0)
                                  +
-                                 derxy_(1,ui)*vderxyaf_(1,1)*2.0
-                                 +
-                                 derxy_(2,ui)*vderxyaf_(1,2)
-                                 +
-                                 derxy_(2,ui)*vderxyaf_(2,1)) ;
+                                 derxy_(1,ui)*vderxyaf_(1,1)*2.0) ;
 
 
             /* continuity equation */
@@ -2442,7 +2433,7 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
                \                            /
           */
 
-          elevec[ui*3    ] -= visceff*fac*
+          elevec[ui*3    ] -= visceff*fac* 
                               (derxy_(0,ui)*vderxyaf_(0,0)*2.0
                                +
                                derxy_(1,ui)*vderxyaf_(0,1)

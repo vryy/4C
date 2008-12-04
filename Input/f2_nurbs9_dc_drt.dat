@@ -30,7 +30,7 @@ TIMEINTEGR   Gen_Alpha
 UPRES        1
 RESTARTEVRY  1
 MAXTIME      1000.0
-NUMSTEP      3
+NUMSTEP      10
 TIMESTEP     0.1
 ALPHA_F      0.666666
 ALPHA_M      0.833333
@@ -427,7 +427,7 @@ CURVE1 on Explicit FUNC f(t)=sin(t:C1*PI:2)_for_t<_C1_else_f(t)=1 c1 10.0 c2 1.0
 ---------------------------------------------------------------END
 // END
 ------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 79 POSITION velx     NAME velx     VALUE -1.238850793e-03 TOLERANCE 1e-9
-FLUID DIS 1 NODE 79 POSITION vely     NAME vely     VALUE -1.103165293e-04 TOLERANCE 1e-9
-FLUID DIS 1 NODE 79 POSITION pressure NAME pressure VALUE  5.336091732e-04 TOLERANCE 1e-9
+FLUID DIS 1 NODE 79 POSITION velx     NAME velx     VALUE -4.311414400e-03 TOLERANCE 1e-9
+FLUID DIS 1 NODE 79 POSITION vely     NAME vely     VALUE -6.008328664e-04 TOLERANCE 1e-9
+FLUID DIS 1 NODE 79 POSITION pressure NAME pressure VALUE  8.452675158e-04 TOLERANCE 1e-9
 ---------------------------------------------------------------END
