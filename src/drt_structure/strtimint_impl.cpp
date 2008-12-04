@@ -402,6 +402,12 @@ void STR::TimIntImpl::NewtonFull()
   // correct iteration counter
   iter_ -= 1;
 
+  // call monitor
+  if (conman_->HaveMonitor())
+  {
+    conman_->ComputeMonitorValues(disn_);
+  }
+  
   // test whether max iterations was hit
   if (iter_ >= itermax_)
   {
@@ -764,7 +770,6 @@ void STR::TimIntImpl::PrintNewtonConv()
   // print constraint manager
   if (conman_->HaveMonitor())
   {
-    conman_->ComputeMonitorValues(disn_);
     conman_->PrintMonitorValues();
   }
 
