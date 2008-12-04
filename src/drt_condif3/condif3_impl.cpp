@@ -2849,11 +2849,12 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalErrorComparedToAnalytSolution(
     const double m = 2.0;
     const double n = 2.0;
     const double k = 2.0;
-    c(0) = A0 + ((cos(m*PI*xint(0))*cos(n*PI*xint(1))*cos(k*PI*xint(2)))*exp((-D)*(m*m + n*n + k*k)*t*PI*PI));
+    const double expterm = exp((-D)*(m*m + n*n + k*k)*t*PI*PI);
+    c(0) = A0 + ((cos(m*PI*xint(0))*cos(n*PI*xint(1))*cos(k*PI*xint(2)))*expterm);
     c(1) = (-valence_[0]/valence_[1])* c(0);
 
     // compute analytical solution for el. potential
-    const double c_0_0_t = A0 + exp((-D)*(m*m + n*n)*t*PI*PI);
+    const double c_0_0_t = A0 + exp((-D)*(m*m + n*n + k*k)*t*PI*PI);
     const double pot = ((diffus_[1]-diffus_[0])/d) * log(c(0)/c_0_0_t);
 
     // compute differences between analytical solution and numerical solution
