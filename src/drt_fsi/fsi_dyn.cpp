@@ -243,6 +243,26 @@ void xfsi_drt()
   Epetra_SerialComm comm;
 #endif
 
+//  cout << endl << endl;
+//  cout << YELLOW_LIGHT << "      @..@        _     _ _______ _______ _____" << END_COLOR << endl;
+//  cout << YELLOW_LIGHT << "     (----)        \\\\__/  |______ |______   |  " << END_COLOR << endl;
+//  cout << YELLOW_LIGHT << "    ( >__< )      _/  \\\\_ |       ______| __|__" << END_COLOR << endl;
+//  cout << YELLOW_LIGHT << "    ^^ ~~ ^^  " << END_COLOR << endl;
+//  cout << endl << endl << endl;
+  Teuchos::RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(genprob.numff,0);
+  if (fluiddis->Comm().MyPID() == 0)
+  {
+    cout << endl;
+    cout << YELLOW_LIGHT << "       @..@    " << END_COLOR << endl;
+    cout << YELLOW_LIGHT << "      (----)      " << END_COLOR << endl;
+    cout << YELLOW_LIGHT << "     ( >__< )   " << END_COLOR << endl;
+    cout << YELLOW_LIGHT << "     ^^ ~~ ^^  " << END_COLOR << endl;
+    cout << YELLOW_LIGHT << "     _     _ _______ _______ _____" << END_COLOR << endl;
+    cout << YELLOW_LIGHT << "      \\\\__/  |______ |______   |  " << END_COLOR << endl;
+    cout << YELLOW_LIGHT << "     _/  \\\\_ |       ______| __|__" << END_COLOR << endl;
+    cout <<  endl << endl;
+  }
+  
   Teuchos::RCP<FSI::DirichletNeumann> fsi = rcp(new FSI::DirichletNeumann(comm));
 
   if (genprob.restart)

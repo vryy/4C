@@ -122,13 +122,16 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
     dserror("for MLFLUID2, you need to set \"DLM_CONDENSATION  yes\" ");
   }
   
-  if (actdis->Comm().MyPID()==0 and params.get<bool>("DLM_condensation"))
+  if (actdis->Comm().MyPID()==0)
   {
-    std::cout << GREEN_LIGHT << "DLM_condensation turned on!" << END_COLOR << endl << endl;    
-  }
-  else
-  {
-    std::cout << RED_LIGHT << "DLM_condensation turned off!" << END_COLOR << endl << endl;
+    if (params.get<bool>("DLM_condensation"))
+    {
+      std::cout << GREEN_LIGHT << "DLM_condensation turned on!" << END_COLOR << endl << endl;    
+    }
+    else
+    {
+      std::cout << RED_LIGHT << "DLM_condensation turned off!" << END_COLOR << endl << endl;
+    }
   }
   
 //  if (Teuchos::getIntegralValue<FLUID_TIMEINTTYPE>(fdyn,"TIMEINTEGR") != timeint_stationary 

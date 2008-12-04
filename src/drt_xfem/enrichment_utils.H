@@ -325,9 +325,9 @@ double DomainCoverageRatio(
  * \brief calculates the fraction of an element that is covered by fictitious domains.
  * \warning should be done separately for each enrichment, but currently it's not done
  * 
- * \return ration between fictitious volume and element volume (can be between 0.0 and 1.0)
+ * \return ratio between fictitious volume and element volume (can be between 0.0 and 1.0)
  */
-vector<double> DomainCoverageRatioPerNode(
+std::vector<double> DomainCoverageRatioPerNode(
     const DRT::Element&           ele,           ///< the element whose area ratio we want to compute
     const XFEM::InterfaceHandle&  ih             ///< interface information
     );
@@ -340,6 +340,16 @@ double BoundaryCoverageRatio(
     const DRT::Element&               ele,           ///< the element whose area ratio we want to compute
     const XFEM::InterfaceHandle&  ih             ///< interface information
     );
+
+/*! 
+ * \brief calculates the volume fraction for each cell of an element .
+ * 
+ * \return ratio between cell volume and element volume (can be between 0.0 and 1.0)
+ */
+std::vector<double> DomainIntCellCoverageRatio(
+        const DRT::Element&           ele,
+        const XFEM::InterfaceHandle&  ih
+        );
 
 //! return assembly type depending on the DOF distribution
 XFEM::AssemblyType CheckForStandardEnrichmentsOnly(

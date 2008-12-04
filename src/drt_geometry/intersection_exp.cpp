@@ -64,8 +64,10 @@ void GEO::IntersectionExp::computeIntersection(
 
   TEUCHOS_FUNC_TIME_MONITOR(" GEO::IntersectionExp");
 
-  std::cout << std::endl << "GEO::IntersectionExp:";
-  flush(std::cout);
+  if (xfemdis->Comm().MyPID() == 0)
+  {
+    std::cout << std::endl << "GEO::IntersectionExp:" << std::flush;
+  }
   
   countMissedPoints_ = 0;
   const double t_start = ds_cputime();
@@ -76,12 +78,28 @@ void GEO::IntersectionExp::computeIntersection(
   octTree->initializeTree(rootBox, *cutterdis, GEO::TreeType(GEO::OCTTREE));
   
   // stop intersection if cutterdis is empty
+  if(cutterdis->NumGlobalElements()==0)
+  { 
+    if (xfemdis->Comm().MyPID() == 0)
+    {
+      std::cout << " cutter discretization empty " << endl;
+    }
+    return;
+  }
+  
+  // stop intersection if cutterdis is empty
   if(cutterdis->NumMyColElements()==0)
   {  
-    std::cout << " cutter discretization empty ";
-    std::cout << endl;
-    flush(cout);
+    if (xfemdis->Comm().MyPID() == 0)
+    {
+      std::cout << " cutter discretization on this proc empty " << endl;
+    }
     return;
+  }
+  
+  if (xfemdis->Comm().MyPID() == 0)
+  {
+    std::cout << endl;
   }
   
   for(int k = 0; k < xfemdis->NumMyColElements(); ++k)
@@ -187,9 +205,9 @@ void GEO::IntersectionExp::computeIntersection(
   if(countMissedPoints_ > 0)
     cout << endl << "Number of missed points during the recovery copy = " << countMissedPoints_ << endl;
 
-  std::cout << " Success (" << t_end  <<  " secs), intersected elements: " << domainintcells.size();
-  std::cout << endl;
-  flush(cout);
+  std::cout << " Success (" << scientific << t_end  
+            << " secs), intersected elements (on proc " << std::setw(2) << xfemdis->Comm().MyPID() << "): "
+            << std::setw(2)<< domainintcells.size() << endl;
 }
 
 

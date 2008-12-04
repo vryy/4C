@@ -57,20 +57,21 @@ extern struct _GENPROB     genprob;
  *----------------------------------------------------------------------*/
 void xdyn_fluid_drt()
 {
-  std::cout << "Hallo, ich bin ein Fluid-XFEM Problem" << endl;
-
   // -------------------------------------------------------------------
-  // access the discretization
+  // access the discretizations
   // -------------------------------------------------------------------
-  Teuchos::RCP<DRT::Discretization> fluiddis = null;
-  fluiddis = DRT::Problem::Instance()->Dis(genprob.numff,0);
-  Teuchos::RCP<DRT::Discretization> soliddis = null;
-  soliddis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
+  Teuchos::RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(genprob.numff,0);
+  Teuchos::RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
+  
+  if (fluiddis->Comm().MyPID() == 0)
+  {
+    std::cout << "Hallo, ich bin ein Fluid-XFEM Problem" << endl;
+  }
 
-  const int fmyrank = fluiddis->Comm().MyPID();
-  std::cout << "FluidProc: " << fmyrank << endl;
-  const int smyrank = soliddis->Comm().MyPID();
-  std::cout << "SolidProc: " << smyrank << endl;
+//  const int fmyrank = fluiddis->Comm().MyPID();
+//  std::cout << "FluidProc: " << fmyrank << endl;
+//  const int smyrank = soliddis->Comm().MyPID();
+//  std::cout << "SolidProc: " << smyrank << endl;
 
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization

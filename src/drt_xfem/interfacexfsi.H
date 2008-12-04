@@ -141,6 +141,8 @@ namespace XFEM
     std::map<int,LINALG::Matrix<3,1> >      cutterposn_;
 
     std::map<int,XFEM::SpaceTimeBoundaryCell>     stlayer_;
+    
+    void CheckDomainIntCellSize() const;
 
   }; // class InterfacehandleXFSI;
   

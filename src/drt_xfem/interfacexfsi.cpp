@@ -28,6 +28,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_geometry/intersection.H"
 #include "../drt_geometry/intersection_exp.H"
 #include "coordinate_transformation.H"
+#include "enrichment_utils.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 
 
@@ -87,7 +88,7 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
     GEO::Intersection is;
     is.computeIntersection(xfemdis, cutterdis, cutterposnp_, elementalDomainIntCells_, elementalBoundaryIntCells_); 
   }
-  
+  xfemdis->Comm().Barrier();
   SanityChecks();
   
   PrintStatistics();
@@ -117,8 +118,10 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
     elementalBoundaryIntCells_.erase(*eleid);
   }
   
-  GenerateSpaceTimeLayer(cutterdis_, cutterposnp_, cutterposn_);
+  CheckDomainIntCellSize();
   
+  GenerateSpaceTimeLayer(cutterdis_, cutterposnp_, cutterposn_);
+  xfemdis->Comm().Barrier();
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -517,6 +520,29 @@ void XFEM::InterfaceHandleXFSI::CheckXFEMElementSize() const
     cout << small_ele_counter << " elements are too small!" << endl;
   }
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void XFEM::InterfaceHandleXFSI::CheckDomainIntCellSize() const
+{
+  
+  for (int i=0; i<xfemdis_->NumMyRowElements(); ++i)
+  {
+    DRT::Element* actele = xfemdis_->lRowElement(i);
+    if (ElementIntersected(actele->Id()))
+    {
+      const std::vector<double> cellsizes = XFEM::DomainIntCellCoverageRatio(*actele,*this);
+      double elevol = 0.0;
+      for (std::vector<double>::const_iterator iter = cellsizes.begin(); iter != cellsizes.end(); iter++)
+      {
+        elevol += *iter;
+      }
+      if (std::abs(1.0 - elevol) > 1.0e-12)
+        dserror("DomainIntCell volume does not add up to the element volume");
+    }
+  }
+}
+
 
 /*! 
  * \brief calculates the volume of an element in initial configuration

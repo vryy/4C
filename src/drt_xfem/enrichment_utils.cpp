@@ -696,6 +696,114 @@ double XFEM::BoundaryCoverageRatio(
   }
 }
 
+/*!
+  Calculate ratio between fictitious element size and normal size
+  */
+template <DRT::Element::DiscretizationType DISTYPE>
+vector<double> DomainIntCellCoverageRatioT(
+        const DRT::Element&           ele,           ///< the element whose area ratio we want to compute
+        const XFEM::InterfaceHandle&  ih             ///< connection to the interface handler
+        )
+{
+  // number of nodes for element
+  const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+ 
+  // information about domain integration cells
+  const GEO::DomainIntCells&  domainIntCells(ih.GetDomainIntCells(ele.Id(),DISTYPE));
+  
+  double area_ele  = 0.0;
+  
+  std::vector<double> portions(domainIntCells.size(),0.0);
+  
+  // loop over integration cells
+  int cellcount = 0;
+  for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
+  {
+
+    const LINALG::Matrix<3,1> cellcenter(cell->GetPhysicalCenterPosition(ele));
+    
+    DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule3D_undefined;
+    switch (cell->Shape())
+    {
+      case DRT::Element::hex8:
+      {
+        gaussrule = DRT::UTILS::intrule_hex_8point;
+        break;
+      }
+      case DRT::Element::hex20:
+      case DRT::Element::hex27:
+      {
+        gaussrule = DRT::UTILS::intrule_hex_27point;
+        break;
+      }
+      case DRT::Element::tet4:
+      case DRT::Element::tet10:
+      {
+        gaussrule = DRT::UTILS::intrule_tet_4point;
+        break;
+      }
+      default:
+        dserror("add your element type here...");
+    }
+    
+    // gaussian points
+    const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+
+    // integration loop
+    for (int iquad=0; iquad<intpoints.nquad; ++iquad)
+    {
+      // coordinates of the current integration point in cell coordinates \eta
+      static LINALG::Matrix<3,1> pos_eta_domain;
+      pos_eta_domain(0) = intpoints.qxg[iquad][0];
+      pos_eta_domain(1) = intpoints.qxg[iquad][1];
+      pos_eta_domain(2) = intpoints.qxg[iquad][2];
+
+      // coordinates of the current integration point in element coordinates \xi
+      static LINALG::Matrix<3,1> posXiDomain;
+      GEO::mapEtaToXi3D<XFEM::xfem_assembly>(*cell, pos_eta_domain, posXiDomain);
+      const double detcell = GEO::detEtaToXi3D<XFEM::xfem_assembly>(*cell, pos_eta_domain);
+      
+      // shape functions and their first derivatives
+      static LINALG::Matrix<numnode,1> funct;
+      DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
+      
+      const double fac = intpoints.qwgt[iquad]*detcell;
+
+      area_ele += fac;
+      portions[cellcount] += fac;
+        
+    } // end loop over gauss points
+    cellcount++;
+  } // end loop over integration cells
+
+  for (unsigned icell = 0;icell < domainIntCells.size();++icell)
+  {
+    portions[icell] /= area_ele;
+  }    
+  
+  return portions;
+}
+
+std::vector<double> XFEM::DomainIntCellCoverageRatio(
+        const DRT::Element&           ele,
+        const XFEM::InterfaceHandle&  ih
+        )
+{
+  switch (ele.Shape())
+  {
+    case DRT::Element::hex8:
+      return DomainIntCellCoverageRatioT<DRT::Element::hex8>(ele,ih);
+    case DRT::Element::hex20:
+      return DomainIntCellCoverageRatioT<DRT::Element::hex20>(ele,ih);
+    case DRT::Element::hex27:
+      return DomainIntCellCoverageRatioT<DRT::Element::hex27>(ele,ih);
+    default:
+      dserror("add you distype here...");
+      exit(1);
+  }
+}
+
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 XFEM::AssemblyType XFEM::CheckForStandardEnrichmentsOnly(
