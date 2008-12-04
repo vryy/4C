@@ -65,6 +65,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   stepmax_(params_.get<int>   ("max number timesteps")),
   maxtime_(params_.get<double>("total time")),
   timealgo_(params_.get<FLUID_TIMEINTTYPE>("time int algo")),
+  itemax_(params_.get<int>("max nonlin iter steps")),
   extrapolationpredictor_(params.get("do explicit predictor",true)),
   uprestart_(params.get("write restart every", -1)),
   upres_(params.get("write solution every", -1)),
@@ -182,7 +183,7 @@ void FLD::XFluidImplicitTimeInt::Integrate(
   const int    numstasteps         =params_.get<int>   ("number of start steps");
 
   // output of stabilization details
-  ParameterList *  stabparams=&(params_.sublist("STABILIZATION"));
+  const ParameterList *  stabparams=&(params_.sublist("STABILIZATION"));
 
   cout0_ << "Stabilization type         : " << stabparams->get<string>("STABTYPE") << "\n";
   cout0_ << "                             " << stabparams->get<string>("TDS")<< "\n";
@@ -633,8 +634,8 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
   const double  ittol     =params_.get<double>("tolerance for nonlin iter");
 
   //------------------------------ turn adaptive solver tolerance on/off
-  const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
-  const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
+  const bool   isadapttol    = params_.get<bool>("ADAPTCONV");
+  const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER");
 
   //const bool fluidrobin = params_.get<bool>("fluidrobin", false);
 
@@ -764,7 +765,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       eleparams.set("timealgo",timealgo_);
       eleparams.set("dt",dta_);
       eleparams.set("theta",theta_);
-      eleparams.set("include reactive terms for linearisation",params_.get<bool>("Use reaction terms for linearisation",false));
+      eleparams.set("include reactive terms for linearisation",params_.get<bool>("Use reaction terms for linearisation"));
 
       // parameters for stabilization
       eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
@@ -794,7 +795,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       // CONVCHECK is set to L_2_norm_without_residual_at_itemax
       if ((itnum != itemax)
           ||
-          (params_.get<string>("CONVCHECK","L_2_norm")
+          (params_.get<string>("CONVCHECK")
            !=
            "L_2_norm_without_residual_at_itemax"))
       {
@@ -925,7 +926,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
           printf(")\n");
           printf("+------------+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+\n");
 
-          FILE* errfile = params_.get<FILE*>("err file",NULL);
+          FILE* errfile = params_.get<FILE*>("err file");
           if (errfile!=NULL)
           {
             fprintf(errfile,"fluid solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
@@ -959,7 +960,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
         printf("|            >>>>>> not converged due to increasing increment!  |\n");
         printf("+---------------------------------------------------------------+\n");
 
-        FILE* errfile = params_.get<FILE*>("err file",NULL);
+        FILE* errfile = params_.get<FILE*>("err file");
         if (errfile!=NULL)
         {
           fprintf(errfile,"fluid unconverged solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
@@ -987,7 +988,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
         printf("|            >>>>>> not converged in itemax steps!              |\n");
         printf("+---------------------------------------------------------------+\n");
 
-        FILE* errfile = params_.get<FILE*>("err file",NULL);
+        FILE* errfile = params_.get<FILE*>("err file");
         if (errfile!=NULL)
         {
           fprintf(errfile,"fluid unconverged solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
@@ -1977,7 +1978,7 @@ void FLD::XFluidImplicitTimeInt::SetInitialFlowField(
 
       // random noise is perc percent of the initial profile
 
-      double perc = params_.sublist("TURBULENCE MODEL").get<double>("CHAN_AMPL_INIT_DIST",0.1);
+      double perc = params_.sublist("TURBULENCE MODEL").get<double>("CHAN_AMPL_INIT_DIST");
 
       // out to screen
       if (myrank_==0)

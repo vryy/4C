@@ -186,6 +186,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
   // -----------------------sublist containing stabilization parameters
   fluidtimeparams->sublist("STABILIZATION")=fdyn.sublist("STABILIZATION");
+  
+  fluidtimeparams->set<bool>("Use reaction terms for linearisation",
+                           Teuchos::getIntegralValue<int>(fdyn,"NONLINITER")==2);
 
   // ------------------------------------------- Robin scheme parameters
   if (genprob.probtyp == prb_fsi)

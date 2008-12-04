@@ -444,6 +444,9 @@ void ADAPTER::XFluidImpl::NonlinearSolve()
   itrueresnp_->PutScalar(0.0);
   itrueresnp_->Export(*itruerescol,*conimpo,Add); 
   //LINALG::Export(*itruerescol,*itrueresnp_);
+  
+  LiftDrag();
+  
 }
 
 

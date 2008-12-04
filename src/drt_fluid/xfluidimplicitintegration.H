@@ -255,8 +255,8 @@ public:
   double Time() const { return time_; }
   int Step() const { return step_; }
 
-  int Itemax() const { return params_.get<int>("max nonlin iter steps"); }
-  void SetItemax(int itemax) { params_.set<int>("max nonlin iter steps", itemax); }
+  int Itemax() const { return itemax_; }
+  void SetItemax(int itemax) { itemax_ = itemax; }
 
   /*!
   \brief return type of time integration scheme
@@ -307,7 +307,7 @@ protected:
   //! fluid discretization
   Teuchos::RCP<DRT::Discretization>      discret_;
   LINALG::Solver&                        solver_;
-  ParameterList&                         params_;
+  const ParameterList&                   params_;
   IO::DiscretizationWriter&              output_;
   
   //! the processor ID from the communicator
@@ -329,6 +329,9 @@ protected:
 
   /// time algorithm flag
   FLUID_TIMEINTTYPE timealgo_;
+  
+  /// max nonlin iter steps
+  int itemax_;
 
   /// constant density extracted from element material for incompressible flow
   double density_;
