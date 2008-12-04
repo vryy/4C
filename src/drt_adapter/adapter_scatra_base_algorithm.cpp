@@ -118,6 +118,9 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   scatratimeparams->set<int>("CALCERROR",Teuchos::getIntegralValue<int>(scatradyn,"CALCERROR"));
 
   // -------------------------------- (fine-scale) subgrid diffusivity?
+  scatratimeparams->set<string>("form of convective term",scatradyn.get<string>("CONVFORM"));
+
+  // -------------------------------- (fine-scale) subgrid diffusivity?
   scatratimeparams->set<string>("fs subgrid diffusivity",scatradyn.get<string>("FSSUGRVISC"));
 
   // -------------------- block preconditioning (only supported by ELCH)

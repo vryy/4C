@@ -308,7 +308,7 @@ private:
   {
     none,
     calc_condif_systemmat_and_residual,
-    initialize_one_step_theta,
+    calc_initial_time_deriv,
     calc_subgrid_diffusivity_matrix,
     calc_condif_flux,
     calc_temp_and_dens

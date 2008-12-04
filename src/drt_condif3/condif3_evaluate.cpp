@@ -48,8 +48,8 @@ DRT::ELEMENTS::Condif3::ActionType DRT::ELEMENTS::Condif3::convertStringToAction
   DRT::ELEMENTS::Condif3::ActionType act = Condif3::none;
   if (action == "calc_condif_systemmat_and_residual")
     act = Condif3::calc_condif_systemmat_and_residual;
-  else if (action == "initialize_one_step_theta")
-    act = Condif3::initialize_one_step_theta;
+  else if (action == "calc_initial_time_deriv")
+    act = Condif3::calc_initial_time_deriv;
   else if (action == "calc_subgrid_diffusivity_matrix")
     act = Condif3::calc_subgrid_diffusivity_matrix;
   else if (action == "calc_condif_flux")
@@ -111,7 +111,7 @@ int DRT::ELEMENTS::Condif3::Evaluate(ParameterList& params,
   }
   break;
   // calculate time derivative for time value t_0
-  case DRT::ELEMENTS::Condif3::initialize_one_step_theta:
+  case DRT::ELEMENTS::Condif3::calc_initial_time_deriv:
   {
     return DRT::ELEMENTS::Condif3ImplInterface::Impl(this)->Evaluate(
              this,

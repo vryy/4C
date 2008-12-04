@@ -842,7 +842,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  ),
                                &fdyn);
 
-  setStringToIntegralParameter<int>("FSSUGRVISC","No","fine-scale subgrid diffusivity/viscosity",
+  setStringToIntegralParameter<int>("CONVFORM","convective","form of convective term",
+                               tuple<std::string>(
+                                 "convective",
+                                 "conservative"
+                                 ),
+                               tuple<int>(0,1),
+                               &fdyn);
+
+  setStringToIntegralParameter<int>("FSSUGRVISC","No","fine-scale subgrid viscosity",
                                tuple<std::string>(
                                  "No",
                                  "artificial_all",
@@ -1237,6 +1245,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "diffusiveflux_boundary"
                                  ),
                                tuple<int>(0,1,2,3,4),
+                               &scatradyn);
+
+  setStringToIntegralParameter<int>("CONVFORM","convective","form of convective term",
+                               tuple<std::string>(
+                                 "convective",
+                                 "conservative"
+                                 ),
+                               tuple<int>(0,1),
                                &scatradyn);
 
   setStringToIntegralParameter<int>("FSSUGRVISC","No","fine-scale subgrid diffusivity",

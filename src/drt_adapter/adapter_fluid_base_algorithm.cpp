@@ -178,6 +178,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   int init = Teuchos::getIntegralValue<int>(fdyn,"INITIALFIELD");
   fluidtimeparams->set                  ("eval err for analyt sol"   ,init);
 
+  // ------------------------------------------ form of convective term
+  fluidtimeparams->set<string> ("form of convective term", fdyn.get<string>("CONVFORM"));
+
   // ---------------------------- fine-scale subgrid viscosity approach
   fluidtimeparams->set<string>           ("fs subgrid viscosity"   ,fdyn.get<string>("FSSUGRVISC"));
 

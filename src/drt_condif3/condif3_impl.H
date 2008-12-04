@@ -144,6 +144,7 @@ public:
         const double                          alphaF, ///< factor for generalized-alpha time integration
         const LINALG::Matrix<3,iel>&          evelnp,///< nodal velocities at t_{n+1}
         const bool                            temperature, ///< temperature flag
+        const bool                            conservative, ///< flag for conservative form
         const enum Condif3::TauType           whichtau, ///< flag for stabilization parameter definition
         const string                          fssgd, ///< subgrid-diff. flag
         const bool                            is_stationary, ///< flag indicating stationary formulation
@@ -152,8 +153,8 @@ public:
         const double                          frt ///< factor F/RT needed for ELCH calculations
     );
 
-    //! calculate mass matrix and rhs for initializing One-Step-Theta time integration
-    virtual void InitializeOST(
+    //! calculate mass matrix and rhs for determining initial time derivative
+    virtual void InitialTimeDerivative(
         const DRT::ELEMENTS::Condif3*         ele,  ///< the element
         const vector<LINALG::Matrix<iel,1> >& ephi0, ///< initial scalar field
         const LINALG::Matrix<iel,1>&          edens0, ///< initial density field
@@ -167,6 +168,7 @@ public:
         const double                          timefac, ///< time discretization factor
         const LINALG::Matrix<3,iel>&          evel0, ///< initial nodal velocities
         const bool                            temperature, ///< temperature flag
+        const bool                            conservative, ///< flag for conservative form
         const enum Condif3::TauType           whichtau, ///< flag for stabilization parameter definition
         const string                          fssgd, ///< subgrid-diff. flag
         const double                          frt ///< factor F/RT needed for ELCH calculations
@@ -223,24 +225,17 @@ public:
         const double& e3  ///< third coordinate of GP
     );
 
-    //! calculate element matrix and rhs vector (One-Step-Theta, BDF2)
+    //! calculate element matrix and rhs vector (One-Step-Theta, BDF2, Gen.-alpha)
     virtual void CalMat(
-        Epetra_SerialDenseMatrix& estif,
-        Epetra_SerialDenseVector& eforce,
-        const bool                higher_order_ele,
-        const double&             timefac,
-        const int&                dofindex
-    );
-
-    //! calculate element matrix and rhs vector (One-Step-Theta, BDF2)
-    virtual void CalMatGenAlpha(
-        Epetra_SerialDenseMatrix&                                 estif,
-        Epetra_SerialDenseVector&                                 eforce,
+        Epetra_SerialDenseMatrix&            estif,
+        Epetra_SerialDenseVector&            eforce,
         const vector<LINALG::Matrix<iel,1> >& ephinp,
-        const bool                                                higher_order_ele,
-        const double&                                             timefac,
-        const double&                                             alphaF,
-        const int&                                                dofindex
+        const bool                           higher_order_ele,
+        const bool                           conservative,
+        const bool                           is_genalpha,
+        const double&                        timefac,
+        const double&                        alphaF,
+        const int&                           dofindex
     );
 
     //! calculate element matrix and rhs vector (Stationary problem formulation)
@@ -248,6 +243,7 @@ public:
         Epetra_SerialDenseMatrix& estif,
         Epetra_SerialDenseVector& eforce,
         const bool                higher_order_ele,
+        const bool                conservative,
         const int&                dofindex
     );
 

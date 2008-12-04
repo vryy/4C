@@ -95,11 +95,13 @@ DRT::ELEMENTS::Fluid2Stationary<distype>::Fluid2Stationary()
     bodyforce_(),
     //velino_(2),
     velint_(),
+    ndwvelint_(),
     fsvelint_(),
     gradp_(),
     tau_(),
     viscs2_(),
     conv_c_(),
+    ndwconv_c_(),
     mdiv_(),
     vdiv_(),
     rhsmom_(),
@@ -167,15 +169,19 @@ int DRT::ELEMENTS::Fluid2Stationary<distype>::Evaluate(
   if (pseudotime < 0.0)
     dserror("no value for total (pseudo-)time in the parameter list");
 
-  // --------------------------------------------------
-  // set parameters for linearization and potential low-Mach-number solver
-  string newtonstr=params.get<string>("Linearisation");
-  string lomastr  =params.get<string>("low-Mach-number solver");
-
+  // ---------------------------------------------------------------------
+  // get control parameters for linearization, low-Mach-number solver
+  // and form of convective term
+  //----------------------------------------------------------------------
+  string newtonstr   = params.get<string>("Linearisation");
+  string lomastr     = params.get<string>("low-Mach-number solver");
+  string convformstr = params.get<string>("form of convective term");
   bool newton = false;
   bool loma   = false;
-  if(newtonstr=="Newton") newton=true;
-  if(lomastr  =="Yes"   ) loma  =true;
+  bool conservative = false;
+  if(newtonstr=="Newton")          newton       = true;
+  if(lomastr  =="Yes")             loma         = true;
+  if(convformstr =="conservative") conservative = true;
 
   // --------------------------------------------------
   // set parameters for stabilisation
@@ -241,6 +247,7 @@ int DRT::ELEMENTS::Fluid2Stationary<distype>::Evaluate(
          pseudotime,
          newton,
          loma,
+         conservative,
          higher_order_ele,
          fssgv,
          pspg,
@@ -283,8 +290,9 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::Sysmat(
   LINALG::Matrix<3*iel,    1>&            eforce,
   struct _MATERIAL*                       material,
   double                                  pseudotime,
-  bool                                    newton,
-  bool                                    loma,
+  const bool                              newton,
+  const bool                              loma,
+  const bool                              conservative,
   const bool                              higher_order_ele,
   const enum Fluid2::StabilisationAction  fssgv,
   const enum Fluid2::StabilisationAction  pspg,
@@ -661,6 +669,15 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::Sysmat(
     /* Convective term  u_old * grad u_old: */
     conv_old_.Multiply(vderxy_, velint_);
 
+    // For conservative form of convective term, we also need "pure"
+    // (i.e., non-density-weighted) velocity (including potential ALE
+    // velocity) and convective part.
+    if (conservative)
+    {
+      ndwvelint_.Multiply(evelnp,funct_);
+      ndwconv_c_.MultiplyTN(derxy_,ndwvelint_);
+    }
+
     if (higher_order_ele)
     {
       /*--- viscous term: div(epsilon(u)) -------------------------------*/
@@ -729,11 +746,11 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::Sysmat(
     /*
       This is the operator
 
-                /               \
-               | resM    o nabla |
-                \    (i)        /
+                  /                      \
+                 | (rho*resM)    o nabla |
+                  \         (i)          /
 
-      required for (lhs) cross- and (rhs) Reynolds-stress calculation
+                  required for (lhs) cross- and (rhs) Reynolds-stress calculation
 
     */
 
@@ -745,27 +762,143 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::Sysmat(
       //----------------------------------------------------------------------
       //                            GALERKIN PART
 
-      for (int ui=0; ui<numnode; ++ui)
+      // computation of convection (convective and reactive part)
+      // for conservative form including right-hand-side contribution
+      if (conservative)
       {
-        const int fui  = 3*ui;
-        const int fuip = fui+1;
-        const double v = fac*conv_c_(ui);
+        for (int ui=0; ui<numnode; ++ui)
+        {
+          const int fui = 3*ui;
+          const int fuip = fui+1;
+          const double v0 = fac*funct_(ui)*velint_(0);
+          const double v1 = fac*funct_(ui)*velint_(1);
+
+          for (int vi=0; vi<numnode; ++vi)
+          {
+            const int fvi  = 3*vi;
+            const int fvip = fvi+1;
+            /* convection, convective part */
+            /*
+
+            /                                   \
+            |  /              n+1  \             |
+            | | Du (x) (rho*u)     |  , nabla v  |
+            |  \              (i)  /             |
+            \                                   /
+
+            */
+            estif(fvi,  fui ) -= v0*derxy_(0, vi);
+            estif(fvi,  fuip) -= v0*derxy_(1, vi);
+            estif(fvip, fui ) -= v1*derxy_(0, vi);
+            estif(fvip, fuip) -= v1*derxy_(1, vi);
+          }
+        }
+
+        if (newton)
+        {
+          for (int ui=0; ui<numnode; ++ui)
+          {
+            const int fui  = 3*ui;
+            const int fuip = fui+1;
+            const double v = fac*densfunct_(ui);
+
+            for (int vi=0; vi<numnode; ++vi)
+            {
+              const int fvi  = 3*vi;
+              const int fvip = fvi+1;
+              /* convection, reactive part */
+              /*
+
+              /                                     \
+              |  / n+1                \             |
+              | | u    (x) D(rho*u)   |  , nabla v  |
+              |  \ (i)               /              |
+              \                                    /
+
+              */
+              double v2 = v*ndwconv_c_(vi) ;
+              estif(fvi,  fui ) -= v2;
+              estif(fvip, fuip) -= v2;
+            }
+          }
+        }
+
+        for (int vi=0; vi<numnode; ++vi)
+        {
+          const int fvi  = 3*vi;
+          const int fvip = fvi+1;
+          /* convection */
+          double v = fac*ndwconv_c_(vi);
+          eforce(fvi ) += v*velint_(0) ;
+          eforce(fvip) += v*velint_(1) ;
+        }
+      }
+      // computation of convection (convective and reactive part)
+      // for convective form including right-hand-side contribution
+      else
+      {
+        for (int ui=0; ui<numnode; ++ui)
+        {
+          const int fui  = 3*ui;
+          const int fuip = fui+1;
+          const double v = fac*conv_c_(ui);
+          for (int vi=0; vi<numnode; ++vi)
+          {
+            const int fvi  = 3*vi;
+            const int fvip = fvi+1;
+            /* convection, convective part */
+            /*
+
+            /                               \
+            |  /       n+1        \         |
+            | | (rho*u)   o nabla | Du , v  |
+            |  \      (i)        /          |
+            \                              /
+
+            */
+            double v2 = v*funct_(vi) ;
+            estif(fvi , fui ) += v2;
+            estif(fvip, fuip) += v2;
+          }
+        }
+
+        if (newton)
+        {
+          for (int vi=0; vi<numnode; ++vi)
+          {
+            const int fvi  = 3*vi;
+            const int fvip = fvi+1;
+            const double v = fac*funct_(vi);
+            for (int ui=0; ui<numnode; ++ui)
+            {
+              const int fui  = 3*ui;
+              const int fuip = fui+1;
+              const double v2 = v*densfunct_(ui);
+
+              /*  convection, reactive part
+
+              /                                 \
+              |  /                \   n+1       |
+              | | D(rho*u) o nabla | u     , v  |
+              |  \                /   (i)       |
+              \                                /
+              */
+              estif(fvi,  fui ) += v2*vderxy_(0, 0) ;
+              estif(fvi,  fuip) += v2*vderxy_(0, 1) ;
+              estif(fvip, fui ) += v2*vderxy_(1, 0) ;
+              estif(fvip, fuip) += v2*vderxy_(1, 1) ;
+            }
+          }
+        }
+
         for (int vi=0; vi<numnode; ++vi)
         {
           const int fvi = 3*vi;
-          /* convection, convective part */
-          /*
-
-                       /                                \
-                      |  /                   \          |
-                      | | dens   u   o nabla | Du , v   |
-                      |  \   (i)  (i)        /          |
-                       \                                /
-
-          */
-          double v2 = v*funct_(vi) ;
-          estif(fvi,     fui ) += v2 ;
-          estif(fvi + 1, fuip) += v2 ;
+          const int fvip = fvi+1;
+          /* convection */
+          double v = -fac*funct_(vi);
+          eforce(fvi ) += v*conv_old_(0) ;
+          eforce(fvip) += v*conv_old_(1) ;
         }
       }
 
@@ -806,7 +939,7 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::Sysmat(
         for (int vi=0; vi<numnode; ++vi)
         {
           const int fvi  = 3*vi;
-          /*  prssure term */
+          /*  pressure term */
           /*
 
           /                  \
@@ -830,55 +963,17 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::Sysmat(
         {
           const int fui = 3*ui;
 
-          /* Divergenzfreiheit */
+          /* divergence */
           /*
-            /                  \
-            |                  |
-            | nabla o Du  , q  |
-            |                  |
-            \                  /
+            /                              \
+            |                              |
+            | nabla o D(rho*u)  , (q/rho)  |
+            |                              |
+            \                              /
           */
           estif(fvipp, fui    ) += v*densderxy_(0, ui) ;
           estif(fvipp, fui + 1) += v*densderxy_(1, ui) ;
         }
-      }
-
-      if (newton)
-      {
-        for (int vi=0; vi<numnode; ++vi)
-        {
-          const int fvi  = 3*vi;
-          const int fvip = fvi+1;
-          const double v = fac*funct_(vi);
-          for (int ui=0; ui<numnode; ++ui)
-          {
-            const int fui  = 3*ui;
-            const int fuip = fui+1;
-            const double v2 = v * densfunct_(ui);
-            /*  convection, reactive part
-
-            /                           \
-            |  /          \   n+1       |
-            | | Du o nabla | u     , v  |
-            |  \          /   (i)       |
-            \                           /
-            */
-            estif(fvi,  fui ) += v2*vderxy_(0, 0) ;
-            estif(fvi,  fuip) += v2*vderxy_(0, 1) ;
-            estif(fvip, fui ) += v2*vderxy_(1, 0) ;
-            estif(fvip, fuip) += v2*vderxy_(1, 1) ;
-          }
-        }
-      }
-
-      /* right hand side */
-      for (int vi=0; vi<numnode; ++vi)
-      {
-        const int fvi  = 3*vi;
-        /* convection */
-        const double v = -fac*funct_(vi);
-        eforce(fvi    ) += v*(velint_(0)*vderxy_(0, 0)+velint_(1)*vderxy_(0, 1)) ;
-        eforce(fvi + 1) += v*(velint_(0)*vderxy_(1, 0)+velint_(1)*vderxy_(1, 1)) ;
       }
 
       {
@@ -979,18 +1074,16 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::Sysmat(
           for (int vi=0; vi<numnode; ++vi)
           {
             const int fvipp  = 3*vi+2;
-
             /* pressure stabilisation: convection, convective part */
             /*
 
-            /                            \
-            |  / n+1       \               |
-            | | u   o nabla | Du , nabla q |
-            |  \ (i)       /               |
-            \                            /
+            /                                     \
+            |  /       n+1        \               |
+            | | (rho*u)   o nabla | Du , nabla q  |
+            |  \      (i)         /               |
+            \                                    /
 
             */
-
             estif(fvipp, fui ) += v*derxy_(0, vi) ;
             estif(fvipp, fuip) += v*derxy_(1, vi) ;
           }
@@ -1057,11 +1150,11 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::Sysmat(
               const int fvipp  = 3*vi+2;
               /*  pressure stabilisation: convection, reactive part
 
-              /                             \
-              |  /          \   n+1           |
-              | | Du o nabla | u     , grad q |
-              |  \          /   (i)           |
-              \                             /
+              /                                     \
+              |  /                 \  n+1           |
+              | | D(rho*u) o nabla | u     , grad q |
+              |  \                /   (i)           |
+              \                                     /
 
               */
               estif(fvipp, fui ) += v*(derxy_(0, vi)*vderxy_(0, 0)
@@ -1101,14 +1194,13 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::Sysmat(
 
             /*
 
-            /                                           \
-            |    / n+1        \        / n+1        \     |
-            |   | u    o nabla | Du , | u    o nabla | v  |
-            |    \ (i)        /        \ (i)        /     |
-            \                                           /
+            /                                                         \
+            |    /       n+1        \        /       n+1        \     |
+            |   | (rho*u)    o nabla | Du , | (rho*u)    o nabla | v  |
+            |    \       (i)        /        \       (i)        /     |
+            \                                                         /
 
             */
-
             const double v2 = v*conv_c_(vi);
             estif(fvi,     fui ) += v2;
             estif(fvi + 1, fuip) += v2;
@@ -1123,14 +1215,13 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::Sysmat(
           for (int ui=0; ui<numnode; ++ui)
           {
             const int fuipp = 3*ui+2;
-
             /* supg stabilisation: pressure part  ( L_pres_p) */
             /*
-              /                              \
-              |              / n+1       \     |
-              |  nabla Dp , | u   o nabla | v  |
-              |              \ (i)       /     |
-              \                              /
+              /                                      \
+              |              /       n+1       \     |
+              |  nabla Dp , | (rho*u)   o nabla | v  |
+              |              \       (i)       /     |
+              \                                     /
             */
             estif(fvi,  fuipp) += v*derxy_(0, ui) ;
             estif(fvip, fuipp) += v*derxy_(1, ui) ;
@@ -1148,14 +1239,13 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::Sysmat(
             {
               const int fui  = 3*ui;
               const int fuip = fui+1;
-
               /* supg stabilisation: viscous part  (-L_visc_u) */
               /*
-                /                                        \
-                |               /  \    / n+1        \     |
-                |  nabla o eps | Du |, | u    o nabla | v  |
-                |               \  /    \ (i)        /     |
-                \                                        /
+                /                                                \
+                |               /  \    /       n+1        \     |
+                |  nabla o eps | Du |, | (rho*u)    o nabla | v  |
+                |               \  /    \       (i)        /     |
+                \                                                /
               */
               estif(fvi,  fui ) += v*viscs2_(0, ui) ;
               estif(fvip, fui ) += v*viscs2_(1, ui) ;
@@ -1183,17 +1273,17 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::Sysmat(
                 const int fvip = fvi+1;
                 /* supg stabilisation: reactive part of convection and linearisation of testfunction ( L_conv_u) */
                 /*
-                  /                                           \
-                  |    / n+1        \   n+1    /          \     |
-                  |   | u    o nabla | u    , | Du o nabla | v  |
-                  |    \ (i)        /   (i)    \          /     |
-                  \                                           /
+                  /                                                         \
+                  |    /       n+1        \   n+1    /                \     |
+                  |   | (rho*u)    o nabla | u    , | D(rho*u) o nabla | v  |
+                  |    \       (i)        /   (i)    \                /     |
+                  \                                                        /
 
-                  /                                           \
-                  |    /          \   n+1    / n+1        \     |
-                  |   | Du o nabla | u    , | u    o nabla | v  |
-                  |    \          /   (i)    \ (i)        /     |
-                  \                                           /
+                  /                                                         \
+                  |    /                \   n+1    /       n+1        \     |
+                  |   | D(rho*u) o nabla | u    , | (rho*u)    o nabla | v  |
+                  |    \                /   (i)    \       (i)        /     |
+                  \                                                        /
                 */
                 estif(fvi,  fui ) += (conv_c_(vi)*vderxy_(0, 0) + v0*derxy_(0, vi))*v;
                 estif(fvip, fui ) += (conv_c_(vi)*vderxy_(1, 0) + v1*derxy_(0, vi))*v;
@@ -1215,11 +1305,11 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::Sysmat(
               const int fvip = fvi+1;
               /* supg stabilisation: pressure part, linearisation of test function  ( L_pres_p) */
               /*
-                /                               \
-                |         n+1    /          \     |
-                |  nabla p    , | Du o nabla | v  |
-                |         (i)    \          /     |
-                \                               /
+                /                                       \
+                |         n+1    /                \     |
+                |  nabla p    , | D(rho*u) o nabla | v  |
+                |         (i)    \                /     |
+                \                                      /
               */
               estif(fvi,  fui ) += v*gradp_(0)*derxy_(0, vi) ;
               estif(fvip, fui ) += v*gradp_(1)*derxy_(0, vi) ;
@@ -1245,11 +1335,11 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::Sysmat(
                 const int fvip = fvi+1;
                 /* supg stabilisation: viscous part, linearisation of test function  (-L_visc_u) */
                 /*
-                  /                                           \
-                  |               / n+1 \    /          \     |
-                  |  nabla o eps | u     |, | Du o nabla | v  |
-                  |               \ (i) /    \          /     |
-                  \                                           /
+                  /                                                 \
+                  |               / n+1 \    /                \     |
+                  |  nabla o eps | u     |, | D(rho*u) o nabla | v  |
+                  |               \ (i) /    \                /     |
+                  \                                                 /
                 */
                 estif(fvi,  fui ) += v0*derxy_(0, vi) ;
                 estif(fvip, fui ) += v1*derxy_(0, vi) ;
@@ -1272,15 +1362,14 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::Sysmat(
             {
               const int fvi  = 3*vi;
               const int fvip = fvi+1;
-
               /* supg stabilisation: bodyforce part, linearisation of test function */
 
               /*
-                /                             \
-                |              /          \     |
-                |  rhsint   , | Du o nabla | v  |
-                |              \          /     |
-                \                             /
+                /                                     \
+                |              /                \     |
+                |  rhsint   , | D(rho*u) o nabla | v  |
+                |              \                /     |
+                \                                     /
 
               */
               estif(fvi , fui ) += v0*derxy_(0, vi) ;
@@ -1331,11 +1420,11 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::Sysmat(
                 const int fvip = fvi+1;
                 /* viscous stabilisation, convective part */
                 /*
-                  /                                  \
-                  |  / n+1       \                   |
-              +/- | | u   o nabla | Du , div eps (v) |
-                  |  \ (i)       /                   |
-                  \                                  /
+                  /                                        \
+                  |  /       n+1       \                   |
+              +/- | | (rho*u)   o nabla | Du , div eps (v) |
+                  |  \       (i)       /                   |
+                  \                                        /
                 */
                 estif(fvi,  fui ) += v*viscs2_(0, vi) ;
                 estif(fvip, fui ) += v*viscs2_(1, vi) ;
@@ -1407,11 +1496,11 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::Sysmat(
                   const int fvip = fvi+1;
                   /* viscous stabilisation, reactive part of convection */
                   /*
-                    /                                   \
-                    |  /          \   n+1               |
-                +/- | | Du o nabla | u    , div eps (v) |
-                    |  \          /   (i)               |
-                    \                                   /
+                    /                                         \
+                    |  /                \   n+1               |
+                +/- | | D(rho*u) o nabla | u    , div eps (v) |
+                    |  \                /   (i)               |
+                    \                                         /
                   */
                   estif(fvi,  fui ) += v*(viscs2_(0,vi)*vderxy_(0,0)+viscs2_(1,vi)*vderxy_(1,0)) ;
                   estif(fvip, fui ) += v*(viscs2_(1,vi)*vderxy_(0,0)+viscs2_(3,vi)*vderxy_(1,0)) ;
@@ -1452,11 +1541,11 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::Sysmat(
             const int fvip = fvi+1;
             /* continuity stabilisation on left hand side */
             /*
-              /                          \
-              |                          |
-              | nabla o Du  , nabla o v  |
-              |                          |
-              \                          /
+              /                                      \
+              |                                      |
+              | nabla o D(rho*u)  , nabla o (rho*v)  |
+              |                                      |
+              \                                      /
             */
             estif(fvi,  fui ) += v0*densderxy_(0, vi) ;
             estif(fvip, fui ) += v0*densderxy_(1, vi) ;
@@ -1494,11 +1583,11 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::Sysmat(
               /* cross-stress part on lhs */
               /*
 
-                          /                        \
-                         |  /            \          |
-                      -  | | resM o nabla | Du , v  |
-                         |  \            /          |
-                          \                        /
+                          /                               \
+                         |  /                  \          |
+                      -  | | (rho*resM) o nabla | Du , v  |
+                         |  \                  /          |
+                          \                               /
               */
               const double v2 = v*funct_(vi);
               estif(fvi , fui ) -= v2 ;
@@ -1513,11 +1602,11 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::Sysmat(
           /* cross-stress part on rhs */
           /*
 
-                          /                         \
-                         |  /            \           |
-                         | | resM o nabla | u   , v  |
-                         |  \            /  (i)      |
-                          \                         /
+                          /                                \
+                         |  /                  \           |
+                         | | (rho*resM) o nabla | u   , v  |
+                         |  \                  /  (i)      |
+                          \                               /
           */
           double v = tau_M*funct_(vi);
           eforce(fvi    ) += v*(res_old_(0)*mderxy_(0,0)+res_old_(1)*mderxy_(0,1));
@@ -1537,11 +1626,11 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::Sysmat(
           /* Reynolds-stress part on rhs */
           /*
 
-                  /                             \
-                 |                               |
-                 |  resM   , ( resM o nabla ) v  |
-                 |                               |
-                  \                             /
+                  /                                    \
+                 |                                     |
+                 |  resM   ,   (rho*resM) o nabla ) v  |
+                 |                                     |
+                  \                                    /
           */
           const double v = tauMtauM*conv_resM_(vi);
           eforce(fvi    ) += v*res_old_(0);

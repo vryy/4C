@@ -159,8 +159,9 @@ namespace ELEMENTS
                 LINALG::Matrix<4*iel,1>&     eforce,
                 struct _MATERIAL*                                material,
                 double                                           pseudotime,
-                bool                                             newton,
-                bool                                             loma,
+                const bool                                       newton,
+                const bool                                       loma,
+                const bool                                       conservative,
                 const bool                                       higher_order_ele,
                 const enum Fluid3::StabilisationAction           fssgv,
                 const enum Fluid3::StabilisationAction           pspg,
@@ -215,12 +216,14 @@ namespace ELEMENTS
     LINALG::Matrix<6,iel> derxy2_;    /// second shape derivative with respect to x
     LINALG::Matrix<3,1> bodyforce_; /// volumetric load at gausspoint
     LINALG::Matrix<3,1> velino_;
-    LINALG::Matrix<3,1> velint_;    /// velocity
+    LINALG::Matrix<3,1> velint_;    /// density-weighted velocity
+    LINALG::Matrix<3,1> ndwvelint_; /// non-density-weighted velocity
     LINALG::Matrix<3,1> fsvelint_;  /// fine-scale velocity
     LINALG::Matrix<3,1> gradp_;     /// pressure gradient
     LINALG::Matrix<3,1> tau_;       /// tau_Mu, tau_Mp, tau_C
     LINALG::Matrix<3*3,iel> viscs2_;    /// viscous term including 2nd derivatives
     LINALG::Matrix<iel,1> conv_c_;    /// linearisation of convect, convective part
+    LINALG::Matrix<iel,1> ndwconv_c_; /// non-density-weighted linearisation of conv.
     double mdiv_;                      /// momentum divergence
     double vdiv_;                      /// velocity divergence
     LINALG::Matrix<3,1> rhsmom_;    /// momentum equation right hand side

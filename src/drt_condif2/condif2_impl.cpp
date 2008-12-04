@@ -134,7 +134,8 @@ void DRT::ELEMENTS::Condif2Impl::Sysmat(
     const double                    timefac, ///< time discretization factor
     const double                    alphaF, ///< factor for gen.-alpha time int.
     const Epetra_SerialDenseVector& evelnp, ///< nodal velocities at n+1
-    bool                            temperature, ///< temperature flag
+    const bool                      temperature, ///< temperature flag
+    const bool                      conservative, ///< flag for conservative form
     const enum Condif2::TauType     whichtau, ///< flag for stabilization parameter definition
     string                          fssgd, ///< subgrid-diff. flag
     const bool                      is_stationary, ///< stationary flag
@@ -260,12 +261,9 @@ void DRT::ELEMENTS::Condif2Impl::Sysmat(
     for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
     {
       if (not is_stationary)
-        if (is_genalpha)
-          CalMatGenAlpha(*sys_mat,*residual,ephinp,higher_order_ele,timefac,alphaF,k);
-        else
-          CalMat(*sys_mat,*residual,higher_order_ele,timefac,k);
+        CalMat(*sys_mat,*residual,ephinp,higher_order_ele,conservative,is_genalpha,timefac,alphaF,k);
       else
-        CalMatStationary(*sys_mat,*residual,higher_order_ele,k);
+        CalMatStationary(*sys_mat,*residual,higher_order_ele,conservative,k);
     } // loop over each scalar
 
   } // integration loop
@@ -1036,284 +1034,359 @@ for further comments see comment lines within code.
 \param  *eforce     DOUBLE        (o)   ele force vector
 \return void
 ------------------------------------------------------------------------*/
-
 void DRT::ELEMENTS::Condif2Impl::CalMat(
-    Epetra_SerialDenseMatrix& estif,
-    Epetra_SerialDenseVector& eforce,
-    const bool                higher_order_ele,
-    const double&             timefac,
-    const int&                dofindex
-    )
-{
-static double             rhsint;           /* rhs at int. point     */
-
-// stabilization parameter
-const double taufac = tau_[dofindex]*fac_;
-
-// integration factors and coefficients of single terms
-const double timefacfac  = timefac * fac_;
-const double timetaufac  = timefac * taufac;
-
-/*-------------------------------- evaluate rhs at integration point ---*/
-rhsint = hist_[dofindex] + rhs_[dofindex]*timefac;
-
-for (int i=0; i<iel_; i++)
-{
-   /* convective part */
-   /* rho * c_p * u_x * N,x  +  rho * c_p * u_y * N,y
-      with  N .. form function matrix */
-   conv_[i] = velint_[0] * derxy_(0,i) + velint_[1] * derxy_(1,i);
-}
-
-if (higher_order_ele)
-{
-  for (int i=0; i<iel_; i++)
-  {
-    /* diffusive part */
-    /* diffus * ( N,xx  +  N,yy ) */
-    diff_[i] = diffus_[dofindex] * (derxy2_(0,i) + derxy2_(1,i));
-  }
-}
-
-/*--------------------------------- now build single stiffness terms ---*/
-const int numdof =numdofpernode_;
-// -------------------------------------------System matrix
-for (int vi=0; vi<iel_; ++vi)
-{
-  for (int ui=0; ui<iel_; ++ui)
-  {
-    /* Standard Galerkin terms: */
-    /* transient term */
-    estif(vi*numdof+dofindex, ui*numdof+dofindex) += fac_*funct_[vi]*densfunct_[ui] ;
-
-    /* convective term */
-    estif(vi*numdof+dofindex, ui*numdof+dofindex) += timefacfac*funct_[vi]*conv_[ui] ;
-
-    /* diffusive term */
-    estif(vi*numdof+dofindex, ui*numdof+dofindex) += timefacfac*diffus_[dofindex]*(derxy_(0, ui)*derxy_(0, vi) + derxy_(1, ui)*derxy_(1, vi)) ;
-
-    /* Stabilization terms: */
-    /* 1) transient stabilization (USFEM assumed here, sign change necessary for GLS) */
-    /* transient term */
-    //estif(vi, ui) += -taufac*densfunct_[vi]*densfunct_[ui] ;
-
-    /* convective term */
-    //estif(vi, ui) += -timetaufac*densfunct_[vi]*conv_[ui] ;
-
-    /* diffusive term */
-    //if (higher_order_ele) estif(vi, ui) += timetaufac*densfunct_[vi]*diff[ui] ;
-
-    /* 2) convective stabilization */
-    /* transient term */
-    estif(vi*numdof+dofindex, ui*numdof+dofindex) += taufac*conv_[vi]*densfunct_[ui];
-
-    /* convective term */
-    estif(vi*numdof+dofindex, ui*numdof+dofindex) += timetaufac*conv_[vi]*conv_[ui] ;
-
-    if (higher_order_ele)
-    {
-      /* diffusive term */
-      estif(vi*numdof+dofindex, ui*numdof+dofindex) += -timetaufac*conv_[vi]*diff_[ui] ;
-
-      /* 2) diffusive stabilization (USFEM assumed here, sign change necessary for GLS) */
-      /* transient term */
-      estif(vi*numdof+dofindex, ui*numdof+dofindex) += taufac*diff_[vi]*densfunct_[ui] ;
-
-      /* convective term */
-      estif(vi*numdof+dofindex, ui*numdof+dofindex) += timetaufac*diff_[vi]*conv_[ui] ;
-
-      /* diffusive term */
-      estif(vi*numdof+dofindex, ui*numdof+dofindex) += -timetaufac*diff_[vi]*diff_[ui] ;
-    }
-  }
-}
-
-// ----------------------------------------------RHS
-for (int vi=0; vi<iel_; ++vi)
-{
-  /* RHS source term */
-  eforce[vi*numdof+dofindex] += fac_*funct_[vi]*rhsint ;
-
-  /* transient stabilization of RHS source term */
-  //eforce[vi] += -taufac*densfunct_[vi]*rhsint ;
-
-  /* convective stabilization of RHS source term */
-  eforce[vi*numdof+dofindex] += taufac*conv_[vi]*rhsint ;
-
-  /* diffusive stabilization of RHS source term */
-  if (higher_order_ele) eforce[vi*numdof+dofindex] += taufac*diff_[vi]*rhsint ;
-}
-
-return;
-} //Condif2Impl::Condif2CalMat
-
-
-/*----------------------------------------------------------------------*
- |  evaluate instationary convection-diffusion matrix for               |
- |  generalized-alpha time-integration scheme (private)        vg 11/08 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Condif2Impl::CalMatGenAlpha(
     Epetra_SerialDenseMatrix& estif,
     Epetra_SerialDenseVector& eforce,
     const vector<double>&     ephinp,
     const bool                higher_order_ele,
+    const bool                conservative,
+    const bool                is_genalpha,
     const double&             timefac,
     const double&             alphaF,
     const int&                dofindex
     )
 {
-static double rhsint;           /* rhs at int. point     */
+// number of degrees of freedom per node
+const int numdof = numdofpernode_;
 
-// stabilization parameter
-const double taufac = tau_[dofindex]*fac_;
+// stabilization parameter and integration factors
+const double taufac     = tau_[dofindex]*fac_;
+const double timefacfac = timefac*fac_;
+const double timetaufac = timefac*taufac;
+const double fac_diffus = timefacfac*diffus_[dofindex];
 
-// integration factors and coefficients of single terms
-const double timefacfac  = timefac * fac_;
-const double timetaufac  = timefac * taufac;
-const double rhstimefacfac  = (1.0 - alphaF)/alphaF * timefacfac;
-const double rhstimetaufac  = (1.0 - alphaF)/alphaF * timetaufac;
-
-/*-------------------------------- evaluate rhs at integration point ---*/
+// evaluate rhs at integration point
+static double rhsint;
 rhsint = hist_[dofindex] + rhs_[dofindex]*(timefac/alphaF);
 
+// convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
 for (int i=0; i<iel_; i++)
 {
-   /* convective part */
-   /* rho * c_p * u_x * N,x  +  rho * c_p * u_y * N,y
-      with  N .. form function matrix */
-   conv_[i] = velint_[0] * derxy_(0,i) + velint_[1] * derxy_(1,i);
+  conv_[i] = velint_[0] * derxy_(0,i) + velint_[1] * derxy_(1,i);
 }
 
-/* gradient of scalar at time step n */
-for (int i=0;i<2;i++)
-{
-  gradphi_[i]=0.0;
-  for (int j=0;j<iel_;j++)
-  {
-    gradphi_[i] += derxy_(i,j)*ephinp[j];
-  }
-}
-
-/* convective part at time step n */
-double convn = velint_[0] * gradphi_[0] + velint_[1] * gradphi_[0];
-
-double diffn = 0.0;
+// diffusive part: diffus*(N,xx+ N,yy)
 if (higher_order_ele)
 {
-  for (int i=0;i<2;i++)
+  for (int i=0; i<iel_; i++)
   {
-    lapphi_[i]=0.0;
-    for (int j=0;j<iel_;j++)
-    {
-      /* second gradient (Laplacian) of scalar at time step n */
-      lapphi_[i] += derxy2_(i,j)*ephinp[j];
-
-      /* diffusive part */
-      /* diffus * ( N,xx  +  N,yy ) */
-      diff_[j] = diffus_[dofindex] * (derxy2_(0,j) + derxy2_(1,j));
-    }
+    diff_[i] = diffus_[dofindex] * (derxy2_(0,i) + derxy2_(1,i));
   }
-
-  /* diffusive part at time step n */
-  diffn = diffus_[dofindex] * (lapphi_[0] + lapphi_[1]);
 }
 
-/*--------------------------------- now build single stiffness terms ---*/
-const int numdof =numdofpernode_;
-// -------------------------------------------System matrix
+//----------------------------------------------------------------
+// element matrix: standard Galerkin terms
+//----------------------------------------------------------------
+// transient term
 for (int vi=0; vi<iel_; ++vi)
 {
+  const double v = fac_*funct_[vi];
+  const int fvi = vi*numdof+dofindex;
+
   for (int ui=0; ui<iel_; ++ui)
   {
-    /* Standard Galerkin terms: */
-    /* transient term */
-    estif(vi*numdof+dofindex, ui*numdof+dofindex) += fac_*funct_[vi]*densfunct_[ui] ;
+    const int fui = ui*numdof+dofindex;
 
-    /* convective term */
-    estif(vi*numdof+dofindex, ui*numdof+dofindex) += timefacfac*funct_[vi]*conv_[ui] ;
+    estif(fvi,fui) += v*densfunct_[ui];
+  }
+}
 
-    /* diffusive term */
-    estif(vi*numdof+dofindex, ui*numdof+dofindex) += timefacfac*diffus_[dofindex]*(derxy_(0, ui)*derxy_(0, vi) + derxy_(1, ui)*derxy_(1, vi)) ;
+// convective term
+if (conservative)
+{
+  // convective term in conservative form
+  for (int vi=0; vi<iel_; ++vi)
+  {
+    const double v = timefacfac*conv_[vi];
+    const int fvi = vi*numdof+dofindex;
 
-    /* Stabilization terms: */
-    /* 1) transient stabilization (USFEM assumed here, sign change necessary for GLS) */
-    /* transient term */
-    //estif(vi, ui) += -taufac*densfunct_[vi]*densfunct_[ui] ;
-
-    /* convective term */
-    //estif(vi, ui) += -timetaufac*densfunct_[vi]*conv_[ui] ;
-
-    /* diffusive term */
-    //if (higher_order_ele) estif(vi, ui) += timetaufac*densfunct_[vi]*diff[ui] ;
-
-    /* 2) convective stabilization */
-    /* transient term */
-    estif(vi*numdof+dofindex, ui*numdof+dofindex) += taufac*conv_[vi]*densfunct_[ui];
-
-    /* convective term */
-    estif(vi*numdof+dofindex, ui*numdof+dofindex) += timetaufac*conv_[vi]*conv_[ui] ;
-
-    if (higher_order_ele)
+    for (int ui=0; ui<iel_; ++ui)
     {
-      /* diffusive term */
-      estif(vi*numdof+dofindex, ui*numdof+dofindex) += -timetaufac*conv_[vi]*diff_[ui] ;
+      const int fui = ui*numdof+dofindex;
 
-      /* 2) diffusive stabilization (USFEM assumed here, sign change necessary for GLS) */
-      /* transient term */
-      estif(vi*numdof+dofindex, ui*numdof+dofindex) += taufac*diff_[vi]*densfunct_[ui] ;
+      estif(fvi,fui) -= v*funct_[ui];
+    }
+  }
+}
+else
+{
+  // convective term in convective form
+  for (int vi=0; vi<iel_; ++vi)
+  {
+    const double v = timefacfac*funct_[vi];
+    const int fvi = vi*numdof+dofindex;
 
-      /* convective term */
-      estif(vi*numdof+dofindex, ui*numdof+dofindex) += timetaufac*diff_[vi]*conv_[ui] ;
+    for (int ui=0; ui<iel_; ++ui)
+    {
+      const int fui = ui*numdof+dofindex;
 
-      /* diffusive term */
-      estif(vi*numdof+dofindex, ui*numdof+dofindex) += -timetaufac*diff_[vi]*diff_[ui] ;
+      estif(fvi,fui) += v*conv_[ui];
     }
   }
 }
 
-// ----------------------------------------------RHS
+// diffusive term
 for (int vi=0; vi<iel_; ++vi)
 {
-  /* RHS source term */
-  eforce[vi*numdof+dofindex] += fac_*funct_[vi]*rhsint ;
+  const int fvi = vi*numdof+dofindex;
 
-  /* transient stabilization of RHS source term */
-  //eforce[vi] += -taufac*densfunct_[vi]*rhsint ;
+  for (int ui=0; ui<iel_; ++ui)
+  {
+    const int fui = ui*numdof+dofindex;
 
-  /* convective stabilization of RHS source term */
-  eforce[vi*numdof+dofindex] += taufac*conv_[vi]*rhsint ;
-
-  /* convective temporal rhs term */
-  eforce[vi*numdof+dofindex] -= rhstimefacfac*funct_[vi]*convn ;
-
-  /* diffusive temporal rhs term */
-  eforce[vi*numdof+dofindex] -= rhstimefacfac*diffus_[dofindex]*(derxy_(0, vi)*gradphi_[0] + derxy_(1, vi)*gradphi_[1]) ;
-
-  /* convective stabilization of convective temporal rhs term */
-  eforce[vi*numdof+dofindex] -= rhstimetaufac*conv_[vi]*convn ;
+    estif(fvi,fui) += fac_diffus*(derxy_(0, ui)*derxy_(0, vi)+derxy_(1, ui)*derxy_(1, vi));
+  }
 }
 
+//----------------------------------------------------------------
+// element matrix: stabilization terms
+//----------------------------------------------------------------
+// convective stabilization of transient term (in convective form)
+for (int vi=0; vi<iel_; ++vi)
+{
+  const double v = taufac*conv_[vi];
+  const int fvi = vi*numdof+dofindex;
+
+  for (int ui=0; ui<iel_; ++ui)
+  {
+    const int fui = ui*numdof+dofindex;
+
+    estif(fvi,fui) += v*densfunct_[ui];
+  }
+}
+
+// convective stabilization of convective term (in convective form)
+for (int vi=0; vi<iel_; ++vi)
+{
+  const double v = timetaufac*conv_[vi];
+  const int fvi = vi*numdof+dofindex;
+
+  for (int ui=0; ui<iel_; ++ui)
+  {
+    const int fui = ui*numdof+dofindex;
+
+    estif(fvi,fui) += v*conv_[ui];
+  }
+}
+
+// The following stabilization terms are only for higher-order elements.
+if (higher_order_ele)
+{
+  // convective stabilization of diffusive term (in convective form)
+  for (int vi=0; vi<iel_; ++vi)
+  {
+    const double v = timetaufac*conv_[vi];
+    const int fvi = vi*numdof+dofindex;
+
+    for (int ui=0; ui<iel_; ++ui)
+    {
+      const int fui = ui*numdof+dofindex;
+
+      estif(fvi,fui) -= v*diff_[ui];
+    }
+  }
+
+  // diffusive stabilization of transient term
+  // (USFEM assumed here, sign change necessary for GLS)
+  for (int vi=0; vi<iel_; ++vi)
+  {
+    const double v = taufac*diff_[vi];
+    const int fvi = vi*numdof+dofindex;
+
+    for (int ui=0; ui<iel_; ++ui)
+    {
+      const int fui = ui*numdof+dofindex;
+
+      estif(fvi,fui) += v*densfunct_[ui];
+    }
+  }
+
+  // diffusive stabilization of convective term (in convective form)
+  // (USFEM assumed here, sign change necessary for GLS)
+  for (int vi=0; vi<iel_; ++vi)
+  {
+    const double v = timetaufac*diff_[vi];
+    const int fvi = vi*numdof+dofindex;
+
+    for (int ui=0; ui<iel_; ++ui)
+    {
+      const int fui = ui*numdof+dofindex;
+
+      estif(fvi,fui) += v*conv_[ui];
+    }
+  }
+
+  // diffusive stabilization of diffusive term
+  // (USFEM assumed here, sign change necessary for GLS)
+  for (int vi=0; vi<iel_; ++vi)
+  {
+    const double v = timetaufac*diff_[vi];
+    const int fvi = vi*numdof+dofindex;
+
+    for (int ui=0; ui<iel_; ++ui)
+    {
+      const int fui = ui*numdof+dofindex;
+
+      estif(fvi,fui) -= v*diff_[ui];
+    }
+  }
+}
+
+//----------------------------------------------------------------
+// element right hand side: standard Galerkin bodyforce term
+//----------------------------------------------------------------
+double vrhs = fac_*rhsint;
+for (int vi=0; vi<iel_; ++vi)
+{
+  const int fvi = vi*numdof+dofindex;
+
+  eforce[fvi] += vrhs*funct_[vi];
+}
+
+//----------------------------------------------------------------
+// element right hand side: stabilization terms
+//----------------------------------------------------------------
+// convective stabilization of bodyforce term
+vrhs = taufac*rhsint;
+for (int vi=0; vi<iel_; ++vi)
+{
+  const int fvi = vi*numdof+dofindex;
+
+  eforce[fvi] += vrhs*conv_[vi];
+}
+
+// diffusive stabilization of bodyforce term (only for higher-order elements)
+// (USFEM assumed here, sign change necessary for GLS)
 if (higher_order_ele)
 {
   for (int vi=0; vi<iel_; ++vi)
   {
-    /*diffusive stabilization: USFEM assumed here, sign change necessary for GLS */
-    /* diffusive stabilization of RHS source term */
-    eforce[vi*numdof+dofindex] += taufac*diff_[vi]*rhsint ;
+    const int fvi = vi*numdof+dofindex;
 
-    /* diffusive stabilization of convective temporal rhs term */
-    eforce[vi*numdof+dofindex] -= rhstimetaufac*diff_[vi]*convn ;
+    eforce[fvi] += vrhs*diff_[vi];
+  }
+}
 
-    /* convective stabilization of diffusive temporal rhs term */
-    eforce[vi*numdof+dofindex] -= rhstimetaufac*conv_[vi]*diffn ;
+//----------------------------------------------------------------
+// part of element right hand side only required for
+// generalized-alpha time integration: temporal terms
+//----------------------------------------------------------------
+if (is_genalpha)
+{
+  // integration factors for temporal rhs
+  const double rhstimefacfac = timefacfac*(1.0-alphaF)/alphaF;
+  const double rhstimetaufac = timetaufac*(1.0-alphaF)/alphaF;
 
-    /* diffusive stabilization of diffusive temporal rhs term */
-    eforce[vi*numdof+dofindex] -= rhstimetaufac*diff_[vi]*diffn ;
+  // gradient of scalar at time step n
+  for (int i=0;i<2;i++)
+  {
+    gradphi_[i]=0.0;
+    for (int j=0;j<iel_;j++)
+    {
+      gradphi_[i] += derxy_(i,j)*ephinp[j];
+    }
+  }
+
+  // convective part in convective form at time step n
+  double convn = velint_[0] * gradphi_[0] + velint_[1] * gradphi_[0];
+
+  // convective temporal rhs term
+  if (conservative)
+  {
+    // scalar at integration point at time step n
+    double phi=0.0;
+    for (int i=0;i<iel_;i++)
+    {
+      phi += funct_[i]*ephinp[i];
+    }
+
+    // convective temporal rhs term in conservative form
+    vrhs = rhstimefacfac*phi;
+    for (int vi=0; vi<iel_; ++vi)
+    {
+      const int fvi = vi*numdof+dofindex;
+
+      eforce[fvi] += vrhs*conv_[vi];
+    }
+  }
+  else
+  {
+    // convective temporal rhs term in convective form
+    vrhs = rhstimefacfac*convn;
+    for (int vi=0; vi<iel_; ++vi)
+    {
+      const int fvi = vi*numdof+dofindex;
+
+      eforce[fvi] -= vrhs*funct_[vi];
+    }
+  }
+
+  // diffusive temporal rhs term
+  vrhs = rhstimefacfac*diffus_[dofindex];
+  for (int vi=0; vi<iel_; ++vi)
+  {
+    const int fvi = vi*numdof+dofindex;
+
+    eforce[fvi] -= vrhs*(derxy_(0, vi)*gradphi_[0]+derxy_(1, vi)*gradphi_[1]);
+  }
+
+  // convective stabilization of convective temporal rhs term (in convective form)
+  vrhs = rhstimetaufac*convn;
+  for (int vi=0; vi<iel_; ++vi)
+  {
+    const int fvi = vi*numdof+dofindex;
+
+    eforce[fvi] -= vrhs*conv_[vi];
+  }
+
+  // The following terms are only for higher-order elements.
+  double diffn = 0.0;
+  if (higher_order_ele)
+  {
+    for (int i=0;i<2;i++)
+    {
+      lapphi_[i]=0.0;
+      for (int j=0;j<iel_;j++)
+      {
+        // second gradient (Laplacian) of scalar at time step n
+        lapphi_[i] += derxy2_(i,j)*ephinp[j];
+      }
+    }
+
+    // diffusive part at time step n
+    diffn = diffus_[dofindex] * (lapphi_[0] + lapphi_[1]);
+
+    // diffusive stabilization of convective temporal rhs term (in convective form)
+    vrhs = rhstimetaufac*convn;
+    for (int vi=0; vi<iel_; ++vi)
+    {
+      const int fvi = vi*numdof+dofindex;
+
+      eforce[fvi] -= vrhs*diff_[vi];
+    }
+
+    // convective stabilization of diffusive temporal rhs term
+    vrhs = rhstimetaufac*diffn;
+    for (int vi=0; vi<iel_; ++vi)
+    {
+      const int fvi = vi*numdof+dofindex;
+
+      eforce[fvi] -= vrhs*conv_[vi];
+    }
+
+    // diffusive stabilization of diffusive temporal rhs term
+    vrhs = rhstimetaufac*diffn;
+    for (int vi=0; vi<iel_; ++vi)
+    {
+      const int fvi = vi*numdof+dofindex;
+
+      eforce[fvi] -= vrhs*diff_[vi];
+    }
   }
 }
 
 return;
-} //Condif2Impl::Condif2CalMatGenAlpha
+} //Condif2Impl::Condif2CalMat
 
 
 /*----------------------------------------------------------------------*
@@ -1358,83 +1431,184 @@ void DRT::ELEMENTS::Condif2Impl::CalMatStationary(
     Epetra_SerialDenseMatrix& estif,
     Epetra_SerialDenseVector& eforce,
     const bool                higher_order_ele,
+    const bool                conservative,
     const int&                dofindex
     )
 {
-static double             rhsint;           /* rhs at int. point     */
+// number of degrees of freedom per node
+const int numdof = numdofpernode_;
+
+// stabilization parameter and integration factor
+const double taufac     = tau_[dofindex]*fac_;
 const double fac_diffus = fac_*diffus_[dofindex];
 
-// stabilization parameter
-const double taufac = tau_[dofindex]*fac_;
-
-/*------------------------------------- set rhs at integration point ---*/
+// evaluate rhs at integration point
+static double rhsint;
 rhsint = rhs_[dofindex];
 
+// convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
 for (int i=0; i<iel_; i++)
 {
-   /* convective part */
-   /* rho * c_p * u_x * N,x  +  rho * c_p * u_y * N,y
-      with  N .. form function matrix */
-   conv_[i] = velint_[0] * derxy_(0,i) + velint_[1] * derxy_(1,i);
+  conv_[i] = velint_[0] * derxy_(0,i) + velint_[1] * derxy_(1,i);
 }
 
+// diffusive part: diffus*(N,xx+ N,yy)
 if (higher_order_ele)
 {
   for (int i=0; i<iel_; i++)
   {
-    /* diffusive part */
-    /* diffus * ( N,xx  +  N,yy ) */
     diff_[i] = diffus_[dofindex] * (derxy2_(0,i) + derxy2_(1,i));
   }
 }
 
-/*--------------------------------- now build single stiffness terms ---*/
-const int numdof = numdofpernode_;
-// -------------------------------------------System matrix
-for (int vi=0; vi<iel_; ++vi)
+//----------------------------------------------------------------
+// element matrix: standard Galerkin terms
+//----------------------------------------------------------------
+// convective term
+if (conservative)
 {
-  for (int ui=0; ui<iel_; ++ui)
+  // convective term in conservative form
+  for (int vi=0; vi<iel_; ++vi)
   {
-    /* Standard Galerkin terms: */
-    /* convective term */
-    estif(vi*numdof+dofindex, ui*numdof+dofindex) += fac_*funct_[vi]*conv_[ui] ;
+    const double v = fac_*conv_[vi];
+    const int fvi = vi*numdof+dofindex;
 
-    /* diffusive term */
-    estif(vi*numdof+dofindex, ui*numdof+dofindex) += fac_diffus*(derxy_(0, ui)*derxy_(0, vi) + derxy_(1, ui)*derxy_(1, vi)) ;
-
-    /* Stabilization term: */
-    /* 1) convective stabilization */
-
-    /* convective term */
-    estif(vi*numdof+dofindex, ui*numdof+dofindex) += taufac*conv_[vi]*conv_[ui] ;
-
-    if (higher_order_ele)
+    for (int ui=0; ui<iel_; ++ui)
     {
-      /* diffusive term */
-	  estif(vi*numdof+dofindex, ui*numdof+dofindex) += -taufac*conv_[vi]*diff_[ui] ;
+      const int fui = ui*numdof+dofindex;
 
-      /* 2) diffusive stabilization (USFEM assumed here, sign change necessary for GLS) */
+      estif(fvi,fui) -= v*funct_[ui];
+    }
+  }
+}
+else
+{
+  // convective term in convective form
+  for (int vi=0; vi<iel_; ++vi)
+  {
+    const double v = fac_*funct_[vi];
+    const int fvi = vi*numdof+dofindex;
 
-      /* convective term */
-      estif(vi*numdof+dofindex, ui*numdof+dofindex) += taufac*diff_[vi]*conv_[ui] ;
+    for (int ui=0; ui<iel_; ++ui)
+    {
+      const int fui = ui*numdof+dofindex;
 
-      /* diffusive term */
-      estif(vi*numdof+dofindex, ui*numdof+dofindex) -= taufac*diff_[vi]*diff_[ui] ;
+      estif(fvi,fui) += v*conv_[ui];
     }
   }
 }
 
-// ----------------------------------------------RHS
+// diffusive term
 for (int vi=0; vi<iel_; ++vi)
 {
-  /* RHS source term */
-  eforce[vi*numdof+dofindex] += fac_*funct_[vi]*rhsint ;
+  const int fvi = vi*numdof+dofindex;
 
-  /* convective stabilization of RHS source term */
-  eforce[vi*numdof+dofindex] += taufac*conv_[vi]*rhsint ;
+  for (int ui=0; ui<iel_; ++ui)
+  {
+    const int fui = ui*numdof+dofindex;
 
-  /* diffusive stabilization of RHS source term */
-  if (higher_order_ele) eforce[vi*numdof+dofindex] += taufac*diff_[vi]*rhsint ;
+    estif(fvi,fui) += fac_diffus*(derxy_(0, ui)*derxy_(0, vi)+derxy_(1, ui)*derxy_(1, vi));
+  }
+}
+
+//----------------------------------------------------------------
+// element matrix: stabilization terms
+//----------------------------------------------------------------
+// convective stabilization of convective term (in convective form)
+for (int vi=0; vi<iel_; ++vi)
+{
+  const double v = taufac*conv_[vi];
+  const int fvi = vi*numdof+dofindex;
+
+  for (int ui=0; ui<iel_; ++ui)
+  {
+    const int fui = ui*numdof+dofindex;
+
+    estif(fvi,fui) += v*conv_[ui];
+  }
+}
+
+// The following stabilization terms are only for higher-order elements.
+if (higher_order_ele)
+{
+  // convective stabilization of diffusive term (in convective form)
+  for (int vi=0; vi<iel_; ++vi)
+  {
+    const double v = taufac*conv_[vi];
+    const int fvi = vi*numdof+dofindex;
+
+    for (int ui=0; ui<iel_; ++ui)
+    {
+      const int fui = ui*numdof+dofindex;
+
+      estif(fvi,fui) -= v*diff_[ui];
+    }
+  }
+
+  // diffusive stabilization of convective term (in convective form)
+  // (USFEM assumed here, sign change necessary for GLS)
+  for (int vi=0; vi<iel_; ++vi)
+  {
+    const double v = taufac*diff_[vi];
+    const int fvi = vi*numdof+dofindex;
+
+    for (int ui=0; ui<iel_; ++ui)
+    {
+      const int fui = ui*numdof+dofindex;
+
+      estif(fvi,fui) += v*conv_[ui];
+    }
+  }
+
+  // diffusive stabilization of diffusive term
+  // (USFEM assumed here, sign change necessary for GLS)
+  for (int vi=0; vi<iel_; ++vi)
+  {
+    const double v = taufac*diff_[vi];
+    const int fvi = vi*numdof+dofindex;
+
+    for (int ui=0; ui<iel_; ++ui)
+    {
+      const int fui = ui*numdof+dofindex;
+
+      estif(fvi,fui) -= v*diff_[ui];
+    }
+  }
+}
+
+//----------------------------------------------------------------
+// element right hand side: standard Galerkin bodyforce term
+//----------------------------------------------------------------
+double vrhs = fac_*rhsint;
+for (int vi=0; vi<iel_; ++vi)
+{
+  const int fvi = vi*numdof+dofindex;
+
+  eforce[fvi] += vrhs*funct_[vi];
+}
+
+//----------------------------------------------------------------
+// element right hand side: stabilization terms
+//----------------------------------------------------------------
+// convective stabilization of bodyforce term
+vrhs = taufac*rhsint;
+for (int vi=0; vi<iel_; ++vi)
+{
+  const int fvi = vi*numdof+dofindex;
+
+  eforce[fvi] += vrhs*conv_[vi];
+}
+
+// diffusive stabilization of bodyforce term (only for higher-order elements)
+// (USFEM assumed here, sign change necessary for GLS)
+if (higher_order_ele)
+{
+  for (int vi=0; vi<iel_; ++vi)
+  {
+    const int fvi = vi*numdof+dofindex;
+
+    eforce[fvi] += vrhs*diff_[vi];
+  }
 }
 
 return;
@@ -1442,9 +1616,9 @@ return;
 
 
 /*----------------------------------------------------------------------*
- | calculate mass matrix and rhs for initializing OST          gjb 08/08|
+ | calculate mass matrix + rhs for determ. initial time deriv. gjb 08/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Condif2Impl::InitializeOST(
+void DRT::ELEMENTS::Condif2Impl::InitialTimeDerivative(
     const DRT::ELEMENTS::Condif2*   ele,
     const vector<double>&           ephi0,
     const vector<double>&           edens0,
@@ -1456,7 +1630,8 @@ void DRT::ELEMENTS::Condif2Impl::InitializeOST(
     const double                    dt,
     const double                    timefac,
     const Epetra_SerialDenseVector& evel0,
-    bool                            temperature,
+    const bool                      temperature,
+    const bool                      conservative,
     const enum Condif2::TauType     whichtau,
     string                          fssgd
     )
@@ -1572,102 +1747,226 @@ void DRT::ELEMENTS::Condif2Impl::InitializeOST(
       }
     }
 
+    // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
+    for (int i=0; i<iel_; i++)
+    {
+      conv_[i] = velint_[0] * derxy_(0,i) + velint_[1] * derxy_(1,i);
+    }
+
     /*-------------- perform integration for entire matrix and rhs ---*/
     for (int dofindex=0;dofindex<numscal_;++dofindex) // deal with a system of transported scalars
     {
-      static double             rhsint;            /* rhs at int. point     */
+      // number of degrees of freedom per node
+      const int numdof = numdofpernode_;
 
-      // stabilization parameter
-      const double taufac = tau_[dofindex]*fac_;
+      // stabilization parameter  and integration factor
+      const double taufac     = tau_[dofindex]*fac_;
+      const double fac_diffus = fac_*diffus_[dofindex];
 
-      /*-------------------------------- evaluate rhs at integration point ---*/
+      // evaluate rhs at integration point
+      static double rhsint;
       rhsint = rhs_[dofindex];
 
-      for (int i=0; i<iel_; i++) /* loop over nodes of element */
-      {
-         /* convective part */
-         /* rho * c_p * u_x * N,x  +  rho * c_p * u_y * N,y
-            with  N .. form function matrix */
-         conv_[i] = velint_[0] * derxy_(0,i) + velint_[1] * derxy_(1,i);
-      } // end of loop over nodes of element
-
+      // diffusive part: diffus*(N,xx+ N,yy)
       if (higher_order_ele)
       {
-        for (int i=0; i<iel_; i++) /* loop over nodes of element */
+        for (int i=0; i<iel_; i++)
         {
-           /* diffusive part */
-           /* diffus * ( N,xx  +  N,yy) */
-           diff_[i] = diffus_[dofindex] * (derxy2_(0,i) + derxy2_(1,i));
-        } // end of loop over nodes of element
+          diff_[i] = diffus_[dofindex] * (derxy2_(0,i) + derxy2_(1,i));
+        }
       }
 
-      /*--------------------------------- now build single stiffness terms ---*/
-      const int numdof = numdofpernode_;
-      // -------------------------------------------System matrix
+      //----------------------------------------------------------------
+      // element matrix: standard Galerkin terms
+      //----------------------------------------------------------------
+      // transient term
       for (int vi=0; vi<iel_; ++vi)
       {
+        const double v = fac_*funct_[vi];
+        const int fvi = vi*numdof+dofindex;
+
+        for (int ui=0; ui<iel_; ++ui)
+        {
+          const int fui = ui*numdof+dofindex;
+
+          massmat(fvi,fui) += v*densfunct_[ui];
+        }
+      }
+
+      // convective term
+      if (conservative)
+      {
+        // convective term in conservative form
+        for (int vi=0; vi<iel_; ++vi)
+        {
+          const double v = fac_*conv_[vi];
+          const int fvi = vi*numdof+dofindex;
+
           for (int ui=0; ui<iel_; ++ui)
           {
-          /* Standard Galerkin terms: */
-          /* transient term */
-          massmat(vi*numdof+dofindex, ui*numdof+dofindex) += fac_*funct_[vi]*densfunct_[ui] ;
+            const int fui = ui*numdof+dofindex;
 
-          /* convective term */
-          rhs[vi*numdof+dofindex] += -(fac_*funct_[vi]*conv_[ui]*ephi0[ui*numdof+dofindex]) ;
+            rhs[fvi] += v*funct_[ui]*ephi0[fui];
+          }
+        }
+      }
+      else
+      {
+        // convective term in convective form
+        for (int vi=0; vi<iel_; ++vi)
+        {
+          const double v = fac_*funct_[vi];
+          const int fvi = vi*numdof+dofindex;
 
-          /* diffusive term */
-          rhs[vi*numdof+dofindex] += -(fac_*diffus_[dofindex]*(derxy_(0, ui)*derxy_(0, vi) + derxy_(1, ui)*derxy_(1, vi))*ephi0[ui*numdof+dofindex]);
-
-          /* Stabilization terms: */
-          /* 1) transient stabilization (USFEM assumed here, sign change necessary for GLS) */
-          /* transient term */
-          //massmat(vi, ui) += -taufac*densfunct_[vi]*densfunct_[ui] ;
-
-          /* convective term */
-          //massmat(vi, ui) += -timetaufac*densfunct_[vi]*conv[ui] ;
-
-          /* diffusive term */
-          //massmat(vi, ui) += timetaufac*densfunct_[vi]*diff[ui] ;
-
-          /* 2) convective stabilization */
-          /* transient term */
-          massmat(vi*numdof+dofindex, ui*numdof+dofindex) += taufac*conv_[vi]*densfunct_[ui]*ephi0[ui*numdof+dofindex];
-
-          /* convective term */
-          rhs[vi*numdof+dofindex] += -(taufac*conv_[vi]*conv_[ui]*ephi0[ui*numdof+dofindex] );
-
-          if (higher_order_ele)
+          for (int ui=0; ui<iel_; ++ui)
           {
-            /* diffusive term */
-            rhs[vi*numdof+dofindex] += -(-taufac*conv_[vi]*diff_[ui]*ephi0[ui*numdof+dofindex] );
+            const int fui = ui*numdof+dofindex;
 
-            /* 2) diffusive stabilization (USFEM assumed here, sign change necessary for GLS) */
-            /* transient term */
-            massmat(vi*numdof+dofindex, ui*numdof+dofindex) += taufac*diff_[vi]*densfunct_[ui];
-
-            /* convective term */
-            rhs[vi*numdof+dofindex] += -(taufac*diff_[vi]*conv_[ui]*ephi0[ui*numdof+dofindex]);
-
-            /* diffusive term */
-            rhs[vi*numdof+dofindex] += -(-taufac*diff_[vi]*diff_[ui]*ephi0[ui*numdof+dofindex]);
+            rhs[fvi] -= v*conv_[ui]*ephi0[fui];
           }
         }
       }
 
-      // ----------------------------------------------RHS
+      // diffusive term
       for (int vi=0; vi<iel_; ++vi)
       {
-        /* RHS source term */
-        rhs[vi*numdof+dofindex] += fac_*funct_[vi]*rhsint ;
+        const int fvi = vi*numdof+dofindex;
 
-        /* transient stabilization of RHS source term */
-        //eforce[vi] += -taufac*densfunct[vi]*rhsint ;
+        for (int ui=0; ui<iel_; ++ui)
+        {
+          const int fui = ui*numdof+dofindex;
 
-        /* convective stabilization of RHS source term */
-        rhs[vi*numdof+dofindex] += taufac*conv_[vi]*rhsint ;
+          rhs[fvi] -= fac_diffus*(derxy_(0, ui)*derxy_(0, vi)+derxy_(1, ui)*derxy_(1, vi))*ephi0[fui];
+        }
+      }
 
-        /* diffusive stabilization of RHS source term */
-        rhs[vi*numdof+dofindex] += taufac*diff_[vi]*rhsint ;
+      //----------------------------------------------------------------
+      // element matrix: stabilization terms
+      //----------------------------------------------------------------
+      // convective stabilization of transient term (in convective form)
+      for (int vi=0; vi<iel_; ++vi)
+      {
+        const double v = taufac*conv_[vi];
+        const int fvi = vi*numdof+dofindex;
+
+        for (int ui=0; ui<iel_; ++ui)
+        {
+          const int fui = ui*numdof+dofindex;
+
+          massmat(fvi,fui) += v*densfunct_[ui];
+        }
+      }
+
+      // convective stabilization of convective term (in convective form)
+      for (int vi=0; vi<iel_; ++vi)
+      {
+        const double v = taufac*conv_[vi];
+        const int fvi = vi*numdof+dofindex;
+
+        for (int ui=0; ui<iel_; ++ui)
+        {
+          const int fui = ui*numdof+dofindex;
+
+          rhs[fvi] -= v*conv_[ui]*ephi0[fui];
+        }
+      }
+
+      // The following stabilization terms are only for higher-order elements.
+      if (higher_order_ele)
+      {
+        // convective stabilization of diffusive term (in convective form)
+        for (int vi=0; vi<iel_; ++vi)
+        {
+          const double v = taufac*conv_[vi];
+          const int fvi = vi*numdof+dofindex;
+
+          for (int ui=0; ui<iel_; ++ui)
+          {
+            const int fui = ui*numdof+dofindex;
+
+            rhs[fvi] += v*diff_[ui]*ephi0[fui];
+          }
+        }
+
+        // diffusive stabilization of transient term
+        // (USFEM assumed here, sign change necessary for GLS)
+        for (int vi=0; vi<iel_; ++vi)
+        {
+          const double v = taufac*diff_[vi];
+          const int fvi = vi*numdof+dofindex;
+
+          for (int ui=0; ui<iel_; ++ui)
+          {
+            const int fui = ui*numdof+dofindex;
+
+            massmat(fvi,fui) += v*densfunct_[ui];
+          }
+        }
+
+        // diffusive stabilization of convective term (in convective form)
+        // (USFEM assumed here, sign change necessary for GLS)
+        for (int vi=0; vi<iel_; ++vi)
+        {
+          const double v = taufac*diff_[vi];
+          const int fvi = vi*numdof+dofindex;
+
+          for (int ui=0; ui<iel_; ++ui)
+          {
+            const int fui = ui*numdof+dofindex;
+
+            rhs[fvi] -= v*conv_[ui]*ephi0[fui];
+          }
+        }
+
+        // diffusive stabilization of diffusive term
+        // (USFEM assumed here, sign change necessary for GLS)
+        for (int vi=0; vi<iel_; ++vi)
+        {
+          const double v = taufac*diff_[vi];
+          const int fvi = vi*numdof+dofindex;
+
+          for (int ui=0; ui<iel_; ++ui)
+          {
+            const int fui = ui*numdof+dofindex;
+
+            rhs[fvi] += v*diff_[ui]*ephi0[fui];
+          }
+        }
+      }
+
+      //----------------------------------------------------------------
+      // element right hand side: standard Galerkin bodyforce term
+      //----------------------------------------------------------------
+      double vrhs = fac_*rhsint;
+      for (int vi=0; vi<iel_; ++vi)
+      {
+        const int fvi = vi*numdof+dofindex;
+
+        rhs[fvi] += vrhs*funct_[vi];
+      }
+
+      //----------------------------------------------------------------
+      // element right hand side: stabilization terms
+      //----------------------------------------------------------------
+      // convective stabilization of bodyforce term
+      vrhs = taufac*rhsint;
+      for (int vi=0; vi<iel_; ++vi)
+      {
+        const int fvi = vi*numdof+dofindex;
+
+        rhs[fvi] += vrhs*conv_[vi];
+      }
+
+      // diffusive stabilization of bodyforce term (only for higher-order elements)
+      // (USFEM assumed here, sign change necessary for GLS)
+      if (higher_order_ele)
+      {
+        for (int vi=0; vi<iel_; ++vi)
+        {
+          const int fvi = vi*numdof+dofindex;
+
+          rhs[fvi] += vrhs*diff_[vi];
+        }
       }
     } // loop over each scalar
 
@@ -1676,15 +1975,16 @@ void DRT::ELEMENTS::Condif2Impl::InitializeOST(
       // testing: set lower-right block to identity matrix:
       for (int vi=0; vi<iel_; ++vi)
       {
-          //fac_funct_vi_densfunct_ui = fac_*funct_[vi]*densfunct_[ui];
-          massmat(vi*numdofpernode_+numscal_, vi*numdofpernode_+numscal_) += 1.0;
+          const int fvi = vi*numdofpernode_+numscal_;
+
+          massmat(fvi,fvi) += 1.0;
       }
     }
 
   } // integration loop
 
   return;
-} // Condif2Impl::InitializeOST
+} // Condif2Impl::InitialTimeDerivative
 
 
 /*----------------------------------------------------------------------*
@@ -1727,12 +2027,16 @@ for (int iquad=0; iquad<intpoints.nquad; ++iquad)
 
     for (int vi=0; vi<iel_; ++vi)
     {
+      const int fvi = vi*numdof+dofindex;
+
       for (int ui=0; ui<iel_; ++ui)
       {
-        sys_mat_sd(vi*numdof+dofindex,ui*numdof+dofindex) += kartfac*(derxy_(0,vi)*derxy_(0,ui)+derxy_(1,vi)*derxy_(1,ui));
+        const int fui = ui*numdof+dofindex;
+
+        sys_mat_sd(fvi,fui) += kartfac*(derxy_(0,vi)*derxy_(0,ui)+derxy_(1,vi)*derxy_(1,ui));
 
         /*subtract SUPG term */
-        //sys_mat_sd(vi*numdof+dofindex, ui*numdof+dofindex) -= taufac*conv[vi]*conv[ui] ;
+        //sys_mat_sd(fvi,fui) -= taufac*conv[vi]*conv[ui] ;
       }
     }
   }

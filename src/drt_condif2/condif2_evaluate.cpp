@@ -48,8 +48,8 @@ DRT::ELEMENTS::Condif2::ActionType DRT::ELEMENTS::Condif2::convertStringToAction
   DRT::ELEMENTS::Condif2::ActionType act = Condif2::none;
   if (action == "calc_condif_systemmat_and_residual")
     act = Condif2::calc_condif_systemmat_and_residual;
-  else if (action == "initialize_one_step_theta")
-    act = Condif2::initialize_one_step_theta;
+  else if (action == "calc_initial_time_deriv")
+    act = Condif2::calc_initial_time_deriv;
   else if (action == "calc_subgrid_diffusivity_matrix")
     act = Condif2::calc_subgrid_diffusivity_matrix;
   else if (action == "calc_condif_flux")
@@ -126,8 +126,11 @@ int DRT::ELEMENTS::Condif2::Evaluate(ParameterList&            params,
       if (not is_stationary)
       {
         timefac = params.get<double>("time factor");
-        alphaF = params.get<double>("alpha_F");
-        timefac *= alphaF;
+        if (is_genalpha)
+        {
+          alphaF = params.get<double>("alpha_F");
+          timefac *= alphaF;
+        }
         if (timefac < 0.0) dserror("time factor is negative.");
       }
 
@@ -163,6 +166,11 @@ int DRT::ELEMENTS::Condif2::Evaluate(ParameterList&            params,
       bool temperature = false;
       if(scaltypestr =="loma") temperature = true;
 
+      // set flag for conservative form
+      string convform = params.get<string>("form of convective term");
+      bool conservative = false;
+      if(convform =="conservative") conservative = true;
+
       // calculate element coefficient matrix and rhs
       DRT::ELEMENTS::Condif2Impl::Impl(this)->Sysmat(
           this,
@@ -179,6 +187,7 @@ int DRT::ELEMENTS::Condif2::Evaluate(ParameterList&            params,
           alphaF,
           evelnp,
           temperature,
+          conservative,
           whichtau,
           fssgd,
           is_stationary,
@@ -186,8 +195,10 @@ int DRT::ELEMENTS::Condif2::Evaluate(ParameterList&            params,
     }
     break;
     // calculate time derivative for time value t_0
-    case initialize_one_step_theta:
+    case calc_initial_time_deriv:
     {
+      const bool is_genalpha = params.get<bool>("using generalized-alpha time integration");
+
       const double time    = params.get<double>("total time");
       const double dt      = params.get<double>("time-step length");
 
@@ -197,8 +208,11 @@ int DRT::ELEMENTS::Condif2::Evaluate(ParameterList&            params,
       double timefac = 1.0;
       double alphaF  = 1.0;
       timefac = params.get<double>("time factor");
-      alphaF = params.get<double>("alpha_F");
-      timefac *= alphaF;
+      if (is_genalpha)
+      {
+        alphaF = params.get<double>("alpha_F");
+        timefac *= alphaF;
+      }
       if (timefac < 0.0) dserror("time factor is negative.");
 
       // need initial field
@@ -245,8 +259,13 @@ int DRT::ELEMENTS::Condif2::Evaluate(ParameterList&            params,
       bool temperature = false;
       if(scaltypestr =="loma") temperature = true;
 
+      // set flag for conservative form
+      string convform = params.get<string>("form of convective term");
+      bool conservative = false;
+      if(convform =="conservative") conservative = true;
+
       // calculate mass matrix and rhs
-      DRT::ELEMENTS::Condif2Impl::Impl(this)->InitializeOST(
+      DRT::ELEMENTS::Condif2Impl::Impl(this)->InitialTimeDerivative(
            this,
            myphi0,
            mydens0,
@@ -259,6 +278,7 @@ int DRT::ELEMENTS::Condif2::Evaluate(ParameterList&            params,
            timefac,
            evel0,
            temperature,
+           conservative,
            whichtau,
            fssgd);
     }
@@ -267,6 +287,7 @@ int DRT::ELEMENTS::Condif2::Evaluate(ParameterList&            params,
     case calc_subgrid_diffusivity_matrix:
     {
       // get control parameter
+      const bool is_genalpha = params.get<bool>("using generalized-alpha time integration");
       const bool is_stationary = params.get<bool>("using stationary formulation");
 
       // One-step-Theta:    timefac = theta*dt
@@ -277,8 +298,11 @@ int DRT::ELEMENTS::Condif2::Evaluate(ParameterList&            params,
       if (not is_stationary)
       {
         timefac = params.get<double>("time factor");
-        alphaF = params.get<double>("alpha_F");
-        timefac *= alphaF;
+        if (is_genalpha)
+        {
+          alphaF = params.get<double>("alpha_F");
+          timefac *= alphaF;
+        }
         if (timefac < 0.0) dserror("time factor is negative.");
       }
 

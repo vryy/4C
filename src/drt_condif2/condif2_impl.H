@@ -85,15 +85,16 @@ namespace ELEMENTS
         const double                    timefac, ///< time discretization factor
         const double                    alphaF, ///< factor for gen.-alpha time int.
         const Epetra_SerialDenseVector& evelnp, ///< nodal velocities at n+1
-        bool                            temperature, ///< temperature flag
+        const bool                      temperature, ///< temperature flag
+        const bool                      conservative, ///< flag for conservative form
         const enum Condif2::TauType     whichtau, ///< flag for stabilization parameter definition
         string                          fssgd, ///< subgrid-diff. flag
         const bool                      is_stationary, ///< stationary flag
         const bool                      is_genalpha ///< generalized-alpha flag
     );
 
-    //! calculate mass matrix and rhs for initializing One-Step-Theta time integration
-    void InitializeOST(
+    //! calculate mass matrix and rhs for determining initial time derivative
+    void InitialTimeDerivative(
         const DRT::ELEMENTS::Condif2*   ele,
         const vector<double>&           ephi0,
         const vector<double>&           edens0,
@@ -105,7 +106,8 @@ namespace ELEMENTS
         const double                    dt,
         const double                    timefac,
         const Epetra_SerialDenseVector& evel0,
-        bool                            temperature,
+        const bool                      temperature,
+        const bool                      conservative,
         const enum Condif2::TauType     whichtau,
         string                          fssgd
     );
@@ -158,21 +160,14 @@ namespace ELEMENTS
         const DRT::Element::DiscretizationType& distype  ///< distinguish between DiscretizationType
     );
 
-    //! calculate element matrix and rhs vector (One-Step-Theta, BDF2)
+    //! calculate element matrix and rhs vector (One-Step-Theta, BDF2, Gen.-alpha)
     void CalMat(
-        Epetra_SerialDenseMatrix& estif,
-        Epetra_SerialDenseVector& eforce,
-        const bool                higher_order_ele,
-        const double&             timefac,
-        const int&                dofindex
-    );
-
-    //! calculate element matrix and rhs vector (One-Step-Theta, BDF2)
-    void CalMatGenAlpha(
         Epetra_SerialDenseMatrix& estif,
         Epetra_SerialDenseVector& eforce,
         const vector<double>&     ephinp,
         const bool                higher_order_ele,
+        const bool                conservative,
+        const bool                is_genalpha,
         const double&             timefac,
         const double&             alphaF,
         const int&                dofindex
@@ -183,6 +178,7 @@ namespace ELEMENTS
         Epetra_SerialDenseMatrix& estif,
         Epetra_SerialDenseVector& eforce,
         const bool                higher_order_ele,
+        const bool                conservative,
         const int&                dofindex
     );
 

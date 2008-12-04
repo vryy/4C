@@ -184,8 +184,9 @@ namespace ELEMENTS
                 double                                   dt,
                 double                                   timefac,
                 double                                   timefacrhs,
-                bool                                     newton,
-                bool                                     loma,
+                const bool                               newton,
+                const bool                               loma,
+                const bool                               conservative,
                 const bool                               is_genalpha,
                 const bool                               higher_order_ele,
                 const enum Fluid2::StabilisationAction   fssgv,
@@ -308,11 +309,13 @@ namespace ELEMENTS
     double histcon_;
     //! direction of flow (normed velocity vector, currently not used)
     //blitz::Array<double,1> velino_;
-    //! velocity vector in gausspoint
+    //! density-weighted velocity vector in gausspoint
     LINALG::Matrix<2,1> velint_;
+    //! non-density-weighted velocity vector in gausspoint
+    LINALG::Matrix<2,1> ndwvelint_;
     //! fine-scale velocity vector in gausspoint
     LINALG::Matrix<2,1> fsvelint_;
-    //! ale convective velocity in gausspoint, c=u-u_G
+    //! density-weighted ale convective velocity in gausspoint, c=rho*u-rho*u_G
     LINALG::Matrix<2,1> convvelint_;
     //! acceleration vector at n+alphaM in gausspoint
     LINALG::Matrix<2,1> accintam_;
@@ -324,6 +327,8 @@ namespace ELEMENTS
     LINALG::Matrix<4,iel> viscs2_;
     //! linearisation of convect, convective part
     LINALG::Matrix<iel,1> conv_c_;
+    //! linearisation of convect, convective part in non-density-weighted form
+    LINALG::Matrix<iel,1> ndwconv_c_;
     //! momentum divergence
     double mdiv_;
     //! velocity divergence

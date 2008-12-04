@@ -317,6 +317,9 @@ protected:
   /// maximum number of nonlinear iterations
   int itemax_;
 
+  /// form of convective term
+  string convform_;
+
   /// fine-scale subgrid-viscosity flag
   string fssgd_;
 

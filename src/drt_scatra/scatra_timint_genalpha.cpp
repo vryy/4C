@@ -261,7 +261,7 @@ void SCATRA::TimIntGenAlpha::CalcInitialPhidt()
     ParameterList eleparams;
 
     // action for elements
-    eleparams.set("action","initialize_one_step_theta");
+    eleparams.set("action","calc_initial_time_deriv");
     // other parameters that are needed by the elements
     eleparams.set("using generalized-alpha time integration",true);
     eleparams.set("total time",time_);
@@ -269,6 +269,7 @@ void SCATRA::TimIntGenAlpha::CalcInitialPhidt()
     eleparams.set("time factor",genalphafac_*dta_);
     eleparams.set("alpha_F",alphaF_);
     eleparams.set("problem type",prbtype_);
+    eleparams.set("form of convective term",convform_);
     eleparams.set("fs subgrid diffusivity",fssgd_);
     if (prbtype_=="elch")
     {

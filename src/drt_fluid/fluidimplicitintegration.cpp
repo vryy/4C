@@ -117,6 +117,9 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // (might be used for af-generalized-alpha, but not yet activated)
   //predictor_ = params_.get<string>("predictor","steady_state_predictor");
 
+  // form of convective term
+  convform_ = params_.get<string>("form of convective term","convective");
+
   // fine-scale subgrid viscosity?
   fssgv_ = params_.get<string>("fs subgrid viscosity","No");
 
@@ -392,9 +395,11 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // flag for potential Neumann-type outflow stabilization
   outflow_stab_ = stabparams->get<string>("OUTFLOW_STAB","no_outstab");
 
-  // the vector containing potential Neumann-type outflow stabilization
-  if(outflow_stab_ == "yes_outstab")
-    outflow_stabil_= LINALG::CreateVector(*dofrowmap,true);
+  // the vector containing potential Neumann-type outflow term: either 
+  // in any case for conservative form of convective term or as a
+  // stabilization term for convective form of convective term
+  if (convform_ == "conservative" or outflow_stab_ == "yes_outstab")
+    outflow_= LINALG::CreateVector(*dofrowmap,true);
 
   // -------------------------------------------------------------------
   // necessary only for the VM3 approach:
@@ -862,11 +867,14 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       // create the parameters for the discretization
       ParameterList eleparams;
 
-      // add stabilization term at Neumann outflow boundary if required
-      if(outflow_stab_ == "yes_outstab")
+      // add potential Neumann-type outflow term: either
+      // in any case for conservative form of convective term or as a
+      // stabilization term for convective form of convective term
+      if (convform_ == "conservative" or outflow_stab_ == "yes_outstab")
       {
         discret_->ClearState();
         eleparams.set("outflow stabilization",outflow_stab_);
+        eleparams.set("form of convective term",convform_);
         if (timealgo_==timeint_afgenalpha)
         {
           eleparams.set("thsl",1.0);
@@ -879,12 +887,12 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           discret_->SetState("velnp",velnp_);
           discret_->SetState("vedenp",vedenp_);
         }
-        outflow_stabil_->PutScalar(0.0);
-        discret_->EvaluateNeumann(eleparams,*outflow_stabil_);
+        outflow_->PutScalar(0.0);
+        discret_->EvaluateNeumann(eleparams,*outflow_);
         discret_->ClearState();
 
-        // add Neumann-type stabilization term to residual vector
-        residual_->Update(1.0,*outflow_stabil_,1.0);
+        // add Neumann-type outflow term to residual vector
+        residual_->Update(1.0,*outflow_,1.0);
       }
 
       // Filter velocity for dynamic Smagorinsky model --- this provides
@@ -910,6 +918,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       // set general element parameters
       eleparams.set("thsl",theta_*dta_);
       eleparams.set("dt",dta_);
+      eleparams.set("form of convective term",convform_);
       eleparams.set("fs subgrid viscosity",fssgv_);
       eleparams.set("Linearisation",newton_);
       eleparams.set("low-Mach-number solver",loma_);
@@ -1545,6 +1554,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   // set general element parameters
   eleparams.set("thsl",theta_*dta_);
   eleparams.set("dt",dta_);
+  eleparams.set("form of convective term",convform_);
   eleparams.set("fs subgrid viscosity",fssgv_);
   eleparams.set("Linearisation",newton_);
   eleparams.set("low-Mach-number solver",loma_);
@@ -1674,8 +1684,8 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
 
   // update old acceleration
   accn_->Update(1.0,*accnp_,0.0);
-  
-  // velocities/pressures of this step become most recent 
+
+  // velocities/pressures of this step become most recent
   // velocities/pressures of the last step
   velnm_->Update(1.0,*veln_ ,0.0);
   veln_ ->Update(1.0,*velnp_,0.0);
@@ -1927,6 +1937,7 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
   // set general element parameters
   eleparams.set("thsl",theta_*dta_);
   eleparams.set("dt",dta_);
+  eleparams.set("form of convective term",convform_);
   eleparams.set("fs subgrid viscosity",fssgv_);
   eleparams.set("Linearisation",newton_);
   eleparams.set("low-Mach-number solver",loma_);
@@ -2521,6 +2532,7 @@ void FLD::FluidImplicitTimeInt::SolveStationaryProblem()
       eleparams.set("total time",time_);
       eleparams.set("delta time",origdta);
       eleparams.set("thsl",1.0); // no timefac in stationary case
+      eleparams.set("form of convective term",convform_);
       eleparams.set("fs subgrid viscosity",fssgv_);
 
       // set vector values needed by elements
@@ -2777,6 +2789,7 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
     eleparams.set("thsl",theta_*dta_);
     eleparams.set("dt",dta_);
     eleparams.set("Linearisation",newton_);
+    eleparams.set("form of convective term",convform_);
     eleparams.set("low-Mach-number solver",loma_);
 
     // parameters for stabilization

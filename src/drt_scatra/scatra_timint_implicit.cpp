@@ -64,6 +64,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   dta_      (params_->get<double>("time step size")),
   dtp_      (params_->get<double>("time step size")),
   cdvel_    (params_->get<int>("velocity field")),
+  convform_ (params_->get<string>("form of convective term")),
   fssgd_    (params_->get<string>("fs subgrid diffusivity")),
   frt_      (96485.3399/(8.314472 * params_->get<double>("TEMPERATURE",298.0)))
 {
@@ -500,6 +501,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
       eleparams.set("time-step length",dta_);
       eleparams.set("problem type",prbtype_);
       eleparams.set("is linear problem", false);
+      eleparams.set("form of convective term",convform_);
       eleparams.set("fs subgrid diffusivity",fssgd_);
       eleparams.set("frt",frt_);// ELCH specific factor F/RT
 
@@ -773,6 +775,7 @@ void SCATRA::ScaTraTimIntImpl::Solve()
     eleparams.set("time-step length",dta_);
     eleparams.set("problem type",prbtype_);
     eleparams.set("is linear problem", true);
+    eleparams.set("form of convective term",convform_);
     eleparams.set("fs subgrid diffusivity",fssgd_);
 
     //provide velocity field (export to column map necessary for parallel evaluation)

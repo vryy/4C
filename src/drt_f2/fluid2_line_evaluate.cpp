@@ -324,7 +324,22 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
   //const double inc_dens = params.get("inc_density",0.0);
 
   // get flag whether outflow stabilization or not
-  string outflow_stab = params.get("outflow stabilization","no_outstab");
+  string outflowstabstr = params.get("outflow stabilization","no_outstab");
+  bool outflowstab = false;
+  if(outflowstabstr =="yes_outstab") outflowstab = true;
+
+  // get flag whether outflow term due to conservative form of convective term
+  string convformstr = params.get<string>("form of convective term","convective");
+  bool conservative = false;
+  if(convformstr =="conservative") conservative = true;
+
+  // When conservative form is used, sign of outflow term on right hand side
+  // is negative in any case (even if mistakenly outflow-stabilization flag
+  // is set to yes); otherwise, outflow-stabilization flag decides, and sign
+  // of outflow term is positive.
+  double signum;
+  if (conservative) signum = -1.0;
+  else              signum =  1.0;
 
   const DiscretizationType distype = this->Shape();
 
@@ -407,8 +422,8 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
     edensnp(i) = myvedenp[2+(i*3)];
   }
 
-  // this part will be run when outflow stabilization is required
-  if(outflow_stab == "yes_outstab")
+  // this part will be run when an outflow term is required
+  if (conservative or outflowstab)
   {
     // Determine normal to this element
     std::vector<double> normal(2);
@@ -487,7 +502,7 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
         normvel += vel[dim]*normal[dim];
       }
 
-      if(normvel<-0.0001)
+      if ((normvel<-0.0001 and outflowstab) or (normvel>0.0 and conservative))
       {
         // The Jacobian is computed using the formula
         //
@@ -513,13 +528,13 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
         // compute infinitesimal line element dr for integration along the line
         const double dr = sqrt(der_par(0)*der_par(0)+der_par(1)*der_par(1));
 
-        const double fac = intpoints.qwgt[gpid] * dr * thsl * normvel;
+        const double fac = intpoints.qwgt[gpid] * dr * thsl * normvel * signum;
 
         for (int node=0;node<iel;++node)
         {
           for(int dim=0;dim<2;dim++)
           {
-            elevec1[node*numdf+dim]+= funct(node) * edensnp(node) * evelnp(dim,node) * fac;
+            elevec1[node*numdf+dim] += funct(node) * edensnp(node) * evelnp(dim,node) * fac;
           }
         }
       }
