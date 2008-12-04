@@ -294,9 +294,9 @@ void DatFileReader::ReadKnots(
   }
 
   // this is a pointer to the knots of one patch in one direction
-  // we will read them and put them 
+  // we will read them and put them
   vector<Teuchos::RCP<vector<double> > > patch_knots(dim);
-  
+
   // open input file --- this is done on all procs
   ifstream file;
 
@@ -311,7 +311,7 @@ void DatFileReader::ReadKnots(
   // start to read something when read is true
   bool read=false;
 
-  
+
   bool knotvectorsection=false;
 
   // index for number of patch
@@ -336,7 +336,7 @@ void DatFileReader::ReadKnots(
 
       // check whether it is the knotvectorsection
       string::size_type loc = tmp.rfind("KNOTVECTORS");
- 
+
       if (loc != string::npos)
       {
         // if this is true, we are at the beginning of a knot section
@@ -357,13 +357,13 @@ void DatFileReader::ReadKnots(
     {
       // check for a new patch
       string::size_type loc;
-      
+
       loc = tmp.rfind("BEGIN");
       if (loc != string::npos)
       {
 	file >> tmp;
 	read=true;
-	
+
 	actdim=-1;
 
 	for(int rr=0;rr<dim;++rr)
@@ -381,7 +381,7 @@ void DatFileReader::ReadKnots(
 	// get ID of patch we are currently reading
 	string str_npatch;
 	file >> str_npatch;
-	
+
 	char* endptr = NULL;
 	npatch=strtol(str_npatch.c_str(),&endptr,10);
 	npatch--;
@@ -686,6 +686,9 @@ void DatFileReader::ReadDat()
       positions_[sectionname] = i;
     }
   }
+
+  if (positions_.find("--END")==positions_.end())
+    dserror("end section missing. incomplete dat file?");
 }
 
 
