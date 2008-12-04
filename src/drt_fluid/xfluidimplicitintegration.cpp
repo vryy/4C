@@ -493,9 +493,12 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   Epetra_Map newdofrowmap = *discret_->DofRowMap();
 
   // print information about dofs
-  const int numdof = newdofrowmap.NumGlobalElements();
-  const int numnodaldof = dofmanager->NumNodalDof();
-  cout0_ << "numdof = " << numdof << ", numstressdof = "<< (numdof - numnodaldof) << endl; 
+  if (discret_->Comm().NumProc() == 1)
+  {
+    const int numdof = newdofrowmap.NumGlobalElements();
+    const int numnodaldof = dofmanager->NumNodalDof();
+    cout << "numdof = " << numdof << ", numstressdof = "<< (numdof - numnodaldof) << endl;
+  }
   
   discret_->ComputeNullSpaceIfNecessary(solver_.Params());
 
@@ -1169,7 +1172,7 @@ void FLD::XFluidImplicitTimeInt::TimeUpdate()
   // compute acceleration
   TIMEINT_THETA_BDF2::CalculateAcceleration(
       state_.velnp_, state_.veln_, state_.velnm_, state_.accn_,
-          timealgo_, step_, theta_, gamma_, dta_, dtp_,
+          timealgo_, step_, theta_, dta_, dtp_,
           state_.accnp_);
 
   // update old acceleration

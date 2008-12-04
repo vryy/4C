@@ -99,7 +99,6 @@ namespace TIMEINT_THETA_BDF2
       const FLUID_TIMEINTTYPE              timealgo, ///< time integration id
       const int                            step,     ///< time step
       const double                         theta,    ///< factor for OST method
-      const double                         gamma,    ///< factor for Af-generalized-alpha method
       const double                         dta,      ///< time step size (delta t) n
       const double                         dtp,      ///< previous time step size (delta t) n-1
       Teuchos::RCP<Epetra_Vector>&         accnp     ///< acceleration at n+1

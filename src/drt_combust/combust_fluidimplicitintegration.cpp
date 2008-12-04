@@ -1002,7 +1002,7 @@ void FLD::CombustFluidImplicitTimeInt::TimeUpdate()
   // compute acceleration
   TIMEINT_THETA_BDF2::CalculateAcceleration(
       state_.velnp_, state_.veln_, state_.velnm_, state_.accn_,
-          timealgo_, step_, theta_, gamma_, dta_, dtp_,
+          timealgo_, step_, theta_, dta_, dtp_,
           state_.accnp_);
 
   // update old acceleration
