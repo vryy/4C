@@ -309,7 +309,8 @@ DRT::ELEMENTS::XFluid3::DLMInfo::DLMInfo(const int nd, const int na)
 : oldKaainv_(LINALG::SerialDenseMatrix(na,na,true)),
   oldKad_(LINALG::SerialDenseMatrix(na,nd,true)),
   oldfa_(LINALG::SerialDenseVector(na,true)),
-  stressdofs_(LINALG::SerialDenseVector(na,true))
+  stressdofs_(LINALG::SerialDenseVector(na,true)),
+  na_(na)
 {
   return;
 }

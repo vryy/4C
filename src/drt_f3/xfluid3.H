@@ -257,6 +257,8 @@ namespace DRT
           DLMInfo();
           //! no copy constructor
           DLMInfo(const DLMInfo&);
+          
+          const int na_; 
         };
         
         Teuchos::RCP<DLMInfo>            DLM_info_;

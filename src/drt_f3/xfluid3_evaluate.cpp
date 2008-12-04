@@ -370,15 +370,25 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       const Teuchos::RCP<XFEM::DofManager> globaldofman = params.get< Teuchos::RCP< XFEM::DofManager > >("dofmanager");
 
       const bool DLM_condensation = params.get<bool>("DLM_condensation");
+      
+      const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_empty;
+      const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_filled((XFLUID::getElementAnsatz(this->Shape())));
+      
+      // always build the eledofman that fits to the global dofs
+      // problem: tight connectivity to xdofmapcreation
+      if (not DLM_condensation)
       {
-        // create local copy of information about dofs
-        map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz;
-        if (not DLM_condensation)
-          element_ansatz = XFLUID::getElementAnsatz(this->Shape());
-
-        eleDofManager_ = rcp(new XFEM::ElementDofManager(*this, element_ansatz, *globaldofman));
+        // assume stress unknowns for the element
+        eleDofManager_ = rcp(new XFEM::ElementDofManager(*this, element_ansatz_filled, *globaldofman));
+      }
+      else
+      {
+        // assume no stress unknowns for the element
+        eleDofManager_ = rcp(new XFEM::ElementDofManager(*this, element_ansatz_empty, *globaldofman));
       }
 
+      // create an eledofman that has stress unknowns only for intersected elements
+      // Note: condensation for unintersected elements is not handled, but also not needed
       if (ih_->ElementIntersected(Id()))
       {
         std::set<XFEM::FieldEnr> enrfieldset;
@@ -395,16 +405,14 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           }
         };
 
-        // create local copy of information about dofs
-        const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(XFLUID::getElementAnsatz(this->Shape()));
-
         // nodal dofs for ele
         eleDofManager_uncondensed_ = 
-          rcp(new XFEM::ElementDofManager(*this, eleDofManager_->getNodalDofSet(), enrfieldset, element_ansatz));
+          rcp(new XFEM::ElementDofManager(*this, eleDofManager_->getNodalDofSet(), enrfieldset, element_ansatz_filled));
 
         const int nd = eleDofManager_uncondensed_->NumNodeDof();
         const int na = eleDofManager_uncondensed_->NumElemDof();
-
+//        if (na == 0)
+//          dserror("this happens, when element is intersected, but we skip the stress unknown due to small surface integral");
         DLM_info_ = Teuchos::rcp(new DLMInfo(nd,na));
       }
       else
@@ -657,29 +665,36 @@ void DRT::ELEMENTS::XFluid3::UpdateOldDLMAndDLMRHS(
 {
   const int nd = eleDofManager_uncondensed_->NumNodeDof();
   const int na = eleDofManager_uncondensed_->NumElemDof();
-  const int numdof_uncond = eleDofManager_uncondensed_->NumDofElemAndNode();
   
-  // add Kda . inc_velnp to feas
-  // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
-  
-  vector<double> inc_velnp(lm.size());
-  DRT::UTILS::ExtractMyValues(*discretization.GetState("nodal increment"),inc_velnp,lm);
-  
-  // update old iteration residual of the stresses
-  // DLM_info_->oldfa_(i) += DLM_info_->oldKad_(i,j)*inc_velnp[j];
-  DLM_info_->oldfa_.GEMV('N', na, nd,1.0, DLM_info_->oldKad_.A(), DLM_info_->oldKad_.LDA(), &inc_velnp[0], 1.0, DLM_info_->oldfa_.A());
-  
-  // compute element stresses
-  // DLM_info_->stressdofs_(i) -= DLM_info_->oldKaainv_(i,j)*DLM_info_->oldfa_(j);
-  DLM_info_->stressdofs_.GEMV('N', na, na,-1.0, DLM_info_->oldKaainv_.A(), DLM_info_->oldKaainv_.LDA(), DLM_info_->oldfa_.A(), 1.0, DLM_info_->stressdofs_.A());
-  
-  // increase size of element vector (old values stay and zeros are added)
-  mystate.velnp.resize(numdof_uncond,0.0);
-  mystate.veln .resize(numdof_uncond,0.0);
-  mystate.velnm.resize(numdof_uncond,0.0);
-  mystate.accn .resize(numdof_uncond,0.0);
-  for (int i=0;i<na;i++)
-    mystate.velnp[i+nd] = DLM_info_->stressdofs_(i);
+  if (na > 0)
+  {
+    // add Kda . inc_velnp to feas
+    // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
+    
+    vector<double> inc_velnp(lm.size());
+    DRT::UTILS::ExtractMyValues(*discretization.GetState("nodal increment"),inc_velnp,lm);
+    
+    const Epetra_BLAS blas;
+    
+    // update old iteration residual of the stresses
+    // DLM_info_->oldfa_(i) += DLM_info_->oldKad_(i,j)*inc_velnp[j];
+    blas.GEMV('N', na, nd,1.0, DLM_info_->oldKad_.A(), DLM_info_->oldKad_.LDA(), &inc_velnp[0], 1.0, DLM_info_->oldfa_.A());
+    
+    // compute element stresses
+    // DLM_info_->stressdofs_(i) -= DLM_info_->oldKaainv_(i,j)*DLM_info_->oldfa_(j);
+    blas.GEMV('N', na, na,-1.0, DLM_info_->oldKaainv_.A(), DLM_info_->oldKaainv_.LDA(), DLM_info_->oldfa_.A(), 1.0, DLM_info_->stressdofs_.A());
+    
+    // increase size of element vector (old values stay and zeros are added)
+    const int numdof_uncond = eleDofManager_uncondensed_->NumDofElemAndNode();
+    mystate.velnp.resize(numdof_uncond,0.0);
+    mystate.veln .resize(numdof_uncond,0.0);
+    mystate.velnm.resize(numdof_uncond,0.0);
+    mystate.accn .resize(numdof_uncond,0.0);
+    for (int i=0;i<na;i++)
+    {
+      mystate.velnp[i+nd] = DLM_info_->stressdofs_(i);
+    }
+  }
 }
 
 /*---------------------------------------------------------------------*
@@ -739,16 +754,17 @@ void DRT::ELEMENTS::XFluid3::CondenseDLMAndStoreOldIterationStep(
     solve_for_inverseKaa.Invert();
 
     {
+      const Epetra_BLAS blas;
       LINALG::SerialDenseMatrix KdaKaainv(nd,na); // temporary Kda.Kaa^{-1}
       
       // KdaKaainv(i,j) = Kda(i,k)*Kaa(k,j);
-      KdaKaainv.GEMM('N','N',nd,na,na,1.0,Kda.A(),Kda.LDA(),Kaa.A(),Kaa.LDA(),0.0,KdaKaainv.A(),KdaKaainv.LDA());
+      blas.GEMM('N','N',nd,na,na,1.0,Kda.A(),Kda.LDA(),Kaa.A(),Kaa.LDA(),0.0,KdaKaainv.A(),KdaKaainv.LDA());
 
       // elemat1(i,j) += - KdaKaainv(i,k)*Kad(k,j);
-      elemat1.GEMM('N','N',nd,nd,na,-1.0,KdaKaainv.A(),KdaKaainv.LDA(),Kad.A(),Kad.LDA(),1.0,elemat1.A(),elemat1.LDA());
+      blas.GEMM('N','N',nd,nd,na,-1.0,KdaKaainv.A(),KdaKaainv.LDA(),Kad.A(),Kad.LDA(),1.0,elemat1.A(),elemat1.LDA());
       
       // elevec1(i) += - KdaKaainv(i,j)*fa(j);
-      elevec1.GEMV('N', nd, na,-1.0, KdaKaainv.A(), KdaKaainv.LDA(), fa.A(), 1.0, elevec1.A());
+      blas.GEMV('N', nd, na,-1.0, KdaKaainv.A(), KdaKaainv.LDA(), fa.A(), 1.0, elevec1.A());
     }
    
     {
