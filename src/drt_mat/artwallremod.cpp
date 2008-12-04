@@ -161,7 +161,7 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
   
   // check whether we currently want remodeling
   // because remodeling might be switched after restart
-  if ((!matdata_) && (matdata_->m.artwallremod->rembegt != -1.)){
+  if (matdata_->m.artwallremod->rembegt != -1.){
     // initialize internal variables of remodeling
     gamma_ = rcp(new vector<double>(numgp));
     phi_ = rcp(new vector<Epetra_SerialDenseMatrix>(numgp));
@@ -553,6 +553,15 @@ std::string MAT::ArtWallRemod::PrintVec(const vector<double> actvec)
 }
 
 /// Debug Output to txt-file
+
+/* this needs to be copied to STR::TimInt::OutputStep() to debug enable output
+{
+  discret_->SetState("displacement",Dis());
+  MAT::ArtWallRemodOutputToGmsh(discret_, GetStep(), 1);
+  MAT::ArtWallRemodOutputToTxt(discret_, GetStep(), 1);
+}
+*/
+
 void MAT::ArtWallRemodOutputToTxt(const Teuchos::RCP<DRT::Discretization> dis,
     const double time,
     const int iter)
@@ -562,7 +571,7 @@ void MAT::ArtWallRemodOutputToTxt(const Teuchos::RCP<DRT::Discretization> dis,
     filename << filebase << "_rem" << ".txt";
     ofstream outfile;
     outfile.open(filename.str().c_str(),ios_base::app);
-    int nele = dis->NumMyColElements();
+    //int nele = dis->NumMyColElements();
     int endele = 100; //nele;
     for (int iele=0; iele<endele; iele+=10) //++iele) iele+=10)
     {
@@ -570,7 +579,7 @@ void MAT::ArtWallRemodOutputToTxt(const Teuchos::RCP<DRT::Discretization> dis,
       RefCountPtr<MAT::Material> mat = actele->Material();
       if (mat->MaterialType() != m_artwallremod) return;
       MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(mat.get());
-      int ngp = remo->Geta1()->size();
+      //int ngp = remo->Geta1()->size();
       int endgp = 1; //ngp;
       for (int gp = 0; gp < endgp; ++gp){
         double gamma = remo->Getgammas()->at(gp);
