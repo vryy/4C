@@ -198,7 +198,7 @@ void FLD::UTILS::SetupXFluidSplit(
 void FLD::UTILS::LiftDrag(
   const DRT::Discretization&     dis         ,      
   const Epetra_Vector&           trueresidual,    
-  ParameterList&                 params      ,
+  const ParameterList&           params      ,
   RCP<map<int,vector<double> > > liftdragvals
   )
 {
