@@ -284,7 +284,7 @@ discret_(discret)
         
         // tangent has to be orthogonal
         double ndott = (*n)[0]*(*t)[0] + (*n)[1]*(*t)[1] + (*n)[2]*(*t)[2];
-        if (abs(ndott)>1.0e-12)
+        if (abs(ndott)>1.0e-8)
           dserror("ERROR: Locsys normal and tangent not orthogonal");
         
         // build unit normal and tangent
@@ -373,7 +373,7 @@ discret_(discret)
         
         // tangent has to be orthogonal
         double ndott = (*n)[0]*(*t)[0] + (*n)[1]*(*t)[1] + (*n)[2]*(*t)[2];
-        if (abs(ndott)>1.0e-12)
+        if (abs(ndott)>1.0e-8)
           dserror("ERROR: Locsys normal and tangent not orthogonal");
         
         // build unit normal and tangent
