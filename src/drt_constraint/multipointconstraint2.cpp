@@ -73,7 +73,7 @@ void UTILS::MPConstraint2::Initialize
     int condID=cond.Getint("ConditionID");
    
     // if current time (at) is larger than activation time of the condition, activate it 
-    if((inittimes_.find(condID)->second <= time) && (!activecons_.find(condID)->second))
+    if((inittimes_.find(condID)->second < time) && (!activecons_.find(condID)->second))
     {     
       activecons_.find(condID)->second=true;
       if (actdisc_->Comm().MyPID()==0)
@@ -327,8 +327,10 @@ void UTILS::MPConstraint2::EvaluateConstraint(RCP<DRT::Discretization> disc,
     DRT::Condition& cond = *(constrcond_[actele->Id()]);
     int condID=cond.Getint("ConditionID");
     
+    // computation only if time is larger or equal than initialization time for constraint
     if(inittimes_.find(condID)->second<=time)
     {
+      // initialize if it is the first time condition is evaluated
       if(activecons_.find(condID)->second==false)
       {
         const string action = params.get<string>("action"); 

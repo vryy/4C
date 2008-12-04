@@ -203,12 +203,12 @@ void UTILS::ConstrManager::StiffnessAndInternalForces(
   mpconline2d_->SetConstrState("displacement",disp);
   mpconline2d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);
   // Export redundant vectors into distributed ones
-  actvalues_->Scale(0.0);
+  actvalues_->PutScalar(0.0);
   actvalues_->Export(*actredundant,*conimpo_,Add);
   RCP<Epetra_Vector> addrefbase = rcp(new Epetra_Vector(*constrmap_));
   addrefbase->Export(*refbaseredundant,*conimpo_,Add);
   refbasevalues_->Update(1.0,*addrefbase,1.0);
-  fact_->Scale(0.0);
+  fact_->PutScalar(0.0);
   fact_->Export(*factredundant,*conimpo_,Insert);
   // ----------------------------------------------------
   // -----------include possible further constraints here
@@ -249,7 +249,7 @@ void UTILS::ConstrManager::ComputeError(double time, RCP<Epetra_Vector> disp)
     mpcnormcomp3d_->Evaluate(p,null,null,null,null,actredundant);
     
     // Export redundant vectors into distributed ones
-    actvalues_->Scale(0.0);
+    actvalues_->PutScalar(0.0);
     actvalues_->Export(*actredundant,*conimpo_,Add);
 
     constrainterr_->Update(1.0,*referencevalues_,-1.0,*actvalues_,0.0);
@@ -300,7 +300,7 @@ void UTILS::ConstrManager::UpdateLagrMult(RCP<Epetra_Vector> vect)
 void UTILS::ConstrManager::ComputeMonitorValues(RCP<Epetra_Vector> disp)
 {
   vector<DRT::Condition*> monitcond(0);
-  monitorvalues_->Scale(0.0);
+  monitorvalues_->PutScalar(0.0);
   ParameterList p;
   actdisc_->SetState("displacement",disp);
   
