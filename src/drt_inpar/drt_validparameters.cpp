@@ -1619,6 +1619,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("FLUIDPCITER",0,
                "Number of Richardson iterations on fluid block in MFSI block preconditioner",
                &fsidyn);
+  
+  setStringToIntegralParameter<int>("INFNORMSCALING","Yes","Scale Blocks in Mono-FSI with row infnorm?",
+                                     yesnotuple,yesnovalue,&fsidyn);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& xfem_general = list->sublist("XFEM GENERAL",false,"");

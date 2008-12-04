@@ -10,9 +10,6 @@
 
 #include "../drt_io/io_control.H"
 
-
-#define scaling_infnorm true
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::MonolithicStructureSplit::MonolithicStructureSplit(Epetra_Comm& comm)
@@ -326,6 +323,10 @@ void FSI::MonolithicStructureSplit::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicStructureSplit::ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b)
 {
+  //should we scale the system?
+  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+  const bool scaling_infnorm = (bool)getIntegralValue<int>(fsidyn,"INFNORMSCALING");
+  
   if (scaling_infnorm)
   {
     // The matrices are modified here. Do we have to change them back later on?
@@ -374,6 +375,9 @@ void FSI::MonolithicStructureSplit::ScaleSystem(LINALG::BlockSparseMatrixBase& m
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicStructureSplit::UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x)
 {
+  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+  const bool scaling_infnorm = (bool)getIntegralValue<int>(fsidyn,"INFNORMSCALING");
+  
   if (scaling_infnorm)
   {
     Teuchos::RCP<Epetra_Vector> sy = Extractor().ExtractVector(x,0);
