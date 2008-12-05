@@ -66,13 +66,22 @@ Maintainer: Alexander Popp
 /* Contact algorithm parameters                                         */
 /************************************************************************/
 
-#define CONTACTPROJTOL 0.05      /* projection tol. for overlap decision */
-#define CONTACTPROJLIM 1.0e-8    /* no problems with exact projections in 2D */
+// CONTACT SEARCH
+#define CONTACTCRITDIST 0.5      /* crit. distance for potential contact */
+#define CONTACTDEPTHOCTREE 5     /* max. depth for contact search octree */
+
+// CONTACT PROJECTION AND INTEGRATION (2D/3D)
 #define CONTACTMAXITER 10        /* max. no. iterations for local Newton */
 #define CONTACTCONVTOL 1.0e-12   /* convergence tolerance for local Newton */
-#define CONTACTCRITDIST 0.5      /* critical distance for potential contact */
-#define CONTACTCLIPTOL 1.0e-12   /* tolerance for polygon clipping in 3D */
-#define CONTACTDEPTHOCTREE 5     /* max. depth for contact search octree */
+
+// CONTACT PROJECTION AND INTEGRATION (2D)
+#define CONTACTPROJTOL 0.05      /* projection tolerance for overlap (2D)*/
+#define CONTACTPROJLIM 1.0e-8    /* exact projection tolerance (2D) */
+
+// CONTACT PROJECTION AND INTEGRATION (3D)
+#define CONTACTCLIPTOL 1.0e-12   /* tolerance for polygon clipping (3D) */
+#define CONTACTINTLIM 1.0e-4     /* min(area-%) cell/slave for integration */
+
 
 namespace CONTACT {
   // static solution routine

@@ -1835,7 +1835,7 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping3D(
         for (int k=0;k<3;++k) diff[k] = respoly[i][k] - respoly[i-1][k];
 
         double dist = sqrt(diff[0]*diff[0]+diff[1]*diff[1]+diff[2]*diff[2]);
-        double tolcollapse = 10*tol;
+        double tolcollapse = 1.0e6*tol;
         
         if (abs(dist) >= tolcollapse)
           collapsedrespoly.push_back(respoly[i]);
@@ -2207,6 +2207,19 @@ bool CONTACT::Coupling::IntegrateCells3D()
   // loop over all integration cells
   for (int i=0;i<(int)(Cells().size());++i)
   {
+    // compare intcell area with slave element area
+    double intcellarea = Cells()[i]->Area();
+    double selearea = 0.0;
+    DRT::Element::DiscretizationType dt = SlaveElement().Shape();
+    if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
+      selearea = 4.0;
+    else if (dt==DRT::Element::tri3 || dt==DRT::Element::tri6)
+      selearea = 0.5;
+    else dserror("ERROR: IntegrateCells3D: Invalid 3D slave element type");
+    
+    // integrate cell only if not neglectable
+    if (intcellarea<CONTACTINTLIM*selearea) continue;
+    
     // do the two integrations
     // *******************************************************************
     // ************ Coupling with or without auxiliary plane *************

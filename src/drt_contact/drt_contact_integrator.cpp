@@ -417,12 +417,11 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateM(CONTACT::CElement&
     if ((mxi[0]<mxia) || (mxi[0]>mxib))
     {
       cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
-      cout << "Slave nodes: " << sele.NodeIds()[0] << " " << sele.NodeIds()[1] << endl;
-      cout << "Master nodes: " << mele.NodeIds()[0] << " " << mele.NodeIds()[1] << endl;
-      cout << "sxia: " << sxia << " sxib: " << sxib << endl;
-      cout << "mxia: " << mxia << " mxib: " << mxib << endl;
+      cout << "Gauss point: " << sxi[0] << " " << sxi[1] << endl;
+      cout << "Projection: " << mxi[0] << " " << mxi[1] << endl;
       dserror("ERROR: IntegrateM: Gauss point projection failed! mxi=%d",mxi[0]);
     }
+    
     // evaluate dual space shape functions (on slave element)
     sele.EvaluateShapeDual(sxi,dualval,dualderiv,nrow);
     
@@ -566,12 +565,11 @@ void CONTACT::Integrator::DerivM(CONTACT::CElement& sele,
     if ((mxi[0]<mxia) || (mxi[0]>mxib))
     {
       cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
-      cout << "Slave nodes: " << sele.NodeIds()[0] << " " << sele.NodeIds()[1] << endl;
-      cout << "Master nodes: " << mele.NodeIds()[0] << " " << mele.NodeIds()[1] << endl;
-      cout << "sxia: " << sxia << " sxib: " << sxib << endl;
-      cout << "mxia: " << mxia << " mxib: " << mxib << endl;
-      dserror("ERROR: IntegrateM: Gauss point projection failed! mxi=%d",mxi[0]);
+      cout << "Gauss point: " << sxi[0] << " " << sxi[1] << endl;
+      cout << "Projection: " << mxi[0] << " " << mxi[1] << endl;
+      dserror("ERROR: DerivM: Gauss point projection failed! mxi=%d",mxi[0]);
     }
+    
     // evaluate dual space shape functions (on slave element)
     sele.EvaluateShapeDual(sxi,dualval,dualderiv,nrow);
     
@@ -1285,7 +1283,12 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateMmod(CONTACT::CEleme
     
     // check GP projection
     if ((mxi[0]<mxia) || (mxi[0]>mxib))
+    {
+      cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+      cout << "Gauss point: " << sxi[0] << " " << sxi[1] << endl;
+      cout << "Projection: " << mxi[0] << " " << mxi[1] << endl;
       dserror("ERROR: IntegrateMmod: Gauss point projection failed!");
+    }
     
     // evaluate trace space shape functions (on both elements)
     sele.EvaluateShape(sxi,sval,sderiv,nrow);
@@ -1427,7 +1430,12 @@ RCP<Epetra_SerialDenseVector> CONTACT::Integrator::IntegrateG(CONTACT::CElement&
     
     // check GP projection
     if ((mxi[0]<mxia) || (mxi[0]>mxib))
+    {
+      cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+      cout << "Gauss point: " << sxi[0] << " " << sxi[1] << endl;
+      cout << "Projection: " << mxi[0] << " " << mxi[1] << endl;
       dserror("ERROR: IntegrateG: Gauss point projection failed!");
+    }
     
     // evaluate dual space shape functions (on slave element)
     sele.EvaluateShapeDual(sxi,dualval,dualderiv,nrow);
@@ -1508,7 +1516,10 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateM3D(
 {
   //check for problem dimension
   if (Dim()!=3) dserror("ERROR: 3D integration method called for non-3D problem");
-    
+  
+  // discretization type of master element
+  DRT::Element::DiscretizationType dt = mele.Shape();
+  
   // check input data
   if ((!sele.IsSlave()) || (mele.IsSlave()))
     dserror("ERROR: IntegrateM3D called on a wrong type of CElement pair!");
@@ -1550,6 +1561,32 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateM3D(
     CONTACT::Projector projector(3);
     projector.ProjectGaussPoint3D(sele,sxi,mele,mxi);
 
+    // check GP projection
+    double tol = 0.01;
+    if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
+    {
+      if (mxi[0]<-1.0-tol || mxi[1]<-1.0-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol)
+      {
+        cout << "\n***Warning: IntegrateM3D: Gauss point projection outside!";
+        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+        cout << "Gauss point: " << sxi[0] << " " << sxi[1] << endl;
+        cout << "Projection: " << mxi[0] << " " << mxi[1] << endl;
+        
+      }
+    }
+    else
+    {
+      if (mxi[0]<-tol || mxi[1]<-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol || mxi[0]+mxi[1]>1.0+2*tol)
+      {
+        cout << "\n***Warning: IntegrateM3D: Gauss point projection outside!";
+        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+        cout << "Gauss point: " << sxi[0] << " " << sxi[1] << endl;
+        cout << "Projection: " << mxi[0] << " " << mxi[1] << endl;
+      }
+    }
+    
     // evaluate dual space shape functions (on slave element)
     sele.EvaluateShapeDual(sxi,dualval,dualderiv,nrow);
     
@@ -1609,6 +1646,10 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateMAuxPlane3D(
 {
   //check for problem dimension
   if (Dim()!=3) dserror("ERROR: 3D integration method called for non-3D problem");
+  
+  // discretization type of slave / master element
+  DRT::Element::DiscretizationType sdt = sele.Shape();
+  DRT::Element::DiscretizationType mdt = mele.Shape();
     
   // check input data
   if ((!sele.IsSlave()) || (mele.IsSlave()))
@@ -1647,6 +1688,51 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateMAuxPlane3D(
     projector.ProjectGaussPointAuxn3D(globgp,auxn,sele,sxi);
     projector.ProjectGaussPointAuxn3D(globgp,auxn,mele,mxi);
     
+    // check GP projection (SLAVE)
+    double tol = 0.01;
+    if (sdt==DRT::Element::quad4 || sdt==DRT::Element::quad8 || sdt==DRT::Element::quad9)
+    {
+      if (sxi[0]<-1.0-tol || sxi[1]<-1.0-tol || sxi[0]>1.0+tol || sxi[1]>1.0+tol)
+      {
+        cout << "\n***Warning: IntegrateMAuxPlane3D: Gauss point projection outside!";
+        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+        cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << endl;
+      }
+    }
+    else
+    {
+      if (sxi[0]<-tol || sxi[1]<-tol || sxi[0]>1.0+tol || sxi[1]>1.0+tol || sxi[0]+sxi[1]>1.0+2*tol)
+      {
+        cout << "\n***Warning: IntegrateMAuxPlane3D: Gauss point projection outside!";
+        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+        cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << endl;
+      }
+    }
+    
+    // check GP projection (MASTER)
+    if (mdt==DRT::Element::quad4 || mdt==DRT::Element::quad8 || mdt==DRT::Element::quad9)
+    {
+      if (mxi[0]<-1.0-tol || mxi[1]<-1.0-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol)
+      {
+        cout << "\n***Warning: IntegrateMAuxPlane3D: Gauss point projection outside!";
+        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+        cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << endl;
+      }
+    }
+    else
+    {
+      if (mxi[0]<-tol || mxi[1]<-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol || mxi[0]+mxi[1]>1.0+2*tol)
+      {
+        cout << "\n***Warning: IntegrateMAuxPlane3D: Gauss point projection outside!";
+        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+        cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << endl;
+      }
+    }
+        
     // evaluate dual space shape functions (on slave element)
     sele.EvaluateShapeDual(sxi,dualval,dualderiv,nrow);
     
@@ -1704,6 +1790,9 @@ RCP<Epetra_SerialDenseVector> CONTACT::Integrator::IntegrateG3D(
 {
   //check for problem dimension
   if (Dim()!=3) dserror("ERROR: 3D integration method called for non-3D problem");
+ 
+  // discretization type of master element
+  DRT::Element::DiscretizationType dt = mele.Shape();
     
   // check input data
   if ((!sele.IsSlave()) || (mele.IsSlave()))
@@ -1753,6 +1842,31 @@ RCP<Epetra_SerialDenseVector> CONTACT::Integrator::IntegrateG3D(
     CONTACT::Projector projector(3);
     projector.ProjectGaussPoint3D(sele,sxi,mele,mxi);
 
+    // check GP projection
+    double tol = 0.01;
+    if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
+    {
+      if (mxi[0]<-1.0-tol || mxi[1]<-1.0-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol)
+      {
+        cout << "\n***Warning: IntegrateG3D: Gauss point projection outside!";
+        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+        cout << "Gauss point: " << sxi[0] << " " << sxi[1] << endl;
+        cout << "Projection: " << mxi[0] << " " << mxi[1] << endl;
+      }
+    }
+    else
+    {
+      if (mxi[0]<-tol || mxi[1]<-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol || mxi[0]+mxi[1]>1.0+2*tol)
+      {
+        cout << "\n***Warning: IntegrateG3D: Gauss point projection outside!";
+        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+        cout << "Gauss point: " << sxi[0] << " " << sxi[1] << endl;
+        cout << "Projection: " << mxi[0] << " " << mxi[1] << endl;
+      }
+    }
+        
     // evaluate dual space shape functions (on slave element)
     sele.EvaluateShapeDual(sxi,dualval,dualderiv,nrow);
     
@@ -1833,6 +1947,10 @@ RCP<Epetra_SerialDenseVector> CONTACT::Integrator::IntegrateGAuxPlane3D(
 {
   //check for problem dimension
   if (Dim()!=3) dserror("ERROR: 3D integration method called for non-3D problem");
+  
+  // discretization type of slave / master element
+  DRT::Element::DiscretizationType sdt = sele.Shape();
+  DRT::Element::DiscretizationType mdt = mele.Shape();
     
   // check input data
   if ((!sele.IsSlave()) || (mele.IsSlave()))
@@ -1880,6 +1998,51 @@ RCP<Epetra_SerialDenseVector> CONTACT::Integrator::IntegrateGAuxPlane3D(
     projector.ProjectGaussPointAuxn3D(globgp,auxn,sele,sxi);
     projector.ProjectGaussPointAuxn3D(globgp,auxn,mele,mxi);
 
+    // check GP projection (SLAVE)
+    double tol = 0.01;
+    if (sdt==DRT::Element::quad4 || sdt==DRT::Element::quad8 || sdt==DRT::Element::quad9)
+    {
+      if (sxi[0]<-1.0-tol || sxi[1]<-1.0-tol || sxi[0]>1.0+tol || sxi[1]>1.0+tol)
+      {
+        cout << "\n***Warning: IntegrateGAuxPlane3D: Gauss point projection outside!";
+        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+        cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << endl;
+      }
+    }
+    else
+    {
+      if (sxi[0]<-tol || sxi[1]<-tol || sxi[0]>1.0+tol || sxi[1]>1.0+tol || sxi[0]+sxi[1]>1.0+2*tol)
+      {
+        cout << "\n***Warning: IntegrateGAuxPlane3D: Gauss point projection outside!";
+        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+        cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << endl;
+      }
+    }
+    
+    // check GP projection (MASTER)
+    if (mdt==DRT::Element::quad4 || mdt==DRT::Element::quad8 || mdt==DRT::Element::quad9)
+    {
+      if (mxi[0]<-1.0-tol || mxi[1]<-1.0-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol)
+      {
+        cout << "\n***Warning: IntegrateGAuxPlane3D: Gauss point projection outside!";
+        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+        cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << endl;
+      }
+    }
+    else
+    {
+      if (mxi[0]<-tol || mxi[1]<-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol || mxi[0]+mxi[1]>1.0+2*tol)
+      {
+        cout << "\n***Warning: IntegrateGAuxPlane3D: Gauss point projection outside!";
+        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+        cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << endl;
+      }
+    }
+        
     // evaluate dual space shape functions (on slave element)
     sele.EvaluateShapeDual(sxi,dualval,dualderiv,nrow);
     
