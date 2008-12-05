@@ -137,7 +137,7 @@ Converter::Converter(PostField* field)
 
   h8dis_->FillComplete();
 
-  control_ = rcp(new IO::OutputControl(h8dis_->Comm(), "structure", "polynomial", "generated", "s8convert", 3, 0, 1000));
+  control_ = rcp(new IO::OutputControl(h8dis_->Comm(), "structure", "Polynomial", "generated", "s8convert", 3, 0, 1000));
   writer_ = rcp(new IO::DiscretizationWriter(h8dis_, control_));
   writer_->WriteMesh(0, 0);
 }
