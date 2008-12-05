@@ -695,18 +695,18 @@ namespace FLD
     )
   {
 
-    if(discret_->Comm().MyPID()==0)
-    {
-      cout << "XXXXXXXXXXXXXXXXXXXXX              ";
-      cout << "Read general mean values           ";
-      cout << "XXXXXXXXXXXXXXXXXXXXX";
-      cout << "\n\n";
-    }
-
     if(statistics_general_mean_!=Teuchos::null)
     {
-      if(samstart_<step)
+      if(samstart_<step && step<=samstop_)
       {
+        if(discret_->Comm().MyPID()==0)
+        {
+          cout << "XXXXXXXXXXXXXXXXXXXXX              ";
+          cout << "Read general mean values           ";
+          cout << "XXXXXXXXXXXXXXXXXXXXX";
+          cout << "\n\n";
+        }
+        
         statistics_general_mean_->ReadOldStatistics(reader);
       }
     }
