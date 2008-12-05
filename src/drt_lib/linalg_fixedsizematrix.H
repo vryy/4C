@@ -3909,7 +3909,7 @@ template<unsigned int rows, unsigned int cols>
 inline const double& Matrix<rows, cols>::operator()(unsigned int r, unsigned int c) const
 {
 #ifdef DEBUG
-    if (r < 0 or r >= rows or c < 0 or c >= cols)
+    if (r >= rows or c >= cols)
       dserror("Indices %i,%i out of range in Matrix<%i,%i>.",r,c,rows,cols);
 #endif
   return data_[r+c*rows];
@@ -3920,7 +3920,7 @@ inline double& Matrix<rows, cols>::operator()(unsigned int r)
 {
   DENSEERROR::Checker<(cols==1) or (rows==1)>::Cannot_call_1D_access_function_on_2D_matrix();
 #ifdef DEBUG
-    if (r < 0 or r >= (cols == 1 ? rows : cols))
+    if (r >= (cols == 1 ? rows : cols))
       dserror("Index %i out of range in Matrix<%i,%i>.",r,rows,cols);
 #endif
   return data_[r];
