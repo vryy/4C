@@ -66,6 +66,7 @@ public:
   {
     lmcurrent,
     lmold,
+    activeold,
     lmupdate,
     jump,
     dirichlet
@@ -402,6 +403,16 @@ public:
   */
   void StoreNodalQuantities(ManagerBase::QuantityType type, RCP<Epetra_Vector> vec = null);
   
+  /*!
+  \brief Store current (contact) nodal entries of D and M to old ones
+  
+  Contact nodes own their current entries and old ones (last converged
+  state) from the mortar matrices D and M. This function writes the
+  current ones to the old ones.  
+      
+  */
+  void StoreDMToNodes();
+    
   /*!
   \brief Update Mortar matrices D and M
   

@@ -624,51 +624,6 @@ void CONTACT::Interface::SetState(const string& statename, const RCP<Epetra_Vect
     }
   }
 
-  if (statename=="oldvelocity")
-  {
-    // set displacements in interface discretization
-    idiscret_->SetState(statename, vec);
-
-    // Get vec to full overlap
-    // RCP<const Epetra_Vector> global = idiscret_->GetState(statename);
-
-    // alternative method to get vec to full overlap
-    Epetra_Vector global(*idiscret_->DofColMap(),false);
-    LINALG::Export(*vec,global);
-    
-    // loop over all nodes to set current displacement
-    // (use fully overlapping column map)
-    for (int i=0;i<idiscret_->NumMyColNodes();++i)
-    {
-      CONTACT::CNode* node = static_cast<CONTACT::CNode*>(idiscret_->lColNode(i));
-      const int numdof = node->NumDof();
-      vector<double> myoldvel(numdof);
-      vector<int> lm(numdof);
-
-      for (int j=0;j<numdof;++j)
-        lm[j]=node->Dofs()[j];
-
-      DRT::UTILS::ExtractMyValues(global,myoldvel,lm);
-
-      // add mydisp[2]=0 for 2D problems
-      if (myoldvel.size()<3)
-        myoldvel.resize(3);
-
-      // set current configuration and displacement
-      for (int j=0;j<3;++j)
-      {
-        node->vold()[j]=myoldvel[j];
-      }
-    }
-
-    // loop over all elements to set current element length / area
-    // (use fully overlapping column map)
-    for (int i=0;i<idiscret_->NumMyColElements();++i)
-    {
-      CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(i));
-      element->Area()=element->ComputeArea();
-    }
-  }
   return;
 }
 
@@ -1385,26 +1340,35 @@ void CONTACT::Interface::AssembleTresca(LINALG::SparseMatrix& lglobal,
     if (colsize==3)
       dserror("ERROR: AssembleTresca: 3D case not yet implemented!");
 
-    /******************************** L-matrix and R-vector********************/
+    /******************************** L-matrix and R-vector**************/
     // the L-Matrix is calculated according to Huebner, Stadler, Wohlmuth: 
-    // A primal-dual active set algorithm for three dimensional contact problems
-    // with coulomn friction, 2008
+    // A primal-dual active set algorithm for three dimensional contact 
+    // problems with coulomb friction, 2008
     
-    // we need the tangent vector, the vector of lagrange multipliers and 
-    // the vector of displacement jumps per timestep of this node (only 2D case so far!)
+    // we need the tangent vector and the vector of lagrange multipliers 
     double tangent[3];
     tangent[0] = cnode->txi()[0];
     tangent[1] = cnode->txi()[1];
     tangent[2] = 0.0;
+    
     double z[3];
     z[0] = cnode->lm()[0];
     z[1] = cnode->lm()[1];
     z[2] =  0.0;
+    
+    // we compute the incremental, relative displacements (incremental dis-
+    // placement is equivalent to velocity in case of linear approach of 
+    // time integration)
+    
     double jump[3];
+    
+    // we can do this by two ways:
+    // first by regarding the change of mortar porjection
+        
     jump[0] = cnode->jump()[0];
     jump[1] = cnode->jump()[1];
     jump[2] =  0.0;
-    
+
     // lagrange multiplier and jump in tangential direction (projection) 
     double ztan    = tangent[0]*z[0] + tangent[1]*z[1];
     double jumptan = tangent[0]*jump[0] + tangent[1]*jump[1];
@@ -1415,7 +1379,7 @@ void CONTACT::Interface::AssembleTresca(LINALG::SparseMatrix& lglobal,
     
     if(abs(ztan) < 0.001)
     {
-      ztan = +100.0;
+      ztan = +20.0;
  	  	cout << "Warning: lagrange multiplier in tangential direction had been set to" 
     	" 100 (hard coded)" << endl;
     }

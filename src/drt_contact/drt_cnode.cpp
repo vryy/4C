@@ -70,7 +70,6 @@ grow_(1.0e12)
     teta()[i]=0.0;
     u()[i]=0.0;
     uold()[i]=0.0;
-    vold()[i]=0.0;
     xspatial()[i]=X()[i];
     lm()[i]=0.0;
     lmold()[i]=0.0;
@@ -93,9 +92,12 @@ dofs_(old.dofs_),
 closestnode_(old.closestnode_),
 hasproj_(old.hasproj_),
 active_(old.active_),
+activeold_(old.activeold_),
 slip_(old.slip_),
 drows_(old.drows_),
 mrows_(old.mrows_),
+drowsold_(old.drowsold_),
+mrowsold_(old.mrowsold_),
 mmodrows_(old.mmodrows_),
 grow_(old.grow_)
 {
@@ -107,7 +109,6 @@ grow_(old.grow_)
     teta()[i]=old.teta_[i];
     u()[i]=old.u_[i];
     uold()[i]=old.uold_[i];
-    vold()[i]=old.vold_[i];
     xspatial()[i]=old.xspatial_[i];
     lm()[i]=old.lm_[i];
     lmold()[i]=old.lmold_[i];
@@ -195,8 +196,6 @@ void CONTACT::CNode::Pack(vector<char>& data) const
   AddtoPack(data,u_,3);
   // add uold_
   AddtoPack(data,uold_,3);
-  // add vold_
-  AddtoPack(data,vold_,3);
   // add lm_
   AddtoPack(data,lm_,3);
   // add lmold_
@@ -209,6 +208,8 @@ void CONTACT::CNode::Pack(vector<char>& data) const
   AddtoPack(data,hasproj_);
   // add active_
   AddtoPack(data,active_);
+  // add activeold_
+  AddtoPack(data,activeold_);
   // add slip_
   AddtoPack(data,slip_);
   return;
@@ -254,8 +255,6 @@ void CONTACT::CNode::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,u_,3);
   // uold_
   ExtractfromPack(position,data,uold_,3);
-  // vold_
-  ExtractfromPack(position,data,vold_,3);
   // lm_
   ExtractfromPack(position,data,lm_,3);
   // lmold_
@@ -268,6 +267,8 @@ void CONTACT::CNode::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,hasproj_);
   // active_
   ExtractfromPack(position,data,active_);
+  // activeold_
+  ExtractfromPack(position,data,activeold_);
   // slip_
   ExtractfromPack(position,data,slip_);
 
@@ -371,6 +372,32 @@ void CONTACT::CNode::AddgValue(double val)
   // add given value to grow_
   grow_+=val;
   
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Store nodal entries of D and M to old ones             gitterle 12/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::CNode::StoreDMOld()
+{
+  // copy drows_ to drowsold_  
+  
+  // reset old nodal Mortar maps
+  for (int j=0;j<(int)(GetDOld().size());++j)
+  (GetDOld())[j].clear();
+  for (int j=0;j<(int)((GetMOld()).size());++j)
+  (GetMOld())[j].clear();
+  
+  // clear and zero nodal vectors   
+  drowsold_.clear();
+  mrowsold_.clear();
+  drowsold_.resize(0);
+	mrowsold_.resize(0);
+	
+	// write drows_ to drowsold_ 
+	drowsold_ = drows_;
+  mrowsold_ = mrows_;
+	
   return;
 }
 

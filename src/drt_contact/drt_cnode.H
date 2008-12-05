@@ -216,11 +216,6 @@ public:
   virtual inline double* uold() { return uold_; }
   
   /*!
-  \brief Return old velocity (length 3) 
-  */
-  virtual inline double* vold() { return vold_; }
-  
-  /*!
   \brief Return current nodal normal (only for slave side!) (length 3)
   */
   virtual inline double* n() { return n_; }
@@ -264,6 +259,11 @@ public:
   \brief Return contact status of this node (active=true)
   */
   virtual inline bool& Active() { return active_; }
+
+  /*!
+  \brief Return contact status of last converged state n (active=true)
+  */
+  virtual inline bool& ActiveOld() { return activeold_; }
   
   /*!
   \brief Return friction status of this node (slip=true)
@@ -321,6 +321,15 @@ public:
   void AddgValue(double val);
   
   /*!
+  brief Write nodal entries of D and M to Dold and Mold
+    
+  At the end of a time step the nodal entries (vector) of the Mortar
+  Matrices D and M are stored to the old ones. 
+     
+  */
+  void StoreDMOld();
+  
+  /*!
   \brief Return the 'D' map (vector) of this node
   */
   virtual inline vector<map<int,double> >& GetD() { return drows_; }
@@ -329,7 +338,17 @@ public:
   \brief Return the 'M' map (vector) of this node
   */
   virtual inline vector<map<int,double> >& GetM() { return mrows_; }
-    
+
+  /*!
+  \brief Return the old 'D' map (vector) of this node (last converged state)
+  */
+  virtual inline vector<map<int,double> >& GetDOld() { return drowsold_; }
+  
+  /*!
+  \brief Return the old 'M' map (vector) of this node (last converged state)
+  */
+  virtual inline vector<map<int,double> >& GetMOld() { return mrowsold_; }
+  
   /*!
   \brief Return the 'Mmod' map (vector) of this node
   */
@@ -466,17 +485,19 @@ protected:
   double          xspatial_[3];    // current configuration
   double          u_[3];           // current displacement
   double          uold_[3];        // old displacement (last converged state)
-  double          vold_[3];        // old velocity value (last converged state n) 
   double          lm_[3];          // current Lagrange multiplier value (n+1)
   double          lmold_[3];       // old Lagrange multiplier value (last converged state n)
   double          jump_[3];        // summation of incremental jumps per time step 
   int             closestnode_;    // closest node id on the other side of interface
   bool            hasproj_;        // true if feasible projection within search set (slave nodes only)
   bool            active_;         // true if cnode is in contact (active set strategy)
+  bool            activeold_;      // true if cnode was in contact (last converged state n)
   bool            slip_;           // true if cnode slips (contact force reaches friction bound)
   
   vector<map<int,double> >      drows_;      // nodal rows of D matrix
   vector<map<int,double> >      mrows_;      // nodal rows of M matrix
+  vector<map<int,double> >      drowsold_;   // nodal rows of old D matrix (last converged state n)
+  vector<map<int,double> >      mrowsold_;   // nodal rows of old M matrix (last converged state n)
   vector<map<int,double> >      mmodrows_;   // nodal rows of Mmod matrix
   double                        grow_;       // nodal entry of g vector
   

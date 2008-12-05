@@ -2206,7 +2206,7 @@ void CONTACT::ManagerBase::UpdateActiveSet()
         // compute tangential part of Lagrange multiplier
         tz = cnode->txi()[0]*cnode->lm()[0] + cnode->txi()[1]*cnode->lm()[1];
         
-        // compute tangential part of Lagrange multiplier
+        // compute tangential part of jump
         tjump = cnode->txi()[0]*cnode->jump()[0] + cnode->txi()[1]*cnode->jump()[1];
       }
       
@@ -2748,6 +2748,10 @@ void CONTACT::ManagerBase::StoreNodalQuantities(ManagerBase::QuantityType type,
       vectorglobal = LagrMultOld();
       break;
     }
+    case ManagerBase::activeold:
+    {
+      break;
+    }
     case ManagerBase::lmupdate:
     {
       vectorglobal = LagrMult();
@@ -2771,6 +2775,8 @@ void CONTACT::ManagerBase::StoreNodalQuantities(ManagerBase::QuantityType type,
     // export global quantity to current interface slave dof row map
     RCP<Epetra_Map> sdofrowmap = interface_[i]->SlaveRowDofs();
     RCP<Epetra_Vector> vectorinterface = rcp(new Epetra_Vector(*sdofrowmap));
+ 
+    if(vectorglobal != null) // necessary for case "activeold"
     LINALG::Export(*vectorglobal,*vectorinterface);
     
     // loop over all slave row nodes on the current interface
@@ -2800,6 +2806,11 @@ void CONTACT::ManagerBase::StoreNodalQuantities(ManagerBase::QuantityType type,
         case ManagerBase::lmold:
         {
           cnode->lmold()[k] = (*vectorinterface)[locindex+k];
+          break;
+        }
+        case ManagerBase::activeold:
+        {
+          cnode->ActiveOld() = cnode->Active();
           break;
         }
         case ManagerBase::lmupdate:
@@ -2841,6 +2852,34 @@ void CONTACT::ManagerBase::StoreNodalQuantities(ManagerBase::QuantityType type,
   }
     
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Store DM to Nodes (in vecor of last conv. time step)  gitterle 06/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::ManagerBase::StoreDMToNodes()
+{
+  // loop over all interfaces
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    // currently this only works safely for 1 interface
+    if (i>0) dserror("ERROR: StoreDMToNodes: Double active node check needed for n interfaces!");
+  
+    // loop over all slave row nodes on the current interface
+    for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
+    {
+      int gid = interface_[i]->SlaveRowNodes()->GID(j);
+      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CNode* cnode = static_cast<CNode*>(node);
+      
+      // store D and M entries 
+      cnode->StoreDMOld();
+    }
+  }
+  
+  return;
+  
 }
 
 /*----------------------------------------------------------------------*

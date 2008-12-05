@@ -1440,11 +1440,24 @@ void CONTACT::ContactStruGenAlpha::Update()
   contactmanager_->StoreNodalQuantities(Manager::lmold);
   contactmanager_->StoreDM("old");
 
-  // friction
-  // store the displacements to contact nodes
-  contactmanager_->SetState("olddisplacement",dis_);
-  contactmanager_->SetState("oldvelocity",vel_);
-
+  //----------------------------------------friction: store history values
+  // in the case of frictional contact we have to store several 
+  // informations and quantities at the end of a time step (converged 
+  // state) which is needed in the next time step as history
+  // information/quantities. These are:
+  
+  if((contactmanager_->Params()).get<string>("contact type","none")=="frictional");
+  {  
+  	// store contact state to contact nodes (active or inactive) 
+  	contactmanager_->StoreNodalQuantities(Manager::activeold);  
+  	  	
+  	// calculate gap vector and store it to contact nodes   
+    contactmanager_->StoreDMToNodes();    
+    
+    // store the displacements to contact nodes
+    contactmanager_->SetState("olddisplacement",dis_);
+  }
+  
 #ifdef PRESTRESS
   //----------- save the current green-lagrange strains in the material
   {

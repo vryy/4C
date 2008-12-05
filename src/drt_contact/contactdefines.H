@@ -49,6 +49,7 @@ Maintainer: Alexander Popp
 //#define CONTACTBOUNDMOD        /* flag for modification of boundary nodes */
 //#define CONTACTONEMORTARLOOP   /* flag for computing D and M in one loop */
 //#define CONTACTAUXPLANE        /* flag for aux plane usage in 3D coupling */
+//#define CONTACTRELVELMORTAR      /* calculation of rel. velocity with mortar*/ 
 
 /************************************************************************/
 /* Debugging options                                                    */
