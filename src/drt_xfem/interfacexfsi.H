@@ -134,10 +134,10 @@ namespace XFEM
     //! discretization that intersects the xfemdis_ -> should be a boundary discretization (e.g. surface of structure)
     const Teuchos::RCP<DRT::Discretization> cutterdis_;
     
-    //! current positions of all cutter nodes at n+1
+    //! map between global node id and its current positions at n+1  
     std::map<int,LINALG::Matrix<3,1> >      cutterposnp_;
     
-    //! current positions of all cutter nodes at n
+    //! map between global node id and its current positions at n
     std::map<int,LINALG::Matrix<3,1> >      cutterposn_;
 
     std::map<int,XFEM::SpaceTimeBoundaryCell>     stlayer_;
