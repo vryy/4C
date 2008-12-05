@@ -41,7 +41,7 @@ FLUID_STRESS      No
 FLUID_VIS         No
 ALE_DISP          No
 ------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP   Gen_Alfa
+DYNAMICTYP   GenAlpha
 EIGEN        0
 RESEVRYDISP  1
 RESEVRYSTRS  1
@@ -51,10 +51,6 @@ PREDICT      ConstDis
 TIMESTEP     0.5 
 NUMSTEP      40 
 MAXTIME      2000.
-BETA         0.3460207 
-GAMMA        0.6764705
-ALPHA_M      0.2352941
-ALPHA_F      0.4117647
 DAMPING      No
 M_DAMP       0.005 
 K_DAMP       0.005
@@ -62,6 +58,12 @@ CONV_CHECK    AbsRes_Or_AbsDis
 TOLDISP      1.0E-08
 TOLRES       1.0E-08
 MAXITER      20
+---------------------------------------STRUCTURAL DYNAMIC/GENALPHA
+GENAVG       ImrLike
+BETA         0.3460207 
+GAMMA        0.6764705
+ALPHA_M      0.2352941
+ALPHA_F      0.4117647
 -----------------------------------------------------STRUCT SOLVER
 SOLVER         UMFPACK
 PARTITION      Cut_Elements
@@ -806,7 +808,7 @@ CURVE1 on EXPR FUNC 0.5*(1+sin(pi*(t-10)/5-pi/2)) t1 10. t2 3000.
 ------------------------------------------------------------CURVE2
 CURVE2 on EXPR FUNC 0.5*(1+sin(pi*t/10-pi/2)) t1 0. t2 10.
 ------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 3 POSITION dispx NAME dispx VALUE -9.002023803667726920e-01 TOLERANCE 1e-8
+STRUCTURE DIS 1 NODE 3 POSITION dispx NAME dispx VALUE -9.002023803667731361e-01 TOLERANCE 1e-8
 STRUCTURE DIS 1 NODE 3 POSITION dispy NAME dispy VALUE 0.000000000000000000e+00 TOLERANCE 1e-8
 STRUCTURE DIS 1 NODE 3 POSITION dispz NAME dispz VALUE 0.000000000000000000e+00 TOLERANCE 1e-8
 ---------------------------------------------------------------END

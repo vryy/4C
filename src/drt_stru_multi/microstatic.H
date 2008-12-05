@@ -168,14 +168,7 @@ public:
   \brief Set time and step
 
   */
-  void SetTime(double timen, int istep);
-
-  /*!
-  \brief Set boolean newstep indicating whether a new time step was
-  entered or not
-
-  */
-  void SetNewStep(bool newstep) { params_->set("newstep", newstep); }
+  void SetTime(const double timen, const double dt, const int istep);
 
   /*!
   \brief Clear all displacement states

@@ -220,7 +220,6 @@ if (par.myrank==0 && ioflags.output_gid)
 
 switch (genprob.probtyp) {
 case prb_structure:
-case prb_struct_multi:
 
   switch (genprob.timetyp) {
   case time_static:
@@ -243,6 +242,23 @@ case prb_struct_multi:
 
   break;
 
+#ifdef CCADISCRET
+  case prb_struct_multi:
+  {
+    switch (genprob.timetyp)
+    {
+    case time_dynamic:
+      caldyn_drt();
+      break;
+    case time_static:
+      dserror("structural multi-scale algorithm only implemented for dynamic problems");
+    default:
+      dserror("Unspecified time handling");
+    }
+  }
+  break;
+#endif
+    
 #ifdef D_FLUID
 case prb_fluid:
 case prb_fluid_pm:

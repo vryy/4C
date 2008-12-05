@@ -272,7 +272,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
   else if (action=="calc_surfstress_stiff")        act = StructuralSurface::calc_surfstress_stiff;
   else if (action=="calc_potential_stiff")         act = StructuralSurface::calc_potential_stiff;
   else if (action=="calc_brownian_motion")         act = StructuralSurface::calc_brownian_motion;
-  else 
+  else
   {
     cout << action << endl;
     dserror("Unknown type of action for StructuralSurface");
@@ -423,29 +423,17 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
         double dt = params.get<double>("delta time",0.0);
         double alphaf = params.get<double>("alpha f",0.0);
         bool newstep = params.get<bool>("newstep", false);
-        bool fintliketr = params.get<bool>("fintliketr", false);
 
         // element geometry update
 
         const int numnode = NumNode();
         LINALG::SerialDenseMatrix x(numnode,3);
 
-        if (fintliketr)
-        {
-          RefCountPtr<const Epetra_Vector> disn = discretization.GetState("new displacement");
-          if (disn==null) dserror("Cannot get state vector 'new displacement'");
-          vector<double> mydisn(lm.size());
-          DRT::UTILS::ExtractMyValues(*disn,mydisn,lm);
-          SpatialConfiguration(x,mydisn);
-        }
-        else
-        {
-          RefCountPtr<const Epetra_Vector> dism = discretization.GetState("displacement");
-          if (dism==null) dserror("Cannot get state vector 'displacement'");
-          vector<double> mydism(lm.size());
-          DRT::UTILS::ExtractMyValues(*dism,mydism,lm);
-          SpatialConfiguration(x,mydism);
-        }
+        RefCountPtr<const Epetra_Vector> dism = discretization.GetState("displacement");
+        if (dism==null) dserror("Cannot get state vector 'displacement'");
+        vector<double> mydism(lm.size());
+        DRT::UTILS::ExtractMyValues(*dism,mydism,lm);
+        SpatialConfiguration(x,mydism);
 
         const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
 
@@ -475,35 +463,24 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
           double con_quot_max = (gamma_min_eq-gamma_min)/m2+1.;
           double con_quot_eq = (k1xC)/(k1xC+k2);
 
-          if (fintliketr)
-          {
-            surfstressman->StiffnessAndInternalForces(curvenum, A, Adiff, Adiff2, A, Adiff, elevector1, elematrix1, this->Id(),
-                                                      time, dt, 0, 0.0, k1xC, k2, m1, m2, gamma_0,
-                                                      gamma_min, gamma_min_eq, con_quot_max,
-                                                      con_quot_eq, alphaf, newstep, fintliketr);
-          }
-          else
-          {
-            // element geometry update (n+1)
-            RefCountPtr<const Epetra_Vector> disn = discretization.GetState("new displacement");
-            if (disn==null) dserror("Cannot get state vector 'new displacement'");
-            vector<double> mydisn(lm.size());
-            DRT::UTILS::ExtractMyValues(*disn,mydisn,lm);
-            SpatialConfiguration(x,mydisn);
+          // element geometry update (n+1)
+          RefCountPtr<const Epetra_Vector> disn = discretization.GetState("new displacement");
+          if (disn==null) dserror("Cannot get state vector 'new displacement'");
+          vector<double> mydisn(lm.size());
+          DRT::UTILS::ExtractMyValues(*disn,mydisn,lm);
+          SpatialConfiguration(x,mydisn);
 
-            // set up matrices and parameters needed for the evaluation of
-            // interfacial area and its first derivative w.r.t. the displacements at (n+1)
-            double Anew = 0.;                                            // interfacial area
-            RCP<Epetra_SerialDenseVector> Adiffnew = rcp(new Epetra_SerialDenseVector(ndof));
+          // set up matrices and parameters needed for the evaluation of
+          // interfacial area and its first derivative w.r.t. the displacements at (n+1)
+          double Anew = 0.;                                            // interfacial area
+          RCP<Epetra_SerialDenseVector> Adiffnew = rcp(new Epetra_SerialDenseVector(ndof));
 
-            ComputeAreaDeriv(x, numnode, ndof, Anew, Adiffnew, null);
+          ComputeAreaDeriv(x, numnode, ndof, Anew, Adiffnew, null);
 
-
-            surfstressman->StiffnessAndInternalForces(curvenum, A, Adiff, Adiff2, Anew, Adiffnew, elevector1, elematrix1, this->Id(),
-                                                      time, dt, 0, 0.0, k1xC, k2, m1, m2, gamma_0,
-                                                      gamma_min, gamma_min_eq, con_quot_max,
-                                                      con_quot_eq, alphaf, newstep, fintliketr);
-          }
+          surfstressman->StiffnessAndInternalForces(curvenum, A, Adiff, Adiff2, Anew, Adiffnew, elevector1, elematrix1, this->Id(),
+                                                    time, dt, 0, 0.0, k1xC, k2, m1, m2, gamma_0,
+                                                    gamma_min, gamma_min_eq, con_quot_max,
+                                                    con_quot_eq, newstep);
         }
         else if (cond->Type()==DRT::Condition::SurfaceTension) // ideal liquid
         {
@@ -512,7 +489,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
           RCP<Epetra_SerialDenseVector> Adiffnew = rcp(new Epetra_SerialDenseVector(ndof));
           surfstressman->StiffnessAndInternalForces(curvenum, A, Adiff, Adiff2, 0., Adiffnew, elevector1, elematrix1, this->Id(),
                                                     time, dt, 1, const_gamma, 0.0, 0.0, 0.0, 0.0, 0.0,
-                                                    0.0, 0.0, 0.0, 0.0, alphaf, newstep);
+                                                    0.0, 0.0, 0.0, 0.0, newstep);
         }
         else
           dserror("Unknown condition type %d",cond->Type());
@@ -530,16 +507,16 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
         RefCountPtr<DRT::Condition> cond = params.get<RefCountPtr<DRT::Condition> >("condition",null);
         if (cond==null)
           dserror("Condition not available in Solid3 Surface");
-     
+
         if (cond->Type()==DRT::Condition::LJ_Potential) // Lennard-Jones potential
-        { 
+        {
           potentialmanager->StiffnessAndInternalForcesLJPotential(this, gaussrule_, params,lm, elematrix1, elevector1);
         }
         else
           dserror("Unknown condition type %d",cond->Type());
       }
       break;
-      
+
       // compute stochastical forces due to Brownian Motion
       case calc_brownian_motion:
       {
@@ -547,13 +524,13 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
           params.get<RefCountPtr<BroMotion_Manager> >("bromo_man", null);
         if (bromotion_manager==null)
           dserror("No Brownian Manager in Solid3 Surface available");
-         
+
         RefCountPtr<DRT::Condition> cond = params.get<RefCountPtr<DRT::Condition> >("condition",null);
          if (cond==null)
            dserror("Condition not available in Solid3 Surface");
-      
+
         if (cond->Type()==DRT::Condition::Brownian_Motion) // Brownian Motion
-        { 
+        {
           bromotion_manager->StochasticalForces(this, gaussrule_, params,lm, elematrix1, elevector1);
         }
         else

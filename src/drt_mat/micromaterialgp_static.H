@@ -49,6 +49,7 @@ public:
                               LINALG::Matrix<6,6>* cmat,
                               double* density,
                               const double time,
+                              const double dt,
                               const bool eleowner);
 
   /// Set up microscale static "time integrator"

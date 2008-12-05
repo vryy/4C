@@ -33,7 +33,7 @@ FLUID_STRESS      No
 FLUID_VIS         No
 ALE_DISP          No
 ------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP   Gen_Alfa
+DYNAMICTYP   GenAlpha
 EIGEN        0
 RESEVRYDISP  1
 RESEVRYSTRS  1
@@ -42,10 +42,6 @@ NLNSOL       fullnewton // fullnewton modnewton matfreenewton nlncg ptc
 TIMESTEP     0.5
 NUMSTEP      3
 MAXTIME      5000.0
-BETA         0.25 
-GAMMA        0.5 
-ALPHA_M      0.5 
-ALPHA_F      0.5
 DAMPING      No 
 M_DAMP       0.5 
 K_DAMP       0.5

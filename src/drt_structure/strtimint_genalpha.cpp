@@ -37,7 +37,7 @@ void STR::TimIntGenAlpha::VerifyCoeff()
     dserror("alpha_f out of range [0.0,1.0)");
   else
     std::cout << "   alpha_f = " << alphaf_ << std::endl;
-  // alpha_m 
+  // alpha_m
   if ( (alpham_ < 0.0) or (alpham_ >= 1.0) )
     dserror("alpha_m out of range [0.0,1.0)");
   else
@@ -100,7 +100,7 @@ STR::TimIntGenAlpha::TimIntGenAlpha
   DetermineMassDampConsistAccel();
 
   // create state vectors
-  
+
   // mid-displacements
   dism_ = LINALG::CreateVector(*dofrowmap_, true);
   // mid-velocities
@@ -118,9 +118,9 @@ STR::TimIntGenAlpha::TimIntGenAlpha
     // internal force vector F_{int;n+1} at new time
     fintn_ = LINALG::CreateVector(*dofrowmap_, true);
     // set initial internal force vector
-    ApplyForceStiffInternal((*time_)[0], (*dt_)[0], (*dis_)(0), zeros_, (*vel_)(0), 
+    ApplyForceStiffInternal((*time_)[0], (*dt_)[0], (*dis_)(0), zeros_, (*vel_)(0),
                             fint_, stiff_);
-  } 
+  }
   else if (midavg_ == INPAR::STR::midavg_imrlike)
   {
     // internal force vector F_{int;m} at mid-time
@@ -167,7 +167,7 @@ void STR::TimIntGenAlpha::PredictConstDisConsistVelAcc()
   accn_->Update(-1./(beta_*(*dt_)[0]), *(*vel_)(0),
                 (2.*beta_-1.)/(2.*beta_), *(*acc_)(0),
                 1./(beta_*(*dt_)[0]*(*dt_)[0]));
-  
+
   // watch out
   return;
 }
@@ -188,7 +188,7 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual()
   // interface forces to external forces
   if (fsisurface_)
   {
-    fextn_->Update(1.0, *fifc_, 1.0);  
+    fextn_->Update(1.0, *fifc_, 1.0);
   }
 
   // external mid-forces F_{ext;n+1-alpha_f} (fextm)
@@ -200,7 +200,7 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual()
   if (midavg_ == INPAR::STR::midavg_trlike)
   {
     fintn_->PutScalar(0.0);
-  } 
+  }
   else if (midavg_ == INPAR::STR::midavg_imrlike)
   {
     fintm_->PutScalar(0.0);
@@ -212,9 +212,9 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual()
   // ordinary internal force and stiffness
   if (midavg_ == INPAR::STR::midavg_trlike)
   {
-    ApplyForceStiffInternal(timen_, (*dt_)[0], disn_, disi_,  veln_, 
+    ApplyForceStiffInternal(timen_, (*dt_)[0], disn_, disi_,  veln_,
                             fintn_, stiff_);
-  } 
+  }
   else if (midavg_ == INPAR::STR::midavg_imrlike)
   {
     disi_->Scale(1.-alphaf_);
@@ -234,25 +234,25 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual()
   {
     ParameterList pcon;
     // for IMR scale stiffness matrix, since constraint is always evaluated at the end of time step
-    pcon.set("scaleStiffEntries",1.0/(1.0-alphaf_));  
+    pcon.set("scaleStiffEntries",1.0/(1.0-alphaf_));
     ApplyForceStiffConstraint(timen_, (*dis_)(0), disn_, fintm_, stiff_, pcon);
   }
 
   // surface stress force
   if (midavg_ == INPAR::STR::midavg_trlike)
   {
-    ApplyForceStiffSurfstress(disn_, fintn_, stiff_);
-  } 
+    ApplyForceStiffSurfstress(timen_, (*dt_)[0], disn_, disn_, fintn_, stiff_);
+  }
   else if (midavg_ == INPAR::STR::midavg_imrlike)
   {
-    ApplyForceStiffSurfstress(dism_, fintm_, stiff_);
+    ApplyForceStiffSurfstress(timen_, (*dt_)[0], dism_, disn_, fintm_, stiff_);
   }
 
   // potential forces
   if (midavg_ == INPAR::STR::midavg_trlike)
   {
     ApplyForceStiffPotential(disn_, fintn_, stiff_);
-  } 
+  }
   else if (midavg_ == INPAR::STR::midavg_imrlike)
   {
     ApplyForceStiffPotential(dism_, fintm_, stiff_);
@@ -286,10 +286,10 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual()
     fres_->Update(1.0, *fviscm_, 1.0);
   }
   fres_->Update(1.0, *finertm_, 1.0);
-  
+
   // build tangent matrix : effective dynamic stiffness matrix
   //    K_{Teffdyn} = (1 - alpha_m)/(beta*dt^2) M
-  //                + (1 - alpha_f)*y/(beta*dt) C     
+  //                + (1 - alpha_f)*y/(beta*dt) C
   //                + (1 - alpha_f) K_{T}
   stiff_->Add(*mass_, false, (1.-alpham_)/(beta_*(*dt_)[0]*(*dt_)[0]), 1.-alphaf_);
   if (damping_ == INPAR::STR::damp_rayleigh)
@@ -324,11 +324,11 @@ void STR::TimIntGenAlpha::EvaluateMidState()
   // mid-displacements D_{n+1-alpha_f} (dism)
   //    D_{n+1-alpha_f} := (1.-alphaf) * D_{n+1} + alpha_f * D_{n}
   dism_->Update(1.-alphaf_, *disn_, alphaf_, (*dis_)[0], 0.0);
-  
+
   // mid-velocities V_{n+1-alpha_f} (velm)
   //    V_{n+1-alpha_f} := (1.-alphaf) * V_{n+1} + alpha_f * V_{n}
   velm_->Update(1.-alphaf_, *veln_, alphaf_, (*vel_)[0], 0.0);
-  
+
   // mid-accelerations A_{n+1-alpha_m} (accm)
   //    A_{n+1-alpha_m} := (1.-alpha_m) * A_{n+1} + alpha_m * A_{n}
   accm_->Update(1.-alpham_, *accn_, alpham_, (*acc_)[0], 0.0);
@@ -417,7 +417,7 @@ void STR::TimIntGenAlpha::UpdateIterIncrementally()
               gamma_/(beta_*dt));
   // put only to free/non-DBC DOFs
   dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), veln_);
-  
+
   // new end-point accelerations
   aux->Update(1.0, *disn_, -1.0, (*dis_)[0], 0.0);
   aux->Update(-1.0/(beta_*dt), (*vel_)[0],
@@ -437,10 +437,10 @@ void STR::TimIntGenAlpha::UpdateIterIteratively()
   // new end-point displacements
   // D_{n+1}^{<k+1>} := D_{n+1}^{<k>} + IncD_{n+1}^{<k>}
   disn_->Update(1.0, *disi_, 1.0);
-  
+
   // new end-point velocities
   veln_->Update(gamma_/(beta_*(*dt_)[0]), *disi_, 1.0);
-  
+
   // new end-point accelerations
   accn_->Update(1.0/(beta_*(*dt_)[0]*(*dt_)[0]), *disi_, 1.0);
 
@@ -483,9 +483,9 @@ void STR::TimIntGenAlpha::UpdateStepState()
     p.set("total time", timen_);
     p.set("delta time", (*dt_)[0]);
     // action for elements
-    if (midavg_ == INPAR::STR::midavg_trlike) 
+    if (midavg_ == INPAR::STR::midavg_trlike)
     {
-      p.set("action", "calc_struct_update_istep");    
+      p.set("action", "calc_struct_update_istep");
     }
     else if (midavg_ == INPAR::STR::midavg_imrlike)
     {
@@ -499,7 +499,7 @@ void STR::TimIntGenAlpha::UpdateStepState()
 
   // update surface stress
   UpdateStepSurfstress();
-  
+
   // update constraints
   UpdateStepConstraint();
 
@@ -526,8 +526,8 @@ void STR::TimIntGenAlpha::ReadRestartForce()
     pcon.set("scaleConstrMat", (1.0-alphaf_));
     ApplyForceStiffConstraint((*time_)[0], (*dis_)(0), (*dis_)(0), fint_, stiff_, pcon);
   }
-  
-  // bye 
+
+  // bye
   return;
 }
 

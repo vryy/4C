@@ -167,15 +167,8 @@ STR::TimInt::TimInt
   // located at different place
   dofrowmap_ = discret_->DofRowMap();
 
-  // Check for surface stress conditions due to interfacial phenomena
-  {
-    std::vector<DRT::Condition*> surfstresscond(0);
-    discret_->GetCondition("SurfaceStress", surfstresscond);
-    if (surfstresscond.size())
-    {
-      surfstressman_ = rcp(new UTILS::SurfStressManager(*discret_));
-    }
-  }
+  // Initialize SurfStressManager for handling surface stress conditions due to interfacial phenomena
+  surfstressman_=rcp(new UTILS::SurfStressManager(*discret_, sdynparams));
 
   // Check for potential conditions
   {
@@ -352,7 +345,7 @@ void STR::TimInt::ReadRestart
 )
 {
   IO::DiscretizationReader reader(discret_, step);
-  if (step != reader.ReadInt("step")) 
+  if (step != reader.ReadInt("step"))
     dserror("Time step on file not equal to given step");
 
   step_ = step;
@@ -400,7 +393,7 @@ void STR::TimInt::ReadRestartConstraint()
     conman_->SetLagrMultVector(tempvec);
     reader.ReadVector(tempvec, "refconval");
     conman_->SetRefBaseValues(tempvec, (*time_)[0]);
-    
+
   }
 }
 
@@ -409,7 +402,7 @@ void STR::TimInt::ReadRestartConstraint()
 /* Read and set restart values for constraints */
 void STR::TimInt::ReadRestartSurfstress()
 {
-  if (surfstressman_ != Teuchos::null)
+  if (surfstressman_ -> HaveSurfStress())
   {
     IO::DiscretizationReader reader(discret_, step_);
     Teuchos::RCP<Epetra_Map> surfmap = surfstressman_->GetSurfRowmap();
@@ -503,7 +496,7 @@ void STR::TimInt::OutputRestart
   output_->WriteVector("fexternal", Fext());
 
   // surface stress
-  if (surfstressman_ != Teuchos::null)
+  if (surfstressman_->HaveSurfStress())
   {
     Teuchos::RCP<Epetra_Map> surfrowmap
       = surfstressman_->GetSurfRowmap();
@@ -814,7 +807,7 @@ void STR::TimInt::ApplyForceInternal
 /* integrate */
 void STR::TimInt::Integrate()
 {
-  // target time #timen_ and step #stepn_ already set 
+  // target time #timen_ and step #stepn_ already set
 
   // time loop
   while ( (timen_ <= timemax_) and (stepn_ <= stepmax_) )

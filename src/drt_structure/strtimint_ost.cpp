@@ -55,7 +55,7 @@ STR::TimIntOneStepTheta::TimIntOneStepTheta
   if (myrank_ == 0)
   {
     std::cout << "with one-step-theta" << std::endl
-              << "   theta = " << theta_ << std::endl 
+              << "   theta = " << theta_ << std::endl
               << std::endl;
   }
 
@@ -63,7 +63,7 @@ STR::TimIntOneStepTheta::TimIntOneStepTheta
   DetermineMassDampConsistAccel();
 
   // create state vectors
-  
+
   // mid-displacements
   dist_ = LINALG::CreateVector(*dofrowmap_, true);
   // mid-velocities
@@ -78,7 +78,7 @@ STR::TimIntOneStepTheta::TimIntOneStepTheta
   // internal force vector F_{int;n+1} at new time
   fintn_ = LINALG::CreateVector(*dofrowmap_, true);
   // set initial internal force vector
-  ApplyForceStiffInternal((*time_)[0], (*dt_)[0], (*dis_)(0), zeros_, (*vel_)(0), 
+  ApplyForceStiffInternal((*time_)[0], (*dt_)[0], (*dis_)(0), zeros_, (*vel_)(0),
                           fint_, stiff_);
 
   // external force vector F_ext at last times
@@ -113,19 +113,19 @@ void STR::TimIntOneStepTheta::PredictConstDisConsistVelAcc()
 
   // new end-point velocities
   veln_->Update(1.0/(theta_*dt), *disn_,
-                -1.0/(theta_*dt), *(*dis_)(0), 
+                -1.0/(theta_*dt), *(*dis_)(0),
                 0.0);
   veln_->Update(-(1.0-theta_)/theta_, *(*vel_)(0),
                 1.0);
 
   // new end-point accelerations
-  accn_->Update(1.0/(theta_*theta_*dt*dt), *disn_, 
-                -1.0/(theta_*theta_*dt*dt), *(*dis_)(0), 
+  accn_->Update(1.0/(theta_*theta_*dt*dt), *disn_,
+                -1.0/(theta_*theta_*dt*dt), *(*dis_)(0),
                 0.0);
-  accn_->Update(-1.0/(theta_*theta_*dt), *(*vel_)(0), 
+  accn_->Update(-1.0/(theta_*theta_*dt), *(*vel_)(0),
                 -(1.0-theta_)/theta_, *(*acc_)(0),
                 1.0);
-  
+
   // watch out
   return;
 }
@@ -145,7 +145,7 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual()
   // interface forces to external forces
   if (fsisurface_)
   {
-    fextn_->Update(1.0, *fifc_, 1.0);  
+    fextn_->Update(1.0, *fifc_, 1.0);
   }
 
   // initialise internal forces
@@ -163,9 +163,6 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual()
   pcon.set("scaleConstrMat",theta_);
   ApplyForceStiffConstraint(timen_, (*dis_)(0), disn_, fintn_, stiff_, pcon);
 
-  // surface stress force
-  ApplyForceStiffSurfstress(disn_, fintn_, stiff_);
-  
   // potential forces
   ApplyForceStiffPotential(disn_, fintn_, stiff_);
 
@@ -194,7 +191,7 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual()
 
   // build tangent matrix : effective dynamic stiffness matrix
   //    K_{Teffdyn} = 1/(theta*dt^2) M
-  //                + 1/dt C     
+  //                + 1/dt C
   //                + theta K_{T}
   stiff_->Add(*mass_, false, 1.0/(theta_*(*dt_)[0]*(*dt_)[0]), theta_);
   if (damping_ == INPAR::STR::damp_rayleigh)
@@ -226,11 +223,11 @@ void STR::TimIntOneStepTheta::EvaluateMidState()
   // mid-displacements D_{n+1-alpha_f} (dism)
   //    D_{n+theta} := theta * D_{n+1} + (1-theta) * D_{n}
   dist_->Update(theta_, *disn_, 1.0-theta_, *(*dis_)(0), 0.0);
-  
+
   // mid-velocities V_{n+1-alpha_f} (velm)
   //    V_{n+theta} := theta * V_{n+1} + (1-theta) * V_{n}
   velt_->Update(theta_, *veln_, 1.0-theta_, *(*vel_)(0), 0.0);
-  
+
   // mid-accelerations A_{n+1-alpha_m} (accm)
   //    A_{n+theta} := theta * A_{n+1} + (1-theta) * A_{n}
   acct_->Update(theta_, *accn_, 1.0-theta_, *(*acc_)(0), 0.0);
@@ -298,7 +295,7 @@ void STR::TimIntOneStepTheta::UpdateIterIncrementally()
   // Auxiliar vector holding new velocities and accelerations
   // by extrapolation/scheme on __all__ DOFs. This includes
   // the Dirichlet DOFs as well. Thus we need to protect those
-  // DOFs of overwriting; they already hold the 
+  // DOFs of overwriting; they already hold the
   // correctly 'predicted', final values.
   Teuchos::RCP<Epetra_Vector> aux
       = LINALG::CreateVector(*dofrowmap_, false);
@@ -309,17 +306,17 @@ void STR::TimIntOneStepTheta::UpdateIterIncrementally()
 
   // new end-point velocities
   aux->Update(1.0/(theta_*(*dt_)[0]), *disn_,
-               -1.0/(theta_*(*dt_)[0]), *(*dis_)(0), 
+               -1.0/(theta_*(*dt_)[0]), *(*dis_)(0),
                0.0);
   aux->Update(-(1.0-theta_)/theta_, *(*vel_)(0), 1.0);
   // put only to free/non-DBC DOFs
   dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), veln_);
 
   // new end-point accelerations
-  aux->Update(1.0/(theta_*theta_*(*dt_)[0]*(*dt_)[0]), *disn_, 
-              -1.0/(theta_*theta_*(*dt_)[0]*(*dt_)[0]), *(*dis_)(0), 
+  aux->Update(1.0/(theta_*theta_*(*dt_)[0]*(*dt_)[0]), *disn_,
+              -1.0/(theta_*theta_*(*dt_)[0]*(*dt_)[0]), *(*dis_)(0),
               0.0);
-  aux->Update(-1.0/(theta_*theta_*(*dt_)[0]), *(*vel_)(0), 
+  aux->Update(-1.0/(theta_*theta_*(*dt_)[0]), *(*vel_)(0),
               -(1.0-theta_)/theta_, *(*acc_)(0),
               1.0);
   // put only to free/non-DBC DOFs
@@ -379,7 +376,7 @@ void STR::TimIntOneStepTheta::UpdateStepState()
     p.set("delta time", (*dt_)[0]);
     //p.set("alpha f", theta_);
     // action for elements
-    p.set("action", "calc_struct_update_istep");    
+    p.set("action", "calc_struct_update_istep");
     // go to elements
     discret_->Evaluate(p, Teuchos::null, Teuchos::null,
                        Teuchos::null, Teuchos::null, Teuchos::null);
@@ -387,7 +384,7 @@ void STR::TimIntOneStepTheta::UpdateStepState()
 
   // update surface stress
   UpdateStepSurfstress();
-  
+
   // update constraints
   UpdateStepConstraint();
 
@@ -405,7 +402,7 @@ void STR::TimIntOneStepTheta::ReadRestartForce()
   // set 'initial' internal force vector
   // Set dt to 0, since we do not propagate in time.
   ApplyForceInternal((*time_)[0], 0.0, (*dis_)(0), zeros_, (*vel_)(0), fint_);
-  
+
   // for TR scale constraint matrix with the same value fintn_ is scaled with
   ParameterList pcon;
   pcon.set("scaleConstrMat", theta_);

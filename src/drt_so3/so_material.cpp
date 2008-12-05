@@ -253,8 +253,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       const double time = params.get<double>("total time",-1.0);
       const double dt = params.get<double>("delta time",-1.0);
 
-      micro->Evaluate(defgrd, cmat, stress, density, gp, Id(), time);
-      //micro->Evaluate(defgrd, cmat, stress, density, gp, Id(), time, dt);
+      micro->Evaluate(defgrd, cmat, stress, density, gp, Id(), time, dt);
       return;
       break;
     }

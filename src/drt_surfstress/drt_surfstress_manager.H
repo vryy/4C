@@ -14,6 +14,8 @@ Maintainer: Lena Wiechert
 #define SURFSTRESS_MANAGER_H
 
 #include <Teuchos_RefCountPtr.hpp>
+#include "Teuchos_ParameterList.hpp"
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Epetra_Vector.h>
 
 #include <Teuchos_ParameterList.hpp>
@@ -21,6 +23,7 @@ Maintainer: Lena Wiechert
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_io/io.H"
+#include "../drt_inpar/inpar_structure.H"
 
 
 using namespace std;
@@ -39,17 +42,30 @@ class SurfStressManager
 {
 public:
 
-   /*!
+  /*!
     \brief Standard Constructor
 
     \param discret (in): Discretization
+    \param sdynparams (in): structural dynamics parameters
   */
-  SurfStressManager(DRT::Discretization& discret);
+  SurfStressManager(DRT::Discretization& discret,
+                    ParameterList sdynparams);
+
 
   /*!
     \brief Destructor
   */
   ~SurfStressManager() {};
+
+
+  /*!
+    \brief Return if there are surface stress conditions
+  */
+  bool HaveSurfStress() const
+  {
+    return havesurfstress_;
+  };
+
 
   /*!
     \brief Call discretization to calculate additional contributions
@@ -133,9 +149,7 @@ public:
     \param gamma_min_eq (in): minimum equilibrium surface stress
     \param con_quot_max (in): maximum surfactant concentration
     \param con_quot_eq (in): equilibrium surfactant concentration
-    \param alphaf (in): generalized-alpha parameter alphaf
     \param newstep (in): flag for new time step
-    \param fintliketr (in): flag for tr-like time integration
   */
   void StiffnessAndInternalForces(const int curvenum,
                                   const double& A,
@@ -159,9 +173,7 @@ public:
                                   const double gamma_min_eq,
                                   const double con_quot_max,
                                   const double con_quot_eq,
-                                  const double alphaf,
-                                  const bool newstep,
-                                  const bool fintliketr=false);
+                                  const bool newstep);
 
   /*!
     \brief Surfactant model equations
@@ -178,9 +190,7 @@ public:
     \param gamma_min (in): minimum surface stress
     \param gamma_min_eq (in): minimum equilibrium surface stress
     \param con_quot_max (in) maximum surfactant concentration
-    \param alphaf (in): generalized-alpha parameter alphaf
     \param update (in): flag for new time step
-    \param fintliketr (in): flag for tr-like time integration
   */
   void SurfactantModel(const int ID,
                        double& gamma,
@@ -194,9 +204,7 @@ public:
                        const double gamma_min,
                        const double gamma_min_eq,
                        const double con_quot_max,
-                       const double alphaf,
-                       const bool newstep,
-                       const bool fintliketr);
+                       const bool newstep);
 
 private:
 
@@ -206,6 +214,10 @@ private:
 
 
   //! name@ Private Attributes
+
+  bool havesurfstress_;
+  double alphaf_;
+  double timen_;
 
   // current discretization
   DRT::Discretization& discret_;

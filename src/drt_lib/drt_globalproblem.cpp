@@ -804,8 +804,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
         structdis_micro = rcp(new DRT::Discretization("structure", micro_reader.Comm()));
         micro_problem->AddDis(genprob.numsf, structdis_micro);
 
-        // we are reading the solver, but currently UMFPACK is used in any
-        // case (hard coded!)
         micro_problem->ReadParameter(micro_reader);
 
         /* input of not mesh or time based problem data  */

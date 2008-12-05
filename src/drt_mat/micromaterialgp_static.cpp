@@ -82,13 +82,13 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID, const bool
   // create and initialize "empty" EAS history map
   EasInit();
 
-  // Check for surface stress conditions due to interfacial phenomena
-  vector<DRT::Condition*> surfstresscond(0);
-  microdis->GetCondition("SurfaceStress",surfstresscond);
-  if (surfstresscond.size())
-  {
-    surf_stress_man_=rcp(new UTILS::SurfStressManager(*microdis));
-  }
+  // we are using the same structural dynamic parameters as on the
+  // macroscale, so to avoid checking the equivalence of the reader
+  // GiD sections we simply ask the macroproblem for its parameters.
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+
+  // Initialize SurfStressManager for handling surface stress conditions due to interfacial phenomena
+  surf_stress_man_=rcp(new UTILS::SurfStressManager(*microdis, sdyn));
 
   // set up micro output
   //
@@ -102,7 +102,7 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID, const bool
   std::string micronewprefix = macrocontrol->NewOutputFileName();
 
   // figure out how the file we restart from is called on the microscale
-  unsigned pos = microprefix.rfind('-');
+  size_t pos = microprefix.rfind('-');
   if (pos!=std::string::npos)
   {
     std::string number = microprefix.substr(pos+1);
@@ -125,7 +125,7 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID, const bool
     // figure out how the new output file is called on the microscale
     // note: the trailing number must be the same as on the macroscale
     std::string newfilename;
-    unsigned pos = micronewprefix.rfind('-');
+    size_t pos = micronewprefix.rfind('-');
     if (pos!=std::string::npos)
     {
       std::string number = micronewprefix.substr(pos+1);
@@ -160,17 +160,9 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID, const bool
   if (eleowner) micro_output_->WriteMesh(istep_, microstaticmap_[microdisnum_]->GetTime());
 
 
-  // we are using the same structural dynamic parameters as on the
-  // macroscale, so to avoid checking the equivalence of the reader
-  // GiD sections we simply ask the macroproblem for its parameters.
-  // note that the microscale solver is currently always UMFPACK
-  // (hard coded)!
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-
   // we set the microscale time _ALWAYS_ to 0 (also in restart case)
   // in order to handle the implicit update query!!!
   timen_ = 0.;
-
   dt_    = sdyn.get<double>("TIMESTEP");
 
   // check whether we are using modified Newton as a nonlinear solver
@@ -316,65 +308,72 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(LINALG::Matrix<3,3>* defgrd,
                                                   LINALG::Matrix<6,6>* cmat,
                                                   double* density,
                                                   const double time,
+                                                  const double dt,
                                                   const bool eleowner)
 {
   // select corresponding "time integration class" for this microstructure
   RefCountPtr<STRUMULTI::MicroStatic> microstatic = microstaticmap_[microdisnum_];
-
-  // this is a comparison of two doubles, but since timen_ is always a
-  // copy of time as long as we are within a time step, any variation
-  // must be due to an update of macroscale time!
-  // -> no update for a new time step if timen_=0
-  // note that timen_ is set in the following if statement!
-  if (time != timen_ && timen_ != 0.)
-  {
-    microstatic->UpdateNewTimeStep(dis_, dism_, disn_, oldalpha_, lastalpha_, surf_stress_man_);
-    microstatic->SetNewStep(true);           // this is needed for possible surface stresses
-                                             // (comparison of A_old and A_new, which are
-                                             // nearly the same in the beginning of a new
-                                             // time step due to our choice of predictors)
-  }
-
-  if (time != timen_)
-    build_stiff_ = true;
-
-  // set displacements and EAS data of last step
-  microstatic->SetOldState(dis_, dism_, disn_, surf_stress_man_, lastalpha_, oldalpha_, oldfeas_, oldKaainv_, oldKda_);
 
   // check if we have to update absolute time and step number
   // in case of restart, timen_ is set to the current total time in
   // the constructor, whereas "time" handed on to this function is
   // still 0. since the macroscopic update of total time is done after
   // the initializing phase in which this function is called the first
-  // time
-  if (time != timen_ && time != 0.)
+  // time.
+  // note that actually time and timen_ need to be _exactly_ the same
+  // while we are in the same macro time step, since timen_ is always
+  // a copy of time.
+  if (fabs(time - timen_) > 0.5*dt)  // this is an arbitrarily chosen bound
   {
-    // Microscale data should be output when macroscale is entering a
-    // new timestep, not in every macroscopic iteration! Therefore
-    // output is written in the beginning of a microscopic step if
-    // necessary at all. Problem: we don't get any output for the very
-    // last time step since the macro-program finishes and the
-    // micro-program is not called again to write output.
-    // Note: only the process owning the corresponding macro-element
-    // is writing output here!
+    build_stiff_ = true;
 
-    // We don't want to write results after just having constructed
-    // the StruGenAlpha class which corresponds to a total time of 0.
-    // (in the calculation phase, total time is instantly set to the first
-    // time step)
-    if (timen_ != 0. && eleowner)
-      microstatic->Output(micro_output_, timen_, istep_, dt_);
-    timen_ = time;
-    istep_++;
+    if (timen_ > 0.5*dt)  // confer above comment (actually if (timen_!=0.))
+    {
+      microstatic->UpdateNewTimeStep(dis_, dism_, disn_, oldalpha_, lastalpha_, surf_stress_man_);
+
+      // set displacements and EAS data of last step
+      microstatic->SetOldState(dis_, dism_, disn_, surf_stress_man_, lastalpha_, oldalpha_, oldfeas_, oldKaainv_, oldKda_);
+
+      // Microscale data should be output when macroscale is entering a
+      // new timestep, not in every macroscopic iteration! Therefore
+      // output is written in the beginning of a microscopic step if
+      // necessary at all. Problem: we don't get any output for the very
+      // last time step since the macro-program finishes and the
+      // micro-program is not called again to write output.
+      // Note: only the process owning the corresponding macro-element
+      // is writing output here!
+
+      // We don't want to write results after just having constructed
+      // the StruGenAlpha class which corresponds to a total time of 0.
+      // (in the calculation phase, total time is instantly set to the first
+      // time step)
+      if (eleowner)
+      {
+        microstatic->Output(micro_output_, timen_, istep_, dt_);
+      }
+      timen_ = time;
+      dt_ = dt;
+      istep_++;
+    }
+    else
+    {
+      // set displacements and EAS data of last step
+      microstatic->SetOldState(dis_, dism_, disn_, surf_stress_man_, lastalpha_, oldalpha_, oldfeas_, oldKaainv_, oldKda_);
+      timen_ = time;
+      dt_ = dt;
+      istep_++;
+    }
+  }
+  else
+  {
+    // set displacements and EAS data of last step
+    microstatic->SetOldState(dis_, dism_, disn_, surf_stress_man_, lastalpha_, oldalpha_, oldfeas_, oldKaainv_, oldKda_);
   }
 
-
-
-  // set current absolute time, step number
-  microstatic->SetTime(timen_, istep_);
+  // set current absolute time, time step size and step number
+  microstatic->SetTime(timen_, dt_, istep_);
 
   microstatic->Predictor(defgrd);
-  microstatic->SetNewStep(false);
   microstatic->FullNewton();
   microstatic->StaticHomogenization(stress, cmat, density, defgrd, mod_newton_, build_stiff_);
 
@@ -382,9 +381,6 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(LINALG::Matrix<3,3>* defgrd,
   // explicitly since we dealt with RCP's -> any update in class
   // microstatic and the elements, respectively, inherently updates the
   // micromaterialgp_static data!
-
-  // save calculated displacements
-  //dism_ = microstatic->ReturnNewDism();
 
   // clear displacements in MicroStruGenAlpha for next usage
   microstatic->ClearState();

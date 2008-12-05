@@ -58,7 +58,7 @@ STR::TimIntStatics::TimIntStatics
   // internal force vector F_{int;n+1} at new time
   fintn_ = LINALG::CreateVector(*dofrowmap_, true);
   // set initial internal force vector
-  ApplyForceStiffInternal((*time_)[0], (*dt_)[0], (*dis_)(0), zeros_, (*vel_)(0), 
+  ApplyForceStiffInternal((*time_)[0], (*dt_)[0], (*dis_)(0), zeros_, (*vel_)(0),
                           fint_, stiff_);
 
   // external force vector F_ext at last times
@@ -88,7 +88,7 @@ void STR::TimIntStatics::PredictConstDisConsistVelAcc()
 
   // new end-point accelerations, these stay zero in static calculation
   accn_->PutScalar(0.0);
-  
+
   // watch out
   return;
 }
@@ -105,7 +105,7 @@ void STR::TimIntStatics::EvaluateForceStiffResidual()
   // interface forces to external forces
   if (fsisurface_)
   {
-    fextn_->Update(1.0, *fifc_, 1.0);  
+    fextn_->Update(1.0, *fifc_, 1.0);
   }
 
   // initialise internal forces
@@ -121,9 +121,6 @@ void STR::TimIntStatics::EvaluateForceStiffResidual()
   Teuchos::ParameterList pcon; //apply empty parameterlist, no scaling necessary
   ApplyForceStiffConstraint(timen_, (*dis_)(0), disn_, fintn_, stiff_, pcon);
 
-  // surface stress force
-  ApplyForceStiffSurfstress(disn_, fintn_, stiff_);
-  
   // potential forces
   ApplyForceStiffPotential(disn_, fintn_, stiff_);
 
@@ -250,17 +247,17 @@ void STR::TimIntStatics::UpdateStepState()
     p.set("delta time", (*dt_)[0]);
     //p.set("alpha f", theta_);
     // action for elements
-    p.set("action", "calc_struct_update_istep");    
+    p.set("action", "calc_struct_update_istep");
     // go to elements
     discret_->Evaluate(p, null, null, null, null, null);
   }
 
   // update surface stress
   UpdateStepSurfstress();
-  
+
   // update constraints
   UpdateStepConstraint();
-  
+
   // look out
   return;
 }
@@ -275,7 +272,7 @@ void STR::TimIntStatics::ReadRestartForce()
   // set 'initial' internal force vector
   // Set dt to 0, since we do not propagate in time.
   ApplyForceInternal((*time_)[0], 0.0, (*dis_)(0), zeros_, (*vel_)(0), fint_);
-  
+
   ParameterList pcon; //no scaling necessary
   ApplyForceStiffConstraint((*time_)[0], (*dis_)(0), (*dis_)(0), fint_, stiff_, pcon);
   return;

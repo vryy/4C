@@ -69,7 +69,7 @@ STR::TimIntImpl::TimIntImpl
   if ( conman_->HaveConstraint())
   {
     if ( (itertype_ != INPAR::STR::soltech_newtonuzawalin)
-               and (itertype_ != INPAR::STR::soltech_newtonuzawanonlin) ) 
+               and (itertype_ != INPAR::STR::soltech_newtonuzawanonlin) )
     {
       dserror("Chosen solution technique %s does not work constrained.",
               INPAR::STR::NonlinSolTechString(itertype_).c_str());
@@ -81,7 +81,7 @@ STR::TimIntImpl::TimIntImpl
       dserror("Chosen solution technique %s does only work constrained.",
               INPAR::STR::NonlinSolTechString(itertype_).c_str());
   }
-  
+
   // create empty residual force vector
   fres_ = LINALG::CreateVector(*dofrowmap_, false);
 
@@ -181,19 +181,23 @@ void STR::TimIntImpl::PredictConstDisVelAcc()
  * evaluation happens internal-force like */
 void STR::TimIntImpl::ApplyForceStiffSurfstress
 (
-  const Teuchos::RCP<Epetra_Vector> dis,
+  const double time,
+  const double dt,
+  const Teuchos::RCP<Epetra_Vector> dism,
+  const Teuchos::RCP<Epetra_Vector> disn,
   Teuchos::RCP<Epetra_Vector>& fint,
   Teuchos::RCP<LINALG::SparseMatrix>& stiff
 )
 {
   // surface stress loads (but on internal force vector side)
-  if (surfstressman_ != Teuchos::null)
+  if (surfstressman_->HaveSurfStress())
   {
     // create the parameters for the discretization
     ParameterList p;
     p.set("surfstr_man", surfstressman_);
-
-    surfstressman_->EvaluateSurfStress(p, dis, disn_, fint, stiff);
+    p.set("total time", time);
+    p.set("delta time", dt);
+    surfstressman_->EvaluateSurfStress(p, dism, disn, fint, stiff);
   }
 
   // bye bye
@@ -512,7 +516,7 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
   normdisi_ = 1.0e6;
   normcon_ = conman_->GetErrorNorm();
   timer_.ResetStartTime();
-  
+
   // equilibrium iteration loop
   while ( (not Converged()) and (iter_ <= itermax_) )
   {
@@ -533,7 +537,7 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
                     disi_, lagrincr,
                     fres_, conrhs);
 
-    
+
     // update Lagrange multiplier
     conman_->UpdateLagrMult(lagrincr);
     // update end-point displacements etc

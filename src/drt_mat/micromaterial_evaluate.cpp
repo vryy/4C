@@ -57,6 +57,7 @@ void MAT::MicroMaterial::Evaluate(LINALG::Matrix<3,3>* defgrd,
                                   const int gp,
                                   const int ele_ID,
                                   const double time,
+                                  const double dt,
                                   string action)
 {
   // activate microscale material
@@ -84,7 +85,7 @@ void MAT::MicroMaterial::Evaluate(LINALG::Matrix<3,3>* defgrd,
   // perform microscale simulation and homogenization (if fint and stiff/mass or stress calculation is required)
   else
   {
-    actmicromatgp->PerformMicroSimulation(defgrd, stress, cmat, density, time, eleowner);
+    actmicromatgp->PerformMicroSimulation(defgrd, stress, cmat, density, time, dt, eleowner);
   }
 
   // reactivate macroscale material

@@ -24,24 +24,51 @@ Maintainer: Lena Wiechert
 /*-------------------------------------------------------------------*
  |  ctor (public)                                            lw 12/07|
  *-------------------------------------------------------------------*/
-UTILS::SurfStressManager::SurfStressManager(DRT::Discretization& discret):
-discret_(discret)
+UTILS::SurfStressManager::SurfStressManager(DRT::Discretization& discret,
+                                            ParameterList sdynparams):
+  discret_(discret)
 {
-  surfrowmap_ = DRT::UTILS::GeometryElementMap(discret, "SurfaceStress", false);
-  RCP<Epetra_Map> surfcolmap = DRT::UTILS::GeometryElementMap(discret, "SurfaceStress", true);
+  std::vector<DRT::Condition*> surfstresscond(0);
+  discret_.GetCondition("SurfaceStress", surfstresscond);
+  if (surfstresscond.size())
+  {
+    switch (Teuchos::getIntegralValue<INPAR::STR::DynamicType>(sdynparams,"DYNAMICTYP"))
+    {
+    case INPAR::STR::dyna_gen_alfa:
+      alphaf_ = sdynparams.get<double>("ALPHA_F");
+      break;
+    case INPAR::STR::dyna_genalpha:
+      if (Teuchos::getIntegralValue<INPAR::STR::MidAverageEnum>(sdynparams.sublist("GENALPHA"), "GENAVG")
+             != INPAR::STR::midavg_imrlike)
+        dserror("Surface stresses are only implemented for imr-like generalized alpha");
+      alphaf_ = sdynparams.sublist("GENALPHA").get<double>("ALPHA_F");
+      break;
+    default:
+      dserror("Surface stresses are only implemented for imr-like generalized alpha");
+    }
 
-  // We start with interfacial area and concentration = 0.
-  // This is wrong but does not make a difference
-  // since we apply the equilibrium concentration gradually, thus we
-  // do not need these history variables needed for the dynamic model
-  // in the beginning.
-  A_current_       = rcp(new Epetra_Vector(*surfcolmap,true));
-  A_last_          = rcp(new Epetra_Vector(*surfcolmap,true));
-  con_current_     = rcp(new Epetra_Vector(*surfcolmap,true));
-  con_last_        = rcp(new Epetra_Vector(*surfcolmap,true));
-  gamma_current_   = rcp(new Epetra_Vector(*surfcolmap,true));
-  gamma_last_      = rcp(new Epetra_Vector(*surfcolmap,true));
+    havesurfstress_ = true;
+    timen_ = 0.;
+
+    surfrowmap_ = DRT::UTILS::GeometryElementMap(discret, "SurfaceStress", false);
+    RCP<Epetra_Map> surfcolmap = DRT::UTILS::GeometryElementMap(discret, "SurfaceStress", true);
+
+    // We start with interfacial area and concentration = 0.
+    // This is wrong but does not make a difference
+    // since we apply the equilibrium concentration gradually, thus we
+    // do not need these history variables needed for the dynamic model
+    // in the beginning.
+    A_current_       = rcp(new Epetra_Vector(*surfcolmap,true));
+    A_last_          = rcp(new Epetra_Vector(*surfcolmap,true));
+    con_current_     = rcp(new Epetra_Vector(*surfcolmap,true));
+    con_last_        = rcp(new Epetra_Vector(*surfcolmap,true));
+    gamma_current_   = rcp(new Epetra_Vector(*surfcolmap,true));
+    gamma_last_      = rcp(new Epetra_Vector(*surfcolmap,true));
+  }
+  else
+    havesurfstress_ = false;
 }
+
 
 /*-------------------------------------------------------------------*
 | (public)						     lw 12/07|
@@ -62,6 +89,18 @@ void UTILS::SurfStressManager::EvaluateSurfStress(ParameterList& p,
   discret_.ClearState();
   discret_.SetState("displacement",dism);
   discret_.SetState("new displacement",disn);
+
+  double currtime = p.get<double>("total time", 0.);
+  double dt = p.get<double>("delta time", 0.);
+  if (fabs(currtime-timen_)>0.5*dt)  // This is true for every new time step as well as for the first
+                                     // time step after reading restart, where step_ still equals 0.
+                                     // Note that currtime and timen_ actually _have_ to be equal unless one
+                                     // enters a new time step (because timen_ is always just a copy).
+  {
+    timen_ = currtime;
+    p.set("newstep", true);
+  }
+
   discret_.EvaluateCondition(p,stiff,null,fint,null,null,"SurfaceStress");
 
   return;
@@ -93,30 +132,28 @@ void UTILS::SurfStressManager::Update()
 *--------------------------------------------------------------------*/
 
 void UTILS::SurfStressManager::StiffnessAndInternalForces(const int curvenum,
-                                                           const double& A,
-                                                           const RCP<Epetra_SerialDenseVector> Adiff,
-                                                           const RCP<Epetra_SerialDenseMatrix> Adiff2,
-                                                           const double& Anew,
-                                                           const RCP<Epetra_SerialDenseVector> Adiffnew,
-                                                           Epetra_SerialDenseVector& fint,
-                                                           Epetra_SerialDenseMatrix& K_surf,
-                                                           const int ID,
-                                                           const double time,
-                                                           const double dt,
-                                                           const int surface_flag,
-                                                           const double const_gamma,
-                                                           const double k1xC,
-                                                           const double k2,
-                                                           const double m1,
-                                                           const double m2,
-                                                           const double gamma_0,
-                                                           const double gamma_min,
-                                                           const double gamma_min_eq,
-                                                           const double con_quot_max,
-                                                           const double con_quot_eq,
-                                                           const double alphaf,
-                                                           const bool newstep,
-                                                           const bool fintliketr)
+                                                          const double& A,
+                                                          const RCP<Epetra_SerialDenseVector> Adiff,
+                                                          const RCP<Epetra_SerialDenseMatrix> Adiff2,
+                                                          const double& Anew,
+                                                          const RCP<Epetra_SerialDenseVector> Adiffnew,
+                                                          Epetra_SerialDenseVector& fint,
+                                                          Epetra_SerialDenseMatrix& K_surf,
+                                                          const int ID,
+                                                          const double time,
+                                                          const double dt,
+                                                          const int surface_flag,
+                                                          const double const_gamma,
+                                                          const double k1xC,
+                                                          const double k2,
+                                                          const double m1,
+                                                          const double m2,
+                                                          const double gamma_0,
+                                                          const double gamma_min,
+                                                          const double gamma_min_eq,
+                                                          const double con_quot_max,
+                                                          const double con_quot_eq,
+                                                          const bool newstep)
 {
   double gamma, dgamma;
   int LID = A_last_->Map().LID(ID);
@@ -139,7 +176,7 @@ void UTILS::SurfStressManager::StiffnessAndInternalForces(const int curvenum,
     else
     {
       SurfactantModel(ID, gamma, dgamma, dt, k1xC, k2, m1, m2,
-                      gamma_0, gamma_min, gamma_min_eq, con_quot_max, alphaf, newstep, fintliketr);
+                      gamma_0, gamma_min, gamma_min_eq, con_quot_max, newstep);
     }
   }
 
@@ -193,9 +230,7 @@ void UTILS::SurfStressManager::SurfactantModel(
                 const double gamma_min,      // (i) mimimum surface stress
                 const double gamma_min_eq,   // (i) mimimum equilibrium surface stress
                 const double con_max,        // (i) max. surfactant concentration
-                const double alphaf,         // (i) generalized-alpha parameter alphaf
-                const bool newstep,          // (i) flag for new step (predictor)
-                const bool fintliketr)
+                const bool newstep)          // (i) flag for new step (predictor)
 {
   const int LID = A_last_->Map().LID(ID);
   const double A_last = (*A_last_)[LID];
@@ -297,8 +332,7 @@ void UTILS::SurfStressManager::SurfactantModel(
   (*con_current_)[LID] = con_new;
   (*gamma_current_)[LID] = gamma;
 
-  if (fintliketr==false)
-    gamma = (1.-alphaf)*(*gamma_current_)[LID]+alphaf*(*gamma_last_)[LID];
+  gamma = (1.-alphaf_)*(*gamma_current_)[LID]+alphaf_*(*gamma_last_)[LID];
 
   return;
 }

@@ -71,7 +71,7 @@ STR::TimIntGEMM::TimIntGEMM
   DetermineMassDampConsistAccel();
 
   // create state vectors
-  
+
   // mid-displacements
   dism_ = LINALG::CreateVector(*dofrowmap_, true);
   // mid-velocities
@@ -124,7 +124,7 @@ void STR::TimIntGEMM::PredictConstDisConsistVelAcc()
   accn_->Update(-1./(beta_*(*dt_)[0]), *(*vel_)(0),
                 (2.*beta_-1.)/(2.*beta_), *(*acc_)(0),
                 1./(beta_*(*dt_)[0]*(*dt_)[0]));
-  
+
   // watch out
   return;
 }
@@ -148,7 +148,7 @@ void STR::TimIntGEMM::EvaluateForceStiffResidual()
   // interface forces to external forces
   if (fsisurface_)
   {
-    fextn_->Update(1.0, *fifc_, 1.0);  
+    fextn_->Update(1.0, *fifc_, 1.0);
   }
 
   // external mid-forces F_{ext;n+1-alpha_f} (fextm)
@@ -170,9 +170,6 @@ void STR::TimIntGEMM::EvaluateForceStiffResidual()
   // apply forces and stiffness due to constraints
   Teuchos::ParameterList pcon; //apply empty parameterlist, no scaling necessary
   ApplyForceStiffConstraint(timen_, (*dis_)(0), disn_, fintm_, stiff_, pcon);
-
-  // surface stress force
-  ApplyForceStiffSurfstress(dism_, fintm_, stiff_);
 
   // potential forces
   ApplyForceStiffPotential(dism_, fintm_, stiff_);
@@ -198,10 +195,10 @@ void STR::TimIntGEMM::EvaluateForceStiffResidual()
     fres_->Update(1.0, *fviscm_, 1.0);
   }
   fres_->Update(1.0, *finertm_, 1.0);
-  
+
   // build tangent matrix : effective dynamic stiffness matrix
   //    K_{Teffdyn} = (1 - alpha_m)/(beta*dt^2) M
-  //                + (1 - alpha_f)*y/(beta*dt) C     
+  //                + (1 - alpha_f)*y/(beta*dt) C
   //                + K_{T;m}
   stiff_->Add(*mass_, false, (1.-alpham_)/(beta_*(*dt_)[0]*(*dt_)[0]), 1.0);
   if (damping_ == INPAR::STR::damp_rayleigh)
@@ -233,11 +230,11 @@ void STR::TimIntGEMM::EvaluateMidState()
   // mid-displacements D_{n+1-alpha_f} (dism)
   //    D_{n+1-alpha_f} := (1.-alphaf) * D_{n+1} + alpha_f * D_{n}
   dism_->Update(1.-alphaf_, *disn_, alphaf_, (*dis_)[0], 0.0);
-  
+
   // mid-velocities V_{n+1-alpha_f} (velm)
   //    V_{n+1-alpha_f} := (1.-alphaf) * V_{n+1} + alpha_f * V_{n}
   velm_->Update(1.-alphaf_, *veln_, alphaf_, (*vel_)[0], 0.0);
-  
+
   // mid-accelerations A_{n+1-alpha_m} (accm)
   //    A_{n+1-alpha_m} := (1.-alpha_m) * A_{n+1} + alpha_m * A_{n}
   accm_->Update(1.-alpham_, *accn_, alpham_, (*acc_)[0], 0.0);
@@ -320,7 +317,7 @@ void STR::TimIntGEMM::UpdateIterIncrementally()
   // put new velocities only on non-DBC/free DOFs
   dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), veln_);
 
-  
+
   // new end-point accelerations
   aux->Update(1.0, *disn_, -1.0, (*dis_)[0], 0.0);
   aux->Update(-1.0/(beta_*dt), (*vel_)[0],
@@ -340,10 +337,10 @@ void STR::TimIntGEMM::UpdateIterIteratively()
   // new end-point displacements
   // D_{n+1}^{<k+1>} := D_{n+1}^{<k>} + IncD_{n+1}^{<k>}
   disn_->Update(1.0, *disi_, 1.0);
-  
+
   // new end-point velocities
   veln_->Update(gamma_/(beta_*(*dt_)[0]), *disi_, 1.0);
-  
+
   // new end-point accelerations
   accn_->Update(1.0/(beta_*(*dt_)[0]*(*dt_)[0]), *disi_, 1.0);
 
@@ -392,10 +389,10 @@ void STR::TimIntGEMM::UpdateStepState()
 
   // update surface stress
   UpdateStepSurfstress();
-  
+
   // update constraints
   UpdateStepConstraint();
-  
+
   // look out
   return;
 }
@@ -434,7 +431,7 @@ void STR::TimIntGEMM::ApplyForceStiffInternalMid
   discret_->Evaluate(p, stiff, Teuchos::null,
                      fint, Teuchos::null, Teuchos::null);
   discret_->ClearState();
-  
+
   // that's it
   return;
 }

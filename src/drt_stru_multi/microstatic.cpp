@@ -52,6 +52,7 @@ solver_(solver)
   // -------------------------------------------------------------------
   double time    = params_->get<double>("total time"      ,0.0);
   double dt      = params_->get<double>("delta time"      ,0.01);
+  double alphaf    = params_->get<double>("alpha f",0.459);
 //   int istep      = params_->get<int>   ("step"            ,0);
 
   // -------------------------------------------------------------------
@@ -198,13 +199,12 @@ solver_(solver)
   if (density_ == 0.0)
     dserror("Density determined from homogenization procedure equals zero!");
 
-  // Check for surface stress conditions due to interfacial phenomena
-  vector<DRT::Condition*> surfstresscond(0);
-  discret_->GetCondition("SurfaceStress",surfstresscond);
-  if (surfstresscond.size())
-  {
-    surf_stress_man_=rcp(new UTILS::SurfStressManager(*discret_));
-  }
+  // Initialize SurfStressManager for handling surface stress
+  // conditions due to interfacial phenomena
+  // Note that sdyn from the macro-scale is called here since we need
+  // to use identical parameters on both scales in any case!
+  const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
+  surf_stress_man_=rcp(new UTILS::SurfStressManager(*discret_, sdyn));
 
   return;
 } // STRUMULTI::MicroStatic::MicroStatic
@@ -290,11 +290,9 @@ void STRUMULTI::MicroStatic::Predictor(LINALG::Matrix<3,3>* defgrd)
     discret_->Evaluate(p,stiff_,null,fint_,null,null);
     discret_->ClearState();
 
-    if (surf_stress_man_!=null)
+    if (surf_stress_man_->HaveSurfStress())
     {
       p.set("surfstr_man", surf_stress_man_);
-      bool newstep = params_->get<bool>("newstep", false);
-      p.set("newstep", newstep);
       surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,stiff_);
     }
 
@@ -438,7 +436,7 @@ void STRUMULTI::MicroStatic::FullNewton()
       discret_->Evaluate(p,stiff_,null,fint_,null,null);
       discret_->ClearState();
 
-      if (surf_stress_man_!=null)
+      if (surf_stress_man_->HaveSurfStress())
       {
         p.set("surfstr_man", surf_stress_man_);
         surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,stiff_);
@@ -531,7 +529,7 @@ void STRUMULTI::MicroStatic::Output(RefCountPtr<DiscretizationWriter> output,
     output->WriteVector("displacement",dis_);
     isdatawritten = true;
 
-    if (surf_stress_man_!=null)
+    if (surf_stress_man_->HaveSurfStress())
     {
       RCP<Epetra_Map> surfrowmap=surf_stress_man_->GetSurfRowmap();
       RCP<Epetra_Vector> A=rcp(new Epetra_Vector(*surfrowmap, true));
@@ -700,7 +698,7 @@ void STRUMULTI::MicroStatic::ReadRestart(int step,
   // step due to our choice of predictors)
   params_->set<bool>("newstep", true);
 
-  if (surf_stress_man!=null)
+  if (surf_stress_man->HaveSurfStress())
   {
     RCP<Epetra_Map> surfmap=surf_stress_man->GetSurfRowmap();
     RCP<Epetra_Vector> A = LINALG::CreateVector(*surfmap,true);
@@ -831,14 +829,14 @@ void STRUMULTI::MicroStatic::EvaluateMicroBC(LINALG::Matrix<3,3>* defgrd)
 }
 
 void STRUMULTI::MicroStatic::SetOldState(RefCountPtr<Epetra_Vector> dis,
-                              RefCountPtr<Epetra_Vector> dism,
-                              RefCountPtr<Epetra_Vector> disn,
-                              RefCountPtr<UTILS::SurfStressManager> surfman,
-                              RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > lastalpha,
-                              RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha,
-                              RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldfeas,
-                              RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKaainv,
-                              RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKda)
+                                         RefCountPtr<Epetra_Vector> dism,
+                                         RefCountPtr<Epetra_Vector> disn,
+                                         RefCountPtr<UTILS::SurfStressManager> surfman,
+                                         RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > lastalpha,
+                                         RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha,
+                                         RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldfeas,
+                                         RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKaainv,
+                                         RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKda)
 {
   dis_ = dis;
   dism_ = dism;
@@ -857,11 +855,11 @@ void STRUMULTI::MicroStatic::SetOldState(RefCountPtr<Epetra_Vector> dis,
 }
 
 void STRUMULTI::MicroStatic::UpdateNewTimeStep(RefCountPtr<Epetra_Vector> dis,
-                                    RefCountPtr<Epetra_Vector> dism,
-                                    RefCountPtr<Epetra_Vector> disn,
-                                    RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > alpha,
-                                    RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha,
-                                    RefCountPtr<UTILS::SurfStressManager> surf_stress_man)
+                                               RefCountPtr<Epetra_Vector> dism,
+                                               RefCountPtr<Epetra_Vector> disn,
+                                               RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > alpha,
+                                               RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha,
+                                               RefCountPtr<UTILS::SurfStressManager> surf_stress_man)
 {
   // these updates hold for an imr-like generalized alpha time integration
   // -> if another time integration scheme should be used, this needs
@@ -874,7 +872,7 @@ void STRUMULTI::MicroStatic::UpdateNewTimeStep(RefCountPtr<Epetra_Vector> dis,
   dism->Update(1.0, *dis, 0.0);
   disn->Update(1.0, *dis, 0.0);
 
-  if (surf_stress_man!=null)
+  if (surf_stress_man->HaveSurfStress())
   {
     surf_stress_man->Update();
   }
@@ -895,9 +893,10 @@ void STRUMULTI::MicroStatic::UpdateNewTimeStep(RefCountPtr<Epetra_Vector> dis,
   }
 }
 
-void STRUMULTI::MicroStatic::SetTime(double timen, int istep)
+void STRUMULTI::MicroStatic::SetTime(const double timen, const double dt, const int istep)
 {
   params_->set<double>("total time", timen);
+  params_->set<double>("delta time", dt);
   params_->set<int>   ("step", istep);
 }
 

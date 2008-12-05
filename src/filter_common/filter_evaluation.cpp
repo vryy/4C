@@ -152,13 +152,14 @@ class MicroMaterialGP
 }
 
 void MAT::MicroMaterial::Evaluate(LINALG::Matrix<3,3>* defgrd,
-                  LINALG::Matrix<6,6>* cmat,
-                  LINALG::Matrix<6,1>* stress,
-                  double* density,
-                  const int gp,
-                  const int ele_ID,
-                  const double time,
-                  const string action)
+                                  LINALG::Matrix<6,6>* cmat,
+                                  LINALG::Matrix<6,1>* stress,
+                                  double* density,
+                                  const int gp,
+                                  const int ele_ID,
+                                  const double time,
+                                  const double dt,
+                                  const string action)
 {
   dserror("MAT::MicroMaterial::Evaluate not available");
 }

@@ -188,7 +188,7 @@ void DRT::ELEMENTS::So_hex8::soh8_read_restart_multi(ParameterList& params)
 
     MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
 
-    micro->Evaluate(NULL, NULL, NULL, NULL, gp, ele_ID, 0., "multi_readrestart");
+    micro->Evaluate(NULL, NULL, NULL, NULL, gp, ele_ID, 0., 0., "multi_readrestart");
   }
   return;
 }

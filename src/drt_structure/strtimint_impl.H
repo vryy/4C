@@ -98,7 +98,7 @@ namespace STR
     //@{
 
     //! Do residual force due to global balance of momentum
-    //! and its tangent with respect to the current 
+    //! and its tangent with respect to the current
     //! displacements \f$D_{n+1}\f$
     //!
     //! The residual #fres_ is determined readily negative
@@ -120,15 +120,18 @@ namespace STR
     //! The Evaluation happens internal-force-like.
     void ApplyForceStiffSurfstress
     (
-      const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
-      Teuchos::RCP<Epetra_Vector>& fint,  //!< internal force
-      Teuchos::RCP<LINALG::SparseMatrix>& stiff  //! stiffness 
+      const double time,                         //!< evaluation time
+      const double dt,                           //!< time step size
+      const Teuchos::RCP<Epetra_Vector> dism,    //!< displacement state at n+1-alphaf
+      const Teuchos::RCP<Epetra_Vector> disn,    //!< displacement state at n+1
+      Teuchos::RCP<Epetra_Vector>& fint,         //!< internal force
+      Teuchos::RCP<LINALG::SparseMatrix>& stiff  //! stiffness
     );
 
     //! evaluate certain potential forces and its stiffness
     //!
     //! Evaluation happens internal-force-like.
-    //! Which potentials are actually meant can be found 
+    //! Which potentials are actually meant can be found
     //! at DRT::PotentialManager
     void ApplyForceStiffPotential
     (
@@ -163,7 +166,7 @@ namespace STR
     void Solve();
 
     //! Do full Newton-Raphson iteration
-    //! 
+    //!
     //! This routines expects a prepared negative reisdual force #fres_
     //! and associated effective stiffness matrix #stiff_
     void NewtonFull();
@@ -175,7 +178,7 @@ namespace STR
 
     //! Do classical augmented lagrange for volume constraint
     //!
-    //! Potential is linearized wrt displacements 
+    //! Potential is linearized wrt displacements
     //! keeping Lagrange multiplier fixed.
     //! Until convergence Lagrange multiplier
     //! is increased by Uzawa_param*(Vol_err)
@@ -187,7 +190,7 @@ namespace STR
 
     //! do full Newton iteration respecting volume constraint
     //!
-    //! Potential is linearized wrt displacements 
+    //! Potential is linearized wrt displacements
     //! and Lagrange multipliers
     //! Linear problem is solved with Uzawa algorithm.
     //!
@@ -202,9 +205,9 @@ namespace STR
     void NonlinearCG() { dserror("Not impl."); }
 
     //! Do pseudo transient continuation non-linear iteration
-    //! 
+    //!
     //! Pseudo transient continuation is a variant of full newton that has a
-    //! larger convergence radius than newton and is therefore more stable 
+    //! larger convergence radius than newton and is therefore more stable
     //! and/or can do larger time steps
     //!
     //! \author mwgee (originally) \date 03/07
@@ -217,27 +220,27 @@ namespace STR
 
     //! Compute the residual of linear momentum
     //!
-    //! Computes the set of nonlinear equations, \f$F(x)=0\f$, to be solved by NOX. 
+    //! Computes the set of nonlinear equations, \f$F(x)=0\f$, to be solved by NOX.
     //! This method must be supplied by the user.
     bool computeF
     (
       const Epetra_Vector& x,  //!< solution vector \f$x\f$ specified from NOX
                                //!< i.e. total displacements
-      Epetra_Vector& RHS,  //!< to be filled with the \f$F\f$ values that correspond 
+      Epetra_Vector& RHS,  //!< to be filled with the \f$F\f$ values that correspond
                            //!< to the input solution vector \f$x\f$.
-      const NOX::Epetra::Interface::Required::FillType flag  //!< enumerated 
-                                        //!< type (see NOX::Epetra::FillType) 
-                                        //!< that tells a users interface why 
-                                        //!< computeF() was called. NOX has 
-                                        //!< the ability to generate 
-                                        //!< Jacobians based on numerical 
-                                        //!< differencing using calls to 
-                                        //!< computeF(). In this case, 
-                                        //!< the user may want to compute 
-                                        //!< an inexact 
-                                        //!< (and hopefully cheaper) \f$F\f$ 
-                                        //!< since it 
-                                        //!< is only used in the Jacobian (or 
+      const NOX::Epetra::Interface::Required::FillType flag  //!< enumerated
+                                        //!< type (see NOX::Epetra::FillType)
+                                        //!< that tells a users interface why
+                                        //!< computeF() was called. NOX has
+                                        //!< the ability to generate
+                                        //!< Jacobians based on numerical
+                                        //!< differencing using calls to
+                                        //!< computeF(). In this case,
+                                        //!< the user may want to compute
+                                        //!< an inexact
+                                        //!< (and hopefully cheaper) \f$F\f$
+                                        //!< since it
+                                        //!< is only used in the Jacobian (or
                                         //!< preconditioner).
     );
 
@@ -246,29 +249,29 @@ namespace STR
     (
       const Epetra_Vector& x,  //!< solution vector \f$x\f$ specified from NOX
                                //!< i.e. total displacements
-      Epetra_Operator& Jac  //!< a reference to the Jacobian operator 
-                            //!< \f$\frac{\partial F}{\partial x}\f$ 
-                            //!< that the user supplied in the 
+      Epetra_Operator& Jac  //!< a reference to the Jacobian operator
+                            //!< \f$\frac{\partial F}{\partial x}\f$
+                            //!< that the user supplied in the
                             //!< NOX::Epetra::Group constructor.
     );
 
     //! Compute preconditioner
     //!
-    //! This method allows a user to supply their own preconditioner. 
-    //! The method should compute a preconditioner based upon the 
-    //! solution vector x and store it in the Epetra_Operator M. 
-    //! Subsequent calls to the Epetra_Operator::Apply method will apply 
-    //! this user supplied preconditioner to epetra vectors. 
-    //! The Epetra_Operator M can also be an Epetra_RowMatrix that can 
+    //! This method allows a user to supply their own preconditioner.
+    //! The method should compute a preconditioner based upon the
+    //! solution vector x and store it in the Epetra_Operator M.
+    //! Subsequent calls to the Epetra_Operator::Apply method will apply
+    //! this user supplied preconditioner to epetra vectors.
+    //! The Epetra_Operator M can also be an Epetra_RowMatrix that can
     //! be used by internally constructed preconditioner objects such as AztecOO, Ipfack, and ML
     bool computePreconditioner
     (
       const Epetra_Vector& x,  //!< solution vector \f$x\f$ specified from NOX
                                //!< i.e. total displacements
-      Epetra_Operator& M,  //!< a reference to the operator that is to be filled. 
-                           //!< This operator should be updated to correspond to the current 
+      Epetra_Operator& M,  //!< a reference to the operator that is to be filled.
+                           //!< This operator should be updated to correspond to the current
                            //!< solution vector x.
-      Teuchos::ParameterList* precParams  //!< a pointer to a parameter list 
+      Teuchos::ParameterList* precParams  //!< a pointer to a parameter list
                                           //!< that can be used by the preconditioner.
     );
 
@@ -310,7 +313,7 @@ namespace STR
 
     //! Update iteration
     //!
-    //! This handles the iterative update of the current 
+    //! This handles the iterative update of the current
     //! displacements \f$D_{n+1}\f$ with the residual dispplacements
     //! The velocities and accelerations follow on par.
     void UpdateIter
@@ -323,7 +326,7 @@ namespace STR
     //! This update is carried out by computing the new #veln_ and #accn_
     //! from scratch by using the newly updated #disn_. The method
     //! respects the Dirichlet DOFs which are not touched.
-    //! This method is necessary for certain predictors 
+    //! This method is necessary for certain predictors
     //! (like #PredictConstDisConsistVelAcc)
     virtual void UpdateIterIncrementally() = 0;
 
@@ -350,7 +353,7 @@ namespace STR
     //!
     //! This means, the state set
     //! \f$D_{n} := D_{n+1}\f$, \f$V_{n} := V_{n+1}\f$ and \f$A_{n} := A_{n+1}\f$
-    //! Thus the 'last' converged state is lost and a reset 
+    //! Thus the 'last' converged state is lost and a reset
     //! of the time step becomes impossible.
     //! We are ready and keen awating the next time step.
     virtual void UpdateStepState() = 0;
@@ -358,7 +361,7 @@ namespace STR
     //! Update step for surface stress
     void UpdateStepSurfstress()
     {
-      if (surfstressman_ != Teuchos::null) surfstressman_->Update();
+      if (surfstressman_ -> HaveSurfStress())  surfstressman_->Update();
     }
 
     //! Update step for constraints
@@ -366,7 +369,7 @@ namespace STR
     {
       if (conman_ -> HaveConstraint()) conman_->Update();
     }
-    
+
     //! @name Output
     //@{
 
@@ -423,19 +426,19 @@ namespace STR
 
     //! Return linear error coefficient of velocities
     virtual double MethodLinErrCoeffVel() = 0;
-    
+
     //! Return bool indicating if constraints are defined
     virtual bool HaveConstraint()
     {
       return conman_->HaveConstraint();
     }
-    
+
     //! Return rcp to ConstraintManager conman_
     virtual const RCP<const UTILS::ConstrManager> GetConstraintManager()
     {
       return conman_;
     }
-    
+
     //! Update iteration
     //! Add residual increment to Lagrange multipliers stored in Constraint manager
     virtual void UpdateIterIncrConstr
@@ -445,8 +448,8 @@ namespace STR
     {
       conman_->UpdateLagrMult(lagrincr);
     }
-    
-    
+
+
     //@}
 
     //! @name Fluid-structure-interaction specific methods
@@ -479,7 +482,7 @@ namespace STR
     //! relaxation solution with SolveRelaxationLinear
     virtual void EvaluateForceStiffResidualRelax() = 0;
 
-    //! Linear structure solve with just an interface load 
+    //! Linear structure solve with just an interface load
     Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear();
 
     //! Prepare system for solving with Newton's method
@@ -502,7 +505,7 @@ namespace STR
 
     //! Read and set external forces from file
     virtual void ReadRestartForce() = 0;
-   
+
     //! Return residual displacements \f$\Delta D_{n+1}^{<k>}\f$
     Teuchos::RCP<const Epetra_Vector> DisRes() const { return disi_; }
 
@@ -511,7 +514,7 @@ namespace STR
     (
       const Teuchos::RCP<const Epetra_Vector> disi  //!< input residual displacements
     )
-    {  
+    {
       if (disi != Teuchos::null) disi_->Update(1.0, *disi, 0.0);
     }
 
@@ -539,15 +542,15 @@ namespace STR
 
     //! @name Iterative solution technique
     //@{
-    enum INPAR::STR::NonlinSolTech itertype_;  //!< kind of iteration technique 
+    enum INPAR::STR::NonlinSolTech itertype_;  //!< kind of iteration technique
                                                //!< or non-linear solution technique
     enum INPAR::STR::ConvCheck itercnvchk_;  //!< convergence check
-    enum INPAR::STR::VectorNorm iternorm_;  //!< vector norm to 
+    enum INPAR::STR::VectorNorm iternorm_;  //!< vector norm to
     //!< check with
     int itermax_;  //!< maximally permitted iterations
     double toldisi_;  //!< tolerance residual displacements
     double tolfres_;  //!< tolerance force residual
-    double uzawaparam_;  //!< Parameter for Uzawa algorithm dealing 
+    double uzawaparam_;  //!< Parameter for Uzawa algorithm dealing
     //!< with Lagrange multipliers
     int uzawaitermax_;  //!< maximally permitted Uzawa iterations
     double tolcon_;  //!< tolerance constraint
