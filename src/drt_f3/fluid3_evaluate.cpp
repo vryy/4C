@@ -502,10 +502,11 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         }
 
         // set Cs_delta_sq without averaging (only clipping)
-        Cs_delta_sq_ = 0.5 * LijMij / MijMij;
-        if (Cs_delta_sq_<0)
+        if (abs(MijMij) < 1E-16) Cs_delta_sq_= 0.0;
+        else  Cs_delta_sq_ = 0.5 * LijMij / MijMij;
+        if (Cs_delta_sq_<0.0)
         {
-          Cs_delta_sq_= 0;
+          Cs_delta_sq_= 0.0;
         }
 
         params.set<double>("LijMij",LijMij);
