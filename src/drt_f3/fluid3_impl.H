@@ -367,6 +367,8 @@ namespace ELEMENTS
     LINALG::Matrix<3,1> visc_old_;
     //! the old residual
     LINALG::Matrix<3,1> res_old_;
+    //! density-weighted old residual
+    LINALG::Matrix<3,1> dwres_old_;
     //! convection by subgrid-scale velocity
     LINALG::Matrix<iel,1> conv_resM_;
     //! 2nd derivatives of coord.-functions w.r.t r,s,t

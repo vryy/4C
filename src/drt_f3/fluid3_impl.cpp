@@ -142,6 +142,7 @@ DRT::ELEMENTS::Fluid3Impl<distype>::Fluid3Impl()
     conv_old_(),
     visc_old_(),
     res_old_(true),  // initialize to zero
+    dwres_old_(true),
     conv_resM_(true),
     xder2_(),
     vderiv_()
@@ -1026,8 +1027,22 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
       }
     }
 
-    /*
-      This is the operator
+    //--------------------------------------------------------------------
+    // calculation of additional terms when cross- and Reynolds-stress
+    // are included
+    //--------------------------------------------------------------------
+    if (cross    == Fluid3::cross_stress_stab ||
+        cross    == Fluid3::cross_stress_stab_only_rhs ||
+        reynolds == Fluid3::reynolds_stress_stab_only_rhs)
+    {
+      // get density at element center
+      const double dens = funct_.Dot(edensnp);
+
+      // get density-weighted residual
+      dwres_old_.Update(dens,res_old_,0.0);
+
+      /*
+        This is the operator
 
                   /                      \
                  | (rho*resM)    o nabla |
@@ -1035,11 +1050,9 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
 
                   required for (lhs) cross- and (rhs) Reynolds-stress calculation
 
-    */
-
-    if (cross    == Fluid3::cross_stress_stab ||
-        reynolds == Fluid3::reynolds_stress_stab_only_rhs)
-      conv_resM_.MultiplyTN (densderxy_,res_old_);
+      */
+      conv_resM_.MultiplyTN (derxy_,dwres_old_);
+    }
 
     //--------------------------------------------------------------------
     // perform integration for element matrix and right hand side
@@ -2251,15 +2264,15 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
                           \                               /
           */
           double v = tau_M*funct_(vi,0);
-          eforce(vi*4)     += v*(res_old_(0,0)*mderxy_(0,0) +
-                                 res_old_(1,0)*mderxy_(0,1) +
-                                 res_old_(2,0)*mderxy_(0,2));
-          eforce(vi*4 + 1) += v*(res_old_(0,0)*mderxy_(1,0) +
-                                 res_old_(1,0)*mderxy_(1,1) +
-                                 res_old_(2,0)*mderxy_(1,2));
-          eforce(vi*4 + 2) += v*(res_old_(0,0)*mderxy_(2,0) +
-                                 res_old_(1,0)*mderxy_(2,1) +
-                                 res_old_(2,0)*mderxy_(2,2));
+          eforce(vi*4)     += v*(dwres_old_(0,0)*vderxy_(0,0) +
+                                 dwres_old_(1,0)*vderxy_(0,1) +
+                                 dwres_old_(2,0)*vderxy_(0,2));
+          eforce(vi*4 + 1) += v*(dwres_old_(0,0)*vderxy_(1,0) +
+                                 dwres_old_(1,0)*vderxy_(1,1) +
+                                 dwres_old_(2,0)*vderxy_(1,2));
+          eforce(vi*4 + 2) += v*(dwres_old_(0,0)*vderxy_(2,0) +
+                                 dwres_old_(1,0)*vderxy_(2,1) +
+                                 dwres_old_(2,0)*vderxy_(2,2));
         }
       } // end cross-stress part on right hand side
 

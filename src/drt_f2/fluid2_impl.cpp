@@ -120,6 +120,7 @@ DRT::ELEMENTS::Fluid2Impl<distype>::Fluid2Impl()
     conv_old_(),
     visc_old_(),
     res_old_(),
+    dwres_old_(),
     conv_resM_(),
     xder2_(),
     vderiv_()
@@ -1032,8 +1033,22 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
       }
     }
 
-    /*
-      This is the operator
+    //--------------------------------------------------------------------
+    // calculation of additional terms when cross- and Reynolds-stress
+    // are included
+    //--------------------------------------------------------------------
+    if (cross    == Fluid2::cross_stress_stab ||
+        cross    == Fluid2::cross_stress_stab_only_rhs ||
+        reynolds == Fluid2::reynolds_stress_stab_only_rhs)
+    {
+      // get density at element center
+      const double dens = funct_.Dot(edensnp);
+
+      // get density-weighted residual
+      dwres_old_.Update(dens,res_old_,0.0);
+
+      /*
+        This is the operator
 
                   /                      \
                  | (rho*resM)    o nabla |
@@ -1041,11 +1056,9 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
 
                   required for (lhs) cross- and (rhs) Reynolds-stress calculation
 
-    */
-
-    if (cross    == Fluid2::cross_stress_stab ||
-        reynolds == Fluid2::reynolds_stress_stab_only_rhs)
-      conv_resM_.MultiplyTN(densderxy_,res_old_);
+      */
+      conv_resM_.MultiplyTN (derxy_,dwres_old_);
+    }
 
     //--------------------------------------------------------------------
     // perform integration for element matrix and right hand side
@@ -2056,8 +2069,8 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
                           \                               /
           */
           const double v = tau_M*funct_(vi);
-          eforce(tvi    ) += v*(res_old_(0)*mderxy_(0,0)+res_old_(1)*mderxy_(0,1));
-          eforce(tvi + 1) += v*(res_old_(0)*mderxy_(1,0)+res_old_(1)*mderxy_(1,1));
+          eforce(tvi    ) += v*(dwres_old_(0)*vderxy_(0,0)+dwres_old_(1)*vderxy_(0,1));
+          eforce(tvi + 1) += v*(dwres_old_(0)*vderxy_(1,0)+dwres_old_(1)*vderxy_(1,1));
         }
       } // end cross-stress part on right hand side
 
