@@ -1118,6 +1118,9 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   // parameters for nonlinear treatment (linearisation) and low-Mach-number solver
   eleparams.set("Linearisation",newton_);
 
+  // parameters for usage of conservative/convective form
+  eleparams.set("CONVFORM",params_.get<string>("form of convective term"));
+
   // parameters for stabilisation
   {
     eleparams.sublist("STABILIZATION")    = params_.sublist("STABILIZATION");
@@ -2087,6 +2090,15 @@ void FLD::FluidGenAlphaIntegration::GenAlphaEchoToScreen(
         cout << stabparams->get<string>("REYNOLDS-STRESS");
         cout << endl;
         cout << endl;
+
+        // do we use a conservative approach?
+        cout << "                             ";
+        cout << "Choosing cross-stress stabilisation based on ";
+        cout << params_.get<string>("form of convective term");
+        cout << " equation";
+        cout << endl;
+        cout << endl;
+
       }
 
       //--------------------------------------------------------------------

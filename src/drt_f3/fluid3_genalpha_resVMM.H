@@ -345,6 +345,8 @@ namespace DRT
         \param dt                 (i) time step size
         \param time               (i) current simulation time
         \param newton             (i) flag for use of full linearisation of reactive terms
+        \param conservative       (i) flag indicating whether to use partially integrated 
+                                      conservative form or do advective
         \param higher_order_ele   (i) include second derivatives in residual for stabilization
         \param fssgv              (i) flag for type of fine-scale subgrid viscosity
         \param tds                (i) flag for use of time dependent subscale stabilisation
@@ -384,6 +386,7 @@ namespace DRT
                   const double                                     dt,
                   const double                                     time,
                   const enum Fluid3::LinearisationAction           newton,
+                  const bool                                       conservative,
                   const bool                                       higher_order_ele,                  
                   const enum Fluid3::StabilisationAction           fssgv,
                   const enum Fluid3::StabilisationAction           tds,
@@ -534,6 +537,8 @@ namespace DRT
       LINALG::Matrix<3,1>   velintaf_;
       //! fine-scale velocity in gausspoint, time n+af
       LINALG::Matrix<3,1>   fsvelintaf_;
+      //! grid velocity at time level n+af 
+      LINALG::Matrix<3,1>   u_G_af_;
       //! ale convective velocity at intermediate time level n+af
       //! aleconvint_af_ = velintaf_ - gridvelintaf_
       LINALG::Matrix<3,1>   aleconvintaf_;
@@ -543,6 +548,10 @@ namespace DRT
       LINALG::Matrix<3,3>   vderxynp_;
       //! velocity derivatives in gausspoint, time n+af
       LINALG::Matrix<3,3>   vderxyaf_;
+#if 0
+      //! grid velocity spatial derivatives in gausspoint, time n+af
+      LINALG::Matrix<3,3>   gridvderxyaf_;
+#endif
       //! fine-scale velocity derivatives in gausspoint, time n+af
       LINALG::Matrix<3,3>   fsvderxyaf_;
       //! value of body force interpolated to the gauss point, time n+af
@@ -550,7 +559,7 @@ namespace DRT
       //! linearisation of convection, convective part, time n+af
       LINALG::Matrix<iel,1> conv_c_af_;
       //! convective part introduced by grid velocity, time n+af
-      LINALG::Matrix<iel,1> conv_g_af_;
+      LINALG::Matrix<iel,1> conv_u_G_af_;
 
       // element data
       // ------------
@@ -560,6 +569,8 @@ namespace DRT
       LINALG::Matrix<3,1>   svelaf_;
       //! Convective term, most recent iteration value
       LINALG::Matrix<3,1>   convaf_old_;
+      //! Convectivion by mesh motion, most recent iteration value
+      LINALG::Matrix<3,1>   convu_G_af_old_;
       //! Convective part of scale-similarity term, most recent iteration value
       LINALG::Matrix<3,1>   convaf_s_;
       /*
