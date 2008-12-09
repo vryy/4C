@@ -634,28 +634,19 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
     ** every necessary data must be passed.
     */
     double density = 0.0;
-    // Caution!! the defgrd can not be modified with ANS to remedy locking
-    // therefore it is empty and passed only for compatibility reasons
-    LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> defgrd; // Caution!! empty!!
-//#define disp_based_F
-#ifdef disp_based_F
-    Epetra_SerialDenseMatrix defgrd_epetra(View,defgrd->A(),defgrd->Rows(),defgrd->Rows(),defgrd->Columns());
-    LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> invJ;
-    invJ.Multiply(derivs[gp],xrefe);
-    invJ.Invert();
+    /* Caution!! the defgrd can not be modified with ANS to remedy locking
+       To get the consistent F a spectral decomposition would be necessary, see sosh8_Cauchy.
+       However if one only maps e.g. stresses from current to material configuration,
+       I have never noticed any difference to applying just the disp_based F
+       which is therefore computed and passed here (no significant add. computation time).  */
+    LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> defgrd; // Caution!! disp_based!
     LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> N_XYZ;
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 * N_rst
-    N_XYZ.Multiply(invJ,derivs[gp]);
+    N_XYZ.Multiply(invJ_[gp],derivs[gp]);
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-    LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> defgrd;
     defgrd.MultiplyTT(xcurr,N_XYZ);
-    for (int i = 0; i < NUMDIM_WEG6; ++i) {
-      for (int j = 0; j < NUMDIM_WEG6; ++j) {
-        defgrd_epetra(i,j) = defgrd(i,j);
-      }
-    }
-#endif
+    // 
     LINALG::Matrix<NUMSTR_WEG6,NUMSTR_WEG6> cmat(true);
     LINALG::Matrix<NUMSTR_WEG6,1> stress(true);
     sow6_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, gp, params);
@@ -673,7 +664,10 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
     }
     break;
     case INPAR::STR::stress_cauchy:
-        dserror("output of Cauchy stresses not supported for solid shell wedge6");
+    {
+      if (elestress == NULL) dserror("stress data not available");
+      soshw6_Cauchy(elestress,gp,defgrd,glstrain,stress);
+    }
     break;
     case INPAR::STR::stress_none:
       break;
@@ -1060,6 +1054,80 @@ void DRT::ELEMENTS::So_shw6::soshw6_eassetup(
 }
 
 /*----------------------------------------------------------------------*
+ |  return Cauchy stress at gp                                 maf 06/08|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_shw6::soshw6_Cauchy(LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestress,
+                                         const int gp,
+                                         const LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6>& defgrd,
+                                         const LINALG::Matrix<NUMSTR_WEG6,1>& glstrain,
+                                         const LINALG::Matrix<NUMSTR_WEG6,1>& stress)
+{
+# if consistent_F
+  //double disp1 = defgrd.NormOne();
+  //double dispinf = defgrd.NormInf();
+
+  /* to get the consistent (locking-free) F^mod, we need two spectral
+   * compositions. First, find R (rotation tensor) from F=RU,
+   * then from E^mod = 1/2((U^mod)^2 - 1) find U^mod,
+   * and finally F^mod = RU^mod */
+
+  // polar decomposition of displacement based F
+  LINALG::SerialDenseMatrix u(NUMDIM_WEG6,NUMDIM_WEG6);
+  LINALG::SerialDenseMatrix s(NUMDIM_WEG6,NUMDIM_WEG6);
+  LINALG::SerialDenseMatrix v(NUMDIM_WEG6,NUMDIM_WEG6);
+  SVD(defgrd,u,s,v); // Singular Value Decomposition
+  LINALG::SerialDenseMatrix rot(NUMDIM_WEG6,NUMDIM_WEG6);
+  rot.Multiply('N','N',1.0,u,v,0.0);
+
+  // get modified squared stretch (U^mod)^2 from glstrain
+  LINALG::SerialDenseMatrix Usq_mod(NUMDIM_WEG6,NUMDIM_WEG6);
+  for (int i = 0; i < NUMDIM_WEG6; ++i) Usq_mod(i,i) = 2.0 * glstrain(i) + 1.0;
+  // off-diagonal terms are already twice in the Voigt-GLstrain-vector
+  Usq_mod(0,1) =  glstrain(3);  Usq_mod(1,0) =  glstrain(3);
+  Usq_mod(1,2) =  glstrain(4);  Usq_mod(2,1) =  glstrain(4);
+  Usq_mod(0,2) =  glstrain(5);  Usq_mod(2,0) =  glstrain(5);
+  // polar decomposition of (U^mod)^2
+  SVD(Usq_mod,u,s,v); // Singular Value Decomposition
+  LINALG::SerialDenseMatrix U_mod(NUMDIM_WEG6,NUMDIM_WEG6);
+  for (int i = 0; i < NUMDIM_SOH8; ++i) s(i,i) = sqrt(s(i,i));
+  LINALG::SerialDenseMatrix temp2(NUMDIM_WEG6,NUMDIM_WEG6);
+  temp2.Multiply('N','N',1.0,u,s,0.0);
+  U_mod.Multiply('N','N',1.0,temp2,v,0.0);
+
+  // F^mod = RU^mod
+  LINALG::SerialDenseMatrix defgrd_consistent(NUMDIM_WEG6,NUMDIM_WEG6);
+  defgrd_consistent.Multiply('N','N',1.0,rot,U_mod,0.0);
+  defgrd.SetView(defgrd_consistent.A());
+#endif
+  double detF = defgrd.Determinant();
+
+  LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> pkstress;
+  pkstress(0,0) = stress(0);
+  pkstress(0,1) = stress(3);
+  pkstress(0,2) = stress(5);
+  pkstress(1,0) = pkstress(0,1);
+  pkstress(1,1) = stress(1);
+  pkstress(1,2) = stress(4);
+  pkstress(2,0) = pkstress(0,2);
+  pkstress(2,1) = pkstress(1,2);
+  pkstress(2,2) = stress(2);
+
+  LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> cauchystress;
+  LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> temp;
+  temp.Multiply(1.0/detF,defgrd,pkstress);
+  cauchystress.MultiplyNT(temp,defgrd);
+
+  (*elestress)(gp,0) = cauchystress(0,0);
+  (*elestress)(gp,1) = cauchystress(1,1);
+  (*elestress)(gp,2) = cauchystress(2,2);
+  (*elestress)(gp,3) = cauchystress(0,1);
+  (*elestress)(gp,4) = cauchystress(1,2);
+  (*elestress)(gp,5) = cauchystress(0,2);
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  | find optimal map between material space and parameter space maf 11/08|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_shw6::soshw6_findoptparmap()
@@ -1158,6 +1226,14 @@ int DRT::ELEMENTS::Soshw6Register::Initialize(DRT::Discretization& dis)
   // but without element init, etc.
   dis.FillComplete(false,false,false);
 
+  // loop again to init Jacobian for Sosh8's
+  for (int i=0; i<dis.NumMyColElements(); ++i)
+  {
+    if (dis.lColElement(i)->Type() != DRT::Element::element_so_shw6) continue;
+    DRT::ELEMENTS::So_shw6* actele = dynamic_cast<DRT::ELEMENTS::So_shw6*>(dis.lColElement(i));
+    if (!actele) dserror("cast to So_shw6* failed");
+    actele->InitJacobianMapping();
+  }
   return 0;
 }
 

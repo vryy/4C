@@ -245,6 +245,14 @@ private:
             LINALG::Matrix<NUMSTR_WEG6,NUMSTR_WEG6>& T0invT,   // maps M(origin) local to global
             const LINALG::Matrix<NUMNOD_WEG6,NUMDIM_WEG6>& xrefe);    // material element coords
 
+  //! Evaluate Cauchy stress (mapping with disp_based F per default)
+  void soshw6_Cauchy(LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestress,
+                     const int gp,
+                     const LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6>& defgrd,
+                     const LINALG::Matrix<NUMSTR_WEG6,1>& glstrain,
+                     const LINALG::Matrix<NUMSTR_WEG6,1>& stress);
+
+  //! Reorient wedge to optimally align material with parameter space
   int soshw6_findoptparmap();
 
 }; // class So_shw6
