@@ -72,7 +72,7 @@ DYNAMICTYP       Nlin_Time_Int
 INITIALFIELD     zero_field
 RESSTEP          -1
 STARTFUNCNO      2
-TIMEINTEGR       Stationary
+TIMEINTEGR       BDF2
 STARTINGALGO     One_Step_Theta
 NONLINITER       Newton
 ITEMAX           10
@@ -86,11 +86,11 @@ UPPSS            1
 UPRES            1
 RESTARTEVRY      20
 NUMSTEP          1
-NUMSTASTEPS      0
+NUMSTASTEPS      1
 MAXTIME          1000.0
 TIMESTEP         0.05
 THETA            0.66
-START_THETA      0.67
+START_THETA      1.0
 ALPHA_F          1.00
 ALPHA_M          1.00
 LIFTDRAG         no
@@ -100,8 +100,8 @@ ADAPTCONV_BETTER 0.1
 SIMPLER          No
 -------------------------------------------------------FSI DYNAMIC
 MAXTIME      1000.0
-TIMESTEP     1.0
-NUMSTEP      1
+TIMESTEP     0.5
+NUMSTEP      20
 UPPSS        1
 UPRES        1
 RESTARTEVRY  20
@@ -117,7 +117,7 @@ COUPMETHOD   conforming
 COUPFORCE    nodeforce
 COUPVARIABLE Displacement
 ------------------------------------------------------FLUID SOLVER
-SOLVER         Aztec_MSR          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER         UMFPACK          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT       0                  // output every so often, 0 no output
 AZSOLVE        GMRES              // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC         MLFLUID2           // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
@@ -187,7 +187,7 @@ ML_DAMPCOARSE     1.0       // damping coarse grid
 PARTITION         Cut_Elements
 -------------------------------------------------------XFEM GENERAL
 EXP_INTERSECTION                Yes
-DLM_CONDENSATION                Yes
+DLM_CONDENSATION                No
 GMSH_DEBUG_OUT                  Yes
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 16
@@ -818,7 +818,8 @@ E 7 - 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 
 E 8 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 --------------------------------------DESIGN VOL DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DVOL 0
+DVOL 1
+E 2 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC NSURF
 DPOINT 0
