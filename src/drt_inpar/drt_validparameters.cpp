@@ -1028,7 +1028,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Definition of tau_M,C",
                                tuple<std::string>(
                                  "Barrenechea_Franca_Valentin_Wall",
-                                 "Franca_Barrenechea_Valentin_Codina"
+                                 "Franca_Barrenechea_Valentin_Codina",
                                  "Bazilevs",
                                  "Codina"),
                                tuple<std::string>(
