@@ -554,7 +554,7 @@ std::string MAT::ArtWallRemod::PrintVec(const vector<double> actvec)
 
 /// Debug Output to txt-file
 
-/* this needs to be copied to STR::TimInt::OutputStep() to debug enable output
+/* this needs to be copied to STR::TimInt::OutputStep() to enable debug output
 {
   discret_->SetState("displacement",Dis());
   MAT::ArtWallRemodOutputToGmsh(discret_, GetStep(), 1);
@@ -572,16 +572,16 @@ void MAT::ArtWallRemodOutputToTxt(const Teuchos::RCP<DRT::Discretization> dis,
     ofstream outfile;
     outfile.open(filename.str().c_str(),ios_base::app);
     //int nele = dis->NumMyColElements();
-    int endele = 100; //nele;
+    int endele = 200; //nele;
     for (int iele=0; iele<endele; iele+=10) //++iele) iele+=10)
     {
       const DRT::Element* actele = dis->lColElement(iele);
       RefCountPtr<MAT::Material> mat = actele->Material();
       if (mat->MaterialType() != m_artwallremod) return;
       MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(mat.get());
-      //int ngp = remo->Geta1()->size();
+      int ngp = remo->Geta1()->size();
       int endgp = 1; //ngp;
-      for (int gp = 0; gp < endgp; ++gp){
+      for (int gp = 0; gp < endgp; ++gp){ //gp+=4
         double gamma = remo->Getgammas()->at(gp);
         double remtime = remo->Getremtimes()->at(gp);
         vector<double> lamb = remo->Getlambdas()->at(gp);

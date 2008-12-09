@@ -247,9 +247,7 @@ private:
   //! Return true Cauchy-stress at gausspoint
   void sosh8_Cauchy(LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,
                     const int gp,
-                    const LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8>& deriv,
-                    const LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8>& xrefe,
-                    const LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8>& xcurr,
+                    const LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>& defgrd,
                     const LINALG::Matrix<NUMSTR_SOH8,1>& glstrain,
                     const LINALG::Matrix<NUMSTR_SOH8,1>& stress);
 

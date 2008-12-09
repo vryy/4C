@@ -870,7 +870,11 @@ bool EXODUS::CheckExtrusion(const EXODUS::NodeSet nodeset)
 bool EXODUS::CheckFlatEx(const EXODUS::NodeSet nodeset)
 {
   const string myname = nodeset.GetName();
-  if (myname.find("flat") != string::npos){
+  const string mypropname = nodeset.GetPropName();
+  if ((myname.find("flat") != string::npos) ||
+      (myname.find("FLAT") != string::npos) ||
+      (mypropname.find("flat") != string::npos) ||
+      (mypropname.find("FLAT") != string::npos)){
     return true;
   }
   return false;
@@ -1087,7 +1091,7 @@ int EXODUS::RepairTwistedExtrusion(const double thickness, // extrusion thicknes
 
   cout << "firstcheck: " << firstcheck << ", secondcheck: " << secondcheck << endl;
   cout << "During repair " << newnodesbyrepair << " new nodes have been created."<<endl;
-  PlotEleConnGmsh(repaired_conn,newnodes,repaired_conn);
+  if (repaired_conn.size() !=0) PlotEleConnGmsh(repaired_conn,newnodes,repaired_conn);
 
   return twistcounter;
 }

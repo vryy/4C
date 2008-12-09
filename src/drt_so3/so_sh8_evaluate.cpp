@@ -777,7 +777,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
     case INPAR::STR::stress_cauchy:
     {
       if (elestress == NULL) dserror("stress data not available");
-      sosh8_Cauchy(elestress,gp,derivs[gp],xrefe,xcurr,glstrain,stress);
+      sosh8_Cauchy(elestress,gp,defgrd,glstrain,stress);
     }
     break;
     case INPAR::STR::stress_none:
@@ -1090,25 +1090,10 @@ void DRT::ELEMENTS::So_sh8::sosh8_evaluateT(const LINALG::Matrix<NUMDIM_SOH8,NUM
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_sh8::sosh8_Cauchy(LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,
                                          const int gp,
-                                         const LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8>& deriv,
-                                         const LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8>& xrefe,
-                                         const LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8>& xcurr,
+                                         const LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>& defgrd,
                                          const LINALG::Matrix<NUMSTR_SOH8,1>& glstrain,
                                          const LINALG::Matrix<NUMSTR_SOH8,1>& stress)
 {
-  // with ANS you do NOT have the correct (locking-free) F, so we
-  // compute it here JUST for mapping of correct (locking-free) stresses
-  LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> invJ;
-  invJ.Multiply(deriv,xrefe);
-  invJ.Invert();
-  LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> N_XYZ;
-  // compute derivatives N_XYZ at gp w.r.t. material coordinates
-  // by N_XYZ = J^-1 * N_rst
-  N_XYZ.Multiply(invJ,deriv);
-  // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-  LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd;
-  defgrd.MultiplyTT(xcurr,N_XYZ);
-
 # if consistent_F
   //double disp1 = defgrd.NormOne();
   //double dispinf = defgrd.NormInf();
@@ -1185,6 +1170,8 @@ void DRT::ELEMENTS::So_sh8::sosh8_Cauchy(LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>
   (*elestress)(gp,3) = cauchystress(0,1);
   (*elestress)(gp,4) = cauchystress(1,2);
   (*elestress)(gp,5) = cauchystress(0,2);
+  
+  return;
 }
 
 
