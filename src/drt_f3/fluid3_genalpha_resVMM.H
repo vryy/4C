@@ -482,6 +482,26 @@ namespace DRT
       void CalVisc(     const struct _MATERIAL* material,
                         double&                 visc);
 
+      /*!
+        \brief calculation of stabilisation parameter (element center or Gaussian point)
+
+    	\param whichtau   (i) select tau definition
+    	\param tds        (i) tau definitions differ for time dependent subscales
+        \param gamma      (i) time integration dependent parameter
+        \param dt         (i) time step size
+        \param hk         (i) an element size required for all stabpars except the Bazilevs parameter
+    	\param mk         (i) element dependent constant
+        \param visceff    (i) effective viscosity
+       */
+      void CalcTau(const enum Fluid3::TauType             whichtau ,
+                   const enum Fluid3::StabilisationAction tds      ,
+                   const double &                         gamma    ,
+                   const double &                         dt       ,
+                   const double &                         hk       ,
+                   const double &                         mk       ,
+                   const double &                         visceff  );
+                   
+
       //! fine-scale subgrid viscosity
       double vart_;
 

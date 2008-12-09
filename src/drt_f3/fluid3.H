@@ -434,9 +434,10 @@ private:
   //! possible options for the stabilisation parameter
   enum TauType
   {
-    franca_barrenechea_valentin_wall,
-    codina                          ,
-    bazilevs                        ,
+    franca_barrenechea_valentin_wall  ,
+    franca_barrenechea_valentin_codina,
+    codina                            ,
+    bazilevs                          ,
     tau_not_defined
   };
 

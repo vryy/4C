@@ -1028,13 +1028,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Definition of tau_M,C",
                                tuple<std::string>(
                                  "Barrenechea_Franca_Valentin_Wall",
+                                 "Franca_Barrenechea_Valentin_Codina"
                                  "Bazilevs",
                                  "Codina"),
                                tuple<std::string>(
                                  "tau_Mp: Barrenechea, Valentin; tau_M: Franca, Barrenechea; tau_C: Wall",
+                                 "tau_Mp: Barrenechea, Valentin; tau_M: Franca, Barrenechea; tau_C: Codina"  ,
                                  "tau_M and tau_C (Bazilevs, based on G_ij and g_i)",
-                                 "tau_Mp: Barrenechea, Valentin; tau_M: Franca, Barrenechea; tau_C: Codina")  ,
-                               tuple<int>(0,1,2),
+                                 "tau_M and tau_C: Codina")  ,
+                                 tuple<int>(0,1,2,3),
                                &fdyn_stab);
 
   setStringToIntegralParameter<int>("OUTFLOW_STAB",
