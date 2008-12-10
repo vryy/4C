@@ -115,7 +115,7 @@ enum GaussRule1D
 };
 
 /*!
- \brief a point with a position an an associated weight
+ \brief a point with a position and an associated weight
 
  */
 template <int dim, class Vec>
@@ -232,6 +232,88 @@ struct IntegrationPoints1D
   double        qxg[5];       ///< coordinates
   double        qwgt[5];      ///< weights
 };
+
+
+/*!
+\brief integration points and weights
+\author Georg Bauer
+\date 12/2008
+
+This class unifies the access of integration points and corresponding weights
+w.r.t. to the number of space dimensions.
+For each number of space dimensions (i.e., 1,2 and 3) a specialization of this class 
+is defined. This avoids performing a switch over the number of space dimensions 
+during runtime!
+The already existing structs IntegrationPoints3D,... are reused in the specializations
+in form of member variables of the class.
+
+*/
+template<const int NSD>
+class IntPointsAndWeights
+{
+public:
+  /// Constructor
+  template<class G>
+  explicit IntPointsAndWeights(const G gaussrule);
+};
+
+
+//! specialization for 3D
+template<>
+class IntPointsAndWeights<3>
+{
+public:
+  /// Constructor for 3D specialization
+  explicit IntPointsAndWeights(const GaussRule3D gaussrule) :
+  intpoints_(IntegrationPoints3D(gaussrule))
+  {return; };
+
+  //! get reference to the integration points and weights
+  const IntegrationPoints3D& IP() const {return intpoints_;};
+
+private:
+  //! integration points and weights for 3D
+  IntegrationPoints3D intpoints_;
+};
+
+
+//! specialization for 2D
+template<>
+class IntPointsAndWeights<2>
+{
+public:
+  /// Constructor for 2D specialization
+  explicit IntPointsAndWeights(const GaussRule2D gaussrule) :
+  intpoints_(IntegrationPoints2D(gaussrule))
+  {return; };
+
+  //! get reference to the integration points and weights
+  const IntegrationPoints2D& IP() const {return intpoints_;};
+
+private:
+  //! integration points and weights for 3D
+  IntegrationPoints2D intpoints_;
+};
+
+
+//! specialization for 1D
+template<>
+class IntPointsAndWeights<1>
+{
+public:
+  /// Constructor for 3D specialization
+  explicit IntPointsAndWeights(const GaussRule1D gaussrule) :
+  intpoints_(IntegrationPoints1D(gaussrule))
+  {return; };
+
+  //! get reference to the integration points and weights
+  const IntegrationPoints1D& IP() const {return intpoints_;};
+
+private:
+  //! integration points and weights for 3D
+  IntegrationPoints1D intpoints_;
+};
+
 
 } // namespace UTILS
 } // namespace DRT
