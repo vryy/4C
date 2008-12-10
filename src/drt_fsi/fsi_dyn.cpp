@@ -61,7 +61,7 @@ void fluid_ale_drt()
 
   // create ale elements if the ale discretization is empty
   if (aledis->NumGlobalNodes()==0)
-    DRT::UTILS::CreateAleDiscretization();
+    FSI::UTILS::CreateAleDiscretization();
 
   Teuchos::RCP<FSI::FluidAleAlgorithm> fluid = Teuchos::rcp(new FSI::FluidAleAlgorithm(comm));
 
@@ -89,7 +89,7 @@ void fluid_freesurf_drt()
 
   // create ale elements if the ale discretization is empty
   if (aledis->NumGlobalNodes()==0)
-    DRT::UTILS::CreateAleDiscretization();
+    FSI::UTILS::CreateAleDiscretization();
 
   Teuchos::RCP<FSI::FluidAleAlgorithm> fluid = Teuchos::rcp(new FSI::FluidAleAlgorithm(comm));
 
@@ -128,7 +128,7 @@ void fsi_ale_drt()
   // create ale elements if the ale discretization is empty
   RCP<DRT::Discretization> aledis = problem->Dis(genprob.numaf,0);
   if (aledis->NumGlobalNodes()==0)
-    DRT::UTILS::CreateAleDiscretization();
+    FSI::UTILS::CreateAleDiscretization();
 
   const Teuchos::ParameterList& fsidyn   = problem->FSIDynamicParams();
 
@@ -262,7 +262,7 @@ void xfsi_drt()
     cout << YELLOW_LIGHT << "     _/  \\\\_ |       ______| __|__" << END_COLOR << endl;
     cout <<  endl << endl;
   }
-  
+
   Teuchos::RCP<FSI::DirichletNeumann> fsi = rcp(new FSI::DirichletNeumann(comm));
 
   if (genprob.restart)

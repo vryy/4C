@@ -78,9 +78,6 @@ namespace DRT
                               map<int, RCP<DRT::Element> >& elements,
                               const string& condname);
 
-    /// create ale discretization parallel to the fluid one
-    void CreateAleDiscretization();
-
     //! create discretization from a given condition
     /*
      * This file is the right place to have such functionionality, but it needs to be generalized

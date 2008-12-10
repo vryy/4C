@@ -34,6 +34,9 @@ namespace FSI
     /// shift given map to have no overlap with maps in vector
     Teuchos::RCP<const Epetra_Map> ShiftMap(Teuchos::RCP<const Epetra_Map> emap,
                                             const std::vector<Teuchos::RCP<const Epetra_Map> >& vecSpaces);
+
+    /// create ale discretization parallel to the fluid one
+    void CreateAleDiscretization();
   }
 }
 
