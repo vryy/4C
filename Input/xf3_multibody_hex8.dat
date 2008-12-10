@@ -104,7 +104,7 @@ ADAPTCONV_BETTER 0.1
 SIMPLER          No
 -------------------------------------------------------FSI DYNAMIC
 MAXTIME      1000.0
-TIMESTEP     0.05
+TIMESTEP     1.0
 NUMSTEP      1
 UPPSS        1
 UPRES        1
