@@ -3672,6 +3672,8 @@ DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
   }
   case intrule_tri_64point:
   {
+    dserror("temporarily switched off. Gives wrong surface integrals (liftdrag) in XFEM computations. Check!  (a.ger, 8.12.2008)");
+    
     nquad = 64;
 
     // weights
