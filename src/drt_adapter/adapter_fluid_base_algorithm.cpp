@@ -242,7 +242,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     fluidtimeparams->set<bool>("shape derivatives",
                                Teuchos::getIntegralValue<int>(fsidyn,"SHAPEDERIVATIVES"));
 
-    int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
+    const int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
     if (coupling == fsi_iter_monolithic or
         coupling == fsi_iter_monolithiclagrange or
         coupling == fsi_iter_monolithicstructuresplit)
@@ -257,7 +257,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
     fluidtimeparams->set<bool>("interface second order", Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER"));
 
-    int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
+    const int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
     if (coupling == fsi_iter_monolithic or
         coupling == fsi_iter_monolithiclagrange or
         coupling == fsi_iter_monolithicstructuresplit)
@@ -265,6 +265,10 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       // there are a couple of restrictions in monolithic FSI
       dserror("XFEM and monolithic FSI not tested!");
       fluidtimeparams->set<bool>("do explicit predictor",false);
+    }
+    else
+    {
+      fluidtimeparams->set<bool>("do explicit predictor",true);
     }
   }
 
@@ -300,7 +304,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     {
       // FSI input parameters
       const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
-      int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
+      const int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
       if (coupling == fsi_iter_monolithic or
           coupling == fsi_iter_monolithiclagrange or
           coupling == fsi_iter_monolithicstructuresplit)
@@ -309,7 +313,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       }
       else
       {
-        INPAR::FSI::PartitionedCouplingMethod method =
+        const INPAR::FSI::PartitionedCouplingMethod method =
           Teuchos::getIntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
         if (method==INPAR::FSI::RobinNeumann or
             method==INPAR::FSI::RobinRobin)
@@ -331,7 +335,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
       if (!soliddis->Filled()) soliddis->FillComplete();
 
-      fluid_ = rcp(new ADAPTER::XFluidImpl(actdis, soliddis, solver, fluidtimeparams, output, isale));
+      fluid_ = rcp(new ADAPTER::XFluidImpl(actdis, soliddis, solver, fluidtimeparams, output));
     }
     else if (genprob.probtyp == prb_combust)
     {
