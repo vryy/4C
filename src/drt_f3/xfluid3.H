@@ -165,7 +165,8 @@ namespace DRT
           calc_fluid_stationary_systemmat_and_residual,
           calc_fluid_beltrami_error,
           store_xfem_info,
-          get_density
+          get_density,
+          reset
         };
         
         //! stabilization actions recognized by fluid3 (genalpha implementation)
@@ -220,8 +221,6 @@ namespace DRT
         bool                                            is_ale_;
         //! container containing all kind of fluid3 this and that
         DRT::Container                                  data_;
-        
-      private:
         
         //! store information about the unknowns of this element
         //!
@@ -457,7 +456,8 @@ namespace DRT
         {
           none,
           integrate_Shapefunction,
-          calc_flux
+          calc_flow_rate,
+          calc_impuls_rate
         };
         
         //! don't want = operator
@@ -486,8 +486,17 @@ namespace DRT
             const std::vector<double>&       edispnp          ///< current displacement of fluid mesh
             );
         
-        //! integrate shapefunction over surface element
-        void IntegrateSurfaceFlow(
+        //! integrate mass flow over surface element
+        void IntegrateSurfaceFlowRate(
+            ParameterList&                   params,          ///< ParameterList for communication between control routine and elements
+            DRT::Discretization&             discretization,  ///< vector to be filled by element
+            const std::vector<int>&          lm,              ///< location vector of this element
+            Epetra_SerialDenseVector&        elevec1,         ///< vector to be filled by element
+            const std::vector<double>&       edispnp          ///< current displacement of fluid mesh
+            );
+        
+        //! integrate impuls rate over surface element
+        void IntegrateSurfaceImpulsRate(
             ParameterList&                   params,          ///< ParameterList for communication between control routine and elements
             DRT::Discretization&             discretization,  ///< vector to be filled by element
             const std::vector<int>&          lm,              ///< location vector of this element

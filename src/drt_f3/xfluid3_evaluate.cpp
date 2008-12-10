@@ -46,6 +46,8 @@ DRT::ELEMENTS::XFluid3::ActionType DRT::ELEMENTS::XFluid3::convertStringToAction
     act = XFluid3::store_xfem_info;
   else if (action == "get_density")
     act = XFluid3::get_density;
+  else if (action == "reset")
+    act = XFluid3::reset;
   else
     dserror("Unknown type of action for XFluid3");
   return act;
@@ -104,6 +106,17 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       // This is a very poor way to transport the density to the
       // outside world. Is there a better one?
       params.set("density", actmat->m.fluid->density);
+      break;
+    }
+    case reset:
+    {
+      // reset all information and make element unusable (e.g. it can't answer the numdof question anymore)
+      // this way, one can see, if all information are generated correctly or whether something is left
+      // from the last nonlinear iteration
+      eleDofManager_ = Teuchos::null;
+      eleDofManager_uncondensed_ = Teuchos::null;
+      ih_ = Teuchos::null;
+      DLM_info_ = Teuchos::null;
       break;
     }
     case calc_fluid_systemmat_and_residual:
@@ -715,24 +728,27 @@ void DRT::ELEMENTS::XFluid3::CondenseDLMAndStoreOldIterationStep(
   
   if (na > 0)
   {
-    // note: the full (u,p,sigma) matrix is unsymmetric, 
+    // note: the full (u,p,sigma) matrix is asymmetric, 
     // hence we need both rectangular matrices Kda and Kad
     LINALG::SerialDenseMatrix Kda(nd,na);
     LINALG::SerialDenseMatrix Kaa(na,na);
     LINALG::SerialDenseMatrix Kad(na,nd);
     LINALG::SerialDenseVector fa(na);
 
+//    cout << elemat1_uncond << endl;
+    
+    // copy data of uncondensed matrix into submatrices
     for (int i=0;i<nd;i++)
       for (int j=0;j<na;j++)
-        Kda(i,j) = elemat1_uncond(i   ,j+nd);
+        Kda(i,j) = elemat1_uncond(   i,nd+j);
     
     for (int i=0;i<na;i++)
       for (int j=0;j<na;j++)
-        Kaa(i,j) = elemat1_uncond(i+nd,j+nd);
+        Kaa(i,j) = elemat1_uncond(nd+i,nd+j);
 
     for (int i=0;i<na;i++)
       for (int j=0;j<nd;j++)
-        Kad(i,j) = elemat1_uncond(i+nd,j   );
+        Kad(i,j) = elemat1_uncond(nd+i,   j);
     
     for (int i=0;i<na;i++)
       fa(i) = elevec1_uncond(i+nd);
@@ -745,12 +761,13 @@ void DRT::ELEMENTS::XFluid3::CondenseDLMAndStoreOldIterationStep(
     Epetra_SerialDenseSolver solve_for_inverseKaa;
     solve_for_inverseKaa.SetMatrix(Kaa);
     solve_for_inverseKaa.Invert();
+    // from here on, Kaa -> Kaainv
 
+    const Epetra_BLAS blas;
     {
-      const Epetra_BLAS blas;
       LINALG::SerialDenseMatrix KdaKaainv(nd,na); // temporary Kda.Kaa^{-1}
       
-      // KdaKaainv(i,j) = Kda(i,k)*Kaa(k,j);
+      // KdaKaainv(i,j) = Kda(i,k)*Kaainv(k,j);
       blas.GEMM('N','N',nd,na,na,1.0,Kda.A(),Kda.LDA(),Kaa.A(),Kaa.LDA(),0.0,KdaKaainv.A(),KdaKaainv.LDA());
 
       // elemat1(i,j) += - KdaKaainv(i,k)*Kad(k,j);
@@ -760,11 +777,17 @@ void DRT::ELEMENTS::XFluid3::CondenseDLMAndStoreOldIterationStep(
       blas.GEMV('N', nd, na,-1.0, KdaKaainv.A(), KdaKaainv.LDA(), fa.A(), 1.0, elevec1.A());
     }
    
+//    cout << Kad << endl;
+//    cout << DLM_info_->oldKad_ << endl;
+    
     {
       // store current DLM data in iteration history
-      DLM_info_->oldKaainv_.Update(1.0,Kaa,0.0);
-      DLM_info_->oldKad_.Update(1.0,Kad,0.0);
-      DLM_info_->oldfa_.Update(1.0,fa,0.0);
+      //DLM_info_->oldKaainv_.Update(1.0,Kaa,0.0);
+      blas.COPY(DLM_info_->oldKaainv_.M()*DLM_info_->oldKaainv_.N(), Kaa.A(), DLM_info_->oldKaainv_.A());
+      //DLM_info_->oldKad_.Update(1.0,Kad,0.0);
+      blas.COPY(DLM_info_->oldKad_.M()*DLM_info_->oldKad_.N(), Kad.A(), DLM_info_->oldKad_.A());
+      //DLM_info_->oldfa_.Update(1.0,fa,0.0);
+      blas.COPY(DLM_info_->oldfa_.M()*DLM_info_->oldfa_.N(), fa.A(), DLM_info_->oldfa_.A());
     }
   }
 }

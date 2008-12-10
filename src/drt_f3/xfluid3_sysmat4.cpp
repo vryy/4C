@@ -66,9 +66,9 @@ struct EnrViscs2
 
   using namespace XFEM::PHYSICS;
 
-  //! size factor to allow static arrays
+  //! size factor to allow fixed size arrays
   ///
-  /// to allow static arrays for a unknown number of unknowns, we make them bigger than necessary
+  /// to allow fixed size arrays for a unknown number of unknowns, we make them bigger than necessary
   /// this factor is multiplied times numnode(distype) to get the size of many arrays
   template<XFEM::AssemblyType ASSTYPE>
   struct SizeFac {};
@@ -79,7 +79,7 @@ struct EnrViscs2
 
   /// generate old velocity/acceleration values, if integration point was in a void during the last time step
   template<class M>
-  static bool modifyOldTimeStepsValues(
+  bool modifyOldTimeStepsValues(
       const DRT::Element*                        ele,           ///< the element those matrix is calculated
       const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,   ///< connection to the interface handler
       const M&                                   xyze,
@@ -93,7 +93,9 @@ struct EnrViscs2
       LINALG::Matrix<3,1>&                       gpaccn
       )
   {
-    static LINALG::Matrix<3,1> posx_gp;
+    const unsigned nsd = 3;
+    
+    LINALG::Matrix<nsd,1> posx_gp;
     GEO::elementToCurrentCoordinates(ele->Shape(), xyze, posXiDomain, posx_gp);
     
     const bool is_in_fluid = (labelnp == 0);
@@ -111,7 +113,7 @@ struct EnrViscs2
     if (in_space_time_slab_area)
     {
       XFEM::SpaceTimeBoundaryCell slab;
-      static LINALG::Matrix<3,1> rst;
+      LINALG::Matrix<nsd,1> rst(true);
       
       const bool found_cell = ih->FindSpaceTimeLayerCell(posx_gp,slab,rst);
       
@@ -131,76 +133,51 @@ struct EnrViscs2
         const DRT::Element* boundaryele = ih->cutterdis()->gElement(slab.getBeleId());
         const int numnode_boundary = boundaryele->NumNode();
         
-        static LINALG::Matrix<3,1> iveln;
-        static LINALG::Matrix<3,1> ivelnm;
-        static LINALG::Matrix<3,1> iaccn;
-        
         if (ivelcoln.GlobalLength() > 3)
         {
+          LINALG::SerialDenseVector funct_ST(numnode_boundary*2);
+          DRT::UTILS::shape_function_3D(funct_ST,rst(0),rst(1),rst(2),DRT::Element::hex8);
+          
           // get interface velocities at the boundary element nodes
-          LINALG::SerialDenseMatrix veln_boundary( 3,numnode_boundary*2);
-          LINALG::SerialDenseMatrix velnm_boundary(3,numnode_boundary*2);
-          LINALG::SerialDenseMatrix accn_boundary( 3,numnode_boundary*2);
+          LINALG::SerialDenseMatrix veln_boundary( nsd,numnode_boundary*2);
+          LINALG::SerialDenseMatrix velnm_boundary(nsd,numnode_boundary*2);
+          LINALG::SerialDenseMatrix accn_boundary( nsd,numnode_boundary*2);
           if (numnode_boundary != 4)
             dserror("needs more generalizashun!");
           const DRT::Node*const* nodes = boundaryele->Nodes();
           
+          std::vector<double> myval(3);
           for (int inode = 0; inode < numnode_boundary; ++inode)
           {
             const DRT::Node* node = nodes[inode];
             const std::vector<int> lm = ih->cutterdis()->Dof(node);
-            static std::vector<double> myvel(3);
-            DRT::UTILS::ExtractMyValues(ivelcoln,myvel,lm);
-            veln_boundary(0,inode) = myvel[0];
-            veln_boundary(1,inode) = myvel[1];
-            veln_boundary(2,inode) = myvel[2];
-            DRT::UTILS::ExtractMyValues(ivelcoln,myvel,lm);
-            veln_boundary(0,inode+4) = myvel[0];
-            veln_boundary(1,inode+4) = myvel[1];
-            veln_boundary(2,inode+4) = myvel[2];
             
-            static std::vector<double> myvelnm(3);
-            DRT::UTILS::ExtractMyValues(ivelcolnm,myvelnm,lm);
-            velnm_boundary(0,inode) = myvelnm[0];
-            velnm_boundary(1,inode) = myvelnm[1];
-            velnm_boundary(2,inode) = myvelnm[2];
-            DRT::UTILS::ExtractMyValues(ivelcolnm,myvelnm,lm);
-            velnm_boundary(0,inode+4) = myvelnm[0];
-            velnm_boundary(1,inode+4) = myvelnm[1];
-            velnm_boundary(2,inode+4) = myvelnm[2];
+            DRT::UTILS::ExtractMyValues(ivelcoln,myval,lm);
+            for (unsigned isd = 0; isd < nsd; ++isd) veln_boundary(isd,inode  ) = myval[isd];
+            DRT::UTILS::ExtractMyValues(ivelcoln,myval,lm);
+            for (unsigned isd = 0; isd < nsd; ++isd) veln_boundary(isd,inode+4) = myval[isd];
             
-            static std::vector<double> myacc(3);
-            DRT::UTILS::ExtractMyValues(iacccoln,myacc,lm);
-            accn_boundary(0,inode) = myacc[0];
-            accn_boundary(1,inode) = myacc[1];
-            accn_boundary(2,inode) = myacc[2];
-            DRT::UTILS::ExtractMyValues(iacccoln,myacc,lm);
-            accn_boundary(0,inode+4) = myacc[0];
-            accn_boundary(1,inode+4) = myacc[1];
-            accn_boundary(2,inode+4) = myacc[2];
+            DRT::UTILS::ExtractMyValues(ivelcolnm,myval,lm);
+            for (unsigned isd = 0; isd < nsd; ++isd) velnm_boundary(isd,inode  ) = myval[isd];
+            DRT::UTILS::ExtractMyValues(ivelcolnm,myval,lm);
+            for (unsigned isd = 0; isd < nsd; ++isd) velnm_boundary(isd,inode+4) = myval[isd];
+            
+            DRT::UTILS::ExtractMyValues(iacccoln,myval,lm);
+            for (unsigned isd = 0; isd < nsd; ++isd) accn_boundary(isd,inode)   = myval[isd];
+            DRT::UTILS::ExtractMyValues(iacccoln,myval,lm);
+            for (unsigned isd = 0; isd < nsd; ++isd) accn_boundary(isd,inode+4) = myval[isd];
           }
-  //                cout << "veln_boundary: " << veln_boundary << endl;
-  //                cout << "accn_boundary: " << accn_boundary << endl;
-          
-          LINALG::SerialDenseVector funct_ST(numnode_boundary*2);
-          DRT::UTILS::shape_function_3D(funct_ST,rst(0),rst(1),rst(2),DRT::Element::hex8);
-          iveln  = XFLUID::interpolateVectorFieldToIntPoint(veln_boundary , funct_ST, 8);
-          ivelnm = XFLUID::interpolateVectorFieldToIntPoint(velnm_boundary, funct_ST, 8);
-          iaccn  = XFLUID::interpolateVectorFieldToIntPoint(accn_boundary , funct_ST, 8);
-  //                cout << "iveln " << iveln << endl;
-  //                cout << "iaccn " << iaccn << endl;
+
+          gpveln  = XFLUID::interpolateVectorFieldToIntPoint(veln_boundary , funct_ST, 8);
+          gpvelnm = XFLUID::interpolateVectorFieldToIntPoint(velnm_boundary, funct_ST, 8);
+          gpaccn  = XFLUID::interpolateVectorFieldToIntPoint(accn_boundary , funct_ST, 8);
         }
         else
         {
-          iveln.Clear();
-          ivelnm.Clear();
-          iaccn.Clear();
+          gpveln.Clear();
+          gpvelnm.Clear();
+          gpaccn.Clear();
         }
-      
-        //cout << "using space time boundary values " << ele->Id() << endl; 
-        gpveln  = iveln;
-        gpvelnm = ivelnm;
-        gpaccn  = iaccn;
       }
     }
     return true;
@@ -312,7 +289,7 @@ struct EnrViscs2
             int NUMDOF,
             int shpVecSize,
             int shpVecSizeStress>
-  static void BuildStiffnessMatrixEntries(
+  void BuildStiffnessMatrixEntries(
       LocalAssembler<DISTYPE,ASSTYPE,NUMDOF>&           assembler,
       const Shp<shpVecSize>&                     shp,
       const LINALG::Matrix<shpVecSizeStress,1>&  shp_tau,
@@ -878,7 +855,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE,
           int NUMDOF,
           class M1, class V1, class M2>
-static void SysmatDomain4(
+void SysmatDomain4(
     const DRT::Element*                 ele,           ///< the element those matrix is calculated
     const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,   ///< connection to the interface handler
     const XFEM::ElementDofManager&      dofman,        ///< dofmanager of the current element
@@ -1011,13 +988,13 @@ static void SysmatDomain4(
         for (int iquad=0; iquad<intpoints.nquad; ++iquad)
         {
             // coordinates of the current integration point in cell coordinates \eta
-            static LINALG::Matrix<3,1> pos_eta_domain;
+            LINALG::Matrix<3,1> pos_eta_domain;
             pos_eta_domain(0) = intpoints.qxg[iquad][0];
             pos_eta_domain(1) = intpoints.qxg[iquad][1];
             pos_eta_domain(2) = intpoints.qxg[iquad][2];
 
             // coordinates of the current integration point in element coordinates \xi
-            static LINALG::Matrix<3,1> posXiDomain;
+            LINALG::Matrix<3,1> posXiDomain;
             GEO::mapEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain, posXiDomain);
             const double detcell = GEO::detEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain);
             
@@ -1080,21 +1057,6 @@ static void SysmatDomain4(
             const int shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
             
             static Shp<shpVecSize> shp;
-            
-//            typedef LINALG::Matrix<shpVecSize,1> ShpVec;
-//            static ShpVec shp;
-//            static ShpVec shp_dx;
-//            static ShpVec shp_dy;
-//            static ShpVec shp_dz;
-//            static ShpVec shp_dxdx;
-//            static ShpVec shp_dxdy;
-//            static ShpVec shp_dxdz;
-//            static ShpVec shp_dydx;
-//            static ShpVec shp_dydy;
-//            static ShpVec shp_dydz;
-//            static ShpVec shp_dzdx;
-//            static ShpVec shp_dzdy;
-//            static ShpVec shp_dzdz;
             
             static LINALG::Matrix<shpVecSizeStress,1>   shp_tau;
             
@@ -1255,7 +1217,7 @@ static void SysmatDomain4(
             }
 
             // get pressure gradients
-            static LINALG::Matrix<3,1> gradp;
+            LINALG::Matrix<3,1> gradp;
             //gradp = enr_derxy(i,j)*eprenp(j);
             gradp.Clear();
             for (int iparam = 0; iparam != numparampres; ++iparam)
@@ -1266,7 +1228,7 @@ static void SysmatDomain4(
             }
     
 //            // get discont. pressure gradients
-//            static LINALG::Matrix<3,1> graddiscp;
+//            LINALG::Matrix<3,1> graddiscp;
 //            //gradp = enr_derxy(i,j)*eprenp(j);
 //            for (int isd = 0; isd < nsd; ++isd)
 //            {
@@ -1281,7 +1243,7 @@ static void SysmatDomain4(
               pres += shp.d0(iparam)*eprenp(iparam);
             
             // get viscous stress unknowns
-            static LINALG::Matrix<3,3> tau;
+            LINALG::Matrix<3,3> tau;
             if (tauele_unknowns_present)
             {
               XFLUID::fill_tau(numparamtauxx, shp_tau, etau, tau);
@@ -1311,8 +1273,8 @@ static void SysmatDomain4(
             const double timefacfac = timefac * fac;
 
             /*------------------------- evaluate rhs vector at integration point ---*/
-            static LINALG::Matrix<3,1> rhsint;
-            static LINALG::Matrix<3,1> bodyforce;
+            LINALG::Matrix<3,1> rhsint;
+            LINALG::Matrix<3,1> bodyforce;
             bodyforce.Clear();
             //bodyforce(0) = 1.0;
             for (int isd = 0; isd < nsd; ++isd)
@@ -1321,18 +1283,18 @@ static void SysmatDomain4(
             /*----------------- get numerical representation of single operators ---*/
 
             /* Convective term  u_old * grad u_old: */
-            static LINALG::Matrix<3,1> conv_old;
+            LINALG::Matrix<3,1> conv_old;
             //conv_old = vderxy(i, j)*gpvelnp(j);
             conv_old.Multiply(vderxy,gpvelnp);
             
             /* Viscous term  div epsilon(u_old) */
-            static LINALG::Matrix<3,1> visc_old;
+            LINALG::Matrix<3,1> visc_old;
             visc_old(0) = vderxy2(0,0) + 0.5 * (vderxy2(0,1) + vderxy2(1,3) + vderxy2(0,2) + vderxy2(2,4));
             visc_old(1) = vderxy2(1,1) + 0.5 * (vderxy2(1,0) + vderxy2(0,3) + vderxy2(1,2) + vderxy2(2,5));
             visc_old(2) = vderxy2(2,2) + 0.5 * (vderxy2(2,0) + vderxy2(0,4) + vderxy2(2,1) + vderxy2(1,5));
             
             // evaluate residual once for all stabilisation right hand sides
-            static LINALG::Matrix<3,1> res_old;
+            LINALG::Matrix<3,1> res_old;
             for (int isd = 0; isd < nsd; ++isd)
                 res_old(isd) = -rhsint(isd)+timefac*(conv_old(isd)+gradp(isd)-2.0*visc*visc_old(isd));  
             
@@ -1412,16 +1374,16 @@ static void SysmatDomain4(
 template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE,
           int NUMDOF,
-          class M1, class V1, class M2>
-static void SysmatBoundary4(
+          class M1, class M2>
+void SysmatBoundary4(
     const DRT::Element*               ele,           ///< the element those matrix is calculated
     const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,   ///< connection to the interface handler
     const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
     const M1&                         evelnp,
-    const M1&                         eveln,
-    const M1&                         evelnm,
-    const M1&                         eaccn,
-    const V1&                         eprenp,
+//    const M1&                         eveln,
+//    const M1&                         evelnm,
+//    const M1&                         eaccn,
+//    const V1&                         eprenp,
     const M2&                         etau,
     const Teuchos::RCP<const Epetra_Vector>& ivelcol,       ///< velocity for interface nodes
     const Teuchos::RCP<Epetra_Vector>& iforcecol,     ///< reaction force due to given interface velocity
@@ -1496,7 +1458,7 @@ static void SysmatBoundary4(
           {
             const DRT::Node* node = nodes[inode];
             std::vector<int> lm = ih->cutterdis()->Dof(node);
-            std::vector<double> myvel(3);
+            static std::vector<double> myvel(3);
             DRT::UTILS::ExtractMyValues(*ivelcol,myvel,lm);
             vel_boundary(0,inode) = myvel[0];
             vel_boundary(1,inode) = myvel[1];
@@ -1510,16 +1472,16 @@ static void SysmatBoundary4(
         for (int iquad=0; iquad<intpoints.nquad; ++iquad)
         {
             // coordinates of the current integration point in cell coordinates \eta^\boundary
-            static LINALG::Matrix<2,1> pos_eta_boundary;
+            LINALG::Matrix<2,1> pos_eta_boundary;
             pos_eta_boundary(0) = intpoints.qxg[iquad][0];
             pos_eta_boundary(1) = intpoints.qxg[iquad][1];
             
             // coordinates of the current integration point in element coordinates \xi^\boundary
-            static LINALG::Matrix<2,1> posXiBoundary;
+            LINALG::Matrix<2,1> posXiBoundary;
             mapEtaBToXiB(*cell, pos_eta_boundary, posXiBoundary);
             
             // coordinates of the current integration point in element coordinates \xi^\domain
-            static LINALG::Matrix<3,1> posXiDomain;
+            LINALG::Matrix<3,1> posXiDomain;
             mapEtaBToXiD(*cell, pos_eta_boundary, posXiDomain);
 
             const double detcell = fabs(detEtaBToXiB(*cell, pos_eta_boundary)); //TODO: check normals
@@ -1546,7 +1508,7 @@ static void SysmatBoundary4(
             
             // position of the gausspoint in physical coordinates
             // gauss_pos_xyz = funct_boundary(j)*xyze_boundary(i,j);
-//            static LINALG::Matrix<3,1> gauss_pos_xyz;
+//            LINALG::Matrix<3,1> gauss_pos_xyz;
 //            gauss_pos_xyz.Clear();
 //            for (int inode = 0; inode < numnode_boundary; ++inode)
 //            {
@@ -1564,7 +1526,7 @@ static void SysmatBoundary4(
             
             // compute covariant metric tensor G for surface element (2x2)
             // metric = dxyzdrs(k,i)*dxyzdrs(k,j);
-            static LINALG::Matrix<2,2> metric;
+            LINALG::Matrix<2,2> metric;
             metric.MultiplyTN(dxyzdrs,dxyzdrs);
             
             // compute global derivates
@@ -1635,7 +1597,7 @@ static void SysmatBoundary4(
             }
             
             // get normal vector (in physical coordinates) to surface element at integration point
-            static LINALG::Matrix<3,1> normalvec_solid;
+            LINALG::Matrix<3,1> normalvec_solid;
             GEO::computeNormalToSurfaceElement(boundaryele, xyze_boundary, posXiBoundary, normalvec_solid);
 //            cout << "normalvec " << normalvec << ", " << endl;
             LINALG::Matrix<3,1> normalvec_fluid(true);
@@ -1645,14 +1607,14 @@ static void SysmatBoundary4(
       
             // get velocities (n+g,i) at integration point
             // gpvelnp = evelnp(i,j)*shp(j);
-            static LINALG::Matrix<3,1> gpvelnp;
+            LINALG::Matrix<3,1> gpvelnp;
             gpvelnp.Clear();
             for (int iparam = 0; iparam < numparamvelx; ++iparam)
                 for (int isd = 0; isd < nsd; ++isd)
                     gpvelnp(isd) += evelnp(isd,iparam)*shp(iparam);
             
             // get interface velocity
-            static LINALG::Matrix<3,1> interface_gpvelnp;
+            LINALG::Matrix<3,1> interface_gpvelnp;
             interface_gpvelnp.Clear();
             if (timealgo != timeint_stationary)
                 for (int inode = 0; inode < numnode_boundary; ++inode)
@@ -1723,7 +1685,7 @@ static void SysmatBoundary4(
             assembler.template Matrix<Velz,Sigmazy>(shp, -timefacfac*normalvec_fluid(1), shp_tau);
             assembler.template Matrix<Velz,Sigmazz>(shp, -timefacfac*normalvec_fluid(2), shp_tau);
             
-            static LINALG::Matrix<3,1> disctau_times_n;
+            LINALG::Matrix<3,1> disctau_times_n;
             disctau_times_n.Multiply(tau,normalvec_fluid);
             //cout << "sigmaijnj : " << disctau_times_n << endl;
             assembler.template Vector<Velx>(shp, timefacfac*disctau_times_n(0));
@@ -1748,12 +1710,10 @@ static void SysmatBoundary4(
         if (ifaceForceContribution)
         {
           const Epetra_Map* dofcolmap = ih->cutterdis()->DofColMap();
+          std::vector<int> gdofs(3);
           for (int inode = 0; inode < numnode_boundary; ++inode)
           {
-            const DRT::Node* node = nodes[inode];
-            const std::vector<int> gdofs(ih->cutterdis()->Dof(node));
-//            static std::vector<int> gdofs(3);
-//            ih->cutterdis()->Dof(node,0,gdofs);
+            ih->cutterdis()->Dof(nodes[inode],0,gdofs);
             (*iforcecol)[dofcolmap->LID(gdofs[0])] += force_boundary(0,inode);
             (*iforcecol)[dofcolmap->LID(gdofs[1])] += force_boundary(1,inode);
             (*iforcecol)[dofcolmap->LID(gdofs[2])] += force_boundary(2,inode);
@@ -1772,7 +1732,7 @@ static void SysmatBoundary4(
   */
 template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE>
-static void Sysmat4(
+void Sysmat4(
         const DRT::Element*               ele,           ///< the element those matrix is calculated
         const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,   ///< connection to the interface handler
         const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
@@ -1810,12 +1770,12 @@ static void Sysmat4(
     const int shpVecSize       = SizeFac<ASSTYPE>::fac*numnode;
     const DRT::Element::DiscretizationType stressdistype = XFLUID::StressInterpolation3D<DISTYPE>::distype;
     const int shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
-    static LINALG::Matrix<shpVecSize,1> eprenp;
-    static LINALG::Matrix<3,shpVecSize> evelnp;
-    static LINALG::Matrix<3,shpVecSize> eveln;
-    static LINALG::Matrix<3,shpVecSize> evelnm;
-    static LINALG::Matrix<3,shpVecSize> eaccn;
-    static LINALG::Matrix<6,shpVecSizeStress> etau;
+    LINALG::Matrix<shpVecSize,1> eprenp;
+    LINALG::Matrix<3,shpVecSize> evelnp;
+    LINALG::Matrix<3,shpVecSize> eveln;
+    LINALG::Matrix<3,shpVecSize> evelnm;
+    LINALG::Matrix<3,shpVecSize> eaccn;
+    LINALG::Matrix<6,shpVecSizeStress> etau;
     
     fillElementUnknownsArrays4<DISTYPE,ASSTYPE>(dofman, mystate, evelnp, eveln, evelnm, eaccn, eprenp, etau);
     
@@ -1826,7 +1786,7 @@ static void Sysmat4(
     if (ASSTYPE == XFEM::xfem_assembly)
     {
       SysmatBoundary4<DISTYPE,ASSTYPE,NUMDOF>(
-          ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, etau, ivelcol, iforcecol,
+          ele, ih, dofman, evelnp, etau, ivelcol, iforcecol,
           timealgo, dt, theta, assembler, ifaceForceContribution);
     }
 }
