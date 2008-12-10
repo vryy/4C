@@ -69,8 +69,7 @@ namespace ADAPTER {
             const Teuchos::RCP<DRT::Discretization> soliddis,
             Teuchos::RCP<LINALG::Solver> solver,
             Teuchos::RCP<ParameterList> params,
-            Teuchos::RCP<IO::DiscretizationWriter> output,
-            bool isale);
+            Teuchos::RCP<IO::DiscretizationWriter> output);
 
     virtual Teuchos::RCP<const Epetra_Vector> InitialGuess();
     virtual Teuchos::RCP<const Epetra_Vector> RHS();

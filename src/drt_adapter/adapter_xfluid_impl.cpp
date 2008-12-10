@@ -34,9 +34,8 @@ ADAPTER::XFluidImpl::XFluidImpl(
         const Teuchos::RCP<DRT::Discretization> soliddis,
         Teuchos::RCP<LINALG::Solver> solver,
         Teuchos::RCP<ParameterList> params,
-        Teuchos::RCP<IO::DiscretizationWriter> output,
-        bool isale)
-  : fluid_(dis, *solver, *params, *output, isale),
+        Teuchos::RCP<IO::DiscretizationWriter> output)
+  : fluid_(dis, *solver, *params, *output),
     dis_(dis),
     solver_(solver),
     params_(params),
@@ -282,7 +281,9 @@ void ADAPTER::XFluidImpl::StatisticsAndOutput()
 /*----------------------------------------------------------------------*/
 void ADAPTER::XFluidImpl::Output()
 {
-  fluid_.Output();
+//  fluid_.Output();
+  
+  fluid_.StatisticsAndOutput();
 
 //  boundaryoutput_->NewStep(Step(),Time());
 //  boundaryoutput_->WriteVector("interface displacement", idisp_);
@@ -311,6 +312,7 @@ void ADAPTER::XFluidImpl::Output()
   {
     PrintInterfaceVectorField(idispnpcol, itruerescol, "_solution_iforce_", "interface force");
     PrintInterfaceVectorField(idispnpcol, ivelnpcol, "_solution_ivel_"  , "interface velocity n+1");
+    PrintInterfaceVectorField(idispnpcol, idispnpcol, "_solution_idisp_"  , "interface displacement n+1");
 //    PrintInterfaceVectorField(idispnpcol, ivelncol , "_solution_iveln_" , "interface velocity n");
 //    PrintInterfaceVectorField(idispnpcol, iaccncol , "_solution_iaccn_" , "interface acceleration n");
   }
@@ -444,8 +446,6 @@ void ADAPTER::XFluidImpl::NonlinearSolve()
   itrueresnp_->PutScalar(0.0);
   itrueresnp_->Export(*itruerescol,*conimpo,Add); 
   //LINALG::Export(*itruerescol,*itrueresnp_);
-  
-  LiftDrag();
   
 }
 
