@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file intersection_service_templates_H
+\file intersection_service_templates.H
 
 \brief collection of templated service methods for intersection computations
 
@@ -80,107 +80,6 @@ namespace GEO
     //! large number to start computations of nearest distance in tree
     const double                 LARGENUMBER = 1e30;
 
-/*!
-\brief Fill vector with with shape function
-*/
-template<DRT::Element::DiscretizationType distype, class T, class V>
-static void shape_function(
-        const T&  xsi,
-        V&        f
-        )
-{
-  switch(DRT::UTILS::DisTypeToDim<distype>::dim)
-  {
-      case 1:
-      {
-          DRT::UTILS::shape_function_1D(f, xsi(0), distype);
-          break;
-      }
-      case 2:
-      {
-          DRT::UTILS::shape_function_2D(f, xsi(0), xsi(1), distype);
-          break;
-      }
-      case 3:
-      {
-          DRT::UTILS::shape_function_3D(f, xsi(0), xsi(1), xsi(2), distype);
-          break;
-      }
-      default:
-          dserror("dimension of the element is not correct");
-  }
-  return;
-}
-
-
-
-/*!
-\brief Fill a matrix with with first shape function derivatives
-*/
-template<DRT::Element::DiscretizationType distype, class T, class M>
-static void shape_function_deriv1(
-        const T&  xsi,
-        M&        d
-        )
-{
-  switch(DRT::UTILS::DisTypeToDim<distype>::dim)
-  {
-      case 1:
-      {
-          DRT::UTILS::shape_function_1D_deriv1(d, xsi(0), distype);
-          break;
-      }
-      case 2:
-      {
-          DRT::UTILS::shape_function_2D_deriv1(d, xsi(0), xsi(1), distype);
-          break;
-      }
-      case 3:
-      {
-          DRT::UTILS::shape_function_3D_deriv1(d, xsi(0), xsi(1), xsi(2), distype);
-          break;
-      }
-      default:
-          dserror("dimension of the element is not correct");
-  }
-  return;
-}
-
-
-
-/*!
-\brief Fill a matrix with with second shape function derivatives
-*/
-template<DRT::Element::DiscretizationType distype, class T, class M>
-static void shape_function_deriv2(
-        const T&  xsi,
-        M&        d2
-        )
-{
-  switch(DRT::UTILS::DisTypeToDim<distype>::dim)
-  {
-      case 1:
-      {
-          DRT::UTILS::shape_function_1D_deriv2(d2, xsi(0), distype);
-          break;
-      }
-      case 2:
-      {
-          DRT::UTILS::shape_function_2D_deriv2(d2, xsi(0), xsi(1), distype);
-          break;
-      }
-      case 3:
-      {
-          DRT::UTILS::shape_function_3D_deriv2(d2, xsi(0), xsi(1), xsi(2), distype);
-          break;
-      }
-      default:
-          dserror("dimension of the element is not correct");
-  }
-  return;
-}
-
-
 
 /*----------------------------------------------------------------------*
  | GM:      transforms a node in element coordinates         u.may 07/07|
@@ -194,7 +93,7 @@ static inline void elementToCurrentCoordinatesInPlaceT(
     const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     static LINALG::Matrix<numNodes, 1> funct;
   
-    shape_function<DISTYPE>(eleCoord, funct);
+    DRT::UTILS::shape_function<DISTYPE>(eleCoord, funct);
         
     eleCoord.Clear();
     for(int i=0; i<numNodes; i++)
@@ -269,7 +168,7 @@ static inline void elementToCurrentCoordinatesT(
     const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     static LINALG::Matrix<numNodes, 1> funct;
     
-    shape_function<DISTYPE>(xsi, funct);
+    DRT::UTILS::shape_function<DISTYPE>(xsi, funct);
     
     // set to zero
     x.Clear();
@@ -383,7 +282,7 @@ static inline void updateAForNWE(
 {   
     const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     static LINALG::Matrix<dim, numNodes> deriv1;
-    shape_function_deriv1<DISTYPE>(xsi, deriv1);
+    DRT::UTILS::shape_function_deriv1<DISTYPE>(xsi, deriv1);
     
     A.Clear();
     for (int isd = 0; isd < 3; ++isd)
@@ -412,7 +311,7 @@ static inline void updateRHSForNWE(
     
     const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     static LINALG::Matrix<numNodes,1> funct;
-    shape_function<DISTYPE>(xsi, funct);
+    DRT::UTILS::shape_function<DISTYPE>(xsi, funct);
     
     for (int isd = 0; isd < 3; ++isd)
     {

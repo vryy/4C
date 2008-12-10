@@ -49,6 +49,7 @@ http://www.lnm.mw.tum.de
 
 
 #include "../drt_lib/drt_element.H"
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 
 namespace DRT
@@ -2084,7 +2085,106 @@ namespace UTILS
       return;
 
   }
-  
+
+
+  /*!
+  \brief Fill vector with the shape function values evaluated at given point
+  */
+  template<DRT::Element::DiscretizationType distype, class T, class V>
+  static void shape_function(
+          const T&  xsi,
+          V&        f
+          )
+  {
+    switch(DRT::UTILS::DisTypeToDim<distype>::dim)
+    {
+        case 1:
+        {
+            DRT::UTILS::shape_function_1D(f, xsi(0), distype);
+            break;
+        }
+        case 2:
+        {
+            DRT::UTILS::shape_function_2D(f, xsi(0), xsi(1), distype);
+            break;
+        }
+        case 3:
+        {
+            DRT::UTILS::shape_function_3D(f, xsi(0), xsi(1), xsi(2), distype);
+            break;
+        }
+        default:
+            dserror("dimension of the element is not correct");
+    }
+    return;
+  }
+
+
+  /*!
+  \brief Fill a matrix with first shape function derivatives evaluated at given point
+  */
+  template<DRT::Element::DiscretizationType distype, class T, class M>
+  static void shape_function_deriv1(
+          const T&  xsi,
+          M&        d
+          )
+  {
+    switch(DRT::UTILS::DisTypeToDim<distype>::dim)
+    {
+        case 1:
+        {
+            DRT::UTILS::shape_function_1D_deriv1(d, xsi(0), distype);
+            break;
+        }
+        case 2:
+        {
+            DRT::UTILS::shape_function_2D_deriv1(d, xsi(0), xsi(1), distype);
+            break;
+        }
+        case 3:
+        {
+            DRT::UTILS::shape_function_3D_deriv1(d, xsi(0), xsi(1), xsi(2), distype);
+            break;
+        }
+        default:
+            dserror("dimension of the element is not correct");
+    }
+    return;
+  }
+
+
+
+  /*!
+  \brief Fill a matrix with second shape function derivatives evaluated at given point
+  */
+  template<DRT::Element::DiscretizationType distype, class T, class M>
+  static void shape_function_deriv2(
+          const T&  xsi,
+          M&        d2
+          )
+  {
+    switch(DRT::UTILS::DisTypeToDim<distype>::dim)
+    {
+        case 1:
+        {
+            DRT::UTILS::shape_function_1D_deriv2(d2, xsi(0), distype);
+            break;
+        }
+        case 2:
+        {
+            DRT::UTILS::shape_function_2D_deriv2(d2, xsi(0), xsi(1), distype);
+            break;
+        }
+        case 3:
+        {
+            DRT::UTILS::shape_function_3D_deriv2(d2, xsi(0), xsi(1), xsi(2), distype);
+            break;
+        }
+        default:
+            dserror("dimension of the element is not correct");
+    }
+    return;
+  }
 
 } // namespace UTILS
 } // namespace DRT
