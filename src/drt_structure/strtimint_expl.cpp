@@ -45,9 +45,11 @@ STR::TimIntExpl:: TimIntExpl
 {
   // explicit time integrators cannot handle constraints
   if (conman_->HaveConstraint())
-  {
     dserror("Explicit TIS cannot handle constraints");
-  }
+
+  // cannot handle rotated DOFs
+  if (locsysman_ != Teuchos::null)
+    dserror("Explicit TIS cannot handle local co-ordinate systems");
 
   // get away
   return;

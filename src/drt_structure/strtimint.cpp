@@ -77,6 +77,7 @@ STR::TimInt::TimInt
   consolv_(Teuchos::null),
   surfstressman_(Teuchos::null),
   potman_(Teuchos::null),
+  locsysman_(Teuchos::null),
   time_(Teuchos::null),
   timen_(0.0),
   dt_(Teuchos::null),
@@ -168,7 +169,7 @@ STR::TimInt::TimInt
   dofrowmap_ = discret_->DofRowMap();
 
   // Initialize SurfStressManager for handling surface stress conditions due to interfacial phenomena
-  surfstressman_=rcp(new UTILS::SurfStressManager(*discret_, sdynparams));
+  surfstressman_ = rcp(new UTILS::SurfStressManager(*discret_, sdynparams));
 
   // Check for potential conditions
   {
@@ -176,7 +177,18 @@ STR::TimInt::TimInt
     discret_->GetCondition("Potential", potentialcond);
     if (potentialcond.size())
     {
-      potman_ = rcp(new UTILS::PotentialManager(Discretization(), *discret_));
+      potman_ = Teuchos::rcp(new UTILS::PotentialManager(Discretization(), *discret_));
+    }
+  }
+
+  // check whether we have locsys B.C. and create locsys manager if so
+  // Check for locsys conditions
+  {
+    std::vector<DRT::Condition*> locsysconditions(0);
+    discret_->GetCondition("Locsys", locsysconditions);
+    if (locsysconditions.size())
+    {
+      locsysman_ = Teuchos::rcp(new DRT::UTILS::LocsysManager(*discret_));
     }
   }
 
@@ -274,6 +286,15 @@ void STR::TimInt::ApplyDirichletBC
   bool recreatemap
 )
 {
+  // in the case of local systems we have to rotate forward ...
+  if (locsysman_ != Teuchos::null)
+  {
+    locsysman_->RotateGlobalToLocal(dis);
+    locsysman_->RotateGlobalToLocal(vel);
+    locsysman_->RotateGlobalToLocal(acc);
+  }
+
+
   // apply DBCs
   // needed parameters
   ParameterList p;
@@ -293,6 +314,14 @@ void STR::TimInt::ApplyDirichletBC
                                 Teuchos::null, Teuchos::null);
   }
   discret_->ClearState();
+
+  // in the case of local systems we have to rotate back into global Cartesian frame
+  if (locsysman_ != Teuchos::null)
+  {
+    locsysman_->RotateLocalToGlobal(dis);
+    locsysman_->RotateLocalToGlobal(vel);
+    locsysman_->RotateLocalToGlobal(acc);
+  }
 
   // ciao
   return;

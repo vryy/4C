@@ -44,6 +44,7 @@ Maintainer: Burkhard Bornemann
 #include "../drt_io/io.H"
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"
+#include "../drt_lib/drt_locsys.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
 #include "../drt_surfstress/drt_potential_manager.H"
 #include "../drt_contact/drt_contact_manager.H"
@@ -529,6 +530,10 @@ namespace STR
 
     //! potential conditions
     Teuchos::RCP<UTILS::PotentialManager> potman_;
+
+    //! Dirichlet BCs with local co-ordinate system
+    Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;
+    
 
     //@}
 
