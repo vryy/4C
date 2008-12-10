@@ -97,21 +97,9 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
     vector<double> myphinp(lmparent.size());
     DRT::UTILS::ExtractMyValues(*phinp,myphinp,lmparent);
 
-    // assure, that the values are in the same order as the parent element nodes
-    for(int k=0;k<ielparent;++k)
-    {
-      Node* node = (parent_->Nodes())[k];
-      vector<int> dof = discretization.Dof(node);
-        // up to now, there's only one dof per node
-        if (dof[0]!=lmparent[k])
-        {
-          cout<<"dof[0]= "<<dof[0]<<"  lmparent[j]="<<lmparent[k]<<endl;
-          dserror("Dofs are not in the same order as the element nodes. Implement some resorting!");
-        }
-    }
-
     // set flag for type of scalar
     string scaltypestr=params.get<string>("problem type");
+    const int numdofpernode = parent_->numdofpernode_;
     int numscal = parent_->numdofpernode_;
     bool temperature = false;
     if (scaltypestr =="loma") temperature = true;
@@ -122,6 +110,22 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
       numscal -= 1; // ELCH case: last dof is for el. potential
       // get parameter F/RT
       frt = params.get<double>("frt");
+    }
+
+    // assure, that the values are in the same order as the parent element nodes
+    for(int k=0;k<ielparent;++k)
+    {
+      Node* node = (parent_->Nodes())[k];
+      vector<int> dof = discretization.Dof(node);
+        // up to now, there's only one dof per node
+      for (unsigned int i=0 ; i< dof.size(); ++i)
+      {
+        if (dof[i]!=lmparent[k*numdofpernode + i])
+        {
+          cout<<"dof[i]= "<<dof[i]<<"  lmparent[k*numdofpernode + i]="<<lmparent[k*numdofpernode + i]<<endl;
+          dserror("Dofs are not in the same order as the element nodes. Implement some resorting!");
+        }
+      }
     }
 
     // access control parameter
@@ -165,8 +169,6 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
     // outward-pointing normal of length 1.0
     for (int i=0; i<3; i++) normal[i] = normal[i] / length;
 
-    const int numdofpernode = parent_->numdofpernode_;
-
     // do a loop for systems of transported scalars
     for (int j = 0; j<numscal; ++j)
     {
@@ -179,7 +181,7 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
       {
         for(int k = 0; k<ielparent;++k)
         {
-          if (lm[i]==lmparent[k]) // dof ids match => assemble this value
+          if (lm[i*numdofpernode+j]==lmparent[k*numdofpernode+j]) // dof ids match => assemble this value
           {
             dofcount++;
             // form arithmetic mean of assembled nodal flux vectors
@@ -253,17 +255,15 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
       // we multiply i0 with timefac. So we do not have to give down this paramater
       // and perform autmatically the multiplication of matrix and rhs with timefac 
       i0 *= timefac;
-
-      // find out whether we shell use a time curve and get the factor
-      if (curvenum>=0)
-      {
-        const double curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
-        // adjust potential at metal side accordingly
-        pot0 *= curvefac;
-      }
     }
-    if ((curvenum>=0) && (is_stationary==true)) 
-      dserror("Stationary simulation, but got a time curve: %d",curvenum);
+    // find out whether we shell use a time curve and get the factor
+    // this feature can be also used for stationary "pseudo time loops"
+    if (curvenum>=0)
+    {
+      const double curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
+      // adjust potential at metal side accordingly
+      pot0 *= curvefac;
+    }
 
 # if 0
     // print all parameters read from the current condition
@@ -346,7 +346,7 @@ int DRT::ELEMENTS::Condif3Surface::EvaluateNeumann(
   // node coordinates
   Epetra_SerialDenseMatrix  xyze(3,iel);
 
-  // the metric tensor and the area of an infintesimal surface element
+  // the metric tensor and the area of an infinitesimal surface element
   Epetra_SerialDenseMatrix  metrictensor(2,2);
   double                    drs;
 
