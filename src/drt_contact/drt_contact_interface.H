@@ -44,7 +44,6 @@ Maintainer: Michael Gee
 #include "drt_celement.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_sparsematrix.H"
-#include "../drt_geometry/searchtree.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -471,17 +470,11 @@ public:
   virtual void Evaluate();
   
   /*!
-  \brief Search algorithm for limitation of potentially contacting slave / master pairs
+  \brief Naive contact search algorithm for potentially contacting slave / master pairs
+         (node-based algorithm)
   
   */
   virtual bool EvaluateContactSearch();
-  
-  /*!
-  \brief Search algorithm for limitation of potentially contacting slave / master pairs
-         based on Ursula's Octree
-    
-  */
-  virtual bool EvaluateContactSearchOctree();
   
   /*!
   \brief Integrate Mortar matrix D on slave element
@@ -677,10 +670,7 @@ protected:
   RCP<Epetra_Map>             activen_;       // row map of global N-matrix
   RCP<Epetra_Map>             activet_;       // row map of global T-matrix
   RCP<Epetra_Map>             slipt_;         // row map of part of T-matrix (slip nodes)
-  
-  RCP<GEO::SearchTree>        tree_;          // octree for contact search
-  int                         treecount_;     // counter for tree
-  
+
   Epetra_SerialDenseMatrix    contactsegs_;   // contains coordinates of all contact segments (gmsh)
   
 }; // class Interface

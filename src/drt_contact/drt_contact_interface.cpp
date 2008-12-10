@@ -63,7 +63,6 @@ dim_(dim)
   procmap_.clear();
   idiscret_ = rcp(new DRT::Discretization((string)"Contact Interface",com));
   contactsegs_.Reshape(0,0);
-  treecount_ = 0;
   
   return;
 }
@@ -433,9 +432,6 @@ void CONTACT::Interface::FillComplete()
     mdofcolmap_ = rcp(new Epetra_Map(-1,(int)mc.size(),&mc[0],0,Comm()));
   }
 
-  // create octree object for contact search
-  tree_ = rcp(new GEO::SearchTree(CONTACTDEPTHOCTREE));
-  
   // create binarytree object for contact search
   // binarytree_ = rcp(new CONTACT::BinaryTree(Discret(),selecolmap_,melefullmap_,Dim()));
    
@@ -671,20 +667,7 @@ void CONTACT::Interface::Evaluate()
   //const double t_end = ds_cputime()-t_start;
   //if (lComm()->MyPID()==0)
   // {
-  //  cout << "************************************************************\n";
-  //  cout << "Classical search: " << t_end << " seconds\n";
-  //}
-  
-  // contact search algorithm (octree)
-  //lComm()->Barrier();
-  //const double t_start2 = ds_cputime();
-  //EvaluateContactSearchOctree();
-  //lComm()->Barrier();
-  //const double t_end2 = ds_cputime()-t_start2;
-  //if (lComm()->MyPID()==0)
-  //{
-  //  cout << "Octree-based search: " << t_end2 << " seconds\n";
-  //  cout << "************************************************************\n";
+  //  cout << "Brute-force search: " << t_end << " seconds\n";
   //}
   
   // loop over proc's slave elements of the interface for integration
@@ -831,101 +814,6 @@ bool CONTACT::Interface::EvaluateContactSearch()
       }
     }
   }
-
-  return true;
-}
-
-/*----------------------------------------------------------------------*
- |  Search for potentially contacting sl/ma pairs (public)    popp 08/08|
- *----------------------------------------------------------------------*/
-bool CONTACT::Interface::EvaluateContactSearchOctree()
-{
-  /**********************************************************************/
-  /* CONTACT SEARCH ALGORITHM (OCTREE)                                  */
-  /* The idea of the search is to reduce the number of master / slave   */
-  /* element pairs that are checked for overlap and contact by intro-   */
-  /* ducing information about proximity and maybe history!              */
-  /* Here we use Ursula's octree to find the potential intersection     */
-  /* candidates on slave and master side.                               */
-  /**********************************************************************/
-  
-  //create map of current positions
-  map<int,LINALG::Matrix<3,1> > currentpositions;
-  
-  for (int i=0; i<mnodefullmapnobound_->NumMyElements();++i)
-  {
-    int gid = mnodefullmapnobound_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
-    CNode* mnode = static_cast<CNode*>(node);
-    
-    LINALG::Matrix<3,1> pos;
-    for (int j=0;j<3;++j)
-      pos(j) = mnode->xspatial()[j];
-    
-    currentpositions[gid] = pos;
-  }
-  
-  for (int i=0; i<snodefullmapbound_->NumMyElements();++i)
-  {
-    int gid = snodefullmapbound_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
-    CNode* snode = static_cast<CNode*>(node);
-    
-    LINALG::Matrix<3,1> pos;
-    for (int j=0;j<3;++j)
-      pos(j) = snode->xspatial()[j];
-    
-    currentpositions[gid] = pos;
-  }
-  
-  //create map of master elements (search domain)
-  map<int,set<int> > masterelements;
-  
-  for (int i=0; i<melefullmap_->NumMyElements();++i)
-  {
-    int gid = melefullmap_->GID(i);
-    masterelements[0].insert(gid);
-  }
-  
-  // initialize tree (only on processors participating in interface
-  if (Discret().NumMyColElements()>0)
-    tree_->initializeTree(GEO::getXAABBofDis(Discret(),currentpositions),masterelements,GEO::TreeType(GEO::QUADTREE));
-
-  // loop over proc's slave elements for intersection detection
-  // use standard column map to include processor's ghosted elements
-  for (int i=0; i<selecolmap_->NumMyElements();++i)
-  {
-    int gid = selecolmap_->GID(i);
-    DRT::Element* element = idiscret_->gElement(gid);
-    if (!element) dserror("ERROR: Cannot find slave element with gid %",gid);
-    CElement* selement = static_cast<CElement*>(element);
-
-    // search intersection partners for this slave element
-    vector<int> partners;
-    vector<int> partners2;
-    partners = selement->SearchElements();
-    partners2 = tree_->searchIntersectionElements(Discret(),currentpositions,element);
-    //if ((int)partners2.size()!=0) selement->AddSearchElements(partners2);
-    /*cout << "\nSElement: " << selement->Id() << endl;
-    if ((int)partners.size()==0)
-      cout << " CLASSICAL: No PartnerMElements for intersection!" << endl;
-    else
-      for (int j=0;j<(int)partners.size();++j)
-        cout << " CLASSICAL: PartnerMElement " << j+1 << " is: " << partners[j] << endl;
-    if ((int)partners2.size()==0)
-      cout << " OCTREE: No PartnerMElements for intersection!" << endl;
-    else
-      for (int j=0;j<(int)partners2.size();++j)
-        cout <<" OCTREE: PartnerMElement " << j+1 << " is: " << partners2[j] << endl;*/
-  }
-  
-  /*if (Discret().NumMyColElements()>0)
-  {
-    tree_->evaluateTreeMetrics(treecount_);
-    tree_->printTree("tree",treecount_++);
-  }*/
 
   return true;
 }
