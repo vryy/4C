@@ -281,7 +281,27 @@ void LiftDrag(
   \author Axel Gerstenberger
   \date 10/08
  */
-std::map<int,double> ComputeSurfaceFlowrates(
+std::map<int,double> ComputeSurfaceFlowRates(
+    DRT::Discretization&       dis  ,      ///< the discretisation (node distribution, conditions)
+    const RCP<Epetra_Vector>   velnp       ///< solution vector with velocities and pressure 
+                                           ///< (only velocities are used)
+    );
+
+/*!
+  \brief integrate impulse rate over surfaces
+
+  for each condition Id, compute the impulse rate vector through the surface
+
+  integral over surface: rho * u_i * u_j * n_j dx 
+
+  \return a map, where for each condition Id, we get the impulse rate.
+          positive and negative signs indicate net inflow and outflow
+
+
+  \author Axel Gerstenberger
+  \date 10/08
+ */
+std::map<int,LINALG::Matrix<3,1> > ComputeSurfaceImpulsRates(
     DRT::Discretization&       dis  ,      ///< the discretisation (node distribution, conditions)
     const RCP<Epetra_Vector>   velnp       ///< solution vector with velocities and pressure 
                                            ///< (only velocities are used)

@@ -1023,7 +1023,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     Teuchos::rcp(new ConditionDefinition("DESIGN FLOW RATE SURF CONDITIONS",
                                          "SurfFlowRate",
                                          "Surface Flow Rate",
-                                         DRT::Condition::FlowRateThroughInterface_3D,
+                                         DRT::Condition::FlowRateThroughSurface_3D,
                                          true,
                                          DRT::Condition::Surface));
 
@@ -1032,6 +1032,26 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     surfflowrate->AddComponent(flowratecomponents[i]);
   }
   condlist.push_back(surfflowrate);
+  
+  /*--------------------------------------------------------------------*/
+  // impuls rate through surface
+
+  std::vector<Teuchos::RCP<ConditionComponent> > impulsratecomponents;
+  impulsratecomponents.push_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+
+  Teuchos::RCP<ConditionDefinition> surfimpulsrate =
+    Teuchos::rcp(new ConditionDefinition("DESIGN IMPULS RATE SURF CONDITIONS",
+                                         "SurfImpulsRate",
+                                         "Surface Impuls Rate",
+                                         DRT::Condition::ImpulsRateThroughSurface_3D,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  for (unsigned i=0; i<impulsratecomponents.size(); ++i)
+  {
+    surfimpulsrate->AddComponent(impulsratecomponents[i]);
+  }
+  condlist.push_back(surfimpulsrate);
 
   return vc;
 }

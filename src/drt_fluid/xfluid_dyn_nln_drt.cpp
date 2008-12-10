@@ -269,6 +269,8 @@ void xdyn_fluid_drt()
     // parameter theta for potential one-step-theta start algorithm 
     // (currently not implemented)
     fluidtimeparams.set<double> ("start theta", fdyn.get<double>("START_THETA"));
+    
+    fluidtimeparams.set<bool>("do explicit predictor",true);
 
     //------------------------------------------------------------------
     // create all vectors and variables associated with the time
@@ -280,8 +282,7 @@ void xdyn_fluid_drt()
     		fluiddis,
     		solver,
     		fluidtimeparams,
-    		fluidoutput,
-    		false);
+    		fluidoutput);
 
     // initial field from restart or calculated by given function
     if (probtype.get<int>("RESTART"))

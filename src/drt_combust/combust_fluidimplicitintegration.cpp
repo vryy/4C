@@ -23,6 +23,7 @@ Maintainer: Florian Henke
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_lib/standardtypes_cpp.H"
+#include "../drt_geometry/position_array.H"
 #include "../drt_xfem/dof_management.H"
 #include "../drt_xfem/dof_distribution_switcher.H"
 #include "../drt_xfem/enrichment_utils.H"
@@ -2076,29 +2077,29 @@ void FLD::CombustFluidImplicitTimeInt::LiftDrag() const
 void FLD::CombustFluidImplicitTimeInt::ComputeSurfaceFlowrates() const
 {
   
-  const map<int,double> volumeflowratepersurface = FLD::UTILS::ComputeSurfaceFlowrates(*discret_, state_.velnp_);
-
-  if (not volumeflowratepersurface.empty())
-  {
-    cout << "Number of flow rate conditions... " << volumeflowratepersurface.size() << endl;
-  }
-  
-  double overall_flowrate = 0.0;
-  std::map<int,double>::const_iterator entry;
-  for(entry = volumeflowratepersurface.begin(); entry != volumeflowratepersurface.end(); ++entry )
-  {
-    const int condID = entry->first;
-    const double value = entry->second;
-    overall_flowrate += value;
-    if (myrank_ == 0)
-    {
-      cout << " - flowrate for label " << condID << ":  " <<  scientific << value << endl;
-    }
-  }
-  if (not volumeflowratepersurface.empty())
-  {
-    cout << " - flowrate over all boundaries: " << overall_flowrate << endl;
-  }
+//  const map<int,double> volumeflowratepersurface = FLD::UTILS::ComputeSurfaceFlowrates(*discret_, state_.velnp_);
+//
+//  if (not volumeflowratepersurface.empty())
+//  {
+//    cout << "Number of flow rate conditions... " << volumeflowratepersurface.size() << endl;
+//  }
+//  
+//  double overall_flowrate = 0.0;
+//  std::map<int,double>::const_iterator entry;
+//  for(entry = volumeflowratepersurface.begin(); entry != volumeflowratepersurface.end(); ++entry )
+//  {
+//    const int condID = entry->first;
+//    const double value = entry->second;
+//    overall_flowrate += value;
+//    if (myrank_ == 0)
+//    {
+//      cout << " - flowrate for label " << condID << ":  " <<  scientific << value << endl;
+//    }
+//  }
+//  if (not volumeflowratepersurface.empty())
+//  {
+//    cout << " - flowrate over all boundaries: " << overall_flowrate << endl;
+//  }
 
   return;
 }

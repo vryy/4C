@@ -48,9 +48,8 @@ Maintainer: Axel Gerstenberger
 FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
     Teuchos::RCP<DRT::Discretization> actdis,
     LINALG::Solver&                   solver,
-    ParameterList&                    params,
-    IO::DiscretizationWriter&         output,
-    const bool                        alefluid
+    const ParameterList&              params,
+    IO::DiscretizationWriter&         output
     ) :
   // call constructor for "nontrivial" objects
   discret_(actdis),
@@ -59,17 +58,17 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   output_ (output),
   myrank_(discret_->Comm().MyPID()),
   cout0_(discret_->Comm(), std::cout),
-  alefluid_(alefluid),
+  alefluid_(false),
   time_(0.0),
   step_(0),
   stepmax_(params_.get<int>   ("max number timesteps")),
   maxtime_(params_.get<double>("total time")),
   timealgo_(params_.get<FLUID_TIMEINTTYPE>("time int algo")),
   itemax_(params_.get<int>("max nonlin iter steps")),
-  extrapolationpredictor_(params.get("do explicit predictor",true)),
-  uprestart_(params.get("write restart every", -1)),
-  upres_(params.get("write solution every", -1)),
-  writestresses_(params.get<int>("write stresses", 0))
+  extrapolationpredictor_(params.get<bool>("do explicit predictor")),
+  uprestart_(params.get<int>("write restart every")),
+  upres_(params.get<int>("write solution every")),
+  writestresses_(params.get<int>("write stresses"))
 {
 
   // time measurement: initialization
@@ -80,9 +79,13 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   // -------------------------------------------------------------------
   // time-step size
   dtp_ = dta_ = params_.get<double>("time step size");
+  if (timealgo_ == timeint_stationary and params_.get<double>("time step size") != 1.0)
+    dserror("Timestep size (delta t) has to be 1.0 for stationary computations!");
 
   // parameter theta for time-integration schemes
   theta_    = params_.get<double>("theta");
+  if (timealgo_ == timeint_stationary)
+    theta_ = 1.0;
   // af-generalized-alpha parameters: gamma_ = 0.5 + alphaM_ - alphaF_
   // (may be reset below when starting algorithm is used)
   alphaM_   = params_.get<double>("alpha_M");
@@ -801,11 +804,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       {
         // call standard loop over elements
         discret_->Evaluate(eleparams,sysmat_,residual_);
-
         discret_->ClearState();
-
-        // get physical surface force
-        iforcecolnp->Scale(ResidualScaling());
 
         // finalize the complete matrix
         sysmat_->Complete();
@@ -1054,7 +1053,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
   }
 
   // macht der FSI algorithmus
-  iforcecolnp->Scale(-1.0);
+  iforcecolnp->Scale(-ResidualScaling());
 
   cutterdiscret->SetState("iforcenp", iforcecolnp);
   
@@ -1062,6 +1061,14 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
   {
     OutputToGmsh();
   }
+  
+  // reset elements to make sure, everything is build next time
+  {
+    ParameterList eleparams;
+    eleparams.set("action","reset");
+    discret_->Evaluate(eleparams,null,null,null,null,null);
+  }
+  
 } // FluidImplicitTimeInt::NonlinearSolve
 
 
@@ -1214,7 +1221,12 @@ void FLD::XFluidImplicitTimeInt::StatisticsAndOutput()
   // -------------------------------------------------------------------
   //          calculate flow through surfaces
   // -------------------------------------------------------------------
-  ComputeSurfaceFlowrates();
+  ComputeSurfaceFlowRates();
+  
+  // -------------------------------------------------------------------
+  //          calculate impuls rate through surfaces
+  // -------------------------------------------------------------------
+  ComputeSurfaceImpulsRates();
 
   // -------------------------------------------------------------------
   //   add calculated velocity to mean value calculation (statistics)
@@ -2296,10 +2308,12 @@ void FLD::XFluidImplicitTimeInt::LiftDrag() const
 }//FluidImplicitTimeInt::LiftDrag
 
 
-void FLD::XFluidImplicitTimeInt::ComputeSurfaceFlowrates() const
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FLD::XFluidImplicitTimeInt::ComputeSurfaceFlowRates() const
 {
   
-  const map<int,double> volumeflowratepersurface = FLD::UTILS::ComputeSurfaceFlowrates(*discret_, state_.velnp_);
+  const map<int,double> volumeflowratepersurface = FLD::UTILS::ComputeSurfaceFlowRates(*discret_, state_.velnp_);
 
   if (not volumeflowratepersurface.empty())
   {
@@ -2325,6 +2339,41 @@ void FLD::XFluidImplicitTimeInt::ComputeSurfaceFlowrates() const
 
   return;
 }
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FLD::XFluidImplicitTimeInt::ComputeSurfaceImpulsRates() const
+{
+  
+  const map<int,LINALG::Matrix<3,1> > impulsratepersurface = FLD::UTILS::ComputeSurfaceImpulsRates(*discret_, state_.velnp_);
+  
+  if (not impulsratepersurface.empty())
+  {
+    cout << "Number of impuls rate conditions... " << impulsratepersurface.size() << endl;
+  }
+  
+  LINALG::Matrix<3,1> overall_flowrate(true);
+  for(std::map<int,LINALG::Matrix<3,1> >::const_iterator entry = impulsratepersurface.begin();
+      entry != impulsratepersurface.end();
+      ++entry )
+  {
+    const int condID = entry->first;
+    const LINALG::Matrix<3,1> value = entry->second;
+    overall_flowrate += value;
+    if (myrank_ == 0)
+    {
+      cout << " - impulsrate for label " << condID << ":  " <<  value << endl;
+    }
+  }
+  if (not impulsratepersurface.empty())
+  {
+    cout << " - impulsrate over all boundaries: " << overall_flowrate << endl;
+  }
+
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

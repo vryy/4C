@@ -52,10 +52,9 @@ public:
   */
   explicit XFluidImplicitTimeInt(
       Teuchos::RCP<DRT::Discretization>  dis,
-      LINALG::Solver&           solver,
-      ParameterList&            params,
-      IO::DiscretizationWriter& output,
-      bool                      alefluid=false);
+      LINALG::Solver&                    solver,
+      const ParameterList&               params,
+      IO::DiscretizationWriter&          output);
 
 
   /*!
@@ -288,7 +287,10 @@ public:
   Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape(std::string condname);
   
   /// integrate mass flow over a surface 
-  void ComputeSurfaceFlowrates() const;
+  void ComputeSurfaceFlowRates() const;
+  
+  /// integrate impuls flow rate over a surface 
+  void ComputeSurfaceImpulsRates() const;
 
   /// switch fluid field to block matrix
   void UseBlockMatrix(Teuchos::RCP<std::set<int> > condelements,

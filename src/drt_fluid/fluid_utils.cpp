@@ -386,14 +386,14 @@ void FLD::UTILS::LiftDrag(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::map<int,double> FLD::UTILS::ComputeSurfaceFlowrates(
+std::map<int,double> FLD::UTILS::ComputeSurfaceFlowRates(
     DRT::Discretization&           dis  ,      
     const RCP<Epetra_Vector>       velnp
     )
 {
   ParameterList eleparams;
   // set action for elements
-  eleparams.set("action","calc_flux");
+  eleparams.set("action","calc_flow_rate");
   
   std::map<int,double> volumeflowratepersurface;
   
@@ -434,6 +434,71 @@ std::map<int,double> FLD::UTILS::ComputeSurfaceFlowrates(
     volumeflowratepersurface[condID] += flowrate;
   }
 
+  return volumeflowratepersurface;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+std::map<int,LINALG::Matrix<3,1> > FLD::UTILS::ComputeSurfaceImpulsRates(
+    DRT::Discretization&           dis  ,      
+    const RCP<Epetra_Vector>       velnp
+    )
+{
+  ParameterList eleparams;
+  // set action for elements
+  eleparams.set("action","calc_impuls_rate");
+  
+  std::map<int,LINALG::Matrix<3,1> > volumeflowratepersurface;
+  
+  // get condition
+  std::vector< DRT::Condition * >      conds;
+  dis.GetCondition ("SurfImpulsRate", conds);
+  
+  // collect elements by xfem coupling label
+  for(vector<DRT::Condition*>::const_iterator conditer = conds.begin(); conditer!=conds.end(); ++conditer)
+  {
+    const DRT::Condition* cond = *conditer;
+    
+    const int condID = cond->Getint("ConditionID");
+
+    // create vector (+ initialization with zeros)
+    const Epetra_BlockMap mappy = velnp->Map();
+    Teuchos::RCP<Epetra_Vector> impulsrates = Teuchos::rcp(new Epetra_Vector(mappy));
+    impulsrates->PutScalar(0.0);
+
+    // call loop over elements
+    dis.ClearState();
+    dis.SetState("velnp",velnp);
+    dis.EvaluateCondition(eleparams,impulsrates,"SurfImpulsRate",condID);
+    dis.ClearState();
+    LINALG::Matrix<3,1> locflowrate(true);
+    for (int inode=0; inode < dis.NumMyRowNodes(); inode++)
+    {
+      const DRT::Node* node = dis.lRowNode(inode);
+      static std::vector<int> gdofs(4);
+      dis.Dof(node,0,gdofs);
+      for (int isd=0; isd < 3; isd++)
+      {
+        locflowrate(isd) += (*impulsrates)[dis.DofColMap()->LID(gdofs[isd])];
+//        cout << (*impulsrates)[dis.DofColMap()->LID(gdofs[isd])] << endl;
+      }
+    }
+    
+//    LINALG::Matrix<3,1> flowrate(true);
+//    dofrowmap->Comm().SumAll(&locflowrate(0),&flowrate(0),1);
+//    dofrowmap->Comm().SumAll(&locflowrate(1),&flowrate(1),1);
+//    dofrowmap->Comm().SumAll(&locflowrate(2),&flowrate(2),1);
+//    cout << "locflowrate " << locflowrate << endl;
+    if (volumeflowratepersurface.find(condID) == volumeflowratepersurface.end())
+    {
+      LINALG::Matrix<3,1> tmp(true);
+      volumeflowratepersurface.insert(make_pair(condID,tmp));
+    }
+    LINALG::Matrix<3,1> tmp = volumeflowratepersurface[condID];
+    tmp += locflowrate;
+    volumeflowratepersurface[condID] = tmp;
+  }
+  
   return volumeflowratepersurface;
 }
 
