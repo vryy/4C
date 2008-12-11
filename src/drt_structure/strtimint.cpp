@@ -186,14 +186,14 @@ STR::TimInt::TimInt
     }
   }
 
-  // check whether we have locsys B.C. and create locsys manager if so
-  // Check for locsys conditions
+  // check whether we have locsys BCs and create LocSysManager if so
+  // after checking
   {
     std::vector<DRT::Condition*> locsysconditions(0);
     discret_->GetCondition("Locsys", locsysconditions);
     if (locsysconditions.size())
     {
-      locsysman_ = Teuchos::rcp(new DRT::UTILS::LocsysManager(*discret_));
+      locsysman_ = Teuchos::rcp(new DRT::UTILS::LocsysManager(*discret_, true));
     }
   }
 

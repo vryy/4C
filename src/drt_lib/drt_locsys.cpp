@@ -26,7 +26,28 @@ using namespace Teuchos;
  |  ctor (public)                                          popp 09/08|
  *-------------------------------------------------------------------*/
 DRT::UTILS::LocsysManager::LocsysManager(DRT::Discretization& discret):
-discret_(discret)
+discret_(discret),
+transformleftonly_(false)
+{
+  Setup();
+}
+
+/*-------------------------------------------------------------------*
+ |  ctor (public)                                         bborn 12/08|
+ *-------------------------------------------------------------------*/
+DRT::UTILS::LocsysManager::LocsysManager(DRT::Discretization& discret, const bool transformleftonly):
+discret_(discret),
+transformleftonly_(transformleftonly)
+{
+  Setup();
+}
+
+
+
+/*-------------------------------------------------------------------*
+ |  set-up                                                 popp 09/08|
+ *-------------------------------------------------------------------*/
+void DRT::UTILS::LocsysManager::Setup()
 {
   // IMPORTANT NOTE:
   // The definition of local coordinate systems only makes sense in
@@ -129,7 +150,7 @@ discret_(discret)
         if (!havenode) continue;
         
         int indices = (*nodes)[k];
-        double values  = i;
+        double values  = (double)i;
         locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
       }
     }
@@ -430,8 +451,14 @@ discret_(discret)
   
   // get dof row layout of discretization
   const Epetra_Map* dofrowmap = discret_.DofRowMap();
+
+  // numbe of nodes subjected to local co-ordinate systems
+  set<int> locsysdofset;
     
   trafo_ = rcp(new LINALG::SparseMatrix(*dofrowmap,3));
+
+  int total = 0;
+  int normal = 0;
   
   for (int i=0;i<noderowmap->NumMyElements();++i)
   {
@@ -445,6 +472,7 @@ discret_(discret)
     // unity matrix for non-locsys node
     if (locsysindex<0)
     {
+      normal += 1;
       for (int r=0;r<numdof;++r)
         for (int c=0;c<numdof;++c)
           if (r==c) trafo_->Assemble(1.0,dofs[r],dofs[c]);
@@ -453,6 +481,8 @@ discret_(discret)
     // trafo matrix for locsys node
     else
     {
+      total += 1;
+
       Epetra_SerialDenseMatrix nodetrafo(numdof,numdof);
       
       // first create an identity matrix od size numdof
@@ -477,11 +507,47 @@ discret_(discret)
       for (int r=0;r<numdof;++r)
         for (int c=0;c<numdof;++c)
           trafo_->Assemble(nodetrafo(r,c),dofs[r],dofs[c]);
+
+      for (int r=0;r<numdof;++r)
+        locsysdofset.insert(dofs[r]);
+
     }
   }
-  
+
   // complete transformation matrix
   trafo_->Complete();
+
+  // create unique/row map of DOFs subjected to local co-ordinate change
+  if (transformleftonly_)
+  {
+    int nummyentries = 0;
+    int* myglobalentries = NULL;
+    vector<int> locsysdofs;
+    if (locsysdofset.size() > 0)
+    {
+      locsysdofs.reserve(locsysdofset.size());
+      locsysdofs.assign(locsysdofset.begin(), locsysdofset.end());
+      nummyentries = locsysdofs.size();
+      myglobalentries = &(locsysdofs[0]);
+    }
+    locsysdofmap_ = rcp(new Epetra_Map(-1, nummyentries, myglobalentries,
+                                       discret_.DofRowMap()->IndexBase(), 
+                                       discret_.Comm()),false);
+    if (locsysdofmap_ == null) dserror("Creation failed.");
+  }
+
+  // transformation matrix for relevent DOFs with local system
+  if (transformleftonly_)
+  {
+    subtrafo_ = trafo_->ExtractDirichletLines(*locsysdofmap_);
+    //cout << "Subtrafo: nummyrows=" << subtrafo_->EpetraMatrix()->NumMyRows() 
+    //     << " nummycols=" << subtrafo_->EpetraMatrix()->NumMyCols() 
+    //     << endl;
+
+  }
+
+  // done here
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -528,22 +594,39 @@ void DRT::UTILS::LocsysManager::Print(ostream& os) const
  |  Transform system global -> local (public)                 popp 09/08|
  *----------------------------------------------------------------------*/
 void DRT::UTILS::LocsysManager::RotateGlobalToLocal(RCP<LINALG::SparseMatrix> sysmat,
-                                               RCP<Epetra_Vector> rhs)
+                                                    RCP<Epetra_Vector> rhs)
 {
   // get dof row layout of discretization
   const Epetra_Map* dofrowmap = discret_.DofRowMap();
   
   // transform rhs vector
-  RCP<Epetra_Vector> modrhs = LINALG::CreateVector(*dofrowmap);
-  trafo_->Multiply(false,*rhs,*modrhs);
-  rhs->Update(1.0,*modrhs,0.0);
+  if (transformleftonly_)
+  {
+    RotateGlobalToLocal(rhs);
+  }
+  else
+  {
+    RCP<Epetra_Vector> modrhs = LINALG::CreateVector(*dofrowmap);
+    trafo_->Multiply(false,*rhs,*modrhs);
+    rhs->Update(1.0,*modrhs,0.0);
+  }
   
   // transform system matrix
-  RCP<LINALG::SparseMatrix> temp;
-  RCP<LINALG::SparseMatrix> temp2;
-  temp = LINALG::Multiply(*sysmat,false,*trafo_,true,true);
-  temp2 = LINALG::Multiply(*trafo_,false,*temp,false,true);
-  *sysmat = *temp2;
+  if (transformleftonly_)
+  {
+    // selective multiplication from left
+    RCP<LINALG::SparseMatrix> A = LINALG::Multiply(*subtrafo_,false,*sysmat,false,true);
+    // put transformed rows back into global matrix
+    sysmat->Put(*A, 1.0, locsysdofmap_);
+  }
+  else
+  {
+    RCP<LINALG::SparseMatrix> temp;
+    temp = LINALG::Multiply(*trafo_,false,*sysmat,false,true);  // multiply from left
+    RCP<LINALG::SparseMatrix> temp2;
+    temp2 = LINALG::Multiply(*temp,false,*trafo_,true,true);  // multiply from right
+    *sysmat = *temp2;
+  }
   
   return;
 }

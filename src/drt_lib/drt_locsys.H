@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file drt_locsys.H
 
 <pre>
@@ -7,14 +8,15 @@ Maintainer: Alexander Popp
             http://www.lnm.mw.tum.de
             089 - 289-15264
 </pre>
-
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 #ifndef DRT_LOCSYS_H
 #define DRT_LOCSYS_H
 
 #include "Teuchos_RefCountPtr.hpp"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/linalg_mapextractor.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -38,12 +40,27 @@ public:
   //@}
 
   /*!
-  \brief Standard Constructor
-
-  \param discret (in): A discretization containing locsys boundary conditions
-  
-  */
+   * \brief Standard Constructor
+   *
+   * \param discret (in): A discretization containing locsys boundary conditions
+   *
+   */
   explicit LocsysManager(DRT::Discretization& discret);
+
+  /*!
+   * \brief Standard Constructor
+   *
+   * \param discret (in): A discretization containing locsys boundary conditions
+   * \param transformleftonly (in): Only a tranformation from the left is going
+   *                                to be applied on sysmatrix, if true
+   *
+   */
+  explicit LocsysManager(DRT::Discretization& discret, const bool transformleftonly);
+
+  /*!
+   * \brief Set-up stuff common to all constructors
+   */
+  void Setup();
 
   /*!
   \brief Destructor
@@ -116,10 +133,24 @@ public:
   //! @name Evaluation methods
   
   /*!
-  \brief Apply forward transformation of linear system of equations
-
-  */
-  void RotateGlobalToLocal(RCP<LINALG::SparseMatrix> sysmat, RCP<Epetra_Vector> rhs);
+   * \brief Apply forward transformation of linear system of equations
+   *
+   * This method transform the matrix #sysmat from global co-ordinate
+   * in local co-ordinate systems, i.e.
+   *   \f[ \tilde{K} = Q \cdot K \cdot Q^T \f]
+   * in which \f$K\f$ is the globally  and \f$\tilde{K}\f$ the locally oriented matrix.
+   * respectively. The transformation matrix #trafo_ is denoted \f$Q\f$.
+   * The similar thing is done for the right-hand-side vector:
+   *   \f[ \tilde{R} = Q \cdot R \f]
+   * 
+   * In case of #transformleftonly_==true the matrix is only transformed from
+   * the left. This yields
+   *   \f[ \hat{K} = Q \cdot K \f]
+   */
+  void RotateGlobalToLocal(
+    RCP<LINALG::SparseMatrix> sysmat,  ///< systemmatrix, will be transformed
+    RCP<Epetra_Vector> rhs  ///< right-hand-side vector, will be transformed
+    );
   
   /*!
   \brief Apply forward transformation of a single vector
@@ -140,6 +171,13 @@ public:
   void RotateLocalToGlobal(RCP<Epetra_Vector> vec);
     
   //@}
+
+
+  /*!
+  \brief Retrieve the global transformation matrix
+
+  */
+  Teuchos::RCP<const LINALG::SparseMatrix> Trafo() const { return trafo_; }
   
   
 protected:
@@ -148,33 +186,47 @@ protected:
   LocsysManager operator = (const LocsysManager& old);
   LocsysManager(const LocsysManager& old);
 
-  //! name@ Private Attributes
+  /// @name Private Attributes
+  //@{
   
-  // current discretization
+  /// current discretization
   DRT::Discretization&                     discret_;
+
+  /// transform system matrix only by left-multiplying
+  bool                                     transformleftonly_;
   
-  // problem dimension
+  /// problem dimension
   int                                      dim_;
   
-  // local system conditions
+  /// local system conditions
   vector<DRT::Condition*>                  locsysconds_;
   
-  // number of local systems
+  /// number of local systems
   int                                      numlocsys_;
   
-  // types of local systems
+  /// types of local systems
   vector<DRT::Condition::ConditionType>    typelocsys_;
   
-  // local system normals / tangents
+  /// local system normals / tangents
   Epetra_SerialDenseMatrix                 normals_;
   Epetra_SerialDenseMatrix                 tangents_;
   Epetra_SerialDenseMatrix                 thirddir_;
   
-  // assignment of local systems to nodes
+  /// assignment of local systems to nodes
   RCP<Epetra_Vector>                       locsystoggle_;
+
+  /// maps containing the DOFs affected by locsys
+  RCP<Epetra_Map>                          locsysdofmap_;
   
-  // transformation matrix
+  /// Transformation matrix which maps globally oriented components 
+  /// into locally oriented components (dubbed 'forward' transformation)
+  ///
+  /// Even if this matrix bears the general name transformation matrix here,
+  /// one should be aware of that it is treated like a rotational
+  /// transformation matrix. This means: The inverse (or 'backward') mapping
+  /// is simply implemented as its transpose rather than a general inverse.
   RCP<LINALG::SparseMatrix>                trafo_;
+  RCP<LINALG::SparseMatrix>                subtrafo_;
   
   //@}
   

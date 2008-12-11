@@ -715,7 +715,8 @@ void LINALG::SparseMatrix::ApplyDirichlet(
 /*----------------------------------------------------------------------*
  |  Apply dirichlet conditions  (public)                     mwgee 02/07|
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrix::ApplyDirichlet(const Epetra_Map& dbctoggle, bool diagonalblock)
+void LINALG::SparseMatrix::ApplyDirichlet(const Epetra_Map& dbctoggle, 
+                                          bool diagonalblock)
 {
   if (not Filled())
     dserror("expect filled matrix to apply dirichlet conditions");
@@ -805,6 +806,128 @@ void LINALG::SparseMatrix::ApplyDirichlet(const Epetra_Map& dbctoggle, bool diag
   }
 }
 
+
+/*----------------------------------------------------------------------*
+ |  Apply dirichlet conditions  (public)                     mwgee 02/07|
+ *----------------------------------------------------------------------*/
+void LINALG::SparseMatrix::ApplyDirichletWithTrafo(Teuchos::RCP<const LINALG::SparseMatrix> trafo,
+                                                   const Epetra_Map& dbctoggle,
+                                                   bool diagonalblock)
+{
+  if (not Filled())
+    dserror("expect filled matrix to apply dirichlet conditions");
+
+  if (explicitdirichlet_)
+  {
+    // Save graph of original matrix if not done already.
+    // This will never happen as the matrix is guaranteed to be filled. But to
+    // make the code more explicit...
+    if (savegraph_ and graph_==Teuchos::null)
+    {
+      graph_ = Teuchos::rcp(new Epetra_CrsGraph(sysmat_->Graph()));
+      if (not graph_->Filled())
+        dserror("got unfilled graph from filled matrix");
+    }
+
+    // allocate a new matrix and copy all rows that are not dirichlet
+    const Epetra_Map& rowmap = sysmat_->RowMap();
+    const int nummyrows      = sysmat_->NumMyRows();
+    const int maxnumentries  = sysmat_->MaxNumEntries();
+
+    // prepare working arrays for extracting rows in trafo matrix
+    const int trafomaxnumentries = trafo->MaxNumEntries();
+    int trafonumentries = 0;
+    std::vector<int> trafoindices(trafomaxnumentries,0);
+    std::vector<double> trafovalues(trafomaxnumentries,0.0);
+
+    Teuchos::RCP<Epetra_CrsMatrix> Anew = Teuchos::rcp(new Epetra_CrsMatrix(Copy,rowmap,maxnumentries,false));
+    vector<int> indices(maxnumentries,0);
+    vector<double> values(maxnumentries,0.0);
+    for (int i=0; i<nummyrows; ++i)
+    {
+      int row = sysmat_->GRID(i);
+      if (not dbctoggle.MyGID(row))
+      {
+        int numentries;
+        int err = sysmat_->ExtractGlobalRowCopy(row,maxnumentries,numentries,&values[0],&indices[0]);
+#ifdef DEBUG
+        if (err) dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d",err);
+#endif
+        err = Anew->InsertGlobalValues(row,numentries,&values[0],&indices[0]);
+#ifdef DEBUG
+        if (err<0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d",err);
+#endif
+      }
+      else
+      {
+        if (diagonalblock)
+        {
+#if DEBUG
+          {
+            int err = trafo->EpetraMatrix()->ExtractGlobalRowCopy(row,trafomaxnumentries,trafonumentries,&(trafovalues[0]),&(trafoindices[0]));
+            if (err<0) dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d",err);
+          }
+#else
+          trafo->EpetraMatrix()->ExtractGlobalRowCopy(row,trafomaxnumentries,numval,&(trafovalues[0]),&(trafoindices[0]));
+#endif
+          //cout << "This is row with LID=" << i << " and GID=" << row << endl;
+          //for (int kk=0; kk<(int)trafovalues.size(); ++kk) cout << trafovalues[kk] << " ";
+          //cout << endl;
+          //for (int kk=0; kk<(int)trafoindices.size(); ++kk) cout << trafoindices[kk] << " ";
+          //cout << endl;
+          // make ready
+          // numval = trafoindices.size();
+        }
+        else
+        {
+          trafonumentries = 1;
+          trafovalues[0] = 0.0;
+          trafoindices[0] = row;
+        }
+#ifdef DEBUG
+        {
+          int err = Anew->InsertGlobalValues(row,trafonumentries,&(trafovalues[0]),&(trafoindices[0]));
+          if (err<0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d",err);
+        }
+#else
+        Anew->InsertGlobalValues(row,trafonumentries,&(trafovalues[0]),&(trafoindices[0]));
+#endif
+      }
+    }
+    sysmat_ = Anew;
+    Complete();
+  }
+  else
+  {
+    const int nummyrows = sysmat_->NumMyRows();
+    for (int i=0; i<nummyrows; ++i)
+    {
+      int row = sysmat_->GRID(i);
+      if (dbctoggle.MyGID(row))
+      {
+        int *indexOffset;
+        int *indices;
+        double *values;
+        int err = sysmat_->ExtractCrsDataPointers(indexOffset, indices, values);
+#ifdef DEBUG
+        if (err) dserror("Epetra_CrsMatrix::ExtractCrsDataPointers returned err=%d",err);
+#endif
+        // zero row
+        memset(&values[indexOffset[i]], 0,
+               (indexOffset[i+1]-indexOffset[i])*sizeof(double));
+
+        if (diagonalblock)
+        {
+          double one = 1.0;
+          err = sysmat_->SumIntoMyValues(i,1,&one,&i);
+#ifdef DEBUG
+          if (err<0) dserror("Epetra_CrsMatrix::SumIntoMyValues returned err=%d",err);
+#endif
+        }
+      }
+    }
+  }
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -1157,6 +1280,48 @@ void LINALG::SparseMatrix::Add(const Epetra_CrsMatrix& A,
   }
 }
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void LINALG::SparseMatrix::Put(const LINALG::SparseMatrix& A,
+                               const double scalarA,
+                               Teuchos::RCP<const Epetra_Map> rowmap)
+{
+  // put values onto sysmat
+  if (A.GetMatrixtype() != LINALG::SparseMatrix::CRS_MATRIX)
+    dserror("Put is not available for matrix type %d", A.GetMatrixtype());
+  Epetra_CrsMatrix* Aprime = const_cast<Epetra_CrsMatrix*>(&(*(A.EpetraMatrix())));
+  if (Aprime == NULL) dserror("Cast failed");
+
+  // Loop over Aprime's rows, extract row content and replace respective row in sysmat
+  const int MaxNumEntries = EPETRA_MAX(Aprime->MaxNumEntries(),
+                                       sysmat_->MaxNumEntries());
+  int NumEntries;
+  vector<int> Indices(MaxNumEntries);
+  vector<double> Values(MaxNumEntries);
+  int err;
+  
+  // define row map to tackle
+  // if #rowmap is a subset of #RowMap(), a selective replacing is perfomed
+  const Epetra_Map* tomap = NULL;
+  if (rowmap != Teuchos::null)
+    tomap = &(*rowmap);
+  else
+    tomap = &(RowMap());
+ 
+  const int* togids = tomap->MyGlobalElements();
+  for (int lid=0; lid<tomap->NumMyElements(); ++lid)
+  {
+    const int Row = togids[lid];
+    err = Aprime->ExtractGlobalRowCopy(Row,MaxNumEntries,NumEntries,&(Values[0]),&(Indices[0]));
+    if (err) dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d",err);
+    if (scalarA != 1.0) for (int j=0; j<NumEntries; ++j) Values[j] *= scalarA;
+    err = sysmat_->ReplaceGlobalValues(Row,NumEntries,&(Values[0]),&(Indices[0]));
+    if (err) dserror("Epetra_CrsMatrix::ReplaceGlobalValues returned err=%d",err);
+  }
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

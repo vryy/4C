@@ -372,6 +372,11 @@ void STR::TimIntImpl::NewtonFull()
     // make negative residual
     fres_->Scale(-1.0);
 
+    // transformation matrix
+    Teuchos::RCP<const LINALG::SparseMatrix> trafo = Teuchos::null;
+    if (locsysman_ != Teuchos::null)
+      trafo = locsysman_->Trafo();
+
     // transform to local co-ordinate systems
     if (locsysman_ != Teuchos::null)
       locsysman_->RotateGlobalToLocal(stiff_, fres_);
@@ -379,7 +384,7 @@ void STR::TimIntImpl::NewtonFull()
     // apply Dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
-                                   zeros_, *(dbcmaps_->CondMap()));
+                                   trafo, zeros_, *(dbcmaps_->CondMap()));
 
     // solve for disi_
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
@@ -391,10 +396,6 @@ void STR::TimIntImpl::NewtonFull()
     }
     solver_->Solve(stiff_->EpetraMatrix(), disi_, fres_, true, iter_==1);
     solver_->ResetTolerance();
-
-    // transform back to global co-ordinate systems
-    if (locsysman_ != Teuchos::null)
-      locsysman_->RotateLocalToGlobal(disi_);
 
     // update end-point displacements etc
     UpdateIter(iter_);

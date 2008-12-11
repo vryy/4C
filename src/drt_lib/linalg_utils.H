@@ -569,6 +569,36 @@ namespace LINALG
   /*!
   \brief Apply dirichlet boundary condition to a linear system of equations
 
+  This is a flexible routine. The vectors x and dbcval might have different
+  maps. The map does not need to contain all Dirichlet dofs.
+
+  The purpose is to set Dirichlet values at a subset of all Dirichlet
+  boundaries.
+
+  Special in this routine is the ability to insert rows of general rotation 
+  matrices (stored in #trafo) rather than simply put ones and zeros 
+  at the rows associated Dirichlet DOFs.
+
+  \param A (in/out)         : Matrix of Ax=b
+  \param x (in/out)         : vector x of Ax=b
+  \param b (in/out)         : vector b of Ax=b
+  \param trafo (in)         : global matrix holding rotation matrices to convert
+                              from global to local co-ordinate systems
+  \param dbcval (in)        : vector holding values that are supposed to be prescribed
+  \param dbctoggle (in)     : unique map of all dofs that should be constrained
+
+  \pre The map dbctoggle must be subset of the maps of the vectors.
+  */
+  void ApplyDirichlettoSystem(RCP<LINALG::SparseMatrix>       A,
+                              RCP<Epetra_Vector>&             x,
+                              RCP<Epetra_Vector>&             b,
+                              RCP<const LINALG::SparseMatrix> trafo,
+                              const RCP<Epetra_Vector>&       dbcval,
+                              const Epetra_Map&               dbcmap);
+
+  /*!
+  \brief Apply dirichlet boundary condition to a linear system of equations
+
 
   \param x (in/out)         : vector x of Ax=b
   \param b (in/out)         : vector b of Ax=b

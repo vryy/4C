@@ -177,6 +177,14 @@ class SparseOperator : public Epetra_Operator
     virtual void ApplyDirichlet(const Teuchos::RCP<Epetra_Vector> dbctoggle, bool diagonalblock=true) = 0;
 
     /// Apply dirichlet boundary condition to a matrix
+    ///
+    ///  This method blanks the rows associated with Dirichlet DOFs
+    ///  and puts a 1.0 at the diagonal entry if diagonlblock==true.
+    ///  Only the rows are blanked, the columns are not touched.
+    ///  We are left with a non-symmetric matrix, if the original
+    ///  matrix was symmtric. However, the blanking of columns is computionally
+    ///  quite expensive, because the matrix is stored in a sparse and distributed
+    ///  manner.
     virtual void ApplyDirichlet(const Epetra_Map& dbcmap, bool diagonalblock=true) = 0;
 
 };

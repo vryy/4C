@@ -718,6 +718,22 @@ void LINALG::ApplyDirichlettoSystem(RCP<LINALG::SparseOperator> A,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void LINALG::ApplyDirichlettoSystem(RCP<LINALG::SparseMatrix>   A,
+                                    RCP<Epetra_Vector>&         x,
+                                    RCP<Epetra_Vector>&         b,
+                                    RCP<const LINALG::SparseMatrix> trafo,
+                                    const RCP<Epetra_Vector>&   dbcval,
+                                    const Epetra_Map&           dbcmap)
+{
+  if (trafo != Teuchos::null)
+    A->ApplyDirichletWithTrafo(trafo,dbcmap);
+  else
+    A->ApplyDirichlet(dbcmap); 
+  ApplyDirichlettoSystem(x,b,dbcval,dbcmap);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::MapExtractor> LINALG::ConvertDirichletToggleVectorToMaps(
   const Teuchos::RCP<const Epetra_Vector>& dbctoggle)
 {

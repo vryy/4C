@@ -298,7 +298,27 @@ class SparseMatrix : public SparseOperator
     void ApplyDirichlet(const Teuchos::RCP<Epetra_Vector> dbctoggle, bool diagonalblock=true);
 
     /// Apply dirichlet boundary condition to a matrix.
+    ///
+    ///  This method blanks the rows associated with Dirichlet DOFs
+    ///  and puts a 1.0 at the diagonal entry if diagonlblock==true.
+    ///  Only the rows are blanked, the columns are not touched.
+    ///  We are left with a non-symmetric matrix, if the original
+    ///  matrix was symmtric. However, the blanking of columns is computionally
+    ///  quite expensive, because the matrix is stored in a sparse and distributed
+    ///  manner.
     void ApplyDirichlet(const Epetra_Map& dbctoggle, bool diagonalblock=true);
+
+    /// Apply dirichlet boundary condition to a matrix using a #trafo matrix
+    ///
+    /// This method the same as the method #ApplyDirichlet, but instead of
+    /// 1.0 on diagonal, the corresponding row of #trafo is inserted. This
+    /// is needed to treat efficiently Dirichlet BCs with local co-ordinate systems.
+    /// The transformation matrix #trafo basically holds rotation matrices
+    /// for the DOFs of the nodes.
+    void ApplyDirichletWithTrafo(Teuchos::RCP<const LINALG::SparseMatrix> trafo,
+                                 const Epetra_Map& dbctoggle,
+                                 bool diagonalblock=true);
+
 
     /// create matrix that contains all Dirichlet lines from my
     Teuchos::RCP<SparseMatrix> ExtractDirichletLines(const Teuchos::RCP<Epetra_Vector> dbctoggle);
@@ -473,6 +493,22 @@ class SparseMatrix : public SparseOperator
              const bool transposeA,
              const double scalarA,
              const double scalarB);
+
+    /// Put a Epetra_CrsMatrix (partially) onto another: (*this) = B*scalarB
+    /*!
+
+    Put one matrix onto another. The matrix (*this) to be added to must not be
+    completed. Sparsity patterns of A and (*this) need not match and A and (*this) can be
+    nonsymmetric in value and pattern.  Row map of A has to be a
+    processor-local subset of the row map of (*this).
+
+    \param A          (in)     : Matrix to add to this (must have Filled()==true)
+    \param scalarA    (in)     : scaling factor for #A
+    \param rowmap     (in)     : to put selectively on rows in #rowmap (inactive if ==Teuchos:null)
+    */
+    void Put(const LINALG::SparseMatrix& A,
+             const double scalarA,
+             Teuchos::RCP<const Epetra_Map> rowmap);
 
     /// Multiply a (transposed) matrix with another (transposed): C = A(^T)*B(^T)
     /*!
