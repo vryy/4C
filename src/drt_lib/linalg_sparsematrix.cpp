@@ -868,7 +868,7 @@ void LINALG::SparseMatrix::ApplyDirichletWithTrafo(Teuchos::RCP<const LINALG::Sp
             if (err<0) dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d",err);
           }
 #else
-          trafo->EpetraMatrix()->ExtractGlobalRowCopy(row,trafomaxnumentries,numval,&(trafovalues[0]),&(trafoindices[0]));
+          trafo->EpetraMatrix()->ExtractGlobalRowCopy(row,trafomaxnumentries,trafonumentries,&(trafovalues[0]),&(trafoindices[0]));
 #endif
           //cout << "This is row with LID=" << i << " and GID=" << row << endl;
           //for (int kk=0; kk<(int)trafovalues.size(); ++kk) cout << trafovalues[kk] << " ";
