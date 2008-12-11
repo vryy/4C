@@ -538,7 +538,7 @@ void DRT::UTILS::LocsysManager::Setup()
     }
     locsysdofmap_ = rcp(new Epetra_Map(-1, nummyentries, myglobalentries,
                                        discret_.DofRowMap()->IndexBase(), 
-                                       discret_.Comm()),false);
+                                       discret_.Comm()));
     if (locsysdofmap_ == null) dserror("Creation failed.");
   }
 
@@ -549,7 +549,6 @@ void DRT::UTILS::LocsysManager::Setup()
     //cout << "Subtrafo: nummyrows=" << subtrafo_->EpetraMatrix()->NumMyRows() 
     //     << " nummycols=" << subtrafo_->EpetraMatrix()->NumMyCols() 
     //     << endl;
-
   }
 
   // done here
@@ -623,7 +622,7 @@ void DRT::UTILS::LocsysManager::RotateGlobalToLocal(RCP<LINALG::SparseMatrix> sy
     // selective multiplication from left
     RCP<LINALG::SparseMatrix> temp = LINALG::Multiply(*subtrafo_,false,*sysmat,false,true);
     // put transformed rows back into global matrix
-    sysmat->Put(*temp, 1.0, locsysdofmap_);
+    sysmat->Put(*temp,1.0,locsysdofmap_);
   }
   else
   {
