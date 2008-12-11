@@ -1296,11 +1296,7 @@ void LINALG::SparseMatrix::Put(const LINALG::SparseMatrix& A,
   // Loop over Aprime's rows, extract row content and replace respective row in sysmat
   const int MaxNumEntries = EPETRA_MAX(Aprime->MaxNumEntries(),
                                        sysmat_->MaxNumEntries());
-  int NumEntries;
-  vector<int> Indices(MaxNumEntries);
-  vector<double> Values(MaxNumEntries);
-  int err;
-  
+
   // define row map to tackle
   // if #rowmap is a subset of #RowMap(), a selective replacing is perfomed
   const Epetra_Map* tomap = NULL;
@@ -1308,6 +1304,12 @@ void LINALG::SparseMatrix::Put(const LINALG::SparseMatrix& A,
     tomap = &(*rowmap);
   else
     tomap = &(RowMap());
+
+  // working variables
+  int NumEntries;
+  vector<int> Indices(MaxNumEntries);
+  vector<double> Values(MaxNumEntries);
+  int err;
  
   const int* togids = tomap->MyGlobalElements();
   for (int lid=0; lid<tomap->NumMyElements(); ++lid)

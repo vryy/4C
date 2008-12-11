@@ -508,14 +508,20 @@ void DRT::UTILS::LocsysManager::Setup()
         for (int c=0;c<numdof;++c)
           trafo_->Assemble(nodetrafo(r,c),dofs[r],dofs[c]);
 
-      for (int r=0;r<numdof;++r)
-        locsysdofset.insert(dofs[r]);
+      // store the DOF with locsys
+      if (transformleftonly_)
+        for (int r=0;r<numdof;++r)
+          locsysdofset.insert(dofs[r]);
 
     }
   }
 
   // complete transformation matrix
   trafo_->Complete();
+
+  //**********************************************************************
+  // Build map holding DOFs linked to nodes with local co-ordinate system
+  //**********************************************************************
 
   // create unique/row map of DOFs subjected to local co-ordinate change
   if (transformleftonly_)
@@ -615,9 +621,9 @@ void DRT::UTILS::LocsysManager::RotateGlobalToLocal(RCP<LINALG::SparseMatrix> sy
   if (transformleftonly_)
   {
     // selective multiplication from left
-    RCP<LINALG::SparseMatrix> A = LINALG::Multiply(*subtrafo_,false,*sysmat,false,true);
+    RCP<LINALG::SparseMatrix> temp = LINALG::Multiply(*subtrafo_,false,*sysmat,false,true);
     // put transformed rows back into global matrix
-    sysmat->Put(*A, 1.0, locsysdofmap_);
+    sysmat->Put(*temp, 1.0, locsysdofmap_);
   }
   else
   {

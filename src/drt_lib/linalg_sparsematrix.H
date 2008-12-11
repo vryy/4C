@@ -504,7 +504,7 @@ class SparseMatrix : public SparseOperator
 
     \param A          (in)     : Matrix to add to this (must have Filled()==true)
     \param scalarA    (in)     : scaling factor for #A
-    \param rowmap     (in)     : to put selectively on rows in #rowmap (inactive if ==Teuchos:null)
+    \param rowmap     (in)     : to put selectively on rows in #rowmap (inactive if ==Teuchos::null)
     */
     void Put(const LINALG::SparseMatrix& A,
              const double scalarA,

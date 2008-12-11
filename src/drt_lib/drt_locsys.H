@@ -136,10 +136,10 @@ public:
    * \brief Apply forward transformation of linear system of equations
    *
    * This method transform the matrix #sysmat from global co-ordinate
-   * in local co-ordinate systems, i.e.
+   * into local co-ordinate systems, i.e.
    *   \f[ \tilde{K} = Q \cdot K \cdot Q^T \f]
-   * in which \f$K\f$ is the globally  and \f$\tilde{K}\f$ the locally oriented matrix.
-   * respectively. The transformation matrix #trafo_ is denoted \f$Q\f$.
+   * in which \f$K\f$ is the globally  and \f$\tilde{K}\f$ the locally oriented matrix,
+   * respectively. The transformation matrix #trafo_ is denoted \f$Q : D \to \tilde{D}\f$.
    * The similar thing is done for the right-hand-side vector:
    *   \f[ \tilde{R} = Q \cdot R \f]
    * 
@@ -226,6 +226,11 @@ protected:
   /// transformation matrix. This means: The inverse (or 'backward') mapping
   /// is simply implemented as its transpose rather than a general inverse.
   RCP<LINALG::SparseMatrix>                trafo_;
+
+  /// Transformation 'sub'-matrix with non-identy entries
+  ///
+  /// This is actually not a sub-matrix, but a global matrix
+  /// with nil entries at (a lot) places
   RCP<LINALG::SparseMatrix>                subtrafo_;
   
   //@}
