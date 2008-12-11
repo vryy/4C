@@ -223,8 +223,10 @@ void MAT::MicroMaterialGP::SetUpMicroStatic()
   // output interval (= output every nstep) is part of StructuralDynamicsParams
 
   const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
-  const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
   const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
+
+  // i/o options should be read from the corresponding micro-file
+  const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance(microdisnum_)->IOParams();
 
   // -------------------------------------------------------------------
   // create a solver
