@@ -16,7 +16,6 @@ Maintainer: Alexander Popp
 
 #include "Teuchos_RefCountPtr.hpp"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/linalg_mapextractor.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -63,70 +62,76 @@ public:
   void Setup();
 
   /*!
-  \brief Destructor
-
-  */
+   *\brief Destructor
+   *
+   */
   virtual ~LocsysManager() {};
 
   /*!
-  \brief Print this Manager
-
-  */
+   *\brief Print this Manager
+   *
+   */
   virtual void Print(ostream& os) const;
 
   /*!
-  \brief Get Epetra communicator
-
-  */
+   * \brief Get Epetra communicator
+   *
+   */
   inline const Epetra_Comm& Comm() const { return discret_.Comm();};
     
   //! @name Access methods
   
   /*!
-  \brief Get discretization
-
-  */
+   * \brief Get discretization
+   *
+   */
   inline DRT::Discretization& Discret() const { return discret_;};
   
   /*!
-  \brief Get problem dimension
-    
-  */
+   * \brief Get problem dimension
+   * 
+   */
   inline const int& Dim() {return dim_;};
     
   /*!
-  \brief Get local system conditions
-
-  */
+   * \brief Get local system conditions
+   *
+   */
   inline vector<DRT::Condition*> Conditions() const { return locsysconds_;};
   
   /*!
-  \brief Get a specific local system condition
-
-  */
+   * \brief Get a specific local system condition
+   *
+   */
   inline DRT::Condition* Conditions(int k) const
   { if (k>=numlocsys_) dserror("Invalid vector index");
     else return locsysconds_[k];};
                                                    
   /*!
-  \brief Get number of local system conditions
-
-  */
+   * \brief Get number of local system conditions
+   *
+   */
   inline int NumLocsys() const { return numlocsys_;};
   
   /*!
-  \brief Get types of local system conditions
-
-  */
+   * \brief Get types of local system conditions
+   *
+   */
   inline vector<DRT::Condition::ConditionType> TypeLocsys() const { return typelocsys_;};
   
   /*!
-  \brief Get type of a specific local system condition
-
-  */
+   * \brief Get type of a specific local system condition
+   *
+   */
   inline DRT::Condition::ConditionType TypeLocsys(int k) const
   { if (k>=numlocsys_) dserror("Invalid vector index");
     return typelocsys_[k];};
+
+  /*!
+   * \brief Retrieve the global transformation matrix
+   *
+   */
+  Teuchos::RCP<const LINALG::SparseMatrix> Trafo() const { return trafo_; }
     
   //@}
   
@@ -139,7 +144,7 @@ public:
    * into local co-ordinate systems, i.e.
    *   \f[ \tilde{K} = Q \cdot K \cdot Q^T \f]
    * in which \f$K\f$ is the globally  and \f$\tilde{K}\f$ the locally oriented matrix,
-   * respectively. The transformation matrix #trafo_ is denoted \f$Q : D \to \tilde{D}\f$.
+   * respectively. The transformation matrix #trafo_ is denoted \f$Q : D \mapsto \tilde{D}\f$.
    * The similar thing is done for the right-hand-side vector:
    *   \f[ \tilde{R} = Q \cdot R \f]
    * 
@@ -153,33 +158,25 @@ public:
     );
   
   /*!
-  \brief Apply forward transformation of a single vector
-
-  */
+   * \brief Apply forward transformation of a single vector
+   *
+   */
   void RotateGlobalToLocal(RCP<Epetra_Vector> vec);
     
   /*!
-  \brief Apply backward transformation of result and linear system of equations
-
-  */
+   * \brief Apply backward transformation of result and linear system of equations
+   *
+   */
   void RotateLocalToGlobal(RCP<Epetra_Vector> result, RCP<LINALG::SparseMatrix> sysmat, RCP<Epetra_Vector> rhs);
   
   /*!
-  \brief Apply backward transformation of a single vector
-
-  */
+   * \brief Apply backward transformation of a single vector
+   *
+   */
   void RotateLocalToGlobal(RCP<Epetra_Vector> vec);
     
   //@}
 
-
-  /*!
-  \brief Retrieve the global transformation matrix
-
-  */
-  Teuchos::RCP<const LINALG::SparseMatrix> Trafo() const { return trafo_; }
-  
-  
 protected:
 
   // don't want = operator and cctor
@@ -227,7 +224,7 @@ protected:
   /// is simply implemented as its transpose rather than a general inverse.
   RCP<LINALG::SparseMatrix>                trafo_;
 
-  /// Transformation 'sub'-matrix with non-identy entries
+  /// Transformation 'sub'-matrix with non-identity entries
   ///
   /// This is actually not a sub-matrix, but a global matrix
   /// with nil entries at (a lot) places
