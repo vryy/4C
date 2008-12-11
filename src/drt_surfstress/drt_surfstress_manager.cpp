@@ -18,18 +18,30 @@ Maintainer: Lena Wiechert
 #include "drt_surfstress_manager.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_io/io_control.H"
+#include "../drt_lib/drt_condition_utils.H"
 #include <cstdlib>
 //#include <m1.h>
+
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
 
 /*-------------------------------------------------------------------*
  |  ctor (public)                                            lw 12/07|
  *-------------------------------------------------------------------*/
-UTILS::SurfStressManager::SurfStressManager(DRT::Discretization& discret,
-                                            ParameterList sdynparams):
+UTILS::SurfStressManager::SurfStressManager(Teuchos::RCP<DRT::Discretization> discret,
+                                            ParameterList sdynparams,
+                                            const std::string file_prefix):
   discret_(discret)
 {
   std::vector<DRT::Condition*> surfstresscond(0);
-  discret_.GetCondition("SurfaceStress", surfstresscond);
+  discret_->GetCondition("SurfaceStress", surfstresscond);
   if (surfstresscond.size())
   {
     switch (Teuchos::getIntegralValue<INPAR::STR::DynamicType>(sdynparams,"DYNAMICTYP"))
@@ -50,8 +62,8 @@ UTILS::SurfStressManager::SurfStressManager(DRT::Discretization& discret,
     havesurfstress_ = true;
     timen_ = 0.;
 
-    surfrowmap_ = DRT::UTILS::GeometryElementMap(discret, "SurfaceStress", false);
-    RCP<Epetra_Map> surfcolmap = DRT::UTILS::GeometryElementMap(discret, "SurfaceStress", true);
+    surfrowmap_ = DRT::UTILS::GeometryElementMap(*discret, "SurfaceStress", false);
+    Teuchos::RCP<Epetra_Map> surfcolmap = DRT::UTILS::GeometryElementMap(*discret, "SurfaceStress", true);
 
     // We start with interfacial area and concentration = 0.
     // This is wrong but does not make a difference
@@ -64,9 +76,91 @@ UTILS::SurfStressManager::SurfStressManager(DRT::Discretization& discret,
     con_last_        = rcp(new Epetra_Vector(*surfcolmap,true));
     gamma_current_   = rcp(new Epetra_Vector(*surfcolmap,true));
     gamma_last_      = rcp(new Epetra_Vector(*surfcolmap,true));
+
+
+    std::vector<string> conditions_to_copy;
+    std::string condname = "SurfaceStress";
+    conditions_to_copy.push_back(condname);
+
+    surfdiscret_ = DRT::UTILS::CreateDiscretizationFromCondition(discret_, condname,
+                                                                 "boundary", "BELE3",
+                                                                 conditions_to_copy);
+    surfdiscret_->FillComplete();
+    std::string outfile = file_prefix + "_" + condname;
+
+    Teuchos::RCP<IO::OutputControl> condcontrol = Teuchos::rcp(new IO::OutputControl(surfdiscret_->Comm(),
+                                                                                     "none",                   // we do not have a problem type
+                                                                                     "Polynomial",
+                                                                                     "debug-output",           // no input file either
+                                                                                     outfile,                  // an output file name is needed
+                                                                                     genprob.ndim,
+                                                                                     0,                        // restart is meaningless here
+                                                                                     1000));                   // we never expect to get 1000 iterations
+
+    surfoutput_=Teuchos::rcp(new IO::DiscretizationWriter(surfdiscret_,condcontrol));
+    surfoutput_->WriteMesh(0,0.0);
+
   }
   else
     havesurfstress_ = false;
+}
+
+
+/*-------------------------------------------------------------------*
+ |  Write Results to file                                    lw 12/08|
+ *-------------------------------------------------------------------*/
+void UTILS::SurfStressManager::WriteResults(const int istep, const double timen)
+{
+  surfoutput_->NewStep(istep, timen);
+
+  // The column map based vectors used for calculations are exported
+  // to row map based ones needed for writing
+
+  RCP<Epetra_Vector> A_last_row = LINALG::CreateVector(*surfrowmap_,true);
+  RCP<Epetra_Vector> con_last_row = LINALG::CreateVector(*surfrowmap_,true);
+  RCP<Epetra_Vector> gamma_last_row = LINALG::CreateVector(*surfrowmap_,true);
+
+  LINALG::Export(*A_last_, *A_last_row);
+  LINALG::Export(*con_last_, *con_last_row);
+  LINALG::Export(*gamma_last_, *gamma_last_row);
+
+  surfoutput_->WriteVector("gamma", gamma_last_row, IO::DiscretizationWriter::elementvector);
+  surfoutput_->WriteVector("Gamma", con_last_row, IO::DiscretizationWriter::elementvector);
+  surfoutput_->WriteVector("Area", A_last_row, IO::DiscretizationWriter::elementvector);
+}
+
+
+/*-------------------------------------------------------------------*
+ |  Read restart from binary file                            lw 12/08|
+ *-------------------------------------------------------------------*/
+void UTILS::SurfStressManager::ReadRestart(const int step,
+                                           const std::string file_prefix,
+                                           const bool serial)
+{
+  // figure out how the file we restart from is called
+  std::string condname = "SurfaceStress";
+  std::string restartname = file_prefix + "_" + condname;
+
+  Teuchos::RCP<IO::InputControl> surfinpcontrol = rcp(new IO::InputControl(restartname, serial));
+
+  IO::DiscretizationReader reader(surfdiscret_, surfinpcontrol, step);
+  int    rstep = reader.ReadInt("step");
+  if (rstep != step) dserror("Time step on file not equal to given step");
+
+  // The row map based vectors written in case of restart are exported
+  // to column based ones needed for calculations again
+
+  RCP<Epetra_Vector> A = LINALG::CreateVector(*surfrowmap_,true);
+  RCP<Epetra_Vector> con = LINALG::CreateVector(*surfrowmap_,true);
+  RCP<Epetra_Vector> gamma = LINALG::CreateVector(*surfrowmap_,true);
+
+  reader.ReadVector(A, "Area");
+  reader.ReadVector(con, "Gamma");
+  reader.ReadVector(gamma, "gamma");
+
+  LINALG::Export(*A, *A_last_);
+  LINALG::Export(*con, *con_last_);
+  LINALG::Export(*gamma, *gamma_last_);
 }
 
 
@@ -86,9 +180,9 @@ void UTILS::SurfStressManager::EvaluateSurfStress(ParameterList& p,
   // action for elements
   p.set("action","calc_surfstress_stiff");
 
-  discret_.ClearState();
-  discret_.SetState("displacement",dism);
-  discret_.SetState("new displacement",disn);
+  discret_->ClearState();
+  discret_->SetState("displacement",dism);
+  discret_->SetState("new displacement",disn);
 
   double currtime = p.get<double>("total time", 0.);
   double dt = p.get<double>("delta time", 0.);
@@ -101,7 +195,7 @@ void UTILS::SurfStressManager::EvaluateSurfStress(ParameterList& p,
     p.set("newstep", true);
   }
 
-  discret_.EvaluateCondition(p,stiff,null,fint,null,null,"SurfaceStress");
+  discret_->EvaluateCondition(p,stiff,null,fint,null,null,"SurfaceStress");
 
   return;
 }
@@ -117,11 +211,6 @@ void UTILS::SurfStressManager::Update()
   A_last_->Update(1.0, *A_current_, 0.0);
   con_last_->Update(1.0, *con_current_, 0.0);
   gamma_last_->Update(1.0, *gamma_current_, 0.0);
-
-//   FILE *out;
-//   out = fopen("Gamma_A.txt", "a");
-//   fprintf(out, "%lf %lf\n", (*A_last_)[20], (*gamma_last_)[20]);
-//   fclose(out);
 }
 
 /*-------------------------------------------------------------------*

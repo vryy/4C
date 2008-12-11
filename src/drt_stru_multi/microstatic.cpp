@@ -52,7 +52,6 @@ solver_(solver)
   // -------------------------------------------------------------------
   double time    = params_->get<double>("total time"      ,0.0);
   double dt      = params_->get<double>("delta time"      ,0.01);
-  double alphaf    = params_->get<double>("alpha f",0.459);
 //   int istep      = params_->get<int>   ("step"            ,0);
 
   // -------------------------------------------------------------------
@@ -203,8 +202,8 @@ solver_(solver)
   // conditions due to interfacial phenomena
   // Note that sdyn from the macro-scale is called here since we need
   // to use identical parameters on both scales in any case!
-  const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
-  surf_stress_man_=rcp(new UTILS::SurfStressManager(*discret_, sdyn));
+//   const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
+//   surf_stress_man_=rcp(new UTILS::SurfStressManager(discret_, sdyn));
 
   return;
 } // STRUMULTI::MicroStatic::MicroStatic
@@ -518,6 +517,7 @@ void STRUMULTI::MicroStatic::Output(RefCountPtr<DiscretizationWriter> output,
   int    updevrystress = params_->get<int>   ("io stress every nstep"  ,10);
   INPAR::STR::StrainType iostrain      = params_->get<INPAR::STR::StrainType>("io structural strain",INPAR::STR::strain_none);
   int    writeresevry  = params_->get<int>   ("write restart every"    ,0);
+  bool   iosurfactant  = params_->get<bool>  ("io surfactant"          ,false);
 
   bool isdatawritten = false;
 
@@ -530,16 +530,7 @@ void STRUMULTI::MicroStatic::Output(RefCountPtr<DiscretizationWriter> output,
     isdatawritten = true;
 
     if (surf_stress_man_->HaveSurfStress())
-    {
-      RCP<Epetra_Map> surfrowmap=surf_stress_man_->GetSurfRowmap();
-      RCP<Epetra_Vector> A=rcp(new Epetra_Vector(*surfrowmap, true));
-      RCP<Epetra_Vector> con=rcp(new Epetra_Vector(*surfrowmap, true));
-      RCP<Epetra_Vector> gamma=rcp(new Epetra_Vector(*surfrowmap, true));
-      surf_stress_man_->GetHistory(A,con,gamma);
-      output->WriteVector("A", A);
-      output->WriteVector("con", con);
-      output->WriteVector("gamma", gamma);
-    }
+      surf_stress_man_->WriteRestart(istep, time);
 
     RCP<std::vector<char> > lastalphadata = rcp(new std::vector<char>());
 
@@ -568,6 +559,9 @@ void STRUMULTI::MicroStatic::Output(RefCountPtr<DiscretizationWriter> output,
     output->NewStep(istep, time);
     output->WriteVector("displacement",dis_);
     isdatawritten = true;
+
+    if (surf_stress_man_->HaveSurfStress() && iosurfactant)
+      surf_stress_man_->WriteResults(istep, time);
   }
 
   //------------------------------------- do stress calculation and output
@@ -654,6 +648,7 @@ void STRUMULTI::MicroStatic::SetDefaults(ParameterList& params)
   params.set<int>   ("io disp every nstep"    ,1);
   params.set<INPAR::STR::StressType>("io structural stress",INPAR::STR::stress_none);
   params.set<INPAR::STR::StrainType>("io structural strain",INPAR::STR::strain_none);
+  params.set<bool>  ("io surfactant",false);
   params.set<int>   ("restart"                ,0);
   params.set<int>   ("write restart every"    ,0);
   // takes values "constant" consistent"
@@ -672,10 +667,10 @@ void STRUMULTI::MicroStatic::SetDefaults(ParameterList& params)
  |  read restart (public)                                       lw 03/08|
  *----------------------------------------------------------------------*/
 void STRUMULTI::MicroStatic::ReadRestart(int step,
-                              RCP<Epetra_Vector> dis,
-                              RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > lastalpha,
-                              RefCountPtr<UTILS::SurfStressManager> surf_stress_man,
-                              string name)
+                                         RCP<Epetra_Vector> dis,
+                                         RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > lastalpha,
+                                         RefCountPtr<UTILS::SurfStressManager> surf_stress_man,
+                                         string name)
 {
   RCP<IO::InputControl> inputcontrol = rcp(new IO::InputControl(name, true));
   IO::DiscretizationReader reader(discret_, inputcontrol, step);
@@ -700,14 +695,7 @@ void STRUMULTI::MicroStatic::ReadRestart(int step,
 
   if (surf_stress_man->HaveSurfStress())
   {
-    RCP<Epetra_Map> surfmap=surf_stress_man->GetSurfRowmap();
-    RCP<Epetra_Vector> A = LINALG::CreateVector(*surfmap,true);
-    RCP<Epetra_Vector> con = LINALG::CreateVector(*surfmap,true);
-    RCP<Epetra_Vector> gamma = LINALG::CreateVector(*surfmap,true);
-    reader.ReadVector(A, "A");
-    reader.ReadVector(con, "con");
-    reader.ReadVector(gamma, "gamma");
-    surf_stress_man->SetHistory(A,con,gamma);
+    surf_stress_man->ReadRestart(rstep, name, true);
   }
 
   reader.ReadSerialDenseMatrix(lastalpha, "alpha");

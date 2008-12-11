@@ -82,14 +82,6 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID, const bool
   // create and initialize "empty" EAS history map
   EasInit();
 
-  // we are using the same structural dynamic parameters as on the
-  // macroscale, so to avoid checking the equivalence of the reader
-  // GiD sections we simply ask the macroproblem for its parameters.
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-
-  // Initialize SurfStressManager for handling surface stress conditions due to interfacial phenomena
-  surf_stress_man_=rcp(new UTILS::SurfStressManager(*microdis, sdyn));
-
   // set up micro output
   //
   // Get the macro output prefix and insert element and gauss point
@@ -120,27 +112,27 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID, const bool
     restartname_ = s.str();
   }
 
+  // figure out how the new output file is called on the microscale
+  // note: the trailing number must be the same as on the macroscale
+  std::string newfilename;
+  size_t posn = micronewprefix.rfind('-');
+  if (posn!=std::string::npos)
+  {
+    std::string number = micronewprefix.substr(posn+1);
+    std::string prefix = micronewprefix.substr(0,posn);
+    ostringstream s;
+    s << prefix << "_el" << ele_ID_ << "_gp" << gp_ << "-" << number;
+    newfilename = s.str();
+  }
+  else
+  {
+    ostringstream s;
+    s << micronewprefix << "_el" << ele_ID_ << "_gp" << gp_;
+    newfilename = s.str();
+  }
+
   if (eleowner)
   {
-    // figure out how the new output file is called on the microscale
-    // note: the trailing number must be the same as on the macroscale
-    std::string newfilename;
-    size_t pos = micronewprefix.rfind('-');
-    if (pos!=std::string::npos)
-    {
-      std::string number = micronewprefix.substr(pos+1);
-      std::string prefix = micronewprefix.substr(0,pos);
-      ostringstream s;
-      s << prefix << "_el" << ele_ID_ << "_gp" << gp_ << "-" << number;
-      newfilename = s.str();
-    }
-    else
-    {
-      ostringstream s;
-      s << micronewprefix << "_el" << ele_ID_ << "_gp" << gp_;
-      newfilename = s.str();
-    }
-
     RCP<OutputControl> microcontrol =
       rcp(new OutputControl(microdis->Comm(),
                             DRT::Problem::Instance(microdisnum_)->ProblemType(),
@@ -154,6 +146,15 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID, const bool
 
     micro_output_ = rcp(new DiscretizationWriter(microdis,microcontrol));
   }
+
+  // we are using the same structural dynamic parameters as on the
+  // macroscale, so to avoid checking the equivalence of the reader
+  // GiD sections we simply ask the macroproblem for its parameters.
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+
+  // Initialize SurfStressManager for handling surface stress conditions due to interfacial phenomena
+  // Note that this has to be done _after_ finding the output file name!
+  surf_stress_man_=rcp(new UTILS::SurfStressManager(microdis, sdyn, newfilename));
 
   istep_ = 0;
 
@@ -272,6 +273,8 @@ void MAT::MicroMaterialGP::SetUpMicroStatic()
 
   INPAR::STR::StrainType iostrain = Teuchos::getIntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_STRAIN");
   params->set<INPAR::STR::StrainType>("io structural strain", iostrain);
+
+  params->set<bool>  ("io surfactant",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_SURFACTANT"));
 
   params->set<int>   ("restart",probtype.get<int>("RESTART"));
   params->set<int>   ("write restart every",sdyn.get<int>("RESTARTEVRY"));

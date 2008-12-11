@@ -461,7 +461,7 @@ namespace STR
 
     //! Get number of time steps
     const int GetTimeNumStep() const { return stepmax_; }
-    
+
 
     //! Return MapExtractor for Dirichlet boundary conditions
     const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() const
@@ -506,6 +506,7 @@ namespace STR
     INPAR::STR::StressType writestress_;  //!< stress output type
     INPAR::STR::StrainType writestrain_;  //!< strain output type
     int writeenergyevery_;  //!< write system energy every given step
+    bool writesurfactant_;  //!< write surfactant output
     std::ofstream* energyfile_;  //!< outputfile for energy
     //@}
 

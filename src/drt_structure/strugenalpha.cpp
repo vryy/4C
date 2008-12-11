@@ -16,6 +16,7 @@ Maintainer: Michael Gee
 
 #include "strugenalpha.H"
 #include "../drt_io/io.H"
+#include "../drt_io/io_control.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_structure.H"
 
@@ -165,7 +166,7 @@ fsisurface_(NULL)
   dofrowmap = discret_.DofRowMap();
   // Initialize SurfStressManager for handling surface stress conditions due to interfacial phenomena
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-  surf_stress_man_=rcp(new UTILS::SurfStressManager(discret_, sdyn));
+  surf_stress_man_=rcp(new UTILS::SurfStressManager(Discretization(), sdyn, DRT::Problem::Instance()->OutputControlFile()->FileName()));
   // Check for potential conditions
   vector<DRT::Condition*> potentialcond;
   discret_.GetCondition("Potential",potentialcond);
@@ -2975,6 +2976,7 @@ void StruGenAlpha::Output()
   INPAR::STR::StressType iostress = params_.get<INPAR::STR::StressType>("io structural stress",INPAR::STR::stress_none);
   int    updevrystress = params_.get<int>   ("io stress every nstep"  ,10);
   INPAR::STR::StrainType iostrain      = params_.get<INPAR::STR::StrainType>("io structural strain",INPAR::STR::strain_none);
+  bool   iosurfactant  = params_.get<bool>  ("io surfactant"          ,false);
 
   int    writeresevry  = params_.get<int>   ("write restart every"    ,0);
 
@@ -3005,16 +3007,7 @@ void StruGenAlpha::Output()
     isdatawritten = true;
 
     if (surf_stress_man_->HaveSurfStress())
-    {
-      RCP<Epetra_Map> surfrowmap=surf_stress_man_->GetSurfRowmap();
-      RCP<Epetra_Vector> A=rcp(new Epetra_Vector(*surfrowmap, true));
-      RCP<Epetra_Vector> con=rcp(new Epetra_Vector(*surfrowmap, true));
-      RCP<Epetra_Vector> gamma=rcp(new Epetra_Vector(*surfrowmap, true));
-      surf_stress_man_->GetHistory(A,con,gamma);
-      output_.WriteVector("A", A);
-      output_.WriteVector("con", con);
-      output_.WriteVector("gamma", gamma);
-    }
+      surf_stress_man_->WriteRestart(istep, timen);
 
     if (constrMan_->HaveConstraint())
     {
@@ -3044,6 +3037,10 @@ void StruGenAlpha::Output()
     output_.WriteVector("acceleration",acc_);
     output_.WriteVector("fexternal",fext_);
     output_.WriteElementData();
+
+    if (surf_stress_man_->HaveSurfStress() and iosurfactant)
+      surf_stress_man_->WriteResults(istep,timen);
+
     isdatawritten = true;
   }
 
@@ -3373,6 +3370,7 @@ void StruGenAlpha::SetDefaults(ParameterList& params)
   params.set<INPAR::STR::StressType>("io structural stress",INPAR::STR::stress_none);
   params.set<int>   ("io disp every nstep"    ,10);
   params.set<INPAR::STR::StrainType>("io structural strain",INPAR::STR::strain_none);
+  params.set<bool>  ("io surfactant",false);
   params.set<int>   ("restart"                ,0);
   params.set<int>   ("write restart every"    ,0);
   params.set<bool>  ("contact"                ,false);
@@ -3425,16 +3423,7 @@ void StruGenAlpha::ReadRestart(int step)
   params_.set<int>   ("step",rstep);
 
   if (surf_stress_man_->HaveSurfStress())
-  {
-    RCP<Epetra_Map> surfmap=surf_stress_man_->GetSurfRowmap();
-    RCP<Epetra_Vector> A = LINALG::CreateVector(*surfmap,true);
-    RCP<Epetra_Vector> con = LINALG::CreateVector(*surfmap,true);
-    RCP<Epetra_Vector> gamma = LINALG::CreateVector(*surfmap,true);
-    reader.ReadVector(A, "A");
-    reader.ReadVector(con, "con");
-    reader.ReadVector(gamma, "gamma");
-    surf_stress_man_->SetHistory(A,con,gamma);
-  }
+    surf_stress_man_->ReadRestart(rstep, DRT::Problem::Instance()->InputControlFile()->FileName());
 
   if (DRT::Problem::Instance()->ProblemType()=="struct_multi")
   {

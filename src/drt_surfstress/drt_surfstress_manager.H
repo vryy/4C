@@ -47,9 +47,16 @@ public:
 
     \param discret (in): Discretization
     \param sdynparams (in): structural dynamics parameters
+    \param file_prefix (in): prefix for output file name
+
+    Note that the prefix needs to be handed in since the
+    SurfStressManager can not distinguish whether it is allocated on
+    the macro- or a possible micro-scale (and if so, in which
+    macro-scale element and at which macro-scale GP).
   */
-  SurfStressManager(DRT::Discretization& discret,
-                    ParameterList sdynparams);
+  SurfStressManager(Teuchos::RCP<DRT::Discretization> discret,
+                    ParameterList sdynparams,
+                    const string file_prefix);
 
 
   /*!
@@ -66,6 +73,26 @@ public:
     return havesurfstress_;
   };
 
+  /*!
+    \brief Write binary results (current gamma, Gamma, A)
+  */
+  void WriteResults(const int istep, const double timen);
+
+  /*!
+    \brief Write restart (current gamma, Gamma, A)
+  */
+  void WriteRestart(const int istep, const double timen)
+  {
+    surfoutput_->WriteMesh(istep,timen);
+    WriteResults(istep, timen);
+  }
+
+  /*!
+    \brief Read restart (current gamma, Gamma, A)
+  */
+  void ReadRestart(const int step,
+                   const string file_prefix,
+                   const bool serial = false);
 
   /*!
     \brief Call discretization to calculate additional contributions
@@ -87,41 +114,6 @@ public:
     \brief Update history variables
   */
   void Update();
-
-  /*!
-    \brief Get history variables needed for writing restart
-
-    The column map based vectors used for calculations are exported
-    to row map based ones needed for writing.
-  */
-  void GetHistory(RCP<Epetra_Vector> A_last_row,
-                  RCP<Epetra_Vector> con_last_row,
-                  RCP<Epetra_Vector> gamma_last_row)
-  {
-    LINALG::Export(*A_last_, *A_last_row);
-    LINALG::Export(*con_last_, *con_last_row);
-    LINALG::Export(*gamma_last_, *gamma_last_row);
-  }
-
-  /*!
-    \brief Get row map of surface elements
-  */
-  RCP<Epetra_Map> GetSurfRowmap() { return surfrowmap_; }
-
-  /*!
-    \brief Set history variables after reading restart
-
-    The row map based vectors written in case of restart are
-    exported to column based ones needed for calculations again.
-  */
-  void SetHistory(RCP<Epetra_Vector> A_last,
-                  RCP<Epetra_Vector> con_last,
-                  RCP<Epetra_Vector> gamma_last)
-  {
-    LINALG::Export(*A_last, *A_last_);
-    LINALG::Export(*con_last, *con_last_);
-    LINALG::Export(*gamma_last, *gamma_last_);
-  }
 
   /*!
     \brief Calculate additional internal forces and
@@ -220,7 +212,13 @@ private:
   double timen_;
 
   // current discretization
-  DRT::Discretization& discret_;
+  Teuchos::RCP<DRT::Discretization> discret_;
+
+  // current surface condition discretization
+  Teuchos::RCP<DRT::Discretization> surfdiscret_;
+
+  // output
+  Teuchos::RCP<IO::DiscretizationWriter> surfoutput_;
 
   // row map of surfaces
   RCP<Epetra_Map> surfrowmap_;

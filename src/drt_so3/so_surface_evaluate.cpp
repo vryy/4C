@@ -421,7 +421,6 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
 
         double time = params.get<double>("total time",-1.0);
         double dt = params.get<double>("delta time",0.0);
-        double alphaf = params.get<double>("alpha f",0.0);
         bool newstep = params.get<bool>("newstep", false);
 
         // element geometry update

@@ -182,6 +182,8 @@ void dyn_nlnstructural_drt()
       INPAR::STR::StrainType iostrain = Teuchos::getIntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_STRAIN");
       genalphaparams.set<INPAR::STR::StrainType>("io structural strain", iostrain);
 
+      genalphaparams.set<bool>  ("io surfactant",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_SURFACTANT"));
+
       genalphaparams.set<int>   ("restart",probtype.get<int>("RESTART"));
       genalphaparams.set<int>   ("write restart every",sdyn.get<int>("RESTARTEVRY"));
 

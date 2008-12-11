@@ -23,6 +23,8 @@ Maintainer: Burkhard Bornemann
 #include "strtimint_mstep.H"
 #include "strtimint.H"
 
+#include "../drt_io/io_control.H"
+
 /*----------------------------------------------------------------------*/
 /* print tea time logo */
 void STR::TimInt::Logo()
@@ -69,6 +71,7 @@ STR::TimInt::TimInt
   writestress_(Teuchos::getIntegralValue<INPAR::STR::StressType>(ioparams,"STRUCT_STRESS")),
   writestrain_(Teuchos::getIntegralValue<INPAR::STR::StrainType>(ioparams,"STRUCT_STRAIN")),
   writeenergyevery_(sdynparams.get<int>("RESEVRYERGY")),
+  writesurfactant_((bool) Teuchos::getIntegralValue<int>(ioparams,"STRUCT_SURFACTANT")),
   energyfile_(NULL),
   damping_(Teuchos::getIntegralValue<INPAR::STR::DampKind>(sdynparams,"DAMPING")),
   dampk_(sdynparams.get<double>("K_DAMP")),
@@ -169,7 +172,9 @@ STR::TimInt::TimInt
   dofrowmap_ = discret_->DofRowMap();
 
   // Initialize SurfStressManager for handling surface stress conditions due to interfacial phenomena
-  surfstressman_ = rcp(new UTILS::SurfStressManager(*discret_, sdynparams));
+  surfstressman_=rcp(new UTILS::SurfStressManager(discret_,
+                                                  sdynparams,
+                                                  DRT::Problem::Instance()->OutputControlFile()->FileName()));
 
   // Check for potential conditions
   {
@@ -432,17 +437,7 @@ void STR::TimInt::ReadRestartConstraint()
 void STR::TimInt::ReadRestartSurfstress()
 {
   if (surfstressman_ -> HaveSurfStress())
-  {
-    IO::DiscretizationReader reader(discret_, step_);
-    Teuchos::RCP<Epetra_Map> surfmap = surfstressman_->GetSurfRowmap();
-    RCP<Epetra_Vector> A = LINALG::CreateVector(*surfmap,true);
-    RCP<Epetra_Vector> con = LINALG::CreateVector(*surfmap,true);
-    RCP<Epetra_Vector> gamma = LINALG::CreateVector(*surfmap,true);
-    reader.ReadVector(A, "A");
-    reader.ReadVector(con, "con");
-    reader.ReadVector(gamma, "gamma");
-    surfstressman_->SetHistory(A, con, gamma);
-  }
+    surfstressman_->ReadRestart(step_, DRT::Problem::Instance()->InputControlFile()->FileName());
 }
 
 /*----------------------------------------------------------------------*/
@@ -527,18 +522,7 @@ void STR::TimInt::OutputRestart
   // surface stress
   if (surfstressman_->HaveSurfStress())
   {
-    Teuchos::RCP<Epetra_Map> surfrowmap
-      = surfstressman_->GetSurfRowmap();
-    Teuchos::RCP<Epetra_Vector> A
-      = Teuchos::rcp(new Epetra_Vector(*surfrowmap, true));
-    Teuchos::RCP<Epetra_Vector> con
-      = Teuchos::rcp(new Epetra_Vector(*surfrowmap, true));
-    Teuchos::RCP<Epetra_Vector> gamma
-      = Teuchos::rcp(new Epetra_Vector(*surfrowmap, true));
-    surfstressman_->GetHistory(A,con,gamma);
-    output_->WriteVector("A", A);
-    output_->WriteVector("con", con);
-    output_->WriteVector("gamma", gamma);
+    surfstressman_->WriteRestart(step_, (*time_)[0]);
   }
 
   // constraints
@@ -588,6 +572,9 @@ void STR::TimInt::OutputState
   output_->WriteVector("acceleration", (*acc_)(0));
   output_->WriteVector("fexternal", Fext());
   output_->WriteElementData();
+
+  if (surfstressman_->HaveSurfStress() && writesurfactant_)
+    surfstressman_->WriteResults(step_, (*time_)[0]);
 
   // leave for good
   return;

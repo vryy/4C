@@ -335,6 +335,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                                              INPAR::STR::strain_ea,INPAR::STR::strain_ea,
                                                              INPAR::STR::strain_gl,INPAR::STR::strain_gl),
                                &io);
+  setStringToIntegralParameter<int>("STRUCT_SURFACTANT","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("STRUCT_SM_DISP","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("FLUID_SOL","Yes","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("FLUID_STRESS","No","",yesnotuple,yesnovalue,&io);
@@ -1621,7 +1622,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("FLUIDPCITER",0,
                "Number of Richardson iterations on fluid block in MFSI block preconditioner",
                &fsidyn);
-  
+
   setStringToIntegralParameter<int>("INFNORMSCALING","Yes","Scale Blocks in Mono-FSI with row infnorm?",
                                      yesnotuple,yesnovalue,&fsidyn);
 
