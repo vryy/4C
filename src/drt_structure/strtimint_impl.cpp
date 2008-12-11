@@ -406,13 +406,11 @@ void STR::TimIntImpl::NewtonFull()
 
     // blank residual at (locally oriented) Dirichlet DOFs
     // rotate to local co-ordinate systems
-    if (locsysman_ != Teuchos::null)
-      locsysman_->RotateGlobalToLocal(fres_);
+    if (locsysman_ != Teuchos::null) locsysman_->RotateGlobalToLocal(fres_);
     // blank residual at DOFs on Dirichlet BC
     dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
     // rotate back to global co-ordinate system
-    if (locsysman_ != Teuchos::null)
-      locsysman_->RotateLocalToGlobal(fres_);
+    if (locsysman_ != Teuchos::null) locsysman_->RotateLocalToGlobal(fres_);
 
     // build residual force norm
     normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
@@ -549,6 +547,11 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
 //    // uncomplete stiffness matrix, so stuff can be inserted again
 //    stiff_->UnComplete();
 
+    // transformation matrix
+    Teuchos::RCP<const LINALG::SparseMatrix> trafo = Teuchos::null;
+    if (locsysman_ != Teuchos::null)
+      trafo = locsysman_->Trafo();
+
     // transform to local co-ordinate systems
     if (locsysman_ != Teuchos::null)
       locsysman_->RotateGlobalToLocal(stiff_, fres_);
@@ -556,7 +559,7 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
     // apply Dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
-                                   zeros_, *(dbcmaps_->CondMap()));
+                                   trafo, zeros_, *(dbcmaps_->CondMap()));
 
     // prepare residual Lagrange multiplier
     lagrincr->PutScalar(0.0);
@@ -583,13 +586,11 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
 
     // blank residual at (locally oriented) Dirichlet DOFs
     // rotate to local co-ordinate systems
-    if (locsysman_ != Teuchos::null)
-      locsysman_->RotateGlobalToLocal(fres_);
+    if (locsysman_ != Teuchos::null) locsysman_->RotateGlobalToLocal(fres_);
     // blank residual at DOFs on Dirichlet BC
     dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
     // rotate back to global co-ordinate system
-    if (locsysman_ != Teuchos::null)
-      locsysman_->RotateLocalToGlobal(fres_);
+    if (locsysman_ != Teuchos::null) locsysman_->RotateLocalToGlobal(fres_);
 
     // build residual force norm
     normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
