@@ -150,7 +150,8 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==null) dserror("Cannot get state vectors 'displacement'");
       vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);    
+      
       // get residual displacements
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (res==null) dserror("Cannot get state vectors 'residual displacement'");
@@ -618,6 +619,12 @@ inline void DRT::ELEMENTS::Beam3::quaterniontoangle(const LINALG::Matrix<4,1>& q
 
   double sin_thetahalf = pow( q(0)*q(0) + q(1)*q(1) + q(2)*q(2) , 0.5);
   double thetahalf_abs = asin( sin_thetahalf );
+  
+  /*note: for sin_thetahalf = 1 numerical problems with the asin function are to be expected; in this cas
+   * asin returns NaN; thetahalf_abs has always to be positive and thus > -1, but Nan returns for NaN > -1 false
+   * so that this case can be considered by means of the following if-condition*/
+  if( !(thetahalf_abs > -1 ) )
+    thetahalf_abs = 0.5*PI;
 
   /*if cos(theta/2), i.e. q(3) is negative the true value is not thetahalf_abs, but
    * (PI - thetahalf_abs)*/
@@ -936,7 +943,9 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
   LINALG::Matrix<3,1> deltabetaminusalpha;
   //midpoint triad, Crisfiel Vol. 2, equation (17.73)
   LINALG::Matrix<3,3> Tnew;
-
+  
+  //std::cout<<"\nElement Nr. = "<< Id();
+  
   //nodal coordinates in current position
   for (int k=0; k<2; ++k) //looping over number of nodes
   {
@@ -946,6 +955,17 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
       xcurr(j+3,k) = disp[k*6+j+3]; //rotational DOF
     }
   }
+  /*
+  std::cout<<"\ntrans disp:  ";
+  for (int k=0; k<2; ++k) //looping over number of nodes
+    for (int j=0; j<3; ++j)
+      std::cout << std::scientific << setprecision(5) << disp[k*6+j] <<"   ";
+
+  std::cout<<"\nrot disp:  ";
+  for (int k=0; k<2; ++k) //looping over number of nodes
+    for (int j=0; j<3; ++j)
+      std::cout << std::scientific << setprecision(5) << disp[k*6+j+3] <<"   ";
+*/
 
   //first of all "new" variables have to be adopted to dispalcement passed in from BACI driver
 
@@ -962,6 +982,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
 
   deltabetaminusalpha  = betaminusalphanew_;
   deltabetaminusalpha -= betaminusalphaold_;
+  
 
   //calculating current central triad like in Crisfield, Vol. 2, equation (17.65), but by a quaternion product
   updatetriad(deltabetaplusalpha,Tnew);
@@ -974,6 +995,8 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
   epsilonn.MultiplyTN(Tnew,x21);
   epsilonn.Scale(1/lrefe_);
   epsilonn(0) -=  1;
+  
+
 
 
   /* read material parameters using structure _MATERIAL which is defined by inclusion of      /
@@ -1020,11 +1043,11 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
   epsilonm(2) *= ym*Izz_;
   stressm.Multiply(Tnew,epsilonm);
   
-  if(Id() > 29)
-  {
-    std::cout<<"\nepsilonn\n"<<epsilonn;
-    std::cout<<"\nepsilonm\n"<<epsilonm;
-  }
+
+    //std::cout<<"\nN = "<< epsilonn;
+    //std::cout<<"\nM = "<< epsilonm;
+
+  
 
 
   //computing global internal forces, Crisfield Vol. 2, equation (17.79)
@@ -1086,6 +1109,25 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
       LINALG::Matrix<3,1> convangle;
       quaterniontoangle(Qnew_, newangle);
       quaterniontoangle(Qconv_, convangle);
+      
+      /*
+      std::cout<<"\nQnew_";
+      for(int id = 0; id<4;id++)
+        std::cout <<"  "<<Qnew_(id);
+      
+      std::cout<<"\nnewangle";
+      for(int id = 0; id<3;id++)
+        std::cout <<"  "<<newangle(id);
+      
+      std::cout<<"\nQconv_";
+      for(int id = 0; id<4;id++)
+        std::cout <<"  "<<Qconv_(id);
+      
+      std::cout<<"\nconvangle";
+      for(int id = 0; id<3;id++)
+        std::cout <<"  "<<convangle(id);
+      */
+      
 
       LINALG::Matrix<3,1> omega = newangle;
       omega -= convangle;

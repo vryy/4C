@@ -378,7 +378,7 @@ private:
   //! @name methods for initilization of the element
   
   //!sets up from current nodal position all geometric parameters (considering current position as reference configuration)
-  void SetUpReferenceGeometry(const LINALG::Matrix<6,1>& xrefe);
+  void SetUpReferenceGeometry(const LINALG::Matrix<6,1>& xrefe, const LINALG::Matrix<6,1>& rotrefe);
   
   //@}
   

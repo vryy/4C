@@ -251,8 +251,9 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Beam3::Lines()
  | has to be stored; prerequesite for applying this method is that the
  | element nodes are already known (public)                   cyron 10/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const LINALG::Matrix<6,1>& xrefe)
+void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const LINALG::Matrix<6,1>& xrefe, const LINALG::Matrix<6,1>& rotrefe)
 {
+ 
   //setting reference coordinates
   X_ = xrefe;
 
@@ -310,15 +311,15 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const LINALG::Matrix<6,1>& xre
   for (int k=0; k<3; k++) 
   {
     curvconv_(k) = 0;
-    curvold_(k) = 0;
-    curvnew_(k) = 0;
-    betaplusalphaconv_(k)  = 0;
-    betaplusalphaold_(k)  = 0;   
-    betaplusalphanew_(k)  = 0;
-    betaminusalphaconv_(k) = 0;
-    betaminusalphaold_(k) = 0;
-    betaminusalphaold_(k) = 0;
-  }
+    curvold_(k)  = 0;
+    curvnew_(k)  = 0;
+    betaplusalphaconv_(k)  = rotrefe(k+3) + rotrefe(k);
+    betaplusalphaold_(k)   = rotrefe(k+3) + rotrefe(k);   
+    betaplusalphanew_(k)   = rotrefe(k+3) + rotrefe(k);
+    betaminusalphaconv_(k) = rotrefe(k+3) - rotrefe(k);
+    betaminusalphaold_(k)  = rotrefe(k+3) - rotrefe(k);
+    betaminusalphaold_(k)  = rotrefe(k+3) - rotrefe(k);
+  }  
 
   return;
 } //DRT::ELEMENTS::Beam3::SetUpReferenceGeometry()
@@ -419,6 +420,8 @@ int DRT::ELEMENTS::Beam3Register::Initialize(DRT::Discretization& dis)
 {		
   //reference node position
   LINALG::Matrix<6,1> xrefe;
+  //reference rotation variables initialized to zero
+  LINALG::Matrix<6,1> rotrefe(true);
   
   //setting up geometric variables for beam3 elements
   for (int num=0; num<  dis.NumMyColElements(); ++num)
@@ -441,7 +444,7 @@ int DRT::ELEMENTS::Beam3Register::Initialize(DRT::Discretization& dis)
           xrefe(k*3 + l) = currele->Nodes()[k]->X()[l];
     }
  
-    currele->SetUpReferenceGeometry(xrefe);
+    currele->SetUpReferenceGeometry(xrefe,rotrefe);
        
   } //for (int num=0; num<dis_.NumMyColElements(); ++num)
 
