@@ -27,15 +27,6 @@ Maintainer: Axel Gerstenberger
 #include <vector>
 #include <algorithm>
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
-
-
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::UTILS::FindInterfaceObjects(const DRT::Discretization& dis,
