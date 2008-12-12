@@ -503,7 +503,7 @@ DRT::UTILS::GaussRule3D getXFEMGaussrule(
       {
         case DRT::Element::hex8:
           if (eleGeoType == GEO::CARTESIAN) // constant jacobian
-            rule = DRT::UTILS::intrule_tet_24point;
+            rule = DRT::UTILS::intrule_tet_15point;
           else
             rule = DRT::UTILS::intrule_tet_24point;
           break;
@@ -590,8 +590,8 @@ LINALG::Matrix<3,1> interpolateVectorFieldToIntPoint(
     const int numparam              ///< number of parameters
     )
 {
-  LINALG::Matrix<3,1> v(true);
   const int nsd = 3;
+  LINALG::Matrix<nsd,1> v(true);
   for (int iparam = 0; iparam < numparam; ++iparam)
     for (int isd = 0; isd < nsd; ++isd)
       v(isd) += eleVectorField(isd,iparam)*shp(iparam);
