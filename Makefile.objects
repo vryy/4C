@@ -206,8 +206,7 @@ OBJS_DRT_CONSTRAINT_LIB      = \
 #----------------------------------------------------- drt version contact
 OBJS_DRT_CONTACT = \
                 src/drt_contact/contactstrugenalpha.o \
-                src/drt_contact/contactstrugenalpha_lsnewton.o \
-                src/drt_contact/contactstrustatic.o
+                src/drt_contact/contactstrugenalpha_lsnewton.o
 #----------------------------------------------------- drt version contact
 OBJS_DRT_CONTACT_LIB = \
                 src/drt_contact/drt_contact_manager_base.o \

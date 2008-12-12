@@ -83,11 +83,5 @@ Maintainer: Alexander Popp
 #define CONTACTCLIPTOL 1.0e-12   /* tolerance for polygon clipping (3D) */
 #define CONTACTINTLIM 1.0e-4     /* min(area-%) cell/slave for integration */
 
-
-namespace CONTACT {
-  // static solution routine
-  void contact_stru_static_drt();
-}
-
 #endif  // #ifndef CONTACTDEFINES_H
 #endif  // #ifdef CCADISCRET

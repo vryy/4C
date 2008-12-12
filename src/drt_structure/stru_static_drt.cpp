@@ -62,39 +62,6 @@ void stru_static_drt()
   if (!actdis->Filled()) actdis->FillComplete();
 
   // -------------------------------------------------------------------
-  // check for contact case
-  // -------------------------------------------------------------------
-  const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->StructuralContactParams();
-
-  // detect if contact is present
-  bool contact = false;
-  switch (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(scontact,"CONTACT"))
-  {
-    case INPAR::CONTACT::contact_none:
-      contact = false;
-      break;
-    case INPAR::CONTACT::contact_normal:
-      contact = true;
-      break;
-    case INPAR::CONTACT::contact_frictional:
-      contact = true;
-      break;
-    case INPAR::CONTACT::contact_meshtying:
-      contact = true;
-      break;
-    default:
-      dserror("Cannot cope with choice of contact type");
-      break;
-  }
-
-  if (contact)
-  {
-    // leave and call special routine for statics with contact
-    CONTACT::contact_stru_static_drt();
-    return;
-  }
-
-  // -------------------------------------------------------------------
   // get a communicator and myrank
   // -------------------------------------------------------------------
   const Epetra_Comm& Comm = actdis->Comm();
