@@ -150,7 +150,7 @@ void DRT::UTILS::LocsysManager::Setup()
         if (!havenode) continue;
         
         int indices = (*nodes)[k];
-        double values  = (double)i;
+        double values  = i;
         locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
       }
     }
@@ -456,9 +456,6 @@ void DRT::UTILS::LocsysManager::Setup()
   set<int> locsysdofset;
     
   trafo_ = rcp(new LINALG::SparseMatrix(*dofrowmap,3));
-
-  int total = 0;
-  int normal = 0;
   
   for (int i=0;i<noderowmap->NumMyElements();++i)
   {
@@ -472,7 +469,6 @@ void DRT::UTILS::LocsysManager::Setup()
     // unity matrix for non-locsys node
     if (locsysindex<0)
     {
-      normal += 1;
       for (int r=0;r<numdof;++r)
         for (int c=0;c<numdof;++c)
           if (r==c) trafo_->Assemble(1.0,dofs[r],dofs[c]);
@@ -481,8 +477,6 @@ void DRT::UTILS::LocsysManager::Setup()
     // trafo matrix for locsys node
     else
     {
-      total += 1;
-
       Epetra_SerialDenseMatrix nodetrafo(numdof,numdof);
       
       // first create an identity matrix od size numdof
