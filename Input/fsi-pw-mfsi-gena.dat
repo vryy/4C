@@ -20480,9 +20480,9 @@ CURVE1 on Polygonal T 0.0 BYABSTIME Yes 3.1e-3 10000 FACTOR 0.0 0.0
 ---------------------------------------------------------------------LOCSYS5
 ------------------------------------------------------------------MONITORING
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 3043 POSITION velx NAME velx VALUE 0.0020362888204250 TOLERANCE 1e-7
-FLUID DIS 1 NODE 3043 POSITION vely NAME vely VALUE -0.0009690698152669 TOLERANCE 1e-7
+FLUID DIS 1 NODE 3043 POSITION velx NAME velx VALUE  2.036542683e-03 TOLERANCE 1e-7
+FLUID DIS 1 NODE 3043 POSITION vely NAME vely VALUE -9.692731699e-04 TOLERANCE 1e-7
 FLUID DIS 1 NODE 3043 POSITION velz NAME velz VALUE -0.0005398875556469 TOLERANCE 1e-7
-FLUID DIS 1 NODE 3043 POSITION pressure NAME pressure VALUE 2.4786244879907042 TOLERANCE 1e-4
+FLUID DIS 1 NODE 3043 POSITION pressure NAME pressure VALUE 2.478778857e+00 TOLERANCE 1e-4
 -------------------------------------------------------------------------END
 // END

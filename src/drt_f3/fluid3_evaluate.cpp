@@ -253,6 +253,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           stabstrtoact_["time_dependent"         ]=subscales_time_dependent;
           stabstrtoact_["no_transient"           ]=inertia_stab_drop;
           stabstrtoact_["yes_transient"          ]=inertia_stab_keep;
+          stabstrtoact_["transient_complete"     ]=inertia_stab_keep_complete;
           stabstrtoact_["no_pspg"                ]=pstab_assume_inf_sup_stable;
           stabstrtoact_["yes_pspg"               ]=pstab_use_pspg;
           stabstrtoact_["no_supg"                ]=convective_stab_none;
@@ -268,6 +269,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           stabstrtoact_["cross_complete"         ]=cross_stress_stab;
           stabstrtoact_["cross_rhs"              ]=cross_stress_stab_only_rhs;
           stabstrtoact_["no_reynolds"            ]=reynolds_stress_stab_none;
+          stabstrtoact_["reynolds_complete"      ]=reynolds_stress_stab;
           stabstrtoact_["reynolds_rhs"           ]=reynolds_stress_stab_only_rhs;
           stabstrtoact_["No"                     ]=Fluid3::fssgv_no;
           stabstrtoact_["artificial_all"         ]=Fluid3::fssgv_artificial_all;

@@ -471,16 +471,87 @@ namespace DRT
       //  \param time        (i) time when the condition is evaluated
       void GetNodalBodyForce(Fluid3*      ele,
                              const double time);
+
+      /*!  Compute the rate of strain of a (fine-scale) velocity
+
+      //  \param evel       (i) nodal velocity values
+      //  \param derxy      (i) shape function derivatives
+      //  \param velderxy   (o) velocity derivatives
+      //
+      //  \return computed rate of strain
       
+      */
+      double GetStrainRate(
+        const LINALG::Matrix<3,iel>& evel     ,
+        const LINALG::Matrix<3,iel>& derxy    ,
+        LINALG::Matrix<3,3>        & velderxy
+        )
+        {
+          double rateofstrain=0;
+
+          // get velocity derivatives at integration point
+          //
+          //              +-----  dN (x)
+          //   dvel (x)    \        k        
+          //   -------- =   +     ------ * vel
+          //      dx       /        dx        k
+          //        j     +-----      j
+          //              node k
+          //
+          // j : direction of derivative x/y/z
+          //
+          for(int rr=0;rr<3;++rr)
+          {
+            for(int mm=0;mm<3;++mm)
+            {
+              velderxy(rr,mm)=derxy(mm,0)*evel(rr,0);
+              for(int nn=1;nn<iel;++nn)
+              {
+                velderxy(rr,mm)+=derxy(mm,nn)*evel(rr,nn);
+              }
+            }
+          }
+
+          // compute (resolved) rate of strain
+          //
+          //          +-                                 -+ 1
+          //          |          /   \           /   \    | -
+          //          | 2 * eps | vel |   * eps | vel |   | 2
+          //          |          \   / ij        \   / ij |  
+          //          +-                                 -+  
+          //
+          LINALG::Matrix<3,3> two_epsilon;
+        
+          for(int rr=0;rr<3;++rr)
+          {
+            for(int mm=0;mm<3;++mm)
+            {
+              two_epsilon(rr,mm) = velderxy(rr,mm) + velderxy(mm,rr);
+            }
+          }
+          
+          for(int rr=0;rr<3;rr++)
+          {
+            for(int mm=0;mm<3;mm++)
+            {
+              rateofstrain += two_epsilon(rr,mm)*two_epsilon(rr,mm);
+            }
+          }
+          // sqrt(two_epsilon(rr,mm)*two_epsilon(rr,mm)/4.0*2.0)
+        
+          return(sqrt(rateofstrain/2.0));
+        }
            
       /*!
         \brief calculates viscosity at a given point (element center or Gaussian point)
 
     	\param material		 	(i) material
         \param visc        		(o) kinematic material viscosity
+    	\param rateofshear		(i) shear rate
        */
-      void CalVisc(     const struct _MATERIAL* material,
-                        double&                 visc);
+      void CalVisc(const struct _MATERIAL* material,
+                   double&                 visc,
+                   const double &          rateofshear);
 
       /*!
         \brief calculation of stabilisation parameter (element center or Gaussian point)
@@ -555,6 +626,8 @@ namespace DRT
       LINALG::Matrix<3,1>   velintnp_;
       //! velocity in gausspoint, time n+af
       LINALG::Matrix<3,1>   velintaf_;
+      // this copy will be used to store the normed velocity at time n+af
+      LINALG::Matrix<3,1>   normed_velintaf_;
       //! fine-scale velocity in gausspoint, time n+af
       LINALG::Matrix<3,1>   fsvelintaf_;
       //! grid velocity at time level n+af 
@@ -578,6 +651,9 @@ namespace DRT
       LINALG::Matrix<3,1>   bodyforceaf_;
       //! linearisation of convection, convective part, time n+af
       LINALG::Matrix<iel,1> conv_c_af_;
+      //! linearisation of convection test function, convective part, time n+af
+      //! may differ from conv_c_af_ if reynolds stress is used
+      LINALG::Matrix<iel,1> conv_c_plus_svel_af_;
       //! convective part introduced by grid velocity, time n+af
       LINALG::Matrix<iel,1> conv_u_G_af_;
 

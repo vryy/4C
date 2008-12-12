@@ -399,6 +399,7 @@ private:
     subscales_time_dependent,
     inertia_stab_drop,
     inertia_stab_keep,
+    inertia_stab_keep_complete,
     pstab_assume_inf_sup_stable,
     pstab_use_pspg,
     convective_stab_none,
@@ -414,6 +415,7 @@ private:
     cross_stress_stab,
     cross_stress_stab_only_rhs,
     reynolds_stress_stab_none,
+    reynolds_stress_stab,
     reynolds_stress_stab_only_rhs,
     fssgv_no,
     fssgv_artificial_all,
@@ -434,10 +436,11 @@ private:
   //! possible options for the stabilisation parameter
   enum TauType
   {
-    franca_barrenechea_valentin_wall  ,
-    franca_barrenechea_valentin_codina,
-    codina                            ,
-    bazilevs                          ,
+    smoothed_franca_barrenechea_valentin_wall,
+    franca_barrenechea_valentin_wall         ,
+    franca_barrenechea_valentin_codina       ,
+    codina                                   ,
+    bazilevs                                 ,
     tau_not_defined
   };
 

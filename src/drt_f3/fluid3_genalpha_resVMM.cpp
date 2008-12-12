@@ -228,6 +228,10 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
     {
       whichtau = Fluid3::franca_barrenechea_valentin_codina;
     }
+    else if(taudef == "Smoothed_FBVW")
+    {
+      whichtau = Fluid3::smoothed_franca_barrenechea_valentin_wall;
+    }
   }
 
   // flag for higher order elements
@@ -466,19 +470,23 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
 
   //------------------------------------------------------------------
   //                      SET MATERIAL DATA
-  //-------------------------------------------------
+  //------------------------------------------------------------------
   // check here, if we really have a fluid !!
   if( material->mattyp != m_carreauyasuda
-      &&	material->mattyp != m_modpowerlaw
-      && material->mattyp != m_fluid)
+      && 
+      material->mattyp != m_modpowerlaw
+      && 
+      material->mattyp != m_fluid)
   dserror("Material law is not a fluid");
 
-  // get viscosity
+  // get material viscosity
   double visc = 0.0;
   if(material->mattyp == m_fluid)
   {
     visc = material->m.fluid->viscosity;
   }
+  // initialise visceff to visc
+  visceff=visc;
 
   //------------------------------------------------------------------
   //                      SET ELEMENT DATA
@@ -519,30 +527,33 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
     }
   }
 
-
   // dead load in element nodes
   GetNodalBodyForce(ele,timealphaF);
 
-  // in case of viscous stabilization decide whether to use GLS or USFEM
-  double vstabfac= 0.0;
-  if (vstab == Fluid3::viscous_stab_usfem || vstab == Fluid3::viscous_stab_usfem_only_rhs)
+
+  // ---------------------------------------------------------------------------
+  // Initialisation of tau computation: mk and hk
+
+  // get element type constant mk for tau and the fssgv_artificial approach
+  double mk=0.0;
+  switch (distype)
   {
-    vstabfac =  1.0;
-  }
-  else if(vstab == Fluid3::viscous_stab_gls || vstab == Fluid3::viscous_stab_gls_only_rhs)
-  {
-    vstabfac = -1.0;
+      case DRT::Element::tet4:
+      case DRT::Element::hex8:
+      case DRT::Element::nurbs8:
+        mk = 0.333333333333333333333;
+        break;
+      case DRT::Element::hex20:
+      case DRT::Element::hex27:
+      case DRT::Element::nurbs27:
+      case DRT::Element::tet10:
+        mk = 0.083333333333333333333;
+        break;
+      default:
+        dserror("type unknown!\n");
   }
 
-  //----------------------------------------------------------------------------
-  //            STABILIZATION PARAMETER, SMAGORINSKY MODEL
-  //      and everything else that is evaluated in the element center
-  //
-  // This has to be done before anything else is calculated because we use
-  // the same arrays internally.
-  //----------------------------------------------------------------------------
-
-  // use one point gauss rule to calculate tau at element center
+  // use one point gauss rule to calculate volume at element center
   DRT::UTILS::GaussRule3D integrationrule_stabili=DRT::UTILS::intrule3D_undefined;
   switch (distype)
   {
@@ -588,25 +599,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
   {
     DRT::UTILS::shape_function_3D       (funct_,gp(0),gp(1),gp(2),distype);
     DRT::UTILS::shape_function_3D_deriv1(deriv_,gp(0),gp(1),gp(2),distype);
-  }
-
-  // get element type constant for tau
-  double mk=0.0;
-  switch (distype)
-  {
-      case DRT::Element::tet4:
-      case DRT::Element::hex8:
-      case DRT::Element::nurbs8:
-        mk = 0.333333333333333333333;
-        break;
-      case DRT::Element::hex20:
-      case DRT::Element::hex27:
-      case DRT::Element::nurbs27:
-      case DRT::Element::tet10:
-        mk = 0.083333333333333333333;
-        break;
-      default:
-        dserror("type unknown!\n");
   }
 
   // get transposed Jacobian matrix and determinant
@@ -657,151 +649,18 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
                      xjm_(0,2)*xjm_(1,1)*xjm_(2,0)-
                      xjm_(0,0)*xjm_(1,2)*xjm_(2,1)-
                      xjm_(0,1)*xjm_(1,0)*xjm_(2,2);
+
+  // vol is used for some stabilisation parameters and the mixing length
+  // definition of the Smagorinsky models
   vol_ = wquad*det;
 
-  // get element length for tau_M and tau_C: volume-equival. diameter/sqrt(3)
+  // get element length hk for tau_M and tau_C: volume-equival. diameter/sqrt(3)
+  // the same hk is used for the fssgv_artificial approach
   const double hk = pow((6.*vol_/PI),(1.0/3.0))/sqrt(3.0);
-
-  //
-  //             compute global first derivates
-  //
-  // this is necessary only for the calculation of the
-  // streamlength (required by the quasistatic formulation) and
-  // the Smagorinsky model.
-  //
-  /*
-    Use the Jacobian and the known derivatives in element coordinate
-    directions on the right hand side to compute the derivatives in
-    global coordinate directions
-
-          +-                 -+     +-    -+      +-    -+
-          |  dx    dy    dz   |     | dN_k |      | dN_k |
-          |  --    --    --   |     | ---- |      | ---- |
-          |  dr    dr    dr   |     |  dx  |      |  dr  |
-          |                   |     |      |      |      |
-          |  dx    dy    dz   |     | dN_k |      | dN_k |
-          |  --    --    --   |  *  | ---- |   =  | ---- | for all k
-          |  ds    ds    ds   |     |  dy  |      |  ds  |
-          |                   |     |      |      |      |
-          |  dx    dy    dz   |     | dN_k |      | dN_k |
-          |  --    --    --   |     | ---- |      | ---- |
-          |  dt    dt    dt   |     |  dz  |      |  dt  |
-          +-                 -+     +-    -+      +-    -+
-
-  */
-
-  // inverse of jacobian (transposed)
-  /*
-          +-                 -+     +-                 -+ -1
-          |  dr    ds    dt   |     |  dx    dy    dz   |
-          |  --    --    --   |     |  --    --    --   |
-          |  dx    dx    dx   |     |  dr    dr    dr   |
-          |                   |     |                   |
-          |  dr    ds    dt   |     |  dx    dy    dz   |
-          |  --    --    --   |  =  |  --    --    --   |
-          |  dy    dy    dy   |     |  ds    ds    ds   |
-          |                   |     |                   |
-          |  dr    ds    dt   |     |  dx    dy    dz   |
-          |  --    --    --   |     |  --    --    --   |
-          |  dz    dz    dz   |     |  dt    dt    dt   |
-          +-                 -+     +-                 -+
-
-  */
-  xji_(0,0) = (  xjm_(1,1)*xjm_(2,2) - xjm_(2,1)*xjm_(1,2))/det;
-  xji_(1,0) = (- xjm_(1,0)*xjm_(2,2) + xjm_(2,0)*xjm_(1,2))/det;
-  xji_(2,0) = (  xjm_(1,0)*xjm_(2,1) - xjm_(2,0)*xjm_(1,1))/det;
-  xji_(0,1) = (- xjm_(0,1)*xjm_(2,2) + xjm_(2,1)*xjm_(0,2))/det;
-  xji_(1,1) = (  xjm_(0,0)*xjm_(2,2) - xjm_(2,0)*xjm_(0,2))/det;
-  xji_(2,1) = (- xjm_(0,0)*xjm_(2,1) + xjm_(2,0)*xjm_(0,1))/det;
-  xji_(0,2) = (  xjm_(0,1)*xjm_(1,2) - xjm_(1,1)*xjm_(0,2))/det;
-  xji_(1,2) = (- xjm_(0,0)*xjm_(1,2) + xjm_(1,0)*xjm_(0,2))/det;
-  xji_(2,2) = (  xjm_(0,0)*xjm_(1,1) - xjm_(1,0)*xjm_(0,1))/det;
-
-  // compute global derivates at integration point
-  //
-  //   dN    +-----  dN (xi)    dxi
-  //     i    \        i           k
-  //   --- =   +     ------- * -----
-  //   dx     /        dxi      dx
-  //     j   +-----       k       j
-  //         node k
-  //
-  // j : direction of derivative x/y/z
-  //
-  for(int nn=0;nn<iel;++nn)
-  {
-    for(int rr=0;rr<3;++rr)
-    {
-      derxy_(rr,nn)=xji_(rr,0)*deriv_(0,nn);
-      for(int mm=1;mm<3;++mm)
-      {
-        derxy_(rr,nn)+=xji_(rr,mm)*deriv_(mm,nn);
-      }
-    }
-  }
-
-  // get velocities (n+alpha_F,i) at integration point
-  //
-  //                 +-----
-  //       n+af       \                  n+af
-  //    vel    (x) =   +      N (x) * vel
-  //                  /        j         j
-  //                 +-----
-  //                 node j
-  //
-  for(int rr=0;rr<3;++rr)
-  {
-    velintaf_(rr)=funct_(0)*evelaf(rr,0);
-    for(int nn=1;nn<iel;++nn)
-    {
-      velintaf_(rr)+=funct_(nn)*evelaf(rr,nn);
-    }
-  }
-  
-  // get velocities (n+1,i)  at integration point
-  //
-  //                +-----
-  //       n+1       \                  n+1
-  //    vel   (x) =   +      N (x) * vel
-  //                 /        j         j
-  //                +-----
-  //                node j
-  //
-  for(int rr=0;rr<3;++rr)
-  {
-    velintnp_(rr)=funct_(0)*evelnp(rr,0);
-    for(int nn=1;nn<iel;++nn)
-    {
-      velintnp_(rr)+=funct_(nn)*evelnp(rr,nn);
-    }
-  }
-
-  // get velocity (n+alpha_F,i) derivatives at integration point
-  //
-  //       n+af      +-----  dN (x)
-  //   dvel    (x)    \        k         n+af
-  //   ----------- =   +     ------ * vel
-  //       dx         /        dx        k
-  //         j       +-----      j
-  //                 node k
-  //
-  // j : direction of derivative x/y/z
-  //
-  for(int rr=0;rr<3;++rr)
-  {
-    for(int mm=0;mm<3;++mm)
-    {
-      vderxyaf_(rr,mm)=derxy_(mm,0)*evelaf(rr,0);
-      for(int nn=1;nn<iel;++nn)
-      {
-        vderxyaf_(rr,mm)+=derxy_(mm,nn)*evelaf(rr,nn);
-      }
-    }
-  }
 
   /*------------------------------------------------------------------*/
   /*                                                                  */
-  /*                 GET EFFECTIVE VISCOSITY IN GAUSSPOINT            */
+  /*                 GET EFFECTIVE VISCOSITY IN ELEMENT               */
   /*                                                                  */
   /* This part is used to specify an effective viscosity. This eff.   */
   /* viscosity may be caused by a Smagorinsky model                   */
@@ -822,58 +681,132 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
   /*                                                                  */
   /* Mind that at the moment all stabilization (tau and viscous test  */
   /* functions if applied) are based on the material viscosity not    */
-  /* the effective viscosity. We do this since we do not evaluate the */
-  /* stabilisation parameter in the gausspoints but just once in the  */
-  /* middle of the element.                                           */
+  /* the effective viscosity.                                         */
+  /* This has to be done before anything else is calculated because   */
+  /* we use the same arrays internally. We need hk, mk as well as the */
+  /* element data computed above!                                     */
   /*------------------------------------------------------------------*/
 
-  // compute nonlinear viscosity according to the Carreau-Yasuda model
-  if( material->mattyp != m_fluid )
-  {
-    CalVisc(material, visc);
-  }
+  // -------------------------------------------------------------------
+  // strain rate based models
 
-  if (turb_mod_action == Fluid3::smagorinsky_with_wall_damping
-      ||
-      turb_mod_action == Fluid3::smagorinsky)
+  if(material->mattyp!= m_fluid
+     ||
+     fssgv==Fluid3::fssgv_Smagorinsky_all
+     ||
+     fssgv==Fluid3::fssgv_Smagorinsky_small
+     ||
+     turb_mod_action !=Fluid3::no_model)
   {
     //
-    // SMAGORINSKY MODEL
-    // -----------------
-    //                            +-                                 -+ 1
-    //                        2   |          / h \           / h \    | -
-    //    visc          = lmix  * | 2 * eps | u   |   * eps | u   |   | 2
-    //        turbulent    |      |          \   / ij        \   / ij |
-    //                     |      +-                                 -+
-    //                     |
-    //                     |      |                                   |
-    //                     |      +-----------------------------------+
-    //                     |           'resolved' rate of strain
-    //                    mixing length
+    //             compute global first derivates
     //
+    //
+    /*
+      Use the Jacobian and the known derivatives in element coordinate
+      directions on the right hand side to compute the derivatives in
+      global coordinate directions
 
-    double rateofstrain = 0;
+          +-                 -+     +-    -+      +-    -+
+          |  dx    dy    dz   |     | dN_k |      | dN_k |
+          |  --    --    --   |     | ---- |      | ---- |
+          |  dr    dr    dr   |     |  dx  |      |  dr  |
+          |                   |     |      |      |      |
+          |  dx    dy    dz   |     | dN_k |      | dN_k |
+          |  --    --    --   |  *  | ---- |   =  | ---- | for all k
+          |  ds    ds    ds   |     |  dy  |      |  ds  |
+          |                   |     |      |      |      |
+          |  dx    dy    dz   |     | dN_k |      | dN_k |
+          |  --    --    --   |     | ---- |      | ---- |
+          |  dt    dt    dt   |     |  dz  |      |  dt  |
+          +-                 -+     +-    -+      +-    -+
+
+    */
+
+    // inverse of jacobian (transposed)
+    /*
+          +-                 -+     +-                 -+ -1
+          |  dr    ds    dt   |     |  dx    dy    dz   |
+          |  --    --    --   |     |  --    --    --   |
+          |  dx    dx    dx   |     |  dr    dr    dr   |
+          |                   |     |                   |
+          |  dr    ds    dt   |     |  dx    dy    dz   |
+          |  --    --    --   |  =  |  --    --    --   |
+          |  dy    dy    dy   |     |  ds    ds    ds   |
+          |                   |     |                   |
+          |  dr    ds    dt   |     |  dx    dy    dz   |
+          |  --    --    --   |     |  --    --    --   |
+          |  dz    dz    dz   |     |  dt    dt    dt   |
+          +-                 -+     +-                 -+
+
+    */
+    xji_(0,0) = (  xjm_(1,1)*xjm_(2,2) - xjm_(2,1)*xjm_(1,2))/det;
+    xji_(1,0) = (- xjm_(1,0)*xjm_(2,2) + xjm_(2,0)*xjm_(1,2))/det;
+    xji_(2,0) = (  xjm_(1,0)*xjm_(2,1) - xjm_(2,0)*xjm_(1,1))/det;
+    xji_(0,1) = (- xjm_(0,1)*xjm_(2,2) + xjm_(2,1)*xjm_(0,2))/det;
+    xji_(1,1) = (  xjm_(0,0)*xjm_(2,2) - xjm_(2,0)*xjm_(0,2))/det;
+    xji_(2,1) = (- xjm_(0,0)*xjm_(2,1) + xjm_(2,0)*xjm_(0,1))/det;
+    xji_(0,2) = (  xjm_(0,1)*xjm_(1,2) - xjm_(1,1)*xjm_(0,2))/det;
+    xji_(1,2) = (- xjm_(0,0)*xjm_(1,2) + xjm_(1,0)*xjm_(0,2))/det;
+    xji_(2,2) = (  xjm_(0,0)*xjm_(1,1) - xjm_(1,0)*xjm_(0,1))/det;
+    
+    // compute global derivates at integration point
+    //
+    //   dN    +-----  dN (xi)    dxi
+    //     i    \        i           k
+    //   --- =   +     ------- * -----
+    //   dx     /        dxi      dx
+    //     j   +-----       k       j
+    //         node k
+    //
+    // j : direction of derivative x/y/z
+    //
+    for(int nn=0;nn<iel;++nn)
     {
-      LINALG::Matrix<3,3> epsilon;
-
-      for(int rr=0;rr<3;rr++)
+      for(int rr=0;rr<3;++rr)
       {
-        for(int mm=0;mm<3;mm++)
+        derxy_(rr,nn)=xji_(rr,0)*deriv_(0,nn);
+        for(int mm=1;mm<3;++mm)
         {
-          epsilon(rr,mm) = 0.5 * ( vderxyaf_(rr,mm) + vderxyaf_(mm,rr) );
+          derxy_(rr,nn)+=xji_(rr,mm)*deriv_(mm,nn);
         }
       }
-
-      for(int rr=0;rr<3;rr++)
-      {
-        for(int mm=0;mm<3;mm++)
-        {
-          rateofstrain += epsilon(rr,mm)*epsilon(rr,mm);
-        }
-      }
-      rateofstrain *= 2.0;
-      rateofstrain = sqrt(rateofstrain);
     }
+
+    // compute the rate of strain
+    double rateofstrain   = -1.0e30;
+    double fsrateofstrain = -1.0e30;
+
+    // large scale strains
+    if(material->mattyp!=m_fluid
+       ||
+       fssgv==Fluid3::fssgv_Smagorinsky_all
+       ||
+       turb_mod_action!=Fluid3::no_model)
+    {
+      rateofstrain  =GetStrainRate(evelaf  ,derxy_,vderxyaf_  );
+    }
+
+    // fine scale strains
+    if(fssgv==Fluid3::fssgv_Smagorinsky_small)
+    {
+      fsrateofstrain=GetStrainRate(fsevelaf,derxy_,fsvderxyaf_);
+    }
+
+
+    // ---------------------------------------------------------------
+    // compute nonlinear viscosity according to Carreau-Yasuda
+    // ---------------------------------------------------------------
+    if(material->mattyp != m_fluid)
+    {
+      CalVisc(material,visceff,rateofstrain);
+    }
+
+
+    // ---------------------------------------------------------------
+    // classical large scale turbulence models of Smagorinsky type
+    // ---------------------------------------------------------------
+
     //
     // Choices of the Smagorinsky constant Cs:
     //
@@ -883,139 +816,200 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
     //
     //             0.1 < Cs < 0.24 (depending on the flow)
     //
+    //             Cs rescaled using law of the wall (Van Driest)
+    //
     //             Cs dynamic  (Germano model. Use several filter
     //                          resolutions to determine Cs)
-
-    if (turb_mod_action == Fluid3::smagorinsky_with_wall_damping)
+    if (turb_mod_action == Fluid3::smagorinsky_with_wall_damping
+        ||
+        turb_mod_action == Fluid3::smagorinsky)
     {
-      // since the Smagorinsky constant is only valid if hk is in the inertial
-      // subrange of turbulent flows, the mixing length is damped in the
-      // viscous near wall region using the van Driest damping function
-      /*
+      //
+      // CONSTANT COEFFICIENT SMAGORINSKY MODEL
+      // --------------------------------------
+      //                            +-                                 -+ 1
+      //                        2   |          / h \           / h \    | -
+      //    visc          = lmix  * | 2 * eps | u   |   * eps | u   |   | 2
+      //        turbulent    |      |          \   / ij        \   / ij |
+      //                     |      +-                                 -+
+      //                     |
+      //                     |      |                                   |
+      //                     |      +-----------------------------------+
+      //                     |           'resolved' rate of strain
+      //                    mixing length
+      //
+
+      if (turb_mod_action == Fluid3::smagorinsky_with_wall_damping)
+      {
+        //
+        // VAN DRIEST DAMPING (option)
+        // ------------------
+        
+        // since the Smagorinsky constant is only valid if hk is in the inertial
+        // subrange of turbulent flows, the mixing length is damped in the
+        // viscous near wall region using the van Driest damping function
+        /*
                                        /         /   y+ \ \
                      lmix = Cs * hk * | 1 - exp | - ---- | |
                                        \         \   A+ / /
-      */
-      // A+ is a constant parameter, y+ the distance from the wall in wall
-      // units
-      const double A_plus = 26.0;
-      double y_plus;
-
-      // the integration point coordinate is defined by the isometric approach
-      /*
+        */
+        // A+ is a constant parameter, y+ the distance from the wall in wall
+        // units
+        const double A_plus = 26.0;
+        double y_plus;
+        
+        // the integration point coordinate is defined by the isometric approach
+        /*
                   +-----
                    \
               x =   +      N (x) * x
                    /        j       j
                   +-----
                   node j
-      */
-      LINALG::Matrix<3,1> centernodecoord;
-
-      for(int rr=0;rr<3;++rr)
-      {
-        centernodecoord(rr)=funct_(0)*xyze_(rr,0);
-
-        for(int mm=1;mm<iel;++mm)
+        */
+        LINALG::Matrix<3,1> centernodecoord;
+        
+        for(int rr=0;rr<3;++rr)
         {
-          centernodecoord(rr)+=funct_(mm)*xyze_(rr,mm);
+          centernodecoord(rr)=funct_(0)*xyze_(rr,0);
+          
+          for(int mm=1;mm<iel;++mm)
+          {
+            centernodecoord(rr)+=funct_(mm)*xyze_(rr,mm);
+          }
         }
-      }
+        
+        if(centernodecoord(1)>0)
+        {
+          y_plus=(1.0-centernodecoord(1))/l_tau;
+        }
+        else
+        {
+          y_plus=(1.0+centernodecoord(1))/l_tau;
+        }
 
-      if(centernodecoord(1)>0)
-      {
-        y_plus=(1.0-centernodecoord(1))/l_tau;
+        // multiply with van Driest damping function
+        Cs *= (1.0-exp(-y_plus/A_plus));
       }
-      else
-      {
-        y_plus=(1.0+centernodecoord(1))/l_tau;
-      }
+      
+      const double h_grid = pow((vol_),(1.0/3.0));
 
-      // multiply with van Driest damping function
-      Cs *= (1.0-exp(-y_plus/A_plus));
+      //
+      // mixing length set proportional to grid witdh
+      //
+      //              lmix = Cs * h_grid
+      
+      double lmix = Cs * h_grid;
+      
+      Cs_delta_sq = lmix * lmix;
+
+      //
+      //          visc    = visc + visc
+      //              eff              turbulent
+      
+      visceff = visc + Cs_delta_sq * rateofstrain;
     }
-
-    const double h_grid = pow((vol_),(1.0/3.0));
-
-    //
-    // mixing length set proportional to grid witdh
-    //
-    //                     lmix = Cs * hk
-
-    double lmix = Cs * h_grid;
-
-    Cs_delta_sq = lmix * lmix;
-
-    //
-    //          visc    = visc + visc
-    //              eff              turbulent
-
-    visceff = visc + Cs_delta_sq * rateofstrain;
-  }
-  else if(turb_mod_action == Fluid3::dynamic_smagorinsky)
-  {
-    //
-    // SMAGORINSKY MODEL
-    // -----------------
-    //                            +-                                 -+ 1
-    //                        2   |          / h \           / h \    | -
-    //    visc          = lmix  * | 2 * eps | u   |   * eps | u   |   | 2
-    //        turbulent    |      |          \   / ij        \   / ij |
-    //                     |      +-                                 -+
-    //                     |
-    //                     |      |                                   |
-    //                     |      +-----------------------------------+
-    //                     |           'resolved' rate of strain
-    //                    mixing length
-    //               provided by the dynamic model
-    //            procedure and stored in Cs_delta_sq
-    //
-
-    double rateofstrain = 0;
+    else if(turb_mod_action == Fluid3::dynamic_smagorinsky)
     {
-      LINALG::Matrix<3,3> epsilon;
+      //
+      // DYNAMIC SMAGORINSKY MODEL
+      // -------------------------
+      //                            +-                                 -+ 1
+      //                        2   |          / h \           / h \    | -
+      //    visc          = lmix  * | 2 * eps | u   |   * eps | u   |   | 2
+      //        turbulent    |      |          \   / ij        \   / ij |
+      //                     |      +-                                 -+  
+      //                     |
+      //                     |      |                                   |
+      //                     |      +-----------------------------------+
+      //                     |           'resolved' rate of strain
+      //                    mixing length
+      //               provided by the dynamic model
+      //            procedure and stored in Cs_delta_sq
+      //
+      
+      visceff = visc + Cs_delta_sq * rateofstrain;
 
-      for(int rr=0;rr<3;rr++)
-      {
-        for(int mm=0;mm<3;mm++)
-        {
-          epsilon(rr,mm) = 0.5 * ( vderxyaf_(rr,mm) + vderxyaf_(mm,rr) );
-        }
-      }
-
-      for(int rr=0;rr<3;rr++)
-      {
-        for(int mm=0;mm<3;mm++)
-        {
-          rateofstrain += epsilon(rr,mm)*epsilon(rr,mm);
-        }
-      }
-      rateofstrain *= 2.0;
-      rateofstrain = sqrt(rateofstrain);
+      // for evaluation of statistics: remember the 'real' Cs
+      Cs=sqrt(Cs_delta_sq)/pow((vol_),(1.0/3.0));
     }
 
-    visceff = visc + Cs_delta_sq * rateofstrain;
 
-    // for evaluation of statistics: remember the 'real' Cs
-    Cs=sqrt(Cs_delta_sq)/pow((vol_),(1.0/3.0));
+    // ---------------------------------------------------------------
+    // fine scale turbulence models of Smagorinsky type
+    // ---------------------------------------------------------------
+
+    if (fssgv == Fluid3::fssgv_Smagorinsky_all)
+    {
+      //
+      // SMALL SCALE LARGE SCALE SMAGORINSKY MODEL
+      // -----------------------------------------
+      //                               +-                                 -+ 1
+      //                           2   |          / * \           / * \    | -
+      //    visc          = (C_S*h)  * | 2 * eps | u   |   * eps | u   |   | 2
+      //        turbulent              |          \   / ij        \   / ij |
+      //                               +-                                 -+
+      //                               |                                   |
+      //                               +-----------------------------------+
+      //                                  * 'resolved' rate of strain
+      
+      // computes the turbulent viscosity (acting on the fine scales) 
+      // based on the resolved-scale rate of strain
+      //
+      // Choices of the fine-scale Smagorinsky constant Cs_fs:
+      //
+      //             Cs = 0.17   (Lilly --- Determined from filter
+      //                          analysis of Kolmogorov spectrum of
+      //                          isotropic turbulence)
+      //
+      //             0.1 < Cs < 0.24 (depending on the flow)
+      //
+      vart_ = Cs * Cs * hk * hk * rateofstrain;
+    }
+    else if(fssgv == Fluid3::fssgv_Smagorinsky_small)
+    {
+      //
+      // SMALL SCALE SMALL SCALE SMAGORINSKY MODEL
+      // -----------------------------------------
+      //                               +-                                 -+ 1
+      //                           2   |          /   \           /   \    | -
+      //    visc          = (C_S*h)  * | 2 * eps | fsu |   * eps | fsu |   | 2
+      //        turbulent              |          \   / ij        \   / ij |
+      //                               +-                                 -+
+      //                               |                                   |
+      //                               +-----------------------------------+
+      //                                     'fine-scale'  rate of strain
+      
+      // compute turbulent viscosity (acting on the fine scales) 
+      // based on the fine-scale rate of strain
+    
+      //
+      // Choices of the fine-scale Smagorinsky constant Cs_fs:
+      //
+      //             Cs = 0.17   (Lilly --- Determined from filter
+      //                          analysis of Kolmogorov spectrum of
+      //                          isotropic turbulence)
+      //
+      //             0.1 < Cs < 0.24 (depending on the flow)
+      //
+      vart_ = Cs * Cs * hk * hk * fsrateofstrain;
+    }
   }
-  else
-  {
-    visceff = visc;
-  }
 
-#if 0
-  /*----------------------------------------- get stabilisation parameter ---*/
-  CalcTau(whichtau,tds,gamma,dt,hk,mk,visceff);
-#endif
+  // ------------------------------------------------------------------
+  // fine scale models based on artificial subgrid viscosities
+  // ------------------------------------------------------------------
 
-  /*------------------------------------------- compute subgrid viscosity ---*/
-  if (fssgv == Fluid3::fssgv_artificial_all or
-      fssgv == Fluid3::fssgv_artificial_small)
+  if (fssgv == Fluid3::fssgv_artificial_all   or
+      fssgv == Fluid3::fssgv_artificial_small
+    )
   {
     double fsvel_normaf = 0.0;
     if (fssgv == Fluid3::fssgv_artificial_small)
     {
+      // SMALL SCALE ARTIFICIAL SUBGRID VISCOSITY MODEL
+      // ----------------------------------------------
+
       // get fine-scale velocities at element center
       fsvelintaf_.Multiply(fsevelaf,funct_);
 
@@ -1025,6 +1019,12 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
     // get all-scale velocity norm
     else 
     {
+      // LARGE SCALE ARTIFICIAL SUBGRID VISCOSITY MODEL
+      // ----------------------------------------------
+
+      // get velocities (n+alpha_F,i) at integration point
+      velintaf_.Multiply(evelaf,funct_);
+
       // get velocity norms
       const double vel_normaf = velintaf_.Norm2();
 
@@ -1036,74 +1036,8 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
     const double xi = DMAX(re,1.0);
 
     vart_ = (DSQR(hk)*mk*DSQR(fsvel_normaf))/(2.0*visc*xi);
-
   }
-  else if (fssgv == Fluid3::fssgv_Smagorinsky_all or
-           fssgv == Fluid3::fssgv_Smagorinsky_small)
-  {
-    //
-    // SMAGORINSKY MODEL
-    // -----------------
-    //                               +-                                 -+ 1
-    //                           2   |          / h \           / h \    | -
-    //    visc          = (C_S*h)  * | 2 * eps | u   |   * eps | u   |   | 2
-    //        turbulent              |          \   / ij        \   / ij |
-    //                               +-                                 -+
-    //                               |                                   |
-    //                               +-----------------------------------+
-    //                                    'resolved' rate of strain
-    //
-
-    double rateofstrain = 0.0;
-    {
-      // get fine-scale or all-scale velocity (np,i) derivatives at element center
-      if (fssgv == Fluid3::fssgv_Smagorinsky_small)
-      {
-        fsvderxyaf_.MultiplyNT(fsevelaf,derxy_);
-      }
-      else
-      {
-        for(int rr=0;rr<3;rr++)
-        {
-          for(int mm=0;mm<3;mm++)
-          {
-            fsvderxyaf_(rr,mm) = vderxyaf_(rr,mm);
-          }
-        }
-      }
-
-      LINALG::Matrix<3,3> epsilon;
-
-      for(int rr=0;rr<3;rr++)
-      {
-        for(int mm=0;mm<3;mm++)
-        {
-          epsilon(rr,mm)=0.5 * ( fsvderxyaf_(rr,mm) + fsvderxyaf_(mm,rr) );
-        }
-      }
-
-      for(int rr=0;rr<3;rr++)
-      {
-        for(int mm=0;mm<3;mm++)
-        {
-          rateofstrain += epsilon(rr,mm)*epsilon(rr,mm);
-        }
-      }
-      rateofstrain *= 2.0;
-      rateofstrain = sqrt(rateofstrain);
-    }
-    //
-    // Choices of the fine-scale Smagorinsky constant Cs_fs:
-    //
-    //             Cs = 0.17   (Lilly --- Determined from filter
-    //                          analysis of Kolmogorov spectrum of
-    //                          isotropic turbulence)
-    //
-    //             0.1 < Cs < 0.24 (depending on the flow)
-    //
-    vart_ = Cs * Cs * hk * hk * rateofstrain;
-  }
-
+ 
   //----------------------------------------------------------------------------
   //
   //    From here onwards, we are working on the gausspoints of the element
@@ -1146,6 +1080,17 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
 
   // just define certain constants for conveniance
   const double afgdt  = alphaF * gamma * dt;
+
+  // in case of viscous stabilization decide whether to use GLS or USFEM
+  double vstabfac= 0.0;
+  if (vstab == Fluid3::viscous_stab_usfem || vstab == Fluid3::viscous_stab_usfem_only_rhs)
+  {
+    vstabfac =  1.0;
+  }
+  else if(vstab == Fluid3::viscous_stab_gls || vstab == Fluid3::viscous_stab_gls_only_rhs)
+  {
+    vstabfac = -1.0;
+  }
 
   //------------------------------------------------------------------
   //                       INTEGRATION LOOP
@@ -1712,6 +1657,25 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
         velintaf_(rr)+=funct_(nn)*evelaf(rr,nn);
       }
     }
+  
+    // get velocities (n+1,i)  at integration point
+    //
+    //                +-----
+    //       n+1       \                  n+1
+    //    vel   (x) =   +      N (x) * vel
+    //                 /        j         j
+    //                +-----
+    //                node j
+    //
+    // required for computation of tauC
+    for(int rr=0;rr<3;++rr)
+    {
+      velintnp_(rr)=funct_(0)*evelnp(rr,0);
+      for(int nn=1;nn<iel;++nn)
+      {
+        velintnp_(rr)+=funct_(nn)*evelnp(rr,nn);
+      }
+    }
 
     if(!constant_bodyforce_)
     {
@@ -1985,6 +1949,13 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
       }
     }
 
+    // prepare possible modification of convective linearisation for 
+    // combined reynolds/supg test function
+    for(int nn=0;nn<iel;++nn)
+    {
+      conv_c_plus_svel_af_(nn)=conv_c_af_(nn);
+    }
+
     // get convective linearisation (n+alpha_F,i) at integration point (convection by grid velocity)
     //
     //                    +----- 
@@ -2131,35 +2102,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
       }
     } // end if higher order
 
-    /*
-      This is the operator
-
-                  /               \
-                 | resM    o nabla |
-                  \    (i)        /
-
-      required for the cross stress linearisation
-    */
-    //
-    //                    +----- 
-    //          n+af       \         n+af      dN        
-    // conv_resM    (x) =   +    resM    (x) * --- (x) 
-    //                     /         j         dx        
-    //                    +-----                 j
-    //                     dim j
-    if(cross == Fluid3::cross_stress_stab)
-    {
-      for(int nn=0;nn<iel;++nn)
-      {
-        conv_resM_(nn)=resM_(0)*derxy_(0,nn);
-        
-        for(int rr=1;rr<3;++rr)
-        {
-          conv_resM_(nn)+=resM_(rr)*derxy_(rr,nn);
-        }
-      }
-    }
-
     /*---------------------------- get stabilisation parameter ---*/
     CalcTau(whichtau,tds,gamma,dt,hk,mk,visceff);
 
@@ -2250,6 +2192,8 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
 
       */
 
+
+
       /*
         This is the operator
 
@@ -2257,10 +2201,12 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
                  | u      o nabla |
                   \   (i)        /
 
-        required for the cross stress linearisation
+        required for the cross/reynolds stress linearisation
 
       */
-      if(cross == Fluid3::cross_stress_stab)
+      if(cross    == Fluid3::cross_stress_stab
+         ||
+         reynolds == Fluid3::reynolds_stress_stab)
       {
 	for (int rr=0;rr<iel;++rr)
 	{
@@ -2271,6 +2217,26 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
 	    conv_subaf_(rr) += svelaf_(mm)*derxy_(mm,rr);
 	  }
 	}
+
+        if(reynolds == Fluid3::reynolds_stress_stab)
+        {
+          /* get modified convective linearisation (n+alpha_F,i) at 
+             integration point takes care of half of the linearisation
+       
+                                   +-----  /                   \
+                         n+af       \     |  n+af      ~n+af    |   dN        
+         conv_c_plus_svel_   (x) =   +    | c    (x) + u    (x) | * --- (x) 
+                                    /     |  j          j       |   dx        
+                                   +-----  \                   /      j
+                                   dim j
+                                   
+
+          */
+          for(int nn=0;nn<iel;++nn)
+          {
+            conv_c_plus_svel_af_(nn)+=conv_subaf_(nn);
+          }
+        }
       }
 
       /* Most recent value for subgrid velocity convective term
@@ -2281,7 +2247,8 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
       */
       if(cross == Fluid3::cross_stress_stab_only_rhs
 	 ||
-	 cross == Fluid3::cross_stress_stab)
+	 cross == Fluid3::cross_stress_stab
+        )
       {
 	for (int rr=0;rr<3;++rr)
 	{
@@ -2330,7 +2297,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
         //
         //---------------------------------------------------------------
 	  
-	if(inertia == Fluid3::inertia_stab_keep)
+	if(inertia == Fluid3::inertia_stab_keep
+           || 
+           inertia == Fluid3::inertia_stab_keep_complete)
 	{
 	  // rescale time factors terms affected by inertia stabilisation
 	  fac_inertia   *=afgdt*facMtau;
@@ -2425,6 +2394,146 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
 	      } // end loop rows (test functions for matrix)
 	    } // end loop rows (solution for matrix, test function for vector)
 	  } // end higher order element and  linearisation of linear terms not supressed
+
+          if(inertia == Fluid3::inertia_stab_keep_complete)
+          {
+
+            /*              
+                                  immediately enters the matrix
+                                  |
+                                  v
+                               +--------------+
+                               |              |
+                                /            \
+                      1.0      |  ~n+af       |
+                 - --------- * |  u     ,  v  |
+                        n+af   |   (i)        |
+                   tau_M        \            /
+
+                   |       |
+                   +-------+
+                       ^
+                       |
+                       consider linearisation of this expression
+                   
+            */
+            const double norm = velintaf_.Norm2();
+
+            // normed velocity at element center (we use the copy for safety reasons!)
+            if (norm>=1e-6)
+            {
+              for (int rr=0;rr<3;++rr) /* loop element nodes */
+              {
+                normed_velintaf_(rr)=velintaf_(rr)/norm;
+              }
+            }
+            else
+            {
+              normed_velintaf_(0) = 1.;
+              for (int rr=1;rr<3;++rr) /* loop element nodes */
+              {
+                normed_velintaf_(rr)=0.0;
+              }      
+            }
+	      
+            double temp=0.0;
+            if(whichtau==Fluid3::codina)
+            {
+              /*
+                                                  || n+af||
+                       1.0           visc         ||u    ||
+                    --------- = CI * ---- + CII * ---------
+                         n+af           2         
+                    tau_M             hk             hk
+
+
+                    where CII=2.0/mk
+              */
+
+              temp=fac*afgdt/hk*2.0/mk;
+            }
+            else if(whichtau==Fluid3::smoothed_franca_barrenechea_valentin_wall)
+            {
+              /*
+                                  -x   '       -x
+                    using f(x)=x+e  , f (x)=1-e
+
+
+                                                +-                                -+ 
+                                                |          / || n+af||          \  |
+                       1.0      4.0 * visceff   |         |  ||u    || * hk * mk | |
+                    --------- = ------------- * | 1.0 + f |  ------------------- | |
+                         n+af           2       |         |                      | |
+                    tau_M         mk* hk        |          \    2.0 * visceff   /  |
+                                                +-                                -+
+
+              */
+
+              temp=fac*afgdt/hk*2.0*(1-exp(-1.0*(norm*hk/visceff)*(mk/2.0)));
+
+
+            }
+            else if(whichtau==Fluid3::franca_barrenechea_valentin_wall)
+            {
+
+              /*
+                                             +-                                  -+ 
+                                             |            / || n+af||          \  |
+                       1.0      4.0 * visc   |           |  ||u    || * hk * mk | |
+                    --------- = ---------- * | 1.0 + max |  ------------------- | |
+                         n+af           2    |           |                      | |
+                    tau_M         mk* hk     |            \    2.0 * visceff   /  |
+                                             +-                                  -+
+
+              */
+
+              if((norm*hk/visceff)*(mk/2.0)>1)
+              {
+                temp=fac*afgdt/hk*2.0;
+              }
+            }
+            else
+            {
+              dserror("There's no linearisation of 1/tau available for this tau definition\n");
+            }
+            
+            /*
+                        || n+af||             n+af    
+                      d ||u    ||            u    * Dacc    
+                      ----------- = afgdt *  -----------
+                                              || n+af||              
+                        d Dacc                ||u    ||   
+
+            */
+
+
+	    for (int vi=0; vi<iel; ++vi)  // loop rows (test functions for matrix)
+	    {
+	      const int fvi    =4*vi;
+	      const int fvip   =fvi+1;
+	      const int fvipp  =fvi+2;
+
+              
+              for (int ui=0; ui<iel; ++ui) // loop columns (solution for matrix, test function for vector)
+              {
+                const int fui  =4*ui;
+                const int fuip =fui+1;
+                const int fuipp=fui+2;
+
+                elemat(fvi  ,fui  ) -= temp*normed_velintaf_(0)*funct_(ui)*funct_(vi)*svelaf_(0);
+                elemat(fvi  ,fuip ) -= temp*normed_velintaf_(1)*funct_(ui)*funct_(vi)*svelaf_(0);
+                elemat(fvi  ,fuipp) -= temp*normed_velintaf_(2)*funct_(ui)*funct_(vi)*svelaf_(0);
+
+                elemat(fvip ,fui  ) -= temp*normed_velintaf_(0)*funct_(ui)*funct_(vi)*svelaf_(1);
+                elemat(fvip ,fuip ) -= temp*normed_velintaf_(1)*funct_(ui)*funct_(vi)*svelaf_(1);
+                elemat(fvip ,fuipp) -= temp*normed_velintaf_(2)*funct_(ui)*funct_(vi)*svelaf_(1);
+
+                elemat(fvipp,fui  ) -= temp*normed_velintaf_(0)*funct_(ui)*funct_(vi)*svelaf_(2);
+                elemat(fvipp,fuip ) -= temp*normed_velintaf_(1)*funct_(ui)*funct_(vi)*svelaf_(2);
+                elemat(fvipp,fuipp) -= temp*normed_velintaf_(2)*funct_(ui)*funct_(vi)*svelaf_(2);
+	      }
+            }
+          } // end linearisation of 1/tauM
 	} // extra terms for inertia stab
 
 	//---------------------------------------------------------------
@@ -2439,13 +2548,11 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
 
 	if(supg == Fluid3::convective_stab_supg)
 	{
-	  const double fac_afgdt_tauM_afgdt_facMtau  = fac*afgdt*afgdt*facMtau*tauM;
+	  const double fac_afgdt_afgdt_tauM_facMtau  = fac*afgdt   *afgdt*tauM*facMtau;
 
-          const double fac_afgdt_tauM_facMtau        = fac*afgdt*tauM*facMtau;
+          const double fac_gdt_afgdt_tauM_facMtau    = fac*gamma*dt*afgdt*tauM*facMtau;
 
-	  const double fac_alphaM_afgdt_tauM_facMtau
-	    =
-	    fac*alphaM*afgdt*tauM*facMtau;
+	  const double fac_alphaM_afgdt_tauM_facMtau = fac*alphaM  *afgdt*tauM*facMtau;
 
 	  for (int ui=0; ui<iel; ++ui) // loop columns (solution for matrix, test function for vector)
 	  {
@@ -2468,7 +2575,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
 	    /* SUPG stabilisation --- inertia and convection */
 	    const double supg_inertia_and_conv_ui
 	      =
-	      fac_alphaM_afgdt_tauM_facMtau*funct_(ui)+fac_afgdt_tauM_afgdt_facMtau*conv_c_af_(ui);
+	      fac_alphaM_afgdt_tauM_facMtau*funct_(ui)+fac_afgdt_afgdt_tauM_facMtau*conv_c_af_(ui);
 	    
 	    /* CSTAB entries */
 	    const double cstab_0 = cstabfac*derxy_(0,ui);
@@ -2489,7 +2596,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
 	      const double sum =
 		inertia_and_conv_ui*funct_(vi)
 		+
-		supg_inertia_and_conv_ui*conv_c_af_(vi)
+		supg_inertia_and_conv_ui*conv_c_plus_svel_af_(vi)
 		+
 		visc_0*derxy_(0,vi)
 		+
@@ -2622,7 +2729,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
 
 	  if (newton==Fluid3::Newton) // if newton and supg
 	  {
-	    const double fac_afgdt_tauM_afgdt_facMtau = fac*afgdt*afgdt*facMtau*tauM;
+	    const double fac_afgdt_afgdt_tauM_facMtau = fac*afgdt*afgdt*facMtau*tauM;
 
 	    double temp[3][3];
 
@@ -2640,7 +2747,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
 		= 
 		fac_convection*funct_(vi)
 		+
-		fac_afgdt_tauM_afgdt_facMtau*conv_c_af_(vi);
+		fac_afgdt_afgdt_tauM_facMtau*conv_c_plus_svel_af_(vi);
 	      
 	      temp[0][0]=scaled_inertia_and_conv_vi*vderxyaf_(0,0)-fac_afgdt_svelaf_0*derxy_(0,vi);
 	      temp[1][0]=scaled_inertia_and_conv_vi*vderxyaf_(0,1)-fac_afgdt_svelaf_0*derxy_(1,vi);
@@ -2725,9 +2832,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
 	  {
 	    const int fuippp=4*ui+3;
 
-	    const double scaled_gradp_0 = fac_afgdt_tauM_facMtau*gamma*dt*derxy_(0,ui);
-	    const double scaled_gradp_1 = fac_afgdt_tauM_facMtau*gamma*dt*derxy_(1,ui);
-	    const double scaled_gradp_2 = fac_afgdt_tauM_facMtau*gamma*dt*derxy_(2,ui);
+	    const double scaled_gradp_0 = fac_gdt_afgdt_tauM_facMtau*derxy_(0,ui);
+	    const double scaled_gradp_1 = fac_gdt_afgdt_tauM_facMtau*derxy_(1,ui);
+	    const double scaled_gradp_2 = fac_gdt_afgdt_tauM_facMtau*derxy_(2,ui);
 
 	    for (int vi=0; vi<iel; ++vi)  // loop rows (test functions for matrix)
 	    {
@@ -2747,9 +2854,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
                    |              \            /     |
                     \                               /
               */
-              elemat(fvi  ,fuippp) += scaled_gradp_0*conv_c_af_(vi);
-              elemat(fvi+1,fuippp) += scaled_gradp_1*conv_c_af_(vi);
-              elemat(fvi+2,fuippp) += scaled_gradp_2*conv_c_af_(vi);
+              elemat(fvi  ,fuippp) += scaled_gradp_0*conv_c_plus_svel_af_(vi);
+              elemat(fvi+1,fuippp) += scaled_gradp_1*conv_c_plus_svel_af_(vi);
+              elemat(fvi+2,fuippp) += scaled_gradp_2*conv_c_plus_svel_af_(vi);
 	      
             } // end loop rows (test functions for matrix)
           } // end loop columns (solution for matrix, test function for vector)
@@ -2796,17 +2903,17 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
                          |  \             \      /     \             /    |
                           \                                              /
                 */
-                elemat(fvi  ,fui  ) -= coltemp[0][0]*conv_c_af_(vi);
-                elemat(fvi  ,fuip ) -= coltemp[0][1]*conv_c_af_(vi);
-                elemat(fvi  ,fuipp) -= coltemp[0][2]*conv_c_af_(vi);
+                elemat(fvi  ,fui  ) -= coltemp[0][0]*conv_c_plus_svel_af_(vi);
+                elemat(fvi  ,fuip ) -= coltemp[0][1]*conv_c_plus_svel_af_(vi);
+                elemat(fvi  ,fuipp) -= coltemp[0][2]*conv_c_plus_svel_af_(vi);
                                                     
-                elemat(fvip ,fui  ) -= coltemp[1][0]*conv_c_af_(vi);
-                elemat(fvip ,fuip ) -= coltemp[1][1]*conv_c_af_(vi);
-                elemat(fvip ,fuipp) -= coltemp[1][2]*conv_c_af_(vi);
+                elemat(fvip ,fui  ) -= coltemp[1][0]*conv_c_plus_svel_af_(vi);
+                elemat(fvip ,fuip ) -= coltemp[1][1]*conv_c_plus_svel_af_(vi);
+                elemat(fvip ,fuipp) -= coltemp[1][2]*conv_c_plus_svel_af_(vi);
                                                     
-                elemat(fvipp,fui  ) -= coltemp[2][0]*conv_c_af_(vi);
-                elemat(fvipp,fuip ) -= coltemp[2][1]*conv_c_af_(vi);
-                elemat(fvipp,fuipp) -= coltemp[2][2]*conv_c_af_(vi);
+                elemat(fvipp,fui  ) -= coltemp[2][0]*conv_c_plus_svel_af_(vi);
+                elemat(fvipp,fuip ) -= coltemp[2][1]*conv_c_plus_svel_af_(vi);
+                elemat(fvipp,fuipp) -= coltemp[2][2]*conv_c_plus_svel_af_(vi);
 
               } // end loop rows (test functions for matrix)
             } // end loop columns (solution for matrix, test function for vector)
@@ -3900,6 +4007,256 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
             } // end loop columns (solution for matrix, test function for vector)
           } // end if higher_order_element
         } // end cross
+
+
+
+        if(reynolds == Fluid3::reynolds_stress_stab)
+        {
+          /* 
+                  /                            \
+                 |  ~n+af    ~n+af              |
+               - |  u    , ( u     o nabla ) v  |
+                 |                              |
+                  \                            /
+                             +----+
+                               ^
+                               |
+                               linearisation of this expression
+          */
+          const double fac_alphaM_afgdt_tauM_facMtau=fac*alphaM*afgdt*tauM*facMtau;
+
+          const double fac_alphaM_afgdt_tauM_facMtau_svelaf_x = fac_alphaM_afgdt_tauM_facMtau*svelaf_(0);
+          const double fac_alphaM_afgdt_tauM_facMtau_svelaf_y = fac_alphaM_afgdt_tauM_facMtau*svelaf_(1);
+          const double fac_alphaM_afgdt_tauM_facMtau_svelaf_z = fac_alphaM_afgdt_tauM_facMtau*svelaf_(2);
+
+          const double fac_afgdt_afgdt_tauM_facMtau =fac*afgdt*afgdt*tauM*facMtau;
+
+          double fac_afgdt_afgdt_tauM_facMtau_svelaf[3];
+          fac_afgdt_afgdt_tauM_facMtau_svelaf[0]=fac_afgdt_afgdt_tauM_facMtau*svelaf_(0);
+          fac_afgdt_afgdt_tauM_facMtau_svelaf[1]=fac_afgdt_afgdt_tauM_facMtau*svelaf_(1);
+          fac_afgdt_afgdt_tauM_facMtau_svelaf[2]=fac_afgdt_afgdt_tauM_facMtau*svelaf_(2);
+
+          for (int ui=0; ui<iel; ++ui) // loop columns (solution for matrix, test function for vector)
+          {
+            const int fui   =4*ui;
+            const int fuip  =fui+1;
+            const int fuipp =fui+2;
+            
+            const double u_o_nabla_ui=velintaf_(0)*derxy_(0,ui)+velintaf_(1)*derxy_(1,ui)+velintaf_(2)*derxy_(2,ui);
+            
+            double inertia_and_conv[3];
+
+            inertia_and_conv[0]=fac_afgdt_afgdt_tauM_facMtau_svelaf[0]*u_o_nabla_ui+fac_alphaM_afgdt_tauM_facMtau_svelaf_x*funct_(ui);
+            inertia_and_conv[1]=fac_afgdt_afgdt_tauM_facMtau_svelaf[1]*u_o_nabla_ui+fac_alphaM_afgdt_tauM_facMtau_svelaf_y*funct_(ui);
+            inertia_and_conv[2]=fac_afgdt_afgdt_tauM_facMtau_svelaf[2]*u_o_nabla_ui+fac_alphaM_afgdt_tauM_facMtau_svelaf_z*funct_(ui);
+              
+            for (int vi=0; vi<iel; ++vi)  // loop rows (test functions for matrix)
+            {
+              const int fvi   =4*vi;
+              const int fvip  =fvi+1;
+              const int fvipp =fvi+2;
+
+              /* 
+                 factor: +alphaM * alphaF * gamma * dt * tauM * facMtau
+                   
+                  /                            \
+                 |  ~n+af                       |
+                 |  u     , ( Dacc o nabla ) v  |
+                 |                              |
+                  \                            /      
+
+              */
+             
+              /* 
+                 factor: + alphaF * gamma * dt * alphaF * gamma * dt * tauM *facMtau
+             
+              /                                                   \
+             |  ~n+af    / / / n+af        \       \         \     |
+             |  u     , | | | u     o nabla | Dacc  | o nabla | v  |
+             |           \ \ \             /       /         /     |
+              \                                                   /      
+
+              */
+
+              elemat(fvi  ,fui  ) += inertia_and_conv[0]*derxy_(0,vi);
+              elemat(fvi  ,fuip ) += inertia_and_conv[0]*derxy_(1,vi);
+              elemat(fvi  ,fuipp) += inertia_and_conv[0]*derxy_(2,vi);
+                                     
+              elemat(fvip ,fui  ) += inertia_and_conv[1]*derxy_(0,vi);
+              elemat(fvip ,fuip ) += inertia_and_conv[1]*derxy_(1,vi);
+              elemat(fvip ,fuipp) += inertia_and_conv[1]*derxy_(2,vi);
+                                     
+              elemat(fvipp,fui  ) += inertia_and_conv[2]*derxy_(0,vi);
+              elemat(fvipp,fuip ) += inertia_and_conv[2]*derxy_(1,vi);
+              elemat(fvipp,fuipp) += inertia_and_conv[2]*derxy_(2,vi);
+            } // end loop rows (test functions for matrix)
+          } // end loop columns (solution for matrix, test function for vector)
+
+          for (int vi=0; vi<iel; ++vi)  // loop rows (test functions for matrix)
+          {
+            const int fvi   =4*vi;
+            const int fvip  =fvi+1;
+            const int fvipp =fvi+2;
+            
+            double temp[3];
+            temp[0]=fac_afgdt_afgdt_tauM_facMtau*(vderxyaf_(0,0)*derxy_(0,vi)+vderxyaf_(1,0)*derxy_(1,vi)+vderxyaf_(2,0)*derxy_(2,vi));
+            temp[1]=fac_afgdt_afgdt_tauM_facMtau*(vderxyaf_(0,1)*derxy_(0,vi)+vderxyaf_(1,1)*derxy_(1,vi)+vderxyaf_(2,1)*derxy_(2,vi));
+            temp[2]=fac_afgdt_afgdt_tauM_facMtau*(vderxyaf_(0,2)*derxy_(0,vi)+vderxyaf_(1,2)*derxy_(1,vi)+vderxyaf_(2,2)*derxy_(2,vi));
+
+            double rowtemp[3][3];
+            
+            rowtemp[0][0]=svelaf_(0)*temp[0];
+            rowtemp[0][1]=svelaf_(0)*temp[1];
+            rowtemp[0][2]=svelaf_(0)*temp[2];
+                               
+            rowtemp[1][0]=svelaf_(1)*temp[0];
+            rowtemp[1][1]=svelaf_(1)*temp[1];
+            rowtemp[1][2]=svelaf_(1)*temp[2];
+                               
+            rowtemp[2][0]=svelaf_(2)*temp[0];
+            rowtemp[2][1]=svelaf_(2)*temp[1];
+            rowtemp[2][2]=svelaf_(2)*temp[2];
+              
+            for (int ui=0; ui<iel; ++ui) // loop columns (solution for matrix, test function for vector)
+            {
+              const int fui   =4*ui;
+              const int fuip  =fui+1;
+              const int fuipp =fui+2;
+            
+              /* 
+                 factor: + alphaF * gamma * dt * alphaF * gamma * dt * tauM *facMtau
+
+              /                                                   \
+             |  ~n+af    / / /            \   n+af \         \     |
+             |  u     , | | | Dacc o nabla | u      | o nabla | v  |
+             |           \ \ \            /        /         /     |
+              \                                                   /      
+
+              */
+
+              elemat(fvi  ,fui  ) += funct_(ui)*rowtemp[0][0];
+              elemat(fvi  ,fuip ) += funct_(ui)*rowtemp[0][1];
+              elemat(fvi  ,fuipp) += funct_(ui)*rowtemp[0][2];
+                                                             
+              elemat(fvip ,fui  ) += funct_(ui)*rowtemp[1][0];
+              elemat(fvip ,fuip ) += funct_(ui)*rowtemp[1][1];
+              elemat(fvip ,fuipp) += funct_(ui)*rowtemp[1][2];
+                                                             
+              elemat(fvipp,fui  ) += funct_(ui)*rowtemp[2][0];
+              elemat(fvipp,fuip ) += funct_(ui)*rowtemp[2][1];
+              elemat(fvipp,fuipp) += funct_(ui)*rowtemp[2][2];
+            } // end loop rows (test functions for matrix)
+          } // end loop columns (solution for matrix, test function for vector)
+
+
+          const double fac_gdt_afgdt_tauM_facMtau         =fac*gamma*dt*afgdt*tauM*facMtau;
+          const double fac_gdt_afgdt_tauM_facMtau_svelaf_x=fac_gdt_afgdt_tauM_facMtau*svelaf_(0);
+          const double fac_gdt_afgdt_tauM_facMtau_svelaf_y=fac_gdt_afgdt_tauM_facMtau*svelaf_(1);
+          const double fac_gdt_afgdt_tauM_facMtau_svelaf_z=fac_gdt_afgdt_tauM_facMtau*svelaf_(2);
+
+          for (int ui=0; ui<iel; ++ui) // loop columns (solution for matrix, test function for vector)
+          {
+            const int fuippp =4*ui+3;
+            
+            double coltemp[3][3];
+
+            coltemp[0][0]=fac_gdt_afgdt_tauM_facMtau_svelaf_x*derxy_(0,ui);
+            coltemp[0][1]=fac_gdt_afgdt_tauM_facMtau_svelaf_x*derxy_(1,ui);
+            coltemp[0][2]=fac_gdt_afgdt_tauM_facMtau_svelaf_x*derxy_(2,ui);
+            coltemp[1][0]=fac_gdt_afgdt_tauM_facMtau_svelaf_y*derxy_(0,ui);
+            coltemp[1][1]=fac_gdt_afgdt_tauM_facMtau_svelaf_y*derxy_(1,ui);
+            coltemp[1][2]=fac_gdt_afgdt_tauM_facMtau_svelaf_y*derxy_(2,ui);
+            coltemp[2][0]=fac_gdt_afgdt_tauM_facMtau_svelaf_z*derxy_(0,ui);
+            coltemp[2][1]=fac_gdt_afgdt_tauM_facMtau_svelaf_z*derxy_(1,ui);
+            coltemp[2][2]=fac_gdt_afgdt_tauM_facMtau_svelaf_z*derxy_(2,ui);
+  
+            for (int vi=0; vi<iel; ++vi)  // loop rows (test functions for matrix)
+            {
+              const int fvi   =4*vi;
+              const int fvip  =fvi+1;
+              const int fvipp =fvi+2;
+            
+              /* 
+                 factor: + gamma * dt * alphaF * gamma * dt * tauM *facMtau (rescaled)
+             
+              /                                \
+             |  ~n+af    /                \     |
+             |  u     , | nabla Dp o nabla | v  |
+             |           \                /     |
+              \                                /      
+
+              */
+
+              elemat(fvi  ,fuippp) += coltemp[0][0]*derxy_(0,vi)+coltemp[0][1]*derxy_(1,vi)+coltemp[0][2]*derxy_(2,vi);
+              elemat(fvip ,fuippp) += coltemp[1][0]*derxy_(0,vi)+coltemp[1][1]*derxy_(1,vi)+coltemp[1][2]*derxy_(2,vi);
+              elemat(fvipp,fuippp) += coltemp[2][0]*derxy_(0,vi)+coltemp[2][1]*derxy_(1,vi)+coltemp[2][2]*derxy_(2,vi);
+
+            } // end loop rows (test functions for matrix)
+          } // end loop columns (solution for matrix, test function for vector)
+
+
+          if (higher_order_ele && newton!=Fluid3::minimal)
+          {
+            const double fac_nu_afgdt_afgdt_tauM_facMtau =fac*visceff*afgdt*afgdt*tauM*facMtau;
+          
+            double temp[3];
+
+            temp[0]=fac_nu_afgdt_afgdt_tauM_facMtau*svelaf_(0);
+            temp[1]=fac_nu_afgdt_afgdt_tauM_facMtau*svelaf_(1);
+            temp[2]=fac_nu_afgdt_afgdt_tauM_facMtau*svelaf_(2);
+
+            for (int vi=0; vi<iel; ++vi)  // loop rows (test functions for matrix)
+            {
+              const int fvi   =4*vi;
+              const int fvip  =fvi+1;
+              const int fvipp =fvi+2;
+              
+              double rowtemp[3][3];
+              
+              rowtemp[0][0]=temp[0]*derxy_(0,vi);
+              rowtemp[0][1]=temp[0]*derxy_(1,vi);
+              rowtemp[0][2]=temp[0]*derxy_(2,vi);
+              
+              rowtemp[1][0]=temp[1]*derxy_(0,vi);
+              rowtemp[1][1]=temp[1]*derxy_(1,vi);
+              rowtemp[1][2]=temp[1]*derxy_(2,vi);
+              
+              rowtemp[2][0]=temp[2]*derxy_(0,vi);
+              rowtemp[2][1]=temp[2]*derxy_(1,vi);
+              rowtemp[2][2]=temp[2]*derxy_(2,vi);
+
+              for (int ui=0; ui<iel; ++ui) // loop columns (solution for matrix, test function for vector)
+              {
+                const int fui   =4*ui;
+                const int fuip  =fui+1;
+                const int fuipp =fui+2;
+                
+                /* 
+                   factor: - 2.0 * visc * alphaF * gamma * dt * alphaF * gamma * dt * tauM * facMtauM
+
+                    /                                                 \
+                   |  ~n+af    / /             /    \  \         \     |
+                   |  u     , | | nabla o eps | Dacc |  | o nabla | v  |
+                   |           \ \             \    /  /         /     |
+                    \                                                 /      
+                */
+
+                elemat(fvi  ,fui  ) -= viscs2_(0,ui)*rowtemp[0][0]+derxy2_(3,ui)*rowtemp[0][1]+derxy2_(4,ui)*rowtemp[0][2];
+                elemat(fvi  ,fuip ) -= derxy2_(3,ui)*rowtemp[0][0]+viscs2_(1,ui)*rowtemp[0][1]+derxy2_(5,ui)*rowtemp[0][2];
+                elemat(fvi  ,fuipp) -= derxy2_(4,ui)*rowtemp[0][0]+derxy2_(5,ui)*rowtemp[0][1]+viscs2_(2,ui)*rowtemp[0][2];
+                
+                elemat(fvip ,fui  ) -= viscs2_(0,ui)*rowtemp[1][0]+derxy2_(3,ui)*rowtemp[1][1]+derxy2_(4,ui)*rowtemp[1][2];
+                elemat(fvip ,fuip ) -= derxy2_(3,ui)*rowtemp[1][0]+viscs2_(1,ui)*rowtemp[1][1]+derxy2_(5,ui)*rowtemp[1][2];
+                elemat(fvip ,fuipp) -= derxy2_(4,ui)*rowtemp[1][0]+derxy2_(5,ui)*rowtemp[1][1]+viscs2_(2,ui)*rowtemp[1][2];
+                
+                elemat(fvipp,fui  ) -= viscs2_(0,ui)*rowtemp[2][0]+derxy2_(3,ui)*rowtemp[2][1]+derxy2_(4,ui)*rowtemp[2][2];
+                elemat(fvipp,fuip ) -= derxy2_(3,ui)*rowtemp[2][0]+viscs2_(1,ui)*rowtemp[2][1]+derxy2_(5,ui)*rowtemp[2][2];
+                elemat(fvipp,fuipp) -= derxy2_(4,ui)*rowtemp[2][0]+derxy2_(5,ui)*rowtemp[2][1]+viscs2_(2,ui)*rowtemp[2][2];
+              }
+            }
+          }// end higher order ele
+        } // end if reynolds stab
+
       } // end if compute_elemat
 
       //---------------------------------------------------------------
@@ -3915,7 +4272,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
       // (MODIFIED) GALERKIN PART, SUBSCALE ACCELERATION STABILISATION
       //
       //---------------------------------------------------------------
-      if(inertia == Fluid3::inertia_stab_keep)
+      if(inertia == Fluid3::inertia_stab_keep
+         ||
+         inertia == Fluid3::inertia_stab_keep_complete)
       {
 
         double aux_x =(-svelaf_(0)/tauM-pderxynp_(0)) ;
@@ -4440,6 +4799,36 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
 //--------------------------------------------------------------
     else
     {
+
+      /*
+         This is the operator
+
+                  /               \
+                 | resM    o nabla |
+                  \    (i)        /
+
+         required for the cross stress linearisation
+      */
+      //
+      //                    +----- 
+      //          n+af       \         n+af      dN        
+      // conv_resM    (x) =   +    resM    (x) * --- (x) 
+      //                     /         j         dx        
+      //                    +-----                 j
+      //                     dim j
+      if(cross == Fluid3::cross_stress_stab)
+      {
+        for(int nn=0;nn<iel;++nn)
+        {
+          conv_resM_(nn)=resM_(0)*derxy_(0,nn);
+          
+          for(int rr=1;rr<3;++rr)
+          {
+            conv_resM_(nn)+=resM_(rr)*derxy_(rr,nn);
+          }
+        }
+      }
+
       // stabilisation parameters
       const double tauM   = tau_(0);
       const double tauMp  = tau_(1);
@@ -4457,6 +4846,285 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat(
       //--------------------------------------------------------------
       if(compute_elemat)
       {
+
+        for(int nn=0;nn<iel;++nn)
+        {
+          conv_c_plus_svel_af_(nn)=conv_c_af_(nn);
+        }
+
+        if(reynolds == Fluid3::reynolds_stress_stab)
+        {
+
+          /* get modified convective linearisation (n+alpha_F,i) at 
+             integration point takes care of half of the linearisation
+       
+                                   +-----  /                   \
+                         n+af       \     |  n+af      ~n+af    |   dN        
+         conv_c_plus_svel_   (x) =   +    | c    (x) + u    (x) | * --- (x) 
+                                    /     |  j          j       |   dx        
+                                   +-----  \                   /      j
+                                   dim j
+                                   
+
+          */
+
+          for(int nn=0;nn<iel;++nn)
+          {
+            conv_c_plus_svel_af_(nn)-=tauM*resM_(0)*derxy_(0,nn);
+            
+            for(int rr=1;rr<3;++rr)
+            {
+              conv_c_plus_svel_af_(nn)-=tauM*resM_(rr)*derxy_(rr,nn);
+            }
+          }
+
+          /* 
+                  /                           \
+                 |                             |
+                 |  resM , ( resM o nabla ) v  |
+                 |                             |
+                  \                           /
+                            +----+
+                              ^
+                              |
+                              linearisation of this expression
+          */
+          const double fac_alphaM_tauM_tauM=fac*alphaM*tauM*tauM;
+
+          const double fac_alphaM_tauM_tauM_resM_x=fac_alphaM_tauM_tauM*resM_(0);
+          const double fac_alphaM_tauM_tauM_resM_y=fac_alphaM_tauM_tauM*resM_(1);
+          const double fac_alphaM_tauM_tauM_resM_z=fac_alphaM_tauM_tauM*resM_(2);
+
+          const double fac_afgdt_tauM_tauM=fac*afgdt*tauM*tauM;
+
+          double fac_afgdt_tauM_tauM_resM[3];
+          fac_afgdt_tauM_tauM_resM[0]=fac_afgdt_tauM_tauM*resM_(0);
+          fac_afgdt_tauM_tauM_resM[1]=fac_afgdt_tauM_tauM*resM_(1);
+          fac_afgdt_tauM_tauM_resM[2]=fac_afgdt_tauM_tauM*resM_(2);
+
+          for (int ui=0; ui<iel; ++ui) // loop columns (solution for matrix, test function for vector)
+          {
+            const int fui   =4*ui;
+            const int fuip  =fui+1;
+            const int fuipp =fui+2;
+            
+            const double u_o_nabla_ui=velintaf_(0)*derxy_(0,ui)+velintaf_(1)*derxy_(1,ui)+velintaf_(2)*derxy_(2,ui);
+            
+            double inertia_and_conv[3];
+
+            inertia_and_conv[0]=fac_afgdt_tauM_tauM_resM[0]*u_o_nabla_ui+fac_alphaM_tauM_tauM_resM_x*funct_(ui);
+            inertia_and_conv[1]=fac_afgdt_tauM_tauM_resM[1]*u_o_nabla_ui+fac_alphaM_tauM_tauM_resM_y*funct_(ui);
+            inertia_and_conv[2]=fac_afgdt_tauM_tauM_resM[2]*u_o_nabla_ui+fac_alphaM_tauM_tauM_resM_z*funct_(ui);
+              
+            for (int vi=0; vi<iel; ++vi)  // loop rows (test functions for matrix)
+            {
+              const int fvi   =4*vi;
+              const int fvip  =fvi+1;
+              const int fvipp =fvi+2;
+
+              /* 
+                 factor: -alphaM * tauM * tauM
+                   
+                  /                           \
+                 |                             |
+                 |  resM , ( Dacc o nabla ) v  |
+                 |                             |
+                  \                           /      
+
+              */
+             
+              /* 
+                 factor: -alphaF * gamma * dt * tauM * tauM
+             
+              /                                                  \
+             |          / / / n+af        \       \         \     |
+             |  resM , | | | u     o nabla | Dacc  | o nabla | v  |
+             |          \ \ \             /       /         /     |
+              \                                                  /      
+
+              */
+
+              elemat(fvi  ,fui  ) -= inertia_and_conv[0]*derxy_(0,vi);
+              elemat(fvi  ,fuip ) -= inertia_and_conv[0]*derxy_(1,vi);
+              elemat(fvi  ,fuipp) -= inertia_and_conv[0]*derxy_(2,vi);
+                                     
+              elemat(fvip ,fui  ) -= inertia_and_conv[1]*derxy_(0,vi);
+              elemat(fvip ,fuip ) -= inertia_and_conv[1]*derxy_(1,vi);
+              elemat(fvip ,fuipp) -= inertia_and_conv[1]*derxy_(2,vi);
+                                     
+              elemat(fvipp,fui  ) -= inertia_and_conv[2]*derxy_(0,vi);
+              elemat(fvipp,fuip ) -= inertia_and_conv[2]*derxy_(1,vi);
+              elemat(fvipp,fuipp) -= inertia_and_conv[2]*derxy_(2,vi);
+            } // end loop rows (test functions for matrix)
+          } // end loop columns (solution for matrix, test function for vector)
+
+              
+          for (int vi=0; vi<iel; ++vi)  // loop rows (test functions for matrix)
+          {
+            const int fvi   =4*vi;
+            const int fvip  =fvi+1;
+            const int fvipp =fvi+2;
+            
+            double temp[3];
+            temp[0]=fac_afgdt_tauM_tauM*(vderxyaf_(0,0)*derxy_(0,vi)+vderxyaf_(1,0)*derxy_(1,vi)+vderxyaf_(2,0)*derxy_(2,vi));
+            temp[1]=fac_afgdt_tauM_tauM*(vderxyaf_(0,1)*derxy_(0,vi)+vderxyaf_(1,1)*derxy_(1,vi)+vderxyaf_(2,1)*derxy_(2,vi));
+            temp[2]=fac_afgdt_tauM_tauM*(vderxyaf_(0,2)*derxy_(0,vi)+vderxyaf_(1,2)*derxy_(1,vi)+vderxyaf_(2,2)*derxy_(2,vi));
+
+            double rowtemp[3][3];
+            
+            rowtemp[0][0]=resM_(0)*temp[0];
+            rowtemp[0][1]=resM_(0)*temp[1];
+            rowtemp[0][2]=resM_(0)*temp[2];
+                                   
+            rowtemp[1][0]=resM_(1)*temp[0];
+            rowtemp[1][1]=resM_(1)*temp[1];
+            rowtemp[1][2]=resM_(1)*temp[2];
+                                   
+            rowtemp[2][0]=resM_(2)*temp[0];
+            rowtemp[2][1]=resM_(2)*temp[1];
+            rowtemp[2][2]=resM_(2)*temp[2];
+              
+            for (int ui=0; ui<iel; ++ui) // loop columns (solution for matrix, test function for vector)
+            {
+              const int fui   =4*ui;
+              const int fuip  =fui+1;
+              const int fuipp =fui+2;
+            
+              /* 
+                 factor: -alphaF * gamma * dt * tauM * tauM
+
+              /                                                  \
+             |          / / /            \   n+af \         \     |
+             |  resM , | | | Dacc o nabla | u      | o nabla | v  |
+             |          \ \ \            /        /         /     |
+              \                                                  /      
+
+              */
+
+              elemat(fvi  ,fui  ) -= funct_(ui)*rowtemp[0][0];
+              elemat(fvi  ,fuip ) -= funct_(ui)*rowtemp[0][1];
+              elemat(fvi  ,fuipp) -= funct_(ui)*rowtemp[0][2];
+                                                             
+              elemat(fvip ,fui  ) -= funct_(ui)*rowtemp[1][0];
+              elemat(fvip ,fuip ) -= funct_(ui)*rowtemp[1][1];
+              elemat(fvip ,fuipp) -= funct_(ui)*rowtemp[1][2];
+                                                             
+              elemat(fvipp,fui  ) -= funct_(ui)*rowtemp[2][0];
+              elemat(fvipp,fuip ) -= funct_(ui)*rowtemp[2][1];
+              elemat(fvipp,fuipp) -= funct_(ui)*rowtemp[2][2];
+            } // end loop rows (test functions for matrix)
+          } // end loop columns (solution for matrix, test function for vector)
+
+
+          const double fac_gdt_tauM_tauM       =fac*gamma*dt*tauM*tauM;
+          const double fac_gdt_tauM_tauM_resM_x=fac_gdt_tauM_tauM*resM_(0);
+          const double fac_gdt_tauM_tauM_resM_y=fac_gdt_tauM_tauM*resM_(1);
+          const double fac_gdt_tauM_tauM_resM_z=fac_gdt_tauM_tauM*resM_(2);
+
+          for (int ui=0; ui<iel; ++ui) // loop columns (solution for matrix, test function for vector)
+          {
+            const int fuippp =4*ui+3;
+            
+            double coltemp[3][3];
+
+            coltemp[0][0]=fac_gdt_tauM_tauM_resM_x*derxy_(0,ui);
+            coltemp[0][1]=fac_gdt_tauM_tauM_resM_x*derxy_(1,ui);
+            coltemp[0][2]=fac_gdt_tauM_tauM_resM_x*derxy_(2,ui);
+            coltemp[1][0]=fac_gdt_tauM_tauM_resM_y*derxy_(0,ui);
+            coltemp[1][1]=fac_gdt_tauM_tauM_resM_y*derxy_(1,ui);
+            coltemp[1][2]=fac_gdt_tauM_tauM_resM_y*derxy_(2,ui);
+            coltemp[2][0]=fac_gdt_tauM_tauM_resM_z*derxy_(0,ui);
+            coltemp[2][1]=fac_gdt_tauM_tauM_resM_z*derxy_(1,ui);
+            coltemp[2][2]=fac_gdt_tauM_tauM_resM_z*derxy_(2,ui);
+  
+            for (int vi=0; vi<iel; ++vi)  // loop rows (test functions for matrix)
+            {
+              const int fvi   =4*vi;
+              const int fvip  =fvi+1;
+              const int fvipp =fvi+2;
+            
+              /* 
+                 factor: - gamma * dt * tauM * tauM (rescaled)
+             
+              /                               \
+             |          /                \     |
+             |  resM , | nabla Dp o nabla | v  |
+             |          \                /     |
+              \                               /      
+
+              */
+
+              elemat(fvi  ,fuippp) -= coltemp[0][0]*derxy_(0,vi)+coltemp[0][1]*derxy_(1,vi)+coltemp[0][2]*derxy_(2,vi);
+              elemat(fvip ,fuippp) -= coltemp[1][0]*derxy_(0,vi)+coltemp[1][1]*derxy_(1,vi)+coltemp[1][2]*derxy_(2,vi);
+              elemat(fvipp,fuippp) -= coltemp[2][0]*derxy_(0,vi)+coltemp[2][1]*derxy_(1,vi)+coltemp[2][2]*derxy_(2,vi);
+
+            } // end loop rows (test functions for matrix)
+          } // end loop columns (solution for matrix, test function for vector)
+
+
+          if (higher_order_ele && newton!=Fluid3::minimal)
+          {
+            const double fac_nu_afgdt_tauM_tauM=fac*visceff*afgdt*tauM*tauM;
+          
+            double temp[3];
+
+            temp[0]=fac_nu_afgdt_tauM_tauM*resM_(0);
+            temp[1]=fac_nu_afgdt_tauM_tauM*resM_(1);
+            temp[2]=fac_nu_afgdt_tauM_tauM*resM_(2);
+
+
+            for (int vi=0; vi<iel; ++vi)  // loop rows (test functions for matrix)
+            {
+              const int fvi   =4*vi;
+              const int fvip  =fvi+1;
+              const int fvipp =fvi+2;
+              
+              double rowtemp[3][3];
+              
+              rowtemp[0][0]=temp[0]*derxy_(0,vi);
+              rowtemp[0][1]=temp[0]*derxy_(1,vi);
+              rowtemp[0][2]=temp[0]*derxy_(2,vi);
+              
+              rowtemp[1][0]=temp[1]*derxy_(0,vi);
+              rowtemp[1][1]=temp[1]*derxy_(1,vi);
+              rowtemp[1][2]=temp[1]*derxy_(2,vi);
+              
+              rowtemp[2][0]=temp[2]*derxy_(0,vi);
+              rowtemp[2][1]=temp[2]*derxy_(1,vi);
+              rowtemp[2][2]=temp[2]*derxy_(2,vi);
+
+              for (int ui=0; ui<iel; ++ui) // loop columns (solution for matrix, test function for vector)
+              {
+                const int fui   =4*ui;
+                const int fuip  =fui+1;
+                const int fuipp =fui+2;
+                
+                /* 
+                   factor: + 2.0 * visc * alphaF * gamma * dt * tauM * tauM 
+
+                    /                                                \
+                   |          / /             /    \  \         \     |
+                   |  resM , | | nabla o eps | Dacc |  | o nabla | v  |
+                   |          \ \             \    /  /         /     |
+                    \                                                /      
+                */
+
+                elemat(fvi  ,fui  ) += viscs2_(0,ui)*rowtemp[0][0]+derxy2_(3,ui)*rowtemp[0][1]+derxy2_(4,ui)*rowtemp[0][2];
+                elemat(fvi  ,fuip ) += derxy2_(3,ui)*rowtemp[0][0]+viscs2_(1,ui)*rowtemp[0][1]+derxy2_(5,ui)*rowtemp[0][2];
+                elemat(fvi  ,fuipp) += derxy2_(4,ui)*rowtemp[0][0]+derxy2_(5,ui)*rowtemp[0][1]+viscs2_(2,ui)*rowtemp[0][2];
+                
+                elemat(fvip ,fui  ) += viscs2_(0,ui)*rowtemp[1][0]+derxy2_(3,ui)*rowtemp[1][1]+derxy2_(4,ui)*rowtemp[1][2];
+                elemat(fvip ,fuip ) += derxy2_(3,ui)*rowtemp[1][0]+viscs2_(1,ui)*rowtemp[1][1]+derxy2_(5,ui)*rowtemp[1][2];
+                elemat(fvip ,fuipp) += derxy2_(4,ui)*rowtemp[1][0]+derxy2_(5,ui)*rowtemp[1][1]+viscs2_(2,ui)*rowtemp[1][2];
+                
+                elemat(fvipp,fui  ) += viscs2_(0,ui)*rowtemp[2][0]+derxy2_(3,ui)*rowtemp[2][1]+derxy2_(4,ui)*rowtemp[2][2];
+                elemat(fvipp,fuip ) += derxy2_(3,ui)*rowtemp[2][0]+viscs2_(1,ui)*rowtemp[2][1]+derxy2_(5,ui)*rowtemp[2][2];
+                elemat(fvipp,fuipp) += derxy2_(4,ui)*rowtemp[2][0]+derxy2_(5,ui)*rowtemp[2][1]+viscs2_(2,ui)*rowtemp[2][2];
+              }
+            }
+          }
+        } // end if reynolds stab
+
         //---------------------------------------------------------------
         /*
              GALERKIN PART, INERTIA, CONVECTION AND VISCOUS TERMS
@@ -4566,6 +5234,8 @@ N
         {
           if(supg == Fluid3::convective_stab_supg)
           {
+        
+
             if(cstab == Fluid3::continuity_stab_yes)
             { // end supg and cstab
               const double fac_gamma_dt_tauC = fac*gamma*dt*tauC;
@@ -4604,7 +5274,7 @@ N
                   const double sum =
                     inertia_and_conv_ui*funct_(vi)
                     +
-                    fac_tauM_inertia_and_conv*conv_c_af_(vi)
+                    fac_tauM_inertia_and_conv*conv_c_plus_svel_af_(vi)
                     +
                     fac_visceff_afgdt_derxy0_ui*derxy_(0,vi)
                     +
@@ -4654,7 +5324,7 @@ N
                   const double sum =
                     inertia_and_conv_ui*funct_(vi)
                     +
-                    fac_tauM_inertia_and_conv*conv_c_af_(vi)
+                    fac_tauM_inertia_and_conv*conv_c_plus_svel_af_(vi)
                     +
                     fac_visceff_afgdt_derxy0_ui*derxy_(0,vi)
                     +
@@ -4703,15 +5373,15 @@ N
                 /*  add linearised convective term in residual, 
                     linearisation of testfunction 
                     and linearised Galerkin term                */
-                temp[0][0]=fac_afgdt*(tauMresM[0]*derxy_(0,vi)+vderxyaf_(0,0)*(tauM*conv_c_af_(vi)+funct_(vi)));
-                temp[0][1]=fac_afgdt*(tauMresM[0]*derxy_(1,vi)+vderxyaf_(0,1)*(tauM*conv_c_af_(vi)+funct_(vi)));
-                temp[0][2]=fac_afgdt*(tauMresM[0]*derxy_(2,vi)+vderxyaf_(0,2)*(tauM*conv_c_af_(vi)+funct_(vi)));
-                temp[1][0]=fac_afgdt*(tauMresM[1]*derxy_(0,vi)+vderxyaf_(1,0)*(tauM*conv_c_af_(vi)+funct_(vi)));
-                temp[1][1]=fac_afgdt*(tauMresM[1]*derxy_(1,vi)+vderxyaf_(1,1)*(tauM*conv_c_af_(vi)+funct_(vi)));
-                temp[1][2]=fac_afgdt*(tauMresM[1]*derxy_(2,vi)+vderxyaf_(1,2)*(tauM*conv_c_af_(vi)+funct_(vi)));
-                temp[2][0]=fac_afgdt*(tauMresM[2]*derxy_(0,vi)+vderxyaf_(2,0)*(tauM*conv_c_af_(vi)+funct_(vi)));
-                temp[2][1]=fac_afgdt*(tauMresM[2]*derxy_(1,vi)+vderxyaf_(2,1)*(tauM*conv_c_af_(vi)+funct_(vi)));
-                temp[2][2]=fac_afgdt*(tauMresM[2]*derxy_(2,vi)+vderxyaf_(2,2)*(tauM*conv_c_af_(vi)+funct_(vi)));
+                temp[0][0]=fac_afgdt*(tauMresM[0]*derxy_(0,vi)+vderxyaf_(0,0)*(tauM*conv_c_plus_svel_af_(vi)+funct_(vi)));
+                temp[0][1]=fac_afgdt*(tauMresM[0]*derxy_(1,vi)+vderxyaf_(0,1)*(tauM*conv_c_plus_svel_af_(vi)+funct_(vi)));
+                temp[0][2]=fac_afgdt*(tauMresM[0]*derxy_(2,vi)+vderxyaf_(0,2)*(tauM*conv_c_plus_svel_af_(vi)+funct_(vi)));
+                temp[1][0]=fac_afgdt*(tauMresM[1]*derxy_(0,vi)+vderxyaf_(1,0)*(tauM*conv_c_plus_svel_af_(vi)+funct_(vi)));
+                temp[1][1]=fac_afgdt*(tauMresM[1]*derxy_(1,vi)+vderxyaf_(1,1)*(tauM*conv_c_plus_svel_af_(vi)+funct_(vi)));
+                temp[1][2]=fac_afgdt*(tauMresM[1]*derxy_(2,vi)+vderxyaf_(1,2)*(tauM*conv_c_plus_svel_af_(vi)+funct_(vi)));
+                temp[2][0]=fac_afgdt*(tauMresM[2]*derxy_(0,vi)+vderxyaf_(2,0)*(tauM*conv_c_plus_svel_af_(vi)+funct_(vi)));
+                temp[2][1]=fac_afgdt*(tauMresM[2]*derxy_(1,vi)+vderxyaf_(2,1)*(tauM*conv_c_plus_svel_af_(vi)+funct_(vi)));
+                temp[2][2]=fac_afgdt*(tauMresM[2]*derxy_(2,vi)+vderxyaf_(2,2)*(tauM*conv_c_plus_svel_af_(vi)+funct_(vi)));
 
                 // loop columns (solution for matrix, test function for vector)
                 for (int ui=0; ui<iel; ++ui)
@@ -5464,9 +6134,9 @@ N
                     \                               /
               */
 
-              elemat(fvi++,fuippp) += fac_tauM_gamma_dt_derxy_0_ui*conv_c_af_(vi);
-              elemat(fvi++,fuippp) += fac_tauM_gamma_dt_derxy_1_ui*conv_c_af_(vi);
-              elemat(fvi  ,fuippp) += fac_tauM_gamma_dt_derxy_2_ui*conv_c_af_(vi);
+              elemat(fvi++,fuippp) += fac_tauM_gamma_dt_derxy_0_ui*conv_c_plus_svel_af_(vi);
+              elemat(fvi++,fuippp) += fac_tauM_gamma_dt_derxy_1_ui*conv_c_plus_svel_af_(vi);
+              elemat(fvi  ,fuippp) += fac_tauM_gamma_dt_derxy_2_ui*conv_c_plus_svel_af_(vi);
 
             } // end loop rows (test functions for matrix)
           } // end loop rows (solution for matrix, test function for vector)
@@ -5504,15 +6174,15 @@ N
 		int fvip =fvi+1;
 		int fvipp=fvi+2;
 
-                elemat(fvi  ,fui  ) -= fac_visceff_afgdt_tauM_viscs2_0_ui*conv_c_af_(vi);
-		elemat(fvi  ,fuip ) -= fac_visceff_afgdt_tauM_derxy2_3_ui*conv_c_af_(vi);
-                elemat(fvi  ,fuipp) -= fac_visceff_afgdt_tauM_derxy2_4_ui*conv_c_af_(vi);
-                elemat(fvip ,fui  ) -= fac_visceff_afgdt_tauM_derxy2_3_ui*conv_c_af_(vi);
-                elemat(fvip ,fuip ) -= fac_visceff_afgdt_tauM_viscs2_1_ui*conv_c_af_(vi);
-                elemat(fvip ,fuipp) -= fac_visceff_afgdt_tauM_derxy2_5_ui*conv_c_af_(vi);
-                elemat(fvipp,fui  ) -= fac_visceff_afgdt_tauM_derxy2_4_ui*conv_c_af_(vi);
-                elemat(fvipp,fuip ) -= fac_visceff_afgdt_tauM_derxy2_5_ui*conv_c_af_(vi);
-                elemat(fvipp,fuipp) -= fac_visceff_afgdt_tauM_viscs2_2_ui*conv_c_af_(vi);
+                elemat(fvi  ,fui  ) -= fac_visceff_afgdt_tauM_viscs2_0_ui*conv_c_plus_svel_af_(vi);
+		elemat(fvi  ,fuip ) -= fac_visceff_afgdt_tauM_derxy2_3_ui*conv_c_plus_svel_af_(vi);
+                elemat(fvi  ,fuipp) -= fac_visceff_afgdt_tauM_derxy2_4_ui*conv_c_plus_svel_af_(vi);
+                elemat(fvip ,fui  ) -= fac_visceff_afgdt_tauM_derxy2_3_ui*conv_c_plus_svel_af_(vi);
+                elemat(fvip ,fuip ) -= fac_visceff_afgdt_tauM_viscs2_1_ui*conv_c_plus_svel_af_(vi);
+                elemat(fvip ,fuipp) -= fac_visceff_afgdt_tauM_derxy2_5_ui*conv_c_plus_svel_af_(vi);
+                elemat(fvipp,fui  ) -= fac_visceff_afgdt_tauM_derxy2_4_ui*conv_c_plus_svel_af_(vi);
+                elemat(fvipp,fuip ) -= fac_visceff_afgdt_tauM_derxy2_5_ui*conv_c_plus_svel_af_(vi);
+                elemat(fvipp,fuipp) -= fac_visceff_afgdt_tauM_viscs2_2_ui*conv_c_plus_svel_af_(vi);
               } //end ui
             } // end vi
           }// end higher_order_ele and linearisation of viscous term
@@ -6187,7 +6857,9 @@ N
         viscous_and_pres[7]=visceff_fac*(vderxyaf_(1,2)+vderxyaf_(2,1));
         viscous_and_pres[8]=visceff_fac*vderxyaf_(2,2)*2.0-fac_prenp;
 	
-        if(reynolds == Fluid3::reynolds_stress_stab_only_rhs)
+        if(reynolds == Fluid3::reynolds_stress_stab_only_rhs
+           ||
+           reynolds == Fluid3::reynolds_stress_stab)
         {
 	  
           /* factor: -tauM*tauM
@@ -6713,6 +7385,10 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
     {
       whichtau = Fluid3::codina;
     }
+    else if(taudef == "Smoothed_FBVW")
+    {
+      whichtau = Fluid3::smoothed_franca_barrenechea_valentin_wall;
+    }
   }
 
   // flag for higher order elements
@@ -6831,35 +7507,65 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   mean_svelaf_sq .Clear();
 
   //------------------------------------------------------------------
+  //   We use LAPACK libraries --- get the epetra wrapper
+  //------------------------------------------------------------------
+  Epetra_LAPACK      solver;
+
+  //------------------------------------------------------------------
   //           SET TIME INTEGRATION SCHEME RELATED DATA
   //------------------------------------------------------------------
 
   //         n+alpha_F     n+1
   //        t          = t     - (1-alpha_F) * dt
-
+  //
   const double timealphaF = time-(1-alphaF)*dt;
 
   //------------------------------------------------------------------
   //                      SET MATERIAL DATA
   //------------------------------------------------------------------
-  // get viscosity
   // check here, if we really have a fluid !!
-  dsassert(material->mattyp == m_fluid, "Material law is not of type m_fluid.");
-  double visc = material->m.fluid->viscosity;
+  if( material->mattyp != m_carreauyasuda
+      && 
+      material->mattyp != m_modpowerlaw
+      && 
+      material->mattyp != m_fluid)
+  dserror("Material law is not a fluid");
+
+  // get material viscosity
+  double visc = 0.0;
+  if(material->mattyp == m_fluid)
+  {
+    visc = material->m.fluid->viscosity;
+  }
+  // initialise visceff to visc
+  visceff=visc;
 
   //------------------------------------------------------------------
   //                      SET ELEMENT DATA
   //------------------------------------------------------------------
-  // set element data
-
-  // get node coordinates
-  DRT::Node** nodes = ele->Nodes();
-  for (int inode=0; inode<iel; inode++)
   {
-    const double* x = nodes[inode]->X();
-    xyze_(0,inode) = x[0];
-    xyze_(1,inode) = x[1];
-    xyze_(2,inode) = x[2];
+    // get node coordinates
+    DRT::Node** nodes = ele->Nodes();
+    for (int inode=0; inode<iel; inode++)
+    {
+      const double* x = nodes[inode]->X();
+      xyze_(0,inode) = x[0];
+      xyze_(1,inode) = x[1];
+      xyze_(2,inode) = x[2];
+    }
+
+    // get node weights for nurbs elements
+    if(distype==DRT::Element::nurbs8 || distype==DRT::Element::nurbs27)
+    {
+      for (int inode=0; inode<iel; inode++)
+      {
+        DRT::NURBS::ControlPoint* cp
+          =
+          dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
+        
+        weights_(inode) = cp->W();
+      }
+    }
   }
 
   // add displacement, when fluid nodes move in the ALE case
@@ -6873,31 +7579,33 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
     }
   }
 
-  // get node weights for nurbs elements
-  if(distype==DRT::Element::nurbs8 || distype==DRT::Element::nurbs27)
-  {
-    for (int inode=0; inode<iel; inode++)
-    {
-      DRT::NURBS::ControlPoint* cp
-        =
-        dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
-      
-      weights_(inode) = cp->W();
-    }
-  }
-
   // dead load in element nodes
   GetNodalBodyForce(ele,timealphaF);
 
-  //----------------------------------------------------------------------------
-  //            STABILIZATION PARAMETER, SMAGORINSKY MODEL
-  //      and everything else that is evaluated in the element center
-  //
-  // This has to be done before anything else is calculated because we use
-  // the same arrays internally.
-  //----------------------------------------------------------------------------
 
-  // use one point gauss rule to calculate tau at element center
+  // ---------------------------------------------------------------------------
+  // Initialisation of tau computation: mk and hk
+
+  // get element type constant mk for tau and the fssgv_artificial approach
+  double mk=0.0;
+  switch (distype)
+  {
+      case DRT::Element::tet4:
+      case DRT::Element::hex8:
+      case DRT::Element::nurbs8:
+        mk = 0.333333333333333333333;
+        break;
+      case DRT::Element::hex20:
+      case DRT::Element::hex27:
+      case DRT::Element::nurbs27:
+      case DRT::Element::tet10:
+        mk = 0.083333333333333333333;
+        break;
+      default:
+        dserror("type unknown!\n");
+  }
+
+  // use one point gauss rule to calculate volume at element center
   DRT::UTILS::GaussRule3D integrationrule_stabili=DRT::UTILS::intrule3D_undefined;
   switch (distype)
   {
@@ -6943,25 +7651,6 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   {
     DRT::UTILS::shape_function_3D       (funct_,gp(0),gp(1),gp(2),distype);
     DRT::UTILS::shape_function_3D_deriv1(deriv_,gp(0),gp(1),gp(2),distype);
-  }
-
-  // get element type constant for tau
-  double mk=0.0;
-  switch (distype)
-  {
-      case DRT::Element::tet4:
-      case DRT::Element::hex8:
-      case DRT::Element::nurbs8:
-        mk = 0.333333333333333333333;
-        break;
-      case DRT::Element::hex20:
-      case DRT::Element::hex27:
-      case DRT::Element::nurbs27:
-      case DRT::Element::tet10:
-        mk = 0.083333333333333333333;
-        break;
-      default:
-        dserror("type unknown!\n");
   }
 
   // get transposed Jacobian matrix and determinant
@@ -7012,155 +7701,18 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
                      xjm_(0,2)*xjm_(1,1)*xjm_(2,0)-
                      xjm_(0,0)*xjm_(1,2)*xjm_(2,1)-
                      xjm_(0,1)*xjm_(1,0)*xjm_(2,2);
+
+  // vol is used for some stabilisation parameters and the mixing length
+  // definition of the Smagorinsky models
   vol_ = wquad*det;
 
-  // get element length for tau_M and tau_C: volume-equival. diameter/sqrt(3)
+  // get element length hk for tau_M and tau_C: volume-equival. diameter/sqrt(3)
+  // the same hk is used for the fssgv_artificial approach
   const double hk = pow((6.*vol_/PI),(1.0/3.0))/sqrt(3.0);
-
-  //
-  //             compute global first derivates
-  //
-  // this is necessary only for the calculation of the
-  // streamlength (required by the quasistatic formulation) and
-  // the Smagorinsky model.
-  //
-  /*
-    Use the Jacobian and the known derivatives in element coordinate
-    directions on the right hand side to compute the derivatives in
-    global coordinate directions
-
-          +-                 -+     +-    -+      +-    -+
-          |  dx    dy    dz   |     | dN_k |      | dN_k |
-          |  --    --    --   |     | ---- |      | ---- |
-          |  dr    dr    dr   |     |  dx  |      |  dr  |
-          |                   |     |      |      |      |
-          |  dx    dy    dz   |     | dN_k |      | dN_k |
-          |  --    --    --   |  *  | ---- |   =  | ---- | for all k
-          |  ds    ds    ds   |     |  dy  |      |  ds  |
-          |                   |     |      |      |      |
-          |  dx    dy    dz   |     | dN_k |      | dN_k |
-          |  --    --    --   |     | ---- |      | ---- |
-          |  dt    dt    dt   |     |  dz  |      |  dt  |
-          +-                 -+     +-    -+      +-    -+
-
-  */
-
-  // inverse of jacobian (transposed)
-  /*
-          +-                 -+     +-                 -+ -1
-          |  dr    ds    dt   |     |  dx    dy    dz   |
-          |  --    --    --   |     |  --    --    --   |
-          |  dx    dx    dx   |     |  dr    dr    dr   |
-          |                   |     |                   |
-          |  dr    ds    dt   |     |  dx    dy    dz   |
-          |  --    --    --   |  =  |  --    --    --   |
-          |  dy    dy    dy   |     |  ds    ds    ds   |
-          |                   |     |                   |
-          |  dr    ds    dt   |     |  dx    dy    dz   |
-          |  --    --    --   |     |  --    --    --   |
-          |  dz    dz    dz   |     |  dt    dt    dt   |
-          +-                 -+     +-                 -+
-
-  */
-  xji_(0,0) = (  xjm_(1,1)*xjm_(2,2) - xjm_(2,1)*xjm_(1,2))/det;
-  xji_(1,0) = (- xjm_(1,0)*xjm_(2,2) + xjm_(2,0)*xjm_(1,2))/det;
-  xji_(2,0) = (  xjm_(1,0)*xjm_(2,1) - xjm_(2,0)*xjm_(1,1))/det;
-  xji_(0,1) = (- xjm_(0,1)*xjm_(2,2) + xjm_(2,1)*xjm_(0,2))/det;
-  xji_(1,1) = (  xjm_(0,0)*xjm_(2,2) - xjm_(2,0)*xjm_(0,2))/det;
-  xji_(2,1) = (- xjm_(0,0)*xjm_(2,1) + xjm_(2,0)*xjm_(0,1))/det;
-  xji_(0,2) = (  xjm_(0,1)*xjm_(1,2) - xjm_(1,1)*xjm_(0,2))/det;
-  xji_(1,2) = (- xjm_(0,0)*xjm_(1,2) + xjm_(1,0)*xjm_(0,2))/det;
-  xji_(2,2) = (  xjm_(0,0)*xjm_(1,1) - xjm_(1,0)*xjm_(0,1))/det;
-
-  // compute global derivates at integration point
-  //
-  //   dN    +-----  dN (xi)    dxi
-  //     i    \        i           k
-  //   --- =   +     ------- * -----
-  //   dx     /        dxi      dx
-  //     j   +-----       k       j
-  //         node k
-  //
-  // j : direction of derivative x/y/z
-  //
-  for(int nn=0;nn<iel;++nn)
-  {
-    for(int rr=0;rr<3;++rr)
-    {
-      derxy_(rr,nn)=xji_(rr,0)*deriv_(0,nn);
-      for(int mm=1;mm<3;++mm)
-      {
-        derxy_(rr,nn)+=xji_(rr,mm)*deriv_(mm,nn);
-      }
-    }
-  }
-
-  // get velocities (n+alpha_F,i) at integration point
-  //
-  //                 +-----
-  //       n+af       \                  n+af
-  //    vel    (x) =   +      N (x) * vel
-  //                  /        j         j
-  //                 +-----
-  //                 node j
-  //
-  for(int rr=0;rr<3;++rr)
-  {
-    velintaf_(rr)=funct_(0)*evelaf(rr,0);
-    for(int nn=1;nn<iel;++nn)
-    {
-      velintaf_(rr)+=funct_(nn)*evelaf(rr,nn);
-    }
-  }
-  
-  // get velocities (n+1,i)  at integration point
-  //
-  //                +-----
-  //       n+1       \                  n+1
-  //    vel   (x) =   +      N (x) * vel
-  //                 /        j         j
-  //                +-----
-  //                node j
-  //
-  for(int rr=0;rr<3;++rr)
-  {
-    velintnp_(rr)=funct_(0)*evelnp(rr,0);
-    for(int nn=1;nn<iel;++nn)
-    {
-      velintnp_(rr)+=funct_(nn)*evelnp(rr,nn);
-    }
-  }
-
-  // get velocity (n+alpha_F,i) derivatives at integration point
-  //
-  //       n+af      +-----  dN (x)
-  //   dvel    (x)    \        k         n+af
-  //   ----------- =   +     ------ * vel
-  //       dx         /        dx        k
-  //         j       +-----      j
-  //                 node k
-  //
-  // j : direction of derivative x/y/z
-  //
-  for(int rr=0;rr<3;++rr)
-  {
-    for(int mm=0;mm<3;++mm)
-    {
-      vderxyaf_(rr,mm)=derxy_(mm,0)*evelaf(rr,0);
-      for(int nn=1;nn<iel;++nn)
-      {
-        vderxyaf_(rr,mm)+=derxy_(mm,nn)*evelaf(rr,nn);
-      }
-    }
-  }
-
-  // get velocity norms
-  const double vel_normaf = velintaf_.Norm2();
-  const double vel_normnp = velintnp_.Norm2();
 
   /*------------------------------------------------------------------*/
   /*                                                                  */
-  /*                 GET EFFECTIVE VISCOSITY IN GAUSSPOINT            */
+  /*                 GET EFFECTIVE VISCOSITY IN ELEMENT               */
   /*                                                                  */
   /* This part is used to specify an effective viscosity. This eff.   */
   /* viscosity may be caused by a Smagorinsky model                   */
@@ -7181,58 +7733,132 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   /*                                                                  */
   /* Mind that at the moment all stabilization (tau and viscous test  */
   /* functions if applied) are based on the material viscosity not    */
-  /* the effective viscosity. We do this since we do not evaluate the */
-  /* stabilisation parameter in the gausspoints but just once in the  */
-  /* middle of the element.                                           */
+  /* the effective viscosity.                                         */
+  /* This has to be done before anything else is calculated because   */
+  /* we use the same arrays internally. We need hk, mk as well as the */
+  /* element data computed above!                                     */
   /*------------------------------------------------------------------*/
 
-  // compute nonlinear viscosity according to the Carreau-Yasuda model
-  if( material->mattyp != m_fluid )
-  {
-    CalVisc(material, visc);
-  }
+  // -------------------------------------------------------------------
+  // strain rate based models
 
-  if (turb_mod_action == Fluid3::smagorinsky_with_wall_damping
-      ||
-      turb_mod_action == Fluid3::smagorinsky)
+  if(material->mattyp!= m_fluid
+     ||
+     fssgv==Fluid3::fssgv_Smagorinsky_all
+     ||
+     fssgv==Fluid3::fssgv_Smagorinsky_small
+     ||
+     turb_mod_action !=Fluid3::no_model)
   {
     //
-    // SMAGORINSKY MODEL
-    // -----------------
-    //                            +-                                 -+ 1
-    //                        2   |          / h \           / h \    | -
-    //    visc          = lmix  * | 2 * eps | u   |   * eps | u   |   | 2
-    //        turbulent    |      |          \   / ij        \   / ij |
-    //                     |      +-                                 -+
-    //                     |
-    //                     |      |                                   |
-    //                     |      +-----------------------------------+
-    //                     |           'resolved' rate of strain
-    //                    mixing length
+    //             compute global first derivates
     //
+    //
+    /*
+      Use the Jacobian and the known derivatives in element coordinate
+      directions on the right hand side to compute the derivatives in
+      global coordinate directions
 
-    double rateofstrain = 0;
+          +-                 -+     +-    -+      +-    -+
+          |  dx    dy    dz   |     | dN_k |      | dN_k |
+          |  --    --    --   |     | ---- |      | ---- |
+          |  dr    dr    dr   |     |  dx  |      |  dr  |
+          |                   |     |      |      |      |
+          |  dx    dy    dz   |     | dN_k |      | dN_k |
+          |  --    --    --   |  *  | ---- |   =  | ---- | for all k
+          |  ds    ds    ds   |     |  dy  |      |  ds  |
+          |                   |     |      |      |      |
+          |  dx    dy    dz   |     | dN_k |      | dN_k |
+          |  --    --    --   |     | ---- |      | ---- |
+          |  dt    dt    dt   |     |  dz  |      |  dt  |
+          +-                 -+     +-    -+      +-    -+
+
+    */
+
+    // inverse of jacobian (transposed)
+    /*
+          +-                 -+     +-                 -+ -1
+          |  dr    ds    dt   |     |  dx    dy    dz   |
+          |  --    --    --   |     |  --    --    --   |
+          |  dx    dx    dx   |     |  dr    dr    dr   |
+          |                   |     |                   |
+          |  dr    ds    dt   |     |  dx    dy    dz   |
+          |  --    --    --   |  =  |  --    --    --   |
+          |  dy    dy    dy   |     |  ds    ds    ds   |
+          |                   |     |                   |
+          |  dr    ds    dt   |     |  dx    dy    dz   |
+          |  --    --    --   |     |  --    --    --   |
+          |  dz    dz    dz   |     |  dt    dt    dt   |
+          +-                 -+     +-                 -+
+
+    */
+    xji_(0,0) = (  xjm_(1,1)*xjm_(2,2) - xjm_(2,1)*xjm_(1,2))/det;
+    xji_(1,0) = (- xjm_(1,0)*xjm_(2,2) + xjm_(2,0)*xjm_(1,2))/det;
+    xji_(2,0) = (  xjm_(1,0)*xjm_(2,1) - xjm_(2,0)*xjm_(1,1))/det;
+    xji_(0,1) = (- xjm_(0,1)*xjm_(2,2) + xjm_(2,1)*xjm_(0,2))/det;
+    xji_(1,1) = (  xjm_(0,0)*xjm_(2,2) - xjm_(2,0)*xjm_(0,2))/det;
+    xji_(2,1) = (- xjm_(0,0)*xjm_(2,1) + xjm_(2,0)*xjm_(0,1))/det;
+    xji_(0,2) = (  xjm_(0,1)*xjm_(1,2) - xjm_(1,1)*xjm_(0,2))/det;
+    xji_(1,2) = (- xjm_(0,0)*xjm_(1,2) + xjm_(1,0)*xjm_(0,2))/det;
+    xji_(2,2) = (  xjm_(0,0)*xjm_(1,1) - xjm_(1,0)*xjm_(0,1))/det;
+    
+    // compute global derivates at integration point
+    //
+    //   dN    +-----  dN (xi)    dxi
+    //     i    \        i           k
+    //   --- =   +     ------- * -----
+    //   dx     /        dxi      dx
+    //     j   +-----       k       j
+    //         node k
+    //
+    // j : direction of derivative x/y/z
+    //
+    for(int nn=0;nn<iel;++nn)
     {
-      LINALG::Matrix<3,3> epsilon;
-
-      for(int rr=0;rr<3;rr++)
+      for(int rr=0;rr<3;++rr)
       {
-        for(int mm=0;mm<3;mm++)
+        derxy_(rr,nn)=xji_(rr,0)*deriv_(0,nn);
+        for(int mm=1;mm<3;++mm)
         {
-          epsilon(rr,mm) = 0.5 * ( vderxyaf_(rr,mm) + vderxyaf_(mm,rr) );
+          derxy_(rr,nn)+=xji_(rr,mm)*deriv_(mm,nn);
         }
       }
-
-      for(int rr=0;rr<3;rr++)
-      {
-        for(int mm=0;mm<3;mm++)
-        {
-          rateofstrain += epsilon(rr,mm)*epsilon(rr,mm);
-        }
-      }
-      rateofstrain *= 2.0;
-      rateofstrain = sqrt(rateofstrain);
     }
+
+    // compute the rate of strain
+    double rateofstrain   = -1.0e30;
+    double fsrateofstrain = -1.0e30;
+
+    // large scale strains
+    if(material->mattyp!=m_fluid
+       ||
+       fssgv==Fluid3::fssgv_Smagorinsky_all
+       ||
+       turb_mod_action!=Fluid3::no_model)
+    {
+      rateofstrain  =GetStrainRate(evelaf  ,derxy_,vderxyaf_  );
+    }
+
+    // fine scale strains
+    if(fssgv==Fluid3::fssgv_Smagorinsky_small)
+    {
+      fsrateofstrain=GetStrainRate(fsevelaf,derxy_,fsvderxyaf_);
+    }
+
+
+    // ---------------------------------------------------------------
+    // compute nonlinear viscosity according to Carreau-Yasuda
+    // ---------------------------------------------------------------
+    if(material->mattyp != m_fluid)
+    {
+      CalVisc(material,visceff,rateofstrain);
+    }
+
+
+    // ---------------------------------------------------------------
+    // classical large scale turbulence models of Smagorinsky type
+    // ---------------------------------------------------------------
+
     //
     // Choices of the Smagorinsky constant Cs:
     //
@@ -7242,705 +7868,228 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
     //
     //             0.1 < Cs < 0.24 (depending on the flow)
     //
+    //             Cs rescaled using law of the wall (Van Driest)
+    //
     //             Cs dynamic  (Germano model. Use several filter
     //                          resolutions to determine Cs)
-
-    if (turb_mod_action == Fluid3::smagorinsky_with_wall_damping)
+    if (turb_mod_action == Fluid3::smagorinsky_with_wall_damping
+        ||
+        turb_mod_action == Fluid3::smagorinsky)
     {
-      // since the Smagorinsky constant is only valid if hk is in the inertial
-      // subrange of turbulent flows, the mixing length is damped in the
-      // viscous near wall region using the van Driest damping function
-      /*
+      //
+      // CONSTANT COEFFICIENT SMAGORINSKY MODEL
+      // --------------------------------------
+      //                            +-                                 -+ 1
+      //                        2   |          / h \           / h \    | -
+      //    visc          = lmix  * | 2 * eps | u   |   * eps | u   |   | 2
+      //        turbulent    |      |          \   / ij        \   / ij |
+      //                     |      +-                                 -+
+      //                     |
+      //                     |      |                                   |
+      //                     |      +-----------------------------------+
+      //                     |           'resolved' rate of strain
+      //                    mixing length
+      //
+
+      if (turb_mod_action == Fluid3::smagorinsky_with_wall_damping)
+      {
+        //
+        // VAN DRIEST DAMPING (option)
+        // ------------------
+        
+        // since the Smagorinsky constant is only valid if hk is in the inertial
+        // subrange of turbulent flows, the mixing length is damped in the
+        // viscous near wall region using the van Driest damping function
+        /*
                                        /         /   y+ \ \
                      lmix = Cs * hk * | 1 - exp | - ---- | |
                                        \         \   A+ / /
-      */
-      // A+ is a constant parameter, y+ the distance from the wall in wall
-      // units
-      const double A_plus = 26.0;
-      double y_plus;
-
-      // the integration point coordinate is defined by the isometric approach
-      /*
+        */
+        // A+ is a constant parameter, y+ the distance from the wall in wall
+        // units
+        const double A_plus = 26.0;
+        double y_plus;
+        
+        // the integration point coordinate is defined by the isometric approach
+        /*
                   +-----
                    \
               x =   +      N (x) * x
                    /        j       j
                   +-----
                   node j
-      */
-      LINALG::Matrix<3,1> centernodecoord;
-
-      for(int rr=0;rr<3;++rr)
-      {
-        centernodecoord(rr)=funct_(0)*xyze_(rr,0);
-
-        for(int mm=1;mm<iel;++mm)
+        */
+        LINALG::Matrix<3,1> centernodecoord;
+        
+        for(int rr=0;rr<3;++rr)
         {
-          centernodecoord(rr)+=funct_(mm)*xyze_(rr,mm);
-        }
-      }
-
-      if(centernodecoord(1)>0)
-      {
-        y_plus=(1.0-centernodecoord(1))/l_tau;
-      }
-      else
-      {
-        y_plus=(1.0+centernodecoord(1))/l_tau;
-      }
-
-      // multiply with van Driest damping function
-      Cs *= (1.0-exp(-y_plus/A_plus));
-    }
-
-    const double hk = pow((vol_),(1.0/3.0));
-
-    //
-    // mixing length set proportional to grid witdh
-    //
-    //                     lmix = Cs * hk
-
-    double lmix = Cs * hk;
-
-    Cs_delta_sq = lmix * lmix;
-
-    //
-    //          visc    = visc + visc
-    //              eff              turbulent
-
-    visceff = visc + Cs_delta_sq * rateofstrain;
-  }
-  else if(turb_mod_action == Fluid3::dynamic_smagorinsky)
-  {
-    //
-    // SMAGORINSKY MODEL
-    // -----------------
-    //                            +-                                 -+ 1
-    //                        2   |          / h \           / h \    | -
-    //    visc          = lmix  * | 2 * eps | u   |   * eps | u   |   | 2
-    //        turbulent    |      |          \   / ij        \   / ij |
-    //                     |      +-                                 -+
-    //                     |
-    //                     |      |                                   |
-    //                     |      +-----------------------------------+
-    //                     |           'resolved' rate of strain
-    //                    mixing length
-    //               provided by the dynamic model
-    //            procedure and stored in Cs_delta_sq
-    //
-
-    double rateofstrain = 0;
-    {
-      LINALG::Matrix<3,3> epsilon;
-
-      for(int rr=0;rr<3;rr++)
-      {
-        for(int mm=0;mm<3;mm++)
-        {
-          epsilon(rr,mm) = 0.5 * ( vderxyaf_(rr,mm) + vderxyaf_(mm,rr) );
-        }
-      }
-
-      for(int rr=0;rr<3;rr++)
-      {
-        for(int mm=0;mm<3;mm++)
-        {
-          rateofstrain += epsilon(rr,mm)*epsilon(rr,mm);
-        }
-      }
-      rateofstrain *= 2.0;
-      rateofstrain = sqrt(rateofstrain);
-    }
-
-    visceff = visc + Cs_delta_sq * rateofstrain;
-
-    // for evaluation of statistics: remember the 'real' Cs
-    Cs=sqrt(Cs_delta_sq)/pow((vol_),(1.0/3.0));
-  }
-  else
-  {
-    visceff = visc;
-  }
-
-  if(tds == Fluid3::subscales_time_dependent)
-  {
-    //-------------------------------------------------------
-    //          TAUS FOR TIME DEPENDENT SUBSCALES
-    //-------------------------------------------------------
-
-    if(whichtau == Fluid3::bazilevs)
-    {
-      /* INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA
-
-         tau_M: Bazilevs et al. + ideas from Codina
-                                                         1.0
-                 +-                                 -+ - ---
-                 |                                   |   2.0
-             td  |  n+af      n+af         2         |
-          tau  = | u     * G u     + C * nu  * G : G |
-             M   |         -          I        -   - |
-                 |         -                   -   - |
-                 +-                                 -+
-
-         tau_C: Bazilevs et al., derived from the fine scale complement Shur
-                                 operator of the pressure equation
-
-
-                       td         1.0
-                    tau  = -----------------
-                       C       td   /     \
-                            tau  * | g * g |
-                               M    \-   -/
-      */
-
-      /*          +-           -+   +-           -+   +-           -+
-                  |             |   |             |   |             |
-                  |  dr    dr   |   |  ds    ds   |   |  dt    dt   |
-            G   = |  --- * ---  | + |  --- * ---  | + |  --- * ---  |
-             ij   |  dx    dx   |   |  dx    dx   |   |  dx    dx   |
-                  |    i     j  |   |    i     j  |   |    i     j  |
-                  +-           -+   +-           -+   +-           -+
-      */
-      LINALG::Matrix<3,3> G;
-
-      for (int nn=0;nn<3;++nn)
-      {
-        for (int rr=0;rr<3;++rr)
-        {
-          G(nn,rr) = xji_(nn,0)*xji_(rr,0);
-          for (int mm=1;mm<3;++mm)
+          centernodecoord(rr)=funct_(0)*xyze_(rr,0);
+          
+          for(int mm=1;mm<iel;++mm)
           {
-            G(nn,rr) += xji_(nn,mm)*xji_(rr,mm);
+            centernodecoord(rr)+=funct_(mm)*xyze_(rr,mm);
           }
         }
-      }
-
-      /*          +----
-                   \
-          G : G =   +   G   * G
-          -   -    /     ij    ij
-          -   -   +----
-                   i,j
-      */
-      double normG = 0;
-      for (int nn=0;nn<3;++nn)
-      {
-        for (int rr=0;rr<3;++rr)
+        
+        if(centernodecoord(1)>0)
         {
-          normG+=G(nn,rr)*G(nn,rr);
+          y_plus=(1.0-centernodecoord(1))/l_tau;
         }
-      }
-
-      /*                    +----
-           n+af      n+af    \     n+af         n+af
-          u     * G u     =   +   u    * G   * u
-                  -          /     i     -ij    j
-                  -         +----        -
-                             i,j
-      */
-      double Gnormu = 0;
-      for (int nn=0;nn<3;++nn)
-      {
-        for (int rr=0;rr<3;++rr)
+        else
         {
-          Gnormu+=velintaf_(nn)*G(nn,rr)*velintaf_(rr);
+          y_plus=(1.0+centernodecoord(1))/l_tau;
         }
+
+        // multiply with van Driest damping function
+        Cs *= (1.0-exp(-y_plus/A_plus));
       }
-
-      // definition of constant
-      // (Akkerman et al. (2008) used 36.0 for quadratics, but Stefan
-      //  brought 144.0 from Austin...)
-      const double CI = 12.0/mk;
-
-      /*                                                 1.0
-                 +-                                 -+ - ---
-                 |                                   |   2.0
-                 |  n+af      n+af         2         |
-          tau  = | u     * G u     + C * nu  * G : G |
-             M   |         -          I        -   - |
-                 |         -                   -   - |
-                 +-                                 -+
-      */
-      tau_(0) = 1.0/sqrt(Gnormu+CI*visceff*visceff*normG);
-      tau_(1) = tau_(0);
-
-      /*         +-     -+   +-     -+   +-     -+
-                 |       |   |       |   |       |
-                 |  dr   |   |  ds   |   |  dt   |
-            g  = |  ---  | + |  ---  | + |  ---  |
-             i   |  dx   |   |  dx   |   |  dx   |
-                 |    i  |   |    i  |   |    i  |
-                 +-     -+   +-     -+   +-     -+
-      */
-      LINALG::Matrix<3,1> g;
-
-      for (int rr=0;rr<3;++rr)
-      {
-        g(rr) = xji_(rr,0);
-        for (int mm=1;mm<3;++mm)
-        {
-          g(rr) += xji_(rr,mm);
-        }
-      }
-
-      /*         +----
-                  \
-         g * g =   +   g * g
-         -   -    /     i   i
-                 +----
-                   i
-      */
-      const double normgsq = g(0)*g(0)+g(1)*g(1)+g(2)*g(2);
-
-      /*
-                                1.0
-                  tau  = -----------------
-                     C           /      \
-                          tau  * | g * g |
-                             M    \-   -/
-      */
-      tau_(2) = 1./(tau_(0)*normgsq);
-
-    }
-    else if(whichtau == Fluid3::franca_barrenechea_valentin_wall)
-    {
-      // INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA
-      //
-      // tau_M: modification of
-      //
-      //    Franca, L.P. and Valentin, F.: On an Improved Unusual Stabilized
-      //    Finite Element Method for the Advective-Reactive-Diffusive
-      //    Equation. Computer Methods in Applied Mechanics and Enginnering,
-      //    Vol. 190, pp. 1785-1800, 2000.
-      //    http://www.lncc.br/~valentin/publication.htm                   */
-      //
-      // tau_Mp: modification of Barrenechea, G.R. and Valentin, F.
-      //
-      //    Barrenechea, G.R. and Valentin, F.: An unusual stabilized finite
-      //    element method for a generalized Stokes problem. Numerische
-      //    Mathematik, Vol. 92, pp. 652-677, 2002.
-      //    http://www.lncc.br/~valentin/publication.htm
-      //
-      //
-      // tau_C: kept Wall definition
-      //
-      // for the modifications see Codina, Principe, Guasch, Badia
-      //    "Time dependent subscales in the stabilized finite  element
-      //     approximation of incompressible flow problems"
-      //
-      //
-      // see also: Codina, R. and Soto, O.: Approximation of the incompressible
-      //    Navier-Stokes equations using orthogonal subscale stabilisation
-      //    and pressure segregation on anisotropic finite element meshes.
-      //    Computer methods in Applied Mechanics and Engineering,
-      //    Vol 193, pp. 1403-1419, 2004.
-
-      //---------------------------------------------- compute tau_Mu = tau_Mp
-      /* convective : viscous forces (element reynolds number)*/
-      const double re_convectaf = (vel_normaf * hk / visceff ) * (mk/2.0);
-
-      const double xi_convectaf = DMAX(re_convectaf,1.0);
-
-      /*
-               xi_convect ^
-                          |      /
-                          |     /
-                          |    /
-                        1 +---+
-                          |
-                          |
-                          |
-                          +--------------> re_convect
-                              1
-      */
-
-      /* the 4.0 instead of the Franca's definition 2.0 results from the viscous
-       * term in the Navier-Stokes-equations, which is scaled by 2.0*nu         */
-
-      tau_(0) = DSQR(hk) / (4.0 * visceff / mk + ( 4.0 * visceff/mk) * xi_convectaf);
-
-      /*------------------------------------------------------ compute tau_C ---*/
-
-      //-- stability parameter definition according to Wall Diss. 99
-      /*
-               xi_convect ^
-                          |
-                        1 |   +-----------
-                          |  /
-                          | /
-                          |/
-                          +--------------> Re_convect
-                              1
-      */
-      const double re_convectnp = (vel_normnp * hk / visceff ) * (mk/2.0);
-
-      const double xi_tau_c = DMIN(re_convectnp,1.0);
-
-      tau_(2) = vel_normnp * hk * 0.5 * xi_tau_c;
-    }
-    else if(whichtau == Fluid3::codina)
-    {
-      // Parameter from Codina, Badia (Constants are chosen according to
-      // the values in the standard definition above)
-
-      const double CI  = 4.0/mk;
-      const double CII = 2.0/mk;
-
-      // in contrast to the original definition, we neglect the influence of
-      // the subscale velocity on velnormaf
-      tau_(0)=1.0/(CI*visceff/(hk*hk)+CII*vel_normaf/hk);
-
-      tau_(1)=tau_(0);
-
-      tau_(2)=(hk*hk)/(CI*tau_(0));
-    }
-    else
-    {
-      dserror("Unknown definition of stabilisation parameter\n");
-    }
-
-  } // end Fluid3::subscales_time_dependent
-  else
-  {
-    //-------------------------------------------------------
-    //        TAUS FOR THE QUASISTATIC FORMULATION
-    //-------------------------------------------------------
-    if(whichtau == Fluid3::bazilevs)
-    {
-      /* INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA
-
-         tau_M: Bazilevs et al.
-                                                               1.0
-                 +-                                       -+ - ---
-                 |                                         |   2.0
-                 | 4.0    n+af      n+af         2         |
-          tau  = | --- + u     * G u     + C * nu  * G : G |
-             M   |   2           -          I        -   - |
-                 | dt            -                   -   - |
-                 +-                                       -+
-
-         tau_C: Bazilevs et al., derived from the fine scale complement Shur
-                                 operator of the pressure equation
-
-
-                                  1.0
-                    tau  = -----------------
-                       C            /     \
-                            tau  * | g * g |
-                               M    \-   -/
-      */
-
-      /*          +-           -+   +-           -+   +-           -+
-                  |             |   |             |   |             |
-                  |  dr    dr   |   |  ds    ds   |   |  dt    dt   |
-            G   = |  --- * ---  | + |  --- * ---  | + |  --- * ---  |
-             ij   |  dx    dx   |   |  dx    dx   |   |  dx    dx   |
-                  |    i     j  |   |    i     j  |   |    i     j  |
-                  +-           -+   +-           -+   +-           -+
-      */
-      LINALG::Matrix<3,3> G;
-      for (int nn=0;nn<3;++nn)
-      {
-        for (int rr=0;rr<3;++rr)
-        {
-          G(nn,rr) = xji_(nn,0)*xji_(rr,0);
-          for (int mm=1;mm<3;++mm)
-          {
-            G(nn,rr) += xji_(nn,mm)*xji_(rr,mm);
-          }
-        }
-      }
-
-      /*          +----
-                   \
-          G : G =   +   G   * G
-          -   -    /     ij    ij
-          -   -   +----
-                   i,j
-      */
-      double normG = 0;
-      for (int nn=0;nn<3;++nn)
-      {
-        for (int rr=0;rr<3;++rr)
-        {
-          normG+=G(nn,rr)*G(nn,rr);
-        }
-      }
-
-      /*                    +----
-           n+af      n+af    \     n+af         n+af
-          u     * G u     =   +   u    * G   * u
-                  -          /     i     -ij    j
-                  -         +----        -
-                             i,j
-      */
-      double Gnormu = 0;
-      for (int nn=0;nn<3;++nn)
-      {
-        for (int rr=0;rr<3;++rr)
-        {
-          Gnormu+=velintaf_(nn)*G(nn,rr)*velintaf_(rr);
-        }
-      }
-
-      // definition of constant
-      // (Akkerman et al. (2008) used 36.0 for quadratics, but Stefan
-      //  brought 144.0 from Austin...)
-      const double CI = 12.0/mk;
-
-      /*                                                       1.0
-                 +-                                       -+ - ---
-                 |                                         |   2.0
-                 | 4.0    n+af      n+af         2         |
-          tau  = | --- + u     * G u     + C * nu  * G : G |
-             M   |   2           -          I        -   - |
-                 | dt            -                   -   - |
-                 +-                                       -+
-      */
-      tau_(0) = 1.0/sqrt(4.0/(dt*dt)+Gnormu+CI*visceff*visceff*normG);
-      tau_(1) = tau_(0);
-
-      /*         +-     -+   +-     -+   +-     -+
-                 |       |   |       |   |       |
-                 |  dr   |   |  ds   |   |  dt   |
-            g  = |  ---  | + |  ---  | + |  ---  |
-             i   |  dx   |   |  dx   |   |  dx   |
-                 |    i  |   |    i  |   |    i  |
-                 +-     -+   +-     -+   +-     -+
-      */
-      LINALG::Matrix<3,1> g;
-
-      for (int rr=0;rr<3;++rr)
-      {
-        g(rr) = xji_(rr,0);
-        for (int mm=1;mm<3;++mm)
-        {
-          g(rr) += xji_(rr,mm);
-        }
-      }
-
-      /*         +----
-                  \
-         g * g =   +   g * g
-         -   -    /     i   i
-                 +----
-                   i
-      */
-      const double normgsq = g(0)*g(0)+g(1)*g(1)+g(2)*g(2);
-
-      /*
-                                1.0
-                  tau  = -----------------
-                     C            /     \
-                          tau  * | g * g |
-                             M    \-   -/
-      */
-      tau_(2) = 1./(tau_(0)*normgsq);
-    }
-    else if (whichtau == Fluid3::franca_barrenechea_valentin_wall)
-    {
-      // INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA
-      // tau_M: Barrenechea, G.R. and Valentin, F.
-      // tau_C: Wall
-
-
-      // this copy of velintaf_ will be used to store the normed velocity
-      LINALG::Matrix<3,1> normed_velintaf;
-
-      // normed velocity at element center (we use the copy for safety reasons!)
-      if (vel_normaf>=1e-6)
-      {
-        for (int rr=0;rr<3;++rr) /* loop element nodes */
-        {
-          normed_velintaf(rr)=velintaf_(rr)/vel_normaf;
-        }      
-      }
-      else
-      {
-        normed_velintaf(0) = 1.;
-        for (int rr=1;rr<3;++rr) /* loop element nodes */
-        {
-          normed_velintaf(rr)=0.0;
-        }      
-      }
-
-      // get streamlength
-      double val = 0.0;
-      for (int rr=0;rr<iel;++rr) /* loop element nodes */
-      {
-        val += FABS( normed_velintaf(0)*derxy_(0,rr)         
-                    +normed_velintaf(1)*derxy_(1,rr)        
-                    +normed_velintaf(2)*derxy_(2,rr));
-      } /* end of loop over element nodes */
       
-      const double strle = 2.0/val;
+      const double h_grid = pow((vol_),(1.0/3.0));
 
-      // time factor
-      const double timefac = gamma*dt;
+      //
+      // mixing length set proportional to grid witdh
+      //
+      //              lmix = Cs * h_grid
+      
+      double lmix = Cs * h_grid;
+      
+      Cs_delta_sq = lmix * lmix;
 
-      /*----------------------------------------------------- compute tau_Mu ---*/
-      /* stability parameter definition according to
-
-              Barrenechea, G.R. and Valentin, F.: An unusual stabilized finite
-              element method for a generalized Stokes problem. Numerische
-              Mathematik, Vol. 92, pp. 652-677, 2002.
-              http://www.lncc.br/~valentin/publication.htm
-         and:
-              Franca, L.P. and Valentin, F.: On an Improved Unusual Stabilized
-              Finite Element Method for the Advective-Reactive-Diffusive
-              Equation. Computer Methods in Applied Mechanics and Enginnering,
-              Vol. 190, pp. 1785-1800, 2000.
-              http://www.lncc.br/~valentin/publication.htm                   */
-
-
-      const double re1 = 4.0 * timefac * visceff / (mk * DSQR(strle));   /* viscous : reactive forces   */
-      const double re2 = mk * vel_normaf * strle / (2.0 * visceff);      /* convective : viscous forces */
-
-      const double xi1 = DMAX(re1,1.0);
-      const double xi2 = DMAX(re2,1.0);
-
-      tau_(0) = timefac * DSQR(strle) / (DSQR(strle)*xi1+( 4.0 * timefac*visceff/mk)*xi2);
-
-      // compute tau_Mp
-      //    stability parameter definition according to Franca and Valentin (2000)
-      //                                       and Barrenechea and Valentin (2002)
-      const double re_viscous = 4.0 * timefac * visceff / (mk * DSQR(hk)); /* viscous : reactive forces   */
-      const double re_convect = mk * vel_normaf * hk / (2.0 * visceff);    /* convective : viscous forces */
-
-      const double xi_viscous = DMAX(re_viscous,1.0);
-      const double xi_convect = DMAX(re_convect,1.0);
-
-      /*
-                  xi1,xi2 ^
-                          |      /
-                          |     /
-                          |    /
-                        1 +---+
-                          |
-                          |
-                          |
-                          +--------------> re1,re2
-                              1
-      */
-      tau_(1) = timefac * DSQR(hk) / (DSQR(hk) * xi_viscous + ( 4.0 * timefac * visceff/mk) * xi_convect);
-
-      // Wall Diss. 99
-      /*
-                      xi2 ^
-                          |
-                        1 |   +-----------
-                          |  /
-                          | /
-                          |/
-                          +--------------> Re2
-                              1
-      */
-      const double xi_tau_c = DMIN(re2,1.0);
-      tau_(2) = vel_normnp * hk * 0.5 * xi_tau_c;
-
+      //
+      //          visc    = visc + visc
+      //              eff              turbulent
+      
+      visceff = visc + Cs_delta_sq * rateofstrain;
     }
-    else if(whichtau == Fluid3::codina)
+    else if(turb_mod_action == Fluid3::dynamic_smagorinsky)
     {
-      // INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA
-      // tau_M: Barrenechea, G.R. and Valentin, F.
-      // tau_C: Codina
+      //
+      // DYNAMIC SMAGORINSKY MODEL
+      // -------------------------
+      //                            +-                                 -+ 1
+      //                        2   |          / h \           / h \    | -
+      //    visc          = lmix  * | 2 * eps | u   |   * eps | u   |   | 2
+      //        turbulent    |      |          \   / ij        \   / ij |
+      //                     |      +-                                 -+  
+      //                     |
+      //                     |      |                                   |
+      //                     |      +-----------------------------------+
+      //                     |           'resolved' rate of strain
+      //                    mixing length
+      //               provided by the dynamic model
+      //            procedure and stored in Cs_delta_sq
+      //
+      
+      visceff = visc + Cs_delta_sq * rateofstrain;
 
-
-      // this copy of velintaf_ will be used to store the normed velocity
-      LINALG::Matrix<3,1> normed_velintaf;
-
-      // normed velocity at element center (we use the copy for safety reasons!)
-      if (vel_normaf>=1e-6)
-      {
-        for (int rr=0;rr<3;++rr) /* loop element nodes */
-        {
-          normed_velintaf(rr)=velintaf_(rr)/vel_normaf;
-        }      
-      }
-      else
-      {
-        normed_velintaf(0) = 1.;
-        for (int rr=1;rr<3;++rr) /* loop element nodes */
-        {
-          normed_velintaf(rr)=0.0;
-        }      
-      }
-
-      // get streamlength
-      double val = 0.0;
-      for (int rr=0;rr<iel;++rr) /* loop element nodes */
-      {
-        val += FABS( normed_velintaf(0)*derxy_(0,rr)         
-                    +normed_velintaf(1)*derxy_(1,rr)        
-                    +normed_velintaf(2)*derxy_(2,rr));
-      } /* end of loop over element nodes */
-      const double strle = 2.0/val;
-
-      // time factor
-      const double timefac = gamma*dt;
-
-      /*----------------------------------------------------- compute tau_Mu ---*/
-      /* stability parameter definition according to
-
-              Barrenechea, G.R. and Valentin, F.: An unusual stabilized finite
-              element method for a generalized Stokes problem. Numerische
-              Mathematik, Vol. 92, pp. 652-677, 2002.
-              http://www.lncc.br/~valentin/publication.htm
-         and:
-              Franca, L.P. and Valentin, F.: On an Improved Unusual Stabilized
-              Finite Element Method for the Advective-Reactive-Diffusive
-              Equation. Computer Methods in Applied Mechanics and Enginnering,
-              Vol. 190, pp. 1785-1800, 2000.
-              http://www.lncc.br/~valentin/publication.htm                   */
-
-
-      const double re1 = 4.0 * timefac * visceff / (mk * DSQR(strle));   /* viscous : reactive forces   */
-      const double re2 = mk * vel_normaf * strle / (2.0 * visceff);      /* convective : viscous forces */
-
-      const double xi1 = DMAX(re1,1.0);
-      const double xi2 = DMAX(re2,1.0);
-
-      tau_(0) = timefac * DSQR(strle) / (DSQR(strle)*xi1+( 4.0 * timefac*visceff/mk)*xi2);
-
-      // compute tau_Mp
-      //    stability parameter definition according to Franca and Valentin (2000)
-      //                                       and Barrenechea and Valentin (2002)
-      const double re_viscous = 4.0 * timefac * visceff / (mk * DSQR(hk)); /* viscous : reactive forces   */
-      const double re_convect = mk * vel_normaf * hk / (2.0 * visceff);    /* convective : viscous forces */
-
-      const double xi_viscous = DMAX(re_viscous,1.0);
-      const double xi_convect = DMAX(re_convect,1.0);
-
-      /*
-                  xi1,xi2 ^
-                          |      /
-                          |     /
-                          |    /
-                        1 +---+
-                          |
-                          |
-                          |
-                          +--------------> re1,re2
-                              1
-      */
-      tau_(1) = timefac * DSQR(hk) / (DSQR(hk) * xi_viscous + ( 4.0 * timefac * visceff/mk) * xi_convect);
-
-      /*------------------------------------------------------ compute tau_C ---*/
-      /*-- stability parameter definition according to Codina (2002), CMAME 191
-       *
-       * Analysis of a stabilized finite element approximation of the transient
-       * convection-diffusion-reaction equation using orthogonal subscales.
-       * Ramon Codina, Jordi Blasco; Comput. Visual. Sci., 4 (3): 167-174, 2002.
-       *
-       * */
-      tau_(2) = sqrt(DSQR(visceff)+DSQR(0.5*vel_normnp*hk));
+      // for evaluation of statistics: remember the 'real' Cs
+      Cs=sqrt(Cs_delta_sq)/pow((vol_),(1.0/3.0));
     }
-    else
+
+
+    // ---------------------------------------------------------------
+    // fine scale turbulence models of Smagorinsky type
+    // ---------------------------------------------------------------
+
+    if (fssgv == Fluid3::fssgv_Smagorinsky_all)
     {
-      dserror("Unknown definition of stabilisation parameter\n");
+      //
+      // SMALL SCALE LARGE SCALE SMAGORINSKY MODEL
+      // -----------------------------------------
+      //                               +-                                 -+ 1
+      //                           2   |          / * \           / * \    | -
+      //    visc          = (C_S*h)  * | 2 * eps | u   |   * eps | u   |   | 2
+      //        turbulent              |          \   / ij        \   / ij |
+      //                               +-                                 -+
+      //                               |                                   |
+      //                               +-----------------------------------+
+      //                                  * 'resolved' rate of strain
+      
+      // computes the turbulent viscosity (acting on the fine scales) 
+      // based on the resolved-scale rate of strain
+      //
+      // Choices of the fine-scale Smagorinsky constant Cs_fs:
+      //
+      //             Cs = 0.17   (Lilly --- Determined from filter
+      //                          analysis of Kolmogorov spectrum of
+      //                          isotropic turbulence)
+      //
+      //             0.1 < Cs < 0.24 (depending on the flow)
+      //
+      vart_ = Cs * Cs * hk * hk * rateofstrain;
+    }
+    else if(fssgv == Fluid3::fssgv_Smagorinsky_small)
+    {
+      //
+      // SMALL SCALE SMALL SCALE SMAGORINSKY MODEL
+      // -----------------------------------------
+      //                               +-                                 -+ 1
+      //                           2   |          /   \           /   \    | -
+      //    visc          = (C_S*h)  * | 2 * eps | fsu |   * eps | fsu |   | 2
+      //        turbulent              |          \   / ij        \   / ij |
+      //                               +-                                 -+
+      //                               |                                   |
+      //                               +-----------------------------------+
+      //                                     'fine-scale'  rate of strain
+      
+      // compute turbulent viscosity (acting on the fine scales) 
+      // based on the fine-scale rate of strain
+    
+      //
+      // Choices of the fine-scale Smagorinsky constant Cs_fs:
+      //
+      //             Cs = 0.17   (Lilly --- Determined from filter
+      //                          analysis of Kolmogorov spectrum of
+      //                          isotropic turbulence)
+      //
+      //             0.1 < Cs < 0.24 (depending on the flow)
+      //
+      vart_ = Cs * Cs * hk * hk * fsrateofstrain;
     }
   }
+
+  // ------------------------------------------------------------------
+  // fine scale models based on artificial subgrid viscosities
+  // ------------------------------------------------------------------
+
+  if (fssgv == Fluid3::fssgv_artificial_all   or
+      fssgv == Fluid3::fssgv_artificial_small
+    )
+  {
+    double fsvel_normaf = 0.0;
+    if (fssgv == Fluid3::fssgv_artificial_small)
+    {
+      // SMALL SCALE ARTIFICIAL SUBGRID VISCOSITY MODEL
+      // ----------------------------------------------
+
+      // get fine-scale velocities at element center
+      fsvelintaf_.Multiply(fsevelaf,funct_);
+
+      // get fine-scale velocity norm
+      fsvel_normaf = fsvelintaf_.Norm2();
+    }
+    // get all-scale velocity norm
+    else 
+    {
+      // LARGE SCALE ARTIFICIAL SUBGRID VISCOSITY MODEL
+      // ----------------------------------------------
+
+      // get velocities (n+alpha_F,i) at integration point
+      velintaf_.Multiply(evelaf,funct_);
+
+      // get velocity norms
+      const double vel_normaf = velintaf_.Norm2();
+
+      fsvel_normaf = vel_normaf;
+    }
+
+    /*----------------------------- compute artificial subgrid viscosity ---*/
+    const double re = mk * fsvel_normaf * hk / visc; /* convective : viscous forces */
+    const double xi = DMAX(re,1.0);
+
+    vart_ = (DSQR(hk)*mk*DSQR(fsvel_normaf))/(2.0*visc*xi);
+  }
+
 
   //----------------------------------------------------------------------------
   //
@@ -8506,6 +8655,24 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
       }
     }
 
+    // get velocities (n+1,i)  at integration point
+    //
+    //                +-----
+    //       n+1       \                  n+1
+    //    vel   (x) =   +      N (x) * vel
+    //                 /        j         j
+    //                +-----
+    //                node j
+    //
+    for(int rr=0;rr<3;++rr)
+    {
+      velintnp_(rr)=funct_(0)*evelnp(rr,0);
+      for(int nn=1;nn<iel;++nn)
+      {
+        velintnp_(rr)+=funct_(nn)*evelnp(rr,nn);
+      }
+    }
+
     // get bodyforce in gausspoint, time (n+alpha_F)
     //
     //                 +-----
@@ -8757,6 +8924,9 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
       }
     }
 
+    /*---------------------------- get stabilisation parameter ---*/
+    CalcTau(whichtau,tds,gamma,dt,hk,mk,visceff);
+
     // -----------------------------------------------------
     // Element volume
     vol               += fac;
@@ -8776,7 +8946,9 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
 
     if(tds == Fluid3::subscales_time_dependent
        &&
-       inertia == Fluid3::inertia_stab_keep) 
+       (inertia == Fluid3::inertia_stab_keep
+        ||
+        inertia == Fluid3::inertia_stab_keep_complete)) 
     {
       for(int rr=0;rr<3;++rr)
       {
@@ -8839,7 +9011,9 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
 
     if(tds      == Fluid3::subscales_time_dependent
        &&
-       inertia  == Fluid3::inertia_stab_keep       )
+       (inertia  == Fluid3::inertia_stab_keep
+        ||
+        inertia == Fluid3::inertia_stab_keep_complete))
     {
       double sacc[3];
       sacc[0]= -1.0/tau_(0)*svelaf_(0) -resM_(0);
@@ -9084,7 +9258,6 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
            velintaf_(2)*(velintaf_(0)*vderxyaf_(2,0)+
                          velintaf_(1)*vderxyaf_(2,1)+
                          velintaf_(2)*vderxyaf_(2,2)));
-           
     }
 
     {
@@ -9629,37 +9802,22 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::GetNodalBodyForce(Fluid3* ele
     constant_bodyforce_=true;
   }
 
-
-
   return;
 }
 
 
-//
-// calculates material viscosity   u.may 05/08
-//
+/*----------------------------------------------------------------------*
+ |                                                                      |
+ | calculates material viscosity                            u.may 05/08 |
+ |                                                                      |
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalVisc(
-  const struct _MATERIAL*                 material,
-  double&                           	  visc)
+  const struct _MATERIAL*                 material   ,
+  double&                           	  visc       ,
+  const double &                          rateofshear
+  )
 {
-
-  blitz::firstIndex i;    // Placeholder for the first index
-  blitz::secondIndex j;   // Placeholder for the second index
-
-  // compute shear rate
-  double rateofshear = 0.0;
-  blitz::Array<double,2> epsilon(3,3,blitz::ColumnMajorArray<2>());   // strain rate tensor
-  for(int rr=0;rr<3;rr++)
-    for(int mm=0;mm<3;mm++)
-      epsilon(rr,mm)=0.5*(vderxyaf_(rr,mm)+vderxyaf_(mm,rr));
-
-  for(int rr=0;rr<3;rr++)
-    for(int mm=0;mm<3;mm++)
-      rateofshear += epsilon(rr,mm)*epsilon(rr,mm);
-
-  rateofshear = sqrt(2.0*rateofshear);
-
   if(material->mattyp == m_carreauyasuda)
   {
     double nu_0 = material->m.carreauyasuda->nu_0;      // parameter for zero-shear viscosity
@@ -9689,12 +9847,12 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalVisc(
 } // DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalVisc
 
 
-// -----------------------------------------------------------
-//
-// calculation of stabilisation parameter          gammi 12/08
-//   (element center or Gaussian point)
-//
-// -----------------------------------------------------------
+/*----------------------------------------------------------------------*
+ |                                                                      |
+ |  calculation of stabilisation parameter          gammi 12/08         |
+ |    (element center or Gaussian point)                                |
+ |                                                                      |
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau(
   const enum Fluid3::TauType             whichtau  ,
@@ -9885,7 +10043,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau(
       //---------------------------------------------- compute tau_Mu = tau_Mp
       /* convective : viscous forces (element reynolds number)*/
       const double re_convectaf = (vel_normaf * hk / visceff ) * (mk/2.0);
-
       const double xi_convectaf = DMAX(re_convectaf,1.0);
 
       /*
@@ -9899,6 +10056,84 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau(
                           |
                           +--------------> re_convect
                               1
+      */
+
+      /* the 4.0 instead of the Franca's definition 2.0 results from the viscous
+       * term in the Navier-Stokes-equations, which is scaled by 2.0*nu         */
+
+      tau_(0) = DSQR(hk) / (4.0 * visceff / mk + ( 4.0 * visceff/mk) * xi_convectaf);
+
+      /*------------------------------------------------------ compute tau_C ---*/
+
+      //-- stability parameter definition according to Wall Diss. 99
+      /*
+               xi_convect ^
+                          |
+                        1 |   +-----------
+                          |  /
+                          | /
+                          |/
+                          +--------------> Re_convect
+                              1
+      */
+      const double re_convectnp = (vel_normnp * hk / visceff ) * (mk/2.0);
+
+      const double xi_tau_c = DMIN(re_convectnp,1.0);
+
+      tau_(2) = vel_normnp * hk * 0.5 * xi_tau_c;
+    }
+    else if(whichtau == Fluid3::smoothed_franca_barrenechea_valentin_wall)
+    {
+      // INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA
+      //
+      // tau_M: modification of
+      //
+      //    Franca, L.P. and Valentin, F.: On an Improved Unusual Stabilized
+      //    Finite Element Method for the Advective-Reactive-Diffusive
+      //    Equation. Computer Methods in Applied Mechanics and Enginnering,
+      //    Vol. 190, pp. 1785-1800, 2000.
+      //    http://www.lncc.br/~valentin/publication.htm                   */
+      //
+      // tau_Mp: modification of Barrenechea, G.R. and Valentin, F.
+      //
+      //    Barrenechea, G.R. and Valentin, F.: An unusual stabilized finite
+      //    element method for a generalized Stokes problem. Numerische
+      //    Mathematik, Vol. 92, pp. 652-677, 2002.
+      //    http://www.lncc.br/~valentin/publication.htm
+      //
+      //
+      // tau_C: kept Wall definition
+      //
+      // for the modifications see Codina, Principe, Guasch, Badia
+      //    "Time dependent subscales in the stabilized finite  element
+      //     approximation of incompressible flow problems"
+      //
+      //
+      // see also: Codina, R. and Soto, O.: Approximation of the incompressible
+      //    Navier-Stokes equations using orthogonal subscale stabilisation
+      //    and pressure segregation on anisotropic finite element meshes.
+      //    Computer methods in Applied Mechanics and Engineering,
+      //    Vol 193, pp. 1403-1419, 2004.
+
+      //---------------------------------------------- compute tau_Mu = tau_Mp
+      /* convective : viscous forces (element reynolds number)*/
+      const double re_convectaf = (vel_normaf * hk / visceff ) * (mk/2.0);
+
+      const double xi_convectaf = re_convectaf+exp(-1.0*re_convectaf);
+
+      /*
+                                           -x
+                                   f(x)=x+e
+               xi_convect ^       -
+                          |      -
+                          |     -
+                          |   -- 
+                        1 +---/
+                          |  /
+                          | /
+                          |/
+                          +--------------> re_convect
+                              
       */
 
       /* the 4.0 instead of the Franca's definition 2.0 results from the viscous
@@ -10290,8 +10525,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau(
 
   return;
 } // DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau
-
-
 
 
 #endif

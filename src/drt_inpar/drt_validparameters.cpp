@@ -930,11 +930,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Specify how to treat the transient term.",
                                tuple<std::string>(
                                  "no_transient",
-                                 "yes_transient"),
+                                 "yes_transient",
+                                 "transient_complete"),
                                tuple<std::string>(
                                  "Do not use transient term (currently only opportunity for quasistatic stabilization)",
-                                 "Use transient term (recommended for time dependent subscales)"),
-                               tuple<int>(0,1),
+                                 "Use transient term (recommended for time dependent subscales)",
+                                 "Use transient term including a linearisation of 1/tau"),
+                               tuple<int>(0,1,2),
                                &fdyn_stab);
 
   setStringToIntegralParameter<int>("PSPG",
@@ -1014,13 +1016,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Flag to (de)activate Reynolds-stress term -> residual-based VMM.",
                                tuple<std::string>(
                                  "no_reynolds",
-                                 "reynolds_rhs"
+                                 "reynolds_rhs",
+                                 "reynolds_complete"
                                  ),
                                tuple<std::string>(
                                  "No Reynolds-stress term",
-                                 "Include Reynolds-stress term explicitly on right hand side"
+                                 "Include Reynolds-stress term explicitly on right hand side",
+                                 "Include Reynolds-stress term with linearisation"
                                  ),
-                               tuple<int>(0,1),
+                               tuple<int>(0,1,2),
                                &fdyn_stab);
 
   // this parameter selects the tau definition applied
@@ -1029,15 +1033,17 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Definition of tau_M,C",
                                tuple<std::string>(
                                  "Barrenechea_Franca_Valentin_Wall",
+                                 "Smoothed_FBVW",
                                  "Franca_Barrenechea_Valentin_Codina",
                                  "Bazilevs",
                                  "Codina"),
                                tuple<std::string>(
                                  "tau_Mp: Barrenechea, Valentin; tau_M: Franca, Barrenechea; tau_C: Wall",
+                                 "tau_Mp: Barrenechea, Valentin; tau_M: Franca, Barrenechea (smoothed max opertaor using exp function); tau_C: Wall",
                                  "tau_Mp: Barrenechea, Valentin; tau_M: Franca, Barrenechea; tau_C: Codina"  ,
                                  "tau_M and tau_C (Bazilevs, based on G_ij and g_i)",
                                  "tau_M and tau_C: Codina")  ,
-                                 tuple<int>(0,1,2,3),
+                                    tuple<int>(0,1,2,3,4),
                                &fdyn_stab);
 
   setStringToIntegralParameter<int>("OUTFLOW_STAB",
