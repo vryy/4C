@@ -210,7 +210,8 @@ void CONTACT::Integrator::DerivD(CONTACT::CElement& sele,
   LINALG::SerialDenseMatrix dualderiv(nrow,2,true);
   
   // get nodal coords for Jacobian evaluation
-  LINALG::SerialDenseMatrix coord = sele.GetNodalCoords();
+  LINALG::SerialDenseMatrix coord(3,sele.NumNode());
+  sele.GetNodalCoords(coord);
   
   // prepare directional derivative of dual shape functions
   // this necessary for all slave element types except line2 (1D) and tri3 (2D)
@@ -363,9 +364,9 @@ void CONTACT::Integrator::DerivD(CONTACT::CElement& sele,
  |  Output is an Epetra_SerialDenseMatrix holding the int. values       |
  *----------------------------------------------------------------------*/
 RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateM(CONTACT::CElement& sele,
-                                                              double sxia, double sxib,
+                                                              double& sxia, double& sxib,
                                                               CONTACT::CElement& mele,
-                                                              double mxia, double mxib)
+                                                              double& mxia, double& mxib)
 {
   //check for problem dimension
   if (Dim()!=2) dserror("ERROR: 2D integration method called for non-2D problem");
@@ -474,9 +475,9 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateM(CONTACT::CElement&
  |  map of the adjacent slave nodes                                     |
  *----------------------------------------------------------------------*/
 void CONTACT::Integrator::DerivM(CONTACT::CElement& sele,
-                                 double sxia, double sxib,
+                                 double& sxia, double& sxib,
                                  CONTACT::CElement& mele,
-                                 double mxia, double mxib)
+                                 double& mxia, double& mxib)
 {
   //check for problem dimension
   if (Dim()!=2) dserror("ERROR: 2D integration method called for non-2D problem");
@@ -532,7 +533,8 @@ void CONTACT::Integrator::DerivM(CONTACT::CElement& sele,
   LINALG::SerialDenseMatrix dualderiv(nrow,1);
 
   // get slave nodal coords for Jacobian evaluation
-  LINALG::SerialDenseMatrix scoord = sele.GetNodalCoords();
+  LINALG::SerialDenseMatrix scoord(3,sele.NumNode());
+  sele.GetNodalCoords(scoord);
   
   // prepare directional derivative of dual shape functions
   // this is only necessary for qudratic shape functions in 2D
@@ -733,11 +735,11 @@ void CONTACT::Integrator::DerivM(CONTACT::CElement& sele,
  |  Compute directional derivative of XiAB (2D)               popp 05/08|
  *----------------------------------------------------------------------*/
 void CONTACT::Integrator::DerivXiAB(CONTACT::CElement& sele,
-                                    double sxia, double sxib,
+                                    double& sxia, double& sxib,
                                     CONTACT::CElement& mele,
-                                    double mxia, double mxib,
+                                    double& mxia, double& mxib,
                                     vector<map<int,double> >& derivxi,
-                                    bool startslave, bool endslave)
+                                    bool& startslave, bool& endslave)
 {
   //check for problem dimension
   if (Dim()!=2) dserror("ERROR: 2D integration method called for non-2D problem");
@@ -1045,10 +1047,10 @@ void CONTACT::Integrator::DerivXiAB(CONTACT::CElement& sele,
  |  Compute directional derivative of XiGP master (2D)        popp 05/08|
  *----------------------------------------------------------------------*/
 void CONTACT::Integrator::DerivXiGP(CONTACT::CElement& sele,
-                                    double sxia, double sxib,
+                                    double& sxia, double& sxib,
                                     CONTACT::CElement& mele,
-                                    double mxia, double mxib,
-                                    double sxigp, double mxigp,
+                                    double& mxia, double& mxib,
+                                    double& sxigp, double& mxigp,
                                     const map<int,double>& derivsxi,
                                     map<int,double>& derivmxi)
 {
@@ -1234,9 +1236,9 @@ void CONTACT::Integrator::DerivXiGP(CONTACT::CElement& sele,
  |  Output is an Epetra_SerialDenseMatrix holding the int. values       |
  *----------------------------------------------------------------------*/
 RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateMmod(CONTACT::CElement& sele,
-                                                                 double sxia, double sxib,
+                                                                 double& sxia, double& sxib,
                                                                  CONTACT::CElement& mele,
-                                                                 double mxia, double mxib)
+                                                                 double& mxia, double& mxib)
 {
   //check for problem dimension
   if (Dim()!=2) dserror("ERROR: 2D integration method called for non-2D problem");
@@ -1371,9 +1373,9 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateMmod(CONTACT::CEleme
  |  Output is an Epetra_SerialDenseVector holding the int. values       |
  *----------------------------------------------------------------------*/
 RCP<Epetra_SerialDenseVector> CONTACT::Integrator::IntegrateG(CONTACT::CElement& sele,
-                                                              double sxia, double sxib,
+                                                              double& sxia, double& sxib,
                                                               CONTACT::CElement& mele,
-                                                              double mxia, double mxib)
+                                                              double& mxia, double& mxib)
 {
   //check for problem dimension
   if (Dim()!=2) dserror("ERROR: 2D integration method called for non-2D problem");
@@ -1400,8 +1402,10 @@ RCP<Epetra_SerialDenseVector> CONTACT::Integrator::IntegrateG(CONTACT::CElement&
   LINALG::SerialDenseMatrix dualderiv(nrow,1);
 
   // get slave and master nodal coords for Jacobian / GP evaluation
-  LINALG::SerialDenseMatrix scoord = sele.GetNodalCoords();
-  LINALG::SerialDenseMatrix mcoord = mele.GetNodalCoords();
+  LINALG::SerialDenseMatrix scoord(3,sele.NumNode());
+  sele.GetNodalCoords(scoord);
+  LINALG::SerialDenseMatrix mcoord(3,mele.NumNode());
+  mele.GetNodalCoords(mcoord);
   
   // get slave element nodes themselves for normal evaluation
   DRT::Node** mynodes = sele.Nodes();
@@ -1814,8 +1818,10 @@ RCP<Epetra_SerialDenseVector> CONTACT::Integrator::IntegrateG3D(
   LINALG::SerialDenseMatrix dualderiv(nrow,2,true);
 
   // get slave and master nodal coords for Jacobian / GP evaluation
-  LINALG::SerialDenseMatrix scoord = sele.GetNodalCoords();
-  LINALG::SerialDenseMatrix mcoord = mele.GetNodalCoords();
+  LINALG::SerialDenseMatrix scoord(3,sele.NumNode());
+  sele.GetNodalCoords(scoord);
+  LINALG::SerialDenseMatrix mcoord(3,mele.NumNode());
+  mele.GetNodalCoords(mcoord);
   
   // get slave element nodes themselves for normal evaluation
   DRT::Node** mynodes = sele.Nodes();
@@ -1972,8 +1978,10 @@ RCP<Epetra_SerialDenseVector> CONTACT::Integrator::IntegrateGAuxPlane3D(
   LINALG::SerialDenseMatrix dualderiv(nrow,2,true);
 
   // get slave and master nodal coords for Jacobian / GP evaluation
-  LINALG::SerialDenseMatrix scoord = sele.GetNodalCoords();
-  LINALG::SerialDenseMatrix mcoord = mele.GetNodalCoords();
+  LINALG::SerialDenseMatrix scoord(3,sele.NumNode());
+  sele.GetNodalCoords(scoord);
+  LINALG::SerialDenseMatrix mcoord(3,mele.NumNode());
+  mele.GetNodalCoords(mcoord);
   
   // get slave element nodes themselves for normal evaluation
   DRT::Node** mynodes = sele.Nodes();
@@ -2164,7 +2172,10 @@ bool CONTACT::Integrator::AssembleD(const Epetra_Comm& comm,
           // which is not diagonal anyway! (Mind the MINUS sign!!!)
           // *************************************************************
           if (mnode->IsOnBound())
-            snode->AddMValue(sdof,col,-val);
+          {
+            double minusval = -val;
+            snode->AddMValue(sdof,col,minusval);
+          }          
           else
             snode->AddDValue(sdof,col,val);
         }

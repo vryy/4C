@@ -280,7 +280,7 @@ void CONTACT::CNode::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Add a value to the 'D' map                                popp 01/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CNode::AddDValue(int row, int col, double val)
+void CONTACT::CNode::AddDValue(int& row, int& col, double& val)
 {
   // check if this is a master node or slave boundary node
   if (IsSlave()==false)
@@ -306,7 +306,7 @@ void CONTACT::CNode::AddDValue(int row, int col, double val)
 /*----------------------------------------------------------------------*
  |  Add a value to the 'M' map                                popp 01/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CNode::AddMValue(int row, int col, double val)
+void CONTACT::CNode::AddMValue(int& row, int& col, double& val)
 {
   // check if this is a master node or slave boundary node
   if (IsSlave()==false)
@@ -332,7 +332,7 @@ void CONTACT::CNode::AddMValue(int row, int col, double val)
 /*----------------------------------------------------------------------*
  |  Add a value to the 'Mmod' map                             popp 01/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CNode::AddMmodValue(int row, int col, double val)
+void CONTACT::CNode::AddMmodValue(int& row, int& col, double& val)
 {
   // check if this is a master node or slave boundary node
   if (IsSlave()==false)
@@ -358,7 +358,7 @@ void CONTACT::CNode::AddMmodValue(int row, int col, double val)
 /*----------------------------------------------------------------------*
  |  Add a value to the weighted gap                           popp 01/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CNode::AddgValue(double val)
+void CONTACT::CNode::AddgValue(double& val)
 {
   // check if this is a master node or slave boundary node
   if (IsSlave()==false)

@@ -1199,7 +1199,7 @@ void CONTACT::Interface::AssembleNT(LINALG::SparseMatrix& nglobal,
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::AssembleTresca(LINALG::SparseMatrix& lglobal,
                                         Epetra_Vector& rglobal,
-                                        double frbound, double ct)
+                                        double& frbound, double& ct)
 {
   // get out of here if not participating in interface
   if (!lComm())

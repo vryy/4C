@@ -109,13 +109,13 @@ public:
   \brief Return coordinates of a specific GP in 1D/2D CElement
     
   */
-  inline double Coordinate(int gp, int dir) {return coords_(gp,dir);}
+  inline double Coordinate(int& gp, int dir) {return coords_(gp,dir);}
   
   /*!
   \brief Return weight of a specific GP in 1D/2D CElement
       
   */
-  inline double Weight(int gp) {return weights_[gp];}
+  inline double Weight(int& gp) {return weights_[gp];}
   
   //@}
   
@@ -148,35 +148,35 @@ public:
       
   */
   RCP<Epetra_SerialDenseMatrix> IntegrateM(CONTACT::CElement& sele,
-                                           double sxia, double sxib,
+                                           double& sxia, double& sxib,
                                            CONTACT::CElement& mele,
-                                           double mxia, double mxib);
+                                           double& mxia, double& mxib);
   
   /*!
   \brief Compute directional derivative of M on a 1D slave / master overlap
         
   */
-  void DerivM(CONTACT::CElement& sele, double sxia, double sxib,
-              CONTACT::CElement& mele, double mxia, double mxib);
+  void DerivM(CONTACT::CElement& sele, double& sxia, double& sxib,
+              CONTACT::CElement& mele, double& mxia, double& mxib);
   
   /*!
   \brief Compute directional derivative of segment end coordinates
          Xi on a 1D slave / master overlap
           
   */
-  void DerivXiAB(CONTACT::CElement& sele, double sxia, double sxib,
-                 CONTACT::CElement& mele, double mxia, double mxib,
+  void DerivXiAB(CONTACT::CElement& sele, double& sxia, double& sxib,
+                 CONTACT::CElement& mele, double& mxia, double& mxib,
                  vector<map<int,double> >& derivxi,
-                 bool startslave, bool endslave);
+                 bool& startslave, bool& endslave);
   
   /*!
   \brief Compute directional derivative of master Gauss point
          coordinates XiGP on a 1D slave / master overlap 
             
   */
-  void DerivXiGP(CONTACT::CElement& sele, double sxia, double sxib,
-                 CONTACT::CElement& mele, double mxia, double mxib,
-                 double sxigp,double mxigp, const map<int,double>& derivsxi,
+  void DerivXiGP(CONTACT::CElement& sele, double& sxia, double& sxib,
+                 CONTACT::CElement& mele, double& mxia, double& mxib,
+                 double& sxigp, double& mxigp, const map<int,double>& derivsxi,
                  map<int,double>& derivmxi);
     
   /*!
@@ -189,18 +189,18 @@ public:
   
   */
   RCP<Epetra_SerialDenseMatrix> IntegrateMmod(CONTACT::CElement& sele,
-                                              double sxia, double sxib,
+                                              double& sxia, double& sxib,
                                               CONTACT::CElement& mele,
-                                              double mxia, double mxib);
+                                              double& mxia, double& mxib);
   
   /*!
   \brief Integrate weighted gap g~ on a 1D slave / master overlap
           
   */
   RCP<Epetra_SerialDenseVector> IntegrateG(CONTACT::CElement& sele,
-                                           double sxia, double sxib,
+                                           double& sxia, double& sxib,
                                            CONTACT::CElement& mele,
-                                           double mxia, double mxib);
+                                           double& mxia, double& mxib);
   
   /*!
   \brief Integrate Mortar matrix M on a 2D slave / master integration cell

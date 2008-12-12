@@ -317,22 +317,22 @@ public:
   /*!
   \brief Get local coordinates for local node id
   */
-  virtual bool LocalCoordinatesOfNode(int lid, double* xi);
+  virtual bool LocalCoordinatesOfNode(int& lid, double* xi);
     
   /*!
   \brief Get local numbering for global node id
   */
-  virtual int GetLocalNodeId(int nid);
+  virtual int GetLocalNodeId(int& nid);
   
   /*!
   \brief Build element normal at node passed in
   */
-  virtual void BuildNormalAtNode(int nid, int i, Epetra_SerialDenseMatrix& elens);
+  virtual void BuildNormalAtNode(int nid, int& i, Epetra_SerialDenseMatrix& elens);
   
   /*!
   \brief Build element normal derivative at node passed in
   */
-  virtual void DerivNormalAtNode(int nid, int i, Epetra_SerialDenseMatrix& elens,
+  virtual void DerivNormalAtNode(int nid, int& i, Epetra_SerialDenseMatrix& elens,
                                  vector<map<int,double> >& derivn);
     
   /*!
@@ -340,7 +340,7 @@ public:
          Caution: This function cannot be called stand-alone! It is
          integrated into the whole nodal normal calculation process.
   */
-  virtual void ComputeNormalAtXi(double* xi, int i, Epetra_SerialDenseMatrix& elens);
+  virtual void ComputeNormalAtXi(double* xi, int& i, Epetra_SerialDenseMatrix& elens);
   
   /*!
   \brief Compute unit element normal at local coordinate xi
@@ -352,13 +352,13 @@ public:
   /*!
   \brief Compute element normal derivative at local coordinate xi
   */
-  virtual void DerivNormalAtXi(double* xi, int i, Epetra_SerialDenseMatrix& elens,
+  virtual void DerivNormalAtXi(double* xi, int& i, Epetra_SerialDenseMatrix& elens,
                                vector<map<int,double> >& derivn);
     
   /*!
   \brief Compute element normal at local coordinate xi
   */
-  virtual LINALG::SerialDenseMatrix GetNodalCoords();
+  virtual void GetNodalCoords(LINALG::SerialDenseMatrix& coord);
   
   /*!
   \brief Evaluate element metrics (local basis vectors)
@@ -420,19 +420,19 @@ public:
   \brief Evaluate shape functions and derivatives
   */
   virtual bool EvaluateShape(const double* xi, LINALG::SerialDenseVector& val,
-                             LINALG::SerialDenseMatrix& deriv, const int valdim);
+                             LINALG::SerialDenseMatrix& deriv, const int& valdim);
    
   /*!
   \brief Evaluate dual shape functions and derivatives
   */
   virtual bool EvaluateShapeDual(const double* xi, LINALG::SerialDenseVector& val,
-                                 LINALG::SerialDenseMatrix& deriv, const int valdim);
+                                 LINALG::SerialDenseMatrix& deriv, const int& valdim);
   
   /*!
   \brief Evaluate 2nd derivative of shape functions
   */
   virtual bool Evaluate2ndDerivShape(const double* xi, LINALG::SerialDenseMatrix& val,
-                                     const int valdim);
+                                     const int& valdim);
     
   /*!
   \brief Compute directional derivative of dual shape functions

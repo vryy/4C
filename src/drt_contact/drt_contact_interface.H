@@ -514,7 +514,7 @@ public:
   */
   virtual void AssembleTresca(LINALG::SparseMatrix& lglobal,
                               Epetra_Vector& rglobal,
-                              double frbound, double ct);
+                              double& frbound, double& ct);
     
   /*!
   \brief Assemble matrix S containing linearizations

@@ -572,7 +572,8 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
     // establish fundamental data  
     double detg = 0.0;
     int nnodes = NumNode();
-    LINALG::SerialDenseMatrix coord = GetNodalCoords();
+    LINALG::SerialDenseMatrix coord(3,nnodes);
+    GetNodalCoords(coord);
     
     // prepare computation with Gauss quadrature
     CONTACT::Integrator integrator(Shape());
@@ -739,7 +740,8 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
     // establish fundamental data  
     double detg = 0.0;
     int nnodes = NumNode();
-    LINALG::SerialDenseMatrix coord = GetNodalCoords();
+    LINALG::SerialDenseMatrix coord(3,nnodes);
+    GetNodalCoords(coord);
     
     // empty shape function vals + derivs
     LINALG::SerialDenseVector valquad(nnodes);
@@ -928,7 +930,8 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
     // establish fundamental data  
     double detg = 0.0;
     int nnodes = NumNode();
-    LINALG::SerialDenseMatrix coord = GetNodalCoords();
+    LINALG::SerialDenseMatrix coord(3,nnodes);
+    GetNodalCoords(coord);
     
     // empty shape function vals + derivs
     LINALG::SerialDenseVector valquad(nnodes);
@@ -1121,7 +1124,7 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
  |  Evaluate shape functions                                  popp 01/08|
  *----------------------------------------------------------------------*/
 bool CONTACT::CElement::EvaluateShape(const double* xi, LINALG::SerialDenseVector& val,
-                                      LINALG::SerialDenseMatrix& deriv, const int valdim)
+                                      LINALG::SerialDenseMatrix& deriv, const int& valdim)
 {
   if (!xi)
     dserror("ERROR: EvaluateShape called with xi=NULL");
@@ -1190,7 +1193,7 @@ bool CONTACT::CElement::EvaluateShape(const double* xi, LINALG::SerialDenseVecto
  |  Evaluate dual shape functions                             popp 12/07|
  *----------------------------------------------------------------------*/
 bool CONTACT::CElement::EvaluateShapeDual(const double* xi, LINALG::SerialDenseVector& val,
-                                          LINALG::SerialDenseMatrix& deriv, const int valdim)
+                                          LINALG::SerialDenseMatrix& deriv, const int& valdim)
 {
   if (!xi)
     dserror("ERROR: EvaluateShapeDual called with xi=NULL");
@@ -1318,7 +1321,7 @@ bool CONTACT::CElement::EvaluateShapeDual(const double* xi, LINALG::SerialDenseV
  *----------------------------------------------------------------------*/
 bool CONTACT::CElement::Evaluate2ndDerivShape(const double* xi,
                                               LINALG::SerialDenseMatrix& secderiv,
-                                              const int valdim)
+                                              const int& valdim)
 {
   if (!xi)
     dserror("ERROR: Evaluate2ndDerivShape called with xi=NULL");

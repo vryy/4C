@@ -527,12 +527,14 @@ public:
   
   \param polygon1 (in): vector of vertices for input polygon 1
   \param polygon2 (in): vector of vertices for input polygon 2
+  \param respoly (out): vector of vertices for result polygon
   \param tol (in): clipping tolerance for close vertices detection 
   
   */
-  virtual vector<vector<double> > PolygonClipping3D(vector<vector<double> > polygon1,
-                                                    vector<vector<double> > polygon2,
-                                                    double& tol);
+  virtual void PolygonClipping3D(vector<vector<double> >& polygon1,
+                                 vector<vector<double> >& polygon2,
+                                 vector<vector<double> >& respoly,
+                                 double& tol);
   
   /*!
   \brief Check / set projection status of slave nodes (3D)

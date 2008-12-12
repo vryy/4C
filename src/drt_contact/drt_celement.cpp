@@ -186,7 +186,7 @@ int CONTACT::CElement::Evaluate(ParameterList&            params,
 /*----------------------------------------------------------------------*
  |  Get local coordinates for local node id                   popp 12/07|
  *----------------------------------------------------------------------*/
-bool CONTACT::CElement::LocalCoordinatesOfNode(int lid, double* xi)
+bool CONTACT::CElement::LocalCoordinatesOfNode(int& lid, double* xi)
 {
   // 2D linear case (2noded line element)
   // 2D quadratic case (3noded line element)
@@ -292,7 +292,7 @@ bool CONTACT::CElement::LocalCoordinatesOfNode(int lid, double* xi)
 /*----------------------------------------------------------------------*
  |  Get local numbering for global node id                    popp 12/07|
  *----------------------------------------------------------------------*/
-int CONTACT::CElement::GetLocalNodeId(int nid)
+int CONTACT::CElement::GetLocalNodeId(int& nid)
 {
   int lid = -1;  
   
@@ -313,7 +313,7 @@ int CONTACT::CElement::GetLocalNodeId(int nid)
 /*----------------------------------------------------------------------*
  |  Build element normal at node                              popp 12/07|
  *----------------------------------------------------------------------*/
-void CONTACT::CElement::BuildNormalAtNode(int nid, int i,
+void CONTACT::CElement::BuildNormalAtNode(int nid, int& i,
                                           Epetra_SerialDenseMatrix& elens)
 {
   // find this node in my list of nodes and get local numbering
@@ -332,7 +332,7 @@ void CONTACT::CElement::BuildNormalAtNode(int nid, int i,
 /*----------------------------------------------------------------------*
  |  Build element normal derivative at node                   popp 05/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CElement::DerivNormalAtNode(int nid, int i,
+void CONTACT::CElement::DerivNormalAtNode(int nid, int& i,
                                           Epetra_SerialDenseMatrix& elens,
                                           vector<map<int,double> >& derivn)
 {
@@ -352,7 +352,7 @@ void CONTACT::CElement::DerivNormalAtNode(int nid, int i,
 /*----------------------------------------------------------------------*
  |  Compute element normal at loc. coord. xi                  popp 09/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CElement::ComputeNormalAtXi(double* xi, int i,
+void CONTACT::CElement::ComputeNormalAtXi(double* xi, int& i,
                                           Epetra_SerialDenseMatrix& elens)
 {
   // empty local basis vectors
@@ -407,7 +407,7 @@ void CONTACT::CElement::ComputeUnitNormalAtXi(double* xi, double* n)
 /*----------------------------------------------------------------------*
  |  Compute element normal derivative at loc. coord. xi       popp 09/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CElement::DerivNormalAtXi(double* xi, int i,
+void CONTACT::CElement::DerivNormalAtXi(double* xi, int& i,
                                         Epetra_SerialDenseMatrix& elens,
                                         vector<map<int,double> >& derivn)
 {
@@ -493,12 +493,12 @@ void CONTACT::CElement::DerivNormalAtXi(double* xi, int i,
 /*----------------------------------------------------------------------*
  |  Get nodal coordinates of the element                      popp 01/08|
  *----------------------------------------------------------------------*/
-LINALG::SerialDenseMatrix CONTACT::CElement::GetNodalCoords()
+void CONTACT::CElement::GetNodalCoords(LINALG::SerialDenseMatrix& coord)
 {
   int nnodes = NumNode();
   DRT::Node** mynodes = Nodes();
   if (!mynodes) dserror("ERROR: GetNodalCoords: Null pointer!");
-  LINALG::SerialDenseMatrix coord(3,nnodes);
+  if (coord.M()!=3 || coord.N()!=nnodes) dserror("ERROR: GetNodalCoords: Dimensions!");
   
   for (int i=0;i<nnodes;++i)
   {
@@ -509,7 +509,7 @@ LINALG::SerialDenseMatrix CONTACT::CElement::GetNodalCoords()
     coord(2,i) = mycnode->xspatial()[2];
   }
   
-  return coord;
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -532,7 +532,8 @@ void CONTACT::CElement::Metrics(double* xi, vector<double>& gxi,
   EvaluateShape(xi, val, deriv, nnodes);
 
   // get coordinates of element nodes
-  LINALG::SerialDenseMatrix coord = GetNodalCoords();
+  LINALG::SerialDenseMatrix coord(3,nnodes);
+  GetNodalCoords(coord);
   
   // build basis vectors gxi and geta
   for (int i=0;i<nnodes;++i)
@@ -740,7 +741,8 @@ double CONTACT::CElement::ComputeArea()
   if (dt==line2)
   {
     // no integration necessary (constant Jacobian)
-    LINALG::SerialDenseMatrix coord = GetNodalCoords();
+    LINALG::SerialDenseMatrix coord(3,NumNode());
+    GetNodalCoords(coord);
     
     // build vector between the two nodes
     double tang[3] = {0.0, 0.0, 0.0};
@@ -755,7 +757,8 @@ double CONTACT::CElement::ComputeArea()
   else if (dt==tri3)
   {
     // no integration necessary (constant Jacobian)
-    LINALG::SerialDenseMatrix coord = GetNodalCoords();
+    LINALG::SerialDenseMatrix coord(3,NumNode());
+    GetNodalCoords(coord);
     
     // build vectors between the three nodes
     double t1[3] = {0.0, 0.0, 0.0};
@@ -930,7 +933,8 @@ double CONTACT::CElement::MinEdgeSize()
   DRT::Element::DiscretizationType dt = Shape();
   
   // get coordinates of element nodes
-  LINALG::SerialDenseMatrix coord = GetNodalCoords();
+  LINALG::SerialDenseMatrix coord(3,NumNode());
+  GetNodalCoords(coord);
     
   // 2D case (2noded and 3noded line elements)
   if (dt==line2 || dt==line3)
@@ -992,7 +996,8 @@ double CONTACT::CElement::MaxEdgeSize()
   DRT::Element::DiscretizationType dt = Shape();
   
   // get coordinates of element nodes
-  LINALG::SerialDenseMatrix coord = GetNodalCoords();
+  LINALG::SerialDenseMatrix coord(3,NumNode());
+  GetNodalCoords(coord);
     
   // 2D case (2noded and 3noded line elements)
   if (dt==line2 || dt==line3)

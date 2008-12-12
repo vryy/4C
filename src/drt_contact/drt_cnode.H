@@ -281,7 +281,7 @@ public:
   \param col : global dof column id of the value added
   
   */
-  void AddDValue(int row, int col, double val);
+  void AddDValue(int& row, int& col, double& val);
   
   /*!
   brief Add a value to the 'M' map of this node
@@ -294,7 +294,7 @@ public:
   \param col : global dof column id of the value added
   
   */
-  void AddMValue(int row, int col, double val);
+  void AddMValue(int& row, int& col, double& val);
     
   /*!
   brief Add a value to the 'Mmod' map of this node
@@ -307,7 +307,7 @@ public:
   \param col : global dof column id of the value added
   
   */
-  void AddMmodValue(int row, int col, double val);  
+  void AddMmodValue(int& row, int& col, double& val);  
 
   /*!
   brief Add a value to the weighted gap of this node
@@ -318,7 +318,7 @@ public:
   \param val : value to be added
   
   */
-  void AddgValue(double val);
+  void AddgValue(double& val);
   
   /*!
   brief Write nodal entries of D and M to Dold and Mold
@@ -417,7 +417,7 @@ public:
   specific M-matrix M_ik entry of this node i.
   
   */
-  virtual inline map<int,double>& GetDerivM(int k)
+  virtual inline map<int,double>& GetDerivM(int& k)
   {
     typedef map<int,map<int,double> >::const_iterator CI;
     CI p =derivm_.find(k);

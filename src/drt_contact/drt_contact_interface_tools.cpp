@@ -124,7 +124,7 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
         // 2D linear case (2noded line elements)
         if (element->Shape()==DRT::Element::line2)
         {
-          coord = element->GetNodalCoords();
+          element->GetNodalCoords(coord);
 
           gmshfilecontent << "SL(" << scientific << coord(0,0) << "," << coord(1,0) << ","
                               << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
@@ -135,7 +135,7 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
         // 2D quadratic case (3noded line elements)
         if (element->Shape()==DRT::Element::line3)
         {
-          coord = element->GetNodalCoords();
+          element->GetNodalCoords(coord);
 
           gmshfilecontent << "SL2(" << scientific << coord(0,0) << "," << coord(1,0) << ","
                               << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
@@ -147,7 +147,7 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
         // 3D linear case (3noded triangular elements)
         if (element->Shape()==DRT::Element::tri3)
         {
-          coord = element->GetNodalCoords();
+          element->GetNodalCoords(coord);
   
           gmshfilecontent << "ST(" << scientific << coord(0,0) << "," << coord(1,0) << ","
                               << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
@@ -160,7 +160,7 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
         // 3D bilinear case (4noded quadrilateral elements)
         if (element->Shape()==DRT::Element::quad4)
         {
-          coord = element->GetNodalCoords();
+          element->GetNodalCoords(coord);
   
           gmshfilecontent << "SQ(" << scientific << coord(0,0) << "," << coord(1,0) << ","
                               << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
@@ -346,7 +346,7 @@ void CONTACT::Interface::VisualizeGmshLight()
         // 2D linear case (2noded line elements)
         if (element->Shape()==DRT::Element::line2)
         {
-          coord = element->GetNodalCoords();
+          element->GetNodalCoords(coord);
 
           gmshfilecontent << "SL(" << scientific << coord(0,0) << "," << coord(1,0) << ","
                               << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
@@ -357,7 +357,7 @@ void CONTACT::Interface::VisualizeGmshLight()
         // 2D quadratic case (3noded line elements)
         if (element->Shape()==DRT::Element::line3)
         {
-          coord = element->GetNodalCoords();
+          element->GetNodalCoords(coord);
 
           gmshfilecontent << "SL2(" << scientific << coord(0,0) << "," << coord(1,0) << ","
                               << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
@@ -369,7 +369,7 @@ void CONTACT::Interface::VisualizeGmshLight()
         // 3D linear case (3noded triangular elements)
         if (element->Shape()==DRT::Element::tri3)
         {
-          coord = element->GetNodalCoords();
+          element->GetNodalCoords(coord);
   
           gmshfilecontent << "ST(" << scientific << coord(0,0) << "," << coord(1,0) << ","
                               << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
@@ -381,7 +381,7 @@ void CONTACT::Interface::VisualizeGmshLight()
         // 3D bilinear case (4noded quadrilateral elements)
         if (element->Shape()==DRT::Element::quad4)
         {
-          coord = element->GetNodalCoords();
+          element->GetNodalCoords(coord);
   
           gmshfilecontent << "SQ(" << scientific << coord(0,0) << "," << coord(1,0) << ","
                               << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","

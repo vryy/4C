@@ -292,7 +292,7 @@ contactsegs_(csegs)
     double tol = CONTACTCLIPTOL * min(sminedge,mminedge);
       
     // do clipping in auxiliary plane
-    Clip() = PolygonClipping3D(SlaveVertices(),MasterVertices(),tol);
+    PolygonClipping3D(SlaveVertices(),MasterVertices(),Clip(),tol);
     int clipsize = (int)(Clip().size());
 #else
     // get some data
@@ -336,7 +336,7 @@ contactsegs_(csegs)
     double tol = CONTACTCLIPTOL;
       
     // do clipping in slave element parameter space
-    Clip() = PolygonClipping3D(svertices,mvertices,tol);
+    PolygonClipping3D(svertices,mvertices,Clip(),tol);
     int clipsize = (int)(Clip().size());
 #endif // #ifdef CONTACTAUXPLANE
     // *******************************************************************
@@ -1048,8 +1048,10 @@ bool CONTACT::Coupling::ProjectMaster3D()
 /*----------------------------------------------------------------------*
  |  Clipping of two polygons                                  popp 11/08|
  *----------------------------------------------------------------------*/
-vector<vector<double> > CONTACT::Coupling::PolygonClipping3D(
-    vector<vector<double> > poly1, vector<vector<double> > poly2, double& tol)
+void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
+                                          vector<vector<double> >& poly2,
+                                          vector<vector<double> >& respoly,
+                                          double& tol)
 {
   // print to screen
   //cout << "\n\n*****************************************************";
@@ -1465,7 +1467,7 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping3D(
   }
   
   // do clipping
-  vector<vector<double> > respoly;
+  if ((int)respoly.size()!=0) dserror("ERROR: PolygonClipping3D: Respoly!=0 at beginning...");
     
   //**********************************************************************
   // STEP5: Find result polygon for no intersection case
@@ -1884,11 +1886,12 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping3D(
 
     // check against auxiliary plane normal
     double check = cross[0]*Auxn()[0]+cross[1]*Auxn()[1]+cross[2]*Auxn()[2];
-    vector<vector<double> > newrespoly((int)respoly.size(),vector<double>(3));
+    
     if (check<0)
     {
       // reorder result polygon in clockwise direction
-     // cout << "Result polygon not ordered counter-clockwise -> reordered!" << endl;
+      // cout << "Result polygon not ordered counter-clockwise -> reordered!" << endl;
+      vector<vector<double> > newrespoly((int)respoly.size(),vector<double>(3));
       for (int i=0;i<(int)respoly.size();++i)
         newrespoly[(int)respoly.size()-1-i] = respoly[i];
       respoly = newrespoly;
@@ -2034,8 +2037,8 @@ vector<vector<double> > CONTACT::Coupling::PolygonClipping3D(
   fprintf(fp,gmshfilecontent.str().c_str());
   fclose(fp);
   */
-  // return result
-  return respoly;
+  
+  return;
 }
 
 /*----------------------------------------------------------------------*
