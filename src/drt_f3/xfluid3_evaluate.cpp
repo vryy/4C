@@ -142,7 +142,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       const double            dt       = params.get<double>("dt");
       const double            theta    = params.get<double>("theta");
 
-      const bool newton = params.get<bool>("include reactive terms for linearisation",false);
+      const bool newton = params.get<bool>("include reactive terms for linearisation");
       const bool pstab  = true;
       const bool supg   = true;
       const bool cstab  = true;
@@ -248,7 +248,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       const double            dt       = 1.0;
       const double            theta    = 1.0;
 
-      const bool newton = params.get<bool>("include reactive terms for linearisation",false);
+      const bool newton = params.get<bool>("include reactive terms for linearisation");
       const bool pstab  = true;
       const bool supg   = true;
       const bool cstab  = true;
@@ -684,11 +684,11 @@ void DRT::ELEMENTS::XFluid3::UpdateOldDLMAndDLMRHS(
     
     // update old iteration residual of the stresses
     // DLM_info_->oldfa_(i) += DLM_info_->oldKad_(i,j)*inc_velnp[j];
-    blas.GEMV('N', na, nd,1.0, DLM_info_->oldKad_.A(), DLM_info_->oldKad_.LDA(), &inc_velnp[0], 1.0, DLM_info_->oldfa_.A());
+    blas.GEMV('N', na, nd,-1.0, DLM_info_->oldKad_.A(), DLM_info_->oldKad_.LDA(), &inc_velnp[0], 1.0, DLM_info_->oldfa_.A());
     
     // compute element stresses
     // DLM_info_->stressdofs_(i) -= DLM_info_->oldKaainv_(i,j)*DLM_info_->oldfa_(j);
-    blas.GEMV('N', na, na,-1.0, DLM_info_->oldKaainv_.A(), DLM_info_->oldKaainv_.LDA(), DLM_info_->oldfa_.A(), 1.0, DLM_info_->stressdofs_.A());
+    blas.GEMV('N', na, na,1.0, DLM_info_->oldKaainv_.A(), DLM_info_->oldKaainv_.LDA(), DLM_info_->oldfa_.A(), 1.0, DLM_info_->stressdofs_.A());
     
     // increase size of element vector (old values stay and zeros are added)
     const int numdof_uncond = eleDofManager_uncondensed_->NumDofElemAndNode();
@@ -698,7 +698,7 @@ void DRT::ELEMENTS::XFluid3::UpdateOldDLMAndDLMRHS(
     mystate.accn .resize(numdof_uncond,0.0);
     for (int i=0;i<na;i++)
     {
-      mystate.velnp[i+nd] = DLM_info_->stressdofs_(i);
+      mystate.velnp[nd+i] = DLM_info_->stressdofs_(i);
     }
   }
 }
@@ -751,7 +751,7 @@ void DRT::ELEMENTS::XFluid3::CondenseDLMAndStoreOldIterationStep(
         Kad(i,j) = elemat1_uncond(nd+i,   j);
     
     for (int i=0;i<na;i++)
-      fa(i) = elevec1_uncond(i+nd);
+      fa(i) = elevec1_uncond(nd+i);
     
     
     // DLM-stiffness matrix is: Kdd - Kda . Kaa^-1 . Kad
@@ -776,19 +776,14 @@ void DRT::ELEMENTS::XFluid3::CondenseDLMAndStoreOldIterationStep(
       // elevec1(i) += - KdaKaainv(i,j)*fa(j);
       blas.GEMV('N', nd, na,-1.0, KdaKaainv.A(), KdaKaainv.LDA(), fa.A(), 1.0, elevec1.A());
     }
-   
-//    cout << Kad << endl;
-//    cout << DLM_info_->oldKad_ << endl;
     
-    {
-      // store current DLM data in iteration history
-      //DLM_info_->oldKaainv_.Update(1.0,Kaa,0.0);
-      blas.COPY(DLM_info_->oldKaainv_.M()*DLM_info_->oldKaainv_.N(), Kaa.A(), DLM_info_->oldKaainv_.A());
-      //DLM_info_->oldKad_.Update(1.0,Kad,0.0);
-      blas.COPY(DLM_info_->oldKad_.M()*DLM_info_->oldKad_.N(), Kad.A(), DLM_info_->oldKad_.A());
-      //DLM_info_->oldfa_.Update(1.0,fa,0.0);
-      blas.COPY(DLM_info_->oldfa_.M()*DLM_info_->oldfa_.N(), fa.A(), DLM_info_->oldfa_.A());
-    }
+    // store current DLM data in iteration history
+    //DLM_info_->oldKaainv_.Update(1.0,Kaa,0.0);
+    blas.COPY(DLM_info_->oldKaainv_.M()*DLM_info_->oldKaainv_.N(), Kaa.A(), DLM_info_->oldKaainv_.A());
+    //DLM_info_->oldKad_.Update(1.0,Kad,0.0);
+    blas.COPY(DLM_info_->oldKad_.M()*DLM_info_->oldKad_.N(), Kad.A(), DLM_info_->oldKad_.A());
+    //DLM_info_->oldfa_.Update(1.0,fa,0.0);
+    blas.COPY(DLM_info_->oldfa_.M()*DLM_info_->oldfa_.N(), fa.A(), DLM_info_->oldfa_.A());
   }
 }
 
