@@ -20,7 +20,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
 
-//! translate between std::vector and blitz array
+//! translate between std::vector and LINALG::SerialDenseMatrix
 template <int dim>
 LINALG::SerialDenseMatrix ConvertPosArrayToLINALG(
         const std::vector<std::vector<double> >&   pos_array,
@@ -28,15 +28,15 @@ LINALG::SerialDenseMatrix ConvertPosArrayToLINALG(
         )
 {
   const int numnode = DRT::UTILS::getNumberOfElementNodes(distype);
-  LINALG::SerialDenseMatrix pos_array_blitz(dim,numnode);
+  LINALG::SerialDenseMatrix pos_array_linalg(dim,numnode);
   for (int inode=0; inode<numnode; ++inode)
   {
     for (int isd=0; isd<dim; ++isd)
     {
-      pos_array_blitz(isd,inode) = pos_array[inode][isd];
+      pos_array_linalg(isd,inode) = pos_array[inode][isd];
     }
   }    
-  return pos_array_blitz;
+  return pos_array_linalg;
 }
 
 
