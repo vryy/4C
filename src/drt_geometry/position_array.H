@@ -115,8 +115,47 @@ namespace GEO
       }
       return;
   }
-  
-  
+
+
+  /*!
+   * a common task is to get an array of the positions of all nodes of this element
+   *
+   * template version
+   *
+   * \note array is defined as (dim,numnode) with user-specified number of space dimensions
+   *       that are of interest for the element application calling this method
+   *
+   * \return Array with 1, 2 or 3 dimensional position of all element nodes in the coordinate system of the nodes
+   *
+   * \author gjb
+   * \date 12/08
+   */
+  template <DRT::Element::DiscretizationType distype, int dim, class M>
+  void fillInitialPositionArray(
+          const DRT::Element*      ele,
+          M&                       xyze
+          )
+  {
+      dsassert(distype == ele->Shape(), "mismatch in distype");
+      const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+
+      const DRT::Node*const* nodes = ele->Nodes();
+      dsassert(nodes != NULL, "element has no nodal pointers, so getting a position array doesn't make sense!");
+
+      dsassert((dim > 0) && (dim < 4),"Illegal number of space dimensions");
+
+      for (int inode=0; inode<numnode; inode++)
+      {
+          const double* x = nodes[inode]->X();
+          for(int idim=0; idim<dim; idim++)
+          {
+            xyze(idim,inode) = x[idim];
+          }
+      }
+      return;
+  }
+
+
   /*!
     * a common task is to get an array of the positions of all nodes of this element
     *
