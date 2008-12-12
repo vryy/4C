@@ -132,8 +132,6 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateD(CONTACT::CElement&
   int nrow = sele.NumNode();
   int ndof = Dim();
   int ncol = nrow;
-  
-  RCP<Epetra_SerialDenseMatrix> dtemp = rcp(new Epetra_SerialDenseMatrix(nrow,ncol));
   RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
   
   // create empty objects for shape fct. evaluation
@@ -160,32 +158,24 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateD(CONTACT::CElement&
        ncol represents the dofs !!!
        (although this does not really matter here for dseg,
        as it will turn out to be diagonal anyway)             */
-    for (int j=0;j<nrow;++j)
+    for (int j=0;j<nrow*ndof;++j)
     {
-      for (int k=0;k<ncol;++k)
-      {
+      for (int k=0;k<ncol*ndof;++k)
+      {  
+        int jindex = (int)(j/ndof);
+        int kindex = (int)(k/ndof);
+        
         // multiply the two shape functions
-        double prod = dualval[j]*val[k];
-        // add current Gauss point's contribution to dtemp  
-        (*dtemp)(j,k) += prod*dxdsxi*wgt; 
+        double prod = dualval[jindex]*val[kindex];
+        
+        // isolate the dseg entries to be filled and
+        // add current Gauss point's contribution to dseg
+        if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
+          (*dseg)(j,k) += prod*dxdsxi*wgt; 
       }
     }  
   } // for (int gp=0;gp<nGP();++gp)
 
-  // fill dseg matrix with dtemp matrix entries
-  // (each dtemp value is multiplied with a (dof)-unit-matrix)
-  for (int j=0;j<nrow*ndof;++j)
-  {
-    for (int k=0;k<ncol*ndof;++k)
-    {
-      int jindex = (int)(j/ndof);
-      int kindex = (int)(k/ndof);
-      // isolate the dseg entries to be filled
-      if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
-        (*dseg)(j,k) = (*dtemp)(jindex,kindex);
-    }
-  }
-  
   return dseg;
 }
 
@@ -383,8 +373,6 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateM(CONTACT::CElement&
   int nrow = sele.NumNode();
   int ncol = mele.NumNode();
   int ndof = Dim();
-  
-  RCP<Epetra_SerialDenseMatrix> mtemp = rcp(new Epetra_SerialDenseMatrix(nrow,ncol));
   RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
   
   // create empty vectors for shape fct. evaluation
@@ -438,32 +426,24 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateM(CONTACT::CElement&
        ncol represents the master dofs !!!
        (this DOES matter here for mseg, as it might
        sometimes be rectangular, not quadratic!)              */
-    for (int j=0;j<nrow;++j)
+    for (int j=0;j<nrow*ndof;++j)
     {
-      for (int k=0;k<ncol;++k)
+      for (int k=0;k<ncol*ndof;++k)
       {
+        int jindex = (int)(j/ndof);
+        int kindex = (int)(k/ndof);
+              
         // multiply the two shape functions
-        double prod = dualval[j]*mval[k];
-        // add current Gauss point's contribution to mseg  
-        (*mtemp)(j,k) += prod*dxdsxi*dsxideta*wgt; 
+        double prod = dualval[jindex]*mval[kindex];
+        
+        // isolate the mseg entries to be filled and
+        // add current Gauss point's contribution to mseg
+        if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
+          (*mseg)(j,k) += prod*dxdsxi*dsxideta*wgt; 
       }
     }  
   } // for (int gp=0;gp<nGP();++gp)
   
-  // fill mseg matrix with mtemp matrix entries
-  // (each mtemp value is multiplied with a (dof)-unit-matrix)
-  for (int j=0;j<nrow*ndof;++j)
-  {
-    for (int k=0;k<ncol*ndof;++k)
-    {
-      int jindex = (int)(j/ndof);
-      int kindex = (int)(k/ndof);
-      // isolate the mseg entries to be filled
-      if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
-        (*mseg)(j,k) = (*mtemp)(jindex,kindex);
-    }
-  }
-
   return mseg;
 }
 
@@ -1256,7 +1236,6 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateMmod(CONTACT::CEleme
   int nrowdof = Dim();
   int ncol  = mele.NumNode();
   int ncoldof = Dim();
-  
   RCP<Epetra_SerialDenseMatrix> mmodseg = rcp(new Epetra_SerialDenseMatrix(nrow*nrowdof,ncol*ncoldof));
   
   // create empty vectors for shape fct. evaluation
@@ -1534,8 +1513,6 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateM3D(
   int nrow = sele.NumNode();
   int ncol = mele.NumNode();
   int ndof = Dim();
-  
-  RCP<Epetra_SerialDenseMatrix> mtemp = rcp(new Epetra_SerialDenseMatrix(nrow,ncol));
   RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
   
   // create empty vectors for shape fct. evaluation
@@ -1606,31 +1583,23 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateM3D(
        ncol represents the master dofs !!!
        (this DOES matter here for mseg, as it might
        sometimes be rectangular, not quadratic!)              */
-    for (int j=0;j<nrow;++j)
+    for (int j=0;j<nrow*ndof;++j)
     {
-      for (int k=0;k<ncol;++k)
+      for (int k=0;k<ncol*ndof;++k)
       {
+        int jindex = (int)(j/ndof);
+        int kindex = (int)(k/ndof);
+              
         // multiply the two shape functions
-        double prod = dualval[j]*mval[k];
+        double prod = dualval[jindex]*mval[kindex];
+        
+        // isolate the mseg entries to be filled and
         // add current Gauss point's contribution to mseg  
-        (*mtemp)(j,k) += prod*jaccell*jacslave*wgt; 
+        if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
+          (*mseg)(j,k) += prod*jaccell*jacslave*wgt; 
       }
     }  
   } // for (int gp=0;gp<nGP();++gp)
-  
-  // fill mseg matrix with mtemp matrix entries
-  // (each mtemp value is multiplied with a (dof)-unit-matrix)
-  for (int j=0;j<nrow*ndof;++j)
-  {
-    for (int k=0;k<ncol*ndof;++k)
-    {
-      int jindex = (int)(j/ndof);
-      int kindex = (int)(k/ndof);
-      // isolate the mseg entries to be filled
-      if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
-        (*mseg)(j,k) = (*mtemp)(jindex,kindex);
-    }
-  }
   
   return mseg;
 }
@@ -1665,8 +1634,6 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateMAuxPlane3D(
   int nrow = sele.NumNode();
   int ncol = mele.NumNode();
   int ndof = Dim();
-  
-  RCP<Epetra_SerialDenseMatrix> mtemp = rcp(new Epetra_SerialDenseMatrix(nrow,ncol));
   RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
   
   // create empty vectors for shape fct. evaluation
@@ -1751,31 +1718,23 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateMAuxPlane3D(
        ncol represents the master dofs !!!
        (this DOES matter here for mseg, as it might
        sometimes be rectangular, not quadratic!)              */
-    for (int j=0;j<nrow;++j)
+    for (int j=0;j<nrow*ndof;++j)
     {
-      for (int k=0;k<ncol;++k)
+      for (int k=0;k<ncol*ndof;++k)
       {
+        int jindex = (int)(j/ndof);
+        int kindex = (int)(k/ndof);
+              
         // multiply the two shape functions
-        double prod = dualval[j]*mval[k];
-        // add current Gauss point's contribution to mseg  
-        (*mtemp)(j,k) += prod*jac*wgt; 
+        double prod = dualval[jindex]*mval[kindex];
+        
+        // isolate the mseg entries to be filled and
+        // add current Gauss point's contribution to mseg
+        if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
+          (*mseg)(j,k) += prod*jac*wgt; 
       }
     }  
   } // for (int gp=0;gp<nGP();++gp)
-  
-  // fill mseg matrix with mtemp matrix entries
-  // (each mtemp value is multiplied with a (dof)-unit-matrix)
-  for (int j=0;j<nrow*ndof;++j)
-  {
-    for (int k=0;k<ncol*ndof;++k)
-    {
-      int jindex = (int)(j/ndof);
-      int kindex = (int)(k/ndof);
-      // isolate the mseg entries to be filled
-      if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
-        (*mseg)(j,k) = (*mtemp)(jindex,kindex);
-    }
-  }
   
   return mseg;
 }

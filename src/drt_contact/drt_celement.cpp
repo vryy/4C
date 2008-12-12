@@ -209,32 +209,41 @@ bool CONTACT::CElement::LocalCoordinatesOfNode(int& lid, double* xi)
   // 3D quadratic case (3noded triangular element)
   else if (Shape()==tri3 || Shape()==tri6)
   {
-    if (lid==0)
+    switch(lid)
+    {
+    case 0:
     {
       xi[0]=0.0; xi[1]=0.0;
+      break;
     }
-    else if (lid==1)
+    case 1:
     {
       xi[0]=1.0; xi[1]=0.0;
+      break;
     }
-    else if (lid==2)
+    case 2:
     {
       xi[0]=0.0; xi[1]=1.0;
-    }
-    else if (lid==3)
+      break;
+    }    
+    case 3:
     {
       xi[0]=0.5; xi[1]=0.0;
+      break;
     }
-    else if (lid==4)
+    case 4:
     {
       xi[0]=0.5; xi[1]=0.5;
+      break;
     }
-    else if (lid==5)
+    case 5:
     {
       xi[0]=0.0; xi[1]=0.5;
+      break;
     }
-    else
-      dserror("ERROR: LocalCoordinatesOfNode: Node number % in segment % out of range",lid,Id());
+    default:
+      dserror("ERROR: LocCoordsOfNode: Node number % in segment % out of range",lid,Id());
+    }
   }
   
   // 3D bilinear case (4noded quadrilateral element)
@@ -242,44 +251,56 @@ bool CONTACT::CElement::LocalCoordinatesOfNode(int& lid, double* xi)
   // 3D biquadratic case (9noded quadrilateral element)
   else if (Shape()==quad4 || Shape()==quad8 || Shape()==quad9)
   {
-    if (lid==0)
+    switch(lid)
+    {
+    case 0:
     {
       xi[0]=-1.0; xi[1]=-1.0;
+      break;
     }
-    else if (lid==1)
+    case 1:
     {
       xi[0]=1.0; xi[1]=-1.0;
+      break;
     }
-    else if (lid==2)
+    case 2:
     {
       xi[0]=1.0; xi[1]=1.0;
-    }
-    else if (lid==3)
+      break;
+    }    
+    case 3:
     {
       xi[0]=-1.0; xi[1]=1.0;
+      break;
     }
-    else if (lid==4)
+    case 4:
     {
       xi[0]=0.0; xi[1]=-1.0;
+      break;
     }
-    else if (lid==5)
+    case 5:
     {
       xi[0]=1.0; xi[1]=0.0;
+      break;
     }
-    else if (lid==6)
+    case 6:
     {
       xi[0]=0.0; xi[1]=1.0;
+      break;
     }
-    else if (lid==7)
+    case 7:
     {
       xi[0]=-1.0; xi[1]=0.0;
+      break;
     }
-    else if (lid==8)
+    case 8:
     {
       xi[0]=0.0; xi[1]=0.0;
+      break;
     }
-    else
-      dserror("ERROR: LocalCoordinatesOfNode: Node number % in segment % out of range",lid,Id());
+    default:
+      dserror("ERROR: LocCoordsOfNode: Node number % in segment % out of range",lid,Id());
+    }
   }
   
   // unknown case

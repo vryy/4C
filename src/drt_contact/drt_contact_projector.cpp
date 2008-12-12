@@ -74,7 +74,6 @@ bool CONTACT::Projector::ProjectNodalNormal(CONTACT::CNode& node,
     
     // local Newton iteration for xi, start in the element middle
     double eta[2] = {0.0, 0.0};
-    double deta = 0.0;
     double f = 0.0;
     double df = 0.0;
     int k=0;
@@ -84,8 +83,7 @@ bool CONTACT::Projector::ProjectNodalNormal(CONTACT::CNode& node,
       f=EvaluateFNodalNormal(node,ele,eta,outward,gap);
       if (abs(f) < CONTACTCONVTOL) break;
       df=EvaluateGradFNodalNormal(node,ele,eta);
-      deta=(-f)/df;
-      eta[0]+=deta;
+      eta[0]+=(-f)/df;
     }
     
     // get the result
@@ -135,7 +133,7 @@ bool CONTACT::Projector::ProjectNodalNormal(CONTACT::CNode& node,
   else
     dserror("ERROR: ProjectNodalNormal: Called 2D version for 3D problem!");
   
-  return true;
+  return ok;
 }
 
 /*----------------------------------------------------------------------*
@@ -158,7 +156,6 @@ bool CONTACT::Projector::ProjectElementNormal(CONTACT::CNode& node,
         
     // local Newton iteration for xi, start in the element middle
     double eta[2] = {0.0, 0.0};
-    double deta = 0.0;
     double f = 0.0;
     double df = 0.0;
     int k=0;
@@ -168,8 +165,7 @@ bool CONTACT::Projector::ProjectElementNormal(CONTACT::CNode& node,
       f=EvaluateFElementNormal(node,ele,eta,outward,gap);
       if (abs(f) < CONTACTCONVTOL) break;
       df=EvaluateGradFElementNormal(node,ele,eta);
-      deta=(-f)/df;
-      eta[0]+=deta;
+      eta[0]+=(-f)/df;
     }
     
     // get the result
@@ -238,12 +234,8 @@ bool CONTACT::Projector::ProjectElementNormal3D(CONTACT::CNode& node,
     eta[1] = 1.0/3;
   }
   
-  // coordinate increment
-  double deta[2] = {0.0, 0.0};
-  
   // auxiliary variable
   double alpha = 0.0;
-  double dalpha = 0.0;
   
   // function f (vector-valued)
   double f[3] = {0.0, 0.0, 0.0};
@@ -265,14 +257,11 @@ bool CONTACT::Projector::ProjectElementNormal3D(CONTACT::CNode& node,
     
     // solve deta = - inv(df) * f
     LINALG::NonSymmetricInverse(df,3);
-    deta[0] = -df(0,0)*f[0] - df(0,1)*f[1] - df(0,2)*f[2];
-    deta[1] = -df(1,0)*f[0] - df(1,1)*f[1] - df(1,2)*f[2];
-    dalpha  = -df(2,0)*f[0] - df(2,1)*f[1] - df(2,2)*f[2];
-    
+
     // update eta and alpha
-    eta[0] += deta[0];
-    eta[1] += deta[1];
-    alpha  += dalpha;
+    eta[0] += -df(0,0)*f[0] - df(0,1)*f[1] - df(0,2)*f[2];
+    eta[1] += -df(1,0)*f[0] - df(1,1)*f[1] - df(1,2)*f[2];
+    alpha  += -df(2,0)*f[0] - df(2,1)*f[1] - df(2,2)*f[2];
   }
       
   // Newton iteration unconverged
@@ -339,7 +328,6 @@ bool CONTACT::Projector::ProjectGaussPoint(CONTACT::CElement& gpele,
         
     // local Newton iteration for xi, start in the element middle
     double eta[2] = {0.0, 0.0};
-    double deta = 0.0;
     double f = 0.0;
     double df = 0.0;
     int k=0;
@@ -349,8 +337,7 @@ bool CONTACT::Projector::ProjectGaussPoint(CONTACT::CElement& gpele,
       f=EvaluateFGaussPoint(gpx,gpn,ele,eta,outward,gap);
       if (abs(f) < CONTACTCONVTOL) break;
       df=EvaluateGradFGaussPoint(gpn,ele,eta);
-      deta=(-f)/df;
-      eta[0]+=deta;
+      eta[0]+=(-f)/df;
     }
         
     // Newton iteration unconverged
@@ -387,7 +374,7 @@ bool CONTACT::Projector::ProjectGaussPoint(CONTACT::CElement& gpele,
   else
     dserror("ERROR: ProjectGaussPoint: Called 2D version for 3D problem!");
   
-  return true;
+  return ok;
 }
 
 /*----------------------------------------------------------------------*
@@ -437,13 +424,9 @@ bool CONTACT::Projector::ProjectGaussPoint3D(CONTACT::CElement& gpele,
     eta[0] = 1.0/3;
     eta[1] = 1.0/3;
   }
-  
-  // coordinate increment
-  double deta[2] = {0.0, 0.0};
-  
+
   // auxiliary variable
   double alpha = 0.0;
-  double dalpha = 0.0;
   
   // function f (vector-valued)
   double f[3] = {0.0, 0.0, 0.0};
@@ -465,14 +448,11 @@ bool CONTACT::Projector::ProjectGaussPoint3D(CONTACT::CElement& gpele,
     
     // solve deta = - inv(df) * f
     LINALG::NonSymmetricInverse(df,3);
-    deta[0] = -df(0,0)*f[0] - df(0,1)*f[1] - df(0,2)*f[2];
-    deta[1] = -df(1,0)*f[0] - df(1,1)*f[1] - df(1,2)*f[2];
-    dalpha  = -df(2,0)*f[0] - df(2,1)*f[1] - df(2,2)*f[2];
     
     // update eta and alpha
-    eta[0] += deta[0];
-    eta[1] += deta[1];
-    alpha  += dalpha;
+    eta[0] += -df(0,0)*f[0] - df(0,1)*f[1] - df(0,2)*f[2];
+    eta[1] += -df(1,0)*f[0] - df(1,1)*f[1] - df(1,2)*f[2];
+    alpha  += -df(2,0)*f[0] - df(2,1)*f[1] - df(2,2)*f[2];
   }
       
   // Newton iteration unconverged
@@ -505,12 +485,8 @@ bool CONTACT::Projector::ProjectGaussPointAuxn3D(const double* globgp,
     eta[1] = 1.0/3;
   }
   
-  // coordinate increment
-  double deta[2] = {0.0, 0.0};
-  
   // auxiliary variable
   double alpha = 0.0;
-  double dalpha = 0.0;
   
   // function f (vector-valued)
   double f[3] = {0.0, 0.0, 0.0};
@@ -532,14 +508,11 @@ bool CONTACT::Projector::ProjectGaussPointAuxn3D(const double* globgp,
     
     // solve deta = - inv(df) * f
     LINALG::NonSymmetricInverse(df,3);
-    deta[0] = -df(0,0)*f[0] - df(0,1)*f[1] - df(0,2)*f[2];
-    deta[1] = -df(1,0)*f[0] - df(1,1)*f[1] - df(1,2)*f[2];
-    dalpha  = -df(2,0)*f[0] - df(2,1)*f[1] - df(2,2)*f[2];
-    
+
     // update eta and alpha
-    eta[0] += deta[0];
-    eta[1] += deta[1];
-    alpha  += dalpha;
+    eta[0] += -df(0,0)*f[0] - df(0,1)*f[1] - df(0,2)*f[2];
+    eta[1] += -df(1,0)*f[0] - df(1,1)*f[1] - df(1,2)*f[2];
+    alpha  += -df(2,0)*f[0] - df(2,1)*f[1] - df(2,2)*f[2];
   }
       
   // Newton iteration unconverged
@@ -848,14 +821,9 @@ bool CONTACT::Projector::EvaluateFElementNormal3D(
     nx[2]+=val[i]*coord(2,i);
   }
   
-  // get coords of node to be projected
-  double xm[3] = {0.0, 0.0, 0.0};
-  for (int i=0;i<3;++i)
-    xm[i] = node.xspatial()[i];
-  
   // evaluate function f
   for (int i=0;i<3;++i)
-    f[i] = nx[i] + alpha * nn[i] - xm[i];
+    f[i] = nx[i] + alpha * nn[i] - node.xspatial()[i];
   
   return true;
 }
@@ -1168,7 +1136,7 @@ bool CONTACT::Projector::EvaluateGradFGaussPointAuxn3D(
   ele.LocalToGlobal(eta,nxeta1,1);
   ele.LocalToGlobal(eta,nxeta2,2);
   
-  //evaluate function f gradient
+  // evaluate function f gradient
   for (int i=0;i<3;++i)
   {
     fgrad(i,0) = nxeta1[i];
