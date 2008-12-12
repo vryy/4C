@@ -448,7 +448,7 @@ void CONTACT::CElement::DerivNormalAtXi(double* xi, int& i,
   Metrics(xi, gxi, geta);
   
   // derivative weighting matrix for current element
-  LINALG::SerialDenseMatrix W(3,3);
+  LINALG::Matrix<3,3> W;
   double lcube  = elens(4,i)*elens(4,i)*elens(4,i);
   
   for (int j=0;j<3;++j)
@@ -487,7 +487,7 @@ void CONTACT::CElement::DerivNormalAtXi(double* xi, int& i,
     int ndof = mycnode->NumDof();
     
     // derivative weighting matrix for current node
-    LINALG::SerialDenseMatrix F(3,3);  
+    LINALG::Matrix<3,3> F;  
     F(0,0) = 0.0;
     F(1,1) = 0.0;
     F(2,2) = 0.0;
@@ -499,8 +499,8 @@ void CONTACT::CElement::DerivNormalAtXi(double* xi, int& i,
     F(2,1) = gxi[0]  * deriv(n,1) - geta[0] * deriv(n,0);
     
     // total weighting matrix
-    LINALG::SerialDenseMatrix WF(3,3);
-    WF.Multiply('N','N',1.0,W,F,0.0);
+    LINALG::Matrix<3,3> WF;
+    WF.MultiplyNN(W,F);
     
     //create directional derivatives
     for (int j=0;j<3;++j)

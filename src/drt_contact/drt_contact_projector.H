@@ -265,7 +265,7 @@ public:
   \brief Evaluate GradF for element normal projection (3D)
 
   */
-  bool EvaluateGradFElementNormal3D(Epetra_SerialDenseMatrix& fgrad,
+  bool EvaluateGradFElementNormal3D(LINALG::Matrix<3,3>& fgrad,
                               CONTACT::CNode& node,
                               CONTACT::CElement& ele,
                               const double* eta,
@@ -305,7 +305,7 @@ public:
   \brief Evaluate GradF for Gauss point projection (3D)
 
   */
-  bool EvaluateGradFGaussPoint3D(Epetra_SerialDenseMatrix& fgrad,
+  bool EvaluateGradFGaussPoint3D(LINALG::Matrix<3,3>& fgrad,
                                  const double* gpx,
                                  const double* gpn,
                                  CONTACT::CElement& ele,
@@ -327,12 +327,12 @@ public:
   \brief Evaluate GradF for AuxPlane Gauss point projection (3D)
 
   */
-  bool EvaluateGradFGaussPointAuxn3D(Epetra_SerialDenseMatrix& fgrad,
-                              const double* globgp,
-                              const double* auxn,
-                              CONTACT::CElement& ele,
-                              const double* eta,
-                              const double& alpha); 
+  bool EvaluateGradFGaussPointAuxn3D(LINALG::Matrix<3,3>& fgrad,
+                                     const double* globgp,
+                                     const double* auxn,
+                                     CONTACT::CElement& ele,
+                                     const double* eta,
+                                     const double& alpha); 
     
   //@}
       

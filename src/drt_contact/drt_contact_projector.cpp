@@ -241,7 +241,7 @@ bool CONTACT::Projector::ProjectElementNormal3D(CONTACT::CNode& node,
   double f[3] = {0.0, 0.0, 0.0};
   
   // gradient of f (df/deta[0], df/deta[1], df/dalpha)
-  Epetra_SerialDenseMatrix df(3,3);
+  LINALG::Matrix<3,3> df;
   
   // start iteration
   int k=0;
@@ -256,7 +256,7 @@ bool CONTACT::Projector::ProjectElementNormal3D(CONTACT::CNode& node,
     EvaluateGradFElementNormal3D(df,node,ele,eta,alpha);
     
     // solve deta = - inv(df) * f
-    LINALG::NonSymmetricInverse(df,3);
+    df.Invert();
 
     // update eta and alpha
     eta[0] += -df(0,0)*f[0] - df(0,1)*f[1] - df(0,2)*f[2];
@@ -432,7 +432,7 @@ bool CONTACT::Projector::ProjectGaussPoint3D(CONTACT::CElement& gpele,
   double f[3] = {0.0, 0.0, 0.0};
   
   // gradient of f (df/deta[0], df/deta[1], df/dalpha)
-  Epetra_SerialDenseMatrix df(3,3);
+  LINALG::Matrix<3,3> df;
   
   // start iteration
   int k=0;
@@ -447,7 +447,7 @@ bool CONTACT::Projector::ProjectGaussPoint3D(CONTACT::CElement& gpele,
     EvaluateGradFGaussPoint3D(df,gpx,gpn,ele,eta,alpha);
     
     // solve deta = - inv(df) * f
-    LINALG::NonSymmetricInverse(df,3);
+    df.Invert();
     
     // update eta and alpha
     eta[0] += -df(0,0)*f[0] - df(0,1)*f[1] - df(0,2)*f[2];
@@ -492,7 +492,7 @@ bool CONTACT::Projector::ProjectGaussPointAuxn3D(const double* globgp,
   double f[3] = {0.0, 0.0, 0.0};
   
   // gradient of f (df/deta[0], df/deta[1], df/dalpha)
-  Epetra_SerialDenseMatrix df(3,3);
+  LINALG::Matrix<3,3> df;
   
   // start iteration
   int k=0;
@@ -507,7 +507,7 @@ bool CONTACT::Projector::ProjectGaussPointAuxn3D(const double* globgp,
     EvaluateGradFGaussPointAuxn3D(df,globgp,auxn,ele,eta,alpha);
     
     // solve deta = - inv(df) * f
-    LINALG::NonSymmetricInverse(df,3);
+    df.Invert();
 
     // update eta and alpha
     eta[0] += -df(0,0)*f[0] - df(0,1)*f[1] - df(0,2)*f[2];
@@ -832,7 +832,7 @@ bool CONTACT::Projector::EvaluateFElementNormal3D(
  |  Evaluate GradF for element normal case (3D)               popp 11/08|
  *----------------------------------------------------------------------*/
 bool CONTACT::Projector::EvaluateGradFElementNormal3D(
-                              Epetra_SerialDenseMatrix& fgrad,
+                              LINALG::Matrix<3,3>& fgrad,
                               CONTACT::CNode& node,
                               CONTACT::CElement& ele,
                               const double* eta,
@@ -1034,7 +1034,7 @@ bool CONTACT::Projector::EvaluateFGaussPoint3D(
  |  Evaluate GradF for Gauss point case (3D)                  popp 11/08|
  *----------------------------------------------------------------------*/
 bool CONTACT::Projector::EvaluateGradFGaussPoint3D(
-                              Epetra_SerialDenseMatrix& fgrad,
+                              LINALG::Matrix<3,3>& fgrad,
                               const double* gpx,
                               const double* gpn,
                               CONTACT::CElement& ele,
@@ -1110,7 +1110,7 @@ bool CONTACT::Projector::EvaluateFGaussPointAuxn3D(
  |  Evaluate GradF for AuxPlane Gauss point case (3D)         popp 11/08|
  *----------------------------------------------------------------------*/
 bool CONTACT::Projector::EvaluateGradFGaussPointAuxn3D(
-                              Epetra_SerialDenseMatrix& fgrad,
+                              LINALG::Matrix<3,3>& fgrad,
                               const double* globgp,
                               const double* auxn,
                               CONTACT::CElement& ele,
