@@ -194,7 +194,7 @@ void GEO::IntersectionExp::computeIntersection(
     if(checkIfCDT())
     {
       completePLC();
-      //debugTetgenDataStructure(xfemElement);
+      //debugTetgenDataStructure(xfemElement,xfemdis,cutterdis,currentcutterpositions);
       computeCDT(xfemElement, currentcutterpositions, domainintcells, boundaryintcells);
     }
 
@@ -2744,11 +2744,11 @@ GEO::IntersectionExp::SteinerType GEO::IntersectionExp::decideSteinerCase(
 {
     const int pointIndex = adjacentFacesList[steinerIndex][0];
 
-    static LINALG::Matrix<3,1> x;
+     LINALG::Matrix<3,1> x;
     for(int k=0; k<3; k++)
         x(k)   = out.pointlist[pointIndex*3 + k];
 
-    static LINALG::Matrix<3,1>    xsi;
+     LINALG::Matrix<3,1>    xsi;
     // check exact TODO
     xsi = currentToVolumeElementCoordinatesExact(xfemElement->Shape(), xyze_xfemElement_, x, TOL7);
     //currentToVolumeElementCoordinates(xfemElement, x, xsi);
@@ -4540,7 +4540,11 @@ void GEO::IntersectionExp::debugNodeWithinElement(
  |  DB:     Debug only                                       u.may 06/07|
  *----------------------------------------------------------------------*/
 void GEO::IntersectionExp::debugTetgenDataStructure(
-        const DRT::Element*               xfemElement) const
+        const DRT::Element*               xfemElement,
+        const Teuchos::RCP<DRT::Discretization>        xfemdis,
+        const Teuchos::RCP<DRT::Discretization>        cutterdis,
+        const std::map<int,LINALG::Matrix<3,1> >&      currentcutterpositions        
+) const
 {
     std::cout << endl;
     std::cout << "===============================================================" << endl;
@@ -4613,6 +4617,27 @@ void GEO::IntersectionExp::debugTetgenDataStructure(
     std::cout << endl;
     std::cout << endl;
 
+    // debug: write both meshes to file in Gmsh format
+    std::stringstream filename;
+    filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_debug_uncut_elements_coupled_system_" << ".pos";
+    std::ofstream f_system(filename.str().c_str());
+    std::stringstream gmshfilecontent;
+    f_system << "View \" " << "Fluid" << " Elements \" {\n";
+    for (int i=0; i<xfemdis->NumMyRowElements(); ++i)
+    {
+      const DRT::Element* actele = xfemdis->lRowElement(i);
+      double scalar = 0.0;
+      if (actele->Id() == xfemElement->Id())
+        scalar = 1.0;
+      else
+        scalar = 0.0;
+      f_system << IO::GMSH::elementAtInitialPositionToString(scalar, actele) << "\n";
+    };
+    f_system << "};\n";
+    
+    f_system << IO::GMSH::disToString("Solid", 1.0, cutterdis, currentcutterpositions);
+    f_system.close();
+    
     std::cout << "===============================================================" << endl;
     std::cout << "Debug Tetgen Data Structure" << endl;
     std::cout << "===============================================================" << endl;

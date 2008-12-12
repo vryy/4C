@@ -1626,7 +1626,10 @@ class IntersectionExp
   \param element                  (in)        : xfemElement
   */
   void debugTetgenDataStructure(
-    const DRT::Element*               xfemElement
+    const DRT::Element*                            xfemElement,            ///< xfem element
+    const Teuchos::RCP<DRT::Discretization>        xfemdis,                ///< xfem dis
+    const Teuchos::RCP<DRT::Discretization>        cutterdis,              ///< cutterdis
+    const std::map<int,LINALG::Matrix<3,1> >&      currentcutterpositions  ///< current position of cutterdis
     ) const;
 
 
