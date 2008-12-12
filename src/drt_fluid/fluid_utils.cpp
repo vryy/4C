@@ -196,10 +196,10 @@ void FLD::UTILS::SetupXFluidSplit(
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
 void FLD::UTILS::LiftDrag(
-  const DRT::Discretization&     dis         ,      
-  const Epetra_Vector&           trueresidual,    
-  const ParameterList&           params      ,
-  RCP<map<int,vector<double> > > liftdragvals
+  const DRT::Discretization      & dis         ,      
+  const Epetra_Vector            & trueresidual,    
+  const ParameterList            & params      ,
+  RCP<map<int,vector<double> > > & liftdragvals
   )
 {
   const int liftdrag = params.get<int>("liftdrag");

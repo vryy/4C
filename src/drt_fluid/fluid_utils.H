@@ -262,10 +262,10 @@ Maintainer: Peter Gamnitzer
   \date 11/07
  */
 void LiftDrag(
-  const DRT::Discretization&     dis         , //! fluid discretization
-  const Epetra_Vector&           force       , //! vector of nodalforces
-  const ParameterList&           params      , //! parameters 
-  RCP<map<int,vector<double> > > liftdragvals  //! computed ld values
+  const DRT::Discretization      & dis         , //! fluid discretization
+  const Epetra_Vector            & force       , //! vector of nodalforces
+  const ParameterList            & params      , //! parameters 
+  RCP<map<int,vector<double> > > & liftdragvals  //! computed ld values
   );
 
 /*!
