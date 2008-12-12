@@ -892,9 +892,14 @@ void LINALG::SparseMatrix::ApplyDirichletWithTrafo(Teuchos::RCP<const LINALG::Sp
   }
   else
   {
-	dserror("Sorry dude, this has not implemented");
-
     const int nummyrows = sysmat_->NumMyRows();
+
+    // prepare working arrays for extracting rows in trafo matrix
+    const int trafomaxnumentries = trafo->MaxNumEntries();
+    int trafonumentries = 0;
+    std::vector<int> trafoindices(trafomaxnumentries,0);
+    std::vector<double> trafovalues(trafomaxnumentries,0.0);
+
     for (int i=0; i<nummyrows; ++i)
     {
       int row = sysmat_->GRID(i);
@@ -913,8 +918,11 @@ void LINALG::SparseMatrix::ApplyDirichletWithTrafo(Teuchos::RCP<const LINALG::Sp
 
         if (diagonalblock)
         {
-          double one = 1.0;
-          err = sysmat_->SumIntoMyValues(i,1,&one,&i);
+          err = trafo->EpetraMatrix()->ExtractMyRowCopy(i,trafomaxnumentries,trafonumentries,&(trafovalues[0]),&(trafoindices[0]));
+#ifdef DEBUG
+          if (err<0) dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d",err);
+#endif
+          err = sysmat_->SumIntoMyValues(i,trafonumentries,&(trafovalues[0]),&(trafoindices[0]));
 #ifdef DEBUG
           if (err<0) dserror("Epetra_CrsMatrix::SumIntoMyValues returned err=%d",err);
 #endif
@@ -1284,7 +1292,7 @@ void LINALG::SparseMatrix::Put(const LINALG::SparseMatrix& A,
 {
   // put values onto sysmat
   if (A.GetMatrixtype() != LINALG::SparseMatrix::CRS_MATRIX)
-    dserror("Put is not available for matrix type %d", A.GetMatrixtype());
+    dserror("Please check code and see wether it is save to apply it to matrix type %d", A.GetMatrixtype());
   Epetra_CrsMatrix* Aprime = const_cast<Epetra_CrsMatrix*>(&(*(A.EpetraMatrix())));
   if (Aprime == NULL) dserror("Cast failed");
 
@@ -1293,7 +1301,7 @@ void LINALG::SparseMatrix::Put(const LINALG::SparseMatrix& A,
                                        sysmat_->MaxNumEntries());
 
   // define row map to tackle
-  // if #rowmap is a subset of #RowMap(), a selective replacing is perfomed
+  // if #rowmap (a subset of #RowMap()) is provided, a selective replacing is perfomed
   const Epetra_Map* tomap = NULL;
   if (rowmap != Teuchos::null)
     tomap = &(*rowmap);
@@ -1306,10 +1314,11 @@ void LINALG::SparseMatrix::Put(const LINALG::SparseMatrix& A,
   vector<double> Values(MaxNumEntries);
   int err;
  
-  const int* togids = tomap->MyGlobalElements();
+  // loop rows in #tomap and replace the rows of #this->sysmat_ with provided input matrix #A
   for (int lid=0; lid<tomap->NumMyElements(); ++lid)
   {
-    const int Row = togids[lid];
+    const int Row = tomap->GID(lid);
+    if (Row < 0) dserror("DOF not found on processor.");
     err = Aprime->ExtractGlobalRowCopy(Row,MaxNumEntries,NumEntries,&(Values[0]),&(Indices[0]));
     if (err) dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d",err);
     if (scalarA != 1.0) for (int j=0; j<NumEntries; ++j) Values[j] *= scalarA;
