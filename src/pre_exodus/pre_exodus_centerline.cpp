@@ -63,6 +63,61 @@ map<int,map<int,vector<vector<double> > > > EXODUS::EleCenterlineInfo(string& cl
 
     return centlineinfo;
 
+  } else if (cline.find(".exo") != string::npos){ // read centerline from another exodus file
+    EXODUS::Mesh centerlinemesh(cline);
+    
+    int centerlineid = -1;
+
+    map<int,EXODUS::NodeSet> nss = centerlinemesh.GetNodeSets();
+    map<int,EXODUS::NodeSet>::const_iterator i_ns;
+    // check for Centerline or Centerpoint Nodeset
+    bool clbool;
+    for(i_ns=nss.begin();i_ns!=nss.end();++i_ns){
+      const string myname = i_ns->second.GetName();
+      if (myname.find("centerline") != string::npos) 
+      {
+        centerlineid = i_ns->first;
+        clbool=true;
+      }
+      else if (myname.find("centerpoint") != string::npos) 
+      {
+        clbool=false;
+        centerlineid = i_ns->first;
+      }
+    }
+    if (centerlineid == -1) dserror("Have not found centerline NodeSet");
+    EXODUS::Centerline myCLine(nss.find(centerlineid)->second,centerlinemesh.GetNodes());
+    myCLine.PlotCL_Gmsh();             //generation of accordant Gmsh-file
+
+    // get rid of helper eb where the centerline ns was based on
+    map<int,RCP<EXODUS::ElementBlock> > ebs = mymesh.GetElementBlocks();
+    map<int,RCP<EXODUS::ElementBlock> >::const_iterator i_eb;
+    vector<int> eb_ids;
+    // check for Centerline ElementBlock
+    for(i_eb=ebs.begin();i_eb!=ebs.end();++i_eb){
+      const string myname = i_eb->second->GetName();
+      if (myname.find("centerline") != string::npos) centerlinemesh.EraseElementBlock(i_eb->first);
+      // check for CenterPoints block
+      else if (myname.find("centerpoint") != string::npos) centerlinemesh.EraseElementBlock(i_eb->first);
+      else eb_ids.push_back(i_eb->first);
+    }
+
+    //generation of coordinate systems
+    map<int,map<int,vector<vector<double> > > > centlineinfo;
+    if (clbool)
+      centlineinfo = EXODUS::element_cosys(myCLine,mymesh,eb_ids);
+    //generation of degenerated coordinate systems
+    else 
+      centlineinfo = EXODUS::element_degcosys(myCLine,mymesh,eb_ids);
+    if (clbool)
+      EXODUS::PlotCosys(myCLine,mymesh,eb_ids);       //generation of accordant Gmsh-file
+    // plot mesh to gmsh
+    string meshname = "centerlinemesh.gmsh";
+    centerlinemesh.PlotElementBlocksGmsh(meshname,mymesh);
+
+
+    return centlineinfo;
+    
   } else { //creation of a Centerline object from file
     cout << "Reading centerline..." << endl;
     EXODUS::Centerline myCLine(cline,coordcorr);
