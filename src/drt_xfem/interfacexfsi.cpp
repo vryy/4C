@@ -27,6 +27,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_io/io_gmsh_xfem_extension.H"
 #include "../drt_geometry/intersection.H"
 #include "../drt_geometry/intersection_exp.H"
+#include "../drt_geometry/position_array.H"
 #include "coordinate_transformation.H"
 #include "enrichment_utils.H"
 #include "../drt_fem_general/drt_utils_integration.H"
@@ -167,7 +168,7 @@ std::set<int> XFEM::InterfaceHandleXFSI::FindDoubleCountedIntersectedElements() 
   for (entry = elementalDomainIntCells_.begin(); entry != elementalDomainIntCells_.end(); ++entry)
   {
     const GEO::DomainIntCells cells = entry->second;
-    DRT::Element* xfemele = xfemdis_->gElement(entry->first);
+    const DRT::Element* xfemele = xfemdis_->gElement(entry->first);
     std::set<int> labelset;
     bool one_cell_is_fluid = false;
     for (GEO::DomainIntCells::const_iterator cell = cells.begin(); cell != cells.end(); ++cell)
@@ -236,7 +237,7 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
       
       for (int i=0; i<xfemdis_->NumMyRowElements(); ++i)
       {
-        DRT::Element* actele = xfemdis_->lRowElement(i);
+        const DRT::Element* actele = xfemdis_->lRowElement(i);
         const GEO::DomainIntCells& elementDomainIntCells = this->GetDomainIntCells(actele->Id(), actele->Shape());
         GEO::DomainIntCells::const_iterator cell;
         for(cell = elementDomainIntCells.begin(); cell != elementDomainIntCells.end(); ++cell )
@@ -306,7 +307,7 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
      
       for (int i=0; i<xfemdis_->NumMyColElements(); ++i)
       {
-        DRT::Element* actele = xfemdis_->lColElement(i);
+        const DRT::Element* actele = xfemdis_->lColElement(i);
         const GEO::DomainIntCells& elementDomainIntCells = this->GetDomainIntCells(actele->Id(), actele->Shape());
         GEO::DomainIntCells::const_iterator cell;
         for(cell = elementDomainIntCells.begin(); cell != elementDomainIntCells.end(); ++cell )
@@ -533,7 +534,7 @@ void XFEM::InterfaceHandleXFSI::CheckDomainIntCellSize() const
     {
       const std::vector<double> cellsizes = XFEM::DomainIntCellCoverageRatio(*actele,*this);
       double elevol = 0.0;
-      for (std::vector<double>::const_iterator iter = cellsizes.begin(); iter != cellsizes.end(); iter++)
+      for (std::vector<double>::const_iterator iter = cellsizes.begin(); iter != cellsizes.end(); ++iter)
       {
         elevol += *iter;
       }

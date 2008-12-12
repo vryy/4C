@@ -1380,52 +1380,43 @@ void SysmatBoundary4(
     const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,   ///< connection to the interface handler
     const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
     const M1&                         evelnp,
-//    const M1&                         eveln,
-//    const M1&                         evelnm,
-//    const M1&                         eaccn,
-//    const V1&                         eprenp,
     const M2&                         etau,
     const Teuchos::RCP<const Epetra_Vector>& ivelcol,       ///< velocity for interface nodes
     const Teuchos::RCP<Epetra_Vector>& iforcecol,     ///< reaction force due to given interface velocity
-//    const struct _MATERIAL*           material,      ///< fluid material
     const FLUID_TIMEINTTYPE           timealgo,      ///< time discretization type
     const double                      dt,            ///< delta t (time step size)
     const double                      theta,         ///< factor for one step theta scheme
-//    const bool                        newton,        ///< full Newton or fixed-point-like
-//    const bool                        pstab,         ///< flag for stabilization
-//    const bool                        supg,          ///< flag for stabilization
-//    const bool                        cstab,         ///< flag for stabilization
-//    const bool                        instationary,  ///< switch between stationary and instationary formulation
     LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,
     const bool                        ifaceForceContribution
 )
 {
+    if (ASSTYPE != XFEM::xfem_assembly) dserror("works only with xfem assembly");
+  
     TEUCHOS_FUNC_TIME_MONITOR(" - evaluate - Sysmat4 - boundary");
   
     const Epetra_BLAS blas; 
     
-    if (ASSTYPE == XFEM::xfem_assembly)
+    const int nsd = 3;
+    
+    // time integration constant
+    const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dt, theta);
+    
+    // number of nodes for element
+    const int numnode_xele = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+    
+    // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
+    const int numparamvelx = XFEM::NumParam<numnode_xele,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
+    //const int numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
+    // put one here to create arrays of size 1, since they are not needed anyway
+    // in the xfem assembly, the numparam is determined by the dofmanager
+    //const int numparamtauxx = getNumParam<ASSTYPE>(dofman, Sigmaxx, 1);
+    const int numparamtauxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Sigmaxx);
+    
+    
+    const bool tauele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, Sigmaxx, 0) > 0);
+    // for now, I don't try to compare to elements without stress unknowns, since they lock anyway
+    if (tauele_unknowns_present)
     {
-      const int nsd = 3;
-      
-      // time integration constant
-      const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dt, theta);
-      
-      // number of nodes for element
-      const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-      
-      // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
-      const int numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
-      //const int numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
-      // put one here to create arrays of size 1, since they are not needed anyway
-      // in the xfem assembly, the numparam is determined by the dofmanager
-      //const int numparamtauxx = getNumParam<ASSTYPE>(dofman, Sigmaxx, 1);
-      const int numparamtauxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Sigmaxx);
-      
-      
-      const bool tauele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, Sigmaxx, 0) > 0);
-        // for now, I don't try to compare to elements without stress unknowns, since they lock anyway
-        if (tauele_unknowns_present){
     
     // information about boundary integration cells
     const GEO::BoundaryIntCells& boundaryIntCells = ih->GetBoundaryIntCells(ele->Id());
@@ -1440,30 +1431,26 @@ void SysmatBoundary4(
         
         // get the right boundary element
         const DRT::Element* boundaryele = ih->GetBoundaryEle(cell->GetSurfaceEleGid());
-        //cout << (*boundaryele) << endl;
         const int numnode_boundary = boundaryele->NumNode();
-//        cout << "numnode_boundary: " << numnode_boundary << endl;
         
         // get current node coordinates
         const std::map<int,LINALG::Matrix<3,1> >& positions(ih->cutterposnp());
-
+  
         LINALG::SerialDenseMatrix xyze_boundary(3,numnode_boundary);
         GEO::fillCurrentNodalPositions(boundaryele, positions, xyze_boundary);
         
         // get interface velocities at the boundary element nodes
         LINALG::SerialDenseMatrix vel_boundary(3,numnode_boundary);
         const DRT::Node*const* nodes = boundaryele->Nodes();
+        for (int inode = 0; inode < numnode_boundary; ++inode)
         {
-          for (int inode = 0; inode < numnode_boundary; ++inode)
-          {
-            const DRT::Node* node = nodes[inode];
-            std::vector<int> lm = ih->cutterdis()->Dof(node);
-            static std::vector<double> myvel(3);
-            DRT::UTILS::ExtractMyValues(*ivelcol,myvel,lm);
-            vel_boundary(0,inode) = myvel[0];
-            vel_boundary(1,inode) = myvel[1];
-            vel_boundary(2,inode) = myvel[2];
-          }
+          const DRT::Node* node = nodes[inode];
+          std::vector<int> lm = ih->cutterdis()->Dof(node);
+          static std::vector<double> myvel(3);
+          DRT::UTILS::ExtractMyValues(*ivelcol,myvel,lm);
+          vel_boundary(0,inode) = myvel[0];
+          vel_boundary(1,inode) = myvel[1];
+          vel_boundary(2,inode) = myvel[2];
         }
         
         LINALG::SerialDenseMatrix force_boundary(3,numnode_boundary,true);
@@ -1508,15 +1495,6 @@ void SysmatBoundary4(
             
             // position of the gausspoint in physical coordinates
             // gauss_pos_xyz = funct_boundary(j)*xyze_boundary(i,j);
-//            LINALG::Matrix<3,1> gauss_pos_xyz;
-//            gauss_pos_xyz.Clear();
-//            for (int inode = 0; inode < numnode_boundary; ++inode)
-//            {
-//              for (int isd = 0; isd < 3; ++isd)
-//              {
-//                gauss_pos_xyz(isd) += xyze_boundary(isd,inode)*funct_boundary(inode);
-//              }
-//            }
             const LINALG::Matrix<3,1> gauss_pos_xyz = XFLUID::interpolateVectorFieldToIntPoint(xyze_boundary,funct_boundary,numnode_boundary);
       
             // get jacobian matrix d x / d \xi  (3x2)
@@ -1526,7 +1504,7 @@ void SysmatBoundary4(
             
             // compute covariant metric tensor G for surface element (2x2)
             // metric = dxyzdrs(k,i)*dxyzdrs(k,j);
-            LINALG::Matrix<2,2> metric;
+            static LINALG::Matrix<2,2> metric;
             metric.MultiplyTN(dxyzdrs,dxyzdrs);
             
             // compute global derivates
@@ -1541,7 +1519,7 @@ void SysmatBoundary4(
               dserror("negative fac! should be a bug!");
             }
             
-            const int shpVecSize       = SizeFac<ASSTYPE>::fac*numnode;
+            const int shpVecSize       = SizeFac<ASSTYPE>::fac*numnode_xele;
             const int shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
             
             // temporary arrays
@@ -1562,21 +1540,6 @@ void SysmatBoundary4(
                     Velx,
                     funct,
                     enr_funct);
-            
-//            // shape function for nodal dofs
-//            XFEM::ComputeEnrichedNodalShapefunction(
-//                    *ele,
-//                    ih,
-//                    dofman,
-//                    Velx,
-//                    gauss_pos_xyz,
-//                    XFEM::Enrichment::approachFromPlus,
-//                    funct,
-//                    derxy,
-//                    derxy2,
-//                    enr_funct,
-//                    enr_derxy,
-//                    enr_derxy2);
 
             // shape functions for element dofs
             enrvals.ComputeEnrichedElementShapefunction(
@@ -1599,11 +1562,8 @@ void SysmatBoundary4(
             // get normal vector (in physical coordinates) to surface element at integration point
             LINALG::Matrix<3,1> normalvec_solid;
             GEO::computeNormalToSurfaceElement(boundaryele, xyze_boundary, posXiBoundary, normalvec_solid);
-//            cout << "normalvec " << normalvec << ", " << endl;
             LINALG::Matrix<3,1> normalvec_fluid(true);
             normalvec_fluid.Update(-1.0,normalvec_solid,0.0);
-//            cout << "normalvec : ";
-//            cout << normalvec_fluid << endl;
       
             // get velocities (n+g,i) at integration point
             // gpvelnp = evelnp(i,j)*shp(j);
@@ -1723,7 +1683,6 @@ void SysmatBoundary4(
         
       } // end loop over boundary integration cells
     }
-    } // if (ASSTYPE == XFEM::xfem_assembly)
     return;
 }
   

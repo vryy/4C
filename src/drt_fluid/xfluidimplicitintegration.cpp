@@ -46,10 +46,10 @@ Maintainer: Axel Gerstenberger
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
-    Teuchos::RCP<DRT::Discretization> actdis,
-    LINALG::Solver&                   solver,
-    const ParameterList&              params,
-    IO::DiscretizationWriter&         output
+    const Teuchos::RCP<DRT::Discretization> actdis,
+    LINALG::Solver&                         solver,
+    const ParameterList&                    params,
+    IO::DiscretizationWriter&               output
     ) :
   // call constructor for "nontrivial" objects
   discret_(actdis),
@@ -113,10 +113,6 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   }
   discret_->FillComplete();
 
-  //output_.WriteMesh(0,0.0);
-  
-//  cout << solver.Params().get<string>("solver") << endl;
-//  cout << solver.Params().isSublist("ML Parameters") << endl;
   // sanity check
   if (  solver.Params().get<string>("solver") == "aztec" 
     and solver.Params().isSublist("ML Parameters")
@@ -137,12 +133,6 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
       std::cout << RED_LIGHT << "DLM_condensation turned off!" << END_COLOR << endl << endl;
     }
   }
-  
-//  if (Teuchos::getIntegralValue<FLUID_TIMEINTTYPE>(fdyn,"TIMEINTEGR") != timeint_stationary 
-//      and fluidtimeparams->get<bool>("DLM_condensation") == true)
-//  {
-//    dserror("condensation does not work for transient problems at the moment! (it's a known bug and it should work in the near future)");
-//  }
   
   // store a dofset with the complete fluid unknowns
   dofset_out_.Reset();
@@ -179,7 +169,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::Integrate(
-    Teuchos::RCP<DRT::Discretization> cutterdiscret
+    const Teuchos::RCP<DRT::Discretization> cutterdiscret
         )
 {
   // bound for the number of startsteps
@@ -231,7 +221,7 @@ void FLD::XFluidImplicitTimeInt::Integrate(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::TimeLoop(
-    Teuchos::RCP<DRT::Discretization> cutterdiscret
+    const Teuchos::RCP<DRT::Discretization> cutterdiscret
         )
 {
   // time measurement: time loop
@@ -462,7 +452,7 @@ void FLD::XFluidImplicitTimeInt::PrepareNonlinearSolve()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
-    Teuchos::RCP<DRT::Discretization>  cutterdiscret
+    const Teuchos::RCP<DRT::Discretization>  cutterdiscret
     )
 {
   // within this routine, no parallel re-distribution is allowed to take place
@@ -471,11 +461,11 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   // calling this function multiple times always results in the same solution vectors
 
   // compute Intersection
-  Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih = rcp(new XFEM::InterfaceHandleXFSI(discret_, cutterdiscret,step_,params_.get<bool>("EXP_INTERSECTION")));
+  const Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih = rcp(new XFEM::InterfaceHandleXFSI(discret_, cutterdiscret,step_,params_.get<bool>("EXP_INTERSECTION")));
   ih->toGmsh(step_);
 
   // apply enrichments
-  Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih,params_.get<bool>("DLM_condensation")));
+  const Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih,params_.get<bool>("DLM_condensation")));
 
   // save to be able to plot Gmsh stuff in Output()
   dofmanagerForOutput_ = dofmanager;
@@ -495,9 +485,9 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
 
 
   // store old (proc-overlapping) dofmap, compute new one and return it
-  Epetra_Map olddofrowmap = *discret_->DofRowMap();
+  const Epetra_Map olddofrowmap = *discret_->DofRowMap();
   discret_->FillComplete();
-  Epetra_Map newdofrowmap = *discret_->DofRowMap();
+  const Epetra_Map& newdofrowmap = *discret_->DofRowMap();
 
   // print information about dofs
   if (discret_->Comm().NumProc() == 1)
@@ -509,8 +499,8 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   
   discret_->ComputeNullSpaceIfNecessary(solver_.Params());
 
-  XFEM::NodalDofPosMap oldNodalDofDistributionMap(state_.nodalDofDistributionMap_);
-  XFEM::ElementalDofPosMap oldElementalDofDistributionMap(state_.elementalDofDistributionMap_);
+  const XFEM::NodalDofPosMap oldNodalDofDistributionMap(state_.nodalDofDistributionMap_);
+  const XFEM::ElementalDofPosMap oldElementalDofDistributionMap(state_.elementalDofDistributionMap_);
   dofmanager->fillDofDistributionMaps(
       state_.nodalDofDistributionMap_,
       state_.elementalDofDistributionMap_);
@@ -536,20 +526,10 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   dofswitch.mapVectorToNewDofDistribution(state_.veln_);
   dofswitch.mapVectorToNewDofDistribution(state_.velnm_);
 
-//  if (alefluid_)
-//  {
-//      dofswitch.mapVectorToNewDofDistribution(state_.dispnp_);
-//      dofswitch.mapVectorToNewDofDistribution(state_.dispn_);
-//      dofswitch.mapVectorToNewDofDistribution(state_.dispnm_);
-//      dofswitch.mapVectorToNewDofDistribution(gridv_);
-//  }
-
   // --------------------------------------------------
   // create remaining vectors with new dof distribution
   // --------------------------------------------------
   //hist_         = LINALG::CreateVector(newdofrowmap,true);
-
-//  gridv_        = LINALG::CreateVector(newdofrowmap,true);
 
   zeros_        = LINALG::CreateVector(newdofrowmap,true);
 
@@ -570,7 +550,6 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   // Vectors used for solution process
   // ---------------------------------
   residual_     = LINALG::CreateVector(newdofrowmap,true);
-  //trueresidual_ = LINALG::CreateVector(newdofrowmap,true);
   trueresidual_ = Teuchos::null;
   incvel_       = LINALG::CreateVector(newdofrowmap,true);
 
@@ -620,7 +599,7 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::NonlinearSolve(
-    Teuchos::RCP<DRT::Discretization> cutterdiscret
+    const Teuchos::RCP<DRT::Discretization> cutterdiscret
     )
 {
 
@@ -656,9 +635,6 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
   if (myrank_ == 0 && ivelcolnp->MyLength() >= 3)
   {
-//    std::cout << "applying interface velocity ivelcolnp[0] = " << (*ivelcolnp)[0] << std::endl;
-//    std::cout << "applying interface velocity ivelcolnp[1] = " << (*ivelcolnp)[1] << std::endl;
-//    std::cout << "applying interface velocity ivelcolnp[2] = " << (*ivelcolnp)[2] << std::endl;
     std::ofstream f;
     const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
                             + ".outifacevelnp.txt";
@@ -674,9 +650,6 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
   if (myrank_ == 0 && ivelcoln->MyLength() >= 3)
   {
-//    std::cout << "applying interface velocity ivelcoln[0] = " << (*ivelcoln)[0] << std::endl;
-//    std::cout << "applying interface velocity ivelcoln[1] = " << (*ivelcoln)[1] << std::endl;
-//    std::cout << "applying interface velocity ivelcoln[2] = " << (*ivelcoln)[2] << std::endl;
     std::ofstream f;
     const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
                             + ".outifaceveln.txt";
@@ -725,9 +698,11 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
   const Epetra_Map* fluidsurface_dofcolmap = cutterdiscret->DofColMap();
   const Teuchos::RCP<Epetra_Vector> iforcecolnp = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
 
+  incvel_->PutScalar(0.0);
+  residual_->PutScalar(0.0);
+  
   // increment of the old iteration step - used for update of condensed element stresses
-  Teuchos::RCP<Epetra_Vector> oldinc = rcp(new Epetra_Vector(state_.velnp_->Map()));
-  oldinc->PutScalar(0.0);
+  const Teuchos::RCP<Epetra_Vector> oldinc = LINALG::CreateVector(*discret_->DofRowMap(),true);
 
   double oldresnorm = 1.0e12;
   double resnorm = 1.0e11;
@@ -815,11 +790,6 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     }
 
     // blank residual DOFs which are on Dirichlet BC
-    // We can do this because the values at the dirichlet positions
-    // are not used anyway.
-    // We could avoid this though, if velrowmap_ and prerowmap_ would
-    // not include the dirichlet values as well. But it is expensive
-    // to avoid that.
     dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), residual_);
 
     double incvelnorm_L2;
@@ -1068,6 +1038,8 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     eleparams.set("action","reset");
     discret_->Evaluate(eleparams,null,null,null,null,null);
   }
+  
+  incvel_ = Teuchos::null;
   
 } // FluidImplicitTimeInt::NonlinearSolve
 
@@ -1350,7 +1322,7 @@ void FLD::XFluidImplicitTimeInt::ReadRestart(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FLD::XFluidImplicitTimeInt::OutputToGmsh()
+void FLD::XFluidImplicitTimeInt::OutputToGmsh() const
 {
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
   const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
@@ -1847,7 +1819,7 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::SetInitialFlowField(
-    Teuchos::RCP<DRT::Discretization> cutterdiscret,
+    const Teuchos::RCP<DRT::Discretization> cutterdiscret,
     int whichinitialfield,
     int startfuncno
     )
@@ -2163,7 +2135,7 @@ void FLD::XFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::SolveStationaryProblem(
-    Teuchos::RCP<DRT::Discretization> cutterdiscret
+    const Teuchos::RCP<DRT::Discretization> cutterdiscret
     )
 {
 

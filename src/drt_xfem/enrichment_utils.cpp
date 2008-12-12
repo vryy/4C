@@ -19,6 +19,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_geometry/intersection_service.H"
+#include "../drt_geometry/position_array.H"
 #include "coordinate_transformation.H"
 
 
@@ -226,13 +227,13 @@ void XFEM::computeVectorCellNodeValues(
 
   const LINALG::SerialDenseMatrix& nodalPosXiDomain(cell.NodalPosXiDomain());
   
-  LINALG::SerialDenseMatrix xyz_cell(3,nen_cell);
+  LINALG::SerialDenseMatrix xyz_cell(nsd,nen_cell);
   cell.NodalPosXYZ(ele, xyz_cell);
 
   // if cell node is on the interface, the value is not defined for a jump.
   // however, we approach the interface from one particular side and therefore,
   // -> we use the center of the cell to determine, where we come from
-  const LINALG::Matrix<3,1> cellcenterpos(cell.GetPhysicalCenterPosition(ele));
+  const LINALG::Matrix<nsd,1> cellcenterpos(cell.GetPhysicalCenterPosition(ele));
 
   const XFEM::ElementEnrichmentValues enrvals(
         ele,
@@ -462,15 +463,10 @@ vector<double> DomainCoverageRatioPerNodeT(
     const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     
     // dimension for 3d fluid element
-//    const int nsd = 3;
-    
-    // get node coordinates of the current element
-//    static LINALG::Matrix<nsd,numnode> xyze;
-//    GEO::fillInitialPositionArray<DISTYPE>(&ele, xyze);
+    const int nsd = 3;
     
     //double 
     double area_ele  = 0.0;
-//    double area_fict = 0.0;
     vector<double> portions(numnode,0.0);
     
     // information about domain integration cells
@@ -478,9 +474,8 @@ vector<double> DomainCoverageRatioPerNodeT(
     // loop over integration cells
     for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
     {
-
-      const LINALG::Matrix<3,1> cellcenter(cell->GetPhysicalCenterPosition(ele));
-                  
+      const LINALG::Matrix<nsd,1> cellcenter(cell->GetPhysicalCenterPosition(ele));
+      
       const int label = ih.PositionWithinConditionNP(cellcenter);
       
       DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule3D_undefined;
@@ -526,9 +521,7 @@ vector<double> DomainCoverageRatioPerNodeT(
             
             // shape functions and their first derivatives
             static LINALG::Matrix<numnode,1> funct;
-//            static LINALG::Matrix<nsd,numnode> deriv;
             DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
-//            DRT::UTILS::shape_function_3D_deriv1(deriv,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
       
             const double fac = intpoints.qwgt[iquad]*detcell;
 

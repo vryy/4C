@@ -18,29 +18,12 @@ Maintainer: Axel Gerstenberger
 #ifndef XFLUID3_LOCAL_ASSEMBLER_H
 #define XFLUID3_LOCAL_ASSEMBLER_H
 
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_xfem/physics.H"
 #include "../drt_xfem/dof_management_element.H"
 #include <Epetra_SerialDenseMatrix.h>
 #include <Epetra_SerialDenseVector.h>
 #include "../drt_lib/linalg_fixedsizematrix.H"
 
-enum DerivDir
-{
-  D0 = 0,
-  Dx = 1,
-  Dy = 2,
-  Dz = 3,
-  DxDx = 4,
-  DyDy = 5,
-  DzDz = 6,
-  DxDy = 7,
-  DxDz = 8,
-  DyDz = 9,
-  DyDx = 7,
-  DzDx = 8,
-  DzDy = 9
-};
 
 //! for non-xfem elements, figure out the order of unknowns per node in the array
 template<XFEM::PHYSICS::Field field>
@@ -87,15 +70,6 @@ template<> struct ShapeMangle<XFEM::PHYSICS::Tauzx>   {static const XFEM::PHYSIC
 template<> struct ShapeMangle<XFEM::PHYSICS::Tauzy>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxx;};
 template<> struct ShapeMangle<XFEM::PHYSICS::Tauzz>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxx;};
 
-template <XFEM::PHYSICS::Field FIELD>
-struct ShapeSelector {static Epetra_SerialDenseMatrix shp;};
-//template<> struct ShapeSelector<XFEM::PHYSICS::Velx> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxy;};
-//template<> struct ShapeSelector<XFEM::PHYSICS::Vely> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxz;};
-//template<> struct ShapeSelector<XFEM::PHYSICS::Velz> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmayz;};
-//template<> struct ShapeSelector<XFEM::PHYSICS::Pres> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxy;};
-//template<> struct ShapeSelector<XFEM::PHYSICS::Tauzx>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxz;};
-//template<> struct ShapeSelector<XFEM::PHYSICS::Tauzy>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauyz;};
-
 //! class that assembles one after another integral of the weak form into the stiffness matrix
 template <DRT::Element::DiscretizationType DISTYPE, 
           XFEM::AssemblyType ASSEMBLYTYPE,
@@ -134,15 +108,18 @@ private:
         const std::vector<int>&   trialdof
         ) const
     {
+      vector<int>::const_iterator trialpos = trialdof.begin();
       for (unsigned ui=0; ui!=numparamtrial; ++ui)
       {
-        const unsigned trialpos = trialdof[ui];
         const double multiply = fac * trialshape(ui);
+        vector<int>::const_iterator testpos = testdof.begin();
         for (unsigned vi=0; vi!=numparamtest; ++vi)
         {
-          const unsigned testpos = testdof[vi];
-          estif_(testpos, trialpos) += testshape(vi)*multiply ;
+//          const unsigned testpos = testdof[vi];
+          estif_(*testpos, *trialpos) += testshape(vi)*multiply ;
+          ++testpos;
         }
+        ++trialpos;
       }
     }
     
@@ -154,9 +131,11 @@ private:
         const double&             fac
         ) const
     {
+      vector<int>::const_iterator testpos = testdof.begin();
       for (unsigned vi=0; vi!=numparamtest; ++vi)
       {
-          eforce_(testdof[vi]) += fac*testshape(vi);
+          eforce_(*testpos) += fac*testshape(vi);
+          ++testpos;
       }
     }
     
@@ -223,35 +202,10 @@ public:
             for (std::vector<int>::const_iterator testpos = testdof.begin(); testpos != testdof.end(); ++testpos)
             {
                 estif_(*testpos, *trialpos) += testshape(vi)*multiply;
-                vi++;
+                ++vi;
             }
-            ui++;
+            ++ui;
         }
-        }
-    }
-    
-    //! assemble one expression for the element stiffness matrix for a given test and trial field
-    template <XFEM::PHYSICS::Field testfield,
-              DerivDir testDerivId,
-              XFEM::PHYSICS::Field trialfield,
-              DerivDir trialDerivId>
-    void Matrix(
-            const double&       fac
-            ) const
-    {
-        const std::vector<int>& testdof  = dofman_.LocalDofPosPerField<SymmetryMangle<testfield>::name>();
-        const std::vector<int>& trialdof = dofman_.LocalDofPosPerField<SymmetryMangle<trialfield>::name>();
-        
-        unsigned ui = 0;
-        for (std::vector<int>::const_iterator trialpos = trialdof.begin(); trialpos != trialdof.end(); ++trialpos)
-        {
-            unsigned vi = 0;
-            for (std::vector<int>::const_iterator testpos = testdof.begin(); testpos != testdof.end(); ++testpos)
-            {
-                estif_(*testpos, *trialpos) += fac*ShapeSelector<ShapeMangle<SymmetryMangle<testfield>::name>::name >::shp(testDerivId,vi)*ShapeSelector<trialfield>::shp(trialDerivId,ui) ;
-                vi++;
-            }
-            ui++;
         }
     }
     

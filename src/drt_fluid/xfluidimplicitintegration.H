@@ -68,7 +68,7 @@ public:
 
   */
   void Integrate(
-      Teuchos::RCP<DRT::Discretization> cutterdiscret
+      const Teuchos::RCP<DRT::Discretization> cutterdiscret
       );
 
   /*!
@@ -76,7 +76,7 @@ public:
 
   */
   void TimeLoop(
-      Teuchos::RCP<DRT::Discretization> cutterdiscret     ///< surface discretization used to intersect fluid elements
+      const Teuchos::RCP<DRT::Discretization> cutterdiscret     ///< surface discretization used to intersect fluid elements
       );
 
   /*!
@@ -84,7 +84,7 @@ public:
 
   */
   void SolveStationaryProblem(
-      Teuchos::RCP<DRT::Discretization> cutterdiscret     ///< surface discretization used to intersect fluid elements
+      const Teuchos::RCP<DRT::Discretization> cutterdiscret     ///< surface discretization used to intersect fluid elements
       );
 
   /// setup the variables to do a new time step
@@ -99,14 +99,14 @@ public:
 
   */
   void NonlinearSolve(
-      Teuchos::RCP<DRT::Discretization> cutterdiscret     ///< surface discretization used to intersect fluid elements
+      const Teuchos::RCP<DRT::Discretization> cutterdiscret     ///< surface discretization used to intersect fluid elements
       );
 
   /*!
   \brief compute Interface
   */
   void ComputeInterfaceAndSetDOFs(
-      Teuchos::RCP<DRT::Discretization>  cutterdiscret
+      const Teuchos::RCP<DRT::Discretization>  cutterdiscret
       );
 
   /*!
@@ -181,7 +181,7 @@ public:
   \brief output solution fields to Gmsh for debugging
 
   */
-  void OutputToGmsh();
+  void OutputToGmsh() const;
 
   /*!
    * \brief plot a vector field to a Gmsh postprocessing file
@@ -307,7 +307,7 @@ protected:
 
   //! @name general algorithm parameters
   //! fluid discretization
-  Teuchos::RCP<DRT::Discretization>      discret_;
+  const Teuchos::RCP<DRT::Discretization> discret_;
   LINALG::Solver&                        solver_;
   const ParameterList&                   params_;
   IO::DiscretizationWriter&              output_;
