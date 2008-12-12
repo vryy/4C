@@ -43,7 +43,7 @@ namespace SCATRA
    *  return false although they have non-zero MIXED second derivatives.
   */
   template <DRT::Element::DiscretizationType  DISTYPE>
-  bool useSecondDerivatives()
+  inline bool useSecondDerivatives()
   {
     switch (DISTYPE)
     {
@@ -68,90 +68,92 @@ namespace SCATRA
   }
 
 
-  //! get optimal gaussrule for discretization type (template version)
-  template <DRT::Element::DiscretizationType  DISTYPE>
-  DRT::UTILS::GaussRule3D get3DOptimalGaussrule()
+  //! Template Meta Programming version of switch over discretization type
+  template<DRT::Element::DiscretizationType DISTYPE>
+  struct DisTypeToOptGaussRule {};
+  template<> struct DisTypeToOptGaussRule<DRT::Element::hex8>    {static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_hex_8point; };
+  template<> struct DisTypeToOptGaussRule<DRT::Element::hex20>   {static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_hex_27point;};
+  template<> struct DisTypeToOptGaussRule<DRT::Element::hex27>   {static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_hex_27point;};
+  template<> struct DisTypeToOptGaussRule<DRT::Element::tet4>    {static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_tet_4point; };
+  template<> struct DisTypeToOptGaussRule<DRT::Element::tet10>   {static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_tet_5point; };
+  template<> struct DisTypeToOptGaussRule<DRT::Element::wedge6>  {static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_wedge_6point;};
+  template<> struct DisTypeToOptGaussRule<DRT::Element::pyramid5>{static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_pyramid_8point;};
+  template<> struct DisTypeToOptGaussRule<DRT::Element::quad4>   {static const DRT::UTILS::GaussRule2D rule =  DRT::UTILS::intrule_quad_4point;};
+  template<> struct DisTypeToOptGaussRule<DRT::Element::quad8>   {static const DRT::UTILS::GaussRule2D rule =  DRT::UTILS::intrule_quad_9point;};
+  template<> struct DisTypeToOptGaussRule<DRT::Element::quad9>   {static const DRT::UTILS::GaussRule2D rule =  DRT::UTILS::intrule_quad_9point;};
+  template<> struct DisTypeToOptGaussRule<DRT::Element::tri3>    {static const DRT::UTILS::GaussRule2D rule =  DRT::UTILS::intrule_tri_3point; };
+  template<> struct DisTypeToOptGaussRule<DRT::Element::tri6>    {static const DRT::UTILS::GaussRule2D rule =  DRT::UTILS::intrule_tri_6point; };
+
+
+  //! Template Meta Programming version of switch over discretization type
+  template<DRT::Element::DiscretizationType DISTYPE>
+  struct DisTypeToGaussRuleForExactSol {};
+  template<> struct DisTypeToGaussRuleForExactSol<DRT::Element::hex8>    {static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_hex_27point;};
+  template<> struct DisTypeToGaussRuleForExactSol<DRT::Element::hex20>   {static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_hex_27point;};
+  template<> struct DisTypeToGaussRuleForExactSol<DRT::Element::hex27>   {static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_hex_27point;};
+  template<> struct DisTypeToGaussRuleForExactSol<DRT::Element::tet4>    {static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule3D_undefined;};
+  template<> struct DisTypeToGaussRuleForExactSol<DRT::Element::tet10>   {static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule3D_undefined;};
+  template<> struct DisTypeToGaussRuleForExactSol<DRT::Element::wedge6>  {static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule3D_undefined;};
+  template<> struct DisTypeToGaussRuleForExactSol<DRT::Element::pyramid5>{static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule3D_undefined;};
+  template<> struct DisTypeToGaussRuleForExactSol<DRT::Element::quad4>   {static const DRT::UTILS::GaussRule2D rule =  DRT::UTILS::intrule_quad_9point;};
+  template<> struct DisTypeToGaussRuleForExactSol<DRT::Element::quad8>   {static const DRT::UTILS::GaussRule2D rule =  DRT::UTILS::intrule_quad_9point;};
+  template<> struct DisTypeToGaussRuleForExactSol<DRT::Element::quad9>   {static const DRT::UTILS::GaussRule2D rule =  DRT::UTILS::intrule_quad_9point;};
+  template<> struct DisTypeToGaussRuleForExactSol<DRT::Element::tri3>    {static const DRT::UTILS::GaussRule2D rule =  DRT::UTILS::intrule2D_undefined;};
+  template<> struct DisTypeToGaussRuleForExactSol<DRT::Element::tri6>    {static const DRT::UTILS::GaussRule2D rule =  DRT::UTILS::intrule2D_undefined;};
+
+
+  //! for each distype there should be an m_k needed for stabilization computation
+  template<DRT::Element::DiscretizationType DISTYPE>
+  inline double MK()
   {
-    DRT::UTILS::GaussRule3D rule = DRT::UTILS::intrule3D_undefined;
     switch (DISTYPE)
     {
-      case DRT::Element::hex8:
-        rule = DRT::UTILS::intrule_hex_8point;
-        break;
-      case DRT::Element::hex20: case DRT::Element::hex27:
-        rule = DRT::UTILS::intrule_hex_27point;
-        break;
-      case DRT::Element::tet4:
-        rule = DRT::UTILS::intrule_tet_4point;
-        break;
-      case DRT::Element::tet10:
-        rule = DRT::UTILS::intrule_tet_5point;
-        break;
-      case DRT::Element::wedge6:
-        rule = DRT::UTILS::intrule_wedge_6point;
-        break;
-      case DRT::Element::pyramid5:
-        rule = DRT::UTILS::intrule_pyramid_8point;
-        break;
-      default:
-        dserror("unknown element shape for gaussrule initialization");
-    }
-    return rule;
+    case DRT::Element::tet4:
+    case DRT::Element::pyramid5:
+    case DRT::Element::hex8:
+    case DRT::Element::wedge6:
+      return 0.333333333333333333333;
+      break;
+    case DRT::Element::hex20:
+    case DRT::Element::hex27:
+    case DRT::Element::tet10:
+    case DRT::Element::wedge15:
+      return 0.083333333333333333333;
+      break;
+    default:
+      dserror("type unknown!\n");
+    }   
+    return -1.0;
   }
 
 
-    //! for each distype there should be an m_k needed for stabilization computation
-    template<DRT::Element::DiscretizationType DISTYPE>
-    double MK()
+  //! get one point gauss rule to calculate tau at element center
+  template<DRT::Element::DiscretizationType DISTYPE>
+  DRT::UTILS::GaussRule3D getIntegrationRuleForStabilization()
+  {
+    switch (DISTYPE)
     {
-      switch (DISTYPE)
-      {
-        case DRT::Element::tet4:
-        case DRT::Element::pyramid5:
-        case DRT::Element::hex8:
-        case DRT::Element::wedge6:
-          return 0.333333333333333333333;
-          break;
-        case DRT::Element::hex20:
-        case DRT::Element::hex27:
-        case DRT::Element::tet10:
-        case DRT::Element::wedge15:
-          return 0.083333333333333333333;
-          break;
-        default:
-          dserror("type unknown!\n");
-      }   
-      return -1.0;
+    case DRT::Element::hex8:
+    case DRT::Element::hex20:
+    case DRT::Element::hex27:
+      return DRT::UTILS::intrule_hex_1point;
+      break;
+    case DRT::Element::tet4:
+    case DRT::Element::tet10:
+      return DRT::UTILS::intrule_tet_1point;
+      break;
+    case DRT::Element::wedge6:
+    case DRT::Element::wedge15:
+      return DRT::UTILS::intrule_wedge_1point;
+      break;
+    case DRT::Element::pyramid5:
+      return DRT::UTILS::intrule_pyramid_1point;
+      break;
+    default:
+      dserror("invalid discretization type for condif3");
+      return DRT::UTILS::intrule3D_undefined;
     }
-
-
-    //! get one point gauss rule to calculate tau at element center
-    template<DRT::Element::DiscretizationType DISTYPE>
-    DRT::UTILS::GaussRule3D getIntegrationRuleForStabilization()
-    {
-      switch (DISTYPE)
-      {
-        case DRT::Element::hex8:
-        case DRT::Element::hex20:
-        case DRT::Element::hex27:
-          return DRT::UTILS::intrule_hex_1point;
-          break;
-        case DRT::Element::tet4:
-        case DRT::Element::tet10:
-          return DRT::UTILS::intrule_tet_1point;
-          break;
-        case DRT::Element::wedge6:
-        case DRT::Element::wedge15:
-          return DRT::UTILS::intrule_wedge_1point;
-          break;
-        case DRT::Element::pyramid5:
-          return DRT::UTILS::intrule_pyramid_1point;
-          break;
-        default:
-          dserror("invalid discretization type for condif3");
-          return DRT::UTILS::intrule3D_undefined;
-      }
-    }
+  }
 
 } // namespace SCATRA
 

@@ -111,6 +111,15 @@ public:
   //! number of nodes
   static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
+  //! number of space dimensions
+  static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+
+  //! number of components necessary to store second derivatives
+  // 1 component  for nsd=1:  (N,xx)
+  // 3 components for nsd=2:  (N,xx ; N,yy ; N,xy)
+  // 6 components for nsd=3:  (N,xx ; N,yy ; N,zz ; N,xy ; N,xz ; N,yz)
+  static const int numderiv2_ = (nsd_*(nsd_+1))/2;
+
   //! Evaluate
   virtual int Evaluate(Condif3*                   ele,
                        ParameterList&             params,
@@ -142,7 +151,7 @@ public:
         const double                          dt, ///< current time-step length
         const double                          timefac, ///< time discretization factor
         const double                          alphaF, ///< factor for generalized-alpha time integration
-        const LINALG::Matrix<3,iel>&          evelnp,///< nodal velocities at t_{n+1}
+        const LINALG::Matrix<nsd_,iel>&       evelnp,///< nodal velocities at t_{n+1}
         const bool                            temperature, ///< temperature flag
         const bool                            conservative, ///< flag for conservative form
         const enum Condif3::TauType           whichtau, ///< flag for stabilization parameter definition
@@ -166,7 +175,7 @@ public:
         const double                          time, ///< current simulation time
         const double                          dt, ///< current time-step length
         const double                          timefac, ///< time discretization factor
-        const LINALG::Matrix<3,iel>&          evel0, ///< initial nodal velocities
+        const LINALG::Matrix<nsd_,iel>&       evel0, ///< initial nodal velocities
         const bool                            temperature, ///< temperature flag
         const bool                            conservative, ///< flag for conservative form
         const enum Condif3::TauType           whichtau, ///< flag for stabilization parameter definition
@@ -198,7 +207,7 @@ public:
     virtual void CalTau(
         const DRT::ELEMENTS::Condif3*&   ele, ///< the element
         Epetra_SerialDenseVector&        subgrdiff, ///< subgrid-diff.-scaling vector
-        const LINALG::Matrix<3,iel>&     evel,///< nodal velocities
+        const LINALG::Matrix<nsd_,iel>&  evel,///< nodal velocities
         const LINALG::Matrix<iel,1>&     edens, ///< density
         const LINALG::Matrix<iel,1>&     epot,  ///< el. potential at element nodes
         const double                     dt, ///< current time-step length
@@ -212,17 +221,15 @@ public:
 
     //! evaluate shape functions and their derivatives at current integration point
     virtual void EvalShapeFuncAndDerivsAtIntPoint(
-        const DRT::UTILS::IntegrationPoints3D& intpoints, ///< integration points
-        const int&                             iquad,     ///< id of current Gauss point
-        const bool&                            higher_order_ele,///< are second derivatives needed?
-        const DRT::ELEMENTS::Condif3*          ele        ///< the element
+        const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints, ///< integration points
+        const int&                                   iquad,     ///< id of current Gauss point
+        const bool&                                  higher_order_ele,///< are second derivatives needed?
+        const DRT::ELEMENTS::Condif3*                ele        ///< the element
     );
 
     //! calculate 2nd derivatives of shape functions (local and global)
     virtual void CalSecondDeriv(
-        const double& e1, ///< first coordinate of GP
-        const double& e2, ///< second coordinate of GP
-        const double& e3  ///< third coordinate of GP
+        const LINALG::Matrix<nsd_,1>& xsi ///< coordinates of GP
     );
 
     //! calculate element matrix and rhs vector (One-Step-Theta, BDF2, Gen.-alpha)
@@ -280,12 +287,45 @@ public:
         struct _MATERIAL*                                material ///< material pointer
     );
 
+
+    //! calculate the Laplacian for all shape functions(strong form)
+    void getLaplacianStrongForm(LINALG::Matrix<iel,1>& diff, const LINALG::Matrix<numderiv2_,iel>& deriv2)
+    {
+      diff.Clear();
+      // compute N,xx  +  N,yy +  N,zz for each shape function at actual integration point
+      for (int i=0; i<iel; ++i)
+      {
+        for (int j = 0; j<nsd_; ++j)
+        {
+          diff(i) += deriv2(j,i);
+        }
+      }
+      return;
+    };
+
+
+    //! calculate the Laplacian (weak form)
+    void getLaplacianWeakForm(
+        double& val,
+        const LINALG::Matrix<nsd_,iel>& derxy, 
+        const int& vi,
+        const int& ui)
+    {
+      val = 0.0;
+      for (int j = 0; j<nsd_; j++)
+      {
+        val += derxy_(j, vi)*derxy_(j, ui);
+      }
+      return;
+    };
+
+
     //! number of dof per node
     const int numdofpernode_;
     //! number of transported scalars (numscal_ <= numdofpernode_)
     const int numscal_;
     //! node coordinates
-    LINALG::Matrix<3,iel> xyze_;
+    LINALG::Matrix<nsd_,iel> xyze_;
     //! bodyforce in element nodes
     vector<LINALG::Matrix<iel,1> > bodyforce_;
     //! diffusivity / diffusivities (in case of systems) / thermal conductivity
@@ -294,36 +334,38 @@ public:
     vector<double> valence_;
     //! specific heat capacity at constant pressure (in case of temperature eq.)
     double shcacp_;
+    //! coordinates of current integration point in reference coordinates
+    LINALG::Matrix<nsd_,1> xsi_;
     //! array for shape functions
     LINALG::Matrix<iel,1> funct_;
     //! array for density-weighted shape functions
     LINALG::Matrix<iel,1> densfunct_;
     //! array for shape function derivatives w.r.t r,s,t
-    LINALG::Matrix<3,iel> deriv_;
+    LINALG::Matrix<nsd_,iel> deriv_;
     //! array for second derivatives of shape function w.r.t r,s,t
-    LINALG::Matrix<6,iel> deriv2_;
+    LINALG::Matrix<numderiv2_,iel> deriv2_;
     //! transposed jacobian "dx/ds"
-    LINALG::Matrix<3,3> xjm_;
+    LINALG::Matrix<nsd_,nsd_> xjm_;
     //! inverse of transposed jacobian "ds/dx"
-    LINALG::Matrix<3,3> xij_;
+    LINALG::Matrix<nsd_,nsd_> xij_;
     //! global derivatives of shape functions w.r.t x,y,z
-    LINALG::Matrix<3,iel> derxy_;
+    LINALG::Matrix<nsd_,iel> derxy_;
     //! global second derivatives of shape functions w.r.t x,y,z
-    LINALG::Matrix<6,iel> derxy2_;
+    LINALG::Matrix<numderiv2_,iel> derxy2_;
     //! rhs force in Gauss point
     vector<double> rhs_;
     //! vector containing all values from previous timelevel n in gausspoint
     vector<double> hist_;
     //! velocity vector in gausspoint
-    LINALG::Matrix<3,1> velint_;
+    LINALG::Matrix<nsd_,1> velint_;
     //! migration velocity vector (divided by D_k*z_k) in gausspoint (ELCH)
-    LINALG::Matrix<3,1> migvelint_;
+    LINALG::Matrix<nsd_,1> migvelint_;
     //! the stabilisation parameters (one per transported scalar)
     vector<double> tau_;
     //! artificial diffusivities (one per transported scalar)
     vector<double> kart_;
     //! 2nd derivatives of coord.-functions w.r.t r,s,t
-    LINALG::Matrix<6,3> xder2_;
+    LINALG::Matrix<numderiv2_,nsd_> xder2_;
     //! integration factor for current GP: fac = GaussWeight * det(J)
     double fac_;
     //! convective part used in stabilization terms
@@ -333,13 +375,13 @@ public:
     //! migration part (divided by D_k*z_k) used in stabilization terms (ELCH)
     LINALG::Matrix<iel,1> mig_;
     //! (global) gradient of el. potential at integration point (ELCH)
-    LINALG::Matrix<3,1> gradpot_;
+    LINALG::Matrix<nsd_,1> gradpot_;
     //! values of all transported scalars in gausspoint (ELCH)
     vector<double> conint_;
     //! (global) gradient of transported scalar at integration point
-    LINALG::Matrix<3,1> gradphi_;
+    LINALG::Matrix<nsd_,1> gradphi_;
     //! (global) 2nd gradient (Laplacian) of transported scalar at integration point
-    LINALG::Matrix<6,1> lapphi_;
+    LINALG::Matrix<numderiv2_,1> lapphi_;
 
   };
 

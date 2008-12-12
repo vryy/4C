@@ -29,16 +29,16 @@ Maintainer: Georg Bauer
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Condif3ImplInterface* DRT::ELEMENTS::Condif3ImplInterface::Impl(DRT::ELEMENTS::Condif3* c3)
+DRT::ELEMENTS::Condif3ImplInterface* DRT::ELEMENTS::Condif3ImplInterface::Impl(DRT::ELEMENTS::Condif3* ele)
 {
   // we assume here, that numdofpernode is equal for every node within
   // the discretization and does not change during the computations
-  const int numdofpernode = c3->NumDofPerNode(*(c3->Nodes()[0]));
+  const int numdofpernode = ele->NumDofPerNode(*(ele->Nodes()[0]));
   int numscal = numdofpernode;
   if (DRT::Problem::Instance()->ProblemType() == "elch")
     numscal -= 1;
 
-  switch (c3->Shape())
+  switch (ele->Shape())
   {
   case DRT::Element::hex8:
   {
@@ -68,13 +68,13 @@ DRT::ELEMENTS::Condif3ImplInterface* DRT::ELEMENTS::Condif3ImplInterface::Impl(D
       ct4 = new Condif3Impl<DRT::Element::tet4>(numdofpernode,numscal);
     return ct4;
   }
-  case DRT::Element::tet10:
+ /* case DRT::Element::tet10:
   {
     static Condif3Impl<DRT::Element::tet10>* ct10;
     if (ct10==NULL)
       ct10 = new Condif3Impl<DRT::Element::tet10>(numdofpernode,numscal);
     return ct10;
-  }
+  } */
   case DRT::Element::wedge6:
   {
     static Condif3Impl<DRT::Element::wedge6>* cw6;
@@ -82,13 +82,13 @@ DRT::ELEMENTS::Condif3ImplInterface* DRT::ELEMENTS::Condif3ImplInterface::Impl(D
       cw6 = new Condif3Impl<DRT::Element::wedge6>(numdofpernode,numscal);
     return cw6;
   }
-  case DRT::Element::wedge15:
+/*  case DRT::Element::wedge15:
   {
     static Condif3Impl<DRT::Element::wedge15>* cw15;
     if (cw15==NULL)
       cw15 = new Condif3Impl<DRT::Element::wedge15>(numdofpernode,numscal);
     return cw15;
-  }
+  } */
   case DRT::Element::pyramid5:
   {
     static Condif3Impl<DRT::Element::pyramid5>* cp5;
@@ -96,9 +96,57 @@ DRT::ELEMENTS::Condif3ImplInterface* DRT::ELEMENTS::Condif3ImplInterface::Impl(D
       cp5 = new Condif3Impl<DRT::Element::pyramid5>(numdofpernode,numscal);
     return cp5;
   }
-
+  case DRT::Element::quad4:
+  {
+    static Condif3Impl<DRT::Element::quad4>* cp4;
+    if (cp4==NULL)
+      cp4 = new Condif3Impl<DRT::Element::quad4>(numdofpernode,numscal);
+    return cp4;
+  }
+  case DRT::Element::quad8:
+  {
+    static Condif3Impl<DRT::Element::quad8>* cp8;
+    if (cp8==NULL)
+      cp8 = new Condif3Impl<DRT::Element::quad8>(numdofpernode,numscal);
+    return cp8;
+  }
+  case DRT::Element::quad9:
+  {
+    static Condif3Impl<DRT::Element::quad9>* cp9;
+    if (cp9==NULL)
+      cp9 = new Condif3Impl<DRT::Element::quad9>(numdofpernode,numscal);
+    return cp9;
+  }
+  case DRT::Element::tri3:
+  {
+    static Condif3Impl<DRT::Element::tri3>* cp3;
+    if (cp3==NULL)
+      cp3 = new Condif3Impl<DRT::Element::tri3>(numdofpernode,numscal);
+    return cp3;
+  }
+  case DRT::Element::tri6:
+  {
+    static Condif3Impl<DRT::Element::tri6>* cp6;
+    if (cp6==NULL)
+      cp6 = new Condif3Impl<DRT::Element::tri6>(numdofpernode,numscal);
+    return cp6;
+  }
+  /*case DRT::Element::line2:
+  {
+    static Condif3Impl<DRT::Element::line2>* cl2;
+    if (cl2==NULL)
+      cl2 = new Condif3Impl<DRT::Element::line2>(numdofpernode,numscal);
+    return cl2;
+  }
+  case DRT::Element::line3:
+  {
+    static Condif3Impl<DRT::Element::line3>* cl3;
+    if (cl3==NULL)
+      cl3 = new Condif3Impl<DRT::Element::line3>(numdofpernode,numscal);
+    return cl3;
+  }*/
   default:
-    dserror("shape %d (%d nodes) not supported", c3->Shape(), c3->NumNode());
+    dserror("shape %d (%d nodes) not supported", ele->Shape(), ele->NumNode());
   }
   return NULL;
 }
@@ -115,6 +163,7 @@ DRT::ELEMENTS::Condif3Impl<distype>::Condif3Impl(int numdofpernode, int numscal)
     diffus_(numscal_),
     valence_(numscal_),
     shcacp_(0.0),
+    xsi_(),
     funct_(),
     densfunct_(),
     deriv_(),
@@ -217,9 +266,7 @@ int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
     // get (weighted) velocity at the nodes
     // compare also with DRT::UTILS::ExtractMyValues()
     const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
-    //const int iel = ele->NumNode();
-    const int nsd=3;
-    Epetra_SerialDenseVector evel(nsd*iel);
+    Epetra_SerialDenseVector evel(nsd_*iel);
     DRT::UTILS::ExtractMyNodeBasedValues(ele,evel,velocity);
 
     // get flag for fine-scale subgrid diffusivity
@@ -247,7 +294,7 @@ int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
     vector<LINALG::Matrix<iel,1> > ephinp(numscal_);
     vector<LINALG::Matrix<iel,1> > ehist(numdofpernode_);
     LINALG::Matrix<iel,1> edensnp;
-    LINALG::Matrix<3,iel> evelnp;
+    LINALG::Matrix<nsd_,iel> evelnp;
     LINALG::Matrix<iel,1> epotnp;
 
     // fill element arrays
@@ -379,7 +426,7 @@ int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
     // create objects for element arrays
     vector<LINALG::Matrix<iel,1> > ephi0(numscal_);
     LINALG::Matrix<iel,1> edens0;
-    LINALG::Matrix<3,iel> evel0;
+    LINALG::Matrix<nsd_,iel> evel0;
     LINALG::Matrix<iel,1> epot0;
 
     // fill element arrays
@@ -392,9 +439,8 @@ int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
       }
 
       // split for each tranported scalar, insert into element arrays
-      evel0(0,i) = evel[   i*3 ];
-      evel0(1,i) = evel[1+(i*3)];
-      evel0(2,i) = evel[2+(i*3)];
+      for (int idim = 0; idim< nsd_; idim++)
+       {evel0(idim,i) = evel[idim + i*3 ];}
 
       // insert density vector into element array
       // (only take values belonging to the first transported scalar!)
@@ -526,7 +572,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::Sysmat(
     const double                          dt, ///< current time-step length
     const double                          timefac, ///< time discretization factor
     const double                          alphaF, ///< factor for generalized-alpha time integration
-    const LINALG::Matrix<3,iel>&          evelnp,///< nodal velocities at t_{n+1}
+    const LINALG::Matrix<nsd_,iel>&       evelnp,///< nodal velocities at t_{n+1}
     const bool                            temperature, ///< temperature flag
     const bool                            conservative, ///< flag for conservative form
     const enum Condif3::TauType           whichtau, ///< stabilization parameter definition
@@ -538,11 +584,12 @@ void DRT::ELEMENTS::Condif3Impl<distype>::Sysmat(
 )
 {
   // get node coordinates
-  for (int i=0;i<iel;i++)
+  const DRT::Node*const* nodes = ele->Nodes();
+  for (int j=0;j<iel;j++)
   {
-    xyze_(0,i)=ele->Nodes()[i]->X()[0];
-    xyze_(1,i)=ele->Nodes()[i]->X()[1];
-    xyze_(2,i)=ele->Nodes()[i]->X()[2];
+    const double* x = nodes[j]->X();
+    for (int i=0;i<nsd_;i++)
+      {xyze_(i,j) = x[i];}
   }
 
   // dead load in element nodes
@@ -563,11 +610,11 @@ void DRT::ELEMENTS::Condif3Impl<distype>::Sysmat(
   // flag for higher order elements
   const bool use2ndderiv = SCATRA::useSecondDerivatives<distype>();
 
-  // gaussian points
-  const DRT::UTILS::IntegrationPoints3D intpoints(SCATRA::get3DOptimalGaussrule<distype>());
+  // integrations points and weights
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop
-  for (int iquad=0; iquad<intpoints.nquad; ++iquad)
+  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
     EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,use2ndderiv,ele);
 
@@ -748,7 +795,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Condif3Impl<distype>::CalTau(
     const DRT::ELEMENTS::Condif3*&  ele,
     Epetra_SerialDenseVector&       subgrdiff,
-    const LINALG::Matrix<3,iel>&    evel,
+    const LINALG::Matrix<nsd_,iel>& evel,
     const LINALG::Matrix<iel,1>&    edens,
     const LINALG::Matrix<iel,1>&    epot,
     const double                    dt,
@@ -978,20 +1025,20 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalTau(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Condif3Impl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
-    const DRT::UTILS::IntegrationPoints3D& intpoints, ///< integration points
-    const int&                             iquad,     ///< id of current Gauss point
-    const bool&                            use2ndderiv,///< are second derivatives needed?
-    const DRT::ELEMENTS::Condif3*          ele        ///< the element
+    const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
+    const int&                                   iquad,      ///< id of current Gauss point
+    const bool&                                  use2ndderiv,///< are second derivatives needed?
+    const DRT::ELEMENTS::Condif3*                ele         ///< the element
 )
 {
   // coordinates of the current integration point
-  const double e1 = intpoints.qxg[iquad][0];
-  const double e2 = intpoints.qxg[iquad][1];
-  const double e3 = intpoints.qxg[iquad][2];
+  const double* gpcoord = (intpoints.IP().qxg)[iquad];
+  for (int idim=0;idim<nsd_;idim++)
+    {xsi_(idim) = gpcoord[idim];}
 
   // shape functions and their first derivatives
-  DRT::UTILS::shape_function_3D(funct_,e1,e2,e3,distype);
-  DRT::UTILS::shape_function_3D_deriv1(deriv_,e1,e2,e3,distype);
+  DRT::UTILS::shape_function<distype>(xsi_,funct_);
+  DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
 
   // compute Jacobian matrix and determinant
   // actually compute its transpose....
@@ -1020,14 +1067,14 @@ void DRT::ELEMENTS::Condif3Impl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
     dserror("GLOBAL ELEMENT NO.%i\nZERO JACOBIAN DETERMINANT: %f", ele->Id(), det);
 
   // set integration factor: fac = Gauss weight * det(J)
-  fac_ = intpoints.qwgt[iquad]*det;
+  fac_ = intpoints.IP().qwgt[iquad]*det;
 
   // compute global derivatives
   derxy_.Multiply(xij_,deriv_);
 
   // compute second global derivatives (if needed)
   if (use2ndderiv)
-    CalSecondDeriv(e1,e2,e3);
+    CalSecondDeriv(xsi_);
   else
     derxy2_.Clear();
 
@@ -1038,7 +1085,9 @@ void DRT::ELEMENTS::Condif3Impl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
 
 /*----------------------------------------------------------------------*
  |  calculate second global derivatives w.r.t. x,y,z at point r,s,t
- |                                            (private)      gammi 07/07
+ |                                            (private)        gjb 12/08
+ |
+ | 3 space dimensions:
  |
  | From the six equations
  |
@@ -1144,70 +1193,160 @@ void DRT::ELEMENTS::Condif3Impl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
  |                                     +--------------------+
  |                                          'chainrulerhs'
  |
+ |
+ | --------------------------------------------------------------
+ | 2 space dimensions:
+ |
+ | From the three equations
+ |
+ |              +-             -+
+ |  d^2N     d  | dx dN   dy dN |
+ |  ----   = -- | --*-- + --*-- |
+ |  dr^2     dr | dr dx   dr dy |
+ |              +-             -+
+ |
+ |              +-             -+
+ |  d^2N     d  | dx dN   dy dN |
+ |  ------ = -- | --*-- + --*-- |
+ |  ds^2     ds | ds dx   ds dy |
+ |              +-             -+
+ |
+ |              +-             -+
+ |  d^2N     d  | dx dN   dy dN |
+ | -----   = -- | --*-- + --*-- |
+ | ds dr     ds | dr dx   dr dy |
+ |              +-             -+
+ |
+ | the matrix system
+ |
+ | +-                                        -+   +-    -+
+ | |   /dx\^2        /dy\^2         dy dx     |   | d^2N |
+ | |  | -- |        | ---|        2*--*--     |   | ---- |
+ | |   \dr/          \dr/           dr dr     |   | dx^2 |
+ | |                                          |   |      |
+ | |   /dx\^2        /dy\^2         dy dx     |   | d^2N |
+ | |  | -- |        | -- |        2*--*--     | * | ---- |
+ | |   \ds/          \ds/           ds ds     |   | dy^2 | =
+ | |                                          |   |      |
+ | |   dx dx         dy dy      dx dy   dy dx |   | d^2N |
+ | |   --*--         --*--      --*-- + --*-- |   | ---- |
+ | |   dr ds         dr ds      dr ds   dr ds |   | dxdy |
+ | +-                        -+   +-    -+
+ |
+ |         +-    -+   +-                 -+
+ |         | d^2N |   | d^2x dN   d^2y dN |
+ |         | ---- |   | ----*-- + ----*-- |
+ |         | dr^2 |   | dr^2 dx   dr^2 dy |
+ |         |      |   |                   |
+ |         | d^2N |   | d^2x dN   d^2y dN |
+ |      =  | ---- | - | ----*-- + ----*-- |
+ |         | ds^2 |   | ds^2 dx   ds^2 dy |
+ |         |      |   |                   |
+ |         | d^2N |   | d^2x dN   d^2y dN |
+ |         | ---- |   | ----*-- + ----*-- |
+ |         | drds |   | drds dx   drds dy |
+ |         +-    -+   +-                 -+
+ |
+ |
+ | is derived. This is solved for the unknown global derivatives.
+ |
+ |
+ |             jacobian_bar * derxy2 = deriv2 - xder2 * derxy
+ |                                              |           |
+ |                                              +-----------+
+ |                                              'chainrulerhs'
+ |                                     |                    |
+ |                                     +--------------------+
+ |                                          'chainrulerhs'
+ |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Condif3Impl<distype>::CalSecondDeriv(
-    const double&  e1, ///< first coordinate of GP
-    const double&  e2, ///< second coordinate of GP
-    const double&  e3  ///< third coordinate of GP
-    )
+    const LINALG::Matrix<nsd_,1>&  xsi ///< coordinates of GP
+)
 {
   /*--- get the second derivatives of standard element at current GP */
-  DRT::UTILS::shape_function_3D_deriv2(deriv2_,e1,e2,e3,distype);
-dserror("Please check CalSecondDeriv first");
+  DRT::UTILS::shape_function_deriv2<distype>(xsi,deriv2_);
+  dserror("Please check CalSecondDeriv first; dim = 1,2,3 ok?");
 
   /*----------- now we have to compute the second global derivatives */
-  static LINALG::Matrix<6,6> bm;
+  static LINALG::Matrix<numderiv2_,numderiv2_> bm;
 
   /*------------------------------------------------- initialization */
-  derxy2_.Clear();
+  derxy2_.Clear(); // initialize with zeros
 
   // calculate elements of jacobian_bar matrix
-  bm(0,0) = xjm_(0,0)*xjm_(0,0);
-  bm(1,0) = xjm_(1,0)*xjm_(1,0);
-  bm(2,0) = xjm_(2,0)*xjm_(2,0);
-  bm(3,0) = xjm_(0,0)*xjm_(1,0);
-  bm(4,0) = xjm_(0,0)*xjm_(2,0);
-  bm(5,0) = xjm_(2,0)*xjm_(1,0);
+  switch (nsd_)
+  {
+  case 3:
+  {
+    bm(0,0) = xjm_(0,0)*xjm_(0,0);
+    bm(1,0) = xjm_(1,0)*xjm_(1,0);
+    bm(2,0) = xjm_(2,0)*xjm_(2,0);
+    bm(3,0) = xjm_(0,0)*xjm_(1,0);
+    bm(4,0) = xjm_(0,0)*xjm_(2,0);
+    bm(5,0) = xjm_(2,0)*xjm_(1,0);
 
-  bm(0,1) = xjm_(0,1)*xjm_(0,1);
-  bm(1,1) = xjm_(1,1)*xjm_(1,1);
-  bm(2,1) = xjm_(2,1)*xjm_(2,1);
-  bm(3,1) = xjm_(0,1)*xjm_(1,1);
-  bm(4,1) = xjm_(0,1)*xjm_(2,1);
-  bm(5,1) = xjm_(2,1)*xjm_(1,1);
+    bm(0,1) = xjm_(0,1)*xjm_(0,1);
+    bm(1,1) = xjm_(1,1)*xjm_(1,1);
+    bm(2,1) = xjm_(2,1)*xjm_(2,1);
+    bm(3,1) = xjm_(0,1)*xjm_(1,1);
+    bm(4,1) = xjm_(0,1)*xjm_(2,1);
+    bm(5,1) = xjm_(2,1)*xjm_(1,1);
 
-  bm(0,2) = xjm_(0,2)*xjm_(0,2);
-  bm(1,2) = xjm_(1,2)*xjm_(1,2);
-  bm(2,2) = xjm_(2,2)*xjm_(2,2);
-  bm(3,2) = xjm_(0,2)*xjm_(1,2);
-  bm(4,2) = xjm_(0,2)*xjm_(2,2);
-  bm(5,2) = xjm_(2,2)*xjm_(1,2);
+    bm(0,2) = xjm_(0,2)*xjm_(0,2);
+    bm(1,2) = xjm_(1,2)*xjm_(1,2);
+    bm(2,2) = xjm_(2,2)*xjm_(2,2);
+    bm(3,2) = xjm_(0,2)*xjm_(1,2);
+    bm(4,2) = xjm_(0,2)*xjm_(2,2);
+    bm(5,2) = xjm_(2,2)*xjm_(1,2);
 
-  bm(0,3) = 2.*xjm_(0,0)*xjm_(0,1);
-  bm(1,3) = 2.*xjm_(1,0)*xjm_(1,1);
-  bm(2,3) = 2.*xjm_(2,0)*xjm_(2,1);
-  bm(3,3) = xjm_(0,0)*xjm_(1,1)+xjm_(1,0)*xjm_(0,1);
-  bm(4,3) = xjm_(0,0)*xjm_(2,1)+xjm_(2,0)*xjm_(0,1);
-  bm(5,3) = xjm_(1,0)*xjm_(2,1)+xjm_(2,0)*xjm_(1,1);
+    bm(0,3) = 2.*xjm_(0,0)*xjm_(0,1);
+    bm(1,3) = 2.*xjm_(1,0)*xjm_(1,1);
+    bm(2,3) = 2.*xjm_(2,0)*xjm_(2,1);
+    bm(3,3) = xjm_(0,0)*xjm_(1,1)+xjm_(1,0)*xjm_(0,1);
+    bm(4,3) = xjm_(0,0)*xjm_(2,1)+xjm_(2,0)*xjm_(0,1);
+    bm(5,3) = xjm_(1,0)*xjm_(2,1)+xjm_(2,0)*xjm_(1,1);
 
-  bm(0,4) = 2.*xjm_(0,0)*xjm_(0,2);
-  bm(1,4) = 2.*xjm_(1,0)*xjm_(1,2);
-  bm(2,4) = 2.*xjm_(2,0)*xjm_(2,2);
-  bm(3,4) = xjm_(0,0)*xjm_(1,2)+xjm_(1,0)*xjm_(0,2);
-  bm(4,4) = xjm_(0,0)*xjm_(2,2)+xjm_(2,0)*xjm_(0,2);
-  bm(5,4) = xjm_(1,0)*xjm_(2,2)+xjm_(2,0)*xjm_(1,2);
+    bm(0,4) = 2.*xjm_(0,0)*xjm_(0,2);
+    bm(1,4) = 2.*xjm_(1,0)*xjm_(1,2);
+    bm(2,4) = 2.*xjm_(2,0)*xjm_(2,2);
+    bm(3,4) = xjm_(0,0)*xjm_(1,2)+xjm_(1,0)*xjm_(0,2);
+    bm(4,4) = xjm_(0,0)*xjm_(2,2)+xjm_(2,0)*xjm_(0,2);
+    bm(5,4) = xjm_(1,0)*xjm_(2,2)+xjm_(2,0)*xjm_(1,2);
 
-  bm(0,5) = 2.*xjm_(0,1)*xjm_(0,2);
-  bm(1,5) = 2.*xjm_(1,1)*xjm_(1,2);
-  bm(2,5) = 2.*xjm_(2,1)*xjm_(2,2);
-  bm(3,5) = xjm_(0,1)*xjm_(1,2)+xjm_(1,1)*xjm_(0,2);
-  bm(4,5) = xjm_(0,1)*xjm_(2,2)+xjm_(2,1)*xjm_(0,2);
-  bm(5,5) = xjm_(1,1)*xjm_(2,2)+xjm_(2,1)*xjm_(1,2);
+    bm(0,5) = 2.*xjm_(0,1)*xjm_(0,2);
+    bm(1,5) = 2.*xjm_(1,1)*xjm_(1,2);
+    bm(2,5) = 2.*xjm_(2,1)*xjm_(2,2);
+    bm(3,5) = xjm_(0,1)*xjm_(1,2)+xjm_(1,1)*xjm_(0,2);
+    bm(4,5) = xjm_(0,1)*xjm_(2,2)+xjm_(2,1)*xjm_(0,2);
+    bm(5,5) = xjm_(1,1)*xjm_(2,2)+xjm_(2,1)*xjm_(1,2);
+  }
+  case 2:
+  {
+    bm(0,0) =                     xjm_(0,0)*xjm_(0,0);
+    bm(0,1) =                     xjm_(0,1)*xjm_(0,1);
+    bm(0,2) =                 2.0*xjm_(0,0)*xjm_(0,1);
+
+    bm(1,0) =                     xjm_(1,0)*xjm_(1,0);
+    bm(1,1) =                     xjm_(1,1)*xjm_(1,1);
+    bm(1,2) =                 2.0*xjm_(1,1)*xjm_(1,0);
+
+    bm(2,0) =                     xjm_(0,0)*xjm_(1,0);
+    bm(2,1) =                     xjm_(0,1)*xjm_(1,1);
+    bm(2,2) = xjm_(0,0)*xjm_(1,1)+xjm_(0,1)*xjm_(1,0);
+  }
+  case 1:
+    bm(0,0) = xjm_(0,0)*xjm_(0,0);
+    dserror("Second derivatives for 1D not tested");
+  default:
+    dserror("Illegal number of space dimensions: %d",nsd_);
+  } // switch nsd_
 
   /*------------------ determine 2nd derivatives of coord.-functions */
 
   /*
+  | 3 space dimensions:
   |
   |         0 1 2              0...iel-1
   |        +-+-+-+             +-+-+-+-+        0 1 2
@@ -1255,22 +1394,41 @@ dserror("Please check CalSecondDeriv first");
   |                                     +-                  -+
   |
   |
-  */
+  | 2 space dimensions:
+  |                                             0 1
+  |         0 1              0...iel-1         +-+-+
+  |        +-+-+             +-+-+-+-+         | | | 0
+  |        | | | 0           | | | | | 0       +-+-+
+  |        +-+-+             +-+-+-+-+         | | | .
+  |        | | | 1     =     | | | | | 1     * +-+-+ .
+  |        +-+-+             +-+-+-+-+         | | | .
+  |        | | | 2           | | | | | 2       +-+-+
+  |        +-+-+             +-+-+-+-+         | | | iel-1
+  |                                            +-+-+
+  |
+  |        xder2               deriv2          xyze^T
+  |
+  |
+  |                                     +-           -+
+  |                                     | d^2x   d^2y |
+  |                                     | ----   ---- |
+  |                                     | dr^2   dr^2 |
+  |                                     |             |
+  |                                     | d^2x   d^2y |
+  |                 yields    xder2  =  | ----   ---- |
+  |                                     | ds^2   ds^2 |
+  |                                     |             |
+  |                                     | d^2x   d^2y |
+  |                                     | ----   ---- |
+  |                                     | drds   drds |
+  |                                     +-           -+
+   */
 
-  //xder2_ = blitz::sum(deriv2_(i,k)*xyze_(j,k),k);
- /* for (int i = 0; i < 6; ++i)
-  {
-      for (int j = 0; j < 3; ++j)
-      {
-          for (int k = 0; k < iel; ++k)
-          {
-              xder2_(i,j) += deriv2_(i,k)*xyze_(j,k);
-          }
-      }
-  }*/
   xder2_.MultiplyNT(deriv2_,xyze_);
 
   /*
+  | 3 space dimensions:
+  |
   |        0...iel-1             0 1 2
   |        +-+-+-+-+            +-+-+-+
   |        | | | | | 0          | | | | 0
@@ -1287,23 +1445,38 @@ dserror("Please check CalSecondDeriv first");
   |        +-+-+-+-+            +-+-+-+
   |
   |       chainrulerhs          xder2
-  */
+  |
+  |
+  |
+  | 2 space dimensions:
+  |
+  |        0...iel-1             0 1
+  |        +-+-+-+-+            +-+-+               0...iel-1
+  |        | | | | | 0          | | | 0             +-+-+-+-+
+  |        +-+-+-+-+            +-+-+               | | | | | 0
+  |        | | | | | 1     =    | | | 1     *       +-+-+-+-+   * (-1)
+  |        +-+-+-+-+            +-+-+               | | | | | 1
+  |        | | | | | 2          | | | 2             +-+-+-+-+
+  |        +-+-+-+-+            +-+-+
+  |
+  |       chainrulerhs          xder2                 derxy
+   */
 
-  //derxy2_ = -blitz::sum(xder2_(i,k)*derxy_(k,j),k);
-  //derxy2_ = deriv2 - blitz::sum(xder2(i,k)*derxy(k,j),k);
-  for (int i = 0; i < 6; ++i)
+  for (int i = 0; i < numderiv2_; ++i)
   {
-      for (int j = 0; j < iel; ++j)
+    for (int j = 0; j < iel; ++j)
+    {
+      derxy2_(i,j) += deriv2_(i,j);
+      for (int k = 0; k < nsd_; ++k)
       {
-          derxy2_(i,j) += deriv2_(i,j);
-          for (int k = 0; k < 3; ++k)
-          {
-              derxy2_(i,j) -= xder2_(i,k)*derxy_(k,j);
-          }
+        derxy2_(i,j) -= xder2_(i,k)*derxy_(k,j);
       }
+    }
   }
 
   /*
+  | 3 space dimensions:
+  |
   |        0...iel-1            0...iel-1         0...iel-1
   |        +-+-+-+-+            +-+-+-+-+         +-+-+-+-+
   |        | | | | | 0          | | | | | 0       | | | | | 0
@@ -1320,12 +1493,28 @@ dserror("Please check CalSecondDeriv first");
   |        +-+-+-+-+            +-+-+-+-+         +-+-+-+-+
   |
   |       chainrulerhs         chainrulerhs        deriv2
-  */
+  |
+  |
+  | 2 space dimensions:
+  |
+  |        0...iel-1             0...iel-1             0...iel-1
+  |        +-+-+-+-+             +-+-+-+-+             +-+-+-+-+
+  |        | | | | | 0           | | | | | 0           | | | | | 0
+  |        +-+-+-+-+             +-+-+-+-+             +-+-+-+-+
+  |        | | | | | 1     =     | | | | | 1     +     | | | | | 1
+  |        +-+-+-+-+             +-+-+-+-+             +-+-+-+-+
+  |        | | | | | 2           | | | | | 2           | | | | | 2
+  |        +-+-+-+-+             +-+-+-+-+             +-+-+-+-+
+  |
+  |       chainrulerhs          chainrulerhs             deriv2
+   */
 
-  //derxy2_ += deriv2_;
+  //derxy2_ += deriv2_;  //already included in the loop above!
 
   /* make LR decomposition and solve system for all right hand sides
    * (i.e. the components of chainrulerhs)
+  |
+  | 3 space dimensions:
   |
   |          0  1  2  3  4  5         i        i
   |        +--+--+--+--+--+--+       +-+      +-+
@@ -1362,10 +1551,39 @@ dserror("Please check CalSecondDeriv first");
   |                      | | | | | 4 = drdt
   |                      +-+-+-+-+
   |                      | | | | | 5 = dsdt
-  |                  +-+-+-+-+
-  */
+  |                      +-+-+-+-+
+  |
+  |
+  | 2 space dimensions:
+  |
+  |          0  1  2         i        i
+  |        +--+--+--+       +-+      +-+
+  |        |  |  |  | 0     | | 0    | | 0
+  |        +--+--+--+       +-+      +-+
+  |        |  |  |  | 1  *  | | 1 =  | | 1  for i=0...iel-1
+  |        +--+--+--+       +-+      +-+
+  |        |  |  |  | 2     | | 2    | | 2
+  |        +--+--+--+       +-+      +-+
+  |                          |        |
+  |                          |        |
+  |                        derxy2[i]  |
+  |                                   |
+  |                              chainrulerhs[i]
+  |
+  |
+  |                   0...iel-1
+  |                   +-+-+-+-+
+  |                   | | | | | 0
+  |                   +-+-+-+-+
+  |        yields     | | | | | 1
+  |                   +-+-+-+-+
+  |                   | | | | | 2
+  |                   +-+-+-+-+
+  |
+  |                    derxy2
+   */
 
-  LINALG::FixedSizeSerialDenseSolver<6,6,iel> solver;
+  LINALG::FixedSizeSerialDenseSolver<numderiv2_,numderiv2_,iel> solver;
   solver.SetMatrix(bm);
 
   // No need for a separate rhs. We assemble the rhs to the solution
@@ -1374,7 +1592,7 @@ dserror("Please check CalSecondDeriv first");
   solver.Solve();
 
   return;
-} //Condif3Impl::Caluse2ndderiv
+} //Condif3Impl::CalSecondDeriv
 
 
 /*----------------------------------------------------------------------*
@@ -1447,13 +1665,11 @@ rhsint = hist_[dofindex] + rhs_[dofindex]*(timefac/alphaF);
 // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
 conv_.MultiplyTN(derxy_,velint_);
 
-// diffusive part: diffus*(N,xx+ N,yy)
+// diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
 if (use2ndderiv)
 {
-  for (int i=0; i<iel; i++)
-  {
-    diff_(i) = diffus_[dofindex]*(derxy2_(0,i)+derxy2_(1,i)+derxy2_(2,i));
-  }
+  getLaplacianStrongForm(diff_, derxy2_);
+  diff_.Scale(diffus_[dofindex]);
 }
 
 //----------------------------------------------------------------
@@ -1515,8 +1731,9 @@ for (int vi=0; vi<iel; ++vi)
   for (int ui=0; ui<iel; ++ui)
   {
     const int fui = ui*numdof+dofindex;
-
-    estif(fvi,fui) += fac_diffus*(derxy_(0,ui)*derxy_(0,vi)+derxy_(1,ui)*derxy_(1,vi)+derxy_(2,ui)*derxy_(2,vi));
+    double laplawf(0.0);
+    getLaplacianWeakForm(laplawf, derxy_,ui,vi);
+    estif(fvi,fui) += fac_diffus*laplawf;
   }
 }
 
@@ -1811,13 +2028,11 @@ rhsint = rhs_[dofindex];
 // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
 conv_.MultiplyTN(derxy_,velint_);
 
-// diffusive part: diffus*(N,xx+ N,yy)
+// diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
 if (use2ndderiv)
 {
-  for (int i=0; i<iel; i++)
-  {
-    diff_(i) = diffus_[dofindex]*(derxy2_(0,i)+derxy2_(1,i)+derxy2_(2,i));
-  }
+  getLaplacianStrongForm(diff_, derxy2_);
+  diff_.Scale(diffus_[dofindex]);
 }
 
 //----------------------------------------------------------------
@@ -1865,8 +2080,9 @@ for (int vi=0; vi<iel; ++vi)
   for (int ui=0; ui<iel; ++ui)
   {
     const int fui = ui*numdof+dofindex;
-
-    estif(fvi,fui) += fac_diffus*(derxy_(0,ui)*derxy_(0,vi)+derxy_(1,ui)*derxy_(1,vi)+ derxy_(2,ui)*derxy_(2,vi));
+    double laplawf(0.0);
+    getLaplacianWeakForm(laplawf,derxy_,vi,ui);
+    estif(fvi,fui) += fac_diffus*laplawf;
   }
 }
 
@@ -1989,20 +2205,21 @@ void DRT::ELEMENTS::Condif3Impl<distype>::InitialTimeDerivative(
     const double                          time,
     const double                          dt,
     const double                          timefac,
-    const LINALG::Matrix<3,iel>&          evel0,
+    const LINALG::Matrix<nsd_,iel>&       evel0,
     const bool                            temperature,
-    const bool                      conservative,
+    const bool                            conservative,
     const enum Condif3::TauType           whichtau,
     const string                          fssgd,
     const double                          frt
 )
 {
   // get node coordinates
-  for (int i=0;i<iel;i++)
+  const DRT::Node*const* nodes = ele->Nodes();
+  for (int j=0;j<iel;j++)
   {
-    xyze_(0,i)=ele->Nodes()[i]->X()[0];
-    xyze_(1,i)=ele->Nodes()[i]->X()[1];
-    xyze_(2,i)=ele->Nodes()[i]->X()[2];
+    const double* x = nodes[j]->X();
+    for (int i=0;i<nsd_;i++)
+      {xyze_(i,j) = x[i];}
   }
 
   // dead load in element nodes
@@ -2023,11 +2240,12 @@ void DRT::ELEMENTS::Condif3Impl<distype>::InitialTimeDerivative(
   // flag for higher order elements
   const bool use2ndderiv = SCATRA::useSecondDerivatives<distype>();
 
-  // gaussian points
-  const DRT::UTILS::IntegrationPoints3D intpoints(SCATRA::get3DOptimalGaussrule<distype>());
+  // integrations points and weights
+  //DRT::UTILS::IntPointsAndWeights<nsd_ > intpoints = SCATRA::GetOptimalIntPoints<distype,nsd_>();
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop
-  for (int iquad=0; iquad<intpoints.nquad; ++iquad)
+  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
     EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,use2ndderiv,ele);
 
@@ -2070,16 +2288,14 @@ void DRT::ELEMENTS::Condif3Impl<distype>::InitialTimeDerivative(
       static double rhsint;
       rhsint = rhs_[k];
 
-      // diffusive part: diffus*(N,xx+ N,yy)
       if (use2ndderiv)
       {
-        for (int i=0; i<iel; i++)
-        {
-          diff_(i) = diffus_[k] * (derxy2_(0,i) + derxy2_(1,i) + derxy2_(2,i));
-        }
+        // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
+        getLaplacianStrongForm(diff_, derxy2_);
+        diff_.Scale(diffus_[k]);
       }
       else
-        diff_.Clear();
+        diff_.Clear(); // for security reasons
 
       // convective and diffusive (if required) part times initial scalar field
       const double conv_ephi0_k = conv_.Dot(ephi0[k]);
@@ -2135,7 +2351,9 @@ void DRT::ELEMENTS::Condif3Impl<distype>::InitialTimeDerivative(
 
         for (int ui=0; ui<iel; ++ui)
         {
-          rhs[fvi] -= fac_diffus*(derxy_(0,ui)*derxy_(0,vi)+derxy_(1,ui)*derxy_(1,vi)+derxy_(2,ui)*derxy_(2,vi))*(ephi0[k])(ui);
+          double laplawf(0.0);
+          getLaplacianWeakForm(laplawf, derxy_,ui,vi);
+          rhs[fvi] -= fac_diffus*laplawf*(ephi0[k])(ui);
         }
       }
 
@@ -2296,11 +2514,11 @@ for (int i=0;i<iel;i++)
 /*----------------------------------------------------------------------*/
 // integration loop for one condif2 element
 /*----------------------------------------------------------------------*/
-// gaussian points
-const DRT::UTILS::IntegrationPoints3D intpoints(SCATRA::get3DOptimalGaussrule<distype>());
+// integrations points and weights
+DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
 // integration loop
-for (int iquad=0; iquad<intpoints.nquad; ++iquad)
+for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
 {
   EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,false,ele);
 
@@ -2317,8 +2535,9 @@ for (int iquad=0; iquad<intpoints.nquad; ++iquad)
       for (int ui=0; ui<iel; ++ui)
       {
         const int fui = ui*numdofpernode_+k;
-
-        sys_mat_sd(fvi,fui) += kartfac*(derxy_(0,vi)*derxy_(0,ui)+derxy_(1,vi)*derxy_(1,ui)+derxy_(2,vi)*derxy_(2,ui));
+        double laplawf(0.0);
+        getLaplacianWeakForm(laplawf, derxy_,ui,vi);
+        sys_mat_sd(fvi,fui) += kartfac*laplawf;
 
         /*subtract SUPG term */
         //sys_mat_sd(fvi,fui) -= taufac*conv(vi)*conv(ui);
@@ -2390,14 +2609,11 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalMatInc(
     // compute gradient of scalar k at integration point
     gradphi_.Multiply(derxy_,ephinp[k]);
 
+    // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
     if (use2ndderiv)
     {
-      for (int i=0; i<iel; i++)
-      {
-        // diffusive part
-        /* diffus * ( N,xx  +  N,yy +  N,zz ) */
-        diff_(i) = diffus_[k] * (derxy2_(0,i) + derxy2_(1,i) + derxy2_(2,i));
-      }
+      getLaplacianStrongForm(diff_, derxy2_);
+      diff_.Scale(diffus_[k]);
     }
 
     // ----------------------------------------matrix entries
@@ -2413,7 +2629,9 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalMatInc(
         emat(vi*numdofpernode_+k, ui*numdofpernode_+k) += timefacfac_funct_vi*conv_(ui) ;
 
         /* diffusive term */
-        emat(vi*numdofpernode_+k, ui*numdofpernode_+k) += timefacfac*diffus_[k]*(derxy_(0, vi)*derxy_(0, ui) + derxy_(1, vi)*derxy_(1, ui) + derxy_(2, vi)*derxy_(2, ui));
+        double laplawf(0.0);
+        getLaplacianWeakForm(laplawf, derxy_,ui,vi);
+        emat(vi*numdofpernode_+k, ui*numdofpernode_+k) += timefacfac*diffus_[k]*laplawf;
 
         /* Stabilization term: */
         /* 0) transient stabilization */
@@ -2610,16 +2828,16 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalMatElch(
 
     if (use2ndderiv)
     {
-      for (int i=0; i<iel; i++)
-      {
-        // diffusive part
-        /* diffus * ( N,xx  +  N,yy +  N,zz ) */
-        diff_(i) = diffus_[k] * (derxy2_(0,i) + derxy2_(1,i) + derxy2_(2,i));
+      // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
+      getLaplacianStrongForm(diff_, derxy2_);
+      diff_.Scale(diffus_[k]);
 
         /* reactive part of migration*/
         /* diffus * ( N,xx  +  N,yy +  N,zz ) */
+      //  for (int i=0; i<iel; i++)
+      //  {
         //migr_[i] = diffus_[k] * funct_[i] * (derxy2_(0,i) + derxy2_(1,i) + derxy2_(2,i));
-      }
+      //  }
     }
 
     const double frt_timefacfac_diffus_valence_k_conint_k = frt*timefacfac*diffus_valence_k*conint_[k];
@@ -2639,11 +2857,13 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalMatElch(
         emat(vi*numdofpernode_+k, ui*numdofpernode_+k) += timefacfac_funct_vi*conv_(ui) ;
 
         /* diffusive term */
-        emat(vi*numdofpernode_+k, ui*numdofpernode_+k) += timefacfac*diffus_[k]*(derxy_(0, vi)*derxy_(0, ui) + derxy_(1, vi)*derxy_(1, ui) + derxy_(2, vi)*derxy_(2, ui));
+        double laplawf(0.0);
+        getLaplacianWeakForm(laplawf, derxy_,ui,vi);
+        emat(vi*numdofpernode_+k, ui*numdofpernode_+k) += timefacfac*diffus_[k]*laplawf;
 
         /* migration term (directional derivatives) */
         emat(vi*numdofpernode_+k, ui*numdofpernode_+k) -= timefacfac_diffus_valence_k_mig_vi*funct_(ui);
-        emat(vi*numdofpernode_+k,ui*numdofpernode_+numscal_) += frt_timefacfac_diffus_valence_k_conint_k*(derxy_(0, vi)*derxy_(0, ui) + derxy_(1, vi)*derxy_(1, ui) + derxy_(2, vi)*derxy_(2, ui));
+        emat(vi*numdofpernode_+k,ui*numdofpernode_+numscal_) += frt_timefacfac_diffus_valence_k_conint_k*laplawf;
 
         /* electroneutrality condition */
         emat(vi*numdofpernode_+numscal_, ui*numdofpernode_+k) += valence_k_fac_funct_vi*densfunct_(ui);
@@ -2799,11 +3019,12 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalErrorComparedToAnalytSolution(
   //   1995, Vol 11, 389-397
 
   // get node coordinates
-  for (int i=0;i<iel;i++)
+  const DRT::Node*const* nodes = ele->Nodes();
+  for (int j=0;j<iel;j++)
   {
-    xyze_(0,i)=ele->Nodes()[i]->X()[0];
-    xyze_(1,i)=ele->Nodes()[i]->X()[1];
-    xyze_(2,i)=ele->Nodes()[i]->X()[2];
+    const double* x = nodes[j]->X();
+    for (int i=0;i<nsd_;i++)
+      {xyze_(i,j) = x[i];}
   }
 
   // set constants for analytical solution
@@ -2816,17 +3037,17 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalErrorComparedToAnalytSolution(
   // working arrays
   double                                  potint;
   LINALG::Matrix<2,1> conint;
-  LINALG::Matrix<3,1> xint;
+  LINALG::Matrix<nsd_,1> xint;
   LINALG::Matrix<2,1> c;
   double                                  deltapot;
   LINALG::Matrix<2,1> deltacon(true);
 
-  // integration points
-  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_hex_27point; // for cos/sin
-  const DRT::UTILS::IntegrationPoints3D  intpoints(gaussrule);
+  // integrations points and weights  
+  // more GP than usual due to cos/exp fcts in analytical solution
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
 
   // start loop over integration points
-  for (int iquad=0;iquad<intpoints.nquad;iquad++)
+  for (int iquad=0;iquad<intpoints.IP().nquad;iquad++)
   {
     EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,false,ele);
 
