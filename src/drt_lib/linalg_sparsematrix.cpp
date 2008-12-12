@@ -863,10 +863,8 @@ void LINALG::SparseMatrix::ApplyDirichletWithTrafo(Teuchos::RCP<const LINALG::Sp
         if (diagonalblock)
         {
 #if DEBUG
-          {
-            int err = trafo->EpetraMatrix()->ExtractGlobalRowCopy(row,trafomaxnumentries,trafonumentries,&(trafovalues[0]),&(trafoindices[0]));
-            if (err<0) dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d",err);
-          }
+          int err = trafo->EpetraMatrix()->ExtractGlobalRowCopy(row,trafomaxnumentries,trafonumentries,&(trafovalues[0]),&(trafoindices[0]));
+          if (err<0) dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d",err);
 #else
           trafo->EpetraMatrix()->ExtractGlobalRowCopy(row,trafomaxnumentries,trafonumentries,&(trafovalues[0]),&(trafoindices[0]));
 #endif
