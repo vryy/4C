@@ -68,6 +68,7 @@ enum GaussRule3D
     intrule_tet_5point,             ///< GAUSS INTEGRATION, DEG.OF PRECISION 3 (open)
     intrule_tet_10point,            ///< KEAST3           , DEG.OF PRECISION 3 (closed)
     intrule_tet_11point,            ///< KEAST5           , DEG.OF PRECISION 4 (open)
+    intrule_tet_15point,            ///< KEAST6           , DEG.OF PRECISION 5 (closed)
     intrule_tet_24point,            ///< KEAST7           , DEG.OF PRECISION 6 (open)
     intrule_tet_64point_peano,      ///< GAUSS-LOBATTO    , DEG.OF PRECISION 6 (open)   (Peano, 1982)
     intrule_tet_45point,            ///< KEAST9           , DEG.OF PRECISION 8 (open)
