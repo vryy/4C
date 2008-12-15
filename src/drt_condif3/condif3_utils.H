@@ -61,8 +61,18 @@ namespace SCATRA
     case DRT::Element::wedge15:
       dserror("wedge15 is untested.");
       break;
+      // now do the more rare 2D case
+    case DRT::Element::quad4:
+    case DRT::Element::tri3:
+      return false;
+      break;
+    case DRT::Element::quad8:
+    case DRT::Element::quad9:
+    case DRT::Element::tri6:
+      return true;
+      break;
     default:
-      dserror("distype unknown!");
+      dserror("distype not supported!");
     }
     return true;
   }
@@ -120,13 +130,23 @@ namespace SCATRA
     case DRT::Element::wedge15:
       return 0.083333333333333333333;
       break;
+    // do the 2D case after the more usual 3D case
+    case DRT::Element::tri3:
+    case DRT::Element::quad4:
+      return 0.333333333333333333333;
+      break;
+    case DRT::Element::tri6:
+    case DRT::Element::quad8:
+    case DRT::Element::quad9:
+      return 0.083333333333333333333;
+      break;
     default:
-      dserror("type unknown!\n");
+      dserror("Element shape not supported.");
     }   
     return -1.0;
   }
 
-
+/*
   //! get one point gauss rule to calculate tau at element center
   template<DRT::Element::DiscretizationType DISTYPE>
   DRT::UTILS::GaussRule3D getIntegrationRuleForStabilization()
@@ -153,7 +173,25 @@ namespace SCATRA
       dserror("invalid discretization type for condif3");
       return DRT::UTILS::intrule3D_undefined;
     }
-  }
+  }*/
+  
+
+  //! Template Meta Programming version of switch over discretization type
+  template<DRT::Element::DiscretizationType DISTYPE>
+  struct DisTypeToStabGaussRule {};
+  template<> struct DisTypeToStabGaussRule<DRT::Element::hex8>    {static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_hex_1point; };
+  template<> struct DisTypeToStabGaussRule<DRT::Element::hex20>   {static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_hex_1point;};
+  template<> struct DisTypeToStabGaussRule<DRT::Element::hex27>   {static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_hex_1point;};
+  template<> struct DisTypeToStabGaussRule<DRT::Element::tet4>    {static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_tet_1point; };
+  template<> struct DisTypeToStabGaussRule<DRT::Element::tet10>   {static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_tet_1point; };
+  template<> struct DisTypeToStabGaussRule<DRT::Element::wedge6>  {static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_wedge_1point;};
+  template<> struct DisTypeToStabGaussRule<DRT::Element::pyramid5>{static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_pyramid_1point;};
+  template<> struct DisTypeToStabGaussRule<DRT::Element::quad4>   {static const DRT::UTILS::GaussRule2D rule =  DRT::UTILS::intrule_quad_1point;};
+  template<> struct DisTypeToStabGaussRule<DRT::Element::quad8>   {static const DRT::UTILS::GaussRule2D rule =  DRT::UTILS::intrule_quad_1point;};
+  template<> struct DisTypeToStabGaussRule<DRT::Element::quad9>   {static const DRT::UTILS::GaussRule2D rule =  DRT::UTILS::intrule_quad_1point;};
+  template<> struct DisTypeToStabGaussRule<DRT::Element::tri3>    {static const DRT::UTILS::GaussRule2D rule =  DRT::UTILS::intrule_tri_1point; };
+  template<> struct DisTypeToStabGaussRule<DRT::Element::tri6>    {static const DRT::UTILS::GaussRule2D rule =  DRT::UTILS::intrule_tri_1point; };
+
 
 } // namespace SCATRA
 

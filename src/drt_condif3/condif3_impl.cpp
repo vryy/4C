@@ -25,11 +25,12 @@ Maintainer: Georg Bauer
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include <Epetra_SerialDenseSolver.h>
+#include "../drt_geometry/position_array.H"
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Condif3ImplInterface* DRT::ELEMENTS::Condif3ImplInterface::Impl(DRT::ELEMENTS::Condif3* ele)
+DRT::ELEMENTS::Condif3ImplInterface* DRT::ELEMENTS::Condif3ImplInterface::Impl(DRT::Element* ele)
 {
   // we assume here, that numdofpernode is equal for every node within
   // the discretization and does not change during the computations
@@ -196,7 +197,7 @@ DRT::ELEMENTS::Condif3Impl<distype>::Condif3Impl(int numdofpernode, int numscal)
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
-    Condif3*                   ele,
+    DRT::Element*              ele,
     ParameterList&             params,
     DRT::Discretization&       discretization,
     vector<int>&               lm,
@@ -267,7 +268,7 @@ int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
     // compare also with DRT::UTILS::ExtractMyValues()
     const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
     Epetra_SerialDenseVector evel(nsd_*iel);
-    DRT::UTILS::ExtractMyNodeBasedValues(ele,evel,velocity);
+    DRT::UTILS::ExtractMyNodeBasedValues(ele,evel,velocity,nsd_);
 
     // get flag for fine-scale subgrid diffusivity
     string fssgd = params.get<string>("fs subgrid diffusivity","No");
@@ -293,9 +294,9 @@ int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
     // create objects for element arrays
     vector<LINALG::Matrix<iel,1> > ephinp(numscal_);
     vector<LINALG::Matrix<iel,1> > ehist(numdofpernode_);
-    LINALG::Matrix<iel,1> edensnp;
+    LINALG::Matrix<iel,1>    edensnp;
     LINALG::Matrix<nsd_,iel> evelnp;
-    LINALG::Matrix<iel,1> epotnp;
+    LINALG::Matrix<iel,1>    epotnp;
 
     // fill element arrays
     for (int i=0;i<iel;++i)
@@ -311,10 +312,11 @@ int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
         ehist[k](i,0) = myhist[k+(i*numdofpernode_)];
       }
 
-      // split for each tranported scalar, insert into element arrays
-      evelnp(0,i) = evel[   i*3 ];
-      evelnp(1,i) = evel[1+(i*3)];
-      evelnp(2,i) = evel[2+(i*3)];
+      // insert velocity field into element array
+      for (int idim=0 ; idim < nsd_ ; idim++)
+      {
+        evelnp(idim,i) = evel[idim + (i*nsd_) ];
+      }
 
       // insert density vector into element array
       // (only take values belonging to the first transported scalar!)
@@ -402,9 +404,8 @@ int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
     // get initial velocity values at the nodes
     // compare also with DRT::UTILS::ExtractMyValues()
     const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
-    const int nsd=3;
-    Epetra_SerialDenseVector evel(nsd*iel);
-    DRT::UTILS::ExtractMyNodeBasedValues(ele,evel,velocity);
+    Epetra_SerialDenseVector evel(nsd_*iel);
+    DRT::UTILS::ExtractMyNodeBasedValues(ele,evel,velocity,nsd_);
 
     // get flag for fine-scale subgrid diffusivity
     string fssgd = params.get<string>("fs subgrid diffusivity","No");
@@ -440,7 +441,9 @@ int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
 
       // split for each tranported scalar, insert into element arrays
       for (int idim = 0; idim< nsd_; idim++)
-       {evel0(idim,i) = evel[idim + i*3 ];}
+      {
+        evel0(idim,i) = evel[idim + (i*nsd_)];
+      }
 
       // insert density vector into element array
       // (only take values belonging to the first transported scalar!)
@@ -559,7 +562,7 @@ return 0;
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Condif3Impl<distype>::Sysmat(
-    const DRT::ELEMENTS::Condif3*         ele, ///< the element those matrix is calculated
+    const DRT::Element*                   ele, ///< the element those matrix is calculated
     const vector<LINALG::Matrix<iel,1> >& ephinp,///< current scalar field
     const vector<LINALG::Matrix<iel,1> >& ehist, ///< rhs from beginning of time step
     const LINALG::Matrix<iel,1>&          edensnp, ///< current density field
@@ -584,13 +587,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::Sysmat(
 )
 {
   // get node coordinates
-  const DRT::Node*const* nodes = ele->Nodes();
-  for (int j=0;j<iel;j++)
-  {
-    const double* x = nodes[j]->X();
-    for (int i=0;i<nsd_;i++)
-      {xyze_(i,j) = x[i];}
-  }
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze_);
 
   // dead load in element nodes
   BodyForce(ele,time);
@@ -616,7 +613,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::Sysmat(
   // integration loop
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
-    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,use2ndderiv,ele);
+    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,use2ndderiv,ele->Id());
 
     // density-weighted shape functions
     densfunct_.EMultiply(funct_,edensnp);
@@ -664,14 +661,24 @@ void DRT::ELEMENTS::Condif3Impl<distype>::Sysmat(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Condif3Impl<distype>::BodyForce(
-    const DRT::ELEMENTS::Condif3* ele,
-    const double                  time
+    const DRT::Element*    ele,
+    const double           time
 )
 {
   vector<DRT::Condition*> myneumcond;
 
   // check whether all nodes have a unique VolumeNeumann condition
-  DRT::UTILS::FindElementConditions(ele, "VolumeNeumann", myneumcond);
+  switch(nsd_)
+  {
+  case 3:
+    DRT::UTILS::FindElementConditions(ele, "VolumeNeumann", myneumcond);
+  break;
+  case 2:
+    DRT::UTILS::FindElementConditions(ele, "SurfaceNeumann", myneumcond);
+  break;
+  default:
+    dserror("Unknown number of space dimensions");
+  }
 
   if (myneumcond.size()>1)
     dserror("more than one VolumeNeumann cond on one node");
@@ -685,7 +692,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::BodyForce(
     if (curve) curvenum = (*curve)[0];
 
     // initialisation
-    double curvefac    = 0.0;
+    double curvefac(0.0);
 
     if (curvenum >= 0) // yes, we have a timecurve
     {
@@ -793,7 +800,7 @@ return;
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Condif3Impl<distype>::CalTau(
-    const DRT::ELEMENTS::Condif3*&  ele,
+    const DRT::Element*             ele,
     Epetra_SerialDenseVector&       subgrdiff,
     const LINALG::Matrix<nsd_,iel>& evel,
     const LINALG::Matrix<iel,1>&    edens,
@@ -811,20 +818,19 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalTau(
   const double mk = SCATRA::MK<distype>();
 
   // use one-point Gauss rule to calculate tau at element center
-  DRT::UTILS::GaussRule3D intrule_stabili = SCATRA::getIntegrationRuleForStabilization<distype>();
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
 
-  // gaussian points
-  const DRT::UTILS::IntegrationPoints3D  intpoints_tau(intrule_stabili);
+  // coordinates of the integration point
+  const double* gpcoord = (intpoints_tau.IP().qxg)[0];
+  for (int idim = 0; idim < nsd_; idim++)
+    {xsi_(idim) = gpcoord[idim];}
 
-  // shape functions and derivs at element center
-  const double e1    = intpoints_tau.qxg[0][0];
-  const double e2    = intpoints_tau.qxg[0][1];
-  const double e3    = intpoints_tau.qxg[0][2];
-  const double wquad = intpoints_tau.qwgt[0];
+  // integration weight
+  const double wquad = intpoints_tau.IP().qwgt[0];
 
-  // shape functions and their derivatives
-  DRT::UTILS::shape_function_3D(funct_,e1,e2,e3,distype);
-  DRT::UTILS::shape_function_3D_deriv1(deriv_,e1,e2,e3,distype);
+  // shape functions and their first derivatives
+  DRT::UTILS::shape_function<distype>(xsi_,funct_);
+  DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
 
   // get Jacobian matrix and determinant
   xjm_.MultiplyNT(deriv_,xyze_);
@@ -854,10 +860,11 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalTau(
     {
       // effective velocity at element center:
       // (weighted) convective velocity + individual migration velocity
+      LINALG::Matrix<nsd_,1> veleff(velint_,false);
       if (numdofpernode_ - numscal_ == 1) // ELCH
       {
         const double Dkzk = diffus_[k]*valence_[k];
-        velint_.Update(Dkzk,migvelint_,1.0);
+        veleff.Update(Dkzk,migvelint_,1.0);
       }
 
       /*
@@ -897,13 +904,17 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalTau(
       double G;
       double normG(0.0);
       double Gnormu(0.0);
-      for (int nn=0;nn<3;++nn)
+      for (int nn=0;nn<nsd_;++nn)
       {
-        for (int rr=0;rr<3;++rr)
+        for (int rr=0;rr<nsd_;++rr)
         {
-          G = xij_(nn,0)*xij_(rr,0) + xij_(nn,1)*xij_(rr,1) + xij_(nn,2)*xij_(rr,2);
+          G = xij_(nn,0)*xij_(rr,0);
+          for(int tt=1;tt<nsd_;tt++)
+          {
+            G += xij_(nn,tt)*xij_(rr,tt);
+          }
           normG+=G*G;
-          Gnormu+=velint_(nn,0)*G*velint_(rr,0);
+          Gnormu+=veleff(nn,0)*G*veleff(rr,0);
         }
       }
 
@@ -941,7 +952,8 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalTau(
   // stabilization parameter definition according to Franca and Valentin (2000)
   else if (whichtau == Condif3::franca_valentin)
   {
-    // volume of element
+    // volume of the element (2D: element surface area; 1D: element length)
+    // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
     const double vol = wquad*det;
 
     // There exist different definitions for 'the' characteristic element length hk:
@@ -951,7 +963,9 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalTau(
     // 2) streamlength (based on velocity vector at element centre) -> not default
 
     // 3) use cubic root of the element volume as characteristic length -> default
-    const double hk = pow(vol,(1.0/3.0));
+    //    2D case: characterisitc length is the square root of the element area
+    const double dim = (double) nsd_;
+    const double hk = pow(vol,(1.0/dim));
 
     // some necessary parameter definitions
     double vel_norm, epe1, epe2, xi1, xi2;
@@ -963,9 +977,9 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalTau(
         const double Dkzk = diffus_[k]*valence_[k];
         // get Euclidean norm of effective velocity at element center:
         // (weighted) convective velocity + individual migration velocity
-        vel_norm = sqrt(DSQR(velint_(0)+Dkzk*migvelint_(0))
-                      + DSQR(velint_(1)+Dkzk*migvelint_(1))
-                      + DSQR(velint_(2)+Dkzk*migvelint_(2)));
+        LINALG::Matrix<nsd_,1> veleff(velint_,false);
+        veleff.Update(Dkzk,migvelint_,1.0);
+        vel_norm = veleff.Norm2();
       }
       else
       {
@@ -1028,7 +1042,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
     const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
     const int&                                   iquad,      ///< id of current Gauss point
     const bool&                                  use2ndderiv,///< are second derivatives needed?
-    const DRT::ELEMENTS::Condif3*                ele         ///< the element
+    const int&                                   eleid       ///< the element id
 )
 {
   // coordinates of the current integration point
@@ -1062,9 +1076,9 @@ void DRT::ELEMENTS::Condif3Impl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
   const double det = xij_.Invert(xjm_);
 
   if (det < 0.0)
-    dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
+    dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", eleid, det);
   if (abs(det) < 1E-16)
-    dserror("GLOBAL ELEMENT NO.%i\nZERO JACOBIAN DETERMINANT: %f", ele->Id(), det);
+    dserror("GLOBAL ELEMENT NO.%i\nZERO JACOBIAN DETERMINANT: %f", eleid, det);
 
   // set integration factor: fac = Gauss weight * det(J)
   fac_ = intpoints.IP().qwgt[iquad]*det;
@@ -2022,8 +2036,7 @@ const double taufac     = tau_[dofindex]*fac_;
 const double fac_diffus = fac_*diffus_[dofindex];
 
 // evaluate rhs at integration point
-static double rhsint;
-rhsint = rhs_[dofindex];
+double rhsint = rhs_[dofindex];
 
 // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
 conv_.MultiplyTN(derxy_,velint_);
@@ -2194,7 +2207,7 @@ return;
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Condif3Impl<distype>::InitialTimeDerivative(
-    const DRT::ELEMENTS::Condif3*         ele,
+    const DRT::Element*                   ele,
     const vector<LINALG::Matrix<iel,1> >& ephi0,
     const LINALG::Matrix<iel,1>&          edens0,
     const LINALG::Matrix<iel,1>&          epot0,
@@ -2214,13 +2227,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::InitialTimeDerivative(
 )
 {
   // get node coordinates
-  const DRT::Node*const* nodes = ele->Nodes();
-  for (int j=0;j<iel;j++)
-  {
-    const double* x = nodes[j]->X();
-    for (int i=0;i<nsd_;i++)
-      {xyze_(i,j) = x[i];}
-  }
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze_);
 
   // dead load in element nodes
   BodyForce(ele,time);
@@ -2241,13 +2248,12 @@ void DRT::ELEMENTS::Condif3Impl<distype>::InitialTimeDerivative(
   const bool use2ndderiv = SCATRA::useSecondDerivatives<distype>();
 
   // integrations points and weights
-  //DRT::UTILS::IntPointsAndWeights<nsd_ > intpoints = SCATRA::GetOptimalIntPoints<distype,nsd_>();
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
-    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,use2ndderiv,ele);
+    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,use2ndderiv,ele->Id());
 
     // density-weighted shape functions
     densfunct_.EMultiply(funct_,edens0);
@@ -2497,19 +2503,14 @@ void DRT::ELEMENTS::Condif3Impl<distype>::InitialTimeDerivative(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Condif3Impl<distype>::CalcSubgridDiffMatrix(
-    const DRT::ELEMENTS::Condif3* ele,
+    const DRT::Element*           ele,
     Epetra_SerialDenseMatrix&     sys_mat_sd,
     const double                  timefac,
     const bool                    is_stationary
     )
 {
-// get node coordinates
-for (int i=0;i<iel;i++)
-{
-  xyze_(0,i)=ele->Nodes()[i]->X()[0];
-  xyze_(1,i)=ele->Nodes()[i]->X()[1];
-  xyze_(2,i)=ele->Nodes()[i]->X()[2];
-}
+  // get node coordinates
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze_);
 
 /*----------------------------------------------------------------------*/
 // integration loop for one condif2 element
@@ -2520,7 +2521,7 @@ DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<di
 // integration loop
 for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
 {
-  EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,false,ele);
+  EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,false,ele->Id());
 
   for (int k=0;k<numscal_;++k)
   {
@@ -2999,7 +3000,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalMatElch(
  *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Condif3Impl<distype>::CalErrorComparedToAnalytSolution(
-    const DRT::ELEMENTS::Condif3*  ele,
+    const DRT::Element*            ele,
     ParameterList&                 params,
     const LINALG::Matrix<iel,2>&   ephinp,
     const LINALG::Matrix<iel,1>&   epotnp,
@@ -3019,13 +3020,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalErrorComparedToAnalytSolution(
   //   1995, Vol 11, 389-397
 
   // get node coordinates
-  const DRT::Node*const* nodes = ele->Nodes();
-  for (int j=0;j<iel;j++)
-  {
-    const double* x = nodes[j]->X();
-    for (int i=0;i<nsd_;i++)
-      {xyze_(i,j) = x[i];}
-  }
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze_);
 
   // set constants for analytical solution
   const double t = params.get<double>("total time");
@@ -3049,7 +3044,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalErrorComparedToAnalytSolution(
   // start loop over integration points
   for (int iquad=0;iquad<intpoints.IP().nquad;iquad++)
   {
-    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,false,ele);
+    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,false,ele->Id());
 
     // get both concentration solutions at integration point
     conint.MultiplyTN(ephinp,funct_);

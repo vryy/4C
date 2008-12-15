@@ -70,7 +70,7 @@ int DRT::ELEMENTS::Condif2Line::Evaluate(ParameterList&            params,
       const int ielparent = parent_->NumNode();
       const int nsd=2;
       Epetra_SerialDenseVector evel(nsd*ielparent);
-      DRT::UTILS::ExtractMyNodeBasedValues2D(parent_,evel,velocity);
+      DRT::UTILS::ExtractMyNodeBasedValues(parent_,evel,velocity,2);
 
       // get actual values of transported scalar
       RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");

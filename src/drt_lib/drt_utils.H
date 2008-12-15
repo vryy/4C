@@ -135,18 +135,9 @@ namespace UTILS
   (
     const DRT::Element* ele,                ///< pointer to current element
     Epetra_SerialDenseVector& local,        ///< local vector on element-level
-    const RCP<Epetra_MultiVector>& global); ///< global vector
-
-
-  /// Locally extract a subset of values from a (column)-nodemap-based Epetra_MultiVector for 2D
-  /*  \author vg
-   *  \date 09/08
-   */
-  void ExtractMyNodeBasedValues2D
-  (
-    const DRT::Element* ele,                ///< pointer to current element
-    Epetra_SerialDenseVector& local,        ///< local vector on element-level
-    const RCP<Epetra_MultiVector>& global); ///< global vector
+    const RCP<Epetra_MultiVector>& global,  ///< global vector
+    const int nsd                           ///< number of space dimensions (default is 3)
+    );
 
 
   /// find all local nodes from discretization marked with condition

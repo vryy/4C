@@ -153,7 +153,7 @@ int DRT::ELEMENTS::Condif3::Evaluate(ParameterList& params,
     const int iel = NumNode();
     const int nsd=3;
     Epetra_SerialDenseVector evel(nsd*iel);
-    DRT::UTILS::ExtractMyNodeBasedValues(this,evel,velocity);
+    DRT::UTILS::ExtractMyNodeBasedValues(this,evel,velocity,nsd);
 
     // need current values of transported scalar
     RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");

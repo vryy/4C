@@ -82,7 +82,7 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
     const int ielparent = parent_->NumNode();
     const int nsd=3;
     Epetra_SerialDenseVector evel(nsd*ielparent);
-    DRT::UTILS::ExtractMyNodeBasedValues(parent_,evel,velocity);
+    DRT::UTILS::ExtractMyNodeBasedValues(parent_,evel,velocity,nsd);
 
     // get actual values of transported scalar
     RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");

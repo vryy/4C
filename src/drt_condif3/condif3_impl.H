@@ -48,7 +48,7 @@ public:
     This class does not provide a definition for this function, it
     must be defined in Condif3Impl.
    */
-  virtual int Evaluate(Condif3*                   ele,
+  virtual int Evaluate(DRT::Element*              ele,
                        ParameterList&             params,
                        DRT::Discretization&       discretization,
                        vector<int>&               lm,
@@ -63,7 +63,7 @@ public:
 
 
   /// Internal implementation class for condif element
-  static Condif3ImplInterface* Impl(DRT::ELEMENTS::Condif3* c3);
+  static Condif3ImplInterface* Impl(DRT::Element* ele);
 
 };
 
@@ -121,7 +121,7 @@ public:
   static const int numderiv2_ = (nsd_*(nsd_+1))/2;
 
   //! Evaluate
-  virtual int Evaluate(Condif3*                   ele,
+  virtual int Evaluate(DRT::Element*              ele,
                        ParameterList&             params,
                        DRT::Discretization&       discretization,
                        vector<int>&               lm,
@@ -138,7 +138,7 @@ public:
 
     //! Calculate matrix and rhs. Here the whole thing is hidden.
     virtual void Sysmat(
-        const DRT::ELEMENTS::Condif3*         ele, ///< the element those matrix is calculated
+        const DRT::Element*                   ele, ///< the element those matrix is calculated
         const vector<LINALG::Matrix<iel,1> >& ephinp,///< current scalar field
         const vector<LINALG::Matrix<iel,1> >& ehist, ///< rhs from beginning of time step
         const LINALG::Matrix<iel,1>&          edensnp, ///< current density field
@@ -164,7 +164,7 @@ public:
 
     //! calculate mass matrix and rhs for determining initial time derivative
     virtual void InitialTimeDerivative(
-        const DRT::ELEMENTS::Condif3*         ele,  ///< the element
+        const DRT::Element*               ele,  ///< the element
         const vector<LINALG::Matrix<iel,1> >& ephi0, ///< initial scalar field
         const LINALG::Matrix<iel,1>&          edens0, ///< initial density field
         const LINALG::Matrix<iel,1>&          epot0,  ///< el. potential at element nodes
@@ -185,7 +185,7 @@ public:
 
     //! calculate normalized subgrid-diffusivity matrix
     virtual void CalcSubgridDiffMatrix(
-        const DRT::ELEMENTS::Condif3* ele,
+        const DRT::Element*       ele,
         Epetra_SerialDenseMatrix&     sys_mat_sd,
         const double                  timefac,
         const bool                    is_stationary
@@ -193,7 +193,7 @@ public:
 
     //! get the body force
     virtual void BodyForce(
-        const DRT::ELEMENTS::Condif3* ele, ///< the element we are dealing with
+        const DRT::Element*       ele, ///< the element we are dealing with
         const double                  time ///< current simulation time
     );
 
@@ -205,7 +205,7 @@ public:
 
     //! calculate stabilization parameter
     virtual void CalTau(
-        const DRT::ELEMENTS::Condif3*&   ele, ///< the element
+        const DRT::Element*          ele, ///< the element
         Epetra_SerialDenseVector&        subgrdiff, ///< subgrid-diff.-scaling vector
         const LINALG::Matrix<nsd_,iel>&  evel,///< nodal velocities
         const LINALG::Matrix<iel,1>&     edens, ///< density
@@ -224,7 +224,7 @@ public:
         const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints, ///< integration points
         const int&                                   iquad,     ///< id of current Gauss point
         const bool&                                  higher_order_ele,///< are second derivatives needed?
-        const DRT::ELEMENTS::Condif3*                ele        ///< the element
+        const int&                                   eleid       ///< the element id
     );
 
     //! calculate 2nd derivatives of shape functions (local and global)
@@ -267,24 +267,24 @@ public:
 
     //! calculate element matrix and rhs vector (Electrochemistry problems)
     virtual void CalMatElch(
-        Epetra_SerialDenseMatrix&                                 emat,   ///< element matrix
-        Epetra_SerialDenseVector&                                 erhs,   ///< element rhs
+        Epetra_SerialDenseMatrix&             emat,   ///< element matrix
+        Epetra_SerialDenseVector&             erhs,   ///< element rhs
         const vector<LINALG::Matrix<iel,1> >& ephinp,///< current scalar field
         const LINALG::Matrix<iel,1>&          epotnp, ///< el. potential at element nodes
-        const bool&                                               higher_order_ele, ///< are second derivatives needed?
-        const double&                                             frt,    ///< factor F/RT
-        const bool&                                               is_stationary, ///< flag indicating stationary formulation
-        const double&                                             timefac ///< time discretization factor
+        const bool&                           higher_order_ele, ///< are second derivatives needed?
+        const double&                         frt,    ///< factor F/RT
+        const bool&                           is_stationary, ///< flag indicating stationary formulation
+        const double&                         timefac ///< time discretization factor
     );
 
     //! calculate error compared to analytical solutions
     virtual void CalErrorComparedToAnalytSolution(
-        const DRT::ELEMENTS::Condif3*                    ele, ///< the element
-        ParameterList&                                   params, ///< parameter list
+        const DRT::Element*          ele, ///< the element
+        ParameterList&               params, ///< parameter list
         const LINALG::Matrix<iel,2>& ephinp, ///< actual numerical sol. of concentrations
         const LINALG::Matrix<iel,1>& epotnp, ///< actual numerical solution of el. potential
-        Epetra_SerialDenseVector&                        errors, ///< vector of error values
-        struct _MATERIAL*                                material ///< material pointer
+        Epetra_SerialDenseVector&    errors, ///< vector of error values
+        struct _MATERIAL*            material ///< material pointer
     );
 
 
