@@ -136,7 +136,6 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_geometry/intersection_math.o \
                 src/drt_geometry/intersection_service.o \
                 src/drt_geometry/intersection.o \
-                src/drt_geometry/intersection_exp.o \
                 src/drt_tetgen/predicates.o \
                 src/drt_tetgen/tetgen.o \
                 src/drt_geometry/integrationcell.o \
@@ -1244,7 +1243,6 @@ OBJS_INTERSECTION = src/drt_xfem/physics.o \
                     src/drt_xfem/interface.o \
                     src/drt_xfem/interfacexfsi.o \
                     src/drt_xfem/spacetime_boundary.o \
-                    src/drt_xfem/xfem_condition.o \
                     src/drt_xfem/enrichment_utils.o \
                     src/drt_xfem/xdofmapcreation.o 
 #               inverse analysis
