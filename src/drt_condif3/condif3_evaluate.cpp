@@ -347,7 +347,7 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::Condif3::CalculateFlux(
   /*----------------------------------------- declaration of variables ---*/
   Epetra_SerialDenseVector        funct(iel);
   Epetra_SerialDenseMatrix        deriv(nsd,iel);
-  static Epetra_SerialDenseMatrix xjm(nsd,nsd);
+  Epetra_SerialDenseMatrix        xjm(nsd,nsd);
   Epetra_SerialDenseMatrix        derxy(nsd,iel);
 
   vector< LINALG::Matrix<3,1> > nodecoords;
@@ -426,7 +426,7 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::Condif3::CalculateFlux(
     } /* end of loop over k */
 
     // ---------------------------------------inverse of transposed jacobian
-    static Epetra_SerialDenseMatrix       xij(nsd,nsd);
+    Epetra_SerialDenseMatrix       xij(nsd,nsd);
     double idet = 1./det;
     xij(0,0) = (  xjm(1,1)*xjm(2,2) - xjm(2,1)*xjm(1,2))*idet;
     xij(1,0) = (- xjm(1,0)*xjm(2,2) + xjm(2,0)*xjm(1,2))*idet;
@@ -524,7 +524,7 @@ void DRT::ELEMENTS::Condif3::CalculateTempAndDens(
   /*----------------------------------------- declaration of variables ---*/
   Epetra_SerialDenseVector        funct(iel);
   Epetra_SerialDenseMatrix        deriv(nsd,iel);
-  static Epetra_SerialDenseMatrix xjm(nsd,nsd);
+  Epetra_SerialDenseMatrix xjm(nsd,nsd);
 
   // gaussian points
   const DRT::UTILS::IntegrationPoints3D intpoints(SCATRA::get3DOptimalGaussrule(distype));

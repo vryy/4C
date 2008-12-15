@@ -1673,8 +1673,7 @@ const double timetaufac = timefac*taufac;
 const double fac_diffus = timefacfac*diffus_[dofindex];
 
 // evaluate rhs at integration point
-static double rhsint;
-rhsint = hist_[dofindex] + rhs_[dofindex]*(timefac/alphaF);
+double rhsint = hist_[dofindex] + rhs_[dofindex]*(timefac/alphaF);
 
 // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
 conv_.MultiplyTN(derxy_,velint_);
@@ -2291,8 +2290,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::InitialTimeDerivative(
       const double fac_diffus = fac_*diffus_[k];
 
       // evaluate rhs at integration point
-      static double rhsint;
-      rhsint = rhs_[k];
+      double rhsint = rhs_[k];
 
       if (use2ndderiv)
       {
@@ -2585,9 +2583,9 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalMatInc(
   // some 'working doubles'
   double rhsint(0.0);  // rhs at int. point
   // integration factors and coefficients of single terms
-  static double timefacfac(0.0);
-  static double timetaufac(0.0);
-  static double taufac(0.0);
+  double timefacfac(0.0);
+  double timetaufac(0.0);
+  double taufac(0.0);
 
   for (int k = 0; k < numscal_;++k) // loop over all transported sclars
   {
@@ -2796,12 +2794,12 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalMatElch(
   {cout<<"gradpot_["<<k<<"] = "<<gradpot_[k]<<endl;}
 #endif
   // some 'working doubles'
-  static double diffus_valence_k(0.0);
+  double diffus_valence_k(0.0);
   double rhsint(0.0);  // rhs at int. point
   // integration factors and coefficients of single terms
-  static double timefacfac(0.0);
-  static double timetaufac(0.0);
-  static double taufac(0.0);
+  double timefacfac(0.0);
+  double timetaufac(0.0);
+  double taufac(0.0);
 
   for (int k = 0; k < numscal_;++k) // loop over all transported sclars
   {
