@@ -2594,7 +2594,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Caltau(
       for (int rr=0;rr<2;++rr)
       {
         g = xji_(nn,0)*xji_(rr,0);
-        for (int mm=1;mm<3;++mm)
+        for (int mm=1;mm<2;++mm)
         {
           g += xji_(nn,mm)*xji_(rr,mm);
         }
