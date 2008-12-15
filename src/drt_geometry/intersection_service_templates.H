@@ -56,29 +56,64 @@ namespace GEO
 {
 
 
-    //! tolerance used for residuals in Newton-methods
-    const double                 TOL14 = 1e-14;
-    
-    //! tolerance used for residuals in Newton-methods
-    const double                 TOL13 = 1e-13;
-    
-    //! tolerance used for residuals in Newton-methods
-    const double                 TOL10 = 1e-10;
 
-    //! named tolerance for easy search/grep
-    const double                 TOL7 = 1e-7;
-    //! named tolerance for easy search/grep
-    const double                 TOL4 = 1e-4;
-    //! named tolerance for easy search/grep
-    const double                 TOL3 = 1e-3;
-    //! named tolerance for easy search/grep
-    const double                 TOL2 = 1e-2;
-    //! named tolerance for easy search/grep
-    const double                 TOLPLUS8 = 1e8;
-    //! named tolerance for easy search/grep
-    const double                 TOLPLUS15 = 1e15;   
-    //! large number to start computations of nearest distance in tree
-    const double                 LARGENUMBER = 1e30;
+template <class M>
+  static inline bool SurfaceElementIsPlane(   
+        const M&                              xyze) 
+{
+  static LINALG::Matrix<3,1> elenorm;
+  // xyze 3 x 4
+
+  if(xyze.N() == 3)
+    return true;
+  
+  elenorm(0)= -(xyze(2,0)*xyze(1,1)) + xyze(1,0)*xyze(2,1) + xyze(2,0)*xyze(1,2) -
+                xyze(2,1)*xyze(1,2)  - xyze(1,0)*xyze(2,2) + xyze(1,1)*xyze(2,2);
+  elenorm(1)=   xyze(2,0)*xyze(0,1)  - xyze(0,0)*xyze(2,1) - xyze(2,0)*xyze(0,2) +
+                xyze(2,1)*xyze(0,2)  + xyze(0,0)*xyze(2,2) - xyze(0,1)*xyze(2,2);
+  elenorm(2)= -(xyze(1,0)*xyze(0,1)) + xyze(0,0)*xyze(1,1) + xyze(1,0)*xyze(0,2) -
+                xyze(1,1)*xyze(0,2)  - xyze(0,0)*xyze(1,2) + xyze(0,1)*xyze(1,2);
+  
+  for(int i = 3; i < xyze.N(); i++)
+  {
+    double distance = (-(elenorm(0)*( xyze(0,0) - xyze(0,i))) + 
+                         elenorm(1)*(-xyze(1,0) + xyze(1,i)) - 
+                         elenorm(2)*( xyze(2,0) - xyze(2,i)))/(-elenorm.Norm2());
+
+    if(fabs(distance) >= GEO::TOL7)
+      return false;
+  }
+  return true;
+}
+
+
+
+template <class M1, class M2>
+  static inline bool pointInPlaneSurfaceElement(   
+        const M1&                              xyze,
+        const M2&                              xyze_points) 
+{
+  static LINALG::Matrix<3,1> elenorm;
+  // xyze 3 x ...
+  
+  elenorm(0)= -(xyze(2,0)*xyze(1,1)) + xyze(1,0)*xyze(2,1) + xyze(2,0)*xyze(1,2) -
+                xyze(2,1)*xyze(1,2)  - xyze(1,0)*xyze(2,2) + xyze(1,1)*xyze(2,2);
+  elenorm(1)=   xyze(2,0)*xyze(0,1)  - xyze(0,0)*xyze(2,1) - xyze(2,0)*xyze(0,2) +
+                xyze(2,1)*xyze(0,2)  + xyze(0,0)*xyze(2,2) - xyze(0,1)*xyze(2,2);
+  elenorm(2)= -(xyze(1,0)*xyze(0,1)) + xyze(0,0)*xyze(1,1) + xyze(1,0)*xyze(0,2) -
+                xyze(1,1)*xyze(0,2)  - xyze(0,0)*xyze(1,2) + xyze(0,1)*xyze(1,2);
+  
+  for(int i = 0; i < 2; i++)
+  {
+    double distance = (-(elenorm(0)*( xyze(0,0) - xyze_points(0,i))) + 
+                         elenorm(1)*(-xyze(1,0) + xyze_points(1,i)) - 
+                         elenorm(2)*( xyze(2,0) - xyze_points(2,i)))/(-elenorm.Norm2());
+
+    if(fabs(distance) >= GEO::TOL7)
+      return false;
+  }
+  return true;
+}
 
 
 /*----------------------------------------------------------------------*
@@ -123,6 +158,12 @@ static inline void elementToCurrentCoordinatesInPlace(
   case DRT::Element::line3:
       elementToCurrentCoordinatesInPlaceT<DRT::Element::line3>(xyze, eleCoord);
       break;
+  case DRT::Element::tri3:
+      elementToCurrentCoordinatesInPlaceT<DRT::Element::tri3>(xyze, eleCoord);
+      break;
+  case DRT::Element::tri6:
+      elementToCurrentCoordinatesInPlaceT<DRT::Element::tri6>(xyze, eleCoord);
+      break;
   case DRT::Element::quad4:
       elementToCurrentCoordinatesInPlaceT<DRT::Element::quad4>(xyze, eleCoord);
       break;
@@ -140,6 +181,12 @@ static inline void elementToCurrentCoordinatesInPlace(
       break;
   case DRT::Element::hex27:
       elementToCurrentCoordinatesInPlaceT<DRT::Element::hex27>(xyze, eleCoord);
+      break;
+  case DRT::Element::tet4:
+      elementToCurrentCoordinatesInPlaceT<DRT::Element::tet4>(xyze, eleCoord);
+      break;
+  case DRT::Element::tet10:
+      elementToCurrentCoordinatesInPlaceT<DRT::Element::tet10>(xyze, eleCoord);
       break;
   default:
       std::cout << DistypeToString(distype) << endl;
@@ -204,6 +251,12 @@ static inline void elementToCurrentCoordinates(
   case DRT::Element::line3:
       elementToCurrentCoordinatesT<DRT::Element::line3>(xyze, xsi, x);
       break;
+  case DRT::Element::tri3:
+      elementToCurrentCoordinatesT<DRT::Element::tri3>(xyze, xsi, x);
+      break;
+  case DRT::Element::tri6:
+      elementToCurrentCoordinatesT<DRT::Element::tri6>(xyze, xsi, x);
+      break;
   case DRT::Element::quad4:
       elementToCurrentCoordinatesT<DRT::Element::quad4>(xyze, xsi, x);
       break;
@@ -222,12 +275,65 @@ static inline void elementToCurrentCoordinates(
   case DRT::Element::hex27:
       elementToCurrentCoordinatesT<DRT::Element::hex27>(xyze, xsi, x);
       break;
+  case DRT::Element::tet4:
+      elementToCurrentCoordinatesT<DRT::Element::tet4>(xyze, xsi, x);
+      break;
+  case DRT::Element::tet10:
+      elementToCurrentCoordinatesT<DRT::Element::tet10>(xyze, xsi, x);
+      break;
   default:
       std::cout << DistypeToString(distype) << endl;
       dserror("add your 3D distype to this switch!");
   }   
   return;
 }
+
+
+
+/*!
+\brief computes starting value for current to volume element computation
+\param xsi              	 (in)   starting vector
+\param distype               (in)   shape of the element
+\return  true if point lies in the element, false otherwise
+*/
+template <	DRT::Element::DiscretizationType distype, 
+			class V>
+static inline void startingValueCurrentToElementCoords(
+	V&			xsi)
+{
+  switch(distype)
+  {
+  case DRT::Element::hex8: case DRT::Element::hex20: case DRT::Element::hex27:
+  {
+    xsi.Clear();
+    break;
+  }
+  case DRT::Element::tet4 : case DRT::Element::tet10: 
+  {
+    xsi.PutScalar(0.3);
+    break;
+  }
+  case DRT::Element::quad4: case DRT::Element::quad8: case DRT::Element::quad9:
+  {
+    xsi.Clear();
+    break;
+  }
+  case DRT::Element::tri3 : case DRT::Element::tri6 : 
+  {
+    xsi.PutScalar(0.3);
+    break;
+  }
+  case DRT::Element::line2 : case DRT::Element::line3 : 
+  {
+    xsi.Clear();
+    break;
+  }
+  default:
+    dserror("distype not yet implemented");
+  }
+  return;
+}
+
 
 
 
@@ -242,26 +348,40 @@ bool checkPositionWithinElementParameterSpace(
         const V&                               eleCoord, 
         const DRT::Element::DiscretizationType distype)
 {
-  bool nodeWithinElement = true;
   switch(distype)
   {
-    case DRT::Element::hex8: case DRT::Element::hex20: case DRT::Element::hex27: 
-    case DRT::Element::quad4: case DRT::Element::quad8:  case DRT::Element::quad9:
-    case DRT::Element::line2: case DRT::Element::line3:    
-    {
-      for(int i = 0; i < DRT::UTILS::getDimension(distype); i++)
-        if(eleCoord(i) > (1.0+GEO::TOL7) || eleCoord(i) < (-1)*(1.0+GEO::TOL7) ) 
-        {
-          nodeWithinElement = false;
-          break;
-        }
-      break;
-    }
-    default:
-      dserror("distype not yet implemented");
-    }   
-    
-  return nodeWithinElement;
+  case DRT::Element::hex8: case DRT::Element::hex20: case DRT::Element::hex27: 
+  case DRT::Element::quad4: case DRT::Element::quad8:  case DRT::Element::quad9:
+  case DRT::Element::line2: case DRT::Element::line3:    
+  {
+    for(int i = 0; i < DRT::UTILS::getDimension(distype); i++)
+      if(eleCoord(i) > (1.0+GEO::TOL7) || eleCoord(i) < (-1)*(1.0+GEO::TOL7) ) 
+        return false;
+
+    break;
+  }
+  case DRT::Element::tri3 : case DRT::Element::tri6: 
+  {
+    if(eleCoord(0) > (1.0 + GEO::TOL7) || eleCoord(0) < (-1)*GEO::TOL7 )    // r = 0 ... 1
+      return false;
+    if(eleCoord(1) > (1.0 - eleCoord(0) + 2*GEO::TOL7) || eleCoord(1) < (-1)*GEO::TOL7 ) 	 // s = 0 ... 1 -r
+      return false;
+    break;
+  }
+  case DRT::Element::tet4 : case DRT::Element::tet10: 
+  {
+    if(eleCoord(0) > (1.0 + GEO::TOL7) || eleCoord(0) < (-1)*GEO::TOL7 )    // r = 0 ... 1
+      return false;
+    if(eleCoord(1) > (1.0 + GEO::TOL7) || eleCoord(1) < (-1)*GEO::TOL7 ) 	 // s = 0 ... 1
+      return false;
+    if(eleCoord(2) > (1.0 - eleCoord(0) - eleCoord(1) + 3*GEO::TOL7) || eleCoord(2) < (-1)*GEO::TOL7 ) 	 // t = 0 ... 1 - r -s
+      return false;   //TODO check tolerance
+    break;
+  }
+  default:
+    dserror("distype not yet implemented");
+  }        
+  return true;
 }
 
 
@@ -340,45 +460,45 @@ static inline bool currentToVolumeElementCoordinatesT(
     LINALG::Matrix<3,1>&                          xsi              ///< (r,s,t)
     )
 {
-    const int dim = 3;
-    bool nodeWithinElement = true;
-    const int maxiter = 20;
-    double residual = 1.0;
-    
-    static LINALG::Matrix<3,3> A;
-    static LINALG::Matrix<3,1> b;
-    static LINALG::Matrix<3,1> dx;
-    
-    // initial guess
-    xsi.Clear();
-            
+  const int dim = 3;
+  bool nodeWithinElement = true;
+  const int maxiter = 20;
+  double residual = 1.0;
+
+  static LINALG::Matrix<3,3> A;
+  static LINALG::Matrix<3,1> b;
+  static LINALG::Matrix<3,1> dx;
+
+  // initial guess
+  startingValueCurrentToElementCoords<DISTYPE>(xsi);
+
+  updateRHSForNWE<DISTYPE,dim>(b, xsi, x, xyze);
+
+  int iter = 0;
+  while(residual > GEO::TOL14)
+  {   
+    updateAForNWE<DISTYPE,dim>( A, xsi, xyze);
+
+    if(!GEO::gaussElimination<true,3>(A, b, dx, GEO::TOL14))
+    {
+      nodeWithinElement = false;
+      break;
+    }   
+
+    xsi += dx;
     updateRHSForNWE<DISTYPE,dim>(b, xsi, x, xyze);
-    
-    int iter = 0;
-    while(residual > GEO::TOL14)
+
+    residual = b.Norm2();
+    iter++; 
+
+    if(iter >= maxiter || GEO::SumOfFabsEntries(xsi) > GEO::TOLPLUS8)
     {   
-        updateAForNWE<DISTYPE,dim>( A, xsi, xyze);
-   
-        if(!GEO::gaussElimination<true,3>(A, b, dx, GEO::TOL14))
-        {
-            nodeWithinElement = false;
-            break;
-        }   
-        
-        xsi += dx;
-        updateRHSForNWE<DISTYPE,dim>(b, xsi, x, xyze);
-        
-        residual = b.Norm2();
-        iter++; 
-        
-        if(iter >= maxiter || GEO::SumOfFabsEntries(xsi) > GEO::TOLPLUS8)
-        {   
-            nodeWithinElement = false;
-            break;
-        }   
-    }
-    
-    return nodeWithinElement;
+      nodeWithinElement = false;
+      break;
+    }   
+  }
+
+  return nodeWithinElement;
 }
 
 
@@ -403,6 +523,12 @@ bool currentToVolumeElementCoordinates(
     case DRT::Element::hex27:
         nodeWithinElement = currentToVolumeElementCoordinatesT<DRT::Element::hex27>(xyze, x, xsi);
         break;
+    case DRT::Element::tet4:
+        nodeWithinElement = currentToVolumeElementCoordinatesT<DRT::Element::tet4>(xyze, x, xsi);
+        break;
+    case DRT::Element::tet10:
+        nodeWithinElement = currentToVolumeElementCoordinatesT<DRT::Element::tet10>(xyze, x, xsi);
+        break;
     default:
         std::cout << DistypeToString(distype) << endl;
         dserror("add your 3D distype to this switch!");
@@ -421,23 +547,48 @@ bool currentToVolumeElementCoordinates(
 template <class M1, class V3>
 LINALG::Matrix<3,1> currentToVolumeElementCoordinatesExact(
         const DRT::Element::DiscretizationType  distype,
-        const M1&                               xyze,
-        const V3&                               x,
-        const double                            tol
+        const M1&                       xyze,
+        const V3&              					x,
+        const double                    tol
         )
 {
-  LINALG::Matrix<3,1> xsi;
-  currentToVolumeElementCoordinates(distype, xyze, x, xsi);
+  	LINALG::Matrix<3,1> xsi;
+  	currentToVolumeElementCoordinates(distype, xyze, x, xsi);
  
-  // rounding 1 and -1 to be exact for the CDT
-  // TODO extend for triangles
-  for(int j = 0; j < 3; j++)
-  {
-      if( fabs((fabs(xsi(j))-1.0)) < tol &&  xsi(j) < 0)    xsi(j) = -1.0;
-      if( fabs((fabs(xsi(j))-1.0)) < tol &&  xsi(j) > 0)    xsi(j) =  1.0;      
-  }
-  return xsi;
-}
+  	switch (distype)
+  	{
+  	case DRT::Element::hex8: case DRT::Element::hex20: case DRT::Element::hex27:
+  	{  
+  	  // rounding 1 and -1 to be exact for the CDT
+  	  for(int j = 0; j < 3; j++)
+  	  {
+  	    if( fabs((fabs(xsi(j))-1.0)) < tol &&  xsi(j) < 0)    xsi(j) = -1.0;
+  	    if( fabs((fabs(xsi(j))-1.0)) < tol &&  xsi(j) > 0)    xsi(j) =  1.0;      
+  	  }
+  	  break;
+  	}
+  	case DRT::Element::tet4: case DRT::Element::tet10: 
+  	{
+  	  // round r on 0 or 1
+  	  // round s on 0 or 1
+  	  // round t on 0 or 1-r-s
+  	  if( fabs( xsi(0)     ) < tol )    xsi(0) = 0.0;
+  	  if( fabs( xsi(0)-1.0 ) < tol )    xsi(0) = 1.0;
+
+  	  if( fabs( xsi(1)     ) < tol )    xsi(1) = 0.0;
+  	  if( fabs( xsi(1)-1.0 ) < tol )    xsi(1) = 1.0;
+
+  	  if( fabs( xsi(2)-(1.0 - xsi(0) - xsi(1)) ) < 3*tol )    xsi(2) = 1.0 -  xsi(0) - xsi(1);
+  	  if( fabs( xsi(2)     ) < 2*tol )    xsi(2) = 0.0;
+
+  	  break;
+  	}
+  	default:
+  	  dserror("element type not implemented");
+  	};
+
+    return xsi;
+} 
 
 
 
@@ -563,7 +714,7 @@ static void currentToSurfaceElementCoordinatesT(
 {
   bool nodeWithinElement = true;
   
-  eleCoord.Clear();
+  startingValueCurrentToElementCoords<DISTYPE>(eleCoord);
   
   const int maxiter = 20;
   int iter = 0;
@@ -626,20 +777,26 @@ static void CurrentToSurfaceElementCoordinates(
         LINALG::Matrix<2,1>&                    eleCoord
         )
 {
-    switch (distype)
-    {
-        case DRT::Element::quad4:
-            currentToSurfaceElementCoordinatesT<DRT::Element::quad4>(xyze_surfaceElement,physCoord,eleCoord);
-            break;
-        case DRT::Element::quad8:
-            currentToSurfaceElementCoordinatesT<DRT::Element::quad8>(xyze_surfaceElement,physCoord,eleCoord);
-            break;
-        case DRT::Element::quad9:
-            currentToSurfaceElementCoordinatesT<DRT::Element::quad9>(xyze_surfaceElement,physCoord,eleCoord);
-            break;
-        default:
-            dserror("please add your surface element type here");
-    }
+  switch (distype)
+  {
+  case DRT::Element::quad4:
+    currentToSurfaceElementCoordinatesT<DRT::Element::quad4>(xyze_surfaceElement,physCoord,eleCoord);
+    break;
+  case DRT::Element::quad8:
+    currentToSurfaceElementCoordinatesT<DRT::Element::quad8>(xyze_surfaceElement,physCoord,eleCoord);
+    break;
+  case DRT::Element::quad9:
+    currentToSurfaceElementCoordinatesT<DRT::Element::quad9>(xyze_surfaceElement,physCoord,eleCoord);
+    break;
+  case DRT::Element::tri3:
+    currentToSurfaceElementCoordinatesT<DRT::Element::tri3>(xyze_surfaceElement,physCoord,eleCoord);
+    break;
+  case DRT::Element::tri6:
+    currentToSurfaceElementCoordinatesT<DRT::Element::tri6>(xyze_surfaceElement,physCoord,eleCoord);
+    break;
+  default:
+    dserror("please add your surface element type here");
+  }
 }
 
 
@@ -666,9 +823,9 @@ static void currentToLineElementCoordinatesT(
   const int maxiter = 20;
   int iter = 0;
   double residual = 1.0;
-  // starting value
-  eleCoord.Clear();
   
+  // starting value
+  startingValueCurrentToElementCoords<DISTYPE>(eleCoord); 
   
   while(residual > GEO::TOL13)
   {
@@ -752,21 +909,19 @@ static void CurrentToLineElementCoordinates(
         LINALG::Matrix<1,1>&                    eleCoord
         )
 {
-    switch (distype)
-    {
-        case DRT::Element::line2:
-            currentToLineElementCoordinatesT<DRT::Element::line2>(xyze_lineElement,physCoord,eleCoord);
-            break;
-        case DRT::Element::line3:
-            currentToLineElementCoordinatesT<DRT::Element::line3>(xyze_lineElement,physCoord,eleCoord);
-            break;
-        default:
-            dserror("please add your line element type here");
-    }
+  switch (distype)
+  {
+  case DRT::Element::line2:
+    currentToLineElementCoordinatesT<DRT::Element::line2>(xyze_lineElement,physCoord,eleCoord);
+    break;
+  case DRT::Element::line3:
+    currentToLineElementCoordinatesT<DRT::Element::line3>(xyze_lineElement,physCoord,eleCoord);
+    break;
+  default:
+    dserror("please add your line element type here");
+  }
 }
 
-  
-  
   
 
 /*!
@@ -855,21 +1010,24 @@ inline void computeNormalToSurfaceElement(
 {
   switch (surfaceElement->Shape())
   {
-      case DRT::Element::quad4:
-          computeNormalToSurfaceElementT<DRT::Element::quad4>(xyze_surfaceElement, eleCoord, unitnormalvec);
-          break;
-      case DRT::Element::quad8:
-          computeNormalToSurfaceElementT<DRT::Element::quad8>(xyze_surfaceElement, eleCoord, unitnormalvec);
-          break;
-      case DRT::Element::quad9:
-          computeNormalToSurfaceElementT<DRT::Element::quad9>(xyze_surfaceElement, eleCoord, unitnormalvec);
-          break;
-      case DRT::Element::tri3:
-          computeNormalToSurfaceElementT<DRT::Element::tri3>(xyze_surfaceElement, eleCoord, unitnormalvec);
-          break;
-      default:
-          cout << DRT::DistypeToString(surfaceElement->Shape()) << " not found!" << endl;
-          dserror("please add your distype!");
+  case DRT::Element::quad4:
+    computeNormalToSurfaceElementT<DRT::Element::quad4>(xyze_surfaceElement, eleCoord, unitnormalvec);
+    break;
+  case DRT::Element::quad8:
+    computeNormalToSurfaceElementT<DRT::Element::quad8>(xyze_surfaceElement, eleCoord, unitnormalvec);
+    break;
+  case DRT::Element::quad9:
+    computeNormalToSurfaceElementT<DRT::Element::quad9>(xyze_surfaceElement, eleCoord, unitnormalvec);
+    break;
+  case DRT::Element::tri3:
+    computeNormalToSurfaceElementT<DRT::Element::tri3>(xyze_surfaceElement, eleCoord, unitnormalvec);
+    break;
+  case DRT::Element::tri6:
+    computeNormalToSurfaceElementT<DRT::Element::tri6>(xyze_surfaceElement, eleCoord, unitnormalvec);
+    break;
+  default:
+    cout << DRT::DistypeToString(surfaceElement->Shape()) << " not found!" << endl;
+    dserror("please add your distype!");
   }
   return;
 }

@@ -26,6 +26,7 @@ Maintainer: Georg Bauer
 #include "../drt_lib/drt_globalproblem.H"
 #include <Epetra_SerialDenseSolver.h>
 #include "../drt_geometry/position_array.H"
+#include "../drt_lib/linalg_serialdensematrix.H"
 
 
 /*----------------------------------------------------------------------*
@@ -3250,17 +3251,17 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalculateFlux(
     dserror("Material type is not supported");
 
   /*----------------------------------------- declaration of variables ---*/
-  vector< LINALG::Matrix<3,1> > nodecoords;
-  nodecoords = DRT::UTILS::getEleNodeNumbering_nodes_reference(distype);
+  LINALG::SerialDenseMatrix nodecoords;
+  nodecoords = DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype);
 
-  if ((int) nodecoords.size() != iel) dserror("number of nodes does not match");
+  if ((int) nodecoords.N() != iel) dserror("number of nodes does not match");
 
   // loop over all nodes
   for (int iquad=0; iquad<iel; ++iquad)
   {
     // reference coordinates of the current node
     for (int idim=0;idim<nsd_;idim++)
-      {xsi_(idim) = nodecoords[iquad](idim);}
+      {xsi_(idim) = nodecoords(idim, iquad);}
 
     // shape functions and their first derivatives
     DRT::UTILS::shape_function<distype>(xsi_,funct_);

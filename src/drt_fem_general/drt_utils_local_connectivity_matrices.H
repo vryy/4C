@@ -366,7 +366,8 @@ namespace UTILS
   template<> struct DisTypeToNumNodePerEle<DRT::Element::wedge15>  {static const int numNodePerElement = 15;};
   template<> struct DisTypeToNumNodePerEle<DRT::Element::pyramid5> {static const int numNodePerElement =  5;};
 
-   /*!
+  
+  /*!
   \brief Returns the number of corner nodes
          for each discretization type
 
@@ -375,18 +376,30 @@ namespace UTILS
   int getNumberOfElementCornerNodes(
     const DRT::Element::DiscretizationType&     distype
     );
+    
+  
+  /*!
+  \brief  Returns the number of corner nodes
+          for each surface element of a given volume discretization type
+
+  \return   number of corner nodes for each surface element of a given volume 
+             of the discretization type
+   */
+  std::vector<int> getNumberOfSurfaceElementCornerNodes(
+    const DRT::Element::DiscretizationType&     distype
+    );
 
   /*!
  \brief Returns the number of lines
         for each discretization type
- */
+   */
   int getNumberOfElementLines(
       const DRT::Element::DiscretizationType&     distype);
 
   /*!
  \brief Returns the number of surfaces
         for each discretization type
- */
+   */
   int getNumberOfElementSurfaces(
       const DRT::Element::DiscretizationType&     distype);
 
@@ -395,20 +408,20 @@ namespace UTILS
          for each discretization type
 
   \return map with all nodes for each surface
-  */
+   */
   vector< vector<int> > getEleNodeNumberingSurfaces(
-    const DRT::Element::DiscretizationType&     distype     ///< discretization type
-    );
+      const DRT::Element::DiscretizationType&     distype     ///< discretization type
+  );
 
   /*!
   \brief Fills a vector< vector<int> > with all nodes for every line
          for each discretization type
 
   \return map with all nodes for each line
-  */
+   */
   vector< vector<int> > getEleNodeNumberingLines(
-    const DRT::Element::DiscretizationType&     distype     ///< discretization type
-    );
+      const DRT::Element::DiscretizationType&     distype     ///< discretization type
+  );
 
   /*!
   \brief Fills a vector< vector<int> > with all surfaces for every line
@@ -441,12 +454,12 @@ namespace UTILS
     );
 
   /*!
-  \brief Fills a vector< vector<int> > with reference coordinates for each node
+  \brief Fills a LINALG::SerialDenseMatrix with parameter space coordinates for each node
          for each discretization type
 
-  \return map of reference coordinates for all nodes
+  \return map of parameter space coordinates for all nodes
   */
-  vector< LINALG::Matrix<3,1> > getEleNodeNumbering_nodes_reference(
+  LINALG::SerialDenseMatrix getEleNodeNumbering_nodes_paramspace(
     const DRT::Element::DiscretizationType      distype     ///< discretization type
     );
 

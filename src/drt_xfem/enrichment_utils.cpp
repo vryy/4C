@@ -18,11 +18,13 @@ Maintainer: Axel Gerstenberger
 #include "enrichment_utils.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_fem_general/drt_utils_integration.H"
+#include "../drt_geometry/integrationcell_coordtrafo.H"
 #include "../drt_geometry/intersection_service.H"
 #include "../drt_geometry/position_array.H"
-#include "coordinate_transformation.H"
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 XFEM::ElementEnrichmentValues::ElementEnrichmentValues(
         const DRT::Element&                   ele,
         const RCP<XFEM::InterfaceHandle>&     ih,               ///< interface information
@@ -36,8 +38,7 @@ XFEM::ElementEnrichmentValues::ElementEnrichmentValues(
     enrvals_.clear();
     const std::set<XFEM::Enrichment>& enrset(dofman.getUniqueEnrichments());
     //TODO: achtung: bei mehreren enrichments ist approach from plus nicht mehr so einfach
-    for (std::set<XFEM::Enrichment>::const_iterator enriter =
-        enrset.begin(); enriter != enrset.end(); ++enriter)
+    for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
     {
         const double enrval = enriter->EnrValue(actpos, *ih, approachdirection);
 //        enrvals_.insert(make_pair((*enriter), enrval));
@@ -46,22 +47,24 @@ XFEM::ElementEnrichmentValues::ElementEnrichmentValues(
     return;
 }
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void XFEM::computeScalarCellNodeValuesFromNodalUnknowns(
-  const DRT::Element&  ele,
-  const RCP<XFEM::InterfaceHandle>&  ih,
-  const XFEM::ElementDofManager& dofman,
-  const GEO::DomainIntCell& cell,
-  const XFEM::PHYSICS::Field field,
-  const LINALG::SerialDenseVector& elementvalues,
-  LINALG::SerialDenseVector&      cellvalues
-  )
+  const DRT::Element&                   ele,
+  const RCP<XFEM::InterfaceHandle>&     ih,
+  const XFEM::ElementDofManager&        dofman,
+  const GEO::DomainIntCell&             cell,
+  const XFEM::PHYSICS::Field            field,
+  const LINALG::SerialDenseVector&      elementvalues,
+  LINALG::SerialDenseVector&            cellvalues)
 {
-  const LINALG::SerialDenseMatrix& nodalPosXiDomain(cell.NodalPosXiDomain());
+  const LINALG::SerialDenseMatrix& nodalPosXiDomain(cell.CellNodalPosXiDomain());
 
   // if cell node is on the interface, the value is not defined for a jump.
   // however, we approach the interface from one particular side and therefore,
   // -> we use the center of the cell to determine, where we come from
-  const LINALG::Matrix<3,1> cellcenterpos(cell.GetPhysicalCenterPosition(ele));
+  const LINALG::Matrix<3,1> cellcenterpos(cell.GetPhysicalCenterPosition());
 
   const XFEM::ElementEnrichmentValues enrvals(
         ele,
@@ -86,30 +89,29 @@ void XFEM::computeScalarCellNodeValuesFromNodalUnknowns(
     enrvals.ComputeEnrichedNodalShapefunction(field, funct, enr_funct);
     // interpolate value
     for (int iparam = 0; iparam < numparam; ++iparam)
-    {
       cellvalues(inen) += elementvalues(iparam) * enr_funct(iparam);
-    }
   }
   return;
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void XFEM::computeScalarCellNodeValuesFromElementUnknowns(
-  const DRT::Element&  ele,
-  const RCP<XFEM::InterfaceHandle>&  ih,
-  const XFEM::ElementDofManager& dofman,
-  const GEO::DomainIntCell& cell,
-  const XFEM::PHYSICS::Field field,
-  const LINALG::SerialDenseVector& elementvalues,
-  LINALG::SerialDenseVector&      cellvalues
-  )
+  const DRT::Element&                 ele,
+  const RCP<XFEM::InterfaceHandle>&   ih,
+  const XFEM::ElementDofManager&      dofman,
+  const GEO::DomainIntCell&           cell,
+  const XFEM::PHYSICS::Field          field,
+  const LINALG::SerialDenseVector&    elementvalues,
+  LINALG::SerialDenseVector&          cellvalues)
 {
-  const LINALG::SerialDenseMatrix& nodalPosXiDomain(cell.NodalPosXiDomain());
+  const LINALG::SerialDenseMatrix& nodalPosXiDomain(cell.CellNodalPosXiDomain());
 
   // if cell node is on the interface, the value is not defined for a jump.
   // however, we approach the interface from one particular side and therefore,
   // -> we use the center of the cell to determine, where we come from
-  const LINALG::Matrix<3,1> cellcenterpos(cell.GetPhysicalCenterPosition(ele));
+  const LINALG::Matrix<3,1> cellcenterpos(cell.GetPhysicalCenterPosition());
   
   const XFEM::ElementEnrichmentValues enrvals(
         ele,
@@ -123,9 +125,7 @@ void XFEM::computeScalarCellNodeValuesFromElementUnknowns(
   {
     const int numparam  = dofman.NumDofPerField(field);
     if (numparam == 0)
-    {
       continue;
-    }
     
     const DRT::Element::DiscretizationType eleval_distype = dofman.getDisTypePerField(field);
     const int numvirtnode = DRT::UTILS::getNumberOfElementNodes(eleval_distype);
@@ -143,30 +143,30 @@ void XFEM::computeScalarCellNodeValuesFromElementUnknowns(
     enrvals.ComputeEnrichedElementShapefunction(field, funct, enr_funct);
     // interpolate value
     for (int iparam = 0; iparam < numparam; ++iparam)
-    {
       cellvalues(incn) += elementvalues(iparam) * enr_funct(iparam);
-    }
   }
   return;
 }
 
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void XFEM::computeTensorCellNodeValuesFromElementUnknowns(
-  const DRT::Element&  ele,
-  const RCP<XFEM::InterfaceHandle>&  ih,
-  const XFEM::ElementDofManager& dofman,
-  const GEO::DomainIntCell& cell,
-  const XFEM::PHYSICS::Field field,
-  const LINALG::SerialDenseMatrix& elementvalues,
-  LINALG::SerialDenseMatrix&       cellvalues
-  )
+  const DRT::Element&                 ele,
+  const RCP<XFEM::InterfaceHandle>&   ih,
+  const XFEM::ElementDofManager&      dofman,
+  const GEO::DomainIntCell&           cell,
+  const XFEM::PHYSICS::Field          field,
+  const LINALG::SerialDenseMatrix&    elementvalues,
+  LINALG::SerialDenseMatrix&          cellvalues)
 {
-  const LINALG::SerialDenseMatrix& nodalPosXiDomain(cell.NodalPosXiDomain());
+  const LINALG::SerialDenseMatrix& nodalPosXiDomain(cell.CellNodalPosXiDomain());
 
   // if cell node is on the interface, the value is not defined for a jump.
   // however, we approach the interface from one particular side and therefore,
   // -> we use the center of the cell to determine, where we come from
-  const LINALG::Matrix<3,1> cellcenterpos(cell.GetPhysicalCenterPosition(ele));
+  const LINALG::Matrix<3,1> cellcenterpos(cell.GetPhysicalCenterPosition());
   flush(cout);
   const XFEM::ElementEnrichmentValues enrvals(
         ele,
@@ -180,9 +180,7 @@ void XFEM::computeTensorCellNodeValuesFromElementUnknowns(
   {
     const int numparam  = dofman.NumDofPerField(field);
     if (numparam == 0)
-    {
       continue;
-    }
     
     const DRT::Element::DiscretizationType eleval_distype = dofman.getDisTypePerField(field);
     const int numvirtnode = DRT::UTILS::getNumberOfElementNodes(eleval_distype);
@@ -200,40 +198,32 @@ void XFEM::computeTensorCellNodeValuesFromElementUnknowns(
     enrvals.ComputeEnrichedElementShapefunction(field, funct, enr_funct);
     // interpolate value
     for (int iparam = 0; iparam < numparam; ++iparam)
-    {
       for (int ientry = 0; ientry < 9; ++ientry)
-      {
         cellvalues(ientry,incn) += elementvalues(ientry,iparam) * enr_funct(iparam);        
-      }
-    }
   }
   return;
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void XFEM::computeVectorCellNodeValues(
-  const DRT::Element&  ele,
-  const RCP<XFEM::InterfaceHandle>&  ih,
-  const XFEM::ElementDofManager& dofman,
-  const GEO::DomainIntCell& cell,
-  const XFEM::PHYSICS::Field field,
-  const LINALG::SerialDenseMatrix& elementvalues,
-  LINALG::SerialDenseMatrix&       cellvalues
-  )
+  const DRT::Element&                 ele,
+  const RCP<XFEM::InterfaceHandle>&   ih,
+  const XFEM::ElementDofManager&      dofman,
+  const GEO::DomainIntCell&           cell,
+  const XFEM::PHYSICS::Field          field,
+  const LINALG::SerialDenseMatrix&    elementvalues,
+  LINALG::SerialDenseMatrix&          cellvalues)
 {
   const int nen_cell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
   const int numparam  = dofman.NumDofPerField(field);
-  const int nsd = 3;
-
-  const LINALG::SerialDenseMatrix& nodalPosXiDomain(cell.NodalPosXiDomain());
-  
-  LINALG::SerialDenseMatrix xyz_cell(nsd,nen_cell);
-  cell.NodalPosXYZ(ele, xyz_cell);
+  const LINALG::SerialDenseMatrix& nodalPosXiDomain(cell.CellNodalPosXiDomain());
 
   // if cell node is on the interface, the value is not defined for a jump.
   // however, we approach the interface from one particular side and therefore,
   // -> we use the center of the cell to determine, where we come from
-  const LINALG::Matrix<nsd,1> cellcenterpos(cell.GetPhysicalCenterPosition(ele));
+  const LINALG::Matrix<3,1> cellcenterpos(cell.GetPhysicalCenterPosition());
 
   const XFEM::ElementEnrichmentValues enrvals(
         ele,
@@ -243,7 +233,6 @@ void XFEM::computeVectorCellNodeValues(
         XFEM::Enrichment::approachUnknown);
   
   // cell corner nodes
-  //const LINALG::SerialDenseMatrix cellnodeposvectors = cell.NodalPosXYZ(ele);
   LINALG::SerialDenseVector enr_funct(numparam);
   //LINALG::SerialDenseVector funct(DRT::UTILS::getNumberOfElementNodes(ele.Shape()));
   static LINALG::SerialDenseVector funct(27);
@@ -259,31 +248,28 @@ void XFEM::computeVectorCellNodeValues(
     enrvals.ComputeEnrichedNodalShapefunction(field, funct, enr_funct);
     // interpolate value
     for (int iparam = 0; iparam < numparam; ++iparam)
-    {
-      for (int isd = 0; isd < nsd; ++isd)
-      {
+      for (int isd = 0; isd < 3; ++isd)
         cellvalues(isd,inen) += elementvalues(isd,iparam) * enr_funct(iparam);        
-      }
-    }
   }
   return;
 }
 
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void XFEM::computeVectorCellNodeValues(
-  const DRT::Element&  ele,
-  const RCP<XFEM::InterfaceHandle>&  ih,
-  const XFEM::ElementDofManager& dofman,
-  const GEO::BoundaryIntCell& cell,
-  const XFEM::PHYSICS::Field field,
-  const LINALG::SerialDenseMatrix& elementvalues,
-  LINALG::SerialDenseMatrix&      cellvalues
-  )
+  const DRT::Element&                 ele,
+  const RCP<XFEM::InterfaceHandle>&   ih,
+  const XFEM::ElementDofManager&      dofman,
+  const GEO::BoundaryIntCell&         cell,
+  const XFEM::PHYSICS::Field          field,
+  const LINALG::SerialDenseMatrix&    elementvalues,
+  LINALG::SerialDenseMatrix&          cellvalues)
 {
   const int nen_cell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
   const int numparam  = dofman.NumDofPerField(field);
-  const int nsd = 3;
-
-  const LINALG::SerialDenseMatrix& nodalPosXiDomain(cell.NodalPosXiDomain());
+  const LINALG::SerialDenseMatrix& nodalPosXiDomain(cell.CellNodalPosXiDomain());
 
   // if cell node is on the interface, the value is not defined for a jump.
   // however, we approach the interface from one particular side and therefore,
@@ -297,8 +283,7 @@ void XFEM::computeVectorCellNodeValues(
         cellcenterpos,
         XFEM::Enrichment::approachFromPlus);
   
-  // cell corner nodes
-  //const LINALG::SerialDenseMatrix cellnodeposvectors = cell.NodalPosXYZ(ele);
+  
   LINALG::SerialDenseVector enr_funct(numparam);
   //LINALG::SerialDenseVector funct(DRT::UTILS::getNumberOfElementNodes(ele.Shape()));
   static LINALG::SerialDenseVector funct(27);
@@ -315,124 +300,108 @@ void XFEM::computeVectorCellNodeValues(
     enrvals.ComputeEnrichedNodalShapefunction(field, funct, enr_funct);
     // interpolate value
     for (int iparam = 0; iparam < numparam; ++iparam)
-    {
-      for (int isd = 0; isd < nsd; ++isd)
-      {
+      for (int isd = 0; isd < 3; ++isd)
         cellvalues(isd,inen) += elementvalues(isd,iparam) * enr_funct(iparam);        
-      }
-    }
   }
   return;
 }
 
 
-/*!
-  Calculate ratio between fictitious element size and normal size
-  */
+
+/*----------------------------------------------------------------------*
+ * Calculate ratio between fictitious element size and normal size
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType DISTYPE>
 double DomainCoverageRatioT(
         const DRT::Element&           ele,           ///< the element whose area ratio we want to compute
         const XFEM::InterfaceHandle&  ih             ///< connection to the interface handler
         )
 {
-    
-    // number of nodes for element
-    const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-    
-    // dimension for 3d fluid element
-    const int nsd = 3;
-    
-    // get node coordinates of the current element
-    static LINALG::Matrix<nsd,numnode> xyze;
-    GEO::fillInitialPositionArray<DISTYPE>(&ele, xyze);
-    
-    //double 
-    double area_ele  = 0.0;
-    double area_fict = 0.0;
-    
-    // information about domain integration cells
-    const GEO::DomainIntCells&  domainIntCells(ih.GetDomainIntCells(ele.Id(),DISTYPE));
-    // loop over integration cells
-    for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
+  // number of nodes for element
+  const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+  // get node coordinates of the current element
+  static LINALG::Matrix<3,numnode> xyze;
+  GEO::fillInitialPositionArray<DISTYPE>(&ele, xyze);
+  
+  //double 
+  double area_ele  = 0.0;
+  double area_fict = 0.0;
+  
+  // information about domain integration cells
+  const GEO::DomainIntCells&  domainIntCells(ih.GetDomainIntCells(&ele));
+  // loop over integration cells
+  for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
+  {
+    const LINALG::Matrix<3,1> cellcenter(cell->GetPhysicalCenterPosition());            
+    const int label = ih.PositionWithinConditionNP(cellcenter);
+    DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule3D_undefined;
+    switch (cell->Shape())
     {
-
-      const LINALG::Matrix<3,1> cellcenter(cell->GetPhysicalCenterPosition(ele));
-                  
-      const int label = ih.PositionWithinConditionNP(cellcenter);
-      
-      DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule3D_undefined;
-      switch (cell->Shape())
+      case DRT::Element::hex8: case DRT::Element::hex20: case DRT::Element::hex27:
       {
-        case DRT::Element::hex8:
-        case DRT::Element::hex20:
-        case DRT::Element::hex27:
-        {
-          gaussrule = DRT::UTILS::intrule_hex_8point;
-          break;
-        }
-        case DRT::Element::tet4:
-        case DRT::Element::tet10:
-        {
-          gaussrule = DRT::UTILS::intrule_tet_4point;
-          break;
-        }
-        default:
-          dserror("add your element type here...");
+        gaussrule = DRT::UTILS::intrule_hex_8point;
+        break;
       }
+      case DRT::Element::tet4: case DRT::Element::tet10:
+      {
+        gaussrule = DRT::UTILS::intrule_tet_4point;
+        break;
+      }
+      default:
+        dserror("add your element type here...");
+    }
+    
+    // gaussian points
+    const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+
+    // integration loop
+    for (int iquad=0; iquad<intpoints.nquad; ++iquad)
+    {
+      // coordinates of the current integration point in cell coordinates \eta
+      static LINALG::Matrix<3,1> pos_eta_domain;
+      pos_eta_domain(0) = intpoints.qxg[iquad][0];
+      pos_eta_domain(1) = intpoints.qxg[iquad][1];
+      pos_eta_domain(2) = intpoints.qxg[iquad][2];
+
+      // coordinates of the current integration point in element coordinates \xi
+      static LINALG::Matrix<3,1> posXiDomain;
+      GEO::mapEtaToXi3D<XFEM::xfem_assembly>(*cell, pos_eta_domain, posXiDomain);
+      const double detcell = GEO::detEtaToXi3D<XFEM::xfem_assembly>(*cell, pos_eta_domain);
       
-        // gaussian points
-        const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+      // shape functions and their first derivatives
+      static LINALG::Matrix<numnode,1> funct;
+      static LINALG::Matrix<3,numnode> deriv;
+      DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
+      DRT::UTILS::shape_function_3D_deriv1(deriv,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
 
-        // integration loop
-        for (int iquad=0; iquad<intpoints.nquad; ++iquad)
-        {
-            // coordinates of the current integration point in cell coordinates \eta
-            static LINALG::Matrix<3,1> pos_eta_domain;
-            pos_eta_domain(0) = intpoints.qxg[iquad][0];
-            pos_eta_domain(1) = intpoints.qxg[iquad][1];
-            pos_eta_domain(2) = intpoints.qxg[iquad][2];
+      // get transposed of the jacobian matrix d x / d \xi
+      //xjm = deriv(i,k)*xyze(j,k);
+      static LINALG::Matrix<3,3> xjm;
+      xjm.MultiplyNT(deriv,xyze);
 
-            // coordinates of the current integration point in element coordinates \xi
-            static LINALG::Matrix<3,1> posXiDomain;
-            GEO::mapEtaToXi3D<XFEM::xfem_assembly>(*cell, pos_eta_domain, posXiDomain);
-            const double detcell = GEO::detEtaToXi3D<XFEM::xfem_assembly>(*cell, pos_eta_domain);
-            
-            // shape functions and their first derivatives
-            static LINALG::Matrix<numnode,1> funct;
-            static LINALG::Matrix<nsd,numnode> deriv;
-            DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
-            DRT::UTILS::shape_function_3D_deriv1(deriv,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
-      
-            // get transposed of the jacobian matrix d x / d \xi
-            //xjm = deriv(i,k)*xyze(j,k);
-            static LINALG::Matrix<3,3> xjm;
-            xjm.MultiplyNT(deriv,xyze);
+      const double det = xjm.Determinant();
+      const double fac = intpoints.qwgt[iquad]*det*detcell;
 
-            const double det = xjm.Determinant();
-            const double fac = intpoints.qwgt[iquad]*det*detcell;
-
-            if (det < 0.0)
-            {
-                dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele.Id(), det);
-            }
-
-            area_ele += fac;
-            
-            if (label != 0)
-            {
-              area_fict += fac;
-            }
-            
-        } // end loop over gauss points
-    } // end loop over integration cells
-
-    return area_fict / area_ele;
+      if(det < 0.0)
+        dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele.Id(), det);
+         
+        area_ele += fac;
+        
+      if(label != 0)
+        area_fict += fac;
+ 
+    } // end loop over gauss points
+  } // end loop over integration cells
+  return area_fict / area_ele;
 }
 
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 double XFEM::DomainCoverageRatio(
         const DRT::Element&           ele,
-        const XFEM::InterfaceHandle&  ih
-        )
+        const XFEM::InterfaceHandle&  ih)
 {
   switch (ele.Shape())
   {
@@ -442,6 +411,10 @@ double XFEM::DomainCoverageRatio(
       return DomainCoverageRatioT<DRT::Element::hex20>(ele,ih);
     case DRT::Element::hex27:
       return DomainCoverageRatioT<DRT::Element::hex27>(ele,ih);
+    case DRT::Element::tet4:
+      return DomainCoverageRatioT<DRT::Element::tet4>(ele,ih);
+    case DRT::Element::tet10:
+      return DomainCoverageRatioT<DRT::Element::tet10>(ele,ih);
     default:
       dserror("add you distype here...");
       exit(1);
@@ -449,107 +422,95 @@ double XFEM::DomainCoverageRatio(
 }
 
 
-/*!
+
+/*----------------------------------------------------------------------*
   Calculate ratio between fictitious element size and normal size
-  */
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType DISTYPE>
 vector<double> DomainCoverageRatioPerNodeT(
         const DRT::Element&           ele,           ///< the element whose area ratio we want to compute
         const XFEM::InterfaceHandle&  ih             ///< connection to the interface handler
         )
 {
+  // number of nodes for element
+  const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+  double area_ele  = 0.0;
+  vector<double> portions(numnode,0.0);
+  
+  // information about domain integration cells
+  const GEO::DomainIntCells&  domainIntCells(ih.GetDomainIntCells(&ele));
+  // loop over integration cells
+  for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
+  {
+    const LINALG::Matrix<3,1> cellcenter(cell->GetPhysicalCenterPosition());          
+    const int label = ih.PositionWithinConditionNP(cellcenter);
     
-    // number of nodes for element
-    const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-    
-    // dimension for 3d fluid element
-    const int nsd = 3;
-    
-    //double 
-    double area_ele  = 0.0;
-    vector<double> portions(numnode,0.0);
-    
-    // information about domain integration cells
-    const GEO::DomainIntCells&  domainIntCells(ih.GetDomainIntCells(ele.Id(),DISTYPE));
-    // loop over integration cells
-    for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
+    DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule3D_undefined;
+    switch (cell->Shape())
     {
-      const LINALG::Matrix<nsd,1> cellcenter(cell->GetPhysicalCenterPosition(ele));
-      
-      const int label = ih.PositionWithinConditionNP(cellcenter);
-      
-      DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule3D_undefined;
-      switch (cell->Shape())
+      case DRT::Element::hex8:
       {
-        case DRT::Element::hex8:
-        {
-          gaussrule = DRT::UTILS::intrule_hex_8point;
-          break;
-        }
-        case DRT::Element::hex20:
-        case DRT::Element::hex27:
-        {
-          gaussrule = DRT::UTILS::intrule_hex_27point;
-          break;
-        }
-        case DRT::Element::tet4:
-        case DRT::Element::tet10:
-        {
-          gaussrule = DRT::UTILS::intrule_tet_4point;
-          break;
-        }
-        default:
-          dserror("add your element type here...");
+        gaussrule = DRT::UTILS::intrule_hex_8point;
+        break;
       }
-      
-        // gaussian points
-        const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
-
-        // integration loop
-        for (int iquad=0; iquad<intpoints.nquad; ++iquad)
-        {
-            // coordinates of the current integration point in cell coordinates \eta
-            static LINALG::Matrix<3,1> pos_eta_domain;
-            pos_eta_domain(0) = intpoints.qxg[iquad][0];
-            pos_eta_domain(1) = intpoints.qxg[iquad][1];
-            pos_eta_domain(2) = intpoints.qxg[iquad][2];
-
-            // coordinates of the current integration point in element coordinates \xi
-            static LINALG::Matrix<3,1> posXiDomain;
-            GEO::mapEtaToXi3D<XFEM::xfem_assembly>(*cell, pos_eta_domain, posXiDomain);
-            const double detcell = GEO::detEtaToXi3D<XFEM::xfem_assembly>(*cell, pos_eta_domain);
-            
-            // shape functions and their first derivatives
-            static LINALG::Matrix<numnode,1> funct;
-            DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
-      
-            const double fac = intpoints.qwgt[iquad]*detcell;
-
-            area_ele += fac;
-            
-            if (label == 0)
-            {
-              for (int inode = 0;inode < numnode;++inode)
-              {
-                portions[inode] += funct(inode) * fac;
-              }
-            }
-            
-        } // end loop over gauss points
-    } // end loop over integration cells
-
-    for (int inode = 0;inode < numnode;++inode)
-    {
-      portions[inode] /= area_ele;
-    }    
+      case DRT::Element::hex20: case DRT::Element::hex27:
+      {
+        gaussrule = DRT::UTILS::intrule_hex_27point;
+        break;
+      }
+      case DRT::Element::tet4: case DRT::Element::tet10:
+      {
+        gaussrule = DRT::UTILS::intrule_tet_4point;
+        break;
+      }
+      default:
+        dserror("add your element type here...");
+    }
     
-    return portions;
+    // gaussian points
+    const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+
+    // integration loop
+    for (int iquad=0; iquad<intpoints.nquad; ++iquad)
+    {
+      // coordinates of the current integration point in cell coordinates \eta
+      static LINALG::Matrix<3,1> pos_eta_domain;
+      pos_eta_domain(0) = intpoints.qxg[iquad][0];
+      pos_eta_domain(1) = intpoints.qxg[iquad][1];
+      pos_eta_domain(2) = intpoints.qxg[iquad][2];
+
+      // coordinates of the current integration point in element coordinates \xi
+      static LINALG::Matrix<3,1> posXiDomain;
+      GEO::mapEtaToXi3D<XFEM::xfem_assembly>(*cell, pos_eta_domain, posXiDomain);
+      const double detcell = GEO::detEtaToXi3D<XFEM::xfem_assembly>(*cell, pos_eta_domain);
+      
+      // shape functions and their first derivatives
+      static LINALG::Matrix<numnode,1> funct;
+      DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
+
+      const double fac = intpoints.qwgt[iquad]*detcell;
+      
+      area_ele += fac;
+      
+      if (label == 0)
+        for (int inode = 0;inode < numnode;++inode)
+          portions[inode] += funct(inode) * fac;
+        
+    } // end loop over gauss points
+  } // end loop over integration cells
+
+  for(int inode = 0; inode < numnode; ++inode)
+    portions[inode] /= area_ele;    
+  
+  return portions;
 }
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 vector<double> XFEM::DomainCoverageRatioPerNode(
-        const DRT::Element&           ele,
-        const XFEM::InterfaceHandle&  ih
-        )
+          const DRT::Element&           ele,
+          const XFEM::InterfaceHandle&  ih)
 {
   switch (ele.Shape())
   {
@@ -559,6 +520,10 @@ vector<double> XFEM::DomainCoverageRatioPerNode(
       return DomainCoverageRatioPerNodeT<DRT::Element::hex20>(ele,ih);
     case DRT::Element::hex27:
       return DomainCoverageRatioPerNodeT<DRT::Element::hex27>(ele,ih);
+    case DRT::Element::tet4:
+      return DomainCoverageRatioPerNodeT<DRT::Element::tet4>(ele,ih);
+    case DRT::Element::tet10:
+      return DomainCoverageRatioPerNodeT<DRT::Element::tet10>(ele,ih);
     default:
       dserror("add you distype here...");
       exit(1);
@@ -566,13 +531,13 @@ vector<double> XFEM::DomainCoverageRatioPerNode(
 }
 
 
-/*!
+/*----------------------------------------------------------------------*
   Calculate ratio between fictitious element size and normal size
-  */
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType DISTYPE>
-double BoundaryCoverageRatioT(
+    double BoundaryCoverageRatioT(
         const DRT::Element&               ele,           ///< the element whose boundary ratio we want to compute
-        const XFEM::InterfaceHandle&  ih             ///< connection to the interface handler
+        const XFEM::InterfaceHandle&      ih             ///< connection to the interface handler
         )
 {
   const Epetra_BLAS blas;
@@ -603,8 +568,7 @@ double BoundaryCoverageRatioT(
     DRT::UTILS::GaussRule2D gaussrule = DRT::UTILS::intrule2D_undefined;
     switch (cell->Shape())
     {
-    case DRT::Element::tri3:
-    case DRT::Element::tri6:
+    case DRT::Element::tri3: case DRT::Element::tri6:
     {
       gaussrule = DRT::UTILS::intrule_tri_1point;
       break;
@@ -616,7 +580,7 @@ double BoundaryCoverageRatioT(
     // gaussian points
     const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule);
     
-    const LINALG::SerialDenseMatrix& nodalpos_xi_domain(cell->NodalPosXiDomain());
+    const LINALG::SerialDenseMatrix& nodalpos_xi_domain(cell->CellNodalPosXiDomain());
     const int numnode_cell = cell->NumNode();
     
     // integration loop
@@ -670,10 +634,13 @@ double BoundaryCoverageRatioT(
   return area_fict / base_area;
 }
 
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 double XFEM::BoundaryCoverageRatio(
         const DRT::Element&           ele,
-        const XFEM::InterfaceHandle&  ih
-        )
+        const XFEM::InterfaceHandle&  ih)
 {
   switch (ele.Shape())
   {
@@ -683,15 +650,21 @@ double XFEM::BoundaryCoverageRatio(
       return BoundaryCoverageRatioT<DRT::Element::hex20>(ele,ih);
     case DRT::Element::hex27:
       return BoundaryCoverageRatioT<DRT::Element::hex27>(ele,ih);
+    case DRT::Element::tet4:
+      return BoundaryCoverageRatioT<DRT::Element::tet4>(ele,ih);
+    case DRT::Element::tet10:
+      return BoundaryCoverageRatioT<DRT::Element::tet10>(ele,ih);
     default:
       dserror("add you distype here...");
       exit(1);
   }
 }
 
-/*!
+
+
+/*----------------------------------------------------------------------*
   Calculate ratio between fictitious element size and normal size
-  */
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType DISTYPE>
 vector<double> DomainIntCellCoverageRatioT(
         const DRT::Element&           ele,           ///< the element whose area ratio we want to compute
@@ -702,7 +675,7 @@ vector<double> DomainIntCellCoverageRatioT(
   const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
  
   // information about domain integration cells
-  const GEO::DomainIntCells&  domainIntCells(ih.GetDomainIntCells(ele.Id(),DISTYPE));
+  const GEO::DomainIntCells&  domainIntCells(ih.GetDomainIntCells(&ele));
   
   double area_ele  = 0.0;
   
@@ -712,9 +685,7 @@ vector<double> DomainIntCellCoverageRatioT(
   int cellcount = 0;
   for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
   {
-
-    const LINALG::Matrix<3,1> cellcenter(cell->GetPhysicalCenterPosition(ele));
-    
+    const LINALG::Matrix<3,1> cellcenter(cell->GetPhysicalCenterPosition()); 
     DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule3D_undefined;
     switch (cell->Shape())
     {
@@ -723,14 +694,12 @@ vector<double> DomainIntCellCoverageRatioT(
         gaussrule = DRT::UTILS::intrule_hex_8point;
         break;
       }
-      case DRT::Element::hex20:
-      case DRT::Element::hex27:
+      case DRT::Element::hex20: case DRT::Element::hex27:
       {
         gaussrule = DRT::UTILS::intrule_hex_27point;
         break;
       }
-      case DRT::Element::tet4:
-      case DRT::Element::tet10:
+      case DRT::Element::tet4: case DRT::Element::tet10:
       {
         gaussrule = DRT::UTILS::intrule_tet_4point;
         break;
@@ -769,14 +738,17 @@ vector<double> DomainIntCellCoverageRatioT(
     cellcount++;
   } // end loop over integration cells
 
-  for (unsigned icell = 0;icell < domainIntCells.size();++icell)
-  {
+  for (unsigned icell = 0; icell < domainIntCells.size(); ++icell)
     portions[icell] /= area_ele;
-  }    
+  
   
   return portions;
 }
 
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 std::vector<double> XFEM::DomainIntCellCoverageRatio(
         const DRT::Element&           ele,
         const XFEM::InterfaceHandle&  ih
@@ -790,6 +762,10 @@ std::vector<double> XFEM::DomainIntCellCoverageRatio(
       return DomainIntCellCoverageRatioT<DRT::Element::hex20>(ele,ih);
     case DRT::Element::hex27:
       return DomainIntCellCoverageRatioT<DRT::Element::hex27>(ele,ih);
+    case DRT::Element::tet4:
+      return DomainIntCellCoverageRatioT<DRT::Element::tet4>(ele,ih);
+    case DRT::Element::tet10:
+      return DomainIntCellCoverageRatioT<DRT::Element::tet10>(ele,ih);
     default:
       dserror("add you distype here...");
       exit(1);
@@ -797,45 +773,44 @@ std::vector<double> XFEM::DomainIntCellCoverageRatio(
 }
 
 
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 XFEM::AssemblyType XFEM::CheckForStandardEnrichmentsOnly(
     const ElementDofManager&   eleDofManager,
     const int                  numnode,
-    const int*                 nodeids
-)
+    const int*                 nodeids)
 {
   // find out whether we can use standard assembly or need xfem assembly
   XFEM::AssemblyType assembly_type = XFEM::standard_assembly;
   for (int inode = 0; inode < numnode; ++inode)
   {
     if (assembly_type == XFEM::xfem_assembly)
-    {
       break;
-    }
+   
     const int gid = nodeids[inode];
     const std::set<XFEM::FieldEnr>& fields = eleDofManager.FieldEnrSetPerNode(gid);
     if (fields.size() != 4)
     {
       assembly_type = XFEM::xfem_assembly;
       break;
-    };
+    }
+    
     for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = fields.begin(); fieldenr != fields.end(); ++fieldenr)
-    {
       if (fieldenr->getEnrichment().Type() != XFEM::Enrichment::typeStandard)
       {
         assembly_type = XFEM::xfem_assembly;
         break;
       };
-    };
   };
+  
   const int eledof = eleDofManager.NumElemDof();
   if (eledof != 0)
-  {
     assembly_type = XFEM::xfem_assembly;
-  }
+  
   
   return assembly_type;
 }
+
 
 #endif  // #ifdef CCADISCRET

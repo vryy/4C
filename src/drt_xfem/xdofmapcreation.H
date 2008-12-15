@@ -23,7 +23,8 @@ Maintainer: Axel Gerstenberger
 
 namespace XFEM
 {
-/// apply nodal enrichments to intersected element
+
+//! apply nodal enrichments to intersected element
 void ApplyNodalEnrichments(
     const DRT::Element*                           xfemele,
     const XFEM::InterfaceHandle&                  ih,
@@ -31,7 +32,7 @@ void ApplyNodalEnrichments(
     std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet
     );
 
-/// apply nodal enrichments to intersected element
+//! apply nodal enrichments to intersected element
 void ApplyNodalEnrichmentsNodeWise(
     const DRT::Element*                           xfemele,
     const XFEM::InterfaceHandle&                  ih,
@@ -39,7 +40,7 @@ void ApplyNodalEnrichmentsNodeWise(
     std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet
     );
 
-/// apply element enrichments to intersected element
+//! apply element enrichments to intersected element
 void ApplyElementEnrichments(
     const DRT::Element*                           xfemele,
     const XFEM::InterfaceHandle&                  ih,
@@ -48,7 +49,7 @@ void ApplyElementEnrichments(
     std::set<XFEM::FieldEnr>&                     enrfieldset
     );
 
-/// apply enrichments and add this info to maps
+//! apply enrichments and add this info to maps
 void ApplyVoidEnrichmentForElement(
     const DRT::Element*                           xfemele,
     const XFEM::InterfaceHandle&                  ih,
@@ -67,7 +68,7 @@ void createDofMap(
     std::map<int, const std::set<XFEM::FieldEnr> >&   nodalDofSetFinal,    ///< enriched fields per node
     std::map<int, const std::set<XFEM::FieldEnr> >&   elementalDofsFinal,  ///< enriched fields per element
     const bool DLM_condensation
-);
+    );
 
 /*! 
  * \brief apply standard dofs to nodes
@@ -77,7 +78,7 @@ void applyStandardEnrichment(
     const XFEM::InterfaceHandle&                  ih,
     std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet,
     std::map<int, std::set<XFEM::FieldEnr> >&     elementalDofs
-);
+    );
 
 /*! 
  * \brief apply standard dofs to nodes
@@ -86,7 +87,7 @@ void applyStandardEnrichment(
 void applyStandardEnrichmentNodalBasedApproach(
     const XFEM::InterfaceHandle&                  ih,
     std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet
-);
+    );
 
 } // namespace XFEM
 

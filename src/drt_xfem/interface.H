@@ -43,7 +43,7 @@ namespace XFEM
     virtual ~InterfaceHandle();
 
     //! return string representation of the interface handle
-    std::string toString() const;
+    virtual std::string toString() const;
 
     //! comment missing! henke 10/08
     virtual void toGmsh(const int step) const;
@@ -69,33 +69,23 @@ namespace XFEM
     //! get pointer to elementsByLabel_
     const std::map<int,std::set<int> >& elementsByLabel() const {return elementsByLabel_;}
 
-    /*! tell me, whether the element is intersected or not
-     * \return true, if element is intersected
-     */
-    bool ElementIntersected(
-            const int element_gid   ///< unique global element id
-            ) const;
+    //! tell me, whether the element is intersected or not
+    bool ElementIntersected(const int element_gid) const;
     
-    /// check, whether given element id has been intersected by the given interface (label)
+    //! check, whether given element id has been intersected by the given interface (label)
     bool ElementHasLabel(
         const int element_gid,
         const int label
     ) const;
     
-    std::set<int> LabelsPerElement(
-        const int element_gid
-    ) const;
+    //! get labels for each element
+    std::set<int> LabelsPerElement( const int element_gid) const;
 
     //! return list of domain integrationcells for a given global element id, returned list can be empty -> always terminates
-    GEO::DomainIntCells GetDomainIntCells(
-            const int                              gid,     ///< unique global element id
-            const DRT::Element::DiscretizationType distype  ///< shape of the finite element
-            ) const;
+    GEO::DomainIntCells GetDomainIntCells( const DRT::Element*  xfemElement) const;
 
     //! return list of boundary integrationcells for a given global element id, returned list can be empty -> always terminates
-    GEO::BoundaryIntCells GetBoundaryIntCells(
-            const int                              gid      ///< unique global element id
-            ) const;
+    GEO::BoundaryIntCells GetBoundaryIntCells(const int   gid) const;
 
     //! get domain information at x_in at timestep n+1
     virtual int PositionWithinConditionNP(const LINALG::Matrix<3,1>& x_in) const;
@@ -112,32 +102,33 @@ namespace XFEM
                                          GEO::NearestObject&  nearestobject) const;
 
   protected:
-
-    //! some checks to ensure properly filled integrationcell maps
-    void SanityChecks() const;
+  
+    //! fill label per element list
+    void InvertElementsPerLabel();
 
     //! intersected domain
-    const Teuchos::RCP<DRT::Discretization> xfemdis_;
+    const Teuchos::RCP<DRT::Discretization>   xfemdis_;
 
     //! integration cells for domain (global id for element -> list of volume integration cells)
-    std::map<int,GEO::DomainIntCells >      elementalDomainIntCells_;
+    std::map<int,GEO::DomainIntCells >        elementalDomainIntCells_;
 
     //! integration cells for boundary
-    std::map<int,GEO::BoundaryIntCells >    elementalBoundaryIntCells_;
+    std::map<int,GEO::BoundaryIntCells >      elementalBoundaryIntCells_;
 
     //! for each xfem condition label there is a set of boundary elements
-    std::map<int,std::set<int> >            elementsByLabel_;
+    std::map<int,std::set<int> >              elementsByLabel_;
     
-    //! each boundary element belongs to one label (inverted information of elementsByLabel_)
-    std::map<int,int>                       labelPerElementId_;
+     //! each boundary element belongs to one label (inverted information of elementsByLabel_)
+    std::map<int,int>                         labelPerElementId_;
 
     //! SearchTree octtree for timestep n+1
-    const Teuchos::RCP<GEO::SearchTree>           octTreenp_;
+    const Teuchos::RCP<GEO::SearchTree>       octTreenp_;
 
     //! SearchTree octtree for timestep n
-    const Teuchos::RCP<GEO::SearchTree>           octTreen_;
+    const Teuchos::RCP<GEO::SearchTree>       octTreen_;
 
   }; // class InterfaceHandle
+  
 } // namespace XFEM
 
 #endif  // #ifndef INTERFACE_H

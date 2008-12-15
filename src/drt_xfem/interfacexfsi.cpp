@@ -21,14 +21,12 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/linalg_serialdensevector.H"
 
-#include "xfem_condition.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_io/io_gmsh_xfem_extension.H"
 #include "../drt_geometry/intersection.H"
-#include "../drt_geometry/intersection_exp.H"
 #include "../drt_geometry/position_array.H"
-#include "coordinate_transformation.H"
+#include "../drt_geometry/integrationcell_coordtrafo.H"
 #include "enrichment_utils.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 
@@ -73,40 +71,22 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
     if (screen_out) cout << " done" << endl;
   }
 
-  CheckXFEMElementSize();
-  
-  elementalDomainIntCells_.clear();
-  elementalBoundaryIntCells_.clear();
+  GEO::Intersection is;
+  is.computeIntersection(xfemdis, cutterdis, cutterposnp_, elementalDomainIntCells_, elementalBoundaryIntCells_);  
 
-  
-  if (experimental_intersection)
-  {
-    GEO::IntersectionExp is;
-    is.computeIntersection(xfemdis, cutterdis, cutterposnp_, elementalDomainIntCells_, elementalBoundaryIntCells_);
-  }
-  else
-  {
-    GEO::Intersection is;
-    is.computeIntersection(xfemdis, cutterdis, cutterposnp_, elementalDomainIntCells_, elementalBoundaryIntCells_); 
-  }
   xfemdis->Comm().Barrier();
-  SanityChecks();
-  
+   
   PrintStatistics();
   
-  elementsByLabel_.clear();
+  // collect elements by xfem label for tree and invert
   CollectElementsByXFEMCouplingLabel(*cutterdis, elementsByLabel_);
+  InvertElementsPerLabel();
   
-  // invert collection
-  labelPerElementId_.clear();
-  XFEM::InvertElementsByLabel(elementsByLabel_, labelPerElementId_);
-
   const LINALG::Matrix<3,2> cutterAABB = GEO::getXAABBofDis(*cutterdis,cutterposnp_);
   const LINALG::Matrix<3,2> xfemAABB =GEO::getXAABBofDis(*xfemdis);
   const LINALG::Matrix<3,2> AABB = GEO::mergeAABB(cutterAABB, xfemAABB);
-//  octTreenp_ = rcp( new GEO::SearchTree(5));
+
   octTreenp_->initializeTree(AABB, elementsByLabel_, GEO::TreeType(GEO::OCTTREE));
-  //octTreen_ = rcp( new GEO::SearchTree(5));
   octTreen_->initializeTree(AABB, elementsByLabel_, GEO::TreeType(GEO::OCTTREE));
   
   // find malicious entries
@@ -119,11 +99,12 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
     elementalBoundaryIntCells_.erase(*eleid);
   }
   
-  CheckDomainIntCellSize();
-  
   GenerateSpaceTimeLayer(cutterdis_, cutterposnp_, cutterposn_);
+
   xfemdis->Comm().Barrier();
 }
+
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 XFEM::InterfaceHandleXFSI::~InterfaceHandleXFSI()
@@ -131,7 +112,8 @@ XFEM::InterfaceHandleXFSI::~InterfaceHandleXFSI()
     return;
 }
 
-
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void XFEM::InterfaceHandleXFSI::FillCurrentCutterPositionMap(
     const Teuchos::RCP<DRT::Discretization>& cutterdis,
     const Epetra_Vector&                     idispcol,
@@ -156,6 +138,49 @@ void XFEM::InterfaceHandleXFSI::FillCurrentCutterPositionMap(
 }
 
 
+
+/*----------------------------------------------------------------------*
+ * remove to general file for all conditions                            *
+ *----------------------------------------------------------------------*/
+void XFEM::InterfaceHandleXFSI::CollectElementsByXFEMCouplingLabel(
+    const DRT::Discretization&           cutterdis,
+    std::map<int,std::set<int> >&        elementsByLabel)
+{
+  // Reset
+  elementsByLabel.clear();
+  // get condition
+  vector< DRT::Condition * >      xfemConditions;
+  cutterdis.GetCondition ("XFEMCoupling", xfemConditions);
+  
+  // collect elements by xfem coupling label
+  for(vector<DRT::Condition*>::const_iterator conditer = xfemConditions.begin(); conditer!=xfemConditions.end(); ++conditer)
+  {
+    DRT::Condition* xfemCondition = *conditer;
+    const int label = xfemCondition->Getint("label");
+    const vector<int> geometryMap = *xfemCondition->Nodes();
+    vector<int>::const_iterator iterNode;
+    for(iterNode = geometryMap.begin(); iterNode != geometryMap.end(); ++iterNode )
+    {
+      const int nodegid = *iterNode;
+      const DRT::Node* node = cutterdis.gNode(nodegid);
+      const DRT::Element*const* cutterElements = node->Elements();
+      for (int iele=0;iele < node->NumElement(); ++iele)
+      {
+        const DRT::Element* cutterElement = cutterElements[iele];
+        elementsByLabel[label].insert(cutterElement->Id());
+      }
+    }
+  }
+  int numOfCollectedIds = 0;
+  for(unsigned int i = 0; i < elementsByLabel.size(); i++)
+    numOfCollectedIds += elementsByLabel[i].size();
+  
+  if(cutterdis.NumMyColElements() != numOfCollectedIds)
+    dserror("not all elements collected.");
+}
+
+
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::set<int> XFEM::InterfaceHandleXFSI::FindDoubleCountedIntersectedElements() const
@@ -173,7 +198,7 @@ std::set<int> XFEM::InterfaceHandleXFSI::FindDoubleCountedIntersectedElements() 
     bool one_cell_is_fluid = false;
     for (GEO::DomainIntCells::const_iterator cell = cells.begin(); cell != cells.end(); ++cell)
     {
-      const LINALG::Matrix<3,1> cellcenter(cell->GetPhysicalCenterPosition(*xfemele));
+      const LINALG::Matrix<3,1> cellcenter(cell->GetPhysicalCenterPosition());
       const int current_label = PositionWithinConditionNP(cellcenter);
       if (current_label == 0)
       {
@@ -189,6 +214,7 @@ std::set<int> XFEM::InterfaceHandleXFSI::FindDoubleCountedIntersectedElements() 
   }
   return ele_to_delete;
 }
+
 
 
 /*----------------------------------------------------------------------*
@@ -238,13 +264,12 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
       for (int i=0; i<xfemdis_->NumMyRowElements(); ++i)
       {
         const DRT::Element* actele = xfemdis_->lRowElement(i);
-        const GEO::DomainIntCells& elementDomainIntCells = this->GetDomainIntCells(actele->Id(), actele->Shape());
+        const GEO::DomainIntCells& elementDomainIntCells = this->GetDomainIntCells(actele);
         GEO::DomainIntCells::const_iterator cell;
         for(cell = elementDomainIntCells.begin(); cell != elementDomainIntCells.end(); ++cell )
         {
-          LINALG::SerialDenseMatrix cellpos(3,cell->NumNode()); 
-          cell->NodalPosXYZ(*actele, cellpos);
-          const LINALG::Matrix<3,1> cellcenterpos(cell->GetPhysicalCenterPosition(*actele));
+          const LINALG::SerialDenseMatrix& cellpos = cell->CellNodalPosXYZ();
+          const LINALG::Matrix<3,1> cellcenterpos(cell->GetPhysicalCenterPosition());
           const int domain_id = PositionWithinConditionNP(cellcenterpos);
           //const double color = domain_id*100000+(closestElementId);
           const double color = domain_id;
@@ -308,13 +333,11 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
       for (int i=0; i<xfemdis_->NumMyColElements(); ++i)
       {
         const DRT::Element* actele = xfemdis_->lColElement(i);
-        const GEO::DomainIntCells& elementDomainIntCells = this->GetDomainIntCells(actele->Id(), actele->Shape());
+        const GEO::DomainIntCells& elementDomainIntCells = this->GetDomainIntCells(actele);
         GEO::DomainIntCells::const_iterator cell;
         for(cell = elementDomainIntCells.begin(); cell != elementDomainIntCells.end(); ++cell )
         {
-          LINALG::SerialDenseMatrix cellpos(3,cell->NumNode()); 
-          cell->NodalPosXYZ(*actele, cellpos);
-          const LINALG::Matrix<3,1> cellcenterpos(cell->GetPhysicalCenterPosition(*actele));
+          const LINALG::Matrix<3,1> cellcenterpos(cell->GetPhysicalCenterPosition());
           
           //const int domain_id = PositionWithinConditionNP(cellcenterpos);
           
@@ -431,8 +454,9 @@ void XFEM::InterfaceHandleXFSI::GenerateSpaceTimeLayer(
   {
     const DRT::Element* cutterele = cutterdis->lColElement(i);
     const int* nodeids = cutterele->NodeIds();
-    LINALG::SerialDenseMatrix posnp(3,4);
-    for (int inode = 0; inode != 4; ++inode) // fill n+1 position
+    const int numNode = cutterele->NumNode();
+    LINALG::SerialDenseMatrix posnp(3, numNode);
+    for (int inode = 0; inode != numNode; ++inode) // fill n+1 position
     {
       const int nodeid = nodeids[inode];
       const LINALG::Matrix<3,1> nodexyz = cutterposnp.find(nodeid)->second;
@@ -441,8 +465,8 @@ void XFEM::InterfaceHandleXFSI::GenerateSpaceTimeLayer(
         posnp(isd,inode) = nodexyz(isd);
       }
     }
-    LINALG::SerialDenseMatrix posn(3,4);
-    for (int inode = 0; inode != 4; ++inode) // fill n   position
+    LINALG::SerialDenseMatrix posn(3,numNode);
+    for (int inode = 0; inode != numNode; ++inode) // fill n   position
     {
       const int nodeid = nodeids[inode];
       const LINALG::Matrix<3,1> nodexyz = cutterposn.find(nodeid)->second;
@@ -458,6 +482,7 @@ void XFEM::InterfaceHandleXFSI::GenerateSpaceTimeLayer(
   
   return;
 }
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -481,68 +506,6 @@ void XFEM::InterfaceHandleXFSI::PrintStatistics() const
   }
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void XFEM::InterfaceHandleXFSI::CheckSurfaceElementSize() const
-{
-  cout << "Warning: Not implemented, yet! No checking performed!" << endl;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void XFEM::InterfaceHandleXFSI::CheckXFEMElementSize() const
-{
-  
-  int small_ele_counter = 0;
-  double smallest_edge_length = 1.0e12;
-  
-  const double smallest_allowed_edgelength = 1.0e-2;
-  
-  for (int i=0; i<xfemdis_->NumMyColElements(); ++i)
-  {
-    const DRT::Element* xfemele = xfemdis_->lColElement(i);
-    const double elevol = XFEM::ElementVolume(*xfemele);
-    
-    // assume that vol = h^3 for a cube
-    const double characteristic_edge_length = std::pow(elevol,1.0/3.0);
-//    cout << "characteristic_edge_length: " << characteristic_edge_length << endl;
-    
-    smallest_edge_length = std::min(smallest_edge_length,characteristic_edge_length);
-    // count to small edges
-    if (characteristic_edge_length < smallest_allowed_edgelength)
-    {
-      small_ele_counter++;
-    }
-  }
-  
-  if (small_ele_counter > 0)
-  {
-    cout << "Warning: Smallest edge length is " << smallest_edge_length << ", ";
-    cout << small_ele_counter << " elements are too small!" << endl;
-  }
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void XFEM::InterfaceHandleXFSI::CheckDomainIntCellSize() const
-{
-  
-  for (int i=0; i<xfemdis_->NumMyRowElements(); ++i)
-  {
-    DRT::Element* actele = xfemdis_->lRowElement(i);
-    if (ElementIntersected(actele->Id()))
-    {
-      const std::vector<double> cellsizes = XFEM::DomainIntCellCoverageRatio(*actele,*this);
-      double elevol = 0.0;
-      for (std::vector<double>::const_iterator iter = cellsizes.begin(); iter != cellsizes.end(); ++iter)
-      {
-        elevol += *iter;
-      }
-      if (std::abs(1.0 - elevol) > 1.0e-12)
-        dserror("DomainIntCell volume does not add up to the element volume");
-    }
-  }
-}
 
 
 /*! 

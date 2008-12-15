@@ -155,18 +155,18 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::Condif3::CalculateFlux(
   Epetra_SerialDenseMatrix        xjm(nsd,nsd);
   Epetra_SerialDenseMatrix        derxy(nsd,iel);
 
-  vector< LINALG::Matrix<3,1> > nodecoords;
-  nodecoords = DRT::UTILS::getEleNodeNumbering_nodes_reference(distype);
+  LINALG::SerialDenseMatrix nodecoords;
+  nodecoords = DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype);
 
-  if ((int) nodecoords.size() != iel) dserror("number of nodes does not match");
+  if ((int) nodecoords.N() != iel) dserror("number of nodes does not match");
 
   // loop over all nodes
   for (int iquad=0; iquad<iel; ++iquad)
   {
     // coordinates of the current integration point
-    const double e1 = nodecoords[iquad](0);
-    const double e2 = nodecoords[iquad](1);
-    const double e3 = nodecoords[iquad](2);
+    const double e1 = nodecoords(0, iquad);
+    const double e2 = nodecoords(1, iquad);
+    const double e3 = nodecoords(2, iquad);
 
     // shape functions and their derivatives
     DRT::UTILS::shape_function_3D(funct,e1,e2,e3,distype);

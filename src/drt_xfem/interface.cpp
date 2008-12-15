@@ -20,10 +20,11 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_utils.H"
 
-#include "xfem_condition.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_io/io_gmsh_xfem_extension.H"
 #include "../drt_geometry/integrationcell.H"
+
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -36,6 +37,8 @@ XFEM::InterfaceHandle::InterfaceHandle(
 {
   return;
 }
+
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 XFEM::InterfaceHandle::~InterfaceHandle()
@@ -43,21 +46,30 @@ XFEM::InterfaceHandle::~InterfaceHandle()
     return;
 }
 
-//! implement this member function in derived classes!
+
+/*----------------------------------------------------------------------*
+ * implement this member function in derived classes!
+ *----------------------------------------------------------------------*/
 void XFEM::InterfaceHandle::toGmsh(const int step) const
 {
   dserror ("not implemented for the InterfaceHandle base class");
   return;
 }
 
-//! implement this member function in derived classes!
+
+/*----------------------------------------------------------------------*
+ * implement this member function in derived classes!
+ *----------------------------------------------------------------------*/
 int XFEM::InterfaceHandle::PositionWithinConditionNP(const LINALG::Matrix<3,1>& x_in) const
 {
   dserror("not implemented for the InterfaceHandle base class");
   return 0;
 }
 
-//! implement this member function in derived classes!
+
+/*----------------------------------------------------------------------*
+ * implement this member function in derived classes!
+ *----------------------------------------------------------------------*/
 int XFEM::InterfaceHandle::PositionWithinConditionN(const LINALG::Matrix<3,1>& x_in) const
 {
   dserror("not implemented for the InterfaceHandle base class");
@@ -65,7 +77,9 @@ int XFEM::InterfaceHandle::PositionWithinConditionN(const LINALG::Matrix<3,1>& x
 }
 
 
-//! implement this member function in derived classes!
+/*----------------------------------------------------------------------*
+ * implement this member function in derived classes!
+ *----------------------------------------------------------------------*/
 int XFEM::InterfaceHandle::PositionWithinConditionNP(const LINALG::Matrix<3,1>&     x_in,
                                                      GEO::NearestObject&  nearestobject) const
 {
@@ -73,7 +87,11 @@ int XFEM::InterfaceHandle::PositionWithinConditionNP(const LINALG::Matrix<3,1>& 
   return 0;
 }
 
-//! implement this member function in derived classes!
+
+
+/*----------------------------------------------------------------------*
+ * implement this member function in derived classes!
+ *----------------------------------------------------------------------*/
 int XFEM::InterfaceHandle::PositionWithinConditionN(const LINALG::Matrix<3,1>&     x_in,
                                                     GEO::NearestObject&  nearestobject) const
 {
@@ -81,7 +99,9 @@ int XFEM::InterfaceHandle::PositionWithinConditionN(const LINALG::Matrix<3,1>&  
   return 0;
 }
 
+
 /*----------------------------------------------------------------------*
+ * to string
  *----------------------------------------------------------------------*/
 std::string XFEM::InterfaceHandle::toString() const
 {
@@ -89,57 +109,29 @@ std::string XFEM::InterfaceHandle::toString() const
   return s.str();
 }
 
-void XFEM::InterfaceHandle::SanityChecks() const
-{
-  //  std::cout << "numcuttedelements (elementalDomainIntCells_)   = " << elementalDomainIntCells_.size() << endl;
-  //  std::cout << "numcuttedelements (elementalBoundaryIntCells_) = " << elementalBoundaryIntCells_.size() << endl;
-  if (elementalDomainIntCells_.size() != elementalBoundaryIntCells_.size())
-  {
-    dserror("mismatch in cutted elements maps!");  
-  }
-  
-  // sanity check, whether, we really have integration cells in the map
-  for (std::map<int,GEO::DomainIntCells>::const_iterator 
-      tmp = elementalDomainIntCells_.begin();
-      tmp != elementalDomainIntCells_.end();
-      ++tmp)
-  {
-    dsassert(tmp->second.empty() == false, "this is a bug!");
-  }
-  
-  // sanity check, whether, we really have integration cells in the map
-  for (std::map<int,GEO::BoundaryIntCells>::const_iterator 
-      tmp = elementalBoundaryIntCells_.begin();
-      tmp != elementalBoundaryIntCells_.end();
-      ++tmp)
-  {
-    dsassert(tmp->second.empty() == false, "this is a bug!");
-  }
-}
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 GEO::DomainIntCells XFEM::InterfaceHandle::GetDomainIntCells(
-    const int gid,
-    const DRT::Element::DiscretizationType distype
-) const
+    const DRT::Element* xfemElement) const
 {
-  std::map<int,GEO::DomainIntCells>::const_iterator tmp = elementalDomainIntCells_.find(gid);
+  std::map<int,GEO::DomainIntCells>::const_iterator tmp = elementalDomainIntCells_.find(xfemElement->Id());
   if (tmp == elementalDomainIntCells_.end())
   {   
     // create default set with one dummy DomainIntCell of proper size
     GEO::DomainIntCells cells;
-    cells.push_back(GEO::DomainIntCell(distype));
+    cells.push_back(GEO::DomainIntCell(xfemElement->Shape(), GEO::InitialPositionArray(xfemElement)));
     return cells;
   }
   return tmp->second;
 }
 
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 GEO::BoundaryIntCells XFEM::InterfaceHandle::GetBoundaryIntCells(
-    const int gid
-) const
+    const int gid) const
 {
   std::map<int,GEO::BoundaryIntCells>::const_iterator tmp = elementalBoundaryIntCells_.find(gid);
   if (tmp == elementalBoundaryIntCells_.end())
@@ -150,28 +142,24 @@ GEO::BoundaryIntCells XFEM::InterfaceHandle::GetBoundaryIntCells(
   return tmp->second;
 }
 
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool XFEM::InterfaceHandle::ElementIntersected(
-    const int element_gid
-) const
+    const int element_gid) const
 {
-  if (elementalDomainIntCells_.find(element_gid) == elementalDomainIntCells_.end())
-  {   
+  if (elementalDomainIntCells_.find(element_gid) == elementalDomainIntCells_.end())   
     return false;
-  }
-  else
-  {
-    return true;
-  }
+
+  return true;
 }
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool XFEM::InterfaceHandle::ElementHasLabel(
     const int element_gid,
-    const int label
-) const
+    const int label) const
 {
   const GEO::BoundaryIntCells& bcells = elementalBoundaryIntCells().find(element_gid)->second;
   bool has_label = false;
@@ -188,11 +176,11 @@ bool XFEM::InterfaceHandle::ElementHasLabel(
   return has_label;
 }
 
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::set<int> XFEM::InterfaceHandle::LabelsPerElement(
-    const int element_gid
-) const
+    const int element_gid) const
 {
   std::set<int> labelset;
   const GEO::BoundaryIntCells& bcells = elementalBoundaryIntCells().find(element_gid)->second;
@@ -202,6 +190,27 @@ std::set<int> XFEM::InterfaceHandle::LabelsPerElement(
   }
   return labelset;
 }
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void XFEM::InterfaceHandle::InvertElementsPerLabel()
+{
+  labelPerElementId_.clear();
+  for(std::map<int,std::set<int> >::const_iterator conditer = elementsByLabel_.begin(); conditer!=elementsByLabel_.end(); ++conditer)
+  {
+    const int xfemlabel = conditer->first;
+    for(std::set<int>::const_iterator eleiditer = conditer->second.begin(); eleiditer!=conditer->second.end(); ++eleiditer)
+    {
+      const int eleid = *eleiditer;
+      if (labelPerElementId_.count(eleid) == 1)
+        dserror("Assumption violation: there should be exactly ONE xfem condition per boundary element id!");
+      labelPerElementId_[eleid] = xfemlabel;
+    }
+  }
+  return;
+}
+
 
 
 #endif  // #ifdef CCADISCRET

@@ -15,24 +15,26 @@ Maintainer: Axel Gerstenberger
 #ifdef CCADISCRET
 
 #include "xdofmapcreation.H"
-#include "xfem_condition.H"
 #include "enrichment_utils.H"
 #include "../drt_f3/xfluid3_interpolation.H"
 
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void XFEM::ApplyNodalEnrichments(
     const DRT::Element*                           xfemele,
     const XFEM::InterfaceHandle&                  ih,
     const int&                                    label,
-    std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet
-) 
+    std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet) 
 {
   const double volumeratiolimit = 1.0e-2;
-  
+
   const double volumeratio = XFEM::DomainCoverageRatio(*xfemele,ih);
   const bool almost_empty_element = (fabs(1.0-volumeratio) < volumeratiolimit);
-  
+
   const XFEM::Enrichment voidenr(label, XFEM::Enrichment::typeVoid);
-  
+
   if ( not almost_empty_element)  
   { // void enrichments for everybody !!!
     const int nen = xfemele->NumNode();
@@ -56,7 +58,7 @@ void XFEM::ApplyNodalEnrichments(
       const LINALG::Matrix<3,1> nodalpos(ih.xfemdis()->gNode(node_gid)->X());
       const int label = ih.PositionWithinConditionNP(nodalpos);
       const bool in_fluid = (label == 0);
-  
+
       if (in_fluid)
       {
         nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Velx, voidenr));
@@ -70,19 +72,21 @@ void XFEM::ApplyNodalEnrichments(
 }
 
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void XFEM::ApplyNodalEnrichmentsNodeWise(
     const DRT::Element*                           xfemele,
     const XFEM::InterfaceHandle&                  ih,
     const int&                                    label,
-    std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet
-) 
+    std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet) 
 {
   const double volumeratiolimit = 1.0e-3;
-  
+
   const vector<double> ratios = XFEM::DomainCoverageRatioPerNode(*xfemele,ih);
-  
+
   const XFEM::Enrichment voidenr(label, XFEM::Enrichment::typeVoid);
-  
+
   const int nen = xfemele->NumNode();
   const int* nodeidptrs = xfemele->NodeIds();
   for (int inen = 0; inen<nen; ++inen)
@@ -102,7 +106,7 @@ void XFEM::ApplyNodalEnrichmentsNodeWise(
       const LINALG::Matrix<3,1> nodalpos(ih.xfemdis()->gNode(node_gid)->X());
       const int label = ih.PositionWithinConditionNP(nodalpos);
       const bool in_fluid = (label == 0);
-  
+
       if (in_fluid)
       {
         nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Velx, voidenr));
@@ -114,19 +118,22 @@ void XFEM::ApplyNodalEnrichmentsNodeWise(
   };
 }
 
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void XFEM::ApplyElementEnrichments(
     const DRT::Element*                           xfemele,
     const XFEM::InterfaceHandle&                  ih,
     const int&                                    label,
     const bool                                    DLM_condensation,
-    std::set<XFEM::FieldEnr>&                     enrfieldset
-    )
+    std::set<XFEM::FieldEnr>&                     enrfieldset)
 {
   // check, how much area for integration we have (from BoundaryIntcells)
   const double boundarysize = XFEM::BoundaryCoverageRatio(*xfemele,ih);
   const bool almost_zero_surface = (fabs(boundarysize) < 1.0e-4);
   const XFEM::Enrichment voidenr(label, XFEM::Enrichment::typeVoid);
-//  const XFEM::Enrichment stdenr(0, XFEM::Enrichment::typeStandard);
+  //  const XFEM::Enrichment stdenr(0, XFEM::Enrichment::typeStandard);
   if ( not almost_zero_surface) 
   {
     // add discontinuous stress unknowns
@@ -142,7 +149,7 @@ void XFEM::ApplyElementEnrichments(
     for (fielditer = element_ansatz.begin();fielditer != element_ansatz.end();++fielditer)
     {
       enrfieldset.insert(XFEM::FieldEnr(fielditer->first, voidenr));
-//      enrfieldset.insert(XFEM::FieldEnr(fielditer->first, stdenr));
+      //      enrfieldset.insert(XFEM::FieldEnr(fielditer->first, stdenr));
     }
   }
   else
@@ -152,36 +159,41 @@ void XFEM::ApplyElementEnrichments(
 }
 
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void XFEM::ApplyVoidEnrichmentForElement(
     const DRT::Element*                           xfemele,
     const XFEM::InterfaceHandle&                  ih,
     const int&                                    label,
     const bool                                    DLM_condensation,
     std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet,
-    std::map<int, std::set<XFEM::FieldEnr> >&     elementalDofs
-    )
+    std::map<int, std::set<XFEM::FieldEnr> >&     elementalDofs)
 {
   const int element_gid = xfemele->Id();
-  
+
   if (ih.ElementIntersected(element_gid))
   {
     if (ih.ElementHasLabel(element_gid, label))
     {
       ApplyNodalEnrichments(xfemele, ih, label, nodalDofSet);
-      
-//      ApplyNodalEnrichmentsNodeWise(xfemele, ih, label, nodalDofSet); 
-  
+
+      //      ApplyNodalEnrichmentsNodeWise(xfemele, ih, label, nodalDofSet); 
+
       ApplyElementEnrichments(xfemele, ih, label, DLM_condensation, elementalDofs[element_gid]);
     }
   }
 }
 
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void XFEM::createDofMap(
     const XFEM::InterfaceHandle&                    ih,
     std::map<int, const std::set<XFEM::FieldEnr> >&     nodalDofSetFinal,
     std::map<int, const std::set<XFEM::FieldEnr> >&     elementalDofsFinal,
-    const bool DLM_condensation
-)
+    const bool DLM_condensation)
 {
   // temporary assembly
   std::map<int, std::set<XFEM::FieldEnr> >  nodalDofSet;
@@ -222,11 +234,13 @@ void XFEM::createDofMap(
 }
 
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void XFEM::applyStandardEnrichment(
     const XFEM::InterfaceHandle&              ih,
     std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet,
-    std::map<int, std::set<XFEM::FieldEnr> >&     elementalDofs
-)
+    std::map<int, std::set<XFEM::FieldEnr> >&     elementalDofs)
 {
   const int standard_label = 0;
   const XFEM::Enrichment enr_std(standard_label, XFEM::Enrichment::typeStandard);
@@ -292,10 +306,13 @@ void XFEM::applyStandardEnrichment(
   };
 }
 
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void XFEM::applyStandardEnrichmentNodalBasedApproach(
     const XFEM::InterfaceHandle&              ih,
-    std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet
-)
+    std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet)
 {
   const int standard_label = 0;
   const XFEM::Enrichment enr_std(standard_label, XFEM::Enrichment::typeStandard);
@@ -340,7 +357,6 @@ void XFEM::applyStandardEnrichmentNodalBasedApproach(
         nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Pres, enr_std));
       }
     }
-    
   };
 }
 

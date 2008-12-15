@@ -459,7 +459,8 @@ int GEO::nearestObjectInNode(
       }
       // collect nodes
       // 4 is correct because only the 4 corner nodes have to checked
-      for(int i = 0; i < 4; i++)
+      // TODO make properly
+      for(int i = 0; i < DRT::UTILS::getNumberOfElementCornerNodes(element->Shape()); i++)
         nodeList[labelIter->first].insert(element->NodeIds()[i]);
     }
 
@@ -525,7 +526,7 @@ bool GEO::getDistanceToSurface(
     { 
       // use nodes as starting values
       for(int j = 0; j < 2; j++)
-        elecoord(j) = DRT::UTILS::getEleNodeNumbering_nodes_reference(surfaceElement->Shape())[i](j);
+        elecoord(j) = DRT::UTILS::getEleNodeNumbering_nodes_paramspace(surfaceElement->Shape())(j, i);
 
       GEO::CurrentToSurfaceElementCoordinates(surfaceElement->Shape(), xyze_surfaceElement, point, elecoord);
 
@@ -590,7 +591,7 @@ bool GEO::getDistanceToLine(
     for(int i = 0; i < 2; i++)
     { 
       // use end nodes as starting values in addition
-      elecoord(0) = DRT::UTILS::getEleNodeNumbering_nodes_reference(lineElement->Shape())[i](0);
+      elecoord(0) = DRT::UTILS::getEleNodeNumbering_nodes_paramspace(lineElement->Shape())(0,i);
 
       GEO::CurrentToLineElementCoordinates(lineElement->Shape(), xyze_lineElement, point, elecoord);
 

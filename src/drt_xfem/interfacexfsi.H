@@ -16,7 +16,6 @@ Maintainer: Axel Gerstenberger
 #define INTERFACEXFSI_H
 
 #include "interface.H"
-
 #include "spacetime_boundary.H"
 
 namespace XFEM
@@ -50,23 +49,13 @@ namespace XFEM
     //! returns pointer to map with (current) nodal positions per node of the cutter discretization 
     const std::map<int,LINALG::Matrix<3,1> >& cutterposn()  const {return cutterposn_;};
 
-
-    //! check surface element size to prevent too small elements
-    //! that might conflict with tolerances in the intersection routines
-    //!
-    //! \return number of too small elements
-    void CheckSurfaceElementSize() const;
+    //! collect elements by xfem label
+    void CollectElementsByXFEMCouplingLabel(
+      const DRT::Discretization&          cutterdis,
+      std::map<int,std::set<int> >&       elementsByLabel
+      );
     
-    //! check xfem element size to prevent too small elements
-    //! that might conflict with tolerances in the intersection routines
-    //!
-    //! \return number of too small elements
-    void CheckXFEMElementSize() const;
-    
-    /*!
-     * get pointer to boundary element
-     * \return pointer to boundary element
-     */
+    //! get pointer to boundary element
     const DRT::Element* GetBoundaryEle(
             const int element_gid   ///< unique global element id of a boundary element
             ) const
@@ -75,14 +64,10 @@ namespace XFEM
     }
 
     //! get domain information at x_in at timestep n+1
-    int PositionWithinConditionNP(
-        const LINALG::Matrix<3,1>&        x_in
-    ) const;
+    int PositionWithinConditionNP(const LINALG::Matrix<3,1>&    x_in) const;
 
     //! get domain information at x_in at timestep n
-    int PositionWithinConditionN(
-        const LINALG::Matrix<3,1>&        x_in
-    ) const;
+    int PositionWithinConditionN(const LINALG::Matrix<3,1>&     x_in) const;
     
     //! get domain information at x_in at timestep n+1
     int PositionWithinConditionNP(
@@ -97,13 +82,14 @@ namespace XFEM
     ) const;
 
 
-    
+    //! find space time layer cell
     bool FindSpaceTimeLayerCell(
         const LINALG::Matrix<3,1>&        querypos,
         XFEM::SpaceTimeBoundaryCell&      slab,
         LINALG::Matrix<3,1>&              rst
     ) const;
     
+    //! print statistics
     void PrintStatistics() const;
 
   private:
@@ -120,7 +106,7 @@ namespace XFEM
         const Epetra_Vector&                     idispcol,               ///< vector with displacements
         std::map<int,LINALG::Matrix<3,1> >&      currentcutterpositions  ///< map to be filled with positions
         ) const;
-
+        
     //! for difficult cases during intersection, do sanity checks and create list of redundant integration cells 
     std::set<int> FindDoubleCountedIntersectedElements() const;
 
@@ -130,21 +116,21 @@ namespace XFEM
         const std::map<int,LINALG::Matrix<3,1> >&       cutterposnp, ///< nodal displacements at n+1
         const std::map<int,LINALG::Matrix<3,1> >&       cutterposn   ///< nodal displacements at n
     );
-
+    
     //! discretization that intersects the xfemdis_ -> should be a boundary discretization (e.g. surface of structure)
-    const Teuchos::RCP<DRT::Discretization> cutterdis_;
+    const Teuchos::RCP<DRT::Discretization>       cutterdis_;
     
     //! map between global node id and its current positions at n+1  
-    std::map<int,LINALG::Matrix<3,1> >      cutterposnp_;
+    std::map<int,LINALG::Matrix<3,1> >            cutterposnp_;
     
     //! map between global node id and its current positions at n
-    std::map<int,LINALG::Matrix<3,1> >      cutterposn_;
+    std::map<int,LINALG::Matrix<3,1> >            cutterposn_;
 
+    //! space time bounday cell layer
     std::map<int,XFEM::SpaceTimeBoundaryCell>     stlayer_;
-    
-    void CheckDomainIntCellSize() const;
 
   }; // class InterfacehandleXFSI;
+  
   
   /*! 
    * \brief calculates the volume of an element in initial configuration

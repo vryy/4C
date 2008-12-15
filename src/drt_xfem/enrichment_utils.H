@@ -257,24 +257,24 @@ namespace XFEM
 
 //! for output, compute values on integration cells
 void computeScalarCellNodeValuesFromNodalUnknowns(
-  const DRT::Element&  ele,
-  const RCP<XFEM::InterfaceHandle>&  ih,
-  const XFEM::ElementDofManager& dofman,
-  const GEO::DomainIntCell& cell,
-  const XFEM::PHYSICS::Field field,
-  const LINALG::SerialDenseVector& elementvalues,
-  LINALG::SerialDenseVector&     cellvalues
+  const DRT::Element&                 ele,
+  const RCP<XFEM::InterfaceHandle>&   ih,
+  const XFEM::ElementDofManager&      dofman,
+  const GEO::DomainIntCell&           cell,
+  const XFEM::PHYSICS::Field          field,
+  const LINALG::SerialDenseVector&    elementvalues,
+  LINALG::SerialDenseVector&          cellvalues
   );
 
 //! for output, compute values on the integration cells
 void computeScalarCellNodeValuesFromElementUnknowns(
-  const DRT::Element&  ele,
-  const RCP<XFEM::InterfaceHandle>&  ih,
-  const XFEM::ElementDofManager& dofman,
-  const GEO::DomainIntCell& cell,
-  const XFEM::PHYSICS::Field field,
-  const LINALG::SerialDenseVector& elementvalues,
-  LINALG::SerialDenseVector&     cellvalues
+  const DRT::Element&                   ele,
+  const RCP<XFEM::InterfaceHandle>&     ih,
+  const XFEM::ElementDofManager&        dofman,
+  const GEO::DomainIntCell&             cell,
+  const XFEM::PHYSICS::Field            field,
+  const LINALG::SerialDenseVector&      elementvalues,
+  LINALG::SerialDenseVector&            cellvalues
   );
 
 //! for output, compute values on the integration cells

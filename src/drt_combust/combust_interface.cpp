@@ -22,7 +22,6 @@ Maintainer: Florian Henke
 #include "../drt_lib/drt_globalproblem.H"
  #include "../drt_lib/drt_utils.H"
 
-// #include "xfem_condition.H"
 // #include "../drt_io/io_gmsh.H"
 // #include "../drt_io/io_gmsh_xfem_extension.H"
 // #include "../drt_geometry/integrationcell.H"
@@ -40,11 +39,6 @@ COMBUST::InterfaceHandleCombust::InterfaceHandleCombust(
 {
   if (fluiddis->Comm().MyPID() == 0)
     std::cout << "Constructing InterfaceHandle" << std::endl;
-
-  elementalDomainIntCells_.clear();
-  elementalBoundaryIntCells_.clear();
-
-  SanityChecks();
 
   // construct a flame front
   Teuchos::RCP<COMBUST::FlameFront> flamefront_ = rcp(new COMBUST::FlameFront(fluiddis,gfuncdis,elementalDomainIntCells_,elementalBoundaryIntCells_));

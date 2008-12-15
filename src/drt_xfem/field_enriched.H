@@ -78,6 +78,7 @@ class FieldEnr
           return false;
       }
     }
+    
     //! equality, if everything is equal
     bool operator ==(const FieldEnr& rhs) const
     {

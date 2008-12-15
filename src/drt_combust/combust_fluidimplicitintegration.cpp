@@ -1202,15 +1202,18 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
           elementvalues(iparam) = myvelnp[dofpos[iparam]];
 
         const GEO::DomainIntCells& domainintcells =
-          dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(elegid, actele->Shape());
+          dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(actele);
         for (GEO::DomainIntCells::const_iterator cell =
           domainintcells.begin(); cell != domainintcells.end(); ++cell)
         {
           LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
               *cell, field, elementvalues, cellvalues);
-          LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
-          cell->NodalPosXYZ(*actele, xyze_cell);
+              
+          const LINALG::SerialDenseMatrix& xyze_cell = cell->CellNodalPosXYZ();
+          //LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
+          //cell->NodalPosXYZ(*actele, xyze_cell);
+          // TODO remove
           gmshfilecontent << IO::GMSH::cellWithScalarFieldToString(
               cell->Shape(), cellvalues, xyze_cell) << "\n";
         }
@@ -1288,15 +1291,18 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
           //cout << elementvalues << endl;
         }
         const GEO::DomainIntCells& domainintcells =
-          dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(elegid, actele->Shape());
+          dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(actele);
         for (GEO::DomainIntCells::const_iterator cell =
           domainintcells.begin(); cell != domainintcells.end(); ++cell)
         {
           LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
               *cell, field, elementvalues, cellvalues);
-          LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
-          cell->NodalPosXYZ(*actele, xyze_cell);
+          
+          const LINALG::SerialDenseMatrix& xyze_cell = cell->CellNodalPosXYZ();
+          //LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
+          //cell->NodalPosXYZ(*actele, xyze_cell);
+          //TODO remove
           if(elementvalues.Length() != 0)
           {
             //cout << "cellvalues DiscPres" << endl;
@@ -1425,13 +1431,14 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
 
 
         const GEO::DomainIntCells& domainintcells =
-          dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(elegid, actele->Shape());
+          dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(actele);
         for (GEO::DomainIntCells::const_iterator cell =
           domainintcells.begin(); cell != domainintcells.end(); ++cell)
         {
-          LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
-          cell->NodalPosXYZ(*actele, xyze_cell);
-
+          //LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
+          //cell->NodalPosXYZ(*actele, xyze_cell);
+          // TODO remove
+          const LINALG::SerialDenseMatrix& xyze_cell = cell->CellNodalPosXYZ();
 //          {
 //          LINALG::SerialDenseMatrix cellvalues(9,DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
 //          XFEM::computeTensorCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
@@ -1569,7 +1576,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
         if (!dofmanagerForOutput_->getInterfaceHandle()->ElementIntersected(elegid))
         {
           const GEO::DomainIntCells& domainintcells =
-            dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(elegid, actele->Shape());
+            dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(actele);
           for (GEO::DomainIntCells::const_iterator cell =
             domainintcells.begin(); cell != domainintcells.end(); ++cell)
           {
@@ -1577,8 +1584,10 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
             //std::cout << cellvalues << endl;
             XFEM::computeVectorCellNodeValues(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
                 *cell, XFEM::PHYSICS::Velx, elementvalues, cellvalues);
-            LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
-            cell->NodalPosXYZ(*actele, xyze_cell);
+            //LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
+            //cell->NodalPosXYZ(*actele, xyze_cell);
+            // TODO remove
+            const LINALG::SerialDenseMatrix& xyze_cell = cell->CellNodalPosXYZ();
             gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
                 cell->Shape(), cellvalues, xyze_cell) << "\n";
           }
@@ -1595,8 +1604,10 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
             //std::cout << cellvalues << endl;
             XFEM::computeVectorCellNodeValues(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
                 *cell, XFEM::PHYSICS::Velx, elementvalues, cellvalues);
-            LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
-            cell->NodalPosXYZ(*actele, xyze_cell);
+            //LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
+            //cell->NodalPosXYZ(*actele, xyze_cell);
+            // TODO remove
+            const LINALG::SerialDenseMatrix& xyze_cell = cell->CellNodalPosXYZ();
             gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
                 cell->Shape(), cellvalues, xyze_cell) << "\n";
           }
@@ -1604,8 +1615,8 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
           // draw uncutted element
           {
             LINALG::SerialDenseMatrix elevalues(3, DRT::UTILS::getNumberOfElementNodes(actele->Shape()),true);
-            const GEO::DomainIntCell cell(actele->Shape());
             const LINALG::SerialDenseMatrix xyze_ele(GEO::InitialPositionArray(actele));
+            const GEO::DomainIntCell cell(actele->Shape(), xyze_ele);
             gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
                 actele->Shape(), elevalues, xyze_ele) << "\n";
           }

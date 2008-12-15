@@ -23,7 +23,7 @@ Maintainer: Axel Gerstenberger
 #include "fluid3_stabilization.H"
 #include "xfluid3_local_assembler.H"
 #include "xfluid3_interpolation.H"
-#include "../drt_xfem/coordinate_transformation.H"
+#include "../drt_geometry/integrationcell_coordtrafo.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_xfem/enrichment_utils.H"
 #include "../drt_fluid/time_integration_element.H"
@@ -939,12 +939,12 @@ void SysmatDomain4(
     const double mk = XFLUID::MK<DISTYPE>();
     
     // information about domain integration cells
-    const GEO::DomainIntCells&  domainIntCells(ih->GetDomainIntCells(ele->Id(),DISTYPE));
+    const GEO::DomainIntCells&  domainIntCells(ih->GetDomainIntCells(ele));
     //cout << "Element "<< ele->Id() << ": ";
     // loop over integration cells
     for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
     {
-        const LINALG::Matrix<3,1> cellcenter(cell->GetPhysicalCenterPosition(*ele));
+        const LINALG::Matrix<3,1> cellcenter(cell->GetPhysicalCenterPosition());
         
         int labelnp = 0;
         

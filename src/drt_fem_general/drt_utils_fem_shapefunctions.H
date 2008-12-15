@@ -1936,6 +1936,21 @@ namespace UTILS
           deriv2(drds, 8) = 2.0*s*2.0*r;
           break;
       }
+      case DRT::Element::tri3:
+      {
+          deriv2(drdr, 0) = 0.0;
+          deriv2(dsds, 0) = 0.0;
+          deriv2(drds, 0) = 0.0;
+
+          deriv2(drdr, 1) = 0.0;
+          deriv2(dsds, 1) = 0.0;
+          deriv2(drds, 1) = 0.0;
+
+          deriv2(drdr, 2) = 0.0;
+          deriv2(dsds, 2) = 0.0;
+          deriv2(drds, 2) = 0.0;
+          break;
+      }
       case DRT::Element::tri6:
       {
           deriv2(drdr, 0) = 4.0;
