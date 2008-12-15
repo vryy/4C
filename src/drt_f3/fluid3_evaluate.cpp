@@ -903,7 +903,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
   )
 {
   // get view of solution vector
-  LINALG::Matrix<iel,1> sol(&(solution[0]),true);
+  LINALG::Matrix<4*iel,1> sol(&(solution[0]),true);
 
   // set element data
   const DiscretizationType distype = this->Shape();

@@ -952,11 +952,13 @@ void FLD::TurbulenceStatisticsCha::DoTimeSample(
       }
 
       // compute forces by dot product
-      double inc;
+      double inc=0.0;
       force.Dot(*toggleu_,&inc);
       sumforceu_+=inc;
+      inc=0.0;
       force.Dot(*togglev_,&inc);
       sumforcev_+=inc;
+      inc=0.0;
       force.Dot(*togglew_,&inc);
       sumforcew_+=inc;
     }
@@ -1046,11 +1048,13 @@ void FLD::TurbulenceStatisticsCha::DoLomaTimeSample(
         }
       }
 
-      double inc;
+      double inc=0.0;
       force.Dot(*toggleu_,&inc);
       sumforceu_+=inc;
+      inc=0.0;
       force.Dot(*togglev_,&inc);
       sumforcev_+=inc;
+      inc=0.0;
       force.Dot(*togglew_,&inc);
       sumforcew_+=inc;
     }
@@ -1340,13 +1344,16 @@ void FLD::TurbulenceStatisticsCha::EvaluatePointwiseMeanValuesInPlanes()
       // compute scalar products from velnp and toggle vec to sum up
       // values in this plane
 
-      double inc;
+      double inc=0.0;
       meanvelnp_->Dot(*toggleu_,&inc);
       (*pointsumu_)[planenum]+=inc/countnodesinplaneonallprocs;
+      inc=0.0;
       meanvelnp_->Dot(*togglev_,&inc);
       (*pointsumv_)[planenum]+=inc/countnodesinplaneonallprocs;
+      inc=0.0;
       meanvelnp_->Dot(*togglew_,&inc);
       (*pointsumw_)[planenum]+=inc/countnodesinplaneonallprocs;
+      inc=0.0;
       meanvelnp_->Dot(*togglep_,&inc);
       (*pointsump_)[planenum]+=inc/countnodesinplaneonallprocs;
 
@@ -1354,12 +1361,16 @@ void FLD::TurbulenceStatisticsCha::EvaluatePointwiseMeanValuesInPlanes()
       // compute scalar products from squaredvelnp and toggle vec to
       // sum up values for second order moments in this plane
 
+      inc=0.0;
       pointsquaredvelnp_->Dot(*toggleu_,&inc);
       (*pointsumsqu_)[planenum]+=inc/countnodesinplaneonallprocs;
+      inc=0.0;
       pointsquaredvelnp_->Dot(*togglev_,&inc);
       (*pointsumsqv_)[planenum]+=inc/countnodesinplaneonallprocs;
+      inc=0.0;
       pointsquaredvelnp_->Dot(*togglew_,&inc);
       (*pointsumsqw_)[planenum]+=inc/countnodesinplaneonallprocs;
+      inc=0.0;
       pointsquaredvelnp_->Dot(*togglep_,&inc);
       (*pointsumsqp_)[planenum]+=inc/countnodesinplaneonallprocs;
     }
@@ -1901,15 +1912,19 @@ void FLD::TurbulenceStatisticsCha::EvaluateLomaPointwiseMeanValuesInPlanes()
       // compute scalar products from velnp and toggle vec to sum up
       // values in this plane
 
-      double inc;
+      double inc=0.0;
       meanvelnp_->Dot(*toggleu_,&inc);
       (*pointsumu_)[planenum]+=inc/countnodesinplaneonallprocs;
+      inc=0.0;
       meanvelnp_->Dot(*togglev_,&inc);
       (*pointsumv_)[planenum]+=inc/countnodesinplaneonallprocs;
+      inc=0.0;
       meanvelnp_->Dot(*togglew_,&inc);
       (*pointsumw_)[planenum]+=inc/countnodesinplaneonallprocs;
+      inc=0.0;
       meanvelnp_->Dot(*togglep_,&inc);
       (*pointsump_)[planenum]+=inc/countnodesinplaneonallprocs;
+      inc=0.0;
       meanvedenp_->Dot(*togglep_,&inc);
       (*pointsumT_)[planenum]+=inc/countnodesinplaneonallprocs;
 
@@ -1917,14 +1932,19 @@ void FLD::TurbulenceStatisticsCha::EvaluateLomaPointwiseMeanValuesInPlanes()
       // compute scalar products from squaredvelnp and toggle vec to
       // sum up values for second order moments in this plane
 
+      inc=0.0;
       pointsquaredvelnp_->Dot(*toggleu_,&inc);
       (*pointsumsqu_)[planenum]+=inc/countnodesinplaneonallprocs;
+      inc=0.0;
       pointsquaredvelnp_->Dot(*togglev_,&inc);
       (*pointsumsqv_)[planenum]+=inc/countnodesinplaneonallprocs;
+      inc=0.0;
       pointsquaredvelnp_->Dot(*togglew_,&inc);
       (*pointsumsqw_)[planenum]+=inc/countnodesinplaneonallprocs;
+      inc=0.0;
       pointsquaredvelnp_->Dot(*togglep_,&inc);
       (*pointsumsqp_)[planenum]+=inc/countnodesinplaneonallprocs;
+      inc=0.0;
       pointsquaredvedenp_->Dot(*togglep_,&inc);
       (*pointsumsqT_)[planenum]+=inc/countnodesinplaneonallprocs;
     }
