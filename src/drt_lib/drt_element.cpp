@@ -401,25 +401,15 @@ void DRT::Element::LocationVector(const Discretization& dis, vector<int>& lm, ve
   {
     for (int i=0; i<numnode; ++i)
     {
-      const int owner = nodes[i]->Owner();
-      dis.Dof(nodes[i],lm);
-      int size = lm.size()-lmowner.size();
-      for (int j=0; j<size; ++j)
-      {
-        lmowner.push_back(owner);
-      }
+      const Node* node = nodes[i];
+      dis.Dof(node,lm);
+      lmowner.resize(lm.size(),node->Owner());
     }
   }
 
   // fill the vector with element dofs
-  const int owner = Owner();
   dis.Dof(this,lm);
-  int size = lm.size()-lmowner.size();
-  for (int j=0; j<size; ++j)
-  {
-    lmowner.push_back(owner);
-  }
-
+  lmowner.resize(lm.size(),Owner());
   return;
 }
 
