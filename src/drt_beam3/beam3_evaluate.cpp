@@ -508,13 +508,23 @@ int DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
   LINALG::Matrix<3,1> newangle;
   quaterniontoangle(Qnew_, newangle);
   LINALG::Matrix<3,3> Hinverse = Hinv(newangle);
+  double dti = params.get<double>("dti",0.0);
 
-  Hinverse.Scale( params.get<double>("dti",0.0) );
+  Hinverse.Scale(dti);
 
   for(int i= 0; i<3; i++)
   {
     for(int j=0;j<3;j++)
     {
+      /*
+      //translational damping
+      elemat1(  i,   j) += dti;
+      elemat1(6+i, 6+j) += dti;
+      elemat1(6+i,   j) += dti;
+      elemat1(  i, 6+j) += dti;
+      */
+      
+      //rotational damping
       elemat1(3+i, 3+j) += Hinverse(i,j);
       elemat1(9+i, 9+j) += Hinverse(i,j);
       elemat1(9+i, 3+j) += Hinverse(i,j);
@@ -944,8 +954,6 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
   //midpoint triad, Crisfiel Vol. 2, equation (17.73)
   LINALG::Matrix<3,3> Tnew;
   
-  //std::cout<<"\nElement Nr. = "<< Id();
-  
   //nodal coordinates in current position
   for (int k=0; k<2; ++k) //looping over number of nodes
   {
@@ -955,17 +963,6 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
       xcurr(j+3,k) = disp[k*6+j+3]; //rotational DOF
     }
   }
-  /*
-  std::cout<<"\ntrans disp:  ";
-  for (int k=0; k<2; ++k) //looping over number of nodes
-    for (int j=0; j<3; ++j)
-      std::cout << std::scientific << setprecision(5) << disp[k*6+j] <<"   ";
-
-  std::cout<<"\nrot disp:  ";
-  for (int k=0; k<2; ++k) //looping over number of nodes
-    for (int j=0; j<3; ++j)
-      std::cout << std::scientific << setprecision(5) << disp[k*6+j+3] <<"   ";
-*/
 
   //first of all "new" variables have to be adopted to dispalcement passed in from BACI driver
 
@@ -1044,8 +1041,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
   stressm.Multiply(Tnew,epsilonm);
   
 
-    //std::cout<<"\nN = "<< epsilonn;
-    //std::cout<<"\nM = "<< epsilonm;
+    std::cout<<"\ncurvnew_ = "<< curvnew_;
 
   
 
@@ -1101,7 +1097,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
     */
 
 
-
+    
     //artificial isotropic rotational damping
     {
       double torsdamp = 0.0005; //0.005 is obviously sufficient for free fluctionations with 10 elements
@@ -1110,25 +1106,6 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
       quaterniontoangle(Qnew_, newangle);
       quaterniontoangle(Qconv_, convangle);
       
-      /*
-      std::cout<<"\nQnew_";
-      for(int id = 0; id<4;id++)
-        std::cout <<"  "<<Qnew_(id);
-      
-      std::cout<<"\nnewangle";
-      for(int id = 0; id<3;id++)
-        std::cout <<"  "<<newangle(id);
-      
-      std::cout<<"\nQconv_";
-      for(int id = 0; id<4;id++)
-        std::cout <<"  "<<Qconv_(id);
-      
-      std::cout<<"\nconvangle";
-      for(int id = 0; id<3;id++)
-        std::cout <<"  "<<convangle(id);
-      */
-      
-
       LINALG::Matrix<3,1> omega = newangle;
       omega -= convangle;
       omega.Scale( 1.0 / params.get<double>("delta time",0.01) );
@@ -1140,7 +1117,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
         (*force)[9+i] += omega(i)*torsdamp*zeta_;
       }
     }
-
+    
 
     /*
     //artificial explicit anisotropic rotational damping
@@ -1255,7 +1232,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
 
 
 
-
+    
     //artificial isotropic rotational damping stiffness
     {
       double torsdamp = 0.0005; //0.005 is obviously sufficient for free fluctionations with 10 elements
@@ -1279,7 +1256,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
     }
 
     //std::cout<<"\ncurvnew = "<<curvnew_;
-
+    
 
     /*
     //artificial explicit anisotropic rotational damping stiffness
