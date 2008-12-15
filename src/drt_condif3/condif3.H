@@ -351,9 +351,6 @@ private:
   //! don't want = operator
   Condif3& operator = (const Condif3& old);
 
-  //! convert action string to condif3 action type
-  ActionType convertStringToActionType(const string& action) const;
-
   //! calculate flux vector for actual solution
   Epetra_SerialDenseMatrix CalculateFlux(
       vector<double>&           phinp,
@@ -365,12 +362,6 @@ private:
       const int&                dofindex
       );
 
-  //! calculate integrals of temperature, density and domain
- void CalculateTempAndDens(
-      ParameterList&            params,
-      vector<double>&           ephinp,
-      vector<double>&           edensnp
-      );
 
 }; // class Condif3
 

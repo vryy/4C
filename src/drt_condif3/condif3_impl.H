@@ -56,9 +56,7 @@ public:
                        Epetra_SerialDenseMatrix&  elemat2_epetra,
                        Epetra_SerialDenseVector&  elevec1_epetra,
                        Epetra_SerialDenseVector&  elevec2_epetra,
-                       Epetra_SerialDenseVector&  elevec3_epetra,
-                       RefCountPtr<MAT::Material> mat,
-                       _MATERIAL*                 actmat
+                       Epetra_SerialDenseVector&  elevec3_epetra
                        ) = 0;
 
 
@@ -129,9 +127,8 @@ public:
                        Epetra_SerialDenseMatrix&  elemat2_epetra,
                        Epetra_SerialDenseVector&  elevec1_epetra,
                        Epetra_SerialDenseVector&  elevec2_epetra,
-                       Epetra_SerialDenseVector&  elevec3_epetra,
-                       RefCountPtr<MAT::Material> mat,
-                       _MATERIAL*                 actmat);
+                       Epetra_SerialDenseVector&  elevec3_epetra
+                       );
 
 
   private:
@@ -269,7 +266,7 @@ public:
     virtual void CalMatElch(
         Epetra_SerialDenseMatrix&             emat,   ///< element matrix
         Epetra_SerialDenseVector&             erhs,   ///< element rhs
-        const vector<LINALG::Matrix<iel,1> >& ephinp,///< current scalar field
+        const vector<LINALG::Matrix<iel,1> >& ephinp, ///< current scalar field
         const LINALG::Matrix<iel,1>&          epotnp, ///< el. potential at element nodes
         const bool&                           higher_order_ele, ///< are second derivatives needed?
         const double&                         frt,    ///< factor F/RT
@@ -287,9 +284,33 @@ public:
         struct _MATERIAL*            material ///< material pointer
     );
 
+    //! calculate flux vector for actual solution
+    virtual void CalculateFlux(
+        LINALG::Matrix<3,iel>&          flux,
+        const DRT::Element*             ele,
+        const vector<double>&           ephinp,
+        struct _MATERIAL*               material,
+        const bool                      temperature,
+        const double                    frt,
+        const Epetra_SerialDenseVector& evel,
+        const Condif3::FluxType         fluxtype,
+        const int&                      dofindex
+    );
+
+    //! calculate integrals of temperature, density and domain
+   virtual void CalculateTempAndDens(
+        const DRT::Element*     ele,    ///< pointer to the element
+        ParameterList&          params, ///< parameter list
+        const vector<double>&   ephinp, ///< current scalar field
+        const vector<double>&   edensnp ///< current density field
+        );
 
     //! calculate the Laplacian for all shape functions(strong form)
-    void getLaplacianStrongForm(LINALG::Matrix<iel,1>& diff, const LINALG::Matrix<numderiv2_,iel>& deriv2)
+    void getLaplacianStrongForm
+    (
+      LINALG::Matrix<iel,1>& diff, 
+      const LINALG::Matrix<numderiv2_,iel>& deriv2
+     )
     {
       diff.Clear();
       // compute N,xx  +  N,yy +  N,zz for each shape function at actual integration point

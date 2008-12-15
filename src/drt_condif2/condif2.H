@@ -348,12 +348,6 @@ private:
       const int&                dofindex
       );
 
-  //! calculate integrals of temperature, density and domain
- void CalculateTempAndDens(
-      ParameterList&            params,
-      vector<double>&           ephinp,
-      vector<double>&           edensnp
-      );
 
 }; // class Condif2
 

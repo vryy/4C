@@ -205,10 +205,21 @@ int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
     Epetra_SerialDenseMatrix&  elemat2_epetra,
     Epetra_SerialDenseVector&  elevec1_epetra,
     Epetra_SerialDenseVector&  elevec2_epetra,
-    Epetra_SerialDenseVector&  elevec3_epetra,
-    RefCountPtr<MAT::Material> mat,
-    MATERIAL*                  actmat)
-    {
+    Epetra_SerialDenseVector&  elevec3_epetra
+    )
+{
+  // get the material
+  RefCountPtr<MAT::Material> mat = ele->Material();
+  MATERIAL* actmat = NULL;
+
+  if(mat->MaterialType()== m_condif)
+    actmat = static_cast<MAT::ConvecDiffus*>(mat.get())->MaterialData();
+  else if (mat->MaterialType()== m_matlist)
+    actmat = static_cast<MAT::MatList*>(mat.get())->MaterialData();
+  else
+    dserror("condif material expected but got type %d", mat->MaterialType());
+
+  // check for the action parameter
   const string action = params.get<string>("action","none");
   if (action=="calc_condif_systemmat_and_residual")
   {
@@ -515,8 +526,107 @@ int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
         timefac,
         is_stationary);
   }
+  else if (action=="calc_condif_flux")
+  {
+    // get velocity values at the nodes
+    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
+    Epetra_SerialDenseVector evel(nsd_*iel);
+    DRT::UTILS::ExtractMyNodeBasedValues(ele,evel,velocity,nsd_);
+
+    // need current values of transported scalar
+    RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    if (phinp==null) dserror("Cannot get state vector 'phinp'");
+
+    // extract local values from the global vectors
+    vector<double> myphinp(lm.size());
+    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
+
+    // assure, that the values are in the same order as the element nodes
+    for(int k=0;k<iel;++k)
+    {
+      Node* node = (ele->Nodes())[k];
+      vector<int> dof = discretization.Dof(node);
+      int numdof = dof.size();
+      for (int i=0;i<numdof;++i)
+      {
+        if (dof[i]!=lm[k*numdof+i])
+        {
+          cout<<"dof[i]= "<<dof[i]<<"  lm[k*numdof+i]="<<lm[k*numdof+i]<<endl;
+          dserror("Dofs are not in the same order as the element nodes. Implement some resorting!");
+        }
+      }
+    }
+
+    // access control parameter
+    Condif3::FluxType fluxtype;
+    string fluxtypestring = params.get<string>("fluxtype","noflux");
+    if (fluxtypestring == "totalflux")
+      fluxtype = Condif3::totalflux;
+    else if (fluxtypestring == "diffusiveflux")
+      fluxtype = Condif3::diffusiveflux;
+    else
+      fluxtype=Condif3::noflux;  //default value
+
+    // set flag for type of scalar
+    string scaltypestr=params.get<string>("problem type");
+    int numscal = numdofpernode_;
+    bool temperature = false;
+    if (scaltypestr =="loma") temperature = true;
+
+    double frt(0.0);
+    if (scaltypestr =="elch") 
+    {
+      numscal -= 1; // ELCH case: last dof is for el. potential
+      // get parameter F/RT
+      frt = params.get<double>("frt");
+    }
+
+    // we always get an 3D flux vector for each node
+    LINALG::Matrix<3,iel> eflux(true);
+
+    // do a loop for systems of transported scalars
+    for (int i = 0; i<numscal; ++i)
+    {
+      // calculate flux vectors for actual scalar
+      eflux.Clear();
+      CalculateFlux(eflux,ele,myphinp,actmat,temperature,frt,evel,fluxtype,i);
+
+      // assembly
+      for (int k=0;k<iel;k++)
+      { // form arithmetic mean of assembled nodal flux vectors
+        // => factor is the number of adjacent elements for each node
+        double factor = ((ele->Nodes())[k])->NumElement();
+        elevec1_epetra[k*numdofpernode_+i]+=eflux(0,k)/factor;
+        elevec2_epetra[k*numdofpernode_+i]+=eflux(1,k)/factor;
+        elevec3_epetra[k*numdofpernode_+i]+=eflux(2,k)/factor;
+      }
+    } // loop over numscal
+  }
+  else if (action=="calc_temp_and_dens")
+  {
+    // calculate mean temperature and density
+
+    // need current scalar and density vector
+    RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    RefCountPtr<const Epetra_Vector> densnp = discretization.GetState("densnp");
+    if (phinp==null || densnp==null)
+      dserror("Cannot get state vector 'phinp' and/or 'densnp'");
+
+    // extract local values from the global vectors
+    vector<double> myphinp(lm.size());
+    vector<double> mydensnp(lm.size());
+    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
+    DRT::UTILS::ExtractMyValues(*densnp,mydensnp,lm);
+
+    // calculate temperature, density and domain integral
+    CalculateTempAndDens(ele,params,myphinp,mydensnp);
+  }
   else if (action=="calc_elch_kwok_error")
   {
+    // check if length suffices
+    if (elevec1_epetra.Length() < 1) dserror("Result vector too short");
+    if (nsd_ != 3) dserror("Error calculation only available for 3D");
+
     // need current solution
     RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
     if (phinp==null) dserror("Cannot get state vector 'phinp'");
@@ -551,9 +661,9 @@ int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
         actmat);
   }
   else
-    dserror("Unknown type of action for Condif3: %s",action.c_str());
+    dserror("Unknown type of action for Scatra Implementation: %s",action.c_str());
 
-return 0;
+  return 0;
 }
 
 
@@ -3084,6 +3194,213 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalErrorComparedToAnalytSolution(
 
   return;
 } // Condif3Impl::CalErrorComparedToAnalytSolution
+
+
+/*----------------------------------------------------------------------*
+ |  calculate mass flux                              (private) gjb 06/08|
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Condif3Impl<distype>::CalculateFlux(
+    LINALG::Matrix<3,iel>&          flux,
+    const DRT::Element*             ele,
+    const vector<double>&           ephinp,
+    struct _MATERIAL*               material,
+    const bool                      temperature,
+    const double                    frt,
+    const Epetra_SerialDenseVector& evel,
+    const Condif3::FluxType         fluxtype,
+    const int&                      dofindex
+)
+{
+  // get node coordinates
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze_);
+
+  // get material constants
+  double diffus(0.0);
+  double valence(0.0);
+  double diffus_valence_frt(0.0);
+
+  //GetMaterialParams(material,temperature);
+
+  if (material->mattyp == m_matlist)
+  {
+    const int matid = material->m.matlist->matids[dofindex];
+    const _MATERIAL& singlemat =  DRT::Problem::Instance()->Material(matid-1);
+
+    if (singlemat.mattyp == m_condif)
+      diffus = singlemat.m.condif->diffusivity;
+    else if (singlemat.mattyp == m_ion)
+    {
+      diffus = singlemat.m.ion->diffusivity;
+      valence = singlemat.m.ion->valence;
+      diffus_valence_frt = diffus*valence*frt;
+    }
+    else
+      dserror("type of material found in material list is not supported.");
+  }
+  else if (material->mattyp == m_condif)
+  {
+    dsassert(numdofpernode_==1,"more than 1 dof per node for condif material"); // paranoia?
+    if (temperature)
+      diffus = material->m.condif->diffusivity/material->m.condif->shc;
+    else
+      diffus = material->m.condif->diffusivity;
+  }
+  else
+    dserror("Material type is not supported");
+
+  /*----------------------------------------- declaration of variables ---*/
+  vector< LINALG::Matrix<3,1> > nodecoords;
+  nodecoords = DRT::UTILS::getEleNodeNumbering_nodes_reference(distype);
+
+  if ((int) nodecoords.size() != iel) dserror("number of nodes does not match");
+
+  // loop over all nodes
+  for (int iquad=0; iquad<iel; ++iquad)
+  {
+    // reference coordinates of the current node
+    for (int idim=0;idim<nsd_;idim++)
+      {xsi_(idim) = nodecoords[iquad](idim);}
+
+    // shape functions and their first derivatives
+    DRT::UTILS::shape_function<distype>(xsi_,funct_);
+    DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
+
+    // compute Jacobian matrix and determinant
+    // actually compute its transpose....
+    xjm_.MultiplyNT(deriv_,xyze_);
+    const double det = xij_.Invert(xjm_);
+
+    if (det < 0.0)
+      dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
+    if (abs(det) < 1E-16)
+      dserror("GLOBAL ELEMENT NO.%i\nZERO JACOBIAN DETERMINANT: %f", ele->Id(), det);
+
+    // compute global derivatives
+    derxy_.Multiply(xij_,deriv_);
+
+    // gradient of electric potential
+    gradpot_.Clear();
+    if (frt > 0.0) // ELCH
+    {
+      for (int k=0;k<iel;k++)
+      {
+        for (int idim=0; idim<nsd_ ;idim++)
+        {
+          gradpot_(idim) += derxy_(idim,k)*ephinp[k*numdofpernode_+(numdofpernode_-1)];
+        }
+      }
+    }
+
+    const double ephinpatnode = ephinp[iquad*numdofpernode_+dofindex];
+    // add different flux contributions as specified by user input
+    switch (fluxtype)
+    {
+      case Condif3::totalflux:
+        if (frt > 0.0) // ELCH
+        {
+          //migration flux terms
+          for (int idim=0; idim<nsd_ ;idim++)
+          {
+            flux(idim,iquad)-=diffus_valence_frt*gradpot_(idim)*ephinpatnode;
+          }
+        }
+        //convective flux terms
+        for (int idim=0; idim<nsd_ ;idim++)
+        {
+          flux(idim,iquad)+=evel[idim+iquad*nsd_]*ephinpatnode;
+        }
+        // no break statement here!
+      case Condif3::diffusiveflux:
+        //diffusive flux terms
+        for (int k=0;k<iel;k++)
+        {
+          for (int idim=0; idim<nsd_ ;idim++)
+          {
+            flux(idim,iquad)+=-diffus*derxy_(idim,k)*ephinp[k*numdofpernode_+dofindex];
+          }
+        }
+        break;
+      case Condif3::noflux:
+        dserror("received noflux flag inside CONDIF3 flux evaluation");
+    };
+
+    //set zeros for unused space dimenions
+    for (int idim=nsd_; idim<3; idim++)
+    {
+      flux(idim,iquad) = 0.0;
+    }
+  } // loop over nodes
+
+  return;
+} // Condif3Impl::CalculateFlux
+
+
+/*----------------------------------------------------------------------*
+ |  calculate temperature, density and domain integral          vg 09/08|
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Condif3Impl<distype>::CalculateTempAndDens(
+    const DRT::Element*             ele,
+    ParameterList&                  params,
+    const vector<double>&           ephinp,
+    const vector<double>&           edensnp
+)
+{
+  // get variables for integrals
+  double tempint = params.get<double>("temperature integral");
+  double densint = params.get<double>("density integral");
+  double domint  = params.get<double>("domain integral");
+
+  /*------------------------------------------------- set element data */
+  // get node coordinates
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze_);
+
+  // integrations points and weights  
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // integration loop
+  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+  {
+    // coordinates of the current integration point
+    const double* gpcoord = (intpoints.IP().qxg)[iquad];
+    for (int idim=0;idim<nsd_;idim++)
+      {xsi_(idim) = gpcoord[idim];}
+
+    // shape functions and their first derivatives
+    DRT::UTILS::shape_function<distype>(xsi_,funct_);
+    DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
+
+    // compute Jacobian matrix and determinant
+    // actually compute its transpose....
+    xjm_.MultiplyNT(deriv_,xyze_);
+    const double det = xij_.Invert(xjm_);
+
+    if (det < 0.0)
+      dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
+    if (abs(det) < 1E-16)
+      dserror("GLOBAL ELEMENT NO.%i\nZERO JACOBIAN DETERMINANT: %f", ele->Id(), det);
+
+    // set integration factor: fac = Gauss weight * det(J)
+    fac_ = intpoints.IP().qwgt[iquad]*det;
+
+    // calculate integrals of temperature, density and domain
+    for (int i=0; i<iel; i++)
+    {
+      tempint += fac_*funct_(i)*ephinp[i];
+      densint += fac_*funct_(i)*edensnp[i];
+      domint  += fac_*funct_(i);
+    }
+  } // loop over integration points
+
+  // return variables for integrals
+  params.set<double>("temperature integral",tempint);
+  params.set<double>("density integral",densint);
+  params.set<double>("domain integral",domint);
+
+  return;
+} // Condif3Impl::CalculateTempAndDens
+
 
 #endif
 #endif
