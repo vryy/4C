@@ -283,6 +283,24 @@ void UTILS::ConstrManager::UpdateLagrMult(double factor)
   return;
 }
 
+void UTILS::ConstrManager::Update()
+{
+  lagrMultVecOld_->Update(1.0,*lagrMultVec_,0.0);
+  // do output for volume constraint
+  if(volconstr3d_->HaveConstraint())
+  {
+    vector<int> volconID = volconstr3d_->GetActiveCondID();
+    for (unsigned int i = 0; i < volconID.size(); i++)
+    {
+      if (constrmap_->LID(i-offsetID_)!=-1)
+      {
+        cout<< "Multiplier for Volume Constraint: "<<volconID.at(i)<<":  "<<
+              (*lagrMultVec_)[constrmap_->LID(i-offsetID_)]<<endl;
+      }
+    }
+  }
+}
+
 /*----------------------------------------------------------------------*
 |(public)                                                       tk 01/08|
 |Add Lagrange increment to Lagrange multiplier.                         |

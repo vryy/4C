@@ -355,7 +355,8 @@ void UTILS::Constraint::EvaluateConstraint(
   return;
 } // end of EvaluateCondition
 
-
+/*-----------------------------------------------------------------------*
+ *-----------------------------------------------------------------------*/
 void UTILS::Constraint::InitializeConstraint(
     ParameterList&        params,
     RCP<Epetra_Vector>    systemvector)
@@ -432,4 +433,17 @@ void UTILS::Constraint::InitializeConstraint(
   return;
 } // end of Initialize Constraint
 
+/*-----------------------------------------------------------------------*
+ *-----------------------------------------------------------------------*/
+vector<int> UTILS::Constraint::GetActiveCondID()
+{
+  vector<int> condID;
+  map<int,bool>::const_iterator mapit;
+  for(mapit = activecons_.begin();mapit!=activecons_.end();mapit++)
+  {
+    if (mapit->second)
+      condID.push_back(mapit->first);
+  }
+  return condID;
+}
 #endif

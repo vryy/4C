@@ -137,6 +137,8 @@ namespace UTILS
       return constrtype_;
     }
     
+    ///Return vector with IDs of active conditions
+    vector<int> GetActiveCondID();
 
   protected:
     

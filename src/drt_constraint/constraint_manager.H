@@ -112,10 +112,7 @@ namespace UTILS
     /*!
          \brief Update constraint variables
     */
-    void Update()
-    {
-      lagrMultVecOld_->Update(1.0,*lagrMultVec_,0.0);
-    };
+    void Update();
       
     /*!
          \brief Update lagrange multiplier \f$\lambda_{n+1}=\lambda_{n}+factor*\f$(volerr)
