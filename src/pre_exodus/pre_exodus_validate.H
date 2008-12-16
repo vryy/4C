@@ -39,6 +39,7 @@ Validate a given BACI input file (after all preprocessing steps)
 using namespace std;
 
 namespace EXODUS{
+
 //! validate a given datfile
 void ValidateInputFile(const string datfile);
 
@@ -47,6 +48,7 @@ void ValidateMeshElementJacobians(EXODUS::Mesh& mymesh);
 
 //! Check for positive Jacobian for Element of distype and otherwise 'rewind' them
 void ValidateElementJacobian(EXODUS::Mesh& mymesh,const DRT::Element::DiscretizationType distype, RCP<EXODUS::ElementBlock>);
+
 //! Check Elements of distype with full gauss integration rule for positive det at all gps and return number of negative dets
 int ValidateElementJacobian_fullgp(Mesh& mymesh, const DRT::Element::DiscretizationType distype, RCP<ElementBlock> eb);
 

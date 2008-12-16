@@ -264,7 +264,7 @@ vector<double> EXODUS::CalcNormalSurfLocsys(const int ns_id,const EXODUS::Mesh& 
     if (normaltangent.size() != 1) break;
   }
   if (normaltangent.size()==1){
-    dserror("Warning! No normal defined for SurfLocsys within nodeset '%s'!",ns.GetName());
+    dserror("Warning! No normal defined for SurfLocsys within nodeset '%s'!",(ns.GetName()).c_str());
   }
   
   // find tangent by Gram-Schmidt
