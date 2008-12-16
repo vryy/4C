@@ -200,8 +200,10 @@ OBJS_DRT_CONSTRAINT      = \
                 src/drt_constraint/constraintsolver.o
 #-------------------------------------------------------constraint elements
 OBJS_DRT_CONSTRAINT_LIB      = \
-                src/drt_constraint/constraint_element.o \
-                src/drt_constraint/constraint_element_evaluate.o
+                src/drt_constraint/constraint_element3.o \
+                src/drt_constraint/constraint_element3_evaluate.o \
+                src/drt_constraint/constraint_element2.o \
+                src/drt_constraint/constraint_element2_evaluate.o
 #----------------------------------------------------- drt version contact
 OBJS_DRT_CONTACT = \
                 src/drt_contact/contactstrugenalpha.o \

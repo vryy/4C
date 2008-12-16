@@ -15,7 +15,7 @@ Maintainer: Thomas Kloeppel
 
 #include "multipointconstraint3.H"
 #include "mpcdofset.H"
-#include "constraint_element.H"
+#include "constraint_element3.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_utils.H"
@@ -62,12 +62,12 @@ MPConstraint
       }
     }
     
-    constraintdis_=CreateDiscretizationFromCondition(actdisc_,constrcond_,"ConstrDisc","CONSTRELE",maxID);
+    constraintdis_=CreateDiscretizationFromCondition(actdisc_,constrcond_,"ConstrDisc","CONSTRELE3",maxID);
     
     map<int, RCP<DRT::Discretization> > ::iterator discriter;
     for (discriter=constraintdis_.begin(); discriter!=constraintdis_.end(); discriter++)
     {
-      ReplaceNumDof(actdisc_,discriter->second);
+      //ReplaceNumDof(actdisc_,discriter->second);
       RCP<Epetra_Map> newcolnodemap = ComputeNodeColMap(actdisc_, discriter->second);
       actdisc_->Redistribute(*(actdisc_->NodeRowMap()), *newcolnodemap);
       RCP<DRT::DofSet> newdofset=rcp(new MPCDofSet(actdisc_));
@@ -132,6 +132,7 @@ void UTILS::MPConstraint3::Initialize(
     int condID=cond.Getint("ConditionID");
     if(inittimes_.find(condID)->second<=time&& (!(activecons_.find(condID)->second)))
     {
+      // control absolute values
       if (absconstraint_.find(condID)->second)
       {
         int  MPCcondID  = constrcond_[i]->Getint("ConditionID");
@@ -145,14 +146,15 @@ void UTILS::MPConstraint3::Initialize(
         }
         const int mid=params.get("OffsetID",0);
         IDs[i]=MPCcondID-mid;
-      } 
+      }
+      // control relative values
       else
       {
         switch (Type())
         {
           case mpcnodeonplane3d: 
           case mpcnormalcomp3d:
-            params.set("action","calc_MPC3D_state");
+            params.set("action","calc_MPC_state");
           break;
           case none:
             return;
@@ -191,7 +193,7 @@ void UTILS::MPConstraint3::Evaluate(
   {
     case mpcnodeonplane3d: 
     case mpcnormalcomp3d:
-      params.set("action","calc_MPC3D_stiff");
+      params.set("action","calc_MPC_stiff");
     break;
     case none:
       return;

@@ -10,8 +10,8 @@ Maintainer: Thomas Kloeppel
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifndef CONSTRAINT_ELEMENT_H
-#define CONSTRAINT_ELEMENT_H
+#ifndef CONSTRAINT_ELEMENT3_H
+#define CONSTRAINT_ELEMENT3_H
 
 
 #include "Teuchos_RefCountPtr.hpp"
@@ -31,24 +31,24 @@ namespace DRT
 {
 // forward declarations
 class Discretization;
-class ConstraintElementRegister;
+class ConstraintElement3Register;
 
 namespace ELEMENTS
 {
 // forward declarations
-//class ConstraintElementLine;
+//class ConstraintElement3Line;
 
 /*!
 \brief A 3D constraint element with no physics attached
 
 \author tk (kloeppel@lnm.mw.tum.de)
 */
-class ConstraintElement : public DRT::Element
+class ConstraintElement3 : public DRT::Element
 {
 public:
 
   //! @name Friends
-  friend class ConstraintElementRegister;
+  friend class ConstraintElement3Register;
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -57,7 +57,7 @@ public:
   \brief Standard Constructor
   
   */
-  ConstraintElement(
+  ConstraintElement3(
     int id,  ///< A unique global id 
     int owner ///< element owner
   );
@@ -68,10 +68,10 @@ public:
   Makes a deep copy of a Element
 
   */
-  ConstraintElement(const ConstraintElement& old);
+  ConstraintElement3(const ConstraintElement3& old);
 
   /*!
-  \brief Deep copy this instance of ConstraintElement and return pointer to the copy
+  \brief Deep copy this instance of ConstraintElement3 and return pointer to the copy
 
   The Clone() method is used from the virtual base class Element in cases
   where the type of the derived class is unknown and a copy-ctor is needed
@@ -84,7 +84,7 @@ public:
   */
   virtual DiscretizationType Shape() const
   {
-      dserror("ConstraintElement has no shape!");
+      dserror("ConstraintElement3 has no shape!");
       return DRT::Element::dis_none;
   };
 
@@ -94,7 +94,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_ConstraintElement;}
+  virtual int UniqueParObjectId() const { return ParObject_ConstraintElement3;}
 
   /*!
   \brief Pack this class so it can be communicated
@@ -116,7 +116,7 @@ public:
   \brief Destructor
 
   */
-  virtual ~ConstraintElement();
+  virtual ~ConstraintElement3();
 
   //@}
 
@@ -132,18 +132,8 @@ public:
   number of degrees of freedom per node along the way for each of it's nodes
   separately.
   */
-  virtual int NumDofPerNode(const DRT::Node& node) const {return numdof_;}
+  virtual int NumDofPerNode(const DRT::Node& node) const {return 3;}
 
-  /*!
-  \brief Set number of degrees of freedom of all connected nodes
-
-  The element decides how many degrees of freedom its nodes must have.
-  As this may vary along a simulation, the element can redecide the
-  number of degrees of freedom per node along the way for each of it's nodes
-  separately.
-  */
-  void SetNumDofPerNode(const int numdof) {numdof_ = numdof;}
-  
   /*!
   \brief Get number of degrees of freedom per element
          (implements pure virtual DRT::Element)
@@ -229,10 +219,8 @@ private:
   enum ActionType
   {
     none,
-    calc_MPC3D_stiff,
-    calc_MPC3D_state,
-    calc_MPC2D_dist_stiff,
-    calc_MPC2D_angle_stiff
+    calc_MPC_stiff,
+    calc_MPC_state
   };
 
   //! container containing all kind of constraint element data
@@ -240,12 +228,9 @@ private:
 
   //! vector of surfaces of this element (length 1)
   vector<DRT::Element*>                           surface_;
-
-  //! Number of dof per node
-  int                                             numdof_;
   
   // don't want = operator
-  ConstraintElement& operator = (const ConstraintElement& old);
+  ConstraintElement3& operator = (const ConstraintElement3& old);
   
   /*!
   \brief Create matrix with material configuration for 3 dimensions and 4 nodes
@@ -257,26 +242,6 @@ private:
   {
     const int numnode = 4;
     const int numdim=3;
-    for (int i=0; i<numnode; ++i)
-    {
-      for (int j = 0; j < numdim; ++j) 
-      {
-        x(i,j) = Nodes()[i]->X()[j];
-      }
-    }
-    return;
-  }
-  
-  /*!
-  \brief Create matrix with material configuration for 2 dimensions and 3 nodes
-  */
-  inline void MaterialConfiguration
-  (
-    LINALG::Matrix<3,2>& x ///< nodal coords in material frame
-  ) const
-  {
-    const int numnode = 3;
-    const int numdim=2;
     for (int i=0; i<numnode; ++i)
     {
       for (int j = 0; j < numdim; ++j) 
@@ -308,43 +273,22 @@ private:
       return;
   }
   
-  /*!
-  \brief Create matrix with spatial configuration for 2 dimensions and 3 nodes
-  */
-  inline void SpatialConfiguration
-  (   
-    LINALG::Matrix<3,2>& x, ///< nodal coords in spatial frame
-    const vector<double> disp  ///< displacements
-  ) const
-  {
-      const int numnode = 3;
-      const int numdim = 2;
-      for (int i=0; i<numnode; ++i)
-      {
-        for (int j = 0; j < numdim; ++j) 
-        {
-          x(i,j) = Nodes()[i]->X()[j] + disp[i*numdim+j];
-        }
-      }
-      return;
-  }
-  
   /// compute normal for 3D case using the first three nodes to specify a plane
-  void ComputeNormal3D
+  void ComputeNormal
   (
     const LINALG::Matrix<4,3>& xc,  ///< nodal coords in spatial frame
     LINALG::Matrix<3,1>& elenormal  ///< resulting element normal
   );
   
   /// Compute normal distance between plane and fourth node
-  double ComputeNormalDist3D
+  double ComputeNormalDist
   (
     const LINALG::Matrix<4,3>& xc,  ///< nodal coords in spatial frame
     const LINALG::Matrix<3,1>& elenormal  ///< element normal
   );
   
   /// Compute first derivative of normal distance with respect to the nodal displacements
-  void ComputeFirstDeriv3D
+  void ComputeFirstDeriv
   (
     const LINALG::Matrix<4,3>& xc,  ///< nodal coords in spatial frame
     Epetra_SerialDenseVector& elevector,  ///< vector to store results into
@@ -352,61 +296,11 @@ private:
   );
   
   /// Compute first derivative of normal distance with respect to the nodal displacements
-  void ComputeSecondDeriv3D
+  void ComputeSecondDeriv
   (
     const LINALG::Matrix<4,3>& xc,  ///< nodal coords in spatial frame
     Epetra_SerialDenseMatrix& elematrix,  ///< vector to store results into
     const LINALG::Matrix<3,1>& elenormal  ///< element normal
-  );
-
-  /// compute normal for 2D case using the first two nodes to specify a line
-  void ComputeNormal2D
-  (
-    const LINALG::Matrix<3,2>& xc,  ///< nodal coords in spatial frame
-    LINALG::Matrix<2,1>& elenormal  ///< resulting element normal
-  );
-  
-  /// Compute normal distance between line and third node
-  double ComputeNormalDist2D
-  (
-    const LINALG::Matrix<3,2>& xc,  ///< nodal coords in spatial frame
-    const LINALG::Matrix<2,1>& elenormal  ///< element normal
-  );
-  
-  /// Compute first derivatives of normal distance with respect to the nodal displacements
-  void ComputeFirstDerivDist2D
-  (
-    const LINALG::Matrix<3,2>& xc,  ///< nodal coords in spatial frame
-    Epetra_SerialDenseVector& elevector,  ///< vector to store results into
-    const LINALG::Matrix<2,1>& elenormal  ///< element normal
-  );
-  
-  /// Compute second derivatives of normal distance with respect to the nodal displacements
-  void ComputeSecondDerivDist2D
-  (
-    const LINALG::Matrix<3,2>& xc,  ///< nodal coords in spatial frame
-    Epetra_SerialDenseMatrix& elevector,  ///< matrix to store results into
-    const LINALG::Matrix<2,1>& elenormal  ///< element normal
-  );
-
-  /// Compute angle at second node 
-  double ComputeAngle2D
-  (
-    const LINALG::Matrix<3,2>& xc  ///< nodal coords in spatial frame
-  );
-  
-  /// Compute first derivatives of angle at second node with respect to the nodal displacements
-  void ComputeFirstDerivAngle2D
-  (
-    const LINALG::Matrix<3,2>& xc,  ///< nodal coords in spatial frame
-    Epetra_SerialDenseVector& elevector  ///< vector to store results into
-  );
-  
-  /// Compute second derivatives of angle at second node with respect to the nodal displacements
-  void ComputeSecondDerivAngle2D
-  (
-    const LINALG::Matrix<3,2>& xc,  ///< nodal coords in spatial frame
-    Epetra_SerialDenseMatrix& elematrix  ///< matrix to store results into
   );
 
   /// Compute difference of nodal displacement to masternode in given direction
@@ -423,7 +317,7 @@ private:
     const vector<double> direct   ///< direction to weight with
   );
 
-}; // class ConstraintElement
+}; // class ConstraintElement3
 
 
 //=======================================================================
@@ -437,7 +331,7 @@ private:
 
 \author tk (kloeppel@lnm.mw.tum.de)
 */
-class ConstraintElementRegister : public DRT::ElementRegister
+class ConstraintElement3Register : public DRT::ElementRegister
 {
 public:
 
@@ -447,24 +341,24 @@ public:
   \brief Standard Constructor
 
   */
-  ConstraintElementRegister(DRT::Element::ElementType etype);
+  ConstraintElement3Register(DRT::Element::ElementType etype);
 
   /*!
   \brief Copy Constructor
 
-  Makes a deep copy of an ConstraintElementRegister
+  Makes a deep copy of an ConstraintElement3Register
 
   */
-  ConstraintElementRegister(const DRT::ELEMENTS::ConstraintElementRegister& old);
+  ConstraintElement3Register(const DRT::ELEMENTS::ConstraintElement3Register& old);
 
   /*!
-  \brief Deep copy this instance of ConstraintElementRegister and return pointer to the copy
+  \brief Deep copy this instance of ConstraintElement3Register and return pointer to the copy
 
   The Clone() method is used from the virtual base class Element in cases
   where the type of the derived class is unknown and a copy-ctor is needed
 
   */
-  DRT::ELEMENTS::ConstraintElementRegister* Clone() const;
+  DRT::ELEMENTS::ConstraintElement3Register* Clone() const;
 
   /*!
   \brief Return unique ParObject id
@@ -472,7 +366,7 @@ public:
   every class imploementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_ConstraintElementRegister;}
+  virtual int UniqueParObjectId() const { return ParObject_ConstraintElement3Register;}
 
   /*!
   \brief Pack this class so it can be communicated
@@ -494,7 +388,7 @@ public:
   \brief Destructor
 
   */
-  virtual ~ConstraintElementRegister();
+  virtual ~ConstraintElement3Register();
 
   //@}
 
@@ -521,7 +415,7 @@ public:
 
 private:
 
-}; // class ConstraintElementRegister
+}; // class ConstraintElement3Register
 
 } // namespace ELEMENTS
 } // namespace DRT

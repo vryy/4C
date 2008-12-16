@@ -15,7 +15,6 @@ Maintainer: Thomas Kloeppel
 
 #include "multipointconstraint.H"
 #include "mpcdofset.H"
-#include "constraint_element.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_utils.H"
@@ -58,33 +57,6 @@ UTILS::MPConstraint::MPConstraint(RCP<DRT::Discretization> discr,
 {  
   return;
 }
-
-
-/*----------------------------------------------------------------------*
- |(private)                                                   tk 05/08  |
- |replace numdofs in elements of constraint discretization              |
- *----------------------------------------------------------------------*/
-void UTILS::MPConstraint::ReplaceNumDof
-(
-  const RCP<DRT::Discretization> sourcedis,
-  const RCP<DRT::Discretization> constraintdis
-) const
-{
-  // find typical numdof of basis discretization (may not work for XFEM)
-  const DRT::Element* actele = sourcedis->lColElement(0);
-  const DRT::Node*const* nodes = actele->Nodes();
-  const int mpc_numdof = sourcedis->NumDof(nodes[0]);
-
-  // change numdof for all constraint elements
-  const int numcolele = constraintdis->NumMyColElements();
-  for (int i=0; i<numcolele; ++i)
-  {
-    DRT::ELEMENTS::ConstraintElement* mpcele = dynamic_cast<DRT::ELEMENTS::ConstraintElement*>(constraintdis->lColElement(i));
-    mpcele->SetNumDofPerNode(mpc_numdof);
-  }
-  constraintdis->FillComplete();
-  return;
- }
 
 
 /*----------------------------------------------------------------------*

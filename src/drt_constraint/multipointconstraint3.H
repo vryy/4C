@@ -109,7 +109,7 @@ namespace UTILS
     // projected attributes
     map<int,bool> absconstraint_;///<maps condition ID to indicator if absolute values are to use for controlling
     map<int,int> eletocondID_;///<maps element ID to condition ID, to allow use of other maps
-    map<int,int> eletocondvecindex_;///<maps element ID to condition index in vector
+    map<int,int> eletocondvecindex_;///<maps element ID to condition index in vector #constrcond_
       
   }; //class
 }

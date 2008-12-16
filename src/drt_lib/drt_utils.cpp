@@ -87,7 +87,8 @@ extern "C"
 #include "../drt_ale2/ale2.H"
 #include "../drt_ale3/ale3.H"
 #include "../drt_bele3/bele3.H"
-#include "../drt_constraint/constraint_element.H"
+#include "../drt_constraint/constraint_element2.H"
+#include "../drt_constraint/constraint_element3.H"
 #include "../drt_w1/wall1.H"
 #include "../drt_so3/so_hex8.H"
 #include "../drt_so3/so_sh8.H"
@@ -668,17 +669,32 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       ele->Unpack(data);
       return ele;
     }
-    case ParObject_ConstraintElement:
+    case ParObject_ConstraintElement2:
     {
-      DRT::ELEMENTS::ConstraintElement* object = new DRT::ELEMENTS::ConstraintElement(-1,-1);
+      DRT::ELEMENTS::ConstraintElement2* object = new DRT::ELEMENTS::ConstraintElement2(-1,-1);
       object->Unpack(data);
       return object;
     }
     break;
-    case ParObject_ConstraintElementRegister:
+    case ParObject_ConstraintElement2Register:
     {
-      DRT::ELEMENTS::ConstraintElementRegister* object =
-                      new DRT::ELEMENTS::ConstraintElementRegister(DRT::Element::element_constraintelement);
+      DRT::ELEMENTS::ConstraintElement2Register* object =
+                      new DRT::ELEMENTS::ConstraintElement2Register(DRT::Element::element_constraintelement2);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_ConstraintElement3:
+    {
+      DRT::ELEMENTS::ConstraintElement3* object = new DRT::ELEMENTS::ConstraintElement3(-1,-1);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_ConstraintElement3Register:
+    {
+      DRT::ELEMENTS::ConstraintElement3Register* object =
+                      new DRT::ELEMENTS::ConstraintElement3Register(DRT::Element::element_constraintelement3);
       object->Unpack(data);
       return object;
     }
@@ -724,7 +740,8 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     beam2,
     beam3,
     truss3,
-    constrele
+    constrele2,
+    constrele3
   };
 
   TypeofElement type = none;
@@ -751,7 +768,8 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
   else if (eletype=="BEAM2") type = beam2;
   else if (eletype=="BEAM3") type = beam3;
   else if (eletype=="TRUSS3") type = truss3;
-  else if (eletype=="CONSTRELE") type = constrele;
+  else if (eletype=="CONSTRELE2") type = constrele2;
+  else if (eletype=="CONSTRELE3") type = constrele3;
   // continue to add elements here....
   else dserror("Unknown type of finite element");
 
@@ -870,9 +888,15 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
       return ele;
     }
     break;
-    case constrele:
+    case constrele2:
     {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::ConstraintElement(id,owner));
+      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::ConstraintElement2(id,owner));
+      return ele;
+    }
+    break;
+    case constrele3:
+    {
+      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::ConstraintElement3(id,owner));
       return ele;
     }
     break;

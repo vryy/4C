@@ -130,7 +130,8 @@ public:
     element_dgfluid2interface,
     element_dgfluid3,
     element_dgfluid3interface,
-    element_constraintelement,
+    element_constraintelement2,
+    element_constraintelement3,
     element_condif3,
     element_condif3surface
   };

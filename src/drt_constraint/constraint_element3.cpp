@@ -12,7 +12,7 @@ Maintainer: Thomas Kloeppel
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#include "constraint_element.H"
+#include "constraint_element3.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
@@ -22,17 +22,16 @@ using namespace DRT::UTILS;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ConstraintElement::ConstraintElement(int id, int owner) :
-DRT::Element(id,element_constraintelement,owner),
+DRT::ELEMENTS::ConstraintElement3::ConstraintElement3(int id, int owner) :
+DRT::Element(id, element_constraintelement3, owner),
 data_()
 {
-  numdof_=0;
   return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ConstraintElement::ConstraintElement(const DRT::ELEMENTS::ConstraintElement& old) :
+DRT::ELEMENTS::ConstraintElement3::ConstraintElement3(const DRT::ELEMENTS::ConstraintElement3& old) :
 DRT::Element(old),
 data_(old.data_)
 {
@@ -41,15 +40,15 @@ data_(old.data_)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::ConstraintElement::Clone() const
+DRT::Element* DRT::ELEMENTS::ConstraintElement3::Clone() const
 {
-  DRT::ELEMENTS::ConstraintElement* newelement = new DRT::ELEMENTS::ConstraintElement(*this);
+  DRT::ELEMENTS::ConstraintElement3* newelement = new DRT::ELEMENTS::ConstraintElement3(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ConstraintElement::Pack(vector<char>& data) const
+void DRT::ELEMENTS::ConstraintElement3::Pack(vector<char>& data) const
 {
   data.resize(0);
 
@@ -72,7 +71,7 @@ void DRT::ELEMENTS::ConstraintElement::Pack(vector<char>& data) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ConstraintElement::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::ConstraintElement3::Unpack(const vector<char>& data)
 {
   int position = 0;
   // extract type
@@ -97,7 +96,7 @@ void DRT::ELEMENTS::ConstraintElement::Unpack(const vector<char>& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ConstraintElement::~ConstraintElement()
+DRT::ELEMENTS::ConstraintElement3::~ConstraintElement3()
 {
   return;
 }
@@ -105,9 +104,9 @@ DRT::ELEMENTS::ConstraintElement::~ConstraintElement()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ConstraintElement::Print(ostream& os) const
+void DRT::ELEMENTS::ConstraintElement3::Print(ostream& os) const
 {
-  os << "ConstraintElement ";
+  os << "ConstraintElement3 ";
   Element::Print(os);
   cout << endl;
   cout << data_;
@@ -116,9 +115,9 @@ void DRT::ELEMENTS::ConstraintElement::Print(ostream& os) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::ConstraintElement::ElementRegister() const
+RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::ConstraintElement3::ElementRegister() const
 {
-  return rcp(new DRT::ELEMENTS::ConstraintElementRegister(Type()));
+  return rcp(new DRT::ELEMENTS::ConstraintElement3Register(Type()));
 }
 
 
@@ -126,7 +125,7 @@ RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::ConstraintElement::ElementRegis
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ConstraintElementRegister::ConstraintElementRegister(DRT::Element::ElementType etype) :
+DRT::ELEMENTS::ConstraintElement3Register::ConstraintElement3Register(DRT::Element::ElementType etype) :
 ElementRegister(etype)
 {
   return;
@@ -134,8 +133,8 @@ ElementRegister(etype)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ConstraintElementRegister::ConstraintElementRegister(
-                               const DRT::ELEMENTS::ConstraintElementRegister& old) :
+DRT::ELEMENTS::ConstraintElement3Register::ConstraintElement3Register(
+                               const DRT::ELEMENTS::ConstraintElement3Register& old) :
 ElementRegister(old)
 {
   return;
@@ -143,14 +142,14 @@ ElementRegister(old)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ConstraintElementRegister* DRT::ELEMENTS::ConstraintElementRegister::Clone() const
+DRT::ELEMENTS::ConstraintElement3Register* DRT::ELEMENTS::ConstraintElement3Register::Clone() const
 {
-  return new DRT::ELEMENTS::ConstraintElementRegister(*this);
+  return new DRT::ELEMENTS::ConstraintElement3Register(*this);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ConstraintElementRegister::Pack(vector<char>& data) const
+void DRT::ELEMENTS::ConstraintElement3Register::Pack(vector<char>& data) const
 {
   data.resize(0);
 
@@ -168,7 +167,7 @@ void DRT::ELEMENTS::ConstraintElementRegister::Pack(vector<char>& data) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ConstraintElementRegister::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::ConstraintElement3Register::Unpack(const vector<char>& data)
 {
   int position = 0;
   // extract type
@@ -188,16 +187,16 @@ void DRT::ELEMENTS::ConstraintElementRegister::Unpack(const vector<char>& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ConstraintElementRegister::~ConstraintElementRegister()
+DRT::ELEMENTS::ConstraintElement3Register::~ConstraintElement3Register()
 {
   return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ConstraintElementRegister::Print(ostream& os) const
+void DRT::ELEMENTS::ConstraintElement3Register::Print(ostream& os) const
 {
-  os << "ConstraintElementRegister ";
+  os << "ConstraintElement3Register ";
   ElementRegister::Print(os);
   return;
 }

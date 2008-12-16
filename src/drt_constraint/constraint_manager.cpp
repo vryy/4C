@@ -13,7 +13,7 @@ Maintainer: Thomas Kloeppel
 #ifdef CCADISCRET
 
 #include "constraint_manager.H"
-#include "constraint_element.H"
+//#include "constraint_element.H"
 #include "iostream"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_utils.H"

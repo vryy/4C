@@ -105,8 +105,8 @@ using namespace std;
 #define ParObject_Bele3Register         (int)95
 #define ParObject_Bele3Line             (int)96
 #define ParObject_ModPowerLaw           (int)97
-#define ParObject_ConstraintElement     (int)98
-#define ParObject_ConstraintElementRegister (int)99
+#define ParObject_ConstraintElement2     (int)98
+#define ParObject_ConstraintElement2Register (int)99
 #define ParObject_StructuralSurface     (int)100
 #define ParObject_StructuralLine        (int)101
 #define ParObject_MooneyRivlin          (int)102
@@ -133,6 +133,8 @@ using namespace std;
 #define ParObject_Combust3Line          (int)123
 #define ParObject_Ion                   (int)124
 #define ParObject_ViscoAnisotropic      (int)125
+#define ParObject_ConstraintElement3     (int)126
+#define ParObject_ConstraintElement3Register (int)127
 
 
 namespace DRT

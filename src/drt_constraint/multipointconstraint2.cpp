@@ -15,7 +15,7 @@ Maintainer: Thomas Kloeppel
 
 #include "multipointconstraint2.H"
 #include "mpcdofset.H"
-#include "constraint_element.H"
+#include "constraint_element2.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_utils.H"
@@ -43,8 +43,7 @@ UTILS::MPConstraint2::MPConstraint2(RCP<DRT::Discretization> discr,
   {
     int dummy=0;
     //create constraint discretization and store it with label 0, within the map
-    constraintdis_=CreateDiscretizationFromCondition(actdisc_,constrcond_,"ConstrDisc","CONSTRELE", dummy);
-    ReplaceNumDof(actdisc_,constraintdis_.find(0)->second);
+    constraintdis_=CreateDiscretizationFromCondition(actdisc_,constrcond_,"ConstrDisc","CONSTRELE2", dummy);
     RCP<Epetra_Map> newcolnodemap = ComputeNodeColMap(actdisc_, constraintdis_.find(0)->second);
     actdisc_->Redistribute(*(actdisc_->NodeRowMap()), *newcolnodemap);
     RCP<DRT::DofSet> newdofset = rcp(new MPCDofSet(actdisc_));
@@ -145,7 +144,7 @@ void UTILS::MPConstraint2::Evaluate(
   switch (Type())
   {
     case mpcnodeonline2d:
-      params.set("action","calc_MPC2D_stiff");
+      params.set("action","calc_MPC_stiff");
     break;
     case none:
       return;
