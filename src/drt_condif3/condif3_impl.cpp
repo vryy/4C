@@ -2,7 +2,7 @@
 /*!
 \file condif3_impl.cpp
 
-\brief Internal implementation of Condif3 element
+\brief Internal implementation of scalar transport elements
 
 <pre>
 Maintainer: Georg Bauer
@@ -17,14 +17,12 @@ Maintainer: Georg Bauer
 #ifdef CCADISCRET
 
 #include "condif3_impl.H"
-#include "condif3_utils.H"
 #include "../drt_mat/convecdiffus.H"
 #include "../drt_mat/matlist.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include <Epetra_SerialDenseSolver.h>
 #include "../drt_geometry/position_array.H"
 #include "../drt_lib/linalg_serialdensematrix.H"
 
@@ -268,12 +266,12 @@ int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
     ParameterList& stablist = params.sublist("STABILIZATION");
 
     // select tau definition
-    Condif3::TauType whichtau = Condif3::tau_not_defined;
+    SCATRA::TauType whichtau = SCATRA::tau_not_defined;
     {
       const string taudef = stablist.get<string>("DEFINITION_TAU");
 
-      if(taudef == "Franca_Valentin") whichtau = Condif3::franca_valentin;
-      else if(taudef == "Bazilevs")   whichtau = Condif3::bazilevs;
+      if(taudef == "Franca_Valentin") whichtau = SCATRA::franca_valentin;
+      else if(taudef == "Bazilevs")   whichtau = SCATRA::bazilevs;
     }
 
     // get (weighted) velocity at the nodes
@@ -393,12 +391,12 @@ int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
     ParameterList& stablist = params.sublist("STABILIZATION");
 
     // select tau definition
-    Condif3::TauType whichtau = Condif3::tau_not_defined;
+    SCATRA::TauType whichtau = SCATRA::tau_not_defined;
     {
       const string taudef = stablist.get<string>("DEFINITION_TAU");
 
-      if(taudef == "Franca_Valentin") whichtau = Condif3::franca_valentin;
-      else if(taudef == "Bazilevs")   whichtau = Condif3::bazilevs;
+      if(taudef == "Franca_Valentin") whichtau = SCATRA::franca_valentin;
+      else if(taudef == "Bazilevs")   whichtau = SCATRA::bazilevs;
     }
 
     // need initial field
@@ -559,14 +557,14 @@ int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
     }
 
     // access control parameter
-    Condif3::FluxType fluxtype;
+    SCATRA::FluxType fluxtype;
     string fluxtypestring = params.get<string>("fluxtype","noflux");
     if (fluxtypestring == "totalflux")
-      fluxtype = Condif3::totalflux;
+      fluxtype = SCATRA::totalflux;
     else if (fluxtypestring == "diffusiveflux")
-      fluxtype = Condif3::diffusiveflux;
+      fluxtype = SCATRA::diffusiveflux;
     else
-      fluxtype=Condif3::noflux;  //default value
+      fluxtype=SCATRA::noflux;  //default value
 
     // set flag for type of scalar
     string scaltypestr=params.get<string>("problem type");
@@ -676,7 +674,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalculateFluxSerialDense(
     LINALG::SerialDenseMatrix&      flux,
     DRT::Element*&            ele,
     vector<double>&           ephinp,
-    struct _MATERIAL*&        material,
+    struct _MATERIAL*         material,
     bool&                     temperature,
     double&                   frt,
     Epetra_SerialDenseVector& evel,
@@ -685,13 +683,13 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalculateFluxSerialDense(
 )
 {
   // access control parameter
-  Condif3::FluxType fluxtype;
+  SCATRA::FluxType fluxtype;
   if (fluxtypestring == "totalflux")
-    fluxtype = Condif3::totalflux;
+    fluxtype = SCATRA::totalflux;
   else if (fluxtypestring == "diffusiveflux")
-    fluxtype = Condif3::diffusiveflux;
+    fluxtype = SCATRA::diffusiveflux;
   else
-    fluxtype=Condif3::noflux;  //default value
+    fluxtype=SCATRA::noflux;  //default value
 
   // we always get an 3D flux vector for each node
   LINALG::Matrix<3,iel> eflux(true);
@@ -721,7 +719,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::Sysmat(
     Epetra_SerialDenseMatrix&             sys_mat,///< element matrix to calculate
     Epetra_SerialDenseVector&             residual, ///< element rhs to calculate
     Epetra_SerialDenseVector&             subgrdiff, ///< subgrid-diff.-scaling vector
-    const struct _MATERIAL*               material, ///< material pointer
+    struct _MATERIAL*                     material, ///< material pointer
     const double                          time, ///< current simulation time
     const double                          dt, ///< current time-step length
     const double                          timefac, ///< time discretization factor
@@ -729,7 +727,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::Sysmat(
     const LINALG::Matrix<nsd_,iel>&       evelnp,///< nodal velocities at t_{n+1}
     const bool                            temperature, ///< temperature flag
     const bool                            conservative, ///< flag for conservative form
-    const enum Condif3::TauType           whichtau, ///< stabilization parameter definition
+    const enum SCATRA::TauType            whichtau, ///< flag for stabilization parameter definition
     const string                          fssgd, ///< subgrid-diff. flag
     const bool                            is_stationary, ///< stationary flag
     const bool                            is_genalpha, ///< generalized-alpha flag
@@ -895,8 +893,8 @@ void DRT::ELEMENTS::Condif3Impl<distype>::BodyForce(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Condif3Impl<distype>::GetMaterialParams(
-    const struct _MATERIAL*   material,
-    const bool&               temperature
+    struct _MATERIAL*  material,
+    const bool&        temperature
 )
 {
 // get diffusivity / diffusivities
@@ -958,7 +956,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalTau(
     const LINALG::Matrix<iel,1>&    epot,
     const double                    dt,
     const double&                   timefac,
-    const enum Condif3::TauType     whichtau,
+    const enum SCATRA::TauType      whichtau,
     const string                    fssgd,
     const bool&                     is_stationary,
     const bool                      initial,
@@ -1005,7 +1003,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalTau(
   } // if ELCH
 
   // stabilization parameter definition according to Bazilevs et al. (2007)
-  if(whichtau == Condif3::bazilevs)
+  if(whichtau == SCATRA::bazilevs)
   {
     for(int k = 0;k<numscal_;++k) // loop over all transported scalars
     {
@@ -1101,7 +1099,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalTau(
     } // for k
   }
   // stabilization parameter definition according to Franca and Valentin (2000)
-  else if (whichtau == Condif3::franca_valentin)
+  else if (whichtau == SCATRA::franca_valentin)
   {
     // volume of the element (2D: element surface area; 1D: element length)
     // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
@@ -1832,7 +1830,7 @@ conv_.MultiplyTN(derxy_,velint_);
 // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
 if (use2ndderiv)
 {
-  getLaplacianStrongForm(diff_, derxy2_);
+  GetLaplacianStrongForm(diff_, derxy2_);
   diff_.Scale(diffus_[dofindex]);
 }
 
@@ -1896,7 +1894,7 @@ for (int vi=0; vi<iel; ++vi)
   {
     const int fui = ui*numdof+dofindex;
     double laplawf(0.0);
-    getLaplacianWeakForm(laplawf, derxy_,ui,vi);
+    GetLaplacianWeakForm(laplawf, derxy_,ui,vi);
     estif(fvi,fui) += fac_diffus*laplawf;
   }
 }
@@ -2194,7 +2192,7 @@ conv_.MultiplyTN(derxy_,velint_);
 // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
 if (use2ndderiv)
 {
-  getLaplacianStrongForm(diff_, derxy2_);
+  GetLaplacianStrongForm(diff_, derxy2_);
   diff_.Scale(diffus_[dofindex]);
 }
 
@@ -2244,7 +2242,7 @@ for (int vi=0; vi<iel; ++vi)
   {
     const int fui = ui*numdof+dofindex;
     double laplawf(0.0);
-    getLaplacianWeakForm(laplawf,derxy_,vi,ui);
+    GetLaplacianWeakForm(laplawf,derxy_,vi,ui);
     estif(fvi,fui) += fac_diffus*laplawf;
   }
 }
@@ -2364,14 +2362,14 @@ void DRT::ELEMENTS::Condif3Impl<distype>::InitialTimeDerivative(
     Epetra_SerialDenseMatrix&             massmat,
     Epetra_SerialDenseVector&             rhs,
     Epetra_SerialDenseVector&             subgrdiff,
-    const struct _MATERIAL*               material,
+    struct _MATERIAL*                     material,
     const double                          time,
     const double                          dt,
     const double                          timefac,
     const LINALG::Matrix<nsd_,iel>&       evel0,
     const bool                            temperature,
     const bool                            conservative,
-    const enum Condif3::TauType           whichtau,
+    const enum SCATRA::TauType            whichtau,
     const string                          fssgd,
     const double                          frt
 )
@@ -2446,7 +2444,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::InitialTimeDerivative(
       if (use2ndderiv)
       {
         // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
-        getLaplacianStrongForm(diff_, derxy2_);
+        GetLaplacianStrongForm(diff_, derxy2_);
         diff_.Scale(diffus_[k]);
       }
       else
@@ -2507,7 +2505,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::InitialTimeDerivative(
         for (int ui=0; ui<iel; ++ui)
         {
           double laplawf(0.0);
-          getLaplacianWeakForm(laplawf, derxy_,ui,vi);
+          GetLaplacianWeakForm(laplawf, derxy_,ui,vi);
           rhs[fvi] -= fac_diffus*laplawf*(ephi0[k])(ui);
         }
       }
@@ -2686,7 +2684,7 @@ for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
       {
         const int fui = ui*numdofpernode_+k;
         double laplawf(0.0);
-        getLaplacianWeakForm(laplawf, derxy_,ui,vi);
+        GetLaplacianWeakForm(laplawf, derxy_,ui,vi);
         sys_mat_sd(fvi,fui) += kartfac*laplawf;
 
         /*subtract SUPG term */
@@ -2762,7 +2760,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalMatInc(
     // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
     if (use2ndderiv)
     {
-      getLaplacianStrongForm(diff_, derxy2_);
+      GetLaplacianStrongForm(diff_, derxy2_);
       diff_.Scale(diffus_[k]);
     }
 
@@ -2780,7 +2778,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalMatInc(
 
         /* diffusive term */
         double laplawf(0.0);
-        getLaplacianWeakForm(laplawf, derxy_,ui,vi);
+        GetLaplacianWeakForm(laplawf, derxy_,ui,vi);
         emat(vi*numdofpernode_+k, ui*numdofpernode_+k) += timefacfac*diffus_[k]*laplawf;
 
         /* Stabilization term: */
@@ -2979,7 +2977,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalMatElch(
     if (use2ndderiv)
     {
       // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
-      getLaplacianStrongForm(diff_, derxy2_);
+      GetLaplacianStrongForm(diff_, derxy2_);
       diff_.Scale(diffus_[k]);
 
         /* reactive part of migration*/
@@ -3008,7 +3006,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalMatElch(
 
         /* diffusive term */
         double laplawf(0.0);
-        getLaplacianWeakForm(laplawf, derxy_,ui,vi);
+        GetLaplacianWeakForm(laplawf, derxy_,ui,vi);
         emat(vi*numdofpernode_+k, ui*numdofpernode_+k) += timefacfac*diffus_[k]*laplawf;
 
         /* migration term (directional derivatives) */
@@ -3249,7 +3247,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalculateFlux(
     const bool                      temperature,
     const double                    frt,
     const Epetra_SerialDenseVector& evel,
-    const Condif3::FluxType         fluxtype,
+    const SCATRA::FluxType          fluxtype,
     const int&                      dofindex
 )
 {
@@ -3337,7 +3335,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalculateFlux(
     // add different flux contributions as specified by user input
     switch (fluxtype)
     {
-      case Condif3::totalflux:
+      case SCATRA::totalflux:
         if (frt > 0.0) // ELCH
         {
           //migration flux terms
@@ -3352,7 +3350,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalculateFlux(
           flux(idim,iquad)+=evel[idim+iquad*nsd_]*ephinpatnode;
         }
         // no break statement here!
-      case Condif3::diffusiveflux:
+      case SCATRA::diffusiveflux:
         //diffusive flux terms
         for (int k=0;k<iel;k++)
         {
@@ -3362,7 +3360,7 @@ void DRT::ELEMENTS::Condif3Impl<distype>::CalculateFlux(
           }
         }
         break;
-      case Condif3::noflux:
+      case SCATRA::noflux:
         dserror("received noflux flag inside CONDIF3 flux evaluation");
     };
 

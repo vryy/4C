@@ -20,8 +20,13 @@ Maintainer: Georg Bauer
 #define CONDIF3_IMPL_H
 
 
-#include "condif3.H"
+#include "condif3_utils.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+
+
+// forward declarations
+struct _MATERIAL;
+
 
 namespace DRT
 {
@@ -64,7 +69,7 @@ public:
       LINALG::SerialDenseMatrix&      flux,
       DRT::Element*&            ele,
       vector<double>&           ephinp,
-      struct _MATERIAL*&        material,
+      struct _MATERIAL*         material,
       bool&                     temperature,
       double&                   frt,
       Epetra_SerialDenseVector& evel,
@@ -148,7 +153,7 @@ public:
       LINALG::SerialDenseMatrix&      flux,
       DRT::Element*&            ele,
       vector<double>&           ephinp,
-      struct _MATERIAL*&        material,
+      struct _MATERIAL*         material,
       bool&                     temperature,
       double&                   frt,
       Epetra_SerialDenseVector& evel,
@@ -157,6 +162,15 @@ public:
   );
 
   private:
+
+    
+    //! possible options for the stabilization parameter
+    enum TauType
+    {
+      ttfranca_valentin,
+      ttbazilevs,
+      tttau_not_defined
+    };
 
     //! Calculate matrix and rhs. Here the whole thing is hidden.
     virtual void Sysmat(
@@ -168,7 +182,7 @@ public:
         Epetra_SerialDenseMatrix&             sys_mat,///< element matrix to calculate
         Epetra_SerialDenseVector&             residual, ///< element rhs to calculate
         Epetra_SerialDenseVector&             subgrdiff, ///< subgrid-diff.-scaling vector
-        const struct _MATERIAL*               material, ///< material pointer
+        struct _MATERIAL*                     material, ///< material pointer
         const double                          time, ///< current simulation time
         const double                          dt, ///< current time-step length
         const double                          timefac, ///< time discretization factor
@@ -176,7 +190,7 @@ public:
         const LINALG::Matrix<nsd_,iel>&       evelnp,///< nodal velocities at t_{n+1}
         const bool                            temperature, ///< temperature flag
         const bool                            conservative, ///< flag for conservative form
-        const enum Condif3::TauType           whichtau, ///< flag for stabilization parameter definition
+        const enum SCATRA::TauType            whichtau, ///< flag for stabilization parameter definition
         const string                          fssgd, ///< subgrid-diff. flag
         const bool                            is_stationary, ///< flag indicating stationary formulation
         const bool                            is_genalpha, ///< generalized-alpha flag
@@ -193,14 +207,14 @@ public:
         Epetra_SerialDenseMatrix&             massmat, ///< mass matrix to calculate
         Epetra_SerialDenseVector&             rhs, ///< element rhs to calculate
         Epetra_SerialDenseVector&             subgrdiff, ///< subgrid-diff.-scaling vector
-        const struct _MATERIAL*               material, ///< material pointer
+        struct _MATERIAL*                     material, ///< material pointer
         const double                          time, ///< current simulation time
         const double                          dt, ///< current time-step length
         const double                          timefac, ///< time discretization factor
         const LINALG::Matrix<nsd_,iel>&       evel0, ///< initial nodal velocities
         const bool                            temperature, ///< temperature flag
         const bool                            conservative, ///< flag for conservative form
-        const enum Condif3::TauType           whichtau, ///< flag for stabilization parameter definition
+        const enum SCATRA::TauType            whichtau, ///< flag for stabilization parameter definition
         const string                          fssgd, ///< subgrid-diff. flag
         const double                          frt ///< factor F/RT needed for ELCH calculations
     );
@@ -215,26 +229,26 @@ public:
 
     //! get the body force
     virtual void BodyForce(
-        const DRT::Element*       ele, ///< the element we are dealing with
-        const double                  time ///< current simulation time
+        const DRT::Element*    ele, ///< the element we are dealing with
+        const double           time ///< current simulation time
     );
 
     //! get the material parameters
     virtual void GetMaterialParams(
-        const struct _MATERIAL* material,    ///< material pointer
+        struct _MATERIAL*       material,    ///< material pointer
         const bool&             temperature  ///< temperature flag
     );
 
     //! calculate stabilization parameter
     virtual void CalTau(
-        const DRT::Element*          ele, ///< the element
+        const DRT::Element*              ele, ///< the element
         Epetra_SerialDenseVector&        subgrdiff, ///< subgrid-diff.-scaling vector
         const LINALG::Matrix<nsd_,iel>&  evel,///< nodal velocities
         const LINALG::Matrix<iel,1>&     edens, ///< density
         const LINALG::Matrix<iel,1>&     epot,  ///< el. potential at element nodes
         const double                     dt, ///< current time-step length
         const double&                    timefac, ///< time discretization factor
-        const enum Condif3::TauType      whichtau, ///< flag for stabilization parameter definition
+        const enum SCATRA::TauType       whichtau, ///< flag for stabilization parameter definition
         const string                     fssgd, ///< subgrid-diff. flag
         const bool&                      is_stationary, ///< flag indicating stationary formulation
         const bool                       initial, ///< flag for intitial calculation
@@ -318,7 +332,7 @@ public:
         const bool                      temperature,
         const double                    frt,
         const Epetra_SerialDenseVector& evel,
-        const Condif3::FluxType         fluxtype,
+        const SCATRA::FluxType         fluxtype,
         const int&                      dofindex
     );
 
@@ -331,7 +345,7 @@ public:
         );
 
     //! calculate the Laplacian for all shape functions(strong form)
-    void getLaplacianStrongForm
+    void GetLaplacianStrongForm
     (
       LINALG::Matrix<iel,1>& diff, 
       const LINALG::Matrix<numderiv2_,iel>& deriv2
@@ -351,7 +365,7 @@ public:
 
 
     //! calculate the Laplacian (weak form)
-    void getLaplacianWeakForm(
+    void GetLaplacianWeakForm(
         double& val,
         const LINALG::Matrix<nsd_,iel>& derxy, 
         const int& vi,

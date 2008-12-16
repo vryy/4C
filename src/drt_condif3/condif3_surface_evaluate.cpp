@@ -130,7 +130,6 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
     }
 
     // access control parameter
-    Condif3::FluxType fluxtype;
     string fluxtypestring = params.get<string>("fluxtype","noflux");
 
     // define vector for normal fluxes

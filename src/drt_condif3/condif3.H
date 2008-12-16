@@ -311,22 +311,6 @@ public:
 
 private:
 
-  //! possible options for the stabilization parameter
-  enum TauType
-  {
-    franca_valentin,
-    bazilevs,
-    tau_not_defined
-  };
-
-  //! flux parameters recognized by condif3
-  enum FluxType
-  {
-    noflux,
-    totalflux,
-    diffusiveflux
-  };
-
   //! Gaussrule
   DRT::UTILS::GaussRule3D   gaussrule_;
   //! container containing all kind of condif3 thisandthat

@@ -14,13 +14,28 @@ Maintainer: Georg Bauer
 #define CONDIF3_UTILS_H
 
 
-#include "condif3.H"
 #include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_element.H"
 
 
 namespace SCATRA
 {
+
+  //! possible options for the stabilization parameter
+  enum TauType
+  {
+    franca_valentin,
+    bazilevs,
+    tau_not_defined
+  };
+
+  //! flux parameters recognized by condif3 implementation class
+  enum FluxType
+  {
+    noflux,
+    totalflux,
+    diffusiveflux
+  };
 
   //! check for higher order derivatives for shape functions
   bool is3DHigherOrderElement
