@@ -230,8 +230,6 @@ OBJS_DRT_STATMECH_LIB = src/drt_statmech/bromotion_manager.o
 #--------------------------------------------------- condif3 (drt version)
 OBJS_DRT_CONDIF3_LIB = src/drt_condif3/condif3.o \
                 src/drt_condif3/condif3_evaluate.o \
-                src/drt_condif3/condif3_impl.o \
-                src/drt_condif3/condif3_utils.o \
                 src/drt_condif3/condif3_input.o \
                 src/drt_condif3/condif3_surface.o \
                 src/drt_condif3/condif3_surface_evaluate.o
@@ -264,7 +262,9 @@ OBJS_DRT_SCATRA=src/drt_scatra/scatra_dyn.o \
                 src/drt_scatra/scatra_timint_stat.o \
                 src/drt_scatra/scatra_resulttest.o \
                 src/drt_scatra/scatra_utils.o \
-                src/drt_scatra/passive_scatra_algorithm.o
+                src/drt_scatra/passive_scatra_algorithm.o 
+OBJS_DRT_SCATRA_LIB = src/drt_scatra/scatra_ele_impl.o \
+                src/drt_scatra/scatra_ele_impl_utils.o
 # ----------------------------- drt version of fluid structure interaction
 OBJS_DRT_FSI  = src/drt_fsi/fsi_dyn.o \
                 src/drt_fsi/fsi_algorithm.o \

@@ -20,19 +20,7 @@ Maintainer: Georg Bauer
 #endif
 
 #include "condif3.H"
-#include "condif3_utils.H"
-#include "condif3_impl.H"
-#include "../drt_mat/convecdiffus.H"
-#include "../drt_mat/matlist.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H" // for CalculateFlux()
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/linalg_utils.H"
-#include "../drt_lib/drt_timecurve.H"
-#include <Epetra_SerialDenseSolver.h>
-
-#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_scatra/scatra_ele_impl.H"
 
 
 using namespace DRT::UTILS;
@@ -56,7 +44,7 @@ int DRT::ELEMENTS::Condif3::Evaluate(ParameterList& params,
   // If this element has special features/ methods that do not fit in the
   // generalized implementation class, you have to do a switch here in order to
   // call element-specific routines
-  return DRT::ELEMENTS::Condif3ImplInterface::Impl(this)->Evaluate(
+  return DRT::ELEMENTS::ScaTraImplInterface::Impl(this)->Evaluate(
       this,
       params,
       discretization,

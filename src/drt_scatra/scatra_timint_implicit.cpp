@@ -107,7 +107,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   const int numscal = numdof - 1;
   if (prbtype_ == "elch")
   {
-    // set up the condif-el.potential splitter
+    // set up the concentration-el.potential splitter
     FLD::UTILS::SetupFluidSplit(*discret_,numscal,conpotsplitter_);
     if (myrank_==0)
     {
@@ -587,7 +587,10 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
     }
 
     //------------------------------------------------ update solution vector
-      phinp_->Update(1.0,*increment_,1.0);
+/*    if (itnum == 1)
+        phinp_->Update(0.25,*increment_,1.0);
+    else  */
+    phinp_->Update(1.0,*increment_,1.0);
 
   } // nonlinear iteration
   return;

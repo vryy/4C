@@ -17,8 +17,7 @@ Maintainer: Georg Bauer
 #ifdef CCADISCRET
 
 #include "condif3.H"
-#include "condif3_utils.H"
-#include "condif3_impl.H"
+#include "../drt_scatra/scatra_ele_impl.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_serialdensematrix.H"
 #include "../drt_lib/linalg_serialdensevector.H"
@@ -169,7 +168,7 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
       // compute fluxes on each node of the parent element
       LINALG::SerialDenseMatrix eflux(3,ielparent);
       DRT::Element* parentele = (DRT::Element*) parent_;
-      DRT::ELEMENTS::Condif3ImplInterface::Impl(parentele)->CalculateFluxSerialDense(
+      DRT::ELEMENTS::ScaTraImplInterface::Impl(parentele)->CalculateFluxSerialDense(
           eflux,
           parentele,
           myphinp,

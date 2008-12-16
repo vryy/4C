@@ -46,7 +46,7 @@ public:
    */
   virtual void TestNode(const RESULTDESCR* res, int& nerr, int& test_count);
 
-  /// return true if this is a condif test
+  /// return true if this is a scalar transport test
   virtual bool Match(const RESULTDESCR* res);
 
 private:
