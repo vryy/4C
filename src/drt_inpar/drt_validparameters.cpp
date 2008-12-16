@@ -710,8 +710,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   //Reading whether dynamics remodelling of cross linker distribution takes place
   setStringToIntegralParameter<int>("DYN_CROSSLINKERS","No","If chosen cross linker proteins are added and removed in each time step",
                                yesnotuple,yesnovalue,&statmech);
-  //Reading double parameter for maximal cross linker protein length
-  DoubleParameter("R_LINK",0.0,"Maximal distance between two nodes connected by a crosslinker",&statmech);
   //Reading double parameter for gradient of flow field
   DoubleParameter("GRADIENT",0.0,"Velocity gradient of shear flow",&statmech);
   //Reading double parameter for viscosity of background fluid
@@ -722,6 +720,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("K_ON",0.0,"crosslinker on-rate",&statmech);
   //Reading double parameter for crosslinker off-rate
   DoubleParameter("K_OFF",0.0,"crosslinker off-rate",&statmech);
+  //Reading double parameter for maximal cross linker protein length
+  DoubleParameter("R_LINK",0.0,"Maximal distance between two nodes connected by a crosslinker",&statmech);
+  //Reading double parameter for concentration of crosslinking protein
+  DoubleParameter("C_CROSSLINKER",0.0,"Molar concentration of crosslinking protein",&statmech);
   //order of interpolation for stochastical fields
   IntParameter("STOCH_ORDER",0,"order of interpolation for stochastical fields",&statmech);
 
