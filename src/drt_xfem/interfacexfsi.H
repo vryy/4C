@@ -48,12 +48,6 @@ namespace XFEM
     
     //! returns pointer to map with (current) nodal positions per node of the cutter discretization 
     const std::map<int,LINALG::Matrix<3,1> >& cutterposn()  const {return cutterposn_;};
-
-    //! collect elements by xfem label
-    void CollectElementsByXFEMCouplingLabel(
-      const DRT::Discretization&          cutterdis,
-      std::map<int,std::set<int> >&       elementsByLabel
-      );
     
     //! get pointer to boundary element
     const DRT::Element* GetBoundaryEle(

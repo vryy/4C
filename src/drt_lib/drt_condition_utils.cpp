@@ -242,4 +242,47 @@ void DRT::UTILS::RedistributeWithNewNodalDistribution(
 
 }
 
+
+/*----------------------------------------------------------------------
+ * collects elements by labels (have to be implemented in the           *
+ * corresponding condition)                                             *
+ *----------------------------------------------------------------------*/
+void DRT::UTILS::CollectElementsByConditionLabel(
+    const DRT::Discretization&           discret,
+    std::map<int,std::set<int> >&        elementsByLabel,
+    const string&                        name)
+{
+  // Reset
+  elementsByLabel.clear();
+  // get condition
+  vector< DRT::Condition * >  conditions;
+  discret.GetCondition (name, conditions);
+  
+  // collect elements by xfem coupling label
+  for(vector<DRT::Condition*>::const_iterator conditer = conditions.begin(); conditer!= conditions.end(); ++conditer)
+  {
+    DRT::Condition* condition = *conditer;
+    const int label = condition->Getint("label");
+    const vector<int> geometryMap = *condition->Nodes();
+    vector<int>::const_iterator iterNode;
+    for(iterNode = geometryMap.begin(); iterNode != geometryMap.end(); ++iterNode )
+    {
+      const int nodegid = *iterNode;
+      const DRT::Node* node = discret.gNode(nodegid);
+      const DRT::Element*const* elements = node->Elements();
+      for (int iele=0;iele < node->NumElement(); ++iele)
+      {
+        const DRT::Element* element = elements[iele];
+        elementsByLabel[label].insert(element->Id());
+      }
+    }
+  }
+  int numOfCollectedIds = 0;
+  for(unsigned int i = 0; i < elementsByLabel.size(); i++)
+    numOfCollectedIds += elementsByLabel[i].size();
+  
+  if(discret.NumMyColElements() != numOfCollectedIds)
+    dserror("not all elements collected.");
+}
+
 #endif

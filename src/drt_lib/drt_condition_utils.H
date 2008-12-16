@@ -97,6 +97,14 @@ namespace DRT
         const Epetra_Map&        noderowmap,
         const Epetra_Map&        nodecolmap
         );
+    
+    
+    //!collects elements by labels (have to be implemented in the corresponding condition                                          *
+    void CollectElementsByConditionLabel(
+        const DRT::Discretization&           discret,               ///< discretization with condition
+        std::map<int,std::set<int> >&        elementsByLabel,       ///< data structure label - set elements
+        const string&                        name                   ///< name of the condition
+        );
   }
 }
 

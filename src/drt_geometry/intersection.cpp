@@ -706,30 +706,16 @@ void GEO::Intersection::computeNewStartingPoint(
 
 
 /*----------------------------------------------------------------------*
- |  CLI:    adds an intersection point to the 			     u.may 07/07|
- |          list of interface points                       			    |
+ |  CLI:    classifiy an intersection point                  u.may 07/07|
  *----------------------------------------------------------------------*/
-void GEO::Intersection::addIntersectionPoint(
-    const DRT::Element*                                           surfaceElement,
-    const LINALG::SerialDenseMatrix&                              xyze_surfaceElement,
-    const DRT::Element*                                           lineElement,
-    const LINALG::SerialDenseMatrix&                              xyze_lineElement,
-    const LINALG::Matrix<3,1>&                                    xsi,
-    const LINALG::Matrix<3,1>&                                    upLimit,
-    const LINALG::Matrix<3,1>&                                    loLimit,
-    std::map< LINALG::Matrix<3,1>, InterfacePoint, ComparePoint>& interfacePoints,
-    const int                         								            surfaceId,
-    const int                         								            lineId,
-    const bool                        								            lines,
-    const bool                        								            doSVD,
-    const std::vector<int>&           								            keyVec)
+GEO::InterfacePoint GEO::Intersection::classifyIntersectionPoint(
+    const DRT::Element*                     surfaceElement,
+    const LINALG::SerialDenseMatrix&        xyze_surfaceElement,
+    const LINALG::Matrix<3,1>&              xsi,
+    const int                               lineId,
+    const bool                              lines)
 {
-
   InterfacePoint ip;
-  
-  (*intersectionpointmap_)[keyVec].push_back(xsi);
-  storePermutedIntersectionPoint(xsi, keyVec);
-  
   // cutter line with xfem surface
   if(lines)
   {          
@@ -774,7 +760,35 @@ void GEO::Intersection::addIntersectionPoint(
       ip.setCoord(coord);
     }
   }
+  
+  return ip;
+}
 
+
+
+/*----------------------------------------------------------------------*
+ |  CLI:    adds an intersection point to the 			         u.may 07/07|
+ |          list of interface points                       	    		    |
+ *----------------------------------------------------------------------*/
+void GEO::Intersection::addIntersectionPoint(
+    const DRT::Element*                                           surfaceElement,
+    const LINALG::SerialDenseMatrix&                              xyze_surfaceElement,
+    const DRT::Element*                                           lineElement,
+    const LINALG::SerialDenseMatrix&                              xyze_lineElement,
+    const LINALG::Matrix<3,1>&                                    xsi,
+    const LINALG::Matrix<3,1>&                                    upLimit,
+    const LINALG::Matrix<3,1>&                                    loLimit,
+    std::map< LINALG::Matrix<3,1>, InterfacePoint, ComparePoint>& interfacePoints,
+    const int                         								            surfaceId,
+    const int                         								            lineId,
+    const bool                        								            lines,
+    const bool                        								            doSVD,
+    const std::vector<int>&           								            keyVec)
+{
+  (*intersectionpointmap_)[keyVec].push_back(xsi);
+  storePermutedIntersectionPoint(xsi, keyVec);
+  
+  InterfacePoint ip = classifyIntersectionPoint(surfaceElement, xyze_surfaceElement, xsi, lineId, lines);
 
   if(interfacePoints.find(ip.getCoord()) == interfacePoints.end())
   {
@@ -814,53 +828,8 @@ void GEO::Intersection::addIntersectionPoint(
     const bool                        								              lines) 
 {
 
-  InterfacePoint ip;
+  InterfacePoint ip = classifyIntersectionPoint(surfaceElement, xyze_surfaceElement, xsi, lineId, lines);
   
-  // cutter line with xfem surface
-  if(lines)
-  {          
-    setIntersectionPointBoundaryStatus(surfaceElement,xyze_surfaceElement,xsi, ip);
-    ip.setCoord(DRT::UTILS::getLineCoordinates(lineId, xsi(2), cutterDistype_));
-  }
-  // xfem line with cutter surface
-  else
-  {
-    // check if point lies on a node of the xfem line element and therefore also on
-    // the xfem element
-    int lineNodeId = -1;
-    if(fabs(xsi(2) + 1) < GEO::TOL7)
-      lineNodeId = 0;
-
-    if(fabs(xsi(2) - 1) < GEO::TOL7)
-      lineNodeId = 1; 
-
-    LINALG::Matrix<3,1> coord(true);
-    if(lineNodeId > -1)
-    {
-      const int nodeId = eleNumberingLines_[lineId][lineNodeId];
-      // point type has to be set before ids and coords are set
-      ip.setPointType(NODE);
-      ip.setNodeId(nodeId);
-      ip.setLineId(eleNodesLines_[nodeId]);
-      ip.setSurfaceId(eleNodesSurfaces_[nodeId]);
-      coord(0) = xsi(0);
-      coord(1) = xsi(1);
-      coord(2) = 0.0;
-      ip.setCoord(coord);
-    }
-    else
-    {
-      ip.setPointType(LINE);
-      vector<int> lineVec(1,lineId);
-      ip.setLineId(lineVec);
-      ip.setSurfaceId(eleLinesSurfaces_[lineId]);
-      coord(0) = xsi(0);
-      coord(1) = xsi(1);
-      coord(2) = 0.0;
-      ip.setCoord(coord);
-    }
-  }
-
   if(interfacePoints.find(ip.getCoord()) == interfacePoints.end())
   	interfacePoints[ip.getCoord()] = ip;
   
@@ -1118,11 +1087,8 @@ void GEO::Intersection::preparePLC(
     {
       midpoint = computeMidpoint(interfacePoints);
       // transform it into current coordinates
-      static LINALG::Matrix<2,1>    eleCoordSurf;
-      for(int j = 0; j < 2; j++)
-        eleCoordSurf(j)  = midpoint.getCoord()(j);
       static LINALG::Matrix<3,1> curCoordVol;
-      elementToCurrentCoordinates(cutterElement->Shape(), xyze_cutterElement, eleCoordSurf, curCoordVol);
+      elementToCurrentCoordinates(cutterElement->Shape(), xyze_cutterElement, midpoint.getCoord(), curCoordVol);
       const LINALG::Matrix<3,1> eleCoordVol(currentToVolumeElementCoordinatesExact(xfemDistype_, xyze_xfemElement_, curCoordVol, TOL14));
       midpoint.setCoord(eleCoordVol);
     }
@@ -1134,11 +1100,8 @@ void GEO::Intersection::preparePLC(
     for(std::map< LINALG::Matrix<3,1>, InterfacePoint, ComparePoint>::iterator ipoint = interfacePoints.begin(); ipoint != interfacePoints.end(); ++ipoint)
     {
       // transform interface points into xfem element coordinates and store in structure vertices
-      static LINALG::Matrix<2,1>  eleCoordSurf;
-      for(int j = 0; j < 2; j++)
-      	eleCoordSurf(j)  = (ipoint->second).getCoord()(j);
       static LINALG::Matrix<3,1> curCoordVol;
-      elementToCurrentCoordinates(cutterElement->Shape(), xyze_cutterElement, eleCoordSurf, curCoordVol);
+      elementToCurrentCoordinates(cutterElement->Shape(), xyze_cutterElement, (ipoint->second).getCoord(), curCoordVol);
       const LINALG::Matrix<3,1> eleCoordVol(currentToVolumeElementCoordinatesExact(xfemDistype_, xyze_xfemElement_, curCoordVol, TOL7));
       (ipoint->second).setCoord(eleCoordVol);
      
@@ -1198,11 +1161,8 @@ void GEO::Intersection::computeConvexHull(
     //cout << endl;
 
     // transform interface points into current coordinates
-    static LINALG::Matrix<2,1>  eleCoordSurf;
-    for(int j = 0; j < 2; j++)
-      eleCoordSurf(j)  = (ipoint->second).getCoord()(j);
     static LINALG::Matrix<3,1> curCoordVol;
-    elementToCurrentCoordinates(cutterElement->Shape(), xyze_cutterElement, eleCoordSurf, curCoordVol);
+    elementToCurrentCoordinates(cutterElement->Shape(), xyze_cutterElement, (ipoint->second).getCoord(), curCoordVol);
     const LINALG::Matrix<3,1> eleCoordVol(currentToVolumeElementCoordinatesExact(xfemDistype_, xyze_xfemElement_, curCoordVol, TOL7));
     (ipoint->second).setCoord(eleCoordVol);
   }

@@ -522,11 +522,12 @@ bool GEO::getDistanceToSurface(
   // TODO fix check if deformed in the linear case
   if(eleGeoType == GEO::HIGHERORDER)
   {
+    LINALG::SerialDenseMatrix eleCoordMatrix = DRT::UTILS::getEleNodeNumbering_nodes_paramspace(surfaceElement->Shape());
     for(int i = 0; i < surfaceElement->NumNode(); i++)
     { 
       // use nodes as starting values
       for(int j = 0; j < 2; j++)
-        elecoord(j) = DRT::UTILS::getEleNodeNumbering_nodes_paramspace(surfaceElement->Shape())(j, i);
+        elecoord(j) = eleCoordMatrix(j, i);
 
       GEO::CurrentToSurfaceElementCoordinates(surfaceElement->Shape(), xyze_surfaceElement, point, elecoord);
 
@@ -587,11 +588,12 @@ bool GEO::getDistanceToLine(
 
   if(eleGeoType == GEO::HIGHERORDER)
   {
+    LINALG::SerialDenseMatrix eleCoordMatrix = DRT::UTILS::getEleNodeNumbering_nodes_paramspace(lineElement->Shape());
     // use end nodes as starting values in addition
     for(int i = 0; i < 2; i++)
     { 
       // use end nodes as starting values in addition
-      elecoord(0) = DRT::UTILS::getEleNodeNumbering_nodes_paramspace(lineElement->Shape())(0,i);
+      elecoord(0) = eleCoordMatrix(0,i);
 
       GEO::CurrentToLineElementCoordinates(lineElement->Shape(), xyze_lineElement, point, elecoord);
 

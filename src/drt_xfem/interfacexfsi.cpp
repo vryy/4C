@@ -20,6 +20,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/linalg_serialdensevector.H"
+#include "../drt_lib/drt_condition_utils.H"
 
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_gmsh.H"
@@ -79,7 +80,7 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
   PrintStatistics();
   
   // collect elements by xfem label for tree and invert
-  CollectElementsByXFEMCouplingLabel(*cutterdis, elementsByLabel_);
+  DRT::UTILS::CollectElementsByConditionLabel(*cutterdis, elementsByLabel_, "XFEMCoupling");
   InvertElementsPerLabel();
   
   const LINALG::Matrix<3,2> cutterAABB = GEO::getXAABBofDis(*cutterdis,cutterposnp_);
@@ -135,48 +136,6 @@ void XFEM::InterfaceHandleXFSI::FillCurrentCutterPositionMap(
     currpos(2) = node->X()[2] + mydisp[2];
     currentcutterpositions[node->Id()] = currpos;
   }
-}
-
-
-
-/*----------------------------------------------------------------------*
- * remove to general file for all conditions                            *
- *----------------------------------------------------------------------*/
-void XFEM::InterfaceHandleXFSI::CollectElementsByXFEMCouplingLabel(
-    const DRT::Discretization&           cutterdis,
-    std::map<int,std::set<int> >&        elementsByLabel)
-{
-  // Reset
-  elementsByLabel.clear();
-  // get condition
-  vector< DRT::Condition * >      xfemConditions;
-  cutterdis.GetCondition ("XFEMCoupling", xfemConditions);
-  
-  // collect elements by xfem coupling label
-  for(vector<DRT::Condition*>::const_iterator conditer = xfemConditions.begin(); conditer!=xfemConditions.end(); ++conditer)
-  {
-    DRT::Condition* xfemCondition = *conditer;
-    const int label = xfemCondition->Getint("label");
-    const vector<int> geometryMap = *xfemCondition->Nodes();
-    vector<int>::const_iterator iterNode;
-    for(iterNode = geometryMap.begin(); iterNode != geometryMap.end(); ++iterNode )
-    {
-      const int nodegid = *iterNode;
-      const DRT::Node* node = cutterdis.gNode(nodegid);
-      const DRT::Element*const* cutterElements = node->Elements();
-      for (int iele=0;iele < node->NumElement(); ++iele)
-      {
-        const DRT::Element* cutterElement = cutterElements[iele];
-        elementsByLabel[label].insert(cutterElement->Id());
-      }
-    }
-  }
-  int numOfCollectedIds = 0;
-  for(unsigned int i = 0; i < elementsByLabel.size(); i++)
-    numOfCollectedIds += elementsByLabel[i].size();
-  
-  if(cutterdis.NumMyColElements() != numOfCollectedIds)
-    dserror("not all elements collected.");
 }
 
 

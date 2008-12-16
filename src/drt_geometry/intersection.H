@@ -439,7 +439,25 @@ class Intersection
     const std::vector<int>&                                         keyVec
     ) ;
 
+  
+  /*!
+  \brief classify an intersection point
 
+  \param surfaceElement           (in)    : surface element
+  \param xyze_surfaceElement      (in)    : nodal coordinates of surface element
+  \param xsi                      (in)    : old stating vector
+  \param lineId                   (in)    : line element id
+  \param lines                    (in)    : if lines = true
+  */
+  GEO::InterfacePoint classifyIntersectionPoint(
+      const DRT::Element*                     surfaceElement,
+      const LINALG::SerialDenseMatrix&        xyze_surfaceElement,
+      const LINALG::Matrix<3,1>&              xsi,
+      const int                               lineId,
+      const bool                              lines
+      );
+
+  
 	/*!
 	\brief adds an intersection point to the list of interface points
 
