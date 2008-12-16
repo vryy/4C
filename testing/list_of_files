@@ -184,6 +184,7 @@ Input/contact1_lin.dat                                  x        x        x     
 Input/contact_friction_tresca.dat                       x        x        x        -        -        -
 Input/locsys2D.dat                                      x        x        x        -        -        -
 Input/locsys3D.dat                                      x        x        x        -        -        -
+Input/locsys3D_sti.dat                                  x        x        x        x        -        -
 Input/xf3_beltrami_tet4_drt.dat                         x        x        x        x        -        -
 Input/xf3_drivencavity_stat_drt.dat                     x        x        x        x        -        -
 Input/xf3_ew_Q1_27x_drt.dat                             x        x        x        x        -        -
