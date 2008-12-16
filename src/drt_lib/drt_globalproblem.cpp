@@ -173,6 +173,18 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--LOMA CONTROL", *list);
   reader.ReadGidSection("--ELCH CONTROL", *list);
 
+  reader.ReadSection("--STRUCT NOX", *list);
+  reader.ReadSection("--STRUCT NOX/Direction", *list);
+  reader.ReadSection("--STRUCT NOX/Direction/Newton", *list);
+  reader.ReadSection("--STRUCT NOX/Direction/Steepest Descent", *list);
+  reader.ReadSection("--STRUCT NOX/Line Search", *list);
+  reader.ReadSection("--STRUCT NOX/Line Search/Full Step", *list);
+  reader.ReadSection("--STRUCT NOX/Line Search/Backtrack", *list);
+  reader.ReadSection("--STRUCT NOX/Line Search/Polynomial", *list);
+  reader.ReadSection("--STRUCT NOX/Line Search/More'-Thuente", *list);
+  reader.ReadSection("--STRUCT NOX/Trust Region", *list);
+  reader.ReadSection("--STRUCT NOX/Printing", *list);
+
   reader.ReadGidSection("--FLUID SOLVER", *list);
   reader.ReadGidSection("--FLUID PRESSURE SOLVER", *list);
   reader.ReadGidSection("--STRUCT SOLVER", *list);

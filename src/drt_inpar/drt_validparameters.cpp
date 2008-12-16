@@ -191,6 +191,34 @@ void DRT::INPUT::PrintDefaultParameters(std::ostream& stream, const Teuchos::Par
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void DRT::INPUT::BoolParameter(std::string const& paramName,
+                               std::string const& value,
+                               std::string const& docString,
+                               Teuchos::ParameterList* paramList)
+{
+  Teuchos::Array<std::string> yesnotuple = Teuchos::tuple<std::string>(
+    "Yes",
+    "No",
+    "yes",
+    "no",
+    "YES",
+    "NO");
+  Teuchos::Array<int> yesnovalue = Teuchos::tuple<int>(
+    true,
+    false,
+    true,
+    false,
+    true,
+    false);
+  Teuchos::setStringToIntegralParameter<int>(
+    paramName,value,docString,
+    yesnotuple,yesnovalue,
+    paramList);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void DRT::INPUT::IntParameter(std::string const &paramName,
                               int const value,
                               std::string const &docString,
@@ -372,6 +400,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   //Teuchos::ParameterList& eigen = list->sublist("EIGENVALUE ANALYSIS",false,"");
 
+
+  /*--------------------------------------------------------------------*/
+  /* parameters for NOX - non-linear solution */
+  Teuchos::ParameterList& snox = list->sublist("STRUCT NOX",false,"");
+  SetValidNoxParameters(snox);
+
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& sdyn = list->sublist("STRUCTURAL DYNAMIC",false,"");
 
@@ -488,7 +523,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "ptc",
                                  "newtonlinuzawa",
                                  "augmentedlagrange",
-                                 "NoxNewtonLineSearch"),
+                                 "NoxNewtonLineSearch",
+                                 "noxgeneral"),
                                tuple<INPAR::STR::NonlinSolTech>(
                                  INPAR::STR::soltech_vague,
                                  INPAR::STR::soltech_newtonfull,
@@ -498,7 +534,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::STR::soltech_ptc,
                                  INPAR::STR::soltech_newtonuzawalin,
                                  INPAR::STR::soltech_newtonuzawanonlin,
-                                 INPAR::STR::soltech_noxnewtonlinesearch),
+                                 INPAR::STR::soltech_noxnewtonlinesearch,
+                                 INPAR::STR::soltech_noxgeneral),
                                &sdyn);
 
   setStringToIntegralParameter<INPAR::STR::PredEnum>("PREDICT","ConstDis","",
@@ -535,9 +572,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Switch on adaptive control of linear solver tolerance for nonlinear solution",
                                yesnotuple,yesnovalue,&sdyn);
   DoubleParameter("ADAPTCONV_BETTER",0.1,"The linear solver shall be this much better than the current nonlinear residual in the nonlinear convergence limit",&sdyn);
-
-
-
 
   /*--------------------------------------------------------------------*/
   /* parameters for time step size adaptivity in structural dynamics */
@@ -1970,5 +2004,250 @@ void DRT::INPUT::SetValidTimeAdaptivityParameters(Teuchos::ParameterList& list)
   IntParameter("ADAPTSTEPMAX", 0, "Limit maximally allowed step size reduction attempts (>0)", &list);
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::SetValidNoxParameters(Teuchos::ParameterList& list)
+{
+  {
+    Teuchos::Array<std::string> st = Teuchos::tuple<std::string>(
+      "Line Search Based",
+      "Trust Region Based",
+      "Inexact Trust Region Based",
+      "Tensor Based");
+    Teuchos::setStringToIntegralParameter<std::string>(
+      "Nonlinear Solver","Line Search Based","",
+      st,st,
+      &list);  
+  }
+
+  // sub-list direction
+  Teuchos::ParameterList& direction = list.sublist("Direction",false,"");
+
+  {
+    Teuchos::Array<std::string> st = Teuchos::tuple<std::string>(
+      "Newton",
+      "Steepest Descent",
+      "NonlinearCG",
+      "Broyden");
+    Teuchos::setStringToIntegralParameter<std::string>(
+      "Method","Newton","",
+      st,st,
+      &direction);
+  }
+
+  // sub-sub-list "Newton"
+  Teuchos::ParameterList& newton = direction.sublist("Newton",false,"");
+
+  {
+    Teuchos::Array<std::string> forcingtermmethod = Teuchos::tuple<std::string>(
+      "Constant",
+      "Type 1",
+      "Type 2");
+    Teuchos::setStringToIntegralParameter<std::string>(
+      "Forcing Term Method","Constant","",
+      forcingtermmethod,forcingtermmethod,
+      &newton);
+    DoubleParameter("Forcing Term Initial Tolerance",0.1,"initial linear solver tolerance",&newton);
+    DoubleParameter("Forcing Term Minimum Tolerance",1.0e-6,"",&newton);
+    DoubleParameter("Forcing Term Maximum Tolerance",0.01,"",&newton);
+    DoubleParameter("Forcing Term Alpha",1.5,"used only by \"Type 2\"",&newton);
+    DoubleParameter("Forcing Term Gamma",0.9,"used only by \"Type 2\"",&newton);
+    Teuchos::setStringToIntegralParameter<bool>(
+      "Rescue Bad Newton Solver","Yes","If set to true, we will use the computed direction even if the linear solve does not achieve the tolerance specified by the forcing term",
+      Teuchos::tuple<std::string>(
+        "Yes",
+        "No"),
+      Teuchos::tuple<bool>(
+        true,
+        false),
+      &newton);
+  }
+
+  // sub-sub-list "Steepest Descent"
+  Teuchos::ParameterList& steepestdescent = direction.sublist("Steepest Descent",false,"");
+
+  {
+    Teuchos::Array<std::string> scalingtype = Teuchos::tuple<std::string>(
+      "2-Norm",
+      "Quadratic Model Min",
+      "F 2-Norm",
+      "None");
+    Teuchos::setStringToIntegralParameter<std::string>(
+      "Scaling Type","None","",
+      scalingtype,scalingtype,
+      &steepestdescent);
+  }
+
+  // sub-list "Line Search"
+  Teuchos::ParameterList& linesearch = list.sublist("Line Search",false,"");
+
+  {
+    Teuchos::Array<std::string> method = Teuchos::tuple<std::string>(
+      "Full Step",
+      "Backtrack" ,
+      "Polynomial",
+      "More'-Thuente",
+      "User Defined");
+    Teuchos::setStringToIntegralParameter<std::string>(
+      "Method","Full Step","",
+      method,method,
+      &linesearch);
+  }
+
+  // sub-sub-list "Full Step"
+  Teuchos::ParameterList& fullstep = linesearch.sublist("Full Step",false,"");
+
+  {
+    DoubleParameter("Full Step",1.0,"length of a full step",&fullstep);
+  }
+
+  // sub-sub-list "Backtrack"
+  Teuchos::ParameterList& backtrack = linesearch.sublist("Backtrack",false,"");
+
+  {
+    DoubleParameter("Default Step",1.0,"starting step length",&backtrack);
+    DoubleParameter("Minimum Step",1.0e-12,"minimum acceptable step length",&backtrack);
+    DoubleParameter("Recovery Step",1.0,"step to take when the line search fails (defaults to value for \"Default Step\")",&backtrack);
+    IntParameter("Max Iters",50,"maximum number of iterations (i.e., RHS computations)",&backtrack);
+    DoubleParameter("Reduction Factor",1.0,"A multiplier between zero and one that reduces the step size between line search iterations",&backtrack);
+  }
+
+  // sub-sub-list "Polynomial"
+  Teuchos::ParameterList& polynomial = linesearch.sublist("Polynomial",false,"");
+
+  {
+    DoubleParameter("Default Step",1.0,"Starting step length",&polynomial);
+    IntParameter("Max Iters",100,"Maximum number of line search iterations. The search fails if the number of iterations exceeds this value",&polynomial);
+    DoubleParameter("Minimum Step",1.0e-12,"Minimum acceptable step length. The search fails if the computed $lambda_k$ is less than this value",&polynomial);
+    Teuchos::Array<std::string> recoverysteptype = Teuchos::tuple<std::string>(
+      "Constant",
+      "Last Computed Step");
+    Teuchos::setStringToIntegralParameter<std::string>(
+      "Recovery Step Type","Constant","Determines the step size to take when the line search fails",
+      recoverysteptype,recoverysteptype,
+      &polynomial);
+    DoubleParameter("Recovery Step",1.0,"The value of the step to take when the line search fails. Only used if the \"Recovery Step Type\" is set to \"Constant\"",&polynomial);
+    Teuchos::Array<std::string> interpolationtype = Teuchos::tuple<std::string>(
+      "Quadratic",
+      "Quadratic3",
+      "Cubic");
+    Teuchos::setStringToIntegralParameter<std::string>(
+      "Interpolation Type","Cubic","Type of interpolation that should be used",
+      interpolationtype,interpolationtype,
+      &polynomial);
+    DoubleParameter("Min Bounds Factor",0.1,"Choice for $gamma_{min}$, i.e., the factor that limits the minimum size of the new step based on the previous step",&polynomial);
+    DoubleParameter("Max Bounds Factor",0.5,"Choice for $gamma_{max}$, i.e., the factor that limits the maximum size of the new step based on the previous step",&polynomial);
+    Teuchos::Array<std::string> sufficientdecreasecondition = Teuchos::tuple<std::string>(
+      "Armijo-Goldstein",
+      "Ared/Pred",
+      "None");
+    Teuchos::setStringToIntegralParameter<std::string>(
+      "Sufficient Decrease Condition","Armijo-Goldstein","Choice to use for the sufficient decrease condition",
+      sufficientdecreasecondition,sufficientdecreasecondition,
+      &polynomial);
+    DoubleParameter("Alpha Factor",1.0e-4,"Parameter choice for sufficient decrease condition",&polynomial);
+    Teuchos::setStringToIntegralParameter<bool>(
+      "Force Interpolation","No","Set to true if at least one interpolation step should be used. The default is false which means that the line search will stop if the default step length satisfies the convergence criteria",
+      Teuchos::tuple<std::string>(
+        "Yes",
+        "No"),
+      Teuchos::tuple<bool>(
+        true,
+        false),
+      &polynomial);
+    Teuchos::setStringToIntegralParameter<bool>(
+      "Use Counters","Yes","Set to true if we should use counters and then output the result to the paramter list as described in Output Parameters",
+      Teuchos::tuple<std::string>(
+        "Yes",
+        "No"),
+      Teuchos::tuple<bool>(
+        true,
+        false),
+      &polynomial);
+    IntParameter("Maximum Iteration for Increase",0,"Maximum index of the nonlinear iteration for which we allow a relative increase",&polynomial);
+    Teuchos::setStringToIntegralParameter<bool>(
+      "Allowed Relative Increase","Yes","",
+      Teuchos::tuple<std::string>(
+        "Yes",
+        "No"),
+      Teuchos::tuple<bool>(
+        true,
+        false),
+      &polynomial);
+  }
+
+  // sub-sub-list "More'-Thuente"
+  Teuchos::ParameterList& morethuente = linesearch.sublist("More'-Thuente",false,"");
+
+  {
+    DoubleParameter("Sufficient Decrease",1.0e-4,"The ftol in the sufficient decrease condition",&morethuente);
+    DoubleParameter("Curvature Condition",0.9999,"The gtol in the curvature condition",&morethuente);
+    DoubleParameter("Interval Width",1.0e-15,"The maximum width of the interval containing the minimum of the modified function",&morethuente);
+    DoubleParameter("Maximum Step",1.0e6,"maximum allowable step length",&morethuente);
+    DoubleParameter("Minimum Step",1.0e-12,"minimum allowable step length",&morethuente);
+    IntParameter("Max Iters",20,"maximum number of right-hand-side and corresponding Jacobian evaluations",&morethuente);
+    DoubleParameter("Default Step",1.0,"starting step length",&morethuente);
+    Teuchos::Array<std::string> recoverysteptype = Teuchos::tuple<std::string>(
+      "Constant",
+      "Last Computed Step");
+    Teuchos::setStringToIntegralParameter<std::string>(
+      "Recovery Step Type","Constant","Determines the step size to take when the line search fails",
+      recoverysteptype,recoverysteptype,
+      &morethuente);
+    DoubleParameter("Recovery Step",1.0,"The value of the step to take when the line search fails. Only used if the \"Recovery Step Type\" is set to \"Constant\"",&morethuente);
+    Teuchos::Array<std::string> sufficientdecreasecondition = Teuchos::tuple<std::string>(
+      "Armijo-Goldstein",
+      "Ared/Pred",
+      "None");
+    Teuchos::setStringToIntegralParameter<std::string>(
+      "Sufficient Decrease Condition","Armijo-Goldstein","Choice to use for the sufficient decrease condition",
+      sufficientdecreasecondition,sufficientdecreasecondition,
+      &morethuente);    
+    Teuchos::setStringToIntegralParameter<bool>(
+      "Optimize Slope Calculation","No","Boolean value. If set to true the value of $s^T J^T F$ is estimated using a directional derivative in a call to NOX::LineSearch::Common::computeSlopeWithOutJac. If false the slope computation is computed with the NOX::LineSearch::Common::computeSlope method. Setting this to true eliminates having to compute the Jacobian at each inner iteration of the More'-Thuente line search",
+      Teuchos::tuple<std::string>(
+        "Yes",
+        "No"),
+      Teuchos::tuple<bool>(
+        true,
+        false),
+      &morethuente);
+  }
+
+  // sub-list "Trust Region"
+  Teuchos::ParameterList& trustregion = list.sublist("Trust Region",false,"");
+
+  {
+    DoubleParameter("Minimum Trust Region Radius",1.0e-6,"Minimum allowable trust region radius",&trustregion);
+    DoubleParameter("Maximum Trust Region Radius",1.0e+10,"Maximum allowable trust region radius",&trustregion);
+    DoubleParameter("Minimum Improvement Ratio",1.0e-4,"Minimum improvement ratio to accept the step",&trustregion);
+    DoubleParameter("Contraction Trigger Ratio",0.1,"If the improvement ratio is less than this value, then the trust region is contracted by the amount specified by the \"Contraction Factor\". Must be larger than \"Minimum Improvement Ratio\"",&trustregion);
+    DoubleParameter("Contraction Factor",0.25,"",&trustregion);
+    DoubleParameter("Expansion Trigger Ratio",0.75,"If the improvement ratio is greater than this value, then the trust region is contracted by the amount specified by the \"Expansion Factor\"",&trustregion);
+    DoubleParameter("Expansion Factor",4.0,"",&trustregion);
+    DoubleParameter("Recovery Step",1.0,"",&trustregion);
+  }
+
+  // sub-list "Printing"
+  Teuchos::ParameterList& printing = list.sublist("Printing",false,"");
+
+  {
+    BoolParameter("Error","No","",&printing);
+    BoolParameter("Warning","Yes","",&printing);
+    BoolParameter("Outer Iteration","Yes","",&printing);
+    BoolParameter("Inner Iteration","Yes","",&printing);
+    BoolParameter("Parameters","No","",&printing);
+    BoolParameter("Details","No","",&printing);
+    BoolParameter("Outer Iteration StatusTest","No","",&printing);
+    BoolParameter("Linear Solver Details","No","",&printing);
+    BoolParameter("Test Details","No","",&printing);
+    /*  // for LOCA
+    BoolParameter("Stepper Iteration","No","",&printing);
+    BoolParameter("Stepper Details","No","",&printing);
+    BoolParameter("Stepper Parameters","Yes","",&printing);
+    */
+    BoolParameter("Debug","No","",&printing);
+  }
+}
 
 #endif

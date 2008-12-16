@@ -50,6 +50,12 @@ namespace INPAR {}
 namespace DRT {
 namespace INPUT {
 
+  /// local wrapper to test multiple versions of "Yes", "YES", etc
+  void BoolParameter(std::string const &paramName,
+                     std::string const &value,
+                     std::string const &docString,
+                     Teuchos::ParameterList *paramList);
+
   /// local wrapper for Teuchos::setIntParameter() that allows only integers
   void IntParameter(std::string const& paramName,
                     int const value,
@@ -70,6 +76,9 @@ namespace INPUT {
 
   /// set parameters for time adaptivity
   void SetValidTimeAdaptivityParameters(Teuchos::ParameterList& list);
+
+  /// set parameters for NOX non-linear solution technique
+  void SetValidNoxParameters(Teuchos::ParameterList& list);
 
   /// print all parameters that have a default value
   void PrintDefaultParameters(std::ostream& stream, const Teuchos::ParameterList& list);

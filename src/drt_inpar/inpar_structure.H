@@ -133,8 +133,9 @@ namespace INPAR
                                   ///< for constraint system
       soltech_nlncg,  ///< nonlinear CG iteration using Nox
       soltech_ptc,  ///< pseudo transient continuation nonlinear iteration
-      soltech_noxnewtonlinesearch  ///< Line search Newton
-                                   ///< utilising NOX
+      soltech_noxnewtonlinesearch,  ///< Line search Newton
+                                    ///< utilising NOX
+      soltech_noxgeneral  ///< non-linear solution with NOX
     };
 
     /// Map solution technique enum to string
@@ -165,6 +166,9 @@ namespace INPAR
         break;
       case soltech_noxnewtonlinesearch :
         return "NoxNewtonLineSearch";
+        break;
+      case soltech_noxgeneral :
+        return "noxgeneral";
         break;
       case soltech_nlncg :
         return "nlncg";

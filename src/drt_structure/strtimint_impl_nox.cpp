@@ -46,6 +46,52 @@ void STR::TimIntImpl::NoxSetup()
 }
 
 /*----------------------------------------------------------------------*/
+/* setup parameters for solution with NOX */
+void STR::TimIntImpl::NoxSetup(const Teuchos::ParameterList& noxparams)
+{
+  // copy the input list
+  noxparams_ = Teuchos::rcp(new Teuchos::ParameterList(noxparams));
+ 
+  // adjust printing parameter list
+  Teuchos::ParameterList& printParams = noxparams_->sublist("Printing");
+  printParams.set("MyPID", myrank_); 
+  printParams.set("Output Precision", 3);
+  printParams.set("Output Processor", 0);
+  int outputinformationlevel = NOX::Utils::Error;  // NOX::Utils::Error==0
+  if ((bool) Teuchos::getIntegralValue<int>(printParams, "Error"))
+    outputinformationlevel += NOX::Utils::Error;
+  if ((bool) Teuchos::getIntegralValue<int>(printParams, "Warning"))
+    outputinformationlevel += NOX::Utils::Warning;
+  if ((bool) Teuchos::getIntegralValue<int>(printParams, "Outer Iteration"))
+    outputinformationlevel += NOX::Utils::OuterIteration;
+  if ((bool) Teuchos::getIntegralValue<int>(printParams, "Inner Iteration"))
+    outputinformationlevel += NOX::Utils::InnerIteration;
+  if ((bool) Teuchos::getIntegralValue<int>(printParams, "Parameters"))
+    outputinformationlevel += NOX::Utils::Parameters;
+  if ((bool) Teuchos::getIntegralValue<int>(printParams, "Details"))
+    outputinformationlevel += NOX::Utils::Details;
+  if ((bool) Teuchos::getIntegralValue<int>(printParams, "Outer Iteration StatusTest"))
+    outputinformationlevel += NOX::Utils::OuterIterationStatusTest;
+  if ((bool) Teuchos::getIntegralValue<int>(printParams, "Linear Solver Details"))
+    outputinformationlevel += NOX::Utils::LinearSolverDetails;
+  if ((bool) Teuchos::getIntegralValue<int>(printParams, "Test Details"))
+    outputinformationlevel += NOX::Utils::TestDetails;
+  /*  // for LOCA
+  if ((bool) Teuchos::getIntegralValue<int>(printParams, "Stepper Iteration"))
+    outputinformationlevel += NOX::Utils::StepperIteration;
+  if ((bool) Teuchos::getIntegralValue<int>(printParams, "Stepper Details"))
+    outputinformationlevel += NOX::Utils::StepperDetails;
+  if ((bool) Teuchos::getIntegralValue<int>(printParams, "Stepper Parameters"))
+    outputinformationlevel += NOX::Utils::StepperParameters; 
+  */
+  if ((bool) Teuchos::getIntegralValue<int>(printParams, "Debug"))
+    outputinformationlevel += NOX::Utils::Debug;
+  printParams.set("Output Information", outputinformationlevel);
+  noxutils_ = Teuchos::rcp(new NOX::Utils(printParams));
+}
+
+
+/*----------------------------------------------------------------------*/
 /* Create status test for non-linear solution with NOX */
 Teuchos::RCP<NOX::StatusTest::Combo> STR::TimIntImpl::NoxCreateStatusTest
 (

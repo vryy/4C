@@ -86,6 +86,8 @@ void STR::strudyn_direct()
   //  = DRT::Problem::Instance()->StructuralContactParams();
   const Teuchos::ParameterList& tap 
     = sdyn.sublist("TIMEADAPTIVITY");
+  const Teuchos::ParameterList& snox
+    = DRT::Problem::Instance()->StructuralNoxParams();
 
   // show default parameters
   if (actdis->Comm().MyPID() == 0)
@@ -94,6 +96,8 @@ void STR::strudyn_direct()
   // add extra parameters (a kind of work-around)
   Teuchos::ParameterList xparams;
   xparams.set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
+  Teuchos::ParameterList& mynox = xparams.sublist("NOX"); //snox);
+  mynox = *(new Teuchos::ParameterList(snox));
 
   // create a solver
   Teuchos::RCP<LINALG::Solver> solver 

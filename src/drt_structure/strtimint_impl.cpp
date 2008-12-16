@@ -95,6 +95,8 @@ STR::TimIntImpl::TimIntImpl
   // setup NOX parameter lists
   if (itertype_ == INPAR::STR::soltech_noxnewtonlinesearch)
     NoxSetup();
+  else if (itertype_ == INPAR::STR::soltech_noxgeneral)
+    NoxSetup(xparams.sublist("NOX"));
 
   // done so far
   return;
@@ -331,11 +333,12 @@ void STR::TimIntImpl::Solve()
     UzawaLinearNewtonFull();
     break;
   case INPAR::STR::soltech_noxnewtonlinesearch :
+  case INPAR::STR::soltech_noxgeneral :
     NoxSolve();
     break;
   // catch problems
   default :
-    dserror("Solution technique %s is not implemented",
+    dserror("Solution technique \"%s\" is not implemented",
             INPAR::STR::NonlinSolTechString(itertype_).c_str());
     break;
   }
