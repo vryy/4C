@@ -107,7 +107,7 @@ void StatMechTime::Integrate()
     ranlib::Normal<double> seedgenerator(0,1);
     //seeding random generator
     int seedvariable = time(0);
-    seedvariable = 20; //5
+    seedvariable = 6; //6 
     seedgenerator.seed((unsigned int)seedvariable);
   }
 
@@ -150,10 +150,15 @@ void StatMechTime::Integrate()
     //else
      // BrownianPredictor3D();
 
+    //std::cout<<"\n new number of elements: "<< discret_.NumGlobalElements()<<"\n\n";
+    
+    //std::cout<<"\nfint_" << *fint_;
 
-
-    FullNewton();
-    //PTC();
+    //FullNewton();
+    PTC();
+    
+    //std::cout<<"\nfint_" << *fint_;
+    
     UpdateandOutput();
 
 
@@ -751,12 +756,15 @@ void StatMechTime::PTC()
   if (!damp_->Filled()) dserror("damping matrix must be filled here");
 
   // hard wired ptc parameters
-  double ptcdt = 1.3e+01; //1.3e+01 scheint eine gute Wahl zu sein
+  double ptcdt = 0.75; //0.75 scheint eine gute Wahl zu sein
   double nc;
   fresm_->NormInf(&nc);
   double dti = 1/ptcdt;
   double dti0 = dti;
   RCP<Epetra_Vector> x0 = rcp(new Epetra_Vector(*disi_));
+  
+  double resinit = nc;
+ 
 
   //=================================================== equilibrium loop
   int numiter=0;
@@ -769,6 +777,13 @@ void StatMechTime::PTC()
 
   while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) and numiter<=maxiter)
   {
+   
+    
+#if 1 // SER
+#else // TTE
+    double dtim = dti0;
+#endif
+    
     dti0 = dti;
     RCP<Epetra_Vector> xm = rcp(new Epetra_Vector(*x0));
     x0->Update(1.0,*disi_,0.0);
@@ -865,8 +880,9 @@ void StatMechTime::PTC()
 
     //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
     damp_->Multiply(false,*velm_,*fvisc_);
-    fresm_->Update(1.0,*fvisc_,0.0);
+    fresm_->Update(1.0,*fvisc_,0.0); 
     fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
+    
 
     // blank residual DOFs that are on Dirichlet BC
     {
@@ -892,10 +908,44 @@ void StatMechTime::PTC()
     }
 
     //------------------------------------ PTC update of artificial time
+#if 1
     // SER step size control
     dti *= (np/nc);
     dti = max(dti,0.0);
     nc = np;
+    
+    //Modifikation: sobald Residuum klein, PTC ausgeschaltet 
+    if(np < 0.01*resinit)
+      dti = 0.0;
+    
+#else
+    {
+      // TTE step size control
+      double ttau=0.75;
+      RCP<Epetra_Vector> d1 = LINALG::CreateVector(stiff_->RowMap(),false);
+      d1->Update(1.0,*disi_,-1.0,*x0,0.0);
+      d1->Scale(dti0);
+      RCP<Epetra_Vector> d0 = LINALG::CreateVector(stiff_->RowMap(),false);
+      d0->Update(1.0,*x0,-1.0,*xm,0.0);
+      d0->Scale(dtim);
+      double dt0 = 1/dti0;
+      double dtm = 1/dtim;
+      RCP<Epetra_Vector> xpp = LINALG::CreateVector(stiff_->RowMap(),false);
+      xpp->Update(2.0/(dt0+dtm),*d1,-2.0/(dt0+dtm),*d0,0.0);
+      RCP<Epetra_Vector> xtt = LINALG::CreateVector(stiff_->RowMap(),false);
+      for (int i=0; i<xtt->MyLength(); ++i) (*xtt)[i] = abs((*xpp)[i])/(1.0+abs((*disi_)[i]));
+      double ett;
+      xtt->MaxValue(&ett);
+      ett = ett / (2.*ttau);
+      dti = sqrt(ett);
+      nc = np;
+      
+      //Modifikation: sobald Residuum klein, PTC ausgeschaltet 
+      if(np < 0.01*resinit)
+        dti = 0.0;
+      
+    }
+#endif
 
 
     //--------------------------------- increment equilibrium loop index

@@ -136,6 +136,7 @@ public:
     ElectrodeKinetics,
     Brownian_Motion,
     FilamentNumber,
+    ForceSensor,
     FlowRateThroughSurface_3D,
     ImpulsRateThroughSurface_3D
   };

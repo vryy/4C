@@ -85,6 +85,9 @@ protected:
   
   //! \brief storing for each node number of filament to which it belongs
   RCP<Epetra_Vector> filamentnumber_;
+  
+  //! \brief storing for degree of freedom whether force has to be measured
+  RCP<Epetra_Vector> forcesensor_;
 
   
 

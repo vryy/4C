@@ -150,6 +150,7 @@ void DRT::Condition::Print(ostream& os) const
   else if (Type()==SurfacePeriodic)             os << "surface periodic boundary condition";
   else if (Type()==Brownian_Motion)             os << "stochastical surface condition (Brownian Motion)";
   else if (Type()==FilamentNumber)              os << "line condition for polymer networks";
+  else if (Type()==ForceSensor)                 os << "marking points in a system where force sensors are applied";
   else if (Type()==FlowRateThroughSurface_3D)   os << "Monitor flow rate through a interface";
   else if (Type()==ImpulsRateThroughSurface_3D) os << "Monitor impuls rate through a interface";
   

@@ -57,6 +57,9 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
     crosslinkerpartner_ = rcp( new Epetra_Vector(*discret_.NodeRowMap()) );
     filamentnumber_ = rcp( new Epetra_Vector(*discret_.NodeRowMap()) );
     
+    //force sensors can be applied at any degree of freedom of the discretization
+    forcesensor_ = rcp( new Epetra_Vector(*discret_.DofRowMap()) );
+    
     //basiselements_ is the number of elements existing in the discretization from the very beginning on
     basiselements_ = discret_.NumGlobalElements();
     
@@ -67,6 +70,13 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
        * over all local indices assigned by the map dis.NodeRowMap() to a processor*/
       (*crosslinkerpartner_)[i] = -1;
       (*filamentnumber_)[i] = -1;
+    }
+    
+    for(int i = 0; i < forcesensor_->MyLength(); i++)
+    {
+      /*initializing forcesensor_ with -1 for each degree of freedom by looping
+       * over all local indices assigned by the map dis.DofRowMap() to a processor*/
+      (*forcesensor_)[i] = -1;
     }
     
     /*since crosslinkers should be established only between different filaments the number of the filament
@@ -100,7 +110,44 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
         if(nodenumber > -1)
           (*filamentnumber_)[nodenumber] = filamentnumber;     
       }
-    }  
+     }  
+    
+    /*Young's modulus and loss modulus are to be measured by means of the reaction forces at certain sensor points; example: if for a
+     * an actin network between two rheometer plates the stiffness is to be deterimined this can be done by measuring the forces exerted
+     * to the upper plate which is moving forwards and backwards for example; so for measurements of viscoelastic properties of materials
+     * whithin a system certain sensor points have to be specified and in order to handle this whithing BACI these points are marked by 
+     * means of the condition sensorcondition*/
+    
+    //gettin a vector consisting of pointers to all filament number conditions set
+    vector<DRT::Condition*> forcesensorconditions(0);
+    discret_.GetCondition("ForceSensor",forcesensorconditions);
+      
+    //next all the pointers to all the different conditions are looped
+    for (int i=0; i<(int)forcesensorconditions.size(); ++i)
+    {
+      //get number of nodal dof with respect to which force is to be measured; note: numbering starts with zero
+      int nodedofnumber = forcesensorconditions[i]->Getint("DOF Number") ;
+      
+      //get a pointer to nodal cloud coverd by the current condition
+      const vector<int>* nodeids = forcesensorconditions[i]->Nodes();
+      
+      //loop through all the nodes of the nodal cloud
+      for(int j = 0; j < (int)nodeids->size() ; j++)
+      {
+        //get the node's global id
+        int nodenumber = (*nodeids)[j];
+        
+        //global id of degree of freedom at which force is to be measured
+        int dofnumber = discret_.Dof( discret_.gNode(nodenumber), nodedofnumber );
+        
+        
+        /*if the node does not belong to current processor Id is set by LID() to -1 and the node is ignored; otherwise the degrees of
+         * freedom affected by this condition are marked in the vector *forcesensor_ by an one entry*/
+        if(nodenumber > -1)
+          (*forcesensor_)[dofnumber] = 1;     
+      }
+     } 
+    
   }
 
   return;
@@ -269,10 +316,10 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& dis)
     delcrosslinker->Random();
     
     //probability with which a crosslinker is established between neighbouring nodes
-    double plink = statmechparams_.get<double>("K_ON",0.0) * dt;;
+    double plink = 1.0 - exp( -dt*statmechparams_.get<double>("K_ON",0.0)*statmechparams_.get<double>("C_CROSSLINKER",0.0) );
     
-    //probability with which a crosslink breaks up in the current time step (off rate multiplied by length of time step)
-    double punlink = statmechparams_.get<double>("K_OFF",0.0) * dt;
+    //probability with which a crosslink breaks up in the current time step 
+    double punlink = 1.0 - exp( -dt*statmechparams_.get<double>("K_OFF",0.0) );
     
     //maximal distance bridged by a crosslinker
     double rlink = statmechparams_.get<double>("R_LINK",0.0);
@@ -282,17 +329,20 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& dis)
        
     /*in order not to have to set all the parameters for each single crosslinker element a dummy crosslinker element 
      * is set up before setting and deleting crosslinkers*/
-    /*
+
+    
+#ifdef D_BEAM3
     RCP<DRT::ELEMENTS::Beam3> crosslinkerdummy;   
     crosslinkerdummy = rcp(new DRT::ELEMENTS::Beam3(-1,discret_.Comm().MyPID()) );
     
-    crosslinkerdummy->crosssec_ = 19e-6;
     crosslinkerdummy->crosssecshear_ = 19e-6*1.1;
     crosslinkerdummy->Iyy_ = 28.74e-12;
     crosslinkerdummy->Izz_ = 28.74e-12;
-    crosslinkerdummy->Irr_ = 28.74e-8;
+    crosslinkerdummy->Irr_ = 28.74e-9;   
     crosslinkerdummy->material_ = 1;
-    */
+#endif
+    
+    /*
 #ifdef D_TRUSS3
     RCP<DRT::ELEMENTS::Truss3> crosslinkerdummy;   
     crosslinkerdummy = rcp(new DRT::ELEMENTS::Truss3(-1,discret_.Comm().MyPID()) );
@@ -300,6 +350,7 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& dis)
     crosslinkerdummy->crosssec_ = 19e-6;
     crosslinkerdummy->material_ = 1;
 #endif
+*/
     
     /*the following tow rcp pointers are auxiliary variables which are needed in order provide in the very end of the
      * crosslinker administration a node row and column map; these maps have to be taken here before the first modification
@@ -335,7 +386,9 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& dis)
         /*delete crosslinker element; when trying to delete a crosslinker element not administrated by the calling processor
          * an error is issued*/
         if( !discret_.DeleteElement(crosslinkerid) )
+        {
           dserror("Deleting crosslinker element failed"); 
+        }
       }
          
       
@@ -388,15 +441,20 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& dis)
         {
           /*a new crosslinker element is generated according to a crosslinker dummy defined during construction 
            * of the statmech_manager; note that the dummy has already the proper owner number*/          
-          //RCP<DRT::ELEMENTS::Beam3> newcrosslinker = rcp(new DRT::ELEMENTS::Beam3(*crosslinkerdummy) );
           
+#ifdef D_BEAM3
+          RCP<DRT::ELEMENTS::Beam3> newcrosslinker = rcp(new DRT::ELEMENTS::Beam3(*crosslinkerdummy) );
+#endif
+          
+/*
 #ifdef D_TRUSS3
           RCP<DRT::ELEMENTS::Truss3> newcrosslinker = rcp(new DRT::ELEMENTS::Truss3(*crosslinkerdummy) );
+#endif
+*/
           
-          
-          /*assigning correct global Id to new crosslinker element: since each node can have one crosslinker element
-           * only at the same time a unique global Id can be found by taking the number of elemnts in the discretization
-           * before starting dealing with crosslinkers and adding to this number the global Id of the node currently involved*/     
+          //assigning correct global Id to new crosslinker element: since each node can have one crosslinker element
+          //only at the same time a unique global Id can be found by taking the number of elemnts in the discretization
+          //before starting dealing with crosslinkers and adding to this number the global Id of the node currently involved     
           newcrosslinker->SetId( basiselements_ + discret_.NodeRowMap()->GID(i) );
                    
           //nodes are assigned to the new crosslinker element by first assigning global node Ids and then assigning nodal pointers
@@ -405,15 +463,20 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& dis)
           DRT::Node *nodes[] = {discret_.gNode( globalnodeids[0] ) , discret_.gNode( globalnodeids[1] )};
           newcrosslinker->BuildNodalPointers(&nodes[0]);
           
+          //setting reference rotation coordinates
+          LINALG::Matrix<6,1> rotrefe;
+          for(int k = 0; k<3; k++)
+          {
+            rotrefe(k)   = dis[discret_.DofRowMap()->LID( discret_.Dof(discret_.lRowNode(i),k+3) )];
+            rotrefe(k+3) = dis[discret_.DofRowMap()->LID( discret_.Dof(discret_.lRowNode(neighbour),k+3) )];
+          }
+          
           //correct reference configuration data is computed for the new crosslinker element
-          newcrosslinker->SetUpReferenceGeometry(xrefe);          
+          newcrosslinker->SetUpReferenceGeometry(xrefe,rotrefe);          
           
           //add new element to discretization
           discret_.AddElement(newcrosslinker);  
-          
-          std::cout<<"\ncrosslinker added\n";
-          
-#endif
+
           
           //noting that local node i has now a crosslinkerelement and noting global Id of this element
           (*crosslinkerpartner_)[i] = neighbour;
