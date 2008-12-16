@@ -13,7 +13,7 @@ Maintainer: Georg Bauer
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef D_FLUID3
+#if defined(D_FLUID3) || defined(D_FLUID2)
 #ifdef CCADISCRET
 
 #ifndef CONDIF3_IMPL_H
@@ -59,6 +59,18 @@ public:
                        Epetra_SerialDenseVector&  elevec3_epetra
                        ) = 0;
 
+  //! calculate mass flux (variable number of nodes)
+  virtual void CalculateFluxSerialDense(
+      LINALG::SerialDenseMatrix&      flux,
+      DRT::Element*&            ele,
+      vector<double>&           ephinp,
+      struct _MATERIAL*&        material,
+      bool&                     temperature,
+      double&                   frt,
+      Epetra_SerialDenseVector& evel,
+      std::string&              fluxtypestring,
+      int&                      dofindex
+  ) = 0;
 
   /// Internal implementation class for condif element
   static Condif3ImplInterface* Impl(DRT::Element* ele);
@@ -130,6 +142,19 @@ public:
                        Epetra_SerialDenseVector&  elevec3_epetra
                        );
 
+
+  //! calculate mass flux (variable number of nodes)
+  virtual void CalculateFluxSerialDense(
+      LINALG::SerialDenseMatrix&      flux,
+      DRT::Element*&            ele,
+      vector<double>&           ephinp,
+      struct _MATERIAL*&        material,
+      bool&                     temperature,
+      double&                   frt,
+      Epetra_SerialDenseVector& evel,
+      std::string&              fluxtypestring,
+      int&                      dofindex
+  );
 
   private:
 

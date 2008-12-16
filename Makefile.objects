@@ -700,7 +700,6 @@ OBJS_DRT_F2_LIB = src/drt_f2/fluid2_evaluate.o \
                 src/drt_f2/fluid2_input.o \
                 src/drt_f2/fluid2_line_evaluate.o \
                 src/drt_condif2/condif2_evaluate.o \
-                src/drt_condif2/condif2_utils.o \
                 src/drt_condif2/condif2_input.o \
                 src/drt_condif2/condif2_line_evaluate.o \
                 src/drt_f2/fluid2.o \

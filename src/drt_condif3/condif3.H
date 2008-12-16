@@ -56,6 +56,7 @@ public:
   //! @name Friends
   friend class Condif3Register;
   friend class Condif3Surface;
+  friend class Condif3ImplInterface;
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -310,18 +311,6 @@ public:
 
 private:
 
-  //! action parameters recognized by condif3
-  enum ActionType
-  {
-    none,
-    calc_condif_systemmat_and_residual,
-    calc_initial_time_deriv,
-    calc_subgrid_diffusivity_matrix,
-    calc_condif_flux,
-    calc_temp_and_dens,
-    calc_elch_kwok_error
-  };
-
   //! possible options for the stabilization parameter
   enum TauType
   {
@@ -350,17 +339,6 @@ private:
 
   //! don't want = operator
   Condif3& operator = (const Condif3& old);
-
-  //! calculate flux vector for actual solution
-  Epetra_SerialDenseMatrix CalculateFlux(
-      vector<double>&           phinp,
-      struct _MATERIAL*         material,
-      const bool                temperature,
-      const double              frt,
-      Epetra_SerialDenseVector& evel,
-      Condif3::FluxType         fluxtype,
-      const int&                dofindex
-      );
 
 
 }; // class Condif3

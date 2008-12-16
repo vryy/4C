@@ -18,6 +18,7 @@ Maintainer: Georg Bauer
 
 #include "condif3.H"
 #include "condif3_utils.H"
+#include "condif3_impl.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_serialdensematrix.H"
 #include "../drt_lib/linalg_serialdensevector.H"
@@ -60,7 +61,7 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
   // get the material
   RefCountPtr<MAT::Material> mat = parent_->Material();
 
-  MATERIAL* actmat = NULL;
+  _MATERIAL* actmat = NULL;
 
   if(mat->MaterialType()== m_condif)
     actmat = static_cast<MAT::ConvecDiffus*>(mat.get())->MaterialData();
@@ -131,12 +132,6 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
     // access control parameter
     Condif3::FluxType fluxtype;
     string fluxtypestring = params.get<string>("fluxtype","noflux");
-    if (fluxtypestring == "totalflux")
-      fluxtype = Condif3::totalflux;
-    else if (fluxtypestring == "diffusiveflux")
-      fluxtype = Condif3::diffusiveflux;
-    else
-      fluxtype=Condif3::noflux;  //default value
 
     // define vector for normal fluxes
     vector<double> mynormflux(lm.size());
@@ -173,7 +168,18 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
     for (int j = 0; j<numscal; ++j)
     {
       // compute fluxes on each node of the parent element
-      Epetra_SerialDenseMatrix eflux = parent_->CalculateFlux(myphinp,actmat,temperature,frt,evel,fluxtype,j);
+      LINALG::SerialDenseMatrix eflux(3,ielparent);
+      DRT::Element* parentele = (DRT::Element*) parent_;
+      DRT::ELEMENTS::Condif3ImplInterface::Impl(parentele)->CalculateFluxSerialDense(
+          eflux,
+          parentele,
+          myphinp,
+          actmat,
+          temperature,
+          frt,
+          evel,
+          fluxtypestring,
+          j);
 
       // handle the result dofs in the right order (compare lm with lmparent)
       int dofcount = 0;

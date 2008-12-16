@@ -14,6 +14,7 @@ Maintainer: Volker Gravemeier
 #ifdef CCADISCRET
 
 #include "condif2.H"
+#include "../drt_condif3/condif3_impl.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_serialdensematrix.H"
 #include "../drt_lib/linalg_serialdensevector.H"
@@ -85,6 +86,21 @@ int DRT::ELEMENTS::Condif2Line::Evaluate(ParameterList&            params,
       vector<double> myphinp(lmparent.size());
       DRT::UTILS::ExtractMyValues(*phinp,myphinp,lmparent);
 
+      // set flag for type of scalar
+      string scaltypestr=params.get<string>("problem type");
+      const int numdofpernode = parent_->numdofpernode_;
+      int numscal = parent_->numdofpernode_;
+      bool temperature = false;
+      if (scaltypestr =="loma") temperature = true;
+
+      double frt(0.0);
+      if (scaltypestr =="elch") 
+      {
+        numscal -= 1; // ELCH case: last dof is for el. potential
+        // get parameter F/RT
+        frt = params.get<double>("frt");
+      }
+
       // assure, that the values are in the same order as the parent element nodes
       for(int k=0;k<ielparent;++k)
       {
@@ -99,19 +115,7 @@ int DRT::ELEMENTS::Condif2Line::Evaluate(ParameterList&            params,
       }
 
       // access control parameter
-      Condif2::FluxType fluxtype;
       string fluxtypestring = params.get<string>("fluxtype","noflux");
-      if (fluxtypestring == "totalflux")
-        fluxtype = Condif2::totalflux;
-      else if (fluxtypestring == "diffusiveflux")
-        fluxtype = Condif2::diffusiveflux;
-      else
-        fluxtype=Condif2::noflux;  //default value
-
-      // set flag for type of scalar
-      string scaltypestr=params.get<string>("problem type");
-      bool temperature = false;
-      if (scaltypestr =="loma") temperature = true;
 
       // define vector for normal fluxes
       vector<double> mynormflux(lm.size());
@@ -138,11 +142,21 @@ int DRT::ELEMENTS::Condif2Line::Evaluate(ParameterList&            params,
       for (int i=0; i<2; i++) normal[i] = normal[i] / length;
 
       // do a loop for systems of transported scalars
-      const int numdofpernode = parent_->numdofpernode_;
       for (int j = 0; j<numdofpernode; ++j)
       {
         // compute fluxes on each node of the parent element
-        Epetra_SerialDenseMatrix eflux = parent_->CalculateFlux(myphinp,actmat,temperature,evel,fluxtype,j);
+        LINALG::SerialDenseMatrix eflux(3,ielparent);
+        DRT::Element* parentele = (DRT::Element*) parent_;
+        DRT::ELEMENTS::Condif3ImplInterface::Impl(parentele)->CalculateFluxSerialDense(
+            eflux,
+            parentele,
+            myphinp,
+            actmat,
+            temperature,
+            frt,
+            evel,
+            fluxtypestring,
+            j);
 
         // handle the result dofs in the right order (compare lm with lmparent)
         int dofcount = 0;

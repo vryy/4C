@@ -292,35 +292,8 @@ public:
   //@}
 
 
-  //! possible options for the stabilization parameter
-  enum TauType
-  {
-    franca_valentin,
-    bazilevs,
-    tau_not_defined
-  };
-
-
 private:
 
-  //! action parameters recognized by condif2
-  enum ActionType
-  {
-    none,
-    calc_condif_systemmat_and_residual,
-    calc_initial_time_deriv,
-    calc_subgrid_diffusivity_matrix,
-    calc_condif_flux,
-    calc_temp_and_dens
-  };
-
-  //! flux parameters recognized by condif2
-  enum FluxType
-  {
-    noflux,
-    totalflux,
-    diffusiveflux
-  };
 
   //! Gaussrule
   DRT::UTILS::GaussRule2D   gaussrule_;
@@ -334,19 +307,6 @@ private:
 
   //! don't want = operator
   Condif2& operator = (const Condif2& old);
-
-  //! convert action string to condif3 action type
-  ActionType convertStringToActionType(const string& action) const;
-
-  //! calculate flux vector for actual solution
-  Epetra_SerialDenseMatrix CalculateFlux(
-      vector<double>&           phinp,
-      struct _MATERIAL*         material,
-      bool                      temperature,
-      Epetra_SerialDenseVector& evel,
-      Condif2::FluxType         fluxtype,
-      const int&                dofindex
-      );
 
 
 }; // class Condif2

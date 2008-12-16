@@ -13,7 +13,7 @@ Maintainer: Georg Bauer
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef D_FLUID3
+#if defined(D_FLUID3) || defined(D_FLUID2)
 #ifdef CCADISCRET
 
 #include "condif3_impl.H"
@@ -665,6 +665,46 @@ int DRT::ELEMENTS::Condif3Impl<distype>::Evaluate(
     dserror("Unknown type of action for Scatra Implementation: %s",action.c_str());
 
   return 0;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  calculate mass flux                              (private) gjb 06/08|
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Condif3Impl<distype>::CalculateFluxSerialDense(
+    LINALG::SerialDenseMatrix&      flux,
+    DRT::Element*&            ele,
+    vector<double>&           ephinp,
+    struct _MATERIAL*&        material,
+    bool&                     temperature,
+    double&                   frt,
+    Epetra_SerialDenseVector& evel,
+    std::string&              fluxtypestring,
+    int&                      dofindex
+)
+{
+  // access control parameter
+  Condif3::FluxType fluxtype;
+  if (fluxtypestring == "totalflux")
+    fluxtype = Condif3::totalflux;
+  else if (fluxtypestring == "diffusiveflux")
+    fluxtype = Condif3::diffusiveflux;
+  else
+    fluxtype=Condif3::noflux;  //default value
+
+  // we always get an 3D flux vector for each node
+  LINALG::Matrix<3,iel> eflux(true);
+  eflux.Clear();
+  CalculateFlux(eflux,ele,ephinp,material,temperature,frt,evel,fluxtype,dofindex);
+  for (int j = 0; j< iel; j++)
+  {
+    flux(0,j) = eflux(0,j);
+    flux(1,j) = eflux(1,j);
+    flux(2,j) = eflux(2,j);
+  }
+
+  return;
 }
 
 
