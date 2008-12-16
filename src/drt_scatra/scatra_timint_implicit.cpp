@@ -587,7 +587,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
     }
 
     //------------------------------------------------ update solution vector
-    phinp_->Update(1.0,*increment_,1.0);
+      phinp_->Update(1.0,*increment_,1.0);
 
   } // nonlinear iteration
   return;
@@ -1292,7 +1292,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
   //                 local <-> global dof numbering
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
-  // empty vector for (normal) mass or heat flux vectors (3D)
+  // empty vector for (normal) mass or heat flux vectors (always 3D)
   Teuchos::RCP<Epetra_MultiVector> flux = rcp(new Epetra_MultiVector(*dofrowmap,3,true));
 
   // we have only 1 dof per node, so we have to treat each spatial direction separately
@@ -1335,17 +1335,21 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
   }
   if (fluxcomputation=="boundary")
   {
-    // evaluate fluxes on surface condition: only normal fluxes
-    // normal flux value is stored at fluxx, fluxy and fluxz are set to 0.0
-    string condstring("FluxCalculation");
+    // calculate normal flux vector field for these surface conditions:
+    vector<std::string> condnames;
+    condnames.push_back("FluxCalculation");
+    condnames.push_back("ElectrodeKinetics");
 
     // calculate integral of normal fluxes over indicated boundary
     // may be sum over several boundary parts given in input file
     double normfluxintegral = 0.0;
     eleparams.set("normfluxintegral",normfluxintegral);
 
-    // do calculation on boundaries
-    discret_->EvaluateCondition(eleparams,Teuchos::null,Teuchos::null,fluxx,fluxy,fluxz,condstring);
+    // do calculation on the boundaries
+    for (unsigned int i=0; i < condnames.size(); i++)
+    {
+      discret_->EvaluateCondition(eleparams,Teuchos::null,Teuchos::null,fluxx,fluxy,fluxz,condnames[i]);
+    }
 
     // get integral of normal flux on this proc
     normfluxintegral = eleparams.get<double>("normfluxintegral");
@@ -1421,7 +1425,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
     if (myrank_ == 0)
     {
       printf("\nL2_err for Kwok and Wu:\n");
-      printf("concentration1 %15.8e\n concentration2 %15.8e\n potential      %15.8e\n\n",
+      printf(" concentration1 %15.8e\n concentration2 %15.8e\n potential      %15.8e\n\n",
              conerr1,conerr2,poterr);
     }
   }
