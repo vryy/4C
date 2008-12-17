@@ -1722,7 +1722,11 @@ void CONTACT::Integrator::DerivM3D(CONTACT::CElement& sele,
     cout << "DJacDXi: " << scientific << djacdxi[0] << " " << djacdxi[1] << endl;
     cout << "FD-DJacDXi: " << scientific << fdres[0] << " " << fdres[1] << endl << endl;
     */
-       
+    
+    // evaluate the Jacobian derivative
+    map<int,double> jacslavemap;
+    sele.DerivJacobian(sxi,jacslavemap);
+        
     // evaluate all parts of DerivM
     //********************************************************************
     DRT::Node** mynodes = sele.Nodes();
@@ -1758,7 +1762,10 @@ void CONTACT::Integrator::DerivM3D(CONTACT::CElement& sele,
         // (4) Lin(dsxideta) - intcell GP Jacobian
         
         // (5) Lin(dxdsxi) - slave GP Jacobian
-        
+        fac = wgt*dualval[j]*mval[k]*jaccell;
+        for (CI p=jacslavemap.begin();p!=jacslavemap.end();++p)
+          dmmap_jk[p->first] += fac*(p->second);
+                
         // (6) Lin(dxdsxi) - slave GP coordinates
        
       }
