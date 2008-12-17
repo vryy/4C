@@ -2947,23 +2947,23 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
   // compute global first derivates
   derxy_.Multiply(xji_,deriv_);
 
-  // get velocity derivatives at integration point
-  // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-  vderxy_.MultiplyNT(evelnp,derxy_);
-
   // get velocity norm
   const double vel_norm = velint_.Norm2();
 
   // normed velocity at element centre
-  if (vel_norm>=1e-6)
-  {
-    velino_.Update(1.0/vel_norm,velint_);
-  }
+  if (vel_norm>=1e-6) velino_.Update(1.0/vel_norm,velint_);
   else
   {
     velino_.Clear();
     velino_(0,0) = 1;
   }
+
+  // (all-scale) rate of strain
+  double rateofstrain   = -1.0e30;
+  if (material->mattyp != m_fluid ||
+      fssgv            == Fluid3::fssgv_Smagorinsky_all ||
+      turb_mod_action  != Fluid3::no_model)
+    rateofstrain = GetStrainRate(evelnp,derxy_,vderxy_);
 
   /*------------------------------------------------------------------*/
   /*                                                                  */
@@ -2994,8 +2994,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
   /*------------------------------------------------------------------*/
 
   // compute nonlinear viscosity according to the Carreau-Yasuda model
-  if( material->mattyp != m_fluid ) CalVisc( material, visc);
-
+  if( material->mattyp != m_fluid ) CalVisc(material,visc,rateofstrain);
 
   if (turb_mod_action == Fluid3::smagorinsky_with_wall_damping
       ||
@@ -3014,23 +3013,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
     //                            |      +-----------------------------------+
     //                            |           'resolved' rate of strain
     //                         mixing length
-    //
-
-    double rateofstrain = 0;
-    {
-      double epsilon;
-      for(int rr=0;rr<3;rr++)
-      {
-        for(int mm=0;mm<rr;mm++)
-        {
-          epsilon = vderxy_(rr,mm) + vderxy_(mm,rr);
-          rateofstrain += epsilon*epsilon;
-        }
-        rateofstrain += 2.0 * vderxy_(rr,rr)*vderxy_(rr,rr);
-      }
-      rateofstrain = sqrt(rateofstrain);
-    }
-
     //
     // Choices of the Smagorinsky constant Cs:
     //
@@ -3092,7 +3074,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
     // mixing length set proportional to grid witdh
     //
     //                     lmix = Cs * hk
-
     double lmix = Cs * hk;
 
     Cs_delta_sq = lmix * lmix;
@@ -3123,33 +3104,16 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
     //            procedure and stored in Cs_delta_sq
     //
 
-    double rateofstrain = 0;
-    {
-      double epsilon;
-      for(int rr=0;rr<3;rr++)
-      {
-        for(int mm=0;mm<rr;mm++)
-        {
-          epsilon = vderxy_(rr,mm) + vderxy_(mm,rr);
-          rateofstrain += epsilon*epsilon;
-        }
-        rateofstrain += 2.0 * vderxy_(rr,rr)*vderxy_(rr,rr);
-      }
-      rateofstrain = sqrt(rateofstrain);
-    }
-
     visceff = visc + dens * Cs_delta_sq * rateofstrain;
 
     // for evaluation of statistics: remember the 'real' Cs
     Cs=sqrt(Cs_delta_sq)/pow((vol),(1.0/3.0));
   }
-  else
-  {
-    visceff = visc;
-  }
+  else visceff = visc;
 
-  // calculate tau
-
+  // ---------------------------------------------------------------
+  // computation of stabilization parameter tau
+  // ---------------------------------------------------------------
   if (whichtau == Fluid3::franca_barrenechea_valentin_wall)
   {
     /*----------------------------------------------------- compute tau_Mu ---*/
@@ -3425,7 +3389,9 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
     dserror("unknown definition of tau\n");
   }
 
-  /*------------------------------------------- compute subgrid viscosity ---*/
+  // ---------------------------------------------------------------
+  // computation of fine-scale artificial subgrid viscosity
+  // ---------------------------------------------------------------
   if (fssgv == Fluid3::fssgv_artificial_all or
       fssgv == Fluid3::fssgv_artificial_small)
   {
@@ -3442,19 +3408,17 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
     // get all-scale velocity norm
     else fsvel_norm = vel_norm;
 
-    /*----------------------------- compute artificial subgrid viscosity ---*/
-    const double re = mk * dens * fsvel_norm * hk / visc; /* convective : viscous forces */
+    // element Reynolds number
+    const double re = mk * dens * fsvel_norm * hk / visc;
     const double xi = DMAX(re,1.0);
 
     vart_ = (DSQR(hk)*mk*DSQR(dens)*DSQR(fsvel_norm))/(2.0*visc*xi);
-
   }
-  else if (fssgv == Fluid3::fssgv_Smagorinsky_all or
-           fssgv == Fluid3::fssgv_Smagorinsky_small)
+  else if (fssgv == Fluid3::fssgv_Smagorinsky_all)
   {
     //
-    // SMAGORINSKY MODEL
-    // -----------------
+    // ALL-SCALE SMAGORINSKY MODEL
+    // ---------------------------
     //                                      +-                                 -+ 1
     //                                  2   |          / h \           / h \    | -
     //    visc          = dens * (C_S*h)  * | 2 * eps | u   |   * eps | u   |   | 2
@@ -3465,37 +3429,28 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
     //                                            'resolved' rate of strain
     //
 
-    double rateofstrain = 0.0;
-    {
-      // get fine-scale or all-scale velocity derivatives at element center
-      // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-      if (fssgv == Fluid3::fssgv_Smagorinsky_small)
-           fsvderxy_.MultiplyNT(fsevelnp,derxy_);
-      else fsvderxy_.MultiplyNT(evelnp,derxy_);
-
-      double epsilon;
-      for(int rr=0;rr<3;rr++)
-      {
-        for(int mm=0;mm<rr;mm++)
-        {
-          epsilon = fsvderxy_(rr,mm) + fsvderxy_(mm,rr);
-          rateofstrain += epsilon*epsilon;
-        }
-        rateofstrain += 2.0 * fsvderxy_(rr,rr)*fsvderxy_(rr,rr);
-      }
-      rateofstrain = sqrt(rateofstrain);
-    }
-
-    //
-    // Choices of the fine-scale Smagorinsky constant Cs:
-    //
-    //             Cs = 0.17   (Lilly --- Determined from filter
-    //                          analysis of Kolmogorov spectrum of
-    //                          isotropic turbulence)
-    //
-    //             0.1 < Cs < 0.24 (depending on the flow)
-
     vart_ = dens * Cs * Cs * hk * hk * rateofstrain;
+  }
+  else if (fssgv == Fluid3::fssgv_Smagorinsky_small)
+  {
+    //
+    // FINE-SCALE SMAGORINSKY MODEL
+    // ----------------------------
+    //                                      +-                                 -+ 1
+    //                                  2   |          /    \          /   \    | -
+    //    visc          = dens * (C_S*h)  * | 2 * eps | fsu |   * eps | fsu |   | 2
+    //        turbulent                     |          \   / ij        \   / ij |
+    //                                      +-                                 -+
+    //                                      |                                   |
+    //                                      +-----------------------------------+
+    //                                            'resolved' rate of strain
+    //
+
+    // fine-scale rate of strain
+    double fsrateofstrain = -1.0e30;
+    fsrateofstrain = GetStrainRate(fsevelnp,derxy_,fsvderxy_);
+
+    vart_ = dens * Cs * Cs * hk * hk * fsrateofstrain;
   }
 }
 
@@ -3507,23 +3462,10 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::CalVisc(
   const struct _MATERIAL* material,
-  double&                 visc)
+  double&                 visc,
+  const double &          rateofshear
+)
 {
-
-  // compute shear rate
-  double rateofshear = 0.0;
-  double tmp;
-  for(int rr=0;rr<3;rr++)
-  {
-    for(int mm=0;mm<rr;mm++)
-    {
-      tmp = ( vderxy_(rr,mm) + vderxy_(mm,rr) );
-      rateofshear += tmp*tmp;
-    }
-    rateofshear += 2.0 * vderxy_(rr,rr)*vderxy_(rr,rr);
-  }
-  rateofshear = sqrt(rateofshear);
-
   if(material->mattyp == m_carreauyasuda)
   {
     double nu_0   = material->m.carreauyasuda->nu_0;    // parameter for zero-shear viscosity

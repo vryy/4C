@@ -254,17 +254,77 @@ namespace ELEMENTS
     /*!
        \brief calculates viscosity at a given point (element center or Gaussian point)
 
-       \param material  (i) material
-       \param visc      (o) kinematic material viscosity
+       \param material     (i) material
+       \param visc         (o) kinematic material viscosity
+       \param rateofshear  (i) shear rate
      */
     void CalVisc(const struct _MATERIAL*   material,
-                 double&                   visc);
+                 double&                   visc,
+                 const double &            rateofshear);
 
     /*!
      * \brief calculate the body force from the nodes condition
      */
     void BodyForce(Fluid2*      ele,
                    const double time);
+
+    /*!
+      \brief Compute rate of strain of (fine-scale) velocity
+
+      \param evel       (i) nodal velocity values
+      \param derxy      (i) shape function derivatives
+      \param velderxy   (o) velocity derivatives
+
+      \return computed rate of strain
+     */
+    double GetStrainRate(const LINALG::Matrix<2,iel>& evel,
+                         const LINALG::Matrix<2,iel>& derxy,
+                         LINALG::Matrix<2,2>        & velderxy)
+    {
+      double rateofstrain=0;
+
+      // get velocity derivatives at integration point
+      //
+      //              +-----  dN (x)
+      //   dvel (x)    \        k        
+      //   -------- =   +     ------ * vel
+      //      dx       /        dx        k
+      //        j     +-----      j
+      //              node k
+      //
+      // j : direction of derivative x/y
+      //
+      velderxy.MultiplyNT(evel,derxy);
+
+      // compute (resolved) rate of strain
+      //
+      //          +-                                 -+ 1
+      //          |          /   \           /   \    | -
+      //          | 2 * eps | vel |   * eps | vel |   | 2
+      //          |          \   / ij        \   / ij |  
+      //          +-                                 -+  
+      //
+      LINALG::Matrix<2,2> two_epsilon;
+      for(int rr=0;rr<2;++rr)
+      {
+        for(int mm=0;mm<2;++mm)
+        {
+          two_epsilon(rr,mm) = velderxy(rr,mm) + velderxy(mm,rr);
+        }
+      }
+
+      for(int rr=0;rr<2;rr++)
+      {
+        for(int mm=0;mm<2;mm++)
+        {
+          rateofstrain += two_epsilon(rr,mm)*two_epsilon(mm,rr);
+        }
+      }
+
+      // sqrt(two_epsilon(rr,mm)*two_epsilon(mm,rr)/4.0*2.0)
+
+      return(sqrt(rateofstrain/2.0));
+    }
 
   private:
     //! artificial viscosity
