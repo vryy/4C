@@ -2940,10 +2940,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
   // compute element volume
   const double vol = wquad*det;
 
-  // get characteristic element length for tau_Mp/tau_C:
-  // volume-equival. diameter/sqrt(3)
-  const double hk = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
-
   // compute global first derivates
   derxy_.Multiply(xji_,deriv_);
 
@@ -3068,7 +3064,8 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
       Cs *= (1.0-exp(-y_plus/A_plus));
     }
 
-    const double hk = pow((vol),(1.0/3.0));
+    // get characteristic element length for Smagorinsky model
+    const double hk = pow(vol,(1.0/3.0));
 
     //
     // mixing length set proportional to grid witdh
@@ -3132,7 +3129,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
     Vol. 190, pp. 1785-1800, 2000.
     http://www.lncc.br/~valentin/publication.htm                   */
 
-
     // get streamlength
     LINALG::Matrix<iel,1> tmp;
     tmp.MultiplyTN(derxy_,velino_);
@@ -3153,6 +3149,10 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
     // compute tau_Mp
     //    stability parameter definition according to Franca and Valentin (2000)
     //                                       and Barrenechea and Valentin (2002)
+
+    // get characteristic element length for tau_Mp/tau_C:
+    // volume-equival. diameter/sqrt(3)
+    const double hk = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
 
     /* viscous : reactive forces */
     const double re11 = 4.0 * timefac * visceff / (mk * dens * DSQR(hk));
@@ -3329,7 +3329,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
     Vol. 190, pp. 1785-1800, 2000.
     http://www.lncc.br/~valentin/publication.htm                   */
 
-
     // get streamlength
     LINALG::Matrix<iel,1> tmp;
     tmp.MultiplyTN(derxy_,velino_);
@@ -3350,6 +3349,10 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
     // compute tau_Mp
     //    stability parameter definition according to Franca and Valentin (2000)
     //                                       and Barrenechea and Valentin (2002)
+
+    // get characteristic element length for tau_Mp/tau_C:
+    // volume-equival. diameter/sqrt(3)
+    const double hk = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
 
     /* viscous : reactive forces */
     const double re11 = 4.0 * timefac * visceff / (mk * dens * DSQR(hk));
@@ -3395,6 +3398,10 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
   if (fssgv == Fluid3::fssgv_artificial_all or
       fssgv == Fluid3::fssgv_artificial_small)
   {
+    // get characteristic element length for artficial subgrid viscosity:
+    // volume-equival. diameter/sqrt(3)
+    const double hk = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
+
     double fsvel_norm = 0.0;
     if (fssgv == Fluid3::fssgv_artificial_small)
     {
@@ -3429,6 +3436,9 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
     //                                            'resolved' rate of strain
     //
 
+    // get characteristic element length for Smagorinsky model
+    const double hk = pow(vol,(1.0/3.0));
+
     vart_ = dens * Cs * Cs * hk * hk * rateofstrain;
   }
   else if (fssgv == Fluid3::fssgv_Smagorinsky_small)
@@ -3445,6 +3455,9 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
     //                                      +-----------------------------------+
     //                                            'resolved' rate of strain
     //
+
+    // get characteristic element length for Smagorinsky model
+    const double hk = pow(vol,(1.0/3.0));
 
     // fine-scale rate of strain
     double fsrateofstrain = -1.0e30;

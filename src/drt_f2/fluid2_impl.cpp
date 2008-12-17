@@ -2268,6 +2268,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Caltau(
   // shape functions and derivs at element center
   const double e1    = intpoints.qxg[0][0];
   const double e2    = intpoints.qxg[0][1];
+  const double wquad = intpoints.qwgt[0];
 
   DRT::UTILS::shape_function_2D(funct_,e1,e2,distype);
   DRT::UTILS::shape_function_2D_deriv1(deriv_,e1,e2,distype);
@@ -2303,45 +2304,10 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Caltau(
   // check for degenerated elements
   if (det < 0.0) dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
 
+  // compute element area
+  const double area = wquad*det;
+
   // get characteristic element length: square root of element area
-  double area=0;
-  double a,b,c;
-
-  switch (distype)
-  {
-    case DRT::Element::tri3:
-    case DRT::Element::tri6:
-    {
-      a = (xyze_(0,0)-xyze_(0,1))*(xyze_(0,0)-xyze_(0,1))
-          +(xyze_(1,0)-xyze_(1,1))*(xyze_(1,0)-xyze_(1,1)); /* line 0-1 squared */
-      b = (xyze_(0,1)-xyze_(0,2))*(xyze_(0,1)-xyze_(0,2))
-          +(xyze_(1,1)-xyze_(1,2))*(xyze_(1,1)-xyze_(1,2)); /* line 1-2 squared */
-      c = (xyze_(0,2)-xyze_(0,0))*(xyze_(0,2)-xyze_(0,0))
-          +(xyze_(1,2)-xyze_(1,0))*(xyze_(1,2)-xyze_(1,0)); /* diag 2-0 squared */
-      area = 0.25 * sqrt(2.0*a*b + 2.0*b*c + 2.0*c*a - a*a - b*b - c*c);
-      break;
-    }
-    case DRT::Element::quad4:
-    case DRT::Element::quad8:
-    case DRT::Element::quad9:
-    {
-      a = (xyze_(0,0)-xyze_(0,1))*(xyze_(0,0)-xyze_(0,1))
-          +(xyze_(1,0)-xyze_(1,1))*(xyze_(1,0)-xyze_(1,1)); /* line 0-1 squared */
-      b = (xyze_(0,1)-xyze_(0,2))*(xyze_(0,1)-xyze_(0,2))
-          +(xyze_(1,1)-xyze_(1,2))*(xyze_(1,1)-xyze_(1,2)); /* line 1-2 squared */
-      c = (xyze_(0,2)-xyze_(0,0))*(xyze_(0,2)-xyze_(0,0))
-          +(xyze_(1,2)-xyze_(1,0))*(xyze_(1,2)-xyze_(1,0)); /* diag 2-0 squared */
-      area = 0.25 * sqrt(2.0*a*b + 2.0*b*c + 2.0*c*a - a*a - b*b - c*c);
-      a = (xyze_(0,2)-xyze_(0,3))*(xyze_(0,2)-xyze_(0,3))
-          +(xyze_(1,2)-xyze_(1,3))*(xyze_(1,2)-xyze_(1,3)); /* line 2-3 squared */
-      b = (xyze_(0,3)-xyze_(0,0))*(xyze_(0,3)-xyze_(0,0))
-          +(xyze_(1,3)-xyze_(1,0))*(xyze_(1,3)-xyze_(1,0)); /* line 3-0 squared */
-      area += 0.25 * sqrt(2.0*a*b + 2.0*b*c + 2.0*c*a - a*a - b*b - c*c);
-      break;
-    }
-    default: dserror("type unknown!\n");
-  }
-
   const double hk = sqrt(area);
 
   //             compute global first derivates
@@ -2479,7 +2445,6 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Caltau(
     Equation. Computer Methods in Applied Mechanics and Enginnering,
     Vol. 190, pp. 1785-1800, 2000.
     http://www.lncc.br/~valentin/publication.htm                   */
-
 
     /* viscous : reactive forces */
     const double re1 = 4.0 * timefac * visceff / (mk * dens * DSQR(hk));
@@ -2646,7 +2611,6 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Caltau(
     Equation. Computer Methods in Applied Mechanics and Enginnering,
     Vol. 190, pp. 1785-1800, 2000.
     http://www.lncc.br/~valentin/publication.htm                   */
-
 
     /* viscous : reactive forces */
     const double re1 = 4.0 * timefac * visceff / (mk * dens * DSQR(hk));
