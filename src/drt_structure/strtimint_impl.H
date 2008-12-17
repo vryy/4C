@@ -280,7 +280,7 @@ namespace STR
 
     //! Setup for solution with NOX
     void NoxSetup(
-      const Teuchos::ParameterList& noxparams  //!< NOX paramters from read-in
+      const Teuchos::ParameterList& noxparams  //!< NOX parameters from read-in
     );
 
     //! Create status test for non-linear solution with NOX

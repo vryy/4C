@@ -2006,6 +2006,7 @@ void DRT::INPUT::SetValidTimeAdaptivityParameters(Teuchos::ParameterList& list)
   IntParameter("ADAPTSTEPMAX", 0, "Limit maximally allowed step size reduction attempts (>0)", &list);
 }
 
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::INPUT::SetValidNoxParameters(Teuchos::ParameterList& list)
@@ -2054,15 +2055,7 @@ void DRT::INPUT::SetValidNoxParameters(Teuchos::ParameterList& list)
     DoubleParameter("Forcing Term Maximum Tolerance",0.01,"",&newton);
     DoubleParameter("Forcing Term Alpha",1.5,"used only by \"Type 2\"",&newton);
     DoubleParameter("Forcing Term Gamma",0.9,"used only by \"Type 2\"",&newton);
-    Teuchos::setStringToIntegralParameter<bool>(
-      "Rescue Bad Newton Solver","Yes","If set to true, we will use the computed direction even if the linear solve does not achieve the tolerance specified by the forcing term",
-      Teuchos::tuple<std::string>(
-        "Yes",
-        "No"),
-      Teuchos::tuple<bool>(
-        true,
-        false),
-      &newton);
+    BoolParameter("Rescue Bad Newton Solver","Yes","If set to true, we will use the computed direction even if the linear solve does not achieve the tolerance specified by the forcing term",&newton);
   }
 
   // sub-sub-list "Steepest Descent"
@@ -2111,7 +2104,7 @@ void DRT::INPUT::SetValidNoxParameters(Teuchos::ParameterList& list)
     DoubleParameter("Minimum Step",1.0e-12,"minimum acceptable step length",&backtrack);
     DoubleParameter("Recovery Step",1.0,"step to take when the line search fails (defaults to value for \"Default Step\")",&backtrack);
     IntParameter("Max Iters",50,"maximum number of iterations (i.e., RHS computations)",&backtrack);
-    DoubleParameter("Reduction Factor",1.0,"A multiplier between zero and one that reduces the step size between line search iterations",&backtrack);
+    DoubleParameter("Reduction Factor",0.5,"A multiplier between zero and one that reduces the step size between line search iterations",&backtrack);
   }
 
   // sub-sub-list "Polynomial"
@@ -2148,34 +2141,10 @@ void DRT::INPUT::SetValidNoxParameters(Teuchos::ParameterList& list)
       sufficientdecreasecondition,sufficientdecreasecondition,
       &polynomial);
     DoubleParameter("Alpha Factor",1.0e-4,"Parameter choice for sufficient decrease condition",&polynomial);
-    Teuchos::setStringToIntegralParameter<bool>(
-      "Force Interpolation","No","Set to true if at least one interpolation step should be used. The default is false which means that the line search will stop if the default step length satisfies the convergence criteria",
-      Teuchos::tuple<std::string>(
-        "Yes",
-        "No"),
-      Teuchos::tuple<bool>(
-        true,
-        false),
-      &polynomial);
-    Teuchos::setStringToIntegralParameter<bool>(
-      "Use Counters","Yes","Set to true if we should use counters and then output the result to the paramter list as described in Output Parameters",
-      Teuchos::tuple<std::string>(
-        "Yes",
-        "No"),
-      Teuchos::tuple<bool>(
-        true,
-        false),
-      &polynomial);
+    BoolParameter("Force Interpolation","No","Set to true if at least one interpolation step should be used. The default is false which means that the line search will stop if the default step length satisfies the convergence criteria",&polynomial);
+    BoolParameter("Use Counters","Yes","Set to true if we should use counters and then output the result to the paramter list as described in Output Parameters",&polynomial);
     IntParameter("Maximum Iteration for Increase",0,"Maximum index of the nonlinear iteration for which we allow a relative increase",&polynomial);
-    Teuchos::setStringToIntegralParameter<bool>(
-      "Allowed Relative Increase","Yes","",
-      Teuchos::tuple<std::string>(
-        "Yes",
-        "No"),
-      Teuchos::tuple<bool>(
-        true,
-        false),
-      &polynomial);
+    DoubleParameter("Allowed Relative Increase",100,"",&polynomial);
   }
 
   // sub-sub-list "More'-Thuente"
@@ -2205,15 +2174,7 @@ void DRT::INPUT::SetValidNoxParameters(Teuchos::ParameterList& list)
       "Sufficient Decrease Condition","Armijo-Goldstein","Choice to use for the sufficient decrease condition",
       sufficientdecreasecondition,sufficientdecreasecondition,
       &morethuente);    
-    Teuchos::setStringToIntegralParameter<bool>(
-      "Optimize Slope Calculation","No","Boolean value. If set to true the value of $s^T J^T F$ is estimated using a directional derivative in a call to NOX::LineSearch::Common::computeSlopeWithOutJac. If false the slope computation is computed with the NOX::LineSearch::Common::computeSlope method. Setting this to true eliminates having to compute the Jacobian at each inner iteration of the More'-Thuente line search",
-      Teuchos::tuple<std::string>(
-        "Yes",
-        "No"),
-      Teuchos::tuple<bool>(
-        true,
-        false),
-      &morethuente);
+    BoolParameter("Optimize Slope Calculation","No","Boolean value. If set to true the value of $s^T J^T F$ is estimated using a directional derivative in a call to NOX::LineSearch::Common::computeSlopeWithOutJac. If false the slope computation is computed with the NOX::LineSearch::Common::computeSlope method. Setting this to true eliminates having to compute the Jacobian at each inner iteration of the More'-Thuente line search",&morethuente);
   }
 
   // sub-list "Trust Region"

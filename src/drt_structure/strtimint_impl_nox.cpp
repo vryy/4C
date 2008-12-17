@@ -22,6 +22,8 @@ Maintainer: Burkhard Bornemann
 #include "strtimint.H"
 #include "strtimint_impl.H"
 #include "strtimint_noxgroup.H"
+#include "../drt_inpar/inpar_boolify.H"
+
 
 /*----------------------------------------------------------------------*/
 /* setup parameters for solution with NOX */
@@ -51,40 +53,42 @@ void STR::TimIntImpl::NoxSetup(const Teuchos::ParameterList& noxparams)
 {
   // copy the input list
   noxparams_ = Teuchos::rcp(new Teuchos::ParameterList(noxparams));
- 
+  // make all Yes/No integral values to Boolean
+  DRT::INPUT::BoolifyValidInputParameters(*noxparams_);
+
   // adjust printing parameter list
   Teuchos::ParameterList& printParams = noxparams_->sublist("Printing");
   printParams.set("MyPID", myrank_); 
   printParams.set("Output Precision", 3);
   printParams.set("Output Processor", 0);
   int outputinformationlevel = NOX::Utils::Error;  // NOX::Utils::Error==0
-  if ((bool) Teuchos::getIntegralValue<int>(printParams, "Error"))
+  if (printParams.get<bool>("Error"))
     outputinformationlevel += NOX::Utils::Error;
-  if ((bool) Teuchos::getIntegralValue<int>(printParams, "Warning"))
+  if (printParams.get<bool>("Warning"))
     outputinformationlevel += NOX::Utils::Warning;
-  if ((bool) Teuchos::getIntegralValue<int>(printParams, "Outer Iteration"))
+  if (printParams.get<bool>("Outer Iteration"))
     outputinformationlevel += NOX::Utils::OuterIteration;
-  if ((bool) Teuchos::getIntegralValue<int>(printParams, "Inner Iteration"))
+  if (printParams.get<bool>("Inner Iteration"))
     outputinformationlevel += NOX::Utils::InnerIteration;
-  if ((bool) Teuchos::getIntegralValue<int>(printParams, "Parameters"))
+  if (printParams.get<bool>("Parameters"))
     outputinformationlevel += NOX::Utils::Parameters;
-  if ((bool) Teuchos::getIntegralValue<int>(printParams, "Details"))
+  if (printParams.get<bool>("Details"))
     outputinformationlevel += NOX::Utils::Details;
-  if ((bool) Teuchos::getIntegralValue<int>(printParams, "Outer Iteration StatusTest"))
+  if (printParams.get<bool>("Outer Iteration StatusTest"))
     outputinformationlevel += NOX::Utils::OuterIterationStatusTest;
-  if ((bool) Teuchos::getIntegralValue<int>(printParams, "Linear Solver Details"))
+  if (printParams.get<bool>("Linear Solver Details"))
     outputinformationlevel += NOX::Utils::LinearSolverDetails;
-  if ((bool) Teuchos::getIntegralValue<int>(printParams, "Test Details"))
+  if (printParams.get<bool>("Test Details"))
     outputinformationlevel += NOX::Utils::TestDetails;
   /*  // for LOCA
-  if ((bool) Teuchos::getIntegralValue<int>(printParams, "Stepper Iteration"))
+  if (printParams.get<bool>("Stepper Iteration"))
     outputinformationlevel += NOX::Utils::StepperIteration;
-  if ((bool) Teuchos::getIntegralValue<int>(printParams, "Stepper Details"))
+  if (printParams.get<bool>("Stepper Details"))
     outputinformationlevel += NOX::Utils::StepperDetails;
-  if ((bool) Teuchos::getIntegralValue<int>(printParams, "Stepper Parameters"))
+  if (printParams.get<bool>("Stepper Parameters"))
     outputinformationlevel += NOX::Utils::StepperParameters; 
   */
-  if ((bool) Teuchos::getIntegralValue<int>(printParams, "Debug"))
+  if (printParams.get<bool>("Debug"))
     outputinformationlevel += NOX::Utils::Debug;
   printParams.set("Output Information", outputinformationlevel);
   noxutils_ = Teuchos::rcp(new NOX::Utils(printParams));
@@ -177,6 +181,21 @@ Teuchos::RCP<NOX::StatusTest::Combo> STR::TimIntImpl::NoxCreateStatusTest
     dserror("Type of convergence control is not available");
   }
 
+  // combined residual force and displacement test
+  Teuchos::RCP<NOX::StatusTest::Combo> combo2 = Teuchos::null;
+  if ( (itercnvchk_ == INPAR::STR::convcheck_absres_and_absdis)
+       or (itercnvchk_ == INPAR::STR::convcheck_relres_and_absdis)
+       or (itercnvchk_ == INPAR::STR::convcheck_relres_and_reldis) )
+    combo2 =  Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::AND));
+  else if ( (itercnvchk_ == INPAR::STR::convcheck_absres_or_absdis)
+            or (itercnvchk_ == INPAR::STR::convcheck_relres_or_absdis)
+            or (itercnvchk_ == INPAR::STR::convcheck_relres_or_reldis) )
+    combo2 =  Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
+  else
+    dserror("Cannot handle convergence check");
+  combo2->addStatusTest(statusTestNormFres);
+  combo2->addStatusTest(statusTestNormDisi);
+
   // maximum iteration
   Teuchos::RCP<NOX::StatusTest::MaxIters> statusTestMaxIters
     = Teuchos::rcp(new NOX::StatusTest::MaxIters(itermax_));
@@ -184,9 +203,9 @@ Teuchos::RCP<NOX::StatusTest::Combo> STR::TimIntImpl::NoxCreateStatusTest
   // the combined test object
   Teuchos::RCP<NOX::StatusTest::Combo> combo
     = Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
-  combo->addStatusTest(statusTestNormFres);
-  combo->addStatusTest(statusTestNormDisi);
+  combo->addStatusTest(combo2);
   combo->addStatusTest(statusTestMaxIters);
+
   
   // hand over
   return combo;

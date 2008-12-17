@@ -96,8 +96,10 @@ void STR::strudyn_direct()
   // add extra parameters (a kind of work-around)
   Teuchos::ParameterList xparams;
   xparams.set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
-  Teuchos::ParameterList& mynox = xparams.sublist("NOX"); //snox);
-  mynox = *(new Teuchos::ParameterList(snox));
+  Teuchos::ParameterList& nox = xparams.sublist("NOX"); //snox);
+  nox = *(new Teuchos::ParameterList(snox));
+//  Teuchos::ParameterList& noxsolver = nox.sublist("Linear Solver");
+//  noxsolver = *(new Teuchos::ParameterList(DRT::Problem::Instance()->StructSolverParams()));
 
   // create a solver
   Teuchos::RCP<LINALG::Solver> solver 

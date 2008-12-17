@@ -143,7 +143,8 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
 #               input parameters and definitions
 OBJS_DRT_INPAR = \
                 src/drt_inpar/drt_validparameters.o \
-                src/drt_inpar/drt_validconditions.o
+                src/drt_inpar/drt_validconditions.o \
+                src/drt_inpar/inpar_boolify.o
 #               nurbs discretization for isogeometric fe (c++)
 OBJS_DRT_NURBS_DISCRET = \
                 src/drt_fem_general/drt_utils_nurbs_shapefunctions.o \
