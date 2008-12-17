@@ -1326,25 +1326,111 @@ bool CONTACT::CElement::Evaluate2ndDerivShape(const double* xi,
   if (!xi)
     dserror("ERROR: Evaluate2ndDerivShape called with xi=NULL");
   
+  //**********************************************************************
+  // IMPORTANT NOTE: In 3D the ordering of the 2nd derivatives is:
+  // 1) dxi,dxi 2) deta,deta 3) dxi,deta
+  //**********************************************************************
+  
+  switch(Shape())
+  {
   // 2D linear case (2noded line element)
-  if ((valdim==2)&& (Shape()==line2))
+  case DRT::Element::line2:
   {
     secderiv(0,0) = 0;
     secderiv(1,0) = 0;
+    break;
   }
-    
   // 2D quadratic case (3noded line element)
-  else if ((valdim==3) && (Shape()==line3))
+  case DRT::Element::line3:
   {
     secderiv(0,0) =  1;
     secderiv(1,0) =  1;
     secderiv(2,0) = -2;
+    break;
+  }
+  // 3D linear case (3noded triangular element)
+  case DRT::Element::tri3:
+  {
+    secderiv(0,0) =  0; secderiv(0,1) =  0; secderiv(0,2) =  0;
+    secderiv(1,0) =  0; secderiv(1,1) =  0; secderiv(1,2) =  0;
+    secderiv(2,0) =  0; secderiv(2,1) =  0; secderiv(2,2) =  0;
+    break;
+  }
+  // 3D bilinear case (4noded quadrilateral element)
+  case DRT::Element::quad4:
+  {
+    secderiv(0,0) =  0; secderiv(0,1) =  0; secderiv(0,2) =  0.25;
+    secderiv(1,0) =  0; secderiv(1,1) =  0; secderiv(1,2) = -0.25;
+    secderiv(2,0) =  0; secderiv(2,1) =  0; secderiv(2,2) =  0.25;
+    secderiv(3,0) =  0; secderiv(3,1) =  0; secderiv(3,2) = -0.25;
+    break;
+  }
+  // 3D quadratic case (6noded triangular element)
+  case DRT::Element::tri6:
+  {   
+    secderiv(0,0) =  4.0; secderiv(0,1) =  4.0; secderiv(0,2) =  4.0;
+    secderiv(1,0) =  4.0; secderiv(1,1) =    0; secderiv(1,2) =    0;
+    secderiv(2,0) =    0; secderiv(2,1) =  4.0; secderiv(2,2) =    0;
+    secderiv(3,0) = -8.0; secderiv(3,1) =    0; secderiv(3,2) = -4.0;
+    secderiv(4,0) =    0; secderiv(4,1) =    0; secderiv(4,2) =  4.0;
+    secderiv(5,0) =    0; secderiv(5,1) = -8.0; secderiv(5,2) = -4.0;
+    break;
+  }
+  // 3D serendipity case (8noded quadrilateral element)
+  case DRT::Element::quad8:
+  {
+    const double r=xi[0];
+    const double s=xi[1];
+    const double rp=1.0+r;
+    const double rm=1.0-r;
+    const double sp=1.0+s;
+    const double sm=1.0-s;
+        
+    secderiv(0,0) = 0.5*sm; secderiv(0,1) = 0.5*rm; secderiv(0,2) =  -0.25*(2*r+2*s-1.0);
+    secderiv(1,0) = 0.5*sm; secderiv(1,1) = 0.5*rp; secderiv(1,2) =  0.25*(-2*r+2*s-1.0);
+    secderiv(2,0) = 0.5*sp; secderiv(2,1) = 0.5*rp; secderiv(2,2) =   0.25*(2*r+2*s+1.0);
+    secderiv(3,0) = 0.5*sp; secderiv(3,1) = 0.5*rm; secderiv(3,2) = -0.25*(-2*r+2*s+1.0);
+    secderiv(4,0) =    -sm; secderiv(4,1) =      0; secderiv(4,2) =                    r;
+    secderiv(5,0) =      0; secderiv(5,1) =    -rp; secderiv(5,2) =                   -s;
+    secderiv(6,0) =    -sp; secderiv(6,1) =      0; secderiv(6,2) =                   -r;
+    secderiv(7,0) =      0; secderiv(7,1) =    -rm; secderiv(7,2) =                    s;
+    break;
+  }
+  // 3D biquadratic case (9noded quadrilateral element)
+  case DRT::Element::quad9:
+  {
+    const double r=xi[0];
+    const double s=xi[1];
+    const double rp=1.0+r;
+    const double rm=1.0-r;
+    const double sp=1.0+s;
+    const double sm=1.0-s;
+    const double r2=1.0-r*r;
+    const double s2=1.0-s*s;
+    const double rh=0.5*r;
+    const double sh=0.5*s;
+    const double rhp=r+0.5;
+    const double rhm=r-0.5;
+    const double shp=s+0.5;
+    const double shm=s-0.5;
+    
+    secderiv(0,0) =     -sh*sm; secderiv(0,1) =     -rh*rm; secderiv(0,2) =     shm*rhm;
+    secderiv(1,0) =     -sh*sm; secderiv(1,1) =      rh*rp; secderiv(1,2) =     shm*rhp;
+    secderiv(2,0) =      sh*sp; secderiv(2,1) =      rh*rp; secderiv(2,2) =     shp*rhp;
+    secderiv(3,0) =      sh*sp; secderiv(3,1) =     -rh*rm; secderiv(3,2) =     shp*rhm;
+    secderiv(4,0) =  2.0*sh*sm; secderiv(4,1) =         r2; secderiv(4,2) =  -2.0*r*shm;
+    secderiv(5,0) =         s2; secderiv(5,1) = -2.0*rh*rp; secderiv(5,2) =  -2.0*s*rhp;
+    secderiv(6,0) = -2.0*sh*sp; secderiv(6,1) =         r2; secderiv(6,2) =  -2.0*r*shp;
+    secderiv(7,0) =         s2; secderiv(7,1) =  2.0*rh*rm; secderiv(7,2) =  -2.0*s*rhm;
+    secderiv(8,0) =    -2.0*s2; secderiv(8,1) =    -2.0*r2; secderiv(8,2) = 2.0*s*2.0*r;
+    break;
+  }
+  // unknown case
+  default:
+    dserror("ERROR: Evaluate2ndDerivShape called for unknown CElement type");
+    break;
   }
   
-  // unknown case
-  else
-    dserror("ERROR: Evaluate2ndDerivShape called for unknown CElement type");
-
   return true;
 }
 

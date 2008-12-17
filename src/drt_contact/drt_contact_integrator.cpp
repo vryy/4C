@@ -499,25 +499,21 @@ void CONTACT::Integrator::DerivM(CONTACT::CElement& sele,
   if ((mxia<-1.0) || (mxib>1.0))
     dserror("ERROR: DerivM called with infeasible master limits!");
   
-  // create empty mseg object and wrap it with RCP
+  // number of nodes (slave, master)
   int nrow = sele.NumNode();
   int ncol = mele.NumNode();
   
   // create empty vectors for shape fct. evaluation
   LINALG::SerialDenseVector sval(nrow);
   LINALG::SerialDenseMatrix sderiv(nrow,1);
-  LINALG::SerialDenseMatrix ssecderiv(nrow,1); //only 2D so far
+  LINALG::SerialDenseMatrix ssecderiv(nrow,1); //only 2D here
   LINALG::SerialDenseVector mval(ncol);
   LINALG::SerialDenseMatrix mderiv(ncol,1);
   LINALG::SerialDenseVector dualval(nrow);
   LINALG::SerialDenseMatrix dualderiv(nrow,1);
 
-  // get slave nodal coords for Jacobian evaluation
-  LINALG::SerialDenseMatrix scoord(3,sele.NumNode());
-  sele.GetNodalCoords(scoord);
-  
   // prepare directional derivative of dual shape functions
-  // this is only necessary for qudratic shape functions in 2D
+  // this is only necessary for quadratic shape functions in 2D
   vector<vector<map<int,double> > > dualmap(nrow,vector<map<int,double> >(nrow));
   if (sele.Shape()==CElement::line3)
     sele.DerivShapeDual(dualmap);
@@ -566,8 +562,8 @@ void CONTACT::Integrator::DerivM(CONTACT::CElement& sele,
     
     // evaluate the derivative dxdsxidsxi = Jac,xi
     double djacdxi[2] = {0.0, 0.0};
-    sele.DJacDXi(djacdxi,sval,sderiv,ssecderiv,scoord);
-    double dxdsxidsxi=djacdxi[0]; // only 2D so far
+    sele.DJacDXi(djacdxi,sxi,ssecderiv);
+    double dxdsxidsxi=djacdxi[0]; // only 2D here
     
     // evalute the GP slave coordinate derivatives
     map<int,double> dsxigp;
@@ -1602,6 +1598,146 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateM3D(
   } // for (int gp=0;gp<nGP();++gp)
   
   return mseg;
+}
+
+/*----------------------------------------------------------------------*
+ |  Compute directional derivative of M (3D)                  popp 12/08|                                   |
+ *----------------------------------------------------------------------*/
+void CONTACT::Integrator::DerivM3D(CONTACT::CElement& sele,
+                                   CONTACT::CElement& mele,
+                                   RCP<CONTACT::Intcell> cell)
+{
+  //check for problem dimension
+  if (Dim()!=3) dserror("ERROR: 3D integration method called for non-3D problem");
+  
+  // discretization type of master element
+  DRT::Element::DiscretizationType dt = mele.Shape();
+    
+  // check input data
+  if ((!sele.IsSlave()) || (mele.IsSlave()))
+    dserror("ERROR: DerivM3D called on a wrong type of CElement pair!");
+  if (cell==null)
+    dserror("ERROR: DerivM3D called without integration cell");
+  
+  // number of nodes (slave)
+  int nrow = sele.NumNode();
+  int ncol = mele.NumNode();
+  
+  // create empty vectors for shape fct. evaluation
+  LINALG::SerialDenseVector dualval(nrow);
+  LINALG::SerialDenseMatrix dualderiv(nrow,2,true);
+  LINALG::SerialDenseVector mval(ncol);
+  LINALG::SerialDenseMatrix mderiv(ncol,2,true);
+  LINALG::SerialDenseMatrix ssecderiv(nrow,3);
+  
+  // loop over all Gauss points for integration
+  for (int gp=0;gp<nGP();++gp)
+  {
+    double eta[2] = {Coordinate(gp,0), Coordinate(gp,1)};
+    //double wgt = Weight(gp);
+    
+    // note that the third component of sxi is necessary!
+    // (although it will always be 0.0 of course)
+    double tempsxi[3] = {0.0, 0.0, 0.0};
+    double sxi[2] = {0.0, 0.0};
+    double mxi[2] = {0.0, 0.0};
+    
+    // get Gauss point in slave element coordinates
+    cell->LocalToGlobal(eta,tempsxi,0);
+    sxi[0] = tempsxi[0];
+    sxi[1] = tempsxi[1];
+    
+    // project Gauss point onto master element
+    CONTACT::Projector projector(3);
+    projector.ProjectGaussPoint3D(sele,sxi,mele,mxi);
+
+    // check GP projection
+    double tol = 0.01;
+    if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
+    {
+      if (mxi[0]<-1.0-tol || mxi[1]<-1.0-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol)
+      {
+        cout << "\n***Warning: DerivM3D: Gauss point projection outside!";
+        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+        cout << "Gauss point: " << sxi[0] << " " << sxi[1] << endl;
+        cout << "Projection: " << mxi[0] << " " << mxi[1] << endl;
+        
+      }
+    }
+    else
+    {
+      if (mxi[0]<-tol || mxi[1]<-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol || mxi[0]+mxi[1]>1.0+2*tol)
+      {
+        cout << "\n***Warning: DerivM3D: Gauss point projection outside!";
+        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+        cout << "Gauss point: " << sxi[0] << " " << sxi[1] << endl;
+        cout << "Projection: " << mxi[0] << " " << mxi[1] << endl;
+      }
+    }
+    
+    // evaluate the slave Jacobian
+    double jacslave = sele.Jacobian(sxi);
+
+    // evaluate the derivative djacdxi = (Jac,xi , Jac,eta)
+    sele.Evaluate2ndDerivShape(sxi,ssecderiv,nrow);
+    double djacdxi[2] = {0.0, 0.0};
+    sele.DJacDXi(djacdxi,sxi,ssecderiv);
+    
+    // finite difference check of DJacDXi
+    double inc = 1.0e-8;
+    double jacnp1 = 0.0;
+    double fdres[2] = {0.0, 0.0};
+    sxi[0] += inc;
+    jacnp1 = sele.Jacobian(sxi);
+    fdres[0] = (jacnp1-jacslave)/inc;
+    sxi[0] -= inc;
+    sxi[1] += inc;
+    jacnp1 = sele.Jacobian(sxi);
+    fdres[1] = (jacnp1-jacslave)/inc;
+    sxi[1] -= inc;
+    //cout << "DJacDXi: " << scientific << djacdxi[0] << " " << djacdxi[1] << endl;
+    //cout << "FD-DJacDXi: " << scientific << fdres[0] << " " << fdres[1] << endl << endl;
+       
+    // evaluate all parts of DerivM
+    //********************************************************************
+    DRT::Node** mynodes = sele.Nodes();
+    if (!mynodes) dserror("ERROR: DerivM3D: Null pointer!");
+    
+    // contributions to DerivM_jk
+    for (int j=0;j<nrow;++j)
+    {
+      CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(mynodes[j]);
+      if (!mycnode) dserror("ERROR: DerivM3D: Null pointer!");
+            
+      for (int k=0;k<ncol;++k)
+      {
+        // global master node ID
+        //int mgid = mele.Nodes()[k]->Id();
+        
+        // get the correct map as a reference
+        //map<int,double>& dmmap_jk = mycnode->GetDerivM()[mgid];
+        
+        // (1) Lin(Phi) - dual shape functions
+        
+        // (2) Lin(Phi) - slave GP coordinates
+        
+        // (3) Lin(NMaster) - master GP coordinates
+        
+        // (4) Lin(dsxideta) - intcell GP Jacobian
+        
+        // (5) Lin(dxdsxi) - slave GP Jacobian
+        
+        // (6) Lin(dxdsxi) - slave GP coordinates
+       
+      }
+    }
+    //********************************************************************
+    
+  } // for (int gp=0;gp<nGP();++gp)
+    
+  return;
 }
 
 /*----------------------------------------------------------------------*

@@ -628,47 +628,95 @@ double CONTACT::CElement::Jacobian(double* xi)
 /*----------------------------------------------------------------------*
  |  Evaluate derivative J,xi of Jacobian determinant          popp 05/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CElement::DJacDXi(double* djacdxi,
-                                const LINALG::SerialDenseVector& val,
-                                const LINALG::SerialDenseMatrix& deriv,
-                                const LINALG::SerialDenseMatrix& secderiv,
-                                const LINALG::SerialDenseMatrix& coord)
+void CONTACT::CElement::DJacDXi(double* djacdxi, double* xi,
+                                const LINALG::SerialDenseMatrix& secderiv)
 {
   // the derivative dJacdXi
   djacdxi[0] = 0.0;
   djacdxi[1] = 0.0;
+  DRT::Element::DiscretizationType dt = Shape();
   
   // 2D linear case (2noded line element)
-  if (Shape()==line2)
-    djacdxi[0] = 0.0;
+  // 3D linear case (3noded triangular element)
+  if (dt==line2 || dt==tri3)
+  {
+    // do nothing
+  }
   
   // 2D quadratic case (3noded line element)
-  else if (Shape()==line3)
+  else if (dt==line3)
   {
-    double g[3] = {0.0, 0.0, 0.0};
+    // get nodal coords for 2nd deriv. evaluation
+    LINALG::SerialDenseMatrix coord(3,NumNode());
+    GetNodalCoords(coord);
+    
+    // metrics routine gives local basis vectors
+    vector<double> gxi(3);
+    vector<double> geta(3);
+    Metrics(xi,gxi,geta);
+        
     double gsec[3] = {0.0, 0.0, 0.0};
-    for (int i=0;i<val.Length();++i)
-    {
-      g[0] += deriv(i,0)*coord(0,i);
-      g[1] += deriv(i,0)*coord(1,i);
-      g[2] += deriv(i,0)*coord(2,i);
-      
-      gsec[0] += secderiv(i,0)*coord(0,i);
-      gsec[1] += secderiv(i,0)*coord(1,i);
-      gsec[2] += secderiv(i,0)*coord(2,i);
-    }
+    for (int i=0;i<NumNode();++i)
+      for (int k=0;k<3;++k)
+        gsec[k] += secderiv(i,0)*coord(k,i);
     
     // the Jacobian itself
-    double jac = sqrt(g[0]*g[0]+g[1]*g[1]+g[2]*g[2]);
+    double jac = sqrt(gxi[0]*gxi[0]+gxi[1]*gxi[1]+gxi[2]*gxi[2]);
     
-    // compute dJacdXi
+    // compute dJacdXi (1 component in 2D)
     for (int dim=0;dim<3;++dim)
-      djacdxi[0] += g[dim]*gsec[dim]/jac;
+      djacdxi[0] += gxi[dim]*gsec[dim]/jac;
+  }
+  
+  // 3D bilinear case    (4noded quadrilateral element)
+  // 3D quadratic case   (6noded triangular element)
+  // 3D serendipity case (8noded quadrilateral element)
+  // 3D biquadratic case (9noded quadrilateral element)
+  else if (dt==quad4 || dt==tri6 || dt==quad8 || dt==quad9)
+  {
+    // get nodal coords for 2nd deriv. evaluation
+    LINALG::SerialDenseMatrix coord(3,NumNode());
+    GetNodalCoords(coord);
+    
+    // metrics routine gives local basis vectors
+    vector<double> gxi(3);
+    vector<double> geta(3);
+    Metrics(xi,gxi,geta);
+    
+    // cross product of gxi and geta
+    double cross[3] = {0.0, 0.0, 0.0};
+    cross[0] = gxi[1]*geta[2]-gxi[2]*geta[1];
+    cross[1] = gxi[2]*geta[0]-gxi[0]*geta[2];
+    cross[2] = gxi[0]*geta[1]-gxi[1]*geta[0];
+    
+    // the Jacobian itself
+    double jac = sqrt(cross[0]*cross[0]+cross[1]*cross[1]+cross[2]*cross[2]);
+    
+    // 2nd deriv. evaluation
+    LINALG::Matrix<3,3> gsec(true);
+    for (int i=0;i<NumNode();++i)
+      for (int k=0;k<3;++k)
+        for (int d=0;d<3;++d)
+          gsec(k,d) += secderiv(i,d)*coord(k,i);
+    
+    // compute dJacdXi (2 components in 3D)
+    djacdxi[0] += 1/jac * (cross[2]*geta[1]-cross[1]*geta[2]) * gsec(0,0);
+    djacdxi[0] += 1/jac * (cross[0]*geta[2]-cross[2]*geta[0]) * gsec(1,0);
+    djacdxi[0] += 1/jac * (cross[1]*geta[0]-cross[0]*geta[1]) * gsec(2,0);
+    djacdxi[0] += 1/jac * (cross[1]*gxi[2]-cross[2]*gxi[1])   * gsec(0,2);
+    djacdxi[0] += 1/jac * (cross[2]*gxi[0]-cross[0]*gxi[2])   * gsec(1,2);
+    djacdxi[0] += 1/jac * (cross[0]*gxi[1]-cross[1]*gxi[0])   * gsec(2,2);
+    djacdxi[1] += 1/jac * (cross[2]*geta[1]-cross[1]*geta[2]) * gsec(0,2);
+    djacdxi[1] += 1/jac * (cross[0]*geta[2]-cross[2]*geta[0]) * gsec(1,2);
+    djacdxi[1] += 1/jac * (cross[1]*geta[0]-cross[0]*geta[1]) * gsec(2,2);
+    djacdxi[1] += 1/jac * (cross[1]*gxi[2]-cross[2]*gxi[1])   * gsec(0,1);
+    djacdxi[1] += 1/jac * (cross[2]*gxi[0]-cross[0]*gxi[2])   * gsec(1,1);
+    djacdxi[1] += 1/jac * (cross[0]*gxi[1]-cross[1]*gxi[0])   * gsec(2,1);
   }
   
   // unknown case
   else
-    dserror("ERROR: dJacdXi called for unknown element type!");
+    dserror("ERROR: DJacDXi called for unknown element type!");
   
   return;
 }

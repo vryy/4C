@@ -209,6 +209,13 @@ public:
   RCP<Epetra_SerialDenseMatrix> IntegrateM3D(CONTACT::CElement& sele,
                                              CONTACT::CElement& mele,
                                              RCP<CONTACT::Intcell> cell);
+  
+  /*!
+  \brief Compute directional deriv. of M on a 2D slave / master integration cell
+        
+  */
+  void DerivM3D(CONTACT::CElement& sele, CONTACT::CElement& mele,
+                RCP<CONTACT::Intcell> cell);
     
   /*!
   \brief Integrate Mortar matrix M on a 2D slave / master integration cell

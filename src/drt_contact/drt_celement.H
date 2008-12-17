@@ -373,11 +373,8 @@ public:
   /*!
   \brief Evaluate derivative J,xi of Jacobian determinant
   */
-  virtual void DJacDXi(double* djacdxi,
-                       const LINALG::SerialDenseVector& val,
-                       const LINALG::SerialDenseMatrix& deriv,
-                       const LINALG::SerialDenseMatrix& secderiv,
-                       const LINALG::SerialDenseMatrix& coord);
+  virtual void DJacDXi(double* djacdxi, double* xi,
+                       const LINALG::SerialDenseMatrix& secderiv);
     
     
   /*!

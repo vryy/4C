@@ -1055,6 +1055,10 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::FDCheckMortarMDeriv()
 {
+  /****************************************************/
+  /* NOTE: This is a combined 2D / 3D method already! */
+  /****************************************************/
+  
   // get out of here if not participating in interface
   if (!lComm())
     return;
@@ -1097,8 +1101,8 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     }
   }
   
-  // global loop to apply FD scheme to all slave dofs (=2*nodes)
-  for (int fd=0; fd<2*snodefullmap_->NumMyElements();++fd)
+  // global loop to apply FD scheme to all slave dofs (=3*nodes)
+  for (int fd=0; fd<3*snodefullmap_->NumMyElements();++fd)
   {
     // Initialize
     // loop over all nodes to reset normals, closestnode and Mortar maps
@@ -1165,7 +1169,7 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     CSegs().Shape(0,0);
       
     // now get the node we want to apply the FD scheme to
-    int gid = snodefullmap_->GID(fd/2);
+    int gid = snodefullmap_->GID(fd/3);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
     CNode* snode = static_cast<CNode*>(node);
@@ -1173,21 +1177,26 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     // apply finite difference scheme
     if (Comm().MyPID()==snode->Owner())
     {
-      cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof(l): " << fd%2
-           << " Dof(g): " << snode->Dofs()[fd%2] << endl;
+      cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof(l): " << fd%3
+           << " Dof(g): " << snode->Dofs()[fd%3] << endl;
     }
     
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
-    if (fd%2==0)
+    if (fd%3==0)
     {
       snode->xspatial()[0] += delta;
       snode->u()[0] += delta;
     }
-    else
+    else if (fd%3==1)
     {
       snode->xspatial()[1] += delta;
       snode->u()[1] += delta;
+    }
+    else
+    {
+      snode->xspatial()[2] += delta;
+      snode->u()[2] += delta;
     }
     
     // loop over all elements to set current element length / area
@@ -1291,29 +1300,34 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
           //int innercol = snode->Dofs()[fd%2];
           //(derivm[outercol/2])[innercol] += val;
           
-          cout << "M-FD-derivative for pair S" << kcnode->Id() << " and M" << (p->first)/2 << endl;
+          cout << "M-FD-derivative for pair S" << kcnode->Id() << " and M" << (p->first)/Dim() << endl;
           //cout << "Ref-M: " << refM[k][p->first] << endl;
           //cout << "New-M: " << newM[k][p->first] << endl;
-          cout << "Deriv: " << snode->Dofs()[fd%2] << " " << (newM[k][p->first]-refM[k][p->first])/delta << endl;
+          cout << "Deriv: " << snode->Dofs()[fd%3] << " " << (newM[k][p->first]-refM[k][p->first])/delta << endl;
         }
       }
     }
     
     // undo finite difference modification
-    if (fd%2==0)
+    if (fd%3==0)
     {
       snode->xspatial()[0] -= delta;
       snode->u()[0] -= delta;
     }
-    else
+    else if (fd%3==1)
     {
       snode->xspatial()[1] -= delta;
       snode->u()[1] -= delta;
+    }
+    else
+    {
+      snode->xspatial()[2] -= delta;
+      snode->u()[2] -= delta;
     }       
   }
   
-  // global loop to apply FD scheme to all master dofs (=2*nodes)
-  for (int fd=0; fd<2*mnodefullmap_->NumMyElements();++fd)
+  // global loop to apply FD scheme to all master dofs (=3*nodes)
+  for (int fd=0; fd<3*mnodefullmap_->NumMyElements();++fd)
   {
     // Initialize
     // loop over all nodes to reset normals, closestnode and Mortar maps
@@ -1321,7 +1335,6 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     for (int i=0;i<idiscret_->NumMyColNodes();++i)
     {
       CONTACT::CNode* node = static_cast<CONTACT::CNode*>(idiscret_->lColNode(i));
-
       //reset nodal normal vector
       for (int j=0;j<3;++j)
       {
@@ -1380,7 +1393,7 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     CSegs().Shape(0,0);
       
     // now get the node we want to apply the FD scheme to
-    int gid = mnodefullmap_->GID(fd/2);
+    int gid = mnodefullmap_->GID(fd/3);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
     CNode* mnode = static_cast<CNode*>(node);
@@ -1388,21 +1401,26 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     // apply finite difference scheme
     if (Comm().MyPID()==mnode->Owner())
     {
-      cout << "\nBuilding FD for Master Node: " << mnode->Id() << " Dof(l): " << fd%2
-           << " Dof(g): " << mnode->Dofs()[fd%2] << endl;
+      cout << "\nBuilding FD for Master Node: " << mnode->Id() << " Dof(l): " << fd%3
+           << " Dof(g): " << mnode->Dofs()[fd%3] << endl;
     }
     
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
-    if (fd%2==0)
+    if (fd%3==0)
     {
       mnode->xspatial()[0] += delta;
       mnode->u()[0] += delta;
     }
-    else
+    else if (fd%3==1)
     {
       mnode->xspatial()[1] += delta;
       mnode->u()[1] += delta;
+    }
+    else
+    {
+      mnode->xspatial()[2] += delta;
+      mnode->u()[2] += delta;
     }
     
     // loop over all elements to set current element length / area
@@ -1505,24 +1523,29 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
           //int innercol = mnode->Dofs()[fd%2];
           //(derivm[outercol/2])[innercol] += val;
           
-          cout << "M-FD-derivative for pair S" << kcnode->Id() << " and M" << (p->first)/2 << endl;
+          cout << "M-FD-derivative for pair S" << kcnode->Id() << " and M" << (p->first)/Dim() << endl;
           //cout << "Ref-M: " << refM[k][p->first] << endl;
           //cout << "New-M: " << newM[k][p->first] << endl;
-          cout << "Deriv: " << mnode->Dofs()[fd%2] << " " << (newM[k][p->first]-refM[k][p->first])/delta << endl;
+          cout << "Deriv: " << mnode->Dofs()[fd%3] << " " << (newM[k][p->first]-refM[k][p->first])/delta << endl;
         }
       }
     }
     
     // undo finite difference modification
-    if (fd%2==0)
+    if (fd%3==0)
     {
       mnode->xspatial()[0] -= delta;
       mnode->u()[0] -= delta;
     }
-    else
+    else if (fd%3==1)
     {
       mnode->xspatial()[1] -= delta;
       mnode->u()[1] -= delta;
+    }
+    else
+    {
+      mnode->xspatial()[2] -= delta;
+      mnode->u()[2] -= delta;
     }       
   }
   
