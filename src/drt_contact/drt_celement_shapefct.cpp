@@ -668,15 +668,19 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
     cout << "FD Check for A-derivative of Element: " << Id() << endl;
     Epetra_SerialDenseMatrix aeref(ae);
     double delta = 1e-8;
+    int thedim=3;
+    if (shape==CElement::quaddual1D) thedim=2;
     
-    for (int dim=0;dim<3;++dim)
+    for (int dim=0;dim<thedim;++dim)
     {
       for (int node=0;node<nnodes;++node)
       {
         // apply FD
-        coord(dim,node)+=delta;
+        DRT::Node** mynodes = Nodes();
+        CNode* mycnode = static_cast<CNode*> (mynodes[node]);
+        mycnode->xspatial()[dim] += delta;
         
-        vector<double> val1(nnodes);
+        LINALG::SerialDenseVector val1(nnodes);
         LINALG::SerialDenseMatrix deriv1(nnodes,2,true);
         LINALG::SerialDenseMatrix me1(nnodes,nnodes,true);
         LINALG::SerialDenseMatrix de1(nnodes,nnodes,true);
@@ -686,7 +690,7 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
         {
           double gpc1[2] = {integrator.Coordinate(i,0), integrator.Coordinate(i,1)};
           EvaluateShape(gpc1, val1, deriv1, nnodes);
-          detg = Jacobian1D(gpc1);
+          detg = Jacobian(gpc1);
           
           for (int j=0;j<nnodes;++j)
             for (int k=0;k<nnodes;++k)
@@ -705,9 +709,6 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
         // get solution matrix ae with dual parameters
         LINALG::SerialDenseMatrix ae1(nnodes,nnodes);
         ae1.Multiply('N','N',1.0,de1,me1,0.0);
-        
-        DRT::Node** mynodes = Nodes();
-        CNode* mycnode = static_cast<CNode*> (mynodes[node]);
         int col= mycnode->Dofs()[dim];
         
         cout << "A-Derivative: " << col << endl;
@@ -721,7 +722,7 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
           }
         
         // undo FD
-        coord(dim,node)-=delta;
+        mycnode->xspatial()[dim] -= delta;
       }
     }
     // *******************************************************************
@@ -1439,8 +1440,7 @@ bool CONTACT::CElement::Evaluate2ndDerivShape(const double* xi,
  *----------------------------------------------------------------------*/
 bool CONTACT::CElement::DerivShapeDual(vector<vector<map<int,double> > >& derivdual)
 {
-  if (!IsSlave())
-      dserror("ERROR: DerivShapeDual called for master element");
+  if (!IsSlave()) dserror("ERROR: DerivShapeDual called for master element");
   
   // get node number and node pointers
   DRT::Node** mynodes = Nodes();

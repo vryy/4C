@@ -204,7 +204,7 @@ void CONTACT::Integrator::DerivD(CONTACT::CElement& sele,
   sele.GetNodalCoords(coord);
   
   // prepare directional derivative of dual shape functions
-  // this necessary for all slave element types except line2 (1D) and tri3 (2D)
+  // this is necessary for all slave element types except line2 (1D) & tri3 (2D)
   bool duallin = false;
   vector<vector<map<int,double> > > dualmap(nrow,vector<map<int,double> >(nrow));
   if (sele.Shape()!=CElement::line2 && sele.Shape()!=CElement::tri3)
@@ -1630,6 +1630,16 @@ void CONTACT::Integrator::DerivM3D(CONTACT::CElement& sele,
   LINALG::SerialDenseMatrix mderiv(ncol,2,true);
   LINALG::SerialDenseMatrix ssecderiv(nrow,3);
   
+  // prepare directional derivative of dual shape functions
+  // this is necessary for all slave element types except tri3
+  bool duallin = false;
+  vector<vector<map<int,double> > > dualmap(nrow,vector<map<int,double> >(nrow));
+  if (sele.Shape()!=CElement::tri3)
+  {
+    duallin = true;
+    sele.DerivShapeDual(dualmap);
+  }
+
   // loop over all Gauss points for integration
   for (int gp=0;gp<nGP();++gp)
   {
