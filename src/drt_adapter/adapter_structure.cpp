@@ -392,8 +392,18 @@ void ADAPTER::Structure::Integrate()
     step += 1;
 
     // talk to user
-    std::cout << "Finished:  Step=" << step << ", Time=" << time << std::endl;
-    std::cout <<endl;
+    fprintf(stdout,
+            "Finalised: step %6d"
+            " | nstep %6d"
+            " | time %-14.8E"
+            " | dt %-14.8E\n",
+            step, stepend, time, timestepsize);
+    // print a beautiful line made exactly of 80 dashes
+    fprintf(stdout,
+            "--------------------------------------------------------------"
+            "------------------\n");
+    // do it, print now!
+    fflush(stdout);
     // talk to disk
     Output();
   }
