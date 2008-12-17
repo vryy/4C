@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_boolify.H
+\file drt_boolifyparameters.H
 
 \brief Auxiliar routine to boolify integral Yes/No data
 
@@ -16,8 +16,8 @@ Maintainer: Burkhard Bornemann
 /* defintions */
 #ifdef CCADISCRET
 
-#ifndef INPAR_BOOLIFY_H
-#define INPAR_BOOLIFY_H
+#ifndef DRT_BOOLIFYPARAMETERS_H
+#define DRT_BOOLIFYPARAMETERS_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -42,5 +42,5 @@ namespace DRT {
 }  // namespace NOX
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef INPAR_BOOLIFY_H
+#endif  // #ifndef DRT_BOOLIFYPARAMETERS_H
 #endif  // #ifdef CCADISCRET

@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_boolify.cpp
+\file drt_boolifyparameters.cpp
 
 \brief Auxiliar routine to boolify integral Yes/No data
 
@@ -18,7 +18,7 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "inpar_boolify.H"
+#include "drt_boolifyparameters.H"
 #include "../drt_lib/drt_dserror.H"
 
 

@@ -22,7 +22,7 @@ Maintainer: Burkhard Bornemann
 #include "strtimint.H"
 #include "strtimint_impl.H"
 #include "strtimint_noxgroup.H"
-#include "../drt_inpar/inpar_boolify.H"
+#include "../drt_inpar/drt_boolifyparameters.H"
 
 
 /*----------------------------------------------------------------------*/
