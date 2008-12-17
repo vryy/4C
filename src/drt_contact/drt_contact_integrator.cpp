@@ -1626,12 +1626,15 @@ void CONTACT::Integrator::DerivM3D(CONTACT::CElement& sele,
   // create empty vectors for shape fct. evaluation
   LINALG::SerialDenseVector dualval(nrow);
   LINALG::SerialDenseMatrix dualderiv(nrow,2,true);
+  LINALG::SerialDenseVector sval(nrow);
+  LINALG::SerialDenseMatrix sderiv(nrow,2,true);
   LINALG::SerialDenseVector mval(ncol);
   LINALG::SerialDenseMatrix mderiv(ncol,2,true);
   LINALG::SerialDenseMatrix ssecderiv(nrow,3);
   
   // prepare directional derivative of dual shape functions
   // this is necessary for all slave element types except tri3
+  typedef map<int,double>::const_iterator CI;
   bool duallin = false;
   vector<vector<map<int,double> > > dualmap(nrow,vector<map<int,double> >(nrow));
   if (sele.Shape()!=CElement::tri3)
@@ -1644,7 +1647,7 @@ void CONTACT::Integrator::DerivM3D(CONTACT::CElement& sele,
   for (int gp=0;gp<nGP();++gp)
   {
     double eta[2] = {Coordinate(gp,0), Coordinate(gp,1)};
-    //double wgt = Weight(gp);
+    double wgt = Weight(gp);
     
     // note that the third component of sxi is necessary!
     // (although it will always be 0.0 of course)
@@ -1687,14 +1690,23 @@ void CONTACT::Integrator::DerivM3D(CONTACT::CElement& sele,
       }
     }
     
-    // evaluate the slave Jacobian
+    // evaluate dual space shape functions (on slave element)
+    sele.EvaluateShapeDual(sxi,dualval,dualderiv,nrow);
+    
+    // evaluate trace space shape functions (on both elements)
+    sele.EvaluateShape(sxi,sval,sderiv,nrow);
+    sele.Evaluate2ndDerivShape(sxi,ssecderiv,nrow);
+    mele.EvaluateShape(mxi,mval,mderiv,ncol);
+       
+    // evaluate the two Jacobians (int cell and slave ele)
+    double jaccell = cell->Jacobian(eta);
     double jacslave = sele.Jacobian(sxi);
 
     // evaluate the derivative djacdxi = (Jac,xi , Jac,eta)
-    sele.Evaluate2ndDerivShape(sxi,ssecderiv,nrow);
     double djacdxi[2] = {0.0, 0.0};
     sele.DJacDXi(djacdxi,sxi,ssecderiv);
     
+    /*
     // finite difference check of DJacDXi
     double inc = 1.0e-8;
     double jacnp1 = 0.0;
@@ -1707,8 +1719,9 @@ void CONTACT::Integrator::DerivM3D(CONTACT::CElement& sele,
     jacnp1 = sele.Jacobian(sxi);
     fdres[1] = (jacnp1-jacslave)/inc;
     sxi[1] -= inc;
-    //cout << "DJacDXi: " << scientific << djacdxi[0] << " " << djacdxi[1] << endl;
-    //cout << "FD-DJacDXi: " << scientific << fdres[0] << " " << fdres[1] << endl << endl;
+    cout << "DJacDXi: " << scientific << djacdxi[0] << " " << djacdxi[1] << endl;
+    cout << "FD-DJacDXi: " << scientific << fdres[0] << " " << fdres[1] << endl << endl;
+    */
        
     // evaluate all parts of DerivM
     //********************************************************************
@@ -1724,12 +1737,19 @@ void CONTACT::Integrator::DerivM3D(CONTACT::CElement& sele,
       for (int k=0;k<ncol;++k)
       {
         // global master node ID
-        //int mgid = mele.Nodes()[k]->Id();
+        int mgid = mele.Nodes()[k]->Id();
+        double fac = 0.0;
         
         // get the correct map as a reference
-        //map<int,double>& dmmap_jk = mycnode->GetDerivM()[mgid];
+        map<int,double>& dmmap_jk = mycnode->GetDerivM()[mgid];
         
         // (1) Lin(Phi) - dual shape functions
+        for (int m=0;m<nrow;++m)
+        {
+          fac = wgt*sval[m]*mval[k]*jaccell*jacslave;
+          for (CI p=dualmap[j][m].begin();p!=dualmap[j][m].end();++p)
+            dmmap_jk[p->first] += fac*(p->second);
+        }
         
         // (2) Lin(Phi) - slave GP coordinates
         
@@ -1744,6 +1764,10 @@ void CONTACT::Integrator::DerivM3D(CONTACT::CElement& sele,
       }
     }
     //********************************************************************
+    
+#ifdef CONTACTONEMORTARLOOP
+    dserror("ERROR: DerivM3D: One mortar loop case not yet impl. for 3D!");
+#endif // #ifdef CONTACTONEMORTARLOOP
     
   } // for (int gp=0;gp<nGP();++gp)
     
