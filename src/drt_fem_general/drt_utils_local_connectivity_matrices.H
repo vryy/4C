@@ -558,6 +558,43 @@ namespace UTILS
   template<> struct DisTypeToDim<DRT::Element::wedge15>  {static const int dim = 3;};
   template<> struct DisTypeToDim<DRT::Element::pyramid5> {static const int dim = 3;};
 
+
+  /*!
+  \brief    Returns the number of independent components for 2nd derivatives per discretization-type
+            Template version
+
+            Number of components necessary to store second derivatives:
+            in general:
+              (n*(n+1))/2 components for nsd=n;
+            in practice:
+              1 component  for nsd=1:  (N,xx)
+              3 components for nsd=2:  (N,xx ; N,yy ; N,xy)
+              6 components for nsd=3:  (N,xx ; N,yy ; N,zz ; N,xy ; N,xz ; N,yz)
+  */
+  template<DRT::Element::DiscretizationType DISTYPE>
+  struct DisTypeToNumDeriv2 {};
+  template<> struct DisTypeToNumDeriv2<DRT::Element::point1>   {static const int numderiv2 = 0;};
+  template<> struct DisTypeToNumDeriv2<DRT::Element::line2>    {static const int numderiv2 = 1;};
+  template<> struct DisTypeToNumDeriv2<DRT::Element::line3>    {static const int numderiv2 = 1;};
+  template<> struct DisTypeToNumDeriv2<DRT::Element::nurbs2>   {static const int numderiv2 = 1;};
+  template<> struct DisTypeToNumDeriv2<DRT::Element::nurbs3>   {static const int numderiv2 = 1;};
+  template<> struct DisTypeToNumDeriv2<DRT::Element::quad4>    {static const int numderiv2 = 3;};
+  template<> struct DisTypeToNumDeriv2<DRT::Element::quad8>    {static const int numderiv2 = 3;};
+  template<> struct DisTypeToNumDeriv2<DRT::Element::quad9>    {static const int numderiv2 = 3;};
+  template<> struct DisTypeToNumDeriv2<DRT::Element::nurbs4>   {static const int numderiv2 = 3;};
+  template<> struct DisTypeToNumDeriv2<DRT::Element::nurbs9>   {static const int numderiv2 = 3;};
+  template<> struct DisTypeToNumDeriv2<DRT::Element::tri3>     {static const int numderiv2 = 3;};
+  template<> struct DisTypeToNumDeriv2<DRT::Element::tri6>     {static const int numderiv2 = 3;};
+  template<> struct DisTypeToNumDeriv2<DRT::Element::hex8>     {static const int numderiv2 = 6;};
+  template<> struct DisTypeToNumDeriv2<DRT::Element::hex20>    {static const int numderiv2 = 6;};
+  template<> struct DisTypeToNumDeriv2<DRT::Element::hex27>    {static const int numderiv2 = 6;};
+  template<> struct DisTypeToNumDeriv2<DRT::Element::tet4>     {static const int numderiv2 = 6;};
+  template<> struct DisTypeToNumDeriv2<DRT::Element::tet10>    {static const int numderiv2 = 6;};
+  template<> struct DisTypeToNumDeriv2<DRT::Element::wedge6>   {static const int numderiv2 = 6;};
+  template<> struct DisTypeToNumDeriv2<DRT::Element::wedge15>  {static const int numderiv2 = 6;};
+  template<> struct DisTypeToNumDeriv2<DRT::Element::pyramid5> {static const int numderiv2 = 6;};
+
+
   /*!
     \brief    Returns the order of an element edges based on its discretization-type
               Template version

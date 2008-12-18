@@ -133,7 +133,7 @@ public:
   // 1 component  for nsd=1:  (N,xx)
   // 3 components for nsd=2:  (N,xx ; N,yy ; N,xy)
   // 6 components for nsd=3:  (N,xx ; N,yy ; N,zz ; N,xy ; N,xz ; N,yz)
-  static const int numderiv2_ = (nsd_*(nsd_+1))/2;
+  static const int numderiv2_ = DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
 
   //! Evaluate
   virtual int Evaluate(DRT::Element*              ele,
@@ -161,15 +161,6 @@ public:
   );
 
   private:
-
-    
-    //! possible options for the stabilization parameter
-    enum TauType
-    {
-      ttfranca_valentin,
-      ttbazilevs,
-      tttau_not_defined
-    };
 
     //! Calculate matrix and rhs. Here the whole thing is hidden.
     virtual void Sysmat(
@@ -260,11 +251,6 @@ public:
         const int&                                   iquad,     ///< id of current Gauss point
         const bool&                                  higher_order_ele,///< are second derivatives needed?
         const int&                                   eleid       ///< the element id
-    );
-
-    //! calculate 2nd derivatives of shape functions (local and global)
-    virtual void CalSecondDeriv(
-        const LINALG::Matrix<nsd_,1>& xsi ///< coordinates of GP
     );
 
     //! calculate element matrix and rhs vector (One-Step-Theta, BDF2, Gen.-alpha)

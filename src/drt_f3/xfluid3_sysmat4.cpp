@@ -29,6 +29,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_fluid/time_integration_element.H"
 #include "../drt_xfem/spacetime_boundary.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_fem_general/drt_utils_gder2.H"
 
 /// hold arrays for all - potentially enriched - shape functions and their derivatives
 /// with respect to the physical coordinates
@@ -1046,7 +1047,7 @@ void SysmatDomain4(
             {
                 static LINALG::Matrix<6,numnode> deriv2;
                 DRT::UTILS::shape_function_3D_deriv2(deriv2,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
-                XFLUID::gder2<DISTYPE>(xjm, derxy, deriv2, xyze, derxy2);
+                DRT::UTILS::gder2<DISTYPE>(xjm, derxy, deriv2, xyze, derxy2);
             }
             else
             {

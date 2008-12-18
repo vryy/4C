@@ -343,10 +343,6 @@ namespace ELEMENTS
       return(sqrt(rateofstrain/2.0));
     }
 
-    /*!
-     * \brief calculate second global derivatives w.r.t x/y/z at point r,s,t
-     */
-    void gder2(Fluid3* ele);
 
   private:
     //! artificial viscosity

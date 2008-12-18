@@ -193,10 +193,6 @@ namespace ELEMENTS
      */
     void BodyForce(Fluid3* ele, const double time);
 
-    /*!
-     * \brief calculate second global derivatives w.r.t x/y/z at point r,s,t
-     */
-    void gder2(Fluid3* ele);
 
   private:
     LINALG::Matrix<3,iel> xyze_;

@@ -23,6 +23,7 @@ Maintainer: Georg Bauer
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../drt_fem_general/drt_utils_gder2.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_lib/linalg_serialdensematrix.H"
 
@@ -47,7 +48,7 @@ DRT::ELEMENTS::ScaTraImplInterface* DRT::ELEMENTS::ScaTraImplInterface::Impl(DRT
       ch8 = new ScaTraImpl<DRT::Element::hex8>(numdofpernode,numscal);
     return ch8;
   }
-  case DRT::Element::hex20:
+/*  case DRT::Element::hex20:
   {
     static ScaTraImpl<DRT::Element::hex20>* ch20;
     if (ch20==NULL)
@@ -60,7 +61,7 @@ DRT::ELEMENTS::ScaTraImplInterface* DRT::ELEMENTS::ScaTraImplInterface::Impl(DRT
     if (ch27==NULL)
       ch27 = new ScaTraImpl<DRT::Element::hex27>(numdofpernode,numscal);
     return ch27;
-  }
+  }*/
   case DRT::Element::tet4:
   {
     static ScaTraImpl<DRT::Element::tet4>* ct4;
@@ -103,7 +104,7 @@ DRT::ELEMENTS::ScaTraImplInterface* DRT::ELEMENTS::ScaTraImplInterface::Impl(DRT
       cp4 = new ScaTraImpl<DRT::Element::quad4>(numdofpernode,numscal);
     return cp4;
   }
-  case DRT::Element::quad8:
+/*  case DRT::Element::quad8:
   {
     static ScaTraImpl<DRT::Element::quad8>* cp8;
     if (cp8==NULL)
@@ -116,7 +117,7 @@ DRT::ELEMENTS::ScaTraImplInterface* DRT::ELEMENTS::ScaTraImplInterface::Impl(DRT
     if (cp9==NULL)
       cp9 = new ScaTraImpl<DRT::Element::quad9>(numdofpernode,numscal);
     return cp9;
-  }
+  }*/
   case DRT::Element::tri3:
   {
     static ScaTraImpl<DRT::Element::tri3>* cp3;
@@ -124,13 +125,13 @@ DRT::ELEMENTS::ScaTraImplInterface* DRT::ELEMENTS::ScaTraImplInterface::Impl(DRT
       cp3 = new ScaTraImpl<DRT::Element::tri3>(numdofpernode,numscal);
     return cp3;
   }
-  case DRT::Element::tri6:
+/*  case DRT::Element::tri6:
   {
     static ScaTraImpl<DRT::Element::tri6>* cp6;
     if (cp6==NULL)
       cp6 = new ScaTraImpl<DRT::Element::tri6>(numdofpernode,numscal);
     return cp6;
-  }
+  }*/
   /*case DRT::Element::line2:
   {
     static ScaTraImpl<DRT::Element::line2>* cl2;
@@ -158,35 +159,35 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(int numdofpernode, int numscal)
   : numdofpernode_(numdofpernode),
     numscal_(numscal),
-    xyze_(),
+    xyze_(true),  // initialize to zero
     bodyforce_(numdofpernode_),
     diffus_(numscal_),
     valence_(numscal_),
     shcacp_(0.0),
-    xsi_(),
-    funct_(),
-    densfunct_(),
-    deriv_(),
-    deriv2_(),
-    xjm_(),
-    xij_(),
-    derxy_(),
-    derxy2_(),
+    xsi_(true),
+    funct_(true),
+    densfunct_(true),
+    deriv_(true),
+    deriv2_(true),
+    xjm_(true),
+    xij_(true),
+    derxy_(true),
+    derxy2_(true),
     rhs_(numdofpernode_),
     hist_(numdofpernode_),
-    velint_(),
-    migvelint_(),
+    velint_(true),
+    migvelint_(true),
     tau_(numscal_),
     kart_(numscal_),
-    xder2_(),
+    xder2_(true),
     fac_(0.0),
-    conv_(),
+    conv_(true),
     diff_(true),
-    mig_(),
-    gradpot_(),
+    mig_(true),
+    gradpot_(true),
     conint_(numscal_),
-    gradphi_(),
-    lapphi_()
+    gradphi_(true),
+    lapphi_(true)
 {
   return;
 }
@@ -1237,525 +1238,21 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
 
   // compute second global derivatives (if needed)
   if (use2ndderiv)
-    CalSecondDeriv(xsi_);
+  {
+    cout<<"computing second derivatives"<<endl;
+
+    // get the second derivatives of standard element at current GP
+    DRT::UTILS::shape_function_deriv2<distype>(xsi_,deriv2_);
+
+    // get global second derivatives
+    DRT::UTILS::gder2<distype>(xjm_,derxy_,deriv2_,xyze_,derxy2_);
+  }
   else
     derxy2_.Clear();
 
   // say goodbye
   return;
 }
-
-
-/*----------------------------------------------------------------------*
- |  calculate second global derivatives w.r.t. x,y,z at point r,s,t
- |                                            (private)        gjb 12/08
- |
- | 3 space dimensions:
- |
- | From the six equations
- |
- |              +-                     -+
- |  d^2N     d  | dx dN   dy dN   dz dN |
- |  ----   = -- | --*-- + --*-- + --*-- |
- |  dr^2     dr | dr dx   dr dy   dr dz |
- |              +-                     -+
- |
- |              +-                     -+
- |  d^2N     d  | dx dN   dy dN   dz dN |
- |  ------ = -- | --*-- + --*-- + --*-- |
- |  ds^2     ds | ds dx   ds dy   ds dz |
- |              +-                     -+
- |
- |              +-                     -+
- |  d^2N     d  | dx dN   dy dN   dz dN |
- |  ----   = -- | --*-- + --*-- + --*-- |
- |  dt^2     dt | dt dx   dt dy   dt dz |
- |              +-                     -+
- |
- |              +-                     -+
- |  d^2N     d  | dx dN   dy dN   dz dN |
- | -----   = -- | --*-- + --*-- + --*-- |
- | ds dr     ds | dr dx   dr dy   dr dz |
- |              +-                     -+
- |
- |              +-                     -+
- |  d^2N     d  | dx dN   dy dN   dz dN |
- | -----   = -- | --*-- + --*-- + --*-- |
- | dt dr     dt | dr dx   dr dy   dr dz |
- |              +-                     -+
- |
- |              +-                     -+
- |  d^2N     d  | dx dN   dy dN   dz dN |
- | -----   = -- | --*-- + --*-- + --*-- |
- | ds dt     ds | dt dx   dt dy   dt dz |
- |              +-                     -+
- |
- | the matrix (jacobian-bar matrix) system
- |
- | +-                                                                                         -+   +-    -+
- | |   /dx\^2        /dy\^2         /dz\^2           dy dx           dz dx           dy dz     |   | d^2N |
- | |  | -- |        | ---|         | ---|          2*--*--         2*--*--         2*--*--     |   | ---- |
- | |   \dr/          \dr/           \dr/             dr dr           dr dr           dr dr     |   | dx^2 |
- | |                                                                                           |   |      |
- | |   /dx\^2        /dy\^2         /dz\^2           dy dx           dz dx           dy dz     |   | d^2N |
- | |  | -- |        | ---|         | ---|          2*--*--         2*--*--         2*--*--     |   | ---- |
- | |   \ds/          \ds/           \ds/             ds ds           ds ds           ds ds     |   | dy^2 |
- | |                                                                                           |   |      |
- | |   /dx\^2        /dy\^2         /dz\^2           dy dx           dz dx           dy dz     |   | d^2N |
- | |  | -- |        | ---|         | ---|          2*--*--         2*--*--         2*--*--     |   | ---- |
- | |   \dt/          \dt/           \dt/             dt dt           dt dt           dt dt     |   | dz^2 |
- | |                                                                                           | * |      |
- | |   dx dx         dy dy          dz dz        dx dy   dx dy   dx dz   dx dz  dy dz   dy dz  |   | d^2N |
- | |   --*--         --*--          --*--        --*-- + --*--   --*-- + --*--  --*-- + --*--  |   | ---- |
- | |   dr ds         dr ds          dr ds        dr ds   ds dr   dr ds   ds dr  dr ds   ds dr  |   | dxdy |
- | |                                                                                           |   |      |
- | |   dx dx         dy dy          dz dz        dx dy   dx dy   dx dz   dx dz  dy dz   dy dz  |   | d^2N |
- | |   --*--         --*--          --*--        --*-- + --*--   --*-- + --*--  --*-- + --*--  |   | ---- |
- | |   dr dt         dr dt          dr dt        dr dt   dt dr   dr dt   dt dr  dr dt   dt dr  |   | dxdz |
- | |                                                                                           |   |      |
- | |   dx dx         dy dy          dz dz        dx dy   dx dy   dx dz   dx dz  dy dz   dy dz  |   | d^2N |
- | |   --*--         --*--          --*--        --*-- + --*--   --*-- + --*--  --*-- + --*--  |   | ---- |
- | |   dt ds         dt ds          dt ds        dt ds   ds dt   dt ds   ds dt  dt ds   ds dt  |   | dydz |
- | +-                                                                                         -+   +-    -+
- |
- |                  +-    -+     +-                           -+
- |                  | d^2N |     | d^2x dN   d^2y dN   d^2y dN |
- |                  | ---- |     | ----*-- + ----*-- + ----*-- |
- |                  | dr^2 |     | dr^2 dx   dr^2 dy   dr^2 dz |
- |                  |      |     |                             |
- |                  | d^2N |     | d^2x dN   d^2y dN   d^2y dN |
- |                  | ---- |     | ----*-- + ----*-- + ----*-- |
- |                  | ds^2 |     | ds^2 dx   ds^2 dy   ds^2 dz |
- |                  |      |     |                             |
- |                  | d^2N |     | d^2x dN   d^2y dN   d^2y dN |
- |                  | ---- |     | ----*-- + ----*-- + ----*-- |
- |                  | dt^2 |     | dt^2 dx   dt^2 dy   dt^2 dz |
- |              =   |      |  -  |                             |
- |                  | d^2N |     | d^2x dN   d^2y dN   d^2y dN |
- |                  | ---- |     | ----*-- + ----*-- + ----*-- |
- |                  | drds |     | drds dx   drds dy   drds dz |
- |                  |      |     |                             |
- |                  | d^2N |     | d^2x dN   d^2y dN   d^2y dN |
- |                  | ---- |     | ----*-- + ----*-- + ----*-- |
- |                  | drdt |     | drdt dx   drdt dy   drdt dz |
- |                  |      |     |                             |
- |                  | d^2N |     | d^2x dN   d^2y dN   d^2z dN |
- |                  | ---- |     | ----*-- + ----*-- + ----*-- |
- |                  | dtds |     | dtds dx   dtds dy   dtds dz |
- |                  +-    -+     +-                           -+
- |
- |
- | is derived. This is solved for the unknown global derivatives.
- |
- |
- |             jacobian_bar * derxy2 = deriv2 - xder2 * derxy
- |                                              |           |
- |                                              +-----------+
- |                                              'chainrulerhs'
- |                                     |                    |
- |                                     +--------------------+
- |                                          'chainrulerhs'
- |
- |
- | --------------------------------------------------------------
- | 2 space dimensions:
- |
- | From the three equations
- |
- |              +-             -+
- |  d^2N     d  | dx dN   dy dN |
- |  ----   = -- | --*-- + --*-- |
- |  dr^2     dr | dr dx   dr dy |
- |              +-             -+
- |
- |              +-             -+
- |  d^2N     d  | dx dN   dy dN |
- |  ------ = -- | --*-- + --*-- |
- |  ds^2     ds | ds dx   ds dy |
- |              +-             -+
- |
- |              +-             -+
- |  d^2N     d  | dx dN   dy dN |
- | -----   = -- | --*-- + --*-- |
- | ds dr     ds | dr dx   dr dy |
- |              +-             -+
- |
- | the matrix system
- |
- | +-                                        -+   +-    -+
- | |   /dx\^2        /dy\^2         dy dx     |   | d^2N |
- | |  | -- |        | ---|        2*--*--     |   | ---- |
- | |   \dr/          \dr/           dr dr     |   | dx^2 |
- | |                                          |   |      |
- | |   /dx\^2        /dy\^2         dy dx     |   | d^2N |
- | |  | -- |        | -- |        2*--*--     | * | ---- |
- | |   \ds/          \ds/           ds ds     |   | dy^2 | =
- | |                                          |   |      |
- | |   dx dx         dy dy      dx dy   dy dx |   | d^2N |
- | |   --*--         --*--      --*-- + --*-- |   | ---- |
- | |   dr ds         dr ds      dr ds   dr ds |   | dxdy |
- | +-                        -+   +-    -+
- |
- |         +-    -+   +-                 -+
- |         | d^2N |   | d^2x dN   d^2y dN |
- |         | ---- |   | ----*-- + ----*-- |
- |         | dr^2 |   | dr^2 dx   dr^2 dy |
- |         |      |   |                   |
- |         | d^2N |   | d^2x dN   d^2y dN |
- |      =  | ---- | - | ----*-- + ----*-- |
- |         | ds^2 |   | ds^2 dx   ds^2 dy |
- |         |      |   |                   |
- |         | d^2N |   | d^2x dN   d^2y dN |
- |         | ---- |   | ----*-- + ----*-- |
- |         | drds |   | drds dx   drds dy |
- |         +-    -+   +-                 -+
- |
- |
- | is derived. This is solved for the unknown global derivatives.
- |
- |
- |             jacobian_bar * derxy2 = deriv2 - xder2 * derxy
- |                                              |           |
- |                                              +-----------+
- |                                              'chainrulerhs'
- |                                     |                    |
- |                                     +--------------------+
- |                                          'chainrulerhs'
- |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraImpl<distype>::CalSecondDeriv(
-    const LINALG::Matrix<nsd_,1>&  xsi ///< coordinates of GP
-)
-{
-  /*--- get the second derivatives of standard element at current GP */
-  DRT::UTILS::shape_function_deriv2<distype>(xsi,deriv2_);
-  dserror("Please check CalSecondDeriv first; dim = 1,2,3 ok?");
-
-  /*----------- now we have to compute the second global derivatives */
-  static LINALG::Matrix<numderiv2_,numderiv2_> bm;
-
-  /*------------------------------------------------- initialization */
-  derxy2_.Clear(); // initialize with zeros
-
-  // calculate elements of jacobian_bar matrix
-  switch (nsd_)
-  {
-  case 3:
-  {
-    bm(0,0) = xjm_(0,0)*xjm_(0,0);
-    bm(1,0) = xjm_(1,0)*xjm_(1,0);
-    bm(2,0) = xjm_(2,0)*xjm_(2,0);
-    bm(3,0) = xjm_(0,0)*xjm_(1,0);
-    bm(4,0) = xjm_(0,0)*xjm_(2,0);
-    bm(5,0) = xjm_(2,0)*xjm_(1,0);
-
-    bm(0,1) = xjm_(0,1)*xjm_(0,1);
-    bm(1,1) = xjm_(1,1)*xjm_(1,1);
-    bm(2,1) = xjm_(2,1)*xjm_(2,1);
-    bm(3,1) = xjm_(0,1)*xjm_(1,1);
-    bm(4,1) = xjm_(0,1)*xjm_(2,1);
-    bm(5,1) = xjm_(2,1)*xjm_(1,1);
-
-    bm(0,2) = xjm_(0,2)*xjm_(0,2);
-    bm(1,2) = xjm_(1,2)*xjm_(1,2);
-    bm(2,2) = xjm_(2,2)*xjm_(2,2);
-    bm(3,2) = xjm_(0,2)*xjm_(1,2);
-    bm(4,2) = xjm_(0,2)*xjm_(2,2);
-    bm(5,2) = xjm_(2,2)*xjm_(1,2);
-
-    bm(0,3) = 2.*xjm_(0,0)*xjm_(0,1);
-    bm(1,3) = 2.*xjm_(1,0)*xjm_(1,1);
-    bm(2,3) = 2.*xjm_(2,0)*xjm_(2,1);
-    bm(3,3) = xjm_(0,0)*xjm_(1,1)+xjm_(1,0)*xjm_(0,1);
-    bm(4,3) = xjm_(0,0)*xjm_(2,1)+xjm_(2,0)*xjm_(0,1);
-    bm(5,3) = xjm_(1,0)*xjm_(2,1)+xjm_(2,0)*xjm_(1,1);
-
-    bm(0,4) = 2.*xjm_(0,0)*xjm_(0,2);
-    bm(1,4) = 2.*xjm_(1,0)*xjm_(1,2);
-    bm(2,4) = 2.*xjm_(2,0)*xjm_(2,2);
-    bm(3,4) = xjm_(0,0)*xjm_(1,2)+xjm_(1,0)*xjm_(0,2);
-    bm(4,4) = xjm_(0,0)*xjm_(2,2)+xjm_(2,0)*xjm_(0,2);
-    bm(5,4) = xjm_(1,0)*xjm_(2,2)+xjm_(2,0)*xjm_(1,2);
-
-    bm(0,5) = 2.*xjm_(0,1)*xjm_(0,2);
-    bm(1,5) = 2.*xjm_(1,1)*xjm_(1,2);
-    bm(2,5) = 2.*xjm_(2,1)*xjm_(2,2);
-    bm(3,5) = xjm_(0,1)*xjm_(1,2)+xjm_(1,1)*xjm_(0,2);
-    bm(4,5) = xjm_(0,1)*xjm_(2,2)+xjm_(2,1)*xjm_(0,2);
-    bm(5,5) = xjm_(1,1)*xjm_(2,2)+xjm_(2,1)*xjm_(1,2);
-  }
-  case 2:
-  {
-    bm(0,0) =                     xjm_(0,0)*xjm_(0,0);
-    bm(0,1) =                     xjm_(0,1)*xjm_(0,1);
-    bm(0,2) =                 2.0*xjm_(0,0)*xjm_(0,1);
-
-    bm(1,0) =                     xjm_(1,0)*xjm_(1,0);
-    bm(1,1) =                     xjm_(1,1)*xjm_(1,1);
-    bm(1,2) =                 2.0*xjm_(1,1)*xjm_(1,0);
-
-    bm(2,0) =                     xjm_(0,0)*xjm_(1,0);
-    bm(2,1) =                     xjm_(0,1)*xjm_(1,1);
-    bm(2,2) = xjm_(0,0)*xjm_(1,1)+xjm_(0,1)*xjm_(1,0);
-  }
-  case 1:
-    bm(0,0) = xjm_(0,0)*xjm_(0,0);
-    dserror("Second derivatives for 1D not tested");
-  default:
-    dserror("Illegal number of space dimensions: %d",nsd_);
-  } // switch nsd_
-
-  /*------------------ determine 2nd derivatives of coord.-functions */
-
-  /*
-  | 3 space dimensions:
-  |
-  |         0 1 2              0...iel-1
-  |        +-+-+-+             +-+-+-+-+        0 1 2
-  |        | | | | 0           | | | | | 0     +-+-+-+
-  |        +-+-+-+             +-+-+-+-+       | | | | 0
-  |        | | | | 1           | | | | | 1   * +-+-+-+ .
-  |        +-+-+-+             +-+-+-+-+       | | | | .
-  |        | | | | 2           | | | | | 2     +-+-+-+
-  |        +-+-+-+       =     +-+-+-+-+       | | | | .
-  |        | | | | 3           | | | | | 3     +-+-+-+ .
-  |        +-+-+-+             +-+-+-+-+       | | | | .
-  |        | | | | 4           | | | | | 4   * +-+-+-+ .
-  |        +-+-+-+             +-+-+-+-+       | | | | .
-  |        | | | | 5           | | | | | 5     +-+-+-+
-  |        +-+-+-+             +-+-+-+-+       | | | | iel-1
-  |                                            +-+-+-+
-  |
-  |        xder2               deriv2          xyze^T
-  |
-  |
-  |                                     +-                  -+
-  |                                     | d^2x   d^2y   d^2z |
-  |                                     | ----   ----   ---- |
-  |                                     | dr^2   dr^2   dr^2 |
-  |                                     |                    |
-  |                                     | d^2x   d^2y   d^2z |
-  |                                     | ----   ----   ---- |
-  |                                     | ds^2   ds^2   ds^2 |
-  |                                     |                    |
-  |                                     | d^2x   d^2y   d^2z |
-  |                                     | ----   ----   ---- |
-  |                                     | dt^2   dt^2   dt^2 |
-  |               yields    xder2  =    |                    |
-  |                                     | d^2x   d^2y   d^2z |
-  |                                     | ----   ----   ---- |
-  |                                     | drds   drds   drds |
-  |                                     |                    |
-  |                                     | d^2x   d^2y   d^2z |
-  |                                     | ----   ----   ---- |
-  |                                     | drdt   drdt   drdt |
-  |                                     |                    |
-  |                                     | d^2x   d^2y   d^2z |
-  |                                     | ----   ----   ---- |
-  |                                     | dsdt   dsdt   dsdt |
-  |                                     +-                  -+
-  |
-  |
-  | 2 space dimensions:
-  |                                             0 1
-  |         0 1              0...iel-1         +-+-+
-  |        +-+-+             +-+-+-+-+         | | | 0
-  |        | | | 0           | | | | | 0       +-+-+
-  |        +-+-+             +-+-+-+-+         | | | .
-  |        | | | 1     =     | | | | | 1     * +-+-+ .
-  |        +-+-+             +-+-+-+-+         | | | .
-  |        | | | 2           | | | | | 2       +-+-+
-  |        +-+-+             +-+-+-+-+         | | | iel-1
-  |                                            +-+-+
-  |
-  |        xder2               deriv2          xyze^T
-  |
-  |
-  |                                     +-           -+
-  |                                     | d^2x   d^2y |
-  |                                     | ----   ---- |
-  |                                     | dr^2   dr^2 |
-  |                                     |             |
-  |                                     | d^2x   d^2y |
-  |                 yields    xder2  =  | ----   ---- |
-  |                                     | ds^2   ds^2 |
-  |                                     |             |
-  |                                     | d^2x   d^2y |
-  |                                     | ----   ---- |
-  |                                     | drds   drds |
-  |                                     +-           -+
-   */
-
-  xder2_.MultiplyNT(deriv2_,xyze_);
-
-  /*
-  | 3 space dimensions:
-  |
-  |        0...iel-1             0 1 2
-  |        +-+-+-+-+            +-+-+-+
-  |        | | | | | 0          | | | | 0
-  |        +-+-+-+-+            +-+-+-+            0...iel-1
-  |        | | | | | 1          | | | | 1         +-+-+-+-+
-  |        +-+-+-+-+            +-+-+-+           | | | | | 0
-  |        | | | | | 2          | | | | 2         +-+-+-+-+
-  |        +-+-+-+-+       =    +-+-+-+       *   | | | | | 1 * (-1)
-  |        | | | | | 3          | | | | 3         +-+-+-+-+
-  |        +-+-+-+-+            +-+-+-+           | | | | | 2
-  |        | | | | | 4          | | | | 4         +-+-+-+-+
-  |        +-+-+-+-+            +-+-+-+
-  |        | | | | | 5          | | | | 5          derxy
-  |        +-+-+-+-+            +-+-+-+
-  |
-  |       chainrulerhs          xder2
-  |
-  |
-  |
-  | 2 space dimensions:
-  |
-  |        0...iel-1             0 1
-  |        +-+-+-+-+            +-+-+               0...iel-1
-  |        | | | | | 0          | | | 0             +-+-+-+-+
-  |        +-+-+-+-+            +-+-+               | | | | | 0
-  |        | | | | | 1     =    | | | 1     *       +-+-+-+-+   * (-1)
-  |        +-+-+-+-+            +-+-+               | | | | | 1
-  |        | | | | | 2          | | | 2             +-+-+-+-+
-  |        +-+-+-+-+            +-+-+
-  |
-  |       chainrulerhs          xder2                 derxy
-   */
-
-  for (int i = 0; i < numderiv2_; ++i)
-  {
-    for (int j = 0; j < iel; ++j)
-    {
-      derxy2_(i,j) += deriv2_(i,j);
-      for (int k = 0; k < nsd_; ++k)
-      {
-        derxy2_(i,j) -= xder2_(i,k)*derxy_(k,j);
-      }
-    }
-  }
-
-  /*
-  | 3 space dimensions:
-  |
-  |        0...iel-1            0...iel-1         0...iel-1
-  |        +-+-+-+-+            +-+-+-+-+         +-+-+-+-+
-  |        | | | | | 0          | | | | | 0       | | | | | 0
-  |        +-+-+-+-+            +-+-+-+-+         +-+-+-+-+
-  |        | | | | | 1          | | | | | 1       | | | | | 1
-  |        +-+-+-+-+            +-+-+-+-+         +-+-+-+-+
-  |        | | | | | 2          | | | | | 2       | | | | | 2
-  |        +-+-+-+-+       =    +-+-+-+-+    +    +-+-+-+-+
-  |        | | | | | 3          | | | | | 3       | | | | | 3
-  |        +-+-+-+-+            +-+-+-+-+         +-+-+-+-+
-  |        | | | | | 4          | | | | | 4       | | | | | 4
-  |        +-+-+-+-+            +-+-+-+-+         +-+-+-+-+
-  |        | | | | | 5          | | | | | 5       | | | | | 5
-  |        +-+-+-+-+            +-+-+-+-+         +-+-+-+-+
-  |
-  |       chainrulerhs         chainrulerhs        deriv2
-  |
-  |
-  | 2 space dimensions:
-  |
-  |        0...iel-1             0...iel-1             0...iel-1
-  |        +-+-+-+-+             +-+-+-+-+             +-+-+-+-+
-  |        | | | | | 0           | | | | | 0           | | | | | 0
-  |        +-+-+-+-+             +-+-+-+-+             +-+-+-+-+
-  |        | | | | | 1     =     | | | | | 1     +     | | | | | 1
-  |        +-+-+-+-+             +-+-+-+-+             +-+-+-+-+
-  |        | | | | | 2           | | | | | 2           | | | | | 2
-  |        +-+-+-+-+             +-+-+-+-+             +-+-+-+-+
-  |
-  |       chainrulerhs          chainrulerhs             deriv2
-   */
-
-  //derxy2_ += deriv2_;  //already included in the loop above!
-
-  /* make LR decomposition and solve system for all right hand sides
-   * (i.e. the components of chainrulerhs)
-  |
-  | 3 space dimensions:
-  |
-  |          0  1  2  3  4  5         i        i
-  |        +--+--+--+--+--+--+       +-+      +-+
-  |        |  |  |  |  |  |  | 0     | | 0    | | 0
-  |        +--+--+--+--+--+--+       +-+      +-+
-  |        |  |  |  |  |  |  | 1     | | 1    | | 1
-  |        +--+--+--+--+--+--+       +-+      +-+
-  |        |  |  |  |  |  |  | 2     | | 2    | | 2
-  |        +--+--+--+--+--+--+    *  +-+   =  +-+      for i=0...iel-1
-  |        |  |  |  |  |  |  | 3     | | 3    | | 3
-  |        +--+--+--+--+--+--+       +-+      +-+
-  |        |  |  |  |  |  |  | 4     | | 4    | | 4
-  |        +--+--+--+--+--+--+       +-+      +-+
-  |        |  |  |  |  |  |  | 5     | | 5    | | 5
-  |        +--+--+--+--+--+--+       +-+      +-+
-  |                                   |        |
-  |                                   |        |
-  |                                   derxy2[i]|
-  |                                    |
-  |                                    chainrulerhs[i]
-  |
-  |   yields
-  |
-  |                      0...iel-1
-  |                      +-+-+-+-+
-  |                      | | | | | 0 = drdr
-  |                      +-+-+-+-+
-  |                      | | | | | 1 = dsds
-  |                      +-+-+-+-+
-  |                      | | | | | 2 = dtdt
-  |            derxy2 =  +-+-+-+-+
-  |                      | | | | | 3 = drds
-  |                      +-+-+-+-+
-  |                      | | | | | 4 = drdt
-  |                      +-+-+-+-+
-  |                      | | | | | 5 = dsdt
-  |                      +-+-+-+-+
-  |
-  |
-  | 2 space dimensions:
-  |
-  |          0  1  2         i        i
-  |        +--+--+--+       +-+      +-+
-  |        |  |  |  | 0     | | 0    | | 0
-  |        +--+--+--+       +-+      +-+
-  |        |  |  |  | 1  *  | | 1 =  | | 1  for i=0...iel-1
-  |        +--+--+--+       +-+      +-+
-  |        |  |  |  | 2     | | 2    | | 2
-  |        +--+--+--+       +-+      +-+
-  |                          |        |
-  |                          |        |
-  |                        derxy2[i]  |
-  |                                   |
-  |                              chainrulerhs[i]
-  |
-  |
-  |                   0...iel-1
-  |                   +-+-+-+-+
-  |                   | | | | | 0
-  |                   +-+-+-+-+
-  |        yields     | | | | | 1
-  |                   +-+-+-+-+
-  |                   | | | | | 2
-  |                   +-+-+-+-+
-  |
-  |                    derxy2
-   */
-
-  LINALG::FixedSizeSerialDenseSolver<numderiv2_,numderiv2_,iel> solver;
-  solver.SetMatrix(bm);
-
-  // No need for a separate rhs. We assemble the rhs to the solution
-  // vector. The solver will destroy the rhs and return the solution.
-  solver.SetVectors(derxy2_,derxy2_);
-  solver.Solve();
-
-  return;
-} //ScaTraImpl::CalSecondDeriv
 
 
 /*----------------------------------------------------------------------*
