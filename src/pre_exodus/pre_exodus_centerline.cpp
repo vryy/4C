@@ -257,7 +257,8 @@ Centerline::Centerline(string filename,vector<double> coordcorr)
         clp[j] = row[j] + coordcorr[j];  // first 3 numbers are CL coords
       }
       points_->insert(pair<int,vector<double> >(clp_id,clp)); // fill map
-      diam_->insert(pair<int,double>(clp_id,row[6])); // fitted diameter is 7th entry in cline table
+      //diam_->insert(pair<int,double>(clp_id,row[7])); // fitted diameter is 7th entry in cline table
+      diam_->insert(pair<int,double>(clp_id,row[7])); // minimum diameter is 8th entry in cline table
       ++ clp_id;
     }
   }
