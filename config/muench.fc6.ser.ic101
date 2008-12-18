@@ -1,0 +1,100 @@
+# -*- shell-script -*-
+
+PLATFORM=LINUX_MUENCH
+PARALLEL=no
+
+LINUX_DIST=fc6
+MPI_VERSION=ser
+
+PROGRAMNAME=cca_"$LINUX_DIST"_"$MPI_VERSION"
+F77="LC_ALL=C ifort"
+CC="LC_ALL=C icc"
+CP="LC_ALL=C icpc"
+LD="LC_ALL=C icpc"
+
+BASEDIR=/lnm/lib/$LINUX_DIST/$MPI_VERSION
+
+INCLUDEDIRS="-I$BASEDIR/include -I/usr/include/netcdf-3 -I/home/kloeppel/lnm_lib_local/$LINUX_DIST/$MPI_VERSION/include"
+LIBDIRS="-L$BASEDIR/lib \
+    -L/home/kloeppel/lnm_lib_local/$LINUX_DIST/$MPI_VERSION/lib \
+	-L/lnm/intel/compiler101/mkl/10.0.2.018/lib/32 \
+	-L/lnm/intel/compiler101/fc/10.1.013/lib \
+	-L/lnm/intel/compiler101/cc/10.1.013/lib \
+	-L/usr/lib/gcc/i386-redhat-linux/4.1.2/ \
+	-L/usr/lib/gcc/i386-redhat-linux/3.4.6/"
+
+#=========================================================== Trilinos
+TRILINOS_HOME=$BASEDIR/trilinos
+#-----------------Baci before 20/10/08 use this path:----------------
+# TRILINOS_HOME=/lnm/lib/Trilinos_dev_27112007/fc6_ser_trilinos
+#--------------------------------------------------------------------
+TRILINOS_INCDIR=$TRILINOS_HOME/include
+TRILINOS_LIBDIR=$TRILINOS_HOME/lib
+TRILINOS_DEFINES="-DHAVE_CONFIG_H -DTRILINOS_HAVE_FORTRAN_UNDERSCORE"
+TRILINOS_LIB="\
+        -lmoertel \
+	-ltrilinoscouplings \
+	-lnoxepetra \
+	-lnox \
+	-lifpack \
+	-laztecoo \
+	-lamesos \
+	-lml \
+	-lepetraext \
+	-lepetra \
+	-lteuchos"
+TRILINOS_FILTER_LIB=$TRILINOS_LIB
+
+# aztec
+AZTEC_INC=""
+AZTEC_LIB="-laztec_gcc"
+#AZTEC_LIB="-laztec"
+#AZTEC_LIB="-laztec -llapack -lgoto"
+
+# spooles
+SPOOLES_INC=""
+SPOOLES_LIB="-lspooles"
+
+# umfpack
+UMFPACK_INC=
+UMFPACK_LIB="-lumfpack -lamd"
+
+# qhull
+QHULL_INC=
+QHULL_LIB="-lqhull"
+
+# fast elements
+LOOPL="-DLOOPL=15"
+
+# visual2
+VISUAL2_INC=""
+VISUAL2_LIB="-L/usr/X11R6/lib -lVisual2 -lX11"
+
+VISUAL3_INC=""
+VISUAL3_LIB="-L/usr/X11R6/lib -lVisual3 -lg2c -lGLU -lGL -lX11 -lXext -ldl -lpthread"
+
+# hdf5
+HDF5_LIB="-lhdf5_hl -lhdf5 -lpthread -lz"
+
+# exodus
+EXODUS_LIB="-lexoIIv2c -L/usr/lib/netcdf-3 -lnetcdf"
+
+#LIBS="-lc -lg2c -llapack -lgoto_p4_512-r0.6 -lxerbla -lmetis"
+LIBS="-lc -lg2c -lmetis -lblitz -llapack -lgoto -lpthread -lsvml -lifcore"
+
+CFLAGS_OPT="-ipo -O3"
+CPFLAGS_OPT="-ipo -O3"
+FFLAGS_OPT="-ipo -O3"
+LDFLAGS_OPT="-O3"
+
+#CFLAGS_OPT="-g"
+#CPPFLAGS_OPT="-g"
+#FFLAGS_OPT="-g"
+#LDFLAGS_OPT="-g"
+
+# Alle Bibliotheken neu uebersetzen?!
+# -malign-double
+CFLAGS="-Wall -w1"
+CPFLAGS="-Wall -w2 -Wcheck -Wbrief -Wpointer-arith -Wreorder -wd378,383,981,1418,2012,2015,869,1419"
+FFLAGS="-Wall -w"
+LDFLAGS="-Wall -Xlinker -defsym -Xlinker MAIN__=main"
