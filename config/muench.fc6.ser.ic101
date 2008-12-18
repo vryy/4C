@@ -14,9 +14,8 @@ LD="LC_ALL=C icpc"
 
 BASEDIR=/lnm/lib/$LINUX_DIST/$MPI_VERSION
 
-INCLUDEDIRS="-I$BASEDIR/include -I/usr/include/netcdf-3 -I/home/kloeppel/lnm_lib_local/$LINUX_DIST/$MPI_VERSION/include"
+INCLUDEDIRS="-I$BASEDIR/include -I/usr/include/netcdf-3"
 LIBDIRS="-L$BASEDIR/lib \
-    -L/home/kloeppel/lnm_lib_local/$LINUX_DIST/$MPI_VERSION/lib \
 	-L/lnm/intel/compiler101/mkl/10.0.2.018/lib/32 \
 	-L/lnm/intel/compiler101/fc/10.1.013/lib \
 	-L/lnm/intel/compiler101/cc/10.1.013/lib \
@@ -82,10 +81,10 @@ EXODUS_LIB="-lexoIIv2c -L/usr/lib/netcdf-3 -lnetcdf"
 #LIBS="-lc -lg2c -llapack -lgoto_p4_512-r0.6 -lxerbla -lmetis"
 LIBS="-lc -lg2c -lmetis -lblitz -llapack -lgoto -lpthread -lsvml -lifcore"
 
-CFLAGS_OPT="-ipo -O3"
-CPFLAGS_OPT="-ipo -O3"
-FFLAGS_OPT="-ipo -O3"
-LDFLAGS_OPT="-O3"
+CFLAGS_OPT="-O2"
+CPFLAGS_OPT="-O2"
+FFLAGS_OPT="-O2"
+LDFLAGS_OPT="-O2"
 
 #CFLAGS_OPT="-g"
 #CPPFLAGS_OPT="-g"
