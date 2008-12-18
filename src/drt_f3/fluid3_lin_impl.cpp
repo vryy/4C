@@ -1032,6 +1032,8 @@ void DRT::ELEMENTS::Fluid3lin_Impl<distype>::BodyForce( Fluid3* ele,
     // we have no dead load
     edeadng_.Clear();
   }
+
+  return;
 }
 
 
