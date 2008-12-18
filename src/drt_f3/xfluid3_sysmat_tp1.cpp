@@ -79,7 +79,7 @@ struct EnrViscs2
 
   /// generate old velocity/acceleration values, if integration point was in a void during the last time step
   template<class M>
-  static bool modifyOldTimeStepsValues(
+  bool modifyOldTimeStepsValues(
       const DRT::Element*                        ele,           ///< the element those matrix is calculated
       const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,   ///< connection to the interface handler
       const M&                                   xyze,
@@ -326,7 +326,7 @@ struct EnrViscs2
             int NUMDOF,
             int shpVecSize,
             int shpVecSizeStress>
-  static void BuildStiffnessMatrixEntries(
+  void BuildStiffnessMatrixEntries(
       LocalAssembler<DISTYPE,ASSTYPE,NUMDOF>&    assembler,
       const Shp<shpVecSize>&                     shp,
       const LINALG::Matrix<shpVecSizeStress,1>&  shp_tau,
@@ -963,7 +963,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE,
           int NUMDOF,
           class M1, class V1, class M2, class V2>
-static void SysmatDomainTP1(
+void SysmatDomainTP1(
     const DRT::Element*                 ele,           ///< the element those matrix is calculated
     const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,   ///< connection to the interface handler
     const XFEM::ElementDofManager&      dofman,        ///< dofmanager of the current element
@@ -1184,32 +1184,16 @@ static void SysmatDomainTP1(
                 derxy2.Clear();
             }
 
-            const int shpVecSize       = SizeFac<ASSTYPE>::fac*numnode;
+            const int shpVecSize       = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
             const int shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
             const int shpVecSizeDiscPres = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<discpresdistype>::numNodePerElement;
             
             static Shp<shpVecSize> shp;
             
-//            typedef LINALG::Matrix<shpVecSize,1> ShpVec;
-//            static ShpVec shp;
-//            static ShpVec shp_dx;
-//            static ShpVec shp_dy;
-//            static ShpVec shp_dz;
-//            static ShpVec shp_dxdx;
-//            static ShpVec shp_dxdy;
-//            static ShpVec shp_dxdz;
-//            static ShpVec shp_dydx;
-//            static ShpVec shp_dydy;
-//            static ShpVec shp_dydz;
-//            static ShpVec shp_dzdx;
-//            static ShpVec shp_dzdy;
-//            static ShpVec shp_dzdz;
-            
             static LINALG::Matrix<shpVecSizeStress,1>   shp_tau;
             static LINALG::Matrix<shpVecSizeDiscPres,1> shp_discpres;
             
             LINALG::SerialDenseVector enr_funct_discpres(numparamdiscpres);
-            //LINALG::Matrix enr_derxy_discpres(3,numparamdiscpres);
             
             if (ASSTYPE == XFEM::xfem_assembly)
             {
@@ -1550,29 +1534,19 @@ static void SysmatDomainTP1(
 template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE,
           int NUMDOF,
-          class M1, class V1, class M2, class V2>
-static void SysmatBoundaryTP1(
+          class M1, class M2, class V2>
+void SysmatBoundaryTP1(
     const DRT::Element*               ele,           ///< the element those matrix is calculated
     const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,   ///< connection to the interface handler
     const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
     const M1&                         evelnp,
-    const M1&                         eveln,
-    const M1&                         evelnm,
-    const M1&                         eaccn,
-    const V1&                         eprenp,
     const M2&                         etau,
     const V2&                         ediscpres,
     const Teuchos::RCP<const Epetra_Vector>& ivelcol,       ///< velocity for interface nodes
     const Teuchos::RCP<Epetra_Vector>& iforcecol,     ///< reaction force due to given interface velocity
-//    const struct _MATERIAL*           material,      ///< fluid material
     const FLUID_TIMEINTTYPE           timealgo,      ///< time discretization type
     const double                      dt,            ///< delta t (time step size)
     const double                      theta,         ///< factor for one step theta scheme
-//    const bool                        newton,        ///< full Newton or fixed-point-like
-//    const bool                        pstab,         ///< flag for stabilization
-//    const bool                        supg,          ///< flag for stabilization
-//    const bool                        cstab,         ///< flag for stabilization
-//    const bool                        instationary,  ///< switch between stationary and instationary formulation
     LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,
     const bool                        ifaceForceContribution
 )
@@ -1581,29 +1555,28 @@ static void SysmatBoundaryTP1(
   
     const Epetra_BLAS blas; 
     
-    if (ASSTYPE == XFEM::xfem_assembly)
+    const int nsd = 3;
+    
+    // time integration constant
+    const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dt, theta);
+    
+    // number of nodes for element
+    const int numnode_xele = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+    
+    // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
+    const int numparamvelx = XFEM::NumParam<numnode_xele,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
+    //const int numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
+    // put one here to create arrays of size 1, since they are not needed anyway
+    // in the xfem assembly, the numparam is determined by the dofmanager
+    //const int numparamtauxx = getNumParam<ASSTYPE>(dofman, Tauxx, 1);
+    const int numparamtauxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Tauxx);
+    const int numparamdiscpres = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::DiscPres);
+    
+    
+    const bool tauele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, Tauxx, 0) > 0);
+    // for now, I don't try to compare to elements without stress unknowns, since they lock anyway
+    if (tauele_unknowns_present)
     {
-      const int nsd = 3;
-      
-      // time integration constant
-      const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dt, theta);
-      
-      // number of nodes for element
-      const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-      
-      // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
-      const int numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
-      //const int numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
-      // put one here to create arrays of size 1, since they are not needed anyway
-      // in the xfem assembly, the numparam is determined by the dofmanager
-      //const int numparamtauxx = getNumParam<ASSTYPE>(dofman, Tauxx, 1);
-      const int numparamtauxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Tauxx);
-      const int numparamdiscpres = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::DiscPres);
-      
-      
-      const bool tauele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, Tauxx, 0) > 0);
-        // for now, I don't try to compare to elements without stress unknowns, since they lock anyway
-        if (tauele_unknowns_present){
     
     // information about boundary integration cells
     const GEO::BoundaryIntCells& boundaryIntCells = ih->GetBoundaryIntCells(ele->Id());
@@ -1618,30 +1591,26 @@ static void SysmatBoundaryTP1(
         
         // get the right boundary element
         const DRT::Element* boundaryele = ih->GetBoundaryEle(cell->GetSurfaceEleGid());
-        //cout << (*boundaryele) << endl;
         const int numnode_boundary = boundaryele->NumNode();
-//        cout << "numnode_boundary: " << numnode_boundary << endl;
         
         // get current node coordinates
         const std::map<int,LINALG::Matrix<3,1> >& positions(ih->cutterposnp());
-
+  
         LINALG::SerialDenseMatrix xyze_boundary(3,numnode_boundary);
         GEO::fillCurrentNodalPositions(boundaryele, positions, xyze_boundary);
         
         // get interface velocities at the boundary element nodes
         LINALG::SerialDenseMatrix vel_boundary(3,numnode_boundary);
         const DRT::Node*const* nodes = boundaryele->Nodes();
+        for (int inode = 0; inode < numnode_boundary; ++inode)
         {
-          for (int inode = 0; inode < numnode_boundary; ++inode)
-          {
-            const DRT::Node* node = nodes[inode];
-            std::vector<int> lm = ih->cutterdis()->Dof(node);
-            std::vector<double> myvel(3);
-            DRT::UTILS::ExtractMyValues(*ivelcol,myvel,lm);
-            vel_boundary(0,inode) = myvel[0];
-            vel_boundary(1,inode) = myvel[1];
-            vel_boundary(2,inode) = myvel[2];
-          }
+          const DRT::Node* node = nodes[inode];
+          std::vector<int> lm = ih->cutterdis()->Dof(node);
+          static std::vector<double> myvel(3);
+          DRT::UTILS::ExtractMyValues(*ivelcol,myvel,lm);
+          vel_boundary(0,inode) = myvel[0];
+          vel_boundary(1,inode) = myvel[1];
+          vel_boundary(2,inode) = myvel[2];
         }
         
         LINALG::SerialDenseMatrix force_boundary(3,numnode_boundary,true);
@@ -1691,15 +1660,6 @@ static void SysmatBoundaryTP1(
             
             // position of the gausspoint in physical coordinates
             // gauss_pos_xyz = funct_boundary(j)*xyze_boundary(i,j);
-//            static LINALG::Matrix<3,1> gauss_pos_xyz;
-//            gauss_pos_xyz.Clear();
-//            for (int inode = 0; inode < numnode_boundary; ++inode)
-//            {
-//              for (int isd = 0; isd < 3; ++isd)
-//              {
-//                gauss_pos_xyz(isd) += xyze_boundary(isd,inode)*funct_boundary(inode);
-//              }
-//            }
             const LINALG::Matrix<3,1> gauss_pos_xyz = XFLUID::interpolateVectorFieldToIntPoint(xyze_boundary,funct_boundary,numnode_boundary);
       
             // get jacobian matrix d x / d \xi  (3x2)
@@ -1724,7 +1684,7 @@ static void SysmatBoundaryTP1(
               dserror("negative fac! should be a bug!");
             }
             
-            const int shpVecSize         = SizeFac<ASSTYPE>::fac*numnode;
+            const int shpVecSize         = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
             const int shpVecSizeStress   = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
             const int shpVecSizeDiscPres = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<discpresdistype>::numNodePerElement;
             
@@ -1747,21 +1707,6 @@ static void SysmatBoundaryTP1(
                     Velx,
                     funct,
                     enr_funct);
-            
-//            // shape function for nodal dofs
-//            XFEM::ComputeEnrichedNodalShapefunction(
-//                    *ele,
-//                    ih,
-//                    dofman,
-//                    Velx,
-//                    gauss_pos_xyz,
-//                    XFEM::Enrichment::approachFromPlus,
-//                    funct,
-//                    derxy,
-//                    derxy2,
-//                    enr_funct,
-//                    enr_derxy,
-//                    enr_derxy2);
 
             // shape functions for element dofs
             enrvals.ComputeEnrichedElementShapefunction(
@@ -1794,11 +1739,8 @@ static void SysmatBoundaryTP1(
             // get normal vector (in physical coordinates) to surface element at integration point
             static LINALG::Matrix<3,1> normalvec_solid;
             GEO::computeNormalToSurfaceElement(boundaryele, xyze_boundary, posXiBoundary, normalvec_solid);
-//            cout << "normalvec " << normalvec << ", " << endl;
             static LINALG::Matrix<3,1> normalvec_fluid(true);
             normalvec_fluid.Update(-1.0,normalvec_solid,0.0);
-//            cout << "normalvec : ";
-//            cout << normalvec_fluid << endl;
       
             // get velocities (n+g,i) at integration point
             // gpvelnp = evelnp(i,j)*shp(j);
@@ -1945,10 +1887,10 @@ static void SysmatBoundaryTP1(
         if (ifaceForceContribution)
         {
           const Epetra_Map* dofcolmap = ih->cutterdis()->DofColMap();
+          std::vector<int> gdofs(3);
           for (int inode = 0; inode < numnode_boundary; ++inode)
           {
-            const DRT::Node* node = nodes[inode];
-            const std::vector<int> gdofs(ih->cutterdis()->Dof(node));
+            ih->cutterdis()->Dof(nodes[inode],0,gdofs);
             (*iforcecol)[dofcolmap->LID(gdofs[0])] += force_boundary(0,inode);
             (*iforcecol)[dofcolmap->LID(gdofs[1])] += force_boundary(1,inode);
             (*iforcecol)[dofcolmap->LID(gdofs[2])] += force_boundary(2,inode);
@@ -1958,7 +1900,6 @@ static void SysmatBoundaryTP1(
         
       } // end loop over boundary integration cells
     }
-    } // if (ASSTYPE == XFEM::xfem_assembly)
     return;
 }
   
@@ -1967,7 +1908,7 @@ static void SysmatBoundaryTP1(
   */
 template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE>
-static void SysmatTP1(
+void SysmatTP1(
         const DRT::Element*               ele,           ///< the element those matrix is calculated
         const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,   ///< connection to the interface handler
         const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
@@ -1992,9 +1933,6 @@ static void SysmatTP1(
     estif.Scale(0.0);
     eforce.Scale(0.0);
     
-    // number of nodes for element
-    const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-    
     const int NUMDOF = 4;
     
     // dead load in element nodes
@@ -2003,7 +1941,7 @@ static void SysmatTP1(
     LocalAssembler<DISTYPE, ASSTYPE, NUMDOF> assembler(dofman, estif, eforce);
     
     // split velocity and pressure (and stress)
-    const int shpVecSize       = SizeFac<ASSTYPE>::fac*numnode;
+    const int shpVecSize       = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     const DRT::Element::DiscretizationType stressdistype = XFLUID::StressInterpolation3D<DISTYPE>::distype;
     const DRT::Element::DiscretizationType discpresdistype = XFLUID::DiscPressureInterpolation3D<DISTYPE>::distype;
     const int shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
@@ -2025,7 +1963,7 @@ static void SysmatTP1(
     if (ASSTYPE == XFEM::xfem_assembly)
     {
       SysmatBoundaryTP1<DISTYPE,ASSTYPE,NUMDOF>(
-          ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, etau, ediscpres, ivelcol, iforcecol,
+          ele, ih, dofman, evelnp, etau, ediscpres, ivelcol, iforcecol,
           timealgo, dt, theta, assembler, ifaceForceContribution);
     }
 }
@@ -2085,7 +2023,7 @@ void XFLUID::callSysmatTP1(
 //                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
 //                break;
             default:
-                dserror("Sysmat not templated yet");
+                dserror("standard_assembly Sysmat not templated yet");
         };
     }
     else
@@ -2113,7 +2051,7 @@ void XFLUID::callSysmatTP1(
 //                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
 //                break;
             default:
-                dserror("Sysmat not templated yet");
+                dserror("xfem_assembly Sysmat not templated yet");
         };
     }
 }

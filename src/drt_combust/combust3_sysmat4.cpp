@@ -501,7 +501,7 @@ static void SysmatDomain4(
                 derxy2 = 0.;
             }
 
-            const int shpVecSize       = SizeFac<ASSTYPE>::fac*numnode;
+            const int shpVecSize       = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
             const int shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
             
             static Shp<shpVecSize> shp;
@@ -1584,7 +1584,7 @@ static void SysmatBoundary4(
                     enr_funct_stress);
                 
             // perform integration for entire matrix and rhs
-            const int shpVecSize       = SizeFac<ASSTYPE>::fac*numnode;
+            const int shpVecSize       = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
             const int shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
             typedef LINALG::Matrix<shpVecSize,1> ShpVec;
             static ShpVec shp;
@@ -1759,16 +1759,13 @@ static void Sysmat4(
     estif.Scale(0.0);
     eforce.Scale(0.0);
     
-    // number of nodes for element
-    const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-    
     // dead load in element nodes
     //////////////////////////////////////////////////// , LINALG::SerialDenseMatrix edeadng_(BodyForce(ele->Nodes(),time));
 
     const LocalAssembler<DISTYPE, ASSTYPE> assembler(dofman, estif, eforce);
     
     // split velocity and pressure (and stress)
-    const int shpVecSize       = SizeFac<ASSTYPE>::fac*numnode;
+    const int shpVecSize       = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     const DRT::Element::DiscretizationType stressdistype = COMBUST::StressInterpolation3D<DISTYPE>::distype;
     const int shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
     static LINALG::Matrix<shpVecSize,1> eprenp;

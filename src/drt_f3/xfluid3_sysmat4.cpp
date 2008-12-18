@@ -1053,7 +1053,7 @@ void SysmatDomain4(
                 derxy2.Clear();
             }
 
-            const int shpVecSize       = SizeFac<ASSTYPE>::fac*numnode;
+            const int shpVecSize       = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
             const int shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
             
             static Shp<shpVecSize> shp;
@@ -1519,7 +1519,7 @@ void SysmatBoundary4(
               dserror("negative fac! should be a bug!");
             }
             
-            const int shpVecSize       = SizeFac<ASSTYPE>::fac*numnode_xele;
+            const int shpVecSize       = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
             const int shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
             
             // temporary arrays
@@ -1716,8 +1716,6 @@ void Sysmat4(
     estif.Scale(0.0);
     eforce.Scale(0.0);
     
-    // number of nodes for element
-    const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     const int NUMDOF = 4;
     
     // dead load in element nodes
@@ -1726,7 +1724,7 @@ void Sysmat4(
     LocalAssembler<DISTYPE, ASSTYPE, NUMDOF> assembler(dofman, estif, eforce);
     
     // split velocity and pressure (and stress)
-    const int shpVecSize       = SizeFac<ASSTYPE>::fac*numnode;
+    const int shpVecSize       = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     const DRT::Element::DiscretizationType stressdistype = XFLUID::StressInterpolation3D<DISTYPE>::distype;
     const int shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
     LINALG::Matrix<shpVecSize,1> eprenp;
