@@ -984,7 +984,6 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
   //calculating current central triad like in Crisfield, Vol. 2, equation (17.65), but by a quaternion product
   updatetriad(deltabetaplusalpha,Tnew);
 
-
   //updating local curvature
   updatecurvature(Tnew, deltabetaplusalpha,deltabetaminusalpha);
 
@@ -1039,11 +1038,6 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
   epsilonm(1) *= ym*Iyy_;
   epsilonm(2) *= ym*Izz_;
   stressm.Multiply(Tnew,epsilonm);
-  
-
-    std::cout<<"\ncurvnew_ = "<< curvnew_;
-
-  
 
 
   //computing global internal forces, Crisfield Vol. 2, equation (17.79)
@@ -1254,8 +1248,6 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
         }
       }
     }
-
-    //std::cout<<"\ncurvnew = "<<curvnew_;
     
 
     /*

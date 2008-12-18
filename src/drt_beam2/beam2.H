@@ -297,6 +297,9 @@ private:
 
   //! container containing all kind of beam2 thisandthat
   DRT::Container data_;
+  
+  //! variable saving whether element has already been initialized (then isinit_ == true)
+  bool isinit_;
 
   //! material type
   int material_;

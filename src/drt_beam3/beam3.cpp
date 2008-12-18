@@ -28,6 +28,7 @@ Maintainer: Christian Cyron
 DRT::ELEMENTS::Beam3::Beam3(int id, int owner) :
 DRT::Element(id,element_beam3,owner),
 data_(),
+isinit_(false),
 material_(0),
 lrefe_(0),
 crosssec_(0),
@@ -40,6 +41,9 @@ zeta_(0),
 //hence enough to integrate 3rd order polynomials exactly
 gaussrule_(DRT::UTILS::intrule_line_2point)
 {
+  
+  std::cout<<"\n\nConstructor Called\n\n";
+  
   return;
 }
 /*----------------------------------------------------------------------*
@@ -48,6 +52,7 @@ gaussrule_(DRT::UTILS::intrule_line_2point)
 DRT::ELEMENTS::Beam3::Beam3(const DRT::ELEMENTS::Beam3& old) :
  DRT::Element(old),
  data_(old.data_),
+ isinit_(old.isinit_),
  X_(old.X_),
  material_(old.material_),
  lrefe_(old.lrefe_),
@@ -71,6 +76,9 @@ DRT::ELEMENTS::Beam3::Beam3(const DRT::ELEMENTS::Beam3& old) :
  zeta_(old.zeta_),
  gaussrule_(old.gaussrule_)
 {
+  
+  std::cout<<"\n\nCopy Constructor Called\n\n";
+  
   return;
 }
 /*----------------------------------------------------------------------*
@@ -137,6 +145,8 @@ void DRT::ELEMENTS::Beam3::Pack(vector<char>& data) const
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
+  //whether element has already been initialized
+  AddtoPack(data,isinit_);
   //reference coordinates
   AddtoPack(data,X_);
   //material type
@@ -191,6 +201,8 @@ void DRT::ELEMENTS::Beam3::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
+  //whether element has already been initialized
+  ExtractfromPack(position,data,isinit_);
   //reference coordinates
   ExtractfromPack(position,data,X_);
   //material type
@@ -253,73 +265,83 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Beam3::Lines()
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const LINALG::Matrix<6,1>& xrefe, const LINALG::Matrix<6,1>& rotrefe)
 {
- 
-  //setting reference coordinates
-  X_ = xrefe;
-
-  //center triad in reference configuration
-  LINALG::Matrix<3,3> Tref;
+  /*this method initialized geometric variables of the element; such an initialization can only be done one time when the element is
+   * generated and never again (especially not in the frame of a restart); to make sure that this requirement is not violated this 
+   * method will initialize the geometric variables iff the class variable isinit_ == false and afterwards set this variable to 
+   * isinit_ = true; if this method is called and finds alreday isinit_ == true it will just do nothing*/
   
-  //length in reference configuration
-  lrefe_ = pow(pow(X_(3)-X_(0),2)+pow(X_(4)-X_(1),2)+pow(X_(5)-X_(2),2),0.5);   
-  
-  /*initial triad Tref = [t1,t2,t3] with t1-axis equals beam axis and t2 and t3 are principal axes of the moment of inertia 
-   * of area tensor */
-  for (int k=0; k<3; k++) 
+  if(!isinit_)
   {
-    Tref(k,0) = ( X_(k + 3)-X_(k) )/lrefe_;        
-  }
+    isinit_ = true;
+ 
+    //setting reference coordinates
+    X_ = xrefe;
   
-  /*in the following two more or less arbitrary axes t2 and t3 are calculated in order to complete the triad Told_, which 
-   * works in case of a rotationally symmetric crosssection; in case of different kinds of crosssections one has to mo-
-   * dify the following code lines in such a way that t2 and t3 are still the principal axes related with Iyy_ and Izz_*/
-  
-  //t2 is a unit vector in the x2x3-plane orthogonal to t1
-  Tref(0,1) = 0;
-  //if t1 is parallel to the x1-axis t2 is set parallel to the x2-axis
-  if (Tref(1,0) == 0 && Tref(2,0) == 0)
-  {    
-    Tref(1,1) = 1;
-    Tref(2,1) = 0;
-  } 
-  //otherwise t2 is calculated from the scalar product with t1
-  else
-  { 
-    //setting t2(0)=0 and calculating other elements by setting scalar product t1 o t2 to zero
-      double lin1norm = pow(pow(Tref(1,0),2)+pow(Tref(2,0),2),0.5);
-      Tref(1,1) = -Tref(2,0)/lin1norm;
-      Tref(2,1) =  Tref(1,0)/lin1norm;    
+    //center triad in reference configuration
+    LINALG::Matrix<3,3> Tref;
+    
+    //length in reference configuration
+    lrefe_ = pow(pow(X_(3)-X_(0),2)+pow(X_(4)-X_(1),2)+pow(X_(5)-X_(2),2),0.5);   
+    
+    /*initial triad Tref = [t1,t2,t3] with t1-axis equals beam axis and t2 and t3 are principal axes of the moment of inertia 
+     * of area tensor */
+    for (int k=0; k<3; k++) 
+    {
+      Tref(k,0) = ( X_(k + 3)-X_(k) )/lrefe_;        
     }
- 
-    //calculating t3 by crossproduct t1 x t2
-  Tref(0,2) = Tref(1,0)*Tref(2,1)-Tref(1,1)*Tref(2,0);
-  Tref(1,2) = Tref(2,0)*Tref(0,1)-Tref(2,1)*Tref(0,0);
-  Tref(2,2) = Tref(0,0)*Tref(1,1)-Tref(0,1)*Tref(1,0);
-  
-  /*the center triad in reference configuration is stored as a quaternion whose equivalent would be the rotation
-   * from the identity matrix into the reference configuration*/
-    triadtoquaternion(Tref,Qconv_);
-     
-    Qold_ = Qconv_;
-    Qnew_ = Qconv_;
- 
-    //the here employed beam element does not need data about the current position of the nodal directors so that
-  //initilization of those can be skipped (the nodal displacements handeled in beam3_evaluate.cpp are not the actual angles,
-  //but only the differences between actual angles and angles in reference configuration, respectively. Thus the
-  //director orientation in reference configuration cancels out and can be assumed to be zero without loss of 
-  //generality
-  for (int k=0; k<3; k++) 
-  {
-    curvconv_(k) = 0;
-    curvold_(k)  = 0;
-    curvnew_(k)  = 0;
-    betaplusalphaconv_(k)  = rotrefe(k+3) + rotrefe(k);
-    betaplusalphaold_(k)   = rotrefe(k+3) + rotrefe(k);   
-    betaplusalphanew_(k)   = rotrefe(k+3) + rotrefe(k);
-    betaminusalphaconv_(k) = rotrefe(k+3) - rotrefe(k);
-    betaminusalphaold_(k)  = rotrefe(k+3) - rotrefe(k);
-    betaminusalphaold_(k)  = rotrefe(k+3) - rotrefe(k);
-  }  
+    
+    /*in the following two more or less arbitrary axes t2 and t3 are calculated in order to complete the triad Told_, which 
+     * works in case of a rotationally symmetric crosssection; in case of different kinds of crosssections one has to mo-
+     * dify the following code lines in such a way that t2 and t3 are still the principal axes related with Iyy_ and Izz_*/
+    
+    //t2 is a unit vector in the x2x3-plane orthogonal to t1
+    Tref(0,1) = 0;
+    //if t1 is parallel to the x1-axis t2 is set parallel to the x2-axis
+    if (Tref(1,0) == 0 && Tref(2,0) == 0)
+    {    
+      Tref(1,1) = 1;
+      Tref(2,1) = 0;
+    } 
+    //otherwise t2 is calculated from the scalar product with t1
+    else
+    { 
+      //setting t2(0)=0 and calculating other elements by setting scalar product t1 o t2 to zero
+        double lin1norm = pow(pow(Tref(1,0),2)+pow(Tref(2,0),2),0.5);
+        Tref(1,1) = -Tref(2,0)/lin1norm;
+        Tref(2,1) =  Tref(1,0)/lin1norm;    
+      }
+   
+      //calculating t3 by crossproduct t1 x t2
+    Tref(0,2) = Tref(1,0)*Tref(2,1)-Tref(1,1)*Tref(2,0);
+    Tref(1,2) = Tref(2,0)*Tref(0,1)-Tref(2,1)*Tref(0,0);
+    Tref(2,2) = Tref(0,0)*Tref(1,1)-Tref(0,1)*Tref(1,0);
+    
+    /*the center triad in reference configuration is stored as a quaternion whose equivalent would be the rotation
+     * from the identity matrix into the reference configuration*/
+      triadtoquaternion(Tref,Qconv_);
+       
+      Qold_ = Qconv_;
+      Qnew_ = Qconv_;
+   
+      //the here employed beam element does not need data about the current position of the nodal directors so that
+    //initilization of those can be skipped (the nodal displacements handeled in beam3_evaluate.cpp are not the actual angles,
+    //but only the differences between actual angles and angles in reference configuration, respectively. Thus the
+    //director orientation in reference configuration cancels out and can be assumed to be zero without loss of 
+    //generality
+    for (int k=0; k<3; k++) 
+    {
+      curvconv_(k) = 0;
+      curvold_(k)  = 0;
+      curvnew_(k)  = 0;
+      betaplusalphaconv_(k)  = rotrefe(k+3) + rotrefe(k);
+      betaplusalphaold_(k)   = rotrefe(k+3) + rotrefe(k);   
+      betaplusalphanew_(k)   = rotrefe(k+3) + rotrefe(k);
+      betaminusalphaconv_(k) = rotrefe(k+3) - rotrefe(k);
+      betaminusalphaold_(k)  = rotrefe(k+3) - rotrefe(k);
+      betaminusalphaold_(k)  = rotrefe(k+3) - rotrefe(k);
+    }  
+  }
+
 
   return;
 } //DRT::ELEMENTS::Beam3::SetUpReferenceGeometry()

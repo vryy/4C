@@ -320,6 +320,9 @@ private:
   //! container containing all kind of Beam3 thisandthat
   DRT::Container data_; 
   
+  //! variable saving whether element has already been initialized (then isinit_ == true)
+  bool isinit_;
+  
   //!reference node position (not needed explicitly, but stored for the seek of completeness)
   LINALG::Matrix<6,1> X_;
   

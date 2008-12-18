@@ -29,6 +29,7 @@ Maintainer: Christian Cyron
 DRT::ELEMENTS::Beam2::Beam2(int id, int owner) :
 DRT::Element(id,element_beam2,owner),
 data_(),
+isinit_(false),
 material_(0),
 lrefe_(0),
 crosssec_(0),
@@ -50,6 +51,7 @@ gaussrule_(DRT::UTILS::intrule_line_2point)
 DRT::ELEMENTS::Beam2::Beam2(const DRT::ELEMENTS::Beam2& old) :
 DRT::Element(old),
 data_(old.data_),
+isinit_(old.isinit_),
 material_(old.material_),
 lrefe_(old.lrefe_),
 crosssec_(old.crosssec_),
@@ -129,6 +131,8 @@ void DRT::ELEMENTS::Beam2::Pack(vector<char>& data) const
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
+  //whether element has already been initialized
+  AddtoPack(data,isinit_);
   //material type
   AddtoPack(data,material_);
   //reference length
@@ -170,6 +174,8 @@ void DRT::ELEMENTS::Beam2::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
+  //whether element has already been initialized
+  ExtractfromPack(position,data,isinit_);
   //material type
   ExtractfromPack(position,data,material_);
   //reference length
@@ -320,44 +326,53 @@ int DRT::ELEMENTS::Beam2Register::Initialize(DRT::Discretization& dis)
       //if we get so far current element is a beam2 element and  we get a pointer at it
       DRT::ELEMENTS::Beam2* currele = dynamic_cast<DRT::ELEMENTS::Beam2*>(dis.lColElement(i));
       if (!currele) dserror("cast to Beam2* failed");
+      
+      /*the following part initializes geometric variables of the element; such an initialization can only be done one time when the element is
+       * generated and never again (especially not in the frame of a restart); to make sure that this requirement is not violated this 
+       * method will initialize the geometric variables iff the class variable isinit_ == false and afterwards set this variable to 
+       * isinit_ = true; if this part is called and finds alreday isinit_ == true it will just do nothing*/    
+      if(!currele->isinit_)
+      {
+        currele->isinit_ = true;
 
-      //getting element's reference coordinates
-      for (int k=0; k<2; ++k) //element has two nodes
-        {
-          xrefe(0,k) = currele->Nodes()[k]->X()[0];
-          xrefe(1,k) = currele->Nodes()[k]->X()[1];
-        }
-
-      //length in reference configuration
-      currele->lrefe_  = pow( pow(xrefe(0,1)-xrefe(0,0),2) + pow(xrefe(1,1)-xrefe(1,0),2) , 0.5 );
-
-      // beta is the rotation angle out of x-axis in a x-y-plane in reference configuration
-      double cos_beta0 = (xrefe(0,1)-xrefe(0,0))/currele->lrefe_;
-      double sin_beta0 = (xrefe(1,1)-xrefe(1,0))/currele->lrefe_;
-
-      //we calculate beta in a range between -pi < beta <= pi
-      if (cos_beta0 >= 0)
-      	currele->beta0_ = asin(sin_beta0);
-      else
-      {	if (sin_beta0 >= 0)
-          currele->beta0_ =  acos(cos_beta0);
+        //getting element's reference coordinates
+        for (int k=0; k<2; ++k) //element has two nodes
+          {
+            xrefe(0,k) = currele->Nodes()[k]->X()[0];
+            xrefe(1,k) = currele->Nodes()[k]->X()[1];
+          }
+  
+        //length in reference configuration
+        currele->lrefe_  = pow( pow(xrefe(0,1)-xrefe(0,0),2) + pow(xrefe(1,1)-xrefe(1,0),2) , 0.5 );
+  
+        // beta is the rotation angle out of x-axis in a x-y-plane in reference configuration
+        double cos_beta0 = (xrefe(0,1)-xrefe(0,0))/currele->lrefe_;
+        double sin_beta0 = (xrefe(1,1)-xrefe(1,0))/currele->lrefe_;
+  
+        //we calculate beta in a range between -pi < beta <= pi
+        if (cos_beta0 >= 0)
+        	currele->beta0_ = asin(sin_beta0);
         else
-          currele->beta0_ = -acos(cos_beta0);
-       }
-
-      //if abs(beta0_)>PI/2 local angle calculations should be carried out in a rotated
-      //system right from the beginning (see also beam2_evaluate.cpp for further explanation)
-      if (currele->beta0_ > PI/2)
-      {
-    	  currele->hrold_ = 1;
-    	  currele->hrnew_ = 1;
-    	  currele->hrconv_ = 1;
-      }
-      if (currele->beta0_ < -PI/2)
-      {
-        currele->hrold_ = -1;
-        currele->hrnew_ = -1;
-        currele->hrconv_ = -1;
+        {	if (sin_beta0 >= 0)
+            currele->beta0_ =  acos(cos_beta0);
+          else
+            currele->beta0_ = -acos(cos_beta0);
+         }
+  
+        //if abs(beta0_)>PI/2 local angle calculations should be carried out in a rotated
+        //system right from the beginning (see also beam2_evaluate.cpp for further explanation)
+        if (currele->beta0_ > PI/2)
+        {
+      	  currele->hrold_ = 1;
+      	  currele->hrnew_ = 1;
+      	  currele->hrconv_ = 1;
+        }
+        if (currele->beta0_ < -PI/2)
+        {
+          currele->hrold_ = -1;
+          currele->hrnew_ = -1;
+          currele->hrconv_ = -1;
+        }
       }
 
     } //for (int i=0; i<dis_.NumMyColElements(); ++i)
