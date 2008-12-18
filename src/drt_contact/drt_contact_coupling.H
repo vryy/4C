@@ -160,6 +160,13 @@ public:
   
   */
   virtual double Jacobian(double* xi);
+  
+  /*!
+  \brief Compute Jacobian determinant derivative
+         Note that this is a linearization with respect to the intcell
+         vertices, which themselves have to be linearized later, of course!
+  */
+  virtual void DerivJacobian(double* xi, map<int,double>& derivjac);
     
   //@}
   

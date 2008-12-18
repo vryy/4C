@@ -1723,9 +1723,14 @@ void CONTACT::Integrator::DerivM3D(CONTACT::CElement& sele,
     cout << "FD-DJacDXi: " << scientific << fdres[0] << " " << fdres[1] << endl << endl;
     */
     
-    // evaluate the Jacobian derivative
+    // evaluate the slave Jacobian derivative
     map<int,double> jacslavemap;
     sele.DerivJacobian(sxi,jacslavemap);
+    
+    // evaluate the intcell Jacobian derivative
+    // these are pre-factors for intcell vertex coordinate linearizations
+    map<int,double> jacintcellmap;
+    cell->DerivJacobian(sxi,jacintcellmap);
         
     // evaluate all parts of DerivM
     //********************************************************************

@@ -190,6 +190,102 @@ double CONTACT::Intcell::Jacobian(double* xi)
 }
 
 /*----------------------------------------------------------------------*
+ |  Evaluate directional deriv. of Jacobian det.              popp 12/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::Intcell::DerivJacobian(double* xi, map<int,double>& derivjac)
+{
+  // initialize parameters
+  int nnodes = NumVertices();
+  vector<double> gxi(3);
+  vector<double> geta(3);
+  
+  // evaluate shape functions
+  LINALG::SerialDenseVector val(nnodes);
+  LINALG::SerialDenseMatrix deriv(nnodes,2,true);
+  EvaluateShape(xi, val, deriv);
+  
+  // metrics routine gives local basis vectors
+  for (int k=0;k<3;++k)
+  {
+    gxi[k]=Coords()(k,1)-Coords()(k,0);
+    geta[k]=Coords()(k,2)-Coords()(k,0);
+  }
+  
+  // cross product of gxi and geta
+  double cross[3] = {0.0, 0.0, 0.0};
+  cross[0] = gxi[1]*geta[2]-gxi[2]*geta[1];
+  cross[1] = gxi[2]*geta[0]-gxi[0]*geta[2];
+  cross[2] = gxi[0]*geta[1]-gxi[1]*geta[0];
+  
+  double jac = sqrt(cross[0]*cross[0]+cross[1]*cross[1]+cross[2]*cross[2]);
+    
+  // 2D linear case (2noded line element)
+  if (Shape()==DRT::Element::tri3)
+  {
+    // *********************************************************************
+    // compute Jacobian derivative
+    // *********************************************************************
+#ifdef CONTACTAUXPLANE
+    dserror("ERROR: DerivJacobian (Intcell) not yet impl. for aux. plane case!");
+#else
+    // in this case, intcells live in slave element parameter space
+    // cross[0] and cross[1] are zero!
+    for (int i=0;i<nnodes;++i)
+    {    
+      derivjac[2*i]   += 1/jac * cross[2] * geta[1] * deriv(i,0);
+      derivjac[2*i]   -= 1/jac * cross[2] * gxi[1]  * deriv(i,1);
+      derivjac[2*i+1] -= 1/jac * cross[2] * geta[0] * deriv(i,0);
+      derivjac[2*i+1] += 1/jac * cross[2] * gxi[0]  * deriv(i,1);
+    }
+#endif // #ifdef CONTACTAUXPLANE
+  }
+  
+  // unknown case
+  else dserror("ERROR: DerivJacobian (Intcell) called for unknown ele type!");
+  
+  /*
+  // finite difference check
+  typedef map<int,double>::const_iterator CI;
+  cout << "Analytical Intcell jac derivative:" << endl;
+  for (CI p = derivjac.begin(); p != derivjac.end(); ++p)
+  {
+    cout << "dof: " << p->first << " " << p->second << endl;
+  }
+
+  double delta = 1.0e-8;
+  double jacfd = 0.0;
+  cout << "FD Intcell jac derivative:" << endl;
+  
+  for (int i=0;i<nnodes;++i)
+  {
+    for (int j=0;j<2;++j)
+    {
+      Coords()(j,i) += delta;
+      
+      // metrics routine gives local basis vectors
+      for (int k=0;k<3;++k)
+      {
+        gxi[k]=Coords()(k,1)-Coords()(k,0);
+        geta[k]=Coords()(k,2)-Coords()(k,0);
+      }
+      
+      // cross product of gxi and geta
+      cross[0] = gxi[1]*geta[2]-gxi[2]*geta[1];
+      cross[1] = gxi[2]*geta[0]-gxi[0]*geta[2];
+      cross[2] = gxi[0]*geta[1]-gxi[1]*geta[0];
+      
+      jacfd = sqrt(cross[0]*cross[0]+cross[1]*cross[1]+cross[2]*cross[2]);
+      cout << "dof: " << 2*i+j << " " << (jacfd-jac)/delta << endl;
+      Coords()(j,i) -= delta;
+    }
+  }
+  cout << endl;
+  */
+  
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
 CONTACT::Vertex::Vertex(vector<double> coord, Vertex* next, Vertex* prev,
