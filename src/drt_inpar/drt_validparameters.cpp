@@ -2182,7 +2182,7 @@ void DRT::INPUT::SetValidNoxParameters(Teuchos::ParameterList& list)
 
   {
     DoubleParameter("Minimum Trust Region Radius",1.0e-6,"Minimum allowable trust region radius",&trustregion);
-    DoubleParameter("Maximum Trust Region Radius",1.0e+10,"Maximum allowable trust region radius",&trustregion);
+    DoubleParameter("Maximum Trust Region Radius",1.0e+9,"Maximum allowable trust region radius",&trustregion);
     DoubleParameter("Minimum Improvement Ratio",1.0e-4,"Minimum improvement ratio to accept the step",&trustregion);
     DoubleParameter("Contraction Trigger Ratio",0.1,"If the improvement ratio is less than this value, then the trust region is contracted by the amount specified by the \"Contraction Factor\". Must be larger than \"Minimum Improvement Ratio\"",&trustregion);
     DoubleParameter("Contraction Factor",0.25,"",&trustregion);
