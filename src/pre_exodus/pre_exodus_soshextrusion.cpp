@@ -109,7 +109,8 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
   // obtain variable extrusion thicknesses (at nodes) from centerline
   map<int,double> nd_ts;
   if (cline != ""){
-    nd_ts = EXODUS::NdCenterlineThickness(cline,nodes_from_sideset,basemesh,thickness,coordcorr);
+    // pass extrusion connectivity for gmsh-debugplot, use first as we up to now use only ONE sideset-extrusionconn
+    nd_ts = EXODUS::NdCenterlineThickness(cline,nodes_from_sideset,extrusion_conns.begin()->second,basemesh,thickness,coordcorr);
   }
 
 
@@ -268,7 +269,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
       if (i_layer==layers-1){
         vector<int> ss(3);  // third pos for later eblockid
         ss.at(0) = newele;  // first entry is element id
-        if (newelenodes.size()==8) ss.at(1) = 5 ; // hexcase: top face id = 6 // bottom face ID = 5
+        if (newelenodes.size()==8) ss.at(1) = 6 ; // hexcase: top face id = 6 // bottom face ID = 5
         else if (newelenodes.size()==6) ss.at(1) = 5; // wedgecase: top face id
         else dserror("wrong number of elenodes!");
         newsideset.insert(pair<int,vector<int> >(newele,ss));
@@ -507,7 +508,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
             if (i_layer==layers-1){
               vector<int> ss(3);  // third pos for later eblockid
               ss.at(0) = newele;  // first entry is element id
-              if (newelenodes.size()==8) ss.at(1) = 5; // hexcase: top face id = 6, bottom = 5
+              if (newelenodes.size()==8) ss.at(1) = 6; // hexcase: top face id = 6, bottom = 5
               else if (newelenodes.size()==6) ss.at(1) = 5; // wedgecase: top face id
               else dserror("wrong number of elenodes!");
               newsideset.insert(pair<int,vector<int> >(newele,ss));

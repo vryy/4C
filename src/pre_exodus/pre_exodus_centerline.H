@@ -18,7 +18,7 @@ namespace EXODUS
 
 map<int,map<int,vector<vector<double> > > > EleCenterlineInfo(string& cline,EXODUS::Mesh& mymesh, const vector<double>coordcorr);
 
-map<int,double> NdCenterlineThickness(string cline,const set<int>& nodes, const EXODUS::Mesh& mesh, const double ratio, const vector<double> coordcorr);
+map<int,double> NdCenterlineThickness(string cline,const set<int>& nodes, const map<int,vector<int> >& conn, const EXODUS::Mesh& mesh, const double ratio, const vector<double> coordcorr);
 
 class Centerline
 {

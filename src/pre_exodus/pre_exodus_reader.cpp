@@ -1186,6 +1186,44 @@ void EXODUS::Mesh::PlotNodesGmsh() const
 	f_system.close();
 }
 
+/*------------------------------------------------------------------------*
+ |creates gmsh-file to visualize connectivity                     MF 12/08|
+ *------------------------------------------------------------------------*/
+void EXODUS::Mesh::PlotConnGmsh(const string fname,const EXODUS::Mesh& mymesh, const map<int,vector<int> >& conn) const
+{
+  RCP<map<int,vector<double> > > nodes= mymesh.GetNodes();
+  ofstream f_system(fname.c_str());
+  stringstream gmshfilecontent;
+  gmshfilecontent << "View \" Connectivity \" {" << endl;
+
+  map<int,vector<int> > ::const_iterator it;
+
+  for(it = conn.begin(); it != conn.end(); ++it)
+  {
+    int eleid = it->first;
+    const vector<int> elenodes = it->second;
+    int numnodes = elenodes.size();
+    if (numnodes==6) gmshfilecontent << "SI(";
+    else if (numnodes==8) gmshfilecontent << "SH(";
+    else if (numnodes==3) gmshfilecontent << "ST(";
+    else if (numnodes==4) gmshfilecontent << "SQ(";
+    for(unsigned int i=0; i<elenodes.size(); ++i){
+      gmshfilecontent << nodes->find(elenodes.at(i))->second[0] << ",";
+      gmshfilecontent << nodes->find(elenodes.at(i))->second[1] << ",";
+      gmshfilecontent << nodes->find(elenodes.at(i))->second[2];
+      if (i==(elenodes.size()-1)) gmshfilecontent << ")";
+      else gmshfilecontent << ",";
+    }
+    gmshfilecontent << "{";
+    for(unsigned int i=0; i<(elenodes.size()-1); ++i) gmshfilecontent << eleid << ",";
+    gmshfilecontent << eleid << "};" << endl;
+  }
+  gmshfilecontent << "};" << endl;
+  f_system << gmshfilecontent.str();
+  f_system.close();
+  return;
+}
+
 
 EXODUS::ElementBlock::ElementBlock(ElementBlock::Shape Distype, RCP<map<int,vector<int> > >& eleconn, string name)
 : distype_(Distype),

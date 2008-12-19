@@ -161,7 +161,7 @@ map<int,map<int,vector<vector<double> > > > EXODUS::EleCenterlineInfo(string& cl
 }
 
 
-map<int,double> EXODUS::NdCenterlineThickness(string cline,const set<int>& nodes, const EXODUS::Mesh& mesh, const double ratio, const vector<double> coordcorr)
+map<int,double> EXODUS::NdCenterlineThickness(string cline,const set<int>& nodes, const map<int,vector<int> >& conn, const EXODUS::Mesh& mesh, const double ratio, const vector<double> coordcorr)
 {
   map<int,double> ndthick;
   set<int>::const_iterator i_node;
@@ -172,7 +172,8 @@ map<int,double> EXODUS::NdCenterlineThickness(string cline,const set<int>& nodes
   map<int,vector<double> > clpoints = *(mycline.GetPoints());
   map<int,double> cldiams = *(mycline.GetDiams());
 
-  //mycline.PlotCL_Gmsh(); // plot centerline with coloured diameter (change comment in plot function!)
+  mycline.PlotCL_Gmsh(); // plot centerline with coloured diameter (change comment in plot function!)
+  mesh.PlotConnGmsh("extrusionsideset.gmsh",mesh,conn);
 
   // go through all nodes and search for closest cline-point to get respective thickness
   for(i_node=nodes.begin(); i_node!= nodes.end(); ++i_node){
@@ -346,8 +347,8 @@ void Centerline::PlotCL_Gmsh()
 	for(map<int,vector<double> >::const_iterator it = points_->begin(); it != points_->end(); ++it)
 	{
 		gmshFile << "SP(" << it->second[0] << "," << it->second[1] << "," << it->second[2] << "){";
-		gmshFile << it->first << "};" << endl;  // id as color
-		//gmshFile << diam_->find(it->first)->second << "};" << endl;  // diameter as color
+		//gmshFile << it->first << "};" << endl;  // id as color
+		gmshFile << diam_->find(it->first)->second << "};" << endl;  // diameter as color
 	}
 
 	gmshFile << "};";

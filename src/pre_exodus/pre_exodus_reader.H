@@ -172,6 +172,9 @@ public:
   //! Plot all ElementBlocks into Gmsh-file
   void PlotElementBlocksGmsh(const string fname,const EXODUS::Mesh& mymesh) const;
   void PlotElementBlocksGmsh(const string fname,const EXODUS::Mesh& mymesh, const vector<int>& ebids) const;
+  
+  //! Plot Connectivity into Gmsh-file
+  void PlotConnGmsh(const string fname,const EXODUS::Mesh& mymesh, const map<int,vector<int> >& conn) const;
 
 private:
   RCP<map<int,vector<double> > > nodes_;
