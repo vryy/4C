@@ -172,13 +172,15 @@ EXODUS::Mesh::Mesh(const string exofilename)
     // Add prop names to final Mesh NodeSet if available
     map<int,NodeSet>::const_iterator i_ns;
     if ((num_props-1) == num_node_sets){
+      int i = 1;  // id of propname, starts with 1 because 0 is "ID"
       for(i_ns=prelimNodeSets.begin(); i_ns != prelimNodeSets.end(); ++i_ns){
-        for (int i = 1; i < num_props; ++i) {
-          string propname(prop_names[i]);
-          const NodeSet actNodeSet = i_ns->second;
-          const NodeSet newNodeSet(actNodeSet.GetNodeSet(),actNodeSet.GetName(),propname);
-          nodeSets_.insert(std::pair<int,NodeSet>(i_ns->first,newNodeSet));
-        }
+        string propname(prop_names[i]);
+        const NodeSet actNodeSet = i_ns->second;
+        string ns_name = actNodeSet.GetName();
+        if (ns_name.size()==0) ns_name = propname;
+        const NodeSet newNodeSet(actNodeSet.GetNodeSet(),ns_name,propname);
+        nodeSets_.insert(std::pair<int,NodeSet>(i_ns->first,newNodeSet));
+        ++i; // next propname refers to next NodeSet
       }
     } else {
       // this is the standard case without prop names
