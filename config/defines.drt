@@ -42,6 +42,7 @@ CCADISCRET           # use new baci discretization subsystem DRT
 # POSTSTRESS          # restart with a prestressed structure
 # INVERSEDESIGNCREATE # run an inverse deign problem
 # INVERSEDESIGNUSE    # use a previously created inverse design
+# PARMETIS            # use parmetis for parallel setup of node graph
 
 #   tools
 #  =======
