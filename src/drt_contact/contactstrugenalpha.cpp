@@ -1559,11 +1559,8 @@ void CONTACT::ContactStruGenAlpha::Output()
     isdatawritten = true;
 
     // write restart information for contact
-    RCP<Epetra_Vector> zold = contactmanager_->LagrMultOld();
-    RCP<Epetra_Vector> activetoggle = contactmanager_->WriteRestart();
-    output_.WriteVector("lagrmultold",zold);
-    output_.WriteVector("activetoggle",activetoggle);
-
+    contactmanager_->WriteRestart(output_);
+    
     if (discret_.Comm().MyPID()==0 and printscreen)
     {
       cout << "====== Restart written in step " << istep << endl;
@@ -1875,20 +1872,8 @@ void CONTACT::ContactStruGenAlpha::ReadRestart(int step)
   reader.ReadMesh(step);
 
   // read restart information for contact
-  RCP<Epetra_Vector> zold = rcp(new Epetra_Vector(*(contactmanager_->SlaveRowDofs())));
-  RCP<Epetra_Vector> activetoggle =rcp(new Epetra_Vector(*(contactmanager_->SlaveRowNodes())));
-  reader.ReadVector(zold,"lagrmultold");
-  reader.ReadVector(activetoggle,"activetoggle");
-  *(contactmanager_->LagrMultOld())=*zold;
-  contactmanager_->StoreNodalQuantities(Manager::lmold);
-  contactmanager_->ReadRestart(activetoggle);
-
-  // build restart Mortar matrices D and M
-  contactmanager_->SetState("displacement",dis_);
-  contactmanager_->InitializeMortar();
-  contactmanager_->EvaluateMortar();
-  contactmanager_->StoreDM("old");
-
+  contactmanager_->ReadRestart(reader,dis_);
+  
   // override current time and step with values from file
   params_.set<double>("total time",time);
   params_.set<int>   ("step",rstep);

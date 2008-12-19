@@ -45,6 +45,7 @@ Maintainer: Alexander Popp
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_sparsematrix.H"
 #include "../drt_lib/linalg_ana.H"
+#include "../drt_io/io.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -120,25 +121,27 @@ public:
   \brief Write restart information for contact
   
   The additionally necessary restart information in the contact
-  case is mainly the current active set status of each slave node.
-  This information is stored into a toggle vector and returned.
+  case are the current Lagrange multiplier values and the current
+  active set status of each slave node.
 
+  \param output (in): IO::Discretization writer for restart
   */
-  RCP<Epetra_Vector> WriteRestart();
+  void WriteRestart(IO::DiscretizationWriter& output);
     
   /*!
   \brief Read restart information for contact
   
   This method has the inverse functionality of WriteRestart, as
-  it reads the activetoggle vector and stores the restart status
-  into each slave node. Moreover, all global maps concerning the
-  active set are rebuilt based on the restart information.
+  it reads the activetoggle / lmold vectors and stores the restart
+  status into each slave node. Moreover, all global maps concerning
+  the active set and the old mortar matrices D,M are rebuilt based
+  on the restart information.
   
-  \param activetoggle (in): A toggle vector with active node information
-                            for restart (0=inactive, 1=active)
-                            
+  \param reader (in): IO::Discretization reader for restart
+  \param dis (in)   : global dof displacement vector                          
   */
-  void ReadRestart(const RCP<Epetra_Vector> activetoggle);
+  void ReadRestart(IO::DiscretizationReader& reader,
+                   RCP<Epetra_Vector> dis);
   
   //@}
   

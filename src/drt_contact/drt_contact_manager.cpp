@@ -465,8 +465,9 @@ bool CONTACT::Manager::ReadAndCheckInput()
 /*----------------------------------------------------------------------*
  |  write restart information for contact (public)            popp 03/08|
  *----------------------------------------------------------------------*/
-RCP<Epetra_Vector> CONTACT::Manager::WriteRestart()
+void CONTACT::Manager::WriteRestart(IO::DiscretizationWriter& output)
 {
+  // quantities to be written for restart
   RCP<Epetra_Vector> activetoggle = rcp(new Epetra_Vector(*gsnoderowmap_));
   
   // loop over all interfaces
@@ -485,14 +486,25 @@ RCP<Epetra_Vector> CONTACT::Manager::WriteRestart()
     }
   }
   
-  return activetoggle;
+  // write restart information for contact
+  output.WriteVector("lagrmultold",LagrMultOld());
+  output.WriteVector("activetoggle",activetoggle);   
+  
+  return;
 }
 
 /*----------------------------------------------------------------------*
  |  read restart information for contact (public)             popp 03/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Manager::ReadRestart(const RCP<Epetra_Vector> activetoggle)
+void CONTACT::Manager::ReadRestart(IO::DiscretizationReader& reader,
+                                   RCP<Epetra_Vector> dis)
 {
+  // read restart information for contact
+  reader.ReadVector(LagrMultOld(),"lagrmultold");
+  StoreNodalQuantities(Manager::lmold);
+  RCP<Epetra_Vector> activetoggle =rcp(new Epetra_Vector(*(SlaveRowNodes())));
+  reader.ReadVector(activetoggle,"activetoggle");
+
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
   {
@@ -530,6 +542,12 @@ void CONTACT::Manager::ReadRestart(const RCP<Epetra_Vector> activetoggle)
   if (gactivenodes_->NumGlobalElements())
     IsInContact()=true;
   
+  // build restart Mortar matrices D and M
+  SetState("displacement",dis);
+  InitializeMortar();
+  EvaluateMortar();
+  StoreDM("old");
+ 
   return;
 }
 
