@@ -327,9 +327,6 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
 #endif
 
-  // keep a copy of fresm for contact forces / equilibrium check
-  RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
-
   //---------------------------------------------- build effective lhs
   // (using matrix stiff_ as effective matrix)
   // (still without contact, this is just Gen-alpha stuff here)
@@ -365,6 +362,9 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   jump->Scale(0.0);
   contactmanager_->StoreNodalQuantities(Manager::jump);
 
+  // keep a copy of fresm for contact forces / equilibrium check
+  RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
+
   //------------------------- make contact modifications to lhs and rhs
   contactmanager_->SetState("displacement",disn_);
 
@@ -374,15 +374,6 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   contactmanager_->Initialize();
   contactmanager_->Evaluate(stiff_,fresm_);
 
-  // blank residual DOFs that are on Dirichlet BC
-  // in the case of local systems we have to rotate forth and back
-  {
-    if (locsysmanager_ != null) locsysmanager_->RotateGlobalToLocal(fresm_);
-    Epetra_Vector fresmdbc(*fresm_);
-    fresm_->Multiply(1.0,*invtoggle_,fresmdbc,0.0);
-    if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(fresm_);
-  }
-
   //---------------------------------------------------- contact forces
   contactmanager_->ContactForces(fresmcopy);
 
@@ -391,6 +382,15 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   int istep = step + 1;
   contactmanager_->VisualizeGmsh(istep,0);
 #endif // #ifdef CONTACTGMSH2
+
+  // blank residual DOFs that are on Dirichlet BC
+  // in the case of local systems we have to rotate forth and back
+  {
+    if (locsysmanager_ != null) locsysmanager_->RotateGlobalToLocal(fresm_);
+    Epetra_Vector fresmdbc(*fresm_);
+    fresm_->Multiply(1.0,*invtoggle_,fresmdbc,0.0);
+    if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(fresm_);
+  }
 
   //------------------------------------------------ build residual norm
   double fresmnorm = 1.0;
@@ -586,9 +586,6 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
 #endif
 
-  // keep a copy of fresm for contact forces / equilibrium check
-  RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
-
   //---------------------------------------------- build effective lhs
   // (using matrix stiff_ as effective matrix)
   // (still without contact, this is just Gen-alpha stuff here)
@@ -610,6 +607,9 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
     }
   }
   stiff_->Complete();
+
+  // keep a copy of fresm for contact forces / equilibrium check
+  RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
 
   // reset Lagrange multipliers to last converged state
   // this resetting is necessary due to multiple active set steps
@@ -633,15 +633,6 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   contactmanager_->Initialize();
   contactmanager_->Evaluate(stiff_,fresm_);
 
-  // blank residual DOFs that are on Dirichlet BC
-  // in the case of local systems we have to rotate forth and back
-  {
-    if (locsysmanager_ != null) locsysmanager_->RotateGlobalToLocal(fresm_);
-    Epetra_Vector fresmdbc(*fresm_);
-    fresm_->Multiply(1.0,*invtoggle_,fresmdbc,0.0);
-    if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(fresm_);
-  }
-
   //---------------------------------------------------- contact forces
   contactmanager_->ContactForces(fresmcopy);
 
@@ -651,6 +642,15 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   contactmanager_->VisualizeGmsh(istep,0);
 #endif // #ifdef CONTACTGMSH2
 
+  // blank residual DOFs that are on Dirichlet BC
+  // in the case of local systems we have to rotate forth and back
+  {
+    if (locsysmanager_ != null) locsysmanager_->RotateGlobalToLocal(fresm_);
+    Epetra_Vector fresmdbc(*fresm_);
+    fresm_->Multiply(1.0,*invtoggle_,fresmdbc,0.0);
+    if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(fresm_);
+  }
+ 
   //------------------------------------------------ build residual norm
   double fresmnorm = 1.0;
 
@@ -750,10 +750,8 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
     //----------------------- transform back to global coordinate system
     if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(disi_);
 
-    //------------------------------------ -- recover disi and Lag. Mult.
-    {
-      contactmanager_->Recover(disi_);
-    }
+    //--------------------------------------- recover disi and Lag. Mult.
+    contactmanager_->Recover(disi_);
 
     //---------------------------------- update mid configuration values
     // displacements
@@ -907,9 +905,6 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
 
 #endif
 
-    // keep a copy of fresm for contact forces / equilibrium check
-    RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
-
     //---------------------------------------------- build effective lhs
     // (using matrix stiff_ as effective matrix)
     // (again without contact, this is just Gen-alpha stuff here)
@@ -932,6 +927,9 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
     }
     stiff_->Complete();
 
+    // keep a copy of fresm for contact forces / equilibrium check
+    RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
+
     //-------------------------make contact modifications to lhs and rhs
     {
       contactmanager_->SetState("displacement",disn_);
@@ -943,6 +941,13 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
       contactmanager_->Evaluate(stiff_,fresm_);
     }
 
+    //--------------------------------------------------- contact forces
+    contactmanager_->ContactForces(fresmcopy);
+    
+#ifdef CONTACTGMSH2
+    dserror("Gmsh Output for every iteration only implemented for semi-smooth Newton");
+#endif // #ifdef CONTACTGMSH2
+    
     // blank residual DOFs that are on Dirichlet BC
     // in the case of local systems we have to rotate forth and back
     {
@@ -951,13 +956,6 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
       fresm_->Multiply(1.0,*invtoggle_,fresmdbc,0.0);
       if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(fresm_);
     }
-
-    //--------------------------------------------------- contact forces
-    contactmanager_->ContactForces(fresmcopy);
-
-#ifdef CONTACTGMSH2
-    dserror("Gmsh Output for every iteration only implemented for semi-smooth Newton");
-#endif // #ifdef CONTACTGMSH2
 
     //---------------------------------------------- build residual norm
     disi_->Norm2(&disinorm);
@@ -1089,10 +1087,8 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
     //----------------------- transform back to global coordinate system
     if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(disi_);
 
-    //------------------------------------ -- recover disi and Lag. Mult.
-    {
-      contactmanager_->Recover(disi_);
-    }
+    //--------------------------------------- recover disi and Lag. Mult.
+    contactmanager_->Recover(disi_);
 
     //---------------------------------- update mid configuration values
     // displacements
@@ -1245,10 +1241,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
     fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
 
 #endif
-
-    // keep a copy of fresm for contact forces / equilibrium check
-    RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
-
+    
     //---------------------------------------------- build effective lhs
     // (using matrix stiff_ as effective matrix)
     // (again without contact, this is just Gen-alpha stuff here)
@@ -1271,6 +1264,9 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
     }
     stiff_->Complete();
 
+    // keep a copy of fresm for contact forces / equilibrium check
+    RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
+
     //-------------------------make contact modifications to lhs and rhs
     //-------------------- update active set for semi-smooth Newton case
     {
@@ -1289,6 +1285,15 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
       contactmanager_->Evaluate(stiff_,fresm_);
     }
 
+    //--------------------------------------------------- contact forces
+    contactmanager_->ContactForces(fresmcopy);
+    
+#ifdef CONTACTGMSH2
+    int step  = params_.get<int>("step",0);
+    int istep = step + 1;
+    contactmanager_->VisualizeGmsh(istep,numiter+1);
+#endif // #ifdef CONTACTGMSH2
+
     // blank residual DOFs that are on Dirichlet BC
     // in the case of local systems we have to rotate forth and back
     {
@@ -1297,15 +1302,6 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
       fresm_->Multiply(1.0,*invtoggle_,fresmdbc,0.0);
       if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(fresm_);
     }
-
-    //--------------------------------------------------- contact forces
-    contactmanager_->ContactForces(fresmcopy);
-
-#ifdef CONTACTGMSH2
-    int step  = params_.get<int>("step",0);
-    int istep = step + 1;
-    contactmanager_->VisualizeGmsh(istep,numiter+1);
-#endif // #ifdef CONTACTGMSH2
 
     //---------------------------------------------- build residual norm
     disi_->Norm2(&disinorm);

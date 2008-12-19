@@ -132,9 +132,7 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
     solver_.ResetTolerance();
 
     //------------------------------------ -- recover disi and Lag. Mult.
-    {
-      contactmanager_->Recover(disi_);
-    }
+    contactmanager_->Recover(disi_);
 
     //----------------------------------------- store the current values
     disno->Update(1.0,*disn_,0.0);
@@ -307,9 +305,6 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
 
 #endif
 
-    // keep a copy of fresm for contact forces / equilibrium check
-    RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
-
     //---------------------------------------------- build effective lhs
     // (using matrix stiff_ as effective matrix)
     // (again without contact, this is just Gen-alpha stuff here)
@@ -332,6 +327,9 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
     }
     stiff_->Complete();
 
+    // keep a copy of fresm for contact forces / equilibrium check
+    RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
+
     //-------------------------make contact modifications to lhs and rhs
     {
       contactmanager_->SetState("displacement",disn_);
@@ -343,18 +341,18 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
       contactmanager_->Evaluate(stiff_,fresm_);
     }
 
-    // blank residual DOFs that are on Dirichlet BC
-    {
-      Epetra_Vector fresmdbc(*fresm_);
-      fresm_->Multiply(1.0,*invtoggle_,fresmdbc,0.0);
-    }
-
     //--------------------------------------------------- contact forces
     contactmanager_->ContactForces(fresmcopy);
 
 #ifdef CONTACTGMSH2
     dserror("Gmsh Output for every iteration only implemented for semi-smooth Newton");
 #endif // #ifdef CONTACTGMSH2
+
+    // blank residual DOFs that are on Dirichlet BC
+    {
+      Epetra_Vector fresmdbc(*fresm_);
+      fresm_->Multiply(1.0,*invtoggle_,fresmdbc,0.0);
+    }
 
     //---------------------------------------------- build residual norm
     disi_->Norm2(&disinorm);
@@ -556,9 +554,6 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
 
 #endif
 
-      // keep a copy of fresm for contact forces / equilibrium check
-      RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
-
       //---------------------------------------------- build effective lhs
       // (using matrix stiff_ as effective matrix)
       // (again without contact, this is just Gen-alpha stuff here)
@@ -581,6 +576,9 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
       }
       stiff_->Complete();
 
+      // keep a copy of fresm for contact forces / equilibrium check
+      RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
+
       //-------------------------make contact modifications to lhs and rhs
       {
         contactmanager_->SetState("displacement",disn_);
@@ -592,18 +590,18 @@ void CONTACT::ContactStruGenAlpha::FullNewtonLineSearch()
         contactmanager_->Evaluate(stiff_,fresm_);
       }
 
-      // blank residual DOFs that are on Dirichlet BC
-      {
-        Epetra_Vector fresmdbc(*fresm_);
-        fresm_->Multiply(1.0,*invtoggle_,fresmdbc,0.0);
-      }
-
       //--------------------------------------------------- contact forces
       contactmanager_->ContactForces(fresmcopy);
 
 #ifdef CONTACTGMSH2
       dserror("Gmsh Output for every iteration only implemented for semi-smooth Newton");
 #endif // #ifdef CONTACTGMSH2
+
+      // blank residual DOFs that are on Dirichlet BC
+      {
+        Epetra_Vector fresmdbc(*fresm_);
+        fresm_->Multiply(1.0,*invtoggle_,fresmdbc,0.0);
+      }
 
       //---------------------------------------------- build residual norm
       disi_->Norm2(&disinorm);
@@ -763,9 +761,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
     solver_.ResetTolerance();
 
     //------------------------------------ -- recover disi and Lag. Mult.
-    {
-      contactmanager_->Recover(disi_);
-    }
+    contactmanager_->Recover(disi_);
 
     //----------------------------------------- store the current values
     disno->Update(1.0,*disn_,0.0);
@@ -938,9 +934,6 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
 
 #endif
 
-    // keep a copy of fresm for contact forces / equilibrium check
-    RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
-
     //---------------------------------------------- build effective lhs
     // (using matrix stiff_ as effective matrix)
     // (again without contact, this is just Gen-alpha stuff here)
@@ -963,6 +956,9 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
     }
     stiff_->Complete();
 
+    // keep a copy of fresm for contact forces / equilibrium check
+    RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
+
     //-------------------------make contact modifications to lhs and rhs
     {
       contactmanager_->SetState("displacement",disn_);
@@ -980,20 +976,20 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
       contactmanager_->Evaluate(stiff_,fresm_);
     }
 
+    //--------------------------------------------------- contact forces
+    contactmanager_->ContactForces(fresmcopy);
+    
+    #ifdef CONTACTGMSH2
+    int step  = params_.get<int>("step",0);
+    int istep = step + 1;
+    contactmanager_->VisualizeGmsh(istep,numiter+1);
+    #endif // #ifdef CONTACTGMSH2
+
     // blank residual DOFs that are on Dirichlet BC
     {
       Epetra_Vector fresmdbc(*fresm_);
       fresm_->Multiply(1.0,*invtoggle_,fresmdbc,0.0);
     }
-
-    //--------------------------------------------------- contact forces
-    contactmanager_->ContactForces(fresmcopy);
-
-#ifdef CONTACTGMSH2
-    int step  = params_.get<int>("step",0);
-    int istep = step + 1;
-    contactmanager_->VisualizeGmsh(istep,numiter+1);
-#endif // #ifdef CONTACTGMSH2
 
     //---------------------------------------------- build residual norm
     disi_->Norm2(&disinorm);
@@ -1195,9 +1191,6 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
 
 #endif
 
-      // keep a copy of fresm for contact forces / equilibrium check
-      RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
-
       //---------------------------------------------- build effective lhs
       // (using matrix stiff_ as effective matrix)
       // (again without contact, this is just Gen-alpha stuff here)
@@ -1220,6 +1213,9 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
       }
       stiff_->Complete();
 
+      // keep a copy of fresm for contact forces / equilibrium check
+      RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
+
       //-------------------------make contact modifications to lhs and rhs
       {
         contactmanager_->SetState("displacement",disn_);
@@ -1235,12 +1231,6 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
         contactmanager_->Evaluate(stiff_,fresm_);
       }
 
-      // blank residual DOFs that are on Dirichlet BC
-      {
-        Epetra_Vector fresmdbc(*fresm_);
-        fresm_->Multiply(1.0,*invtoggle_,fresmdbc,0.0);
-      }
-
       //--------------------------------------------------- contact forces
       contactmanager_->ContactForces(fresmcopy);
 
@@ -1249,6 +1239,12 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewtonLineSearch()
       int istep = step + 1;
       contactmanager_->VisualizeGmsh(istep,numiter+1);
 #endif // #ifdef CONTACTGMSH2
+
+      // blank residual DOFs that are on Dirichlet BC
+      {
+        Epetra_Vector fresmdbc(*fresm_);
+        fresm_->Multiply(1.0,*invtoggle_,fresmdbc,0.0);
+      }
 
       //---------------------------------------------- build residual norm
       disi_->Norm2(&disinorm);
