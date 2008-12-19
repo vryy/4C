@@ -36,21 +36,21 @@ SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   // temporal solution derivative at time n
-  phidtn_       = LINALG::CreateVector(*dofrowmap,true);
+  phidtn_ = LINALG::CreateVector(*dofrowmap,true);
 
-  // density at time n
+  // only required for low-Mach-number flow
   if (prbtype_ == "loma")
   {
     // density at time n
     densn_  = LINALG::CreateVector(*dofrowmap,true);
-    // density at time n-1 (only defined since required by fluid OST scheme)
+    // density at time n-1 (only defined since required by fluid OST solver)
     densnm_ = LINALG::CreateVector(*dofrowmap,true);
 
     // time derivative of density at time n
-    // (required for same-density-derivative predictor, currently not active)
-    //densdtn_  = LINALG::CreateVector(*dofrowmap,true);
+    // (required for same-density-derivative predictor and conservative
+    // formulation)
+    densdtn_  = LINALG::CreateVector(*dofrowmap,true);
   }
-
 
   return;
 }
@@ -71,8 +71,19 @@ SCATRA::TimIntOneStepTheta::~TimIntOneStepTheta()
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::SetOldPartOfRighthandside()
 {
-  // hist_ = phin_ + dt*(1-Theta)*phidtn_
-  hist_->Update(1.0, *phin_, dta_*(1.0-theta_), *phidtn_, 0.0);
+  // low-Mach-number flow: hist_ = densn_*phin_+dt*(1-Theta)*densn_*phidtn_
+  if (prbtype_ == "loma")
+  {
+    hist_->Multiply(1.0, *phin_, *densn_, 0.0);
+    hist_->Multiply(dta_*(1.0-theta_), *phidtn_, *densn_, 1.0);
+
+    // for conservative formulation: 
+    // hist_ = hist_+dt*(1-Theta)*phin_*densdtn_
+    if (convform_ =="conservative")
+      hist_->Multiply(dta_*(1.0-theta_), *densdtn_, *phin_, 1.0);
+  }
+  // else: hist_=phin_+dt*(1-Theta)*phidtn_
+  else hist_->Update(1.0, *phin_, dta_*(1.0-theta_), *phidtn_, 0.0);
 
   return;
 }
@@ -109,6 +120,17 @@ void SCATRA::TimIntOneStepTheta::PredictDensity()
 
 
 /*----------------------------------------------------------------------*
+ | set time for evaluation of Neumann boundary conditions      vg 12/08 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntOneStepTheta::SetTimeForNeumannEvaluation(
+  ParameterList& params)
+{
+  params.set("total time",time_);
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  | reset the residual vector and add actual Neumann loads               |
  | scaled with a factor resulting from time discretization     vg 11/08 |
  *----------------------------------------------------------------------*/
@@ -127,6 +149,7 @@ void SCATRA::TimIntOneStepTheta::AddSpecificTimeIntegrationParameters(
 {
   params.set("using stationary formulation",false);
   params.set("using generalized-alpha time integration",false);
+  params.set("total time",time_);
   params.set("time factor",theta_*dta_);
   params.set("alpha_F",1.0);
 
@@ -165,19 +188,22 @@ void SCATRA::TimIntOneStepTheta::Update()
 void SCATRA::TimIntOneStepTheta::UpdateDensity()
 {
   // compute density derivative at time n if required for
-  // same-density-derivative predictor, currently not active
-  /*if (step_ == 1)
+  // same-density-derivative predictor or conservative formulation
+  if (convform_ =="conservative")
   {
-    // first timestep: densdt(n) = (dens(n)-dens(n-1))/dt
-    densdtn_->Update(1.0/dta_,*densnp_,-1.0/dta_,*densn_, 0.0);
+    if (step_ == 1)
+    {
+      // first timestep: densdt(n) = (dens(n)-dens(n-1))/dt
+      densdtn_->Update(1.0/dta_,*densnp_,-1.0/dta_,*densn_, 0.0);
+    }
+    else
+    {
+      // densdt(n) = (dens(n)-dens(n-1))/(theta*dt)+((theta-1)/theta)*densdt(n-1)
+      double fact1 = 1.0/(theta_*dta_);
+      double fact2 = (theta_-1.0)/theta_;
+      densdtn_->Update(fact1,*densnp_,-fact1,*densn_ ,fact2);
+    }
   }
-  else
-  {
-    // densdt(n) = (dens(n)-dens(n-1))/(theta*dt)+((theta-1)/theta)*densdt(n-1)
-    double fact1 = 1.0/(theta_*dta_);
-    double fact2 = (theta_-1.0)/theta_;
-    densdtn_->Update(fact1,*densnp_,-fact1,*densn_ ,fact2);
-  }*/
 
   densn_->Update(1.0,*densnp_,0.0);
 

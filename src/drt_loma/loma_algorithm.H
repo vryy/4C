@@ -87,6 +87,9 @@ namespace LOMA
     /// flag for printing out mean values of temperature and density
     string outmean_ ;
 
+    /// factor for equation of state (default: 98100.0/287.0)
+    double stateqfac_;
+
   private:
 
   };

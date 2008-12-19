@@ -1387,7 +1387,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("CONVTOL",1e-6,"Tolerance for convergence check",&lomacontrol);
   IntParameter("UPRES",1,"Increment for writing solution",&lomacontrol);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&lomacontrol);
-
   setStringToIntegralParameter<int>("OUTMEAN","No",
                                "print out mean values of temperature/density",
                                tuple<std::string>(
@@ -1396,6 +1395,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  ),
                                tuple<int>(0,1),
                                &lomacontrol);
+  DoubleParameter("THERMOPRESS",98100.0,"(initial) thermodynamic pressure",&lomacontrol);
+  DoubleParameter("GASCONSTANT",287.0,"specific gas constant R (in J/(kg*K))",&lomacontrol);
 
 
   /*----------------------------------------------------------------------*/
@@ -2182,7 +2183,7 @@ void DRT::INPUT::SetValidNoxParameters(Teuchos::ParameterList& list)
 
   {
     DoubleParameter("Minimum Trust Region Radius",1.0e-6,"Minimum allowable trust region radius",&trustregion);
-    DoubleParameter("Maximum Trust Region Radius",1.0e+9,"Maximum allowable trust region radius",&trustregion);
+    DoubleParameter("Maximum Trust Region Radius",1.0e+10,"Maximum allowable trust region radius",&trustregion);
     DoubleParameter("Minimum Improvement Ratio",1.0e-4,"Minimum improvement ratio to accept the step",&trustregion);
     DoubleParameter("Contraction Trigger Ratio",0.1,"If the improvement ratio is less than this value, then the trust region is contracted by the amount specified by the \"Contraction Factor\". Must be larger than \"Minimum Improvement Ratio\"",&trustregion);
     DoubleParameter("Contraction Factor",0.25,"",&trustregion);

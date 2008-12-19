@@ -53,6 +53,17 @@ void SCATRA::TimIntStationary::SetOldPartOfRighthandside()
 
 
 /*----------------------------------------------------------------------*
+ | set time for evaluation of Neumann boundary conditions      vg 12/08 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntStationary::SetTimeForNeumannEvaluation(
+  ParameterList& params)
+{
+  params.set("total time",time_);
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  | reset the residual vector and add actual Neumann loads      vg 11/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntStationary::AddNeumannToResidual()
@@ -70,6 +81,7 @@ void SCATRA::TimIntStationary::AddSpecificTimeIntegrationParameters(
 {
   params.set("using stationary formulation",true);
   params.set("using generalized-alpha time integration",false);
+  params.set("total time",time_);
 
   discret_->SetState("densnp",densnp_);
   return;

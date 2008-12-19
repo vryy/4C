@@ -79,9 +79,20 @@ SCATRA::TimIntGenAlpha::~TimIntGenAlpha()
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntGenAlpha::SetOldPartOfRighthandside()
 {
+  // For conservative formulation of low-Mach-number flow:
+  // hist_ = densn_*phin_ + dt*(1-(gamma/alpha_M))*densn_*phidtn_
+  //                      + dt*(1-(gamma/alpha_M))*phin_*densdtn_
+  //       = densn_*phin_ + dt*(1-genalphafac)*densn_*phidtn_
+  //                      + dt*(1-genalphafac)*phin_*densdtn_
+  if (prbtype_ == "loma" and convform_ =="conservative")
+  {
+      hist_->Multiply(1.0, *phin_, *densn_, 0.0);
+      hist_->Multiply(dta_*(1.0-genalphafac_), *phidtn_, *densn_, 1.0);
+      hist_->Multiply(dta_*(1.0-genalphafac_), *phin_, *densdtn_, 1.0);
+  }
   // hist_ = phin_ + dt*(1-(gamma/alpha_M))*phidtn_
   //       = phin_ + dt*(1-genalphafac)*phidtn_
-  hist_->Update(1.0, *phin_, dta_*(1.0-genalphafac_), *phidtn_, 0.0);
+  else hist_->Update(1.0, *phin_, dta_*(1.0-genalphafac_), *phidtn_, 0.0);
 
   return;
 }
@@ -120,6 +131,17 @@ void SCATRA::TimIntGenAlpha::PredictDensity()
 
 
 /*----------------------------------------------------------------------*
+ | set time for evaluation of Neumann boundary conditions      vg 12/08 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntGenAlpha::SetTimeForNeumannEvaluation(
+  ParameterList& params)
+{
+  params.set("total time",time_-(1-alphaF_)*dta_);
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  | reset the residual vector and add actual Neumann loads               |
  | scaled with a factor resulting from time discretization     vg 11/08 |
  *----------------------------------------------------------------------*/
@@ -138,11 +160,13 @@ void SCATRA::TimIntGenAlpha::AddSpecificTimeIntegrationParameters(
 {
   params.set("using stationary formulation",false);
   params.set("using generalized-alpha time integration",true);
+  params.set("total time",time_-(1-alphaF_)*dta_);
   params.set("time factor",genalphafac_*dta_);
   params.set("alpha_F",alphaF_);
 
-  if (prbtype_ == "loma") discret_->SetState("densnp",densam_);
-  else                    discret_->SetState("densnp",densnp_);
+  if (prbtype_ == "loma" and convform_ != "conservative")
+       discret_->SetState("densnp",densam_);
+  else discret_->SetState("densnp",densnp_);
 
   return;
 }
@@ -323,10 +347,9 @@ void SCATRA::TimIntGenAlpha::SetLomaVelocity(RCP<const Epetra_Vector> extvel,
     RCP<DRT::Discretization> fluiddis)
 {
   // for generalized-alpha time integration, at first, density fields at
-  // intermediate time steps have to be calculated
+  // intermediate time steps need to be calculated.
   densam_->Update((alphaM_),*densnp_,(1.0-alphaM_),*densn_,0.0);
   densaf_->Update((alphaF_),*densnp_,(1.0-alphaF_),*densn_,0.0);
-
 
   // check vector compatibility and determine space dimension
   int numdim =-1;

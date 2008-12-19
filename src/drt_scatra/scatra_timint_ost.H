@@ -73,6 +73,9 @@ protected:
   /// do explicit predictor step (-> better starting value for nonlinear solver)
   void ExplicitPredictor();
 
+  /// set time for evaluation of Neumann boundary conditions
+  void SetTimeForNeumannEvaluation(ParameterList& params);
+
   /// reset the residual vector and add actual Neumann loads with time factor
   void AddNeumannToResidual();
 

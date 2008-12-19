@@ -73,6 +73,9 @@ protected:
   /// do explicit predictor step (nothing to predict for stationary problems!)
   void ExplicitPredictor(){return;};
 
+  /// set time for evaluation of Neumann boundary conditions
+  void SetTimeForNeumannEvaluation(ParameterList& params);
+
   /// reset the residual vector and add actual Neumann loads with time factor
   void AddNeumannToResidual();
 

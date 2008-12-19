@@ -73,6 +73,9 @@ void SCATRA::TimIntBDF2::SetOldPartOfRighthandside()
   BDF2: for constant time step:
 
                  hist_ = 4/3 phin_ - 1/3 phinm_
+
+  For low-Mach-number flow, densn_*phin_ and densnm_*phinm_ are
+  used instead of phin_ and phinm_, respectively.
   */
   if (step_>1)
   {
@@ -80,14 +83,22 @@ void SCATRA::TimIntBDF2::SetOldPartOfRighthandside()
     double fact1 = (1.0 + omega)*(1.0 + omega)/(1.0 + (2.0*omega));
     double fact2 = -(omega*omega)/(1+ (2.0*omega));
 
-    hist_->Update(fact1, *phin_, fact2, *phinm_, 0.0);
+    // low-Mach-number flow: multiply by density
+    if (prbtype_ == "loma")
+    {
+      hist_->Multiply(fact1, *phin_, *densn_, 0.0);
+      hist_->Multiply(fact2, *phinm_, *densnm_, 1.0);
+    }
+    else hist_->Update(fact1, *phin_, fact2, *phinm_, 0.0);
 
     // for BDF2 theta is set by the timestepsizes, 2/3 for const. dt
     theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
   }
   else   // for start-up of BDF2 we do one step with backward Euler
   {
-    hist_->Update(1.0, *phin_, 0.0);
+    // low-Mach-number flow: multiply by density
+    if (prbtype_ == "loma") hist_->Multiply(1.0, *phin_, *densn_, 0.0);
+    else                    hist_->Update(1.0, *phin_, 0.0);
 
     // backward Euler => use theta=1.0
     theta_=1.0;
@@ -126,6 +137,17 @@ void SCATRA::TimIntBDF2::PredictDensity()
 
 
 /*----------------------------------------------------------------------*
+ | set time for evaluation of Neumann boundary conditions      vg 12/08 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntBDF2::SetTimeForNeumannEvaluation(
+  ParameterList& params)
+{
+  params.set("total time",time_);
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  | reset the residual vector and add actual Neumann loads               |
  | scaled with a factor resulting from time discretization     vg 11/08 |
  *----------------------------------------------------------------------*/
@@ -144,6 +166,7 @@ void SCATRA::TimIntBDF2::AddSpecificTimeIntegrationParameters(
 {
   params.set("using stationary formulation",false);
   params.set("using generalized-alpha time integration",false);
+  params.set("total time",time_);
   params.set("time factor",theta_*dta_);
   params.set("alpha_F",1.0);
 

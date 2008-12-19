@@ -161,7 +161,7 @@ public:
   virtual void PredictDensity() = 0;
 
   //! compute density field for low-Mach-number flow
-  void ComputeDensity();
+  void ComputeDensity(const double stateqfac);
 
   //! compute time derivative of density field for low-Mach-number flow
   virtual void ComputeDensityDerivative() = 0;
@@ -233,6 +233,9 @@ protected:
 
   //! Set the part of the righthandside belonging to the last timestep.
   virtual void SetOldPartOfRighthandside() = 0;
+
+  //! set time for evaluation of Neumann boundary conditions
+  virtual void SetTimeForNeumannEvaluation(ParameterList& params) = 0;
 
   //! reset the residual vector and add actual Neumann loads with time factor
   virtual void AddNeumannToResidual() = 0;

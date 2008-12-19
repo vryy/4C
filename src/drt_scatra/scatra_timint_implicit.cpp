@@ -387,18 +387,13 @@ void SCATRA::ScaTraTimIntImpl::ApplyNeumannBC
   // prepare load vector
   neumann_loads->PutScalar(0.0);
 
-  // set needed parameters in parameter list
+  // set time for evaluation of Neumann boundary conditions as parameter
+  // depending on time-integration scheme
   ParameterList p;
-  p.set("total time", time); // actual time t_{n+1}
-  // for generalized-alpha time integration, this is an approximation,
-  // for the time being, since the time actually would have to be set
-  // to time-(1-alphaF_)*dta_
-  // Since we do not use time-dependent Neumann loads currently, this
-  // approximation does not pose a problem; in fact, it is not an
-  // approximation in this case.
+  SetTimeForNeumannEvaluation(p);
 
   discret_->ClearState();
-  // evaluate Neumann conditions at actual time t_{n+1}
+  // evaluate Neumann conditions at actual time t_{n+1} or t_{n+alpha_F}
   discret_->EvaluateNeumann(p,*neumann_loads);
   discret_->ClearState();
 
@@ -497,7 +492,6 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
       eleparams.set("action","calc_condif_systemmat_and_residual");
 
       // other parameters that might be needed by the elements
-      eleparams.set("total time",time_);
       eleparams.set("time-step length",dta_);
       eleparams.set("problem type",prbtype_);
       eleparams.set("is linear problem", false);
@@ -774,7 +768,6 @@ void SCATRA::ScaTraTimIntImpl::Solve()
     eleparams.set("action","calc_condif_systemmat_and_residual");
 
     // other parameters that might be needed by the elements
-    eleparams.set("total time",time_);
     eleparams.set("time-step length",dta_);
     eleparams.set("problem type",prbtype_);
     eleparams.set("is linear problem", true);
@@ -1130,18 +1123,15 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
 /*----------------------------------------------------------------------*
  | compute density for low-Mach-number flow                    vg 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::ComputeDensity()
+void SCATRA::ScaTraTimIntImpl::ComputeDensity(const double stateqfac)
 {
   // store density of previous iteration for convergence check
   densincnp_->Update(1.0,*densnp_,0.0);
 
-  // set thermodynamic pressure p_therm (in N/m^2 = kg/(m*s^2) = J/m^3): 98100.0
-  // constantly set to atmospheric pressure, for the time being -> dp_therm/dt=0
-  // set specific gas constant R (in J/(kg*K)): 287.05
-  // compute density based on equation of state: rho = (p_therm/R)*(1/T)
-  double fac = 98100.0/287.05;
+  // compute density based on equation of state:
+  // rho = (p_therm/R)*(1/T) = stateqfac_*(1/T)
   densnp_->Reciprocal(*phinp_);
-  densnp_->Scale(fac);
+  densnp_->Scale(stateqfac);
 
   //densnp_->PutScalar(1.0);
 

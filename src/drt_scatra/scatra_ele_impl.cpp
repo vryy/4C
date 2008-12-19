@@ -739,7 +739,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
   // get node coordinates
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze_);
 
-  // dead load in element nodes
+  // ---------------------------------------------------------------------
+  // call routine for calculation of body force in element nodes
+  // (time n+alpha_F for generalized-alpha scheme, at time n+1 otherwise)
+  // ---------------------------------------------------------------------
   BodyForce(ele,time);
 
   // get material constants
@@ -774,8 +777,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
     //------------ get values of variables at integration point
     for (int k = 0;k<numdofpernode_;++k)     // loop of each transported sclar
     {
-      // get history data at integration point (weighted by density)
-      hist_[k] = densfunct_.Dot(ehist[k]);
+      // get history data at integration point
+      if (is_genalpha and not conservative) hist_[k] = densfunct_.Dot(ehist[k]);
+      else                                  hist_[k] = funct_.Dot(ehist[k]);
 
       // get bodyforce in gausspoint (divided by shcacp for temperature eq.)
       rhs_[k] = bodyforce_[k].Dot(funct_) / shcacp_;

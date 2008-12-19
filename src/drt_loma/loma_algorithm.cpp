@@ -34,6 +34,10 @@ LOMA::Algorithm::Algorithm(
   // flag for printing out mean values of temperature and density
   outmean_ = prbdyn.get<string>("OUTMEAN");
 
+  // factor for equation of state:
+  // thermodynamic pressure/specific gas constant (default: 98100.0/287.0)
+  stateqfac_ = prbdyn.get<double>("THERMOPRESS")/prbdyn.get<double>("GASCONSTANT");
+
   return;
 }
 
@@ -102,7 +106,7 @@ void LOMA::Algorithm::InitialCalculations()
 {
   // compute initial density field using initial temperature + therm. pressure
   // temperature stored at phinp in SCATRA is used -> densnp is set
-  ScaTraField().ComputeDensity();
+  ScaTraField().ComputeDensity(stateqfac_);
 
   // initially set density at 0 (i.e., densn)
   // furthermore, set density at -1 (i.e., densnm) for BDF2 (zero vector)
@@ -202,7 +206,7 @@ void LOMA::Algorithm::OuterLoop()
     ScaTraField().Solve();
 
     // compute density using current temperature + thermodynamic pressure
-    ScaTraField().ComputeDensity();
+    ScaTraField().ComputeDensity(stateqfac_);
 
     // get current density at n+1
     GetDensityNp();
