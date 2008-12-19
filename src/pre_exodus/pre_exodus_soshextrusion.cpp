@@ -766,7 +766,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
   for (i_nss = nss.begin(); i_nss != nss.end(); ++i_nss ){
     bool FlatEx = CheckFlatEx(i_nss->second);
     if (FlatEx){
-      cout << "Flattening Nodeset " <<  (i_nss->second).GetName() << "..." <<endl;
+      cout << "Flattening Nodeset " <<  (i_nss->second).GetName() << " to its Normal: "; //"..." <<endl;
       set<int> nodes_from_nodeset = (i_nss->second).GetNodeSet();
       set<int>::iterator it;
 
@@ -787,6 +787,8 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
         // leave for loop if valid normal is found
         if (facenormal.size() != 1) break;
       }
+      
+      PrintVec(cout,facenormal);
       
       // could a normal direction be computed?
       if (facenormal.size()==1){
@@ -1372,7 +1374,7 @@ vector<double> EXODUS::Normal(int head1, int origin, int head2,const EXODUS::Mes
   normal[2] =   ((h1[0]-o[0])*(h2[1]-o[1]) - (h1[1]-o[1])*(h2[0]-o[0]));
 
   double length = sqrt(normal[0]*normal[0] + normal[1]*normal[1] + normal[2]*normal[2]);
-  const double epsilon = 1.E-6;
+  const double epsilon = 1.E-4;
   if (length > epsilon){
     normal[0] = normal[0]/length;
     normal[1] = normal[1]/length;
