@@ -47,6 +47,7 @@ int main(
         char** argv)
 {
 
+// communication
 #ifdef PARALLEL
   MPI_Init(&argc,&argv);
 
@@ -55,6 +56,9 @@ int main(
   MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
   MPI_Comm_size(MPI_COMM_WORLD, &nproc);
   if ((nproc>1) && (myrank==0)) dserror("Using more than one processor is not supported.");
+  RefCountPtr<Epetra_Comm> comm = rcp(new Epetra_MpiComm(MPI_COMM_WORLD));
+#else
+  RefCountPtr<Epetra_Comm> comm = rcp(new Epetra_SerialComm());
 #endif
 
   string exofile;
@@ -117,6 +121,15 @@ int main(
     dserror("CommandLineProcessor reported an error");
   }
 
+  // create a problem instance
+  Teuchos::RCP<DRT::Problem> problem = DRT::Problem::Instance();
+
+  // create error files
+  // call this one rather early, since ReadConditions etc
+  // underlying methods may try to write to allfiles.out_err
+  // this (old-style) global variable is (indirectly) set as well
+  problem->OpenErrorFile(*comm, datfile);
+
   // centerline related: transfer separate doubles into vector
   cline_coordcorr[0] = clinedx; cline_coordcorr[1] = clinedy; cline_coordcorr[2] = clinedz;
 
@@ -128,7 +141,7 @@ int main(
     if (datfile!="")
     {
       // just validate a given BACI input file
-      EXODUS::ValidateInputFile(datfile);
+      EXODUS::ValidateInputFile(comm, datfile);
       return 0;
     }
     else
@@ -256,7 +269,7 @@ int main(
 
     // screen info
     cout << "creating and checking BACI input file       --> " << datfile << endl;
-    RCP<Time> timer = TimeMonitor::getNewTimer("pre-exodus timer");;
+    RCP<Time> timer = TimeMonitor::getNewTimer("pre-exodus timer");
 
     // check for positive Element-Center-Jacobians and otherwise rewind them
     {
@@ -279,8 +292,11 @@ int main(
     }
 
     //validate the generated BACI input file
-    EXODUS::ValidateInputFile(datfile);
+    EXODUS::ValidateInputFile(comm, datfile);
   }
+
+  // free the global problem instance
+  problem->Done();
 
 #ifdef PARALLEL
   MPI_Finalize();

@@ -20,6 +20,7 @@ Validate a given BACI input file (after all preprocessing steps)
 
 #include "pre_exodus_validate.H"
 #include "pre_exodus_soshextrusion.H" //just temporarly for gmsh-plot
+#include "../drt_io/io_control.H"     //for writing to the error file
 
 
 using namespace std;
@@ -27,34 +28,16 @@ using namespace Teuchos;
 using namespace EXODUS;
 
 
-void EXODUS::ValidateInputFile(const string datfile)
+void EXODUS::ValidateInputFile(const RCP<Epetra_Comm> comm, const string datfile)
 {
   // read and check the provided header file
   //cout << "checking BACI input file       --> "<<datfile<< endl;
 
-  // communication
-#ifdef PARALLEL
-  int myrank = 0;
-  int nproc  = 1;
-  MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
-  MPI_Comm_size(MPI_COMM_WORLD, &nproc);
-  if ((nproc>1) && (myrank==0)) dserror("Using more than one processor is not supported.");
-  RefCountPtr<Epetra_Comm> comm = rcp(new Epetra_MpiComm(MPI_COMM_WORLD));
-#else
-  RefCountPtr<Epetra_Comm> comm = rcp(new Epetra_SerialComm());
-#endif
-
-  // create a problem instance
+  // access our problem instance
   Teuchos::RCP<DRT::Problem> problem = DRT::Problem::Instance();
 
-  // create error files
-  // call this one rather early, since ReadConditions etc
-  // underlying methods may try to write to allfiles.out_err
-  // this (old-style) global variable is (indirectly) set as well
-  problem->OpenErrorFile(*comm, datfile);
-
   // create a DatFileReader
-  DRT::INPUT::DatFileReader reader(datfile, comm, 0,false);
+  DRT::INPUT::DatFileReader reader(datfile,comm, 0,false);
   reader.Activate();
 
   // validate dynamic and solver sections
@@ -74,9 +57,6 @@ void EXODUS::ValidateInputFile(const string datfile)
   // the input file seems to be valid
   cout<<"...OK"<<endl<<endl;
 
-  // clean up
-  problem->Done();
-
   return;
 }
 
@@ -90,6 +70,7 @@ void EXODUS::ValidateMeshElementJacobians(Mesh& mymesh)
   for(i_eb=myebs.begin(); i_eb!=myebs.end(); ++i_eb){
     RCP<ElementBlock> eb = i_eb->second;
     const DRT::Element::DiscretizationType distype = PreShapeToDrt(eb->GetShape());
+    // check and rewind if necessary
     ValidateElementJacobian(mymesh,distype,eb);
     // full check at all gausspoints
     int invalid_dets = ValidateElementJacobian_fullgp(mymesh,distype,eb);
@@ -104,9 +85,12 @@ void EXODUS::ValidateElementJacobian(Mesh& mymesh, const DRT::Element::Discretiz
   DRT::UTILS::GaussRule3D integrationrule_1point = DRT::UTILS::intrule3D_undefined;
   switch(distype)
   {
-  case DRT::Element::hex8: case DRT::Element::hex20: case DRT::Element::hex27:
+  case DRT::Element::hex8: case DRT::Element::hex20:
       integrationrule_1point = DRT::UTILS::intrule_hex_1point;
       break;
+  case DRT::Element::hex27:
+    integrationrule_1point = DRT::UTILS::intrule_hex_27point;  // one point is not enough for hex27!!
+    break;
   case DRT::Element::tet4: case DRT::Element::tet10:
       integrationrule_1point = DRT::UTILS::intrule_tet_1point;
       break;
@@ -130,16 +114,20 @@ void EXODUS::ValidateElementJacobian(Mesh& mymesh, const DRT::Element::Discretiz
   // shape functions derivatives
   const int NSD = 3;
   Epetra_SerialDenseMatrix    deriv(NSD, iel);
-  DRT::UTILS::shape_function_3D_deriv1(deriv,intpoints.qxg[0][0],intpoints.qxg[0][1],intpoints.qxg[0][2],distype);
 
   // go through all elements
   RCP<map<int,vector<int> > > eleconn = eb->GetEleConn();
   map<int,vector<int> >::iterator i_ele;
   for(i_ele=eleconn->begin();i_ele!=eleconn->end();++i_ele){
-    if(!PositiveEle(i_ele->second,mymesh,deriv)){
-      i_ele->second = RewindEle(i_ele->second,distype);
-      // double check
-      if(!PositiveEle(i_ele->second,mymesh,deriv)) dserror("Could not determine a proper rewinding");
+    for (int igp = 0; igp < intpoints.nquad; ++igp) {
+      DRT::UTILS::shape_function_3D_deriv1(deriv,intpoints.qxg[igp][0],intpoints.qxg[igp][1],intpoints.qxg[igp][2],distype);
+      if(!PositiveEle(i_ele->first,i_ele->second,mymesh,deriv))
+      {
+        i_ele->second = RewindEle(i_ele->second,distype);
+        // double check
+        if(!PositiveEle(i_ele->first,i_ele->second,mymesh,deriv)) 
+          dserror("Could not determine a proper rewinding for element id %d",i_ele->first);
+      }
     }
   }
 
@@ -194,7 +182,7 @@ int EXODUS::ValidateElementJacobian_fullgp(Mesh& mymesh, const DRT::Element::Dis
   for(i_ele=eleconn->begin();i_ele!=eleconn->end();++i_ele){
     for (int igp = 0; igp < intpoints.nquad; ++igp) {
       DRT::UTILS::shape_function_3D_deriv1(deriv,intpoints.qxg[igp][0],intpoints.qxg[igp][1],intpoints.qxg[igp][2],distype);
-      if (PositiveEle(i_ele->second,mymesh,deriv) == false){
+      if (PositiveEle(i_ele->first,i_ele->second,mymesh,deriv) == false){
         invalids++;
       }
     }
@@ -204,7 +192,7 @@ int EXODUS::ValidateElementJacobian_fullgp(Mesh& mymesh, const DRT::Element::Dis
 }
 
 
-bool EXODUS::PositiveEle(const vector<int>& nodes,const Mesh& mymesh,const Epetra_SerialDenseMatrix& deriv)
+bool EXODUS::PositiveEle(const int& eleid, const vector<int>& nodes,const Mesh& mymesh,const Epetra_SerialDenseMatrix& deriv)
 {
   const int iel = deriv.N();
   const int NSD = deriv.M();
@@ -226,10 +214,35 @@ bool EXODUS::PositiveEle(const vector<int>& nodes,const Mesh& mymesh,const Epetr
                      xjm(0,2)*xjm(1,1)*xjm(2,0)-
                      xjm(0,0)*xjm(1,2)*xjm(2,1)-
                      xjm(0,1)*xjm(1,0)*xjm(2,2);
-  if (abs(det) < 1E-16) dserror("ZERO JACOBIAN DETERMINANT");
 
-  if (det < 0.0) return false;
-  else return true;
+  if (abs(det) < 1E-16)
+  {
+  //  if (iel < 27)
+      dserror("ZERO JACOBIAN DETERMINANT FOR ELEMENT %d: DET = %lf",eleid,det);
+ //   else ;
+      // do not stop for hex27 elements, since wrong orientation generated by Cubit 
+      // can cause here also ZERO(!) determinants
+ /*   {
+      // write info to the error log file
+      FILE* errfile = DRT::Problem::Instance()->ErrorFile()->Handle();
+      fprintf(errfile,"ZERO JACOBIAN DETERMINANT FOR HEX27 ELEMENT %d: DET = %lf -> REWIND\n",eleid,det);
+      fflush(errfile);
+      // please rewind!
+      return false;
+      //if (det <= 0.0) {return false;} else {return true;}
+    }*/
+  }
+
+  if (det < 0.0) 
+  {
+    // write info to the error log file
+    FILE* errfile = DRT::Problem::Instance()->ErrorFile()->Handle();
+    fprintf(errfile,"NEGATIVE JACOBIAN DETERMINANT FOR ELEMENT %d: DET = %lf -> REWIND\n",eleid,det);
+    fflush(errfile);
+    return false;
+  }
+  else 
+    return true;
 }
 
 int EXODUS::EleSaneSign(const vector<int>& nodes,const map<int,vector<double> >& nodecoords)
@@ -358,6 +371,23 @@ vector<int> EXODUS::RewindEle(vector<int> old_nodeids, const DRT::Element::Discr
     new_nodeids[0] = old_nodeids[0];
     new_nodeids[2] = old_nodeids[2];
     new_nodeids[4] = old_nodeids[4];
+    break;
+  }
+  case DRT::Element::hex27:{
+    // nodes 1 - 20 can stay the same (no rewinding for hex20)
+    for (int i = 0; i < 20; i++)
+    {
+      new_nodeids[i] = old_nodeids[i];
+    }
+    // rewind the nodes on the center of the 6 sides 
+    // and the center node of the hex27 element
+    new_nodeids[20] = old_nodeids[21];
+    new_nodeids[21] = old_nodeids[25];
+    new_nodeids[22] = old_nodeids[24];
+    new_nodeids[23] = old_nodeids[26];
+    new_nodeids[24] = old_nodeids[23];
+    new_nodeids[25] = old_nodeids[22];
+    new_nodeids[26] = old_nodeids[20];
     break;
   }
   default: dserror("no rewinding scheme for this type of element");

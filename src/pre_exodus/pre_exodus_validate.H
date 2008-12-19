@@ -41,7 +41,7 @@ using namespace std;
 namespace EXODUS{
 
 //! validate a given datfile
-void ValidateInputFile(const string datfile);
+void ValidateInputFile(const RCP<Epetra_Comm> comm, const string datfile);
 
 //! Check Elements for positive Jacobian and otherwise 'rewind' them
 void ValidateMeshElementJacobians(EXODUS::Mesh& mymesh);
@@ -52,8 +52,8 @@ void ValidateElementJacobian(EXODUS::Mesh& mymesh,const DRT::Element::Discretiza
 //! Check Elements of distype with full gauss integration rule for positive det at all gps and return number of negative dets
 int ValidateElementJacobian_fullgp(Mesh& mymesh, const DRT::Element::DiscretizationType distype, RCP<ElementBlock> eb);
 
-//! Check one element for positive Jacobian
-bool PositiveEle(const vector<int>& nodes,const EXODUS::Mesh& mymesh,const Epetra_SerialDenseMatrix& deriv);
+//! Check one element for positive Jacobi determinant
+bool PositiveEle(const int& eleid, const vector<int>& nodes,const EXODUS::Mesh& mymesh,const Epetra_SerialDenseMatrix& deriv);
 int EleSaneSign(const vector<int>& nodes,const map<int,vector<double> >& nodecoords);
 
 //! Rewind one Element
