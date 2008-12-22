@@ -581,7 +581,7 @@ void LINALG::SymmetricEigen(Epetra_SerialDenseMatrix& A,
   // a warning might be sufficient
   else
   {
-    if (info > 0) cout << "Lapack algorithm syevd failed" << endl;
+    if (info > 0) cout << "Lapack algorithm syevd failed: " << info << " off-diagonal elements of intermediate tridiagonal form did not converge to zero" << endl;
     if (info < 0) cout << "Illegal value in Lapack syevd call" << endl;
   }
 
