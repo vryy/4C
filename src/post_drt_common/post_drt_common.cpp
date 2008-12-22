@@ -80,7 +80,9 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
   CLP.setOption("file",&file,"control file to open");
   CLP.setOption("output",&output,"output file name [defaults to control file name]");
   CLP.setOption("stresstype",&stresstype_,"stress output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
+  CLP.setOption("stress",&stresstype_,"stress output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
   CLP.setOption("straintype",&straintype_,"strain output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
+  CLP.setOption("strain",&straintype_,"strain output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
 
   CommandLineProcessor::EParseCommandLineReturn
     parseReturn = CLP.parse(argc,argv);
