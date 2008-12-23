@@ -73,6 +73,7 @@ void DRT::ELEMENTS::So_hex8::soh8_reiniteas(const DRT::ELEMENTS::So_hex8::EASTyp
   case DRT::ELEMENTS::So_hex8::soh8_easnone:  neas_ =  0; break;
   }
   eastype_ = EASType;
+  if (eastype_ == DRT::ELEMENTS::So_hex8::soh8_easnone) return; 
   Epetra_SerialDenseMatrix* alpha = NULL;  // EAS alphas
   Epetra_SerialDenseMatrix* alphao = NULL;  // EAS alphas
   Epetra_SerialDenseMatrix* feas = NULL;   // EAS history
