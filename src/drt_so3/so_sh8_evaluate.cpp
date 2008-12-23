@@ -1184,7 +1184,8 @@ int DRT::ELEMENTS::Sosh8Register::Initialize(DRT::Discretization& dis)
 {
   //sosh8_gmshplotdis(dis);
 
-  int num_morphed_so_hex8 = 0;
+  int num_morphed_so_hex8_easmild = 0;
+  int num_morphed_so_hex8_easnone = 0;
 
   // Loop through all elements
   for (int i=0; i<dis.NumMyColElements(); ++i)
@@ -1246,11 +1247,19 @@ int DRT::ELEMENTS::Sosh8Register::Initialize(DRT::Discretization& dis)
         break;
       }
       case DRT::ELEMENTS::So_sh8::undefined: {
-        // here comes plan B: morph So_sh8 to So_hex8
-        actele->SetType(DRT::Element::element_so_hex8);
-        actele->soh8_reiniteas(DRT::ELEMENTS::So_hex8::soh8_easmild);
-        actele->InitJacobianMapping();
-        num_morphed_so_hex8++;
+        if (actele->eastype_ == DRT::ELEMENTS::So_sh8::soh8_eassosh8){
+          // here comes plan B: morph So_sh8 to So_hex8
+          actele->SetType(DRT::Element::element_so_hex8);
+          actele->soh8_reiniteas(DRT::ELEMENTS::So_hex8::soh8_easmild);
+          actele->InitJacobianMapping();
+          num_morphed_so_hex8_easmild++;
+        } else if (actele->eastype_ == DRT::ELEMENTS::So_sh8::soh8_easnone){
+          // here comes plan B: morph So_sh8 to So_hex8
+          actele->SetType(DRT::Element::element_so_hex8);
+          actele->soh8_reiniteas(DRT::ELEMENTS::So_hex8::soh8_easnone);
+          actele->InitJacobianMapping();
+          num_morphed_so_hex8_easnone++;
+        } else dserror("Undefined EAS type");
         break;
       }
       case DRT::ELEMENTS::So_sh8::none: break;
@@ -1261,11 +1270,13 @@ int DRT::ELEMENTS::Sosh8Register::Initialize(DRT::Discretization& dis)
     }
   }
 
-  if (num_morphed_so_hex8>0){
-    cout << endl << num_morphed_so_hex8
+  if (num_morphed_so_hex8_easmild>0){
+    cout << endl << num_morphed_so_hex8_easmild
     << " Sosh8-Elements have no clear 'thin' direction and have morphed to So_hex8 with eas_mild" << endl;
+  } else if (num_morphed_so_hex8_easnone>0){
+    cout << endl << num_morphed_so_hex8_easnone
+    << " Sosh8-Elements have no clear 'thin' direction and have morphed to So_hex8 with eas_none" << endl;
   }
-
 
   // fill complete again to reconstruct element-node pointers,
   // but without element init, etc.

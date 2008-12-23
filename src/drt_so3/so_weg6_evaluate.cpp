@@ -23,6 +23,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/linalg_serialdensevector.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../drt_mat/viscoanisotropic.H"
 
 //#include "Epetra_SerialDenseSolver.h"
 
@@ -303,7 +304,13 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
 
     case calc_struct_update_istep:
     {
-      ;// there is nothing to do here at the moment
+      // Update of history for visco material
+      RefCountPtr<MAT::Material> mat = Material();
+      if (mat->MaterialType() == m_viscoanisotropic)
+      {
+        MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
+        visco->Update();
+      }
     }
     break;
 

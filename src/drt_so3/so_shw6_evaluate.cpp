@@ -30,6 +30,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "Epetra_SerialDenseSolver.h"
+#include "../drt_mat/viscoanisotropic.H"
 
 
 using namespace std; // cout etc.
@@ -293,6 +294,13 @@ int DRT::ELEMENTS::So_shw6::Evaluate(ParameterList& params,
         Epetra_SerialDenseMatrix* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
         // alphao := alpha
         LINALG::DENSEFUNCTIONS::update<soshw6_easpoisthick,1>(*alphao,*alpha);
+      }
+      // Update of history for visco material
+      RefCountPtr<MAT::Material> mat = Material();
+      if (mat->MaterialType() == m_viscoanisotropic)
+      {
+        MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
+        visco->Update();
       }
     }
     break;

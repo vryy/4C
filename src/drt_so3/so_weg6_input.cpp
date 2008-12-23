@@ -15,6 +15,7 @@ Maintainer: Moritz Frenzel
 
 #include "so_weg6.H"
 #include "../drt_mat/artwallremod.H"
+#include "../drt_mat/viscoanisotropic.H"
 
 /*----------------------------------------------------------------------*
  |  read element input (public)                                maf 04/07|
@@ -52,6 +53,9 @@ bool DRT::ELEMENTS::So_weg6::ReadElement()
   if (Material()->MaterialType() == m_artwallremod){
     MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(Material().get());
     remo->Setup(NUMGPT_WEG6, this->Id());
+  } else if (Material()->MaterialType() == m_viscoanisotropic){
+    MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(Material().get());
+    visco->Setup(NUMGPT_WEG6);
   }
 
 
