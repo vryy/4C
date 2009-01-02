@@ -181,7 +181,8 @@ void FLD::TIMEINT_THETA_BDF2::CalculateAcceleration(
                  dt(n-1)*[dt(n)+dt(n-1)]
 
     For low-Mach-number flow, the same is done for density values,
-    which are located at the "pressure dofs" of "vede"-vectors.
+    which are located at the "pressure dofs" of "vede"-vectors, and all
+    velocity values are multiplied by the respective density values.
 
     */
 

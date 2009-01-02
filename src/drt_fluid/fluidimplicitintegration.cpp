@@ -106,7 +106,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
     if (timealgo_ != timeint_afgenalpha)
       dserror("no starting algorithm supported for schemes other than af-gen-alpha");
     else startalgo_= true;
-    if (numstasteps_>stepmax_) 
+    if (numstasteps_>stepmax_)
       dserror("more steps for starting algorithm than steps overall");
   }
 
@@ -395,7 +395,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // flag for potential Neumann-type outflow stabilization
   outflow_stab_ = stabparams->get<string>("OUTFLOW_STAB","no_outstab");
 
-  // the vector containing potential Neumann-type outflow term: either 
+  // the vector containing potential Neumann-type outflow term: either
   // in any case for conservative form of convective term or as a
   // stabilization term for convective form of convective term
   if (convform_ == "conservative" or outflow_stab_ == "yes_outstab")
@@ -625,6 +625,8 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
   // set part(s) of the rhs vector(s) belonging to the old timestep
   // for low-Mach-number flow: distinguish momentum and continuity part
   // (continuity part only meaningful for low-Mach-number flow)
+  // For low-Mach-number flow, all velocity values are multiplied by the
+  // respective density values.
   //
   // Stationary/af-generalized-alpha:
   //
@@ -763,7 +765,13 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
     //    acc    = acc * --------- + ------------
     //       (0)           gamma      gamma * dt
     //
-    accnp_->Update(1.0,*velnp_,-1.0,*veln_,0.0);
+    // in case of conservative form: velocity*density
+    if (convform_ == "conservative")
+    {
+      accnp_->Multiply(1.0,*velnp_,*vedenp_,0.0);
+      accnp_->Multiply(-1.0,*veln_,*veden_,1.0);
+    }
+    else accnp_->Update(1.0,*velnp_,-1.0,*veln_,0.0);
     accnp_->Update((gamma_-1.0)/gamma_,*accn_,1.0/(gamma_*dta_));
 
     //       n+alphaM                n+1                      n
@@ -957,8 +965,9 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 
         discret_->SetState("velnp", velaf_ );
         discret_->SetState("vedenp",vedeaf_);
-        discret_->SetState("vedeam",vedeam_);
         discret_->SetState("accam", accam_ );
+        if (convform_ == "conservative") discret_->SetState("vedeam",vedenp_);
+        else                             discret_->SetState("vedeam",vedeam_);
       }
       else
       {
@@ -1285,7 +1294,15 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       //    (i+1)       (i)
       //
       onlyvel->Scale(1.0/(gamma_*dta_));
-      velpressplitter_.AddOtherVector(onlyvel,accnp_);
+      // in case of conservative form: velocity*density
+      if (convform_ == "conservative")
+      {
+        Teuchos::RCP<Epetra_Vector> onlydens = velpressplitter_.ExtractOtherVector(vedenp_);
+        Teuchos::RCP<Epetra_Vector> denstimesvel = velpressplitter_.ExtractOtherVector(vedenp_);
+        denstimesvel->Multiply(1.0, *onlyvel, *onlydens, 0.0);
+        velpressplitter_.AddOtherVector(denstimesvel,accnp_);
+      }
+      else velpressplitter_.AddOtherVector(onlyvel,accnp_);
 
       //       n+alphaM                n+1                      n
       //    acc         = alpha_M * acc     + (1-alpha_M) *  acc
@@ -1584,8 +1601,9 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 
     discret_->SetState("velnp", velaf_ );
     discret_->SetState("vedenp",vedeaf_);
-    discret_->SetState("vedeam",vedeam_);
     discret_->SetState("accam", accam_ );
+    if (convform_ == "conservative") discret_->SetState("vedeam",vedenp_);
+    else                             discret_->SetState("vedeam",vedeam_);
   }
   else
   {
@@ -1656,7 +1674,8 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
  |  accn_  = (velnp_-veln_) / (dt)                                      |
  |                                                                      |
  |  For low-Mach-number flow, the same is done for density values,      |
- |  which are located at the "pressure dofs" of "vede"-vectors.         |
+ |  which are located at the "pressure dofs" of "vede"-vectors and all  |
+ |  velocity values are multiplied by the respective density values.    |
  |                                                                      |
  |                                                           gammi 04/07|
  *----------------------------------------------------------------------*/
@@ -1975,8 +1994,9 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
 
     discret_->SetState("velnp", velaf_ );
     discret_->SetState("vedenp",vedeaf_);
-    discret_->SetState("vedeam",vedeam_);
     discret_->SetState("accam", accam_ );
+    if (convform_ == "conservative") discret_->SetState("vedeam",vedenp_);
+    else                             discret_->SetState("vedeam",vedeam_);
   }
   else
   {
@@ -2294,50 +2314,115 @@ void FLD::FluidImplicitTimeInt::SetTimeLomaFields(
   else
     dserror("velocity/pressure and density vectors do not match in size");
 
-  // get velocity dofs for vede-vectors as copies from vel-vectors
-  vedenp_->Update(1.0,*velnp_,0.0);
-  veden_->Update(1.0,*veln_,0.0);
-
   vector<int>    Indices(numdof);
   vector<double> Values(numdof);
 
-  // insert density values in vedenp- and veden-vectors
-  // loop all nodes on the processor
-  for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+  // There are three different ways for filling the vedenp/veden-vectors:
+  // 1) generalized-alpha/conservative: vel-dofs: density,  pre-dofs: density
+  // 2) generalized-alpha/convective:   vel-dofs: velocity, pre-dofs: density
+  // 3) one-step-theta/BDF2:    vel-dofs: velocity*density, pre-dofs: density
+  // Furthermore, the accn-vector is filled with time derivatives of density
+  // at pre-dof locations for generalized-alpha time integration (contained in
+  // densnm-vector here).
+  // Moreover, for BDF2, the same mentioned above for the vedenp/veden-vectors
+  // is done for the vedenm-vector.
+  if (timealgo_==timeint_afgenalpha)
   {
-    Indices[numdim] = lnodeid*numdof + numdim;
-
-    Values[numdim] = (*densnp)[lnodeid];
-    vedenp_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
-
-    Values[numdim] = (*densn)[lnodeid];
-    veden_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
-  }
-
-  if (timealgo_==timeint_bdf2)
-  {
-    vedenm_->Update(1.0,*velnm_,0.0);
-
-    // insert density values in vedenm-vector
-    // loop all nodes on the processor
-    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    if (convform_ == "conservative")
     {
-      Indices[numdim] = lnodeid*numdof + numdim;
+      // loop all nodes on the processor
+      for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+      {
+        for(int index=0;index<numdim;++index)
+        {
+          Indices[index] = lnodeid*numdof + index;
 
-      Values[numdim] = (*densnm)[lnodeid];
-      vedenm_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+          Values[index] = (*densnp)[lnodeid];
+          vedenp_->ReplaceMyValues(1,&Values[index],&Indices[index]);
+
+          Values[index] = (*densn)[lnodeid];
+          veden_->ReplaceMyValues(1,&Values[index],&Indices[index]);
+        }
+
+        Indices[numdim] = lnodeid*numdof + numdim;
+
+        Values[numdim] = (*densnp)[lnodeid];
+        vedenp_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+
+        Values[numdim] = (*densn)[lnodeid];
+        veden_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+
+        Values[numdim] = (*densnm)[lnodeid];
+        accn_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+      }
+    }
+    else
+    {
+      // get velocity dofs for vede-vectors as copies from vel-vectors
+      vedenp_->Update(1.0,*velnp_,0.0);
+      veden_->Update(1.0,*veln_,0.0);
+
+      // loop all nodes on the processor
+      for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+      {
+        Indices[numdim] = lnodeid*numdof + numdim;
+
+        Values[numdim] = (*densnp)[lnodeid];
+        vedenp_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+
+        Values[numdim] = (*densn)[lnodeid];
+        veden_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+
+        Values[numdim] = (*densnm)[lnodeid];
+        accn_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+      }
     }
   }
-  else if (timealgo_==timeint_afgenalpha)
+  else
   {
-    // insert density time derivative values in accn-vector
+    // insert density values in vedenp- and veden-vectors
     // loop all nodes on the processor
     for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
     {
+      for(int index=0;index<numdim;++index)
+      {
+        Indices[index] = lnodeid*numdof + index;
+
+        Values[index] = (*densnp)[lnodeid]*(*velnp_)[Indices[index]];
+        vedenp_->ReplaceMyValues(1,&Values[index],&Indices[index]);
+
+        Values[index] = (*densn)[lnodeid]*(*veln_)[Indices[index]];
+        veden_->ReplaceMyValues(1,&Values[index],&Indices[index]);
+      }
+
       Indices[numdim] = lnodeid*numdof + numdim;
 
-      Values[numdim] = (*densnm)[lnodeid];
-      accn_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+      Values[numdim] = (*densnp)[lnodeid];
+      vedenp_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+
+      Values[numdim] = (*densn)[lnodeid];
+      veden_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+    }
+
+    if (timealgo_==timeint_bdf2)
+    {
+      // insert density values in vedenm-vector
+      // loop all nodes on the processor
+      for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+      {
+        for(int index=0;index<numdim;++index)
+        {
+          Indices[index] = lnodeid*numdof + index;
+
+          Values[index] = (*densnm)[lnodeid]*(*velnm_)[Indices[index]];
+          vedenm_->ReplaceMyValues(1,&Values[index],&Indices[index]);
+        }
+
+        Indices[numdim] = lnodeid*numdof + numdim;
+
+        Values[numdim] = (*densnm)[lnodeid];
+        vedenm_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+      }
     }
   }
 
@@ -2369,32 +2454,77 @@ void FLD::FluidImplicitTimeInt::SetIterLomaFields(
   else
     dserror("velocity/pressure and density vectors do not match in size");
 
-  // get velocity dofs for vedenp-vector as copies from velnp-vector
-  vedenp_->Update(1.0,*velnp_,0.0);
-
   vector<int>    Indices(numdof);
   vector<double> Values(numdof);
 
-  // insert density values in vedenp-vector
-  // loop all nodes on the processor
-  for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
-  {
-    Indices[numdim] = lnodeid*numdof + numdim;
-
-    Values[numdim] = (*densnp)[lnodeid];
-    vedenp_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
-  }
-
+  // There are three different ways for filling the vedenp-vector:
+  // 1) generalized-alpha/conservative: vel-dofs: density,  pre-dofs: density
+  // 2) generalized-alpha/convective:   vel-dofs: velocity, pre-dofs: density
+  // 3) one-step-theta/BDF2:    vel-dofs: velocity*density, pre-dofs: density
+  // Furthermore, the accnp-vector is filled with time derivatives of density
+  // at pre-dof locations for generalized-alpha time integration
   if (timealgo_==timeint_afgenalpha)
   {
-    // insert density time derivative values in accn-vector
+    if (convform_ == "conservative")
+    {
+      // insert density values in vedenp-vector
+      // loop all nodes on the processor
+      for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+      {
+        for(int index=0;index<numdim;++index)
+        {
+          Indices[index] = lnodeid*numdof + index;
+
+          Values[index] = (*densnp)[lnodeid];
+          vedenp_->ReplaceMyValues(1,&Values[index],&Indices[index]);
+        }
+
+        Indices[numdim] = lnodeid*numdof + numdim;
+
+        Values[numdim] = (*densnp)[lnodeid];
+        vedenp_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+
+        Values[numdim] = (*densdtnp)[lnodeid];
+        accnp_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+      }
+    }
+    else
+    {
+      // get velocity dofs for vedenp-vector as copies from velnp-vector
+      vedenp_->Update(1.0,*velnp_,0.0);
+
+      // insert density time derivative values in accn-vector
+      // loop all nodes on the processor
+      for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+      {
+        Indices[numdim] = lnodeid*numdof + numdim;
+
+        Values[numdim] = (*densnp)[lnodeid];
+        vedenp_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+
+        Values[numdim] = (*densdtnp)[lnodeid];
+        accnp_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+      }
+    }
+  }
+  else
+  {
+    // insert density values in vedenp-vector
     // loop all nodes on the processor
     for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
     {
+      for(int index=0;index<numdim;++index)
+      {
+        Indices[index] = lnodeid*numdof + index;
+
+        Values[index] = (*densnp)[lnodeid]*(*velnp_)[Indices[index]];
+        vedenp_->ReplaceMyValues(1,&Values[index],&Indices[index]);
+      }
+
       Indices[numdim] = lnodeid*numdof + numdim;
 
-      Values[numdim] = (*densdtnp)[lnodeid];
-      accnp_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
+      Values[numdim] = (*densnp)[lnodeid];
+      vedenp_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
     }
   }
 
@@ -2814,8 +2944,9 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
 
       discret_->SetState("velnp", velaf_ );
       discret_->SetState("vedenp",vedeaf_);
-      discret_->SetState("vedeam",vedeam_);
       discret_->SetState("accam", accam_ );
+      if (convform_ == "conservative") discret_->SetState("vedeam",vedenp_);
+      else                             discret_->SetState("vedeam",vedeam_);
     }
     else
     {

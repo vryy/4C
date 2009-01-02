@@ -660,8 +660,8 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
     velint_.Multiply(evelnp,densfunct_);
 
-    // get (density-weighted) history data at integration point
-    histmom_.Multiply(emhist,densfunct_);
+    // get history data at integration point
+    histmom_.Multiply(emhist,funct_);
     histcon_ = funct_.Dot(echist);
 
     // get velocity derivatives at integration point
@@ -808,7 +808,8 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
       rhscon_ = - timefacrhs * densdt;
 
       // get acceleration at time n+alpha_M at integration point
-      accintam_.Multiply(eaccam,densamfunct_);
+      if (conservative) accintam_.Multiply(eaccam,funct_);
+      else              accintam_.Multiply(eaccam,densamfunct_);
 
       // evaluate residual once for all stabilization right hand sides
       for (int rr=0;rr<2;++rr)
