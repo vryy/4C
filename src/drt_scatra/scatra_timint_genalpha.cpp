@@ -43,6 +43,7 @@ SCATRA::TimIntGenAlpha::TimIntGenAlpha(
   // temporal solution derivative at time n
   phidtn_  = LINALG::CreateVector(*dofrowmap,true);
 
+  // only required for low-Mach-number flow
   if (prbtype_ == "loma")
   {
     // density at times n, n+alpha_M and n+alpha_F
@@ -53,6 +54,11 @@ SCATRA::TimIntGenAlpha::TimIntGenAlpha(
     // time derivative of density at times n+1 and n
     densdtnp_ = LINALG::CreateVector(*dofrowmap,true);
     densdtn_  = LINALG::CreateVector(*dofrowmap,true);
+
+    // time derivative of thermodynamic pressure at n+alpha_F and n
+    // (computed if not constant, otherwise remaining zero)
+    thermpressdtaf_ = 0.0;
+    thermpressdtn_  = 0.0;
   }
 
   // compute specific time factor for generalized-alpha time integration:
@@ -99,6 +105,32 @@ void SCATRA::TimIntGenAlpha::SetOldPartOfRighthandside()
 
 
 /*----------------------------------------------------------------------*
+ | compute initial time derivative of density field            vg 12/08 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntGenAlpha::ComputeInitialDensityDerivative()
+{
+  // -------------------------------------------------------------------
+  // get a vector layout from the discretization to construct matching
+  // vectors and matrices
+  //                 local <-> global dof numbering
+  // -------------------------------------------------------------------
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+  // define auxiliary vectors
+  Teuchos::RCP<Epetra_Vector> invphi = LINALG::CreateVector(*dofrowmap,true);
+  Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*dofrowmap,true);
+
+  // densdtn_ = densn_*thermpressdtn_/thermpressn_ - densn_*phidtn_/phin_
+  invphi->Reciprocal(*phin_);
+  tmp->Multiply(1.0, *invphi, *densn_, 0.0);
+  densdtn_->Multiply(-1.0, *tmp, *phidtn_, 0.0);
+  densdtn_->Update((thermpressdtn_/thermpressn_), *densn_, 1.0);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  | perform an explicit predictor step                          vg 11/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntGenAlpha::ExplicitPredictor()
@@ -110,19 +142,47 @@ void SCATRA::TimIntGenAlpha::ExplicitPredictor()
 
 
 /*----------------------------------------------------------------------*
+ | predict thermodynamic pressure and time derivative          vg 12/08 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntGenAlpha::PredictThermPressure()
+{
+  // same-thermodynamic-pressure predictor (not required to be performed,
+  // since we just updated the thermodynamic pressure, and thus,
+  // thermpressnp_ = thermpressn_)
+  // prediction of time derivative:
+  double fact = (gamma_-1.0)/gamma_;
+  thermpressdtnp_ = fact*thermpressdtn_;
+
+  // same-thermodynamic-pressure-derivative predictor (currrently not used)
+  //thermpressnp_ += dta_*thermpressdtn_;
+  // prediction of time derivative not required (would also not be required
+  // to be performed, since we just updated the time derivatives of density,
+  // and thus, thermpressdtnp_ = thermpressdtn_)
+
+  // time derivative of thermodynamic pressure at n+alpha_F
+  // -> required as right-hand-side contribution to temperature equation
+  thermpressdtaf_ = alphaF_*thermpressdtnp_ + (1.0-alphaF_)*thermpressdtn_;
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  | predict density for next time step for low-Mach-number flow vg 11/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntGenAlpha::PredictDensity()
 {
   // same-density predictor (not required to be performed, since we just
   // updated the density field, and thus, densnp_ = densn_)
-  // prediction of time derivative not required, for the time being
+  // consistent prediction of time derivative
+  // (not required here, for the time being, since it will be calculated
+  //  before being required by FLUID solver)
   //double fact = (gamma_-1.0)/gamma_;
   //densdtnp_->Update(fact,*densdtn_,0.0);
 
   // same-density-derivative predictor
   //densnp_->Update(dta_,*densdtn_,1.0);
-  // prediction of time derivative not required (would also not be required 
+  // prediction of time derivative not required (would also not be required
   // to be performed, since we just updated the time derivatives of density,
   // and thus, densdtnp_ = densdtn_)
 
@@ -164,11 +224,90 @@ void SCATRA::TimIntGenAlpha::AddSpecificTimeIntegrationParameters(
   params.set("time factor",genalphafac_*dta_);
   params.set("alpha_F",alphaF_);
 
+  if (prbtype_ == "loma")
+    params.set("time derivative of thermodynamic pressure",thermpressdtaf_);
+
   if (prbtype_ == "loma" and convform_ != "conservative")
        discret_->SetState("densnp",densam_);
   else discret_->SetState("densnp",densnp_);
 
   return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | compute thermodynamic pressure for low-Mach-number flow     vg 12/08 |
+ *----------------------------------------------------------------------*/
+double SCATRA::TimIntGenAlpha::ComputeThermPressure()
+{
+  // compute temperature at n+alpha_F
+  phiaf_->Update((alphaF_),*phinp_,(1.0-alphaF_),*phin_,0.0);
+
+  // set scalar and density vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState("phinp",phiaf_);
+  discret_->SetState("densnp",densaf_);
+
+  // define element parameter list
+  ParameterList eleparams;
+
+  // provide velocity field (export to column map necessary for parallel evaluation)
+  // SetState cannot be used since this Multivector is nodebased and not dofbased
+  const Epetra_Map* nodecolmap = discret_->NodeColMap();
+  RefCountPtr<Epetra_MultiVector> tmp = rcp(new Epetra_MultiVector(*nodecolmap,3));
+  LINALG::Export(*convel_,*tmp);
+  eleparams.set("velocity field",tmp);
+
+  // set action for elements
+  eleparams.set("action","calc_therm_press");
+
+  // variables for integrals of velocity-divergence, rhs and domain
+  double divuint = 0.0;
+  double rhsint  = 0.0;
+  double domint  = 0.0;
+  eleparams.set("velocity-divergence integral",divuint);
+  eleparams.set("rhs integral",                rhsint);
+  eleparams.set("domain integral",             domint);
+
+  // evaluate integrals of velocity-divergence, rhs and domain
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
+  // get integral values on this proc
+  divuint = eleparams.get<double>("velocity-divergence integral");
+  rhsint = eleparams.get<double>("rhs integral");
+  domint  = eleparams.get<double>("domain integral");
+
+  // get integral values in parallel case
+  double pardivuint = 0.0;
+  double parrhsint = 0.0;
+  double pardomint  = 0.0;
+  discret_->Comm().SumAll(&divuint,&pardivuint,1);
+  discret_->Comm().SumAll(&rhsint,&parrhsint,1);
+  discret_->Comm().SumAll(&domint,&pardomint,1);
+
+  // clean up
+  discret_->ClearState();
+
+  // compute thermodynamic pressure (with specific heat ratio fixed to be 1.4)
+  const double shr = 1.4;
+  const double lhs = alphaF_*genalphafac_*dta_*shr*divuint/domint;
+  const double rhs = genalphafac_*dta_*(shr-1.0)*rhsint/domint;
+  thermpressnp_ = rhs/(1.0 + lhs);
+
+  // print out thermodynamic pressure
+  if (myrank_ == 0) cout << "Thermodynamic pressure: " << thermpressnp_ << endl;
+
+  // compute time derivative of thermodynamic pressure at n+1
+  // tpdt(n+1) = (tp(n+1)-tp(n))/(gamma*dt)+((gamma-1)/gamma)*tpdt(n)
+  double fact1 = 1.0/(gamma_*dta_);
+  double fact2 = (gamma_-1.0)/gamma_;
+  thermpressdtnp_ = fact1*(thermpressnp_-thermpressn_) + fact2*thermpressdtn_;
+
+  // time derivative of thermodynamic pressure at n+alpha_F
+  // -> required as right-hand-side contribution to temperature equation
+  thermpressdtaf_ = alphaF_*thermpressdtnp_ + (1.0-alphaF_)*thermpressdtn_;
+
+  return thermpressnp_;
 }
 
 
@@ -206,6 +345,18 @@ void SCATRA::TimIntGenAlpha::Update()
 
   // solution of this step becomes most recent solution of the last step
   phin_ ->Update(1.0,*phinp_,0.0);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | update thermodynamic pressure at n for low-Mach-number flow vg 12/08 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntGenAlpha::UpdateThermPressure()
+{
+  thermpressn_   = thermpressnp_;
+  thermpressdtn_ = thermpressdtnp_;
 
   return;
 }
@@ -301,6 +452,8 @@ void SCATRA::TimIntGenAlpha::CalcInitialPhidt()
       const double frt = 96485.3399/(8.314472 * params_->get<double>("TEMPERATURE",298.0));
       eleparams.set("frt",frt); // factor F/RT
     }
+    else if (prbtype_ == "loma")
+      eleparams.set("time derivative of thermodynamic pressure",thermpressdtn_);
 
     //provide velocity field (export to column map necessary for parallel evaluation)
     //SetState cannot be used since this Multivector is nodebased and not dofbased

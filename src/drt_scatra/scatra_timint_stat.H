@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file scatra_timint_stat.H
-\brief 
+\brief
 
 <pre>
 Maintainer: Georg Bauer
@@ -35,21 +35,36 @@ public:
   /// Destructor
   virtual ~TimIntStationary();
 
-  //! set velocity field for low-Mach-number flow
+  /// Initialization procedure before the first time step is done
+  void PrepareFirstTimeStep(){return;};
+
+  /// set velocity field for low-Mach-number flow
   void SetLomaVelocity(RCP<const Epetra_Vector> extvel,
                        RCP<DRT::Discretization> fluiddis);
 
-  //! predict density field for low-Mach-number flow
+  /// compute initial time derivative of density field for low-Mach-number flow
+  void ComputeInitialDensityDerivative(){return;};
+
+  /// predict thermodynamic pressure and time derivative for low-Mach-number flow
+  void PredictThermPressure(){return;};
+
+  /// predict density field (and time derivative) for low-Mach-number flow
   void PredictDensity(){return;};
 
-  //! compute time derivative of density field for low-Mach-number flow
+  /// compute thermodynamic pressure and time derivative for low-Mach-number flow
+  double ComputeThermPressure(){return 0.0;};
+
+  /// compute time derivative of density field for low-Mach-number flow
   void ComputeDensityDerivative(){return;};
 
   /// Update the solution after convergence of the nonlinear iteration.
   /// Current solution becomes old solution of next timestep.
   void Update(){return;};
 
-  //! update density field for low-Mach-number flow
+  /// update thermodynamic pressure and time derivative for low-Mach-number flow
+  void UpdateThermPressure(){return;};
+
+  /// update density field (and time derivative) for low-Mach-number flow
   void UpdateDensity(){return;};
 
   /// read restart data
@@ -58,14 +73,11 @@ public:
 
 protected:
 
-  // don't want = operator and cctor
+  /// don't want = operator and cctor
   TimIntStationary operator = (const TimIntStationary& old);
 
-  //! copy constructor
+  /// copy constructor
   TimIntStationary (const TimIntStationary& old);
-
-  /// Initialization procedure before the first time step is done
-  void PrepareFirstTimeStep(){return;};
 
   /// Set the part of the righthandside belonging to the last timestep.
   void SetOldPartOfRighthandside();

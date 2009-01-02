@@ -35,21 +35,36 @@ public:
   /// Destructor
   virtual ~TimIntGenAlpha();
 
-  //! set velocity field for low-Mach-number flow
+  /// set velocity field for low-Mach-number flow
   void SetLomaVelocity(RCP<const Epetra_Vector> extvel,
                        RCP<DRT::Discretization> fluiddis);
 
-  //! predict density field for low-Mach-number flow
+  /// Initialization procedure before the first time step is done
+  void PrepareFirstTimeStep();
+
+  /// compute initial time derivative of density field for low-Mach-number flow
+  void ComputeInitialDensityDerivative();
+
+  /// predict thermodynamic pressure and time derivative for low-Mach-number flow
+  void PredictThermPressure();
+
+  /// predict density field and time derivative for low-Mach-number flow
   void PredictDensity();
 
-  //! compute time derivative of density field for low-Mach-number flow
+  /// compute thermodynamic pressure and time derivative for low-Mach-number flow
+  double ComputeThermPressure();
+
+  /// compute time derivative of density field for low-Mach-number flow
   void ComputeDensityDerivative();
 
   /// Update the solution after convergence of the nonlinear iteration.
   /// Current solution becomes old solution of next timestep.
   void Update();
 
-  //! update density field for low-Mach-number flow
+  /// update thermodynamic pressure and time derivative for low-Mach-number flow
+  void UpdateThermPressure();
+
+  /// update density field and time derivative for low-Mach-number flow
   void UpdateDensity();
 
   /// read restart data
@@ -58,14 +73,11 @@ public:
 
 protected:
 
-  // don't want = operator and cctor
+  /// don't want = operator and cctor
   TimIntGenAlpha operator = (const TimIntGenAlpha& old);
 
-  //! copy constructor
+  /// copy constructor
   TimIntGenAlpha (const TimIntGenAlpha& old);
-
-  /// Initialization procedure before the first time step is done
-  void PrepareFirstTimeStep();
 
   /// Set the part of the righthandside belonging to the last timestep.
   void SetOldPartOfRighthandside();
@@ -94,6 +106,9 @@ private:
   /// calculate initial value for phidtn_
   void CalcInitialPhidt();
 
+  /// solution vector at time n+alpha_F
+  RCP<Epetra_Vector>  phiaf_;
+
   /// density at times n+alpha_M and n+alpha_F
   RCP<Epetra_Vector>  densam_;
   RCP<Epetra_Vector>  densaf_;
@@ -103,6 +118,14 @@ private:
   double alphaF_;
   double gamma_;
   double genalphafac_;
+
+  /// LOMA-specific parameter: thermodynamic pressure at n+1
+  double thermpressnp_;
+
+  /// LOMA-specific parameter: time derivative of thermodynamic pressure
+  /// at n+1 and n+alpha_F
+  double thermpressdtnp_;
+  double thermpressdtaf_;
 
 }; // class TimIntGenAlpha
 

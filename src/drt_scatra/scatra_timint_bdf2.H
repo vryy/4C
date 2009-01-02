@@ -34,21 +34,36 @@ public:
   /// Destructor
   virtual ~TimIntBDF2();
 
-  //! set velocity field for low-Mach-number flow
+  /// set velocity field for low-Mach-number flow
   void SetLomaVelocity(RCP<const Epetra_Vector> extvel,
                        RCP<DRT::Discretization> fluiddis);
 
-  //! predict density field for low-Mach-number flow
+  /// Initialization procedure before the first time step is done
+  void PrepareFirstTimeStep();
+
+  /// compute initial time derivative of density field for low-Mach-number flow
+  void ComputeInitialDensityDerivative(){return;};
+
+  /// predict thermodynamic pressure for low-Mach-number flow
+  void PredictThermPressure();
+
+  /// predict density field for low-Mach-number flow
   void PredictDensity();
 
-  //! compute time derivative of density field for low-Mach-number flow
+  /// compute thermodynamic pressure and time derivative for low-Mach-number flow
+  double ComputeThermPressure();
+
+  /// compute time derivative of density field for low-Mach-number flow
   void ComputeDensityDerivative(){return;};
 
   /// Update the solution after convergence of the nonlinear iteration.
   /// Current solution becomes old solution of next timestep.
   void Update();
 
-  //! update density field for low-Mach-number flow
+  /// update thermodynamic pressure for low-Mach-number flow
+  void UpdateThermPressure();
+
+  /// update density field for low-Mach-number flow
   void UpdateDensity();
 
   /// read restart data
@@ -62,9 +77,6 @@ protected:
 
   /// copy constructor
   TimIntBDF2 (const TimIntBDF2& old);
-
-  /// Initialization procedure before the first time step is done
-  void PrepareFirstTimeStep();
 
   /// Set the part of the righthandside belonging to the last timestep.
   void SetOldPartOfRighthandside();
@@ -91,6 +103,13 @@ private:
 
   /// time factor for one-step-theta/BDF2 time integration
   double theta_;
+
+  /// LOMA-specific parameters: thermodynamic pressure at n+1 and n-1
+  double thermpressnp_;
+  double thermpressnm_;
+
+  /// LOMA-specific parameter: time derivative of thermodynamic pressure at n+1
+  double thermpressdtnp_;
 
 }; // class TimIntBDF2
 

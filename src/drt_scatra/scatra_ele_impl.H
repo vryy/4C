@@ -185,7 +185,8 @@ public:
         const bool                            is_stationary, ///< flag indicating stationary formulation
         const bool                            is_genalpha, ///< generalized-alpha flag
         const bool                            islinear, ///< flag for linear/nonlinear problem
-        const double                          frt ///< factor F/RT needed for ELCH calculations
+        const double                          frt, ///< factor F/RT needed for ELCH calculations
+        const double                          thermpressdt ///< time deriv. of therm. press. (for temp. eq.)
     );
 
     //! calculate mass matrix and rhs for determining initial time derivative
@@ -206,7 +207,8 @@ public:
         const bool                            conservative, ///< flag for conservative form
         const enum SCATRA::TauType            whichtau, ///< flag for stabilization parameter definition
         const string                          fssgd, ///< subgrid-diff. flag
-        const double                          frt ///< factor F/RT needed for ELCH calculations
+        const double                          frt, ///< factor F/RT needed for ELCH calculations
+        const double                          thermpressdt ///< time deriv. of therm. press. (for temp. eq.)
     );
 
     //! calculate normalized subgrid-diffusivity matrix
@@ -331,7 +333,7 @@ public:
     //! calculate the Laplacian for all shape functions(strong form)
     void GetLaplacianStrongForm
     (
-      LINALG::Matrix<iel,1>& diff, 
+      LINALG::Matrix<iel,1>& diff,
       const LINALG::Matrix<numderiv2_,iel>& deriv2
      )
     {
@@ -350,7 +352,7 @@ public:
     //! calculate the Laplacian (weak form)
     void GetLaplacianWeakForm(
         double& val,
-        const LINALG::Matrix<nsd_,iel>& derxy, 
+        const LINALG::Matrix<nsd_,iel>& derxy,
         const int& vi,
         const int& ui)
     {

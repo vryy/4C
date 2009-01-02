@@ -76,22 +76,22 @@ class ScaTraTimIntImpl
 
 public:
 
-  //! Standard Constructor
+  /// Standard Constructor
   ScaTraTimIntImpl(RCP<DRT::Discretization>       dis,
                    RCP<LINALG::Solver>            solver,
                    RCP<ParameterList>             params,
                    RCP<IO::DiscretizationWriter>  output);
 
-  //! Destructor
+  /// Destructor
   virtual ~ScaTraTimIntImpl();
 
-  //! Provide enum of time integration scheme
+  /// Provide enum of time integration scheme
   enum INPAR::SCATRA::TimeIntegrationScheme MethodName(){return timealgo_;}
 
-  //! Provide title of time integration scheme
+  /// Provide title of time integration scheme
   std::string MethodTitle(){return MapTimIntEnumToString(MethodName());}
 
-  //! Print information about current time step to screen
+  /// Print information about current time step to screen
   void PrintTimeStepInfo()
   {
     if (myrank_==0)
@@ -100,31 +100,34 @@ public:
     return;
   }
 
-  //! do time integration (time loop)
+  /// do time integration (time loop)
   void TimeLoop(bool nonlinear = false);
 
   /// setup the variables to do a new time step
   void PrepareTimeStep();
 
+  /// initialization procedure before the first time step is done
+  virtual void PrepareFirstTimeStep() = 0;
+
   /// do explicit predictor step (-> better starting value for nonlinear solver)
   virtual void ExplicitPredictor() = 0;
 
-  //! contains the nonlinear iteration loop
+  /// contains the nonlinear iteration loop
   void NonlinearSolve();
 
-  //! check convergence (or divergence) of nonlinear iteration
+  /// check convergence (or divergence) of nonlinear iteration
   bool AbortNonlinIter(const int itnum, const int itmax, const double ittol, double& actresidual);
 
-  //! solve linear system
+  /// solve linear system
   void Solve();
 
-  //! update the solution after convergence of the nonlinear iteration.
+  /// update the solution after convergence of the nonlinear iteration.
   virtual void Update() = 0;
 
-  //! update configuration and output to file
+  /// update configuration and output to file
   void Output();
 
-  //! read restart data
+  /// read restart data
   virtual void ReadRestart(int step)=0;
 
   /// provide access to the Dirichlet map
@@ -138,87 +141,102 @@ public:
   /// note: VM3 solver still needs an explicit toggle vector for construction
   const Teuchos::RCP<const Epetra_Vector> DirichletToggle();
 
-  //! prepare AVM3-based scale separation
+  /// prepare AVM3-based scale separation
   void AVM3Preparation();
 
-  //! scaling of AVM3-based subgrid-diffusivity matrix
+  /// scaling of AVM3-based subgrid-diffusivity matrix
   void AVM3Scaling(ParameterList& eleparams);
 
-  //! set the velocity field
+  /// set the velocity field
   void SetVelocityField(int veltype, int velfuncno);
 
-  //! set the velocity field
+  /// set the velocity field
   void SetVelocityField(int veltype, RCP<const Epetra_Vector> extvel);
 
-  //! set the initial scalar field phi
+  /// set the initial scalar field phi
   void SetInitialField(int init,int startfuncno);
 
-  //! set velocity field for low-Mach-number flow
+  /// set velocity field for low-Mach-number flow
   virtual void SetLomaVelocity(RCP<const Epetra_Vector> extvel,
                        RCP<DRT::Discretization> fluiddis)=0;
 
-  //! predict density field for low-Mach-number flow
+  /// set initial thermodynamic pressure and time derivative for low-Mach-number flow
+  void SetInitialThermPressure(const double thermpress);
+
+  /// compute initial time derivative of density field for low-Mach-number flow
+  virtual void ComputeInitialDensityDerivative() = 0;
+
+  /// predict thermodynamic pressure and time derivative for low-Mach-number flow
+  virtual void PredictThermPressure() = 0;
+
+  /// predict density field (and time derivative) for low-Mach-number flow
   virtual void PredictDensity() = 0;
 
-  //! compute density field for low-Mach-number flow
-  void ComputeDensity(const double stateqfac);
+  /// compute thermodynamic pressure and time derivative for low-Mach-number flow
+  virtual double ComputeThermPressure()=0;
 
-  //! compute time derivative of density field for low-Mach-number flow
+  /// compute density field for low-Mach-number flow
+  void ComputeDensity(const double thermpress, const double gasconstant);
+
+  /// compute time derivative of density field for low-Mach-number flow
   virtual void ComputeDensityDerivative() = 0;
 
-  //! check convergence of density field for low-Mach-number flow
+  /// check convergence of density field for low-Mach-number flow
   bool DensityConvergenceCheck(int itnum, int itmax, const double ittol);
 
-  //! update density field for low-Mach-number flow
+  /// update thermodynamic pressure and time derivative for low-Mach-number flow
+  virtual void UpdateThermPressure() = 0;
+
+  /// update density field (and time derivative) for low-Mach-number flow
   virtual void UpdateDensity() = 0;
 
-  //! output of mean temperature and density
+  /// output of mean temperature and density for low-Mach-number flow
   void OutputMeanTempAndDens();
 
-  //! routine to return density field at time step n+1 for low-Mach-number flow
+  /// routine to return density field at time step n+1 for low-Mach-number flow
   Teuchos::RCP<Epetra_Vector> DensNp() { return densnp_; }
 
-  //! routine to return density field at time step n for low-Mach-number flow
+  /// routine to return density field at time step n for low-Mach-number flow
   Teuchos::RCP<Epetra_Vector> DensN() { return densn_; }
 
-  //! routine to return density field at time step n-1 for low-Mach-number flow
+  /// routine to return density field at time step n-1 for low-Mach-number flow
   Teuchos::RCP<Epetra_Vector> DensNm() { return densnm_; }
 
-  //! routine to return time deriv. of density at time step n for low-Mach-number flow
+  /// routine to return time deriv. of density at time step n for low-Mach-number flow
   Teuchos::RCP<Epetra_Vector> DensDtN() { return densdtn_; }
 
-  //! routine to return time deriv. of density at time step n+1 for low-Mach-number flow
+  /// routine to return time deriv. of density at time step n+1 for low-Mach-number flow
   Teuchos::RCP<Epetra_Vector> DensDtNp() { return densdtnp_; }
 
-  //! routine to return discretization
+  /// routine to return discretization
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
 
-  //! return current time value
+  /// return current time value
   double Time() const { return time_; }
 
-  //! return current step number
+  /// return current step number
   int Step() const { return step_; }
 
-  //! return system matrix down-casted as sparse matrix
+  /// return system matrix down-casted as sparse matrix
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
 
-  //! return system matrix downcasted as block sparse matrix
+  /// return system matrix downcasted as block sparse matrix
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_); }
 
-  //! calculate error compared to analytical solution
+  /// calculate error compared to analytical solution
   void EvaluateErrorComparedToAnalyticalSol();
 
 protected:
 
-  // don't want = operator and cctor
+  /// don't want = operator and cctor
   //ScaTraTimIntImpl operator = (const ScaTraTimIntImpl& old);
-  //! copy constructor
+  /// copy constructor
   ScaTraTimIntImpl (const ScaTraTimIntImpl& old);
 
-  //! helper function to get algorithm title
+  /// helper function to get algorithm title
   std::string MapTimIntEnumToString
   (
-    const enum INPAR::SCATRA::TimeIntegrationScheme term  //!< the enum
+    const enum INPAR::SCATRA::TimeIntegrationScheme term  ///< the enum
   );
 
   /// increment time and step value
@@ -228,47 +246,44 @@ protected:
     time_ += dta_;
   }
 
-  //! initialization procedure before the first time step is done
-  virtual void PrepareFirstTimeStep() = 0;
-
-  //! Set the part of the righthandside belonging to the last timestep.
+  /// Set the part of the righthandside belonging to the last timestep.
   virtual void SetOldPartOfRighthandside() = 0;
 
-  //! set time for evaluation of Neumann boundary conditions
+  /// set time for evaluation of Neumann boundary conditions
   virtual void SetTimeForNeumannEvaluation(ParameterList& params) = 0;
 
-  //! reset the residual vector and add actual Neumann loads with time factor
+  /// reset the residual vector and add actual Neumann loads with time factor
   virtual void AddNeumannToResidual() = 0;
 
-  //! add parameters specific for time-integration scheme
+  /// add parameters specific for time-integration scheme
   virtual void AddSpecificTimeIntegrationParameters(ParameterList& params) = 0;
 
-  //! Apply Dirichlet boundary conditions on provided state vector
+  /// Apply Dirichlet boundary conditions on provided state vector
   void ApplyDirichletBC
   (
-    const double& time,  //!< evaluation time
-    Teuchos::RCP<Epetra_Vector> phinp, //!< transported scalar(s) (may be = null)
-    Teuchos::RCP<Epetra_Vector> phidt  //!< first time derivative (may be = null)
+    const double& time,  ///< evaluation time
+    Teuchos::RCP<Epetra_Vector> phinp, ///< transported scalar(s) (may be = null)
+    Teuchos::RCP<Epetra_Vector> phidt  ///< first time derivative (may be = null)
   );
 
-  //! Apply Neumann boundary conditions
+  /// Apply Neumann boundary conditions
   void ApplyNeumannBC
   (
-    const double& time,  //!< evaluation time
-    const Teuchos::RCP<Epetra_Vector>& phinp,   //!< transported scalar(s) state
-    Teuchos::RCP<Epetra_Vector>& neumann_loads //!< Neumann loads
+    const double& time,  ///< evaluation time
+    const Teuchos::RCP<Epetra_Vector>& phinp,   ///< transported scalar(s) state
+    Teuchos::RCP<Epetra_Vector>& neumann_loads ///< Neumann loads
   );
 
-  //! write state vectors (phinp and convective velocity) to BINIO
+  /// write state vectors (phinp and convective velocity) to BINIO
   void OutputState();
 
-  //! write additional data required for restart
+  /// write additional data required for restart
   virtual void OutputRestart() = 0;
 
-  //! write flux vectors to BINIO
+  /// write flux vectors to BINIO
   void OutputFlux();
 
-  //! routine to calculate mass/heat flux vectors
+  /// routine to calculate mass/heat flux vectors
   Teuchos::RCP<Epetra_MultiVector> CalcFlux();
 
   /// the scalar transport discretization
@@ -326,8 +341,14 @@ protected:
   /// fine-scale subgrid-viscosity flag
   string fssgd_;
 
-  // ELCH-specific paramter F/RT (default value for the temperature is 298K)
+  /// ELCH-specific paramter F/RT (default value for the temperature is 298K)
   double frt_;
+
+  /// LOMA-specific parameter: thermodynamic pressure at n
+  double thermpressn_;
+
+  /// LOMA-specific parameter: time derivative of thermodynamic pressure at n
+  double thermpressdtn_;
 
   /// system matrix (either sparse matrix or block sparse matrix)
   RCP<LINALG::SparseOperator> sysmat_;
@@ -335,7 +356,7 @@ protected:
   /// a vector of zeros to be used to enforce zero dirichlet boundary conditions
   RCP<Epetra_Vector>    zeros_;
 
-  // maps for extracting Dirichlet and free DOF sets
+  /// maps for extracting Dirichlet and free DOF sets
   RCP<LINALG::MapExtractor> dbcmaps_;
 
   /// the vector containing body and surface forces
@@ -380,7 +401,7 @@ protected:
   /// only necessary for vm3 solver: subgrid-diffusivity-scaling vector
   RCP<Epetra_Vector>    subgrdiff_;
 
-  //! Extractor used for convergence check of nonlinear iteration
+  /// Extractor used for convergence check of nonlinear iteration
   LINALG::MapExtractor      conpotsplitter_;
 
   /// Periodic Boundary Conditions. Guess what.
@@ -389,8 +410,7 @@ protected:
   /// connection between master and slave nodes on this proc
   RCP<map<int,vector<int> > >     pbcmapmastertoslave_;
 
-  // time measurement
-  // ----------------
+  /// time measurement
   double dtele_;
   double dtsolve_;
 

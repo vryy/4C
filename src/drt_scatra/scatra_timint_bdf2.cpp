@@ -38,11 +38,16 @@ SCATRA::TimIntBDF2::TimIntBDF2(
   // state vector for solution at time t_{n-1}
   phinm_      = LINALG::CreateVector(*dofrowmap,true);
 
-  // density at times n and n-1
+  // only required for low-Mach-number flow
   if (prbtype_ == "loma")
   {
+    // density at times n and n-1
     densn_  = LINALG::CreateVector(*dofrowmap,true);
     densnm_ = LINALG::CreateVector(*dofrowmap,true);
+
+    // time derivative of thermodynamic pressure at n+1
+    // (computed if not constant, otherwise remaining zero)
+    thermpressdtnp_ = 0.0;
   }
 
   return;
@@ -129,8 +134,24 @@ void SCATRA::TimIntBDF2::PredictDensity()
   // same-density predictor (not required to be performed, since we just
   // updated the density field, and thus, densnp_ = densn_)
 
-  // same-density-increment predictor
-  densnp_->Update(2.0,*densn_,-1.0,*densnm_,0.0);
+  // same-density-increment predictor (currently not used)
+  //if (step_>1) densnp_->Update(-1.0,*densnm_,2.0);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | predict thermodynamic pressure and time derivative          vg 12/08 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntBDF2::PredictThermPressure()
+{
+  // same-thermodynamic-pressure predictor (not required to be performed,
+  // since we just updated the thermodynamic pressure, and thus,
+  // thermpressnp_ = thermpressn_)
+
+  // same-thermodynamic-pressure-increment predictor (currently not used)
+  //if (step_>1) thermpressnp_ = 2.0*thermpressn_ - thermpressnm_;
 
   return;
 }
@@ -170,8 +191,92 @@ void SCATRA::TimIntBDF2::AddSpecificTimeIntegrationParameters(
   params.set("time factor",theta_*dta_);
   params.set("alpha_F",1.0);
 
+  if (prbtype_ == "loma")
+    params.set("time derivative of thermodynamic pressure",thermpressdtnp_);
+
   discret_->SetState("densnp",densnp_);
   return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | compute thermodynamic pressure for low-Mach-number flow     vg 12/08 |
+ *----------------------------------------------------------------------*/
+double SCATRA::TimIntBDF2::ComputeThermPressure()
+{
+  // compute "history" part (start-up of BDF2: one step backward Euler)
+  double hist = 0.0;
+  if (step_>1)
+  {
+    double omega = dta_/dtp_;
+    double fact1 = (1.0 + omega)*(1.0 + omega)/(1.0 + (2.0*omega));
+    double fact2 = -(omega*omega)/(1+ (2.0*omega));
+
+    hist = fact1*thermpressn_ + fact2*thermpressnm_;
+  }
+  else hist = thermpressn_;
+
+  // set scalar and density vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState("phinp",phinp_);
+  discret_->SetState("densnp",densnp_);
+
+  // define element parameter list
+  ParameterList eleparams;
+
+  // provide velocity field (export to column map necessary for parallel evaluation)
+  // SetState cannot be used since this Multivector is nodebased and not dofbased
+  const Epetra_Map* nodecolmap = discret_->NodeColMap();
+  RefCountPtr<Epetra_MultiVector> tmp = rcp(new Epetra_MultiVector(*nodecolmap,3));
+  LINALG::Export(*convel_,*tmp);
+  eleparams.set("velocity field",tmp);
+
+  // set action for elements
+  eleparams.set("action","calc_therm_press");
+
+  // variables for integrals of velocity-divergence, rhs and domain
+  double divuint = 0.0;
+  double rhsint  = 0.0;
+  double domint  = 0.0;
+  eleparams.set("velocity-divergence integral",divuint);
+  eleparams.set("rhs integral",                rhsint);
+  eleparams.set("domain integral",             domint);
+
+  // evaluate integrals of velocity-divergence, rhs and domain
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
+  // get integral values on this proc
+  divuint = eleparams.get<double>("velocity-divergence integral");
+  rhsint = eleparams.get<double>("rhs integral");
+  domint  = eleparams.get<double>("domain integral");
+
+  // get integral values in parallel case
+  double pardivuint = 0.0;
+  double parrhsint = 0.0;
+  double pardomint  = 0.0;
+  discret_->Comm().SumAll(&divuint,&pardivuint,1);
+  discret_->Comm().SumAll(&rhsint,&parrhsint,1);
+  discret_->Comm().SumAll(&domint,&pardomint,1);
+
+  // clean up
+  discret_->ClearState();
+
+  // compute thermodynamic pressure (with specific heat ratio fixed to be 1.4)
+  const double shr = 1.4;
+  const double lhs = theta_*dta_*shr*divuint/domint;
+  const double rhs = theta_*dta_*(shr-1.0)*rhsint/domint;
+  thermpressnp_ = (rhs + hist)/(1.0 + lhs);
+
+  // print out thermodynamic pressure
+  if (myrank_ == 0) cout << "Thermodynamic pressure: " << thermpressnp_ << endl;
+
+  // compute time derivative of thermodynamic pressure at n+1
+  // (start-up of BDF2: one step backward Euler)
+  if (step_>1)
+       thermpressdtnp_ = (3.0*thermpressnp_-4.0*thermpressn_+thermpressnm_)/(2.0*dta_);
+  else thermpressdtnp_ = (thermpressnp_-thermpressn_)/dta_;
+
+  return thermpressnp_;
 }
 
 
@@ -184,6 +289,18 @@ void SCATRA::TimIntBDF2::Update()
   // solution of this step becomes most recent solution of the last step
   phinm_->Update(1.0,*phin_ ,0.0);
   phin_ ->Update(1.0,*phinp_,0.0);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | update thermodynamic pressure at n for low-Mach-number flow vg 12/08 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntBDF2::UpdateThermPressure()
+{
+  thermpressnm_ = thermpressn_;
+  thermpressn_  = thermpressnp_;
 
   return;
 }

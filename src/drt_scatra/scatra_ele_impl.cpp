@@ -291,7 +291,12 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     // set flag for type of scalar whether it is temperature or not
     string scaltypestr=params.get<string>("problem type");
     bool temperature = false;
-    if(scaltypestr =="loma") temperature = true;
+    double thermpressdt = 0.0;
+    if(scaltypestr =="loma")
+    {
+      temperature = true;
+      thermpressdt = params.get<double>("time derivative of thermodynamic pressure");
+    }
 
     // set flag for conservative form
     string convform = params.get<string>("form of convective term");
@@ -365,7 +370,8 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         is_stationary,
         is_genalpha,
         islinear,
-        frt);
+        frt,
+        thermpressdt);
   }
   else if (action =="calc_initial_time_deriv")
     // calculate time derivative for time value t_0
@@ -428,7 +434,12 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     // set flag for type of scalar whether it is temperature or not
     string scaltypestr=params.get<string>("problem type");
     bool temperature = false;
-    if(scaltypestr =="loma") temperature = true;
+    double thermpressdt = 0.0;
+    if(scaltypestr =="loma")
+    {
+      temperature = true;
+      thermpressdt = params.get<double>("time derivative of thermodynamic pressure");
+    }
 
     // set flag for conservative form
     string convform = params.get<string>("form of convective term");
@@ -494,7 +505,8 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         conservative,
         whichtau,
         fssgd,
-        frt);
+        frt,
+        thermpressdt);
   }
   else if (action =="calc_subgrid_diffusivity_matrix")
   // calculate normalized subgrid-diffusivity matrix
@@ -574,7 +586,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     if (scaltypestr =="loma") temperature = true;
 
     double frt(0.0);
-    if (scaltypestr =="elch") 
+    if (scaltypestr =="elch")
     {
       numscal -= 1; // ELCH case: last dof is for el. potential
       // get parameter F/RT
@@ -733,7 +745,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
     const bool                            is_stationary, ///< stationary flag
     const bool                            is_genalpha, ///< generalized-alpha flag
     const bool                            islinear, ///< flag for linear/nonlinear problem
-    const double                          frt ///< factor F/RT needed for ELCH calculations
+    const double                          frt, ///< factor F/RT needed for ELCH calculations
+    const double                          thermpressdt ///< time deriv. of therm. press. (for temp. eq.)
 )
 {
   // get node coordinates
@@ -781,8 +794,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
       if (is_genalpha and not conservative) hist_[k] = densfunct_.Dot(ehist[k]);
       else                                  hist_[k] = funct_.Dot(ehist[k]);
 
-      // get bodyforce in gausspoint (divided by shcacp for temperature eq.)
-      rhs_[k] = bodyforce_[k].Dot(funct_) / shcacp_;
+      // get bodyforce in gausspoint
+      // (For temperature equation, time derivative of thermodynamic pressure
+      //  is added, if not constant, and the sum is divided by shcacp.)
+      rhs_[k] = (bodyforce_[k].Dot(funct_) + thermpressdt) / shcacp_;
     }
 
     //----------- perform integration for entire matrix and rhs
@@ -1872,7 +1887,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
     const bool                            conservative,
     const enum SCATRA::TauType            whichtau,
     const string                          fssgd,
-    const double                          frt
+    const double                          frt,
+    const double                          thermpressdt
 )
 {
   // get node coordinates
@@ -1913,8 +1929,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
     //------------ get values of variables at integration point
     for (int k = 0;k<numdofpernode_;++k)     // loop of each transported sclar
     {
-      // get bodyforce in gausspoint (divided by shcacp for temperature eq.)
-      rhs_[k] = bodyforce_[k].Dot(funct_) / shcacp_;
+      // get bodyforce in gausspoint
+      // (For temperature equation, time derivative of thermodynamic pressure
+      //  is added, if not constant, and the sum is divided by shcacp.)
+      rhs_[k] = (bodyforce_[k].Dot(funct_) + thermpressdt) / shcacp_;
     }
 
     // get values of all transported scalars at integration point
@@ -2685,7 +2703,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
   double                                  deltapot;
   LINALG::Matrix<2,1> deltacon(true);
 
-  // integrations points and weights  
+  // integrations points and weights
   // more GP than usual due to cos/exp fcts in analytical solution
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
 
@@ -2896,7 +2914,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateTempAndDens(
   // get node coordinates
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze_);
 
-  // integrations points and weights  
+  // integrations points and weights
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop

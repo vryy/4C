@@ -535,7 +535,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
     // blank residual DOFs which are on Dirichlet BC
     // We can do this because the values at the Dirichlet positions
     // are not used anyway.
-    // We could avoid this though, if the dofrowmap would not include 
+    // We could avoid this though, if the dofrowmap would not include
     // the Dirichlet values as well. But it is expensive to avoid that.
     dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), residual_);
 
@@ -668,7 +668,7 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
   else
   {
     // this is the convergence check
-    // We always require at least one solve. We test the L_2-norm of the 
+    // We always require at least one solve. We test the L_2-norm of the
     // current residual. Norm of residual is just printed for information
     if (conresnorm <= ittol and potresnorm <= ittol and
         incconnorm_L2/connorm_L2 <= ittol and incpotnorm_L2/potnorm_L2 <= ittol)
@@ -1121,17 +1121,80 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
 
 
 /*----------------------------------------------------------------------*
+ | set initial thermodynamic pressure and time derivative      vg 12/08 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::SetInitialThermPressure(const double thermpress)
+{
+  // set initial thermodynamic pressure
+  thermpressn_ = thermpress;
+
+  // set scalar and density vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState("phinp",phin_);
+  discret_->SetState("densnp",densn_);
+
+  // define element parameter list
+  ParameterList eleparams;
+
+  // provide velocity field (export to column map necessary for parallel evaluation)
+  // SetState cannot be used since this Multivector is nodebased and not dofbased
+  const Epetra_Map* nodecolmap = discret_->NodeColMap();
+  RefCountPtr<Epetra_MultiVector> tmp = rcp(new Epetra_MultiVector(*nodecolmap,3));
+  LINALG::Export(*convel_,*tmp);
+  eleparams.set("velocity field",tmp);
+
+  // set action for elements
+  eleparams.set("action","calc_therm_press");
+
+  // variables for integrals of velocity-divergence, rhs and domain
+  double divuint = 0.0;
+  double rhsint  = 0.0;
+  double domint  = 0.0;
+  eleparams.set("velocity-divergence integral",divuint);
+  eleparams.set("rhs integral",                rhsint);
+  eleparams.set("domain integral",             domint);
+
+  // evaluate integrals of velocity-divergence, rhs and domain
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
+  // get integral values on this proc
+  divuint = eleparams.get<double>("velocity-divergence integral");
+  rhsint  = eleparams.get<double>("rhs integral");
+  domint  = eleparams.get<double>("domain integral");
+
+  // get integral values in parallel case
+  double pardivuint = 0.0;
+  double parrhsint = 0.0;
+  double pardomint  = 0.0;
+  discret_->Comm().SumAll(&divuint,&pardivuint,1);
+  discret_->Comm().SumAll(&rhsint,&parrhsint,1);
+  discret_->Comm().SumAll(&domint,&pardomint,1);
+
+  // clean up
+  discret_->ClearState();
+
+  // compute initial time derivative of thermodynamic pressure
+  // (with specific heat ratio fixed to be 1.4)
+  const double shr = 1.4;
+  thermpressdtn_ = (shr*thermpressn_*divuint + (shr-1.0)*rhsint)/domint;
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  | compute density for low-Mach-number flow                    vg 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::ComputeDensity(const double stateqfac)
+void SCATRA::ScaTraTimIntImpl::ComputeDensity(const double thermpress,
+                                              const double gasconstant)
 {
   // store density of previous iteration for convergence check
   densincnp_->Update(1.0,*densnp_,0.0);
 
   // compute density based on equation of state:
-  // rho = (p_therm/R)*(1/T) = stateqfac_*(1/T)
+  // rho = (p_therm/R)*(1/T) = (thermpress/gasconstant)*(1/T)
   densnp_->Reciprocal(*phinp_);
-  densnp_->Scale(stateqfac);
+  densnp_->Scale(thermpress/gasconstant);
 
   //densnp_->PutScalar(1.0);
 

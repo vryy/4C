@@ -1387,6 +1387,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("CONVTOL",1e-6,"Tolerance for convergence check",&lomacontrol);
   IntParameter("UPRES",1,"Increment for writing solution",&lomacontrol);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&lomacontrol);
+  DoubleParameter("THERMOPRESS",98100.0,"(initial) thermodynamic pressure",&lomacontrol);
+  DoubleParameter("GASCONSTANT",287.0,"specific gas constant R (in J/(kg*K))",&lomacontrol);
+  setStringToIntegralParameter<int>("CONSTHERMPRESS","Yes",
+                               "assume thermodynamic prssure constant in time",
+                               tuple<std::string>(
+                                 "No",
+                                 "Yes"
+                                 ),
+                               tuple<int>(0,1),
+                               &lomacontrol);
   setStringToIntegralParameter<int>("OUTMEAN","No",
                                "print out mean values of temperature/density",
                                tuple<std::string>(
@@ -1395,9 +1405,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  ),
                                tuple<int>(0,1),
                                &lomacontrol);
-  DoubleParameter("THERMOPRESS",98100.0,"(initial) thermodynamic pressure",&lomacontrol);
-  DoubleParameter("GASCONSTANT",287.0,"specific gas constant R (in J/(kg*K))",&lomacontrol);
-
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& elchcontrol = list->sublist(

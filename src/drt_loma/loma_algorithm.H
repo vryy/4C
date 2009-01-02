@@ -85,10 +85,16 @@ namespace LOMA
     double  ittol_;
 
     /// flag for printing out mean values of temperature and density
-    string outmean_ ;
+    string outmean_;
 
-    /// factor for equation of state (default: 98100.0/287.0)
-    double stateqfac_;
+    /// flag for constant thermodynamic pressure
+    string consthermpress_;
+
+    /// thermodynamic pressure (default: 98100.0)
+    double thermpress_;
+
+    /// gas constant (default: 287.0)
+    double gasconstant_;
 
   private:
 

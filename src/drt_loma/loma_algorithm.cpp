@@ -34,9 +34,13 @@ LOMA::Algorithm::Algorithm(
   // flag for printing out mean values of temperature and density
   outmean_ = prbdyn.get<string>("OUTMEAN");
 
-  // factor for equation of state:
-  // thermodynamic pressure/specific gas constant (default: 98100.0/287.0)
-  stateqfac_ = prbdyn.get<double>("THERMOPRESS")/prbdyn.get<double>("GASCONSTANT");
+  // flag for constant thermodynamic pressure
+  consthermpress_ = prbdyn.get<string>("CONSTHERMPRESS");
+
+  // thermodynamic pressure and specific gas constant (default: 98100.0/287.0)
+  // in case of non-constant thermodynamic pressure: initial value
+  thermpress_  = prbdyn.get<double>("THERMOPRESS");
+  gasconstant_ = prbdyn.get<double>("GASCONSTANT");
 
   return;
 }
@@ -106,7 +110,7 @@ void LOMA::Algorithm::InitialCalculations()
 {
   // compute initial density field using initial temperature + therm. pressure
   // temperature stored at phinp in SCATRA is used -> densnp is set
-  ScaTraField().ComputeDensity(stateqfac_);
+  ScaTraField().ComputeDensity(thermpress_,gasconstant_);
 
   // initially set density at 0 (i.e., densn)
   // furthermore, set density at -1 (i.e., densnm) for BDF2 (zero vector)
@@ -119,10 +123,23 @@ void LOMA::Algorithm::InitialCalculations()
 
   // compute initial convective density-weighted velocity field for scalar
   // transport solver using initial fluid velocity (and pressure) field
-  // for generalized-alpha time-integration scheme, velocity at n+1
+  // (For generalized-alpha time-integration scheme, velocity at n+1
   // is weighted by density at n+alpha_F, which is identical to density
-  // at n+1, since density at n was set equal to n+1 above
+  // at n+1, since density at n was set equal to n+1 above.)
   ScaTraField().SetLomaVelocity(VelocityPressureNp(),fluiddiscret_);
+
+  // set initial value of thermodynamic pressure in SCATRA and compute
+  // time derivative (if not constant)
+  if (consthermpress_=="No") ScaTraField().SetInitialThermPressure(thermpress_);
+
+  // compute initial time derivative of density in first time step,
+  // for which initial time derivatives of temperature dphi/dt_(0) are necessary
+  if (ScaTraField().MethodName()==INPAR::SCATRA::timeint_gen_alpha or
+      ScaTraField().MethodName()==INPAR::SCATRA::timeint_one_step_theta)
+  {
+    ScaTraField().PrepareFirstTimeStep();
+    ScaTraField().ComputeInitialDensityDerivative();
+  }
 
   // write initial fields
   Output();
@@ -135,13 +152,17 @@ void LOMA::Algorithm::InitialCalculations()
 /*----------------------------------------------------------------------*/
 void LOMA::Algorithm::PrepareTimeStep()
 {
-  // predict density field (from second time step on)
-  if (Step()> 1) ScaTraField().PredictDensity();
-
   // prepare temperature time step (+ initialize one-step-theta and
   // generalized-alpha schemes correctly by computing initial time
-  // derivatives of temperature dphi/dt_(0))
+  // derivatives of temperature dphi/dt_(0) in first time step)
   ScaTraField().PrepareTimeStep();
+
+  // predict thermodynamic pressure and time derivative
+  // (if not constant)
+  if (consthermpress_=="No") ScaTraField().PredictThermPressure();
+
+  // predict density field and time derivative
+  ScaTraField().PredictDensity();
 
   // get density at n+1 and n
   GetDensityNp();
@@ -205,8 +226,11 @@ void LOMA::Algorithm::OuterLoop()
     if (Comm().MyPID()==0) cout<<"\n**********************\n  TEMPERATURE SOLVER \n**********************\n";
     ScaTraField().Solve();
 
+    // in case of non-constant thermodynamic pressure: compute
+    if (consthermpress_=="No") thermpress_ = ScaTraField().ComputeThermPressure();
+
     // compute density using current temperature + thermodynamic pressure
-    ScaTraField().ComputeDensity(stateqfac_);
+    ScaTraField().ComputeDensity(thermpress_,gasconstant_);
 
     // get current density at n+1
     GetDensityNp();
@@ -239,11 +263,14 @@ void LOMA::Algorithm::OuterLoop()
 /*----------------------------------------------------------------------*/
 void LOMA::Algorithm::Update()
 {
-  // update density
-  ScaTraField().UpdateDensity();
-
   // update temperature
   ScaTraField().Update();
+
+  // in case of non-constant thermodynamic pressure: update
+  if (consthermpress_=="No") ScaTraField().UpdateThermPressure();
+
+  // update density
+  ScaTraField().UpdateDensity();
 
   // get density at n+1 and n
   GetDensityNp();
