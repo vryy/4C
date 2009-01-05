@@ -92,7 +92,8 @@ namespace INPAR
     {
       damp_none = 0,            ///< damping off
       damp_rayleigh,            ///< globally applied Rayleigh damping
-      damp_material             ///< element-wise applied damping
+      damp_material             ///< element-wise applied damping by 
+                                ///< using element velocities
     };
 
     /// Mid-average type of internal forces for generalised-alpha-like
@@ -187,8 +188,13 @@ namespace INPAR
     {
       pred_vague,  ///< undetermined
       pred_constdis,  ///< constant displacements
-      pred_constdisvelacc  ///< constant displacements, 
+      pred_constdisvelacc,  ///< constant displacements, 
                            ///< velocities and accelerations
+      pred_tangdis  ///< linearised solution obeying DBC displacements via tangent
+                    ///< D_{n+1}^{<0>} = D_{n} + Ktang_{n,eff}^{-1} . (- Ktang_{n} . (D_{n+1}^{DBC} - D_{n}))
+                    ///< This looks hilarious, but remember Ktan_{n,eff}^{-1} is not
+                    ///< the inverse of Ktan_{n} due to the application of the
+                    ///< Dirichlet BCs (i.e. the reduction to the test space).
     };
 
     /// Map predictor enum term to string
@@ -207,6 +213,9 @@ namespace INPAR
         break;
       case pred_constdisvelacc :
         return "ConstDisVelAcc";
+        break;
+      case pred_tangdis :
+        return "TangDis";
         break;
       default :
         dserror("Cannot make string for predictor %d", name);

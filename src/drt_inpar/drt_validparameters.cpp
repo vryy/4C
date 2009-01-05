@@ -542,11 +542,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>(
                                  "Vague",
                                  "ConstDis",
-                                 "ConstDisVelAcc"),
+                                 "ConstDisVelAcc",
+                                 "TangDis"),
                                tuple<INPAR::STR::PredEnum>(
                                  INPAR::STR::pred_vague,
                                  INPAR::STR::pred_constdis,
-                                 INPAR::STR::pred_constdisvelacc),
+                                 INPAR::STR::pred_constdisvelacc,
+                                 INPAR::STR::pred_tangdis),
                                &sdyn);
 
   // time adaptivity (old style)

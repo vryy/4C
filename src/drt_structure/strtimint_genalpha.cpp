@@ -402,7 +402,7 @@ void STR::TimIntGenAlpha::UpdateIterIncrementally()
 {
   // auxiliar global vectors
   Teuchos::RCP<Epetra_Vector> aux
-      = LINALG::CreateVector(*dofrowmap_, true);
+    = LINALG::CreateVector(*dofrowmap_, true);
   // further auxiliar variables
   const double dt = (*dt_)[0];  // step size \f$\Delta t_{n}\f$
 

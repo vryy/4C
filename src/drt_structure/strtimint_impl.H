@@ -92,6 +92,12 @@ namespace STR
     //! integrator.
     virtual void PredictConstDisConsistVelAcc() = 0;
 
+    //! Predict displacements which satisfy exactly the Dirichlet BCs 
+    //! and the linearised system at the previously converged state.
+    //!
+    //! This is an implicit predictor, i.e. it calls the solver once.
+    void PredictTangDisConsistVelAcc();
+
     //@}
 
     //! @name Forces and stiffnesses

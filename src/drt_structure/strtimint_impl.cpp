@@ -125,6 +125,10 @@ void STR::TimIntImpl::Predict()
   {
     PredictConstDisVelAcc();
   }
+  else if (pred_ == INPAR::STR::pred_tangdis)
+  {
+    PredictTangDisConsistVelAcc();
+  }
   else
   {
     dserror("Trouble in determining predictor %i", pred_);
@@ -181,6 +185,106 @@ void STR::TimIntImpl::PredictConstDisVelAcc()
   accn_->Update(1.0, *(*acc_)(0), 0.0);
 
   // see you next time step
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+void STR::TimIntImpl::PredictTangDisConsistVelAcc()
+{
+  // initialise
+  disn_->Update(1.0, *(*dis_)(0), 0.0);
+  veln_->Update(1.0, *(*vel_)(0), 0.0);
+  accn_->Update(1.0, *(*acc_)(0), 0.0);
+  disi_->PutScalar(0.0);
+
+  // for displacement increments on Dirichlet boundary
+  Teuchos::RCP<Epetra_Vector> dbcinc
+    = LINALG::CreateVector(*dofrowmap_, true);
+
+  // copy last converged displacements
+  dbcinc->Update(1.0, *(*dis_)(0), 0.0);
+
+  // get Dirichlet values at t_{n+1}
+  ApplyDirichletBC(timen_, dbcinc, Teuchos::null, Teuchos::null, false);
+
+  // subtract the displacements of the last converged step
+  // DBC-DOFs hold increments of current step
+  // free-DOFs hold zeros
+  dbcinc->Update(-1.0, *(*dis_)(0), 1.0);
+
+  // compute residual forces fres_ and stiffness stiff_
+  // at disn_, etc which are unchanged
+  EvaluateForceStiffResidual();
+
+  // add linear reaction forces to residual
+  {
+    // linear reactions
+    Teuchos::RCP<Epetra_Vector> freact
+      = LINALG::CreateVector(*dofrowmap_, true);
+    stiff_->Multiply(false, *dbcinc, *freact);
+
+    // add linear reaction forces due to prescribed Dirichlet BCs
+    fres_->Update(1.0, *freact, 1.0);
+  }
+
+  // rotate to local co-ordinate systems
+  if (locsysman_ != Teuchos::null)
+    locsysman_->RotateGlobalToLocal(fres_);
+  // blank residual at DOFs on Dirichlet BC
+  dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
+  // rotate back to global co-ordinate system
+  if (locsysman_ != Teuchos::null)
+    locsysman_->RotateLocalToGlobal(fres_);
+
+  // make negative residual
+  fres_->Scale(-1.0);
+
+  // transformation matrix
+  Teuchos::RCP<const LINALG::SparseMatrix> trafo = Teuchos::null;
+  if (locsysman_ != Teuchos::null)
+    trafo = locsysman_->Trafo();
+
+  // transform to local co-ordinate systems
+  if (locsysman_ != Teuchos::null)
+    locsysman_->RotateGlobalToLocal(stiff_, fres_);
+
+  // apply Dirichlet BCs to system of equations
+  disi_->PutScalar(0.0);
+  stiff_->Complete();
+  LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
+                                 trafo, zeros_, *(dbcmaps_->CondMap()));
+
+  // solve for disi_
+  // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
+  solver_->Reset();
+  solver_->Solve(stiff_->EpetraMatrix(), disi_, fres_, true, true);
+  solver_->Reset();
+
+  // set Dirichlet increments in displacement increments
+  disi_->Update(1.0, *dbcinc, 1.0);
+
+  // update end-point displacements etc
+  UpdateIterIncrementally();
+  //disn_->Update(1.0, *disi_, 1.0);
+
+  // MARK:
+  // velocities and accelerations unset on Dirichlet boundary
+
+  // reset to zero
+  disi_->PutScalar(0.0);
+
+  // reset anything that needs to be reset at the element level
+  {
+    // create the parameters for the discretization
+    ParameterList p;
+    p.set("action", "calc_struct_reset_istep");
+    // go to elements
+    discret_->Evaluate(p, Teuchos::null, Teuchos::null,
+                       Teuchos::null, Teuchos::null, Teuchos::null);
+    discret_->ClearState();
+  }
+
+  // shalom
   return;
 }
 
