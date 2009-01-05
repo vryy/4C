@@ -38,9 +38,6 @@ public:
   void SetLomaVelocity(RCP<const Epetra_Vector> extvel,
                        RCP<DRT::Discretization> fluiddis);
 
-  /// Initialization procedure before the first time step is done
-  void PrepareFirstTimeStep();
-
   /// compute initial time derivative of density field for low-Mach-number flow
   void ComputeInitialDensityDerivative(){return;};
 
@@ -77,6 +74,9 @@ protected:
 
   /// copy constructor
   TimIntBDF2 (const TimIntBDF2& old);
+
+  /// Initialization procedure before the first time step is done
+  void PrepareFirstTimeStep();
 
   /// Set the part of the righthandside belonging to the last timestep.
   void SetOldPartOfRighthandside();

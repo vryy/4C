@@ -35,9 +35,6 @@ public:
   /// Destructor
   virtual ~TimIntStationary();
 
-  /// Initialization procedure before the first time step is done
-  void PrepareFirstTimeStep(){return;};
-
   /// set velocity field for low-Mach-number flow
   void SetLomaVelocity(RCP<const Epetra_Vector> extvel,
                        RCP<DRT::Discretization> fluiddis);
@@ -78,6 +75,9 @@ protected:
 
   /// copy constructor
   TimIntStationary (const TimIntStationary& old);
+
+  /// Initialization procedure before the first time step is done
+  void PrepareFirstTimeStep(){return;};
 
   /// Set the part of the righthandside belonging to the last timestep.
   void SetOldPartOfRighthandside();

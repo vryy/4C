@@ -1365,21 +1365,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       false,
       "control parameters for low-Mach-number flow problems\n");
 
-  setStringToIntegralParameter<FLUID_TIMEINTTYPE>("TIMEINTEGR","One_Step_Theta",
-                               "Time Integration Scheme",
-                               tuple<std::string>(
-                                 "Stationary",
-                                 "One_Step_Theta",
-                                 "BDF2",
-                                 "Af_Gen_Alpha"
-                                 ),
-                               tuple<FLUID_TIMEINTTYPE>(
-                                 timeint_stationary,
-                                 timeint_one_step_theta,
-                                 timeint_bdf2,
-                                 timeint_afgenalpha
-                                 ),
-                               &lomacontrol);
   IntParameter("NUMSTEP",24,"Total number of time steps",&lomacontrol);
   DoubleParameter("TIMESTEP",0.1,"Time increment dt",&lomacontrol);
   DoubleParameter("MAXTIME",1000.0,"Total simulation time",&lomacontrol);

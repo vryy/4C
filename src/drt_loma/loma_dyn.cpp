@@ -86,12 +86,8 @@ void loma_dyn(int disnumff,int disnumscatra, int restart)
   // read the restart information, set vectors and variables
   if (restart) loma->ReadRestart(restart);
 
-  // type of time integration
-  FLUID_TIMEINTTYPE timealgo = Teuchos::getIntegralValue<FLUID_TIMEINTTYPE>(lomacontrol,"TIMEINTEGR");
-
-  // enter stationary or time loop for solving the low-Mach-number flow problem
-  if (timealgo==timeint_stationary) loma->SolveStationaryProblem();
-  else                              loma->TimeLoop();
+  // enter LOMA algorithm
+  loma->TimeLoop();
 
   // summarize the performance measurements
   Teuchos::TimeMonitor::summarize();

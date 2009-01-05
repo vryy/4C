@@ -54,25 +54,41 @@ namespace LOMA
     /// virtual destructor to support polymorph destruction
     virtual ~Algorithm();
 
-    /// LOMA stationary algorithm
-    void SolveStationaryProblem();
-
-    /// LOMA time loop
+    /// just the general entry to LOMA algorithm where particular algorithm
+    /// will be decided on
     void TimeLoop();
 
   protected:
 
+    /// LOMA stationary algorithm
+    void SolveStationaryProblem();
+
+    /// LOMA generalized-alpha time loop
+    void GenAlphaTimeLoop();
+
+    /// LOMA one-step-theta/BDF2 time loop
+    void OSTBDF2TimeLoop();
+
     /// prepare time step
     void InitialCalculations();
 
-    /// prepare time step
-    void PrepareTimeStep();
+    /// prepare generalized-alpha time step
+    void GenAlphaPrepareTimeStep();
 
-    /// do outer iteration loop
-    void OuterLoop();
+    /// prepare one-step-theta/BDF2 time step
+    void OSTBDF2PrepareTimeStep();
 
-    /// save current (converged) results for next time step
-    void Update();
+    /// do generalized-alpha outer iteration loop
+    void GenAlphaOuterLoop();
+
+    /// do one-step-theta/BDF2 outer iteration loop
+    void OSTBDF2OuterLoop();
+
+    /// do generalized-alpha update for next time step
+    void GenAlphaUpdate();
+
+    /// do one-step-theta/BDF2 update for next time step
+    void OSTBDF2Update();
 
     /// write output
     void Output();

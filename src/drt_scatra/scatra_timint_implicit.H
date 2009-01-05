@@ -106,9 +106,6 @@ public:
   /// setup the variables to do a new time step
   void PrepareTimeStep();
 
-  /// initialization procedure before the first time step is done
-  virtual void PrepareFirstTimeStep() = 0;
-
   /// do explicit predictor step (-> better starting value for nonlinear solver)
   virtual void ExplicitPredictor() = 0;
 
@@ -245,6 +242,9 @@ protected:
     step_ += 1;
     time_ += dta_;
   }
+
+  /// initialization procedure before the first time step is done
+  virtual void PrepareFirstTimeStep() = 0;
 
   /// Set the part of the righthandside belonging to the last timestep.
   virtual void SetOldPartOfRighthandside() = 0;
