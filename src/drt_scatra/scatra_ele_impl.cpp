@@ -794,10 +794,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
       if (is_genalpha and not conservative) hist_[k] = densfunct_.Dot(ehist[k]);
       else                                  hist_[k] = funct_.Dot(ehist[k]);
 
-      // get bodyforce in gausspoint
+      // get bodyforce in gausspoint (divided by shcacp)
       // (For temperature equation, time derivative of thermodynamic pressure
-      //  is added, if not constant, and the sum is divided by shcacp.)
-      rhs_[k] = (bodyforce_[k].Dot(funct_) + thermpressdt) / shcacp_;
+      //  is added, if not constant.)
+      rhs_[k] = bodyforce_[k].Dot(funct_) / shcacp_;
+      rhs_[k] += thermpressdt / shcacp_;
     }
 
     //----------- perform integration for entire matrix and rhs
@@ -1929,10 +1930,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
     //------------ get values of variables at integration point
     for (int k = 0;k<numdofpernode_;++k)     // loop of each transported sclar
     {
-      // get bodyforce in gausspoint
+      // get bodyforce in gausspoint (divided by shcacp)
       // (For temperature equation, time derivative of thermodynamic pressure
-      //  is added, if not constant, and the sum is divided by shcacp.)
-      rhs_[k] = (bodyforce_[k].Dot(funct_) + thermpressdt) / shcacp_;
+      //  is added, if not constant.)
+      rhs_[k] = bodyforce_[k].Dot(funct_) / shcacp_;
+      rhs_[k] += thermpressdt / shcacp_;
     }
 
     // get values of all transported scalars at integration point
