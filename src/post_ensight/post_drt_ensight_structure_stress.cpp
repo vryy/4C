@@ -1268,9 +1268,9 @@ void StructureEnsightWriter::WriteElementCenterEigenStressStep(std::vector<RCP<o
         }
       }
     } // if (myrank_==0)
-
-    for (int i=0;i<numfiles;++i) Write(*(files[i]), "END TIME STEP");
   }
+
+  for (int i=0;i<numfiles;++i) Write(*(files[i]), "END TIME STEP");
 
   return;
 }
