@@ -140,7 +140,7 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
   }
 
   // post_drt wants to unpack but has no input variables!
-  if (!matdata_){
+  if (!mat){ // we check here the global mat struct pointer as this is the only existing NULL pointer in post
     if(haveremodeldata){
       // read data into nowhere
       for (int gp = 0; gp < numgp; ++gp) {
@@ -393,6 +393,8 @@ void MAT::ArtWallRemod::Evaluate(
 
   // decide whether its time to remodel
   const double time = params.get("total time",-1.0);
+//  const double dt = params.get("delta time",-1.0);
+//  if ((remtime_->at(gp) != -1.) && (time > dt+remtime_->at(gp))){
   if ((remtime_->at(gp) != -1.) && (time > remtime_->at(gp))){
     Remodel(gp,time,defgrd);
   }
@@ -508,9 +510,11 @@ void MAT::ArtWallRemod::Remodel(const int gp, const double time, const LINALG::M
   // pull-back of new fiber vecs
   vector<double> a1_0(3);
   vector<double> a2_0(3);
+  LINALG::Matrix<3,3> idefgrd(false);
+  idefgrd.Invert(defgrd);
   for (int i = 0; i < 3; ++i) {
-    a1_0[i] = defgrd(i,0)*a1_->at(gp)[0] + defgrd(i,1)*a1_->at(gp)[1] + defgrd(i,2)*a1_->at(gp)[2];
-    a2_0[i] = defgrd(i,0)*a2_->at(gp)[0] + defgrd(i,1)*a2_->at(gp)[1] + defgrd(i,2)*a2_->at(gp)[2];
+    a1_0[i] = idefgrd(i,0)*a1_->at(gp)[0] + idefgrd(i,1)*a1_->at(gp)[1] + idefgrd(i,2)*a1_->at(gp)[2];
+    a2_0[i] = idefgrd(i,0)*a2_->at(gp)[0] + idefgrd(i,1)*a2_->at(gp)[1] + idefgrd(i,2)*a2_->at(gp)[2];
   }
   double a1_0norm = sqrt(a1_0[0]*a1_0[0] + a1_0[1]*a1_0[1] + a1_0[2]*a1_0[2]);
   double a2_0norm = sqrt(a2_0[0]*a2_0[0] + a2_0[1]*a2_0[1] + a2_0[2]*a2_0[2]);
