@@ -92,7 +92,7 @@ public:
   std::string MethodTitle(){return MapTimIntEnumToString(MethodName());}
 
   /// Print information about current time step to screen
-  void PrintTimeStepInfo()
+  virtual void PrintTimeStepInfo()
   {
     if (myrank_==0)
         printf("TIME: %11.4E/%11.4E  DT = %11.4E  %s  STEP = %4d/%4d \n",
