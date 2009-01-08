@@ -411,9 +411,8 @@ void SCATRA::TimIntOneStepTheta::CalcInitialPhidt()
     eleparams.set("fs subgrid diffusivity",fssgd_);
     if (prbtype_=="elch")
     {
-      // get ELCH-specific paramter F/RT (default value for the temperature is 298K)
-      const double frt = 96485.3399/(8.314472 * params_->get<double>("TEMPERATURE",298.0));
-      eleparams.set("frt",frt); // factor F/RT
+      // get ELCH-specific paramter F/RT (already set in base class constructor)
+      eleparams.set("frt",frt_);
     }
     else if (prbtype_ == "loma")
       eleparams.set("time derivative of thermodynamic pressure",thermpressdtn_);
