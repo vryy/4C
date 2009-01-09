@@ -440,12 +440,11 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
         // interfacial area and its derivatives w.r.t. the displacements
 
         int ndof = 3*numnode;                                     // overall number of surface dofs
-        double A = 0.;                                            // interfacial area
-        // we really want to zero out the following matrices -> no LINALG::SerialDenseMatrix
+        double A;                                                 // interfacial area
         // first partial derivatives
-        RCP<Epetra_SerialDenseVector> Adiff = rcp(new Epetra_SerialDenseVector(ndof));
+        RCP<Epetra_SerialDenseVector> Adiff = rcp(new Epetra_SerialDenseVector);
         // second partial derivatives
-        RCP<Epetra_SerialDenseMatrix> Adiff2 = rcp(new Epetra_SerialDenseMatrix(ndof,ndof)); // second partial derivatives
+        RCP<Epetra_SerialDenseMatrix> Adiff2 = rcp(new Epetra_SerialDenseMatrix);
 
         ComputeAreaDeriv(x, numnode, ndof, A, Adiff, Adiff2);
 
@@ -933,6 +932,11 @@ void DRT::ELEMENTS::StructuralSurface::ComputeAreaDeriv(const LINALG::SerialDens
                                                         RCP<Epetra_SerialDenseVector> Adiff,
                                                         RCP<Epetra_SerialDenseMatrix> Adiff2)
 {
+  // initialization
+  A = 0.;
+  Adiff->Size(ndof);
+  Adiff2->Shape(ndof, ndof);
+
   const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
 
   int ngp = intpoints.nquad;
