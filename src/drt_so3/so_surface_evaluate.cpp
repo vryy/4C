@@ -323,7 +323,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
         ComputeVolConstrDeriv(xscurr,elevector1);
         //update corresponding column in "constraint" matrix
         elevector2=elevector1;
-        //call submethod for volume evaluation and store rseult in third systemvector
+        //call submethod for volume evaluation and store result in third systemvector
         double volumeele = ComputeConstrVols(xscurr);
         elevector3[0]=volumeele;
       }
@@ -627,12 +627,58 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
       break;
       case calc_struct_constrarea:
       {
-        dserror("Element routines for area constraint in 3D not implemented yet!");
+        if (distype!=quad4)
+          dserror("Area Constraint only works for quad4 surfaces!");
+        // element geometry update
+        RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+        if (disp==null) dserror("Cannot get state vector 'displacement'");
+        vector<double> mydisp(lm.size());
+        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+        const int numdim =3;
+        LINALG::SerialDenseMatrix xscurr(NumNode(),numdim);  // material coord. of element
+        SpatialConfiguration(xscurr,mydisp);
+        // initialize variables
+        double elearea;
+        // first partial derivatives
+        RCP<Epetra_SerialDenseVector> Adiff = rcp(new Epetra_SerialDenseVector);
+        // second partial derivatives
+        RCP<Epetra_SerialDenseMatrix> Adiff2 = rcp(new Epetra_SerialDenseMatrix);
+
+        //call submethod
+        ComputeAreaDeriv(xscurr, NumNode(),numdim*NumNode(), elearea, Adiff, Adiff2);
+        // store result
+        elevector3[0] = elearea;
+        
       }
       break;
       case calc_struct_areaconstrstiff:
       {
-        dserror("Element routines for area constraint in 3D not implemented yet!");
+        if (distype!=quad4)
+           dserror("Area Constraint only works for quad4 surfaces!");
+        // element geometry update
+        RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+        if (disp==null) dserror("Cannot get state vector 'displacement'");
+        vector<double> mydisp(lm.size());
+        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+        const int numdim =3;
+        LINALG::SerialDenseMatrix xscurr(NumNode(),numdim);  // material coord. of element
+        SpatialConfiguration(xscurr,mydisp);
+        // initialize variables
+        double elearea;
+        // first partial derivatives
+        RCP<Epetra_SerialDenseVector> Adiff = rcp(new Epetra_SerialDenseVector);
+        // second partial derivatives
+        RCP<Epetra_SerialDenseMatrix> Adiff2 = rcp(new Epetra_SerialDenseMatrix);
+
+        //call submethod
+        ComputeAreaDeriv(xscurr, NumNode(),numdim*NumNode(), elearea, Adiff, Adiff2);
+        //update elematrices and elevectors
+        elevector1 = *Adiff;
+        elevector1.Scale(-1.0);
+        elevector2 = elevector1;
+        elematrix1 = *Adiff2;
+        elematrix1.Scale(-1.0);
+        elevector3[0] = elearea;
       }
       break;
       default:
