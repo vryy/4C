@@ -955,10 +955,8 @@ void DRT::ELEMENTS::StructuralSurface::ComputeAreaDeriv(const LINALG::SerialDens
 
     vector<double> normal(3);
     double detA;
-    double Jac;
     SurfaceIntegration(detA,normal,x,deriv);
-    Jac = sqrt(normal[0]*normal[0]+normal[1]*normal[1]+normal[2]*normal[2]);
-    A += Jac*intpoints.qwgt[gpid];
+    A += detA*intpoints.qwgt[gpid];
 
     blitz::Array<double,2> ddet(3,ndof);
     blitz::Array<double,3> ddet2(3,ndof,ndof);
@@ -983,9 +981,9 @@ void DRT::ELEMENTS::StructuralSurface::ComputeAreaDeriv(const LINALG::SerialDens
       ddet(2,3*i+1) = deriv(1,i)*dxyzdrs(0,0)-deriv(0,i)*dxyzdrs(1,0);
       ddet(2,3*i+2) = 0.;
 
-      jacobi_deriv(i*3)   = 1/Jac*(normal[2]*ddet(2,3*i  )+normal[1]*ddet(1,3*i  ));
-      jacobi_deriv(i*3+1) = 1/Jac*(normal[2]*ddet(2,3*i+1)+normal[0]*ddet(0,3*i+1));
-      jacobi_deriv(i*3+2) = 1/Jac*(normal[0]*ddet(0,3*i+2)+normal[1]*ddet(1,3*i+2));
+      jacobi_deriv(i*3)   = 1/detA*(normal[2]*ddet(2,3*i  )+normal[1]*ddet(1,3*i  ));
+      jacobi_deriv(i*3+1) = 1/detA*(normal[2]*ddet(2,3*i+1)+normal[0]*ddet(0,3*i+1));
+      jacobi_deriv(i*3+2) = 1/detA*(normal[0]*ddet(0,3*i+2)+normal[1]*ddet(1,3*i+2));
     }
 
     /*--- calculation of first derivatives of current interfacial area
@@ -1043,7 +1041,7 @@ void DRT::ELEMENTS::StructuralSurface::ComputeAreaDeriv(const LINALG::SerialDens
 
         for (int j=0;j<ndof;++j)
         {
-          (*Adiff2)(i,j) += (-1/Jac*jacobi_deriv(j)*jacobi_deriv(i)+1/Jac*
+          (*Adiff2)(i,j) += (-1/detA*jacobi_deriv(j)*jacobi_deriv(i)+1/detA*
                              (ddet(var1,i)*ddet(var1,j)+normal[var1]*ddet2(var1,i,j)+
                               ddet(var2,i)*ddet(var2,j)+normal[var2]*ddet2(var2,i,j)))*intpoints.qwgt[gpid];
         }
