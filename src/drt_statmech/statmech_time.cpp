@@ -14,6 +14,7 @@ Maintainer: Christian Cyron
 
 #include "statmech_time.H"
 #include "../drt_statmech/statmech_manager.H"
+#include "../drt_io/io_control.H"
 
 #include <random/normal.h>
 
@@ -81,26 +82,6 @@ void StatMechTime::Integrate()
   int num_dof = (*fext_).GlobalLength();
 
 
-  Epetra_SerialDenseVector  v0;
-  v0.Size(num_dof);
-  Epetra_SerialDenseVector d0;
-  d0.Size(num_dof);
-  Epetra_SerialDenseVector d1_ap;
-  d1_ap.Size(num_dof);
-  Epetra_SerialDenseVector v1_ap;
-  v1_ap.Size(num_dof);
-  Epetra_SerialDenseVector fint0;
-  fint0.Size(num_dof);
-  Epetra_SerialDenseVector relerr_d;
-  relerr_d.Size(num_dof);
-  Epetra_SerialDenseVector relerr_v;
-  relerr_v.Size(num_dof);
-  Epetra_SerialDenseVector Delta_d;
-  Delta_d.Size(num_dof);
-  Epetra_SerialDenseVector Delta_v;
-  Delta_v.Size(num_dof);
-  int kd = 0;
-  double gamma = 0.125663706 / ((num_dof/6) - 1);
 
   {
     //random generator for seeding only (necessary for thermal noise)
@@ -136,6 +117,21 @@ void StatMechTime::Integrate()
 
   for (int i=step; i<nstep; ++i)
   {
+    /*in the very first step and in case that special output for statistical mechanics is requested we have
+     * to initialized the related output method*/
+    if(i == 0)
+      statmechmanager_->StatMechInitOutput();
+    
+    {
+      //random generator for seeding only (necessary for thermal noise)
+      ranlib::Normal<double> seedgenerator(0,1);
+      //seeding random generator
+
+      seedgenerator.seed((unsigned int)i);
+    }
+    
+    std::cout<<"\nAnzahl der Elemnete am Beginn des Zeitschritts: "<<discret_.NumMyRowElements()<<"\n";
+    
     double time = params_.get<double>("total time",0.0);
 
     //pay attention: for a constant predictor an incremental velocity update is necessary, which has
@@ -145,87 +141,18 @@ void StatMechTime::Integrate()
     if      (predictor==1) ConstantPredictor();
     else if (predictor==2) ConsistentPredictor();
     */
-    //if(i<10000)
-      ConsistentPredictor();
-    //else
-     // BrownianPredictor3D();
 
-    //std::cout<<"\n new number of elements: "<< discret_.NumGlobalElements()<<"\n\n";
-    
-    //std::cout<<"\nfint_" << *fint_;
+    ConsistentPredictor();    
 
     //FullNewton();
     PTC();
-    
-    //std::cout<<"\nfint_" << *fint_;
-    
+   
     UpdateandOutput();
-
-
+   
     //special update and output for statistical mechanics
-    statmechmanager_->StatMechOutput(time,num_dof,i,dt,*dis_);
+    statmechmanager_->StatMechOutput(time,num_dof,i,dt,*dis_,*fint_);
     statmechmanager_->StatMechUpdate(dt,*dis_);
-
-    
-    /*
-    //Freiheitsgrade längs zur Filamentachse: Da nur geringe axiale Dehnung zu erwarten ist, kann angenommen werden,
-    //dass alle Freiheitsgrade in Längsrichtung dieselbe Bewegung Delta_x ausführen, die approximiert werden kann durch:
-    // Gamma * Delta_x / dt = fext_axial, wobei fext_axial die Summe der externen Kräfte in Axialrichtung längs des
-    //gesamten Filaments ist und Gamma die Gesamtreibung eines Filaments der Länge 10 gegenüber axialer Verschiebung ist
-    double fext_axial = 0;
-    for(int id = 0; id < num_dof; id = id+6)
-    {
-      fext_axial += (*fext_)[id];
-    }
-    //Freiheitsgrade entlang der Filamentachse:
-    v1_ap(0) = fext_axial / 0.125663706;
-    d1_ap(0) = 0.5*dt*(v0(0) + v1_ap(0)) + d0(0);
-    double lrefe = 10.0 / (num_dof/6 - 1);
-
-    for(int jd = 0; jd < (num_dof/6); jd++)
-    {
-      //Freiheitsgrade entlang der Filamentachse aus Undehnbarkeitsbedingung:
-      //v1_ap(jd*6) = fext_axial / 0.125663706;
-      //d1_ap(jd*6) = 0.5*dt*(v0(jd*6) + v1_ap(jd*6)) + d0(jd*6);
-
-
-      //Freiheitsgrade quer zur Filamentachse
-      for(int id = 1; id < 3; id++)
-      {
-        kd = 6*jd + id;
-        v1_ap(kd) = ( (*fext_)[kd] - fint0(kd) ) / gamma;
-        //an den Randknoten nur jeweils halbes gamma:
-        if (jd == 0 || jd == (num_dof/6 -1) )
-          v1_ap(kd) = 2*v1_ap(kd);
-        d1_ap(kd) = 0.5*dt*(v0(kd) + v1_ap(kd)) + d0(kd);
-      }
-
-      if(jd>0)
-      {
-        double dy = d1_ap(jd*6+1) - d1_ap((jd-1)*6+1);
-        double dz = d1_ap(jd*6+2) - d1_ap((jd-1)*6+2);
-        d1_ap(jd*6) = pow(lrefe*lrefe - dy*dy - dz*dz  ,0.5) + d1_ap((jd-1)*6) - lrefe;
-        v1_ap(jd*6) = 2*(d1_ap(jd*6) - d0(jd*6))/dt - v0(jd*6);
-      }
-
-      for(int id = 0; id < 6; id++)
-      {
-        kd = 6*jd + id;
-        //Berechnung des relativen Fehlers im Prädiktorschritt:
-        Delta_d(kd) = (*dis_)[kd] - d0(kd);
-        Delta_v(kd) = (*velm_)[kd] - v0(kd);
-        relerr_d(kd) = ( (d1_ap(kd) - d0(kd) ) - Delta_d(kd) ) / Delta_d(kd);
-        relerr_v(kd) = ( (v1_ap(kd) - v0(kd) ) - Delta_v(kd) ) / Delta_v(kd);
-
-        //Zwischenspeichern der Endgrößen im abgeschlossenen Zeitschritt
-        d0(kd) = (*dis_)[kd];
-        v0(kd) = (*velm_)[kd];
-        fint0(kd) = (*fint_)[kd];
-      }
-    }
-
-
-  */
+   
 
     if (time>=maxtime) break;
   }
@@ -505,14 +432,15 @@ void StatMechTime::ConsistentPredictor()
 
     //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
     damp_->Multiply(false,*velm_,*fvisc_);
-    fresm_->Update(1.0,*fvisc_,1.0);
+    fresm_->Update(1.0,*fvisc_,0.0);
 
   }
   // add static mid-balance
 
   fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
 
-
+  
+  
   // blank residual at DOFs on Dirichlet BC
   {
     Epetra_Vector fresmcopy(*fresm_);
@@ -626,7 +554,6 @@ void StatMechTime::FullNewton()
     velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
 
     velm_->Update((delta-(1.0-alphaf)*gamma)/delta,*vel_,gamma/(delta*dt));
-
 
 
     //---------------------------- compute internal forces and stiffness
@@ -897,8 +824,6 @@ void StatMechTime::PTC()
     //---------------------------------------------- build residual norm
     disi_->Norm2(&disinorm);
 
-    //std::cout<<"\ndisi_\n"<<*disi_;
-
     fresm_->Norm2(&fresmnorm);
     // a short message
     if (!myrank_ and (printscreen or printerr))
@@ -973,6 +898,247 @@ void StatMechTime::PTC()
 
   return;
 } // StatMechTime::PTC()
+
+
+/*----------------------------------------------------------------------*
+ |  do output including statistical mechanics data(public)    cyron 12/08|
+ *----------------------------------------------------------------------*/
+void StatMechTime::Output()
+{
+  // -------------------------------------------------------------------
+  // get some parameters from parameter list
+  // -------------------------------------------------------------------
+  double timen         = params_.get<double>("total time"             ,0.0);
+  double dt            = params_.get<double>("delta time"             ,0.01);
+  double alphaf        = params_.get<double>("alpha f"                ,0.459);
+  int    istep         = params_.get<int>   ("step"                   ,0);
+  int    nstep         = params_.get<int>   ("nstep"                  ,5);
+  int    numiter       = params_.get<int>   ("num iterations"         ,-1);
+
+  bool   iodisp        = params_.get<bool>  ("io structural disp"     ,true);
+  int    updevrydisp   = params_.get<int>   ("io disp every nstep"    ,10);
+  INPAR::STR::StressType iostress = params_.get<INPAR::STR::StressType>("io structural stress",INPAR::STR::stress_none);
+  int    updevrystress = params_.get<int>   ("io stress every nstep"  ,10);
+  INPAR::STR::StrainType iostrain      = params_.get<INPAR::STR::StrainType>("io structural strain",INPAR::STR::strain_none);
+  bool   iosurfactant  = params_.get<bool>  ("io surfactant"          ,false);
+
+  int    writeresevry  = params_.get<int>   ("write restart every"    ,0);
+
+  bool   printscreen   = params_.get<bool>  ("print to screen"        ,true);
+  bool   printerr      = params_.get<bool>  ("print to err"           ,true);
+  FILE*  errfile       = params_.get<FILE*> ("err file"               ,NULL);
+  if (!errfile) printerr = false;
+
+  bool isdatawritten = false;
+
+  //------------------------------------------------- write restart step
+  if (writeresevry and istep%writeresevry==0)
+  {
+    output_.WriteMesh(istep,timen);
+    output_.NewStep(istep, timen);
+    output_.WriteVector("displacement",dis_);
+    output_.WriteVector("velocity",vel_);
+    output_.WriteVector("acceleration",acc_);
+    output_.WriteVector("fexternal",fext_);
+
+#ifdef INVERSEDESIGNCREATE // indicate that this restart is from INVERSEDESIGCREATE phase
+    output_.WriteInt("InverseDesignRestartFlag",0);
+#endif
+#ifdef INVERSEDESIGNUSE // indicate that this restart is from INVERSEDESIGNUSE phase
+    output_.WriteInt("InverseDesignRestartFlag",1);
+#endif
+
+    isdatawritten = true;   
+    
+//____________________________________________________________________________________________________________    
+//note:the following block is the only difference to Output() in strugenalpha.cpp-----------------------------
+/* write restart information for statistical mechanics problems; all the information is saved as class variables
+ * of StatMechManager*/   
+    statmechmanager_->StatMechWriteRestart(output_); 
+//------------------------------------------------------------------------------------------------------------
+//____________________________________________________________________________________________________________
+
+    if (surf_stress_man_->HaveSurfStress())
+      surf_stress_man_->WriteRestart(istep, timen);
+
+    if (constrMan_->HaveConstraint())
+    {
+      output_.WriteDouble("uzawaparameter",constrSolv_->GetUzawaParameter());
+      output_.WriteVector("lagrmultiplier",constrMan_->GetLagrMultVector());
+      output_.WriteVector("refconval",constrMan_->GetRefBaseValues());
+    }
+
+    if (discret_.Comm().MyPID()==0 and printscreen)
+    {
+      cout << "====== Restart written in step " << istep << endl;
+      fflush(stdout);
+    }
+    if (errfile and printerr)
+    {
+      fprintf(errfile,"====== Restart written in step %d\n",istep);
+      fflush(errfile);
+    }
+  }
+
+  //----------------------------------------------------- output results
+  if (iodisp and updevrydisp and istep%updevrydisp==0 and !isdatawritten)
+  {
+    output_.NewStep(istep, timen);
+    output_.WriteVector("displacement",dis_);
+    output_.WriteVector("velocity",vel_);
+    output_.WriteVector("acceleration",acc_);
+    output_.WriteVector("fexternal",fext_);
+    output_.WriteElementData();
+
+    if (surf_stress_man_->HaveSurfStress() and iosurfactant)
+      surf_stress_man_->WriteResults(istep,timen);
+
+    isdatawritten = true;
+  }
+
+  //------------------------------------- do stress calculation and output
+  if (updevrystress and !(istep%updevrystress) and iostress!=INPAR::STR::stress_none)
+  {
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    p.set("action","calc_struct_stress");
+    // other parameters that might be needed by the elements
+    p.set("total time",timen);
+    p.set("delta time",dt);
+    p.set("alpha f",alphaf);
+    Teuchos::RCP<std::vector<char> > stress = Teuchos::rcp(new std::vector<char>());
+    Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
+    p.set("stress", stress);
+    p.set("iostress", iostress);
+    p.set("strain", strain);
+    p.set("iostrain", iostrain);
+    // set vector values needed by elements
+    discret_.ClearState();
+    discret_.SetState("residual displacement",zeros_);
+    discret_.SetState("displacement",dis_);
+    discret_.SetState("velocity",vel_);
+    discret_.Evaluate(p,null,null,null,null,null);
+    discret_.ClearState();
+    if (!isdatawritten) output_.NewStep(istep, timen);
+    isdatawritten = true;
+
+    switch (iostress)
+    {
+    case INPAR::STR::stress_cauchy:
+      output_.WriteVector("gauss_cauchy_stresses_xyz",*stress,*discret_.ElementColMap());
+      break;
+    case INPAR::STR::stress_2pk:
+      output_.WriteVector("gauss_2PK_stresses_xyz",*stress,*discret_.ElementColMap());
+      break;
+    case INPAR::STR::stress_none:
+      break;
+    default:
+      dserror ("requested stress type not supported");
+    }
+
+    switch (iostrain)
+    {
+    case INPAR::STR::strain_ea:
+      output_.WriteVector("gauss_EA_strains_xyz",*strain,*discret_.ElementColMap());
+      break;
+    case INPAR::STR::strain_gl:
+      output_.WriteVector("gauss_GL_strains_xyz",*strain,*discret_.ElementColMap());
+      break;
+    case INPAR::STR::strain_none:
+      break;
+    default:
+      dserror("requested strain type not supported");
+    }
+  }
+
+  //---------------------------------------------------------- print out
+  if (!myrank_)
+  {
+    if (printscreen)
+    {
+      printf("step %6d | nstep %6d | time %-14.8E | dt %-14.8E | numiter %3d\n",
+             istep,nstep,timen,dt,numiter);
+      printf("----------------------------------------------------------------------------------\n");
+      fflush(stdout);
+    }
+    if (printerr)
+    {
+      fprintf(errfile,"step %6d | nstep %6d | time %-14.8E | dt %-14.8E | numiter %3d\n",
+              istep,nstep,timen,dt,numiter);
+      fprintf(errfile,"----------------------------------------------------------------------------------\n");
+      fflush(errfile);
+    }
+  }
+}//StatMechTime::Output()
+
+/*----------------------------------------------------------------------*
+ |  read restart (public)                                    cyron 12/08|
+ *----------------------------------------------------------------------*/
+void StatMechTime::ReadRestart(int step)
+{
+  RefCountPtr<DRT::Discretization> rcpdiscret = rcp(&discret_);
+  rcpdiscret.release();
+  IO::DiscretizationReader reader(rcpdiscret,step);
+  double time  = reader.ReadDouble("time");
+  int    rstep = reader.ReadInt("step");
+  if (rstep != step) dserror("Time step on file not equal to given step");
+
+  reader.ReadVector(dis_, "displacement");
+  reader.ReadVector(vel_, "velocity");
+  reader.ReadVector(acc_, "acceleration");
+  reader.ReadVector(fext_,"fexternal");
+  reader.ReadMesh(step);
+  
+  // read restart information for contact
+  statmechmanager_->StatMechReadRestart(reader);
+
+#ifdef INVERSEDESIGNUSE
+  int idrestart = -1;
+  idrestart = reader.ReadInt("InverseDesignRestartFlag");
+  if (idrestart==-1) dserror("expected inverse design restart flag not on file");
+  // if idrestart==0 then the file is from a INVERSEDESIGCREATE phase
+  // and we have to zero out the inverse design displacements.
+  // The stored reference configuration is on record at the element level
+  if (!idrestart)
+  {
+    dis_->PutScalar(0.0);
+    vel_->PutScalar(0.0);
+    acc_->PutScalar(0.0);
+  }
+#endif
+
+  // override current time and step with values from file
+  params_.set<double>("total time",time);
+  params_.set<int>   ("step",rstep);
+
+  if (surf_stress_man_->HaveSurfStress())
+    surf_stress_man_->ReadRestart(rstep, DRT::Problem::Instance()->InputControlFile()->FileName());
+
+  if (DRT::Problem::Instance()->ProblemType()=="struct_multi")
+  {
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    p.set("action","multi_readrestart");
+    discret_.Evaluate(p,null,null,null,null,null);
+    discret_.ClearState();
+  }
+
+  if (constrMan_->HaveConstraint())
+  {
+    double uzawatemp = reader.ReadDouble("uzawaparameter");
+    constrSolv_->SetUzawaParameter(uzawatemp);
+    RCP<Epetra_Map> constrmap=constrMan_->GetConstraintMap();
+    RCP<Epetra_Vector> tempvec = LINALG::CreateVector(*constrmap,true);
+    reader.ReadVector(tempvec, "lagrmultiplier");
+    constrMan_->SetLagrMultVector(tempvec);
+    reader.ReadVector(tempvec, "refconval");
+    constrMan_->SetRefBaseValues(tempvec,time);
+  }
+
+  return;
+}//StatMechTime::ReadRestart()
 
 
 

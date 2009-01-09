@@ -15,6 +15,8 @@ Maintainer: Christian Cyron
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_io/io.H"
+#include "../drt_io/io_control.H"
 
 
 /*!
@@ -33,8 +35,17 @@ public:
   virtual ~StatMechManager() {};
 
   //! \brief write special output for statistical mechanics into files
-  void StatMechOutput(const double& time,const int& num_dof,const int& istep, const double& dt, const Epetra_Vector& dis);
+  void StatMechOutput(const double& time,const int& num_dof,const int& istep, const double& dt, const Epetra_Vector& dis, const Epetra_Vector& fint);
   
+  //! \brief initializing special output for statistical mechanics by looking for a suitable name of the outputfile and setting up an empty file with this name
+  void StatMechInitOutput();
+  
+  //! \brief saving all necessary class variables for restart
+  void StatMechWriteRestart(IO::DiscretizationWriter& output);
+  
+  //! \brief reading all necessary information after a restart
+  void StatMechReadRestart(IO::DiscretizationReader& reader);
+    
   //! \brief special update for statistical mechanics including setting and deleting crosslinkers in the discretization
   void StatMechUpdate(const double dt, const Epetra_Vector& dis);
   
@@ -68,6 +79,9 @@ protected:
   //! \brief number of elements which are part of the discretization already before starting adding crosslinkers
   int basiselements_;
   
+  //! \brief number of file into which output is written (only important for single filament dynamics)
+  int outputfilenumber_;
+  
   //! \brief reference to current discretization
   DRT::Discretization& discret_; 
   
@@ -76,9 +90,6 @@ protected:
   
   //! \brief reference to current damping matrix
   RCP<LINALG::SparseMatrix>& damp_;
-  
-  //! \brief name of file into which output is written
-  std::ostringstream outputfilename_; 
   
   //! \brief storing for each node global Id of node with which it is crosslinked; -1 means: no crosslink
   RCP<Epetra_Vector>  crosslinkerpartner_;

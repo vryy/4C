@@ -49,8 +49,14 @@ public:
   //!\brief do full Newton iteration
   virtual void FullNewton();
   
-  //!\brief do full Newton iteration
+  //!\brief solve non-linear problem by means of PTC method
   virtual void PTC();
+  
+  //!\brief writing output including restart information
+  virtual void Output();
+  
+  //!\brief read restart information
+  virtual void ReadRestart(int step);
     
 
 protected:

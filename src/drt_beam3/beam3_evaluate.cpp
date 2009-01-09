@@ -432,7 +432,9 @@ int DRT::ELEMENTS::Beam3::EvaluateStatForceDamp(ParameterList& params,
 
 
     //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
-    double stand_dev_trans = pow(2 * kT * (zeta_/2) / params.get<double>("delta time",0.01),0.5);
+    double stand_dev_trans = pow(2 * kT * (zeta/2) / params.get<double>("delta time",0.01),0.5);
+    
+
 
     //creating a random generator object which creates random numbers with mean = 0 and standard deviation
     //stand_dev; using Blitz namespace "ranlib" for random number generation
@@ -467,7 +469,7 @@ int DRT::ELEMENTS::Beam3::EvaluateStatForceDamp(ParameterList& params,
 
 
     //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
-    double stand_dev_trans = pow(2 * kT * (zeta_/6) / params.get<double>("delta time",0.01),0.5);
+    double stand_dev_trans = pow(2 * kT * (zeta/6) / params.get<double>("delta time",0.01),0.5);
 
     //creating a random generator object which creates random numbers with mean = 0 and standard deviation
     //stand_dev; using Blitz namespace "ranlib" for random number generation
@@ -492,7 +494,7 @@ int DRT::ELEMENTS::Beam3::EvaluateStatForceDamp(ParameterList& params,
     elevec1[7] += force2;
     elevec1[8] += force3;
   }
-
+  
   return 0;
 } //DRT::ELEMENTS::Beam3::EvaluateStatisticalNeumann
 
@@ -991,8 +993,6 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
   epsilonn.MultiplyTN(Tnew,x21);
   epsilonn.Scale(1/lrefe_);
   epsilonn(0) -=  1;
-  
-
 
 
   /* read material parameters using structure _MATERIAL which is defined by inclusion of      /

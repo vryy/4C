@@ -43,6 +43,8 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
   endtoendref_(0.0),
   istart_(0),
   rlink_(params.get<double>("R_LINK",0.0)),
+  basiselements_(0),
+  outputfilenumber_(-1),
   discret_(discret),
   stiff_(stiff),
   damp_(damp)
@@ -137,6 +139,10 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
         //get the node's global id
         int nodenumber = (*nodeids)[j];
         
+        //testing whether current nodedofnumber makes sense for current node
+        if( nodedofnumber < 0 || nodedofnumber >= discret_.NumDof(discret_.gNode(nodenumber)) )
+          dserror("ForceSensor condition applied with improper local dof number");
+        
         //global id of degree of freedom at which force is to be measured
         int dofnumber = discret_.Dof( discret_.gNode(nodenumber), nodedofnumber );
         
@@ -157,81 +163,32 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
 /*----------------------------------------------------------------------*
  | write special output for statistical mechanics (public)    cyron 09/08|
  *----------------------------------------------------------------------*/
-void StatMechManager::StatMechOutput(const double& time,const int& num_dof,const int& istep, const double& dt, const Epetra_Vector& dis)
+void StatMechManager::StatMechOutput(const double& time,const int& num_dof,const int& istep, const double& dt, const Epetra_Vector& dis, const Epetra_Vector& fint)
 {
   switch(Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_,"SPECIAL_OUTPUT"))
   {
     case INPAR::STATMECH::statout_endtoendlog:
     {
       FILE* fp = NULL; //file pointer for statistical output file
+      
+      //name of output file
+      std::ostringstream outputfilename;
+      outputfilename << "EndToEnd"<< outputfilenumber_ << ".dat";
+      
       double endtoend = 0; //end to end length at a certain time step in single filament dynamics
       double DeltaR2 = 0;
        
       //as soon as system is equilibrated (after time START_FACTOR*maxtime_) a new file for storing output is generated
       if ( (time >= maxtime_ * statmechparams_.get<double>("START_FACTOR",0.0))  && (starttimeoutput_ == -1.0) )
       {
-         int testnumber = 0; 
          endtoendref_ = pow ( pow((dis)[num_dof-3]+10 - (dis)[0],2) + pow((dis)[num_dof-2] - (dis)[1],2) , 0.5);  
          starttimeoutput_ = time;
-         istart_ = istep;
-         //file pointer for operating with numbering file
-         FILE* fpnumbering = NULL;
-         std::ostringstream numberingfilename;
-         
-         //look for a numbering file where number of already existing output files is stored:
-         numberingfilename.str("NumberOfRealizations");
-         fpnumbering = fopen(numberingfilename.str().c_str(), "r");
-         
-         //if there is no such numbering file: look for a not yet existing output file name (numbering upwards)
-         if(fpnumbering == NULL)
-         {
-           do
-           {
-             testnumber++;
-             outputfilename_.str("");
-             outputfilename_ << "EndToEnd"<< testnumber << ".dat";
-             fp = fopen(outputfilename_.str().c_str(), "r");
-           } while(fp != NULL);
-           
-           //set up new file with name "outputfilename" without writing anything into this file
-           fp = fopen(outputfilename_.str().c_str(), "w");
-           fclose(fp);
-        }         
-        //if there already exists a numbering file
-        else
-        {
-          fclose(fpnumbering);
-          
-          //read the number of the next realization out of the file into the variable testnumber
-          std::fstream f(numberingfilename.str().c_str());            
-          while (f)
-          {
-            std::string tok;
-            f >> tok;
-            if (tok=="Next")
-            {
-              f >> tok; 
-              if (tok=="Number:")     
-                f >> testnumber;
-            }
-          } //while(f)
-          
-          //defining outputfilename by meands of new testnumber
-          outputfilename_.str("");
-          outputfilename_ << "EndToEnd"<< testnumber << ".dat";
-        }
-         
-        //increasing the number in the numbering file by one
-        fpnumbering = fopen(numberingfilename.str().c_str(), "w");
-        std::stringstream filecontent;
-        filecontent << "Next Number: "<< testnumber + 1;
-        fprintf(fpnumbering,filecontent.str().c_str());
-        fclose(fpnumbering);
-        
+         istart_ = istep;      
       }
       if (time > starttimeoutput_ && starttimeoutput_ > -1.0)
       { 
         endtoend = pow ( pow((dis)[num_dof-3]+10 - (dis)[0],2) + pow((dis)[num_dof-2] - (dis)[1],2) , 0.5);
+        
         //applying in the following a well conditioned substraction formula according to Crisfield, Vol. 1, equ. (7.53)
         DeltaR2 = pow( (endtoend*endtoend - endtoendref_*endtoendref_) / (endtoend + endtoendref_) ,2 );
     
@@ -239,10 +196,12 @@ void StatMechManager::StatMechOutput(const double& time,const int& num_dof,const
         if ( (istep - istart_) % int(ceil(pow( 10, floor(log10((time - starttimeoutput_) / (10*dt))))) ) == 0 )
         {
           // open file and append new data line
-          fp = fopen(outputfilename_.str().c_str(), "a");
+          fp = fopen(outputfilename.str().c_str(), "a");
+          
           //defining temporary stringstream variable
           std::stringstream filecontent;
           filecontent << scientific << setprecision(15) << time - starttimeoutput_ << "  " << DeltaR2 << endl;
+          
           // move temporary stringstream to file and close it
           fprintf(fp,filecontent.str().c_str());
           fclose(fp);
@@ -261,38 +220,185 @@ void StatMechManager::StatMechOutput(const double& time,const int& num_dof,const
        endtoendref_ = pow ( pow((dis)[num_dof-3]+10 - (dis)[0],2) + pow((dis)[num_dof-2] - (dis)[1],2) , 0.5);  
        starttimeoutput_ = time;
        istart_ = istep;   
-       //setting up an empty file "EndToEndErgo.dat"
-       fp = fopen("EndToEndErgo.dat", "w");
-       fclose(fp);
       }
        
-        if (time > starttimeoutput_ && starttimeoutput_ > -1.0)
-        { 
-          endtoend = pow ( pow((dis)[num_dof-3]+10 - (dis)[0],2) + pow((dis)[num_dof-2] - (dis)[1],2) , 0.5);
+      if (time > starttimeoutput_ && starttimeoutput_ > -1.0)
+      { 
+        endtoend = pow ( pow((dis)[num_dof-3]+10 - (dis)[0],2) + pow((dis)[num_dof-2] - (dis)[1],2) , 0.5);
+    
+        //writing output: current time and end to end distance are stored without any further postprocessing
+        if ( (istep - istart_) % 100 == 0 )
+          {
+          // open file and append new data line
+          fp = fopen("EndToEndErgo.dat", "a");
+          //defining temporary stringstream variable
+          std::stringstream filecontent;
+          filecontent << scientific << setprecision(15) << time << "  " << endtoend << endl;
+          // move temporary stringstream to file and close it
+          fprintf(fp,filecontent.str().c_str());
+          fclose(fp);
+          }
+      }
+    }
+    break;
+    //measurement of viscoelastic properties should be carried out by means of force sensors
+    case INPAR::STATMECH::statout_viscoelasticity:
+    {
+      //pointer to file into which each processor writes the output related with the dof of which it is the row map owner
+      FILE* fp = NULL; 
+           
+      //content to be written into the output file
+      std::stringstream filecontent;
       
-          //writing output: current time and end to end distance are stored without any further postprocessing
-          if ( (istep - istart_) % 100 == 0 )
-            {
-            // open file and append new data line
-            fp = fopen("EndToEndErgo.dat", "a");
-            //defining temporary stringstream variable
-            std::stringstream filecontent;
-            filecontent << scientific << setprecision(15) << time << "  " << endtoend << endl;
-            // move temporary stringstream to file and close it
-            fprintf(fp,filecontent.str().c_str());
-            fclose(fp);
-            }
-        }
+      //name of file into which output is written
+      std::ostringstream outputfilename; 
+      outputfilename << "ViscoElOutputProc"<< discret_.Comm().MyPID() << ".dat";
+     
+      fp = fopen(outputfilename.str().c_str(), "a");
+      
+      /*the output to be written consists of internal forces at exactly those degrees of freedom
+       * marked in *forcesensor_ by a one entry*/
+      
+      filecontent << endl << endl << endl << scientific << setprecision(10) << "measurement data in timestep " << istep << ", time = " << time << endl << endl;
+      
+      for(int i = 0; i < forcesensor_->MyLength(); i++)
+        if( (*forcesensor_)[i] == 1)
+          filecontent << "displacement = "<< dis[i] << "  internal force = "<< fint[i] << endl;
+         
+      //writing filecontent into output file and closing it
+      fprintf(fp,filecontent.str().c_str());
+      fclose(fp);
     }
     break;
     case INPAR::STATMECH::statout_none:
-    case INPAR::STATMECH::statout_viscoelasticity:
     default:
     break;
   }
  
   return;
 } // StatMechManager::StatMechOutput()
+
+
+/*----------------------------------------------------------------------*
+ | initialize special output for statistical mechanics(public)cyron 12/08|
+ *----------------------------------------------------------------------*/
+void StatMechManager::StatMechInitOutput()
+{
+  //initializing special output for statistical mechanics by looking for a suitable name of the outputfile and setting up an empty file with this name
+  
+  switch(Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_,"SPECIAL_OUTPUT"))
+  {
+    case INPAR::STATMECH::statout_endtoendlog:
+    {
+       FILE* fp = NULL; //file pointer for statistical output file
+       
+       //defining name of output file
+       std::ostringstream outputfilename;
+
+       outputfilenumber_ = 0; 
+
+       //file pointer for operating with numbering file
+       FILE* fpnumbering = NULL;
+       std::ostringstream numberingfilename;
+       
+       //look for a numbering file where number of already existing output files is stored:
+       numberingfilename.str("NumberOfRealizations");
+       fpnumbering = fopen(numberingfilename.str().c_str(), "r");
+       
+       //if there is no such numbering file: look for a not yet existing output file name (numbering upwards)
+       if(fpnumbering == NULL)
+       {
+         do
+         {
+           outputfilenumber_++;
+           outputfilename.str("");
+           outputfilename << "EndToEnd"<< outputfilenumber_ << ".dat";
+           fp = fopen(outputfilename.str().c_str(), "r");
+         } while(fp != NULL);
+         
+         //set up new file with name "outputfilename" without writing anything into this file
+         fp = fopen(outputfilename.str().c_str(), "w");
+         fclose(fp);
+      }         
+      //if there already exists a numbering file
+      else
+      {
+        fclose(fpnumbering);
+        
+        //read the number of the next realization out of the file into the variable testnumber
+        std::fstream f(numberingfilename.str().c_str());            
+        while (f)
+        {
+          std::string tok;
+          f >> tok;
+          if (tok=="Next")
+          {
+            f >> tok; 
+            if (tok=="Number:")     
+              f >> outputfilenumber_;
+          }
+        } //while(f)
+        
+        //defining outputfilename by means of new testnumber
+        outputfilename.str("");
+        outputfilename << "EndToEnd"<< outputfilenumber_ << ".dat";
+      }
+       
+      //increasing the number in the numbering file by one
+      fpnumbering = fopen(numberingfilename.str().c_str(), "w");
+      std::stringstream filecontent;
+      filecontent << "Next Number: "<< (outputfilenumber_ + 1);
+      fprintf(fpnumbering,filecontent.str().c_str());
+      fclose(fpnumbering);
+
+    }
+    break;
+    case INPAR::STATMECH::statout_endtoendergodicity:
+    {
+      //defining name of output file
+      std::ostringstream outputfilename;
+      outputfilename.str("");
+      outputfilename << "EndToEndErgo.dat";
+      
+      FILE* fp = NULL; //file pointer for statistical output file
+      
+      //making sure that there exists an now empty file named by outputfilename_
+      fp = fopen(outputfilename.str().c_str(), "w");
+      
+      fclose(fp);
+      
+    }
+    break;
+    //measurement of viscoelastic properties should be carried out by means of force sensors
+    case INPAR::STATMECH::statout_viscoelasticity:
+    {
+      //pointer to file into which each processor writes the output related with the dof of which it is the row map owner
+      FILE* fp = NULL; 
+          
+      //content to be written into the output file
+      std::stringstream filecontent;
+      
+      //defining name of output file related to processor Id
+      std::ostringstream outputfilename; 
+      outputfilename.str("");
+      outputfilename << "ViscoElOutputProc"<< discret_.Comm().MyPID() << ".dat";
+    
+      fp = fopen(outputfilename.str().c_str(), "w");
+        
+      filecontent << "Output for measurement of viscoelastic properties written by processor "<< discret_.Comm().MyPID() << endl;
+         
+      // move temporary stringstream to file and close it
+      fprintf(fp,filecontent.str().c_str());
+      fclose(fp);
+    }
+    break;
+    case INPAR::STATMECH::statout_none:
+    default:
+    break;
+  }
+ 
+  return;
+} // StatMechManager::StatMechInitOutput()
 
 
 /*----------------------------------------------------------------------*
@@ -339,7 +445,7 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& dis)
     crosslinkerdummy->Iyy_ = 28.74e-12;
     crosslinkerdummy->Izz_ = 28.74e-12;
     crosslinkerdummy->Irr_ = 28.74e-9;   
-    crosslinkerdummy->material_ = 1;
+    crosslinkerdummy->material_ = 1;   
 #endif
     
     /*
@@ -472,7 +578,9 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& dis)
           }
           
           //correct reference configuration data is computed for the new crosslinker element
-          newcrosslinker->SetUpReferenceGeometry(xrefe,rotrefe);          
+          newcrosslinker->SetUpReferenceGeometry(xrefe,rotrefe); 
+          //set drag coefficient for new crosslinker element dependent on its length
+          newcrosslinker->zeta_ = 4*PI*newcrosslinker->lrefe_*( statmechparams_.get<double>("ETA",0.0) );
           
           //add new element to discretization
           discret_.AddElement(newcrosslinker);  
@@ -526,6 +634,7 @@ void StatMechManager::StatMechForceDamp(ParameterList& params, RCP<Epetra_Vector
   pstat.set("ETA",statmechparams_.get<double>("ETA",0.0));
   pstat.set("STOCH_ORDER",statmechparams_.get<int>("STOCH_ORDER",0));
   
+  
   /*note: the column map statistical force vector is passed down via the parameter list and not as a systemvector 
    * so that assembly is not done by the evaluate method itself, but elementwise; this is in order to account for the
    * special assembly needs of randomly evaluated forces: the evaluate method of the discretization uses the LINALG
@@ -534,11 +643,12 @@ void StatMechManager::StatMechForceDamp(ParameterList& params, RCP<Epetra_Vector
    * global column map vector is used*/
   pstat.set("statistical force vector",fstatcol);
   
+  
   //evaluation of statistical forces on column map vecotor
   discret_.SetState("displacement",dis); //during evaluation of statistical forces access to current displacement possible
   discret_.Evaluate(pstat,damp,null,null,null,null);
   discret_.ClearState();
-
+  
   
   /*exporting col map statistical force vector to a row map vector additively, i.e. in such a way that a 
    * vector element with a certain GID in the final row vector is the sum of all elements of the column 
@@ -555,7 +665,42 @@ void StatMechManager::StatMechForceDamp(ParameterList& params, RCP<Epetra_Vector
   return;
 } // StatMechManager::StatMechForceDamp()
 
+/*----------------------------------------------------------------------*
+ | (public) writing restart information for manager objects   cyron 12/08|
+ *----------------------------------------------------------------------*/
+void StatMechManager::StatMechWriteRestart(IO::DiscretizationWriter& output)
+{   
+  output.WriteInt("istart",istart_);
+  output.WriteDouble("starttimeoutput",starttimeoutput_);
+  output.WriteDouble("endtoendref",endtoendref_);
+  output.WriteInt("basiselements",basiselements_);
+  output.WriteInt("outputfilenumber",outputfilenumber_);
+  /*if no dynamic crosslinkers are calculated the variable crosslinkerpartner is never initialized
+   * and hence cannot be saved or read*/
+  if(Teuchos::getIntegralValue<int>(statmechparams_,"DYN_CROSSLINKERS"))
+    output.WriteVector("crosslinkerpartner",crosslinkerpartner_,IO::DiscretizationWriter::nodevector);
+  
+  return;
+} // StatMechManager::StatMechOutput()
 
+/*----------------------------------------------------------------------*
+ |read restart information for statistical mechanics (public)cyron 12/08|
+ *----------------------------------------------------------------------*/
+void StatMechManager::StatMechReadRestart(IO::DiscretizationReader& reader)
+{
+  // read restart information for statistical mechanics  
+  istart_ = reader.ReadInt("istart");
+  starttimeoutput_ = reader.ReadDouble("starttimeoutput");
+  endtoendref_ = reader.ReadDouble("endtoendref");
+  basiselements_ = reader.ReadInt("basiselements");
+  outputfilenumber_ = reader.ReadInt("outputfilenumber");
+  /*if no dynamic crosslinkers are calculated the variable crosslinkerpartner is never initialized
+   * and hence cannot be saved or read*/
+  if(Teuchos::getIntegralValue<int>(statmechparams_,"DYN_CROSSLINKERS"))
+   reader.ReadVector(crosslinkerpartner_,"crosslinkerpartner");
+ 
+  return;
+}// StatMechManager::StatMechReadRestart()
 
 
 #endif  // #ifdef CCADISCRET

@@ -41,9 +41,6 @@ zeta_(0),
 //hence enough to integrate 3rd order polynomials exactly
 gaussrule_(DRT::UTILS::intrule_line_2point)
 {
-  
-  std::cout<<"\n\nConstructor Called\n\n";
-  
   return;
 }
 /*----------------------------------------------------------------------*
@@ -76,9 +73,6 @@ DRT::ELEMENTS::Beam3::Beam3(const DRT::ELEMENTS::Beam3& old) :
  zeta_(old.zeta_),
  gaussrule_(old.gaussrule_)
 {
-  
-  std::cout<<"\n\nCopy Constructor Called\n\n";
-  
   return;
 }
 /*----------------------------------------------------------------------*
