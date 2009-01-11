@@ -387,10 +387,10 @@ namespace ELEMENTS
     LINALG::Matrix<4,iel> viscs2_;
     //! linearisation of convect, convective part
     LINALG::Matrix<iel,1> conv_c_;
-    //! linearisation of convect, convective part in non-density-weighted form
-    LINALG::Matrix<iel,1> ndwconv_c_;
     //! momentum divergence
     double mdiv_;
+    //! momentum divergence used for conservative form of convective term
+    double consmdiv_;
     //! velocity divergence
     double vdiv_;
     //! total right hand side terms at int.-point for momentum equation

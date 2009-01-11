@@ -395,10 +395,8 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // flag for potential Neumann-type outflow stabilization
   outflow_stab_ = stabparams->get<string>("OUTFLOW_STAB","no_outstab");
 
-  // the vector containing potential Neumann-type outflow term: either
-  // in any case for conservative form of convective term or as a
-  // stabilization term for convective form of convective term
-  if (convform_ == "conservative" or outflow_stab_ == "yes_outstab")
+  // vector containing potential Neumann-type outflow stabilization term
+  if (outflow_stab_ == "yes_outstab") 
     outflow_= LINALG::CreateVector(*dofrowmap,true);
 
   // -------------------------------------------------------------------
@@ -875,14 +873,11 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       // create the parameters for the discretization
       ParameterList eleparams;
 
-      // add potential Neumann-type outflow term: either
-      // in any case for conservative form of convective term or as a
-      // stabilization term for convective form of convective term
-      if (convform_ == "conservative" or outflow_stab_ == "yes_outstab")
+      // add potential Neumann-type outflow stabilization term
+      if (outflow_stab_ == "yes_outstab")
       {
         discret_->ClearState();
         eleparams.set("outflow stabilization",outflow_stab_);
-        eleparams.set("form of convective term",convform_);
         if (timealgo_==timeint_afgenalpha)
         {
           eleparams.set("thsl",1.0);

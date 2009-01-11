@@ -110,8 +110,8 @@ DRT::ELEMENTS::Fluid2Impl<distype>::Fluid2Impl()
     tau_(),
     viscs2_(),
     conv_c_(),
-    ndwconv_c_(),
     mdiv_(),
+    consmdiv_(),
     vdiv_(),
     rhsmom_(),
     rhscon_(),
@@ -707,16 +707,6 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
     /* Convective term  u_old * grad u_old: */
     conv_old_.Multiply(vderxy_,convvelint_);
 
-    // For conservative form of convective term, we also need "pure"
-    // (i.e., non-density-weighted) velocity (including potential ALE
-    // velocity) and convective part.
-    if (conservative)
-    {
-      ndwvelint_.Multiply(evelnp,funct_);
-      if (ele->is_ale_) ndwvelint_.Multiply(-1.0, egridv, funct_, 1.0);
-      ndwconv_c_.MultiplyTN(derxy_,ndwvelint_);
-    }
-
     if (higher_order_ele)
     {
       /*--- viscous term: div(epsilon(u)) -------------------------------*/
@@ -777,6 +767,15 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
     // (the later is only required for low-Mach-number flow)
     mdiv_ = mderxy_(0, 0) + mderxy_(1, 1);
     if (loma) vdiv_ = vderxy_(0, 0) + vderxy_(1, 1);
+
+    // momentum divergence as well as non-density-weighted velocity required
+    // for conservative form of convective term
+    if (conservative)
+    {
+      consmdiv_ = mdiv_;
+      ndwvelint_.Multiply(evelnp,funct_);
+    }
+    else consmdiv_ = 0.0;
 
     //--------------------------------------------------------------------
     // stabilization, time-integration and subgrid-viscosity factors
@@ -873,186 +872,98 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
       //                            GALERKIN PART
 
       // computation of inertia and convection (convective and reactive part)
-      // for conservative form including right-hand-side contribution
-      if (conservative)
+      // for convective or conservative form
+      for (int ui=0; ui<numnode; ++ui)
       {
-        for (int ui=0; ui<numnode; ++ui)
-        {
-          const int tui  = 3*ui;
-          const int tuip = tui+1;
-          const double v = fac*densamfunct_(ui);
-
-          for (int vi=0; vi<numnode; ++vi)
-          {
-            const int tvi  = 3*vi;
-            const int tvip = tvi+1;
-            /* inertia (contribution to mass matrix) */
-            /*
-
-            /               \
-            |                |
-            |  D(rho*u) , v  |
-            |                |
-            \               /
-            */
-            double v2 = v*funct_(vi) ;
-            estif(tvi , tui ) += v2;
-            estif(tvip, tuip) += v2;
-          }
-        }
-
+        const int tui   = 3*ui;
+        const int tuip  = tui+1;
+        const double v = fac*densamfunct_(ui)
 #if 1
-        for (int ui=0; ui<numnode; ++ui)
+                         + timefacfac*(conv_c_(ui)+funct_(ui)*consmdiv_)
+#endif
+                         ;
+        for (int vi=0; vi<numnode; ++vi)
         {
-          const int tui = 3*ui;
-          const int tuip = tui+1;
-          const double v0 = timefacfac*funct_(ui)*velint_(0);
-          const double v1 = timefacfac*funct_(ui)*velint_(1);
+          const int tvi   = 3*vi;
+          const int tvip  = tvi+1;
+          /* inertia (contribution to mass matrix) */
+          /*
 
-          for (int vi=0; vi<numnode; ++vi)
-          {
-            const int tvi = 3*vi;
-            const int tvip = tvi+1;
-            /* convection, convective part */
-            /*
+          /                \
+          |                |
+          |  D(rho*u) , v  |
+          |                |
+          \                /
+          */
 
-            /                                   \
-            |  /              n+1  \             |
-            | | Du (x) (rho*u)     |  , nabla v  |
-            |  \              (i)  /             |
-            \                                   /
+          /* convection, convective part (convective or conservative) */
+          /*
 
-            */
-            estif(tvi,  tui ) -= v0*derxy_(0, vi);
-            estif(tvi,  tuip) -= v0*derxy_(1, vi);
-            estif(tvip, tui ) -= v1*derxy_(0, vi);
-            estif(tvip, tuip) -= v1*derxy_(1, vi);
-          }
+          /                                                         \
+          |  /       n+1        \          /              n+1 \     |
+          | | (rho*u)   o nabla | Du + Du | nabla o (rho*u)   |, v  |
+          |  \      (i)        /           \             (i) /      |
+          \                                                        /
+
+          */
+          double v2 = v*funct_(vi) ;
+          estif(tvi  , tui  ) += v2;
+          estif(tvip , tuip ) += v2;
         }
+      }
 
+      if (newton)
+      {
         for (int vi=0; vi<numnode; ++vi)
         {
           const int tvi  = 3*vi;
           const int tvip = tvi+1;
-          /* convection */
-          double v = rhsfac*ndwconv_c_(vi);
-          eforce(tvi ) += v*velint_(0) ;
-          eforce(tvip) += v*velint_(1) ;
-        }
-#endif
-
-        if (newton)
-        {
+          const double v = timefacfac*funct_(vi);
           for (int ui=0; ui<numnode; ++ui)
           {
-            const int tui = 3*ui;
+            const int tui  = 3*ui;
             const int tuip = tui+1;
-            const double v = timefacfac*densfunct_(ui);
-
-            for (int vi=0; vi<numnode; ++vi)
-            {
-              const int tvi = 3*vi;
-              const int tvip = tvi+1;
-              /* convection, reactive part */
-              /*
-
-              /                                     \
-              |  / n+1                \             |
-              | | u    (x) D(rho*u)   |  , nabla v  |
-              |  \ (i)               /              |
-              \                                    /
-
-              */
-              double v2 = v*ndwconv_c_(vi) ;
-              estif(tvi,  tui ) -= v2;
-              estif(tvip, tuip) -= v2;
-            }
-          }
-        }
-      }
-      // computation of inertia and convection (convective and reactive part)
-      // for convective form including right-hand-side contribution
-      else
-      {
-        for (int ui=0; ui<numnode; ++ui)
-        {
-          const int tui  = 3*ui;
-          const int tuip = tui+1;
-          const double v = fac*densamfunct_(ui)
-#if 1
-                           + timefacfac*conv_c_(ui)
-#endif
-                           ;
-          for (int vi=0; vi<numnode; ++vi)
-          {
-            const int tvi  = 3*vi;
-            const int tvip = tvi+1;
-            /* inertia (contribution to mass matrix) */
-            /*
-
-            /                \
-            |                |
-            |  D(rho*u) , v  |
-            |                |
-            \                /
+            const double v2 = v*densfunct_(ui);
+            /*  convection, reactive part
+            /                                 \
+            |  /                \   n+1       |
+            | | D(rho*u) o nabla | u     , v  |
+            |  \                /   (i)       |
+            \                                /
             */
-
-            /* convection, convective part */
-            /*
-
-            /                               \
-            |  /       n+1        \         |
-            | | (rho*u)   o nabla | Du , v  |
-            |  \      (i)        /          |
-            \                              /
-
-            */
-            double v2 = v*funct_(vi) ;
-            estif(tvi , tui ) += v2;
-            estif(tvip, tuip) += v2;
+            estif(tvi,  tui ) += v2*vderxy_(0, 0) ;
+            estif(tvi,  tuip) += v2*vderxy_(0, 1) ;
+            estif(tvip, tui ) += v2*vderxy_(1, 0) ;
+            estif(tvip, tuip) += v2*vderxy_(1, 1) ;
           }
         }
 
-        if (newton)
+        if (conservative)
         {
           for (int vi=0; vi<numnode; ++vi)
           {
-            const int tvi  = 3*vi;
-            const int tvip = tvi+1;
-            const double v = timefacfac*funct_(vi);
+            const int tvi   = 3*vi;
+            const int tvip  = tvi+1;
+            const double v0 = timefacfac*ndwvelint_(0)*funct_(vi);
+            const double v1 = timefacfac*ndwvelint_(1)*funct_(vi);
             for (int ui=0; ui<numnode; ++ui)
             {
-              const int tui  = 3*ui;
-              const int tuip = tui+1;
-              const double v2 = v*densfunct_(ui);
-
-              /*  convection, reactive part
-
-              /                                 \
-              |  /                \   n+1       |
-              | | D(rho*u) o nabla | u     , v  |
-              |  \                /   (i)       |
+              const int tui   = 3*ui;
+              const int tuip  = tui+1;
+              /*  convection, reactive part (conservative addition) 
+              /                                \
+              |  n+1  /                \       |
+              | u    | nabla o D(rho*u) | , v  |
+              |  (i)  \                /       |
               \                                /
               */
-              estif(tvi,  tui ) += v2*vderxy_(0, 0) ;
-              estif(tvi,  tuip) += v2*vderxy_(0, 1) ;
-              estif(tvip, tui ) += v2*vderxy_(1, 0) ;
-              estif(tvip, tuip) += v2*vderxy_(1, 1) ;
+              estif(tvi,  tui  ) += v0*densderxy_(0, ui) ;
+              estif(tvi,  tuip ) += v0*densderxy_(1, ui) ;
+              estif(tvip, tui  ) += v1*densderxy_(0, ui) ;
+              estif(tvip, tuip ) += v1*densderxy_(1, ui) ;
             }
           }
         }
-
-#if 1
-        for (int vi=0; vi<numnode; ++vi)
-        {
-          const int tvi = 3*vi;
-          const int tvip = tvi+1;
-          /* convection */
-          double v = -rhsfac*funct_(vi);
-          eforce(tvi ) += v*conv_old_(0) ;
-          eforce(tvip) += v*conv_old_(1) ;
-        }
-#endif
       }
 
       const double viscefftimefacfac = visceff*timefacfac;
@@ -1153,6 +1064,18 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
           eforce(tvi + 1) += v*velint_(1) ;
         }
       }
+
+#if 1
+      for (int vi=0; vi<numnode; ++vi)
+      {
+        const int tvi   = 3*vi;
+        const int tvip  = tvi+1;
+        /* convection (convective or conservative) */
+        double v = -rhsfac*funct_(vi);
+        eforce(tvi  ) += v*(conv_old_(0)+ndwvelint_(0)*consmdiv_) ;
+        eforce(tvip ) += v*(conv_old_(1)+ndwvelint_(1)*consmdiv_) ;
+      }
+#endif
 
       for (int vi=0; vi<numnode; ++vi)
       {

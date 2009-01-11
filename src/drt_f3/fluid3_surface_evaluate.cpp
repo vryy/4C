@@ -157,19 +157,6 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
   bool outflowstab = false;
   if(outflowstabstr =="yes_outstab") outflowstab = true;
 
-  // get flag whether outflow term due to conservative form of convective term
-  string convformstr = params.get<string>("form of convective term","convective");
-  bool conservative = false;
-  if(convformstr =="conservative") conservative = true;
-
-  // When conservative form is used, sign of outflow term on right hand side
-  // is negative in any case (even if mistakenly outflow-stabilization flag
-  // is set to yes); otherwise, outflow-stabilization flag decides, and sign
-  // of outflow term is positive.
-  double signum;
-  if (conservative) signum = -1.0;
-  else              signum =  1.0;
-
   const DiscretizationType distype = this->Shape();
 
   // set number of nodes
@@ -232,8 +219,8 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
     edensnp(i) = myvedenp[3+(i*4)];
   }
 
-  // this part will be run when an outflow term is required
-  if (conservative or outflowstab)
+  // this part will be run when an outflow stabilization term is required
+  if (outflowstab)
   {
     // Determine normal to this element
     std::vector<double> dist1(3), dist2(3), normal(3);
@@ -295,14 +282,14 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
         normvel += vel[dim]*normal[dim];
       }
 
-      if ((normvel<-0.0001 and outflowstab) or (normvel>0.0 and conservative))
+      if (normvel<-0.0001)
       {
         // compute measure tensor for surface element and the infinitesimal
         // area element drs for the integration
         shape_function_2D_deriv1(deriv, e0, e1, distype);
         DRT::UTILS::ComputeMetricTensorForSurface(xyze,deriv,metrictensor,&drs);
 
-        const double fac = intpoints.qwgt[gpid] * drs * thsl * normvel * signum;
+        const double fac = intpoints.qwgt[gpid] * drs * thsl * normvel;
 
         for (int node=0;node<iel;++node)
         {
