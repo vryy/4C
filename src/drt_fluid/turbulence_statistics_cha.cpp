@@ -1486,6 +1486,11 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
       eleparams_.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
     }
     
+    // parameters for a turbulence model
+    {
+      eleparams_.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
+    }
+    
     // set state vectors for element call
     for(map<string,RCP<Epetra_Vector> >::iterator state =statevecs.begin();
                                                   state!=statevecs.end()  ;
