@@ -111,7 +111,6 @@ DRT::ELEMENTS::Fluid2Impl<distype>::Fluid2Impl()
     viscs2_(),
     conv_c_(),
     mdiv_(),
-    consmdiv_(),
     vdiv_(),
     rhsmom_(),
     rhscon_(),
@@ -660,6 +659,9 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
     velint_.Multiply(evelnp,densfunct_);
 
+    // non-density-weighted velocity required for conservative form
+    if (conservative) ndwvelint_.Multiply(evelnp,funct_);
+
     // get history data at integration point
     histmom_.Multiply(emhist,funct_);
     histcon_ = funct_.Dot(echist);
@@ -768,15 +770,6 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
     mdiv_ = mderxy_(0, 0) + mderxy_(1, 1);
     if (loma) vdiv_ = vderxy_(0, 0) + vderxy_(1, 1);
 
-    // momentum divergence as well as non-density-weighted velocity required
-    // for conservative form of convective term
-    if (conservative)
-    {
-      consmdiv_ = mdiv_;
-      ndwvelint_.Multiply(evelnp,funct_);
-    }
-    else consmdiv_ = 0.0;
-
     //--------------------------------------------------------------------
     // stabilization, time-integration and subgrid-viscosity factors
     //--------------------------------------------------------------------
@@ -864,51 +857,50 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
       conv_resM_.MultiplyTN (derxy_,dwres_old_);
     }
 
-    //--------------------------------------------------------------------
+    //------------------------------------------------------------------------
     // perform integration for element matrix and right hand side
-    //--------------------------------------------------------------------
+    //------------------------------------------------------------------------
     {
       //----------------------------------------------------------------------
       //                            GALERKIN PART
 
-      // computation of inertia and convection (convective and reactive part)
-      // for convective or conservative form
+      //----------------------------------------------------------------------
+      // computation of inertia term and convection term (convective and
+      // reactive part) for convective form of convection term including
+      // right-hand-side contribution
+      //----------------------------------------------------------------------
       for (int ui=0; ui<numnode; ++ui)
       {
-        const int tui   = 3*ui;
-        const int tuip  = tui+1;
+        const int fui   = 3*ui;
+        const int fuip  = fui+1;
         const double v = fac*densamfunct_(ui)
 #if 1
-                         + timefacfac*(conv_c_(ui)+funct_(ui)*consmdiv_)
+                         + timefacfac*conv_c_(ui)
 #endif
                          ;
         for (int vi=0; vi<numnode; ++vi)
         {
-          const int tvi   = 3*vi;
-          const int tvip  = tvi+1;
+          const int fvi   = 3*vi;
+          const int fvip  = fvi+1;
           /* inertia (contribution to mass matrix) */
           /*
-
           /                \
           |                |
           |  D(rho*u) , v  |
           |                |
           \                /
           */
-
-          /* convection, convective part (convective or conservative) */
+          /* convection, convective part (convective form) */
           /*
-
-          /                                                         \
-          |  /       n+1        \          /              n+1 \     |
-          | | (rho*u)   o nabla | Du + Du | nabla o (rho*u)   |, v  |
-          |  \      (i)        /           \             (i) /      |
-          \                                                        /
-
+          /                               \
+          |  /       n+1        \         |
+          | | (rho*u)   o nabla | Du , v  |
+          |  \      (i)        /          |
+          \                              /
           */
           double v2 = v*funct_(vi) ;
-          estif(tvi  , tui  ) += v2;
-          estif(tvip , tuip ) += v2;
+          estif(fvi  , fui  ) += v2;
+          estif(fvip , fuip ) += v2;
         }
       }
 
@@ -916,129 +908,26 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
       {
         for (int vi=0; vi<numnode; ++vi)
         {
-          const int tvi  = 3*vi;
-          const int tvip = tvi+1;
+          const int fvi   = 3*vi;
+          const int fvip  = fvi+1;
           const double v = timefacfac*funct_(vi);
           for (int ui=0; ui<numnode; ++ui)
           {
-            const int tui  = 3*ui;
-            const int tuip = tui+1;
+            const int fui   = 3*ui;
+            const int fuip  = fui+1;
             const double v2 = v*densfunct_(ui);
-            /*  convection, reactive part
+            /*  convection, reactive part (convective form)
             /                                 \
             |  /                \   n+1       |
             | | D(rho*u) o nabla | u     , v  |
             |  \                /   (i)       |
             \                                /
             */
-            estif(tvi,  tui ) += v2*vderxy_(0, 0) ;
-            estif(tvi,  tuip) += v2*vderxy_(0, 1) ;
-            estif(tvip, tui ) += v2*vderxy_(1, 0) ;
-            estif(tvip, tuip) += v2*vderxy_(1, 1) ;
+            estif(fvi,   fui)   += v2*vderxy_(0, 0) ;
+            estif(fvi,   fuip)  += v2*vderxy_(0, 1) ;
+            estif(fvip,  fui)   += v2*vderxy_(1, 0) ;
+            estif(fvip,  fuip)  += v2*vderxy_(1, 1) ;
           }
-        }
-
-        if (conservative)
-        {
-          for (int vi=0; vi<numnode; ++vi)
-          {
-            const int tvi   = 3*vi;
-            const int tvip  = tvi+1;
-            const double v0 = timefacfac*ndwvelint_(0)*funct_(vi);
-            const double v1 = timefacfac*ndwvelint_(1)*funct_(vi);
-            for (int ui=0; ui<numnode; ++ui)
-            {
-              const int tui   = 3*ui;
-              const int tuip  = tui+1;
-              /*  convection, reactive part (conservative addition) 
-              /                                \
-              |  n+1  /                \       |
-              | u    | nabla o D(rho*u) | , v  |
-              |  (i)  \                /       |
-              \                                /
-              */
-              estif(tvi,  tui  ) += v0*densderxy_(0, ui) ;
-              estif(tvi,  tuip ) += v0*densderxy_(1, ui) ;
-              estif(tvip, tui  ) += v1*densderxy_(0, ui) ;
-              estif(tvip, tuip ) += v1*densderxy_(1, ui) ;
-            }
-          }
-        }
-      }
-
-      const double viscefftimefacfac = visceff*timefacfac;
-      for (int ui=0; ui<numnode; ++ui)
-      {
-        const int tui  = 3*ui;
-        const int tuip = tui+1;
-        for (int vi=0; vi<numnode; ++vi)
-        {
-          const int tvi  = 3*vi;
-          const int tvip = tvi+1;
-
-          const double derxy_0ui_0vi = derxy_(0, ui)*derxy_(0, vi);
-          const double derxy_1ui_1vi = derxy_(1, ui)*derxy_(1, vi);
-          /* viscosity term */
-          /*
-
-                /                          \
-                |       /  \         / \   |
-          2 mu  |  eps | Du | , eps | v |  |
-                |       \  /         \ /   |
-                \                          /
-          */
-          estif(tvi,  tui ) += viscefftimefacfac*(2.0*derxy_0ui_0vi
-                                                  +
-                                                  derxy_1ui_1vi) ;
-          estif(tvi,  tuip) += viscefftimefacfac*derxy_(0, ui)*derxy_(1, vi) ;
-          estif(tvip, tui ) += viscefftimefacfac*derxy_(0, vi)*derxy_(1, ui) ;
-          estif(tvip, tuip) += viscefftimefacfac*(derxy_0ui_0vi
-                                                  +
-                                                  2.0*derxy_1ui_1vi) ;
-
-        }
-      }
-
-      for (int ui=0; ui<numnode; ++ui)
-      {
-        const int tuipp = 3*ui + 2;
-        const double v = -timefacfac*funct_(ui);
-        for (int vi=0; vi<numnode; ++vi)
-        {
-          const int tvi = 3*vi;
-          /* pressure */
-          /*
-
-          /                  \
-          |                  |
-          |  Dp , nabla o v  |
-          |                  |
-          \                  /
-          */
-
-          estif(tvi,     tuipp) += v*derxy_(0, vi) ;
-          estif(tvi + 1, tuipp) += v*derxy_(1, vi) ;
-
-        }
-      }
-
-      for (int vi=0; vi<numnode; ++vi)
-      {
-        const int tvipp = 3*vi + 2;
-        const double v = timefacfac*functdens_(vi);
-        for (int ui=0; ui<numnode; ++ui)
-        {
-          const int tui = 3*ui;
-          /* divergence */
-          /*
-            /                              \
-            |                              |
-            | nabla o D(rho*u)  , (q/rho)  |
-            |                              |
-            \                              /
-          */
-          estif(tvipp, tui    ) += v*densderxy_(0, ui) ;
-          estif(tvipp, tui + 1) += v*densderxy_(1, ui) ;
         }
       }
 
@@ -1046,93 +935,246 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
       {
         for (int vi=0; vi<numnode; ++vi)
         {
-          const int tvi = 3*vi;
-          /* inertia */
+          const int fvi = 3*vi;
+          /* inertia term on right-hand side for generalized-alpha scheme */
           const double v = -fac*funct_(vi);
-          eforce(tvi    ) += v*accintam_(0) ;
-          eforce(tvi + 1) += v*accintam_(1) ;
+          eforce(fvi    ) += v*accintam_(0) ;
+          eforce(fvi + 1) += v*accintam_(1) ;
         }
       }
       else
       {
         for (int vi=0; vi<numnode; ++vi)
         {
-          const int tvi = 3*vi;
-          /* inertia */
+          const int fvi = 3*vi;
+          /* inertia term on right-hand side for one-step-theta/BDF2 schem */
           const double v = -fac*funct_(vi);
-          eforce(tvi    ) += v*velint_(0) ;
-          eforce(tvi + 1) += v*velint_(1) ;
+          eforce(fvi    ) += v*velint_(0) ;
+          eforce(fvi + 1) += v*velint_(1) ;
         }
       }
 
 #if 1
       for (int vi=0; vi<numnode; ++vi)
       {
-        const int tvi   = 3*vi;
-        const int tvip  = tvi+1;
-        /* convection (convective or conservative) */
+        const int fvi   = 3*vi;
+        /* convection (convective form) on right-hand side */
         double v = -rhsfac*funct_(vi);
-        eforce(tvi  ) += v*(conv_old_(0)+ndwvelint_(0)*consmdiv_) ;
-        eforce(tvip ) += v*(conv_old_(1)+ndwvelint_(1)*consmdiv_) ;
+        eforce(fvi    ) += v*conv_old_(0) ;
+        eforce(fvi + 1) += v*conv_old_(1) ;
       }
 #endif
 
-      for (int vi=0; vi<numnode; ++vi)
+      //----------------------------------------------------------------------
+      // computation of additions to convection term (convective and
+      // reactive part) for conservative form of convection term including
+      // right-hand-side contribution
+      //----------------------------------------------------------------------
+      if (conservative)
       {
-        const int tvi = 3*vi;
-        /* pressure */
-        double v = press*rhsfac;
-        eforce(tvi    ) += v*derxy_(0, vi) ;
-        eforce(tvi + 1) += v*derxy_(1, vi) ;
+        for (int ui=0; ui<numnode; ++ui)
+        {
+          const int fui   = 3*ui;
+          const int fuip  = fui+1;
+          const double v = timefacfac*funct_(ui)*mdiv_;
+          for (int vi=0; vi<numnode; ++vi)
+          {
+            const int fvi   = 3*vi;
+            const int fvip  = fvi+1;
+            /* convection, convective part (conservative addition) */
+            /*
+            /                                \
+            |      /              n+1 \      |
+            |  Du | nabla o (rho*u)   | , v  |
+            |      \             (i) /       |
+            \                                /
+            */
+            double v2 = v*funct_(vi) ;
+            estif(fvi  , fui  ) += v2;
+            estif(fvip , fuip ) += v2;
+          }
+        }
+
+        if (newton)
+        {
+          for (int vi=0; vi<numnode; ++vi)
+          {
+            const int fvi   = 3*vi;
+            const int fvip  = fvi+1;
+            const double v0 = timefacfac*ndwvelint_(0)*funct_(vi);
+            const double v1 = timefacfac*ndwvelint_(1)*funct_(vi);
+            for (int ui=0; ui<numnode; ++ui)
+            {
+              const int fui   = 3*ui;
+              const int fuip  = fui+1;
+              /*  convection, reactive part (conservative addition) */
+              /*
+              /                                \
+              |  n+1  /                \       |
+              | u    | nabla o D(rho*u) | , v  |
+              |  (i)  \                /       |
+              \                                /
+              */
+              estif(fvi,  fui  ) += v0*densderxy_(0, ui) ;
+              estif(fvi,  fuip ) += v0*densderxy_(1, ui) ;
+              estif(fvip, fui  ) += v1*densderxy_(0, ui) ;
+              estif(fvip, fuip ) += v1*densderxy_(1, ui) ;
+            }
+          }
+        }
+
+        for (int vi=0; vi<numnode; ++vi)
+        {
+          const int fvi   = 3*vi;
+          /* convection (conservative addition) on right-hand side */
+          double v = -rhsfac*funct_(vi);
+          eforce(fvi    ) += v*ndwvelint_(0)*mdiv_ ;
+          eforce(fvi + 1) += v*ndwvelint_(1)*mdiv_ ;
+        }
+      }
+
+      //----------------------------------------------------------------------
+      // computation of viscosity term including right-hand-side contribution
+      //----------------------------------------------------------------------
+      const double visceff_timefacfac = visceff*timefacfac;
+      for (int ui=0; ui<numnode; ++ui)
+      {
+        const int fui   = 3*ui;
+        const int fuip  = fui+1;
+        for (int vi=0; vi<numnode; ++vi)
+        {
+          const int fvi   = 3*vi;
+          const int fvip  = fvi+1;
+
+          const double derxy_0ui_0vi = derxy_(0, ui)*derxy_(0, vi);
+          const double derxy_1ui_1vi = derxy_(1, ui)*derxy_(1, vi);
+          /* viscosity term */
+          /*
+                /                          \
+                |       /  \         / \   |
+          2 mu  |  eps | Du | , eps | v |  |
+                |       \  /         \ /   |
+                \                          /
+          */
+          estif(fvi, fui)     += visceff_timefacfac*(2.0*derxy_0ui_0vi
+                                                     +
+                                                     derxy_1ui_1vi) ;
+          estif(fvi , fuip)   += visceff_timefacfac*derxy_(0, ui)*derxy_(1, vi) ;
+          estif(fvip, fui)    += visceff_timefacfac*derxy_(0, vi)*derxy_(1, ui) ;
+          estif(fvip, fuip)   += visceff_timefacfac*(derxy_0ui_0vi
+                                                     +
+                                                     2.0*derxy_1ui_1vi) ;
+        }
       }
 
       for (int vi=0; vi<numnode; ++vi)
       {
-        const int tvi = 3*vi;
+        const int fvi = 3*vi;
         const double v = -visceff*rhsfac;
-        /* viscosity */
-        eforce(tvi    ) += v*(2.0*derxy_(0, vi)*vderxy_(0, 0)
+        /* viscosity term on right-hand side */
+        eforce(fvi)     += v*(2.0*derxy_(0, vi)*vderxy_(0, 0)
                               +
                               derxy_(1, vi)*vderxy_(0, 1)
                               +
                               derxy_(1, vi)*vderxy_(1, 0)) ;
-        eforce(tvi + 1) += v*(derxy_(0, vi)*vderxy_(0, 1)
+        eforce(fvi + 1) += v*(derxy_(0, vi)*vderxy_(0, 1)
                               +
                               derxy_(0, vi)*vderxy_(1, 0)
                               +
                               2.0*derxy_(1, vi)*vderxy_(1, 1)) ;
       }
 
+      //----------------------------------------------------------------------
+      // computation of pressure term including right-hand-side contribution
+      //----------------------------------------------------------------------
+      for (int ui=0; ui<numnode; ++ui)
+      {
+        const int fuippp = 3*ui+2;
+        const double v = -timefacfac*funct_(ui);
+        for (int vi=0; vi<numnode; ++vi)
+        {
+          const int fvi   = 3*vi;
+          /* pressure term */
+          /*
+          /                  \
+          |                  |
+          |  Dp , nabla o v  |
+          |                  |
+          \                  /
+          */
+          estif(fvi,     fuippp) += v*derxy_(0, vi) ;
+          estif(fvi + 1, fuippp) += v*derxy_(1, vi) ;
+        }
+      }
+
       for (int vi=0; vi<numnode; ++vi)
       {
-        const int tvi = 3*vi;
-        // source term of the right hand side
-        const double v = fac*funct_(vi);
-        eforce(tvi    ) += v*rhsmom_(0) ;
-        eforce(tvi + 1) += v*rhsmom_(1) ;
+        const int fvi = 3*vi;
+        /* pressure term on right-hand side */
+        const double v = press*rhsfac;
+        eforce(fvi    ) += v*derxy_(0, vi) ;
+        eforce(fvi + 1) += v*derxy_(1, vi) ;
+      }
+
+      //----------------------------------------------------------------------
+      // computation of continuity term including right-hand-side contribution
+      //----------------------------------------------------------------------
+      for (int vi=0; vi<numnode; ++vi)
+      {
+        const int fvippp = 3*vi+2;
+        const double v = timefacfac*functdens_(vi);
+        for (int ui=0; ui<numnode; ++ui)
+        {
+          const int fui   = 3*ui;
+          /* continuity term */
+          /*
+            /                              \
+            |                              |
+            | nabla o D(rho*u)  , (q/rho)  |
+            |                              |
+            \                              /
+          */
+          estif(fvippp, fui)     += v*densderxy_(0, ui) ;
+          estif(fvippp, fui + 1) += v*densderxy_(1, ui) ;
+        }
       }
 
       const double rhsfac_mdiv = -rhsfac * mdiv_;
       for (int vi=0; vi<numnode; ++vi)
       {
-        // continuity equation
+        // continuity term on right-hand side
         eforce(vi*3 + 2) += rhsfac_mdiv*functdens_(vi) ;
       }
 
+      //----------------------------------------------------------------------
+      // computation of body-force term on right-hand side
+      //----------------------------------------------------------------------
+      for (int vi=0; vi<numnode; ++vi)
+      {
+        const int fvi = 3*vi;
+        const double v = fac*funct_(vi);
+        eforce(fvi    ) += v*rhsmom_(0) ;
+        eforce(fvi + 1) += v*rhsmom_(1) ;
+      }
+
+      //----------------------------------------------------------------------
+      // computation of additional terms for low-Mach-number flow:
+      // 1) subtracted viscosity term including right-hand-side contribution
+      // 2) additional rhs term of continuity equation: density time derivat.
+      //----------------------------------------------------------------------
       if (loma)
       {
         const double v = -(2.0/3.0)*visceff*timefacfac ;
         for (int ui=0; ui<numnode; ++ui)
         {
-          const int tui  = 3*ui;
-          const int tuip = tui+1;
+          const int fui   = 3*ui;
+          const int fuip  = fui+1;
           const double v0 = v*derxy_(0,ui);
           const double v1 = v*derxy_(1,ui);
           for (int vi=0; vi<numnode; ++vi)
           {
-            const int tvi  = 3*vi;
-            const int tvip = tvi+1;
-
+            const int fvi   = 3*vi;
+            const int fvip  = fvi+1;
             /* viscosity term - subtraction for low-Mach-number flow */
             /*
                   /                               \
@@ -1141,11 +1183,10 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
                   |  3                      \ /   |
                   \                               /
             */
-            estif(tvi,  tui ) += v0*derxy_(0, vi) ;
-            estif(tvi,  tuip) += v1*derxy_(0, vi) ;
-            estif(tvip, tui ) += v0*derxy_(1, vi) ;
-            estif(tvip, tuip) += v1*derxy_(1, vi) ;
-
+            estif(fvi,   fui  ) += v0*derxy_(0, vi) ;
+            estif(fvi,   fuip ) += v1*derxy_(0, vi) ;
+            estif(fvip,  fui  ) += v0*derxy_(1, vi) ;
+            estif(fvip,  fuip ) += v1*derxy_(1, vi) ;
           }
         }
 
@@ -1153,13 +1194,13 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
         const double fac_rhscon = fac*rhscon_;
         for (int vi=0; vi<numnode; ++vi)
         {
-          const int tvi = 3*vi;
-          /* viscosity term - subtraction for low-Mach-number flow */
-          eforce(tvi    ) += derxy_(0, vi)*v_div ;
-          eforce(tvi + 1) += derxy_(1, vi)*v_div ;
+          const int fvi = 3*vi;
+          /* viscosity term on rhs - subtraction for low-Mach-number flow */
+          eforce(fvi    ) += derxy_(0, vi)*v_div ;
+          eforce(fvi + 1) += derxy_(1, vi)*v_div ;
 
           /* additional rhs term of continuity equation */
-          eforce(tvi + 2) += fac_rhscon*functdens_(vi) ;
+          eforce(fvi + 2) += fac_rhscon*functdens_(vi) ;
         }
       }
 

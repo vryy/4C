@@ -136,7 +136,6 @@ DRT::ELEMENTS::Fluid3Impl<distype>::Fluid3Impl()
     viscs2_(),
     conv_c_(),
     mdiv_(),
-    consmdiv_(),
     vdiv_(),
     rhsmom_(),
     rhscon_(),
@@ -833,6 +832,9 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
     velint_.Multiply(evelnp,densfunct_);
 
+    // non-density-weighted velocity required for conservative form
+    if (conservative) ndwvelint_.Multiply(evelnp,funct_);
+
     // get history data at integration point
     histmom_.Multiply(emhist,funct_);
     histcon_ = funct_.Dot(echist);
@@ -960,15 +962,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     mdiv_ = mderxy_(0, 0) + mderxy_(1, 1) + mderxy_(2, 2);
     if (loma) vdiv_ = vderxy_(0, 0) + vderxy_(1, 1) + vderxy_(2, 2);
 
-    // momentum divergence as well as non-density-weighted velocity required
-    // for conservative form of convective term
-    if (conservative)
-    {
-      consmdiv_ = mdiv_;
-      ndwvelint_.Multiply(evelnp,funct_);
-    }
-    else consmdiv_ = 0.0;
-
     //--------------------------------------------------------------------
     // stabilization, time-integration and subgrid-viscosity factors
     //--------------------------------------------------------------------
@@ -1056,15 +1049,18 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
       conv_resM_.MultiplyTN (derxy_,dwres_old_);
     }
 
-    //--------------------------------------------------------------------
+    //------------------------------------------------------------------------
     // perform integration for element matrix and right hand side
-    //--------------------------------------------------------------------
+    //------------------------------------------------------------------------
     {
       //----------------------------------------------------------------------
       //                            GALERKIN PART
 
-      // computation of inertia and convection (convective and reactive part)
-      // for convective or conservative form
+      //----------------------------------------------------------------------
+      // computation of inertia term and convection term (convective and
+      // reactive part) for convective form of convection term including
+      // right-hand-side contribution
+      //----------------------------------------------------------------------
       for (int ui=0; ui<numnode; ++ui)
       {
         const int fui   = 4*ui;
@@ -1072,7 +1068,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
         const int fuipp = fui+2;
         const double v = fac*densamfunct_(ui)
 #if 1
-                         + timefacfac*(conv_c_(ui)+funct_(ui)*consmdiv_)
+                         + timefacfac*conv_c_(ui)
 #endif
                          ;
         for (int vi=0; vi<numnode; ++vi)
@@ -1082,23 +1078,19 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
           const int fvipp = fvi+2;
           /* inertia (contribution to mass matrix) */
           /*
-
           /                \
           |                |
           |  D(rho*u) , v  |
           |                |
           \                /
           */
-
-          /* convection, convective part (convective or conservative) */
+          /* convection, convective part (convective form) */
           /*
-
-          /                                                         \
-          |  /       n+1        \          /              n+1 \     |
-          | | (rho*u)   o nabla | Du + Du | nabla o (rho*u)   |, v  |
-          |  \      (i)        /           \             (i) /      |
-          \                                                        /
-
+          /                               \
+          |  /       n+1        \         |
+          | | (rho*u)   o nabla | Du , v  |
+          |  \      (i)        /          |
+          \                              /
           */
           double v2 = v*funct_(vi) ;
           estif(fvi  , fui  ) += v2;
@@ -1139,8 +1131,79 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
             estif(fvipp, fuipp) += v2*vderxy_(2, 2) ;
           }
         }
+      }
 
-        if (conservative)
+      if(is_genalpha)
+      {
+        for (int vi=0; vi<numnode; ++vi)
+        {
+          const int fvi = 4*vi;
+          /* inertia term on right-hand side for generalized-alpha scheme */
+          const double v = -fac*funct_(vi);
+          eforce(fvi    ) += v*accintam_(0) ;
+          eforce(fvi + 1) += v*accintam_(1) ;
+          eforce(fvi + 2) += v*accintam_(2) ;
+        }
+      }
+      else
+      {
+        for (int vi=0; vi<numnode; ++vi)
+        {
+          const int fvi = 4*vi;
+          /* inertia term on right-hand side for one-step-theta/BDF2 schem */
+          const double v = -fac*funct_(vi);
+          eforce(fvi    ) += v*velint_(0) ;
+          eforce(fvi + 1) += v*velint_(1) ;
+          eforce(fvi + 2) += v*velint_(2) ;
+        }
+      }
+
+#if 1
+      for (int vi=0; vi<numnode; ++vi)
+      {
+        const int fvi   = 4*vi;
+        /* convection (convective form) on right-hand side */
+        double v = -rhsfac*funct_(vi);
+        eforce(fvi    ) += v*conv_old_(0) ;
+        eforce(fvi + 1) += v*conv_old_(1) ;
+        eforce(fvi + 2) += v*conv_old_(2) ;
+      }
+#endif
+
+      //----------------------------------------------------------------------
+      // computation of additions to convection term (convective and
+      // reactive part) for conservative form of convection term including
+      // right-hand-side contribution
+      //----------------------------------------------------------------------
+      if (conservative)
+      {
+        for (int ui=0; ui<numnode; ++ui)
+        {
+          const int fui   = 4*ui;
+          const int fuip  = fui+1;
+          const int fuipp = fui+2;
+          const double v = timefacfac*funct_(ui)*mdiv_;
+          for (int vi=0; vi<numnode; ++vi)
+          {
+            const int fvi   = 4*vi;
+            const int fvip  = fvi+1;
+            const int fvipp = fvi+2;
+            /* convection, convective part (conservative addition) */
+            /*
+            /                                \
+            |      /              n+1 \      |
+            |  Du | nabla o (rho*u)   | , v  |
+            |      \             (i) /       |
+            \                                /
+            */
+            double v2 = v*funct_(vi) ;
+            estif(fvi  , fui  ) += v2;
+            estif(fvip , fuip ) += v2;
+            estif(fvipp, fuipp) += v2;
+          }
+        }
+
+        if (newton)
         {
           for (int vi=0; vi<numnode; ++vi)
           {
@@ -1155,7 +1218,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
               const int fui   = 4*ui;
               const int fuip  = fui+1;
               const int fuipp = fui+2;
-              /*  convection, reactive part (conservative addition)
+              /*  convection, reactive part (conservative addition) */
               /*
               /                                \
               |  n+1  /                \       |
@@ -1175,8 +1238,21 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
             }
           }
         }
+
+        for (int vi=0; vi<numnode; ++vi)
+        {
+          const int fvi   = 4*vi;
+          /* convection (conservative addition) on right-hand side */
+          double v = -rhsfac*funct_(vi);
+          eforce(fvi    ) += v*ndwvelint_(0)*mdiv_ ;
+          eforce(fvi + 1) += v*ndwvelint_(1)*mdiv_ ;
+          eforce(fvi + 2) += v*ndwvelint_(2)*mdiv_ ;
+        }
       }
 
+      //----------------------------------------------------------------------
+      // computation of viscosity term including right-hand-side contribution
+      //----------------------------------------------------------------------
       const double visceff_timefacfac = visceff*timefacfac;
       for (int ui=0; ui<numnode; ++ui)
       {
@@ -1194,7 +1270,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
           const double derxy_2ui_2vi = derxy_(2, ui)*derxy_(2, vi);
           /* viscosity term */
           /*
-
                 /                          \
                 |       /  \         / \   |
           2 mu  |  eps | Du | , eps | v |  |
@@ -1226,108 +1301,11 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
         }
       }
 
-      for (int ui=0; ui<numnode; ++ui)
-      {
-        const int fuippp = 4*ui+3;
-
-        const double v = -timefacfac*funct_(ui);
-        for (int vi=0; vi<numnode; ++vi)
-        {
-          const int fvi   = 4*vi;
-
-          /* pressure term */
-          /*
-
-          /                  \
-          |                  |
-          |  Dp , nabla o v  |
-          |                  |
-          \                  /
-          */
-
-          estif(fvi,     fuippp) += (v*derxy_(0, vi)) ;
-          estif(fvi + 1, fuippp) += (v*derxy_(1, vi)) ;
-          estif(fvi + 2, fuippp) += (v*derxy_(2, vi)) ;
-
-        }
-      }
-
-      for (int vi=0; vi<numnode; ++vi)
-      {
-        const double v = timefacfac*functdens_(vi);
-
-        const int fvippp = 4*vi+3;
-        for (int ui=0; ui<numnode; ++ui)
-        {
-          const int fui   = 4*ui;
-          /* divergence term */
-          /*
-            /                              \
-            |                              |
-            | nabla o D(rho*u)  , (q/rho)  |
-            |                              |
-            \                              /
-          */
-          estif(fvippp, fui)     += v*densderxy_(0, ui) ;
-          estif(fvippp, fui + 1) += v*densderxy_(1, ui) ;
-          estif(fvippp, fui + 2) += v*densderxy_(2, ui) ;
-        }
-      }
-
-      if(is_genalpha)
-      {
-        for (int vi=0; vi<numnode; ++vi)
-        {
-          const int fvi = 4*vi;
-          /* inertia */
-          const double v = -fac*funct_(vi);
-          eforce(fvi)     += v*accintam_(0) ;
-          eforce(fvi + 1) += v*accintam_(1) ;
-          eforce(fvi + 2) += v*accintam_(2) ;
-        }
-      }
-      else
-      {
-        for (int vi=0; vi<numnode; ++vi)
-        {
-          const int fvi = 4*vi;
-          /* inertia */
-          const double v = -fac*funct_(vi);
-          eforce(fvi)     += v*velint_(0) ;
-          eforce(fvi + 1) += v*velint_(1) ;
-          eforce(fvi + 2) += v*velint_(2) ;
-        }
-      }
-
-#if 1
-      for (int vi=0; vi<numnode; ++vi)
-      {
-        const int fvi   = 4*vi;
-        const int fvip  = fvi+1;
-        const int fvipp = fvi+2;
-        /* convection (convective or conservative) */
-        double v = -rhsfac*funct_(vi);
-        eforce(fvi  ) += v*(conv_old_(0)+ndwvelint_(0)*consmdiv_) ;
-        eforce(fvip ) += v*(conv_old_(1)+ndwvelint_(1)*consmdiv_) ;
-        eforce(fvipp) += v*(conv_old_(2)+ndwvelint_(2)*consmdiv_) ;
-      }
-#endif
-
-      for (int vi=0; vi<numnode; ++vi)
-      {
-        const int fvi = 4*vi;
-        /* pressure */
-        const double v = press*rhsfac;
-        eforce(fvi    ) += v*derxy_(0, vi) ;
-        eforce(fvi + 1) += v*derxy_(1, vi) ;
-        eforce(fvi + 2) += v*derxy_(2, vi) ;
-      }
-
       for (int vi=0; vi<numnode; ++vi)
       {
         const int fvi = 4*vi;
         const double v = -visceff*rhsfac;
-        /* viscosity */
+        /* viscosity term on right-hand side */
         eforce(fvi)     += v*(2.0*derxy_(0, vi)*vderxy_(0, 0)
                               +
                               derxy_(1, vi)*vderxy_(0, 1)
@@ -1357,23 +1335,88 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
                               2.0*derxy_(2, vi)*vderxy_(2, 2)) ;
       }
 
+      //----------------------------------------------------------------------
+      // computation of pressure term including right-hand-side contribution
+      //----------------------------------------------------------------------
+      for (int ui=0; ui<numnode; ++ui)
+      {
+        const int fuippp = 4*ui+3;
+        const double v = -timefacfac*funct_(ui);
+        for (int vi=0; vi<numnode; ++vi)
+        {
+          const int fvi   = 4*vi;
+          /* pressure term */
+          /*
+          /                  \
+          |                  |
+          |  Dp , nabla o v  |
+          |                  |
+          \                  /
+          */
+          estif(fvi,     fuippp) += v*derxy_(0, vi) ;
+          estif(fvi + 1, fuippp) += v*derxy_(1, vi) ;
+          estif(fvi + 2, fuippp) += v*derxy_(2, vi) ;
+        }
+      }
+
       for (int vi=0; vi<numnode; ++vi)
       {
         const int fvi = 4*vi;
-        // source term of the right hand side
+        /* pressure term on right-hand side */
+        const double v = press*rhsfac;
+        eforce(fvi    ) += v*derxy_(0, vi) ;
+        eforce(fvi + 1) += v*derxy_(1, vi) ;
+        eforce(fvi + 2) += v*derxy_(2, vi) ;
+      }
+
+      //----------------------------------------------------------------------
+      // computation of continuity term including right-hand-side contribution
+      //----------------------------------------------------------------------
+      for (int vi=0; vi<numnode; ++vi)
+      {
+        const int fvippp = 4*vi+3;
+        const double v = timefacfac*functdens_(vi);
+        for (int ui=0; ui<numnode; ++ui)
+        {
+          const int fui   = 4*ui;
+          /* continuity term */
+          /*
+            /                              \
+            |                              |
+            | nabla o D(rho*u)  , (q/rho)  |
+            |                              |
+            \                              /
+          */
+          estif(fvippp, fui)     += v*densderxy_(0, ui) ;
+          estif(fvippp, fui + 1) += v*densderxy_(1, ui) ;
+          estif(fvippp, fui + 2) += v*densderxy_(2, ui) ;
+        }
+      }
+
+      const double rhsfac_mdiv = -rhsfac * mdiv_;
+      for (int vi=0; vi<numnode; ++vi)
+      {
+        // continuity term on right-hand side
+        eforce(vi*4 + 3) += rhsfac_mdiv*functdens_(vi) ;
+      }
+
+      //----------------------------------------------------------------------
+      // computation of body-force term on right-hand side
+      //----------------------------------------------------------------------
+      for (int vi=0; vi<numnode; ++vi)
+      {
+        const int fvi = 4*vi;
         const double v = fac*funct_(vi);
         eforce(fvi    ) += v*rhsmom_(0) ;
         eforce(fvi + 1) += v*rhsmom_(1) ;
         eforce(fvi + 2) += v*rhsmom_(2) ;
       }
 
-      const double rhsfac_mdiv = -rhsfac * mdiv_;
-      for (int vi=0; vi<numnode; ++vi)
-      {
-        // continuity equation
-        eforce(vi*4 + 3) += rhsfac_mdiv*functdens_(vi) ;
-      }
-
+      //----------------------------------------------------------------------
+      // computation of additional terms for low-Mach-number flow:
+      // 1) subtracted viscosity term including right-hand-side contribution
+      // 2) additional rhs term of continuity equation: density time derivat.
+      //----------------------------------------------------------------------
       if (loma)
       {
         const double v = -(2.0/3.0)*visceff*timefacfac ;
@@ -1382,6 +1425,9 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
           const int fui   = 4*ui;
           const int fuip  = fui+1;
           const int fuipp = fui+2;
+          const double v0 = v*derxy_(0,ui);
+          const double v1 = v*derxy_(1,ui);
+          const double v2 = v*derxy_(2,ui);
           for (int vi=0; vi<numnode; ++vi)
           {
             const int fvi   = 4*vi;
@@ -1395,16 +1441,15 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
                   |  3                      \ /   |
                   \                               /
             */
-            estif(fvi,   fui  ) += v*derxy_(0, vi)*derxy_(0, ui) ;
-            estif(fvi,   fuip ) += v*derxy_(0, vi)*derxy_(1, ui) ;
-            estif(fvi,   fuipp) += v*derxy_(0, vi)*derxy_(2, ui) ;
-            estif(fvip,  fui  ) += v*derxy_(1, vi)*derxy_(0, ui) ;
-            estif(fvip,  fuip ) += v*derxy_(1, vi)*derxy_(1, ui) ;
-            estif(fvip,  fuipp) += v*derxy_(1, vi)*derxy_(2, ui) ;
-            estif(fvipp, fui  ) += v*derxy_(2, vi)*derxy_(0, ui) ;
-            estif(fvipp, fuip ) += v*derxy_(2, vi)*derxy_(1, ui) ;
-            estif(fvipp, fuipp) += v*derxy_(2, vi)*derxy_(2, ui) ;
-
+            estif(fvi,   fui  ) += v0*derxy_(0, vi) ;
+            estif(fvi,   fuip ) += v1*derxy_(0, vi) ;
+            estif(fvi,   fuipp) += v2*derxy_(0, vi) ;
+            estif(fvip,  fui  ) += v0*derxy_(1, vi) ;
+            estif(fvip,  fuip ) += v1*derxy_(1, vi) ;
+            estif(fvip,  fuipp) += v2*derxy_(1, vi) ;
+            estif(fvipp, fui  ) += v0*derxy_(2, vi) ;
+            estif(fvipp, fuip ) += v1*derxy_(2, vi) ;
+            estif(fvipp, fuipp) += v2*derxy_(2, vi) ;
           }
         }
 
@@ -1413,7 +1458,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
         for (int vi=0; vi<numnode; ++vi)
         {
           const int fvi = 4*vi;
-          /* viscosity term - subtraction for low-Mach-number flow */
+          /* viscosity term on rhs - subtraction for low-Mach-number flow */
           eforce(fvi    ) += derxy_(0, vi)*v_div ;
           eforce(fvi + 1) += derxy_(1, vi)*v_div ;
           eforce(fvi + 2) += derxy_(2, vi)*v_div ;

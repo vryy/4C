@@ -764,7 +764,7 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
     //       (0)           gamma      gamma * dt
     //
     // in case of conservative form: velocity*density
-    if (convform_ == "conservative")
+    if (convform_ == "conservative" and loma_ != "No")
     {
       accnp_->Multiply(1.0,*velnp_,*vedenp_,0.0);
       accnp_->Multiply(-1.0,*veln_,*veden_,1.0);

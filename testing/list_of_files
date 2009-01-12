@@ -53,6 +53,7 @@ Input/f2_channel_carreauyasuda_genalpha_drt.dat         x        x        x     
 Input/f2_dc2D_usfem_ld.dat                              x        x        x        x        -        -
 Input/f2_drivencavity20x20.dat                          x        x        x        x        -        -
 Input/f2_dc20x20_drt_afgenalpha.dat                     x        x        x        -        -        -
+Input/f2_dc20x20_drt_afg_cons.dat                       x        x        x        -        -        -
 Input/f2_drivencavity20x20_drt.dat                      x        x        x        -        x        x
 Input/f2_nurbs9_dc_drt.dat                              x        x        x        -        -        -
 Input/f2_drivencavity20x20_is.dat                       x        x        x        x        -        -
@@ -86,6 +87,7 @@ Input/f3_channel_carreauyasuda_genalpha_drt.dat         x        x        x     
 Input/f3_drivencavity_stat_drt.dat                      x        x        x        -        -        -
 Input/f3_drt_genalpha_initialfield_volforce_pbc.dat     x        x        x        -        -        -
 Input/f3_bel_tet4_drt_afgenalpha.dat                    x        x        x        -        -        -
+Input/f3_bel_tet4_drt_afg_cons.dat                      x        x        x        -        -        -
 Input/f3_beltrami_tet4_drt.dat                          x        x        x        -        -        -
 Input/f3_ew_Q1_27x.dat                                  x        x        x        x        x        x
 Input/f3_ew_Q1_27x_drt.dat                              x        x        x        -        -        -

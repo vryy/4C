@@ -409,8 +409,6 @@ namespace ELEMENTS
     LINALG::Matrix<iel,1> conv_c_;
     //! momentum divergence
     double mdiv_;
-    //! momentum divergence used for conservative form of convective term
-    double consmdiv_;
     //! velocity divergence
     double vdiv_;
     //! total right hand side terms at int.-point for momentum equation
