@@ -338,7 +338,7 @@ public:
      )
     {
       diff.Clear();
-      // compute N,xx  +  N,yy +  N,zz for each shape function at actual integration point
+      // compute N,xx  +  N,yy +  N,zz for each shape function at integration point
       for (int i=0; i<iel; ++i)
       {
         for (int j = 0; j<nsd_; ++j)
@@ -359,7 +359,20 @@ public:
       val = 0.0;
       for (int j = 0; j<nsd_; j++)
       {
-        val += derxy_(j, vi)*derxy_(j, ui);
+        val += derxy(j, vi)*derxy(j, ui);
+      }
+      return;
+    };
+
+    //! calculate momentum divergence
+    void GetMomentumDivergence(double&                          mdiv,
+                               const LINALG::Matrix<nsd_,nsd_>& mderxy)
+    {
+      mdiv = 0.0;
+      // compute (rho*vel),x  + (rho*vel),y +  (rho*vel),z at integration point
+      for (int j = 0; j<nsd_; ++j)
+      {
+        mdiv += mderxy(j,j);
       }
       return;
     };
@@ -405,6 +418,10 @@ public:
     LINALG::Matrix<nsd_,1> velint_;
     //! migration velocity vector (divided by D_k*z_k) in gausspoint (ELCH)
     LINALG::Matrix<nsd_,1> migvelint_;
+    //! momentum (density-weighted velocity) derivatives
+    LINALG::Matrix<nsd_,nsd_> mderxy_;
+    //! momentum divergence
+    double mdiv_;
     //! the stabilisation parameters (one per transported scalar)
     vector<double> tau_;
     //! artificial diffusivities (one per transported scalar)

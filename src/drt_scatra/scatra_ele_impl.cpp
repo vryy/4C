@@ -787,6 +787,15 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
     // get (density-weighted) velocity at integration point
     velint_.Multiply(evelnp,funct_);
 
+    if (conservative)
+    {
+      // get momentum (density-weighted velocity) derivatives at integration point
+      mderxy_.MultiplyNT(evelnp,derxy_);
+
+      // momentum divergence
+      GetMomentumDivergence(mdiv_,mderxy_);
+    }
+
     //------------ get values of variables at integration point
     for (int k = 0;k<numdofpernode_;++k)     // loop of each transported sclar
     {
@@ -1368,26 +1377,23 @@ for (int vi=0; vi<iel; ++vi)
   }
 }
 
-// convective term
-if (conservative)
+// convective term in convective form
+for (int vi=0; vi<iel; ++vi)
 {
-  // convective term in conservative form
-  for (int vi=0; vi<iel; ++vi)
+  const double v = timefacfac*funct_(vi);
+  const int fvi = vi*numdof+dofindex;
+
+  for (int ui=0; ui<iel; ++ui)
   {
-    const double v = timefacfac*conv_(vi);
-    const int fvi = vi*numdof+dofindex;
+    const int fui = ui*numdof+dofindex;
 
-    for (int ui=0; ui<iel; ++ui)
-    {
-      const int fui = ui*numdof+dofindex;
-
-      estif(fvi,fui) -= v*funct_(ui);
-    }
+    estif(fvi,fui) += v*conv_(ui);
   }
 }
-else
+
+// addition to convective term for conservative form
+if (conservative)
 {
-  // convective term in convective form
   for (int vi=0; vi<iel; ++vi)
   {
     const double v = timefacfac*funct_(vi);
@@ -1397,7 +1403,7 @@ else
     {
       const int fui = ui*numdof+dofindex;
 
-      estif(fvi,fui) += v*conv_(ui);
+      estif(fvi,fui) += v*funct_(ui)*mdiv_;
     }
   }
 }
@@ -1560,31 +1566,22 @@ if (is_genalpha)
   // convective part in convective form at time step n
   const double convn = velint_.Dot(gradphi_);
 
-  // convective temporal rhs term
+  // convective temporal rhs term in convective form
+  vrhs = rhstimefacfac*convn;
+  // addition to convective temporal rhs term for conservative form
   if (conservative)
   {
     // scalar at integration point at time step n
     const double phi = funct_.Dot(ephinp[dofindex]);
 
     // convective temporal rhs term in conservative form
-    vrhs = rhstimefacfac*phi;
-    for (int vi=0; vi<iel; ++vi)
-    {
-      const int fvi = vi*numdof+dofindex;
-
-      eforce[fvi] += vrhs*conv_(vi);
-    }
+    vrhs += rhstimefacfac*phi*mdiv_;
   }
-  else
+  for (int vi=0; vi<iel; ++vi)
   {
-    // convective temporal rhs term in convective form
-    vrhs = rhstimefacfac*convn;
-    for (int vi=0; vi<iel; ++vi)
-    {
-      const int fvi = vi*numdof+dofindex;
+    const int fvi = vi*numdof+dofindex;
 
-      eforce[fvi] -= vrhs*funct_(vi);
-    }
+    eforce[fvi] -= vrhs*funct_(vi);
   }
 
   // diffusive temporal rhs term
@@ -1716,26 +1713,23 @@ if (use2ndderiv)
 //----------------------------------------------------------------
 // element matrix: standard Galerkin terms
 //----------------------------------------------------------------
-// convective term
-if (conservative)
+// convective term in convective form
+for (int vi=0; vi<iel; ++vi)
 {
-  // convective term in conservative form
-  for (int vi=0; vi<iel; ++vi)
+  const double v = fac_*funct_(vi);
+  const int fvi = vi*numdof+dofindex;
+
+  for (int ui=0; ui<iel; ++ui)
   {
-    const double v = fac_*conv_(vi);
-    const int fvi = vi*numdof+dofindex;
+    const int fui = ui*numdof+dofindex;
 
-    for (int ui=0; ui<iel; ++ui)
-    {
-      const int fui = ui*numdof+dofindex;
-
-      estif(fvi,fui) -= v*funct_(ui);
-    }
+    estif(fvi,fui) += v*conv_(ui);
   }
 }
-else
+
+// addition to convective term for conservative form
+if (conservative)
 {
-  // convective term in convective form
   for (int vi=0; vi<iel; ++vi)
   {
     const double v = fac_*funct_(vi);
@@ -1745,7 +1739,7 @@ else
     {
       const int fui = ui*numdof+dofindex;
 
-      estif(fvi,fui) += v*conv_(ui);
+      estif(fvi,fui) += v*funct_(ui)*mdiv_;
     }
   }
 }
@@ -1927,6 +1921,15 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
     // get (density-weighted) velocity at element center
     velint_.Multiply(evel0,funct_);
 
+    if (conservative)
+    {
+      // get momentum (density-weighted velocity) derivatives at integration point
+      mderxy_.MultiplyNT(evel0,derxy_);
+
+      // momentum divergence
+      GetMomentumDivergence(mdiv_,mderxy_);
+    }
+
     //------------ get values of variables at integration point
     for (int k = 0;k<numdofpernode_;++k)     // loop of each transported sclar
     {
@@ -1993,29 +1996,15 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
         }
       }
 
-      // convective term
-      if (conservative)
+      // convective term in convective form
+      double vrhs = fac_*conv_ephi0_k;
+      // addition to convective temporal rhs term for conservative form
+      if (conservative) vrhs += fac_*conint_[k]*mdiv_;
+      for (int vi=0; vi<iel; ++vi)
       {
-        // convective term in conservative form
-        const double phi0_k = funct_.Dot(ephi0[k]);
-        const double v = fac_*phi0_k;
-        for (int vi=0; vi<iel; ++vi)
-        {
-          const int fvi = vi*numdofpernode_+k;
+        const int fvi = vi*numdofpernode_+k;
 
-          rhs[fvi] += v*conv_(vi);
-        }
-      }
-      else
-      {
-        // convective term in convective form
-        const double v = fac_*conv_ephi0_k;
-        for (int vi=0; vi<iel; ++vi)
-        {
-          const int fvi = vi*numdofpernode_+k;
-
-          rhs[fvi] -= v*funct_(vi);
-        }
+        rhs[fvi] -= vrhs*funct_(vi);
       }
 
       // diffusive term
@@ -2032,7 +2021,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
       }
 
       // nonlinear migration term
-      double vrhs = fac_diffus*conint_[k]*valence_[k];
+      vrhs = fac_diffus*conint_[k]*valence_[k];
       for (int vi=0; vi<iel; ++vi)
       {
         const int fvi = vi*numdofpernode_+k;
