@@ -471,7 +471,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
           // set up matrices and parameters needed for the evaluation of
           // interfacial area and its first derivative w.r.t. the displacements at (n+1)
           double Anew = 0.;                                            // interfacial area
-          RCP<Epetra_SerialDenseVector> Adiffnew = rcp(new Epetra_SerialDenseVector(ndof));
+          RCP<Epetra_SerialDenseVector> Adiffnew = rcp(new Epetra_SerialDenseVector);
 
           ComputeAreaDeriv(x, numnode, ndof, Anew, Adiffnew, null);
 
@@ -484,7 +484,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
         {
           int curvenum = cond->Getint("curve");
           double const_gamma = cond->GetDouble("gamma");
-          RCP<Epetra_SerialDenseVector> Adiffnew = rcp(new Epetra_SerialDenseVector(ndof));
+          RCP<Epetra_SerialDenseVector> Adiffnew = rcp(new Epetra_SerialDenseVector);
           surfstressman->StiffnessAndInternalForces(curvenum, A, Adiff, Adiff2, 0., Adiffnew, elevector1, elematrix1, this->Id(),
                                                     time, dt, 1, const_gamma, 0.0, 0.0, 0.0, 0.0, 0.0,
                                                     0.0, 0.0, 0.0, 0.0, newstep);
@@ -648,7 +648,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
         ComputeAreaDeriv(xscurr, NumNode(),numdim*NumNode(), elearea, Adiff, Adiff2);
         // store result
         elevector3[0] = elearea;
-        
+
       }
       break;
       case calc_struct_areaconstrstiff:
@@ -981,7 +981,8 @@ void DRT::ELEMENTS::StructuralSurface::ComputeAreaDeriv(const LINALG::SerialDens
   // initialization
   A = 0.;
   Adiff->Size(ndof);
-  Adiff2->Shape(ndof, ndof);
+
+  if (Adiff2!=null) Adiff2->Shape(ndof, ndof);
 
   const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
 

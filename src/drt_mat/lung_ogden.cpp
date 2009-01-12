@@ -164,7 +164,7 @@ void MAT::LungOgden::Evaluate(LINALG::Matrix<6,1>* glstrain,
         - 0.25 * rcg(2)*rcg(3)*rcg(3)
         - 0.25 * rcg(0)*rcg(4)*rcg(4);    // 3rd invariant, determinant
 
-  double detf;
+  double detf = 0.;
   if (iiinv < 0.0)
     dserror("fatal failure in LungOgden material");
   else
