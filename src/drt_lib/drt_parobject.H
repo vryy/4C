@@ -52,9 +52,7 @@ using namespace std;
 #define ParObject_Ale3                  (int)24
 #define ParObject_Ale3Register          (int)25
 #define ParObject_Ale3Surface           (int)26
-#define ParObject_Condif2               (int)31
-#define ParObject_Condif2Register       (int)32
-#define ParObject_Condif2Line           (int)33
+// missing ints result from removed Condif2 elements
 #define ParObject_Sosh8Register         (int)34
 #define ParObject_Ale2                  (int)35
 #define ParObject_Ale2Register          (int)36
@@ -112,9 +110,7 @@ using namespace std;
 #define ParObject_MooneyRivlin          (int)102
 #define ParObject_LungOgden             (int)103
 #define ParObject_ViscoNeoHooke         (int)104
-#define ParObject_Condif3Register       (int)105
-#define ParObject_Condif3               (int)106
-#define ParObject_Condif3Surface        (int)107
+// missing ints result from removed Condif3 elements
 #define ParObject_Knotvector            (int)108
 #define ParObject_ControlPoint          (int)109
 #define ParObject_Fluid2Nurbs           (int)110
@@ -135,6 +131,8 @@ using namespace std;
 #define ParObject_ViscoAnisotropic      (int)125
 #define ParObject_ConstraintElement3     (int)126
 #define ParObject_ConstraintElement3Register (int)127
+#define ParObject_Transport             (int)128
+#define ParObject_TransportBoundary     (int)129
 
 
 namespace DRT

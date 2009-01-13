@@ -95,8 +95,6 @@ public:
     element_wall1line,
     element_fluid2,
     element_fluid2line,
-    element_condif2,
-    element_condif2line,
     element_fluid3,
     element_fluid3surface,
     element_fluid3line,
@@ -132,8 +130,8 @@ public:
     element_dgfluid3interface,
     element_constraintelement2,
     element_constraintelement3,
-    element_condif3,
-    element_condif3surface
+    element_transport,
+    element_transportboundary
   };
 
   /*!

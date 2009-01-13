@@ -1,5 +1,5 @@
-/*!----------------------------------------------------------------------
-\file condif3.cpp
+/*!
+\file scatra_element.cpp
 \brief
 
 <pre>
@@ -8,12 +8,12 @@ Maintainer: Georg Bauer
             http://www.lnm.mw.tum.de
             089 - 289-15252
 </pre>
-
-*----------------------------------------------------------------------*/
-#ifdef D_FLUID3
+*/
+/*----------------------------------------------------------------------*/
+#if defined(D_FLUID2) || defined(D_FLUID3)
 #ifdef CCADISCRET
 
-#include "condif3.H"
+#include "scatra_element.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
@@ -25,11 +25,11 @@ using namespace DRT::UTILS;
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             gjb 05/08 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Condif3::Condif3(int id, int owner) :
-DRT::Element(id,element_condif3,owner),
-gaussrule_(intrule3D_undefined),
+DRT::ELEMENTS::Transport::Transport(int id, int owner) :
+DRT::Element(id,element_transport,owner),
 data_(),
-numdofpernode_(-1)
+numdofpernode_(-1),
+distype_(dis_none)
 {
     return;
 }
@@ -37,21 +37,22 @@ numdofpernode_(-1)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                        gjb 05/08 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Condif3::Condif3(const DRT::ELEMENTS::Condif3& old) :
+DRT::ELEMENTS::Transport::Transport(const DRT::ELEMENTS::Transport& old) :
 DRT::Element(old),
-gaussrule_(old.gaussrule_),
-data_(old.data_)
+data_(old.data_),
+numdofpernode_(old.numdofpernode_),
+distype_(old.distype_)
 {
     return;
 }
 
 /*----------------------------------------------------------------------*
- |  Deep copy this instance of Condif3 and return pointer to it (public) |
+ |  Deep copy this instance of Transport and return pointer to it (public) |
  |                                                            gjb 05/08 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::Condif3::Clone() const
+DRT::Element* DRT::ELEMENTS::Transport::Clone() const
 {
-  DRT::ELEMENTS::Condif3* newelement = new DRT::ELEMENTS::Condif3(*this);
+  DRT::ELEMENTS::Transport* newelement = new DRT::ELEMENTS::Transport(*this);
   return newelement;
 }
 
@@ -59,7 +60,7 @@ DRT::Element* DRT::ELEMENTS::Condif3::Clone() const
 /*----------------------------------------------------------------------*
  |  create material class (public)                            gjb 07/08 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Condif3::SetMaterial(int matnum)
+void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
 {
   // the standard part:
   //mat_ = MAT::Material::Factory(matnum);  // not allowed since mat_ is private
@@ -94,32 +95,19 @@ void DRT::ELEMENTS::Condif3::SetMaterial(int matnum)
 
 
 /*----------------------------------------------------------------------*
- |  Return the shape of a Condif3 element                      (public) |
+ |  Return the shape of a Transport element                      (public) |
  |                                                            gjb 05/08 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Condif3::Shape() const
+DRT::Element::DiscretizationType DRT::ELEMENTS::Transport::Shape() const
 {
-  switch (NumNode())
-  {
-  case  4: return tet4;
-  case  5: return pyramid5;
-  case  6: return wedge6;
-  case  8: return hex8;
-  case 10: return tet10;
-  case 15: return wedge15;
-  case 20: return hex20;
-  case 27: return hex27;
-  default:
-    dserror("unexpected number of nodes %d", NumNode());
-  }
-  return dis_none;
+  return distype_;
 }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                            gjb 05/08 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Condif3::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Transport::Pack(vector<char>& data) const
 {
   data.resize(0);
 
@@ -130,10 +118,10 @@ void DRT::ELEMENTS::Condif3::Pack(vector<char>& data) const
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
-  // Gaussrule
-  AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   // numdofpernode
   AddtoPack(data,numdofpernode_);
+  // distype
+  AddtoPack(data,distype_);
 
   // data_
   vector<char> tmp(0);
@@ -148,7 +136,7 @@ void DRT::ELEMENTS::Condif3::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            gjb 05/08 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Condif3::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Transport::Unpack(const vector<char>& data)
 {
   int position = 0;
   // extract type
@@ -159,12 +147,10 @@ void DRT::ELEMENTS::Condif3::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
-  // Gaussrule
-  int gausrule_integer;
-  ExtractfromPack(position,data,gausrule_integer);
-  gaussrule_ = GaussRule3D(gausrule_integer); //explicit conversion from integer to enum
   // numdofpernode
   ExtractfromPack(position,data,numdofpernode_);
+  // distype
+  ExtractfromPack(position,data,distype_);
 
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
@@ -179,7 +165,7 @@ void DRT::ELEMENTS::Condif3::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                             gjb 05/08 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Condif3::~Condif3()
+DRT::ELEMENTS::Transport::~Transport()
 {
   return;
 }
@@ -188,28 +174,34 @@ DRT::ELEMENTS::Condif3::~Condif3()
 /*----------------------------------------------------------------------*
  |  print this element (public)                               gjb 05/08 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Condif3::Print(ostream& os) const
+void DRT::ELEMENTS::Transport::Print(ostream& os) const
 {
-  os << "Condif3 ";
+  os << "Transport element";
   Element::Print(os);
+  cout << endl;
+  cout << "DiscretizationType:  "<<distype_<<endl;
+  cout << endl;
+  cout << "Number DOF per Node: "<<numdofpernode_<<endl;
   cout << endl;
   cout << data_;
   return;
 }
 
 /*----------------------------------------------------------------------*
- |  allocate and return Condif3Register (public)              gjb 05/08 |
+ |  allocate and return register element (public)             gjb 05/08 |
  *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Condif3::ElementRegister() const
+RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Transport::ElementRegister() const
 {
-  return rcp(new DRT::ELEMENTS::Condif3Register(Type()));
+  //Assuming that this element do not need initialization, we return a 
+  //dummy base class here.
+  return rcp(new DRT::ElementRegister(Type()));
 }
 
 
 /*----------------------------------------------------------------------*
  |  get vector of lines            (public)                  g.bau 03/07|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::Condif3::Lines()
+vector<RCP<DRT::Element> > DRT::ELEMENTS::Transport::Lines()
 {
   // do NOT store line or surface elements inside the parent element 
   // after their creation.
@@ -218,18 +210,23 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Condif3::Lines()
   // have become illegal and you will get a nice segmentation fault ;-)
 
   // so we have to allocate new line elements:
-  dserror("Lines() for condif3 not implemented");
-  vector<RCP<DRT::Element> > lines(0);
-  return lines;
+  if (NumLine() > 1) // 3D and 2D
+    return DRT::UTILS::ElementBoundaryFactory<TransportBoundary,Transport>(DRT::UTILS::buildLines,this);
+  else 
+  {
+    // 1D (we return the element itself)
+    vector<RCP<Element> > lines(1);
+    lines[0]= rcp(this, false);
+    return lines;
+  }
 
-  //return DRT::UTILS::ElementBoundaryFactory<Condif3Line,Condif3>(DRT::UTILS::buildLines,this);
 }
 
 
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          g.bau 03/07|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::Condif3::Surfaces()
+vector<RCP<DRT::Element> > DRT::ELEMENTS::Transport::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element 
   // after their creation.
@@ -238,14 +235,29 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Condif3::Surfaces()
   // have become illegal and you will get a nice segmentation fault ;-)
 
   // so we have to allocate new surface elements:
-  return DRT::UTILS::ElementBoundaryFactory<Condif3Surface,Condif3>(DRT::UTILS::buildSurfaces,this);
+  if (NumSurface() > 1) // 3D
+    return DRT::UTILS::ElementBoundaryFactory<TransportBoundary,Transport>(DRT::UTILS::buildSurfaces,this);
+  else if (NumSurface() == 1)
+  {
+    // 2D (we return the element itself)
+    vector<RCP<Element> > surfaces(1);
+    surfaces[0]= rcp(this, false);
+    return surfaces;
+  }
+  else
+  {
+    // 1D
+    dserror("Surfaces() for 1D-Transport element not implemented");
+    vector<RCP<Element> > surfaces(0);
+    return surfaces;
+  }
 }
 
 
 /*----------------------------------------------------------------------*
  |  get vector of volumes (length 1) (public)                g.bau 03/07|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::Condif3::Volumes()
+vector<RCP<DRT::Element> > DRT::ELEMENTS::Transport::Volumes()
 {
   vector<RCP<Element> > volumes(1);
   volumes[0]= rcp(this, false);
@@ -253,98 +265,140 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Condif3::Volumes()
 }
 
 
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                            mwgee 12/06|
+ |  ctor (public)                                             gjb 01/09 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Condif3Register::Condif3Register(DRT::Element::ElementType etype) :
-ElementRegister(etype)
+DRT::ELEMENTS::TransportBoundary::TransportBoundary(int id, int owner,
+                              int nnode, const int* nodeids,
+                              DRT::Node** nodes,
+                              DRT::ELEMENTS::Transport* parent,
+                              const int lbeleid) :
+DRT::Element(id,element_transportboundary,owner),
+parent_(parent),
+lbeleid_(lbeleid)
+{
+  SetNodeIds(nnode,nodeids);
+  BuildNodalPointers(nodes);
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  copy-ctor (public)                                        gjb 01/09 |
+ *----------------------------------------------------------------------*/
+DRT::ELEMENTS::TransportBoundary::TransportBoundary(const DRT::ELEMENTS::TransportBoundary& old) :
+DRT::Element(old),
+parent_(old.parent_),
+lbeleid_(old.lbeleid_)
 {
   return;
 }
 
 /*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       mwgee 12/06|
+ |  Deep copy this instance return pointer to it     (public) gjb 01/09 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Condif3Register::Condif3Register(
-                               const DRT::ELEMENTS::Condif3Register& old) :
-ElementRegister(old)
+DRT::Element* DRT::ELEMENTS::TransportBoundary::Clone() const
 {
-  return;
+  DRT::ELEMENTS::TransportBoundary* newelement = new DRT::ELEMENTS::TransportBoundary(*this);
+  return newelement;
 }
 
 /*----------------------------------------------------------------------*
- |  Deep copy this instance return pointer to it               (public) |
- |                                                            gee 12/06 |
+ |  Return shape of this element                    (public)  gjb 01/09 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Condif3Register* DRT::ELEMENTS::Condif3Register::Clone() const
+DRT::Element::DiscretizationType DRT::ELEMENTS::TransportBoundary::Shape() const
 {
-  return new DRT::ELEMENTS::Condif3Register(*this);
+  switch (NumNode())
+  {
+  case 2: return line2;
+  case 3: 
+    if ((parent_->Shape() == quad8) || (parent_->Shape() == quad9))
+      return line3;
+    else
+      return tri3;
+  case 4: return quad4;
+  case 6: return tri6;
+  case 8: return quad8;
+  case 9: return quad9;
+  default:
+    dserror("unexpected number of nodes %d", NumNode());
+  }
+  return dis_none;
 }
 
 /*----------------------------------------------------------------------*
- |  Pack data                                                  (public) |
- |                                                            gee 02/07 |
+ |  Pack data (public)                                        gjb 01/09 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Condif3Register::Pack(vector<char>& data) const
+void DRT::ELEMENTS::TransportBoundary::Pack(vector<char>& data) const
 {
   data.resize(0);
+  dserror("This TransportBoundary element does not support communication");
 
-  // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
-  AddtoPack(data,type);
-  // add base class ElementRegister
-  vector<char> basedata(0);
-  ElementRegister::Pack(basedata);
-  AddtoPack(data,basedata);
+  return;
+}
 
+/*----------------------------------------------------------------------*
+ |  Unpack data (public)                                      gjb 01/09 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::TransportBoundary::Unpack(const vector<char>& data)
+{
+  dserror("This TransportBoundary element does not support communication");
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  dtor (public)                                             gjb 01/09 |
+ *----------------------------------------------------------------------*/
+DRT::ELEMENTS::TransportBoundary::~TransportBoundary()
+{
   return;
 }
 
 
 /*----------------------------------------------------------------------*
- |  Unpack data                                                (public) |
- |                                                            gee 02/07 |
+ |  print this element (public)                               gjb 01/09 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Condif3Register::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::TransportBoundary::Print(ostream& os) const
 {
-  int position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  // base class ElementRegister
-  vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
-  ElementRegister::Unpack(basedata);
-
-  if (position != (int)data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            mwgee 12/06|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Condif3Register::~Condif3Register()
-{
+  os << "TransportBoundary ";
+  Element::Print(os);
   return;
 }
 
 /*----------------------------------------------------------------------*
- |  print (public)                                           mwgee 12/06|
+ |  get vector of lines (public)                              gjb 01/09 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Condif3Register::Print(ostream& os) const
+vector<RCP<DRT::Element> > DRT::ELEMENTS::TransportBoundary::Lines()
 {
-  os << "Condif3Register ";
-  ElementRegister::Print(os);
-  return;
+  // do NOT store line or surface elements inside the parent element 
+  // after their creation.
+  // Reason: if a Redistribute() is performed on the discretization, 
+  // stored node ids and node pointers owned by these boundary elements might
+  // have become illegal and you will get a nice segmentation fault ;-)
+
+  // so we have to allocate new line elements:
+  dserror("Lines of TransportBoundary not implemented");
+  vector<RCP<DRT::Element> > lines(0);
+  return lines;
 }
+
+/*----------------------------------------------------------------------*
+ |  get vector of lines (public)                              gjb 01/09 |
+ *----------------------------------------------------------------------*/
+vector<RCP<DRT::Element> > DRT::ELEMENTS::TransportBoundary::Surfaces()
+{
+  // do NOT store line or surface elements inside the parent element 
+  // after their creation.
+  // Reason: if a Redistribute() is performed on the discretization, 
+  // stored node ids and node pointers owned by these boundary elements might
+  // have become illegal and you will get a nice segmentation fault ;-)
+
+  // so we have to allocate new surface elements:
+  dserror("Surfaces of TransportBoundary not implemented");
+  vector<RCP<DRT::Element> > surfaces(0);
+  return surfaces;
+}
+
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_FLUID3

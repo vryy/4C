@@ -29,7 +29,7 @@ namespace SCATRA
     tau_not_defined
   };
 
-  //! flux parameters recognized by condif3 implementation class
+  //! flux parameters recognized by scalar transport implementation class
   enum FluxType
   {
     noflux,

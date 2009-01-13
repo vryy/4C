@@ -30,9 +30,8 @@ Maintainer: Georg Bauer
 // we need to know all necessary element types for the mesh creation
 #include "../drt_f2/fluid2.H"
 #include "../drt_f3/fluid3.H"
-#include "../drt_condif2/condif2.H"
-#include "../drt_condif3/condif3.H"
 //#include "../drt_combust/combust3.H"
+#include "../drt_scatra/scatra_element.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -79,14 +78,9 @@ void SCATRA::CreateScaTraDiscretization(
   {
     DRT::Element* actele = fluiddis->lColElement(i);
     bool ismyele = fluiddis->ElementRowMap()->MyGID(actele->Id());
-    // we use the shape of the fluid elements to find out if we have a 2D or 3D problem
-    switch (DRT::UTILS::getDimension(actele->Shape()))
-    {
-      case 3: {eletype.push_back("CONDIF3"); break;}
-      case 2: {eletype.push_back("CONDIF2"); break;}
-      default: dserror("Illegal dimension: %d",DRT::UTILS::getDimension(actele->Shape()));
-    }
 
+    // we only support transport elements here
+    eletype.push_back("TRANSPORT");
     {
       if (ismyele)
         egid.push_back(actele->Id());
@@ -188,28 +182,19 @@ void SCATRA::CreateScaTraDiscretization(
     // We need to set material and gauss points to complete element setup.
     // This is again really ugly as we have to extract the actual
     // element type in order to access the material property
-
-#ifdef D_FLUID2
-    DRT::ELEMENTS::Condif2* condif2 = dynamic_cast<DRT::ELEMENTS::Condif2*>(scatraele.get());
-    if (condif2!=NULL)
-    {
-      condif2->SetMaterial(matnr);
-    }
-    else
-#endif
-    {
-#ifdef D_FLUID3
-      DRT::ELEMENTS::Condif3* condif3 = dynamic_cast<DRT::ELEMENTS::Condif3*>(scatraele.get());
-      if (condif3!=NULL)
-      {
-        condif3->SetMaterial(matnr);
-      }
-      else
+    // note: SetMaterial() was reimplemented by the transport element!
+#if defined(D_FLUID2) || defined(D_FLUID3)
+        DRT::ELEMENTS::Transport* trans = dynamic_cast<DRT::ELEMENTS::Transport*>(scatraele.get());
+        if (trans!=NULL)
+        {
+          trans->SetMaterial(matnr);
+          trans->SetDisType(fluidele->Shape());
+        }
+        else
 #endif
       {
         dserror("unsupported element type '%s'", typeid(*scatraele).name());
       }
-    }
 
     // add new scalar transport element to discretization
     scatradis->AddElement(scatraele);

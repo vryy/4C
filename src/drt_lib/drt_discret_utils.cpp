@@ -80,8 +80,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
       nv = 2;
       np = 1;
     break;
-    case DRT::Element::element_condif2:
-    case DRT::Element::element_condif3:
+    case DRT::Element::element_transport:
       nv = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
       if (DRT::Problem::Instance(0)->ProblemType() == "elch")
       {
@@ -177,8 +176,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
       numdf = 3;
       dimns = 3;
     break;
-    case DRT::Element::element_condif2:
-    case DRT::Element::element_condif3:
+    case DRT::Element::element_transport:
       numdf = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
       dimns = numdf;
     break;
@@ -677,7 +675,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     } // for (int i=0; i<NumMyRowNodes(); ++i)
   } // else if (ele->Type() == DRT::Element::element_fluid2)
 
-  else if (ele->Type() == DRT::Element::element_condif2 || ele->Type() == DRT::Element::element_condif3)
+  else if (ele->Type() == DRT::Element::element_transport)
   {
     for (int i=0; i<NumMyRowNodes(); ++i)
     {
@@ -700,8 +698,8 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
 
       } // for (int j=0; j<actnode->Dof().NumDof(); ++j)
     } // for (int i=0; i<NumMyRowNodes(); ++i)
-  } // else if (ele->Type() == DRT::Element::element_condif2
-    // || ele->Type() == DRT::Element::element_condif3)
+  } // else if (ele->Type() == DRT::Element::element_transport)
+
 
   else ; // do nothing
 

@@ -183,11 +183,13 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(int numdofpernode, int numscal)
     fac_(0.0),
     conv_(true),
     diff_(true),
-    mig_(true),
+    migconv_(true),
+    migrea_(true),
     gradpot_(true),
     conint_(numscal_),
     gradphi_(true),
-    lapphi_(true)
+    lapphi_(true),
+    laplace_(true)
 {
   return;
 }
@@ -217,7 +219,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
   else if (mat->MaterialType()== m_matlist)
     actmat = static_cast<MAT::MatList*>(mat.get())->MaterialData();
   else
-    dserror("condif material expected but got type %d", mat->MaterialType());
+    dserror("condif or matlist material expected but got type %d", mat->MaterialType());
 
   // check for the action parameter
   const string action = params.get<string>("action","none");
@@ -800,8 +802,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
     for (int k = 0;k<numdofpernode_;++k)     // loop of each transported sclar
     {
       // get history data at integration point
-      if (is_genalpha and not conservative) hist_[k] = densfunct_.Dot(ehist[k]);
-      else                                  hist_[k] = funct_.Dot(ehist[k]);
+      if (is_genalpha and not conservative)
+        hist_[k] = densfunct_.Dot(ehist[k]);
+      else
+        hist_[k] = funct_.Dot(ehist[k]);
 
       // get bodyforce in gausspoint (divided by shcacp)
       // (For temperature equation, time derivative of thermodynamic pressure
@@ -827,7 +831,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         CalMatInc(sys_mat,residual,ephinp,use2ndderiv,is_stationary,timefac);
     }
     else  // ELCH problems
+    {
+     if(is_genalpha) dserror("GenAlpha is not supported by ELCH!");
      CalMatElch(sys_mat,residual,ephinp,epotnp,use2ndderiv,frt,is_stationary,timefac);
+    }
 
   } // integration loop
 
@@ -1015,10 +1022,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
   xjm_.MultiplyNT(deriv_,xyze_);
   const double det = xij_.Invert(xjm_);
 
-  if (det < 0.0)
-    dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
-  if (abs(det) < 1E-16)
-    dserror("GLOBAL ELEMENT NO.%i\nZERO JACOBIAN DETERMINANT: %f", ele->Id(), det);
+  if (det < 1E-16)
+    dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f",ele->Id(), det);
 
   // get (density-weighted) velocity at element center
   velint_.Multiply(evel,funct_);
@@ -1254,10 +1259,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
   xjm_.MultiplyNT(deriv_,xyze_);
   const double det = xij_.Invert(xjm_);
 
-  if (det < 0.0)
-    dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", eleid, det);
-  if (abs(det) < 1E-16)
-    dserror("GLOBAL ELEMENT NO.%i\nZERO JACOBIAN DETERMINANT: %f", eleid, det);
+  if (det < 1E-16)
+    dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", eleid, det);
 
   // set integration factor: fac = Gauss weight * det(J)
   fac_ = intpoints.IP().qwgt[iquad]*det;
@@ -1268,8 +1271,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
   // compute second global derivatives (if needed)
   if (use2ndderiv)
   {
-    cout<<"computing second derivatives"<<endl;
-
     // get the second derivatives of standard element at current GP
     DRT::UTILS::shape_function_deriv2<distype>(xsi_,deriv2_);
 
@@ -1290,11 +1291,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
 
 /*
 In this routine the Gauss point contributions to the elemental coefficient
-matrix of a stabilized condif3 element are calculated for the instationary
-case. The procedure is based on the Rothe method of first discretizing in
-time. Hence the resulting terms include coefficients containing time
-integration variables such as theta or delta t which are represented by
-'timefac'.
+matrix of a stabilized scalar transport element are calculated for the 
+instationary case. The procedure is based on the Rothe method of first 
+discretizing in time. Hence the resulting terms include coefficients 
+containing time integration variables such as theta or delta t which are 
+represented by 'timefac'.
 
 The stabilization is based on the residuum:
 
@@ -1650,8 +1651,8 @@ return;
 
 /*
 In this routine the Gauss point contributions to the elemental coefficient
-matrix of a stabilized condif3 element are calculated for the stationary
-case.
+matrix of a stabilized scalar transport element are calculated for the 
+stationary case.
 
 The stabilization is based on the residuum:
 
@@ -1953,7 +1954,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
     conv_.MultiplyTN(derxy_,velint_);
 
     // migration part
-    mig_.MultiplyTN(-frt,derxy_,gradpot_);
+    migconv_.MultiplyTN(-frt,derxy_,gradpot_);
 
     /*-------------- perform integration for entire matrix and rhs ---*/
     for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
@@ -2026,7 +2027,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
       {
         const int fvi = vi*numdofpernode_+k;
 
-        rhs[fvi] += vrhs*mig_(vi);
+        rhs[fvi] += vrhs*migconv_(vi);
       }
 
       //----------------------------------------------------------------
@@ -2361,8 +2362,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatInc(
     {
       for (int vi=0; vi<iel; ++vi)
       {
-        dserror("higher order terms not yet tested");
-
         // 2) diffusive stabilization (USFEM assumed here, sign change necessary for GLS)
         erhs[vi*numdofpernode_+k] += diff_(vi)*taufacresidual ;
 
@@ -2429,7 +2428,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
     conint_[k] = funct_.Dot(ephinp[k]);
 
     // when concentration becomes zero, the coupling terms in the system matrix get lost!
-    if (abs(conint_[k])<1e-18) dserror("concentration is nearly singular: %g",conint_[k]);
+    if (conint_[k] < 1e-18) 
+      dserror("species concentration %d at GP is zero or negative: %g",k,conint_[k]);
   }
 
   // get gradient of el. potential at integration point
@@ -2440,8 +2440,14 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
       with  N .. form function matrix */
   conv_.MultiplyTN(derxy_,velint_);
 
-  // migration part
-  mig_.MultiplyTN(-frt,derxy_,gradpot_);
+  // migration term (convective part)
+  migconv_.MultiplyTN(-frt,derxy_,gradpot_);
+
+  // Laplacian of shape functions at integration point
+  if (use2ndderiv)
+  {
+    GetLaplacianStrongForm(laplace_, derxy2_);
+  }
 
 #if 0
   // DEBUG output
@@ -2453,20 +2459,17 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
   {cout<<"gradpot_["<<k<<"] = "<<gradpot_[k]<<endl;}
 #endif
   // some 'working doubles'
-  double diffus_valence_k(0.0);
-  double rhsint(0.0);  // rhs at int. point
+  double diffus_valence_k;
+  double rhsint;  // rhs at int. point
   // integration factors and coefficients of single terms
-  double timefacfac(0.0);
-  double timetaufac(0.0);
-  double taufac(0.0);
+  double timefacfac;
+  double timetaufac;
+  double taufac;
 
   for (int k = 0; k < numscal_;++k) // loop over all transported sclars
   {
     // stabilization parameters
     taufac = tau_[k]*fac_;
-
-    // factor D_k * z_k
-    diffus_valence_k = diffus_[k]*valence_[k];
 
     if (is_stationary)
     {
@@ -2484,18 +2487,18 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
     // compute gradient of scalar k at integration point
     gradphi_.Multiply(derxy_,ephinp[k]);
 
+    // factor D_k * z_k
+    diffus_valence_k = diffus_[k]*valence_[k];
+
     if (use2ndderiv)
     {
       // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
-      GetLaplacianStrongForm(diff_, derxy2_);
-      diff_.Scale(diffus_[k]);
+      diff_.Update(diffus_[k],laplace_);
 
-        /* reactive part of migration*/
-        /* diffus * ( N,xx  +  N,yy +  N,zz ) */
-      //  for (int i=0; i<iel; i++)
-      //  {
-        //migr_[i] = diffus_[k] * funct_[i] * (derxy2_(0,i) + derxy2_(1,i) + derxy2_(2,i));
-      //  }
+      // get Laplacian of el. potential at integration point
+      double lappot = laplace_.Dot(epotnp);
+      // reactive part of migration term
+      migrea_.Update(-frt*diffus_valence_k*lappot,funct_);
     }
 
     const double frt_timefacfac_diffus_valence_k_conint_k = frt*timefacfac*diffus_valence_k*conint_[k];
@@ -2503,28 +2506,31 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
     // ----------------------------------------matrix entries
     for (int vi=0; vi<iel; ++vi)
     {
-      const double timetaufac_conv_eff_vi = timetaufac*(conv_(vi)+diffus_valence_k*mig_(vi));
+      const int    fvi = vi*numdofpernode_+k;
+      const double timetaufac_conv_eff_vi = timetaufac*(conv_(vi)+diffus_valence_k*migconv_(vi));
       const double timefacfac_funct_vi = timefacfac*funct_(vi);
-      const double timefacfac_diffus_valence_k_mig_vi = timefacfac*diffus_valence_k*mig_(vi);
+      const double timefacfac_diffus_valence_k_mig_vi = timefacfac*diffus_valence_k*migconv_(vi);
       const double valence_k_fac_funct_vi = valence_[k]*fac_*funct_(vi);
 
       for (int ui=0; ui<iel; ++ui)
       {
+        const int fui = ui*numdofpernode_+k;
+
         /* Standard Galerkin terms: */
         /* convective term */
-        emat(vi*numdofpernode_+k, ui*numdofpernode_+k) += timefacfac_funct_vi*conv_(ui) ;
+        emat(fvi, fui) += timefacfac_funct_vi*conv_(ui) ;
 
         /* diffusive term */
         double laplawf(0.0);
         GetLaplacianWeakForm(laplawf, derxy_,ui,vi);
-        emat(vi*numdofpernode_+k, ui*numdofpernode_+k) += timefacfac*diffus_[k]*laplawf;
+        emat(fvi, fui) += timefacfac*diffus_[k]*laplawf;
 
         /* migration term (directional derivatives) */
-        emat(vi*numdofpernode_+k, ui*numdofpernode_+k) -= timefacfac_diffus_valence_k_mig_vi*funct_(ui);
-        emat(vi*numdofpernode_+k,ui*numdofpernode_+numscal_) += frt_timefacfac_diffus_valence_k_conint_k*laplawf;
+        emat(fvi, fui) -= timefacfac_diffus_valence_k_mig_vi*funct_(ui);
+        emat(fvi,ui*numdofpernode_+numscal_) += frt_timefacfac_diffus_valence_k_conint_k*laplawf;
 
         /* electroneutrality condition */
-        emat(vi*numdofpernode_+numscal_, ui*numdofpernode_+k) += valence_k_fac_funct_vi*densfunct_(ui);
+        emat(vi*numdofpernode_+numscal_, fui) += valence_k_fac_funct_vi*densfunct_(ui);
 
         /* Stabilization term: */
         /* 0) transient stabilization */
@@ -2533,7 +2539,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
         /* 1) convective stabilization */
 
         /* convective term */
-        emat(vi*numdofpernode_+k, ui*numdofpernode_+k) += timetaufac_conv_eff_vi*(conv_(ui)+diffus_valence_k*mig_(ui));
+        emat(fvi, fui) += timetaufac_conv_eff_vi*(conv_(ui)+diffus_valence_k*migconv_(ui));
 
       } // for ui
     } // for vi
@@ -2542,18 +2548,42 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
     {
       for (int vi=0; vi<iel; ++vi)
       {
+        const int fvi = vi*numdofpernode_+k;
+        const double timetaufac_conv_eff_vi = timetaufac*(conv_(vi)+diffus_valence_k*migconv_(vi));
         for (int ui=0; ui<iel; ++ui)
         {
-          /* diffusive term */
-          emat(vi*numdofpernode_+k, ui*numdofpernode_+k) += -timetaufac*(conv_(vi)+diffus_valence_k*mig_(vi))*diff_(ui) ;
+          const int fui = ui*numdofpernode_+k;
+
+          /* 1) convective stabilization */
+
+          // diffusive term 
+          emat(fvi, fui) += -timetaufac_conv_eff_vi*diff_(ui) ;
+
+          // migration term (reactive part)
+          emat(fvi, fui) += -timetaufac_conv_eff_vi*migrea_(ui) ;
 
           /* 2) diffusive stabilization (USFEM assumed here, sign change necessary for GLS) */
 
-          /* convective term */
-          emat(vi*numdofpernode_+k, ui*numdofpernode_+k) += timetaufac*diff_(vi)*(conv_(ui)+diffus_valence_k*mig_(ui));
+          // convective term
+          emat(fvi, fui) += timetaufac*diff_(vi)*(conv_(ui)+diffus_valence_k*migconv_(ui));
 
-          /* diffusive term */
-          emat(vi*numdofpernode_+k, ui*numdofpernode_+k) -= timetaufac*diff_(vi)*diff_(ui) ;
+          // diffusive term
+          emat(fvi, fui) -= timetaufac*diff_(vi)*diff_(ui) ;
+
+          // migration term (reactive part)
+          emat(fvi, fui) += timetaufac*diff_(vi)*migrea_(ui) ;
+
+          /* 3) reactive stabilization (reactive part of migration term) */
+
+          // convective terms
+          //emat(fvi, ui*numdofpernode_+k) += timetaufac*migrea_(vi)*(conv_(ui)+diffus_valence_k*migconv_(ui));
+
+          // diffusive term
+          //emat(fvi, ui*numdofpernode_+k) -= timetaufac*migrea_(vi)*diff_(ui) ;
+
+          // migration term (reactive part)
+          //emat(fvi, ui*numdofpernode_+k) += timetaufac*migrea_(vi)*migrea_(ui) ;
+
         } // for ui
       } // for vi
 
@@ -2561,31 +2591,38 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
 
     // ----------------------------------------------RHS
     const double conv_ephinp_k = conv_.Dot(ephinp[k]);
-    const double Dkzk_mig_ephinp_k = diffus_valence_k*(mig_.Dot(ephinp[k]));
+    const double Dkzk_mig_ephinp_k = diffus_valence_k*(migconv_.Dot(ephinp[k]));
     const double conv_eff_k = conv_ephinp_k + Dkzk_mig_ephinp_k;
     const double densfunct_ephinp_k = densfunct_.Dot(ephinp[k]);
     double diff_ephinp_k(0.0);
-    if (use2ndderiv) diff_ephinp_k = diff_.Dot(ephinp[k]); // only necessary for higher order ele!
+    double migrea_k(0.0);
+    if (use2ndderiv) 
+    { // only necessary for higher order elements
+      diff_ephinp_k = diff_.Dot(ephinp[k]);   // diffusion
+      migrea_k      = migrea_.Dot(ephinp[k]); // reactive part of migration term
+    }
 
-    // compute residual of strong form for stabilization
-    double taufacresidual = taufac*rhsint - timetaufac*(conv_eff_k + diff_ephinp_k);
+    // compute residual of strong form for residual-based stabilization
+    double taufacresidual = taufac*rhsint - timetaufac*(conv_eff_k + diff_ephinp_k + migrea_k);
     if (!is_stationary) // add transient term to the residual
       taufacresidual -= taufac*densfunct_ephinp_k;
 
     //------------residual formulation (Newton iteration)
     for (int vi=0; vi<iel; ++vi)
     {
+      const int fvi = vi*numdofpernode_+k;
+
       // RHS source term
-      erhs[vi*numdofpernode_+k] += fac_*funct_(vi)*rhsint ;
+      erhs[fvi] += fac_*funct_(vi)*rhsint ;
 
       // nonlinear migration term
-      erhs[vi*numdofpernode_+k] += conint_[k]*timefacfac*diffus_valence_k*mig_(vi);
+      erhs[fvi] += conint_[k]*timefacfac*diffus_valence_k*migconv_(vi);
 
       // convective term
-      erhs[vi*numdofpernode_+k] -= timefacfac*funct_(vi)*conv_ephinp_k;
+      erhs[fvi] -= timefacfac*funct_(vi)*conv_ephinp_k;
 
       // diffusive term
-      erhs[vi*numdofpernode_+k] -= timefacfac*diffus_[k]*(gradphi_(0)*derxy_(0, vi) + gradphi_(1)*derxy_(1, vi)+ gradphi_(2)*derxy_(2, vi));
+      erhs[fvi] -= timefacfac*diffus_[k]*(gradphi_(0)*derxy_(0, vi) + gradphi_(1)*derxy_(1, vi)+ gradphi_(2)*derxy_(2, vi));
 
       // electroneutrality condition
       // for incremental formulation, there is the residuum on the rhs! : 0-ENC*phi_i
@@ -2597,7 +2634,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
       // not implemented
 
       // 1) convective stabilization
-      erhs[vi*numdofpernode_+k] += (conv_(vi)+diffus_valence_k*mig_(vi)) * taufacresidual;
+      erhs[fvi] += (conv_(vi)+diffus_valence_k*migconv_(vi)) * taufacresidual;
 
     } // for vi
 
@@ -2605,10 +2642,12 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
     {
       for (int vi=0; vi<iel; ++vi)
       {
-        dserror("higher order terms not yet tested");
+        const int fvi = vi*numdofpernode_+k;
 
         // 2) diffusive stabilization (USFEM assumed here, sign change necessary for GLS)
-        erhs[vi*numdofpernode_+k] += diff_(vi)*taufacresidual ;
+        erhs[fvi] += diff_(vi)*taufacresidual ;
+
+        /* 3) reactive stabilization (reactive part of migration term) */
 
       } // for vi
     } // use2ndderiv
@@ -2618,22 +2657,25 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
     {
       for (int vi=0; vi<iel; ++vi)
       {
+        const int fvi = vi*numdofpernode_+k;
         const double fac_funct_vi = fac_*funct_(vi);
         for (int ui=0; ui<iel; ++ui)
         {
+         const int fui = ui*numdofpernode_+k;
+
           /* Standard Galerkin terms: */
           /* transient term */
-          emat(vi*numdofpernode_+k, ui*numdofpernode_+k) += fac_funct_vi*densfunct_(ui) ;
+          emat(fvi, fui) += fac_funct_vi*densfunct_(ui) ;
 
           /* 1) convective stabilization */
           /* transient term */
-          emat(vi*numdofpernode_+k, ui*numdofpernode_+k) += taufac*(conv_(vi)+diffus_valence_k*mig_(vi))*densfunct_(ui);
+          emat(fvi, fui) += taufac*(conv_(vi)+diffus_valence_k*migconv_(vi))*densfunct_(ui);
 
           if (use2ndderiv)
           {
             /* 2) diffusive stabilization (USFEM assumed here, sign change necessary for GLS) */
             /* transient term */
-            emat(vi*numdofpernode_+k, ui*numdofpernode_+k) += taufac*diff_(vi)*densfunct_(ui) ;
+            emat(fvi, fui) += taufac*diff_(vi)*densfunct_(ui);
           }
         } // for ui
 
@@ -2641,7 +2683,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
 
         /* Standard Galerkin terms: */
         /* transient term */
-        erhs[vi*numdofpernode_+k] -= fac_funct_vi*densfunct_ephinp_k;
+        erhs[fvi] -= fac_funct_vi*densfunct_ephinp_k;
 
       } // for vi
     } // instationary case
@@ -2687,12 +2729,12 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
   GetMaterialParams(material,false);
 
   // working arrays
-  double                                  potint;
-  LINALG::Matrix<2,1> conint;
-  LINALG::Matrix<nsd_,1> xint;
-  LINALG::Matrix<2,1> c;
-  double                                  deltapot;
-  LINALG::Matrix<2,1> deltacon(true);
+  double                  potint;
+  LINALG::Matrix<2,1>     conint;
+  LINALG::Matrix<nsd_,1>  xint;
+  LINALG::Matrix<2,1>     c;
+  double                  deltapot;
+  LINALG::Matrix<2,1>     deltacon(true);
 
   // integrations points and weights
   // more GP than usual due to cos/exp fcts in analytical solution
@@ -2722,13 +2764,14 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
     const double m = 2.0;
     const double n = 2.0;
     const double k = 2.0;
+    const double A_mnk = 1.0;
     const double expterm = exp((-D)*(m*m + n*n + k*k)*t*PI*PI);
-    c(0) = A0 + ((cos(m*PI*xint(0))*cos(n*PI*xint(1))*cos(k*PI*xint(2)))*expterm);
+    c(0) = A0 + (A_mnk*(cos(m*PI*xint(0))*cos(n*PI*xint(1))*cos(k*PI*xint(2)))*expterm);
     c(1) = (-valence_[0]/valence_[1])* c(0);
 
     // compute analytical solution for el. potential
-    const double c_0_0_t = A0 + exp((-D)*(m*m + n*n + k*k)*t*PI*PI);
-    const double pot = ((diffus_[1]-diffus_[0])/d) * log(c(0)/c_0_0_t);
+    const double c_0_0_0_t = A0 + (A_mnk*exp((-D)*(m*m + n*n + k*k)*t*PI*PI));
+    const double pot = ((diffus_[1]-diffus_[0])/d) * log(c(0)/c_0_0_0_t);
 
     // compute differences between analytical solution and numerical solution
     deltapot = potint - pot;
@@ -2820,10 +2863,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
     xjm_.MultiplyNT(deriv_,xyze_);
     const double det = xij_.Invert(xjm_);
 
-    if (det < 0.0)
-      dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
-    if (abs(det) < 1E-16)
-      dserror("GLOBAL ELEMENT NO.%i\nZERO JACOBIAN DETERMINANT: %f", ele->Id(), det);
+    if (det < 1E-16)
+      dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f",ele->Id(), det);
 
     // compute global derivatives
     derxy_.Multiply(xij_,deriv_);
@@ -2925,10 +2966,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateTempAndDens(
     xjm_.MultiplyNT(deriv_,xyze_);
     const double det = xij_.Invert(xjm_);
 
-    if (det < 0.0)
-      dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
-    if (abs(det) < 1E-16)
-      dserror("GLOBAL ELEMENT NO.%i\nZERO JACOBIAN DETERMINANT: %f", ele->Id(), det);
+    if (det < 1E-16)
+      dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f",ele->Id(), det);
 
     // set integration factor: fac = Gauss weight * det(J)
     fac_ = intpoints.IP().qwgt[iquad]*det;

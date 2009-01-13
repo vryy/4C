@@ -69,18 +69,18 @@ void scatra_dyn(int disnumff, int disnumscatra, int restart)
       if (scatradis->NumGlobalNodes()==0)
         dserror("No elements in the ---TRANSPORT ELEMENTS section");
 
-      // create instance of convection diffusion basis algorithm (empty fluid discretization)
-      Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> condifonly = rcp(new ADAPTER::ScaTraBaseAlgorithm(scatradyn));
+      // create instance of scalar transport basis algorithm (empty fluid discretization)
+      Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly = rcp(new ADAPTER::ScaTraBaseAlgorithm(scatradyn));
 
       if (restart)
       {
         // read the restart information, set vectors and variables
-        condifonly->ScaTraField().ReadRestart(restart);
+        scatraonly->ScaTraField().ReadRestart(restart);
       }
 
       // set velocity field 
       //(this is done only once. Time-dependent velocity fields are not supported)
-      (condifonly->ScaTraField()).SetVelocityField(veltype,scatradyn.get<int>("VELFUNCNO"));
+      (scatraonly->ScaTraField()).SetVelocityField(veltype,scatradyn.get<int>("VELFUNCNO"));
 
       // do we have a nonlinear problem due to applied boundary conditions?
       vector< DRT::Condition * >  conditions;
@@ -93,17 +93,17 @@ void scatra_dyn(int disnumff, int disnumscatra, int restart)
           cout<<"--> Solving nonlinear problem\n"<<endl;
         }
         // solve the nonlinear problem with given convective velocity
-        (condifonly->ScaTraField()).TimeLoop(true);
+        (scatraonly->ScaTraField()).TimeLoop(true);
       }
       else
       {
         // solve the linear problem with given convective velocity
-        (condifonly->ScaTraField()).TimeLoop(false);
+        (scatraonly->ScaTraField()).TimeLoop(false);
       }
 
       // perform the result test if required
       DRT::ResultTestManager testmanager(comm);
-      testmanager.AddFieldTest(condifonly->CreateScaTraFieldTest());
+      testmanager.AddFieldTest(scatraonly->CreateScaTraFieldTest());
       testmanager.TestAll();
 
       break;
@@ -132,7 +132,7 @@ void scatra_dyn(int disnumff, int disnumscatra, int restart)
         <<time.ElapsedTime() << " secs\n\n";
       }
       else
-        dserror("Fluid AND ConDif discretization present. This is not supported.");
+        dserror("Fluid AND ScaTra discretization present. This is not supported.");
 
       // create an one-way coupling algorithm instance
       Teuchos::RCP<SCATRA::PassiveScaTraAlgorithm> algo = Teuchos::rcp(new SCATRA::PassiveScaTraAlgorithm(comm,scatradyn));

@@ -78,8 +78,7 @@ extern "C"
 #include "../drt_s8/shell8.H"
 #include "../drt_f2/fluid2.H"
 #include "../drt_f2/fluid2_nurbs.H"
-#include "../drt_condif2/condif2.H"
-#include "../drt_condif3/condif3.H"
+#include "../drt_scatra/scatra_element.H"
 #include "../drt_f3/fluid3.H"
 #include "../drt_f3/fluid3_nurbs.H"
 #include "../drt_f3/xfluid3.H"
@@ -286,21 +285,6 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       return object;
     }
     break;
-    case ParObject_Condif2:
-    {
-      DRT::ELEMENTS::Condif2* object = new DRT::ELEMENTS::Condif2(-1,-1);
-      object->Unpack(data);
-      return object;
-    }
-    break;
-    case ParObject_Condif2Register:
-    {
-      DRT::ELEMENTS::Condif2Register* object =
-                      new DRT::ELEMENTS::Condif2Register(DRT::Element::element_condif2);
-      object->Unpack(data);
-      return object;
-    }
-    break;
 #endif
 #ifdef D_FLUID3
     case ParObject_Fluid3:
@@ -351,21 +335,6 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
     {
       DRT::ELEMENTS::Combust3Register* object =
     	              new DRT::ELEMENTS::Combust3Register(DRT::Element::element_combust3);
-      object->Unpack(data);
-      return object;
-    }
-    break;
-    case ParObject_Condif3:
-    {
-      DRT::ELEMENTS::Condif3* object = new DRT::ELEMENTS::Condif3(-1,-1);
-      object->Unpack(data);
-      return object;
-    }
-    break;
-    case ParObject_Condif3Register:
-    {
-      DRT::ELEMENTS::Condif3Register* object =
-                      new DRT::ELEMENTS::Condif3Register(DRT::Element::element_condif3);
       object->Unpack(data);
       return object;
     }
@@ -541,7 +510,10 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
 #endif
     case ParObject_ElementRegister:
     {
-      dserror("DRT::ElementRegister is pure virtual, cannot create instance");
+      DRT::ElementRegister* object =
+                new DRT::ElementRegister(DRT::Element::element_none);
+      object->Unpack(data);
+      return object;
     }
     break;
     case ParObject_NewtonianFluid:
@@ -699,6 +671,16 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       return object;
     }
     break;
+#if defined(D_FLUID2) || defined(D_FLUID3)
+    case ParObject_Transport:
+    {
+      DRT::ELEMENTS::Transport* object =
+                      new DRT::ELEMENTS::Transport(-1,-1);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+#endif
     default:
       dserror("Unknown type of ParObject instance: %d",type);
     break;
@@ -721,8 +703,6 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     shell8,
     wall1,
     fluid2,
-    condif2,
-    condif3,
     fluid3,
     xfluid3,
     combust3,
@@ -741,7 +721,8 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     beam3,
     truss3,
     constrele2,
-    constrele3
+    constrele3,
+    transport
   };
 
   TypeofElement type = none;
@@ -749,8 +730,8 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
   else if (eletype=="SHELL8") type = shell8;
   else if (eletype=="WALL")  type = wall1;
   else if (eletype=="FLUID2") type = fluid2;
-  else if (eletype=="CONDIF2") type = condif2;
-  else if (eletype=="CONDIF3") type = condif3;
+  else if (eletype=="CONDIF2") type = transport; //backward compatibility
+  else if (eletype=="CONDIF3") type = transport; //backward compatibility
   else if (eletype=="FLUID3") type = fluid3;
   else if (eletype=="XFLUID3") type = xfluid3;
   else if (eletype=="COMBUST3") type = combust3;
@@ -770,6 +751,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
   else if (eletype=="TRUSS3") type = truss3;
   else if (eletype=="CONSTRELE2") type = constrele2;
   else if (eletype=="CONSTRELE3") type = constrele3;
+  else if (eletype=="TRANSPORT") type = transport;
   // continue to add elements here....
   else dserror("Unknown type of finite element");
 
@@ -824,12 +806,6 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
       return ele;
     }
     break;
-    case condif2:
-    {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Condif2(id,owner));
-      return ele;
-    }
-    break;
 #endif
 #ifdef D_FLUID3
     case fluid3:
@@ -856,12 +832,6 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     case combust3:
     {
       RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Combust3(id,owner));
-      return ele;
-    }
-    break;
-    case condif3:
-    {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Condif3(id,owner));
       return ele;
     }
     break;
@@ -954,6 +924,14 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     case so_tet10:
     {
       RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_tet10(id,owner));
+      return ele;
+    }
+    break;
+#endif
+#if defined(D_FLUID2) || defined(D_FLUID3)
+    case transport:
+    {
+      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Transport(id,owner));
       return ele;
     }
     break;

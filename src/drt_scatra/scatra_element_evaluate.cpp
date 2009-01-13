@@ -1,16 +1,16 @@
-/*!----------------------------------------------------------------------
-\file condif2_evaluate.cpp
+/*!
+\file scatra_element_evaluate.cpp
 \brief
 
 <pre>
-Maintainer: Volker Gravemeier
-            vgravem@lnm.mw.tum.de
+Maintainer: Georg Bauer
+            bauer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15245
+            089 - 289-15252
 </pre>
 
-*----------------------------------------------------------------------*/
-#ifdef D_FLUID2
+*/
+#if defined(D_FLUID2) || defined(D_FLUID3)
 #ifdef CCADISCRET
 
 // This is just here to get the c++ mpi header, otherwise it would
@@ -19,14 +19,15 @@ Maintainer: Volker Gravemeier
 #include "mpi.h"
 #endif
 
-#include "condif2.H"
+#include "scatra_element.H"
 #include "../drt_scatra/scatra_ele_impl.H"
 
 
+
 /*----------------------------------------------------------------------*
- |  evaluate the element (public)                               vg 05/07|
+ |  evaluate the element (public)                              gjb 01/09|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Condif2::Evaluate(
+int DRT::ELEMENTS::Transport::Evaluate(
     ParameterList&            params,
     DRT::Discretization&      discretization,
     vector<int>&              lm,
@@ -38,7 +39,7 @@ int DRT::ELEMENTS::Condif2::Evaluate(
 {
 
   // all physics-related stuff is included in the implementation class that can
-  // be used in principle inside any element (at the moment: condif3 and condif2)
+  // be used in principle inside any element (at the moment: only Transport element)
   // If this element has special features/ methods that do not fit in the
   // generalized implementation class, you have to do a switch here in order to
   // call element-specific routines
@@ -52,27 +53,27 @@ int DRT::ELEMENTS::Condif2::Evaluate(
       elevec1,
       elevec2,
       elevec3
-  );
+      );
 
-} // end of DRT::ELEMENTS::Condif2::Evaluate
+} //DRT::ELEMENTS::Transport::Evaluate
 
 
 /*----------------------------------------------------------------------*
- |  do nothing (public)                                         vg 08/07|
+ |  do nothing (public)                                        gjb 01/09|
  |                                                                      |
- |  The function is just a dummy. For the condif2 elements, the         |
- |  integration of the surface neumann loads takes place in the element.|
- |  We need it there for the stabilization terms!                       |
+ |  The function is just a dummy. For the transport elements, the       |
+ |  integration of the volume neumann (body forces) loads takes place   |
+ |  in the element. We need it there for the stabilisation terms!       |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Condif2::EvaluateNeumann(ParameterList&            params,
-                                            DRT::Discretization&      discretization,
-                                            DRT::Condition&           condition,
-                                            vector<int>&              lm,
-                                            Epetra_SerialDenseVector& elevec1)
+int DRT::ELEMENTS::Transport::EvaluateNeumann(ParameterList& params,
+    DRT::Discretization&      discretization,
+    DRT::Condition&           condition,
+    vector<int>&              lm,
+    Epetra_SerialDenseVector& elevec1)
 {
   return 0;
 }
 
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_FLUID2
+#endif  // #if defined(D_FLUID2) || defined(D_FLUID3)

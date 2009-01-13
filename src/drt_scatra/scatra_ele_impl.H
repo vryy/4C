@@ -85,19 +85,19 @@ public:
   /// Internal Scalar transport element implementation
   /*!
     This internal class keeps all the working arrays needed to
-    calculate the Condif3 element. Additionally the method Sysmat()
+    calculate the transport element. Additionally the method Sysmat()
     provides a clean and fast element implementation.
 
     <h3>Purpose</h3>
 
-    The idea is to separate the element maintenance (class Condif3)
+    The idea is to separate the element maintenance (class Transport)
     from the mathematical contents (this class). Of course there are
-    different implementations of the Condif3 element, this is just one
+    different implementations of the Transport element, this is just one
     such implementation.
 
-    The Condif3 will allocate exactly one object of this class for all
-    condif elements with the same number of nodes in the mesh. This
-    allows us to use exactly matching working arrays (and keep them
+    The Transport element will allocate exactly one object of this class 
+    for all transport elements with the same number of nodes in the mesh. 
+    This allows us to use exactly matching working arrays (and keep them
     around.)
 
     The code is meant to be as clean as possible. This is the only way
@@ -331,7 +331,7 @@ public:
         );
 
     //! calculate the Laplacian for all shape functions(strong form)
-    void GetLaplacianStrongForm
+    inline void GetLaplacianStrongForm
     (
       LINALG::Matrix<iel,1>& diff,
       const LINALG::Matrix<numderiv2_,iel>& deriv2
@@ -350,7 +350,7 @@ public:
     };
 
     //! calculate the Laplacian (weak form)
-    void GetLaplacianWeakForm(
+    inline void GetLaplacianWeakForm(
         double& val,
         const LINALG::Matrix<nsd_,iel>& derxy,
         const int& vi,
@@ -434,8 +434,10 @@ public:
     LINALG::Matrix<iel,1> conv_;
     //! diffusive part used in stabilization terms
     LINALG::Matrix<iel,1> diff_;
-    //! migration part (divided by D_k*z_k) used in stabilization terms (ELCH)
-    LINALG::Matrix<iel,1> mig_;
+    //! convective part of migration term (divided by D_k*z_k) used in stabilization terms (ELCH)
+    LINALG::Matrix<iel,1> migconv_;
+    // reactive part of migration term used in stabilization terms
+    LINALG::Matrix<iel,1> migrea_;
     //! (global) gradient of el. potential at integration point (ELCH)
     LINALG::Matrix<nsd_,1> gradpot_;
     //! values of all transported scalars in gausspoint (ELCH)
@@ -444,6 +446,8 @@ public:
     LINALG::Matrix<nsd_,1> gradphi_;
     //! (global) 2nd gradient (Laplacian) of transported scalar at integration point
     LINALG::Matrix<numderiv2_,1> lapphi_;
+    //! (global) Laplacian of shape functions at integration point
+    LINALG::Matrix<iel,1> laplace_;
 
   };
 

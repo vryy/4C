@@ -228,13 +228,6 @@ OBJS_DRT_STATMECH = \
                 src/drt_statmech/statmech_manager.o           
 #----------------------------------------------------- drt version statmech
 OBJS_DRT_STATMECH_LIB = src/drt_statmech/bromotion_manager.o 
-#--------------------------------------------------- condif3 (drt version)
-OBJS_DRT_CONDIF3_LIB = src/drt_condif3/condif3.o \
-                src/drt_condif3/condif3_evaluate.o \
-                src/drt_condif3/condif3_input.o \
-                src/drt_condif3/condif3_surface.o \
-                src/drt_condif3/condif3_surface_evaluate.o
-OBJS_DRT_CONDIF3 = 
 # --------------------------------------------------- drt version of fluid
 OBJS_DRT_FLUID= src/drt_fluid/fluid_utils.o \
                 src/drt_fluid/fluid_dyn_nln_drt.o \
@@ -253,7 +246,7 @@ OBJS_DRT_FLUID= src/drt_fluid/fluid_utils.o \
                 src/drt_fluid/fluidresulttest.o \
                 src/drt_fluid/xfluidresulttest.o \
                 src/drt_fluid/vm3_solver.o \
-                src/drt_fluid/avms_solver.o \
+                src/drt_fluid/avms_solver.o
 # ---------------------------------------------- scalar transport problems
 OBJS_DRT_SCATRA=src/drt_scatra/scatra_dyn.o \
                 src/drt_scatra/scatra_timint_implicit.o \
@@ -265,7 +258,11 @@ OBJS_DRT_SCATRA=src/drt_scatra/scatra_dyn.o \
                 src/drt_scatra/scatra_utils.o \
                 src/drt_scatra/passive_scatra_algorithm.o 
 OBJS_DRT_SCATRA_LIB = src/drt_scatra/scatra_ele_impl.o \
-                src/drt_scatra/scatra_ele_impl_utils.o
+                src/drt_scatra/scatra_ele_impl_utils.o \
+                src/drt_scatra/scatra_element.o \
+                src/drt_scatra/scatra_element_evaluate.o \
+                src/drt_scatra/scatra_element_input.o \
+                src/drt_scatra/scatra_element_boundary_evaluate.o
 # ----------------------------- drt version of fluid structure interaction
 OBJS_DRT_FSI  = src/drt_fsi/fsi_dyn.o \
                 src/drt_fsi/fsi_algorithm.o \
@@ -702,14 +699,9 @@ OBJS_WALL1    = src/wall1/w1_bop.o \
 OBJS_DRT_F2_LIB = src/drt_f2/fluid2_evaluate.o \
                 src/drt_f2/fluid2_input.o \
                 src/drt_f2/fluid2_line_evaluate.o \
-                src/drt_condif2/condif2_evaluate.o \
-                src/drt_condif2/condif2_input.o \
-                src/drt_condif2/condif2_line_evaluate.o \
                 src/drt_f2/fluid2.o \
                 src/drt_f2/fluid2_nurbs.o \
                 src/drt_f2/fluid2_line.o \
-                src/drt_condif2/condif2.o \
-                src/drt_condif2/condif2_line.o\
                 src/drt_f2/fluid2_impl.o \
                 src/drt_f2/fluid2_stationary.o \
                 src/drt_f2/fluid2_genalpha_resVMM.o

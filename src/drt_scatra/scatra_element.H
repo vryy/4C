@@ -1,7 +1,7 @@
 /*!
-\file condif3.H
+\file scatra_element.H
 
-\brief A C++ wrapper for the fluid3 element
+\brief A C++ wrapper for the scalar transport element
 
 This file contains the element specific service routines like
 Pack, Unpack, NumDofPerNode etc.
@@ -14,21 +14,20 @@ Maintainer: Georg Bauer
             089 - 289-15252
 </pre>
 */
-#ifdef D_FLUID3
+#if defined(D_FLUID2) || defined(D_FLUID3)
 #ifdef CCADISCRET
-#ifndef DRT_CONDIF3_H
-#define DRT_CONDIF3_H
+#ifndef DRT_SCATRA_ELEMENT_H
+#define DRT_SCATRA_ELEMENT_H
 
 
 #include "Teuchos_RefCountPtr.hpp"
-#include "Epetra_Vector.h"
 using namespace std;
 using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_node.H"
-#include "../drt_fem_general/drt_utils_integration.H"
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 // forward declarations
 struct _MATERIAL;
@@ -41,22 +40,19 @@ class Discretization;
 namespace ELEMENTS
 {
 // forward declarations
-class Condif3Surface;
-class Condif3Register;
+class TransportBoundary;
 
 /*!
-\brief A C++ wrapper for the condif3 element
+\brief A C++ wrapper for the Transport element
 
 \author g.bau (bauer@lnm.mw.tum.de)
 */
-class Condif3 : public DRT::Element
+class Transport : public DRT::Element
 {
 public:
 
   //! @name Friends
-  friend class Condif3Register;
-  friend class Condif3Surface;
-  friend class Condif3ImplInterface;
+  friend class TransportBoundary;
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -64,7 +60,7 @@ public:
   /*!
   \brief Standard Constructor
   */
-  Condif3(
+  Transport(
     int id,    ///< A unique global id
     int owner  ///< processor id who owns a certain instance of this class
     );
@@ -75,10 +71,10 @@ public:
   Makes a deep copy of a Element
 
   */
-  Condif3(const Condif3& old);
+  Transport(const Transport& old);
 
   /*!
-  \brief Deep copy this instance of Condif3 and return pointer to the copy
+  \brief Deep copy this instance of Transport and return pointer to the copy
 
   The Clone() method is used from the virtual base class Element in cases
   where the type of the derived class is unknown and a copy-ctor is needed
@@ -107,34 +103,90 @@ public:
   virtual DiscretizationType Shape() const;
 
   /*!
+  \brief set discretization type of element
+  */
+  virtual void SetDisType(DRT::Element::DiscretizationType shape)
+  { 
+    distype_ = shape; 
+    return;
+  };
+
+  /*!
   \brief Return number of lines of this element
   */
   virtual int NumLine() const
-  {if (NumNode()==8 || NumNode()==20 || NumNode()==27) return 12;
-   else if (NumNode()==4 || NumNode()==10) return 6;
-   else {
-    dserror("Could not determine number of lines");
-    return -1;
-    }
+  {
+    return DRT::UTILS::getNumberOfElementLines(distype_);
   }
 
   /*!
   \brief Return number of surfaces of this element
   */
   virtual int NumSurface() const
-  {if (NumNode()==8 || NumNode()==20 || NumNode()==27) return 6;
-    else if (NumNode()==4 || NumNode()==10) return 4;
-   else if (NumNode()==6 || NumNode()==15 || NumNode()==5) return 5;
-   else {
-   	dserror("Could not determine number of surfaces");
-   	return -1;
-	}
+  {
+    switch(distype_)
+    {
+    case DRT::Element::hex8: 
+    case DRT::Element::hex20: 
+    case DRT::Element::hex27:
+      return 6; break;
+    case DRT::Element::tet4: 
+    case DRT::Element::tet10:
+      return 4; break;
+    case DRT::Element::wedge6: 
+    case DRT::Element::wedge15:
+    case DRT::Element::pyramid5:
+      return 5; break;
+    case DRT::Element::quad4:
+    case DRT::Element::quad8:
+    case DRT::Element::quad9:
+    case DRT::Element::nurbs4:
+    case DRT::Element::nurbs9:
+    case DRT::Element::tri3:
+    case DRT::Element::tri6:
+      return 1; break;
+    case DRT::Element::line2:
+    case DRT::Element::line3:
+      return 0; break;
+    default:
+      dserror("discretization type not yet implemented");
+    }
+    return 0;
   }
 
   /*!
   \brief Return number of volumes of this element (always 1)
   */
-  virtual int NumVolume() const {return 1;}
+  virtual int NumVolume() const
+{
+    switch(distype_)
+    {
+    case DRT::Element::hex8: 
+    case DRT::Element::hex20: 
+    case DRT::Element::hex27:
+    case DRT::Element::tet4: 
+    case DRT::Element::tet10:
+    case DRT::Element::wedge6: 
+    case DRT::Element::wedge15:
+    case DRT::Element::pyramid5:
+      return 1; 
+      break;
+    case DRT::Element::quad4:
+    case DRT::Element::quad8:
+    case DRT::Element::quad9:
+    case DRT::Element::nurbs4:
+    case DRT::Element::nurbs9:
+    case DRT::Element::tri3:
+    case DRT::Element::tri6:
+    case DRT::Element::line2:
+    case DRT::Element::line3:
+      return 0;
+      break;
+    default:
+      dserror("discretization type not yet implemented");
+    }
+    return 0;
+  }
 
   /*!
   \brief Get vector of RefCountPtrs to the lines of this element
@@ -157,7 +209,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Condif3;}
+  virtual int UniqueParObjectId() const { return ParObject_Transport;}
 
   /*!
   \brief Pack this class so it can be communicated
@@ -178,7 +230,7 @@ public:
   \brief Destructor
 
   */
-  virtual ~Condif3();
+  virtual ~Transport();
 
   //@}
 
@@ -241,7 +293,7 @@ public:
   //! @name Evaluation
 
   /*!
-  \brief Evaluate an element, i.e. call the implementation to evaluate condif3
+  \brief Evaluate an element, i.e. call the implementation to evaluate Transport
   element stiffness, mass, internal forces or evaluate errors, statistics or updates
   etc. directly.
 
@@ -311,120 +363,20 @@ public:
 
 private:
 
-  //! Gaussrule
-  DRT::UTILS::GaussRule3D   gaussrule_;
-  //! container containing all kind of condif3 thisandthat
+  //! container containing all kind of element thisandthat
   DRT::Container            data_;
   //! number of dofs per node (for systems of transport equations)
   //! (storage neccessary because we dont know the material in the post filters anymore)
   int                       numdofpernode_;
+  //! the element discretization type
+  DRT::Element::DiscretizationType distype_;
 
-  // internal calculation methods
 
   //! don't want = operator
-  Condif3& operator = (const Condif3& old);
+  Transport& operator = (const Transport& old);
 
 
-}; // class Condif3
-
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-
-/*!
-\brief A register for condif3 element
-
-\author gee (gee@lnm.mw.tum.de)
-*/
-class Condif3Register : public DRT::ElementRegister
-{
-public:
-
-  //! @name Constructors and destructors and related methods
-
-  /*!
-  \brief Standard Constructor
-
-  */
-  Condif3Register(DRT::Element::ElementType etype);
-
-  /*!
-  \brief Copy Constructor
-
-  Makes a deep copy of an Condif3Register
-
-  */
-  Condif3Register(const DRT::ELEMENTS::Condif3Register& old);
-
-  /*!
-  \brief Deep copy this instance of Condif3Register and return pointer to the copy
-
-  The Clone() method is used from the virtual base class Element in cases
-  where the type of the derived class is unknown and a copy-ctor is needed
-
-  */
-  DRT::ELEMENTS::Condif3Register* Clone() const;
-
-  /*!
-  \brief Return unique ParObject id
-
-  every class imploementing ParObject needs a unique id defined at the
-  top of this file.
-  */
-  virtual int UniqueParObjectId() const { return ParObject_Condif3Register;}
-
-  /*!
-  \brief Pack this class so it can be communicated
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Pack(vector<char>& data) const;
-
-  /*!
-  \brief Unpack data from a char vector into this class
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Unpack(const vector<char>& data);
-
-  /*!
-  \brief Destructor
-
-  */
-  virtual ~Condif3Register();
-
-  //@}
-
-  //! @name Acess methods
-
-  /*!
-  \brief Print this element
-  */
-  void Print(ostream& os) const;
-
-  //@}
-
-  //! @name Construction
-
-  /*!
-  \brief Call Element init routines
-
-  The method performs all steps needed to init the condif3 elements. it e.g. calculates the
-  field of averaged directors at nodes.
-  */
-  //int Initialize(DRT::Discretization& dis);
-
-  //@}
-
-private:
-
-
-}; // class Condif3Register
+}; // class Transport
 
 
 //=======================================================================
@@ -434,20 +386,17 @@ private:
 
 
 /*!
-\brief An element representing a surface of a condif3 element
+\brief An element representing a boundary element of a Transport element
 
-\note This is a pure Neumann boundary condition element. It's only
-      purpose is to evaluate surface Neumann boundary conditions that might be
-      adjacent to a parent condif3 element. It therefore does not implement
-      the DRT::Element::Evaluate method and does not have its own ElementRegister class.
+\note This is a pure boundary condition element. It's only
+      purpose is to evaluate certain boundary conditions that might be
+      adjacent to a parent Transport element.
 
-\author gee (gee@lnm.mw.tum.de)
+\author bauer (bauer@lnm.mw.tum.de)
 */
-class Condif3Surface : public DRT::Element
+class TransportBoundary : public DRT::Element
 {
 public:
-
-  friend class Condif3Line;
 
   //! @name Constructors and destructors and related methods
 
@@ -462,8 +411,8 @@ public:
   \param parent: The parent fluid element of this surface
   \param lsurface: the local surface number of this surface w.r.t. the parent element
   */
-  Condif3Surface(int id, int owner, int nnode, const int* nodeids,
-             DRT::Node** nodes, DRT::ELEMENTS::Condif3* parent, const int lsurface);
+  TransportBoundary(int id, int owner, int nnode, const int* nodeids,
+             DRT::Node** nodes, DRT::ELEMENTS::Transport* parent, const int lsurface);
 
   /*!
   \brief Copy Constructor
@@ -471,7 +420,7 @@ public:
   Makes a deep copy of a Element
 
   */
-  Condif3Surface(const Condif3Surface& old);
+  TransportBoundary(const TransportBoundary& old);
 
   /*!
   \brief Deep copy this instance of an element and return pointer to the copy
@@ -488,16 +437,37 @@ public:
   virtual DiscretizationType Shape() const;
 
   /*!
-  \brief Return number of lines of this element
+  \brief Return number of lines of boundary element
   */
   virtual int NumLine() const
-  {if (NumNode()==4 || NumNode()==8 || NumNode()==9) return 4;
-  else if (NumNode()==3 || NumNode()==6) return 3;
-  else
   {
-    dserror("Could not determine number of lines");
-    return -1;
+    // get spatial dimension of boundary
+    const int nsd = DRT::UTILS::getDimension(parent_->Shape()) - 1;
+
+    if (NumNode()==4 || NumNode()==8 || NumNode()==9) return 4;
+    else if (NumNode()==6) return 3;
+    else if (NumNode()==3 && nsd ==2) return 3;
+    else if (NumNode()==3 && nsd ==1) return 1;
+    else if (NumNode()==2) return 1;
+    else
+    {
+      dserror("Could not determine number of lines");
+      return -1;
+    }
   }
+
+  /*!
+  \brief Return number of surfaces of boundary element
+   */
+  virtual int NumSurface() const
+  {
+    // get spatial dimension of boundary
+    const int nsd = DRT::UTILS::getDimension(parent_->Shape()) - 1;
+
+    if (nsd == 2) 
+      return 1;
+    else
+      return 0;
   }
 
   /*!
@@ -507,12 +477,17 @@ public:
   virtual vector<RCP<DRT::Element> > Lines();
 
   /*!
+  \brief Get vector of RefCountPtrs to the surfaces of this element
+  */
+  virtual vector<RCP<DRT::Element> > Surfaces();
+
+  /*!
   \brief Return unique ParObject id
 
   every class implementing ParObject needs a unique id defined at the
   top of the drt_parobject.H file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Condif3Surface;}
+  virtual int UniqueParObjectId() const { return ParObject_TransportBoundary;}
 
   /*!
   \brief Pack this class so it can be communicated
@@ -534,7 +509,7 @@ public:
   \brief Destructor
 
   */
-  virtual ~Condif3Surface();
+  virtual ~TransportBoundary();
 
   //@}
 
@@ -577,8 +552,9 @@ public:
   Every implementation of DRT::Element must also implement
   an DRT::ElementRegister. This method allocates and returns
   an instance of a matching DRT::ElementRegister.
-  */
-  virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const { return null; }
+  */ 
+  virtual RCP<DRT::ElementRegister> ElementRegister() const
+  { return rcp(new DRT::ElementRegister(Type())); }
 
   //@}
 
@@ -587,7 +563,7 @@ public:
   /*!
   \brief Evaluate an element
 
-  Evaluate condif3 element stiffness, mass, internal forces etc
+  Evaluate Transport element stiffness, mass, internal forces etc
 
   \param params (in/out): ParameterList for communication between control routine
                           and elements
@@ -626,7 +602,7 @@ public:
   /*!
   \brief Evaluate a Neumann boundary condition
 
-  this method evaluates a surface Neumann condition on the condif3 element
+  this method evaluates a surface Neumann condition on the Transport element
 
   \param params (in/out)    : ParameterList for communication between control routine
                               and elements
@@ -647,7 +623,7 @@ public:
 
 private:
 
-  //! action parameters recognized by Condif3Surface
+  //! action parameters recognized by TransportSurface
   enum ActionType
   {
     none,
@@ -656,7 +632,7 @@ private:
   };
 
   // don't want = operator
-  Condif3Surface& operator = (const Condif3Surface& old);
+  TransportBoundary& operator = (const TransportBoundary& old);
 
   //! evaluate an electrode kinetics boundary condition
   void EvaluateElectrodeKinetics(
@@ -691,23 +667,20 @@ private:
                           const vector<double>&           enormflux);
 
   //! The parent element of this surface
-  DRT::ELEMENTS::Condif3* parent_;
-  //! The local surface number of this surface w.r.t to the parent_ element
-  int                    lsurface_;
+  DRT::ELEMENTS::Transport* parent_;
+  //! The local boundary element number of this surface w.r.t to the parent_ element
+  int                       lbeleid_;
   //! number of dofs per node (for systems of transport equations)
   //! (storage neccessary because we dont know the material in the post filters anymore)
   int                       numdofpernode_;
 
+}; // class TransportBoundary
 
-}; // class Condif3Surface
-
-// put class Condif3Line in here, if needed
 
 } // namespace ELEMENTS
 } // namespace DRT
 
 
-
-#endif  // #ifndef CONDIF3_H
+#endif  // #ifndef DRT_SCATRA_ELEMENT_H
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_FLUID3
+#endif  // #if defined(D_FLUID2) || defined(D_FLUID3)
