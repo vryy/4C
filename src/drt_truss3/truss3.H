@@ -254,7 +254,43 @@ public:
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
                               vector<int>&              lm,
-                              Epetra_SerialDenseVector& elevec1);                            
+                              Epetra_SerialDenseVector& elevec1);    
+  /*!
+  \brief Evaluate a statistical Neumann boundary condition and related damping matrix
+
+  An element derived from this class uses the Evaluate method to receive commands
+  and parameters from some control routine in params and evaluates a  statistical Neumann boundary condition
+  as used in the problem type STATISTICAL MECHANICS
+
+  \param params (in/out)       : ParameterList for communication between control routine and elements
+  \param vector<double> mydisp : current nodal displacement
+  \param elevec1 (out)         : Force vector to be filled by element
+  \param elemat1 (out)         : damping matrix to be filled by element
+
+  \return 0 if successful, negative otherwise
+  */
+  virtual int EvaluateStatForceDamp(ParameterList& params,
+                                    vector<double> mydisp,
+                                    Epetra_SerialDenseVector& elevec1,
+                                    Epetra_SerialDenseMatrix& elemat1,
+                                    int& ActNumDof0);  
+  
+  /*!
+  \brief Evaluate PTC addition to stiffness for free Brownian motion
+
+  An element derived from this class uses the Evaluate method to receive commands
+  and parameters from some control routine in params and evaluates a  statistical Neumann boundary condition
+  as used in the problem type STATISTICAL MECHANICS
+
+  \param params (in/out)       : ParameterList for communication between control routine and elements
+  \param vector<double> mydisp : current nodal displacement
+  \param elemat1 (out)         : artificial damping matrix to be filled by element
+
+  \return 0 if successful, negative otherwise
+  */
+  virtual int EvaluatePTC(ParameterList& params,
+                          Epetra_SerialDenseMatrix& elemat1,
+                          int& ActNumDof0);
   //@}
 
   
@@ -279,8 +315,8 @@ private:
     calc_struct_reset_istep,  //!< reset elementwise internal variables
                              //!< during iteration to last converged state
     postprocess_stress,
-    calc_stat_force_damp,
-    calc_struct_ptcstiff 
+    calc_stat_force_damp, //calculate statistical forces and damping for Brownian dynamics
+    calc_struct_ptcstiff //calculate artificial stiffness due to PTC solution strategy
   };
   
   //! possible kinematic types

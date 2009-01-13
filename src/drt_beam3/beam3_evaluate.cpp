@@ -518,13 +518,13 @@ int DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
   {
     for(int j=0;j<3;j++)
     {
-      /*
+      
       //translational damping
-      elemat1(  i,   j) += dti;
-      elemat1(6+i, 6+j) += dti;
-      elemat1(6+i,   j) += dti;
-      elemat1(  i, 6+j) += dti;
-      */
+      elemat1(  i,   j) += dti*0.1;
+      elemat1(6+i, 6+j) += dti*0.1;
+      elemat1(6+i,   j) += dti*0.1;
+      elemat1(  i, 6+j) += dti*0.1;
+      
       
       //rotational damping
       elemat1(3+i, 3+j) += Hinverse(i,j);
@@ -994,7 +994,6 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
   epsilonn.Scale(1/lrefe_);
   epsilonn(0) -=  1;
 
-
   /* read material parameters using structure _MATERIAL which is defined by inclusion of      /
    / "../drt_lib/drt_timecurve.H"; note: material parameters have to be read in the evaluation /
    / function instead of e.g. Beam3_input.cpp or within the Beam3Register class since it is not/
@@ -1057,6 +1056,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
         (*force)(i+9) -= stressn(j)*spinx21(i,j);
       }
     }
+    
 
     /*
     //adding isotropic torsional curvature damping
@@ -1153,6 +1153,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
 
 
   }
+  
 
   //computing linear stiffness matrix
   if (stiffmatrix != NULL)

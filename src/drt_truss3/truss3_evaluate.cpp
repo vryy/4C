@@ -26,6 +26,8 @@ Maintainer: Christian Cyron
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/linalg_fixedsizematrix.H"
+//including random number library of blitz for statistical forces
+#include <random/normal.h>
 
 //externally defined structure for material data
 extern struct _MATERIAL *mat;
@@ -66,15 +68,72 @@ int DRT::ELEMENTS::Truss3::Evaluate(ParameterList& params,
       cout<<action<<endl;
       dserror("Unknown type of action for Truss3");
     }
+  
+  /*number of degrees of freedom actually assigned to the discretization by the first node
+   *(allows connectin truss3 and beam3 directly)*/
+  int ActNumDof0 = discretization.NumDof(Nodes()[0]);
 
   switch(act)
   {
-    case Truss3::calc_stat_force_damp:
     case Truss3::calc_struct_ptcstiff:
-    {   
-      //Truss3 element does not provide any tool for calculating stochastical forces and related damping
-      
-      //Truss3 element does'nt need any special ptc tools to allow stable implicit dynamics with acceptable time step size
+    {
+      EvaluatePTC(params, elemat1,ActNumDof0);
+    }
+    break;
+    //action type for evaluating statistical forces
+    case Truss3::calc_stat_force_damp:
+    {
+      /*in order to understand the way how in the following parallel computing is handled one has to
+       * be aware of what usually happens: each processor evaluates forces on each of its elements no
+       * matter whether it's a real element or only a ghost element; later on in the assembly of the
+       * evaluation method each processor adds the thereby gained DOF forces only for the DOF of
+       * which it is the row map owner; if one used this way for random forces the following problem
+       * would arise: if two processors evaluate both the same element (one time as a real element, one time
+       * as a ghost element) and assemble later only the random forces of their own DOF the assembly for
+       * different DOF of the same element might take place by means of random forces evaluated during different
+       * element calls (one time the real element was called, one time only the ghost element); as a consequence
+       * prescribing any correlation function between random forces of different DOF is in general
+       * impossible since the random forces of two different DOF may have been evaluated during different
+       * element calls; the only solution to this problem is obviously to allow element evaluation
+       * to one processor only (the row map owner processor) and to allow this processor to assemble the
+       * thereby gained random forces later on also to DOF of which it is not the row map owner; so fist
+       * we check in this method whether the current processor is the owner of the element (if not
+       * evaluation is cancelled) and finally this processor assembles the evaluated forces for degrees of
+       * freedom right no matter whether its the row map owner of these DOF (outside the element routine
+       * in the evaluation method of the discretization this would be not possible by default*/
+  
+  
+      //test whether current processor is row map owner of the element
+      if(this->Owner() != discretization.Comm().MyPID()) return 0;
+  
+      // get element displacements (for use in shear flow fields)
+      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp==null) dserror("Cannot get state vector 'displacement'");
+      vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+  
+      //evaluation of statistical forces with the local statistical forces vector fstat
+      Epetra_SerialDenseVector fstat(lm.size());
+      EvaluateStatForceDamp(params,mydisp,fstat,elemat1,ActNumDof0);
+  
+      /*all the above evaluated forces are used in assembly of the column map force vector no matter if the current processor if
+       * the row map owner of these DOF*/
+      //note carefully: a space between the two subsequal ">" signs is mandatory for the C++ parser in order to avoid confusion with ">>" for streams
+      RCP<Epetra_Vector>    fstatcol = params.get<  RCP<Epetra_Vector> >("statistical force vector",Teuchos::null);
+  
+      for(unsigned int i = 0; i < lm.size(); i++)
+      {
+        //note: lm contains the global Ids of the degrees of freedom of this element
+        //testing whether the fstatcol vector has really an element related with the i-th element of fstat by the i-the entry of lm
+        if (!(fstatcol->Map()).MyGID(lm[i])) dserror("Sparse vector fstatcol does not have global row %d",lm[i]);
+  
+        //get local Id of the fstatcol vector related with a certain element of fstat
+        int lid = (fstatcol->Map()).LID(lm[i]);
+  
+        //add to the related element of fstatcol the contribution of fstat
+        (*fstatcol)[lid] += fstat[i];
+      }
+  
     }
     break;
     /*in case that only linear stiffness matrix is required b3_nlstiffmass is called with zero dispalcement and 
@@ -106,12 +165,7 @@ int DRT::ELEMENTS::Truss3::Evaluate(ParameterList& params,
       if (res==null) dserror("Cannot get state vectors 'residual displacement'");
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      
-      /*number of degrees of freedom actually assigned to the discretization by the first node
-       *(allows flexible handling of the case that the truss3 element is connected directly to
-       *a beam3 element)*/
-      int ActNumDof0 = discretization.NumDof(Nodes()[0]);
-      
+           
       // get element velocities (UNCOMMENT IF NEEDED)
       /*
       RefCountPtr<const Epetra_Vector> vel  = discretization.GetState("velocity");
@@ -258,6 +312,99 @@ int DRT::ELEMENTS::Truss3::EvaluateNeumann(ParameterList& params,
   
   return 0;
 }
+
+/*-----------------------------------------------------------------------------------------------------------*
+ | Evaluate Statistical forces and viscous damping (public)                                       cyron 01/09|
+ *----------------------------------------------------------------------------------------------------------*/
+
+int DRT::ELEMENTS::Truss3::EvaluateStatForceDamp(ParameterList& params,
+                                                vector<double> mydisp,
+                                                Epetra_SerialDenseVector& elevec1,
+                                                Epetra_SerialDenseMatrix& elemat1,
+                                                int& ActNumDof0)
+{
+  // frictional coefficient per unit length (approximated by the one of an infinitely long staff)
+  double zeta = 4 * PI * lrefe_ * params.get<double>("ETA",0.0);
+
+  /*the following funcitons are assuming linear interpolation of thermal and drag forces between the nodes
+   * comparable to the case stoch_order == 1 for the beam3 element*/
+
+  //computing damping matrix (by background fluid of thermal bath) 
+  
+  //diagonal entries 
+  for(int i= 0; i<3; i++)
+  {
+    //first node
+    elemat1(i,i) += zeta/3.0;
+    //second node
+    elemat1(ActNumDof0+i,ActNumDof0+i) += zeta/3.0;
+  }
+  
+  //offdiagonal entries 
+  for(int i= 0; i<3; i++)
+  {
+    elemat1(i,ActNumDof0+i) += zeta/6.0;
+    elemat1(ActNumDof0+i,i) += zeta/6.0;
+  }
+
+  //computing statistical forces due to fluctuation-dissipation theorem
+
+  // thermal energy responsible for statistical forces
+  double kT = params.get<double>("KT",0.0);
+
+  //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
+  double stand_dev_trans = pow(2 * kT * (zeta/6) / params.get<double>("delta time",0.01),0.5);
+
+  //creating a random generator object which creates random numbers with mean = 0 and standard deviation
+  //stand_dev; using Blitz namespace "ranlib" for random number generation
+  ranlib::Normal<double> normalGen(0,stand_dev_trans);
+  
+  //uncorrelated part of the statistical forces
+  for(int i= 0; i<3; i++)
+  {
+    //first node
+    elevec1[i] += normalGen.random();
+    //second node
+    elevec1[ActNumDof0+i] += normalGen.random();
+  }
+  
+  //correlated part of the statistical forces
+  for(int i= 0; i<3; i++)
+  {
+    double force = normalGen.random();
+    
+    //first node
+    elevec1[i] += force;
+    //second node
+    elevec1[ActNumDof0+i] += force;
+  }
+
+  
+  return 0;
+} //DRT::ELEMENTS::Truss3::EvaluateStatisticalNeumann
+
+
+
+/*-----------------------------------------------------------------------------------------------------------*
+ | Evaluate PTC damping (public)                                                                  cyron 01/09|
+ *----------------------------------------------------------------------------------------------------------*/
+
+int DRT::ELEMENTS::Truss3::EvaluatePTC(ParameterList& params,
+                                      Epetra_SerialDenseMatrix& elemat1,
+                                      int& ActNumDof0)
+{
+  double dti = params.get<double>("dti",0.0);
+
+  //first node
+  for(int i= 0; i<3; i++)
+    elemat1(i,i) += dti;
+  
+  //second node
+  for(int i= 0; i<3; i++)
+    elemat1(i+ActNumDof0,i+ActNumDof0) += dti;
+
+  return 0;
+} //DRT::ELEMENTS::Truss3::EvaluatePTC
 
 /*--------------------------------------------------------------------------------------*
  | switch between kintypes                                                      tk 11/08|
