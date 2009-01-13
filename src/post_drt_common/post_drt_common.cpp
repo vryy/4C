@@ -126,7 +126,7 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
   setup_filter(file, output);
 
   ndim_ = map_read_int(&control_table_, "ndim");
-  dsassert((ndim_ == 2) || (ndim_ == 3), "illegal dimension");
+  dsassert((ndim_ == 1) || (ndim_ == 2) || (ndim_ == 3), "illegal dimension");
 
   const char* problem_names[] = PROBLEMNAMES;
   const char* type = map_read_string(&control_table_, "problem_type");
