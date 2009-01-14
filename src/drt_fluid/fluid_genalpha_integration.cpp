@@ -1201,6 +1201,11 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
     // set the only required state vectors
     discret_->SetState("u and p (n+alpha_F,trial)",velaf_);
     discret_->SetState("u and p (n+1      ,trial)",velnp_);
+    if (alefluid_)
+    {
+      discret_->SetState("dispnp"    , dispnp_   );
+      discret_->SetState("gridvelaf" , gridvelaf_);
+    }
 
     // evaluate all line weak Dirichlet boundary conditions
     discret_->EvaluateConditionUsingParentData
