@@ -185,6 +185,10 @@ namespace DRT
       LINALG::Matrix<3,piel> pevelnp_;
       //! array of nodal pressure, new time level
       LINALG::Matrix<piel,1> peprenp_;
+      //! array of nodal grid displacements, parent element, new time level
+      LINALG::Matrix<3,piel> pedispnp_;
+      //! array of nodal grid displacements, surface element, new time level
+      LINALG::Matrix<3,piel> edispnp_; 
       //! node coordinates of boundary element
       LINALG::Matrix<3, iel> xyze_;
 
@@ -202,6 +206,7 @@ namespace DRT
       LINALG::Matrix<3,piel> pderiv_;
       //! vector of shape function derivatives in global coordinate system
       LINALG::Matrix<3,piel> pderxy_;
+
 
       //! vector of shape functions, boundary element
       LINALG::Matrix<iel ,1> funct_;

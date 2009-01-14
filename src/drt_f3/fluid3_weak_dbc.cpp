@@ -237,9 +237,27 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     dserror("Cannot get state vector 'velnp'");
   }
 
+
+
   vector<double> mypvelnp((*plm).size());
   DRT::UTILS::ExtractMyValues(*velnp,mypvelnp,*plm);
 
+  vector<double> myedispnp ((lm  ).size());
+  vector<double> mypedispnp((*plm).size());
+  if (surfele->parent_->IsAle())
+  {
+    // mesh displacements, new time step, n+1
+    RefCountPtr<const Epetra_Vector> dispnp
+      =
+      discretization.GetState("dispnp");
+    if (dispnp==null)
+    {
+      dserror("Cannot get state vector 'dispnp'");
+    }
+
+    DRT::UTILS::ExtractMyValues(*dispnp,myedispnp ,lm  );
+    DRT::UTILS::ExtractMyValues(*dispnp,mypedispnp,*plm);
+  }
 
   //--------------------------------------------------
   //                GET PARENT DATA
@@ -267,12 +285,43 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     peprenp_(  i) = mypvelaf[3+fi];
   }
 
+  if (surfele->parent_->IsAle())
+  {
+    for (int i=0;i<piel;++i)
+    {
+      const int fi=4*i;
+      
+      pedispnp_(0,i) = mypedispnp[  fi];
+      pedispnp_(1,i) = mypedispnp[1+fi];
+      pedispnp_(2,i) = mypedispnp[2+fi];
+    }
+
+    for (int i=0;i<piel;++i)
+    {
+      const int fi=4*i;
+      
+      edispnp_(0,i) = myedispnp[  fi];
+      edispnp_(1,i) = myedispnp[1+fi];
+      edispnp_(2,i) = myedispnp[2+fi];
+    }
+  }
+
   // extract node coords
   for(int i=0;i<piel;++i)
   {
     pxyze_(0,i)=surfele->parent_->Nodes()[i]->X()[0];
     pxyze_(1,i)=surfele->parent_->Nodes()[i]->X()[1];
     pxyze_(2,i)=surfele->parent_->Nodes()[i]->X()[2];
+  }
+
+  if (surfele->parent_->IsAle())
+  {
+    for (int i=0;i<piel;++i)
+    {
+      pxyze_(0,i) += pedispnp_(0,i);
+      pxyze_(1,i) += pedispnp_(1,i);
+      pxyze_(2,i) += pedispnp_(2,i);
+    }
   }
 
   //--------------------------------------------------
@@ -312,6 +361,16 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     xyze_(0,i)=surfele->Nodes()[i]->X()[0];
     xyze_(1,i)=surfele->Nodes()[i]->X()[1];
     xyze_(2,i)=surfele->Nodes()[i]->X()[2];
+  }
+
+  if (surfele->parent_->IsAle())
+  {
+    for (int i=0;i<iel;++i)
+    {
+      xyze_(0,i) += edispnp_(0,i);
+      xyze_(1,i) += edispnp_(1,i);
+      xyze_(2,i) += edispnp_(2,i);
+    }
   }
 
   //--------------------------------------------------
