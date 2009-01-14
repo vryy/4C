@@ -517,7 +517,7 @@ int DRT::ELEMENTS::TransportBoundary::EvaluateNeumann(
     // integration loop
     for (int iquad=0; iquad<intpoints.nquad; ++iquad)
     {
-      const double e1 = intpoints.qxg[iquad];
+      const double e1 = intpoints.qxg[iquad][0];
 
       // get shape functions and derivatives for line element
       DRT::UTILS::shape_function_1D(funct,e1,distype);
@@ -914,7 +914,7 @@ void DRT::ELEMENTS::TransportBoundary::NormalFluxIntegral(
     const IntegrationPoints1D  intpoints(intrule);
     for (int iquad=0; iquad<intpoints.nquad; iquad++)
     {
-      const double e1 = intpoints.qxg[iquad];
+      const double e1 = intpoints.qxg[iquad][0];
 
       // get shape functions and derivatives in the plane of the element
       DRT::UTILS::shape_function_1D(funct,e1,distype);
