@@ -435,7 +435,8 @@ public:
   virtual inline DRT::Node* lRowNode(int lid) const
   {
   #ifdef DEBUG
-    if (!Filled()) dserror("DRT::Discretization::lRowNode: Filled() != true");
+    if (!Filled()) 
+      dserror("DRT::Discretization::lRowNode: Filled() != true");
   #endif
     return noderowptr_[lid];
   }
