@@ -271,6 +271,42 @@ void ADAPTER::Coupling::BuildDofMaps(const DRT::Discretization& dis,
   for (int i=0; i<numnode; ++i)
   {
     const DRT::Node* actnode = dis.gNode(nodes[i]);
+
+    // ----------------------------------------------------------------
+    // get all periodic boundary conditions on this node
+    // slave nodes do not contribute dofs, we skip them
+    // ----------------------------------------------------------------
+    vector<DRT::Condition*> thiscond;
+    actnode->GetCondition("SurfacePeriodic",thiscond);
+
+    if(thiscond.empty())
+    {
+      actnode->GetCondition("LinePeriodic",thiscond);
+    }
+
+    if(!thiscond.empty())
+    {
+      // loop them and check, whether this is a pbc pure master node
+      // for all previous conditions
+      unsigned ntimesmaster = 0;
+      for (unsigned numcond=0;numcond<thiscond.size();++numcond)
+      {
+        const string* mymasterslavetoggle
+          = thiscond[numcond]->Get<string>("Is slave periodic boundary condition");
+        
+        if(*mymasterslavetoggle=="Master")
+        {
+          ++ntimesmaster;
+        } // end is slave?
+      } // end loop this conditions
+
+      if(ntimesmaster<thiscond.size())
+      {
+        // this node is not a master and does not own its own dofs
+        continue;
+      }
+    }
+
     const vector<int> dof = dis.Dof(actnode);
     if (genprob.ndim > static_cast<int>(dof.size()))
       dserror("got just %d dofs at node %d (lid=%d) but expected %d",dof.size(),nodes[i],i,genprob.ndim);
