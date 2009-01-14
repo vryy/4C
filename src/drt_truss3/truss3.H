@@ -329,6 +329,9 @@ private:
   //! container containing all kind of Truss3 thisandthat
   DRT::Container data_; 
   
+  //! variable saving whether element has already been initialized (then isinit_ == true)
+  bool isinit_;
+  
   //!reference node position
   LINALG::Matrix<6,1> X_;
   

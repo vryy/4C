@@ -26,6 +26,7 @@ Maintainer: Christian Cyron
 DRT::ELEMENTS::Truss3::Truss3(int id, int owner) :
 DRT::Element(id,element_truss3,owner),
 data_(),
+isinit_(false),
 material_(0),
 lrefe_(0),
 crosssec_(0),
@@ -43,6 +44,7 @@ gaussrule_(DRT::UTILS::intrule_line_2point)
 DRT::ELEMENTS::Truss3::Truss3(const DRT::ELEMENTS::Truss3& old) :
  DRT::Element(old),
  data_(old.data_),
+ isinit_(old.isinit_),
  X_(old.X_),
  material_(old.material_),
  lrefe_(old.lrefe_),
@@ -115,6 +117,8 @@ void DRT::ELEMENTS::Truss3::Pack(vector<char>& data) const
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
+  //whether element has already been initialized
+  AddtoPack(data,isinit_);
   //nodal reference coordinates
   AddtoPack(data,X_);
   //material type
@@ -150,6 +154,8 @@ void DRT::ELEMENTS::Truss3::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
+  //whether element has already been initialized
+  ExtractfromPack(position,data,isinit_);
   //nodal reference coordinates
   ExtractfromPack(position,data,X_);
   //material type
@@ -185,11 +191,20 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Truss3::Lines()
 
 void DRT::ELEMENTS::Truss3::SetUpReferenceGeometry(const LINALG::Matrix<6,1>& xrefe)
 {   
-  //setting reference coordinates
-  X_ = xrefe;
-  
-  //length in reference configuration
-  lrefe_ = pow(pow(X_(3)-X_(0),2)+pow(X_(4)-X_(1),2)+pow(X_(5)-X_(2),2),0.5); 
+  /*this method initialized geometric variables of the element; such an initialization can only be done one time when the element is
+   * generated and never again (especially not in the frame of a restart); to make sure that this requirement is not violated this 
+   * method will initialize the geometric variables iff the class variable isinit_ == false and afterwards set this variable to 
+   * isinit_ = true; if this method is called and finds alreday isinit_ == true it will just do nothing*/ 
+  if(!isinit_)
+  {
+    isinit_ = true;
+    
+    //setting reference coordinates
+    X_ = xrefe;
+    
+    //length in reference configuration
+    lrefe_ = pow(pow(X_(3)-X_(0),2)+pow(X_(4)-X_(1),2)+pow(X_(5)-X_(2),2),0.5); 
+  }
  
   return;
 }
@@ -290,29 +305,35 @@ void DRT::ELEMENTS::Truss3Register::Print(ostream& os) const
 
 int DRT::ELEMENTS::Truss3Register::Initialize(DRT::Discretization& dis)
 {		  
+  //reference node positions
+  LINALG::Matrix<6,1> xrefe;
+
   //setting beam reference director correctly
   for (int i=0; i<  dis.NumMyColElements(); ++i)
-    {    
-      //in case that current element is not a beam3 element there is nothing to do and we go back
-      //to the head of the loop
-      if (dis.lColElement(i)->Type() != DRT::Element::element_truss3) continue;
-      
-      //if we get so far current element is a beam3 element and  we get a pointer at it
-      DRT::ELEMENTS::Truss3* currele = dynamic_cast<DRT::ELEMENTS::Truss3*>(dis.lColElement(i));
-      if (!currele) dserror("cast to Truss3* failed");
-      
-      //getting element's reference coordinates     
-      for (int k=0; k<2; ++k) //element has two nodes
-        {
-          currele->X_(3*k + 0) = currele->Nodes()[k]->X()[0];
-          currele->X_(3*k + 1) = currele->Nodes()[k]->X()[1];
-          currele->X_(3*k + 2) = currele->Nodes()[k]->X()[2];
-        }
-      
-      //length in reference configuration
-      currele->lrefe_ = pow(pow(currele->X_(3) - currele->X_(0),2)+pow(currele->X_(4) - currele->X_(1),2)+pow(currele->X_(5) - currele->X_(2),2),0.5);  
-          
-    } //for (int i=0; i<dis_.NumMyColElements(); ++i)
+  {    
+    //in case that current element is not a beam3 element there is nothing to do and we go back
+    //to the head of the loop
+    if (dis.lColElement(i)->Type() != DRT::Element::element_truss3) continue;
+    
+    //if we get so far current element is a beam3 element and  we get a pointer at it
+    DRT::ELEMENTS::Truss3* currele = dynamic_cast<DRT::ELEMENTS::Truss3*>(dis.lColElement(i));
+    if (!currele) dserror("cast to Truss3* failed");
+    
+    //getting element's nodal coordinates and treating them as reference configuration
+    if (currele->Nodes()[0] == NULL || currele->Nodes()[1] == NULL)
+      dserror("Cannot get nodes in order to compute reference configuration'");
+    else
+    {   
+      for (int k=0; k<2; k++) //element has two nodes
+        for(int l= 0; l < 3; l++)
+          xrefe(k*3 + l) = currele->Nodes()[k]->X()[l];
+    }
+ 
+    currele->SetUpReferenceGeometry(xrefe);
+    
+    
+  } //for (int i=0; i<dis_.NumMyColElements(); ++i)
+
 	
   return 0;
 }
