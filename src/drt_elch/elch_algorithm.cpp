@@ -125,7 +125,7 @@ void ELCH::Algorithm::DoTransportStep()
 
   // transfer convective velocity
   ScaTraField().SetVelocityField(2,ConvectiveVelocity());
-  //ConDifField().SetVelocityField(1,1);
+  //ScaTraField().SetVelocityField(1,1);
 
   // solve coupled transport equations for ion concentrations and electric 
   // potential
