@@ -27,6 +27,7 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include "../drt_inpar/inpar_fsi.H"
+#include "../drt_fluid/drt_periodicbc.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -72,6 +73,12 @@ void ADAPTER::AleBaseAlgorithm::SetupAle()
   // set degrees of freedom in the discretization
   // -------------------------------------------------------------------
   if (!actdis->Filled()) actdis->FillComplete();
+
+  // -------------------------------------------------------------------
+  // connect degrees of freedom for coupled nodes
+  // -------------------------------------------------------------------
+  PeriodicBoundaryConditions::PeriodicBoundaryConditions pbc(actdis);
+  pbc.UpdateDofsForPeriodicBoundaryConditions();
 
   // -------------------------------------------------------------------
   // context for output and restart
