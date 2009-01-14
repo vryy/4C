@@ -368,6 +368,24 @@ void FSI::UTILS::CreateAleDiscretization()
     aledis->SetCondition("Dirichlet", rcp(new DRT::Condition(*cond[i])));
   }
 
+  cond.clear();
+  fluiddis->GetCondition("SurfacePeriodic", cond);
+  for (unsigned i=0; i<cond.size(); ++i)
+  {
+    // We use the same nodal ids and therefore we can just copy the
+    // conditions.
+    aledis->SetCondition("SurfacePeriodic", rcp(new DRT::Condition(*cond[i])));
+  }
+
+  cond.clear();
+  fluiddis->GetCondition("SurfacePeriodic", cond);
+  for (unsigned i=0; i<cond.size(); ++i)
+  {
+    // We use the same nodal ids and therefore we can just copy the
+    // conditions.
+    aledis->SetCondition("LinePeriodic", rcp(new DRT::Condition(*cond[i])));
+  }
+
   // now care about the parallel distribution
   //
 
