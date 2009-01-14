@@ -243,7 +243,7 @@ void StatMechManager::StatMechOutput(const double& time,const int& num_dof,const
     break;
     //measurement of viscoelastic properties should be carried out by means of force sensors
     case INPAR::STATMECH::statout_viscoelasticity:
-    {
+    {   
       //pointer to file into which each processor writes the output related with the dof of which it is the row map owner
       FILE* fp = NULL; 
            
@@ -268,6 +268,101 @@ void StatMechManager::StatMechOutput(const double& time,const int& num_dof,const
       //writing filecontent into output file and closing it
       fprintf(fp,filecontent.str().c_str());
       fclose(fp);
+
+    }
+    break;
+    //writing data for generating a Gmsh video of the simulation
+    case INPAR::STATMECH::statout_gmsh:
+    {
+      
+      /*construct unique filename for gmsh output with two indices: the first one marking the time step number
+       * and the second one marking the newton iteration number, where numbers are written with zeros in the front
+       * e.g. number one is written as 00001, number fourteen as 00014 and so on;*/
+      
+      //note: this kind of output is possilbe for serial computing only (otherwise the following method would have to be adapted to parallel use*/   
+      if(discret_.Comm().NumProc() > 1)
+        dserror("No Gmsh output for parallel computation possible so far");
+      
+      // first index = time step index
+      std::ostringstream filename;
+      const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+      if (istep<100000)
+        filename << "./GmshOutput/network"<< std::setw(5) << setfill('0') << istep <<".pos";
+      else 
+        dserror("Gmsh output implemented for a maximum of 99999 time steps");
+               
+      // do output to file in c-style
+      FILE* fp = NULL;
+      
+      //start Gmsh output
+      fp = fopen(filename.str().c_str(), "w");
+
+      // write output to temporary stringstream; 
+      std::stringstream gmshfilecontent;
+      /*the beginning of the stream is "View \"" to indicate Gmsh that the following data is in order to create an image and
+       * this command is followed by the name of that view displayed during it's shown in the video; in the following example
+       * this name is for the 100th time step: Step00100; then the data to be presented within this view is written within { ... };
+       * in the following example this data consists of scalar lines defined by the coordinates of their end points*/
+      gmshfilecontent << "View \" Step " << istep << " \" {" << endl;
+      
+      
+      //writing the origin point as reference for colors
+      gmshfilecontent << "SP(" << scientific;
+      gmshfilecontent << 0.0 << "," << 0.0 << "," << 0.0 ;
+      /*note: for each node there is one color variable for gmsh and gmsh finally plots the line
+       * interpolating these two colors between the nodes*/
+      gmshfilecontent << ")" << "{" << scientific << 0.0  << "};" << endl;
+
+      //looping through all elements on the processor
+      for (int i=0; i<discret_.NumMyRowElements(); ++i)
+      {
+        //getting pointer to current element
+        DRT::Element* element = discret_.lRowElement(i);
+        
+        //getting number of nodes of current element
+        if( element->NumNode() > 2)
+          dserror("Gmsh output for two noded elements only");
+        
+        //preparing variable storing coordinates of all these nodes
+        int nnodes = 2;
+        LINALG::SerialDenseMatrix coord(3,nnodes);
+        
+        for(int id = 0; id<3; id++)
+         for(int jd = 0; jd<2; jd++)  
+         {
+           double referenceposition = ((element->Nodes())[jd])->X()[id];
+           vector<int> dofnode = discret_.Dof((element->Nodes())[jd]);        
+           double displacement = dis[discret_.DofRowMap()->LID( dofnode[id] )];
+           coord(id,jd) =  referenceposition + displacement;
+         }
+        
+              
+        //declaring variable for color of elements
+        double color;
+        
+        //apply different colors for elements representing filaments and those representing dynamics crosslinkers
+        if (element->Id() < basiselements_)
+          color = 1.2;
+        else
+          color = 2.6;
+
+        //writing element by nodal coordinates as a scalar line
+        gmshfilecontent << "SL(" << scientific;
+        gmshfilecontent<< coord(0,0) << "," << coord(1,0) << "," << coord(2,0) << "," 
+                       << coord(0,1) << "," << coord(1,1) << "," << coord(2,1) ;
+        /*note: for each node there is one color variable for gmsh and gmsh finally plots the line
+         * interpolating these two colors between the nodes*/
+        gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
+ 
+      }  
+      
+      //finish data section of this view by closing curley brackets
+      gmshfilecontent << "};" << endl;
+      
+      //write content into file and close it
+      fprintf(fp,gmshfilecontent.str().c_str());
+      fclose(fp);
+      
     }
     break;
     case INPAR::STATMECH::statout_none:

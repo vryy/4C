@@ -88,7 +88,7 @@ void StatMechTime::Integrate()
     ranlib::Normal<double> seedgenerator(0,1);
     //seeding random generator
     int seedvariable = time(0);
-    seedvariable = 6; //6 
+    seedvariable = 15; //6 
     seedgenerator.seed((unsigned int)seedvariable);
   }
 
@@ -117,19 +117,21 @@ void StatMechTime::Integrate()
 
   for (int i=step; i<nstep; ++i)
   {
-    /*in the very first step and in case that special output for statistical mechanics is requested we have
-     * to initialized the related output method*/
-    if(i == 0)
-      statmechmanager_->StatMechInitOutput();
-    
     {
       //random generator for seeding only (necessary for thermal noise)
       ranlib::Normal<double> seedgenerator(0,1);
       //seeding random generator
-
-      seedgenerator.seed((unsigned int)i);
+      int seedvariable = time(0);
+      seedvariable = i; //6 
+      seedgenerator.seed((unsigned int)seedvariable);
     }
     
+    
+    /*in the very first step and in case that special output for statistical mechanics is requested we have
+     * to initialized the related output method*/
+    if(i == 0)
+      statmechmanager_->StatMechInitOutput();
+        
     std::cout<<"\nAnzahl der Elemnete am Beginn des Zeitschritts: "<<discret_.NumMyRowElements()<<"\n";
     
     double time = params_.get<double>("total time",0.0);
@@ -683,7 +685,7 @@ void StatMechTime::PTC()
   if (!damp_->Filled()) dserror("damping matrix must be filled here");
 
   // hard wired ptc parameters
-  double ptcdt = 0.75; //0.75 scheint eine gute Wahl zu sein
+  double ptcdt = 5; //0.75 ... 5e1 scheint eine gute Wahl zu sein
   double nc;
   fresm_->NormInf(&nc);
   double dti = 1/ptcdt;
@@ -839,9 +841,11 @@ void StatMechTime::PTC()
     dti = max(dti,0.0);
     nc = np;
     
+    
     //Modifikation: sobald Residuum klein, PTC ausgeschaltet 
     if(np < 0.01*resinit)
-      dti = 0.0;
+      dti = 0.0;    
+      
     
 #else
     {
