@@ -86,6 +86,13 @@ namespace SCATRA
     case DRT::Element::tri6:
       return true;
       break;
+      // finally, the 1D case
+    case DRT::Element::line2:
+      return false;
+      break;
+    case DRT::Element::line3:
+      return true;
+      break;
     default:
       dserror("distype not supported!");
     }
@@ -155,6 +162,13 @@ namespace SCATRA
     case DRT::Element::tri6:
     case DRT::Element::quad8:
     case DRT::Element::quad9:
+      return 0.083333333333333333333;
+      break;
+    // finally, do the 1D case
+    case DRT::Element::line2:
+      return 0.333333333333333333333;
+      break;
+    case DRT::Element::line3:
       return 0.083333333333333333333;
       break;
     default:

@@ -446,7 +446,7 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
     *----------------------------------------------------------------------*/
     for (int gpid=0; gpid<intpoints.nquad; gpid++)
     {
-      const double e1 = intpoints.qxg[gpid];
+      const double e1 = intpoints.qxg[gpid][0];
 
       // get shape functions and derivatives for linear element
       DRT::UTILS::shape_function_1D(funct,e1,distype);
@@ -551,7 +551,7 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
     // loop over integration points
     for (int gpid=0;gpid<intpoints.nquad;gpid++)
     {
-      const double e1 = intpoints.qxg[gpid];
+      const double e1 = intpoints.qxg[gpid][0];
 
       // get shape functions and derivatives for line element
       if(!(distype == DRT::Element::nurbs2 || distype == DRT::Element::nurbs3))
@@ -752,7 +752,7 @@ void DRT::ELEMENTS::Fluid2Line::IntegrateShapeFunction(ParameterList& params,
   // loop over integration points
   for (int gpid=0;gpid<intpoints.nquad;gpid++)
   {
-    const double e1 = intpoints.qxg[gpid];
+    const double e1 = intpoints.qxg[gpid][0];
     // get shape functions and derivatives in the line
     shape_function_1D(funct,e1,distype);
     shape_function_1D_deriv1(deriv,e1,distype);
@@ -839,7 +839,7 @@ void DRT::ELEMENTS::Fluid2Line::ElementNodeNormal(ParameterList& params,
   // loop over integration points
   for (int gpid=0;gpid<intpoints.nquad;gpid++)
   {
-    const double e1 = intpoints.qxg[gpid];
+    const double e1 = intpoints.qxg[gpid][0];
     // get shape functions and derivatives in the line
     shape_function_1D(funct,e1,distype);
     shape_function_1D_deriv1(deriv,e1,distype);
@@ -943,7 +943,7 @@ void DRT::ELEMENTS::Fluid2Line::ElementSurfaceTension(ParameterList& params,
   // loop over integration points
   for (int gpid=0;gpid<intpoints.nquad;gpid++)
   {
-    const double e1 = intpoints.qxg[gpid];
+    const double e1 = intpoints.qxg[gpid][0];
     // get shape functions and derivatives in the line
     shape_function_1D(funct,e1,distype);
     shape_function_1D_deriv1(deriv,e1,distype);
@@ -1200,7 +1200,7 @@ void DRT::ELEMENTS::Fluid2Line::EvaluateWeakDirichlet(
 
     for (int iquad=0;iquad<intpoints.nquad;++iquad)
     { 
-      intpointinparent[iquad][0]=intpoints.qxg [iquad];
+      intpointinparent[iquad][0]=intpoints.qxg [iquad][0];
       intpointinparent[iquad][1]=-1.0;
     }
     break;
@@ -1228,7 +1228,7 @@ void DRT::ELEMENTS::Fluid2Line::EvaluateWeakDirichlet(
     for (int iquad=0;iquad<intpoints.nquad;++iquad)
     { 
       intpointinparent[iquad][0]= 1.0;
-      intpointinparent[iquad][1]=intpoints.qxg [iquad];
+      intpointinparent[iquad][1]=intpoints.qxg [iquad][0];
     }
     break;
   }  
@@ -1254,7 +1254,7 @@ void DRT::ELEMENTS::Fluid2Line::EvaluateWeakDirichlet(
 
     for (int iquad=0;iquad<intpoints.nquad;++iquad)
     { 
-      intpointinparent[iquad][0]=-intpoints.qxg [iquad];
+      intpointinparent[iquad][0]=-intpoints.qxg [iquad][0];
       intpointinparent[iquad][1]= 1.0;
     }
     break;
@@ -1282,7 +1282,7 @@ void DRT::ELEMENTS::Fluid2Line::EvaluateWeakDirichlet(
     for (int iquad=0;iquad<intpoints.nquad;++iquad)
     { 
       intpointinparent[iquad][0]=-1.0;
-      intpointinparent[iquad][1]=-intpoints.qxg [iquad];
+      intpointinparent[iquad][1]=-intpoints.qxg [iquad][0];
     }
     break;
   }
@@ -1301,7 +1301,7 @@ void DRT::ELEMENTS::Fluid2Line::EvaluateWeakDirichlet(
     const double wquad = intpoints.qwgt[iquad];
 
     // gaussian point in boundary elements local coordinates
-    const double gp    = intpoints.qxg [iquad];
+    const double gp    = intpoints.qxg [iquad][0];
 
     // gaussian point in parent elements local coordinates
     const double r     = intpointinparent[iquad][0];

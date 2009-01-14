@@ -751,7 +751,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
   else if (eletype=="TRUSS3") type = truss3;
   else if (eletype=="CONSTRELE2") type = constrele2;
   else if (eletype=="CONSTRELE3") type = constrele3;
-  else if (eletype=="TRANSPORT") type = transport;
+  else if (eletype=="TRANSP") type = transport;
   // continue to add elements here....
   else dserror("Unknown type of finite element");
 

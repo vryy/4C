@@ -80,7 +80,7 @@ void SCATRA::CreateScaTraDiscretization(
     bool ismyele = fluiddis->ElementRowMap()->MyGID(actele->Id());
 
     // we only support transport elements here
-    eletype.push_back("TRANSPORT");
+    eletype.push_back("TRANSP");
     {
       if (ismyele)
         egid.push_back(actele->Id());

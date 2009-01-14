@@ -139,7 +139,7 @@ int DRT::ELEMENTS::Bele3Line::EvaluateNeumann(
   // loop over integration points
   for (int gpid=0;gpid<intpoints.nquad;gpid++)
   {
-    const double e1 = intpoints.qxg[gpid];
+    const double e1 = intpoints.qxg[gpid][0];
     // get shape functions and derivatives in the line
     DRT::UTILS::shape_function_1D(funct,e1,distype);
     DRT::UTILS::shape_function_1D_deriv1(deriv,e1,distype);
@@ -282,7 +282,7 @@ void DRT::ELEMENTS::Bele3Line::IntegrateShapeFunction(ParameterList& params,
   // loop over integration points
   for (int gpid=0;gpid<intpoints.nquad;gpid++)
   {
-    const double e1 = intpoints.qxg[gpid];
+    const double e1 = intpoints.qxg[gpid][0];
     // get shape functions and derivatives in the line
     DRT::UTILS::shape_function_1D(funct,e1,distype);
     DRT::UTILS::shape_function_1D_deriv1(deriv,e1,distype);

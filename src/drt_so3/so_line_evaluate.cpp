@@ -93,7 +93,7 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(ParameterList&            par
   for (int gp = 0; gp < ngp; ++gp) 
   {
     // get shape functions and derivatives of element surface
-    const double e   = intpoints.qxg[gp];
+    const double e   = intpoints.qxg[gp][0];
     const double wgt = intpoints.qwgt[gp];
     DRT::UTILS::shape_function_1D(funct,e,shape);
     DRT::UTILS::shape_function_1D_deriv1(deriv,e,shape);

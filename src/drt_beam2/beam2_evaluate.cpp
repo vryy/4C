@@ -348,7 +348,7 @@ int DRT::ELEMENTS::Beam2::EvaluateNeumann(ParameterList& params,
   for (int ip=0; ip<intpoints.nquad; ++ip)
   {
     //integration points in parameter space and weights
-    const double xi = intpoints.qxg[ip];
+    const double xi = intpoints.qxg[ip][0];
     const double wgt = intpoints.qwgt[ip];
 
     //evaluation of shape funcitons at Gauss points

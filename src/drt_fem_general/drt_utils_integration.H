@@ -230,7 +230,7 @@ struct IntegrationPoints1D
       const GaussRule1D gaussrule   ///< 1d rule
       );
   int           nquad;        ///< number of integration points
-  double        qxg[5];       ///< coordinates
+  double        qxg[5][1];    ///< coordinates
   double        qwgt[5];      ///< weights
 };
 
@@ -302,7 +302,7 @@ template<>
 class IntPointsAndWeights<1>
 {
 public:
-  /// Constructor for 3D specialization
+  /// Constructor for 1D specialization
   explicit IntPointsAndWeights(const GaussRule1D gaussrule) :
   intpoints_(IntegrationPoints1D(gaussrule))
   {return; };

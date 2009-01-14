@@ -69,7 +69,7 @@ CONTACT::Integrator::Integrator(DRT::Element::DiscretizationType eletype)
     weights_.resize(nGP());
     for (int i=0;i<nGP();++i)
     {
-      coords_(i,0)=intpoints.qxg[i];
+      coords_(i,0)=intpoints.qxg[i][0];
       weights_[i]=intpoints.qwgt[i];
     }
     break;

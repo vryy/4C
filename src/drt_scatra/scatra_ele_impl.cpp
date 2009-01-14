@@ -132,13 +132,13 @@ DRT::ELEMENTS::ScaTraImplInterface* DRT::ELEMENTS::ScaTraImplInterface::Impl(DRT
       cp6 = new ScaTraImpl<DRT::Element::tri6>(numdofpernode,numscal);
     return cp6;
   }*/
-  /*case DRT::Element::line2:
+  case DRT::Element::line2:
   {
     static ScaTraImpl<DRT::Element::line2>* cl2;
     if (cl2==NULL)
       cl2 = new ScaTraImpl<DRT::Element::line2>(numdofpernode,numscal);
     return cl2;
-  }
+  }/*
   case DRT::Element::line3:
   {
     static ScaTraImpl<DRT::Element::line3>* cl3;
@@ -862,8 +862,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::BodyForce(
   case 2:
     DRT::UTILS::FindElementConditions(ele, "SurfaceNeumann", myneumcond);
   break;
+  case 1:
+    DRT::UTILS::FindElementConditions(ele, "LineNeumann", myneumcond);
+  break;
   default:
-    dserror("Unknown number of space dimensions");
+    dserror("Illegal number of space dimensions: %d",nsd_);
   }
 
   if (myneumcond.size()>1)

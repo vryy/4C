@@ -96,7 +96,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(ParameterList& params,
   // loop over integration points //new
   for (int gpid=0;gpid<intpoints.nquad;gpid++)
   {  
-     const double e1 = intpoints.qxg[gpid];
+     const double e1 = intpoints.qxg[gpid][0];
      
   // get shape functions and derivatives in the line
      DRT::UTILS::shape_function_1D(funct,e1,distype);
