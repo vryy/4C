@@ -13,7 +13,6 @@ Maintainer: Thomas Kloeppel
 #ifdef CCADISCRET
 
 #include "constraint_manager.H"
-//#include "constraint_element.H"
 #include "iostream"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_utils.H"
@@ -280,6 +279,20 @@ void UTILS::ConstrManager::SetRefBaseValues(RCP<Epetra_Vector> newrefval,const d
 void UTILS::ConstrManager::UpdateLagrMult(double factor)
 {
   lagrMultVec_->Update(factor,*constrainterr_,1.0);
+  cout<<"I am there!"<<endl;
+  if(volconstr3d_->HaveConstraint())
+  {
+    vector<int> volconID = volconstr3d_->GetActiveCondID();
+    for (unsigned int i = 0; i < volconID.size(); i++)
+    {
+      if (constrmap_->LID(i-offsetID_)!=-1)
+      {
+        cout<< "Multiplier for Volume Constraint: "<<volconID.at(i)<<":  "<<
+              (*lagrMultVec_)[constrmap_->LID(i-offsetID_)]<<endl;
+      }
+    }
+  }
+  
   return;
 }
 

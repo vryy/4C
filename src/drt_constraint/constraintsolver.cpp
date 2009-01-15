@@ -147,19 +147,14 @@ void UTILS::ConstraintSolver::Solve
   const RCP<Epetra_Vector> rhsconstr
 )
 {
-  const int iterlimit = 20;
   switch (algo_)
   {
     case iterative:
-      // use a limit above which, direct solve should be called 
-      if (lagrinc -> GlobalLength() < iterlimit)
-        SolveIterative(stiff,constr,dispinc,lagrinc,rhsstand,rhsconstr);
-      else
-        SolveDirect(stiff,constr,dispinc,lagrinc,rhsstand,rhsconstr);
-      break;
+      SolveIterative(stiff,constr,dispinc,lagrinc,rhsstand,rhsconstr);
+    break;
     case direct:
       SolveDirect(stiff,constr,dispinc,lagrinc,rhsstand,rhsconstr);
-      break;
+    break;
     default :
       dserror("Unknown constraint solution technique!");
   }
@@ -308,7 +303,6 @@ void UTILS::ConstraintSolver::SolveIterative
   if (!myrank)
   {
      cout<<"Uzawa steps "<<numiter_uzawa<<", Uzawa parameter: "<< uzawaparam_;
-     //cout<<endl;
      cout<<", residual norms for linear system: "<< norm_constr_uzawa<<" and "<<norm_uzawa<<endl;
   }
   counter_++;
