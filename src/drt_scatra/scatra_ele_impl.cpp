@@ -2140,17 +2140,27 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
           rhs[fvi] += vrhs*diff_(vi);
         }
       }
-    } // loop over each scalar
+    } // loop over each scalar k
 
     if (numdofpernode_-numscal_== 1) // ELCH
     {
-      // dof for el. potential have no 'acceleration' -> rhs is zero
+      // we put a dummy mass matrix here in order to have a regular 
+      // matrix in the lower right block of the whole system-matrix
+      // A identity matrix would cause problems with ML solver in the SIMPLE 
+      // schemes since ML needs to have off-diagonal entries for the aggregation!
       for (int vi=0; vi<iel; ++vi)
       {
+        const double v = fac_*funct_(vi);
         const int fvi = vi*numdofpernode_+numscal_;
 
-        massmat(fvi,fvi) += 1.0;
+        for (int ui=0; ui<iel; ++ui)
+        {
+          const int fui = ui*numdofpernode_+numscal_;
+
+          massmat(fvi,fui) += v*densfunct_(ui);
+        }
       }
+      // dof for el. potential have no 'velocity' -> rhs is zero!
     }
 
   } // integration loop
