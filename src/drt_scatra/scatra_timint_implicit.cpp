@@ -1176,7 +1176,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialThermPressure(const double thermpress)
   // compute initial time derivative of thermodynamic pressure
   // (with specific heat ratio fixed to be 1.4)
   const double shr = 1.4;
-  thermpressdtn_ = (shr*thermpressn_*divuint + (shr-1.0)*rhsint)/domint;
+  thermpressdtn_ = (-shr*thermpressn_*divuint + (shr-1.0)*rhsint)/domint;
 
   return;
 }
@@ -1359,7 +1359,6 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState("phinp",phinp_);
-  discret_->SetState("densnp",densnp_);
   // set action for elements
   ParameterList eleparams;
   eleparams.set("action","calc_condif_flux");

@@ -145,7 +145,7 @@ int DRT::ELEMENTS::TransportBoundary::Evaluate(ParameterList&         params,
 
     // determine normal to this element
     std::vector<double> normal(nsd);
-    double length;
+    double length = 1.0;
 
     switch(nsd)
     {
@@ -213,7 +213,11 @@ int DRT::ELEMENTS::TransportBoundary::Evaluate(ParameterList&         params,
             double factor = (parent_->Nodes()[k])->NumElement();
 
             // calculate normal flux at present node
-            mynormflux[i] = (eflux(0,k)*normal[0] + eflux(1,k)*normal[1] + eflux(2,k)*normal[2]);
+            mynormflux[i] = 0.0;
+            for (int l=0; l<nsd; l++)
+            {
+              mynormflux[i] += eflux(l,k)*normal[l];
+            }
 
             // store normal flux vector for this node
             elevec1[i*numdofpernode+j]+=normal[0]*mynormflux[i]/factor;
@@ -951,10 +955,7 @@ void DRT::ELEMENTS::TransportBoundary::NormalFluxIntegral(
       // compute integral of normal flux
       for (int node=0;node<iel;++node)
       {
-        for(int dim=0;dim<2;dim++)
-        {
           normfluxintegral += funct[node] * enormflux[node] *fac;
-        }
       }
     } // loop over integration points
   }
