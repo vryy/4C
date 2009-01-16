@@ -86,39 +86,31 @@ double MAT::MooneyRivlin::Density()
 
 /*----------------------------------------------------------------------*
  |  Evaluate Material                             (public)     maf 04/08|
- *----------------------------------------------------------------------*
-
-Mooney-Rivlin type nearly incompressible, hyperelastic 3D material law.
-
-The underlying strain-energy function is ('a' is 'alpha' and J = I3^(1/2)):
-
-W = sum_(p=1)^2 ( mu_p / a_p (l1^a_p + l2^a_p + l3^a_p) - mu_p ln(J) )
-  + Lambda/4 * (J^2 - 1 - 2 ln(J) )
-
-which can be expressed in terms of invariants I1 and I2 as:
-
-W = mu_1/a_1 (I1 - 3)  +  mu_2/a_2 (I2 - 3)  -  mu_1 ln(J)  -  mu_2 ln(J)
-  + Lambda/4 * (J^2 - 1 - 2 ln(J) )
-
-For references see Holzapfel p. 245, Simo&Miehe 1992, Klinkel et al 2007.
-
-Parameters are mu_1, mu_2, a_1, a_2 and Lambda = kappa - 2/3 mu as penalty factor
-to effectuate incompressibility (shear modulus mu = (mu_1 a_1 + mu_2 a_2)/2 )
-
-Mind that it is not stress-free in reference configuration!
-*/
-
+ *----------------------------------------------------------------------*/
 void MAT::MooneyRivlin::Evaluate(
         const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,
         LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> * cmat,
         LINALG::Matrix<NUM_STRESS_3D,1> * stress)
 {
-        // get material parameters
-  const double m1  = matdata_->m.mooneyrivlin->mu1;
-  const double m2  = matdata_->m.mooneyrivlin->mu2;
-  const double c1  = m1 / matdata_->m.mooneyrivlin->alpha1;  // c1 = mu1/a1
-  const double c2  = m2 / matdata_->m.mooneyrivlin->alpha2;  // c2 = mu2/a2
-  const double pen = matdata_->m.mooneyrivlin->penalty;
+  // get material parameters
+  const double c1  = matdata_->m.mooneyrivlin->c1;
+  const double c2  = matdata_->m.mooneyrivlin->c2;
+  const double kappa_q1 = matdata_->m.mooneyrivlin->kap; // kappa_q1*(J-1)^2
+  const double lambda = matdata_->m.mooneyrivlin->lambda;
+  
+  // penalty param for Klinkel-formulation 
+  // Watch out: It is not stress free in reference configuration!
+  double kappa_q2 = 0.;  
+  double kappa_ln = 0.; 
+
+  if (lambda !=0.0)
+  {
+    kappa_q2 = lambda/4.;  // kappa_q2*(J^2-1)
+    kappa_ln = lambda/2.-6.*c2;  //kappa_ln*ln(J)
+  }
+  
+  // aux param d (to ensure stress free reference configuration -> Holzapfel)
+  const double d = 2.*c1+4.*c2+kappa_ln;
   
   // right Cauchy-Green Tensor  C = 2 * E + I
   // build identity tensor I
@@ -136,6 +128,8 @@ void MAT::MooneyRivlin::Evaluate(
         - C(2)*C(3)*C(3)
         - C(0)*C(4)*C(4);    // 3rd invariant, determinant
 
+  const double J = sqrt(I3);
+  
   // invert C
   LINALG::Matrix<NUM_STRESS_3D,1> Cinv(false);
 
@@ -153,27 +147,29 @@ void MAT::MooneyRivlin::Evaluate(
   CC.Multiply('N','N',1.0,C,C,0.0);
   double I2 = 0.5*( C(0,0)*C(0,0) + C(1,1)*C(1,1) + C(2,2)*C(2,2) - CC(0,0) - CC(1,1) - CC(2,2));
   double J = sqrt(I3);                     // J = I3^(1/2)
-  double W = c1*(I1-3.0) + c2*(I2-3.0) - m1*log(J) - m2*log(J) + 0.25*pen*(J*J -1.0 -2.0*log(J));
+  double W = c1*(I1-3.0) + c2*(I2-3.0) - d*log(J) + pen*pow(J -1.0,2)
   */
 
 
   // ******* evaluate 2nd PK stress ********************
-  double scalar1 = -2.0 * c2;     // -2 dW/dI2
-  (*stress).Update(scalar1,C);       // S = -2 dW/dI2 C
+  // gammas from Holzapfel page 248
   
-  // S += 2 (dW/dI1 + I1 dW/dI2) times Identity
-  double scalar2 = 2.0 * (c1 + I1*c2);
-  (*stress).Update(scalar2,Id,1.0);
+  const double gamma1 = 2.0 * (c1 + I1*c2); //2 (dW/dI1 + I1 dW/dI2)
+  (*stress).Update(gamma1,Id,0.0); //S +=  gamma1 times Identity
 
-  double scalar3 = - m1 - m2 + 0.5*I3*pen - 0.5*pen;   // 2 I3 dW/dI3
-  (*stress).Update(scalar3,Cinv,1.0);    // S += 2 I3 dW/dI3 Cinv
+  const double gamma2 = -2.0 * c2;     // -2 dW/dI2
+  (*stress).Update(gamma2,C,1.0);       // S = gamma2 times C
+    
+  const double gamma3 = 2.*kappa_q1*J*(J-1.0)-d+2.*kappa_q2*J*J;   // 2 I3 dW/dI3
+  (*stress).Update(gamma3,Cinv,1.0);    // S += gamma3 times Cinv
   // end of ******* evaluate 2nd PK stress ********************
 
   // ********** evaluate C-Matrix *****************************
-  double delta1 = 4.0 * c2;
-  double delta6 = pen * I3;
-  double delta7 = 2.0*m1 + 2.0*m2 - pen*I3 + pen;
-  double delta8 = - 4.0*c2;
+  // deltas from Holzapfel page 262
+  const double delta1 = 4.0 * c2;
+  const double delta6 = 2.*kappa_q1*J*(2.*J-1.) + 4.*kappa_q2*J*J;
+  const double delta7 = -2.*(2.*kappa_q1*J*(J-1.)-d) - 4.*kappa_q2*J*J;
+  const double delta8 = - 4.0*c2;
 
   for (unsigned int i = 0; i < NUM_STRESS_3D; ++i) {
     for (unsigned int j = 0; j < NUM_STRESS_3D; ++j) {

@@ -550,11 +550,10 @@ while(strncmp(fractplace(),"------",6)!=0)
    {
       localmat.mattyp      = m_mooneyrivlin;
       localmat.m.mooneyrivlin = new MOONEYRIVLIN();
-      frdouble("MU1"     ,&(localmat.m.mooneyrivlin->mu1)      ,&ierr);
-      frdouble("ALPHA1"  ,&(localmat.m.mooneyrivlin->alpha1)   ,&ierr);
-      frdouble("MU2"     ,&(localmat.m.mooneyrivlin->mu2)      ,&ierr);
-      frdouble("ALPHA2"  ,&(localmat.m.mooneyrivlin->alpha2)   ,&ierr);
-      frdouble("PENALTY" ,&(localmat.m.mooneyrivlin->penalty)  ,&ierr);
+      frdouble("C1"     ,&(localmat.m.mooneyrivlin->c1)      ,&ierr);
+      frdouble("C2"     ,&(localmat.m.mooneyrivlin->c2)      ,&ierr);
+      frdouble("KAPPA" ,&(localmat.m.mooneyrivlin->kap)  ,&ierr);
+      frdouble("LAMBDA" ,&(localmat.m.mooneyrivlin->lambda)  ,&ierr);
       frdouble("DENS"    ,&(localmat.m.mooneyrivlin->density)  ,&ierr);
    }
    // Viscoelastic NeoHookean material law

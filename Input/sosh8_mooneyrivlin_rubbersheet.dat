@@ -102,7 +102,7 @@ KINTYP       Tot_Lagr
 NEWTONRAPHSO Load_Control
 //NUMSTEP      400
 NUMSTEP      5
-MAXITER      20
+MAXITER      10
 TOLRESID     1.0E-06
 TOLDISP      1.0E-07
 STEPSIZE     0.01
@@ -113,7 +113,8 @@ RESEVRYDISP  1
 RESEVRYSTRS  1
 RESTARTEVRY  400
 ---------------------------------------------------------MATERIALS
-MAT       1 MAT_MOONEYRIVLIN MU1 50.0 ALPHA1 2.0 MU2 -14.0 ALPHA2 -2.0 PENALTY 1000.0 DENS 0.0
+//MAT       1 MAT_MOONEYRIVLIN MU1 50.0 ALPHA1 2.0 MU2 -14.0 ALPHA2 -2.0 PENALTY 1000.0 DENS 0.0
+MAT       1 MAT_MOONEYRIVLIN C1 25.0 C2 7.0 KAPPA 0.0 LAMBDA 1000. DENS 0.0
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 10000 FACTOR 0 10000

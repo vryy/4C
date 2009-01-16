@@ -671,11 +671,10 @@ typedef struct _ANISOTROPIC_BALZANI
  *----------------------------------------------------------------------*/
 typedef struct _MOONEYRIVLIN
 {
-     DOUBLE                    mu1;
-     DOUBLE                    alpha1;
-     DOUBLE                    mu2;
-     DOUBLE                    alpha2;
-     DOUBLE                    penalty;
+     DOUBLE                    c1;
+     DOUBLE                    c2;
+     DOUBLE                    kap;
+     DOUBLE                    lambda;
      DOUBLE                    density;
 } MOONEYRIVLIN;
 /*----------------------------------------------------------------------*

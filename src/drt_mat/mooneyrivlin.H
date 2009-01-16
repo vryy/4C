@@ -76,22 +76,18 @@ namespace MAT
     /*!
     \brief Mooney-Rivlin type nearly incompressible, hyperelastic 3D material law.
 
-    The underlying strain-energy function is ('a' is 'alpha' and J = I3^(1/2)):
+    The underlying strain-energy function is (expressed in invariants I1 and I2):
+    
+    W = c_1 (I1 - 3)  +  c_2 (I2 - 3)  -  (2 c_1 + 4 c_2) ln(J) + kappa * (J - 1)^2 +
+        lambda / 4 * (J^2 - 1 - 2 ln(J))
 
-    W = sum_(p=1)^2 ( mu_p / a_p (l1^a_p + l2^a_p + l3^a_p) - mu_p ln(J) )
-      + Lambda/4 * (J^2 - 1 - 2 ln(J) )
+    For references see Holzapfel p. 245, (Klinkel et al 2007).
 
-    which can be expressed in terms of invariants I1 and I2 as:
+    Parameters are c_1, c_2 and kappa as penalty factor to effectuate incompressibility 
+    (shear modulus mu = (c1 + c2) / 2)
 
-    W = mu_1/a_1 (I1 - 3)  +  mu_2/a_2 (I2 - 3)  -  mu_1 ln(J)  -  mu_2 ln(J)
-      + Lambda/4 * (J^2 - 1 - 2 ln(J) )
-
-    For references see Holzapfel p. 245, Simo&Miehe 1992, Klinkel et al 2007.
-
-    Parameters are mu_1, mu_2, a_1, a_2 and Lambda = kappa - 2/3 mu as penalty factor
-    to effectuate incompressibility (shear modulus mu = (mu_1 a_1 + mu_2 a_2)/2 )
-
-    Mind that it is not stress-free in reference configuration!
+    Note that this special form is stress-free in reference configuration iff lambda == 0.0 
+    (See Holzapfel for discussion with d = 2 c_1 + 4 c_2)
     */
     void Evaluate(
             const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,
