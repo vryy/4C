@@ -1144,31 +1144,54 @@ void SCATRA::ScaTraTimIntImpl::SetInitialThermPressure(const double thermpress)
   eleparams.set("velocity field",tmp);
 
   // set action for elements
-  eleparams.set("action","calc_therm_press");
+  eleparams.set("action","calc_domain_and_bodyforce");
+  eleparams.set("total time",0.0);
 
-  // variables for integrals of velocity-divergence, rhs and domain
-  double divuint = 0.0;
-  double rhsint  = 0.0;
+  // variables for integrals of domain and bodyforce
   double domint  = 0.0;
-  eleparams.set("velocity-divergence integral",divuint);
-  eleparams.set("rhs integral",                rhsint);
-  eleparams.set("domain integral",             domint);
+  double bofint  = 0.0;
+  eleparams.set("domain integral",    domint);
+  eleparams.set("bodyforce integral", bofint);
 
-  // evaluate integrals of velocity-divergence, rhs and domain
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
   // get integral values on this proc
+  domint = eleparams.get<double>("domain integral");
+  bofint = eleparams.get<double>("bodyforce integral");
+
+  // evaluate domain integral
+  // set action for elements
+  eleparams.set("action","calc_therm_press");
+
+  // variables for integrals of velocity-divergence and diffusive flux
+  double divuint = 0.0;
+  double diffint = 0.0;
+  eleparams.set("velocity-divergence integral",divuint);
+  eleparams.set("diffusive-flux integral",     diffint);
+
+  // evaluate velocity-divergence and rhs on boundaries
+  // We may use the flux-calculation condition for calculation of fluxes for 
+  // thermodynamic pressure, since it is usually at the same boundary.
+  vector<std::string> condnames;
+  condnames.push_back("FluxCalculation");
+  for (unsigned int i=0; i < condnames.size(); i++)
+  {
+    discret_->EvaluateCondition(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,condnames[i]);
+  }
+
+  // get integral values on this proc
   divuint = eleparams.get<double>("velocity-divergence integral");
-  rhsint  = eleparams.get<double>("rhs integral");
-  domint  = eleparams.get<double>("domain integral");
+  diffint = eleparams.get<double>("diffusive-flux integral");
 
   // get integral values in parallel case
-  double pardivuint = 0.0;
-  double parrhsint = 0.0;
   double pardomint  = 0.0;
-  discret_->Comm().SumAll(&divuint,&pardivuint,1);
-  discret_->Comm().SumAll(&rhsint,&parrhsint,1);
+  double parbofint  = 0.0;
+  double pardivuint = 0.0;
+  double pardiffint = 0.0;
   discret_->Comm().SumAll(&domint,&pardomint,1);
+  discret_->Comm().SumAll(&bofint,&parbofint,1);
+  discret_->Comm().SumAll(&divuint,&pardivuint,1);
+  discret_->Comm().SumAll(&diffint,&pardiffint,1);
 
   // clean up
   discret_->ClearState();
@@ -1176,7 +1199,8 @@ void SCATRA::ScaTraTimIntImpl::SetInitialThermPressure(const double thermpress)
   // compute initial time derivative of thermodynamic pressure
   // (with specific heat ratio fixed to be 1.4)
   const double shr = 1.4;
-  thermpressdtn_ = (-shr*thermpressn_*divuint + (shr-1.0)*rhsint)/domint;
+  thermpressdtn_ = (-shr*thermpressn_*pardivuint
+                    + (shr-1.0)*(pardiffint+parbofint))/pardomint;
 
   return;
 }

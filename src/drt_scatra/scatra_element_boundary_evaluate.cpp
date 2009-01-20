@@ -53,6 +53,8 @@ int DRT::ELEMENTS::TransportBoundary::Evaluate(ParameterList&         params,
     act = TransportBoundary::calc_condif_flux;
   else if (action == "calc_elch_electrode_kinetics")
     act = TransportBoundary::calc_elch_electrode_kinetics;
+  else if (action == "calc_therm_press")
+    act = TransportBoundary::calc_therm_press;
   else 
     dserror("Unknown type of action for Transport boundary element");
 
@@ -321,6 +323,132 @@ int DRT::ELEMENTS::TransportBoundary::Evaluate(ParameterList&         params,
         frt,
         iselch
     );
+  }
+  break;
+  case TransportBoundary::calc_therm_press:
+  {
+    const int iel = NumNode();
+
+    // get velocity values at the nodes (needed for total flux values)
+    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
+    const int ielparent = parent_->NumNode();
+    // get spatial dimenion of the problem
+    const int nsd = DRT::UTILS::getDimension(parent_->Shape());
+    Epetra_SerialDenseVector evel(nsd*ielparent);
+    DRT::UTILS::ExtractMyNodeBasedValues(parent_,evel,velocity,nsd);
+
+    // get actual values of transported scalar
+    RefCountPtr<const Epetra_Vector> densnp = discretization.GetState("densnp");
+    RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    if (densnp==null || phinp==null)
+      dserror("Cannot get state vector 'densnp' and/or 'phinp'");
+
+    // we dont know the parent element's lm vector; so we have to build it here
+    vector<int> lmparent(ielparent);
+    vector<int> lmparentowner;
+    parent_->LocationVector(discretization, lmparent, lmparentowner);
+
+    // extract local values from the global vectors for the parent(!) element 
+    vector<double> mydensnp(lmparent.size());
+    vector<double> myphinp(lmparent.size());
+    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lmparent);
+    DRT::UTILS::ExtractMyValues(*densnp,mydensnp,lmparent);
+
+    // this routine is only for low-mach-number flow
+    bool temperature = true;
+
+    // define vector for normal fluxes
+    vector<double> mydiffflux(lm.size());
+    vector<double> mydivu(lm.size());
+
+    // node coordinates
+    LINALG::SerialDenseMatrix xyze(nsd,iel);
+    for(int i=0;i<nsd;i++)
+    {
+      for(int j=0;j<iel;j++)
+      {
+        xyze(i,j)=Nodes()[j]->X()[i];
+      }
+    }
+
+    // determine normal to this element
+    std::vector<double> normal(nsd);
+    double length = 1.0;
+
+    switch(nsd)
+    {
+    case 3:
+    {
+      std::vector<double> dist1(3), dist2(3);
+      for (int i=0; i<3; i++)
+      {
+        dist1[i] = xyze(i,1)-xyze(i,0);
+        dist2[i] = xyze(i,2)-xyze(i,0);
+      }
+
+      normal[0] = dist1[1]*dist2[2] - dist1[2]*dist2[1];
+      normal[1] = dist1[2]*dist2[0] - dist1[0]*dist2[2];
+      normal[2] = dist1[0]*dist2[1] - dist1[1]*dist2[0];
+
+      // length of normal to this element
+      length = sqrt( normal[0]*normal[0] + normal[1]*normal[1] + normal[2]*normal[2] );
+    }
+    break;
+    case 2:
+    {     normal[0] = xyze(1,1) - xyze(1,0);
+    normal[1] = (-1.0)*(xyze(0,1) - xyze(0,0));
+
+    // length of normal to this element
+    length = sqrt(normal[0]*normal[0]+normal[1]*normal[1]);
+    }
+    break;
+    default:
+      dserror("Illegal number of space dimensions: %d",nsd);
+    } // switch(nsd)
+
+    // outward-pointing normal of length 1.0
+    for (int i=0; i<nsd; i++)
+    {normal[i] = normal[i] / length;}
+
+    // compute fluxes on each node of the parent element
+    LINALG::SerialDenseMatrix eflux(3,ielparent);
+    DRT::Element* parentele = (DRT::Element*) parent_;
+    // set some parameters
+    double frt=0.0;
+    string fluxtypestring("diffusiveflux");
+    int j=0;
+    DRT::ELEMENTS::ScaTraImplInterface::Impl(parentele)->CalculateFluxSerialDense(
+          eflux,
+          parentele,
+          myphinp,
+          actmat,
+          temperature,
+          frt,
+          evel,
+          fluxtypestring,
+          j);
+
+    for (int i=0; i<NumNode(); ++i)
+    {
+      for(int k = 0; k<ielparent;++k)
+      {
+        // calculate normal diffusive flux and velocity div. at present node
+        mydiffflux[i] = 0.0;
+        mydivu[i]     = 0.0;
+        for (int l=0; l<nsd; l++)
+        {
+          mydiffflux[i] += eflux(l,k)*normal[l];
+          mydivu[i]     += (evel[i*nsd+l]/mydensnp[i])*normal[l];
+        }
+      }
+    }
+
+    // calculate integral of normal diffusive flux and velocity divergence
+    // NOTE: add integral value only for elements which are NOT ghosted!
+    if(Owner() == discretization.Comm().MyPID())
+    {
+      DifffluxAndDivuIntegral(params,discretization,lm,xyze,mydiffflux,mydivu);
+    }
   }
   break;
   default:
@@ -966,6 +1094,156 @@ void DRT::ELEMENTS::TransportBoundary::NormalFluxIntegral(
 
   // add contribution to the global value
   params.set<double>("normfluxintegral",normfluxintegral);
+
+}//DRT::ELEMENTS::TransportBoundary::NormalFluxIntegral
+
+
+/*----------------------------------------------------------------------*
+ | calculate integral of normal diffusive flux + velocity div.  vg 09/08|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::TransportBoundary::DifffluxAndDivuIntegral(
+    ParameterList&                  params,
+    DRT::Discretization&            discretization,
+    const vector<int>&              lm,
+    const Epetra_SerialDenseMatrix  xyze,
+    const vector<double>&           ediffflux,
+    const vector<double>&           edivu
+)
+{
+  const int iel = NumNode();
+  const DiscretizationType distype = Shape();
+  // number space dimenions of the problem
+  const int nsd = DRT::UTILS::getDimension(parent_->Shape());
+
+  // allocate vector for shape functions and matrix for derivatives
+  LINALG::SerialDenseVector funct(iel);
+  LINALG::SerialDenseMatrix deriv(nsd,iel);
+
+  // the metric tensor and the area of an infinitesimal surface element
+  LINALG::SerialDenseMatrix metrictensor(2,2);
+  double                    drs;
+
+  // get variables for integrals of normal diffusive flux and velocity div.
+  double difffluxintegral = params.get<double>("diffusive-flux integral");
+  double divuintegral     = params.get<double>("velocity-divergence integral");
+
+  // integrations points and weights
+  switch(nsd)
+  {
+  case 3:
+  {
+    DRT::UTILS::GaussRule2D  gaussrule = DRT::UTILS::intrule2D_undefined;
+    switch(distype)
+    {
+    case DRT::Element::quad4:
+      gaussrule = DRT::UTILS::intrule_quad_4point;
+      break;
+    case DRT::Element::quad8: case DRT::Element::quad9:
+      gaussrule = DRT::UTILS::intrule_quad_9point;
+      break;
+    case DRT::Element::tri3 :
+      gaussrule = DRT::UTILS::intrule_tri_3point;
+      break;
+    case DRT::Element::tri6:
+      gaussrule = DRT::UTILS::intrule_tri_6point;
+      break;
+    default:
+      dserror("shape type unknown!\n");
+    }
+
+    const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule);
+    for (int gpid=0; gpid<intpoints.nquad; gpid++)
+    {
+      const double e0 = intpoints.qxg[gpid][0];
+      const double e1 = intpoints.qxg[gpid][1];
+
+      // get shape functions and derivatives in the plane of the element
+      DRT::UTILS::shape_function_2D(funct, e0, e1, distype);
+      DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, distype);
+
+      // compute measure tensor for surface element and the infinitesimal
+      // area element drs for the integration
+      DRT::UTILS::ComputeMetricTensorForSurface(xyze,deriv,metrictensor,&drs);
+
+      const double fac = intpoints.qwgt[gpid] * drs;
+
+      // compute integral of normal flux
+      for (int node=0;node<iel;++node)
+      {
+        difffluxintegral += funct[node] * ediffflux[node] * fac;
+        divuintegral     += funct[node] * edivu[node] * fac;
+      }
+    } // loop over integration points
+  }
+  break;
+  case 2:
+  {
+    GaussRule1D intrule = intrule1D_undefined;
+    switch (distype)
+    {
+    case line2:
+      intrule = intrule_line_2point;
+      break;
+    case line3:
+      intrule = intrule_line_3point;
+      break;
+    default:
+      dserror("unknown number of nodes for gaussrule initialization");
+    }
+
+    const IntegrationPoints1D  intpoints(intrule);
+    for (int iquad=0; iquad<intpoints.nquad; iquad++)
+    {
+      const double e1 = intpoints.qxg[iquad][0];
+
+      // get shape functions and derivatives in the plane of the element
+      DRT::UTILS::shape_function_1D(funct,e1,distype);
+      DRT::UTILS::shape_function_1D_deriv1(deriv,e1,distype);
+
+      // The Jacobian is computed using the formula
+      //
+      //            +-----
+      //   dx_j(u)   \      dN_k(r)
+      //   -------  = +     ------- * (x_j)_k
+      //     du      /       du         |
+      //            +-----    |         |
+      //            node k    |         |
+      //                  derivative    |
+      //                   of shape     |
+      //                   function     |
+      //                           component of
+      //                          node coordinate
+      //
+      LINALG::SerialDenseVector der_par(2);
+      der_par[0]=0.0;
+      der_par[1]=0.0;
+      for (int node=0;node<iel;++node)
+      {
+        der_par[0] += deriv(0,node)*xyze(0,node);
+        der_par[1] += deriv(0,node)*xyze(1,node);
+      }
+
+      // compute infinitesimal line element dr for integration along the line
+      const double dr = sqrt(der_par[0]*der_par[0]+der_par[1]*der_par[1]);
+
+      const double fac = intpoints.qwgt[iquad] * dr;
+
+      // compute integral of normal flux
+      for (int node=0;node<iel;++node)
+      {
+        difffluxintegral += funct[node] * ediffflux[node] * fac;
+        divuintegral     += funct[node] * edivu[node] * fac;
+      }
+    } // loop over integration points
+  }
+  break;
+  default:
+    dserror("Illegal number of space dimenions: %d",nsd);
+  } // switch(nsd)
+
+  // add contributions to the global values
+  params.set<double>("diffusive-flux integral",difffluxintegral);
+  params.set<double>("velocity-divergence integral",divuintegral);
 
 }//DRT::ELEMENTS::TransportBoundary::NormalFluxIntegral
 

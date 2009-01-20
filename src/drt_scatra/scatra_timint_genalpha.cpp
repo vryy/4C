@@ -46,7 +46,10 @@ SCATRA::TimIntGenAlpha::TimIntGenAlpha(
   // only required for low-Mach-number flow
   if (prbtype_ == "loma")
   {
-    // density at times n, n+alpha_M and n+alpha_F
+     // temperature at n+alpha_F
+    phiaf_ = LINALG::CreateVector(*dofrowmap,true);
+
+   // density at times n, n+alpha_M and n+alpha_F
     densn_  = LINALG::CreateVector(*dofrowmap,true);
     densam_ = LINALG::CreateVector(*dofrowmap,true);
     densaf_ = LINALG::CreateVector(*dofrowmap,true);
@@ -207,7 +210,7 @@ void SCATRA::TimIntGenAlpha::SetTimeForNeumannEvaluation(
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntGenAlpha::AddNeumannToResidual()
 {
-  residual_->Update(alphaF_*genalphafac_*dta_,*neumann_loads_,0.0);
+  residual_->Update(genalphafac_*dta_,*neumann_loads_,0.0);
   return;
 }
 
@@ -241,7 +244,7 @@ void SCATRA::TimIntGenAlpha::AddSpecificTimeIntegrationParameters(
 double SCATRA::TimIntGenAlpha::ComputeThermPressure()
 {
   // compute temperature at n+alpha_F
-  phiaf_->Update((alphaF_),*phinp_,(1.0-alphaF_),*phin_,0.0);
+  phiaf_->Update(alphaF_,*phinp_,(1.0-alphaF_),*phin_,0.0);
 
   // set scalar and density vector values needed by elements
   discret_->ClearState();
@@ -259,49 +262,102 @@ double SCATRA::TimIntGenAlpha::ComputeThermPressure()
   eleparams.set("velocity field",tmp);
 
   // set action for elements
-  eleparams.set("action","calc_therm_press");
+  eleparams.set("action","calc_domain_and_bodyforce");
+  eleparams.set("total time",time_-(1-alphaF_)*dta_);
 
-  // variables for integrals of velocity-divergence, rhs and domain
-  double divuint = 0.0;
-  double rhsint  = 0.0;
+  // variables for integrals of domain and bodyforce
   double domint  = 0.0;
-  eleparams.set("velocity-divergence integral",divuint);
-  eleparams.set("rhs integral",                rhsint);
-  eleparams.set("domain integral",             domint);
+  double bofint  = 0.0;
+  eleparams.set("domain integral",    domint);
+  eleparams.set("bodyforce integral", bofint);
 
-  // evaluate integrals of velocity-divergence, rhs and domain
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
   // get integral values on this proc
+  domint = eleparams.get<double>("domain integral");
+  bofint = eleparams.get<double>("bodyforce integral");
+
+  // evaluate domain integral
+  // set action for elements
+  eleparams.set("action","calc_therm_press");
+
+  // variables for integrals of velocity-divergence and diffusive flux
+  double divuint = 0.0;
+  double diffint = 0.0;
+  eleparams.set("velocity-divergence integral",divuint);
+  eleparams.set("diffusive-flux integral",     diffint);
+
+  // evaluate velocity-divergence and rhs on boundaries
+  // We may use the flux-calculation condition for calculation of fluxes for 
+  // thermodynamic pressure, since it is usually at the same boundary.
+  vector<std::string> condnames;
+  condnames.push_back("FluxCalculation");
+  for (unsigned int i=0; i < condnames.size(); i++)
+  {
+    discret_->EvaluateCondition(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,condnames[i]);
+  }
+
+  // get integral values on this proc
   divuint = eleparams.get<double>("velocity-divergence integral");
-  rhsint = eleparams.get<double>("rhs integral");
-  domint  = eleparams.get<double>("domain integral");
+  diffint = eleparams.get<double>("diffusive-flux integral");
 
   // get integral values in parallel case
-  double pardivuint = 0.0;
-  double parrhsint = 0.0;
   double pardomint  = 0.0;
-  discret_->Comm().SumAll(&divuint,&pardivuint,1);
-  discret_->Comm().SumAll(&rhsint,&parrhsint,1);
+  double parbofint  = 0.0;
+  double pardivuint = 0.0;
+  double pardiffint = 0.0;
   discret_->Comm().SumAll(&domint,&pardomint,1);
+  discret_->Comm().SumAll(&bofint,&parbofint,1);
+  discret_->Comm().SumAll(&divuint,&pardivuint,1);
+  discret_->Comm().SumAll(&diffint,&pardiffint,1);
 
   // clean up
   discret_->ClearState();
 
   // compute thermodynamic pressure (with specific heat ratio fixed to be 1.4)
-  const double shr = 1.4;
-  const double lhs = alphaF_*genalphafac_*dta_*shr*divuint/domint;
-  const double rhs = genalphafac_*dta_*(shr-1.0)*rhsint/domint;
-  thermpressnp_ = rhs/(1.0 + lhs);
+  const double shr  = 1.4;
+  const double divt = shr*pardivuint/pardomint;
+  const double lhs  = alphaF_*genalphafac_*dta_*divt;
+  const double rhs  = genalphafac_*dta_*(shr-1.0)*(pardiffint+parbofint)/pardomint;
+  const double hist = thermpressn_
+                     - (1.0 - alphaF_)*genalphafac_*dta_*divt*thermpressn_
+                     + (1.0 - genalphafac_)*dta_*thermpressdtn_;
+  thermpressnp_ = (rhs + hist)/(1.0 + lhs);
+
+  // compute time derivative of thermodynamic pressure
+  // tpdt(n+1) = (tp(n+1)-tp(n))/(gamma*dt)+((gamma-1)/gamma)*tpdt(n)
+  const double fact1 = 1.0/(gamma_*dta_);
+  const double fact2 = (gamma_-1.0)/gamma_;
+  thermpressdtnp_ = fact1*(thermpressnp_-thermpressn_) + fact2*thermpressdtn_;
+
+  // generalized-alpha version for time derivative of thermodynamic pressure
+  /*const double lhs  = alphaF_*gamma_*dta_*divt;
+  const double rhs  = (shr-1.0)*(pardiffint+parbofint)/pardomint;
+  const double hist = (alphaF_-1.0)*divt*thermpressn_
+                     + (alphaM_-1.0+alphaF_*(gamma_-1.0)*dta_*divt)*thermpressdtn_;
+  thermpressdtnp_ = (rhs + hist)/(alphaM_ + lhs);
+  const double fact1 = gamma_*dta_;
+  constdouble fact2 = (1.0-gamma_)*dta_;
+  thermpressnp_ = thermpressn_ + fact1*thermpressdtnp_ + fact2*thermpressdtn_;*/
+
+  // backward-Euler version for thermodynamic pressure
+  /*const double lhs  = dta_*divt;
+  const double rhs  = dta_*(shr-1.0)*(pardiffint+parbofint)/pardomint;
+  const double hist = thermpressn_;
+  thermpressnp_ = (rhs + hist)/(1.0 + lhs);
+  thermpressdtnp_ = (thermpressnp_-thermpressn_)/dta_;*/
 
   // print out thermodynamic pressure
-  if (myrank_ == 0) cout << "Thermodynamic pressure: " << thermpressnp_ << endl;
-
-  // compute time derivative of thermodynamic pressure at n+1
-  // tpdt(n+1) = (tp(n+1)-tp(n))/(gamma*dt)+((gamma-1)/gamma)*tpdt(n)
-  double fact1 = 1.0/(gamma_*dta_);
-  double fact2 = (gamma_-1.0)/gamma_;
-  thermpressdtnp_ = fact1*(thermpressnp_-thermpressn_) + fact2*thermpressdtn_;
+  if (myrank_ == 0) 
+  {
+    cout << endl;
+    cout << "+--------------------------------------------------------------------------------------------+" << endl;
+    cout << "Data output for instationary thermodynamic pressure:" << endl;
+    cout << "Velocity in-/outflow at indicated boundary: " << pardivuint << endl;
+    cout << "Diffusive flux at indicated boundary: "       << pardiffint << endl;
+    cout << "Thermodynamic pressure: "                     << thermpressnp_ << endl;
+    cout << "+--------------------------------------------------------------------------------------------+" << endl;
+  }
 
   // time derivative of thermodynamic pressure at n+alpha_F
   // -> required as right-hand-side contribution to temperature equation

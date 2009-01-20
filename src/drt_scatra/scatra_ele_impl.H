@@ -330,6 +330,13 @@ public:
         const vector<double>&   edensnp ///< current density field
         );
 
+    //! calculate domain integral
+   virtual void CalculateDomainAndBodyforce(
+        const DRT::Element*     ele,     ///< pointer to the element
+        ParameterList&          params,  ///< parameter list
+        const double            time     ///< current simulation time
+        );
+
     //! calculate the Laplacian for all shape functions(strong form)
     inline void GetLaplacianStrongForm
     (

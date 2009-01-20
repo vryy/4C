@@ -232,49 +232,78 @@ double SCATRA::TimIntBDF2::ComputeThermPressure()
   eleparams.set("velocity field",tmp);
 
   // set action for elements
-  eleparams.set("action","calc_therm_press");
+  eleparams.set("action","calc_domain_and_bodyforce");
+  eleparams.set("total time",time_);
 
-  // variables for integrals of velocity-divergence, rhs and domain
-  double divuint = 0.0;
-  double rhsint  = 0.0;
+  // variables for integrals of domain and bodyforce
   double domint  = 0.0;
-  eleparams.set("velocity-divergence integral",divuint);
-  eleparams.set("rhs integral",                rhsint);
-  eleparams.set("domain integral",             domint);
+  double bofint  = 0.0;
+  eleparams.set("domain integral",    domint);
+  eleparams.set("bodyforce integral", bofint);
 
-  // evaluate integrals of velocity-divergence, rhs and domain
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
   // get integral values on this proc
+  domint = eleparams.get<double>("domain integral");
+  bofint = eleparams.get<double>("bodyforce integral");
+
+  // evaluate domain integral
+  // set action for elements
+  eleparams.set("action","calc_therm_press");
+
+  // variables for integrals of velocity-divergence and diffusive flux
+  double divuint = 0.0;
+  double diffint = 0.0;
+  eleparams.set("velocity-divergence integral",divuint);
+  eleparams.set("diffusive-flux integral",     diffint);
+
+  // evaluate velocity-divergence and rhs on boundaries
+  // We may use the flux-calculation condition for calculation of fluxes for 
+  // thermodynamic pressure, since it is usually at the same boundary.
+  vector<std::string> condnames;
+  condnames.push_back("FluxCalculation");
+  for (unsigned int i=0; i < condnames.size(); i++)
+  {
+    discret_->EvaluateCondition(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,condnames[i]);
+  }
+
+  // get integral values on this proc
   divuint = eleparams.get<double>("velocity-divergence integral");
-  rhsint = eleparams.get<double>("rhs integral");
-  domint  = eleparams.get<double>("domain integral");
+  diffint = eleparams.get<double>("diffusive-flux integral");
 
   // get integral values in parallel case
-  double pardivuint = 0.0;
-  double parrhsint = 0.0;
   double pardomint  = 0.0;
-  discret_->Comm().SumAll(&divuint,&pardivuint,1);
-  discret_->Comm().SumAll(&rhsint,&parrhsint,1);
+  double parbofint  = 0.0;
+  double pardivuint = 0.0;
+  double pardiffint = 0.0;
   discret_->Comm().SumAll(&domint,&pardomint,1);
+  discret_->Comm().SumAll(&bofint,&parbofint,1);
+  discret_->Comm().SumAll(&divuint,&pardivuint,1);
+  discret_->Comm().SumAll(&diffint,&pardiffint,1);
 
   // clean up
   discret_->ClearState();
 
   // compute thermodynamic pressure (with specific heat ratio fixed to be 1.4)
   const double shr = 1.4;
-  const double lhs = theta_*dta_*shr*divuint/domint;
-  const double rhs = theta_*dta_*(shr-1.0)*rhsint/domint;
+  const double lhs = theta_*dta_*shr*pardivuint/pardomint;
+  const double rhs = theta_*dta_*(shr-1.0)*(pardiffint+parbofint)/pardomint;
   thermpressnp_ = (rhs + hist)/(1.0 + lhs);
 
   // print out thermodynamic pressure
-  if (myrank_ == 0) cout << "Thermodynamic pressure: " << thermpressnp_ << endl;
+  if (myrank_ == 0) 
+  {
+    cout << endl;
+    cout << "+--------------------------------------------------------------------------------------------+" << endl;
+    cout << "Data output for instationary thermodynamic pressure:" << endl;
+    cout << "Velocity in-/outflow at indicated boundary: " << pardivuint << endl;
+    cout << "Diffusive flux at indicated boundary: "       << pardiffint << endl;
+    cout << "Thermodynamic pressure: "                     << thermpressnp_ << endl;
+    cout << "+--------------------------------------------------------------------------------------------+" << endl;
+  }
 
   // compute time derivative of thermodynamic pressure at n+1
-  // (start-up of BDF2: one step backward Euler)
-  if (step_>1)
-       thermpressdtnp_ = (3.0*thermpressnp_-4.0*thermpressn_+thermpressnm_)/(2.0*dta_);
-  else thermpressdtnp_ = (thermpressnp_-thermpressn_)/dta_;
+  thermpressdtnp_ = (thermpressnp_-thermpressn_)/dta_;
 
   return thermpressnp_;
 }

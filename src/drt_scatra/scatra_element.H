@@ -628,7 +628,8 @@ private:
   {
     none,
     calc_condif_flux,
-    calc_elch_electrode_kinetics
+    calc_elch_electrode_kinetics,
+    calc_therm_press
   };
 
   // don't want = operator
@@ -665,6 +666,24 @@ private:
                           const vector<int>&              lm,
                           const Epetra_SerialDenseMatrix  xyze,
                           const vector<double>&           enormflux);
+
+ /*!
+  brief integral of normal diffusive flux and velocity div. over boundary surface
+
+  \param params (in/out)    : ParameterList for communication between control routine
+                              and elements
+  \param discretization (in): A reference to the underlying discretization
+  \param lm (in)            : location vector of this element
+  \param xyze (in)          : node coordinates
+  \param ediffflux (in)     : normal diffusive fluxes at element nodes
+  \param edivu (in)         : velocity divergence at element nodes
+  */
+  void DifffluxAndDivuIntegral(ParameterList&                  params,
+                               DRT::Discretization&            discretization,
+                               const vector<int>&              lm,
+                               const Epetra_SerialDenseMatrix  xyze,
+                               const vector<double>&           ediffflux,
+                               const vector<double>&           edivu);
 
   //! The parent element of this surface
   DRT::ELEMENTS::Transport* parent_;

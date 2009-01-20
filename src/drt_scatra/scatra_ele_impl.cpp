@@ -620,20 +620,35 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
   {
     // calculate mean temperature and density
 
-    // need current scalar and density vector
-    RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
-    RefCountPtr<const Epetra_Vector> densnp = discretization.GetState("densnp");
-    if (phinp==null || densnp==null)
-      dserror("Cannot get state vector 'phinp' and/or 'densnp'");
+    // NOTE: add integral values only for elements which are NOT ghosted!
+    if(ele->Owner() == discretization.Comm().MyPID())
+    {
+      // need current scalar and density vector
+      RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
+      RefCountPtr<const Epetra_Vector> densnp = discretization.GetState("densnp");
+      if (phinp==null || densnp==null)
+        dserror("Cannot get state vector 'phinp' and/or 'densnp'");
 
-    // extract local values from the global vectors
-    vector<double> myphinp(lm.size());
-    vector<double> mydensnp(lm.size());
-    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
-    DRT::UTILS::ExtractMyValues(*densnp,mydensnp,lm);
+      // extract local values from the global vectors
+      vector<double> myphinp(lm.size());
+      vector<double> mydensnp(lm.size());
+      DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
+      DRT::UTILS::ExtractMyValues(*densnp,mydensnp,lm);
 
-    // calculate temperature, density and domain integral
-    CalculateTempAndDens(ele,params,myphinp,mydensnp);
+      // calculate temperature, density and domain integral
+      CalculateTempAndDens(ele,params,myphinp,mydensnp);
+    }
+  }
+  else if (action=="calc_domain_and_bodyforce")
+  {
+    // NOTE: add integral values only for elements which are NOT ghosted!
+    if(ele->Owner() == discretization.Comm().MyPID())
+    {
+      const double time = params.get<double>("total time");
+
+      // calculate domain integral
+      CalculateDomainAndBodyforce(ele,params,time);
+    }
   }
   else if (action=="calc_elch_kwok_error")
   {
@@ -2867,8 +2882,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
     for (int idim=0;idim<nsd_;idim++)
       {xsi_(idim) = nodecoords(idim, iquad);}
 
-    // shape functions and their first derivatives
-    DRT::UTILS::shape_function<distype>(xsi_,funct_);
+    // first derivatives
     DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
 
     // compute Jacobian matrix and determinant
@@ -2905,13 +2919,13 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
           //migration flux terms
           for (int idim=0; idim<nsd_ ;idim++)
           {
-            flux(idim,iquad)-=diffus_valence_frt*gradpot_(idim)*ephinpatnode;
+            flux(idim,iquad) += diffus_valence_frt*gradpot_(idim)*ephinpatnode;
           }
         }
         //convective flux terms
         for (int idim=0; idim<nsd_ ;idim++)
         {
-          flux(idim,iquad)+=evel[idim+iquad*nsd_]*ephinpatnode;
+          flux(idim,iquad) -= evel[idim+iquad*nsd_]*ephinpatnode;
         }
         // no break statement here!
       case SCATRA::diffusiveflux:
@@ -2920,7 +2934,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
         {
           for (int idim=0; idim<nsd_ ;idim++)
           {
-            flux(idim,iquad)+=-diffus*derxy_(idim,k)*ephinp[k*numdofpernode_+dofindex];
+            flux(idim,iquad) += diffus*derxy_(idim,k)*ephinp[k*numdofpernode_+dofindex];
           }
         }
         break;
@@ -3001,6 +3015,76 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateTempAndDens(
 
   return;
 } // ScaTraImpl::CalculateTempAndDens
+
+
+/*----------------------------------------------------------------------*
+ |  calculate domain integral                                   vg 01/09|
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateDomainAndBodyforce(
+    const DRT::Element*             ele,
+    ParameterList&                  params,
+    const double                    time
+)
+{
+  // get variables for domain and bodyforce integral
+  double domint = params.get<double>("domain integral");
+  double bofint = params.get<double>("bodyforce integral");
+
+  // ---------------------------------------------------------------------
+  // call routine for calculation of body force in element nodes
+  // (time n+alpha_F for generalized-alpha scheme, at time n+1 otherwise)
+  // ---------------------------------------------------------------------
+  BodyForce(ele,time);
+
+  /*------------------------------------------------- set element data */
+  // get node coordinates
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze_);
+
+  // integrations points and weights
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // integration loop
+  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+  {
+    // coordinates of the current integration point
+    const double* gpcoord = (intpoints.IP().qxg)[iquad];
+    for (int idim=0;idim<nsd_;idim++)
+      {xsi_(idim) = gpcoord[idim];}
+
+    // shape functions and their first derivatives
+    DRT::UTILS::shape_function<distype>(xsi_,funct_);
+    DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
+
+    // compute Jacobian matrix and determinant
+    // actually compute its transpose....
+    xjm_.MultiplyNT(deriv_,xyze_);
+    const double det = xij_.Invert(xjm_);
+
+    if (det < 1E-16)
+      dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f",ele->Id(), det);
+
+    // set integration factor: fac = Gauss weight * det(J)
+    fac_ = intpoints.IP().qwgt[iquad]*det;
+
+    // get bodyforce in gausspoint
+    rhs_[0] = bodyforce_[0].Dot(funct_);
+
+    // calculate integrals of domain and bodyforce
+    for (int i=0; i<iel; i++)
+    {
+      domint += fac_*funct_(i);
+    }
+    bofint += fac_*rhs_[0];
+
+  } // loop over integration points
+
+  // return variables for domain integral
+  params.set<double>("domain integral",   domint);
+  params.set<double>("bodyforce integral",bofint);
+
+  return;
+} // ScaTraImpl::CalculateDomain
 
 
 #endif // CCADISCRET
