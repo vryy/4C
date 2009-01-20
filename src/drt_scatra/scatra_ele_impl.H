@@ -164,7 +164,7 @@ public:
 
     //! Calculate matrix and rhs. Here the whole thing is hidden.
     virtual void Sysmat(
-        const DRT::Element*                   ele, ///< the element those matrix is calculated
+        DRT::Element*                         ele, ///< the element those matrix is calculated
         const vector<LINALG::Matrix<iel,1> >& ephinp,///< current scalar field
         const vector<LINALG::Matrix<iel,1> >& ehist, ///< rhs from beginning of time step
         const LINALG::Matrix<iel,1>&          edensnp, ///< current density field
@@ -191,7 +191,7 @@ public:
 
     //! calculate mass matrix and rhs for determining initial time derivative
     virtual void InitialTimeDerivative(
-        const DRT::Element*               ele,  ///< the element
+        DRT::Element*                         ele,  ///< the element
         const vector<LINALG::Matrix<iel,1> >& ephi0, ///< initial scalar field
         const LINALG::Matrix<iel,1>&          edens0, ///< initial density field
         const LINALG::Matrix<iel,1>&          epot0,  ///< el. potential at element nodes
@@ -213,7 +213,7 @@ public:
 
     //! calculate normalized subgrid-diffusivity matrix
     virtual void CalcSubgridDiffMatrix(
-        const DRT::Element*       ele,
+        const DRT::Element*           ele,
         Epetra_SerialDenseMatrix&     sys_mat_sd,
         const double                  timefac,
         const bool                    is_stationary
@@ -233,7 +233,7 @@ public:
 
     //! calculate stabilization parameter
     virtual void CalTau(
-        const DRT::Element*              ele, ///< the element
+        DRT::Element*                    ele, ///< the element
         Epetra_SerialDenseVector&        subgrdiff, ///< subgrid-diff.-scaling vector
         const LINALG::Matrix<nsd_,iel>&  evel,///< nodal velocities
         const LINALG::Matrix<iel,1>&     edens, ///< density

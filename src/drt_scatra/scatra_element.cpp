@@ -248,8 +248,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Transport::Surfaces()
   {
     // 1D
     dserror("Surfaces() for 1D-Transport element not implemented");
-    vector<RCP<Element> > surfaces(0);
-    return surfaces;
+    return DRT::Element::Surfaces();
   }
 }
 
@@ -259,11 +258,86 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Transport::Surfaces()
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::Transport::Volumes()
 {
-  vector<RCP<Element> > volumes(1);
-  volumes[0]= rcp(this, false);
-  return volumes;
+  if (NumVolume() == 1)
+  {
+    vector<RCP<Element> > volumes(1);
+    volumes[0]= rcp(this, false);
+    return volumes;
+  }
+  else 
+  {
+    dserror("Surfaces() for 1D-/2D-Transport element not implemented");
+    return DRT::Element::Volumes();
+  }
 }
 
+
+/*----------------------------------------------------------------------*
+ |  Return names of visualization data (public)                gjb 01/09|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Transport::VisNames(map<string,int>& names)
+{
+  // Put the owner of this element into the file (use base class method for this)
+  DRT::Element::VisNames(names);
+
+  // see whether we have additional data for visualization in our container
+  for (int k = 0 ;k<numdofpernode_; k++)
+  {
+    ostringstream temp;
+    temp << k;
+
+    // element Peclet number
+    string name = "Pe_"+temp.str();
+    const vector<double>* Pe = data_.Get<vector<double> >(name);
+    if (Pe) names.insert(pair<string,int>(name,1));
+
+    // element Peclet number (only migration term)
+    name = "Pe_mig_"+temp.str();
+    const vector<double>* Pe_mig = data_.Get<vector<double> >(name);
+    if (Pe_mig) names.insert(pair<string,int>(name,1));
+
+    // Stabilization parameter at element center
+    name = "tau_"+temp.str();
+    const vector<double>* tau = data_.Get<vector<double> >(name);
+    if (tau) names.insert(pair<string,int>(name,1));
+
+  } // loop over transported scalars
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Return visualization data (public)                         gjb 01/09|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Transport ::VisData(const string& name, vector<double>& data)
+{
+  // Put the owner of this element into the file (use base class method for this)
+  DRT::Element::VisData(name,data);
+
+  for (int k = 0 ;k<numdofpernode_; k++)
+  {
+    ostringstream temp;
+    temp << k;
+    if (   (name == "Pe_"+temp.str()    ) 
+        || (name == "Pe_mig_"+temp.str()) 
+        || (name == "tau_"+temp.str()   )
+    )
+    {
+      if ((int)data.size()!=1) dserror("size mismatch");
+      const double value = data_.GetDouble(name);
+      data[0] = value;
+    }
+  } // loop over transported scalars
+
+  return;
+}
+
+
+//=======================================================================
+//=======================================================================
+//=======================================================================
+//=======================================================================
 
 
 /*----------------------------------------------------------------------*

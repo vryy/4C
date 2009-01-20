@@ -66,7 +66,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   cdvel_    (params_->get<int>("velocity field")),
   convform_ (params_->get<string>("form of convective term")),
   fssgd_    (params_->get<string>("fs subgrid diffusivity")),
-  frt_      (96485.3399/(8.314472 * params_->get<double>("TEMPERATURE",298.0)))
+  frt_      (96485.3399/(8.314472 * params_->get<double>("TEMPERATURE",298.15)))
 {
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
@@ -651,7 +651,7 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
   //-------------------------------------------------- output to screen
   /* special case of very first iteration step:
       - solution increment is not yet available
-      - convergence check is not required (we solve at least once!)    */
+      - ELCH: do not do a solver call when the initial residuals are < EPS15*/
   if (itnum == 1)
   {
     if (myrank_ == 0)
@@ -661,12 +661,31 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
       printf(" (      --     ,te=%10.3E",dtele_);
       printf(")\n");
     }
+    // abort iteration for ELCH, when there's nothing to do
+    if ((prbtype_=="elch") && (conresnorm < EPS15) && (potresnorm < EPS15))
+    {
+      // print 'finish line'
+      if (myrank_ == 0)
+      {
+        printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
+      }
+      return true;
+    }
   }
   /* ordinary case later iteration steps:
       - solution increment can be printed
       - convergence check should be done*/
   else
   {
+    // print the screen info
+    if (myrank_ == 0)
+    {
+      printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
+          itnum,itemax,ittol,conresnorm,potresnorm,
+          incconnorm_L2/connorm_L2,incpotnorm_L2/potnorm_L2);
+      printf(" (ts=%10.3E,te=%10.3E)\n",dtsolve_,dtele_);
+    }
+
     // this is the convergence check
     // We always require at least one solve. We test the L_2-norm of the
     // current residual. Norm of residual is just printed for information
@@ -675,12 +694,9 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
     {
       if (myrank_ == 0)
       {
-        printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
-            itnum,itemax,ittol,conresnorm,potresnorm,
-            incconnorm_L2/connorm_L2,incpotnorm_L2/potnorm_L2);
-        printf(" (ts=%10.3E,te=%10.3E)\n",dtsolve_,dtele_);
+        // print 'finish line'
         printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
-
+        // write info to error file
         FILE* errfile = params_->get<FILE*>("err file",NULL);
         if (errfile!=NULL)
         {
@@ -692,14 +708,7 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
       // yes, we stop the iteration
       return true;
     }
-    else // if not yet converged
-      if (myrank_ == 0)
-      {
-        printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
-            itnum,itemax,ittol,conresnorm,potresnorm,
-            incconnorm_L2/connorm_L2,incpotnorm_L2/potnorm_L2);
-        printf(" (ts=%10.3E,te=%10.3E)\n",dtsolve_,dtele_);
-      }
+    // if not yet converged go on...
   }
 
   // warn if itemax is reached without convergence, but proceed to

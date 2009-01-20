@@ -27,6 +27,8 @@ Maintainer: Georg Bauer
 #include "../drt_geometry/position_array.H"
 #include "../drt_lib/linalg_serialdensematrix.H"
 
+//#define VISUALIZE_ELEMENT_DATA
+#include "scatra_element.H" // only for visualization of element data
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -741,7 +743,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFluxSerialDense(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
-    const DRT::Element*                   ele, ///< the element those matrix is calculated
+    DRT::Element*                         ele, ///< the element those matrix is calculated
     const vector<LINALG::Matrix<iel,1> >& ephinp,///< current scalar field
     const vector<LINALG::Matrix<iel,1> >& ehist, ///< rhs from beginning of time step
     const LINALG::Matrix<iel,1>&          edensnp, ///< current density field
@@ -1004,7 +1006,7 @@ return;
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
-    const DRT::Element*             ele,
+    DRT::Element*                   ele,
     Epetra_SerialDenseVector&       subgrdiff,
     const LINALG::Matrix<nsd_,iel>& evel,
     const LINALG::Matrix<iel,1>&    edens,
@@ -1166,6 +1168,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
 
     // 3) use cubic root of the element volume as characteristic length -> default
     //    2D case: characterisitc length is the square root of the element area
+    //    1D case: characteristic length is the element length
     const double dim = (double) nsd_;
     const double hk = pow(vol,(1.0/dim));
 
@@ -1182,6 +1185,20 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
         LINALG::Matrix<nsd_,1> veleff(velint_,false);
         veleff.Update(Dkzk,migvelint_,1.0);
         vel_norm = veleff.Norm2();
+
+#ifdef VISUALIZE_ELEMENT_DATA
+        veleff.Update(Dkzk,migvelint_,0.0);
+        double vel_norm_mig = veleff.Norm2();
+        double migepe2 = mk * vel_norm_mig * hk / diffus_[k];
+
+        DRT::ELEMENTS::Transport* actele = dynamic_cast<DRT::ELEMENTS::Transport*>(ele);
+        if (!actele) dserror("cast to Transport* failed");
+        vector<double> v(1,migepe2);
+        ostringstream temp;
+        temp << k;
+        string name = "Pe_mig_"+temp.str();
+        actele->AddToData(name,v);
+#endif
       }
       else
       {
@@ -1228,6 +1245,21 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
           subgrdiff(vi) = kart_[k]/ele->Nodes()[vi]->NumElement();
         }
       }
+
+#ifdef VISUALIZE_ELEMENT_DATA 
+      // visualize resultant Pe number and stabilization parameter
+      DRT::ELEMENTS::Transport* actele = dynamic_cast<DRT::ELEMENTS::Transport*>(ele);
+      if (!actele) dserror("cast to Transport* failed");
+      vector<double> v(1,epe2);
+      ostringstream temp;
+      temp << k;
+      string name = "Pe_"+temp.str();
+      actele->AddToData(name,v);
+      v[0] = tau_[k];
+      name = "tau_"+ temp.str();
+      actele->AddToData(name,v);
+#endif
+
     } // loop over scalars
   }
   else dserror("unknown definition of tau\n");
@@ -1885,7 +1917,7 @@ return;
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
-    const DRT::Element*                   ele,
+    DRT::Element*                         ele,
     const vector<LINALG::Matrix<iel,1> >& ephi0,
     const LINALG::Matrix<iel,1>&          edens0,
     const LINALG::Matrix<iel,1>&          epot0,
