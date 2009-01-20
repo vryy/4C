@@ -2861,10 +2861,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
   else if (material->mattyp == m_condif)
   {
     dsassert(numdofpernode_==1,"more than 1 dof per node for condif material"); // paranoia?
-    if (temperature)
-      diffus = material->m.condif->diffusivity/material->m.condif->shc;
-    else
-      diffus = material->m.condif->diffusivity;
+    diffus = material->m.condif->diffusivity;
   }
   else
     dserror("Material type is not supported");
