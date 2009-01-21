@@ -360,9 +360,9 @@ DLINE  0
 --------------------------------ELECTRODE KINETICS SURF CONDITIONS
 DSURF  2
 // anode
-E 9 -  anode   2 Butler-Volmer 1.0 1 0.5 0.5 -964.853399 //i0 = 0.01
+E 9 -  2 Butler-Volmer 1.0 1 0.5 0.5 -964.853399 //i0 = 0.01
 // cathode
-E 10 - cathode 2 Butler-Volmer 0.0 1 0.5 0.5 -964.853399 //i0 = 0.01
+E 10 - 2 Butler-Volmer 0.0 1 0.5 0.5 -964.853399 //i0 = 0.01
 ---------------------------------------------CONTACT CONDITIONS 2D
 DLINE  0
 ---------------------------------------------CONTACT CONDITIONS 3D

@@ -1004,12 +1004,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   std::vector<Teuchos::RCP<ConditionComponent> > eleccomponents;
 
-  eleccomponents.push_back(
-    Teuchos::rcp(
-      new StringConditionComponent(
-        "electrode type","cathode",
-        Teuchos::tuple<std::string>("cathode","anode"),
-        Teuchos::tuple<std::string>("cathode","anode"))));
   eleccomponents.push_back(Teuchos::rcp(new IntConditionComponent("reactant id")));
   eleccomponents.push_back(
     Teuchos::rcp(

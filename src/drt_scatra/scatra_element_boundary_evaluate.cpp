@@ -886,8 +886,7 @@ void DRT::ELEMENTS::TransportBoundary::EvaluateElectrodeKinetics(
       potint += funct[node]*pot[node];
     }
 
-    // anode:   eta= phi0 - phi
-    // cathode: eta= phi - phi0
+    // compute over-potential
     eta = (pot0 - potint);
 
     double gammak = 1.0;
