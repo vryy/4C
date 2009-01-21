@@ -503,14 +503,14 @@ int DRT::ELEMENTS::TransportBoundary::EvaluateNeumann(
     Epetra_SerialDenseMatrix  deriv(nsd,iel);
 
     // node coordinates
-    Epetra_SerialDenseMatrix  xyze(nsd,iel);
+    Epetra_SerialDenseMatrix  xyze(3,iel);
 
     // the metric tensor and the area of an infinitesimal surface element
     Epetra_SerialDenseMatrix  metrictensor(2,2);
     double                    drs;
 
     // get node coordinates
-    for(int i=0;i<nsd;i++)
+    for(int i=0;i<3;i++)
     {
       for(int j=0;j<iel;j++)
       {
