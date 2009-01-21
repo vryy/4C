@@ -37,20 +37,6 @@ namespace SCATRA
     diffusiveflux
   };
 
-  //! check for higher order derivatives for shape functions
-  bool is3DHigherOrderElement
-  (
-   const DRT::Element::DiscretizationType& distype ///< distype of the element
-  );
-
-
-  //! get optimal gaussrule for discretization type
-  DRT::UTILS::GaussRule3D get3DOptimalGaussrule
-  (
-   const DRT::Element::DiscretizationType& distype ///< distype of the element
-  );
-
-
   //! decide, whether second derivatives are needed  (template version)
   /*! In convection-diffusion problems, ONLY N,xx , N,yy and N,zz are needed
    *  to evaluate the laplacian operator for the residual-based stabilization.

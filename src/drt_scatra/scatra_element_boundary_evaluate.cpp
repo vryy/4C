@@ -36,7 +36,8 @@ using namespace DRT::UTILS;
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                             gjb 01/09 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::TransportBoundary::Evaluate(ParameterList&         params,
+int DRT::ELEMENTS::TransportBoundary::Evaluate(
+    ParameterList&            params,
     DRT::Discretization&      discretization,
     vector<int>&              lm,
     Epetra_SerialDenseMatrix& elemat1,
@@ -473,8 +474,8 @@ int DRT::ELEMENTS::TransportBoundary::EvaluateNeumann(
   const int iel = NumNode();
 
   // switch for the number of space dimensions of the problem:
-  const int nsd = DRT::UTILS::getDimension(parent_->Shape());
-  if (nsd == 3)
+  const int nsd = DRT::UTILS::getDimension(Shape());
+  if (nsd == 2)
   {
     DRT::UTILS::GaussRule2D  gaussrule = DRT::UTILS::intrule2D_undefined;
     switch(distype)
@@ -596,8 +597,8 @@ int DRT::ELEMENTS::TransportBoundary::EvaluateNeumann(
       }
     } //end of loop over integration points
 
-  } //if (nsd == 3)
-  else if (nsd==2)
+  } //if (nsd == 2)
+  else if (nsd==1)
   {
     // Gaussian points
     GaussRule1D intrule = intrule1D_undefined;
@@ -723,7 +724,7 @@ int DRT::ELEMENTS::TransportBoundary::EvaluateNeumann(
         }
       }
     } //end of loop over integration points
-  } //if (nsd == 2)
+  } //if (nsd == 1)
   else 
     dserror("Illegal number of space dimenions for problem: %d", nsd);
 
@@ -1112,8 +1113,8 @@ void DRT::ELEMENTS::TransportBoundary::DifffluxAndDivuIntegral(
 {
   const int iel = NumNode();
   const DiscretizationType distype = Shape();
-  // number space dimenions of the problem
-  const int nsd = DRT::UTILS::getDimension(parent_->Shape());
+  // number space dimenions of this element type
+  const int nsd = DRT::UTILS::getDimension(Shape());
 
   // allocate vector for shape functions and matrix for derivatives
   LINALG::SerialDenseVector funct(iel);
@@ -1130,7 +1131,7 @@ void DRT::ELEMENTS::TransportBoundary::DifffluxAndDivuIntegral(
   // integrations points and weights
   switch(nsd)
   {
-  case 3:
+  case 2:
   {
     DRT::UTILS::GaussRule2D  gaussrule = DRT::UTILS::intrule2D_undefined;
     switch(distype)
@@ -1176,7 +1177,7 @@ void DRT::ELEMENTS::TransportBoundary::DifffluxAndDivuIntegral(
     } // loop over integration points
   }
   break;
-  case 2:
+  case 1:
   {
     GaussRule1D intrule = intrule1D_undefined;
     switch (distype)
