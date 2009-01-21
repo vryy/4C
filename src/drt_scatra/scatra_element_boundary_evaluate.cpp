@@ -188,7 +188,7 @@ int DRT::ELEMENTS::TransportBoundary::Evaluate(ParameterList&         params,
     for (int j = 0; j<numscal; ++j)
     {
       // compute fluxes on each node of the parent element
-      LINALG::SerialDenseMatrix eflux(3,ielparent);
+      LINALG::SerialDenseMatrix eflux(3,ielparent,true);
       DRT::Element* parentele = (DRT::Element*) parent_;
       DRT::ELEMENTS::ScaTraImplInterface::Impl(parentele)->CalculateFluxSerialDense(
           eflux,
@@ -966,8 +966,8 @@ void DRT::ELEMENTS::TransportBoundary::NormalFluxIntegral(
 {
   const int iel   = NumNode();
   const DiscretizationType distype = Shape();
-  // number space dimenions of the problem
-  const int nsd = DRT::UTILS::getDimension(parent_->Shape());
+  // number space dimenions of this element
+  const int nsd = DRT::UTILS::getDimension(Shape());
 
   // allocate vector for shape functions and matrix for derivatives
   LINALG::SerialDenseVector funct       (iel);
@@ -983,7 +983,7 @@ void DRT::ELEMENTS::TransportBoundary::NormalFluxIntegral(
   // integrations points and weights
   switch(nsd)
   {
-  case 3:
+  case 2:
   {
     DRT::UTILS::GaussRule2D  gaussrule = DRT::UTILS::intrule2D_undefined;
     switch(distype)
@@ -1028,7 +1028,7 @@ void DRT::ELEMENTS::TransportBoundary::NormalFluxIntegral(
     } // loop over integration points
   }
   break;
-  case 2:
+  case 1:
   {
     GaussRule1D intrule = intrule1D_undefined;
     switch (distype)
