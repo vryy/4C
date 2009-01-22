@@ -977,8 +977,9 @@ void DRT::ELEMENTS::TransportBoundary::NormalFluxIntegral(
   LINALG::SerialDenseMatrix metrictensor  (2,2);
   double                    drs;
 
-  // get variable for integral of normal flux
+  // get variables with their current values
   double normfluxintegral = params.get<double>("normfluxintegral");
+  double boundaryint = params.get<double>("boundaryint");
 
   // integrations points and weights
   switch(nsd)
@@ -1024,6 +1025,7 @@ void DRT::ELEMENTS::TransportBoundary::NormalFluxIntegral(
       for (int node=0;node<iel;++node)
       {
         normfluxintegral += funct[node] * enormflux[node] * fac;
+        boundaryint += funct[node] * fac;
       }
     } // loop over integration points
   }
@@ -1084,6 +1086,7 @@ void DRT::ELEMENTS::TransportBoundary::NormalFluxIntegral(
       for (int node=0;node<iel;++node)
       {
           normfluxintegral += funct[node] * enormflux[node] *fac;
+          boundaryint += funct[node] * fac;
       }
     } // loop over integration points
   }
@@ -1092,8 +1095,9 @@ void DRT::ELEMENTS::TransportBoundary::NormalFluxIntegral(
     dserror("Illegal number of space dimenions: %d",nsd);
   } // switch(nsd)
 
-  // add contribution to the global value
+  // add contributions to the global values
   params.set<double>("normfluxintegral",normfluxintegral);
+  params.set<double>("boundaryint",boundaryint);
 
 }//DRT::ELEMENTS::TransportBoundary::NormalFluxIntegral
 

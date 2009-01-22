@@ -1423,33 +1423,82 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
   }
   if (fluxcomputation=="boundary")
   {
-    // calculate normal flux vector field for these surface conditions:
+    // calculate normal flux vector field only for these boundary conditions:
     vector<std::string> condnames;
     condnames.push_back("FluxCalculation");
     condnames.push_back("ElectrodeKinetics");
+    condnames.push_back("Neumann");
 
-    // calculate integral of normal fluxes over indicated boundary
-    // may be sum over several boundary parts given in input file
-    double normfluxintegral = 0.0;
-    eleparams.set("normfluxintegral",normfluxintegral);
+    double normfluxsum(0.0);
 
-    // do calculation on the boundaries
     for (unsigned int i=0; i < condnames.size(); i++)
     {
-      discret_->EvaluateCondition(eleparams,Teuchos::null,Teuchos::null,fluxx,fluxy,fluxz,condnames[i]);
+      vector<DRT::Condition*> cond;
+      discret_->GetCondition(condnames[i],cond);
+
+      // go to the next condition type, if there's nothing to do
+      if (!cond.size()) continue;
+
+      if (myrank_ == 0)
+      {
+        cout<<"Normal fluxes at boundary '"<<condnames[i]<<"':\n"
+        <<"+----+-------------------------+------------------+--------------------------+"<<endl;
+       printf("| ID | Integral of normal flux | Area of boundary | Mean normal flux density |\n");
+      }
+
+      // calculate integral of normal fluxes over indicated boundary and it's area
+      eleparams.set("normfluxintegral",0.0);
+      eleparams.set("boundaryint",0.0);
+
+      // first, add to all conditions of interest a ConditionID
+      for (int condid = 0; condid < (int) cond.size(); condid++)
+      {
+        // is there already a ConditionID?
+        const vector<int>*    CondIDVec  = cond[condid]->Get<vector<int> >("ConditionID");
+        if (CondIDVec)
+        { 
+          if ((*CondIDVec)[0] != condid)
+            dserror("Condition %s has non-matching ConditionID",condnames[i].c_str());
+        }
+        else
+        {
+          // let's add a ConditionID
+          cond[condid]->Add("ConditionID",condid);
+        }
+      }
+      // now we evaluate the conditions and seperate via ConditionID
+      for (int condid = 0; condid < (int) cond.size(); condid++)
+      {
+        discret_->EvaluateCondition(eleparams,Teuchos::null,Teuchos::null,fluxx,fluxy,fluxz,condnames[i],condid);
+
+        // get integral of normal flux on this proc
+        double normfluxintegral = eleparams.get<double>("normfluxintegral");
+        // get area of the boundary on this proc
+        double boundaryint = eleparams.get<double>("boundaryint");
+
+        // care for the parallel case
+        double parnormfluxintegral = 0.0;
+        discret_->Comm().SumAll(&normfluxintegral,&parnormfluxintegral,1);
+        double parboundaryint = 0.0;
+        discret_->Comm().SumAll(&boundaryint,&parboundaryint,1);
+
+        // print out results
+        if (myrank_ == 0)
+        {
+          printf("| %2d |       %10.3E        |    %10.3E    |        %10.3E        |\n",
+              condid,parnormfluxintegral,parboundaryint,parnormfluxintegral/parboundaryint);
+        }
+        normfluxsum+=parnormfluxintegral;
+      } // loop over condid
+
+      if (myrank_==0)
+      cout<<"+----+-------------------------+------------------+--------------------------+"<<endl;
     }
 
-    // get integral of normal flux on this proc
-    normfluxintegral = eleparams.get<double>("normfluxintegral");
-
-    // get integral of normal flux in parallel case
-    double parnormfluxintegral = 0.0;
-    discret_->Comm().SumAll(&normfluxintegral,&parnormfluxintegral,1);
-
-    // print out integral of normal fluxes over indicated boundary
+    // print out the accumulated normal flux over all indicated boundaries
     if (myrank_ == 0)
-      cout << "Integral of normal flux at indicated boundary: " << parnormfluxintegral << endl;
-  }
+      printf("Sum of all normal flux boundary integrals: %10.3E\n\n",normfluxsum);
+  } // boundary
 
   // clean up
   discret_->ClearState();
