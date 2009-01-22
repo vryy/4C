@@ -151,6 +151,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 #endif
 
   // ---------------------------------------------- nonlinear iteration
+  // type of predictor
+  fluidtimeparams->set<string>           ("predictor"                 , fdyn.get<string>("PREDICTOR"));
   // set linearisation scheme
   fluidtimeparams->set<string>           ("Linearisation"             ,fdyn.get<string>("NONLINITER"));
   // maximum number of nonlinear iteration steps
