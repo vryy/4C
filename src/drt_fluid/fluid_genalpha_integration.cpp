@@ -1491,9 +1491,15 @@ bool FLD::FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck(double& ba
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::FluidGenAlphaIntegration::ReadRestart(int step)
 {
+
   IO::DiscretizationReader reader(discret_,step);
   time_ = reader.ReadDouble ("time");
   step_ = reader.ReadInt    ("step");
+
+  if(myrank_==0)
+  {
+    printf("Reading restart info to restart at step %d, time %5f\n\n",step_,time_);
+  }
 
   reader.ReadVector(velnp_,"velnp");
   reader.ReadVector(veln_ ,"veln" );
