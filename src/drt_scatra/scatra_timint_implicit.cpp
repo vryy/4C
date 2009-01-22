@@ -1446,10 +1446,6 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
        printf("| ID | Integral of normal flux | Area of boundary | Mean normal flux density |\n");
       }
 
-      // calculate integral of normal fluxes over indicated boundary and it's area
-      eleparams.set("normfluxintegral",0.0);
-      eleparams.set("boundaryint",0.0);
-
       // first, add to all conditions of interest a ConditionID
       for (int condid = 0; condid < (int) cond.size(); condid++)
       {
@@ -1469,6 +1465,10 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
       // now we evaluate the conditions and seperate via ConditionID
       for (int condid = 0; condid < (int) cond.size(); condid++)
       {
+        // calculate integral of normal fluxes over indicated boundary and it's area
+        eleparams.set("normfluxintegral",0.0);
+        eleparams.set("boundaryint",0.0);
+
         discret_->EvaluateCondition(eleparams,Teuchos::null,Teuchos::null,fluxx,fluxy,fluxz,condnames[i],condid);
 
         // get integral of normal flux on this proc
