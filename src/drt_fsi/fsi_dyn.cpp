@@ -64,7 +64,11 @@ void fluid_ale_drt()
     FSI::UTILS::CreateAleDiscretization();
 
   Teuchos::RCP<FSI::FluidAleAlgorithm> fluid = Teuchos::rcp(new FSI::FluidAleAlgorithm(comm));
-
+  if (genprob.restart)
+  {
+    // read the restart information, set vectors and variables
+    fluid->ReadRestart(genprob.restart);
+  }
   fluid->Timeloop();
 
   DRT::ResultTestManager testmanager(comm);

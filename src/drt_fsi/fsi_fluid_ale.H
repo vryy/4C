@@ -22,6 +22,9 @@ namespace FSI
     /// communicator
     const Epetra_Comm& Comm() const { return comm_; }
 
+    /// read restart data
+    virtual void ReadRestart(int step);
+
   protected:
 
     /// time step size
