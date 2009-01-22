@@ -5,6 +5,15 @@
 \brief Internal implementation of Fluid3 element with a generalisbed alpha
        time integration.
 
+       This element is designed for the solution of the Navier-Stokes
+       equations using a residual based stabilised method. The
+       stabilisation terms are derived in a variational multiscale sense.
+
+       Subscales are either treated as quasi-static or time dependent.
+
+       Both versions provide a conservative and an advective form. ALE
+       is fully supported. 
+
 <pre>
 Maintainer: Peter Gamnitzer
             gamnitzer@lnm.mw.tum.de
@@ -88,8 +97,8 @@ namespace DRT
     /*!
       This internal class keeps all the working arrays needed to
       calculate the Fluid3 element (genalpha implementation).
-      Additionally the method Sysmat() provides this element
-      implementation.
+      Additionally the methods Sysmat_...() provide this elements
+      implementations.
       
       <h3>Purpose</h3>
 
@@ -120,9 +129,10 @@ namespace DRT
       implementation. For the standard residual based method these are:
       <pre>
     
-      o Newton/Quasi-Newton (on/off)
-        -------------------
-        Reactive terms are/are not linearised
+      o Newton/Quasi-Newton/minimal (on/off)
+        ------------------------------------
+        Reactive terms are/are not linearised, minimal does not 
+        include second derivatives in tangent matrix
 
       o SUPG Stabilisation
         ------------------
@@ -144,8 +154,13 @@ namespace DRT
 
       </pre>
 
-      Available versions of the stabilisation parameters are
+      Available versions of the stabilisation parameters are 
       <pre>
+
+      o tauM: Codina
+        tauC: Codina
+
+        (only for time-dependent subgrid scales)
 
       o tauM: Barrenechea, Franca , Valentin
         tauC: Wall
@@ -153,12 +168,15 @@ namespace DRT
       o tauM: Barrenechea, Franca , Valentin
         tauC: Codina
 
+        (only for quasistatic subgrid scales)
+
       o tauM: Bazilevs
         tauC: Bazilevs
 
       </pre>
       For further details on the choice of the stabilisation parameter
-      see the inline documentation.
+      see the inline documentation. Note that the formulations differ
+      for time-dependent and quasistatic subgrid scales.
 
       For time dependent subscale stabilisation we have an additional
       option:
@@ -166,10 +184,10 @@ namespace DRT
 
       o Stabilisation using subscale accelerations
         ------------------------------------------
-        Equivalent to include a reaction like expression into the
-        stablilisation operator --- should be included if any remarkable
-        change on the matrix should occur in comparison to quasistatic
-        subscales formulation.
+        Stop to neglect the time derivative of the subgrid scales in the
+        coarse scale equation. Obviously, this one is used only in the
+        case of time-dependent subgrid scales. We allow to switch it off
+        for debugging purposes.
 
       </pre>
 
@@ -223,8 +241,12 @@ namespace DRT
       //! number of nodes
       static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
-      /// Evaluate
+
+      //! @name Control routine calling the specific stabilised (non)conservative form
+
       /*!
+        Evaluate
+
         The evaluate function for the generalized-alpha fluid case.
 
         Get statevetors, extract values required by the element using the
@@ -233,11 +255,12 @@ namespace DRT
         Set parameters for time integration and nonlinear iteration  (i.e. 
         read control parameters from the parameterlist)
         
-        Do setup for stabilization, turbulence models and so on.
+        Do setup for stabilisation, turbulence models and so on.
 
         Get knots for the nurbs implementation.
 
-        In the end, call Sysmat, i.e. assemble element residual (and matrix)
+        In the end, call the specific Sysmat implementation, i.e. assemble 
+        element residual (and matrix).
 
         \param ele            (i)   the element to evaluate
         \param params         (i/o) list of all parameters --- Smagorinsky model 
@@ -267,6 +290,10 @@ namespace DRT
                            RefCountPtr<MAT::Material> mat,
                            _MATERIAL*                 actmat);
 
+      //@}
+
+      //! @name Data collection for turbulent channel flow computations
+
       /*!
         \brief evaluate residuals resM and resC on the element and return
                averaged values together with averaged subgrid-scale quantities.
@@ -275,7 +302,7 @@ namespace DRT
         elements in a turbulent channel flow is based on a generalized-alpha 
         time integration. 
 
-        The computed values are are added to a vector associated with an 
+        The computed values are added to a vector associated with an 
         element layer and communicated with the time integration via the 
         parameterlist.
 
@@ -297,7 +324,7 @@ namespace DRT
         
         Note:
 
-        In large parts, this method is a copy of Sysmat (concerning
+        In large parts, this method is a copy of Sysmat... (concerning
         the computations of the residuals). Its only purpose is to
         allow an output of time averaged residuals and subscale
         accelerations to study their influence
@@ -320,12 +347,13 @@ namespace DRT
                               vector<int>&               lm,
                               RefCountPtr<MAT::Material> mat,
                               _MATERIAL*                 actmat);
+      //@}
 
+      //! @name routines for calculation of element matrix and rhs
 
-
-      /// calculating element matrix and rhs
-      /*
-        Calculate matrix and rhs. Here the whole thing is hidden.
+      /*!
+        Calculate matrix and rhs in advective form. Here the whole thing is hidden
+        for the quasistatic approach.
 
         \param ele                (i) the element those matrix is calculated
     	\param myknots            (i) the elements knot vector for nurbs elements
@@ -345,8 +373,6 @@ namespace DRT
         \param dt                 (i) time step size
         \param time               (i) current simulation time
         \param newton             (i) flag for use of full linearisation of reactive terms
-        \param conservative       (i) flag indicating whether to use partially integrated 
-                                      conservative form or do advective
         \param higher_order_ele   (i) include second derivatives in residual for stabilization
         \param fssgv              (i) flag for type of fine-scale subgrid viscosity
         \param tds                (i) flag for use of time dependent subscale stabilisation
@@ -368,45 +394,281 @@ namespace DRT
         \param compute_elemat     (i) if false, element matrices are not computed
 
       */
-      void Sysmat(Fluid3*                                          ele,
-		  std::vector<blitz::Array<double,1> >&            myknots,
-                  LINALG::Matrix<4*iel,4*iel>& elemat,
-                  LINALG::Matrix<4*iel,    1>& elevec,
-                  const LINALG::Matrix<3,iel>& edispnp,
-                  const LINALG::Matrix<3,iel>& egridvaf,
-                  const LINALG::Matrix<3,iel>& evelnp,
-                  const LINALG::Matrix<iel,1>& eprenp,
-                  const LINALG::Matrix<3,iel>& eaccam,
-                  const LINALG::Matrix<3,iel>& evelaf,
-                  const LINALG::Matrix<3,iel>& fsevelaf,
-                  const struct _MATERIAL*                          material,
-                  const double                                     alphaM,
-                  const double                                     alphaF,
-                  const double                                     gamma,
-                  const double                                     dt,
-                  const double                                     time,
-                  const enum Fluid3::LinearisationAction           newton,
-                  const bool                                       conservative,
-                  const bool                                       higher_order_ele,                  
-                  const enum Fluid3::StabilisationAction           fssgv,
-                  const enum Fluid3::StabilisationAction           tds,
-                  const enum Fluid3::StabilisationAction           inertia,
-                  const enum Fluid3::StabilisationAction           pspg,
-                  const enum Fluid3::StabilisationAction           supg,
-                  const enum Fluid3::StabilisationAction           vstab,
-                  const enum Fluid3::StabilisationAction           cstab,
-                  const enum Fluid3::StabilisationAction           cross,
-                  const enum Fluid3::StabilisationAction           reynolds,
-                  const enum Fluid3::TauType                       whichtau,
-                  const enum Fluid3::TurbModelAction               turb_mod_action,
-                  double&                                          Cs,
-                  double&                                          Cs_delta_sq,
-                  double&                                          visceff,
-                  const double                                     l_tau,
-                  const bool                                       compute_elemat
+      void Sysmat_adv_qs(Fluid3*                                ele,
+                         std::vector<blitz::Array<double,1> >&  myknots,
+                         LINALG::Matrix<4*iel,4*iel>&           elemat,
+                         LINALG::Matrix<4*iel,    1>&           elevec,
+                         const LINALG::Matrix<3,iel>&           edispnp,
+                         const LINALG::Matrix<3,iel>&           egridvaf,
+                         const LINALG::Matrix<3,iel>&           evelnp,
+                         const LINALG::Matrix<iel,1>&           eprenp,
+                         const LINALG::Matrix<3,iel>&           eaccam,
+                         const LINALG::Matrix<3,iel>&           evelaf,
+                         const LINALG::Matrix<3,iel>&           fsevelaf,
+                         const struct _MATERIAL*                material,
+                         const double                           alphaM,
+                         const double                           alphaF,
+                         const double                           gamma,
+                         const double                           dt,
+                         const double                           time,
+                         const enum Fluid3::LinearisationAction newton,
+                         const bool                             higher_order_ele,                  
+                         const enum Fluid3::StabilisationAction fssgv,
+                         const enum Fluid3::StabilisationAction inertia,
+                         const enum Fluid3::StabilisationAction pspg,
+                         const enum Fluid3::StabilisationAction supg,
+                         const enum Fluid3::StabilisationAction vstab,
+                         const enum Fluid3::StabilisationAction cstab,
+                         const enum Fluid3::StabilisationAction cross,
+                         const enum Fluid3::StabilisationAction reynolds,
+                         const enum Fluid3::TauType             whichtau,
+                         const enum Fluid3::TurbModelAction     turb_mod_action,
+                         double&                                Cs,
+                         double&                                Cs_delta_sq,
+                         double&                                visceff,
+                         const double                           l_tau,
+                         const bool                             compute_elemat
         );
 
+      /*!
+        Calculate matrix and rhs in advective form using time-dependent subgrid scales
+
+        \param ele                (i) the element those matrix is calculated
+    	\param myknots            (i) the elements knot vector for nurbs elements
+        \param elemat             (o) element matrix to calculate
+        \param elevec             (o) element rhs to calculate
+        \param edispnp            (i) mesh displacement (ALE formulation)
+        \param egridvaf           (i) intermedoate grid velocity (ALE formulation)
+        \param evelnp             (i) nodal velocities at n+1
+        \param eprenp             (i) nodal pressure, time n+1
+        \param eaccam             (i) nodal accelerations at n+alphaM
+        \param evelaf             (i) nodal velocities at n+alphaF
+        \param fsevelaf           (i) nodal fine-scale velocity, time n+af
+        \param material           (i) fluid material
+        \param alphaM             (i) evaluate accelerations at this intermediate level
+        \param alphaF             (i) evaluate velocities at this intermediate level
+        \param gamma              (i) one step theta based parameter
+        \param dt                 (i) time step size
+        \param time               (i) current simulation time
+        \param newton             (i) flag for use of full linearisation of reactive terms
+        \param higher_order_ele   (i) include second derivatives in residual for stabilization
+        \param fssgv              (i) flag for type of fine-scale subgrid viscosity
+        \param tds                (i) flag for use of time dependent subscale stabilisation
+        \param inertia            (i) flag for use of subscale accelerations for stabilisation (only for tds==true)
+        \param pspg               (i) flag for use of nabla q testfunctions
+        \param supg               (i) flag for use of (u o nabla) v testfunctions
+        \param vstab              (i) flag for use of 2 * nu * grad o eps(v) testfunctions
+        \param cross              (i) flag to add (u,(u_sub o nabla) v) to right hand side
+        \param reynolds           (i) flag to add (u_sub,(u_sub o nabla) v) to right hand side
+        \param whichtau           (i) flag choosing the tau version used for stabilization
+        \param turb_mod_action    (i) action flag for the application of a turbulence model
+        \param Cs               (i/o) value for Smagorinsky constant (zero if unused)
+                                      in case of the dynamic model, it is only equal to the
+                                      Smagorinsky constant on output.
+        \param Cs_delta_sq        (i) Used for the dynamic Smagorinsky model. Corresponds to (Cs*hk)^2
+        \param visceff            (o) effective viscosity computed by dynamic Smagorinsky model,
+                                      non Newtonian fluid etc.
+        \param l_tau              (i) viscous length scale for van Driest damping (zero if unused)
+        \param compute_elemat     (i) if false, element matrices are not computed
+
+      */
+      void Sysmat_adv_td(Fluid3*                                ele,
+                         std::vector<blitz::Array<double,1> >&  myknots,
+                         LINALG::Matrix<4*iel,4*iel>&           elemat,
+                         LINALG::Matrix<4*iel,    1>&           elevec,
+                         const LINALG::Matrix<3,iel>&           edispnp,
+                         const LINALG::Matrix<3,iel>&           egridvaf,
+                         const LINALG::Matrix<3,iel>&           evelnp,
+                         const LINALG::Matrix<iel,1>&           eprenp,
+                         const LINALG::Matrix<3,iel>&           eaccam,
+                         const LINALG::Matrix<3,iel>&           evelaf,
+                         const LINALG::Matrix<3,iel>&           fsevelaf,
+                         const struct _MATERIAL*                material,
+                         const double                           alphaM,
+                         const double                           alphaF,
+                         const double                           gamma,
+                         const double                           dt,
+                         const double                           time,
+                         const enum Fluid3::LinearisationAction newton,
+                         const bool                             higher_order_ele,                  
+                         const enum Fluid3::StabilisationAction fssgv,
+                         const enum Fluid3::StabilisationAction inertia,
+                         const enum Fluid3::StabilisationAction pspg,
+                         const enum Fluid3::StabilisationAction supg,
+                         const enum Fluid3::StabilisationAction vstab,
+                         const enum Fluid3::StabilisationAction cstab,
+                         const enum Fluid3::StabilisationAction cross,
+                         const enum Fluid3::StabilisationAction reynolds,
+                         const enum Fluid3::TauType             whichtau,
+                         const enum Fluid3::TurbModelAction     turb_mod_action,
+                         double&                                Cs,
+                         double&                                Cs_delta_sq,
+                         double&                                visceff,
+                         const double                           l_tau,
+                         const bool                             compute_elemat
+        );
+
+      /*!
+        Calculate matrix and rhs. Here the whole thing is hidden.
+        Conservative, quasistatic version
+
+        \param ele                (i) the element those matrix is calculated
+    	\param myknots            (i) the elements knot vector for nurbs elements
+        \param elemat             (o) element matrix to calculate
+        \param elevec             (o) element rhs to calculate
+        \param edispnp            (i) mesh displacement (ALE formulation)
+        \param egridvaf           (i) intermedoate grid velocity (ALE formulation)
+        \param evelnp             (i) nodal velocities at n+1
+        \param eprenp             (i) nodal pressure, time n+1
+        \param eaccam             (i) nodal accelerations at n+alphaM
+        \param evelaf             (i) nodal velocities at n+alphaF
+        \param fsevelaf           (i) nodal fine-scale velocity, time n+af
+        \param material           (i) fluid material
+        \param alphaM             (i) evaluate accelerations at this intermediate level
+        \param alphaF             (i) evaluate velocities at this intermediate level
+        \param gamma              (i) one step theta based parameter
+        \param dt                 (i) time step size
+        \param time               (i) current simulation time
+        \param newton             (i) flag for use of full linearisation of reactive terms
+        \param higher_order_ele   (i) include second derivatives in residual for stabilization
+        \param fssgv              (i) flag for type of fine-scale subgrid viscosity
+        \param pspg               (i) flag for use of nabla q testfunctions
+        \param supg               (i) flag for use of (u o nabla) v testfunctions
+        \param vstab              (i) flag for use of 2 * nu * grad o eps(v) testfunctions
+        \param cross              (i) flag to add (u,(u_sub o nabla) v) to right hand side
+        \param reynolds           (i) flag to add (u_sub,(u_sub o nabla) v) to right hand side
+        \param whichtau           (i) flag choosing the tau version used for stabilization
+        \param turb_mod_action    (i) action flag for the application of a turbulence model
+        \param Cs               (i/o) value for Smagorinsky constant (zero if unused)
+                                      in case of the dynamic model, it is only equal to the
+                                      Smagorinsky constant on output.
+        \param Cs_delta_sq        (i) Used for the dynamic Smagorinsky model. Corresponds to (Cs*hk)^2
+        \param visceff            (o) effective viscosity computed by dynamic Smagorinsky model,
+                                      non Newtonian fluid etc.
+        \param l_tau              (i) viscous length scale for van Driest damping (zero if unused)
+        \param compute_elemat     (i) if false, element matrices are not computed
+
+      */
+      void Sysmat_cons_qs(Fluid3*                                ele,
+                          std::vector<blitz::Array<double,1> >&  myknots,
+                          LINALG::Matrix<4*iel,4*iel>&           elemat,
+                          LINALG::Matrix<4*iel,    1>&           elevec,
+                          const LINALG::Matrix<3,iel>&           edispnp,
+                          const LINALG::Matrix<3,iel>&           egridvaf,
+                          const LINALG::Matrix<3,iel>&           evelnp,
+                          const LINALG::Matrix<iel,1>&           eprenp,
+                          const LINALG::Matrix<3,iel>&           eaccam,
+                          const LINALG::Matrix<3,iel>&           evelaf,
+                          const LINALG::Matrix<3,iel>&           fsevelaf,
+                          const struct _MATERIAL*                material,
+                          const double                           alphaM,
+                          const double                           alphaF,
+                          const double                           gamma,
+                          const double                           dt,
+                          const double                           time,
+                          const enum Fluid3::LinearisationAction newton,
+                          const bool                             higher_order_ele,                  
+                          const enum Fluid3::StabilisationAction fssgv,
+                          const enum Fluid3::StabilisationAction pspg,
+                          const enum Fluid3::StabilisationAction supg,
+                          const enum Fluid3::StabilisationAction vstab,
+                          const enum Fluid3::StabilisationAction cstab,
+                          const enum Fluid3::StabilisationAction cross,
+                          const enum Fluid3::StabilisationAction reynolds,
+                          const enum Fluid3::TauType             whichtau,
+                          const enum Fluid3::TurbModelAction     turb_mod_action,
+                          double&                                Cs,
+                          double&                                Cs_delta_sq,
+                          double&                                visceff,
+                          const double                           l_tau,
+                          const bool                             compute_elemat
+        );
+
+      /*!
+        Calculate matrix and rhs. Here the whole thing is hidden.
+        Conservative, time-dependent version
+
+        \param ele                (i) the element those matrix is calculated
+    	\param myknots            (i) the elements knot vector for nurbs elements
+        \param elemat             (o) element matrix to calculate
+        \param elevec             (o) element rhs to calculate
+        \param edispnp            (i) mesh displacement (ALE formulation)
+        \param egridvaf           (i) intermedoate grid velocity (ALE formulation)
+        \param evelnp             (i) nodal velocities at n+1
+        \param eprenp             (i) nodal pressure, time n+1
+        \param eaccam             (i) nodal accelerations at n+alphaM
+        \param evelaf             (i) nodal velocities at n+alphaF
+        \param fsevelaf           (i) nodal fine-scale velocity, time n+af
+        \param material           (i) fluid material
+        \param alphaM             (i) evaluate accelerations at this intermediate level
+        \param alphaF             (i) evaluate velocities at this intermediate level
+        \param gamma              (i) one step theta based parameter
+        \param dt                 (i) time step size
+        \param time               (i) current simulation time
+        \param newton             (i) flag for use of full linearisation of reactive terms
+        \param higher_order_ele   (i) include second derivatives in residual for stabilization
+        \param fssgv              (i) flag for type of fine-scale subgrid viscosity
+        \param inertia            (i) flag for use of subscale accelerations for stabilisation (only for tds==true)
+        \param pspg               (i) flag for use of nabla q testfunctions
+        \param supg               (i) flag for use of (u o nabla) v testfunctions
+        \param vstab              (i) flag for use of 2 * nu * grad o eps(v) testfunctions
+        \param cross              (i) flag to add (u,(u_sub o nabla) v) to right hand side
+        \param reynolds           (i) flag to add (u_sub,(u_sub o nabla) v) to right hand side
+        \param whichtau           (i) flag choosing the tau version used for stabilization
+        \param turb_mod_action    (i) action flag for the application of a turbulence model
+        \param Cs               (i/o) value for Smagorinsky constant (zero if unused)
+                                      in case of the dynamic model, it is only equal to the
+                                      Smagorinsky constant on output.
+        \param Cs_delta_sq        (i) Used for the dynamic Smagorinsky model. Corresponds to (Cs*hk)^2
+        \param visceff            (o) effective viscosity computed by dynamic Smagorinsky model,
+                                      non Newtonian fluid etc.
+        \param l_tau              (i) viscous length scale for van Driest damping (zero if unused)
+        \param compute_elemat     (i) if false, element matrices are not computed
+
+      */
+      void Sysmat_cons_td(Fluid3*                                ele,
+                          std::vector<blitz::Array<double,1> >&  myknots,
+                          LINALG::Matrix<4*iel,4*iel>&           elemat,
+                          LINALG::Matrix<4*iel,    1>&           elevec,
+                          const LINALG::Matrix<3,iel>&           edispnp,
+                          const LINALG::Matrix<3,iel>&           egridvaf,
+                          const LINALG::Matrix<3,iel>&           evelnp,
+                          const LINALG::Matrix<iel,1>&           eprenp,
+                          const LINALG::Matrix<3,iel>&           eaccam,
+                          const LINALG::Matrix<3,iel>&           evelaf,
+                          const LINALG::Matrix<3,iel>&           fsevelaf,
+                          const struct _MATERIAL*                material,
+                          const double                           alphaM,
+                          const double                           alphaF,
+                          const double                           gamma,
+                          const double                           dt,
+                          const double                           time,
+                          const enum Fluid3::LinearisationAction newton,
+                          const bool                             higher_order_ele,                  
+                          const enum Fluid3::StabilisationAction fssgv,
+                          const enum Fluid3::StabilisationAction inertia,
+                          const enum Fluid3::StabilisationAction pspg,
+                          const enum Fluid3::StabilisationAction supg,
+                          const enum Fluid3::StabilisationAction vstab,
+                          const enum Fluid3::StabilisationAction cstab,
+                          const enum Fluid3::StabilisationAction cross,
+                          const enum Fluid3::StabilisationAction reynolds,
+                          const enum Fluid3::TauType             whichtau,
+                          const enum Fluid3::TurbModelAction     turb_mod_action,
+                          double&                                Cs,
+                          double&                                Cs_delta_sq,
+                          double&                                visceff,
+                          const double                           l_tau,
+                          const bool                             compute_elemat
+        );
+
+
+      //@}
+
     private:
+
+      //! @name service methods
+
       ///  Set parameters for turbulence models
 
       //
@@ -469,8 +731,8 @@ namespace DRT
       //
       //  \param ele         (i) element pointer for access to the neumann condition
       //  \param time        (i) time when the condition is evaluated
-      void GetNodalBodyForce(Fluid3*      ele,
-                             const double time);
+      void GetNodalBodyForce(const Fluid3* ele ,
+                             const double  time);
 
       /*!  Compute the rate of strain of a (fine-scale) velocity
 
@@ -541,6 +803,28 @@ namespace DRT
         
           return(sqrt(rateofstrain/2.0));
         }
+
+      /*!
+        \brief Get all global shape functions, first and eventually second 
+               derivatives in a gausspoint
+
+    	\param ele       (i) pointer to element for debug io
+    	\param iquad     (i) number of gausspoint
+    	\param intpoints (i) array with gausspoints and weights
+    	\param myknots   (i) knotvector for NURBS elements
+    	\param hoel      (i) flag for the evaluation of second derivatives
+
+        \return integration factor (weight)
+
+       */
+      double ShapeFunctionsFirstAndSecondDerivatives(
+        const Fluid3*                                ele      ,
+        const int                                 &  iquad    ,
+        const DRT::UTILS::IntegrationPoints3D     &  intpoints,
+        const std::vector<blitz::Array<double,1> >&  myknots  ,
+        const bool                                   hoel
+        );
+
            
       /*!
         \brief calculates viscosity at a given point (element center or Gaussian point)
@@ -571,7 +855,104 @@ namespace DRT
                    const double &                         hk       ,
                    const double &                         mk       ,
                    const double &                         visceff  );
-                   
+             
+
+      /*!
+        \brief calculates all quantities which are defined at the element center
+               or for the whole element
+                        o element geometry (xyze_ etc)
+                        o element volume vol_
+                        o element size hk, constant mk from inverse estimate
+                        o dead load
+                        o viscosity, effective viscosity
+                        
+
+     	\param ele                      (i) pointer to element
+        \param edispnp                  (i) nodal mesh displacements, t_{n+1} (for ALE)
+        \param evelaf                   (i) nodal velocities, t_{n+alpha_F}
+        \param fsevelaf                 (i) fine-scale velocity
+    	\param myknots                  (i) knotvector for NURBS elements
+        \param timealphaF               (i) alphaF*t_{n+1}+(1-alphaF)*t_{n}
+        \param hk                       (o) element length for stabilisation parameter
+        \param mk                       (o) element type constant mk for tau and the fssgv_artificial approach
+    	\param material		 	(i) material
+        \param visc                     (o) kinematicmaterial viscosity
+        \param fssgv                    (i) Control parameter: use a fine-scale subgrid viscosity
+        \param turb_mod_action          (i) enum specifying the turbulence approach used
+        \param l_tau                    (i) viscous length scale of problem (set for van Driest damping)
+        \param Cs                     (i/o) Smagorinsky constant, read from parameterlist for constant coefficient models,
+                                            returned (computed value)for dynamic Smagorinsky model and van Driest damping
+        \param Cs_delta_sq              (o) Computed for dynamic Smagorinsky model
+        \param visceff        		(o) effective material viscosity
+
+       */                 
+      void SetElementData
+      (
+        Fluid3*                                     ele            ,
+        const LINALG::Matrix<3,iel>               & edispnp        ,
+        const LINALG::Matrix<3,iel>               & evelaf         ,
+        const LINALG::Matrix<3,iel>               & fsevelaf       ,
+        const std::vector<blitz::Array<double,1> >& myknots        ,
+        const double                              & timealphaF     ,
+        double                                    & hk             ,
+        double                                    & mk             ,
+        const struct _MATERIAL*                     material       ,
+        double                                    & visc           ,
+        const enum Fluid3::StabilisationAction      fssgv          ,
+        const enum Fluid3::TurbModelAction          turb_mod_action,
+        const double                                l_tau          ,
+        double                                    & Cs             ,
+        double                                    & Cs_delta_sq    ,
+        double                                    & visceff        );
+
+
+      /*!
+        \brief Interpolates standard quantities to gausspoint, including
+
+        o accintam_
+        o velintaf_
+        o velintnp_
+        o bodyforce_
+        o prenp_
+        o pderxynp_
+        o vderxyaf_
+        o vderxynp_
+        o divunp_
+        o u_G_af
+        o aleconvintaf_
+        o conv_af_old_
+        o resM_
+        o conv_c_af_
+        o fsvderxyaf_ (if fssgv)
+        o viscs2_ (if hoel)
+        o viscaf_old_ (if hoel)
+
+
+     	\param ele               (i) pointer to element
+        \param egridvelaf        (i) nodal mesh velocities, t_{n+alpha_F} (for ALE)
+        \param evelnp            (i) nodal velocities, t_{n+1}
+        \param eprenp            (i) nodal pressure values, t_{n+1}
+        \param eaccam            (i) nodal accelerations, t_{n+alpha_M}
+        \param evelaf            (i) nodal velocities, t_{n+alpha_F}
+        \param fsevelaf          (i) fine-scale velocity
+        \param visceff        	 (i) effective material viscosity
+        \param fssgv             (i) Control parameter: use a fine-scale subgrid viscosity
+        \param higher_order_ele  (i) include second derivatives in residual for stabilization
+
+       */     
+      void InterpolateToGausspoint(
+        Fluid3*                                     ele             ,
+        const LINALG::Matrix<3,iel>               & egridvaf        ,
+        const LINALG::Matrix<3,iel>               & evelnp          ,
+        const LINALG::Matrix<iel,1>               & eprenp          ,
+        const LINALG::Matrix<3,iel>               & eaccam          ,
+        const LINALG::Matrix<3,iel>               & evelaf          ,
+        const LINALG::Matrix<3,iel>               & fsevelaf        ,
+        const double                              & visceff         ,
+        const enum Fluid3::StabilisationAction      fssgv           ,
+        const bool                                  higher_order_ele);
+
+      //@}
 
       //! fine-scale subgrid viscosity
       double vart_;
@@ -641,10 +1022,6 @@ namespace DRT
       LINALG::Matrix<3,3>   vderxynp_;
       //! velocity derivatives in gausspoint, time n+af
       LINALG::Matrix<3,3>   vderxyaf_;
-#if 0
-      //! grid velocity spatial derivatives in gausspoint, time n+af
-      LINALG::Matrix<3,3>   gridvderxyaf_;
-#endif
       //! fine-scale velocity derivatives in gausspoint, time n+af
       LINALG::Matrix<3,3>   fsvderxyaf_;
       //! value of body force interpolated to the gauss point, time n+af
@@ -708,8 +1085,11 @@ namespace DRT
                     \   (i)        /
       */
 
+      //! Current residual of the continuity equation, time t_{n+1}
+      double                divunp_;
+
       //! the element volume, used to define element length
-      double                                    vol_;
+      double                vol_;
 
 
       // temporary working arrays
@@ -717,6 +1097,9 @@ namespace DRT
       //! array used for the computation of jacobian 
       //! determinant and second derivatives
       LINALG::Matrix<6,6>   bm_;
+
+      //! An epetra wrapper for LAPACK library functions
+      Epetra_LAPACK         solver_;
 
     };
   }
