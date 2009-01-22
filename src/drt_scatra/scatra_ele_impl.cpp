@@ -637,8 +637,8 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
       DRT::UTILS::ExtractMyValues(*densnp,mydensnp,lm);
 
-      // calculate temperature, density and domain integral
-      CalculateTempAndDens(ele,params,myphinp,mydensnp);
+      // calculate temperature/concentrations, density and domain integral
+      CalculateTempAndDens(ele,myphinp,mydensnp,elevec1_epetra);
     }
   }
   else if (action=="calc_domain_and_bodyforce")
@@ -648,8 +648,8 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     {
       const double time = params.get<double>("total time");
 
-      // calculate domain integral
-      CalculateDomainAndBodyforce(ele,params,time);
+      // calculate domain and bodyforce integral
+      CalculateDomainAndBodyforce(elevec1_epetra,ele,time);
     }
   }
   else if (action=="calc_elch_kwok_error")
@@ -2825,12 +2825,33 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
     const double n = 2.0;
     const double k = 2.0;
     const double A_mnk = 1.0;
-    const double expterm = exp((-D)*(m*m + n*n + k*k)*t*PI*PI);
-    c(0) = A0 + (A_mnk*(cos(m*PI*xint(0))*cos(n*PI*xint(1))*cos(k*PI*xint(2)))*expterm);
-    c(1) = (-valence_[0]/valence_[1])* c(0);
+    double expterm;
+    double c_0_0_0_t;
 
+    if (nsd_==3)
+    {
+      expterm = exp((-D)*(m*m + n*n + k*k)*t*PI*PI);
+      c(0) = A0 + (A_mnk*(cos(m*PI*xint(0))*cos(n*PI*xint(1))*cos(k*PI*xint(2)))*expterm);
+      c_0_0_0_t = A0 + (A_mnk*exp((-D)*(m*m + n*n + k*k)*t*PI*PI));
+    }
+    else if (nsd_==2)
+    {
+      expterm = exp((-D)*(m*m + n*n)*t*PI*PI);
+      c(0) = A0 + (A_mnk*(cos(m*PI*xint(0))*cos(n*PI*xint(1)))*expterm);
+      c_0_0_0_t = A0 + (A_mnk*exp((-D)*(m*m + n*n)*t*PI*PI));
+    }
+    else if (nsd_==1)
+    {
+      expterm = exp((-D)*(m*m)*t*PI*PI);
+      c(0) = A0 + (A_mnk*(cos(m*PI*xint(0)))*expterm);
+      c_0_0_0_t = A0 + (A_mnk*exp((-D)*(m*m)*t*PI*PI));
+    }
+    else
+      dserror("Illegal number of space dimenions for analyt. solution: %d",nsd_);
+
+    // compute analytical solution for anion concentration
+    c(1) = (-valence_[0]/valence_[1])* c(0);
     // compute analytical solution for el. potential
-    const double c_0_0_0_t = A0 + (A_mnk*exp((-D)*(m*m + n*n + k*k)*t*PI*PI));
     const double pot = ((diffus_[1]-diffus_[0])/d) * log(c(0)/c_0_0_0_t);
 
     // compute differences between analytical solution and numerical solution
@@ -2988,16 +3009,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateTempAndDens(
     const DRT::Element*             ele,
-    ParameterList&                  params,
     const vector<double>&           ephinp,
-    const vector<double>&           edensnp
+    const vector<double>&           edensnp,
+    Epetra_SerialDenseVector&       scalars
 )
 {
-  // get variables for integrals
-  double tempint = params.get<double>("temperature integral");
-  double densint = params.get<double>("density integral");
-  double domint  = params.get<double>("domain integral");
-
   /*------------------------------------------------- set element data */
   // get node coordinates
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze_);
@@ -3008,39 +3024,20 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateTempAndDens(
   // integration loop
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
-    // coordinates of the current integration point
-    const double* gpcoord = (intpoints.IP().qxg)[iquad];
-    for (int idim=0;idim<nsd_;idim++)
-      {xsi_(idim) = gpcoord[idim];}
+    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,false,ele->Id());
 
-    // shape functions and their first derivatives
-    DRT::UTILS::shape_function<distype>(xsi_,funct_);
-    DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
-
-    // compute Jacobian matrix and determinant
-    // actually compute its transpose....
-    xjm_.MultiplyNT(deriv_,xyze_);
-    const double det = xij_.Invert(xjm_);
-
-    if (det < 1E-16)
-      dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f",ele->Id(), det);
-
-    // set integration factor: fac = Gauss weight * det(J)
-    fac_ = intpoints.IP().qwgt[iquad]*det;
-
-    // calculate integrals of temperature, density and domain
+    // calculate integrals of temperature or concentrentations, 
+    // then of density and domain
     for (int i=0; i<iel; i++)
     {
-      tempint += fac_*funct_(i)*ephinp[i];
-      densint += fac_*funct_(i)*edensnp[i];
-      domint  += fac_*funct_(i);
+      for (int k = 0; k < numscal_; k++)
+      {
+        scalars[k] += fac_*funct_(i)*ephinp[i*numdofpernode_+k];
+      }
+      scalars[numscal_]    += fac_*funct_(i)*edensnp[i];
+      scalars[numscal_+1]  += fac_*funct_(i);
     }
   } // loop over integration points
-
-  // return variables for integrals
-  params.set<double>("temperature integral",tempint);
-  params.set<double>("density integral",densint);
-  params.set<double>("domain integral",domint);
 
   return;
 } // ScaTraImpl::CalculateTempAndDens
@@ -3051,15 +3048,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateTempAndDens(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateDomainAndBodyforce(
-    const DRT::Element*             ele,
-    ParameterList&                  params,
-    const double                    time
+    Epetra_SerialDenseVector&  scalars,
+    const DRT::Element*        ele,
+    const double               time
 )
 {
-  // get variables for domain and bodyforce integral
-  double domint = params.get<double>("domain integral");
-  double bofint = params.get<double>("bodyforce integral");
-
   // ---------------------------------------------------------------------
   // call routine for calculation of body force in element nodes
   // (time n+alpha_F for generalized-alpha scheme, at time n+1 otherwise)
@@ -3076,25 +3069,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateDomainAndBodyforce(
   // integration loop
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
-    // coordinates of the current integration point
-    const double* gpcoord = (intpoints.IP().qxg)[iquad];
-    for (int idim=0;idim<nsd_;idim++)
-      {xsi_(idim) = gpcoord[idim];}
-
-    // shape functions and their first derivatives
-    DRT::UTILS::shape_function<distype>(xsi_,funct_);
-    DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
-
-    // compute Jacobian matrix and determinant
-    // actually compute its transpose....
-    xjm_.MultiplyNT(deriv_,xyze_);
-    const double det = xij_.Invert(xjm_);
-
-    if (det < 1E-16)
-      dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f",ele->Id(), det);
-
-    // set integration factor: fac = Gauss weight * det(J)
-    fac_ = intpoints.IP().qwgt[iquad]*det;
+    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,false,ele->Id());
 
     // get bodyforce in gausspoint
     rhs_[0] = bodyforce_[0].Dot(funct_);
@@ -3102,15 +3077,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateDomainAndBodyforce(
     // calculate integrals of domain and bodyforce
     for (int i=0; i<iel; i++)
     {
-      domint += fac_*funct_(i);
+      scalars[0] += fac_*funct_(i);
     }
-    bofint += fac_*rhs_[0];
+    scalars[1] += fac_*rhs_[0];
 
   } // loop over integration points
-
-  // return variables for domain integral
-  params.set<double>("domain integral",   domint);
-  params.set<double>("bodyforce integral",bofint);
 
   return;
 } // ScaTraImpl::CalculateDomain

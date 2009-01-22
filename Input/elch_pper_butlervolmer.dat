@@ -129,6 +129,7 @@ ITEMAX                          10
 MAXTIME                         1000
 NUMSTEP                         10
 RESTARTEVRY                     10
+OUTMEAN                         Yes
 TIMESTEP                        1.0
 UPRES                           1
 TEMPERATURE                     11604.506 // abused as a scaling factor in order to have: F/RT = 1.0

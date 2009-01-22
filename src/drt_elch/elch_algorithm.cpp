@@ -23,9 +23,9 @@ ELCH::Algorithm::Algorithm(
     Epetra_Comm& comm, 
     const Teuchos::ParameterList& prbdyn
     )
-:  ScaTraFluidCouplingAlgorithm(comm,prbdyn)
+:  ScaTraFluidCouplingAlgorithm(comm,prbdyn),
+   outmean_(Teuchos::getIntegralValue<int>(prbdyn,"OUTMEAN"))
 {
-  // no ELCH specific stuff at the moment
   return;
 }
 
@@ -154,6 +154,8 @@ void ELCH::Algorithm::Output()
   FluidField().Output();
   FluidField().LiftDrag();
   ScaTraField().Output();
+  if (outmean_) 
+    ScaTraField().OutputMeanTempAndDens();
 
   return;
 }

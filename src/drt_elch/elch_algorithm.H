@@ -74,6 +74,9 @@ namespace ELCH
 
   private:
 
+    /// flag for printing out mean values of concentrations and density
+    bool outmean_;
+
   };
 
 } // namespace ELCH

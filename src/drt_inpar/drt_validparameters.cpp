@@ -1407,6 +1407,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("ITEMAX",10,"Maximum number of nonlinear iterations",&elchcontrol);
   IntParameter("UPRES",1,"Increment for writing solution",&elchcontrol);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&elchcontrol);
+  BoolParameter("OUTMEAN","No","Output of total and mean values",&elchcontrol);
   DoubleParameter("TEMPERATURE",298.0,"Constant temperature (Kelvin)",&elchcontrol);
 
   /*----------------------------------------------------------------------*/

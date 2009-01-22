@@ -108,6 +108,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   if (prbtype_ == "elch")
   {
     // set up the concentration-el.potential splitter
+
     FLD::UTILS::SetupFluidSplit(*discret_,numscal,conpotsplitter_);
     if (myrank_==0)
     {
@@ -120,7 +121,8 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   if (params_->get<int>("BLOCKPRECOND",0) )
   {
     // we need a block sparse matrix here
-    if (prbtype_ != "elch") dserror("Block-Preconditioning is only for ELCH problems");
+    if (prbtype_ != "elch") 
+      dserror("Block-Preconditioning is only for ELCH problems");
     Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy> > blocksysmat =
       Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy>(conpotsplitter_,conpotsplitter_,27,false,true));
     blocksysmat->SetNumdim(numscal);
@@ -1157,16 +1159,14 @@ void SCATRA::ScaTraTimIntImpl::SetInitialThermPressure(const double thermpress)
   eleparams.set("total time",0.0);
 
   // variables for integrals of domain and bodyforce
-  double domint  = 0.0;
-  double bofint  = 0.0;
-  eleparams.set("domain integral",    domint);
-  eleparams.set("bodyforce integral", bofint);
+  Teuchos::RCP<Epetra_SerialDenseVector> scalars
+    = Teuchos::rcp(new Epetra_SerialDenseVector(2));
 
-  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  discret_->EvaluateScalars(eleparams, scalars);
 
-  // get integral values on this proc
-  domint = eleparams.get<double>("domain integral");
-  bofint = eleparams.get<double>("bodyforce integral");
+  // get global integral values
+  double pardomint  = (*scalars)[0];
+  double parbofint  = (*scalars)[1];
 
   // evaluate domain integral
   // set action for elements
@@ -1193,12 +1193,8 @@ void SCATRA::ScaTraTimIntImpl::SetInitialThermPressure(const double thermpress)
   diffint = eleparams.get<double>("diffusive-flux integral");
 
   // get integral values in parallel case
-  double pardomint  = 0.0;
-  double parbofint  = 0.0;
   double pardivuint = 0.0;
   double pardiffint = 0.0;
-  discret_->Comm().SumAll(&domint,&pardomint,1);
-  discret_->Comm().SumAll(&bofint,&parbofint,1);
   discret_->Comm().SumAll(&divuint,&pardivuint,1);
   discret_->Comm().SumAll(&diffint,&pardiffint,1);
 
@@ -1283,7 +1279,7 @@ bool SCATRA::ScaTraTimIntImpl::DensityConvergenceCheck(int          itnum,
 
 
 /*----------------------------------------------------------------------*
- |  write mass / heat flux vector to BINIO                   gjb   08/08|
+ |  output of some mean values                               gjb   01/09|
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::OutputMeanTempAndDens()
 {
@@ -1295,39 +1291,36 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanTempAndDens()
   ParameterList eleparams;
   eleparams.set("action","calc_temp_and_dens");
 
-  // variables for integrals of temperature, density and domain
-  double tempint = 0.0;
-  double densint = 0.0;
-  double domint  = 0.0;
-  eleparams.set("temperature integral",tempint);
-  eleparams.set("density integral",    densint);
-  eleparams.set("domain integral",     domint);
+  // evaluate integrals of temperature/concentrations, density and domain
+  int numscal = discret_->NumDof(discret_->lRowNode(0));
+  if (prbtype_ == "elch") numscal-=1;
+  Teuchos::RCP<Epetra_SerialDenseVector> scalars
+    = Teuchos::rcp(new Epetra_SerialDenseVector(numscal+2));
+  discret_->EvaluateScalars(eleparams, scalars);
+  discret_->ClearState();   // clean up
 
-  // evaluate integrals of temperature, density and domain
-  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  const double densint = (*scalars)[numscal];
+  const double domint  = (*scalars)[numscal+1];
 
-  // get integral values on this proc
-  tempint = eleparams.get<double>("temperature integral");
-  densint = eleparams.get<double>("density integral");
-  domint  = eleparams.get<double>("domain integral");
-
-  // get integral values in parallel case
-  double partempint = 0.0;
-  double pardensint = 0.0;
-  double pardomint  = 0.0;
-  discret_->Comm().SumAll(&tempint,&partempint,1);
-  discret_->Comm().SumAll(&densint,&pardensint,1);
-  discret_->Comm().SumAll(&domint,&pardomint,1);
-
-  // print out mean values of temperature and density
+  // print out values
   if (myrank_ == 0)
   {
-    cout << "Mean temperature: " << tempint/domint << endl;
-    cout << "Mean density: " << densint/domint << endl;
+    if (prbtype_=="loma")
+    {
+      cout << "Mean temperature: " << (*scalars)[0]/domint << endl;
+      cout << "Mean density:     " << densint/domint << endl;
+    }
+    else
+    {
+        cout << "Domain integral:          " << domint << endl;
+      for (int k = 0; k < numscal; k++)
+      {
+        //cout << "Total concentration (c_"<<k+1<<"): "<< (*scalars)[k] << endl;
+        cout << "Mean concentration (c_"<<k+1<<"): "<< (*scalars)[k]/domint << endl;
+      }
+        cout << "Mean density:             " << densint/domint << endl;
+    }
   }
-
-  // clean up
-  discret_->ClearState();
 
   return;
 }
@@ -1427,7 +1420,9 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
     vector<std::string> condnames;
     condnames.push_back("FluxCalculation");
     condnames.push_back("ElectrodeKinetics");
-    condnames.push_back("Neumann");
+    condnames.push_back("PointNeumann");
+    condnames.push_back("LineNeumann");
+    condnames.push_back("SurfaceNeumann");
 
     double normfluxsum(0.0);
 
@@ -1436,7 +1431,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
       vector<DRT::Condition*> cond;
       discret_->GetCondition(condnames[i],cond);
 
-      // go to the next condition type, if there's nothing to do
+      // go to the next condition type, if there's nothing to do!
       if (!cond.size()) continue;
 
       if (myrank_ == 0)

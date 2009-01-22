@@ -322,19 +322,19 @@ public:
         const int&                      dofindex
     );
 
-    //! calculate integrals of temperature, density and domain
+    //! calculate integrals of temperature/concentrations, density and domain
    virtual void CalculateTempAndDens(
-        const DRT::Element*     ele,    ///< pointer to the element
-        ParameterList&          params, ///< parameter list
-        const vector<double>&   ephinp, ///< current scalar field
-        const vector<double>&   edensnp ///< current density field
+        const DRT::Element*       ele,     ///< pointer to the element
+        const vector<double>&     ephinp,  ///< current scalar field
+        const vector<double>&     edensnp, ///< current density field
+        Epetra_SerialDenseVector& scalars  ///< vector for the computed integrals
         );
 
-    //! calculate domain integral
+    //! calculate domain and bodyforce integral
    virtual void CalculateDomainAndBodyforce(
-        const DRT::Element*     ele,     ///< pointer to the element
-        ParameterList&          params,  ///< parameter list
-        const double            time     ///< current simulation time
+        Epetra_SerialDenseVector&  scalars, ///< vector for the computed integrals
+        const DRT::Element*        ele,     ///< pointer to the element
+        const double               time     ///< current simulation time
         );
 
     //! calculate the Laplacian for all shape functions(strong form)

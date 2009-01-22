@@ -266,16 +266,14 @@ double SCATRA::TimIntGenAlpha::ComputeThermPressure()
   eleparams.set("total time",time_-(1-alphaF_)*dta_);
 
   // variables for integrals of domain and bodyforce
-  double domint  = 0.0;
-  double bofint  = 0.0;
-  eleparams.set("domain integral",    domint);
-  eleparams.set("bodyforce integral", bofint);
+  Teuchos::RCP<Epetra_SerialDenseVector> scalars
+    = Teuchos::rcp(new Epetra_SerialDenseVector(2));
 
-  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  discret_->EvaluateScalars(eleparams, scalars);
 
-  // get integral values on this proc
-  domint = eleparams.get<double>("domain integral");
-  bofint = eleparams.get<double>("bodyforce integral");
+  // get global integral values
+  double pardomint  = (*scalars)[0];
+  double parbofint  = (*scalars)[1];
 
   // evaluate domain integral
   // set action for elements
@@ -302,12 +300,8 @@ double SCATRA::TimIntGenAlpha::ComputeThermPressure()
   diffint = eleparams.get<double>("diffusive-flux integral");
 
   // get integral values in parallel case
-  double pardomint  = 0.0;
-  double parbofint  = 0.0;
   double pardivuint = 0.0;
   double pardiffint = 0.0;
-  discret_->Comm().SumAll(&domint,&pardomint,1);
-  discret_->Comm().SumAll(&bofint,&parbofint,1);
   discret_->Comm().SumAll(&divuint,&pardivuint,1);
   discret_->Comm().SumAll(&diffint,&pardiffint,1);
 
