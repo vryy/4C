@@ -219,11 +219,11 @@ void ADAPTER::AleLinear::Output()
 
   restartstep_ += 1;
 
-  output_->NewStep    (step_,time_);
-  output_->WriteVector("dispnp", dispnp_);
-
   if (restartstep_ == uprestart_)
   {
+    output_->NewStep    (step_,time_);
+    output_->WriteVector("dispnp", dispnp_);
+
     restartstep_ = 0;
 
     // add restart data
