@@ -321,15 +321,6 @@ public:
   void AddgValue(double& val);
   
   /*!
-  brief Write nodal entries of D and M to Dold and Mold
-    
-  At the end of a time step the nodal entries (vector) of the Mortar
-  Matrices D and M are stored to the old ones. 
-     
-  */
-  void StoreDMOld();
-  
-  /*!
   \brief Return the 'D' map (vector) of this node
   */
   virtual inline vector<map<int,double> >& GetD() { return drows_; }
@@ -339,16 +330,6 @@ public:
   */
   virtual inline vector<map<int,double> >& GetM() { return mrows_; }
 
-  /*!
-  \brief Return the old 'D' map (vector) of this node (last converged state)
-  */
-  virtual inline vector<map<int,double> >& GetDOld() { return drowsold_; }
-  
-  /*!
-  \brief Return the old 'M' map (vector) of this node (last converged state)
-  */
-  virtual inline vector<map<int,double> >& GetMOld() { return mrowsold_; }
-  
   /*!
   \brief Return the 'Mmod' map (vector) of this node
   */
@@ -496,8 +477,6 @@ protected:
   
   vector<map<int,double> >      drows_;      // nodal rows of D matrix
   vector<map<int,double> >      mrows_;      // nodal rows of M matrix
-  vector<map<int,double> >      drowsold_;   // nodal rows of old D matrix (last converged state n)
-  vector<map<int,double> >      mrowsold_;   // nodal rows of old M matrix (last converged state n)
   vector<map<int,double> >      mmodrows_;   // nodal rows of Mmod matrix
   double                        grow_;       // nodal entry of g vector
   

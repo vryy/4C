@@ -96,8 +96,6 @@ activeold_(old.activeold_),
 slip_(old.slip_),
 drows_(old.drows_),
 mrows_(old.mrows_),
-drowsold_(old.drowsold_),
-mrowsold_(old.mrowsold_),
 mmodrows_(old.mmodrows_),
 grow_(old.grow_)
 {
@@ -372,32 +370,6 @@ void CONTACT::CNode::AddgValue(double& val)
   // add given value to grow_
   grow_+=val;
   
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Store nodal entries of D and M to old ones             gitterle 12/08|
- *----------------------------------------------------------------------*/
-void CONTACT::CNode::StoreDMOld()
-{
-  // copy drows_ to drowsold_  
-  
-  // reset old nodal Mortar maps
-  for (int j=0;j<(int)(GetDOld().size());++j)
-  (GetDOld())[j].clear();
-  for (int j=0;j<(int)((GetMOld()).size());++j)
-  (GetMOld())[j].clear();
-  
-  // clear and zero nodal vectors   
-  drowsold_.clear();
-  mrowsold_.clear();
-  drowsold_.resize(0);
-	mrowsold_.resize(0);
-	
-	// write drows_ to drowsold_ 
-	drowsold_ = drows_;
-  mrowsold_ = mrows_;
-	
   return;
 }
 

@@ -178,6 +178,155 @@ void CONTACT::ManagerBase::EvaluateMortar()
 }
 
 /*----------------------------------------------------------------------*
+ |  evaluate relative sliding (jump)                      gitterle 01/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::ManagerBase::EvaluateRelMov(RCP<Epetra_Vector> disi)
+{
+  
+#ifdef CONTACTRELVELMATERIAL
+	
+  // extract slave displacements from disi
+  RCP<Epetra_Vector> disis = rcp(new Epetra_Vector(*gsdofrowmap_));
+  LINALG::Export(*disi,*disis);
+  
+  // extract master displacements from disi
+  RCP<Epetra_Vector> disim = rcp(new Epetra_Vector(*gmdofrowmap_));
+  LINALG::Export(*disi,*disim);
+  
+  /**********************************************************************/
+  /* Multiply Mortar matrices: m^ = inv(d) * m                          */
+  /**********************************************************************/
+  RCP<LINALG::SparseMatrix> invd = rcp(new LINALG::SparseMatrix(*dmatrix_));
+  RCP<Epetra_Vector> diag = LINALG::CreateVector(*gsdofrowmap_,true);
+  int err = 0;
+    
+  // extract diagonal of invd into diag
+  invd->ExtractDiagonalCopy(*diag);
+    
+  // set zero diagonal values to dummy 1.0
+  for (int i=0;i<diag->MyLength();++i)
+    if ((*diag)[i]==0.0) (*diag)[i]=1.0;
+  
+  // scalar inversion of diagonal values
+  err = diag->Reciprocal(*diag);
+  if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+  
+  // re-insert inverted diagonal into invd
+  err = invd->ReplaceDiagonalValues(*diag);
+  // we cannot use this check, as we deliberately replaced zero entries
+  //if (err>0) dserror("ERROR: ReplaceDiagonalValues: Missing diagonal entry!");
+    
+  // do the multiplication M^ = inv(D) * M
+  mhatmatrix_ = LINALG::Multiply(*invd,false,*mmatrix_,false);
+    
+  // recover incremental jump (for active set)
+  incrjump_ = rcp(new Epetra_Vector(*gsdofrowmap_));
+  mhatmatrix_->Multiply(false,*disim,*incrjump_);
+  incrjump_->Update(1.0,*disis,-1.0);
+  
+  // sum up incremental jumps from active set nodes
+  jump_->Update(1.0,*incrjump_,1.0);
+
+#else
+  
+  // export global quantity to current interface slave dof row map
+  RCP<Epetra_Vector> slaveconfiguration = rcp(new Epetra_Vector(*gsdofrowmap_));
+  RCP<Epetra_Vector> masterconfiguration = rcp(new Epetra_Vector(*gmdofrowmap_));
+
+  // create vector of current slave configuration
+  // loop over all interfaces
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    // currently this only works safely for 1 interface
+    if (i>0) dserror("ERROR: Evaluate RelSliding: not working for n interfaces yet!");
+          
+    // loop over all slave row nodes on the current interface
+    for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
+    {
+      int gid = interface_[i]->SlaveRowNodes()->GID(j);
+      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CNode* cnode = static_cast<CNode*>(node);
+      
+      // be aware of problem dimension
+      int dim = Dim();
+      
+      // index for first DOF of current node in Epetra_Vector
+      int locindex = slaveconfiguration->Map().LID(dim*gid);
+      
+      // extract this node's quantity from vectorinterface
+      for (int k=0;k<dim;++k)
+      {
+         (*slaveconfiguration)[locindex+k] = cnode->xspatial()[k];
+      }
+    }
+  }
+  
+  // create vector of current master configuration
+  // loop over all interfaces
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    // currently this only works safely for 1 interface
+    if (i>0) dserror("ERROR: Evaluate RelSliding: not working for n interfaces yet!");
+          
+    // loop over all slave row nodes on the current interface
+    for (int j=0;j<interface_[i]->MasterRowNodes()->NumMyElements();++j)
+    {
+      int gid = interface_[i]->MasterRowNodes()->GID(j);
+      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CNode* cnode = static_cast<CNode*>(node);
+      
+      // be aware of problem dimension
+      int dim = Dim();
+      
+      // index for first DOF of current node in Epetra_Vector
+      int locindex = masterconfiguration->Map().LID(dim*gid);
+      
+      // extract this node's quantity from vectorinterface
+      for (int k=0;k<dim;++k)
+      {
+         (*masterconfiguration)[locindex+k] = cnode->xspatial()[k];
+      }
+    }
+  }
+  
+  RCP<LINALG::SparseMatrix> diffD = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,81));
+  diffD->Add(*dmatrix_,false,1.0,0.0);
+  diffD->Add(*dold_,false,-1.0,1.0);
+  diffD->Complete(dmatrix_->DomainMap(),dmatrix_->RowMap());
+  
+  RCP<Epetra_Vector> diffDx = rcp(new Epetra_Vector(*gsdofrowmap_));
+  diffD->Multiply(false,*slaveconfiguration,*diffDx);
+  
+  // create a merged map of domain map of M and Mold
+  const Epetra_Map& mmatrixdofs = mmatrix_->DomainMap();
+  const Epetra_Map& molddofs = mold_->DomainMap();
+  RCP<Epetra_Map> mdiffdofs = LINALG::MergeMap(mmatrixdofs,molddofs,true);
+  
+  // Create a new Matrix, add M and -Mold
+  RCP<LINALG::SparseMatrix> diffM = rcp(new LINALG::SparseMatrix(mmatrix_->RowMap(),81));
+  diffM->Add(*mmatrix_,false,+1.0,0.0);
+  diffM->Add(*mold_,false,-1.0,1.0);
+  diffM->Complete(*mdiffdofs,mmatrix_->RowMap());
+    
+  RCP<Epetra_Vector> diffMx = rcp(new Epetra_Vector(*gsdofrowmap_)); 
+  diffM->Multiply(false,*masterconfiguration,*diffMx);
+    
+  //RCP<Epetra_Vector> jump1 = rcp(new Epetra_Vector(*gsdofrowmap_));
+  jump_->Update(-1.0,*diffDx,0.0);
+  jump_->Update(+1.0,*diffMx,1.0);
+  
+#endif
+  
+  // friction
+  // store updaded jumps to nodes
+  StoreNodalQuantities(ManagerBase::jump);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  evaluate contact (public)                                 popp 04/08|
  *----------------------------------------------------------------------*/
 void CONTACT::ManagerBase::Evaluate(RCP<LINALG::SparseMatrix> kteff,
@@ -838,13 +987,18 @@ void CONTACT::ManagerBase::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> 
   
   /**********************************************************************/
   /* Isolate active and slip part from mhat, invd and dold              */
+  /* Also isolate slip part form dmatrix_, mmatrix_, dold_ and mold_    */
   /* Isolate slip part from T                                           */
   /**********************************************************************/
   
-  RCP<LINALG::SparseMatrix> mhata, mhatsl, mhatst;
+  RCP<LINALG::SparseMatrix> mhata, mhatst;
   LINALG::SplitMatrix2x2(mhatmatrix_,gactivedofs_,gidofs,gmdofrowmap_,tempmap,mhata,tempmtx1,tempmtx2,tempmtx3);
-  LINALG::SplitMatrix2x2(mhatmatrix_,gslipdofs_,gstdofs,gmdofrowmap_,tempmap,mhatsl,tempmtx2,mhatst,tempmtx3);
   mhata_=mhata;
+  
+#ifdef CONTACTRELVELMATERIAL  
+  RCP<LINALG::SparseMatrix> mhatsl;
+  LINALG::SplitMatrix2x2(mhatmatrix_,gslipdofs_,gstdofs,gmdofrowmap_,tempmap,mhatsl,tempmtx2,mhatst,tempmtx3);
+#endif
   
   RCP<LINALG::SparseMatrix> invda, invdsl;
   LINALG::SplitMatrix2x2(invd_,gactivedofs_,gidofs,gactivedofs_,gidofs,invda,tempmtx1,tempmtx2,tempmtx3);
@@ -855,6 +1009,16 @@ void CONTACT::ManagerBase::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> 
   RCP<LINALG::SparseMatrix> dolda, doldi;
   LINALG::SplitMatrix2x2(dold_,gactivedofs_,gidofs,gactivedofs_,gidofs,dolda,tempmtx1,tempmtx2,doldi);
   
+  RCP<LINALG::SparseMatrix> dmatrixsl, doldsl, mmatrixsl, moldsl; 
+  LINALG::SplitMatrix2x2(dmatrix_,gslipdofs_,gstdofs,gslipdofs_,gstdofs,dmatrixsl,tempmtx1,tempmtx2,tempmtx3);
+  LINALG::SplitMatrix2x2(dold_,gslipdofs_,gstdofs,gslipdofs_,gstdofs,doldsl,tempmtx1,tempmtx2,tempmtx3);  
+  LINALG::SplitMatrix2x2(mmatrix_,gslipdofs_,gstdofs,gmdofrowmap_,tempmap,mmatrixsl,tempmtx2,mhatst,tempmtx3);
+  LINALG::SplitMatrix2x2(mold_,gslipdofs_,gstdofs,gmdofrowmap_,tempmap,moldsl,tempmtx2,mhatst,tempmtx3);
+  dmatrixsl->Scale(1/(1-alphaf_));
+  doldsl->Scale(1/(1-alphaf_));
+  mmatrixsl->Scale(1/(1-alphaf_));
+  moldsl->Scale(1/(1-alphaf_));
+   
   // we will get the stickt rowmap as a by-product
   RCP<Epetra_Map> gstickt;
     
@@ -867,7 +1031,6 @@ void CONTACT::ManagerBase::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> 
   // we want to split the tmatrix_ into 2 groups
   RCP<LINALG::SparseMatrix> tslmatrix, tstmatrix;
   LINALG::SplitMatrix2x2(tmatrix_,gslipt_,gstickt,gslipdofs_,tmap,tslmatrix,tm1,tm2,tstmatrix);
-  
     
   /**********************************************************************/
   /* Split LinD and LinM into blocks                                    */
@@ -957,27 +1120,67 @@ void CONTACT::ManagerBase::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> 
   // kslm: multiply with tslmatrix
   RCP<LINALG::SparseMatrix> kslmmod = LINALG::Multiply(*tslmatrix,false,*invdsl,false,true);
   kslmmod = LINALG::Multiply(*kslmmod,false,*kslm,false,false);
-  
-  // friction 
-  // lmatrix: multiply with tslmatrix, also multiply with mbarslip 
+
+#ifdef CONTACTRELVELMATERIAL
+ 
+  // lmatrix: multiply with tslmatrix, also multiply with mhatslip
+  // L.Tsl.Mhatsl 
+
   RCP<LINALG::SparseMatrix> ltmatrix = LINALG::Multiply(*lmatrix_,false,*tslmatrix,false,true);
   RCP<LINALG::SparseMatrix> ltmatrixmb = LINALG::Multiply(*ltmatrix,false,*mhatsl,false,true);
   
-   // subtract ltmatrixmb from kslmmod
+  // subtract ltmatrixmb from kslmmod
   kslmmod->Add(*ltmatrixmb,false,-1.0,1.0);
   kslmmod->Complete(kslm->DomainMap(),kslm->RowMap());
+#else
   
-  // ksli: multiply with tslmatrix
+  // lmatrix: multiply with tslmatrix, also multiply with DiffM
+  // L.Tsl.(Mn+1-Mn)
+    RCP<LINALG::SparseMatrix> ltmatrix = LINALG::Multiply(*lmatrix_,false,*tslmatrix,false,true);
+    
+  // create a merged map of domain map of M and Mold
+  const Epetra_Map& mmatrixdofs = mmatrixsl->DomainMap();
+  const Epetra_Map& molddofs = moldsl->DomainMap();
+  RCP<Epetra_Map> mdiffdofs = LINALG::MergeMap(mmatrixdofs,molddofs,true);
+  
+  // Create a new Matrix, add M and -Mold
+  RCP<LINALG::SparseMatrix> diffM = rcp(new LINALG::SparseMatrix(mmatrixsl->RowMap(),81));
+  diffM->Add(*mmatrixsl,false,+1.0,0.0);
+  diffM->Add(*moldsl,false,-1.0,1.0);
+  diffM->Complete(*mdiffdofs,mmatrixsl->RowMap());
+  
+  // do the multiplication
+  RCP<LINALG::SparseMatrix> ltmatrixdiffm = LINALG::Multiply(*ltmatrix,false,*diffM,false,true);
+
+  // subtract ltmatrixdiffm from kslmmod
+  kslmmod->Add(*ltmatrixdiffm,false,-1.0,1.0);
+  kslmmod->Complete(kslm->DomainMap(),kslm->RowMap());
+#endif  
+  
+   // ksli: multiply with tslmatrix
   RCP<LINALG::SparseMatrix> kslimod = LINALG::Multiply(*tslmatrix,false,*invdsl,false,true);
   kslimod = LINALG::Multiply(*kslimod,false,*ksli,false,true);
   
   // kslsl: multiply with tslmatrix
   RCP<LINALG::SparseMatrix> kslslmod = LINALG::Multiply(*tslmatrix,false,*invdsl,false,true);
   kslslmod = LINALG::Multiply(*kslslmod,false,*kslsl,false,true);
-  
-  // add tlmatirx to kslslmod
+
+#ifdef CONTACTRELVELMATERIAL
+
+  // add ltmatirx to kslslmod
   kslslmod->Add(*ltmatrix,false,1.0,1.0);
   kslslmod->Complete(kslsl->DomainMap(),kslsl->RowMap());
+#else
+  
+  // lmatrix: Multiply with tslipmatrix, also multiply with diffD    
+  RCP<LINALG::SparseMatrix> diffD = dmatrixsl;
+  diffD->Add(*doldsl,false,-1.0,1.0);
+  RCP<LINALG::SparseMatrix> ltmatrixdiffd = LINALG::Multiply(*ltmatrix,false,*diffD,false,true);
+  
+  //add ltmatrixdiffD to kslslmod
+  kslslmod->Add(*ltmatrixdiffd,false,1.0,1.0);
+  kslslmod->Complete(kslsl->DomainMap(),kslsl->RowMap());
+#endif
   
   // slstmod: multiply with tslmatrix
   RCP<LINALG::SparseMatrix> kslstmod = LINALG::Multiply(*tslmatrix,false,*invdsl,false,true);
@@ -1163,7 +1366,7 @@ void CONTACT::ManagerBase::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> 
   { 
   RCP<Epetra_Vector> tstjumpexp = rcp(new Epetra_Vector(*problemrowmap_));
   LINALG::Export(*tstjump,*tstjumpexp);
-  feffnew->Update(-1.0,*tstjumpexp,+1.0);
+  //feffnew->Update(-1.0,*tstjumpexp,+1.0);
   }
   
   // add weighted gap vector to feffnew, if existing
@@ -2065,17 +2268,17 @@ void CONTACT::ManagerBase::RecoverNoBasisTrafo(RCP<Epetra_Vector> disi)
   RCP<Epetra_Vector> disim = rcp(new Epetra_Vector(*gmdofrowmap_));
   LINALG::Export(*disi,*disim);
   
-  // recover incremental jump (for active set)
-  incrjump_ = rcp(new Epetra_Vector(*gsdofrowmap_));
-  mhatmatrix_->Multiply(false,*disim,*incrjump_);
-  incrjump_->Update(1.0,*disis,-1.0);
-  
-  // friction
-  // sum up incremental jumps from active set nodes
-  jump_->Update(1.0,*incrjump_,1.0);
-  // friction
-  // store updaded jumps to nodes
-  StoreNodalQuantities(ManagerBase::jump);
+//  // recover incremental jump (for active set)
+//  incrjump_ = rcp(new Epetra_Vector(*gsdofrowmap_));
+//  mhatmatrix_->Multiply(false,*disim,*incrjump_);
+//  incrjump_->Update(1.0,*disis,-1.0);
+//  
+//  // friction
+//  // sum up incremental jumps from active set nodes
+//  jump_->Update(1.0,*incrjump_,1.0);
+//  // friction
+//  // store updaded jumps to nodes
+//  StoreNodalQuantities(ManagerBase::jump);
     
   /**********************************************************************/
   /* Update Lagrange multipliers z_n+1                                  */
@@ -2759,7 +2962,7 @@ void CONTACT::ManagerBase::StoreNodalQuantities(ManagerBase::QuantityType type,
     }
     case ManagerBase::jump:
     {
-      vectorglobal = Jump(); 
+      vectorglobal = Jump();
       break;
     }
     case ManagerBase::dirichlet:
@@ -2852,34 +3055,6 @@ void CONTACT::ManagerBase::StoreNodalQuantities(ManagerBase::QuantityType type,
   }
     
   return;
-}
-
-/*----------------------------------------------------------------------*
- |  Store DM to Nodes (in vecor of last conv. time step)  gitterle 06/08|
- *----------------------------------------------------------------------*/
-void CONTACT::ManagerBase::StoreDMToNodes()
-{
-  // loop over all interfaces
-  for (int i=0; i<(int)interface_.size(); ++i)
-  {
-    // currently this only works safely for 1 interface
-    if (i>0) dserror("ERROR: StoreDMToNodes: Double active node check needed for n interfaces!");
-  
-    // loop over all slave row nodes on the current interface
-    for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
-    {
-      int gid = interface_[i]->SlaveRowNodes()->GID(j);
-      DRT::Node* node = interface_[i]->Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      CNode* cnode = static_cast<CNode*>(node);
-      
-      // store D and M entries 
-      cnode->StoreDMOld();
-    }
-  }
-  
-  return;
-  
 }
 
 /*----------------------------------------------------------------------*

@@ -230,7 +230,18 @@ public:
       
   */
   void EvaluateMortar();
+  
+  /*!
+  \brief Evaluate relative movement of contact bodies
     
+  This is for evaluating the relative movement of contact bodies. This 
+  can either be done with regarding the different movement of material points
+  or regarding the change of mortar projection. The second possibility 
+  is definitely objective wheras the first possibility is objective 
+  only when the gap is zero.         
+  */
+  void EvaluateRelMov(RCP<Epetra_Vector> disi);
+  
   /*!
   \brief Evaluate contact
   
@@ -403,16 +414,6 @@ public:
   */
   void StoreNodalQuantities(ManagerBase::QuantityType type, RCP<Epetra_Vector> vec = null);
   
-  /*!
-  \brief Store current (contact) nodal entries of D and M to old ones
-  
-  Contact nodes own their current entries and old ones (last converged
-  state) from the mortar matrices D and M. This function writes the
-  current ones to the old ones.  
-      
-  */
-  void StoreDMToNodes();
-    
   /*!
   \brief Update Mortar matrices D and M
   

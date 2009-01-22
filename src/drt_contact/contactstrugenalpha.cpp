@@ -108,6 +108,23 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   {
     CalcRefNorms();
   }
+  
+  //-------------friction: calculate quantities of reference configuration 
+  // for frictional contact we need history values and therefore we store 
+  // the nodal entries of mortar matrices (reference configuration) before 
+  // first time step
+  
+  if(firststep_ and (contactmanager_->Params()).get<string>("contact type","none")=="frictional")
+  {  
+  	// set state and do mortar calculation 
+  	contactmanager_->SetState("displacement",disn_);
+    contactmanager_->InitializeMortar();
+    contactmanager_->EvaluateMortar();
+
+    // store contact state to contact nodes (active or inactive) 
+  	contactmanager_->StoreNodalQuantities(Manager::activeold);  
+  	  	
+  }
 
   // increment time and step
   double timen = time + dt;  // t_{n+1}
@@ -445,6 +462,23 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   if (!firststep_ and (convcheck != "AbsRes_And_AbsDis" or convcheck != "AbsRes_Or_AbsDis"))
   {
     CalcRefNorms();
+  }
+  
+  //-------------friction: calculate quantities of reference configuration 
+  // for frictional contact we need history values and therefore we store 
+  // the nodal entries of mortar matrices (reference configuration) before 
+  // first time step
+  
+  if(firststep_ and (contactmanager_->Params()).get<string>("contact type","none")=="frictional")
+  {  
+  	// set state and do mortar calculation 
+  	contactmanager_->SetState("displacement",disn_);
+    contactmanager_->InitializeMortar();
+    contactmanager_->EvaluateMortar();
+
+    // store contact state to contact nodes (active or inactive) 
+  	contactmanager_->StoreNodalQuantities(Manager::activeold);  
+  	  	
   }
 
   // increment time and step
@@ -937,6 +971,13 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
       contactmanager_->InitializeMortar();
       contactmanager_->EvaluateMortar();
 
+      // friction
+      // here the relative movement of the contact bodies is evaluated
+      // therefore the current configuration and the according mortar
+      // matrices are needed
+      if((contactmanager_->Params()).get<string>("contact type","none")=="frictional")
+        contactmanager_->EvaluateRelMov(disi_); 
+            
       contactmanager_->Initialize();
       contactmanager_->Evaluate(stiff_,fresm_);
     }
@@ -1274,6 +1315,13 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
 
       contactmanager_->InitializeMortar();
       contactmanager_->EvaluateMortar();
+      
+      // friction
+      // here the relative movement of the contact bodies is evaluated
+      // therefore the current configuration and the according mortar
+      // matrices are needed
+      if((contactmanager_->Params()).get<string>("contact type","none")=="frictional")
+        contactmanager_->EvaluateRelMov(disi_); 
 
       // this is the correct place to update the active set!!!
       // (on the one hand we need the new weighted gap vector g, which is
@@ -1447,9 +1495,6 @@ void CONTACT::ContactStruGenAlpha::Update()
   	// store contact state to contact nodes (active or inactive) 
   	contactmanager_->StoreNodalQuantities(Manager::activeold);  
   	  	
-  	// calculate gap vector and store it to contact nodes   
-    contactmanager_->StoreDMToNodes();    
-    
     // store the displacements to contact nodes
     contactmanager_->SetState("olddisplacement",dis_);
   }

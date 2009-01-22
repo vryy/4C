@@ -610,14 +610,6 @@ void CONTACT::Interface::SetState(const string& statename, const RCP<Epetra_Vect
         node->uold()[j]=myolddisp[j];
       }
     }
-
-    // loop over all elements to set current element length / area
-    // (use fully overlapping column map)
-    for (int i=0;i<idiscret_->NumMyColElements();++i)
-    {
-      CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(i));
-      element->Area()=element->ComputeArea();
-    }
   }
 
   return;
@@ -1244,20 +1236,89 @@ void CONTACT::Interface::AssembleTresca(LINALG::SparseMatrix& lglobal,
     z[1] = cnode->lm()[1];
     z[2] =  0.0;
     
-    // we compute the incremental, relative displacements (incremental dis-
+    // we get the incremental, relative displacements (incremental dis-
     // placement is equivalent to velocity in case of linear approach of 
     // time integration)
-    
     double jump[3];
-    
-    // we can do this by two ways:
-    // first by regarding the change of mortar porjection
-        
     jump[0] = cnode->jump()[0];
     jump[1] = cnode->jump()[1];
     jump[2] =  0.0;
-
-    // lagrange multiplier and jump in tangential direction (projection) 
+    
+//    // FIXGIT: The following the calculation of the jump is done 
+      // based on quantities stored on nodes. But this is done globally 
+      // in contact manager wherby following lines will be deleted soon. 
+//        
+//    // get nodal entries of mortar matrices D and M, in fact current and
+//    // old ones
+//    vector<map<int,double> > dmap = cnode->GetD();
+//  	vector<map<int,double> > mmap = cnode->GetM();
+//  	vector<map<int,double> > dmapold = cnode->GetDOld();
+//  	vector<map<int,double> > mmapold = cnode->GetMOld();
+//  	
+//  	// get vectors of ids from master nodes which have entries in the M 
+//  	// matrix, in fact current and old ones
+//  	vector<int> mnodesvector = cnode->GetMNodes();
+//  	vector<int> mnodesvectorold = cnode->GetMNodesOld();
+//  	
+//  	// create a merged vector which includes the ids of master nodes with
+//  	// entries in M from current and last step 
+//  	int mnodessize = mnodesvector.size();
+//  	int mnodessizeold = mnodesvectorold.size();
+//  	
+//  	for(int i=0;i<mnodessizeold;++i)
+//  	{
+//  		bool isentry = false;
+//  		for(int j=0;j<mnodessize;j++)
+//  		{
+//  			if (mnodesvector[j] == mnodesvectorold[i]) 
+//  			{
+//  			  isentry = true;
+//  			  break;
+//  			}
+//  		}
+//  		
+//  		// add nodeid to vector mnodes_
+//  		if (isentry == false) mnodesvector.push_back(mnodesvectorold[i]);
+//  	} // end of creating merged vector
+//  	
+//  	// get row- and column size
+//  	// mnodes now also contains old ones
+//  	int rowsize1 = cnode->NumDof();
+//  	mnodessize = mnodesvector.size();
+//
+//  	// loop over rows (degrees of freedom)
+//  	for (int j=0;j<rowsize1;++j)
+//  	{
+//  	  // (D-Dold).xs
+//  		int row1 = cnode->Dofs()[j];
+//  	  jump[j] = ((dmap[j])[row1]-(dmapold[j])[row1])*(cnode->xspatial()[j]);
+//  	  
+//  	  // loop over according master nodes
+//  	  int k;
+//  	  for (k = 0;k < mnodessize;++k)
+//  	  {
+//  	    // get node
+//  	  	int gidm = mnodesvector[k];
+//  	    DRT::Node* node = idiscret_->gNode(gidm);
+//        if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+//        CNode* mnode = static_cast<CNode*>(node);
+//        
+//        // -(M-Mols).xm
+//        int col1 = mnode->Dofs()[j];
+//        jump[j] -= ((mmap[j])[col1]-(mmapold[j])[col1])*mnode->xspatial()[j];
+//	    } // loop over master nodes
+//
+//  	  // Scaling with D Matrix
+//  	  jump[j] = -jump[j]/(dmap[j])[row1]; 
+//  	} // loop over rowsize
+//  	
+//  	// store it to nodes 
+//  	for (int j=0;j<rowsize1;++j)
+//  	{
+//  		//cnode->jump()[j] = jump[j];
+//  	}
+  	
+  	// lagrange multiplier and jump in tangential direction (projection) 
     double ztan    = tangent[0]*z[0] + tangent[1]*z[1];
     double jumptan = tangent[0]*jump[0] + tangent[1]*jump[1];
 
@@ -1267,7 +1328,7 @@ void CONTACT::Interface::AssembleTresca(LINALG::SparseMatrix& lglobal,
     
     if(abs(ztan) < 0.001)
     {
-      ztan = +20.0;
+      ztan = +100;
  	  	cout << "Warning: lagrange multiplier in tangential direction had been set to" 
     	" 100 (hard coded)" << endl;
     }
