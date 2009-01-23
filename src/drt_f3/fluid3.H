@@ -1051,7 +1051,8 @@ private:
     flowratecalc,
     Outletimpedance,
     calc_node_normal,
-    enforce_weak_dbc
+    enforce_weak_dbc,
+    conservative_outflow_bc
   };
 
   // don't want = operator
@@ -1132,6 +1133,26 @@ private:
           DRT::Discretization&       discretization,
           vector<int>&               lm,
           Epetra_SerialDenseVector&  elevec1);
+
+  /*!
+  \brief apply outflow boundary condition which is necessary for the conservative
+  element formulation (since the convective term was partially integrated)
+
+  \param params (in)        : ParameterList for communication between control routine
+  \param discretization (in): A reference to the underlying discretization
+  \param lm (in)            : location vector of this element
+  \param elemat1 (out)      : matrix to be filled by element. If NULL on input,
+                              the controling method does not epxect the element to fill
+                              this matrix.                          and elements
+  \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+
+  */
+  void SurfaceConservativeOutflowConsistency(
+    ParameterList&             params,
+    DRT::Discretization&       discretization,
+    vector<int>&               lm,
+    Epetra_SerialDenseMatrix&  elemat1,
+    Epetra_SerialDenseVector&  elevec1);
 
 }; // class Fluid3Surface
 

@@ -497,6 +497,21 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(lineweakdirichlet);
   condlist.push_back(surfweakdirichlet);
 
+
+  /*--------------------------------------------------------------------*/
+  // consistent outflow bcs for conservative element formulations
+
+  Teuchos::RCP<ConditionDefinition> surfconsistentoutflowconsistency 
+    =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURFACE CONSERVATIVE OUTFLOW CONSISTENCY",
+                                         "SurfaceConservativeOutflowConsistency",
+                                         "SurfaceConservativeOutflowConsistency",
+                                         DRT::Condition::SurfaceConservativeOutflowConsistency,
+                                         true,
+                                         DRT::Condition::Surface));
+
+   condlist.push_back(surfconsistentoutflowconsistency);
+
   /*--------------------------------------------------------------------*/
   // FSI
 

@@ -113,6 +113,7 @@ public:
     SurfacePeriodic,
     LineWeakDirichlet,
     SurfaceWeakDirichlet,
+    SurfaceConservativeOutflowConsistency,
     FSICoupling,
     FREESURFCoupling,
     SurfaceTension,

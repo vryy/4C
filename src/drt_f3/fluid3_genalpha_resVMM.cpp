@@ -12995,7 +12995,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::InterpolateToGausspoint(
 
     /* Viscous term  div epsilon(u_old) 
     //
-    //              /                           \
+    //              /             \
     //             |     / n+af \  |
     //     nabla o | eps| u      | | =
     //             |     \      /  | 

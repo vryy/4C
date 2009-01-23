@@ -1234,6 +1234,39 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
     residual_->Update(1.0,*wdbcloads,1.0);
   }
 
+  //----------------------------------------------------------------------
+  // apply consistent outflow boundary condition for conservative element 
+  //     formulation (expressions arising from partial integration)
+  //----------------------------------------------------------------------
+  if(params_.get<string>("form of convective term")=="conservative")
+  {
+    ParameterList apply_cons_params;
+    // set action for elements
+    apply_cons_params.set("action","conservative_outflow_bc");
+    apply_cons_params.set("timefac_mat" ,alphaF_*gamma_*dt_);
+    apply_cons_params.set("timefac_rhs" ,               1.0);
+
+    // set required state vectors
+    discret_->ClearState();
+
+    discret_->SetState("u and p (trial)",velaf_);
+    if (alefluid_)
+    {
+      discret_->SetState("dispnp", dispnp_);
+    }
+
+    // call loop over elements
+    discret_->EvaluateCondition(apply_cons_params                      ,
+                                sysmat_                                ,
+                                Teuchos::null                          ,
+                                residual_                              ,
+                                Teuchos::null                          ,
+                                Teuchos::null                          ,
+                                "SurfaceConservativeOutflowConsistency");
+
+    discret_->ClearState();
+  }
+
   // end time measurement for element call
   tm3_ref_=null;
 
