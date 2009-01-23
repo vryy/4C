@@ -665,14 +665,14 @@ void DRT::Discretization::EvaluateCondition
           vector<int> lmowner;
           curr->second->LocationVector(*this,lm,lmowner);
 
-        // get dimension of element matrices and vectors
-        // Reshape element matrices and vectors and init to zero
-        const int eledim = (int)lm.size();
-        if (assemblemat1) elematrix1.Shape(eledim,eledim);
-        if (assemblemat2) elematrix2.Shape(eledim,eledim);
-        if (assemblevec1) elevector1.Size(eledim);
-        if (assemblevec2) elevector2.Size(eledim);
-        if (assemblevec3) elevector3.Size(eledim);
+          // get dimension of element matrices and vectors
+          // Reshape element matrices and vectors and init to zero
+          const int eledim = (int)lm.size();
+          if (assemblemat1) elematrix1.Shape(eledim,eledim);
+          if (assemblemat2) elematrix2.Shape(eledim,eledim);
+          if (assemblevec1) elevector1.Size(eledim);
+          if (assemblevec2) elevector2.Size(eledim);
+          if (assemblevec3) elevector3.Size(eledim);
 
           // call the element specific evaluate method
           int err = curr->second->Evaluate(params,*this,lm,elematrix1,elematrix2,
