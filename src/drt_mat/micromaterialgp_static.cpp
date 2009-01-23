@@ -49,7 +49,7 @@ std::map<int, int> MAT::MicroMaterialGP::microstaticcounter_;
 /// microscale discretization
 
 MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID, const bool eleowner,
-                                      const double time, const int microdisnum)
+                                      const double time, const int microdisnum, const double V0)
   : gp_(gp),
     ele_ID_(ele_ID),
     microdisnum_(microdisnum)
@@ -71,7 +71,7 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID, const bool
   if (microstaticmap_.find(microdisnum_) == microstaticmap_.end() or microstaticmap_[microdisnum_] == Teuchos::null)
   {
     // create "time integration" class for this microstructure
-    MAT::MicroMaterialGP::SetUpMicroStatic();
+    MAT::MicroMaterialGP::SetUpMicroStatic(V0);
     // create a counter of macroscale GP associated with this "time integration" class
     // note that the counter is immediately updated afterwards!
     microstaticcounter_[microdisnum_] = 0;
@@ -201,7 +201,7 @@ void MAT::MicroMaterialGP::ReadRestart()
 
 /// Set up microscale generalized alpha
 
-void MAT::MicroMaterialGP::SetUpMicroStatic()
+void MAT::MicroMaterialGP::SetUpMicroStatic(const double V0)
 {
   // -------------------------------------------------------------------
   // access the discretization
@@ -283,6 +283,10 @@ void MAT::MicroMaterialGP::SetUpMicroStatic()
 
   params->set<bool>  ("ADAPTCONV",getIntegralValue<int>(sdyn,"ADAPTCONV")==1);
   params->set<double>("ADAPTCONV_BETTER",sdyn.get<double>("ADAPTCONV_BETTER"));
+
+  // set initial RVE volume possibly defined in dat-file
+  params->set<double>("V0", V0);
+  params->set<int>("microdisnum", microdisnum_);
 
   microstaticmap_[microdisnum_] = rcp(new STRUMULTI::MicroStatic(params,actdis,solver));
 }

@@ -287,6 +287,8 @@ protected:
   RefCountPtr<Epetra_MultiVector> D_;  // D Matrix following Miehe et al., 2002
   RefCountPtr<Epetra_MultiVector> rhs_; // exported transpose of D (pdof -> dofrowmap)
 
+  int                   microdisnum_;  // number of RVE
+
   double                         V0_;  // initial volume of RVE
   double                    density_;  // initial density of RVE
 

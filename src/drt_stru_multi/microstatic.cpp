@@ -41,12 +41,15 @@ extern struct _GENPROB     genprob;
  |  ctor (public)|
  *----------------------------------------------------------------------*/
 STRUMULTI::MicroStatic::MicroStatic(RCP<ParameterList> params,
-                                         RCP<DRT::Discretization> dis,
-                                         RCP<LINALG::Solver> solver):
+                                    RCP<DRT::Discretization> dis,
+                                    RCP<LINALG::Solver> solver):
 params_(params),
 discret_(dis),
 solver_(solver)
 {
+  int microdisnum_ = params_->get<int>("microdisnum", -1);
+  if (microdisnum_ == -1) dserror("problem with microdisnum in micro control routine");
+
   // -------------------------------------------------------------------
   // get some parameters from parameter list
   // -------------------------------------------------------------------
@@ -167,16 +170,36 @@ solver_(solver)
   invtoggle_->PutScalar(1.0);
   invtoggle_->Update(-1.0,*dirichtoggle_,1.0);
 
-  // -------------------------- Calculate initial volume of microstructure
-  ParameterList p;
-  // action for elements
-  p.set("action","calc_init_vol");
-  p.set("V0", 0.0);
-//   discret_->Evaluate(p,null,null,null,null,null);
-  discret_->EvaluateCondition(p, null, null, null, null, null, "MicroBoundary");
-  V0_ = p.get<double>("V0", -1.0);
-  if (V0_ == -1.0)
-    dserror("Calculation of initial volume failed");
+
+  double V0 = params_->get<double>("V0", -1.0);
+  if (V0 > 0.0)
+  {
+    V0_ = V0;
+    // just in case anyone ever wants to query the initial volume from
+    // the parameter list...
+    params_->set<double>("V0", V0_);
+  }
+  else
+  {
+    cout << "You have not specified the initial volume of the RVE with number "
+         << microdisnum_ << ", therefore it will now be calculated.\n\n"
+         << "CAUTION: This calculation works only for RVEs without holes penetrating the surface!\n"
+         << endl;
+
+    // -------------------------- Calculate initial volume of microstructure
+    ParameterList p;
+    // action for elements
+    p.set("action","calc_init_vol");
+    p.set("V0", 0.0);
+    discret_->EvaluateCondition(p, null, null, null, null, null, "MicroBoundary");
+    V0_ = p.get<double>("V0", -1.0);
+    if (V0_ == -1.0)
+      dserror("Calculation of initial volume failed");
+    // just in case anyone ever wants to query the initial volume from
+    // the parameter list...
+    params_->set<double>("V0", V0_);
+  }
+
 
   // ------------------------- Calculate initial density of microstructure
   // the macroscopic density has to be averaged over the entire

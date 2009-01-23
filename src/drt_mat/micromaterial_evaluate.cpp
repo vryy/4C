@@ -63,6 +63,7 @@ void MAT::MicroMaterial::Evaluate(LINALG::Matrix<3,3>* defgrd,
   // activate microscale material
 
   int microdisnum = matdata_->m.struct_multiscale->microdis;
+  double V0 = matdata_->m.struct_multiscale->V0;
   RefCountPtr<DRT::Problem> micro_problem = DRT::Problem::Instance(microdisnum);
   micro_problem->ActivateMaterial();
 
@@ -72,7 +73,7 @@ void MAT::MicroMaterial::Evaluate(LINALG::Matrix<3,3>* defgrd,
   if (gp > static_cast<int>(matgp_.size())-1)
   {
     matgp_.resize(gp+1);
-    matgp_[gp] = rcp(new MicroMaterialGP(gp, ele_ID, eleowner, time, microdisnum));
+    matgp_[gp] = rcp(new MicroMaterialGP(gp, ele_ID, eleowner, time, microdisnum, V0));
   }
 
   RefCountPtr<MicroMaterialGP> actmicromatgp = matgp_[gp];

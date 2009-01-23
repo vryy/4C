@@ -817,6 +817,7 @@ typedef struct _STRUCT_MULTISCALE
 {
   INT            microdis;      /* Number of corresponding microscale
                                  * discretization */
+  DOUBLE         V0;            /* initial volume of RVE (optional) */
   char   *micro_inputfile_name; /* inputfile name for microstructure */
 } STRUCT_MULTISCALE;
 

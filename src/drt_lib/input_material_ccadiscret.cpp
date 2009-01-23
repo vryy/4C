@@ -726,6 +726,9 @@ while(strncmp(fractplace(),"------",6)!=0)
       frint("MICRODIS_NUM", &(localmat.m.struct_multiscale->microdis), &ierr);
       if (ierr!=1) dserror("Number of microscale discretization not found");
 
+      frdouble("INITVOL", &(localmat.m.struct_multiscale->V0), &ierr);
+      // this is an optional input parameter, so no checking necessary
+
       localmat.m.struct_multiscale->micro_inputfile_name =
         (char*)CCACALLOC(length+1, sizeof(char));
       strcpy(localmat.m.struct_multiscale->micro_inputfile_name, &buffer[0]);

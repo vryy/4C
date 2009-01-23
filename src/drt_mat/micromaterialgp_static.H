@@ -35,7 +35,8 @@ public:
 
   /// construct an instance of MicroMaterial for a given Gauss point
   /// and microscale discretization
-  MicroMaterialGP(const int gp, const int ele_ID, const bool eleowner, const double time, const int microdisnum);
+  MicroMaterialGP(const int gp, const int ele_ID, const bool eleowner,
+                  const double time, const int microdisnum, const double V0);
 
   /// destructor
   ~MicroMaterialGP();
@@ -53,7 +54,7 @@ public:
                               const bool eleowner);
 
   /// Set up microscale static "time integrator"
-  void SetUpMicroStatic();
+  void SetUpMicroStatic(const double V0);
 
   /// Create and initialize "empty" EAS history map
   void EasInit();
