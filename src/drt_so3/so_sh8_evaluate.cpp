@@ -1273,7 +1273,8 @@ int DRT::ELEMENTS::Sosh8Register::Initialize(DRT::Discretization& dis)
   if (num_morphed_so_hex8_easmild>0){
     cout << endl << num_morphed_so_hex8_easmild
     << " Sosh8-Elements have no clear 'thin' direction and have morphed to So_hex8 with eas_mild" << endl;
-  } else if (num_morphed_so_hex8_easnone>0){
+  } 
+  if (num_morphed_so_hex8_easnone>0){
     cout << endl << num_morphed_so_hex8_easnone
     << " Sosh8-Elements have no clear 'thin' direction and have morphed to So_hex8 with eas_none" << endl;
   }
