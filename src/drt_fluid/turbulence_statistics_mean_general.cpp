@@ -22,11 +22,15 @@ Maintainer: Peter Gamnitzer
 //
 //----------------------------------------------------------------------
 FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean(
-  RCP<DRT::Discretization> discret,
-  string                   homdir
+  RCP<DRT::Discretization> discret        ,
+  string                   homdir         ,
+  double &                 density        ,
+  LINALG::MapExtractor&    velpressplitter
   )
   :
-  discret_(discret)
+  discret_(discret),
+  density_(density),
+  velpressplitter_(velpressplitter)
 {
   // get directions to do spacial averaging
   homdir_.clear();
@@ -795,6 +799,11 @@ void FLD::TurbulenceStatisticsGeneralMean::WriteOldAverageVec(
   output.WriteDouble("sampling_time"      , prev_avg_time_);
 
   output.WriteVector("averaged_velnp",prev_avg_);
+
+  // output real pressure
+  Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_.ExtractCondVector(prev_avg_);
+  pressure->Scale(density_);
+  output.WriteVector("averaged_pressure", pressure);
 
   return;
 } // FLD::TurbulenceStatisticsGeneralMean::WriteOldAverageVec

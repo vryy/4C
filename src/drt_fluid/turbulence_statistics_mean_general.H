@@ -50,7 +50,12 @@ public:
   \param (in) the discretisation (containing nodes, dofs etc.)
 
   */
-  TurbulenceStatisticsGeneralMean(RCP<DRT::Discretization> discret,string homdir);
+  TurbulenceStatisticsGeneralMean(
+    RCP<DRT::Discretization> discret        ,
+    string                   homdir         ,
+    double &                 density        ,
+    LINALG::MapExtractor&    velpressplitter
+    );
 
   /*!
   \brief Destructor (public)
@@ -124,25 +129,31 @@ public:
 private:
 
   //! the discretization
-  RCP<DRT::Discretization>     discret_      ;
+  RCP<DRT::Discretization>     discret_        ;
+
+  //! reference to material density to rescale pressure
+  double &                     density_;
+
+  //! a splitter between velocities and pressure dofs
+  LINALG::MapExtractor&        velpressplitter_;
 
   //! vector containing homogeneous directions
-  vector<int>                  homdir_       ;
+  vector<int>                  homdir_         ;
 
   //! previous averages, done in time and space
-  RCP<Epetra_Vector>           prev_avg_     ;
+  RCP<Epetra_Vector>           prev_avg_       ;
   //! number of time steps included in the previous average
-  int                          prev_n_       ;
+  int                          prev_n_         ;
   //! time covered by previous average
-  double                       prev_avg_time_;
+  double                       prev_avg_time_  ;
 
 
   //! current averages, done in time and space
-  RCP<Epetra_Vector>           curr_avg_     ;
+  RCP<Epetra_Vector>           curr_avg_       ;
   //! number of time steps included in the current average
-  int                          curr_n_       ;
+  int                          curr_n_         ;
   //! time covered by current average
-  double                       curr_avg_time_;
+  double                       curr_avg_time_  ;
 
   //! compare operator for doubles up to a precision of 1e-8
   struct doublecomp {

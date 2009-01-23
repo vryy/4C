@@ -944,6 +944,9 @@ void FLD::FluidGenAlphaIntegration::GenAlphaOutput()
     if (step_==upres_)
      output_.WriteElementData();
 
+    // dumping of turbulence statistics if required
+    statisticsmanager_->DoOutput(output_,step_);
+
     // do restart if we have to
     if (step_%uprestart_ == 0)
     {
@@ -955,9 +958,6 @@ void FLD::FluidGenAlphaIntegration::GenAlphaOutput()
         output_.WriteVector("dispn"   ,dispn_   );
         output_.WriteVector("gridveln",gridveln_);
       }
-
-      // dumping of turbulence statistics if required
-      statisticsmanager_->DoOutput(output_,step_);
 
       // write mesh in each restart step --- the elements are required since
       // they contain history variables (the time dependent subscales)

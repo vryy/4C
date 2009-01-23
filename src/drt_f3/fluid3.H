@@ -594,7 +594,8 @@ private:
   template<int iel> 
   void f3_calc_means(
     DRT::Discretization&      discretization,
-    vector<double>&           vel  ,
+    vector<double>&           vel   ,
+    vector<double>&           disp  ,
     ParameterList& 	      params
     );
 

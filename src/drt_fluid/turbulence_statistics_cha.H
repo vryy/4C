@@ -110,6 +110,7 @@ public:
 
   */
   TurbulenceStatisticsCha(RefCountPtr<DRT::Discretization> actdis             ,
+                          RefCountPtr<Epetra_Vector>       dispnp             ,
                           ParameterList&                   params             ,
                           bool                             smagorinsky        ,
                           bool                             subgrid_dissipation);
@@ -304,6 +305,9 @@ private:
 
   //! The discretisation (required for nodes, dofs etc;)
   RefCountPtr<DRT::Discretization> discret_;
+
+  //! node displacements due to mesh motion
+  RefCountPtr<Epetra_Vector>       dispnp_;
 
   //! contains plane normal direction etc --- this is the original 
   //! fluid dynamic parameterlist

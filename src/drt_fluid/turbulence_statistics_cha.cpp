@@ -17,12 +17,14 @@ flows.
   ---------------------------------------------------------------------*/
 FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   RefCountPtr<DRT::Discretization> actdis             ,
+  RefCountPtr<Epetra_Vector>       dispnp             ,
   ParameterList&                   params             ,
   bool                             smagorinsky        ,
   bool                             subgrid_dissipation
   )
   :
   discret_            (actdis             ),
+  dispnp_             (dispnp             ),
   params_             (params             ),
   smagorinsky_        (smagorinsky        ),
   subgrid_dissipation_(subgrid_dissipation)
@@ -1185,7 +1187,8 @@ void FLD::TurbulenceStatisticsCha::EvaluateIntegralMeanValuesInPlanes()
 
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState("u and p (n+1,converged)"    ,meanvelnp_);
+  discret_->SetState("u and p (n+1,converged)"    ,meanvelnp_   );
+  discret_->SetState("dispnp"                     ,dispnp_      );
 
   // call loop over elements
   discret_->Evaluate(eleparams,null,null,null,null,null);

@@ -363,35 +363,50 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           vector<double> mysol  (lm.size());
           DRT::UTILS::ExtractMyValues(*velnp,mysol,lm);
 
+          vector<double> mydisp(lm.size());
+          if(is_ale_)
+          {
+            // get most recent displacements
+            RefCountPtr<const Epetra_Vector> dispnp
+              =
+              discretization.GetState("dispnp");
+                        
+            if (dispnp==null)
+            {
+              dserror("Cannot get state vectors 'dispnp'");
+            }
+            
+            DRT::UTILS::ExtractMyValues(*dispnp,mydisp,lm);
+          }
+
           // integrate mean values
           const DiscretizationType distype = this->Shape();
-
 
           switch (distype)
           {
           case DRT::Element::hex8:
           {
-            f3_calc_means<8>(discretization,mysol,params);
+            f3_calc_means<8>(discretization,mysol,mydisp,params);
             break;
           }
           case DRT::Element::hex20:
           {
-            f3_calc_means<20>(discretization,mysol,params);
+            f3_calc_means<20>(discretization,mysol,mydisp,params);
             break;
           }
           case DRT::Element::hex27:
           {
-            f3_calc_means<27>(discretization,mysol,params);
+            f3_calc_means<27>(discretization,mysol,mydisp,params);
             break;
           }
           case DRT::Element::nurbs8:
           {
-            f3_calc_means<8>(discretization,mysol,params);
+            f3_calc_means<8>(discretization,mysol,mydisp,params);
             break;
           }
           case DRT::Element::nurbs27:
           {
-            f3_calc_means<27>(discretization,mysol,params);
+            f3_calc_means<27>(discretization,mysol,mydisp,params);
             break;
           }
           default:
@@ -899,6 +914,7 @@ template<int iel>
 void DRT::ELEMENTS::Fluid3::f3_calc_means(
   DRT::Discretization&      discretization,
   vector<double>&           solution      ,
+  vector<double>&           displacement  ,
   ParameterList& 	    params
   )
 {
@@ -944,6 +960,23 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
       xyze(0,inode)=x[0];
       xyze(1,inode)=x[1];
       xyze(2,inode)=x[2];
+    }
+
+    if(is_ale_)
+    {
+      for (int inode=0; inode<iel; inode++)
+      {
+        const int finode = 4*inode;
+
+        xyze(0,inode) += displacement[ +finode];
+        xyze(1,inode) += displacement[1+finode];
+        xyze(2,inode) += displacement[2+finode];
+
+        if(abs(displacement[normdirect+finode])>1e-6)
+        {
+          dserror("no sampling possible if homogeneous planes are not conserved\n");
+        }
+      }
     }
 
     double min = xyze(normdirect,0);

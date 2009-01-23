@@ -31,6 +31,7 @@ namespace FLD
     alphaM_     (fluid.alphaM_   ),
     alphaF_     (fluid.alphaF_   ),
     gamma_      (fluid.gamma_    ),
+    density_    (fluid.density_  ),
     discret_    (fluid.discret_  ),
     params_     (fluid.params_   ),
     alefluid_   (fluid.alefluid_ ),
@@ -47,6 +48,8 @@ namespace FLD
     mygridvelaf_(fluid.gridvelaf_),
     myforce_    (fluid.force_    )
   {
+    // get density
+
     // activate the computation of subgrid dissipation, 
     // residuals etc
     subgrid_dissipation_=true;
@@ -63,6 +66,7 @@ namespace FLD
       // allocate one instance of the averaging procedure for
       // the flow under consideration
       statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_            ,
+                                                          mydispnp_           ,
                                                           params_             ,
                                                           smagorinsky_        ,
                                                           subgrid_dissipation_));
@@ -77,6 +81,7 @@ namespace FLD
       // allocate one instance of the averaging procedure for
       // the flow under consideration
       statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_            ,
+                                                          mydispnp_           ,
                                                           params_             ,
                                                           smagorinsky_        ,
                                                           subgrid_dissipation_));
@@ -136,7 +141,12 @@ namespace FLD
       
       string homdir = modelparams->get<string>("HOMDIR","not_specified");
 
-      statistics_general_mean_=rcp(new TurbulenceStatisticsGeneralMean(discret_,homdir));
+      statistics_general_mean_
+        =rcp(new TurbulenceStatisticsGeneralMean(
+               discret_,
+               homdir,
+               density_,
+               fluid.VelPresSplitter()));
     }
     return;
     
@@ -153,6 +163,7 @@ namespace FLD
     alphaM_     (0.0                ),
     alphaF_     (0.0                ),
     gamma_      (0.0                ),
+    density_    (fluid.density_     ),
     discret_    (fluid.discret_     ),
     params_     (fluid.params_      ),
     alefluid_   (fluid.alefluid_    ),
@@ -170,6 +181,8 @@ namespace FLD
     mygridvelaf_(null               ),
     myforce_    (fluid.trueresidual_)
   {
+    // get density
+
     // no subgrid dissipation computation is available for the
     // one-steo-theta implementation
     subgrid_dissipation_=false;
@@ -186,6 +199,7 @@ namespace FLD
       // allocate one instance of the averaging procedure for
       // the flow under consideration
       statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_            ,
+                                                          mydispnp_           ,
                                                           params_             ,
                                                           smagorinsky_        ,
                                                           subgrid_dissipation_));
@@ -200,6 +214,7 @@ namespace FLD
       // allocate one instance of the averaging procedure for
       // the flow under consideration
       statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_            ,
+                                                          mydispnp_           ,
                                                           params_             ,
                                                           smagorinsky_        ,
                                                           subgrid_dissipation_));
@@ -259,7 +274,13 @@ namespace FLD
       
       string homdir = modelparams->get<string>("HOMDIR","not_specified");
 
-      statistics_general_mean_=rcp(new TurbulenceStatisticsGeneralMean(discret_,homdir));
+
+      statistics_general_mean_
+        =rcp(new TurbulenceStatisticsGeneralMean(
+               discret_,
+               homdir,
+               density_,
+               fluid.VelPresSplitter()));
     }
 
     return;
