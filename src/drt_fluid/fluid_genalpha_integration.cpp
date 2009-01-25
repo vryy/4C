@@ -894,6 +894,11 @@ void FLD::FluidGenAlphaIntegration::GenAlphaStatisticsAndOutput()
   statisticsmanager_->DoTimeSample(step_,time_);
 
   // -------------------------------------------------------------------
+  //   calculate lift and drag values
+  // -------------------------------------------------------------------
+  this->LiftDrag();
+  
+  // -------------------------------------------------------------------
   //                         output of solution
   // -------------------------------------------------------------------
   this->GenAlphaOutput();

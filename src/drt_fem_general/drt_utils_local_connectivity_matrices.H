@@ -271,6 +271,48 @@ namespace UTILS
 
                                                                 { 0.0,  0.0} };
 
+
+
+  //! 6 Surfaces of a nurbs27 element with 9 control points per surface
+  //! we apply the nurbs specific cartesian numbering, only interpolated surfaces are valid!
+  //!
+  //! \verbatim
+  //!                          v
+  //!                         /
+  //!                        / 
+  //!          X---------X---------X      
+  //!         /|24      /|25      /|26       
+  //!  w     / |       / |       / |       
+  //!  ^    /  |      /  |      /  |       
+  //!  |   X---------X---------X   |     
+  //!  |  /|21 |    /|22 |    /|23 |       
+  //!  | / |   X---/-|---X---/-|---X        
+  //!   /  |  /|15/  |  /|16/  |  /|17    
+  //!  X---------X---------X   | / |       
+  //!  |18 |/  | |19 |/  | |20 |/  |      
+  //!  |   X-----|---X-----|---X   |      
+  //!  |  /|12 | |  /|13 | |  /|14 |         
+  //!  | / |   X-|-/-|---X-|-/-|---X        
+  //!  |/  |  /6 |/  |  /7 |/  |  /8        
+  //!  X---------X---------X   | /          
+  //!  |9  |/    |10 |/    |11 |/    
+  //!  |   X-----|---X-----|---X     
+  //!  |  /3     |  /4     |  /5
+  //!  | /       | /       | /
+  //!  |/        |/        |/
+  //!  X---------X---------X ----->u
+  //!   0         1         2
+  //!
+  //! \endverbatim
+
+  const int eleNodeNumbering_nurbs27_surfaces[6][9] = {
+          { 2, 1, 0, 5, 4, 3, 8, 7, 6},
+          {18,19,20,21,22,23,24,25,26},
+          { 0, 1, 2, 9,10,11,18,19,20},
+          { 2, 5, 8,11,14,17,20,23,26},
+          { 8, 7, 6,17,16,15,26,25,24},
+          { 6, 3, 0,15,12, 9,24,21,18}};
+  
   //! for each node the reference coordinates are stored for tri6
   const double eleNodeNumbering_tri6_nodes_reference[6][2] = { {0.0, 0.0},
                                                                {1.0, 0.0},
