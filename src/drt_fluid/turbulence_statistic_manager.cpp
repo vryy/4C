@@ -66,6 +66,7 @@ namespace FLD
       // allocate one instance of the averaging procedure for
       // the flow under consideration
       statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_            ,
+                                                          alefluid_           ,
                                                           mydispnp_           ,
                                                           params_             ,
                                                           smagorinsky_        ,
@@ -81,6 +82,7 @@ namespace FLD
       // allocate one instance of the averaging procedure for
       // the flow under consideration
       statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_            ,
+                                                          alefluid_           ,
                                                           mydispnp_           ,
                                                           params_             ,
                                                           smagorinsky_        ,
@@ -199,6 +201,7 @@ namespace FLD
       // allocate one instance of the averaging procedure for
       // the flow under consideration
       statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_            ,
+                                                          alefluid_           ,
                                                           mydispnp_           ,
                                                           params_             ,
                                                           smagorinsky_        ,
@@ -214,6 +217,7 @@ namespace FLD
       // allocate one instance of the averaging procedure for
       // the flow under consideration
       statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_            ,
+                                                          alefluid_           ,
                                                           mydispnp_           ,
                                                           params_             ,
                                                           smagorinsky_        ,

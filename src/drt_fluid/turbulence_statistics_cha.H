@@ -110,6 +110,7 @@ public:
 
   */
   TurbulenceStatisticsCha(RefCountPtr<DRT::Discretization> actdis             ,
+                          bool                             alefluid           ,
                           RefCountPtr<Epetra_Vector>       dispnp             ,
                           ParameterList&                   params             ,
                           bool                             smagorinsky        ,
@@ -305,6 +306,9 @@ private:
 
   //! The discretisation (required for nodes, dofs etc;)
   RefCountPtr<DRT::Discretization> discret_;
+
+  //! flag for ale discretisation 
+  bool                             alefluid_;
 
   //! node displacements due to mesh motion
   RefCountPtr<Epetra_Vector>       dispnp_;

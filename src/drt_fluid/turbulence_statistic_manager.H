@@ -128,7 +128,7 @@ private:
   int                                  samstop_;
   //! incremental dump every dumperiod steps or standalone 
   //! records (0)
-  int                                  dumperiod_;
+  int                                  dumperiod_  ;
 
   //! the discretization
   RCP<DRT::Discretization>             discret_    ;

@@ -17,6 +17,7 @@ flows.
   ---------------------------------------------------------------------*/
 FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   RefCountPtr<DRT::Discretization> actdis             ,
+  bool                             alefluid           ,
   RefCountPtr<Epetra_Vector>       dispnp             ,
   ParameterList&                   params             ,
   bool                             smagorinsky        ,
@@ -24,6 +25,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   )
   :
   discret_            (actdis             ),
+  alefluid_           (alefluid           ),
   dispnp_             (dispnp             ),
   params_             (params             ),
   smagorinsky_        (smagorinsky        ),
@@ -1188,7 +1190,10 @@ void FLD::TurbulenceStatisticsCha::EvaluateIntegralMeanValuesInPlanes()
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState("u and p (n+1,converged)"    ,meanvelnp_   );
-  discret_->SetState("dispnp"                     ,dispnp_      );
+  if(alefluid_)
+  {
+    discret_->SetState("dispnp"                   ,dispnp_      );
+  }
 
   // call loop over elements
   discret_->Evaluate(eleparams,null,null,null,null,null);
