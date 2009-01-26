@@ -1420,7 +1420,6 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
     vector<std::string> condnames;
     condnames.push_back("FluxCalculation");
     condnames.push_back("ElectrodeKinetics");
-    condnames.push_back("PointNeumann");
     condnames.push_back("LineNeumann");
     condnames.push_back("SurfaceNeumann");
 

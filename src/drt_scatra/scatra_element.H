@@ -573,6 +573,10 @@ public:
   virtual int NumDofPerNode(const DRT::Node& node) const
   {return parent_->NumDofPerNode(node);}
 
+  //! Return a pointer to the parent element of this boundary element
+  virtual DRT::ELEMENTS::Transport* ParentElement()
+  {return parent_;}
+
   /*!
   \brief Get number of degrees of freedom per element
          (implements pure virtual DRT::Element)
@@ -668,75 +672,13 @@ public:
 
 private:
 
-  //! action parameters recognized by TransportSurface
-  enum ActionType
-  {
-    none,
-    calc_condif_flux,
-    calc_elch_electrode_kinetics,
-    calc_therm_press
-  };
-
   // don't want = operator
   TransportBoundary& operator = (const TransportBoundary& old);
 
-  //! evaluate an electrode kinetics boundary condition
-  void EvaluateElectrodeKinetics(
-     Epetra_SerialDenseMatrix& emat,  ///< element-matrix
-     Epetra_SerialDenseVector& erhs,  ///< element-rhs
-     const vector<double>&   ephinp,  ///< actual conc. and pot. values
-     struct _MATERIAL*     material,  ///< the material
-     const int&          reactantid,  ///< MATERIAL id of reactive species
-     const std::string*    kinetics,  ///< desired electrode kinetics model
-     const double&             pot0,  ///< actual electrode potential on metal side
-     const double&           alphaa,  ///< anodic factor in Butler-Volmer model
-     const double&           alphac,  ///< cathodic factor in Butler-Volmer model
-     const double&               i0,  ///< exchange current density
-     const double&              frt,  ///< factor F/RT
-     const bool&             iselch   ///< problemtype elch or scatra
-     );
-
- /*!
-  brief integral of normal flux over boundary surface
-
-  \param params (in/out)    : ParameterList for communication between control routine
-                              and elements
-  \param discretization (in): A reference to the underlying discretization
-  \param lm (in)            : location vector of this element
-  \param xyze (in)          : node coordinates
-  \param enormflux (in)     : normal fluxes at element nodes
-  */
-  void NormalFluxIntegral(ParameterList&                  params,
-                          DRT::Discretization&            discretization,
-                          const vector<int>&              lm,
-                          const Epetra_SerialDenseMatrix  xyze,
-                          const vector<double>&           enormflux);
-
- /*!
-  brief integral of normal diffusive flux and velocity div. over boundary surface
-
-  \param params (in/out)    : ParameterList for communication between control routine
-                              and elements
-  \param discretization (in): A reference to the underlying discretization
-  \param lm (in)            : location vector of this element
-  \param xyze (in)          : node coordinates
-  \param ediffflux (in)     : normal diffusive fluxes at element nodes
-  \param edivu (in)         : velocity divergence at element nodes
-  */
-  void DifffluxAndDivuIntegral(ParameterList&                  params,
-                               DRT::Discretization&            discretization,
-                               const vector<int>&              lm,
-                               const Epetra_SerialDenseMatrix  xyze,
-                               const vector<double>&           ediffflux,
-                               const vector<double>&           edivu);
-
-  //! The parent element of this surface
+  //! The parent element of this boundary element
   DRT::ELEMENTS::Transport* parent_;
   //! The local boundary element number of this surface w.r.t to the parent_ element
   int                       lbeleid_;
-  //! number of dofs per node (for systems of transport equations)
-  //! (storage neccessary because we dont know the material in the post filters anymore)
-  int                       numdofpernode_;
 
 }; // class TransportBoundary
 

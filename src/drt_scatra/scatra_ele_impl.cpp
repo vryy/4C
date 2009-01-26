@@ -1410,7 +1410,7 @@ if (use2ndderiv)
   GetLaplacianStrongForm(diff_, derxy2_);
   diff_.Scale(diffus_[dofindex]);
 }
-
+cout<<"starting with SG\n"<<endl;
 //----------------------------------------------------------------
 // element matrix: standard Galerkin terms
 //----------------------------------------------------------------

@@ -259,6 +259,7 @@ OBJS_DRT_SCATRA=src/drt_scatra/scatra_dyn.o \
                 src/drt_scatra/passive_scatra_algorithm.o 
 OBJS_DRT_SCATRA_LIB = src/drt_scatra/scatra_ele_impl.o \
                 src/drt_scatra/scatra_ele_impl_utils.o \
+                src/drt_scatra/scatra_ele_boundary_impl.o \
                 src/drt_scatra/scatra_element.o \
                 src/drt_scatra/scatra_element_evaluate.o \
                 src/drt_scatra/scatra_element_input.o \

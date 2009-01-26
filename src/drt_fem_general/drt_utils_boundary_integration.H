@@ -16,6 +16,9 @@ Maintainer: Georg Bauer
 #define UTILS_BOUNDARY_INTEGRATION_H
 
 #include <Epetra_SerialDenseMatrix.h>
+#include "../drt_lib/drt_element.H"
+#include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 
 namespace DRT
@@ -28,8 +31,37 @@ void ComputeMetricTensorForSurface(
   const Epetra_SerialDenseMatrix& xyze,
   const Epetra_SerialDenseMatrix& deriv,
   Epetra_SerialDenseMatrix&       metrictensor,
-  double                         *sqrtdetg
+  double*                         sqrtdetg
   );
+
+
+//! compute kovariant metric tensor for surface/line element (template)
+template<DRT::Element::DiscretizationType DISTYPE>
+void ComputeMetricTensorForBoundaryEle(
+  const LINALG::Matrix< (1 + DRT::UTILS::DisTypeToDim<DISTYPE>::dim), DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>&  xyze,
+  const LINALG::Matrix<DRT::UTILS::DisTypeToDim<DISTYPE>::dim,  DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>&  deriv,
+  LINALG::Matrix<DRT::UTILS::DisTypeToDim<DISTYPE>::dim,        DRT::UTILS::DisTypeToDim<DISTYPE>::dim>&                    metrictensor,
+  double&  sqrtdetg
+  )
+{
+  LINALG::Matrix<DRT::UTILS::DisTypeToDim<DISTYPE>::dim,1 + DRT::UTILS::DisTypeToDim<DISTYPE>::dim> dxyzdrs;
+
+  dxyzdrs.MultiplyNT(1.0,deriv,xyze,0.0);
+
+  metrictensor.Clear();
+  metrictensor.MultiplyNT(1.0,dxyzdrs,dxyzdrs,0.0);
+
+/*
+                          +--------------+
+                         /               |
+           sqrtdetg =   /  g11*g22-g12^2
+                      \/
+*/
+
+  sqrtdetg = sqrt(metrictensor.Determinant());
+
+  return;
+}
 
 } // namespace UTILS
 } // namespace DRT
