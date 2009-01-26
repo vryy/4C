@@ -492,25 +492,24 @@ private:
 
   /*!
     \brief calculate spatial mean values for channel flow
-    (requires cartesian mesh)
+    (requires wall parallel layers of elements)
 
                                                              gammi 07/07
 
     <pre>
 
     this method assumes that each 2 dimensional integration element
-    in the homogeneous plane has the same size!!!
+    in the homogeneous plane is parallel to the wall!!!
 
-    The necessary element integration is performed in here. The element
+    The necessary element integration is done in here. The element
     is cut into two (HEX8) or three (quadratic elements) planes (plus
     additional planes for visualisation purposes, defined by planes
     vector), the spatial functions (velocity, pressure etc.) are
     integrated over this plane and this element contribution is added
     to a processor local vector (see formulas below for a exact
     description of the output).
-    The method assumes, that all elements are of the same rectangular
-    shape in the "inplanedirection". In addition, it is assumed that
-    the sampling planes are distributed equidistant in the element.
+    It is assumed that the sampling planes are distributed equidistant 
+    in the element. The result is normalized by the area afterwards
 
 
                        ^ normdirect       integration plane
@@ -542,37 +541,20 @@ private:
 
     Example for a mean value evaluation:
 
-                            1.0       /
-                     _               |
-                     u = -------- *  | u(x,y,z) dx dy dz =
-                         +---        |
-                          \         / A
-                          / area
-                         +---
-
-
-                           1.0      /
-                                   |            area
-                     =  -------- * | u(r,s,t) * ---- dr ds dt
-                        +---       |              4
-                         \        /  [-1:1]^2
-                         / area
-                        +---
-
-
-
-                            1.0      /
-                                    |            1
-                     =   -------- * | u(r,s,t) * - dr ds dt
-                                    |            4
-                          numele   /  [-1:1]^2
-
-                                   |                        |
-                                   +------------------------+
-                                this is the integral we compute!
-
-    The factor 1/4 is necessary since we use a reference element of
-    size 2x2
+           1.0       /                     1.0      /                          
+    _               |                              |            detJ           
+    u = -------- *  | u(x,y,z) dx dz =  -------- * | u(r,s,t) * ---- dr ds
+        +---        |                   +---       |             h            
+         \         / A                   \        /  [-1:1]^2     y             
+         / area                          / area                                
+        +---                            +---                    +--+               
+                                                               Jacobi-
+                                                             determinant
+                                                              computed
+                                                           from 3d mapping
+                                                         h  is the (constant) 
+                                                          y
+                                                        height of the element
 
     The method computes:
                         _             _             _             _
@@ -582,10 +564,10 @@ private:
     and        numele * u  , numele * v  , numele * w  , numele * p
 
                         _ _           _ _           _ _
-   as well as  numele * u*v, numele * u*w, numele * v*w
+    as well as  numele * u*v, numele * u*w, numele * v*w
 
 
-    as well as numele.
+    as well as numele and the element area.
     All results are communicated via the parameter list!
 
     </pre>

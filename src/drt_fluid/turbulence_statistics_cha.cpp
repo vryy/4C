@@ -1099,6 +1099,9 @@ void FLD::TurbulenceStatisticsCha::EvaluateIntegralMeanValuesInPlanes()
   int size = sumu_->size();
 
   // generate processor local result vectors
+  RefCountPtr<vector<double> > locarea =  rcp(new vector<double> );
+  locarea->resize(size,0.0);
+
   RefCountPtr<vector<double> > locsumu =  rcp(new vector<double> );
   locsumu->resize(size,0.0);
 
@@ -1131,6 +1134,9 @@ void FLD::TurbulenceStatisticsCha::EvaluateIntegralMeanValuesInPlanes()
 
   RefCountPtr<vector<double> > locsumsqp =  rcp(new vector<double> );
   locsumsqp->resize(size,0.0);
+
+  RefCountPtr<vector<double> > globarea =  rcp(new vector<double> );
+  globarea->resize(size,0.0);
 
   RefCountPtr<vector<double> > globsumu =  rcp(new vector<double> );
   globsumu->resize(size,0.0);
@@ -1166,6 +1172,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateIntegralMeanValuesInPlanes()
   globsumsqp->resize(size,0.0);
 
   // communicate pointers to the result vectors to the element
+  eleparams.set("element layer area"  ,locarea );
   eleparams.set("mean velocity u"     ,locsumu);
   eleparams.set("mean velocity v"     ,locsumv);
   eleparams.set("mean velocity w"     ,locsumw);
@@ -1202,6 +1209,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateIntegralMeanValuesInPlanes()
 
   //----------------------------------------------------------------------
   // add contributions from all processors
+  discret_->Comm().SumAll(&((*locarea)[0]),&((*globarea)[0]),size);
 
   discret_->Comm().SumAll(&((*locsumu)[0]),&((*globsumu)[0]),size);
   discret_->Comm().SumAll(&((*locsumv)[0]),&((*globsumv)[0]),size);
@@ -1218,8 +1226,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateIntegralMeanValuesInPlanes()
 
 
   //----------------------------------------------------------------------
-  // the sums are divided by the number of elements to get the area
-  // average
+  // the sums are divided by the layers area to get the area average
 
   DRT::NURBS::NurbsDiscretization* nurbsdis
     =
@@ -1240,18 +1247,21 @@ void FLD::TurbulenceStatisticsCha::EvaluateIntegralMeanValuesInPlanes()
 
   for(unsigned i=0; i<planecoordinates_->size(); ++i)
   {
-    (*sumu_)[i]  +=(*globsumu)[i];
-    (*sumv_)[i]  +=(*globsumv)[i];
-    (*sumw_)[i]  +=(*globsumw)[i];
-    (*sump_)[i]  +=(*globsump)[i];
+    // get averege element size
+    (*globarea)[i]/=numele_;
 
-    (*sumsqu_)[i]+=(*globsumsqu)[i];
-    (*sumsqv_)[i]+=(*globsumsqv)[i];
-    (*sumsqw_)[i]+=(*globsumsqw)[i];
-    (*sumuv_ )[i]+=(*globsumuv )[i];
-    (*sumuw_ )[i]+=(*globsumuw )[i];
-    (*sumvw_ )[i]+=(*globsumvw )[i];
-    (*sumsqp_)[i]+=(*globsumsqp)[i];
+    (*sumu_)[i]  +=(*globsumu)[i]/(*globarea)[i];
+    (*sumv_)[i]  +=(*globsumv)[i]/(*globarea)[i];
+    (*sumw_)[i]  +=(*globsumw)[i]/(*globarea)[i];
+    (*sump_)[i]  +=(*globsump)[i]/(*globarea)[i];
+
+    (*sumsqu_)[i]+=(*globsumsqu)[i]/(*globarea)[i];
+    (*sumsqv_)[i]+=(*globsumsqv)[i]/(*globarea)[i];
+    (*sumsqw_)[i]+=(*globsumsqw)[i]/(*globarea)[i];
+    (*sumuv_ )[i]+=(*globsumuv )[i]/(*globarea)[i];
+    (*sumuw_ )[i]+=(*globsumuw )[i]/(*globarea)[i];
+    (*sumvw_ )[i]+=(*globsumvw )[i]/(*globarea)[i];
+    (*sumsqp_)[i]+=(*globsumsqp)[i]/(*globarea)[i];
   }
 
   return;

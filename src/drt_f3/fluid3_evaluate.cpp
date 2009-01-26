@@ -823,92 +823,8 @@ void DRT::ELEMENTS::Fluid3::f3_int_beltrami_err(
 }
 
 /*---------------------------------------------------------------------*
- | Calculate spatial mean values for channel flow (cartesian mesh)
+ | Calculate spatial mean values for channel flow 
  |                                                           gammi 07/07
- |
- | The necessary element integration is performed in here. The element
- | is cut into at least two (HEX8) or three (quadratic elements) planes,
- | the spatial functions (velocity, pressure etc.) are integrated over
- | this plane and this element contribution is added to a processor local
- | vector (see formulas below for a exact description of the output).
- | The method assumes, that all elements are of the same rectangular
- | shape in the "inplanedirection". In addition, it is assumed that
- | the sampling planes are distributed equidistant in the element.
- |
- |
- |                      ^ normdirect       integration plane
- |                      |                /
- |                      |               /
- |                      |
- |                +-----|-------------+
- |               /|     |            /|
- |              / |     |           / |
- |             /  |     |          /  |
- |            /   |     |         /   |
- |           /    +-----|--------/----+ ---- additional integration
- |          /    /|     |       /    /|      plane (for quadratic elements)
- |         /    / |     |      /    / |
- |        +-------------------+    /  |
- |        |   /   |     *-----|---+------------>
- |        |  /    +----/------|--/----+         inplanedirect[1]
- |        | /    /    /       | /    /
- |        |/    /    /        |/    /   \
- |        +---------+---------+    /     \
- |        |   /    /          |   /       integration plane
- |        |  /    /           |  /
- |        | /    /            | /
- |        |/    /             |/
- |        +----/--------------+
- |            /
- |           /   inplanedirect[0]
- |
- |
- |  Example for a mean value evaluation:
- |
- |         1.0       /
- |  _               |
- |  u = -------- *  | u(x,y,z) dx dy dz =
- |      +---        |
- |       \         / A
- |       / area
- |      +---
- |
- |
- |        1.0      /
- |                |            area
- |  =  -------- * | u(r,s,t) * ---- dr ds dt
- |     +---       |              4
- |      \        /  [-1:1]^2
- |      / area
- |     +---
- |
- |
- |
- |         1.0      /
- |                 |            1
- |  =   -------- * | u(r,s,t) * - dr ds dt
- |                 |            4
- |       numele   /  [-1:1]^2
- |
- |                |                        |
- |                +------------------------+
- |             this is the integral we compute!
- |
- | The factor 1/4 is necessary since we use a reference element of
- | size 2x2
- |
- | The method computes:
- |                      _             _             _             _
- |             numele * u  , numele * v  , numele * w  , numele * p
- |                      ___           ___           ___           ___
- |                       ^2            ^2            ^2            ^2
- | and         numele * u  , numele * v  , numele * w  , numele * p
- |                      _ _           _ _           _ _
- | as well as  numele * u*v, numele * u*w, numele * v*w
- |
- | as well as numele.
- | All results are communicated via the parameter list!
- |
  *---------------------------------------------------------------------*/
 template<int iel>
 void DRT::ELEMENTS::Fluid3::f3_calc_means(
@@ -932,6 +848,8 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
   RefCountPtr<vector<double> > planes = params.get<RefCountPtr<vector<double> > >("coordinate vector for hom. planes");
 
   // get the pointers to the solution vectors
+  RefCountPtr<vector<double> > sumarea= params.get<RefCountPtr<vector<double> > >("element layer area");
+
   RefCountPtr<vector<double> > sumu   = params.get<RefCountPtr<vector<double> > >("mean velocity u");
   RefCountPtr<vector<double> > sumv   = params.get<RefCountPtr<vector<double> > >("mean velocity v");
   RefCountPtr<vector<double> > sumw   = params.get<RefCountPtr<vector<double> > >("mean velocity w");
@@ -945,40 +863,40 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
   RefCountPtr<vector<double> > sumvw  = params.get<RefCountPtr<vector<double> > >("mean value vw");
   RefCountPtr<vector<double> > sumsqp = params.get<RefCountPtr<vector<double> > >("mean value p^2");
 
+  // get node coordinates of element
+  LINALG::Matrix<3,iel>  xyze;
+  DRT::Node** nodes = Nodes();
+  for(int inode=0;inode<iel;inode++)
+  {
+    const double* x = nodes[inode]->X();
+    xyze(0,inode)=x[0];
+    xyze(1,inode)=x[1];
+    xyze(2,inode)=x[2];
+  }
+  
+  if(is_ale_)
+  {
+    for (int inode=0; inode<iel; inode++)
+    {
+      const int finode = 4*inode;
+      
+      xyze(0,inode) += displacement[ +finode];
+      xyze(1,inode) += displacement[1+finode];
+      xyze(2,inode) += displacement[2+finode];
+      
+      if(abs(displacement[normdirect+finode])>1e-6)
+      {
+        dserror("no sampling possible if homogeneous planes are not conserved\n");
+      }
+    }
+  }
+  
   if(distype == DRT::Element::hex8
      ||
      distype == DRT::Element::hex27
      ||
      distype == DRT::Element::hex20)
   {
-    // get node coordinates of element
-    LINALG::Matrix<3,iel>  xyze;
-    DRT::Node** nodes = Nodes();
-    for(int inode=0;inode<iel;inode++)
-    {
-      const double* x = nodes[inode]->X();
-      xyze(0,inode)=x[0];
-      xyze(1,inode)=x[1];
-      xyze(2,inode)=x[2];
-    }
-
-    if(is_ale_)
-    {
-      for (int inode=0; inode<iel; inode++)
-      {
-        const int finode = 4*inode;
-
-        xyze(0,inode) += displacement[ +finode];
-        xyze(1,inode) += displacement[1+finode];
-        xyze(2,inode) += displacement[2+finode];
-
-        if(abs(displacement[normdirect+finode])>1e-6)
-        {
-          dserror("no sampling possible if homogeneous planes are not conserved\n");
-        }
-      }
-    }
-
     double min = xyze(normdirect,0);
     double max = xyze(normdirect,0);
 
@@ -1096,6 +1014,10 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 
     // allocate vector for shapefunctions
     LINALG::Matrix<iel,1> funct;
+    // allocate vector for shapederivatives
+    LINALG::Matrix<3,iel> deriv;
+    // space for the jacobian
+    LINALG::Matrix<3,3>   xjm;
 
     // get the quad9 gaussrule for the in plane integration
     const IntegrationPoints2D  intpoints(intrule_quad_9point);
@@ -1108,6 +1030,8 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
     for(set<int>::const_iterator id = planesinele.begin();id!=planesinele.end() ;++id)
     {
       // reset temporary values
+      double area=0;
+        
       double ubar=0;
       double vbar=0;
       double wbar=0;
@@ -1121,7 +1045,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
       double vwbar =0;
       double psqbar=0;
 
-      // get the intgration point in wall normal direction
+      // get the integration point in wall normal direction
       double e[3];
 
       e[elenormdirect]=-1.0+shift+layershift;
@@ -1141,6 +1065,65 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 
 	// compute the shape function values
 	shape_function_3D(funct,e[0],e[1],e[2],distype);
+        
+        shape_function_3D_deriv1(deriv,e[0],e[1],e[2],distype);
+
+        // get transposed Jacobian matrix and determinant
+        //
+        //        +-            -+ T      +-            -+
+        //        | dx   dx   dx |        | dx   dy   dz |
+        //        | --   --   -- |        | --   --   -- |
+        //        | dr   ds   dt |        | dr   dr   dr |
+        //        |              |        |              |
+        //        | dy   dy   dy |        | dx   dy   dz |
+        //        | --   --   -- |   =    | --   --   -- |
+        //        | dr   ds   dt |        | ds   ds   ds |
+        //        |              |        |              |
+        //        | dz   dz   dz |        | dx   dy   dz |
+        //        | --   --   -- |        | --   --   -- |
+        //        | dr   ds   dt |        | dt   dt   dt |
+        //        +-            -+        +-            -+
+        //
+        // The Jacobian is computed using the formula
+        //
+        //            +-----
+        //   dx_j(r)   \      dN_k(r)
+        //   -------  = +     ------- * (x_j)_k
+        //    dr_i     /       dr_i       |
+        //            +-----    |         |
+        //            node k    |         |
+        //                  derivative    |
+        //                   of shape     |
+        //                   function     |
+        //                           component of
+        //                          node coordinate
+        //
+        xjm.MultiplyNT(deriv,xyze);
+
+        // we assume that every plane parallel to the wall is preserved
+        // hence we can compute the jacobian determinant of the 2d cutting
+        // element by replacin max-min by one on the diagonal of the 
+        // jacobi matrix (the two non-diagonal elements are zero)
+        xjm(normdirect,normdirect)=1.0;
+
+        const double det = 
+          xjm(0,0)*xjm(1,1)*xjm(2,2)
+          +
+          xjm(0,1)*xjm(1,2)*xjm(2,0)
+          +
+          xjm(0,2)*xjm(1,0)*xjm(2,1)
+          -
+          xjm(0,2)*xjm(1,1)*xjm(2,0)
+          -
+          xjm(0,0)*xjm(1,2)*xjm(2,1)
+          -
+          xjm(0,1)*xjm(1,0)*xjm(2,2);
+
+        // check for degenerated elements
+        if (det <= 0.0)
+        {
+          dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", Id(), det);
+        }
 
 #ifdef DEBUG
 	// check whether this gausspoint is really inside the desired plane
@@ -1169,11 +1152,13 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 	double wgp=0;
 	double pgp=0;
 
-	// we assume that every 2d element we are integrating here is of
-	// rectangular shape and every element is of the same size.
-	// 1/4 is necessary since we use a reference element of size 2x2
-	// the factor fac is omitting the element area up to now
-	double fac=0.25*intpoints.qwgt[iquad];
+        // the computation of this jacobian determinant from the 3d 
+        // mapping is based on the assumption that we do not deform 
+        // our elements in wall normal direction!
+	const double fac=det*intpoints.qwgt[iquad];
+
+        // increase area of cutting plane in element
+        area += fac;
 
 	for(int inode=0;inode<iel;inode++)
 	{
@@ -1207,18 +1192,20 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
       } // end loop integration points
 
       // add increments from this layer to processor local vectors
-      (*sumu  )[*id] += ubar;
-      (*sumv  )[*id] += vbar;
-      (*sumw  )[*id] += wbar;
-      (*sump  )[*id] += pbar;
+      (*sumarea)[*id] += area;
 
-      (*sumsqu)[*id] += usqbar;
-      (*sumsqv)[*id] += vsqbar;
-      (*sumsqw)[*id] += wsqbar;
-      (*sumuv) [*id] += uvbar;
-      (*sumuw) [*id] += uwbar;
-      (*sumvw) [*id] += vwbar;
-      (*sumsqp)[*id] += psqbar;
+      (*sumu   )[*id] += ubar;
+      (*sumv   )[*id] += vbar;
+      (*sumw   )[*id] += wbar;
+      (*sump   )[*id] += pbar;
+
+      (*sumsqu )[*id] += usqbar;
+      (*sumsqv )[*id] += vsqbar;
+      (*sumsqw )[*id] += wsqbar;
+      (*sumuv  )[*id] += uvbar;
+      (*sumuw  )[*id] += uwbar;
+      (*sumvw  )[*id] += vwbar;
+      (*sumsqp )[*id] += psqbar;
 
       // jump to the next layer in the element.
       // in case of an hex8 element, the two coordinates are -1 and 1(+2)
@@ -1283,6 +1270,10 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 
     // get shapefunctions, compute all visualisation point positions
     LINALG::Matrix<iel,1> nurbs_shape_funct;
+    // allocate vector for shapederivatives
+    LINALG::Matrix<3,iel> nurbs_shape_deriv;
+    // space for the jacobian
+    LINALG::Matrix<3,3>   xjm;
 
     // there's one additional plane for the last element layer
     int endlayer=0;
@@ -1307,6 +1298,8 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
       const IntegrationPoints2D  intpoints(intrule_quad_9point);
 
       // reset temporary values
+      double area=0;
+
       double ubar=0;
       double vbar=0;
       double wbar=0;
@@ -1330,12 +1323,70 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 	gp(2)=intpoints.qxg[iquad][1];
 
 	// compute the shape function values
-	DRT::NURBS::UTILS::nurbs_get_3D_funct
+	DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv
 	  (nurbs_shape_funct,
+           nurbs_shape_deriv,
 	   gp               ,
 	   eleknots         ,
 	   weights          ,
 	   distype          );
+
+        // get transposed Jacobian matrix and determinant
+        //
+        //        +-            -+ T      +-            -+
+        //        | dx   dx   dx |        | dx   dy   dz |
+        //        | --   --   -- |        | --   --   -- |
+        //        | dr   ds   dt |        | dr   dr   dr |
+        //        |              |        |              |
+        //        | dy   dy   dy |        | dx   dy   dz |
+        //        | --   --   -- |   =    | --   --   -- |
+        //        | dr   ds   dt |        | ds   ds   ds |
+        //        |              |        |              |
+        //        | dz   dz   dz |        | dx   dy   dz |
+        //        | --   --   -- |        | --   --   -- |
+        //        | dr   ds   dt |        | dt   dt   dt |
+        //        +-            -+        +-            -+
+        //
+        // The Jacobian is computed using the formula
+        //
+        //            +-----
+        //   dx_j(r)   \      dN_k(r)
+        //   -------  = +     ------- * (x_j)_k
+        //    dr_i     /       dr_i       |
+        //            +-----    |         |
+        //            node k    |         |
+        //                  derivative    |
+        //                   of shape     |
+        //                   function     |
+        //                           component of
+        //                          node coordinate
+        //
+        xjm.MultiplyNT(nurbs_shape_deriv,xyze);
+
+        // we assume that every plane parallel to the wall is preserved
+        // hence we can compute the jacobian determinant of the 2d cutting
+        // element by replacin max-min by one on the diagonal of the 
+        // jacobi matrix (the two non-diagonal elements are zero)
+        xjm(normdirect,normdirect)=1.0;
+
+        const double det = 
+          xjm(0,0)*xjm(1,1)*xjm(2,2)
+          +
+          xjm(0,1)*xjm(1,2)*xjm(2,0)
+          +
+          xjm(0,2)*xjm(1,0)*xjm(2,1)
+          -
+          xjm(0,2)*xjm(1,1)*xjm(2,0)
+          -
+          xjm(0,0)*xjm(1,2)*xjm(2,1)
+          -
+          xjm(0,1)*xjm(1,0)*xjm(2,2);
+
+        // check for degenerated elements
+        if (det <= 0.0)
+        {
+          dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", Id(), det);
+        }
 
 	//interpolated values at gausspoints
 	double ugp=0;
@@ -1343,11 +1394,13 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 	double wgp=0;
 	double pgp=0;
 
-	// we assume that every 2d element we are integrating here is of
-	// rectangular shape and every element is of the same size.
-	// 1/4 is necessary since we use a reference element of size 2x2
-	// the factor fac is omitting the element area up to now
-	double fac=0.25*intpoints.qwgt[iquad];
+        // the computation of this jacobian determinant from the 3d 
+        // mapping is based on the assumption that we do not deform 
+        // our elements in wall normal direction!
+	const double fac=det*intpoints.qwgt[iquad];
+
+        // increase area of cutting plane in element
+        area += fac;
 
 	for(int inode=0;inode<iel;inode++)
 	{
@@ -1374,18 +1427,20 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 
 
       // add increments from this layer to processor local vectors
-      (*sumu  )[ele_cart_id[1]*numsublayers+rr] += ubar;
-      (*sumv  )[ele_cart_id[1]*numsublayers+rr] += vbar;
-      (*sumw  )[ele_cart_id[1]*numsublayers+rr] += wbar;
-      (*sump  )[ele_cart_id[1]*numsublayers+rr] += pbar;
+      (*sumarea)[ele_cart_id[1]*numsublayers+rr] += area;
 
-      (*sumsqu)[ele_cart_id[1]*numsublayers+rr] += usqbar;
-      (*sumsqv)[ele_cart_id[1]*numsublayers+rr] += vsqbar;
-      (*sumsqw)[ele_cart_id[1]*numsublayers+rr] += wsqbar;
-      (*sumuv) [ele_cart_id[1]*numsublayers+rr] += uvbar;
-      (*sumuw) [ele_cart_id[1]*numsublayers+rr] += uwbar;
-      (*sumvw) [ele_cart_id[1]*numsublayers+rr] += vwbar;
-      (*sumsqp)[ele_cart_id[1]*numsublayers+rr] += psqbar;
+      (*sumu   )[ele_cart_id[1]*numsublayers+rr] += ubar;
+      (*sumv   )[ele_cart_id[1]*numsublayers+rr] += vbar;
+      (*sumw   )[ele_cart_id[1]*numsublayers+rr] += wbar;
+      (*sump   )[ele_cart_id[1]*numsublayers+rr] += pbar;
+
+      (*sumsqu )[ele_cart_id[1]*numsublayers+rr] += usqbar;
+      (*sumsqv )[ele_cart_id[1]*numsublayers+rr] += vsqbar;
+      (*sumsqw )[ele_cart_id[1]*numsublayers+rr] += wsqbar;
+      (*sumuv  )[ele_cart_id[1]*numsublayers+rr] += uvbar;
+      (*sumuw  )[ele_cart_id[1]*numsublayers+rr] += uwbar;
+      (*sumvw  )[ele_cart_id[1]*numsublayers+rr] += vwbar;
+      (*sumsqp )[ele_cart_id[1]*numsublayers+rr] += psqbar;
     }
 
   }
