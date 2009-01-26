@@ -263,9 +263,9 @@ public:
         const bool                           higher_order_ele,
         const bool                           conservative,
         const bool                           is_genalpha,
-        const double&                        timefac,
-        const double&                        alphaF,
-        const int&                           dofindex
+        const double                         timefac,
+        const double                         alphaF,
+        const int                            dofindex
     );
 
     //! calculate element matrix and rhs vector (Stationary problem formulation)
@@ -274,7 +274,7 @@ public:
         Epetra_SerialDenseVector& eforce,
         const bool                higher_order_ele,
         const bool                conservative,
-        const int&                dofindex
+        const int                 dofindex
     );
 
     //! calculate matrix and rhs vector (incremental formulation)
@@ -282,9 +282,9 @@ public:
         Epetra_SerialDenseMatrix&             emat,
         Epetra_SerialDenseVector&             erhs,
         const vector<LINALG::Matrix<iel,1> >& ephinp,
-        const bool&                           higher_order_ele,
-        const bool&                           is_stationary,
-        const double&                         timefac
+        const bool                            higher_order_ele,
+        const bool                            is_stationary,
+        const double                          timefac
     );
 
     //! calculate element matrix and rhs vector (Electrochemistry problems)
@@ -293,10 +293,10 @@ public:
         Epetra_SerialDenseVector&             erhs,   ///< element rhs
         const vector<LINALG::Matrix<iel,1> >& ephinp, ///< current scalar field
         const LINALG::Matrix<iel,1>&          epotnp, ///< el. potential at element nodes
-        const bool&                           higher_order_ele, ///< are second derivatives needed?
-        const double&                         frt,    ///< factor F/RT
-        const bool&                           is_stationary, ///< flag indicating stationary formulation
-        const double&                         timefac ///< time discretization factor
+        const bool                            higher_order_ele, ///< are second derivatives needed?
+        const double                          frt,    ///< factor F/RT
+        const bool                            is_stationary, ///< flag indicating stationary formulation
+        const double                          timefac ///< time discretization factor
     );
 
     //! calculate error compared to analytical solutions
@@ -318,8 +318,8 @@ public:
         const bool                      temperature,
         const double                    frt,
         const Epetra_SerialDenseVector& evel,
-        const SCATRA::FluxType         fluxtype,
-        const int&                      dofindex
+        const SCATRA::FluxType          fluxtype,
+        const int                       dofindex
     );
 
     //! calculate integrals of temperature/concentrations, density and domain
@@ -360,8 +360,8 @@ public:
     inline void GetLaplacianWeakForm(
         double& val,
         const LINALG::Matrix<nsd_,iel>& derxy,
-        const int& vi,
-        const int& ui)
+        const int vi,
+        const int ui)
     {
       val = 0.0;
       for (int j = 0; j<nsd_; j++)

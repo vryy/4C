@@ -179,6 +179,8 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(int numdofpernode, int numscal)
     hist_(numdofpernode_),
     velint_(true),
     migvelint_(true),
+    mderxy_(true),
+    mdiv_(0.0),
     tau_(numscal_),
     kart_(numscal_),
     xder2_(true),
@@ -1384,9 +1386,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMat(
     const bool                            use2ndderiv,
     const bool                            conservative,
     const bool                            is_genalpha,
-    const double&                         timefac,
-    const double&                         alphaF,
-    const int&                            dofindex
+    const double                          timefac,
+    const double                          alphaF,
+    const int                             dofindex
     )
 {
 // number of degrees of freedom per node
@@ -1738,7 +1740,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatStationary(
     Epetra_SerialDenseVector& eforce,
     const bool                use2ndderiv,
     const bool                conservative,
-    const int&                dofindex
+    const int                 dofindex
     )
 {
 // number of degrees of freedom per node
@@ -2277,9 +2279,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatInc(
     Epetra_SerialDenseMatrix&             emat,
     Epetra_SerialDenseVector&             erhs,
     const vector<LINALG::Matrix<iel,1> >& ephinp,
-    const bool&                           use2ndderiv,
-    const bool&                           is_stationary,
-    const double&                         timefac
+    const bool                            use2ndderiv,
+    const bool                            is_stationary,
+    const double                          timefac
 )
 {
   // get values of all transported scalars at integration point
@@ -2476,10 +2478,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
     Epetra_SerialDenseVector&             erhs,
     const vector<LINALG::Matrix<iel,1> >& ephinp,
     const LINALG::Matrix<iel,1>&          epotnp,
-    const bool&                           use2ndderiv,
-    const double&                         frt,
-    const bool&                           is_stationary,
-    const double&                         timefac
+    const bool                            use2ndderiv,
+    const double                          frt,
+    const bool                            is_stationary,
+    const double                          timefac
 )
 {
   // get values of all transported scalars at integration point
@@ -2882,7 +2884,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
     const double                    frt,
     const Epetra_SerialDenseVector& evel,
     const SCATRA::FluxType          fluxtype,
-    const int&                      dofindex
+    const int                       dofindex
 )
 {
   // get node coordinates
