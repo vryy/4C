@@ -121,7 +121,7 @@ void ADAPTER::AleSprings::Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp)
   }
 
   EvaluateElements();
-  LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,*(dbcmaps_->CondMap()));
+  LINALG::ApplyDirichlettoSystem(sysmat_,incr_,residual_,dispnp_,*(dbcmaps_->CondMap()));
 }
 
 
