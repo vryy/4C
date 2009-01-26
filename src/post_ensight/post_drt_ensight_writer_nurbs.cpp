@@ -1863,21 +1863,14 @@ void EnsightWriter::WriteDofResultStepForNurbs(
     for (int inode=0; inode<actele->NumNode(); ++inode)
     {
 
-      if(name == "velocity")
+      if(name == "velocity" || name == "averaged_velocity")
       {
         for(int rr=0;rr<dim;++rr)
         {
           coldofset.insert(lm[inode*(dim+1)+rr]);
         }
       }
-      else if(name == "averaged_velocity")
-      {
-        for(int rr=0;rr<dim;++rr)
-        {
-	  coldofset.insert(lm[inode*(dim+1)+rr]);
-	}
-      }
-      else if(name == "pressure")
+      else if(name == "pressure" || name == "averaged_pressure")
       {
         coldofset.insert(lm[inode*(dim+1)+dim]);
       }
@@ -1957,7 +1950,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(
     actele->LocationVector(*nurbsdis,lm,lmowner);
 
     vector<double> my_data(lm.size());
-    if(name == "velocity")
+    if(name == "velocity" || name == "averaged_velocity")
     {
       my_data.resize(dim*numnp);
 
@@ -1969,19 +1962,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(
         }
       }
     }
-    else if(name == "averaged_velocity")
-    {
-      my_data.resize(dim*numnp);
-
-      for (int inode=0; inode<numnp; ++inode)
-      {
-        for(int rr=0;rr<dim;++rr)
-        {
-          my_data[dim*inode+rr]=(*coldata)[(*coldata).Map().LID(lm[inode*(dim+1)+rr])];
-        }
-      }
-    }
-    else if(name == "pressure")
+    else if(name == "pressure" || name == "averaged_pressure")
     {
       my_data.resize(numnp);
 
