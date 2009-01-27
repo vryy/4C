@@ -751,12 +751,12 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp,
 Teuchos::RefCountPtr<Epetra_Vector> vedenp
   )
 {
-
-  // set thermodynamic pressure p_therm (in N/m^2 = kg/(m*s^2) = J/m^3): 98100.0
-  // constantly set to atmospheric pressure, for the time being -> dp_therm/dt=0
-  // set specific gas constant R (in J/(kg*K)): 287.05
-  // compute density based on equation of state: rho = (p_therm/R)*(1/T)
-  double fac = 98100.0/287.05;
+  // For this example, a constant thermodynamic pressure is assumed:
+  // set thermodynamic pressure p_therm to 100000.0
+  // set specific gas constant R (in J/(kg*K)): 287.0
+  // compute temperature based on equation of state using density values:
+  // T = (p_therm/R)*(1/rho)
+  double fac = 100000.0/287.0;
 
   //----------------------------------------------------------------------
   // increase sample counter
