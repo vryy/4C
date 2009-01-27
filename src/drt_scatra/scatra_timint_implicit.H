@@ -414,6 +414,9 @@ protected:
   double dtele_;
   double dtsolve_;
 
+  /// error file handle
+  FILE* errfile_;
+
 }; // class ScaTraTimIntImpl
 
 } // namespace SCATRA

@@ -66,7 +66,8 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   cdvel_    (params_->get<int>("velocity field")),
   convform_ (params_->get<string>("form of convective term")),
   fssgd_    (params_->get<string>("fs subgrid diffusivity")),
-  frt_      (96485.3399/(8.314472 * params_->get<double>("TEMPERATURE",298.15)))
+  frt_      (96485.3399/(8.314472 * params_->get<double>("TEMPERATURE",298.15))),
+  errfile_  (params_->get<FILE*>("err file"))
 {
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
