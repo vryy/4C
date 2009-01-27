@@ -1224,7 +1224,7 @@ OBJS_POST_FILE_MANAGER = src/post_file_manager/post_file_manager.o
                 #src/post_visual/post_map_functions.o 
 #               ensight_file_converter
 OBJS_POST_ENSIGHT = src/post_ensight/post_ensight.o \
-                src/post_ensight/post_functions.o              
+                src/post_ensight/post_functions.o 
 #               post_cmp
 OBJS_POST_CMP = src/post_cmp/post_cmp.o
 
@@ -1264,7 +1264,7 @@ OBJS_DRT_COMBUST3_LIB = src/drt_combust/combust3.o \
                         src/drt_combust/combust3_line_evaluate.o \
                         src/drt_combust/combust3_surface.o \
                         src/drt_combust/combust3_surface_evaluate.o \
-                        src/drt_combust/combust3_sysmat4.o                                     
+                        src/drt_combust/combust3_sysmat4.o
 # boundary elements
 OBJS_DRT_BELE3_LIB = src/drt_bele3/bele3.o \
                   src/drt_bele3/bele3_line.o \
