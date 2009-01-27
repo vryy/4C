@@ -556,6 +556,18 @@ while(strncmp(fractplace(),"------",6)!=0)
       frdouble("LAMBDA" ,&(localmat.m.mooneyrivlin->lambda)  ,&ierr);
       frdouble("DENS"    ,&(localmat.m.mooneyrivlin->density)  ,&ierr);
    }
+   // Mooney-Rivlin material law
+    frchk("MAT_YEOH",&ierr);
+    if (ierr==1)
+    {
+       localmat.mattyp      = m_yeoh;
+       localmat.m.yeoh = new YEOH();
+       frdouble("C1"     ,&(localmat.m.yeoh->c1)      ,&ierr);
+       frdouble("C2"     ,&(localmat.m.yeoh->c2)      ,&ierr);
+       frdouble("C3"     ,&(localmat.m.yeoh->c3)      ,&ierr);
+       frdouble("KAPPA" ,&(localmat.m.yeoh->kap)  ,&ierr);
+       frdouble("DENS"    ,&(localmat.m.yeoh->density)  ,&ierr);
+    }
    // Viscoelastic NeoHookean material law
    frchk("MAT_VISCONEOHOOKE",&ierr);
    if (ierr==1)

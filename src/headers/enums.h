@@ -286,6 +286,7 @@ typedef enum _MATERIAL_TYP
                        m_quadratic_aniso, /* hyperelastic polyconvex energy strain function following Itskov */
                        m_anisotropic_balzani,  /* anisotropic polyconvex material*/
                        m_mooneyrivlin,  /* Mooney-Rivlin material*/
+                       m_yeoh,          /* Yeoh material*/
                        m_visconeohooke, /* Viscous NeoHookean Material */
                        m_viscoanisotropic, /* Viscous Anisotropic Fiber Material */
                        m_contchainnetw, /* Continuum Chain Network Material Law with remodeling */

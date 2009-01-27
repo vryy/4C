@@ -955,6 +955,7 @@ OBJS_DRT_MAT_LIB = src/drt_mat/micromaterial.o \
                 src/drt_mat/aaaneohooke.o \
                 src/drt_mat/anisotropic_balzani.o \
                 src/drt_mat/mooneyrivlin.o \
+                src/drt_mat/yeoh.o \
                 src/drt_mat/contchainnetw.o \
                 src/drt_mat/artwallremod.o \
                 src/drt_mat/biocell.o \

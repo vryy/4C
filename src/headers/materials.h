@@ -56,6 +56,7 @@ typedef struct _MATERIAL
      struct _QUADRATIC_ANISO  *quadratic_aniso;       /* Anisotropic quadratic material */
      struct _ANISOTROPIC_BALZANI *anisotropic_balzani; /* anisotropic hyperelastic polyconvex material */
      struct _MOONEYRIVLIN     *mooneyrivlin; /* Mooney-Rivlin material */
+     struct _YEOH             *yeoh; /* Mooney-Rivlin material */
      struct _VISCONEOHOOKE    *visconeohooke; /* Viscous NeoHookean material */
      struct _VISCOANISOTROPIC *viscoanisotropic; /* Viscous Anisotropic fiber material */
      struct _CONTCHAINNETW    *contchainnetw; /* Continuum Chain Network material law */
@@ -677,6 +678,17 @@ typedef struct _MOONEYRIVLIN
      DOUBLE                    lambda;
      DOUBLE                    density;
 } MOONEYRIVLIN;
+/*----------------------------------------------------------------------*
+ | Yeoh material                                               tk 01/09 |
+ *----------------------------------------------------------------------*/
+typedef struct _YEOH
+{
+     DOUBLE                    c1;
+     DOUBLE                    c2;
+     DOUBLE                    c3;
+     DOUBLE                    kap;
+     DOUBLE                    density;
+} YEOH;
 /*----------------------------------------------------------------------*
  | Viscous NeoHookean material                                maf 05/08 |
  *----------------------------------------------------------------------*/

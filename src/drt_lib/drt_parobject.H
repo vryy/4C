@@ -110,6 +110,7 @@ using namespace std;
 #define ParObject_MooneyRivlin          (int)102
 #define ParObject_LungOgden             (int)103
 #define ParObject_ViscoNeoHooke         (int)104
+#define ParObject_Yeoh                  (int)105
 // missing ints result from removed Condif3 elements
 #define ParObject_Knotvector            (int)108
 #define ParObject_ControlPoint          (int)109

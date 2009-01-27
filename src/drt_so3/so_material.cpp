@@ -38,6 +38,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/anisotropic_balzani.H"
 #include "../drt_mat/aaaneohooke.H"
 #include "../drt_mat/mooneyrivlin.H"
+#include "../drt_mat/yeoh.H"
 #include "../drt_mat/lung_penalty.H"
 #include "../drt_mat/lung_ogden.H"
 #include "../drt_mat/visconeohooke.H"
@@ -46,6 +47,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/artwallremod.H"
 #include "../drt_mat/biocell.H"
 #include "../drt_mat/material.H"
+
 
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
@@ -142,6 +144,14 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       MAT::MooneyRivlin* moon = static_cast <MAT::MooneyRivlin*>(mat.get());
       moon->Evaluate(glstrain,cmat,stress);
       *density = moon->Density();
+      return;
+      break;
+    }
+    case m_yeoh: /*----------------- Mooney-Rivlin Material */
+    {
+      MAT::Yeoh* yeoh = static_cast <MAT::Yeoh*>(mat.get());
+      yeoh->Evaluate(glstrain,cmat,stress);
+      *density = yeoh->Density();
       return;
       break;
     }
@@ -350,6 +360,14 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       return;
       break;
     }
+    case m_yeoh: /*----------------- Mooney-Rivlin Material */
+    {
+      MAT::Yeoh* yeoh = static_cast <MAT::Yeoh*>(mat.get());
+      yeoh->Evaluate(glstrain,cmat,stress);
+      *density = yeoh->Density();
+      return;
+      break;
+    }
     case m_artwallremod: /*-Arterial Wall (Holzapfel) with remodeling (Hariton) */
     {
       MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(mat.get());
@@ -439,6 +457,14 @@ void DRT::ELEMENTS::SoDisp::sodisp_mat_sel(
       return;
       break;
     }
+    case m_yeoh: /*----------------- Mooney-Rivlin Material */
+    {
+      MAT::Yeoh* yeoh = static_cast <MAT::Yeoh*>(mat.get());
+      yeoh->Evaluate(glstrain,cmat,stress);
+      *density = yeoh->Density();
+      return;
+      break;
+    }
     default:
     break;
   } // switch (mat->MaterialType())
@@ -505,6 +531,14 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
       return;
       break;
     }
+    case m_yeoh: /*----------------- Mooney-Rivlin Material */
+    {
+      MAT::Yeoh* yeoh = static_cast <MAT::Yeoh*>(mat.get());
+      yeoh->Evaluate(glstrain,cmat,stress);
+      *density = yeoh->Density();
+      return;
+      break;
+    }
     default:
       dserror("Unknown material to tet4 element");
     break;
@@ -566,6 +600,14 @@ void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
       MAT::MooneyRivlin* moon = static_cast <MAT::MooneyRivlin*>(mat.get());
       moon->Evaluate(glstrain,cmat,stress);
       *density = moon->Density();
+      return;
+      break;
+    }
+    case m_yeoh: /*----------------- Mooney-Rivlin Material */
+    {
+      MAT::Yeoh* yeoh = static_cast <MAT::Yeoh*>(mat.get());
+      yeoh->Evaluate(glstrain,cmat,stress);
+      *density = yeoh->Density();
       return;
       break;
     }

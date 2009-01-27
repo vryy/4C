@@ -23,6 +23,7 @@ Maintainer: Lena Wiechert
 #include "convecdiffus.H"
 #include "anisotropic_balzani.H"
 #include "mooneyrivlin.H"
+#include "yeoh.H"
 #include "visconeohooke.H"
 #include "viscoanisotropic.H"
 #include "contchainnetw.H"
@@ -104,6 +105,8 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     return Teuchos::rcp(new BioCell(actmat));
  case m_ion:
     return Teuchos::rcp(new Ion(actmat));
+ case m_yeoh:
+     return Teuchos::rcp(new Yeoh(actmat));
   case m_pl_mises_3D:
   case m_pl_mises:
   case m_pl_hoff:
