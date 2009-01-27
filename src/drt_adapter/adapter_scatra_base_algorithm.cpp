@@ -105,6 +105,8 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   //scatratimeparams->set           ("write solution every"      ,prbdyn.get<int>("WRITESOLEVRY"));
   // write also flux vectors when solution is written out?
   scatratimeparams->set<string>   ("write flux"   ,scatradyn.get<string>("WRITEFLUX"));
+  // pointer to the error file (for output)
+  scatratimeparams->set<FILE*>    ("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
 
   // ---------------------------------------------------- initial field
   scatratimeparams->set<int>("scalar initial field" ,Teuchos::getIntegralValue<int>(scatradyn,"INITIALFIELD"));
