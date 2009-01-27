@@ -405,7 +405,6 @@ DSURF  0
 DSURF  0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    1 DNODE 1
-NODE    25 DNODE 1
 -----------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    1 DSURFACE 1
