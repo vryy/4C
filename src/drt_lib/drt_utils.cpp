@@ -106,6 +106,7 @@ extern "C"
 #include "../drt_mat/lung_ogden.H"
 #include "../drt_mat/anisotropic_balzani.H"
 #include "../drt_mat/mooneyrivlin.H"
+#include "../drt_mat/yeoh.H"
 #include "../drt_mat/visconeohooke.H"
 #include "../drt_mat/viscoanisotropic.H"
 #include "../drt_mat/contchainnetw.H"
@@ -551,6 +552,12 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       MAT::MooneyRivlin* moon = new MAT::MooneyRivlin();
       moon->Unpack(data);
       return moon;
+    }
+    case ParObject_Yeoh:
+    {
+      MAT::Yeoh* yeoh = new MAT::Yeoh();
+      yeoh->Unpack(data);
+      return yeoh;
     }
     case ParObject_ViscoNeoHooke:
     {
