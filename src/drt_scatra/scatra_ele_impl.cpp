@@ -2956,7 +2956,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
       {
         for (int idim=0; idim<nsd_ ;idim++)
         {
-          gradpot_(idim) += derxy_(idim,k)*ephinp[k*numdofpernode_+(numdofpernode_-1)];
+          gradpot_(idim) += derxy_(idim,k)*ephinp[k*numdofpernode_+numscal_];
         }
       }
     }

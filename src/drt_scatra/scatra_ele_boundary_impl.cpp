@@ -250,7 +250,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
 
             // calculate normal flux at present node
             mynormflux[i] = 0.0;
-            for (int l=0; l<nsd_; l++)
+            for (int l=0; l<nsd_+1; l++)
             {
               mynormflux[i] += eflux(l,k)*normal_(l);
             }
@@ -325,7 +325,6 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
 
 # if 0
     // print all parameters read from the current condition
-    cout<<"electrode type = "<<*eltype<<endl;
     cout<<"sign           = "<<sign<<endl;
     cout<<"kinetic model  = "<<*kinetics<<endl;
     cout<<"reactant id    = "<<reactantid<<endl;
@@ -416,7 +415,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
         // calculate normal diffusive flux and velocity div. at present node
         mydiffflux[i] = 0.0;
         mydivu[i]     = 0.0;
-        for (int l=0; l<nsd_; l++)
+        for (int l=0; l<nsd_+1; l++)
         {
           mydiffflux[i] += eflux(l,k)*normal_(l);
           mydivu[i]     += (evel[i*(nsd_+1)+l]/mydensnp[i])*normal_(l);
