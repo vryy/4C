@@ -549,7 +549,7 @@ void DRT::ELEMENTS::Fluid3Surface::SurfaceConservativeOutflowConsistency(
       xyze(2,i)+=mydispnp[2+fi];
     }
   }
-  
+
   // velocities
   RCP<const Epetra_Vector> vel = discretization.GetState("u and p (trial)");
   if (vel==null) dserror("Cannot get state vector 'u and p (trial)'");
@@ -576,7 +576,7 @@ void DRT::ELEMENTS::Fluid3Surface::SurfaceConservativeOutflowConsistency(
   {
     const double e0 = intpoints.qxg[gpid][0];
     const double e1 = intpoints.qxg[gpid][1];
-    
+
     // get shape functions and derivatives in the plane of the element
     shape_function_2D(funct, e0, e1, distype);
     shape_function_2D_deriv1(deriv, e0, e1, distype);
@@ -589,15 +589,15 @@ void DRT::ELEMENTS::Fluid3Surface::SurfaceConservativeOutflowConsistency(
     // and the gauss weight
     const double fac = intpoints.qwgt[gpid] * drs;
 
-    // compute this element's normal vector scaled by infinitesimal area 
+    // compute this element's normal vector scaled by infinitesimal area
     // element and gaussweight
     double length = 0.0;
     norm(0) = (xyze(1,1)-xyze(1,0))*(xyze(2,2)-xyze(2,0))-(xyze(2,1)-xyze(2,0))*(xyze(1,2)-xyze(1,0));
     norm(1) = (xyze(2,1)-xyze(2,0))*(xyze(0,2)-xyze(0,0))-(xyze(0,1)-xyze(0,0))*(xyze(2,2)-xyze(2,0));
     norm(2) = (xyze(0,1)-xyze(0,0))*(xyze(1,2)-xyze(1,0))-(xyze(1,1)-xyze(1,0))*(xyze(0,2)-xyze(0,0));
-    
+
     length = sqrt(norm(0)*norm(0)+norm(1)*norm(1)+norm(2)*norm(2));
-    
+
     norm(0) = fac*(1.0/length)*norm(0);
     norm(1) = fac*(1.0/length)*norm(1);
     norm(2) = fac*(1.0/length)*norm(2);
@@ -605,7 +605,7 @@ void DRT::ELEMENTS::Fluid3Surface::SurfaceConservativeOutflowConsistency(
     /* interpolate velocities to integration point
     //
     //                 +-----
-    //                  \                       
+    //                  \
     //        vel(x) =   +      N (x) * vel
     //                  /        j         j
     //                 +-----
@@ -630,30 +630,30 @@ void DRT::ELEMENTS::Fluid3Surface::SurfaceConservativeOutflowConsistency(
     n_x_u(0,0) = timefac_mat*velint(0)*norm(0);
     n_x_u(0,1) = timefac_mat*velint(0)*norm(1);
     n_x_u(0,2) = timefac_mat*velint(0)*norm(2);
-                                                                 
+
     n_x_u(1,0) = timefac_mat*velint(1)*norm(0);
     n_x_u(1,1) = timefac_mat*velint(1)*norm(1);
     n_x_u(1,2) = timefac_mat*velint(1)*norm(2);
-                                                                 
+
     n_x_u(2,0) = timefac_mat*velint(2)*norm(0);
     n_x_u(2,1) = timefac_mat*velint(2)*norm(1);
     n_x_u(2,2) = timefac_mat*velint(2)*norm(2);
 
 
-    for (int ui=0; ui<iel; ++ui) // loop columns 
+    for (int ui=0; ui<iel; ++ui) // loop columns
     {
       const int fui   =4*ui;
       const int fuip  =fui+1;
       const int fuipp =fui+2;
-      
+
       temp(0,0) = n_x_u(0,0)*funct(ui);
       temp(0,1) = n_x_u(0,1)*funct(ui);
       temp(0,2) = n_x_u(0,2)*funct(ui);
-                                      
+
       temp(1,0) = n_x_u(1,0)*funct(ui);
       temp(1,1) = n_x_u(1,1)*funct(ui);
       temp(1,2) = n_x_u(1,2)*funct(ui);
-                                      
+
       temp(2,0) = n_x_u(2,0)*funct(ui);
       temp(2,1) = n_x_u(2,1)*funct(ui);
       temp(2,2) = n_x_u(2,2)*funct(ui);
@@ -679,11 +679,11 @@ void DRT::ELEMENTS::Fluid3Surface::SurfaceConservativeOutflowConsistency(
         elemat1(fvi  ,fui  ) += temp(0,0)*funct(vi);
         elemat1(fvi  ,fuip ) += temp(0,1)*funct(vi);
         elemat1(fvi  ,fuipp) += temp(0,2)*funct(vi);
-                                          
+
         elemat1(fvip ,fui  ) += temp(1,0)*funct(vi);
         elemat1(fvip ,fuip ) += temp(1,1)*funct(vi);
         elemat1(fvip ,fuipp) += temp(1,2)*funct(vi);
-                                          
+
         elemat1(fvipp,fui  ) += temp(2,0)*funct(vi);
         elemat1(fvipp,fuip ) += temp(2,1)*funct(vi);
         elemat1(fvipp,fuipp) += temp(2,2)*funct(vi);
@@ -698,7 +698,7 @@ void DRT::ELEMENTS::Fluid3Surface::SurfaceConservativeOutflowConsistency(
                   \                /
         */
 
-        const double timefac_mat_u_o_n_funct_ui_funct_vi 
+        const double timefac_mat_u_o_n_funct_ui_funct_vi
           =
           timefac_mat_u_o_n_funct_ui*funct(vi);
 
@@ -716,7 +716,7 @@ void DRT::ELEMENTS::Fluid3Surface::SurfaceConservativeOutflowConsistency(
     for (int ui=0; ui<iel; ++ui) // loop rows  (test functions)
     {
       int fui=4*ui;
-	
+
       /*
 
 
@@ -726,11 +726,11 @@ void DRT::ELEMENTS::Fluid3Surface::SurfaceConservativeOutflowConsistency(
                  |                 |
                   \               /
       */
-	
+
       elevec1(fui++) -= tempvec(0)*funct(ui);
       elevec1(fui++) -= tempvec(1)*funct(ui);
       elevec1(fui  ) -= tempvec(2)*funct(ui);
-      
+
     } // ui
   } // end gaussloop
   return;
@@ -1003,7 +1003,7 @@ void DRT::ELEMENTS::Fluid3Surface::ElementSurfaceTension(ParameterList& params,
   default:
       dserror("shape type unknown!\n");
   }
-  const IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
+  const IntegrationPoints2D  intpoints(gaussrule);
 
   // allocate vector for shape functions and for derivatives
   Epetra_SerialDenseVector   funct(iel);
