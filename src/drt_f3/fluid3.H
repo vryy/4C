@@ -1034,6 +1034,7 @@ private:
     flowratecalc,
     Outletimpedance,
     calc_node_normal,
+    calc_surface_tension,
     enforce_weak_dbc,
     conservative_outflow_bc
   };
@@ -1072,9 +1073,10 @@ private:
   /*!
     \brief Calculate node normals
 
-    This method calculates the node normals perpendicular to the surface-element.
+    For TET-elements only. Node normals are assembled using weighted element
+    normals. Of course these element normals need to be unique.
 
-    \param elevec1 (out)      : Node normals multiplied by the elements area.
+    \param elevec1 (out)      : Element normal multiplied by the element's area.
     \param edispnp (in)       : Displacement-vector
   */
   void ElementNodeNormal(ParameterList& 		 params,
@@ -1082,6 +1084,19 @@ private:
                        vector<int>&               lm,
                        Epetra_SerialDenseVector&  elevec1,
                        const std::vector<double>& edispnp);
+
+  /*!
+    \brief Integrate surface tension
+
+    \param elevec1 (out)      : RHS contribution of surface tension effect
+    \param edispnp (in)       : Displacement-vector
+  */
+  void ElementSurfaceTension(ParameterList& params,
+                             DRT::Discretization& discretization,
+                             vector<int>& lm,
+                             Epetra_SerialDenseVector& elevec1,
+                             const std::vector<double>& edispnp,
+                             std::vector<double>& enormals);
 
   /*!
   brief integrate elemental areas over a surface

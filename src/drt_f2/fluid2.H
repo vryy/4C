@@ -741,10 +741,17 @@ private:
                          vector<int>&               lm,
                          Epetra_SerialDenseVector&  elevec1,
                          const std::vector<double>& edispnp);
+
+  /*!
+    \brief Integrate surface tension
+
+    \param elevec1 (out)      : RHS contribution of surface tension effect
+    \param edispnp (in)       : Displacement-vector
+    \param enormals (in)      : Element node normals
+  */
   void ElementSurfaceTension(ParameterList& params,
                              DRT::Discretization& discretization,
                              vector<int>& lm,
-                             Epetra_SerialDenseMatrix& elemat1,
                              Epetra_SerialDenseVector& elevec1,
                              const std::vector<double>& edispnp,
                              std::vector<double>& enormals);

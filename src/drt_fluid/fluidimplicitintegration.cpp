@@ -992,17 +992,23 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 
         discret_->ClearState();
 
-#if 0
 
         //---------------------------surface tension update
         if (alefluid_ and freesurface_->Relevant())
         {
+
+// 2D or TET: To possibilities work. FSTENS1 is a direct implementation of Wall et
+// al. eq. (25) with node normals obtained by weighted assembly of element
+// normals. Because geometric considerations are used to find the normals of
+// our flat (!) surface elements no second derivatives appear. FSTENS2 employs the
+// divergence theorem acc. to Saksono eq. (24).
+
+#define FSTENS2
+#undef FSTENS1
+
+
           // select free surface elements
           std::string condname = "FREESURFCoupling";
-
-          ParameterList eleparams;
-          // set action for elements, calc_surface_tension uses node normals
-          eleparams.set("action","calc_node_normal");
 
           // get a vector layout from the discretization to construct matching
           // vectors and matrices
@@ -1012,22 +1018,30 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           //vector ndnorm0 with pressure-entries is needed for EvaluateCondition
           Teuchos::RCP<Epetra_Vector> ndnorm0 = LINALG::CreateVector(*dofrowmap,true);
 
+          ParameterList eleparams;
+
+#ifdef FSTENS1
+          // set action for elements, calc_surface_tension uses node normals
+          eleparams.set("action","calc_node_normal");
+
           //call loop over elements, note: normal vectors do not yet have length = 1.0
           discret_->ClearState();
           discret_->SetState("dispnp", dispnp_);
           discret_->EvaluateCondition(eleparams,ndnorm0,condname);
+#endif
 
           // set action for elements
           eleparams.set("action","calc_surface_tension");
-          eleparams.set("thsl",theta_*dta_);
-          eleparams.set("dta",dta_);
+          discret_->ClearState();
+          discret_->SetState("dispnp", dispnp_);
+#ifdef FSTENS1
           discret_->SetState("normals", ndnorm0);
+#endif
           discret_->EvaluateCondition(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null,condname);
           discret_->ClearState();
         }
         //---------------------------end of surface tension update
 
-#endif
         if (timealgo_==timeint_afgenalpha)
         {
           // For af-generalized-alpha scheme, we already have the true residual,...
@@ -1317,7 +1331,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       }
     }
 
-    // free surface update
+    //------------------------------------------------ free surface update
     if (alefluid_ and freesurface_->Relevant())
     {
       Teuchos::RefCountPtr<Epetra_Vector> fsvelnp = freesurface_->ExtractCondVector(velnp_);
@@ -1390,8 +1404,9 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           for (int i=0; i<numdof; i++)
           {
             int rgid = GIDdof[i];
-            if (!ndnorm->Map().MyGID(rgid) or !fsvelnp->Map().MyGID(rgid))
-              dserror("Sparse vector does not have global row %d",rgid);
+            if (!ndnorm->Map().MyGID(rgid) or !fsvelnp->Map().MyGID(rgid)
+                or ndnorm->Map().MyGID(rgid) != fsvelnp->Map().MyGID(rgid))
+              dserror("Sparse vector does not have global row  %d or vectors don't match",rgid);
             rfs[i] = ndnorm->Map().LID(rgid);
           }
 

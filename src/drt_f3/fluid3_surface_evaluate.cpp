@@ -59,6 +59,8 @@ int DRT::ELEMENTS::Fluid3Surface::Evaluate(     ParameterList&            params
         act = Fluid3Surface::Outletimpedance;
     else if (action == "calc_node_normal")
         act = Fluid3Surface::calc_node_normal;
+    else if (action == "calc_surface_tension")
+        act = Fluid3Surface::calc_surface_tension;
     else if (action == "enforce_weak_dbc")
         act = Fluid3Surface::enforce_weak_dbc;
     else if (action == "conservative_outflow_bc")
@@ -136,7 +138,44 @@ int DRT::ELEMENTS::Fluid3Surface::Evaluate(     ParameterList&            params
         lm,
         elemat1,
         elevec1);
+      break;
+    }
+    case calc_surface_tension:
+    {
 
+// 2D or TET: To possibilities work. FSTENS1 is a direct implementation of Wall et
+// al. eq. (25) with node normals obtained by weighted assembly of element
+// normals. Because geometric considerations are used to find the normals of
+// our flat (!) surface elements no second derivatives appear. FSTENS2 employs the
+// divergence theorem acc. to Saksono eq. (24).
+
+#define FSTENS2
+#undef FSTENS1
+
+
+      RefCountPtr<const Epetra_Vector> dispnp;
+      vector<double> mydispnp;
+
+      dispnp = discretization.GetState("dispnp");
+      if (dispnp!=null)
+      {
+        mydispnp.resize(lm.size());
+        DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
+      }
+
+      vector<double> mynormals;
+#ifdef FSTENS1
+      RefCountPtr<const Epetra_Vector> normals;
+
+      normals = discretization.GetState("normals");
+      if (normals!=null)
+      {
+        mynormals.resize(lm.size());
+        DRT::UTILS::ExtractMyValues(*normals,mynormals,lm);
+      }
+#endif
+
+      ElementSurfaceTension(params,discretization,lm,elevec1,mydispnp,mynormals);
       break;
     }
     default:
@@ -863,14 +902,14 @@ void DRT::ELEMENTS::Fluid3Surface::ElementNodeNormal(ParameterList& params,
 
     for (int i=0;i<iel;i++)
     {
-      xyze(0,i) += edispnp[4*i];
-      xyze(1,i) += edispnp[4*i+1];
-      xyze(2,i) += edispnp[4*i+2];
+      xyze(0,i) += edispnp[numdf*i];
+      xyze(1,i) += edispnp[numdf*i+1];
+      xyze(2,i) += edispnp[numdf*i+2];
     }
   }
 
   //this element's normal vector
-  Epetra_SerialDenseVector   norm(numdf);
+  Epetra_SerialDenseVector   norm(3);
   double length = 0.0;
   norm[0] = (xyze(1,1)-xyze(1,0))*(xyze(2,2)-xyze(2,0))-(xyze(2,1)-xyze(2,0))*(xyze(1,2)-xyze(1,0));
   norm[1] = (xyze(2,1)-xyze(2,0))*(xyze(0,2)-xyze(0,0))-(xyze(0,1)-xyze(0,0))*(xyze(2,2)-xyze(2,0));
@@ -910,14 +949,277 @@ void DRT::ELEMENTS::Fluid3Surface::ElementNodeNormal(ParameterList& params,
     {
       for(int dim=0;dim<3;dim++)
       {
-        elevec1[node*numdf+dim]+=
-          funct[node] * fac * norm[dim];
+        elevec1[node*numdf+dim]+= norm[dim] * funct[node] * fac;
       }
+      elevec1[node*numdf+3] = 0.0;
     }
   } /* end of loop over integration points gpid */
 } // DRT::ELEMENTS::Fluid3Surface::ElementNodeNormal
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Fluid3Surface::ElementSurfaceTension(ParameterList& params,
+                                                         DRT::Discretization& discretization,
+                                                         vector<int>& lm,
+                                                         Epetra_SerialDenseVector& elevec1,
+                                                         const std::vector<double>& edispnp,
+                                                         std::vector<double>& enormals)
+{
+  // there are 3 velocities and 1 pressure
+  const int numdf = 4;
+
+  // set number of nodes
+  const int iel   = this->NumNode();
+
+  // get material data
+  RCP<MAT::Material> mat = parent_->Material();
+  if (mat==null) dserror("no mat from parent!");
+  if (mat->MaterialType()!=m_fluid)
+    dserror("newtonian fluid material expected but got type %d", mat->MaterialType());
+
+  MATERIAL* actmat = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
+
+  // isotropic and isothermal surface tension coefficient
+  const double SFgamma = actmat->m.fluid->gamma;
+
+  // gaussian points
+  const DiscretizationType distype = this->Shape();
+  GaussRule2D  gaussrule = intrule2D_undefined;
+  switch(distype)
+  {
+  case quad4:
+      gaussrule = intrule_quad_4point;
+      break;
+  case quad8: case quad9:
+      gaussrule = intrule_quad_9point;
+      break;
+  case tri3 :
+      gaussrule = intrule_tri_3point;
+      break;
+  case tri6:
+      gaussrule = intrule_tri_6point;
+      break;
+  default:
+      dserror("shape type unknown!\n");
+  }
+  const IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
+
+  // allocate vector for shape functions and for derivatives
+  Epetra_SerialDenseVector   funct(iel);
+  Epetra_SerialDenseMatrix   deriv(2,iel);
+
+  // node coordinates
+  Epetra_SerialDenseMatrix 	xyze(3,iel);
+
+  // get node coordinates
+  for(int node=0;node<iel;node++)
+  {
+    xyze(0,node)=this->Nodes()[node]->X()[0];
+    xyze(1,node)=this->Nodes()[node]->X()[1];
+    xyze(2,node)=this->Nodes()[node]->X()[2];
+  }
+
+  if (parent_->IsAle())
+  {
+    dsassert(edispnp.size()!=0,"paranoid");
+
+    for (int node=0;node<iel;node++)
+    {
+      xyze(0,node) += edispnp[numdf*node     ];
+      xyze(1,node) += edispnp[numdf*node + 1 ];
+      xyze(2,node) += edispnp[numdf*node + 2 ];
+    }
+  }
+
+#ifdef FSTENS1
+  // node normals
+  Epetra_SerialDenseMatrix 	norm_elem(3,iel);
+
+  //set normal vectors to length = 1.0
+  for (int node=0;node<iel;++node)
+  {
+    double length = 0.0;
+    for (int dim=0;dim<3;dim++)
+    {
+      norm_elem(dim,node) = enormals[numdf*node+dim];
+      length += norm_elem(dim,node)*norm_elem(dim,node);
+    }
+    length = sqrt(length);
+    for (int dim=0;dim<3;dim++)
+    {
+      norm_elem(dim,node) = (1.0/length) * norm_elem(dim,node);
+    }
+  }
+#endif
+
+
+  // the metric tensor and its determinant
+  Epetra_SerialDenseMatrix      metrictensor(2,2);
+  double sqrtdetg;
+
+  /*----------------------------------------------------------------------*
+  |               start loop over integration points                     |
+  *----------------------------------------------------------------------*/
+
+  for (int gpid=0; gpid<intpoints.nquad; gpid++)
+  {
+    const double e0 = intpoints.qxg[gpid][0];
+    const double e1 = intpoints.qxg[gpid][1];
+
+    // get shape functions and derivatives in the plane of the element
+    shape_function_2D(funct, e0, e1, distype);
+    shape_function_2D_deriv1(deriv, e0, e1, distype);
+
+    // compute measure tensor for surface element and the infinitesimal
+    // area element drs for the integration
+    DRT::UTILS::ComputeMetricTensorForSurface(xyze,deriv,metrictensor,&sqrtdetg);
+
+    // values are multiplied by the product of the determinant of the metric
+    // tensor and the gauss weight
+    const double fac = intpoints.qwgt[gpid] * sqrtdetg;
+
+    Epetra_SerialDenseMatrix dxyzdrs(2,3);
+    dxyzdrs.Multiply('N','T',1.0,deriv,xyze,0.0);
+
+
+#ifdef FSTENS1
+
+    // calculate normal vector at integration point
+    Epetra_SerialDenseVector  norm(3);
+    for (int dim=0;dim<3;dim++)
+    {
+      for (int node=0;node<iel;++node)
+      {
+        norm[dim] += funct[node] * norm_elem(dim,node);
+      }
+    }
+    // set length to 1.0
+    double length = 0.0;
+    for (int dim=0;dim<3;dim++)
+    {
+      length += norm[dim] * norm[dim];
+    }
+    length = sqrt(length);
+    for (int dim=0;dim<3;dim++)
+    {
+      norm[dim] = (1.0/length) * norm[dim];
+    }
+
+    // calculate double mean curvature 2*H at integration point.
+    double twoH = 0.0;
+    Epetra_SerialDenseMatrix dn123drs(2,3);
+
+    for (int i=0;i<2;i++)
+    {
+      for (int dim=0;dim<3;dim++)
+      {
+        for (int node=0;node<iel;node++)
+        {
+          dn123drs(i,dim) = deriv(i,node) * norm_elem(dim,node);
+        }
+      }
+    }
+
+    //Acc. to Bronstein ..."mittlere Kruemmung":
+    double L = 0.0, twoM = 0.0, N = 0.0;
+    for (int i=0;i<3;i++)
+     {
+      L += (-1.0) * dxyzdrs(0,i) * dn123drs(0,i);
+      twoM += (-1.0) * dxyzdrs(0,i) * dn123drs(1,i) - dxyzdrs(1,i) * dn123drs(0,i);
+      N += (-1.0) * dxyzdrs(1,i) * dn123drs(1,i);
+     }
+    twoH = (metrictensor(0,0)*N - twoM*metrictensor(0,1)
+    + metrictensor(1,1)*L)/(sqrtdetg*sqrtdetg);
+
+
+//     //Acc. to Saksono eq. (4): 2H = - Surface_gradient*norm
+//     double abs_dxyzdr = 0.0;
+//     double abs_dxyzds = 0.0;
+//     double pointproduct = 0.0;
+
+//     for (int dim=0;dim<3;dim++)
+//     {
+//       abs_dxyzdr += dxyzdrs(0,dim) * dxyzdrs(0,dim);
+//       abs_dxyzds += dxyzdrs(1,dim) * dxyzdrs(1,dim);
+//       pointproduct += dxyzdrs(0,dim) * dxyzdrs(1,dim);
+//     }
+//     abs_dxyzdr = sqrt(abs_dxyzdr);
+//     abs_dxyzds = sqrt(abs_dxyzds);
+
+
+//TODO: for 2H = (L+N)/E (as below) 0<E=G (!) and F=0 are required!
+
+
+//     for(int dim=0;dim<3;dim++)
+//     {
+//        twoH += dn123drs(1, dim) * dxyzdrs(1, dim)
+//         - dn123drs(0, dim) * pointproduct / abs_dxyzdr / abs_dxyzds * dxyzdrs(1, dim)
+//         + dn123drs(0, dim) * pointproduct * pointproduct / abs_dxyzdr / abs_dxyzds * dxyzdrs(0, dim)
+//         - dn123drs(1, dim) * pointproduct * dxyzdrs(0, dim)
+//         + dn123drs(0, dim) * dxyzdrs(0, dim);
+//     }
+//     twoH = (-1.0) * twoH;
+
+
+     for (int node=0;node<iel;++node)
+     {
+       for(int dim=0;dim<3;dim++)
+       {
+        // according to Saksono (23)
+         elevec1[node*numdf+dim]+= SFgamma *
+                                   twoH * norm[dim] * funct[node]
+                                   * fac;
+       }
+      elevec1[node*numdf+3] = 0.0;
+     }
+
+#else  //----> FSTENS2
+
+    double abs_dxyzdr = 0.0;
+    double abs_dxyzds = 0.0;
+    double pointproduct = 0.0;
+
+    for (int dim=0;dim<3;dim++)
+    {
+      abs_dxyzdr += dxyzdrs(0,dim) * dxyzdrs(0,dim);
+      abs_dxyzds += dxyzdrs(1,dim) * dxyzdrs(1,dim);
+      pointproduct += dxyzdrs(0,dim) * dxyzdrs(1,dim);
+    }
+    abs_dxyzdr = sqrt(abs_dxyzdr);
+    abs_dxyzds = sqrt(abs_dxyzds);
+
+    for (int node=0;node<iel;++node)
+    {
+      for(int dim=0;dim<3;dim++)
+      {
+        // Right hand side Integral (SFgamma * -Surface_Gradient, weighting
+        // function) on Gamma_FS
+        // See Saksono eq. (26)
+        // discretized as surface gradient * ( Shapefunction-Matrix
+        // transformed )
+
+//TODO: This works well. But is E=G required?
+
+        elevec1[node*numdf+dim] += SFgamma *
+                                   (-1.0) * (
+                                     deriv(1, node) * dxyzdrs(1, dim)
+                                     - deriv(0, node) * pointproduct / abs_dxyzdr / abs_dxyzds * dxyzdrs(1, dim)
+                                     + deriv(0, node) * pointproduct * pointproduct / abs_dxyzdr / abs_dxyzds * dxyzdrs(0, dim)
+                                     - deriv(1, node) * pointproduct * dxyzdrs(0, dim)
+                                     + deriv(0, node) * dxyzdrs(0, dim)
+                                     )
+                                   * fac;
+      }
+      elevec1[node*numdf+3] = 0.0;
+    }
+
+#endif
+
+  } /* end of loop over integration points gpid */
+
+
+} // DRT::ELEMENTS::Fluid3Surface::ElementSurfaceTension
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

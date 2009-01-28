@@ -1,4 +1,4 @@
-#/*!----------------------------------------------------------------------
+/*!----------------------------------------------------------------------
 \file fluid2_line_evaluate.cpp
 \brief
 
@@ -95,6 +95,18 @@ int DRT::ELEMENTS::Fluid2Line::Evaluate(        ParameterList&            params
     }
     case calc_surface_tension:
     {
+
+
+// 2D or TET: To possibilities work. FSTENS1 is a direct implementation of Wall et
+// al. eq. (25) with node normals obtained by weighted assembly of element
+// normals. Because geometric considerations are used to find the normals of
+// our flat (!) surface elements no second derivatives appear. FSTENS2 employs the
+// divergence theorem acc. to Saksono eq. (24).
+
+#define FSTENS2
+#undef FSTENS1
+
+
       RefCountPtr<const Epetra_Vector> dispnp;
       vector<double> mydispnp;
 
@@ -104,8 +116,10 @@ int DRT::ELEMENTS::Fluid2Line::Evaluate(        ParameterList&            params
         mydispnp.resize(lm.size());
         DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
       }
-      RefCountPtr<const Epetra_Vector> normals;
+
       vector<double> mynormals;
+#ifdef FSTENS1
+      RefCountPtr<const Epetra_Vector> normals;
 
       normals = discretization.GetState("normals");
       if (normals!=null)
@@ -113,7 +127,9 @@ int DRT::ELEMENTS::Fluid2Line::Evaluate(        ParameterList&            params
         mynormals.resize(lm.size());
         DRT::UTILS::ExtractMyValues(*normals,mynormals,lm);
       }
-      ElementSurfaceTension(params,discretization,lm,elemat1,elevec1,mydispnp,mynormals);
+#endif
+
+      ElementSurfaceTension(params,discretization,lm,elevec1,mydispnp,mynormals);
       break;
     }
     case enforce_weak_dbc:
@@ -191,7 +207,7 @@ int DRT::ELEMENTS::Fluid2Line::Evaluate(        ParameterList&            params
       const vector<int>* functions = (*wdbc_cond).Get<vector<int> >   ("funct");
 
       // I hope we have a linear element.
-      // Ciarlet PG. The ﬁnite element method for elliptic 
+      // Ciarlet PG. The ï¬nite element method for elliptic
       // problems. Amsterdam: North-Holland; 1978.
       if(parent_->Shape()!=Fluid2::quad4)
       {
@@ -820,13 +836,13 @@ void DRT::ELEMENTS::Fluid2Line::ElementNodeNormal(ParameterList& params,
 
     for (int i=0;i<iel;i++)
     {
-      xye(0,i) += edispnp[3*i];
-      xye(1,i) += edispnp[3*i+1];
+      xye(0,i) += edispnp[numdf*i];
+      xye(1,i) += edispnp[numdf*i+1];
     }
   }
 
   //this element's normal vector
-  Epetra_SerialDenseVector   norm(numdf);
+  Epetra_SerialDenseVector   norm(2);
   double length = 0.0;
   norm[0] = xye(1,1) - xye(1,0);
   norm[1] = (-1.0)*(xye(0,1) - xye(0,0));
@@ -852,11 +868,13 @@ void DRT::ELEMENTS::Fluid2Line::ElementNodeNormal(ParameterList& params,
 
     for (int node=0;node<iel;++node)
     {
-      for(int dim=0;dim<numdf;dim++)
+       for(int dim=0;dim<2;dim++)
       {
         elevec1[node*numdf+dim]+=funct[node] * fac * norm[dim];
       }
+       elevec1[node*numdf+2] = 0.0;
     }
+
   } //end of loop over integration points
 } // DRT::ELEMENTS::Fluid2Line::ElementNodeNormal
 
@@ -865,7 +883,6 @@ void DRT::ELEMENTS::Fluid2Line::ElementNodeNormal(ParameterList& params,
 void DRT::ELEMENTS::Fluid2Line::ElementSurfaceTension(ParameterList& params,
                                                       DRT::Discretization& discretization,
                                                       vector<int>& lm,
-                                                      Epetra_SerialDenseMatrix& elemat1,
                                                       Epetra_SerialDenseVector& elevec1,
                                                       const std::vector<double>& edispnp,
                                                       std::vector<double>& enormals)
@@ -875,12 +892,6 @@ void DRT::ELEMENTS::Fluid2Line::ElementSurfaceTension(ParameterList& params,
 
   // set number of nodes
   const int iel   = this->NumNode();
-
-  const double thsl = params.get("thsl",0.0);
-  if (thsl <= 0.0) dserror("recieved illegal time integration value");
-
-  const double dta = params.get("dta",0.0);
-  if (dta <= 0.0) dserror("recieved illegal time step value");
 
   // get material data
   RCP<MAT::Material> mat = parent_->Material();
@@ -918,27 +929,27 @@ void DRT::ELEMENTS::Fluid2Line::ElementSurfaceTension(ParameterList& params,
 
     for (int i=0;i<iel;i++)
     {
-      xye(0,i) += edispnp[3*i];
-      xye(1,i) += edispnp[3*i+1];
+      xye(0,i) += edispnp[numdf*i];
+      xye(1,i) += edispnp[numdf*i+1];
     }
   }
 
+#ifdef FSTENS1
   //set normal vectors to length = 1.0
   for (int node=0;node<iel;++node)
   {
     double length = 0.0;
-    for (int dim=0;dim<numdf;dim++)
+    for (int dim=0;dim<2;dim++)
+    {
       length += enormals[numdf*node+dim] * enormals[numdf*node+dim];
+    }
     length = sqrt(length);
-    for (int dim=0;dim<numdf;dim++)
+    for (int dim=0;dim<2;dim++)
     {
       enormals[numdf*node+dim] = (1.0/length) * enormals[numdf*node+dim];
     }
   }
-
-  //This element's surface force vector, obtained by integrating the surface
-  //stress h over the element's surface. See Wall et al. 2.3 (14)
-  Epetra_SerialDenseVector   H(numdf);
+#endif
 
   // loop over integration points
   for (int gpid=0;gpid<intpoints.nquad;gpid++)
@@ -951,76 +962,101 @@ void DRT::ELEMENTS::Fluid2Line::ElementSurfaceTension(ParameterList& params,
     // compute infinitesimal line element dr for integration along the line
     const double dr = f2_substitution(xye,deriv,iel);
 
-    // Values are multiplied by the product from inf. area element,
-    // the gauss weight and the constant belonging to the time integration
-    // algorithm (theta*dt for one step theta, 2/3 for bdf with dt const.)
-    const double fac = dr * intpoints.qwgt[gpid] * thsl;
+    // values are multiplied by the product from inf. area element and the
+    // the gauss weight
+    const double fac = intpoints.qwgt[gpid] *dr;
 
-    //------ calculate surface tension force
-    // Determinant of the metric-tensor. metric-tensor for surface element (a line) is 1x1
-    double A = 0.0;
-    Epetra_SerialDenseVector  a(numdf);
+#ifdef FSTENS1
+
+    // Metric-tensor for surface element (a line) is 1x1
+    double metrictensor = 0.0;
+    Epetra_SerialDenseVector  dxyds(2);
     for (int node=0;node<iel;++node)
     {
-      for (int dim=0;dim<numdf-1;dim++)
-        a[dim] += xye(dim,node)*deriv(0,node);
+      for (int dim=0;dim<2;dim++)
+        dxyds[dim] += xye(dim,node)*deriv(0,node);
     }
-    for (int dim=0;dim<numdf-1;dim++)
-      A += a[dim]*a[dim];
+    for (int dim=0;dim<2;dim++)
+      metrictensor += dxyds[dim]*dxyds[dim];
 
     // calculate normal vector at integration point
-    Epetra_SerialDenseVector  norm(numdf);
-    for (int dim=0;dim<numdf;dim++)
+    Epetra_SerialDenseVector  norm(2);
+    for (int dim=0;dim<2;dim++)
     {
       for (int node=0;node<iel;++node)
       {
         norm[dim] += funct[node] * enormals[numdf*node+dim];
       }
     }
-
-    // calculate surface stress at integration point
-    double h = 0.0, left = 0.0, right = 0.0;
-    for(int dim=0;dim<numdf;dim++)
+    // set length to 1.0
+    double length = 0.0;
+    for (int dim=0;dim<2;dim++)
     {
-      left = 0.0;
-      right = 0.0;
+      length += norm[dim] * norm[dim];
+    }
+    length = sqrt(length);
+    for (int dim=0;dim<2;dim++)
+    {
+      norm[dim] = (1.0/length) * norm[dim];
+    }
+
+    // calculate double mean curvature 2*H at integration point.
+    double twoH = 0.0;
+    Epetra_SerialDenseVector dn12dr(2);
+
+    for(int dim=0;dim<2;dim++)
+    {
       for (int node=0;node<iel;++node)
       {
-        left += enormals[numdf*node+dim] * deriv(0,node);
-        right += xye(dim,node) * deriv(0,node);
+        dn12dr[dim] += enormals[numdf*node+dim] * deriv(0,node);
       }
-      h += left * right;
     }
-    h = SFgamma * (-1.0/A) * h;
 
-    // Gauss-Integration
-    for (int dim=0;dim<numdf;dim++)
+    //Acc. to Saksono eq. (4): 2H = - Surface_gradient*norm
+    //see also Bronstein ..."mittlere Kruemmung" (2D: with H instead of 2H,
+    //E=G, F=0,N=L)
+    twoH = (-1.0) * dn12dr[0] * dxyds[0] + (-1.0) * dn12dr[1] * dxyds[1];
+
+
+    for (int node=0;node<iel;++node)
         {
-          H[dim] += fac * h  * norm[dim];
+       for(int dim=0;dim<2;dim++)
+        {
+          // according to Saksono (23)
+          elevec1[node*numdf+dim]+= SFgamma *
+                                    twoH * norm[dim] * funct[node]
+                                    * fac;
         }
-    //END--- calculate surface tension force
+        }
 
-    //------ calculate element matrix contribution. Slikkerveer, Van Lohuizen, O'Brien (eq.29)
-    for (int nodei = 0; nodei < iel; nodei++)
-      for (int nodej = nodei; nodej < iel; nodej++)
-        for (int l = 0; l < 2; l++)
-          for (int p = 0; p < 2; p++)
-            // it turns out that the factor 0.06 reduces calculation-time by
-            // some percent compared to 0.0. much slower convergence with 1.0
-            // ->don't use dta for whole timestep. dr?
-            elemat1(nodei*3+l,nodej*3+p) += 0.06 * SFgamma * dta
-                                            * dr * intpoints.qwgt[gpid]
-                                            * deriv(0,nodei) * deriv(0,nodej)
-                                            * norm[p] * norm[l];
-  } //end of loop over integration points
+#else //----> FSTENS2
+      // works fine
 
+    Epetra_SerialDenseVector  dxyds(2);
   for (int node=0;node<iel;++node)
   {
-    for(int dim=0;dim<numdf;dim++)
+      for (int dim=0;dim<2;dim++)
+        dxyds[dim] += xye(dim,node)*deriv(0,node);
+    }
+
+    for (int node=0;node<iel;++node)
+      {
+       for(int dim=0;dim<2;dim++)
     {
-      elevec1[numdf*node+dim] = H[dim] * (1.0/iel);
+          // Right hand side Integral (SFgamma * -Surface_Gradient, weighting
+          // function) on Gamma_FS
+          // See Saksono eq. (26)
+          // discretized as surface gradient * ( Shapefunction-Matrix
+          // transformed )
+          elevec1[node*numdf+dim]+= SFgamma *
+                                    (-1.0) * deriv(0, node) * dxyds[dim]
+                                    * fac;
     }
   }
+#endif
+
+  } //end of loop over integration points
+
 } // DRT::ELEMENTS::Fluid2Line::ElementSurfaceTension
 
 
