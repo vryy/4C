@@ -1102,9 +1102,16 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 
         // we assume that every plane parallel to the wall is preserved
         // hence we can compute the jacobian determinant of the 2d cutting
-        // element by replacin max-min by one on the diagonal of the 
+        // element by replacing max-min by one on the diagonal of the 
         // jacobi matrix (the two non-diagonal elements are zero)
-        xjm(normdirect,normdirect)=1.0;
+        if(xjm(normdirect,normdirect)<0)
+        {
+          xjm(normdirect,normdirect)=-1.0;
+        }
+        else
+        {
+          xjm(normdirect,normdirect)= 1.0;
+        }
 
         const double det = 
           xjm(0,0)*xjm(1,1)*xjm(2,2)
@@ -1365,9 +1372,16 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 
         // we assume that every plane parallel to the wall is preserved
         // hence we can compute the jacobian determinant of the 2d cutting
-        // element by replacin max-min by one on the diagonal of the 
+        // element by replacing max-min by one on the diagonal of the 
         // jacobi matrix (the two non-diagonal elements are zero)
-        xjm(normdirect,normdirect)=1.0;
+        if(xjm(normdirect,normdirect)<0)
+        {
+          xjm(normdirect,normdirect)=-1.0;
+        }
+        else
+        {
+          xjm(normdirect,normdirect)= 1.0;
+        }
 
         const double det = 
           xjm(0,0)*xjm(1,1)*xjm(2,2)

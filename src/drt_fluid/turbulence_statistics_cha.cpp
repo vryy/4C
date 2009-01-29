@@ -1193,7 +1193,6 @@ void FLD::TurbulenceStatisticsCha::EvaluateIntegralMeanValuesInPlanes()
 
   eleparams.set("count processed elements",&locprocessedeles);
 
-
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState("u and p (n+1,converged)"    ,meanvelnp_   );
