@@ -65,9 +65,7 @@ Input/f2_eq4x4_algebraic.dat                            x        x        x     
 Input/f2_eq4x4_keps.dat                                 x        -        x        -        -        -
 Input/f2_eq4x4_kome.dat                                 x        -        x        -        -        -
 Input/f2_freeosz20x20.dat                               x        x        x        x        -        -
-Input/f2_freeosz20x20_drt.dat                           x        x        x        -        -        -
 Input/f2_channel20x20_drt_weak.dat                      x        x        x        x        -        -
-Input/f2_fs_channel.dat                                 x        x        x        -        -        -
 Input/f2_kim-moin.dat                                   x        x        x        x        -        -
 Input/f2_impinging_flow_drt.dat                         x        x        x        -        -        -
 Input/f2_locsystest.dat                                 x        x        x        x        -        -
