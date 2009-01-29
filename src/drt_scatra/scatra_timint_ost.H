@@ -118,12 +118,6 @@ private:
   /// time factor for one-step-theta/BDF2 time integration
   double theta_;
 
-  /// LOMA-specific parameter: thermodynamic pressure at n+1
-  double thermpressnp_;
-
-  /// LOMA-specific parameter: time derivative of thermodynamic pressure at n+1
-  double thermpressdtnp_;
-
 }; // class TimIntOneStepTheta
 
 } // namespace SCATRA

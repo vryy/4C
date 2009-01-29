@@ -1379,12 +1379,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("THERMOPRESS",98100.0,"(initial) thermodynamic pressure",&lomacontrol);
   DoubleParameter("GASCONSTANT",287.0,"specific gas constant R (in J/(kg*K))",&lomacontrol);
   setStringToIntegralParameter<int>("CONSTHERMPRESS","Yes",
-                               "assume thermodynamic prssure constant in time",
+                               "treatment of thermodynamic pressure in time",
                                tuple<std::string>(
-                                 "No",
+                                 "No_energy",
+                                 "No_mass",
                                  "Yes"
                                  ),
-                               tuple<int>(0,1),
+                               tuple<int>(0,1,2),
                                &lomacontrol);
   setStringToIntegralParameter<int>("OUTMEAN","No",
                                "print out mean values of temperature/density",

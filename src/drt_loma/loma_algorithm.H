@@ -112,6 +112,10 @@ namespace LOMA
     /// gas constant (default: 287.0)
     double gasconstant_;
 
+    /// initial total mass (required if thermodynamic pressure is
+    /// calculated from mass conservation)
+    double initialmass_;
+
   private:
 
   };

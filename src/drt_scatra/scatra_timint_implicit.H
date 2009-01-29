@@ -160,6 +160,9 @@ public:
   /// set initial thermodynamic pressure and time derivative for low-Mach-number flow
   void SetInitialThermPressure(const double thermpress);
 
+  /// compute initial total mass in domain for low-Mach-number flow
+  double ComputeInitialMass(const double thermpress);
+
   /// compute initial time derivative of density field for low-Mach-number flow
   virtual void ComputeInitialDensityDerivative() = 0;
 
@@ -172,6 +175,10 @@ public:
   /// compute thermodynamic pressure and time derivative for low-Mach-number flow
   virtual double ComputeThermPressure()=0;
 
+  /// compute thermodyn. pressure from mass cons. in domain for low-Mach-number flow
+  double ComputeThermPressureFromMassCons(const double initialmass,
+                                          const double gasconstant);
+
   /// compute density field for low-Mach-number flow
   void ComputeDensity(const double thermpress, const double gasconstant);
 
@@ -183,6 +190,9 @@ public:
 
   /// update thermodynamic pressure and time derivative for low-Mach-number flow
   virtual void UpdateThermPressure() = 0;
+
+  /// update thermodynamic pressure from mass conservation for low-Mach-number flow
+  void UpdateThermPressureFromMassCons();
 
   /// update density field (and time derivative) for low-Mach-number flow
   virtual void UpdateDensity() = 0;
@@ -344,10 +354,12 @@ protected:
   /// ELCH-specific paramter F/RT (default value for the temperature is 298K)
   double frt_;
 
-  /// LOMA-specific parameter: thermodynamic pressure at n
+  /// LOMA-specific parameter: thermodynamic pressure at n+1 and n
+  double thermpressnp_;
   double thermpressn_;
 
-  /// LOMA-specific parameter: time derivative of thermodynamic pressure at n
+  /// LOMA-specific parameter: time deriv. of thermodynamic pressure at n+1 and n
+  double thermpressdtnp_;
   double thermpressdtn_;
 
   /// system matrix (either sparse matrix or block sparse matrix)

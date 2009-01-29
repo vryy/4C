@@ -119,12 +119,8 @@ private:
   double gamma_;
   double genalphafac_;
 
-  /// LOMA-specific parameter: thermodynamic pressure at n+1
-  double thermpressnp_;
-
   /// LOMA-specific parameter: time derivative of thermodynamic pressure
-  /// at n+1 and n+alpha_F
-  double thermpressdtnp_;
+  /// at n+alpha_F
   double thermpressdtaf_;
 
 }; // class TimIntGenAlpha

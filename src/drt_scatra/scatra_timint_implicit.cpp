@@ -1213,6 +1213,86 @@ void SCATRA::ScaTraTimIntImpl::SetInitialThermPressure(const double thermpress)
 
 
 /*----------------------------------------------------------------------*
+ | compute initial total mass in domain                        vg 01/09 |
+ *----------------------------------------------------------------------*/
+double SCATRA::ScaTraTimIntImpl::ComputeInitialMass(const double thermpress)
+{
+  // set initial thermodynamic pressure
+  thermpressn_ = thermpress;
+
+  // set scalar and density vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState("phinp",phinp_);
+  discret_->SetState("densnp",densnp_);
+  // set action for elements
+  ParameterList eleparams;
+  eleparams.set("action","calc_temp_and_dens");
+
+  // evaluate integral of inverse temperature
+  Teuchos::RCP<Epetra_SerialDenseVector> scalars
+    = Teuchos::rcp(new Epetra_SerialDenseVector(3));
+  discret_->EvaluateScalars(eleparams, scalars);
+  discret_->ClearState();   // clean up
+
+  double initialmass = (*scalars)[1];
+
+  // print out initial total mass
+  if (myrank_ == 0)
+  {
+    cout << endl;
+    cout << "+--------------------------------------------------------------------------------------------+" << endl;
+    cout << "Initial total mass in domain: " << initialmass << endl;
+    cout << "+--------------------------------------------------------------------------------------------+" << endl;
+  }
+
+  return initialmass;
+}
+
+
+/*----------------------------------------------------------------------*
+ | compute thermodynamic pressure from mass conservation       vg 01/09 |
+ *----------------------------------------------------------------------*/
+double SCATRA::ScaTraTimIntImpl::ComputeThermPressureFromMassCons(
+      const double initialmass,
+      const double gasconstant)
+{
+  // use density vector as "storage space" for inverse temperature
+  densnp_->Reciprocal(*phinp_);
+  // set scalar and density vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState("phinp",phinp_);
+  discret_->SetState("densnp",densnp_);
+  // set action for elements
+  ParameterList eleparams;
+  eleparams.set("action","calc_temp_and_dens");
+
+  // evaluate integral of inverse temperature
+  Teuchos::RCP<Epetra_SerialDenseVector> scalars
+    = Teuchos::rcp(new Epetra_SerialDenseVector(3));
+  discret_->EvaluateScalars(eleparams, scalars);
+  discret_->ClearState();   // clean up
+
+  // compute thermodynamic pressure: tp = R*M_0/int(1/T)
+  thermpressnp_ = gasconstant*initialmass/(*scalars)[1];
+
+  // compute time derivative of thermodynamic pressure: tpdt = (tp(n+1)-tp(n))/dt
+  thermpressdtnp_ = (thermpressnp_-thermpressn_)/dta_;
+
+  // print out thermodynamic pressure and its time derivative
+  if (myrank_ == 0)
+  {
+    cout << endl;
+    cout << "+--------------------------------------------------------------------------------------------+" << endl;
+    cout << "Thermodynamic pressure from mass conservation: " << thermpressnp_ << endl;
+    cout << "Time derivative of thermodynamic pressure: " << thermpressdtnp_ << endl;
+    cout << "+--------------------------------------------------------------------------------------------+" << endl;
+  }
+
+  return thermpressnp_;
+}
+
+
+/*----------------------------------------------------------------------*
  | compute density for low-Mach-number flow                    vg 08/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::ComputeDensity(const double thermpress,
@@ -1276,6 +1356,17 @@ bool SCATRA::ScaTraTimIntImpl::DensityConvergenceCheck(int          itnum,
   }
 
   return stopnonliniter;
+}
+
+
+/*----------------------------------------------------------------------*
+ | update thermodynamic pressure for mass conservation         vg 01/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::UpdateThermPressureFromMassCons()
+{
+  thermpressn_   = thermpressnp_;
+
+  return;
 }
 
 
