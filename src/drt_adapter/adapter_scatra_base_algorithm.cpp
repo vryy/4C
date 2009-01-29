@@ -63,10 +63,13 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   const Teuchos::ParameterList& scatradyn =
     DRT::Problem::Instance()->ScalarTransportDynamicParams();
 
-  // print out default parameters of scalar tranport parameter list
+  // print out default parameters of scalar transport parameter list
   if (actdis->Comm().MyPID()==0)
+  {
     DRT::INPUT::PrintDefaultParameters(std::cout, scatradyn);
-
+    DRT::INPUT::PrintDefaultParameters(std::cout, scatradyn.sublist("STABILIZATION"));
+    DRT::INPUT::PrintDefaultParameters(std::cout, scatradyn.sublist("NONLINEAR"));
+  }
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
