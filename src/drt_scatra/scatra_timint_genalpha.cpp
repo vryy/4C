@@ -549,6 +549,10 @@ void SCATRA::TimIntGenAlpha::CalcInitialPhidt()
 void SCATRA::TimIntGenAlpha::SetLomaVelocity(RCP<const Epetra_Vector> extvel,
     RCP<DRT::Discretization> fluiddis)
 {
+  // store temperature and velocity of previous iteration for convergence check
+  tempincnp_->Update(1.0,*phinp_,0.0);
+  //velincnp_->Update(1.0,*convel_,0.0);
+
   // for generalized-alpha time integration, at first, density fields at
   // intermediate time steps need to be calculated.
   densam_->Update((alphaM_),*densnp_,(1.0-alphaM_),*densn_,0.0);

@@ -185,8 +185,8 @@ public:
   /// compute time derivative of density field for low-Mach-number flow
   virtual void ComputeDensityDerivative() = 0;
 
-  /// check convergence of density field for low-Mach-number flow
-  bool DensityConvergenceCheck(int itnum, int itmax, const double ittol);
+  /// check convergence for low-Mach-number flow
+  bool LomaConvergenceCheck(int itnum, int itmax, const double ittol);
 
   /// update thermodynamic pressure and time derivative for low-Mach-number flow
   virtual void UpdateThermPressure() = 0;
@@ -390,8 +390,9 @@ protected:
   RCP<Epetra_Vector>  densdtnp_;
   RCP<Epetra_Vector>  densdtn_;
 
-  /// density increment at time n+1
-  RCP<Epetra_Vector>    densincnp_;
+  /// temperature and velocity increment at time n+1
+  RCP<Epetra_Vector>       tempincnp_;
+  //RCP<Epetra_MultiVector>  velincnp_;
 
   /// histvector --- a linear combination of phinm, phin (BDF)
   ///                or phin, phidtn (One-Step-Theta)

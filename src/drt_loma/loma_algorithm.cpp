@@ -317,8 +317,8 @@ void LOMA::Algorithm::GenAlphaOuterLoop()
     if (Comm().MyPID()==0) cout<<"\n******************************************\n      GENERALIZED-ALPHA FLOW SOLVER \n******************************************\n";
     FluidField().NonlinearSolve();
 
-    // check convergence of density
-    stopnonliniter = ScaTraField().DensityConvergenceCheck(itnum,itmax_,ittol_);
+    // check convergence of temperature field
+    stopnonliniter = ScaTraField().LomaConvergenceCheck(itnum,itmax_,ittol_);
   }
 
   return;
@@ -368,8 +368,8 @@ void LOMA::Algorithm::OSTBDF2OuterLoop()
     if (Comm().MyPID()==0) cout<<"\n******************************************\n     ONE-STEP-THETA/BDF2 FLOW SOLVER \n******************************************\n";
     FluidField().NonlinearSolve();
 
-    // check convergence of density
-    stopnonliniter = ScaTraField().DensityConvergenceCheck(itnum,itmax_,ittol_);
+    // check convergence of temperature field
+    stopnonliniter = ScaTraField().LomaConvergenceCheck(itnum,itmax_,ittol_);
   }
 
   return;

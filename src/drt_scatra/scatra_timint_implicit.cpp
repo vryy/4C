@@ -158,9 +158,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // density at time n+1
   densnp_ = LINALG::CreateVector(*dofrowmap,true);
 
-  // density increment at time n+1
-  if (prbtype_ == "loma") densincnp_ = LINALG::CreateVector(*dofrowmap,true);
-
   // histvector --- a linear combination of phinm, phin (BDF)
   //                or phin, phidtn (One-Step-Theta, Generalized-alpha)
   hist_ = LINALG::CreateVector(*dofrowmap,true);
@@ -169,6 +166,13 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   const Epetra_Map* noderowmap = discret_->NodeRowMap();
   /// convective velocity (always three velocity components per node)
   convel_ = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+
+  // temperature and velocity increment at time n+1
+  if (prbtype_ == "loma")
+  {
+    tempincnp_ = LINALG::CreateVector(*dofrowmap,true);
+    //velincnp_  = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+  }
 
   // Vectors associated to boundary conditions
   // -----------------------------------------
@@ -1298,54 +1302,68 @@ double SCATRA::ScaTraTimIntImpl::ComputeThermPressureFromMassCons(
 void SCATRA::ScaTraTimIntImpl::ComputeDensity(const double thermpress,
                                               const double gasconstant)
 {
-  // store density of previous iteration for convergence check
-  densincnp_->Update(1.0,*densnp_,0.0);
-
   // compute density based on equation of state:
   // rho = (p_therm/R)*(1/T) = (thermpress/gasconstant)*(1/T)
   densnp_->Reciprocal(*phinp_);
   densnp_->Scale(thermpress/gasconstant);
-
-  //densnp_->PutScalar(1.0);
 
   return;
 }
 
 
 /*----------------------------------------------------------------------*
- | compute density for low-Mach-number flow                    vg 08/08 |
+ | convergence check for low-Mach-number flow                  vg 01/09 |
  *----------------------------------------------------------------------*/
-bool SCATRA::ScaTraTimIntImpl::DensityConvergenceCheck(int          itnum,
-                                                       int          itmax,
-                                                       const double ittol)
+bool SCATRA::ScaTraTimIntImpl::LomaConvergenceCheck(int          itnum,
+                                                    int          itmax,
+                                                    const double ittol)
 {
   bool stopnonliniter = false;
 
-  double densincnorm_L2;
-  double densnorm_L2;
+  // compute L2-norm of incremental temperature and temperature
+  double tempincnorm_L2;
+  double tempnorm_L2;
+  tempincnp_->Update(1.0,*phinp_,-1.0);
+  tempincnp_->Norm2(&tempincnorm_L2);
+  phinp_->Norm2(&tempnorm_L2);
 
-  densincnp_->Update(1.0,*densnp_,-1.0);
-  densincnp_->Norm2(&densincnorm_L2);
-  densnp_->Norm2(&densnorm_L2);
+  /*double velincnorm_L2;
+  double velnorm_L2;
+  velincnp_->Update(1.0,*convel_,-1.0);
+  velincnp_->Norm2(&velincnorm_L2);
+  convel_->Norm2(&velnorm_L2);*/
 
-  // care for the case that there is (almost) zero density
-  if (densnorm_L2 < 1e-6) densnorm_L2 = 1.0;
+  // care for the case that there is (almost) zero temperature or velocity
+  // (usually not required for temperature)
+  //if (velnorm_L2 < 1e-6) velnorm_L2 = 1.0;
+  //if (tempnorm_L2 < 1e-6) tempnorm_L2 = 1.0;
 
   if (myrank_==0)
   {
     cout<<"\n******************************************\n           OUTER ITERATION STEP            \n******************************************\n";
     printf("+------------+-------------------+--------------+\n");
-    printf("|- step/max -|- tol      [norm] -|-- dens-inc --|\n");
+    printf("|- step/max -|- tol      [norm] -|-- temp-inc --|\n");
     printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   |",
-             itnum,itmax,ittol,densincnorm_L2/densnorm_L2);
+         itnum,itmax,ittol,tempincnorm_L2/tempnorm_L2);
     printf("\n");
     printf("+------------+-------------------+--------------+\n");
+
+    /*printf("+------------+-------------------+--------------+--------------+\n");
+    printf("|- step/max -|- tol      [norm] -|-- temp-inc --|-- vel-inc --|\n");
+    printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |",
+         itnum,itmax,ittol,tempincnorm_L2/tempnorm_L2,velincnorm_L2/velnorm_L2);
+    printf("\n");
+    printf("+------------+-------------------+--------------+--------------+\n");*/
   }
 
-  if (densincnorm_L2/densnorm_L2 <= ittol) stopnonliniter=true;
+  /*if ((tempincnorm_L2/tempnorm_L2 <= ittol) and (velincnorm_L2/velnorm_L2 <= ittol))
+    stopnonliniter=true;*/
+  if ((tempincnorm_L2/tempnorm_L2 <= ittol)) stopnonliniter=true;
 
   // warn if itemax is reached without convergence, but proceed to next timestep
-  if ((itnum == itmax) and (densincnorm_L2/densnorm_L2 > ittol))
+  /*if ((itnum == itmax) and
+      ((tempincnorm_L2/tempnorm_L2 > ittol) or (velincnorm_L2/velnorm_L2 > ittol)))*/
+  if ((itnum == itmax) and (tempincnorm_L2/tempnorm_L2 > ittol))
   {
     stopnonliniter=true;
     if (myrank_==0)

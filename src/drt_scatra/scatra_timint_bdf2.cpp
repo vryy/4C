@@ -388,6 +388,10 @@ void SCATRA::TimIntBDF2::PrepareFirstTimeStep()
 void SCATRA::TimIntBDF2::SetLomaVelocity(RCP<const Epetra_Vector> extvel,
     RCP<DRT::Discretization> fluiddis)
 {
+  // store temperature and velocity of previous iteration for convergence check
+  tempincnp_->Update(1.0,*phinp_,0.0);
+  //velincnp_->Update(1.0,*convel_,0.0);
+
   // check vector compatibility and determine space dimension
   int numdim =-1;
   if (extvel->MyLength()<= (4* convel_->MyLength()) and
