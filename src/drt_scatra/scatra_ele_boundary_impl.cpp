@@ -109,9 +109,9 @@ DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ScaTraBoundaryImpl
     : numdofpernode_(numdofpernode),
     numscal_(numscal),
     xyze_(true),  // initialize to zero
-    bodyforce_(numdofpernode_),
-    diffus_(numscal_),
-    valence_(numscal_),
+    bodyforce_(numdofpernode_,0),
+    diffus_(numscal_,0),
+    valence_(numscal_,0),
     shcacp_(0.0),
     xsi_(true),
     funct_(true),
@@ -250,7 +250,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
 
             // calculate normal flux at present node
             mynormflux[i] = 0.0;
-            for (int l=0; l<nsd_+1; l++)
+            for (int l=0; l<(nsd_+1); l++)
             {
               mynormflux[i] += eflux(l,k)*normal_(l);
             }
@@ -301,19 +301,6 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     const double time = params.get<double>("total time");
     double       timefac = 1.0;
     double       alphaF  = 1.0;
-    if (not is_stationary)
-    {
-      // One-step-Theta:    timefac = theta*dt
-      // BDF2:              timefac = 2/3 * dt
-      // generalized-alpha: timefac = (gamma*alpha_F/alpha_M) * dt
-      timefac = params.get<double>("time factor");
-      alphaF = params.get<double>("alpha_F");
-      timefac *= alphaF;
-      if (timefac < 0.0) dserror("time factor is negative.");
-      // we multiply i0 with timefac. So we do not have to give down this paramater
-      // and perform autmatically the multiplication of matrix and rhs with timefac 
-      i0 *= timefac;
-    }
     // find out whether we shell use a time curve and get the factor
     // this feature can be also used for stationary "pseudo time loops"
     if (curvenum>=0)
@@ -323,34 +310,69 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
       pot0 *= curvefac;
     }
 
+    const bool calc_status = params.get<bool>("calc_status",false);
+    if (!calc_status)
+    {
+      if (not is_stationary)
+      {
+        // One-step-Theta:    timefac = theta*dt
+        // BDF2:              timefac = 2/3 * dt
+        // generalized-alpha: timefac = (gamma*alpha_F/alpha_M) * dt
+        timefac = params.get<double>("time factor");
+        alphaF = params.get<double>("alpha_F");
+        timefac *= alphaF;
+        if (timefac < 0.0) dserror("time factor is negative.");
+        // we multiply i0 with timefac. So we do not have to give down this paramater
+        // and perform autmatically the multiplication of matrix and rhs with timefac 
+        i0 *= timefac;
+      }
+
+
 # if 0
-    // print all parameters read from the current condition
-    cout<<"sign           = "<<sign<<endl;
-    cout<<"kinetic model  = "<<*kinetics<<endl;
-    cout<<"reactant id    = "<<reactantid<<endl;
-    cout<<"pot0(mod.)     = "<<pot0<<endl;
-    cout<<"curvenum       = "<<curvenum<<endl;
-    cout<<"alpha_a        = "<<alphaa<<endl;
-    cout<<"alpha_c        = "<<alphac<<endl;
-    cout<<"i0(mod.)       = "<<i0<<endl;
-    cout<<"F/RT           = "<<frt<<endl<<endl;
+      // print all parameters read from the current condition
+      cout<<"sign           = "<<sign<<endl;
+      cout<<"kinetic model  = "<<*kinetics<<endl;
+      cout<<"reactant id    = "<<reactantid<<endl;
+      cout<<"pot0(mod.)     = "<<pot0<<endl;
+      cout<<"curvenum       = "<<curvenum<<endl;
+      cout<<"alpha_a        = "<<alphaa<<endl;
+      cout<<"alpha_c        = "<<alphac<<endl;
+      cout<<"i0(mod.)       = "<<i0<<endl;
+      cout<<"F/RT           = "<<frt<<endl<<endl;
 #endif
 
-    EvaluateElectrodeKinetics(
-        ele,
-        elemat1_epetra,
-        elevec1_epetra,
-        ephinp,
-        actmat,
-        reactantid,
-        kinetics,
-        pot0,
-        alphaa,
-        alphac,
-        i0,
-        frt,
-        iselch
-    );
+      EvaluateElectrodeKinetics(
+          ele,
+          elemat1_epetra,
+          elevec1_epetra,
+          ephinp,
+          actmat,
+          reactantid,
+          kinetics,
+          pot0,
+          alphaa,
+          alphac,
+          i0,
+          frt,
+          iselch
+      );
+    }
+    else
+    {
+      // NOTE: add integral value only for elements which are NOT ghosted!
+      if(ele->Owner() == discretization.Comm().MyPID())
+      { ElectrodeStatus(
+            ele,
+            params,
+            ephinp,
+            kinetics,
+            pot0,
+            alphaa,
+            alphac,
+            i0,
+            frt,
+            iselch);} 
+    }
   } 
   else if (action =="calc_therm_press")
   {
@@ -718,6 +740,93 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
 
 
 /*----------------------------------------------------------------------*
+ | calculate electrode kinetics status information             gjb 01/09|
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
+    const DRT::Element*        ele,
+    ParameterList&          params,
+    const vector<double>&   ephinp,
+    const std::string*    kinetics,
+    const double&             pot0,
+    const double&           alphaa,
+    const double&           alphac,
+    const double&               i0,
+    const double&              frt,
+    const bool&             iselch
+)
+{
+  // get node coordinates (we have a nsd_+1 dimensional domain!)
+  GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,iel> >(ele,xyze_);
+
+  // get variables with their current values
+  double currentintegral  = params.get<double>("currentintegral");
+  double boundaryint      = params.get<double>("boundaryintegral");
+  double overpotentialint = params.get<double>("overpotentialintegral");
+  double concentrationint = params.get<double>("concentrationintegral");
+
+  // integrations points and weights
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // concentration values of reactive species at element nodes
+  LINALG::Matrix<iel,1> conreact(true);
+
+  // el. potential values at element nodes
+  LINALG::Matrix<iel,1> pot(true);
+  if(iselch)
+  {
+    for (int inode=0; inode< iel;++inode)
+    {
+      conreact(inode) = ephinp[inode*numdofpernode_];
+      pot(inode) = ephinp[inode*numdofpernode_+numscal_];
+    }
+  }
+  else
+  {
+    for (int inode=0; inode< iel;++inode)
+    {
+      conreact(inode) = 1.0;
+      pot(inode) = ephinp[inode*numdofpernode_];
+    }
+  }
+
+  // concentration of active species at integration point
+  double conint;
+  // el. potential at integration point
+  double potint;
+
+  // loop over integration points
+  for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
+  {
+    EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
+
+    // elch-specific values at integration point:
+    conint = funct_.Dot(conreact);
+    potint = funct_.Dot(pot);
+
+    // surface overpotential eta at integration point
+    const double eta = (pot0 - potint);
+    //Butler-Volmer
+    const double expterm = conint * (exp(alphaa*frt*eta)-exp((-alphac)*frt*eta));
+
+    // compute integrals
+    overpotentialint += eta * fac_;
+    currentintegral += (-i0) * expterm * fac_; // the negative(!) normal flux density
+    boundaryint += fac_;
+    concentrationint += conint*fac_;
+
+  } // loop over integration points
+
+  // add contributions to the global values
+  params.set<double>("currentintegral",currentintegral);
+  params.set<double>("boundaryintegral",boundaryint);
+  params.set<double>("overpotentialintegral",overpotentialint);
+  params.set<double>("concentrationintegral",concentrationint);
+
+} //ScaTraBoundaryImpl<distype>::ElectrodeStatus
+
+
+/*----------------------------------------------------------------------*
  | get constant normal                                        gjb 01/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
@@ -731,7 +840,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::GetConstNormal(
   {
   case 2:
   {
-    LINALG::Matrix<3,1> dist1, dist2;
+    LINALG::Matrix<3,1> dist1(true), dist2(true);
     for (int i=0; i<3; i++)
     {
       dist1(i) = xyze(i,1)-xyze(i,0);

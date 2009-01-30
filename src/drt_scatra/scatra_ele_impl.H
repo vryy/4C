@@ -397,6 +397,8 @@ public:
     vector<double> diffus_;
     //! charge numbers of all ion species (ELCH specific)
     vector<double> valence_;
+    //! diffusivity times valence for each ion species (ELCH specific)
+    vector<double> diffusvalence_;
     //! specific heat capacity at constant pressure (in case of temperature eq.)
     double shcacp_;
     //! coordinates of current integration point in reference coordinates

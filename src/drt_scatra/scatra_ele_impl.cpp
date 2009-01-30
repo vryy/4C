@@ -165,6 +165,7 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(int numdofpernode, int numscal)
     bodyforce_(numdofpernode_),
     diffus_(numscal_),
     valence_(numscal_),
+    diffusvalence_(numscal_),
     shcacp_(0.0),
     xsi_(true),
     funct_(true),
@@ -273,12 +274,12 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     ParameterList& stablist = params.sublist("STABILIZATION");
 
     // select tau definition
-    SCATRA::TauType whichtau = SCATRA::tau_not_defined;
+    SCATRA::TauType whichtau = SCATRA::tau_franca_valentin; //default
     {
       const string taudef = stablist.get<string>("DEFINITION_TAU");
 
-      if(taudef == "Franca_Valentin") whichtau = SCATRA::franca_valentin;
-      else if(taudef == "Bazilevs")   whichtau = SCATRA::bazilevs;
+      if(taudef == "Zero") whichtau = SCATRA::tau_zero;
+      else if(taudef == "Bazilevs")   whichtau = SCATRA::tau_bazilevs;
     }
 
     // get (weighted) velocity at the nodes
@@ -404,12 +405,12 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     ParameterList& stablist = params.sublist("STABILIZATION");
 
     // select tau definition
-    SCATRA::TauType whichtau = SCATRA::tau_not_defined;
+    SCATRA::TauType whichtau = SCATRA::tau_franca_valentin; //default
     {
       const string taudef = stablist.get<string>("DEFINITION_TAU");
 
-      if(taudef == "Franca_Valentin") whichtau = SCATRA::franca_valentin;
-      else if(taudef == "Bazilevs")   whichtau = SCATRA::bazilevs;
+      if(taudef == "Zero") whichtau = SCATRA::tau_zero;
+      else if(taudef == "Bazilevs")   whichtau = SCATRA::tau_bazilevs;
     }
 
     // need initial field
@@ -658,7 +659,6 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
   {
     // check if length suffices
     if (elevec1_epetra.Length() < 1) dserror("Result vector too short");
-    if (nsd_ != 3) dserror("Error calculation only available for 3D");
 
     // need current solution
     RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
@@ -968,6 +968,7 @@ if (material->mattyp == m_matlist)
     {
       valence_[k]= singlemat.m.ion->valence;
       diffus_[k]= singlemat.m.ion->diffusivity;
+      diffusvalence_[k] = valence_[k]*diffus_[k];
     }
     else if (singlemat.mattyp == m_condif)
       diffus_[k]= singlemat.m.condif->diffusivity;
@@ -1060,7 +1061,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
   } // if ELCH
 
   // stabilization parameter definition according to Bazilevs et al. (2007)
-  if(whichtau == SCATRA::bazilevs)
+  switch (whichtau){
+  case SCATRA::tau_bazilevs:
   {
     for(int k = 0;k<numscal_;++k) // loop over all transported scalars
     {
@@ -1155,8 +1157,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
       } // for artificial diffusivity
     } // for k
   }
+  break;
+  case SCATRA::tau_franca_valentin:
   // stabilization parameter definition according to Franca and Valentin (2000)
-  else if (whichtau == SCATRA::franca_valentin)
   {
     // volume of the element (2D: element surface area; 1D: element length)
     // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
@@ -1264,7 +1267,16 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
 
     } // loop over scalars
   }
-  else dserror("unknown definition of tau\n");
+  break;
+  case SCATRA::tau_zero:
+  {
+    // set tau's to zero (-> no stabilization effect)
+    for(int k = 0;k<numscal_;++k)
+      tau_[k] = 0.0;
+  }
+  break;
+  default: dserror("Unknown definition of tau\n");
+  } //switch (whichtau)
 
   return;
 } //ScaTraImpl::Caltau
@@ -3032,12 +3044,13 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateTempAndDens(
     // then of density and domain
     for (int i=0; i<iel; i++)
     {
+      const double fac_funct_i = fac_*funct_(i);
       for (int k = 0; k < numscal_; k++)
       {
-        scalars[k] += fac_*funct_(i)*ephinp[i*numdofpernode_+k];
+        scalars[k] += fac_funct_i*ephinp[i*numdofpernode_+k];
       }
-      scalars[numscal_]    += fac_*funct_(i)*edensnp[i];
-      scalars[numscal_+1]  += fac_*funct_(i);
+      scalars[numscal_]    += fac_funct_i*edensnp[i];
+      scalars[numscal_+1]  += fac_funct_i;
     }
   } // loop over integration points
 

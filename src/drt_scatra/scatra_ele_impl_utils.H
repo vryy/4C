@@ -24,9 +24,9 @@ namespace SCATRA
   //! possible options for the stabilization parameter
   enum TauType
   {
-    franca_valentin,
-    bazilevs,
-    tau_not_defined
+    tau_franca_valentin,
+    tau_bazilevs,
+    tau_zero
   };
 
   //! flux parameters recognized by scalar transport implementation class
