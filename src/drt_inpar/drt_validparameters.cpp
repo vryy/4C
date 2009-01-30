@@ -1356,11 +1356,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Definition of tau",
                                tuple<std::string>(
                                  "Franca_Valentin",
-                                 "Bazilevs"),
+                                 "Bazilevs",
+                                 "Zero"),
                                tuple<std::string>(
                                  "tau according to Franca and Valentin (2000)",
-                                 "tau according to Bazilevs et al. (2007) (based on G_ij and g_i)")  ,
-                               tuple<int>(0,1),
+                                 "tau according to Bazilevs et al. (2007) (based on G_ij and g_i)"
+                                 "zero tau (no stabilizing effect)")  ,
+                                tuple<int>(0,1,2),
                                &scatradyn_stab);
 
   /*----------------------------------------------------------------------*/
