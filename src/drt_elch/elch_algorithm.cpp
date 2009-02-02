@@ -155,7 +155,10 @@ void ELCH::Algorithm::Output()
   FluidField().LiftDrag();
   ScaTraField().Output();
   if (outmean_) 
+  {
+    ScaTraField().OutputElectrodeInfo();
     ScaTraField().OutputMeanTempAndDens();
+  }
 
   return;
 }
