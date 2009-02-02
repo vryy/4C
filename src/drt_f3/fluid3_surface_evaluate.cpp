@@ -29,6 +29,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_function.H"
 
 #include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/sutherland_fluid.H"
 #include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/modpowerlaw.H"
 
@@ -975,8 +976,8 @@ void DRT::ELEMENTS::Fluid3Surface::ElementSurfaceTension(ParameterList& params,
   // get material data
   RCP<MAT::Material> mat = parent_->Material();
   if (mat==null) dserror("no mat from parent!");
-  if (mat->MaterialType()!=m_fluid)
-    dserror("newtonian fluid material expected but got type %d", mat->MaterialType());
+  if (mat->MaterialType()!=m_fluid && mat->MaterialType()!=m_sutherland_fluid)
+    dserror("newtonian or sutherland fluid material expected but got type %d", mat->MaterialType());
 
   MATERIAL* actmat = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
 
@@ -1244,6 +1245,7 @@ void DRT::ELEMENTS::Fluid3Surface::AreaCaculation(ParameterList& params)
 
   if( mat->MaterialType()    != m_carreauyasuda
       && mat->MaterialType() != m_modpowerlaw
+      && mat->MaterialType() != m_sutherland_fluid
       && mat->MaterialType() != m_fluid)
           dserror("Material law is not a fluid");
 
@@ -1254,6 +1256,11 @@ void DRT::ELEMENTS::Fluid3Surface::AreaCaculation(ParameterList& params)
     actmat = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
     density = actmat->m.fluid->density;
     viscosity =  actmat->m.fluid->viscosity;
+  }
+  else if(mat->MaterialType()== m_sutherland_fluid)
+  {
+    actmat = static_cast<MAT::SutherlandFluid*>(mat.get())->MaterialData();
+    dserror("How to extract viscosity from Sutherland law material for artery tree??");
   }
   else if(mat->MaterialType()== m_carreauyasuda)
   {
@@ -1468,6 +1475,7 @@ void DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration(ParameterList& params,
 
   if( mat->MaterialType()    != m_carreauyasuda
       && mat->MaterialType() != m_modpowerlaw
+      && mat->MaterialType() != m_sutherland_fluid
       && mat->MaterialType() != m_fluid)
           dserror("Material law is not a fluid");
 
@@ -1477,6 +1485,11 @@ void DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration(ParameterList& params,
   {
     actmat = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
     invdensity = 1.0/actmat->m.fluid->density;
+  }
+  else if(mat->MaterialType()== m_sutherland_fluid)
+  {
+    actmat = static_cast<MAT::SutherlandFluid*>(mat.get())->MaterialData();
+    dserror("You really want to compute this with Sutherland fluid???");
   }
   else if(mat->MaterialType()== m_carreauyasuda)
   {

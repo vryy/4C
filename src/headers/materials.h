@@ -22,53 +22,55 @@ typedef struct _MATERIAL
 
      union
      {
-     struct _STVENANT         *stvenant;     /* St. Venant-Kirchhoff material */
-     struct _PL_HOFF          *pl_hoff;      /* anisotropic plastic material, based on hoffman-criterion */
-     struct _PL_MISES         *pl_mises;     /* von Mises material */
-     struct _DAMAGE           *damage;       /* CDM material */
-     struct _PL_FOAM          *pl_foam;      /* foam material - large strains */
-     struct _PL_MISES_LS      *pl_mises_ls;  /* von Mises material - large strains*/
-     struct _PL_DP            *pl_dp;        /* Drucker Prager material */
-     struct _PL_EPC           *pl_epc;       /* elastoplastic concrete material */
-     struct _STVENPOR         *stvenpor;     /* porous St. Ven.-Kirch. material */
-     struct _PL_POR_MISES     *pl_por_mises; /* porous von Mises material */
-     struct _NEO_HOOKE        *neohooke;     /* Neo-Hooke material */
-     struct _AAA_NEO_HOOKE    *aaaneohooke;  /* quasi Neo-Hooke material for aneurysmatic artery wall*/
-     struct _COMPOGDEN        *compogden;    /* compressible ogden hyperelastic material */
-     struct _VISCOHYPER       *viscohyper;   /* viscoelastic compressible ogden hyperelastic material */
-     struct _FLUID            *fluid;        /* fluid material */
-     struct _CARREAUYASUDA    *carreauyasuda;/* fluid with nonlinear viscosity according to Carreau-Yasuda */
-     struct _MODPOWERLAW      *modpowerlaw;  /* fluid with nonlinear viscosity according to modified power law */
-     struct _CONDIF           *condif;       /* convection-diffusion material */
-     struct _PL_HASH          *pl_hash;      /* elpl. hashin delamination material */
-     struct _EL_ORTH          *el_orth;      /* elastic orthotropic material */
-     struct _MFOC             *mfoc;         /* metal foam, open cell  */
-     struct _MFCC             *mfcc;         /* metal foam, closed cell  */
-     struct _NHMFCC           *nhmfcc;       /* foam, closed cell, based on modified Neo Hook */
-     struct _MULTI_LAYER      *multi_layer;  /* multi layer material*/
-     struct _IFMAT            *ifmat;        /* interface elasto-damage-plasto surface material*/
-     struct _INTERF_THERM     *interf_therm; /* themodyn. based interface elasto-damage surface material*/
-     struct _DAM_MP           *dam_mp;       /* isotropic damage material (mazars-pijadier-cabot)*/
-     struct _DAMAGE_GE        *damage_ge;    /* isotropic gradient enhanced damage material */
-     struct _LUNG_PENALTY     *lung_penalty; /* lung tissue material model with penalty function for incompressibility constraint */
-     struct _LUNG_OGDEN       *lung_ogden;   /* lung tissue material model with compressible Ogden for volumetric part */
-     struct _ITSKOV           *itskov;       /* Itskov material for isotropic case */
-     struct _QUADRATIC_ANISO  *quadratic_aniso;       /* Anisotropic quadratic material */
+     struct _STVENANT            *stvenant;     /* St. Venant-Kirchhoff material */
+     struct _PL_HOFF             *pl_hoff;      /* anisotropic plastic material, based on hoffman-criterion */
+     struct _PL_MISES            *pl_mises;     /* von Mises material */
+     struct _DAMAGE              *damage;       /* CDM material */
+     struct _PL_FOAM             *pl_foam;      /* foam material - large strains */
+     struct _PL_MISES_LS         *pl_mises_ls;  /* von Mises material - large strains*/
+     struct _PL_DP               *pl_dp;        /* Drucker Prager material */
+     struct _PL_EPC              *pl_epc;       /* elastoplastic concrete material */
+     struct _STVENPOR            *stvenpor;     /* porous St. Ven.-Kirch. material */
+     struct _PL_POR_MISES        *pl_por_mises; /* porous von Mises material */
+     struct _NEO_HOOKE           *neohooke;     /* Neo-Hooke material */
+     struct _AAA_NEO_HOOKE       *aaaneohooke;  /* quasi Neo-Hooke material for aneurysmatic artery wall*/
+     struct _COMPOGDEN           *compogden;    /* compressible ogden hyperelastic material */
+     struct _VISCOHYPER          *viscohyper;   /* viscoelastic compressible ogden hyperelastic material */
+     struct _FLUID               *fluid;        /* fluid material */
+     struct _SUTHERLAND_FLUID    *sutherland_fluid;  /* fluid material with temperature dependence according to Sutherland law */
+     struct _CARREAUYASUDA       *carreauyasuda;/* fluid with nonlinear viscosity according to Carreau-Yasuda */
+     struct _MODPOWERLAW         *modpowerlaw;  /* fluid with nonlinear viscosity according to modified power law */
+     struct _CONDIF              *condif;       /* convection-diffusion material */
+     struct _SUTHERLAND_CONDIF   *sutherland_condif;  /* convection-diffusion material with temperature dependence according to Sutherland law */
+     struct _PL_HASH             *pl_hash;      /* elpl. hashin delamination material */
+     struct _EL_ORTH             *el_orth;      /* elastic orthotropic material */
+     struct _MFOC                *mfoc;         /* metal foam, open cell  */
+     struct _MFCC                *mfcc;         /* metal foam, closed cell  */
+     struct _NHMFCC              *nhmfcc;       /* foam, closed cell, based on modified Neo Hook */
+     struct _MULTI_LAYER         *multi_layer;  /* multi layer material*/
+     struct _IFMAT               *ifmat;        /* interface elasto-damage-plasto surface material*/
+     struct _INTERF_THERM        *interf_therm; /* themodyn. based interface elasto-damage surface material*/
+     struct _DAM_MP              *dam_mp;       /* isotropic damage material (mazars-pijadier-cabot)*/
+     struct _DAMAGE_GE           *damage_ge;    /* isotropic gradient enhanced damage material */
+     struct _LUNG_PENALTY        *lung_penalty; /* lung tissue material model with penalty function for incompressibility constraint */
+     struct _LUNG_OGDEN          *lung_ogden;   /* lung tissue material model with compressible Ogden for volumetric part */
+     struct _ITSKOV              *itskov;       /* Itskov material for isotropic case */
+     struct _QUADRATIC_ANISO     *quadratic_aniso;       /* Anisotropic quadratic material */
      struct _ANISOTROPIC_BALZANI *anisotropic_balzani; /* anisotropic hyperelastic polyconvex material */
-     struct _MOONEYRIVLIN     *mooneyrivlin; /* Mooney-Rivlin material */
-     struct _YEOH             *yeoh; /* Mooney-Rivlin material */
-     struct _VISCONEOHOOKE    *visconeohooke; /* Viscous NeoHookean material */
-     struct _VISCOANISOTROPIC *viscoanisotropic; /* Viscous Anisotropic fiber material */
-     struct _CONTCHAINNETW    *contchainnetw; /* Continuum Chain Network material law */
-     struct _ARTWALLREMOD     *artwallremod;  /* Arterial Wall Material Law with Remodeling */
-     struct _TH_FOURIER_ISO   *th_fourier_iso;   /* isotropic Fourier's law of heat conduction */
-     struct _TH_FOURIER_GEN   *th_fourier_gen;   /* general heat conduction matrix of Fourier's (linear) law of heat conduction */
-     struct _VP_ROBINSON      *vp_robinson;   /* viscoplastic Robinson material */
-     struct _STRUCT_MULTISCALE *struct_multiscale;     /* material parameters are calculated from microscale simulation */
-     struct _MATLIST          *matlist;       /* collection of any single materials (used for scalar transport problems)*/
-     struct _BIOCELL          *biocell;       /* Biological Cell model */
-     struct _ION              *ion;           /* material properties of an ion species in an electrolyte solution */
-     }                         m;             /* union pointer to material specific structure */
+     struct _MOONEYRIVLIN        *mooneyrivlin; /* Mooney-Rivlin material */
+     struct _YEOH                *yeoh; /* Mooney-Rivlin material */
+     struct _VISCONEOHOOKE       *visconeohooke; /* Viscous NeoHookean material */
+     struct _VISCOANISOTROPIC    *viscoanisotropic; /* Viscous Anisotropic fiber material */
+     struct _CONTCHAINNETW       *contchainnetw; /* Continuum Chain Network material law */
+     struct _ARTWALLREMOD        *artwallremod;  /* Arterial Wall Material Law with Remodeling */
+     struct _TH_FOURIER_ISO      *th_fourier_iso;   /* isotropic Fourier's law of heat conduction */
+     struct _TH_FOURIER_GEN      *th_fourier_gen;   /* general heat conduction matrix of Fourier's (linear) law of heat conduction */
+     struct _VP_ROBINSON         *vp_robinson;   /* viscoplastic Robinson material */
+     struct _STRUCT_MULTISCALE   *struct_multiscale;     /* material parameters are calculated from microscale simulation */
+     struct _MATLIST             *matlist;       /* collection of any single materials (used for scalar transport problems)*/
+     struct _BIOCELL             *biocell;       /* Biological Cell model */
+     struct _ION                 *ion;           /* material properties of an ion species in an electrolyte solution */
+     }                           m;             /* union pointer to material specific structure */
 
 } MATERIAL;
 
@@ -185,10 +187,21 @@ typedef struct _VISCOHYPER
  *----------------------------------------------------------------------*/
 typedef struct _FLUID
 {
-     DOUBLE                    viscosity; /* kinematic viscosity */
+     DOUBLE                    viscosity; /* kinematic or dynamic viscosity */
      DOUBLE                    density;
      DOUBLE                    gamma;     /* surface tension coeficient */
 } FLUID;
+
+
+/*----------------------------------------------------------------------*
+ | fluid material according to Sutherland law               vg 01/09    |
+ *----------------------------------------------------------------------*/
+typedef struct _SUTHERLAND_FLUID
+{
+     DOUBLE                    refvisc;  /* reference dynamic viscosity (kg/(m*s)) */
+     DOUBLE                    reftemp;  /* reference temperature (K) */
+     DOUBLE                    suthtemp; /* Sutherland temperature (K) */
+} SUTHERLAND_FLUID;
 
 
 /*----------------------------------------------------------------------*
@@ -227,6 +240,19 @@ typedef struct _CONDIF
      DOUBLE                    diffusivity; /* kinematic diffusivity */
      DOUBLE                    shc;     /* specific heat capacity */
 } CONDIF;
+
+/*----------------------------------------------------------------------*
+ | convection-diffusion material according to Sutherland law  vg 01/09  |
+ *----------------------------------------------------------------------*/
+typedef struct _SUTHERLAND_CONDIF
+{
+     DOUBLE                    refvisc;  /* reference dynamic viscosity (kg/(m*s)) */
+     DOUBLE                    reftemp;  /* reference temperature (K) */
+     DOUBLE                    suthtemp; /* Sutherland temperature (K) */
+     DOUBLE                    shc;      /* specific heat capacity */
+     DOUBLE                    pranum;   /* Prandtl number */
+} SUTHERLAND_CONDIF;
+
 
 /*----------------------------------------------------------------------*
  | plastic mises material                              a.lipka 17/05    |

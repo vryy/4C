@@ -32,6 +32,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/sutherland_fluid.H"
 #include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/modpowerlaw.H"
 
@@ -174,6 +175,8 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
 
   if(mat->MaterialType()== m_fluid)
     actmat = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
+  else if(mat->MaterialType()== m_sutherland_fluid)
+    actmat = static_cast<MAT::SutherlandFluid*>(mat.get())->MaterialData();
   else if(mat->MaterialType()== m_carreauyasuda)
     actmat = static_cast<MAT::CarreauYasuda*>(mat.get())->MaterialData();
   else if(mat->MaterialType()== m_modpowerlaw)

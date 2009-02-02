@@ -23,8 +23,9 @@ Maintainer: Peter Gmanitzer
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/sutherland_fluid.H"
+#include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/modpowerlaw.H"
 
 using namespace DRT::UTILS;
@@ -896,8 +897,8 @@ void DRT::ELEMENTS::Fluid2Line::ElementSurfaceTension(ParameterList& params,
   // get material data
   RCP<MAT::Material> mat = parent_->Material();
   if (mat==null) dserror("no mat from parent!");
-  if (mat->MaterialType()!=m_fluid)
-    dserror("newtonian fluid material expected but got type %d", mat->MaterialType());
+  if (mat->MaterialType()!=m_fluid && mat->MaterialType()!=m_sutherland_fluid)
+    dserror("newtonian or sutherland fluid material expected but got type %d", mat->MaterialType());
 
   MATERIAL* actmat = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
 
@@ -1118,6 +1119,7 @@ void DRT::ELEMENTS::Fluid2Line::EvaluateWeakDirichlet(
 
   if( mat->MaterialType()    != m_carreauyasuda
       && mat->MaterialType() != m_modpowerlaw
+      && mat->MaterialType() != m_sutherland_fluid
       && mat->MaterialType() != m_fluid)
           dserror("Material law is not a fluid");
 

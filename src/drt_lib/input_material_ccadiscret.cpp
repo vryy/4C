@@ -52,6 +52,15 @@ while(strncmp(fractplace(),"------",6)!=0)
       if (localmat.m.fluid->density <= 0.0) dserror("MAT_fluid: density is not positive: %f",localmat.m.fluid->density);
       frdouble("GAMMA",&(localmat.m.fluid->gamma)  ,&ierr);
    }
+   frchk("MAT_sutherland_fluid",&ierr);
+   if (ierr==1)
+   {
+      localmat.mattyp = m_sutherland_fluid;
+      localmat.m.sutherland_fluid = new _SUTHERLAND_FLUID();
+      frdouble("REFVISC", &(localmat.m.sutherland_fluid->refvisc), &ierr);
+      frdouble("REFTEMP", &(localmat.m.sutherland_fluid->reftemp), &ierr);
+      frdouble("SUTHTEMP",&(localmat.m.sutherland_fluid->suthtemp),&ierr);
+   }
    frchk("MAT_carreauyasuda",&ierr);
    if (ierr==1)
    {
@@ -82,6 +91,17 @@ while(strncmp(fractplace(),"------",6)!=0)
       frdouble("DIFFUSIVITY",&(localmat.m.condif->diffusivity),&ierr);
       if (localmat.m.condif->diffusivity <= 0.0) dserror("MAT_condif: diffusivity is not positive: %f",localmat.m.condif->diffusivity);
       frdouble("SHC",&(localmat.m.condif->shc)  ,&ierr);
+   }
+   frchk("MAT_sutherland_condif",&ierr);
+   if (ierr==1)
+   {
+      localmat.mattyp = m_sutherland_condif;
+      localmat.m.sutherland_condif = new _SUTHERLAND_CONDIF();
+      frdouble("REFVISC", &(localmat.m.sutherland_condif->refvisc), &ierr);
+      frdouble("REFTEMP", &(localmat.m.sutherland_condif->reftemp), &ierr);
+      frdouble("SUTHTEMP",&(localmat.m.sutherland_condif->suthtemp),&ierr);
+      frdouble("SHC",     &(localmat.m.sutherland_condif->shc)     ,&ierr);
+      frdouble("PRANUM",  &(localmat.m.sutherland_condif->pranum)  ,&ierr);
    }
    frchk("MAT_ion",&ierr);
    if (ierr==1)

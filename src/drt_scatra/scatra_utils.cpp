@@ -150,7 +150,8 @@ void SCATRA::CreateScaTraDiscretization(
   {
     for (int i=0; i<nummat; ++i)
     {
-      if (DRT::Problem::Instance()->Material(i).mattyp==m_condif)
+      if (DRT::Problem::Instance()->Material(i).mattyp==m_condif or
+          DRT::Problem::Instance()->Material(i).mattyp==m_sutherland_condif)
       {
         matnr = i+1;// For historical reasons material numbers are given in FORTRAN style.
         break;

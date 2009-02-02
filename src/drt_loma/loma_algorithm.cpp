@@ -42,6 +42,10 @@ LOMA::Algorithm::Algorithm(
   thermpress_  = prbdyn.get<double>("THERMOPRESS");
   gasconstant_ = prbdyn.get<double>("GASCONSTANT");
 
+  // factor for equation of state (i.e., therm. press. / gas constant)
+  // constant if thermodynamic pressure is constant
+  eosfac_ = thermpress_/gasconstant_;
+
   // initialization of variable for initial total mass
   // (required if thermodynamic pressure is calculated from mass conservation)
   initialmass_ = 0.0;
@@ -182,11 +186,15 @@ void LOMA::Algorithm::InitialCalculations()
   // (if not constant) set initial value of thermodynamic pressure in SCATRA
   // and (if not based on mass conservation) compute also time derivative
   if (consthermpress_=="No_energy")
+  {
     ScaTraField().SetInitialThermPressure(thermpress_);
+    eosfac_ = thermpress_/gasconstant_;
+  }
   else if (consthermpress_=="No_mass")
   {
     initialmass_ = ScaTraField().ComputeInitialMass(thermpress_);
     thermpress_  = ScaTraField().ComputeThermPressureFromMassCons(initialmass_,gasconstant_);
+    eosfac_ = thermpress_/gasconstant_;
   }
 
   // write initial fields
@@ -222,8 +230,8 @@ void LOMA::Algorithm::GenAlphaPrepareTimeStep()
   GetDensityN();
   GetDensityDtN();
 
-  // set density at n+1 and n as well as density time derivative at n
-  FluidField().SetTimeLomaFields(DensityNp(),DensityN(),DensityDtN());
+  // set density at n+1 and n, density time derivative at n and eos factor
+  FluidField().SetTimeLomaFields(DensityNp(),DensityN(),DensityDtN(),eosfac_);
 
   // prepare fluid time step, particularly predict velocity field
   FluidField().PrepareTimeStep();
@@ -258,8 +266,8 @@ void LOMA::Algorithm::OSTBDF2PrepareTimeStep()
   GetDensityN();
   GetDensityNm();
 
-  // set density at n+1, n and n-1
-  FluidField().SetTimeLomaFields(DensityNp(),DensityN(),DensityNm());
+  // set density at n+1, n and n-1 as well as eos factor
+  FluidField().SetTimeLomaFields(DensityNp(),DensityN(),DensityNm(),eosfac_);
 
   // prepare fluid time step, particularly predict velocity field
   FluidField().PrepareTimeStep();
@@ -294,9 +302,15 @@ void LOMA::Algorithm::GenAlphaOuterLoop()
 
     // in case of non-constant thermodynamic pressure: compute
     if (consthermpress_=="No_energy")
+    {
       thermpress_ = ScaTraField().ComputeThermPressure();
+      eosfac_ = thermpress_/gasconstant_;
+    }
     else if (consthermpress_=="No_mass")
+    {
       thermpress_ = ScaTraField().ComputeThermPressureFromMassCons(initialmass_,gasconstant_);
+      eosfac_ = thermpress_/gasconstant_;
+    }
 
     // compute density using current temperature + thermodynamic pressure
     ScaTraField().ComputeDensity(thermpress_,gasconstant_);
@@ -310,8 +324,8 @@ void LOMA::Algorithm::GenAlphaOuterLoop()
     // get density time derivative at n+1
     GetDensityDtNp();
 
-    // set density (and density time derivative) at n+1
-    FluidField().SetIterLomaFields(DensityNp(),DensityDtNp());
+    // set density (and density time derivative) at n+1 as well as eos factor
+    FluidField().SetIterLomaFields(DensityNp(),DensityDtNp(),eosfac_);
 
     // solve low-Mach-number flow equations
     if (Comm().MyPID()==0) cout<<"\n******************************************\n      GENERALIZED-ALPHA FLOW SOLVER \n******************************************\n";
@@ -351,9 +365,15 @@ void LOMA::Algorithm::OSTBDF2OuterLoop()
 
     // in case of non-constant thermodynamic pressure: compute
     if (consthermpress_=="No_energy")
+    {
       thermpress_ = ScaTraField().ComputeThermPressure();
+      eosfac_ = thermpress_/gasconstant_;
+    }
     else if (consthermpress_=="No_mass")
+    {
       thermpress_ = ScaTraField().ComputeThermPressureFromMassCons(initialmass_,gasconstant_);
+      eosfac_ = thermpress_/gasconstant_;
+    }
 
     // compute density using current temperature + thermodynamic pressure
     ScaTraField().ComputeDensity(thermpress_,gasconstant_);
@@ -361,8 +381,8 @@ void LOMA::Algorithm::OSTBDF2OuterLoop()
     // get current density at n+1
     GetDensityNp();
 
-    // set density (and density time derivative) at n+1
-    FluidField().SetIterLomaFields(DensityNp(),DensityDtNp());
+    // set density (and density time derivative) at n+1 as well as eos factor
+    FluidField().SetIterLomaFields(DensityNp(),DensityDtNp(),eosfac_);
 
     // solve low-Mach-number flow equations
     if (Comm().MyPID()==0) cout<<"\n******************************************\n     ONE-STEP-THETA/BDF2 FLOW SOLVER \n******************************************\n";
@@ -397,8 +417,8 @@ void LOMA::Algorithm::GenAlphaUpdate()
   GetDensityN();
   GetDensityDtN();
 
-  // set density at n+1 and n as well as density time derivative at n
-  FluidField().SetTimeLomaFields(DensityNp(),DensityN(),DensityDtN());
+  // set density at n+1 and n, density time derivative at n and eos factor
+  FluidField().SetTimeLomaFields(DensityNp(),DensityN(),DensityDtN(),eosfac_);
 
   // update fluid
   FluidField().Update();
@@ -428,8 +448,8 @@ void LOMA::Algorithm::OSTBDF2Update()
   GetDensityN();
   GetDensityNm();
 
-  // set density at n+1, n and n-1
-  FluidField().SetTimeLomaFields(DensityNp(),DensityN(),DensityNm());
+  // set density at n+1, n and n-1 as well as eos factor
+  FluidField().SetTimeLomaFields(DensityNp(),DensityN(),DensityNm(),eosfac_);
 
   // update fluid
   FluidField().Update();

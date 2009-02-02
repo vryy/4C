@@ -258,14 +258,16 @@ public:
   */
   void SetTimeLomaFields(RCP<const Epetra_Vector> densnp,
                          RCP<const Epetra_Vector> densn,
-                         RCP<const Epetra_Vector> densnm);
+                         RCP<const Epetra_Vector> densnm,
+                         const double             eosfac);
 
   /*!
   \brief set outer-iteration-related fields for low-Mach-number flow
 
   */
   void SetIterLomaFields(RCP<const Epetra_Vector> densnp,
-                         RCP<const Epetra_Vector> densdtnp);
+                         RCP<const Epetra_Vector> densdtnp,
+                         const double             eosfac);
 
   /// introduce free surface extractor object
   /*!
@@ -355,6 +357,10 @@ protected:
 
   /// constant density extracted from element material for incompressible flow
   double density_;
+
+  /// factor for equation of state (i.e., therm. press. / gas constant) for
+  /// low-Mach-number flow solver
+  double eosfac_;
 
   //! use (or not) linearisation of reactive terms on the element
   string newton_;

@@ -925,6 +925,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       eleparams.set("fs subgrid viscosity",fssgv_);
       eleparams.set("Linearisation",newton_);
       eleparams.set("low-Mach-number solver",loma_);
+      eleparams.set("eos factor",eosfac_);
 
       // parameters for stabilization
       eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
@@ -1494,6 +1495,7 @@ void FLD::FluidImplicitTimeInt::LinearSolve()
     eleparams.set("total time",time_);
     eleparams.set("thsl",theta_*dta_);
     eleparams.set("low-Mach-number solver",loma_);
+    eleparams.set("eos factor",eosfac_);
 
     // set vector values needed by elements
     discret_->ClearState();
@@ -1585,6 +1587,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   eleparams.set("fs subgrid viscosity",fssgv_);
   eleparams.set("Linearisation",newton_);
   eleparams.set("low-Mach-number solver",loma_);
+  eleparams.set("eos factor",eosfac_);
 
   // parameters for stabilization
   eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
@@ -1970,6 +1973,7 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
   eleparams.set("fs subgrid viscosity",fssgv_);
   eleparams.set("Linearisation",newton_);
   eleparams.set("low-Mach-number solver",loma_);
+  eleparams.set("eos factor",eosfac_);
 
   // parameters for stabilization
   eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
@@ -2306,8 +2310,12 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
 void FLD::FluidImplicitTimeInt::SetTimeLomaFields(
    RCP<const Epetra_Vector> densnp,
    RCP<const Epetra_Vector> densn,
-   RCP<const Epetra_Vector> densnm)
+   RCP<const Epetra_Vector> densnm,
+   const double             eosfac)
 {
+  // get factor for equation of state (i.e., therm. press. / gas constant)
+  eosfac_ = eosfac;
+
   // check vector compatibility and determine space dimension
   int numdim =-1;
   int numdof =-1;
@@ -2446,8 +2454,12 @@ void FLD::FluidImplicitTimeInt::SetTimeLomaFields(
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::SetIterLomaFields(
    RCP<const Epetra_Vector> densnp,
-   RCP<const Epetra_Vector> densdtnp)
+   RCP<const Epetra_Vector> densdtnp,
+   const double             eosfac)
 {
+  // get factor for equation of state (i.e., therm. press. / gas constant)
+  eosfac_ = eosfac;
+
   // check vector compatibility and determine space dimension
   int numdim =-1;
   int numdof =-1;
@@ -2931,6 +2943,7 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
     eleparams.set("Linearisation",newton_);
     eleparams.set("form of convective term",convform_);
     eleparams.set("low-Mach-number solver",loma_);
+    eleparams.set("eos factor",eosfac_);
 
     // parameters for stabilization
     eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");

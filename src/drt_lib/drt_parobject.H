@@ -134,6 +134,8 @@ using namespace std;
 #define ParObject_ConstraintElement3Register (int)127
 #define ParObject_Transport             (int)128
 #define ParObject_TransportBoundary     (int)129
+#define ParObject_SutherlandFluid       (int)130
+#define ParObject_SutherlandCondif      (int)131
 
 
 namespace DRT

@@ -227,8 +227,9 @@ public:
 
     //! get the material parameters
     virtual void GetMaterialParams(
-        struct _MATERIAL*       material,    ///< material pointer
-        const bool&             temperature  ///< temperature flag
+        struct _MATERIAL*                     material,    ///< material pointer
+        const bool&                           temperature,  ///< temperature flag
+        const vector<LINALG::Matrix<iel,1> >& ephinp      /// scalar field
     );
 
     //! calculate stabilization parameter
@@ -303,7 +304,7 @@ public:
     virtual void CalErrorComparedToAnalytSolution(
         const DRT::Element*          ele, ///< the element
         ParameterList&               params, ///< parameter list
-        const LINALG::Matrix<iel,2>& ephinp, ///< actual numerical sol. of concentrations
+        const vector<LINALG::Matrix<iel,1> >& ephinp, ///< actual numerical sol. of concentrations
         const LINALG::Matrix<iel,1>& epotnp, ///< actual numerical solution of el. potential
         Epetra_SerialDenseVector&    errors, ///< vector of error values
         struct _MATERIAL*            material ///< material pointer

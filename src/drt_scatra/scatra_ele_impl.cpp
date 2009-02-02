@@ -18,6 +18,7 @@ Maintainer: Georg Bauer
 
 #include "scatra_ele_impl.H"
 #include "../drt_mat/convecdiffus.H"
+#include "../drt_mat/sutherland_condif.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_timecurve.H"
@@ -221,10 +222,12 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
 
   if(mat->MaterialType()== m_condif)
     actmat = static_cast<MAT::ConvecDiffus*>(mat.get())->MaterialData();
+  else if(mat->MaterialType()== m_sutherland_condif)
+    actmat = static_cast<MAT::SutherlandCondif*>(mat.get())->MaterialData();
   else if (mat->MaterialType()== m_matlist)
     actmat = static_cast<MAT::MatList*>(mat.get())->MaterialData();
   else
-    dserror("condif or matlist material expected but got type %d", mat->MaterialType());
+    dserror("condif, sutherland_condif or matlist material expected but got type %d", mat->MaterialType());
 
   // check for the action parameter
   const string action = params.get<string>("action","none");
@@ -669,7 +672,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
 
     // create objects for element arrays
-    LINALG::Matrix<iel,2> ephinp;
+    vector<LINALG::Matrix<iel,1> > ephinp(2);
     LINALG::Matrix<iel,1> epotnp;
 
     // fill element arrays
@@ -678,7 +681,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       for (int k = 0; k< 2; ++k)
       {
         // split for each tranported scalar, insert into element arrays
-        ephinp(i,k) = myphinp[k+(i*numdofpernode_)];
+        ephinp[k](i) = myphinp[k+(i*numdofpernode_)];
       }
 
       // get values for el. potential at element nodes
@@ -780,7 +783,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
   BodyForce(ele,time);
 
   // get material constants
-  GetMaterialParams(material,temperature);
+  GetMaterialParams(material,temperature,ephinp);
 
   /*----------------------------------------------------------------------*/
   // calculation of stabilization parameter(s) tau
@@ -952,8 +955,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::BodyForce(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
-    struct _MATERIAL*  material,
-    const bool&        temperature
+    struct _MATERIAL*                      material,
+    const bool&                            temperature,
+    const vector<LINALG::Matrix<iel,1> >&  ephinp
 )
 {
 // get diffusivity / diffusivities
@@ -996,6 +1000,28 @@ else if (material->mattyp == m_condif)
     shcacp_ = 1.0;
     diffus_[0] = material->m.condif->diffusivity;
   }
+}
+else if (material->mattyp == m_sutherland_condif)
+{
+  dsassert(numdofpernode_==1,"more than 1 dof per node for condif material");
+
+  // use one-point Gauss rule to calculate temperature at element center
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
+
+  // coordinates of the integration point
+  const double* gpcoord = (intpoints_tau.IP().qxg)[0];
+  for (int idim = 0; idim < nsd_; idim++)
+    {xsi_(idim) = gpcoord[idim];}
+
+  // shape functions
+  DRT::UTILS::shape_function<distype>(xsi_,funct_);
+
+  // compute diffusivity according to Sutherland law
+  shcacp_ = material->m.sutherland_condif->shc;
+  const double s   = material->m.sutherland_condif->suthtemp;
+  const double rt  = material->m.sutherland_condif->reftemp;
+  const double phi = funct_.Dot(ephinp[0]);
+  diffus_[0] = pow((phi/rt),1.5)*((rt+s)/(phi+s))*material->m.sutherland_condif->refvisc/material->m.sutherland_condif->pranum;
 }
 else
   dserror("Material type is not supported");
@@ -1958,7 +1984,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
   BodyForce(ele,time);
 
   // get material constants
-  GetMaterialParams(material,temperature);
+  GetMaterialParams(material,temperature,ephi0);
 
   /*----------------------------------------------------------------------*/
   // calculation of instationary(!) stabilization parameter(s)
@@ -2775,7 +2801,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
     const DRT::Element*            ele,
     ParameterList&                 params,
-    const LINALG::Matrix<iel,2>&   ephinp,
+    const vector<LINALG::Matrix<iel,1> >& ephinp,
     const LINALG::Matrix<iel,1>&   epotnp,
     Epetra_SerialDenseVector&      errors,
     struct _MATERIAL*              material
@@ -2800,7 +2826,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
   const double frt = params.get<double>("frt");
 
   // get material constants
-  GetMaterialParams(material,false);
+  GetMaterialParams(material,false,ephinp);
 
   // working arrays
   double                  potint;
@@ -2819,8 +2845,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
   {
     EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,false,ele->Id());
 
-    // get both concentration solutions at integration point
-    conint.MultiplyTN(ephinp,funct_);
+    // get values of all transported scalars at integration point
+    for (int k=0; k<2; ++k)
+    {
+      conint(k) = funct_.Dot(ephinp[k]);
+    }
 
     // get el. potential solution at integration point
     potint = funct_.Dot(epotnp);
@@ -2907,7 +2936,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
   double valence(0.0);
   double diffus_valence_frt(0.0);
 
-  //GetMaterialParams(material,temperature);
+  //GetMaterialParams(material,temperature,ephinp);
 
   if (material->mattyp == m_matlist)
   {
@@ -2929,6 +2958,32 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
   {
     dsassert(numdofpernode_==1,"more than 1 dof per node for condif material"); // paranoia?
     diffus = material->m.condif->diffusivity;
+  }
+  else if (material->mattyp == m_sutherland_condif)
+  {
+    dsassert(numdofpernode_==1,"more than 1 dof per node for condif material");
+
+    // use one-point Gauss rule to calculate temperature at element center
+    DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
+
+    // coordinates of the integration point
+    const double* gpcoord = (intpoints_tau.IP().qxg)[0];
+    for (int idim = 0; idim < nsd_; idim++)
+      {xsi_(idim) = gpcoord[idim];}
+
+    // shape functions
+    DRT::UTILS::shape_function<distype>(xsi_,funct_);
+
+    // compute diffusivity according to Sutherland law
+    shcacp_ = material->m.sutherland_condif->shc;
+    const double s   = material->m.sutherland_condif->suthtemp;
+    const double rt  = material->m.sutherland_condif->reftemp;
+    double phi = 0.0;
+    for (int i=0; i<iel; ++i)
+    {
+      phi += funct_(i)*ephinp[i];
+    }
+    diffus = (shcacp_/material->m.sutherland_condif->pranum)*pow((phi/rt),1.5)*((rt+s)/(phi+s))*material->m.sutherland_condif->refvisc;
   }
   else
     dserror("Material type is not supported");
@@ -3040,7 +3095,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateTempAndDens(
   {
     EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,false,ele->Id());
 
-    // calculate integrals of temperature or concentrentations, 
+    // calculate integrals of temperature or concentrations,
     // then of density and domain
     for (int i=0; i<iel; i++)
     {

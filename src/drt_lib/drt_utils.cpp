@@ -98,6 +98,7 @@ extern "C"
 #include "../drt_so3/so_shw6.H"
 #include "../drt_so3/so_disp.H"
 #include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/sutherland_fluid.H"
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../drt_mat/micromaterial.H"
 #include "../drt_mat/neohooke.H"
@@ -112,6 +113,7 @@ extern "C"
 #include "../drt_mat/contchainnetw.H"
 #include "../drt_mat/artwallremod.H"
 #include "../drt_mat/convecdiffus.H"
+#include "../drt_mat/sutherland_condif.H"
 #include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/modpowerlaw.H"
 #include "../drt_mat/biocell.H"
@@ -523,6 +525,12 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       fluid->Unpack(data);
       return fluid;
     }
+    case ParObject_SutherlandFluid:
+    {
+      MAT::SutherlandFluid* sutherland_fluid = new MAT::SutherlandFluid();
+      sutherland_fluid->Unpack(data);
+      return sutherland_fluid;
+    }
     case ParObject_StVenantKirchhoff:
     {
       MAT::StVenantKirchhoff* stvenantk = new MAT::StVenantKirchhoff();
@@ -606,6 +614,12 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       MAT::ConvecDiffus* condif = new MAT::ConvecDiffus();
       condif->Unpack(data);
       return condif;
+    }
+    case ParObject_SutherlandCondif:
+    {
+      MAT::SutherlandCondif* sutherland_condif = new MAT::SutherlandCondif();
+      sutherland_condif->Unpack(data);
+      return sutherland_condif;
     }
     case ParObject_CarreauYasuda:
     {

@@ -946,6 +946,7 @@ OBJS_MAT      = src/materials/mat_el_iso.o \
 #               materials for new discretization
 OBJS_DRT_MAT_LIB = src/drt_mat/micromaterial.o \
                 src/drt_mat/newtonianfluid.o \
+                src/drt_mat/sutherland_fluid.o \
                 src/drt_mat/stvenantkirchhoff.o \
                 src/drt_mat/lung_penalty.o \
                 src/drt_mat/lung_ogden.o \
@@ -960,6 +961,7 @@ OBJS_DRT_MAT_LIB = src/drt_mat/micromaterial.o \
                 src/drt_mat/artwallremod.o \
                 src/drt_mat/biocell.o \
                 src/drt_mat/convecdiffus.o \
+                src/drt_mat/sutherland_condif.o \
                 src/drt_mat/carreauyasuda.o \
                 src/drt_mat/modpowerlaw.o \
                 src/drt_mat/material.o \

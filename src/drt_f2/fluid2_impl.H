@@ -184,6 +184,7 @@ namespace ELEMENTS
                 double                                   dt,
                 double                                   timefac,
                 double                                   timefacrhs,
+                const double                             eosfac,
                 const bool                               newton,
                 const bool                               loma,
                 const bool                               conservative,
@@ -245,6 +246,7 @@ namespace ELEMENTS
                 double&                                 visc,
                 const double                            timefac,
                 const double                            dt,
+                const double                            eosfac,
                 const enum Fluid2::TurbModelAction      turb_mod_action,
                 double&                                 Cs,
                 double&                                 visceff,
@@ -260,7 +262,9 @@ namespace ELEMENTS
      */
     void CalVisc(const struct _MATERIAL*   material,
                  double&                   visc,
-                 const double &            rateofshear);
+                 const double &            rateofshear,
+                 const double &            dens,
+                 const double &            eosfac);
 
     /*!
      * \brief calculate the body force from the nodes condition

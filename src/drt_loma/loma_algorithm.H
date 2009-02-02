@@ -112,6 +112,9 @@ namespace LOMA
     /// gas constant (default: 287.0)
     double gasconstant_;
 
+    /// factor for equation of state (i.e., therm. press. / gas constant)
+    double eosfac_;
+
     /// initial total mass (required if thermodynamic pressure is
     /// calculated from mass conservation)
     double initialmass_;

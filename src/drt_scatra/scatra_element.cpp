@@ -70,7 +70,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
   // now the element knows its material, and we can use it to determine numdofpernode
   RefCountPtr<MAT::Material> mat = Material();
   MATERIAL* actmat = NULL;
-  if(mat->MaterialType()== m_condif)
+  if(mat->MaterialType()== m_condif or mat->MaterialType()== m_sutherland_condif)
   {
     numdofpernode_=1; // we only have a single scalar
   }

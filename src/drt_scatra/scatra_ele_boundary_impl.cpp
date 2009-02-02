@@ -19,6 +19,7 @@ Maintainer: Georg Bauer
 #include "scatra_ele_boundary_impl.H"
 #include "scatra_ele_impl.H"
 #include "../drt_mat/convecdiffus.H"
+#include "../drt_mat/sutherland_condif.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_timecurve.H"
@@ -148,6 +149,8 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
 
   if(mat->MaterialType()== m_condif)
     actmat = static_cast<MAT::ConvecDiffus*>(mat.get())->MaterialData();
+  else if(mat->MaterialType()== m_sutherland_condif)
+    actmat = static_cast<MAT::SutherlandCondif*>(mat.get())->MaterialData();
   else if (mat->MaterialType()== m_matlist)
     actmat = static_cast<MAT::MatList*>(mat.get())->MaterialData();
   else

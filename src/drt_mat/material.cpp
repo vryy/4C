@@ -16,11 +16,13 @@ Maintainer: Lena Wiechert
 
 #include "material.H"
 #include "newtonianfluid.H"
+#include "sutherland_fluid.H"
 #include "stvenantkirchhoff.H"
 #include "micromaterial.H"
 #include "neohooke.H"
 #include "aaaneohooke.H"
 #include "convecdiffus.H"
+#include "sutherland_condif.H"
 #include "anisotropic_balzani.H"
 #include "mooneyrivlin.H"
 #include "yeoh.H"
@@ -69,6 +71,8 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     return Teuchos::rcp(new NewtonianFluid(actmat));
 #endif
   }
+  case m_sutherland_fluid:
+    return Teuchos::rcp(new SutherlandFluid(actmat));
   case m_stvenant:
     return Teuchos::rcp(new StVenantKirchhoff(actmat));
   case m_struct_multiscale:
@@ -95,6 +99,8 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     return Teuchos::rcp(new AAAneohooke(actmat));
   case m_condif:
     return Teuchos::rcp(new ConvecDiffus(actmat));
+  case m_sutherland_condif:
+    return Teuchos::rcp(new SutherlandCondif(actmat));
   case m_carreauyasuda:
     return Teuchos::rcp(new CarreauYasuda(actmat));
   case m_modpowerlaw:

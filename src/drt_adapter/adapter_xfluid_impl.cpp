@@ -768,7 +768,7 @@ void ADAPTER::XFluidImpl::SetInitialFlowField(int whichinitialfield,int startfun
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::XFluidImpl::SetTimeLomaFields(RCP<const Epetra_Vector> densnp,RCP<const Epetra_Vector> densn,RCP<const Epetra_Vector> densnm)
+void ADAPTER::XFluidImpl::SetTimeLomaFields(RCP<const Epetra_Vector> densnp,RCP<const Epetra_Vector> densn,RCP<const Epetra_Vector> densnm,const double eosfac)
 {
    dserror("not implemented!");
    return;
@@ -776,7 +776,7 @@ void ADAPTER::XFluidImpl::SetTimeLomaFields(RCP<const Epetra_Vector> densnp,RCP<
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::XFluidImpl::SetIterLomaFields(RCP<const Epetra_Vector> densnp,RCP<const Epetra_Vector> densdtnp)
+void ADAPTER::XFluidImpl::SetIterLomaFields(RCP<const Epetra_Vector> densnp,RCP<const Epetra_Vector> densdtnp,const double eosfac)
 {
    dserror("not implemented!");
    return;

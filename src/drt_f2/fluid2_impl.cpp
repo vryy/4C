@@ -19,6 +19,7 @@ Maintainer: Volker Gravemeier
 #include "fluid2_impl.H"
 
 #include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/sutherland_fluid.H"
 #include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/modpowerlaw.H"
 #include "../drt_lib/drt_timecurve.H"
@@ -183,6 +184,10 @@ int DRT::ELEMENTS::Fluid2Impl<distype>::Evaluate(
   if(newtonstr=="Newton")          newton       = true;
   if(lomastr  =="Yes")             loma         = true;
   if(convformstr =="conservative") conservative = true;
+
+  // for low-Mach-number flow: get factor for equation of state
+  double eosfac=0.0;
+  if (loma) eosfac = params.get<double>("eos factor",100000.0/287.0);
 
   // ---------------------------------------------------------------------
   // get control parameters for stabilization and higher-order elements
@@ -449,6 +454,7 @@ int DRT::ELEMENTS::Fluid2Impl<distype>::Evaluate(
          dt,
          timefac,
          timefacrhs,
+         eosfac,
          newton,
          loma,
          conservative,
@@ -494,6 +500,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
   double                                  dt,
   double                                  timefac,
   double                                  timefacrhs,
+  const double                            eosfac,
   const bool                              newton,
   const bool                              loma,
   const bool                              conservative,
@@ -535,6 +542,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
 
   // check here, if we really have a fluid !!
   if( material->mattyp != m_fluid
+   && material->mattyp != m_sutherland_fluid
    && material->mattyp != m_carreauyasuda
    && material->mattyp != m_modpowerlaw) dserror("Material law is not a fluid");
 
@@ -556,6 +564,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Sysmat(
          visc,
          timefac,
          dt,
+         eosfac,
          turb_mod_action,
          Cs,
          visceff,
@@ -2008,6 +2017,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Caltau(
   double&                                 visc,
   const double                            timefac,
   const double                            dt,
+  const double                            eosfac,
   const enum Fluid2::TurbModelAction      turb_mod_action,
   double&                                 Cs,
   double&                                 visceff,
@@ -2155,7 +2165,7 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::Caltau(
   /*------------------------------------------------------------------*/
 
   // compute nonlinear viscosity according to the Carreau-Yasuda model
-  if( material->mattyp != m_fluid ) CalVisc(material,visc,rateofstrain);
+  if( material->mattyp != m_fluid ) CalVisc(material,visc,rateofstrain,dens,eosfac);
 
   if (turb_mod_action == Fluid2::smagorinsky)
   {
@@ -2482,7 +2492,9 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid2Impl<distype>::CalVisc(
   const struct _MATERIAL* material,
   double&                 visc,
-  const double &          rateofshear
+  const double &          rateofshear,
+  const double &          dens,
+  const double &          eosfac
 )
 {
   if(material->mattyp == m_carreauyasuda)
@@ -2508,6 +2520,14 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::CalVisc(
     // compute viscosity according to a modified power law model for shear-thinning fluids
     // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
     visc = m * pow((delta + rateofshear), (-1)*a);
+  }
+  else if (material->mattyp == m_sutherland_fluid)
+  {
+    // compute viscosity according to Sutherland law
+    const double s  = material->m.sutherland_fluid->suthtemp;
+    const double rt = material->m.sutherland_fluid->reftemp;
+    const double t  = eosfac/dens;
+    visc = pow((t/rt),1.5)*((rt+s)/(t+s))*material->m.sutherland_fluid->refvisc;
   }
   else
     dserror("material type is not yet implemented");
