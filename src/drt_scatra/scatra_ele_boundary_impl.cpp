@@ -156,14 +156,14 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
   else
     dserror("condif or matlist material expected but got type %d", mat->MaterialType());
 
-  // get actual values of transported scalars
-  RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
-  if (phinp==null) dserror("Cannot get state vector 'phinp'");
-
   // Now, check for the action parameter
   const string action = params.get<string>("action","none");
   if (action=="calc_condif_flux")
   {
+    // get actual values of transported scalars
+    RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    if (phinp==null) dserror("Cannot get state vector 'phinp'");
+
     // get velocity values at the nodes (needed for total flux values)
     const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
     const DRT::ELEMENTS::Transport* parentele = ele->ParentElement();
@@ -180,6 +180,11 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     // extract local values from the global vector for the parent(!) element 
     vector<double> myphinp(lmparent.size());
     DRT::UTILS::ExtractMyValues(*phinp,myphinp,lmparent);
+
+    // get the averaged normal vectors at the nodes
+    const RCP<Epetra_MultiVector> normals = params.get< RCP<Epetra_MultiVector> >("normal vectors",null);
+    LINALG::SerialDenseVector enormals((nsd_+1)*iel);
+    DRT::UTILS::ExtractMyNodeBasedValues(ele,enormals,normals,nsd_+1);
 
     // set flag for type of scalar
     string scaltypestr=params.get<string>("problem type");
@@ -214,12 +219,8 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     // define vector for normal fluxes
     vector<double> mynormflux(lm.size());
 
-    // node coordinates
     // get node coordinates (we have a nsd_+1 dimensional domain!)
     GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,iel> >(ele,xyze_);
-
-    // determine normal to this element
-    GetConstNormal(normal_, xyze_);
 
     // do a loop for systems of transported scalars
     for (int j = 0; j<numscal_; ++j)
@@ -249,19 +250,20 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
             dofcount++;
             // form arithmetic mean of assembled nodal flux vectors
             // => factor is the number of adjacent elements for each node
-            double factor = (parentele->Nodes()[k])->NumElement();
+            const double factor = (double) (ele->Nodes()[i])->NumElement();
 
             // calculate normal flux at present node
             mynormflux[i] = 0.0;
             for (int l=0; l<(nsd_+1); l++)
             {
-              mynormflux[i] += eflux(l,k)*normal_(l);
+              mynormflux[i] += eflux(l,k)*enormals(i*(nsd_+1)+l);
             }
 
             // store normal flux vector for this node
-            elevec1_epetra[i*numdofpernode_+j]+=normal_(0)*mynormflux[i]/factor;
-            elevec2_epetra[i*numdofpernode_+j]+=normal_(1)*mynormflux[i]/factor;
-            elevec3_epetra[i*numdofpernode_+j]+=normal_(2)*mynormflux[i]/factor;
+            elevec1_epetra[i*numdofpernode_+j]+=enormals(i*(nsd_+1))*mynormflux[i]/factor;
+            elevec2_epetra[i*numdofpernode_+j]+=enormals(i*(nsd_+1)+1)*mynormflux[i]/factor;
+            if (nsd_==2)
+            elevec3_epetra[i*numdofpernode_+j]+=enormals(i*(nsd_+1)+2)*mynormflux[i]/factor;
           }
         }
       }
@@ -277,8 +279,44 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
 
     } // loop over numscal
   }
+  else if (action == "calc_normal_vectors")
+  {
+    // access the global vector
+    const RCP<Epetra_MultiVector> normals = params.get< RCP<Epetra_MultiVector> >("normal vectors",null);
+    if (normals == Teuchos::null) dserror("Could not access vector 'normal vectors'");
+
+    // get node coordinates (we have a nsd_+1 dimensional domain!)
+    GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,iel> >(ele,xyze_);
+
+    // determine constant normal to this element
+    GetConstNormal(normal_,xyze_);
+
+    // loop over the element nodes
+    for (int j=0;j<iel;j++)
+    {
+      const int nodegid = (ele->Nodes()[j])->Id();
+      if (normals->Map().MyGID(nodegid) )
+      { // OK, the node belongs to this processor
+
+        // form arithmetic mean of normal vector
+        // => numele is the number of adjacent elements for each node
+        const double numele = (double) (ele->Nodes()[j])->NumElement();
+        for (int dim=0; dim<(nsd_+1); dim++)
+        {
+          const double component = normal_(dim)/numele;
+          normals->SumIntoGlobalValue(nodegid,dim,component);
+        }
+      }
+      //else: the node belongs to another processor; the ghosted
+      //      element will contribute the right value on that proc
+    }
+  }
   else if (action =="calc_elch_electrode_kinetics")
   {
+    // get actual values of transported scalars
+    RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    if (phinp==null) dserror("Cannot get state vector 'phinp'");
+
     // extract local values from the global vector
     vector<double> ephinp(lm.size());
     DRT::UTILS::ExtractMyValues(*phinp,ephinp,lm);
@@ -379,6 +417,10 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
   } 
   else if (action =="calc_therm_press")
   {
+    // get actual values of transported scalars
+    RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    if (phinp==null) dserror("Cannot get state vector 'phinp'");
+
     // get velocity values at the nodes (needed for total flux values)
     const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
     DRT::ELEMENTS::Transport* parentele = ele->ParentElement();

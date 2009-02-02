@@ -28,6 +28,7 @@ Maintainer: Georg Bauer
 #include "../drt_fluid/vm3_solver.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_fluid/fluid_utils.H" // for conpotsplitter
+#include "../drt_lib/drt_timecurve.H"
 
 // for the condition writer output
 /*
@@ -1378,6 +1379,121 @@ bool SCATRA::ScaTraTimIntImpl::LomaConvergenceCheck(int          itnum,
 
 
 /*----------------------------------------------------------------------*
+ |  output of electrode status information to screen         gjb  01/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::OutputElectrodeInfo()
+{
+  // set vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState("phinp",phinp_);
+  // set action for elements
+  ParameterList eleparams;
+  eleparams.set("action","calc_elch_electrode_kinetics");
+  eleparams.set("calc_status",true); // just want to have a status ouput!
+  eleparams.set("iselch",(prbtype_=="elch")); // a boolean
+  eleparams.set("problem type",prbtype_);
+  eleparams.set("frt",frt_);
+  // add element parameters and density state according to time-int. scheme
+  AddSpecificTimeIntegrationParameters(eleparams);
+
+  // calculate normal flux vector field only for these boundary conditions:
+  std::string condname("ElectrodeKinetics");
+
+  double sum(0.0);
+
+  vector<DRT::Condition*> cond;
+  discret_->GetCondition(condname,cond);
+
+  // leave method, if there's nothing to do!
+  if (!cond.size()) return;
+
+  if (myrank_ == 0)
+  {
+    cout<<"Status of '"<<condname<<"':\n"
+    <<"++----+---------------------+------------------+----------------------+--------------------+----------------+----------------+"<<endl;
+    printf("|| ID |    Total current    | Area of boundary | Mean current density | Mean overpotential | Electrode pot. | Mean Concentr. |\n");
+  }
+
+  // first, add to all conditions of interest a ConditionID
+  for (int condid = 0; condid < (int) cond.size(); condid++)
+  {
+    // is there already a ConditionID?
+    const vector<int>*    CondIDVec  = cond[condid]->Get<vector<int> >("ConditionID");
+    if (CondIDVec)
+    { 
+      if ((*CondIDVec)[0] != condid)
+        dserror("Condition %s has non-matching ConditionID",condname.c_str());
+    }
+    else
+    {
+      // let's add a ConditionID
+      cond[condid]->Add("ConditionID",condid);
+    }
+  }
+  // now we evaluate the conditions and seperate via ConditionID
+  for (int condid = 0; condid < (int) cond.size(); condid++)
+  {
+    // calculate integral of normal fluxes over indicated boundary and it's area
+    eleparams.set("currentintegral",0.0);
+    eleparams.set("boundaryintegral",0.0);
+    eleparams.set("overpotentialintegral",0.0);
+    eleparams.set("concentrationintegral",0.0);
+
+    discret_->EvaluateCondition(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,condname,condid);
+
+    // get integral of current on this proc
+    double currentintegral = eleparams.get<double>("currentintegral");
+    // get area of the boundary on this proc
+    double boundaryint = eleparams.get<double>("boundaryintegral");
+    // get integral of overpotential on this proc
+    double overpotentialint = eleparams.get<double>("overpotentialintegral");
+    // get integral of reactant concentration on this proc
+    double cint = eleparams.get<double>("concentrationintegral");
+
+    // care for the parallel case
+    double parcurrentintegral = 0.0;
+    discret_->Comm().SumAll(&currentintegral,&parcurrentintegral,1);
+    double parboundaryint = 0.0;
+    discret_->Comm().SumAll(&boundaryint,&parboundaryint,1);
+    double paroverpotentialint = 0.0;
+    discret_->Comm().SumAll(&overpotentialint,&paroverpotentialint,1);
+    double parcint = 0.0;
+    discret_->Comm().SumAll(&cint,&parcint,1);
+
+    // access some parameters of the actual condition
+    double pot0 = cond[condid]->GetDouble("pot0");
+    const int curvenum = cond[condid]->Getint("curve");
+    if (curvenum>=0)
+    {
+      const double curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time_);
+      // adjust potential at metal side accordingly
+      pot0 *= curvefac;
+    }
+
+    // print out results
+    if (myrank_ == 0)
+    {
+      printf("|| %2d |     %10.3E      |    %10.3E    |      %10.3E      |     %10.3E     |   %10.3E   |   %10.3E   |\n",
+        condid,parcurrentintegral,parboundaryint,parcurrentintegral/parboundaryint,paroverpotentialint/parboundaryint, pot0, parcint/parboundaryint);
+    }
+    sum+=parcurrentintegral;
+  } // loop over condid
+
+  if (myrank_==0)
+    cout<<"++----+---------------------+------------------+----------------------+--------------------+----------------+----------------+"<<endl;
+
+  // print out the net total current for all indicated boundaries
+  if (myrank_ == 0)
+    printf("Net total current over boundary: %10.3E\n\n",sum);
+
+  // clean up
+  discret_->ClearState();
+
+  return;
+} // ScaTraImplicitTimeInt::OutputElectrodeInfo
+
+
+/*----------------------------------------------------------------------*
  | update thermodynamic pressure for mass conservation         vg 01/09 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::UpdateThermPressureFromMassCons()
@@ -1487,14 +1603,13 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
   // empty vector for (normal) mass or heat flux vectors (always 3D)
   Teuchos::RCP<Epetra_MultiVector> flux = rcp(new Epetra_MultiVector(*dofrowmap,3,true));
 
-  // we have only 1 dof per node, so we have to treat each spatial direction separately
+  // We have to treat each spatial direction separately
   Teuchos::RCP<Epetra_Vector> fluxx = LINALG::CreateVector(*dofrowmap,true);
   Teuchos::RCP<Epetra_Vector> fluxy = LINALG::CreateVector(*dofrowmap,true);
   Teuchos::RCP<Epetra_Vector> fluxz = LINALG::CreateVector(*dofrowmap,true);
 
-  // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState("phinp",phinp_);
+
   // set action for elements
   ParameterList eleparams;
   eleparams.set("action","calc_condif_flux");
@@ -1521,6 +1636,10 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
   // now compute the fluxes
   if (fluxcomputation=="domain")
   {
+    // set vector values needed by elements
+    discret_->ClearState();
+    discret_->SetState("phinp",phinp_);
+
     // evaluate fluxes in the whole computational domain (e.g., for visualization of particle path-lines)
     discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,fluxx,fluxy,fluxz);
   }
@@ -1532,6 +1651,21 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
     condnames.push_back("ElectrodeKinetics");
     condnames.push_back("LineNeumann");
     condnames.push_back("SurfaceNeumann");
+
+    // determine the averaged normal vector field for indicated boundaries
+    RCP<Epetra_MultiVector> normals = ComputeNormalVectors(condnames);
+
+    //hand the normal vector field down to the elements
+    //(export to column map necessary for parallel evaluation)
+    //SetState cannot be used since this Multivector is nodebased and not dofbased
+    const Epetra_Map* nodecolmap = discret_->NodeColMap();
+    RefCountPtr<Epetra_MultiVector> colnormals = rcp(new Epetra_MultiVector(*nodecolmap,3));
+    LINALG::Export(*normals,*colnormals);
+    eleparams.set("normal vectors",colnormals);
+
+    // set vector values needed by elements
+    discret_->ClearState();
+    discret_->SetState("phinp",phinp_);
 
     double normfluxsum(0.0);
 
@@ -1618,6 +1752,37 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
   return flux;
 } // ScaTraImplicitTimeInt::CalcNormalFlux
 
+
+/*----------------------------------------------------------------------*
+ | compute outward pointing unit normal vectors at given b.c.  gjb 01/09|
+ *----------------------------------------------------------------------*/
+RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNormalVectors( 
+    const vector<string>& condnames
+)
+{
+  // create vectors for x,y and z component of average normal vector field
+  // get noderowmap of discretization
+  const Epetra_Map* noderowmap = discret_->NodeRowMap();
+  RCP<Epetra_MultiVector> normal = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+
+  discret_->ClearState();
+
+  // set action for elements
+  ParameterList eleparams;
+  eleparams.set("action","calc_normal_vectors");
+  eleparams.set<RCP<Epetra_MultiVector> >("normal vectors",normal);
+
+  // loop over all intended types of conditions
+  for (unsigned int i=0; i < condnames.size(); i++)
+  {
+    discret_->EvaluateCondition(eleparams,condnames[i]);
+  }
+
+  // clean up
+  discret_->ClearState();
+
+  return normal;
+}
 
 
 /*----------------------------------------------------------------------*

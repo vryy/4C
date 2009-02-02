@@ -200,6 +200,9 @@ public:
   /// output of mean temperature and density for low-Mach-number flow
   void OutputMeanTempAndDens();
 
+  /// output of electrode information to screen
+  void OutputElectrodeInfo();
+
   /// routine to return density field at time step n+1 for low-Mach-number flow
   Teuchos::RCP<Epetra_Vector> DensNp() { return densnp_; }
 
@@ -295,6 +298,9 @@ protected:
 
   /// routine to calculate mass/heat flux vectors
   Teuchos::RCP<Epetra_MultiVector> CalcFlux();
+
+  //! compute outward pointing unit normal vectors at given bc's
+  RCP<Epetra_MultiVector> ComputeNormalVectors(const vector<string>& condnames);
 
   /// the scalar transport discretization
   RCP<DRT::Discretization>   discret_;
