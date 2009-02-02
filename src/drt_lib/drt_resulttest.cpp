@@ -167,9 +167,9 @@ void ResultTestManager::TestAll()
   /* test_count == -1 means we had a special test routine. It's thus
    * illegal to use both a special routine and single tests. But who
    * wants that? */
+  int count;
   if (test_count > -1)
   {
-    int count;
     comm_.SumAll(&test_count,&count,1);
 
     /* It's indeed possible to count more tests than expected if you
@@ -182,7 +182,7 @@ void ResultTestManager::TestAll()
   }
 
   if (comm_.MyPID()==0)
-    cout << "\n" GREEN_LIGHT "OK" END_COLOR "\n";
+    cout << "\n" GREEN_LIGHT "OK (" << count << ")" END_COLOR "\n";
 }
 
 
