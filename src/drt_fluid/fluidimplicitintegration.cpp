@@ -396,7 +396,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   outflow_stab_ = stabparams->get<string>("OUTFLOW_STAB","no_outstab");
 
   // vector containing potential Neumann-type outflow stabilization term
-  if (outflow_stab_ == "yes_outstab") 
+  if (outflow_stab_ == "yes_outstab")
     outflow_= LINALG::CreateVector(*dofrowmap,true);
 
   // -------------------------------------------------------------------
@@ -2982,7 +2982,7 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
     }
 
     // call loop over elements
-    discret_->Evaluate(eleparams,sysmat_,meshmovematrix_,residual_);
+    discret_->Evaluate(eleparams,sysmat_,meshmatrix_,residual_);
     discret_->ClearState();
 
     // finalize the system matrix
