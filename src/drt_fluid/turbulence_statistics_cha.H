@@ -455,14 +455,22 @@ private:
   RefCountPtr<vector<double> >     sumres_;
   //! sum over all in plane squared residuals
   RefCountPtr<vector<double> >     sumres_sq_;
+  //! sum over all in plane residuals norms
+  RefCountPtr<vector<double> >     sumabsres_;
+  //! sum over all in plane values of svel/tau
+  RefCountPtr<vector<double> >     sumtauinvsvel_;
   //! sum over all in plane subscale accelerations
   RefCountPtr<vector<double> >     sumsacc_;
   //! sum over all in plane squared subscale accelerations
   RefCountPtr<vector<double> >     sumsacc_sq_;
-  //! sum over all in plane subscale velocitiess
+  //! sum over all in plane subscale accelerations norms
+  RefCountPtr<vector<double> >     sumabssacc_;
+  //! sum over all in plane subscale velocities
   RefCountPtr<vector<double> >     sumsvelaf_;
-  //! sum over all in plane squared subscale velocitiess
+  //! sum over all in plane squared subscale velocities
   RefCountPtr<vector<double> >     sumsvelaf_sq_;
+  //! sum over all in plane subscale velocities norms
+  RefCountPtr<vector<double> >     sumabssvelaf_;
 
   //! sum over all in plane residuals of the continuity equation
   RefCountPtr<vector<double> >     sumresC_;

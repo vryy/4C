@@ -703,9 +703,9 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     //--------------------------------------------------
     // local_incrtauC            (in plane) averaged values of stabilisation parameter tauC
     // local_incrtauM            (in plane) averaged values of stabilisation parameter tauM
-    // local_incrres(_sq)        (in plane) averaged values of resM (^2)
-    // local_incrsacc(_sq)       (in plane) averaged values of sacc (^2)
-    // local_incrsvelaf(_sq)     (in plane) averaged values of svelaf (^2)
+    // local_incrres(_sq,abs)    (in plane) averaged values of resM (^2) (||.||)
+    // local_incrsacc(_sq,abs)   (in plane) averaged values of sacc (^2) (||.||)
+    // local_incrsvelaf(_sq,abs) (in plane) averaged values of svelaf (^2) (||.||)
     // local_incrresC(_sq)       (in plane) averaged values of resC (^2)
     // local_incrspressnp(_sq)   (in plane) averaged values of spressnp (^2)
     //--------------------------------------------------
@@ -716,10 +716,18 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     
     RefCountPtr<vector<double> > local_incrres           = rcp(new vector<double> (3*(nodeplanes_->size()-1),0.0));
     RefCountPtr<vector<double> > local_incrres_sq        = rcp(new vector<double> (3*(nodeplanes_->size()-1),0.0));
+    RefCountPtr<vector<double> > local_incrabsres        = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
+
+    RefCountPtr<vector<double> > local_incrtauinvsvel    = rcp(new vector<double> (3*(nodeplanes_->size()-1)  ,0.0));
+
     RefCountPtr<vector<double> > local_incrsacc          = rcp(new vector<double> (3*(nodeplanes_->size()-1),0.0));
     RefCountPtr<vector<double> > local_incrsacc_sq       = rcp(new vector<double> (3*(nodeplanes_->size()-1),0.0));
+    RefCountPtr<vector<double> > local_incrabssacc       = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
+
     RefCountPtr<vector<double> > local_incrsvelaf        = rcp(new vector<double> (3*(nodeplanes_->size()-1),0.0));
     RefCountPtr<vector<double> > local_incrsvelaf_sq     = rcp(new vector<double> (3*(nodeplanes_->size()-1),0.0));
+    RefCountPtr<vector<double> > local_incrabssvelaf     = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
+
     RefCountPtr<vector<double> > local_incrresC          = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
     RefCountPtr<vector<double> > local_incrresC_sq       = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
     RefCountPtr<vector<double> > local_incrspressnp      = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
@@ -745,10 +753,14 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     eleparams_.set<RefCountPtr<vector<double> > >("incrtauM"         ,local_incrtauM        );
     eleparams_.set<RefCountPtr<vector<double> > >("incrres"          ,local_incrres         );
     eleparams_.set<RefCountPtr<vector<double> > >("incrres_sq"       ,local_incrres_sq      );
+    eleparams_.set<RefCountPtr<vector<double> > >("incrabsres"       ,local_incrabsres      );
+    eleparams_.set<RefCountPtr<vector<double> > >("incrtauinvsvel"   ,local_incrtauinvsvel  );
     eleparams_.set<RefCountPtr<vector<double> > >("incrsacc"         ,local_incrsacc        );
     eleparams_.set<RefCountPtr<vector<double> > >("incrsacc_sq"      ,local_incrsacc_sq     );
+    eleparams_.set<RefCountPtr<vector<double> > >("incrabssacc"      ,local_incrabssacc     );
     eleparams_.set<RefCountPtr<vector<double> > >("incrsvelaf"       ,local_incrsvelaf      );
     eleparams_.set<RefCountPtr<vector<double> > >("incrsvelaf_sq"    ,local_incrsvelaf_sq   );
+    eleparams_.set<RefCountPtr<vector<double> > >("incrabssvelaf"    ,local_incrabssvelaf   );
     eleparams_.set<RefCountPtr<vector<double> > >("incrresC"         ,local_incrresC        );
     eleparams_.set<RefCountPtr<vector<double> > >("incrresC_sq"      ,local_incrresC_sq     );
     eleparams_.set<RefCountPtr<vector<double> > >("incrspressnp"     ,local_incrspressnp    );
@@ -771,16 +783,24 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     sumres_->resize(3*(nodeplanes_->size()-1),0.0);
     sumres_sq_ =  rcp(new vector<double> );
     sumres_sq_->resize(3*(nodeplanes_->size()-1),0.0);
+    sumabsres_ =  rcp(new vector<double> );
+    sumabsres_->resize((nodeplanes_->size()-1),0.0);
+    sumtauinvsvel_ =  rcp(new vector<double> );
+    sumtauinvsvel_->resize(3*(nodeplanes_->size()-1),0.0);
     
     sumsacc_   =  rcp(new vector<double> );
     sumsacc_->resize(3*(nodeplanes_->size()-1),0.0);
     sumsacc_sq_=  rcp(new vector<double> );
     sumsacc_sq_->resize(3*(nodeplanes_->size()-1),0.0);
+    sumabssacc_=  rcp(new vector<double> );
+    sumabssacc_->resize((nodeplanes_->size()-1),0.0);
     
     sumsvelaf_=  rcp(new vector<double> );
     sumsvelaf_->resize(3*(nodeplanes_->size()-1),0.0);
     sumsvelaf_sq_=  rcp(new vector<double> );
     sumsvelaf_sq_->resize(3*(nodeplanes_->size()-1),0.0);
+    sumabssvelaf_=  rcp(new vector<double> );
+    sumabssvelaf_->resize((nodeplanes_->size()-1),0.0);
     
     sumresC_       =  rcp(new vector<double> );
     sumresC_->resize(nodeplanes_->size()-1,0.0);
@@ -1530,10 +1550,14 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
 
     RefCountPtr<vector<double> > local_incrres           =eleparams_.get<RefCountPtr<vector<double> > >("incrres"         );
     RefCountPtr<vector<double> > local_incrres_sq        =eleparams_.get<RefCountPtr<vector<double> > >("incrres_sq"      );
+    RefCountPtr<vector<double> > local_incrabsres        =eleparams_.get<RefCountPtr<vector<double> > >("incrabsres"      );
+    RefCountPtr<vector<double> > local_incrtauinvsvel    =eleparams_.get<RefCountPtr<vector<double> > >("incrtauinvsvel"  );
     RefCountPtr<vector<double> > local_incrsacc          =eleparams_.get<RefCountPtr<vector<double> > >("incrsacc"        );
     RefCountPtr<vector<double> > local_incrsacc_sq       =eleparams_.get<RefCountPtr<vector<double> > >("incrsacc_sq"     );
+    RefCountPtr<vector<double> > local_incrabssacc       =eleparams_.get<RefCountPtr<vector<double> > >("incrabssacc"     );
     RefCountPtr<vector<double> > local_incrsvelaf        =eleparams_.get<RefCountPtr<vector<double> > >("incrsvelaf"      );
     RefCountPtr<vector<double> > local_incrsvelaf_sq     =eleparams_.get<RefCountPtr<vector<double> > >("incrsvelaf_sq"   );
+    RefCountPtr<vector<double> > local_incrabssvelaf     =eleparams_.get<RefCountPtr<vector<double> > >("incrabssvelaf"   );
     RefCountPtr<vector<double> > local_incrresC          =eleparams_.get<RefCountPtr<vector<double> > >("incrresC"        );
     RefCountPtr<vector<double> > local_incrresC_sq       =eleparams_.get<RefCountPtr<vector<double> > >("incrresC_sq"     );
     RefCountPtr<vector<double> > local_incrspressnp      =eleparams_.get<RefCountPtr<vector<double> > >("incrspressnp"    );
@@ -1568,7 +1592,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
     RefCountPtr<vector<double> > global_incrtauC;
     global_incrtauC=  rcp(new vector<double> (presize,0.0));
     
-    // (in plane) averaged values of resM (^2)
+    // (in plane) averaged values of resM (^2) (abs)
 
     RefCountPtr<vector<double> > global_incrres;
     global_incrres=  rcp(new vector<double> (velsize,0.0));
@@ -1576,21 +1600,33 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
     RefCountPtr<vector<double> > global_incrres_sq;
     global_incrres_sq=  rcp(new vector<double> (velsize,0.0));
   
-    // (in plane) averaged values of sacc (^2)
+    RefCountPtr<vector<double> > global_incrtauinvsvel;
+    global_incrtauinvsvel=  rcp(new vector<double> (velsize,0.0));
+  
+    RefCountPtr<vector<double> > global_incrabsres;
+    global_incrabsres=  rcp(new vector<double> (presize,0.0));
+  
+    // (in plane) averaged values of sacc (^2) (abs)
 
     RefCountPtr<vector<double> > global_incrsacc;
     global_incrsacc=  rcp(new vector<double> (velsize,0.0));
       
     RefCountPtr<vector<double> > global_incrsacc_sq;
     global_incrsacc_sq=  rcp(new vector<double> (velsize,0.0));
-      
-    // (in plane) averaged values of svelaf (^2)
+
+    RefCountPtr<vector<double> > global_incrabssacc;
+    global_incrabssacc=  rcp(new vector<double> (presize,0.0));
+    
+    // (in plane) averaged values of svelaf (^2) (abs)
 
     RefCountPtr<vector<double> > global_incrsvelaf;
     global_incrsvelaf=  rcp(new vector<double> (velsize,0.0));
 
     RefCountPtr<vector<double> > global_incrsvelaf_sq;
     global_incrsvelaf_sq=  rcp(new vector<double> (velsize,0.0));
+
+    RefCountPtr<vector<double> > global_incrabssvelaf;
+    global_incrabssvelaf=  rcp(new vector<double> (presize,0.0));
 
     // (in plane) averaged values of resC (^2)
 
@@ -1681,13 +1717,22 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
     discret_->Comm().SumAll(&((*local_incrres_sq    )[0]),
                             &((*global_incrres_sq   )[0]),
                             velsize);
-     
+    discret_->Comm().SumAll(&((*local_incrtauinvsvel)[0]),
+                            &((*global_incrtauinvsvel)[0]),
+                            velsize);
+    discret_->Comm().SumAll(&((*local_incrabsres    )[0]),
+                            &((*global_incrabsres   )[0]),
+                            presize);
+
     discret_->Comm().SumAll(&((*local_incrsacc      )[0]),
                             &((*global_incrsacc     )[0]),
                             velsize);
     discret_->Comm().SumAll(&((*local_incrsacc_sq   )[0]),
                             &((*global_incrsacc_sq  )[0]),
                             velsize);
+    discret_->Comm().SumAll(&((*local_incrabssacc   )[0]),
+                            &((*global_incrabssacc  )[0]),
+                            presize);
       
     discret_->Comm().SumAll(&((*local_incrsvelaf    )[0]),
                             &((*global_incrsvelaf   )[0]),
@@ -1695,6 +1740,9 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
     discret_->Comm().SumAll(&((*local_incrsvelaf_sq )[0]),
                             &((*global_incrsvelaf_sq)[0]),
                             velsize);
+    discret_->Comm().SumAll(&((*local_incrabssvelaf )[0]),
+                            &((*global_incrabssvelaf)[0]),
+                            presize);
 
     // compute global sums, incompressibility residuals
     discret_->Comm().SumAll(&((*local_incrresC      )[0]),
@@ -1752,9 +1800,16 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
       (*sumsacc_sq_      )[rr]+=(*global_incrsacc_sq      )[rr];
       (*sumsvelaf_       )[rr]+=(*global_incrsvelaf       )[rr];
       (*sumsvelaf_sq_    )[rr]+=(*global_incrsvelaf_sq    )[rr];
+
+      (*sumtauinvsvel_   )[rr]+=(*global_incrtauinvsvel   )[rr];
     }
     for (int rr=0;rr<presize;++rr)
     {
+
+      (*sumabsres_       )[rr]+=(*global_incrabsres       )[rr];
+      (*sumabssacc_      )[rr]+=(*global_incrabssacc      )[rr];
+      (*sumabssvelaf_    )[rr]+=(*global_incrabssvelaf    )[rr];
+
       (*sumtauM_         )[rr]+=(*global_incrtauM         )[rr];
       (*sumtauC_         )[rr]+=(*global_incrtauC         )[rr];
 
@@ -1787,6 +1842,11 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
     local_incrsacc_sq       = rcp(new vector<double> (velsize,0.0));
     local_incrsvelaf        = rcp(new vector<double> (velsize,0.0));
     local_incrsvelaf_sq     = rcp(new vector<double> (velsize,0.0));
+    local_incrtauinvsvel    = rcp(new vector<double> (velsize,0.0));
+
+    local_incrabsres        = rcp(new vector<double> (presize,0.0));
+    local_incrabssacc       = rcp(new vector<double> (presize,0.0));
+    local_incrabssvelaf     = rcp(new vector<double> (presize,0.0));
 
     local_incrresC          = rcp(new vector<double> (presize,0.0));
     local_incrresC_sq       = rcp(new vector<double> (presize,0.0));
@@ -1812,10 +1872,14 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
     
     eleparams_.set<RefCountPtr<vector<double> > >("incrres"          ,local_incrres          );
     eleparams_.set<RefCountPtr<vector<double> > >("incrres_sq"       ,local_incrres_sq       );
+    eleparams_.set<RefCountPtr<vector<double> > >("incrabsres"       ,local_incrabsres       );
+    eleparams_.set<RefCountPtr<vector<double> > >("incrtauinvsvel"   ,local_incrtauinvsvel   );
     eleparams_.set<RefCountPtr<vector<double> > >("incrsacc"         ,local_incrsacc         );
     eleparams_.set<RefCountPtr<vector<double> > >("incrsacc_sq"      ,local_incrsacc_sq      );
+    eleparams_.set<RefCountPtr<vector<double> > >("incrabssacc"      ,local_incrabssacc      );
     eleparams_.set<RefCountPtr<vector<double> > >("incrsvelaf"       ,local_incrsvelaf       );
     eleparams_.set<RefCountPtr<vector<double> > >("incrsvelaf_sq"    ,local_incrsvelaf_sq    );
+    eleparams_.set<RefCountPtr<vector<double> > >("incrabssvelaf"    ,local_incrabssvelaf    );
 
     eleparams_.set<RefCountPtr<vector<double> > >("incrresC"         ,local_incrresC         );
     eleparams_.set<RefCountPtr<vector<double> > >("incrresC_sq"      ,local_incrresC_sq      );
@@ -2194,7 +2258,8 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(int ste
 
       (*log_res) << "\n\n\n";
       (*log_res) << "# Statistics record " << countrecord_;
-      (*log_res) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
+      (*log_res) << " (Steps " << step-numsamp_+1 << "--" << step <<")   ";
+      (*log_res) << " (dt " << params_.get<double>("time step size") <<")\n";
       (*log_res) << "#       y    ";
 
       (*log_res) << "    res_x   ";
@@ -2216,6 +2281,14 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(int ste
       (*log_res) << "   svel_sq_x ";
       (*log_res) << "   svel_sq_y ";
       (*log_res) << "   svel_sq_z ";
+
+      (*log_res) << " tauinvsvel_x";
+      (*log_res) << " tauinvsvel_y";
+      (*log_res) << " tauinvsvel_z";
+
+      (*log_res) << "    ||res||  ";
+      (*log_res) << "   ||sacc||  ";
+      (*log_res) << "   ||svel||  ";
 
       (*log_res) << "      resC   ";
       (*log_res) << "    spresnp  ";
@@ -2265,6 +2338,14 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(int ste
         (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_sq_)[3*rr  ]/(numele_*numsamp_) << "  ";
         (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_sq_)[3*rr+1]/(numele_*numsamp_) << "  ";
         (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_sq_)[3*rr+2]/(numele_*numsamp_) << "  ";
+
+        (*log_res)  << setw(11) << setprecision(4) << (*sumtauinvsvel_)[3*rr  ]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sumtauinvsvel_)[3*rr+1]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sumtauinvsvel_)[3*rr+2]/(numele_*numsamp_) << "  ";
+
+        (*log_res)  << setw(11) << setprecision(4) << (*sumabsres_       )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sumabssacc_      )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sumabssvelaf_    )[rr]/(numele_*numsamp_) << "  ";
 
         (*log_res)  << setw(11) << setprecision(4) << (*sumresC_         )[rr]/(numele_*numsamp_) << "  ";
         (*log_res)  << setw(11) << setprecision(4) << (*sumspressnp_     )[rr]/(numele_*numsamp_) << "  ";
@@ -2701,9 +2782,17 @@ void FLD::TurbulenceStatisticsCha::ClearStatistics()
       (*sumsvelaf_sq_)[3*rr  ]=0.0;
       (*sumsvelaf_sq_)[3*rr+1]=0.0;
       (*sumsvelaf_sq_)[3*rr+2]=0.0;
+
+      (*sumtauinvsvel_)[3*rr  ]=0.0;
+      (*sumtauinvsvel_)[3*rr+1]=0.0;
+      (*sumtauinvsvel_)[3*rr+2]=0.0;
     }
     for (unsigned rr=0;rr<sumresC_->size();++rr)
     {
+      (*sumabsres_        )[rr]=0.0;
+      (*sumabssacc_       )[rr]=0.0;
+      (*sumabssvelaf_     )[rr]=0.0;
+
       (*sumtauM_         )[rr]=0.0;
       (*sumtauC_         )[rr]=0.0;
       

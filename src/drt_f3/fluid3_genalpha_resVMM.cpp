@@ -224,6 +224,10 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
     {
       whichtau = Fluid3::codina;
     }
+    else if(taudef == "FBVW_without_dt")
+    {
+      whichtau = Fluid3::fbvw_wo_dt;
+    }
     else if(taudef == "Franca_Barrenechea_Valentin_Codina")
     {
       whichtau = Fluid3::franca_barrenechea_valentin_codina;
@@ -231,6 +235,10 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
     else if(taudef == "Smoothed_FBVW")
     {
       whichtau = Fluid3::smoothed_franca_barrenechea_valentin_wall;
+    }
+    else
+    {
+      dserror("unknown tau definition\n");
     }
   }
 
@@ -9681,6 +9689,14 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
     {
       whichtau = Fluid3::smoothed_franca_barrenechea_valentin_wall;
     }
+    else if(taudef == "FBVW_without_dt")
+    {
+      whichtau = Fluid3::fbvw_wo_dt;
+    }
+    else
+    {
+      dserror("unknown tau definition\n");
+    }
   }
 
   // flag for higher order elements
@@ -9762,17 +9778,22 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
 
   // ---------------------------------------------------
   // working arrays for the quantities we want to compute
-  LINALG::Matrix<3,1>  mean_res      ;
-  LINALG::Matrix<3,1>  mean_sacc     ;
-  LINALG::Matrix<3,1>  mean_svelaf   ;
-  LINALG::Matrix<3,1>  mean_res_sq   ;
-  LINALG::Matrix<3,1>  mean_sacc_sq  ;
-  LINALG::Matrix<3,1>  mean_svelaf_sq;
+  LINALG::Matrix<3,1>  mean_res       ;
+  LINALG::Matrix<3,1>  mean_sacc      ;
+  LINALG::Matrix<3,1>  mean_svelaf    ;
+  LINALG::Matrix<3,1>  mean_res_sq    ;
+  LINALG::Matrix<3,1>  mean_sacc_sq   ;
+  LINALG::Matrix<3,1>  mean_svelaf_sq ;
+  LINALG::Matrix<3,1>  mean_tauinvsvel;
 
   double vol             = 0.0;
 
   double averaged_tauC   = 0.0;
   double averaged_tauM   = 0.0;
+
+  double abs_res         = 0.0;
+  double abs_svel        = 0.0;
+  double abs_sacc        = 0.0;
 
   double mean_resC       = 0.0;
   double mean_resC_sq    = 0.0;
@@ -9797,6 +9818,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   mean_res_sq    .Clear();
   mean_sacc_sq   .Clear();
   mean_svelaf_sq .Clear();
+  mean_tauinvsvel.Clear();
 
   //------------------------------------------------------------------
   //           SET TIME INTEGRATION SCHEME RELATED DATA
@@ -9919,6 +9941,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
       mean_res    (rr) += resM_(rr)*fac;
       mean_res_sq (rr) += resM_(rr)*resM_(rr)*fac;
     }
+    abs_res    += sqrt(resM_(0)*resM_(0)+resM_(1)*resM_(1)+resM_(2)*resM_(2))*fac;
 
     if(tds == Fluid3::subscales_time_dependent
        &&
@@ -9933,6 +9956,11 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
         mean_sacc   (rr) += aux*fac;
         mean_sacc_sq(rr) += aux*aux*fac;
       }
+      const double aux0 = -1.0/tau_(0)*svelaf_(0)-resM_(0);
+      const double aux1 = -1.0/tau_(0)*svelaf_(1)-resM_(1);
+      const double aux2 = -1.0/tau_(0)*svelaf_(2)-resM_(2);
+
+      abs_sacc += sqrt(aux0*aux0+aux1*aux1+aux2*aux2)*fac;
     }
 
     if(tds == Fluid3::subscales_time_dependent)
@@ -9942,6 +9970,12 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
         mean_svelaf   (rr) += svelaf_(rr)*fac;
         mean_svelaf_sq(rr) += svelaf_(rr)*svelaf_(rr)*fac;
       }
+
+      abs_svel +=sqrt(svelaf_(0)*svelaf_(0)
+                      +
+                      svelaf_(1)*svelaf_(1)
+                      +
+                      svelaf_(2)*svelaf_(2))*fac;
     }
     else
     {
@@ -9952,7 +9986,19 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
         mean_svelaf   (rr) -= aux*fac;
         mean_svelaf_sq(rr) += aux*aux*fac;
       }
+
+      abs_svel +=sqrt(resM_(0)*resM_(0)
+                      +
+                      resM_(1)*resM_(1)
+                      +
+                      resM_(2)*resM_(2))*tau_(0)*fac;
     }
+
+    for(int rr=0;rr<3;++rr)
+    {
+      mean_tauinvsvel(rr)+=mean_svelaf(rr)/tau_(0);
+    }
+    
 
     {
       const double aux = tau_(2)*divunp_;
@@ -10307,7 +10353,13 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
     mean_sacc_sq    (rr)/= vol;
     mean_svelaf     (rr)/= vol;
     mean_svelaf_sq  (rr)/= vol;
+    mean_tauinvsvel (rr)/= vol;
   }
+
+  abs_res         /= vol;
+  abs_sacc        /= vol;
+  abs_svel        /= vol;
+
   mean_resC       /= vol;
   mean_resC_sq    /= vol;
   mean_sprenp     /= vol;
@@ -10334,10 +10386,16 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
 
   RefCountPtr<vector<double> > incrres           = params.get<RefCountPtr<vector<double> > >("incrres"          );
   RefCountPtr<vector<double> > incrres_sq        = params.get<RefCountPtr<vector<double> > >("incrres_sq"       );
+  RefCountPtr<vector<double> > incrabsres        = params.get<RefCountPtr<vector<double> > >("incrabsres"       );
+  RefCountPtr<vector<double> > incrtauinvsvel    = params.get<RefCountPtr<vector<double> > >("incrtauinvsvel"   );
+ 
   RefCountPtr<vector<double> > incrsacc          = params.get<RefCountPtr<vector<double> > >("incrsacc"         );
   RefCountPtr<vector<double> > incrsacc_sq       = params.get<RefCountPtr<vector<double> > >("incrsacc_sq"      );
+  RefCountPtr<vector<double> > incrabssacc       = params.get<RefCountPtr<vector<double> > >("incrabssacc"      );
+
   RefCountPtr<vector<double> > incrsvelaf        = params.get<RefCountPtr<vector<double> > >("incrsvelaf"       );
   RefCountPtr<vector<double> > incrsvelaf_sq     = params.get<RefCountPtr<vector<double> > >("incrsvelaf_sq"    );
+  RefCountPtr<vector<double> > incrabssvelaf     = params.get<RefCountPtr<vector<double> > >("incrabssvelaf"    );
   
   RefCountPtr<vector<double> > incrresC          = params.get<RefCountPtr<vector<double> > >("incrresC"         );
   RefCountPtr<vector<double> > incrresC_sq       = params.get<RefCountPtr<vector<double> > >("incrresC_sq"      );
@@ -10400,14 +10458,20 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   // averages of momentum residuals, subscale velocity and accelerations
   for(int mm=0;mm<3;++mm)
   {
-    (*incrres      )[3*nlayer+mm] += mean_res      (mm);
-    (*incrres_sq   )[3*nlayer+mm] += mean_res_sq   (mm);
-    (*incrsacc     )[3*nlayer+mm] += mean_sacc     (mm);
-    (*incrsacc_sq  )[3*nlayer+mm] += mean_sacc_sq  (mm);
+    (*incrres       )[3*nlayer+mm] += mean_res       (mm);
+    (*incrres_sq    )[3*nlayer+mm] += mean_res_sq    (mm);
+    (*incrsacc      )[3*nlayer+mm] += mean_sacc      (mm);
+    (*incrsacc_sq   )[3*nlayer+mm] += mean_sacc_sq   (mm);
     
-    (*incrsvelaf   )[3*nlayer+mm] += mean_svelaf   (mm);
-    (*incrsvelaf_sq)[3*nlayer+mm] += mean_svelaf_sq(mm);
+    (*incrsvelaf    )[3*nlayer+mm] += mean_svelaf    (mm);
+    (*incrsvelaf_sq )[3*nlayer+mm] += mean_svelaf_sq (mm);
+
+    (*incrtauinvsvel)[3*nlayer+mm] += mean_tauinvsvel(mm);
   }
+
+  (*incrabsres       )[nlayer] += abs_res;
+  (*incrabssacc      )[nlayer] += abs_sacc;
+  (*incrabssvelaf    )[nlayer] += abs_svel;
 
   // averages of subscale pressure and continuity residuals
   (*incrresC         )[nlayer] += mean_resC      ;
@@ -10985,7 +11049,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau(
       tau_(2) = 1./(tau_(0)*normgsq);
 
     }
-    else if(whichtau == Fluid3::franca_barrenechea_valentin_wall)
+    else if(whichtau == Fluid3::franca_barrenechea_valentin_wall
+            ||
+            whichtau == Fluid3::fbvw_wo_dt                      )
     {
       // INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA
       //
@@ -11494,6 +11560,87 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau(
        *
        * */
       tau_(2) = sqrt(DSQR(visceff)+DSQR(0.5*vel_normnp*hk));
+    }
+    else if (whichtau == Fluid3::codina)
+    {
+
+      // time factor
+      const double timefac = gamma*dt;
+
+      // Parameter from Codina, Badia (Constants are chosen according to
+      // the values in the standard definition above)
+
+      const double CI  = 4.0/mk;
+      const double CII = 2.0/mk;
+
+      // in contrast to the original definition, we neglect the influence of
+      // the subscale velocity on velnormaf
+      tau_(0)=1.0/(1./timefac+CI*visceff/(hk*hk)+CII*vel_normaf/hk);
+
+      tau_(1)=tau_(0);
+
+      tau_(2)=(hk*hk)/(CI*tau_(0));
+    }
+    else if(whichtau == Fluid3::fbvw_wo_dt)
+    {
+      // INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA
+      //
+      // tau_M: modification of
+      //
+      //    Franca, L.P. and Valentin, F.: On an Improved Unusual Stabilized
+      //    Finite Element Method for the Advective-Reactive-Diffusive
+      //    Equation. Computer Methods in Applied Mechanics and Enginnering,
+      //    Vol. 190, pp. 1785-1800, 2000.
+      //    http://www.lncc.br/~valentin/publication.htm                   */
+      //
+      // tau_C: kept Wall definition
+      //
+      // for the modifications see Codina, Principe, Guasch, Badia
+      //    "Time dependent subscales in the stabilized finite  element
+      //     approximation of incompressible flow problems"
+
+      //---------------------------------------------- compute tau_Mu = tau_Mp
+      /* convective : viscous forces (element reynolds number)*/
+      const double re_convectaf = (vel_normaf * hk / visceff ) * (mk/2.0);
+      const double xi_convectaf = DMAX(re_convectaf,1.0);
+
+      /*
+               xi_convect ^
+                          |      /
+                          |     /
+                          |    /
+                        1 +---+
+                          |
+                          |
+                          |
+                          +--------------> re_convect
+                              1
+      */
+
+      /* the 4.0 instead of the Franca's definition 2.0 results from the viscous
+       * term in the Navier-Stokes-equations, which is scaled by 2.0*nu         */
+
+      tau_(0) = DSQR(hk) / (4.0 * visceff / mk + ( 4.0 * visceff/mk) * xi_convectaf);
+      tau_(1) = tau_(0);
+
+      /*------------------------------------------------------ compute tau_C ---*/
+
+      //-- stability parameter definition according to Wall Diss. 99
+      /*
+               xi_convect ^
+                          |
+                        1 |   +-----------
+                          |  /
+                          | /
+                          |/
+                          +--------------> Re_convect
+                              1
+      */
+      const double re_convectnp = (vel_normnp * hk / visceff ) * (mk/2.0);
+
+      const double xi_tau_c = DMIN(re_convectnp,1.0);
+
+      tau_(2) = vel_normnp * hk * 0.5 * xi_tau_c;
     }
     else
     {
