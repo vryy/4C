@@ -48,7 +48,11 @@ ADAPTER::StructureGenAlpha::StructureGenAlpha(Teuchos::RCP<Teuchos::ParameterLis
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::InitialGuess()
 {
+#if defined(INVERSEDESIGNCREATE) || defined(PRESTRESS)
+  return Teuchos::rcp(new Epetra_Vector(structure_.Getdu().Map(),true));
+#else
   return Teuchos::rcp(&structure_.Getdu(),false);
+#endif
   //return structure_.Dispm();
 }
 
@@ -65,8 +69,8 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::RHS()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::Dispnp()
 {
-#ifdef INVERSEDESIGNCREATE
-  return Teuchos::rcp(new Epetra_Vector(*dis_->DofRowMap()));
+#if defined(INVERSEDESIGNCREATE) || defined(PRESTRESS)
+  return Teuchos::rcp(new Epetra_Vector(*dis_->DofRowMap(),true));
 #else
   double alphaf = structure_.AlphaF();
   Teuchos::RCP<Epetra_Vector> dispnp = Teuchos::rcp(new Epetra_Vector(*Dispn()));
@@ -80,8 +84,8 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::Dispnp()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::Dispn()
 {
-#ifdef INVERSEDESIGNCREATE
-  return Teuchos::rcp(new Epetra_Vector(*dis_->DofRowMap()));
+#if defined(INVERSEDESIGNCREATE) || defined(PRESTRESS)
+  return Teuchos::rcp(new Epetra_Vector(*dis_->DofRowMap(),true));
 #else
   return structure_.Disp();
 #endif
@@ -92,8 +96,8 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::Dispn()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::Dispnm()
 {
-#ifdef INVERSEDESIGNCREATE
-  return Teuchos::rcp(new Epetra_Vector(*dis_->DofRowMap()));
+#if defined(INVERSEDESIGNCREATE) || defined(PRESTRESS)
+  return Teuchos::rcp(new Epetra_Vector(*dis_->DofRowMap(),true));
 #else
   return structure_.Dispm();
 #endif
@@ -314,8 +318,8 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::RelaxationSolve(Teuchos:
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::ExtractInterfaceDispn()
 {
-#ifdef INVERSEDESIGNCREATE
-  return Teuchos::rcp(new Epetra_Vector(*interface_.CondMap()));
+#if defined(INVERSEDESIGNCREATE) || defined(PRESTRESS)
+  return Teuchos::rcp(new Epetra_Vector(*interface_.CondMap(),true));
 #else
   Teuchos::RCP<Epetra_Vector> idis  = interface_.ExtractCondVector(structure_.Disp());
   return idis;
@@ -327,8 +331,8 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::ExtractInterfaceDispn()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::ExtractInterfaceDispnp()
 {
-#ifdef INVERSEDESIGNCREATE
-  return Teuchos::rcp(new Epetra_Vector(*interface_.CondMap()));
+#if defined(INVERSEDESIGNCREATE) || defined(PRESTRESS)
+  return Teuchos::rcp(new Epetra_Vector(*interface_.CondMap(),true));
 #else
   Teuchos::RCP<Epetra_Vector> idism = interface_.ExtractCondVector(structure_.Dispm());
   Teuchos::RCP<Epetra_Vector> idis  = interface_.ExtractCondVector(structure_.Disp());
@@ -365,7 +369,11 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::PredictInterfaceDispnp()
   {
     // d(n)
     // respect Dirichlet conditions at the interface (required for pseudo-rigid body)
+#if defined(INVERSEDESIGNCREATE) || defined(PRESTRESS)
+    idis = Teuchos::rcp(new Epetra_Vector(*interface_.CondMap(),true));
+#else
     idis  = interface_.ExtractCondVector(structure_.Dispn());
+#endif
     break;
   }
   case 2:
@@ -374,6 +382,9 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::PredictInterfaceDispnp()
     break;
   case 3:
   {
+#if defined(INVERSEDESIGNCREATE) || defined(PRESTRESS)
+    idis = Teuchos::rcp(new Epetra_Vector(*interface_.CondMap(),true));
+#else
     // d(n)+dt*v(n)
     double dt            = params_->get<double>("delta time"             ,0.01);
 
@@ -381,10 +392,14 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::PredictInterfaceDispnp()
     Teuchos::RCP<Epetra_Vector> ivel  = interface_.ExtractCondVector(structure_.Vel());
 
     idis->Update(dt,*ivel,1.0);
+#endif
     break;
   }
   case 4:
   {
+#if defined(INVERSEDESIGNCREATE) || defined(PRESTRESS)
+    idis = Teuchos::rcp(new Epetra_Vector(*interface_.CondMap(),true));
+#else
     // d(n)+dt*v(n)+0.5*dt^2*a(n)
     double dt            = params_->get<double>("delta time"             ,0.01);
 
@@ -393,6 +408,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::PredictInterfaceDispnp()
     Teuchos::RCP<Epetra_Vector> iacc  = interface_.ExtractCondVector(structure_.Acc());
 
     idis->Update(dt,*ivel,0.5*dt*dt,*iacc,1.0);
+#endif
     break;
   }
   default:
