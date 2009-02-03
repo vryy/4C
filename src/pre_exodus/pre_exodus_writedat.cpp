@@ -75,8 +75,8 @@ void EXODUS::WriteDatIntro(const string& headfile, const EXODUS::Mesh& mymesh, o
   "------------------------------------------------------PROBLEM SIZE\n";
   dat << "ELEMENTS " << '\t' << mymesh.GetNumEle() << endl;
   dat << "NODES    " << '\t' << mymesh.GetNumNodes() << endl;
-  dat << "DIM      " << '\t' << mymesh.GetNumDim() << endl;
-  int nummat = EXODUS::CountMat(headfile);
+  dat << "DIM      " << '\t' << mymesh.GetBACIDim() << endl;
+  const int nummat = EXODUS::CountMat(headfile);
   dat << "MATERIALS" << '\t' << nummat << endl;
   dat << "NUMDF    " << '\t' << "6" << endl;
 

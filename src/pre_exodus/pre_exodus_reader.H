@@ -81,6 +81,9 @@ public:
 
   //! Get number of dimensions
   int GetNumDim() const {return num_dim_;}
+  
+  //! Get number of dimensions
+  int GetBACIDim() const {return baci_dim_;}
 
   //! Get exodus file id
   int GetExoId() const {return exoid_;}
@@ -187,6 +190,8 @@ private:
 
   //! number of dimensions
   int num_dim_;
+  //! number of dimensions for BACI problem (wall and fluid2 elements require 2d, although we have spatial dimensions)
+  int baci_dim_;
   //! number of elements
   int num_elem_;
   //! exoid

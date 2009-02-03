@@ -56,10 +56,10 @@ EXODUS::Mesh::Mesh(const string exofilename)
   // read database parameters
   int num_elem_blk,num_node_sets,num_side_sets,num_nodes;
   char title[MAX_LINE_LENGTH+1];
-  error = ex_get_init (exoid_, title, &num_dim_, &num_nodes,&num_elem_, &num_elem_blk, &num_node_sets, &num_side_sets);
+  error = ex_get_init (exoid_, title, &baci_dim_, &num_nodes,&num_elem_, &num_elem_blk, &num_node_sets, &num_side_sets);
   title_ = string(title);
 
-  if (num_dim_ != 3) dserror("only 3 dimensions for mesh, yet");
+  num_dim_ = 3;
 
   // get nodal coordinates
   {
@@ -241,6 +241,7 @@ EXODUS::Mesh::Mesh()
 {
   nodes_ = rcp(new map<int,vector<double> >);
   num_dim_ = 3;
+  baci_dim_ = 3;
   num_elem_ = 0;
   exoid_ = 0;
   title_ = "emptymesh";
@@ -269,8 +270,9 @@ EXODUS::Mesh::Mesh(const EXODUS::Mesh& basemesh,
   title_(newtitle.c_str())
 {
   // get all data from basemesh
-  int basedim     = basemesh.GetNumDim();
-  int basenumele  = basemesh.GetNumEle();
+  const int basedim     = basemesh.GetNumDim();
+  const int bacidim     = basemesh.GetBACIDim();
+  const int basenumele  = basemesh.GetNumEle();
   RCP<map<int,vector<double> > >baseNodes = rcp(new map<int,vector<double> >);
   baseNodes = basemesh.GetNodes();
   //RCP<map<int,vector<double> > > baseNodes = basemesh.GetNodes();
@@ -283,6 +285,7 @@ EXODUS::Mesh::Mesh(const EXODUS::Mesh& basemesh,
 
   /********************* merge everything into new mesh ***********************/
   num_dim_ = basedim;
+  baci_dim_ = bacidim;
   int total_num_elem = basenumele;
 //  num_elem_ = basenumele; // + extnumele;
   exoid_ = basemesh.GetExoId(); //basefile still used for writing minor infos, e.g. qa record or coordnames
