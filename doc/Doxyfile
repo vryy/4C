@@ -486,7 +486,6 @@ INPUT                  = index.doc \
                          ../src/post_monitor \
                          ../src/post_gid \
                          ../src/pre_exodus \
-                         ../src/drt_timada \
                          ../src/drt_structure \
                          ../src/drt_contact \
                          ../src/drt_statmech \
