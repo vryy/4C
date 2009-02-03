@@ -961,7 +961,8 @@ void CONTACT::ManagerBase::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> 
   RCP<LINALG::SparseMatrix> temp1mtx1;
   RCP<LINALG::SparseMatrix> temp1mtx2;
   RCP<LINALG::SparseMatrix> temp1mtx3;
-  
+  RCP<LINALG::SparseMatrix> temp1mtx4;
+   
   // we will get the stick rowmap as a by-product
   RCP<Epetra_Map> gstdofs;
      
@@ -1009,11 +1010,13 @@ void CONTACT::ManagerBase::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> 
   RCP<LINALG::SparseMatrix> dolda, doldi;
   LINALG::SplitMatrix2x2(dold_,gactivedofs_,gidofs,gactivedofs_,gidofs,dolda,tempmtx1,tempmtx2,doldi);
   
-  RCP<LINALG::SparseMatrix> dmatrixsl, doldsl, mmatrixsl, moldsl; 
-  LINALG::SplitMatrix2x2(dmatrix_,gslipdofs_,gstdofs,gslipdofs_,gstdofs,dmatrixsl,tempmtx1,tempmtx2,tempmtx3);
-  LINALG::SplitMatrix2x2(dold_,gslipdofs_,gstdofs,gslipdofs_,gstdofs,doldsl,tempmtx1,tempmtx2,tempmtx3);  
-  LINALG::SplitMatrix2x2(mmatrix_,gslipdofs_,gstdofs,gmdofrowmap_,tempmap,mmatrixsl,tempmtx2,mhatst,tempmtx3);
-  LINALG::SplitMatrix2x2(mold_,gslipdofs_,gstdofs,gmdofrowmap_,tempmap,moldsl,tempmtx2,mhatst,tempmtx3);
+  RCP<LINALG::SparseMatrix> dmatrixsl, doldsl, dmatrixst, doldst, mmatrixsl, mmatrixst, moldsl, moldst; 
+  LINALG::SplitMatrix2x2(dmatrix_,gslipdofs_,gstdofs,gslipdofs_,gstdofs,dmatrixsl,tempmtx1,tempmtx2,dmatrixst);
+  LINALG::SplitMatrix2x2(dold_,gslipdofs_,gstdofs,gslipdofs_,gstdofs,doldsl,tempmtx1,tempmtx2,doldst);  
+  LINALG::SplitMatrix2x2(mmatrix_,gslipdofs_,gstdofs,gmdofrowmap_,tempmap,mmatrixsl,tempmtx2,mmatrixst,tempmtx3);
+  LINALG::SplitMatrix2x2(mold_,gslipdofs_,gstdofs,gmdofrowmap_,tempmap,moldsl,tempmtx2,moldst,tempmtx3);
+  
+  // FIXGIT: Is this scaling really necessary
   dmatrixsl->Scale(1/(1-alphaf_));
   doldsl->Scale(1/(1-alphaf_));
   mmatrixsl->Scale(1/(1-alphaf_));
@@ -1108,9 +1111,35 @@ void CONTACT::ManagerBase::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> 
   // n*mbaractive: do the multiplication 
   RCP<LINALG::SparseMatrix> nmhata = LINALG::Multiply(*nmatrix_,false,*mhata,false,true);
   
+#ifdef CONTACTRELVELMATERIAL  
+
   // t*mbarstick: do the multiplication
   RCP<LINALG::SparseMatrix> tmhatst = LINALG::Multiply(*tstmatrix,false,*mhatst,false,true);
+#else
+   
+  // create a merged map of domain map of M and Mold
+  const Epetra_Map& mmatrixdofsst = mmatrixst->DomainMap();
+  const Epetra_Map& molddofsst = moldst->DomainMap();
+  RCP<Epetra_Map> mdiffdofsst = LINALG::MergeMap(mmatrixdofsst,molddofsst,true);
   
+  // Create a new Matrix, add M and -Mold
+  RCP<LINALG::SparseMatrix> diffMst = rcp(new LINALG::SparseMatrix(mmatrixst->RowMap(),81));
+  diffMst->Add(*mmatrixst,false,+1.0,0.0);
+  diffMst->Add(*moldst,false,-1.0,1.0);
+  diffMst->Complete(*mdiffdofsst,mmatrixst->RowMap());
+
+  // Tst.(Mn+1-Mn)
+  RCP<LINALG::SparseMatrix> tstdiffM = LINALG::Multiply(*tstmatrix,false,*diffMst,false,true);
+  
+  RCP<LINALG::SparseMatrix> diffDst = dmatrixst;
+  diffDst->Add(*doldst,false,-1.0,1.0);
+  
+  // Tst.(Dn+1-Dn)
+  RCP<LINALG::SparseMatrix> tstdiffD = LINALG::Multiply(*tstmatrix,false,*diffDst,false,true);
+  
+  dserror("ERROR: Equation for stick not yet linearized, leads to singular matrix");
+#endif
+
   // nmatrix: nothing to do
   
   // ksln: multiply with tslmatrix
@@ -1178,7 +1207,7 @@ void CONTACT::ManagerBase::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> 
   RCP<LINALG::SparseMatrix> ltmatrixdiffd = LINALG::Multiply(*ltmatrix,false,*diffD,false,true);
   
   //add ltmatrixdiffD to kslslmod
-  kslslmod->Add(*ltmatrixdiffd,false,1.0,1.0);
+  kslslmod->Add(*ltmatrixdiffd,false,-1.0,1.0);
   kslslmod->Complete(kslsl->DomainMap(),kslsl->RowMap());
 #endif
   
@@ -1318,12 +1347,32 @@ void CONTACT::ManagerBase::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> 
   // add matrix n to kteffnew
   if (gactiven_->NumGlobalElements()) kteffnew->Add(*nmatrix_,false,1.0,1.0);
 
+#ifdef CONTACTRELVELMATERIAL
+ 
   // add matrix t to kteffnew
   if(tstmatrix!=null) kteffnew->Add(*tstmatrix,false,1.0,1.0);
   
+  
   // add matrix tmhatst to kteffnew
   if(tmhatst!=null) kteffnew->Add(*tmhatst,false,-1.0,1.0);
+ 
+    
+  
+#else
 
+  // add matrix tstdiffD to kteffnew
+  if(tstdiffD!=null) 
+  {
+   	kteffnew->Add(*tstdiffD,false,-1.0,1.0);
+  }
+  
+  // add matrix tstdiffM to kteffnew
+  {
+    if(tstdiffM!=null) 
+    kteffnew->Add(*tstdiffM,false,+1.0,1.0);
+  }
+#endif  
+  
   // add full linearization terms to kteffnew
   if (fulllin)
   {

@@ -1328,7 +1328,7 @@ void CONTACT::Interface::AssembleTresca(LINALG::SparseMatrix& lglobal,
     
     if(abs(ztan) < 0.001)
     {
-      ztan = +100;
+      ztan = +1.2;
  	  	cout << "Warning: lagrange multiplier in tangential direction had been set to" 
     	" 100 (hard coded)" << endl;
     }
@@ -1340,6 +1340,35 @@ void CONTACT::Interface::AssembleTresca(LINALG::SparseMatrix& lglobal,
     // Fpk = ztan*(ztan + ct*utan)/(gp*(abs(ztan + ct*utan))
     double Fpk = ztan*temp/(frbound*abs(temp));
     
+//    // Modification of Robin System - not working already 
+//    // First Modification: Modification of Fpk 
+//    if (abs(ztan)>frbound)
+//    {
+//    	// Fpk
+//    	Fpk = ztan*temp/(abs(ztan)*abs(temp));
+//      cout << "Modification of F" << endl;   
+//    }  
+//    
+//    // alpha
+//    double alpha = ztan*temp/(abs(ztan)*abs(temp));
+//      
+//    // delta
+//    double delta = (abs(ztan))/frbound;
+//    if (delta > 1) delta = 1;
+//     
+//    // beta
+//    double beta;
+//    if (alpha < 0)
+//    {
+//    	beta = 1/(1-(alpha*delta));
+//      cout << "Modification of beta" << " " << "GID" << " " << gid << " " << beta <<  endl;   
+//    }
+//    else
+//    {
+//    	beta = 1;
+//    }	
+  	
+    
     // Mpk = epk(1-Fpk)
     double Mpk = epk*(1-Fpk);
     
@@ -1348,6 +1377,10 @@ void CONTACT::Interface::AssembleTresca(LINALG::SparseMatrix& lglobal,
     
     Epetra_SerialDenseMatrix Lnode(1,1);
     Lnode(0,0)= Mpk/(1-Mpk)*ct;
+    
+    // First Modification: 
+    //Lnode(0,0)= ct*(1/(1-beta*Mpk)-1);
+        
     lmcol[0] = cnode->Dofs()[1];
         
     //assemble into L matrix
@@ -1359,6 +1392,9 @@ void CONTACT::Interface::AssembleTresca(LINALG::SparseMatrix& lglobal,
 
     Rnode(0) = -hpk/(1-Mpk);
     
+    // First Modification:
+    //Rnode(0) = -hpk/(1-beta*Mpk);
+        
     lm[0] = cnode->Dofs()[1];
     lmowner[0] = cnode->Owner();
 

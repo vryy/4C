@@ -193,17 +193,21 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
 
         double nc[3];
         double nn[3];
-        double nt[3];
+        double nt1[3];
+        double nt2[3];
         double lmn = 0.0;
-        double lmt = 0.0;
+        double lmt1 = 0.0;
+        double lmt2 = 0.0;
         
         for (int j=0;j<3;++j)
         {
           nc[j]=cnode->xspatial()[j];
           nn[j]=cnode->n()[j];
-          nt[j]=cnode->txi()[j];
+          nt1[j]=cnode->txi()[j];
+          nt2[j]=cnode->teta()[j];
           lmn +=  (cnode->Active())*nn[j]* cnode->lm()[j];
-          lmt +=  (cnode->Active())*nt[j]* cnode->lm()[j];
+          lmt1 +=  (cnode->Active())*nt1[j]* cnode->lm()[j];
+          lmt2 +=  (cnode->Active())*nt2[j]* cnode->lm()[j];
         }
 
         //******************************************************************
@@ -215,7 +219,9 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
         if (fric)
         {
           gmshfilecontent << "VP(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
-          gmshfilecontent << "{" << scientific << nt[0] << "," << nt[1] << "," << nt[2] << "};" << endl;
+          gmshfilecontent << "{" << scientific << nt1[0] << "," << nt1[1] << "," << nt1[2] << "};" << endl;
+          gmshfilecontent << "VP(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
+          gmshfilecontent << "{" << scientific << nt2[0] << "," << nt2[1] << "," << nt2[2] << "};" << endl;
         }
          
         //******************************************************************
@@ -257,7 +263,9 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
         if (fric)
         {
           gmshfilecontent << "VP(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
-          gmshfilecontent << "{" << scientific << lmt*nn[0] << "," << lmt*nn[1] << "," << lmt*nn[2] << "};" << endl;
+          gmshfilecontent << "{" << scientific << lmt1*nn[0] << "," << lmt1*nn[1] << "," << lmt1*nn[2] << "};" << endl;
+          gmshfilecontent << "VP(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
+          gmshfilecontent << "{" << scientific << lmt2*nn[0] << "," << lmt2*nn[1] << "," << lmt2*nn[2] << "};" << endl;
         }
       }
       

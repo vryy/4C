@@ -122,8 +122,10 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
     contactmanager_->EvaluateMortar();
 
     // store contact state to contact nodes (active or inactive) 
-  	contactmanager_->StoreNodalQuantities(Manager::activeold);  
-  	  	
+  	contactmanager_->StoreNodalQuantities(Manager::activeold);
+  	
+  	// store D and M to old ones 
+  	contactmanager_->StoreDM("old");
   }
 
   // increment time and step
@@ -366,12 +368,12 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   }
   stiff_->Complete();
 
-  // reset Lagrange multipliers to last converged state
-  // this resetting is necessary due to multiple active set steps
-  RCP<Epetra_Vector> z = contactmanager_->LagrMult();
-  RCP<Epetra_Vector> zold = contactmanager_->LagrMultOld();
-  z->Update(1.0,*zold,0.0);
-  contactmanager_->StoreNodalQuantities(Manager::lmcurrent);
+//  // reset Lagrange multipliers to last converged state
+//  // this resetting is necessary due to multiple active set steps
+//  RCP<Epetra_Vector> z = contactmanager_->LagrMult();
+//  RCP<Epetra_Vector> zold = contactmanager_->LagrMultOld();
+//  z->Update(1.0,*zold,0.0);
+//  contactmanager_->StoreNodalQuantities(Manager::lmcurrent);
 
   // friction
   // reset displacement jumps (slave dofs)
@@ -478,7 +480,9 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
 
     // store contact state to contact nodes (active or inactive) 
   	contactmanager_->StoreNodalQuantities(Manager::activeold);  
-  	  	
+  	
+  	// store D and M to old ones 
+  	contactmanager_->StoreDM("old");
   }
 
   // increment time and step
@@ -645,12 +649,12 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   // keep a copy of fresm for contact forces / equilibrium check
   RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
 
-  // reset Lagrange multipliers to last converged state
-  // this resetting is necessary due to multiple active set steps
-  RCP<Epetra_Vector> z = contactmanager_->LagrMult();
-  RCP<Epetra_Vector> zold = contactmanager_->LagrMultOld();
-  z->Update(1.0,*zold,0.0);
-  contactmanager_->StoreNodalQuantities(Manager::lmcurrent);
+//  // reset Lagrange multipliers to last converged state
+//  // this resetting is necessary due to multiple active set steps
+//  RCP<Epetra_Vector> z = contactmanager_->LagrMult();
+//  RCP<Epetra_Vector> zold = contactmanager_->LagrMultOld();
+//  z->Update(1.0,*zold,0.0);
+//  contactmanager_->StoreNodalQuantities(Manager::lmcurrent);
 
   // friction
   // reset displacement jumps (slave dofs)
