@@ -79,7 +79,7 @@ public:
   averaging procedure
 
   */
-  void DoTimeSample(int step, double time);
+  void DoTimeSample(int step, double time, const double eosfac);
 
   /*!
   \brief Write (dump) the statistics to a file

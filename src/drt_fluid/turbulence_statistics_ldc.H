@@ -99,7 +99,8 @@ public:
   average of the nodal values after a certain amount of timesteps.
   */
   void DoLomaTimeSample(Teuchos::RefCountPtr<Epetra_Vector> velnp,
-                        Teuchos::RefCountPtr<Epetra_Vector> vedenp);
+                        Teuchos::RefCountPtr<Epetra_Vector> vedenp,
+                        const double                        eosfac);
 
   /*!
   \brief Dump the result to file for incompressible flow.

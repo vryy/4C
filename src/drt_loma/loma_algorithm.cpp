@@ -284,7 +284,7 @@ void LOMA::Algorithm::GenAlphaOuterLoop()
   bool stopnonliniter = false;
 
   if (Comm().MyPID()==0)
-    cout<<"\n******************************************\n  OUTER GENERALIZED-ALPHA ITERATION LOOP  \n******************************************\n";
+    cout<<"\n******************************************\n  OUTER GENERALIZED-ALPHA ITERATION LOOP\n******************************************\n";
 
   while (stopnonliniter==false)
   {
@@ -297,7 +297,7 @@ void LOMA::Algorithm::GenAlphaOuterLoop()
     ScaTraField().SetLomaVelocity(VelocityPressureAf(),fluiddiscret_);
 
     // solve transport equation for temperature
-    if (Comm().MyPID()==0) cout<<"\n******************************************\n   GENERALIZED-ALPHA TEMPERATURE SOLVER  \n******************************************\n";
+    if (Comm().MyPID()==0) cout<<"\n******************************************\n   GENERALIZED-ALPHA TEMPERATURE SOLVER\n******************************************\n";
     ScaTraField().Solve();
 
     // in case of non-constant thermodynamic pressure: compute
@@ -328,7 +328,7 @@ void LOMA::Algorithm::GenAlphaOuterLoop()
     FluidField().SetIterLomaFields(DensityNp(),DensityDtNp(),eosfac_);
 
     // solve low-Mach-number flow equations
-    if (Comm().MyPID()==0) cout<<"\n******************************************\n      GENERALIZED-ALPHA FLOW SOLVER \n******************************************\n";
+    if (Comm().MyPID()==0) cout<<"\n******************************************\n      GENERALIZED-ALPHA FLOW SOLVER\n******************************************\n";
     FluidField().NonlinearSolve();
 
     // check convergence of temperature field
@@ -347,7 +347,7 @@ void LOMA::Algorithm::OSTBDF2OuterLoop()
   bool stopnonliniter = false;
 
   if (Comm().MyPID()==0)
-    cout<<"\n******************************************\n OUTER ONE-STEP-THETA/BDF2 ITERATION LOOP \n******************************************\n";
+    cout<<"\n******************************************\n OUTER ONE-STEP-THETA/BDF2 ITERATION LOOP\n******************************************\n";
 
   while (stopnonliniter==false)
   {
@@ -360,7 +360,7 @@ void LOMA::Algorithm::OSTBDF2OuterLoop()
     ScaTraField().SetLomaVelocity(VelocityPressureNp(),fluiddiscret_);
 
     // solve transport equation for temperature
-    if (Comm().MyPID()==0) cout<<"\n******************************************\n  ONE-STEP-THETA/BDF2 TEMPERATURE SOLVER \n******************************************\n";
+    if (Comm().MyPID()==0) cout<<"\n******************************************\n  ONE-STEP-THETA/BDF2 TEMPERATURE SOLVER\n******************************************\n";
     ScaTraField().Solve();
 
     // in case of non-constant thermodynamic pressure: compute
@@ -385,7 +385,7 @@ void LOMA::Algorithm::OSTBDF2OuterLoop()
     FluidField().SetIterLomaFields(DensityNp(),DensityDtNp(),eosfac_);
 
     // solve low-Mach-number flow equations
-    if (Comm().MyPID()==0) cout<<"\n******************************************\n     ONE-STEP-THETA/BDF2 FLOW SOLVER \n******************************************\n";
+    if (Comm().MyPID()==0) cout<<"\n******************************************\n     ONE-STEP-THETA/BDF2 FLOW SOLVER\n******************************************\n";
     FluidField().NonlinearSolve();
 
     // check convergence of temperature field

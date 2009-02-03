@@ -748,16 +748,9 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp
  *----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsLdc::DoLomaTimeSample(
 Teuchos::RefCountPtr<Epetra_Vector> velnp,
-Teuchos::RefCountPtr<Epetra_Vector> vedenp
-  )
+Teuchos::RefCountPtr<Epetra_Vector> vedenp,
+const double                        eosfac)
 {
-  // For this example, a constant thermodynamic pressure is assumed:
-  // set thermodynamic pressure p_therm to 100000.0
-  // set specific gas constant R (in J/(kg*K)): 287.0
-  // compute temperature based on equation of state using density values:
-  // T = (p_therm/R)*(1/rho)
-  double fac = 100000.0/287.0;
-
   //----------------------------------------------------------------------
   // increase sample counter
   //----------------------------------------------------------------------
@@ -825,8 +818,8 @@ Teuchos::RefCountPtr<Epetra_Vector> vedenp
       // at first, we get density value out of vede-vector
       double rho;
       vedenp->Dot(*togglep_,&rho);
-      // compute temperature: T = fac/rho
-      double T = fac/rho;
+      // compute temperature: T = eosfac/rho
+      double T = eosfac/rho;
 
       //----------------------------------------------------------------------
       // calculate spatial means for vel., press. and temp. on this centerline
@@ -923,8 +916,8 @@ Teuchos::RefCountPtr<Epetra_Vector> vedenp
       // at first, we get density value out of vede-vector
       double rho;
       vedenp->Dot(*togglep_,&rho);
-      // compute temperature: T = fac/rho
-      double T = fac/rho;
+      // compute temperature: T = eosfac/rho
+      double T = eosfac/rho;
 
       //----------------------------------------------------------------------
       // calculate spatial means for velocity and pressure on this centerline
@@ -1020,8 +1013,8 @@ Teuchos::RefCountPtr<Epetra_Vector> vedenp
       // at first, we get density value out of vede-vector
       double rho;
       vedenp->Dot(*togglep_,&rho);
-      // compute temperature: T = fac/rho
-      double T = fac/rho;
+      // compute temperature: T = eosfac/rho
+      double T = eosfac/rho;
 
       //----------------------------------------------------------------------
       // calculate spatial means for velocity and pressure on this centerline

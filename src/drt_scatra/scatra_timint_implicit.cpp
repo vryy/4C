@@ -1341,7 +1341,7 @@ bool SCATRA::ScaTraTimIntImpl::LomaConvergenceCheck(int          itnum,
 
   if (myrank_==0)
   {
-    cout<<"\n******************************************\n           OUTER ITERATION STEP            \n******************************************\n";
+    cout<<"\n******************************************\n           OUTER ITERATION STEP\n******************************************\n";
     printf("+------------+-------------------+--------------+\n");
     printf("|- step/max -|- tol      [norm] -|-- temp-inc --|\n");
     printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   |",

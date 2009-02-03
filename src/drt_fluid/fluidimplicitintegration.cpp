@@ -1766,7 +1766,7 @@ void FLD::FluidImplicitTimeInt::StatisticsAndOutput()
   // -------------------------------------------------------------------
   //   add calculated velocity to mean value calculation (statistics)
   // -------------------------------------------------------------------
-  statisticsmanager_->DoTimeSample(step_,time_);
+  statisticsmanager_->DoTimeSample(step_,time_,eosfac_);
 
   // -------------------------------------------------------------------
   //                         output of solution

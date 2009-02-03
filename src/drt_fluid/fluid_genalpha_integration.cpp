@@ -891,7 +891,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaStatisticsAndOutput()
   // -------------------------------------------------------------------
   //   add calculated velocity to mean value calculation (statistics)
   // -------------------------------------------------------------------
-  statisticsmanager_->DoTimeSample(step_,time_);
+  statisticsmanager_->DoTimeSample(step_,time_,0.0);
 
   // -------------------------------------------------------------------
   //   calculate lift and drag values

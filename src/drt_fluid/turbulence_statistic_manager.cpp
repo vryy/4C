@@ -438,7 +438,9 @@ namespace FLD
     Include current quantities in the time averaging procedure
 
   ----------------------------------------------------------------------*/
-  void TurbulenceStatisticManager::DoTimeSample(int step, double time)
+  void TurbulenceStatisticManager::DoTimeSample(int          step,
+                                                double       time,
+                                                const double eosfac)
   {
 
 
@@ -481,7 +483,7 @@ namespace FLD
         if(statistics_ldc_==null)
           dserror("need statistics_ldc_ to do a time sample for a cavity flow at low Mach number");
 
-        statistics_ldc_->DoLomaTimeSample(myvelnp_,myvedenp_);
+        statistics_ldc_->DoLomaTimeSample(myvelnp_,myvedenp_,eosfac);
         break;
       }
       case square_cylinder:
