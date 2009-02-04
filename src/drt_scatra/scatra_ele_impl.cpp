@@ -709,14 +709,14 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFluxSerialDense(
     LINALG::SerialDenseMatrix&      flux,
-    DRT::Element*&            ele,
-    vector<double>&           ephinp,
-    struct _MATERIAL*         material,
-    bool&                     temperature,
-    double&                   frt,
-    Epetra_SerialDenseVector& evel,
-    std::string&              fluxtypestring,
-    int&                      dofindex
+    DRT::Element*&                  ele,
+    vector<double>&                 ephinp,
+    struct _MATERIAL*               material,
+    bool                            temperature,
+    double                          frt,
+    Epetra_SerialDenseVector&       evel,
+    std::string&                    fluxtypestring,
+    int                             dofindex
 )
 {
   // access control parameter
@@ -729,8 +729,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFluxSerialDense(
     fluxtype=SCATRA::noflux;  //default value
 
   // we always get an 3D flux vector for each node
-  LINALG::Matrix<3,iel> eflux(true);
-  eflux.Clear();
+  LINALG::Matrix<3,iel> eflux(true); //initialize!
   CalculateFlux(eflux,ele,ephinp,material,temperature,frt,evel,fluxtype,dofindex);
   for (int j = 0; j< iel; j++)
   {

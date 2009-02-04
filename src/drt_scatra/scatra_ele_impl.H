@@ -70,11 +70,11 @@ public:
       DRT::Element*&            ele,
       vector<double>&           ephinp,
       struct _MATERIAL*         material,
-      bool&                     temperature,
-      double&                   frt,
+      bool                      temperature,
+      double                    frt,
       Epetra_SerialDenseVector& evel,
       std::string&              fluxtypestring,
-      int&                      dofindex
+      int                       dofindex
   ) = 0;
 
   /// Internal implementation class for scalar transport elements
@@ -150,14 +150,14 @@ public:
   //! calculate mass flux (variable number of nodes)
   virtual void CalculateFluxSerialDense(
       LINALG::SerialDenseMatrix&      flux,
-      DRT::Element*&            ele,
-      vector<double>&           ephinp,
-      struct _MATERIAL*         material,
-      bool&                     temperature,
-      double&                   frt,
-      Epetra_SerialDenseVector& evel,
-      std::string&              fluxtypestring,
-      int&                      dofindex
+      DRT::Element*&                  ele,
+      vector<double>&                 ephinp,
+      struct _MATERIAL*               material,
+      bool                            temperature,
+      double                          frt,
+      Epetra_SerialDenseVector&       evel,
+      std::string&                    fluxtypestring,
+      int                             dofindex
   );
 
   private:
@@ -258,15 +258,15 @@ public:
 
     //! calculate element matrix and rhs vector (One-Step-Theta, BDF2, Gen.-alpha)
     virtual void CalMat(
-        Epetra_SerialDenseMatrix&            estif,
-        Epetra_SerialDenseVector&            eforce,
+        Epetra_SerialDenseMatrix&             estif,
+        Epetra_SerialDenseVector&             eforce,
         const vector<LINALG::Matrix<iel,1> >& ephinp,
-        const bool                           higher_order_ele,
-        const bool                           conservative,
-        const bool                           is_genalpha,
-        const double                         timefac,
-        const double                         alphaF,
-        const int                            dofindex
+        const bool                            higher_order_ele,
+        const bool                            conservative,
+        const bool                            is_genalpha,
+        const double                          timefac,
+        const double                          alphaF,
+        const int                             dofindex
     );
 
     //! calculate element matrix and rhs vector (Stationary problem formulation)

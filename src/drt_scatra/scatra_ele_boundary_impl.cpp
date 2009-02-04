@@ -254,9 +254,9 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
 
             // calculate normal flux at present node
             mynormflux[i] = 0.0;
-            for (int l=0; l<(nsd_+1); l++)
+            for (int m=0; m<(nsd_+1); m++)
             {
-              mynormflux[i] += eflux(l,k)*enormals(i*(nsd_+1)+l);
+              mynormflux[i] += eflux(m,k)*enormals(i*(nsd_+1)+m);
             }
 
             // store normal flux vector for this node
