@@ -9951,14 +9951,14 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
     {
       for(int rr=0;rr<3;++rr)
       {
-        const double aux = -1.0/tau_(0)*svelaf_(rr) -resM_(rr);
+        const double aux = -1.0/tau_(1)*svelaf_(rr) -resM_(rr);
 
         mean_sacc   (rr) += aux*fac;
         mean_sacc_sq(rr) += aux*aux*fac;
       }
-      const double aux0 = -1.0/tau_(0)*svelaf_(0)-resM_(0);
-      const double aux1 = -1.0/tau_(0)*svelaf_(1)-resM_(1);
-      const double aux2 = -1.0/tau_(0)*svelaf_(2)-resM_(2);
+      const double aux0 = -1.0/tau_(1)*svelaf_(0)-resM_(0);
+      const double aux1 = -1.0/tau_(1)*svelaf_(1)-resM_(1);
+      const double aux2 = -1.0/tau_(1)*svelaf_(2)-resM_(2);
 
       abs_sacc += sqrt(aux0*aux0+aux1*aux1+aux2*aux2)*fac;
     }
@@ -9981,7 +9981,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
     {
       for(int rr=0;rr<3;++rr)
       {
-        const double aux = tau_(0)*resM_(rr);
+        const double aux = tau_(1)*resM_(rr);
 
         mean_svelaf   (rr) -= aux*fac;
         mean_svelaf_sq(rr) += aux*aux*fac;
@@ -9991,12 +9991,12 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
                       +
                       resM_(1)*resM_(1)
                       +
-                      resM_(2)*resM_(2))*tau_(0)*fac;
+                      resM_(2)*resM_(2))*tau_(1)*fac;
     }
 
     for(int rr=0;rr<3;++rr)
     {
-      mean_tauinvsvel(rr)+=mean_svelaf(rr)/tau_(0);
+      mean_tauinvsvel(rr)+=mean_svelaf(rr)/tau_(1);
     }
     
 
@@ -10012,7 +10012,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
     //      o tauM
     //      o tauC
 
-    averaged_tauM+=tau_(0)*fac;
+    averaged_tauM+=tau_(1)*fac;
     averaged_tauC+=tau_(2)*fac;
 
     mean_resC    += divunp_*fac;
@@ -10038,9 +10038,9 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
         inertia == Fluid3::inertia_stab_keep_complete))
     {
       double sacc[3];
-      sacc[0]= -1.0/tau_(0)*svelaf_(0) -resM_(0);
-      sacc[1]= -1.0/tau_(0)*svelaf_(1) -resM_(1);
-      sacc[2]= -1.0/tau_(0)*svelaf_(2) -resM_(2);
+      sacc[0]= -1.0/tau_(1)*svelaf_(0) -resM_(0);
+      sacc[1]= -1.0/tau_(1)*svelaf_(1) -resM_(1);
+      sacc[2]= -1.0/tau_(1)*svelaf_(2) -resM_(2);
         
       /*
 
@@ -10075,7 +10075,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
       }
       else
       {
-        eps_pspg+=tau_(0)*fac*
+        eps_pspg+=tau_(1)*fac*
           (resM_(0)*pderxynp_(0)
            +
            resM_(1)*pderxynp_(1)
@@ -10106,7 +10106,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
       }
       else
       {
-        eps_supg+=tau_(0)*fac*
+        eps_supg+=tau_(1)*fac*
           (resM_(0)*convaf_old_(0)
            +
            resM_(1)*convaf_old_(1)
@@ -10142,7 +10142,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
       else
       {
         eps_cross-=
-          tau_(0)*fac*(velintaf_(0)*(resM_(0)*vderxyaf_(0,0)+
+          tau_(1)*fac*(velintaf_(0)*(resM_(0)*vderxyaf_(0,0)+
                                      resM_(1)*vderxyaf_(0,1)+
                                      resM_(2)*vderxyaf_(0,2))
                        +
@@ -10186,7 +10186,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
       else
       {
         eps_rey-=
-          tau_(0)*tau_(0)*fac*
+          tau_(1)*tau_(1)*fac*
           (resM_(0)*(resM_(0)*vderxyaf_(0,0)+
                      resM_(1)*vderxyaf_(0,1)+
                      resM_(2)*vderxyaf_(0,2))
@@ -10236,7 +10236,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
       else
       {
         eps_vstab+=
-          vstabfac*tau_(0)*fac*
+          vstabfac*tau_(1)*fac*
           (resM_(0)*visceff*viscaf_old_(0)
            +
            resM_(1)*visceff*viscaf_old_(1)
