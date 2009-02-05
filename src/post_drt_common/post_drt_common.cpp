@@ -450,7 +450,7 @@ void PostProblem::read_meshes()
         dserror("No meshfile name for discretization %s.", currfield.discretization()->Name().c_str());
       string filename = fn;
       IO::HDFReader reader = IO::HDFReader(input_dir_);
-      reader.Open(filename,num_output_procs);
+      reader.Open(filename,num_output_procs,comm_->NumProc(),comm_->MyPID());
 
       RCP<vector<char> > node_data =
         reader.ReadNodeData(step, comm_->NumProc(), comm_->MyPID());
@@ -569,7 +569,7 @@ void PostProblem::setup_ghosting(RCP<DRT::Discretization> dis)
   while(nodecount < numnode)
   {
     if (dis->HaveGlobalNode(ngid)) // do we have this global node id on this processor?
-    { 
+    {
       nids[nodecount]= ngid;
       nodecount+=1;
     }
@@ -751,7 +751,7 @@ void PostProblem::setup_ghosting(RCP<DRT::Discretization> dis)
   graph = null;
   finalgraph = null;
   tgraph = null;
-  
+
   // distribute ghost nodes resolving the node dependencies given by the final graph
   DRT::UTILS::RedistributeWithNewNodalDistribution(*dis, *rownodes, *colnodes);
   dis->FillComplete();
@@ -969,7 +969,8 @@ void PostResult::open_result_files(MAP* field_info)
   }
   string basename = map_read_string(field_info,"result_file");
   //field_->problem()->set_basename(basename);
-  file_.Open(basename,num_output_procs);
+  Epetra_Comm& comm = *field_->problem()->comm();
+  file_.Open(basename,num_output_procs,comm.NumProc(),comm.MyPID());
 }
 
 /*----------------------------------------------------------------------*
