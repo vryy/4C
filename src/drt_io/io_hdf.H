@@ -69,7 +69,7 @@ public:
     files of all processors, by appending .p<proc_num> to the
     basename.
   */
-  void Open(std::string basename,int num_output_procs);
+  void Open(std::string basename,int num_output_procs,int new_proc_num,int my_id);
   //!
   void Close();
 

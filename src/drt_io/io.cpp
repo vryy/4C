@@ -138,10 +138,10 @@ void IO::DiscretizationReader::ReadMesh(int step)
   Teuchos::RCP<Epetra_Map> nodecolmap = rcp(new Epetra_Map(*dis_->NodeColMap()));
 
   // unpack nodes and elements and redistirbuted to current layout
-  
+
   // take care --- we are just adding elements to the discretisation
-  // that means depending on the current distribution and the 
-  // distribution of the data read we might increase the 
+  // that means depending on the current distribution and the
+  // distribution of the data read we might increase the
   // number of elements in dis_
   // the call to redistribute deletes the unnecessary elements,
   // so everything should be OK
@@ -347,8 +347,9 @@ IO::DiscretizationReader::OpenFiles(const char* filestring,
 
   const string filename = map_read_string(result_step, filestring);
 
+  const Epetra_Comm& comm = dis_->Comm();
   Teuchos::RCP<HDFReader> reader = rcp(new HDFReader(dirname));
-  reader->Open(filename,numoutputproc);
+  reader->Open(filename,numoutputproc,comm.NumProc(),comm.MyPID());
   return reader;
 }
 

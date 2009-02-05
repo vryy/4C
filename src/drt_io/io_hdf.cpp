@@ -43,10 +43,13 @@ IO::HDFReader::~HDFReader()
  * with name basename. When num_output_proc_ > 1 it opens the result
  * files of all processors, by appending .p<proc_num> to the basename.
  *----------------------------------------------------------------------*/
-void IO::HDFReader::Open(std::string basename,int num_output_procs)
+void IO::HDFReader::Open(std::string basename,int num_output_procs,int new_proc_num,int my_id)
 {
-  Close();
+  int start;
+  int end;
   num_output_proc_ = num_output_procs;
+  CalculateRange(new_proc_num, my_id, start, end);
+  Close();
   for (int i = 0; i < num_output_proc_; ++i)
   {
     std::ostringstream buf;
@@ -55,10 +58,18 @@ void IO::HDFReader::Open(std::string basename,int num_output_procs)
     {
       buf << ".p" << i;
     }
-    filenames_.push_back(buf.str());
-    files_.push_back(H5Fopen(buf.str().c_str(), H5F_ACC_RDONLY, H5P_DEFAULT));
-    if (files_[i] < 0)
-      dserror("Failed to open HDF-file %s", filenames_[i].c_str());
+    if (i>=start and i<end)
+    {
+      filenames_.push_back(buf.str());
+      files_.push_back(H5Fopen(buf.str().c_str(), H5F_ACC_RDONLY, H5P_DEFAULT));
+      if (files_[i] < 0)
+        dserror("Failed to open HDF-file %s", filenames_[i].c_str());
+    }
+    else
+    {
+      filenames_.push_back("");
+      files_.push_back(-1);
+    }
   }
 }
 /*----------------------------------------------------------------------*
@@ -68,7 +79,7 @@ void IO::HDFReader::Open(std::string basename,int num_output_procs)
  *----------------------------------------------------------------------*/
 Teuchos::RCP<std::vector<char> > IO::HDFReader::ReadElementData(int step, int new_proc_num, int my_id) const
 {
-  if (files_.size()==0 || files_[0] == -1)
+  if (files_.size()==0)
     dserror("Tried to read data without opening any file");
   std::ostringstream path;
   path << "/step" << step << "/elements";
@@ -97,7 +108,7 @@ Teuchos::RCP<std::vector<char> > IO::HDFReader::ReadCondition(
         const int my_id,
         const std::string condname) const
 {
-  if (files_.size()==0 || files_[0] == -1)
+  if (files_.size()==0)
     dserror("Tried to read data without opening any file");
 
   std::ostringstream path;
@@ -106,6 +117,9 @@ Teuchos::RCP<std::vector<char> > IO::HDFReader::ReadCondition(
   // only one proc (PROC 0) wrote this conditions to the mesh file
   const int start =0;
   const int end   =1;
+
+  //////////////////////
+  // This is illegal code! It needs to be removed!
 
   /* Save old error handler */
   herr_t (*old_func)(void*);
@@ -124,9 +138,8 @@ Teuchos::RCP<std::vector<char> > IO::HDFReader::ReadCondition(
   Teuchos::RCP<std::vector<char> > block = Teuchos::rcp(new std::vector<char>());
   if (dataset > -1)
   {
-      block = ReadCharData(path.str(),start,end);
+    block = ReadCharData(path.str(),start,end);
   }
-
   return block;
 }
 
@@ -139,7 +152,7 @@ Teuchos::RCP<std::vector<char> > IO::HDFReader::ReadCondition(
 Teuchos::RCP<std::vector<char> > IO::HDFReader::ReadKnotvector(
   const int step) const
 {
-  if (files_.size()==0 || files_[0] == -1)
+  if (files_.size()==0)
     dserror("Tried to read data without opening any file");
 
   std::ostringstream path;
@@ -183,7 +196,7 @@ Teuchos::RCP<std::vector<char> > IO::HDFReader::ReadNodeData(
         int new_proc_num,
         int my_id) const
 {
-  if (files_.size()==0 || files_[0] == -1)
+  if (files_.size()==0)
     dserror("Tried to read data without opening any file");
   std::ostringstream path;
   path << "/step" << step << "/nodes";
@@ -215,10 +228,13 @@ IO::HDFReader::ReadCharData(std::string path, int start, int end) const
   Teuchos::RCP<std::vector<char> > data = Teuchos::rcp(new std::vector<char>);
   for (int i = start; i < end; ++i)
   {
-    hid_t dataset = H5Dopen(files_[i],path.c_str());
+    const char* cpath = path.c_str();
+    hid_t dataset = H5Dopen(files_[i],cpath);
     if (dataset < 0)
+    {
       dserror("Failed to open dataset %s in HDF-file %s",
-              path.c_str(),filenames_[i].c_str());
+              cpath,filenames_[i].c_str());
+    }
     hid_t dataspace = H5Dget_space(dataset);
     if (dataspace < 0)
       dserror("Failed to get dataspace from dataset %s in HDF-file %s",
@@ -274,8 +290,10 @@ IO::HDFReader::ReadIntData(std::string path, int start, int end) const
   {
     hid_t dataset = H5Dopen(files_[i],path.c_str());
     if (dataset < 0)
+    {
       dserror("Failed to open dataset %s in HDF-file %s",
               path.c_str(),filenames_[i].c_str());
+    }
     hid_t dataspace = H5Dget_space(dataset);
     if (dataspace < 0)
       dserror("Failed to get dataspace from dataset %s in HDF-file %s",
@@ -381,7 +399,7 @@ IO::HDFReader::ReadResultData(std::string id_path, std::string value_path, int c
   int new_proc_num = Comm.NumProc();
   int my_id = Comm.MyPID();
 
-  if (files_.size()==0 || files_[0] == -1)
+  if (files_.size()==0)
     dserror("Tried to read data without opening any file");
   int start, end;
   CalculateRange(new_proc_num,my_id,start,end);
@@ -430,7 +448,7 @@ IO::HDFReader::ReadResultDataVecChar(std::string id_path, std::string value_path
   int new_proc_num = Comm.NumProc();
   int my_id = Comm.MyPID();
 
-  if (files_.size()==0 || files_[0] == -1)
+  if (files_.size()==0)
     dserror("Tried to read data without opening any file");
   int start, end;
   CalculateRange(new_proc_num,my_id,start,end);
@@ -449,7 +467,7 @@ IO::HDFReader::ReadResultDataVecChar(std::string id_path, std::string value_path
 /*----------------------------------------------------------------------*/
 void IO::HDFReader::Close()
 {
-  for (int i = 0; i < num_output_proc_; ++i)
+  for (int i = 0; i < num_output_proc_ and i<static_cast<int>(files_.size()); ++i)
   {
     if (files_[i] != -1)
     {
