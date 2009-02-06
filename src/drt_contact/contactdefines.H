@@ -69,7 +69,6 @@ Maintainer: Alexander Popp
 
 // CONTACT SEARCH
 #define CONTACTCRITDIST 0.5      /* crit. distance for potential contact */
-#define CONTACTDEPTHOCTREE 5     /* max. depth for contact search octree */
 
 // CONTACT PROJECTION AND INTEGRATION (2D/3D)
 #define CONTACTMAXITER 10        /* max. no. iterations for local Newton */
