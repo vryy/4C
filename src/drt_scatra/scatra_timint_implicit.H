@@ -351,6 +351,11 @@ protected:
   /// maximum number of nonlinear iterations
   int itemax_;
 
+  /// parameters for sampling/dumping period
+  int samstart_;
+  int samstop_;
+  int dumperiod_;
+
   /// form of convective term
   string convform_;
 
@@ -435,6 +440,9 @@ protected:
 
   /// error file handle
   FILE* errfile_;
+
+  /// vector for statistical evaluation of normal fluxes
+  RCP<Epetra_SerialDenseVector> sumnormfluxintegral_;
 
 }; // class ScaTraTimIntImpl
 

@@ -1272,8 +1272,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>(
                                  "zero_field",
                                  "field_by_function",
-                                 "field_by_condition"),
-                               tuple<int>(0,1,2),
+                                 "field_by_condition",
+                                 "disturbed_field_by_function"),
+                               tuple<int>(0,1,2,3),
                                &scatradyn);
 
   IntParameter("INITFUNCNO",-1,"function number for scalar transport initial field",&scatradyn);
@@ -1399,6 +1400,22 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  ),
                                tuple<int>(0,1),
                                &lomacontrol);
+  setStringToIntegralParameter<int>(
+    "CANONICAL_FLOW",
+    "no",
+    "Information on special flows",
+    tuple<std::string>(
+      "no",
+      "loma_channel_flow_of_height_2",
+      "loma_lid_driven_cavity"),
+    tuple<std::string>(
+      "The flow is not further specified.",
+      "low-Mach-number in channel",
+      "low-Mach-number flow in lid-driven cavity"),
+    tuple<int>(0,1,2),
+    &lomacontrol);
+  IntParameter("SAMPLING_START",1,"Time step after when sampling shall be started",&lomacontrol);
+
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& elchcontrol = list->sublist(

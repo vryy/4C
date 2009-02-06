@@ -433,6 +433,14 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
   x3sumvw_->resize(size3,0.0);
 
   // the following vectors are only necessary for low-Mach-number flow
+  // first-order moments
+  x1sumrho_ =  rcp(new vector<double> );
+  x1sumrho_->resize(size1,0.0);
+  x2sumrho_ =  rcp(new vector<double> );
+  x2sumrho_->resize(size2,0.0);
+  x3sumrho_ =  rcp(new vector<double> );
+  x3sumrho_->resize(size3,0.0);
+
   x1sumT_ =  rcp(new vector<double> );
   x1sumT_->resize(size1,0.0);
   x2sumT_ =  rcp(new vector<double> );
@@ -440,12 +448,41 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
   x3sumT_ =  rcp(new vector<double> );
   x3sumT_->resize(size3,0.0);
 
+  // second-order moments
+  x1sumsqrho_ =  rcp(new vector<double> );
+  x1sumsqrho_->resize(size1,0.0);
+  x2sumsqrho_ =  rcp(new vector<double> );
+  x2sumsqrho_->resize(size2,0.0);
+  x3sumsqrho_ =  rcp(new vector<double> );
+  x3sumsqrho_->resize(size3,0.0);
+
   x1sumsqT_ =  rcp(new vector<double> );
   x1sumsqT_->resize(size1,0.0);
   x2sumsqT_ =  rcp(new vector<double> );
   x2sumsqT_->resize(size2,0.0);
   x3sumsqT_ =  rcp(new vector<double> );
   x3sumsqT_->resize(size3,0.0);
+
+  x1sumuT_ =  rcp(new vector<double> );
+  x1sumuT_->resize(size1,0.0);
+  x2sumuT_ =  rcp(new vector<double> );
+  x2sumuT_->resize(size2,0.0);
+  x3sumuT_ =  rcp(new vector<double> );
+  x3sumuT_->resize(size3,0.0);
+
+  x1sumvT_ =  rcp(new vector<double> );
+  x1sumvT_->resize(size1,0.0);
+  x2sumvT_ =  rcp(new vector<double> );
+  x2sumvT_->resize(size2,0.0);
+  x3sumvT_ =  rcp(new vector<double> );
+  x3sumvT_->resize(size3,0.0);
+
+  x1sumwT_ =  rcp(new vector<double> );
+  x1sumwT_->resize(size1,0.0);
+  x2sumwT_ =  rcp(new vector<double> );
+  x2sumwT_->resize(size2,0.0);
+  x3sumwT_ =  rcp(new vector<double> );
+  x3sumwT_->resize(size3,0.0);
 
   // clear statistics
   this->ClearStatistics();
@@ -804,7 +841,7 @@ const double                        eosfac)
     if (countnodesonallprocs)
     {
       //----------------------------------------------------------------------
-      // get values for velocity, pressure and temperature on this centerline
+      // get values for velocity, pressure, density, temperature on this centerline
       //----------------------------------------------------------------------
       double u;
       double v;
@@ -822,33 +859,39 @@ const double                        eosfac)
       double T = eosfac/rho;
 
       //----------------------------------------------------------------------
-      // calculate spatial means for vel., press. and temp. on this centerline
+      // calculate spatial means for vel., press., dens., temp. on this centerline
       // (if more than one node contributing to this centerline node)
       //----------------------------------------------------------------------
       double usm=u/countnodesonallprocs;
       double vsm=v/countnodesonallprocs;
       double wsm=w/countnodesonallprocs;
       double psm=p/countnodesonallprocs;
+      double rsm=rho/countnodesonallprocs;
       double Tsm=T/countnodesonallprocs;
 
       //----------------------------------------------------------------------
       // add spatial mean values to statistical sample
       //----------------------------------------------------------------------
-      (*x1sumu_)[x1nodnum]+=usm;
-      (*x1sumv_)[x1nodnum]+=vsm;
-      (*x1sumw_)[x1nodnum]+=wsm;
-      (*x1sump_)[x1nodnum]+=psm;
-      (*x1sumT_)[x1nodnum]+=Tsm;
+      (*x1sumu_)[x1nodnum]  +=usm;
+      (*x1sumv_)[x1nodnum]  +=vsm;
+      (*x1sumw_)[x1nodnum]  +=wsm;
+      (*x1sump_)[x1nodnum]  +=psm;
+      (*x1sumrho_)[x1nodnum]+=rsm;
+      (*x1sumT_)[x1nodnum]  +=Tsm;
 
-      (*x1sumsqu_)[x1nodnum]+=usm*usm;
-      (*x1sumsqv_)[x1nodnum]+=vsm*vsm;
-      (*x1sumsqw_)[x1nodnum]+=wsm*wsm;
-      (*x1sumsqp_)[x1nodnum]+=psm*psm;
-      (*x1sumsqT_)[x1nodnum]+=Tsm*Tsm;
+      (*x1sumsqu_)[x1nodnum]  +=usm*usm;
+      (*x1sumsqv_)[x1nodnum]  +=vsm*vsm;
+      (*x1sumsqw_)[x1nodnum]  +=wsm*wsm;
+      (*x1sumsqp_)[x1nodnum]  +=psm*psm;
+      (*x1sumsqrho_)[x1nodnum]+=rsm*rsm;
+      (*x1sumsqT_)[x1nodnum]  +=Tsm*Tsm;
 
       (*x1sumuv_)[x1nodnum]+=usm*vsm;
       (*x1sumuw_)[x1nodnum]+=usm*wsm;
       (*x1sumvw_)[x1nodnum]+=vsm*wsm;
+      (*x1sumuT_)[x1nodnum]+=usm*Tsm;
+      (*x1sumvT_)[x1nodnum]+=vsm*Tsm;
+      (*x1sumwT_)[x1nodnum]+=wsm*Tsm;
     }
     x1nodnum++;
 
@@ -902,7 +945,7 @@ const double                        eosfac)
     if (countnodesonallprocs)
     {
       //----------------------------------------------------------------------
-      // get values for velocity and pressure on this centerline
+      // get values for velocity, pressure, density, temperature on this centerline
       //----------------------------------------------------------------------
       double u;
       double v;
@@ -920,33 +963,39 @@ const double                        eosfac)
       double T = eosfac/rho;
 
       //----------------------------------------------------------------------
-      // calculate spatial means for velocity and pressure on this centerline
+      // calculate spatial means for vel., press., dens., temp. on this centerline
       // (if more than one node contributing to this centerline node)
       //----------------------------------------------------------------------
       double usm=u/countnodesonallprocs;
       double vsm=v/countnodesonallprocs;
       double wsm=w/countnodesonallprocs;
       double psm=p/countnodesonallprocs;
+      double rsm=rho/countnodesonallprocs;
       double Tsm=T/countnodesonallprocs;
 
       //----------------------------------------------------------------------
       // add spatial mean values to statistical sample
       //----------------------------------------------------------------------
-      (*x2sumu_)[x2nodnum]+=usm;
-      (*x2sumv_)[x2nodnum]+=vsm;
-      (*x2sumw_)[x2nodnum]+=wsm;
-      (*x2sump_)[x2nodnum]+=psm;
-      (*x2sumT_)[x2nodnum]+=Tsm;
+      (*x2sumu_)[x2nodnum]  +=usm;
+      (*x2sumv_)[x2nodnum]  +=vsm;
+      (*x2sumw_)[x2nodnum]  +=wsm;
+      (*x2sump_)[x2nodnum]  +=psm;
+      (*x2sumrho_)[x2nodnum]+=rsm;
+      (*x2sumT_)[x2nodnum]  +=Tsm;
 
-      (*x2sumsqu_)[x2nodnum]+=usm*usm;
-      (*x2sumsqv_)[x2nodnum]+=vsm*vsm;
-      (*x2sumsqw_)[x2nodnum]+=wsm*wsm;
-      (*x2sumsqp_)[x2nodnum]+=psm*psm;
-      (*x2sumsqT_)[x2nodnum]+=Tsm*Tsm;
+      (*x2sumsqu_)[x2nodnum]  +=usm*usm;
+      (*x2sumsqv_)[x2nodnum]  +=vsm*vsm;
+      (*x2sumsqw_)[x2nodnum]  +=wsm*wsm;
+      (*x2sumsqp_)[x2nodnum]  +=psm*psm;
+      (*x2sumsqrho_)[x2nodnum]+=rsm*rsm;
+      (*x2sumsqT_)[x2nodnum]  +=Tsm*Tsm;
 
       (*x2sumuv_)[x2nodnum]+=usm*vsm;
       (*x2sumuw_)[x2nodnum]+=usm*wsm;
       (*x2sumvw_)[x2nodnum]+=vsm*wsm;
+      (*x2sumuT_)[x2nodnum]+=usm*Tsm;
+      (*x2sumvT_)[x2nodnum]+=vsm*Tsm;
+      (*x2sumwT_)[x2nodnum]+=wsm*Tsm;
     }
     x2nodnum++;
 
@@ -999,7 +1048,7 @@ const double                        eosfac)
     if (countnodesonallprocs)
     {
       //----------------------------------------------------------------------
-      // get values for velocity and pressure on this centerline
+      // get values for velocity, pressure, density, temperature on this centerline
       //----------------------------------------------------------------------
       double u;
       double v;
@@ -1017,33 +1066,39 @@ const double                        eosfac)
       double T = eosfac/rho;
 
       //----------------------------------------------------------------------
-      // calculate spatial means for velocity and pressure on this centerline
+      // calculate spatial means for vel., press., dens., temp. on this centerline
       // (if more than one node contributing to this centerline node)
       //----------------------------------------------------------------------
       double usm=u/countnodesonallprocs;
       double vsm=v/countnodesonallprocs;
       double wsm=w/countnodesonallprocs;
       double psm=p/countnodesonallprocs;
+      double rsm=rho/countnodesonallprocs;
       double Tsm=T/countnodesonallprocs;
 
       //----------------------------------------------------------------------
       // add spatial mean values to statistical sample
       //----------------------------------------------------------------------
-      (*x3sumu_)[x3nodnum]+=usm;
-      (*x3sumv_)[x3nodnum]+=vsm;
-      (*x3sumw_)[x3nodnum]+=wsm;
-      (*x3sump_)[x3nodnum]+=psm;
-      (*x3sumT_)[x3nodnum]+=Tsm;
+      (*x3sumu_)[x3nodnum]  +=usm;
+      (*x3sumv_)[x3nodnum]  +=vsm;
+      (*x3sumw_)[x3nodnum]  +=wsm;
+      (*x3sump_)[x3nodnum]  +=psm;
+      (*x3sumrho_)[x3nodnum]+=rsm;
+      (*x3sumT_)[x3nodnum]  +=Tsm;
 
-      (*x3sumsqu_)[x3nodnum]+=usm*usm;
-      (*x3sumsqv_)[x3nodnum]+=vsm*vsm;
-      (*x3sumsqw_)[x3nodnum]+=wsm*wsm;
-      (*x3sumsqp_)[x3nodnum]+=psm*psm;
-      (*x3sumsqT_)[x3nodnum]+=Tsm*Tsm;
+      (*x3sumsqu_)[x3nodnum]  +=usm*usm;
+      (*x3sumsqv_)[x3nodnum]  +=vsm*vsm;
+      (*x3sumsqw_)[x3nodnum]  +=wsm*wsm;
+      (*x3sumsqp_)[x3nodnum]  +=psm*psm;
+      (*x3sumsqrho_)[x3nodnum]+=rsm*rsm;
+      (*x3sumsqT_)[x3nodnum]  +=Tsm*Tsm;
 
       (*x3sumuv_)[x3nodnum]+=usm*vsm;
       (*x3sumuw_)[x3nodnum]+=usm*wsm;
       (*x3sumvw_)[x3nodnum]+=vsm*wsm;
+      (*x3sumuT_)[x3nodnum]+=usm*Tsm;
+      (*x3sumvT_)[x3nodnum]+=vsm*Tsm;
+      (*x3sumwT_)[x3nodnum]+=wsm*Tsm;
     }
     x3nodnum++;
 
@@ -1074,7 +1129,7 @@ void FLD::TurbulenceStatisticsLdc::DumpStatistics(int step)
     (*log) << "#     x1";
     (*log) << "           umean         vmean         wmean         pmean";
     (*log) << "         urms          vrms          wrms";
-    (*log) << "          u'v'          u'w'          v'w'          prms   \n";
+    (*log) << "          u'v'          u'w'          v'w'          prms\n";
 
     (*log) << scientific;
     for(unsigned i=0; i<x1coordinates_->size(); ++i)
@@ -1107,13 +1162,13 @@ void FLD::TurbulenceStatisticsLdc::DumpStatistics(int step)
       (*log) << "   " << setw(11) << setprecision(4) << x1uw;
       (*log) << "   " << setw(11) << setprecision(4) << x1vw;
       (*log) << "   " << setw(11) << setprecision(4) << x1prms;
-      (*log) << "   \n";
+      (*log) << "\n";
     }
 
     (*log) << "#     x2";
     (*log) << "           umean         vmean         wmean         pmean";
     (*log) << "         urms          vrms          wrms";
-    (*log) << "          u'v'          u'w'          v'w'          prms   \n";
+    (*log) << "          u'v'          u'w'          v'w'          prms\n";
 
     (*log) << scientific;
     for(unsigned i=0; i<x2coordinates_->size(); ++i)
@@ -1146,13 +1201,13 @@ void FLD::TurbulenceStatisticsLdc::DumpStatistics(int step)
       (*log) << "   " << setw(11) << setprecision(4) << x2uw;
       (*log) << "   " << setw(11) << setprecision(4) << x2vw;
       (*log) << "   " << setw(11) << setprecision(4) << x2prms;
-      (*log) << "   \n";
+      (*log) << "\n";
     }
 
     (*log) << "#     x3";
     (*log) << "           umean         vmean         wmean         pmean";
     (*log) << "         urms          vrms          wrms";
-    (*log) << "          u'v'          u'w'          v'w'          prms   \n";
+    (*log) << "          u'v'          u'w'          v'w'          prms\n";
 
     (*log) << scientific;
     for(unsigned i=0; i<x3coordinates_->size(); ++i)
@@ -1185,7 +1240,7 @@ void FLD::TurbulenceStatisticsLdc::DumpStatistics(int step)
       (*log) << "   " << setw(11) << setprecision(4) << x3uw;
       (*log) << "   " << setw(11) << setprecision(4) << x3vw;
       (*log) << "   " << setw(11) << setprecision(4) << x3prms;
-      (*log) << "   \n";
+      (*log) << "\n";
     }
     log->flush();
   }
@@ -1215,9 +1270,9 @@ void FLD::TurbulenceStatisticsLdc::DumpLomaStatistics(int step)
     (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
 
     (*log) << "#     x1";
-    (*log) << "           umean         vmean         wmean         pmean         Tmean";
-    (*log) << "         urms          vrms          wrms          prms          Trms";
-    (*log) << "          u'v'          u'w'          v'w'   \n";
+    (*log) << "           umean         vmean         wmean         pmean       rhomean         Tmean";
+    (*log) << "         urms          vrms          wrms          prms        rhorms          Trms";
+    (*log) << "          u'v'          u'w'          v'w'          u'T'          v'T'          w'T'\n";
 
     (*log) << scientific;
     for(unsigned i=0; i<x1coordinates_->size(); ++i)
@@ -1226,41 +1281,49 @@ void FLD::TurbulenceStatisticsLdc::DumpLomaStatistics(int step)
       double x1v    = (*x1sumv_)[i]/numsamp_;
       double x1w    = (*x1sumw_)[i]/numsamp_;
       double x1p    = (*x1sump_)[i]/numsamp_;
+      double x1rho  = (*x1sumrho_)[i]/numsamp_;
       double x1T    = (*x1sumT_)[i]/numsamp_;
 
-      // factor 10 for better depiction
-      double x1urms = 10*sqrt((*x1sumsqu_)[i]/numsamp_-x1u*x1u);
-      double x1vrms = 10*sqrt((*x1sumsqv_)[i]/numsamp_-x1v*x1v);
-      double x1wrms = 10*sqrt((*x1sumsqw_)[i]/numsamp_-x1w*x1w);
-      double x1prms = 10*sqrt((*x1sumsqp_)[i]/numsamp_-x1p*x1p);
-      double x1Trms = 10*sqrt((*x1sumsqT_)[i]/numsamp_-x1T*x1T);
+      double x1urms   = sqrt((*x1sumsqu_)[i]/numsamp_-x1u*x1u);
+      double x1vrms   = sqrt((*x1sumsqv_)[i]/numsamp_-x1v*x1v);
+      double x1wrms   = sqrt((*x1sumsqw_)[i]/numsamp_-x1w*x1w);
+      double x1prms   = sqrt((*x1sumsqp_)[i]/numsamp_-x1p*x1p);
+      double x1rhorms = sqrt((*x1sumsqrho_)[i]/numsamp_-x1rho*x1rho);
+      double x1Trms   = sqrt((*x1sumsqT_)[i]/numsamp_-x1T*x1T);
 
-      // factor 500 for better depiction
-      double x1uv   = 500*((*x1sumuv_)[i]/numsamp_-x1u*x1v);
-      double x1uw   = 500*((*x1sumuw_)[i]/numsamp_-x1u*x1w);
-      double x1vw   = 500*((*x1sumvw_)[i]/numsamp_-x1v*x1w);
+      double x1uv   = (*x1sumuv_)[i]/numsamp_-x1u*x1v;
+      double x1uw   = (*x1sumuw_)[i]/numsamp_-x1u*x1w;
+      double x1vw   = (*x1sumvw_)[i]/numsamp_-x1v*x1w;
+      double x1uT   = (*x1sumuT_)[i]/numsamp_-x1u*x1T;
+      double x1vT   = (*x1sumvT_)[i]/numsamp_-x1v*x1T;
+      double x1wT   = (*x1sumwT_)[i]/numsamp_-x1w*x1T;
 
       (*log) <<  " "  << setw(11) << setprecision(4) << (*x1coordinates_)[i];
       (*log) << "   " << setw(11) << setprecision(4) << x1u;
       (*log) << "   " << setw(11) << setprecision(4) << x1v;
       (*log) << "   " << setw(11) << setprecision(4) << x1w;
       (*log) << "   " << setw(11) << setprecision(4) << x1p;
+      (*log) << "   " << setw(11) << setprecision(4) << x1rho;
       (*log) << "   " << setw(11) << setprecision(4) << x1T;
       (*log) << "   " << setw(11) << setprecision(4) << x1urms;
       (*log) << "   " << setw(11) << setprecision(4) << x1vrms;
       (*log) << "   " << setw(11) << setprecision(4) << x1wrms;
       (*log) << "   " << setw(11) << setprecision(4) << x1prms;
+      (*log) << "   " << setw(11) << setprecision(4) << x1rhorms;
       (*log) << "   " << setw(11) << setprecision(4) << x1Trms;
       (*log) << "   " << setw(11) << setprecision(4) << x1uv;
       (*log) << "   " << setw(11) << setprecision(4) << x1uw;
       (*log) << "   " << setw(11) << setprecision(4) << x1vw;
-      (*log) << "   \n";
+      (*log) << "   " << setw(11) << setprecision(4) << x1uT;
+      (*log) << "   " << setw(11) << setprecision(4) << x1vT;
+      (*log) << "   " << setw(11) << setprecision(4) << x1wT;
+      (*log) << "\n";
     }
 
     (*log) << "#     x2";
-    (*log) << "           umean         vmean         wmean         pmean         Tmean";
-    (*log) << "         urms          vrms          wrms          prms          Trms";
-    (*log) << "          u'v'          u'w'          v'w'   \n";
+    (*log) << "           umean         vmean         wmean         pmean       rhomean         Tmean";
+    (*log) << "         urms          vrms          wrms          prms        rhorms          Trms";
+    (*log) << "          u'v'          u'w'          v'w'          u'T'          v'T'          w'T'\n";
 
     (*log) << scientific;
     for(unsigned i=0; i<x2coordinates_->size(); ++i)
@@ -1269,41 +1332,49 @@ void FLD::TurbulenceStatisticsLdc::DumpLomaStatistics(int step)
       double x2v    = (*x2sumv_)[i]/numsamp_;
       double x2w    = (*x2sumw_)[i]/numsamp_;
       double x2p    = (*x2sump_)[i]/numsamp_;
+      double x2rho  = (*x2sumrho_)[i]/numsamp_;
       double x2T    = (*x2sumT_)[i]/numsamp_;
 
-      // factor 10 for better depiction
-      double x2urms = 10*sqrt((*x2sumsqu_)[i]/numsamp_-x2u*x2u);
-      double x2vrms = 10*sqrt((*x2sumsqv_)[i]/numsamp_-x2v*x2v);
-      double x2wrms = 10*sqrt((*x2sumsqw_)[i]/numsamp_-x2w*x2w);
-      double x2prms = 10*sqrt((*x2sumsqp_)[i]/numsamp_-x2p*x2p);
-      double x2Trms = 10*sqrt((*x2sumsqT_)[i]/numsamp_-x2T*x2T);
+      double x2urms   = sqrt((*x2sumsqu_)[i]/numsamp_-x2u*x2u);
+      double x2vrms   = sqrt((*x2sumsqv_)[i]/numsamp_-x2v*x2v);
+      double x2wrms   = sqrt((*x2sumsqw_)[i]/numsamp_-x2w*x2w);
+      double x2prms   = sqrt((*x2sumsqp_)[i]/numsamp_-x2p*x2p);
+      double x2rhorms = sqrt((*x2sumsqrho_)[i]/numsamp_-x2rho*x2rho);
+      double x2Trms   = sqrt((*x2sumsqT_)[i]/numsamp_-x2T*x2T);
 
-      // factor 500 for better depiction
-      double x2uv   = 500*((*x2sumuv_)[i]/numsamp_-x2u*x2v);
-      double x2uw   = 500*((*x2sumuw_)[i]/numsamp_-x2u*x2w);
-      double x2vw   = 500*((*x2sumvw_)[i]/numsamp_-x2v*x2w);
+      double x2uv   = (*x2sumuv_)[i]/numsamp_-x2u*x2v;
+      double x2uw   = (*x2sumuw_)[i]/numsamp_-x2u*x2w;
+      double x2vw   = (*x2sumvw_)[i]/numsamp_-x2v*x2w;
+      double x2uT   = (*x2sumuT_)[i]/numsamp_-x2u*x2T;
+      double x2vT   = (*x2sumvT_)[i]/numsamp_-x2v*x2T;
+      double x2wT   = (*x2sumwT_)[i]/numsamp_-x2w*x2T;
 
       (*log) <<  " "  << setw(11) << setprecision(4) << (*x2coordinates_)[i];
       (*log) << "   " << setw(11) << setprecision(4) << x2u;
       (*log) << "   " << setw(11) << setprecision(4) << x2v;
       (*log) << "   " << setw(11) << setprecision(4) << x2w;
       (*log) << "   " << setw(11) << setprecision(4) << x2p;
+      (*log) << "   " << setw(11) << setprecision(4) << x2rho;
       (*log) << "   " << setw(11) << setprecision(4) << x2T;
       (*log) << "   " << setw(11) << setprecision(4) << x2urms;
       (*log) << "   " << setw(11) << setprecision(4) << x2vrms;
       (*log) << "   " << setw(11) << setprecision(4) << x2wrms;
       (*log) << "   " << setw(11) << setprecision(4) << x2prms;
+      (*log) << "   " << setw(11) << setprecision(4) << x2rhorms;
       (*log) << "   " << setw(11) << setprecision(4) << x2Trms;
       (*log) << "   " << setw(11) << setprecision(4) << x2uv;
       (*log) << "   " << setw(11) << setprecision(4) << x2uw;
       (*log) << "   " << setw(11) << setprecision(4) << x2vw;
-      (*log) << "   \n";
+      (*log) << "   " << setw(11) << setprecision(4) << x2uT;
+      (*log) << "   " << setw(11) << setprecision(4) << x2vT;
+      (*log) << "   " << setw(11) << setprecision(4) << x2wT;
+      (*log) << "\n";
     }
 
     (*log) << "#     x3";
-    (*log) << "           umean         vmean         wmean         pmean         Tmean";
-    (*log) << "         urms          vrms          wrms          prms          Trms";
-    (*log) << "          u'v'          u'w'          v'w'   \n";
+    (*log) << "           umean         vmean         wmean         pmean       rhomean         Tmean";
+    (*log) << "         urms          vrms          wrms          prms        rhorms          Trms";
+    (*log) << "          u'v'          u'w'          v'w'          u'T'          v'T'          w'T'\n";
 
     (*log) << scientific;
     for(unsigned i=0; i<x3coordinates_->size(); ++i)
@@ -1312,35 +1383,43 @@ void FLD::TurbulenceStatisticsLdc::DumpLomaStatistics(int step)
       double x3v    = (*x3sumv_)[i]/numsamp_;
       double x3w    = (*x3sumw_)[i]/numsamp_;
       double x3p    = (*x3sump_)[i]/numsamp_;
+      double x3rho  = (*x3sumrho_)[i]/numsamp_;
       double x3T    = (*x3sumT_)[i]/numsamp_;
 
-      // factor 10 for better depiction
-      double x3urms = 10*sqrt((*x3sumsqu_)[i]/numsamp_-x3u*x3u);
-      double x3vrms = 10*sqrt((*x3sumsqv_)[i]/numsamp_-x3v*x3v);
-      double x3wrms = 10*sqrt((*x3sumsqw_)[i]/numsamp_-x3w*x3w);
-      double x3prms = 10*sqrt((*x3sumsqp_)[i]/numsamp_-x3p*x3p);
-      double x3Trms = 10*sqrt((*x3sumsqT_)[i]/numsamp_-x3T*x3T);
+      double x3urms   = sqrt((*x3sumsqu_)[i]/numsamp_-x3u*x3u);
+      double x3vrms   = sqrt((*x3sumsqv_)[i]/numsamp_-x3v*x3v);
+      double x3wrms   = sqrt((*x3sumsqw_)[i]/numsamp_-x3w*x3w);
+      double x3prms   = sqrt((*x3sumsqp_)[i]/numsamp_-x3p*x3p);
+      double x3rhorms = sqrt((*x3sumsqrho_)[i]/numsamp_-x3rho*x3rho);
+      double x3Trms   = sqrt((*x3sumsqT_)[i]/numsamp_-x3T*x3T);
 
-      // factor 500 for better depiction
-      double x3uv   = 500*((*x3sumuv_)[i]/numsamp_-x3u*x3v);
-      double x3uw   = 500*((*x3sumuw_)[i]/numsamp_-x3u*x3w);
-      double x3vw   = 500*((*x3sumvw_)[i]/numsamp_-x3v*x3w);
+      double x3uv   = (*x3sumuv_)[i]/numsamp_-x3u*x3v;
+      double x3uw   = (*x3sumuw_)[i]/numsamp_-x3u*x3w;
+      double x3vw   = (*x3sumvw_)[i]/numsamp_-x3v*x3w;
+      double x3uT   = (*x3sumuT_)[i]/numsamp_-x3u*x3T;
+      double x3vT   = (*x3sumvT_)[i]/numsamp_-x3v*x3T;
+      double x3wT   = (*x3sumwT_)[i]/numsamp_-x3w*x3T;
 
       (*log) <<  " "  << setw(11) << setprecision(4) << (*x3coordinates_)[i];
       (*log) << "   " << setw(11) << setprecision(4) << x3u;
       (*log) << "   " << setw(11) << setprecision(4) << x3v;
       (*log) << "   " << setw(11) << setprecision(4) << x3w;
       (*log) << "   " << setw(11) << setprecision(4) << x3p;
+      (*log) << "   " << setw(11) << setprecision(4) << x3rho;
       (*log) << "   " << setw(11) << setprecision(4) << x3T;
       (*log) << "   " << setw(11) << setprecision(4) << x3urms;
       (*log) << "   " << setw(11) << setprecision(4) << x3vrms;
       (*log) << "   " << setw(11) << setprecision(4) << x3wrms;
       (*log) << "   " << setw(11) << setprecision(4) << x3prms;
+      (*log) << "   " << setw(11) << setprecision(4) << x3rhorms;
       (*log) << "   " << setw(11) << setprecision(4) << x3Trms;
       (*log) << "   " << setw(11) << setprecision(4) << x3uv;
       (*log) << "   " << setw(11) << setprecision(4) << x3uw;
       (*log) << "   " << setw(11) << setprecision(4) << x3vw;
-      (*log) << "   \n";
+      (*log) << "   " << setw(11) << setprecision(4) << x3uT;
+      (*log) << "   " << setw(11) << setprecision(4) << x3vT;
+      (*log) << "   " << setw(11) << setprecision(4) << x3wT;
+      (*log) << "\n";
     }
     log->flush();
   }
@@ -1363,17 +1442,22 @@ void FLD::TurbulenceStatisticsLdc::ClearStatistics()
     (*x1sumv_)[i]=0;
     (*x1sumw_)[i]=0;
     (*x1sump_)[i]=0;
+    (*x1sumrho_)[i]=0;
     (*x1sumT_)[i]=0;
 
     (*x1sumsqu_)[i]=0;
     (*x1sumsqv_)[i]=0;
     (*x1sumsqw_)[i]=0;
     (*x1sumsqp_)[i]=0;
+    (*x1sumsqrho_)[i]=0;
     (*x1sumsqT_)[i]=0;
 
     (*x1sumuv_)[i] =0;
     (*x1sumuw_)[i] =0;
     (*x1sumvw_)[i] =0;
+    (*x1sumuT_)[i] =0;
+    (*x1sumvT_)[i] =0;
+    (*x1sumwT_)[i] =0;
   }
 
   for(unsigned i=0; i<x2coordinates_->size(); ++i)
@@ -1382,17 +1466,22 @@ void FLD::TurbulenceStatisticsLdc::ClearStatistics()
     (*x2sumv_)[i]=0;
     (*x2sumw_)[i]=0;
     (*x2sump_)[i]=0;
+    (*x2sumrho_)[i]=0;
     (*x2sumT_)[i]=0;
 
     (*x2sumsqu_)[i]=0;
     (*x2sumsqv_)[i]=0;
     (*x2sumsqw_)[i]=0;
     (*x2sumsqp_)[i]=0;
+    (*x2sumsqrho_)[i]=0;
     (*x2sumsqT_)[i]=0;
 
     (*x2sumuv_)[i] =0;
     (*x2sumuw_)[i] =0;
     (*x2sumvw_)[i] =0;
+    (*x2sumuT_)[i] =0;
+    (*x2sumvT_)[i] =0;
+    (*x2sumwT_)[i] =0;
   }
 
   for(unsigned i=0; i<x3coordinates_->size(); ++i)
@@ -1401,17 +1490,22 @@ void FLD::TurbulenceStatisticsLdc::ClearStatistics()
     (*x3sumv_)[i]=0;
     (*x3sumw_)[i]=0;
     (*x3sump_)[i]=0;
+    (*x3sumrho_)[i]=0;
     (*x3sumT_)[i]=0;
 
     (*x3sumsqu_)[i]=0;
     (*x3sumsqv_)[i]=0;
     (*x3sumsqw_)[i]=0;
     (*x3sumsqp_)[i]=0;
+    (*x3sumsqrho_)[i]=0;
     (*x3sumsqT_)[i]=0;
 
     (*x3sumuv_)[i] =0;
     (*x3sumuw_)[i] =0;
     (*x3sumvw_)[i] =0;
+    (*x3sumuT_)[i] =0;
+    (*x3sumvT_)[i] =0;
+    (*x3sumwT_)[i] =0;
   }
 
   return;

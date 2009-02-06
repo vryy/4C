@@ -191,6 +191,10 @@ private:
   RefCountPtr<vector<double> >     x1sump_;
   RefCountPtr<vector<double> >     x2sump_;
   RefCountPtr<vector<double> >     x3sump_;
+  //! sum over density (over the centerlines in x1-, x2- and x3-direction)
+  RefCountPtr<vector<double> >     x1sumrho_;
+  RefCountPtr<vector<double> >     x2sumrho_;
+  RefCountPtr<vector<double> >     x3sumrho_;
   //! sum over T (over the centerlines in x1-, x2- and x3-direction)
   RefCountPtr<vector<double> >     x1sumT_;
   RefCountPtr<vector<double> >     x2sumT_;
@@ -212,6 +216,10 @@ private:
   RefCountPtr<vector<double> >     x1sumsqp_;
   RefCountPtr<vector<double> >     x2sumsqp_;
   RefCountPtr<vector<double> >     x3sumsqp_;
+  //! sum over density^2 (over the centerlines in x1-, x2- and x3-direction)
+  RefCountPtr<vector<double> >     x1sumsqrho_;
+  RefCountPtr<vector<double> >     x2sumsqrho_;
+  RefCountPtr<vector<double> >     x3sumsqrho_;
   //! sum over T^2 (over the centerlines in x1-, x2- and x3-direction)
   RefCountPtr<vector<double> >     x1sumsqT_;
   RefCountPtr<vector<double> >     x2sumsqT_;
@@ -229,6 +237,18 @@ private:
   RefCountPtr<vector<double> >     x1sumvw_;
   RefCountPtr<vector<double> >     x2sumvw_;
   RefCountPtr<vector<double> >     x3sumvw_;
+  //! sum over uT (over the centerlines in x1-, x2- and x3-direction)
+  RefCountPtr<vector<double> >     x1sumuT_;
+  RefCountPtr<vector<double> >     x2sumuT_;
+  RefCountPtr<vector<double> >     x3sumuT_;
+  //! sum over vT (over the centerlines in x1-, x2- and x3-direction)
+  RefCountPtr<vector<double> >     x1sumvT_;
+  RefCountPtr<vector<double> >     x2sumvT_;
+  RefCountPtr<vector<double> >     x3sumvT_;
+  //! sum over wT (over the centerlines in x1-, x2- and x3-direction)
+  RefCountPtr<vector<double> >     x1sumwT_;
+  RefCountPtr<vector<double> >     x2sumwT_;
+  RefCountPtr<vector<double> >     x3sumwT_;
 };
 
 }

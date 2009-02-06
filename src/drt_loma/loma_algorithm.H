@@ -96,8 +96,9 @@ namespace LOMA
     /// fluid discretization
     RCP<DRT::Discretization> fluiddiscret_;
 
-    /// maximum number of iterations and tolerance for outer iteration
+    /// (preliminary) maximum number of iterations and tolerance for outer iteration
     int     itmax_;
+    int     itmaxpre_;
     double  ittol_;
 
     /// flag for printing out mean values of temperature and density
@@ -118,6 +119,12 @@ namespace LOMA
     /// initial total mass (required if thermodynamic pressure is
     /// calculated from mass conservation)
     double initialmass_;
+
+    /// flag for special flow
+    string special_flow_;
+
+    /// start of sampling period
+    int samstart_;
 
   private:
 

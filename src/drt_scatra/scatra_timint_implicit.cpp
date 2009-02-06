@@ -227,6 +227,17 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // used as good initial guess for stationary temperature case
   densnp_->PutScalar(1.0);
 
+  // get fluid turbulence sublist
+  ParameterList * turbparams =&(params_->sublist("TURBULENCE PARAMETERS"));
+
+  // parameters for statistical evaluation of normal fluxes
+  samstart_  = turbparams->get<int>("SAMPLING_START",1         );
+  samstop_   = turbparams->get<int>("SAMPLING_STOP", 1000000000);
+  dumperiod_ = turbparams->get<int>("DUMPING_PERIOD",1         );
+
+  // initialize vector for statistics (assume a maximum of 10 conditions)
+  sumnormfluxintegral_ = Teuchos::rcp(new Epetra_SerialDenseVector(10));
+
   return;
 
 } // ScaTraTimIntImpl::ScaTraTimIntImpl
@@ -857,7 +868,11 @@ void SCATRA::ScaTraTimIntImpl::Output()
   // time measurement: output of solution
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:    + output of solution");
 
-  if (step_%upres_==0)  //yes, output is desired
+  // 3 opportunities for entering output routines:
+  // 1) anyway as soon as an upres-step is reached,
+  // 2) as soon as a restart-step is reached,
+  // 3) as soon as sampling period is reached if statistical data is required.
+  if (step_%upres_==0)
   {
     // write state vectors
     OutputState();
@@ -874,14 +889,18 @@ void SCATRA::ScaTraTimIntImpl::Output()
     if (writeflux_!="No")
       OutputFlux();
   }
-
-  // write restart also when uprestart_ is not a integer multiple of upres_
-  if ((step_%uprestart_== 0) && (step_%upres_!=0))
+  else if ((step_%upres_!=0) && (step_%uprestart_== 0))
   {
     OutputState();   // write state vectors
     OutputRestart(); // add restart data
     if (writeflux_!="No") // write flux vector field
       OutputFlux();
+  }
+  else if ((step_%uprestart_!= 0 && step_%upres_!=0) &&
+           (step_>=samstart_ && step_<=samstop_ && writeflux_!="No"))
+  {
+    // calculation of statistics for normal fluxes
+    OutputFlux();
   }
 
   return;
@@ -1060,7 +1079,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
     phin_-> PutScalar(0);
     phinp_-> PutScalar(0);
   }
-  else if (init == 1)  // field_by_function
+  else if (init == 1 || init == 3)  // (disturbed_)field_by_function
   {
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
@@ -1083,6 +1102,93 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
         // initialize also the solution vector. These values are a pretty good guess for the
         // solution after the first time step (much better than starting with a zero vector)
         phinp_->ReplaceMyValues(1,&initialval,&doflid);
+      }
+    }
+
+    // add random perturbation for initial field of turbulent flows
+    if(init==3)
+    {
+      int err =0;
+
+      // random noise is relative to difference of max-min values of initial profile
+      double perc = params_->sublist("TURBULENCE PARAMETERS").get<double>("CHAN_AMPL_INIT_DIST",0.1);
+
+      // out to screen
+      if (myrank_==0)
+      {
+        cout << "Disturbed initial scalar profile:   max. " << perc*100 << "% random perturbation\n";
+        cout << "\n\n";
+      }
+
+      double thisphi=0;
+      double mymaxphi=0;
+      double myminphi=10000000.0;
+      double maxphi=0;
+      double minphi=10000000.0;
+      // loop all nodes on the processor
+      for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+      {
+        // get the processor local node
+        DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
+        // the set of degrees of freedom associated with the node
+        vector<int> nodedofset = discret_->Dof(lnode);
+
+        int numdofs = nodedofset.size();
+        for (int k=0;k< numdofs;++k)
+        {
+          const int dofgid = nodedofset[0];
+          int doflid = dofrowmap->LID(dofgid);
+
+          thisphi=(*phinp_)[doflid];
+          if (mymaxphi*mymaxphi < thisphi*thisphi) mymaxphi=thisphi;
+          if (myminphi*myminphi > thisphi*thisphi) myminphi=thisphi;
+        }
+      }
+
+      // get overall max and min values and range between min and max
+      discret_->Comm().MaxAll(&mymaxphi,&maxphi,1);
+      discret_->Comm().MaxAll(&myminphi,&minphi,1);
+      double range = abs(maxphi - minphi);
+
+      // loop all nodes on the processor
+      for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();++lnodeid)
+      {
+        // get the processor local node
+        DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
+        // the set of degrees of freedom associated with the node
+        vector<int> nodedofset = discret_->Dof(lnode);
+
+        // check whether we have a pbc condition on this node
+        vector<DRT::Condition*> mypbc;
+
+        lnode->GetCondition("SurfacePeriodic",mypbc);
+
+        // check whether a periodic boundary condition is active on this node
+        if (mypbc.size()>0)
+        {
+          // yes, we have one
+
+          // get the list of all his slavenodes
+          map<int, vector<int> >::iterator master = pbcmapmastertoslave_->find(lnode->Id());
+
+          // slavenodes are ignored
+          if(master == pbcmapmastertoslave_->end()) continue;
+        }
+
+        int numdofs = nodedofset.size();
+        for (int k=0;k< numdofs;++k)
+        {
+          int dofgid = nodedofset[k];
+
+          double randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
+
+          double noise = perc * range * randomnumber;
+
+          err += phinp_->SumIntoGlobalValues(1,&noise,&dofgid);
+          err += phin_ ->SumIntoGlobalValues(1,&noise,&dofgid);
+        }
+
+        if(err!=0) dserror("dof not on proc");
       }
     }
   }
@@ -1700,6 +1806,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
           cond[condid]->Add("ConditionID",condid);
         }
       }
+
       // now we evaluate the conditions and seperate via ConditionID
       for (int condid = 0; condid < (int) cond.size(); condid++)
       {
@@ -1727,6 +1834,24 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
               condid,parnormfluxintegral,parboundaryint,parnormfluxintegral/parboundaryint);
         }
         normfluxsum+=parnormfluxintegral;
+
+        // statistics section for normfluxintegral
+        if (step_>=samstart_ && step_<=samstop_)
+        {
+          (*sumnormfluxintegral_)[condid] += parnormfluxintegral;
+          int samstep = step_-samstart_+1;
+
+          // dump every dumperiod steps
+          if (samstep%dumperiod_==0)
+          {
+            double meannormfluxintegral = (*sumnormfluxintegral_)[condid]/samstep;
+            // dump statistical results
+            if (myrank_ == 0)
+            {
+              printf("| %2d | Mean normal-flux integral (step %5d -- step %5d) :   %12.5E |\n", condid,samstart_,step_,meannormfluxintegral);
+            }
+          }
+        }
       } // loop over condid
 
       if (myrank_==0)

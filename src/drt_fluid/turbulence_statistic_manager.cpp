@@ -62,7 +62,7 @@ namespace FLD
 
       // do the time integration independent setup
       Setup();
-    
+
       // allocate one instance of the averaging procedure for
       // the flow under consideration
       statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_            ,
@@ -140,7 +140,7 @@ namespace FLD
     // providiing colerful output for paraview
     {
       ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
-      
+
       string homdir = modelparams->get<string>("HOMDIR","not_specified");
 
       statistics_general_mean_
@@ -275,7 +275,7 @@ namespace FLD
     // providiing colerful output for paraview
     {
       ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
-      
+
       string homdir = modelparams->get<string>("HOMDIR","not_specified");
 
 
@@ -288,9 +288,9 @@ namespace FLD
     }
 
     return;
-    
+
   }
-  
+
   /*
     Destructor
   */
@@ -354,7 +354,7 @@ namespace FLD
         string homdir
           =
           modelparams->get<string>("HOMDIR","not_specified");
-        
+
         if(homdir!="xy" && homdir!="xz" && homdir!="yz")
         {
           dserror("need two homogeneous directions to do averaging in plane channel flows\n");
@@ -410,23 +410,19 @@ namespace FLD
       switch(flow_)
       {
       case channel_flow_of_height_2:
+      case loma_channel_flow_of_height_2:
       {
 
         // add computed dynamic Smagorinsky quantities 
         // (effective viscosity etc. used during the computation)
-
-        if(smagorinsky_)
-        {
-          statistics_channel_->AddDynamicSmagorinskyQuantities();
-        }
-
-      break;
-    }
-    default:
-    {
-      // there are no values to be stored in these cases
-      break;
-    }
+        if(smagorinsky_) statistics_channel_->AddDynamicSmagorinskyQuantities();
+        break;
+      }
+      default:
+      {
+        // there are no values to be stored in these cases
+        break;
+      }
     }
   }
 
@@ -442,8 +438,6 @@ namespace FLD
                                                 double       time,
                                                 const double eosfac)
   {
-
-
     // sampling takes place only in the sampling period
     if(step>=samstart_ && step<=samstop_ && flow_ != no_special_flow)
     {
@@ -467,7 +461,7 @@ namespace FLD
         if(statistics_channel_==null)
           dserror("need statistics_channel_ to do a time sample for a turbulent channel flow at low Mach number");
 
-        statistics_channel_->DoLomaTimeSample(myvelnp_,myvedenp_,*myforce_);
+        statistics_channel_->DoLomaTimeSample(myvelnp_,myvedenp_,*myforce_,eosfac);
         break;
       }
       case lid_driven_cavity:
@@ -578,7 +572,6 @@ namespace FLD
 
       // add vector to general mean value computation
       statistics_general_mean_->AddToCurrentTimeAverage(dt_,myvelnp_);
-      
 
     } // end step in sampling period
 
@@ -604,12 +597,9 @@ namespace FLD
       if(dumperiod_!=0)
       {
         int samstep = step-samstart_+1;
-        double dsamstep=samstep;
-        double ddumperiod=dumperiod_;
 
         // dump every dumperiod steps
-        if (fmod(dsamstep,ddumperiod)==0)
-          outputformat=write_single_record;
+        if (samstep%dumperiod_==0) outputformat=write_single_record;
       }
 
       // sampling a la Peter --- for each sampling period a
@@ -700,7 +690,7 @@ namespace FLD
       {
         int upres    =params_.get("write solution every", -1);
         int uprestart=params_.get("write restart every" , -1);
-        
+
         if(step%upres == 0 || step%uprestart == 0)
         {
           statistics_general_mean_->WriteOldAverageVec(output);
@@ -733,7 +723,7 @@ namespace FLD
           cout << "XXXXXXXXXXXXXXXXXXXXX";
           cout << "\n\n";
         }
-        
+
         statistics_general_mean_->ReadOldStatistics(reader);
       }
     }

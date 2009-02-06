@@ -143,7 +143,8 @@ public:
   */
   void DoLomaTimeSample(Teuchos::RefCountPtr<Epetra_Vector> velnp,
                         Teuchos::RefCountPtr<Epetra_Vector> vedenp,
-                        Epetra_Vector & force);
+                        Epetra_Vector &                     force,
+                        const double                        eosfac);
 
 
   /*!
@@ -157,6 +158,11 @@ public:
   Further documentation is provided in the element subroutines
   */
   void EvaluateIntegralMeanValuesInPlanes();
+
+  /*!
+  \brief Compute in-plane means (integral version) for low-Mach-number flow
+  */
+  void EvaluateLomaIntegralMeanValuesInPlanes(const double eosfac);
 
   /*!
   \brief Compute in plane means of u,u^2 etc. (nodal quantities)
@@ -208,11 +214,6 @@ public:
   void EvaluateResiduals(map<string,RCP<Epetra_Vector> > statevecs,
                          double                          time     );
 
-
-  /*!
-  \brief The same as above for low-Mach-number flows
-  */
-  void EvaluateLomaPointwiseMeanValuesInPlanes();
 
   //@}
 
@@ -368,6 +369,14 @@ private:
   RefCountPtr<vector<double> >     sumw_;
   //! sum over p (over one plane in each component)
   RefCountPtr<vector<double> >     sump_;
+  //! sum over density (over one plane in each component)
+  RefCountPtr<vector<double> >     sumrho_;
+  //! sum over T (over one plane in each component)
+  RefCountPtr<vector<double> >     sumT_;
+  //! sum over density*u (over one plane in each component)
+  RefCountPtr<vector<double> >     sumrhou_;
+  //! sum over density*u*T (over one plane in each component)
+  RefCountPtr<vector<double> >     sumrhouT_;
 
   //! sum over u^2 (over one plane in each component)
   RefCountPtr<vector<double> >     sumsqu_;
@@ -375,14 +384,25 @@ private:
   RefCountPtr<vector<double> >     sumsqv_;
   //! sum over w^2 (over one plane in each component)
   RefCountPtr<vector<double> >     sumsqw_;
+  //! sum over p^2 (over one plane in each component)
+  RefCountPtr<vector<double> >     sumsqp_;
+  //! sum over density (over one plane in each component)
+  RefCountPtr<vector<double> >     sumsqrho_;
+  //! sum over T (over one plane in each component)
+  RefCountPtr<vector<double> >     sumsqT_;
+
   //! sum over uv (over one plane in each component)
   RefCountPtr<vector<double> >     sumuv_;
   //! sum over uw (over one plane in each component)
   RefCountPtr<vector<double> >     sumuw_;
   //! sum over vw (over one plane in each component)
   RefCountPtr<vector<double> >     sumvw_;
-  //! sum over p^2 (over one plane in each component)
-  RefCountPtr<vector<double> >     sumsqp_;
+  //! sum over uv (over one plane in each component)
+  RefCountPtr<vector<double> >     sumuT_;
+  //! sum over uw (over one plane in each component)
+  RefCountPtr<vector<double> >     sumvT_;
+  //! sum over vw (over one plane in each component)
+  RefCountPtr<vector<double> >     sumwT_;
 
   //!--------------------------------------------------
   //!       the pointwise averaged stuff
@@ -415,7 +435,7 @@ private:
   RefCountPtr<vector<double> >     pointsumsqT_;
 
   //!--------------------------------------------------
-  //!               averaged forces
+  //!   averaged forces (mean, bottom and top)
   //!--------------------------------------------------
 
   //! sum over nodal forces on boundary in u direction
@@ -424,6 +444,20 @@ private:
   double                           sumforcev_;
   //! sum over nodal forces on boundary in w direction
   double                           sumforcew_;
+
+  //! sum over nodal forces on boundary in u direction
+  double                           sumforcebu_;
+  //! sum over nodal forces on boundary in v direction
+  double                           sumforcebv_;
+  //! sum over nodal forces on boundary in w direction
+  double                           sumforcebw_;
+
+  //! sum over nodal forces on boundary in u direction
+  double                           sumforcetu_;
+  //! sum over nodal forces on boundary in v direction
+  double                           sumforcetv_;
+  //! sum over nodal forces on boundary in w direction
+  double                           sumforcetw_;
 
   //!--------------------------------------------------
   //!  averaged quantities from dynamic Smagorinsky

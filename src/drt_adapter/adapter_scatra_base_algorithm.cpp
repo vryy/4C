@@ -161,6 +161,10 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
     }
   }
 
+  // ------------------------------------get also fluid turbulence sublist
+  const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
+  scatratimeparams->sublist("TURBULENCE PARAMETERS")=fdyn.sublist("TURBULENCE MODEL");
+
   // -------------------------------------------------------------------
   // additional parameters and algorithm construction depending on
   // respective time-integration (or stationary) scheme

@@ -83,6 +83,8 @@ DRT::ELEMENTS::Fluid3::ActionType DRT::ELEMENTS::Fluid3::convertStringToActionTy
     act = Fluid3::calc_fluid_beltrami_error;
   else if (action == "calc_turbulence_statistics")
     act = Fluid3::calc_turbulence_statistics;
+  else if (action == "calc_loma_statistics")
+    act = Fluid3::calc_loma_statistics;
   else if (action == "calc_fluid_box_filter")
     act = Fluid3::calc_fluid_box_filter;
   else if (action == "calc_smagorinsky_const")
@@ -415,6 +417,61 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           default:
           {
             dserror("Unknown element type for mean value evaluation\n");
+          }
+          }
+        }
+      }
+      break;
+      case calc_loma_statistics:
+      {
+        // do nothing if you do not own this element
+        if(this->Owner() == discretization.Comm().MyPID())
+        {
+          // --------------------------------------------------
+          // extract velocities and pressure as well as densities
+          // from the global distributed vectors
+
+          // velocity and pressure values (n+1)
+          RefCountPtr<const Epetra_Vector> velnp
+            = discretization.GetState("u and p (n+1,converged)");
+          RefCountPtr<const Epetra_Vector> vedenp
+            = discretization.GetState("rho (n+1,converged)");
+
+          if (velnp==null || vedenp==null)
+            dserror("Cannot get state vectors 'velnp' and/or 'vedenp'");
+
+          // extract local values from the global vectors
+          vector<double> myvelpre(lm.size());
+          vector<double> mydens(lm.size());
+          DRT::UTILS::ExtractMyValues(*velnp,myvelpre,lm);
+          DRT::UTILS::ExtractMyValues(*vedenp,mydens,lm);
+
+          // get factor for equation of state
+          const double eosfac = params.get<double>("eos factor",100000.0/287.0);
+
+          // integrate mean values
+          const DiscretizationType distype = this->Shape();
+
+          switch (distype)
+          {
+          case DRT::Element::hex8:
+          {
+            f3_calc_loma_means<8>(discretization,myvelpre,mydens,params,eosfac);
+            break;
+          }
+          case DRT::Element::hex20:
+          {
+            f3_calc_loma_means<20>(discretization,myvelpre,mydens,params,eosfac);
+            break;
+          }
+          case DRT::Element::hex27:
+          {
+            f3_calc_loma_means<27>(discretization,myvelpre,mydens,params,eosfac);
+            break;
+          }
+          default:
+          {
+            dserror("Unknown element type for low-Mach-number mean value evaluation\n");
           }
           }
         }
@@ -1467,6 +1524,407 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
   }
   return;
 } // DRT::ELEMENTS::Fluid3::f3_calc_means
+
+/*---------------------------------------------------------------------*
+ | Calculate spatial mean values for low-Mach-number channel flow
+ |                                                           vg 02/09
+ *---------------------------------------------------------------------*/
+template<int iel>
+void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
+  DRT::Discretization&      discretization,
+  vector<double>&           velocitypressure ,
+  vector<double>&           density  ,
+  ParameterList&            params,
+  const double              eosfac
+  )
+{
+  // get view of solution vector
+  LINALG::Matrix<4*iel,1> velpre(&(velocitypressure[0]),true);
+  LINALG::Matrix<4*iel,1> dens(&(density[0]),true);
+
+  // set element data
+  const DiscretizationType distype = this->Shape();
+
+  // the plane normal tells you in which plane the integration takes place
+  const int normdirect = params.get<int>("normal direction to homogeneous plane");
+
+  // the vector planes contains the coordinates of the homogeneous planes (in
+  // wall normal direction)
+  RefCountPtr<vector<double> > planes = params.get<RefCountPtr<vector<double> > >("coordinate vector for hom. planes");
+
+  // get the pointers to the solution vectors
+  RefCountPtr<vector<double> > sumarea= params.get<RefCountPtr<vector<double> > >("element layer area");
+
+  RefCountPtr<vector<double> > sumu   = params.get<RefCountPtr<vector<double> > >("mean velocity u");
+  RefCountPtr<vector<double> > sumv   = params.get<RefCountPtr<vector<double> > >("mean velocity v");
+  RefCountPtr<vector<double> > sumw   = params.get<RefCountPtr<vector<double> > >("mean velocity w");
+  RefCountPtr<vector<double> > sump   = params.get<RefCountPtr<vector<double> > >("mean pressure p");
+  RefCountPtr<vector<double> > sumrho = params.get<RefCountPtr<vector<double> > >("mean density rho");
+  RefCountPtr<vector<double> > sumT   = params.get<RefCountPtr<vector<double> > >("mean temperature T");
+  RefCountPtr<vector<double> > sumrhou  = params.get<RefCountPtr<vector<double> > >("mean momentum rho*u");
+  RefCountPtr<vector<double> > sumrhouT = params.get<RefCountPtr<vector<double> > >("mean rho*u*T");
+
+  RefCountPtr<vector<double> > sumsqu = params.get<RefCountPtr<vector<double> > >("mean value u^2");
+  RefCountPtr<vector<double> > sumsqv = params.get<RefCountPtr<vector<double> > >("mean value v^2");
+  RefCountPtr<vector<double> > sumsqw = params.get<RefCountPtr<vector<double> > >("mean value w^2");
+  RefCountPtr<vector<double> > sumsqp = params.get<RefCountPtr<vector<double> > >("mean value p^2");
+  RefCountPtr<vector<double> > sumsqrho = params.get<RefCountPtr<vector<double> > >("mean value rho^2");
+  RefCountPtr<vector<double> > sumsqT = params.get<RefCountPtr<vector<double> > >("mean value T^2");
+
+  RefCountPtr<vector<double> > sumuv  = params.get<RefCountPtr<vector<double> > >("mean value uv");
+  RefCountPtr<vector<double> > sumuw  = params.get<RefCountPtr<vector<double> > >("mean value uw");
+  RefCountPtr<vector<double> > sumvw  = params.get<RefCountPtr<vector<double> > >("mean value vw");
+  RefCountPtr<vector<double> > sumuT  = params.get<RefCountPtr<vector<double> > >("mean value uT");
+  RefCountPtr<vector<double> > sumvT  = params.get<RefCountPtr<vector<double> > >("mean value vT");
+  RefCountPtr<vector<double> > sumwT  = params.get<RefCountPtr<vector<double> > >("mean value wT");
+
+  // get node coordinates of element
+  LINALG::Matrix<3,iel>  xyze;
+  DRT::Node** nodes = Nodes();
+  for(int inode=0;inode<iel;inode++)
+  {
+    const double* x = nodes[inode]->X();
+    xyze(0,inode)=x[0];
+    xyze(1,inode)=x[1];
+    xyze(2,inode)=x[2];
+  }
+
+  if(distype == DRT::Element::hex8
+     ||
+     distype == DRT::Element::hex27
+     ||
+     distype == DRT::Element::hex20)
+  {
+    double min = xyze(normdirect,0);
+    double max = xyze(normdirect,0);
+
+    // set maximum and minimum value in wall normal direction
+    for(int inode=0;inode<iel;inode++)
+    {
+      if(min > xyze(normdirect,inode)) min=xyze(normdirect,inode);
+      if(max < xyze(normdirect,inode)) max=xyze(normdirect,inode);
+    }
+
+    // determine the ids of the homogeneous planes intersecting this element
+    set<int> planesinele;
+    for(unsigned nplane=0;nplane<planes->size();++nplane)
+    {
+    // get all available wall normal coordinates
+      for(int nn=0;nn<iel;++nn)
+      {
+        if (min-2e-9 < (*planes)[nplane] && max+2e-9 > (*planes)[nplane])
+          planesinele.insert(nplane);
+      }
+    }
+
+    // remove lowest layer from planesinele to avoid double calculations. This is not done
+    // for the first level (index 0) --- if deleted, shift the first integration point in
+    // wall normal direction
+    // the shift depends on the number of sampling planes in the element
+    double shift=0;
+
+    // set the number of planes which cut the element
+    const int numplanesinele = planesinele.size();
+
+    if(*planesinele.begin() != 0)
+    {
+      // this is not an element of the lowest element layer
+      planesinele.erase(planesinele.begin());
+
+      shift=2.0/(static_cast<double>(numplanesinele-1));
+    }
+    else
+    {
+      // this is an element of the lowest element layer. Increase the counter
+      // in order to compute the total number of elements in one layer
+      int* count = params.get<int*>("count processed elements");
+
+      (*count)++;
+    }
+
+    // determine the orientation of the rst system compared to the xyz system
+    int elenormdirect=-1;
+    bool upsidedown =false;
+    // the only thing of interest is how normdirect is oriented in the
+    // element coordinate system
+    if(xyze(normdirect,4)-xyze(normdirect,0)>2e-9)
+    {
+      // t aligned
+      elenormdirect =2;
+      cout << "upsidedown false" <<&endl;
+    }
+    else if (xyze(normdirect,3)-xyze(normdirect,0)>2e-9)
+    {
+      // s aligned
+      elenormdirect =1;
+    }
+    else if (xyze(normdirect,1)-xyze(normdirect,0)>2e-9)
+    {
+      // r aligned
+      elenormdirect =0;
+    }
+    else if(xyze(normdirect,4)-xyze(normdirect,0)<-2e-9)
+    {
+      cout << xyze(normdirect,4)-xyze(normdirect,0) << &endl;
+      // -t aligned
+      elenormdirect =2;
+      upsidedown =true;
+      cout << "upsidedown true" <<&endl;
+    }
+    else if (xyze(normdirect,3)-xyze(normdirect,0)<-2e-9)
+    {
+      // -s aligned
+      elenormdirect =1;
+      upsidedown =true;
+    }
+    else if (xyze(normdirect,1)-xyze(normdirect,0)<-2e-9)
+    {
+      // -r aligned
+      elenormdirect =0;
+      upsidedown =true;
+    }
+    else
+    {
+      dserror("cannot determine orientation of plane normal in local coordinate system of element");
+    }
+    vector<int> inplanedirect;
+    {
+      set <int> inplanedirectset;
+      for(int i=0;i<3;++i)
+      {
+        inplanedirectset.insert(i);
+      }
+      inplanedirectset.erase(elenormdirect);
+
+      for(set<int>::iterator id = inplanedirectset.begin();id!=inplanedirectset.end() ;++id)
+      {
+        inplanedirect.push_back(*id);
+      }
+    }
+
+    // allocate vector for shapefunctions
+    LINALG::Matrix<iel,1> funct;
+    // allocate vector for shapederivatives
+    LINALG::Matrix<3,iel> deriv;
+    // space for the jacobian
+    LINALG::Matrix<3,3>   xjm;
+
+    // get the quad9 gaussrule for the in-plane integration
+    const IntegrationPoints2D  intpoints(intrule_quad_9point);
+
+    // a hex8 element has two levels, the hex20 and hex27 element have three layers to sample
+    // (now we allow even more)
+    double layershift=0;
+
+    // loop all levels in element
+    for(set<int>::const_iterator id = planesinele.begin();id!=planesinele.end() ;++id)
+    {
+      // reset temporary values
+      double area=0;
+
+      double ubar=0;
+      double vbar=0;
+      double wbar=0;
+      double pbar=0;
+      double rhobar=0;
+      double Tbar=0;
+      double rhoubar=0;
+      double rhouTbar=0;
+
+      double usqbar=0;
+      double vsqbar=0;
+      double wsqbar=0;
+      double psqbar=0;
+      double rhosqbar=0;
+      double Tsqbar=0;
+
+      double uvbar =0;
+      double uwbar =0;
+      double vwbar =0;
+      double uTbar =0;
+      double vTbar =0;
+      double wTbar =0;
+
+      // get the integration point in wall normal direction
+      double e[3];
+
+      e[elenormdirect]=-1.0+shift+layershift;
+      if(upsidedown) e[elenormdirect]*=-1;
+
+      // start loop over integration points in layer
+      for (int iquad=0;iquad<intpoints.nquad;iquad++)
+      {
+        // get the other gauss point coordinates
+        for(int i=0;i<2;++i)
+        {
+          e[inplanedirect[i]]=intpoints.qxg[iquad][i];
+        }
+
+        // compute the shape function values
+        shape_function_3D(funct,e[0],e[1],e[2],distype);
+        shape_function_3D_deriv1(deriv,e[0],e[1],e[2],distype);
+
+        // get transposed Jacobian matrix and determinant
+        //
+        //        +-            -+ T      +-            -+
+        //        | dx   dx   dx |        | dx   dy   dz |
+        //        | --   --   -- |        | --   --   -- |
+        //        | dr   ds   dt |        | dr   dr   dr |
+        //        |              |        |              |
+        //        | dy   dy   dy |        | dx   dy   dz |
+        //        | --   --   -- |   =    | --   --   -- |
+        //        | dr   ds   dt |        | ds   ds   ds |
+        //        |              |        |              |
+        //        | dz   dz   dz |        | dx   dy   dz |
+        //        | --   --   -- |        | --   --   -- |
+        //        | dr   ds   dt |        | dt   dt   dt |
+        //        +-            -+        +-            -+
+        //
+        // The Jacobian is computed using the formula
+        //
+        //            +-----
+        //   dx_j(r)   \      dN_k(r)
+        //   -------  = +     ------- * (x_j)_k
+        //    dr_i     /       dr_i       |
+        //            +-----    |         |
+        //            node k    |         |
+        //                  derivative    |
+        //                   of shape     |
+        //                   function     |
+        //                           component of
+        //                          node coordinate
+        //
+        xjm.MultiplyNT(deriv,xyze);
+
+        // we assume that every plane parallel to the wall is preserved
+        // hence we can compute the jacobian determinant of the 2d cutting
+        // element by replacing max-min by one on the diagonal of the 
+        // jacobi matrix (the two non-diagonal elements are zero)
+        if (xjm(normdirect,normdirect)<0) xjm(normdirect,normdirect)=-1.0;
+        else                              xjm(normdirect,normdirect)= 1.0;
+
+        const double det =
+          xjm(0,0)*xjm(1,1)*xjm(2,2)
+          +
+          xjm(0,1)*xjm(1,2)*xjm(2,0)
+          +
+          xjm(0,2)*xjm(1,0)*xjm(2,1)
+          -
+          xjm(0,2)*xjm(1,1)*xjm(2,0)
+          -
+          xjm(0,0)*xjm(1,2)*xjm(2,1)
+          -
+          xjm(0,1)*xjm(1,0)*xjm(2,2);
+
+        // check for degenerated elements
+        if (det <= 0.0) dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", Id(), det);
+
+        //interpolated values at gausspoints
+        double ugp=0;
+        double vgp=0;
+        double wgp=0;
+        double pgp=0;
+        double rhogp=0;
+        double Tgp=0;
+        double rhougp=0;
+        double rhouTgp=0;
+        double usave=0;
+
+        // the computation of this jacobian determinant from the 3d 
+        // mapping is based on the assumption that we do not deform 
+        // our elements in wall normal direction!
+        const double fac=det*intpoints.qwgt[iquad];
+
+        // increase area of cutting plane in element
+        area += fac;
+
+        for(int inode=0;inode<iel;inode++)
+        {
+          int finode=inode*4;
+
+          usave  = velpre(finode);
+          ugp    += funct(inode)*velpre(finode++);
+          vgp    += funct(inode)*velpre(finode++);
+          wgp    += funct(inode)*velpre(finode++);
+          pgp    += funct(inode)*velpre(finode  );
+          rhogp  += funct(inode)*dens(finode  );
+          rhougp += funct(inode)*dens(finode  )*usave;
+        }
+        Tgp     = eosfac/rhogp;
+        rhouTgp = eosfac*ugp;
+
+        // add contribution to integral
+        double dubar   = ugp*fac;
+        double dvbar   = vgp*fac;
+        double dwbar   = wgp*fac;
+        double dpbar   = pgp*fac;
+        double drhobar = rhogp*fac;
+        double dTbar   = Tgp*fac;
+        double drhoubar  = rhougp*fac;
+        double drhouTbar = rhouTgp*fac;
+
+        ubar   += dubar;
+        vbar   += dvbar;
+        wbar   += dwbar;
+        pbar   += dpbar;
+        rhobar += drhobar;
+        Tbar   += dTbar;
+        rhoubar  += drhoubar;
+        rhouTbar += drhouTbar;
+
+        usqbar   += ugp*dubar;
+        vsqbar   += vgp*dvbar;
+        wsqbar   += wgp*dwbar;
+        psqbar   += pgp*dpbar;
+        rhosqbar += rhogp*dpbar;
+        Tsqbar   += Tgp*dpbar;
+
+        uvbar  += ugp*dvbar;
+        uwbar  += ugp*dwbar;
+        vwbar  += vgp*dwbar;
+        uTbar  += ugp*dTbar;
+        vTbar  += vgp*dTbar;
+        wTbar  += wgp*dTbar;
+      } // end loop integration points
+
+      // add increments from this layer to processor local vectors
+      (*sumarea)[*id] += area;
+
+      (*sumu   )[*id] += ubar;
+      (*sumv   )[*id] += vbar;
+      (*sumw   )[*id] += wbar;
+      (*sump   )[*id] += pbar;
+      (*sumrho )[*id] += rhobar;
+      (*sumT   )[*id] += Tbar;
+      (*sumrhou)[*id] += rhoubar;
+      (*sumrhouT)[*id] += rhouTbar;
+
+      (*sumsqu  )[*id] += usqbar;
+      (*sumsqv  )[*id] += vsqbar;
+      (*sumsqw  )[*id] += wsqbar;
+      (*sumsqp  )[*id] += psqbar;
+      (*sumsqrho)[*id] += rhosqbar;
+      (*sumsqT  )[*id] += Tsqbar;
+
+      (*sumuv  )[*id] += uvbar;
+      (*sumuw  )[*id] += uwbar;
+      (*sumvw  )[*id] += vwbar;
+      (*sumuT  )[*id] += uTbar;
+      (*sumvT  )[*id] += vTbar;
+      (*sumwT  )[*id] += wTbar;
+
+      // jump to the next layer in the element.
+      // in case of an hex8 element, the two coordinates are -1 and 1(+2)
+      // for quadratic elements with three sample planes, we have -1,0(+1),1(+2)
+
+      layershift+=2.0/(static_cast<double>(numplanesinele-1));
+    }
+  }
+  else
+    dserror("Unknown element type for low-Mach-number mean value evaluation\n");
+
+  return;
+} // DRT::ELEMENTS::Fluid3::f3_calc_loma_means
 
 //----------------------------------------------------------------------
 //

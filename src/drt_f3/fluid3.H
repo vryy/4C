@@ -386,6 +386,7 @@ private:
     calc_fluid_genalpha_average_for_subscales_and_residual,
     calc_fluid_beltrami_error,
     calc_turbulence_statistics,
+    calc_loma_statistics,
     calc_fluid_box_filter,
     calc_smagorinsky_const,
     get_density
@@ -580,6 +581,18 @@ private:
     vector<double>&           vel   ,
     vector<double>&           disp  ,
     ParameterList& 	      params
+    );
+
+  /*!
+    \brief same as above for low-Mach-number flow
+   */
+  template<int iel> 
+  void f3_calc_loma_means(
+    DRT::Discretization&      discretization,
+    vector<double>&           velocitypressure ,
+    vector<double>&           density  ,
+    ParameterList&            params,
+    const double              eosfac
     );
 
   /*!

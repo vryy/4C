@@ -20,16 +20,16 @@ Maintainer: Volker Gravemeier
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 LOMA::Algorithm::Algorithm(
-    Epetra_Comm& comm,
+    Epetra_Comm&                  comm,
     RCP<DRT::Discretization>      fluiddis,
     const Teuchos::ParameterList& prbdyn
     )
 :  ScaTraFluidCouplingAlgorithm(comm,prbdyn),
    fluiddiscret_(fluiddis)
 {
-  // maximum number of iterations and tolerance for outer iteration
-  itmax_ = prbdyn.get<int>   ("ITEMAX");
-  ittol_ = prbdyn.get<double>("CONVTOL");
+  // (preliminary) maximum number of iterations and tolerance for outer iteration
+  ittol_    = prbdyn.get<double>("CONVTOL");
+  itmaxpre_ = prbdyn.get<int>("ITEMAX");
 
   // flag for printing out mean values of temperature and density
   outmean_ = prbdyn.get<string>("OUTMEAN");
@@ -49,6 +49,10 @@ LOMA::Algorithm::Algorithm(
   // initialization of variable for initial total mass
   // (required if thermodynamic pressure is calculated from mass conservation)
   initialmass_ = 0.0;
+
+  // flag for special flow and start of sampling period from fluid parameter list
+  special_flow_ = prbdyn.get<string>("CANONICAL_FLOW");
+  samstart_     = prbdyn.get<int>("SAMPLING_START");
 
   return;
 }
@@ -286,6 +290,12 @@ void LOMA::Algorithm::GenAlphaOuterLoop()
   if (Comm().MyPID()==0)
     cout<<"\n******************************************\n  OUTER GENERALIZED-ALPHA ITERATION LOOP\n******************************************\n";
 
+  // maximum number of iterations tolerance for outer iteration
+  // currently default for turbulent channel flow: only one iteration before sampling
+  if (special_flow_ == "loma_channel_flow_of_height_2" && Step() < samstart_ )
+       itmax_ = 1;
+  else itmax_ = itmaxpre_;
+
   while (stopnonliniter==false)
   {
     itnum++;
@@ -348,6 +358,12 @@ void LOMA::Algorithm::OSTBDF2OuterLoop()
 
   if (Comm().MyPID()==0)
     cout<<"\n******************************************\n OUTER ONE-STEP-THETA/BDF2 ITERATION LOOP\n******************************************\n";
+
+  // maximum number of iterations tolerance for outer iteration
+  // currently default for turbulent channel flow: only one iteration before sampling
+  if (special_flow_ == "loma_channel_flow_of_height_2" && Step() < samstart_ )
+       itmax_ = 1;
+  else itmax_ = itmaxpre_;
 
   while (stopnonliniter==false)
   {
