@@ -69,7 +69,7 @@ namespace FSI
     virtual void ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b);
 
     /// undo infnorm scaling from scaled solution
-    virtual void UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x);
+    virtual void UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
 
   protected:
 
@@ -130,7 +130,7 @@ namespace FSI
     Teuchos::RCP<Epetra_Vector> scolsum_;
     Teuchos::RCP<Epetra_Vector> arowsum_;
     Teuchos::RCP<Epetra_Vector> acolsum_;
-    
+
     /// preconditioned block Krylov or block Gauss-Seidel linear solver
     INPAR::FSI::LinearBlockSolver linearsolverstrategy_;
 

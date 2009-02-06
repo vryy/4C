@@ -72,7 +72,7 @@ NOX::Abstract::Group::ReturnType NOX::FSI::Group::computeNewton(Teuchos::Paramet
 {
   mfsi_.ScaleSystem(RHSVector.getEpetraVector());
   NOX::Abstract::Group::ReturnType status = NOX::Epetra::Group::computeNewton(p);
-  mfsi_.UnscaleSolution(NewtonVector.getEpetraVector());
+  mfsi_.UnscaleSolution(NewtonVector.getEpetraVector(),RHSVector.getEpetraVector());
   return status;
 }
 

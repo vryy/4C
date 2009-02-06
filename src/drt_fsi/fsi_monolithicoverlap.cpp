@@ -17,7 +17,7 @@ FSI::MonolithicOverlap::MonolithicOverlap(Epetra_Comm& comm)
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
   linearsolverstrategy_ = Teuchos::getIntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
-  
+
   SetDefaultParameters(fsidyn,NOXParameterList());
 
   // right now we use matching meshes at the interface
@@ -276,7 +276,7 @@ void FSI::MonolithicOverlap::ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epe
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
   const bool scaling_infnorm = (bool)getIntegralValue<int>(fsidyn,"INFNORMSCALING");
-  
+
   if (scaling_infnorm)
   {
     // The matrices are modified here. Do we have to change them back later on?
@@ -323,11 +323,11 @@ void FSI::MonolithicOverlap::ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epe
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicOverlap::UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x)
+void FSI::MonolithicOverlap::UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
   const bool scaling_infnorm = (bool)getIntegralValue<int>(fsidyn,"INFNORMSCALING");
-  
+
   if (scaling_infnorm)
   {
     Teuchos::RCP<Epetra_Vector> sy = Extractor().ExtractVector(x,0);
@@ -340,6 +340,17 @@ void FSI::MonolithicOverlap::UnscaleSolution(LINALG::BlockSparseMatrixBase& mat,
 
     Extractor().InsertVector(*sy,0,x);
     Extractor().InsertVector(*ay,2,x);
+
+    Teuchos::RCP<Epetra_Vector> sx = Extractor().ExtractVector(b,0);
+    Teuchos::RCP<Epetra_Vector> ax = Extractor().ExtractVector(b,2);
+
+    if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0))
+      dserror("structure scaling failed");
+    if (ax->ReciprocalMultiply(1.0, *arowsum_, *ax, 0.0))
+      dserror("ale scaling failed");
+
+    Extractor().InsertVector(*sx,0,b);
+    Extractor().InsertVector(*ax,2,b);
 
     Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(0,0).EpetraMatrix();
     srowsum_->Reciprocal(*srowsum_);
@@ -446,7 +457,7 @@ FSI::MonolithicOverlap::CreateLinearSystem(ParameterList& nlParams,
   default:
     dserror("unsupported linear block solver strategy: %d", linearsolverstrategy_);
   }
-  
+
   return linSys;
 }
 

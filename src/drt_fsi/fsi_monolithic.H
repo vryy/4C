@@ -217,7 +217,7 @@ namespace UTILS
     virtual void ScaleSystem(Epetra_Vector& b) {}
 
     /// undo infnorm scaling from scaled solution
-    virtual void UnscaleSolution(Epetra_Vector& x) {}
+    virtual void UnscaleSolution(Epetra_Vector& x, Epetra_Vector& b) {}
 
   protected:
 
@@ -334,13 +334,13 @@ namespace UTILS
     virtual void ScaleSystem(Epetra_Vector& b) { ScaleSystem(*SystemMatrix(),b); }
 
     /// undo infnorm scaling from scaled solution
-    virtual void UnscaleSolution(Epetra_Vector& x) { UnscaleSolution(*SystemMatrix(),x); }
+    virtual void UnscaleSolution(Epetra_Vector& x, Epetra_Vector& b) { UnscaleSolution(*SystemMatrix(),x,b); }
 
     /// apply infnorm scaling to linear block system
     virtual void ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b) {}
 
     /// undo infnorm scaling from scaled solution
-    virtual void UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x) {}
+    virtual void UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b) {}
 
   protected:
 
