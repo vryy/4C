@@ -143,7 +143,8 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateD(CONTACT::CElement&
   // loop over all Gauss points for integration
   for (int gp=0;gp<nGP();++gp)
   {
-    double eta[2] = {Coordinate(gp,0), Coordinate(gp,1)};
+  	double eta[2] = {Coordinate(gp,0), 0.0};
+  	if (Dim()==3) eta[1] = Coordinate(gp,1);
     double wgt = Weight(gp);
     
     // evaluate trace space and dual space shape functions
@@ -216,7 +217,8 @@ void CONTACT::Integrator::DerivD(CONTACT::CElement& sele,
   // loop over all Gauss points for integration
   for (int gp=0;gp<nGP();++gp)
   {
-    double eta[2] = {Coordinate(gp,0), Coordinate(gp,1)};
+    double eta[2] = {Coordinate(gp,0), 0.0};
+    if (Dim()==3) eta[1] = Coordinate(gp,1);
     double wgt = Weight(gp);
     typedef map<int,double>::const_iterator CI;
     
