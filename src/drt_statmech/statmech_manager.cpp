@@ -285,84 +285,16 @@ void StatMechManager::StatMechOutput(const double& time,const int& num_dof,const
       
       // first index = time step index
       std::ostringstream filename;
-      const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+
+      //creating complete file name dependent on step number with 5 digits and leading zeros
       if (istep<100000)
         filename << "./GmshOutput/network"<< std::setw(5) << setfill('0') << istep <<".pos";
       else 
-        dserror("Gmsh output implemented for a maximum of 99999 time steps");
-               
-      // do output to file in c-style
-      FILE* fp = NULL;
-      
-      //start Gmsh output
-      fp = fopen(filename.str().c_str(), "w");
-
-      // write output to temporary stringstream; 
-      std::stringstream gmshfilecontent;
-      /*the beginning of the stream is "View \"" to indicate Gmsh that the following data is in order to create an image and
-       * this command is followed by the name of that view displayed during it's shown in the video; in the following example
-       * this name is for the 100th time step: Step00100; then the data to be presented within this view is written within { ... };
-       * in the following example this data consists of scalar lines defined by the coordinates of their end points*/
-      gmshfilecontent << "View \" Step " << istep << " \" {" << endl;
-      
-      
-      //writing the origin point as reference for colors
-      gmshfilecontent << "SP(" << scientific;
-      gmshfilecontent << 0.0 << "," << 0.0 << "," << 0.0 ;
-      /*note: for each node there is one color variable for gmsh and gmsh finally plots the line
-       * interpolating these two colors between the nodes*/
-      gmshfilecontent << ")" << "{" << scientific << 0.0  << "};" << endl;
-
-      //looping through all elements on the processor
-      for (int i=0; i<discret_.NumMyRowElements(); ++i)
-      {
-        //getting pointer to current element
-        DRT::Element* element = discret_.lRowElement(i);
-        
-        //getting number of nodes of current element
-        if( element->NumNode() > 2)
-          dserror("Gmsh output for two noded elements only");
-        
-        //preparing variable storing coordinates of all these nodes
-        int nnodes = 2;
-        LINALG::SerialDenseMatrix coord(3,nnodes);
-        
-        for(int id = 0; id<3; id++)
-         for(int jd = 0; jd<2; jd++)  
-         {
-           double referenceposition = ((element->Nodes())[jd])->X()[id];
-           vector<int> dofnode = discret_.Dof((element->Nodes())[jd]);        
-           double displacement = dis[discret_.DofRowMap()->LID( dofnode[id] )];
-           coord(id,jd) =  referenceposition + displacement;
-         }
-        
-              
-        //declaring variable for color of elements
-        double color;
-        
-        //apply different colors for elements representing filaments and those representing dynamics crosslinkers
-        if (element->Id() < basiselements_)
-          color = 1.2;
-        else
-          color = 2.6;
-
-        //writing element by nodal coordinates as a scalar line
-        gmshfilecontent << "SL(" << scientific;
-        gmshfilecontent<< coord(0,0) << "," << coord(1,0) << "," << coord(2,0) << "," 
-                       << coord(0,1) << "," << coord(1,1) << "," << coord(2,1) ;
-        /*note: for each node there is one color variable for gmsh and gmsh finally plots the line
-         * interpolating these two colors between the nodes*/
-        gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
- 
-      }  
-      
-      //finish data section of this view by closing curley brackets
-      gmshfilecontent << "};" << endl;
-      
-      //write content into file and close it
-      fprintf(fp,gmshfilecontent.str().c_str());
-      fclose(fp);
-      
+        dserror("Gmsh output implemented for a maximum of 99999 steps");
+          
+      //calling method for writing Gmsh output
+      GmshOutput(dis,filename,istep);     
+   
     }
     break;
     case INPAR::STATMECH::statout_none:
@@ -372,6 +304,82 @@ void StatMechManager::StatMechOutput(const double& time,const int& num_dof,const
  
   return;
 } // StatMechManager::StatMechOutput()
+
+
+/*----------------------------------------------------------------------*
+ | writing Gmsh data for current step                 public)cyron 01/09|
+ *----------------------------------------------------------------------*/
+void StatMechManager::GmshOutput(const Epetra_Vector& dis, const std::ostringstream& filename, const int& step)
+{
+  //the following method writes output data for Gmsh into file with name "filename"; all line elements are written;
+  //the nodal displacements are handed over in the variable "dis";
+  
+  // do output to file in c-style
+  FILE* fp = NULL;
+  
+  //open file to write output data into
+  fp = fopen(filename.str().c_str(), "w");
+
+  // write output to temporary stringstream; 
+  std::stringstream gmshfilecontent;
+  /*the beginning of the stream is "View \"" to indicate Gmsh that the following data is in order to create an image and
+   * this command is followed by the name of that view displayed during it's shown in the video; in the following example
+   * this name is for the 100th time step: Step00100; then the data to be presented within this view is written within { ... };
+   * in the following example this data consists of scalar lines defined by the coordinates of their end points*/
+  gmshfilecontent << "View \" Step " << step << " \" {" << endl;
+
+  //looping through all elements on the processor
+  for (int i=0; i<discret_.NumMyRowElements(); ++i)
+  {
+    //getting pointer to current element
+    DRT::Element* element = discret_.lRowElement(i);
+    
+    //getting number of nodes of current element
+    if( element->NumNode() > 2)
+      dserror("Gmsh output for two noded elements only");
+    
+    //preparing variable storing coordinates of all these nodes
+    int nnodes = 2;
+    LINALG::SerialDenseMatrix coord(3,nnodes);
+    
+    for(int id = 0; id<3; id++)
+     for(int jd = 0; jd<2; jd++)  
+     {
+       double referenceposition = ((element->Nodes())[jd])->X()[id];
+       vector<int> dofnode = discret_.Dof((element->Nodes())[jd]);        
+       double displacement = dis[discret_.DofRowMap()->LID( dofnode[id] )];
+       coord(id,jd) =  referenceposition + displacement;
+     }
+    
+          
+    //declaring variable for color of elements
+    double color;
+    
+    //apply different colors for elements representing filaments and those representing dynamics crosslinkers
+    if (element->Id() < basiselements_)
+      color = 1.0;
+    else
+      color = 0.0;
+
+    //writing element by nodal coordinates as a scalar line
+    gmshfilecontent << "SL(" << scientific;
+    gmshfilecontent<< coord(0,0) << "," << coord(1,0) << "," << coord(2,0) << "," 
+                   << coord(0,1) << "," << coord(1,1) << "," << coord(2,1) ;
+    /*note: for each node there is one color variable for gmsh and gmsh finally plots the line
+     * interpolating these two colors between the nodes*/
+    gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
+
+  }  
+  
+  //finish data section of this view by closing curley brackets
+  gmshfilecontent << "};" << endl;
+  
+  //write content into file and close it
+  fprintf(fp,gmshfilecontent.str().c_str());
+  fclose(fp);
+ 
+  return;
+} // StatMechManager::GmshOutput()
 
 
 /*----------------------------------------------------------------------*
@@ -565,34 +573,16 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& dis)
     
     
     /*_________________________________________________________________________________________________________
-     * note: the following part of the code is suitable for serial use only !!!!
+     * note: the following part of the code is suitable for serial use only !!!! at least one reason is that 
+     * only then crosslinker contains on each processor the information about also those nodes not stored locally
+     * on this processor; e.g. j < i when searching nearby nodes makes sense only for serial use as well as a 
+     * similar control structure for unlinking nodes
      * _______________________________________________________________________________________________________*/
     
      
     //searching locally with a tree all nodes forming neighbouring couples and establishing crosslinkers between them
     for(int i = 0; i < discret_.NumMyRowNodes(); i++)
-    {
-      //if the node is already crosslinked the crosslinker is removed with probability punlink
-      if ((*crosslinkerpartner_)[i] != -1.0 && (*delcrosslinker)[i] <  -1.0 + 2*punlink)
-      {
-        //noting that node responsible for the crosslinker to be deleted has from now on no crosslinker
-        (*crosslinkerpartner_)[i] = -1;
-
-        /*since each node can have only one crosslinker at the same time a unique Id for the crosslinker 
-         * element can be found by adding the lower one of the global Ids of the two nodes to basiselements_;
-         * this is the way new crosslinkers are numbered below and hence also the way old crosslinkers can
-         * be deleted*/
-        int crosslinkerid = basiselements_ + discret_.NodeRowMap()->GID(i);
-        
-        /*delete crosslinker element; when trying to delete a crosslinker element not administrated by the calling processor
-         * an error is issued*/
-        if( !discret_.DeleteElement(crosslinkerid) )
-        {
-          dserror("Deleting crosslinker element failed"); 
-        }
-      }
-         
-      
+    {  
       /*in the following new crosslinkers are established; however this is possibleonly if the current node has not 
        * yet one, i.e. (*crosslinkerpartner_)[i] == -1.0 and if the node has passed a random test by which it's figured
        * out whether it can get a new crosslinker in this time step, i.e. (*setcrosslinker)[i] <  -1.0 + 2*plink*/
@@ -637,8 +627,9 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& dis)
             }
           }
         
-        //if a neighbour within the prescribed maximal distance has been found a crosslinker is established
-        if(neighbour > -1)
+        /*if a neighbour within the prescribed maximal distance has been found and this neighbour node has not yet
+         * a crosslinker itself a crosslinker is established*/
+        if(neighbour > -1 && (*crosslinkerpartner_)[neighbour] == -1.0)
         {
           /*a new crosslinker element is generated according to a crosslinker dummy defined during construction 
            * of the statmech_manager; note that the dummy has already the proper owner number*/          
@@ -656,10 +647,10 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& dis)
           //assigning correct global Id to new crosslinker element: since each node can have one crosslinker element
           //only at the same time a unique global Id can be found by taking the number of elemnts in the discretization
           //before starting dealing with crosslinkers and adding to this number the global Id of the node currently involved     
-          newcrosslinker->SetId( basiselements_ + discret_.NodeRowMap()->GID(i) );
+          newcrosslinker->SetId( basiselements_ + noderowmap->GID(i) );          
                    
           //nodes are assigned to the new crosslinker element by first assigning global node Ids and then assigning nodal pointers
-          int globalnodeids[] = {discret_.NodeRowMap()->GID(i), neighbour};      
+          int globalnodeids[] = {noderowmap->GID(i), neighbour};      
           newcrosslinker->SetNodeIds(2, globalnodeids);
           DRT::Node *nodes[] = {discret_.gNode( globalnodeids[0] ) , discret_.gNode( globalnodeids[1] )};
           newcrosslinker->BuildNodalPointers(&nodes[0]);
@@ -678,14 +669,41 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& dis)
           newcrosslinker->zeta_ = 4*PI*newcrosslinker->lrefe_*( statmechparams_.get<double>("ETA",0.0) );
           
           //add new element to discretization
-          discret_.AddElement(newcrosslinker);  
-
-          
-          //noting that local node i has now a crosslinkerelement and noting global Id of this element
+          discret_.AddElement(newcrosslinker); 
+         
+          //saving that local node i and neighbour are crosslinked with each other now
           (*crosslinkerpartner_)[i] = neighbour;
+          (*crosslinkerpartner_)[neighbour] = i;
 
         }
       }
+     
+     /*now crosslinkers are removed with probability punlink; it's crucial that removing crosslinkers for each 
+      * crosslinker only the node with the higher global Id is checked which is considered throughout this whole method as
+      * kind of the "owner" of the crosslinker;in this sloppy implementation we assume GID = LID so that we can consider just
+      * (*crosslinkerpartner_)[i] > i;
+      * note that removing crosslinkers should be done after setting the crosslinkers since the latter one uses 
+      * operations possible on a discretization on which already FillComplete() has been called*/
+     if ((*crosslinkerpartner_)[i] != -1.0 && (*crosslinkerpartner_)[i] < i &&  (*delcrosslinker)[i] <  -1.0 + 2*punlink)
+     {
+       
+       //noting that node responsible for the crosslinker to be deleted has from now on no crosslinker
+       (*crosslinkerpartner_)[i] = -1;
+       (*crosslinkerpartner_)[(*crosslinkerpartner_)[i]] = -1;
+
+       /*since each node can have only one crosslinker at the same time a unique Id for the crosslinker 
+        * element can be found by adding the lower one of the global Ids of the two nodes to basiselements_;
+        * this is the way new crosslinkers are numbered above and hence also the way old crosslinkers can
+        * be deleted*/
+       int crosslinkerid = basiselements_ + noderowmap->GID(i);
+       
+       /*delete crosslinker element; when trying to delete a crosslinker element not administrated by the calling processor
+        * an error is issued*/
+       if( !discret_.DeleteElement(crosslinkerid) )
+       {
+         dserror("Deleting crosslinker element failed"); 
+       }
+     }
       
       /*settling administrative stuff in order to make the discretization ready for the next time step: the following
        * commmand generates ghost elements if necessary and calls FillCompete() method of discretization; note: this is

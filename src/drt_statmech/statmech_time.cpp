@@ -132,7 +132,7 @@ void StatMechTime::Integrate()
     if(i == 0)
       statmechmanager_->StatMechInitOutput();
         
-    std::cout<<"\nAnzahl der Elemnete am Beginn des Zeitschritts: "<<discret_.NumMyRowElements()<<"\n";
+    std::cout<<"\nAnzahl der Elemente am Beginn des Zeitschritts: "<<discret_.NumMyRowElements()<<"\n";
     
     double time = params_.get<double>("total time",0.0);
 
@@ -145,9 +145,10 @@ void StatMechTime::Integrate()
     */
 
     ConsistentPredictor();    
+    
 
-    //FullNewton();
-    PTC();
+    FullNewton();
+    //PTC();
    
     UpdateandOutput();
    
@@ -370,12 +371,12 @@ void StatMechTime::ConsistentPredictor()
 
 
   // zerofy velocity and acceleration in case of statics
-  if (dynkindstat)
-  {
+  //if (dynkindstat)
+  //{
     velm_->PutScalar(0.0);
     veln_->PutScalar(0.0);
     vel_->PutScalar(0.0);
-  }
+  //}
 
   //------------------------------- compute interpolated external forces
   // external mid-forces F_{ext;n+1-alpha_f} (fextm)
@@ -614,6 +615,18 @@ void StatMechTime::FullNewton()
     //---------------------------------------------- build residual norm
     disi_->Norm2(&disinorm);
     fresm_->Norm2(&fresmnorm);
+    
+    // first index = time step index
+    std::ostringstream filename;
+
+    //creating complete file name dependent on step number with 5 digits and leading zeros
+    if (numiter<100000)
+      filename << "./GmshOutput/konvergenz"<< std::setw(5) << setfill('0') << numiter <<".pos";
+    else 
+      dserror("Gmsh output implemented for a maximum of 99999 steps");
+    
+    statmechmanager_->GmshOutput(*dism_,filename,numiter);
+    
 
     // a short message
     if (!myrank_ and (printscreen or printerr))
@@ -685,7 +698,7 @@ void StatMechTime::PTC()
   if (!damp_->Filled()) dserror("damping matrix must be filled here");
 
   // hard wired ptc parameters
-  double ptcdt = 5; //0.75 ... 5e1 scheint eine gute Wahl zu sein
+  double ptcdt = 2.5e1; //0.75 ... 5e1 scheint eine gute Wahl zu sein
   double nc;
   fresm_->NormInf(&nc);
   double dti = 1/ptcdt;
@@ -718,7 +731,7 @@ void StatMechTime::PTC()
     x0->Update(1.0,*disi_,0.0);
 
 
-    stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
+    stiff_->Add(*damp_,false,1/(dt),1.0);
     stiff_->Complete();
 
 
@@ -760,8 +773,8 @@ void StatMechTime::PTC()
     // velocities
 
     // incremental (required for constant predictor)
-    velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
-    velm_->Update((delta-(1.0-alphaf)*gamma)/delta,*vel_,gamma/(delta*dt));
+    velm_->Update(1.0/dt,*dism_,-1.0/dt,*dis_,0.0);
+    //velm_->Update((delta-(1.0-alphaf)*gamma)/delta,*vel_,gamma/(delta*dt));
 
 
 

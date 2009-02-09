@@ -42,7 +42,7 @@ public:
   //! \brief Do time integration
   void Integrate();
   
-  //! \brief do consistent constant predictor step
+  //! \brief do consistent predictor step
   virtual void ConsistentPredictor();
   
 

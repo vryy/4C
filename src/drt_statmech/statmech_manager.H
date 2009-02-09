@@ -40,6 +40,9 @@ public:
   //! \brief initializing special output for statistical mechanics by looking for a suitable name of the outputfile and setting up an empty file with this name
   void StatMechInitOutput();
   
+  //! \brief write output for Gmsh postprocessing
+  void GmshOutput(const Epetra_Vector& dis, const std::ostringstream& filename, const int& step);
+  
   //! \brief saving all necessary class variables for restart
   void StatMechWriteRestart(IO::DiscretizationWriter& output);
   
