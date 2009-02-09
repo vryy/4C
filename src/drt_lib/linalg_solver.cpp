@@ -957,13 +957,16 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
         while (mlsmotimes >> word)
           mlsmotimessteps.push_back(std::atoi(word.c_str()));
       }
+
       if ((int)mlsmotimessteps.size() < mlmaxlevel)
-        dserror("Not enough smoothing steps ML_SMOTIMES=%d, must be larger than ML_MAXLEVEL=%d\n",
+        dserror("Not enough smoothing steps ML_SMOTIMES=%d, must be larger/equal than ML_MAXLEVEL=%d\n",
                 mlsmotimessteps.size(),mlmaxlevel);
+
       for (int i=0; i<mlmaxlevel-1; ++i)
       {
         char levelstr[11];
         sprintf(levelstr,"(level %d)",i);
+        ParameterList& smolevelsublist = mllist.sublist("smoother: list "+(string)levelstr);
         int type;
         double damp;
         if (i==0)
@@ -984,19 +987,19 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
         switch (type)
         {
         case 0: // SGS
-          mllist.set("smoother: type "+(string)levelstr                    ,"symmetric Gauss-Seidel");
-          mllist.set("smoother: sweeps "+(string)levelstr                  ,mlsmotimessteps[i]);
-          mllist.set("smoother: damping factor "+(string)levelstr          ,damp);
+          smolevelsublist.set("smoother: type"                        ,"symmetric Gauss-Seidel");
+          smolevelsublist.set("smoother: sweeps"                      ,mlsmotimessteps[i]);
+          smolevelsublist.set("smoother: damping factor"              ,damp);
         break;
         case 7: // GS
-          mllist.set("smoother: type "+(string)levelstr                    ,"Gauss-Seidel");
-          mllist.set("smoother: sweeps "+(string)levelstr                  ,mlsmotimessteps[i]);
-          mllist.set("smoother: damping factor "+(string)levelstr          ,damp);
+          smolevelsublist.set("smoother: type"                        ,"Gauss-Seidel");
+          smolevelsublist.set("smoother: sweeps"                      ,mlsmotimessteps[i]);
+          smolevelsublist.set("smoother: damping factor"              ,damp);
         break;
         case 8: // DGS
-          mllist.set("smoother: type "+(string)levelstr                    ,"Gauss-Seidel");
-          mllist.set("smoother: sweeps "+(string)levelstr                  ,mlsmotimessteps[i]);
-          mllist.set("smoother: damping factor "+(string)levelstr          ,damp);
+          smolevelsublist.set("smoother: type"                        ,"Gauss-Seidel");
+          smolevelsublist.set("smoother: sweeps"                      ,mlsmotimessteps[i]);
+          smolevelsublist.set("smoother: damping factor"              ,damp);
           azlist.set<bool>("downwinding",true);
           azlist.set<double>("downwinding tau",inparams.get<double>("DWINDTAU"));
           {
@@ -1005,40 +1008,40 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
           }
         break;
         case 1: // Jacobi
-          mllist.set("smoother: type "+(string)levelstr                    ,"Jacobi");
-          mllist.set("smoother: sweeps "+(string)levelstr                  ,mlsmotimessteps[i]);
-          mllist.set("smoother: damping factor "+(string)levelstr          ,damp);
+          smolevelsublist.set("smoother: type"                        ,"Jacobi");
+          smolevelsublist.set("smoother: sweeps"                      ,mlsmotimessteps[i]);
+          smolevelsublist.set("smoother: damping factor"              ,damp);
         break;
         case 2: // Chebychev
-          mllist.set("smoother: type "+(string)levelstr                    ,"MLS");
-          mllist.set("smoother: MLS polynomial order "+(string)levelstr    ,mlsmotimessteps[i]);
+          smolevelsublist.set("smoother: type"                        ,"MLS");
+          smolevelsublist.set("smoother: MLS polynomial order"        ,mlsmotimessteps[i]);
         break;
         case 3: // MLS
-          mllist.set("smoother: type (level 0)"                            ,"MLS");
-          mllist.set("smoother: MLS polynomial order "+(string)levelstr    ,-mlsmotimessteps[i]);
+          smolevelsublist.set("smoother: type"                        ,"MLS");
+          smolevelsublist.set("smoother: MLS polynomial order"        ,-mlsmotimessteps[i]);
         break;
         case 4: // Ifpack's ILU
         {
-          mllist.set("smoother: type "+(string)levelstr,"ILU");
-          mllist.set("smoother: ifpack type "+(string)levelstr,"ILU");
-          mllist.set("smoother: ifpack overlap "+(string)levelstr,inparams.get<int>("AZOVERLAP"));
-          mllist.set<double>("smoother: ifpack level-of-fill",(double)mlsmotimessteps[i]);
+          smolevelsublist.set("smoother: type"                        ,"IFPACK");
+          smolevelsublist.set("smoother: ifpack type"                 ,"ILU");
+          smolevelsublist.set("smoother: ifpack overlap"              ,inparams.get<int>("AZOVERLAP"));
+          smolevelsublist.set<double>("smoother: ifpack level-of-fill",(double)mlsmotimessteps[i]);
           ParameterList& ifpacklist = mllist.sublist("smoother: ifpack list");
-          ifpacklist.set<int>("fact: level-of-fill",mlsmotimessteps[i]);
           ifpacklist.set("schwarz: reordering type","rcm");
         }
         break;
         case 5: // Amesos' KLU
-          mllist.set("smoother: type "+(string)levelstr,"Amesos-KLU");
+          smolevelsublist.set("smoother: type"                        ,"Amesos-KLU");
         break;
 #ifdef PARALLEL
         case 6: // Amesos' SuperLU_Dist
-          mllist.set("smoother: type "+(string)levelstr,"Amesos-Superludist");
+          smolevelsublist.set("smoother: type"                        ,"Amesos-Superludist");
         break;
 #endif
         default: dserror("Unknown type of smoother for ML: tuple %d",type); break;
         } // switch (type)
       } // for (int i=0; i<azvar->mlmaxlevel-1; ++i)
+      
       // set coarse grid solver
       const int coarse = mlmaxlevel-1;
       switch (Teuchos::getIntegralValue<int>(inparams,"ML_SMOOTHERCOARSE"))
@@ -1082,6 +1085,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
           mllist.set("coarse: type"          ,"IFPACK");
           mllist.set("coarse: ifpack type"   ,"ILU");
           mllist.set("coarse: ifpack overlap",0);
+          mllist.set<double>("coarse: ifpack level-of-fill",(double)mlsmotimessteps[coarse]);
           ParameterList& ifpacklist = mllist.sublist("coarse: ifpack list");
           ifpacklist.set<int>("fact: level-of-fill",mlsmotimessteps[coarse]);
           ifpacklist.set("schwarz: reordering type","rcm");
@@ -1101,6 +1105,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
       mllist.set("null space: type","pre-computed");
       mllist.set("null space: add default vectors",false);
       mllist.set<double*>("null space: vectors",NULL);
+      //cout << mllist << endl << endl << endl; fflush(stdout);
     } // if ml preconditioner
   }
   break;
