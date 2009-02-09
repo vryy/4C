@@ -165,7 +165,7 @@ namespace IO
     template<class M> std::string cellWithScalarToString(
         const DRT::Element::DiscretizationType distype,   ///< element shape
         const double scalar,                              ///< scalar value for the entire element
-        const M& xyze                                     ///< position array
+        const M& xyze                                     ///< position array (3, numnode)
     )
     {
       std::stringstream gmsh_ele_line;
@@ -183,7 +183,7 @@ namespace IO
     template<class V, class M> std::string cellWithScalarFieldToString(
         const DRT::Element::DiscretizationType  distype,        ///< element shape
         const V&                                scalarfield,    ///< scalar field in the element
-        const M&                                xyze            ///< position array
+        const M&                                xyze            ///< position array (3, numnode)
     )
     {
       std::stringstream gmsh_ele_line;

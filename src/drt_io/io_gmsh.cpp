@@ -223,10 +223,10 @@ std::string IO::GMSH::disToString(
 }
 
 std::string IO::GMSH::disToString(
-    const std::string&                      	s,
-    const double                            	scalar,
-    const Teuchos::RCP<DRT::Discretization> 	dis,
-    const std::map<int,LINALG::Matrix<3,1> >& 	currentpositions)
+    const std::string&                          s,
+    const double                                scalar,
+    const Teuchos::RCP<DRT::Discretization>     dis,
+    const std::map<int,LINALG::Matrix<3,1> >&   currentpositions)
 {
   std::stringstream gmshfilecontent;
   gmshfilecontent << "View \" " << s << " Elements \" {\n";

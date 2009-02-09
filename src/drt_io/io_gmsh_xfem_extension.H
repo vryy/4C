@@ -20,7 +20,6 @@
 
 namespace IO
 {
-  //! routines to transform results (elements, nodes, integrationcells, whole discretizations...) to Gmsh output
   namespace GMSH
   {
     //! print discretization including intersection information in initial configuration (t = 0)
