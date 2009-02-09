@@ -2796,8 +2796,9 @@ void FLD::FluidImplicitTimeInt::LiftDrag() const
   RCP<map<int,vector<double> > > liftdragvals;
 
   FLD::UTILS::LiftDrag(*discret_,*trueresidual_,params_,liftdragvals);
-  
-  FLD::UTILS::WriteLiftDragToFile(time_, step_, *liftdragvals);
+
+  if (liftdragvals!=Teuchos::null)
+    FLD::UTILS::WriteLiftDragToFile(time_, step_, *liftdragvals);
 
   return;
 }//FluidImplicitTimeInt::LiftDrag
