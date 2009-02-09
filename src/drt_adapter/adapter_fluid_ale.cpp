@@ -96,8 +96,6 @@ void ADAPTER::FluidAle::Output()
 {
   FluidField().StatisticsAndOutput();
   AleField().Output();
-
-  FluidField().LiftDrag();
 }
 
 

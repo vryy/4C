@@ -250,22 +250,26 @@ Maintainer: Peter Gamnitzer
             http://www.lnm.mw.tum.de
             089 - 289-15235
 </pre>
-
-
-  \param dis          (in ) the discretisation (node distribution, conditions)
-  \param force        (in ) the true residual (the nodal forces)
-  \param params       (in ) parameterlist including the lifdrag flag
-  \param liftdragvals (out) the computed values for lift and drag in an array 
-  
-
   \author chfoe 
   \date 11/07
  */
 void LiftDrag(
-  const DRT::Discretization      & dis         , //! fluid discretization
+  const DRT::Discretization      & dis         , //! fluid discretization (node distribution, conditions)
   const Epetra_Vector            & force       , //! vector of nodalforces
-  const ParameterList            & params      , //! parameters 
-  RCP<map<int,vector<double> > > & liftdragvals  //! computed ld values
+  const ParameterList            & params      , //! parameterlist including the lifdrag flag
+  RCP<map<int,vector<double> > > & liftdragvals  //! the computed values for lift and drag in an array 
+  );
+
+/*!
+ * \brief proc 0 writes transient liftdrag values to files (1 file per label)
+ * 
+ * \author axel
+ * \date 02/09
+ */
+void WriteLiftDragToFile(
+  const double                     time,         ///< current real time
+  const int                        step,         ///< time step
+  const map<int,vector<double> >&  liftdragvals  ///< the computed values for lift and drag in an array
   );
 
 /*!

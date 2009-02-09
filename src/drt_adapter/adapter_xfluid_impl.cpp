@@ -310,11 +310,11 @@ void ADAPTER::XFluidImpl::Output()
   // print redundant arrays on proc 0
   if (boundarydis_->Comm().MyPID() == 0)
   {
-    PrintInterfaceVectorField(idispnpcol, itruerescol, "_solution_iforce_", "interface force");
-    PrintInterfaceVectorField(idispnpcol, ivelnpcol, "_solution_ivel_"  , "interface velocity n+1");
-    PrintInterfaceVectorField(idispnpcol, idispnpcol, "_solution_idisp_"  , "interface displacement n+1");
-//    PrintInterfaceVectorField(idispnpcol, ivelncol , "_solution_iveln_" , "interface velocity n");
-//    PrintInterfaceVectorField(idispnpcol, iaccncol , "_solution_iaccn_" , "interface acceleration n");
+    PrintInterfaceVectorField(idispnpcol, itruerescol, ".solution_iforce_", "interface force");
+    PrintInterfaceVectorField(idispnpcol, ivelnpcol, ".solution_ivel_"  , "interface velocity n+1");
+    PrintInterfaceVectorField(idispnpcol, idispnpcol, ".solution_idisp_"  , "interface displacement n+1");
+//    PrintInterfaceVectorField(idispnpcol, ivelncol , ".solution_iveln_" , "interface velocity n");
+//    PrintInterfaceVectorField(idispnpcol, iaccncol , ".solution_iaccn_" , "interface acceleration n");
   }
   
   if (boundarydis_->Comm().MyPID() == 0 && itruerescol->MyLength() >= 3)

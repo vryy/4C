@@ -173,7 +173,7 @@ void FLD::XFluidImplicitTimeInt::Integrate(
         )
 {
   // bound for the number of startsteps
-  const int    numstasteps         =params_.get<int>   ("number of start steps");
+  //const int    numstasteps         =params_.get<int>   ("number of start steps");
 
   // output of stabilization details
   const ParameterList *  stabparams=&(params_.sublist("STABILIZATION"));
@@ -681,11 +681,9 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
 
   // action for elements
-  if (timealgo_!=timeint_stationary)
+  if (timealgo_!=timeint_stationary and theta_ < 1.0)
   {
-    cout0_ << "******************************************************" << endl;
-    cout0_ << "* Warning! Does not work for moving boundaries, yet! *" << endl;
-    cout0_ << "******************************************************" << endl;
+    cout0_ << "* Warning! Works reliable only for Backward Euler time discretization! *" << endl;
   }
   
   
@@ -987,8 +985,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       const int sign_digits = (int)floor(tmp);
       cout0_ << " cond est: " << scientific << cond_number << ", max.sign.digits: " << sign_digits;
     }
-    if (myrank_ == 0)
-      cout << endl;
+    cout0_ << endl;
     
     //-------solve for residual displacements to correct incremental displacements
     {
@@ -1325,7 +1322,7 @@ void FLD::XFluidImplicitTimeInt::ReadRestart(int step)
 void FLD::XFluidImplicitTimeInt::OutputToGmsh() const
 {
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
-  const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
+  const bool gmshdebugout = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
 
   const bool screen_out = false;
   
@@ -1335,8 +1332,8 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh() const
 
     std::stringstream filename;
     std::stringstream filenamedel;
-    filename << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_solution_pressure_" << std::setw(5) << setfill('0') << step_ << ".pos";
-    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_solution_pressure_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
+    filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".solution_pressure_" << std::setw(5) << setfill('0') << step_   << ".pos";
+    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".solution_pressure_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
     std::remove(filenamedel.str().c_str());
     if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
@@ -1419,8 +1416,8 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh() const
     std::stringstream filename;
     std::stringstream filenamedel;
     const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
-    filename    << filebase << "_solution_pressure_disc_" << std::setw(5) << setfill('0') << step_   << ".pos";
-    filenamedel << filebase << "_solution_pressure_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
+    filename    << filebase << ".solution_pressure_disc_" << std::setw(5) << setfill('0') << step_   << ".pos";
+    filenamedel << filebase << ".solution_pressure_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
     std::remove(filenamedel.str().c_str());
     if (screen_out) std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
@@ -1433,9 +1430,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh() const
       << "\n";
       for (int i=0; i<discret_->NumMyColElements(); ++i)
       {
-
         const DRT::Element* actele = discret_->lColElement(i);
-        const int elegid = actele->Id();
 
         static LINALG::Matrix<3,27> xyze_xfemElement;
         GEO::fillInitialPositionArray(actele,xyze_xfemElement);
@@ -1486,13 +1481,14 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh() const
 #if 0
   if (gmshdebugout)
   {
-    //std::stringstream filename;
+    std::stringstream filename;
     std::stringstream filenamexx;
     std::stringstream filenameyy;
     std::stringstream filenamezz;
     std::stringstream filenamexy;
     std::stringstream filenamexz;
     std::stringstream filenameyz;
+    std::stringstream filenamedel;
     std::stringstream filenamexxdel;
     std::stringstream filenameyydel;
     std::stringstream filenamezzdel;
@@ -1501,18 +1497,21 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh() const
     std::stringstream filenameyzdel;
     //filename   << "solution_tau_disc_"   << std::setw(5) << setfill('0') << step_ << ".pos";
     const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
-    filenamexx << filebase << "_solution_tauxx_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
-    filenameyy << filebase << "_solution_tauyy_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
-    filenamezz << filebase << "_solution_tauzz_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
-    filenamexy << filebase << "_solution_tauxy_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
-    filenamexz << filebase << "_solution_tauxz_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
-    filenameyz << filebase << "_solution_tauyz_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
-    filenamexxdel << filebase << "_solution_tauxx_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
-    filenameyydel << filebase << "_solution_tauyy_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
-    filenamezzdel << filebase << "_solution_tauzz_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
-    filenamexydel << filebase << "_solution_tauxy_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
-    filenamexzdel << filebase << "_solution_tauxz_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
-    filenameyzdel << filebase << "_solution_tauyz_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
+    filename   << filebase << ".solution_sigma_disc_"   << std::setw(5) << setfill('0') << step_ << ".pos";
+    filenamexx << filebase << ".solution_sigmaxx_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
+    filenameyy << filebase << ".solution_sigmayy_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
+    filenamezz << filebase << ".solution_sigmazz_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
+    filenamexy << filebase << ".solution_sigmaxy_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
+    filenamexz << filebase << ".solution_sigmaxz_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
+    filenameyz << filebase << ".solution_sigmayz_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
+    filenamedel   << filebase << ".solution_sigma_disc_"   << std::setw(5) << setfill('0') << step_-5 << ".pos";
+    filenamexxdel << filebase << ".solution_sigmaxx_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
+    filenameyydel << filebase << ".solution_sigmayy_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
+    filenamezzdel << filebase << ".solution_sigmazz_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
+    filenamexydel << filebase << ".solution_sigmaxy_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
+    filenamexzdel << filebase << ".solution_sigmaxz_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
+    filenameyzdel << filebase << ".solution_sigmayz_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
+    std::remove(filenamedel.str().c_str());
     std::remove(filenamexxdel.str().c_str());
     std::remove(filenameyydel.str().c_str());
     std::remove(filenamezzdel.str().c_str());
@@ -1521,7 +1520,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh() const
     std::remove(filenameyzdel.str().c_str());
     if (screen_out) std::cout << "writing " << std::left << std::setw(50) <<"stresses"<<"..."<<flush;
     
-    //std::ofstream f_system(  filename.str().c_str());
+    std::ofstream f_system(  filename.str().c_str());
     std::ofstream f_systemxx(filenamexx.str().c_str());
     std::ofstream f_systemyy(filenameyy.str().c_str());
     std::ofstream f_systemzz(filenamezz.str().c_str());
@@ -1532,25 +1531,23 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh() const
     const XFEM::PHYSICS::Field field = XFEM::PHYSICS::Sigmaxx;
 
     {
-      //stringstream gmshfilecontent;
+      stringstream gmshfilecontent;
       stringstream gmshfilecontentxx;
       stringstream gmshfilecontentyy;
       stringstream gmshfilecontentzz;
       stringstream gmshfilecontentxy;
       stringstream gmshfilecontentxz;
       stringstream gmshfilecontentyz;
-      //gmshfilecontent << "View \" " << "Discontinous Viscous Stress Solution (Physical) \" {" << endl;
-      gmshfilecontentxx << "View \" " << "Discontinous Viscous Stress (xx) Solution (Physical) \" {\n";
-      gmshfilecontentyy << "View \" " << "Discontinous Viscous Stress (yy) Solution (Physical) \" {\n";
-      gmshfilecontentzz << "View \" " << "Discontinous Viscous Stress (zz) Solution (Physical) \" {\n";
-      gmshfilecontentxy << "View \" " << "Discontinous Viscous Stress (xy) Solution (Physical) \" {\n";
-      gmshfilecontentxz << "View \" " << "Discontinous Viscous Stress (xz) Solution (Physical) \" {\n";
-      gmshfilecontentyz << "View \" " << "Discontinous Viscous Stress (yz) Solution (Physical) \" {\n";
+      gmshfilecontent   << "View \" " << "Discontinous Stress Solution (Physical) \" {" << endl;
+      gmshfilecontentxx << "View \" " << "Discontinous Stress (xx) Solution (Physical) \" {\n";
+      gmshfilecontentyy << "View \" " << "Discontinous Stress (yy) Solution (Physical) \" {\n";
+      gmshfilecontentzz << "View \" " << "Discontinous Stress (zz) Solution (Physical) \" {\n";
+      gmshfilecontentxy << "View \" " << "Discontinous Stress (xy) Solution (Physical) \" {\n";
+      gmshfilecontentxz << "View \" " << "Discontinous Stress (xz) Solution (Physical) \" {\n";
+      gmshfilecontentyz << "View \" " << "Discontinous Stress (yz) Solution (Physical) \" {\n";
       for (int i=0; i<discret_->NumMyColElements(); ++i)
       {
-
         const DRT::Element* actele = discret_->lColElement(i);
-        const int elegid = actele->Id();
 
         static LINALG::Matrix<3,27> xyze_xfemElement;
         GEO::fillInitialPositionArray(actele,xyze_xfemElement);
@@ -1605,12 +1602,12 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh() const
           // TODO remove
           const LINALG::SerialDenseMatrix& xyze_cell = cell->CellNodalPosXYZ();
 
-//          {
-//          LINALG::SerialDenseMatrix cellvalues(9,DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-//          XFEM::computeTensorCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
-//              *cell, field, elementvalues, cellvalues);
-//          gmshfilecontent << IO::GMSH::cellWithTensorFieldToString(cell->Shape(), cellvalues, xyze_cell) << endl;
-//          }
+          {
+          LINALG::SerialDenseMatrix cellvalues(9,DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+          XFEM::computeTensorCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
+              *cell, field, elementvalues, cellvalues);
+          gmshfilecontent << IO::GMSH::cellWithTensorFieldToString(cell->Shape(), cellvalues, xyze_cell) << endl;
+          }
 
           {
           LINALG::SerialDenseVector cellvaluexx(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
@@ -1644,14 +1641,14 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh() const
           }
         }
       }
-      //gmshfilecontent   << "};" << endl;
+      gmshfilecontent   << "};" << endl;
       gmshfilecontentxx << "};\n";
       gmshfilecontentyy << "};\n";
       gmshfilecontentzz << "};\n";
       gmshfilecontentxy << "};\n";
       gmshfilecontentxz << "};\n";
       gmshfilecontentyz << "};\n";
-      //f_system   << gmshfilecontent.str();
+      f_system   << gmshfilecontent.str();
       f_systemxx << gmshfilecontentxx.str();
       f_systemyy << gmshfilecontentyy.str();
       f_systemzz << gmshfilecontentzz.str();
@@ -1664,10 +1661,10 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh() const
 #endif
 
 
-  PlotVectorFieldToGmsh(state_.velnp_, "_solution_velocity_","Velocity Solution (Physical) n+1",true);
-//  PlotVectorFieldToGmsh(state_.veln_,  "_solution_velocity_old_step_","Velocity Solution (Physical) n",false);
-//  PlotVectorFieldToGmsh(state_.velnm_, "_solution_velocity_old2_step_","Velocity Solution (Physical) n-1",false);
-//  PlotVectorFieldToGmsh(state_.accn_,  "_solution_acceleration_old_step_","Acceleration Solution (Physical) n",false);
+  PlotVectorFieldToGmsh(state_.velnp_, ".solution_velocity_","Velocity Solution (Physical) n+1",true);
+//  PlotVectorFieldToGmsh(state_.veln_,  ".solution_velocity_old_step_","Velocity Solution (Physical) n",false);
+//  PlotVectorFieldToGmsh(state_.velnm_, ".solution_velocity_old2_step_","Velocity Solution (Physical) n-1",false);
+//  PlotVectorFieldToGmsh(state_.accn_,  ".solution_acceleration_old_step_","Acceleration Solution (Physical) n",false);
 }
 
 
@@ -1693,7 +1690,7 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
     std::stringstream filename;
     std::stringstream filenamedel;
     const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
-    filename << filebase << filestr << std::setw(5) << std::setfill('0') << step_ << ".pos";
+    filename    << filebase << filestr << std::setw(5) << std::setfill('0') << step_ << ".pos";
     filenamedel << filebase << filestr << std::setw(5) << std::setfill('0') << step_-5 << ".pos";
     std::remove(filenamedel.str().c_str());
     if (screen_out) std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"...";
@@ -1740,8 +1737,8 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
           elementvalues(2, iparam) = myvelnp[dofposvelz[iparam]];
         }
 
-        if (!dofmanagerForOutput_->getInterfaceHandle()->ElementIntersected(elegid))
-        {
+//        if (!dofmanagerForOutput_->getInterfaceHandle()->ElementIntersected(elegid))
+//        {
           const GEO::DomainIntCells& domainintcells =
             dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(actele);
           for (GEO::DomainIntCells::const_iterator cell =
@@ -1758,9 +1755,9 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
             gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
                 cell->Shape(), cellvalues, xyze_cell) << "\n";
           }
-        }
-        else
-        {
+//        }
+//        else
+//        {
           const GEO::BoundaryIntCells& boundaryintcells =
             dofmanagerForOutput_->getInterfaceHandle()->GetBoundaryIntCells(elegid);
           // draw boundary integration cells with values
@@ -1789,7 +1786,7 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
                 actele->Shape(), elevalues, xyze_ele) << "\n";
           }
 
-        }
+//        }
         //if (dofmanagerForOutput_->getInterfaceHandle()->ElementIntersected(elegid) and not ele_to_textfile and ele_to_textfile2)
         if (elegid == 1 and elementvalues.N() > 0 and plot_to_gnuplot)
         {

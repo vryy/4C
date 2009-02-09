@@ -16,6 +16,8 @@ Maintainer: Axel Gerstenberger
 
 #include "fluid_utils.H"
 #include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_io/io_control.H"
 
 
 /*----------------------------------------------------------------------*
@@ -383,6 +385,54 @@ void FLD::UTILS::LiftDrag(
   return;
 }
 
+// -------------------------------------------------------------------
+// -------------------------------------------------------------------
+void FLD::UTILS::WriteLiftDragToFile(
+  const double                     time,
+  const int                        step,
+  const map<int,vector<double> >&  liftdragvals
+  )
+{
+  // print to file
+  std::stringstream header;
+  header << right << std::setw(16) << "Time"
+         << right << std::setw(10) << "Step"
+         << right << std::setw(10) << "Label"
+         << right << std::setw(16) << "F_x"
+         << right << std::setw(16) << "F_y"
+         << right << std::setw(16) << "F_z";
+  
+  
+  for (map<int,vector<double> >::const_iterator liftdragval = liftdragvals.begin(); liftdragval != liftdragvals.end(); ++liftdragval)
+  {
+    std::stringstream s;
+    s << right << std::setw(16) << scientific << time
+      << right << std::setw(10) << scientific << step
+      << right << std::setw(10) << scientific << liftdragval->first
+      << right << std::setw(16) << scientific << liftdragval->second[0]
+      << right << std::setw(16) << scientific << liftdragval->second[1]
+      << right << std::setw(16) << scientific << liftdragval->second[2];
+    
+    std::stringstream slabel;
+    slabel << std::setw(3) << setfill('0') << liftdragval->first;
+    std::ofstream f;
+    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
+                            + ".liftdrag_label_"+slabel.str()+".txt";
+  
+    if (step <= 1)
+    {
+      f.open(fname.c_str(),std::fstream::trunc);
+      //f << header.str() << endl;
+    }
+    else
+    {
+      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+    }
+    
+    f << s.str() << "\n";
+    f.close();
+  }
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

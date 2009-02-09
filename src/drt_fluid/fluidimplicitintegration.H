@@ -85,7 +85,7 @@ public:
   \brief Standard Constructor
 
   */
-  FluidImplicitTimeInt(RCP<DRT::Discretization>  dis,
+  FluidImplicitTimeInt(RCP<DRT::Discretization>  actdis,
                        LINALG::Solver&           solver,
                        ParameterList&            params,
                        IO::DiscretizationWriter& output,
