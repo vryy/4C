@@ -63,31 +63,11 @@ namespace FSI
     /// structure-ale-fluid lower Gauss-Seidel block preconditioner
     void SAFLowerGS(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
 
-    /// fluid-structure-ale lower Gauss-Seidel block preconditioner
-    void FSALowerGS(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
-
-    /// upper Gauss-Seidel block preconditioner
-    void UpperGS(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
-
     /// symmetric Gauss-Seidel block preconditioner
     void SGS(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
 
     /// merge block matrix for direct solve
     void MergeSolve(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
-
-    /// block Richardson iteration with fixed relaxation
-    void BlockRichardson(const LINALG::SparseMatrix& Aii,
-                         const LINALG::SparseMatrix& Aig,
-                         const LINALG::SparseMatrix& Agi,
-                         const LINALG::SparseMatrix& Agg,
-                         Teuchos::RCP<LINALG::Preconditioner> Sii,
-                         Teuchos::RCP<LINALG::Preconditioner> Sgg,
-                         Teuchos::RCP<Epetra_Vector> xi,
-                         Teuchos::RCP<Epetra_Vector> xg,
-                         Teuchos::RCP<Epetra_Vector> bi,
-                         Teuchos::RCP<Epetra_Vector> bg,
-                         double omega,
-                         int itenum) const;
 
     /** \name Field solver objects */
     //@{
