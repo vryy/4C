@@ -99,6 +99,7 @@ FSI::MonolithicStructureSplit::MonolithicStructureSplit(Epetra_Comm& comm)
                                                           FluidField(),
                                                           AleField(),
                                                           true,
+                                                          Teuchos::getIntegralValue<int>(fsidyn,"SYMMETRICPRECOND"),
                                                           fsidyn.get<double>("STRUCTPCOMEGA"),
                                                           fsidyn.get<int>("STRUCTPCITER"),
                                                           fsidyn.get<double>("FLUIDPCOMEGA"),

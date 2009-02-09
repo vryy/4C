@@ -1687,6 +1687,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   setStringToIntegralParameter<int>("INFNORMSCALING","Yes","Scale Blocks in Mono-FSI with row infnorm?",
                                      yesnotuple,yesnovalue,&fsidyn);
+  setStringToIntegralParameter<int>("SYMMETRICPRECOND","No","Symmetric block GS preconditioner in monolithic FSI or ordinary GS",
+                                     yesnotuple,yesnovalue,&fsidyn);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& xfem_general = list->sublist("XFEM GENERAL",false,"");
@@ -2040,7 +2042,7 @@ void DRT::INPUT::SetValidNoxParameters(Teuchos::ParameterList& list)
     Teuchos::setStringToIntegralParameter<std::string>(
       "Nonlinear Solver","Line Search Based","",
       st,st,
-      &list);  
+      &list);
   }
 
   // sub-list direction
@@ -2193,7 +2195,7 @@ void DRT::INPUT::SetValidNoxParameters(Teuchos::ParameterList& list)
     Teuchos::setStringToIntegralParameter<std::string>(
       "Sufficient Decrease Condition","Armijo-Goldstein","Choice to use for the sufficient decrease condition",
       sufficientdecreasecondition,sufficientdecreasecondition,
-      &morethuente);    
+      &morethuente);
     BoolParameter("Optimize Slope Calculation","No","Boolean value. If set to true the value of $s^T J^T F$ is estimated using a directional derivative in a call to NOX::LineSearch::Common::computeSlopeWithOutJac. If false the slope computation is computed with the NOX::LineSearch::Common::computeSlope method. Setting this to true eliminates having to compute the Jacobian at each inner iteration of the More'-Thuente line search",&morethuente);
   }
 

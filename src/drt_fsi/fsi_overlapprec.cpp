@@ -53,6 +53,7 @@ FSI::OverlappingBlockMatrix::OverlappingBlockMatrix(const LINALG::MultiMapExtrac
                                                     ADAPTER::Fluid& fluid,
                                                     ADAPTER::Ale& ale,
                                                     bool structuresplit,
+                                                    int symmetric,
                                                     double somega,
                                                     int siterations,
                                                     double fomega,
@@ -60,6 +61,7 @@ FSI::OverlappingBlockMatrix::OverlappingBlockMatrix(const LINALG::MultiMapExtrac
                                                     FILE* err)
   : LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(maps,maps,81,false,true),
     structuresplit_(structuresplit),
+    symmetric_(symmetric),
     somega_(somega),
     siterations_(siterations),
     fomega_(fomega),
@@ -90,8 +92,10 @@ int FSI::OverlappingBlockMatrix::ApplyInverse(const Epetra_MultiVector &X, Epetr
 #ifdef BLOCKMATRIXMERGE
   MergeSolve(X, Y);
 #else
-  //SAFLowerGS(X, Y);
-  SGS(X, Y);
+  if (symmetric_)
+    SGS(X, Y);
+  else
+    SAFLowerGS(X, Y);
 #endif
 
   return 0;

@@ -32,7 +32,8 @@ namespace FSI
                            ADAPTER::Structure& structure,
                            ADAPTER::Fluid& fluid,
                            ADAPTER::Ale& ale,
-                           bool structuresplit=false,
+                           bool structuresplit,
+                           int symmetric,
                            double somega=1.0,
                            int siterations=0,
                            double fomega=1.0,
@@ -82,6 +83,9 @@ namespace FSI
 
     /// split is in structural matrix, interface equations belong to fluid block
     bool structuresplit_;
+
+    /// Symmetric block GS preconditioner in monolithic FSI or ordinary GS
+    int symmetric_;
 
     /// \name Richardson iteration
     //@{
