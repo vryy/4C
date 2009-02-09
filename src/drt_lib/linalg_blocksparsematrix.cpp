@@ -5,11 +5,11 @@
 -------------------------------------------------------------------------
                  BACI finite element library subsystem
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -21,11 +21,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 </pre>
@@ -56,7 +56,8 @@ LINALG::BlockSparseMatrixBase::BlockSparseMatrixBase(const MultiMapExtractor& do
                                                      bool explicitdirichlet,
                                                      bool savegraph)
   : domainmaps_(domainmaps),
-    rangemaps_(rangemaps)
+    rangemaps_(rangemaps),
+    usetranspose_(false)
 {
   blocks_.reserve(Rows()*Cols());
 
@@ -241,9 +242,10 @@ void LINALG::BlockSparseMatrixBase::ApplyDirichlet(const Epetra_Map& dbcmap, boo
  *----------------------------------------------------------------------*/
 int LINALG::BlockSparseMatrixBase::SetUseTranspose(bool UseTranspose)
 {
-  if (UseTranspose)
-    dserror("transposed block matrix not implemented");
-  return false;
+  for (unsigned i=0; i<blocks_.size(); ++i)
+    blocks_[i].SetUseTranspose(UseTranspose);
+  usetranspose_ = UseTranspose;
+  return 0;
 }
 
 
@@ -275,7 +277,21 @@ int LINALG::BlockSparseMatrixBase::Apply(const Epetra_MultiVector &X, Epetra_Mul
   }
   else
   {
-    dserror("transposed block matrices not supported");
+    for (int rblock=0; rblock<cols; ++rblock)
+    {
+      Teuchos::RCP<Epetra_MultiVector> rowresult = rangemaps_.Vector(rblock,Y.NumVectors());
+      Teuchos::RCP<Epetra_MultiVector> rowy      = rangemaps_.Vector(rblock,Y.NumVectors());
+      for (int cblock=0; cblock<rows; ++cblock)
+      {
+        Teuchos::RCP<Epetra_MultiVector> colx = domainmaps_.ExtractVector(X,cblock);
+        const LINALG::SparseMatrix& bmat = Matrix(cblock,rblock);
+        int err = bmat.Apply(*colx,*rowy);
+        if (err!=0)
+          dserror("failed to apply vector to matrix: err=%d",err);
+        rowresult->Update(1.0,*rowy,1.0);
+      }
+      rangemaps_.InsertVector(*rowresult,rblock,Y);
+    }
   }
 
   return 0;
@@ -311,7 +327,7 @@ const char* LINALG::BlockSparseMatrixBase::Label() const
  *----------------------------------------------------------------------*/
 bool LINALG::BlockSparseMatrixBase::UseTranspose() const
 {
-  return false;
+  return usetranspose_;
 }
 
 
