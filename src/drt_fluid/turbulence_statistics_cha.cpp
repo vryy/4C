@@ -2797,10 +2797,6 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(int step)
   // u_tau and l_tau at bottom and top wall as well as mean values
   const double utaub = sqrt(tauwb/rhowb);
   const double utaut = sqrt(tauwt/rhowt);
-  const double utaum = (utaub+utaut)/2.0;
-  const double ltaub = visc_/utaub/rhowb;
-  const double ltaut = visc_/utaut/rhowt;
-  const double ltaum = (ltaub+ltaut)/2.0;
 
   //----------------------------------------------------------------------
   // output to log-file
@@ -2816,26 +2812,19 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(int step)
     (*log) << "# Statistics record ";
     (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
 
-    (*log) << "# bottom wall: tauwb, rhowb, u_taub, ltaub : ";
+    (*log) << "# bottom wall: tauwb, rhowb, u_taub : ";
     (*log) << "   " << setw(11) << setprecision(4) << tauwb;
     (*log) << "   " << setw(11) << setprecision(4) << rhowb;
     (*log) << "   " << setw(11) << setprecision(4) << utaub;
-    (*log) << "   " << setw(11) << setprecision(4) << ltaub;
     (*log) << &endl;
 
-    (*log) << "# top wall:    tauwt, rhowt, u_taut, ltaut : ";
+    (*log) << "# top wall:    tauwt, rhowt, u_taut : ";
     (*log) << "   " << setw(11) << setprecision(4) << tauwt;
     (*log) << "   " << setw(11) << setprecision(4) << rhowt;
     (*log) << "   " << setw(11) << setprecision(4) << utaut;
-    (*log) << "   " << setw(11) << setprecision(4) << ltaut;
     (*log) << &endl;
 
-    (*log) << "# mean values:               u_taum, ltaum : ";
-    (*log) << "   " << setw(11) << setprecision(4) << utaum;
-    (*log) << "   " << setw(11) << setprecision(4) << ltaum;
-    (*log) << &endl;
-
-    (*log) << "#     y       y+_mean     y+_bottom        y+_top";
+    (*log) << "#     y";
     (*log) << "           umean         vmean         wmean         pmean       rhomean         Tmean       mommean     rhouTmean";
     (*log) << "        mean u^2      mean v^2      mean w^2      mean p^2    mean rho^2      mean T^2";
     (*log) << "      mean u*v      mean u*w      mean v*w      mean u*T      mean v*T      mean w*T\n";
@@ -2844,9 +2833,6 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(int step)
     for(unsigned i=0; i<planecoordinates_->size(); ++i)
     {
       (*log) <<  " "  << setw(11) << setprecision(4) << (*planecoordinates_)[i];
-      (*log) << "   " << setw(11) << setprecision(4) << (*planecoordinates_)[i]/ltaum;
-      (*log) << "   " << setw(11) << setprecision(4) << (*planecoordinates_)[i]/ltaub;
-      (*log) << "   " << setw(11) << setprecision(4) << (*planecoordinates_)[i]/ltaut;
       (*log) << "   " << setw(11) << setprecision(4) << (*sumu_            )[i]/aux;
       (*log) << "   " << setw(11) << setprecision(4) << (*sumv_            )[i]/aux;
       (*log) << "   " << setw(11) << setprecision(4) << (*sumw_            )[i]/aux;

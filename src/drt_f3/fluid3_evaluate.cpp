@@ -1876,8 +1876,8 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
         vsqbar   += vgp*dvbar;
         wsqbar   += wgp*dwbar;
         psqbar   += pgp*dpbar;
-        rhosqbar += rhogp*dpbar;
-        Tsqbar   += Tgp*dpbar;
+        rhosqbar += rhogp*drhobar;
+        Tsqbar   += Tgp*dTbar;
 
         uvbar  += ugp*dvbar;
         uwbar  += ugp*dwbar;
