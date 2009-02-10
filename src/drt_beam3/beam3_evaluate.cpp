@@ -229,8 +229,8 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
             }
 
             //modifying displacment artificially (for numerical derivative of internal forces):
-            disp_aux[i + 6*k] = disp_aux[i + 6*k] + h_rel;
-             vel_aux[i + 6*k] =  vel_aux[i + 6*k] + h_rel * params.get<double>("gamma",0.581) / ( params.get<double>("delta time",0.01)*params.get<double>("beta",0.292) );
+            disp_aux[i + 6*k] += h_rel;
+             vel_aux[i + 6*k] += h_rel * params.get<double>("gamma",0.581) / ( params.get<double>("delta time",0.01)*params.get<double>("beta",0.292) );
 
             b3_nlnstiffmass(params,vel_aux,disp_aux,NULL,NULL,&force_aux);
 
@@ -624,35 +624,43 @@ inline void DRT::ELEMENTS::Beam3::computestiffbasis(const LINALG::Matrix<3,3>& T
  |computes from a quaternion q the related angle theta (public)cyron10/08|
  *----------------------------------------------------------------------*/
 inline void DRT::ELEMENTS::Beam3::quaterniontoangle(const LINALG::Matrix<4,1>& q, LINALG::Matrix<3,1>& theta)
-{
-  /*for the angle theta we assume the domain [0; 2*PI[; hence the halfangle sine is always
-   * positive and if it is zero the only solution is theta = 0; the halfangle theta/2 has
-   * the domain [0; PI[*/
-
-  double sin_thetahalf = pow( q(0)*q(0) + q(1)*q(1) + q(2)*q(2) , 0.5);
-  double thetahalf_abs = asin( sin_thetahalf );
+{  
+  /*the following funciton computes from a quaternion q an angle theta within [-PI; PI]; such an interval is
+   * imperative for the use of the resulting angle together with formulae like Crisfield, Vol. 2, equation (16.90);
+   * note that these formulae comprise not only trigonometric functions, but rather the angle theta directly. Hence
+   * they are not 2*PI-invariant !!! */
   
-  /*note: for sin_thetahalf = 1 numerical problems with the asin function are to be expected; in this cas
-   * asin returns NaN; thetahalf_abs has always to be positive and thus > -1, but Nan returns for NaN > -1 false
-   * so that this case can be considered by means of the following if-condition*/
-  if( !(thetahalf_abs > -1 ) )
-    thetahalf_abs = 0.5*PI;
-
-  /*if cos(theta/2), i.e. q(3) is negative the true value is not thetahalf_abs, but
-   * (PI - thetahalf_abs)*/
-  if(q(3) < 0)
-    thetahalf_abs = PI - thetahalf_abs;
-
-  double theta_abs = thetahalf_abs * 2;
-
-  if(sin_thetahalf > 0)
+  //first we consider the case that the absolute value of the rotation angle equals zero
+  if(q(0) == 0 && q(1) == 0 && q(2) == 0 )
   {
     for(int i = 0; i<3; i++)
-      theta(i) = theta_abs * q(i) / sin_thetahalf;
-  }
-  else
-    for(int i = 0; i<3; i++)
       theta(i) = 0;
+    
+    return;
+  }
+  
+  //second we consider the case that the abolute value of the rotation angle equals PI
+  if(q(3) == 0)
+  {
+    //note that with q(3) == 0 the first three elements of q represent the unit direction vector of the angle
+    //according to Crisfield, Vol. 2, equation (16.67)
+    for(int i = 0; i<3; i++)
+      theta(i) = q(i) * PI;
+    
+    return;   
+  }
+  
+  //in any case except for the one dealt with above the angle can be computed from a quaternion via Crisfield, Vol. 2, eq. (16.79) 
+  LINALG::Matrix<3,1> omega;
+  for(int i = 0; i<3; i++)
+    omega(i) = q(i)*2/q(3);
+    
+  double tanhalf = omega.Norm2() / 2;
+  
+  double thetaabs = atan(tanhalf)*2;
+  
+  for(int i = 0; i<3; i++)
+      theta(i) = thetaabs* omega(i) / omega.Norm2();
 
   return;
 } //DRT::ELEMENTS::Beam3::quaterniontoangle()
@@ -993,6 +1001,32 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
   epsilonn.MultiplyTN(Tnew,x21);
   epsilonn.Scale(1/lrefe_);
   epsilonn(0) -=  1;
+  
+  
+  LINALG::Matrix<3,1> winkel;
+  LINALG::Matrix<3,1> richtung;
+  LINALG::Matrix<3,1> aufpunkt;
+  LINALG::Matrix<3,1> endpunkt;
+  for (int j = 0; j<3; j++)
+  {
+    richtung(j) = xcurr(j,1) - xcurr(j,0);
+    aufpunkt(j) = xcurr(j,0);
+    endpunkt(j) = xcurr(j,1);
+  }
+  
+  if(Id() == 0)
+  {
+    //quaterniontoangle(Qnew_, winkel);
+    //std::cout<<"\nwinkel element "<<Id()<<" : "<< winkel;
+    //std::cout<<"\nTriade element "<<Id()<<" : "<< Tnew;
+    //std::cout<<"\nAxenrichtung element "<<Id()<<" : "<< richtung;
+    //std::cout<<"\nAufpunkt element "<<Id()<<" : "<< aufpunkt;
+    //std::cout<<"\nEndpunkt element "<<Id()<<" : "<< endpunkt;
+    //std::cout<<"\ncurvature element "<<Id()<<" : "<< curvnew_;
+    
+    //std::cout<<"\nxcurr "<<Id()<<" : "<< xcurr;
+  }
+  
 
   /* read material parameters using structure _MATERIAL which is defined by inclusion of      /
    / "../drt_lib/drt_timecurve.H"; note: material parameters have to be read in the evaluation /
@@ -1105,10 +1139,10 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
       omega.Scale( 1.0 / params.get<double>("delta time",0.01) );
       for(int i = 0; i<3; i++)
       {
-        //node 1
+        //node 1     
         (*force)[3+i] += omega(i)*torsdamp*zeta_;
         //node 2
-        (*force)[9+i] += omega(i)*torsdamp*zeta_;
+        (*force)[9+i] += omega(i)*torsdamp*zeta_;      
       }
     }
     
