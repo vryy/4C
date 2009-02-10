@@ -34,6 +34,8 @@ namespace FSI
                            ADAPTER::Ale& ale,
                            bool structuresplit,
                            int symmetric,
+                           double omega=1.0,
+                           int iterations=1,
                            double somega=1.0,
                            int siterations=0,
                            double fomega=1.0,
@@ -90,6 +92,8 @@ namespace FSI
     /// \name Richardson iteration
     //@{
 
+    double omega_;
+    int iterations_;
     double somega_;
     int siterations_;
     double fomega_;

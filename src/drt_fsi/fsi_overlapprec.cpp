@@ -54,6 +54,8 @@ FSI::OverlappingBlockMatrix::OverlappingBlockMatrix(const LINALG::MultiMapExtrac
                                                     ADAPTER::Ale& ale,
                                                     bool structuresplit,
                                                     int symmetric,
+                                                    double omega,
+                                                    int iterations,
                                                     double somega,
                                                     int siterations,
                                                     double fomega,
@@ -62,6 +64,8 @@ FSI::OverlappingBlockMatrix::OverlappingBlockMatrix(const LINALG::MultiMapExtrac
   : LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(maps,maps,81,false,true),
     structuresplit_(structuresplit),
     symmetric_(symmetric),
+    omega_(omega),
+    iterations_(iterations),
     somega_(somega),
     siterations_(siterations),
     fomega_(fomega),
@@ -92,10 +96,7 @@ int FSI::OverlappingBlockMatrix::ApplyInverse(const Epetra_MultiVector &X, Epetr
 #ifdef BLOCKMATRIXMERGE
   MergeSolve(X, Y);
 #else
-  if (symmetric_)
-    SGS(X, Y);
-  else
-    SAFLowerGS(X, Y);
+  SGS(X, Y);
 #endif
 
   return 0;
@@ -280,10 +281,6 @@ void FSI::OverlappingBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_MultiV
 
   const Epetra_Vector &x = Teuchos::dyn_cast<const Epetra_Vector>(X);
 
-  Teuchos::RCP<Epetra_Vector> sx = DomainExtractor().ExtractVector(x,0);
-  Teuchos::RCP<Epetra_Vector> fx = DomainExtractor().ExtractVector(x,1);
-  Teuchos::RCP<Epetra_Vector> ax = DomainExtractor().ExtractVector(x,2);
-
   // initial guess
 
   Epetra_Vector &y = Teuchos::dyn_cast<Epetra_Vector>(Y);
@@ -292,115 +289,176 @@ void FSI::OverlappingBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_MultiV
   Teuchos::RCP<Epetra_Vector> fy = RangeExtractor().ExtractVector(y,1);
   Teuchos::RCP<Epetra_Vector> ay = RangeExtractor().ExtractVector(y,2);
 
-  // ----------------------------------------------------------------
-  // lower GS
+  Teuchos::RCP<Epetra_Vector> sz = Teuchos::rcp(new Epetra_Vector(sy->Map()));
+  Teuchos::RCP<Epetra_Vector> fz = Teuchos::rcp(new Epetra_Vector(fy->Map()));
+  Teuchos::RCP<Epetra_Vector> az = Teuchos::rcp(new Epetra_Vector(ay->Map()));
 
+  Teuchos::RCP<Epetra_Vector> tmpsx = Teuchos::rcp(new Epetra_Vector(DomainMap(0)));
+  Teuchos::RCP<Epetra_Vector> tmpfx = Teuchos::rcp(new Epetra_Vector(DomainMap(1)));
+  Teuchos::RCP<Epetra_Vector> tmpax = Teuchos::rcp(new Epetra_Vector(DomainMap(2)));
+
+  // outer Richardson loop
+  for (int run=0; run<iterations_; ++run)
   {
-    // Solve structure equations for sy with the rhs sx
-    structuresolver_->Solve(structInnerOp.EpetraMatrix(),sy,sx,true);
+    Teuchos::RCP<Epetra_Vector> sx = DomainExtractor().ExtractVector(x,0);
+    Teuchos::RCP<Epetra_Vector> fx = DomainExtractor().ExtractVector(x,1);
+    Teuchos::RCP<Epetra_Vector> ax = DomainExtractor().ExtractVector(x,2);
 
-    // do Richardson iteration
-    Teuchos::RCP<Epetra_Vector> tmpsx = Teuchos::rcp(new Epetra_Vector(DomainMap(0)));
-    LocalBlockRichardson(structuresolver_,structInnerOp,sx,sy,tmpsx,siterations_,somega_,err_,Comm());
-  }
+    // ----------------------------------------------------------------
+    // lower GS
 
-  {
-    // Solve ale equations for ay with the rhs ax - A(I,Gamma) sy
-
-    if (structuresplit_)
     {
+      if (run>0)
+      {
+        const LINALG::SparseMatrix& structBoundOp  = Matrix(0,1);
+
+        structInnerOp.Multiply(false,*sy,*tmpsx);
+        sx->Update(-1.0,*tmpsx,1.0);
+        structBoundOp.Multiply(false,*fy,*tmpsx);
+        sx->Update(-1.0,*tmpsx,1.0);
+      }
+
+      // Solve structure equations for sy with the rhs sx
+      structuresolver_->Solve(structInnerOp.EpetraMatrix(),sz,sx,true);
+
+      // do Richardson iteration
+      LocalBlockRichardson(structuresolver_,structInnerOp,sx,sz,tmpsx,siterations_,somega_,err_,Comm());
+
+      if (run>0)
+      {
+        sy->Update(omega_,*sz,1.0);
+      }
+      else
+      {
+        sy->Update(omega_,*sz,0.0);
+      }
     }
-    else
+
     {
-      Teuchos::RCP<Epetra_Vector> tmpax = Teuchos::rcp(new Epetra_Vector(DomainMap(2)));
-      const LINALG::SparseMatrix& aleBoundOp    = Matrix(2,0);
-      aleBoundOp.Multiply(false,*sy,*tmpax);
-      ax->Update(-1.0,*tmpax,1.0);
+      // Solve ale equations for ay with the rhs ax - A(I,Gamma) sy
+
+      if (run>0)
+      {
+        aleInnerOp.Multiply(false,*ay,*tmpax);
+        ax->Update(-1.0,*tmpax,1.0);
+      }
+
+      if (structuresplit_)
+      {
+        if (run>0)
+        {
+          const LINALG::SparseMatrix& aleBoundOp    = Matrix(2,1);
+          aleBoundOp.Multiply(false,*fy,*tmpax);
+          ax->Update(-1.0,*tmpax,1.0);
+        }
+      }
+      else
+      {
+        const LINALG::SparseMatrix& aleBoundOp    = Matrix(2,0);
+        aleBoundOp.Multiply(false,*sy,*tmpax);
+        ax->Update(-1.0,*tmpax,1.0);
+      }
+
+      alesolver_->Solve(aleInnerOp.EpetraMatrix(),az,ax,true);
+
+      if (run>0)
+      {
+        ay->Update(omega_,*az,1.0);
+      }
+      else
+      {
+        ay->Update(omega_,*az,0.0);
+      }
     }
-    alesolver_->Solve(aleInnerOp.EpetraMatrix(),ay,ax,true);
-  }
 
-  {
-    // Solve fluid equations for fy with the rhs fx - F(I,Gamma) sy - F(Mesh) ay
-
-    Teuchos::RCP<Epetra_Vector> tmpfx = Teuchos::rcp(new Epetra_Vector(DomainMap(1)));
-
-    fluidBoundOp.Multiply(false,*sy,*tmpfx);
-    fx->Update(-1.0,*tmpfx,1.0);
-    fluidMeshOp.Multiply(false,*ay,*tmpfx);
-    fx->Update(-1.0,*tmpfx,1.0);
-    fluidsolver_->Solve(fluidInnerOp.EpetraMatrix(),fy,fx,true);
-
-    LocalBlockRichardson(fluidsolver_,fluidInnerOp,fx,fy,tmpfx,fiterations_,fomega_,err_,Comm());
-  }
-
-  // ----------------------------------------------------------------
-  // reset
-
-  sx = DomainExtractor().ExtractVector(x,0);
-  fx = DomainExtractor().ExtractVector(x,1);
-  ax = DomainExtractor().ExtractVector(x,2);
-
-  // store first part of solution
-
-  Teuchos::RCP<Epetra_Vector> sz = Teuchos::rcp(new Epetra_Vector(*sy));
-  Teuchos::RCP<Epetra_Vector> fz = Teuchos::rcp(new Epetra_Vector(*fy));
-  Teuchos::RCP<Epetra_Vector> az = Teuchos::rcp(new Epetra_Vector(*ay));
-
-  // ----------------------------------------------------------------
-  // upper GS
-
-  {
-    Teuchos::RCP<Epetra_Vector> tmpfx = Teuchos::rcp(new Epetra_Vector(DomainMap(1)));
-
-    fluidInnerOp.Multiply(false,*fy,*tmpfx);
-    fx->Update(-1.0,*tmpfx,1.0);
-    fluidBoundOp.Multiply(false,*sy,*tmpfx);
-    fx->Update(-1.0,*tmpfx,1.0);
-    fluidMeshOp.Multiply(false,*ay,*tmpfx);
-    fx->Update(-1.0,*tmpfx,1.0);
-
-    fluidsolver_->Solve(fluidInnerOp.EpetraMatrix(),fy,fx,true);
-
-    LocalBlockRichardson(fluidsolver_,fluidInnerOp,fx,fy,tmpfx,fiterations_,fomega_,err_,Comm());
-  }
-
-  {
-    Teuchos::RCP<Epetra_Vector> tmpax = Teuchos::rcp(new Epetra_Vector(DomainMap(2)));
-    aleInnerOp.Multiply(false,*ay,*tmpax);
-    ax->Update(-1.0,*tmpax,1.0);
-    if (structuresplit_)
     {
-      const LINALG::SparseMatrix& aleBoundOp    = Matrix(2,1);
-      aleBoundOp.Multiply(false,*fy,*tmpax);
-      ax->Update(-1.0,*tmpax,1.0);
+      // Solve fluid equations for fy with the rhs fx - F(I,Gamma) sy - F(Mesh) ay
+
+      if (run>0)
+      {
+        fluidInnerOp.Multiply(false,*fy,*tmpfx);
+        fx->Update(-1.0,*tmpfx,1.0);
+      }
+
+      fluidBoundOp.Multiply(false,*sy,*tmpfx);
+      fx->Update(-1.0,*tmpfx,1.0);
+      fluidMeshOp.Multiply(false,*ay,*tmpfx);
+      fx->Update(-1.0,*tmpfx,1.0);
+      fluidsolver_->Solve(fluidInnerOp.EpetraMatrix(),fz,fx,true);
+
+      LocalBlockRichardson(fluidsolver_,fluidInnerOp,fx,fz,tmpfx,fiterations_,fomega_,err_,Comm());
+
+      if (run>0)
+      {
+        fy->Update(omega_,*fz,1.0);
+      }
+      else
+      {
+        fy->Update(omega_,*fz,0.0);
+      }
     }
-    else
+
+    // ----------------------------------------------------------------
+    // the symmetric part of the pc can be skipped
+
+    if (symmetric_)
     {
+
+      sx = DomainExtractor().ExtractVector(x,0);
+      fx = DomainExtractor().ExtractVector(x,1);
+      ax = DomainExtractor().ExtractVector(x,2);
+
+      // ----------------------------------------------------------------
+      // upper GS
+
+      {
+        fluidInnerOp.Multiply(false,*fy,*tmpfx);
+        fx->Update(-1.0,*tmpfx,1.0);
+        fluidBoundOp.Multiply(false,*sy,*tmpfx);
+        fx->Update(-1.0,*tmpfx,1.0);
+        fluidMeshOp.Multiply(false,*ay,*tmpfx);
+        fx->Update(-1.0,*tmpfx,1.0);
+
+        fluidsolver_->Solve(fluidInnerOp.EpetraMatrix(),fz,fx,true);
+
+        LocalBlockRichardson(fluidsolver_,fluidInnerOp,fx,fz,tmpfx,fiterations_,fomega_,err_,Comm());
+        fy->Update(omega_,*fz,1.0);
+      }
+
+      {
+        aleInnerOp.Multiply(false,*ay,*tmpax);
+        ax->Update(-1.0,*tmpax,1.0);
+        if (structuresplit_)
+        {
+          const LINALG::SparseMatrix& aleBoundOp    = Matrix(2,1);
+          aleBoundOp.Multiply(false,*fy,*tmpax);
+          ax->Update(-1.0,*tmpax,1.0);
+        }
+        else
+        {
+          const LINALG::SparseMatrix& aleBoundOp    = Matrix(2,0);
+          aleBoundOp.Multiply(false,*sy,*tmpax);
+          ax->Update(-1.0,*tmpax,1.0);
+        }
+        alesolver_->Solve(aleInnerOp.EpetraMatrix(),az,ax,true);
+        ay->Update(omega_,*az,1.0);
+      }
+
+      {
+        const LINALG::SparseMatrix& structBoundOp  = Matrix(0,1);
+
+        structInnerOp.Multiply(false,*sy,*tmpsx);
+        sx->Update(-1.0,*tmpsx,1.0);
+        structBoundOp.Multiply(false,*fy,*tmpsx);
+        sx->Update(-1.0,*tmpsx,1.0);
+
+        structuresolver_->Solve(structInnerOp.EpetraMatrix(),sz,sx,true);
+
+        LocalBlockRichardson(structuresolver_,structInnerOp,sx,sz,tmpsx,siterations_,somega_,err_,Comm());
+        sy->Update(omega_,*sz,1.0);
+      }
     }
-    alesolver_->Solve(aleInnerOp.EpetraMatrix(),ay,ax,true);
   }
-
-  {
-    Teuchos::RCP<Epetra_Vector> tmpsx = Teuchos::rcp(new Epetra_Vector(DomainMap(0)));
-    const LINALG::SparseMatrix& structBoundOp  = Matrix(0,1);
-
-    structInnerOp.Multiply(false,*sy,*tmpsx);
-    sx->Update(-1.0,*tmpsx,1.0);
-    structBoundOp.Multiply(false,*fy,*tmpsx);
-    sx->Update(-1.0,*tmpsx,1.0);
-
-    structuresolver_->Solve(structInnerOp.EpetraMatrix(),sy,sx,true);
-
-    LocalBlockRichardson(structuresolver_,structInnerOp,sx,sy,tmpsx,siterations_,somega_,err_,Comm());
-  }
-
-  // ----------------------------------------------------------------
-  // build solution vector
-
-  sy->Update(1.0,*sz,1.0);
-  fy->Update(1.0,*fz,1.0);
-  ay->Update(1.0,*az,1.0);
 
   RangeExtractor().InsertVector(*sy,0,y);
   RangeExtractor().InsertVector(*fy,1,y);

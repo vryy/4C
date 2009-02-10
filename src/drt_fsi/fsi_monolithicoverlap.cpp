@@ -92,6 +92,8 @@ FSI::MonolithicOverlap::MonolithicOverlap(Epetra_Comm& comm)
                                                           AleField(),
                                                           false,
                                                           Teuchos::getIntegralValue<int>(fsidyn,"SYMMETRICPRECOND"),
+                                                          fsidyn.get<double>("PCOMEGA"),
+                                                          fsidyn.get<int>("PCITER"),
                                                           fsidyn.get<double>("STRUCTPCOMEGA"),
                                                           fsidyn.get<int>("STRUCTPCITER"),
                                                           fsidyn.get<double>("FLUIDPCOMEGA"),
