@@ -20,26 +20,9 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/linalg_mapextractor.H"
 #include "../drt_lib/drt_colors.H"
 
-//! try to find another enrichment for this physical field
-XFEM::Enrichment XFEM::genAlternativeEnrichment(
-        const int                    gnodeid,
-        const XFEM::PHYSICS::Field   oldphysvar,
-        const RCP<XFEM::DofManager>& dofman
-        )
-{
-    const std::set<XFEM::FieldEnr>& fieldset(dofman->getNodeDofSet(gnodeid));
-    for (std::set<XFEM::FieldEnr>::const_iterator fieldenriter = fieldset.begin(); fieldenriter != fieldset.end(); ++fieldenriter)
-    {
-        const XFEM::PHYSICS::Field physvar = fieldenriter->getField();
-        if (oldphysvar == physvar)
-        {
-            return fieldenriter->getEnrichment();
-            break;
-        }
-    }
-    return XFEM::Enrichment();
-}
 
+
+//! try to find another enrichment for this physical field
 void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
         RCP<Epetra_Vector>&             vector,
         LINALG::Matrix<3,1>                    ivalrigid_body
@@ -225,6 +208,7 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
 }
 
 
+
 ////////////////////////////////////////////
 void XFEM::DofDistributionSwitcher::generateTransferInformation(
         const RCP<Epetra_Vector>&             vector
@@ -375,6 +359,28 @@ void XFEM::DofDistributionSwitcher::generateTransferInformation(
         }
         //exit(1);
     }
+}
+
+
+
+//! try to find another enrichment for this physical field
+XFEM::Enrichment XFEM::genAlternativeEnrichment(
+        const int                    gnodeid,
+        const XFEM::PHYSICS::Field   oldphysvar,
+        const RCP<XFEM::DofManager>& dofman
+        )
+{
+    const std::set<XFEM::FieldEnr>& fieldset(dofman->getNodeDofSet(gnodeid));
+    for (std::set<XFEM::FieldEnr>::const_iterator fieldenriter = fieldset.begin(); fieldenriter != fieldset.end(); ++fieldenriter)
+    {
+        const XFEM::PHYSICS::Field physvar = fieldenriter->getField();
+        if (oldphysvar == physvar)
+        {
+            return fieldenriter->getEnrichment();
+            break;
+        }
+    }
+    return XFEM::Enrichment();
 }
 
 

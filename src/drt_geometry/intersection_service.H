@@ -45,15 +45,22 @@ Maintainer: Ursula Mayer
 #define INTERSECTION_SERVICE_H_
 
 #include "../drt_geometry/intersection_service_templates.H"
+#include "../drt_geometry/element_normals.H"
 #include "../drt_geometry/position_array.H"
 
 
 
 namespace GEO
 {
-
-    //! based on this element property, one can speed up geometry algorithms 
-    enum EleGeoType {CARTESIAN, LINEAR, HIGHERORDER};
+    
+    
+    const double Dop18Normals[6][3] = {
+            { 1.0, 1.0, 0.0},  //  x  y
+            { 1.0, 0.0, 1.0},  //  x  z
+            { 0.0, 1.0, 1.0},  //  y  z
+            { 1.0, 0.0,-1.0},  //  x -z
+            {-1.0, 1.0, 0.0},  // -x  y
+            { 0.0,-1.0, 1.0}}; // -y  z
     
      
      /*!
@@ -75,62 +82,38 @@ namespace GEO
              }
          return true;
      }
-     
-     
-    /*!
-    \brief Checks if a node is within an 
-           extended axis-aligned bounding box (XAABB)
 
-    \param pos        (in)    : node to be checked
-    \param XAABB      (in)    : extended axis-aligned bouning box
-    \return true if node is within the XAABB or false otherwise
-    */
-    bool isPositionWithinXAABB(
-            const LINALG::Matrix<3,1>&                  pos,    
-            const LINALG::Matrix<3,2>&                  XAABB   
-            );
-    
-    
-    /*!
-    \brief Checks if a straightline with 2 nodes is within an 
-           extended axis-aligned bounding box (XAABB)
-    \param pos1       (in)    : node to be checked
-    \param pos2       (in)    : node to be checked
-    \param XAABB      (in)    : extended axis-aligned bouning box
-    \return true if node is within the XAABB or false otherwise
-    */
-    bool isLineWithinXAABB(
-            const LINALG::Matrix<3,1>&                    pos1, 
-            const LINALG::Matrix<3,1>&                    pos2, 
-            const LINALG::Matrix<3,2>&                    XAABB 
-            );
+     
+     const std::map<int,LINALG::Matrix<3,2> > getCurrentXAABBs(
+         const DRT::Discretization&                dis,
+         const std::map<int,LINALG::Matrix<3,1> >& currentpositions
+         );
     
     
     /*!
     \brief Computes a rough overestimating extended  
            axis-aligned bounding box for an element (XAABB)
     \param element        (in)  element
-    \param xyze           (in)  nodal position array (3,numnode)
-    \param eleGeoType     (in)  element geometric type CARTESIAN LINEAR or HIGHERORDER
+    \param xyze           (in)  nodal position array (3,numnodes)
     \return extended axis-aligned bounding box  (XAABB) for an element
      */
-    LINALG::Matrix<3,2> computeFastXAABB( 
-        const DRT::Element*                 element,    ///< element for which one wants to have a boundaing box
-        const LINALG::SerialDenseMatrix&    xyze,       ///< nodal position array (3,numnode)
-        const EleGeoType                    eleGeoType  ///< element geometric type CARTESIAN LINEAR or HIGHERORDER
+    LINALG::Matrix<6,2> compute18Dop( 
+        const DRT::Element*                 element,
+        const LINALG::SerialDenseMatrix&    xyze
         );
-
-
+    
+    
     /*!
-    \brief checks if two extended axis aligned bounding boxes intersect
+    \brief checks if two 18 Dops are intersecting (note : for efficiency it only checks slabs
+           which are not present for XAABBs)
 
-    \param cutterXAABB (in)         : XAABB of the cutting element
-    \param xfemXAABB   (in)         : XAABB of the xfem element
-    \return true if the XAABB's intersect or false otherwise
+    \param cutterDOP   (in)         : DOP of the cutting element
+    \param xfemDOP     (in)         : DOP of the xfem element
+    \return true if the DOP's intersect or false otherwise
      */
-    bool intersectionOfXAABB(
-        const LINALG::Matrix<3,2>&    cutterXAABB,
-        const LINALG::Matrix<3,2>&    xfemXAABB
+    bool intersectionOf18Dop(  
+        const LINALG::Matrix<6,2>&    cutterDOP,
+        const LINALG::Matrix<6,2>&    xfemDOP
         );
 
 
@@ -271,8 +254,6 @@ namespace GEO
             LINALG::Matrix<3,1>&                    normal,          
             double&                                 distance        
             );
-    
-
     
 }
 

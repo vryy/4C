@@ -20,12 +20,13 @@ Maintainer: Ursula Mayer
 
 #include "../drt_xfem/xfem_enums.H"
 #include "../drt_geometry/integrationcell.H"
-#include "../drt_geometry/intersection_service_templates.H"
 
 
 namespace GEO
 {
  
+  // TODO extend all methods for non cartesian parent elements
+
   /////////////////////  Domain Integration Cell ////////////////////////////////
 
   //! map position from eta to xi space
@@ -47,15 +48,14 @@ namespace GEO
   inline void mapEtaToXi3D<XFEM::standard_assembly>(
       const GEO::DomainIntCell&,
       const LINALG::Matrix<3,1>&  pos_eta_domain,
-      LINALG::Matrix<3,1>&        pos_xsi_domain
-      )
+      LINALG::Matrix<3,1>&        pos_xsi_domain)
   {   
     pos_xsi_domain = pos_eta_domain;
     return;
   }  
   
   
-  //! compute dteterminant from eta to xi space
+  //! compute determinant from eta to xi space
   template<DRT::Element::DiscretizationType  distype>
     static inline double detEtaToXi3DT(
       const LINALG::SerialDenseMatrix&    xyze_cell,

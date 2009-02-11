@@ -14,7 +14,6 @@ Maintainer: Ursula Mayer
 #ifdef CCADISCRET
 
 #include "integrationcell.H"
-#include "../drt_geometry/intersection_service_templates.H"
 
 
 
@@ -67,7 +66,8 @@ GEO::DomainIntCell::DomainIntCell(
             IntCell(distype),
             nodalpos_xi_domain_(xfemEleDomainCoordinates),
             nodalpos_xyz_domain_(physDomainCoordinates),
-            phys_center_(ComputePhysicalCenterPosition(distype, physDomainCoordinates)) 
+            phys_center_(ComputePhysicalCenterPosition(distype, physDomainCoordinates)),
+            label_(-1)
 {}
 
          
@@ -81,7 +81,8 @@ GEO::DomainIntCell::DomainIntCell(
             IntCell(distype),
             nodalpos_xi_domain_(DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype)),
             nodalpos_xyz_domain_(xyze_ele),
-            phys_center_(ComputePhysicalCenterPosition(distype, xyze_ele)) 
+            phys_center_(ComputePhysicalCenterPosition(distype, xyze_ele)),
+            label_(-1)
 {}
        
         
@@ -93,7 +94,8 @@ GEO::DomainIntCell::DomainIntCell(
           IntCell(old),
           nodalpos_xi_domain_(old.nodalpos_xi_domain_),
           nodalpos_xyz_domain_(old.nodalpos_xyz_domain_),
-          phys_center_(old.phys_center_) 
+          phys_center_(old.phys_center_),
+          label_(old.label_)
 {}
 
 
@@ -132,7 +134,13 @@ LINALG::Matrix<3,1> GEO::DomainIntCell::ComputePhysicalCenterPosition(
 } 
 
 
-
+/*----------------------------------------------------------------------*
+ * set xfem label, if fluid label = 0; if solid label = solid id
+ *----------------------------------------------------------------------*/
+void GEO::DomainIntCell::setLabel(const int   label)
+{
+  label_ = label;
+}
 
 
 ////////////// Boundary integration cell ////////////////////////////////

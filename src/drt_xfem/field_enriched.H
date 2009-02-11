@@ -104,9 +104,9 @@ class FieldEnr
     explicit FieldEnr();
   
     //! physical field variable to be enriched
-    const PHYSICS::Field field_;
+    const PHYSICS::Field    field_;
     //! specific enrichment for this physical field
-    const Enrichment enr_;
+    const Enrichment        enr_;
 
 }; // class FieldEnr
 

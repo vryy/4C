@@ -18,8 +18,10 @@ Maintainer: Ursula Mayer
 
 #include "../drt_geometry/intersection_interfacepoint.H"
 #include "../drt_geometry/intersection_templates.H"
+#include "../drt_geometry/intersection_service.H"
 #include "../drt_geometry/integrationcell.H"
 #include "../drt_geometry/searchtree.H"
+#include "../drt_geometry/position_array.H"
 #include "../drt_tetgen/tetgen.h"
 
 
@@ -70,6 +72,7 @@ class Intersection
       const RCP<DRT::Discretization>              xfemdis,                 ///< xfem discretization
       const RCP<DRT::Discretization>              cutterdis,               ///< cutter discretization
       const std::map<int,LINALG::Matrix<3,1> >&   currentcutterpositions,  ///< current positions of all cutter nodes
+      const std::map<int,LINALG::Matrix<3,2> >&   currentXAABBs,           ///< XAABBs of current elements
       map< int, DomainIntCells >&                 domainintcells,          ///< domainintegrationcells for each intersected element
       map< int, BoundaryIntCells >&               boundaryintcells         ///< boundaryintegrationcells for each intersected element
       );
@@ -214,7 +217,6 @@ class Intersection
   
   //! store bool values if intersection points lies element or not for faster access
   Teuchos::RCP< std::map< std::vector<int>, bool, CompareVecInt > > intersectionpointinoutmap_;
-  
   
   
   /*!
@@ -716,8 +718,8 @@ class Intersection
   \param positions        (in/out)    :   vector of interface points
   */
   void storePointList(
-    vector< LINALG::Matrix<3,1> >&  								vertices,
-    vector<int>&                    								positions,
+    vector< LINALG::Matrix<3,1> >&  								                vertices,
+    vector<int>&                    								                positions,
     std::map< LINALG::Matrix<3,1>, InterfacePoint, ComparePoint>&  	interfacePoints
     );
   
@@ -731,9 +733,9 @@ class Intersection
   \param positions        (in/out)    :   positions
   */
   void storePoint(
-    const LINALG::Matrix<3,1>&        								point,
+    const LINALG::Matrix<3,1>&        								              point,
     std::map< LINALG::Matrix<3,1>, InterfacePoint, ComparePoint>&  	interfacePoints,
-    vector<int>&                      								positions
+    vector<int>&                      								              positions
     );
 
   
@@ -939,11 +941,11 @@ class Intersection
   \param out                      (out)   : output data structure of TetGen
   */
   void recoverCurvedInterface(
-    const DRT::Element*             			xfemElement,
-    const map<int,LINALG::Matrix<3,1> >&       	currentcutterpositions,  
-    map< int, BoundaryIntCells >&   boundaryintcells,
-    tetgenio&                       out,
-    bool 							              recovery
+    const DRT::Element*                         xfemElement,
+    const map<int,LINALG::Matrix<3,1> >&        currentcutterpositions,  
+    map< int, BoundaryIntCells >&               boundaryintcells,
+    tetgenio&                                   out,
+    bool 							                          recovery
     );
 
   
@@ -955,10 +957,10 @@ class Intersection
   \param out                      (out)   :   output data structure of TetGen
   */
   void storeIntCells(
-  	const DRT::Element*                   xfemElement,
-    const map<int,LINALG::Matrix<3,1> >&       currentcutterpositions,  ///< current positions of all cutter nodes
-    map< int, BoundaryIntCells >&   boundaryintcells,
-    tetgenio&                       out
+  	const DRT::Element*                        xfemElement,
+  	const map<int,LINALG::Matrix<3,1> >&       currentcutterpositions,  ///< current positions of all cutter nodes
+  	map< int, BoundaryIntCells >&              boundaryintcells,
+  	tetgenio&                                  out
     );
 
   
@@ -970,9 +972,9 @@ class Intersection
   \param out                      (out)   :   output data structure of TetGen
   */
 	void storeSurfaceIntCells(
-    const bool                      higherorder,
-    const map<int,LINALG::Matrix<3,1> >&       currentcutterpositions,
-    BoundaryIntCells&               listBoundaryICPerElement
+    const bool                                  higherorder,
+    const map<int,LINALG::Matrix<3,1> >&        currentcutterpositions,
+    BoundaryIntCells&                           listBoundaryICPerElement
     );
   	
     	
@@ -1388,9 +1390,9 @@ class Intersection
   */
   void addCellsToDomainIntCellsMap(
     const DRT::Element*               xfemElement,
-    map< int, DomainIntCells >&     	domainintcells,
-    const tetgenio&                 	out,
-    bool 								higherorder
+    map< int, DomainIntCells >&       domainintcells,
+    const tetgenio&                   out,
+    bool                              higherorder
     ) const;
 
 
@@ -1595,9 +1597,9 @@ class Intersection
   \param cutterElements               (in)        : cutter elements whose XAABB's are intersecting
   */
   void debugIntersection(
-    const DRT::Element* 							xfemElement,
-    const std::vector<int>& 						cutterElementIds,
-    const Teuchos::RCP<DRT::Discretization>        	cutterdis
+    const DRT::Element*                         xfemElement,
+    const std::set<int>&                        cutterElementIds,
+    const Teuchos::RCP<DRT::Discretization>     cutterdis
     ) const;
 
   

@@ -104,7 +104,7 @@ private:
   const double zPlaneCoordinate_;
 
   //! treenode has 8 children (octtree) or 4 children (quadtree)
-  std::vector<Teuchos::RCP<TreeNode> > children_;  
+  std::vector<Teuchos::RCP<TreeNode> >  children_;  
     
   //! list of elements belonging to this treenode
   std::map<int, std::set<int> > elementList_;
@@ -118,6 +118,17 @@ private:
   LINALG::Matrix<3,2> getChildNodeBox(
       const int childIndex                      
       ) const;
+  
+  
+  /*!
+   \brief returns the node box of a child node
+   \param index           index of child node
+   \param childNodeBox    child node box
+   */
+  void getChildNodeBox(
+    const int             index,
+    LINALG::Matrix<3,2>&  childNodeBox
+    ) const;
 
   
   /*!
@@ -132,6 +143,17 @@ private:
 
   /*!
    \brief returns the child node indices which overlaps with a given AABB
+   \param AABB            AABB
+   \param octants         vector of octantcs
+   */
+  void classifyXAABB(
+      const LINALG::Matrix<3,2>&    AABB,
+      std::vector<int>&             octants
+      ) const; 
+  
+  
+  /*!
+   \brief returns the child node indices which overlaps with a given AABB
    \param AABB                AABB
    \return vector of childen indices
    */
@@ -139,7 +161,19 @@ private:
       const LINALG::Matrix<3,2>&    AABB
       ) const;
 
+  
+  /*!
+   \brief returns the index of the child node which overlaps with a given AABB
+   \param index               index     
+   \param AABB                AABB
+   \return vector of childen indices
+   */
+  bool classifyXAABB(
+      int&                         index,
+      const LINALG::Matrix<3,2>&   AABB
+      ) const; 
 
+  
   /*!
    \brief return child(ren) of this tree node in which the ele has to be inserted
    \param element              element
@@ -185,6 +219,17 @@ private:
       const DRT::Discretization&                    dis,    
       const std::map<int, LINALG::Matrix<3,1> >&    currentpositions
       );
+    
+  
+  /*!
+   \brief create children of a treenode and insert elements 
+          a lot more efficient than the method above
+
+   \param currentXAABBs        current elemental bounding boxes
+   */
+  void createChildren(
+      const std::map<int,LINALG::Matrix<3,2> >&      currentXAABBs
+      );
   
   
   /*!
@@ -211,6 +256,8 @@ private:
   
   
 public:
+  
+  
   /*!
    \brief constructor of tree node
    \param depth      depth of tree node
@@ -224,6 +271,7 @@ public:
       const TreeType                treeType
       );
 
+  
   //! destructor
   virtual ~TreeNode();
 
@@ -239,7 +287,10 @@ public:
    \brief checks, if this node has a parent node 
    \return true if node has parent
    */
-  bool hasParent() const;
+  bool hasParent()const {if (parent_!=NULL)
+                          return true;
+                         else
+                             return false;};
 
   
   /*!
@@ -273,14 +324,14 @@ public:
    \brief returns tree node type INNER_NODE or LEAF_NODE
    \return returns tree node type INNER_NODE or LEAF_NODE
    */
-  const TreeNodeType getTreeNodeType() const;
+  const TreeNodeType getTreeNodeType() const {return treeNodeType_;};
   
   
   /*!
   \brief returns tree type OCTTREE or QUADTREE
   \return returns tree type OCTTREE or QUADTREE
   */
-  const TreeType getTreeType() const;
+  const TreeType getTreeType() const {return treeType_;};
 
 
   /*!
@@ -295,7 +346,7 @@ public:
    \param index   child node index
    \return retruns pointer to child node
    */
-  const Teuchos::RCP<TreeNode> getChild(
+  const Teuchos::RCP< GEO::SearchTree::TreeNode > getChild(
       const int index           
       ) const;
 
@@ -304,7 +355,9 @@ public:
    \brief return pointer to the parent node 
    \return pointer to parent tree node
    */
-  const TreeNode* const getParent() const;
+  const TreeNode* const getParent() const {if (this->hasParent())
+                                                  return parent_;
+                                               return NULL;};
 
 
   /*!
@@ -318,14 +371,14 @@ public:
    \brief returns the node box of the tree node 
    \return returns the node box of the tree node 
    */
-  const LINALG::Matrix<3,2>& getNodeBox() const;
+  const LINALG::Matrix<3,2>& getNodeBox() const {return nodeBox_;};
 
 
   /*!
    \brief returns elementList
    \return element list
    */
-  const std::map<int,std::set<int> > getElementList() const;
+  const std::map<int,std::set<int> > getElementList() const {return elementList_;};
 
 
   /*!
@@ -361,6 +414,7 @@ public:
   int queryFSINearestObject(
       const DRT::Discretization&                  dis,
       const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
+      const std::map<int,LINALG::Matrix<3,2> >&   currentXAABBs,
       const LINALG::Matrix<3,1>&                  point,
       GEO::NearestObject&                         nearestobject
       );
@@ -376,6 +430,7 @@ public:
   int queryXFEMFSIPointType(
       const DRT::Discretization&                    dis,
       const std::map<int,LINALG::Matrix<3,1> >&     currentpositions,
+      const std::map<int,LINALG::Matrix<3,2> >&     currentXAABBs,
       const LINALG::Matrix<3,1>&                    point
       );
   
@@ -401,17 +456,15 @@ public:
   /*!
   \brief   returns a set of elements whose XAABB s are    
            intersecting with the XAABB of a given volume element
-  \param dis                  discretization
-  \param currentpositions     current nodal positions in discretization
+ 
   \param element              given slave contact element
   \param xyze_element         coordinates of element
   \return set of node gids
    */
-  std::vector<int> queryIntersectionCandidates(
-      const DRT::Discretization&                  dis,
-      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions, 
-      DRT::Element*                               element,
-      const LINALG::SerialDenseMatrix&            xyze_element    
+  void queryIntersectionCandidates(
+      const std::map<int,LINALG::Matrix<3,2> >&   currentXAABBs,
+      const LINALG::Matrix<3,2>&                  eleXAABB,
+      std::set<int>&                           elementset
       );
   
   
@@ -429,6 +482,7 @@ public:
       DRT::Element*                               element
       );
     
+  
   /*!
   \brief print tree node
   \param max_depth           maximum depth of tree
@@ -438,6 +492,7 @@ public:
       const int       max_depth,
       stringstream&   fc
       ) const;
+  
   
   /*!
   \brief returns depth of subtree from the  tree node it is called (METRICS)
@@ -460,6 +515,7 @@ public:
   // class Tree
 public:
 
+  
   /*!
   \brief tree constructor
   \param max_depth                  max_depth
@@ -468,9 +524,14 @@ public:
       const int           max_depth
       );
 
+  
   //! destructor
   virtual ~SearchTree();
 
+  
+  //! returns tree root node
+  Teuchos::RCP< GEO::SearchTree::TreeNode > getRoot() const {return treeRoot_;} ;
+  
 
   /*!
   \brief destroys the old tree if its exists and builds the root 
@@ -500,7 +561,7 @@ public:
       const DRT::Discretization&  dis,
       const TreeType              treetype
       );
-
+  
 
   /*!
   \brief updates tree for labeled structures due to movements of these structures.
@@ -527,6 +588,7 @@ public:
   int queryFSINearestObject(
       const DRT::Discretization&                  dis,
       const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
+      const std::map<int,LINALG::Matrix<3,2> >&   currentXAABBs,
       const LINALG::Matrix<3,1>&                  point,
       GEO::NearestObject&                         nearestobject
       );
@@ -542,9 +604,11 @@ public:
     int queryXFEMFSIPointType(
         const DRT::Discretization&                  dis,
         const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
+        const std::map<int,LINALG::Matrix<3,2> >&   currentXAABBs,
         const LINALG::Matrix<3,1>&                  point
         );
 
+    
   /*!
   \brief returns a set of gids of nodes lying in a radius around a given point for each object
   \param dis                  discretization
@@ -568,15 +632,13 @@ public:
            intersecting with the XAABB of a given volume element
   \param dis                  discretization
   \param currentpositions     current nodal positions in discretization
-  \param element              given slave contact element
-  \param xyze_element         coordinates of element
   \return set of node gids
    */
-  std::vector<int> queryIntersectionCandidates(
-      const DRT::Discretization&                  dis,
-      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions, 
-      DRT::Element*                               element,
-      const LINALG::SerialDenseMatrix&            xyze_element
+  void queryIntersectionCandidates( 
+      const std::map<int,LINALG::Matrix<3,2> >&   currentXAABBs,
+      const std::vector< LINALG::Matrix<3,2> >&   structure_AABBs,
+      const LINALG::Matrix<3,2>&                  eleXAABB,
+      std::set<int>&                           elementset
       );
   
   
@@ -615,6 +677,7 @@ public:
 
   
 private:
+  
   //! maximum search depth
   const int max_depth_;   
 

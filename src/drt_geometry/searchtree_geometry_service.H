@@ -44,7 +44,8 @@ Maintainer: Ursula Mayer
 #ifndef SEARCHTREE_GEOMETRY_SERVICE_H_
 #define SEARCHTREE_GEOMETRY_SERVICE_H_
 
-#include "../drt_geometry/intersection_service.H"
+#include "../drt_geometry/element_coordtrafo.H"
+#include "../drt_geometry/intersection_service_templates.H"
 #include "../drt_geometry/searchtree_nearestobject.H"
 
 namespace GEO
@@ -156,18 +157,6 @@ namespace GEO
       const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,   
       DRT::Element*                               element,
       std::map<int, std::set<int> >&              elementList);
-  
-  
-  /*!
-  \brief checks if two 2D extended axis aligned bounding boxes intersect
-         This is for CONTACT search!
-  \param slaveXAABB (in)       XAABB of the slave element
-  \param masterXAABB (in)      XAABB of the element element
-  \return true if the XAABBs intersect or false otherwise
-   */
-  bool intersectionOfXAABB2D(  
-      const LINALG::Matrix<3,2>&     slaveXAABB, 
-      const LINALG::Matrix<3,2>&     masterXAABB);
   
   
   /*!
@@ -357,11 +346,11 @@ namespace GEO
   \param elementList          map of elements label gid
   \return                     label
    */
-  std::vector<int> getIntersectionCandidates(    
-      const DRT::Discretization&                  dis,     
-      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,   
-      DRT::Element*                               xfemElement,
-      std::map<int, std::set<int> >&              elementList
+  void getIntersectionCandidates(      
+      const std::map<int,LINALG::Matrix<3,2> >&   currentXAABBs, 
+      const LINALG::Matrix<3,2>&                  xfemXAABB,
+      const std::map<int, std::set<int> >&        elementList,
+      std::set<int>&                           intersectionCandidateIds
       );
 
 

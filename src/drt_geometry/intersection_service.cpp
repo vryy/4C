@@ -37,179 +37,6 @@ LINALG::Matrix<3,1> GEO::computeCrossProduct(
 }
 
 
-
-/*----------------------------------------------------------------------*
- |  ICS:    computes an extended axis-aligned bounding box   u.may 06/07|
- |          XAABB for a given element                                   |
- *----------------------------------------------------------------------*/
-LINALG::Matrix<3,2> GEO::computeFastXAABB( 
-    const DRT::Element*                 element,
-    const LINALG::SerialDenseMatrix&    xyze,
-    const EleGeoType                    eleGeoType)
-{
-    const int nsd = 3;
-    LINALG::Matrix<3,2> XAABB;
-    
-    // first node
-    for(int dim=0; dim<nsd; ++dim)
-    {
-        XAABB(dim, 0) = xyze(dim, 0) - TOL7;
-        XAABB(dim, 1) = xyze(dim, 0) + TOL7;
-    }
-    // remaining nodes
-    for(int i=1; i<element->NumNode(); ++i)
-    {
-        for(int dim=0; dim<nsd; dim++)
-        {
-            XAABB(dim, 0) = std::min( XAABB(dim, 0), xyze(dim,i) - TOL7);
-            XAABB(dim, 1) = std::max( XAABB(dim, 1), xyze(dim,i) + TOL7);
-        }
-    }
-    
-    if(eleGeoType == HIGHERORDER)
-    {
-      double maxDistance = fabs(XAABB(0,1) - XAABB(0,0));
-      for(int dim=1; dim<nsd; ++dim)
-        maxDistance = std::max(maxDistance, fabs(XAABB(dim,1)-XAABB(dim,0)) );
-    
-      // subtracts a certain percent of maximal distance to minX, minY, minZ
-      // adds a certain percent of the maximal distance to maxX, maxY, maxZ 
-      const double extension = 0.2*maxDistance;
-      for(int dim=0; dim<nsd; ++dim)
-      {
-          XAABB(dim, 0) -= extension;
-          XAABB(dim, 1) += extension;
-      }   
-    }
-    /*
-    printf("\n");
-    printf("axis-aligned bounding box:\n minX = %f\n minY = %f\n minZ = %f\n maxX = %f\n maxY = %f\n maxZ = %f\n", 
-              XAABB(0,0), XAABB(1,0), XAABB(2,0), XAABB(0,1), XAABB(1,1), XAABB(2,1));
-    printf("\n");
-    */
-    
-    return XAABB;
-}
-
-
-/*----------------------------------------------------------------------*
- |  ICS:    checks if two XAABB's intersect                  u.may 06/07|
- *----------------------------------------------------------------------*/
-bool GEO::intersectionOfXAABB(  
-    const LINALG::Matrix<3,2>&     cutterXAABB, 
-    const LINALG::Matrix<3,2>&     xfemXAABB)
-{
-    
-  /*====================================================================*/
-  /* bounding box topology*/
-  /*--------------------------------------------------------------------*/
-  /* parameter coordinates (x,y,z) of nodes
-   * node 0: (minX, minY, minZ)
-   * node 1: (maxX, minY, minZ)
-   * node 2: (maxX, maxY, minZ)
-   * node 3: (minX, maxY, minZ)
-   * node 4: (minX, minY, maxZ)
-   * node 5: (maxX, minY, maxZ)
-   * node 6: (maxX, maxY, maxZ)
-   * node 7: (minX, maxY, maxZ)
-   * 
-   *                      z
-   *                      |           
-   *             4========|================7
-   *           //|        |               /||
-   *          // |        |              //||
-   *         //  |        |             // ||
-   *        //   |        |            //  ||
-   *       //    |        |           //   ||
-   *      //     |        |          //    ||
-   *     //      |        |         //     ||
-   *     5=========================6       ||
-   *    ||       |        |        ||      ||
-   *    ||       |        o--------||---------y
-   *    ||       |       /         ||      ||
-   *    ||       0------/----------||------3
-   *    ||      /      /           ||     //
-   *    ||     /      /            ||    //
-   *    ||    /      /             ||   //
-   *    ||   /      /              ||  //
-   *    ||  /      /               || //
-   *    || /      x                ||//
-   *    ||/                        ||/
-   *     1=========================2
-   *
-   */
-  /*====================================================================*/
-    
-    bool intersection =  false;
-    static std::vector< LINALG::Matrix<3,1> > nodes(8, LINALG::Matrix<3,1>());
-    
-    nodes[0](0) = cutterXAABB(0,0); nodes[0](1) = cutterXAABB(1,0); nodes[0](2) = cutterXAABB(2,0); // node 0   
-    nodes[1](0) = cutterXAABB(0,1); nodes[1](1) = cutterXAABB(1,0); nodes[1](2) = cutterXAABB(2,0); // node 1
-    nodes[2](0) = cutterXAABB(0,1); nodes[2](1) = cutterXAABB(1,1); nodes[2](2) = cutterXAABB(2,0); // node 2
-    nodes[3](0) = cutterXAABB(0,0); nodes[3](1) = cutterXAABB(1,1); nodes[3](2) = cutterXAABB(2,0); // node 3
-    nodes[4](0) = cutterXAABB(0,0); nodes[4](1) = cutterXAABB(1,0); nodes[4](2) = cutterXAABB(2,1); // node 4
-    nodes[5](0) = cutterXAABB(0,1); nodes[5](1) = cutterXAABB(1,0); nodes[5](2) = cutterXAABB(2,1); // node 5
-    nodes[6](0) = cutterXAABB(0,1); nodes[6](1) = cutterXAABB(1,1); nodes[6](2) = cutterXAABB(2,1); // node 6
-    nodes[7](0) = cutterXAABB(0,0); nodes[7](1) = cutterXAABB(1,1); nodes[7](2) = cutterXAABB(2,1); // node 7
-    
-    for (int i = 0; i < 8; i++)
-        if(isPositionWithinXAABB(nodes[i], xfemXAABB))
-        {
-            intersection = true;
-            break;
-        }
-    
-    if(!intersection)
-    {
-        for (int i = 0; i < 12; i++)
-        {
-            const int index1 = DRT::UTILS::eleNodeNumbering_hex27_lines[i][0];
-            const int index2 = DRT::UTILS::eleNodeNumbering_hex27_lines[i][1];
-            if(isLineWithinXAABB(nodes[index1], nodes[index2], xfemXAABB))
-            {
-                intersection = true;
-                break;
-            }
-        }
-    }
-    
-    if(!intersection)
-    {
-        nodes[0](0) = xfemXAABB(0,0);   nodes[0](1) = xfemXAABB(1,0);   nodes[0](2) = xfemXAABB(2,0);   // node 0   
-        nodes[1](0) = xfemXAABB(0,1);   nodes[1](1) = xfemXAABB(1,0);   nodes[1](2) = xfemXAABB(2,0);   // node 1
-        nodes[2](0) = xfemXAABB(0,1);   nodes[2](1) = xfemXAABB(1,1);   nodes[2](2) = xfemXAABB(2,0);   // node 2
-        nodes[3](0) = xfemXAABB(0,0);   nodes[3](1) = xfemXAABB(1,1);   nodes[3](2) = xfemXAABB(2,0);   // node 3
-        nodes[4](0) = xfemXAABB(0,0);   nodes[4](1) = xfemXAABB(1,0);   nodes[4](2) = xfemXAABB(2,1);   // node 4
-        nodes[5](0) = xfemXAABB(0,1);   nodes[5](1) = xfemXAABB(1,0);   nodes[5](2) = xfemXAABB(2,1);   // node 5
-        nodes[6](0) = xfemXAABB(0,1);   nodes[6](1) = xfemXAABB(1,1);   nodes[6](2) = xfemXAABB(2,1);   // node 6
-        nodes[7](0) = xfemXAABB(0,0);   nodes[7](1) = xfemXAABB(1,1);   nodes[7](2) = xfemXAABB(2,1);   // node 7
-    
-        for (int i = 0; i < 8; i++)
-            if(isPositionWithinXAABB(nodes[i], cutterXAABB))
-            {
-                intersection = true;
-                break;
-            }
-    }   
-    
-    if(!intersection)
-    {
-        for (int i = 0; i < 12; i++)
-        {
-            const int index1 = DRT::UTILS::eleNodeNumbering_hex27_lines[i][0];
-            const int index2 = DRT::UTILS::eleNodeNumbering_hex27_lines[i][1];
-            if(isLineWithinXAABB(nodes[index1], nodes[index2], cutterXAABB))
-            {
-                intersection = true;
-                break;
-            }
-        }
-    }
-    return intersection;
-}
-
-
-
 /*----------------------------------------------------------------------*
  |  ICS:    checks if an element is CARTESIAN, LINEAR and    u.may 07/08|
  |          HIGHERORDER                                                 |
@@ -293,74 +120,87 @@ void GEO::checkGeoType(
 
 
 /*----------------------------------------------------------------------*
- |  ICS:    checks if a position is within an XAABB          u.may 06/07|
+ | delivers a axis-aligned bounding box for a given          u.may 12/08|
+ | discretization                                                       |
  *----------------------------------------------------------------------*/
-bool GEO::isPositionWithinXAABB(    
-    const LINALG::Matrix<3,1>&                    pos,
-    const LINALG::Matrix<3,2>&                    XAABB)
+const std::map<int,LINALG::Matrix<3,2> > GEO::getCurrentXAABBs(
+    const DRT::Discretization&                dis,
+    const std::map<int,LINALG::Matrix<3,1> >& currentpositions)
 {
-    bool isWithin = true;
-    for (int i=0; i<3; i++)
-    {
-        const double diffMin = XAABB(i,0) - TOL7;
-        const double diffMax = XAABB(i,1) + TOL7;
-        
-       // printf("nodal value =  %f, min =  %f, max =  %f\n", node[dim], diffMin, diffMax);   
-        if((pos(i) < diffMin)||(pos(i) > diffMax)) //check again !!!!!   
-        {
-            isWithin = false;
-            break;
-        }
-    }
-   
-    return isWithin;
+  std::map<int,LINALG::Matrix<3,2> >  currentXAABBs;
+  // loop over elements and merge XAABB with their eXtendedAxisAlignedBoundingBox
+  for (int j=0; j< dis.NumMyColElements(); ++j) 
+  {
+    const DRT::Element* element = dis.lColElement(j);
+    const LINALG::SerialDenseMatrix xyze_element(GEO::getCurrentNodalPositions(element,currentpositions));
+    GEO::EleGeoType eleGeoType(GEO::HIGHERORDER);
+    GEO::checkGeoType(element, xyze_element, eleGeoType);
+    const LINALG::Matrix<3,2> xaabbEle = GEO::computeFastXAABB(element->Shape(), xyze_element, eleGeoType);
+    currentXAABBs[element->Id()] = xaabbEle;
+  }
+  return currentXAABBs;
 }
+
 
 
 /*----------------------------------------------------------------------*
- |  ICS:    checks if a pos is within an XAABB               u.may 06/07|
+ |  ICS:    computes 18Dops                                  u.may 12/08|
+ |          (only the slabs which are not present in an XAABB)          |
  *----------------------------------------------------------------------*/
-bool GEO::isLineWithinXAABB(    
-    const LINALG::Matrix<3,1>&                  pos1,
-    const LINALG::Matrix<3,1>&                  pos2,
-    const LINALG::Matrix<3,2>&                  XAABB)
+LINALG::Matrix<6,2> GEO::compute18Dop( 
+    const DRT::Element*                 element,
+    const LINALG::SerialDenseMatrix&    xyze)
 {
-    const int nsd = 3;
-    bool isWithin = true;
-    int isd = -1;
-    
-    for(isd=0; isd<nsd; isd++)
-        if(fabs(pos1(isd)-pos2(isd)) > TOL7)
-            break;
-    
-    for(int ksd = 0; ksd < nsd; ksd++)
+  // consider only remaining slabs
+  LINALG::Matrix<6,2> slabs;
+
+  for (int j=0; j<6; j++)
+    slabs(j,0) = slabs(j,1) = (GEO::Dop18Normals[j][0]*xyze(0,0)+GEO::Dop18Normals[j][1]*xyze(1,0)+GEO::Dop18Normals[j][2]*xyze(2,0))/sqrt(2.0);
+  
+  // remaining element nodes
+  for (int k=1; k<element->NumNode();k++)
+    for(int j=0; j<6;j++)
     {
-        if(ksd != isd)
-        {
-            const double min = XAABB(ksd,0) - TOL7;
-            const double max = XAABB(ksd,1) + TOL7;
-   
-            if((pos1(ksd) < min)||(pos1(ksd) > max))
-                isWithin = false;
-            
-        }
-        if(!isWithin)
-            break;
-    }
-        
-    if(isWithin && isd > -1)
-    {
-        isWithin = false;
-        const double min = XAABB(isd,0) - TOL7;
-        const double max = XAABB(isd,1) + TOL7;
-                            
-        if( ((pos1(isd) < min) && (pos2(isd) > max)) ||  
-            ((pos2(isd) < min) && (pos1(isd) > max)) )
-            isWithin = true;
-    }
-    return isWithin;
+      //= ax+by+cz=d/sqrt(aa+bb+cc)
+      const double dcurrent = (GEO::Dop18Normals[j][0]*xyze(0,k)+GEO::Dop18Normals[j][1]*xyze(1,k)+GEO::Dop18Normals[j][2]*xyze(2,k))/sqrt(2.0);
+      if (dcurrent > slabs(j,1))
+        slabs(j,1)=dcurrent;
+      if (dcurrent < slabs(j,0))
+        slabs(j,0)=dcurrent;
+    }  
+  
+  // inflation of slabs by tolerance
+  for(int j=0; j<6;j++)
+  {
+    slabs(j,0) -= GEO::TOL7;
+    slabs(j,1) += GEO::TOL7;
+  }
+  
+  // if higher order include proper extension
+  
+  return slabs;
 }
 
+
+
+/*----------------------------------------------------------------------*
+ |  ICS:    checks if two 18DOPs intersect                   u.may 12/08|
+ |          if their XAABB's intersect                                  |
+ *----------------------------------------------------------------------*/
+bool GEO::intersectionOf18Dop(  
+    const LINALG::Matrix<6,2>&    cutterDOP,
+    const LINALG::Matrix<6,2>&    xfemDOP)
+{
+  // check the remaing slabs for intersection
+  for(int i = 0; i < 6; i++)
+    if(! (  ((cutterDOP(i,0)  > (xfemDOP(i,0)   -GEO::TOL7))  && ( cutterDOP(i,0) < (xfemDOP(i,1)   +GEO::TOL7)) )  || 
+            ((cutterDOP(i,1)  > (xfemDOP(i,0)   -GEO::TOL7))  && ( cutterDOP(i,1) < (xfemDOP(i,1)   +GEO::TOL7)) )  || 
+            ((xfemDOP(i,0)    > (cutterDOP(i,0) -GEO::TOL7))  && ( xfemDOP(i,0)   < (cutterDOP(i,1) +GEO::TOL7)) )  || 
+            ((xfemDOP(i,1)    > (cutterDOP(i,0) -GEO::TOL7))  && ( xfemDOP(i,1)   < (cutterDOP(i,1) +GEO::TOL7)) )  ))
+      return false;
+  
+  return true;
+}
 
 
 /*----------------------------------------------------------------------*
@@ -380,6 +220,7 @@ bool GEO::checkPositionWithinElement(
 
     return nodeWithinElement;
 }
+
 
 
 /*----------------------------------------------------------------------*

@@ -27,6 +27,7 @@ namespace XFEM
 class DofDistributionSwitcher
 {
 public:
+  
     //! constructor
     explicit DofDistributionSwitcher(
             const RCP<XFEM::InterfaceHandle>&    ih,
@@ -58,12 +59,14 @@ public:
 //        }
         return;
     }
+          
             
     //! destructor
     ~DofDistributionSwitcher()
     {
         return;
     }
+    
     
     //! switch from old to new dof distribution
     void mapVectorToNewDofDistribution(
@@ -72,6 +75,7 @@ public:
     {
       mapVectorToNewDofDistribution(vector,LINALG::Matrix<3,1>(true));
     }
+    
     
     //! switch from old to new dof distribution
     void mapVectorToNewDofDistribution(
@@ -84,9 +88,12 @@ public:
             const RCP<Epetra_Vector>&     vector
             ) const;
     
+    
 private:
+  
     //! disabled copy constructor
     explicit DofDistributionSwitcher(const XFEM::DofDistributionSwitcher& dofdist);
+    
     //! disabled default constructor
     explicit DofDistributionSwitcher();
 
@@ -102,12 +109,14 @@ private:
 //    map<int,std::set<XFEM::FieldEnr> >   oldEnrFieldSetNode_;      ///< old enriched fields per node 
 };
 
+
 //! try to find another enrichment for this physical field
 XFEM::Enrichment genAlternativeEnrichment(
         const int                    gnodeid,
         const XFEM::PHYSICS::Field   oldphysvar,
         const RCP<XFEM::DofManager>& dofman
         );
+
 
 } // namespace XFEM
 

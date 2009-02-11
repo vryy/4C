@@ -27,6 +27,7 @@ namespace XFEM
   class InterfaceHandleXFSI : public InterfaceHandle
   {
   public:
+    
     //! constructor
     explicit InterfaceHandleXFSI(
              const Teuchos::RCP<DRT::Discretization>&  xfemdis,   ///< discretization that will be intersected
@@ -34,11 +35,9 @@ namespace XFEM
              const int step,                                      ///< counter to control file numbering of gmsh debug output
              const bool experimental_intersection                 ///< choose intersection class
              );
+    
     //! destructor
     ~InterfaceHandleXFSI();
-
-    //! return string representation of the interface handle
-    void toGmsh(const int step) const;
 
     //! return pointer to the intersecting discretization
     const Teuchos::RCP<DRT::Discretization> cutterdis() const {return cutterdis_;};
@@ -75,7 +74,6 @@ namespace XFEM
         GEO::NearestObject&               nearestobject
     ) const;
 
-
     //! find space time layer cell
     bool FindSpaceTimeLayerCell(
         const LINALG::Matrix<3,1>&        querypos,
@@ -83,9 +81,14 @@ namespace XFEM
         LINALG::Matrix<3,1>&              rst
     ) const;
     
-    //! print statistics
+    //! print statistics (Debug)
     void PrintStatistics() const;
+    
+    //! return string representation of the interface handle
+    void toGmsh(const int step) const;
 
+    
+    
   private:
 
     //! don't want default constructor
@@ -102,7 +105,7 @@ namespace XFEM
         ) const;
         
     //! for difficult cases during intersection, do sanity checks and create list of redundant integration cells 
-    std::set<int> FindDoubleCountedIntersectedElements() const;
+    void ClassifyIntegrationCells();
 
     //! from surface element, create 3d volume space-time cells
     void GenerateSpaceTimeLayer(
@@ -111,8 +114,12 @@ namespace XFEM
         const std::map<int,LINALG::Matrix<3,1> >&       cutterposn   ///< nodal displacements at n
     );
     
+    
     //! discretization that intersects the xfemdis_ -> should be a boundary discretization (e.g. surface of structure)
     const Teuchos::RCP<DRT::Discretization>       cutterdis_;
+    
+    //! bounding boxes of cutter elements           
+    std::map<int,LINALG::Matrix<3,2> >            currentXAABBs_;
     
     //! map between global node id and its current positions at n+1  
     std::map<int,LINALG::Matrix<3,1> >            cutterposnp_;
@@ -124,16 +131,6 @@ namespace XFEM
     std::map<int,XFEM::SpaceTimeBoundaryCell>     stlayer_;
 
   }; // class InterfacehandleXFSI;
-  
-  
-  /*! 
-   * \brief calculates the volume of an element in initial configuration
-   * 
-   * \return physical volume of the element in initial configuration (without any displacement)
-   */
-  double ElementVolume(
-      const DRT::Element&           ele            ///< the element whose physical volume we want to compute
-      );
 
 } // namespace XFEM
 

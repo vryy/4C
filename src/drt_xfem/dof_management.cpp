@@ -28,6 +28,7 @@ Maintainer: Axel Gerstenberger
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 XFEM::DofManager::DofManager(const RCP<XFEM::InterfaceHandle>& ih, const bool DLM_condensation) :
@@ -47,6 +48,8 @@ XFEM::DofManager::DofManager(const RCP<XFEM::InterfaceHandle>& ih, const bool DL
     }
   }
 }
+
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -81,6 +84,8 @@ std::set<XFEM::Enrichment> XFEM::DofManager::GatherUniqueEnrichments() const
   return unique_enrichments;
 }
 
+
+
 /*----------------------------------------------------------------------*
  |  copy-ctor                                                   ag 11/07|
  *----------------------------------------------------------------------*/
@@ -88,6 +93,8 @@ XFEM::DofManager::DofManager(const XFEM::DofManager&)
 {
   dserror("A DofManager shall not be copied!");
 }
+
+
 
 /*----------------------------------------------------------------------*
  |  dtor                                                        ag 11/07|
@@ -97,8 +104,171 @@ XFEM::DofManager::~DofManager()
   return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  transform  to a string                                      ag 11/07|
+ *----------------------------------------------------------------------*/
+int XFEM::DofManager::NumNodalDof() const
+{
+  int locnumnodaldof = 0;
+  
+  std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator iter;
+  for (iter = nodalDofSet_.begin(); iter != nodalDofSet_.end(); ++iter)
+  {
+    locnumnodaldof += iter->second.size();
+  }
+
+  // collect number of nodal dofs from all procs
+  int numnodaldof = 0;
+  ih_->xfemdis()->Comm().SumAll(&locnumnodaldof,&numnodaldof,1);
+  
+  return numnodaldof;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void XFEM::DofManager::fillDofDistributionMaps(
+    NodalDofPosMap&      NodalDofDistributionMap,
+    ElementalDofPosMap&  ElementalDofDistributionMap
+) const
+{
+  NodalDofDistributionMap.clear();
+  // loop all (non-overlapping = Row)-Nodes and store the DOF information w.t.h. of DofKeys
+  for (int i=0; i<ih_->xfemdis()->NumMyRowNodes(); ++i)
+  {
+    const DRT::Node* actnode = ih_->xfemdis()->lRowNode(i);
+    const int gid = actnode->Id();
+    std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator entry = nodalDofSet_.find(gid);
+    if (entry == nodalDofSet_.end())
+    {
+      // no dofs for this node... must be a hole or somethin'
+      continue;
+    }
+    const std::vector<int> gdofs(ih_->xfemdis()->Dof(actnode));
+    const std::set<FieldEnr> dofset = entry->second;
+    if (gdofs.size() != dofset.size())
+    {
+      cout << "numdof node (Discretization): " <<  gdofs.size() << endl;
+      cout << "numdof node (DofManager):     " <<  dofset.size() << endl;
+      dserror("Bug!!! Information about nodal dofs in DofManager and Discretization does not fit together!");
+    }
+    
+    int dofcount = 0;
+    std::set<FieldEnr>::const_iterator fieldenr;
+    for(fieldenr = dofset.begin(); fieldenr != dofset.end(); ++fieldenr )
+    {
+      NodalDofDistributionMap.insert(make_pair(DofKey<onNode>(gid, *fieldenr), gdofs[dofcount]));
+      dofcount++;
+    }
+  };
+  
+  ElementalDofDistributionMap.clear();
+  // loop all (non-overlapping = Row)-Elements and store the DOF information w.t.h. of DofKeys
+  for (int i=0; i<ih_->xfemdis()->NumMyRowElements(); ++i)
+  {
+    const DRT::Element* actele = ih_->xfemdis()->lRowElement(i);
+    const int gid = actele->Id();
+    std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator entry = elementalDofs_.find(gid);
+    if (entry == elementalDofs_.end())
+    {
+      // no dofs for this node... must be a hole or somethin'
+      continue;
+    }
+    const std::vector<int> gdofs(ih_->xfemdis()->Dof(actele));
+    const std::set<FieldEnr> dofset = entry->second;
+    if (gdofs.size() != dofset.size())
+    {
+//      cout << "numdof node (Discretization): " <<  gdofs.size() << endl;
+//      cout << "numdof node (DofManager):     " <<  dofset.size() << endl;
+//      dserror("Bug!!! Information about element dofs in DofManager and Discretization does not fit together!");
+      // TODO: this mismatch is known and a better structure for element dofs should be found,
+      //       e.g. DofKey(gid,fieldenr,dofperfieldenr), the latter being the number of dofs per fieldenr in the element
+    }
+    
+    int dofcount = 0;
+    std::set<FieldEnr>::const_iterator fieldenr;
+    for(fieldenr = dofset.begin(); fieldenr != dofset.end(); ++fieldenr )
+    {
+      ElementalDofDistributionMap.insert(make_pair(DofKey<onElem>(gid, *fieldenr), gdofs[dofcount]));
+      dofcount++;
+    }
+  };
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> XFEM::DofManager::fillPhysicalOutputVector(
+    const Epetra_Vector&             original_vector,
+    const DRT::DofSet&               dofset_out,
+    const XFEM::NodalDofPosMap&      nodalDofDistributionMap,
+    const std::set<XFEM::PHYSICS::Field>&   fields_out
+) const
+{
+  Teuchos::RCP<Epetra_Vector> outvec = LINALG::CreateVector(*dofset_out.DofRowMap(),true);
+  
+  const int numdof = fields_out.size();
+  
+  const Epetra_Map* dofrowmap = dofset_out.DofRowMap();
+  const Epetra_Map* xdofrowmap = ih_->xfemdis()->DofRowMap();
+  
+  for (int i=0; i<ih_->xfemdis()->NumMyRowNodes(); ++i)
+  {
+    const DRT::Node* xfemnode = ih_->xfemdis()->lRowNode(i);
+    const int gid = xfemnode->Id();
+    const std::vector<int> gdofs(dofset_out.Dof(xfemnode));
+    
+    
+    std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator entry = nodalDofSet_.find(gid);
+    if (entry == nodalDofSet_.end())
+    {
+      // no dofs for this node... must be a hole or somethin'
+      //cout << "hole" << endl;
+      for (int idof = 0; idof < numdof; ++idof)
+      {
+        //cout << dofrowmap->LID(gdofs[idof]) << endl;
+        (*outvec)[dofrowmap->LID(gdofs[idof])] = 0.0;
+      }
+    }
+    else
+    {
+      //cout << "some values available" << endl;
+      
+      //const std::vector<int> gdofs(ih_->xfemdis()->Dof(actnode));
+      const std::set<FieldEnr> dofset = entry->second;
+      
+      const LINALG::Matrix<3,1> actpos(xfemnode->X());
+      int idof = 0;
+      for(std::set<XFEM::PHYSICS::Field>::const_iterator field_out = fields_out.begin(); field_out != fields_out.end(); ++field_out)
+      {
+        for(std::set<FieldEnr>::const_iterator fieldenr = dofset.begin(); fieldenr != dofset.end(); ++fieldenr )
+        {
+          const XFEM::PHYSICS::Field fielditer = fieldenr->getField(); 
+          if (fielditer == *field_out)
+          {
+            const double enrval = fieldenr->getEnrichment().EnrValue(actpos, *ih_, XFEM::Enrichment::approachUnknown);
+            const XFEM::DofKey<XFEM::onNode> dofkey(gid,*fieldenr);
+            const int origpos = nodalDofDistributionMap.find(dofkey)->second;
+            //cout << origpos << endl;
+            if (origpos < 0)
+              dserror("bug!");
+            if (gdofs[idof] < 0)
+              dserror("bug!");
+            (*outvec)[dofrowmap->LID(gdofs[idof])] += enrval * original_vector[xdofrowmap->LID(origpos)];
+            
+          }
+        }
+        //cout << "LID " << dofrowmap->LID(gdofs[idof]) << " -> GID " << gdofs[idof] << endl;
+        idof++;
+      }
+    }
+  };
+  return outvec;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  transform  to a string (Debug)                              ag 11/07|
  *----------------------------------------------------------------------*/
 std::string XFEM::DofManager::toString() const
 {
@@ -115,9 +285,12 @@ std::string XFEM::DofManager::toString() const
   return s.str();
 }
 
+
+/*----------------------------------------------------------------------*
+ |  to Gmsh (Debug)                                             ag 11/07|
+ *----------------------------------------------------------------------*/
 void XFEM::DofManager::toGmsh(
-    const int step
-) const
+    const int step) const
 {
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
   const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
@@ -338,165 +511,6 @@ void XFEM::DofManager::toGmsh(
 #endif
 }
 
-int XFEM::DofManager::NumNodalDof() const
-{
-  int locnumnodaldof = 0;
-  
-  std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator iter;
-  for (iter = nodalDofSet_.begin(); iter != nodalDofSet_.end(); ++iter)
-  {
-    locnumnodaldof += iter->second.size();
-  }
-
-  // collect number of nodal dofs from all procs
-  int numnodaldof = 0;
-  ih_->xfemdis()->Comm().SumAll(&locnumnodaldof,&numnodaldof,1);
-  
-  return numnodaldof;
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void XFEM::DofManager::fillDofDistributionMaps(
-    NodalDofPosMap&      NodalDofDistributionMap,
-    ElementalDofPosMap&  ElementalDofDistributionMap
-) const
-{
-  NodalDofDistributionMap.clear();
-  // loop all (non-overlapping = Row)-Nodes and store the DOF information w.t.h. of DofKeys
-  for (int i=0; i<ih_->xfemdis()->NumMyRowNodes(); ++i)
-  {
-    const DRT::Node* actnode = ih_->xfemdis()->lRowNode(i);
-    const int gid = actnode->Id();
-    std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator entry = nodalDofSet_.find(gid);
-    if (entry == nodalDofSet_.end())
-    {
-      // no dofs for this node... must be a hole or somethin'
-      continue;
-    }
-    const std::vector<int> gdofs(ih_->xfemdis()->Dof(actnode));
-    const std::set<FieldEnr> dofset = entry->second;
-    if (gdofs.size() != dofset.size())
-    {
-      cout << "numdof node (Discretization): " <<  gdofs.size() << endl;
-      cout << "numdof node (DofManager):     " <<  dofset.size() << endl;
-      dserror("Bug!!! Information about nodal dofs in DofManager and Discretization does not fit together!");
-    }
-    
-    int dofcount = 0;
-    std::set<FieldEnr>::const_iterator fieldenr;
-    for(fieldenr = dofset.begin(); fieldenr != dofset.end(); ++fieldenr )
-    {
-      NodalDofDistributionMap.insert(make_pair(DofKey<onNode>(gid, *fieldenr), gdofs[dofcount]));
-      dofcount++;
-    }
-  };
-  
-  ElementalDofDistributionMap.clear();
-  // loop all (non-overlapping = Row)-Elements and store the DOF information w.t.h. of DofKeys
-  for (int i=0; i<ih_->xfemdis()->NumMyRowElements(); ++i)
-  {
-    const DRT::Element* actele = ih_->xfemdis()->lRowElement(i);
-    const int gid = actele->Id();
-    std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator entry = elementalDofs_.find(gid);
-    if (entry == elementalDofs_.end())
-    {
-      // no dofs for this node... must be a hole or somethin'
-      continue;
-    }
-    const std::vector<int> gdofs(ih_->xfemdis()->Dof(actele));
-    const std::set<FieldEnr> dofset = entry->second;
-    if (gdofs.size() != dofset.size())
-    {
-//      cout << "numdof node (Discretization): " <<  gdofs.size() << endl;
-//      cout << "numdof node (DofManager):     " <<  dofset.size() << endl;
-//      dserror("Bug!!! Information about element dofs in DofManager and Discretization does not fit together!");
-      // TODO: this mismatch is known and a better structure for element dofs should be found,
-      //       e.g. DofKey(gid,fieldenr,dofperfieldenr), the latter being the number of dofs per fieldenr in the element
-    }
-    
-    int dofcount = 0;
-    std::set<FieldEnr>::const_iterator fieldenr;
-    for(fieldenr = dofset.begin(); fieldenr != dofset.end(); ++fieldenr )
-    {
-      ElementalDofDistributionMap.insert(make_pair(DofKey<onElem>(gid, *fieldenr), gdofs[dofcount]));
-      dofcount++;
-    }
-  };
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> XFEM::DofManager::fillPhysicalOutputVector(
-    const Epetra_Vector&             original_vector,
-    const DRT::DofSet&               dofset_out,
-    const XFEM::NodalDofPosMap&      nodalDofDistributionMap,
-    const std::set<XFEM::PHYSICS::Field>&   fields_out
-) const
-{
-  Teuchos::RCP<Epetra_Vector> outvec = LINALG::CreateVector(*dofset_out.DofRowMap(),true);
-  
-  const int numdof = fields_out.size();
-  
-  const Epetra_Map* dofrowmap = dofset_out.DofRowMap();
-  const Epetra_Map* xdofrowmap = ih_->xfemdis()->DofRowMap();
-  
-  for (int i=0; i<ih_->xfemdis()->NumMyRowNodes(); ++i)
-  {
-    const DRT::Node* xfemnode = ih_->xfemdis()->lRowNode(i);
-    const int gid = xfemnode->Id();
-    const std::vector<int> gdofs(dofset_out.Dof(xfemnode));
-    
-    
-    std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator entry = nodalDofSet_.find(gid);
-    if (entry == nodalDofSet_.end())
-    {
-      // no dofs for this node... must be a hole or somethin'
-      //cout << "hole" << endl;
-      for (int idof = 0; idof < numdof; ++idof)
-      {
-        //cout << dofrowmap->LID(gdofs[idof]) << endl;
-        (*outvec)[dofrowmap->LID(gdofs[idof])] = 0.0;
-      }
-    }
-    else
-    {
-      
-      //cout << "some values available" << endl;
-      
-      //const std::vector<int> gdofs(ih_->xfemdis()->Dof(actnode));
-      const std::set<FieldEnr> dofset = entry->second;
-      
-      const LINALG::Matrix<3,1> actpos(xfemnode->X());
-      int idof = 0;
-      for(std::set<XFEM::PHYSICS::Field>::const_iterator field_out = fields_out.begin(); field_out != fields_out.end(); ++field_out)
-      {
-        for(std::set<FieldEnr>::const_iterator fieldenr = dofset.begin(); fieldenr != dofset.end(); ++fieldenr )
-        {
-          const XFEM::PHYSICS::Field fielditer = fieldenr->getField(); 
-          if (fielditer == *field_out)
-          {
-            const double enrval = fieldenr->getEnrichment().EnrValue(actpos, *ih_, XFEM::Enrichment::approachUnknown);
-            const XFEM::DofKey<XFEM::onNode> dofkey(gid,*fieldenr);
-            const int origpos = nodalDofDistributionMap.find(dofkey)->second;
-            //cout << origpos << endl;
-            if (origpos < 0)
-              dserror("bug!");
-            if (gdofs[idof] < 0)
-              dserror("bug!");
-            (*outvec)[dofrowmap->LID(gdofs[idof])] += enrval * original_vector[xdofrowmap->LID(origpos)];
-            
-          }
-        }
-        //cout << "LID " << dofrowmap->LID(gdofs[idof]) << " -> GID " << gdofs[idof] << endl;
-        idof++;
-      }
-    }
-  };
-  return outvec;
-}
 
 
 #endif  // #ifdef CCADISCRET

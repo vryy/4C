@@ -59,7 +59,7 @@ namespace XFEM
        */
       const std::set<FieldEnr>& FieldEnrSetPerNode(
           const int  gid    ///< unique global node id
-      ) const
+          ) const
       {
         map<int, const std::set<FieldEnr> >::const_iterator tmp = nodalDofSet_.find(gid);
         if (tmp == nodalDofSet_.end())
@@ -87,28 +87,16 @@ namespace XFEM
       };
       
       //! return number of dofs at nodes
-      int NumNodeDof() const
-      {
-        return numNodeDof_;
-      };
+      int NumNodeDof() const { return numNodeDof_; };
 
       //! return number of dofs at elements
-      int NumElemDof() const
-      {
-        return numElemDof_;
-      };
+      int NumElemDof() const { return numElemDof_; };
       
       //! return number of dofs at nodes + elements
-      int NumDofElemAndNode() const
-      {
-        return numNodeDof_ + numElemDof_;
-      };
+      int NumDofElemAndNode() const { return numNodeDof_ + numElemDof_; };
       
       //! function that returns dofs for each node of this particular element
-      const std::map<int, const std::set<XFEM::FieldEnr> >& getNodalDofSet() const
-      {
-        return nodalDofSet_;
-      };
+      const std::map<int, const std::set<XFEM::FieldEnr> >& getNodalDofSet() const { return nodalDofSet_; };
       
       /*! return number of dofs on this element for a given field. E.g., if we have 4 nodes with
        *  standard x displacements at each node and 2 enriched x displacements, this function will return 6
@@ -134,16 +122,10 @@ namespace XFEM
       
       //! return reference to list of local positions in a array of dofs
       template <XFEM::PHYSICS::Field field>
-      const std::vector<int>& LocalDofPosPerField() const
-      {
-        return paramsLocalEntries_.find(field)->second;
-      }
+      const std::vector<int>& LocalDofPosPerField() const { return paramsLocalEntries_.find(field)->second;}
       
       //! return unique enrichments for this proc
-      const std::set<XFEM::Enrichment>& getUniqueEnrichments() const
-      {
-        return unique_enrichments_;
-      }
+      const std::set<XFEM::Enrichment>& getUniqueEnrichments() const {return unique_enrichments_;}
       
       //! return unique enrichments for this proc
       std::set<int> getUniqueEnrichmentLabels() const

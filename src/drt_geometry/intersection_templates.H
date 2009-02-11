@@ -326,8 +326,8 @@ namespace GEO
         const M1&                         xyze_surfaceElement,
         const DRT::Element*               lineElement,
         const M2&                         xyze_lineElement,
-        const V2&        				  upLimit,
-        const V3&        				  loLimit,
+        const V2&                         upLimit,
+        const V3&                         loLimit,
         V1&                               xsi,
         const bool                        doSVD
     ) 
@@ -627,7 +627,7 @@ namespace GEO
 	        return false;
 	      else if(singular && doSVD)
 	      {
-	        cout << "SINGULAR " << endl;
+	        // cout << "SINGULAR " << endl;
 	        if(computeSingularRCI<surftype>(xsi, xyze_cutterElement, normal, onBoundary))
 	          return false; 
 
@@ -641,7 +641,7 @@ namespace GEO
 
 	      updateRHSForRCINormal<surftype>( b, xsi, normal, xyze_cutterElement, onBoundary);
 	      residual = b.Norm2();
-	      cout << "residual = " << residual << endl;
+	      // cout << "residual = " << residual << endl;
 	      iter++;   
 	    }
 	    return intersectionPointInElementsRCI<surftype>(xsi);

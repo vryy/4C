@@ -34,6 +34,7 @@ Maintainer: Axel Gerstenberger
 
 
 /*----------------------------------------------------------------------*
+ * standard constructor
  *----------------------------------------------------------------------*/
 XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
     const Teuchos::RCP<DRT::Discretization>&  xfemdis,
@@ -48,6 +49,10 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
       
   FillCurrentCutterPositionMap(cutterdis, *cutterdis->GetState("idispcolnp"), cutterposnp_);
   FillCurrentCutterPositionMap(cutterdis, *cutterdis->GetState("idispcoln") , cutterposn_ );
+  currentXAABBs_ = GEO::getCurrentXAABBs(*cutterdis, cutterposnp_);
+  
+  static std::map<int,LINALG::Matrix<3,2> > currentXAABBs; 
+  currentXAABBs = GEO::getCurrentXAABBs(*cutterdis, cutterposnp_);
   
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
   const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
@@ -73,7 +78,7 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
   }
 
   GEO::Intersection is;
-  is.computeIntersection(xfemdis, cutterdis, cutterposnp_, elementalDomainIntCells_, elementalBoundaryIntCells_);  
+  is.computeIntersection(xfemdis, cutterdis, cutterposnp_, currentXAABBs, elementalDomainIntCells_, elementalBoundaryIntCells_);  
 
   xfemdis->Comm().Barrier();
    
@@ -90,28 +95,24 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
   octTreenp_->initializeTree(AABB, elementsByLabel_, GEO::TreeType(GEO::OCTTREE));
   octTreen_->initializeTree(AABB, elementsByLabel_, GEO::TreeType(GEO::OCTTREE));
   
-  // find malicious entries
-  const std::set<int> ele_to_delete = FindDoubleCountedIntersectedElements();
-  
-  // remove malicious entries from both maps
-  for (set<int>::const_iterator eleid = ele_to_delete.begin(); eleid != ele_to_delete.end(); ++eleid)
-  {
-    elementalDomainIntCells_.erase(*eleid);
-    elementalBoundaryIntCells_.erase(*eleid);
-  }
-  
+  ClassifyIntegrationCells();
+ 
   GenerateSpaceTimeLayer(cutterdis_, cutterposnp_, cutterposn_);
 
   xfemdis->Comm().Barrier();
 }
 
+    
 
 /*----------------------------------------------------------------------*
+ * destructor
  *----------------------------------------------------------------------*/
 XFEM::InterfaceHandleXFSI::~InterfaceHandleXFSI()
 {
     return;
 }
+
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -142,7 +143,7 @@ void XFEM::InterfaceHandleXFSI::FillCurrentCutterPositionMap(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::set<int> XFEM::InterfaceHandleXFSI::FindDoubleCountedIntersectedElements() const
+void XFEM::InterfaceHandleXFSI::ClassifyIntegrationCells()
 {
   // clean up double counted intersections
   std::set<int> ele_to_delete;
@@ -151,14 +152,15 @@ std::set<int> XFEM::InterfaceHandleXFSI::FindDoubleCountedIntersectedElements() 
   std::map<int,GEO::DomainIntCells >::const_iterator entry;
   for (entry = elementalDomainIntCells_.begin(); entry != elementalDomainIntCells_.end(); ++entry)
   {
-    const GEO::DomainIntCells cells = entry->second;
+    GEO::DomainIntCells cells = entry->second;
     const DRT::Element* xfemele = xfemdis_->gElement(entry->first);
     std::set<int> labelset;
     bool one_cell_is_fluid = false;
-    for (GEO::DomainIntCells::const_iterator cell = cells.begin(); cell != cells.end(); ++cell)
+    for (GEO::DomainIntCells::iterator cell = cells.begin(); cell != cells.end(); ++cell)
     {
       const LINALG::Matrix<3,1> cellcenter(cell->GetPhysicalCenterPosition());
       const int current_label = PositionWithinConditionNP(cellcenter);
+      cell->setLabel(current_label);
       if (current_label == 0)
       {
         one_cell_is_fluid = true;
@@ -171,12 +173,173 @@ std::set<int> XFEM::InterfaceHandleXFSI::FindDoubleCountedIntersectedElements() 
       ele_to_delete.insert(xfemele->Id());
     }
   }
-  return ele_to_delete;
+  
+  // remove malicious entries from both maps
+  for (std::set<int>::const_iterator eleid = ele_to_delete.begin(); eleid != ele_to_delete.end(); ++eleid)
+  {
+    elementalDomainIntCells_.erase(*eleid);
+    elementalBoundaryIntCells_.erase(*eleid);
+  }
+ 
+  return;
 }
 
 
 
 /*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int XFEM::InterfaceHandleXFSI::PositionWithinConditionNP(
+    const LINALG::Matrix<3,1>&        x_in) const
+{
+  
+  TEUCHOS_FUNC_TIME_MONITOR(" - search - InterfaceHandle::PositionWithinConditionNP");
+  return octTreenp_->queryXFEMFSIPointType(*(cutterdis_), cutterposnp_, currentXAABBs_, x_in);
+}
+
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int XFEM::InterfaceHandleXFSI::PositionWithinConditionN(
+    const LINALG::Matrix<3,1>&        x_in) const
+{
+  
+  TEUCHOS_FUNC_TIME_MONITOR(" - search - InterfaceHandle::PositionWithinConditionN");
+  return octTreen_->queryXFEMFSIPointType(*(cutterdis_), cutterposn_, currentXAABBs_, x_in);
+}
+
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int XFEM::InterfaceHandleXFSI::PositionWithinConditionNP(
+    const LINALG::Matrix<3,1>&        x_in,
+    GEO::NearestObject&               nearestobject) const
+{
+  TEUCHOS_FUNC_TIME_MONITOR(" - search - InterfaceHandle::PositionWithinConditionNP");
+  return octTreenp_->queryFSINearestObject(*(cutterdis_), cutterposnp_, currentXAABBs_, x_in, nearestobject);
+}
+
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int XFEM::InterfaceHandleXFSI::PositionWithinConditionN(
+    const LINALG::Matrix<3,1>&        x_in,
+    GEO::NearestObject&               nearestobject) const
+{
+  TEUCHOS_FUNC_TIME_MONITOR(" - search - InterfaceHandle::PositionWithinConditionN");
+  return octTreen_->queryFSINearestObject(*(cutterdis_), cutterposn_, currentXAABBs_, x_in, nearestobject);
+}
+
+
+/*----------------------------------------------------------------------*
+ * generate space time layer
+ *----------------------------------------------------------------------*/
+void XFEM::InterfaceHandleXFSI::GenerateSpaceTimeLayer(
+    const Teuchos::RCP<DRT::Discretization>&            cutterdis,
+    const std::map<int,LINALG::Matrix<3,1> >&           cutterposnp,
+    const std::map<int,LINALG::Matrix<3,1> >&           cutterposn)
+{
+ 
+  for (int i=0; i<cutterdis->NumMyColElements(); ++i)
+  {
+    const DRT::Element* cutterele = cutterdis->lColElement(i);
+    const int* nodeids = cutterele->NodeIds();
+    const int numNode = cutterele->NumNode();
+    LINALG::SerialDenseMatrix posnp(3, numNode);
+    for (int inode = 0; inode != numNode; ++inode) // fill n+1 position
+    {
+      const int nodeid = nodeids[inode];
+      const LINALG::Matrix<3,1> nodexyz = cutterposnp.find(nodeid)->second;
+      for (int isd = 0; isd != 3; ++isd)
+      {
+        posnp(isd,inode) = nodexyz(isd);
+      }
+    }
+    LINALG::SerialDenseMatrix posn(3,numNode);
+    for (int inode = 0; inode != numNode; ++inode) // fill n   position
+    {
+      const int nodeid = nodeids[inode];
+      const LINALG::Matrix<3,1> nodexyz = cutterposn.find(nodeid)->second;
+      for (int isd = 0; isd != 3; ++isd)
+      {
+        posn(isd,inode) = nodexyz(isd);
+      }
+    }
+    //XFEM::SpaceTimeBoundaryCell slab(cutterele->Id(),posnp,posn);
+    stlayer_.insert(make_pair(cutterele->Id(),XFEM::SpaceTimeBoundaryCell(cutterele->Id(),posnp,posn)));
+    //cout << "XFEM::SpaceTimeBoundaryCell" << slab.getBeleId() << endl;
+  }
+  
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ * find space time layer
+ *----------------------------------------------------------------------*/
+bool XFEM::InterfaceHandleXFSI::FindSpaceTimeLayerCell(
+    const LINALG::Matrix<3,1>&        querypos,
+    XFEM::SpaceTimeBoundaryCell&      stcell,
+    LINALG::Matrix<3,1>&              rst) const
+{
+  bool in_spacetimecell = false;
+  // loop over space time slab cells until one is found - brute force
+  for (std::map<int,XFEM::SpaceTimeBoundaryCell>::const_iterator slabiter = stlayer_.begin(); slabiter != stlayer_.end(); ++slabiter)
+  {
+    const XFEM::SpaceTimeBoundaryCell slabitem = slabiter->second;
+    LINALG::Matrix<3,1> xsi(true);
+
+    // TODO check if hardcoding hex8 is ok
+    in_spacetimecell = GEO::currentToVolumeElementCoordinates(DRT::Element::hex8, slabitem.get_xyzt(), querypos, xsi);
+    in_spacetimecell = GEO::checkPositionWithinElementParameterSpace(xsi, DRT::Element::hex8);
+    if (in_spacetimecell)
+    {
+      stcell = XFEM::SpaceTimeBoundaryCell(slabitem);
+//      cout << "slabitem " << slabitem.toString() << endl;
+      rst = xsi;    
+      return true;
+    }
+  }
+  
+//  if (not in_spacetimecell)
+//  {
+//    dserror("should be in one space time cell");
+//  }
+//  cout << stcell.toString() << endl;
+  return false;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ * Debug only
+ *----------------------------------------------------------------------*/
+void XFEM::InterfaceHandleXFSI::PrintStatistics() const
+{
+
+  // loop intersected elements and count intcells
+  const unsigned numintersectedele = elementalDomainIntCells_.size();
+  
+  if (numintersectedele > 0)
+  {
+    unsigned numcells = 0;
+    std::map<int,GEO::DomainIntCells >::const_iterator entry;
+    for (entry = elementalDomainIntCells_.begin(); entry != elementalDomainIntCells_.end(); ++entry)
+    {
+      const GEO::DomainIntCells cells = entry->second;
+      numcells += cells.size();
+    }
+    const unsigned avgnumcellperele = numcells/numintersectedele;
+    cout << "Avg. Number of DomainIntCells per intersected xfem element: " << avgnumcellperele << endl;
+  }
+}
+
+
+
+/*----------------------------------------------------------------------*
+ * Debug only
  *----------------------------------------------------------------------*/
 void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
 {
@@ -322,253 +485,5 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
 }
 
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-bool XFEM::InterfaceHandleXFSI::FindSpaceTimeLayerCell(
-    const LINALG::Matrix<3,1>&        querypos,
-    XFEM::SpaceTimeBoundaryCell&      stcell,
-    LINALG::Matrix<3,1>&              rst
-) const
-{
-  bool in_spacetimecell = false;
-  // loop over space time slab cells until one is found - brute force
-  for (std::map<int,XFEM::SpaceTimeBoundaryCell>::const_iterator slabiter = stlayer_.begin(); slabiter != stlayer_.end(); ++slabiter)
-  {
-    const XFEM::SpaceTimeBoundaryCell slabitem = slabiter->second;
-    LINALG::Matrix<3,1> xsi(true);
-
-    in_spacetimecell = GEO::currentToVolumeElementCoordinates(DRT::Element::hex8, slabitem.get_xyzt(), querypos, xsi);
-    in_spacetimecell = GEO::checkPositionWithinElementParameterSpace(xsi, DRT::Element::hex8);
-    if (in_spacetimecell)
-    {
-      stcell = XFEM::SpaceTimeBoundaryCell(slabitem);
-//      cout << "slabitem " << slabitem.toString() << endl;
-      rst = xsi;    
-      return true;
-    }
-  }
-  
-//  if (not in_spacetimecell)
-//  {
-//    dserror("should be in one space time cell");
-//  }
-//  cout << stcell.toString() << endl;
-  return false;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-int XFEM::InterfaceHandleXFSI::PositionWithinConditionNP(
-    const LINALG::Matrix<3,1>&        x_in
-) const
-{
-  
-  TEUCHOS_FUNC_TIME_MONITOR(" - search - InterfaceHandle::PositionWithinConditionNP");
-  return octTreenp_->queryXFEMFSIPointType(*(cutterdis_), cutterposnp_, x_in);
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-int XFEM::InterfaceHandleXFSI::PositionWithinConditionN(
-    const LINALG::Matrix<3,1>&        x_in
-) const
-{
-  
-  TEUCHOS_FUNC_TIME_MONITOR(" - search - InterfaceHandle::PositionWithinConditionN");
-  return octTreen_->queryXFEMFSIPointType(*(cutterdis_), cutterposn_, x_in);
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-int XFEM::InterfaceHandleXFSI::PositionWithinConditionNP(
-    const LINALG::Matrix<3,1>&        x_in,
-    GEO::NearestObject&               nearestobject
-) const
-{
-  TEUCHOS_FUNC_TIME_MONITOR(" - search - InterfaceHandle::PositionWithinConditionNP");
-  return octTreenp_->queryFSINearestObject(*(cutterdis_), cutterposnp_, x_in, nearestobject);
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-int XFEM::InterfaceHandleXFSI::PositionWithinConditionN(
-    const LINALG::Matrix<3,1>&        x_in,
-    GEO::NearestObject&               nearestobject
-) const
-{
-  TEUCHOS_FUNC_TIME_MONITOR(" - search - InterfaceHandle::PositionWithinConditionN");
-  return octTreen_->queryFSINearestObject(*(cutterdis_), cutterposn_, x_in, nearestobject);
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void XFEM::InterfaceHandleXFSI::GenerateSpaceTimeLayer(
-    const Teuchos::RCP<DRT::Discretization>&            cutterdis,
-    const std::map<int,LINALG::Matrix<3,1> >&           cutterposnp,
-    const std::map<int,LINALG::Matrix<3,1> >&           cutterposn
-)
-{
- 
-  for (int i=0; i<cutterdis->NumMyColElements(); ++i)
-  {
-    const DRT::Element* cutterele = cutterdis->lColElement(i);
-    const int* nodeids = cutterele->NodeIds();
-    const int numNode = cutterele->NumNode();
-    LINALG::SerialDenseMatrix posnp(3, numNode);
-    for (int inode = 0; inode != numNode; ++inode) // fill n+1 position
-    {
-      const int nodeid = nodeids[inode];
-      const LINALG::Matrix<3,1> nodexyz = cutterposnp.find(nodeid)->second;
-      for (int isd = 0; isd != 3; ++isd)
-      {
-        posnp(isd,inode) = nodexyz(isd);
-      }
-    }
-    LINALG::SerialDenseMatrix posn(3,numNode);
-    for (int inode = 0; inode != numNode; ++inode) // fill n   position
-    {
-      const int nodeid = nodeids[inode];
-      const LINALG::Matrix<3,1> nodexyz = cutterposn.find(nodeid)->second;
-      for (int isd = 0; isd != 3; ++isd)
-      {
-        posn(isd,inode) = nodexyz(isd);
-      }
-    }
-    //XFEM::SpaceTimeBoundaryCell slab(cutterele->Id(),posnp,posn);
-    stlayer_.insert(make_pair(cutterele->Id(),XFEM::SpaceTimeBoundaryCell(cutterele->Id(),posnp,posn)));
-    //cout << "XFEM::SpaceTimeBoundaryCell" << slab.getBeleId() << endl;
-  }
-  
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void XFEM::InterfaceHandleXFSI::PrintStatistics() const
-{
-
-  // loop intersected elements and count intcells
-  const unsigned numintersectedele = elementalDomainIntCells_.size();
-  
-  if (numintersectedele > 0)
-  {
-    unsigned numcells = 0;
-    std::map<int,GEO::DomainIntCells >::const_iterator entry;
-    for (entry = elementalDomainIntCells_.begin(); entry != elementalDomainIntCells_.end(); ++entry)
-    {
-      const GEO::DomainIntCells cells = entry->second;
-      numcells += cells.size();
-    }
-    const unsigned avgnumcellperele = numcells/numintersectedele;
-    cout << "Avg. Number of DomainIntCells per intersected xfem element: " << avgnumcellperele << endl;
-  }
-}
-
-
-
-/*! 
- * \brief calculates the volume of an element in initial configuration
- * 
- * \return physical volume of the element in initial configuration (without any displacement)
- */
-template <DRT::Element::DiscretizationType DISTYPE>
-double ElementVolumeT(
-        const DRT::Element&           ele
-        )
-{
-  if (ele.Shape() != DISTYPE)
-  {
-    dserror("mismatch between element shape and template parameter DISTYPE! This is a bug!");
-  }
-
-  // number of nodes for element
-  const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-  
-  // dimension for 3d element
-  const int nsd = 3;
-  
-  // get node coordinates of the current element
-  static LINALG::Matrix<nsd,numnode> xyze;
-  GEO::fillInitialPositionArray<DISTYPE>(&ele, xyze);
-  
-  // physical element volume 
-  double vol = 0.0;
-  
-  DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule3D_undefined;
-  switch (DISTYPE)
-  {
-    case DRT::Element::hex8:
-    case DRT::Element::hex20:
-    case DRT::Element::hex27:
-    {
-      gaussrule = DRT::UTILS::intrule_hex_8point;
-      break;
-    }
-    case DRT::Element::tet4:
-    case DRT::Element::tet10:
-    {
-      gaussrule = DRT::UTILS::intrule_tet_4point;
-      break;
-    }
-    default:
-      dserror("add your element type here...");
-  }
-  
-  // integration points
-  const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
-
-  // integration loop
-  for (int iquad=0; iquad<intpoints.nquad; ++iquad)
-  {
-    // coordinates of the current integration point in element coordinates \xi
-    static LINALG::Matrix<3,1> posXiDomain;
-    posXiDomain(0) = intpoints.qxg[iquad][0];
-    posXiDomain(1) = intpoints.qxg[iquad][1];
-    posXiDomain(2) = intpoints.qxg[iquad][2];
-    
-    // shape functions and their first derivatives
-    static LINALG::Matrix<nsd,numnode> deriv;
-    DRT::UTILS::shape_function_3D_deriv1(deriv,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
-
-    // get transposed of the jacobian matrix d x / d \xi
-    static LINALG::Matrix<3,3> xjm;
-    xjm.MultiplyNT(deriv,xyze);
-
-    const double det = xjm.Determinant();
-    const double fac = intpoints.qwgt[iquad]*det;
-
-    if (det <= 0.0)
-    {
-      dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele.Id(), det);
-    }
-   
-    vol += fac;
-      
-  }
-  return vol;
-}
-
-double XFEM::ElementVolume(
-        const DRT::Element&           ele
-        )
-{
-  switch (ele.Shape())
-  {
-    case DRT::Element::hex8:
-      return ElementVolumeT<DRT::Element::hex8>(ele);
-    case DRT::Element::hex20:
-      return ElementVolumeT<DRT::Element::hex20>(ele);
-    case DRT::Element::hex27:
-      return ElementVolumeT<DRT::Element::hex27>(ele);
-    case DRT::Element::tet4:
-      return ElementVolumeT<DRT::Element::tet4>(ele);
-    case DRT::Element::tet10:
-      return ElementVolumeT<DRT::Element::tet10>(ele);
-    default:
-      dserror("add you distype here...");
-      exit(1);
-  }
-}
 
 #endif  // #ifdef CCADISCRET

@@ -10,6 +10,8 @@ Maintainer: Axel Gerstenberger
             089 - 289-15236
 </pre>
  */
+
+
 #ifdef CCADISCRET
 #ifndef DOF_MANAGEMENT_H
 #define DOF_MANAGEMENT_H
@@ -26,17 +28,23 @@ namespace XFEM
   class DofManager
   {
     public:
+      
       //! default constructor
       explicit DofManager();
+      
       //! constructor
       explicit DofManager(const RCP<XFEM::InterfaceHandle>& ih, const bool DLM_condensation);
+      
       //! copy constructor
       explicit DofManager(const XFEM::DofManager& dofman);
+      
       //! destructor
       ~DofManager();
+      
       //! return string representation of the dofmanager
       std::string toString() const;
 
+      
       //! print a Gmsh representation of this class
       void toGmsh(
           const int step                                 ///< step for file numbering
@@ -45,6 +53,7 @@ namespace XFEM
       //! return global (i.e. from all procs) number of nodal dofs only
       int NumNodalDof() const;
 
+      
       //! return set with enriched fields for requested node
       const std::set<FieldEnr>& getNodeDofSet(
           const int gid      ///< global node id
@@ -57,6 +66,7 @@ namespace XFEM
         }
         return entry->second;
       };
+      
       
       //! return set with enriched fields for requested element
       const std::set<XFEM::FieldEnr>& getElementDofSet(
@@ -83,6 +93,7 @@ namespace XFEM
           ElementalDofPosMap&  ElementalDofDistributionMap     ///< element dofs
       ) const;
       
+      
       //! for output XFEM is turned of and a uniform field is drawn. This method returns a vector with uniform number of unknowns per node
       Teuchos::RCP<Epetra_Vector> fillPhysicalOutputVector(
           const Epetra_Vector&             original_vector,
@@ -91,10 +102,8 @@ namespace XFEM
           const std::set<XFEM::PHYSICS::Field>&   fields_out
       ) const;
       
-      const Teuchos::RCP<XFEM::InterfaceHandle> getInterfaceHandle() const
-      {
-        return ih_;
-      }
+      
+      const Teuchos::RCP<XFEM::InterfaceHandle> getInterfaceHandle() const { return ih_; }
       
     private:
       
@@ -102,23 +111,23 @@ namespace XFEM
       std::set<XFEM::Enrichment> GatherUniqueEnrichments() const;
       
       //! pointer to the xfem discretization of which we hold the unknowns
-      const Teuchos::RCP<XFEM::InterfaceHandle> ih_;
+      const Teuchos::RCP<XFEM::InterfaceHandle>         ih_;
       
       /*! unknowns for each global node id (gid) on this processor
        * if it does not contain the key, the number of unknowns is supposed to be zero
        * meaning, the the dofmanager will not crash but give back an empty set of unknowns
        * see also getNodeDofSet()
        */
-      std::map<int, const std::set<XFEM::FieldEnr> > nodalDofSet_;
+      std::map<int, const std::set<XFEM::FieldEnr> >    nodalDofSet_;
       
       /*! unknowns for each global element id (gid) on this processor
        * same as above, see getElementDofSet()
        */
-      std::map<int, const std::set<XFEM::FieldEnr> > elementalDofs_;
+      std::map<int, const std::set<XFEM::FieldEnr> >    elementalDofs_;
       
       /// when returning a reference to a set, this set can be used when an empty set is needed
       /// avoids creating a lot of empty sets -> speed
-      const std::set<XFEM::FieldEnr>   emptyset_;
+      const std::set<XFEM::FieldEnr>                    emptyset_;
       
   };
 

@@ -16,6 +16,7 @@ Maintainer: Ursula Mayer
 #define INTEGRATIONCELL_H
 
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "../drt_geometry/element_coordtrafo.H"
 
 
 namespace GEO
@@ -105,6 +106,13 @@ class DomainIntCell : public IntCell
        
     //! return string representation of the DomainIntCell
     virtual std::string toString() const;
+    
+    //! return label of domain intcell
+    int getLabel() const {return label_; }
+        
+    //! set label of domain intcell
+    void setLabel(const int   label);
+    
 
   private:
      
@@ -125,6 +133,9 @@ class DomainIntCell : public IntCell
     
     //! get geometric center of the cell in physical coordinates
     LINALG::Matrix<3,1>                             phys_center_;
+    
+    // xfem label if fluid label = 0; otherwise label = solid id
+    int label_;
 };
 
 //! shortcut for a vector of DomainIntCells

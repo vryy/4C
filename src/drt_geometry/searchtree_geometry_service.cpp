@@ -41,6 +41,7 @@ LINALG::Matrix<3,2> GEO::getXAABBofDis(
     XAABB(dim, 1) = pos(dim) + GEO::TOL7;
   }
 
+  // TODO make more efficeient by cahcking nodes
   // loop over elements and merge XAABB with their eXtendedAxisAlignedBoundingBox
   for (int j=0; j< dis.NumMyColElements(); ++j) 
   {
@@ -48,7 +49,7 @@ LINALG::Matrix<3,2> GEO::getXAABBofDis(
     const LINALG::SerialDenseMatrix xyze_element(GEO::getCurrentNodalPositions(element,currentpositions));
     GEO::EleGeoType eleGeoType(GEO::HIGHERORDER);
     GEO::checkRoughGeoType(element, xyze_element, eleGeoType);
-    LINALG::Matrix<3,2> xaabbEle = GEO::computeFastXAABB(element, xyze_element, eleGeoType);
+    const LINALG::Matrix<3,2> xaabbEle = GEO::computeFastXAABB(element->Shape(), xyze_element, eleGeoType);
     XAABB = mergeAABB(XAABB, xaabbEle);
   }
   
@@ -111,7 +112,7 @@ std::vector< LINALG::Matrix<3,2> > GEO::computeXAABBForLabeledStructures(
       const LINALG::SerialDenseMatrix xyze_element(GEO::getCurrentNodalPositions(element,currentpositions));
       GEO::EleGeoType eleGeoType(GEO::HIGHERORDER);
       GEO::checkRoughGeoType(element, xyze_element, eleGeoType);
-      LINALG::Matrix<3,2> xaabbEle = GEO::computeFastXAABB(element, xyze_element, eleGeoType);
+      LINALG::Matrix<3,2> xaabbEle = GEO::computeFastXAABB(element->Shape(), xyze_element, eleGeoType);
       xaabb_label = mergeAABB(xaabb_label, xaabbEle);
     }
     XAABBs.push_back(xaabb_label);
@@ -147,6 +148,8 @@ int GEO::getXFEMLabel(
   
   // if fluid
   if(scalarproduct > (-1)*GEO::TOL13)
+    label = 0;
+  if(minDistanceVec.Norm2() < GEO::TOL7)
     label = 0;
 
   return label;
@@ -257,114 +260,13 @@ std::vector<int> GEO::getIntersectionElements(
     const LINALG::SerialDenseMatrix masterxyze(GEO::getCurrentNodalPositions(masterelement,currentpositions));
     LINALG::Matrix<3,2> masterXAABB = GEO::computeContactXAABB(masterelement,masterxyze);
     
+    //TODO adjust for 3d
     // compare slaveXAABB and masterXAABB (2D only)
-    if(intersectionOfXAABB2D(slaveXAABB,masterXAABB))
+    if(intersectionOfXAABB<2>(slaveXAABB,masterXAABB))
       intersectionids.push_back(*elementIter);
   }
 
   return intersectionids;
-}
-
-/*----------------------------------------------------------------------*
- | checks if two XAABB's intersect (2D CONTACT)               popp 08/08|
- *----------------------------------------------------------------------*/
-bool GEO::intersectionOfXAABB2D(  
-    const LINALG::Matrix<3,2>&     slaveXAABB, 
-    const LINALG::Matrix<3,2>&     masterXAABB)
-{
-    
-  /*====================================================================*/
-  /* bounding box topology*/
-  /*--------------------------------------------------------------------*/
-  /* parameter coordinates (x,y,z) of nodes
-   * node 0: (minX, minY, minZ)
-   * node 1: (maxX, minY, minZ)
-   * node 2: (maxX, maxY, minZ)
-   * node 3: (minX, maxY, minZ)
-   * node 4: (minX, minY, maxZ)
-   * node 5: (maxX, minY, maxZ)
-   * node 6: (maxX, maxY, maxZ)
-   * node 7: (minX, maxY, maxZ)
-   * 
-   *                      z
-   *                      |           
-   *             4========|================7
-   *           //|        |               /||
-   *          // |        |              //||
-   *         //  |        |             // ||
-   *        //   |        |            //  ||
-   *       //    |        |           //   ||
-   *      //     |        |          //    ||
-   *     //      |        |         //     ||
-   *     5=========================6       ||
-   *    ||       |        |        ||      ||
-   *    ||       |        o--------||---------y
-   *    ||       |       /         ||      ||
-   *    ||       0------/----------||------3
-   *    ||      /      /           ||     //
-   *    ||     /      /            ||    //
-   *    ||    /      /             ||   //
-   *    ||   /      /              ||  //
-   *    ||  /      /               || //
-   *    || /      x                ||//
-   *    ||/                        ||/
-   *     1=========================2
-   *
-   */
-  /*====================================================================*/
-    
-    bool intersection =  false;
-    static std::vector< LINALG::Matrix<3,1> > nodes(8, LINALG::Matrix<3,1>());
-    
-    nodes[0](0) = slaveXAABB(0,0); nodes[0](1) = slaveXAABB(1,0); nodes[0](2) = slaveXAABB(2,0); // node 0   
-    nodes[1](0) = slaveXAABB(0,1); nodes[1](1) = slaveXAABB(1,0); nodes[1](2) = slaveXAABB(2,0); // node 1
-    nodes[2](0) = slaveXAABB(0,1); nodes[2](1) = slaveXAABB(1,1); nodes[2](2) = slaveXAABB(2,0); // node 2
-    nodes[3](0) = slaveXAABB(0,0); nodes[3](1) = slaveXAABB(1,1); nodes[3](2) = slaveXAABB(2,0); // node 3
-    nodes[4](0) = slaveXAABB(0,0); nodes[4](1) = slaveXAABB(1,0); nodes[4](2) = slaveXAABB(2,1); // node 4
-    nodes[5](0) = slaveXAABB(0,1); nodes[5](1) = slaveXAABB(1,0); nodes[5](2) = slaveXAABB(2,1); // node 5
-    nodes[6](0) = slaveXAABB(0,1); nodes[6](1) = slaveXAABB(1,1); nodes[6](2) = slaveXAABB(2,1); // node 6
-    nodes[7](0) = slaveXAABB(0,0); nodes[7](1) = slaveXAABB(1,1); nodes[7](2) = slaveXAABB(2,1); // node 7
-    
-    for (int i = 0; i < 8; i++)
-        if(isPositionWithinXAABB(nodes[i], masterXAABB))
-        {
-            intersection = true;
-            break;
-        }
-    
-    if(!intersection)
-    {
-        nodes[0](0) = masterXAABB(0,0);   nodes[0](1) = masterXAABB(1,0);   nodes[0](2) = masterXAABB(2,0);   // node 0   
-        nodes[1](0) = masterXAABB(0,1);   nodes[1](1) = masterXAABB(1,0);   nodes[1](2) = masterXAABB(2,0);   // node 1
-        nodes[2](0) = masterXAABB(0,1);   nodes[2](1) = masterXAABB(1,1);   nodes[2](2) = masterXAABB(2,0);   // node 2
-        nodes[3](0) = masterXAABB(0,0);   nodes[3](1) = masterXAABB(1,1);   nodes[3](2) = masterXAABB(2,0);   // node 3
-        nodes[4](0) = masterXAABB(0,0);   nodes[4](1) = masterXAABB(1,0);   nodes[4](2) = masterXAABB(2,1);   // node 4
-        nodes[5](0) = masterXAABB(0,1);   nodes[5](1) = masterXAABB(1,0);   nodes[5](2) = masterXAABB(2,1);   // node 5
-        nodes[6](0) = masterXAABB(0,1);   nodes[6](1) = masterXAABB(1,1);   nodes[6](2) = masterXAABB(2,1);   // node 6
-        nodes[7](0) = masterXAABB(0,0);   nodes[7](1) = masterXAABB(1,1);   nodes[7](2) = masterXAABB(2,1);   // node 7
-    
-        for (int i = 0; i < 8; i++)
-            if(isPositionWithinXAABB(nodes[i], slaveXAABB))
-            {
-                intersection = true;
-                break;
-            }
-    }   
-    
-    if(!intersection)
-    {
-        for (int i = 0; i < 12; i++)
-        {
-            const int index1 = DRT::UTILS::eleNodeNumbering_hex27_lines[i][0];
-            const int index2 = DRT::UTILS::eleNodeNumbering_hex27_lines[i][1];
-            if(isLineWithinXAABB(nodes[index1], nodes[index2], slaveXAABB))
-            {
-                intersection = true;
-                break;
-            }
-        }
-    }
-    return intersection;
 }
 
 
@@ -869,36 +771,24 @@ void GEO::checkRoughGeoType(
 /*----------------------------------------------------------------------*
  | returns a set of intersection candidate ids             u.may   09/08|
  *----------------------------------------------------------------------*/
-std::vector<int> GEO::getIntersectionCandidates(    
-    const DRT::Discretization&                  dis,     
-    const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,   
-    DRT::Element*                               xfemElement,
-    std::map<int, std::set<int> >&              elementList)
+void GEO::getIntersectionCandidates(       
+    const std::map<int,LINALG::Matrix<3,2> >&   currentXAABBs, 
+    const LINALG::Matrix<3,2>&                  xfemXAABB,
+    const std::map<int, std::set<int> >&        elementList,
+    std::set<int>&                           intersectionCandidateIds)
 { 
-  std::vector<int> intersectionCandidateIds;
   
-  // create XAABB for query xfem  element
-  GEO::EleGeoType xfemGeoType = HIGHERORDER;
-  const LINALG::SerialDenseMatrix xyze_xfemElement(GEO::InitialPositionArray(xfemElement));
-  GEO::checkGeoType(xfemElement, xyze_xfemElement, xfemGeoType);
-  const LINALG::Matrix<3,2> xfemXAABB(GEO::computeFastXAABB(xfemElement, xyze_xfemElement, xfemGeoType));
   
   // loop over all entries of elementList (= intersection candidates)
   // run over global ids
   for(std::set<int>::const_iterator elementIter = (elementList.begin()->second).begin();
       elementIter != (elementList.begin()->second).end(); elementIter++)
   {
-    DRT::Element*  cutterElement = dis.gElement(*elementIter);
-    const LINALG::SerialDenseMatrix xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentpositions));
-    GEO::EleGeoType cutterGeoType = HIGHERORDER;
-    GEO::checkGeoType(cutterElement, xyze_cutterElement, cutterGeoType);
-    const LINALG::Matrix<3,2> cutterXAABB(GEO::computeFastXAABB(cutterElement, xyze_cutterElement, cutterGeoType));
-    // compare 
-    if(intersectionOfXAABB(cutterXAABB, xfemXAABB))
-      intersectionCandidateIds.push_back(cutterElement->Id());
+    if(intersectionOfXAABB<3>(currentXAABBs.find(*elementIter)->second, xfemXAABB))
+      intersectionCandidateIds.insert(*elementIter);
   }
 
-  return intersectionCandidateIds;
+  return;
 }
 
 #endif  // #ifdef CCADISCRET

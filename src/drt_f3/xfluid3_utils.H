@@ -15,6 +15,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_timecurve.H"
 //#include "../drt_xfem/dof_management_element.H"
 #include "../drt_xfem/xfem_enums.H"
+#include "../drt_geometry/intersection_service.H"
 #include <Epetra_SerialDenseSolver.h>
 
 namespace XFLUID
