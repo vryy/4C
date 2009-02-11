@@ -23,7 +23,9 @@ Maintainer: Axel Gerstenberger
 
 namespace XFEM
 {
-  
+  /*!
+   * \brief pre-calculate enrichment values for an element and store it in this class
+   */
   class ElementEnrichmentValues
   {
     

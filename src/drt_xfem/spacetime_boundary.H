@@ -41,6 +41,7 @@ public:
 //    SpaceTimeBoundaryCell(
 //            const SpaceTimeBoundaryCell& old);
     
+    //! Default Constructor
     explicit SpaceTimeBoundaryCell();
     
 //    /*!  = operator
@@ -53,8 +54,10 @@ public:
 //      return ref;
 //    };
     
+    //! return position array
     LINALG::SerialDenseMatrix get_xyzt() const {return xyzt_;};
     
+    //! get global id of boundary element for which this space-time cell is constructed
     int getBeleId() const {return bele_id_;};
     
     //! return string representation

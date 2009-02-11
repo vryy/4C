@@ -61,7 +61,9 @@ XFEM::SpaceTimeBoundaryCell::SpaceTimeBoundaryCell() :
 //{
 //    return;   
 //}
-        
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 LINALG::SerialDenseMatrix XFEM::SpaceTimeBoundaryCell::getLinearPositionArray(
     const LINALG::SerialDenseMatrix&      posnp,
     const LINALG::SerialDenseMatrix&      posn
@@ -84,29 +86,15 @@ LINALG::SerialDenseMatrix XFEM::SpaceTimeBoundaryCell::getLinearPositionArray(
   }
   return xyzt;
 }
-//
-// Print method
-//
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 std::string XFEM::SpaceTimeBoundaryCell::toString() const
 {
     std::stringstream s;
     s << "SpaceTimeBoundaryCell: " << getBeleId() << endl;
-//    MCONST_FOREACH(vector< vector<double> >, coordinate, nodalpos_xi_domain_)
-//    {
-//        s << "[";
-//        MPFOREACH(vector<double>, val, coordinate)
-//        {
-//            s << *val << " ";
-//        };
-//        s << "]" << endl;
-//    };
     return s.str();
 }
-
-
-
-
-     
 
 
 #endif  // #ifdef CCADISCRET

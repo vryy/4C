@@ -308,9 +308,9 @@ void XFEM::computeVectorCellNodeValues(
 
 
 
-/*----------------------------------------------------------------------*
+/*!
  * Calculate ratio between fictitious element size and normal size
- *----------------------------------------------------------------------*/
+ */
 template <DRT::Element::DiscretizationType DISTYPE>
 double DomainCoverageRatioT(
         const DRT::Element&           ele,           ///< the element whose area ratio we want to compute
@@ -423,9 +423,9 @@ double XFEM::DomainCoverageRatio(
 
 
 
-/*----------------------------------------------------------------------*
-  Calculate ratio between fictitious element size and normal size
- *----------------------------------------------------------------------*/
+/*!
+ * Calculate ratio between fictitious element size and normal size
+ */
 template <DRT::Element::DiscretizationType DISTYPE>
 vector<double> DomainCoverageRatioPerNodeT(
         const DRT::Element&           ele,           ///< the element whose area ratio we want to compute
@@ -531,16 +531,16 @@ vector<double> XFEM::DomainCoverageRatioPerNode(
 }
 
 
-/*----------------------------------------------------------------------*
+/*!
   Calculate ratio between fictitious element size and normal size
- *----------------------------------------------------------------------*/
+ */
 template <DRT::Element::DiscretizationType DISTYPE>
     double BoundaryCoverageRatioT(
         const DRT::Element&               ele,           ///< the element whose boundary ratio we want to compute
         const XFEM::InterfaceHandle&      ih             ///< connection to the interface handler
         )
 {
-  const Epetra_BLAS blas;
+  static const Epetra_BLAS blas;
   
   double area_fict = 0.0;
   
@@ -660,11 +660,9 @@ double XFEM::BoundaryCoverageRatio(
   }
 }
 
-
-
-/*----------------------------------------------------------------------*
-  Calculate ratio between fictitious element size and normal size
- *----------------------------------------------------------------------*/
+/*!
+ * Calculate ratio between fictitious element size and normal size
+ */
 template <DRT::Element::DiscretizationType DISTYPE>
 vector<double> DomainIntCellCoverageRatioT(
         const DRT::Element&           ele,           ///< the element whose area ratio we want to compute

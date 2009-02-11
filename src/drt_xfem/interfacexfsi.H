@@ -21,8 +21,6 @@ Maintainer: Axel Gerstenberger
 namespace XFEM
 {
 
-  class DRT::Discretization;
-
   /// This class describes the interface using an extra discretization with surface element
   class InterfaceHandleXFSI : public InterfaceHandle
   {
@@ -81,6 +79,13 @@ namespace XFEM
         LINALG::Matrix<3,1>&              rst
     ) const;
     
+    //! delete tiny domain integration cells
+    //!  
+    //! purely for efficiency - conditioning is not influenced
+    void EraseTinyDomainIntCells(
+        std::map<int,GEO::DomainIntCells >& elementalDomainIntCells
+        ) const;
+
     //! print statistics (Debug)
     void PrintStatistics() const;
     

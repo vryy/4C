@@ -40,12 +40,13 @@ XFEM::DofManager::DofManager(const RCP<XFEM::InterfaceHandle>& ih, const bool DL
 
   if (ih_->xfemdis()->Comm().MyPID() == 0)
   {
-    std::cout << " Enrichments available:" << endl;
+    std::cout << " Enrichments available:";// << endl;
     for (std::set<XFEM::Enrichment>::const_iterator enr =
       unique_enrichments.begin(); enr != unique_enrichments.end(); ++enr)
     {
-      std::cout << "  - " << enr->toString() << endl;
+      std::cout << " " << enr->toString();// << endl;
     }
+    std::cout << endl;
   }
 }
 
@@ -304,8 +305,8 @@ void XFEM::DofManager::toGmsh(
   {
     std::stringstream filename;
     std::stringstream filenamedel;
-    filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_numdof_coupled_system_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
-    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_numdof_coupled_system_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
+    filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".numdof_coupled_system_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
+    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".numdof_coupled_system_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
     std::remove(filenamedel.str().c_str());
     if (screen_out) std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"..."<<flush;
     std::ofstream f_system(filename.str().c_str());

@@ -66,8 +66,8 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
     // debug: write both meshes to file in Gmsh format
     std::stringstream filename;
     std::stringstream filenamedel;
-    filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_uncut_elements_coupled_system_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
-    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_uncut_elements_coupled_system_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
+    filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".uncut_elements_coupled_system_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
+    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".uncut_elements_coupled_system_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
     std::remove(filenamedel.str().c_str());
     if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
@@ -80,6 +80,8 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
   GEO::Intersection is;
   is.computeIntersection(xfemdis, cutterdis, cutterposnp_, currentXAABBs, elementalDomainIntCells_, elementalBoundaryIntCells_);  
 
+  EraseTinyDomainIntCells(elementalDomainIntCells_);
+  
   xfemdis->Comm().Barrier();
    
   PrintStatistics();
@@ -184,6 +186,50 @@ void XFEM::InterfaceHandleXFSI::ClassifyIntegrationCells()
   return;
 }
 
+/*----------------------------------------------------------------------*
+ * delete tiny cells, if they are only a small fraction
+ * of the parent element
+ * 
+ * this is purely for speedup, conditioning of the tangent stiffness
+ * is not affected 
+ *----------------------------------------------------------------------*/
+void XFEM::InterfaceHandleXFSI::EraseTinyDomainIntCells(
+    std::map<int,GEO::DomainIntCells >& elementalDomainIntCells) const
+{
+  
+  unsigned small_cell_count = 0;
+  const double small_cell_treshold = 1.0e-12;
+  
+  // check size of each cell and delete, if to small
+  // implementation copies each cell ones!!!
+  // not very efficient - improve such that no copy is necessary
+  // (can't find command to erase from vector without killing the iterator)
+  std::map<int,GEO::DomainIntCells >::iterator entry;
+  for (entry = elementalDomainIntCells.begin(); entry != elementalDomainIntCells.end(); ++entry)
+  {
+    const GEO::DomainIntCells cells_old = entry->second;
+    GEO::DomainIntCells& cells = entry->second;
+    cells.clear();
+    
+    const DRT::Element* xfemele = xfemdis_->gElement(entry->first);
+    for (GEO::DomainIntCells::const_iterator cell = cells_old.begin(); cell != cells_old.end(); ++cell)
+    {
+      const double size = cell->SizeXiDomain(*xfemele);
+      if (size < small_cell_treshold)
+      {
+//        cout << RED << size << END_COLOR << endl;
+        small_cell_count++;
+      }
+      else
+      {
+        cells.push_back(*cell);
+//        cout << GREEN << size << END_COLOR << endl;
+      }
+    }
+  }
+  cout << " " << small_cell_count << " small cells ( v_ele / v_cell < " << small_cell_treshold << " % ) deleted." << endl;
+  return;
+}
 
 
 /*----------------------------------------------------------------------*
@@ -291,7 +337,7 @@ bool XFEM::InterfaceHandleXFSI::FindSpaceTimeLayerCell(
     const XFEM::SpaceTimeBoundaryCell slabitem = slabiter->second;
     LINALG::Matrix<3,1> xsi(true);
 
-    // TODO check if hardcoding hex8 is ok
+    // TODO check if hardcoding hex8 is ok (needs more theoretical work)
     in_spacetimecell = GEO::currentToVolumeElementCoordinates(DRT::Element::hex8, slabitem.get_xyzt(), querypos, xsi);
     in_spacetimecell = GEO::checkPositionWithinElementParameterSpace(xsi, DRT::Element::hex8);
     if (in_spacetimecell)
@@ -357,8 +403,8 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
     // debug: write both meshes to file in Gmsh format
     std::stringstream filename;
     std::stringstream filenamedel;
-    filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_elements_coupled_system_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
-    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_elements_coupled_system_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
+    filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".elements_coupled_system_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
+    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".elements_coupled_system_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
     std::remove(filenamedel.str().c_str());
     if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
@@ -372,8 +418,8 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
   {
     std::stringstream filename;
     std::stringstream filenamedel;
-    filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_domains_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
-    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_domains_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
+    filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".domains_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
+    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".domains_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
     std::remove(filenamedel.str().c_str());
     if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
 
@@ -409,8 +455,8 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
   {
     std::stringstream filename;
     std::stringstream filenamedel;
-    filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_spacetime_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
-    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_spacetime_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
+    filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".spacetime_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
+    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".spacetime_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
     std::remove(filenamedel.str().c_str());
     if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
 
