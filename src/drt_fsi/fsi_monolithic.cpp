@@ -423,15 +423,109 @@ void FSI::Monolithic::SetDefaultParameters(const Teuchos::ParameterList& fsidyn,
   // sublists
 
   Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
+  Teuchos::ParameterList& solverOptions = nlParams.sublist("Solver Options");
+  Teuchos::ParameterList& newtonParams = dirParams.sublist("Newton");
+  Teuchos::ParameterList& lineSearchParams = nlParams.sublist("Line Search");
 
+
+
+#if 0 // NonlinearCG 
+
+  dirParams.set("Method","NonlinearCG");
+  lineSearchParams.set("Method","NonlinearCG");
+  Teuchos::ParameterList& nlcgParams = dirParams.sublist("Nonlinear CG");
+  ParameterList& lsParams = nlcgParams.sublist("Linear Solver");
+  nlcgParams.set("Restart Frequency",10);
+  nlcgParams.set("Precondition", "On");
+  nlcgParams.set("Orthogonalize", "Fletcher-Reeves");
+  lsParams.set("Preconditioning", "User Supplied Preconditioner");
+  lsParams.set("Preconditioner","User Defined");
+
+#endif // NonlinearCG 
+
+#if 0 // Steepest Decent 
+
+  dirParams.set("Method","Steepest Descent");
+  //lineSearchParams.set("Method","Full Step");
+  Teuchos::ParameterList& SDParams = dirParams.sublist("Steepest Descent");
+  ParameterList& lsParams = SDParams.sublist("Linear Solver");
+  dirParams.set("Precondition","On");
+  SDParams.set("Precondition","On"); // not recognized
+  // Quadratic Model Min / 2-Norm / F 2-Norm / None
+  SDParams.set("Scaling Type","2-Norm"); 
+  lsParams.set("Preconditioning","User Supplied Preconditioner");
+  lsParams.set("Preconditioner","User Defined");
+
+#endif // Steepest Decent  
+
+
+#if 1 // Newton
+
+  Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
   dirParams.set<std::string>("Method","User Defined");
   Teuchos::RCP<NOX::Direction::UserDefinedFactory> newtonfactory = Teuchos::rcp(this,false);
   dirParams.set("User Defined Direction Factory",newtonfactory);
 
-  Teuchos::ParameterList& solverOptions = nlParams.sublist("Solver Options");
-  Teuchos::ParameterList& newtonParams = dirParams.sublist("Newton");
-  Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
-  //Teuchos::ParameterList& lineSearchParams = nlParams.sublist("Line Search");
+
+#if 0 // polynominal line search
+  lineSearchParams.set("Method","Polynomial");
+  Teuchos::ParameterList& polyparams = lineSearchParams.sublist("Polynomial");
+  polyparams.set("Default Step",1.0);
+  polyparams.set("Max Iters",5);
+  polyparams.set("Minimum Step",0.01);
+  polyparams.set("Maximum Step",1.5);
+  polyparams.set("Recovery Step Type","Constant");
+  polyparams.set("Recovery Step",0.1);
+  //polyparams.set("Interpolation Type","Cubic");
+  polyparams.set("Interpolation Type","Quadratic");
+  //polyparams.set("Interpolation Type","Quadratic3");
+  //polyparams.set("Sufficient Decrease Condition","Armijo-Goldstein");
+  polyparams.set("Sufficient Decrease Condition","Ared/Pred");
+  //polyparams.set("Sufficient Decrease Condition","None");
+  //polyparams.set("Sufficient Decrease",0.001); 
+  polyparams.set("Alpha Factor",0.1);
+  polyparams.set("Use Counters",false);
+  polyparams.set("Maximum Iteration for Increase",0);
+  polyparams.set("Optimize Slope Calculation",false);
+  polyparams.set("Allowed Relative Increase",1.0);
+  polyparams.set("Min Bounds Factor",0.1);
+  polyparams.set("Max Bounds Factor",0.95);
+#endif
+
+#if 0 // backtracking
+  lineSearchParams.set("Method","Backtrack");
+  Teuchos::ParameterList& backtrack = lineSearchParams.sublist("Backtrack");
+  backtrack.set("Default Step",1.0);
+  backtrack.set("Minimum Step",0.01);
+  backtrack.set("Recovery Step",0.1);
+  backtrack.set("Reduction Factor",0.5);
+  backtrack.set("Max Iters",10);
+  backtrack.set("Maximum Iteration for Increase",0);
+  backtrack.set("Optimize Slope Calculation",false);
+  polyparams.set("Min Bounds Factor",0.1);
+  polyparams.set("Max Bounds Factor",1.5);
+#endif
+
+#if 0 // More'-Thuente
+  lineSearchParams.set("Method","More'-Thuente");
+  Teuchos::ParameterList& mt = lineSearchParams.sublist("More'-Thuente");
+  mt.set("Default Step",1.0);
+  mt.set("Minimum Step",0.01);
+  mt.set("Maximum Step",1.5);
+  mt.set("Max Iters",5);
+  mt.set("Recovery Step",0.1);
+  //mt.set("Sufficient Decrease Condition","Armijo-Goldstein");
+  mt.set("Sufficient Decrease Condition","Ared/Pred");
+  mt.set("Alpha Factor",0.1);
+  mt.set("Optimize Slope Calculation",false);
+  mt.set("Maximum Iteration for Increase",0);
+  mt.set("Curvature Condition",0.9999);
+  mt.set("Min Bounds Factor",0.1);
+  mt.set("Max Bounds Factor",1.1);
+#endif
+
+
+#endif // Newton
 
   // status tests are expensive, but instructive
   //solverOptions.set<std::string>("Status Test Check Type","Minimal");
@@ -439,9 +533,10 @@ void FSI::Monolithic::SetDefaultParameters(const Teuchos::ParameterList& fsidyn,
 
   // be explicit about linear solver parameters
   lsParams.set<std::string>("Aztec Solver","GMRES");
-  lsParams.set<int>("Size of Krylov Subspace",25);
+  lsParams.set<int>("Size of Krylov Subspace",50);
+  lsParams.set<int>("Max Iterations",400);
   lsParams.set<std::string>("Preconditioner","User Defined");
-  lsParams.set<int>("Output Frequency",AZ_all);
+  lsParams.set<int>("Output Frequency",10);
   lsParams.set<bool>("Output Solver Details",true);
 
   // adaptive tolerance settings

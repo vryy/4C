@@ -476,18 +476,24 @@ FSI::MonolithicStructureSplit::CreateLinearSystem(ParameterList& nlParams,
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
   Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
   Teuchos::ParameterList& newtonParams = dirParams.sublist("Newton");
-  Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
+  Teuchos::ParameterList* lsParams;
+  // in case of nonlinCG the linear solver list is somewhere else
+  if (dirParams.get("Method","User Defined")=="User Defined")
+    lsParams = &(newtonParams.sublist("Linear Solver"));
+  else if (dirParams.get("Method","User Defined")=="NonlinearCG")
+    lsParams = &(dirParams.sublist("Nonlinear CG").sublist("Linear Solver"));
+  else dserror("Unknown nonlinear method");
 
   NOX::Epetra::Interface::Jacobian* iJac = this;
   NOX::Epetra::Interface::Preconditioner* iPrec = this;
   const Teuchos::RCP< Epetra_Operator > J = systemmatrix_;
   const Teuchos::RCP< Epetra_Operator > M = systemmatrix_;
-
+  
   switch (linearsolverstrategy_)
   {
   case INPAR::FSI::PreconditionedKrylov:
     linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams,
-                                                               lsParams,
+                                                               *lsParams,
                                                                Teuchos::rcp(iJac,false),
                                                                J,
                                                                Teuchos::rcp(iPrec,false),
@@ -498,7 +504,7 @@ FSI::MonolithicStructureSplit::CreateLinearSystem(ParameterList& nlParams,
   case INPAR::FSI::BGSVectorExtrapolation:
   case INPAR::FSI::BGSJacobianFreeNewtonKrylov:
     linSys = Teuchos::rcp(new NOX::FSI::LinearBGSSolver(printParams,
-                                                        lsParams,
+                                                        *lsParams,
                                                         Teuchos::rcp(iJac,false),
                                                         J,
                                                         noxSoln,
