@@ -2779,14 +2779,14 @@ FLD::FluidImplicitTimeInt::~FluidImplicitTimeInt()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*!
-\brief calculate lift&drag forces and angular momenta
+/*
+calculate lift&drag forces and angular moments
 
 Lift and drag forces are based upon the right hand side true-residual entities
 of the corresponding nodes. The contribution of the end node of a line is entirely
 added to a present L&D force.
 
-Notice: Angular moments obtained from lift&drag forces currently refere to the
+Notice: Angular moments obtained from lift&drag forces currently refer to the
         initial configuration, i.e. are built with the coordinates X of a particular
         node irrespective of its current position.
 */
@@ -2797,11 +2797,11 @@ void FLD::FluidImplicitTimeInt::LiftDrag() const
 
   FLD::UTILS::LiftDrag(*discret_,*trueresidual_,params_,liftdragvals);
 
-  if (liftdragvals!=Teuchos::null)
+  if (liftdragvals!=Teuchos::null and discret_->Comm().MyPID() == 0)
     FLD::UTILS::WriteLiftDragToFile(time_, step_, *liftdragvals);
 
   return;
-}//FluidImplicitTimeInt::LiftDrag
+}
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
