@@ -681,68 +681,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(lj_potential,"cutOff");
 
   condlist.push_back(lj_potential);
-  
-  
-  /*-------------------------------------------------------------------*/
-  // Zeta Potential
-  
-    Teuchos::RCP<ConditionDefinition> zeta_potential =
-    Teuchos::rcp(new ConditionDefinition("DESIGN SURF ZETA_POTENTIAL CONDITIONS",
-                                         "Potential",
-                                         "Zeta_Potential",
-                                         DRT::Condition::Zeta_Potential,
-                                         true,
-                                         DRT::Condition::Surface));
 
-  zeta_potential->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
-  AddNamedInt(zeta_potential,"label");
-  AddNamedReal(zeta_potential,"zeta_param_1");
-  AddNamedReal(zeta_potential,"zeta_param_2");
-  AddNamedReal(zeta_potential,"cutOff");
-
-  condlist.push_back(zeta_potential);
-  
-  
-   /*--------------------------------------------------------------------*/
-  // Lennard Jones potential 2D
-  
-  Teuchos::RCP<ConditionDefinition> lj_potential_2D =
-    Teuchos::rcp(new ConditionDefinition("DESIGN LINE LJ_POTENTIAL CONDITIONS",
-                                         "Potential_2D",
-                                         "LJ_Potential_2D",
-                                         DRT::Condition::LJ_Potential_2D,
-                                         true,
-                                         DRT::Condition::Line));
-
-  lj_potential->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
-  AddNamedInt(lj_potential,"label");
-  AddNamedReal(lj_potential,"depth");
-  AddNamedReal(lj_potential,"rootDist");
-  AddNamedReal(lj_potential,"cutOff");
-
-  condlist.push_back(lj_potential_2D);
-  
-  
-  /*-------------------------------------------------------------------*/
-  // Zeta Potential 2D
-  
-    Teuchos::RCP<ConditionDefinition> zeta_potential_2D =
-    Teuchos::rcp(new ConditionDefinition("DESIGN LINE ZETA_POTENTIAL CONDITIONS",
-                                         "Potential_2D",
-                                         "Zeta_Potential_2D",
-                                         DRT::Condition::Zeta_Potential_2D,
-                                         true,
-                                         DRT::Condition::Line));
-
-  zeta_potential->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
-  AddNamedInt(zeta_potential,"label");
-  AddNamedReal(zeta_potential,"zeta_param_1");
-  AddNamedReal(zeta_potential,"zeta_param_2");
-  AddNamedReal(zeta_potential,"cutOff");
-
-  condlist.push_back(zeta_potential_2D);
-  
-  
   /*--------------------------------------------------------------------*/
   // Brownian Motion 
   
