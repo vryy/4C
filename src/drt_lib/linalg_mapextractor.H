@@ -321,6 +321,9 @@ namespace LINALG
   full vector. These extractions and insertions are termed communications,
   because internally an Epetra_Import class is used, even though there is no
   communication required once the Epetra_Import object is created.
+  
+  \note The two partial maps (cond and other) are stored in the parent member variable maps_,
+  where other has index 0 and cond has index 1.
 
   \author u.kue
   \date 01/08
