@@ -415,6 +415,16 @@ public:
   void StoreNodalQuantities(ManagerBase::QuantityType type, RCP<Epetra_Vector> vec = null);
   
   /*!
+  \brief Store current (contact) nodal entries of D and M to old ones
+  
+  Contact nodes own their current entries and old ones (last converged
+  state) from the mortar matrices D and M. This function writes the
+  current ones to the old ones.  
+      
+  */
+  void StoreDMToNodes();
+    
+  /*!
   \brief Update Mortar matrices D and M
   
   The string input parameter defines in which direction the conversion
@@ -490,7 +500,8 @@ protected:
   RCP<LINALG::SparseMatrix>          pmatrix_;         // global Matrix P containing tangent derivatives
   RCP<LINALG::SparseMatrix>          lindmatrix_;      // global Matrix LinD containing slave fc derivatives
   RCP<LINALG::SparseMatrix>          linmmatrix_;      // global Matrix LinM containing master fc derivatives
-  
+  RCP<LINALG::SparseMatrix>          linstickmatrix_;  // global Matrix LinStick containing derivatives of stick condition
+   
   RCP<LINALG::SparseMatrix>          dold_;            // global Mortar matrix D (last end-point t_n)
   RCP<LINALG::SparseMatrix>          mold_;            // global Mortar matrix D (last end-point t_n)
   

@@ -126,6 +126,9 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   	
   	// store D and M to old ones 
   	contactmanager_->StoreDM("old");
+  	
+   	// store nodal entries from D and M to old ones
+    contactmanager_->StoreDMToNodes();
   }
 
   // increment time and step
@@ -483,6 +486,9 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   	
   	// store D and M to old ones 
   	contactmanager_->StoreDM("old");
+  	
+  	// store nodal entries from D and M to old ones
+  	contactmanager_->StoreDMToNodes();
   }
 
   // increment time and step
@@ -1499,6 +1505,9 @@ void CONTACT::ContactStruGenAlpha::Update()
   	// store contact state to contact nodes (active or inactive) 
   	contactmanager_->StoreNodalQuantities(Manager::activeold);  
   	  	
+  	// store nodal entries of D and M to old ones   
+    contactmanager_->StoreDMToNodes();    
+    
     // store the displacements to contact nodes
     contactmanager_->SetState("olddisplacement",dis_);
   }

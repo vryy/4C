@@ -449,7 +449,7 @@ bool CONTACT::Manager::ReadAndCheckInput()
   if (ctype=="frictional" && ftype=="coulomb")
     dserror("Coulomb friction law not yet implemented");
   if (ctype=="frictional" && fulllin)
-    dserror("Full linearization not yet implemented for friction");
+    cout << ("Warning: Full linearization not completely implemented for friction\n") << endl;
   if (btrafo && fulllin)
     dserror("Full linearization not yet implemented for basis trafo case");
   if (ctype=="frictional" && ct == 0)

@@ -150,6 +150,10 @@ void CONTACT::ManagerBase::Initialize()
   smatrix_ = rcp(new LINALG::SparseMatrix(*gactiven_,3));
   pmatrix_ = rcp(new LINALG::SparseMatrix(*gactivet_,3));
   
+  // here the calculation of gstickt is necessary
+  RCP<Epetra_Map> gstickt = LINALG::SplitMap(*gactivet_,*gslipt_);
+  linstickmatrix_ = rcp(new LINALG::SparseMatrix(*gstickt,3));
+    
   return;
 }
 
@@ -811,6 +815,7 @@ void CONTACT::ManagerBase::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> 
   /* build global matrix n with normal vectors of active nodes          */
   /* and global matrix t with tangent vectors of active nodes           */
   /* and global matrix s with normal derivatives of active nodes        */
+  /* and global matrix linstick with derivatives of stick nodes         */
   /* and global matrix l and vector r for frictional contact            */
   /**********************************************************************/
   // here and for the splitting later, we need the combined sm rowmap
@@ -831,10 +836,11 @@ void CONTACT::ManagerBase::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> 
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     interface_[i]->AssembleNT(*nmatrix_,*tmatrix_);
-//    interface_[i]->AssembleS(*smatrix_);
-//    interface_[i]->AssembleP(*pmatrix_);
-//    interface_[i]->AssembleLinDM(*lindmatrix_,*linmmatrix_);
+    interface_[i]->AssembleS(*smatrix_);
+    interface_[i]->AssembleP(*pmatrix_);
+    interface_[i]->AssembleLinDM(*lindmatrix_,*linmmatrix_);
     interface_[i]->AssembleTresca(*lmatrix_,*r_,frbound,ct);
+    interface_[i]->AssembleLinStick(*linstickmatrix_);
   }
     
   // FillComplete() global matrices N and T and L
@@ -858,6 +864,10 @@ void CONTACT::ManagerBase::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> 
   lindmatrix_->Complete(*gsmdofs,*gsdofrowmap_);
   linmmatrix_->Complete(*gsmdofs,*gmdofrowmap_);
   
+  // FillComplete global Matrix LinStick
+  RCP<Epetra_Map> gstickt = LINALG::SplitMap(*gactivet_,*gslipt_);
+  linstickmatrix_->Complete(*gsmdofs,*gstickt);
+    
   /**********************************************************************/
   /* Multiply Mortar matrices: m^ = inv(d) * m                          */
   /**********************************************************************/
@@ -1022,9 +1032,6 @@ void CONTACT::ManagerBase::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> 
   mmatrixsl->Scale(1/(1-alphaf_));
   moldsl->Scale(1/(1-alphaf_));
    
-  // we will get the stickt rowmap as a by-product
-  RCP<Epetra_Map> gstickt;
-    
   // temporary RCPs
   RCP<Epetra_Map> tmap;
     
@@ -1136,8 +1143,6 @@ void CONTACT::ManagerBase::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> 
   
   // Tst.(Dn+1-Dn)
   RCP<LINALG::SparseMatrix> tstdiffD = LINALG::Multiply(*tstmatrix,false,*diffDst,false,true);
-  
-  dserror("ERROR: Equation for stick not yet linearized, leads to singular matrix");
 #endif
 
   // nmatrix: nothing to do
@@ -1364,6 +1369,7 @@ void CONTACT::ManagerBase::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> 
   if(tstdiffD!=null) 
   {
    	kteffnew->Add(*tstdiffD,false,-1.0,1.0);
+   	
   }
   
   // add matrix tstdiffM to kteffnew
@@ -1377,7 +1383,7 @@ void CONTACT::ManagerBase::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> 
   if (fulllin)
   {
    if (gactiven_->NumGlobalElements()) kteffnew->Add(*smatrix_,false,1.0,1.0);
-   if (gactivet_->NumGlobalElements()) kteffnew->Add(*pmatrix_,false,-1.0,1.0);
+   if (gstickt->NumGlobalElements()) kteffnew->Add(*linstickmatrix_,false,1.0,1.0);
   }
   
   // add a submatrices to kteffnew
@@ -3103,6 +3109,33 @@ void CONTACT::ManagerBase::StoreNodalQuantities(ManagerBase::QuantityType type,
     }
   }
     
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Store DM to Nodes (in vecor of last conv. time step)  gitterle 02/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::ManagerBase::StoreDMToNodes()
+{
+  // loop over all interfaces
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    // currently this only works safely for 1 interface
+    if (i>0) dserror("ERROR: StoreDMToNodes: Double active node check needed for n interfaces!");
+  
+    // loop over all slave row nodes on the current interface
+    for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
+    {
+      int gid = interface_[i]->SlaveRowNodes()->GID(j);
+      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CNode* cnode = static_cast<CNode*>(node);
+      
+      // store D and M entries 
+      cnode->StoreDMOld();
+    }
+  }
+  
   return;
 }
 
