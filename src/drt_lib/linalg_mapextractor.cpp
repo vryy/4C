@@ -115,6 +115,43 @@ Teuchos::RCP<Epetra_Map> LINALG::MultiMapExtractor::MergeMaps(const std::vector<
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Map> LINALG::MultiMapExtractor::IntersectMaps(const std::vector<Teuchos::RCP<const Epetra_Map> >& maps)
+{
+  if (maps.size()==0)
+    dserror("no maps to intersect");
+  for (unsigned i=0; i<maps.size(); ++i)
+  {
+    if (maps[i]==Teuchos::null)
+      dserror("can not intersect extractor with null maps");
+    if (not maps[i]->UniqueGIDs())
+      dserror("map %d not unique", i);
+  }
+  std::set<int> mapentries(maps[0]->MyGlobalElements(),
+                           maps[0]->MyGlobalElements()+maps[0]->NumMyElements());
+  for (unsigned i=1; i<maps.size(); ++i)
+  {
+    const Epetra_Map& map = *maps[i];
+    std::set<int> newset;
+    int numele = map.NumMyElements();
+    int* ele = map.MyGlobalElements();
+    for (int j=0; j<numele; ++j)
+    {
+      if (mapentries.find(ele[j])!=mapentries.end())
+      {
+        newset.insert(ele[j]);
+      }
+    }
+    std::swap(mapentries,newset);
+  }
+  std::vector<int> mapvector;
+  mapvector.reserve(mapentries.size());
+  mapvector.assign(mapentries.begin(),mapentries.end());
+  return Teuchos::rcp(new Epetra_Map(-1,mapvector.size(),&mapvector[0],0,maps[0]->Comm()));
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> LINALG::MultiMapExtractor::ExtractVector(const Epetra_Vector& full, int block) const
 {
   if (maps_[block]==Teuchos::null)

@@ -6,11 +6,11 @@
 -------------------------------------------------------------------------
                  BACI finite element library subsystem
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -22,11 +22,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 </pre>
@@ -98,6 +98,12 @@ namespace LINALG
       \warning There must be no overlap in these maps.
      */
     static Teuchos::RCP<Epetra_Map> MergeMaps(const std::vector<Teuchos::RCP<const Epetra_Map> >& maps);
+
+    /// intersect set of unique maps
+    /*!
+      \warning There must be no overlap in these maps.
+     */
+    static Teuchos::RCP<Epetra_Map> IntersectMaps(const std::vector<Teuchos::RCP<const Epetra_Map> >& maps);
 
     /** \name Maps */
     //@{
@@ -321,7 +327,7 @@ namespace LINALG
   full vector. These extractions and insertions are termed communications,
   because internally an Epetra_Import class is used, even though there is no
   communication required once the Epetra_Import object is created.
-  
+
   \note The two partial maps (cond and other) are stored in the parent member variable maps_,
   where other has index 0 and cond has index 1.
 
