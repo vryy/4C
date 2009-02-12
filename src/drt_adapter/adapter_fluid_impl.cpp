@@ -44,7 +44,7 @@ ADAPTER::FluidImpl::FluidImpl(
   std::vector<Teuchos::RCP<const Epetra_Map> > maps;
   maps.push_back(interface_.OtherMap());
   maps.push_back(dbcmaps->OtherMap());
-  innervelmap_ = LINALG::MultiMapExtractor::MergeMaps(maps);
+  innervelmap_ = LINALG::MultiMapExtractor::IntersectMaps(maps);
 
   if (dirichletcond)
   {
