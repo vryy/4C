@@ -1367,12 +1367,15 @@ double SCATRA::ScaTraTimIntImpl::ComputeThermPressureFromMassCons(
       const double initialmass,
       const double gasconstant)
 {
-  // use density vector as "storage space" for inverse temperature
-  densnp_->Reciprocal(*phinp_);
-  // set scalar and density vector values needed by elements
+  // provide storage space for inverse temperature and compute
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  invphinp_ = LINALG::CreateVector(*dofrowmap,true);
+  invphinp_->Reciprocal(*phinp_);
+
+  // set scalar and inverse-scalar (on density state) values needed by elements
   discret_->ClearState();
   discret_->SetState("phinp",phinp_);
-  discret_->SetState("densnp",densnp_);
+  discret_->SetState("densnp",invphinp_);
   // set action for elements
   ParameterList eleparams;
   eleparams.set("action","calc_temp_and_dens");

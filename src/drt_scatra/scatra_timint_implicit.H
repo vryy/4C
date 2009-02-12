@@ -392,6 +392,9 @@ protected:
   RCP<Epetra_Vector>    phinp_;
   RCP<Epetra_Vector>    phin_;
 
+  /// inverse values of phi at time n+1
+  RCP<Epetra_Vector>    invphinp_;
+
   /// density at times n+1, n and n-1
   RCP<Epetra_Vector>    densnp_;
   RCP<Epetra_Vector>    densn_;
