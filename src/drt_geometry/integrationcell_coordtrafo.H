@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file integrationcell_coordtrafo.H
 
-\brief outines doing coordinate transformation between various coordinate systems
+\brief routines doing coordinate transformation between various coordinate systems
        a integration cell is lying in
 
 <pre>
@@ -75,12 +75,12 @@ namespace GEO
         for (int j = 0; j < 3; ++j)
           xjm(i,j) += deriv(i,inode) * xyze_cell(j,inode);
 
-    // ...and return its determinante
+    // ...and return its determinant
     return xjm.Determinant();
   }
   
     
-  //! get determinante between eta and xi space  
+  //! get determinant between eta and xi space  
   template<XFEM::AssemblyType ASSTYPE>
     inline double detEtaToXi3D(
         const GEO::DomainIntCell&   cell,
@@ -103,7 +103,7 @@ namespace GEO
   }
       
   
-  //! get determinante between eta and xi space
+  //! get determinant between eta and xi space
   template<>
     inline double detEtaToXi3D<XFEM::standard_assembly>(
       const GEO::DomainIntCell&,
@@ -177,7 +177,7 @@ namespace GEO
   }
   
   
-  //! get determinante between eta and xi space
+  //! get determinant between eta^boundary and xi^boundary space
   template<DRT::Element::DiscretizationType  distype>
     static inline double detEtaBToXiBT(
       const LINALG::SerialDenseMatrix&    xyze_cell,
@@ -198,12 +198,12 @@ namespace GEO
         for (int j = 0; j < 2; ++j)
           xjm(i,j) += deriv(i,inode) * xyze_cell(j,inode);
 
-    // ...and return its determinante
+    // ...and return its determinant
     return xjm.Determinant();
   }
   
     
-  //! get determinante between eta and xi space
+  //! get determinant between eta^boundary and xi^boundary space
   inline double detEtaBToXiB(
       const GEO::BoundaryIntCell&   cell,
       const LINALG::Matrix<2,1>&    pos_eta_boundary)

@@ -14,6 +14,8 @@ Maintainer: Ursula Mayer
 #ifdef CCADISCRET
 
 #include "integrationcell.H"
+#include "../drt_geometry/integrationcell_coordtrafo.H"
+#include "../drt_fem_general/drt_utils_integration.H"
 
 
 
@@ -123,7 +125,7 @@ std::string GEO::DomainIntCell::toString() const
  *----------------------------------------------------------------------*/
 LINALG::Matrix<3,1> GEO::DomainIntCell::ComputePhysicalCenterPosition(
   const DRT::Element::DiscretizationType&   distype,
-  const LINALG::SerialDenseMatrix&          xyze)
+  const LINALG::SerialDenseMatrix&          xyze) const
 {
   // center in local coordinates
   const LINALG::Matrix<3,1> localcenterpos(DRT::UTILS::getLocalCenterPosition<3>(distype));
@@ -140,6 +142,64 @@ LINALG::Matrix<3,1> GEO::DomainIntCell::ComputePhysicalCenterPosition(
 void GEO::DomainIntCell::setLabel(const int   label)
 {
   label_ = label;
+}
+
+
+/*----------------------------------------------------------------------*
+ * compute size in XiDomain coordinates
+ *----------------------------------------------------------------------*/
+double GEO::DomainIntCell::SizeXiDomain(
+        const DRT::Element&           ele
+        ) const
+{
+  double volume_cell = 0.0;
+  
+  DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule3D_undefined;
+  switch (this->Shape())
+  {
+    case DRT::Element::hex8: case DRT::Element::hex20: case DRT::Element::hex27:
+    {
+      gaussrule = DRT::UTILS::intrule_hex_8point;
+      break;
+    }
+    case DRT::Element::tet4: case DRT::Element::tet10:
+    {
+      gaussrule = DRT::UTILS::intrule_tet_4point;
+      break;
+    }
+    default:
+      dserror("add your element type here...");
+  }
+  
+  // gaussian points
+  const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+
+  // integration loop
+  for (int iquad=0; iquad<intpoints.nquad; ++iquad)
+  {
+    // coordinates of the current integration point in cell coordinates \eta
+    static LINALG::Matrix<3,1> pos_eta_domain;
+    pos_eta_domain(0) = intpoints.qxg[iquad][0];
+    pos_eta_domain(1) = intpoints.qxg[iquad][1];
+    pos_eta_domain(2) = intpoints.qxg[iquad][2];
+
+
+    // coordinates of the current integration point in element coordinates \xi
+    static LINALG::Matrix<3,1> posXiDomain;
+    GEO::mapEtaToXi3D<XFEM::xfem_assembly>(*this, pos_eta_domain, posXiDomain);
+    const double detcell = GEO::detEtaToXi3D<XFEM::xfem_assembly>(*this, pos_eta_domain);
+
+    const double fac = intpoints.qwgt[iquad]*detcell;
+
+    if(detcell < 0.0)
+    {
+      dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele.Id(), detcell);
+    }
+       
+    volume_cell += fac;
+
+  } // end loop over gauss points
+  return volume_cell/DRT::UTILS::getSizeInLocalCoordinates(ele.Shape());
 }
 
 

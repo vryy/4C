@@ -74,7 +74,7 @@ class DomainIntCell : public IntCell
     explicit DomainIntCell(
         const DRT::Element::DiscretizationType&     distype,                    ///< distype of the integration cell
         const LINALG::SerialDenseMatrix&            xfemEleDomainCoordinates,   ///< coordinates in xfem element coordinates
-        const LINALG::SerialDenseMatrix&            physDomainCoordinates       ///< coordinates in pyhsical coordinates
+        const LINALG::SerialDenseMatrix&            physDomainCoordinates       ///< coordinates in physical coordinates
         );
     
     /*!
@@ -103,6 +103,8 @@ class DomainIntCell : public IntCell
     
     //! returns an array with the coordinates of the integration cell in physical coordinates
     const LINALG::Matrix<3,1>  GetPhysicalCenterPosition() const{ return phys_center_;}
+    
+    double SizeXiDomain(const DRT::Element& ele) const;
        
     //! return string representation of the DomainIntCell
     virtual std::string toString() const;
@@ -123,7 +125,7 @@ class DomainIntCell : public IntCell
     LINALG::Matrix<3,1> ComputePhysicalCenterPosition(
         const DRT::Element::DiscretizationType&   distype,
         const LINALG::SerialDenseMatrix&          xyze
-        );
+        ) const;
       
     //! coordinates of the nodes in the parent element coordinates system ( xi_domain )
     LINALG::SerialDenseMatrix                       nodalpos_xi_domain_;
@@ -167,7 +169,7 @@ class BoundaryIntCell : public IntCell
     //! virtual destructor
     virtual ~BoundaryIntCell();
     
-    //! returns the coordinates of the integration cell in parent element coordionates xsi
+    //! returns the coordinates of the integration cell in parent element coordinates xsi
     const LINALG::SerialDenseMatrix&  CellNodalPosXiDomain() const {return nodalpos_xi_domain_;};
     
     //! returns the coordinates of the integration cell in boundary parent space eta 
@@ -191,10 +193,10 @@ class BoundaryIntCell : public IntCell
     //! the boundaryIntCell should know, to which cutterElement it belongs!?
     int                                   surface_ele_gid_;
     
-    //! coordinates of the nodes of the integration cell in parent element coordionates xsi
+    //! coordinates of the nodes of the integration cell in parent element coordinates xsi
     LINALG::SerialDenseMatrix             nodalpos_xi_domain_;
     
-    //! boundary coordinates of the nodes of the integration cell in boundary element coordionates eta
+    //! boundary coordinates of the nodes of the integration cell in boundary element coordinates eta
     LINALG::SerialDenseMatrix             nodalpos_xi_boundary_;
      
     //! coordinates of the nodes of the integration cell in physical coordinates
