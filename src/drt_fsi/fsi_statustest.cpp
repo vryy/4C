@@ -408,18 +408,20 @@ NOX::StatusTest::StatusType NOX::FSI::GenericNormUpdate::checkStatus(const NOX::
 /*----------------------------------------------------------------------*/
 double NOX::FSI::GenericNormUpdate::computeNorm(const Epetra_Vector& v)
 {
-  int n = (scaleType_ == Scaled) ? updateVectorPtr_->length() : 0;
+  //NOX::Epetra::Vector vec(Teuchos::rcp(&v,false),NOX::Epetra::Vector::CreateView);
+  NOX::Epetra::Vector vec(v);
+  int n = (scaleType_ == Scaled) ? vec.length() : 0;
 
   switch (normType_)
   {
   case NOX::Abstract::Vector::TwoNorm:
-    normUpdate_ = updateVectorPtr_->norm();
+    normUpdate_ = vec.norm();
     if (scaleType_ == Scaled)
       normUpdate_ /= sqrt(1.0 * n);
     break;
 
   default:
-    normUpdate_ = updateVectorPtr_->norm(normType_);
+    normUpdate_ = vec.norm(normType_);
     if (scaleType_ == Scaled)
       normUpdate_ /= n;
     break;
