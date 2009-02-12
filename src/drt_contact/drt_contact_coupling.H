@@ -81,7 +81,10 @@ public:
   
   */
   explicit Intcell(int id, int nvertices, Epetra_SerialDenseMatrix& coords,
-                   const DRT::Element::DiscretizationType& shape);
+                   const DRT::Element::DiscretizationType& shape,
+                   vector<map<int,double> >& linv1,
+                   vector<map<int,double> >& linv2,
+                   vector<map<int,double> >& linv3);
   
   /*!
   \brief Copy Constructor
@@ -128,6 +131,22 @@ public:
   
   */
   virtual DRT::Element::DiscretizationType Shape() const { return shape_;}
+  
+  /*!
+  \brief Return one of the three 'DerivVertex' maps (vectors) of this node
+    
+  These maps contain the directional derivatives of the intcell's vertex
+  coordinates with respect to the slave and master displacements. A vector
+  is used because the coordinates themselves are a vector (2 components for
+  the 'coupling in slave parameter space' case). The respective vertex (1,2,3)
+  is addressed by an int-variable and checked internally.
+  
+  */
+  virtual inline vector<map<int,double> >& GetDerivVertex(int i)
+  {
+    if (i<0 || i>2) dserror("ERROR: Intcell has 3 vertex linearizations only!");
+    return linvertex_[i];
+  }
     
   //@}
   
@@ -166,8 +185,8 @@ public:
          Note that this is a linearization with respect to the intcell
          vertices, which themselves have to be linearized later, of course!
   */
-  virtual void DerivJacobian(double* xi, map<int,double>& derivjac);
-    
+  virtual void DerivJacobian(double* xi, vector<double>& derivjac);
+   
   //@}
   
 protected:
@@ -177,7 +196,8 @@ protected:
   double                     area_;            // integration cell area
   Epetra_SerialDenseMatrix   coords_;          // coords of cell vertices
   
-  DRT::Element::DiscretizationType   shape_;   // shape of this element (always tri3)
+  DRT::Element::DiscretizationType   shape_;     // shape of this element (always tri3)
+  vector<vector<map<int,double> > >  linvertex_; // directional derivative of 3 vertices
   
 }; // class Intcell
 
@@ -200,6 +220,16 @@ class Vertex{
   
 public:
   
+  //! @name Enums and Friends
+  enum vType // vertex types recognized by Vertex
+    {
+      slave,        // slave node
+      projmaster,   // projected master node
+      lineclip      // clipping point of two lines
+    };
+      
+  //@}
+      
   /*!
   \brief Standard constructor
   
@@ -208,8 +238,10 @@ public:
   performed in parallel by individual processes.
   
   */
-  explicit Vertex(vector<double> coord, Vertex* next, Vertex* prev, bool intersect,
-                  bool entryexit, Vertex* neighbor, double alpha);
+  explicit Vertex(vector<double> coord, Vertex::vType type,
+                  vector<int> nodeids, Vertex* next, Vertex* prev,
+                  bool intersect, bool entryexit, Vertex* neighbor,
+                  double alpha);
   
   /*!
   \brief Copy Constructor
@@ -233,6 +265,12 @@ public:
   */
   virtual inline vector<double>& Coord() {return coord_; }
   
+  /*!
+  \brief Return vertex type (slave, projmaster or lineclip)
+  
+  */
+  virtual inline Vertex::vType& VType() {return type_; }
+    
   /*!
   \brief Return pointer to next vertex on polygon
   
@@ -297,6 +335,20 @@ public:
   
   */
   virtual inline double& Alpha() {return alpha_; }
+  
+  /*!
+  \brief Return vector of relevant node ids (length 1 or 4)
+  Note that for a slave or projmaster type vertex only the
+  respective node id is relevant, therefore length 1. For a
+  lineclip type vertex we need the 4 node ids of both the
+  corresponding slave and master lines which intersect!
+  
+  */
+  virtual inline vector<int>& Nodeids()
+  { //if(type_==Vertex::slave && nodeids_.size()!=1) dserror("Error: Vertex Ids");
+    //if(type_==Vertex::projmaster && nodeids_.size()!=1) dserror("Error: Vertex Ids");
+    //if(type_==Vertex::lineclip && nodeids_.size()!=4) dserror("Error: Vertex Ids");
+    return nodeids_; }
     
   //@}
   
@@ -304,13 +356,14 @@ public:
 protected:
   
   vector<double>   coord_;        // vertex coordinates (length 3)
+  Vertex::vType    type_;         // vertex type (slave,projmaster,lineclip)
+  vector<int>      nodeids_;      // relevant ids (1 if slave or master, 4 if lineclip)  
   Vertex*          next_;         // pointer to next vertex on polygon
   Vertex*          prev_;         // pointer to previous vertex on polygon
   bool             intersect_;    // if true, this is an intersection vertex
   bool             entryexit_;    // if true, this is an entry vertex
   Vertex*          neighbor_;     // pointer to neighbor vertex on other polygon
   double           alpha_;        // intersection parameter
-  
   
 }; // class Vertex
 
@@ -344,6 +397,20 @@ public:
   explicit Coupling(DRT::Discretization& idiscret,
                     CONTACT::CElement& sele, CONTACT::CElement& mele,
                     int dim, Epetra_SerialDenseMatrix& csegs);
+  
+  /*!
+  \brief Standard constructor
+  (THIS IS A PURE FINITE DIFFERENCE VERSION!!!)
+  
+  Constructs an instance of this class.<br>
+  Note that this is \b not a collective call as coupling is
+  performed in parallel by individual processes.
+  
+  */
+  explicit Coupling(DRT::Discretization& idiscret,
+                    CONTACT::CElement& sele, CONTACT::CElement& mele,
+                    int dim, Epetra_SerialDenseMatrix& csegs,
+                    vector<vector<double> >& testv, bool printderiv);
 
   /*!
   \brief Destructor
@@ -402,22 +469,22 @@ public:
                                   return auxn_; }
   
   /*!
-  \brief Return vector of projected slave node coordinates in AuxPlane
+  \brief Return vector of (projected) slave node vertex objects
   
   */
-  virtual inline vector<vector<double> >& SlaveVertices() {return svertices_; }
+  virtual inline vector<Vertex>& SlaveVertices() {return svertices_; }
   
   /*!
-  \brief Return vector of projected master node coordinates in AuxPlane
+  \brief Return vector of projected master node vertex objects
   
   */
-  virtual inline vector<vector<double> >& MasterVertices() {return mvertices_; }
+  virtual inline vector<Vertex>& MasterVertices() {return mvertices_; }
   
   /*!
-  \brief Return vector of clip polygon coordinates
+  \brief Return vector of clip polygon vertex objects
   
   */
-  virtual inline vector<vector<double> >& Clip() {return clip_; }
+  virtual inline vector<Vertex>& Clip() {return clip_; }
   
   /*!
   \brief Return vector of integration cells
@@ -532,15 +599,15 @@ public:
   Polygons, ACM Transactions on Graphics, vol. 17, pp. 71-83).
   Returns a vector of vertices defining the clipped polygon.
   
-  \param polygon1 (in): vector of vertices for input polygon 1
-  \param polygon2 (in): vector of vertices for input polygon 2
-  \param respoly (out): vector of vertices for result polygon
+  \param poly1list (in): vector of vertex objects for input polygon 1 (slave)
+  \param poly2list (in): vector of vertex objects for input polygon 2 (master)
+  \param respoly (out): vector of vertex objects for result polygon
   \param tol (in): clipping tolerance for close vertices detection 
   
   */
-  virtual void PolygonClipping3D(vector<vector<double> >& polygon1,
-                                 vector<vector<double> >& polygon2,
-                                 vector<vector<double> >& respoly,
+  virtual void PolygonClipping3D(vector<Vertex>& poly1list,
+                                 vector<Vertex>& poly2list,
+                                 vector<Vertex>& respoly,
                                  double& tol);
   
   /*!
@@ -557,12 +624,55 @@ public:
   
   This method first finds the center of the clip polygon by computing
   the centroid / geometric center (2nd case) or by simple averaging of
-  vertex coordinates (arithmetic center, 1st case, aux. plane!). Then
-  the clip polygon is triangulated into as many integration cells
-  (tri3) as necessary. The method stores these cells in the variable cells_.
+  vertex coordinates (arithmetic center, 1st case, aux. plane!). In a
+  second step, linearizations of all clip polygon vertices and of the
+  clip center are computed and stored into local maps. Then the clip
+  polygon is triangulated into as many integration cells (tri3) as
+  necessary. The method stores these cells in the variable cells_.
   
   */
-  virtual bool Triangulation3D();
+  virtual bool Triangulation3D(map<int,double>& projpar);
+  
+  // THIS IS A PURE FINITE DIFFERENCE VERSION!!! 
+  virtual bool Triangulation3D(map<int,double>& projpar,
+                               vector<vector<double> >& testv,
+                               bool printderiv=false);
+  
+  /*!
+  \brief Linearization of clip vertex coordinates (3D)
+  
+  This method computes and returns full linearizations of all
+  clip polygon vertices. We distinguish three possible cases here,
+  namely the vertex being a slave node, a projected master node in
+  slave element parameter space or a line-clipping intersection in
+  slave element paramater space. NOT implemented for AuxPlane case!
+  
+  */
+  virtual bool VertexLinearization3D(vector<vector<map<int,double> > >& linvertex,
+                                     map<int,double>& projpar, bool printderiv=false);
+  
+  /*!
+  \brief Linearization of clip vertex coordinates (3D)
+  
+  Sub-method of VertexLinearization for projmaster linearization.
+  NOT implemented for AuxPlane case!
+  
+  */
+  virtual bool MasterVertexLinearization3D(Vertex& currv,
+                                           vector<map<int,double> >& linmaster,
+                                           int mid, double alpha);
+    
+  /*!
+  \brief Linearization of clip vertex coordinates (3D)
+  
+  This method computes and returns the full linearization of
+  the clip polygon center, which itself is obtained from the
+  clip polygon vertices by centroid formulas. NOT implemented
+  for AuxPlane case!
+  
+  */
+  virtual bool CenterLinearization3D(const vector<vector<map<int,double> > >& linvertex,
+                                     vector<map<int,double> >& lincenter);
     
   /*!
   \brief Integrate the integration cells (3D)
@@ -594,9 +704,9 @@ protected:
     
     double                     auxc_[3];     // center of auxiliary plane (3D)
     double                     auxn_[3];     // normal of auxiliary plane (3D)
-    vector<vector<double> >    svertices_;   // slave node coordinates
-    vector<vector<double> >    mvertices_;   // master node coordinates
-    vector<vector<double> >    clip_;        // clipped polygon coordinates
+    vector<Vertex>             svertices_;   // slave node vertex objects
+    vector<Vertex>             mvertices_;   // master node vertex objects
+    vector<Vertex>             clip_;        // clipped polygon vertex objects
     
     vector<RCP<Intcell> >      cells_;       // vector of integration cells
     

@@ -174,8 +174,7 @@ public:
          coordinates XiGP on a 1D slave / master overlap 
             
   */
-  void DerivXiGP(CONTACT::CElement& sele, double& sxia, double& sxib,
-                 CONTACT::CElement& mele, double& mxia, double& mxib,
+  void DerivXiGP(CONTACT::CElement& sele, CONTACT::CElement& mele,
                  double& sxigp, double& mxigp, const map<int,double>& derivsxi,
                  map<int,double>& derivmxi);
     
@@ -216,6 +215,15 @@ public:
   */
   void DerivM3D(CONTACT::CElement& sele, CONTACT::CElement& mele,
                 RCP<CONTACT::Intcell> cell);
+  
+  /*!
+  \brief Compute directional derivative of master Gauss point
+         coordinates XiGP on a 2D slave / master integration cell 
+            
+  */
+  void DerivXiGP3D(CONTACT::CElement& sele, CONTACT::CElement& mele,
+                   double* sxigp, double* mxigp, const vector<map<int,double> >& derivsxi,
+                   vector<map<int,double> >& derivmxi, double& alpha);
     
   /*!
   \brief Integrate Mortar matrix M on a 2D slave / master integration cell

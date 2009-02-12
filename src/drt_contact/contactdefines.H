@@ -60,6 +60,7 @@ Maintainer: Alexander Popp
 //#define CONTACTFDMORTARM       /* flag for FD check of mortar matrix M */
 //#define CONTACTFDGAP           /* flag for FD check of weighted gap g */
 //#define CONTACTFDTANGLM        /* flag for FD check of tangential LM */
+//#define CONTACTFDVERTEX3D      /* flag for FD check of vertices in 3D */
 //#define CONTACTGMSH1           /* flag for gmsh output in each time step */
 //#define CONTACTGMSH2           /* flag for gmsh output in each iteration */
 
@@ -80,7 +81,7 @@ Maintainer: Alexander Popp
 
 // CONTACT PROJECTION AND INTEGRATION (3D)
 #define CONTACTCLIPTOL 1.0e-12   /* tolerance for polygon clipping (3D) */
-#define CONTACTINTLIM 1.0e-4     /* min(area-%) cell/slave for integration */
+#define CONTACTINTLIM 1.0e-6     /* min(area-%) cell/slave for integration */
 
 #endif  // #ifndef CONTACTDEFINES_H
 #endif  // #ifdef CCADISCRET

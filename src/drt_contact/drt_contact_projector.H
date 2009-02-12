@@ -152,11 +152,12 @@ public:
   \param node (in): Master Node to project
   \param ele (in) : Slave Celement to project on
   \param xi (out) : Local coordinates of projection on Celement
+  \param par (out): Projection parameter alpha
   
   */
   bool ProjectElementNormal3D(CONTACT::CNode& node,
                               CONTACT::CElement& ele,
-                              double* xi);
+                              double* xi, double& par);
     
   /*!
   \brief Project a Gauss point onto a CElement along GP normal
@@ -189,12 +190,13 @@ public:
   \param gpeta (in): Local coordinates of GP on gpele
   \param ele (in)  : Master Celement to project on
   \param xi (out)  : Local coordinates of projection on CElement
+  \param par (out ): Projection parameter alpha
   
   */
   bool ProjectGaussPoint3D(CONTACT::CElement& gpele,
                            const double* gpeta,
                            CONTACT::CElement& ele,
-                           double* xi);
+                           double* xi, double& par);
    
   /*!
   \brief Project a Gauss point onto a CElement along AuxPlane normal (3D)

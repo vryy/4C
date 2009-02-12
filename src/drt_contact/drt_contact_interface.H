@@ -493,6 +493,12 @@ public:
   virtual bool IntegrateCoupling(CONTACT::CElement& sele,
                                  CONTACT::CElement& mele);
     
+  // (THIS IS A PURE FINITE DIFFERENCE VERSION!!!)       
+  virtual bool IntegrateCoupling(CONTACT::CElement& sele,
+                                 CONTACT::CElement& mele,
+                                 vector<vector<double> >& testv,
+                                 bool printderiv=false);
+    
   /*!
   \brief Assemble Mortar matrices and weighted gap
         
@@ -631,6 +637,12 @@ public:
            
   */
   virtual void FDCheckTangLMDeriv();
+  
+  /*!
+  \brief Check 3D coupling vertex derivatives with finite differences
+           
+  */
+  virtual void FDCheckVertex3DDeriv(vector<vector<double> >& testv);
     
   //@}
 
@@ -690,8 +702,6 @@ protected:
 
 // << operator
 ostream& operator << (ostream& os, const CONTACT::Interface& interface);
-
-
 
 
 #endif  // #ifndef DRT_CONTACT_INTERFACE_H

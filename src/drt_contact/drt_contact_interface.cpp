@@ -662,6 +662,11 @@ void CONTACT::Interface::Evaluate()
   //  cout << "Brute-force search: " << t_end << " seconds\n";
   //}
   
+#ifdef CONTACTFDVERTEX3D
+  // define test variable for FDVertex
+  vector<vector<double> > testv(0,vector<double>(5));
+#endif // #ifdef CONTACTFDVERTEX3D
+  
   // loop over proc's slave elements of the interface for integration
   // use standard column map to include processor's ghosted elements
   for (int i=0; i<selecolmap_->NumMyElements();++i)
@@ -699,7 +704,11 @@ void CONTACT::Interface::Evaluate()
       // 2) integrate Mortar matrix M and weighted gap g
       // 3) compute directional derivative of M and g and store into nodes
       //********************************************************************
+#ifdef CONTACTFDVERTEX3D
+      IntegrateCoupling(*selement,*melement,testv);
+#else
       IntegrateCoupling(*selement,*melement);
+#endif // #ifdef CONTACTFDVERTEX3D
     }
   }
 
@@ -712,6 +721,11 @@ void CONTACT::Interface::Evaluate()
   // FD check of Mortar matrix M derivatives
   FDCheckMortarMDeriv();
 #endif // #ifdef CONTACTFDMORTARM
+
+#ifdef CONTACTFDVERTEX3D
+  // FD check of coupling vertex derivatives(3D)
+  FDCheckVertex3DDeriv(testv);
+#endif // #ifdef CONTACTFDVERTEX3D
   
   return;
 }
@@ -855,6 +869,23 @@ bool CONTACT::Interface::IntegrateCoupling(CONTACT::CElement& sele,
   // (projection slave and master, overlap detection, integration and
   // linearization of the Mortar matrix M)
   CONTACT::Coupling coup(Discret(),sele,mele,Dim(),CSegs());
+      
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Integrate matrix M and gap g on slave/master overlap      popp 11/08|
+ |  THIS IS A PURE FINITE DIFFERENCE VERSION!!!                         |
+ *----------------------------------------------------------------------*/
+bool CONTACT::Interface::IntegrateCoupling(CONTACT::CElement& sele,
+                                           CONTACT::CElement& mele,
+                                           vector<vector<double> >& testv,
+                                           bool printderiv)
+{
+  // do interface coupling within a new class
+  // (projection slave and master, overlap detection, integration and
+  // linearization of the Mortar matrix M)
+  CONTACT::Coupling coup(Discret(),sele,mele,Dim(),CSegs(),testv,printderiv);
       
   return true;
 }
@@ -2092,8 +2123,6 @@ void CONTACT::Interface::AssembleLinStick(LINALG::SparseMatrix& linstickglobal)
 	  
 	  return;
 }
-
-
 
 /*----------------------------------------------------------------------*
  |  initialize active set (nodes / dofs)                      popp 03/08|

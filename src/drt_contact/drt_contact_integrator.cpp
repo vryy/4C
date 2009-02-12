@@ -576,7 +576,7 @@ void CONTACT::Integrator::DerivM(CONTACT::CElement& sele,
     
     // evalute the GP master coordinate derivatives
     map<int,double> dmxigp;
-    DerivXiGP(sele,sxia,sxib,mele,mxia,mxib,sxi[0],mxi[0],dsxigp,dmxigp);
+    DerivXiGP(sele,mele,sxi[0],mxi[0],dsxigp,dmxigp);
     
     // simple version (no Gauss point projection)
     //for (CI p=ximaps[2].begin();p!=ximaps[2].end();++p)
@@ -1025,9 +1025,7 @@ void CONTACT::Integrator::DerivXiAB(CONTACT::CElement& sele,
  |  Compute directional derivative of XiGP master (2D)        popp 05/08|
  *----------------------------------------------------------------------*/
 void CONTACT::Integrator::DerivXiGP(CONTACT::CElement& sele,
-                                    double& sxia, double& sxib,
                                     CONTACT::CElement& mele,
-                                    double& mxia, double& mxib,
                                     double& sxigp, double& mxigp,
                                     const map<int,double>& derivsxi,
                                     map<int,double>& derivmxi)
@@ -1530,6 +1528,7 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateM3D(
     double tempsxi[3] = {0.0, 0.0, 0.0};
     double sxi[2] = {0.0, 0.0};
     double mxi[2] = {0.0, 0.0};
+    double projalpha = 0.0;
     
     // get Gauss point in slave element coordinates
     cell->LocalToGlobal(eta,tempsxi,0);
@@ -1538,7 +1537,7 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateM3D(
     
     // project Gauss point onto master element
     CONTACT::Projector projector(3);
-    projector.ProjectGaussPoint3D(sele,sxi,mele,mxi);
+    projector.ProjectGaussPoint3D(sele,sxi,mele,mxi,projalpha);
 
     // check GP projection
     double tol = 0.01;
@@ -1551,7 +1550,6 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateM3D(
         cout << "GP local: " << eta[0] << " " << eta[1] << endl;
         cout << "Gauss point: " << sxi[0] << " " << sxi[1] << endl;
         cout << "Projection: " << mxi[0] << " " << mxi[1] << endl;
-        
       }
     }
     else
@@ -1603,7 +1601,7 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateM3D(
 }
 
 /*----------------------------------------------------------------------*
- |  Compute directional derivative of M (3D)                  popp 12/08|                                   |
+ |  Compute directional derivative of M (3D)                  popp 12/08|
  *----------------------------------------------------------------------*/
 void CONTACT::Integrator::DerivM3D(CONTACT::CElement& sele,
                                    CONTACT::CElement& mele,
@@ -1656,6 +1654,7 @@ void CONTACT::Integrator::DerivM3D(CONTACT::CElement& sele,
     double tempsxi[3] = {0.0, 0.0, 0.0};
     double sxi[2] = {0.0, 0.0};
     double mxi[2] = {0.0, 0.0};
+    double projalpha = 0.0;
     
     // get Gauss point in slave element coordinates
     cell->LocalToGlobal(eta,tempsxi,0);
@@ -1664,7 +1663,7 @@ void CONTACT::Integrator::DerivM3D(CONTACT::CElement& sele,
     
     // project Gauss point onto master element
     CONTACT::Projector projector(3);
-    projector.ProjectGaussPoint3D(sele,sxi,mele,mxi);
+    projector.ProjectGaussPoint3D(sele,sxi,mele,mxi,projalpha);
 
     // check GP projection
     double tol = 0.01;
@@ -1677,7 +1676,6 @@ void CONTACT::Integrator::DerivM3D(CONTACT::CElement& sele,
         cout << "GP local: " << eta[0] << " " << eta[1] << endl;
         cout << "Gauss point: " << sxi[0] << " " << sxi[1] << endl;
         cout << "Projection: " << mxi[0] << " " << mxi[1] << endl;
-        
       }
     }
     else
@@ -1731,8 +1729,26 @@ void CONTACT::Integrator::DerivM3D(CONTACT::CElement& sele,
     
     // evaluate the intcell Jacobian derivative
     // these are pre-factors for intcell vertex coordinate linearizations
-    map<int,double> jacintcellmap;
-    cell->DerivJacobian(sxi,jacintcellmap);
+    vector<double> jacintcellvec(2*(cell->NumVertices()));
+    cell->DerivJacobian(eta,jacintcellvec);
+
+    // evalute the GP slave coordinate derivatives
+    vector<map<int,double> > dsxigp(2);
+    LINALG::SerialDenseVector svalcell(nrow);
+    LINALG::SerialDenseMatrix sderivcell(nrow,2,true);
+    cell->EvaluateShape(eta,svalcell,sderivcell);
+    
+    for (int v=0;v<cell->NumVertices();++v)
+    {
+      for (CI p=(cell->GetDerivVertex(v))[0].begin();p!=(cell->GetDerivVertex(v))[0].end();++p)
+        dsxigp[0][p->first] += svalcell[v] * (p->second);
+      for (CI p=(cell->GetDerivVertex(v))[1].begin();p!=(cell->GetDerivVertex(v))[1].end();++p)
+        dsxigp[1][p->first] += svalcell[v] * (p->second);
+    }
+    
+    // evalute the GP master coordinate derivatives
+    vector<map<int,double> > dmxigp(2);
+    DerivXiGP3D(sele,mele,sxi,mxi,dsxigp,dmxigp,projalpha);
         
     // evaluate all parts of DerivM
     //********************************************************************
@@ -1763,10 +1779,30 @@ void CONTACT::Integrator::DerivM3D(CONTACT::CElement& sele,
         }
         
         // (2) Lin(Phi) - slave GP coordinates
+        fac = wgt*dualderiv(j,0)*mval[k]*jaccell*jacslave;
+        for (CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
+          dmmap_jk[p->first] += fac*(p->second);
+        fac = wgt*dualderiv(j,1)*mval[k]*jaccell*jacslave;
+        for (CI p=dsxigp[1].begin();p!=dsxigp[1].end();++p)
+          dmmap_jk[p->first] += fac*(p->second);
         
         // (3) Lin(NMaster) - master GP coordinates
+        fac = wgt*dualval[j]*mderiv(k,0)*jaccell*jacslave;
+        for (CI p=dmxigp[0].begin();p!=dmxigp[0].end();++p)
+          dmmap_jk[p->first] += fac*(p->second);
+        fac = wgt*dualval[j]*mderiv(k,1)*jaccell*jacslave;
+        for (CI p=dmxigp[1].begin();p!=dmxigp[1].end();++p)
+          dmmap_jk[p->first] += fac*(p->second);
         
         // (4) Lin(dsxideta) - intcell GP Jacobian
+        fac = wgt*sval[j]*mval[k]*jacslave;
+        for (int m=0;m<(int)jacintcellvec.size();++m)
+        {
+          int v = m/2;   // which vertex?
+          int dof = m%2; // which dof?
+          for (CI p=(cell->GetDerivVertex(v))[dof].begin();p!=(cell->GetDerivVertex(v))[dof].end();++p)
+            dmmap_jk[p->first] += fac * jacintcellvec[m] * (p->second);
+        }
         
         // (5) Lin(dxdsxi) - slave GP Jacobian
         fac = wgt*dualval[j]*mval[k]*jaccell;
@@ -1774,7 +1810,12 @@ void CONTACT::Integrator::DerivM3D(CONTACT::CElement& sele,
           dmmap_jk[p->first] += fac*(p->second);
                 
         // (6) Lin(dxdsxi) - slave GP coordinates
-       
+        fac = wgt*dualval[j]*mval[k]*jaccell*djacdxi[0];
+        for (CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
+          dmmap_jk[p->first] += fac*(p->second);
+        fac = wgt*dualval[j]*mval[k]*jaccell*djacdxi[1];
+        for (CI p=dsxigp[1].begin();p!=dsxigp[1].end();++p)
+          dmmap_jk[p->first] += fac*(p->second);
       }
     }
     //********************************************************************
@@ -1784,6 +1825,217 @@ void CONTACT::Integrator::DerivM3D(CONTACT::CElement& sele,
 #endif // #ifdef CONTACTONEMORTARLOOP
     
   } // for (int gp=0;gp<nGP();++gp)
+    
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Compute directional derivative of XiGP master (3D)        popp 02/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::Integrator::DerivXiGP3D(CONTACT::CElement& sele,
+                                      CONTACT::CElement& mele,
+                                      double* sxigp, double* mxigp,
+                                      const vector<map<int,double> >& derivsxi,
+                                      vector<map<int,double> >& derivmxi,
+                                      double& alpha)
+{
+  //check for problem dimension
+  if (Dim()!=3) dserror("ERROR: 3D integration method called for non-3D problem");
+    
+  // we need the participating slave and master nodes
+  DRT::Node** snodes = sele.Nodes();
+  DRT::Node** mnodes = mele.Nodes();
+  vector<CONTACT::CNode*> scnodes(sele.NumNode());
+  vector<CONTACT::CNode*> mcnodes(mele.NumNode());
+  int numsnode = sele.NumNode();
+  int nummnode = mele.NumNode();
+  
+  for (int i=0;i<numsnode;++i)
+  {
+    scnodes[i] = static_cast<CONTACT::CNode*>(snodes[i]);
+    if (!scnodes[i]) dserror("ERROR: DerivXiAB: Null pointer!");
+  }
+  
+  for (int i=0;i<nummnode;++i)
+  {
+    mcnodes[i] = static_cast<CONTACT::CNode*>(mnodes[i]);
+    if (!mcnodes[i]) dserror("ERROR: DerivXiAB: Null pointer!");
+  }
+  
+  // we also need shape function derivs at the GP
+  double psxigp[2] = {sxigp[0], sxigp[1]};
+  double pmxigp[2] = {mxigp[0], mxigp[1]};
+  LINALG::SerialDenseVector valsxigp(numsnode);
+  LINALG::SerialDenseVector valmxigp(nummnode);
+  LINALG::SerialDenseMatrix derivsxigp(numsnode,2,true);
+  LINALG::SerialDenseMatrix derivmxigp(nummnode,2,true);
+  
+  sele.EvaluateShape(psxigp,valsxigp,derivsxigp,numsnode);
+  mele.EvaluateShape(pmxigp,valmxigp,derivmxigp,nummnode);
+  
+  // we also need the GP slave coordinates + normal
+  double sgpn[3] = {0.0,0.0,0.0};
+  double sgpx[3] = {0.0,0.0,0.0};
+  for (int i=0;i<numsnode;++i)
+    for (int k=0;k<3;++k)
+    {
+      sgpn[k]+=valsxigp[i]*scnodes[i]->n()[k];         
+      sgpx[k]+=valsxigp[i]*scnodes[i]->xspatial()[k];
+    }
+  
+  // normalize interpolated GP normal back to length 1.0 !!!
+  double length = sqrt(sgpn[0]*sgpn[0]+sgpn[1]*sgpn[1]+sgpn[2]*sgpn[2]);
+  if (length<1.0e-12) dserror("ERROR: DerivXiGP: Divide by zero!");
+  for (int i=0;i<3;++i) sgpn[i]/=length;
+  
+  // build 3x3 factor matrix L
+  LINALG::Matrix<3,3> lmatrix(true);
+  for (int k=0;k<3;++k) lmatrix(k,2) = -sgpn[k];
+  for (int z=0;z<nummnode;++z)
+    for (int k=0;k<3;++k)
+    {
+      lmatrix(k,0) += derivmxigp(z,0) * mcnodes[z]->xspatial()[k];   
+      lmatrix(k,1) += derivmxigp(z,1) * mcnodes[z]->xspatial()[k];
+    }
+  
+  // get inverse of the 3x3 matrix L (in place)
+  lmatrix.Invert();
+  
+  // build directional derivative of slave GP normal
+  typedef map<int,double>::const_iterator CI;
+  map<int,double> dmap_nxsl_gp;
+  map<int,double> dmap_nysl_gp;
+  map<int,double> dmap_nzsl_gp;
+  
+  double sgpnmod[3] = {0.0,0.0,0.0};
+  for (int i=0;i<3;++i) sgpnmod[i]=sgpn[i]*length;
+  
+  map<int,double> dmap_nxsl_gp_mod;
+  map<int,double> dmap_nysl_gp_mod;
+  map<int,double> dmap_nzsl_gp_mod;
+  
+  for (int i=0;i<numsnode;++i)
+  {
+    map<int,double>& dmap_nxsl_i = scnodes[i]->GetDerivN()[0];
+    map<int,double>& dmap_nysl_i = scnodes[i]->GetDerivN()[1];
+    map<int,double>& dmap_nzsl_i = scnodes[i]->GetDerivN()[2];
+    
+    for (CI p=dmap_nxsl_i.begin();p!=dmap_nxsl_i.end();++p)
+      dmap_nxsl_gp_mod[p->first] += valsxigp[i]*(p->second);
+    for (CI p=dmap_nysl_i.begin();p!=dmap_nysl_i.end();++p)
+      dmap_nysl_gp_mod[p->first] += valsxigp[i]*(p->second);
+    for (CI p=dmap_nzsl_i.begin();p!=dmap_nzsl_i.end();++p)
+      dmap_nzsl_gp_mod[p->first] += valsxigp[i]*(p->second);
+    
+    for (CI p=derivsxi[0].begin();p!=derivsxi[0].end();++p)
+    {
+      double valx =  derivsxigp(i,0)*scnodes[i]->n()[0];
+      dmap_nxsl_gp_mod[p->first] += valx*(p->second);
+      double valy =  derivsxigp(i,0)*scnodes[i]->n()[1];
+      dmap_nysl_gp_mod[p->first] += valy*(p->second);
+      double valz =  derivsxigp(i,0)*scnodes[i]->n()[2];
+      dmap_nzsl_gp_mod[p->first] += valz*(p->second);
+    }
+    
+    for (CI p=derivsxi[1].begin();p!=derivsxi[1].end();++p)
+    {
+      double valx =  derivsxigp(i,1)*scnodes[i]->n()[0];
+      dmap_nxsl_gp_mod[p->first] += valx*(p->second);
+      double valy =  derivsxigp(i,1)*scnodes[i]->n()[1];
+      dmap_nysl_gp_mod[p->first] += valy*(p->second);
+      double valz =  derivsxigp(i,1)*scnodes[i]->n()[2];
+      dmap_nzsl_gp_mod[p->first] += valz*(p->second);
+    }
+  }
+  
+  double sxsx = sgpnmod[0]*sgpnmod[0];
+  double sxsy = sgpnmod[0]*sgpnmod[1];
+  double sxsz = sgpnmod[0]*sgpnmod[2];
+  double sysy = sgpnmod[1]*sgpnmod[1];
+  double sysz = sgpnmod[1]*sgpnmod[2];
+  double szsz = sgpnmod[2]*sgpnmod[2];
+  
+  for (CI p=dmap_nxsl_gp_mod.begin();p!=dmap_nxsl_gp_mod.end();++p)
+  {
+    dmap_nxsl_gp[p->first] += 1/length*(p->second);
+    dmap_nxsl_gp[p->first] -= 1/(length*length*length)*sxsx*(p->second);
+    dmap_nysl_gp[p->first] -= 1/(length*length*length)*sxsy*(p->second);
+    dmap_nzsl_gp[p->first] -= 1/(length*length*length)*sxsz*(p->second);
+  }
+  
+  for (CI p=dmap_nysl_gp_mod.begin();p!=dmap_nysl_gp_mod.end();++p)
+  {
+    dmap_nysl_gp[p->first] += 1/length*(p->second);
+    dmap_nysl_gp[p->first] -= 1/(length*length*length)*sysy*(p->second);
+    dmap_nxsl_gp[p->first] -= 1/(length*length*length)*sxsy*(p->second);
+    dmap_nxsl_gp[p->first] -= 1/(length*length*length)*sysz*(p->second);
+  }
+  
+  for (CI p=dmap_nzsl_gp_mod.begin();p!=dmap_nzsl_gp_mod.end();++p)
+  {
+    dmap_nzsl_gp[p->first] += 1/length*(p->second);
+    dmap_nzsl_gp[p->first] -= 1/(length*length*length)*szsz*(p->second);
+    dmap_nxsl_gp[p->first] -= 1/(length*length*length)*sxsz*(p->second);
+    dmap_nysl_gp[p->first] -= 1/(length*length*length)*sysz*(p->second);
+  }
+    
+  // start to fill linearization maps for master GP
+  // (1) all master nodes coordinates part
+  for (int z=0;z<nummnode;++z)
+    for (int k=0;k<3;++k)
+    {
+      derivmxi[0][mcnodes[z]->Dofs()[k]] -= valmxigp[z] * lmatrix(0,k);
+      derivmxi[1][mcnodes[z]->Dofs()[k]] -= valmxigp[z] * lmatrix(1,k);
+    }
+  
+  // (2) slave Gauss point coordinates part
+  for (int z=0;z<numsnode;++z)
+    for (int k=0;k<3;++k)
+    {
+      derivmxi[0][scnodes[z]->Dofs()[k]] += valsxigp[z] * lmatrix(0,k);
+      derivmxi[1][scnodes[z]->Dofs()[k]] += valsxigp[z] * lmatrix(1,k);
+      
+      for (CI p=derivsxi[0].begin();p!=derivsxi[0].end();++p)
+      {
+        derivmxi[0][p->first] += derivsxigp(z,0) * scnodes[z]->xspatial()[k] *lmatrix(0,k);
+        derivmxi[1][p->first] += derivsxigp(z,0) * scnodes[z]->xspatial()[k] *lmatrix(1,k);
+      }
+      
+      for (CI p=derivsxi[1].begin();p!=derivsxi[1].end();++p)
+      {
+        derivmxi[0][p->first] += derivsxigp(z,1) * scnodes[z]->xspatial()[k] *lmatrix(0,k);    
+        derivmxi[1][p->first] += derivsxigp(z,1) * scnodes[z]->xspatial()[k] *lmatrix(1,k);
+      }
+    }
+  
+  // (3) slave Gauss point normal part
+  for (CI p=dmap_nxsl_gp.begin();p!=dmap_nxsl_gp.end();++p)
+  {
+    derivmxi[0][p->first] += alpha * lmatrix(0,0) *(p->second);
+    derivmxi[1][p->first] += alpha * lmatrix(1,0) *(p->second);
+  }
+  for (CI p=dmap_nysl_gp.begin();p!=dmap_nysl_gp.end();++p)
+  {
+    derivmxi[0][p->first] += alpha * lmatrix(0,1) *(p->second);
+    derivmxi[1][p->first] += alpha * lmatrix(1,1) *(p->second);
+  }
+  for (CI p=dmap_nzsl_gp.begin();p!=dmap_nzsl_gp.end();++p)
+  {
+    derivmxi[0][p->first] += alpha * lmatrix(0,2) *(p->second);
+    derivmxi[1][p->first] += alpha * lmatrix(1,2) *(p->second);
+  }
+  
+  /*
+  // check linearization
+  typedef map<int,double>::const_iterator CI;
+  cout << "\nLinearization of current master GP:" << endl;
+  cout << "-> Coordinate 1:" << endl;
+  for (CI p=derivmxi[0].begin();p!=derivmxi[0].end();++p)
+    cout << p->first << " " << p->second << endl;
+  cout << "-> Coordinate 2:" << endl;
+  for (CI p=derivmxi[1].begin();p!=derivmxi[1].end();++p)
+      cout << p->first << " " << p->second << endl;
+  */
     
   return;
 }
@@ -1981,6 +2233,7 @@ RCP<Epetra_SerialDenseVector> CONTACT::Integrator::IntegrateG3D(
     double tempsxi[3] = {0.0, 0.0, 0.0};
     double sxi[2] = {0.0, 0.0};
     double mxi[2] = {0.0, 0.0};
+    double projalpha = 0.0;
     
     // get Gauss point in slave element coordinates
     cell->LocalToGlobal(eta,tempsxi,0);
@@ -1989,7 +2242,7 @@ RCP<Epetra_SerialDenseVector> CONTACT::Integrator::IntegrateG3D(
     
     // project Gauss point onto master element
     CONTACT::Projector projector(3);
-    projector.ProjectGaussPoint3D(sele,sxi,mele,mxi);
+    projector.ProjectGaussPoint3D(sele,sxi,mele,mxi,projalpha);
 
     // check GP projection
     double tol = 0.01;

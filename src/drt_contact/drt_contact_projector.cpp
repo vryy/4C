@@ -223,7 +223,7 @@ bool CONTACT::Projector::ProjectElementNormal(CONTACT::CNode& node,
  *----------------------------------------------------------------------*/
 bool CONTACT::Projector::ProjectElementNormal3D(CONTACT::CNode& node,
                                                 CONTACT::CElement& ele,
-                                                double* xi)
+                                                double* xi, double& par)
 {
   // start in the element center
   DRT::Element::DiscretizationType dt = ele.Shape();
@@ -272,6 +272,7 @@ bool CONTACT::Projector::ProjectElementNormal3D(CONTACT::CNode& node,
   // Newton iteration converged
   xi[0]=eta[0];
   xi[1]=eta[1];
+  par=alpha;
   //cout << "Newton iteration converged in " << k << " steps!" << endl;
   
   return true;  
@@ -383,7 +384,7 @@ bool CONTACT::Projector::ProjectGaussPoint(CONTACT::CElement& gpele,
 bool CONTACT::Projector::ProjectGaussPoint3D(CONTACT::CElement& gpele,
                                              const double* gpeta,
                                              CONTACT::CElement& ele,
-                                             double* xi)
+                                             double* xi, double& par)
 {
   // collect necessary data (slave side, for GP)
   int nnodes = gpele.NumNode();
@@ -463,7 +464,7 @@ bool CONTACT::Projector::ProjectGaussPoint3D(CONTACT::CElement& gpele,
   // Newton iteration converged
   xi[0]=eta[0];
   xi[1]=eta[1];
-  
+  par=alpha;
   //cout << "Newton iteration converged in " << k << " steps!" << endl;
   
   return true;

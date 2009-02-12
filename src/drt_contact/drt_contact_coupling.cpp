@@ -48,7 +48,10 @@ Maintainer: Alexander Popp
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
 CONTACT::Intcell::Intcell(int id, int nvertices, Epetra_SerialDenseMatrix& coords,
-                          const DRT::Element::DiscretizationType& shape) :
+                          const DRT::Element::DiscretizationType& shape,
+                          vector<map<int,double> >& linv1,
+                          vector<map<int,double> >& linv2,
+                          vector<map<int,double> >& linv3) :
 id_(id),
 nvertices_(nvertices),
 coords_(coords),
@@ -76,6 +79,12 @@ shape_(shape)
   t1xt2[1] = t1[2]*t2[0]-t1[0]*t2[2];
   t1xt2[2] = t1[0]*t2[1]-t1[1]*t2[0]; 
   area_ = 0.5*sqrt(t1xt2[0]*t1xt2[0]+t1xt2[1]*t1xt2[1]+t1xt2[2]*t1xt2[2]);
+  
+  // store vertex linearizations
+  linvertex_.resize(3);
+  linvertex_[0] = linv1;
+  linvertex_[1] = linv2;
+  linvertex_[2] = linv3;
   
   return;
 }
@@ -192,7 +201,7 @@ double CONTACT::Intcell::Jacobian(double* xi)
 /*----------------------------------------------------------------------*
  |  Evaluate directional deriv. of Jacobian det.              popp 12/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Intcell::DerivJacobian(double* xi, map<int,double>& derivjac)
+void CONTACT::Intcell::DerivJacobian(double* xi, vector<double>& derivjac)
 {
   // initialize parameters
   int nnodes = NumVertices();
@@ -288,10 +297,12 @@ void CONTACT::Intcell::DerivJacobian(double* xi, map<int,double>& derivjac)
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
-CONTACT::Vertex::Vertex(vector<double> coord, Vertex* next, Vertex* prev,
-                        bool intersect, bool entryexit, Vertex* neighbor,
-                        double alpha) :
+CONTACT::Vertex::Vertex(vector<double> coord, Vertex::vType type, vector<int> nodeids,
+                        Vertex* next, Vertex* prev, bool intersect,
+                        bool entryexit, Vertex* neighbor, double alpha) :
 coord_(coord),
+type_(type),
+nodeids_(nodeids),
 next_(next),
 prev_(prev),
 intersect_(intersect),
@@ -308,6 +319,8 @@ alpha_(alpha)
  *----------------------------------------------------------------------*/
 CONTACT::Vertex::Vertex(const Vertex& old) :
 coord_(old.coord_),
+type_(old.type_),
+nodeids_(old.nodeids_),
 next_(old.next_),
 prev_(old.prev_),
 intersect_(old.intersect_),
@@ -369,12 +382,19 @@ contactsegs_(csegs)
     bool near = RoughCheck3D();
     if (!near) return;
     
+    // map to store projection parameter alpha for each master node
+    map<int,double> projpar;
+    
     // *******************************************************************
     // ************ Coupling with or without auxiliary plane *************
     // *******************************************************************
 #ifdef CONTACTAUXPLANE
     // compute auxiliary plane for 3D coupling
     AuxiliaryPlane3D();
+    
+    //create vertex data structure
+    vector<Vertex> poly1list;
+    vector<Vertex> poly2list;
     
     // project slave element nodes onto auxiliary plane
     ProjectSlave3D();
@@ -386,27 +406,40 @@ contactsegs_(csegs)
     double sminedge = sele.MinEdgeSize();
     double mminedge = mele.MinEdgeSize(); 
     double tol = CONTACTCLIPTOL * min(sminedge,mminedge);
-      
+    
     // do clipping in auxiliary plane
     PolygonClipping3D(SlaveVertices(),MasterVertices(),Clip(),tol);
     int clipsize = (int)(Clip().size());
 #else
+    
     // get some data
     int nsnodes = SlaveElement().NumNode();
     int nmnodes = MasterElement().NumNode();
     
     // get slave vertices in slave element parameter space (direct)
+    // additionally get slave vertex Ids for later linearization
     vector<vector<double> > svertices(nsnodes,vector<double>(3));
+    vector<int> snodeids(1);
+    
     for (int i=0;i<nsnodes;++i)
-    {
+    {     
       double xi[2] = {0.0, 0.0};
       SlaveElement().LocalCoordinatesOfNode(i,xi);
       svertices[i][0] = xi[0];
       svertices[i][1] = xi[1];
+      svertices[i][2] = 0.0;
+   
+      // relevant ids (here only slave node id itself)
+      snodeids[0] = SlaveElement().NodeIds()[i];
+      
+      // store into vertex data structure
+      SlaveVertices().push_back(Vertex(svertices[i],Vertex::slave,snodeids,NULL,NULL,false,false,NULL,-1.0));
     }
     
     // get master vertices in slave element parameter space (project)
+    // additionally get master vertex Ids for later linearization
     vector<vector<double> > mvertices(nmnodes,vector<double>(3));
+    vector<int> mnodeids(1);
     for (int i=0;i<nmnodes;++i)
     {
       int gid = MasterElement().NodeIds()[i];
@@ -415,13 +448,25 @@ contactsegs_(csegs)
       CNode* mnode = static_cast<CNode*>(node);
       
       // do the projection
+      // the third component of sxi will be the proj. parameter alpha!
       double sxi[2] = {0.0, 0.0};
+      double alpha = 0.0;
       CONTACT::Projector projector(3);
       //cout << "Projecting master node ID: " << mnode->Id() << endl;
-      projector.ProjectElementNormal3D(*mnode,SlaveElement(),sxi);
+      projector.ProjectElementNormal3D(*mnode,SlaveElement(),sxi,alpha);
       
       mvertices[i][0] = sxi[0];
       mvertices[i][1] = sxi[1];
+      mvertices[i][2] = 0.0;
+      
+      // relevant ids (here only master node id itself)
+      mnodeids[0] = gid;
+      
+      // store proj. parameter for later linearization
+      projpar[gid] = alpha;
+      
+      // store into vertex data structure
+      MasterVertices().push_back(Vertex(mvertices[i],Vertex::projmaster,mnodeids,NULL,NULL,false,false,NULL,-1.0));
     }
     
     // normal is (0,0,1) in slave element parameter space
@@ -432,7 +477,7 @@ contactsegs_(csegs)
     double tol = CONTACTCLIPTOL;
       
     // do clipping in slave element parameter space
-    PolygonClipping3D(svertices,mvertices,Clip(),tol);
+    PolygonClipping3D(SlaveVertices(),MasterVertices(),Clip(),tol);
     int clipsize = (int)(Clip().size());
 #endif // #ifdef CONTACTAUXPLANE
     // *******************************************************************
@@ -445,8 +490,196 @@ contactsegs_(csegs)
       // check / set  projection status of slave nodes
       HasProjStatus3D();
       
-      // do triangulation of clip polygon
-      Triangulation3D();
+      // do linearization + triangulation of clip polygon
+      Triangulation3D(projpar);
+      
+      // do integration of integration cells
+      IntegrateCells3D();
+    }
+  }
+  
+  // *********************************************************************
+  // invalid cases for dim (other than 2D or 3D)
+  // *********************************************************************
+  else dserror("ERROR: Coupling can only be called for 2D or 3D!");
+  
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  ctor (public)                                             popp 11/08|
+ |  THIS IS A PURE FINITE DIFFERENCE VERSION!!!                         |
+ *----------------------------------------------------------------------*/
+CONTACT::Coupling::Coupling(DRT::Discretization& idiscret,
+                            CONTACT::CElement& sele, CONTACT::CElement& mele,
+                            int dim, Epetra_SerialDenseMatrix& csegs,
+                            vector<vector<double> >& testv,
+                            bool printderiv) :
+idiscret_(idiscret),
+sele_(sele),
+mele_(mele),
+dim_(dim),
+contactsegs_(csegs)
+{
+  // check sanity of dimension
+  if (Dim()!=2 && Dim()!=3) dserror("Dim. must be 2D or 3D!");
+  
+  // *********************************************************************
+  // the two-dimensional case
+  // *********************************************************************
+  if (Dim()==2)
+  {
+    // prepare overlap integration
+    vector<bool> hasproj(4);
+    vector<double> xiproj(4);
+    bool overlap = false;
+  
+    // project the element pair
+    Project2D(hasproj,xiproj);
+  
+    // check for element overlap
+    overlap = DetectOverlap2D(hasproj,xiproj);
+  
+    // integrate the element overlap
+    if (overlap) IntegrateOverlap2D(xiproj);
+  }
+  
+  // *********************************************************************
+  // the three-dimensional case
+  // *********************************************************************
+  else if (Dim()==3)
+  {
+    // check for quadratic elements
+    if (sele.Shape()!=DRT::Element::tri3 && sele.Shape()!=DRT::Element::quad4)
+      dserror("ERROR: 3D mortar coupling not yet impl. for quadratic elements");
+    if (mele.Shape()!=DRT::Element::tri3 && mele.Shape()!=DRT::Element::quad4)
+      dserror("ERROR: 3D mortar coupling not yet impl. for quadratic elements");
+
+    // rough check whether elements are "near"
+    bool near = RoughCheck3D();
+    if (!near) return;
+    
+    // map to store projection parameter alpha for each master node
+    map<int,double> projpar;
+    
+    // *******************************************************************
+    // ************ Coupling with or without auxiliary plane *************
+    // *******************************************************************
+#ifdef CONTACTAUXPLANE
+    // compute auxiliary plane for 3D coupling
+    AuxiliaryPlane3D();
+    
+    //create vertex data structure
+    vector<Vertex> poly1list;
+    vector<Vertex> poly2list;
+            
+    // project slave element nodes onto auxiliary plane
+    ProjectSlave3D();
+    
+    // project master element nodes onto auxiliary plane
+    ProjectMaster3D();
+    
+    // tolerance for polygon clipping
+    double sminedge = sele.MinEdgeSize();
+    double mminedge = mele.MinEdgeSize(); 
+    double tol = CONTACTCLIPTOL * min(sminedge,mminedge);
+    
+    
+    // do clipping in auxiliary plane
+    PolygonClipping3D(SlaveVertices(),MasterVertices(),Clip(),tol);
+    int clipsize = (int)(Clip().size());
+#else
+    
+    // get some data
+    int nsnodes = SlaveElement().NumNode();
+    int nmnodes = MasterElement().NumNode();
+    
+    // get slave vertices in slave element parameter space (direct)
+    // additionally get slave vertex Ids for later linearization
+    vector<vector<double> > svertices(nsnodes,vector<double>(3));
+    vector<int> snodeids(1);
+    
+    for (int i=0;i<nsnodes;++i)
+    {     
+      double xi[2] = {0.0, 0.0};
+      SlaveElement().LocalCoordinatesOfNode(i,xi);
+      svertices[i][0] = xi[0];
+      svertices[i][1] = xi[1];
+      svertices[i][2] = 0.0;
+   
+      // relevant ids (here only slave node id itself)
+      snodeids[0] = SlaveElement().NodeIds()[i];
+      
+      // store into vertex data structure
+      SlaveVertices().push_back(Vertex(svertices[i],Vertex::slave,snodeids,NULL,NULL,false,false,NULL,-1.0));
+    }
+    
+    // get master vertices in slave element parameter space (project)
+    // additionally get master vertex Ids for later linearization
+    vector<vector<double> > mvertices(nmnodes,vector<double>(3));
+    vector<int> mnodeids(1);
+    for (int i=0;i<nmnodes;++i)
+    {
+      int gid = MasterElement().NodeIds()[i];
+      DRT::Node* node = Discret().gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CNode* mnode = static_cast<CNode*>(node);
+      
+      // do the projection
+      double sxi[2] = {0.0, 0.0};
+      double alpha = 0.0;
+      CONTACT::Projector projector(3);
+      //cout << "Projecting master node ID: " << mnode->Id() << endl;
+      projector.ProjectElementNormal3D(*mnode,SlaveElement(),sxi,alpha);
+      
+      mvertices[i][0] = sxi[0];
+      mvertices[i][1] = sxi[1];
+      mvertices[i][2] = 0.0;
+      
+      // relevant ids (here only master node id itself)
+      mnodeids[0] = gid;
+      
+      // store proj. parameter for later linearization
+      projpar[gid] = alpha;
+      
+      // store into vertex data structure
+      MasterVertices().push_back(Vertex(mvertices[i],Vertex::projmaster,mnodeids,NULL,NULL,false,false,NULL,-1.0));
+    }
+    
+    // normal is (0,0,1) in slave element parameter space
+    Auxn()[0] = 0.0; Auxn()[1] = 0.0; Auxn()[2] = 1.0;
+    
+    // tolerance for polygon clipping
+    // minimum edge size in parameter space is 1
+    double tol = CONTACTCLIPTOL;
+      
+    // do clipping in slave element parameter space
+    PolygonClipping3D(SlaveVertices(),MasterVertices(),Clip(),tol);
+    int clipsize = (int)(Clip().size());
+#endif // #ifdef CONTACTAUXPLANE
+    // *******************************************************************
+    
+    // proceed only if clipping polygon is at least a triangle
+    bool overlap = false;
+    if (clipsize>=3) overlap = true;
+    if (overlap)
+    {
+      // fill testv vector for FDVertex check
+      for (int k=0;k<clipsize;++k)
+      {
+        vector<double> testventry(5);
+        testventry[0] = (Clip()[k]).Coord()[0];
+        testventry[1] = (Clip()[k]).Coord()[1];
+        testventry[2] = SlaveElement().Id();
+        testventry[3] = MasterElement().Id();
+        testventry[4] = (Clip()[k]).VType();
+        testv.push_back(testventry);
+      }
+      // check / set  projection status of slave nodes
+      HasProjStatus3D();
+      
+      // do linearization + triangulation of clip polygon
+      Triangulation3D(projpar,testv,printderiv);
       
       // do integration of integration cells
       IntegrateCells3D();
@@ -1075,8 +1308,9 @@ bool CONTACT::Coupling::ProjectSlave3D()
   DRT::Node** mynodes = SlaveElement().Nodes();
   if (!mynodes) dserror("ERROR: ProjectSlave3D: Null pointer!");
   
-  // initialize storage for slave vertices
-  vector<vector<double> > vertices(nnodes,vector<double>(3));
+  // initialize storage for slave coords + their ids
+  vector<double> vertices(3);
+  vector<int> snodeids(1);
   
   for (int i=0;i<nnodes;++i)
   {
@@ -1090,15 +1324,18 @@ bool CONTACT::Coupling::ProjectSlave3D()
                 + (mycnode->xspatial()[2]-Auxc()[2])*Auxn()[2];
     
     // compute projection
-    for (int k=0;k<3;++k) vertices[i][k] = mycnode->xspatial()[k] - dist * Auxn()[k];
- 
+    for (int k=0;k<3;++k) vertices[k] = mycnode->xspatial()[k] - dist * Auxn()[k];
+
+    // get node id, too
+    snodeids[0] = mycnode->Id();
+    
+    // store into vertex data structure
+    SlaveVertices().push_back(Vertex(vertices,Vertex::slave,snodeids,NULL,NULL,false,false,NULL,-1.0));
+          
     //cout << "->RealNode(S) " << mycnode->Id() << ": " << mycnode->xspatial()[0] << " " << mycnode->xspatial()[1] << " " << mycnode->xspatial()[2] << endl; 
     //cout << dist << endl;
     //cout << "->ProjNode(S) " << mycnode->Id() << ": " << vertices[i][0] << " " << vertices[i][1] << " " << vertices[i][2] << endl; 
   }
-  
-  // store slave vertices into svertices_
-  svertices_ = vertices;
   
   return true;
 }
@@ -1113,9 +1350,10 @@ bool CONTACT::Coupling::ProjectMaster3D()
   DRT::Node** mynodes = MasterElement().Nodes();
   if (!mynodes) dserror("ERROR: ProjectMaster3D: Null pointer!");
   
-  // initialize storage for master vertices
-  vector<vector<double> > vertices(nnodes,vector<double>(3));
-    
+  // initialize storage for master coords + their ids
+  vector<double> vertices(3);
+  vector<int> mnodeids(1);
+  
   for (int i=0;i<nnodes;++i)
   {
     CNode* mycnode = static_cast<CNode*> (mynodes[i]);
@@ -1128,15 +1366,18 @@ bool CONTACT::Coupling::ProjectMaster3D()
                 + (mycnode->xspatial()[2]-Auxc()[2])*Auxn()[2];
     
     // compute projection
-    for (int k=0;k<3;++k) vertices[i][k] = mycnode->xspatial()[k] - dist * Auxn()[k];
+    for (int k=0;k<3;++k) vertices[k] = mycnode->xspatial()[k] - dist * Auxn()[k];
     
+    // get node id, too
+   mnodeids[0] = mycnode->Id();
+   
+   // store into vertex data structure
+   MasterVertices().push_back(Vertex(vertices,Vertex::projmaster,mnodeids,NULL,NULL,false,false,NULL,-1.0));
+       
     //cout << "->RealNode(M) " << mycnode->Id() << ": " << mycnode->xspatial()[0] << " " << mycnode->xspatial()[1] << " " << mycnode->xspatial()[2] << endl; 
     //cout << dist << endl;
     //cout << "->ProjNode(M) " << mycnode->Id() << ": " << vertices[i][0] << " " << vertices[i][1] << " " << vertices[i][2] << endl; 
   }
-  
-  // store master vertices into mvertices_
-  mvertices_ = vertices;
     
   return true;
 }
@@ -1144,9 +1385,9 @@ bool CONTACT::Coupling::ProjectMaster3D()
 /*----------------------------------------------------------------------*
  |  Clipping of two polygons                                  popp 11/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
-                                          vector<vector<double> >& poly2,
-                                          vector<vector<double> >& respoly,
+void CONTACT::Coupling::PolygonClipping3D(vector<Vertex>& poly1,
+                                          vector<Vertex>& poly2,
+                                          vector<Vertex>& respoly,
                                           double& tol)
 {
   // print to screen
@@ -1174,11 +1415,11 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
   
   for (int i=0;i<(int)poly1.size();++i)
     for (int k=0;k<3;++k)
-      center1[k] += poly1[i][k]/((int)poly1.size());
+      center1[k] += poly1[i].Coord()[k]/((int)poly1.size());
   
   for (int i=0;i<(int)poly2.size();++i)
     for (int k=0;k<3;++k)
-      center2[k] += poly2[i][k]/((int)poly2.size());
+      center2[k] += poly2[i].Coord()[k]/((int)poly2.size());
   
   //cout << "Center 1: " << center1[0] << " " << center1[1] << " " << center1[2] << endl;
   //cout << "Center 2: " << center2[0] << " " << center2[1] << " " << center2[2] << endl;
@@ -1191,10 +1432,10 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
   
   for (int k=0;k<3;++k)
   {
-    diff1[k] = poly1[0][k]-center1[k];
-    edge1[k] = poly1[1][k]-poly1[0][k];
-    diff2[k] = poly2[0][k]-center2[k];
-    edge2[k] = poly2[1][k]-poly2[0][k];
+    diff1[k] = poly1[0].Coord()[k]-center1[k];
+    edge1[k] = poly1[1].Coord()[k]-poly1[0].Coord()[k];
+    diff2[k] = poly2[0].Coord()[k]-center2[k];
+    edge2[k] = poly2[1].Coord()[k]-poly2[0].Coord()[k];
   }
   
   double cross1[3] = {0.0, 0.0, 0.0};
@@ -1219,10 +1460,7 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
   if (check2<0)
   {
     //cout << "Polygon 2 (master) not ordered counter-clockwise -> reordered!" << endl;
-    vector<vector<double> > newpoly2((int)poly2.size(),vector<double>(3));
-    for (int i=0;i<(int)poly2.size();++i)
-      newpoly2[(int)poly2.size()-1-i] = poly2[i];
-    poly2 = newpoly2;
+    std::reverse(poly2.begin(), poly2.end());
   }
    
   // check if the two input polygons are convex
@@ -1234,8 +1472,8 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
     double edge[3] = {0.0, 0.0, 0.0};
     for (int k=0;k<3;++k)
     {
-      if (i!=(int)poly1.size()-1) edge[k] = poly1[i+1][k] - poly1[i][k];
-      else edge[k] = poly1[0][k] - poly1[i][k];
+      if (i!=(int)poly1.size()-1) edge[k] = poly1[i+1].Coord()[k] - poly1[i].Coord()[k];
+      else edge[k] = poly1[0].Coord()[k] - poly1[i].Coord()[k];
     }
     
     // edge normal is result of cross product
@@ -1248,9 +1486,9 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
     double nextedge[3] = {0.0, 0.0, 0.0};
     for (int k=0;k<3;++k)
     {
-      if (i<(int)poly1.size()-2) nextedge[k] = poly1[i+2][k] - poly1[i+1][k];
-      else if (i==(int)poly1.size()-2) nextedge[k] = poly1[0][k] - poly1[i+1][k];
-      else nextedge[k] = poly1[1][k] - poly1[0][k];
+      if (i<(int)poly1.size()-2) nextedge[k] = poly1[i+2].Coord()[k] - poly1[i+1].Coord()[k];
+      else if (i==(int)poly1.size()-2) nextedge[k] = poly1[0].Coord()[k] - poly1[i+1].Coord()[k];
+      else nextedge[k] = poly1[1].Coord()[k] - poly1[0].Coord()[k];
     }
     
     // check scalar product
@@ -1264,8 +1502,8 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
     double edge[3] = {0.0, 0.0, 0.0};
     for (int k=0;k<3;++k)
     {
-      if (i!=(int)poly2.size()-1) edge[k] = poly2[i+1][k] - poly2[i][k];
-      else edge[k] = poly2[0][k] - poly2[i][k];
+      if (i!=(int)poly2.size()-1) edge[k] = poly2[i+1].Coord()[k] - poly2[i].Coord()[k];
+      else edge[k] = poly2[0].Coord()[k] - poly2[i].Coord()[k];
     }
     
     // edge normal is result of cross product
@@ -1278,9 +1516,9 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
     double nextedge[3] = {0.0, 0.0, 0.0};
     for (int k=0;k<3;++k)
     {
-      if (i<(int)poly2.size()-2) nextedge[k] = poly2[i+2][k] - poly2[i+1][k];
-      else if (i==(int)poly2.size()-2) nextedge[k] = poly2[0][k] - poly2[i+1][k];
-      else nextedge[k] = poly2[1][k] - poly2[0][k];
+      if (i<(int)poly2.size()-2) nextedge[k] = poly2[i+2].Coord()[k] - poly2[i+1].Coord()[k];
+      else if (i==(int)poly2.size()-2) nextedge[k] = poly2[0].Coord()[k] - poly2[i+1].Coord()[k];
+      else nextedge[k] = poly2[1].Coord()[k] - poly2[0].Coord()[k];
     }
     
     // check scalar product
@@ -1291,70 +1529,63 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
   // print final input polygons to screen
   //cout << "\nInput Poylgon 1:";
   //for (int i=0;i<(int)poly1.size();++i)
-  //  cout << "\nVertex " << i << ":\t" << scientific << poly1[i][0] << "\t" << poly1[i][1] << "\t" << poly1[i][2];
+  //  cout << "\nVertex " << i << ":\t" << scientific << poly1[i].Coord()[0]
+  //       << "\t" << poly1[i].Coord()[1] << "\t" << poly1[i].Coord()[2];
  
   //cout << "\nInput Poylgon 2:";
   //for (int i=0;i<(int)poly2.size();++i)
-  //  cout << "\nVertex " << i << ":\t" << scientific << poly2[i][0] << "\t" << poly2[i][1] << "\t" << poly2[i][2];
+  //  cout << "\nVertex " << i << ":\t" << scientific << poly2[i].Coord()[0]
+  //       << "\t" << poly2[i].Coord()[1] << "\t" << poly2[i].Coord()[2];
   
   //cout << endl << endl;
   
   //**********************************************************************
-  // STEP2: Create Vertex data structures
-  // - convert the input vectors into a vector of Vertex objects each
+  // STEP2: Extend Vertex data structures
+  // - note that poly1 is the slave element and poly2 the master element
   // - assign Next() and Prev() pointers to initialize linked structure
   //**********************************************************************
-  vector<Vertex> poly1list;
-  vector<Vertex> poly2list;
   
-  // create Vertex types from input data
-  for (int i=0;i<(int)poly1.size();++i)
-    poly1list.push_back(Vertex(poly1[i],NULL,NULL,false,false,NULL,-1.0));
-
-  for (int i=0;i<(int)poly2.size();++i)
-    poly2list.push_back(Vertex(poly2[i],NULL,NULL,false,false,NULL,-1.0));
-
   // set previous and next Vertex pointer for all elements in lists
-  for (int i=0;i<(int)poly1list.size();++i)
+  for (int i=0;i<(int)poly1.size();++i)
   {
     // standard case
-    if (i!=0 && i!=(int)poly1list.size()-1)
+    if (i!=0 && i!=(int)poly1.size()-1)
     {
-      poly1list[i].AssignNext(&poly1list[i+1]);
-      poly1list[i].AssignPrev(&poly1list[i-1]);
+      poly1[i].AssignNext(&poly1[i+1]);
+      poly1[i].AssignPrev(&poly1[i-1]);
     }
     // first element in list
     else if (i==0)
     {
-      poly1list[i].AssignNext(&poly1list[i+1]);
-      poly1list[i].AssignPrev(&poly1list[(int)poly1list.size()-1]);
+      poly1[i].AssignNext(&poly1[i+1]);
+      poly1[i].AssignPrev(&poly1[(int)poly1.size()-1]);
     }
     // last element in list
     else
     {
-      poly1list[i].AssignNext(&poly1list[0]);
-      poly1list[i].AssignPrev(&poly1list[i-1]);
+      poly1[i].AssignNext(&poly1[0]);
+      poly1[i].AssignPrev(&poly1[i-1]);
     }
   }
-  for (int i=0;i<(int)poly2list.size();++i)
+  for (int i=0;i<(int)poly2.size();++i)
   {
     // standard case
-    if (i!=0 && i!=(int)poly2list.size()-1)
+    if (i!=0 && i!=(int)poly2.size()-1)
     {
-      poly2list[i].AssignNext(&poly2list[i+1]);
-      poly2list[i].AssignPrev(&poly2list[i-1]);
+      poly2[i].AssignNext(&poly2[i+1]);
+      poly2[i].AssignPrev(&poly2[i-1]);
     }
     // first element in list
     else if (i==0)
     {
-      poly2list[i].AssignNext(&poly2list[i+1]);
-      poly2list[i].AssignPrev(&poly2list[(int)poly2list.size()-1]);
+      poly2[i].AssignNext(&poly2[i+1]);
+      poly2[i].AssignPrev(&poly2[(int)poly2.size()-1]);
     }
     // last element in list
     else
     {
-      poly2list[i].AssignNext(&poly2list[0]);
-      poly2list[i].AssignPrev(&poly2list[i-1]);
+      poly2[i].AssignNext(&poly2[0]);
+      poly2[i].AssignPrev(&poly2[i-1]);
     }
   }
   
@@ -1363,17 +1594,17 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
   // - if a point of poly1 is close (<tol) to a edge of poly2 or vice
   //   versa we move this point away from the edge by tol
   //**********************************************************************
-  for (int i=0;i<(int)poly1list.size();++i)
+  for (int i=0;i<(int)poly1.size();++i)
   {
-    for (int j=0;j<(int)poly2list.size();++j)
+    for (int j=0;j<(int)poly2.size();++j)
     {
       // we need diff vector and edge2 first
       double diff1[3] = {0.0, 0.0, 0.0};
       double edge2[3] = {0.0, 0.0, 0.0};
       for (int k=0;k<3;++k)
       {
-        diff1[k] = poly1list[i].Coord()[k] - poly2list[j].Coord()[k];
-        edge2[k] = (poly2list[j].Next())->Coord()[k] - poly2list[j].Coord()[k];
+        diff1[k] = poly1[i].Coord()[k] - poly2[j].Coord()[k];
+        edge2[k] = (poly2[j].Next())->Coord()[k] - poly2[j].Coord()[k];
       }
       
       // check if point of poly1 lies within [0,1] for edge2
@@ -1397,16 +1628,16 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
       if (dist > -tol && dist < 0)
       {
         //cout << "Vertex " << i << " on poly1 is very close to edge " << j << " of poly2 -> moved inside!" << endl;
-        poly1list[i].Coord()[0] -= tol*n2[0];
-        poly1list[i].Coord()[1] -= tol*n2[1];
-        poly1list[i].Coord()[2] -= tol*n2[2];                                   
+        poly1[i].Coord()[0] -= tol*n2[0];
+        poly1[i].Coord()[1] -= tol*n2[1];
+        poly1[i].Coord()[2] -= tol*n2[2];                                   
       }
       else if (dist < tol && dist >= 0)
       {
         //cout << "Vertex " << i << " on poly1 is very close to edge " << j << " of poly2 -> moved outside!" << endl;
-        poly1list[i].Coord()[0] += tol*n2[0];
-        poly1list[i].Coord()[1] += tol*n2[1];
-        poly1list[i].Coord()[2] += tol*n2[2];     
+        poly1[i].Coord()[0] += tol*n2[0];
+        poly1[i].Coord()[1] += tol*n2[1];
+        poly1[i].Coord()[2] += tol*n2[2];     
       }
       else
       {
@@ -1415,17 +1646,17 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
     }
   }
   
-  for (int i=0;i<(int)poly2list.size();++i)
+  for (int i=0;i<(int)poly2.size();++i)
   {
-    for (int j=0;j<(int)poly1list.size();++j)
+    for (int j=0;j<(int)poly1.size();++j)
     {
       // we need diff vector and edge1 first
       double diff2[3] = {0.0, 0.0, 0.0};
       double edge1[3] = {0.0, 0.0, 0.0};
       for (int k=0;k<3;++k)
       {
-        diff2[k] = poly2list[i].Coord()[k] - poly1list[j].Coord()[k];
-        edge1[k] = (poly1list[j].Next())->Coord()[k] - poly1list[j].Coord()[k];
+        diff2[k] = poly2[i].Coord()[k] - poly1[j].Coord()[k];
+        edge1[k] = (poly1[j].Next())->Coord()[k] - poly1[j].Coord()[k];
       }
       
       // check if point of poly2 lies within [0,1] for edge1
@@ -1449,16 +1680,16 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
       if (dist > -tol && dist < 0)
       {
         //cout << "Vertex " << i << " on poly2 is very close to edge " << j << " of poly1 -> moved inside!" << endl;
-        poly2list[i].Coord()[0] -= tol*n1[0];
-        poly2list[i].Coord()[1] -= tol*n1[1];
-        poly2list[i].Coord()[2] -= tol*n1[2];                                   
+        poly2[i].Coord()[0] -= tol*n1[0];
+        poly2[i].Coord()[1] -= tol*n1[1];
+        poly2[i].Coord()[2] -= tol*n1[2];                                   
       }
       else if (dist < tol && dist >= 0)
       {
         //cout << "Vertex " << i << " on poly2 is very close to edge " << j << " of poly1 -> moved outside!" << endl;
-        poly2list[i].Coord()[0] += tol*n1[0];
-        poly2list[i].Coord()[1] += tol*n1[1];
-        poly2list[i].Coord()[2] += tol*n1[2];     
+        poly2[i].Coord()[0] += tol*n1[0];
+        poly2[i].Coord()[1] += tol*n1[1];
+        poly2[i].Coord()[2] += tol*n1[2];     
       }
       else
       {
@@ -1466,7 +1697,6 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
       }    
     }
   }
-  
   
   //**********************************************************************
   // STEP4: Perform line intersection of all edge pairs
@@ -1477,9 +1707,9 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
   vector<Vertex> intersec1;
   vector<Vertex> intersec2;
   
-  for (int i=0;i<(int)poly1list.size();++i)
+  for (int i=0;i<(int)poly1.size();++i)
   {
-    for (int j=0;j<(int)poly2list.size();++j)
+    for (int j=0;j<(int)poly2.size();++j)
     {
       // we need two diff vectors and edges first
       double diffp1[3] = {0.0, 0.0, 0.0};
@@ -1490,12 +1720,12 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
       double edge2[3] = {0.0, 0.0, 0.0};
       for (int k=0;k<3;++k)
       {
-        diffp1[k] = poly1list[i].Coord()[k] - poly2list[j].Coord()[k];
-        diffp2[k] = (poly1list[i].Next())->Coord()[k] - poly2list[j].Coord()[k];
-        diffq1[k] = poly2list[j].Coord()[k] - poly1list[i].Coord()[k];
-        diffq2[k] = (poly2list[j].Next())->Coord()[k] - poly1list[i].Coord()[k];
-        edge1[k] = (poly1list[i].Next())->Coord()[k] - poly1list[i].Coord()[k];
-        edge2[k] = (poly2list[j].Next())->Coord()[k] - poly2list[j].Coord()[k];
+        diffp1[k] = poly1[i].Coord()[k] - poly2[j].Coord()[k];
+        diffp2[k] = (poly1[i].Next())->Coord()[k] - poly2[j].Coord()[k];
+        diffq1[k] = poly2[j].Coord()[k] - poly1[i].Coord()[k];
+        diffq2[k] = (poly2[j].Next())->Coord()[k] - poly1[i].Coord()[k];
+        edge1[k] = (poly1[i].Next())->Coord()[k] - poly1[i].Coord()[k];
+        edge2[k] = (poly2[j].Next())->Coord()[k] - poly2[j].Coord()[k];
       }
       
       // outward edge normals of polygon 1 and 2 edges
@@ -1523,8 +1753,8 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
       double wec_p2 = 0.0;
       for (int k=0;k<3;++k)
       {
-        wec_p1 += (poly1list[i].Coord()[k] - poly2list[j].Coord()[k]) * n2[k];
-        wec_p2 += ((poly1list[i].Next())->Coord()[k] - poly2list[j].Coord()[k]) * n2[k];
+        wec_p1 += (poly1[i].Coord()[k] - poly2[j].Coord()[k]) * n2[k];
+        wec_p2 += ((poly1[i].Next())->Coord()[k] - poly2[j].Coord()[k]) * n2[k];
       }
      
       if (wec_p1*wec_p2<=0)
@@ -1533,8 +1763,8 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
         double wec_q2 = 0.0;
         for (int k=0;k<3;++k)
         {
-          wec_q1 += (poly2list[j].Coord()[k] - poly1list[i].Coord()[k]) * n1[k];
-          wec_q2 += ((poly2list[j].Next())->Coord()[k] - poly1list[i].Coord()[k]) * n1[k];
+          wec_q1 += (poly2[j].Coord()[k] - poly1[i].Coord()[k]) * n1[k];
+          wec_q2 += ((poly2[j].Next())->Coord()[k] - poly1[i].Coord()[k]) * n1[k];
         }
         
         if (wec_q1*wec_q2<=0)
@@ -1545,8 +1775,8 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
           vector<double> iq(3);
           for (int k=0;k<3;++k)
           {
-            ip[k] = (1-alphap) * poly1list[i].Coord()[k] + alphap * (poly1list[i].Next())->Coord()[k];
-            iq[k] = (1-alphaq) * poly2list[j].Coord()[k] + alphaq * (poly2list[j].Next())->Coord()[k];
+            ip[k] = (1-alphap) * poly1[i].Coord()[k] + alphap * (poly1[i].Next())->Coord()[k];
+            iq[k] = (1-alphaq) * poly2[j].Coord()[k] + alphaq * (poly2[j].Next())->Coord()[k];
             if (abs(ip[k])<1.0e-12) ip[k] = 0.0;
             if (abs(iq[k])<1.0e-12) iq[k] = 0.0;
           }
@@ -1555,14 +1785,70 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
           //cout << "On Polygon 1: " << ip[0] << " " << ip[1] << " " << ip[2] << endl;
           //cout << "On Polygon 2: " << iq[0] << " " << iq[1] << " " << iq[2] << endl;
           
-          intersec1.push_back(Vertex(ip,poly1list[i].Next(),&poly1list[i],true,false,NULL,alphap));
-          intersec2.push_back(Vertex(iq,poly2list[j].Next(),&poly2list[j],true,false,NULL,alphaq));
+          // generate vectors of underlying node ids for lineclip (2x slave, 2x master)
+          vector<int> lcids(4);
+          lcids[0] = (int)(poly1[i].Nodeids()[0]);
+          lcids[1] = (int)((poly1[i].Next())->Nodeids()[0]);
+          lcids[2] = (int)(poly2[j].Nodeids()[0]);
+          lcids[3] = (int)((poly2[j].Next())->Nodeids()[0]);
+          
+          // store intersection points
+          intersec1.push_back(Vertex(ip,Vertex::lineclip,lcids,poly1[i].Next(),&poly1[i],true,false,NULL,alphap));
+          intersec2.push_back(Vertex(iq,Vertex::lineclip,lcids,poly2[j].Next(),&poly2[j],true,false,NULL,alphaq));
         }
       }
     }
   }
   
+  /*
+  // check slave points
+  cout << "\nTesting slave element points" << endl;
+  for (int i=0;i<(int)poly1.size();++i)
+  {
+    Vertex& testv = poly1[i];
+    cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " " << testv.Coord()[2] << endl;
+    cout << "Type: " << testv.VType() << endl;
+    cout << "Alpha: " << testv.Alpha() << endl;
+    cout << "Node id: " << testv.Nodeids()[0] << endl << endl;
+  }
+  // check master points
+  cout << "\nTesting master element points" << endl;
+  for (int i=0;i<(int)poly2.size();++i)
+  {
+    Vertex& testv = poly2[i];
+    cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " " << testv.Coord()[2] << endl;
+    cout << "Type: " << testv.VType() << endl;
+    cout << "Alpha: " << testv.Alpha() << endl;
+    cout << "Node id: " << testv.Nodeids()[0] << endl << endl;
+  }
+      
+  // check intersection points
+  cout << "\nTesting slave intersection points" << endl;
+  for (int i=0;i<(int)intersec1.size();++i)
+  {
+    Vertex& testv = intersec1[i];
+    cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " " << testv.Coord()[2] << endl;
+    cout << "Type: " << testv.VType() << endl;
+    cout << "Alpha: " << testv.Alpha() << endl;
+    cout << "Lineclip ids: " << testv.Nodeids()[0] << " " << testv.Nodeids()[1]
+         << " " << testv.Nodeids()[2] << " " << testv.Nodeids()[3] << endl << endl;
+  }
+  // check intersection points
+  cout << "\nTesting master intersection points" << endl;
+  for (int i=0;i<(int)intersec2.size();++i)
+  {
+    Vertex& testv = intersec2[i];
+    cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " " << testv.Coord()[2] << endl;
+    cout << "Type: " << testv.VType() << endl;
+    cout << "Alpha: " << testv.Alpha() << endl;
+    cout << "Lineclip ids: " << testv.Nodeids()[0] << " " << testv.Nodeids()[1]
+         << " " << testv.Nodeids()[2] << " " << testv.Nodeids()[3] << endl << endl;
+  }
+  */
+  
+  //**********************
   // do clipping
+  //**********************
   if ((int)respoly.size()!=0) dserror("ERROR: PolygonClipping3D: Respoly!=0 at beginning...");
     
   //**********************************************************************
@@ -1578,16 +1864,16 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
     bool poly1inner = true;
     bool poly2inner = true;
     
-    // (A) check if poly1list[0] inside poly2
-    for (int i=0;i<(int)poly2list.size();++i)
+    // (A) check if poly1[0] inside poly2
+    for (int i=0;i<(int)poly2.size();++i)
     {
       double edge[3] = {0.0, 0.0, 0.0};
       double diff[3] = {0.0, 0.0, 0.0};
       
       for (int k=0;k<3;++k)
       {
-        edge[k] = (poly2list[i].Next())->Coord()[k] - poly2list[i].Coord()[k];
-        diff[k] = poly1list[0].Coord()[k] - poly2list[i].Coord()[k];
+        edge[k] = (poly2[i].Next())->Coord()[k] - poly2[i].Coord()[k];
+        diff[k] = poly1[0].Coord()[k] - poly2[i].Coord()[k];
       }
       
       double n[3] = {0.0, 0.0, 0.0};
@@ -1597,7 +1883,7 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
       
       double check = diff[0]*n[0] + diff[1]*n[1] + diff[2]*n[2];
       
-      // if check>0 then poly1list[0] NOT inside poly2
+      // if check>0 then poly1[0] NOT inside poly2
       if (check>0)
       {
         poly1inner = false;
@@ -1613,16 +1899,16 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
     
     else
     {
-      // (A) check if poly2list[0] inside poly1
-      for (int i=0;i<(int)poly1list.size();++i)
+      // (A) check if poly2[0] inside poly1
+      for (int i=0;i<(int)poly1.size();++i)
       {
         double edge[3] = {0.0, 0.0, 0.0};
         double diff[3] = {0.0, 0.0, 0.0};
         
         for (int k=0;k<3;++k)
         {
-          edge[k] = (poly1list[i].Next())->Coord()[k] - poly1list[i].Coord()[k];
-          diff[k] = poly2list[0].Coord()[k] - poly1list[i].Coord()[k];
+          edge[k] = (poly1[i].Next())->Coord()[k] - poly1[i].Coord()[k];
+          diff[k] = poly2[0].Coord()[k] - poly1[i].Coord()[k];
         }
         
         double n[3] = {0.0, 0.0, 0.0};
@@ -1632,7 +1918,7 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
         
         double check = diff[0]*n[0] + diff[1]*n[1] + diff[2]*n[2];
         
-        // if check>0 then poly2list[0] NOT inside poly1
+        // if check>0 then poly2[0] NOT inside poly1
         if (check>0)
         {
           poly2inner = false;
@@ -1650,7 +1936,7 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
       else
       {
         //cout << "Polygons S and M are fully adjacent!" << endl; 
-        vector<vector<double> > empty(0,vector<double>(3));
+        vector<Vertex> empty;
         respoly = empty;
       }
     }
@@ -1683,12 +1969,12 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
       intersec2[i].AssignNeighbor(&intersec1[i]);
         
     // check all edges for double intersections
-    for (int i=0;i<(int)poly1list.size();++i)
+    for (int i=0;i<(int)poly1.size();++i)
     {
       vector<Vertex*> dis;
       for (int z=0;z<(int)intersec1.size();++z)
       {
-       if (intersec1[z].Next()==poly1list[i].Next() && intersec1[z].Prev()==&poly1list[i])
+       if (intersec1[z].Next()==poly1[i].Next() && intersec1[z].Prev()==&poly1[i])
        {
          dis.push_back(&intersec1[z]);
        }
@@ -1702,7 +1988,7 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
       
       if (alpha1<alpha2)
       {
-        // ordering is polylist1[i] -> dis[0] -> dis[1] -> polylist1[i].Next()
+        // ordering is poly1[i] -> dis[0] -> dis[1] -> poly1[i].Next()
         dis[0]->AssignNext(dis[1]);
         dis[1]->AssignPrev(dis[0]);
       }
@@ -1712,18 +1998,18 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
       }
       else
       {
-        // ordering is polylist1[i] -> dis[1] -> dis[0] -> polylist1[i].Next()
+        // ordering is poly1[i] -> dis[1] -> dis[0] -> poly1[i].Next()
         dis[1]->AssignNext(dis[0]);
         dis[0]->AssignPrev(dis[1]);
       }
     }
     
-    for (int i=0;i<(int)poly2list.size();++i)
+    for (int i=0;i<(int)poly2.size();++i)
     {
       vector<Vertex*> dis;
       for (int z=0;z<(int)intersec2.size();++z)
       {
-       if (intersec2[z].Next()==poly2list[i].Next() && intersec2[z].Prev()==&poly2list[i])
+       if (intersec2[z].Next()==poly2[i].Next() && intersec2[z].Prev()==&poly2[i])
        {
          dis.push_back(&intersec2[z]);
        }
@@ -1737,7 +2023,7 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
       
       if (alpha1<alpha2)
       {
-        // ordering is polylist2[i] -> dis[0] -> dis[1] -> polylist2[i].Next()
+        // ordering is poly2[i] -> dis[0] -> dis[1] -> poly2[i].Next()
         dis[0]->AssignNext(dis[1]);
         dis[1]->AssignPrev(dis[0]);
       }
@@ -1747,7 +2033,7 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
       }
       else
       {
-        // ordering is polylist2[i] -> dis[1] -> dis[0] -> polylist2[i].Next()
+        // ordering is poly2[i] -> dis[1] -> dis[0] -> poly2[i].Next()
         dis[1]->AssignNext(dis[0]);
         dis[0]->AssignPrev(dis[1]);
       }
@@ -1842,8 +2128,7 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
     
     // push_back start Vertex coords into result polygon
     //cout << "\nStart loop on Slave at " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << endl;
-    vector<double> coords = current->Coord();
-    respoly.push_back(coords);
+    respoly.push_back(Vertex(current->Coord(),Vertex::lineclip,current->Nodeids(),NULL,NULL,false,false,NULL,-1.0));
     
     do {
       // find next Vertex / Vertices (path)
@@ -1853,8 +2138,7 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
         do {
           current = current->Next();
           //cout << "Current vertex is " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << endl;
-          vector<double> coords = current->Coord();
-          respoly.push_back(coords);
+          respoly.push_back(Vertex(current->Coord(),current->VType(),current->Nodeids(),NULL,NULL,false,false,NULL,-1.0));
         } while (current->Intersect()==false);
         //cout << "Found intersection: " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << endl;
       }
@@ -1864,8 +2148,7 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
         do {
           current = current->Prev();
           //cout << "Current vertex is " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << endl;
-          vector<double> coords = current->Coord();
-          respoly.push_back(coords);
+          respoly.push_back(Vertex(current->Coord(),current->VType(),current->Nodeids(),NULL,NULL,false,false,NULL,-1.0));
         } while (current->Intersect()==false);
         //cout << "Found intersection: " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << endl;
       }
@@ -1883,7 +2166,7 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
     double fldist = 0.0;
     for (int k=0;k<3;++k)
     {
-      fldiff[k] = respoly[(int)respoly.size()-1][k] - respoly[0][k];
+      fldiff[k] = respoly[(int)respoly.size()-1].Coord()[k] - respoly[0].Coord()[k];
       fldist += fldiff[k]*fldiff[k];
     }
     fldist = sqrt(fldist);
@@ -1899,7 +2182,7 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
     
     
     // collapse respoly points that are very close
-    vector<vector<double> > collapsedrespoly;
+    vector<Vertex> collapsedrespoly;
     for (int i=0;i<(int)respoly.size();++i)
     {
       // find distance between two consecutive points
@@ -1913,8 +2196,8 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
         double diff[3] = {0.0, 0.0, 0.0};
         double diff2[3] = {0.0, 0.0, 0.0};
         
-        for (int k=0;k<3;++k) diff[k] = respoly[i][k] - respoly[i-1][k];
-        for (int k=0;k<3;++k) diff2[k] = respoly[0][k] - respoly[i][k];
+        for (int k=0;k<3;++k) diff[k] = respoly[i].Coord()[k] - respoly[i-1].Coord()[k];
+        for (int k=0;k<3;++k) diff2[k] = respoly[0].Coord()[k] - respoly[i].Coord()[k];
         
         double dist = sqrt(diff[0]*diff[0]+diff[1]*diff[1]+diff[2]*diff[2]);
         double dist2 = sqrt(diff2[0]*diff2[0]+diff2[1]*diff2[1]+diff2[2]*diff2[2]);
@@ -1930,7 +2213,7 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
       else
       {
         double diff[3] = {0.0, 0.0, 0.0};
-        for (int k=0;k<3;++k) diff[k] = respoly[i][k] - respoly[i-1][k];
+        for (int k=0;k<3;++k) diff[k] = respoly[i].Coord()[k] - respoly[i-1].Coord()[k];
 
         double dist = sqrt(diff[0]*diff[0]+diff[1]*diff[1]+diff[2]*diff[2]);
         double tolcollapse = 1.0e6*tol;
@@ -1950,7 +2233,7 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
     if ((int)collapsedrespoly.size()<3)
     {
      // cout << "Collapsing of result polygon led to < 3 vertices -> no respoly!" << endl;
-      vector<vector<double> > empty(0,vector<double>(3));
+      vector<Vertex> empty;
       respoly = empty;
     }
  
@@ -1960,7 +2243,7 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
     
     for (int i=0;i<(int)respoly.size();++i)
       for (int k=0;k<3;++k)
-        center[k] += respoly[i][k]/((int)respoly.size());
+        center[k] += respoly[i].Coord()[k]/((int)respoly.size());
     
     //cout << "\nCenter ResPoly: " << center[0] << " " << center[1] << " " << center[2] << endl;
     
@@ -1970,8 +2253,8 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
     
     for (int k=0;k<3;++k)
     {
-      diff[k] = respoly[0][k]-center[k];
-      edge[k] = respoly[1][k]-respoly[0][k];
+      diff[k] = respoly[0].Coord()[k]-center[k];
+      edge[k] = respoly[1].Coord()[k]-respoly[0].Coord()[k];
     }
     
     double cross[3] = {0.0, 0.0, 0.0};
@@ -1987,10 +2270,7 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
     {
       // reorder result polygon in clockwise direction
       // cout << "Result polygon not ordered counter-clockwise -> reordered!" << endl;
-      vector<vector<double> > newrespoly((int)respoly.size(),vector<double>(3));
-      for (int i=0;i<(int)respoly.size();++i)
-        newrespoly[(int)respoly.size()-1-i] = respoly[i];
-      respoly = newrespoly;
+      std::reverse(respoly.begin(),respoly.end());
     }
     
     // print final input polygons to screen
@@ -2007,8 +2287,8 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
       double edge[3] = {0.0, 0.0, 0.0};
       for (int k=0;k<3;++k)
       {
-        if (i!=(int)respoly.size()-1) edge[k] = respoly[i+1][k] - respoly[i][k];
-        else edge[k] = respoly[0][k] - respoly[i][k];
+        if (i!=(int)respoly.size()-1) edge[k] = respoly[i+1].Coord()[k] - respoly[i].Coord()[k];
+        else edge[k] = respoly[0].Coord()[k] - respoly[i].Coord()[k];
       }
       // edge normal is result of cross product
       double n[3] = {0.0, 0.0, 0.0};
@@ -2020,9 +2300,9 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
       double nextedge[3] = {0.0, 0.0, 0.0};
       for (int k=0;k<3;++k)
       {
-        if (i<(int)respoly.size()-2) nextedge[k] = respoly[i+2][k] - respoly[i+1][k];
-        else if (i==(int)respoly.size()-2) nextedge[k] = respoly[0][k] - respoly[i+1][k];
-        else nextedge[k] = respoly[1][k] - respoly[0][k];
+        if (i<(int)respoly.size()-2) nextedge[k] = respoly[i+2].Coord()[k] - respoly[i+1].Coord()[k];
+        else if (i==(int)respoly.size()-2) nextedge[k] = respoly[0].Coord()[k] - respoly[i+1].Coord()[k];
+        else nextedge[k] = respoly[1].Coord()[k] - respoly[0].Coord()[k];
       }
       // check scalar product
       double check = n[0]*nextedge[0]+n[1]*nextedge[1]+n[2]*nextedge[2];
@@ -2059,20 +2339,20 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
   {
     if (i!=(int)poly1.size()-1)
     {
-      gmshfilecontent << "SL(" << scientific << poly1[i][0] << "," << poly1[i][1] << ","
-                               << poly1[i][2] << "," << poly1[i+1][0] << "," << poly1[i+1][1] << ","
-                               << poly1[i+1][2] << ")";
+      gmshfilecontent << "SL(" << scientific << poly1[i].Coord()[0] << "," << poly1[i].Coord()[1] << ","
+                               << poly1[i].Coord()[2] << "," << poly1[i+1].Coord()[0] << "," << poly1[i+1].Coord()[1] << ","
+                               << poly1[i+1].Coord()[2] << ")";
       gmshfilecontent << "{" << scientific << 1.0 << "," << 1.0 << "};" << endl;
     }
     else
     {
-      gmshfilecontent << "SL(" << scientific << poly1[i][0] << "," << poly1[i][1] << ","
-                               << poly1[i][2] << "," << poly1[0][0] << "," << poly1[0][1] << ","
-                               << poly1[0][2] << ")";
+      gmshfilecontent << "SL(" << scientific << poly1[i].Coord()[0] << "," << poly1[i].Coord()[1] << ","
+                               << poly1[i].Coord()[2] << "," << poly1[0].Coord()[0] << "," << poly1[0].Coord()[1] << ","
+                               << poly1[0].Coord()[2] << ")";
       gmshfilecontent << "{" << scientific << 1.0 << "," << 1.0 << "};" << endl;
       
     }
-    gmshfilecontent << "T3(" << scientific << poly1[i][0] << "," << poly1[i][1] << "," << poly1[i][2] << "," << 17 << ")";
+    gmshfilecontent << "T3(" << scientific << poly1[i].Coord()[0] << "," << poly1[i].Coord()[1] << "," << poly1[i].Coord()[2] << "," << 17 << ")";
     gmshfilecontent << "{" << "S" << i << "};" << endl;
   }
   
@@ -2080,20 +2360,20 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
   {
     if (i!=(int)poly2.size()-1)
     {
-      gmshfilecontent << "SL(" << scientific << poly2[i][0] << "," << poly2[i][1] << ","
-                               << poly2[i][2] << "," << poly2[i+1][0] << "," << poly2[i+1][1] << ","
-                               << poly2[i+1][2] << ")";
+      gmshfilecontent << "SL(" << scientific << poly2[i].Coord()[0] << "," << poly2[i].Coord()[1] << ","
+                               << poly2[i].Coord()[2] << "," << poly2[i+1].Coord()[0] << "," << poly2[i+1].Coord()[1] << ","
+                               << poly2[i+1].Coord()[2] << ")";
       gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
     }
     else
     {
-      gmshfilecontent << "SL(" << scientific << poly2[i][0] << "," << poly2[i][1] << ","
-                               << poly2[i][2] << "," << poly2[0][0] << "," << poly2[0][1] << ","
-                               << poly2[0][2] << ")";
+      gmshfilecontent << "SL(" << scientific << poly2[i].Coord()[0] << "," << poly2[i].Coord()[1] << ","
+                               << poly2[i].Coord()[2] << "," << poly2[0].Coord()[0] << "," << poly2[0].Coord()[1] << ","
+                               << poly2[0].Coord()[2] << ")";
       gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
       
     }
-    gmshfilecontent << "T3(" << scientific << poly2[i][0] << "," << poly2[i][1] << "," << poly2[i][2] << "," << 17 << ")";
+    gmshfilecontent << "T3(" << scientific << poly2[i].Coord()[0] << "," << poly2[i].Coord()[1] << "," << poly2[i].Coord()[2] << "," << 17 << ")";
     gmshfilecontent << "{" << "M" << i << "};" << endl;
   }
   
@@ -2101,20 +2381,20 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
   {
     if (i!=(int)respoly.size()-1)
     {
-      gmshfilecontent << "SL(" << scientific << respoly[i][0] << "," << respoly[i][1] << ","
-                               << respoly[i][2] << "," << respoly[i+1][0] << "," << respoly[i+1][1] << ","
-                               << respoly[i+1][2] << ")";
+      gmshfilecontent << "SL(" << scientific << respoly[i].Coord()[0] << "," << respoly[i].Coord()[1] << ","
+                               << respoly[i].Coord()[2] << "," << respoly[i+1].Coord()[0] << "," << respoly[i+1].Coord()[1] << ","
+                               << respoly[i+1].Coord()[2] << ")";
       gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
     }
     else
     {
-      gmshfilecontent << "SL(" << scientific << respoly[i][0] << "," << respoly[i][1] << ","
-                               << respoly[i][2] << "," << respoly[0][0] << "," << respoly[0][1] << ","
-                               << respoly[0][2] << ")";
+      gmshfilecontent << "SL(" << scientific << respoly[i].Coord()[0] << "," << respoly[i].Coord()[1] << ","
+                               << respoly[i].Coord()[2] << "," << respoly[0].Coord()[0] << "," << respoly[0].Coord()[1] << ","
+                               << respoly[0].Coord()[2] << ")";
       gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
       
     }
-    gmshfilecontent << "T3(" << scientific << respoly[i][0] << "," << respoly[i][1] << "," << respoly[i][2] << "," << 27 << ")";
+    gmshfilecontent << "T3(" << scientific << respoly[i].Coord()[0] << "," << respoly[i].Coord()[1] << "," << respoly[i].Coord()[2] << "," << 27 << ")";
     gmshfilecontent << "{" << "R" << i << "};" << endl;
   }
   
@@ -2132,6 +2412,23 @@ void CONTACT::Coupling::PolygonClipping3D(vector<vector<double> >& poly1,
   // move everything to gmsh post-processing file and close it
   fprintf(fp,gmshfilecontent.str().c_str());
   fclose(fp);
+  */
+  
+  /*
+  // check result polygon points
+  cout << "\nTesting result polygon points" << endl;
+  for (int i=0;i<(int)respoly.size();++i)
+  {
+    Vertex& testv = respoly[i];
+    cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " " << testv.Coord()[2] << endl;
+    cout << "Type: " << testv.VType() << endl;
+    cout << "Alpha: " << testv.Alpha() << endl;
+    if (testv.VType()==Vertex::lineclip)
+      cout << "Lineclip ids: " << testv.Nodeids()[0] << " " << testv.Nodeids()[1]
+           << " " << testv.Nodeids()[2] << " " << testv.Nodeids()[3] << endl << endl;
+    else
+      cout << "Node id: " << testv.Nodeids()[0] << endl << endl;
+  }
   */
   
   return;
@@ -2165,7 +2462,7 @@ bool CONTACT::Coupling::HasProjStatus3D()
     for (int j=0;j<(int)(Clip().size());++j)
     {
       // compare node pos and vertex pos
-      double currpos[3] = {Clip()[j][0],Clip()[j][1],Clip()[j][2]};
+      double currpos[3] = {Clip()[j].Coord()[0],Clip()[j].Coord()[1],Clip()[j].Coord()[2]};
       bool identical = true;
       
       // this tolerance can be chosen less tight
@@ -2185,22 +2482,32 @@ bool CONTACT::Coupling::HasProjStatus3D()
 /*----------------------------------------------------------------------*
  |  Triangulation of clip polygon (3D)                        popp 11/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::Coupling::Triangulation3D()
+bool CONTACT::Coupling::Triangulation3D(map<int,double>& projpar)
 {
-  // find center of clipping polygon
+  // preparations
   vector<double> clipcenter(3);
   for (int k=0;k<3;++k) clipcenter[k] = 0.0;
   int clipsize = (int)(Clip().size());
   
-  // *********************************************************************
+#ifndef CONTACTAUXPLANE
+  //**********************************************************************
+  // (1) Linearization of clip vertex coordinates
+  //**********************************************************************
+  vector<vector<map<int,double> > > linvertex(clipsize,vector<map<int,double> >(3));
+  VertexLinearization3D(linvertex,projpar);
+#endif // #ifndef CONTACTAUXPLANE
+  
+  //**********************************************************************
+  // (2) Find center of clipping polygon
+  //**********************************************************************
+  
   // ************* Coupling with or without auxiliary plane **************
-  // *********************************************************************
 #ifdef CONTACTAUXPLANE
   // as a first shot we use simple node averaging here
   // arithmetic center, NOT geometric center
   for (int i=0;i<clipsize;++i)
     for (int k=0;k<3;++k)
-      clipcenter[k] += (Clip()[i][k] / clipsize);
+      clipcenter[k] += (Clip()[i].Coord()[k] / clipsize);
   //cout << "Clipcenter (simple): " << clipcenter[0] << " " << clipcenter[1] << " " << clipcenter[2] << endl;
   
 #else
@@ -2212,21 +2519,21 @@ bool CONTACT::Coupling::Triangulation3D()
   for (int i=0; i<clipsize; ++i)
   {
     // check for 2D clip polygon in parameter space
-    if (abs(Clip()[i][2])>1.0e-12) dserror("ERROR: Clip polygon point with z!=0");
+    if (abs(Clip()[i].Coord()[2])>1.0e-12) dserror("ERROR: Clip polygon point with z!=0");
     double xi_i[2] = {0.0, 0.0};
     double xi_ip1[2] = {0.0, 0.0};
     
     // standard case    
     if (i<clipsize-1)
     {
-      xi_i[0] = Clip()[i][0]; xi_i[1] = Clip()[i][1];
-      xi_ip1[0] = Clip()[i+1][0]; xi_ip1[1] = Clip()[i+1][1];
+      xi_i[0] = Clip()[i].Coord()[0]; xi_i[1] = Clip()[i].Coord()[1];
+      xi_ip1[0] = Clip()[i+1].Coord()[0]; xi_ip1[1] = Clip()[i+1].Coord()[1];
     }
     // last vertex of clip polygon
     else
     {
-      xi_i[0] = Clip()[clipsize-1][0]; xi_i[1] = Clip()[clipsize-1][1];
-      xi_ip1[0] = Clip()[0][0]; xi_ip1[1] = Clip()[0][1];
+      xi_i[0] = Clip()[clipsize-1].Coord()[0]; xi_i[1] = Clip()[clipsize-1].Coord()[1];
+      xi_ip1[0] = Clip()[0].Coord()[0]; xi_ip1[1] = Clip()[0].Coord()[1];
     }
     
     // add contribution to area and centroid coords
@@ -2243,7 +2550,17 @@ bool CONTACT::Coupling::Triangulation3D()
 #endif // #ifdef CONTACTAUXPLANE
   // *********************************************************************
   
-  // do triangulization (create Intcells)
+#ifndef CONTACTAUXPLANE
+  //**********************************************************************
+  // (3) Linearization of clip center coordinates
+  //**********************************************************************
+  vector<map<int,double> > lincenter(3);
+  CenterLinearization3D(linvertex,lincenter);
+#endif // #ifndef CONTACTAUXPLANE
+  
+  //**********************************************************************
+  // (4)Triangulation -> Intcells
+  //**********************************************************************
   vector<Intcell> cells;
   
   // easy if clip polygon = triangle: 1 Intcell
@@ -2253,10 +2570,12 @@ bool CONTACT::Coupling::Triangulation3D()
     Epetra_SerialDenseMatrix coords(3,clipsize);
     for (int i=0;i<clipsize;++i)
       for (int k=0;k<3;++k)
-        coords(k,i) = Clip()[i][k];
+        coords(k,i) = Clip()[i].Coord()[k];
     
     // create Intcell object and push back
-    Cells().push_back(rcp(new Intcell(0,3,coords,DRT::Element::tri3)));    
+    Cells().push_back(rcp(new Intcell(0,3,coords,DRT::Element::tri3,
+                      linvertex[0],linvertex[1],linvertex[2])));
+    
   }
   
   // triangulation if clip polygon > triangle
@@ -2271,20 +2590,684 @@ bool CONTACT::Coupling::Triangulation3D()
       for (int k=0;k<3;++k)
       {
         coords(k,0) = clipcenter[k];
-        coords(k,1) = Clip()[num][k];
+        coords(k,1) = Clip()[num].Coord()[k];
       }
       
       // the third vertex is the next vertex on clip polygon
+      int numplus1 = num+1;
       if (num==clipsize-1)
-        for (int k=0;k<3;++k) coords(k,2) = Clip()[0][k];
+      {
+        for (int k=0;k<3;++k) coords(k,2) = Clip()[0].Coord()[k];
+        numplus1 = 0;
+      }
       else
-        for (int k=0;k<3;++k) coords(k,2) = Clip()[num+1][k];
+        for (int k=0;k<3;++k) coords(k,2) = Clip()[num+1].Coord()[k];
       
       // create Intcell object and push back
-      Cells().push_back(rcp(new Intcell(num,3,coords,DRT::Element::tri3)));
+      Cells().push_back(rcp(new Intcell(num,3,coords,DRT::Element::tri3,
+                        lincenter,linvertex[num],linvertex[numplus1])));
     }
   }
   
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Triangulation of clip polygon (3D)                        popp 11/08|
+ |  THIS IS A PURE FINITE DIFFERENCE VERSION!!!                         |
+ *----------------------------------------------------------------------*/
+bool CONTACT::Coupling::Triangulation3D(map<int,double>& projpar,
+                                        vector<vector<double> >& testv, bool printderiv)
+{
+  // preparations
+  vector<double> clipcenter(3);
+  for (int k=0;k<3;++k) clipcenter[k] = 0.0;
+  int clipsize = (int)(Clip().size());
+  
+#ifndef CONTACTAUXPLANE
+  //**********************************************************************
+  // (1) Linearization of clip vertex coordinates
+  //**********************************************************************
+  vector<vector<map<int,double> > > linvertex(clipsize,vector<map<int,double> >(3));
+  VertexLinearization3D(linvertex,projpar,printderiv);
+#endif // #ifndef CONTACTAUXPLANE
+  
+  //**********************************************************************
+  // (2) Find center of clipping polygon
+  //**********************************************************************
+  
+  // ************* Coupling with or without auxiliary plane **************
+#ifdef CONTACTAUXPLANE
+  // as a first shot we use simple node averaging here
+  // arithmetic center, NOT geometric center
+  for (int i=0;i<clipsize;++i)
+    for (int k=0;k<3;++k)
+      clipcenter[k] += (Clip()[i].Coord()[k] / clipsize);
+  //cout << "Clipcenter (simple): " << clipcenter[0] << " " << clipcenter[1] << " " << clipcenter[2] << endl;
+  
+  // fill testv vector for FDVertex check with center
+  // we use 3 for VType (because 0,1,2 are already in use)
+  vector<double> testventry(5);
+  testventry[0] = clipcenter[0];
+  testventry[1] = clipcenter[1];
+  testventry[2] = SlaveElement().Id();
+  testventry[3] = MasterElement().Id();
+  testventry[4] = 3;
+  testv.push_back(testventry);
+#else
+  // as an improved version we use centroid formulas here
+  // this really yields the geometric center
+  // (taken from: Moertel package, Trilinos, Sandia NL)
+  double A = 0.0;
+  
+  for (int i=0; i<clipsize; ++i)
+  {
+    // check for 2D clip polygon in parameter space
+    if (abs(Clip()[i].Coord()[2])>1.0e-12) dserror("ERROR: Clip polygon point with z!=0");
+    double xi_i[2] = {0.0, 0.0};
+    double xi_ip1[2] = {0.0, 0.0};
+    
+    // standard case    
+    if (i<clipsize-1)
+    {
+      xi_i[0] = Clip()[i].Coord()[0]; xi_i[1] = Clip()[i].Coord()[1];
+      xi_ip1[0] = Clip()[i+1].Coord()[0]; xi_ip1[1] = Clip()[i+1].Coord()[1];
+    }
+    // last vertex of clip polygon
+    else
+    {
+      xi_i[0] = Clip()[clipsize-1].Coord()[0]; xi_i[1] = Clip()[clipsize-1].Coord()[1];
+      xi_ip1[0] = Clip()[0].Coord()[0]; xi_ip1[1] = Clip()[0].Coord()[1];
+    }
+    
+    // add contribution to area and centroid coords
+    A     += xi_ip1[0]*xi_i[1] - xi_i[0]*xi_ip1[1];
+    clipcenter[0] += (xi_i[0]+xi_ip1[0])*(xi_ip1[0]*xi_i[1]-xi_i[0]*xi_ip1[1]);
+    clipcenter[1] += (xi_i[1]+xi_ip1[1])*(xi_ip1[0]*xi_i[1]-xi_i[0]*xi_ip1[1]);
+  }
+  
+  // final centroid coords
+  clipcenter[0] /= (3.0*A);
+  clipcenter[1] /= (3.0*A);
+  //cout << "Clipcenter (centroid): " << clipcenter[0] << " " << clipcenter[1] << " " << clipcenter[2] << endl;
+  
+  // fill testv vector for FDVertex check with center
+  // we use 3 for VType (because 0,1,2 are already in use)
+  vector<double> testventry(5);
+  testventry[0] = clipcenter[0];
+  testventry[1] = clipcenter[1];
+  testventry[2] = SlaveElement().Id();
+  testventry[3] = MasterElement().Id();
+  testventry[4] = 3;
+  testv.push_back(testventry);
+        
+#endif // #ifdef CONTACTAUXPLANE
+  // *********************************************************************
+  
+#ifndef CONTACTAUXPLANE
+  //**********************************************************************
+  // (3) Linearization of clip center coordinates
+  //**********************************************************************
+  vector<map<int,double> > lincenter(3);
+  CenterLinearization3D(linvertex,lincenter);
+  
+  if (printderiv)
+  {
+    static int counter = 0;
+    typedef map<int,double>::const_iterator CI;
+    for (int i=0;i<clipsize;++i)
+    {
+      cout << "\nAnalytical derivative for Vertex " << counter << " (x-component). VType=" << Clip()[i].VType() << endl;
+      for (CI p=linvertex[i][0].begin();p!=linvertex[i][0].end();++p)
+        cout << "Dof: " << p->first << "\t" << p->second << endl;
+      cout << "Analytical derivative for Vertex " << counter << " (y-component). VType=" << Clip()[i].VType() << endl;
+      for (CI p=linvertex[i][1].begin();p!=linvertex[i][1].end();++p)
+        cout << "Dof: " << p->first << "\t" << p->second << endl;
+      counter = counter+1;
+    }
+    cout << "\nAnalytical derivative for Vertex " << counter << " (x-component). VType=" << 3 << endl;
+    for (CI p=lincenter[0].begin();p!=lincenter[0].end();++p)
+      cout << "Dof: " << p->first << "\t" << p->second << endl;
+    cout << "Analytical derivative for Vertex " << counter << " (y-component). VType=" << 3 << endl;
+    for (CI p=lincenter[1].begin();p!=lincenter[1].end();++p)
+      cout << "Dof: " << p->first << "\t" << p->second << endl;
+    counter = counter+1;
+  }
+#endif // #ifndef CONTACTAUXPLANE
+  
+  //**********************************************************************
+  // (4)Triangulation -> Intcells
+  //**********************************************************************
+  vector<Intcell> cells;
+  
+  // easy if clip polygon = triangle: 1 Intcell
+  if (clipsize==3)
+  {
+    // Intcell vertices = clip polygon vertices
+    Epetra_SerialDenseMatrix coords(3,clipsize);
+    for (int i=0;i<clipsize;++i)
+      for (int k=0;k<3;++k)
+        coords(k,i) = Clip()[i].Coord()[k];
+    
+    // create Intcell object and push back
+    Cells().push_back(rcp(new Intcell(0,3,coords,DRT::Element::tri3,
+                      linvertex[0],linvertex[1],linvertex[2])));
+    
+  }
+  
+  // triangulation if clip polygon > triangle
+  else
+  {
+    // No. of Intcells is equal to no. of clip polygon vertices
+    for (int num=0;num<clipsize;++num)
+    {
+      // the first vertex is always the clip center
+      // the second vertex is always the current clip vertex
+      Epetra_SerialDenseMatrix coords(3,3);
+      for (int k=0;k<3;++k)
+      {
+        coords(k,0) = clipcenter[k];
+        coords(k,1) = Clip()[num].Coord()[k];
+      }
+      
+      // the third vertex is the next vertex on clip polygon
+      int numplus1 = num+1;
+      if (num==clipsize-1)
+      {
+        for (int k=0;k<3;++k) coords(k,2) = Clip()[0].Coord()[k];
+        numplus1 = 0;
+      }
+      else
+        for (int k=0;k<3;++k) coords(k,2) = Clip()[num+1].Coord()[k];
+      
+      // create Intcell object and push back
+      Cells().push_back(rcp(new Intcell(num,3,coords,DRT::Element::tri3,
+                        lincenter,linvertex[num],linvertex[numplus1])));
+    }
+  }
+  
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Linearization of clip polygon vertices (3D)               popp 02/09|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Coupling::VertexLinearization3D(vector<vector<map<int,double> > >& linvertex,
+                                              map<int,double>& projpar, bool printderiv)
+{
+  typedef map<int,double>::const_iterator CI;
+  
+  // loop over all clip polygon vertices
+  for (int i=0;i<(int)Clip().size();++i)
+  {
+    // references to current vertex and its linearization
+    Vertex& currv = Clip()[i];
+    vector<map<int,double> >& currlin = linvertex[i];
+    
+    //cout << "Testing current vertex" << endl;
+    //cout << "Coords: " << currv.Coord()[0] << " " << currv.Coord()[1] << " " << currv.Coord()[2] << endl;
+    //cout << "Type: " << currv.VType() << endl;
+    //cout << "Alpha: " << currv.Alpha() << endl;
+    //for (int k=0;k<(int)(currv.Nodeids().size());++k) cout << currv.Nodeids()[k] << endl;
+    
+    // decision on vertex type (slave, projmaster, linclip)
+    if (currv.VType()==Vertex::slave)
+    {
+      // Vertex = slave node -> Linearization = 0
+      // this is the easy case with nothing to do
+    }
+    else if (currv.VType()==Vertex::projmaster)
+    {
+      //check projection alphas
+      //typedef map<int,double>::const_iterator CI;
+      //cout << "Map of master node ids and projection alphas:" << endl;
+      //for (CI p=projpar.begin();p!=projpar.end();++p)
+      //  cout << p->first << " " << p->second << endl;
+      
+      // get corresponding master projection alpha
+      int mid = currv.Nodeids()[0];
+      double alpha = projpar[mid];
+      
+      //cout << "Coords: " << currv.Coord()[0] << " " << currv.Coord()[1] << endl;
+      
+      // do master vertex linearization
+      MasterVertexLinearization3D(currv,currlin,mid,alpha);
+      
+      /*if (printderiv)
+      {
+      cout << "\nCoords: " << currv.Coord()[0] << " " << currv.Coord()[1] << endl;
+      cout << "mid: " << mid << " alpha: " << alpha << endl;
+      cout << "(projmaster)Analytical derivative for Projmaster Vertex " << currv.Nodeids()[0] << " (x-component)" << endl;
+      for (CI p=currlin[0].begin();p!=currlin[0].end();++p)
+        cout << "Dof: " << p->first << "\t" << p->second << endl;
+      cout << "(projmaster)Analytical derivative for Projmaster Vertex " << currv.Nodeids()[0] << " (y-component)" << endl;
+      for (CI p=currlin[1].begin();p!=currlin[1].end();++p)
+        cout << "Dof: " << p->first << "\t" << p->second << endl;
+      }*/
+    }
+    else if (currv.VType()==Vertex::lineclip)
+    {
+      //cout << "Doing lineclip linearization!" << endl;
+      //cout << "Slave ids:  " << currv.Nodeids()[0] << " " << currv.Nodeids()[1] << endl;
+      //cout << "Master ids: " << currv.Nodeids()[2] << " " << currv.Nodeids()[3] << endl;
+
+      // get references to the two slave vertices
+      int sindex1 = -1;
+      int sindex2 = -1;
+      for (int j=0;j<(int)SlaveVertices().size();++j)
+      {
+        if (SlaveVertices()[j].Nodeids()[0]==currv.Nodeids()[0])
+          sindex1 = j;
+        if (SlaveVertices()[j].Nodeids()[0]==currv.Nodeids()[1])
+          sindex2 = j;
+      }
+      if (sindex1 < 0 || sindex2 < 0 || sindex1==sindex2)
+        dserror("ERROR: Lineclip linearization: (S) Something went wrong!");
+      
+      Vertex* sv1 = &SlaveVertices()[sindex1];
+      Vertex* sv2 = &SlaveVertices()[sindex2];
+      
+      // get references to the two master vertices
+      int mindex1 = -1;
+      int mindex2 = -1;
+      for (int j=0;j<(int)MasterVertices().size();++j)
+      {
+        if (MasterVertices()[j].Nodeids()[0]==currv.Nodeids()[2])
+          mindex1 = j;
+        if (MasterVertices()[j].Nodeids()[0]==currv.Nodeids()[3])
+          mindex2 = j;
+      }
+      if (mindex1 < 0 || mindex2 < 0 || mindex1==mindex2)
+        dserror("ERROR: Lineclip linearization: (M) Something went wrong!");
+      
+      Vertex* mv1 = &MasterVertices()[mindex1];
+      Vertex* mv2 = &MasterVertices()[mindex2];
+      
+      // compute factor Z
+      double crossZ[3] = {0.0, 0.0, 0.0};
+      crossZ[0] = (sv1->Coord()[1]-mv1->Coord()[1])*(mv2->Coord()[2]-mv1->Coord()[2])
+               - (sv1->Coord()[2]-mv1->Coord()[2])*(mv2->Coord()[1]-mv1->Coord()[1]);
+      crossZ[1] = (sv1->Coord()[2]-mv1->Coord()[2])*(mv2->Coord()[0]-mv1->Coord()[0])
+               - (sv1->Coord()[0]-mv1->Coord()[0])*(mv2->Coord()[2]-mv1->Coord()[2]); 
+      crossZ[2] = (sv1->Coord()[0]-mv1->Coord()[0])*(mv2->Coord()[1]-mv1->Coord()[1])
+               - (sv1->Coord()[1]-mv1->Coord()[1])*(mv2->Coord()[0]-mv1->Coord()[0]);
+      double Zfac = crossZ[0]*Auxn()[0]+crossZ[1]*Auxn()[1]+crossZ[2]*Auxn()[2];
+      
+      // compute factor N
+      double crossN[3] = {0.0, 0.0, 0.0};
+      crossN[0] = (sv2->Coord()[1]-sv1->Coord()[1])*(mv2->Coord()[2]-mv1->Coord()[2])
+               - (sv2->Coord()[2]-sv1->Coord()[2])*(mv2->Coord()[1]-mv1->Coord()[1]);
+      crossN[1] = (sv2->Coord()[2]-sv1->Coord()[2])*(mv2->Coord()[0]-mv1->Coord()[0])
+               - (sv2->Coord()[0]-sv1->Coord()[0])*(mv2->Coord()[2]-mv1->Coord()[2]); 
+      crossN[2] = (sv2->Coord()[0]-sv1->Coord()[0])*(mv2->Coord()[1]-mv1->Coord()[1])
+               - (sv2->Coord()[1]-sv1->Coord()[1])*(mv2->Coord()[0]-mv1->Coord()[0]);
+      double Nfac = crossN[0]*Auxn()[0]+crossN[1]*Auxn()[1]+crossN[2]*Auxn()[2];
+      
+      // slave edge vector
+      double sedge[3] = {0.0, 0.0, 0.0};
+      for (int k=0;k<3;++k) sedge[k] = sv1->Coord()[k] - sv2->Coord()[k];
+      
+      // prepare linearization derivZ
+      double crossdZ1[3] = {0.0, 0.0, 0.0};
+      double crossdZ2[3] = {0.0, 0.0, 0.0};
+      crossdZ1[0] = Auxn()[1]*(mv2->Coord()[2]-mv1->Coord()[2])-Auxn()[2]*(mv2->Coord()[1]-mv1->Coord()[1]);
+      crossdZ1[1] = Auxn()[2]*(mv2->Coord()[0]-mv1->Coord()[0])-Auxn()[0]*(mv2->Coord()[2]-mv1->Coord()[2]);
+      crossdZ1[2] = Auxn()[0]*(mv2->Coord()[1]-mv1->Coord()[1])-Auxn()[1]*(mv2->Coord()[0]-mv1->Coord()[0]);
+      crossdZ2[0] = Auxn()[1]*(sv1->Coord()[2]-mv1->Coord()[2])-Auxn()[2]*(sv1->Coord()[1]-mv1->Coord()[1]);
+      crossdZ2[1] = Auxn()[2]*(sv1->Coord()[0]-mv1->Coord()[0])-Auxn()[0]*(sv1->Coord()[2]-mv1->Coord()[2]);
+      crossdZ2[2] = Auxn()[0]*(sv1->Coord()[1]-mv1->Coord()[1])-Auxn()[1]*(sv1->Coord()[0]-mv1->Coord()[0]);
+      
+      // prepare linearization derivN
+      double crossdN1[3] = {0.0, 0.0, 0.0};
+      crossdN1[0] = Auxn()[1]*(sv2->Coord()[2]-sv1->Coord()[2])-Auxn()[2]*(sv2->Coord()[1]-sv1->Coord()[1]);
+      crossdN1[1] = Auxn()[2]*(sv2->Coord()[0]-sv1->Coord()[0])-Auxn()[0]*(sv2->Coord()[2]-sv1->Coord()[2]);
+      crossdN1[2] = Auxn()[0]*(sv2->Coord()[1]-sv1->Coord()[1])-Auxn()[1]*(sv2->Coord()[0]-sv1->Coord()[0]);
+      
+      // master vertex linearization (2x)
+      vector<vector<map<int,double> > > masterlin(2,vector<map<int,double> >(3));
+      
+      int mid1 = currv.Nodeids()[2];
+      double alpha1 = projpar[mid1];
+      
+      bool found1 = false;
+      Vertex* masterv1 = &MasterVertices()[0];
+      for (int j=0;j<(int)MasterVertices().size();++j)
+      {
+        if (MasterVertices()[j].Nodeids()[0]==mid1)
+        {
+          found1=true;
+          masterv1 = &MasterVertices()[j];
+          break;
+        }
+      }
+      if (!found1) dserror("ERROR: Lineclip linearization, Master vertex 1 not found!");
+      
+      //cout << "Coords: " << masterv1->Coord()[0] << " " << masterv1->Coord()[1] << endl;
+      
+      MasterVertexLinearization3D(*masterv1,masterlin[0],mid1,alpha1);
+      
+      /*if (printderiv)
+      {
+      cout << "\nCoords: " << masterv1->Coord()[0] << " " << masterv1->Coord()[1] << endl;
+      cout << "mid: " << mid1 << " alpha: " << alpha1 << endl;
+      cout << "(lineclip)Analytical derivative for Projmaster Vertex " << currv.Nodeids()[2] << " (x-component)" << endl;
+      for (CI p=masterlin[0][0].begin();p!=masterlin[0][0].end();++p)
+        cout << "Dof: " << p->first << "\t" << p->second << endl;
+      cout << "(lineclip)Analytical derivative for Projmaster Vertex " << currv.Nodeids()[2] << " (y-component)" << endl;
+      for (CI p=masterlin[0][1].begin();p!=masterlin[0][1].end();++p)
+        cout << "Dof: " << p->first << "\t" << p->second << endl;
+      }*/ 
+      
+      int mid2 = currv.Nodeids()[3];
+      double alpha2 = projpar[mid2];
+      
+      bool found2 = false;
+      Vertex* masterv2 = &MasterVertices()[0];
+      for (int j=0;j<(int)MasterVertices().size();++j)
+      {
+        if (MasterVertices()[j].Nodeids()[0]==mid2)
+        {
+          found2=true;
+          masterv2 = &MasterVertices()[j];
+          break;
+        }
+      }
+      if (!found2) dserror("ERROR: Lineclip linearization, Master vertex 2 not found!");
+      
+      //cout << "Coords: " << masterv2->Coord()[0] << " " << masterv2->Coord()[1] << endl;
+      
+      MasterVertexLinearization3D(*masterv2,masterlin[1],mid2,alpha2);
+      
+      /*if (printderiv)
+      {
+      cout << "\nCoords: " << masterv2->Coord()[0] << " " << masterv2->Coord()[1] << endl;
+      cout << "mid: " << mid2 << " alpha: " << alpha2 << endl;
+      cout << "(lineclip) Analytical derivative for Projmaster Vertex " << currv.Nodeids()[3] << " (x-component)" << endl;
+      for (CI p=masterlin[1][0].begin();p!=masterlin[1][0].end();++p)
+        cout << "Dof: " << p->first << "\t" << p->second << endl;
+      cout << "(lineclip) Analytical derivative for Projmaster Vertex " << currv.Nodeids()[3] << " (y-component)" << endl;
+      for (CI p=masterlin[1][1].begin();p!=masterlin[1][1].end();++p)
+        cout << "Dof: " << p->first << "\t" << p->second << endl;
+      }*/
+      
+      // bring everything together -> lineclip vertex linearization
+      typedef map<int,double>::const_iterator CI;
+      for (int k=0;k<3;++k)
+      {
+        for (CI p=masterlin[0][k].begin();p!=masterlin[0][k].end();++p)
+        {
+          for (int dim=0;dim<2;++dim)
+          {
+          currlin[dim][p->first] += sedge[dim] * 1/Nfac * crossdZ1[k] * (p->second);
+          currlin[dim][p->first] -= sedge[dim] * 1/Nfac * crossdZ2[k] * (p->second);
+          currlin[dim][p->first] += sedge[dim] * Zfac/(Nfac*Nfac) * crossdN1[k] * (p->second);
+          }
+        }
+        for (CI p=masterlin[1][k].begin();p!=masterlin[1][k].end();++p)
+        {
+          for (int dim=0;dim<2;++dim)
+          {
+          currlin[dim][p->first] += sedge[dim] * 1/Nfac * crossdZ2[k] * (p->second);
+          currlin[dim][p->first] -= sedge[dim] * Zfac/(Nfac*Nfac) * crossdN1[k] * (p->second);
+          }
+        }
+      }
+    }
+    else
+      dserror("ERROR: VertexLinearization3D: Invalid Vertex Type!");
+   
+    /*
+    // check linearization
+    typedef map<int,double>::const_iterator CI;
+    cout << "\nLinearization of current vertex (type " << currv.VType() << "):" << endl;
+    cout << "-> Coordinate 1:" << endl;
+    for (CI p=currlin[0].begin();p!=currlin[0].end();++p)
+      cout << p->first << " " << p->second << endl;
+    cout << "-> Coordinate 2:" << endl;
+    for (CI p=currlin[1].begin();p!=currlin[1].end();++p)
+        cout << p->first << " " << p->second << endl;
+    */
+  }
+  
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Linearization of projmaster vertex (3D)                   popp 02/09|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Coupling::MasterVertexLinearization3D(Vertex& currv,
+                                                    vector<map<int,double> >& currlin,
+                                                    int mid, double alpha)
+{
+  // get current vertex coordinates (in slave param. space)
+  double sxi[2] = {0.0, 0.0};
+  sxi[0] = currv.Coord()[0];
+  sxi[1] = currv.Coord()[1];
+  
+  // evlauate shape functions + derivatives at sxi
+  int nrow = SlaveElement().NumNode();
+  LINALG::SerialDenseVector sval(nrow);
+  LINALG::SerialDenseMatrix sderiv(nrow,2,true);
+  SlaveElement().EvaluateShape(sxi,sval,sderiv,nrow);
+  
+  // build 3x3 factor matrix L
+  LINALG::Matrix<3,3> lmatrix(true);
+  
+  for (int z=0;z<nrow;++z)
+  {
+    int gid = SlaveElement().NodeIds()[z];
+    DRT::Node* node = Discret().gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    CNode* snode = static_cast<CNode*>(node);
+    
+    lmatrix(0,0) += sderiv(z,0) * snode->xspatial()[0];
+    lmatrix(1,0) += sderiv(z,0) * snode->xspatial()[1];
+    lmatrix(2,0) += sderiv(z,0) * snode->xspatial()[2];
+    
+    lmatrix(0,0) += alpha * sderiv(z,0) * snode->n()[0];
+    lmatrix(1,0) += alpha * sderiv(z,0) * snode->n()[1];
+    lmatrix(2,0) += alpha * sderiv(z,0) * snode->n()[2];
+    
+    lmatrix(0,1) += sderiv(z,1) * snode->xspatial()[0];
+    lmatrix(1,1) += sderiv(z,1) * snode->xspatial()[1];
+    lmatrix(2,1) += sderiv(z,1) * snode->xspatial()[2];
+    
+    lmatrix(0,1) += alpha * sderiv(z,1) * snode->n()[0];
+    lmatrix(1,1) += alpha * sderiv(z,1) * snode->n()[1];
+    lmatrix(2,1) += alpha * sderiv(z,1) * snode->n()[2];
+    
+    lmatrix(0,2) += sval[z] * snode->n()[0];
+    lmatrix(1,2) += sval[z] * snode->n()[1];
+    lmatrix(2,2) += sval[z] * snode->n()[2];        
+  }
+  
+  // get inverse of the 3x3 matrix L (in place)
+  lmatrix.Invert();
+  
+  // start to fill linearization maps for current vertex
+  typedef map<int,double>::const_iterator CI;
+  
+  // (1) master node coordinates part
+  DRT::Node* mnode = Discret().gNode(mid);
+  if (!mnode) dserror("ERROR: Cannot find node with gid %",mid);
+  CNode* cmnode = static_cast<CNode*>(mnode);
+          
+  currlin[0][cmnode->Dofs()[0]] += lmatrix(0,0);
+  currlin[0][cmnode->Dofs()[1]] += lmatrix(0,1);
+  currlin[0][cmnode->Dofs()[2]] += lmatrix(0,2);
+  currlin[1][cmnode->Dofs()[0]] += lmatrix(1,0);
+  currlin[1][cmnode->Dofs()[1]] += lmatrix(1,1);
+  currlin[1][cmnode->Dofs()[2]] += lmatrix(1,2);
+  
+  // (2) all slave nodes coordinates part
+  // (3) all slave nodes normals part
+  for (int z=0;z<nrow;++z)
+  {
+    int gid = SlaveElement().NodeIds()[z];
+    DRT::Node* node = Discret().gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    CNode* snode = static_cast<CNode*>(node);
+    
+    currlin[0][snode->Dofs()[0]] -= sval[z] * lmatrix(0,0);
+    currlin[0][snode->Dofs()[1]] -= sval[z] * lmatrix(0,1);
+    currlin[0][snode->Dofs()[2]] -= sval[z] * lmatrix(0,2);
+    currlin[1][snode->Dofs()[0]] -= sval[z] * lmatrix(1,0);
+    currlin[1][snode->Dofs()[1]] -= sval[z] * lmatrix(1,1);
+    currlin[1][snode->Dofs()[2]] -= sval[z] * lmatrix(1,2);
+    
+    // get nodal normal derivative maps (x,y and z components)
+    vector<map<int,double> >& derivn = snode->GetDerivN();
+    
+    for (CI p=derivn[0].begin();p!=derivn[0].end();++p)
+    {
+      currlin[0][p->first] -= alpha * sval[z] * lmatrix(0,0) * (p->second);
+      currlin[1][p->first] -= alpha * sval[z] * lmatrix(1,0) * (p->second);
+    }
+    for (CI p=derivn[1].begin();p!=derivn[1].end();++p)
+    {
+      currlin[0][p->first] -= alpha * sval[z] * lmatrix(0,1) * (p->second);
+      currlin[1][p->first] -= alpha * sval[z] * lmatrix(1,1) * (p->second);
+    }
+    for (CI p=derivn[2].begin();p!=derivn[2].end();++p)
+    {
+      currlin[0][p->first] -= alpha * sval[z] * lmatrix(0,2) * (p->second);
+      currlin[1][p->first] -= alpha * sval[z] * lmatrix(1,2) * (p->second);
+    }
+  }   
+  
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Linearization of clip polygon center (3D)                 popp 02/09|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Coupling::CenterLinearization3D(const vector<vector<map<int,double> > >& linvertex,
+                                              vector<map<int,double> >& lincenter)
+{
+  // preparations
+  int clipsize = (int)(Clip().size());
+  typedef map<int,double>::const_iterator CI;
+  
+  // ************* Coupling with or without auxiliary plane **************
+#ifdef CONTACTAUXPLANE
+  // as a first shot we have used simple node averaging here
+  // arithmetic center, NOT geometric center
+  for (int i=0;i<clipsize;++i)
+    for (int k=0;k<3;++k)
+      for (CI p=linvertex[i][k].begin();p!=linvertex[i][k].end();++p)
+        lincenter[k][p->first] += 1/clipsize * (p->second);
+#else
+  // as an improved version we have used centroid formulas here
+  // this really yields the geometric center
+  double sumci = 0.0;
+  double sumcixi = 0.0;
+  double sumcieta = 0.0;
+  
+  // first round: prepare linearization
+  for (int i=0; i<clipsize; ++i)
+  {
+    double xi_i[2] = {0.0, 0.0};
+    double xi_ip1[2] = {0.0, 0.0};
+    
+    // standard case    
+    if (i<clipsize-1)
+    {
+      xi_i[0] = Clip()[i].Coord()[0]; xi_i[1] = Clip()[i].Coord()[1];
+      xi_ip1[0] = Clip()[i+1].Coord()[0]; xi_ip1[1] = Clip()[i+1].Coord()[1];
+    }
+    // last vertex of clip polygon
+    else
+    {
+      xi_i[0] = Clip()[i].Coord()[0]; xi_i[1] = Clip()[i].Coord()[1];
+      xi_ip1[0] = Clip()[0].Coord()[0]; xi_ip1[1] = Clip()[0].Coord()[1];
+    }
+    
+    // build sum factors
+    sumci    += (xi_ip1[0]*xi_i[1] - xi_i[0]*xi_ip1[1]);
+    sumcixi  += (xi_ip1[0]*xi_i[1] - xi_i[0]*xi_ip1[1]) * (xi_i[0] + xi_ip1[0]);
+    sumcieta += (xi_ip1[0]*xi_i[1] - xi_i[0]*xi_ip1[1]) * (xi_i[1] + xi_ip1[1]);
+  }
+  
+  // second round: compute linearization
+  for (int i=0; i<clipsize; ++i)
+  {
+    double xi_i[2] = {0.0, 0.0};
+    double xi_ip1[2] = {0.0, 0.0};
+    int iplus1 = 0;
+    
+    // standard case    
+    if (i<clipsize-1)
+    {
+      xi_i[0] = Clip()[i].Coord()[0]; xi_i[1] = Clip()[i].Coord()[1];
+      xi_ip1[0] = Clip()[i+1].Coord()[0]; xi_ip1[1] = Clip()[i+1].Coord()[1];
+      iplus1 = i+1;
+    }
+    // last vertex of clip polygon
+    else
+    {
+      xi_i[0] = Clip()[i].Coord()[0]; xi_i[1] = Clip()[i].Coord()[1];
+      xi_ip1[0] = Clip()[0].Coord()[0]; xi_ip1[1] = Clip()[0].Coord()[1];
+      iplus1 = 0;    
+    }
+    
+    // leading factor ci
+    double ci = xi_ip1[0]*xi_i[1] - xi_i[0]*xi_ip1[1];
+    
+    // sum up contributions to lincenter (i)
+    for (CI p=linvertex[i][0].begin();p!=linvertex[i][0].end();++p)
+    {
+      lincenter[0][p->first] -= 1/(3*sumci) * (xi_i[0]+xi_ip1[0]) * xi_ip1[1] * (p->second);
+      lincenter[0][p->first] += 1/(3*sumci) * ci * (p->second);
+      lincenter[0][p->first] += sumcixi/(3*sumci*sumci) * xi_ip1[1] * (p->second);
+      
+      lincenter[1][p->first] -= 1/(3*sumci) * (xi_i[1]+xi_ip1[1]) * xi_ip1[1] * (p->second);
+      lincenter[1][p->first] += sumcieta/(3*sumci*sumci) * xi_ip1[1] * (p->second);
+    }
+    for (CI p=linvertex[i][1].begin();p!=linvertex[i][1].end();++p)
+    {
+      lincenter[0][p->first] += 1/(3*sumci) * (xi_i[0]+xi_ip1[0]) * xi_ip1[0] * (p->second);
+      lincenter[0][p->first] -= sumcixi/(3*sumci*sumci) * xi_ip1[0] * (p->second);
+      
+      lincenter[1][p->first] += 1/(3*sumci) * (xi_i[1]+xi_ip1[1]) * xi_ip1[0] * (p->second);
+      lincenter[1][p->first] += 1/(3*sumci) * ci * (p->second);
+      lincenter[1][p->first] -= sumcieta/(3*sumci*sumci) * xi_ip1[0] * (p->second);
+    }
+    
+    // sum up contributions to lincenter (i+1)
+    for (CI p=linvertex[iplus1][0].begin();p!=linvertex[iplus1][0].end();++p)
+    {
+      lincenter[0][p->first] += 1/(3*sumci) * (xi_i[0]+xi_ip1[0]) * xi_i[1] * (p->second);
+      lincenter[0][p->first] += 1/(3*sumci) * ci * (p->second);
+      lincenter[0][p->first] -= sumcixi/(3*sumci*sumci) * xi_i[1] * (p->second);
+      
+      lincenter[1][p->first] += 1/(3*sumci) * (xi_i[1]+xi_ip1[1]) * xi_i[1] * (p->second);
+      lincenter[1][p->first] -= sumcieta/(3*sumci*sumci) * xi_i[1] * (p->second);
+    }
+    for (CI p=linvertex[iplus1][1].begin();p!=linvertex[iplus1][1].end();++p)
+    {
+      lincenter[0][p->first] -= 1/(3*sumci) * (xi_i[0]+xi_ip1[0]) * xi_i[0] * (p->second);
+      lincenter[0][p->first] += sumcixi/(3*sumci*sumci) * xi_i[0] * (p->second);
+      
+      lincenter[1][p->first] -= 1/(3*sumci) * (xi_i[1]+xi_ip1[1]) * xi_i[0] * (p->second);
+      lincenter[1][p->first] += 1/(3*sumci) * ci * (p->second);
+      lincenter[1][p->first] += sumcieta/(3*sumci*sumci) * xi_i[0] * (p->second);
+    }
+  }
+#endif // #ifdef CONTACTAUXPLANE
+  // *********************************************************************
+  
+  /*
+  // check linearization
+  typedef map<int,double>::const_iterator CI;
+  cout << "\nLinearization of current center vertex:" << endl;
+  cout << "-> Coordinate 1:" << endl;
+  for (CI p=lincenter[0].begin();p!=lincenter[0].end();++p)
+    cout << p->first << " " << p->second << endl;
+  cout << "-> Coordinate 2:" << endl;
+  for (CI p=lincenter[1].begin();p!=lincenter[1].end();++p)
+      cout << p->first << " " << p->second << endl;
+  */
+      
   return true;
 }
 
