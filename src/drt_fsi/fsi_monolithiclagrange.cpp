@@ -13,46 +13,49 @@
 FSI::MonolithicLagrange::MonolithicLagrange(Epetra_Comm& comm)
   : BlockMonolithic(comm)
 {
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
 
   SetDefaultParameters(fsidyn,NOXParameterList());
+  linearsolverstrategy_ = Teuchos::getIntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
 
   // right now we use matching meshes at the interface
 
+  // set up the coupling objects
   ADAPTER::Coupling& coupsf = StructureFluidCoupling();
   ADAPTER::Coupling& coupsa = StructureAleCoupling();
   ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
-  // structure to fluid
-
+  // structure (master) to fluid (slave)
   coupsf.SetupConditionCoupling(*StructureField().Discretization(),
                                 StructureField().Interface(),
                                 *FluidField().Discretization(),
                                 FluidField().Interface(),
                                 "FSICoupling");
 
-  // structure to ale
-
+  // structure (master) to ale (slave)
   coupsa.SetupConditionCoupling(*StructureField().Discretization(),
                                 StructureField().Interface(),
                                 *AleField().Discretization(),
                                 AleField().Interface(),
                                 "FSICoupling");
 
-  // In the following we assume that both couplings find the same dof
-  // map at the structural side. This enables us to use just one
-  // interface dof map for all fields and have just one transfer
-  // operator from the interface map to the full field map.
+  // assure that both coupling objects use the same map
+  // at their common master side (i.e. the structure)
   if (not coupsf.MasterDofMap()->SameAs(*coupsa.MasterDofMap()))
-    dserror("structure interface dof maps do not match");
-
+    dserror("Structure interface dof maps do not match!");
+  // and that it is in fact existant
   if (coupsf.MasterDofMap()->NumGlobalElements()==0)
     dserror("No nodes in matching FSI interface. Empty FSI coupling condition?");
 
-  // the fluid-ale coupling always matches
+  // In the following we can assume that both couplings find the same dof
+  // map at the structural side. This enables us to use just one
+  // interface dof map for all fields and have just one transfer
+  // operator from the interface map to the full field map.
+
+  // fluid (master) to ale (slave)
+  // note: the fluid-ale coupling always matches
   const Epetra_Map* fluidnodemap = FluidField().Discretization()->NodeRowMap();
   const Epetra_Map* alenodemap   = AleField().Discretization()->NodeRowMap();
-
   coupfa.SetupCoupling(*FluidField().Discretization(),
                        *AleField().Discretization(),
                        *fluidnodemap,
@@ -60,39 +63,44 @@ FSI::MonolithicLagrange::MonolithicLagrange(Epetra_Comm& comm)
 
   FluidField().SetMeshMap(coupfa.MasterDofMap());
 
-  // create combined map
+  // fluid (master) to ale (slave) only at the interface
+  icoupfa_.SetupConditionCoupling(*FluidField().Discretization(),
+                                  FluidField().Interface(),
+                                  *AleField().Discretization(),
+                                  AleField().Interface(),
+                                  "FSICoupling");
 
+  // create combined map
   std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
   vecSpaces.push_back(StructureField().DofRowMap());
-  vecSpaces.push_back(FluidField()    .Interface().OtherMap());
-  vecSpaces.push_back(FluidField()    .Interface().CondMap());
+  vecSpaces.push_back(FluidField()    .DofRowMap());
   vecSpaces.push_back(AleField()      .Interface().OtherMap());
-  vecSpaces.push_back(AleField()      .Interface().CondMap());
-  vecSpaces.push_back(UTILS::ShiftMap(StructureField().Interface().CondMap(),vecSpaces));
   vecSpaces.push_back(UTILS::ShiftMap(StructureField().Interface().CondMap(),vecSpaces));
 
   SetDofRowMaps(vecSpaces);
 
   // create block system matrix
-
   systemmatrix_ = Teuchos::rcp(new LagrangianBlockMatrix(Extractor(),
                                                          StructureField().LinearSolver(),
                                                          FluidField().LinearSolver(),
                                                          AleField().LinearSolver()));
 
-  /*----------------------------------------------------------------------*/
   // Switch fluid to interface split block matrix
+  // TODO do we need splitting up natrices? (guess not)
+  /*
   FluidField().UseBlockMatrix(FluidField().Interface(),
                               FluidField().Interface(),
                               true);
+  */
 
   // build ale system matrix in splitted system
   AleField().BuildSystemMatrix(false);
 
   // setup Lagrangian coupling terms
-
-  coupsf.SetupCouplingMatrices(*vecSpaces[5],*StructureField().DofRowMap(),*FluidField().Interface().CondMap());
-  coupsa.SetupCouplingMatrices(*vecSpaces[6],*StructureField().DofRowMap(),*AleField()  .Interface().CondMap());
+  coupsf.SetupCouplingMatrices(*vecSpaces[3],
+                               *StructureField().DofRowMap(),
+                               *FluidField().DofRowMap());
+                               //*FluidField().Interface().CondMap());
 }
 
 
@@ -108,7 +116,64 @@ void FSI::MonolithicLagrange::SetupRHS(Epetra_Vector& f, bool firstcall)
               AleField().RHS(),
               FluidField().ResidualScaling());
 
-  // NOX expects a different sign here.
+  if (firstcall)
+  {
+    // additional rhs term for ALE equations
+    // -dt Aig u(n)
+    //
+    //    1/dt Delta d(n+1) = theta Delta u(n+1) + u(n)
+    //
+    // And we are concerned with the u(n) part here.
+
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField().BlockSystemMatrix();
+    if (a==Teuchos::null)
+      dserror("expect ale block matrix");
+
+    LINALG::SparseMatrix& aig = a->Matrix(0,1);
+
+    // extract u,gamma,n (and translate it to the other maps)
+    Teuchos::RCP<Epetra_Vector> fveln = FluidField().ExtractInterfaceVeln();
+    Teuchos::RCP<Epetra_Vector> sveln = FluidToStruct(fveln);
+    Teuchos::RCP<Epetra_Vector> aveln = StructToAle(sveln);
+
+    Teuchos::RCP<Epetra_Vector> rhs;
+
+    // ale (#2): A,ig * u,gamma,n
+    rhs = Teuchos::rcp(new Epetra_Vector(aig.RowMap()));
+    aig.Apply(*aveln,*rhs);
+
+    rhs->Scale(-1.*Dt());
+    Extractor().AddVector(*rhs,2,f);
+
+    // lagrangian multiplier (#3): -C,fs * u,gamma,n
+    Teuchos::RCP<Epetra_CrsMatrix> cfs = StructureFluidCoupling().SlaveToMasterMat();
+    rhs = Teuchos::rcp(new Epetra_Vector(cfs->RowMap()));
+    cfs->Apply(*FluidField().Veln(),*rhs);
+
+    rhs->Scale( 1.*Dt());
+    Extractor().AddVector(*rhs,3,f);
+
+    // shape derivatives (#1): (F^G,gg + F^G,ig) * u,gamma,n
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().MeshMoveMatrix();
+    if (mmm!=Teuchos::null)
+    {
+      LINALG::SparseMatrix& fmig = mmm->Matrix(0,1);
+      LINALG::SparseMatrix& fmgg = mmm->Matrix(1,1);
+
+      rhs = Teuchos::rcp(new Epetra_Vector(fmig.RowMap()));
+      fmig.Apply(*fveln,*rhs);
+      Teuchos::RCP<Epetra_Vector> veln = FluidField().Interface().InsertOtherVector(rhs);
+
+      rhs = Teuchos::rcp(new Epetra_Vector(fmgg.RowMap()));
+      fmgg.Apply(*fveln,*rhs);
+      FluidField().Interface().InsertCondVector(rhs,veln);
+
+      veln->Scale(-1.*Dt());
+      Extractor().AddVector(*veln,1,f);
+    }
+  }
+
+  // NOX expects a different sign here
   f.Scale(-1.);
 }
 
@@ -120,56 +185,102 @@ void FSI::MonolithicLagrange::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& m
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicLagrange::SetupSystemMatrix");
 
   // extract Jacobian matrices and put them into composite system
-  // matrix W
 
+  // get all the prerequisites...
+
+  // coupling objects
   const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-  const ADAPTER::Coupling& coupsa = StructureAleCoupling();
-  //const ADAPTER::Coupling& coupfa = FluidAleCoupling();
+  // (unused) const ADAPTER::Coupling& coupsa = StructureAleCoupling();
+  const ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
+  // system matrices
   Teuchos::RCP<LINALG::SparseMatrix> s = StructureField().SystemMatrix();
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> f = FluidField().BlockSystemMatrix();
-
-  LINALG::SparseMatrix& fii = f->Matrix(0,0);
-  LINALG::SparseMatrix& fig = f->Matrix(0,1);
-  LINALG::SparseMatrix& fgi = f->Matrix(1,0);
-  LINALG::SparseMatrix& fgg = f->Matrix(1,1);
+  Teuchos::RCP<LINALG::SparseMatrix> f = FluidField().SystemMatrix();
 
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField().BlockSystemMatrix();
   LINALG::SparseMatrix& aii = a->Matrix(0,0);
   LINALG::SparseMatrix& aig = a->Matrix(0,1);
-  LINALG::SparseMatrix& agi = a->Matrix(1,0);
-  LINALG::SparseMatrix& agg = a->Matrix(1,1);
 
-  mat.Assign(0,0,View,*s);
-
-  mat.Assign(1,1,View,fii);
-  mat.Assign(1,2,View,fig);
-  mat.Assign(2,1,View,fgi);
-  mat.Assign(2,2,View,fgg);
-
-  mat.Assign(3,3,View,aii);
-  mat.Assign(3,4,View,aig);
-  mat.Assign(4,3,View,agi);
-  mat.Assign(4,4,View,agg);
-
+  // scaling factors (needed for coupling matrices)
   // note: these scaling factors are not guaranteed to be available until the
   // elements have been evaluated.
+  // note: delta = delta_t * theta
+  double timescale = FluidField().TimeScaling();	// delta_t
+  double resscale  = FluidField().ResidualScaling();	// theta
 
-  double timescale = FluidField().TimeScaling();
-  double scale     = FluidField().ResidualScaling();
+  // mesh move matrix (needed for shape derivatives)
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().MeshMoveMatrix();
 
-  mat.Matrix(5,0).Add(*coupsf.MasterToMasterMat(),false,1.0,0.0);
-  mat.Matrix(5,2).Add(*coupsf.SlaveToMasterMat() ,false,-1./timescale,0.0);
+  // ... and assemble the matrices into the combined block matrix
+  // note: we have to make sure that the maps of the blocks we want to insert
+  // here match the maps of the combined block matrix
 
-  mat.Matrix(0,5).Add(*coupsf.MasterToMasterMatTrans(),false,1.0,0.0);
-  mat.Matrix(2,5).Add(*coupsf.SlaveToMasterMatTrans() ,false,-1./scale,0.0);
+  // structure
+  mat.Assign(0,0,View,*s);
 
-  mat.Matrix(6,0).Add(*coupsa.MasterToMasterMat(),false,1.0,0.0);
-  mat.Matrix(6,4).Add(*coupsa.SlaveToMasterMat() ,false,-1.0,0.0);
+  // fluid
+  mat.Assign(1,1,View,*f);
 
-  mat.Matrix(4,6).Add(*coupsa.SlaveToMasterMatTrans(),false,-1.0,0.0);
+  // ale
+  mat.Assign(2,2,View,aii);
 
-  // done. make sure all blocks are filled.
+  aigtransform_(*a,             // full src
+                aig,            // src
+                1./timescale,   // scale
+                ADAPTER::Coupling::SlaveConverter(icoupfa_), // converter
+                mat.Matrix(2,1)); // dst
+
+#if 1
+
+  // lagrangian coupling matrices
+  mat.Matrix(3,0).Add(*coupsf.MasterToMasterMat(),false,1.0,0.0);
+  mat.Matrix(3,1).Add(*coupsf.SlaveToMasterMat() ,false,-1./timescale,0.0);
+  //mat.Matrix(3,1).Add(*coupsf.SlaveToMasterMat() ,false,-1.,0.0);
+
+  mat.Matrix(0,3).Add(*coupsf.MasterToMasterMatTrans(),false,1.0,0.0);
+  mat.Matrix(1,3).Add(*coupsf.SlaveToMasterMatTrans(),false,-1./resscale,0.0);
+  //mat.Matrix(1,3).Add(*coupsf.SlaveToMasterMatTrans() ,false,-1.,0.0);
+
+#else
+
+  Epetra_Vector v(*Extractor().Map(3));
+  v.PutScalar(1.);
+  LINALG::SparseMatrix d(v);
+  d.Complete();
+  mat.Matrix(3,3).Add(d,false,1.0,0.0);
+
+#endif
+
+  // add optional fluid linearization with respect to mesh motion block
+  if (mmm != Teuchos::null)
+  {
+    LINALG::SparseMatrix& fmii = mmm->Matrix(0,0);
+    LINALG::SparseMatrix& fmig = mmm->Matrix(0,1);
+    LINALG::SparseMatrix& fmgi = mmm->Matrix(1,0);
+    LINALG::SparseMatrix& fmgg = mmm->Matrix(1,1);
+
+    // add fmgg, fmig to (1,1)-block (in addition to fluid)
+    mat.Matrix(1,1).Add(fmgg,false,1./timescale,1.0);
+    mat.Matrix(1,1).Add(fmig,false,1./timescale,1.0);
+
+    // insert fmgi, fmii into (1,2)-block using columnmap transformations between fluid and ale
+    fmgitransform_(*mmm,        // full src
+                   fmgi,        // src
+                   1.,          // scale
+                   ADAPTER::Coupling::MasterConverter(coupfa), // converter
+                   mat.Matrix(1,2), // dst
+                   false,       // exactmatch
+                   false);      // addmatrix
+    fmiitransform_(*mmm,        // full src
+                   fmii,        // src
+                   1.,          // scale
+                   ADAPTER::Coupling::MasterConverter(coupfa), // converter
+                   mat.Matrix(1,2), // dst
+                   false,       // exactmatch
+                   true);       // addmatrix
+  }
+
+  // Done. make sure all blocks are filled.
   mat.Complete();
 }
 
@@ -190,6 +301,120 @@ void FSI::MonolithicLagrange::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void FSI::MonolithicLagrange::ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b)
+{
+  //should we scale the system?
+  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+  const bool scaling_infnorm = (bool)getIntegralValue<int>(fsidyn,"INFNORMSCALING");
+
+  if (scaling_infnorm)
+  {
+    Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(0,0).EpetraMatrix();
+    srowsum_ = rcp(new Epetra_Vector(A->RowMap(),false));
+    scolsum_ = rcp(new Epetra_Vector(A->RowMap(),false));
+    A->InvRowSums(*srowsum_);
+    A->InvColSums(*scolsum_);
+    if (A->LeftScale(*srowsum_) or
+        A->RightScale(*scolsum_) or
+        mat.Matrix(0,1).EpetraMatrix()->LeftScale(*srowsum_) or
+        mat.Matrix(0,2).EpetraMatrix()->LeftScale(*srowsum_) or
+        mat.Matrix(0,3).EpetraMatrix()->LeftScale(*srowsum_) or
+        mat.Matrix(1,0).EpetraMatrix()->RightScale(*scolsum_) or
+        mat.Matrix(2,0).EpetraMatrix()->RightScale(*scolsum_) or
+        mat.Matrix(3,0).EpetraMatrix()->RightScale(*scolsum_))
+      dserror("structure scaling failed");
+
+    A = mat.Matrix(2,2).EpetraMatrix();
+    arowsum_ = rcp(new Epetra_Vector(A->RowMap(),false));
+    acolsum_ = rcp(new Epetra_Vector(A->RowMap(),false));
+    A->InvRowSums(*arowsum_);
+    A->InvColSums(*acolsum_);
+    if (A->LeftScale(*arowsum_) or
+        A->RightScale(*acolsum_) or
+        mat.Matrix(2,0).EpetraMatrix()->LeftScale(*arowsum_) or
+        mat.Matrix(2,1).EpetraMatrix()->LeftScale(*arowsum_) or
+        mat.Matrix(2,3).EpetraMatrix()->LeftScale(*arowsum_) or
+        mat.Matrix(0,2).EpetraMatrix()->RightScale(*acolsum_) or
+        mat.Matrix(1,2).EpetraMatrix()->RightScale(*acolsum_) or
+        mat.Matrix(3,2).EpetraMatrix()->RightScale(*acolsum_))
+      dserror("ale scaling failed");
+
+    Teuchos::RCP<Epetra_Vector> sx = Extractor().ExtractVector(b,0);
+    Teuchos::RCP<Epetra_Vector> ax = Extractor().ExtractVector(b,2);
+
+    if (sx->Multiply(1.0, *srowsum_, *sx, 0.0))
+      dserror("structure scaling failed");
+    if (ax->Multiply(1.0, *arowsum_, *ax, 0.0))
+      dserror("ale scaling failed");
+
+    Extractor().InsertVector(*sx,0,b);
+    Extractor().InsertVector(*ax,2,b);
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::MonolithicLagrange::UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
+{
+  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+  const bool scaling_infnorm = (bool)getIntegralValue<int>(fsidyn,"INFNORMSCALING");
+
+  if (scaling_infnorm)
+  {
+    Teuchos::RCP<Epetra_Vector> sy = Extractor().ExtractVector(x,0);
+    Teuchos::RCP<Epetra_Vector> ay = Extractor().ExtractVector(x,2);
+
+    if (sy->Multiply(1.0, *scolsum_, *sy, 0.0))
+      dserror("structure scaling failed");
+    if (ay->Multiply(1.0, *acolsum_, *ay, 0.0))
+      dserror("ale scaling failed");
+
+    Extractor().InsertVector(*sy,0,x);
+    Extractor().InsertVector(*ay,2,x);
+
+    Teuchos::RCP<Epetra_Vector> sx = Extractor().ExtractVector(b,0);
+    Teuchos::RCP<Epetra_Vector> ax = Extractor().ExtractVector(b,2);
+
+    if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0))
+      dserror("structure scaling failed");
+    if (ax->ReciprocalMultiply(1.0, *arowsum_, *ax, 0.0))
+      dserror("ale scaling failed");
+
+    Extractor().InsertVector(*sx,0,b);
+    Extractor().InsertVector(*ax,2,b);
+
+    Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(0,0).EpetraMatrix();
+    srowsum_->Reciprocal(*srowsum_);
+    scolsum_->Reciprocal(*scolsum_);
+    if (A->LeftScale(*srowsum_) or
+        A->RightScale(*scolsum_) or
+        mat.Matrix(0,1).EpetraMatrix()->LeftScale(*srowsum_) or
+        mat.Matrix(0,2).EpetraMatrix()->LeftScale(*srowsum_) or
+        mat.Matrix(0,3).EpetraMatrix()->LeftScale(*srowsum_) or
+        mat.Matrix(1,0).EpetraMatrix()->RightScale(*scolsum_) or
+        mat.Matrix(2,0).EpetraMatrix()->RightScale(*scolsum_) or
+        mat.Matrix(3,0).EpetraMatrix()->RightScale(*scolsum_))
+      dserror("structure scaling failed");
+
+    A = mat.Matrix(2,2).EpetraMatrix();
+    arowsum_->Reciprocal(*arowsum_);
+    acolsum_->Reciprocal(*acolsum_);
+    if (A->LeftScale(*arowsum_) or
+        A->RightScale(*acolsum_) or
+        mat.Matrix(2,0).EpetraMatrix()->LeftScale(*arowsum_) or
+        mat.Matrix(2,1).EpetraMatrix()->LeftScale(*arowsum_) or
+        mat.Matrix(2,3).EpetraMatrix()->LeftScale(*arowsum_) or
+        mat.Matrix(0,2).EpetraMatrix()->RightScale(*acolsum_) or
+        mat.Matrix(1,2).EpetraMatrix()->RightScale(*acolsum_) or
+        mat.Matrix(3,2).EpetraMatrix()->RightScale(*acolsum_))
+      dserror("ale scaling failed");
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FSI::MonolithicLagrange::SetupVector(Epetra_Vector &f,
                                           Teuchos::RCP<const Epetra_Vector> sv,
                                           Teuchos::RCP<const Epetra_Vector> fv,
@@ -200,16 +425,21 @@ void FSI::MonolithicLagrange::SetupVector(Epetra_Vector &f,
 
   Extractor().InsertVector(*sv,0,f);
 
-  Teuchos::RCP<Epetra_Vector> fov = FluidField()    .Interface().ExtractOtherVector(fv);
-  Teuchos::RCP<Epetra_Vector> fcv = FluidField()    .Interface().ExtractCondVector (fv);
-  Teuchos::RCP<Epetra_Vector> aov = AleField()      .Interface().ExtractOtherVector(av);
-  Teuchos::RCP<Epetra_Vector> acv = AleField()      .Interface().ExtractCondVector (av);
+  // TODO do we need fluidscale here?
+//   if (fluidscale != 0)
+//   {
+//     Teuchos::RCP<Epetra_Vector> modfv = Teuchos::rcp(new Epetra_Vector(fv->Map()));
+//     modfv->Update(fluidscale,*fv,0.0);
 
-  Extractor().InsertVector(*fov,1,f);
-  Extractor().InsertVector(*fcv,2,f);
+//     Extractor().InsertVector(*modfv,1,f);
+//   }
+//   else
+  {
+    Extractor().InsertVector(*fv,1,f);
+  }
 
-  Extractor().InsertVector(*aov,3,f);
-  Extractor().InsertVector(*acv,4,f);
+  Teuchos::RCP<Epetra_Vector> aov = AleField().Interface().ExtractOtherVector(av);
+  Extractor().InsertVector(*aov,2,f);
 }
 
 
@@ -232,13 +462,20 @@ FSI::MonolithicLagrange::CreateLinearSystem(ParameterList& nlParams,
   const Teuchos::RCP< Epetra_Operator > J = systemmatrix_;
   const Teuchos::RCP< Epetra_Operator > M = systemmatrix_;
 
-  linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams,
-                                                             lsParams,
-                                                             Teuchos::rcp(iJac,false),
-                                                             J,
-                                                             Teuchos::rcp(iPrec,false),
-                                                             M,
-                                                             noxSoln));
+  switch (linearsolverstrategy_)
+  {
+  case INPAR::FSI::PreconditionedKrylov:
+    linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams,
+                                                               lsParams,
+                                                               Teuchos::rcp(iJac,false),
+                                                               J,
+                                                               Teuchos::rcp(iPrec,false),
+                                                               M,
+                                                               noxSoln));
+    break;
+  default:
+    dserror("unsupported linear block solver strategy: %d", linearsolverstrategy_);
+  }
 
   return linSys;
 }
@@ -264,7 +501,8 @@ FSI::MonolithicLagrange::CreateStatusTest(Teuchos::ParameterList& nlParams,
   // require one solve
   converged->addStatusTest(Teuchos::rcp(new NOX::FSI::MinIters(1)));
 
-  // setup tests for structural displacements
+
+  // tests for structural displacements
 
   std::vector<Teuchos::RCP<const Epetra_Map> > structdisp;
   structdisp.push_back(StructureField().Interface().OtherMap());
@@ -282,13 +520,14 @@ FSI::MonolithicLagrange::CreateStatusTest(Teuchos::ParameterList& nlParams,
                                             NOX::FSI::PartialNormF::Scaled));
   Teuchos::RCP<NOX::FSI::PartialNormUpdate> structureDispUpdate =
     Teuchos::rcp(new NOX::FSI::PartialNormUpdate("displacement update",
-                                                 structdispextract,0,
+                                                 Extractor(),0,
                                                  nlParams.get("Norm abs disp", 1.0e-6),
                                                  NOX::FSI::PartialNormUpdate::Scaled));
 
   AddStatusTest(structureDisp);
+
   structcombo->addStatusTest(structureDisp);
-  //structcombo->addStatusTest(structureDispUpdate);
+  structcombo->addStatusTest(structureDispUpdate);
 
   converged->addStatusTest(structcombo);
 
@@ -319,11 +558,12 @@ FSI::MonolithicLagrange::CreateStatusTest(Teuchos::ParameterList& nlParams,
   interfacecombo->addStatusTest(interfaceForce);
   converged->addStatusTest(interfacecombo);
 
-  // setup tests for fluid velocities
+  // tests for fluid velocities
 
   std::vector<Teuchos::RCP<const Epetra_Map> > fluidvel;
   fluidvel.push_back(FluidField().InnerVelocityRowMap());
   fluidvel.push_back(Teuchos::null);
+
   LINALG::MultiMapExtractor fluidvelextract(*DofRowMap(),fluidvel);
 
   Teuchos::RCP<NOX::StatusTest::Combo> fluidvelcombo =
@@ -342,8 +582,9 @@ FSI::MonolithicLagrange::CreateStatusTest(Teuchos::ParameterList& nlParams,
                                                  NOX::FSI::PartialNormUpdate::Scaled));
 
   AddStatusTest(innerFluidVel);
+
   fluidvelcombo->addStatusTest(innerFluidVel);
-  //fluidvelcombo->addStatusTest(innerFluidVelUpdate);
+  fluidvelcombo->addStatusTest(innerFluidVelUpdate);
 
   converged->addStatusTest(fluidvelcombo);
 
@@ -352,6 +593,7 @@ FSI::MonolithicLagrange::CreateStatusTest(Teuchos::ParameterList& nlParams,
   std::vector<Teuchos::RCP<const Epetra_Map> > fluidpress;
   fluidpress.push_back(FluidField().PressureRowMap());
   fluidpress.push_back(Teuchos::null);
+
   LINALG::MultiMapExtractor fluidpressextract(*DofRowMap(),fluidpress);
 
   Teuchos::RCP<NOX::StatusTest::Combo> fluidpresscombo =
@@ -370,10 +612,26 @@ FSI::MonolithicLagrange::CreateStatusTest(Teuchos::ParameterList& nlParams,
                                                  NOX::FSI::PartialNormUpdate::Scaled));
 
   AddStatusTest(fluidPress);
+
   fluidpresscombo->addStatusTest(fluidPress);
-  //fluidpresscombo->addStatusTest(fluidPressUpdate);
+  fluidpresscombo->addStatusTest(fluidPressUpdate);
 
   converged->addStatusTest(fluidpresscombo);
+
+  // tests for interface forces
+  // tests for lagrangian multipliers
+
+//   Teuchos::RCP<NOX::StatusTest::Combo> lagrangecombo =
+//     Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
+
+//   Teuchos::RCP<NOX::FSI::PartialNormUpdate> lagrangeUpdate =
+//     Teuchos::rcp(new NOX::FSI::PartialNormUpdate("lagrange update",
+//                                                  Extractor(),3,
+//                                                  nlParams.get("Norm abs lagrange", 1.0e-6),
+//                                                  NOX::FSI::PartialNormUpdate::Scaled));
+
+//   lagrangecombo->addStatusTest(lagrangeUpdate);
+//   converged->addStatusTest(lagrangecombo);
 
   return combo;
 }
@@ -389,16 +647,16 @@ void FSI::MonolithicLagrange::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vect
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicLagrange::ExtractFieldVectors");
 
   sx = Extractor().ExtractVector(x,0);
+  fx = Extractor().ExtractVector(x,1);
 
-  Teuchos::RCP<const Epetra_Vector> fox = Extractor().ExtractVector(x,1);
-  Teuchos::RCP<const Epetra_Vector> fcx = Extractor().ExtractVector(x,2);
+  Teuchos::RCP<Epetra_Vector> fcx = FluidField().Interface().ExtractCondVector(fx);
+  FluidField().VelocityToDisplacement(fcx);
+  Teuchos::RCP<Epetra_Vector> scx = FluidToStruct(fcx);
 
-  Teuchos::RCP<Epetra_Vector> f = FluidField().Interface().InsertOtherVector(fox);
-  FluidField().Interface().InsertCondVector(fcx, f);
-  fx = f;
+  //ax = Extractor().ExtractVector(x,2);
 
-  Teuchos::RCP<const Epetra_Vector> aox = Extractor().ExtractVector(x,3);
-  Teuchos::RCP<const Epetra_Vector> acx = Extractor().ExtractVector(x,4);
+  Teuchos::RCP<const Epetra_Vector> aox = Extractor().ExtractVector(x,2);
+  Teuchos::RCP<Epetra_Vector> acx = StructToAle(scx);
 
   Teuchos::RCP<Epetra_Vector> a = AleField().Interface().InsertOtherVector(aox);
   AleField().Interface().InsertCondVector(acx, a);
@@ -406,4 +664,4 @@ void FSI::MonolithicLagrange::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vect
 }
 
 
-#endif
+#endif // ifdef ccadiscret

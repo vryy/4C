@@ -7,6 +7,10 @@
 #include "../drt_lib/linalg_precond.H"
 #include "../drt_lib/linalg_solver.H"
 
+// debug flag to merge the MFSI block matrix to one sparse matrix
+// and use the fluid solver to solve for it
+//#define BLOCKMATRIXMERGE
+
 namespace FSI
 {
 
@@ -41,6 +45,8 @@ namespace FSI
     void SetupPreconditioner();
 
   private:
+
+    void SAFLowerGS(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
 
     // evil debug helper
     void MergeSolve(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;

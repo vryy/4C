@@ -3,8 +3,10 @@
 #ifndef FSI_MONOLITHICLAGRANGE_H
 #define FSI_MONOLITHICLAGRANGE_H
 
+#include "../drt_inpar/inpar_fsi.H"
 #include "fsi_monolithic.H"
 #include "fsi_lagrangeprec.H"
+#include "fsi_matrixtransform.H"
 
 namespace FSI
 {
@@ -30,6 +32,12 @@ namespace FSI
 
     /// the composed system matrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const { return systemmatrix_; }
+
+    /// apply infnorm scaling to linear block system
+    virtual void ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b);
+
+    /// undo infnorm scaling from scaled solution
+    virtual void UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
 
   protected:
 
@@ -68,8 +76,35 @@ namespace FSI
                      Teuchos::RCP<const Epetra_Vector> av,
                      double fluidscale);
 
+    /// coupling of fluid and ale (interface only)
+    /// note: the other coupling objects are accessible via the public functions
+    /// StructureFluidCoupling(), StructureAleCoupling() and FluidAleCoupling() as defined in Monolithic
+    ADAPTER::Coupling icoupfa_;
+
+    /// @name Matrix block transform objects
+    /// Handle row and column map exchange for matrix blocks
+
+    UTILS::MatrixColTransform aigtransform_;
+
+    UTILS::MatrixColTransform fmiitransform_;
+    UTILS::MatrixColTransform fmgitransform_;
+
+    ///@}
+
+    /// @name infnorm scaling
+
+    Teuchos::RCP<Epetra_Vector> srowsum_;
+    Teuchos::RCP<Epetra_Vector> scolsum_;
+    Teuchos::RCP<Epetra_Vector> arowsum_;
+    Teuchos::RCP<Epetra_Vector> acolsum_;
+
+    //@}
+
     /// block system matrix
     Teuchos::RCP<LagrangianBlockMatrix> systemmatrix_;
+
+    /// preconditioned block Krylov or block Gauss-Seidel linear solver
+    INPAR::FSI::LinearBlockSolver linearsolverstrategy_;
 };
 
 }
