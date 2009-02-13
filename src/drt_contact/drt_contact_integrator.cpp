@@ -1078,6 +1078,14 @@ void CONTACT::Integrator::DerivXiGP(CONTACT::CElement& sele,
     sgpx[2]+=valsxigp[i]*scnodes[i]->xspatial()[2];
   }
   
+  // FIXME: This does not have to be the UNIT normal (see 3D)!
+  // The reason for this is that we linearize the Gauss point
+  // projection from slave to master side here and this condition
+  // only includes the Gauss point normal in a cross product.
+  // When looking at Projector::ProjectGaussPoint, one can see
+  // that we do NOT use a unit normal there, either. Thus, why here?
+  // First results suggest that it really makes no difference!
+  
   // normalize interpolated GP normal back to length 1.0 !!!
   double length = sqrt(sgpn[0]*sgpn[0]+sgpn[1]*sgpn[1]+sgpn[2]*sgpn[2]);
   if (length<1.0e-12) dserror("ERROR: DerivXiGP: Divide by zero!");
