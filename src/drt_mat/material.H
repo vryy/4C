@@ -33,60 +33,66 @@ namespace MAT
 
   const unsigned int  NUM_STRESS_3D = 6; ///< 6 stresses for 3D
 
-/// Interface class for materials in elements
-/*!
+  /// Interface class for materials in elements
+  /*!
+   *
+   * The Material class provides a general way to store material history
+   * variables in elements. Each element owns one object derived from
+   * this class. Each derived class implements a specific material and
+   * might even store history data.
+   * 
+   * \note There is one material object to each element, so one material
+   * object must store the history data of all Gauss points.
+   *
+   * Different material classes will (in general) not share a common set
+   * of functions, so the element needs to cast to the right
+   * material implementation. The element code will typically perform a
+   * test on MaterialType() and do the appropriate cast afterwards.
+   *
+   * <h3>Storage</h3>
+   *
+   * In order to support storage of material data (for restart, post
+   * processing, ...) this class does implement DRT::ParObject. The
+   * elements pack and unpack its materials along with its other data.
+   *
+   * \author u. kue and l.w.
+   * \date 06/07
+   */
+  class Material : public DRT::ParObject
+  {
+  public:
 
-   The Material class provides a general way to store material history
-   variables in elements. Each element owns one object derived from
-   this class. Each derived class implements a specific material and
-   might even store history data.
+    /// return type of this material
+    virtual INPAR::MAT::MaterialType MaterialType() const = 0;
 
-   \note There is one material object to each element, so one material
-   object must store the history data of all Gauss points.
-
-   Different material classes will (in general) not share a common set
-   of functions, so the element needs to cast to the right
-   material implementation. The element code will typically perform a
-   test on MaterialType() and do the appropriate cast afterwards.
-
-   <h3>Storage</h3>
-
-   In order to support storage of material data (for restart, post
-   processing, ...) this class does implement DRT::ParObject. The
-   elements pack and unpack its materials along with its other data.
-
-   \author u. kue and l.w.
-   \date 06/07
-*/
-class Material : public DRT::ParObject
-{
-public:
-
-  /// return type of this material
-  virtual INPAR::MAT::MaterialType MaterialType() const = 0;
-
-  /// create element material object given the number of a material definition
-  static Teuchos::RefCountPtr<Material> Factory(
-    int matnum  ///< material ID
-    );
-};
+    /// create element material object given the number of a material definition
+    static Teuchos::RefCountPtr<Material> Factory(
+      int matnum  ///< material ID
+      );
+  };
 
   /*!
-  \brief Multiply two 2nd order tensors A x B and add the result to a
-   4th order symmetric material tensor in matrix notation
-
-   compute the "elasticity tensor product" A x B of
-   two 2nd order tensors (in matrix notation) and add the result to
-   a 4th order tensor (in Voigt matrix notation!) using the
-   symmetry-conditions inherent to elasticity tensors
-   The implementation is based on the Epetra-Method Matrix.Multiply.
-
-  \param C (in/out)    : Material tangent matrix to be modified
-  \param ScalarAB (in) : Scalar to multiply with A x B
-  \param A (in)        : Dense matrix (3 by 3) as 2nd order tensor A
-  \param B (in)        : Dense matrix (3 by 3) as 2nd order tensor B
-  \param ScalarThis (in): Scalar to multiply with C before adding A x B
-  */
+   * \brief Multiply two 2nd order tensors A x B and add the result to a
+   * 4th order symmetric material tensor in matrix notation
+   * 
+   * In tensor index notation this method does
+   * \f[
+   * C_{IJKL} := ScalarThis \cdot C_{IJKL}
+   *           + 1/2 \cdot ScalarAB \cdot ( A_{IJ} \cdot B_{KL} )
+   * \f]
+   *
+   * compute the "elasticity tensor product" A x B of
+   * two 2nd order tensors (in matrix notation) and add the result to
+   * a 4th order tensor (in Voigt matrix notation!) using the
+   * symmetry-conditions inherent to elasticity tensors
+   * The implementation is based on the Epetra-Method Matrix.Multiply.
+   * 
+   * \param C (in/out)    : Material tangent matrix to be modified
+   * \param ScalarAB (in) : Scalar to multiply with A x B
+   * \param A (in)        : Dense matrix (3 by 3) as 2nd order tensor A
+   * \param B (in)        : Dense matrix (3 by 3) as 2nd order tensor B
+   * \param ScalarThis (in): Scalar to multiply with C before adding A x B
+   */
   void ElastSymTensorMultiply(Epetra_SerialDenseMatrix& C,
                                    const double ScalarAB,
                                    const Epetra_SerialDenseMatrix& A,
@@ -94,21 +100,27 @@ public:
                                    const double ScalarThis);
 
   /*!
-  \brief Multiply two 2nd order tensors A x B and add the result to a
-   4th order symmetric material tensor in matrix notation
-
-   compute the "elasticity tensor product" A x B of
-   two 2nd order tensors (in matrix notation) and add the result to
-   a 4th order tensor (in Voigt matrix notation!) using the
-   symmetry-conditions inherent to elasticity tensors.
-   This is another version of this function using the fixed size matrix.
-
-  \param C (in/out)    : Material tangent matrix to be modified
-  \param ScalarAB (in) : Scalar to multiply with A x B
-  \param A (in)        : Dense matrix (3 by 3) as 2nd order tensor A
-  \param B (in)        : Dense matrix (3 by 3) as 2nd order tensor B
-  \param ScalarThis (in): Scalar to multiply with C before adding A x B
-  */
+   * \brief Multiply two 2nd order tensors A x B and add the result to a
+   * 4th order symmetric material tensor in matrix notation
+   * 
+   * In tensor index notation this method does
+   * \f[
+   * C_{IJKL} := ScalarThis \cdot C_{IJKL}
+   *          + ScalarAB \cdot ( A_{IJ} \cdot B_{KL} )
+   * \f]
+   *
+   * compute the "elasticity tensor product" A x B of
+   * two 2nd order tensors (in matrix notation) and add the result to
+   * a 4th order tensor (in Voigt matrix notation!) using the
+   * symmetry-conditions inherent to elasticity tensors.
+   * This is another version of this function using the fixed size matrix.
+   *
+   * \param C (in/out)    : Material tangent matrix to be modified
+   * \param ScalarAB (in) : Scalar to multiply with A x B
+   * \param A (in)        : Dense matrix (3 by 3) as 2nd order tensor A
+   * \param B (in)        : Dense matrix (3 by 3) as 2nd order tensor B
+   * \param ScalarThis (in): Scalar to multiply with C before adding A x B
+   */
   void ElastSymTensorMultiply(LINALG::Matrix<6,6>& C,
                               const double ScalarAB,
                               const LINALG::Matrix<3,3>& A,
@@ -116,19 +128,25 @@ public:
                               const double ScalarThis);
 
   /*!
-  \brief Multiply two 2nd order tensors (A x B + B x A) and add the result to a
-   4th order symmetric material tensor in matrix notation
-
-   compute the "elasticity tensor product" (A x B + B x A) of
-   two 2nd order tensors (in matrix notation) and add the result to
-   a 4th order tensor (in Voigt matrix notation!) using the
-   symmetry-conditions inherent to elasticity tensors
-
-  \param C (in/out)     : Material tangent matrix to be modified
-  \param ScalarAB (in)  : Scalar to multiply with (A x B + B x A)
-  \param A (in)         : Dense matrix (3 by 3) as 2nd order tensor A
-  \param B (in)         : Dense matrix (3 by 3) as 2nd order tensor B
-  \param ScalarThis (in): Scalar to multiply with C before adding (A x B + B x A)
+   * \brief Multiply two 2nd order tensors (A x B + B x A) and add the result to a
+   * 4th order symmetric material tensor in matrix notation
+   * 
+   * In tensor index notation this method does
+   * \f[
+   * C_{IJKL} := ScalarThis \cdot C_{IJKL}
+   *          + ScalarAB \cdot ( A_{IJ} \cdot B_{KL} + B_{IJ} \cdot A_{KL} )
+   * \f]
+   * 
+   * compute the "elasticity tensor product" (A x B + B x A) of
+   * two 2nd order tensors (in matrix notation) and add the result to
+   * a 4th order tensor (in Voigt matrix notation!) using the
+   * symmetry-conditions inherent to elasticity tensors
+   *
+   * \param C (in/out)     : Material tangent matrix to be modified
+   * \param ScalarAB (in)  : Scalar to multiply with (A x B + B x A)
+   * \param A (in)         : Dense matrix (3 by 3) as 2nd order tensor A
+   * \param B (in)         : Dense matrix (3 by 3) as 2nd order tensor B
+   * \param ScalarThis (in): Scalar to multiply with C before adding (A x B + B x A)
   */
   void ElastSymTensorMultiplyAddSym(Epetra_SerialDenseMatrix& C,
                                    const double ScalarAB,
@@ -137,20 +155,26 @@ public:
                                    const double ScalarThis);
 
   /*!
-  \brief Multiply two 2nd order tensors (A x B + B x A) and add the result to a
-   4th order symmetric material tensor in matrix notation
-
-   compute the "elasticity tensor product" (A x B + B x A) of
-   two 2nd order tensors (in matrix notation) and add the result to
-   a 4th order tensor (in Voigt matrix notation!) using the
-   symmetry-conditions inherent to elasticity tensors
-   This is another version of this function using the fixed size matrix.
-
-  \param C (in/out)     : Material tangent matrix to be modified
-  \param ScalarAB (in)  : Scalar to multiply with (A x B + B x A)
-  \param A (in)         : Dense matrix (3 by 3) as 2nd order tensor A
-  \param B (in)         : Dense matrix (3 by 3) as 2nd order tensor B
-  \param ScalarThis (in): Scalar to multiply with C before adding (A x B + B x A)
+   * \brief Multiply two 2nd order tensors (A x B + B x A) and add the result to a
+   * 4th order symmetric material tensor in matrix notation
+   *
+   * In tensor index notation this method does
+   * \f[
+   * C_{IJKL} := ScalarThis \cdot C_{IJKL}
+   *          + ScalarAB \cdot ( A_{IJ} \cdot B_{KL} + B_{IJ} \cdot A_{KL} )
+   * \f]
+   *
+   * compute the "elasticity tensor product" (A x B + B x A) of
+   * two 2nd order tensors (in matrix notation) and add the result to
+   * a 4th order tensor (in Voigt matrix notation!) using the
+   * symmetry-conditions inherent to elasticity tensors
+   * This is another version of this function using the fixed size matrix.
+   * 
+   * \param C (in/out)     : Material tangent matrix to be modified
+   * \param ScalarAB (in)  : Scalar to multiply with (A x B + B x A)
+   * \param A (in)         : Dense matrix (3 by 3) as 2nd order tensor A
+   * \param B (in)         : Dense matrix (3 by 3) as 2nd order tensor B
+   * \param ScalarThis (in): Scalar to multiply with C before adding (A x B + B x A)
   */
   void ElastSymTensorMultiplyAddSym(LINALG::Matrix<6,6>& C,
           const double ScalarAB,
@@ -159,15 +183,21 @@ public:
           const double ScalarThis);
   
   /*!
-  \brief Multiply two 2nd order tensors A o B and add the result to a
-   4th order symmetric material tensor in matrix notation
-
-  \param C (in/out)    : Material tangent matrix to be modified
-  \param ScalarAB (in) : Scalar to multiply with A o B
-  \param A (in)        : Dense matrix (3 by 3) as 2nd order tensor A
-  \param B (in)        : Dense matrix (3 by 3) as 2nd order tensor B
-  \param ScalarThis (in): Scalar to multiply with C before adding A o B
-  */
+   * \brief Multiply two 2nd order tensors A o B and add the result to a
+   * 4th order symmetric material tensor in matrix notation
+   * 
+   * In tensor index notation this method does
+   * \f[
+   * C_{IJKL} := ScalarThis \cdot C_{IJKL}
+   *          + 1/2 \cdot ScalarAB \cdot ( A_{IK} \cdot B_{JL} + A_{IL} \cdot B_{JK} )
+   * \f]
+   *
+   * \param C (in/out)    : Material tangent matrix to be modified
+   * \param ScalarAB (in) : Scalar to multiply with A o B
+   * \param A (in)        : Dense matrix (3 by 3) as 2nd order tensor A
+   * \param B (in)        : Dense matrix (3 by 3) as 2nd order tensor B
+   * \param ScalarThis (in): Scalar to multiply with C before adding A o B
+   */
   void ElastSymTensor_o_Multiply(Epetra_SerialDenseMatrix& C,
                                    const double ScalarAB,
                                    const Epetra_SerialDenseMatrix& A,
@@ -175,16 +205,22 @@ public:
                                    const double ScalarThis);
 
   /*!
-  \brief Multiply two 2nd order tensors A o B and add the result to a
-   4th order symmetric material tensor in matrix notation
-   This is another version of this function using the fixed size matrix.
-
-  \param C (in/out)    : Material tangent matrix to be modified
-  \param ScalarAB (in) : Scalar to multiply with A o B
-  \param A (in)        : Dense matrix (3 by 3) as 2nd order tensor A
-  \param B (in)        : Dense matrix (3 by 3) as 2nd order tensor B
-  \param ScalarThis (in): Scalar to multiply with C before adding A o B
-  */
+   * \brief Multiply two 2nd order tensors A o B and add the result to a
+   * 4th order symmetric material tensor in matrix notation
+   * This is another version of this function using the fixed size matrix.
+   *
+   * In tensor index notation this method does
+   * \f[
+   * C_{IJKL} := ScalarThis \cdot C_{IJKL}
+   *          + 1/2 \cdot ScalarAB \cdot ( A_{IK} \cdot B_{JL} + A_{IL} \cdot B_{JK} )
+   * \f]
+   *
+   * \param C (in/out)    : Material tangent matrix to be modified
+   * \param ScalarAB (in) : Scalar to multiply with A o B
+   * \param A (in)        : Dense matrix (3 by 3) as 2nd order tensor A
+   * \param B (in)        : Dense matrix (3 by 3) as 2nd order tensor B
+   * \param ScalarThis (in): Scalar to multiply with C before adding A o B
+   */
   void ElastSymTensor_o_Multiply(LINALG::Matrix<6,6>& C,
                                  const double ScalarAB,
                                  const LINALG::Matrix<3,3>& A,
@@ -193,13 +229,37 @@ public:
 
 
   /*!
-  \brief Add 'Holzapfel product' contribution to constitutive tensor
-  using Voigt notation
-
-  \param cmat (in/out): Material tangent matrix(6x6) to be modified
-  \param invc   (in)  : Inverse right Cauchy-Green vector(6)
-  \param scalar (in)  : scalar corresponding to delta7
-  */
+   * \brief Add 'Holzapfel product' contribution to constitutive tensor
+   * using Voigt notation
+   *
+   * This function adds the following contribution to the given constitutive
+   * matrix cmat(6,6) based on the inverse of the right Cauchy-Green vector
+   * invc(6):
+   *
+   * \verbatim
+     scalar * ( Cinv boeppel Cinv )
+   * \endverbatim
+   *
+   * For that purpose we need the derivative
+   *
+   * \verbatim
+     \partial tensor(C)^-1
+     -----------------------
+     \partial tensor(C)
+   * \endverbatim 
+   *
+   * which yields the following product
+   * 
+   * \verbatim
+     - ( Cinv boeppel Cinv )_{abcd} = 1/2 * ( Cinv_{ac} Cinv_{bd} + Cinv_{ad} Cinv_{bc} )
+   * \endverbatim
+   * 
+   * For more details see Holzapfel p. 254
+   *
+   * \param cmat (in/out): Material tangent matrix(6x6) to be modified
+   * \param invc   (in)  : Inverse right Cauchy-Green vector(6)
+   * \param scalar (in)  : scalar corresponding to delta7
+   */
   void AddtoCmatHolzapfelProduct( Epetra_SerialDenseMatrix& cmat,
                                   Epetra_SerialDenseVector& invc,
                                   const double scalar);
@@ -207,6 +267,8 @@ public:
   /*!
   \brief Add 'Holzapfel product' contribution to constitutive tensor
   using Voigt notation
+
+  
 
   \param cmat (in/out): Material tangent matrix(6x6) to be modified
   \param invc   (in)  : Inverse right Cauchy-Green vector(6)
