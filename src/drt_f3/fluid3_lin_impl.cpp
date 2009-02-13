@@ -148,8 +148,7 @@ int DRT::ELEMENTS::Fluid3lin_Impl<distype>::Evaluate(
   Epetra_SerialDenseVector&  elevec1_epetra,
   Epetra_SerialDenseVector&  elevec2_epetra,
   Epetra_SerialDenseVector&  elevec3_epetra,
-  RefCountPtr<MAT::Material> mat,
-  MATERIAL*                  actmat)
+  RefCountPtr<MAT::Material> mat)
 {
   const int numnode = iel;
 
@@ -228,7 +227,7 @@ int DRT::ELEMENTS::Fluid3lin_Impl<distype>::Evaluate(
          echist,
          elemat1,
          elevec1,
-         actmat,
+         mat,
          time,
          timefac,
          loma);
@@ -255,7 +254,7 @@ void DRT::ELEMENTS::Fluid3lin_Impl<distype>::Sysmat(
   const LINALG::Matrix<iel,1>&     echist,
   LINALG::Matrix<4*iel,4*iel>&     estif,
   LINALG::Matrix<4*iel,1>&         eforce,
-  struct _MATERIAL*                                    material,
+  Teuchos::RCP<const MAT::Material>                    material,
   double                                               time,
   double                                               timefac,
   bool                                                 loma
@@ -280,8 +279,9 @@ void DRT::ELEMENTS::Fluid3lin_Impl<distype>::Sysmat(
 
   // get viscosity
   // check here, if we really have a fluid !!
-  dsassert(material->mattyp == m_fluid, "Material law is not of type m_fluid.");
-  const double visc = material->m.fluid->viscosity;
+  dsassert(material->MaterialType() == INPAR::MAT::m_fluid, "Material law is not of type m_fluid.");
+  const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());
+  const double visc = actmat->Viscosity();
 
   // stabilization parameter
   // This has to be done before anything else is calculated because

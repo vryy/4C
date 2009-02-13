@@ -38,7 +38,7 @@ using namespace Teuchos;
 
 
 // forward declarations
-struct _MATERIAL;
+//struct _MATERIAL;
 
 namespace DRT
 {
@@ -488,7 +488,7 @@ private:
   void f3_int_beltrami_err(
     vector<double>&       myvelnp,
     vector<double>&       myprenp,
-    struct _MATERIAL*     material,
+    Teuchos::RCP<const MAT::Material> material,
     ParameterList&    	  params
     );
 

@@ -23,21 +23,34 @@ Maintainer: Robert Metzke
 #include <Epetra_SerialDenseVector.h>
 #include "neohooke.H"
 
-extern struct _MATERIAL *mat;
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+MAT::PAR::NeoHooke::NeoHooke(
+  Teuchos::RCP<MAT::PAR::Material> matdata
+  )
+: Parameter(matdata),
+  youngs_(matdata->GetDouble("YOUNG")),
+  poissonratio_(matdata->GetDouble("NUE")),
+  density_(matdata->GetDouble("DENS"))
+{
+}
+
+/*----------------------------------------------------------------------*/
 /*---------------------------------------------------------------------*/
 MAT::NeoHooke::NeoHooke()
-  : matdata_(NULL)
+  : params_(NULL)
 {
 }
 
-
-/*---------------------------------------------------------------------*/
-MAT::NeoHooke::NeoHooke(MATERIAL* matdata)
-  : matdata_(matdata)
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+MAT::NeoHooke::NeoHooke(MAT::PAR::NeoHooke* params)
+  : params_(params)
 {
 }
 
+/*----------------------------------------------------------------------*/
 /*---------------------------------------------------------------------*/
 void MAT::NeoHooke::Pack(vector<char>& data) const
 {
@@ -46,12 +59,13 @@ void MAT::NeoHooke::Pack(vector<char>& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
-  // matdata
-  int matdata = matdata_ - mat;   // pointer difference to reach 0-entry
-  AddtoPack(data,matdata);
+
+  // matid
+  int matid = params_->Id();
+  AddtoPack(data,matid);
 }
 
-
+/*----------------------------------------------------------------------*/
 /*---------------------------------------------------------------------*/
 void MAT::NeoHooke::Unpack(const vector<char>& data)
 {
@@ -61,10 +75,15 @@ void MAT::NeoHooke::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
 
-  // matdata
-  int matdata;
-  ExtractfromPack(position,data,matdata);
-  matdata_ = &mat[matdata];     // unpack pointer to my specific matdata_
+  // matid
+  int matid;
+  ExtractfromPack(position,data,matid);
+  const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+  MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+  if (mat->Type() == MaterialType())
+    params_ = static_cast<MAT::PAR::NeoHooke*>(mat);
+  else
+    dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -80,8 +99,8 @@ void MAT::NeoHooke::Evaluate(
                   LINALG::Matrix<6,1>& stress)
 {
   // get material parameters
-  double ym = matdata_->m.neohooke->youngs;    // Young's modulus
-  double nu = matdata_->m.neohooke->possionratio; // Poisson's ratio
+  double ym = params_->youngs_;    // Young's modulus
+  double nu = params_->poissonratio_; // Poisson's ratio
 
   // Green-Lagrange Strain Tensor
   LINALG::Matrix<3,3> E(false);
@@ -219,8 +238,8 @@ void MAT::NeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
         LINALG::Matrix<6,1> stress(stress_e->A(),true);
 
   // get material parameters
-  double ym = matdata_->m.neohooke->youngs;    // Young's modulus
-  double nu = matdata_->m.neohooke->possionratio; // Poisson's ratio
+  double ym = params_->youngs_;    // Young's modulus
+  double nu = params_->poissonratio_; // Poisson's ratio
 
   // Green-Lagrange Strain Tensor
   LINALG::Matrix<3,3> E(false);

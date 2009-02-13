@@ -20,6 +20,40 @@ Maintainer: Lena Wiechert & Sophie Rausch
 namespace MAT
 {
 
+  namespace PAR
+  {
+
+    /*----------------------------------------------------------------------*/
+    /// material parameters for lung Ogden
+    class LungPenalty : public Parameter
+    {
+    public:
+
+      /// standard constructor
+      LungPenalty(
+        Teuchos::RCP<MAT::PAR::Material> matdata
+        );
+
+      /// destructor
+      virtual ~LungPenalty() { ; }
+
+      /// @name material parameters (these need to be writable for inverse analysis)
+      //@{
+
+      double c_;
+      double k1_;
+      double k2_;
+      double epsilon_;
+      double gamma_;
+      double dens_;
+
+      //@}
+
+    };  // class LungPenalty
+
+  }  // namespace PAR
+
+  /*----------------------------------------------------------------------*/
   /// Wrapper for hyperelastic polyconvex anisotropic material
   class LungPenalty : public Material
   {
@@ -29,7 +63,11 @@ namespace MAT
     LungPenalty();
 
     /// construct the material object given material parameters
-    explicit LungPenalty(MATERIAL* matdata);
+//    explicit LungPenalty(MATERIAL* matdata);
+
+
+    /// construct the material object given material parameters
+    explicit LungPenalty(MAT::PAR::LungPenalty* params);
 
     //! @name Packing and Unpacking
 
@@ -70,21 +108,37 @@ namespace MAT
     //@}
 
     /// material type
-    virtual MATERIAL_TYP MaterialType() const { return m_lung_penalty; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_lung_penalty; }
 
     // wrapper for less intensive error output information
     void Evaluate(const LINALG::Matrix<6,1>* glstrain,
                   LINALG::Matrix<6,6>* cmat,
                   LINALG::Matrix<6,1>* stress);
 
+    /// @name Access methods
+    //@{
+    double Density() const { return params_->dens_; }
+    double C() const { return params_->c_; }
+    double K1() const { return params_->k1_; }
+    double K2() const { return params_->k2_; }
+    double Epsilon() const { return params_->epsilon_; }
+    double Gamma() const { return params_->gamma_; }
+    //@}
 
-    double Density();
-
+    /// @name Write methods
+    //@{
+    void SetC(const double c) { params_->c_ = c; }
+    void SetK1(const double k1) { params_->k1_ = k1; }
+    void SetK2(const double k2) { params_->k2_ = k2; }
+    //@}
 
   private:
 
     /// my material parameters
-    MATERIAL* matdata_;
+////    MATERIAL* matdata_;
+
+    /// my material parameters
+    MAT::PAR::LungPenalty* params_;
 
   };
 }

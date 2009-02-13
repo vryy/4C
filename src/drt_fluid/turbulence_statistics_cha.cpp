@@ -69,7 +69,15 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
   // get fluid viscosity from material definition --- for computation
   // of ltau
-  visc_ = mat->m.fluid->viscosity;
+  int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
+  if (id==-1)
+    dserror("Could not find Newtonian fluid material");
+  else
+  {
+    const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+    const MAT::PAR::NewtonianFluid* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(mat);
+    visc_ = actmat->viscosity_;
+  }
 
 
   // ---------------------------------------------------------------------

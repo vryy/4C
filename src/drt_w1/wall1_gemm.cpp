@@ -51,7 +51,7 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
   Epetra_SerialDenseVector* force,
   Epetra_SerialDenseMatrix* elestress,
   Epetra_SerialDenseMatrix* elestrain,
-  struct _MATERIAL* material,
+  Teuchos::RCP<const MAT::Material> material,
   const INPAR::STR::StressType iostress,
   const INPAR::STR::StrainType iostrain
 )
@@ -277,7 +277,7 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
     }
 
     // call material law
-    if (material->mattyp == m_stvenant)
+    if (material->MaterialType() == INPAR::MAT::m_stvenant)
       w1_call_matgeononl(Evm, Smm, C, Wall1::numstr_, material);
     else
       dserror("It must be St.Venant-Kirchhoff material.");

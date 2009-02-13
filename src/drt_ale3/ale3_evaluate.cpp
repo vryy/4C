@@ -1077,7 +1077,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke(
   LINALG::Matrix<nd,nd> sys_mat(sys_mat_epetra.A(),true);
 
   //  get material using class StVenantKirchhoff
-  if (material->MaterialType()!=m_stvenant)
+  if (material->MaterialType()!=INPAR::MAT::m_stvenant)
     dserror("stvenant material expected but got type %d", material->MaterialType());
   MAT::StVenantKirchhoff* actmat = static_cast<MAT::StVenantKirchhoff*>(material.get());
 

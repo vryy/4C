@@ -272,7 +272,7 @@ void DRT::ELEMENTS::So_weg6::VisNames(map<string,int>& names)
 {
   // Put the owner of this element into the file (use base class method for this)
   DRT::Element::VisNames(names);
-  if (Material()->MaterialType() == m_artwallremod){
+  if (Material()->MaterialType() == INPAR::MAT::m_artwallremod){
     string fiber = "Fiber1";
     names[fiber] = 3; // 3-dim vector
     fiber = "Fiber2";
@@ -289,7 +289,7 @@ void DRT::ELEMENTS::So_weg6::VisData(const string& name, vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   DRT::Element::VisData(name,data);
-  if (Material()->MaterialType() == m_artwallremod){
+  if (Material()->MaterialType() == INPAR::MAT::m_artwallremod){
     MAT::ArtWallRemod* art = static_cast <MAT::ArtWallRemod*>(Material().get());
     vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
     vector<double> a2 = art->Geta2()->at(0);  // get a2 of first gp

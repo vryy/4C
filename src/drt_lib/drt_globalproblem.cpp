@@ -21,13 +21,18 @@ Maintainer: Ulrich Kuettler
 #include <Epetra_Time.h>
 
 #include "drt_conditiondefinition.H"
+#include "drt_materialdefinition.H"
 #include "drt_function.H"
 #include "drt_globalproblem.H"
 #include "drt_inputreader.H"
 #include "drt_timecurve.H"
 #include "drt_utils.H"
+#include "../drt_mat/material.H"
+#include "../drt_mat/matpar_bundle.H"
 #include "../drt_inpar/drt_validconditions.H"
 #include "../drt_inpar/drt_validparameters.H"
+#include "../drt_inpar/drt_validmaterials.H"
+#include "../drt_mat/micromaterial.H"
 
 #include "../drt_io/io_control.H"
 
@@ -64,10 +69,6 @@ and the type is in partition.h
 *----------------------------------------------------------------------*/
 extern struct _PAR   par;
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-extern struct _MATERIAL *mat;
 
 
 
@@ -335,6 +336,73 @@ void DRT::Problem::InputControl()
 
   ioflags.steps_per_file = io.get<int>("FILESTEPS");
 
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::Problem::ReadMaterials(const DRT::INPUT::DatFileReader& reader)
+{
+  if (materials_ != Teuchos::null)
+    dserror("Trying to create again the material bundle");
+  materials_ = Teuchos::rcp(new MAT::PAR::Bundle());
+
+  // create list of known materials
+  Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > vm = DRT::INPUT::ValidMaterials();
+  std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> >& matlist = *vm;
+
+  // test for each material definition (input file --MATERIALS section)
+  // and store in #matmap_
+  for (unsigned m=0; m<matlist.size(); ++m)
+  {
+    // read material from DAT file of type #matlist[m]
+    matlist[m]->Read(*this,reader,materials_);
+  }
+
+  // check if every material was identified
+  const std::string name = "--MATERIALS";
+  std::vector<const char*> section = reader.Section(name);
+  int nummat = 0;
+  if (section.size() > 0)
+  {
+    for (std::vector<const char*>::iterator i=section.begin();
+         i!=section.end();
+         ++i)
+    {
+      Teuchos::RCP<std::stringstream> condline = Teuchos::rcp(new std::stringstream(*i));
+
+      std::string mat;
+      std::string number;
+      std::string name;
+      (*condline) >> mat >> number >> name;
+      if ( (not (*condline)) or (mat != "MAT") )
+        dserror("invalid material line in '%s'",name.c_str());
+
+      // extract material ID
+      int matid = -1;
+      {
+        char* ptr;
+        matid = strtol(number.c_str(),&ptr,10);
+        if (ptr == number.c_str())
+          dserror("failed to read material object number '%s'",
+                  number.c_str());
+      }
+
+      // processed?
+      if (materials_->Find(matid) == -1)
+        dserror("Material 'MAT %d' with name '%s' could not be identified", matid, name.c_str());
+
+      // count number of materials provided in file
+      nummat += 1;
+    }
+  }
+
+  // make fast access parameters
+  materials_->MakeParameters();
+
+
+  // inform user
+  //std::cout << "Number of successfully read materials is " << nummat << std::endl;
 }
 
 
@@ -782,11 +850,18 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
 
     // read microscale fields from second, third, ... inputfile
 
-    for (unsigned i=0; i<material_.size(); ++i)
+    for (std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator i=materials_->Map()->begin();
+         i!=materials_->Map()->end();
+         ++i)
     {
-      if (material_[i].mattyp == m_struct_multiscale)
+      int matid = i->first;
+      Teuchos::RCP<MAT::PAR::Material> material = i->second;
+      if (material->Type() == INPAR::MAT::m_struct_multiscale)
       {
-        int microdisnum = material_[i].m.struct_multiscale->microdis;
+        Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(matid);
+        MAT::MicroMaterial* micromat = static_cast<MAT::MicroMaterial*>(mat.get());
+        int microdisnum = micromat->MicroDisNum();
+
         RCP<DRT::Problem> micro_problem = DRT::Problem::Instance(microdisnum);
 #ifdef PARALLEL
         RCP<Epetra_MpiComm> serialcomm = rcp(new Epetra_MpiComm(MPI_COMM_SELF));
@@ -794,7 +869,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
         RCP<Epetra_SerialComm> serialcomm = rcp(new Epetra_SerialComm());
 #endif
 
-        string micro_inputfile_name = material_[i].m.struct_multiscale->micro_inputfile_name;
+        string micro_inputfile_name = micromat->MicroInputFileName();
 
         if (micro_inputfile_name[0]!='/')
         {
@@ -828,9 +903,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
         // before elements are read since elements establish a connection
         // to the corresponding material! Thus do not change position of
         // function calls!
+        materials_->SetReadFromProblem(microdisnum);
 
-        micro_problem->ReadMaterial();
-
+        micro_problem->ReadMaterials(micro_reader);
 
         DRT::INPUT::NodeReader micronodereader(micro_reader, "--NODE COORDS");
         micronodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis_micro, micro_reader, "--STRUCTURE ELEMENTS")));
@@ -850,7 +925,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     // reactivate reader of macroscale as well as macroscale material
 
     reader.Activate();
-    ActivateMaterial();
+//    ActivateMaterial();
+    materials_->ResetReadFromProblem();
 
     break;
   } // end of else if (genprob.probtyp==prb_struct_multi)
@@ -973,13 +1049,13 @@ void DRT::Problem::AddDis(int fieldnum, RCP<Discretization> dis)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Problem::AddMaterial(const _MATERIAL& m)
-{
-  if (m.m.fluid==NULL)
-    dserror("invalid material added");
-  material_.push_back(m); // copy!
-  ActivateMaterial();     // always reset!
-}
+//void DRT::Problem::AddMaterial(const _MATERIAL& m)
+//{
+//  if (m.m.fluid==NULL)
+//    dserror("invalid material added");
+//  material_.push_back(m); // copy!
+//  ActivateMaterial();     // always reset!
+//}
 
 
 /*----------------------------------------------------------------------*/
@@ -1000,10 +1076,11 @@ void DRT::Problem::SetDis(int fieldnum, int disnum, RCP<Discretization> dis)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Problem::ActivateMaterial()
-{
-  mat = &material_[0];
-}
+//void DRT::Problem::ActivateMaterial()
+//{
+//  mat = &material_[0];
+//}
+
 
 
 #endif

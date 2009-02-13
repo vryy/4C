@@ -20,6 +20,7 @@ Maintainer: Georg Bauer
 #include "scatra_ele_impl.H"
 #include "../drt_mat/convecdiffus.H"
 #include "../drt_mat/sutherland_condif.H"
+#include "../drt_mat/ion.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_timecurve.H"
@@ -145,16 +146,6 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
   // get the material (of the parent element)
   DRT::ELEMENTS::Transport* parentele = ele->ParentElement();
   RefCountPtr<MAT::Material> mat = parentele->Material();
-  MATERIAL* actmat = NULL;
-
-  if(mat->MaterialType()== m_condif)
-    actmat = static_cast<MAT::ConvecDiffus*>(mat.get())->MaterialData();
-  else if(mat->MaterialType()== m_sutherland_condif)
-    actmat = static_cast<MAT::SutherlandCondif*>(mat.get())->MaterialData();
-  else if (mat->MaterialType()== m_matlist)
-    actmat = static_cast<MAT::MatList*>(mat.get())->MaterialData();
-  else
-    dserror("condif or matlist material expected but got type %d", mat->MaterialType());
 
   // Now, check for the action parameter
   const string action = params.get<string>("action","none");
@@ -232,7 +223,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
           eflux,
           peleptr,
           myphinp,
-          actmat,
+          mat,
           temperature,
           frt,
           evel,
@@ -387,7 +378,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
           elemat1_epetra,
           elevec1_epetra,
           ephinp,
-          actmat,
+          mat,
           reactantid,
           kinetics,
           pot0,
@@ -468,7 +459,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
         eflux,
         peleptr,
         myphinp,
-        actmat,
+        mat,
         temperature,
         frt,
         evel,
@@ -636,7 +627,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
     Epetra_SerialDenseMatrix& emat,
     Epetra_SerialDenseVector& erhs,
     const vector<double>&   ephinp,
-    struct _MATERIAL*     material,
+    Teuchos::RCP<const MAT::Material> material,
     const int&               rctid,
     const std::string*    kinetics,
     const double&             pot0,
@@ -659,14 +650,19 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
   if (iselch)
   {
     // get valence of the single(!) reactant
-    if (material->mattyp == m_matlist)
+    if (material->MaterialType() == INPAR::MAT::m_matlist)
     {
-      if (material->m.matlist->matids[0] != rctid) 
+      const MAT::MatList* actmat = static_cast<const MAT::MatList*>(material.get());
+
+      if (actmat->MatID(0) != rctid) 
         dserror("active species is not first scalar in material list!");
       // the active species is the FIRST material in the material list. ALWAYS!
-      const _MATERIAL& singlemat =  DRT::Problem::Instance()->Material(rctid-1);
-      if (singlemat.mattyp == m_ion)
-        fz = fz/singlemat.m.ion->valence;
+      Teuchos::RCP<const MAT::Material> singlemat = actmat->MaterialById(rctid);
+      if (singlemat->MaterialType() == INPAR::MAT::m_ion)
+      {
+        const MAT::Ion* actsinglemat = static_cast<const MAT::Ion*>(singlemat.get());
+        fz = fz/actsinglemat->Valence();
+      }
       else
         dserror("single material type is not 'ion'");
     }

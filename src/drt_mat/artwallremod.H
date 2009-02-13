@@ -13,6 +13,7 @@ Maintainer: Moritz Frenzel
 #define ARTWALLREMOD_H_
 #ifdef CCADISCRET
 
+#include "matpar_parameter.H"
 #include "material.H"
 #include <Epetra_SerialDenseVector.h>
 #include <Epetra_SerialDenseMatrix.h>
@@ -26,6 +27,43 @@ Maintainer: Moritz Frenzel
 namespace MAT
 {
 
+  namespace PAR
+  {
+
+    /*----------------------------------------------------------------------*/
+    /// material parameters
+    class ArtWallRemod : public Parameter
+    {
+    public:
+
+      /// standard constructor
+      ArtWallRemod(
+        Teuchos::RCP<MAT::PAR::Material> matdata
+        );
+
+      /// destructor
+      virtual ~ArtWallRemod() { ; }
+
+      /// @name material parameters
+      //@{
+
+      const double kappa_;
+      const double mue_;
+      const double density_;
+      const double k1_;
+      const double k2_;
+      const double gamma_;
+      const int init_;
+      double rembegt_;  // this is changed!!!
+      const int tensonly_;
+
+      //@}
+
+    };  // class ArtWallRemod
+
+  }  // namespace PAR 
+
+  /*----------------------------------------------------------------------*/
   /// Wrapper for Mooney-Rivlin material
   class ArtWallRemod : public Material
   {
@@ -35,7 +73,7 @@ namespace MAT
     ArtWallRemod();
 
     /// construct the material object given material parameters
-    explicit ArtWallRemod(MATERIAL* matdata);
+    explicit ArtWallRemod(MAT::PAR::ArtWallRemod* params);
 
     //! @name Packing and Unpacking
 
@@ -76,7 +114,7 @@ namespace MAT
     //@}
 
     /// material type
-    virtual MATERIAL_TYP MaterialType() const { return m_artwallremod; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_artwallremod; }
 
     /// evaluate stress and elasticity matrix
     void Evaluate(
@@ -89,7 +127,7 @@ namespace MAT
 
 
     /// return density
-    double Density() {return matdata_->m.artwallremod->density;}
+    double Density() const {return params_->density_;}
 
     /// check whether internal variables are initialized
     bool Initialized() const
@@ -147,7 +185,7 @@ namespace MAT
   private:
 
     /// my material parameters
-    MATERIAL* matdata_;
+    MAT::PAR::ArtWallRemod* params_;
 
     /// angle of alignment at gp
     Teuchos::RCP<vector<double> > gamma_;

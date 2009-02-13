@@ -15,11 +15,52 @@ Maintainer: Volker Gravemeier
 
 #ifdef CCADISCRET
 
+#include "matpar_parameter.H"
 #include "material.H"
 
 namespace MAT
 {
 
+  namespace PAR
+  {
+
+    /*----------------------------------------------------------------------*/
+    /// material parameters for temperature-dependent viscosity according to Sutherland law
+    ///
+    /// This object exists only once for each read Newton fluid.
+    class SutherlandCondif : public Parameter
+    {
+    public:
+
+      /// standard constructor
+      SutherlandCondif(
+        Teuchos::RCP<MAT::PAR::Material> matdata
+        );
+
+      /// destructor
+      virtual ~SutherlandCondif() { ; }
+
+      /// @name material parameters
+      //@{
+
+      /// reference dynamic viscosity (kg/(m*s))
+      const double refvisc_;
+      /// reference temperature (K)
+      const double reftemp_;
+      /// Sutherland temperature (K)
+      const double suthtemp_;
+      /// specific heat capacity
+      const double shc_;
+      /// Prandtl number
+      const double pranum_;
+
+      //@}
+
+    };  // class SutherlandCondif
+
+  }  // namespace PAR
+
+  /*----------------------------------------------------------------------*/
   /// temperature-dependent viscosity according to Sutherland law
   class SutherlandCondif : public Material
   {
@@ -29,7 +70,7 @@ namespace MAT
     SutherlandCondif();
 
     /// construct the material object given material parameters
-    explicit SutherlandCondif(MATERIAL* matdata);
+    explicit SutherlandCondif(MAT::PAR::SutherlandCondif* params);
 
     //! @name Packing and Unpacking
 
@@ -71,24 +112,28 @@ namespace MAT
     //@}
 
     /// material type 
-    virtual MATERIAL_TYP MaterialType() const { return m_sutherland_condif; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_sutherland_condif; }
 
     /// return material parameters for element calculation
+    //@{
 
-    /*!
-      To smooth transition of fluid elements to the unified class
-      based material structure we simply return the globally defined
-      material parameters. The actual stress calculations are still
-      done inside the elements. This will change once we have to
-      support different materials in fluid as well.
-     */
-    MATERIAL* MaterialData() const { return matdata_; }
+    /// reference dynamic viscosity (kg/(m*s))
+    double RefVisc() const { return params_->refvisc_; }
+    /// reference temperature (K)
+    double RefTemp() const { return params_->reftemp_; }
+    /// Sutherland temperature (K)
+    double SuthTemp() const { return params_->suthtemp_; }
+    /// specific heat capacity
+    double Shc() const { return params_->shc_; }
+    /// Prandtl number
+    double PraNum() const { return params_->pranum_; }
 
+    //@}
 
   private:
 
     /// my material parameters
-    MATERIAL* matdata_;
+    MAT::PAR::SutherlandCondif* params_;
   };
 
 }

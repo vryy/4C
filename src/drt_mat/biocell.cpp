@@ -18,18 +18,26 @@ Maintainer: Robert Metzke
 #include <Epetra_SerialDenseVector.h>
 #include "biocell.H"
 
-extern struct _MATERIAL *mat;
-
 /*---------------------------------------------------------------------*/
-MAT::BioCell::BioCell()
-  : matdata_(NULL)
+MAT::PAR::BioCell::BioCell(
+  Teuchos::RCP<MAT::PAR::Material> matdata
+  )
+: Parameter(matdata),
+  density_(matdata->GetDouble("DENS"))
 {
 }
 
 
 /*---------------------------------------------------------------------*/
-MAT::BioCell::BioCell(MATERIAL* matdata)
-  : matdata_(matdata)
+MAT::BioCell::BioCell()
+  : params_(NULL)
+{
+}
+
+
+/*---------------------------------------------------------------------*/
+MAT::BioCell::BioCell(MAT::PAR::BioCell* params)
+  : params_(params)
 {
 }
 
@@ -41,9 +49,9 @@ void MAT::BioCell::Pack(vector<char>& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
-  // matdata
-  int matdata = matdata_ - mat;   // pointer difference to reach 0-entry
-  AddtoPack(data,matdata);
+  // matid
+  int matid = params_->Id();
+  AddtoPack(data,matid);
 }
 
 
@@ -56,10 +64,15 @@ void MAT::BioCell::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
 
-  // matdata
-  int matdata;
-  ExtractfromPack(position,data,matdata);
-  matdata_ = &mat[matdata];     // unpack pointer to my specific matdata_
+  // matid and recover params_
+  int matid;
+  ExtractfromPack(position,data,matid);
+  const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+  MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+  if (mat->Type() == MaterialType())
+    params_ = static_cast<MAT::PAR::BioCell*>(mat);
+  else
+    dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -159,7 +172,7 @@ void MAT::BioCell::Evaluate(
           }}}
   // anisotropic invariant J4 = tr(HC)
   double J4_af = HC_af(0,0)+HC_af(1,1)+HC_af(2,2);
-  double J4_mt = HC_mt(0,0)+HC_mt(1,1)+HC_mt(2,2);
+  //double J4_mt = HC_mt(0,0)+HC_mt(1,1)+HC_mt(2,2);  // unused
   
   
   // Strain Energy /////////////////////////////////////////////////////////////

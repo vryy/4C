@@ -48,9 +48,6 @@ using namespace Teuchos;
 #define NUMNOD_SOTET4_FACE  3	   ///< number of nodes on a TET4 face (which is a TRI3)
 #define NUMGPT_SOTET4_FACE  1	   ///< number of GP    on a TET4 face (which is a TRI3)
 
-// forward declarations
-struct _MATERIAL;
-
 namespace DRT
 {
 // forward declarations
@@ -368,7 +365,7 @@ protected:
                                     LINALG::Matrix<NUMDOF_SOTET4,1>* force,
                                     LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* stresses,
                                     LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestrain,
-                                    struct _MATERIAL*         material,
+                                    Teuchos::RCP<const MAT::Material> material,
                                     const INPAR::STR::StressType     iostress,
                                     const INPAR::STR::StrainType     iostrain);
 

@@ -25,7 +25,7 @@ Maintainer: Georg Bauer
 
 
 // forward declarations
-struct _MATERIAL;
+//struct _MATERIAL;
 
 
 namespace DRT
@@ -69,7 +69,7 @@ public:
       LINALG::SerialDenseMatrix&      flux,
       DRT::Element*&            ele,
       vector<double>&           ephinp,
-      struct _MATERIAL*         material,
+      Teuchos::RCP<const MAT::Material> material,
       bool                      temperature,
       double                    frt,
       Epetra_SerialDenseVector& evel,
@@ -152,7 +152,7 @@ public:
       LINALG::SerialDenseMatrix&      flux,
       DRT::Element*&                  ele,
       vector<double>&                 ephinp,
-      struct _MATERIAL*               material,
+      Teuchos::RCP<const MAT::Material> material,
       bool                            temperature,
       double                          frt,
       Epetra_SerialDenseVector&       evel,
@@ -172,7 +172,7 @@ public:
         Epetra_SerialDenseMatrix&             sys_mat,///< element matrix to calculate
         Epetra_SerialDenseVector&             residual, ///< element rhs to calculate
         Epetra_SerialDenseVector&             subgrdiff, ///< subgrid-diff.-scaling vector
-        struct _MATERIAL*                     material, ///< material pointer
+        Teuchos::RCP<const MAT::Material>     material, ///< material pointer
         const double                          time, ///< current simulation time
         const double                          dt, ///< current time-step length
         const double                          timefac, ///< time discretization factor
@@ -198,7 +198,7 @@ public:
         Epetra_SerialDenseMatrix&             massmat, ///< mass matrix to calculate
         Epetra_SerialDenseVector&             rhs, ///< element rhs to calculate
         Epetra_SerialDenseVector&             subgrdiff, ///< subgrid-diff.-scaling vector
-        struct _MATERIAL*                     material, ///< material pointer
+        Teuchos::RCP<const MAT::Material>     material, ///< material pointer
         const double                          time, ///< current simulation time
         const double                          dt, ///< current time-step length
         const double                          timefac, ///< time discretization factor
@@ -227,7 +227,7 @@ public:
 
     //! get the material parameters
     virtual void GetMaterialParams(
-        struct _MATERIAL*                     material,    ///< material pointer
+      Teuchos::RCP<const MAT::Material>       material,    ///< material pointer
         const bool&                           temperature,  ///< temperature flag
         const vector<LINALG::Matrix<iel,1> >& ephinp      /// scalar field
     );
@@ -307,7 +307,7 @@ public:
         const vector<LINALG::Matrix<iel,1> >& ephinp, ///< actual numerical sol. of concentrations
         const LINALG::Matrix<iel,1>& epotnp, ///< actual numerical solution of el. potential
         Epetra_SerialDenseVector&    errors, ///< vector of error values
-        struct _MATERIAL*            material ///< material pointer
+        Teuchos::RCP<const MAT::Material> material ///< material pointer
     );
 
     //! calculate flux vector for actual solution
@@ -315,7 +315,7 @@ public:
         LINALG::Matrix<3,iel>&          flux,
         const DRT::Element*             ele,
         const vector<double>&           ephinp,
-        struct _MATERIAL*               material,
+        Teuchos::RCP<const MAT::Material> material,
         const bool                      temperature,
         const double                    frt,
         const Epetra_SerialDenseVector& evel,

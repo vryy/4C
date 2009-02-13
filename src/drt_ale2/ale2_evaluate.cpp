@@ -498,7 +498,7 @@ void DRT::ELEMENTS::Ale2::static_ke(vector<int>&              lm,
 
 
   // get material using class StVenantKirchhoff
-  if (material->MaterialType()!=m_stvenant)
+  if (material->MaterialType()!=INPAR::MAT::m_stvenant)
     dserror("stvenant material expected but got type %d", material->MaterialType());
   MAT::StVenantKirchhoff* actmat = static_cast<MAT::StVenantKirchhoff*>(material.get());
 

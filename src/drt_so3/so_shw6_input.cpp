@@ -56,10 +56,10 @@ bool DRT::ELEMENTS::So_shw6::ReadElement()
   SetMaterial(material);
 
   // special element-dependent input of material parameters
-  if (Material()->MaterialType() == m_artwallremod){
+  if (Material()->MaterialType() == INPAR::MAT::m_artwallremod){
     MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(Material().get());
     remo->Setup(NUMGPT_WEG6, this->Id());
-  } else if (Material()->MaterialType() == m_viscoanisotropic){
+  } else if (Material()->MaterialType() == INPAR::MAT::m_viscoanisotropic){
     MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(Material().get());
     visco->Setup(NUMGPT_WEG6);
   }

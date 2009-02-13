@@ -12,6 +12,7 @@ Maintainer: ???
 
 #ifdef CCADISCRET
 
+#include "matpar_parameter.H"
 #include "material.H"
 #include <Epetra_SerialDenseVector.h>
 #include <Epetra_SerialDenseMatrix.h>
@@ -20,6 +21,42 @@ Maintainer: ???
 namespace MAT
 {
 
+  namespace PAR
+  {
+
+    /*----------------------------------------------------------------------*/
+    /// material parameters for de St. Venant--Kirchhoff
+    class StVenantKirchhoff : public Parameter
+    {
+    public:
+
+      /// standard constructor
+      StVenantKirchhoff(
+        Teuchos::RCP<MAT::PAR::Material> matdata
+        );
+
+      /// destructor
+      virtual ~StVenantKirchhoff() { ; }
+
+      /// @name material parameters
+      //@{
+
+      /// Young's modulus
+      const double youngs_;
+      /// Possion's ratio
+      const double poissonratio_;
+      /// mass density
+      const double density_;
+      /// linear coefficient of thermal expansion
+      const double thermexpans_;
+
+      //@}
+
+    };  // class StVenantKirchhoff
+
+  }  // namespace PAR
+
+  /*----------------------------------------------------------------------*/
   /// Wrapper for St.-Venant-Kirchhoff material
   class StVenantKirchhoff : public Material
   {
@@ -29,7 +66,7 @@ namespace MAT
     StVenantKirchhoff();
 
     /// construct the material object given material parameters
-    explicit StVenantKirchhoff(MATERIAL* matdata);
+    explicit StVenantKirchhoff(MAT::PAR::StVenantKirchhoff* params);
 
     //! @name Packing and Unpacking
 
@@ -70,7 +107,7 @@ namespace MAT
     //@}
 
     /// material type
-    virtual MATERIAL_TYP MaterialType() const { return m_stvenant; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_stvenant; }
     
     //evaluates stresses for 3d
     void Evaluate(const Epetra_SerialDenseVector* glstrain_e,
@@ -89,13 +126,20 @@ namespace MAT
     // plane strain, rotational symmetry
     void SetupCmat2d(Epetra_SerialDenseMatrix* cmat);
 
-    double Density();                  
+    /// Young's modulus
+    double Youngs() const { return params_->youngs_; }
+
+    /// Poisson's ratio
+    double PoissonRatio() const { return params_->poissonratio_; }
+
+    /// density
+    double Density() const { return params_->density_; }              
 
 
   private:
 
     /// my material parameters
-    MATERIAL* matdata_;
+    MAT::PAR::StVenantKirchhoff* params_;
   
   };
 }

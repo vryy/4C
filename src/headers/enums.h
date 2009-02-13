@@ -248,6 +248,8 @@ typedef enum _NODE_ARRAY {
  | enum MATERIAL_TYP                                      m.gee 7/01    |
  | material laws                                                        |
  *----------------------------------------------------------------------*/
+#if defined(CCADISCRET) && !defined(D_SHELL8)
+#else
 typedef enum _MATERIAL_TYP
 {
                        m_stvenant,    /* St.Venant Kirchhoff material */
@@ -301,6 +303,7 @@ typedef enum _MATERIAL_TYP
                        m_biocell,       /* biological cell model */
                        m_ion            /* properties of an ion species in an electrolyte solution */
 } MATERIAL_TYP;
+#endif
 /*----------------------------------------------------------------------*
  | enum PART_TYP                                          m.gee 7/01    |
  | type of domain decomposition                                         |

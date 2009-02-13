@@ -176,8 +176,7 @@ int DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Evaluate(
   Epetra_SerialDenseVector&  elevec1_epetra,
   Epetra_SerialDenseVector&  elevec2_epetra,
   Epetra_SerialDenseVector&  elevec3_epetra,
-  RefCountPtr<MAT::Material> mat,
-  _MATERIAL*                 actmat)
+  RefCountPtr<MAT::Material> mat)
 {
 
   // the number of nodes
@@ -301,7 +300,7 @@ int DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Evaluate(
          edensnp,
          elemat1,
          elevec1,
-         actmat,
+         mat,
          pseudotime,
          newton,
          loma,
@@ -319,12 +318,21 @@ int DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Evaluate(
   // This is a very poor way to transport the density to the
   // outside world. Is there a better one?
   /*double dens = 0.0;
-  if(mat->MaterialType()== m_fluid)
-    dens = actmat->m.fluid->density;
-  else if(mat->MaterialType()== m_carreauyasuda)
-    dens = actmat->m.carreauyasuda->density;
-  else if(mat->MaterialType()== m_modpowerlaw)
-    dens = actmat->m.modpowerlaw->density;
+  if(mat->MaterialType()== INPAR::MAT::m_fluid)
+  {
+    const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
+    dens = actmat->Density();
+  }
+  else if(mat->MaterialType()== INPAR::MAT::m_carreauyasuda)
+  {
+    const MAT::CarreauYasuda* actmat = static_cast<const MAT::CarreauYasuda*>(mat.get());
+    dens = actmat->Density();
+  }
+  else if(mat->MaterialType()== INPAR::MAT::m_modpowerlaw)
+  {
+    const MAT::ModPowerLaw* actmat = static_cast<const MAT::ModPowerLaw*>(mat.get());
+    dens = actmat->Density();
+  }
   else
     dserror("no fluid material found");
 
@@ -350,7 +358,7 @@ void DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Sysmat(
   const LINALG::Matrix<iel,1>& edensnp,
   LINALG::Matrix<4*iel,4*iel>& estif,
   LINALG::Matrix<4*iel,1>&     eforce,
-  struct _MATERIAL*                                material,
+  Teuchos::RCP<const MAT::Material>                material,
   double                                           pseudotime,
   const bool                                       newton,
   const bool                                       loma,
@@ -382,8 +390,9 @@ void DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Sysmat(
 
   // get viscosity
   // check here, if we really have a fluid !!
-  dsassert(material->mattyp == m_fluid, "Material law is not of type m_fluid.");
-  const double visc = material->m.fluid->viscosity;
+  dsassert(material->MaterialType() == INPAR::MAT::m_fluid, "Material law is not of type m_fluid.");
+  const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());
+  const double visc = actmat->Viscosity();
 
   // stabilization parameter
   // This has to be done before anything else is calculated because

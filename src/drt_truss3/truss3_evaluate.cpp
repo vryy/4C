@@ -28,9 +28,7 @@ Maintainer: Christian Cyron
 #include "../drt_lib/linalg_fixedsizematrix.H"
 //including random number library of blitz for statistical forces
 #include <random/normal.h>
-
-//externally defined structure for material data
-extern struct _MATERIAL *mat;
+#include "../drt_mat/stvenantkirchhoff.H"
 
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public)                                                                 cyron 08/08|
@@ -491,19 +489,20 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_totlag( vector<double>& disp,
    / the evaluation functions */
 
   // get the material law
-  MATERIAL* currmat = &(mat[material_-1]);
+  Teuchos::RCP<const MAT::Material> currmat = Material();
   double ym = 0;
   double sm = 0;
   double density = 0;
 
   //assignment of material parameters; only St.Venant material is accepted for this truss 
-  switch(currmat->mattyp)
+  switch(currmat->MaterialType())
   {
-    case m_stvenant:// only linear elastic material supported
+    case INPAR::MAT::m_stvenant:// only linear elastic material supported
     {
-      ym = currmat->m.stvenant->youngs;
-      sm = ym / (2*(1 + currmat->m.stvenant->possionratio));
-      density = currmat->m.stvenant->density;
+      const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
+      ym = actmat->Youngs();
+      sm = ym / (2*(1 + actmat->PoissonRatio()));
+      density = actmat->Density();
     }
     break;
     default:
@@ -622,17 +621,18 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_engstr( vector<double>& disp,
    / the evaluation functions */
 
   // get the material law
-  MATERIAL* currmat = &(mat[material_-1]);
+  Teuchos::RCP<const MAT::Material> currmat = Material();
   double ym = 0;
   double density = 0;
 
   //assignment of material parameters; only St.Venant material is accepted for this truss 
-  switch(currmat->mattyp)
+  switch(currmat->MaterialType())
   {
-    case m_stvenant:// only linear elastic material supported
+  case INPAR::MAT::m_stvenant:// only linear elastic material supported
     {
-      ym = currmat->m.stvenant->youngs;
-      density = currmat->m.stvenant->density;
+      const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
+      ym = actmat->Youngs();
+      density = actmat->Density();
     }
     break;
     default:

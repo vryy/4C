@@ -15,6 +15,7 @@ Maintainer: Robert Metzke
 
 #ifdef CCADISCRET
 
+#include "matpar_parameter.H"
 #include "material.H"
 #include <Epetra_SerialDenseVector.h>
 #include <Epetra_SerialDenseMatrix.h>
@@ -23,6 +24,35 @@ Maintainer: Robert Metzke
 namespace MAT
 {
 
+  namespace PAR
+  {
+
+    /*----------------------------------------------------------------------*/
+    /// material parameters
+    class BioCell : public Parameter
+    {
+    public:
+
+      /// standard constructor
+      BioCell(
+        Teuchos::RCP<MAT::PAR::Material> matdata
+        );
+
+      /// destructor
+      virtual ~BioCell() { ; }
+
+      /// @name material parameters
+      //@{
+
+      const double density_;
+
+      //@}
+
+    };  // class BioCell
+
+  }  // namespace PAR
+
+  /*----------------------------------------------------------------------*/
   /// Wrapper for Biological Cell Material
   class BioCell : public Material
   {
@@ -32,7 +62,7 @@ namespace MAT
     BioCell();
 
     /// construct the material object given material parameters
-    explicit BioCell(MATERIAL* matdata);
+    explicit BioCell(MAT::PAR::BioCell* params);
 
     //! @name Packing and Unpacking
 
@@ -73,20 +103,20 @@ namespace MAT
     //@}
 
     /// material type
-    virtual MATERIAL_TYP MaterialType() const { return m_biocell; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_biocell; }
     
     void Evaluate(const LINALG::Matrix<6,1>* glstrain,
             LINALG::Matrix<6,6>* cmat,
             LINALG::Matrix<6,1>* stress);
     
 
-    inline double Density() { return matdata_->m.biocell->density; }
+    inline double Density() const { return params_->density_; }
 
 
   private:
 
     /// my material parameters
-    MATERIAL* matdata_;
+    MAT::PAR::BioCell* params_;
     
     void InverseTensor(
                   const Epetra_SerialDenseMatrix& M,

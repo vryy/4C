@@ -155,7 +155,7 @@ namespace DRT
                   const blitz::Array<double,1>&                         eprenp,
                   const blitz::Array<double,2>&                         eaccam,
                   const blitz::Array<double,2>&                         evelaf,
-                  const struct _MATERIAL*                               material,
+                  Teuchos::RCP<const MAT::Material>                     material,
                   const double                                          alphaM,
                   const double                                          alphaF,
                   const double                                          gamma,
@@ -180,7 +180,7 @@ namespace DRT
                    const blitz::Array<double,1>&                         eprenp,
                    const blitz::Array<double,2>&                         eaccam,
                    const blitz::Array<double,2>&                         evelaf,
-                   const struct _MATERIAL*                               material,
+                   Teuchos::RCP<const MAT::Material>                     material,
                    const double                                          alphaM,
                    const double                                          alphaF,
                    const double                                          gamma,
@@ -207,7 +207,7 @@ namespace DRT
         \param material                 (i) material
         \param visc                     (o) kinematic material viscosity
         */
-      void CalVisc(     const struct _MATERIAL*                 material,
+      void CalVisc(     Teuchos::RCP<const MAT::Material>       material,
                         double&                                 visc);
       //! number of nodes --- determines array sizes
       int iel_;                             

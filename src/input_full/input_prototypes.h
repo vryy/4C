@@ -166,10 +166,12 @@ void inpdesign_topology_fe(
  *----------------------------------------------------------------------*/
 void inp_material(void);
 
+#ifndef CCADISCRET
 void inp_mat_nonconstparam(CHAR* param_w,  /* parameter key word */
                            MAT_PARAM_INTPOL* param_ipl,  /* parameter interpolation */
                            INT* param_n,   /* number of parameter components */
                            DOUBLE** param);  /* parameter vector */
+#endif
 
 void inp_multimat(void);
 

@@ -25,6 +25,7 @@ D_WALL1            # wall1
 D_SOLID3           # spatial solid elements
 D_BEAM2            # two dimensional Timoshenko beam element
 D_BEAM3            # two dimensional Reissner beam element
+D_TRUSS3
 
 
 #   problem types

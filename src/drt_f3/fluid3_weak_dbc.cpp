@@ -328,20 +328,17 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   // get material of volume element this surface belongs to
   RCP<MAT::Material> mat = surfele->parent_->Material();
 
-  if( mat->MaterialType()    != m_carreauyasuda
-      && mat->MaterialType() != m_modpowerlaw
-      && mat->MaterialType() != m_fluid)
+  if( mat->MaterialType()    != INPAR::MAT::m_carreauyasuda
+      && mat->MaterialType() != INPAR::MAT::m_modpowerlaw
+      && mat->MaterialType() != INPAR::MAT::m_fluid)
           dserror("Material law is not a fluid");
 
   // get viscosity
   double visc = 0.0;
-  if(mat->MaterialType() == m_fluid)
+  if(mat->MaterialType() == INPAR::MAT::m_fluid)
   {
-    MATERIAL* actmat 
-      =  
-      static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
-
-    visc = actmat->m.fluid->viscosity;
+    const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
+    visc = actmat->Viscosity();
   }
   else
   {

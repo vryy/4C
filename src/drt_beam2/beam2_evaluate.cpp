@@ -25,11 +25,7 @@ Maintainer: Christian Cyron
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-
-//externally defined structure for material data
-extern struct _MATERIAL  *mat;
-
-
+#include "../drt_mat/stvenantkirchhoff.H"
 
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public)                                                                 cyron 01/08|
@@ -594,15 +590,16 @@ void DRT::ELEMENTS::Beam2::b2_nlnstiffmass( ParameterList& params,
   / the evaluation functions */
 
   // get the material law
-  MATERIAL* currmat = &(mat[material_-1]);
+  Teuchos::RCP<const MAT::Material> currmat = Material();
   //assignment of material parameters; only St.Venant material is accepted for this beam
-  switch(currmat->mattyp)
+  switch(currmat->MaterialType())
 	{
-    case m_stvenant:// only linear elastic material supported
+        case INPAR::MAT::m_stvenant:// only linear elastic material supported
     {
-  	  ym = currmat->m.stvenant->youngs;
-  	  sm = ym / (2*(1 + currmat->m.stvenant->possionratio));
-  	  density = currmat->m.stvenant->density;
+      const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
+      ym = actmat->Youngs();
+      sm = ym / (2*(1 + actmat->PoissonRatio()));
+      density = actmat->Density();
     }
     break;
     default:

@@ -62,10 +62,11 @@ void MAT::MicroMaterial::Evaluate(LINALG::Matrix<3,3>* defgrd,
 {
   // activate microscale material
 
-  int microdisnum = matdata_->m.struct_multiscale->microdis;
-  double V0 = matdata_->m.struct_multiscale->V0;
+  int microdisnum = MicroDisNum();
+  double V0 = InitVol();
   RefCountPtr<DRT::Problem> micro_problem = DRT::Problem::Instance(microdisnum);
-  micro_problem->ActivateMaterial();
+//  micro_problem->ActivateMaterial();
+  DRT::Problem::Instance()->Materials()->SetReadFromProblem(microdisnum);
 
   // avoid writing output also for ghosted elements
   const bool eleowner = DRT::Problem::Instance(0)->Dis(genprob.numsf,0)->ElementRowMap()->MyGID(ele_ID);
@@ -90,8 +91,9 @@ void MAT::MicroMaterial::Evaluate(LINALG::Matrix<3,3>* defgrd,
   }
 
   // reactivate macroscale material
-  RefCountPtr<DRT::Problem> macro_problem = DRT::Problem::Instance(0);
-  macro_problem->ActivateMaterial();
+//  RefCountPtr<DRT::Problem> macro_problem = DRT::Problem::Instance(0);
+//  macro_problem->ActivateMaterial();
+  DRT::Problem::Instance()->Materials()->ResetReadFromProblem();
 
   return;
 }

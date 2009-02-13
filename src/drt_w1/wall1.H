@@ -31,7 +31,6 @@ Maintainer: Markus Gitterle
 #include "../drt_inpar/inpar_structure.H"
 
 // forward declarations
-struct _MATERIAL;  ///< material data
 struct _W1_DATA;  ///< additional wall element data
 
 
@@ -321,7 +320,7 @@ private:
     Epetra_SerialDenseVector* force,  ///< element internal force vector
     Epetra_SerialDenseMatrix* elestress,  ///< element stresses
     Epetra_SerialDenseMatrix* elestrain,  ///< element strains
-    struct _MATERIAL* material,  ///< element material
+    Teuchos::RCP<const MAT::Material> material,  ///< element material
     const INPAR::STR::StressType   iostress,   ///< stress output option
     const INPAR::STR::StrainType   iostrain    ///< strain output option
   );
@@ -433,7 +432,7 @@ private:
     const std::vector<int>& lm,  ///< location vector
     const std::vector<double>& dis,  ///< element displacements \f$d_{n}^{(e)}\f$ at \f$t_{n}\f$
     Epetra_SerialDenseVector* energies,  ///< (in/out) energies
-    struct _MATERIAL* material  ///< element material
+    Teuchos::RCP<const MAT::Material> material  ///< element material
   );
 
   //@}
@@ -549,18 +548,18 @@ private:
     Epetra_SerialDenseMatrix& stress,  ///< stress vector
     Epetra_SerialDenseMatrix& C,  ///< elasticity matrix
     const int numeps,  ///< number of strains
-    const struct _MATERIAL* material  ///< the material data
+    Teuchos::RCP<const MAT::Material> material  ///< the material data
   );
 
   /// (constant) density
   /// \return density
   double Density(
-    const struct _MATERIAL* material  ///< material pointer
+    Teuchos::RCP<const MAT::Material> material  ///< material pointer
   );
 
   /// Internal/strain energy
   double EnergyInternal(
-    const struct _MATERIAL* material,  ///< element material
+    Teuchos::RCP<const MAT::Material> material,  ///< element material
     const double& fac,  ///< integration factor
     const Epetra_SerialDenseVector& Ev  ///< Green-Lagrange strain vector
   );
@@ -592,7 +591,7 @@ private:
     Epetra_SerialDenseVector* force,  ///< element internal mid-force vector \f$f_{int;m}^{(e)}\f$
     Epetra_SerialDenseMatrix* elestress,  ///< element stresses
     Epetra_SerialDenseMatrix* elestrain,  ///< element strains
-    struct _MATERIAL* material,  ///< element material
+    Teuchos::RCP<const MAT::Material> material,  ///< element material
     const INPAR::STR::StressType   iostress,   ///< stress output option
     const INPAR::STR::StrainType   iostrain    ///< strain output option
   );

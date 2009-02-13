@@ -20,6 +20,7 @@ Maintainer: Robert Metzke
 
 #ifdef CCADISCRET
 
+#include "matpar_parameter.H"
 #include "material.H"
 #include <Epetra_SerialDenseVector.h>
 #include <Epetra_SerialDenseMatrix.h>
@@ -28,6 +29,40 @@ Maintainer: Robert Metzke
 namespace MAT
 {
 
+  namespace PAR
+  {
+
+    /*----------------------------------------------------------------------*/
+    /// material parameters for neo-Hooke
+    class NeoHooke : public Parameter
+    {
+    public:
+
+      /// standard constructor
+      NeoHooke(
+        Teuchos::RCP<MAT::PAR::Material> matdata
+        );
+
+      /// destructor
+      virtual ~NeoHooke() { ; }
+
+      /// @name material parameters
+      //@{
+
+      /// Young's modulus
+      const double youngs_;
+      /// Possion's ratio
+      const double poissonratio_;
+      /// mass density
+      const double density_;
+
+      //@}
+
+    };  // class NeoHooke
+
+  }  // namespace PAR
+
+  /*----------------------------------------------------------------------*/
   /// Wrapper for Neo-Hookean Material
   class NeoHooke : public Material
   {
@@ -37,7 +72,7 @@ namespace MAT
     NeoHooke();
 
     /// construct the material object given material parameters
-    explicit NeoHooke(MATERIAL* matdata);
+    explicit NeoHooke(MAT::PAR::NeoHooke* params);
 
     //! @name Packing and Unpacking
 
@@ -78,7 +113,7 @@ namespace MAT
     //@}
 
     /// material type
-    virtual MATERIAL_TYP MaterialType() const { return m_neohooke; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_neohooke; }
     
     void Evaluate(const Epetra_SerialDenseVector* glstrain_e,
                   Epetra_SerialDenseMatrix* cmat_e,
@@ -88,13 +123,21 @@ namespace MAT
                   LINALG::Matrix<6,6>& cmat,
                   LINALG::Matrix<6,1>& stress);
 
-    inline double Density() { return matdata_->m.neohooke->density; }
+    /// Young's modulus
+    double Youngs() const { return params_->youngs_; }
+
+    /// Poisson's ratio
+    double PoissonRatio() const { return params_->poissonratio_; }
+    
+    /// density
+    inline double Density() const { return params_->density_; }
 
 
   private:
 
+
     /// my material parameters
-    MATERIAL* matdata_;
+    MAT::PAR::NeoHooke* params_;
 
     void InverseTensor(
                   const Epetra_SerialDenseMatrix& M,

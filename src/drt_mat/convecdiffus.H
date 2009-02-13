@@ -10,11 +10,45 @@ Maintainer: ???
 
 #ifdef CCADISCRET
 
+#include "matpar_parameter.H"
 #include "material.H"
 
 namespace MAT
 {
 
+  namespace PAR
+  {
+   
+    /*----------------------------------------------------------------------*/
+    /// material parameters for convection-diffusion
+    class ConvecDiffus : public Parameter
+    {
+    public:
+
+      /// standard constructor
+      ConvecDiffus(
+        Teuchos::RCP<MAT::PAR::Material> matdata
+        );
+
+      /// destructor
+      virtual ~ConvecDiffus() { ; }
+
+      /// @name material parameters
+      //@{
+
+      /// diffusivity coefficient
+      const double diffusivity_;
+      /// specific heat capacity
+      const double shc_;
+
+      //@}
+
+    };  // class ConvecDiffus
+
+  } // namespace PAR
+
+
+  /*----------------------------------------------------------------------*/
   /// Wrapper for Newtonian fluid material
   class ConvecDiffus : public Material
   {
@@ -24,7 +58,7 @@ namespace MAT
     ConvecDiffus();
 
     /// construct the material object given material parameters
-    explicit ConvecDiffus(MATERIAL* matdata);
+    explicit ConvecDiffus(MAT::PAR::ConvecDiffus* params);
 
     //! @name Packing and Unpacking
 
@@ -65,22 +99,18 @@ namespace MAT
     //@}
 
     /// material type
-    virtual MATERIAL_TYP MaterialType() const { return m_condif; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_condif; }
 
-    /// return material parameters for element calculation
-    /*!
-      To smooth transition of fluid elements to the unified class
-      based material structure we simply return the globally defined
-      material parameters. The actual stress calculations are still
-      done inside the elements. This will change once we have to
-      support different materials in fluid as well.
-     */
-    MATERIAL* MaterialData() const { return matdata_; }
+    /// diffusivity coefficient
+    double Diffusivity() const { return params_->diffusivity_; }
+    /// specific heat capacity
+    double Shc() const { return params_->shc_; }
 
   private:
 
     /// my material parameters
-    MATERIAL* matdata_;
+    MAT::PAR::ConvecDiffus* params_;
+
   };
 
 }

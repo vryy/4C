@@ -14,6 +14,9 @@ Maintainer: Lena Wiechert
 /*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+#include "../drt_lib/drt_globalproblem.H"
+#include "matpar_parameter.H"
+
 #include "material.H"
 #include "newtonianfluid.H"
 #include "sutherland_fluid.H"
@@ -37,110 +40,210 @@ Maintainer: Lena Wiechert
 #include "matlist.H"
 #include "biocell.H"
 #include "ion.H"
-
-extern struct _MATERIAL *mat;  ///< C-style material struct
-
-
+#include "compogden.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
 {
-  // We still query the global variable here because we have no idea
-  // which Problem instance we are working at. There might be more
-  // that one...
-  MATERIAL* actmat = &(mat[matnum-1]);
+  // retrieve problem instance to read from
+  const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+  // retrieve validated input line of material ID in question
+  Teuchos::RCP<MAT::PAR::Material> curmat = DRT::Problem::Instance(probinst)->Materials()->ById(matnum);
 
-  switch (actmat->mattyp)
+  // check what was read
+  //cout << *curmat << endl;
+
+  switch (curmat->Type())
   {
-  case m_fluid:
+  case INPAR::MAT::m_fluid:
   {
-#if 0
-    // Newtonian fluid does not store any data. So we could cache the
-    // objects and just return the copy we already have. But we have
-    // to keep in mind that there could be many Problems and therefore
-    // many sets of materials. So the material number is not a
-    // sufficient criteria.
-    std::map<MATERIAL*,Teuchos::RefCountPtr<Material> > mats;
-    if (mats.find(actmat)==mats.end())
-    {
-      mats[actmat] = Teuchos::rcp(new NewtonianFluid(actmat));
-    }
-    return mats[actmat];
-#else
-    return Teuchos::rcp(new NewtonianFluid(actmat));
-#endif
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::NewtonianFluid(curmat));
+    MAT::PAR::NewtonianFluid* params = static_cast<MAT::PAR::NewtonianFluid*>(curmat->Parameter());
+    return Teuchos::rcp(new NewtonianFluid(params));
   }
-  case m_sutherland_fluid:
-    return Teuchos::rcp(new SutherlandFluid(actmat));
-  case m_stvenant:
-    return Teuchos::rcp(new StVenantKirchhoff(actmat));
-  case m_struct_multiscale:
-    return Teuchos::rcp(new MicroMaterial(actmat));
-  case m_lung_penalty:
-    return Teuchos::rcp(new LungPenalty(actmat));
-  case m_lung_ogden:
-    return Teuchos::rcp(new LungOgden(actmat));
-  case m_anisotropic_balzani:
-    return Teuchos::rcp(new AnisotropicBalzani(actmat));
-  case m_mooneyrivlin:
-    return Teuchos::rcp(new MooneyRivlin(actmat));
-  case m_visconeohooke:
-    return Teuchos::rcp(new ViscoNeoHooke(actmat));
-  case m_viscoanisotropic:
-    return Teuchos::rcp(new ViscoAnisotropic(actmat));
-  case m_contchainnetw:
-    return Teuchos::rcp(new ContChainNetw(actmat));
-  case m_artwallremod:
-    return Teuchos::rcp(new ArtWallRemod(actmat));
-  case m_neohooke:
-    return Teuchos::rcp(new NeoHooke(actmat));
-  case m_aaaneohooke:
-    return Teuchos::rcp(new AAAneohooke(actmat));
-  case m_condif:
-    return Teuchos::rcp(new ConvecDiffus(actmat));
-  case m_sutherland_condif:
-    return Teuchos::rcp(new SutherlandCondif(actmat));
-  case m_carreauyasuda:
-    return Teuchos::rcp(new CarreauYasuda(actmat));
-  case m_modpowerlaw:
-    return Teuchos::rcp(new ModPowerLaw(actmat));
-  case m_matlist:
-    return Teuchos::rcp(new MatList(actmat));
- case m_biocell:
-    return Teuchos::rcp(new BioCell(actmat));
- case m_ion:
-    return Teuchos::rcp(new Ion(actmat));
- case m_yeoh:
-     return Teuchos::rcp(new Yeoh(actmat));
-  case m_pl_mises_3D:
-  case m_pl_mises:
-  case m_pl_hoff:
-  case m_damage:
-  case m_pl_foam:
-  case m_pl_mises_ls:
-  case m_pl_dp:
-  case m_pl_epc:
-  case m_pl_epc3D:
-  case m_stvenpor:
-  case m_pl_por_mises:
-  case m_compogden:
-  case m_viscohyper:
-  case m_pl_hash:
-  case m_el_orth:
-  case m_mfoc:
-  case m_mfcc:
-  case m_nhmfcc:
-  case m_multi_layer:
-  case m_ifmat:
-  case m_interf_therm:
-  case m_dam_mp:
-  case m_damage_ge:
-  case m_th_fourier_iso:
-  case m_th_fourier_gen:
-  case m_vp_robinson:
+  case INPAR::MAT::m_sutherland_fluid:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::SutherlandFluid(curmat));
+    MAT::PAR::SutherlandFluid* params = static_cast<MAT::PAR::SutherlandFluid*>(curmat->Parameter());
+    return Teuchos::rcp(new SutherlandFluid(params));
+  }
+  case INPAR::MAT::m_stvenant:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::StVenantKirchhoff(curmat));
+    MAT::PAR::StVenantKirchhoff* params = static_cast<MAT::PAR::StVenantKirchhoff*>(curmat->Parameter());
+    return Teuchos::rcp(new StVenantKirchhoff(params));
+  }
+  case INPAR::MAT::m_struct_multiscale:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::MicroMaterial(curmat));
+    MAT::PAR::MicroMaterial* params = static_cast<MAT::PAR::MicroMaterial*>(curmat->Parameter());
+    return Teuchos::rcp(new MicroMaterial(params));
+  }
+  case INPAR::MAT::m_lung_penalty:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::LungPenalty(curmat));
+    MAT::PAR::LungPenalty* params = static_cast<MAT::PAR::LungPenalty*>(curmat->Parameter());
+    return Teuchos::rcp(new LungPenalty(params));
+  }
+  case INPAR::MAT::m_lung_ogden:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::LungOgden(curmat));
+    MAT::PAR::LungOgden* params = static_cast<MAT::PAR::LungOgden*>(curmat->Parameter());
+    return Teuchos::rcp(new LungOgden(params));
+  }
+  case INPAR::MAT::m_anisotropic_balzani:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::AnisotropicBalzani(curmat));
+    MAT::PAR::AnisotropicBalzani* params = static_cast<MAT::PAR::AnisotropicBalzani*>(curmat->Parameter());
+    return Teuchos::rcp(new AnisotropicBalzani(params));
+  }
+  case INPAR::MAT::m_mooneyrivlin:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::MooneyRivlin(curmat));
+    MAT::PAR::MooneyRivlin* params = static_cast<MAT::PAR::MooneyRivlin*>(curmat->Parameter());
+    return Teuchos::rcp(new MooneyRivlin(params));
+  }
+  case INPAR::MAT::m_visconeohooke:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::ViscoNeoHooke(curmat));
+    MAT::PAR::ViscoNeoHooke* params = static_cast<MAT::PAR::ViscoNeoHooke*>(curmat->Parameter());
+    return Teuchos::rcp(new ViscoNeoHooke(params));
+  }
+  case INPAR::MAT::m_viscoanisotropic:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::ViscoAnisotropic(curmat));
+    MAT::PAR::ViscoAnisotropic* params = static_cast<MAT::PAR::ViscoAnisotropic*>(curmat->Parameter());
+    return Teuchos::rcp(new ViscoAnisotropic(params));
+  }
+  case INPAR::MAT::m_contchainnetw:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::ContChainNetw(curmat));
+    MAT::PAR::ContChainNetw* params = static_cast<MAT::PAR::ContChainNetw*>(curmat->Parameter());
+    return Teuchos::rcp(new ContChainNetw(params));
+  }
+  case INPAR::MAT::m_artwallremod:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::ArtWallRemod(curmat));
+    MAT::PAR::ArtWallRemod* params = static_cast<MAT::PAR::ArtWallRemod*>(curmat->Parameter());
+    return Teuchos::rcp(new ArtWallRemod(params));
+  }
+  case INPAR::MAT::m_neohooke:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::NeoHooke(curmat));
+    MAT::PAR::NeoHooke* params = static_cast<MAT::PAR::NeoHooke*>(curmat->Parameter());
+    return Teuchos::rcp(new NeoHooke(params));
+  }
+  case INPAR::MAT::m_aaaneohooke:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::AAAneohooke(curmat));
+    MAT::PAR::AAAneohooke* params = static_cast<MAT::PAR::AAAneohooke*>(curmat->Parameter());
+    return Teuchos::rcp(new AAAneohooke(params));
+  }
+  case INPAR::MAT::m_condif:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::ConvecDiffus(curmat));
+    MAT::PAR::ConvecDiffus* params = static_cast<MAT::PAR::ConvecDiffus*>(curmat->Parameter());
+    return Teuchos::rcp(new ConvecDiffus(params));
+  }
+  case INPAR::MAT::m_sutherland_condif:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::SutherlandCondif(curmat));
+    MAT::PAR::SutherlandCondif* params = static_cast<MAT::PAR::SutherlandCondif*>(curmat->Parameter());
+    return Teuchos::rcp(new SutherlandCondif(params));
+  }
+  case INPAR::MAT::m_carreauyasuda:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::CarreauYasuda(curmat));
+    MAT::PAR::CarreauYasuda* params = static_cast<MAT::PAR::CarreauYasuda*>(curmat->Parameter());
+    return Teuchos::rcp(new CarreauYasuda(params));
+  }
+  case INPAR::MAT::m_modpowerlaw:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::ModPowerLaw(curmat));
+    MAT::PAR::ModPowerLaw* params = static_cast<MAT::PAR::ModPowerLaw*>(curmat->Parameter());
+    return Teuchos::rcp(new ModPowerLaw(params));
+  }
+  case INPAR::MAT::m_matlist:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::MatList(curmat));
+    MAT::PAR::MatList* params = static_cast<MAT::PAR::MatList*>(curmat->Parameter());
+    return Teuchos::rcp(new MatList(params));
+  }
+  case INPAR::MAT::m_biocell:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::BioCell(curmat));
+    MAT::PAR::BioCell* params = static_cast<MAT::PAR::BioCell*>(curmat->Parameter());
+    return Teuchos::rcp(new BioCell(params));
+  }
+  case INPAR::MAT::m_ion:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::Ion(curmat));
+    MAT::PAR::Ion* params = static_cast<MAT::PAR::Ion*>(curmat->Parameter());
+    return Teuchos::rcp(new Ion(params));
+  }
+  case INPAR::MAT::m_yeoh:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::Yeoh(curmat));
+    MAT::PAR::Yeoh* params = static_cast<MAT::PAR::Yeoh*>(curmat->Parameter());
+    return Teuchos::rcp(new Yeoh(params));
+  }
+  case INPAR::MAT::m_compogden:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::CompOgden(curmat));
+    MAT::PAR::CompOgden* params = static_cast<MAT::PAR::CompOgden*>(curmat->Parameter());
+    return Teuchos::rcp(new CompOgden(params));
+  }
+  case INPAR::MAT::m_pl_mises_3D:
+  case INPAR::MAT::m_pl_mises:
+  case INPAR::MAT::m_pl_hoff:
+  case INPAR::MAT::m_damage:
+  case INPAR::MAT::m_pl_foam:
+  case INPAR::MAT::m_pl_mises_ls:
+  case INPAR::MAT::m_pl_dp:
+  case INPAR::MAT::m_pl_epc:
+  case INPAR::MAT::m_pl_epc3D:
+  case INPAR::MAT::m_stvenpor:
+  case INPAR::MAT::m_pl_por_mises:
+  case INPAR::MAT::m_viscohyper:
+  case INPAR::MAT::m_pl_hash:
+  case INPAR::MAT::m_el_orth:
+  case INPAR::MAT::m_mfoc:
+  case INPAR::MAT::m_mfcc:
+  case INPAR::MAT::m_nhmfcc:
+  case INPAR::MAT::m_multi_layer:
+  case INPAR::MAT::m_ifmat:
+  case INPAR::MAT::m_interf_therm:
+  case INPAR::MAT::m_dam_mp:
+  case INPAR::MAT::m_damage_ge:
+  case INPAR::MAT::m_th_fourier_iso:
+  case INPAR::MAT::m_th_fourier_gen:
+  case INPAR::MAT::m_vp_robinson:
   default:
-    dserror("unknown material type %d", actmat->mattyp);
+    dserror("unknown material type %d", curmat->Type());
   }
 
   return Teuchos::null;

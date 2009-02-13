@@ -13,21 +13,37 @@ Maintainer: Georg Bauer
 #include <vector>
 #include "ion.H"
 
-extern struct _MATERIAL *mat;
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+MAT::PAR::Ion::Ion(
+  Teuchos::RCP<MAT::PAR::Material> matdata
+  )
+: Parameter(matdata),
+  valence_(matdata->GetDouble("VALENCE")),
+  diffusivity_(matdata->GetDouble("DIFFUSIVITY"))
+{
+}
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 MAT::Ion::Ion()
-  : matdata_(NULL)
+  : params_(NULL)
 {
 }
 
 
-MAT::Ion::Ion(MATERIAL* matdata)
-  : matdata_(matdata)
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+MAT::Ion::Ion(MAT::PAR::Ion* params)
+  : params_(params)
 {
 }
 
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void MAT::Ion::Pack(vector<char>& data) const
 {
   data.resize(0);
@@ -35,12 +51,15 @@ void MAT::Ion::Pack(vector<char>& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
-  // matdata
-  int matdata = matdata_ - mat;
-  AddtoPack(data,matdata);
+
+  // matid
+  int matid = params_->Id();
+  AddtoPack(data,matid);
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void MAT::Ion::Unpack(const vector<char>& data)
 {
   int position = 0;
@@ -49,10 +68,15 @@ void MAT::Ion::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
 
-  // matdata
-  int matdata;
-  ExtractfromPack(position,data,matdata);
-  matdata_ = &mat[matdata];
+  // matid and recover params_
+  int matid;
+  ExtractfromPack(position,data,matid);
+  const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+  MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+  if (mat->Type() == MaterialType())
+    params_ = static_cast<MAT::PAR::Ion*>(mat);
+  else
+    dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);

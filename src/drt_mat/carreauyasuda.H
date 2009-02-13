@@ -15,10 +15,44 @@ Maintainer: Ursula Mayer
 
 #ifdef CCADISCRET
 
+#include "matpar_parameter.H"
 #include "material.H"
 
 namespace MAT
 {
+
+  namespace PAR
+  {
+
+    /*----------------------------------------------------------------------*/
+    /// material parameters
+    class CarreauYasuda : public Parameter
+    {
+    public:
+
+      /// standard constructor
+      CarreauYasuda(
+        Teuchos::RCP<MAT::PAR::Material> matdata
+        );
+
+      /// destructor
+      virtual ~CarreauYasuda() { ; }
+
+      /// @name material parameters
+      //@{
+
+      const double nu_0_; 		/* zero-shear viscosity */
+      const double nu_inf_;		/* infinite-shear viscosity */
+      const double lambda_;      /* characteristic time */
+      const double a_param_;		/* constant parameter */
+      const double b_param_;     /* constant parameter */
+      const double density_;     /* density */
+
+      //@}
+
+    };  // class CarreauYasuda
+
+  }  // namespace PAR
 
   /// Nonlinear viscosity according to Carreau-Yasuda 
   class CarreauYasuda : public Material
@@ -26,10 +60,10 @@ namespace MAT
   public:
 
     /// construct empty material object
-	CarreauYasuda();
+    CarreauYasuda();
 
     /// construct the material object given material parameters
-    explicit CarreauYasuda(MATERIAL* matdata);
+    explicit CarreauYasuda(MAT::PAR::CarreauYasuda* params);
 
     //! @name Packing and Unpacking
 
@@ -71,24 +105,31 @@ namespace MAT
     //@}
 
     /// material type 
-    virtual MATERIAL_TYP MaterialType() const { return m_carreauyasuda; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_carreauyasuda; }
 
     /// return material parameters for element calculation
+    //@{
     
-    /*!
-      To smooth transition of fluid elements to the unified class
-      based material structure we simply return the globally defined
-      material parameters. The actual stress calculations are still
-      done inside the elements. This will change once we have to
-      support different materials in fluid as well.
-     */
-    MATERIAL* MaterialData() const { return matdata_; }
-  
+    /// return parameter for zero-shear viscosity
+    double Nu0() const { return params_->nu_0_; }
+    /// return parameter for infinite-shear viscosity
+    double NuInf() const { return params_->nu_inf_; }
+    /// parameter for characteristic time
+    double Lambda() const { return params_->lambda_; }
+    /// constant parameter
+    double AParam() const { return params_->a_param_; }
+    /// constant parameter
+    double BParam() const { return params_->b_param_; }
+    /// density
+    double Density() const { return params_->density_; }
+
+    //@}
 
   private:
 
     /// my material parameters
-    MATERIAL* matdata_;
+    MAT::PAR::CarreauYasuda* params_;
+
   };
 
 }

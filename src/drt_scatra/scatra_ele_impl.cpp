@@ -19,6 +19,7 @@ Maintainer: Georg Bauer
 #include "scatra_ele_impl.H"
 #include "../drt_mat/convecdiffus.H"
 #include "../drt_mat/sutherland_condif.H"
+#include "../drt_mat/ion.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_timecurve.H"
@@ -218,16 +219,6 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
 {
   // get the material
   RefCountPtr<MAT::Material> mat = ele->Material();
-  MATERIAL* actmat = NULL;
-
-  if(mat->MaterialType()== m_condif)
-    actmat = static_cast<MAT::ConvecDiffus*>(mat.get())->MaterialData();
-  else if(mat->MaterialType()== m_sutherland_condif)
-    actmat = static_cast<MAT::SutherlandCondif*>(mat.get())->MaterialData();
-  else if (mat->MaterialType()== m_matlist)
-    actmat = static_cast<MAT::MatList*>(mat.get())->MaterialData();
-  else
-    dserror("condif, sutherland_condif or matlist material expected but got type %d", mat->MaterialType());
 
   // check for the action parameter
   const string action = params.get<string>("action","none");
@@ -367,7 +358,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         elemat1_epetra,
         elevec1_epetra,
         elevec2_epetra,
-        actmat,
+        mat,
         time,
         dt,
         timefac,
@@ -506,7 +497,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         elemat1_epetra,
         elevec1_epetra,
         elevec2_epetra,
-        actmat,
+        mat,
         time,
         dt,
         timefac,
@@ -611,7 +602,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     {
       // calculate flux vectors for actual scalar
       eflux.Clear();
-      CalculateFlux(eflux,ele,myphinp,actmat,temperature,frt,evel,fluxtype,i);
+      CalculateFlux(eflux,ele,myphinp,mat,temperature,frt,evel,fluxtype,i);
 
       // assembly
       for (int k=0;k<iel;k++)
@@ -694,7 +685,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         ephinp,
         epotnp,
         elevec1_epetra,
-        actmat);
+        mat);
   }
   else
     dserror("Unknown type of action for Scatra Implementation: %s",action.c_str());
@@ -711,7 +702,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFluxSerialDense(
     LINALG::SerialDenseMatrix&      flux,
     DRT::Element*&                  ele,
     vector<double>&                 ephinp,
-    struct _MATERIAL*               material,
+    Teuchos::RCP<const MAT::Material> material,
     bool                            temperature,
     double                          frt,
     Epetra_SerialDenseVector&       evel,
@@ -755,7 +746,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
     Epetra_SerialDenseMatrix&             sys_mat,///< element matrix to calculate
     Epetra_SerialDenseVector&             residual, ///< element rhs to calculate
     Epetra_SerialDenseVector&             subgrdiff, ///< subgrid-diff.-scaling vector
-    struct _MATERIAL*                     material, ///< material pointer
+    Teuchos::RCP<const MAT::Material>     material, ///< material pointer
     const double                          time, ///< current simulation time
     const double                          dt, ///< current time-step length
     const double                          timefac, ///< time discretization factor
@@ -954,35 +945,43 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::BodyForce(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
-    struct _MATERIAL*                      material,
+  Teuchos::RCP<const MAT::Material>        material,
     const bool&                            temperature,
     const vector<LINALG::Matrix<iel,1> >&  ephinp
 )
 {
 // get diffusivity / diffusivities
-if (material->mattyp == m_matlist)
+if (material->MaterialType() == INPAR::MAT::m_matlist)
 {
+  const MAT::MatList* actmat = static_cast<const MAT::MatList*>(material.get());
+
   for (int k = 0;k<numscal_;++k)
   {
-    const int matid = material->m.matlist->matids[k];
-    const _MATERIAL& singlemat =  DRT::Problem::Instance()->Material(matid-1);
+    const int matid = actmat->MatID(k);
+    Teuchos::RCP<const MAT::Material> singlemat = actmat->MaterialById(matid);
 
-    if (singlemat.mattyp == m_ion)
+    if (singlemat->MaterialType() == INPAR::MAT::m_ion)
     {
-      valence_[k]= singlemat.m.ion->valence;
-      diffus_[k]= singlemat.m.ion->diffusivity;
+      const MAT::Ion* actsinglemat = static_cast<const MAT::Ion*>(singlemat.get());
+      valence_[k] = actsinglemat->Valence();
+      diffus_[k] = actsinglemat->Diffusivity();
       diffusvalence_[k] = valence_[k]*diffus_[k];
     }
-    else if (singlemat.mattyp == m_condif)
-      diffus_[k]= singlemat.m.condif->diffusivity;
+    else if (singlemat->MaterialType() == INPAR::MAT::m_condif)
+    {
+      const MAT::ConvecDiffus* actsinglemat = static_cast<const MAT::ConvecDiffus*>(singlemat.get());
+      diffus_[k] = actsinglemat->Diffusivity();
+    }
     else
       dserror("material type is not allowed");
   }
   // set specific heat capacity at constant pressure to 1.0
   shcacp_ = 1.0;
 }
-else if (material->mattyp == m_condif)
+else if (material->MaterialType() == INPAR::MAT::m_condif)
 {
+  const MAT::ConvecDiffus* actmat = static_cast<const MAT::ConvecDiffus*>(material.get());
+
   dsassert(numdofpernode_==1,"more than 1 dof per node for condif material");
 
   // in case of a temperature equation, we get thermal conductivity instead of
@@ -990,18 +989,20 @@ else if (material->mattyp == m_condif)
   // pressure; otherwise, it is the "usual" diffusivity
   if (temperature)
   {
-    shcacp_ = material->m.condif->shc;
-    diffus_[0] = material->m.condif->diffusivity/shcacp_;
+    shcacp_ = actmat->Shc();
+    diffus_[0] = actmat->Diffusivity()/shcacp_;
   }
   else
   {
     // set specific heat capacity at constant pressure to 1.0, get diffusivity
     shcacp_ = 1.0;
-    diffus_[0] = material->m.condif->diffusivity;
+    diffus_[0] = actmat->Diffusivity();
   }
 }
-else if (material->mattyp == m_sutherland_condif)
+else if (material->MaterialType() == INPAR::MAT::m_sutherland_condif)
 {
+  const MAT::SutherlandCondif* actmat = static_cast<const MAT::SutherlandCondif*>(material.get());
+
   dsassert(numdofpernode_==1,"more than 1 dof per node for condif material");
 
   // use one-point Gauss rule to calculate temperature at element center
@@ -1016,11 +1017,11 @@ else if (material->mattyp == m_sutherland_condif)
   DRT::UTILS::shape_function<distype>(xsi_,funct_);
 
   // compute diffusivity according to Sutherland law
-  shcacp_ = material->m.sutherland_condif->shc;
-  const double s   = material->m.sutherland_condif->suthtemp;
-  const double rt  = material->m.sutherland_condif->reftemp;
+  shcacp_ = actmat->Shc();
+  const double s   = actmat->SuthTemp();
+  const double rt  = actmat->RefTemp();
   const double phi = funct_.Dot(ephinp[0]);
-  diffus_[0] = pow((phi/rt),1.5)*((rt+s)/(phi+s))*material->m.sutherland_condif->refvisc/material->m.sutherland_condif->pranum;
+  diffus_[0] = pow((phi/rt),1.5)*((rt+s)/(phi+s))*actmat->RefVisc()/actmat->PraNum();
 }
 else
   dserror("Material type is not supported");
@@ -1963,7 +1964,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
     Epetra_SerialDenseMatrix&             massmat,
     Epetra_SerialDenseVector&             rhs,
     Epetra_SerialDenseVector&             subgrdiff,
-    struct _MATERIAL*                     material,
+    Teuchos::RCP<const MAT::Material>     material,
     const double                          time,
     const double                          dt,
     const double                          timefac,
@@ -2803,7 +2804,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
     const vector<LINALG::Matrix<iel,1> >& ephinp,
     const LINALG::Matrix<iel,1>&   epotnp,
     Epetra_SerialDenseVector&      errors,
-    struct _MATERIAL*              material
+    Teuchos::RCP<const MAT::Material> material
 )
 {
   //at the moment, there is only one analytical test problem available!
@@ -2919,7 +2920,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
     LINALG::Matrix<3,iel>&          flux,
     const DRT::Element*             ele,
     const vector<double>&           ephinp,
-    struct _MATERIAL*               material,
+    Teuchos::RCP<const MAT::Material> material,
     const bool                      temperature,
     const double                    frt,
     const Epetra_SerialDenseVector& evel,
@@ -2937,29 +2938,38 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
 
   //GetMaterialParams(material,temperature,ephinp);
 
-  if (material->mattyp == m_matlist)
+  if (material->MaterialType() == INPAR::MAT::m_matlist)
   {
-    const int matid = material->m.matlist->matids[dofindex];
-    const _MATERIAL& singlemat =  DRT::Problem::Instance()->Material(matid-1);
+    const MAT::MatList* actmat = static_cast<const MAT::MatList*>(material.get());
 
-    if (singlemat.mattyp == m_condif)
-      diffus = singlemat.m.condif->diffusivity;
-    else if (singlemat.mattyp == m_ion)
+    const int matid = actmat->MatID(dofindex);
+    Teuchos::RCP<const MAT::Material> singlemat = actmat->MaterialById(matid);
+
+    if (singlemat->MaterialType() == INPAR::MAT::m_condif)
     {
-      diffus = singlemat.m.ion->diffusivity;
-      valence = singlemat.m.ion->valence;
+      const MAT::ConvecDiffus* actsinglemat = static_cast<const MAT::ConvecDiffus*>(singlemat.get());
+      diffus = actsinglemat->Diffusivity();
+    }
+    else if (singlemat->MaterialType() == INPAR::MAT::m_ion)
+    {
+      const MAT::Ion* actsinglemat = static_cast<const MAT::Ion*>(singlemat.get());
+      diffus = actsinglemat->Diffusivity();
+      valence = actsinglemat->Valence();
       diffus_valence_frt = diffus*valence*frt;
     }
     else
       dserror("type of material found in material list is not supported.");
   }
-  else if (material->mattyp == m_condif)
+  else if (material->MaterialType() == INPAR::MAT::m_condif)
   {
+    const MAT::ConvecDiffus* actmat = static_cast<const MAT::ConvecDiffus*>(material.get());
     dsassert(numdofpernode_==1,"more than 1 dof per node for condif material"); // paranoia?
-    diffus = material->m.condif->diffusivity;
+    diffus = actmat->Diffusivity();
   }
-  else if (material->mattyp == m_sutherland_condif)
+  else if (material->MaterialType() == INPAR::MAT::m_sutherland_condif)
   {
+    const MAT::SutherlandCondif* actmat = static_cast<const MAT::SutherlandCondif*>(material.get());
+
     dsassert(numdofpernode_==1,"more than 1 dof per node for condif material");
 
     // use one-point Gauss rule to calculate temperature at element center
@@ -2974,15 +2984,15 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
     DRT::UTILS::shape_function<distype>(xsi_,funct_);
 
     // compute diffusivity according to Sutherland law
-    shcacp_ = material->m.sutherland_condif->shc;
-    const double s   = material->m.sutherland_condif->suthtemp;
-    const double rt  = material->m.sutherland_condif->reftemp;
+    shcacp_ = actmat->Shc();
+    const double s   = actmat->SuthTemp();
+    const double rt  = actmat->RefTemp();
     double phi = 0.0;
     for (int i=0; i<iel; ++i)
     {
       phi += funct_(i)*ephinp[i];
     }
-    diffus = (shcacp_/material->m.sutherland_condif->pranum)*pow((phi/rt),1.5)*((rt+s)/(phi+s))*material->m.sutherland_condif->refvisc;
+    diffus = (shcacp_/actmat->PraNum())*pow((phi/rt),1.5)*((rt+s)/(phi+s))*actmat->RefVisc();
   }
   else
     dserror("Material type is not supported");

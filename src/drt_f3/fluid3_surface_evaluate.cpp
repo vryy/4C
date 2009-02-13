@@ -973,16 +973,23 @@ void DRT::ELEMENTS::Fluid3Surface::ElementSurfaceTension(ParameterList& params,
   // set number of nodes
   const int iel   = this->NumNode();
 
+  // isotropic and isothermal surface tension coefficient
+  double SFgamma = 0.0;
   // get material data
   RCP<MAT::Material> mat = parent_->Material();
-  if (mat==null) dserror("no mat from parent!");
-  if (mat->MaterialType()!=m_fluid && mat->MaterialType()!=m_sutherland_fluid)
+  if (mat==null)
+    dserror("no mat from parent!");
+  else if (mat->MaterialType()==INPAR::MAT::m_fluid)
+  {
+    const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
+    SFgamma = actmat->Gamma();
+  }
+  else if (mat->MaterialType()==INPAR::MAT::m_sutherland_fluid)
+  {
+    // no Gamma available
+  }
+  else
     dserror("newtonian or sutherland fluid material expected but got type %d", mat->MaterialType());
-
-  MATERIAL* actmat = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
-
-  // isotropic and isothermal surface tension coefficient
-  const double SFgamma = actmat->m.fluid->gamma;
 
   // gaussian points
   const DiscretizationType distype = this->Shape();
@@ -1243,35 +1250,33 @@ void DRT::ELEMENTS::Fluid3Surface::AreaCaculation(ParameterList& params)
   RefCountPtr<MAT::Material> mat = parent_->Material();
   double density=0.0, viscosity=0.0;
 
-  if( mat->MaterialType()    != m_carreauyasuda
-      && mat->MaterialType() != m_modpowerlaw
-      && mat->MaterialType() != m_sutherland_fluid
-      && mat->MaterialType() != m_fluid)
+  if( mat->MaterialType()    != INPAR::MAT::m_carreauyasuda
+      && mat->MaterialType() != INPAR::MAT::m_modpowerlaw
+      && mat->MaterialType() != INPAR::MAT::m_sutherland_fluid
+      && mat->MaterialType() != INPAR::MAT::m_fluid)
           dserror("Material law is not a fluid");
 
-  MATERIAL* actmat = NULL;
-
-  if(mat->MaterialType()== m_fluid)
+  if(mat->MaterialType()== INPAR::MAT::m_fluid)
   {
-    actmat = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
-    density = actmat->m.fluid->density;
-    viscosity =  actmat->m.fluid->viscosity;
+    const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
+    density = actmat->Density();
+    viscosity =  actmat->Viscosity();
   }
-  else if(mat->MaterialType()== m_sutherland_fluid)
+  else if(mat->MaterialType()== INPAR::MAT::m_sutherland_fluid)
   {
-    actmat = static_cast<MAT::SutherlandFluid*>(mat.get())->MaterialData();
+    //const MAT::SutherlandFluid* actmat = static_cast<const MAT::SutherlandFluid*>(mat.get());
     dserror("How to extract viscosity from Sutherland law material for artery tree??");
   }
-  else if(mat->MaterialType()== m_carreauyasuda)
+  else if(mat->MaterialType()== INPAR::MAT::m_carreauyasuda)
   {
-    actmat = static_cast<MAT::CarreauYasuda*>(mat.get())->MaterialData();
-    density = actmat->m.carreauyasuda->density;
+    const MAT::CarreauYasuda* actmat = static_cast<const MAT::CarreauYasuda*>(mat.get());
+    density = actmat->Density();
     dserror("How to extract viscosity from Carreau Yasuda material law for artery tree??");
   }
-  else if(mat->MaterialType()== m_modpowerlaw)
+  else if(mat->MaterialType()== INPAR::MAT::m_modpowerlaw)
   {
-    actmat = static_cast<MAT::ModPowerLaw*>(mat.get())->MaterialData();
-    density = actmat->m.modpowerlaw->density;
+    const MAT::ModPowerLaw* actmat = static_cast<const MAT::ModPowerLaw*>(mat.get());
+    density = actmat->Density();
     dserror("How to extract viscosity from modified power law material for artery tree??");
   }
   else
@@ -1473,33 +1478,31 @@ void DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration(ParameterList& params,
   // get material of volume element this surface belongs to
   RefCountPtr<MAT::Material> mat = parent_->Material();
 
-  if( mat->MaterialType()    != m_carreauyasuda
-      && mat->MaterialType() != m_modpowerlaw
-      && mat->MaterialType() != m_sutherland_fluid
-      && mat->MaterialType() != m_fluid)
+  if( mat->MaterialType()    != INPAR::MAT::m_carreauyasuda
+      && mat->MaterialType() != INPAR::MAT::m_modpowerlaw
+      && mat->MaterialType() != INPAR::MAT::m_sutherland_fluid
+      && mat->MaterialType() != INPAR::MAT::m_fluid)
           dserror("Material law is not a fluid");
 
-  MATERIAL* actmat = NULL;
-
-  if(mat->MaterialType()== m_fluid)
+  if(mat->MaterialType()== INPAR::MAT::m_fluid)
   {
-    actmat = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
-    invdensity = 1.0/actmat->m.fluid->density;
+    const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
+    invdensity = 1.0/actmat->Density();
   }
-  else if(mat->MaterialType()== m_sutherland_fluid)
+  else if(mat->MaterialType()== INPAR::MAT::m_sutherland_fluid)
   {
-    actmat = static_cast<MAT::SutherlandFluid*>(mat.get())->MaterialData();
+    //const MAT::SutherlandFluid* actmat = static_cast<const MAT::SutherlandFluid*>(mat.get());
     dserror("You really want to compute this with Sutherland fluid???");
   }
-  else if(mat->MaterialType()== m_carreauyasuda)
+  else if(mat->MaterialType()== INPAR::MAT::m_carreauyasuda)
   {
-    actmat = static_cast<MAT::CarreauYasuda*>(mat.get())->MaterialData();
-    invdensity = 1.0/actmat->m.carreauyasuda->density;
+    const MAT::CarreauYasuda* actmat = static_cast<const MAT::CarreauYasuda*>(mat.get());
+    invdensity = 1.0/actmat->Density();
   }
-  else if(mat->MaterialType()== m_modpowerlaw)
+  else if(mat->MaterialType()== INPAR::MAT::m_modpowerlaw)
   {
-    actmat = static_cast<MAT::ModPowerLaw*>(mat.get())->MaterialData();
-    invdensity = 1.0/actmat->m.modpowerlaw->density;
+    const MAT::ModPowerLaw* actmat = static_cast<const MAT::ModPowerLaw*>(mat.get());
+    invdensity = 1.0/actmat->Density();
   }
   else
     dserror("fluid material expected but got type %d", mat->MaterialType());

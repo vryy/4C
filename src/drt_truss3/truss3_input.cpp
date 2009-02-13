@@ -16,11 +16,6 @@ Maintainer: Christian Cyron
 #include "truss3.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/linalg_fixedsizematrix.H"
-/*----------------------------------------------------------------------*
-| vector of material laws defined in global_control.c        cyron 08/08|
-*----------------------------------------------------------------------*/
-extern struct _MATERIAL  *mat;
-
 
 /*----------------------------------------------------------------------*
  |  read element input (public)                              cyron 08/08|
@@ -58,6 +53,7 @@ bool DRT::ELEMENTS::Truss3::ReadElement()
   material_ = 0;
   frint("MAT",&material_,&ierr);
   if (ierr!=1) dserror("Reading of Truss3 element failed");
+  SetMaterial(material_);
 
   // read truss cross section
   crosssec_ = 0;

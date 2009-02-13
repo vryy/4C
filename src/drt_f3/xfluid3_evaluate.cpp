@@ -94,10 +94,10 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
   // get the material
   const Teuchos::RCP<MAT::Material> mat = Material();
-  if (mat->MaterialType()!=m_fluid)
+  if (mat->MaterialType()!=INPAR::MAT::m_fluid)
     dserror("newtonian fluid material expected but got type %d", mat->MaterialType());
 
-  const MATERIAL* actmat = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
+  const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
 
   switch(act)
   {
@@ -105,7 +105,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
     {
       // This is a very poor way to transport the density to the
       // outside world. Is there a better one?
-      params.set("density", actmat->m.fluid->density);
+      params.set("density", actmat->Density());
       break;
     }
     case reset:
@@ -157,7 +157,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         // calculate element coefficient matrix and rhs
         XFLUID::callSysmat4(assembly_type,
                 this, ih_, *eleDofManager_, mystate, ivelcol, iforcecol, elemat1, elevec1,
-                actmat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution);
+                mat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution);
 
       }
       else // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
@@ -188,7 +188,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         // calculate element coefficient matrix and rhs
         XFLUID::callSysmat4(assembly_type,
                 this, ih_, *eleDofManager_uncondensed_, mystate, ivelcol, iforcecol, elemat1_uncond, elevec1_uncond,
-                actmat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution);
+                mat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution);
 
         // condensation
         CondenseDLMAndStoreOldIterationStep(elemat1_uncond, elevec1_uncond, elemat1, elevec1);
@@ -224,7 +224,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         }
 
         // integrate beltrami error
-        f3_int_beltrami_err(myvelnp,myprenp,actmat,params);
+        f3_int_beltrami_err(myvelnp,myprenp,mat,params);
       }
       break;
     }
@@ -263,7 +263,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         // calculate element coefficient matrix and rhs
         XFLUID::callSysmat4(assembly_type,
                 this, ih_, *eleDofManager_, mystate, ivelcol, iforcecol, elemat1, elevec1,
-                actmat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution);
+                mat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution);
 
       }
       else // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
@@ -294,7 +294,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         // calculate element coefficient matrix and rhs
         XFLUID::callSysmat4(assembly_type,
                 this, ih_, *eleDofManager_uncondensed_, mystate, ivelcol, iforcecol, elemat1_uncond, elevec1_uncond,
-                actmat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution);
+                mat, timealgo, dt, theta, newton, pstab, supg, cstab, mystate.instationary, ifaceForceContribution);
 
         // condensation
         CondenseDLMAndStoreOldIterationStep(elemat1_uncond, elevec1_uncond, elemat1, elevec1);
@@ -317,7 +317,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
               // calculate element coefficient matrix and rhs
               XFLUID::callSysmat4(assembly_type,
                       this, ih_, eleDofManager_, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
-                      actmat, pseudotime, 1.0, newton, pstab, supg, cstab, false);
+                      mat, pseudotime, 1.0, newton, pstab, supg, cstab, false);
 
               LINALG::SerialDensevector eforce_0(locval.size());
               for (unsigned i = 0;i < locval.size(); ++i)
@@ -345,7 +345,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
               // calculate element coefficient matrix and rhs
               XFLUID::callSysmat4(assembly_type,
                       this, ih_, eleDofManager_, locval_disturbed, locval_hist, ivelcol, iforcecol, estif, eforce,
-                      actmat, pseudotime, 1.0, newton, pstab, supg, cstab, false);
+                      mat, pseudotime, 1.0, newton, pstab, supg, cstab, false);
 
               
               
@@ -482,7 +482,7 @@ DRT::UTILS::GaussRule3D DRT::ELEMENTS::XFluid3::getOptimalGaussrule(const Discre
 void DRT::ELEMENTS::XFluid3::f3_int_beltrami_err(
     std::vector<double>&      evelnp,
     std::vector<double>&      eprenp,
-    const struct _MATERIAL*   material,
+    Teuchos::RCP<const MAT::Material> material,
     ParameterList&            params
     )
 {
@@ -517,7 +517,14 @@ void DRT::ELEMENTS::XFluid3::f3_int_beltrami_err(
   const double d      = PI/2.0;
 
   // get viscosity
-  const double  visc = material->m.fluid->viscosity;
+  double  visc = 0.0;
+  if(material->MaterialType() == INPAR::MAT::m_fluid)
+  {
+    const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());
+    visc = actmat->Viscosity();
+  }
+  else
+    dserror("Cannot handle material of type %d", material->MaterialType());
 
   double         preint;
   vector<double> velint  (3);

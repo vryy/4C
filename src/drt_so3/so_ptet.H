@@ -44,9 +44,6 @@ using namespace Teuchos;
 #define NUMCOORD_PTET     4    ///< number of shape function cooordinates (ksi1-ksi4)
 #define ALPHA_PTET      0.1    ///< stabilization parameter
 
-// forward declarations
-struct _MATERIAL;
-
 namespace DRT
 {
 // forward declarations

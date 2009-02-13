@@ -29,7 +29,6 @@ using namespace Teuchos;
 
 
 // forward declarations
-struct _MATERIAL;
 struct _SOH8_DATA;
 
 namespace DRT

@@ -17,24 +17,38 @@ Maintainer: Lena Wiechert & Sophie Rausch
 #include "../drt_lib/linalg_utils.H"
 #include "lung_penalty.H"
 
-extern struct _MATERIAL *mat;
-
 using namespace LINALG; // our linear algebra
 
-/*----------------------------------------------------------------------*
- |  Constructor                                   (public)     maf 07/07|
- *----------------------------------------------------------------------*/
-MAT::LungPenalty::LungPenalty()
-  : matdata_(NULL)
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+MAT::PAR::LungPenalty::LungPenalty(
+  Teuchos::RCP<MAT::PAR::Material> matdata
+  )
+: Parameter(matdata),
+  c_(matdata->GetDouble("C")),
+  k1_(matdata->GetDouble("K1")),
+  k2_(matdata->GetDouble("K2")),
+  epsilon_(matdata->GetDouble("EPSILON")),
+  gamma_(matdata->GetDouble("GAMMA")),
+  dens_(matdata->GetDouble("DENS"))
 {
 }
 
 
 /*----------------------------------------------------------------------*
- |  Copy-Constructor                             (public)      maf 07/07|
+ |  Constructor                                   (public)     maf 07/07|
  *----------------------------------------------------------------------*/
-MAT::LungPenalty::LungPenalty(MATERIAL* matdata)
-  : matdata_(matdata)
+MAT::LungPenalty::LungPenalty()
+  : params_(NULL)
+{
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Constructor                                (public)   lw 04/08 |
+ *----------------------------------------------------------------------*/
+MAT::LungPenalty::LungPenalty(MAT::PAR::LungPenalty* params)
+  : params_(params)
 {
 }
 
@@ -49,9 +63,10 @@ void MAT::LungPenalty::Pack(vector<char>& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
-  // matdata
-  int matdata = matdata_ - mat;   // pointer difference to reach 0-entry
-  AddtoPack(data,matdata);
+
+  // matid
+  int matid = params_->Id();
+  AddtoPack(data,matid);
 }
 
 
@@ -66,22 +81,18 @@ void MAT::LungPenalty::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
 
-  // matdata
-  int matdata;
-  ExtractfromPack(position,data,matdata);
-  matdata_ = &mat[matdata];     // unpack pointer to my specific matdata_
+  // matid
+  int matid;
+  ExtractfromPack(position,data,matid);
+  const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+  MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+  if (mat->Type() == MaterialType())
+    params_ = static_cast<MAT::PAR::LungPenalty*>(mat);
+  else
+    dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
-}
-
-
-/*----------------------------------------------------------------------*
- |  Return density                                (public)     maf 04/07|
- *----------------------------------------------------------------------*/
-double MAT::LungPenalty::Density()
-{
-  return matdata_->m.lung_penalty->density;  // density, returned to evaluate mass matrix
 }
 
 
@@ -132,13 +143,13 @@ void MAT::LungPenalty::Evaluate(const LINALG::Matrix<6,1>* glstrain,
                                 LINALG::Matrix<6,1>* stress)
 {
   // material parameters for isochoric part
-  double c = matdata_->m.lung_penalty->c;             //parameter for ground substance
-  double k1 = matdata_->m.lung_penalty->k1;           //parameter for fiber potential
-  double k2 = matdata_->m.lung_penalty->k2;           //parameter for fiber potential
+  double c = C();             //parameter for ground substance
+  double k1 = K1();           //parameter for fiber potential
+  double k2 = K2();           //parameter for fiber potential
 
   // material parameters for volumetric part
-  double gamma = matdata_->m.lung_penalty->gamma;     //penalty parameter
-  double epsilon = matdata_->m.lung_penalty->epsilon; //penalty parameter
+  double gamma = Gamma();     //penalty parameter
+  double epsilon = Epsilon(); //penalty parameter
 
   //--------------------------------------------------------------------------------------
   // build identity tensor I
@@ -160,7 +171,7 @@ void MAT::LungPenalty::Evaluate(const LINALG::Matrix<6,1>* glstrain,
 
   double detf;
   if (iiinv < 0.0)
-    dserror("fatal failure in LungOgden material");
+    dserror("fatal failure in LungPenalty material");
   else
     detf = sqrt(iiinv);                   // determinant of deformation gradient
 

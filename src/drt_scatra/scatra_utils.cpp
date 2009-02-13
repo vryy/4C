@@ -136,28 +136,14 @@ void SCATRA::CreateScaTraDiscretization(
   // So we search for a appropriate material and take the first
   // one we find. If we find a MatList material we take this one,
   // if not search for convection diffusion material law.
-  int nummat = DRT::Problem::Instance()->NumMaterials();
+
+  //int nummat = DRT::Problem::Instance()->NumMaterials();
   int matnr = -1;
-  for (int i=0; i<nummat; ++i)
-  {
-    if (DRT::Problem::Instance()->Material(i).mattyp==m_matlist)
-    {
-      matnr = i+1;// For historical reasons material numbers are given in FORTRAN style.
-      break;
-    }
-  }
-  if (matnr == -1) // if there is no material list, search for a single condif material
-  {
-    for (int i=0; i<nummat; ++i)
-    {
-      if (DRT::Problem::Instance()->Material(i).mattyp==m_condif or
-          DRT::Problem::Instance()->Material(i).mattyp==m_sutherland_condif)
-      {
-        matnr = i+1;// For historical reasons material numbers are given in FORTRAN style.
-        break;
-      }
-    }
-  }
+  matnr = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_matlist);
+  if (matnr <= -1)
+    matnr = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_condif);
+  if (matnr <= -1)
+    matnr = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_sutherland_condif);
   if (matnr==-1) // we could not find any proper material
     dserror("No appropriate material found. Cannot generate scalar transport discretization.");
 

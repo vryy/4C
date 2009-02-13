@@ -49,7 +49,7 @@ using namespace LINALG; // our linear algebra
  | vector of material laws                                              |
  | defined in global_control.c
  *----------------------------------------------------------------------*/
-extern struct _MATERIAL  *mat;
+//extern struct _MATERIAL  *mat;
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            mwgee 12/06|
@@ -85,7 +85,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
   else dserror("Unknown type of action %s for Wall1", action.c_str());
 
   // get the material law
-  MATERIAL* actmat = &(mat[material_-1]);
+  Teuchos::RCP<const MAT::Material> actmat = Material();
+
   switch(act)
   {
     case Wall1::calc_struct_linstiff:
@@ -494,7 +495,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
                                            Epetra_SerialDenseVector* force,
                                            Epetra_SerialDenseMatrix* elestress,
                                            Epetra_SerialDenseMatrix* elestrain,
-                                           struct _MATERIAL*         material,
+                                           Teuchos::RCP<const MAT::Material> material,
                                            const INPAR::STR::StressType iostress,
                                            const INPAR::STR::StrainType iostrain)
 
@@ -1162,7 +1163,7 @@ void DRT::ELEMENTS::Wall1::Energy(
   const std::vector<int>& lm,
   const std::vector<double>& dis,
   Epetra_SerialDenseVector* energies,
-  struct _MATERIAL* material
+  Teuchos::RCP<const MAT::Material> material
 )
 {
   // constants

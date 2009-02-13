@@ -20,16 +20,46 @@ Maintainer: Ursula Mayer
 namespace MAT
 {
 
+  namespace PAR
+  {
+
+    /*----------------------------------------------------------------------*/
+    /// material parameters
+    class ModPowerLaw : public Parameter
+    {
+    public:
+
+      /// standard constructor
+      ModPowerLaw(
+        Teuchos::RCP<MAT::PAR::Material> matdata
+        );
+
+      /// destructor
+      virtual ~ModPowerLaw() { ; }
+
+      /// @name material parameters
+      //@{
+     const double m_cons_; 		    /* consistency */
+     const double delta_;       	/* safety factor */
+     const double a_exp_;			/* exponent */
+     const double density_;     	/* density */
+      //@}
+
+    };  // class ModPowerLaw
+
+  }  // namespace PAR
+
+  /*----------------------------------------------------------------------*/
   /// Nonlinear viscosity according to a modified power law
   class ModPowerLaw : public Material
   {
   public:
 
     /// construct empty material object
-	  ModPowerLaw();
+    ModPowerLaw();
 
     /// construct the material object given material parameters
-    explicit ModPowerLaw(MATERIAL* matdata);
+    explicit ModPowerLaw(MAT::PAR::ModPowerLaw* params);
 
     //! @name Packing and Unpacking
 
@@ -71,24 +101,24 @@ namespace MAT
     //@}
 
     /// material type 
-    virtual MATERIAL_TYP MaterialType() const { return m_modpowerlaw; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_modpowerlaw; }
 
     /// return material parameters for element calculation
     
-    /*!
-      To smooth transition of fluid elements to the unified class
-      based material structure we simply return the globally defined
-      material parameters. The actual stress calculations are still
-      done inside the elements. This will change once we have to
-      support different materials in fluid as well.
-     */
-    MATERIAL* MaterialData() const { return matdata_; }
-    
+    /// consistency constant
+    double MCons() const { return params_->m_cons_; }
+    /// safety factor
+    double Delta() const { return params_->delta_; }
+    /// exponent
+    double AExp() const { return params_->a_exp_; }
+    /// density
+    double Density() const { return params_->density_; }
 
   private:
 
     /// my material parameters
-    MATERIAL* matdata_;
+    MAT::PAR::ModPowerLaw* params_;
+
   };
 
 }

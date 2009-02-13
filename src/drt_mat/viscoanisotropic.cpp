@@ -15,14 +15,35 @@ Maintainer: Moritz Frenzel & Thomas Kloeppel
 #include "viscoanisotropic.H"
 
 
-extern struct _MATERIAL *mat;  ///< C-style material struct
-
+/*----------------------------------------------------------------------*
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+MAT::PAR::ViscoAnisotropic::ViscoAnisotropic(
+  Teuchos::RCP<MAT::PAR::Material> matdata
+  )
+: Parameter(matdata),
+  kappa_(matdata->GetDouble("KAPPA")),
+  mue_(matdata->GetDouble("MUE")),
+  density_(matdata->GetDouble("DENS")),
+  k1_(matdata->GetDouble("K1")),
+  k2_(matdata->GetDouble("K2")),
+  gamma_(matdata->GetDouble("GAMMA")),
+  numstresstypes_(3),
+  beta_(),
+  relax_(),
+  tensonly_(matdata->Getint("TENSION_ONLY"))
+{
+  beta_[0] = matdata->GetDouble("BETA_ISO");
+  beta_[1] = matdata->GetDouble("BETA_ANISO");
+  relax_[0] = matdata->GetDouble("RELAX_ISO");
+  relax_[1] = matdata->GetDouble("RELAX_ANISO");
+}
 
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)         05/08|
  *----------------------------------------------------------------------*/
 MAT::ViscoAnisotropic::ViscoAnisotropic()
-  : matdata_(NULL)
+  : params_(NULL)
 {
 }
 
@@ -30,8 +51,8 @@ MAT::ViscoAnisotropic::ViscoAnisotropic()
 /*----------------------------------------------------------------------*
  |  Copy-Constructor                             (public)          05/08|
  *----------------------------------------------------------------------*/
-MAT::ViscoAnisotropic::ViscoAnisotropic(MATERIAL* matdata)
-  : matdata_(matdata)
+MAT::ViscoAnisotropic::ViscoAnisotropic(MAT::PAR::ViscoAnisotropic* params)
+  : params_(params)
 {
 }
 
@@ -46,9 +67,9 @@ void MAT::ViscoAnisotropic::Pack(vector<char>& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
-  // matdata
-  int matdata = matdata_ - mat;   // pointer difference to reach 0-entry
-  AddtoPack(data,matdata);
+  // matid
+  int matid = params_->Id();
+  AddtoPack(data,matid);
 
   int numgp;
   int numhist;
@@ -92,10 +113,16 @@ void MAT::ViscoAnisotropic::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
 
-  // matdata
-  int matdata;
-  ExtractfromPack(position,data,matdata);
-  matdata_ = &mat[matdata];     // unpack pointer to my specific matdata_
+  // matid and recover params_
+  int matid;
+  ExtractfromPack(position,data,matid);
+  const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+  MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+  if (mat->Type() == MaterialType())
+    params_ = static_cast<MAT::PAR::ViscoAnisotropic*>(mat);
+  else
+    dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
+
   int numgp, numhist;
   ExtractfromPack(position,data,numgp);
   if (numgp == 0){ // no history data to unpack
@@ -148,8 +175,8 @@ void MAT::ViscoAnisotropic::Setup(const int numgp)
 {
   a1_ = rcp(new vector<vector<double> > (numgp));
   a2_ = rcp(new vector<vector<double> > (numgp));
-  if ((matdata_->m.viscoanisotropic->gamma<0) || (matdata_->m.viscoanisotropic->gamma >90)) dserror("Fiber angle not in [0,90]");
-  const double gamma = (matdata_->m.viscoanisotropic->gamma*PI)/180.; //convert
+  if ((params_->gamma_<0) || (params_->gamma_ >90)) dserror("Fiber angle not in [0,90]");
+  const double gamma = (params_->gamma_*PI)/180.; //convert
 
   /* fibers are always related to a local element cosy
      which has to be specified in the element line */
@@ -188,8 +215,8 @@ void MAT::ViscoAnisotropic::Setup(const int numgp)
   }
 
   // some input checking of viscous parameters for convenience
-  if ((matdata_->m.viscoanisotropic->beta[0]<0) || (matdata_->m.viscoanisotropic->beta[1]<0)
-     || (matdata_->m.viscoanisotropic->relax[0]<=0) || (matdata_->m.viscoanisotropic->relax[1]<=0))
+  if ((params_->beta_[0]<0) || (params_->beta_[1]<0)
+     || (params_->relax_[0]<=0) || (params_->relax_[1]<=0))
         dserror("Check visocus parameters! Found beta < 0 or relax <= 0!");
 
   // initialize hist variables
@@ -200,7 +227,7 @@ void MAT::ViscoAnisotropic::Setup(const int numgp)
   const LINALG::Matrix<NUM_STRESS_3D,1> emptyvec(true);
   
   // how many stress types are used?
-  const int numst = matdata_->m.viscoanisotropic->numstresstypes;
+  const int numst = params_->numstresstypes_;
   histstresscurr_->resize(numst*numgp);
   histstresslast_->resize(numst*numgp);
   artstresscurr_->resize(numst*numgp);
@@ -250,11 +277,11 @@ void MAT::ViscoAnisotropic::Evaluate
   LINALG::Matrix<NUM_STRESS_3D,1> * stress
 )
 {
-  const double mue = matdata_->m.viscoanisotropic->mue;
-  const double kappa = matdata_->m.viscoanisotropic->kappa;
-  const double k1 = matdata_->m.viscoanisotropic->k1;
-  const double k2 = matdata_->m.viscoanisotropic->k2;
-  const int    tensonly = matdata_->m.viscoanisotropic->tensonly;
+  const double mue = params_->mue_;
+  const double kappa = params_->kappa_;
+  const double k1 = params_->k1_;
+  const double k2 = params_->k2_;
+  const int    tensonly = params_->tensonly_;
   
   // right Cauchy-Green Tensor  C = 2 * E + I
   // build identity tensor I
@@ -413,7 +440,7 @@ void MAT::ViscoAnisotropic::Evaluate
    */
 
   // read history
-  const int numst = matdata_->m.viscoanisotropic->numstresstypes;
+  const int numst = params_->numstresstypes_;
   LINALG::Matrix<NUM_STRESS_3D,1> SisoEla_nh_old (histstresslast_->at(numst*gp   + 0));
   LINALG::Matrix<NUM_STRESS_3D,1> SisoEla_fib1_old (histstresslast_->at(numst*gp + 1));
   LINALG::Matrix<NUM_STRESS_3D,1> SisoEla_fib2_old (histstresslast_->at(numst*gp + 2));
@@ -426,10 +453,10 @@ void MAT::ViscoAnisotropic::Evaluate
    * the betas control the ratio serial/parallel elasticity of the Maxwell-body
    * the taus control the relaxation time for each dashpot path with respect to the serial elasticity
    */
-  const double beta_nh = matdata_->m.viscoanisotropic->beta[0];
-  const double beta_fib = matdata_->m.viscoanisotropic->beta[1];   // assume same beta for both fibers
-  const double tau_nh = matdata_->m.viscoanisotropic->relax[0];
-  const double tau_fib = matdata_->m.viscoanisotropic->relax[1];   // assume same tau for both fibers
+  const double beta_nh = params_->beta_[0];
+  const double beta_fib = params_->beta_[1];   // assume same beta for both fibers
+  const double tau_nh = params_->relax_[0];
+  const double tau_fib = params_->relax_[1];   // assume same tau for both fibers
 
   // get time algorithmic parameters
   double dt = params.get("delta time",-1.0);

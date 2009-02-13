@@ -14,14 +14,26 @@ Maintainer: Moritz Frenzel & Thomas Kloeppel
 #include <vector>
 #include "visconeohooke.H"
 
-extern struct _MATERIAL *mat;  ///< C-style material struct
-
-
+/*----------------------------------------------------------------------*
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+MAT::PAR::ViscoNeoHooke::ViscoNeoHooke(
+  Teuchos::RCP<MAT::PAR::Material> matdata
+  )
+: Parameter(matdata),
+  youngs_slow_(matdata->GetDouble("YOUNGS_SLOW")),
+  poisson_(matdata->GetDouble("POISSON")),
+  density_(matdata->GetDouble("DENS")),
+  youngs_fast_(matdata->GetDouble("YOUNGS_FAST")),
+  relax_(matdata->GetDouble("RELAX")),
+  theta_(matdata->GetDouble("THETA"))
+{
+}
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)         05/08|
  *----------------------------------------------------------------------*/
 MAT::ViscoNeoHooke::ViscoNeoHooke()
-  : matdata_(NULL)
+  : params_(NULL)
 {
   isinit_=false;
   histstresscurr_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
@@ -34,8 +46,8 @@ MAT::ViscoNeoHooke::ViscoNeoHooke()
 /*----------------------------------------------------------------------*
  |  Copy-Constructor                             (public)          05/08|
  *----------------------------------------------------------------------*/
-MAT::ViscoNeoHooke::ViscoNeoHooke(MATERIAL* matdata)
-  : matdata_(matdata)
+MAT::ViscoNeoHooke::ViscoNeoHooke(MAT::PAR::ViscoNeoHooke* params)
+  : params_(params)
 {
 }
 
@@ -50,10 +62,12 @@ void MAT::ViscoNeoHooke::Pack(vector<char>& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
-  // matdata
-  int matdata = matdata_ - mat;   // pointer difference to reach 0-entry
-  AddtoPack(data,matdata);
-  //Pack history data
+
+  // matid
+  int matid = params_->Id();
+  AddtoPack(data,matid);
+
+  //  pack history data
   int histsize;
   if (!Initialized())
   {
@@ -85,10 +99,16 @@ void MAT::ViscoNeoHooke::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
 
-  // matdata
-  int matdata;
-  ExtractfromPack(position,data,matdata);
-  matdata_ = &mat[matdata];     // unpack pointer to my specific matdata_
+  // matid and recover params_
+  int matid;
+  ExtractfromPack(position,data,matid);
+  const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+  MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+  if (mat->Type() == MaterialType())
+    params_ = static_cast<MAT::PAR::ViscoNeoHooke*>(mat);
+  else
+    dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
+
   // history data
   int twicehistsize;
   ExtractfromPack(position,data,twicehistsize);
@@ -138,9 +158,9 @@ void MAT::ViscoNeoHooke::Setup(const int numgp)
     artstresslast_->at(j) = emptyvec;
   }
  
-  const double E_s  = matdata_->m.visconeohooke->youngs_slow;
-  double E_f  = matdata_->m.visconeohooke->youngs_fast;
-  double tau  = matdata_->m.visconeohooke->relax;
+  const double E_s  = params_->youngs_slow_;
+  double E_f  = params_->youngs_fast_;
+  double tau  = params_->relax_;
  
   if (E_f < E_s) dserror("Wrong ratio between fast and slow Young's modulus");
   if (tau<=0.0) dserror("Relaxation time tau has to be positive!");
@@ -193,11 +213,11 @@ void MAT::ViscoNeoHooke::Evaluate(const LINALG::Matrix<NUM_STRESS_3D,1>* glstrai
 
 {
   // get material parameters
-  const double E_s  = matdata_->m.visconeohooke->youngs_slow;
-  const double nue  = matdata_->m.visconeohooke->poisson;
-  double E_f  = matdata_->m.visconeohooke->youngs_fast;
-  double tau  = matdata_->m.visconeohooke->relax;
-  const double theta= matdata_->m.visconeohooke->theta;
+  const double E_s  = params_->youngs_slow_;
+  const double nue  = params_->poisson_;
+  double E_f  = params_->youngs_fast_;
+  double tau  = params_->relax_;
+  const double theta= params_->theta_;
 
   // get time algorithmic parameters
   // NOTE: dt can be zero (in restart of STI) for Generalized Maxwell model 

@@ -22,6 +22,38 @@ using namespace Teuchos;
 namespace MAT
 {
 
+  namespace PAR
+  {
+
+    /*----------------------------------------------------------------------*/
+    /// material parameters
+    class ViscoNeoHooke : public Parameter
+    {
+    public:
+
+      /// standard constructor
+      ViscoNeoHooke(
+        Teuchos::RCP<MAT::PAR::Material> matdata
+        );
+
+      /// destructor
+      virtual ~ViscoNeoHooke() { ; }
+
+      /// @name material parameters
+      //@{
+      const double youngs_slow_;
+      const double poisson_;
+      const double density_;
+      const double youngs_fast_;
+      const double relax_;
+      const double theta_;
+      //@}
+
+    };  // class ViscoNeoHooke
+
+  }  // namespace PAR
+
+  /*----------------------------------------------------------------------*/
   /// Wrapper for Visco-NeoHooke material
   class ViscoNeoHooke : public Material
   {
@@ -31,7 +63,7 @@ namespace MAT
     ViscoNeoHooke();
 
     /// construct the material object given material parameters
-    explicit ViscoNeoHooke(MATERIAL* matdata);
+    explicit ViscoNeoHooke(MAT::PAR::ViscoNeoHooke* params);
 
     //! @name Packing and Unpacking
 
@@ -74,7 +106,7 @@ namespace MAT
     //@}
 
     /// material type
-    virtual MATERIAL_TYP MaterialType() const { return m_visconeohooke; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_visconeohooke; }
 
     /// Initialize internal stress variables
     void Setup
@@ -99,10 +131,7 @@ namespace MAT
     );
 
     /// Return density
-    double Density()
-    {
-      return matdata_->m.visconeohooke->density;
-    };
+    double Density() const {return params_->density_;}
 
     /// Check if history variables are already initialized
     bool Initialized() const
@@ -111,7 +140,7 @@ namespace MAT
   private:
 
     /// my material parameters
-    MATERIAL* matdata_;
+    MAT::PAR::ViscoNeoHooke* params_;
 
     /// visco history stresses
     Teuchos::RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstresscurr_; ///< current stress

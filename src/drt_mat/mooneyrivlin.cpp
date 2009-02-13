@@ -17,14 +17,29 @@ Maintainer: Moritz Frenzel
 #include "Epetra_SerialDenseSolver.h"
 #include "mooneyrivlin.H"
 
-extern struct _MATERIAL *mat; ///< C-style material struct
+
+/*----------------------------------------------------------------------*
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+MAT::PAR::MooneyRivlin::MooneyRivlin(
+  Teuchos::RCP<MAT::PAR::Material> matdata
+  )
+: Parameter(matdata),
+  c1_(matdata->GetDouble("C1")),
+  c2_(matdata->GetDouble("C2")),
+  kap_(matdata->GetDouble("KAPPA")),
+  lambda_(matdata->GetDouble("LAMBDA")),
+  density_(matdata->GetDouble("DENS"))
+
+{
+}
 
 
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)     maf 04/08|
  *----------------------------------------------------------------------*/
 MAT::MooneyRivlin::MooneyRivlin()
-  : matdata_(NULL)
+  : params_(NULL)
 {
 }
 
@@ -32,8 +47,8 @@ MAT::MooneyRivlin::MooneyRivlin()
 /*----------------------------------------------------------------------*
  |  Copy-Constructor                             (public)      maf 04/08|
  *----------------------------------------------------------------------*/
-MAT::MooneyRivlin::MooneyRivlin(MATERIAL* matdata)
-  : matdata_(matdata)
+MAT::MooneyRivlin::MooneyRivlin(MAT::PAR::MooneyRivlin* params)
+  : params_(params)
 {
 }
 
@@ -48,9 +63,9 @@ void MAT::MooneyRivlin::Pack(vector<char>& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
-  // matdata
-  int matdata = matdata_ - mat;   // pointer difference to reach 0-entry
-  AddtoPack(data,matdata);
+  // matid
+  int matid = params_->Id();
+  AddtoPack(data,matid);
 }
 
 
@@ -65,22 +80,18 @@ void MAT::MooneyRivlin::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
 
-  // matdata
-  int matdata;
-  ExtractfromPack(position,data,matdata);
-  matdata_ = &mat[matdata];     // unpack pointer to my specific matdata_
+  // matid and recover params_
+  int matid;
+  ExtractfromPack(position,data,matid);
+  const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+  MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+  if (mat->Type() == MaterialType())
+    params_ = static_cast<MAT::PAR::MooneyRivlin*>(mat);
+  else
+    dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
-}
-
-
-/*----------------------------------------------------------------------*
- |  Return density                                (public)     maf 04/07|
- *----------------------------------------------------------------------*/
-double MAT::MooneyRivlin::Density()
-{
-  return matdata_->m.mooneyrivlin->density;  // density, returned to evaluate mass matrix
 }
 
 
@@ -93,10 +104,10 @@ void MAT::MooneyRivlin::Evaluate(
         LINALG::Matrix<NUM_STRESS_3D,1> * stress)
 {
   // get material parameters
-  const double c1  = matdata_->m.mooneyrivlin->c1;
-  const double c2  = matdata_->m.mooneyrivlin->c2;
-  const double kappa_q1 = matdata_->m.mooneyrivlin->kap; // kappa_q1*(J-1)^2
-  const double lambda = matdata_->m.mooneyrivlin->lambda;
+  const double c1  = params_->c1_;
+  const double c2  = params_->c2_;
+  const double kappa_q1 = params_->kap_; // kappa_q1*(J-1)^2
+  const double lambda = params_->lambda_;
   
   // penalty param for Klinkel-formulation 
   // Watch out: It is not stress free in reference configuration!

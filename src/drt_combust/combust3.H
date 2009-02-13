@@ -241,7 +241,7 @@ namespace DRT
         void f3_int_beltrami_err(
             std::vector<double>&       myvelnp,
             std::vector<double>&       myprenp,
-            const struct _MATERIAL*    material,
+            Teuchos::RCP<const MAT::Material> material,
             ParameterList&             params
         );
         

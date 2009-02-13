@@ -38,8 +38,6 @@ using namespace IO;
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
 
-extern struct _MATERIAL    *mat;
-
 
 std::map<int, RefCountPtr<STRUMULTI::MicroStatic> > MAT::MicroMaterialGP::microstaticmap_;
 std::map<int, int> MAT::MicroMaterialGP::microstaticcounter_;

@@ -14,6 +14,7 @@ Maintainer: Malte Neumann
 #include <../headers/compile_settings.h>
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_inpar/drt_validconditions.H"
+#include "../drt_inpar/drt_validmaterials.H"
 
 #ifdef TRAP_FE
 
@@ -187,6 +188,7 @@ else if ((argc == 2) &&
     printf("\n\n");
     PrintDefaultDatHeader();
     PrintConditionDatHeader();
+    PrintMaterialDatHeader();
     printf("\n\n");
   }
 }

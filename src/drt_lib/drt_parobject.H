@@ -136,7 +136,8 @@ using namespace std;
 #define ParObject_TransportBoundary     (int)129
 #define ParObject_SutherlandFluid       (int)130
 #define ParObject_SutherlandCondif      (int)131
-
+#define ParObject_CompOgden             (int)132
+#define ParObject_ParMaterial           (int)133
 
 namespace DRT
 {

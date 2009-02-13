@@ -273,18 +273,7 @@ void FSI::UTILS::CreateAleDiscretization()
   // have a pointer to that vector. Too bad.
   // So we search for a StVenantKirchhoff material and take the first
   // one we find.
-  int nummat = DRT::Problem::Instance()->NumMaterials();
-  int matnr = -1;
-  for (int i=0; i<nummat; ++i)
-  {
-    if (DRT::Problem::Instance()->Material(i).mattyp==m_stvenant)
-    {
-      // For historical reasons material numbers are given in FORTRAN
-      // style.
-      matnr = i+1;
-      break;
-    }
-  }
+  int matnr = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_stvenant);
   if (matnr==-1)
     dserror("No StVenantKirchhoff material defined. Cannot generate ale mesh.");
 

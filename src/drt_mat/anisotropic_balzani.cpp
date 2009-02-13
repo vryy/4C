@@ -17,23 +17,50 @@ Maintainer: Moritz Frenzel
 #include "Epetra_SerialDenseSolver.h"
 #include "anisotropic_balzani.H"
 
-extern struct _MATERIAL *mat;  ///< C-style material struct
+
+/*----------------------------------------------------------------------*
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+MAT::PAR::AnisotropicBalzani::AnisotropicBalzani(
+  Teuchos::RCP<MAT::PAR::Material> matdata
+  )
+: Parameter(matdata),
+  c1_(matdata->GetDouble("C1")),
+  eps1_(matdata->GetDouble("EPS1")),
+  eps2_(matdata->GetDouble("EPS2")),
+  alpha1_(matdata->GetDouble("ALPHA1")),
+  alpha2_(matdata->GetDouble("ALPHA2")),
+  dens_(matdata->GetDouble("DENS")),
+  aloc_(matdata->Getint("ALOC")),
+  a1_(),
+  alpha1_2_(matdata->GetDouble("ALPHA1_2")),
+  alpha2_2_(matdata->GetDouble("ALPHA2_2")),
+  a2_()
+{
+  a1_[0] = matdata->GetDouble("A1X");
+  a1_[1] = matdata->GetDouble("A1Y");
+  a1_[2] = matdata->GetDouble("A1Z");
+
+  a2_[0] = matdata->GetDouble("A2X");
+  a2_[1] = matdata->GetDouble("A2Y");
+  a2_[2] = matdata->GetDouble("A2Z");
+}
 
 
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)     maf 07/07|
  *----------------------------------------------------------------------*/
 MAT::AnisotropicBalzani::AnisotropicBalzani()
-  : matdata_(NULL)
+  : params_(NULL)
 {
 }
 
 
 /*----------------------------------------------------------------------*
- |  Copy-Constructor                             (public)      maf 07/07|
+ |  Constructor                                  (public)      maf 07/07|
  *----------------------------------------------------------------------*/
-MAT::AnisotropicBalzani::AnisotropicBalzani(MATERIAL* matdata)
-  : matdata_(matdata)
+MAT::AnisotropicBalzani::AnisotropicBalzani(MAT::PAR::AnisotropicBalzani* params)
+  : params_(params)
 {
 }
 
@@ -48,9 +75,10 @@ void MAT::AnisotropicBalzani::Pack(vector<char>& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
-  // matdata
-  int matdata = matdata_ - mat;   // pointer difference to reach 0-entry
-  AddtoPack(data,matdata);
+  // matid
+  int matid = params_->Id();
+  AddtoPack(data,matid);
+  // fibers
   AddtoPack(data,a1_);  // fiber vector 1
   AddtoPack(data,a2_);  // fiber vector 2
 }
@@ -67,11 +95,17 @@ void MAT::AnisotropicBalzani::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
 
-  // matdata
-  int matdata;
-  ExtractfromPack(position,data,matdata);
-  matdata_ = &mat[matdata];     // unpack pointer to my specific matdata_
+  // matid and recover params_
+  int matid;
+  ExtractfromPack(position,data,matid);
+  const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+  MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+  if (mat->Type() == MaterialType())
+    params_ = static_cast<MAT::PAR::AnisotropicBalzani*>(mat);
+  else
+    dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
 
+  // fibres
   ExtractfromPack(position,data,a1_);  // fiber vector 1
   ExtractfromPack(position,data,a2_);  // fiber vector 2
 
@@ -82,7 +116,7 @@ void MAT::AnisotropicBalzani::Unpack(const vector<char>& data)
 void MAT::AnisotropicBalzani::Setup()
 {
   // check whether fiber are based on local cosy
-  if (matdata_->m.anisotropic_balzani->aloc == 1){
+  if (params_->aloc_ == 1){
     // fibers aligned in local element cosy with gamma_i around circumferential direction
     vector<double> rad(3);
     vector<double> axi(3);
@@ -102,9 +136,9 @@ void MAT::AnisotropicBalzani::Setup()
     }
 
     // alignment angles gamma_i are read from first entry of then unnecessary vectors a1 and a2
-    double gamma1 = matdata_->m.anisotropic_balzani->a1[0];
+    double gamma1 = params_->a1_[0];
     gamma1 = (gamma1 * PI)/180.0;  // convert to radians
-    double gamma2 = matdata_->m.anisotropic_balzani->a2[0];
+    double gamma2 = params_->a2_[0];
     gamma2 = (gamma2 * PI)/180.0;  // convert to radians
 
     a1_.resize(3);
@@ -115,26 +149,17 @@ void MAT::AnisotropicBalzani::Setup()
       a1_.at(i) = cos(gamma1)*locsys(i,2) + sin(gamma1)*locsys(i,1);
       a2_.at(i) = cos(gamma2)*locsys(i,2) - sin(gamma2)*locsys(i,1);
     }
-  } else if (matdata_->m.anisotropic_balzani->aloc == 0){
+  } else if (params_->aloc_ == 0){
     a1_.resize(3);
     a2_.resize(3);
     for (int i = 0; i < 3; ++i) {
-      a1_.at(i) = matdata_->m.anisotropic_balzani->a1[i];
-      a2_.at(i) = matdata_->m.anisotropic_balzani->a2[i];
+      a1_.at(i) = params_->a1_[i];
+      a2_.at(i) = params_->a2_[i];
     }
     
   }
 }
 
-
-
-/*----------------------------------------------------------------------*
- |  Return density                                (public)     maf 04/07|
- *----------------------------------------------------------------------*/
-double MAT::AnisotropicBalzani::Density()
-{
-  return matdata_->m.anisotropic_balzani->density;  // density, returned to evaluate mass matrix
-}
 
 
 /*----------------------------------------------------------------------*
@@ -160,13 +185,13 @@ void MAT::AnisotropicBalzani::Evaluate(
   // stress and glstrain are copied value by value and are thus not necessary
 
   // get material parameters
-  double c1 = matdata_->m.anisotropic_balzani->c1;          //parameter for ground substance
-  double eps1 = matdata_->m.anisotropic_balzani->eps1;      //parameter for incomp. penalty
-  double eps2 = matdata_->m.anisotropic_balzani->eps2;      //parameter for incomp. penalty
-  double alpha1 = matdata_->m.anisotropic_balzani->alpha1;  //parameter for 1st fiber potential
-  double alpha2 = matdata_->m.anisotropic_balzani->alpha2;  //parameter for 1st fiber potential
-  double alpha1_2 = matdata_->m.anisotropic_balzani->alpha1_2;//parameter for 2nd fiber potential
-  double alpha2_2 = matdata_->m.anisotropic_balzani->alpha2_2;//parameter for 2nd fiber potential
+  double c1 = params_->c1_;          //parameter for ground substance
+  double eps1 = params_->eps1_;      //parameter for incomp. penalty
+  double eps2 = params_->eps2_;      //parameter for incomp. penalty
+  double alpha1 = params_->alpha1_;  //parameter for 1st fiber potential
+  double alpha2 = params_->alpha2_;  //parameter for 1st fiber potential
+  double alpha1_2 = params_->alpha1_2_;//parameter for 2nd fiber potential
+  double alpha2_2 = params_->alpha2_2_;//parameter for 2nd fiber potential
 
   // Identity Matrix
   Epetra_SerialDenseMatrix I(3,3);
@@ -225,10 +250,10 @@ void MAT::AnisotropicBalzani::Evaluate(
 
   // Structural Tensor M, defined by a x a
   Epetra_SerialDenseVector a(3);
-  if (matdata_->m.anisotropic_balzani->aloc != 1){
-    a(0) = matdata_->m.anisotropic_balzani->a1[0];  // first fiber vector from input
-    a(1) = matdata_->m.anisotropic_balzani->a1[1];
-    a(2) = matdata_->m.anisotropic_balzani->a1[2];
+  if (params_->aloc_ != 1){
+    a(0) = params_->a1_[0];  // first fiber vector from input
+    a(1) = params_->a1_[1];
+    a(2) = params_->a1_[2];
   } else {
     a(0) = a1_.at(0); a(1) = a1_.at(1); a(2) = a1_.at(2);
   }
@@ -259,10 +284,10 @@ void MAT::AnisotropicBalzani::Evaluate(
   /* Second fiber part ******************************************************/
   // Structural Tensor M_2, defined by a_2 x a_2
   Epetra_SerialDenseVector a_2(3);
-  if (matdata_->m.anisotropic_balzani->aloc != 1){
-    a_2(0) = matdata_->m.anisotropic_balzani->a2[0];  // 2nd fiber vector from input
-    a_2(1) = matdata_->m.anisotropic_balzani->a2[1];
-    a_2(2) = matdata_->m.anisotropic_balzani->a2[2];
+  if (params_->aloc_ != 1){
+    a_2(0) = params_->a2_[0];  // 2nd fiber vector from input
+    a_2(1) = params_->a2_[1];
+    a_2(2) = params_->a2_[2];
   } else {
     a_2(0) = a2_.at(0); a_2(1) = a2_.at(1); a_2(2) = a2_.at(2);
   }

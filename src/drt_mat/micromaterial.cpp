@@ -27,9 +27,6 @@ using namespace Teuchos;
 using namespace IO;
 
 
-extern struct _MATERIAL    *mat;
-
-
 
 // Be careful when adding new member functions of MicroMaterial that
 // relate to MicroMaterialGP (which is NOT in the filter). See also
@@ -37,17 +34,35 @@ extern struct _MATERIAL    *mat;
 // this file for the very reason.
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+MAT::PAR::MicroMaterial::MicroMaterial(
+  Teuchos::RCP<MAT::PAR::Material> matdata
+  )
+: Parameter(matdata),
+  microfile_(*(matdata->Get<std::string>("MICROFILE"))),
+  microdisnum_(matdata->Getint("MICRODIS_NUM")),
+  initvol_(matdata->GetDouble("INITVOL"))
+{
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 MAT::MicroMaterial::MicroMaterial()
-  : matdata_(NULL)
+  : params_(NULL)
 {
 }
 
 
-MAT::MicroMaterial::MicroMaterial(MATERIAL* matdata)
-  : matdata_(matdata)
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+MAT::MicroMaterial::MicroMaterial(MAT::PAR::MicroMaterial* params)
+  : params_(params)
 {
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void MAT::MicroMaterial::Pack(vector<char>& data) const
 {
   data.resize(0);
@@ -55,12 +70,14 @@ void MAT::MicroMaterial::Pack(vector<char>& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
-  // matdata
-  int matdata = matdata_ - mat;   // pointer difference to reach 0-entry
-  AddtoPack(data,matdata);
+
+  // matid
+  int matid = params_->Id();
+  AddtoPack(data,matid);
 }
 
-
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void MAT::MicroMaterial::Unpack(const vector<char>& data)
 {
   int position = 0;
@@ -69,10 +86,15 @@ void MAT::MicroMaterial::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
 
-  // matdata
-  int matdata;
-  ExtractfromPack(position,data,matdata);
-  matdata_ = &mat[matdata];     // unpack pointer to my specific matdata_
+  // matid
+  int matid;
+  ExtractfromPack(position,data,matid);
+  const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+  MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+  if (mat->Type() == MaterialType())
+    params_ = static_cast<MAT::PAR::MicroMaterial*>(mat);
+  else
+    dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);

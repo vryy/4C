@@ -72,8 +72,8 @@ class Inv_analysis : public StruGenAlpha {
 		vector<double> parameters_;
 		RefCountPtr<Epetra_Vector>  ref_disp_;
 		RefCountPtr<Epetra_Vector>  ref_load_;
-		const MATERIAL& mat_;
-		MATERIAL& nonconstmat_;
+//		const MATERIAL& mat_;
+//		MATERIAL& nonconstmat_;
 
                 vector<DRT::Condition*> surfneum_;
                 vector<DRT::Condition*> surfdir_;

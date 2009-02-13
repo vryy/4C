@@ -171,19 +171,6 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
   // get the material
   RCP<MAT::Material> mat = Material();
 
-  MATERIAL* actmat = NULL;
-
-  if(mat->MaterialType()== m_fluid)
-    actmat = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
-  else if(mat->MaterialType()== m_sutherland_fluid)
-    actmat = static_cast<MAT::SutherlandFluid*>(mat.get())->MaterialData();
-  else if(mat->MaterialType()== m_carreauyasuda)
-    actmat = static_cast<MAT::CarreauYasuda*>(mat.get())->MaterialData();
-  else if(mat->MaterialType()== m_modpowerlaw)
-    actmat = static_cast<MAT::ModPowerLaw*>(mat.get())->MaterialData();
-  else
-    dserror("fluid material expected but got type %d", mat->MaterialType());
-
   switch(act)
   {
     //-----------------------------------------------------------------------
@@ -229,8 +216,7 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
                                                                       elevec1,
                                                                       elevec2,
                                                                       elevec3,
-                                                                      mat,
-                                                                      actmat);
+                                                                      mat);
     }
     break;
     case calc_fluid_stationary_systemmat_and_residual:
@@ -269,8 +255,7 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
                                                                             elevec1,
                                                                             elevec2,
                                                                             elevec3,
-                                                                            mat,
-                                                                            actmat);
+                                                                            mat);
     }
     break;
     case calc_fluid_genalpha_sysmat_and_residual:
@@ -454,7 +439,7 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
                                eprenp,
                                eaccam,
                                evelaf,
-                               actmat,
+                               mat,
                                alphaM,
                                alphaF,
                                gamma,
@@ -475,12 +460,21 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
       // This is a very poor way to transport the density to the
       // outside world. Is there a better one?
       double dens = 0.0;
-      if(mat->MaterialType()== m_fluid)
-        dens = actmat->m.fluid->density;
-      else if(mat->MaterialType()== m_carreauyasuda)
-        dens = actmat->m.carreauyasuda->density;
-      else if(mat->MaterialType()== m_modpowerlaw)
-        dens = actmat->m.modpowerlaw->density;
+      if(mat->MaterialType()== INPAR::MAT::m_fluid)
+      {
+        MAT::NewtonianFluid* actmat = static_cast<MAT::NewtonianFluid*>(mat.get());
+        dens = actmat->Density();
+      }
+      else if(mat->MaterialType()== INPAR::MAT::m_carreauyasuda)
+      {
+        MAT::CarreauYasuda* actmat = static_cast<MAT::CarreauYasuda*>(mat.get());
+        dens = actmat->Density();
+      }
+      else if(mat->MaterialType()== INPAR::MAT::m_modpowerlaw)
+      {
+        MAT::ModPowerLaw* actmat = static_cast<MAT::ModPowerLaw*>(mat.get());
+        dens = actmat->Density();
+      }
       else
         dserror("no fluid material found");
 
@@ -530,12 +524,21 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
     {
       // This is a very poor way to transport the density to the
       // outside world. Is there a better one?
-      if(mat->MaterialType()== m_fluid)
-        params.set("density", actmat->m.fluid->density);
-      else if(mat->MaterialType()== m_carreauyasuda)
-        params.set("density", actmat->m.carreauyasuda->density);
-      else if(mat->MaterialType()== m_modpowerlaw)
-        params.set("density", actmat->m.modpowerlaw->density);
+      if(mat->MaterialType()== INPAR::MAT::m_fluid)
+      {
+        MAT::NewtonianFluid* actmat = static_cast<MAT::NewtonianFluid*>(mat.get());
+        params.set("density", actmat->Density());
+      }
+      else if(mat->MaterialType()== INPAR::MAT::m_carreauyasuda)
+      {
+        MAT::CarreauYasuda* actmat = static_cast<MAT::CarreauYasuda*>(mat.get());
+        params.set("density", actmat->Density());
+      }
+      else if(mat->MaterialType()== INPAR::MAT::m_modpowerlaw)
+      {
+        MAT::ModPowerLaw* actmat = static_cast<MAT::ModPowerLaw*>(mat.get());
+        params.set("density", actmat->Density());
+      }
       else
         dserror("no fluid material found");
     }

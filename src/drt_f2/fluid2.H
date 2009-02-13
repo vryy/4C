@@ -27,7 +27,7 @@ using namespace Teuchos;
 
 
 // forward declarations
-struct _MATERIAL;
+//struct _MATERIAL;
 struct _FLUID_DATA;
 
 

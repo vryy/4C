@@ -572,28 +572,28 @@ void DRT::ELEMENTS::Ptet::SelectMaterial(
   RCP<MAT::Material> mat = Material();
   switch (mat->MaterialType())
   {
-    case m_stvenant: /*------------------ st.venant-kirchhoff-material */
+    case INPAR::MAT::m_stvenant: /*------------------ st.venant-kirchhoff-material */
     {
       MAT::StVenantKirchhoff* stvk = static_cast<MAT::StVenantKirchhoff*>(mat.get());
       stvk->Evaluate(&glstrain_e,&cmat_e,&stress_e);
       density = stvk->Density();
     }
     break;
-    case m_neohooke: /*----------------- NeoHookean Material */
+    case INPAR::MAT::m_neohooke: /*----------------- NeoHookean Material */
     {
       MAT::NeoHooke* neo = static_cast<MAT::NeoHooke*>(mat.get());
       neo->Evaluate(&glstrain_e,&cmat_e,&stress_e);
       density = neo->Density();
     }
     break;
-    case m_aaaneohooke: /*-- special case of generalised NeoHookean material see Raghavan, Vorp */
+    case INPAR::MAT::m_aaaneohooke: /*-- special case of generalised NeoHookean material see Raghavan, Vorp */
     {
       MAT::AAAneohooke* aaa = static_cast<MAT::AAAneohooke*>(mat.get());
       aaa->Evaluate(&glstrain_e,&cmat_e,&stress_e);
       density = aaa->Density();
     }
     break;
-    case m_lung_ogden: /* lung tissue material with Ogden for volumetric part */
+    case INPAR::MAT::m_lung_ogden: /* lung tissue material with Ogden for volumetric part */
     {
       MAT::LungOgden* lungog = static_cast <MAT::LungOgden*>(mat.get());
       lungog->Evaluate(&glstrain,&cmat,&stress);
@@ -601,7 +601,7 @@ void DRT::ELEMENTS::Ptet::SelectMaterial(
       return;
       break;
     }
-    case m_lung_penalty: /* lung tissue material with penalty function for incompressibility constraint */
+    case INPAR::MAT::m_lung_penalty: /* lung tissue material with penalty function for incompressibility constraint */
     {
       MAT::LungPenalty* lungpen = static_cast <MAT::LungPenalty*>(mat.get());
 
@@ -634,21 +634,21 @@ void DRT::ELEMENTS::Ptet::SelectMaterial(
   RCP<MAT::Material> mat = Material();
   switch (mat->MaterialType())
   {
-    case m_stvenant: /*------------------ st.venant-kirchhoff-material */
+    case INPAR::MAT::m_stvenant: /*------------------ st.venant-kirchhoff-material */
     {
       MAT::StVenantKirchhoff* stvk = static_cast<MAT::StVenantKirchhoff*>(mat.get());
       stvk->Evaluate(&glstrain,&cmat,&stress);
       density = stvk->Density();
     }
     break;
-    case m_neohooke: /*----------------- NeoHookean Material */
+    case INPAR::MAT::m_neohooke: /*----------------- NeoHookean Material */
     {
       MAT::NeoHooke* neo = static_cast<MAT::NeoHooke*>(mat.get());
       neo->Evaluate(&glstrain,&cmat,&stress);
       density = neo->Density();
     }
     break;
-    case m_aaaneohooke: /*-- special case of generalised NeoHookean material see Raghavan, Vorp */
+    case INPAR::MAT::m_aaaneohooke: /*-- special case of generalised NeoHookean material see Raghavan, Vorp */
     {
       MAT::AAAneohooke* aaa = static_cast<MAT::AAAneohooke*>(mat.get());
       aaa->Evaluate(&glstrain,&cmat,&stress);

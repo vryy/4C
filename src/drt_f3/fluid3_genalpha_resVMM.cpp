@@ -24,6 +24,8 @@ Maintainer: Peter Gamnitzer
 
 #include "fluid3_genalpha_resVMM.H"
 #include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/carreauyasuda.H"
+#include "../drt_mat/modpowerlaw.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
@@ -140,8 +142,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
   Epetra_SerialDenseVector&  elevec1_epetra,
   Epetra_SerialDenseVector&  elevec2_epetra,
   Epetra_SerialDenseVector&  elevec3_epetra,
-  RefCountPtr<MAT::Material> mat,
-  MATERIAL*                  actmat)
+  RefCountPtr<MAT::Material> mat)
 {
 
   // --------------------------------------------------
@@ -348,7 +349,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
         eaccam,
         evelaf,
         fsevelaf,
-        actmat,
+        mat,
         alphaM,
         alphaF,
         gamma,
@@ -387,7 +388,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
         eaccam,
         evelaf,
         fsevelaf,
-        actmat,
+        mat,
         alphaM,
         alphaF,
         gamma,
@@ -429,7 +430,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
 	eaccam,
 	evelaf,
 	fsevelaf,
-	actmat,
+	mat,
 	alphaM,
 	alphaF,
 	gamma,
@@ -467,7 +468,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
         eaccam          ,
         evelaf          ,
         fsevelaf        ,
-        actmat          ,
+        mat             ,
         alphaM          ,
         alphaF          ,
         gamma           ,
@@ -526,12 +527,21 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
     // This is a very poor way to transport the density to the
     // outside world. Is there a better one?
     double dens = 0.0;
-    if(mat->MaterialType()== m_fluid)
-      dens = actmat->m.fluid->density;
-    else if(mat->MaterialType()== m_carreauyasuda)
-      dens = actmat->m.carreauyasuda->density;
-    else if(mat->MaterialType()== m_modpowerlaw)
-      dens = actmat->m.modpowerlaw->density;
+    if(mat->MaterialType()== INPAR::MAT::m_fluid)
+    {
+      const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
+      dens = actmat->Density();
+    }
+    else if(mat->MaterialType()== INPAR::MAT::m_carreauyasuda)
+    {
+      const MAT::CarreauYasuda* actmat = static_cast<const MAT::CarreauYasuda*>(mat.get());
+      dens = actmat->Density();
+    }
+    else if(mat->MaterialType()== INPAR::MAT::m_modpowerlaw)
+    {
+      const MAT::ModPowerLaw* actmat = static_cast<const MAT::ModPowerLaw*>(mat.get());
+      dens = actmat->Density();
+    }
     else
       dserror("no fluid material found");
     
@@ -559,7 +569,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_qs(
   const LINALG::Matrix<3,iel>&            eaccam          ,
   const LINALG::Matrix<3,iel>&            evelaf          ,
   const LINALG::Matrix<3,iel>&            fsevelaf        ,
-  const struct _MATERIAL*                 material        ,
+  Teuchos::RCP<const MAT::Material>       material        ,
   const double                            alphaM          ,
   const double                            alphaF          ,
   const double                            gamma           ,
@@ -2472,7 +2482,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_td(
   const LINALG::Matrix<3,iel>&            eaccam          ,
   const LINALG::Matrix<3,iel>&            evelaf          ,
   const LINALG::Matrix<3,iel>&            fsevelaf        ,
-  const struct _MATERIAL*                 material        ,
+  Teuchos::RCP<const MAT::Material>       material        ,
   const double                            alphaM          ,
   const double                            alphaF          ,
   const double                            gamma           ,
@@ -5006,7 +5016,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_qs(
   const LINALG::Matrix<3,iel>&                     eaccam          ,
   const LINALG::Matrix<3,iel>&                     evelaf          ,
   const LINALG::Matrix<3,iel>&                     fsevelaf        ,
-  const struct _MATERIAL*                          material        ,
+  Teuchos::RCP<const MAT::Material>                material        ,
   const double                                     alphaM          ,
   const double                                     alphaF          ,
   const double                                     gamma           ,
@@ -6966,7 +6976,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_td(
   const LINALG::Matrix<3,iel>&                     eaccam          ,
   const LINALG::Matrix<3,iel>&                     evelaf          ,
   const LINALG::Matrix<3,iel>&                     fsevelaf        ,
-  const struct _MATERIAL*                          material        ,
+  Teuchos::RCP<const MAT::Material>                material        ,
   const double                                     alphaM          ,
   const double                                     alphaF          ,
   const double                                     gamma           ,
@@ -9626,8 +9636,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   ParameterList&             params,
   DRT::Discretization&       discretization,
   vector<int>&               lm,
-  RefCountPtr<MAT::Material> mat,
-  _MATERIAL*                 material)
+  RefCountPtr<MAT::Material> mat)
 {
 
   // --------------------------------------------------
@@ -9850,7 +9859,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
                  timealphaF     ,
                  hk             ,
                  mk             ,
-                 material       ,
+                 mat            ,
                  visc           ,
                  fssgv          ,
                  turb_mod_action,
@@ -10855,30 +10864,34 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::GetNodalBodyForce(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalVisc(
-  const struct _MATERIAL*                 material   ,
+  Teuchos::RCP<const MAT::Material>       material   ,
   double&                           	  visc       ,
   const double &                          rateofshear
   )
 {
-  if(material->mattyp == m_carreauyasuda)
+  if(material->MaterialType() == INPAR::MAT::m_carreauyasuda)
   {
-    double nu_0 = material->m.carreauyasuda->nu_0;      // parameter for zero-shear viscosity
-    double nu_inf = material->m.carreauyasuda->nu_inf;  // parameter for infinite-shear viscosity
-    double lambda = material->m.carreauyasuda->lambda;  // parameter for characteristic time
-    double a = material->m.carreauyasuda->a_param;      // constant parameter
-    double b = material->m.carreauyasuda->b_param;  	// constant parameter
+    const MAT::CarreauYasuda* actmat = static_cast<const MAT::CarreauYasuda*>(material.get());
+
+    double nu_0 = actmat->Nu0();      // parameter for zero-shear viscosity
+    double nu_inf = actmat->NuInf();  // parameter for infinite-shear viscosity
+    double lambda = actmat->Lambda();  // parameter for characteristic time
+    double a = actmat->AParam();      // constant parameter
+    double b = actmat->BParam();  	// constant parameter
 
     // compute viscosity according to the Carreau-Yasuda model for shear-thinning fluids
     // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
     const double tmp = pow(lambda*rateofshear,b);
     visc = nu_inf + ((nu_0 - nu_inf)/pow((1 + tmp),a));
   }
-  else if(material->mattyp == m_modpowerlaw)
+  else if(material->MaterialType() == INPAR::MAT::m_modpowerlaw)
   {
+    const MAT::ModPowerLaw* actmat = static_cast<const MAT::ModPowerLaw*>(material.get());
+
     // get material parameters
-    double m  	  = material->m.modpowerlaw->m_cons;    // consistency constant
-    double delta  = material->m.modpowerlaw->delta;     // safety factor
-    double a      = material->m.modpowerlaw->a_exp;     // exponent
+    double m  	  = actmat->MCons();    // consistency constant
+    double delta  = actmat->Delta();     // safety factor
+    double a      = actmat->AExp();     // exponent
 
     // compute viscosity according to a modified power law model for shear-thinning fluids
     // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
@@ -12212,7 +12225,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetElementData(
   const double                              & timealphaF     ,
   double                                    & hk             ,
   double                                    & mk             ,
-  const struct _MATERIAL*                     material       ,
+  Teuchos::RCP<const MAT::Material>           material       ,
   double                                    & visc           ,
   const enum Fluid3::StabilisationAction      fssgv          ,
   const enum Fluid3::TurbModelAction          turb_mod_action,
@@ -12269,17 +12282,18 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetElementData(
   //                      SET MATERIAL DATA
   //------------------------------------------------------------------
   // check here, if we really have a fluid !!
-  if( material->mattyp != m_carreauyasuda
+  if( material->MaterialType() != INPAR::MAT::m_carreauyasuda
       && 
-      material->mattyp != m_modpowerlaw
+      material->MaterialType() != INPAR::MAT::m_modpowerlaw
       && 
-      material->mattyp != m_fluid)
+      material->MaterialType() != INPAR::MAT::m_fluid)
   dserror("Material law is not a fluid");
 
   // get material viscosity
-  if(material->mattyp == m_fluid)
+  if(material->MaterialType() == INPAR::MAT::m_fluid)
   {
-    visc = material->m.fluid->viscosity;
+    const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());
+    visc = actmat->Viscosity();
   }
   // initialise visceff to visc
   visceff=visc;
@@ -12442,7 +12456,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetElementData(
   // -------------------------------------------------------------------
   // strain rate based models
 
-  if(material->mattyp!= m_fluid
+  if(material->MaterialType()!= INPAR::MAT::m_fluid
      ||
      fssgv==Fluid3::fssgv_Smagorinsky_all
      ||
@@ -12530,7 +12544,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetElementData(
     double fsrateofstrain = -1.0e30;
 
     // large scale strains
-    if(material->mattyp!=m_fluid
+    if(material->MaterialType()!=INPAR::MAT::m_fluid
        ||
        fssgv==Fluid3::fssgv_Smagorinsky_all
        ||
@@ -12549,7 +12563,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetElementData(
     // ---------------------------------------------------------------
     // compute nonlinear viscosity according to Carreau-Yasuda
     // ---------------------------------------------------------------
-    if(material->mattyp != m_fluid)
+    if(material->MaterialType() != INPAR::MAT::m_fluid)
     {
       CalVisc(material,visceff,rateofstrain);
     }

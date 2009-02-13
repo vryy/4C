@@ -13,11 +13,64 @@ Maintainer: Georg Bauer
 
 #ifdef CCADISCRET
 
+#include "matpar_parameter.H"
 #include "material.H"
 
 namespace MAT
 {
+ 
+  namespace PAR
+  {
+    /*----------------------------------------------------------------------*/
+    /// material parameters for list of materials
+    class MatList : public Parameter
+    {
+    public:
 
+      /// standard constructor
+      MatList(
+        Teuchos::RCP<MAT::PAR::Material> matdata
+        );
+
+      /// destructor
+      virtual ~MatList() { ; }
+
+      /// @name material parameters
+      //@{
+
+      /// provide access to material by its ID
+      Teuchos::RCP<const MAT::Material> MaterialById(const int id) const
+      {
+        std::map<int,Teuchos::RCP<MAT::Material> >::const_iterator m = mat_.find(id);
+
+        if (m == mat_.end())
+        {
+          dserror("Material %d could not be found", id);
+          return Teuchos::null;
+        }
+        else
+          return m->second;
+      }
+
+      /// length of material list
+      const int nummat_;
+
+      /// the list of material IDs
+      const std::vector<int>* matids_;
+
+    private:
+
+      /// map to materials
+      std::map<int,Teuchos::RCP<MAT::Material> > mat_;
+
+      //@}
+
+    };  // class MatList
+
+  }  // namespace PAR
+
+
+  /*----------------------------------------------------------------------*/
   /// Wrapper for a list of materials
   class MatList : public Material
   {
@@ -27,7 +80,7 @@ namespace MAT
     MatList();
 
     /// construct the material object given material parameters
-    explicit MatList(MATERIAL* matdata);
+    explicit MatList(MAT::PAR::MatList* params);
 
     //! @name Packing and Unpacking
 
@@ -68,15 +121,32 @@ namespace MAT
     //@}
 
     /// material type
-    virtual MATERIAL_TYP MaterialType() const { return m_matlist; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_matlist; }
 
-    /// return material parameters for element calculation
-    MATERIAL* MaterialData() const { return matdata_; }
+    /// number of materials
+    int NumMat() const { return params_->nummat_; }
+
+    /// material ID by Index
+    int MatID(
+      const unsigned index
+    ) const
+    { 
+      if ((int)index < params_->nummat_)
+        return params_->matids_->at(index);
+      else
+      {
+        dserror("Index too large");
+        return -1;
+      }
+    }
+
+    /// provide access to material by its ID
+    Teuchos::RCP<const MAT::Material> MaterialById(const int id) const { return params_->MaterialById(id); }
 
   private:
 
     /// my material parameters
-    MATERIAL* matdata_;
+    MAT::PAR::MatList* params_;
   };
 
 }

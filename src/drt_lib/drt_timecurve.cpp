@@ -55,16 +55,12 @@ Maintainer: Ulrich Kuettler
 #include "drt_timecurve.H"
 #include "drt_dserror.H"
 
+#include "drt_globalproblem.H"
+#include "../drt_mat/newtonianfluid.H"
+
 #ifdef PARALLEL
 #include <mpi.h>
 #endif
-
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | vector of material laws                                              |
- | defined in global_control.c
- *----------------------------------------------------------------------*/
-extern struct _MATERIAL  *mat;
 
 
 using namespace std;
@@ -373,7 +369,11 @@ ScalarT DRT::UTILS::ExplicitTimeSlice::Fct(const ScalarT& T)
     break;
   case -6: /* Beltrami-Flow */
   {
-    ScalarT visc = mat[0].m.fluid->viscosity;
+    int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
+    if (id==-1) dserror("Newtonian fluid material could not be found");
+    const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+    const MAT::PAR::NewtonianFluid* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(mat);
+    ScalarT visc = (ScalarT) actmat->viscosity_;
     ScalarT d = M_PI/2.;
     ScalarT val1 = -c1_*visc*d*d*T;
     fac = exp(val1);
@@ -381,7 +381,11 @@ ScalarT DRT::UTILS::ExplicitTimeSlice::Fct(const ScalarT& T)
   }
   case -7: /* Kim-Moin-Flow */
   {
-    ScalarT visc = mat[0].m.fluid->viscosity;
+    int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
+    if (id==-1) dserror("Newtonian fluid material could not be found");
+    const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+    const MAT::PAR::NewtonianFluid* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(mat);
+    ScalarT visc = (ScalarT) actmat->viscosity_;
     ScalarT a = 2.0;
     ScalarT val1 = -c1_*a*a*M_PI*M_PI*visc*T;
     fac = exp(val1);

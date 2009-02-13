@@ -22,6 +22,7 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterListAcceptorDefaultBase.hpp>
 
+#include "../drt_mat/matpar_bundle.H"
 #include "drt_discret.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "drt_inputreader.H"
@@ -38,6 +39,15 @@ namespace IO
   class ErrorFileControl;
 }
 
+namespace MAT
+{
+namespace PAR
+{
+class Bundle;
+}
+}
+
+
 namespace DRT
 {
 
@@ -45,6 +55,7 @@ namespace INPUT
 {
 class DatFileReader;
 }
+
 
 /// Global problem instance that keeps the discretizations
 /*!
@@ -162,6 +173,9 @@ public:
   /// input of materials
   void ReadMaterial();
 
+  /// input of materials
+  void ReadMaterials(const DRT::INPUT::DatFileReader& reader);
+  
   /// input of conditions
   void ReadConditions(const DRT::INPUT::DatFileReader& reader);
 
@@ -265,27 +279,10 @@ public:
   //@}
 
   /// @name Materials
+  //@{
 
-  /// add material vector
-  void AddMaterial(const _MATERIAL& m);
-
-  /// return number of defined materials
-  int NumMaterials() const { return material_.size(); }
-
-  /// return material definition with given number
-  const _MATERIAL& Material(int num) const { return material_[num]; }
-
-  /// activate material vector of problem instance as global mat
-  /*!
-    This is a hack, really. The global mat pointer (known from the old
-    ccarat code) points into the material vector of one Problem
-    object. If there is just one such object (the usual case) there is
-    nothing to worry about. If, however, there are several Problem
-    objects (that is we read several input files at once)
-    ActivateMaterial() is used to switch the mat pointer between the
-    material definitions of different Problem objects.
-   */
-  void ActivateMaterial();
+  /// return pointer to materials bundled to the problem
+  Teuchos::RCP<MAT::PAR::Bundle> Materials() { return materials_; }
 
   //@}
 
@@ -306,8 +303,8 @@ private:
   /// discretizations of this problem
   vector<vector<RCP<Discretization> > > discretizations_;
 
-  /// material vector
-  vector<_MATERIAL> material_;
+  /// material bundle
+  Teuchos::RCP<MAT::PAR::Bundle> materials_;
 
   Teuchos::RCP<IO::InputControl>  inputcontrol_;
   Teuchos::RCP<IO::OutputControl> outputcontrol_;

@@ -59,16 +59,16 @@ bool DRT::ELEMENTS::So_sh8::ReadElement()
   SetMaterial(material);
 
   // special element-dependent input of material parameters
-  if (Material()->MaterialType() == m_artwallremod){
+  if (Material()->MaterialType() == INPAR::MAT::m_artwallremod){
     MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(Material().get());
     remo->Setup(NUMGPT_SOH8, this->Id());
-  } else if (Material()->MaterialType() == m_anisotropic_balzani){
+  } else if (Material()->MaterialType() == INPAR::MAT::m_anisotropic_balzani){
     MAT::AnisotropicBalzani* balz = static_cast <MAT::AnisotropicBalzani*>(Material().get());
     balz->Setup();
-  } else if (Material()->MaterialType() == m_viscoanisotropic){
+  } else if (Material()->MaterialType() == INPAR::MAT::m_viscoanisotropic){
     MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(Material().get());
     visco->Setup(NUMGPT_SOH8);
-  } else if (Material()->MaterialType() == m_visconeohooke){
+  } else if (Material()->MaterialType() == INPAR::MAT::m_visconeohooke){
     MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(Material().get());
     visco->Setup(NUMGPT_SOH8);
   }

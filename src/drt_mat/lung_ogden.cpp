@@ -18,24 +18,40 @@ Maintainer: Lena Wiechert & Sophie Rausch
 
 #include "lung_ogden.H"
 
-extern struct _MATERIAL *mat;
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+MAT::PAR::LungOgden::LungOgden(
+  Teuchos::RCP<MAT::PAR::Material> matdata
+  )
+: Parameter(matdata),
+  kappa_(matdata->GetDouble("KAPPA")),
+  beta_(matdata->GetDouble("BETA")),
+  c_(matdata->GetDouble("C")),
+  k1_(matdata->GetDouble("K1")),
+  k2_(matdata->GetDouble("K2")),
+  dens_(matdata->GetDouble("DENS"))
+{
+}
+
 
 /*----------------------------------------------------------------------*
  |  Constructor                                      (public)  lw 04/08 |
  *----------------------------------------------------------------------*/
 MAT::LungOgden::LungOgden()
-  : matdata_(NULL)
+  : params_(NULL)
 {
 }
 
 
 /*----------------------------------------------------------------------*
- |  Copy-Constructor                                (public)   lw 04/08 |
+ |  Constructor                                (public)   lw 04/08 |
  *----------------------------------------------------------------------*/
-MAT::LungOgden::LungOgden(MATERIAL* matdata)
-  : matdata_(matdata)
+MAT::LungOgden::LungOgden(MAT::PAR::LungOgden* params)
+  : params_(params)
 {
 }
+
 
 /*----------------------------------------------------------------------*
  |  Pack                                             (public)  lw 04/08 |
@@ -47,9 +63,10 @@ void MAT::LungOgden::Pack(vector<char>& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
-  // matdata
-  int matdata = matdata_ - mat;   // pointer difference to reach 0-entry
-  AddtoPack(data,matdata);
+
+  // matid
+  int matid = params_->Id();
+  AddtoPack(data,matid);
 }
 
 /*----------------------------------------------------------------------*
@@ -63,21 +80,18 @@ void MAT::LungOgden::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
 
-  // matdata
-  int matdata;
-  ExtractfromPack(position,data,matdata);
-  matdata_ = &mat[matdata];     // unpack pointer to my specific matdata_
+  // matid
+  int matid;
+  ExtractfromPack(position,data,matid);
+  const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+  MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+  if (mat->Type() == MaterialType())
+    params_ = static_cast<MAT::PAR::LungOgden*>(mat);
+  else
+    dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
-}
-
-/*----------------------------------------------------------------------*
- |  Return density                                   (public)  lw 04/08 |
- *----------------------------------------------------------------------*/
-double MAT::LungOgden::Density()
-{
-  return matdata_->m.lung_ogden->density;  // density, returned to evaluate mass matrix
 }
 
 /*----------------------------------------------------------------------*
@@ -138,13 +152,13 @@ void MAT::LungOgden::Evaluate(LINALG::Matrix<6,1>* glstrain,
                               LINALG::Matrix<6,1>* stress)
 {
   // material parameters for isochoric part
-  double c  = matdata_->m.lung_ogden->c;             // parameter for ground substance
-  double k1 = matdata_->m.lung_ogden->k1;            // parameter for fiber potential
-  double k2 = matdata_->m.lung_ogden->k2;            // parameter for fiber potential
+  double c  = C();             // parameter for ground substance
+  double k1 = K1();            // parameter for fiber potential
+  double k2 = K2();            // parameter for fiber potential
 
   // material parameters for volumetric part
-  double komp = matdata_->m.lung_ogden->kappa;       // bulk modulus-like parameter
-  double beta = matdata_->m.lung_ogden->beta;        // empirical coefficient
+  double komp = Kappa();       // bulk modulus-like parameter
+  double beta = Beta();        // empirical coefficient
 
   //--------------------------------------------------------------------------------------
   // build identity tensor I

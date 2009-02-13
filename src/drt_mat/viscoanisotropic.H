@@ -21,6 +21,42 @@ using namespace Teuchos;
 namespace MAT
 {
 
+  namespace PAR
+  {
+
+    /*----------------------------------------------------------------------*/
+    /// material parameters
+    class ViscoAnisotropic : public Parameter
+    {
+    public:
+
+      /// standard constructor
+      ViscoAnisotropic(
+        Teuchos::RCP<MAT::PAR::Material> matdata
+        );
+
+      /// destructor
+      virtual ~ViscoAnisotropic() { ; }
+
+      /// @name material parameters
+      //@{
+      const double kappa_;
+      const double mue_;
+      const double density_;
+      const double k1_;
+      const double k2_;
+      const double gamma_;
+      const int numstresstypes_;
+      double beta_[2];
+      double relax_[2];
+      const int tensonly_;
+      //@}
+
+    };  // class ViscoAnisotropic
+
+  }  // namespace PAR
+
+  /*----------------------------------------------------------------------*/
   /// Wrapper for Visco-NeoHooke material
   class ViscoAnisotropic : public Material
   {
@@ -30,7 +66,7 @@ namespace MAT
     ViscoAnisotropic();
 
     /// construct the material object given material parameters
-    explicit ViscoAnisotropic(MATERIAL* matdata);
+    explicit ViscoAnisotropic(MAT::PAR::ViscoAnisotropic* params);
 
     //! @name Packing and Unpacking
 
@@ -73,7 +109,7 @@ namespace MAT
     //@}
 
     /// material type
-    virtual MATERIAL_TYP MaterialType() const { return m_viscoanisotropic; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_viscoanisotropic; }
 
     /// Setup and Initialize internal stress variables
     void Setup
@@ -103,10 +139,7 @@ namespace MAT
     );
 
     /// Return density
-    double Density()
-    {
-      return matdata_->m.viscoanisotropic->density;
-    };
+    double Density() const {return params_->density_;};
 
     /// Check if history variables are already initialized
     bool Initialized() const
@@ -122,7 +155,7 @@ namespace MAT
   private:
 
     /// my material parameters
-    MATERIAL* matdata_;
+    MAT::PAR::ViscoAnisotropic* params_;
 
     // internal variables for fibers
     RCP<vector<vector<double> > > a1_; ///< first fiber vector per gp

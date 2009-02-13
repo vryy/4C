@@ -75,14 +75,6 @@ Maintainer: Peter Gamnitzer
 
 #include "../drt_mat/newtonianfluid.H"
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | vector of material laws                                              |
- | defined in global_control.c
- *----------------------------------------------------------------------*/
-extern struct _MATERIAL  *mat;
-
-
 using namespace std;
 using namespace Teuchos;
 

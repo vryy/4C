@@ -21,22 +21,35 @@ Maintainer: Christiane Förster
 
 #include "aaaneohooke.H"
 
-extern struct _MATERIAL *mat;
-
 /*----------------------------------------------------------------------*
- |  Constructor                                   (public)  chfoe 03/08 |
+ |                                                                      |
  *----------------------------------------------------------------------*/
-MAT::AAAneohooke::AAAneohooke()
-  : matdata_(NULL)
+MAT::PAR::AAAneohooke::AAAneohooke(
+  Teuchos::RCP<MAT::PAR::Material> matdata
+  )
+: Parameter(matdata),
+  youngs_(matdata->GetDouble("YOUNG")),
+  nue_(matdata->GetDouble("NUE")),
+  beta_(matdata->GetDouble("BETA")),
+  density_(matdata->GetDouble("DENS"))
 {
 }
 
 
 /*----------------------------------------------------------------------*
- |  Copy-Constructor                             (public)   chfoe 03/08 |
+ |  Constructor                                   (public)  chfoe 03/08 |
  *----------------------------------------------------------------------*/
-MAT::AAAneohooke::AAAneohooke(MATERIAL* matdata)
-  : matdata_(matdata)
+MAT::AAAneohooke::AAAneohooke()
+  : params_(NULL)
+{
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Constructor                             (public)   chfoe 03/08 |
+ *----------------------------------------------------------------------*/
+MAT::AAAneohooke::AAAneohooke(MAT::PAR::AAAneohooke* params)
+  : params_(params)
 {
 }
 
@@ -50,9 +63,10 @@ void MAT::AAAneohooke::Pack(vector<char>& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
-  // matdata
-  int matdata = matdata_ - mat;   // pointer difference to reach 0-entry
-  AddtoPack(data,matdata);
+
+  // matid
+  int matid = params_->Id();
+  AddtoPack(data,matid);
 }
 
 /*----------------------------------------------------------------------*
@@ -66,22 +80,20 @@ void MAT::AAAneohooke::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
 
-  // matdata
-  int matdata;
-  ExtractfromPack(position,data,matdata);
-  matdata_ = &mat[matdata];     // unpack pointer to my specific matdata_
+  // matid
+  int matid;
+  ExtractfromPack(position,data,matid);
+  const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+  MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+  if (mat->Type() == MaterialType())
+    params_ = static_cast<MAT::PAR::AAAneohooke*>(mat);
+  else
+    dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
 }
 
-/*----------------------------------------------------------------------*
- |  Return density                                (public)  chfoe 03/08 |
- *----------------------------------------------------------------------*/
-double MAT::AAAneohooke::Density()
-{
-  return matdata_->m.aaaneohooke->density;  // density, returned to evaluate mass matrix
-}
 
 /*----------------------------------------------------------------------*
  |  Evaluate Material                   (public)  chfoe 03/08 gee 10/08 |
@@ -134,9 +146,9 @@ void MAT::AAAneohooke::Evaluate(
 		  LINALG::Matrix<6,1>& stress)
 {
   // material parameters for isochoric part
-  double youngs   = matdata_->m.aaaneohooke->youngs;    // Young's modulus
-  double beta     = matdata_->m.aaaneohooke->beta;      // second parameter
-  double nue      = matdata_->m.aaaneohooke->nue;       // Poisson's ratio
+  double youngs   = params_->youngs_;    // Young's modulus
+  double beta     = params_->beta_;      // second parameter
+  double nue      = params_->nue_;       // Poisson's ratio
   double alpha    = youngs*0.1666666666666666667;       // E = alpha * 6..
 
   // material parameters for volumetric part
@@ -328,9 +340,9 @@ void MAT::AAAneohooke::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
         LINALG::Matrix<6,1> stress(stress_e->A(),true);
 
   // material parameters for isochoric part
-  double youngs   = matdata_->m.aaaneohooke->youngs;    // Young's modulus
-  double beta     = matdata_->m.aaaneohooke->beta;      // second parameter
-  double nue      = matdata_->m.aaaneohooke->nue;       // Poisson's ratio
+  double youngs   = params_->youngs_;    // Young's modulus
+  double beta     = params_->beta_;      // second parameter
+  double nue      = params_->nue_;       // Poisson's ratio
   double alpha    = youngs*0.1666666666666666667;       // E = alpha * 6..
 
   // material parameters for volumetric part

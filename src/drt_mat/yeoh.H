@@ -20,7 +20,38 @@ Maintainer: Thomas Kloeppel
 
 namespace MAT
 {
+  
+  namespace PAR
+  {
 
+    /*----------------------------------------------------------------------*/
+    /// material parameters
+    class Yeoh : public Parameter
+    {
+    public:
+
+      /// standard constructor
+      Yeoh(
+        Teuchos::RCP<MAT::PAR::Material> matdata
+        );
+
+      /// destructor
+      virtual ~Yeoh() { ; }
+
+      /// @name material parameters
+      //@{
+      const double c1_;
+      const double c2_;
+      const double c3_;
+      const double kap_;
+      const double density_;
+      //@}
+
+    };  // class Yeoh
+
+  }  // namespace PAR
+
+  /*----------------------------------------------------------------------*/
   /// Wrapper for Yeoh material
   class Yeoh : public Material
   {
@@ -30,7 +61,7 @@ namespace MAT
     Yeoh();
 
     /// construct the material object given material parameters
-    explicit Yeoh(MATERIAL* matdata);
+    explicit Yeoh(MAT::PAR::Yeoh* params);
 
     //! @name Packing and Unpacking
 
@@ -71,7 +102,7 @@ namespace MAT
     //@}
 
     /// material type
-    virtual MATERIAL_TYP MaterialType() const { return m_yeoh; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_yeoh; }
 
     /*!
     \brief Yeoh type nearly incompressible, hyperelastic 3D material law.
@@ -91,12 +122,12 @@ namespace MAT
             LINALG::Matrix<NUM_STRESS_3D,1> * stress);
 
     /// return density
-    double Density();
+    double Density() const { return params_->density_; }
 
   private:
 
     /// my material parameters
-    MATERIAL* matdata_;
+    MAT::PAR::Yeoh* params_;
 
   };
 }

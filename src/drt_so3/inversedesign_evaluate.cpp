@@ -1361,7 +1361,7 @@ void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(
       LINALG::Matrix<NUMDOF_SOTET4,            1>* force,          ///< element internal force vector
       LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestress,       ///< stresses at GP
       LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestrain,      ///< strains at GP
-      struct _MATERIAL*         material,       ///< element material data
+      Teuchos::RCP<MAT::Material>  material,       ///< element material data
       const INPAR::STR::StressType iostress,    ///< stress output options
       const INPAR::STR::StrainType iostrain)
 {

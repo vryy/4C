@@ -15,12 +15,6 @@ Maintainer: Christian Cyron
 
 #include "beam3.H"
 #include "../drt_lib/standardtypes_cpp.H"
-/*----------------------------------------------------------------------*
-|                                                        cyron 03/08     |
-| vector of material laws                                                |
-| defined in global_control.c
-*----------------------------------------------------------------------*/
-extern struct _MATERIAL  *mat;
 
 /*----------------------------------------------------------------------*
  |  read element input (public)                              cyron 03/08|
@@ -58,6 +52,7 @@ bool DRT::ELEMENTS::Beam3::ReadElement()
   material_ = 0;
   frint("MAT",&material_,&ierr);
   if (ierr!=1) dserror("Reading of Beam3 element failed");
+  SetMaterial(material_);
 
   // read beam cross section
   crosssec_ = 0;

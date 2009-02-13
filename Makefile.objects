@@ -103,6 +103,7 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_lib/drt_condition.o \
                 src/drt_lib/drt_condition_utils.o \
                 src/drt_lib/drt_conditiondefinition.o \
+                src/drt_lib/drt_materialdefinition.o \
                 src/drt_lib/drt_dofset.o \
                 src/drt_lib/drt_dofset_base.o \
                 src/drt_fem_general/drt_utils_integration.o \
@@ -144,6 +145,7 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
 OBJS_DRT_INPAR = \
                 src/drt_inpar/drt_validparameters.o \
                 src/drt_inpar/drt_validconditions.o \
+                src/drt_inpar/drt_validmaterials.o \
                 src/drt_inpar/drt_boolifyparameters.o
 #               nurbs discretization for isogeometric fe (c++)
 OBJS_DRT_NURBS_DISCRET = \
@@ -944,7 +946,10 @@ OBJS_MAT      = src/materials/mat_el_iso.o \
                 src/materials/mat_pl_dp_lin.o \
                 src/materials/mat_el_ogden.o
 #               materials for new discretization
-OBJS_DRT_MAT_LIB = src/drt_mat/micromaterial.o \
+OBJS_DRT_MAT_LIB = src/drt_mat/matpar_bundle.o \
+                src/drt_mat/matpar_material.o \
+                src/drt_mat/matpar_parameter.o \
+                src/drt_mat/micromaterial.o \
                 src/drt_mat/newtonianfluid.o \
                 src/drt_mat/sutherland_fluid.o \
                 src/drt_mat/stvenantkirchhoff.o \
@@ -966,7 +971,8 @@ OBJS_DRT_MAT_LIB = src/drt_mat/micromaterial.o \
                 src/drt_mat/modpowerlaw.o \
                 src/drt_mat/material.o \
                 src/drt_mat/matlist.o \
-                src/drt_mat/ion.o
+                src/drt_mat/ion.o \
+                src/drt_mat/compogden.o
 #
 OBJS_DRT_MAT  = src/drt_mat/micromaterialgp_static.o \
                 src/drt_mat/micromaterial_evaluate.o

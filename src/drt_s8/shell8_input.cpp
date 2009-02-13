@@ -71,6 +71,7 @@ bool DRT::ELEMENTS::Shell8::ReadElement()
   material_ = 0;
   frint("MAT",&material_,&ierr);
   if (ierr!=1) dserror("Reading of SHELL8 element failed");
+  SetMaterial(material_);
   
   // read shell thickness
   thickness_ = 1.0;

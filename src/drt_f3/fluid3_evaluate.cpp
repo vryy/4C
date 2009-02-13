@@ -138,19 +138,6 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
   // get the material
   RefCountPtr<MAT::Material> mat = Material();
 
-  MATERIAL* actmat = NULL;
-
-  if(mat->MaterialType()== m_fluid)
-    actmat = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
-  else if(mat->MaterialType()== m_sutherland_fluid)
-    actmat = static_cast<MAT::SutherlandFluid*>(mat.get())->MaterialData();
-  else if(mat->MaterialType()== m_carreauyasuda)
-    actmat = static_cast<MAT::CarreauYasuda*>(mat.get())->MaterialData();
-  else if(mat->MaterialType()== m_modpowerlaw)
-    actmat = static_cast<MAT::ModPowerLaw*>(mat.get())->MaterialData();
-  else
-    dserror("fluid material expected but got type %d", mat->MaterialType());
-
   switch(act)
   {
       //-----------------------------------------------------------------------
@@ -198,8 +185,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
                elevec1,
                elevec2,
                elevec3,
-               mat,
-               actmat);
+               mat);
       }
       break;
       case calc_fluid_stationary_systemmat_and_residual:
@@ -240,8 +226,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
                elevec1,
                elevec2,
                elevec3,
-               mat,
-               actmat);
+               mat);
       }
       break;
       //--------------------------------------------------
@@ -293,8 +278,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
                elevec1,
                elevec2,
                elevec3,
-               mat,
-               actmat);
+               mat);
       }
       break;
       case calc_linear_fluid:
@@ -309,8 +293,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
                elevec1,
                elevec2,
                elevec3,
-               mat,
-               actmat);
+               mat);
       }
       break;
       case calc_fluid_beltrami_error:
@@ -342,7 +325,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           }
 
           // integrate beltrami error
-          f3_int_beltrami_err(myvelnp,myprenp,actmat,params);
+          f3_int_beltrami_err(myvelnp,myprenp,mat,params);
         }
       }
       break;
@@ -628,8 +611,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
             params,
             discretization,
             lm,
-            mat,
-            actmat);
+            mat);
         }
       }
       break;
@@ -637,12 +619,21 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
       {
         // This is a very poor way to transport the density to the
         // outside world. Is there a better one?
-        if(mat->MaterialType()== m_fluid)
-          params.set("density", actmat->m.fluid->density);
-        else if(mat->MaterialType()== m_carreauyasuda)
-          params.set("density", actmat->m.carreauyasuda->density);
-        else if(mat->MaterialType()== m_modpowerlaw)
-          params.set("density", actmat->m.modpowerlaw->density);
+        if(mat->MaterialType()== INPAR::MAT::m_fluid)
+        {
+          const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
+          params.set("density", actmat->Density());
+        }
+        else if(mat->MaterialType()== INPAR::MAT::m_carreauyasuda)
+        {
+          const MAT::CarreauYasuda* actmat = static_cast<const MAT::CarreauYasuda*>(mat.get());
+          params.set("density", actmat->Density());
+        }
+        else if(mat->MaterialType()== INPAR::MAT::m_modpowerlaw)
+        {
+          const MAT::ModPowerLaw* actmat = static_cast<const MAT::ModPowerLaw*>(mat.get());
+          params.set("density", actmat->Density());
+        }
         else
           dserror("no fluid material found");
       }
@@ -701,7 +692,7 @@ GaussRule3D DRT::ELEMENTS::Fluid3::getOptimalGaussrule(const DiscretizationType&
 void DRT::ELEMENTS::Fluid3::f3_int_beltrami_err(
   vector<double>&           evelnp,
   vector<double>&           eprenp,
-  struct _MATERIAL*         material,
+  Teuchos::RCP<const MAT::Material> material,
   ParameterList& 	    params
   )
 {
@@ -738,7 +729,9 @@ void DRT::ELEMENTS::Fluid3::f3_int_beltrami_err(
   const double d      = PI/2.0;
 
   // get viscosity
-  const double  visc = material->m.fluid->viscosity;
+  dsassert(material->MaterialType()==INPAR::MAT::m_fluid, "Material is not Newtonian Fluid");
+  const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());
+  const double  visc = actmat->Viscosity();
 
   double         preint;
   vector<double> velint  (3);

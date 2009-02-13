@@ -71,8 +71,7 @@ namespace DRT
                            Epetra_SerialDenseVector&  elevec1_epetra,
                            Epetra_SerialDenseVector&  elevec2_epetra,
                            Epetra_SerialDenseVector&  elevec3_epetra,
-                           RefCountPtr<MAT::Material> mat,
-                           _MATERIAL*                 actmat) = 0;
+                           RefCountPtr<MAT::Material> mat) = 0;
 
       /// Calculate averages for residual, dissipation rates etc for 
       /// elements in a turbulent channel flow. The computed values are
@@ -85,8 +84,7 @@ namespace DRT
                               ParameterList&             params,
                               DRT::Discretization&       discretization,
                               vector<int>&               lm,
-                              RefCountPtr<MAT::Material> mat,
-                              _MATERIAL*                 actmat) = 0;
+                              RefCountPtr<MAT::Material> mat) = 0;
       
       /// Internal implementation class for fluid element
       static Fluid3GenalphaResVMMInterface* Impl(DRT::ELEMENTS::Fluid3* f3);
@@ -287,8 +285,7 @@ namespace DRT
                            Epetra_SerialDenseVector&  elevec1_epetra,
                            Epetra_SerialDenseVector&  elevec2_epetra,
                            Epetra_SerialDenseVector&  elevec3_epetra,
-                           RefCountPtr<MAT::Material> mat,
-                           _MATERIAL*                 actmat);
+                           RefCountPtr<MAT::Material> mat);
 
       //@}
 
@@ -345,8 +342,7 @@ namespace DRT
                               ParameterList&             params,
                               DRT::Discretization&       discretization,
                               vector<int>&               lm,
-                              RefCountPtr<MAT::Material> mat,
-                              _MATERIAL*                 actmat);
+                              RefCountPtr<MAT::Material> mat);
       //@}
 
       //! @name routines for calculation of element matrix and rhs
@@ -405,7 +401,7 @@ namespace DRT
                          const LINALG::Matrix<3,iel>&           eaccam,
                          const LINALG::Matrix<3,iel>&           evelaf,
                          const LINALG::Matrix<3,iel>&           fsevelaf,
-                         const struct _MATERIAL*                material,
+                         Teuchos::RCP<const MAT::Material>      material,
                          const double                           alphaM,
                          const double                           alphaF,
                          const double                           gamma,
@@ -483,7 +479,7 @@ namespace DRT
                          const LINALG::Matrix<3,iel>&           eaccam,
                          const LINALG::Matrix<3,iel>&           evelaf,
                          const LINALG::Matrix<3,iel>&           fsevelaf,
-                         const struct _MATERIAL*                material,
+                         Teuchos::RCP<const MAT::Material>      material,
                          const double                           alphaM,
                          const double                           alphaF,
                          const double                           gamma,
@@ -560,7 +556,7 @@ namespace DRT
                           const LINALG::Matrix<3,iel>&           eaccam,
                           const LINALG::Matrix<3,iel>&           evelaf,
                           const LINALG::Matrix<3,iel>&           fsevelaf,
-                          const struct _MATERIAL*                material,
+                          Teuchos::RCP<const MAT::Material>      material,
                           const double                           alphaM,
                           const double                           alphaF,
                           const double                           gamma,
@@ -637,7 +633,7 @@ namespace DRT
                           const LINALG::Matrix<3,iel>&           eaccam,
                           const LINALG::Matrix<3,iel>&           evelaf,
                           const LINALG::Matrix<3,iel>&           fsevelaf,
-                          const struct _MATERIAL*                material,
+                          Teuchos::RCP<const MAT::Material>      material,
                           const double                           alphaM,
                           const double                           alphaF,
                           const double                           gamma,
@@ -833,7 +829,7 @@ namespace DRT
         \param visc        		(o) kinematic material viscosity
     	\param rateofshear		(i) shear rate
        */
-      void CalVisc(const struct _MATERIAL* material,
+      void CalVisc(Teuchos::RCP<const MAT::Material> material,
                    double&                 visc,
                    const double &          rateofshear);
 
@@ -896,7 +892,7 @@ namespace DRT
         const double                              & timealphaF     ,
         double                                    & hk             ,
         double                                    & mk             ,
-        const struct _MATERIAL*                     material       ,
+        Teuchos::RCP<const MAT::Material>           material       ,
         double                                    & visc           ,
         const enum Fluid3::StabilisationAction      fssgv          ,
         const enum Fluid3::TurbModelAction          turb_mod_action,

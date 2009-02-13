@@ -30,7 +30,7 @@ using namespace Teuchos;
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 // forward declarations
-struct _MATERIAL;
+//struct _MATERIAL;
 
 namespace DRT
 {

@@ -42,20 +42,57 @@ using namespace Teuchos;
 using namespace IO;
 
 
-namespace MAT {
+namespace MAT
+{
 
+  namespace PAR
+  {
+
+    /*----------------------------------------------------------------------*/
+    /// material parameters for micro material
+    class MicroMaterial : public Parameter
+    {
+    public:
+
+      /// standard constructor
+      MicroMaterial(
+        Teuchos::RCP<MAT::PAR::Material> matdata
+        );
+
+      /// destructor
+      virtual ~MicroMaterial() { ; }
+
+      /// @name material parameters
+      //@{
+
+      /// inputfile for microstructure
+      const std::string microfile_;
+      /// Number of microscale discretization
+      const int microdisnum_;
+      /// 
+      const double initvol_;
+
+      //@}
+
+    };  // class MicroMaterial
+
+  }  // namespace PAR
+
+
+  /*----------------------------------------------------------------------*/
   // forward
   class MicroMaterialGP;
 
-class MicroMaterial : public Material
-{
-public:
+  /*----------------------------------------------------------------------*/
+  class MicroMaterial : public Material
+  {
+  public:
 
     /// construct empty material object
     MicroMaterial();
 
     /// construct the material object given material parameters
-    explicit MicroMaterial(MATERIAL* matdata);
+    explicit MicroMaterial(MAT::PAR::MicroMaterial* params);
 
     //! @name Packing and Unpacking
 
@@ -96,7 +133,7 @@ public:
     //@}
 
     /// material type
-    virtual MATERIAL_TYP MaterialType() const { return m_struct_multiscale; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_struct_multiscale; }
 
     void Evaluate(LINALG::Matrix<3,3>* defgrd,
                   LINALG::Matrix<6,6>* cmat,
@@ -108,12 +145,21 @@ public:
                   const double dt,
                   string action = string());
 
-private:
+    /// @name Access parameters
+    //@{
+    std::string MicroInputFileName() const { return params_->microfile_; }
+    int MicroDisNum() const { return params_->microdisnum_; }
+    double InitVol() const { return params_->initvol_; }
+    //@}
 
-  vector<RefCountPtr<MicroMaterialGP> > matgp_;
-  /// my material parameters
-  MATERIAL* matdata_;
-};
+  private:
+
+    vector<RefCountPtr<MicroMaterialGP> > matgp_;
+
+    /// my material parameters
+    MAT::PAR::MicroMaterial* params_;
+
+  };
 
 }
 

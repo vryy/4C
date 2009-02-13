@@ -58,8 +58,7 @@ namespace ELEMENTS
                          Epetra_SerialDenseVector& elevec1_epetra,
                          Epetra_SerialDenseVector& elevec2_epetra,
                          Epetra_SerialDenseVector& elevec3_epetra,
-                         RefCountPtr<MAT::Material> mat,
-                         _MATERIAL* actmat) = 0;
+                         RefCountPtr<MAT::Material> mat) = 0;
 
     /// Internal implementation class for fluid element
     static Fluid2StationaryInterface* Impl(DRT::ELEMENTS::Fluid2* f2);
@@ -120,8 +119,7 @@ namespace ELEMENTS
                          Epetra_SerialDenseVector& elevec1_epetra,
                          Epetra_SerialDenseVector& elevec2_epetra,
                          Epetra_SerialDenseVector& elevec3_epetra,
-                         RefCountPtr<MAT::Material> mat,
-                         _MATERIAL* actmat);
+                         RefCountPtr<MAT::Material> mat);
     /// calculating element matrix and rhs
     /*!
       Calculate matrix and rhs for stationary problem formulation
@@ -149,13 +147,13 @@ namespace ELEMENTS
       \param Cs               (i) Smagorinsky model parameter
      */
     void Sysmat(Fluid2*                                  ele,
-                const LINALG::Matrix<2,iel>&            evelnp,
-                const LINALG::Matrix<2,iel>&            fsevelnp,
-                const LINALG::Matrix<iel,1>&            eprenp,
-                const LINALG::Matrix<iel,1>&            edensnp,
-                LINALG::Matrix<3*iel,3*iel>&            estif,
-                LINALG::Matrix<3*iel,    1>&            eforce,
-                struct _MATERIAL*                        material,
+                const LINALG::Matrix<2,iel>&             evelnp,
+                const LINALG::Matrix<2,iel>&             fsevelnp,
+                const LINALG::Matrix<iel,1>&             eprenp,
+                const LINALG::Matrix<iel,1>&             edensnp,
+                LINALG::Matrix<3*iel,3*iel>&             estif,
+                LINALG::Matrix<3*iel,    1>&             eforce,
+                Teuchos::RCP<const MAT::Material>        material,
                 double                                   pseudotime,
                 const bool                               newton,
                 const bool                               loma,

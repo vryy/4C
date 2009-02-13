@@ -975,7 +975,7 @@ void SysmatDomainTP1(
     const V1&                           eprenp,
     const M2&                           etau,
     const V2&                           ediscpres,
-    const struct _MATERIAL*             material,      ///< fluid material
+    Teuchos::RCP<const MAT::Material>   material,      ///< fluid material
     const FLUID_TIMEINTTYPE             timealgo,      ///< time discretization type
     const double                        dt,            ///< delta t (time step size)
     const double                        theta,         ///< factor for one step theta scheme
@@ -1012,8 +1012,9 @@ void SysmatDomainTP1(
 
     // get viscosity
     // check here, if we really have a fluid !!
-    dsassert(material->mattyp == m_fluid, "Material law is not of type m_fluid.");
-    const double visc = material->m.fluid->viscosity;
+    dsassert(material->MaterialType() == INPAR::MAT::m_fluid, "Material law is not of type m_fluid.");
+    const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());
+    const double visc = actmat->Viscosity();
 
     // flag for higher order elements
     const bool higher_order_ele = XFLUID::isHigherOrderElement<DISTYPE>();
@@ -1918,7 +1919,7 @@ void SysmatTP1(
         const Teuchos::RCP<Epetra_Vector>& iforcecol,     ///< reaction force due to given interface velocity
         Epetra_SerialDenseMatrix&         estif,         ///< element matrix to calculate
         Epetra_SerialDenseVector&         eforce,        ///< element rhs to calculate
-        const struct _MATERIAL*           material,      ///< fluid material
+        Teuchos::RCP<const MAT::Material> material,      ///< fluid material
         const FLUID_TIMEINTTYPE           timealgo,      ///< time discretization type
         const double                      dt,            ///< delta t (time step size)
         const double                      theta,         ///< factor for one step theta scheme
@@ -1982,7 +1983,7 @@ void XFLUID::callSysmatTP1(
         const Teuchos::RCP<Epetra_Vector>& iforcecol,     ///< reaction force due to given interface velocity
         Epetra_SerialDenseMatrix&         estif,
         Epetra_SerialDenseVector&         eforce,
-        const struct _MATERIAL*           material,
+        Teuchos::RCP<const MAT::Material> material,
         const FLUID_TIMEINTTYPE           timealgo,      ///< time discretization type
         const double                      dt,            ///< delta t (time step size)
         const double                      theta,         ///< factor for one step theta scheme

@@ -16,21 +16,40 @@ Maintainer: Ursula Mayer
 
 #include "carreauyasuda.H"
 
-extern struct _MATERIAL *mat;
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+MAT::PAR::CarreauYasuda::CarreauYasuda(
+  Teuchos::RCP<MAT::PAR::Material> matdata
+  )
+: Parameter(matdata),
+  nu_0_(matdata->GetDouble("NU_0")),
+  nu_inf_(matdata->GetDouble("NU_INF")),
+  lambda_(matdata->GetDouble("LAMBDA")),
+  a_param_(matdata->GetDouble("APARAM")),
+  b_param_(matdata->GetDouble("BPARAM")),
+  density_(matdata->GetDouble("DENSITY"))
+{
+}
 
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 MAT::CarreauYasuda::CarreauYasuda()
-  : matdata_(NULL)
+  : params_(NULL)
 {
 }
 
 
-MAT::CarreauYasuda::CarreauYasuda(MATERIAL* matdata)
-  : matdata_(matdata)
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+MAT::CarreauYasuda::CarreauYasuda(MAT::PAR::CarreauYasuda* params)
+  : params_(params)
 {
 }
 
-
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void MAT::CarreauYasuda::Pack(vector<char>& data) const
 {
   data.resize(0);
@@ -38,12 +57,14 @@ void MAT::CarreauYasuda::Pack(vector<char>& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
-  // matdata
-  int matdata = matdata_ - mat;
-  AddtoPack(data,matdata);
+
+  // matid
+  int matid = params_->Id();
+  AddtoPack(data,matid);
 }
 
-
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void MAT::CarreauYasuda::Unpack(const vector<char>& data)
 {
   int position = 0;
@@ -52,10 +73,15 @@ void MAT::CarreauYasuda::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
 
-  // matdata
-  int matdata;
-  ExtractfromPack(position,data,matdata);
-  matdata_ = &mat[matdata];
+  // matid and recover params_
+  int matid;
+  ExtractfromPack(position,data,matid);
+  const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+  MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+  if (mat->Type() == MaterialType())
+    params_ = static_cast<MAT::PAR::CarreauYasuda*>(mat);
+  else
+    dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);

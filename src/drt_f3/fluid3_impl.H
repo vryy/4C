@@ -56,8 +56,7 @@ namespace ELEMENTS
                          Epetra_SerialDenseVector& elevec1_epetra,
                          Epetra_SerialDenseVector& elevec2_epetra,
                          Epetra_SerialDenseVector& elevec3_epetra,
-                         RefCountPtr<MAT::Material> mat,
-                         _MATERIAL* actmat) = 0;
+                         RefCountPtr<MAT::Material> mat) = 0;
 
     /// Internal implementation class for fluid element
     static Fluid3ImplInterface* Impl(DRT::ELEMENTS::Fluid3* f3);
@@ -124,8 +123,7 @@ namespace ELEMENTS
                          Epetra_SerialDenseVector&  elevec1_epetra,
                          Epetra_SerialDenseVector&  elevec2_epetra,
                          Epetra_SerialDenseVector&  elevec3_epetra,
-                         RefCountPtr<MAT::Material> mat,
-                         _MATERIAL*                 actmat);
+                         RefCountPtr<MAT::Material> mat);
 
     /// calculating element matrix and rhs
     /*!
@@ -188,7 +186,7 @@ namespace ELEMENTS
                 LINALG::Matrix<4*iel,4*iel>&             estif_epetra,
                 LINALG::Matrix<4*iel,4*iel>&             emesh_epetra,
                 LINALG::Matrix<4*iel,     1>&            eforce_epetra,
-                struct _MATERIAL*                        material,
+                Teuchos::RCP<const MAT::Material>        material,
                 double                                   time,
                 double                                   dt,
                 double                                   timefac,
@@ -257,7 +255,7 @@ namespace ELEMENTS
                 const LINALG::Matrix<3,iel>&           fsevelnp,
                 const LINALG::Matrix<iel,1>&           edensnp,
                 const enum Fluid3::TauType              whichtau,
-                struct _MATERIAL*                       material,
+                Teuchos::RCP<const MAT::Material>       material,
                 double&                                 visc,
                 const double                            timefac,
                 const double                            dt,
@@ -277,7 +275,7 @@ namespace ELEMENTS
        \param visc         (o) kinematic material viscosity
        \param rateofshear  (i) shear rate
      */
-    void CalVisc(const struct _MATERIAL*   material,
+    void CalVisc(Teuchos::RCP<const MAT::Material> material,
                  double&                   visc,
                  const double &            rateofshear,
                  const double &            dens,

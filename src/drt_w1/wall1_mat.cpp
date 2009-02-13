@@ -37,6 +37,7 @@ Maintainer: Markus Gitterle
 #include "Epetra_SerialDenseSolver.h"
 
 #include "../drt_mat/stvenantkirchhoff.H"
+#include "../drt_mat/neohooke.H"
 
 /*----------------------------------------------------------------------*/
 // namespaces
@@ -49,7 +50,7 @@ using namespace LINALG; // our linear algebra
  | vector of material laws                                              |
  | defined in global_control.c
  *----------------------------------------------------------------------*/
-extern struct _MATERIAL  *mat;
+//extern struct _MATERIAL  *mat;
 
 
 /*----------------------------------------------------------------------*
@@ -60,16 +61,17 @@ void DRT::ELEMENTS::Wall1::w1_call_matgeononl(
   Epetra_SerialDenseMatrix& stress,  ///< stress vector
   Epetra_SerialDenseMatrix& C,  ///< elasticity matrix
   const int numeps,  ///< number of strains
-  const struct _MATERIAL* material  ///< the material data
+  Teuchos::RCP<const MAT::Material> material  ///< the material data
 )
 {
   /*--------------------------- call material law -> get tangent modulus--*/
-  switch(material->mattyp)
+  switch(material->MaterialType())
   {
-    case m_stvenant:/*--------------------------------- linear elastic ---*/
+  case INPAR::MAT::m_stvenant:/*----------------------- linear elastic ---*/
     {
-      double ym = material->m.stvenant->youngs;
-      double pv = material->m.stvenant->possionratio;
+      const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(material.get());
+      double ym = actmat->Youngs();
+      double pv = actmat->PoissonRatio();
 
 
   /*-------------- some comments, so that even fluid people are able to
@@ -176,11 +178,12 @@ void DRT::ELEMENTS::Wall1::w1_call_matgeononl(
       break;
     }
     
-    case m_neohooke: /*----------------- neo-Hookean material (popp 07/08) ---*/
+    case INPAR::MAT::m_neohooke: /*----- neo-Hookean material (popp 07/08) ---*/
     {
+      const MAT::NeoHooke* actmat = static_cast<const MAT::NeoHooke*>(material.get());
       // get material parameters
-      double ym = material->m.neohooke->youngs;       // Young's modulus
-      double nu = material->m.neohooke->possionratio; // Poisson's ratio
+      double ym = actmat->Youngs();       // Young's modulus
+      double nu = actmat->PoissonRatio(); // Poisson's ratio
           
       switch(wtype_)
       {
@@ -416,30 +419,37 @@ void DRT::ELEMENTS::Wall1::w1_call_matgeononl(
 | deliver density                                                   bborn 08/08|
 *-----------------------------------------------------------------------------*/
 double DRT::ELEMENTS::Wall1::Density(
-  const struct _MATERIAL* material
+  Teuchos::RCP<const MAT::Material> material
 )
 {
   // switch material type
-  switch (material->mattyp)
+  switch (material->MaterialType())
   {
-  case m_stvenant :  // linear elastic
-    return material->m.stvenant->density;
+  case INPAR::MAT::m_stvenant :  // linear elastic
+  {
+    const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(material.get());
+    return actmat->Density();
     break;
-  case m_neohooke : // kompressible neo-Hooke
-    return material->m.neohooke->density;
+  }
+  case INPAR::MAT::m_neohooke : // kompressible neo-Hooke
+  {
+    const MAT::NeoHooke* actmat = static_cast<const MAT::NeoHooke*>(material.get());
+    return actmat->Density();
     break;
-  case m_stvenpor :  //porous linear elastic
-    return material->m.stvenpor->density;
-    break;
-  case m_pl_mises: // von Mises material law
+  }
+  case INPAR::MAT::m_stvenpor :  //porous linear elastic
     dserror("Illegal typ of material for this element");
     return 0;
     break;
-  case m_pl_mises_3D: // Stefan's von mises 3D material law (certainly not Stefan Lenz's law)
+  case INPAR::MAT::m_pl_mises: // von Mises material law
     dserror("Illegal typ of material for this element");
     return 0;
     break;
-  case m_pl_dp :  // Drucker-Prager material law
+  case INPAR::MAT::m_pl_mises_3D: // Stefan's von mises 3D material law (certainly not Stefan Lenz's law)
+    dserror("Illegal typ of material for this element");
+    return 0;
+    break;
+  case INPAR::MAT::m_pl_dp :  // Drucker-Prager material law
     dserror("Illegal typ of material for this element");
     return 0;
     break;
@@ -454,15 +464,15 @@ double DRT::ELEMENTS::Wall1::Density(
 | deliver internal/strain energy                                    bborn 08/08|
 *-----------------------------------------------------------------------------*/
 double DRT::ELEMENTS::Wall1:: EnergyInternal(
-  const struct _MATERIAL* material,
+  Teuchos::RCP<const MAT::Material> material,
   const double& fac,
   const Epetra_SerialDenseVector& Ev
 )
 {
   // switch material type
-  switch (material->mattyp)
+  switch (material->MaterialType())
   {
-  case m_stvenant :  // linear elastic
+  case INPAR::MAT::m_stvenant :  // linear elastic
   {
     Epetra_SerialDenseMatrix Cm(Wall1::numnstr_,Wall1::numnstr_);  // elasticity matrix
     Epetra_SerialDenseMatrix Sm(Wall1::numnstr_,Wall1::numnstr_);  // 2nd PK stress matrix

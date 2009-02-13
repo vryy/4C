@@ -10,6 +10,9 @@ Maintainer: Malte Neumann
 </pre>
 
 ---------------------------------------------------------------------*/
+#if defined(CCADISCRET) && !defined(D_SHELL8)
+#else
+
 /*----------------------------------------------------------------------*
  | materials                                              m.gee 4/01    |
  | structure to hold all types of material laws                         |
@@ -876,3 +879,5 @@ typedef struct _ION
      INT         valence;     /* valence (= charge number) */
      DOUBLE      diffusivity; /* kinematic diffusivity     */
 } ION;
+
+#endif

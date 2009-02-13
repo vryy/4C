@@ -46,9 +46,6 @@ const int NUMSTR_WEG6 = 6;      ///< number of strains/stresses
 const int NUMGPT_WEG6 = 6;      ///< total gauss points per element
 const int NUMDIM_WEG6 = 3;      ///< number of dimensions
 
-// forward declarations
-struct _MATERIAL;
-
 namespace DRT
 {
 // forward declarations

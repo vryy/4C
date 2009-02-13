@@ -23,6 +23,9 @@ Maintainer: Lena Wiechert
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../drt_inpar/inpar_material.H"
+#include "../drt_lib/drt_globalproblem.H"
+
 
 /// MAT: materials
 namespace MAT
@@ -60,10 +63,12 @@ class Material : public DRT::ParObject
 public:
 
   /// return type of this material
-  virtual MATERIAL_TYP MaterialType() const = 0;
+  virtual INPAR::MAT::MaterialType MaterialType() const = 0;
 
   /// create element material object given the number of a material definition
-  static Teuchos::RefCountPtr<Material> Factory(int matnum);
+  static Teuchos::RefCountPtr<Material> Factory(
+    int matnum  ///< material ID
+    );
 };
 
   /*!

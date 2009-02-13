@@ -13,6 +13,7 @@ Maintainer: Moritz Frenzel
 #define CONTCHAINNETW_H_
 #ifdef CCADISCRET
 
+#include "matpar_parameter.H"
 #include "material.H"
 #include <Epetra_SerialDenseVector.h>
 #include <Epetra_SerialDenseMatrix.h>
@@ -25,6 +26,49 @@ Maintainer: Moritz Frenzel
 
 namespace MAT
 {
+
+  namespace PAR
+  {
+
+    /*----------------------------------------------------------------------*/
+    /// material parameters
+    class ContChainNetw : public Parameter
+    {
+    public:
+
+      /// standard constructor
+      ContChainNetw(
+        Teuchos::RCP<MAT::PAR::Material> matdata
+        );
+
+      /// destructor
+      virtual ~ContChainNetw() { ; }
+
+      /// @name material parameters
+      //@{
+
+      const double lambda_;
+      const double mue_;
+      const double density_;
+      const double nchain_;
+      const double abstemp_;
+      const double contl_l_;
+      const double persl_a_;
+      const double r0_;
+      const double relax_;
+      const int initran_;
+      const double rembegt_;
+      const int updrate_;
+      const double difftol_;
+
+      //@}
+
+    };  // class ContChainNetw
+
+  }  // namespace PAR
+
+
+  /*----------------------------------------------------------------------*/
   /// Wrapper for Mooney-Rivlin material
   class ContChainNetw : public Material
   {
@@ -34,7 +78,7 @@ namespace MAT
     ContChainNetw();
 
     /// construct the material object given material parameters
-    explicit ContChainNetw(MATERIAL* matdata);
+    explicit ContChainNetw(MAT::PAR::ContChainNetw* params);
 
     //! @name Packing and Unpacking
 
@@ -75,7 +119,7 @@ namespace MAT
     //@}
 
     /// material type
-    virtual MATERIAL_TYP MaterialType() const { return m_contchainnetw; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_contchainnetw; }
 
     /// initialize material and remodeling
     void Initialize(const int numgp, const int eleid) ;
@@ -89,7 +133,7 @@ namespace MAT
                                       int eleId);
 
     /// return density
-    double Density() {return matdata_->m.contchainnetw->density;}
+    double Density() const {return params_->density_;}
 
     /// check whether material history is initialized
     bool Initialized() const
@@ -169,7 +213,7 @@ namespace MAT
   private:
 
     /// my material parameters
-    MATERIAL* matdata_;
+    MAT::PAR::ContChainNetw* params_;
 
     /// unit cell dimensions per gp
     Teuchos::RCP<vector<vector<double> > > li_;

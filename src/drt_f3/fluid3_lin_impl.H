@@ -57,8 +57,7 @@ namespace ELEMENTS
                          Epetra_SerialDenseVector& elevec1_epetra,
                          Epetra_SerialDenseVector& elevec2_epetra,
                          Epetra_SerialDenseVector& elevec3_epetra,
-                         RefCountPtr<MAT::Material> mat,
-                         _MATERIAL* actmat) = 0;
+                         RefCountPtr<MAT::Material> mat) = 0;
 
     /// Internal implementation class for linear fluid element
     static Fluid3lin_ImplInterface* Impl(DRT::ELEMENTS::Fluid3* f3);
@@ -137,8 +136,7 @@ namespace ELEMENTS
                          Epetra_SerialDenseVector& elevec1_epetra,
                          Epetra_SerialDenseVector& elevec2_epetra,
                          Epetra_SerialDenseVector& elevec3_epetra,
-                         RefCountPtr<MAT::Material> mat,
-                         _MATERIAL* actmat);
+                         RefCountPtr<MAT::Material> mat);
 
     /// calculating element matrix and rhs
     /*!
@@ -171,7 +169,7 @@ namespace ELEMENTS
                 const LINALG::Matrix<iel,1>&     echist,
                 LINALG::Matrix<4*iel,4*iel>&     estif,
                 LINALG::Matrix<4*iel,1>&         eforce,
-                struct _MATERIAL*                                    material,
+                Teuchos::RCP<const MAT::Material>                    material,
                 double                                               time,
                 double                                               timefac,
                 bool                                                 loma);

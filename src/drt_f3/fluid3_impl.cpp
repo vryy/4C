@@ -161,8 +161,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   Epetra_SerialDenseVector&  elevec1_epetra,
   Epetra_SerialDenseVector&  elevec2_epetra,
   Epetra_SerialDenseVector&  elevec3_epetra,
-  RefCountPtr<MAT::Material> mat,
-  MATERIAL*                  actmat)
+  RefCountPtr<MAT::Material> mat)
 {
   // the number of nodes
   const int numnode = iel;
@@ -600,7 +599,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
          elemat1,
          elemat2,
          elevec1,
-         actmat,
+         mat,
          time,
          dt,
          timefac,
@@ -679,7 +678,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
   LINALG::Matrix<4*iel,4*iel>&            estif,
   LINALG::Matrix<4*iel,4*iel>&            emesh,
   LINALG::Matrix<4*iel,1>&                eforce,
-  struct _MATERIAL*                       material,
+  Teuchos::RCP<const MAT::Material>       material,
   double                                  time,
   double                                  dt,
   double                                  timefac,
@@ -728,14 +727,18 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
   BodyForce(ele,time);
 
   // check here, if we really have a fluid !!
-  if( material->mattyp != m_fluid
-   && material->mattyp != m_sutherland_fluid
-   && material->mattyp != m_carreauyasuda
-   && material->mattyp != m_modpowerlaw) dserror("Material law is not a fluid");
+  if( material->MaterialType() != INPAR::MAT::m_fluid
+   && material->MaterialType() != INPAR::MAT::m_sutherland_fluid
+   && material->MaterialType() != INPAR::MAT::m_carreauyasuda
+   && material->MaterialType() != INPAR::MAT::m_modpowerlaw) dserror("Material law is not a fluid");
 
   // get viscosity
   double visc = 0.0;
-  if(material->mattyp == m_fluid) visc = material->m.fluid->viscosity;
+  if(material->MaterialType() == INPAR::MAT::m_fluid)
+  {
+    const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());
+    visc = actmat->Viscosity();
+  }
 
   // ---------------------------------------------------------------------
   // call routine for calculation of stabilization parameter
@@ -2828,7 +2831,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
   const LINALG::Matrix<3,iel>&            fsevelnp,
   const LINALG::Matrix<iel,1>&            edensnp,
   const enum Fluid3::TauType              whichtau,
-  struct _MATERIAL*                       material,
+  Teuchos::RCP<const MAT::Material>       material,
   double&                                 visc,
   const double                            timefac,
   const double                            dt,
@@ -2930,7 +2933,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
 
   // (all-scale) rate of strain
   double rateofstrain   = -1.0e30;
-  if (material->mattyp != m_fluid ||
+  if (material->MaterialType() != INPAR::MAT::m_fluid ||
       fssgv            == Fluid3::fssgv_Smagorinsky_all ||
       turb_mod_action  != Fluid3::no_model)
     rateofstrain = GetStrainRate(evelnp,derxy_,vderxy_);
@@ -2964,7 +2967,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
   /*------------------------------------------------------------------*/
 
   // compute nonlinear viscosity according to the Carreau-Yasuda model
-  if( material->mattyp != m_fluid ) CalVisc(material,visc,rateofstrain,dens,eosfac);
+  if( material->MaterialType() != INPAR::MAT::m_fluid ) CalVisc(material,visc,rateofstrain,dens,eosfac);
 
   if (turb_mod_action == Fluid3::smagorinsky_with_wall_damping
       ||
@@ -3448,44 +3451,50 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
 //
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::CalVisc(
-  const struct _MATERIAL* material,
+  Teuchos::RCP<const MAT::Material> material,
   double&                 visc,
   const double &          rateofshear,
   const double &          dens,
   const double &          eosfac
 )
 {
-  if(material->mattyp == m_carreauyasuda)
+  if(material->MaterialType() == INPAR::MAT::m_carreauyasuda)
   {
-    double nu_0   = material->m.carreauyasuda->nu_0;    // parameter for zero-shear viscosity
-    double nu_inf = material->m.carreauyasuda->nu_inf;  // parameter for infinite-shear viscosity
-    double lambda = material->m.carreauyasuda->lambda;  // parameter for characteristic time
-    double a      = material->m.carreauyasuda->a_param; // constant parameter
-    double b      = material->m.carreauyasuda->b_param; // constant parameter
+    const MAT::CarreauYasuda* actmat = static_cast<const MAT::CarreauYasuda*>(material.get());
+
+    double nu_0   = actmat->Nu0();    // parameter for zero-shear viscosity
+    double nu_inf = actmat->NuInf();  // parameter for infinite-shear viscosity
+    double lambda = actmat->Lambda();  // parameter for characteristic time
+    double a      = actmat->AParam(); // constant parameter
+    double b      = actmat->BParam(); // constant parameter
 
     // compute viscosity according to the Carreau-Yasuda model for shear-thinning fluids
     // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
     const double tmp = pow(lambda*rateofshear,b);
     visc = nu_inf + ((nu_0 - nu_inf)/pow((1 + tmp),a));
   }
-  else if(material->mattyp == m_modpowerlaw)
+  else if(material->MaterialType() == INPAR::MAT::m_modpowerlaw)
   {
+    const MAT::ModPowerLaw* actmat = static_cast<const MAT::ModPowerLaw*>(material.get());
+
     // get material parameters
-    double m     = material->m.modpowerlaw->m_cons;     // consistency constant
-    double delta = material->m.modpowerlaw->delta;      // safety factor
-    double a     = material->m.modpowerlaw->a_exp;      // exponent
+    double m     = actmat->MCons();     // consistency constant
+    double delta = actmat->Delta();      // safety factor
+    double a     = actmat->AExp();      // exponent
 
     // compute viscosity according to a modified power law model for shear-thinning fluids
     // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
     visc = m * pow((delta + rateofshear), (-1)*a);
   }
-  else if (material->mattyp == m_sutherland_fluid)
+  else if (material->MaterialType() == INPAR::MAT::m_sutherland_fluid)
   {
+    const MAT::SutherlandFluid* actmat = static_cast<const MAT::SutherlandFluid*>(material.get());
+
     // compute viscosity according to Sutherland law
-    const double s  = material->m.sutherland_fluid->suthtemp;
-    const double rt = material->m.sutherland_fluid->reftemp;
+    const double s  = actmat->SuthTemp();
+    const double rt = actmat->RefTemp();
     const double t  = eosfac/dens;
-    visc = pow((t/rt),1.5)*((rt+s)/(t+s))*material->m.sutherland_fluid->refvisc;
+    visc = pow((t/rt),1.5)*((rt+s)/(t+s))*actmat->RefVisc();
   }
   else
     dserror("material type is not yet implemented");

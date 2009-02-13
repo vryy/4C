@@ -26,7 +26,7 @@ Maintainer: Georg Bauer
 
 
 // forward declarations
-struct _MATERIAL;
+//struct _MATERIAL;
 
 
 namespace DRT
@@ -166,7 +166,7 @@ public:
        Epetra_SerialDenseMatrix& emat,  ///< element-matrix
        Epetra_SerialDenseVector& erhs,  ///< element-rhs
        const vector<double>&   ephinp,  ///< actual conc. and pot. values
-       struct _MATERIAL*     material,  ///< the material
+       Teuchos::RCP<const MAT::Material> material,  ///< the material
        const int&          reactantid,  ///< MATERIAL id of reactive species
        const std::string*    kinetics,  ///< desired electrode kinetics model
        const double&             pot0,  ///< actual electrode potential on metal side

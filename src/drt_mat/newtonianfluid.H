@@ -13,11 +13,50 @@ Maintainer: ???
 #ifdef CCADISCRET
 
 #include "material.H"
+#include "matpar_parameter.H"
 
 namespace MAT
 {
 
+  namespace PAR
+  {
+
+    /*----------------------------------------------------------------------*/
+    /// material parameters for Newtonian fluid
+    ///
+    /// This object exists only once for each read Newton fluid.
+    class NewtonianFluid : public Parameter
+    {
+    public:
+
+      /// standard constructor
+      NewtonianFluid(
+        Teuchos::RCP<MAT::PAR::Material> matdata
+        );
+
+      /// destructor
+      virtual ~NewtonianFluid() { ; }
+
+      /// @name material parameters
+      //@{
+
+      /// kinematic or dynamic viscosity
+      const double viscosity_;
+      /// density
+      const double density_;
+      /// surface tension coefficient
+      const double gamma_;
+
+      //@}
+
+    };  // class NewtonianFluid
+
+  }  // namespace PAR
+
+  /*----------------------------------------------------------------------*/
   /// Wrapper for Newtonian fluid material
+  ///
+  /// This object exists (several times) at every element
   class NewtonianFluid : public Material
   {
   public:
@@ -26,7 +65,7 @@ namespace MAT
     NewtonianFluid();
 
     /// construct the material object given material parameters
-    explicit NewtonianFluid(MATERIAL* matdata);
+    explicit NewtonianFluid(MAT::PAR::NewtonianFluid* params);
 
     //! @name Packing and Unpacking
 
@@ -67,22 +106,21 @@ namespace MAT
     //@}
 
     /// material type
-    virtual MATERIAL_TYP MaterialType() const { return m_fluid; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_fluid; }
 
-    /// return material parameters for element calculation
-    /*!
-      To smooth transition of fluid elements to the unified class
-      based material structure we simply return the globally defined
-      material parameters. The actual stress calculations are still
-      done inside the elements. This will change once we have to
-      support different materials in fluid as well.
-     */
-    MATERIAL* MaterialData() const { return matdata_; }
+    /// return viscosity
+    double Viscosity() const { return params_->viscosity_; } //matdata_->m.fluid->viscosity; }
+
+    /// return density
+    double Density() const { return params_->density_; } //matdata_->m.fluid->density; }
+
+    /// return surface tension coefficient
+    double Gamma() const { return params_->gamma_; } //matdata_->m.fluid->gamma; }
 
   private:
 
     /// my material parameters
-    MATERIAL* matdata_;
+    MAT::PAR::NewtonianFluid* params_;
   };
 
 }

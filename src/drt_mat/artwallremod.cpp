@@ -23,16 +23,32 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
 
-extern struct _MATERIAL *mat; ///< C-style material struct
-
 //#define PI        (asin(1.0)*2.0)
+
+
+/*----------------------------------------------------------------------*
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+MAT::PAR::ArtWallRemod::ArtWallRemod(Teuchos::RCP<MAT::PAR::Material> matdata)
+  : Parameter(matdata),
+    kappa_(matdata->GetDouble("KAPPA")),
+    mue_(matdata->GetDouble("MUE")),
+    density_(matdata->GetDouble("DENS")),
+    k1_(matdata->GetDouble("K1")),
+    k2_(matdata->GetDouble("K2")),
+    gamma_(matdata->GetDouble("GAMMA")),
+    init_(matdata->Getint("INIT")),
+    rembegt_(matdata->GetDouble("REMBEGT")),
+    tensonly_(matdata->Getint("TENSION_ONLY"))
+{
+}
 
 
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)         06/08|
  *----------------------------------------------------------------------*/
 MAT::ArtWallRemod::ArtWallRemod()
-  : matdata_(NULL)
+  : params_(NULL)
 {
   isinit_=false;
   gamma_ = rcp(new vector<double>);
@@ -48,8 +64,8 @@ MAT::ArtWallRemod::ArtWallRemod()
 /*----------------------------------------------------------------------*
  |  Copy-Constructor                             (public)          06/08|
  *----------------------------------------------------------------------*/
-MAT::ArtWallRemod::ArtWallRemod(MATERIAL* matdata)
-  : matdata_(matdata)
+MAT::ArtWallRemod::ArtWallRemod(MAT::PAR::ArtWallRemod* params)
+  : params_(params)
 {
 }
 
@@ -64,9 +80,9 @@ void MAT::ArtWallRemod::Pack(vector<char>& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
-  // matdata
-  int matdata = matdata_ - mat;   // pointer difference to reach 0-entry
-  AddtoPack(data,matdata);
+  // matid
+  int matid = params_->Id();
+  AddtoPack(data,matid);
   int numgp;
   if (!Initialized())
   {
@@ -85,7 +101,7 @@ void MAT::ArtWallRemod::Pack(vector<char>& data) const
     AddtoPack(data,a2_->at(gp));
   }
   // Pack internal variables only for remodeling
-  if (matdata_->m.artwallremod->rembegt != -1.){
+  if (params_->rembegt_ != -1.){
     for (int gp = 0; gp < numgp; ++gp)
     {
       AddtoPack(data,gamma_->at(gp));
@@ -110,10 +126,15 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
 
-  // matdata
-  int matdata;
-  ExtractfromPack(position,data,matdata);
-  matdata_ = &mat[matdata];     // unpack pointer to my specific matdata_
+  // matid and recover params_
+  int matid;
+  ExtractfromPack(position,data,matid);
+  const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+  MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+  if (mat->Type() == MaterialType())
+    params_ = static_cast<MAT::PAR::ArtWallRemod*>(mat);
+  else
+    dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
 
   // history data
   isinit_ = true;
@@ -161,7 +182,7 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
   
   // check whether we currently want remodeling
   // because remodeling might be switched after restart
-  if (matdata_->m.artwallremod->rembegt != -1.){
+  if (params_->rembegt_ != -1.){
     // initialize internal variables of remodeling
     gamma_ = rcp(new vector<double>(numgp));
     phi_ = rcp(new vector<Epetra_SerialDenseMatrix>(numgp));
@@ -183,19 +204,19 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
       }
     } else { // assign input variables or zeros, respectively
       for (int gp = 0; gp < numgp; ++gp) {
-        gamma_->at(gp) = (matdata_->m.artwallremod->gamma * PI)/180.0;  // convert to radians
+        gamma_->at(gp) = (params_->gamma_ * PI)/180.0;  // convert to radians
         lambda_->at(gp).resize(3);
         for (int i = 0; i < 3; ++i) lambda_->at(gp)[i] = 0.0;
         Epetra_SerialDenseMatrix emptymat(3,3);
         phi_->at(gp) = emptymat;
         stresses_->at(gp) = emptymat;
-        remtime_->at(gp) = matdata_->m.artwallremod->rembegt; // overwrite restart data with input when switching
+        remtime_->at(gp) = params_->rembegt_; // overwrite restart data with input when switching
       }
     }
   }
 
   // correct position in case remodeling is switched off
-  if ((matdata_->m.artwallremod->rembegt == -1.) && (haveremodeldata)){
+  if ((params_->rembegt_ == -1.) && (haveremodeldata)){
     // read data into nowhere
     for (int gp = 0; gp < numgp; ++gp) {
       double gamma;
@@ -205,7 +226,7 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
       ExtractfromPack(position,data,tmp);
       vector<double> a;
       ExtractfromPack(position,data,a);
-      remtime_->at(gp) = matdata_->m.artwallremod->rembegt; // overwrite restart data with input when switching
+      remtime_->at(gp) = params_->rembegt_; // overwrite restart data with input when switching
     }
   }
 
@@ -220,8 +241,8 @@ void MAT::ArtWallRemod::Setup(const int numgp, const int eleid)
 {
   a1_ = rcp(new vector<vector<double> > (numgp));
   a2_ = rcp(new vector<vector<double> > (numgp));
-  int initflag = matdata_->m.artwallremod->init;
-  double gamma = matdata_->m.artwallremod->gamma;
+  int initflag = params_->init_;
+  double gamma = params_->gamma_;
   gamma = (gamma * PI)/180.0;  // convert to radians
   // switch how to setup/initialize fiber directions
   if (initflag==0){
@@ -268,7 +289,7 @@ void MAT::ArtWallRemod::Setup(const int numgp, const int eleid)
   } else dserror("Unknown init for ARTWALLREMOD");
 
   // check for remodelling option and initialize
-  if ((matdata_->m.artwallremod->rembegt > 0.)){
+  if ((params_->rembegt_ > 0.)){
     // history
     gamma_ = rcp(new vector<double> (numgp));  // of alignment angles
     lambda_ = rcp(new vector<vector<double> > (numgp)); // of eigenvalues
@@ -284,10 +305,10 @@ void MAT::ArtWallRemod::Setup(const int numgp, const int eleid)
     }
   } else {
     // no remodeling
-    matdata_->m.artwallremod->rembegt = -1.0;
+    params_->rembegt_ = -1.0;
   }
   remtime_ = rcp(new vector<double> (numgp)); // of remodelling time
-  for (int gp = 0; gp < numgp; ++gp) remtime_->at(gp) = matdata_->m.artwallremod->rembegt;
+  for (int gp = 0; gp < numgp; ++gp) remtime_->at(gp) = params_->rembegt_;
 
   isinit_ = true;
   return;
@@ -310,11 +331,11 @@ void MAT::ArtWallRemod::Evaluate(
         const LINALG::Matrix<3,3>& defgrd)
 
 {
-  const double mue = matdata_->m.artwallremod->mue;
-  const double kappa = matdata_->m.artwallremod->kappa;
-  const double k1 = matdata_->m.artwallremod->k1;
-  const double k2 = matdata_->m.artwallremod->k2;
-  const int tensonly = matdata_->m.artwallremod->tensonly;
+  const double mue = params_->mue_;
+  const double kappa = params_->kappa_;
+  const double k1 = params_->k1_;
+  const double k2 = params_->k2_;
+  const int tensonly = params_->tensonly_;
 
   // right Cauchy-Green Tensor  C = 2 * E + I
   // build identity tensor I
@@ -581,7 +602,7 @@ void MAT::ArtWallRemodOutputToTxt(const Teuchos::RCP<DRT::Discretization> dis,
     {
       const DRT::Element* actele = dis->lColElement(iele);
       RefCountPtr<MAT::Material> mat = actele->Material();
-      if (mat->MaterialType() != m_artwallremod) return;
+      if (mat->MaterialType() != INPAR::MAT::m_artwallremod) return;
       MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(mat.get());
       int ngp = remo->Geta1()->size();
       int endgp = 1; //ngp;

@@ -10,6 +10,7 @@ Maintainer: Lena Wiechert
 </pre>
 
 *----------------------------------------------------------------------*/
+#if 0
 #ifdef CCADISCRET
 
 #include "global_inp_control2.H"
@@ -770,7 +771,7 @@ while(strncmp(fractplace(),"------",6)!=0)
    /*----------------------------------------------------------------------*/
    /* add local material vector to problem instance                        */
    /*----------------------------------------------------------------------*/
-   AddMaterial(localmat);
+//   AddMaterial(localmat);
 
    /*----------------------------------------------------------------------*/
    frread();
@@ -782,3 +783,4 @@ return;
 } /* end of inp_material */
 
 #endif  // #ifdef CCADISCRET
+#endif

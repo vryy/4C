@@ -62,14 +62,6 @@ using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
 
 /*----------------------------------------------------------------------*
- |                                                         maf 04/07    |
- | vector of material laws                                              |
- | defined in global_control.c						|
- *----------------------------------------------------------------------*/
-extern struct _MATERIAL  *mat; ///< C-style material struct
-
-
-/*----------------------------------------------------------------------*
  |  evaluate the element (public)                              vlf 06/07|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
@@ -114,7 +106,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
   else dserror("Unknown type of action for So_tet4");
 
   // get the material law
-  MATERIAL* actmat = &(mat[material_-1]);
+  Teuchos::RCP<MAT::Material> actmat = Material();
 
   // what should the element do
   switch(act)
@@ -594,7 +586,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
       LINALG::Matrix<NUMDOF_SOTET4,1>* force,          // element internal force vector
       LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestress,      // stresses at GP
       LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestrain,      // strains at GP
-      struct _MATERIAL*         material,       // element material data
+      Teuchos::RCP<const MAT::Material>            material,       // element material data
       const INPAR::STR::StressType                 iostress,         // stress output options
       const INPAR::STR::StrainType                 iostrain)         // strain output options
 {

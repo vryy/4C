@@ -70,6 +70,7 @@ bool DRT::ELEMENTS::Wall1::ReadElement()
   material_ = 0;
   frint("MAT",&material_,&ierr);
   if (ierr!=1) dserror("Reading of WALL1 element failed");
+  SetMaterial(material_);
   
   // read wall thickness
   thickness_ = 1.0;

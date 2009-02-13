@@ -46,9 +46,6 @@ const int NUMSTR_SOH8 = 6;      ///< number of strains/stresses
 const int NUMGPT_SOH8 = 8;      ///< total gauss points per element
 const int NUMDIM_SOH8 = 3;      ///< number of dimensions
 
-// forward declarations
-struct _MATERIAL;
-
 
 namespace DRT
 {

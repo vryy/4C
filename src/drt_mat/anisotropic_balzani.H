@@ -22,6 +22,45 @@ Maintainer: Moritz Frenzel
 namespace MAT
 {
 
+  namespace PAR
+  {
+
+    /*----------------------------------------------------------------------*/
+    /// material parameters for hyperelastic polyconvex anisotropic material
+    class AnisotropicBalzani : public Parameter
+    {
+    public:
+
+      /// standard constructor
+      AnisotropicBalzani(
+        Teuchos::RCP<MAT::PAR::Material> matdata
+        );
+
+      /// destructor
+      virtual ~AnisotropicBalzani() { ; }
+
+      /// @name material parameters
+      //@{
+
+      const double c1_;
+      const double eps1_;
+      const double eps2_;
+      const double alpha1_;
+      const double alpha2_;
+      const double dens_;
+      const int aloc_;
+      double a1_[3];
+      const double alpha1_2_;
+      const double alpha2_2_;
+      double a2_[3];
+
+      //@}
+
+    };  // class AnisotropicBalzani
+
+  }  // namespace PAR
+
+  /*----------------------------------------------------------------------*/
   /// Wrapper for hyperelastic polyconvex anisotropic material
   class AnisotropicBalzani : public Material
   {
@@ -31,7 +70,7 @@ namespace MAT
     AnisotropicBalzani();
 
     /// construct the material object given material parameters
-    explicit AnisotropicBalzani(MATERIAL* matdata);
+    explicit AnisotropicBalzani(MAT::PAR::AnisotropicBalzani* matdata);
 
     //! @name Packing and Unpacking
 
@@ -72,7 +111,7 @@ namespace MAT
     //@}
 
     /// material type
-    virtual MATERIAL_TYP MaterialType() const { return m_anisotropic_balzani; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_anisotropic_balzani; }
 
 
     /// evaluate stress and elasticity matrix
@@ -83,7 +122,7 @@ namespace MAT
             LINALG::Matrix<NUM_STRESS_3D,1> * stress);
 
     /// return density
-    double Density();
+    double Density() const { return params_->dens_; }
 
     /*!
       \brief setup material at element input with potentially local fiber cosy
@@ -98,15 +137,15 @@ namespace MAT
     /// return fiber directions
     vector<double> ReturnGlobalFiberDirection() {
       vector<double> aglob(3);
-      aglob[0] = matdata_->m.anisotropic_balzani->a1[0];
-      aglob[1] = matdata_->m.anisotropic_balzani->a1[1];
-      aglob[2] = matdata_->m.anisotropic_balzani->a1[2];
+      aglob[0] = params_->a1_[0];
+      aglob[1] = params_->a1_[1];
+      aglob[2] = params_->a1_[2];
       return aglob;
     }
 
     /// check whether fiber directions are globally defined
     bool GlobalFiberDirection() const {
-      if (matdata_->m.anisotropic_balzani->aloc == 1) return false;
+      if (params_->aloc_ == 1) return false;
       else return true;
     };
 
@@ -119,7 +158,7 @@ namespace MAT
   private:
 
     /// my material parameters
-    MATERIAL* matdata_;
+    MAT::PAR::AnisotropicBalzani* params_;
 
     /// first fiber vector
     vector<double> a1_;

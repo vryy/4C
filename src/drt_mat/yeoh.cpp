@@ -17,14 +17,26 @@ Maintainer: Thomas Kloeppel
 #include "Epetra_SerialDenseSolver.h"
 #include "yeoh.H"
 
-extern struct _MATERIAL *mat; ///< C-style material struct
-
+/*----------------------------------------------------------------------*
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+MAT::PAR::Yeoh::Yeoh(
+  Teuchos::RCP<MAT::PAR::Material> matdata
+  )
+: Parameter(matdata),
+  c1_(matdata->GetDouble("C1")),
+  c2_(matdata->GetDouble("C2")),
+  c3_(matdata->GetDouble("C3")),
+  kap_(matdata->GetDouble("KAPPA")),
+  density_(matdata->GetDouble("DENS"))
+{
+}
 
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)      tk 01/09|
  *----------------------------------------------------------------------*/
 MAT::Yeoh::Yeoh()
-  : matdata_(NULL)
+  : params_(NULL)
 {
 }
 
@@ -32,8 +44,8 @@ MAT::Yeoh::Yeoh()
 /*----------------------------------------------------------------------*
  |  Copy-Constructor                             (public)       tk 01/09|
  *----------------------------------------------------------------------*/
-MAT::Yeoh::Yeoh(MATERIAL* matdata)
-  : matdata_(matdata)
+MAT::Yeoh::Yeoh(MAT::PAR::Yeoh* params)
+  : params_(params)
 {
 }
 
@@ -48,9 +60,10 @@ void MAT::Yeoh::Pack(vector<char>& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
-  // matdata
-  int matdata = matdata_ - mat;   // pointer difference to reach 0-entry
-  AddtoPack(data,matdata);
+
+  // matid
+  int matid = params_->Id();
+  AddtoPack(data,matid);
 }
 
 
@@ -65,22 +78,18 @@ void MAT::Yeoh::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
 
-  // matdata
-  int matdata;
-  ExtractfromPack(position,data,matdata);
-  matdata_ = &mat[matdata];     // unpack pointer to my specific matdata_
+  // matid and recover params_
+  int matid;
+  ExtractfromPack(position,data,matid);
+  const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+  MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+  if (mat->Type() == MaterialType())
+    params_ = static_cast<MAT::PAR::Yeoh*>(mat);
+  else
+    dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
-}
-
-
-/*----------------------------------------------------------------------*
- |  Return density                                (public)      tk 01/09|
- *----------------------------------------------------------------------*/
-double MAT::Yeoh::Density()
-{
-  return matdata_->m.yeoh->density;  // density, returned to evaluate mass matrix
 }
 
 
@@ -93,10 +102,10 @@ void MAT::Yeoh::Evaluate(
         LINALG::Matrix<NUM_STRESS_3D,1> * stress)
 {
   // get material parameters
-  const double c1  = matdata_->m.yeoh->c1;
-  const double c2  = matdata_->m.yeoh->c2;
-  const double c3  = matdata_->m.yeoh->c3;
-  const double kappa = matdata_->m.yeoh->kap;
+  const double c1  = params_->c1_;
+  const double c2  = params_->c2_;
+  const double c3  = params_->c3_;
+  const double kappa = params_->kap_;
   
   // right Cauchy-Green Tensor  C = 2 * E + I
   // build identity tensor I

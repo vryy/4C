@@ -21,6 +21,38 @@ Maintainer: Moritz Frenzel
 namespace MAT
 {
 
+  namespace PAR
+  {
+
+    /*----------------------------------------------------------------------*/
+    /// material parameters
+    class MooneyRivlin : public Parameter
+    {
+    public:
+
+      /// standard constructor
+      MooneyRivlin(
+        Teuchos::RCP<MAT::PAR::Material> matdata
+        );
+
+      /// destructor
+      virtual ~MooneyRivlin() { ; }
+
+      /// @name material parameters
+      //@{
+      const double c1_;
+      const double c2_;
+      const double kap_;
+      const double lambda_;
+      const double density_;
+      //@}
+
+    };  // class MooneyRivlin
+
+  }  // namespace PAR
+
+
+  /*----------------------------------------------------------------------*/
   /// Wrapper for Mooney-Rivlin material
   class MooneyRivlin : public Material
   {
@@ -30,7 +62,7 @@ namespace MAT
     MooneyRivlin();
 
     /// construct the material object given material parameters
-    explicit MooneyRivlin(MATERIAL* matdata);
+    explicit MooneyRivlin(MAT::PAR::MooneyRivlin* params);
 
     //! @name Packing and Unpacking
 
@@ -71,7 +103,7 @@ namespace MAT
     //@}
 
     /// material type
-    virtual MATERIAL_TYP MaterialType() const { return m_mooneyrivlin; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_mooneyrivlin; }
 
     /*!
     \brief Mooney-Rivlin type nearly incompressible, hyperelastic 3D material law.
@@ -95,12 +127,12 @@ namespace MAT
             LINALG::Matrix<NUM_STRESS_3D,1> * stress);
 
     /// return density
-    double Density();
+    double Density() const { return params_->density_; }
 
   private:
 
     /// my material parameters
-    MATERIAL* matdata_;
+    MAT::PAR::MooneyRivlin* params_;
 
   };
 }

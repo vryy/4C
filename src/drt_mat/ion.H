@@ -13,11 +13,44 @@ Maintainer: Georg Bauer
 
 #ifdef CCADISCRET
 
+#include "matpar_parameter.H"
 #include "material.H"
 
 namespace MAT
 {
 
+  namespace PAR
+  {
+   
+    /*----------------------------------------------------------------------*/
+    /// material parameters for convection-diffusion
+    class Ion : public Parameter
+    {
+    public:
+
+      /// standard constructor
+      Ion(
+        Teuchos::RCP<MAT::PAR::Material> matdata
+        );
+
+      /// destructor
+      virtual ~Ion() { ; }
+
+      /// @name material parameters
+      //@{
+
+      /// valence (= charge number)
+      const double valence_;
+      /// diffusivity coefficient
+      const double diffusivity_;
+
+      //@}
+
+    };  // class Ion
+
+  } // namespace PAR
+
+  /*----------------------------------------------------------------------*/
   /// Wrapper for the material properties of an ion species in an electrolyte solution
   class Ion : public Material
   {
@@ -27,7 +60,7 @@ namespace MAT
     Ion();
 
     /// construct the material object given material parameters
-    explicit Ion(MATERIAL* matdata);
+    explicit Ion(MAT::PAR::Ion* params);
 
     //! @name Packing and Unpacking
 
@@ -68,15 +101,17 @@ namespace MAT
     //@}
 
     /// material type
-    virtual MATERIAL_TYP MaterialType() const { return m_ion; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_ion; }
 
-    /// return material parameters for element calculation
-    MATERIAL* MaterialData() const { return matdata_; }
+    /// valence (= charge number)
+    double Valence() const { return params_->valence_; }
+    /// diffusivity coefficient
+    double Diffusivity() const { return params_->diffusivity_; }
 
   private:
 
-    /// my material parameters
-    MATERIAL* matdata_;
+    /// my material parameters 
+    MAT::PAR::Ion* params_;
   };
 
 }

@@ -24,6 +24,10 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
+#include "../drt_mat/material.H"
+#include "../drt_mat/stvenantkirchhoff.H"
+#include "../drt_mat/neohooke.H"
+#include "../drt_mat/compogden.H"
 
 extern "C"
 {
@@ -35,7 +39,7 @@ extern "C"
  | vector of material laws                                              |
  | defined in global_control.c
  *----------------------------------------------------------------------*/
-extern struct _MATERIAL  *mat;
+//extern struct _MATERIAL  *mat;
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            mwgee 12/06|
@@ -69,7 +73,54 @@ int DRT::ELEMENTS::Shell8::Evaluate(ParameterList&            params,
   else dserror("Unknown type of action for Shell8");
 
   // get the material law
-  MATERIAL* actmat = &(mat[material_-1]);
+  Teuchos::RCP<MAT::Material> material = Material();
+  MATERIAL* actmat = new _MATERIAL();
+  switch(material->MaterialType())
+  {
+  case INPAR::MAT::m_stvenant:
+  {
+    const MAT::StVenantKirchhoff* mat = static_cast<const MAT::StVenantKirchhoff*>(material.get());
+    actmat->mattyp = m_stvenant;
+    actmat->m.stvenant = new STVENANT();
+    actmat->m.stvenant->youngs = mat->Youngs();
+    actmat->m.stvenant->possionratio = mat->PoissonRatio();
+    actmat->m.stvenant->density = mat->Density();
+    break;
+  }
+  case INPAR::MAT::m_neohooke:
+  {
+    const MAT::NeoHooke* mat = static_cast<const MAT::NeoHooke*>(material.get());
+    actmat->mattyp = m_neohooke;
+    actmat->m.neohooke = new NEO_HOOKE();
+    actmat->m.neohooke->youngs = mat->Youngs();
+    actmat->m.neohooke->possionratio = mat->PoissonRatio();
+    actmat->m.neohooke->density = mat->Density();
+    break;
+  }
+  case INPAR::MAT::m_compogden:
+  {
+    const MAT::CompOgden* mat = static_cast<const MAT::CompOgden*>(material.get());
+    actmat->mattyp = m_compogden;
+    actmat->m.compogden = new COMPOGDEN();
+    actmat->m.compogden->nue = mat->Nue();
+    actmat->m.compogden->beta = mat->Beta();
+    actmat->m.compogden->alfap[0] = mat->AlfaP(0);
+    actmat->m.compogden->alfap[1] = mat->AlfaP(1);
+    actmat->m.compogden->alfap[2] = mat->AlfaP(2);
+    actmat->m.compogden->mup[0] = mat->MuP(0);
+    actmat->m.compogden->mup[1] = mat->MuP(1);
+    actmat->m.compogden->mup[2] = mat->MuP(2);
+    actmat->m.compogden->density = mat->Density();
+    break;
+  }
+  case INPAR::MAT::m_viscohyper:
+    dserror("viscohyperelastic material in shell8 not ported to DRT");
+    break;
+  default:
+    dserror("Material of type %d is not implemented",material->MaterialType());
+    break;
+  }
+
   switch(act)
   {
     case calc_struct_linstiff:
@@ -195,6 +246,35 @@ int DRT::ELEMENTS::Shell8::Evaluate(ParameterList&            params,
     default:
       dserror("Unknown type of action for Shell8");
   }
+
+  // remove material object
+  switch(material->MaterialType())
+  {
+  case INPAR::MAT::m_stvenant:
+  {
+    delete actmat->m.stvenant;
+    break;
+  }
+  case INPAR::MAT::m_neohooke:
+  {
+    delete actmat->m.neohooke;
+    break;
+  }
+  case INPAR::MAT::m_compogden:
+  {
+    delete actmat->m.compogden;
+    break;
+  }
+  case INPAR::MAT::m_viscohyper:
+    dserror("viscohyperelastic material in shell8 not ported to DRT");
+    break;
+  default:
+    dserror("Material of type %d is not implemented",material->MaterialType());
+    break;
+  }
+  // delete base
+  delete actmat;
+
   return 0;
 }
 
@@ -3861,8 +3941,9 @@ int DRT::ELEMENTS::Shell8Register::Initialize(DRT::Discretization& dis)
     }
 
     //--------------------------------------allocate space for material history
-    MATERIAL* actmat = &(mat[actele->material_-1]);
-    if (actmat->mattyp==m_viscohyper)/* material is viscohyperelastic */
+    Teuchos::RCP<MAT::Material> material = actele->Material();
+    MATERIAL* actmat = NULL;
+    if (material->MaterialType()==INPAR::MAT::m_viscohyper)/* material is viscohyperelastic */
     {
       dserror("viscohyperelastic material in shell8 not ported to DRT");
       const int nmaxw  = actmat->m.viscohyper->nmaxw;

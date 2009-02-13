@@ -21,6 +21,7 @@ Maintainer: Christiane Förster
 #define AAANEOHOOKE_H_
 #ifdef CCADISCRET
 
+#include "matpar_parameter.H"
 #include "material.H"
 #include <Epetra_SerialDenseVector.h>
 #include <Epetra_SerialDenseMatrix.h>
@@ -28,6 +29,44 @@ Maintainer: Christiane Förster
 
 namespace MAT
 {
+
+  namespace PAR
+  {
+
+    /*----------------------------------------------------------------------*/
+    /// material parameters for aneurysm wall material
+    class AAAneohooke : public Parameter
+    {
+    public:
+
+      /// standard constructor
+      AAAneohooke(
+        Teuchos::RCP<MAT::PAR::Material> matdata
+        );
+
+      /// destructor
+      virtual ~AAAneohooke() { ; }
+
+      /// @name material parameters
+      //@{
+
+      /// Young's modulus
+      const double youngs_;
+      /// Possion's ratio
+      const double nue_;
+      /// 2nd parameter
+      const double beta_; 
+      /// mass density
+      const double density_;
+
+      //@}
+
+    };  // class AAAneohooke
+
+  }  // namespace PAR
+
+  /*----------------------------------------------------------------------*/
+  /// aneurysm wall material according to Raghavan and Vorp [2000]
   class AAAneohooke : public Material
   {
 
@@ -37,7 +76,7 @@ namespace MAT
     AAAneohooke();
 
     // constructor with given material parameters
-    AAAneohooke(MATERIAL* matdata);
+    AAAneohooke(MAT::PAR::AAAneohooke* params);
 
     //! @name Packing and Unpacking
 
@@ -77,10 +116,10 @@ namespace MAT
 
     //@}
 
-    double Density();
+    double Density() const { return params_->density_; }
 
     // material type
-    virtual MATERIAL_TYP MaterialType() const { return m_aaaneohooke; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_aaaneohooke; }
 
     // THE material routine
     void Evaluate(const Epetra_SerialDenseVector* glstrain_e,
@@ -95,7 +134,8 @@ namespace MAT
   private:
 
     /// my material parameters
-    MATERIAL* matdata_;
+    MAT::PAR::AAAneohooke* params_;
+
   };
 }
 

@@ -25,6 +25,41 @@ Maintainer: Lena Wiechert & Sophie Rausch
 
 namespace MAT
 {
+
+  namespace PAR
+  {
+
+    /*----------------------------------------------------------------------*/
+    /// material parameters for lung Ogden
+    class LungOgden : public Parameter
+    {
+    public:
+
+      /// standard constructor
+      LungOgden(
+        Teuchos::RCP<MAT::PAR::Material> matdata
+        );
+
+      /// destructor
+      virtual ~LungOgden() { ; }
+
+      /// @name material parameters (these need to be writable for inverse analysis)
+      //@{
+
+      double kappa_;
+      double beta_;
+      double c_;
+      double k1_;
+      double k2_;
+      double dens_;
+
+      //@}
+
+    };  // class LungOgden
+
+  }  // namespace PAR
+
+  /*----------------------------------------------------------------------*/
   class LungOgden : public Material
   {
 
@@ -34,7 +69,7 @@ namespace MAT
     LungOgden();
 
     // constructor with given material parameters
-    LungOgden(MATERIAL* matdata);
+    LungOgden(MAT::PAR::LungOgden* params);
 
     //! @name Packing and Unpacking
 
@@ -74,10 +109,26 @@ namespace MAT
 
     //@}
 
-    double Density();
+    /// @name Access methods
+    //@{
+    double Density() const { return params_->dens_; }
+    double C() const { return params_->c_; }
+    double K1() const { return params_->k1_; }
+    double K2() const { return params_->k2_; }
+    double Kappa() const { return params_->kappa_; }
+    double Beta() const { return params_->beta_; }
+
+    //@}
+
+    /// @name Write methods
+    //@{
+    void SetC(const double c) { params_->c_ = c; }
+    void SetK1(const double k1) { params_->k1_ = k1; }
+    void SetK2(const double k2) { params_->k2_ = k2; }
+    //@}
 
     // material type
-    virtual MATERIAL_TYP MaterialType() const { return m_lung_ogden; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_lung_ogden; }
 
     // THE material routine
     void Evaluate(LINALG::Matrix<6,1>* glstrain,
@@ -87,7 +138,7 @@ namespace MAT
   private:
 
     /// my material parameters
-    MATERIAL* matdata_;
+    MAT::PAR::LungOgden* params_;
   };
 }
 

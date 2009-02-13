@@ -20,6 +20,43 @@ Maintainer: Volker Gravemeier
 namespace MAT
 {
 
+  namespace PAR
+  {
+
+    /*----------------------------------------------------------------------*/
+    /// material parameters for Newtonian fluid
+    ///
+    /// This object exists only once for each read Newton fluid.
+    class SutherlandFluid : public Parameter
+    {
+    public:
+
+      /// standard constructor
+      SutherlandFluid(
+        Teuchos::RCP<MAT::PAR::Material> matdata
+        );
+
+      /// destructor
+      virtual ~SutherlandFluid() { ; }
+
+      /// @name material parameters
+      //@{
+
+      /// reference dynamic viscosity (kg/(m*s))
+      const double refvisc_;
+      /// reference temperature (K)
+      const double reftemp_;
+      /// Sutherland temperature (K)
+      const double suthtemp_;
+
+      //@}
+
+    };  // class SutherlandFluid
+
+  }  // namespace PAR
+
+
+  /*----------------------------------------------------------------------*/
   /// temperature-dependent viscosity according to Sutherland law
   class SutherlandFluid : public Material
   {
@@ -29,7 +66,7 @@ namespace MAT
     SutherlandFluid();
 
     /// construct the material object given material parameters
-    explicit SutherlandFluid(MATERIAL* matdata);
+    explicit SutherlandFluid(MAT::PAR::SutherlandFluid* params);
 
     //! @name Packing and Unpacking
 
@@ -71,24 +108,24 @@ namespace MAT
     //@}
 
     /// material type 
-    virtual MATERIAL_TYP MaterialType() const { return m_sutherland_fluid; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_sutherland_fluid; }
 
     /// return material parameters for element calculation
+    //@{
+    
+    ///  reference dynamic viscosity (kg/(m*s)) 
+    double RefVisc() const { return params_->refvisc_; }
+    /// reference temperature (K)
+    double RefTemp() const { return params_->reftemp_; }
+    /// Sutherland temperature (K)
+    double SuthTemp() const { return params_->suthtemp_; }
 
-    /*!
-      To smooth transition of fluid elements to the unified class
-      based material structure we simply return the globally defined
-      material parameters. The actual stress calculations are still
-      done inside the elements. This will change once we have to
-      support different materials in fluid as well.
-     */
-    MATERIAL* MaterialData() const { return matdata_; }
-
+    //@}
 
   private:
 
     /// my material parameters
-    MATERIAL* matdata_;
+    MAT::PAR::SutherlandFluid* params_;
   };
 
 }

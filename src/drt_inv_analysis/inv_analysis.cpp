@@ -23,6 +23,8 @@ Maintainer: Sophie Rausch
 #include "../drt_io/io_hdf.H"
 #include "../drt_lib/linalg_ana.H"
 #include "../drt_mat/material.H"
+#include "../drt_mat/lung_ogden.H"
+#include "../drt_mat/lung_penalty.H"
 
 
 using namespace LINALG::ANA;
@@ -42,9 +44,9 @@ Inv_analysis::Inv_analysis(ParameterList& params,
                                   LINALG::Solver& solver,
                                   IO::DiscretizationWriter& output,
                                   bool init)
-  : StruGenAlpha(params,dis,solver,output),
-    mat_(DRT::Problem::Instance()->Material(0)),
-    nonconstmat_(const_cast<MATERIAL&>(mat_))
+  : StruGenAlpha(params,dis,solver,output)//,
+//    mat_(DRT::Problem::Instance()->Material(0)),
+//    nonconstmat_(const_cast<MATERIAL&>(mat_))
 {
    // get the surface neuman nodes
    discret_.GetCondition("SurfaceNeumann",surfneum_ );
@@ -97,20 +99,24 @@ Inv_analysis::Inv_analysis(ParameterList& params,
   p_.Resize(3);
   p_o_.Resize(3);
   //Which material is used in the input file
-  if (dis.lRowElement(0)->Material()->MaterialType() == m_lung_penalty)
   {
-    p_(0) = sqrt(DRT::Problem::Instance()->Material(0).m.lung_penalty->c);
-    p_(1) = sqrt(DRT::Problem::Instance()->Material(0).m.lung_penalty->k1);
-    p_(2) = sqrt(DRT::Problem::Instance()->Material(0).m.lung_penalty->k2);
+  Teuchos::RCP<const MAT::Material> material = dis.lRowElement(0)->Material();
+  if (material->MaterialType() == INPAR::MAT::m_lung_penalty)
+  {
+    const MAT::LungPenalty* actmat = static_cast<const MAT::LungPenalty*>(material.get());
+    p_(0) = sqrt(actmat->C());
+    p_(1) = sqrt(actmat->K1());
+    p_(2) = sqrt(actmat->K2());
   }
-  else if (dis.lRowElement(0)->Material()->MaterialType() == m_lung_ogden)
+  else if (material->MaterialType() == INPAR::MAT::m_lung_ogden)
   {
-    p_(0) = sqrt(DRT::Problem::Instance()->Material(0).m.lung_ogden->c);
-    p_(1) = sqrt(DRT::Problem::Instance()->Material(0).m.lung_ogden->k1);
-    p_(2) = sqrt(DRT::Problem::Instance()->Material(0).m.lung_ogden->k2);
+    const MAT::LungOgden* actmat = static_cast<const MAT::LungOgden*>(material.get());
+    p_(0) = sqrt(actmat->C());
+    p_(1) = sqrt(actmat->K1());
+    p_(2) = sqrt(actmat->K2());
   }
   else dserror("The inverse analysis is only implemented for the LungOgden and the LungPenalty material");
-
+  }
   numb_run_=0;
 }
 
@@ -191,18 +197,25 @@ void Inv_analysis::evaluate()
 
   numb_run_++;
 
-  if (discret_.lRowElement(0)->Material()->MaterialType() == m_lung_penalty)
   {
-    DRT::Problem::Instance()->Material(0).m.lung_penalty->c      = (p_(0)*p_(0));
-    DRT::Problem::Instance()->Material(0).m.lung_penalty->k1     = (p_(1)*p_(1));
-    DRT::Problem::Instance()->Material(0).m.lung_penalty->k2     = (p_(2)*p_(2));
+  Teuchos::RCP<MAT::Material> material = discret_.lRowElement(0)->Material();
+  if (material->MaterialType() == INPAR::MAT::m_lung_penalty)
+  {
+    MAT::LungPenalty* actmat = static_cast<MAT::LungPenalty*>(material.get());
+    actmat->SetC(p_(0)*p_(0));
+    actmat->SetK1(p_(1)*p_(1));
+    actmat->SetK2(p_(2)*p_(2));
   }
-  else if (discret_.lRowElement(0)->Material()->MaterialType() == m_lung_ogden)
+  else if (material->MaterialType() == INPAR::MAT::m_lung_ogden)
   {
-    DRT::Problem::Instance()->Material(0).m.lung_ogden->c      = (p_(0)*p_(0));
-    DRT::Problem::Instance()->Material(0).m.lung_ogden->k1     = (p_(1)*p_(1));
-    DRT::Problem::Instance()->Material(0).m.lung_ogden->k2     = (p_(2)*p_(2));
+    MAT::LungOgden* actmat = static_cast<MAT::LungOgden*>(material.get());
+    actmat->SetC(p_(0)*p_(0));
+    actmat->SetK1(p_(1)*p_(1));
+    actmat->SetK2(p_(2)*p_(2));
     //DRT::Problem::Instance()->Material(0).m.lung_ogden->youngs = (p_(0)*p_(0));
+  }
+  else
+    dserror("Cannot handle material");
   }
   return;
 }

@@ -82,7 +82,7 @@ void ntainp_ccadiscret()
   problem->InputControl();
 
   /* input of materials */
-  problem->ReadMaterial();
+  problem->ReadMaterials(reader);
 
   /* input of fields */
   problem->ReadFields(reader);

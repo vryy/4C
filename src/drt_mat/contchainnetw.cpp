@@ -24,15 +24,34 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
 
-extern struct _MATERIAL *mat;   ///< C-style material struct
-
-
+/*----------------------------------------------------------------------*
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+MAT::PAR::ContChainNetw::ContChainNetw(
+  Teuchos::RCP<MAT::PAR::Material> matdata
+  )
+: Parameter(matdata),
+  lambda_(matdata->GetDouble("LAMBDA")),
+  mue_(matdata->GetDouble("MUE")),
+  density_(matdata->GetDouble("DENS")),
+  nchain_(matdata->GetDouble("NCHAIN")),
+  abstemp_(matdata->GetDouble("ABSTEMP")),
+  contl_l_(matdata->GetDouble("CONTL_L")),
+  persl_a_(matdata->GetDouble("PERSL_A")),
+  r0_(matdata->GetDouble("R0")),
+  relax_(matdata->GetDouble("RELAX")),
+  initran_(matdata->Getint("INITRAN")),
+  rembegt_(matdata->GetDouble("REMBEGT")),
+  updrate_(matdata->Getint("UPDRATE")),
+  difftol_(matdata->GetDouble("DIFFTOL"))
+{
+}
 
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)         06/08|
  *----------------------------------------------------------------------*/
 MAT::ContChainNetw::ContChainNetw()
-  : matdata_(NULL)
+  : params_(NULL)
 {
   isinit_=false;
   //mytime_=0.0;
@@ -48,8 +67,8 @@ MAT::ContChainNetw::ContChainNetw()
 /*----------------------------------------------------------------------*
  |  Copy-Constructor                             (public)          06/08|
  *----------------------------------------------------------------------*/
-MAT::ContChainNetw::ContChainNetw(MATERIAL* matdata)
-  : matdata_(matdata)
+MAT::ContChainNetw::ContChainNetw(MAT::PAR::ContChainNetw* params)
+  : params_(params)
 {
 }
 
@@ -64,9 +83,9 @@ void MAT::ContChainNetw::Pack(vector<char>& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
-  // matdata
-  int matdata = matdata_ - mat;   // pointer difference to reach 0-entry
-  AddtoPack(data,matdata);
+  // matid
+  int matid = params_->Id();
+  AddtoPack(data,matid);
   int histsize;
   if (!Initialized())
   {
@@ -101,10 +120,15 @@ void MAT::ContChainNetw::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
 
-  // matdata
-  int matdata;
-  ExtractfromPack(position,data,matdata);
-  matdata_ = &mat[matdata];     // unpack pointer to my specific matdata_
+  // matid and recover params_
+  int matid;
+  ExtractfromPack(position,data,matid);
+  const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+  MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+  if (mat->Type() == MaterialType())
+    params_ = static_cast<MAT::PAR::ContChainNetw*>(mat);
+  else
+    dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
 
   // history data
   isinit_ = true;
@@ -146,7 +170,7 @@ void MAT::ContChainNetw::Unpack(const vector<char>& data)
  *----------------------------------------------------------------------*/
 void MAT::ContChainNetw::Initialize(const int numgp, const int eleid)
 {
-  const double r0 = matdata_->m.contchainnetw->r0;
+  const double r0 = params_->r0_;
   const double isotropy  = 1/sqrt(3.0) * r0;
   srand ( time(NULL) + 5 + eleid*numgp );
 
@@ -174,12 +198,12 @@ void MAT::ContChainNetw::Initialize(const int numgp, const int eleid)
     li0_->at(gp).resize(3);
     li_->at(gp).resize(3);
     lambda_->at(gp).resize(3);
-    if (matdata_->m.contchainnetw->initran == 1){
+    if (params_->initran_ == 1){
       // random init, however sum of li^2 has to be r0^2
       li0_->at(gp)[0] = randominit[0]*rescale;
       li0_->at(gp)[1] = randominit[1]*rescale;
       li0_->at(gp)[2] = randominit[2]*rescale;
-    } else if (matdata_->m.contchainnetw->initran == 0){
+    } else if (params_->initran_ == 0){
       // pseudo-isotropic init
       li0_->at(gp)[0] = 1.0*isotropy;
       li0_->at(gp)[1] = 1.0*isotropy;  // 2nd dir off! check update!
@@ -194,7 +218,7 @@ void MAT::ContChainNetw::Initialize(const int numgp, const int eleid)
     }
     ni_->push_back(id);
     stresses_->push_back(initstress);
-    mytime_->push_back(matdata_->m.contchainnetw->rembegt);
+    mytime_->push_back(params_->rembegt_);
   }
 
   //mytime_ = 1.0;  // carefull!
@@ -219,14 +243,14 @@ void MAT::ContChainNetw::Evaluate(const LINALG::Matrix<NUM_STRESS_3D,1>* glstrai
                                   int eleId)
 {
   // bulk (isotropic) NeoHooke material parameters (Lame constants)
-  const double lambda = matdata_->m.contchainnetw->lambda;
-  const double mue = matdata_->m.contchainnetw->mue;
+  const double lambda = params_->lambda_;
+  const double mue = params_->mue_;
   // chain network unit cell material parameters
-  const double nchain = matdata_->m.contchainnetw->nchain; // chain density ~= cell stiffness
-  const double abstemp = matdata_->m.contchainnetw->abstemp; // absolute temperature (K)
-  const double L = matdata_->m.contchainnetw->contl_l;  // chain contour length
-  const double A = matdata_->m.contchainnetw->persl_a;  // chain persistence length
-  double r0 = matdata_->m.contchainnetw->r0;      // initial chain length
+  const double nchain = params_->nchain_; // chain density ~= cell stiffness
+  const double abstemp = params_->abstemp_; // absolute temperature (K)
+  const double L = params_->contl_l_;  // chain contour length
+  const double A = params_->persl_a_;  // chain persistence length
+  double r0 = params_->r0_;      // initial chain length
   const double boltzmann = 1.3806503E-23;
   const int dim = 3;
 
@@ -315,12 +339,12 @@ void MAT::ContChainNetw::Evaluate(const LINALG::Matrix<NUM_STRESS_3D,1>* glstrai
   UpdateStress(S,Ni,lisq,I,s_chn,stressfree);
 
   // do remodeling only if we are at a new time step and based on last stress
-  const double kappa = matdata_->m.contchainnetw->relax; // relaxation time for remodeling
+  const double kappa = params_->relax_; // relaxation time for remodeling
   const double time = params.get("total time",-1.0);
   const double dt = params.get("delta time",-1.0);
-  const double lambda_tol = matdata_->m.contchainnetw->difftol; //1.0E-12;
+  const double lambda_tol = params_->difftol_; //1.0E-12;
   if ( (kappa >= 0.0)  && (time > mytime_->at(gp)) ){
-    double rem_time = time - matdata_->m.contchainnetw->rembegt;
+    double rem_time = time - params_->rembegt_;
     mytime_->at(gp) = time;
     const double decay = min(1.0,exp(-kappa*rem_time));
 
@@ -344,22 +368,22 @@ void MAT::ContChainNetw::Evaluate(const LINALG::Matrix<NUM_STRESS_3D,1>* glstrai
     vector<double> rem_toggle(3,0.0);
 
     // decide on remodeling strategy and update cell dimensions and history
-    if (matdata_->m.contchainnetw->updrate == 0){
+    if (params_->updrate_ == 0){
       for (int i=0; i<3; ++i){
         if (lambda(i)/lambda(2) > lambda_tol) rem_toggle[i] = 1.0;
       }
       Update(Phi,lambda,rem_toggle,gp,r0,decay);
-    } else if (matdata_->m.contchainnetw->updrate == 1){
+    } else if (params_->updrate_ == 1){
       for (int i=0; i<3; ++i){
         if (lambda(i)/lambda(2) > lambda_tol) rem_toggle[i] = 1.0;
       }
       UpdateRate(Phi,lambda,rem_toggle,gp,r0,decay,kappa,dt);
-    } else if (matdata_->m.contchainnetw->updrate == 2){  // my new strategy
+    } else if (params_->updrate_ == 2){  // my new strategy
       for (int i=0; i<3; ++i){
         if (lambda(i)/lambda(2) > lambda_tol) rem_toggle[i] = lambda(i)/lambda(2);
       }
       Update(Phi,lambda,rem_toggle,gp,r0,decay);
-    } else if (matdata_->m.contchainnetw->updrate == 3){  // my new strategy
+    } else if (params_->updrate_ == 3){  // my new strategy
       for (int i=0; i<3; ++i){
         if (lambda(i)/lambda(2) > lambda_tol) rem_toggle[i] = lambda(i)/lambda(2);
       }
@@ -733,7 +757,7 @@ void MAT::ChainOutputToTxt(const Teuchos::RCP<DRT::Discretization> dis,
     {
       const DRT::Element* actele = dis->lColElement(iele);
       RefCountPtr<MAT::Material> mat = actele->Material();
-      if (mat->MaterialType() != m_contchainnetw) return;
+      if (mat->MaterialType() != INPAR::MAT::m_contchainnetw) return;
       MAT::ContChainNetw* chain = static_cast <MAT::ContChainNetw*>(mat.get());
       //int ngp = chain->Getni()->size();
       int endgp = 1; //ngp;

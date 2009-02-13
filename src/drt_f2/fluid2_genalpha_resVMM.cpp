@@ -18,6 +18,9 @@ Maintainer: Peter Gamnitzer
 
 #include "fluid2_genalpha_resVMM.H"
 #include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/carreauyasuda.H"
+#include "../drt_mat/sutherland_fluid.H"
+#include "../drt_mat/modpowerlaw.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
@@ -95,7 +98,7 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
   const blitz::Array<double,1>&                         eprenp,
   const blitz::Array<double,2>&                         eaccam,
   const blitz::Array<double,2>&                         evelaf,
-  const struct _MATERIAL*                               material,
+  Teuchos::RCP<const MAT::Material>                     material,
   const double                                          alphaM,
   const double                                          alphaF,
   const double                                          gamma,
@@ -143,15 +146,18 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
   //------------------------------------------------------------------
   // get viscosity
   // check here, if we really have a fluid !! 
-  if( material->mattyp != m_carreauyasuda
-      &&      material->mattyp != m_modpowerlaw
-      && material->mattyp != m_fluid)
+  if( material->MaterialType() != INPAR::MAT::m_carreauyasuda
+      && material->MaterialType() != INPAR::MAT::m_modpowerlaw
+      && material->MaterialType() != INPAR::MAT::m_fluid)
         dserror("Material law is not a fluid");
 
   // get viscosity
   double visc = 0.0;
-  if(material->mattyp == m_fluid)
-    visc = material->m.fluid->viscosity;
+  if(material->MaterialType() == INPAR::MAT::m_fluid)
+  {
+    const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());
+    visc = actmat->Viscosity();
+  }
 
   //------------------------------------------------------------------
   //                      SET ELEMENT DATA
@@ -389,7 +395,7 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
   /*------------------------------------------------------------------*/
 
   // compute nonlinear viscosity according to the Carreau-Yasuda model
-  if( material->mattyp != m_fluid )
+  if( material->MaterialType() != INPAR::MAT::m_fluid )
       CalVisc( material, visc);
   
   double visceff = visc;
@@ -3904,7 +3910,7 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::CalcRes(
   const blitz::Array<double,1>&                         eprenp,
   const blitz::Array<double,2>&                         eaccam,
   const blitz::Array<double,2>&                         evelaf,
-  const struct _MATERIAL*                               material,
+  Teuchos::RCP<const MAT::Material>                     material,
   const double                                          alphaM,
   const double                                          alphaF,
   const double                                          gamma,
@@ -3925,7 +3931,7 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::CalcRes(
 
 
 void DRT::ELEMENTS::Fluid2GenalphaResVMM::CalVisc(
-  const struct _MATERIAL*                 material,
+  Teuchos::RCP<const MAT::Material>       material,
   double&                                 visc)
 {
 
@@ -3943,25 +3949,28 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::CalVisc(
 
   rateofshear = sqrt(2.0*rateofshear);
 
-  if(material->mattyp == m_carreauyasuda)
+  if(material->MaterialType() == INPAR::MAT::m_carreauyasuda)
   {
-    double nu_0     = material->m.carreauyasuda->nu_0;      // parameter for zero-shear viscosity
-    double nu_inf   = material->m.carreauyasuda->nu_inf;    // parameter for infinite-shear viscosity
-    double lambda   = material->m.carreauyasuda->lambda;    // parameter for characteristic time
-    double a        = material->m.carreauyasuda->a_param;   // constant parameter
-    double b        = material->m.carreauyasuda->b_param;   // constant parameter
+    const MAT::CarreauYasuda* actmat = static_cast<const MAT::CarreauYasuda*>(material.get());
+
+    double nu_0     = actmat->Nu0();      // parameter for zero-shear viscosity
+    double nu_inf   = actmat->NuInf();    // parameter for infinite-shear viscosity
+    double lambda   = actmat->Lambda();    // parameter for characteristic time
+    double a        = actmat->AParam();   // constant parameter
+    double b        = actmat->BParam();   // constant parameter
 
     // compute viscosity according to the Carreau-Yasuda model for shear-thinning fluids
     // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
     const double tmp = pow(lambda*rateofshear,b);
     visc = nu_inf + ((nu_0 - nu_inf)/pow((1 + tmp),a));
   }
-  else if(material->mattyp == m_modpowerlaw)
+  else if(material->MaterialType() == INPAR::MAT::m_modpowerlaw)
   {
+    const MAT::ModPowerLaw* actmat = static_cast<const MAT::ModPowerLaw*>(material.get());
     // get material parameters
-    double m      = material->m.modpowerlaw->m_cons;    // consistency constant
-    double delta  = material->m.modpowerlaw->delta;     // safety factor
-    double a      = material->m.modpowerlaw->a_exp;     // exponent
+    double m      = actmat->MCons();    // consistency constant
+    double delta  = actmat->Delta();     // safety factor
+    double a      = actmat->AExp();     // exponent
 
     // compute viscosity according to a modified power law model for shear-thinning fluids
     // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005

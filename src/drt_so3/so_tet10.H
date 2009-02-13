@@ -46,9 +46,6 @@ using namespace Teuchos;
 #define NUMNOD_SOTET10_FACE  6	    ///< number of nodes on a TET10 face (which is a TRI6)
 #define NUMGPT_SOTET10_FACE  3      ///< number of GP    on a TET10 face (which is a TRI6)
 
-// forward declarations
-struct _MATERIAL;
-
 namespace DRT
 {
 // forward declarations
@@ -348,7 +345,7 @@ protected:
                                      LINALG::Matrix<NUMDOF_SOTET10,1>* force,
                                      LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10>* stresses,
                                      LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10>* elestrain,
-                                     struct _MATERIAL*         material,
+                                     Teuchos::RCP<const MAT::Material> material,
                                      const INPAR::STR::StressType iostress,
                                      const INPAR::STR::StrainType iostrain);
 
@@ -374,7 +371,7 @@ protected:
   //! Evaluate Tet10 Weights at 10 gausspoints to keep them static
   const vector<double>& so_tet10_10gp_weights();
 
-//   void so_tet10_stress(struct _MATERIAL* material,
+//   void so_tet10_stress(Teuchos::RCP<const MAT::Material> material,
 //                    vector<double>& mydisp,
 //                    Epetra_SerialDenseMatrix* stresses);
 

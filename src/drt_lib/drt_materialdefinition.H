@@ -1,0 +1,620 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file drt_materialdefinition.H
+
+<pre>
+Maintainer: Burkhard Bornemann
+            bornemann@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15237
+</pre>
+*/
+
+/*----------------------------------------------------------------------*/
+/* defintions */
+#ifdef CCADISCRET
+#ifndef DRT_MATERIALDEFINITION_H
+#define DRT_MATERIALDEFINITION_H
+
+/*----------------------------------------------------------------------*/
+/* headers */
+#include <string>
+#include <vector>
+#include <iostream>
+
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_Array.hpp>
+
+#include "../drt_inpar/inpar_material.H"
+#include "../drt_mat/matpar_material.H"
+#include "drt_inputreader.H"
+#include "../drt_mat/matpar_bundle.H"
+
+namespace DRT
+{
+  class Problem;
+  class Discretization;
+
+  namespace INPUT
+  {
+    // forward declaration
+    class MaterialDefinition;
+
+    /// pure virtual base class for all material line parts
+    ///
+    ///
+    /// The aim of the machinery here is to describe how a valid DRT::Material
+    /// looks like and to be able to read and write them.
+    ///
+    /// In general it is assumed that one material definition in the dat file
+    /// consists of one line. This line might consist of various components, each
+    /// one corresponding to one variable that has to be defined in the
+    /// DRT::Material object. This class does represent one such component.
+    /// 
+    /// There are different types of variables stored in a DRT::Material. And
+    /// accordingly there are different subclasses of MaterialComponent that
+    /// implement the reading and writing of these types.
+    ///
+    /// \see MaterialDefinition
+    class MaterialComponent
+    {
+    public:
+
+      /// construct with the name of the corresponding variable in the material
+      explicit MaterialComponent(
+        std::string name,
+        bool optional=false
+        );
+
+      /// virtual destructor is mandatory
+      virtual ~MaterialComponent() {}
+
+      /// write my part of the default (comment) line of the material
+      virtual void DefaultLine(
+        std::ostream& stream
+        ) = 0;
+
+      /// write my part of this actual material
+      virtual void Print(
+        std::ostream& stream, 
+        const MAT::PAR::Material* cond
+        ) = 0;
+
+      /// describe my part of this actual material
+      ///
+      /// This action provides a descriptive comment about component
+      virtual void Describe(
+        std::ostream& stream
+        ) = 0;
+
+      /// read my part of an input line and put it into the material
+      virtual Teuchos::RCP<std::stringstream> Read(
+        MaterialDefinition* def,
+        Teuchos::RCP<std::stringstream> condline,
+        Teuchos::RCP<MAT::PAR::Material> material
+        ) = 0;
+
+      /// the name of my variable inside a material
+      std::string Name() const { return name_; }
+
+    protected:
+
+      /// push back token into stream so that it can be read again
+      Teuchos::RCP<std::stringstream> PushBack(std::string token, Teuchos::RCP<std::stringstream> stream);
+
+      /// for optional components
+      bool optional_;
+
+    private:
+
+      /// my material variable name
+      std::string name_;
+
+    };
+
+
+    /// material line part that is a string out of a list of valid strings
+    ///
+    ///  \see MaterialDefinition
+    class StringMaterialComponent : public MaterialComponent
+    {
+    public:
+
+      /// construct material component that reads and writes a string variable
+      ///
+      ///  A string is read from the input file and (another one is) stored in
+      ///  the DRT::Material.
+      ///
+      ///  It might be a good idea to store the same string in the Material that
+      ///  is read from the dat file. You don't have to. You can make things as
+      ///  confusing as you want.
+      ///
+      ///  An optional StringMaterialComponent will not complain if does not find
+      ///  one of the admissible strings but set the default value instead.
+      ///
+      ///  There is a 1:1 correspondance between datfilevalues and condvalues.
+      StringMaterialComponent(
+        std::string name,  ///< Name of the corresponding variable in the MAT::PAR::Material
+        std::string defaultvalue,  ///< Default value of this variable
+//        const Teuchos::Array<std::string>& datfilevalues,  ///< Possible values in the DAT file
+//        const Teuchos::Array<std::string>& condvalues,  ///< Corresponding values stored in the MAT::PAR::Material
+        bool optional=false  ///< Whether this string is optional in the dat file
+        );
+
+      virtual void DefaultLine(
+        std::ostream& stream
+        );
+
+      virtual void Print(
+        std::ostream& stream, 
+        const MAT::PAR::Material* cond
+        );
+
+      virtual void Describe(
+        std::ostream& stream
+        );
+
+      virtual Teuchos::RCP<std::stringstream> Read(
+        MaterialDefinition* def,
+        Teuchos::RCP<std::stringstream> condline,
+        Teuchos::RCP<MAT::PAR::Material> material
+        );
+
+    private:
+
+      std::string defaultvalue_;
+//      Teuchos::Array<std::string> datfilevalues_;
+//      Teuchos::Array<std::string> condvalues_;
+    };
+
+
+    /// material line part that is a fixed string without any effect on the MAT::PAR::Material
+    ///
+    /// This is really just a separator at the input line. The DRT::Material is
+    /// not effected.
+    ///
+    /// The reason we need this is that the we specify the order of the input line
+    /// part. It might be reasonable to specify names that have to appear in the
+    /// dat file to enhance human readability.
+    ///
+    /// \see MaterialDefinition
+    class SeparatorMaterialComponent : public MaterialComponent
+    {
+    public:
+
+      /// constuct a separator component that does read a string without setting a variable
+      /// here with description
+      SeparatorMaterialComponent(
+        std::string separator,
+        std::string description,
+        bool optional=false
+        );
+
+      /// constuct a separator component that does read a string without setting a variable
+      SeparatorMaterialComponent(
+        std::string separator,
+        bool optional=false
+        );
+
+      virtual void DefaultLine(
+        std::ostream& stream
+        );
+
+      virtual void Print(
+        std::ostream& stream,
+        const MAT::PAR::Material* cond
+        );
+
+      virtual void Describe(
+        std::ostream& stream
+        );
+
+      virtual Teuchos::RCP<std::stringstream> Read(
+        MaterialDefinition* def,
+        Teuchos::RCP<std::stringstream> condline,
+        Teuchos::RCP<MAT::PAR::Material> material
+        );
+
+    private:
+
+      std::string separator_;
+
+      std::string description_;
+    };
+
+
+    /// material line part that is a single integer number
+    ///
+    ///
+    ///  Integer numbers are special as these can be stored in fortran style in the
+    ///  dat file (internally we always store C style numbers) and sometimes the
+    ///  string "none" is allowed for -1.
+    ///
+    ///  \see MaterialDefinition
+    class IntMaterialComponent : public MaterialComponent
+    {
+    public:
+
+      /// constuct a material component that reads a int variable
+      ///
+      ///  A int value is expected in the dat file.
+      explicit IntMaterialComponent(
+        std::string name,  ///< variable name in DRT::Material
+        bool fortranstyle=false,  ///< whether to substract 1 from the value read
+        bool noneallowed=false,  ///< noneallowed whether "none" is a legal value (meaning -1)
+        bool optional=false
+        );
+
+      virtual void DefaultLine(
+        std::ostream& stream
+        );
+
+      virtual void Print(
+        std::ostream& stream, 
+        const MAT::PAR::Material* cond
+        );
+
+      virtual void Describe(
+        std::ostream& stream
+        );
+
+      virtual Teuchos::RCP<std::stringstream> Read(
+        MaterialDefinition* def,
+        Teuchos::RCP<std::stringstream> condline,
+        Teuchos::RCP<MAT::PAR::Material> material
+        );
+
+    private:
+
+      bool fortranstyle_;
+      bool noneallowed_;
+    };
+
+
+    /// material line part that is a vector of integer numbers
+    ///
+    ///  Integer numbers are special as these can be stored in fortran style in the
+    ///  dat file (internally we always store C style numbers) and sometimes the
+    ///  string "none" is allowed for -1.
+    ///
+    ///  \see MaterialDefinition
+    class IntVectorMaterialComponent : public MaterialComponent
+    {
+    public:
+
+      /// constuct a material component that reads a vector of int variables
+      ///
+      /// A vector of int values are expected in the dat file.
+      IntVectorMaterialComponent(
+        std::string name,  ///< variable name in MAT::PAR::Material
+        int length,  ///< number of int values expected
+        bool fortranstyle=false,  ///< whether to substract 1 from the value read
+        bool noneallowed=false,  ///< whether "none" is a legal value (meaning -1)
+        bool optional=false  ///< whether this material component can be skipped
+        );
+
+      /// constuct a material component that reads a vector of int variables
+      ///
+      /// A vector of int values are expected in the dat file.
+      IntVectorMaterialComponent(
+        std::string name,  ///< variable name in MAT::PAR::Material
+        std::string lengthname,  ///< named variable which holds number of int values expected
+        bool fortranstyle=false,  ///< whether to substract 1 from the value read
+        bool noneallowed=false,  ///< whether "none" is a legal value (meaning -1)
+        bool optional=false  ///< whether this material component can be skipped
+        );
+
+      virtual void DefaultLine(
+        std::ostream& stream
+        );
+
+      virtual void Print(
+        std::ostream& stream,
+        const MAT::PAR::Material* cond
+        );
+
+      virtual void Describe(
+        std::ostream& stream
+        );
+
+      virtual Teuchos::RCP<std::stringstream> Read(
+        MaterialDefinition* def,
+        Teuchos::RCP<std::stringstream> condline,
+        Teuchos::RCP<MAT::PAR::Material> material
+        );
+
+    private:
+
+      int length_;
+      std::string lengthname_;
+      bool fortranstyle_;
+      bool noneallowed_;
+    };
+
+
+    /// material line part that is a single real number
+    ///
+    ///  \see MaterialDefinition
+    class RealMaterialComponent : public MaterialComponent
+    {
+    public:
+
+      /// constuct a material component that reads a double variable
+      ///
+      ///  A double value is expected in the dat file.
+      RealMaterialComponent(
+        std::string name,  ///< variable name in MAT::PAR::Material
+        bool optional=false
+        );
+
+      virtual void DefaultLine(
+        std::ostream& stream
+        );
+
+      virtual void Print(
+        std::ostream& stream,
+        const MAT::PAR::Material* cond
+        );
+
+      virtual void Describe(
+        std::ostream& stream
+        );
+
+      virtual Teuchos::RCP<std::stringstream> Read(
+        MaterialDefinition* def,
+        Teuchos::RCP<std::stringstream> condline,
+        Teuchos::RCP<MAT::PAR::Material> material
+        );
+    };
+
+
+    /// material line part that is a vector of real numbers
+    ///
+    ///  \see MaterialDefinition
+    class RealVectorMaterialComponent : public MaterialComponent
+    {
+    public:
+
+      /// constuct a material component that reads a vector of double variables
+      ///
+      ///  A number of double values are expected in the dat file.
+      RealVectorMaterialComponent(
+        std::string name,  ///< variable name in DRT::Material
+        int length,  ///< number of double values expected
+        bool optional=false
+        );
+
+      /// constuct a material component that reads a vector of int variables
+      ///
+      /// A vector of int values are expected in the dat file.
+      RealVectorMaterialComponent(
+        std::string name,  ///< variable name in DRT::Material
+        std::string lengthname,  ///< named variable which holds number of real values expected
+        bool optional=false
+        );
+
+      virtual void DefaultLine(
+        std::ostream& stream
+        );
+
+      virtual void Print(
+        std::ostream& stream,
+        const MAT::PAR::Material* cond
+        );
+
+      virtual void Describe(
+        std::ostream& stream
+        );
+
+      virtual Teuchos::RCP<std::stringstream> Read(
+        MaterialDefinition* def,
+        Teuchos::RCP<std::stringstream> condline,
+        Teuchos::RCP<MAT::PAR::Material> material
+        );
+
+    private:
+
+      int length_;
+      std::string lengthname_;
+
+    };
+
+
+    /// definition of a valid material in BACI input
+    ///
+    /// This is basically a clone of \see ConditionDefinition which
+    /// was adjusted to adhere the heterogeneous lines occuring
+    /// in material descriptions in the DAT file.
+    ///
+    /// A MaterialDefinition is the definition of a --MATERIALS in DAT file
+    /// section. This definition includes the knowledge what this section looks
+    /// like, how to read it and how to write it. In particular given a
+    /// MaterialDefinition object it is possible to (a) write an empty DAT file
+    /// section that describes digestible materials, (b) read a DAT file and create
+    /// MAT::PAR::Material objects for each line in this section and (c) write the DAT
+    /// file section filled with all corresponding materials from a given
+    /// DRT::Discretization.
+    ///  
+    /// So this is quite sophisticated internal stuff here. If you want to
+    /// introduce a new material to BACI, all you have to do is add an
+    /// appropriate definition in ValidMaterials(). This will take care of the
+    /// reading part and you will get your DRT::Discretization filled with proper
+    /// DRT::Material objects.
+    /// 
+    /// \author bborn
+    /// \date 02/09
+    class MaterialDefinition
+    {
+    public:
+
+      /// construction of a material definition
+      MaterialDefinition(
+        std::string materialname,  ///< name of materials in DRT::Discretization
+        std::string description,  ///< description of material type
+        INPAR::MAT::MaterialType mattype  ///< type of materials to be build
+        );
+
+      /// add a concrete component to the material line definition
+      ///
+      /// Add new components to the input line. One at a time. Form left to
+      /// right. <b>The order is important!</b> On reading we try and read component
+      /// after component.
+      void AddComponent(Teuchos::RCP<MaterialComponent> c);
+
+      /// read all materials from my input file section
+      void Read(
+        const Problem& problem,  ///< global problem instance that manages the input
+        const DatFileReader& reader,  ///< the actual dat file reader that has access to the dat file
+        Teuchos::RCP<MAT::PAR::Bundle> mmap  ///< the materials we read here
+        );
+
+      /// print my DAT file section and possible materials from the Discretization
+      std::ostream& Print(
+        std::ostream& stream,  ///< the output stream
+        const Discretization* dis=NULL,
+        const bool color=false
+        );
+
+      /// my material name
+      std::string Name() const { return materialname_; }
+
+      // my material type
+      INPAR::MAT::MaterialType Type() const { return mattype_; }
+
+      /// my material description
+      std::string Description() const { return description_; }
+    
+      /// my material inputline
+      std::vector<Teuchos::RCP<MaterialComponent> > Inputline() const { return inputline_; }
+    
+    private:
+      
+      /// name of material
+      std::string materialname_;
+      /// description of material type
+      std::string description_;
+      /// type of materials to be build
+      INPAR::MAT::MaterialType mattype_;
+
+      /// the list of valid components
+      std::vector<Teuchos::RCP<MaterialComponent> > inputline_;
+    };
+
+
+    /// add a separator followed by a single integer value
+    ///
+    /// The name on the input line becomes the name used to put the int value into MAT::PAR::Material.
+    inline void AddNamedInt(
+      Teuchos::RCP<MaterialDefinition> matdef,  ///< a material defintion to which named integer is added
+      const std::string name,  ///< name of integer to add
+      const std::string description,  ///< description about value
+      const bool optional=false
+      )
+    {
+      matdef->AddComponent(Teuchos::rcp(new SeparatorMaterialComponent(name,description,optional)));
+      matdef->AddComponent(Teuchos::rcp(new IntMaterialComponent(name,optional)));
+    }
+
+    /// add a separator followed by a number integer values
+    ///
+    /// The name on the input line becomes the name used to put the int value into MAT::PAR::Material.
+    inline void AddNamedIntVector(
+      Teuchos::RCP<MaterialDefinition> matdef,  ///< a material defintion to which named integer is added
+      const std::string name,  ///< name of integer to add
+      const std::string description,  ///< description about value
+      const int size,  ///< number vector components
+      const bool optional=false
+      )
+    {
+      matdef->AddComponent(Teuchos::rcp(new SeparatorMaterialComponent(name,description,optional)));
+      matdef->AddComponent(Teuchos::rcp(new IntVectorMaterialComponent(name,size,optional)));
+    }
+
+    /// add a separator followed by a number integer values
+    ///
+    /// The name on the input line becomes the name used to put the int value into MAT::PAR::Material.
+    inline void AddNamedIntVector(
+      Teuchos::RCP<MaterialDefinition> matdef,  ///< a material defintion to which named integer is added
+      const std::string name,  ///< name of integer to add
+      const std::string description,  ///< description about value
+      const std::string sizename,  ///< named entry which holds number of vector components; named entry _must_ be added _prior_ to this vector compo
+      const bool optional=false
+      )
+    {
+      matdef->AddComponent(Teuchos::rcp(new SeparatorMaterialComponent(name,description,optional)));
+      matdef->AddComponent(Teuchos::rcp(new IntVectorMaterialComponent(name,sizename,optional)));
+    }
+  
+    /// add a separator followed by a single real value
+    ///
+    /// The name on the input line becomes the name used to put the value into MAT::PAR::Material
+    inline void AddNamedReal(
+      Teuchos::RCP<MaterialDefinition> matdef,  ///< a material defintion to which named real is added
+      const std::string name,  ///< name of real to add
+      const std::string description,  ///< description about value
+      const bool optional=false
+      )
+    {
+      matdef->AddComponent(Teuchos::rcp(new SeparatorMaterialComponent(name,description,optional)));
+      matdef->AddComponent(Teuchos::rcp(new RealMaterialComponent(name,optional)));
+    }
+  
+    /// add a separator followed by a number of real values
+    ///
+    /// The name on the input line becomes the name used to put the value into MAT::PAR::Material.
+    inline void AddNamedRealVector(
+      Teuchos::RCP<MaterialDefinition> matdef,  ///< a material defintion to which named vector of reals is added
+      const std::string name, ///< name of vector of reals to add
+      const std::string description,  ///< description about values
+      const int size,  ///< number vector components
+      const bool optional=false
+      )
+    {
+      matdef->AddComponent(Teuchos::rcp(new SeparatorMaterialComponent(name,description,optional)));
+      matdef->AddComponent(Teuchos::rcp(new RealVectorMaterialComponent(name,size,optional)));
+    }
+
+    /// add a separator followed by a number of real values
+    ///
+    /// The name on the input line becomes the name used to put the value into MAT::PAR::Material.
+    inline void AddNamedRealVector(
+      Teuchos::RCP<MaterialDefinition> matdef,  ///< a material defintion to which named vector of reals is added
+      const std::string name, ///< name of vector of reals to add
+      const std::string description,  ///< description about values
+      const std::string sizename,  ///< named entry which holds number of vector components; named entry _must_ be added _prior_ to this vector compo
+      const bool optional=false
+      )
+    {
+      matdef->AddComponent(Teuchos::rcp(new SeparatorMaterialComponent(name,description,optional)));
+      matdef->AddComponent(Teuchos::rcp(new RealVectorMaterialComponent(name,sizename,optional)));
+    }
+
+    /// add a separator followed by a single string value
+    ///
+    /// The name on the input line becomes the name used to put the value into MAT::PAR::Material
+    inline void AddNamedString(
+      Teuchos::RCP<MaterialDefinition> matdef,  ///< a material defintion to which named real is added
+      const std::string name,  ///< name of real to add
+      const std::string description,  ///< description about value
+      const std::string defaultvalue,  ///< default string
+      const bool optional=false
+      )
+    {
+      matdef->AddComponent(Teuchos::rcp(new SeparatorMaterialComponent(name,description,optional)));
+      matdef->AddComponent(Teuchos::rcp(new StringMaterialComponent(name,defaultvalue,optional)));
+    }
+
+    /// add material definition to list of defined materials
+    ///
+    /// this method checks for coincidental material names or types
+    void AddDefinedMaterial(
+      std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> >& matlist,  ///< list of defined materials
+      Teuchos::RCP<DRT::INPUT::MaterialDefinition> mat  ///< material to add
+      );
+
+  }  // namespace INPUT
+
+}  // namespace DRT
+
+#endif
+#endif

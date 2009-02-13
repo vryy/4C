@@ -297,7 +297,7 @@ int DRT::ELEMENTS::So_shw6::Evaluate(ParameterList& params,
       }
       // Update of history for visco material
       RefCountPtr<MAT::Material> mat = Material();
-      if (mat->MaterialType() == m_viscoanisotropic)
+      if (mat->MaterialType() == INPAR::MAT::m_viscoanisotropic)
       {
         MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
         visco->Update();

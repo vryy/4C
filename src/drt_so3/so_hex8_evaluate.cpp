@@ -337,12 +337,12 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
       }
       // Update of history for visco material
       RCP<MAT::Material> mat = Material();
-      if (mat->MaterialType() == m_visconeohooke)
+      if (mat->MaterialType() == INPAR::MAT::m_visconeohooke)
       {
         MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
         visco->Update();
       }
-      else if (mat->MaterialType() == m_viscoanisotropic)
+      else if (mat->MaterialType() == INPAR::MAT::m_viscoanisotropic)
       {
         MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
         visco->Update();
@@ -381,12 +381,12 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
       }
       // Update of history for visco material
       RefCountPtr<MAT::Material> mat = Material();
-      if (mat->MaterialType() == m_visconeohooke)
+      if (mat->MaterialType() == INPAR::MAT::m_visconeohooke)
       {
         MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
         visco->Update();
       }
-      else if (mat->MaterialType() == m_viscoanisotropic)
+      else if (mat->MaterialType() == INPAR::MAT::m_viscoanisotropic)
       {
         MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
         visco->Update();
@@ -410,12 +410,12 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
       }
       // Reset of history for visco material
       RefCountPtr<MAT::Material> mat = Material();
-      if (mat->MaterialType() == m_visconeohooke)
+      if (mat->MaterialType() == INPAR::MAT::m_visconeohooke)
       {
         MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
         visco->Reset();
       }
-      else if (mat->MaterialType() == m_viscoanisotropic)
+      else if (mat->MaterialType() == INPAR::MAT::m_viscoanisotropic)
       {
         MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
         visco->Reset();
@@ -460,7 +460,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
     {
       RefCountPtr<MAT::Material> mat = Material();
 
-      if (mat->MaterialType()==m_struct_multiscale)
+      if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
         soh8_read_restart_multi(params);
     }
     break;

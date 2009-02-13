@@ -78,7 +78,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
   RCP<MAT::Material> mat = Material();
   switch (mat->MaterialType())
   {
-    case m_stvenant: /*------------------ st.venant-kirchhoff-material */
+    case INPAR::MAT::m_stvenant: /*------------------ st.venant-kirchhoff-material */
     {
       MAT::StVenantKirchhoff* stvk = static_cast <MAT::StVenantKirchhoff*>(mat.get());
       stvk->Evaluate(*glstrain,*cmat,*stress);
@@ -86,7 +86,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       return;
       break;
     }
-    case m_neohooke: /*----------------- NeoHookean Material */
+    case INPAR::MAT::m_neohooke: /*----------------- NeoHookean Material */
     {
       MAT::NeoHooke* neo = static_cast <MAT::NeoHooke*>(mat.get());
       neo->Evaluate(*glstrain,*cmat,*stress);
@@ -94,7 +94,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       return;
       break;
     }
-    case m_aaaneohooke: /*-- special case of generalised NeoHookean material see Raghavan, Vorp */
+    case INPAR::MAT::m_aaaneohooke: /*-- special case of generalised NeoHookean material see Raghavan, Vorp */
     {
       MAT::AAAneohooke* aaa = static_cast <MAT::AAAneohooke*>(mat.get());
       aaa->Evaluate(*glstrain,*cmat,*stress);
@@ -102,7 +102,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       return;
       break;
     }
-    case m_lung_ogden: /* lung tissue material with Ogden for volumetric part */
+    case INPAR::MAT::m_lung_ogden: /* lung tissue material with Ogden for volumetric part */
     {
       MAT::LungOgden* lungog = static_cast <MAT::LungOgden*>(mat.get());
       lungog->Evaluate(glstrain,cmat,stress);
@@ -110,7 +110,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       return;
       break;
     }
-    case m_lung_penalty: /* lung tissue material with penalty function for incompressibility constraint */
+    case INPAR::MAT::m_lung_penalty: /* lung tissue material with penalty function for incompressibility constraint */
     {
       MAT::LungPenalty* lungpen = static_cast <MAT::LungPenalty*>(mat.get());
 
@@ -120,7 +120,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       return;
       break;
     }
-    case m_visconeohooke: /*----------------- Viscous NeoHookean Material */
+    case INPAR::MAT::m_visconeohooke: /*----------------- Viscous NeoHookean Material */
     {
       MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
       /* Initialization moved to element input. So we can be sure, that material is initialized. */
@@ -131,7 +131,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       return;
       break;
     }
-    case m_viscoanisotropic: /*------- Viscous Anisotropic Fiber Material */
+    case INPAR::MAT::m_viscoanisotropic: /*------- Viscous Anisotropic Fiber Material */
     {
       MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
       visco->Evaluate(glstrain,gp,params,cmat,stress);
@@ -139,7 +139,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       return;
       break;
     }
-    case m_mooneyrivlin: /*----------------- Mooney-Rivlin Material */
+    case INPAR::MAT::m_mooneyrivlin: /*----------------- Mooney-Rivlin Material */
     {
       MAT::MooneyRivlin* moon = static_cast <MAT::MooneyRivlin*>(mat.get());
       moon->Evaluate(glstrain,cmat,stress);
@@ -147,7 +147,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       return;
       break;
     }
-    case m_yeoh: /*----------------- Mooney-Rivlin Material */
+    case INPAR::MAT::m_yeoh: /*----------------- Mooney-Rivlin Material */
     {
       MAT::Yeoh* yeoh = static_cast <MAT::Yeoh*>(mat.get());
       yeoh->Evaluate(glstrain,cmat,stress);
@@ -155,7 +155,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       return;
       break;
     }
-    case m_anisotropic_balzani:
+    case INPAR::MAT::m_anisotropic_balzani:
     {
       MAT::AnisotropicBalzani* anba = static_cast <MAT::AnisotropicBalzani*>(mat.get());
 
@@ -166,7 +166,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       return;
       break;
     }
-    case m_contchainnetw: /*------------ Continuum Chain Network Material */
+    case INPAR::MAT::m_contchainnetw: /*------------ Continuum Chain Network Material */
     {
       MAT::ContChainNetw* chain = static_cast <MAT::ContChainNetw*>(mat.get());
       if (!chain->Initialized())
@@ -176,7 +176,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       return;
       break;
     }
-    case m_artwallremod: /*-Arterial Wall (Holzapfel) with remodeling (Hariton) */
+    case INPAR::MAT::m_artwallremod: /*-Arterial Wall (Holzapfel) with remodeling (Hariton) */
     {
       MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(mat.get());
 //      // Check if we use EAS
@@ -220,7 +220,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       return;
       break;
     }
-    case m_struct_multiscale: /*------------------- multiscale approach */
+    case INPAR::MAT::m_struct_multiscale: /*------------------- multiscale approach */
     {
       MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
 
@@ -267,7 +267,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       return;
       break;
     }
-    case m_biocell: /*----------------- Biological Cell Material */
+    case INPAR::MAT::m_biocell: /*----------------- Biological Cell Material */
     {
       MAT::BioCell* biocell = static_cast <MAT::BioCell*>(mat.get());
       biocell->Evaluate(glstrain,cmat,stress);
@@ -310,7 +310,7 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
   RCP<MAT::Material> mat = Material();
   switch (mat->MaterialType())
   {
-    case m_stvenant: /*------------------ st.venant-kirchhoff-material */
+    case INPAR::MAT::m_stvenant: /*------------------ st.venant-kirchhoff-material */
     {
       MAT::StVenantKirchhoff* stvk = static_cast <MAT::StVenantKirchhoff*>(mat.get());
       stvk->Evaluate(*glstrain,*cmat,*stress);
@@ -318,7 +318,7 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       return;
       break;
     }
-    case m_neohooke: /*----------------- NeoHookean Material */
+    case INPAR::MAT::m_neohooke: /*----------------- NeoHookean Material */
     {
       MAT::NeoHooke* neo = static_cast <MAT::NeoHooke*>(mat.get());
       neo->Evaluate(*glstrain,*cmat,*stress);
@@ -326,7 +326,7 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       return;
       break;
     }
-    case m_aaaneohooke: /*-- special case of generalised NeoHookean material see Raghavan, Vorp */
+    case INPAR::MAT::m_aaaneohooke: /*-- special case of generalised NeoHookean material see Raghavan, Vorp */
     {
       MAT::AAAneohooke* aaa = static_cast <MAT::AAAneohooke*>(mat.get());
       aaa->Evaluate(*glstrain,*cmat,*stress);
@@ -334,7 +334,7 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       return;
       break;
     }
-    case m_lung_ogden: /* lung tissue material with Ogden for volumetric part */
+    case INPAR::MAT::m_lung_ogden: /* lung tissue material with Ogden for volumetric part */
     {
       MAT::LungOgden* lungog = static_cast <MAT::LungOgden*>(mat.get());
       lungog->Evaluate(glstrain,cmat,stress);
@@ -342,7 +342,7 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       return;
       break;
     }
-    case m_lung_penalty: /* lung tissue material with penalty function for incompressibility constraint */
+    case INPAR::MAT::m_lung_penalty: /* lung tissue material with penalty function for incompressibility constraint */
     {
       MAT::LungPenalty* lungpen = static_cast <MAT::LungPenalty*>(mat.get());
 
@@ -352,7 +352,7 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       return;
       break;
     }
-    case m_mooneyrivlin: /*----------------- Mooney-Rivlin Material */
+    case INPAR::MAT::m_mooneyrivlin: /*----------------- Mooney-Rivlin Material */
     {
       MAT::MooneyRivlin* moon = static_cast <MAT::MooneyRivlin*>(mat.get());
       moon->Evaluate(glstrain,cmat,stress);
@@ -360,7 +360,7 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       return;
       break;
     }
-    case m_yeoh: /*----------------- Mooney-Rivlin Material */
+    case INPAR::MAT::m_yeoh: /*----------------- Mooney-Rivlin Material */
     {
       MAT::Yeoh* yeoh = static_cast <MAT::Yeoh*>(mat.get());
       yeoh->Evaluate(glstrain,cmat,stress);
@@ -368,7 +368,7 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       return;
       break;
     }
-    case m_artwallremod: /*-Arterial Wall (Holzapfel) with remodeling (Hariton) */
+    case INPAR::MAT::m_artwallremod: /*-Arterial Wall (Holzapfel) with remodeling (Hariton) */
     {
       MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(mat.get());
       remo->Evaluate(glstrain,gp,params,cmat,stress,*defgrd);
@@ -407,7 +407,7 @@ void DRT::ELEMENTS::SoDisp::sodisp_mat_sel(
   RCP<MAT::Material> mat = Material();
   switch (mat->MaterialType())
   {
-    case m_stvenant: /*------------------ st.venant-kirchhoff-material */
+    case INPAR::MAT::m_stvenant: /*------------------ st.venant-kirchhoff-material */
     {
       MAT::StVenantKirchhoff* stvk = static_cast <MAT::StVenantKirchhoff*>(mat.get());
       stvk->Evaluate(*glstrain,*cmat,*stress);
@@ -415,7 +415,7 @@ void DRT::ELEMENTS::SoDisp::sodisp_mat_sel(
       return;
       break;
     }
-    case m_neohooke: /*----------------- NeoHookean Material */
+    case INPAR::MAT::m_neohooke: /*----------------- NeoHookean Material */
     {
       MAT::NeoHooke* neo = static_cast <MAT::NeoHooke*>(mat.get());
       neo->Evaluate(*glstrain,*cmat,*stress);
@@ -423,7 +423,7 @@ void DRT::ELEMENTS::SoDisp::sodisp_mat_sel(
       return;
       break;
     }
-    case m_aaaneohooke: /*-- special case of generalised NeoHookean material see Raghavan, Vorp */
+    case INPAR::MAT::m_aaaneohooke: /*-- special case of generalised NeoHookean material see Raghavan, Vorp */
     {
       MAT::AAAneohooke* aaa = static_cast <MAT::AAAneohooke*>(mat.get());
       aaa->Evaluate(*glstrain,*cmat,*stress);
@@ -431,7 +431,7 @@ void DRT::ELEMENTS::SoDisp::sodisp_mat_sel(
       return;
       break;
     }
-    case m_lung_ogden: /* lung tissue material with Ogden for volumetric part */
+    case INPAR::MAT::m_lung_ogden: /* lung tissue material with Ogden for volumetric part */
     {
       MAT::LungOgden* lungog = static_cast <MAT::LungOgden*>(mat.get());
       lungog->Evaluate(glstrain,cmat,stress);
@@ -439,7 +439,7 @@ void DRT::ELEMENTS::SoDisp::sodisp_mat_sel(
       return;
       break;
     }
-    case m_lung_penalty: /* lung tissue material with penalty function for incompressibility constraint */
+    case INPAR::MAT::m_lung_penalty: /* lung tissue material with penalty function for incompressibility constraint */
     {
       MAT::LungPenalty* lungpen= static_cast <MAT::LungPenalty*>(mat.get());
 
@@ -449,7 +449,7 @@ void DRT::ELEMENTS::SoDisp::sodisp_mat_sel(
       return;
       break;
     }
-    case m_mooneyrivlin: /*----------------- Mooney-Rivlin Material */
+    case INPAR::MAT::m_mooneyrivlin: /*----------------- Mooney-Rivlin Material */
     {
       MAT::MooneyRivlin* moon = static_cast <MAT::MooneyRivlin*>(mat.get());
       moon->Evaluate(glstrain,cmat,stress);
@@ -457,7 +457,7 @@ void DRT::ELEMENTS::SoDisp::sodisp_mat_sel(
       return;
       break;
     }
-    case m_yeoh: /*----------------- Mooney-Rivlin Material */
+    case INPAR::MAT::m_yeoh: /*----------------- Mooney-Rivlin Material */
     {
       MAT::Yeoh* yeoh = static_cast <MAT::Yeoh*>(mat.get());
       yeoh->Evaluate(glstrain,cmat,stress);
@@ -499,7 +499,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
   RCP<MAT::Material> mat = Material();
   switch (mat->MaterialType())
   {
-    case m_stvenant: /*------------------ st.venant-kirchhoff-material */
+    case INPAR::MAT::m_stvenant: /*------------------ st.venant-kirchhoff-material */
     {
       MAT::StVenantKirchhoff* stvk = static_cast <MAT::StVenantKirchhoff*>(mat.get());
       stvk->Evaluate(*glstrain,*cmat,*stress);
@@ -507,7 +507,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
       return;
       break;
     }
-    case m_neohooke: /*----------------- NeoHookean Material */
+    case INPAR::MAT::m_neohooke: /*----------------- NeoHookean Material */
     {
       MAT::NeoHooke* neo = static_cast <MAT::NeoHooke*>(mat.get());
       neo->Evaluate(*glstrain,*cmat,*stress);
@@ -515,7 +515,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
       return;
       break;
     }
-    case m_aaaneohooke: /*-- special case of generalised NeoHookean material see Raghavan, Vorp */
+    case INPAR::MAT::m_aaaneohooke: /*-- special case of generalised NeoHookean material see Raghavan, Vorp */
     {
       MAT::AAAneohooke* aaa = static_cast <MAT::AAAneohooke*>(mat.get());
       aaa->Evaluate(*glstrain,*cmat,*stress);
@@ -523,7 +523,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
       return;
       break;
     }
-    case m_mooneyrivlin: /*----------------- Mooney-Rivlin Material */
+    case INPAR::MAT::m_mooneyrivlin: /*----------------- Mooney-Rivlin Material */
     {
       MAT::MooneyRivlin* moon = static_cast <MAT::MooneyRivlin*>(mat.get());
       moon->Evaluate(glstrain,cmat,stress);
@@ -531,7 +531,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
       return;
       break;
     }
-    case m_yeoh: /*----------------- Mooney-Rivlin Material */
+    case INPAR::MAT::m_yeoh: /*----------------- Mooney-Rivlin Material */
     {
       MAT::Yeoh* yeoh = static_cast <MAT::Yeoh*>(mat.get());
       yeoh->Evaluate(glstrain,cmat,stress);
@@ -571,7 +571,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
   RCP<MAT::Material> mat = Material();
   switch (mat->MaterialType())
   {
-    case m_stvenant: /*------------------ st.venant-kirchhoff-material */
+    case INPAR::MAT::m_stvenant: /*------------------ st.venant-kirchhoff-material */
     {
       MAT::StVenantKirchhoff* stvk = static_cast <MAT::StVenantKirchhoff*>(mat.get());
       stvk->Evaluate(*glstrain,*cmat,*stress);
@@ -579,7 +579,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
       return;
       break;
     }
-    case m_neohooke: /*----------------- NeoHookean Material */
+    case INPAR::MAT::m_neohooke: /*----------------- NeoHookean Material */
     {
       MAT::NeoHooke* neo = static_cast <MAT::NeoHooke*>(mat.get());
       neo->Evaluate(*glstrain,*cmat,*stress);
@@ -587,7 +587,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
       return;
       break;
     }
-    case m_aaaneohooke: /*-- special case of generalised NeoHookean material see Raghavan, Vorp */
+    case INPAR::MAT::m_aaaneohooke: /*-- special case of generalised NeoHookean material see Raghavan, Vorp */
     {
       MAT::AAAneohooke* aaa = static_cast <MAT::AAAneohooke*>(mat.get());
       aaa->Evaluate(*glstrain,*cmat,*stress);
@@ -595,7 +595,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
       return;
       break;
     }
-    case m_mooneyrivlin: /*----------------- Mooney-Rivlin Material */
+    case INPAR::MAT::m_mooneyrivlin: /*----------------- Mooney-Rivlin Material */
     {
       MAT::MooneyRivlin* moon = static_cast <MAT::MooneyRivlin*>(mat.get());
       moon->Evaluate(glstrain,cmat,stress);
@@ -603,7 +603,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
       return;
       break;
     }
-    case m_yeoh: /*----------------- Mooney-Rivlin Material */
+    case INPAR::MAT::m_yeoh: /*----------------- Mooney-Rivlin Material */
     {
       MAT::Yeoh* yeoh = static_cast <MAT::Yeoh*>(mat.get());
       yeoh->Evaluate(glstrain,cmat,stress);

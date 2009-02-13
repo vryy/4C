@@ -14,13 +14,26 @@ Maintainer: ???
 #include <Epetra_SerialDenseVector.h>
 #include "stvenantkirchhoff.H"
 
-extern struct _MATERIAL *mat;
+/*----------------------------------------------------------------------*
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+MAT::PAR::StVenantKirchhoff::StVenantKirchhoff(
+  Teuchos::RCP<MAT::PAR::Material> matdata
+  )
+: Parameter(matdata),
+  youngs_(matdata->GetDouble("YOUNG")),
+  poissonratio_(matdata->GetDouble("NUE")),
+  density_(matdata->GetDouble("DENS")),
+  thermexpans_(matdata->GetDouble("THEXPANS"))
+{
+}
+
 
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
 MAT::StVenantKirchhoff::StVenantKirchhoff()
-  : matdata_(NULL)
+  : params_(NULL)
 {
 }
 
@@ -28,10 +41,11 @@ MAT::StVenantKirchhoff::StVenantKirchhoff()
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-MAT::StVenantKirchhoff::StVenantKirchhoff(MATERIAL* matdata)
-  : matdata_(matdata)
+MAT::StVenantKirchhoff::StVenantKirchhoff(MAT::PAR::StVenantKirchhoff* params)
+  : params_(params)
 {
 }
+
 
 /*----------------------------------------------------------------------*
  |                                                                      |
@@ -43,9 +57,10 @@ void MAT::StVenantKirchhoff::Pack(vector<char>& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
-  // matdata
-  int matdata = matdata_ - mat;   // pointer difference to reach 0-entry
-  AddtoPack(data,matdata);
+
+  // matid
+  int matid = params_->Id();
+  AddtoPack(data,matid);
 }
 
 
@@ -60,10 +75,15 @@ void MAT::StVenantKirchhoff::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
 
-  // matdata
-  int matdata;
-  ExtractfromPack(position,data,matdata);
-  matdata_ = &mat[matdata];     // unpack pointer to my specific matdata_
+  // matid and recover params_
+  int matid;
+  ExtractfromPack(position,data,matid);
+  const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+  MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+  if (mat->Type() == MaterialType())
+    params_ = static_cast<MAT::PAR::StVenantKirchhoff*>(mat);
+  else
+    dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -75,8 +95,12 @@ void MAT::StVenantKirchhoff::Unpack(const vector<char>& data)
  *----------------------------------------------------------------------*/
 void MAT::StVenantKirchhoff::SetupCmat2d(Epetra_SerialDenseMatrix* cmat)
 {
+/*
   const double ym  = matdata_->m.stvenant->youngs;
   const double pv  = matdata_->m.stvenant->possionratio;
+*/
+  const double ym  = params_->youngs_;
+  const double pv  = params_->poissonratio_;
 
   // plane strain, rotational symmetry
   const double c1=ym/(1.0+pv);
@@ -110,8 +134,12 @@ void MAT::StVenantKirchhoff::SetupCmat2d(Epetra_SerialDenseMatrix* cmat)
 void MAT::StVenantKirchhoff::SetupCmat(LINALG::Matrix<6,6>& cmat)
 {
   // get material parameters
+/*
   double Emod = matdata_->m.stvenant->youngs;    // Young's modulus (modulus of elasticity)
   double nu = matdata_->m.stvenant->possionratio;// Poisson's ratio (Querdehnzahl)
+*/
+  double Emod = params_->youngs_;    // Young's modulus (modulus of elasticity)
+  double nu = params_->poissonratio_;// Poisson's ratio (Querdehnzahl)
 
   /*--------------------------------------------------------------------*/
   /* isotropic elasticity tensor C in matrix notion */
@@ -171,15 +199,6 @@ void MAT::StVenantKirchhoff::Evaluate(
   SetupCmat(cmat);
   // evaluate stresses
   stress.MultiplyNN(cmat,glstrain);  // sigma = C . epsilon
-}
-
-
-/*----------------------------------------------------------------------*
- |                                                                      |
- *----------------------------------------------------------------------*/
-double MAT::StVenantKirchhoff::Density()
-{
-  return matdata_->m.stvenant->density;  // density, returned to evaluate mass matrix
 }
 
 

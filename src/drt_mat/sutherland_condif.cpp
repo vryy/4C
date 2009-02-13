@@ -16,21 +16,40 @@ Maintainer: Volker Gravemeier
 
 #include "sutherland_condif.H"
 
-extern struct _MATERIAL *mat;
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+MAT::PAR::SutherlandCondif::SutherlandCondif(
+  Teuchos::RCP<MAT::PAR::Material> matdata
+  )
+: Parameter(matdata),
+  refvisc_(matdata->GetDouble("REFVISC")),
+  reftemp_(matdata->GetDouble("REFTEMP")),
+  suthtemp_(matdata->GetDouble("SUTHTEMP")),
+  shc_(matdata->GetDouble("SHC")),
+  pranum_(matdata->GetDouble("PRANUM"))
+{
+}
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 MAT::SutherlandCondif::SutherlandCondif()
-  : matdata_(NULL)
+  : params_(NULL)
 {
 }
 
 
-MAT::SutherlandCondif::SutherlandCondif(MATERIAL* matdata)
-  : matdata_(matdata)
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+MAT::SutherlandCondif::SutherlandCondif(MAT::PAR::SutherlandCondif* params)
+  : params_(params)
 {
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void MAT::SutherlandCondif::Pack(vector<char>& data) const
 {
   data.resize(0);
@@ -38,12 +57,14 @@ void MAT::SutherlandCondif::Pack(vector<char>& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
-  // matdata
-  int matdata = matdata_ - mat;
-  AddtoPack(data,matdata);
+  // matid
+  int matid = params_->Id();
+  AddtoPack(data,matid);
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void MAT::SutherlandCondif::Unpack(const vector<char>& data)
 {
   int position = 0;
@@ -52,10 +73,15 @@ void MAT::SutherlandCondif::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
 
-  // matdata
-  int matdata;
-  ExtractfromPack(position,data,matdata);
-  matdata_ = &mat[matdata];
+  // matid and recover params_
+  int matid;
+  ExtractfromPack(position,data,matid);
+  const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+  MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+  if (mat->Type() == MaterialType())
+    params_ = static_cast<MAT::PAR::SutherlandCondif*>(mat);
+  else
+    dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
