@@ -507,7 +507,7 @@ contactsegs_(csegs)
 }
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                             popp 11/08|
+ |  ctor (public)                                             popp 02/09|
  |  THIS IS A PURE FINITE DIFFERENCE VERSION!!!                         |
  *----------------------------------------------------------------------*/
 CONTACT::Coupling::Coupling(DRT::Discretization& idiscret,
@@ -683,6 +683,186 @@ contactsegs_(csegs)
       
       // do integration of integration cells
       IntegrateCells3D();
+    }
+  }
+  
+  // *********************************************************************
+  // invalid cases for dim (other than 2D or 3D)
+  // *********************************************************************
+  else dserror("ERROR: Coupling can only be called for 2D or 3D!");
+  
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  ctor (public)                                             popp 02/09|
+ |  THIS IS A PURE FINITE DIFFERENCE VERSION!!!                         |
+ *----------------------------------------------------------------------*/
+CONTACT::Coupling::Coupling(DRT::Discretization& idiscret,
+                            CONTACT::CElement& sele, CONTACT::CElement& mele,
+                            int dim, Epetra_SerialDenseMatrix& csegs,
+                            vector<vector<double> >& testgps,
+                            vector<vector<double> >& testgpm,
+                            vector<vector<double> >& testjs,
+                            vector<vector<double> >& testji,
+                            bool printderiv) :
+idiscret_(idiscret),
+sele_(sele),
+mele_(mele),
+dim_(dim),
+contactsegs_(csegs)
+{
+  // check sanity of dimension
+  if (Dim()!=2 && Dim()!=3) dserror("Dim. must be 2D or 3D!");
+  
+  // *********************************************************************
+  // the two-dimensional case
+  // *********************************************************************
+  if (Dim()==2)
+  {
+    // prepare overlap integration
+    vector<bool> hasproj(4);
+    vector<double> xiproj(4);
+    bool overlap = false;
+  
+    // project the element pair
+    Project2D(hasproj,xiproj);
+  
+    // check for element overlap
+    overlap = DetectOverlap2D(hasproj,xiproj);
+  
+    // integrate the element overlap
+    if (overlap) IntegrateOverlap2D(xiproj);
+  }
+  
+  // *********************************************************************
+  // the three-dimensional case
+  // *********************************************************************
+  else if (Dim()==3)
+  {
+    // check for quadratic elements
+    if (sele.Shape()!=DRT::Element::tri3 && sele.Shape()!=DRT::Element::quad4)
+      dserror("ERROR: 3D mortar coupling not yet impl. for quadratic elements");
+    if (mele.Shape()!=DRT::Element::tri3 && mele.Shape()!=DRT::Element::quad4)
+      dserror("ERROR: 3D mortar coupling not yet impl. for quadratic elements");
+
+    // rough check whether elements are "near"
+    bool near = RoughCheck3D();
+    if (!near) return;
+    
+    // map to store projection parameter alpha for each master node
+    map<int,double> projpar;
+    
+    // *******************************************************************
+    // ************ Coupling with or without auxiliary plane *************
+    // *******************************************************************
+#ifdef CONTACTAUXPLANE
+    // compute auxiliary plane for 3D coupling
+    AuxiliaryPlane3D();
+    
+    //create vertex data structure
+    vector<Vertex> poly1list;
+    vector<Vertex> poly2list;
+    
+    // project slave element nodes onto auxiliary plane
+    ProjectSlave3D();
+    
+    // project master element nodes onto auxiliary plane
+    ProjectMaster3D();
+    
+    // tolerance for polygon clipping
+    double sminedge = sele.MinEdgeSize();
+    double mminedge = mele.MinEdgeSize(); 
+    double tol = CONTACTCLIPTOL * min(sminedge,mminedge);
+    
+    // do clipping in auxiliary plane
+    PolygonClipping3D(SlaveVertices(),MasterVertices(),Clip(),tol);
+    int clipsize = (int)(Clip().size());
+#else
+    
+    // get some data
+    int nsnodes = SlaveElement().NumNode();
+    int nmnodes = MasterElement().NumNode();
+    
+    // get slave vertices in slave element parameter space (direct)
+    // additionally get slave vertex Ids for later linearization
+    vector<vector<double> > svertices(nsnodes,vector<double>(3));
+    vector<int> snodeids(1);
+    
+    for (int i=0;i<nsnodes;++i)
+    {     
+      double xi[2] = {0.0, 0.0};
+      SlaveElement().LocalCoordinatesOfNode(i,xi);
+      svertices[i][0] = xi[0];
+      svertices[i][1] = xi[1];
+      svertices[i][2] = 0.0;
+   
+      // relevant ids (here only slave node id itself)
+      snodeids[0] = SlaveElement().NodeIds()[i];
+      
+      // store into vertex data structure
+      SlaveVertices().push_back(Vertex(svertices[i],Vertex::slave,snodeids,NULL,NULL,false,false,NULL,-1.0));
+    }
+    
+    // get master vertices in slave element parameter space (project)
+    // additionally get master vertex Ids for later linearization
+    vector<vector<double> > mvertices(nmnodes,vector<double>(3));
+    vector<int> mnodeids(1);
+    for (int i=0;i<nmnodes;++i)
+    {
+      int gid = MasterElement().NodeIds()[i];
+      DRT::Node* node = Discret().gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CNode* mnode = static_cast<CNode*>(node);
+      
+      // do the projection
+      // the third component of sxi will be the proj. parameter alpha!
+      double sxi[2] = {0.0, 0.0};
+      double alpha = 0.0;
+      CONTACT::Projector projector(3);
+      //cout << "Projecting master node ID: " << mnode->Id() << endl;
+      projector.ProjectElementNormal3D(*mnode,SlaveElement(),sxi,alpha);
+      
+      mvertices[i][0] = sxi[0];
+      mvertices[i][1] = sxi[1];
+      mvertices[i][2] = 0.0;
+      
+      // relevant ids (here only master node id itself)
+      mnodeids[0] = gid;
+      
+      // store proj. parameter for later linearization
+      projpar[gid] = alpha;
+      
+      // store into vertex data structure
+      MasterVertices().push_back(Vertex(mvertices[i],Vertex::projmaster,mnodeids,NULL,NULL,false,false,NULL,-1.0));
+    }
+    
+    // normal is (0,0,1) in slave element parameter space
+    Auxn()[0] = 0.0; Auxn()[1] = 0.0; Auxn()[2] = 1.0;
+    
+    // tolerance for polygon clipping
+    // minimum edge size in parameter space is 1
+    double tol = CONTACTCLIPTOL;
+      
+    // do clipping in slave element parameter space
+    PolygonClipping3D(SlaveVertices(),MasterVertices(),Clip(),tol);
+    int clipsize = (int)(Clip().size());
+#endif // #ifdef CONTACTAUXPLANE
+    // *******************************************************************
+    
+    // proceed only if clipping polygon is at least a triangle
+    bool overlap = false;
+    if (clipsize>=3) overlap = true;
+    if (overlap)
+    {
+      // check / set  projection status of slave nodes
+      HasProjStatus3D();
+      
+      // do linearization + triangulation of clip polygon
+      Triangulation3D(projpar);
+      
+      // do integration of integration cells
+      IntegrateCells3D(testgps,testgpm,testjs,testji,printderiv);
     }
   }
   
@@ -2613,7 +2793,7 @@ bool CONTACT::Coupling::Triangulation3D(map<int,double>& projpar)
 }
 
 /*----------------------------------------------------------------------*
- |  Triangulation of clip polygon (3D)                        popp 11/08|
+ |  Triangulation of clip polygon (3D)                        popp 02/09|
  |  THIS IS A PURE FINITE DIFFERENCE VERSION!!!                         |
  *----------------------------------------------------------------------*/
 bool CONTACT::Coupling::Triangulation3D(map<int,double>& projpar,
@@ -3321,6 +3501,71 @@ bool CONTACT::Coupling::IntegrateCells3D()
     // linearization not yet implemented
 #else
     integrator.DerivM3D(sele_,mele_,Cells()[i]);
+#endif // #ifdef CONTACTAUXPLANE
+ 
+    // do the two assemblies into the slave nodes
+    // if CONTACTONEMORTARLOOP defined, then AssembleM does M AND D matrices !!!
+    integrator.AssembleM(Comm(),sele_,mele_,*mseg);
+    integrator.AssembleG(Comm(),sele_,*gseg);
+  }
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Integration of cells (3D)                                 popp 02/09|
+ |  THIS IS A PURE FINITE DIFFERENCE VERSION!!!                         |
+ *----------------------------------------------------------------------*/
+bool CONTACT::Coupling::IntegrateCells3D(vector<vector<double> >& testgps,
+                                         vector<vector<double> >& testgpm,
+                                         vector<vector<double> >& testjs,
+                                         vector<vector<double> >& testji,
+                                         bool printderiv)
+{
+  /**********************************************************************/
+  /* INTEGRATION                                                        */
+  /* Integrate the Mortar matrix M and the weighted gap function g~ on  */
+  /* the current integration cell of the slave / master CElement pair   */
+  /**********************************************************************/
+  
+  // create an integrator instance with correct NumGP and Dim
+  // it is sufficient to do this once as all Intcells are triangles
+  CONTACT::Integrator integrator(Cells()[0]->Shape());
+    
+  // loop over all integration cells
+  for (int i=0;i<(int)(Cells().size());++i)
+  {
+    // compare intcell area with slave element area
+    double intcellarea = Cells()[i]->Area();
+    double selearea = 0.0;
+    DRT::Element::DiscretizationType dt = SlaveElement().Shape();
+    if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
+      selearea = 4.0;
+    else if (dt==DRT::Element::tri3 || dt==DRT::Element::tri6)
+      selearea = 0.5;
+    else dserror("ERROR: IntegrateCells3D: Invalid 3D slave element type");
+    
+    // integrate cell only if not neglectable
+    if (intcellarea<CONTACTINTLIM*selearea) continue;
+    
+    // do the two integrations
+    // *******************************************************************
+    // ************ Coupling with or without auxiliary plane *************
+    // *******************************************************************
+#ifdef CONTACTAUXPLANE
+    RCP<Epetra_SerialDenseMatrix> mseg = integrator.IntegrateMAuxPlane3D(sele_,mele_,Cells()[i],Auxn());
+    RCP<Epetra_SerialDenseVector> gseg = integrator.IntegrateGAuxPlane3D(sele_,mele_,Cells()[i],Auxn());
+#else
+    RCP<Epetra_SerialDenseMatrix> mseg = integrator.IntegrateM3D(sele_,mele_,Cells()[i],testgps,testgpm,testjs,testji);
+    RCP<Epetra_SerialDenseVector> gseg = integrator.IntegrateG3D(sele_,mele_,Cells()[i]);
+#endif // #ifdef CONTACTAUXPLANE
+    // *******************************************************************
+  
+    // compute directional derivative of M and store into nodes
+    // if CONTACTONEMORTARLOOP defined, then DerivM does linearization of M AND D matrices !!!
+#ifdef CONTACTAUXPLANE
+    // linearization not yet implemented
+#else
+    integrator.DerivM3D(sele_,mele_,Cells()[i],printderiv);
 #endif // #ifdef CONTACTAUXPLANE
  
     // do the two assemblies into the slave nodes

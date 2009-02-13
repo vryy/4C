@@ -209,12 +209,21 @@ public:
                                              CONTACT::CElement& mele,
                                              RCP<CONTACT::Intcell> cell);
   
+  // THIS IS A FINITE DIFFERENCE VERSION ONLY!!!
+  RCP<Epetra_SerialDenseMatrix> IntegrateM3D(CONTACT::CElement& sele,
+                                             CONTACT::CElement& mele,
+                                             RCP<CONTACT::Intcell> cell,
+                                             vector<vector<double> >& testgps,
+                                             vector<vector<double> >& testgpm,
+                                             vector<vector<double> >& testjs,
+                                             vector<vector<double> >& testji);
+  
   /*!
   \brief Compute directional deriv. of M on a 2D slave / master integration cell
         
   */
   void DerivM3D(CONTACT::CElement& sele, CONTACT::CElement& mele,
-                RCP<CONTACT::Intcell> cell);
+                RCP<CONTACT::Intcell> cell, bool printderiv=false);
   
   /*!
   \brief Compute directional derivative of master Gauss point

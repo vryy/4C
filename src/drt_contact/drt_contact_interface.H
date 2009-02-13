@@ -498,6 +498,15 @@ public:
                                  CONTACT::CElement& mele,
                                  vector<vector<double> >& testv,
                                  bool printderiv=false);
+  
+  // (THIS IS A PURE FINITE DIFFERENCE VERSION!!!)       
+  virtual bool IntegrateCoupling(CONTACT::CElement& sele,
+                                 CONTACT::CElement& mele,
+                                 vector<vector<double> >& testgps,
+                                 vector<vector<double> >& testgpm,
+                                 vector<vector<double> >& testjs,
+                                 vector<vector<double> >& testji,
+                                 bool printderiv=false);
     
   /*!
   \brief Assemble Mortar matrices and weighted gap
@@ -643,6 +652,16 @@ public:
            
   */
   virtual void FDCheckVertex3DDeriv(vector<vector<double> >& testv);
+  
+  /*!
+  \brief Check 3D Gauss point derivatives and slave and intcell
+  Jacobian derivatives with finite differences
+           
+  */
+  virtual void FDCheckGP3DDeriv(vector<vector<double> >& testgps,
+                                vector<vector<double> >& testgpm,
+                                vector<vector<double> >& testjs,
+                                vector<vector<double> >& testjm);
     
   //@}
 

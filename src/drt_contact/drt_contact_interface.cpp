@@ -667,6 +667,14 @@ void CONTACT::Interface::Evaluate()
   vector<vector<double> > testv(0,vector<double>(5));
 #endif // #ifdef CONTACTFDVERTEX3D
   
+#ifdef CONTACTFDGP3D
+  // define test variable for FDGP
+  vector<vector<double> > testgps(0,vector<double>(12));
+  vector<vector<double> > testgpm(0,vector<double>(12));
+  vector<vector<double> > testjs(0,vector<double>(6));
+  vector<vector<double> > testji(0,vector<double>(6));
+#endif // #ifdef CONTACTFDGP3D
+  
   // loop over proc's slave elements of the interface for integration
   // use standard column map to include processor's ghosted elements
   for (int i=0; i<selecolmap_->NumMyElements();++i)
@@ -707,7 +715,12 @@ void CONTACT::Interface::Evaluate()
 #ifdef CONTACTFDVERTEX3D
       IntegrateCoupling(*selement,*melement,testv);
 #else
+#ifdef CONTACTFDGP3D
+      IntegrateCoupling(*selement,*melement,testgps,testgpm,testjs,testji);
+#else
+      // this is the standard case without any FD checks
       IntegrateCoupling(*selement,*melement);
+#endif // #ifdef CONTACTFDGP3D
 #endif // #ifdef CONTACTFDVERTEX3D
     }
   }
@@ -723,9 +736,14 @@ void CONTACT::Interface::Evaluate()
 #endif // #ifdef CONTACTFDMORTARM
 
 #ifdef CONTACTFDVERTEX3D
-  // FD check of coupling vertex derivatives(3D)
+  // FD check of coupling vertex derivatives (3D)
   FDCheckVertex3DDeriv(testv);
 #endif // #ifdef CONTACTFDVERTEX3D
+  
+#ifdef CONTACTFDGP3D
+  // FD check of Gauss points (3D)
+  FDCheckGP3DDeriv(testgps,testgpm,testjs,testji);
+#endif // #ifdef CONTACTFDGP3D
   
   return;
 }
@@ -874,7 +892,7 @@ bool CONTACT::Interface::IntegrateCoupling(CONTACT::CElement& sele,
 }
 
 /*----------------------------------------------------------------------*
- |  Integrate matrix M and gap g on slave/master overlap      popp 11/08|
+ |  Integrate matrix M and gap g on slave/master overlap      popp 02/09|
  |  THIS IS A PURE FINITE DIFFERENCE VERSION!!!                         |
  *----------------------------------------------------------------------*/
 bool CONTACT::Interface::IntegrateCoupling(CONTACT::CElement& sele,
@@ -886,6 +904,27 @@ bool CONTACT::Interface::IntegrateCoupling(CONTACT::CElement& sele,
   // (projection slave and master, overlap detection, integration and
   // linearization of the Mortar matrix M)
   CONTACT::Coupling coup(Discret(),sele,mele,Dim(),CSegs(),testv,printderiv);
+      
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Integrate matrix M and gap g on slave/master overlap      popp 02/09|
+ |  THIS IS A PURE FINITE DIFFERENCE VERSION!!!                         |
+ *----------------------------------------------------------------------*/
+bool CONTACT::Interface::IntegrateCoupling(CONTACT::CElement& sele,
+                                           CONTACT::CElement& mele,
+                                           vector<vector<double> >& testgps,
+                                           vector<vector<double> >& testgpm,
+                                           vector<vector<double> >& testjs,
+                                           vector<vector<double> >& testji,
+                                           bool printderiv)
+{
+  // do interface coupling within a new class
+  // (projection slave and master, overlap detection, integration and
+  // linearization of the Mortar matrix M)
+  CONTACT::Coupling coup(Discret(),sele,mele,Dim(),CSegs(),
+                         testgps,testgpm,testjs,testji,printderiv);
       
   return true;
 }

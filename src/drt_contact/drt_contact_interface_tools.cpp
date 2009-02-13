@@ -3572,4 +3572,1013 @@ void CONTACT::Interface::FDCheckVertex3DDeriv(vector<vector<double> >& testv)
   return;
 }
 
+/*----------------------------------------------------------------------*
+ | Finite difference check for 3D Gauss point derivatives     popp 02/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::Interface::FDCheckGP3DDeriv(vector<vector<double> >& testgps,
+                                          vector<vector<double> >& testgpm,
+                                          vector<vector<double> >& testjs,
+                                          vector<vector<double> >& testji)
+{
+  /*************************************/
+  /* NOTE: This is a 3D method only !!!*/
+  /*************************************/
+  if (Dim()!=3) dserror("ERROR: FDCheckVertex3DDeriv called for 2D!");
+  
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+  
+  // create storage for NEW Gauss point coordinate entries
+  // create storage for NEW Jacobian entries
+  vector<vector<double> > newtestgps(0,vector<double>(12));
+  vector<vector<double> > newtestgpm(0,vector<double>(12));
+  vector<vector<double> > newtestjs(0,vector<double>(6));
+  vector<vector<double> > newtestji(0,vector<double>(6));
+  
+  // global loop to apply FD scheme to all slave dofs (=3*nodes)
+  for (int fd=0; fd<3*snodefullmap_->NumMyElements();++fd)
+  {
+    // clear new vertex coordinates
+    newtestgps.clear();
+    newtestgpm.clear();
+    newtestjs.clear();
+    newtestji.clear();
+    
+    // Initialize
+    // loop over all nodes to reset normals, closestnode and Mortar maps
+    // (use fully overlapping column map)
+    for (int i=0;i<idiscret_->NumMyColNodes();++i)
+    {
+      CONTACT::CNode* node = static_cast<CONTACT::CNode*>(idiscret_->lColNode(i));
+
+      //reset nodal normal vector
+      for (int j=0;j<3;++j)
+      {
+        node->n()[j]=0.0;
+        node->txi()[j]=0.0;
+        node->teta()[j]=0.0;
+      }
+
+      // reset derivative maps of normal vector
+      for (int j=0;j<(int)((node->GetDerivN()).size());++j)
+        (node->GetDerivN())[j].clear();
+      (node->GetDerivN()).resize(0);
+      
+      // reset derivative maps of tangent vector
+      for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
+        (node->GetDerivTxi())[j].clear();
+      (node->GetDerivTxi()).resize(0);
+          
+      // reset closest node
+      // (FIXME: at the moment we do not need this info. in the next
+      // iteration, but it might be helpful for accelerated search!!!)
+      node->ClosestNode() = -1;
+
+      // reset nodal Mortar maps
+      for (int j=0;j<(int)((node->GetD()).size());++j)
+        (node->GetD())[j].clear();
+      for (int j=0;j<(int)((node->GetM()).size());++j)
+        (node->GetM())[j].clear();
+      for (int j=0;j<(int)((node->GetMmod()).size());++j)
+        (node->GetMmod())[j].clear();
+
+      (node->GetD()).resize(0);
+      (node->GetM()).resize(0);
+      (node->GetMmod()).resize(0);
+
+      // reset derivative map of Mortar matrices
+      (node->GetDerivD()).clear();
+      (node->GetDerivM()).clear();
+      
+      // reset nodal weighted gap
+      node->Getg() = 1.0e12;
+
+      // reset feasible projection status
+      node->HasProj() = false;
+    }
+
+    // loop over all elements to reset contact candidates / search lists
+    // (use fully overlapping column map)
+    for (int i=0;i<idiscret_->NumMyColElements();++i)
+    {
+      CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(i));
+      element->SearchElements().resize(0);
+    }
+
+    // reset matrix containing interface contact segments (gmsh)
+    CSegs().Shape(0,0);
+      
+    // now get the node we want to apply the FD scheme to
+    int gid = snodefullmap_->GID(fd/3);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
+    CNode* snode = static_cast<CNode*>(node);
+    
+    // apply finite difference scheme
+    if (Comm().MyPID()==snode->Owner())
+    {
+      cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof(l): " << fd%3
+           << " Dof(g): " << snode->Dofs()[fd%3] << endl;
+    }
+    
+    // do step forward (modify nodal displacement)
+    double delta = 1e-8;
+    if (fd%3==0)
+    {
+      snode->xspatial()[0] += delta;
+      snode->u()[0] += delta;
+    }
+    else if (fd%3==1)
+    {
+      snode->xspatial()[1] += delta;
+      snode->u()[1] += delta;
+    }
+    else
+    {
+      snode->xspatial()[2] += delta;
+      snode->u()[2] += delta;
+    }
+    
+    // loop over all elements to set current element length / area
+    // (use fully overlapping column map)
+    for (int j=0;j<idiscret_->NumMyColElements();++j)
+    {
+      CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(j));
+      element->Area()=element->ComputeArea();
+    }
+    
+    // *******************************************************************
+    // contents of Evaluate()
+    // *******************************************************************    
+    // loop over proc's slave nodes of the interface
+    // use standard column map to include processor's ghosted nodes
+    // use boundary map to include slave side boundary nodes
+    for(int i=0; i<snodecolmapbound_->NumMyElements();++i)
+    {
+      int gid1 = snodecolmapbound_->GID(i);
+      DRT::Node* node = idiscret_->gNode(gid1);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid1);
+      CNode* cnode = static_cast<CNode*>(node);
+      
+      // build averaged normal at each slave node
+      cnode->BuildAveragedNormal();
+    }
+
+    // contact search algorithm
+    EvaluateContactSearch();
+    
+    // loop over proc's slave elements of the interface for integration
+    // use standard column map to include processor's ghosted elements
+    for (int i=0; i<selecolmap_->NumMyElements();++i)
+    {
+      int gid1 = selecolmap_->GID(i);
+      DRT::Element* ele1 = idiscret_->gElement(gid1);
+      if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
+      CElement* selement = static_cast<CElement*>(ele1);
+
+  #ifndef CONTACTONEMORTARLOOP
+      // integrate Mortar matrix D (lives on slave side only!)
+      IntegrateSlave(*selement);
+  #endif // #ifndef CONTACTONEMORTARLOOP
+    }
+    
+    // loop over proc's slave elements of the interface for integration
+    // use standard column map to include processor's ghosted elements
+    for (int i=0; i<selecolmap_->NumMyElements();++i)
+    {
+      int gid1 = selecolmap_->GID(i);
+      DRT::Element* ele1 = idiscret_->gElement(gid1);
+      if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
+      CElement* selement = static_cast<CElement*>(ele1);
+      
+      // loop over the contact candidate master elements of sele_
+      // use slave element's candidate list SearchElements !!!
+      for (int j=0;j<selement->NumSearchElements();++j)
+      {
+        int gid2 = selement->SearchElements()[j];
+        DRT::Element* ele2 = idiscret_->gElement(gid2);
+        if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
+        CElement* melement = static_cast<CElement*>(ele2);
+        
+        //********************************************************************
+        // 1) perform coupling (projection + overlap detection for sl/m pair)
+        // 2) integrate Mortar matrix M and weighted gap g
+        // 3) compute directional derivative of M and g and store into nodes
+        //********************************************************************
+        IntegrateCoupling(*selement,*melement,newtestgps,newtestgpm,newtestjs,newtestji);
+      }
+    }
+    // *******************************************************************
+    
+    // compute finite difference derivative
+    /*for (int k=0;k<(int)newtestgps.size();++k)
+    {
+      // print results (derivatives) to screen
+      if (abs(newtestgps[k][0]-testgps[k][0])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (x-component) Slave GP 0" << endl;
+        cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestgps[k][0]-testgps[k][0])/delta << endl; 
+      }
+      if (abs(newtestgps[k][1]-testgps[k][1])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (y-component) Slave GP 0" << endl;
+        cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestgps[k][1]-testgps[k][1])/delta << endl; 
+      }
+      if (abs(newtestgps[k][2]-testgps[k][2])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (x-component) Slave GP 1" << endl;
+        cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestgps[k][2]-testgps[k][2])/delta << endl; 
+      }
+      if (abs(newtestgps[k][3]-testgps[k][3])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (y-component) Slave GP 1" << endl;
+        cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestgps[k][3]-testgps[k][3])/delta << endl; 
+      }
+      if (abs(newtestgps[k][4]-testgps[k][4])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (x-component) Slave GP 2" << endl;
+        cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestgps[k][4]-testgps[k][4])/delta << endl; 
+      }
+      if (abs(newtestgps[k][5]-testgps[k][5])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (y-component) Slave GP 2" << endl;
+        cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestgps[k][5]-testgps[k][5])/delta << endl; 
+      }
+      if (abs(newtestgps[k][6]-testgps[k][6])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (x-component) Slave GP 3" << endl;
+        cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestgps[k][6]-testgps[k][6])/delta << endl; 
+      }
+      if (abs(newtestgps[k][7]-testgps[k][7])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (y-component) Slave GP 3" << endl;
+        cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestgps[k][7]-testgps[k][7])/delta << endl; 
+      }
+      if (abs(newtestgps[k][8]-testgps[k][8])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (x-component) Slave GP 4" << endl;
+        cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestgps[k][8]-testgps[k][8])/delta << endl; 
+      }
+      if (abs(newtestgps[k][9]-testgps[k][9])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (y-component) Slave GP 4" << endl;
+        cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestgps[k][9]-testgps[k][9])/delta << endl; 
+      }
+      if (abs(newtestgps[k][10]-testgps[k][10])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (x-component) Slave GP 5" << endl;
+        cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestgps[k][10]-testgps[k][10])/delta << endl; 
+      }
+      if (abs(newtestgps[k][11]-testgps[k][11])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (y-component) Slave GP 5" << endl;
+        cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestgps[k][11]-testgps[k][11])/delta << endl; 
+      }
+    }
+    // compute finite difference derivative
+    for (int k=0;k<(int)newtestgpm.size();++k)
+    {
+      // print results (derivatives) to screen
+      if (abs(newtestgpm[k][0]-testgpm[k][0])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (x-component) Master GP 0" << endl;
+        cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestgpm[k][0]-testgpm[k][0])/delta << endl; 
+      }
+      if (abs(newtestgpm[k][1]-testgpm[k][1])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (y-component) Master GP 0" << endl;
+        cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestgpm[k][1]-testgpm[k][1])/delta << endl; 
+      }
+      if (abs(newtestgpm[k][2]-testgpm[k][2])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (x-component) Master GP 1" << endl;
+        cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestgpm[k][2]-testgpm[k][2])/delta << endl; 
+      }
+      if (abs(newtestgpm[k][3]-testgpm[k][3])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (y-component) Master GP 1" << endl;
+        cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestgpm[k][3]-testgpm[k][3])/delta << endl; 
+      }
+      if (abs(newtestgpm[k][4]-testgpm[k][4])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (x-component) Master GP 2" << endl;
+        cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestgpm[k][4]-testgpm[k][4])/delta << endl; 
+      }
+      if (abs(newtestgpm[k][5]-testgpm[k][5])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (y-component) Master GP 2" << endl;
+        cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestgpm[k][5]-testgpm[k][5])/delta << endl; 
+      }
+      if (abs(newtestgpm[k][6]-testgpm[k][6])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (x-component) Master GP 3" << endl;
+        cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestgpm[k][6]-testgpm[k][6])/delta << endl; 
+      }
+      if (abs(newtestgpm[k][7]-testgpm[k][7])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (y-component) Master GP 3" << endl;
+        cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestgpm[k][7]-testgpm[k][7])/delta << endl; 
+      }
+      if (abs(newtestgpm[k][8]-testgpm[k][8])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (x-component) Master GP 4" << endl;
+        cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestgpm[k][8]-testgpm[k][8])/delta << endl; 
+      }
+      if (abs(newtestgpm[k][9]-testgpm[k][9])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (y-component) Master GP 4" << endl;
+        cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestgpm[k][9]-testgpm[k][9])/delta << endl; 
+      }
+      if (abs(newtestgpm[k][10]-testgpm[k][10])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (x-component) Master GP 5" << endl;
+        cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestgpm[k][10]-testgpm[k][10])/delta << endl; 
+      }
+      if (abs(newtestgpm[k][11]-testgpm[k][11])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (y-component) Master GP 5" << endl;
+        cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestgpm[k][11]-testgpm[k][11])/delta << endl; 
+      }
+    }*/
+    // compute finite difference derivative
+    for (int k=0;k<(int)newtestjs.size();++k)
+    {
+      // print results (derivatives) to screen
+      if (abs(newtestjs[k][0]-testjs[k][0])>1.0e-12)
+      {
+        cout << "Derivative for Slave Jac Intcell " << k << " GP 0" << endl;
+        cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestjs[k][0]-testjs[k][0])/delta << endl; 
+      }
+      if (abs(newtestjs[k][1]-testjs[k][1])>1.0e-12)
+      {
+        cout << "Derivative for Slave Jac Intcell " << k << " GP 1" << endl;
+        cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestjs[k][1]-testjs[k][1])/delta << endl; 
+      }
+      if (abs(newtestjs[k][2]-testjs[k][2])>1.0e-12)
+      {
+        cout << "Derivative for Slave Jac Intcell " << k << " GP 2" << endl;
+        cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestjs[k][2]-testjs[k][2])/delta << endl; 
+      }
+      if (abs(newtestjs[k][3]-testjs[k][3])>1.0e-12)
+      {
+        cout << "Derivative for Slave Jac Intcell " << k << " GP 3" << endl;
+        cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestjs[k][3]-testjs[k][3])/delta << endl; 
+      }
+      if (abs(newtestjs[k][4]-testjs[k][4])>1.0e-12)
+      {
+        cout << "Derivative for Slave Jac Intcell " << k << " GP 4" << endl;
+        cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestjs[k][4]-testjs[k][4])/delta << endl; 
+      }
+      if (abs(newtestjs[k][5]-testjs[k][5])>1.0e-12)
+      {
+        cout << "Derivative for Slave Jac Intcell " << k << " GP 5" << endl;
+        cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestjs[k][5]-testjs[k][5])/delta << endl; 
+      }
+    }
+    // compute finite difference derivative
+    for (int k=0;k<(int)newtestji.size();++k)
+    {
+      // print results (derivatives) to screen
+      if (abs(newtestji[k][0]-testji[k][0])>1.0e-12)
+      {
+        cout << "Derivative for Intcell Jac Intcell " << k << " GP 0" << endl;
+        cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestji[k][0]-testji[k][0])/delta << endl; 
+      }
+      if (abs(newtestji[k][1]-testji[k][1])>1.0e-12)
+      {
+        cout << "Derivative for Intcell Jac Intcell " << k << " GP 1" << endl;
+        cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestji[k][1]-testji[k][1])/delta << endl; 
+      }
+      if (abs(newtestji[k][2]-testji[k][2])>1.0e-12)
+      {
+        cout << "Derivative for Intcell Jac Intcell " << k << " GP 2" << endl;
+        cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestji[k][2]-testji[k][2])/delta << endl; 
+      }
+      if (abs(newtestji[k][3]-testji[k][3])>1.0e-12)
+      {
+        cout << "Derivative for Intcell Jac Intcell " << k << " GP 3" << endl;
+        cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestji[k][3]-testji[k][3])/delta << endl; 
+      }
+      if (abs(newtestji[k][4]-testji[k][4])>1.0e-12)
+      {
+        cout << "Derivative for Intcell Jac Intcell " << k << " GP 4" << endl;
+        cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestji[k][4]-testji[k][4])/delta << endl; 
+      }
+      if (abs(newtestji[k][5]-testji[k][5])>1.0e-12)
+      {
+        cout << "Derivative for Intcell Jac Intcell " << k << " GP 5" << endl;
+        cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestji[k][5]-testji[k][5])/delta << endl; 
+      }
+    }
+        
+    // undo finite difference modification
+    if (fd%3==0)
+    {
+      snode->xspatial()[0] -= delta;
+      snode->u()[0] -= delta;
+    }
+    else if (fd%3==1)
+    {
+      snode->xspatial()[1] -= delta;
+      snode->u()[1] -= delta;
+    }
+    else
+    {
+      snode->xspatial()[2] -= delta;
+      snode->u()[2] -= delta;
+    }       
+  }
+  
+  // global loop to apply FD scheme to all master dofs (=3*nodes)
+  for (int fd=0; fd<3*mnodefullmap_->NumMyElements();++fd)
+  {
+    // clear new vertex coordinates
+    newtestgps.clear();
+    newtestgpm.clear();
+    newtestjs.clear();
+    newtestji.clear();
+        
+    // Initialize
+    // loop over all nodes to reset normals, closestnode and Mortar maps
+    // (use fully overlapping column map)
+    for (int i=0;i<idiscret_->NumMyColNodes();++i)
+    {
+      CONTACT::CNode* node = static_cast<CONTACT::CNode*>(idiscret_->lColNode(i));
+      //reset nodal normal vector
+      for (int j=0;j<3;++j)
+      {
+        node->n()[j]=0.0;
+        node->txi()[j]=0.0;
+        node->teta()[j]=0.0;
+      }
+
+      // reset derivative maps of normal vector
+      for (int j=0;j<(int)((node->GetDerivN()).size());++j)
+        (node->GetDerivN())[j].clear();
+      (node->GetDerivN()).resize(0);
+      
+      // reset derivative maps of tangent vector
+      for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
+        (node->GetDerivTxi())[j].clear();
+      (node->GetDerivTxi()).resize(0);
+          
+      // reset closest node
+      // (FIXME: at the moment we do not need this info. in the next
+      // iteration, but it might be helpful for accelerated search!!!)
+      node->ClosestNode() = -1;
+
+      // reset nodal Mortar maps
+      for (int j=0;j<(int)((node->GetD()).size());++j)
+        (node->GetD())[j].clear();
+      for (int j=0;j<(int)((node->GetM()).size());++j)
+        (node->GetM())[j].clear();
+      for (int j=0;j<(int)((node->GetMmod()).size());++j)
+        (node->GetMmod())[j].clear();
+
+      (node->GetD()).resize(0);
+      (node->GetM()).resize(0);
+      (node->GetMmod()).resize(0);
+
+      // reset derivative map of Mortar matrices
+      (node->GetDerivD()).clear();
+      (node->GetDerivM()).clear();
+      
+      // reset nodal weighted gap
+      node->Getg() = 1.0e12;
+
+      // reset feasible projection status
+      node->HasProj() = false;
+    }
+
+    // loop over all elements to reset contact candidates / search lists
+    // (use fully overlapping column map)
+    for (int i=0;i<idiscret_->NumMyColElements();++i)
+    {
+      CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(i));
+      element->SearchElements().resize(0);
+    }
+
+    // reset matrix containing interface contact segments (gmsh)
+    CSegs().Shape(0,0);
+      
+    // now get the node we want to apply the FD scheme to
+    int gid = mnodefullmap_->GID(fd/3);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
+    CNode* mnode = static_cast<CNode*>(node);
+    
+    // apply finite difference scheme
+    if (Comm().MyPID()==mnode->Owner())
+    {
+      cout << "\nBuilding FD for Master Node: " << mnode->Id() << " Dof(l): " << fd%3
+           << " Dof(g): " << mnode->Dofs()[fd%3] << endl;
+    }
+    
+    // do step forward (modify nodal displacement)
+    double delta = 1e-8;
+    if (fd%3==0)
+    {
+      mnode->xspatial()[0] += delta;
+      mnode->u()[0] += delta;
+    }
+    else if (fd%3==1)
+    {
+      mnode->xspatial()[1] += delta;
+      mnode->u()[1] += delta;
+    }
+    else
+    {
+      mnode->xspatial()[2] += delta;
+      mnode->u()[2] += delta;
+    }
+    
+    // loop over all elements to set current element length / area
+    // (use fully overlapping column map)
+    for (int j=0;j<idiscret_->NumMyColElements();++j)
+    {
+      CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(j));
+      element->Area()=element->ComputeArea();
+    }
+    
+    // *******************************************************************
+    // contents of Evaluate()
+    // *******************************************************************    
+    // loop over proc's slave nodes of the interface
+    // use standard column map to include processor's ghosted nodes
+    // use boundary map to include slave side boundary nodes
+    for(int i=0; i<snodecolmapbound_->NumMyElements();++i)
+    {
+      int gid1 = snodecolmapbound_->GID(i);
+      DRT::Node* node = idiscret_->gNode(gid1);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid1);
+      CNode* cnode = static_cast<CNode*>(node);
+      
+      // build averaged normal at each slave node
+      cnode->BuildAveragedNormal();
+    }
+
+    // contact search algorithm
+    EvaluateContactSearch();
+
+    // loop over proc's slave elements of the interface for integration
+    // use standard column map to include processor's ghosted elements
+    for (int i=0; i<selecolmap_->NumMyElements();++i)
+    {
+      int gid1 = selecolmap_->GID(i);
+      DRT::Element* ele1 = idiscret_->gElement(gid1);
+      if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
+      CElement* selement = static_cast<CElement*>(ele1);
+
+  #ifndef CONTACTONEMORTARLOOP
+      // integrate Mortar matrix D (lives on slave side only!)
+      IntegrateSlave(*selement);
+  #endif // #ifndef CONTACTONEMORTARLOOP
+    }
+    
+    // loop over proc's slave elements of the interface for integration
+    // use standard column map to include processor's ghosted elements
+    for (int i=0; i<selecolmap_->NumMyElements();++i)
+    {
+      int gid1 = selecolmap_->GID(i);
+      DRT::Element* ele1 = idiscret_->gElement(gid1);
+      if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
+      CElement* selement = static_cast<CElement*>(ele1);
+      
+      // loop over the contact candidate master elements of sele_
+      // use slave element's candidate list SearchElements !!!
+      for (int j=0;j<selement->NumSearchElements();++j)
+      {
+        int gid2 = selement->SearchElements()[j];
+        DRT::Element* ele2 = idiscret_->gElement(gid2);
+        if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
+        CElement* melement = static_cast<CElement*>(ele2);
+        
+        //********************************************************************
+        // 1) perform coupling (projection + overlap detection for sl/m pair)
+        // 2) integrate Mortar matrix M and weighted gap g
+        // 3) compute directional derivative of M and g and store into nodes
+        //********************************************************************
+        IntegrateCoupling(*selement,*melement,newtestgps,newtestgpm,newtestjs,newtestji);
+      }
+    }
+    // *******************************************************************
+    
+    // compute finite difference derivative
+    /*for (int k=0;k<(int)newtestgps.size();++k)
+    {
+      // print results (derivatives) to screen
+      if (abs(newtestgps[k][0]-testgps[k][0])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (x-component) Slave GP 0" << endl;
+        cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestgps[k][0]-testgps[k][0])/delta << endl; 
+      }
+      if (abs(newtestgps[k][1]-testgps[k][1])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (y-component) Slave GP 0" << endl;
+        cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestgps[k][1]-testgps[k][1])/delta << endl; 
+      }
+      if (abs(newtestgps[k][2]-testgps[k][2])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (x-component) Slave GP 1" << endl;
+        cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestgps[k][2]-testgps[k][2])/delta << endl; 
+      }
+      if (abs(newtestgps[k][3]-testgps[k][3])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (y-component) Slave GP 1" << endl;
+        cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestgps[k][3]-testgps[k][3])/delta << endl; 
+      }
+      if (abs(newtestgps[k][4]-testgps[k][4])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (x-component) Slave GP 2" << endl;
+        cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestgps[k][4]-testgps[k][4])/delta << endl; 
+      }
+      if (abs(newtestgps[k][5]-testgps[k][5])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (y-component) Slave GP 2" << endl;
+        cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestgps[k][5]-testgps[k][5])/delta << endl; 
+      }
+      if (abs(newtestgps[k][6]-testgps[k][6])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (x-component) Slave GP 3" << endl;
+        cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestgps[k][6]-testgps[k][6])/delta << endl; 
+      }
+      if (abs(newtestgps[k][7]-testgps[k][7])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (y-component) Slave GP 3" << endl;
+        cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestgps[k][7]-testgps[k][7])/delta << endl; 
+      }
+      if (abs(newtestgps[k][8]-testgps[k][8])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (x-component) Slave GP 4" << endl;
+        cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestgps[k][8]-testgps[k][8])/delta << endl; 
+      }
+      if (abs(newtestgps[k][9]-testgps[k][9])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (y-component) Slave GP 4" << endl;
+        cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestgps[k][9]-testgps[k][9])/delta << endl; 
+      }
+      if (abs(newtestgps[k][10]-testgps[k][10])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (x-component) Slave GP 5" << endl;
+        cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestgps[k][10]-testgps[k][10])/delta << endl; 
+      }
+      if (abs(newtestgps[k][11]-testgps[k][11])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (y-component) Slave GP 5" << endl;
+        cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestgps[k][11]-testgps[k][11])/delta << endl; 
+      }
+    }
+    // compute finite difference derivative
+    for (int k=0;k<(int)newtestgpm.size();++k)
+    {
+      // print results (derivatives) to screen
+      if (abs(newtestgpm[k][0]-testgpm[k][0])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (x-component) Master GP 0" << endl;
+        cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestgpm[k][0]-testgpm[k][0])/delta << endl; 
+      }
+      if (abs(newtestgpm[k][1]-testgpm[k][1])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (y-component) Master GP 0" << endl;
+        cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestgpm[k][1]-testgpm[k][1])/delta << endl; 
+      }
+      if (abs(newtestgpm[k][2]-testgpm[k][2])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (x-component) Master GP 1" << endl;
+        cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestgpm[k][2]-testgpm[k][2])/delta << endl; 
+      }
+      if (abs(newtestgpm[k][3]-testgpm[k][3])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (y-component) Master GP 1" << endl;
+        cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestgpm[k][3]-testgpm[k][3])/delta << endl; 
+      }
+      if (abs(newtestgpm[k][4]-testgpm[k][4])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (x-component) Master GP 2" << endl;
+        cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestgpm[k][4]-testgpm[k][4])/delta << endl; 
+      }
+      if (abs(newtestgpm[k][5]-testgpm[k][5])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (y-component) Master GP 2" << endl;
+        cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestgpm[k][5]-testgpm[k][5])/delta << endl; 
+      }
+      if (abs(newtestgpm[k][6]-testgpm[k][6])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (x-component) Master GP 3" << endl;
+        cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestgpm[k][6]-testgpm[k][6])/delta << endl; 
+      }
+      if (abs(newtestgpm[k][7]-testgpm[k][7])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (y-component) Master GP 3" << endl;
+        cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestgpm[k][7]-testgpm[k][7])/delta << endl; 
+      }
+      if (abs(newtestgpm[k][8]-testgpm[k][8])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (x-component) Master GP 4" << endl;
+        cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestgpm[k][8]-testgpm[k][8])/delta << endl; 
+      }
+      if (abs(newtestgpm[k][9]-testgpm[k][9])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (y-component) Master GP 4" << endl;
+        cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestgpm[k][9]-testgpm[k][9])/delta << endl; 
+      }
+      if (abs(newtestgpm[k][10]-testgpm[k][10])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (x-component) Master GP 5" << endl;
+        cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestgpm[k][10]-testgpm[k][10])/delta << endl; 
+      }
+      if (abs(newtestgpm[k][11]-testgpm[k][11])>1.0e-12)
+      {
+        cout << "Derivative for Intcell " << k << " (y-component) Master GP 5" << endl;
+        cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestgpm[k][11]-testgpm[k][11])/delta << endl; 
+      }
+    }*/
+    // compute finite difference derivative
+    for (int k=0;k<(int)newtestjs.size();++k)
+    {
+      // print results (derivatives) to screen
+      if (abs(newtestjs[k][0]-testjs[k][0])>1.0e-12)
+      {
+        cout << "Derivative for Slave Jac Intcell " << k << " GP 0" << endl;
+        cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestjs[k][0]-testjs[k][0])/delta << endl; 
+      }
+      if (abs(newtestjs[k][1]-testjs[k][1])>1.0e-12)
+      {
+        cout << "Derivative for Slave Jac Intcell " << k << " GP 1" << endl;
+        cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestjs[k][1]-testjs[k][1])/delta << endl; 
+      }
+      if (abs(newtestjs[k][2]-testjs[k][2])>1.0e-12)
+      {
+        cout << "Derivative for Slave Jac Intcell " << k << " GP 2" << endl;
+        cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestjs[k][2]-testjs[k][2])/delta << endl; 
+      }
+      if (abs(newtestjs[k][3]-testjs[k][3])>1.0e-12)
+      {
+        cout << "Derivative for Slave Jac Intcell " << k << " GP 3" << endl;
+        cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestjs[k][3]-testjs[k][3])/delta << endl; 
+      }
+      if (abs(newtestjs[k][4]-testjs[k][4])>1.0e-12)
+      {
+        cout << "Derivative for Slave Jac Intcell " << k << " GP 4" << endl;
+        cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestjs[k][4]-testjs[k][4])/delta << endl; 
+      }
+      if (abs(newtestjs[k][5]-testjs[k][5])>1.0e-12)
+      {
+        cout << "Derivative for Slave Jac Intcell " << k << " GP 5" << endl;
+        cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestjs[k][5]-testjs[k][5])/delta << endl; 
+      }
+    }
+    // compute finite difference derivative
+    for (int k=0;k<(int)newtestji.size();++k)
+    {
+      // print results (derivatives) to screen
+      if (abs(newtestji[k][0]-testji[k][0])>1.0e-12)
+      {
+        cout << "Derivative for Intcell Jac Intcell " << k << " GP 0" << endl;
+        cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestji[k][0]-testji[k][0])/delta << endl; 
+      }
+      if (abs(newtestji[k][1]-testji[k][1])>1.0e-12)
+      {
+        cout << "Derivative for Intcell Jac Intcell " << k << " GP 1" << endl;
+        cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestji[k][1]-testji[k][1])/delta << endl; 
+      }
+      if (abs(newtestji[k][2]-testji[k][2])>1.0e-12)
+      {
+        cout << "Derivative for Intcell Jac Intcell " << k << " GP 2" << endl;
+        cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestji[k][2]-testji[k][2])/delta << endl; 
+      }
+      if (abs(newtestji[k][3]-testji[k][3])>1.0e-12)
+      {
+        cout << "Derivative for Intcell Jac Intcell " << k << " GP 3" << endl;
+        cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestji[k][3]-testji[k][3])/delta << endl; 
+      }
+      if (abs(newtestji[k][4]-testji[k][4])>1.0e-12)
+      {
+        cout << "Derivative for Intcell Jac Intcell " << k << " GP 4" << endl;
+        cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestji[k][4]-testji[k][4])/delta << endl; 
+      }
+      if (abs(newtestji[k][5]-testji[k][5])>1.0e-12)
+      {
+        cout << "Derivative for Intcell Jac Intcell " << k << " GP 5" << endl;
+        cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestji[k][5]-testji[k][5])/delta << endl; 
+      }
+    }
+        
+    // undo finite difference modification
+    if (fd%3==0)
+    {
+      mnode->xspatial()[0] -= delta;
+      mnode->u()[0] -= delta;
+    }
+    else if (fd%3==1)
+    {
+      mnode->xspatial()[1] -= delta;
+      mnode->u()[1] -= delta;
+    }
+    else
+    {
+      mnode->xspatial()[2] -= delta;
+      mnode->u()[2] -= delta;
+    }       
+  }
+  
+  // back to normal...
+  
+  // clear new vertex coordinates
+  newtestgps.clear();
+  newtestgpm.clear();
+  newtestjs.clear();
+  newtestji.clear();
+      
+  // Initialize
+  // loop over all nodes to reset normals, closestnode and Mortar maps
+  // (use fully overlapping column map)
+  for (int i=0;i<idiscret_->NumMyColNodes();++i)
+  {
+    CONTACT::CNode* node = static_cast<CONTACT::CNode*>(idiscret_->lColNode(i));
+
+    //reset nodal normal vector
+    for (int j=0;j<3;++j)
+    {
+      node->n()[j]=0.0;
+      node->txi()[j]=0.0;
+      node->teta()[j]=0.0;
+    }
+
+    // reset derivative maps of normal vector
+    for (int j=0;j<(int)((node->GetDerivN()).size());++j)
+      (node->GetDerivN())[j].clear();
+    (node->GetDerivN()).resize(0);
+    
+    // reset derivative maps of tangent vector
+    for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
+      (node->GetDerivTxi())[j].clear();
+    (node->GetDerivTxi()).resize(0);
+        
+    // reset closest node
+    // (FIXME: at the moment we do not need this info. in the next
+    // iteration, but it might be helpful for accelerated search!!!)
+    node->ClosestNode() = -1;
+
+    // reset nodal Mortar maps
+    for (int j=0;j<(int)((node->GetD()).size());++j)
+      (node->GetD())[j].clear();
+    for (int j=0;j<(int)((node->GetM()).size());++j)
+      (node->GetM())[j].clear();
+    for (int j=0;j<(int)((node->GetMmod()).size());++j)
+      (node->GetMmod())[j].clear();
+
+    (node->GetD()).resize(0);
+    (node->GetM()).resize(0);
+    (node->GetMmod()).resize(0);
+
+    // reset derivative map of Mortar matrices
+    (node->GetDerivD()).clear();
+    (node->GetDerivM()).clear();
+    
+    // reset nodal weighted gap
+    node->Getg() = 1.0e12;
+
+    // reset feasible projection status
+    node->HasProj() = false;
+  }
+
+  // loop over all elements to reset contact candidates / search lists
+  // (use fully overlapping column map)
+  for (int i=0;i<idiscret_->NumMyColElements();++i)
+  {
+    CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(i));
+    element->SearchElements().resize(0);
+  }
+
+  // reset matrix containing interface contact segments (gmsh)
+  CSegs().Shape(0,0);
+  
+  // loop over all elements to set current element length / area
+  // (use fully overlapping column map)
+  for (int j=0;j<idiscret_->NumMyColElements();++j)
+  {
+    CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(j));
+    element->Area()=element->ComputeArea();
+  }
+    
+  // *******************************************************************
+  // contents of Evaluate()
+  // *******************************************************************    
+  // loop over proc's slave nodes of the interface
+  // use standard column map to include processor's ghosted nodes
+  // use boundary map to include slave side boundary nodes
+  for(int i=0; i<snodecolmapbound_->NumMyElements();++i)
+  {
+    int gid1 = snodecolmapbound_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid1);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid1);
+    CNode* cnode = static_cast<CNode*>(node);
+    
+    // build averaged normal at each slave node
+    cnode->BuildAveragedNormal();
+  }
+
+  // contact search algorithm
+  EvaluateContactSearch();
+
+  // loop over proc's slave elements of the interface for integration
+  // use standard column map to include processor's ghosted elements
+  for (int i=0; i<selecolmap_->NumMyElements();++i)
+  {
+    int gid1 = selecolmap_->GID(i);
+    DRT::Element* ele1 = idiscret_->gElement(gid1);
+    if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
+    CElement* selement = static_cast<CElement*>(ele1);
+
+#ifndef CONTACTONEMORTARLOOP
+    // integrate Mortar matrix D (lives on slave side only!)
+    IntegrateSlave(*selement);
+#endif // #ifndef CONTACTONEMORTARLOOP
+  }
+  
+  // loop over proc's slave elements of the interface for integration
+  // use standard column map to include processor's ghosted elements
+  for (int i=0; i<selecolmap_->NumMyElements();++i)
+  {
+    int gid1 = selecolmap_->GID(i);
+    DRT::Element* ele1 = idiscret_->gElement(gid1);
+    if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
+    CElement* selement = static_cast<CElement*>(ele1);
+    
+    // loop over the contact candidate master elements of sele_
+    // use slave element's candidate list SearchElements !!!
+    for (int j=0;j<selement->NumSearchElements();++j)
+    {
+      int gid2 = selement->SearchElements()[j];
+      DRT::Element* ele2 = idiscret_->gElement(gid2);
+      if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
+      CElement* melement = static_cast<CElement*>(ele2);
+      
+      //********************************************************************
+      // 1) perform coupling (projection + overlap detection for sl/m pair)
+      // 2) integrate Mortar matrix M and weighted gap g
+      // 3) compute directional derivative of M and g and store into nodes
+      //********************************************************************
+      IntegrateCoupling(*selement,*melement,newtestgps,newtestgpm,newtestjs,newtestji,true);
+    }
+  }
+  // *******************************************************************
+  
+  // check reference (Vertex coordinates)
+  for (int i=0;i<(int)newtestgps.size();++i)
+  {
+    for (int k=0;k<12;++k)
+    {
+      double error = abs(newtestgps[i][k]-testgps[i][k]);
+      if (error>1.0e-12)
+      {
+        cout << "GPS Error: i=" << i << " k=" << k << " val=" << error << endl;
+        dserror("ERROR: FDCheckGP3D: Something went wrong!");
+      }
+    }
+  }
+  for (int i=0;i<(int)newtestgpm.size();++i)
+  {
+    for (int k=0;k<12;++k)
+    {
+      double error = abs(newtestgpm[i][k]-testgpm[i][k]);
+      if (error>1.0e-12)
+      {
+        cout << "GPM Error: i=" << i << " k=" << k << " val=" << error << endl;
+        dserror("ERROR: FDCheckGP3D: Something went wrong!");
+      }
+    }
+  }
+  // check reference (Jacobians)
+  for (int i=0;i<(int)newtestjs.size();++i)
+  {
+    for (int k=0;k<6;++k)
+    {
+      double error = abs(newtestjs[i][k]-testjs[i][k]);
+      if (error>1.0e-12)
+      {
+        cout << "JS Error: i=" << i << " k=" << k << " val=" << error << endl;
+        dserror("ERROR: FDCheckGP3D: Something went wrong!");
+      }
+    }
+  }
+  for (int i=0;i<(int)newtestji.size();++i)
+  {
+    for (int k=0;k<6;++k)
+    {
+      double error = abs(newtestji[i][k]-testji[i][k]);
+      if (error>1.0e-12)
+      {
+        cout << "JM Error: i=" << i << " k=" << k << " val=" << error << endl;
+        dserror("ERROR: FDCheckGP3D: Something went wrong!");
+      }
+    }
+  }
+  
+  exit(0);
+  return;
+}
+
 #endif  // #ifdef CCADISCRET

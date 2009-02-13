@@ -61,6 +61,7 @@ Maintainer: Alexander Popp
 //#define CONTACTFDGAP           /* flag for FD check of weighted gap g */
 //#define CONTACTFDTANGLM        /* flag for FD check of tangential LM */
 //#define CONTACTFDVERTEX3D      /* flag for FD check of vertices in 3D */
+//#define CONTACTFDGP3D          /* flag for FD check of GP + Jacs in 3D */
 //#define CONTACTGMSH1           /* flag for gmsh output in each time step */
 //#define CONTACTGMSH2           /* flag for gmsh output in each iteration */
 

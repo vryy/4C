@@ -411,6 +411,22 @@ public:
                     CONTACT::CElement& sele, CONTACT::CElement& mele,
                     int dim, Epetra_SerialDenseMatrix& csegs,
                     vector<vector<double> >& testv, bool printderiv);
+  
+  /*!
+  \brief Standard constructor
+  (THIS IS A PURE FINITE DIFFERENCE VERSION!!!)
+  
+  Constructs an instance of this class.<br>
+  Note that this is \b not a collective call as coupling is
+  performed in parallel by individual processes.
+  
+  */
+  explicit Coupling(DRT::Discretization& idiscret,
+                    CONTACT::CElement& sele, CONTACT::CElement& mele,
+                    int dim, Epetra_SerialDenseMatrix& csegs,
+                    vector<vector<double> >& testgps, vector<vector<double> >& testgpm,
+                    vector<vector<double> >& testjs, vector<vector<double> >& testji,
+                    bool printderiv);
 
   /*!
   \brief Destructor
@@ -686,6 +702,13 @@ public:
   
   */
   virtual bool IntegrateCells3D();
+  
+  // THIS IS A FINITE DIFFERENCE VERSION ONLY!!!
+  virtual bool IntegrateCells3D(vector<vector<double> >& testgps,
+                                vector<vector<double> >& testgpm,
+                                vector<vector<double> >& testjs,
+                                vector<vector<double> >& testji,
+                                bool printderiv=false);
     
   //@}
     
