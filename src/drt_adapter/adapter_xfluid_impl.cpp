@@ -24,6 +24,9 @@ Maintainer: Axel Gerstenberger
 #include "../drt_io/io_control.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/standardtypes_cpp.H"
+#include "../drt_geometry/position_array.H"
+#include "../drt_geometry/element_volume.H"
+#include "../drt_geometry/intersection_service.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Epetra_Export.h>
 
@@ -56,8 +59,8 @@ ADAPTER::XFluidImpl::XFluidImpl(
   if (numxfemcond != numfsicond)
     dserror("number of xfem conditions has to match number of fsi conditions");
   
-//  boundaryoutput_ = rcp(new IO::DiscretizationWriter(boundarydis_));
-//  boundaryoutput_->WriteMesh(0,0.0);
+  // remove internal surface elements that occur for flat 3D hex8 meshes
+  RemoveInternalSurfElements(soliddis);
 
   // create node and element distribution with elements and nodes ghosted on all processors
   const Epetra_Map noderowmap = *boundarydis_->NodeRowMap();
@@ -599,6 +602,83 @@ void ADAPTER::XFluidImpl::LiftDrag()
   }
   
   fluid_.LiftDrag();
+}
+
+void ADAPTER::XFluidImpl::RemoveInternalSurfElements(
+    const Teuchos::RCP<DRT::Discretization> soliddis
+    )
+{
+if (boundarydis_->Comm().NumProc() == 1)
+{
+  // for structures consisting of one layer of hex8 elements, internal surface elements appear
+  // find internal elements
+  set<int> internal_surfeles;
+  for (int isurf=0; isurf<boundarydis_->NumMyRowElements(); ++isurf)
+  {
+    const DRT::Element* surfele = boundarydis_->lRowElement(isurf);
+    
+    LINALG::SerialDenseMatrix          xyze_surf(3,surfele->NumNode());
+    GEO::fillInitialPositionArray(surfele,xyze_surf);
+   
+    // center in local coordinates
+    const LINALG::Matrix<2,1> localcenterpos(DRT::UTILS::getLocalCenterPosition<2>(surfele->Shape()));
+    // center in physical coordinates
+    static LINALG::Matrix<3,1> physicalcenterpos;
+    GEO::elementToCurrentCoordinates(surfele->Shape(), xyze_surf, localcenterpos, physicalcenterpos);
+    
+    LINALG::Matrix<3,1> unitnormalvec;
+    GEO::computeNormalToSurfaceElement(surfele, xyze_surf, localcenterpos, unitnormalvec);
+    
+    for (int ivol=0; ivol<soliddis->NumMyColElements(); ++ivol)
+    {
+      const DRT::Element* solidele = soliddis->lColElement(ivol);
+      
+      // check if solid ele is connected with surf
+      bool connected = false;
+      for (int inode = 0; inode < surfele->NumNode(); ++inode)
+        for (int jnode = 0; jnode < solidele->NumNode(); ++jnode)
+          if (surfele->NodeIds()[inode] == solidele->NodeIds()[jnode])
+          {
+            connected = true;
+            break;
+          }
+      
+      
+      if (connected)
+      {
+        LINALG::SerialDenseMatrix          solidxyze(3,solidele->NumNode());
+        GEO::fillInitialPositionArray(solidele,solidxyze);
+        const double length = pow(GEO::ElementVolume(*solidele),1.0/3.0);
+        
+        LINALG::Matrix<3,1> normalvector = unitnormalvec;
+        normalvector.Scale(length/10.0);
+        
+        LINALG::Matrix<3,1> testpos(true);
+        testpos += physicalcenterpos;
+        testpos += normalvector;
+              
+        const bool inside = GEO::checkPositionWithinElement(solidele, solidxyze, testpos);
+        if (inside)
+        {
+          internal_surfeles.insert(surfele->Id());
+          break;
+        }
+      }
+    }
+  }
+  
+  if (not internal_surfeles.empty())
+    cout << RED_LIGHT << "Found " << internal_surfeles.size() << " internal surface elements! Removing them..." << END_COLOR << endl;
+  // remove internal elements
+  for (set<int>::const_iterator ele=internal_surfeles.begin();
+       ele!=internal_surfeles.end();
+       ++ele)
+  {
+    boundarydis_->DeleteElement(*ele);
+  }
+  const int err2 = boundarydis_->FillComplete();
+  if (err2) dserror("FillComplete() returned err=%d",err2);
+}
 }
 
 

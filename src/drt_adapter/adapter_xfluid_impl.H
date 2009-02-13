@@ -181,6 +181,10 @@ namespace ADAPTER {
         const std::string filestr,
         const std::string name_in_gmsh
         );
+    
+    void RemoveInternalSurfElements(
+        Teuchos::RCP<DRT::Discretization> soliddis
+        );
 
     /// the actual fluid algorithm
     FLD::XFluidImplicitTimeInt             fluid_;
