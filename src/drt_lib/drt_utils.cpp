@@ -118,6 +118,7 @@ extern "C"
 #include "../drt_mat/modpowerlaw.H"
 #include "../drt_mat/biocell.H"
 #include "../drt_mat/matlist.H"
+#include "../drt_mat/charmm.H"
 #include "../drt_contact/drt_cnode.H"
 #include "../drt_contact/drt_celement.H"
 #include "drt_dserror.H"
@@ -638,6 +639,12 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       MAT::BioCell* biocell = new MAT::BioCell();
       biocell->Unpack(data);
       return biocell;
+    }
+    case ParObject_CHARMM:
+    {
+      MAT::CHARMM* charmm = new MAT::CHARMM();
+      charmm->Unpack(data);
+      return charmm;
     }
     case ParObject_MatList:
     {

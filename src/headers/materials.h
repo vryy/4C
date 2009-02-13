@@ -58,7 +58,6 @@ typedef struct _MATERIAL
      struct _LUNG_PENALTY        *lung_penalty; /* lung tissue material model with penalty function for incompressibility constraint */
      struct _LUNG_OGDEN          *lung_ogden;   /* lung tissue material model with compressible Ogden for volumetric part */
      struct _ITSKOV              *itskov;       /* Itskov material for isotropic case */
-     struct _QUADRATIC_ANISO     *quadratic_aniso;       /* Anisotropic quadratic material */
      struct _ANISOTROPIC_BALZANI *anisotropic_balzani; /* anisotropic hyperelastic polyconvex material */
      struct _MOONEYRIVLIN        *mooneyrivlin; /* Mooney-Rivlin material */
      struct _YEOH                *yeoh; /* Mooney-Rivlin material */
@@ -670,14 +669,6 @@ typedef struct _ITSKOV
      DOUBLE                    gamma;
      DOUBLE					   density;
 } ITSKOV;
-/*----------------------------------------------------------------------*
- | anisotropic material                                        rm 10/07 |
- |                                                                      |
- *----------------------------------------------------------------------*/
-typedef struct _QUADRATIC_ANISO
-{
-     DOUBLE					   density;
-} QUADRATIC_ANISO;
 /*----------------------------------------------------------------------*
  | anisotropic hyperelastic polyconvex material based on      maf 11/07 |
  | Balzani et. al.                                                      |

@@ -287,7 +287,6 @@ typedef enum _MATERIAL_TYP
                        m_lung_penalty, /* lung tissue material with penalty function for incompressibility constraint*/
                        m_lung_ogden,   /* lung tissue material with compressible Ogden for volumetric part */
                        m_itskov,       /* hyperelastic polyconvex energy strain function following Itskov */
-                       m_quadratic_aniso, /* hyperelastic polyconvex energy strain function following Itskov */
                        m_anisotropic_balzani,  /* anisotropic polyconvex material*/
                        m_mooneyrivlin,  /* Mooney-Rivlin material*/
                        m_yeoh,          /* Yeoh material*/
@@ -301,7 +300,7 @@ typedef enum _MATERIAL_TYP
                        m_struct_multiscale, /*  structural microscale approach */
                        m_matlist,       /* collection of single materials (used for scalar transport problems)*/
                        m_biocell,       /* biological cell model */
-                       m_ion            /* properties of an ion species in an electrolyte solution */
+                       m_ion           /* properties of an ion species in an electrolyte solution */
 } MATERIAL_TYP;
 #endif
 /*----------------------------------------------------------------------*

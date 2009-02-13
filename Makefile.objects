@@ -589,7 +589,6 @@ OBJS_BRICK1   = src/brick1/c1_out.o \
                 src/brick1/c1_mat_hyper_polyconvex.o \
                 src/brick1/c1_mat_ogden.o \
                 src/brick1/c1_mat_itskov.o \
-                src/brick1/c1_mat_quadratic_aniso.o \
                 src/brick1/c1_mat_viscoushyper.o \
                 src/brick1/c1_cal_eps.o \
                 src/brick1/c1_init.o \
@@ -972,7 +971,8 @@ OBJS_DRT_MAT_LIB = src/drt_mat/matpar_bundle.o \
                 src/drt_mat/material.o \
                 src/drt_mat/matlist.o \
                 src/drt_mat/ion.o \
-                src/drt_mat/compogden.o
+                src/drt_mat/compogden.o \
+				src/drt_mat/charmm.o
 #
 OBJS_DRT_MAT  = src/drt_mat/micromaterialgp_static.o \
                 src/drt_mat/micromaterial_evaluate.o

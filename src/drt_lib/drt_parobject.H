@@ -138,6 +138,7 @@ using namespace std;
 #define ParObject_SutherlandCondif      (int)131
 #define ParObject_CompOgden             (int)132
 #define ParObject_ParMaterial           (int)133
+#define ParObject_CHARMM				(int)132
 
 namespace DRT
 {

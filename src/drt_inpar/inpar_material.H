@@ -82,6 +82,7 @@ namespace INPAR
       m_matlist,       ///< collection of single materials (used for scalar transport problems)
       m_biocell,       ///< biological cell model 
       m_ion,            ///< properties of an ion species in an electrolyte solution
+      m_charmm,		///< CHARmm API
       m_none          ///< undefined
     };
 

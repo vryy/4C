@@ -303,6 +303,19 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*--------------------------------------------------------------------*/
+  // CHARMM API
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_CHARMM",
+                                            "CHARmm API",
+                                            INPAR::MAT::m_charmm));
+
+    AddNamedReal(m,"DENS","mass density");
+    
+    AddDefinedMaterial(matlist,m);
+  }
+
+  /*--------------------------------------------------------------------*/
   // MFOC
   {
     Teuchos::RCP<MaterialDefinition> m
