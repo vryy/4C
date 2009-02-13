@@ -58,7 +58,7 @@ LINALG::SerialDenseMatrix GEO::getCurrentNodalPositions(
     const int* nodeids = ele->NodeIds();
     for (int inode = 0; inode < numnode; ++inode)
     {
-      const LINALG::Matrix<3,1> x = currentcutterpositions.find(nodeids[inode])->second;
+      const LINALG::Matrix<3,1>& x = currentcutterpositions.find(nodeids[inode])->second;
       xyze(0,inode) = x(0);
       xyze(1,inode) = x(1);
       xyze(2,inode) = x(2);
