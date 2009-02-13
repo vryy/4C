@@ -472,6 +472,14 @@ private:
   //!  averaged resudiuals and subscale quantities
   //!--------------------------------------------------
 
+  //! sum over all in plane element sizes
+  RefCountPtr<vector<double> >     sumhk_;
+  //! sum over all in plane element sizes for the Bazilevs 
+  //! parameter in the viscous regime
+  RefCountPtr<vector<double> >     sumhbazilevs_;
+  //! sum over all in plane stream lengths
+  RefCountPtr<vector<double> >     sumstrle_;
+
   //! sum over all in plane residuals
   RefCountPtr<vector<double> >     sumtauM_;
   //! sum over all in plane squared residuals

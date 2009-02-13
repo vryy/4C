@@ -9797,6 +9797,9 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
 
   double vol             = 0.0;
 
+  double h               = 0.0;
+  double h_bazilevs      = 0.0;
+  double strle           = 0.0;
   double averaged_tauC   = 0.0;
   double averaged_tauM   = 0.0;
 
@@ -9937,6 +9940,87 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
     // -----------------------------------------------------
     // Element volume
     vol               += fac;
+
+    // volume based element size
+    h                 += fac*hk;
+
+    // streamlength based element size
+    {
+      const double vel_normaf=velintaf_.Norm2();
+
+      // this copy of velintaf_ will be used to store the normed velocity
+      LINALG::Matrix<3,1> normed_velintaf;
+
+      // normed velocity at element center (we use the copy for safety reasons!)
+      if (vel_normaf>=1e-6)
+      {
+        for (int rr=0;rr<3;++rr) /* loop element nodes */
+        {
+          normed_velintaf(rr)=velintaf_(rr)/vel_normaf;
+        }      
+      }
+      else
+      {
+        normed_velintaf(0) = 1.;
+        for (int rr=1;rr<3;++rr) /* loop element nodes */
+        {
+          normed_velintaf(rr)=0.0;
+        }      
+      }
+
+      // get streamlength
+      double val = 0.0;
+      for (int rr=0;rr<iel;++rr) /* loop element nodes */
+      {
+        val += FABS( normed_velintaf(0)*derxy_(0,rr)         
+                    +normed_velintaf(1)*derxy_(1,rr)        
+                    +normed_velintaf(2)*derxy_(2,rr));
+      } /* end of loop over element nodes */
+      strle += 2.0/val*fac;
+    }
+
+    // -----------------------------------------------------
+    {
+      /*          +-           -+   +-           -+   +-           -+
+                  |             |   |             |   |             |
+                  |  dr    dr   |   |  ds    ds   |   |  dt    dt   |
+            G   = |  --- * ---  | + |  --- * ---  | + |  --- * ---  |
+             ij   |  dx    dx   |   |  dx    dx   |   |  dx    dx   |
+                  |    i     j  |   |    i     j  |   |    i     j  |
+                  +-           -+   +-           -+   +-           -+
+      */
+      LINALG::Matrix<3,3> G;
+
+      for (int nn=0;nn<3;++nn)
+      {
+        for (int rr=0;rr<3;++rr)
+        {
+          G(nn,rr) = xji_(nn,0)*xji_(rr,0);
+          for (int mm=1;mm<3;++mm)
+          {
+            G(nn,rr) += xji_(nn,mm)*xji_(rr,mm);
+          }
+        }
+      }
+
+      /*          +----
+                   \
+          G : G =   +   G   * G
+          -   -    /     ij    ij
+          -   -   +----
+                   i,j
+      */
+      double normG = 0;
+      for (int nn=0;nn<3;++nn)
+      {
+        for (int rr=0;rr<3;++rr)
+        {
+          normG+=G(nn,rr)*G(nn,rr);
+        }
+      }
+
+      h_bazilevs+=1./sqrt(sqrt(normG))*fac;
+     }
 
     // ------------------------------------------------------
     // Element average:
@@ -10374,6 +10458,10 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   mean_sprenp     /= vol;
   mean_sprenp_sq  /= vol;
 
+  h               /= vol;
+  h_bazilevs      /= vol;
+  strle           /= vol;
+
   averaged_tauC   /= vol;
   averaged_tauM   /= vol;
 
@@ -10392,6 +10480,10 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   // the vectors containing the local sums over layers
 
   RefCountPtr<vector<double> > incrvol           = params.get<RefCountPtr<vector<double> > >("incrvol"          );
+
+  RefCountPtr<vector<double> > incrhk            = params.get<RefCountPtr<vector<double> > >("incrhk"           );
+  RefCountPtr<vector<double> > incrhbazilevs     = params.get<RefCountPtr<vector<double> > >("incrhbazilevs"    );
+  RefCountPtr<vector<double> > incrstrle         = params.get<RefCountPtr<vector<double> > >("incrstrle"        );
 
   RefCountPtr<vector<double> > incrres           = params.get<RefCountPtr<vector<double> > >("incrres"          );
   RefCountPtr<vector<double> > incrres_sq        = params.get<RefCountPtr<vector<double> > >("incrres_sq"       );
@@ -10458,11 +10550,20 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   }
 
   // collect layer volume
-  (*incrvol  )[nlayer] += vol;
+  (*incrvol      )[nlayer] += vol;
+
+  // element length in stabilisation parameter
+  (*incrhk       )[nlayer] += hk;
+
+  // element length in viscous regime defined by the Bazilevs parameter
+  (*incrhbazilevs)[nlayer] += h_bazilevs;
+
+  // stream length 
+  (*incrstrle    )[nlayer] += strle;
 
   // averages of stabilisation parameters
-  (*incrtauC )[nlayer] += averaged_tauC;
-  (*incrtauM )[nlayer] += averaged_tauM;
+  (*incrtauC     )[nlayer] += averaged_tauC;
+  (*incrtauM     )[nlayer] += averaged_tauM;
   
   // averages of momentum residuals, subscale velocity and accelerations
   for(int mm=0;mm<3;++mm)
