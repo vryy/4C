@@ -293,7 +293,7 @@ void ADAPTER::Coupling::BuildDofMaps(const DRT::Discretization& dis,
       {
         const string* mymasterslavetoggle
           = thiscond[numcond]->Get<string>("Is slave periodic boundary condition");
-        
+
         if(*mymasterslavetoggle=="Master")
         {
           ++ntimesmaster;
@@ -534,7 +534,7 @@ void ADAPTER::Coupling::SetupCouplingMatrices(const Epetra_Map& shiftedmastermap
   matsm_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,shiftedmastermap,1,true));
 
   matmm_trans_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,masterdomainmap,1,true));
-  matsm_trans_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,slavedomainmap,1,true));
+  matsm_trans_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,*PermSlaveDofMap(),1,true));
 
   int length = shiftedmastermap.NumMyElements();
   double one = 1.;
@@ -565,8 +565,19 @@ void ADAPTER::Coupling::SetupCouplingMatrices(const Epetra_Map& shiftedmastermap
   matsm_->FillComplete(slavedomainmap,shiftedmastermap);
 
   matmm_trans_->FillComplete(shiftedmastermap,masterdomainmap);
-  matsm_trans_->FillComplete(shiftedmastermap,slavedomainmap);
+  matsm_trans_->FillComplete(shiftedmastermap,*PermSlaveDofMap());
 
+  // communicate slave to master matrix
+
+  Teuchos::RCP<Epetra_CrsMatrix> tmp = Teuchos::rcp(new Epetra_CrsMatrix(Copy,slavedomainmap,1));
+
+  Teuchos::RCP<Epetra_Import> exporter = rcp(new Epetra_Import(slavedomainmap, *PermSlaveDofMap()));
+  int err = tmp->Import(*matsm_trans_,*exporter,Insert);
+  if (err)
+    dserror("Import failed with err=%d",err);
+
+  tmp->FillComplete(shiftedmastermap,slavedomainmap);
+  matsm_trans_ = tmp;
 }
 
 #endif
