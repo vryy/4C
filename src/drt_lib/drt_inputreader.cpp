@@ -2021,15 +2021,15 @@ void ElementReader::PackLocalConnectivity(
   // size (number of nodes we have a connectivity for)
   int size=lcon.size();
   DRT::ParObject::AddtoPack(sblock,size);
-    
+
   for(gidinlcon=lcon.begin();gidinlcon!=lcon.end();++gidinlcon)
   {
     // add node gid we store the connectivity for
-    DRT::ParObject::AddtoPack(sblock,gidinlcon->first);
+    DRT::ParObject::AddtoPack<int>(sblock,(int)(gidinlcon->first));
 
     // add number of nodes adjacent to this one
-    DRT::ParObject::AddtoPack(sblock,(gidinlcon->second).size());
-   
+    DRT::ParObject::AddtoPack<int>(sblock,(int)(gidinlcon->second).size());
+    
     // add list of neighbours to this node
     for(adjacentgid =(gidinlcon->second).begin();
         adjacentgid!=(gidinlcon->second).end();
@@ -2051,6 +2051,11 @@ void ElementReader::UnpackLocalConnectivity(
   vector<char>       & rblock
   )
 {
+  if(rblock.empty())
+  {
+    dserror("trying to extract information from an empty receive block\n");
+  }
+  
   lcon.clear();
 
   // position to extract
@@ -2058,13 +2063,13 @@ void ElementReader::UnpackLocalConnectivity(
 
   // extract size (number of nodes we have a connectivity for)
   int size=0;
-  DRT::ParObject::ExtractfromPack(position,rblock,size);
-
+  DRT::ParObject::ExtractfromPack<int>(position,rblock,size);
+  
   for(int i=0;i<size;++i)
   {
     // extract node gid we store the connectivity for
     int gid=-1;
-    DRT::ParObject::ExtractfromPack(position,rblock,gid);
+    DRT::ParObject::ExtractfromPack<int>(position,rblock,gid);
 
     if(gid<0)
     {
@@ -2073,10 +2078,11 @@ void ElementReader::UnpackLocalConnectivity(
 
     // extract number of adjacent nodes
     int numnb=0;
-    DRT::ParObject::ExtractfromPack(position,rblock,numnb);
+    DRT::ParObject::ExtractfromPack<int>(position,rblock,numnb);
+
     if(numnb<1)
     {
-      dserror("Everybody should have at least one unpackable neighbour");
+      dserror("Everybody should have at least one unpackable neighbour (%d given)",numnb);
     }
 
     set<int> neighbourset;
