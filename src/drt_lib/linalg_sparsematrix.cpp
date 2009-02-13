@@ -715,7 +715,7 @@ void LINALG::SparseMatrix::ApplyDirichlet(
 /*----------------------------------------------------------------------*
  |  Apply dirichlet conditions  (public)                     mwgee 02/07|
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrix::ApplyDirichlet(const Epetra_Map& dbctoggle, 
+void LINALG::SparseMatrix::ApplyDirichlet(const Epetra_Map& dbctoggle,
                                           bool diagonalblock)
 {
   if (not Filled())
@@ -1311,7 +1311,7 @@ void LINALG::SparseMatrix::Put(const LINALG::SparseMatrix& A,
   vector<int> Indices(MaxNumEntries);
   vector<double> Values(MaxNumEntries);
   int err;
- 
+
   // loop rows in #tomap and replace the rows of #this->sysmat_ with provided input matrix #A
   for (int lid=0; lid<tomap->NumMyElements(); ++lid)
   {
@@ -1387,7 +1387,7 @@ void LINALG::SparseMatrix::Dump(std::string filename)
 /*----------------------------------------------------------------------*
   (private)
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase)
+void LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase) const
 {
   // for timing of this method
   //Epetra_Time time(Abase.Comm());

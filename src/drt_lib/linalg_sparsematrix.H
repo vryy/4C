@@ -5,11 +5,11 @@
 -------------------------------------------------------------------------
                  BACI finite element library subsystem
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -21,11 +21,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 </pre>
@@ -61,7 +61,7 @@ namespace LINALG
   /// A single sparse matrix enhanced with features for FE simulations
   /*!
 
-    A single sparse matrix. Internally we have an Epetra_CrsMatrix 
+    A single sparse matrix. Internally we have an Epetra_CrsMatrix
     (or the sub-class Epetra_FECrsMatrix). So we have
     all the glory of a fully parallel and fast sparse matrix. The added value
     is twofold. For one thing there are the FE specific operations. Assemble()
@@ -83,12 +83,12 @@ namespace LINALG
     but Assemble() is much faster if your matrix is already Filled(). Of course
     you can always Reset() you matrix, that is throw away the matrix graph and
     start anew with an empty matrix.
-    
+
     If FE_MATRIX is set as a flag, the implementation is based on an Epetra_FECrsMatrix.
     Nonlocal matrix values can be assembled by invoking FEAssemble()-methods
-    instead of Assemble()-methods. Internally this will cause 
-    the GlobalAssemble()-method to distribute the nonlocal values to the owning 
-    procs before FillComplete is called on the matrix. 
+    instead of Assemble()-methods. Internally this will cause
+    the GlobalAssemble()-method to distribute the nonlocal values to the owning
+    procs before FillComplete is called on the matrix.
     Since Epetra_FECrsMatrix is a sub-class of Epetra_CrsMatrix,
     all other functionality can be used as described above.
     All SparseMatrix constructors create Epetra_CrsMatrices by default.
@@ -104,19 +104,19 @@ namespace LINALG
 class SparseMatrix : public SparseOperator
 {
   public:
-    /*! 
-      flag for the underlying Epetra matrix type; CRS_MATRIX means that the implementation of the 
-      linalg sparse matrix is based on an Epetra_CrsMatrix. 
+    /*!
+      flag for the underlying Epetra matrix type; CRS_MATRIX means that the implementation of the
+      linalg sparse matrix is based on an Epetra_CrsMatrix.
       If FE_MATRIX is chosen, the implementation is based on an Epetra_FECrsMatrix.
       This allows the assembly and handling of nonlocal values in addition to Epetra_CrsMatrix-functionality.
      */
     enum MatrixType {CRS_MATRIX, FE_MATRIX};
-    
+
     /// construction of sparse matrix
     SparseMatrix(
-        const Epetra_Map&   rowmap, 
-        const int           npr, 
-        bool                explicitdirichlet=true, 
+        const Epetra_Map&   rowmap,
+        const int           npr,
+        bool                explicitdirichlet=true,
         bool                savegraph=false,
         MatrixType          matrixtype = CRS_MATRIX);
 
@@ -129,8 +129,8 @@ class SparseMatrix : public SparseOperator
       \pre matrix.Filled()==true
      */
     explicit SparseMatrix(
-        const Epetra_CrsMatrix&   matrix, 
-        bool                      explicitdirichlet=true, 
+        const Epetra_CrsMatrix&   matrix,
+        bool                      explicitdirichlet=true,
         bool                      savegraph=false,
         MatrixType                matrixtype = CRS_MATRIX);
 
@@ -143,8 +143,8 @@ class SparseMatrix : public SparseOperator
       Epetra_CrsMatrix or Epetra_FECrsMatrix.
      */
     explicit SparseMatrix(
-        Teuchos::RCP<Epetra_CrsMatrix>  matrix, 
-        bool                            explicitdirichlet=true, 
+        Teuchos::RCP<Epetra_CrsMatrix>  matrix,
+        bool                            explicitdirichlet=true,
         bool                            savegraph=false,
         MatrixType                      matrixtype = CRS_MATRIX);
 
@@ -156,8 +156,8 @@ class SparseMatrix : public SparseOperator
       Does not make a copy of the Epetra_CrsMatrix or Epetra_FECrsMatrix
      */
     explicit SparseMatrix(
-        const Epetra_Vector&  diag, 
-        bool                  explicitdirichlet=true, 
+        const Epetra_Vector&  diag,
+        bool                  explicitdirichlet=true,
         bool                  savegraph=false,
         MatrixType            matrixtype = CRS_MATRIX);
 
@@ -176,7 +176,7 @@ class SparseMatrix : public SparseOperator
       \param access how to treat this assignment: Copy or View
      */
     SparseMatrix(
-        const SparseMatrix&     mat, 
+        const SparseMatrix&     mat,
         Epetra_DataAccess       access=Copy);
 
     /// Destructor
@@ -188,7 +188,7 @@ class SparseMatrix : public SparseOperator
     /// Assignment method. Deep copy or view on matrix.
     /*!
       Explicit method for the assignment operator. You can make an explicit
-      copy of the internal Epetra_CrsMatrix (or Epetra_FECrsMatrix) 
+      copy of the internal Epetra_CrsMatrix (or Epetra_FECrsMatrix)
       or have a second view on it.
 
       \warning A view assignment will have your matrix use the same internal
@@ -215,11 +215,11 @@ class SparseMatrix : public SparseOperator
      */
     virtual Teuchos::RCP<Epetra_Operator> EpetraOperator() { return sysmat_; }
 
-    /// return the internal Epetra_CrsMatrix or Epetra_FECrsMatrix 
+    /// return the internal Epetra_CrsMatrix or Epetra_FECrsMatrix
     /// (down-cast from Epetra_CrsMatrix !) (you should not need this!)
     Teuchos::RCP<Epetra_CrsMatrix> EpetraMatrix() { return sysmat_; }
 
-    /// return the internal Epetra_CrsMatrix or Epetra_FECrsMatrix 
+    /// return the internal Epetra_CrsMatrix or Epetra_FECrsMatrix
     /// (down-cast from Epetra_CrsMatrix !) (you should not need this!)
     Teuchos::RCP<Epetra_CrsMatrix> EpetraMatrix() const { return sysmat_; }
 
@@ -247,16 +247,16 @@ class SparseMatrix : public SparseOperator
                   const std::vector<int>& lmrow,
                   const std::vector<int>& lmrowowner,
                   const std::vector<int>& lmcol);
-    
-    /*! 
+
+    /*!
       Assemble method for an Epetra_FECrsMatrices.
       This method is also able
       to handle the assembly of nonlocal values.
-      It sets the doGlobalAssemble-flag to true and causes the 
+      It sets the doGlobalAssemble-flag to true and causes the
       GlobalAssemble -method() to redistribute the non-local
-      values to their owning procs, such that FillComplete can be savely 
+      values to their owning procs, such that FillComplete can be savely
       called on this matrix.
-     */ 
+     */
     void FEAssemble(
             int eid,
             const Epetra_SerialDenseMatrix& Aele,
@@ -265,32 +265,32 @@ class SparseMatrix : public SparseOperator
 
     /// single value assemble used by BlockSparseMatrix
     void Assemble(double val, int rgid, int cgid);
-    
-    
-    /*! 
+
+
+    /*!
       Assemble method for an Epetra_FECrsMatrices.
       This method is also able
       to handle the assembly of nonlocal values.
-      It sets the doGlobalAssemble-flag to true and causes the 
+      It sets the doGlobalAssemble-flag to true and causes the
       GlobalAssemble -method() to redistribute the non-local
-      values to their owning procs, such that FillComplete can be savely 
+      values to their owning procs, such that FillComplete can be savely
       called on this matrix.
-     */ 
+     */
     void FEAssemble(double val, int rgid, int cgid);
 
 
-    /*! 
+    /*!
       The GlobalAssembleMethod() distributes nonlocal values to their owning procs
       for Epetra_FECrsMatrices.
       Afterwards Fillcomplete is called such as for Epetra_CrsMatrices.
-     */ 
+     */
     void Complete();
-    
-    /*! 
+
+    /*!
       The GlobalAssembleMethod() distributes nonlocal values to their owning procs
       for Epetra_FECrsMatrices.
       Afterwards Fillcomplete is called such as for Epetra_CrsMatrices.
-     */ 
+     */
     void Complete(const Epetra_Map& domainmap, const Epetra_Map& rangemap);
 
     void UnComplete();
@@ -348,7 +348,7 @@ class SparseMatrix : public SparseOperator
       graph.
      */
     bool SaveGraph() const { return savegraph_; }
-    
+
     /// Return matrix type
     MatrixType GetMatrixtype() const {return matrixtype_; }
 
@@ -544,11 +544,11 @@ class SparseMatrix : public SparseOperator
             BlockSparseMatrix.
      */
     template <class Strategy> Teuchos::RCP<LINALG::BlockSparseMatrix<Strategy> >
-      Split(const MultiMapExtractor& domainmaps,const MultiMapExtractor& rangemaps);
+      Split(const MultiMapExtractor& domainmaps,const MultiMapExtractor& rangemaps) const;
 
     /// binary dump of matrix for debugging
     void Dump(std::string filename);
-    
+
 
     //@}
 
@@ -558,11 +558,11 @@ class SparseMatrix : public SparseOperator
     /*!
        Used by public Split, does not call Complete() on output matrix.
      */
-    void Split2x2(BlockSparseMatrixBase& Abase);
+    void Split2x2(BlockSparseMatrixBase& Abase) const;
 
     /// internal epetra matrix (Epetra_CrsMatrix or Epetra_FECrsMatrix )
     Teuchos::RCP<Epetra_CrsMatrix> sysmat_;
-    
+
     /// saved graph (if any)
     Teuchos::RCP<Epetra_CrsGraph> graph_;
 
@@ -574,7 +574,7 @@ class SparseMatrix : public SparseOperator
 
     /// (estimated) maximum number of entries per row
     int maxnumentries_;
-    
+
     /// matrix type (Epetra_CrsMatrix or Epetra_FECrsMatrix)
     MatrixType matrixtype_;
 
@@ -618,7 +618,7 @@ class SparseMatrix : public SparseOperator
 template <class Strategy> Teuchos::RCP<LINALG::BlockSparseMatrix<Strategy> >
 LINALG::SparseMatrix::Split(
     const MultiMapExtractor& domainmaps,
-    const MultiMapExtractor& rangemaps)
+    const MultiMapExtractor& rangemaps) const
 {
   if (domainmaps.NumMaps()==2 && rangemaps.NumMaps()==2)
   {
