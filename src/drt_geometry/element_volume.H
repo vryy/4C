@@ -22,7 +22,7 @@ Maintainer: Ursula Mayer
 namespace GEO
 {
 
-}
+
   //! calculates the volume of an element in initial configuration      a.ger
   template <DRT::Element::DiscretizationType DISTYPE>
     static inline double ElementVolumeT(
@@ -35,7 +35,7 @@ namespace GEO
     const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
     // get node coordinates of the current element
-    static LINALG::Matrix<nsd,numnode> xyze;
+    static LINALG::Matrix<3,numnode> xyze;
     GEO::fillInitialPositionArray<DISTYPE>(&ele, xyze);
     
     // physical element volume 
@@ -113,6 +113,7 @@ namespace GEO
       default:
         dserror("add you distype here...");
       exit(1);
+    }
   }
 
 }  // namespace GEO
