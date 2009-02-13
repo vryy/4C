@@ -13,34 +13,28 @@
 
 // debug flag to merge the MFSI block matrix to one sparse matrix
 // and use the fluid solver to solve for it
-//#define BLOCKMATRIXMERGE
+#define BLOCKMATRIXMERGE
 
 namespace FSI
 {
 
-  /// special version of block matrix that includes the FSI block preconditioner
-  /*!
-    The normal block matrix is enhanced by a ApplyInverse() method that does
-    the Gauss-Seidel block preconditioning explicitly for FSI block matrices.
-   */
-  class OverlappingBlockMatrix : public LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>
+  /// Base class for all FSI block preconditioning matrices
+  class BlockPreconditioningMatrix : public LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>
   {
   public:
 
-    /// construction
-    OverlappingBlockMatrix(const LINALG::MultiMapExtractor& maps,
-                           ADAPTER::Structure& structure,
-                           ADAPTER::Fluid& fluid,
-                           ADAPTER::Ale& ale,
-                           bool structuresplit,
-                           int symmetric,
-                           double omega=1.0,
-                           int iterations=1,
-                           double somega=1.0,
-                           int siterations=0,
-                           double fomega=1.0,
-                           int fiterations=0,
-                           FILE* err=NULL);
+    BlockPreconditioningMatrix(const LINALG::MultiMapExtractor& maps,
+                               ADAPTER::Structure& structure,
+                               ADAPTER::Fluid& fluid,
+                               ADAPTER::Ale& ale,
+                               int symmetric,
+                               double omega=1.0,
+                               int iterations=1,
+                               double somega=1.0,
+                               int siterations=0,
+                               double fomega=1.0,
+                               int fiterations=0,
+                               FILE* err=NULL);
 
     /** \name Mathematical functions */
     //@{
@@ -50,27 +44,27 @@ namespace FSI
 
     //@}
 
-    /** \name Attribute access functions */
-    //@{
-
-    /// Returns a character string describing the operator.
-    virtual const char* Label() const;
-
-    //@}
-
     /// setup of block preconditioners
-    void SetupPreconditioner();
+    virtual void SetupPreconditioner();
 
-  private:
+  protected:
 
-    /// structure-ale-fluid lower Gauss-Seidel block preconditioner
-    void SAFLowerGS(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
-
-    /// symmetric Gauss-Seidel block preconditioner
-    void SGS(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
+    /// (symmetric) Gauss-Seidel block preconditioner
+    virtual void SGS(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const = 0;
 
     /// merge block matrix for direct solve
     void MergeSolve(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
+
+    /// Richardson iteration on one block using the given flags
+    static void LocalBlockRichardson(Teuchos::RCP<LINALG::Preconditioner> solver,
+                                     const LINALG::SparseMatrix& innerOp,
+                                     Teuchos::RCP<Epetra_Vector> x,
+                                     Teuchos::RCP<Epetra_Vector> y,
+                                     Teuchos::RCP<Epetra_Vector> tmpx,
+                                     int iterations,
+                                     double omega,
+                                     FILE* err,
+                                     const Epetra_Comm& comm);
 
     /** \name Field solver objects */
     //@{
@@ -82,9 +76,6 @@ namespace FSI
     Teuchos::RCP<LINALG::Preconditioner> constalesolver_;
 
     //@}
-
-    /// split is in structural matrix, interface equations belong to fluid block
-    bool structuresplit_;
 
     /// Symmetric block GS preconditioner in monolithic FSI or ordinary GS
     int symmetric_;
@@ -108,6 +99,48 @@ namespace FSI
     /// debug merged sparse
     Teuchos::RCP<LINALG::SparseMatrix> sparse_;
 #endif
+  };
+
+
+  /// special version of block matrix that includes the FSI block preconditioner
+  /*!
+    The normal block matrix is enhanced by a ApplyInverse() method that does
+    the Gauss-Seidel block preconditioning explicitly for FSI block matrices.
+   */
+  class OverlappingBlockMatrix : public BlockPreconditioningMatrix
+  {
+  public:
+
+    /// construction
+    OverlappingBlockMatrix(const LINALG::MultiMapExtractor& maps,
+                           ADAPTER::Structure& structure,
+                           ADAPTER::Fluid& fluid,
+                           ADAPTER::Ale& ale,
+                           bool structuresplit,
+                           int symmetric,
+                           double omega=1.0,
+                           int iterations=1,
+                           double somega=1.0,
+                           int siterations=0,
+                           double fomega=1.0,
+                           int fiterations=0,
+                           FILE* err=NULL);
+
+    /** \name Attribute access functions */
+    //@{
+
+    /// Returns a character string describing the operator.
+    virtual const char* Label() const;
+
+    //@}
+
+  private:
+
+    /// symmetric Gauss-Seidel block preconditioner
+    void SGS(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
+
+    /// split is in structural matrix, interface equations belong to fluid block
+    bool structuresplit_;
   };
 }
 

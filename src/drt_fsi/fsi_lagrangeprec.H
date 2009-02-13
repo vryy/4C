@@ -7,31 +7,29 @@
 #include "../drt_lib/linalg_precond.H"
 #include "../drt_lib/linalg_solver.H"
 
-// debug flag to merge the MFSI block matrix to one sparse matrix
-// and use the fluid solver to solve for it
-//#define BLOCKMATRIXMERGE
+#include "fsi_overlapprec.H"
 
 namespace FSI
 {
 
   /// special version of block matrix that includes the FSI block preconditioner
-  class LagrangianBlockMatrix : public LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>
+  class LagrangianBlockMatrix : public BlockPreconditioningMatrix
   {
   public:
 
     /// construction
     LagrangianBlockMatrix(const LINALG::MultiMapExtractor& maps,
-                          Teuchos::RCP<LINALG::Solver> structuresolver,
-                          Teuchos::RCP<LINALG::Solver> fluidsolver,
-                          Teuchos::RCP<LINALG::Solver> alesolver);
-
-    /** \name Mathematical functions */
-    //@{
-
-    /// Returns the result of a Epetra_Operator inverse applied to an Epetra_MultiVector X in Y.
-    virtual int ApplyInverse(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
-
-    //@}
+                          ADAPTER::Structure& structure,
+                          ADAPTER::Fluid& fluid,
+                          ADAPTER::Ale& ale,
+                          int symmetric,
+                          double omega=1.0,
+                          int iterations=1,
+                          double somega=1.0,
+                          int siterations=0,
+                          double fomega=1.0,
+                          int fiterations=0,
+                          FILE* err=NULL);
 
     /** \name Attribute access functions */
     //@{
@@ -46,19 +44,7 @@ namespace FSI
 
   private:
 
-    void SAFLowerGS(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
-
-    // evil debug helper
-    void MergeSolve(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
-
-    /** \name Field solver objects */
-    //@{
-
-    Teuchos::RCP<LINALG::Preconditioner> structuresolver_;
-    Teuchos::RCP<LINALG::Preconditioner> fluidsolver_;
-    Teuchos::RCP<LINALG::Preconditioner> alesolver_;
-
-    //@}
+    void SGS(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
   };
 
 }

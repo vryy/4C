@@ -81,9 +81,17 @@ FSI::MonolithicLagrange::MonolithicLagrange(Epetra_Comm& comm)
 
   // create block system matrix
   systemmatrix_ = Teuchos::rcp(new LagrangianBlockMatrix(Extractor(),
-                                                         StructureField().LinearSolver(),
-                                                         FluidField().LinearSolver(),
-                                                         AleField().LinearSolver()));
+                                                         StructureField(),
+                                                         FluidField(),
+                                                         AleField(),
+                                                         Teuchos::getIntegralValue<int>(fsidyn,"SYMMETRICPRECOND"),
+                                                         fsidyn.get<double>("PCOMEGA"),
+                                                         fsidyn.get<int>("PCITER"),
+                                                         fsidyn.get<double>("STRUCTPCOMEGA"),
+                                                         fsidyn.get<int>("STRUCTPCITER"),
+                                                         fsidyn.get<double>("FLUIDPCOMEGA"),
+                                                         fsidyn.get<int>("FLUIDPCITER"),
+                                                         DRT::Problem::Instance()->ErrorFile()->Handle()));
 
   // Switch fluid to interface split block matrix
   // TODO do we need splitting up natrices? (guess not)

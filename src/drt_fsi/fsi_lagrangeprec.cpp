@@ -7,33 +7,36 @@
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 FSI::LagrangianBlockMatrix::LagrangianBlockMatrix(const LINALG::MultiMapExtractor& maps,
-                                                  Teuchos::RCP<LINALG::Solver> structuresolver,
-                                                  Teuchos::RCP<LINALG::Solver> fluidsolver,
-                                                  Teuchos::RCP<LINALG::Solver> alesolver)
-  : LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(maps,maps,81,false,true)
+                                                  ADAPTER::Structure& structure,
+                                                  ADAPTER::Fluid& fluid,
+                                                  ADAPTER::Ale& ale,
+                                                  int symmetric,
+                                                  double omega,
+                                                  int iterations,
+                                                  double somega,
+                                                  int siterations,
+                                                  double fomega,
+                                                  int fiterations,
+                                                  FILE* err)
+  : BlockPreconditioningMatrix(maps,
+                               structure,
+                               fluid,
+                               ale,
+                               symmetric,
+                               omega,
+                               iterations,
+                               somega,
+                               siterations,
+                               fomega,
+                               fiterations,
+                               err)
 {
-  structuresolver_ = Teuchos::rcp(new LINALG::Preconditioner(structuresolver));
-  fluidsolver_ = Teuchos::rcp(new LINALG::Preconditioner(fluidsolver));
-  alesolver_ = Teuchos::rcp(new LINALG::Preconditioner(alesolver));
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int FSI::LagrangianBlockMatrix::ApplyInverse(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
-{
-#ifdef BLOCKMATRIXMERGE
-  MergeSolve(X,Y);
-#else
-  SAFLowerGS(X,Y);
-#endif
-
-  return 0;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void FSI::LagrangianBlockMatrix::SAFLowerGS(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
+void FSI::LagrangianBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
 {
   // Extract matrix blocks
 
@@ -85,24 +88,6 @@ void FSI::LagrangianBlockMatrix::SAFLowerGS(const Epetra_MultiVector &X, Epetra_
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::LagrangianBlockMatrix::MergeSolve(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
-{
-  // this is really evil :)
-
-  Teuchos::RCP<LINALG::SparseMatrix> sparse = Merge();
-
-  const Epetra_Vector &x = Teuchos::dyn_cast<const Epetra_Vector>(X);
-  Epetra_Vector &y = Teuchos::dyn_cast<Epetra_Vector>(Y);
-
-  fluidsolver_->Solve(sparse->EpetraMatrix(),
-                      Teuchos::rcp(&y,false),
-                      Teuchos::rcp(new Epetra_Vector(x)),
-                      true);
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 const char* FSI::LagrangianBlockMatrix::Label() const
 {
   return "FSI::LagrangianBlockMatrix";
@@ -113,13 +98,18 @@ const char* FSI::LagrangianBlockMatrix::Label() const
  *----------------------------------------------------------------------*/
 void FSI::LagrangianBlockMatrix::SetupPreconditioner()
 {
+#ifdef BLOCKMATRIXMERGE
+  BlockPreconditioningMatrix::SetupPreconditioner();
+#else
   const LINALG::SparseMatrix& structInnerOp = Matrix(0,0);
   const LINALG::SparseMatrix& fluidInnerOp  = Matrix(1,1);
   const LINALG::SparseMatrix& aleInnerOp    = Matrix(2,2);
 
   structuresolver_->Setup(structInnerOp.EpetraMatrix());
   fluidsolver_    ->Setup(fluidInnerOp .EpetraMatrix());
-  alesolver_      ->Setup(aleInnerOp   .EpetraMatrix());
+  if (constalesolver_==Teuchos::null)
+    alesolver_    ->Setup(aleInnerOp   .EpetraMatrix());
+#endif
 }
 
 
