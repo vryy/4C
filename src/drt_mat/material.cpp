@@ -41,6 +41,7 @@ Maintainer: Lena Wiechert
 #include "biocell.H"
 #include "ion.H"
 #include "compogden.H"
+#include "charmm.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -195,6 +196,13 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
       curmat->SetParameter(new MAT::PAR::BioCell(curmat));
     MAT::PAR::BioCell* params = static_cast<MAT::PAR::BioCell*>(curmat->Parameter());
     return Teuchos::rcp(new BioCell(params));
+  }
+  case INPAR::MAT::m_charmm:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::CHARMM(curmat));
+    MAT::PAR::CHARMM* params = static_cast<MAT::PAR::CHARMM*>(curmat->Parameter());
+    return Teuchos::rcp(new CHARMM(params));
   }
   case INPAR::MAT::m_ion:
   {
