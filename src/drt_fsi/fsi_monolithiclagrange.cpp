@@ -93,14 +93,6 @@ FSI::MonolithicLagrange::MonolithicLagrange(Epetra_Comm& comm)
                                                          fsidyn.get<int>("FLUIDPCITER"),
                                                          DRT::Problem::Instance()->ErrorFile()->Handle()));
 
-  // Switch fluid to interface split block matrix
-  // TODO do we need splitting up natrices? (guess not)
-  /*
-  FluidField().UseBlockMatrix(FluidField().Interface(),
-                              FluidField().Interface(),
-                              true);
-  */
-
   // build ale system matrix in splitted system
   AleField().BuildSystemMatrix(false);
 
@@ -108,7 +100,6 @@ FSI::MonolithicLagrange::MonolithicLagrange(Epetra_Comm& comm)
   coupsf.SetupCouplingMatrices(*vecSpaces[3],
                                *StructureField().DofRowMap(),
                                *FluidField().DofRowMap());
-                               //*FluidField().Interface().CondMap());
 }
 
 

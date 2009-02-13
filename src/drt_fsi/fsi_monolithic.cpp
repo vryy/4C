@@ -429,7 +429,7 @@ void FSI::Monolithic::SetDefaultParameters(const Teuchos::ParameterList& fsidyn,
 
 
 
-#if 0 // NonlinearCG 
+#if 0 // NonlinearCG
 
   dirParams.set("Method","NonlinearCG");
   lineSearchParams.set("Method","NonlinearCG");
@@ -441,9 +441,9 @@ void FSI::Monolithic::SetDefaultParameters(const Teuchos::ParameterList& fsidyn,
   lsParams.set("Preconditioning", "User Supplied Preconditioner");
   lsParams.set("Preconditioner","User Defined");
 
-#endif // NonlinearCG 
+#endif // NonlinearCG
 
-#if 0 // Steepest Decent 
+#if 0 // Steepest Decent
 
   dirParams.set("Method","Steepest Descent");
   //lineSearchParams.set("Method","Full Step");
@@ -452,11 +452,11 @@ void FSI::Monolithic::SetDefaultParameters(const Teuchos::ParameterList& fsidyn,
   dirParams.set("Precondition","On");
   SDParams.set("Precondition","On"); // not recognized
   // Quadratic Model Min / 2-Norm / F 2-Norm / None
-  SDParams.set("Scaling Type","2-Norm"); 
+  SDParams.set("Scaling Type","2-Norm");
   lsParams.set("Preconditioning","User Supplied Preconditioner");
   lsParams.set("Preconditioner","User Defined");
 
-#endif // Steepest Decent  
+#endif // Steepest Decent
 
 
 #if 1 // Newton
@@ -482,7 +482,7 @@ void FSI::Monolithic::SetDefaultParameters(const Teuchos::ParameterList& fsidyn,
   //polyparams.set("Sufficient Decrease Condition","Armijo-Goldstein");
   polyparams.set("Sufficient Decrease Condition","Ared/Pred");
   //polyparams.set("Sufficient Decrease Condition","None");
-  //polyparams.set("Sufficient Decrease",0.001); 
+  //polyparams.set("Sufficient Decrease",0.001);
   polyparams.set("Alpha Factor",0.1);
   polyparams.set("Use Counters",false);
   polyparams.set("Maximum Iteration for Increase",0);
