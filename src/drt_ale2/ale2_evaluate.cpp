@@ -53,6 +53,8 @@ int DRT::ELEMENTS::Ale2::Evaluate(ParameterList& params,
     dserror("No action supplied");
   else if (action == "calc_ale_lin_stiff")
     act = Ale2::calc_ale_lin_stiff;
+  else if (action == "calc_ale_laplace")
+      act = Ale2::calc_ale_laplace;
   else if (action == "calc_ale_spring")
     act = Ale2::calc_ale_spring;
   else
@@ -70,6 +72,16 @@ int DRT::ELEMENTS::Ale2::Evaluate(ParameterList& params,
     //DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
 
     static_ke(lm,&elemat1,&elevec1,mat,params);
+
+    break;
+  }
+  case calc_ale_laplace:
+  {
+    //RefCountPtr<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+    //vector<double> my_dispnp(lm.size());
+    //DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
+
+    static_ke_laplace(lm,&elemat1,&elevec1,mat,params);
 
     break;
   }
@@ -608,6 +620,154 @@ void DRT::ELEMENTS::Ale2::static_ke(vector<int>&              lm,
   }
 }
 
+
+//=======================================================================
+//=======================================================================
+
+static void ale2_min_jaco(DRT::Element::DiscretizationType distyp, Epetra_SerialDenseMatrix xyz, DOUBLE *min_detF)
+{
+DOUBLE           detF[4];          /* Jacobian determinant at nodes */
+
+switch (distyp)
+{
+   case DRT::Element::quad4:
+   case DRT::Element::quad8:
+   case DRT::Element::quad9:
+      /*--------------------- evaluate Jacobian determinant at nodes ---*/
+      detF[0] = 0.25 * ( (xyz[0][0]-xyz[0][1]) * (xyz[1][0]-xyz[1][3])
+                       - (xyz[1][0]-xyz[1][1]) * (xyz[0][0]-xyz[0][3]) );
+      detF[1] = 0.25 * ( (xyz[0][0]-xyz[0][1]) * (xyz[1][1]-xyz[1][2])
+                       - (xyz[1][0]-xyz[1][1]) * (xyz[0][1]-xyz[0][2]) );
+      detF[2] = 0.25 * ( (xyz[0][3]-xyz[0][2]) * (xyz[1][1]-xyz[1][2])
+                       - (xyz[1][3]-xyz[1][2]) * (xyz[0][1]-xyz[0][2]) );
+      detF[3] = 0.25 * ( (xyz[0][3]-xyz[0][2]) * (xyz[1][0]-xyz[1][3])
+                       - (xyz[1][3]-xyz[1][2]) * (xyz[0][0]-xyz[0][3]) );
+
+      /*------------------------------------------------- check sign ---*/
+      if (detF[0] <= 0.0) dserror("Negative JACOBIAN ");
+      if (detF[1] <= 0.0) dserror("Negative JACOBIAN ");
+      if (detF[2] <= 0.0) dserror("Negative JACOBIAN ");
+      if (detF[3] <= 0.0) dserror("Negative JACOBIAN ");
+      /*-------------------------------------- look for the smallest ---*/
+      *min_detF = ( detF[0]  < detF[1]) ?  detF[0]  : detF[1];
+      *min_detF = (*min_detF < detF[2]) ? *min_detF : detF[2];
+      *min_detF = (*min_detF < detF[3]) ? *min_detF : detF[3];
+      /*----------------------------------------------------------------*/
+      break;
+   case DRT::Element::tri3:
+      *min_detF = (-xyz[0][0]+xyz[0][1]) * (-xyz[1][0]+xyz[1][2])
+                - (-xyz[0][0]+xyz[0][2]) * (-xyz[1][0]+xyz[1][1]);
+      if (*min_detF <= 0.0) dserror("Negative JACOBIAN ");
+      break;
+   default:
+      dserror("minimal Jacobian determinant for this distyp not implemented");
+      break;
+}
+return;
+}
+
+
+
+void DRT::ELEMENTS::Ale2::static_ke_laplace(vector<int>&              lm,
+                                    Epetra_SerialDenseMatrix* sys_mat,
+                                    Epetra_SerialDenseVector* residual,
+                                    RefCountPtr<MAT::Material> material,
+                                    ParameterList&            params)
+{
+  const int iel = NumNode();
+//  const int nd  = 2 * iel;
+  const DiscretizationType distype = this->Shape();
+
+
+//  // get material using class StVenantKirchhoff
+//  if (material->MaterialType()!=m_stvenant)
+//    dserror("stvenant material expected but got type %d", material->MaterialType());
+//  MAT::StVenantKirchhoff* actmat = static_cast<MAT::StVenantKirchhoff*>(material.get());
+
+  Epetra_SerialDenseMatrix xyze(2,iel);
+
+  // get node coordinates
+  for(int i=0;i<iel;i++)
+  {
+    xyze(0,i)=Nodes()[i]->X()[0];
+    xyze(1,i)=Nodes()[i]->X()[1];
+  }
+
+  /*----------------------------------------- declaration of variables ---*/
+  Epetra_SerialDenseVector  funct(iel);
+  Epetra_SerialDenseMatrix      deriv(2,iel);
+  Epetra_SerialDenseMatrix      deriv_xy(2,iel);
+  Epetra_SerialDenseMatrix      xjm(2,2);
+  Epetra_SerialDenseMatrix      xji(2,2);
+//  Epetra_SerialDenseMatrix      bop(3,2*iel);
+//  Epetra_SerialDenseMatrix      d(4,4);
+
+  // gaussian points
+  const GaussRule2D gaussrule = getOptimalGaussrule(distype);
+  const IntegrationPoints2D  intpoints(gaussrule);
+  DOUBLE              min_detF;         /* minimal Jacobian determinant   */
+  ale2_min_jaco(Shape(),xyze,&min_detF);
+  
+  // integration loops
+  for (int iquad=0;iquad<intpoints.nquad;iquad++)
+  {
+      const double e1 = intpoints.qxg[iquad][0];
+      const double e2 = intpoints.qxg[iquad][1];
+
+      // shape functions and their derivatives
+      DRT::UTILS::shape_function_2D(funct,e1,e2,distype);
+      DRT::UTILS::shape_function_2D_deriv1(deriv,e1,e2,distype);
+
+      // compute jacobian matrix
+
+      // determine jacobian at point r,s,t
+      for (int i=0; i<2; i++)
+      {
+        for (int j=0; j<2; j++)
+        {
+          double dum=0.;
+          for (int l=0; l<iel; l++)
+          {
+            dum += deriv(i,l)*xyze(j,l);
+          }
+          xjm(i,j)=dum;
+        }
+      }
+
+      // determinant of jacobian
+      const double det = xjm(0,0)*xjm(1,1) - xjm(0,1)*xjm(1,0);
+      const double fac = intpoints.qwgt[iquad]*det;
+
+      // calculate operator B
+
+      // inverse of jacobian
+      const double dum=1.0/det;
+      xji(0,0) = xjm(1,1)* dum;
+      xji(0,1) =-xjm(0,1)* dum;
+      xji(1,0) =-xjm(1,0)* dum;
+      xji(1,1) = xjm(0,0)* dum;
+
+      for (int isd=0; isd<2; isd++)
+        for (int jsd=0; jsd<2; jsd++)
+          for (int inode=0; inode<iel; inode++)
+            deriv_xy(isd,inode) = xji(isd,jsd) * deriv(jsd,inode);
+      /*------------------------- diffusivity depends on displacement ---*/
+      const double k_diff = 1.0/min_detF/min_detF;
+      /*------------------------------- sort it into stiffness matrix ---*/
+      for (int i=0; i<iel; i++)
+      {
+         for (int j=0; j<iel; j++)
+         {
+           (*sys_mat)(i*2,j*2)     += ( deriv_xy(0,i) * deriv_xy(0,j)
+                                      + deriv_xy(1,i) * deriv_xy(1,j) )*fac*k_diff;
+           (*sys_mat)(i*2+1,j*2+1) += ( deriv_xy(0,i) * deriv_xy(0,j)
+                                      + deriv_xy(1,i) * deriv_xy(1,j) )*fac*k_diff;
+         }
+      }
+      
+      
+  }
+}
 
 //=======================================================================
 //=======================================================================

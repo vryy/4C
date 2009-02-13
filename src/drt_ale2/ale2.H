@@ -274,6 +274,11 @@ private:
                  Epetra_SerialDenseVector* residual,
 		 RefCountPtr<MAT::Material> material,
                  ParameterList& 	   params);
+  void static_ke_laplace(vector<int>&              lm,
+                 Epetra_SerialDenseMatrix* sys_mat,
+                 Epetra_SerialDenseVector* residual,
+                 RefCountPtr<MAT::Material> material,
+                 ParameterList&            params);
   void static_ke_spring(Epetra_SerialDenseMatrix* sys_mat, vector<double>& displacements);
   void edge_geometry(int i, int j, const Epetra_SerialDenseMatrix& xyze,
                      double* length, double* sin_alpha, double* cos_alpha);
@@ -289,6 +294,7 @@ private:
   {
     none,
     calc_ale_lin_stiff,
+    calc_ale_laplace,
     calc_ale_spring
   };
 

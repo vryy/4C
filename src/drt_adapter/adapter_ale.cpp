@@ -17,6 +17,7 @@ Maintainer: Ulrich Kuettler
 
 #include "adapter_ale.H"
 #include "adapter_ale_lin.H"
+#include "adapter_ale_laplace.H"
 #include "adapter_ale_springs.H"
 
 // further includes for AleBaseAlgorithm:
@@ -138,6 +139,8 @@ void ADAPTER::AleBaseAlgorithm::SetupAle()
     ale_ = rcp(new AleLinear(actdis, solver, params, output, false, dirichletcond));
   else if (aletype==ALE_DYNAMIC::incr_lin)
     ale_ = rcp(new AleLinear(actdis, solver, params, output, true , dirichletcond));
+  else if (aletype==ALE_DYNAMIC::laplace)
+    ale_ = rcp(new AleLaplace(actdis, solver, params, output, true, dirichletcond));
   else if (aletype==ALE_DYNAMIC::springs)
     ale_ = rcp(new AleSprings(actdis, solver, params, output, dirichletcond));
   else
