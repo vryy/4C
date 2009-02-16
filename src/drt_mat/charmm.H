@@ -1,7 +1,6 @@
 #ifndef CHARMM_H_
 #define CHARMM_H_
 
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 #include "material.H"
@@ -129,6 +128,5 @@ INPAR::MAT::m_charmm; }
 }
 
 #endif // CCADISCRET
-#endif // D_SOLID3
 #endif // CHARMM_H_
 

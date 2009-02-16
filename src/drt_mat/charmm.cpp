@@ -1,4 +1,3 @@
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 #include <vector>
@@ -112,6 +111,5 @@ Epetra_SerialDenseVector MAT::CHARMM::charmmfileapi ( const double STARTD,
 }
 
 
-#endif
 #endif
 
