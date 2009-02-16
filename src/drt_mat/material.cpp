@@ -48,11 +48,11 @@ Maintainer: Lena Wiechert
 Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
 {
   // for the sake of safety
+  // in post-process mode we do not have any instance of DRT::Problem
   if (DRT::Problem::NumInstances() <= 0)
     dserror("Sorry dude, cannot work out problem instance.");
 
   // retrieve problem instance to read from
-  // in post-process mode we do not have any instance of DRT::Problem
   const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
   // retrieve validated input line of material ID in question
   Teuchos::RCP<MAT::PAR::Material> curmat = DRT::Problem::Instance(probinst)->Materials()->ById(matnum);
