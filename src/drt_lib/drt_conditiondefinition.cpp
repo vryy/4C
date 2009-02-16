@@ -441,9 +441,14 @@ void DRT::INPUT::ConditionDefinition::Read(const Problem& problem,
   {
     std::stringstream line(section[0]);
     std::string dobj;
-    int condcount;
+    int condcount=-1;
     line >> dobj;
     line >> condcount;
+
+    if(condcount<0)
+    {
+      dserror("condcount<0 in section %s\n",sectionname_.c_str());
+    }
 
     bool success = false;
     switch (gtype_)
