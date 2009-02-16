@@ -258,7 +258,7 @@ public:
                               Epetra_SerialDenseVector& elevec1);
 
   /*!
-  \brief Evaluate a statistical Neumann boundary condition and related damping matrix
+  \brief Evaluate a statistical Neumann boundary condition or a Brownian step in space together with a related damping matrix
 
   An element derived from this class uses the Evaluate method to receive commands
   and parameters from some control routine in params and evaluates a  statistical Neumann boundary condition
@@ -271,7 +271,7 @@ public:
 
   \return 0 if successful, negative otherwise
   */
-  virtual int EvaluateStatForceDamp(ParameterList& params,
+  virtual int EvaluateBrownian(ParameterList& params,
                                     vector<double> mydisp,
                                     Epetra_SerialDenseVector& elevec1,
                                     Epetra_SerialDenseMatrix& elemat1);  
@@ -313,7 +313,7 @@ private:
     calc_struct_update_istep,
     calc_struct_update_imrlike,
     calc_struct_reset_istep, //!< reset elementwise internal variables during iteration to last converged state
-    calc_stat_force_damp, //calculate statistical forces and damping for Brownian dynamics
+    calc_brownian_damp, //calculate statistical forces and damping for Brownian dynamics
     calc_struct_ptcstiff //calculate artificial stiffness due to PTC solution strategy
   };
   
@@ -323,7 +323,7 @@ private:
   //! variable saving whether element has already been initialized (then isinit_ == true)
   bool isinit_;
   
-  //!reference node position (not needed explicitly, but stored for the seek of completeness)
+  //!reference node position (not needed explicitly, but stored for the sake of completeness)
   LINALG::Matrix<6,1> X_;
   
   //! material type
@@ -413,6 +413,9 @@ private:
   
   //!updating local curvature according to Crisfield, Vol. 2, pages 209 - 210
   void updatecurvature(const LINALG::Matrix<3,3>& Tnew, LINALG::Matrix<3,1> deltabetaplusalpha,LINALG::Matrix<3,1> deltabetaminusalpha);
+  
+  //!updating local curvature approximately according to Crisfield, Vol. 2, eqs. (17.72) & (17.73)
+  void approxupdatecurvature(const LINALG::Matrix<3,3>& Tnew, LINALG::Matrix<3,1> deltabetaplusalpha,LINALG::Matrix<3,1> deltabetaminusalpha);
   
   //!computing stiffness matrix Ksigma1 according to Crisfield, Vol. 2, equation (17.83)
   void computeKsig1(Epetra_SerialDenseMatrix& Ksig1, const LINALG::Matrix<3,1>& stressn, const LINALG::Matrix<3,1>& stressm);

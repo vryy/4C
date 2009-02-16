@@ -144,11 +144,13 @@ void StatMechTime::Integrate()
     else if (predictor==2) ConsistentPredictor();
     */
 
-    ConsistentPredictor();    
+    ConsistentPredictor(); 
+    
     
 
-    FullNewton();
-    //PTC();
+    //FullNewton();
+    PTC();
+    
    
     UpdateandOutput();
    
@@ -239,10 +241,7 @@ void StatMechTime::ConsistentPredictor()
   // -------------------------------------------------------------------
   double time        = params_.get<double>("total time"     ,0.0);
   double dt          = params_.get<double>("delta time"     ,0.01);
-  double mdamp       = params_.get<double>("damping factor M",0.0);
-  bool   damping     = params_.get<bool>  ("damping"        ,false);
   double alphaf      = params_.get<double>("alpha f"        ,0.459);
-  double alpham      = params_.get<double>("alpha m"        ,0.378);
   double beta        = params_.get<double>("beta"           ,0.292);
 #ifdef STRUGENALPHA_BE
   double delta       = params_.get<double>("delta"          ,beta);
@@ -263,13 +262,15 @@ void StatMechTime::ConsistentPredictor()
   // increment time and step
   double timen = time + dt;  // t_{n+1}
   //int istep = step + 1;  // n+1
+  
+  
 
-  //--------------------------------------------------- predicting state
-  // constant predictor : displacement in domain
-  disn_->Update(1.0,*dis_,0.0);
 
-  // apply new displacements at DBCs
-  // and get new external force vector
+
+ 
+
+  /*compute new ordinary external forces (if dependent on displacement with respect to old displacemnet for a
+   * semi-implicit-time-integration scheme)*/
   {
     ParameterList p;
     // action for elements
@@ -278,7 +279,6 @@ void StatMechTime::ConsistentPredictor()
     p.set("total time",timen);
     p.set("delta time",dt);
     p.set("alpha f",alphaf);
-    p.set("damping factor M",mdamp);
     // set vector values needed by elements
     discret_.ClearState();
     discret_.SetState("displacement",disn_);
@@ -292,13 +292,20 @@ void StatMechTime::ConsistentPredictor()
     fextn_->PutScalar(0.0);  // initialize external force vector (load vect)
     discret_.EvaluateNeumann(p,*fextn_);
     discret_.ClearState();
-
-
-    //adding thermal forces and related damping matrix according to fluctuation dissipation theorem
-    statmechmanager_->StatMechForceDamp(params_,dis_,fextn_,damp_);
-
-
   }
+  
+  /*The Brownian term in the Ito integral is evaluated either by means of statistical forces or by means of a random
+   *  step in space; these statistical variables are to be evaluated in the configuration of the last time step 
+   * (semi-implicit-time integration !!!) to ensure convergence to the correct solution to the stochastical proceess;
+   *  together with the random variables also the related damping matrix is evaluated according to the fluctuation 
+   * dissipation theorem */
+
+  statmechmanager_->StatMechBrownian(params_,dis_,fextn_,damp_);
+  
+  // constant predictor : displacement in domain
+  disn_->Update(1.0,*dis_,0.0);
+  
+
 
   //cout << *disn_ << endl;
 
@@ -359,6 +366,7 @@ void StatMechTime::ConsistentPredictor()
     discret_.ClearState();
   }
 #endif
+  
 
   //------------------------------ compute interpolated dis, vel and acc
   // consistent predictor
@@ -371,12 +379,12 @@ void StatMechTime::ConsistentPredictor()
 
 
   // zerofy velocity and acceleration in case of statics
-  //if (dynkindstat)
-  //{
+  if (dynkindstat)
+  {
     velm_->PutScalar(0.0);
     veln_->PutScalar(0.0);
     vel_->PutScalar(0.0);
-  //}
+  }
 
   //------------------------------- compute interpolated external forces
   // external mid-forces F_{ext;n+1-alpha_f} (fextm)
@@ -471,7 +479,8 @@ void StatMechTime::ConsistentPredictor()
   }
 
   return;
-} // StruGenAlpha::ConsistentPredictor()
+} //StatMechTime::ConsistentPredictor()
+
 
 /*----------------------------------------------------------------------*
  |  do Newton iteration (public)                             mwgee 03/07|
@@ -543,6 +552,7 @@ void StatMechTime::FullNewton()
     }
     solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,numiter==0);
     solver_.ResetTolerance();
+    
 
     //---------------------------------- update mid configuration values
     // displacements
@@ -615,6 +625,18 @@ void StatMechTime::FullNewton()
     //---------------------------------------------- build residual norm
     disi_->Norm2(&disinorm);
     fresm_->Norm2(&fresmnorm);
+    
+
+    
+    /*
+    for(int id = 0; id < fresm_->MyLength() ; id++)
+    {
+      if ( (*fresm_)[id] > 10 && numiter < 2 )
+      {
+        std::cout<<"\nfres["<<id<<"] = "<< (*fresm_)[id];
+      }
+    }
+    */
     
     // first index = time step index
     std::ostringstream filename;
@@ -698,7 +720,7 @@ void StatMechTime::PTC()
   if (!damp_->Filled()) dserror("damping matrix must be filled here");
 
   // hard wired ptc parameters
-  double ptcdt = 2.5e1; //0.75 ... 5e1 scheint eine gute Wahl zu sein
+  double ptcdt = 1.3e1; //0.75 ... 5e1 scheint eine gute Wahl zu sein
   double nc;
   fresm_->NormInf(&nc);
   double dti = 1/ptcdt;

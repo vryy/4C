@@ -58,7 +58,7 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
   else if (action=="calc_struct_update_istep") act = Beam3::calc_struct_update_istep;
   else if (action=="calc_struct_update_imrlike") act = Beam3::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep") act = Beam3::calc_struct_reset_istep;
-  else if (action=="calc_stat_force_damp")        act = Beam3::calc_stat_force_damp;
+  else if (action=="calc_brownian_damp")        act = Beam3::calc_brownian_damp;
   else if (action=="calc_struct_ptcstiff")        act = Beam3::calc_struct_ptcstiff;
   else dserror("Unknown type of action for Beam3");
 
@@ -70,7 +70,7 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
     }
     break;
     //action type for evaluating statistical forces
-    case Beam3::calc_stat_force_damp:
+    case Beam3::calc_brownian_damp:
     {
       /*in order to understand the way how in the following parallel computing is handled one has to
        * be aware of what usually happens: each processor evaluates forces on each of its elements no
@@ -85,7 +85,7 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
        * impossible since the random forces of two different DOF may have been evaluated during different
        * element calls; the only solution to this problem is obviously to allow element evaluation
        * to one processor only (the row map owner processor) and to allow this processor to assemble the
-       * thereby gained random forces later on also to DOF of which it is not the row map owner; so fist
+       * thereby gained random forces later on also to DOF of which it is not the row map owner; so first
        * we check in this method whether the current processor is the owner of the element (if not
        * evaluation is cancelled) and finally this processor assembles the evaluated forces for degrees of
        * freedom right no matter whether its the row map owner of these DOF (outside the element routine
@@ -101,26 +101,26 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
-      //evaluation of statistical forces with the local statistical forces vector fstat
-      Epetra_SerialDenseVector fstat(lm.size());
-      EvaluateStatForceDamp(params,mydisp,fstat,elemat1);
+      //evaluation of statistical forces or movement (both stored in variable "brownian")
+      Epetra_SerialDenseVector brownian(lm.size());
+      EvaluateBrownian(params,mydisp,brownian,elemat1);
 
-      /*all the above evaluated forces are used in assembly of the column map force vector no matter if the current processor if
-       * the row map owner of these DOF*/
+      /*all the above evaluated forces or movements are used in assembly of the in general column map vector no matter if the current processor is
+       * the row map owner of the affected DOF*/
       //note carefully: a space between the two subsequal ">" signs is mandatory for the C++ parser in order to avoid confusion with ">>" for streams
-      RCP<Epetra_Vector>    fstatcol = params.get<  RCP<Epetra_Vector> >("statistical force vector",Teuchos::null);
+      RCP<Epetra_Vector>    browniancol = params.get<  RCP<Epetra_Vector> >("statistical vector",Teuchos::null);
 
       for(unsigned int i = 0; i < lm.size(); i++)
       {
         //note: lm contains the global Ids of the degrees of freedom of this element
-        //testing whether the fstatcol vector has really an element related with the i-th element of fstat by the i-the entry of lm
-        if (!(fstatcol->Map()).MyGID(lm[i])) dserror("Sparse vector fstatcol does not have global row %d",lm[i]);
+        //testing whether the browniancol vector has really an element related with the i-th element of brownian by the i-the entry of lm
+        if (!(browniancol->Map()).MyGID(lm[i])) dserror("Sparse vector browniancol does not have global row %d",lm[i]);
 
         //get local Id of the fstatcol vector related with a certain element of fstat
-        int lid = (fstatcol->Map()).LID(lm[i]);
+        int lid = (browniancol->Map()).LID(lm[i]);
 
         //add to the related element of fstatcol the contribution of fstat
-        (*fstatcol)[lid] += fstat[i];
+        (*browniancol)[lid] += brownian[i];
       }
 
     }
@@ -204,7 +204,7 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
         stiff_relerr.Shape(12,12);
 
         //characteristic length for numerical approximation of stiffness
-        double h_rel = 1e-6;
+        double h_rel = 1e-7;
 
         //flag indicating whether approximation lead to significant relative error
         int outputflag = 0;
@@ -401,10 +401,10 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(ParameterList& params,
  | Evaluate Statistical forces and viscous damping (public)                                       cyron 09/08|
  *----------------------------------------------------------------------------------------------------------*/
 
-int DRT::ELEMENTS::Beam3::EvaluateStatForceDamp(ParameterList& params,
-                                                vector<double> mydisp,
-                                                Epetra_SerialDenseVector& elevec1,
-                                                Epetra_SerialDenseMatrix& elemat1)
+int DRT::ELEMENTS::Beam3::EvaluateBrownian(ParameterList& params,
+                                           vector<double> mydisp,
+                                           Epetra_SerialDenseVector& elevec1,
+                                           Epetra_SerialDenseMatrix& elemat1)
 {
 
   // thermal energy responsible for statistical forces
@@ -415,7 +415,6 @@ int DRT::ELEMENTS::Beam3::EvaluateStatForceDamp(ParameterList& params,
 
   // polynomial order for interpolation of stochastic line load (zero corresponds to bead spring model)
   int stochasticorder = params.get<int>("STOCH_ORDER",0);
-
 
   //stochastic field of line load is interpolated by zeroth order polynomial functions
   if (stochasticorder == 0)
@@ -429,8 +428,14 @@ int DRT::ELEMENTS::Beam3::EvaluateStatForceDamp(ParameterList& params,
     elemat1(8,8) += zeta/2.0;
 
 
-    //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
-    double stand_dev_trans = pow(2 * kT * (zeta/2) / params.get<double>("delta time",0.01),0.5);
+    //calculating standard deviation of statistical forces or Brownian steps according to fluctuation dissipation theorem   
+    double stand_dev_trans = 0;
+    //if FORCE_OR_DISP == 0 a statistical force is evaluated
+    if(params.get<int>("FORCE_OR_DISP",0) == 0)
+      stand_dev_trans = pow(2 * kT * (zeta/2) / params.get<double>("delta time",0.01),0.5);
+    //if FORCE_OR_DISP == 1 a statistical displacement is evaluated
+    else
+      stand_dev_trans = pow(2 * kT * params.get<double>("delta time",0.01) / (zeta/2),0.5);
     
 
 
@@ -464,11 +469,17 @@ int DRT::ELEMENTS::Beam3::EvaluateStatForceDamp(ParameterList& params,
     elemat1(7,1) += zeta/6.0;
     elemat1(2,8) += zeta/6.0;
     elemat1(8,2) += zeta/6.0;
+    
+    //calculating standard deviation of statistical forces or Brownian steps according to fluctuation dissipation theorem   
+    double stand_dev_trans = 0;
+    //if FORCE_OR_DISP == 0 a statistical force is evaluated
+    if(params.get<int>("FORCE_OR_DISP",0) == 0)
+      stand_dev_trans = pow(2 * kT * (zeta/6) / params.get<double>("delta time",0.01),0.5);
+    //if FORCE_OR_DISP == 1 a statistical displacement is evaluated
+    else
+      stand_dev_trans = pow(2 * kT * params.get<double>("delta time",0.01) / (zeta/6),0.5);
 
-
-    //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
-    double stand_dev_trans = pow(2 * kT * (zeta/6) / params.get<double>("delta time",0.01),0.5);
-
+    
     //creating a random generator object which creates random numbers with mean = 0 and standard deviation
     //stand_dev; using Blitz namespace "ranlib" for random number generation
     ranlib::Normal<double> normalGen(0,stand_dev_trans);
@@ -482,19 +493,19 @@ int DRT::ELEMENTS::Beam3::EvaluateStatForceDamp(ParameterList& params,
     elevec1[8] += normalGen.random();
 
     //adding correlated components of statistical forces
-    double force1 = normalGen.random();
-    double force2 = normalGen.random();
-    double force3 = normalGen.random();
-    elevec1[0] += force1;
-    elevec1[1] += force2;
-    elevec1[2] += force3;
-    elevec1[6] += force1;
-    elevec1[7] += force2;
-    elevec1[8] += force3;
+    double stat1 = normalGen.random();
+    double stat2 = normalGen.random();
+    double stat3 = normalGen.random();
+    elevec1[0] += stat1;
+    elevec1[1] += stat2;
+    elevec1[2] += stat3;
+    elevec1[6] += stat1;
+    elevec1[7] += stat2;
+    elevec1[8] += stat3;
   }
   
   return 0;
-} //DRT::ELEMENTS::Beam3::EvaluateStatisticalNeumann
+} //DRT::ELEMENTS::Beam3::EvaluateBrownian
 
 
 
@@ -518,10 +529,10 @@ int DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
     {
       
       //translational damping
-      elemat1(  i,   j) += dti*0.1;
-      elemat1(6+i, 6+j) += dti*0.1;
-      elemat1(6+i,   j) += dti*0.1;
-      elemat1(  i, 6+j) += dti*0.1;
+      elemat1(  i,   j) += dti*0.5;
+      elemat1(6+i, 6+j) += dti*0.5;
+      elemat1(6+i,   j) += dti*0.5;
+      elemat1(  i, 6+j) += dti*0.5;
       
       
       //rotational damping
@@ -812,9 +823,14 @@ inline void DRT::ELEMENTS::Beam3::updatetriad(LINALG::Matrix<3,1> deltabetaplusa
   Qnew_(1) = Qrot(3)*Qold_(1) + Qold_(3)*Qrot(1) + Qrot(2)*Qold_(0) - Qold_(2)*Qrot(0);
   Qnew_(2) = Qrot(3)*Qold_(2) + Qold_(3)*Qrot(2) + Qrot(0)*Qold_(1) - Qold_(0)*Qrot(1);
   Qnew_(3) = Qrot(3)*Qold_(3) - Qrot(2)*Qold_(2) - Qrot(1)*Qold_(1) - Qrot(0)*Qold_(0);
+  
+  //normalizing quaternion in order to make sure that it keeps unit absolute values throught time stepping
+  double abs = pow(Qnew_(0)*Qnew_(0) + Qnew_(1)*Qnew_(1) + Qnew_(2)*Qnew_(2) + Qnew_(3)*Qnew_(3),0.5);
+  for(int i = 0; i<4; i++)
+    Qnew_(i) = Qnew_(i) / abs;
 
   quaterniontotriad(Qnew_,Tnew);
-
+  
 
 } //DRT::ELEMENTS::Beam3::updatetriad
 
@@ -865,6 +881,37 @@ inline void DRT::ELEMENTS::Beam3::updatecurvature(const LINALG::Matrix<3,3>& Tne
 
   return;
 } //DRT::ELEMENTS::Beam3::updatecurvature
+
+
+//updating local curvature according approximately to Crisfield, Vol. 2, eqs. (17.72) and (17.73)
+inline void DRT::ELEMENTS::Beam3::approxupdatecurvature(const LINALG::Matrix<3,3>& Tnew, LINALG::Matrix<3,1> deltabetaplusalpha,LINALG::Matrix<3,1> deltabetaminusalpha)
+{
+  //old triad
+  LINALG::Matrix<3,3> Told;
+  quaterniontotriad(Qold_,Told);
+  
+  //compute spin matrix from eq. (17.73)
+  LINALG::Matrix<3,3> spin;
+  computespin(spin, deltabetaplusalpha, 0.5);
+  
+  //turning spin matrix to left right hand side matrix of eq. (17.73)
+  for(int i = 0; i<3; i++)
+    spin(i,i) += 1;
+
+  //complete right hand side matrix of eq. (17.73)
+  //mid point triad
+  LINALG::Matrix<3,3> Tmid;
+  Tmid.Multiply(spin,Told);
+  
+  //eq. (17.72)
+  curvnew_.MultiplyTN(Tmid,deltabetaminusalpha);
+  curvnew_.Scale(1/lrefe_);
+
+  curvnew_ += curvold_;
+
+  return;
+} //DRT::ELEMENTS::Beam3::approxupdatecurvature
+
 
 //computing stiffens matrix Ksigma1 according to Crisfield, Vol. 2, equation (17.83)
 inline void DRT::ELEMENTS::Beam3::computeKsig1(Epetra_SerialDenseMatrix& Ksig1, const LINALG::Matrix<3,1>& stressn, const LINALG::Matrix<3,1>& stressm)
@@ -946,9 +993,6 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
   LINALG::Matrix<3,1> stressn;
   LINALG::Matrix<3,1> stressm;
 
-  //current position of nodal degrees of freedom
-  LINALG::Matrix<6,2> xcurr;
-
   //difference between coordinates of both nodes in current configuration, x21' Crisfield  Vol. 2 equ. (17.66a) and (17.72)
   LINALG::Matrix<3,1> x21;
 
@@ -959,28 +1003,19 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
   //auxiliary variables
   LINALG::Matrix<3,1> deltabetaplusalpha;
   LINALG::Matrix<3,1> deltabetaminusalpha;
+  
   //midpoint triad, Crisfiel Vol. 2, equation (17.73)
   LINALG::Matrix<3,3> Tnew;
-  
-  //nodal coordinates in current position
-  for (int k=0; k<2; ++k) //looping over number of nodes
-  {
-    for (int j=0; j<3; ++j)
-    {
-      xcurr(j,k)   = Nodes()[k]->X()[j] + disp[k*6+j]; //translational DOF
-      xcurr(j+3,k) = disp[k*6+j+3]; //rotational DOF
-    }
-  }
 
   //first of all "new" variables have to be adopted to dispalcement passed in from BACI driver
 
   //difference between coordinates of both nodes, x21' Crisfield  Vol. 2 equ. (17.66a) and (17.72)
   for (int j=0; j<3; ++j)
   {
-    x21(j) = xcurr(j,1) - xcurr(j,0);
-    betaplusalphanew_(j) = xcurr(j+3,1) + xcurr(j+3,0);
-    betaminusalphanew_(j) = xcurr(j+3,1) - xcurr(j+3,0);
-  }
+    x21(j)                = (X_(3+j) - X_(j) ) + ( disp[6+j]  - disp[j] );
+    betaplusalphanew_(j)  = disp[9+j] + disp[3+j];
+    betaminusalphanew_(j) = disp[9+j] - disp[3+j];
+  }    
 
   deltabetaplusalpha  = betaplusalphanew_;
   deltabetaplusalpha -= betaplusalphaold_;
@@ -999,32 +1034,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
   epsilonn.MultiplyTN(Tnew,x21);
   epsilonn.Scale(1/lrefe_);
   epsilonn(0) -=  1;
-  
-  
-  LINALG::Matrix<3,1> winkel;
-  LINALG::Matrix<3,1> richtung;
-  LINALG::Matrix<3,1> aufpunkt;
-  LINALG::Matrix<3,1> endpunkt;
-  for (int j = 0; j<3; j++)
-  {
-    richtung(j) = xcurr(j,1) - xcurr(j,0);
-    aufpunkt(j) = xcurr(j,0);
-    endpunkt(j) = xcurr(j,1);
-  }
-  
-  if(Id() == 0)
-  {
-    //quaterniontoangle(Qnew_, winkel);
-    //std::cout<<"\nwinkel element "<<Id()<<" : "<< winkel;
-    //std::cout<<"\nTriade element "<<Id()<<" : "<< Tnew;
-    //std::cout<<"\nAxenrichtung element "<<Id()<<" : "<< richtung;
-    //std::cout<<"\nAufpunkt element "<<Id()<<" : "<< aufpunkt;
-    //std::cout<<"\nEndpunkt element "<<Id()<<" : "<< endpunkt;
-    //std::cout<<"\ncurvature element "<<Id()<<" : "<< curvnew_;
-    
-    //std::cout<<"\nxcurr "<<Id()<<" : "<< xcurr;
-  }
-  
+
 
   /* read material parameters using structure _MATERIAL which is defined by inclusion of      /
    / "../drt_lib/drt_timecurve.H"; note: material parameters have to be read in the evaluation /
@@ -1063,6 +1073,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
   epsilonn(2) *= sm*crosssecshear_;
 
   stressn.Multiply(Tnew,epsilonn);
+        
 
   //turning bending strain epsilonm into bending stress stressm
   epsilonm = curvnew_;
@@ -1070,7 +1081,11 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
   epsilonm(1) *= ym*Iyy_;
   epsilonm(2) *= ym*Izz_;
   stressm.Multiply(Tnew,epsilonm);
-
+  
+  /*
+  std::cout<<"\nstressn"<<stressn;
+  std::cout<<"\nstressm"<<stressm;
+*/
 
   //computing global internal forces, Crisfield Vol. 2, equation (17.79)
   //note: X = [-I 0; -S -I; I 0; -S I] with -S = T^t; and S = S(x21)/2;
@@ -1088,46 +1103,14 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
         (*force)(i+3) -= stressn(j)*spinx21(i,j);
         (*force)(i+9) -= stressn(j)*spinx21(i,j);
       }
+      
     }
     
-
-    /*
-    //adding isotropic torsional curvature damping
-    double torsdamp = 0.01;
-    for(int i = 0; i<3; i++)
-    {
-      //damping moment
-      LINALG::Matrix<3,3> Tconv;
-      quaterniontotriad(Qconv_,Tconv);
-      double Mg = Tconv(i,0)*lrefe_*(curvnew_(0) - curvconv_(0))*(zeta_/2)*torsdamp / params.get<double>("delta time",0.01);
-      //node 1
-      (*force)[3+i] += Mg;
-      //node 2
-      (*force)[9+i] += Mg;
-    }
-    */
-
-    /*
-    //adding anisotropic torsional curvature damping
-    double torsdamp = 0.01;
-    for(int i = 0; i<3; i++)
-    {
-      //damping moment
-      LINALG::Matrix<3,3> Tconv;
-      quaterniontotriad(Qconv_,Tconv);
-      double Mg = Tconv(i,0)*lrefe_*(curvnew_(0) - curvconv_(0))*(zeta_/2)*torsdamp / params.get<double>("delta time",0.01);
-      //node 1
-      (*force)[3+i] += Mg;
-      //node 2
-      (*force)[9+i] += Mg;
-    }
-    */
-
 
     
     //artificial isotropic rotational damping
     {
-      double torsdamp = 0.0005; //0.005 is obviously sufficient for free fluctionations with 10 elements
+      double torsdamp = 0.000005; //0.005 is obviously sufficient for free fluctionations with 10 elements
       LINALG::Matrix<3,1> newangle;
       LINALG::Matrix<3,1> convangle;
       quaterniontoangle(Qnew_, newangle);
@@ -1145,45 +1128,25 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
       }
     }
     
-
+    
     /*
-    //artificial explicit anisotropic rotational damping
+    //artificial isotropic curvature damping
     {
-      double torsdamp = 0.01;
-      LINALG::Matrix<3,1> newangle;
-      LINALG::Matrix<3,1> convangle;
-      LINALG::Matrix<3,1> artforce;
-      LINALG::Matrix<3,3> Tconv;
-      quaterniontotriad(Qconv_,Tconv);
-      quaterniontoangle(Qnew_, newangle);
-      quaterniontoangle(Qconv_, convangle);
-
-      LINALG::Matrix<3,1> omega = newangle;
-      omega -= convangle;
+      double torsdamp = 0.05; //0.005 is obviously sufficient for free fluctionations with 10 elements
+      
+      LINALG::Matrix<3,1> omega = curvnew_;
+      omega -= curvconv_;
       omega.Scale( 1.0 / params.get<double>("delta time",0.01) );
-
-      LINALG::Matrix<3,3> Theta;
-      for(int i = 0; i<3 ; i++)
-      {
-        for(int j = 0; j<3; j++)
-        {
-          Theta(i,j) = Tconv(i,0)*Tconv(j,0);
-        }
-      }
-
-      artforce.Multiply(Theta,omega);
-      artforce.Scale(zeta_*torsdamp);
-
       for(int i = 0; i<3; i++)
       {
-        (*force)[3+i] += artforce(i);
-        (*force)[9+i] += artforce(i);
+        //node 1     
+        (*force)[3+i] += omega(i)*torsdamp*zeta_;
+        //node 2
+        (*force)[9+i] += omega(i)*torsdamp*zeta_;      
       }
     }
     */
-
-
-
+    
 
   }
   
@@ -1209,61 +1172,13 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
     (*stiffmatrix) += Ksig2;
 
 
-    /*
-    //adding isotropic torsional curvature damping
-    {
-      double torsdamp = 0.01;
-      LINALG::Matrix<3,3> Tconv;
-      quaterniontotriad(Qconv_,Tconv);
-
-      LINALG::Matrix<3,3> aux;
-
-      for(int i= 0; i<3; i++)
-      {
-        for(int j=0;j<3;j++)
-        {
-          aux(i,j) = Tconv(i,0)*Tnew(0,j)*(zeta_/2)*torsdamp / params.get<double>("delta time",0.01);
-
-          (*stiffmatrix)(3+i, 3+j) -= aux(i,j);
-          (*stiffmatrix)(9+i, 9+j) += aux(i,j);
-          (*stiffmatrix)(9+i, 3+j) -= aux(i,j);
-          (*stiffmatrix)(3+i, 9+j) += aux(i,j);
-        }
-      }
-    }
-    */
-
-
-    /*
-    //adding anisotropic torsional curvature damping
-    {
-      double torsdamp = 0.005;
-      LINALG::Matrix<3,3> Tconv;
-      quaterniontotriad(Qconv_,Tconv);
-
-      LINALG::Matrix<3,3> aux;
-
-      for(int i= 0; i<3; i++)
-      {
-        for(int j=0;j<3;j++)
-        {
-          aux(i,j) = Tconv(i,0)*Tnew(0,j)*(zeta_/2)*torsdamp / params.get<double>("delta time",0.01);
-
-          (*stiffmatrix)(3+i, 3+j) -= aux(i,j);
-          (*stiffmatrix)(9+i, 9+j) += aux(i,j);
-          (*stiffmatrix)(9+i, 3+j) -= aux(i,j);
-          (*stiffmatrix)(3+i, 9+j) += aux(i,j);
-        }
-      }
-    }
-    */
 
 
 
     
     //artificial isotropic rotational damping stiffness
     {
-      double torsdamp = 0.0005; //0.005 is obviously sufficient for free fluctionations with 10 elements
+      double torsdamp = 0.000005; //0.005 is obviously sufficient for free fluctionations with 10 elements
       LINALG::Matrix<3,1> newangle;
       quaterniontoangle(Qnew_, newangle);
       LINALG::Matrix<3,3> Hinverse = Hinv(newangle);
@@ -1283,44 +1198,30 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
       }
     }
     
-
+    
     /*
-    //artificial explicit anisotropic rotational damping stiffness
+    //artificial isotropic curvature damping stiffness
     {
-      double torsdamp = 0.01;
-      LINALG::Matrix<3,1> newangle;
-      quaterniontoangle(Qnew_, newangle);
-      LINALG::Matrix<3,3> Hinverse = Hinv(newangle);
-      LINALG::Matrix<3,3> aux;
-      LINALG::Matrix<3,3> Tconv;
-      quaterniontotriad(Qconv_,Tconv);
+      double torsdamp = 0.05; //0.005 is obviously sufficient for free fluctionations with 10 elements
 
-      LINALG::Matrix<3,3> Theta;
-      for(int i = 0; i<3 ; i++)
-      {
-        for(int j = 0; j<3; j++)
-        {
-          Theta(i,j) = Tconv(i,0)*Tconv(j,0);
-        }
-      }
+      LINALG::Matrix<3,3> artstiff = Tnew;
 
-      aux.Multiply(Theta,Hinverse);
 
-      aux.Scale(zeta_*0.5*torsdamp / params.get<double>("delta time",0.01));
+      artstiff.Scale(zeta_*torsdamp / (params.get<double>("delta time",0.01) * lrefe_ ));
 
       for(int i= 0; i<3; i++)
       {
         for(int j=0;j<3;j++)
         {
-          (*stiffmatrix)(3+i, 3+j) += aux(i,j);
-          (*stiffmatrix)(9+i, 9+j) += aux(i,j);
-          (*stiffmatrix)(9+i, 3+j) += aux(i,j);
-          (*stiffmatrix)(3+i, 9+j) += aux(i,j);
+          (*stiffmatrix)(3+i, 3+j) += artstiff(j,i);
+          (*stiffmatrix)(9+i, 9+j) -= artstiff(j,i);
+          (*stiffmatrix)(9+i, 3+j) += artstiff(j,i);
+          (*stiffmatrix)(3+i, 9+j) -= artstiff(j,i);
         }
       }
     }
     */
-
+    
 
 
 

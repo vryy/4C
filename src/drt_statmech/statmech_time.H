@@ -43,8 +43,7 @@ public:
   void Integrate();
   
   //! \brief do consistent predictor step
-  virtual void ConsistentPredictor();
-  
+  virtual void ConsistentPredictor();    
 
   //!\brief do full Newton iteration
   virtual void FullNewton();

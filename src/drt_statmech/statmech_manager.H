@@ -53,7 +53,7 @@ public:
   void StatMechUpdate(const double dt, const Epetra_Vector& dis);
   
   //! \brief updates system damping matrix and external force vector according to influence of thermal bath
-  void StatMechForceDamp(ParameterList& params, RCP<Epetra_Vector> dis, RCP<Epetra_Vector> fext, RCP<LINALG::SparseMatrix> damp);
+  void StatMechBrownian(ParameterList& params, RCP<Epetra_Vector> dis, RCP<Epetra_Vector> fext, RCP<LINALG::SparseMatrix> damp);
   
   //! \brief containing statistical mechanics input parameters
   Teuchos::ParameterList statmechparams_;

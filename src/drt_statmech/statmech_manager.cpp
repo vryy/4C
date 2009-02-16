@@ -49,6 +49,14 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
   stiff_(stiff),
   damp_(damp)
 { 
+  /*there are two ways for Brownian motion: either by statistical forces or by statistical displacement increments: the first one
+   * is activated by setting the following parameter to zero, the latter one by setting it uneuqual zero; note: currently only the 
+   * first way is working properly; the second one entails to large predictor residuals and thus crashes the program; however, in 
+   * principle it could be a nice option, since it allows simple division of a step into several displacement controlled load steps
+   * and hence e.g. an arc-length solver in order to prevent from instabilities*/
+  statmechparams_.set("FORCE_OR_DISP",0);
+  
+  
   //if dynamic crosslinkers are used additional variables are initialized
   if(Teuchos::getIntegralValue<int>(statmechparams_,"DYN_CROSSLINKERS"))
   {
@@ -544,10 +552,10 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& dis)
     RCP<DRT::ELEMENTS::Beam3> crosslinkerdummy;   
     crosslinkerdummy = rcp(new DRT::ELEMENTS::Beam3(-1,discret_.Comm().MyPID()) );
     
-    crosslinkerdummy->crosssecshear_ = 19e-6*1.1;
-    crosslinkerdummy->Iyy_ = 28.74e-12;
-    crosslinkerdummy->Izz_ = 28.74e-12;
-    crosslinkerdummy->Irr_ = 28.74e-9;   
+    crosslinkerdummy->crosssecshear_ = 19e-10*1.1;
+    crosslinkerdummy->Iyy_ = 28.74e-11;
+    crosslinkerdummy->Izz_ = 28.74e-11;
+    crosslinkerdummy->Irr_ = 57.48e-11;   
     crosslinkerdummy->material_ = 1;   
 #endif
     
@@ -663,6 +671,18 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& dis)
             rotrefe(k+3) = dis[discret_.DofRowMap()->LID( discret_.Dof(discret_.lRowNode(neighbour),k+3) )];
           }
           
+          
+          
+          std::cout<<"\ndegrees of freedom affected by new crosslinker: ";
+          std::cout<<"\n";
+          for(int id = 0; id < 6; id++)
+            std::cout<<"  "<< discret_.Dof(discret_.lRowNode(i),id);
+          std::cout<<"\n";
+          for(int id = 0; id < 6; id++)
+            std::cout<<"  "<< discret_.Dof(discret_.lRowNode(neighbour),id);
+          
+          
+          
           //correct reference configuration data is computed for the new crosslinker element
           newcrosslinker->SetUpReferenceGeometry(xrefe,rotrefe); 
           //set drag coefficient for new crosslinker element dependent on its length
@@ -677,7 +697,7 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& dis)
 
         }
       }
-     
+        
      /*now crosslinkers are removed with probability punlink; it's crucial that removing crosslinkers for each 
       * crosslinker only the node with the higher global Id is checked which is considered throughout this whole method as
       * kind of the "owner" of the crosslinker;in this sloppy implementation we assume GID = LID so that we can consider just
@@ -688,9 +708,10 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& dis)
      {
        
        //noting that node responsible for the crosslinker to be deleted has from now on no crosslinker
-       (*crosslinkerpartner_)[i] = -1;
        (*crosslinkerpartner_)[(*crosslinkerpartner_)[i]] = -1;
-
+       (*crosslinkerpartner_)[i] = -1;
+       
+       
        /*since each node can have only one crosslinker at the same time a unique Id for the crosslinker 
         * element can be found by adding the lower one of the global Ids of the two nodes to basiselements_;
         * this is the way new crosslinkers are numbered above and hence also the way old crosslinkers can
@@ -715,7 +736,7 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& dis)
       stiff_->Reset();
       damp_->Reset();
     }
-    
+
   }
   
   #endif
@@ -724,59 +745,64 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& dis)
 } // StatMechManager::StatMechUpdate()
 
 /*----------------------------------------------------------------------*
- | updates system damping matrix and external force vector according to |
- | influence of thermal bath (public)                        cyron 10/08|
+ | updates system damping matrix and either external force vector or    |
+ | displacement vector according to influence of thermal bath (public)  |
+ |                                                           cyron 10/08|
  *----------------------------------------------------------------------*/
-void StatMechManager::StatMechForceDamp(ParameterList& params, RCP<Epetra_Vector> dis, RCP<Epetra_Vector> fext, RCP<LINALG::SparseMatrix> damp)
+void StatMechManager::StatMechBrownian(ParameterList& params, RCP<Epetra_Vector> dis, RCP<Epetra_Vector> fext, RCP<LINALG::SparseMatrix> damp)
 {  
   // zero out damping matrix
   damp->Zero();
   
-  /*declaration of a column and row map Epetra_Vector for evaluation of statistical forces; note: zero initilization 
-   * mandatory for correct computations later on*/
-  RCP<Epetra_Vector>    fstatcol;
-  fstatcol = LINALG::CreateVector(*discret_.DofColMap(),true);
-  RCP<Epetra_Vector>    fstatrow;
-  fstatrow = LINALG::CreateVector(*discret_.DofRowMap(),true);
+  /*declaration of a column and row map Epetra_Vector for evaluation of statistical forces or Brownian stets in space;
+   *  note: zero initilization mandatory for correct computations later on*/
+  RCP<Epetra_Vector>    browniancol;
+  browniancol = LINALG::CreateVector(*discret_.DofColMap(),true);
+  RCP<Epetra_Vector>    brownianrow;
+  brownianrow = LINALG::CreateVector(*discret_.DofRowMap(),true);
   
   //defining parameter list passed down to the elements in order to evalute statistical forces down there
   ParameterList pstat;
-  pstat.set("action","calc_stat_force_damp");
+  pstat.set("action","calc_brownian_damp");
   pstat.set("delta time",params.get<double>("delta time",0.0));
   pstat.set("KT",statmechparams_.get<double>("KT",0.0));
   pstat.set("ETA",statmechparams_.get<double>("ETA",0.0));
   pstat.set("STOCH_ORDER",statmechparams_.get<int>("STOCH_ORDER",0));
+  pstat.set("FORCE_OR_DISP",statmechparams_.get<int>("FORCE_OR_DISP",0));
   
   
-  /*note: the column map statistical force vector is passed down via the parameter list and not as a systemvector 
+  /*note: the column map statistical force or movement vector is passed down via the parameter list and not as a systemvector 
    * so that assembly is not done by the evaluate method itself, but elementwise; this is in order to account for the
-   * special assembly needs of randomly evaluated forces: the evaluate method of the discretization uses the LINALG
-   * assembly method in which a processor assembles to the element of the global vector only ir the processor is the 
+   * special assembly needs of randomly evaluated variables: the evaluate method of the discretization uses the LINALG
+   * assembly method in which a processor assembles to the element of the global vector only if the processor is the 
    * row owner of the related DOF; this is efficient for global row map vectors, but does not assemble correctly if a 
    * global column map vector is used*/
-  pstat.set("statistical force vector",fstatcol);
+  pstat.set("statistical vector",browniancol);
   
   
-  //evaluation of statistical forces on column map vecotor
-  discret_.SetState("displacement",dis); //during evaluation of statistical forces access to current displacement possible
+  //evaluation of statistical Brownian forces or displacements on column map vecotor
+  discret_.SetState("displacement",dis); //during evaluation of statistical forces or steps in space access to current displacement possible
   discret_.Evaluate(pstat,damp,null,null,null,null);
   discret_.ClearState();
   
   
-  /*exporting col map statistical force vector to a row map vector additively, i.e. in such a way that a 
+  /*exporting col map statistical force/ displacement vector to a row map vector additively, i.e. in such a way that a 
    * vector element with a certain GID in the final row vector is the sum of all elements of the column 
    * vector related to the same GID*/
   Epetra_Export exporter(*discret_.DofColMap(),*discret_.DofRowMap());
-  fstatrow->Export(*fstatcol,exporter,Add);
+  brownianrow->Export(*browniancol,exporter,Add);
   
-  //adding statistical forces to external forces passed to this method
-  fext->Update(1.0,*fstatrow,1.0);
+  //adding Brownian forces to external forces passed to this method or adding Brownian displacements to current displacements
+  if(statmechparams_.get<int>("FORCE_OR_DISP",0) == 0)
+    fext->Update(1.0,*brownianrow,1.0);
+  else
+    dis->Update(1.0,*brownianrow,1.0);
   
   //complete damping matrix
   damp->Complete();
 
   return;
-} // StatMechManager::StatMechForceDamp()
+} // StatMechManager::StatMechBrownian()
 
 /*----------------------------------------------------------------------*
  | (public) writing restart information for manager objects   cyron 12/08|
