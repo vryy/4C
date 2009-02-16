@@ -49,7 +49,7 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
 {
   // for the sake of safety
   if (DRT::Problem::NumInstances() <= 0)
-    dserror("Cannot work with out problem instance, mate");
+    dserror("Sorry dude, cannot work out problem instance.");
 
   // retrieve problem instance to read from
   // in post-process mode we do not have any instance of DRT::Problem
