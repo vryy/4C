@@ -88,10 +88,10 @@ void MAT::LungPenalty::Unpack(const vector<char>& data)
   if (DRT::Problem::NumInstances() > 0)
   {
     const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
-  MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-  if (mat->Type() == MaterialType())
-    params_ = static_cast<MAT::PAR::LungPenalty*>(mat);
-  else
+    MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+    if (mat->Type() == MaterialType())
+      params_ = static_cast<MAT::PAR::LungPenalty*>(mat);
+    else
       dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
   }
   else
