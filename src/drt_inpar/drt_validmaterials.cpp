@@ -93,7 +93,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"DENSITY","spatial mass density");
     AddNamedReal(m,"GAMMA","surface tension coeficient",true);
     
-    AddDefinedMaterial(matlist,m);    
+    AppendDefinedMaterial(matlist,m);    
   }
 
   /*----------------------------------------------------------------------*/
@@ -108,7 +108,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"REFTEMP","reference temperature (K)");
     AddNamedReal(m,"SUTHTEMP","Sutherland temperature (K)");
     
-    AddDefinedMaterial(matlist,m);    
+    AppendDefinedMaterial(matlist,m);    
   }
 
   /*----------------------------------------------------------------------*/
@@ -126,7 +126,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"BPARAM","constant parameter");
     AddNamedReal(m,"DENSITY","density");
     
-    AddDefinedMaterial(matlist,m);    
+    AppendDefinedMaterial(matlist,m);    
   }
 
   /*----------------------------------------------------------------------*/
@@ -142,7 +142,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"AEXP","exponent");
     AddNamedReal(m,"DENSITY","density");
     
-    AddDefinedMaterial(matlist,m);    
+    AppendDefinedMaterial(matlist,m);    
   }
 
   /*----------------------------------------------------------------------*/
@@ -156,7 +156,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"DIFFUSIVITY","kinematic diffusivity");
     AddNamedReal(m,"SHC","specific heat capacity",true);
     
-    AddDefinedMaterial(matlist,m);
+    AppendDefinedMaterial(matlist,m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -173,7 +173,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"SHC","specific heat capacity");
     AddNamedReal(m,"PRANUM","Prandtl number");
     
-    AddDefinedMaterial(matlist,m);    
+    AppendDefinedMaterial(matlist,m);    
   }
 
   /*----------------------------------------------------------------------*/
@@ -187,7 +187,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"DIFFUSIVITY","kinematic diffusivity");
     AddNamedReal(m,"VALENCE","valence (= charge number)");
     
-    AddDefinedMaterial(matlist,m);    
+    AppendDefinedMaterial(matlist,m);    
   }
 
   /*----------------------------------------------------------------------*/
@@ -201,7 +201,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedInt(m,"NUMMAT","number of materials in list");
     AddNamedIntVector(m,"MATIDS","the list material IDs","NUMMAT");
     
-    AddDefinedMaterial(matlist,m);
+    AppendDefinedMaterial(matlist,m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -217,7 +217,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"DENS","mass density");
     AddNamedReal(m,"THEXPANS","coefficient of linear thermal expansion",true);
     
-    AddDefinedMaterial(matlist,m);
+    AppendDefinedMaterial(matlist,m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -238,7 +238,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"XNUE13","???");
     AddNamedReal(m,"XNUE23","???");
     
-    AddDefinedMaterial(matlist,m);
+    AppendDefinedMaterial(matlist,m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -255,7 +255,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"REFDENS","reference density");
     AddNamedReal(m,"EXPO","material parameter");
     
-    AddDefinedMaterial(matlist,m);
+    AppendDefinedMaterial(matlist,m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -270,7 +270,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"NUE","Poisson's ratio");
     AddNamedReal(m,"DENS","mass density");
     
-    AddDefinedMaterial(matlist,m);
+    AppendDefinedMaterial(matlist,m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -286,7 +286,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"NUE","Poisson's ratio");
     AddNamedReal(m,"DENS","mass density");
     
-    AddDefinedMaterial(matlist,m);
+    AppendDefinedMaterial(matlist,m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -299,7 +299,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AddNamedReal(m,"DENS","mass density");
     
-    AddDefinedMaterial(matlist,m);
+    AppendDefinedMaterial(matlist,m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -312,7 +312,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AddNamedReal(m,"DENS","mass density");
     
-    AddDefinedMaterial(matlist,m);
+    AppendDefinedMaterial(matlist,m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -332,7 +332,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"densmin","min. dens. foam (opti.)");
     AddNamedReal(m,"densmax","max. dens. foam (opti.)");
     
-    AddDefinedMaterial(matlist,m);
+    AppendDefinedMaterial(matlist,m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -352,7 +352,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"densmin","min. dens. foam (opti.)");
     AddNamedReal(m,"densmax","max. dens. foam (opti.)");
     
-    AddDefinedMaterial(matlist,m);
+    AppendDefinedMaterial(matlist,m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -372,7 +372,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"densmin","???");
     AddNamedReal(m,"densmax","???");
     
-    AddDefinedMaterial(matlist,m);
+    AppendDefinedMaterial(matlist,m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -393,7 +393,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"NU3","???");
     AddNamedReal(m,"DENS","???");
     
-    AddDefinedMaterial(matlist,m);
+    AppendDefinedMaterial(matlist,m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -423,7 +423,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"BETA3","???");
     AddNamedReal(m,"BETA4","???");
    
-    AddDefinedMaterial(matlist,m);
+    AppendDefinedMaterial(matlist,m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -442,7 +442,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"GF","???");
     AddNamedReal(m,"BETAH","???");
 
-    AddDefinedMaterial(matlist,m);
+    AppendDefinedMaterial(matlist,m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -461,7 +461,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"GF","???");
     AddNamedReal(m,"BETAH","???");
 
-    AddDefinedMaterial(matlist,m);
+    AppendDefinedMaterial(matlist,m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -482,7 +482,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"Beta","???");
     AddNamedReal(m,"k_fac","???");
 
-    AddDefinedMaterial(matlist,m);
+    AppendDefinedMaterial(matlist,m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -500,7 +500,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"Hard","???");
     AddNamedReal(m,"GF","???");
 
-    AddDefinedMaterial(matlist,m);
+    AppendDefinedMaterial(matlist,m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -520,7 +520,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"GF","???");
     AddNamedReal(m,"BETAH","???");
 
-    AddDefinedMaterial(matlist,m);
+    AppendDefinedMaterial(matlist,m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -538,7 +538,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"BETA","???");
     AddNamedReal(m,"DENS","???");
 
-    AddDefinedMaterial(matlist,m);
+    AppendDefinedMaterial(matlist,m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -556,7 +556,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"GAMMA","???");
     AddNamedReal(m,"DENS","???");
 
-    AddDefinedMaterial(matlist,m);
+    AppendDefinedMaterial(matlist,m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -583,7 +583,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"A2Y","???");
     AddNamedReal(m,"A2Z","???");
 
-    AddDefinedMaterial(matlist,m);
+    AppendDefinedMaterial(matlist,m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -600,7 +600,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"LAMBDA","???");
     AddNamedReal(m,"DENS","???");
 
-    AddDefinedMaterial(matlist,m);
+    AppendDefinedMaterial(matlist,m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -617,7 +617,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"KAPPA","???");
     AddNamedReal(m,"DENS","???");
 
-    AddDefinedMaterial(matlist,m);
+    AppendDefinedMaterial(matlist,m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -635,7 +635,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"RELAX","???");
     AddNamedReal(m,"THETA","???");
 
-    AddDefinedMaterial(matlist,m);
+    AppendDefinedMaterial(matlist,m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -658,7 +658,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"RELAX_ANISO","???");
     AddNamedInt(m,"TENSION_ONLY","???");
 
-    AddDefinedMaterial(matlist,m);
+    AppendDefinedMaterial(matlist,m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -683,7 +683,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedInt(m,"UPDRATE","???");
     AddNamedReal(m,"DIFFTOL","???");
 
-    AddDefinedMaterial(matlist,m);
+    AppendDefinedMaterial(matlist,m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -704,7 +704,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"GAMMA","???");
     AddNamedInt(m,"TENSION_ONLY","???");
 
-    AddDefinedMaterial(matlist,m);
+    AppendDefinedMaterial(matlist,m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -719,7 +719,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedInt(m,"MICRODIS_NUM","Number of microscale discretization");
     AddNamedReal(m,"INITVOL","Initial volume of RVE",true);
 
-    AddDefinedMaterial(matlist,m);
+    AppendDefinedMaterial(matlist,m);
   }
 
 

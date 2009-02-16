@@ -171,9 +171,6 @@ public:
   void ReadFields(DRT::INPUT::DatFileReader& reader);
 
   /// input of materials
-  void ReadMaterial();
-
-  /// input of materials
   void ReadMaterials(const DRT::INPUT::DatFileReader& reader);
   
   /// input of conditions

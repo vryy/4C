@@ -1,6 +1,6 @@
 /*======================================================================*/
 /*!
-\file drt_condition.cpp
+\file matpar_material.cpp
 
 <pre>
 -------------------------------------------------------------------------
@@ -34,10 +34,10 @@ http://www.lnm.mw.tum.de
 \brief A condition of any kind
 
 <pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
+Maintainer: Burkhard Bornemann
+            bornemann@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15239
+            089 - 289-15237
 </pre>
 */
 

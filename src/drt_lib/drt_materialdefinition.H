@@ -136,8 +136,6 @@ namespace DRT
       StringMaterialComponent(
         std::string name,  ///< Name of the corresponding variable in the MAT::PAR::Material
         std::string defaultvalue,  ///< Default value of this variable
-//        const Teuchos::Array<std::string>& datfilevalues,  ///< Possible values in the DAT file
-//        const Teuchos::Array<std::string>& condvalues,  ///< Corresponding values stored in the MAT::PAR::Material
         bool optional=false  ///< Whether this string is optional in the dat file
         );
 
@@ -163,8 +161,7 @@ namespace DRT
     private:
 
       std::string defaultvalue_;
-//      Teuchos::Array<std::string> datfilevalues_;
-//      Teuchos::Array<std::string> condvalues_;
+
     };
 
 
@@ -240,8 +237,7 @@ namespace DRT
       ///  A int value is expected in the dat file.
       explicit IntMaterialComponent(
         std::string name,  ///< variable name in DRT::Material
-        bool fortranstyle=false,  ///< whether to substract 1 from the value read
-        bool noneallowed=false,  ///< noneallowed whether "none" is a legal value (meaning -1)
+        const int defaultvalue=0,  ///< a default value
         bool optional=false
         );
 
@@ -266,8 +262,8 @@ namespace DRT
 
     private:
 
-      bool fortranstyle_;
-      bool noneallowed_;
+      int defaultvalue_;
+
     };
 
 
@@ -288,8 +284,7 @@ namespace DRT
       IntVectorMaterialComponent(
         std::string name,  ///< variable name in MAT::PAR::Material
         int length,  ///< number of int values expected
-        bool fortranstyle=false,  ///< whether to substract 1 from the value read
-        bool noneallowed=false,  ///< whether "none" is a legal value (meaning -1)
+        const int defaultvalue=0,  ///< a default value for initialisation
         bool optional=false  ///< whether this material component can be skipped
         );
 
@@ -299,8 +294,7 @@ namespace DRT
       IntVectorMaterialComponent(
         std::string name,  ///< variable name in MAT::PAR::Material
         std::string lengthname,  ///< named variable which holds number of int values expected
-        bool fortranstyle=false,  ///< whether to substract 1 from the value read
-        bool noneallowed=false,  ///< whether "none" is a legal value (meaning -1)
+        const int defaultvalue=0,  ///< a default value for initialisation
         bool optional=false  ///< whether this material component can be skipped
         );
 
@@ -327,8 +321,7 @@ namespace DRT
 
       int length_;
       std::string lengthname_;
-      bool fortranstyle_;
-      bool noneallowed_;
+      int defaultvalue_;
     };
 
 
@@ -344,6 +337,7 @@ namespace DRT
       ///  A double value is expected in the dat file.
       RealMaterialComponent(
         std::string name,  ///< variable name in MAT::PAR::Material
+        const double defaultvalue=0.0,  ///< a default value
         bool optional=false
         );
 
@@ -365,6 +359,10 @@ namespace DRT
         Teuchos::RCP<std::stringstream> condline,
         Teuchos::RCP<MAT::PAR::Material> material
         );
+
+    private:
+      
+      double defaultvalue_;
     };
 
 
@@ -381,15 +379,17 @@ namespace DRT
       RealVectorMaterialComponent(
         std::string name,  ///< variable name in DRT::Material
         int length,  ///< number of double values expected
+        const double defaultvalue=0.0,  ///< a default value
         bool optional=false
         );
 
-      /// constuct a material component that reads a vector of int variables
+      /// constuct a material component that reads a vector of double variables
       ///
       /// A vector of int values are expected in the dat file.
       RealVectorMaterialComponent(
         std::string name,  ///< variable name in DRT::Material
         std::string lengthname,  ///< named variable which holds number of real values expected
+        const double defaultvalue=0.0,  ///< a default value
         bool optional=false
         );
 
@@ -416,6 +416,7 @@ namespace DRT
 
       int length_;
       std::string lengthname_;
+      double defaultvalue_;
 
     };
 
@@ -607,7 +608,7 @@ namespace DRT
     /// add material definition to list of defined materials
     ///
     /// this method checks for coincidental material names or types
-    void AddDefinedMaterial(
+    void AppendDefinedMaterial(
       std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> >& matlist,  ///< list of defined materials
       Teuchos::RCP<DRT::INPUT::MaterialDefinition> mat  ///< material to add
       );

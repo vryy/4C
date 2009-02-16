@@ -26,7 +26,8 @@ Maintainer: Burkhard Bornemann
 #include <Epetra_SerialDenseMatrix.h>
 #include <Teuchos_RCP.hpp>
 
-
+/*----------------------------------------------------------------------*/
+/* forward declarations */
 namespace MAT
 {
   class Material;
@@ -37,7 +38,8 @@ namespace MAT
   }
 }
 
-
+/*----------------------------------------------------------------------*/
+/* declarations */
 namespace MAT
 {
 

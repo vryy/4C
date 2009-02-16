@@ -1049,17 +1049,6 @@ void DRT::Problem::AddDis(int fieldnum, RCP<Discretization> dis)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-//void DRT::Problem::AddMaterial(const _MATERIAL& m)
-//{
-//  if (m.m.fluid==NULL)
-//    dserror("invalid material added");
-//  material_.push_back(m); // copy!
-//  ActivateMaterial();     // always reset!
-//}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void DRT::Problem::SetDis(int fieldnum, int disnum, RCP<Discretization> dis)
 {
   if (fieldnum > static_cast<int>(discretizations_.size())-1)
@@ -1072,14 +1061,6 @@ void DRT::Problem::SetDis(int fieldnum, int disnum, RCP<Discretization> dis)
   }
   discretizations_[fieldnum][disnum] = dis;
 }
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-//void DRT::Problem::ActivateMaterial()
-//{
-//  mat = &material_[0];
-//}
 
 
 

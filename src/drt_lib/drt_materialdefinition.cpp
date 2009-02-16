@@ -58,25 +58,11 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::MaterialComponent::PushBack(
 DRT::INPUT::StringMaterialComponent::StringMaterialComponent(
   std::string name,
   std::string defaultvalue,
-//  const Teuchos::Array<std::string>& datfilevalues,
-//  const Teuchos::Array<std::string>& condvalues,
   bool optional
   )
 : MaterialComponent(name,optional),
-  defaultvalue_(defaultvalue)//,
-//  datfilevalues_(datfilevalues),
-//  condvalues_(condvalues)
+  defaultvalue_(defaultvalue)
 {
-/*
-  if (std::find(datfilevalues_.begin(),datfilevalues_.end(),defaultvalue_)==datfilevalues_.end())
-  {
-    dserror("invalid default value '%s'", defaultvalue_.c_str());
-  }
-  if (datfilevalues_.size()!=condvalues_.size())
-  {
-    dserror("dat file values must match material values");
-  }
-*/
 }
 
 
@@ -123,23 +109,6 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::StringMaterialComponent::Read(
 
   if ( (value=="") or (optional_) )
     value = defaultvalue_;
-
-/*
-  Teuchos::Array<std::string>::iterator i = std::find(datfilevalues_.begin(),datfilevalues_.end(),value);
-  if (i==datfilevalues_.end())
-  {
-    if (optional_)
-    {
-      condline = PushBack(value,condline);
-      i = std::find(datfilevalues_.begin(),datfilevalues_.end(),defaultvalue_);
-    }
-    else
-      dserror("unrecognized string '%s' while reading variable '%s' in '%s'",
-              value.c_str(),Name().c_str(),def->Name().c_str());
-  }
-  unsigned pos = &*i - &datfilevalues_[0];
-  material->Add(Name(),condvalues_[pos]);
-*/
 
   material->Add(Name(),value);
 
@@ -231,13 +200,11 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::SeparatorMaterialComponent::Read(
  *----------------------------------------------------------------------*/
 DRT::INPUT::IntMaterialComponent::IntMaterialComponent(
   std::string name,
-  bool fortranstyle,
-  bool noneallowed,
+  const int defaultvalue,
   bool optional
   )
 : MaterialComponent(name,optional),
-  fortranstyle_(fortranstyle),
-  noneallowed_(noneallowed)
+  defaultvalue_(defaultvalue)
 {
 }
 
@@ -248,10 +215,7 @@ void DRT::INPUT::IntMaterialComponent::DefaultLine(
   std::ostream& stream
   )
 {
-  if (noneallowed_)
-    stream << "none";
-  else
-    stream << 0;
+  stream << defaultvalue_;
 }
 
 
@@ -262,15 +226,7 @@ void DRT::INPUT::IntMaterialComponent::Print(
   const MAT::PAR::Material* cond
   )
 {
-  int n = cond->Getint(Name());
-  if (noneallowed_ and n==-1)
-    stream << "none ";
-  else
-  {
-    if (fortranstyle_)
-      n += 1;
-    stream << n;
-  }
+  stream << cond->Getint(Name());
 }
 
 
@@ -295,22 +251,12 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntMaterialComponent::Read(
   (*condline) >> number;
 
   int n;
-  if (noneallowed_ and number=="none")
-  {
-    n = -1;
-  }
-  else
   {
     char* ptr;
     n = strtol(number.c_str(),&ptr,10);
     if (ptr==number.c_str())
       dserror("failed to read number '%s' while reading variable '%s' in '%s'",
               number.c_str(),Name().c_str(),def->Name().c_str());
-  }
-  if (fortranstyle_)
-  {
-    if (not noneallowed_ or n!=-1)
-      n -= 1;
   }
   material->Add(Name(),n);
   return condline;
@@ -322,15 +268,13 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntMaterialComponent::Read(
 DRT::INPUT::IntVectorMaterialComponent::IntVectorMaterialComponent(
   std::string name,
   int length,
-  bool fortranstyle,
-  bool noneallowed,
+  const int defaultvalue,
   bool optional
 )
 : MaterialComponent(name,optional),
   length_(length),
   lengthname_("*UNDEFINED*"),
-  fortranstyle_(fortranstyle),
-  noneallowed_(noneallowed)
+  defaultvalue_(defaultvalue)
 {
 }
 
@@ -339,15 +283,13 @@ DRT::INPUT::IntVectorMaterialComponent::IntVectorMaterialComponent(
 DRT::INPUT::IntVectorMaterialComponent::IntVectorMaterialComponent(
   std::string name,
   std::string lengthname,
-  bool fortranstyle,
-  bool noneallowed,
+  const int defaultvalue,
   bool optional
 )
 : MaterialComponent(name,optional),
   length_(-1),
   lengthname_(lengthname),
-  fortranstyle_(fortranstyle),
-  noneallowed_(noneallowed)
+  defaultvalue_(defaultvalue)
 {
 }
 
@@ -358,16 +300,8 @@ void DRT::INPUT::IntVectorMaterialComponent::DefaultLine(
   std::ostream& stream
   )
 {
-  if (noneallowed_)
-  {
-    for (int i=0; i<length_; ++i)
-      stream << "none ";
-  }
-  else
-  {
-    for (int i=0; i<length_; ++i)
-      stream << 0 << " ";
-  }
+  for (int i=0; i<length_; ++i)
+    stream << defaultvalue_ << " ";
 }
 
 
@@ -381,15 +315,8 @@ void DRT::INPUT::IntVectorMaterialComponent::Print(
   const std::vector<int>* v = cond->Get<std::vector<int> >(Name());
   for (unsigned i=0; i<v->size(); ++i)
   {
-    if (noneallowed_ and (*v)[i]==-1)
-      stream << "none ";
-    else
-    {
-      if (fortranstyle_)
-        stream << (*v)[i]+1 << " ";
-      else
-        stream << (*v)[i]+1 << " ";
-    }
+//    stream << (*v)[i]+1 << " ";  // ??? : this is used in DRT::INPUT::IntVectorConditionComponent::Print
+    stream << (*v)[i] << " ";
   }
 }
 
@@ -427,11 +354,6 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorMaterialComponent::Read(
     (*condline) >> number;
 
     int n;
-    if (noneallowed_ and number=="none")
-    {
-      n = -1;
-    }
-    else
     {
       char* ptr;
       n = strtol(number.c_str(),&ptr,10);
@@ -447,11 +369,6 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorMaterialComponent::Read(
                 number.c_str(),Name().c_str(),def->Name().c_str());
       }
     }
-    if (fortranstyle_)
-    {
-      if (not noneallowed_ or n!=-1)
-        n -= 1;
-    }
     numbers[i] = n;
   }
   material->Add(Name(),numbers);
@@ -463,9 +380,11 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorMaterialComponent::Read(
  *----------------------------------------------------------------------*/
 DRT::INPUT::RealMaterialComponent::RealMaterialComponent(
   std::string name,
+  const double defaultvalue,
   bool optional
   )
-  : MaterialComponent(name,optional)
+  : MaterialComponent(name,optional),
+    defaultvalue_(defaultvalue)
 {
 }
 
@@ -476,7 +395,7 @@ void DRT::INPUT::RealMaterialComponent::DefaultLine(
   std::ostream& stream
   )
 {
-  stream << "0.0";
+  stream << defaultvalue_;
 }
 
 
@@ -522,11 +441,13 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealMaterialComponent::Read(
 DRT::INPUT::RealVectorMaterialComponent::RealVectorMaterialComponent(
   std::string name,
   int length,
+  const double defaultvalue,
   bool optional
 )
 : MaterialComponent(name,optional),
   length_(length),
-  lengthname_("*UNDEFINED*")
+  lengthname_("*UNDEFINED*"),
+  defaultvalue_(defaultvalue)
 {
 }
 
@@ -535,11 +456,13 @@ DRT::INPUT::RealVectorMaterialComponent::RealVectorMaterialComponent(
 DRT::INPUT::RealVectorMaterialComponent::RealVectorMaterialComponent(
   std::string name,
   std::string lengthname,
+  const double defaultvalue,
   bool optional
 )
 : MaterialComponent(name,optional),
   length_(-1),
-  lengthname_(lengthname)
+  lengthname_(lengthname),
+  defaultvalue_(defaultvalue)
 {
 }
 
@@ -552,7 +475,7 @@ void DRT::INPUT::RealVectorMaterialComponent::DefaultLine(
   )
 {
   for (int i=0; i<length_; ++i)
-    stream << "0.0 ";
+    stream << defaultvalue_ << " ";
 }
 
 
@@ -595,7 +518,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealVectorMaterialComponent::Read(
       dserror("Trouble to get length of real vector material component.");
   }
   
-  std::vector<double> numbers(length_);
+  std::vector<double> numbers(length_,defaultvalue_);
 
   for (int i=0; i<length_; ++i)
   {
@@ -756,7 +679,7 @@ std::ostream& DRT::INPUT::MaterialDefinition::Print(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::AddDefinedMaterial(
+void DRT::INPUT::AppendDefinedMaterial(  
   std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> >& matlist,
   Teuchos::RCP<DRT::INPUT::MaterialDefinition> mat
   )
@@ -768,11 +691,11 @@ void DRT::INPUT::AddDefinedMaterial(
     Teuchos::RCP<DRT::INPUT::MaterialDefinition> mmd = *m;
 
     if (mmd->Type() == mat->Type())
-      dserror("Trying to define two materials with same type '%d'\n"
+      dserror("Trying to define two materials with the same type '%d'\n"
               "Please revise your definitions of valid materials", mmd->Type());
 
     if (mmd->Name() == mat->Name())
-      dserror("Trying to define two materials with same name '%s'\n"
+      dserror("Trying to define two materials with the same name '%s'\n"
               "Please revise your definitions of valid materials", mmd->Name().c_str());
   }
 
