@@ -43,7 +43,17 @@ namespace MAT
   {
 
     /*----------------------------------------------------------------------*/
-    /// Base object to hold material parameters
+    /// Base object to hold 'quick' access material parameters
+    ///
+    /// MAT::PAR::Parameters is derived for the various implemented
+    /// materials. These provide the 'quick' access to the read-in
+    /// material parameters.
+    ///
+    /// For every read-in material will exist a single instance (of
+    /// a derived class) of this object.
+    ///
+    /// \author bborn
+    /// \date 02/09
     class Parameter
     {
 
@@ -51,7 +61,7 @@ namespace MAT
 
       /// construct the material object given material parameters
       Parameter(
-        Teuchos::RCP<const MAT::PAR::Material> matdata  ///< read and validated (and slowly accessible) material data
+        Teuchos::RCP<const MAT::PAR::Material> matdata  ///< read and validated material data (of 'slow' access)
         );
 
       /// destructor

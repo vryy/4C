@@ -56,6 +56,12 @@ namespace DRT
     /// implement the reading and writing of these types.
     ///
     /// \see MaterialDefinition
+    ///
+    /// Also helpful, because this copies the ConditionDefinition system
+    /// \see ConditionDefinition
+    ///
+    /// \author bborn
+    /// \date 02/09
     class MaterialComponent
     {
     public:
@@ -160,6 +166,7 @@ namespace DRT
 
     private:
 
+      /// default value
       std::string defaultvalue_;
 
     };
@@ -214,8 +221,10 @@ namespace DRT
 
     private:
 
+      /// separator string, i.e. the NAME of variable in DAT input file
       std::string separator_;
 
+      /// description attached to the field separator
       std::string description_;
     };
 
@@ -262,6 +271,7 @@ namespace DRT
 
     private:
 
+      /// a default value
       int defaultvalue_;
 
     };
@@ -319,8 +329,13 @@ namespace DRT
 
     private:
 
+      /// length of vector of parameters
       int length_;
+
+      /// name of variable which holds the length of the vector
       std::string lengthname_;
+
+      /// a default value
       int defaultvalue_;
     };
 
@@ -338,7 +353,7 @@ namespace DRT
       RealMaterialComponent(
         std::string name,  ///< variable name in MAT::PAR::Material
         const double defaultvalue=0.0,  ///< a default value
-        bool optional=false
+        bool optional=false  ///< optional parameter
         );
 
       virtual void DefaultLine(
@@ -390,7 +405,7 @@ namespace DRT
         std::string name,  ///< variable name in DRT::Material
         std::string lengthname,  ///< named variable which holds number of real values expected
         const double defaultvalue=0.0,  ///< a default value
-        bool optional=false
+        bool optional=false  ///< optional parameter
         );
 
       virtual void DefaultLine(
@@ -414,8 +429,13 @@ namespace DRT
 
     private:
 
+      /// length of vector of parameters
       int length_;
+
+      /// name of variable which holds the length of the vector
       std::string lengthname_;
+
+      /// a default value
       double defaultvalue_;
 
     };
@@ -509,7 +529,7 @@ namespace DRT
       Teuchos::RCP<MaterialDefinition> matdef,  ///< a material defintion to which named integer is added
       const std::string name,  ///< name of integer to add
       const std::string description,  ///< description about value
-      const bool optional=false
+      const bool optional=false  ///< optional parameter if true
       )
     {
       matdef->AddComponent(Teuchos::rcp(new SeparatorMaterialComponent(name,description,optional)));
@@ -524,7 +544,7 @@ namespace DRT
       const std::string name,  ///< name of integer to add
       const std::string description,  ///< description about value
       const int size,  ///< number vector components
-      const bool optional=false
+      const bool optional=false  ///< optional parameter if true
       )
     {
       matdef->AddComponent(Teuchos::rcp(new SeparatorMaterialComponent(name,description,optional)));
@@ -539,7 +559,7 @@ namespace DRT
       const std::string name,  ///< name of integer to add
       const std::string description,  ///< description about value
       const std::string sizename,  ///< named entry which holds number of vector components; named entry _must_ be added _prior_ to this vector compo
-      const bool optional=false
+      const bool optional=false  ///< optional parameter if true
       )
     {
       matdef->AddComponent(Teuchos::rcp(new SeparatorMaterialComponent(name,description,optional)));
@@ -553,7 +573,7 @@ namespace DRT
       Teuchos::RCP<MaterialDefinition> matdef,  ///< a material defintion to which named real is added
       const std::string name,  ///< name of real to add
       const std::string description,  ///< description about value
-      const bool optional=false
+      const bool optional=false  ///< optional parameter if true
       )
     {
       matdef->AddComponent(Teuchos::rcp(new SeparatorMaterialComponent(name,description,optional)));
@@ -568,7 +588,7 @@ namespace DRT
       const std::string name, ///< name of vector of reals to add
       const std::string description,  ///< description about values
       const int size,  ///< number vector components
-      const bool optional=false
+      const bool optional=false  ///< optional parameter if true
       )
     {
       matdef->AddComponent(Teuchos::rcp(new SeparatorMaterialComponent(name,description,optional)));
@@ -583,7 +603,7 @@ namespace DRT
       const std::string name, ///< name of vector of reals to add
       const std::string description,  ///< description about values
       const std::string sizename,  ///< named entry which holds number of vector components; named entry _must_ be added _prior_ to this vector compo
-      const bool optional=false
+      const bool optional=false  ///< optional parameter if true
       )
     {
       matdef->AddComponent(Teuchos::rcp(new SeparatorMaterialComponent(name,description,optional)));
@@ -598,7 +618,7 @@ namespace DRT
       const std::string name,  ///< name of real to add
       const std::string description,  ///< description about value
       const std::string defaultvalue,  ///< default string
-      const bool optional=false
+      const bool optional=false  ///< optional parameter if true
       )
     {
       matdef->AddComponent(Teuchos::rcp(new SeparatorMaterialComponent(name,description,optional)));

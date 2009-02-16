@@ -77,6 +77,9 @@ namespace MAT
     ///
     /// This object stores the validated material parameters as
     /// DRT::Container.
+    ///
+    /// \author bborn
+    /// \date 02/09
     class Material : public DRT::Container
     {
     public:
@@ -120,9 +123,13 @@ namespace MAT
       /// \ref Pack and \ref Unpack are used to communicate this class
       virtual void Unpack(const std::vector<char>& data);
 
-      /// Allocate quick access material parameters
+      /// Set pointer to readily allocated 'quick access' material parameters
+      ///
+      /// This function is called by the material factory MAT::Material::Factory.
+      /// To circumvent more than this single major switch of material type to 
+      /// object, #params_ are allocated externally.
       inline void SetParameter(
-        MAT::PAR::Parameter* matparam
+        MAT::PAR::Parameter* matparam  ///< the pointer
         )
       {
         params_ = matparam;
@@ -161,7 +168,7 @@ namespace MAT
       /// don't want = operator
       Material operator = (const Material& old);
 
-      /// Unique id of this condition, no second condition of the same type with same id may exist
+      /// Unique ID of this material, no second material of same ID may exist
       int id_;
 
       /// Type of this condition
@@ -173,7 +180,7 @@ namespace MAT
       /// A communicator
       Teuchos::RCP<Epetra_Comm> comm_;
 
-      /// Unwrapped material data for quick access
+      /// Unwrapped material data for 'quick' access
       MAT::PAR::Parameter* params_;
 
     };  // class Material
