@@ -129,12 +129,21 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
   // matid and recover params_
   int matid;
   ExtractfromPack(position,data,matid);
-  const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
-  MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-  if (mat->Type() == MaterialType())
-    params_ = static_cast<MAT::PAR::ArtWallRemod*>(mat);
+  // in post-process mode we do not have any instance of DRT::Problem
+  MAT::PAR::Parameter* mat = NULL;
+  if (DRT::Problem::NumInstances() > 0)
+  {
+    const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+    mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+    if (mat->Type() == MaterialType())
+      params_ = static_cast<MAT::PAR::ArtWallRemod*>(mat);
+    else
+      dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
+  }
   else
-    dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
+  {
+    params_ = NULL;
+  }
 
   // history data
   isinit_ = true;
@@ -161,7 +170,7 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
   }
 
   // post_drt wants to unpack but has no input variables!
-  if (!mat){ // we check here the global mat struct pointer as this is the only existing NULL pointer in post
+  if (mat != NULL) { // we check here the global mat struct pointer as this is the only existing NULL pointer in post
     if(haveremodeldata){
       // read data into nowhere
       for (int gp = 0; gp < numgp; ++gp) {
@@ -604,7 +613,7 @@ void MAT::ArtWallRemodOutputToTxt(const Teuchos::RCP<DRT::Discretization> dis,
       RefCountPtr<MAT::Material> mat = actele->Material();
       if (mat->MaterialType() != INPAR::MAT::m_artwallremod) return;
       MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(mat.get());
-      int ngp = remo->Geta1()->size();
+      //int ngp = remo->Geta1()->size();  // unused
       int endgp = 1; //ngp;
       for (int gp = 0; gp < endgp; ++gp){ //gp+=4
         double gamma = remo->Getgammas()->at(gp);

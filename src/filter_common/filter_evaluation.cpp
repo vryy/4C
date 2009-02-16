@@ -80,8 +80,8 @@ using namespace DRT;
 // Some of the global problems input methods are not linked with the
 // filters. We need them.
 
-void DRT::Problem::ReadMaterial()
-{}
+//void DRT::Problem::ReadMaterial()
+//{}
 
 // another anachronism
 extern "C" void input_ReadGlobalParameterList()

@@ -46,11 +46,11 @@ Maintainer: Ulrich Kuettler
 struct _FILES   allfiles;
 struct _PAR     par;
 struct _GENPROB genprob;
-struct _MATERIAL *mat;
+//struct _MATERIAL *mat;
 struct _IO_FLAGS ioflags;
 
 // not actually used here, but referenced by global problem
-struct _SOLVAR  *solv;
+//struct _SOLVAR  *solv;
 
 
 

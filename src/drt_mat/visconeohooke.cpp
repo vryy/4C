@@ -102,12 +102,20 @@ void MAT::ViscoNeoHooke::Unpack(const vector<char>& data)
   // matid and recover params_
   int matid;
   ExtractfromPack(position,data,matid);
-  const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+  // in post-process mode we do not have any instance of DRT::Problem
+  if (DRT::Problem::NumInstances() > 0)
+  {
+    const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
   MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
   if (mat->Type() == MaterialType())
     params_ = static_cast<MAT::PAR::ViscoNeoHooke*>(mat);
   else
-    dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
+      dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
+  }
+  else
+  {
+    params_ = NULL;
+  }
 
   // history data
   int twicehistsize;

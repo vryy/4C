@@ -66,12 +66,20 @@ void MAT::CHARMM::Unpack(const vector<char>& data)
   // matid
   int matid;
   ExtractfromPack(position,data,matid);
-  const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
-  MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-  if (mat->Type() == MaterialType())
-    params_ = static_cast<MAT::PAR::CHARMM*>(mat);
+  // in post-process mode we do not have any instance of DRT::Problem
+  if (DRT::Problem::NumInstances() > 0)
+  {
+    const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+    MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+    if (mat->Type() == MaterialType())
+      params_ = static_cast<MAT::PAR::CHARMM*>(mat);
+    else
+      dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
+  }
   else
-    dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
+  {
+    params_ = NULL;
+  }
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
