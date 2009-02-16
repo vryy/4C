@@ -44,9 +44,6 @@ void EXODUS::ValidateInputFile(const RCP<Epetra_Comm> comm, const string datfile
   cout<<"...Read parameters"<<endl;
   problem->ReadParameter(reader);
 
-  // input of not mesh or time based problem data
-  problem->InputControl();
-
   // read and validate all material definitions
   cout<<"...Read materials"<<endl;
   problem->ReadMaterials(reader);
