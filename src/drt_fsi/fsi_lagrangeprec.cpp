@@ -114,7 +114,6 @@ void FSI::LagrangianBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_MultiVe
 
     // structure interface from fluid
 
-#if 0
     if (run>0)
     {
       CFS.Multiply(false,*fy,*tmplx);
@@ -124,7 +123,6 @@ void FSI::LagrangianBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_MultiVe
       CSF.Multiply(true,*lx,*sy);
       structure_.Interface().ExtractCondVector(sy,sgy);
     }
-#endif
 
     // structure
 
@@ -150,7 +148,6 @@ void FSI::LagrangianBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_MultiVe
 
     // lagrange coupling
 
-#if 0
     if (run>0)
     {
       Sgg.Multiply(false,*sgy,*tmpsgx);
@@ -163,7 +160,6 @@ void FSI::LagrangianBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_MultiVe
     // semi-solve. Assume CSFT==I
     structure_.Interface().InsertCondVector(sgx,tmpsx);
     CSFT.Multiply(true,*tmpsx,*ly);
-#endif
 
     // ale
 
@@ -175,7 +171,7 @@ void FSI::LagrangianBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_MultiVe
       ax->Update(-1.0,*tmpax,1.0);
     }
 
-    alesolver_->Solve(Aii.EpetraMatrix(),ay,ax,true);
+    alesolver_->Solve(Aii.EpetraMatrix(),az,ax,true);
 
     if (run>0)
     {
@@ -196,12 +192,10 @@ void FSI::LagrangianBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_MultiVe
 
     Fg.Multiply(false,*ay,*tmpfx);
     fx->Update(-1.0,*tmpfx,1.0);
-#if 0
     CFST.Multiply(false,*ly,*tmpfx);
     fx->Update(-1.0,*tmpfx,1.0);
-#endif
 
-    fluidsolver_->Solve(F.EpetraMatrix(),fy,fx,true);
+    fluidsolver_->Solve(F.EpetraMatrix(),fz,fx,true);
     LocalBlockRichardson(fluidsolver_,F,fx,fz,tmpfx,fiterations_,fomega_,err_,Comm());
 
     if (run>0)
@@ -215,6 +209,9 @@ void FSI::LagrangianBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_MultiVe
   }
 
   // build solution vector
+
+  structure_.Interface().InsertCondVector(sgy,sy);
+  structure_.Interface().InsertOtherVector(siy,sy);
 
   RangeExtractor().InsertVector(*sy,0,y);
   RangeExtractor().InsertVector(*fy,1,y);
