@@ -40,16 +40,20 @@ void EXODUS::ValidateInputFile(const RCP<Epetra_Comm> comm, const string datfile
   DRT::INPUT::DatFileReader reader(datfile,comm, 0,false);
   reader.Activate();
 
-  // validate dynamic and solver sections
+  // read and validate dynamic and solver sections
   cout<<"...Read parameters"<<endl;
   problem->ReadParameter(reader);
 
-  // validate all condition definitions
+  // input of not mesh or time based problem data
+  problem->InputControl();
+
+  // read and validate all material definitions
+  cout<<"...Read materials"<<endl;
+  problem->ReadMaterials(reader);
+
+  // read and validate all condition definitions
   cout<<"...";
   problem->ReadConditions(reader);
-
-  // materials cannot be checked via problem->ReadMaterial()
-  // since the filters use a dummy definition for this method
 
   // do not read the different fields (discretizations) here,
   // since RAM might be a problem for huge problems!
