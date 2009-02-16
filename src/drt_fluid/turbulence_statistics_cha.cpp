@@ -356,8 +356,8 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
       int patchid=0;
 
-      vector<int> ele_cart_id;
-      knots->ConvertEleGidToKnotIds(patchid,gid,ele_cart_id);
+      vector<int> ele_cart_id(3);
+      knots->ConvertEleGidToKnotIds(gid,patchid,ele_cart_id);
 
       // want to loop all control points of the element,
       // so get the number of points

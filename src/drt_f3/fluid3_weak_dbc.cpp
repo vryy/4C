@@ -37,6 +37,22 @@ DRT::ELEMENTS::Fluid3SurfaceWeakDBCInterface* DRT::ELEMENTS::Fluid3SurfaceWeakDB
 
     return fsurfq4;
   }
+  case DRT::Element::nurbs9:
+  {
+    static Fluid3SurfaceWeakDBC<DRT::Element::nurbs9,DRT::Element::nurbs27>* fsurfn9;
+
+    if(f3surf->parent_->Shape()==DRT::Element::nurbs27)
+    {
+      if (fsurfn9==NULL)
+        fsurfn9 = new Fluid3SurfaceWeakDBC<DRT::Element::nurbs9,DRT::Element::nurbs27>();
+    }
+    else
+    {
+      dserror("expected combination quad4/hex8 for surface/parent pair");
+    }
+
+    return fsurfn9;
+  }
   default:
     dserror("shape %d (%d nodes) not supported by weak DBC", f3surf->Shape(), f3surf->NumNode());
   }
@@ -165,7 +181,11 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   // I hope we have a linear element.
   // Ciarlet PG. The Finite element method for elliptic 
   // problems. Amsterdam: North-Holland; 1978.
-  if(surfele->parent_->Shape()!=Fluid3::hex8)
+
+  // Bazilevs Michler etal use 4.0 for quadratic nurbs as well
+  // (in combination with a dynamic computation of tau, so lets
+  // try it as well)
+  if(surfele->parent_->Shape()!=Fluid3::hex8 && surfele->parent_->Shape()!=Fluid3::nurbs27)
   {
     dserror("Cb up to now only implemented for trilinear elements");
   }
@@ -382,6 +402,11 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     gaussrule = DRT::UTILS::intrule_quad_4point;
     break;
   }
+  case DRT::Element::nurbs9:
+  {
+    gaussrule = DRT::UTILS::intrule_quad_9point;
+    break;
+  }
   default:
     dserror("invalid discretization type for fluid3surface weak DBC evaluation");
   }
@@ -395,12 +420,14 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   // derivatives on the boundary
   Epetra_SerialDenseMatrix pqxg(intpoints.nquad,3);
 
-  switch(surfaceid)
+  if(distype==DRT::Element::hex8)
   {
-  case 0:
-  {
-    // t=-1
-    /*
+    switch(surfaceid)
+    {
+    case 0:
+    {
+      // t=-1
+      /*
                 parent               surface
 
                  r|                    s|                    
@@ -412,20 +439,20 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
               |       |             |       |                
               +-------+             +-------+                
              0         3           0         1               
-    */
+      */
 
-    for (int iquad=0;iquad<intpoints.nquad;++iquad)
-    { 
-      pqxg(iquad,0)= intpoints.qxg[1][iquad];
-      pqxg(iquad,1)= intpoints.qxg[0][iquad];
-      pqxg(iquad,2)=-1.0;
+      for (int iquad=0;iquad<intpoints.nquad;++iquad)
+      { 
+	pqxg(iquad,0)= intpoints.qxg[1][iquad];
+	pqxg(iquad,1)= intpoints.qxg[0][iquad];
+	pqxg(iquad,2)=-1.0;
+      }
+      break;
     }
-    break;
-  }
-  case 1:
-  {
-    // s=-1
-    /*
+    case 1:
+    {
+      // s=-1
+      /*
                 parent               surface
 
                  t|                    s|                    
@@ -437,19 +464,19 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
               |       |             |       |                
               +-------+             +-------+                
              0         1           0         1               
-    */
-    for (int iquad=0;iquad<intpoints.nquad;++iquad)
-    { 
-      pqxg(iquad,0)= intpoints.qxg[0][iquad];
-      pqxg(iquad,1)=-1.0;
-      pqxg(iquad,2)= intpoints.qxg[1][iquad];
+      */
+      for (int iquad=0;iquad<intpoints.nquad;++iquad)
+      { 
+	pqxg(iquad,0)= intpoints.qxg[0][iquad];
+	pqxg(iquad,1)=-1.0;
+	pqxg(iquad,2)= intpoints.qxg[1][iquad];
+      }
+      break;
     }
-    break;
-  }
-  case 2:
-  {
-    // r= 1
-    /*
+    case 2:
+    {
+      // r= 1
+      /*
                 parent               surface
 
                  t|                    s|                    
@@ -461,19 +488,19 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
               |       |             |       |                
               +-------+             +-------+                
              1         2           0         1               
-    */
-    for (int iquad=0;iquad<intpoints.nquad;++iquad)
-    { 
-      pqxg(iquad,0)= 1.0;
-      pqxg(iquad,1)= intpoints.qxg[0][iquad];
-      pqxg(iquad,2)= intpoints.qxg[1][iquad];
+      */
+      for (int iquad=0;iquad<intpoints.nquad;++iquad)
+      { 
+	pqxg(iquad,0)= 1.0;
+	pqxg(iquad,1)= intpoints.qxg[0][iquad];
+	pqxg(iquad,2)= intpoints.qxg[1][iquad];
+      }
+      break;
     }
-    break;
-  }
-  case 3:
-  {
-    // s= 1
-    /*
+    case 3:
+    {
+      // s= 1
+      /*
                 parent               surface
 
                  t|                    s|                    
@@ -485,19 +512,19 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
               |       |             |       |                
               +-------+             +-------+                
              2         3           0         1               
-    */
-    for (int iquad=0;iquad<intpoints.nquad;++iquad)
-    { 
-      pqxg(iquad,0)=-intpoints.qxg[0][iquad];
-      pqxg(iquad,1)= 1.0;
-      pqxg(iquad,2)= intpoints.qxg[1][iquad];
+      */
+      for (int iquad=0;iquad<intpoints.nquad;++iquad)
+      { 
+	pqxg(iquad,0)=-intpoints.qxg[0][iquad];
+	pqxg(iquad,1)= 1.0;
+	pqxg(iquad,2)= intpoints.qxg[1][iquad];
+      }
+      break;
     }
-    break;
-  }
-  case 4:
-  {
-    // r=-1
-    /*
+    case 4:
+    {
+      // r=-1
+      /*
                 parent               surface
 
                  s|                    s|                    
@@ -509,19 +536,19 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
               |       |             |       |                
               +-------+             +-------+                
              0         4           0         1               
-    */
-    for (int iquad=0;iquad<intpoints.nquad;++iquad)
-    { 
-      pqxg(iquad,0)=-1.0;
-      pqxg(iquad,1)= intpoints.qxg[1][iquad];
-      pqxg(iquad,2)= intpoints.qxg[0][iquad];
+      */
+      for (int iquad=0;iquad<intpoints.nquad;++iquad)
+      { 
+	pqxg(iquad,0)=-1.0;
+	pqxg(iquad,1)= intpoints.qxg[1][iquad];
+	pqxg(iquad,2)= intpoints.qxg[0][iquad];
+      }
+      break;
     }
-    break;
-  }
-  case 5:
-  {
-    // t=1
-    /*
+    case 5:
+    {
+      // t=1
+      /*
                 parent               surface
 
                  s|                    s|                    
@@ -533,17 +560,169 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
               |       |             |       |                
               +-------+             +-------+                
              4         5           0         1               
-    */
-    for (int iquad=0;iquad<intpoints.nquad;++iquad)
-    { 
-      pqxg(iquad,0)= intpoints.qxg[0][iquad];
-      pqxg(iquad,1)= intpoints.qxg[1][iquad];
-      pqxg(iquad,2)= 1.0;
+      */
+      for (int iquad=0;iquad<intpoints.nquad;++iquad)
+      { 
+	pqxg(iquad,0)= intpoints.qxg[0][iquad];
+	pqxg(iquad,1)= intpoints.qxg[1][iquad];
+	pqxg(iquad,2)= 1.0;
+      }
+      break;
     }
-    break;
+    default:
+      dserror("invalid number of surfaces, unable to determine intpoint in parent");
+    }
   }
-  default:
-    dserror("invalid number of surfaces, unable to determine intpoint in parent");
+  else if(distype==DRT::Element::nurbs27)
+  {
+    switch(surfaceid)
+    {
+    case 0:
+    {
+      // t=-1
+      /*
+                parent               surface
+
+                 s|                    s|                    
+                  |                     |                    
+              +---+---+             +---+---+                
+	     6|  7|  8|      r     6|  7|  8|      r  
+              +   +-- +  -----      +   +-- +  -----  
+             3|  4   5|            3|  4   5|                
+              +---+---+             +---+---+                
+             0   1   2             0   1   2                 
+      */
+      for (int iquad=0;iquad<intpoints.nquad;++iquad)
+      { 
+	pqxg(iquad,0)= intpoints.qxg[0][iquad];
+	pqxg(iquad,1)= intpoints.qxg[1][iquad];
+	pqxg(iquad,2)=-1.0;
+      }
+      break;
+    }
+    case 1:
+    {
+      // t=+1
+      /*
+                parent               surface
+
+                 s|                    s|                    
+                  |                     |                    
+              +---+---+             +---+---+                
+	    24| 25| 26|      r     6|  7|  8|      r  
+              +   +-- +  -----      +   +-- +  -----  
+            21| 22  23|            3|  4   5|                
+              +---+---+             +---+---+                
+            18  19  20             0   1   2                 
+      */
+      for (int iquad=0;iquad<intpoints.nquad;++iquad)
+      { 
+	pqxg(iquad,0)= intpoints.qxg[0][iquad];
+	pqxg(iquad,1)= intpoints.qxg[1][iquad];
+	pqxg(iquad,2)= 1.0;
+      }
+      break;
+    }
+    case 2:
+    {
+      // s=-1
+      /*
+                parent               surface
+
+                 t|                    s|                    
+                  |                     |                    
+              +---+---+             +---+---+                
+	    18| 19| 20|      r     6|  7|  8|      r  
+              +   +-- +  -----      +   +-- +  -----  
+             9| 10  11|            3|  4   5|                
+              +---+---+             +---+---+                
+             0   1   2             0   1   2                 
+      */
+
+      for (int iquad=0;iquad<intpoints.nquad;++iquad)
+      { 
+	pqxg(iquad,0)= intpoints.qxg[0][iquad];
+	pqxg(iquad,1)=-1.0;
+	pqxg(iquad,2)= intpoints.qxg[1][iquad];
+      }
+      break;
+    }
+    case 3:
+    {
+      // s=+1
+      /*
+                parent               surface
+
+                 t|                    s|                    
+                  |                     |                    
+              +---+---+             +---+---+                
+ 	    24| 25| 26|    r       6|  7|  8|      r  
+              +   +-- + ----        +   +-- +  -----  
+            15| 16  17|            3|  4   5|                
+              +---+---+             +---+---+                
+             6   7   8             0   1   2                 
+      */
+      for (int iquad=0;iquad<intpoints.nquad;++iquad)
+      { 
+	pqxg(iquad,0)= intpoints.qxg[0][iquad];
+	pqxg(iquad,1)= 1.0;
+	pqxg(iquad,2)= intpoints.qxg[1][iquad];
+      }
+      break;
+    }
+    case 4:
+    {
+      // r=+1
+      /*
+                parent               surface
+
+                 t|                    s|                    
+                  |                     |                    
+              +---+---+             +---+---+                
+	    20| 23| 26|      s     6|  7|  8|      r  
+              +   +-- +  -----      +   +-- +  -----  
+            11| 14  17|            3|  4   5|                
+              +---+---+             +---+---+                
+             2   5   8             0   1   2                 
+      */
+      for (int iquad=0;iquad<intpoints.nquad;++iquad)
+      { 
+	pqxg(iquad,0)= 1.0;
+	pqxg(iquad,1)= intpoints.qxg[0][iquad];
+	pqxg(iquad,2)= intpoints.qxg[1][iquad];
+      }
+      break;
+    }
+    case 5:
+    {
+      // r=-1
+      /*
+                parent               surface
+
+                 t|                    s|                    
+                  |                     |                    
+              +---+---+             +---+---+                
+	    18| 21| 24|      s     6|  7|  8|      r  
+              +   +-- +  -----      +   +-- +  -----  
+             9| 12  15|            3|  4   5|                
+              +---+---+             +---+---+                
+             0   3   6             0   1   2                 
+      */
+      for (int iquad=0;iquad<intpoints.nquad;++iquad)
+      { 
+	pqxg(iquad,0)=-1.0;
+	pqxg(iquad,1)= intpoints.qxg[0][iquad];
+	pqxg(iquad,2)= intpoints.qxg[1][iquad];
+      }
+      break;
+    }
+    default:
+      dserror("invalid number of surfaces, unable to determine intpoint in parent");
+    }
+  }
+  else
+  {
+      dserror("only hex8 and nurbs27 have a weak dbc implementation up to now\n");
   }
 
 

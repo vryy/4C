@@ -10518,35 +10518,58 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   RefCountPtr<vector<double> > incr_eps_conv     = params.get<RefCountPtr<vector<double> > >("incr_eps_conv"    );
 
 
-  //this will be the y-coordinate of a point in the element interior
-  double center = 0;
+  if(!(distype == DRT::Element::nurbs8
+       ||
+       distype == DRT::Element::nurbs27))
+  {
 
-  // get node coordinates of element
-  LINALG::Matrix<3,iel>  xyze;
-  for(int inode=0;inode<iel;inode++)
-  {
-    xyze(0,inode)=ele->Nodes()[inode]->X()[0];
-    xyze(1,inode)=ele->Nodes()[inode]->X()[1];
-    xyze(2,inode)=ele->Nodes()[inode]->X()[2];
-    
-    center+=xyze(1,inode);
-  }
-  center/=iel;
-  
-  bool found = false;
-  
-  for (nlayer=0;nlayer<(int)(*planecoords).size()-1;)
-  {
-    if(center<(*planecoords)[nlayer+1])
+    //this will be the y-coordinate of a point in the element interior
+    double center = 0;
+
+    // get node coordinates of element
+    LINALG::Matrix<3,iel>  xyze;
+
+    for(int inode=0;inode<iel;inode++)
     {
-      found = true;
-      break;
+      xyze(0,inode)=ele->Nodes()[inode]->X()[0];
+      xyze(1,inode)=ele->Nodes()[inode]->X()[1];
+      xyze(2,inode)=ele->Nodes()[inode]->X()[2];
+      
+      center+=xyze(1,inode);
     }
-    nlayer++;
+    center/=iel;
+  
+    bool found = false;
+  
+    for (nlayer=0;nlayer<(int)(*planecoords).size()-1;)
+    {
+      if(center<(*planecoords)[nlayer+1])
+      {
+	found = true;
+	break;
+      }
+      nlayer++;
+    }
+    if (found ==false)
+    {
+      dserror("could not determine element layer");
+    }
   }
-  if (found ==false)
+  else
   {
-    dserror("could not determine element layer");
+    DRT::NURBS::NurbsDiscretization* nurbsdis
+      =
+      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+
+    (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,ele->Id());
+      
+    int patchid=0;
+    int gid    =ele->Id();
+    vector<int> ele_cart_id(3);
+    
+    (nurbsdis->GetKnotVector())->ConvertEleGidToKnotIds(gid,patchid,ele_cart_id);
+
+    nlayer=ele_cart_id[1];
   }
 
   // collect layer volume

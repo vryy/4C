@@ -22,9 +22,9 @@ DRT::NURBS::NurbsDiscretization::NurbsDiscretization(
   const string             name, 
   RefCountPtr<Epetra_Comm> comm) 
   :
-  DRT::Discretization::Discretization(name,comm),
-  npatches_                          (        0),
-  knots_                             (     null)  
+  DRT::Discretization::Discretization(name,comm    ),
+  npatches_                          (            0),
+  knots_                             (Teuchos::null)  
 {
   return;
 }
@@ -58,6 +58,10 @@ RefCountPtr<DRT::NURBS::Knotvector>
 DRT::NURBS::NurbsDiscretization::GetKnotVector
 ()
 {
+  if(knots_==Teuchos::null)
+  {
+    dserror("knotvector invalid\n");
+  }
   return knots_;
 }
 

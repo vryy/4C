@@ -352,6 +352,20 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
           }
           break;
         }
+        case DRT::Element::nurbs8:
+        {
+          // nurbs 4 surfaces --- valid only on interpolated boundaries
+          const int nSurf = 6;
+          const int nNode = 4;
+          vector<int> submap(nNode, 0);
+          for(int i = 0; i < nSurf; i++)
+          {
+            map.push_back(submap);
+            for(int j = 0; j < nNode; j++)
+              map[i][j] = eleNodeNumbering_nurbs8_surfaces[i][j];
+          }
+          break;
+        }
         case DRT::Element::nurbs27:
         {
           // nurbs 9 surfaces --- valid only on interpolated boundaries

@@ -272,6 +272,47 @@ namespace UTILS
                                                                 { 0.0,  0.0} };
 
 
+  //! 6 Surfaces of a nurbs8 element with 4 control points per 
+  //! surface we apply the nurbs specific cartesian numbering, 
+  //! only interpolated surfaces are valid!
+  //!
+  //! \verbatim
+  //!                         v
+  //!                        /
+  //!                       / 
+  //!          X-------------------X      
+  //!         /|6         /       /|7       
+  //!  w     / |         /       / |       
+  //!  ^    /  |        /       /  |       
+  //!  |   /   |               /   |     
+  //!  |  /    |              /    |       
+  //!  | /     |             /     |        
+  //!   /      |            /      |      
+  //!  X-------------------X       |       
+  //!  |4      |           |5      |      
+  //!  |       |           |       |      
+  //!  |       |           |       |         
+  //!  |       X-----------|-------X        
+  //!  |      / 2          |      / 3       
+  //!  |     /             |     /          
+  //!  |    /              |    /    
+  //!  |   /               |   /     
+  //!  |  /                |  / 
+  //!  | /                 | /
+  //!  |/                  |/
+  //!  X-------------------X ----->u
+  //!   0                   1
+  //!
+  //! \endverbatim
+
+  const int eleNodeNumbering_nurbs8_surfaces[6][4] = {
+          {0,1,2,3},
+          {4,5,6,7},
+          {0,1,4,5},
+          {2,3,6,7},
+          {0,2,4,6},
+          {1,3,5,7}};
+
 
   //! 6 Surfaces of a nurbs27 element with 9 control points per surface
   //! we apply the nurbs specific cartesian numbering, only interpolated surfaces are valid!
@@ -306,12 +347,12 @@ namespace UTILS
   //! \endverbatim
 
   const int eleNodeNumbering_nurbs27_surfaces[6][9] = {
-          { 2, 1, 0, 5, 4, 3, 8, 7, 6},
+          { 0, 1, 2, 3, 4, 5, 6, 7, 8},
           {18,19,20,21,22,23,24,25,26},
           { 0, 1, 2, 9,10,11,18,19,20},
+          { 6, 7, 8,15,16,17,24,25,26},
           { 2, 5, 8,11,14,17,20,23,26},
-          { 8, 7, 6,17,16,15,26,25,24},
-          { 6, 3, 0,15,12, 9,24,21,18}};
+          { 0, 3, 6, 9,12,15,18,21,24}};
   
   //! for each node the reference coordinates are stored for tri6
   const double eleNodeNumbering_tri6_nodes_reference[6][2] = { {0.0, 0.0},

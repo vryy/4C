@@ -1302,7 +1302,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
     // get gid, location in the patch
     int gid = Id();
 
-    vector<int> ele_cart_id;
+    vector<int> ele_cart_id(3);
 
     int npatch = -1;
 

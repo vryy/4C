@@ -840,7 +840,8 @@ public:
 
   friend class Fluid3Line;
 
-  friend class Fluid3SurfaceWeakDBC<DRT::Element::quad4,DRT::Element::hex8>;
+  friend class Fluid3SurfaceWeakDBC<DRT::Element::quad4 ,DRT::Element::hex8   >;
+  friend class Fluid3SurfaceWeakDBC<DRT::Element::nurbs9,DRT::Element::nurbs27>;
   friend class Fluid3SurfaceWeakDBCInterface;
 
   //! @name Constructors and destructors and related methods
