@@ -1482,10 +1482,6 @@ void CONTACT::Interface::AssembleS(LINALG::SparseMatrix& sglobal)
   // nothing to do if no active nodes
   if (activenodes_==null)
     return;
-
-  // not yet implemented for 3D
-  if (Dim()==3)
-    return;
   
   // loop over all active slave nodes of the interface
   for (int i=0;i<activenodes_->NumMyElements();++i)
@@ -1506,9 +1502,6 @@ void CONTACT::Interface::AssembleS(LINALG::SparseMatrix& sglobal)
     int row = activen_->GID(i);
     double* xi = cnode->xspatial();
     double* n = cnode->n();
-    
-    // only 2D so far
-    if (mapsize==3) mapsize=2;
     
     for (int j=0;j<mapsize-1;++j)
       if ((int)dnmap[j].size() != (int)dnmap[j+1].size())
@@ -1549,9 +1542,10 @@ void CONTACT::Interface::AssembleS(LINALG::SparseMatrix& sglobal)
     map<int,double>::iterator mcurr;
     int mcolsize = (int)mmap[0].size();
     
-    // get out of here, if no M-matric entries for this node
+    // get out of here, if no M-matrix entries for this node
     if ((int)mmap.size()==0) continue;
-    if (mcolsize%2!=0) dserror("ERROR: AssembleS: 3D case not yet implemented!");
+    if (mcolsize%2!=0 && mcolsize%3!=0)
+      dserror("ERROR: AssembleS: Inconsistency! Only 2D or 3D case possible!");
     
     // loop over all master nodes (find adjacent ones to this active node)
     for (int m=0;m<mnodefullmap_->NumMyElements();++m)
@@ -1676,10 +1670,6 @@ void CONTACT::Interface::AssembleP(LINALG::SparseMatrix& pglobal)
   if (activenodes_==null)
     return;
   
-  // not yet implemented for 3D
-  if (Dim()==3)
-    return;
-
   // loop over all active slave nodes of the interface
   for (int i=0;i<activenodes_->NumMyElements();++i)
   {
@@ -1691,43 +1681,113 @@ void CONTACT::Interface::AssembleP(LINALG::SparseMatrix& pglobal)
     if (cnode->Owner() != Comm().MyPID())
       dserror("ERROR: AssembleP: Node ownership inconsistency!");
     
-    // prepare assembly
-    vector<map<int,double> > dtmap = cnode->GetDerivTxi();
-    map<int,double>::iterator colcurr;
-    int colsize = (int)dtmap[0].size();
-    int mapsize = (int)dtmap.size();
-    int row = activet_->GID(i);
-        
-    // only 2D so far
-    if (mapsize==3) mapsize=2;
-    
-    for (int j=0;j<mapsize-1;++j)
-      if ((int)dtmap[j].size() != (int)dtmap[j+1].size())
-        dserror("ERROR: AssembleS: Column dim. of nodal DerivT-map is inconsistent!");
-         
-    // begin assembly of P-matrix
-    //cout << endl << "->Assemble P for Node ID: " << cnode->Id() << endl;
-    
-    // loop over all derivative maps (=dimensions)
-    for (int j=0;j<mapsize;++j)
+    if (Dim()==2)
     {
-      int k=0;
-    
-      // loop over all entries of the current derivative map
-      for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
+      // prepare assembly
+      vector<map<int,double> >& dtmap = cnode->GetDerivTxi();
+      map<int,double>::iterator colcurr;
+      int colsize = (int)dtmap[0].size();
+      int mapsize = (int)dtmap.size();
+      int row = activet_->GID(i);
+      
+      if (mapsize==3) mapsize=2;
+      
+      for (int j=0;j<mapsize-1;++j)
+        if ((int)dtmap[j].size() != (int)dtmap[j+1].size())
+          dserror("ERROR: AssembleP: Column dim. of nodal DerivT-map is inconsistent!");
+           
+      // begin assembly of P-matrix
+      //cout << endl << "->Assemble P for Node ID: " << cnode->Id() << endl;
+      
+      // loop over all derivative maps (=dimensions)
+      for (int j=0;j<mapsize;++j)
       {
-        int col = colcurr->first;
-        double val = cnode->lm()[j]*(colcurr->second);
-        //cout << "lm[" << j << "]=" << cnode->lm()[j] << " deriv=" << colcurr->second << endl;
-        //cout << "Assemble P: " << row << " " << col << " " << val << endl;
-        // do not assemble zeros into P matrix
-        if (abs(val)>1.0e-12) pglobal.Assemble(val,row,col);
-        ++k;
+        int k=0;
+      
+        // loop over all entries of the current derivative map
+        for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
+        {
+          int col = colcurr->first;
+          double val = cnode->lm()[j]*(colcurr->second);
+          //cout << "lm[" << j << "]=" << cnode->lm()[j] << " deriv=" << colcurr->second << endl;
+          //cout << "Assemble P: " << row << " " << col << " " << val << endl;
+          // do not assemble zeros into P matrix
+          if (abs(val)>1.0e-12) pglobal.Assemble(val,row,col);
+          ++k;
+        }
+  
+        if (k!=colsize)
+          dserror("ERROR: AssembleP: k = %i but colsize = %i",k,colsize);
       }
-
-      if (k!=colsize)
-        dserror("ERROR: AssembleP: k = %i but colsize = %i",k,colsize);
     }
+    else if (Dim()==3)
+    {
+      // prepare assembly
+      vector<map<int,double> >& dtximap = cnode->GetDerivTxi();
+      vector<map<int,double> >& dtetamap = cnode->GetDerivTeta();
+      map<int,double>::iterator colcurr;
+      int colsizexi = (int)dtximap[0].size();
+      int colsizeeta = (int)dtetamap[0].size();
+      int mapsizexi = (int)dtximap.size();
+      int mapsizeeta = (int)dtetamap.size();
+      int rowxi = activet_->GID(2*i);
+      int roweta = activet_->GID(2*i+1);
+          
+      for (int j=0;j<mapsizexi-1;++j)
+        if ((int)dtximap[j].size() != (int)dtximap[j+1].size())
+          dserror("ERROR: AssembleS: Column dim. of nodal DerivTXi-map is inconsistent!");
+      
+      for (int j=0;j<mapsizeeta-1;++j)
+        if ((int)dtetamap[j].size() != (int)dtetamap[j+1].size())
+          dserror("ERROR: AssembleS: Column dim. of nodal DerivTEta-map is inconsistent!");
+           
+      // begin assembly of P-matrix
+      //cout << endl << "->Assemble P for Node ID: " << cnode->Id() << endl;
+      
+      // loop over all derivative maps (=dimensions) for TXi
+      for (int j=0;j<mapsizexi;++j)
+      {
+        int k=0;
+      
+        // loop over all entries of the current derivative map
+        for (colcurr=dtximap[j].begin();colcurr!=dtximap[j].end();++colcurr)
+        {
+          int col = colcurr->first;
+          double val = cnode->lm()[j]*(colcurr->second);
+          //cout << "lm[" << j << "]=" << cnode->lm()[j] << " deriv=" << colcurr->second << endl;
+          //cout << "Assemble P: " << rowxi << " " << col << " " << val << endl;
+          // do not assemble zeros into P matrix
+          if (abs(val)>1.0e-12) pglobal.Assemble(val,rowxi,col);
+          ++k;
+        }
+  
+        if (k!=colsizexi)
+          dserror("ERROR: AssembleP: k = %i but colsize = %i",k,colsizexi);
+      }
+      
+      // loop over all derivative maps (=dimensions) for TEta
+      for (int j=0;j<mapsizeeta;++j)
+      {
+        int k=0;
+      
+        // loop over all entries of the current derivative map
+        for (colcurr=dtetamap[j].begin();colcurr!=dtetamap[j].end();++colcurr)
+        {
+          int col = colcurr->first;
+          double val = cnode->lm()[j]*(colcurr->second);
+          //cout << "lm[" << j << "]=" << cnode->lm()[j] << " deriv=" << colcurr->second << endl;
+          //cout << "Assemble P: " << roweta << " " << col << " " << val << endl;
+          // do not assemble zeros into P matrix
+          if (abs(val)>1.0e-12) pglobal.Assemble(val,roweta,col);
+          ++k;
+        }
+  
+        if (k!=colsizeeta)
+          dserror("ERROR: AssembleP: k = %i but colsize = %i",k,colsizeeta);
+      }
+    }
+    else
+      dserror("ERROR: Dim() must be either 2 or 3!");
     
   } //for (int i=0;i<activenodes_->NumMyElements();++i)
   
@@ -1742,10 +1802,6 @@ void CONTACT::Interface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
 {
   // get out of here if not participating in interface
   if (!lComm())
-    return;
-  
-  // not yet implemented for 3D
-  if (Dim()==3)
     return;
   
   /********************************************** LinDMatrix **********/

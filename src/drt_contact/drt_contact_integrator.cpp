@@ -1926,7 +1926,7 @@ void CONTACT::Integrator::DerivM3D(CONTACT::CElement& sele,
       
       typedef map<int,double>::const_iterator CI;
 
-      /*cout << "\nAnalytical derivative for Intcell " << gpcounter << " (x-component). Slave GP " << gp << endl;
+      cout << "\nAnalytical derivative for Intcell " << gpcounter << " (x-component). Slave GP " << gp << endl;
       for (CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
         cout << "Dof: " << p->first << "\t" << p->second << endl;
       cout << "Analytical derivative for Intcell " << gpcounter << " (y-component). Slave GP " << gp << endl;
@@ -1938,7 +1938,7 @@ void CONTACT::Integrator::DerivM3D(CONTACT::CElement& sele,
         cout << "Dof: " << p->first << "\t" << p->second << endl;
       cout << "Analytical derivative for Intcell " << gpcounter << " (y-component). Master GP " << gp << endl;
       for (CI p=dmxigp[1].begin();p!=dmxigp[1].end();++p)
-        cout << "Dof: " << p->first << "\t" << p->second << endl;*/
+        cout << "Dof: " << p->first << "\t" << p->second << endl;
       
       cout << "\nAnalytical derivative for Slave Jacobian Intcell " << gpcounter << " GP " << gp << endl;
       for (CI p=djsgp.begin();p!=djsgp.end();++p)

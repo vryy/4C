@@ -1759,7 +1759,7 @@ void CONTACT::Interface::FDCheckGapDeriv()
           defgap+= (cnode->n()[j]) * mik * mxi[j];
       }
       
-      //cout << "SNode: " << cnode->Id() << " IntGap: " << gap << " DefGap: " << defgap << endl;
+      //cout << "SNode: " << cnode->Id() << " IntGap: " << cnode->Getg() << " DefGap: " << defgap << endl;
       //cnode->Getg() = defgap;
     }
     
@@ -1767,8 +1767,8 @@ void CONTACT::Interface::FDCheckGapDeriv()
     refG[i]=cnode->Getg();
   }
   
-  // global loop to apply FD scheme to all slave dofs (=2*nodes)
-  for (int fd=0; fd<2*snodefullmap_->NumMyElements();++fd)
+  // global loop to apply FD scheme to all slave dofs (=3*nodes)
+  for (int fd=0; fd<3*snodefullmap_->NumMyElements();++fd)
   {
     // Initialize
     // loop over all nodes to reset normals, closestnode and Mortar maps
@@ -1790,10 +1790,13 @@ void CONTACT::Interface::FDCheckGapDeriv()
         (node->GetDerivN())[j].clear();
       (node->GetDerivN()).resize(0);
       
-      // reset derivative maps of tangent vector
+      // reset derivative maps of tangent vectors
       for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
         (node->GetDerivTxi())[j].clear();
       (node->GetDerivTxi()).resize(0);
+      for (int j=0;j<(int)((node->GetDerivTeta()).size());++j)
+       (node->GetDerivTeta())[j].clear();
+     (node->GetDerivTeta()).resize(0);
           
       // reset closest node
       // (FIXME: at the moment we do not need this info. in the next
@@ -1835,7 +1838,7 @@ void CONTACT::Interface::FDCheckGapDeriv()
     CSegs().Shape(0,0);
       
     // now get the node we want to apply the FD scheme to
-    int gid = snodefullmap_->GID(fd/2);
+    int gid = snodefullmap_->GID(fd/3);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
     CNode* snode = static_cast<CNode*>(node);
@@ -1843,21 +1846,26 @@ void CONTACT::Interface::FDCheckGapDeriv()
     // apply finite difference scheme
     if (Comm().MyPID()==snode->Owner())
     {
-      cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof(l): " << fd%2
-           << " Dof(g): " << snode->Dofs()[fd%2] << endl;
+      cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof(l): " << fd%3
+           << " Dof(g): " << snode->Dofs()[fd%3] << endl;
     }
     
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
-    if (fd%2==0)
+    if (fd%3==0)
     {
       snode->xspatial()[0] += delta;
       snode->u()[0] += delta;
     }
-    else
+    else if (fd%3==1)
     {
       snode->xspatial()[1] += delta;
       snode->u()[1] += delta;
+    }
+    else
+    {
+      snode->xspatial()[2] += delta;
+      snode->u()[2] += delta;
     }
     
     // loop over all elements to set current element length / area
@@ -1978,7 +1986,7 @@ void CONTACT::Interface::FDCheckGapDeriv()
             defgap+= (kcnode->n()[j]) * mik * mxi[j];
         }
         
-        //cout << "SNode: " << kcnode->Id() << " IntGap: " << gap << " DefGap: " << defgap << endl;
+        //cout << "SNode: " << kcnode->Id() << " IntGap: " << kcnode->Getg() << " DefGap: " << defgap << endl;
         //kcnode->Getg() = defgap;
       }
       
@@ -1991,25 +1999,29 @@ void CONTACT::Interface::FDCheckGapDeriv()
         cout << "G-FD-derivative for node S" << kcnode->Id() << endl;
         //cout << "Ref-G: " << refG[k] << endl;
         //cout << "New-G: " << newG[k] << endl;
-        cout << "Deriv: " << snode->Dofs()[fd%2] << " " << (newG[k]-refG[k])/delta << endl;
+        cout << "Deriv: " << snode->Dofs()[fd%3] << " " << (newG[k]-refG[k])/delta << endl;
       }
     }
-    
     // undo finite difference modification
-    if (fd%2==0)
+    if (fd%3==0)
     {
       snode->xspatial()[0] -= delta;
       snode->u()[0] -= delta;
     }
-    else
+    else if (fd%3==1)
     {
       snode->xspatial()[1] -= delta;
       snode->u()[1] -= delta;
-    }       
+    }
+    else
+    {
+      snode->xspatial()[2] -= delta;
+      snode->u()[2] -= delta;
+    }   
   }
   
-  // global loop to apply FD scheme to all master dofs (=2*nodes)
-  for (int fd=0; fd<2*mnodefullmap_->NumMyElements();++fd)
+  // global loop to apply FD scheme to all master dofs (=3*nodes)
+  for (int fd=0; fd<3*mnodefullmap_->NumMyElements();++fd)
   {
     // Initialize
     // loop over all nodes to reset normals, closestnode and Mortar maps
@@ -2031,10 +2043,13 @@ void CONTACT::Interface::FDCheckGapDeriv()
         (node->GetDerivN())[j].clear();
       (node->GetDerivN()).resize(0);
       
-      // reset derivative maps of tangent vector
+      // reset derivative maps of tangent vectors
       for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
         (node->GetDerivTxi())[j].clear();
       (node->GetDerivTxi()).resize(0);
+      for (int j=0;j<(int)((node->GetDerivTeta()).size());++j)
+        (node->GetDerivTeta())[j].clear();
+      (node->GetDerivTeta()).resize(0);
           
       // reset closest node
       // (FIXME: at the moment we do not need this info. in the next
@@ -2076,7 +2091,7 @@ void CONTACT::Interface::FDCheckGapDeriv()
     CSegs().Shape(0,0);
       
     // now get the node we want to apply the FD scheme to
-    int gid = mnodefullmap_->GID(fd/2);
+    int gid = mnodefullmap_->GID(fd/3);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
     CNode* mnode = static_cast<CNode*>(node);
@@ -2084,21 +2099,26 @@ void CONTACT::Interface::FDCheckGapDeriv()
     // apply finite difference scheme
     if (Comm().MyPID()==mnode->Owner())
     {
-      cout << "\nBuilding FD for Master Node: " << mnode->Id() << " Dof(l): " << fd%2
-           << " Dof(g): " << mnode->Dofs()[fd%2] << endl;
+      cout << "\nBuilding FD for Master Node: " << mnode->Id() << " Dof(l): " << fd%3
+           << " Dof(g): " << mnode->Dofs()[fd%3] << endl;
     }
     
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
-    if (fd%2==0)
+    if (fd%3==0)
     {
       mnode->xspatial()[0] += delta;
       mnode->u()[0] += delta;
     }
-    else
+    else if (fd%3==1)
     {
       mnode->xspatial()[1] += delta;
       mnode->u()[1] += delta;
+    }
+    else
+    {
+      mnode->xspatial()[2] += delta;
+      mnode->u()[2] += delta;
     }
     
     // loop over all elements to set current element length / area
@@ -2219,7 +2239,7 @@ void CONTACT::Interface::FDCheckGapDeriv()
             defgap+= (kcnode->n()[j]) * mik * mxi[j];
         }
         
-        //cout << "SNode: " << kcnode->Id() << " IntGap: " << gap << " DefGap: " << defgap << endl;
+        //cout << "SNode: " << kcnode->Id() << " IntGap: " << kcnode->Getg() << " DefGap: " << defgap << endl;
         //kcnode->Getg() = defgap;
       }
       
@@ -2232,21 +2252,26 @@ void CONTACT::Interface::FDCheckGapDeriv()
         cout << "G-FD-derivative for node S" << kcnode->Id() << endl;
         //cout << "Ref-G: " << refG[k] << endl;
         //cout << "New-G: " << newG[k] << endl;
-        cout << "Deriv: " << mnode->Dofs()[fd%2] << " " << (newG[k]-refG[k])/delta << endl;
+        cout << "Deriv: " << mnode->Dofs()[fd%3] << " " << (newG[k]-refG[k])/delta << endl;
       }
     }
     
     // undo finite difference modification
-    if (fd%2==0)
+    if (fd%3==0)
     {
       mnode->xspatial()[0] -= delta;
       mnode->u()[0] -= delta;
     }
-    else
+    else if (fd%3==1)
     {
       mnode->xspatial()[1] -= delta;
       mnode->u()[1] -= delta;
-    }       
+    }
+    else
+    {
+      mnode->xspatial()[2] -= delta;
+      mnode->u()[2] -= delta;
+    }      
   }
   
   // back to normal...
@@ -2271,10 +2296,13 @@ void CONTACT::Interface::FDCheckGapDeriv()
       (node->GetDerivN())[j].clear();
     (node->GetDerivN()).resize(0);
     
-    // reset derivative maps of tangent vector
+    // reset derivative maps of tangent vectors
     for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
       (node->GetDerivTxi())[j].clear();
     (node->GetDerivTxi()).resize(0);
+    for (int j=0;j<(int)((node->GetDerivTeta()).size());++j)
+      (node->GetDerivTeta())[j].clear();
+    (node->GetDerivTeta()).resize(0);
         
     // reset closest node
     // (FIXME: at the moment we do not need this info. in the next
@@ -2400,8 +2428,10 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     
   // create storage for tangential LM values
   int nrow = snoderowmap_->NumMyElements();
-  vector<double> refTLM(nrow);
-  vector<double> newTLM(nrow);
+  vector<double> refTLMxi(nrow);
+  vector<double> newTLMxi(nrow);
+  vector<double> refTLMeta(nrow);
+  vector<double> newTLMeta(nrow);
   
   // store reference
   // loop over proc's slave nodes
@@ -2412,16 +2442,21 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CNode* cnode = static_cast<CNode*>(node);
     
-    double val = 0.0;
+    double valxi = 0.0;
+    double valeta = 0.0;
     for (int dim=0;dim<3;++dim)
-      val += (cnode->txi()[dim])*(cnode->lm()[dim]);
+    {
+      valxi  += (cnode->txi()[dim])*(cnode->lm()[dim]);
+      valeta += (cnode->teta()[dim])*(cnode->lm()[dim]);
+    }
     
     // store gap-values into refTLM
-    refTLM[i]=val;
+    refTLMxi[i]=valxi;
+    refTLMeta[i]=valeta;
   }
   
-  // global loop to apply FD scheme to all slave dofs (=2*nodes)
-  for (int fd=0; fd<2*snodefullmap_->NumMyElements();++fd)
+  // global loop to apply FD scheme to all slave dofs (=3*nodes)
+  for (int fd=0; fd<3*snodefullmap_->NumMyElements();++fd)
   {
     // Initialize
     // loop over all nodes to reset normals, closestnode and Mortar maps
@@ -2443,10 +2478,13 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
         (node->GetDerivN())[j].clear();
       (node->GetDerivN()).resize(0);
       
-      // reset derivative maps of tangent vector
+      // reset derivative maps of tangent vectors
       for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
         (node->GetDerivTxi())[j].clear();
       (node->GetDerivTxi()).resize(0);
+      for (int j=0;j<(int)((node->GetDerivTeta()).size());++j)
+        (node->GetDerivTeta())[j].clear();
+      (node->GetDerivTeta()).resize(0);
           
       // reset closest node
       // (FIXME: at the moment we do not need this info. in the next
@@ -2488,7 +2526,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     CSegs().Shape(0,0);
       
     // now get the node we want to apply the FD scheme to
-    int gid = snodefullmap_->GID(fd/2);
+    int gid = snodefullmap_->GID(fd/3);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
     CNode* snode = static_cast<CNode*>(node);
@@ -2496,21 +2534,26 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     // apply finite difference scheme
     if (Comm().MyPID()==snode->Owner())
     {
-      cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof(l): " << fd%2
-           << " Dof(g): " << snode->Dofs()[fd%2] << endl;
+      cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof(l): " << fd%3
+           << " Dof(g): " << snode->Dofs()[fd%3] << endl;
     }
     
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
-    if (fd%2==0)
+    if (fd%3==0)
     {
       snode->xspatial()[0] += delta;
       snode->u()[0] += delta;
     }
-    else
+    else if (fd%3==1)
     {
       snode->xspatial()[1] += delta;
       snode->u()[1] += delta;
+    }
+    else
+    {
+      snode->xspatial()[2] += delta;
+      snode->u()[2] += delta;
     }
     
     // loop over all elements to set current element length / area
@@ -2592,38 +2635,56 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
       if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
       CNode* kcnode = static_cast<CNode*>(knode);
       
-      double val = 0.0;
+      double valxi = 0.0;
+      double valeta = 0.0;
       for (int dim=0;dim<3;++dim)
-        val += (kcnode->txi()[dim])*(kcnode->lm()[dim]);
+      {
+        valxi  += (kcnode->txi()[dim])*(kcnode->lm()[dim]);
+        valeta += (kcnode->teta()[dim])*(kcnode->lm()[dim]);
+      }
       
       // store gap-values into newTLM
-      newTLM[k]=val;
+      newTLMxi[k]=valxi;
+      newTLMeta[k]=valeta;
               
       // print results (derivatives) to screen
-      if (abs(newTLM[k]-refTLM[k]) > 1e-12)
+      if (abs(newTLMxi[k]-refTLMxi[k]) > 1e-12)
       {
-        cout << "TLM-FD-derivative for node S" << kcnode->Id() << endl;
-        //cout << "Ref-TLM: " << refTLM[k] << endl;
-        //cout << "New-TLM: " << newTLM[k] << endl;
-        cout << "Deriv: " << snode->Dofs()[fd%2] << " " << (newTLM[k]-refTLM[k])/delta << endl;
+        cout << "Xi-TLM-FD-derivative for node S" << kcnode->Id() << endl;
+        //cout << "Ref-Xi-TLM: " << refTLMxi[k] << endl;
+        //cout << "New-Xi-TLM: " << newTLMxi[k] << endl;
+        cout << "Deriv: " << snode->Dofs()[fd%3] << " " << (newTLMxi[k]-refTLMxi[k])/delta << endl;
+      }
+      // print results (derivatives) to screen
+      if (abs(newTLMeta[k]-refTLMeta[k]) > 1e-12)
+      {
+        cout << "Eta-TLM-FD-derivative for node S" << kcnode->Id() << endl;
+        //cout << "Ref-TLM: " << refTLMeta[k] << endl;
+        //cout << "New-TLM: " << newTLMeta[k] << endl;
+        cout << "Deriv: " << snode->Dofs()[fd%3] << " " << (newTLMeta[k]-refTLMeta[k])/delta << endl;
       }
     }
     
     // undo finite difference modification
-    if (fd%2==0)
+    if (fd%3==0)
     {
       snode->xspatial()[0] -= delta;
       snode->u()[0] -= delta;
     }
-    else
+    else if (fd%3==1)
     {
       snode->xspatial()[1] -= delta;
       snode->u()[1] -= delta;
+    }
+    else
+    {
+      snode->xspatial()[2] -= delta;
+      snode->u()[2] -= delta;
     }       
   }
   
-  // global loop to apply FD scheme to all master dofs (=2*nodes)
-  for (int fd=0; fd<2*mnodefullmap_->NumMyElements();++fd)
+  // global loop to apply FD scheme to all master dofs (=3*nodes)
+  for (int fd=0; fd<3*mnodefullmap_->NumMyElements();++fd)
   {
     // Initialize
     // loop over all nodes to reset normals, closestnode and Mortar maps
@@ -2645,10 +2706,13 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
         (node->GetDerivN())[j].clear();
       (node->GetDerivN()).resize(0);
       
-      // reset derivative maps of tangent vector
+      // reset derivative maps of tangent vectors
       for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
         (node->GetDerivTxi())[j].clear();
       (node->GetDerivTxi()).resize(0);
+      for (int j=0;j<(int)((node->GetDerivTeta()).size());++j)
+        (node->GetDerivTeta())[j].clear();
+      (node->GetDerivTeta()).resize(0);
           
       // reset closest node
       // (FIXME: at the moment we do not need this info. in the next
@@ -2690,7 +2754,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     CSegs().Shape(0,0);
       
     // now get the node we want to apply the FD scheme to
-    int gid = mnodefullmap_->GID(fd/2);
+    int gid = mnodefullmap_->GID(fd/3);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
     CNode* mnode = static_cast<CNode*>(node);
@@ -2698,23 +2762,28 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     // apply finite difference scheme
     if (Comm().MyPID()==mnode->Owner())
     {
-      cout << "\nBuilding FD for Master Node: " << mnode->Id() << " Dof(l): " << fd%2
-           << " Dof(g): " << mnode->Dofs()[fd%2] << endl;
+      cout << "\nBuilding FD for Master Node: " << mnode->Id() << " Dof(l): " << fd%3
+           << " Dof(g): " << mnode->Dofs()[fd%3] << endl;
     }
     
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
-    if (fd%2==0)
+    if (fd%3==0)
     {
       mnode->xspatial()[0] += delta;
       mnode->u()[0] += delta;
     }
-    else
+    else if (fd%3==1)
     {
       mnode->xspatial()[1] += delta;
       mnode->u()[1] += delta;
     }
-    
+    else
+    {
+      mnode->xspatial()[2] += delta;
+      mnode->u()[2] += delta;
+    }
+        
     // loop over all elements to set current element length / area
     // (use fully overlapping column map)
     for (int j=0;j<idiscret_->NumMyColElements();++j)
@@ -2794,34 +2863,52 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
       if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
       CNode* kcnode = static_cast<CNode*>(knode);
       
-      double val = 0.0;
+      double valxi = 0.0;
+      double valeta = 0.0;
       for (int dim=0;dim<3;++dim)
-        val += (kcnode->txi()[dim])*(kcnode->lm()[dim]);
+      {
+        valxi  += (kcnode->txi()[dim])*(kcnode->lm()[dim]);
+        valeta += (kcnode->teta()[dim])*(kcnode->lm()[dim]);
+      }
       
       // store gap-values into newTLM
-      newTLM[k]=val;
+      newTLMxi[k]=valxi;
+      newTLMeta[k]=valeta;
               
       // print results (derivatives) to screen
-      if (abs(newTLM[k]-refTLM[k]) > 1e-12)
+      if (abs(newTLMxi[k]-refTLMxi[k]) > 1e-12)
       {
-        cout << "TLM-FD-derivative for node S" << kcnode->Id() << endl;
-        //cout << "Ref-TLM: " << refTLM[k] << endl;
-        //cout << "New-TLM: " << newTLM[k] << endl;
-        cout << "Deriv: " << mnode->Dofs()[fd%2] << " " << (newTLM[k]-refTLM[k])/delta << endl;
+        cout << "Xi-TLM-FD-derivative for node S" << kcnode->Id() << endl;
+        //cout << "Ref-TLM: " << refTLMxi[k] << endl;
+        //cout << "New-TLM: " << newTLMxi[k] << endl;
+        cout << "Deriv: " << mnode->Dofs()[fd%3] << " " << (newTLMxi[k]-refTLMxi[k])/delta << endl;
+      }
+      // print results (derivatives) to screen
+      if (abs(newTLMeta[k]-refTLMeta[k]) > 1e-12)
+      {
+        cout << "Eta-TLM-FD-derivative for node S" << kcnode->Id() << endl;
+        //cout << "Ref-TLM: " << refTLMeta[k] << endl;
+        //cout << "New-TLM: " << newTLMeta[k] << endl;
+        cout << "Deriv: " << mnode->Dofs()[fd%3] << " " << (newTLMeta[k]-refTLMeta[k])/delta << endl;
       }
     }
     
     // undo finite difference modification
-    if (fd%2==0)
+    if (fd%3==0)
     {
       mnode->xspatial()[0] -= delta;
       mnode->u()[0] -= delta;
     }
-    else
+    else if (fd%3==1)
     {
       mnode->xspatial()[1] -= delta;
       mnode->u()[1] -= delta;
-    }       
+    }
+    else
+    {
+      mnode->xspatial()[2] -= delta;
+      mnode->u()[2] -= delta;
+    }        
   }
   
   // back to normal...
@@ -2846,10 +2933,13 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
       (node->GetDerivN())[j].clear();
     (node->GetDerivN()).resize(0);
     
-    // reset derivative maps of tangent vector
+    // reset derivative maps of tangent vectors
     for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
       (node->GetDerivTxi())[j].clear();
     (node->GetDerivTxi()).resize(0);
+    for (int j=0;j<(int)((node->GetDerivTeta()).size());++j)
+      (node->GetDerivTeta())[j].clear();
+    (node->GetDerivTeta()).resize(0);
         
     // reset closest node
     // (FIXME: at the moment we do not need this info. in the next
@@ -3772,7 +3862,7 @@ void CONTACT::Interface::FDCheckGP3DDeriv(vector<vector<double> >& testgps,
     // *******************************************************************
     
     // compute finite difference derivative
-    /*for (int k=0;k<(int)newtestgps.size();++k)
+    for (int k=0;k<(int)newtestgps.size();++k)
     {
       // print results (derivatives) to screen
       if (abs(newtestgps[k][0]-testgps[k][0])>1.0e-12)
@@ -3900,7 +3990,7 @@ void CONTACT::Interface::FDCheckGP3DDeriv(vector<vector<double> >& testgps,
         cout << "Derivative for Intcell " << k << " (y-component) Master GP 5" << endl;
         cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestgpm[k][11]-testgpm[k][11])/delta << endl; 
       }
-    }*/
+    }
     // compute finite difference derivative
     for (int k=0;k<(int)newtestjs.size();++k)
     {
@@ -4165,7 +4255,7 @@ void CONTACT::Interface::FDCheckGP3DDeriv(vector<vector<double> >& testgps,
     // *******************************************************************
     
     // compute finite difference derivative
-    /*for (int k=0;k<(int)newtestgps.size();++k)
+    for (int k=0;k<(int)newtestgps.size();++k)
     {
       // print results (derivatives) to screen
       if (abs(newtestgps[k][0]-testgps[k][0])>1.0e-12)
@@ -4293,7 +4383,7 @@ void CONTACT::Interface::FDCheckGP3DDeriv(vector<vector<double> >& testgps,
         cout << "Derivative for Intcell " << k << " (y-component) Master GP 5" << endl;
         cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestgpm[k][11]-testgpm[k][11])/delta << endl; 
       }
-    }*/
+    }
     // compute finite difference derivative
     for (int k=0;k<(int)newtestjs.size();++k)
     {
