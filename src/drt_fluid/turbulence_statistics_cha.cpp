@@ -1015,14 +1015,44 @@ void FLD::TurbulenceStatisticsCha::DoTimeSample(
 
       // compute forces by dot product
       double inc=0.0;
-      force.Dot(*toggleu_,&inc);
-      sumforceu_+=inc;
-      inc=0.0;
-      force.Dot(*togglev_,&inc);
-      sumforcev_+=inc;
-      inc=0.0;
-      force.Dot(*togglew_,&inc);
-      sumforcew_+=inc;
+      {
+        double local_inc=0.0;
+        for(int rr=0;rr<(*toggleu_).MyLength();++rr)
+        {
+          local_inc+=(*toggleu_)[rr]*(*toggleu_)[rr];
+        }
+        discret_->Comm().SumAll(&local_inc,&inc,1);
+
+        if(abs(inc)<1e-9)
+        {
+          dserror("there are no forced nodes on the boundary\n");
+        }
+
+        local_inc=0.0;
+        for(int rr=0;rr<force.MyLength();++rr)
+        {
+          local_inc+=force[rr]*(*toggleu_)[rr];
+        }
+        discret_->Comm().SumAll(&local_inc,&inc,1);
+        sumforceu_+=inc;
+
+        local_inc=0.0;
+        for(int rr=0;rr<force.MyLength();++rr)
+        {
+          local_inc+=force[rr]*(*togglev_)[rr];
+        }
+        discret_->Comm().SumAll(&local_inc,&inc,1);
+        sumforcev_+=inc;
+
+
+        local_inc=0.0;
+        for(int rr=0;rr<force.MyLength();++rr)
+        {
+          local_inc+=force[rr]*(*togglew_)[rr];
+        }
+        discret_->Comm().SumAll(&local_inc,&inc,1);
+        sumforcew_+=inc;
+      }
     }
   }
 
@@ -1689,39 +1719,79 @@ void FLD::TurbulenceStatisticsCha::EvaluatePointwiseMeanValuesInPlanes()
 
     if (countnodesinplaneonallprocs)
     {
-      //----------------------------------------------------------------------
-      // compute scalar products from velnp and toggle vec to sum up
-      // values in this plane
-
       double inc=0.0;
-      meanvelnp_->Dot(*toggleu_,&inc);
-      (*pointsumu_)[planenum]+=inc/countnodesinplaneonallprocs;
-      inc=0.0;
-      meanvelnp_->Dot(*togglev_,&inc);
-      (*pointsumv_)[planenum]+=inc/countnodesinplaneonallprocs;
-      inc=0.0;
-      meanvelnp_->Dot(*togglew_,&inc);
-      (*pointsumw_)[planenum]+=inc/countnodesinplaneonallprocs;
-      inc=0.0;
-      meanvelnp_->Dot(*togglep_,&inc);
-      (*pointsump_)[planenum]+=inc/countnodesinplaneonallprocs;
+      {
+        //----------------------------------------------------------------------
+        // compute scalar products from velnp and toggle vec to sum up
+        // values in this plane
+        double local_inc=0.0;
+        for(int rr=0;rr<meanvelnp_->MyLength();++rr)
+        {
+          local_inc+=(*meanvelnp_)[rr]*(*toggleu_)[rr];
+        }
+        discret_->Comm().SumAll(&local_inc,&inc,1);
+        (*pointsumu_)[planenum]+=inc/countnodesinplaneonallprocs;
 
-      //----------------------------------------------------------------------
-      // compute scalar products from squaredvelnp and toggle vec to
-      // sum up values for second order moments in this plane
+        local_inc=0.0;
+        for(int rr=0;rr<meanvelnp_->MyLength();++rr)
+        {
+          local_inc+=(*meanvelnp_)[rr]*(*togglev_)[rr];
+        }
+        discret_->Comm().SumAll(&local_inc,&inc,1);
+        (*pointsumv_)[planenum]+=inc/countnodesinplaneonallprocs;
 
-      inc=0.0;
-      pointsquaredvelnp_->Dot(*toggleu_,&inc);
-      (*pointsumsqu_)[planenum]+=inc/countnodesinplaneonallprocs;
-      inc=0.0;
-      pointsquaredvelnp_->Dot(*togglev_,&inc);
-      (*pointsumsqv_)[planenum]+=inc/countnodesinplaneonallprocs;
-      inc=0.0;
-      pointsquaredvelnp_->Dot(*togglew_,&inc);
-      (*pointsumsqw_)[planenum]+=inc/countnodesinplaneonallprocs;
-      inc=0.0;
-      pointsquaredvelnp_->Dot(*togglep_,&inc);
-      (*pointsumsqp_)[planenum]+=inc/countnodesinplaneonallprocs;
+        local_inc=0.0;
+        for(int rr=0;rr<meanvelnp_->MyLength();++rr)
+        {
+          local_inc+=(*meanvelnp_)[rr]*(*togglew_)[rr];
+        }
+        discret_->Comm().SumAll(&local_inc,&inc,1);
+        (*pointsumw_)[planenum]+=inc/countnodesinplaneonallprocs;
+
+        local_inc=0.0;
+        for(int rr=0;rr<meanvelnp_->MyLength();++rr)
+        {
+          local_inc+=(*meanvelnp_)[rr]*(*togglep_)[rr];
+        }
+        discret_->Comm().SumAll(&local_inc,&inc,1);
+        (*pointsump_)[planenum]+=inc/countnodesinplaneonallprocs;
+
+        //----------------------------------------------------------------------
+        // compute scalar products from squaredvelnp and toggle vec to
+        // sum up values for second order moments in this plane
+        local_inc=0.0;
+        for(int rr=0;rr<pointsquaredvelnp_->MyLength();++rr)
+        {
+          local_inc+=(*pointsquaredvelnp_)[rr]*(*toggleu_)[rr];
+        }
+        discret_->Comm().SumAll(&local_inc,&inc,1);
+        (*pointsumsqu_)[planenum]+=inc/countnodesinplaneonallprocs;
+
+        local_inc=0.0;
+        for(int rr=0;rr<pointsquaredvelnp_->MyLength();++rr)
+        {
+          local_inc+=(*pointsquaredvelnp_)[rr]*(*togglev_)[rr];
+        }
+        discret_->Comm().SumAll(&local_inc,&inc,1);
+        (*pointsumsqv_)[planenum]+=inc/countnodesinplaneonallprocs;
+
+        local_inc=0.0;
+        for(int rr=0;rr<pointsquaredvelnp_->MyLength();++rr)
+        {
+          local_inc+=(*pointsquaredvelnp_)[rr]*(*togglew_)[rr];
+        }
+        discret_->Comm().SumAll(&local_inc,&inc,1);
+        (*pointsumsqw_)[planenum]+=inc/countnodesinplaneonallprocs;
+
+        local_inc=0.0;
+        for(int rr=0;rr<pointsquaredvelnp_->MyLength();++rr)
+        {
+          local_inc+=(*pointsquaredvelnp_)[rr]*(*togglep_)[rr];
+        }
+        discret_->Comm().SumAll(&local_inc,&inc,1);
+        (*pointsumsqp_)[planenum]+=inc/countnodesinplaneonallprocs;
+
+      }
     }
     planenum++;
   }
@@ -2342,6 +2412,11 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(int ste
   if      (sumforceu_>sumforcev_ && sumforceu_>sumforcew_)
   {
     flowdirection=0;
+    if(abs(sumforceu_)< 1.0e-12)
+    {
+      dserror("zero force during computation of wall shear stress\n");
+    }
+
     ltau = visc_/sqrt(sumforceu_/area);
   }
   else if (sumforcev_>sumforceu_ && sumforcev_>sumforcew_)
