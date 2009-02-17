@@ -236,11 +236,11 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
         remtime_->at(gp) = params_->rembegt_; // overwrite restart data with input when switching
       }
     }
-  }
 
-  // check if everything was savely unpacked
-  if (position != (int)data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+    // check if everything was savely unpacked
+    if (position != (int)data.size())
+      dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+  }
 
   // get away from this
   return;
