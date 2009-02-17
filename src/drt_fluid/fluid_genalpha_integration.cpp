@@ -921,6 +921,122 @@ void FLD::FluidGenAlphaIntegration::GenAlphaStatisticsAndOutput()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::FluidGenAlphaIntegration::GenAlphaOutput()
 {
+#if 0
+  {
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+    vector<double> my_y;
+    // loop all nodes on the processor
+    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    {
+      // get the processor local node
+      DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
+
+      if (abs(lnode->X()[0])<1e-6 && abs(lnode->X()[2])<1e-6)
+      {
+        my_y.push_back(lnode->X()[1]);
+      }
+
+      // the set of degrees of freedom associated with the node
+      vector<int> nodedofset = discret_->Dof(lnode);
+    }
+
+    vector<int> num_y(discret_->Comm().NumProc(),0);
+    num_y[myrank_]=my_y.size();
+    vector<int> num_y_all(discret_->Comm().NumProc(),0);
+    discret_->Comm().SumAll(&num_y[0],&num_y_all[0],(discret_->Comm().NumProc()));
+
+    int n            =0;
+    int n_lower_procs=0;
+
+    for(int rr=0;rr<(discret_->Comm().NumProc());++rr)
+    {
+      n+=num_y_all[rr];
+    }
+    
+    for(int rr=0;rr<myrank_;++rr)
+    {
+      n_lower_procs+=num_y_all[rr];
+    }
+
+    vector<int>    rank     (n,0);
+    vector<int>    rank_loc (n,0);
+
+    vector<int>    id       (n,0);
+    vector<int>    id_loc   (n,0);
+
+    vector<double> u    (n,0.0);
+    vector<double> u_loc(n,0.0);
+   
+    vector<double> v    (n,0.0);
+    vector<double> v_loc(n,0.0);
+    
+    vector<double> w    (n,0.0);
+    vector<double> w_loc(n,0.0);
+  
+    vector<double> p    (n,0.0);
+    vector<double> p_loc(n,0.0);
+       
+    vector<double> y    (n,0.0);
+    vector<double> y_loc(n,0.0);
+
+
+    int count=n_lower_procs;
+
+    int lid=-1;
+
+    // loop all nodes on the processor
+    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    {
+      // get the processor local node
+      DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
+
+      if (abs(lnode->X()[0])<1e-6 && abs(lnode->X()[2])<1e-6)
+      {
+        id_loc  [count]=lnode->Id();
+        rank_loc[count]=myrank_;
+
+        y_loc[count]=lnode->X()[1];
+
+        // the set of degrees of freedom associated with the node
+        vector<int> nodedofset = discret_->Dof(lnode);
+        
+        lid = dofrowmap->LID(nodedofset[0]);
+        u_loc[count]=(*velnp_)[lid];
+
+        lid = dofrowmap->LID(nodedofset[1]);
+        v_loc[count]=(*velnp_)[lid];
+
+        lid = dofrowmap->LID(nodedofset[2]);
+        w_loc[count]=(*velnp_)[lid];
+
+        lid = dofrowmap->LID(nodedofset[3]);
+        p_loc[count]=(*velnp_)[lid];
+
+        ++count;
+      }
+    }
+
+
+    discret_->Comm().SumAll(&rank_loc[0],&rank[0],n);
+    discret_->Comm().SumAll(&id_loc  [0],&id[0]  ,n);
+
+    discret_->Comm().SumAll(&y_loc[0],&y[0],n);
+    discret_->Comm().SumAll(&u_loc[0],&u[0],n);
+    discret_->Comm().SumAll(&v_loc[0],&v[0],n);
+    discret_->Comm().SumAll(&w_loc[0],&w[0],n);
+    discret_->Comm().SumAll(&p_loc[0],&p[0],n);
+
+    if(myrank_==0)
+    {
+      for(int rr=0;rr<n;++rr)
+      {
+        printf("NR  %3d %5d %18.10e  %13.5e  %13.5e  %13.5e  %13.5e  %13.5e\n",rank[rr],id[rr],time_,y[rr],u[rr],v[rr],w[rr],p[rr]);
+      }
+    }
+  }
+#endif
+
   //-------------------------------------------- output of solution
   if (step_%upres_ == 0)  //write solution
   {
@@ -1184,8 +1300,11 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   //----------------------------------------------------------------------
   // remember force vector for stress computation
   //----------------------------------------------------------------------
-  *force_=Epetra_Vector(*residual_);
-  force_->Scale(density_);
+  if(abs(density_)<1e-16)
+  {
+    dserror("zero density not allowed in dynamic computations\n");
+  }
+  force_->Update(density_,*residual_,0.0);
 
   //----------------------------------------------------------------------
   // apply weak Dirichlet boundary conditions to sysmat_ and residual_
@@ -1283,6 +1402,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
 
     timesparsitypattern_ref_ = null;
   }
+
 
   // -------------------------------------------------------------------
   // Apply strong Dirichlet boundary conditions to system of equations 
