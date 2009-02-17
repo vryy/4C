@@ -169,7 +169,7 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
   }
 
   // post_drt wants to unpack but has no input variables!
-  if (params_ != NULL){ // we check here the global mat struct pointer as this is the only existing NULL pointer in post
+  if (params_ == NULL){ // we are in post-process mode // we check here the global mat struct pointer as this is the only existing NULL pointer in post
     if (haveremodeldata){
       // read data into nowhere
       for (int gp = 0; gp < numgp; ++gp) {
