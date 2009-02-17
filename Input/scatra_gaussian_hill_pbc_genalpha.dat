@@ -60,6 +60,7 @@ FRBOUND          0.0
 FRCOEFF          0.0
 -----------------------------------------------------FLUID DYNAMIC
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
+SOLVERTYPE       linear_full
 TIMEINTEGR       Gen_Alpha
 UPRES            1
 RESTARTEVRY      10
@@ -67,8 +68,8 @@ NUMSTEP          100
 MAXTIME          1.0  //hill reaches point of departure (x0=2/15)
 TIMESTEP         0.01  // Cr = 1.5
 THETA            0.5
-ALPHA_M          0.833333333333330
-ALPHA_F          0.666666666666660
+ALPHA_M          0.833333333333333
+ALPHA_F          0.666666666666667
 GAMMA            0.666666666666667
 VELOCITYFIELD    function
 VELFUNCNO        1

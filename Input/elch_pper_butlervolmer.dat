@@ -103,6 +103,7 @@ SAMPLING_START        0
 SAMPLING_STOP         0
 DUMPING_PERIOD        0
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
+SOLVERTYPE                      nonlinear
 FSSUGRVISC                      No
 INITFUNCNO                      3
 INITIALFIELD                    field_by_function

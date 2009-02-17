@@ -87,6 +87,9 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // ----problem type (type of scalar transport problem we want to solve)
   scatratimeparams->set<string>("problem type",DRT::Problem::Instance()->ProblemType());
 
+  // ----solver type (linear full, linear incremental or nonlinear (incremental))
+  scatratimeparams->set<string>("solver type",scatradyn.get<string>("SOLVERTYPE"));
+
   // --------------------type of time-integration (or stationary) scheme
   INPAR::SCATRA::TimeIntegrationScheme timintscheme =
     Teuchos::getIntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(scatradyn,"TIMEINTEGR");

@@ -33,6 +33,7 @@ NUMTHERMDIS  0
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
+SOLVERTYPE   linear_full
 TIMEINTEGR   Stationary
 UPRES        1
 RESTARTEVRY  20

@@ -184,7 +184,7 @@ public:
         const string                          fssgd, ///< subgrid-diff. flag
         const bool                            is_stationary, ///< flag indicating stationary formulation
         const bool                            is_genalpha, ///< generalized-alpha flag
-        const bool                            islinear, ///< flag for linear/nonlinear problem
+        const bool                            is_incremental, ///< flag for incremental/non-incemental linear solver
         const double                          frt, ///< factor F/RT needed for ELCH calculations
         const double                          thermpressdt ///< time deriv. of therm. press. (for temp. eq.)
     );
@@ -205,6 +205,8 @@ public:
         const LINALG::Matrix<nsd_,iel>&       evel0, ///< initial nodal velocities
         const bool                            temperature, ///< temperature flag
         const bool                            conservative, ///< flag for conservative form
+        const bool                            is_genalpha, ///< generalized-alpha flag
+        const bool                            is_incremental, ///< flag for incremental/non-incemental linear solver
         const enum SCATRA::TauType            whichtau, ///< flag for stabilization parameter definition
         const string                          fssgd, ///< subgrid-diff. flag
         const double                          frt, ///< factor F/RT needed for ELCH calculations
@@ -227,7 +229,7 @@ public:
 
     //! get the material parameters
     virtual void GetMaterialParams(
-      Teuchos::RCP<const MAT::Material>       material,    ///< material pointer
+        Teuchos::RCP<const MAT::Material>     material,    ///< material pointer
         const bool&                           temperature,  ///< temperature flag
         const vector<LINALG::Matrix<iel,1> >& ephinp      /// scalar field
     );
@@ -257,35 +259,18 @@ public:
     );
 
     //! calculate element matrix and rhs vector (One-Step-Theta, BDF2, Gen.-alpha)
-    virtual void CalMat(
-        Epetra_SerialDenseMatrix&             estif,
-        Epetra_SerialDenseVector&             eforce,
-        const vector<LINALG::Matrix<iel,1> >& ephinp,
-        const bool                            higher_order_ele,
-        const bool                            conservative,
-        const bool                            is_genalpha,
-        const double                          timefac,
-        const double                          alphaF,
-        const int                             dofindex
-    );
-
-    //! calculate element matrix and rhs vector (Stationary problem formulation)
-    virtual void CalMatStationary(
-        Epetra_SerialDenseMatrix& estif,
-        Epetra_SerialDenseVector& eforce,
-        const bool                higher_order_ele,
-        const bool                conservative,
-        const int                 dofindex
-    );
-
-    //! calculate matrix and rhs vector (incremental formulation)
-    virtual void CalMatInc(
+    virtual void CalMatAndRHS(
         Epetra_SerialDenseMatrix&             emat,
         Epetra_SerialDenseVector&             erhs,
         const vector<LINALG::Matrix<iel,1> >& ephinp,
-        const bool                            higher_order_ele,
+        const bool                            use2ndderiv,
+        const bool                            conservative,
         const bool                            is_stationary,
-        const double                          timefac
+        const bool                            is_genalpha,
+        const bool                            is_incremental,
+        const double                          timefac,
+        const double                          alphaF,
+        const int                             dofindex
     );
 
     //! calculate element matrix and rhs vector (Electrochemistry problems)
@@ -294,7 +279,7 @@ public:
         Epetra_SerialDenseVector&             erhs,   ///< element rhs
         const vector<LINALG::Matrix<iel,1> >& ephinp, ///< current scalar field
         const LINALG::Matrix<iel,1>&          epotnp, ///< el. potential at element nodes
-        const bool                            higher_order_ele, ///< are second derivatives needed?
+        const bool                            use2ndderiv, ///< are second derivatives needed?
         const double                          frt,    ///< factor F/RT
         const bool                            is_stationary, ///< flag indicating stationary formulation
         const double                          timefac ///< time discretization factor
@@ -372,9 +357,24 @@ public:
       return;
     };
 
+    //! calculate the Laplacian (weak form)
+    inline void GetLaplacianWeakFormRHS(
+        double& val,
+        const LINALG::Matrix<nsd_,iel>& derxy,
+        const LINALG::Matrix<nsd_,1>&   gradphi,
+        const int vi)
+    {
+      val = 0.0;
+      for (int j = 0; j<nsd_; j++)
+      {
+        val += derxy(j,vi)*gradphi(j);
+      }
+      return;
+    };
+
     //! calculate momentum divergence
-    void GetMomentumDivergence(double&                          mdiv,
-                               const LINALG::Matrix<nsd_,nsd_>& mderxy)
+    inline void GetMomentumDivergence(double&                          mdiv,
+                                      const LINALG::Matrix<nsd_,nsd_>& mderxy)
     {
       mdiv = 0.0;
       // compute (rho*vel),x  + (rho*vel),y +  (rho*vel),z at integration point
@@ -454,8 +454,6 @@ public:
     vector<double> conint_;
     //! (global) gradient of transported scalar at integration point
     LINALG::Matrix<nsd_,1> gradphi_;
-    //! (global) 2nd gradient (Laplacian) of transported scalar at integration point
-    LINALG::Matrix<numderiv2_,1> lapphi_;
     //! (global) Laplacian of shape functions at integration point
     LINALG::Matrix<iel,1> laplace_;
 

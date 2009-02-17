@@ -194,6 +194,7 @@ void SCATRA::TimIntBDF2::AddSpecificTimeIntegrationParameters(
   if (prbtype_ == "loma")
     params.set("time derivative of thermodynamic pressure",thermpressdtnp_);
 
+  discret_->SetState("phinp", phinp_);
   discret_->SetState("densnp",densnp_);
   return;
 }

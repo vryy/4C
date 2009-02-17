@@ -92,6 +92,7 @@ REYNOLDS-STRESS       no_reynolds
 OUTFLOW_STAB          no_outstab
 ------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
+SOLVERTYPE       nonlinear
 TIMEINTEGR       Stationary
 ITEMAX           10
 WRITEFLUX        totalflux_boundary

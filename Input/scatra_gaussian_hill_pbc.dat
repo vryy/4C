@@ -60,6 +60,7 @@ FRBOUND          0.0
 FRCOEFF          0.0
 -----------------------------------------------------FLUID DYNAMIC
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
+SOLVERTYPE       linear_full
 TIMEINTEGR       One_Step_Theta
 UPRES            1
 RESTARTEVRY      10

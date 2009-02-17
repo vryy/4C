@@ -48,6 +48,9 @@ public:
   /// predict density field (and time derivative) for low-Mach-number flow
   void PredictDensity(){return;};
 
+  /// compute values at intermediate time steps (required for generalized-alpha)
+  void ComputeIntermediateValues(){return;};
+
   /// compute thermodynamic pressure and time derivative for low-Mach-number flow
   double ComputeThermPressure(){return 0.0;};
 

@@ -1228,6 +1228,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       false,
       "control parameters for scalar transport problems\n");
 
+  setStringToIntegralParameter<int>("SOLVERTYPE","linear_full",
+                               "type of scalar transport solver",
+                               tuple<std::string>(
+                                 "linear_full",
+                                 "linear_incremental",
+                                 "nonlinear"
+                                 ),
+                               tuple<int>(0,1,2),
+                               &scatradyn);
+
   setStringToIntegralParameter<INPAR::SCATRA::TimeIntegrationScheme>("TIMEINTEGR","One_Step_Theta",
                                "Time Integration Scheme",
                                tuple<std::string>(

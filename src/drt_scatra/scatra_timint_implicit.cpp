@@ -56,6 +56,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   time_(0.0),
   step_(0),
   prbtype_  (params_->get<string>("problem type")),
+  solvtype_ (params_->get<string>("solver type")),
   stepmax_  (params_->get<int>("max number timesteps")),
   maxtime_  (params_->get<double>("total time")),
   timealgo_ (params_->get<INPAR::SCATRA::TimeIntegrationScheme>("time int algo")),
@@ -70,6 +71,25 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   frt_      (96485.3399/(8.314472 * params_->get<double>("TEMPERATURE",298.15))),
   errfile_  (params_->get<FILE*>("err file"))
 {
+  // -------------------------------------------------------------------
+  // determine whether linear incremental or nonlinear solver
+  // -------------------------------------------------------------------
+  if (solvtype_ == "nonlinear")
+  {
+    incremental_ = true;
+    nonlinear_   = true;
+  }
+  else if (solvtype_ == "linear_incremental")
+  {
+    incremental_ = true;
+    nonlinear_   = false;
+  }
+  else
+  {
+    incremental_ = false;
+    nonlinear_   = false;
+  }
+
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
   // -------------------------------------------------------------------
@@ -277,7 +297,7 @@ std::string SCATRA::ScaTraTimIntImpl::MapTimIntEnumToString
 /*----------------------------------------------------------------------*
  | contains the time loop                                       vg 05/07|
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::TimeLoop(const bool nonlinear)
+void SCATRA::ScaTraTimIntImpl::TimeLoop()
 {
   // write out inital state
   // Output();
@@ -287,15 +307,21 @@ void SCATRA::ScaTraTimIntImpl::TimeLoop(const bool nonlinear)
 
   while ((step_<stepmax_) and ((time_+ EPS12) < maxtime_))
   {
+    // -------------------------------------------------------------------
+    // prepare time step
+    // -------------------------------------------------------------------
     PrepareTimeStep();
+
+    // -------------------------------------------------------------------
+    // compute values at intermediate time steps (only for gen.-alpha)
+    // -------------------------------------------------------------------
+    ComputeIntermediateValues();
 
     // -------------------------------------------------------------------
     //                  solve nonlinear / linear equation
     // -------------------------------------------------------------------
-    if (nonlinear)
-      NonlinearSolve();
-    else
-      Solve();
+    if (nonlinear_) NonlinearSolve();
+    else            Solve();
 
     // -------------------------------------------------------------------
     //                         update solution
@@ -513,7 +539,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
       // other parameters that might be needed by the elements
       eleparams.set("time-step length",dta_);
       eleparams.set("problem type",prbtype_);
-      eleparams.set("is linear problem", false);
+      eleparams.set("incremental solver",incremental_);
       eleparams.set("form of convective term",convform_);
       eleparams.set("fs subgrid diffusivity",fssgd_);
       eleparams.set("frt",frt_);// ELCH specific factor F/RT
@@ -530,7 +556,6 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
 
       // set vector values needed by elements
       discret_->ClearState();
-      discret_->SetState("phinp",phinp_);
       discret_->SetState("hist" ,hist_);
 
       // add element parameters and density state according to time-int. scheme
@@ -798,7 +823,7 @@ void SCATRA::ScaTraTimIntImpl::Solve()
     // other parameters that might be needed by the elements
     eleparams.set("time-step length",dta_);
     eleparams.set("problem type",prbtype_);
-    eleparams.set("is linear problem", true);
+    eleparams.set("incremental solver",incremental_);
     eleparams.set("form of convective term",convform_);
     eleparams.set("fs subgrid diffusivity",fssgd_);
 
@@ -814,8 +839,7 @@ void SCATRA::ScaTraTimIntImpl::Solve()
 
     // set vector values needed by elements
     discret_->ClearState();
-    discret_->SetState("phinp",phinp_);
-    discret_->SetState("hist" ,hist_ );
+    discret_->SetState("hist",hist_);
 
     // add element parameters and density state according to time-int. scheme
     AddSpecificTimeIntegrationParameters(eleparams);
@@ -836,24 +860,72 @@ void SCATRA::ScaTraTimIntImpl::Solve()
     dtele_=ds_cputime()-tcpu;
   }
 
-  // Apply dirichlet boundary conditions to system matrix
+  // Apply Dirichlet boundary conditions to system matrix and solve system in
+  // incremental or non-incremental case
+  if (incremental_)
+  {
+    // blank residual DOFs which are on Dirichlet BC
+    // We can do this because the values at the Dirichlet positions
+    // are not used anyway.
+    // We could avoid this though, if the dofrowmap would not include
+    // the Dirichlet values as well. But it is expensive to avoid that.
+    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), residual_);
+
+    //--------- Apply Dirichlet boundary conditions to system of equations
+    // residual values are supposed to be zero at Dirichlet boundaries
+    increment_->PutScalar(0.0);
+
+    // time measurement: application of DBC to system
+    TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + apply DBC to system");
+
+    LINALG::ApplyDirichlettoSystem(sysmat_,increment_,residual_,zeros_,*(dbcmaps_->CondMap()));
+
+    //-------solve
+    {
+      TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + solver calls");
+      // get cpu time
+      tcpu=ds_cputime();
+
+      solver_->Solve(sysmat_->EpetraOperator(),increment_,residual_,true,true);
+
+      // end time measurement for solver
+      dtsolve_=ds_cputime()-tcpu;
+    }
+
+    //------------------------------------------------ update solution vector
+    phinp_->Update(1.0,*increment_,1.0);
+
+    //--------------------------------------------- compute norm of increment
+    double incnorm_L2(0.0);
+    double scalnorm_L2(0.0);
+    increment_->Norm2(&incnorm_L2);
+    phinp_    ->Norm2(&scalnorm_L2);
+
+    if (myrank_ == 0)
+    {
+      printf("+-------------+-------------+\n");
+      printf("|  increment  | %10.3E  |\n",incnorm_L2/scalnorm_L2);
+      printf("+-------------+-------------+\n");
+    }
+  }
+  else
   {
     // time measurement: application of DBC to system
     TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + apply DBC to system");
 
     LINALG::ApplyDirichlettoSystem(sysmat_,phinp_,residual_,phinp_,*(dbcmaps_->CondMap()));
-  }
 
-  //-------solve
-  {
-    TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + solver calls");
-    // get cpu time
-    tcpu=ds_cputime();
+    //-------solve
+    {
+      TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + solver calls");
+      // get cpu time
+      tcpu=ds_cputime();
 
-    solver_->Solve(sysmat_->EpetraOperator(),phinp_,residual_,true,true);
+      solver_->Solve(sysmat_->EpetraOperator(),phinp_,residual_,true,true);
 
-    // end time measurement for solver
-    dtsolve_=ds_cputime()-tcpu;
+      // end time measurement for solver
+      dtsolve_=ds_cputime()-tcpu;
+    }
   }
 
   return;

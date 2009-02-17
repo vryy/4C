@@ -108,6 +108,7 @@ SAMPLING_START        0
 SAMPLING_STOP         0
 DUMPING_PERIOD        0
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
+SOLVERTYPE       linear_full
 TIMEINTEGR       Stationary
 ITEMAX           10
 WRITEFLUX        totalflux_domain

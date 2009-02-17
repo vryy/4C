@@ -83,6 +83,7 @@ void SCATRA::TimIntStationary::AddSpecificTimeIntegrationParameters(
   params.set("using generalized-alpha time integration",false);
   params.set("total time",time_);
 
+  discret_->SetState("phinp", phinp_);
   discret_->SetState("densnp",densnp_);
   return;
 }

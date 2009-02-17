@@ -34,6 +34,7 @@ NUMTHERMDIS  0
 ------------------------------------------------STRUCTURAL DYNAMIC
 -----------------------------------------------------FLUID DYNAMIC
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
+SOLVERTYPE   linear_full
 TIMEINTEGR   Stationary
 RESTARTEVRY  20
 MAXTIME      1.0

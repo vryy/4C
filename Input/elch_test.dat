@@ -87,6 +87,7 @@ SIMPLER          No
 ---------------------------------------FLUID DYNAMIC/STABILIZATION
 ------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
+SOLVERTYPE                      nonlinear
 FSSUGRVISC                      No
 INITFUNCNO                      2
 INITIALFIELD                    field_by_function

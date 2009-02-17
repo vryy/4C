@@ -57,6 +57,7 @@ FRBOUND          0.0
 FRCOEFF          0.0
 -----------------------------------------------------FLUID DYNAMIC
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
+SOLVERTYPE       linear_full
 TIMEINTEGR       Stationary
 UPRES            1
 RESTARTEVRY      20

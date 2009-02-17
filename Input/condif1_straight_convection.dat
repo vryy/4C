@@ -52,6 +52,7 @@ FILESTEPS              1000
 ------------------------------------------------STRUCTURAL CONTACT
 -----------------------------------------------------FLUID DYNAMIC
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
+SOLVERTYPE       linear_full
 TIMEINTEGR       Stationary
 UPRES            1
 RESTARTEVRY      20

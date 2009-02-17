@@ -203,6 +203,7 @@ void SCATRA::TimIntOneStepTheta::AddSpecificTimeIntegrationParameters(
   if (prbtype_ == "loma")
     params.set("time derivative of thermodynamic pressure",thermpressdtnp_);
 
+  discret_->SetState("phinp", phinp_);
   discret_->SetState("densnp",densnp_);
   return;
 }
@@ -433,6 +434,7 @@ void SCATRA::TimIntOneStepTheta::CalcInitialPhidt()
     eleparams.set("time factor",theta_*dta_);
     eleparams.set("alpha_F",1.0);
     eleparams.set("problem type",prbtype_);
+    eleparams.set("incremental solver",incremental_);
     eleparams.set("form of convective term",convform_);
     eleparams.set("fs subgrid diffusivity",fssgd_);
     if (prbtype_=="elch")

@@ -48,6 +48,9 @@ public:
   /// predict density field and time derivative for low-Mach-number flow
   void PredictDensity();
 
+  /// compute values at intermediate time steps
+  void ComputeIntermediateValues();
+
   /// compute thermodynamic pressure and time derivative for low-Mach-number flow
   double ComputeThermPressure();
 
@@ -97,8 +100,9 @@ protected:
   /// write additional data required for restart
   void OutputRestart();
 
-  /// time derivative of solution vector phi at time t_{n}
-  RCP<Epetra_Vector>    phidtn_;
+  /// time derivative of solution vector phi at times t_{n+1} and t_{n}
+  RCP<Epetra_Vector>  phidtnp_;
+  RCP<Epetra_Vector>  phidtn_;
 
 
 private:

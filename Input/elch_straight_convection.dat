@@ -82,6 +82,7 @@ ADAPTCONV        Yes
 ADAPTCONV_BETTER 0.1
 SIMPLER          No
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
+SOLVERTYPE       nonlinear
 TIMEINTEGR       Stationary
 UPRES            1
 RESTARTEVRY      20

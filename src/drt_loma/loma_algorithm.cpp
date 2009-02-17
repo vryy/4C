@@ -175,6 +175,9 @@ void LOMA::Algorithm::InitialCalculations()
   // furthermore, set density at -1 (i.e., densnm) for BDF2 (zero vector)
   ScaTraField().UpdateDensity();
 
+  // compute density at n+alpha_F (only for generalized-alpha scheme)
+  ScaTraField().ComputeIntermediateValues();
+
   // get initial velocity (and pressure) field
   // use value at n+1 for all time-integration schemes, i.e., also for
   // generalized-alpha time integration
@@ -299,6 +302,9 @@ void LOMA::Algorithm::GenAlphaOuterLoop()
   while (stopnonliniter==false)
   {
     itnum++;
+
+    // compute values at intermediate time steps
+    ScaTraField().ComputeIntermediateValues();
 
     // get velocity (and pressure) field at intermediate time step n+alpha_F
     GetFluidVelPressAf();

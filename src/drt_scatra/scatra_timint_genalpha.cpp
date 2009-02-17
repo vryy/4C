@@ -40,15 +40,16 @@ SCATRA::TimIntGenAlpha::TimIntGenAlpha(
   // Vectors passed to the element
   // -----------------------------
 
-  // temporal solution derivative at time n
+  // scalar at time n+alpha_F
+  phiaf_ = LINALG::CreateVector(*dofrowmap,true);
+
+  // temporal solution derivative at times n+1 and n
+  phidtnp_ = LINALG::CreateVector(*dofrowmap,true);
   phidtn_  = LINALG::CreateVector(*dofrowmap,true);
 
   // only required for low-Mach-number flow
   if (prbtype_ == "loma")
   {
-     // temperature at n+alpha_F
-    phiaf_ = LINALG::CreateVector(*dofrowmap,true);
-
    // density at times n, n+alpha_M and n+alpha_F
     densn_  = LINALG::CreateVector(*dofrowmap,true);
     densam_ = LINALG::CreateVector(*dofrowmap,true);
@@ -88,20 +89,25 @@ SCATRA::TimIntGenAlpha::~TimIntGenAlpha()
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntGenAlpha::SetOldPartOfRighthandside()
 {
-  // For conservative formulation of low-Mach-number flow:
-  // hist_ = densn_*phin_ + dt*(1-(gamma/alpha_M))*densn_*phidtn_
-  //                      + dt*(1-(gamma/alpha_M))*phin_*densdtn_
-  //       = densn_*phin_ + dt*(1-genalphafac)*densn_*phidtn_
-  //                      + dt*(1-genalphafac)*phin_*densdtn_
-  if (prbtype_ == "loma" and convform_ =="conservative")
+  // calculation of history vector only for non-incremental formulation:
+  // (History vector is used in bot cases, but in incremental case, it
+  // contains time derivatives of (density times) scalar, see below.)
+  if (not incremental_)
   {
+    // For conservative formulation of low-Mach-number flow:
+    // hist_ = densn_*phin_ + dt*(1-(gamma/alpha_M))*densn_*phidtn_
+    //                      + dt*(1-(gamma/alpha_M))*phin_*densdtn_
+    //       = densn_*phin_ + dt*(1-genalphafac)*densn_*phidtn_
+    //                      + dt*(1-genalphafac)*phin_*densdtn_
+    if (prbtype_ == "loma" and convform_ =="conservative")
+    {
       hist_->Multiply(1.0, *phin_, *densn_, 0.0);
-      hist_->Multiply(dta_*(1.0-genalphafac_), *phidtn_, *densn_, 1.0);
-      hist_->Multiply(dta_*(1.0-genalphafac_), *phin_, *densdtn_, 1.0);
+      hist_->Update(dta_*(1.0-genalphafac_),*phidtn_,1.0);
+    }
+    // hist_ = phin_ + dt*(1-(gamma/alpha_M))*phidtn_
+    //       = phin_ + dt*(1-genalphafac)*phidtn_
+    else hist_->Update(1.0, *phin_, dta_*(1.0-genalphafac_), *phidtn_, 0.0);
   }
-  // hist_ = phin_ + dt*(1-(gamma/alpha_M))*phidtn_
-  //       = phin_ + dt*(1-genalphafac)*phidtn_
-  else hist_->Update(1.0, *phin_, dta_*(1.0-genalphafac_), *phidtn_, 0.0);
 
   return;
 }
@@ -139,7 +145,7 @@ void SCATRA::TimIntGenAlpha::ComputeInitialDensityDerivative()
 void SCATRA::TimIntGenAlpha::ExplicitPredictor()
 {
   // constant predictor
-  phinp_ ->Update(1.0,*phin_,0.0);
+  phinp_->Update(1.0,*phin_,0.0);
   return;
 }
 
@@ -194,6 +200,43 @@ void SCATRA::TimIntGenAlpha::PredictDensity()
 
 
 /*----------------------------------------------------------------------*
+ | compute values at intermediate time steps                   vg 02/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntGenAlpha::ComputeIntermediateValues()
+{
+  // computations for incremental case: phi at time n+alpha_F and time deriv.
+  if (incremental_)
+  {
+    // computation of time derivative of phi:
+    // phidt(n+1) = (phi(n+1)-phi(n)) / (gamma*dt) - (1/gamma -1)*phidt(n)
+    // in conservative low-Mach-number case: density times phi instead of phi
+    const double fact1 = 1.0/(gamma_*dta_);
+    const double fact2 = (-1.0/gamma_) +1.0;
+    phidtnp_->Update(1.0,*phidtn_,fact2);
+    if (prbtype_ == "loma" and convform_ =="conservative")
+    {
+      phidtnp_->Multiply( fact1,*phinp_,*densnp_,1.0);
+      phidtnp_->Multiply(-fact1,*phin_,*densn_,1.0);
+    }
+    else phidtnp_->Update(fact1,*phinp_,-fact1,*phin_,1.0);
+
+    // we know the first time derivative on Dirichlet boundaries
+    // so we do not need an approximation of these values!
+    ApplyDirichletBC(time_,Teuchos::null,phidtnp_);
+
+    // calculation of time derivative of phi at n+alpha_M, stored on
+    // history vector for comfortable later transport to element routine
+    hist_->Update(alphaM_,*phidtnp_,(1.0-alphaM_),*phidtn_,0.0);
+
+    // compute phi at n+alpha_F
+    phiaf_->Update(alphaF_,*phinp_,(1.0-alphaF_),*phin_,0.0);
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  | set time for evaluation of Neumann boundary conditions      vg 12/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntGenAlpha::SetTimeForNeumannEvaluation(
@@ -229,6 +272,9 @@ void SCATRA::TimIntGenAlpha::AddSpecificTimeIntegrationParameters(
 
   if (prbtype_ == "loma")
     params.set("time derivative of thermodynamic pressure",thermpressdtaf_);
+
+  if (incremental_) discret_->SetState("phinp",phiaf_);
+  else              discret_->SetState("phinp",phin_);
 
   if (prbtype_ == "loma" and convform_ != "conservative")
        discret_->SetState("densnp",densam_);
@@ -367,8 +413,8 @@ double SCATRA::TimIntGenAlpha::ComputeThermPressure()
 void SCATRA::TimIntGenAlpha::ComputeDensityDerivative()
 {
   // densdt(n+1) = (dens(n+1)-dens(n))/(gamma*dt)+((gamma-1)/gamma)*densdt(n)
-  double fact1 = 1.0/(gamma_*dta_);
-  double fact2 = (gamma_-1.0)/gamma_;
+  const double fact1 = 1.0/(gamma_*dta_);
+  const double fact2 = (gamma_-1.0)/gamma_;
   densdtnp_->Update(fact1,*densnp_,-fact1,*densn_ ,0.0);
   densdtnp_->Update(fact2,*densdtn_,1.0);
 
@@ -382,19 +428,24 @@ void SCATRA::TimIntGenAlpha::ComputeDensityDerivative()
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntGenAlpha::Update()
 {
-  // update time derivative of phi
-  double fact1 = 1.0/(gamma_*dta_);
-  double fact2 = (-1.0/gamma_) +1.0;
-
+  // compute time derivative of phi for non-incremental case:
   // phidt(n) = (phi(n)-phi(n-1)) / (gamma*dt(n)) - (1/gamma -1)*phidt(n-1)
-  phidtn_->Update( fact1,*phinp_,-fact1,*phin_ ,fact2);
+  if (not incremental_)
+  {
+    const double fact1 = 1.0/(gamma_*dta_);
+    const double fact2 = (-1.0/gamma_) +1.0;
+    phidtn_->Update( fact1,*phinp_,-fact1,*phin_ ,fact2);
 
-  // we know the first time derivative on Dirichlet boundaries
-  // so we do not need an approximation of these values!
-  ApplyDirichletBC(time_,Teuchos::null,phidtn_);
+    // we know the first time derivative on Dirichlet boundaries
+    // so we do not need an approximation of these values!
+    ApplyDirichletBC(time_,Teuchos::null,phidtn_);
+  }
+  // time deriv. of this step becomes most recent time derivative of
+  // last step for incremental solver
+  else phidtn_->Update(1.0,*phidtnp_,0.0);
 
-  // solution of this step becomes most recent solution of the last step
-  phin_ ->Update(1.0,*phinp_,0.0);
+  // solution of this step becomes most recent solution of last step
+  phin_->Update(1.0,*phinp_,0.0);
 
   return;
 }
@@ -494,6 +545,7 @@ void SCATRA::TimIntGenAlpha::CalcInitialPhidt()
     eleparams.set("time factor",genalphafac_*dta_);
     eleparams.set("alpha_F",alphaF_);
     eleparams.set("problem type",prbtype_);
+    eleparams.set("incremental solver",incremental_);
     eleparams.set("form of convective term",convform_);
     eleparams.set("fs subgrid diffusivity",fssgd_);
     if (prbtype_=="elch")
@@ -533,6 +585,9 @@ void SCATRA::TimIntGenAlpha::CalcInitialPhidt()
   // solve for phidtn
   solver_->Solve(sysmat_->EpetraOperator(),phidtn_,residual_,true,true);
 
+  // copy values to phidtnp
+  phidtnp_->Update(1.0,*phidtn_,0.0);
+
   // reset the matrix (and its graph!) since we solved
   // a very special problem here that has a different sparsity pattern_
   if (params_->get<int>("BLOCKPRECOND") )
@@ -553,10 +608,9 @@ void SCATRA::TimIntGenAlpha::SetLomaVelocity(RCP<const Epetra_Vector> extvel,
   tempincnp_->Update(1.0,*phinp_,0.0);
   //velincnp_->Update(1.0,*convel_,0.0);
 
-  // for generalized-alpha time integration, at first, density fields at
-  // intermediate time steps need to be calculated.
-  densam_->Update((alphaM_),*densnp_,(1.0-alphaM_),*densn_,0.0);
-  densaf_->Update((alphaF_),*densnp_,(1.0-alphaF_),*densn_,0.0);
+  // calculation of density fields at intermediate time steps
+  densam_->Update(alphaM_,*densnp_,(1.0-alphaM_),*densn_,0.0);
+  densaf_->Update(alphaF_,*densnp_,(1.0-alphaF_),*densn_,0.0);
 
   // check vector compatibility and determine space dimension
   int numdim =-1;

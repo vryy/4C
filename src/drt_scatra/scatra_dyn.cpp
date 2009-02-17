@@ -72,34 +72,15 @@ void scatra_dyn(int disnumff, int disnumscatra, int restart)
       // create instance of scalar transport basis algorithm (empty fluid discretization)
       Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly = rcp(new ADAPTER::ScaTraBaseAlgorithm(scatradyn));
 
-      if (restart)
-      {
-        // read the restart information, set vectors and variables
-        scatraonly->ScaTraField().ReadRestart(restart);
-      }
+      // read the restart information, set vectors and variables
+      if (restart) scatraonly->ScaTraField().ReadRestart(restart);
 
       // set velocity field 
       //(this is done only once. Time-dependent velocity fields are not supported)
       (scatraonly->ScaTraField()).SetVelocityField(veltype,scatradyn.get<int>("VELFUNCNO"));
 
-      // do we have a nonlinear problem due to applied boundary conditions?
-      vector< DRT::Condition * >  conditions;
-      scatradis->GetCondition("ElectrodeKinetics", conditions);
-      if (conditions.size() > 0) 
-      {
-        if (comm.MyPID()==0)
-        {
-          cout<<"Found "<<conditions.size()<<" nonlinear boundary condition(s) applied to "<<scatradis->Name()<<" discretization"<<endl;
-          cout<<"--> Solving nonlinear problem\n"<<endl;
-        }
-        // solve the nonlinear problem with given convective velocity
-        (scatraonly->ScaTraField()).TimeLoop(true);
-      }
-      else
-      {
-        // solve the linear problem with given convective velocity
-        (scatraonly->ScaTraField()).TimeLoop(false);
-      }
+      // enter time loop to solve problem with given convective velocity
+      (scatraonly->ScaTraField()).TimeLoop();
 
       // perform the result test if required
       DRT::ResultTestManager testmanager(comm);

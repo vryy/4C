@@ -101,7 +101,7 @@ public:
   }
 
   /// do time integration (time loop)
-  void TimeLoop(bool nonlinear = false);
+  void TimeLoop();
 
   /// setup the variables to do a new time step
   void PrepareTimeStep();
@@ -152,6 +152,9 @@ public:
 
   /// set the initial scalar field phi
   void SetInitialField(int init,int startfuncno);
+
+  /// compute values at intermediate time steps (required for generalized-alpha)
+  virtual void ComputeIntermediateValues()=0;
 
   /// set velocity field for low-Mach-number flow
   virtual void SetLomaVelocity(RCP<const Epetra_Vector> extvel,
@@ -321,6 +324,12 @@ protected:
 
   /// flag defining type of scalar transport problem
   string prbtype_;
+
+  /// solvertype and flags for nonlinear (always incremental) and
+  /// (linear) incremental solver
+  string solvtype_;
+  bool nonlinear_;
+  bool incremental_;
 
   /// maximum number of steps
   int stepmax_;
