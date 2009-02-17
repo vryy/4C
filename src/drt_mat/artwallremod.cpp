@@ -130,11 +130,10 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
   int matid;
   ExtractfromPack(position,data,matid);
   // in post-process mode we do not have any instance of DRT::Problem
-  MAT::PAR::Parameter* mat = NULL;
   if (DRT::Problem::NumInstances() > 0)
   {
     const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
-    mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+    MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
     if (mat->Type() == MaterialType())
       params_ = static_cast<MAT::PAR::ArtWallRemod*>(mat);
     else
@@ -170,8 +169,8 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
   }
 
   // post_drt wants to unpack but has no input variables!
-  if (mat != NULL) { // we check here the global mat struct pointer as this is the only existing NULL pointer in post
-    if(haveremodeldata){
+  if (params_ != NULL){ // we check here the global mat struct pointer as this is the only existing NULL pointer in post
+    if (haveremodeldata){
       // read data into nowhere
       for (int gp = 0; gp < numgp; ++gp) {
         double gamma;
@@ -191,51 +190,55 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
   
   // check whether we currently want remodeling
   // because remodeling might be switched after restart
-  if (params_->rembegt_ != -1.){
-    // initialize internal variables of remodeling
-    gamma_ = rcp(new vector<double>(numgp));
-    phi_ = rcp(new vector<Epetra_SerialDenseMatrix>(numgp));
-    stresses_ = rcp(new vector<Epetra_SerialDenseMatrix>(numgp));
-    lambda_ = rcp(new vector<vector<double> >(numgp));
-    if (haveremodeldata){ // unpack remodel data
-      for (int gp = 0; gp < numgp; ++gp) {
-        double gamma;
-        Epetra_SerialDenseMatrix tmp(3,3);
-        ExtractfromPack(position,data,gamma);
-        ExtractfromPack(position,data,tmp);
-        gamma_->at(gp) = gamma;
-        phi_->at(gp) = tmp;
-        ExtractfromPack(position,data,tmp);
-        stresses_->at(gp) = tmp;
-        vector<double> a;
-        ExtractfromPack(position,data,a);
-        lambda_->at(gp) = a;
-      }
-    } else { // assign input variables or zeros, respectively
-      for (int gp = 0; gp < numgp; ++gp) {
-        gamma_->at(gp) = (params_->gamma_ * PI)/180.0;  // convert to radians
-        lambda_->at(gp).resize(3);
-        for (int i = 0; i < 3; ++i) lambda_->at(gp)[i] = 0.0;
-        Epetra_SerialDenseMatrix emptymat(3,3);
-        phi_->at(gp) = emptymat;
-        stresses_->at(gp) = emptymat;
-        remtime_->at(gp) = params_->rembegt_; // overwrite restart data with input when switching
+  if (params_ != NULL){
+    if (params_->rembegt_ != -1.){
+      // initialize internal variables of remodeling
+      gamma_ = rcp(new vector<double>(numgp));
+      phi_ = rcp(new vector<Epetra_SerialDenseMatrix>(numgp));
+      stresses_ = rcp(new vector<Epetra_SerialDenseMatrix>(numgp));
+      lambda_ = rcp(new vector<vector<double> >(numgp));
+      if (haveremodeldata){ // unpack remodel data
+        for (int gp = 0; gp < numgp; ++gp) {
+          double gamma;
+          Epetra_SerialDenseMatrix tmp(3,3);
+          ExtractfromPack(position,data,gamma);
+          ExtractfromPack(position,data,tmp);
+          gamma_->at(gp) = gamma;
+          phi_->at(gp) = tmp;
+          ExtractfromPack(position,data,tmp);
+          stresses_->at(gp) = tmp;
+          vector<double> a;
+          ExtractfromPack(position,data,a);
+          lambda_->at(gp) = a;
+        }
+      } else { // assign input variables or zeros, respectively
+        for (int gp = 0; gp < numgp; ++gp) {
+          gamma_->at(gp) = (params_->gamma_ * PI)/180.0;  // convert to radians
+          lambda_->at(gp).resize(3);
+          for (int i = 0; i < 3; ++i) lambda_->at(gp)[i] = 0.0;
+          Epetra_SerialDenseMatrix emptymat(3,3);
+          phi_->at(gp) = emptymat;
+          stresses_->at(gp) = emptymat;
+          remtime_->at(gp) = params_->rembegt_; // overwrite restart data with input when switching
+        }
       }
     }
   }
 
   // correct position in case remodeling is switched off
-  if ((params_->rembegt_ == -1.) && (haveremodeldata)){
-    // read data into nowhere
-    for (int gp = 0; gp < numgp; ++gp) {
-      double gamma;
-      Epetra_SerialDenseMatrix tmp(3,3);
-      ExtractfromPack(position,data,gamma);
-      ExtractfromPack(position,data,tmp);
-      ExtractfromPack(position,data,tmp);
-      vector<double> a;
-      ExtractfromPack(position,data,a);
-      remtime_->at(gp) = params_->rembegt_; // overwrite restart data with input when switching
+  if (params_ != NULL){
+    if ((params_->rembegt_ == -1.) && (haveremodeldata)){
+      // read data into nowhere
+      for (int gp = 0; gp < numgp; ++gp) {
+        double gamma;
+        Epetra_SerialDenseMatrix tmp(3,3);
+        ExtractfromPack(position,data,gamma);
+        ExtractfromPack(position,data,tmp);
+        ExtractfromPack(position,data,tmp);
+        vector<double> a;
+        ExtractfromPack(position,data,a);
+        remtime_->at(gp) = params_->rembegt_; // overwrite restart data with input when switching
+      }
     }
   }
 
