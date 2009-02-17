@@ -36,6 +36,9 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_function.H"
 
+#include "../drt_nurbs_discret/drt_nurbs_discret.H"
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H" 
+
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_integration.H"

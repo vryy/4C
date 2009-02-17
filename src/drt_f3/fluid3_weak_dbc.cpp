@@ -209,6 +209,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   const double afgdt = params.get<double>("afgdt");
   const double gdt   = params.get<double>("gdt");
 
+
   //--------------------------------------------------
   // get parent elements location vector and ownerships
 
@@ -256,8 +257,6 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   {
     dserror("Cannot get state vector 'velnp'");
   }
-
-
 
   vector<double> mypvelnp((*plm).size());
   DRT::UTILS::ExtractMyValues(*velnp,mypvelnp,*plm);
@@ -420,7 +419,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   // derivatives on the boundary
   Epetra_SerialDenseMatrix pqxg(intpoints.nquad,3);
 
-  if(distype==DRT::Element::hex8)
+  if(distype==DRT::Element::quad4)
   {
     switch(surfaceid)
     {
@@ -443,8 +442,8 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
       for (int iquad=0;iquad<intpoints.nquad;++iquad)
       { 
-	pqxg(iquad,0)= intpoints.qxg[1][iquad];
-	pqxg(iquad,1)= intpoints.qxg[0][iquad];
+	pqxg(iquad,0)= intpoints.qxg[iquad][1];
+	pqxg(iquad,1)= intpoints.qxg[iquad][0];
 	pqxg(iquad,2)=-1.0;
       }
       break;
@@ -467,9 +466,9 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       */
       for (int iquad=0;iquad<intpoints.nquad;++iquad)
       { 
-	pqxg(iquad,0)= intpoints.qxg[0][iquad];
+	pqxg(iquad,0)= intpoints.qxg[iquad][0];
 	pqxg(iquad,1)=-1.0;
-	pqxg(iquad,2)= intpoints.qxg[1][iquad];
+	pqxg(iquad,2)= intpoints.qxg[iquad][1];
       }
       break;
     }
@@ -492,8 +491,8 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       for (int iquad=0;iquad<intpoints.nquad;++iquad)
       { 
 	pqxg(iquad,0)= 1.0;
-	pqxg(iquad,1)= intpoints.qxg[0][iquad];
-	pqxg(iquad,2)= intpoints.qxg[1][iquad];
+	pqxg(iquad,1)= intpoints.qxg[iquad][0];
+	pqxg(iquad,2)= intpoints.qxg[iquad][1];
       }
       break;
     }
@@ -515,9 +514,9 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       */
       for (int iquad=0;iquad<intpoints.nquad;++iquad)
       { 
-	pqxg(iquad,0)=-intpoints.qxg[0][iquad];
+	pqxg(iquad,0)=-intpoints.qxg[iquad][0];
 	pqxg(iquad,1)= 1.0;
-	pqxg(iquad,2)= intpoints.qxg[1][iquad];
+	pqxg(iquad,2)= intpoints.qxg[iquad][1];
       }
       break;
     }
@@ -540,8 +539,8 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       for (int iquad=0;iquad<intpoints.nquad;++iquad)
       { 
 	pqxg(iquad,0)=-1.0;
-	pqxg(iquad,1)= intpoints.qxg[1][iquad];
-	pqxg(iquad,2)= intpoints.qxg[0][iquad];
+	pqxg(iquad,1)= intpoints.qxg[iquad][1];
+	pqxg(iquad,2)= intpoints.qxg[iquad][0];
       }
       break;
     }
@@ -563,8 +562,8 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       */
       for (int iquad=0;iquad<intpoints.nquad;++iquad)
       { 
-	pqxg(iquad,0)= intpoints.qxg[0][iquad];
-	pqxg(iquad,1)= intpoints.qxg[1][iquad];
+	pqxg(iquad,0)= intpoints.qxg[iquad][0];
+	pqxg(iquad,1)= intpoints.qxg[iquad][1];
 	pqxg(iquad,2)= 1.0;
       }
       break;
@@ -573,7 +572,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       dserror("invalid number of surfaces, unable to determine intpoint in parent");
     }
   }
-  else if(distype==DRT::Element::nurbs27)
+  else if(distype==DRT::Element::nurbs9)
   {
     switch(surfaceid)
     {
@@ -594,8 +593,8 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       */
       for (int iquad=0;iquad<intpoints.nquad;++iquad)
       { 
-	pqxg(iquad,0)= intpoints.qxg[0][iquad];
-	pqxg(iquad,1)= intpoints.qxg[1][iquad];
+	pqxg(iquad,0)= intpoints.qxg[iquad][0];
+	pqxg(iquad,1)= intpoints.qxg[iquad][1];
 	pqxg(iquad,2)=-1.0;
       }
       break;
@@ -617,8 +616,8 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       */
       for (int iquad=0;iquad<intpoints.nquad;++iquad)
       { 
-	pqxg(iquad,0)= intpoints.qxg[0][iquad];
-	pqxg(iquad,1)= intpoints.qxg[1][iquad];
+	pqxg(iquad,0)= intpoints.qxg[iquad][0];
+	pqxg(iquad,1)= intpoints.qxg[iquad][1];
 	pqxg(iquad,2)= 1.0;
       }
       break;
@@ -641,9 +640,9 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
       for (int iquad=0;iquad<intpoints.nquad;++iquad)
       { 
-	pqxg(iquad,0)= intpoints.qxg[0][iquad];
+	pqxg(iquad,0)= intpoints.qxg[iquad][0];
 	pqxg(iquad,1)=-1.0;
-	pqxg(iquad,2)= intpoints.qxg[1][iquad];
+	pqxg(iquad,2)= intpoints.qxg[iquad][1];
       }
       break;
     }
@@ -664,9 +663,9 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       */
       for (int iquad=0;iquad<intpoints.nquad;++iquad)
       { 
-	pqxg(iquad,0)= intpoints.qxg[0][iquad];
+	pqxg(iquad,0)= intpoints.qxg[iquad][0];
 	pqxg(iquad,1)= 1.0;
-	pqxg(iquad,2)= intpoints.qxg[1][iquad];
+	pqxg(iquad,2)= intpoints.qxg[iquad][1];
       }
       break;
     }
@@ -688,8 +687,8 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       for (int iquad=0;iquad<intpoints.nquad;++iquad)
       { 
 	pqxg(iquad,0)= 1.0;
-	pqxg(iquad,1)= intpoints.qxg[0][iquad];
-	pqxg(iquad,2)= intpoints.qxg[1][iquad];
+	pqxg(iquad,1)= intpoints.qxg[iquad][0];
+	pqxg(iquad,2)= intpoints.qxg[iquad][1];
       }
       break;
     }
@@ -711,8 +710,8 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       for (int iquad=0;iquad<intpoints.nquad;++iquad)
       { 
 	pqxg(iquad,0)=-1.0;
-	pqxg(iquad,1)= intpoints.qxg[0][iquad];
-	pqxg(iquad,2)= intpoints.qxg[1][iquad];
+	pqxg(iquad,1)= intpoints.qxg[iquad][0];
+	pqxg(iquad,2)= intpoints.qxg[iquad][1];
       }
       break;
     }
@@ -722,7 +721,201 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   }
   else
   {
-      dserror("only hex8 and nurbs27 have a weak dbc implementation up to now\n");
+      dserror("only quad4 and nurbs9 weak dbc implementations up to now\n");
+  }
+
+
+  // --------------------------------------------------
+  // Now do the nurbs specific stuff
+  double normalfac=0.0;
+
+  std::vector<blitz::Array<double,1> > mypknots(3);
+  std::vector<blitz::Array<double,1> > myknots (2);
+
+  blitz::Array<double, 1> weights(iel);
+  LINALG::Matrix<piel,1>  pweights;
+
+
+  // for isogeometric elements --- get knotvectors for parent
+  // element and surface element, get weights
+  if(surfele->Shape()==Fluid3::nurbs4 || surfele->Shape()==Fluid3::nurbs9)
+  {
+    // --------------------------------------------------
+    // get knotvector
+
+    DRT::NURBS::NurbsDiscretization* nurbsdis
+      =
+      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+
+    RefCountPtr<DRT::NURBS::Knotvector> knots=(*nurbsdis).GetKnotVector();
+
+    knots->GetEleKnots(mypknots,surfele->parent_->Id());
+
+    switch(surfaceid)
+    {
+    case 0:
+    {
+      // t=-1
+      /*
+                parent               surface
+
+                 s|                    s|                    
+                  |                     |                    
+              +---+---+             +---+---+                
+	     6|  7|  8|      r     6|  7|  8|      r  
+              +   +-- +  -----      +   +-- +  -----  
+             3|  4   5|            3|  4   5|                
+              +---+---+             +---+---+                
+             0   1   2             0   1   2                 
+      */
+      myknots[0].resize(mypknots[0].extent(blitz::firstDim));
+      myknots[1].resize(mypknots[1].extent(blitz::firstDim));
+      myknots[0]=mypknots[0];
+      myknots[1]=mypknots[1];
+
+      normalfac=-1.0;
+      break;
+    }
+    case 1:
+    {
+      // t=+1
+      /*
+                parent               surface
+
+                 s|                    s|                    
+                  |                     |                    
+              +---+---+             +---+---+                
+	    24| 25| 26|      r     6|  7|  8|      r  
+              +   +-- +  -----      +   +-- +  -----  
+            21| 22  23|            3|  4   5|                
+              +---+---+             +---+---+                
+            18  19  20             0   1   2                 
+      */
+      myknots[0].resize(mypknots[0].extent(blitz::firstDim));
+      myknots[1].resize(mypknots[1].extent(blitz::firstDim));
+      myknots[0]=mypknots[0];
+      myknots[1]=mypknots[1];
+
+      normalfac= 1.0;
+      break;
+    }
+    case 2:
+    {
+      // s=-1
+      /*
+                parent               surface
+
+                 t|                    s|                    
+                  |                     |                    
+              +---+---+             +---+---+                
+	    18| 19| 20|      r     6|  7|  8|      r  
+              +   +-- +  -----      +   +-- +  -----  
+             9| 10  11|            3|  4   5|                
+              +---+---+             +---+---+                
+             0   1   2             0   1   2                 
+      */
+      myknots[0].resize(mypknots[0].extent(blitz::firstDim));
+      myknots[1].resize(mypknots[2].extent(blitz::firstDim));
+      myknots[0]=mypknots[0];
+      myknots[1]=mypknots[2];
+
+      normalfac= 1.0;
+      break;
+    }
+    case 3:
+    {
+      // s=+1
+      /*
+                parent               surface
+
+                 t|                    s|                    
+                  |                     |                    
+              +---+---+             +---+---+                
+ 	    24| 25| 26|    r       6|  7|  8|      r  
+              +   +-- + ----        +   +-- +  -----  
+            15| 16  17|            3|  4   5|                
+              +---+---+             +---+---+                
+             6   7   8             0   1   2                 
+      */
+      myknots[0].resize(mypknots[0].extent(blitz::firstDim));
+      myknots[1].resize(mypknots[2].extent(blitz::firstDim));
+      myknots[0]=mypknots[0];
+      myknots[1]=mypknots[2];
+
+      normalfac=-1.0;
+      break;
+    }
+    case 4:
+    {
+      // r=+1
+      /*
+                parent               surface
+
+                 t|                    s|                    
+                  |                     |                    
+              +---+---+             +---+---+                
+	    20| 23| 26|      s     6|  7|  8|      r  
+              +   +-- +  -----      +   +-- +  -----  
+            11| 14  17|            3|  4   5|                
+              +---+---+             +---+---+                
+             2   5   8             0   1   2                 
+      */
+      myknots[0].resize(mypknots[1].extent(blitz::firstDim));
+      myknots[1].resize(mypknots[2].extent(blitz::firstDim));
+      myknots[0]=mypknots[1];
+      myknots[1]=mypknots[2];
+
+      normalfac= 1.0;
+      break;
+    }
+    case 5:
+    {
+      // r=-1
+      /*
+                parent               surface
+
+                 t|                    s|                    
+                  |                     |                    
+              +---+---+             +---+---+                
+	    18| 21| 24|      s     6|  7|  8|      r  
+              +   +-- +  -----      +   +-- +  -----  
+             9| 12  15|            3|  4   5|                
+              +---+---+             +---+---+                
+             0   3   6             0   1   2                 
+      */
+      myknots[0].resize(mypknots[1].extent(blitz::firstDim));
+      myknots[1].resize(mypknots[2].extent(blitz::firstDim));
+      myknots[0]=mypknots[1];
+      myknots[1]=mypknots[2];
+
+      normalfac=-1.0;
+      break;
+    }
+    default:
+      dserror("invalid number of surfaces, unable to determine intpoint in parent");
+    }
+
+    // --------------------------------------------------
+    // get node weights for nurbs elements
+    for (int inode=0; inode<iel; inode++)
+    {
+      DRT::NURBS::ControlPoint* cp
+        =
+        dynamic_cast<DRT::NURBS::ControlPoint* > (surfele->Nodes()[inode]);
+      
+      weights(inode) = cp->W();
+    }
+
+
+    // extract node coords
+    for(int i=0;i<piel;++i)
+    {
+      DRT::NURBS::ControlPoint* cp
+        =
+        dynamic_cast<DRT::NURBS::ControlPoint* > (surfele->parent_->Nodes()[i]);
+      
+      pweights(i) = cp->W();
+    }
   }
 
 
@@ -743,10 +936,38 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     const double s     = pqxg(iquad,1);
     const double t     = pqxg(iquad,2);
 
-    // ------------------------------------------------
-    // shape function derivs of boundary element at gausspoint
-    DRT::UTILS::shape_function_2D       (funct_,xi,eta,distype);
-    DRT::UTILS::shape_function_2D_deriv1(deriv_,xi,eta,distype);
+    if(!(distype == DRT::Element::nurbs9))
+    {
+      // ------------------------------------------------
+      // shape function derivs of boundary element at gausspoint
+      DRT::UTILS::shape_function_2D       (funct_,xi,eta,distype);
+      DRT::UTILS::shape_function_2D_deriv1(deriv_,xi,eta,distype);
+    }
+    else
+    {
+      // this is just a temporary work-around
+      blitz::Array<double,1> gp(2);
+      gp(0)=xi;
+      gp(1)=eta;
+
+      blitz::Array<double,1> tempfunct(iel);
+      blitz::Array<double,2> tempderiv(2,iel);
+
+      DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
+        (tempfunct,
+         tempderiv,
+         gp       ,
+         myknots  ,
+         weights  ,
+         distype  );
+
+      for(int rr=0;rr<iel;++rr)
+      {
+        funct_(  rr)=tempfunct(  rr);
+        deriv_(0,rr)=tempderiv(0,rr);
+        deriv_(1,rr)=tempderiv(1,rr);
+      }
+    }
 
     // ------------------------------------------------
     // compute measure tensor for surface element and the infinitesimal
@@ -811,23 +1032,56 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     const double fac = drs_*wquad;
 
     // ------------------------------------------------
-    // compute normal
-    double length = 0.0;
-    n_(0) = (xyze_(1,1)-xyze_(1,0))*(xyze_(2,2)-xyze_(2,0))
-            -
-            (xyze_(2,1)-xyze_(2,0))*(xyze_(1,2)-xyze_(1,0));
-    n_(1) = (xyze_(2,1)-xyze_(2,0))*(xyze_(0,2)-xyze_(0,0))
-            -
-            (xyze_(0,1)-xyze_(0,0))*(xyze_(2,2)-xyze_(2,0));
-    n_(2) = (xyze_(0,1)-xyze_(0,0))*(xyze_(1,2)-xyze_(1,0))
-            -
-            (xyze_(1,1)-xyze_(1,0))*(xyze_(0,2)-xyze_(0,0));
-    
-    length = n_.Norm2();
-
-    for(int i=0;i<3;++i)
+    // compute normal 
+    if(distype!=DRT::Element::nurbs9)
     {
-      n_(i)/=length;
+      double length = 0.0;
+      n_(0) = (xyze_(1,1)-xyze_(1,0))*(xyze_(2,2)-xyze_(2,0))
+        -
+        (xyze_(2,1)-xyze_(2,0))*(xyze_(1,2)-xyze_(1,0));
+      n_(1) = (xyze_(2,1)-xyze_(2,0))*(xyze_(0,2)-xyze_(0,0))
+        -
+        (xyze_(0,1)-xyze_(0,0))*(xyze_(2,2)-xyze_(2,0));
+      n_(2) = (xyze_(0,1)-xyze_(0,0))*(xyze_(1,2)-xyze_(1,0))
+        -
+        (xyze_(1,1)-xyze_(1,0))*(xyze_(0,2)-xyze_(0,0));
+      
+      length = n_.Norm2();
+      
+      for(int i=0;i<3;++i)
+      {
+        n_(i)/=length;
+      }
+    }
+    else
+    {
+      /*
+      |
+      |                      +-  -+     +-  -+
+      |                      | dx |     | dx |
+      |                      | -- |     | -- |
+      |                      | dr |     | ds |
+      |                      |    |     |    |
+      |             1.0      | dy |     | dy |
+      |    n  =  --------- * | -- |  X  | -- |
+      |                      | dr |     | ds |
+      |          ||.....||   |    |     |    |
+      |                      | dz |     | dz |
+      |                      | -- |     | -- |
+      |                      | dr |     | ds |
+      |                      +-  -+     +-  -+
+      |
+    */ 
+      n_(0) = dxyzdrs_(0,1)*dxyzdrs_(1,2)-dxyzdrs_(1,1)*dxyzdrs_(0,2);
+      n_(1) = dxyzdrs_(0,2)*dxyzdrs_(1,0)-dxyzdrs_(1,2)*dxyzdrs_(0,0);
+      n_(2) = dxyzdrs_(0,0)*dxyzdrs_(1,1)-dxyzdrs_(1,0)*dxyzdrs_(0,1);
+
+      const double length = n_.Norm2()*normalfac;
+  
+      for(int i=0;i<3;++i)
+      {
+        n_(i)/=length;
+      }
     }
 
     // ------------------------------------------------
@@ -877,9 +1131,28 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
     // ------------------------------------------------
     // shape functions and derivs of corresponding parent at gausspoint
-    DRT::UTILS::shape_function_3D       (pfunct_,r,s,t,pdistype);
-    DRT::UTILS::shape_function_3D_deriv1(pderiv_,r,s,t,pdistype);
+    if(!(pdistype == DRT::Element::nurbs27))
+    {
+      DRT::UTILS::shape_function_3D       (pfunct_,r,s,t,pdistype);
+      DRT::UTILS::shape_function_3D_deriv1(pderiv_,r,s,t,pdistype);
+    }
+    else
+    {
+      // set gauss point coordinates
+      LINALG::Matrix<3,1> gp;
 
+      gp(0)=r;
+      gp(1)=s;
+      gp(2)=t;
+
+      DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv
+        (pfunct_ ,
+         pderiv_ ,
+         gp      ,
+         mypknots,
+         pweights,
+         pdistype);
+    }
 
     //-----------------------------------------------------
     //
@@ -1503,57 +1776,57 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
         elevec(vi*4 + 2) += fluxfac*pfunct_(vi)*
           (velintaf_(2)-(*val)[2]*functionfac(2)*curvefac);
       }
-      
-      //--------------------------------------------------
-      // penalty term
-      
-      /*
-      // factor: nu*Cb/h*afgdt
-      //
-      //    /          \
-      //   |            |
-      // + |  w , Dacc  |
-      //   |            |
-      //    \          / boundaryele
-      //
-      */
 
-      const double penaltytimefac=afgdt*tau_B*fac;
-      for (int ui=0; ui<piel; ++ui) 
-      {
-        for (int vi=0; vi<piel; ++vi) 
-        {
-          const double temp=penaltytimefac*pfunct_(ui)*pfunct_(vi);
-
-          elemat(vi*4    ,ui*4    ) += temp;
-          elemat(vi*4 + 1,ui*4 + 1) += temp;
-          elemat(vi*4 + 2,ui*4 + 2) += temp;
-        }
-      }
-
-      /*
-      // factor: nu*Cb/h
-      //
-      //    /                \
-      //   |        n+af      |
-      // + |   w , u    - u   |
-      //   |               b  |
-      //    \                / boundaryele
-      //
-      */
-
-      const double penaltyfac=tau_B*fac;
-      for (int vi=0; vi<piel; ++vi) 
-      {
-        elevec(vi*4    ) -= penaltyfac*pfunct_(vi)*
-          (velintaf_(0)-(*val)[0]*functionfac(0)*curvefac);
-        elevec(vi*4 + 1) -= penaltyfac*pfunct_(vi)*
-          (velintaf_(1)-(*val)[1]*functionfac(1)*curvefac);
-        elevec(vi*4 + 2) -= penaltyfac*pfunct_(vi)*
-          (velintaf_(2)-(*val)[2]*functionfac(2)*curvefac);
-      }
     } // end if flux<0, i.e. boundary is an inflow boundary
 
+    //--------------------------------------------------
+    // penalty term
+    
+    /*
+    // factor: nu*Cb/h*afgdt
+    //
+    //    /          \
+    //   |            |
+    // + |  w , Dacc  |
+    //   |            |
+    //    \          / boundaryele
+    //
+    */
+
+    const double penaltytimefac=afgdt*tau_B*fac;
+    for (int ui=0; ui<piel; ++ui) 
+    {
+      for (int vi=0; vi<piel; ++vi) 
+      {
+        const double temp=penaltytimefac*pfunct_(ui)*pfunct_(vi);
+        
+        elemat(vi*4    ,ui*4    ) += temp;
+        elemat(vi*4 + 1,ui*4 + 1) += temp;
+        elemat(vi*4 + 2,ui*4 + 2) += temp;
+      }
+    }
+    
+    /*
+    // factor: nu*Cb/h
+    //
+    //    /                \
+    //   |        n+af      |
+    // + |   w , u    - u   |
+    //   |               b  |
+    //    \                / boundaryele
+    //
+    */
+
+    const double penaltyfac=tau_B*fac;
+    for (int vi=0; vi<piel; ++vi) 
+    {
+      elevec(vi*4    ) -= penaltyfac*pfunct_(vi)*
+        (velintaf_(0)-(*val)[0]*functionfac(0)*curvefac);
+      elevec(vi*4 + 1) -= penaltyfac*pfunct_(vi)*
+        (velintaf_(1)-(*val)[1]*functionfac(1)*curvefac);
+      elevec(vi*4 + 2) -= penaltyfac*pfunct_(vi)*
+        (velintaf_(2)-(*val)[2]*functionfac(2)*curvefac);
+    }
   } // end gaussloop
 
   return 0;
