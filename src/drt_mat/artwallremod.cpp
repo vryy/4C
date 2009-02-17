@@ -169,7 +169,7 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
   }
 
   // post_drt wants to unpack but has no input variables!
-  if (params_ == NULL){ // we are in post-process mode // we check here the global mat struct pointer as this is the only existing NULL pointer in post
+  if (params_ == NULL){  // we are in post-process mode
     if (haveremodeldata){
       // read data into nowhere
       for (int gp = 0; gp < numgp; ++gp) {
@@ -184,13 +184,11 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
     }
     if (position != (int)data.size())
       dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
-
-    return;
   }
-  
-  // check whether we currently want remodeling
-  // because remodeling might be switched after restart
-  if (params_ != NULL){
+  else  // we are in analysis mode
+  {
+    // check whether we currently want remodeling
+    // because remodeling might be switched after restart
     if (params_->rembegt_ != -1.){
       // initialize internal variables of remodeling
       gamma_ = rcp(new vector<double>(numgp));
@@ -223,10 +221,8 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
         }
       }
     }
-  }
 
-  // correct position in case remodeling is switched off
-  if (params_ != NULL){
+    // correct position in case remodeling is switched off
     if ((params_->rembegt_ == -1.) && (haveremodeldata)){
       // read data into nowhere
       for (int gp = 0; gp < numgp; ++gp) {
@@ -242,10 +238,11 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
     }
   }
 
-
+  // check if everything was savely unpacked
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
 
+  // get away from this
   return;
 }
 
