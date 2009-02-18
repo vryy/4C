@@ -76,7 +76,7 @@ struct EnrViscs2
   /// specialization of SizeFac for XFEM::standard_assembly
   template<> struct SizeFac<XFEM::standard_assembly> {static const unsigned int fac = 1;};
   /// specialization of SizeFac for XFEM::xfem_assembly
-  template<> struct SizeFac<XFEM::xfem_assembly>     {static const unsigned int fac = 1;};
+  template<> struct SizeFac<XFEM::xfem_assembly>     {static const unsigned int fac = 3;};
 
   /// generate old velocity/acceleration values, if integration point was in a void during the last time step
   template<class M>
@@ -95,11 +95,11 @@ struct EnrViscs2
       )
   {
     const unsigned nsd = 3;
-    
+    const int numnodefix_boundary = 9;
     LINALG::Matrix<nsd,1> posx_gp;
     GEO::elementToCurrentCoordinates(ele->Shape(), xyze, posXiDomain, posx_gp);
     
-    const bool is_in_fluid = (labelnp == 0);
+    const bool is_in_fluid = (0 == labelnp);
     
     if (not is_in_fluid)
     {
@@ -133,18 +133,22 @@ struct EnrViscs2
       
         const DRT::Element* boundaryele = ih->cutterdis()->gElement(slab.getBeleId());
         const int numnode_boundary = boundaryele->NumNode();
-        
+        if (numnode_boundary != 4)
+          dserror("needs more generalizashun!");
         if (ivelcoln.GlobalLength() > 3)
         {
-          LINALG::SerialDenseVector funct_ST(numnode_boundary*2);
+          //LINALG::SerialDenseVector funct_ST(numnode_boundary*2);
+          static LINALG::Matrix<numnodefix_boundary*2,1> funct_ST;
           DRT::UTILS::shape_function_3D(funct_ST,rst(0),rst(1),rst(2),DRT::Element::hex8);
           
           // get interface velocities at the boundary element nodes
-          LINALG::SerialDenseMatrix veln_boundary( nsd,numnode_boundary*2);
-          LINALG::SerialDenseMatrix velnm_boundary(nsd,numnode_boundary*2);
-          LINALG::SerialDenseMatrix accn_boundary( nsd,numnode_boundary*2);
-          if (numnode_boundary != 4)
-            dserror("needs more generalizashun!");
+          static LINALG::Matrix<3,numnodefix_boundary*2> veln_boundary;
+          static LINALG::Matrix<3,numnodefix_boundary*2> velnm_boundary;
+          static LINALG::Matrix<3,numnodefix_boundary*2> accn_boundary;
+//          LINALG::SerialDenseMatrix veln_boundary( nsd,numnode_boundary*2);
+//          LINALG::SerialDenseMatrix velnm_boundary(nsd,numnode_boundary*2);
+//          LINALG::SerialDenseMatrix accn_boundary( nsd,numnode_boundary*2);
+
           const DRT::Node*const* nodes = boundaryele->Nodes();
           
           std::vector<double> myval(3);
@@ -878,8 +882,6 @@ void SysmatDomain4(
     LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&   assembler
 )
 {
-    TEUCHOS_FUNC_TIME_MONITOR(" - evaluate - Sysmat4 - domain");
-   
     // number of nodes for element
     const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     
@@ -952,19 +954,11 @@ void SysmatDomain4(
         
         if (ASSTYPE == XFEM::xfem_assembly)
         {
-          // shortcut for intersected elements: if cell is only in solid domains for all influencing enrichments, skip it
+          // integrate only in fluid integration cells (works well only with void enrichments!!!)
           labelnp = ih->PositionWithinConditionNP(cellcenter);
           const std::set<int> xlabelset(dofman.getUniqueEnrichmentLabels());
           bool compute = false;
           if (labelnp == 0) // fluid
-          {
-            compute = true;
-          }
-          else if (xlabelset.size() > 1) // multiple interface labels
-          {
-            compute = true;
-          }
-          else if (xlabelset.find(labelnp) == xlabelset.end()) // ???
           {
             compute = true;
           }
@@ -1393,12 +1387,9 @@ void SysmatBoundary4(
 )
 {
     if (ASSTYPE != XFEM::xfem_assembly) dserror("works only with xfem assembly");
-  
-    TEUCHOS_FUNC_TIME_MONITOR(" - evaluate - Sysmat4 - boundary");
-  
-    const Epetra_BLAS blas; 
     
     const int nsd = 3;
+    const int numnodefix_boundary = 9;
     
     // time integration constant
     const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dt, theta);
@@ -1438,11 +1429,13 @@ void SysmatBoundary4(
         // get current node coordinates
         const std::map<int,LINALG::Matrix<3,1> >& positions(ih->cutterposnp());
   
-        LINALG::SerialDenseMatrix xyze_boundary(3,numnode_boundary);
+//        LINALG::SerialDenseMatrix xyze_boundary(3,numnode_boundary);
+        static LINALG::Matrix<3,numnodefix_boundary> xyze_boundary;
         GEO::fillCurrentNodalPositions(boundaryele, positions, xyze_boundary);
         
         // get interface velocities at the boundary element nodes
-        LINALG::SerialDenseMatrix vel_boundary(3,numnode_boundary);
+//        LINALG::SerialDenseMatrix vel_boundary(3,numnode_boundary);
+        static LINALG::Matrix<3,numnodefix_boundary> vel_boundary;
         const DRT::Node*const* nodes = boundaryele->Nodes();
         for (int inode = 0; inode < numnode_boundary; ++inode)
         {
@@ -1455,8 +1448,10 @@ void SysmatBoundary4(
           vel_boundary(2,inode) = myvel[2];
         }
         
-        LINALG::SerialDenseMatrix force_boundary(3,numnode_boundary,true);
-
+//        LINALG::SerialDenseMatrix force_boundary(3,numnode_boundary,true);
+        static LINALG::Matrix<3,numnodefix_boundary> force_boundary;
+        force_boundary = 0.0;
+        
         // integration loop
         for (int iquad=0; iquad<intpoints.nquad; ++iquad)
         {
@@ -1481,9 +1476,14 @@ void SysmatBoundary4(
             }
 
             // shape functions and their first derivatives
-            LINALG::SerialDenseVector funct_boundary(DRT::UTILS::getNumberOfElementNodes(boundaryele->Shape()));
+            dsassert(numnodefix_boundary >= DRT::UTILS::getNumberOfElementNodes(boundaryele->Shape()),"More than 9 nodes for boundary element - change size of fixed size array!");
+            
+            //LINALG::SerialDenseVector funct_boundary(DRT::UTILS::getNumberOfElementNodes(boundaryele->Shape()));
+            static LINALG::Matrix<numnodefix_boundary,1> funct_boundary;
             DRT::UTILS::shape_function_2D(funct_boundary, posXiBoundary(0),posXiBoundary(1),boundaryele->Shape());
-            LINALG::SerialDenseMatrix deriv_boundary(3, DRT::UTILS::getNumberOfElementNodes(boundaryele->Shape()));
+            
+            //LINALG::SerialDenseMatrix deriv_boundary(3, DRT::UTILS::getNumberOfElementNodes(boundaryele->Shape()));
+            static LINALG::Matrix<3,numnodefix_boundary> deriv_boundary;
             DRT::UTILS::shape_function_2D_deriv1(deriv_boundary, posXiBoundary(0),posXiBoundary(1),boundaryele->Shape());
             
             // shape functions and their first derivatives
@@ -1502,8 +1502,12 @@ void SysmatBoundary4(
             // get jacobian matrix d x / d \xi  (3x2)
             // dxyzdrs(i,j) = xyze_boundary(i,k)*deriv_boundary(j,k);
             static LINALG::Matrix<3,2> dxyzdrs;
-            blas.GEMM('N','T',3,2,numnode_boundary,1.0,xyze_boundary.A(),xyze_boundary.LDA(),deriv_boundary.A(),deriv_boundary.LDA(),0.0,dxyzdrs.A(),dxyzdrs.M());
-            
+            dxyzdrs = 0.0;
+            //blas.GEMM('N','T',3,2,numnode_boundary,1.0,xyze_boundary.A(),xyze_boundary.LDA(),deriv_boundary.A(),0,0.0,dxyzdrs.A(),dxyzdrs.M());
+            for (int k=0;k!=numnode_boundary;++k)
+              for (int i=0;i!=3;++i)
+                for (int j=0;j!=2;++j)
+                  dxyzdrs(i,j) += xyze_boundary(i,k)*deriv_boundary(j,k);
             // compute covariant metric tensor G for surface element (2x2)
             // metric = dxyzdrs(k,i)*dxyzdrs(k,j);
             static LINALG::Matrix<2,2> metric;
@@ -1528,8 +1532,8 @@ void SysmatBoundary4(
             static LINALG::Matrix<shpVecSize,1>       enr_funct;
             static LINALG::Matrix<shpVecSizeStress,1> enr_funct_stress;
             
-            if (dofman.getUniqueEnrichments().size() > 1)
-              dserror("for an intersected element, we assume only 1 enrichment for now!");
+//            if (dofman.getUniqueEnrichments().size() > 1)
+//              dserror("for an intersected element, we assume only 1 enrichment for now!");
             const XFEM::ElementEnrichmentValues enrvals(
                   *ele,
                   ih,

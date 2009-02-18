@@ -27,11 +27,11 @@ Maintainer: Axel Gerstenberger
 
 //! for non-xfem elements, figure out the order of unknowns per node in the array
 template<XFEM::PHYSICS::Field field>
-struct FieldNum {static const int pos = -1;};
-template<> struct FieldNum<XFEM::PHYSICS::Velx> {static const int pos = 0;};
-template<> struct FieldNum<XFEM::PHYSICS::Vely> {static const int pos = 1;};
-template<> struct FieldNum<XFEM::PHYSICS::Velz> {static const int pos = 2;};
-template<> struct FieldNum<XFEM::PHYSICS::Pres> {static const int pos = 3;};
+struct FieldNum {static const unsigned pos = 7777;};
+template<> struct FieldNum<XFEM::PHYSICS::Velx> {static const unsigned pos = 0;};
+template<> struct FieldNum<XFEM::PHYSICS::Vely> {static const unsigned pos = 1;};
+template<> struct FieldNum<XFEM::PHYSICS::Velz> {static const unsigned pos = 2;};
+template<> struct FieldNum<XFEM::PHYSICS::Pres> {static const unsigned pos = 3;};
 
 //! for the viscous stress, replace shear stress components with symmetric part
 template <XFEM::PHYSICS::Field FIELD>
@@ -309,7 +309,11 @@ public:
             const V2&           trialshape
             )
     {
-        const unsigned numparam = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+#ifdef DEBUG
+      if (FieldNum<trialfield>::pos == 7777 or FieldNum<testfield>::pos == 7777)
+        dserror("no stress allowed here");
+#endif
+      const unsigned numparam = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
         for (unsigned ui=0; ui!=numparam; ++ui)
         {
             const unsigned trialpos = NUMDOF*ui + FieldNum<trialfield>::pos;

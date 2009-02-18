@@ -13,7 +13,6 @@ Maintainer: Axel Gerstenberger
 #define XFLUID3_UTILS_H
 
 #include "../drt_lib/drt_timecurve.H"
-//#include "../drt_xfem/dof_management_element.H"
 #include "../drt_xfem/xfem_enums.H"
 #include "../drt_geometry/intersection_service.H"
 #include <Epetra_SerialDenseSolver.h>
@@ -178,34 +177,40 @@ DRT::UTILS::GaussRule3D getXFEMGaussrule(
   }
   else
   {
-    const GEO::EleGeoType eleGeoType = GEO::checkGeoTypeT<XELEDISTYPE>(xele,xyze_element);
+    const GEO::EleGeoType xeleGeoType = GEO::checkGeoTypeT<XELEDISTYPE>(xele,xyze_element);
     
     if (celldistype == DRT::Element::tet4 or celldistype == DRT::Element::tet10)
     {
       switch (XELEDISTYPE)
       {
         case DRT::Element::hex8:
-          if (eleGeoType == GEO::CARTESIAN) // constant jacobian
+        {
+          if (xeleGeoType == GEO::CARTESIAN) // constant jacobian
             rule = DRT::UTILS::intrule_tet_15point;
           else
             rule = DRT::UTILS::intrule_tet_24point;
           break;
+        }
         case DRT::Element::hex20:
-          if (eleGeoType == GEO::CARTESIAN) // constant jacobian
+        {
+          if (xeleGeoType == GEO::CARTESIAN) // constant jacobian
             rule = DRT::UTILS::intrule_tet_24point;
           else
             rule = DRT::UTILS::intrule_tet_45point;
           break;
+        }
         case DRT::Element::hex27:
+        {
           rule = DRT::UTILS::intrule_tet_343point_peano;
           break;
+        }
         default:
           dserror("no rule defined for this xele");
       }
     }
     else
     {
-      dserror("gaussrule only for tetrahedral integration cells defined. Add your stuff here!");
+      dserror("gaussrule only for tetrahedral integration cells defined. Please add additional rules here!");
     }
   }
 

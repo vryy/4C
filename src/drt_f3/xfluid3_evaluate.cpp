@@ -27,24 +27,6 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/enrichment_utils.H"
 
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-static bool VoidEnrichmentInElementDofSet(
-    const int                     gid,
-    std::set<XFEM::FieldEnr>&     fieldenrset)
-{
-  bool voidenrichment_in_set = false;
-  for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin(); fieldenr != fieldenrset.end(); ++fieldenr)
-  {
-    if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeVoid)
-    {
-      voidenrichment_in_set = true;
-      break;
-    }
-  }
-  return voidenrichment_in_set;
-}
-
 /*---------------------------------------------------------------------*
 |  converts a string into an Action for this element                   |
 *----------------------------------------------------------------------*/
@@ -415,17 +397,10 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           // for surface with label, loop my col elements and add void enrichments to each elements member nodes
           if (ih_->ElementHasLabel(this->Id(), label))
           {
-            const bool anothervoidenrichment_in_set = VoidEnrichmentInElementDofSet(Id(), enrfieldset);
+            const bool anothervoidenrichment_in_set = XFEM::EnrichmentInDofSet(XFEM::Enrichment::typeVoid, enrfieldset);
             if (not anothervoidenrichment_in_set)
             {
-              if (not DLM_condensation)
-              {
-                XFEM::ApplyElementEnrichments(this, element_ansatz_filled, *ih_, label, enrfieldset);                
-              }
-              else
-              {
-                XFEM::ApplyElementEnrichments(this, element_ansatz_empty, *ih_, label, enrfieldset);
-              }
+              XFEM::ApplyElementEnrichments(this, element_ansatz_filled, *ih_, label, enrfieldset);                
             }
           }
         };
