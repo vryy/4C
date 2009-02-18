@@ -840,6 +840,22 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::ExtractVelocityPart(Teuch
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void ADAPTER::XFluidImpl::Predictor()
+{
+  dserror("not implemented!");
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::XFluidImpl::MultiCorrector()
+{
+  dserror("not implemented!");
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void ADAPTER::XFluidImpl::SetInitialFlowField(int whichinitialfield,int startfuncno)
 {
   dserror("not implemented!");

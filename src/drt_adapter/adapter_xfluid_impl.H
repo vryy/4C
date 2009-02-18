@@ -146,6 +146,12 @@ namespace ADAPTER {
                                 const LINALG::MultiMapExtractor& rangemaps,
                                 bool splitmatrix);
 
+    /// predictor
+    virtual void Predictor();
+
+    /// (multiple) corrector
+    virtual void MultiCorrector();
+
     /// linear fluid solve with just a interface load
     /*!
       The very special solve done in steepest descent relaxation

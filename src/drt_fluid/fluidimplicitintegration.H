@@ -133,6 +133,18 @@ public:
   void LinearSolve();
 
   /*!
+  \brief predictor
+
+  */
+  void Predictor();
+
+  /*!
+  \brief (multiple) corrector
+
+  */
+  void MultiCorrector();
+
+  /*!
     \brief build linear system matrix and rhs
 
     Monolithic FSI needs to access the linear fluid problem.
@@ -330,6 +342,25 @@ protected:
   FluidImplicitTimeInt operator = (const FluidImplicitTimeInt& old);
   FluidImplicitTimeInt (const FluidImplicitTimeInt& old);
 
+  /*!
+  \brief compute values at intermediate time steps for gen.-alpha 
+
+  */
+  void GenAlphaIntermediateValues();
+
+  /*!
+  \brief call elements to calculate system matrix/rhs and assemble
+
+  */
+  void AssembleMatAndRHS();
+
+  /*!
+  \brief update acceleration for generalized-alpha time integration
+
+  */
+  void GenAlphaUpdateAcceleration();
+
+
   //! @name general algorithm parameters
   //! fluid discretization
   RCP<DRT::Discretization>      discret_;
@@ -367,6 +398,9 @@ protected:
 
   /// whether we do some extrapolation at the begin of each time step
   bool extrapolationpredictor_;
+
+  /// whether we do skip element call for last iteration
+  bool skiplastelecall_;
 
   //! predictor used in nonlinear iteration
   string  predictor_;
@@ -409,6 +443,11 @@ protected:
 
   /// fine-scale subgrid-viscosity flag
   string fssgv_;
+
+  /// cpu-time measures
+  double  dtele_;
+  double  dtfilter_;
+  double  dtsolve_;
 
   /// (standard) system matrix
   RCP<LINALG::SparseOperator> sysmat_;

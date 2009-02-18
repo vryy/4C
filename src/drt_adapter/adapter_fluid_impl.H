@@ -99,6 +99,9 @@ namespace ADAPTER {
     virtual void Output();
 
     virtual void NonlinearSolve();
+    virtual void Predictor();
+    virtual void MultiCorrector();
+
 
     /// get the linear solver object used for this field
     virtual Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }

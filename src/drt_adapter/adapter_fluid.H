@@ -170,6 +170,12 @@ namespace ADAPTER {
      */
     virtual void NonlinearSolve() = 0;
 
+    /// predictor
+    virtual void Predictor() = 0;
+
+    /// (multiple) corrector
+    virtual void MultiCorrector() = 0;
+
     /// linear fluid solve with just a interface load
     virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel) = 0;
 

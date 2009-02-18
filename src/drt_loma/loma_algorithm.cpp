@@ -175,9 +175,6 @@ void LOMA::Algorithm::InitialCalculations()
   // furthermore, set density at -1 (i.e., densnm) for BDF2 (zero vector)
   ScaTraField().UpdateDensity();
 
-  // compute density at n+alpha_F (only for generalized-alpha scheme)
-  ScaTraField().ComputeIntermediateValues();
-
   // get initial velocity (and pressure) field
   // use value at n+1 for all time-integration schemes, i.e., also for
   // generalized-alpha time integration
@@ -299,6 +296,9 @@ void LOMA::Algorithm::GenAlphaOuterLoop()
        itmax_ = 1;
   else itmax_ = itmaxpre_;
 
+  // evaluate fluid predictor step
+  FluidField().Predictor();
+
   while (stopnonliniter==false)
   {
     itnum++;
@@ -345,7 +345,7 @@ void LOMA::Algorithm::GenAlphaOuterLoop()
 
     // solve low-Mach-number flow equations
     if (Comm().MyPID()==0) cout<<"\n******************************************\n      GENERALIZED-ALPHA FLOW SOLVER\n******************************************\n";
-    FluidField().NonlinearSolve();
+    FluidField().MultiCorrector();
 
     // check convergence of temperature field
     stopnonliniter = ScaTraField().LomaConvergenceCheck(itnum,itmax_,ittol_);
@@ -370,6 +370,9 @@ void LOMA::Algorithm::OSTBDF2OuterLoop()
   if (special_flow_ == "loma_channel_flow_of_height_2" && Step() < samstart_ )
        itmax_ = 1;
   else itmax_ = itmaxpre_;
+
+  // evaluate fluid predictor step
+  FluidField().Predictor();
 
   while (stopnonliniter==false)
   {
@@ -408,7 +411,7 @@ void LOMA::Algorithm::OSTBDF2OuterLoop()
 
     // solve low-Mach-number flow equations
     if (Comm().MyPID()==0) cout<<"\n******************************************\n     ONE-STEP-THETA/BDF2 FLOW SOLVER\n******************************************\n";
-    FluidField().NonlinearSolve();
+    FluidField().MultiCorrector();
 
     // check convergence of temperature field
     stopnonliniter = ScaTraField().LomaConvergenceCheck(itnum,itmax_,ittol_);

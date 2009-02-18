@@ -726,9 +726,7 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
   //  For af-generalized-alpha time-integration scheme:
   //  set "pseudo-theta", calculate initial accelerations according to
   //  prescribed Dirichlet values for generalized-alpha time
-  //  integration as well as velocities, pressures, densities,
-  //  accelerations and density time derivatives at intermediate time
-  //  steps n+alpha_F and n+alpha_M, respectively, for first iteration.
+  //  integration.
   // -------------------------------------------------------------------
   if (timealgo_==timeint_afgenalpha)
   {
@@ -772,22 +770,10 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
     else accnp_->Update(1.0,*velnp_,-1.0,*veln_,0.0);
     accnp_->Update((gamma_-1.0)/gamma_,*accn_,1.0/(gamma_*dta_));
 
-    //       n+alphaM                n+1                      n
-    //    acc         = alpha_M * acc     + (1-alpha_M) *  acc
-    //       (i)                     (i)
-    accam_->Update((alphaM_),*accnp_,(1.0-alphaM_),*accn_,0.0);
-
-    //       n+alphaF              n+1                   n
-    //      u         = alpha_F * u     + (1-alpha_F) * u
-    //       (i)                   (i)
-    velaf_->Update((alphaF_),*velnp_,(1.0-alphaF_),*veln_,0.0);
-
-    // values only required for low-Mach-number flow
-    if (loma_ != "No")
-    {
-      vedeaf_->Update((alphaF_),*vedenp_,(1.0-alphaF_),*veden_,0.0);
-      vedeam_->Update((alphaM_),*vedenp_,(1.0-alphaM_),*veden_,0.0);
-    }
+    // -------------------------------------------------------------------
+    // compute values at intermediate time steps for generalized-alpha
+    // -------------------------------------------------------------------
+    GenAlphaIntermediateValues();
   }
 
   // -------------------------------------------------------------------
@@ -838,9 +824,9 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
        itemax  = 2;
   else itemax  = params_.get<int>   ("max nonlin iter steps");
 
-  double dtsolve = 0.0;
-  double dtele   = 0.0;
-  double dtfilter = 0.0;
+  dtsolve_  = 0.0;
+  dtele_    = 0.0;
+  dtfilter_ = 0.0;
 
   if (myrank_ == 0)
   {
@@ -853,7 +839,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
     itnum++;
 
     // -------------------------------------------------------------------
-    // call elements to calculate system matrix
+    // call elements to calculate system matrix and RHS
     // -------------------------------------------------------------------
     {
       // time measurement: element
@@ -914,7 +900,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           // time measurement
           const double tcpufilter=ds_cputime();
           this->ApplyFilterForDynamicComputationOfCs();
-          dtfilter=ds_cputime()-tcpufilter;
+          dtfilter_=ds_cputime()-tcpufilter;
         }
       }
 
@@ -1107,7 +1093,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       }
 
       // end time measurement for element
-      dtele=ds_cputime()-tcpu;
+      dtele_=ds_cputime()-tcpu;
     }
 
     // blank residual DOFs which are on Dirichlet BC
@@ -1160,10 +1146,10 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       {
         printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |      --      |      --      |",
                itnum,itemax,ittol,vresnorm,presnorm);
-        printf(" (      --     ,te=%10.3E",dtele);
+        printf(" (      --     ,te=%10.3E",dtele_);
         if (dynamic_smagorinsky_)
         {
-          printf(",tf=%10.3E",dtfilter);
+          printf(",tf=%10.3E",dtfilter_);
         }
         printf(")\n");
       }
@@ -1185,10 +1171,10 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
                  itnum,itemax,ittol,vresnorm,presnorm,
                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
-          printf(" (ts=%10.3E,te=%10.3E",dtsolve,dtele);
+          printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
           if (dynamic_smagorinsky_)
           {
-            printf(",tf=%10.3E",dtfilter);
+            printf(",tf=%10.3E",dtfilter_);
           }
           printf(")\n");
           printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
@@ -1209,10 +1195,10 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
                  itnum,itemax,ittol,vresnorm,presnorm,
                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
-          printf(" (ts=%10.3E,te=%10.3E",dtsolve,dtele);
+          printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
           if (dynamic_smagorinsky_)
           {
-            printf(",tf=%10.3E",dtfilter);
+            printf(",tf=%10.3E",dtfilter_);
           }
           printf(")\n");
         }
@@ -1272,7 +1258,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       solver_.ResetTolerance();
 
       // end time measurement for solver
-      dtsolve = ds_cputime()-tcpusolve;
+      dtsolve_ = ds_cputime()-tcpusolve;
     }
 
     // -------------------------------------------------------------------
@@ -1292,44 +1278,9 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
     // -------------------------------------------------------------------
     if (timealgo_==timeint_afgenalpha)
     {
-      // -------------------------------------------------------------------
-      // separate velocity from pressure values
-      velpressplitter_.ExtractOtherVector(incvel_,onlyvel);
+      GenAlphaUpdateAcceleration();
 
-      // ------------------------------------------------------
-      // use updated velocity to update acceleration:
-      //
-      //    n+1         n+1
-      // acc      =  acc    + (1/gamma*dt)*dvel
-      //    (i+1)       (i)
-      //
-      onlyvel->Scale(1.0/(gamma_*dta_));
-      // in case of conservative form: velocity*density
-      if (convform_ == "conservative")
-      {
-        Teuchos::RCP<Epetra_Vector> onlydens = velpressplitter_.ExtractOtherVector(vedenp_);
-        Teuchos::RCP<Epetra_Vector> denstimesvel = velpressplitter_.ExtractOtherVector(vedenp_);
-        denstimesvel->Multiply(1.0, *onlyvel, *onlydens, 0.0);
-        velpressplitter_.AddOtherVector(denstimesvel,accnp_);
-      }
-      else velpressplitter_.AddOtherVector(onlyvel,accnp_);
-
-      //       n+alphaM                n+1                      n
-      //    acc         = alpha_M * acc     + (1-alpha_M) *  acc
-      //       (i)                     (i)
-      accam_->Update((alphaM_),*accnp_,(1.0-alphaM_),*accn_,0.0);
-
-      //       n+alphaF              n+1                   n
-      //      u         = alpha_F * u     + (1-alpha_F) * u
-      //       (i)                   (i)
-      velaf_->Update((alphaF_),*velnp_,(1.0-alphaF_),*veln_,0.0);
-
-      // values only required for low-Mach-number flow
-      if (loma_ != "No")
-      {
-        vedeaf_->Update((alphaF_),*vedenp_,(1.0-alphaF_),*veden_,0.0);
-        vedeam_->Update((alphaM_),*vedenp_,(1.0-alphaM_),*veden_,0.0);
-      }
+      GenAlphaIntermediateValues();
     }
 
     //------------------------------------------------ free surface update
@@ -1511,7 +1462,7 @@ void FLD::FluidImplicitTimeInt::LinearSolve()
     sysmat_->Complete();
   }
   // end time measurement for element
-  const double dtele = ds_cputime() - tcpuele;
+  const double dtele_ = ds_cputime() - tcpuele;
 
   //--------- Apply dirichlet boundary conditions to system of equations
   //          residual velocities (and pressures) are supposed to be zero at
@@ -1538,12 +1489,545 @@ void FLD::FluidImplicitTimeInt::LinearSolve()
     solver_.Solve(sysmat_->EpetraOperator(),velnp_,rhs_,true,true);
   }
   // end time measurement for solver
-  const double dtsolve = ds_cputime() - tcpusolve;
+  dtsolve_ = ds_cputime() - tcpusolve;
 
   if (myrank_ == 0)
-    cout << "te=" << dtele << ", ts=" << dtsolve << "\n\n" ;
+    cout << "te=" << dtele_ << ", ts=" << dtsolve_ << "\n\n" ;
 
 } // FluidImplicitTimeInt::LinearSolve
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | predictor                                                   vg 02/09 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::FluidImplicitTimeInt::Predictor()
+{
+  // -------------------------------------------------------------------
+  // time measurement: nonlinear iteration
+  // -------------------------------------------------------------------
+  TEUCHOS_FUNC_TIME_MONITOR("   + predictor");
+
+  // -------------------------------------------------------------------
+  // call elements to calculate system matrix and rhs and assemble
+  // -------------------------------------------------------------------
+  AssembleMatAndRHS();
+
+  // -------------------------------------------------------------------
+  // calculate and print out residual norms
+  // (blank residual DOFs which are on Dirichlet BC
+  // We can do this because the values at the dirichlet positions
+  // are not used anyway.
+  // We could avoid this though, if velrowmap_ and prerowmap_ would
+  // not include the dirichlet values as well. But it is expensive
+  // to avoid that.)
+  // -------------------------------------------------------------------
+  dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_),residual_);
+
+  double vresnorm;
+  double presnorm;
+
+  Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_.ExtractOtherVector(residual_);
+  onlyvel->Norm2(&vresnorm);
+
+  Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_.ExtractCondVector(residual_);
+  onlypre->Norm2(&presnorm);
+
+  if (myrank_ == 0)
+  {
+    printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
+    printf("| predictor  |  vel. | pre. res. | %10.3E   | %10.3E   |      --      |      --      |",vresnorm,presnorm);
+    printf(" (      --     ,te=%10.3E",dtele_);
+    if (dynamic_smagorinsky_) printf(",tf=%10.3E",dtfilter_);
+    printf(")\n");
+    printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
+  }
+
+} // FluidImplicitTimeInt::Predictor
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | (multiple) corrector                                        vg 02/09 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::FluidImplicitTimeInt::MultiCorrector()
+{
+  // -------------------------------------------------------------------
+  // time measurement: nonlinear iteration
+  // -------------------------------------------------------------------
+  TEUCHOS_FUNC_TIME_MONITOR("   + corrector");
+
+  dtsolve_  = 0.0;
+
+  // -------------------------------------------------------------------
+  // parameters and declarations for nonlinear iteration
+  // (including potential skipping of element call for last iteration)
+  // -------------------------------------------------------------------
+  const double ittol = params_.get<double>("tolerance for nonlin iter");
+  int          itnum = 0;
+  int          itemax = 0;
+  bool         stopnonliniter = false;
+  if (params_.get<string>("CONVCHECK","L_2_norm")==
+                                      "L_2_norm_without_residual_at_itemax")
+       skiplastelecall_=true;
+  else skiplastelecall_=false;
+  double incvelnorm_L2;
+  double incprenorm_L2;
+  double velnorm_L2;
+  double prenorm_L2;
+  double vresnorm;
+  double presnorm;
+
+
+  // -------------------------------------------------------------------
+  // currently default for turbulent channel flow:
+  // only one iteration before sampling
+  // -------------------------------------------------------------------
+  if (special_flow_ == "channel_flow_of_height_2" && step_<samstart_ )
+       itemax = 1;
+  else itemax = params_.get<int>("max nonlin iter steps");
+
+  // -------------------------------------------------------------------
+  // turn adaptive solver tolerance on/off
+  // -------------------------------------------------------------------
+  const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
+  const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
+
+  // -------------------------------------------------------------------
+  // prepare print out for (multiple) corrector
+  // -------------------------------------------------------------------
+  if (myrank_ == 0)
+  {
+    printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
+    printf("|- step/max -|- tol      [norm] -|-- vel-res ---|-- pre-res ---|-- vel-inc ---|-- pre-inc ---|\n");
+  }
+
+  // -------------------------------------------------------------------
+  // nonlinear iteration loop
+  // -------------------------------------------------------------------
+  while (stopnonliniter==false)
+  {
+    itnum++;
+
+    // -------------------------------------------------------------------
+    // apply Dirichlet boundary conditions to system of equations:
+    // - Residual displacements are supposed to be zero for resp. dofs.
+    // - Time for applying Dirichlet boundary conditions is measured.
+    // -------------------------------------------------------------------
+    incvel_->PutScalar(0.0);
+    {
+      TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
+      LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(dbcmaps_->CondMap()));
+    }
+
+    // -------------------------------------------------------------------
+    // solve for velocity and pressure increments
+    // - Adaptive linear solver tolerance is used from second
+    //   corrector step on.
+    // - Time for solver is measured.
+    // -------------------------------------------------------------------
+    {
+      TEUCHOS_FUNC_TIME_MONITOR("      + solver calls");
+
+      const double tcpusolve=ds_cputime();
+
+      if (isadapttol and itnum>1)
+      {
+        double currresidual = max(vresnorm,presnorm);
+        currresidual = max(currresidual,incvelnorm_L2/velnorm_L2);
+        currresidual = max(currresidual,incprenorm_L2/prenorm_L2);
+        solver_.AdaptTolerance(ittol,currresidual,adaptolbetter);
+      }
+      solver_.Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1);
+
+      solver_.ResetTolerance();
+
+      dtsolve_ = ds_cputime()-tcpusolve;
+    }
+
+    // -------------------------------------------------------------------
+    // update velocity and pressure values by increments
+    // -------------------------------------------------------------------
+    velnp_->Update(1.0,*incvel_,1.0);
+
+    // -------------------------------------------------------------------
+    // For af-generalized-alpha, also update accelerations, but do not
+    // update time derivatives of density for low-Mach-number flow.
+    // Furthermore, calculate velocities, pressures, densities,
+    // accelerations and density time derivatives at intermediate time
+    // steps n+alpha_F and n+alpha_M, respectively, for next iteration.
+    // This has to be done at the end of the iteration, since we might
+    // need the velocities at n+alpha_F in a potential coupling
+    // algorithm, for instance.
+    // -------------------------------------------------------------------
+    if (timealgo_==timeint_afgenalpha)
+    {
+      GenAlphaUpdateAcceleration();
+
+      GenAlphaIntermediateValues();
+    }
+
+    // -------------------------------------------------------------------
+    // call elements to calculate system matrix and rhs and assemble
+    // (not called if it is the last iteration and we skip the call)
+    // -------------------------------------------------------------------
+    if (not (itnum == itemax) or not skiplastelecall_) AssembleMatAndRHS();
+
+    // -------------------------------------------------------------------
+    // calculate and print out norms for convergence check
+    // (blank residual DOFs which are on Dirichlet BC
+    // We can do this because the values at the dirichlet positions
+    // are not used anyway.
+    // We could avoid this though, if velrowmap_ and prerowmap_ would
+    // not include the dirichlet values as well. But it is expensive
+    // to avoid that.)
+    // -------------------------------------------------------------------
+    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_),residual_);
+
+    Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_.ExtractOtherVector(residual_);
+    onlyvel->Norm2(&vresnorm);
+
+    velpressplitter_.ExtractOtherVector(incvel_,onlyvel);
+    onlyvel->Norm2(&incvelnorm_L2);
+
+    velpressplitter_.ExtractOtherVector(velnp_,onlyvel);
+    onlyvel->Norm2(&velnorm_L2);
+
+    Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_.ExtractCondVector(residual_);
+    onlypre->Norm2(&presnorm);
+
+    velpressplitter_.ExtractCondVector(incvel_,onlypre);
+    onlypre->Norm2(&incprenorm_L2);
+
+    velpressplitter_.ExtractCondVector(velnp_,onlypre);
+    onlypre->Norm2(&prenorm_L2);
+
+    // care for the case that nothing really happens in velocity
+    // or pressure field
+    if (velnorm_L2 < 1e-5) velnorm_L2 = 1.0;
+    if (prenorm_L2 < 1e-5) prenorm_L2 = 1.0;
+
+    if (myrank_ == 0)
+    {
+      printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",itnum,itemax,ittol,vresnorm,presnorm,
+                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
+      printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
+      if (dynamic_smagorinsky_) printf(",tf=%10.3E",dtfilter_);
+      printf(")\n");
+    }
+
+    // -------------------------------------------------------------------
+    // check convergence and print out respective information:
+    // - stop if convergence is achieved
+    // - warn if itemax is reached without convergence, but proceed to
+    //   next timestep
+    // -------------------------------------------------------------------
+    if (vresnorm <= ittol and
+        presnorm <= ittol and
+        incvelnorm_L2/velnorm_L2 <= ittol and
+        incprenorm_L2/prenorm_L2 <= ittol)
+    {
+      stopnonliniter=true;
+      if (myrank_ == 0)
+      {
+        printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
+        FILE* errfile = params_.get<FILE*>("err file",NULL);
+        if (errfile!=NULL)
+        {
+          fprintf(errfile,"fluid solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
+          itnum,itemax,ittol,vresnorm,presnorm,
+          incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
+        }
+      }
+      break;
+    }
+
+    if ((itnum == itemax) and (vresnorm > ittol or
+                               presnorm > ittol or
+                               incvelnorm_L2/velnorm_L2 > ittol or
+                               incprenorm_L2/prenorm_L2 > ittol))
+    {
+      stopnonliniter=true;
+      if (myrank_ == 0)
+      {
+        printf("+---------------------------------------------------------------+\n");
+        printf("|            >>>>>> not converged in itemax steps!              |\n");
+        printf("+---------------------------------------------------------------+\n");
+
+        FILE* errfile = params_.get<FILE*>("err file",NULL);
+        if (errfile!=NULL)
+        {
+          fprintf(errfile,"fluid unconverged solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
+                  itnum,itemax,ittol,vresnorm,presnorm,
+                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
+        }
+      }
+      break;
+    }
+  }
+
+} // FluidImplicitTimeInt::MultiCorrector
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | compute values at intermediate time steps for gen.-alpha    vg 02/09 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::FluidImplicitTimeInt::GenAlphaIntermediateValues()
+{
+  //       n+alphaM                n+1                      n
+  //    acc         = alpha_M * acc     + (1-alpha_M) *  acc
+  //       (i)                     (i)
+  accam_->Update((alphaM_),*accnp_,(1.0-alphaM_),*accn_,0.0);
+
+  //       n+alphaF              n+1                   n
+  //      u         = alpha_F * u     + (1-alpha_F) * u
+  //       (i)                   (i)
+  velaf_->Update((alphaF_),*velnp_,(1.0-alphaF_),*veln_,0.0);
+
+  // values only required for low-Mach-number flow
+  if (loma_ != "No")
+  {
+    vedeaf_->Update((alphaF_),*vedenp_,(1.0-alphaF_),*veden_,0.0);
+    vedeam_->Update((alphaM_),*vedenp_,(1.0-alphaM_),*veden_,0.0);
+  }
+
+} // FluidImplicitTimeInt::GenAlphaIntermediateValues
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | call elements to calculate system matrix/rhs and assemble   vg 02/09 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
+{
+  dtele_    = 0.0;
+  dtfilter_ = 0.0;
+
+  // time measurement: element
+  TEUCHOS_FUNC_TIME_MONITOR("      + element calls");
+
+  // get cpu time
+  const double tcpu=ds_cputime();
+
+  sysmat_->Zero();
+
+  // add Neumann loads
+  residual_->Update(1.0,*neumann_loads_,0.0);
+
+  // update impedance boundary condition
+  impedancebc_->UpdateResidual(residual_);
+
+  // create the parameters for the discretization
+  ParameterList eleparams;
+
+  // add potential Neumann-type outflow stabilization term
+  if (outflow_stab_ == "yes_outstab")
+  {
+    discret_->ClearState();
+    eleparams.set("outflow stabilization",outflow_stab_);
+    if (timealgo_==timeint_afgenalpha)
+    {
+      eleparams.set("thsl",1.0);
+      discret_->SetState("velnp",velaf_);
+      discret_->SetState("vedenp",vedeaf_);
+    }
+    else
+    {
+      eleparams.set("thsl",theta_*dta_);
+      discret_->SetState("velnp",velnp_);
+      discret_->SetState("vedenp",vedenp_);
+    }
+    outflow_->PutScalar(0.0);
+    discret_->EvaluateNeumann(eleparams,*outflow_);
+    discret_->ClearState();
+
+    // add Neumann-type outflow term to residual vector
+    residual_->Update(1.0,*outflow_,1.0);
+  }
+
+  if (dynamic_smagorinsky_)
+  {
+    // time measurement
+    const double tcpufilter=ds_cputime();
+    this->ApplyFilterForDynamicComputationOfCs();
+    dtfilter_=ds_cputime()-tcpufilter;
+  }
+
+  // set general element parameters
+  eleparams.set("thsl",theta_*dta_);
+  eleparams.set("dt",dta_);
+  eleparams.set("form of convective term",convform_);
+  eleparams.set("fs subgrid viscosity",fssgv_);
+  eleparams.set("Linearisation",newton_);
+  eleparams.set("low-Mach-number solver",loma_);
+  eleparams.set("eos factor",eosfac_);
+
+  // parameters for stabilization
+  eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
+
+  // parameters for turbulence model
+  eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
+
+  // set general vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState("hist"  ,hist_ );
+  if (alefluid_)
+  {
+    discret_->SetState("dispnp", dispnp_);
+    discret_->SetState("gridv", gridv_);
+   }
+
+  // set scheme-specific element parameters and vector values
+  if (timealgo_==timeint_stationary)
+  {
+    eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
+    eleparams.set("using generalized-alpha time integration",false);
+    eleparams.set("total time",time_);
+
+    discret_->SetState("velnp",velnp_);
+    discret_->SetState("vedenp",vedenp_);
+  }
+  else if (timealgo_==timeint_afgenalpha)
+  {
+    eleparams.set("action","calc_fluid_afgenalpha_systemmat_and_residual");
+    eleparams.set("using generalized-alpha time integration",true);
+    eleparams.set("total time",time_-(1-alphaF_)*dta_);
+    eleparams.set("timefacrhs",alphaM_/(gamma_*dta_));
+
+    discret_->SetState("velnp", velaf_ );
+    discret_->SetState("vedenp",vedeaf_);
+    discret_->SetState("accam", accam_ );
+    if (convform_ == "conservative") discret_->SetState("vedeam",vedenp_);
+    else                             discret_->SetState("vedeam",vedeam_);
+  }
+  else
+  {
+    eleparams.set("action","calc_fluid_systemmat_and_residual");
+    eleparams.set("using generalized-alpha time integration",false);
+    eleparams.set("total time",time_);
+
+    discret_->SetState("velnp",velnp_);
+    discret_->SetState("vedenp",vedenp_);
+  }
+
+  //----------------------------------------------------------------------
+  // AVM3-based solution approach if required
+  //----------------------------------------------------------------------
+  if (fssgv_ != "No") AVM3Separation();
+
+  // call standard loop over elements
+  discret_->Evaluate(eleparams,sysmat_,residual_);
+  discret_->ClearState();
+
+  if (timealgo_==timeint_afgenalpha)
+  {
+    // For af-generalized-alpha scheme, we already have the true residual,...
+    trueresidual_->Update(1.0,*residual_,0.0);
+
+    // ...but the residual vector for the solution rhs has to be scaled.
+    residual_->Scale(gamma_*dta_/alphaM_);
+  }
+  else
+  {
+    // scaling to get true residual vector for all other schemes
+    trueresidual_->Update(ResidualScaling(),*residual_,0.0);
+  }
+
+  // finalize the complete matrix
+  sysmat_->Complete();
+
+  // end time measurement for element
+  dtele_=ds_cputime()-tcpu;
+
+} // FluidImplicitTimeInt::AssembleMatAndRHS
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | update acceleration for generalized-alpha time integration  vg 02/09 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::FluidImplicitTimeInt::GenAlphaUpdateAcceleration()
+{
+  // -------------------------------------------------------------------
+  // separate current velocity at n+1 and at n from pressure values
+  Teuchos::RCP<Epetra_Vector> onlyvel  = velpressplitter_.ExtractOtherVector(velnp_);
+  Teuchos::RCP<Epetra_Vector> onlyveln = velpressplitter_.ExtractOtherVector(veln_);
+
+  // in case of conservative form: velocity*density
+  if (convform_ == "conservative")
+  {
+    // -------------------------------------------------------------------
+    // separate current density at n+1 and at n, get result vector
+    Teuchos::RCP<Epetra_Vector> onlydens = velpressplitter_.ExtractOtherVector(vedenp_);
+    Teuchos::RCP<Epetra_Vector> onlydensn = velpressplitter_.ExtractOtherVector(veden_);
+    Teuchos::RCP<Epetra_Vector> denstimesvel = velpressplitter_.ExtractOtherVector(vedenp_);
+
+    // -------------------------------------------------------------------
+    // compute dens_n+1*vel_n+1 - dens_n*vel_n / (gamma*dt)
+    const double fact1 = 1.0/(gamma_*dta_);
+    denstimesvel->Multiply( fact1,*onlyvel ,*onlydens ,0.0);
+    denstimesvel->Multiply(-fact1,*onlyveln,*onlydensn,1.0);
+
+    // -------------------------------------------------------------------
+    // separate density-weighted acceleration at n
+    velpressplitter_.ExtractOtherVector(accn_,onlyveln);
+
+    // -------------------------------------------------------------------
+    // compute ((gamma-1)/gamma)*dens_n*acc_n and add to previous result
+    const double fact2 = (gamma_-1.0)/gamma_;
+    denstimesvel->Update(fact2,*onlyveln,1.0);
+
+    // -------------------------------------------------------------------
+    // insert result into accnp-vector
+    velpressplitter_.InsertOtherVector(denstimesvel,accnp_);
+  }
+  else
+  {
+    // -------------------------------------------------------------------
+    // compute vel_n+1 - vel_n / (gamma*dt)
+    const double fact1 = 1.0/(gamma_*dta_);
+    onlyvel->Update(-fact1,*onlyveln,fact1);
+
+    // -------------------------------------------------------------------
+    // separate acceleration at n from potential density time derivative
+    velpressplitter_.ExtractOtherVector(accn_,onlyveln);
+
+    // -------------------------------------------------------------------
+    // compute ((gamma-1)/gamma)*acc_n and add to previous result
+    const double fact2 = (gamma_-1.0)/gamma_;
+    onlyvel->Update(fact2,*onlyveln,1.0);
+
+    // -------------------------------------------------------------------
+    // insert result into accnp-vector
+    velpressplitter_.InsertOtherVector(onlyvel,accnp_);
+  }
+} // FluidImplicitTimeInt::GenAlphaUpdateAcceleration
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
