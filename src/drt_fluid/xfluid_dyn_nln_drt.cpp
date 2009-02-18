@@ -76,8 +76,8 @@ void xdyn_fluid_drt()
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
   // -------------------------------------------------------------------
-  if (!soliddis->Filled()) soliddis->FillComplete();
-  if (!fluiddis->Filled()) fluiddis->FillComplete();
+  if (!soliddis->HaveDofs()) soliddis->FillComplete();
+  if (!fluiddis->HaveDofs()) fluiddis->FillComplete();
 
   // -------------------------------------------------------------------
   // context for output and restart
@@ -279,10 +279,10 @@ void xdyn_fluid_drt()
     // velocity degrees of freedom
     //------------------------------------------------------------------
     FLD::XFluidImplicitTimeInt fluidimplicit(
-    		fluiddis,
-    		solver,
-    		fluidtimeparams,
-    		fluidoutput);
+        fluiddis,
+        solver,
+        fluidtimeparams,
+        fluidoutput);
 
     // initial field from restart or calculated by given function
     if (probtype.get<int>("RESTART"))

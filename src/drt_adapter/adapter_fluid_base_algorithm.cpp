@@ -65,7 +65,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
   // -------------------------------------------------------------------
-  if (!actdis->Filled()) actdis->FillComplete();
+  if (!actdis->HaveDofs()) actdis->FillComplete();
 
   // -------------------------------------------------------------------
   // context for output and restart
