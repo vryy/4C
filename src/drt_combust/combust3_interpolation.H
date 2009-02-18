@@ -125,6 +125,7 @@ namespace COMBUST
     return distype;
   }
   
+  //! implementation for combust3 element
   class CombustElementAnsatz : public XFEM::ElementAnsatz 
   {
   public:

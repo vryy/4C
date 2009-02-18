@@ -125,6 +125,7 @@ namespace XFLUID
     return distype;
   }
   
+  //! implementation for xfluid3 element
   class FluidElementAnsatz : public XFEM::ElementAnsatz 
   {
   public:
