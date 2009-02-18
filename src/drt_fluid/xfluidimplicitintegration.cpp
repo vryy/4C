@@ -989,7 +989,8 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       const int sign_digits = (int)floor(tmp);
       cout0_ << " cond est: " << scientific << cond_number << ", max.sign.digits: " << sign_digits;
     }
-    cout0_ << endl;
+    if (myrank_ == 0)
+      cout0_ << endl;
     
     //-------solve for residual displacements to correct incremental displacements
     {

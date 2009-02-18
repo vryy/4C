@@ -608,7 +608,7 @@ void ADAPTER::XFluidImpl::RemoveInternalSurfElements(
     const Teuchos::RCP<DRT::Discretization> soliddis
     )
 {
-if (boundarydis_->Comm().NumProc() == 1)
+//if (boundarydis_->Comm().NumProc() == 1)
 {
   // for structures consisting of one layer of hex8 elements, internal surface elements appear
   // find internal elements

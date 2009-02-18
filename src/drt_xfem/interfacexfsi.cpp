@@ -80,6 +80,8 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
   GEO::Intersection is;
   is.computeIntersection(xfemdis, cutterdis, cutterposnp_, currentXAABBs, elementalDomainIntCells_, elementalBoundaryIntCells_);  
 
+  xfemdis->Comm().Barrier();
+  
   EraseTinyDomainIntCells(elementalDomainIntCells_);
   
   xfemdis->Comm().Barrier();
