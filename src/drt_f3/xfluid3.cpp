@@ -209,6 +209,27 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::XFluid3::Volumes()
 }
 
 
+/*----------------------------------------------------------------------*
+ |  constructor
+ *----------------------------------------------------------------------*/
+DRT::ELEMENTS::XFluid3::MyState::MyState(
+    const DRT::Discretization&      discret,
+    const std::vector<int>&         lm,
+    const bool                      instat
+    ) :
+      instationary(instat)
+{
+  DRT::UTILS::ExtractMyValues(*discret.GetState("velnp"),velnp,lm);
+  if (instat)
+  {
+    DRT::UTILS::ExtractMyValues(*discret.GetState("veln") ,veln ,lm);
+    DRT::UTILS::ExtractMyValues(*discret.GetState("velnm"),velnm,lm);
+    DRT::UTILS::ExtractMyValues(*discret.GetState("accn") ,accn ,lm);
+  }
+}
+
+
+
 //=======================================================================
 //=======================================================================
 //=======================================================================

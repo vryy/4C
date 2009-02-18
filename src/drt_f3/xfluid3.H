@@ -43,13 +43,20 @@ namespace DRT
       public:
         
         //! this struct stores local vectors extracted from the global unknown arrays
-        struct MyState
+        class MyState
         {
-          bool instationary;
-          std::vector<double> velnp;
-          std::vector<double> veln;
-          std::vector<double> velnm;
-          std::vector<double> accn;
+        public:
+          MyState(
+              const DRT::Discretization&      discret,
+              const std::vector<int>&         lm,
+              const bool                      instat
+              );
+              
+          const bool instationary;   ///< whether we need unknowns for transient computation
+          std::vector<double> velnp; ///< unknowns at n+1
+          std::vector<double> veln;  ///< unknowns at n
+          std::vector<double> velnm; ///< unknowns at n-1
+          std::vector<double> accn;  ///< time derivative of unknowns at n
         };
         
         //! @name Constructors and destructors and related methods
@@ -241,9 +248,11 @@ namespace DRT
         class DLMInfo
         {
         public:
-          //! store matrizes and rhs of the old iteration step
+          //! Kaa inv of old iteration step
           LINALG::SerialDenseMatrix      oldKaainv_;
+          //! Kad of old iteration step
           LINALG::SerialDenseMatrix      oldKad_;
+          //! fa inv of old iteration step
           LINALG::SerialDenseVector      oldfa_;
           
           //! this map stores all element stresses (independent of the xfem label)
@@ -252,11 +261,11 @@ namespace DRT
           //! constructor
           explicit DLMInfo(const int nd, const int na);
         private:
-          //! no standard constructor
+          //! disabled standard constructor
           DLMInfo();
-          //! no copy constructor
+          //! disabled copy constructor
           DLMInfo(const DLMInfo&);
-          
+          //! number of stress unknowns
           const int na_; 
         };
         

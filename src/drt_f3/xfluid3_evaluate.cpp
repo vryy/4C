@@ -27,6 +27,24 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/enrichment_utils.H"
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+static bool VoidEnrichmentInElementDofSet(
+    const int                     gid,
+    std::set<XFEM::FieldEnr>&     fieldenrset)
+{
+  bool voidenrichment_in_set = false;
+  for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin(); fieldenr != fieldenrset.end(); ++fieldenr)
+  {
+    if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeVoid)
+    {
+      voidenrichment_in_set = true;
+      break;
+    }
+  }
+  return voidenrichment_in_set;
+}
+
 /*---------------------------------------------------------------------*
 |  converts a string into an Action for this element                   |
 *----------------------------------------------------------------------*/
@@ -121,18 +139,12 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
     }
     case calc_fluid_systemmat_and_residual:
     {
-      TEUCHOS_FUNC_TIME_MONITOR("XFLUID3 - evaluate - calc_fluid_systemmat_and_residual");
       // do no calculation, if not needed
       if (lm.empty())
         break;
 
       // extract local values from the global vectors
-      DRT::ELEMENTS::XFluid3::MyState mystate;
-      mystate.instationary = true;
-      DRT::UTILS::ExtractMyValues(*discretization.GetState("velnp"),mystate.velnp,lm);
-      DRT::UTILS::ExtractMyValues(*discretization.GetState("veln") ,mystate.veln ,lm);
-      DRT::UTILS::ExtractMyValues(*discretization.GetState("velnm"),mystate.velnm,lm);
-      DRT::UTILS::ExtractMyValues(*discretization.GetState("accn") ,mystate.accn ,lm);
+      DRT::ELEMENTS::XFluid3::MyState mystate(discretization,lm,true);
 
       const Teuchos::RCP<const Epetra_Vector> ivelcol = params.get<Teuchos::RCP<const Epetra_Vector> >("interface velocity");
       const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("interface force");
@@ -230,15 +242,12 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
     }
     case calc_fluid_stationary_systemmat_and_residual:
     {
-      TEUCHOS_FUNC_TIME_MONITOR("XFLUID3 - evaluate - calc_fluid_stationary_systemmat_and_residual");
       // do no calculation, if not needed
       if (lm.empty())
         break;
 
       // extract local values from the global vector
-      DRT::ELEMENTS::XFluid3::MyState mystate;
-      mystate.instationary = false;
-      DRT::UTILS::ExtractMyValues(*discretization.GetState("velnp"),mystate.velnp,lm);
+      DRT::ELEMENTS::XFluid3::MyState mystate(discretization,lm,false);
 
       const Teuchos::RCP<const Epetra_Vector> ivelcol = params.get<Teuchos::RCP<const Epetra_Vector> >("interface velocity");
       const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("interface force");
@@ -367,8 +376,6 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
     }
     case store_xfem_info:
     {
-      TEUCHOS_FUNC_TIME_MONITOR("XFLUID3 - evaluate - store_xfem_info");
-
       // store pointer to interface handle
       ih_ = params.get< Teuchos::RCP< XFEM::InterfaceHandleXFSI > >("interfacehandle",null);
 
@@ -407,7 +414,11 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           // for surface with label, loop my col elements and add void enrichments to each elements member nodes
           if (ih_->ElementHasLabel(this->Id(), label))
           {
-            XFEM::ApplyElementEnrichments(this, *ih_, label, false, enrfieldset);
+            const bool anothervoidenrichment_in_set = VoidEnrichmentInElementDofSet(Id(), enrfieldset);
+            if (not anothervoidenrichment_in_set)
+            {
+              XFEM::ApplyElementEnrichments(this, *ih_, label, false, enrfieldset);
+            }
           }
         };
 
@@ -687,7 +698,7 @@ void DRT::ELEMENTS::XFluid3::UpdateOldDLMAndDLMRHS(
     vector<double> inc_velnp(lm.size());
     DRT::UTILS::ExtractMyValues(*discretization.GetState("nodal increment"),inc_velnp,lm);
     
-    const Epetra_BLAS blas;
+    static const Epetra_BLAS blas;
     
     // update old iteration residual of the stresses
     // DLM_info_->oldfa_(i) += DLM_info_->oldKad_(i,j)*inc_velnp[j];
@@ -770,7 +781,7 @@ void DRT::ELEMENTS::XFluid3::CondenseDLMAndStoreOldIterationStep(
     solve_for_inverseKaa.Invert();
     // from here on, Kaa -> Kaainv
 
-    const Epetra_BLAS blas;
+    static const Epetra_BLAS blas;
     {
       LINALG::SerialDenseMatrix KdaKaainv(nd,na); // temporary Kda.Kaa^{-1}
       

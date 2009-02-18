@@ -22,6 +22,46 @@ Maintainer: Axel Gerstenberger
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+static bool EnrichmentInDofSet(
+    const XFEM::Enrichment::EnrType     testenr,
+    const std::set<XFEM::FieldEnr>&     fieldenrset)
+{
+  bool voidenrichment_in_set = false;
+  for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin(); fieldenr != fieldenrset.end(); ++fieldenr)
+  {
+    if (fieldenr->getEnrichment().Type() == testenr)
+    {
+      voidenrichment_in_set = true;
+      break;
+    }
+  }
+  return voidenrichment_in_set;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+static bool EnrichmentInNodalDofSet(
+    const int                                           gid,
+    const XFEM::Enrichment::EnrType                     testenr,
+    const std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet)
+{
+  bool voidenrichment_in_set = false;
+  //check for testenrichment in the given nodalDofSet
+  std::map<int, std::set<XFEM::FieldEnr> >::const_iterator setiter = nodalDofSet.find(gid);
+  if (setiter != nodalDofSet.end())
+  {
+    const std::set<XFEM::FieldEnr>& fieldenrset = setiter->second;
+    return EnrichmentInDofSet(testenr, fieldenrset);
+  }
+  return voidenrichment_in_set;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void XFEM::ApplyNodalEnrichments(
     const DRT::Element*                           xfemele,
     const XFEM::InterfaceHandle&                  ih,
@@ -42,10 +82,14 @@ void XFEM::ApplyNodalEnrichments(
     for (int inen = 0; inen<nen; ++inen)
     {
       const int node_gid = nodeidptrs[inen];
-      nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Velx, voidenr));
-      nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Vely, voidenr));
-      nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Velz, voidenr));
-      nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Pres, voidenr));
+      const bool anothervoidenrichment_in_set = EnrichmentInNodalDofSet(node_gid, XFEM::Enrichment::typeVoid, nodalDofSet);
+      if (not anothervoidenrichment_in_set)
+      {
+        nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Velx, voidenr));
+        nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Vely, voidenr));
+        nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Velz, voidenr));
+        nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Pres, voidenr));
+      }
     };
   }
   else
@@ -57,14 +101,18 @@ void XFEM::ApplyNodalEnrichments(
       const int node_gid = nodeidptrs[inen];
       const LINALG::Matrix<3,1> nodalpos(ih.xfemdis()->gNode(node_gid)->X());
       const int label = ih.PositionWithinConditionNP(nodalpos);
-      const bool in_fluid = (label == 0);
+      const bool in_fluid = (0 == label);
 
       if (in_fluid)
       {
-        nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Velx, voidenr));
-        nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Vely, voidenr));
-        nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Velz, voidenr));
-        nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Pres, voidenr));
+        const bool anothervoidenrichment_in_set = EnrichmentInNodalDofSet(node_gid, XFEM::Enrichment::typeVoid, nodalDofSet);
+        if (not anothervoidenrichment_in_set)
+        {
+          nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Velx, voidenr));
+          nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Vely, voidenr));
+          nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Velz, voidenr));
+          nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Pres, voidenr));
+        }
       }
     };
     cout << "skipped interior void unknowns for element: "<< xfemele->Id() << ", volumeratio limit: " << std::scientific << volumeratiolimit << ", volumeratio: abs (" << std::scientific << (1.0 - volumeratio) << " )" << endl;
@@ -92,30 +140,41 @@ void XFEM::ApplyNodalEnrichmentsNodeWise(
   for (int inen = 0; inen<nen; ++inen)
   {
     const int node_gid = nodeidptrs[inen];
-    const bool usefull_contribution = (fabs(ratios[inen]) > volumeratiolimit);
-    if ( usefull_contribution)  
-    {      
-      nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Velx, voidenr));
-      nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Vely, voidenr));
-      nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Velz, voidenr));
-      nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Pres, voidenr));
-    }
-    else
+    
+    const bool anothervoidenrichment_in_set = EnrichmentInNodalDofSet(node_gid, XFEM::Enrichment::typeVoid, nodalDofSet);
+    
+    if (not anothervoidenrichment_in_set)
     {
-      cout << "skipped interior void unknowns for element: "<< xfemele->Id() << ", for node: "<< node_gid << ", volumeratio limit: " << std::scientific << volumeratiolimit << ", volumeratio: abs (" << std::scientific << fabs(ratios[inen]) << " )" << endl;
-      const LINALG::Matrix<3,1> nodalpos(ih.xfemdis()->gNode(node_gid)->X());
-      const int label = ih.PositionWithinConditionNP(nodalpos);
-      const bool in_fluid = (label == 0);
-
-      if (in_fluid)
-      {
+    
+      const bool usefull_contribution = (fabs(ratios[inen]) > volumeratiolimit);
+      if ( usefull_contribution)  
+      {      
         nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Velx, voidenr));
         nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Vely, voidenr));
         nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Velz, voidenr));
         nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Pres, voidenr));
       }
+      else
+      {
+        cout << "skipped interior void unknowns for element: "<< xfemele->Id() << ", for node: "<< node_gid << ", volumeratio limit: " << std::scientific << volumeratiolimit << ", volumeratio: abs (" << std::scientific << fabs(ratios[inen]) << " )" << endl;
+        const LINALG::Matrix<3,1> nodalpos(ih.xfemdis()->gNode(node_gid)->X());
+        const int label = ih.PositionWithinConditionNP(nodalpos);
+        const bool in_fluid = (0 == label);
+  
+        if (in_fluid)
+        {
+          nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Velx, voidenr));
+          nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Vely, voidenr));
+          nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Velz, voidenr));
+          nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Pres, voidenr));
+        }
+      }
     }
-  };
+    else
+    {
+      cout << "skipping due to other voids already there" << endl;
+    }
+  }
 }
 
 
@@ -145,11 +204,15 @@ void XFEM::ApplyElementEnrichments(
       element_ansatz = XFLUID::getElementAnsatz(xfemele->Shape());
     }
 
-    map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>::const_iterator fielditer;
-    for (fielditer = element_ansatz.begin();fielditer != element_ansatz.end();++fielditer)
+    const bool anothervoidenrichment_in_set = EnrichmentInDofSet(XFEM::Enrichment::typeVoid, enrfieldset);
+    if (not anothervoidenrichment_in_set)
     {
-      enrfieldset.insert(XFEM::FieldEnr(fielditer->first, voidenr));
-      //      enrfieldset.insert(XFEM::FieldEnr(fielditer->first, stdenr));
+      map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>::const_iterator fielditer;
+      for (fielditer = element_ansatz.begin();fielditer != element_ansatz.end();++fielditer)
+      {
+        enrfieldset.insert(XFEM::FieldEnr(fielditer->first, voidenr));
+        //      enrfieldset.insert(XFEM::FieldEnr(fielditer->first, stdenr));
+      }
     }
   }
   else
@@ -252,16 +315,8 @@ void XFEM::applyStandardEnrichment(
       const int* nodeidptrs = xfemele->NodeIds();
       const LINALG::Matrix<3,1> nodalpos(xfemele->Nodes()[0]->X());
 
-      bool in_fluid = false;
       const int label = ih.PositionWithinConditionNP(nodalpos);
-      if (label == 0)
-      {
-        in_fluid = true;
-      }
-      else
-      {
-        in_fluid = false;
-      }
+      const bool in_fluid = (0 == label);
 
       if (in_fluid)
       {
@@ -321,40 +376,19 @@ void XFEM::applyStandardEnrichmentNodalBasedApproach(
     const DRT::Node* node = ih.xfemdis()->lColNode(i);
     const LINALG::Matrix<3,1> nodalpos(node->X());
 
-    const int node_gid = node->Id();
-    bool voidenrichment_in_set = false;
-    //check for void enrichment in a given set, if such set already exists for this node_gid
-    std::map<int, std::set<FieldEnr> >::const_iterator setiter = nodalDofSet.find(node_gid);
-    if (setiter != nodalDofSet.end())
-    {
-      std::set<FieldEnr> fieldenrset = setiter->second;
-      for (std::set<FieldEnr>::const_iterator fieldenr = fieldenrset.begin(); fieldenr != fieldenrset.end(); ++fieldenr)
-      {
-        if (fieldenr->getEnrichment().Type() == Enrichment::typeVoid)
-        {
-          voidenrichment_in_set = true;
-          break;
-        }
-      }
-    }
+    const bool voidenrichment_in_set = EnrichmentInNodalDofSet(node->Id(), XFEM::Enrichment::typeVoid, nodalDofSet);
+    
     if (not voidenrichment_in_set)
     {
-      bool in_fluid = false;
       const int label = ih.PositionWithinConditionNP(nodalpos);
-      if (label == 0)
-      {
-        in_fluid = true;
-      }
-      else
-      {
-        in_fluid = false;
-      }
+      const bool in_fluid = (0 == label);
+
       if (in_fluid)
       {
-        nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velx, enr_std));
-        nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Vely, enr_std));
-        nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velz, enr_std));
-        nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Pres, enr_std));
+        nodalDofSet[node->Id()].insert(XFEM::FieldEnr(PHYSICS::Velx, enr_std));
+        nodalDofSet[node->Id()].insert(XFEM::FieldEnr(PHYSICS::Vely, enr_std));
+        nodalDofSet[node->Id()].insert(XFEM::FieldEnr(PHYSICS::Velz, enr_std));
+        nodalDofSet[node->Id()].insert(XFEM::FieldEnr(PHYSICS::Pres, enr_std));
       }
     }
   };
