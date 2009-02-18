@@ -495,8 +495,9 @@ void CONTACT::Interface::Initialize()
     (node->GetDerivD()).clear();
     (node->GetDerivM()).clear();
     
-    // reset nodal weighted gap
+    // reset nodal weighted gap and derivative
     node->Getg() = 1.0e12;
+    (node->GetDerivG()).clear();
 
     // reset feasible projection status
     node->HasProj() = false;
@@ -1471,7 +1472,7 @@ void CONTACT::Interface::AssembleTresca(LINALG::SparseMatrix& lglobal,
 }
 
 /*----------------------------------------------------------------------*
- |  Assemble matrix S containing normal+D+M derivatives       popp 05/08|
+ |  Assemble matrix S containing gap g~ derivatives           popp 02/09|
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::AssembleS(LINALG::SparseMatrix& sglobal)
 {
@@ -1495,161 +1496,17 @@ void CONTACT::Interface::AssembleS(LINALG::SparseMatrix& sglobal)
       dserror("ERROR: AssembleS: Node ownership inconsistency!");
     
     // prepare assembly
-    vector<map<int,double> > dnmap = cnode->GetDerivN();
+    map<int,double>& dgmap = cnode->GetDerivG();
     map<int,double>::iterator colcurr;
-    int colsize = (int)dnmap[0].size();
-    int mapsize = (int)dnmap.size();
     int row = activen_->GID(i);
-    double* xi = cnode->xspatial();
-    double* n = cnode->n();
     
-    for (int j=0;j<mapsize-1;++j)
-      if ((int)dnmap[j].size() != (int)dnmap[j+1].size())
-        dserror("ERROR: AssembleS: Column dim. of nodal DerivN-map is inconsistent!");
-         
-    /*********************************************** N_normal_slave *****/
-    //cout << endl << "->Assemble N_Normal_s for Node ID: " << cnode->Id() << endl;
-    
-    // we need the D-matrix entry of this node
-    double wii = (cnode->GetD()[0])[cnode->Dofs()[0]];
-    
-    // loop over all derivative maps (=dimensions)
-    for (int j=0;j<mapsize;++j)
-    {
-      int k=0;
-    
-      // loop over all entries of the current derivative map
-      for (colcurr=dnmap[j].begin();colcurr!=dnmap[j].end();++colcurr)
-      {
-        int col = colcurr->first;
-        double val = wii*xi[j]*colcurr->second;
-        //cout << "wii=" << wii << " xi=" << xi[0] << " yi=" << xi[1] << " deriv=" << colcurr->second << endl;
-        //cout << "Assemble N_Normal_s: " << row << " " << col << " " << val << endl;
-        // do not assemble zeros into s matrix
-        if (abs(val)>1.0e-12) sglobal.Assemble(val,row,col);
-        ++k;
-      }
-
-      if (k!=colsize)
-        dserror("ERROR: AssembleS: k = %i but colsize = %i",k,colsize);
-    }
-    
-    /********************************************** N_normal_master *****/
-    //cout << endl << "->Assemble N_Normal_m for Node ID: " << cnode->Id() << endl;
-    
-    // we need the M-matrix entries of this node
-    vector<map<int,double> > mmap = cnode->GetM();
-    map<int,double>::iterator mcurr;
-    int mcolsize = (int)mmap[0].size();
-    
-    // get out of here, if no M-matrix entries for this node
-    if ((int)mmap.size()==0) continue;
-    if (mcolsize%2!=0 && mcolsize%3!=0)
-      dserror("ERROR: AssembleS: Inconsistency! Only 2D or 3D case possible!");
-    
-    // loop over all master nodes (find adjacent ones to this active node)
-    for (int m=0;m<mnodefullmap_->NumMyElements();++m)
-    {
-      int gid = mnodefullmap_->GID(m);
-      DRT::Node* mnode = idiscret_->gNode(gid);
-      if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-      CNode* cmnode = static_cast<CNode*>(mnode);
-      const int* mdofs = cmnode->Dofs();
-      bool hasentry = false;
-      
-      // look for this master node in M-map of the active slave node
-      for (mcurr=mmap[0].begin();mcurr!=mmap[0].end();++mcurr)
-        if ((mcurr->first)==mdofs[0])
-        {
-          hasentry=true;
-          break;
-        }
-      
-      double mik = (mmap[0])[mdofs[0]];
-      double* mxi = cmnode->xspatial();
-      
-      // get out of here, if master node not adjacent or coupling very weak
-      if (!hasentry || abs(mik)<1.0e-12) continue;
-      
-      // compute S-matrix entry of the current active node / master node pair
-      // loop over all derivative maps (=dimensions)
-      for (int j=0;j<mapsize;++j)
-      {
-        int k=0;
-      
-        // loop over all entries of the current derivative map
-        for (colcurr=dnmap[j].begin();colcurr!=dnmap[j].end();++colcurr)
-        {
-          int col = colcurr->first;
-          double val = mik*mxi[j]*colcurr->second;
-          //cout << "mik=" << mik << " mxi=" << mxi[0] << " myi=" << mxi[1] << " deriv=" << colcurr->second << endl;
-          //cout << "Assemble N_Normal_m: " << row << " " << col << " " << val << endl;
-          // do not assemble zeros into s matrix
-          if (abs(val)>1.0e-12) sglobal.Assemble(-val,row,col);
-          ++k;
-        }
-
-        if (k!=colsize)
-          dserror("ERROR: AssembleS: k = %i but colsize = %i",k,colsize);
-      }  
-    }
-    
-    /********************************************** N_Dmortar_slave *****/
-    //cout << endl << "->Assemble N_Dmortar_s for Node ID: " << cnode->Id() << endl;
-    
-    // we need the dot product n*x of this node
-    double ndotx = 0.0;
-    for (int dim=0;dim<cnode->NumDof();++dim)
-      ndotx += n[dim]*xi[dim];
-    
-    // prepare assembly
-    map<int,double>& ddmap = cnode->GetDerivD();
-        
-    // loop over all entries of the current derivative map
-    for (colcurr=ddmap.begin();colcurr!=ddmap.end();++colcurr)
+    for (colcurr=dgmap.begin();colcurr!=dgmap.end();++colcurr)
     {
       int col = colcurr->first;
-      double val = ndotx*colcurr->second;
-      //cout << "ndotx=" << ndotx <<  " deriv=" << colcurr->second << endl;
-      //cout << "Assemble N_DMortar_s: " << row << " " << col << " " << val << endl;
+      double val = colcurr->second;
+      //cout << "Assemble S: " << row << " " << col << " " << val << endl;    
       // do not assemble zeros into s matrix
-      if (abs(val)>1.0e-12) sglobal.Assemble(val,row,col);
-    }
-    
-    /*************************************** N_Mmortar_slave+master *****/
-    //cout << endl << "->Assemble N_Mmortar for Node ID: " << cnode->Id() << endl;
-    
-    // we need the Lin(M-matrix) entries of this node
-    map<int,map<int,double> >& dmmap = cnode->GetDerivM();
-    map<int,map<int,double> >::iterator dmcurr;
-    
-    // loop over all master nodes in the DerivM-map of the active slave node
-    for (dmcurr=dmmap.begin();dmcurr!=dmmap.end();++dmcurr)
-    {
-      int gid = dmcurr->first;
-      DRT::Node* mnode = idiscret_->gNode(gid);
-      if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-      CNode* cmnode = static_cast<CNode*>(mnode);
-      double* mxi = cmnode->xspatial();
-      
-      // we need the dot product ns*xm of this node pair
-      double ndotx = 0.0;
-      for (int dim=0;dim<cnode->NumDof();++dim)
-        ndotx += n[dim]*mxi[dim];
-          
-      // compute S-matrix entry of the current active node / master node pair
-      map<int,double>& thisdmmap = cnode->GetDerivM(gid);
-      
-      // loop over all entries of the current derivative map
-      for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
-      {
-        int col = colcurr->first;
-        double val = ndotx*colcurr->second;
-        //cout << "ndotx=" << ndotx <<  " deriv=" << colcurr->second << endl;
-        //cout << "Assemble N_Mmortar: " << row << " " << col << " " << val << endl;
-        // do not assemble zeros into s matrix
-        if (abs(val)>1.0e-12) sglobal.Assemble(-val,row,col);
-      }
+      if (abs(val)>1.0e-12) sglobal.Assemble(val,row,col);  
     }
     
   } //for (int i=0;i<activenodes_->NumMyElements();++i)

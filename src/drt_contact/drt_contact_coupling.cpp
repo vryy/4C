@@ -1359,6 +1359,7 @@ bool CONTACT::Coupling::IntegrateOverlap2D(vector<double>& xiproj)
   // compute directional derivative of M and store into nodes
   // if CONTACTONEMORTARLOOP defined, then DerivM does linearization of M AND D matrices !!!
   integrator.DerivM(sele_,sxia,sxib,mele_,mxia,mxib);
+  integrator.DerivG(sele_,sxia,sxib,mele_,mxia,mxib);
     
   // do the two assemblies into the slave nodes
   // if CONTACTONEMORTARLOOP defined, then AssembleM does M AND D matrices !!!
@@ -3501,6 +3502,7 @@ bool CONTACT::Coupling::IntegrateCells3D()
     // linearization not yet implemented
 #else
     integrator.DerivM3D(sele_,mele_,Cells()[i]);
+    integrator.DerivG3D(sele_,mele_,Cells()[i]);
 #endif // #ifdef CONTACTAUXPLANE
  
     // do the two assemblies into the slave nodes
@@ -3566,6 +3568,7 @@ bool CONTACT::Coupling::IntegrateCells3D(vector<vector<double> >& testgps,
     // linearization not yet implemented
 #else
     integrator.DerivM3D(sele_,mele_,Cells()[i],printderiv);
+    integrator.DerivG3D(sele_,mele_,Cells()[i]);
 #endif // #ifdef CONTACTAUXPLANE
  
     // do the two assemblies into the slave nodes

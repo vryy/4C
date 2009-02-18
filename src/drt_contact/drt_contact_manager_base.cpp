@@ -1346,11 +1346,13 @@ void CONTACT::ManagerBase::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> 
   if (gidofs->NumGlobalElements()) kteffnew->Add(*kii,false,1.0,1.0);
   if (gidofs->NumGlobalElements()) kteffnew->Add(*kia,false,1.0,1.0);
   
-  // add matrix nmhata to keteffnew
-  if (gactiven_->NumGlobalElements()) kteffnew->Add(*nmhata,false,-1.0,1.0);
-
-  // add matrix n to kteffnew
-  if (gactiven_->NumGlobalElements()) kteffnew->Add(*nmatrix_,false,1.0,1.0);
+  // add matrices n and nmhata to kteffnew
+  // this is only done for the "NO full linearization" case
+  if (!fulllin)
+  {
+    if (gactiven_->NumGlobalElements()) kteffnew->Add(*nmatrix_,false,1.0,1.0);
+    if (gactiven_->NumGlobalElements()) kteffnew->Add(*nmhata,false,-1.0,1.0);
+  }
 
 #ifdef CONTACTRELVELMATERIAL
  
@@ -1382,7 +1384,7 @@ void CONTACT::ManagerBase::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> 
   // add full linearization terms to kteffnew
   if (fulllin)
   {
-   if (gactiven_->NumGlobalElements()) kteffnew->Add(*smatrix_,false,1.0,1.0);
+   if (gactiven_->NumGlobalElements()) kteffnew->Add(*smatrix_,false,-1.0,1.0);
    if (gstickt->NumGlobalElements()) kteffnew->Add(*linstickmatrix_,false,1.0,1.0);
   }
   
@@ -2076,15 +2078,10 @@ void CONTACT::ManagerBase::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   // gactive: nothing to do
   
 #ifdef CONTACTFDGAP
-  // FD check of weighted gap g derivatives
+  // FD check of weighted gap g derivatives (non-penetr. condition)
   for (int i=0; i<(int)interface_.size(); ++i)
   {
-    RCP<LINALG::SparseMatrix> deriv = rcp(new LINALG::SparseMatrix(*gactiven_,81));
-    deriv->Add(*nmatrix_,false,1.0,1.0);
-    deriv->Add(*smatrix_,false,1.0,1.0);
-    deriv->Add(*nmhata,false,-1.0,1.0);
-    deriv->Complete(*gsmdofs,*gactiven_);
-    cout << *deriv << endl;
+    cout << *smatrix_ << endl;
     interface_[i]->FDCheckGapDeriv();
   }
 #endif // #ifdef CONTACTFDGAP
@@ -2121,16 +2118,18 @@ void CONTACT::ManagerBase::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   if (gidofs->NumGlobalElements()) kteffnew->Add(*kii,false,1.0,1.0);
   if (gidofs->NumGlobalElements()) kteffnew->Add(*kia,false,1.0,1.0);
   
-  // add matrix nmhata to keteffnew
-  if (gactiven_->NumGlobalElements()) kteffnew->Add(*nmhata,false,-1.0,1.0);
-
-  // add matrix n to kteffnew
-  if (gactiven_->NumGlobalElements()) kteffnew->Add(*nmatrix_,false,1.0,1.0);
-  
+  // add matrices n and nmhata to kteffnew
+  // this is only done for the "NO full linearization" case
+  if (!fulllin)
+  {
+    if (gactiven_->NumGlobalElements()) kteffnew->Add(*nmatrix_,false,1.0,1.0);
+    if (gactiven_->NumGlobalElements()) kteffnew->Add(*nmhata,false,-1.0,1.0);
+  }
+ 
   // add full linearization terms to kteffnew
   if (fulllin)
   {
-   if (gactiven_->NumGlobalElements()) kteffnew->Add(*smatrix_,false,1.0,1.0);
+   if (gactiven_->NumGlobalElements()) kteffnew->Add(*smatrix_,false,-1.0,1.0);
    if (gactivet_->NumGlobalElements()) kteffnew->Add(*pmatrix_,false,-1.0,1.0);
   }
   

@@ -425,6 +425,15 @@ public:
      dserror("ERROR: GetDerivM: No map entry existing for given index");
     return derivm_[k];
   }
+  
+  /*!
+  \brief Return the 'DerivG' map of this node
+  
+  This map contains the directional derivatives of the node's
+  weighted gap entry g~ with respect to the slave/master displacements.
+  
+  */
+  virtual inline map<int,double>& GetDerivG() { return derivg_; }
     
   //@}
 
@@ -506,6 +515,7 @@ protected:
   vector<map<int,double> >      derivteta_;  // directional derivative of nodal tangent t_eta
   map<int,double>               derivd_;     // directional derivative of nodal D-matrix value
   map<int,map<int,double> >     derivm_;     // directional derivative of nodal M-matrix values
+  map<int,double>               derivg_;     // directional derivative of nodal weighted gap value
   
 
 }; // class CNode

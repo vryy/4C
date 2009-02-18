@@ -968,6 +968,7 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
     
     // reset nodal weighted gap
     node->Getg() = 1.0e12;
+    (node->GetDerivG()).clear();
 
     // reset feasible projection status
     node->HasProj() = false;
@@ -1160,6 +1161,7 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
       
       // reset nodal weighted gap
       node->Getg() = 1.0e12;
+      (node->GetDerivG()).clear();
 
       // reset feasible projection status
       node->HasProj() = false;
@@ -1384,6 +1386,7 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
       
       // reset nodal weighted gap
       node->Getg() = 1.0e12;
+      (node->GetDerivG()).clear();
 
       // reset feasible projection status
       node->HasProj() = false;
@@ -1607,6 +1610,7 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     
     // reset nodal weighted gap
     node->Getg() = 1.0e12;
+    (node->GetDerivG()).clear();
 
     // reset feasible projection status
     node->HasProj() = false;
@@ -1819,8 +1823,9 @@ void CONTACT::Interface::FDCheckGapDeriv()
       (node->GetDerivD()).clear();
       (node->GetDerivM()).clear();
       
-      // reset nodal weighted gap
+      // reset nodal weighted gap and derivative
       node->Getg() = 1.0e12;
+      (node->GetDerivG()).clear();
 
       // reset feasible projection status
       node->HasProj() = false;
@@ -2072,8 +2077,9 @@ void CONTACT::Interface::FDCheckGapDeriv()
       (node->GetDerivD()).clear();
       (node->GetDerivM()).clear();
       
-      // reset nodal weighted gap
+      // reset nodal weighted gap and derivative
       node->Getg() = 1.0e12;
+      (node->GetDerivG()).clear();
 
       // reset feasible projection status
       node->HasProj() = false;
@@ -2325,8 +2331,9 @@ void CONTACT::Interface::FDCheckGapDeriv()
     (node->GetDerivD()).clear();
     (node->GetDerivM()).clear();
     
-    // reset nodal weighted gap
+    // reset nodal weighted gap and derivative
     node->Getg() = 1.0e12;
+    (node->GetDerivG()).clear();
 
     // reset feasible projection status
     node->HasProj() = false;
@@ -2509,6 +2516,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
       
       // reset nodal weighted gap
       node->Getg() = 1.0e12;
+      (node->GetDerivG()).clear();
 
       // reset feasible projection status
       node->HasProj() = false;
@@ -2737,6 +2745,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
       
       // reset nodal weighted gap
       node->Getg() = 1.0e12;
+      (node->GetDerivG()).clear();
 
       // reset feasible projection status
       node->HasProj() = false;
@@ -2964,6 +2973,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     
     // reset nodal weighted gap
     node->Getg() = 1.0e12;
+    (node->GetDerivG()).clear();
 
     // reset feasible projection status
     node->HasProj() = false;
@@ -3135,6 +3145,7 @@ void CONTACT::Interface::FDCheckVertex3DDeriv(vector<vector<double> >& testv)
       
       // reset nodal weighted gap
       node->Getg() = 1.0e12;
+      (node->GetDerivG()).clear();
 
       // reset feasible projection status
       node->HasProj() = false;
@@ -3346,6 +3357,7 @@ void CONTACT::Interface::FDCheckVertex3DDeriv(vector<vector<double> >& testv)
       
       // reset nodal weighted gap
       node->Getg() = 1.0e12;
+      (node->GetDerivG()).clear();
 
       // reset feasible projection status
       node->HasProj() = false;
@@ -3557,6 +3569,7 @@ void CONTACT::Interface::FDCheckVertex3DDeriv(vector<vector<double> >& testv)
     
     // reset nodal weighted gap
     node->Getg() = 1.0e12;
+    (node->GetDerivG()).clear();
 
     // reset feasible projection status
     node->HasProj() = false;
@@ -3675,6 +3688,10 @@ void CONTACT::Interface::FDCheckGP3DDeriv(vector<vector<double> >& testgps,
   /*************************************/
   if (Dim()!=3) dserror("ERROR: FDCheckVertex3DDeriv called for 2D!");
   
+  cout << "\n*********************************************************************" << endl;
+  cout << "* WARNING: FDCheckGP3DDeriv only works for Tri3-Intcells with 6 GP! *" << endl;
+  cout << "*********************************************************************" << endl;
+  
   // get out of here if not participating in interface
   if (!lComm())
     return;
@@ -3743,6 +3760,7 @@ void CONTACT::Interface::FDCheckGP3DDeriv(vector<vector<double> >& testgps,
       
       // reset nodal weighted gap
       node->Getg() = 1.0e12;
+      (node->GetDerivG()).clear();
 
       // reset feasible projection status
       node->HasProj() = false;
@@ -4136,6 +4154,7 @@ void CONTACT::Interface::FDCheckGP3DDeriv(vector<vector<double> >& testgps,
       
       // reset nodal weighted gap
       node->Getg() = 1.0e12;
+      (node->GetDerivG()).clear();
 
       // reset feasible projection status
       node->HasProj() = false;
@@ -4529,6 +4548,7 @@ void CONTACT::Interface::FDCheckGP3DDeriv(vector<vector<double> >& testgps,
     
     // reset nodal weighted gap
     node->Getg() = 1.0e12;
+    (node->GetDerivG()).clear();
 
     // reset feasible projection status
     node->HasProj() = false;

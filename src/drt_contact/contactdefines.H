@@ -70,7 +70,7 @@ Maintainer: Alexander Popp
 /************************************************************************/
 
 // CONTACT SEARCH
-#define CONTACTCRITDIST 0.5      /* crit. distance for potential contact */
+#define CONTACTCRITDIST 2      /* crit. distance for potential contact */
 
 // CONTACT PROJECTION AND INTEGRATION (2D/3D)
 #define CONTACTMAXITER 10        /* max. no. iterations for local Newton */

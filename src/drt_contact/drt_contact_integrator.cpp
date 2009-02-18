@@ -1490,6 +1490,343 @@ RCP<Epetra_SerialDenseVector> CONTACT::Integrator::IntegrateG(CONTACT::CElement&
 }
 
 /*----------------------------------------------------------------------*
+ |  Compute directional derivative of gap (2D)                popp 02/09|                                  |
+ *----------------------------------------------------------------------*/
+void CONTACT::Integrator::DerivG(CONTACT::CElement& sele,
+                                 double& sxia, double& sxib,
+                                 CONTACT::CElement& mele,
+                                 double& mxia, double& mxib)
+{
+  //check for problem dimension
+  if (Dim()!=2) dserror("ERROR: 2D integration method called for non-2D problem");
+  
+  // *********************************************************************
+  // CAUTION: be careful with positive rotation direction ("Umlaufsinn")
+  // sxia -> belongs to sele.Nodes()[0]
+  // sxib -> belongs to sele.Nodes()[1]
+  // mxia -> belongs to mele.Nodes()[0]
+  // mxib -> belongs to mele.Nodes()[1]
+  // but slave and master have different positive rotation directions,
+  // counter-clockwise for slave side, clockwise for master side!
+  // this means that mxia belongs to sxib and vice versa!
+  // *********************************************************************
+  
+  bool startslave = false;
+  bool endslave = false;
+  typedef map<int,double>::const_iterator CI;
+  
+  if (sxia!=-1.0 && mxib!=1.0)
+    dserror("ERROR: First outer node is neither slave nor master node");
+  if (sxib!=1.0 && mxia!=-1.0)
+      dserror("ERROR: Second outer node is neither slave nor master node");
+  
+  if (sxia==-1.0) startslave = true;
+  else            startslave = false;
+  if (sxib==1.0) endslave = true;
+  else           endslave = false;
+  
+  // get directional derivatives of sxia, sxib, mxia, mxib
+  vector<map<int,double> > ximaps(4);
+  DerivXiAB(sele,sxia,sxib,mele,mxia,mxib,ximaps,startslave,endslave);
+    
+  // check input data
+  if ((!sele.IsSlave()) || (mele.IsSlave()))
+    dserror("ERROR: DerivG called on a wrong type of CElement pair!");
+  if ((sxia<-1.0) || (sxib>1.0))
+    dserror("ERROR: DeivG called with infeasible slave limits!");
+  if ((mxia<-1.0) || (mxib>1.0))
+      dserror("ERROR: DerivG called with infeasible master limits!");
+  
+  // number of nodes (slave, master)
+  int nrow = sele.NumNode();
+  int ncol = mele.NumNode();
+  
+  // create empty vectors for shape fct. evaluation
+  LINALG::SerialDenseVector sval(nrow);
+  LINALG::SerialDenseMatrix sderiv(nrow,1);
+  LINALG::SerialDenseMatrix ssecderiv(nrow,1); //only 2D here
+  LINALG::SerialDenseVector mval(ncol);
+  LINALG::SerialDenseMatrix mderiv(ncol,1);
+  LINALG::SerialDenseVector dualval(nrow);
+  LINALG::SerialDenseMatrix dualderiv(nrow,1);
+
+  // prepare directional derivative of dual shape functions
+  // this is only necessary for quadratic shape functions in 2D
+  vector<vector<map<int,double> > > dualmap(nrow,vector<map<int,double> >(nrow));
+  if (sele.Shape()==CElement::line3)
+    sele.DerivShapeDual(dualmap);
+    
+  // get slave and master nodal coords for Jacobian / GP evaluation
+  LINALG::SerialDenseMatrix scoord(3,sele.NumNode());
+  sele.GetNodalCoords(scoord);
+  LINALG::SerialDenseMatrix mcoord(3,mele.NumNode());
+  mele.GetNodalCoords(mcoord);
+  
+  // get slave element nodes themselves for normal evaluation
+  DRT::Node** mynodes = sele.Nodes();
+  if(!mynodes) dserror("ERROR: DerivG: Null pointer!");
+  
+  // loop over all Gauss points for integration
+  for (int gp=0;gp<nGP();++gp)
+  {
+    double eta[2] = {Coordinate(gp,0), 0.0};
+    double wgt = Weight(gp);
+    
+    double sxi[2] = {0.0, 0.0};
+    double mxi[2] = {0.0, 0.0};
+    
+    // coordinate transformation sxi->eta (slave CElement->Overlap)
+    sxi[0] = 0.5*(1-eta[0])*sxia + 0.5*(1+eta[0])*sxib;
+    
+    // project Gauss point onto master element
+    CONTACT::Projector projector(2);
+    projector.ProjectGaussPoint(sele,sxi,mele,mxi);
+    
+    // simple version (no Gauss point projection)
+    // double test[2] = {0.0, 0.0};
+    // test[0] = 0.5*(1-eta[0])*mxib + 0.5*(1+eta[0])*mxia;
+    // mxi[0]=test[0];
+    
+    // check GP projection
+    if ((mxi[0]<mxia) || (mxi[0]>mxib))
+    {
+      cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+      cout << "Gauss point: " << sxi[0] << " " << sxi[1] << endl;
+      cout << "Projection: " << mxi[0] << " " << mxi[1] << endl;
+      dserror("ERROR: DerivG: Gauss point projection failed!");
+    }
+    
+    // evaluate dual space shape functions (on slave element)
+    sele.EvaluateShapeDual(sxi,dualval,dualderiv,nrow);
+    
+    // evaluate trace space shape functions (on both elements)
+    sele.EvaluateShape(sxi,sval,sderiv,nrow);
+    sele.Evaluate2ndDerivShape(sxi,ssecderiv,nrow);
+    mele.EvaluateShape(mxi,mval,mderiv,ncol);
+    
+    // build interpolation of slave GP normal and coordinates
+    double gpn[3] = {0.0,0.0,0.0};
+    double sgpx[3] = {0.0, 0.0, 0.0};
+    for (int i=0;i<nrow;++i)
+    {
+      CNode* mycnode = static_cast<CNode*> (mynodes[i]);
+      gpn[0]+=sval[i]*mycnode->n()[0];
+      gpn[1]+=sval[i]*mycnode->n()[1];
+      gpn[2]+=sval[i]*mycnode->n()[2];
+            
+      sgpx[0]+=sval[i]*scoord(0,i);
+      sgpx[1]+=sval[i]*scoord(1,i);
+      sgpx[2]+=sval[i]*scoord(2,i);
+    }
+    
+    // normalize interpolated GP normal back to length 1.0 !!!
+    double length = sqrt(gpn[0]*gpn[0]+gpn[1]*gpn[1]+gpn[2]*gpn[2]);
+    if (length<1.0e-12) dserror("ERROR: IntegrateG: Divide by zero!");
+    
+    for (int i=0;i<3;++i)
+      gpn[i]/=length;
+    
+    // build interpolation of slave GP coordinates
+    double mgpx[3] = {0.0, 0.0, 0.0};
+    for (int i=0;i<ncol;++i)
+    {
+      mgpx[0]+=mval[i]*mcoord(0,i);
+      mgpx[1]+=mval[i]*mcoord(1,i);
+      mgpx[2]+=mval[i]*mcoord(2,i);
+    }
+    
+    // build normal gap at current GP
+    double gap = 0.0;
+    for (int i=0;i<3;++i)
+      gap+=(mgpx[i]-sgpx[i])*gpn[i];
+    
+#ifdef DEBUG
+    //cout << "GP gap: " << gap << endl;
+#endif // #ifdef DEBUG
+    
+    // evaluate the two slave side Jacobians
+    double dxdsxi = sele.Jacobian(sxi);
+    double dsxideta = -0.5*sxia + 0.5*sxib;
+    
+    // evaluate the derivative dxdsxidsxi = Jac,xi
+    double djacdxi[2] = {0.0, 0.0};
+    sele.DJacDXi(djacdxi,sxi,ssecderiv);
+    double dxdsxidsxi=djacdxi[0]; // only 2D here
+        
+    // evalute the GP slave coordinate derivatives
+    map<int,double> dsxigp;
+    for (CI p=ximaps[0].begin();p!=ximaps[0].end();++p)
+      dsxigp[p->first] += 0.5*(1-eta[0])*(p->second);
+    for (CI p=ximaps[1].begin();p!=ximaps[1].end();++p)
+      dsxigp[p->first] += 0.5*(1+eta[0])*(p->second);
+    
+    // evalute the GP master coordinate derivatives
+    map<int,double> dmxigp;
+    DerivXiGP(sele,mele,sxi[0],mxi[0],dsxigp,dmxigp);
+    
+    // simple version (no Gauss point projection)
+    //for (CI p=ximaps[2].begin();p!=ximaps[2].end();++p)
+    //  dmxigp[p->first] += 0.5*(1+eta[0])*(p->second);
+    //for (CI p=ximaps[3].begin();p!=ximaps[3].end();++p)
+    //  dmxigp[p->first] += 0.5*(1-eta[0])*(p->second);
+    
+    // evaluate the Jacobian derivative
+    map<int,double> testmap;
+    sele.DerivJacobian(sxi,testmap);
+    
+    //*************************************************************************
+    // evaluate the GP gap function derivatives
+    map<int,double> dgapgp;
+    
+    // we need the participating slave and master nodes
+    DRT::Node** snodes = sele.Nodes();
+    DRT::Node** mnodes = mele.Nodes();
+    vector<CONTACT::CNode*> scnodes(sele.NumNode());
+    vector<CONTACT::CNode*> mcnodes(mele.NumNode());
+    
+    for (int i=0;i<nrow;++i)
+    {
+      scnodes[i] = static_cast<CONTACT::CNode*>(snodes[i]);
+      if (!scnodes[i]) dserror("ERROR: DerivG: Null pointer!");
+    }
+    
+    for (int i=0;i<ncol;++i)
+    {
+      mcnodes[i] = static_cast<CONTACT::CNode*>(mnodes[i]);
+      if (!mcnodes[i]) dserror("ERROR: DerivG: Null pointer!");
+    }
+    
+    // build directional derivative of slave GP normal (non-unit)
+    map<int,double> dmap_nxsl_gp;
+    map<int,double> dmap_nysl_gp;
+    
+    for (int i=0;i<nrow;++i)
+    {
+      map<int,double>& dmap_nxsl_i = scnodes[i]->GetDerivN()[0];
+      map<int,double>& dmap_nysl_i = scnodes[i]->GetDerivN()[1];
+      
+      for (CI p=dmap_nxsl_i.begin();p!=dmap_nxsl_i.end();++p)
+        dmap_nxsl_gp[p->first] += sval[i]*(p->second);
+      for (CI p=dmap_nysl_i.begin();p!=dmap_nysl_i.end();++p)
+        dmap_nysl_gp[p->first] += sval[i]*(p->second);
+
+      for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
+      {
+        double valx =  sderiv(i,0)*scnodes[i]->n()[0];
+        dmap_nxsl_gp[p->first] += valx*(p->second);
+        double valy =  sderiv(i,0)*scnodes[i]->n()[1];
+        dmap_nysl_gp[p->first] += valy*(p->second);
+      }
+    }
+    
+    // build directional derivative of slave GP normal (unit)
+    map<int,double> dmap_nxsl_gp_unit;
+    map<int,double> dmap_nysl_gp_unit;
+    
+    double ll = length*length;
+    double sxsx = gpn[0]*gpn[0]*ll;
+    double sxsy = gpn[0]*gpn[1]*ll;
+    double sysy = gpn[1]*gpn[1]*ll;
+    
+    for (CI p=dmap_nxsl_gp.begin();p!=dmap_nxsl_gp.end();++p)
+    {
+      dmap_nxsl_gp_unit[p->first] += 1/length*(p->second);
+      dmap_nxsl_gp_unit[p->first] -= 1/(length*length*length)*sxsx*(p->second);
+      dmap_nysl_gp_unit[p->first] -= 1/(length*length*length)*sxsy*(p->second);
+    }
+    
+    for (CI p=dmap_nysl_gp.begin();p!=dmap_nysl_gp.end();++p)
+    {
+      dmap_nysl_gp_unit[p->first] += 1/length*(p->second);
+      dmap_nysl_gp_unit[p->first] -= 1/(length*length*length)*sysy*(p->second);
+      dmap_nxsl_gp_unit[p->first] -= 1/(length*length*length)*sxsy*(p->second);
+    }
+      
+    // add everything to dgapgp
+    for (CI p=dmap_nxsl_gp_unit.begin();p!=dmap_nxsl_gp_unit.end();++p)
+      dgapgp[p->first] += (mgpx[0]-sgpx[0]) * (p->second);
+    
+    for (CI p=dmap_nysl_gp_unit.begin();p!=dmap_nysl_gp_unit.end();++p)
+      dgapgp[p->first] += (mgpx[1]-sgpx[1]) * (p->second);
+    
+    for (int z=0;z<nrow;++z)
+      for (int k=0;k<2;++k)
+      {
+        dgapgp[scnodes[z]->Dofs()[k]] -= sval[z] * gpn[k];
+        
+        for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
+          dgapgp[p->first] -= gpn[k] * sderiv(z,0) * scnodes[z]->xspatial()[k] * (p->second);  
+      }
+    
+    for (int z=0;z<ncol;++z)
+      for (int k=0;k<2;++k)
+      {
+        dgapgp[mcnodes[z]->Dofs()[k]] += mval[z] * gpn[k];
+        
+        for (CI p=dmxigp.begin();p!=dmxigp.end();++p)
+          dgapgp[p->first] += gpn[k] * mderiv(z,0) * mcnodes[z]->xspatial()[k] * (p->second);   
+      }
+    
+    //*************************************************************************
+    
+    // evaluate all parts of DerivG
+    //********************************************************************
+    DRT::Node** mynodes = sele.Nodes();
+    if (!mynodes) dserror("ERROR: DerivG: Null pointer!");
+        
+    for (int j=0;j<nrow;++j)
+    {
+      CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(mynodes[j]);
+      if (!mycnode) dserror("ERROR: DerivG: Null pointer!");
+            
+      double fac = 0.0;
+      
+      // get the corresponding map as a reference
+      map<int,double>& dgmap = mycnode->GetDerivG();
+      
+      // (1) Lin(Phi) - dual shape functions
+      for (int m=0;m<nrow;++m)
+      {
+        fac = wgt*sval[m]*gap*dsxideta*dxdsxi;
+        for (CI p=dualmap[j][m].begin();p!=dualmap[j][m].end();++p)
+          dgmap[p->first] += fac*(p->second);
+      }
+      
+      // (2) Lin(Phi) - slave GP coordinates
+      fac = wgt*dualderiv(j,0)*gap*dsxideta*dxdsxi;
+      for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
+        dgmap[p->first] += fac*(p->second);
+      
+      // (3) Lin(g) - gap function
+      fac = wgt*dualval[j]*dsxideta*dxdsxi;
+      for (CI p=dgapgp.begin();p!=dgapgp.end();++p)
+        dgmap[p->first] += fac*(p->second);
+      
+      // (4) Lin(dsxideta) - segment end coordinates
+      fac = wgt*dualval[j]*gap*dxdsxi;
+      for (CI p=ximaps[0].begin();p!=ximaps[0].end();++p)
+        dgmap[p->first] -= 0.5*fac*(p->second);
+      for (CI p=ximaps[1].begin();p!=ximaps[1].end();++p)
+        dgmap[p->first] += 0.5*fac*(p->second);
+      
+      // (5) Lin(dxdsxi) - slave GP Jacobian
+      fac = wgt*dualval[j]*gap*dsxideta;
+      for (CI p=testmap.begin();p!=testmap.end();++p)
+        dgmap[p->first] += fac*(p->second);
+      
+      // (6) Lin(dxdsxi) - slave GP coordinates
+      fac = wgt*dualval[j]*gap*dsxideta*dxdsxidsxi;
+      for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
+        dgmap[p->first] += fac*(p->second);
+    }
+    //********************************************************************
+      
+  } // for (int gp=0;gp<nGP();++gp)
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  Integrate M on slave / master integration cell (3D)       popp 11/08|
  |  This method integrates a slave side function (dual shape fct.)      |
  |  and a master side function (standard shape fct.) on a given tri3    |
@@ -2492,6 +2829,389 @@ RCP<Epetra_SerialDenseVector> CONTACT::Integrator::IntegrateG3D(
   } // for (int gp=0;gp<nGP();++gp)
   
   return gseg;
+}
+
+/*----------------------------------------------------------------------*
+ |  Compute directional derivative of gap g~ (3D)             popp 02/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::Integrator::DerivG3D(CONTACT::CElement& sele,
+                                   CONTACT::CElement& mele,
+                                   RCP<CONTACT::Intcell> cell)
+{
+  //check for problem dimension
+  if (Dim()!=3) dserror("ERROR: 3D integration method called for non-3D problem");
+ 
+  // discretization type of master element
+  DRT::Element::DiscretizationType dt = mele.Shape();
+    
+  // check input data
+  if ((!sele.IsSlave()) || (mele.IsSlave()))
+    dserror("ERROR: DerivG3D called on a wrong type of CElement pair!");
+  if (cell==null)
+      dserror("ERROR: DerivG3D called without integration cell");
+  
+  // number of nodes
+  int nrow = sele.NumNode();
+  int ncol = mele.NumNode();
+
+  // create empty vectors for shape fct. evaluation
+  LINALG::SerialDenseVector sval(nrow);
+  LINALG::SerialDenseMatrix sderiv(nrow,2,true);
+  LINALG::SerialDenseVector mval(ncol);
+  LINALG::SerialDenseMatrix mderiv(ncol,2,true);
+  LINALG::SerialDenseVector dualval(nrow);
+  LINALG::SerialDenseMatrix dualderiv(nrow,2,true);
+  LINALG::SerialDenseMatrix ssecderiv(nrow,3);
+
+  // prepare directional derivative of dual shape functions
+  // this is necessary for all slave element types except tri3
+  typedef map<int,double>::const_iterator CI;
+  bool duallin = false;
+  vector<vector<map<int,double> > > dualmap(nrow,vector<map<int,double> >(nrow));
+  if (sele.Shape()!=CElement::tri3)
+  {
+    duallin = true;
+    sele.DerivShapeDual(dualmap);
+  }
+    
+  // get slave and master nodal coords for Jacobian / GP evaluation
+  LINALG::SerialDenseMatrix scoord(3,sele.NumNode());
+  sele.GetNodalCoords(scoord);
+  LINALG::SerialDenseMatrix mcoord(3,mele.NumNode());
+  mele.GetNodalCoords(mcoord);
+  
+  // get slave element nodes themselves for normal evaluation
+  DRT::Node** mynodes = sele.Nodes();
+  if(!mynodes) dserror("ERROR: IntegrateG3D: Null pointer!");
+  
+  // loop over all Gauss points for integration
+  for (int gp=0;gp<nGP();++gp)
+  {
+    double eta[2] = {Coordinate(gp,0), Coordinate(gp,1)};
+    double wgt = Weight(gp);
+    
+    // note that the third component of sxi is necessary!
+    // (although it will always be 0.0 of course)
+    double tempsxi[3] = {0.0, 0.0, 0.0};
+    double sxi[2] = {0.0, 0.0};
+    double mxi[2] = {0.0, 0.0};
+    double projalpha = 0.0;
+    
+    // get Gauss point in slave element coordinates
+    cell->LocalToGlobal(eta,tempsxi,0);
+    sxi[0] = tempsxi[0];
+    sxi[1] = tempsxi[1];
+    
+    // project Gauss point onto master element
+    CONTACT::Projector projector(3);
+    projector.ProjectGaussPoint3D(sele,sxi,mele,mxi,projalpha);
+
+    // check GP projection
+    double tol = 0.01;
+    if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
+    {
+      if (mxi[0]<-1.0-tol || mxi[1]<-1.0-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol)
+      {
+        cout << "\n***Warning: IntegrateG3D: Gauss point projection outside!";
+        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+        cout << "Gauss point: " << sxi[0] << " " << sxi[1] << endl;
+        cout << "Projection: " << mxi[0] << " " << mxi[1] << endl;
+      }
+    }
+    else
+    {
+      if (mxi[0]<-tol || mxi[1]<-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol || mxi[0]+mxi[1]>1.0+2*tol)
+      {
+        cout << "\n***Warning: IntegrateG3D: Gauss point projection outside!";
+        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+        cout << "Gauss point: " << sxi[0] << " " << sxi[1] << endl;
+        cout << "Projection: " << mxi[0] << " " << mxi[1] << endl;
+      }
+    }
+        
+    // evaluate dual space shape functions (on slave element)
+    sele.EvaluateShapeDual(sxi,dualval,dualderiv,nrow);
+    
+    // evaluate trace space shape functions (on both elements)
+    sele.EvaluateShape(sxi,sval,sderiv,nrow);
+    sele.Evaluate2ndDerivShape(sxi,ssecderiv,nrow);
+    mele.EvaluateShape(mxi,mval,mderiv,ncol);
+    
+    // build interpolation of slave GP normal and coordinates
+    double gpn[3] = {0.0,0.0,0.0};
+    double sgpx[3] = {0.0, 0.0, 0.0};
+    for (int i=0;i<nrow;++i)
+    {
+      CNode* mycnode = static_cast<CNode*> (mynodes[i]);
+      gpn[0]+=sval[i]*mycnode->n()[0];
+      gpn[1]+=sval[i]*mycnode->n()[1];
+      gpn[2]+=sval[i]*mycnode->n()[2];
+            
+      sgpx[0]+=sval[i]*scoord(0,i);
+      sgpx[1]+=sval[i]*scoord(1,i);
+      sgpx[2]+=sval[i]*scoord(2,i);
+    }
+    
+    // normalize interpolated GP normal back to length 1.0 !!!
+    double length = sqrt(gpn[0]*gpn[0]+gpn[1]*gpn[1]+gpn[2]*gpn[2]);
+    if (length<1.0e-12) dserror("ERROR: DerivG3D: Divide by zero!");
+    
+    for (int i=0;i<3;++i)
+      gpn[i]/=length;
+    
+    // build interpolation of master GP coordinates
+    double mgpx[3] = {0.0, 0.0, 0.0};
+    for (int i=0;i<ncol;++i)
+    {
+      mgpx[0]+=mval[i]*mcoord(0,i);
+      mgpx[1]+=mval[i]*mcoord(1,i);
+      mgpx[2]+=mval[i]*mcoord(2,i);
+    }
+    
+    // build normal gap at current GP
+    double gap = 0.0;
+    for (int i=0;i<3;++i)
+      gap+=(mgpx[i]-sgpx[i])*gpn[i];
+    
+#ifdef DEBUG
+    //cout << "GP gap: " << gap << endl;
+#endif // #ifdef DEBUG
+    
+    // evaluate the two Jacobians (int cell and slave ele)
+    double jaccell = cell->Jacobian(eta);
+    double jacslave = sele.Jacobian(sxi);
+
+    // evaluate the derivative djacdxi = (Jac,xi , Jac,eta)
+    double djacdxi[2] = {0.0, 0.0};
+    sele.DJacDXi(djacdxi,sxi,ssecderiv);
+    
+    // evaluate the slave Jacobian derivative
+    map<int,double> jacslavemap;
+    sele.DerivJacobian(sxi,jacslavemap);
+    
+    // evaluate the intcell Jacobian derivative
+    // these are pre-factors for intcell vertex coordinate linearizations
+    vector<double> jacintcellvec(2*(cell->NumVertices()));
+    cell->DerivJacobian(eta,jacintcellvec);
+    
+    // evalute the GP slave coordinate derivatives
+    vector<map<int,double> > dsxigp(2);
+    LINALG::SerialDenseVector svalcell(nrow);
+    LINALG::SerialDenseMatrix sderivcell(nrow,2,true);
+    cell->EvaluateShape(eta,svalcell,sderivcell);
+    
+    for (int v=0;v<cell->NumVertices();++v)
+    {
+      for (CI p=(cell->GetDerivVertex(v))[0].begin();p!=(cell->GetDerivVertex(v))[0].end();++p)
+        dsxigp[0][p->first] += svalcell[v] * (p->second);
+      for (CI p=(cell->GetDerivVertex(v))[1].begin();p!=(cell->GetDerivVertex(v))[1].end();++p)
+        dsxigp[1][p->first] += svalcell[v] * (p->second);
+    }
+    
+    // evalute the GP master coordinate derivatives
+    vector<map<int,double> > dmxigp(2);
+    DerivXiGP3D(sele,mele,sxi,mxi,dsxigp,dmxigp,projalpha);
+        
+    //*************************************************************************
+    // evaluate the GP gap function derivatives
+    map<int,double> dgapgp;
+    
+    // we need the participating slave and master nodes
+    DRT::Node** snodes = sele.Nodes();
+    DRT::Node** mnodes = mele.Nodes();
+    vector<CONTACT::CNode*> scnodes(sele.NumNode());
+    vector<CONTACT::CNode*> mcnodes(mele.NumNode());
+    
+    for (int i=0;i<nrow;++i)
+    {
+      scnodes[i] = static_cast<CONTACT::CNode*>(snodes[i]);
+      if (!scnodes[i]) dserror("ERROR: DerivG3D: Null pointer!");
+    }
+    
+    for (int i=0;i<ncol;++i)
+    {
+      mcnodes[i] = static_cast<CONTACT::CNode*>(mnodes[i]);
+      if (!mcnodes[i]) dserror("ERROR: DerivG3D: Null pointer!");
+    }
+    
+    // build directional derivative of slave GP normal (non-unit)
+    map<int,double> dmap_nxsl_gp;
+    map<int,double> dmap_nysl_gp;
+    map<int,double> dmap_nzsl_gp;
+    
+    for (int i=0;i<nrow;++i)
+    {
+      map<int,double>& dmap_nxsl_i = scnodes[i]->GetDerivN()[0];
+      map<int,double>& dmap_nysl_i = scnodes[i]->GetDerivN()[1];
+      map<int,double>& dmap_nzsl_i = scnodes[i]->GetDerivN()[2];
+      
+      for (CI p=dmap_nxsl_i.begin();p!=dmap_nxsl_i.end();++p)
+        dmap_nxsl_gp[p->first] += sval[i]*(p->second);
+      for (CI p=dmap_nysl_i.begin();p!=dmap_nysl_i.end();++p)
+        dmap_nysl_gp[p->first] += sval[i]*(p->second);
+      for (CI p=dmap_nzsl_i.begin();p!=dmap_nzsl_i.end();++p)
+        dmap_nzsl_gp[p->first] += sval[i]*(p->second);
+      
+      for (CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
+      {
+        double valx =  sderiv(i,0)*scnodes[i]->n()[0];
+        dmap_nxsl_gp[p->first] += valx*(p->second);
+        double valy =  sderiv(i,0)*scnodes[i]->n()[1];
+        dmap_nysl_gp[p->first] += valy*(p->second);
+        double valz =  sderiv(i,0)*scnodes[i]->n()[2];
+        dmap_nzsl_gp[p->first] += valz*(p->second);
+      }
+      
+      for (CI p=dsxigp[1].begin();p!=dsxigp[1].end();++p)
+      {
+        double valx =  sderiv(i,1)*scnodes[i]->n()[0];
+        dmap_nxsl_gp[p->first] += valx*(p->second);
+        double valy =  sderiv(i,1)*scnodes[i]->n()[1];
+        dmap_nysl_gp[p->first] += valy*(p->second);
+        double valz =  sderiv(i,1)*scnodes[i]->n()[2];
+        dmap_nzsl_gp[p->first] += valz*(p->second);
+      }
+    }
+    
+    // build directional derivative of slave GP normal (unit)
+    map<int,double> dmap_nxsl_gp_unit;
+    map<int,double> dmap_nysl_gp_unit;
+    map<int,double> dmap_nzsl_gp_unit;
+    
+    double ll = length*length;
+    double sxsx = gpn[0]*gpn[0]*ll;
+    double sxsy = gpn[0]*gpn[1]*ll;
+    double sxsz = gpn[0]*gpn[2]*ll;
+    double sysy = gpn[1]*gpn[1]*ll;
+    double sysz = gpn[1]*gpn[2]*ll;
+    double szsz = gpn[2]*gpn[2]*ll;
+    
+    for (CI p=dmap_nxsl_gp.begin();p!=dmap_nxsl_gp.end();++p)
+    {
+      dmap_nxsl_gp_unit[p->first] += 1/length*(p->second);
+      dmap_nxsl_gp_unit[p->first] -= 1/(length*length*length)*sxsx*(p->second);
+      dmap_nysl_gp_unit[p->first] -= 1/(length*length*length)*sxsy*(p->second);
+      dmap_nzsl_gp_unit[p->first] -= 1/(length*length*length)*sxsz*(p->second);
+    }
+    
+    for (CI p=dmap_nysl_gp.begin();p!=dmap_nysl_gp.end();++p)
+    {
+      dmap_nysl_gp_unit[p->first] += 1/length*(p->second);
+      dmap_nysl_gp_unit[p->first] -= 1/(length*length*length)*sysy*(p->second);
+      dmap_nxsl_gp_unit[p->first] -= 1/(length*length*length)*sxsy*(p->second);
+      dmap_nzsl_gp_unit[p->first] -= 1/(length*length*length)*sysz*(p->second);
+    }
+    
+    for (CI p=dmap_nzsl_gp.begin();p!=dmap_nzsl_gp.end();++p)
+    {
+      dmap_nzsl_gp_unit[p->first] += 1/length*(p->second);
+      dmap_nzsl_gp_unit[p->first] -= 1/(length*length*length)*szsz*(p->second);
+      dmap_nxsl_gp_unit[p->first] -= 1/(length*length*length)*sxsz*(p->second);
+      dmap_nysl_gp_unit[p->first] -= 1/(length*length*length)*sysz*(p->second);
+    }
+      
+    // add everything to dgapgp
+    for (CI p=dmap_nxsl_gp_unit.begin();p!=dmap_nxsl_gp_unit.end();++p)
+      dgapgp[p->first] += (mgpx[0]-sgpx[0]) * (p->second);
+    
+    for (CI p=dmap_nysl_gp_unit.begin();p!=dmap_nysl_gp_unit.end();++p)
+      dgapgp[p->first] += (mgpx[1]-sgpx[1]) * (p->second);
+
+    for (CI p=dmap_nzsl_gp_unit.begin();p!=dmap_nzsl_gp_unit.end();++p)
+      dgapgp[p->first] += (mgpx[2]-sgpx[2]) *(p->second);
+    
+    for (int z=0;z<nrow;++z)
+      for (int k=0;k<3;++k)
+      {
+        dgapgp[scnodes[z]->Dofs()[k]] -= sval[z] * gpn[k];
+        
+        for (CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
+          dgapgp[p->first] -= gpn[k] * sderiv(z,0) * scnodes[z]->xspatial()[k] * (p->second);
+        
+        for (CI p=dsxigp[1].begin();p!=dsxigp[1].end();++p)
+          dgapgp[p->first] -= gpn[k] * sderiv(z,1) * scnodes[z]->xspatial()[k] * (p->second);    
+      }
+    
+    for (int z=0;z<ncol;++z)
+      for (int k=0;k<3;++k)
+      {
+        dgapgp[mcnodes[z]->Dofs()[k]] += mval[z] * gpn[k];
+        
+        for (CI p=dmxigp[0].begin();p!=dmxigp[0].end();++p)
+          dgapgp[p->first] += gpn[k] * mderiv(z,0) * mcnodes[z]->xspatial()[k] * (p->second);
+        
+        for (CI p=dmxigp[1].begin();p!=dmxigp[1].end();++p)
+          dgapgp[p->first] += gpn[k] * mderiv(z,1) * mcnodes[z]->xspatial()[k] * (p->second);    
+      } 
+    //*************************************************************************
+
+    // evaluate all parts of DerivG
+    //********************************************************************
+    DRT::Node** mynodes = sele.Nodes();
+    if (!mynodes) dserror("ERROR: DerivG3D: Null pointer!");
+    
+    // contributions to DerivG_j
+    for (int j=0;j<nrow;++j)
+    {
+      CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(mynodes[j]);
+      if (!mycnode) dserror("ERROR: DerivG3D: Null pointer!");
+            
+      double fac = 0.0;
+      
+      // get the corresponding map as a reference
+      map<int,double>& dgmap = mycnode->GetDerivG();
+      
+      // (1) Lin(Phi) - dual shape functions
+      for (int m=0;m<nrow;++m)
+      {
+        fac = wgt*sval[m]*gap*jaccell*jacslave;
+        for (CI p=dualmap[j][m].begin();p!=dualmap[j][m].end();++p)
+          dgmap[p->first] += fac*(p->second);
+      }
+      
+      // (2) Lin(Phi) - slave GP coordinates
+      fac = wgt*dualderiv(j,0)*gap*jaccell*jacslave;
+      for (CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
+        dgmap[p->first] += fac*(p->second);
+      fac = wgt*dualderiv(j,1)*gap*jaccell*jacslave;
+      for (CI p=dsxigp[1].begin();p!=dsxigp[1].end();++p)
+        dgmap[p->first] += fac*(p->second);
+      
+      // (3) Lin(g) - gap function
+      fac = wgt*dualval[j]*jaccell*jacslave;
+      for (CI p=dgapgp.begin();p!=dgapgp.end();++p)
+        dgmap[p->first] += fac*(p->second);
+      
+      // (4) Lin(dsxideta) - intcell GP Jacobian
+      fac = wgt*dualval[j]*gap*jacslave;
+      for (int m=0;m<(int)jacintcellvec.size();++m)
+      {
+        int v = m/2;   // which vertex?
+        int dof = m%2; // which dof?
+        for (CI p=(cell->GetDerivVertex(v))[dof].begin();p!=(cell->GetDerivVertex(v))[dof].end();++p)
+          dgmap[p->first] += fac * jacintcellvec[m] * (p->second);
+      }
+      
+      // (5) Lin(dxdsxi) - slave GP Jacobian
+      fac = wgt*dualval[j]*gap*jaccell;
+      for (CI p=jacslavemap.begin();p!=jacslavemap.end();++p)
+        dgmap[p->first] += fac*(p->second);
+              
+      // (6) Lin(dxdsxi) - slave GP coordinates
+      fac = wgt*dualval[j]*gap*jaccell*djacdxi[0];
+      for (CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
+        dgmap[p->first] += fac*(p->second);
+      fac = wgt*dualval[j]*gap*jaccell*djacdxi[1];
+      for (CI p=dsxigp[1].begin();p!=dsxigp[1].end();++p)
+        dgmap[p->first] += fac*(p->second);
+    }
+    //********************************************************************
+    
+  } // for (int gp=0;gp<nGP();++gp)
+    
+  return;
 }
 
 /*----------------------------------------------------------------------*

@@ -202,6 +202,14 @@ public:
                                            double& mxia, double& mxib);
   
   /*!
+  \brief Compute directional derivative of weighted gap g~ on
+         a 1D slave / master overlap
+        
+  */
+  void DerivG(CONTACT::CElement& sele, double& sxia, double& sxib,
+              CONTACT::CElement& mele, double& mxia, double& mxib);
+    
+  /*!
   \brief Integrate Mortar matrix M on a 2D slave / master integration cell
         
   */
@@ -251,6 +259,15 @@ public:
   RCP<Epetra_SerialDenseVector> IntegrateG3D(CONTACT::CElement& sele,
                                              CONTACT::CElement& mele,
                                              RCP<CONTACT::Intcell> cell);
+  
+  /*!
+  \brief Compute directional deriv. of weighted gap g~ on a 2D slave /
+         master integration cell
+        
+  */
+  void DerivG3D(CONTACT::CElement& sele, CONTACT::CElement& mele,
+                RCP<CONTACT::Intcell> cell);
+    
     
   /*!
   \brief Integrate weighted gap g~ on a 2D slave / master integration cell
