@@ -183,6 +183,7 @@ Input/contact_hertz_linstatic.dat                       x        x        x     
 Input/contact1.dat                                      x        x        x        -        -        -
 Input/contact1_lin.dat                                  x        x        x        -        -        -
 Input/contact_friction_tresca.dat                       x        x        x        -        -        -
+Input/contact3D_lin.dat                                 x        x        x        -        -        -
 Input/locsys2D.dat                                      x        x        x        -        -        -
 Input/locsys3D.dat                                      x        x        x        -        -        -
 Input/locsys3D_sti.dat                                  x        x        x        x        -        -
