@@ -17,6 +17,7 @@ Maintainer: Axel Gerstenberger
 #define DOF_MANAGEMENT_H
 
 #include "dofkey.H"
+#include "element_ansatz.H"
 
 namespace XFEM
 {
@@ -33,7 +34,10 @@ namespace XFEM
       explicit DofManager();
       
       //! constructor
-      explicit DofManager(const RCP<XFEM::InterfaceHandle>& ih, const bool DLM_condensation);
+      explicit DofManager(
+          const RCP<XFEM::InterfaceHandle>& ih,
+          const XFEM::ElementAnsatz&  element_ansatz,
+          const bool DLM_condensation);
       
       //! copy constructor
       explicit DofManager(const XFEM::DofManager& dofman);

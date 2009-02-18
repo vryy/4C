@@ -19,10 +19,21 @@ Maintainer: Axel Gerstenberger
 
 #include "../drt_xfem/dof_management.H"
 #include "../drt_xfem/interfacexfsi.H"
+#include "../drt_xfem/element_ansatz.H"
 
 
 namespace XFEM
 {
+
+  bool EnrichmentInDofSet(
+    const XFEM::Enrichment::EnrType     testenr,
+    const std::set<XFEM::FieldEnr>&     fieldenrset);
+
+
+  bool EnrichmentInNodalDofSet(
+    const int                                           gid,
+    const XFEM::Enrichment::EnrType                     testenr,
+    const std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet);
 
 
   //! apply nodal enrichments to intersected element
@@ -46,9 +57,9 @@ namespace XFEM
   //! apply element enrichments to intersected element
   void ApplyElementEnrichments(
       const DRT::Element*                           xfemele,
+      const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>&  element_ansatz,
       const XFEM::InterfaceHandle&                  ih,
       const int&                                    label,
-      const bool                                    DLM_condensation,
       std::set<XFEM::FieldEnr>&                     enrfieldset
       );
   
@@ -56,9 +67,9 @@ namespace XFEM
   //! apply enrichments and add this info to maps
   void ApplyVoidEnrichmentForElement(
       const DRT::Element*                           xfemele,
+      const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>&  element_ansatz,
       const XFEM::InterfaceHandle&                  ih,
       const int&                                    label,
-      const bool                                    DLM_condensation,
       std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet,
       std::map<int, std::set<XFEM::FieldEnr> >&     elementalDofs
       );
@@ -72,6 +83,7 @@ namespace XFEM
       const XFEM::InterfaceHandle&                      ih,                  ///< interface information
       std::map<int, const std::set<XFEM::FieldEnr> >&   nodalDofSetFinal,    ///< enriched fields per node
       std::map<int, const std::set<XFEM::FieldEnr> >&   elementalDofsFinal,  ///< enriched fields per element
+      const XFEM::ElementAnsatz&  elementAnsatz,
       const bool DLM_condensation
       );
   

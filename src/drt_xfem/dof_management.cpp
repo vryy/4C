@@ -31,10 +31,13 @@ Maintainer: Axel Gerstenberger
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-XFEM::DofManager::DofManager(const RCP<XFEM::InterfaceHandle>& ih, const bool DLM_condensation) :
+XFEM::DofManager::DofManager(
+    const RCP<XFEM::InterfaceHandle>& ih,
+    const XFEM::ElementAnsatz&  element_ansatz,
+    const bool DLM_condensation) :
   ih_(ih)
 {
-  XFEM::createDofMap(*ih, nodalDofSet_, elementalDofs_, DLM_condensation);
+  XFEM::createDofMap(*ih, nodalDofSet_, elementalDofs_, element_ansatz, DLM_condensation);
   
   std::set<XFEM::Enrichment> unique_enrichments = GatherUniqueEnrichments();
 

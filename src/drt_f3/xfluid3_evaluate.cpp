@@ -384,8 +384,9 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
       const bool DLM_condensation = params.get<bool>("DLM_condensation");
       
+      const XFLUID::FluidElementAnsatz elementAnsatz;
       const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_empty;
-      const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_filled((XFLUID::getElementAnsatz(this->Shape())));
+      const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_filled(elementAnsatz.getElementAnsatz(this->Shape()));
       
       // always build the eledofman that fits to the global dofs
       // problem: tight connectivity to xdofmapcreation
@@ -417,7 +418,14 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
             const bool anothervoidenrichment_in_set = VoidEnrichmentInElementDofSet(Id(), enrfieldset);
             if (not anothervoidenrichment_in_set)
             {
-              XFEM::ApplyElementEnrichments(this, *ih_, label, false, enrfieldset);
+              if (not DLM_condensation)
+              {
+                XFEM::ApplyElementEnrichments(this, element_ansatz_filled, *ih_, label, enrfieldset);                
+              }
+              else
+              {
+                XFEM::ApplyElementEnrichments(this, element_ansatz_empty, *ih_, label, enrfieldset);
+              }
             }
           }
         };

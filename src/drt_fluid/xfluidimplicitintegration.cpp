@@ -35,6 +35,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/dof_management.H"
 #include "../drt_xfem/dof_distribution_switcher.H"
 #include "../drt_xfem/enrichment_utils.H"
+#include "../drt_xfem/element_ansatz.H"
 #include "../drt_geometry/position_array.H"
 #include "fluid_utils.H"
 #include "../drt_f3/xfluid3_interpolation.H"
@@ -101,7 +102,9 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   // intersection with empty cutter will result in a complete fluid domain with no holes or intersections
   Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih = rcp(new XFEM::InterfaceHandleXFSI(discret_,emptyboundarydis_,0,params_.get<bool>("EXP_INTERSECTION")));
   // apply enrichments
-  Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih,params_.get<bool>("DLM_condensation")));
+  
+  const XFLUID::FluidElementAnsatz elementAnsatz;
+  Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih, elementAnsatz, params_.get<bool>("DLM_condensation")));
   // tell elements about the dofs and the integration
   {
     ParameterList eleparams;
@@ -465,7 +468,8 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   ih->toGmsh(step_);
 
   // apply enrichments
-  const Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih,params_.get<bool>("DLM_condensation")));
+  const XFLUID::FluidElementAnsatz elementAnsatz;
+  const Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih,elementAnsatz,params_.get<bool>("DLM_condensation")));
 
   // save to be able to plot Gmsh stuff in Output()
   dofmanagerForOutput_ = dofmanager;
@@ -648,36 +652,36 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     f.close();
   }
 
-  if (myrank_ == 0 && ivelcoln->MyLength() >= 3)
-  {
-    std::ofstream f;
-    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
-                            + ".outifaceveln.txt";
-    if (step_ <= 1)
-      f.open(fname.c_str(),std::fstream::trunc);
-    else
-      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+//  if (myrank_ == 0 && ivelcoln->MyLength() >= 3)
+//  {
+//    std::ofstream f;
+//    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
+//                            + ".outifaceveln.txt";
+//    if (step_ <= 1)
+//      f.open(fname.c_str(),std::fstream::trunc);
+//    else
+//      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+//
+//    f << time_ << " " << (*ivelcoln)[0] << "  " << "\n";
+//
+//    f.close();
+//  }
 
-    f << time_ << " " << (*ivelcoln)[0] << "  " << "\n";
-
-    f.close();
-  }
-
-  if (myrank_ == 0 && ivelcolnp->MyLength() >= 3)
-  {
-    std::ofstream f;
-    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
-                            + ".outifaceanalytischvel.txt";
-    if (step_ <= 1)
-      f.open(fname.c_str(),std::fstream::trunc);
-    else
-      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-
-    const double periodendauer = 10.0;
-    f << time_ << " " << (-1.5*std::sin(2.0*time_* PI/periodendauer) * PI/periodendauer) << "\n";
-
-    f.close();
-  }
+//  if (myrank_ == 0 && ivelcolnp->MyLength() >= 3)
+//  {
+//    std::ofstream f;
+//    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
+//                            + ".outifaceanalytischvel.txt";
+//    if (step_ <= 1)
+//      f.open(fname.c_str(),std::fstream::trunc);
+//    else
+//      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+//
+//    const double periodendauer = 10.0;
+//    f << time_ << " " << (-1.5*std::sin(2.0*time_* PI/periodendauer) * PI/periodendauer) << "\n";
+//
+//    f.close();
+//  }
 
 
   // action for elements
@@ -1352,10 +1356,10 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh() const
         static LINALG::Matrix<3,27> xyze_xfemElement;
         GEO::fillInitialPositionArray(actele,xyze_xfemElement);
 
-        const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(XFLUID::getElementAnsatz(actele->Shape()));
+        const XFLUID::FluidElementAnsatz elementAnsatz;
 
         // create local copy of information about dofs
-        const XFEM::ElementDofManager eledofman(*actele,element_ansatz,*dofmanagerForOutput_);
+        const XFEM::ElementDofManager eledofman(*actele,elementAnsatz.getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
 
         vector<int> lm;
         vector<int> lmowner;
@@ -1707,10 +1711,9 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
         static LINALG::Matrix<3,27> xyze_xfemElement;
         GEO::fillInitialPositionArray(actele,xyze_xfemElement);
 
-        const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(XFLUID::getElementAnsatz(actele->Shape()));
-
         // create local copy of information about dofs
-        const XFEM::ElementDofManager eledofman(*actele,element_ansatz,*dofmanagerForOutput_);
+        const XFLUID::FluidElementAnsatz elementAnsatz;
+        const XFEM::ElementDofManager eledofman(*actele,elementAnsatz.getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
 
         vector<int> lm;
         vector<int> lmowner;

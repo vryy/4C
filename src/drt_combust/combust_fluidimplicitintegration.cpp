@@ -84,7 +84,8 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
 
   // soll der DofManager hier bleiben, oder soll er in den Combustion Algorithmus wandern? henke 10/08
   // apply enrichments
-  Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(null,true));
+  const COMBUST::CombustElementAnsatz elementAnsatz;
+  Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(null,elementAnsatz,true));
   /*----------------------------------------------------------------------------------------------*
    * comment missing! Axels comment: tell elements about the dofs and the integration  
    *----------------------------------------------------------------------------------------------*/
@@ -423,7 +424,8 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(Teuchos::RCP<COMBUST
 //  interfacehandle_->toGmsh(step_);
 
   // apply enrichments
-  Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(interfacehandle_,true));
+  COMBUST::CombustElementAnsatz elementAnsatz;
+  Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(interfacehandle_,elementAnsatz,true));
   
   // save dofmanager to be able to plot Gmsh stuff in Output()
   dofmanagerForOutput_ = dofmanager;
@@ -1181,10 +1183,9 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
 
         LINALG::SerialDenseMatrix xyze_xfemElement(GEO::InitialPositionArray(actele));
 
-        const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(COMBUST::getElementAnsatz(actele->Shape()));
-
         // create local copy of information about dofs
-        const XFEM::ElementDofManager eledofman(*actele,element_ansatz,*dofmanagerForOutput_);
+        const COMBUST::CombustElementAnsatz elementAnsatz;
+        const XFEM::ElementDofManager eledofman(*actele,elementAnsatz.getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
 
         vector<int> lm;
         vector<int> lmowner;
@@ -1543,10 +1544,9 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 
         LINALG::SerialDenseMatrix xyze_xfemElement = GEO::InitialPositionArray(actele);
                       
-        const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(COMBUST::getElementAnsatz(actele->Shape()));
-
         // create local copy of information about dofs
-        const XFEM::ElementDofManager eledofman(*actele,element_ansatz,*dofmanagerForOutput_);
+        const COMBUST::CombustElementAnsatz elementAnsatz;
+        const XFEM::ElementDofManager eledofman(*actele,elementAnsatz.getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
 
         vector<int> lm;
         vector<int> lmowner;

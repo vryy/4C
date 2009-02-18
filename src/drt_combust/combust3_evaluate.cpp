@@ -309,9 +309,8 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       const Teuchos::RCP<XFEM::DofManager> globaldofman = params.get< Teuchos::RCP< XFEM::DofManager > >("dofmanager");
 
       // create local copy of information about dofs
-      const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(COMBUST::getElementAnsatz(this->Shape()));
-
-      eleDofManager_ = rcp(new XFEM::ElementDofManager(*this, element_ansatz, *globaldofman));
+      const COMBUST::CombustElementAnsatz elementAnsatz;
+      eleDofManager_ = rcp(new XFEM::ElementDofManager(*this, elementAnsatz.getElementAnsatz(Shape()), *globaldofman));
     }
     break;
     default:

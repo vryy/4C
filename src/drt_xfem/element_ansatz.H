@@ -1,0 +1,36 @@
+/*!
+\file element_ansatz.H
+
+\brief defines class ElementAnsatz
+
+<pre>
+Maintainer: Axel Gerstenberger
+            gerstenberger@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15236
+</pre>
+*/
+#ifdef CCADISCRET
+#ifndef ELEMENT_ANSATZ_H
+#define ELEMENT_ANSATZ_H
+
+#include "../drt_xfem/physics.H"
+#include "../drt_lib/drt_element.H"
+
+
+namespace XFEM
+{
+  //! Implement this abstract class to tell the dofmanangers,
+  //! what stress ansatz you want to use for Distributed Lagrange multipliers
+  class ElementAnsatz
+  {
+    public:
+    //! for a given velocity/displacement interpolation, a map is produced which has the number of element unknowns per physical field
+    virtual map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> getElementAnsatz(DRT::Element::DiscretizationType eledistype) const = 0;
+  };
+
+
+} // namespace XFEM
+
+#endif  // #ifndef XDOFMAPCREATION_H
+#endif  // #ifdef CCADISCRET

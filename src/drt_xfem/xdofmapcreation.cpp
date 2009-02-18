@@ -16,13 +16,12 @@ Maintainer: Axel Gerstenberger
 
 #include "xdofmapcreation.H"
 #include "enrichment_utils.H"
-#include "../drt_f3/xfluid3_interpolation.H"
 
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-static bool EnrichmentInDofSet(
+bool XFEM::EnrichmentInDofSet(
     const XFEM::Enrichment::EnrType     testenr,
     const std::set<XFEM::FieldEnr>&     fieldenrset)
 {
@@ -42,7 +41,7 @@ static bool EnrichmentInDofSet(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-static bool EnrichmentInNodalDofSet(
+bool XFEM::EnrichmentInNodalDofSet(
     const int                                           gid,
     const XFEM::Enrichment::EnrType                     testenr,
     const std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet)
@@ -53,7 +52,7 @@ static bool EnrichmentInNodalDofSet(
   if (setiter != nodalDofSet.end())
   {
     const std::set<XFEM::FieldEnr>& fieldenrset = setiter->second;
-    return EnrichmentInDofSet(testenr, fieldenrset);
+    return XFEM::EnrichmentInDofSet(testenr, fieldenrset);
   }
   return voidenrichment_in_set;
 }
@@ -82,7 +81,7 @@ void XFEM::ApplyNodalEnrichments(
     for (int inen = 0; inen<nen; ++inen)
     {
       const int node_gid = nodeidptrs[inen];
-      const bool anothervoidenrichment_in_set = EnrichmentInNodalDofSet(node_gid, XFEM::Enrichment::typeVoid, nodalDofSet);
+      const bool anothervoidenrichment_in_set = XFEM::EnrichmentInNodalDofSet(node_gid, XFEM::Enrichment::typeVoid, nodalDofSet);
       if (not anothervoidenrichment_in_set)
       {
         nodalDofSet[node_gid].insert(XFEM::FieldEnr(XFEM::PHYSICS::Velx, voidenr));
@@ -183,9 +182,9 @@ void XFEM::ApplyNodalEnrichmentsNodeWise(
  *----------------------------------------------------------------------*/
 void XFEM::ApplyElementEnrichments(
     const DRT::Element*                           xfemele,
+    const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>&  element_ansatz,
     const XFEM::InterfaceHandle&                  ih,
     const int&                                    label,
-    const bool                                    DLM_condensation,
     std::set<XFEM::FieldEnr>&                     enrfieldset)
 {
   // check, how much area for integration we have (from BoundaryIntcells)
@@ -195,15 +194,6 @@ void XFEM::ApplyElementEnrichments(
   //  const XFEM::Enrichment stdenr(0, XFEM::Enrichment::typeStandard);
   if ( not almost_zero_surface) 
   {
-    // add discontinuous stress unknowns
-    // the number of each of these parameters will be determined later
-    // by using a discretization type and appropriate shape functions
-    map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz; 
-    if (not DLM_condensation)
-    {
-      element_ansatz = XFLUID::getElementAnsatz(xfemele->Shape());
-    }
-
     const bool anothervoidenrichment_in_set = EnrichmentInDofSet(XFEM::Enrichment::typeVoid, enrfieldset);
     if (not anothervoidenrichment_in_set)
     {
@@ -227,9 +217,9 @@ void XFEM::ApplyElementEnrichments(
  *----------------------------------------------------------------------*/
 void XFEM::ApplyVoidEnrichmentForElement(
     const DRT::Element*                           xfemele,
+    const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>&  element_ansatz,
     const XFEM::InterfaceHandle&                  ih,
     const int&                                    label,
-    const bool                                    DLM_condensation,
     std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet,
     std::map<int, std::set<XFEM::FieldEnr> >&     elementalDofs)
 {
@@ -243,7 +233,7 @@ void XFEM::ApplyVoidEnrichmentForElement(
 
       //      ApplyNodalEnrichmentsNodeWise(xfemele, ih, label, nodalDofSet); 
 
-      ApplyElementEnrichments(xfemele, ih, label, DLM_condensation, elementalDofs[element_gid]);
+      ApplyElementEnrichments(xfemele, element_ansatz, ih, label, elementalDofs[element_gid]);
     }
   }
 }
@@ -256,6 +246,7 @@ void XFEM::createDofMap(
     const XFEM::InterfaceHandle&                    ih,
     std::map<int, const std::set<XFEM::FieldEnr> >&     nodalDofSetFinal,
     std::map<int, const std::set<XFEM::FieldEnr> >&     elementalDofsFinal,
+    const XFEM::ElementAnsatz&  elementAnsatz,
     const bool DLM_condensation)
 {
   // temporary assembly
@@ -274,14 +265,22 @@ void XFEM::createDofMap(
     for (int i=0; i<ih.xfemdis()->NumMyColElements(); ++i)
     {
       const DRT::Element* xfemele = ih.xfemdis()->lColElement(i);
-
-      ApplyVoidEnrichmentForElement(
-          xfemele, ih, label, DLM_condensation,
+      // add discontinuous stress unknowns
+      // the number of each of these parameters will be determined later
+      // by using a discretization type and appropriate shape functions
+      map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz; 
+      if (not DLM_condensation)
+      {
+        element_ansatz = elementAnsatz.getElementAnsatz(xfemele->Shape());
+      }
+      
+      XFEM::ApplyVoidEnrichmentForElement(
+          xfemele, element_ansatz, ih, label,
           nodalDofSet, elementalDofs);
     };
   };
 
-  applyStandardEnrichmentNodalBasedApproach(ih, nodalDofSet);
+  XFEM::applyStandardEnrichmentNodalBasedApproach(ih, nodalDofSet);
 
   // create const sets from standard sets, so the sets cannot be accidently changed
   // could be removed later, if this is a performance bottleneck

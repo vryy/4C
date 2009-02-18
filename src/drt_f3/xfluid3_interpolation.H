@@ -21,6 +21,7 @@ Maintainer: Axel Gerstenberger
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_xfem/physics.H"
+#include "../drt_xfem/element_ansatz.H"
 
 
 //! support routines for the xfluid3 element
@@ -124,25 +125,29 @@ namespace XFLUID
     return distype;
   }
   
-  //! for a given velocity interpolation, a map is produced which has the number of element unknowns per physical field
-  inline map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> getElementAnsatz(DRT::Element::DiscretizationType eledistype)
+  class FluidElementAnsatz : public XFEM::ElementAnsatz 
   {
-    map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz;
-//    element_ansatz[XFEM::PHYSICS::Tauxx] = XFLUID::getStressInterpolationType3D(eledistype);
-//    element_ansatz[XFEM::PHYSICS::Tauyy] = XFLUID::getStressInterpolationType3D(eledistype);
-//    element_ansatz[XFEM::PHYSICS::Tauzz] = XFLUID::getStressInterpolationType3D(eledistype);
-//    element_ansatz[XFEM::PHYSICS::Tauxy] = XFLUID::getStressInterpolationType3D(eledistype);
-//    element_ansatz[XFEM::PHYSICS::Tauxz] = XFLUID::getStressInterpolationType3D(eledistype);
-//    element_ansatz[XFEM::PHYSICS::Tauyz] = XFLUID::getStressInterpolationType3D(eledistype);
-//    element_ansatz[XFEM::PHYSICS::DiscPres] = XFLUID::getDiscPressureInterpolationType3D(eledistype);
-    element_ansatz.insert(make_pair(XFEM::PHYSICS::Sigmaxx,XFLUID::getStressInterpolationType3D(eledistype)));
-    element_ansatz.insert(make_pair(XFEM::PHYSICS::Sigmayy,XFLUID::getStressInterpolationType3D(eledistype)));
-    element_ansatz.insert(make_pair(XFEM::PHYSICS::Sigmazz,XFLUID::getStressInterpolationType3D(eledistype)));
-    element_ansatz.insert(make_pair(XFEM::PHYSICS::Sigmaxy,XFLUID::getStressInterpolationType3D(eledistype)));
-    element_ansatz.insert(make_pair(XFEM::PHYSICS::Sigmaxz,XFLUID::getStressInterpolationType3D(eledistype)));
-    element_ansatz.insert(make_pair(XFEM::PHYSICS::Sigmayz,XFLUID::getStressInterpolationType3D(eledistype)));
-    return element_ansatz;
-  }
+  public:
+    //! for a given velocity interpolation, a map is produced which has the number of element unknowns per physical field
+    virtual map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> getElementAnsatz(DRT::Element::DiscretizationType eledistype) const
+    {
+      map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz;
+  //    element_ansatz[XFEM::PHYSICS::Tauxx] = XFLUID::getStressInterpolationType3D(eledistype);
+  //    element_ansatz[XFEM::PHYSICS::Tauyy] = XFLUID::getStressInterpolationType3D(eledistype);
+  //    element_ansatz[XFEM::PHYSICS::Tauzz] = XFLUID::getStressInterpolationType3D(eledistype);
+  //    element_ansatz[XFEM::PHYSICS::Tauxy] = XFLUID::getStressInterpolationType3D(eledistype);
+  //    element_ansatz[XFEM::PHYSICS::Tauxz] = XFLUID::getStressInterpolationType3D(eledistype);
+  //    element_ansatz[XFEM::PHYSICS::Tauyz] = XFLUID::getStressInterpolationType3D(eledistype);
+  //    element_ansatz[XFEM::PHYSICS::DiscPres] = XFLUID::getDiscPressureInterpolationType3D(eledistype);
+      element_ansatz.insert(make_pair(XFEM::PHYSICS::Sigmaxx,XFLUID::getStressInterpolationType3D(eledistype)));
+      element_ansatz.insert(make_pair(XFEM::PHYSICS::Sigmayy,XFLUID::getStressInterpolationType3D(eledistype)));
+      element_ansatz.insert(make_pair(XFEM::PHYSICS::Sigmazz,XFLUID::getStressInterpolationType3D(eledistype)));
+      element_ansatz.insert(make_pair(XFEM::PHYSICS::Sigmaxy,XFLUID::getStressInterpolationType3D(eledistype)));
+      element_ansatz.insert(make_pair(XFEM::PHYSICS::Sigmaxz,XFLUID::getStressInterpolationType3D(eledistype)));
+      element_ansatz.insert(make_pair(XFEM::PHYSICS::Sigmayz,XFLUID::getStressInterpolationType3D(eledistype)));
+      return element_ansatz;
+    }
+  };
 }
 
 
