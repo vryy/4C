@@ -142,6 +142,23 @@ namespace GEO
       std::map<int, std::set<int> >&              elementList
       );
   
+  /*!
+  \brief Returns a map of element ids lying in a circle of a given querypoint and a radius
+  \param dis                  discretization
+  \param currentpositions     current nodal positions in discretization
+  \param querypoint           point to be examined
+  \param radius               radius
+  \param elementList          map of elements label gid
+  \return                     label
+   */
+  std::map<int,std::set<int> > getNodesInRadius(
+      const DRT::Discretization&                  dis,    
+      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,   
+      const LINALG::Matrix<3,1>&                  querypoint,
+      const double                                radius,
+      std::map<int, std::set<int> >&              elementList
+      );
+  
   
   /*!
   \brief Returns a vector of element ids intersecting with a given query element (XAABB)

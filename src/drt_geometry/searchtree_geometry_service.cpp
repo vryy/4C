@@ -234,6 +234,47 @@ std::map<int,std::set<int> > GEO::getElementsInRadius(
   return elementMap;
 }
 
+/*----------------------------------------------------------------------*
+ | a set of nodes in a given radius                          cyron 02/09|
+ | from a query point                                                   |
+ *----------------------------------------------------------------------*/
+std::map<int,std::set<int> > GEO::getNodesInRadius(
+    const DRT::Discretization&                  dis,    
+    const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,   
+    const LINALG::Matrix<3,1>&                  querypoint,
+    const double                                radius,
+    std::map<int, std::set<int> >&              elementList)  
+{
+  std::map< int, std::set<int> >  nodeList;
+  std::map<int,std::set<int> >    nodeMap;
+  
+  // collect all nodes with different label
+  for(std::map<int, std::set<int> >::const_iterator labelIter = elementList.begin(); labelIter != elementList.end(); labelIter++)
+  {
+      for(std::set<int>::const_iterator eleIter = (labelIter->second).begin(); eleIter != (labelIter->second).end(); eleIter++)
+      {
+        DRT::Element* element = dis.gElement(*eleIter);
+        for(int i = 0; i < DRT::UTILS::getNumberOfElementCornerNodes(element->Shape()); i++)
+          nodeList[labelIter->first].insert(element->NodeIds()[i]);
+      }
+  }
+  
+  for(std::map<int, std::set<int> >::const_iterator labelIter = nodeList.begin(); labelIter != nodeList.end(); labelIter++)
+    for(std::set<int>::const_iterator nodeIter = (labelIter->second).begin(); nodeIter != (labelIter->second).end(); nodeIter++)
+    {
+      double distance = GEO::LARGENUMBER;
+      const DRT::Node* node = dis.gNode(*nodeIter);
+      GEO::getDistanceToPoint(node, currentpositions, querypoint, distance);
+      if(distance < (radius + GEO::TOL7) )
+      {
+        for(int i=0; i<dis.gNode(*nodeIter)->NumElement();i++)  
+          nodeMap[labelIter->first].insert(dis.gNode(*nodeIter)->Id()); 
+      }
+    }
+  
+  return nodeMap;
+}
+
 
 /*----------------------------------------------------------------------*
  | a vector of intersection elements                          popp 07/08|

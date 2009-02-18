@@ -454,6 +454,21 @@ public:
   
   
   /*!
+  \brief returns a set of gids of nodes lying in a radius around a given point
+  \param dis                  discretization
+  \param currentpositions     current nodal positions in discretization
+  \param point                point to be examined
+  \param radius               radius
+  \return set of node gids
+   */
+  std::map<int,std::set<int> > searchNodesInRadius(
+      const DRT::Discretization&                  dis,
+      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions, 
+      const LINALG::Matrix<3,1>&                  point, //point around which should be searched
+      const double                                radius); 
+  
+  
+  /*!
   \brief   returns a set of elements whose XAABB s are    
            intersecting with the XAABB of a given volume element
  

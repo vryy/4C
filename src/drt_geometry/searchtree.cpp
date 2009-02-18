@@ -173,6 +173,32 @@ std::map<int,std::set<int> > GEO::SearchTree::searchElementsInRadius(
 }
 
 
+/*----------------------------------------------------------------------*
+ | returns nodes in the radius of a given point              cyron 02/09|
+ *----------------------------------------------------------------------*/
+/*
+std::map<int,std::set<int> > GEO::SearchTree::searchNodesInRadius(
+    const DRT::Discretization&                  dis,
+    const std::map<int,LINALG::Matrix<3,1> >&   currentpositions, 
+    const LINALG::Matrix<3,1>&                  point, //point around which should be searched
+    const double                                radius) 
+{
+  TEUCHOS_FUNC_TIME_MONITOR("SearchTree - queryTime");
+
+  std::map<int,std::set<int> > nodeset;
+
+  if(treeRoot_ == Teuchos::null)
+    dserror("tree is not yet initialized !!!");
+
+  if(!(treeRoot_->getElementList().empty()))
+    nodeset = treeRoot_->searchNodesInRadius(dis, currentpositions, point, radius);
+  else
+    dserror("element list is empty");
+
+  return nodeset;
+}
+*/
+
 
 /*----------------------------------------------------------------------*
  | returns a vector of elements whose XAABB s are            u.may 09/08|
@@ -1323,6 +1349,60 @@ std::map<int,std::set<int> > GEO::SearchTree::TreeNode::searchElementsInRadius(
       }
       else // AABB does not fit into a single child node box anymore so don t refine any further
         return GEO::getElementsInRadius(dis, currentpositions, point, radius, label, elementList_); 
+      break;
+    }
+    default:
+      dserror("should not get here\n");
+  }
+  return eleMap;
+}
+
+
+/*----------------------------------------------------------------------*
+ | returns nodes in the radius of a given point              cyron 02/09|
+ *----------------------------------------------------------------------*/
+std::map<int,std::set<int> > GEO::SearchTree::TreeNode::searchNodesInRadius(
+    const DRT::Discretization&                    dis,
+    const std::map<int,LINALG::Matrix<3,1> >&     currentpositions, 
+    const LINALG::Matrix<3,1>&                    point,
+    const double                                  radius) 
+{  
+  std::map<int,std::set<int> > eleMap;
+
+  switch (treeNodeType_) 
+  {
+    case INNER_NODE:
+    {       
+      const vector<int> childindex = classifyRadius(radius, point);
+      if(childindex.size() < 1)
+        dserror("no child found\n");
+      else if (childindex.size() ==1) // child node found which encloses AABB so step down
+        return children_[childindex[0]]->searchNodesInRadius(dis, currentpositions, point, radius);
+      else
+        return GEO::getNodesInRadius(dis, currentpositions, point, radius, elementList_); 
+      break;
+    }
+    case LEAF_NODE:   
+    {
+      if(elementList_.empty())
+        return eleMap;
+
+      // max depth reached, counts reverse
+      if (treedepth_ <= 0 || (elementList_.size()==1 && (elementList_.begin()->second).size() == 1) )
+        return GEO::getNodesInRadius(dis, currentpositions, point, radius, elementList_); 
+
+      // dynamically grow tree otherwise, create children and set label for empty children
+      // search in apropriate child node 
+      const vector<int> childindex = classifyRadius(radius, point);
+      if(childindex.size() < 1)
+        dserror("no child found\n");
+      else if (childindex.size() ==1) // child node found which encloses AABB so refine further
+      { 
+        createChildren(dis, currentpositions);
+        return children_[childindex[0]]->searchNodesInRadius(dis, currentpositions, point, radius);
+      }
+      else // AABB does not fit into a single child node box anymore so don t refine any further
+        return GEO::getNodesInRadius(dis, currentpositions, point, radius, elementList_); 
       break;
     }
     default:
