@@ -122,43 +122,30 @@ public:
   //! @name 2D and 3D integration methods
   
   /*!
-  \brief Integrate Mortar matrix D on a 1D/2D slave element
+  \brief Build all integrals and linearizations on a 1D or 2D
+         slave element (i.e. D, LinD).
   
-  This method is only called if the flag CONTACTONEMORTARLOOP
-  is not set. Otherwise we obtain the D-matrix entries via a
-  fundamental Mortar equation from the M-matrix entries. Therefore,
-  when AssembleM is called, Assemble D is done too in that case.
-  
+  This method is only called if the flag CONTACTONEMORTARLOOP is
+  not set. Otherwise we obtain the D-matrix entries via a fundamental
+  Mortar equation from the M-matrix entries. Therefore, when AssembleM
+  is called, Assemble D is done too in that case.
+          
   */
-  RCP<Epetra_SerialDenseMatrix> IntegrateD(CONTACT::CElement& sele,
-                                           double* sxia, double* sxib);
-  
-  /*!
-  \brief Compute directional derivative of D on a 1D/2D slave element
-  
-  This method is only called if the flag CONTACTONEMORTARLOOP
-  is not set. Linearization of D is not yet implemented for the
-  CONTACTONEMORTARLOOP case and will throw a dserror.
-  
-  */
-  void DerivD(CONTACT::CElement& sele, double* sxia, double* sxib);
+  void IntegrateDerivSlave2D3D(
+      CONTACT::CElement& sele, double* sxia, double* sxib,
+      RCP<Epetra_SerialDenseMatrix> dseg);
     
   /*!
-  \brief Integrate Mortar matrix M on a 1D slave / master overlap
-      
+  \brief Build all integrals and linearizations on a 1D slave /
+         master overlap (i.e. M, g, LinM, Ling)
+          
   */
-  RCP<Epetra_SerialDenseMatrix> IntegrateM(CONTACT::CElement& sele,
-                                           double& sxia, double& sxib,
-                                           CONTACT::CElement& mele,
-                                           double& mxia, double& mxib);
-  
-  /*!
-  \brief Compute directional derivative of M on a 1D slave / master overlap
-        
-  */
-  void DerivM(CONTACT::CElement& sele, double& sxia, double& sxib,
-              CONTACT::CElement& mele, double& mxia, double& mxib);
-  
+  void IntegrateDerivSegment2D(
+      CONTACT::CElement& sele, double& sxia, double& sxib,
+      CONTACT::CElement& mele, double& mxia, double& mxib,
+      RCP<Epetra_SerialDenseMatrix> mseg,
+      RCP<Epetra_SerialDenseVector> gseg);
+    
   /*!
   \brief Compute directional derivative of segment end coordinates
          Xi on a 1D slave / master overlap
@@ -191,23 +178,6 @@ public:
                                               double& sxia, double& sxib,
                                               CONTACT::CElement& mele,
                                               double& mxia, double& mxib);
-  
-  /*!
-  \brief Integrate weighted gap g~ on a 1D slave / master overlap
-          
-  */
-  RCP<Epetra_SerialDenseVector> IntegrateG(CONTACT::CElement& sele,
-                                           double& sxia, double& sxib,
-                                           CONTACT::CElement& mele,
-                                           double& mxia, double& mxib);
-  
-  /*!
-  \brief Compute directional derivative of weighted gap g~ on
-         a 1D slave / master overlap
-        
-  */
-  void DerivG(CONTACT::CElement& sele, double& sxia, double& sxib,
-              CONTACT::CElement& mele, double& mxia, double& mxib);
     
   /*!
   \brief Integrate Mortar matrix M on a 2D slave / master integration cell

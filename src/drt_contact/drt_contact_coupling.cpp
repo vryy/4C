@@ -1352,21 +1352,19 @@ bool CONTACT::Coupling::IntegrateOverlap2D(vector<double>& xiproj)
   // create an integrator instance with correct NumGP and Dim
   CONTACT::Integrator integrator(sele_.Shape());
 
-  // do the two integrations
-  RCP<Epetra_SerialDenseMatrix> mseg = integrator.IntegrateM(sele_,sxia,sxib,mele_,mxia,mxib);
-  RCP<Epetra_SerialDenseVector> gseg = integrator.IntegrateG(sele_,sxia,sxib,mele_,mxia,mxib);
-
-  // compute directional derivative of M and store into nodes
-  // if CONTACTONEMORTARLOOP defined, then DerivM does linearization of M AND D matrices !!!
-  integrator.DerivM(sele_,sxia,sxib,mele_,mxia,mxib);
-  integrator.DerivG(sele_,sxia,sxib,mele_,mxia,mxib);
+  // do the overlap integration (integrate and linearize both M and gap)
+  // if CONTACTONEMORTARLOOP defined, then this does linearization of M AND D matrices !!!
+  int nrow = sele_.NumNode();
+  int ncol = mele_.NumNode();
+  RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
+  RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
+  integrator.IntegrateDerivSegment2D(sele_,sxia,sxib,mele_,mxia,mxib,mseg,gseg);
     
   // do the two assemblies into the slave nodes
   // if CONTACTONEMORTARLOOP defined, then AssembleM does M AND D matrices !!!
   integrator.AssembleM(Comm(),sele_,mele_,*mseg);
   integrator.AssembleG(Comm(),sele_,*gseg);
 
-  
   /*----------------------------------------------------------------------
   // check for the modification of the M matrix for curved interfaces
   // (based on the paper by M. Puso / B. Wohlmuth, IJNME, 2005)

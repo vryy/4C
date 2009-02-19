@@ -866,11 +866,10 @@ bool CONTACT::Interface::IntegrateSlave(CONTACT::CElement& sele)
     sxib[0] =  1.0; sxib[1] =  1.0;
   }
 
-  // do the integration
-  RCP<Epetra_SerialDenseMatrix> dseg = integrator.IntegrateD(sele,sxia,sxib);
-  
-  // do the linearization of D
-  integrator.DerivD(sele,sxia,sxib);
+  // do the element integration (integrate and linearize D)
+  int nrow = sele.NumNode();
+  RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
+  integrator.IntegrateDerivSlave2D3D(sele,sxia,sxib,dseg);
   
   // do the assembly into the slave nodes
   integrator.AssembleD(Comm(),sele,*dseg);
