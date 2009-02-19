@@ -452,6 +452,10 @@ public:
   */
   virtual inline DRT::Node* lColNode(int lid) const
   {
+    #ifdef DEBUG
+      if (!Filled()) 
+        dserror("DRT::Discretization::lRowNode: Filled() != true");
+    #endif
     return nodecolptr_[lid];
   }
 
