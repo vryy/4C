@@ -122,7 +122,7 @@ void StatMechTime::Integrate()
       ranlib::Normal<double> seedgenerator(0,1);
       //seeding random generator
       int seedvariable = time(0);
-      seedvariable = i; //6 
+      seedvariable = i*9; //6 
       seedgenerator.seed((unsigned int)seedvariable);
     }
     
@@ -145,11 +145,11 @@ void StatMechTime::Integrate()
     */
 
     ConsistentPredictor(); 
-    
-    
 
     //FullNewton();
     PTC();
+    
+    
     
    
     UpdateandOutput();
@@ -720,7 +720,7 @@ void StatMechTime::PTC()
   if (!damp_->Filled()) dserror("damping matrix must be filled here");
 
   // hard wired ptc parameters
-  double ptcdt = 1.3e1; //0.75 ... 5e1 scheint eine gute Wahl zu sein
+  double ptcdt = 1.3e1; //1.3e1 für Actin3D_10GOLD1.dat;
   double nc;
   fresm_->NormInf(&nc);
   double dti = 1/ptcdt;

@@ -709,14 +709,17 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& disro
     
     /*create random numbers in order to decide whether a crosslinker should be deleted; each
      * processor creates random numbers for its own nodes only; all these numbers are exported to
-     * a column map vector so that each processor has access to the same information (additive export
-     * allowed due to zero initialization before!); finally for the column map vector each element is
-     * considered: a node i can loose its crosslinker in the following step if it has already one and if
-     * the random number calculated for it passes the probability test (i.e. is smaller than -1 + 2*punlink).
-     * In this case the element i is turned into 1 whereas otherwise into 0. As a consequence finally each
-     * element i indicates whether node i can get a crosslinker (entry 1) or not (entry 0); note that this
-     * postprocessing of the elements has to be done for the column map vector since also the information
-     * of crosslinkerpartner_ is related to a column map*/
+     * a column map vector so that each processor has access to the same information; finally for the 
+     * column map vector each element is considered: a node i can loose its crosslinker in the following 
+     * step if it has already one and if the random number calculated for it passes the probability test 
+     * (i.e. is smaller than -1 + 2*punlink). Furthermore the node has to have the lower global Id of the
+     * two nodes related to the crosslinker; this makes sure that the off-rate is a quantitiy with respect
+     * to crosslinkers and not with respect to their nodes; the node with the lower GID is kind of the owner
+     * of the crosslinker responsible for its element GID, for creating it and for deleting it. 
+     * If the above three conditions are satisfied the element i is turned into 1 whereas otherwise 
+     * into 0. As a consequence finally each element i indicates whether node i can get a crosslinker 
+     * (entry 1) or not (entry 0); note that this postprocessing of the elements has to be done for the column
+     *  map vector since also the information of crosslinkerpartner_ is related to a column map*/
     Epetra_Vector  delcrosslinkerrow(noderowmap);
     Epetra_Vector  delcrosslinkercol(nodecolmap);
     delcrosslinkercol.PutScalar(0);
@@ -726,7 +729,7 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& disro
     
     for(int i = 0; i < delcrosslinkercol.MyLength(); i++)
     {
-      if( delcrosslinkercol[i] <  -1.0 + 2*punlink && (*crosslinkerpartner_)[i] != -1.0 && (*crosslinkerpartner_)[i])
+      if( delcrosslinkercol[i] <  -1.0 + 2*punlink && (*crosslinkerpartner_)[i] != -1.0 && nodecolmap.GID(i) < nodecolmap.GID( (*crosslinkerpartner_)[i] )  )
         delcrosslinkercol[i] = 1;
       else
         delcrosslinkercol[i] = 0;
@@ -864,8 +867,11 @@ void StatMechManager::SetCrosslinkers(const Epetra_Vector& setcrosslinkercol,con
    
     
     /*if a neighbour within the prescribed maximal distance has been found and this neighbour node has not yet
-    * a crosslinker itself a crosslinker has to be established in case that also the probability check was passed */
-    if(setcrosslinkercol[i] && nearestneighbour[i] > -1 && (*crosslinkerpartner_)[ (int)nearestneighbour[i] ] == -1.0)
+    * a crosslinker itself a crosslinker has to be established in case that also the probability check was passed and
+    * that the neighbour has a higher GID; note that the latter condition makes sure that for each crosslinker always
+    * the node with the lower GID is kind of the owner: it has to establish it, to delete it, and it is respondible 
+    * for the element GID of the crosslinker */
+    if(setcrosslinkercol[i] && nearestneighbour[i] > -1 && (*crosslinkerpartner_)[ (int)nearestneighbour[i] ] == -1.0 && nodecolmap.GID(i) < nodecolmap.GID(nearestneighbour[i]))
     {
       //the crosslinker to be established is registered in the variable crosslinkerpartner_
       (*crosslinkerpartner_)[i] = (int)nearestneighbour[i];
