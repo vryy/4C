@@ -1195,7 +1195,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     "Max. amplitude of the random disturbance in percent of the initial value in mean flow direction.",
     &fdyn_turbu);
 
-  IntParameter("SAMPLING_START",1,"Time step after when sampling shall be started",&fdyn_turbu);
+  IntParameter("SAMPLING_START",10000000,"Time step after when sampling shall be started",&fdyn_turbu);
   IntParameter("SAMPLING_STOP",1,"Time step when sampling shall be stopped",&fdyn_turbu);
   IntParameter("DUMPING_PERIOD",1,"Period of time steps after which statistical data shall be dumped",&fdyn_turbu);
 
