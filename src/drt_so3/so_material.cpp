@@ -47,6 +47,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/artwallremod.H"
 #include "../drt_mat/biocell.H"
 #include "../drt_mat/material.H"
+#include "../drt_mat/charmm.H"
 
 
 using namespace std; // cout etc.
@@ -272,6 +273,25 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       MAT::BioCell* biocell = static_cast <MAT::BioCell*>(mat.get());
       biocell->Evaluate(glstrain,cmat,stress);
       *density = biocell->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_charmm: /*------------------------------------ CHARmm */
+    {
+      MAT::CHARMM* charmm = static_cast <MAT::CHARMM*>(mat.get());
+
+      LINALG::SerialDenseMatrix XREFE(3,3);
+      LINALG::SerialDenseMatrix XCURR(3,3);
+      for (int i=0;i<3;i++)
+      for (int j=0;j<3;j++) {
+          //XREFE(i,j) = (*xrefe)(i,j);
+          //XCURR(i,j) = (*xcurr)(i,j);
+          XREFE(i,j) = 0.0; // Quick hack, that needs to be resoved
+          XCURR(i,j) = 0.0;
+      }
+      const double time = params.get("total time",-1.0);
+      charmm->Evaluate(glstrain,cmat,stress,Id(),gp,data_,time,XREFE,XCURR);
+      *density = charmm->Density();
       return;
       break;
     }

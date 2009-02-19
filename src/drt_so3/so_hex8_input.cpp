@@ -17,6 +17,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/artwallremod.H"
 #include "../drt_mat/viscoanisotropic.H"
 #include "../drt_mat/visconeohooke.H"
+#include "../drt_mat/charmm.H"
 
 /*----------------------------------------------------------------------*
  |  read element input (public)                                maf 04/07|
@@ -58,6 +59,9 @@ bool DRT::ELEMENTS::So_hex8::ReadElement()
   } else if (Material()->MaterialType() == INPAR::MAT::m_visconeohooke){
     MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(Material().get());
     visco->Setup(NUMGPT_SOH8);
+  } else if (Material()->MaterialType() == INPAR::MAT::m_charmm){
+    MAT::CHARMM* charmm = static_cast <MAT::CHARMM*>(Material().get());
+    charmm->Setup(data_);
   }
 
   // read possible gaussian points, obsolete for computation

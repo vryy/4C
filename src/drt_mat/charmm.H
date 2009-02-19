@@ -1,6 +1,16 @@
+/*!----------------------------------------------------------------------
+\file charmm.H
+\brief
+
+<pre>
+Maintainer: Robert Metzke
+            metzke@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15244
+</pre>
+*----------------------------------------------------------------------*/
 #ifndef CHARMM_H_
 #define CHARMM_H_
-
 #ifdef CCADISCRET
 
 #include "material.H"
@@ -93,16 +103,28 @@ namespace MAT
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return
 INPAR::MAT::m_charmm; }
-    
-    void Evaluate(const LINALG::Matrix<6,1>& glstrain,
-                  LINALG::Matrix<6,6>& cmat,
-                  LINALG::Matrix<6,1>& stress,
+
+    /// Initialize internal stress variables
+    void Setup
+    (
+      DRT::Container& data_  ///< Container for History
+    );
+
+    void Evaluate(const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,
+                  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,
+                  LINALG::Matrix<NUM_STRESS_3D,1>* stress,
                   const int ele_ID,
                   const int gp,
                   DRT::Container& data_,
                   const double time,
-                  Epetra_SerialDenseMatrix* xrefe,
-                  Epetra_SerialDenseMatrix* xcurr);
+                  const LINALG::SerialDenseMatrix& xrefe,
+                  const LINALG::SerialDenseMatrix& xcurr);
+
+    void EvalStrain( const bool& origin,
+                  const LINALG::Matrix<3,3>& C,
+                  const LINALG::SerialDenseMatrix& xrefe,
+                  const LINALG::SerialDenseMatrix& xcurr,
+                  LINALG::SerialDenseVector& lambda );
     
     Epetra_SerialDenseVector charmmfileapi(
                   const double STARTD,
