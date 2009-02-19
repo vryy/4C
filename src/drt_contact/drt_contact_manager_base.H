@@ -501,7 +501,8 @@ protected:
   RCP<LINALG::SparseMatrix>          lindmatrix_;      // global Matrix LinD containing slave fc derivatives
   RCP<LINALG::SparseMatrix>          linmmatrix_;      // global Matrix LinM containing master fc derivatives
   RCP<LINALG::SparseMatrix>          linstickmatrix_;  // global Matrix LinStick containing derivatives of stick condition
-   
+  RCP<LINALG::SparseMatrix>          linslipmatrix_;   // global Matrix LinSlip containing derivatives of slip condition
+  
   RCP<LINALG::SparseMatrix>          dold_;            // global Mortar matrix D (last end-point t_n)
   RCP<LINALG::SparseMatrix>          mold_;            // global Mortar matrix D (last end-point t_n)
   

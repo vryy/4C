@@ -566,7 +566,7 @@ public:
                              LINALG::SparseMatrix& linmglobal);
     
   /*!
-  \brief Assemble matrix Linstick containing linearizations
+  \brief Assemble matrix LinStick containing linearizations
   
   This method builds an algebraic form of the FULL linearization
   of the tangential stick condition delta tg = 0. Concretely, this
@@ -575,7 +575,19 @@ public:
   
   */
   virtual void AssembleLinStick(LINALG::SparseMatrix& linstickglobal);
-   
+
+  /*!
+  \brief Assemble matrix LinSlip containing linearizations
+  
+  This method builds an algebraic form of the FULL linearization
+  of the tangential slip condition. Concretely, this
+  includes assembling the linearizations of the slave side
+  nodal tangents and of the Mortar matrices D  and M.
+  
+  */
+  virtual void AssembleLinSlip(LINALG::SparseMatrix& linslipglobal,
+  		                         double& frbound, double& ct);
+  
   /*!
   \brief Initialize active set of this interface (t=0)
         

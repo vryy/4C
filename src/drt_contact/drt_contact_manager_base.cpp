@@ -153,7 +153,8 @@ void CONTACT::ManagerBase::Initialize()
   // here the calculation of gstickt is necessary
   RCP<Epetra_Map> gstickt = LINALG::SplitMap(*gactivet_,*gslipt_);
   linstickmatrix_ = rcp(new LINALG::SparseMatrix(*gstickt,3));
-    
+  
+  linslipmatrix_ = rcp(new LINALG::SparseMatrix(*gslipt_,3));
   return;
 }
 
@@ -837,10 +838,10 @@ void CONTACT::ManagerBase::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> 
   {
     interface_[i]->AssembleNT(*nmatrix_,*tmatrix_);
     interface_[i]->AssembleS(*smatrix_);
-    interface_[i]->AssembleP(*pmatrix_);
     interface_[i]->AssembleLinDM(*lindmatrix_,*linmmatrix_);
     interface_[i]->AssembleTresca(*lmatrix_,*r_,frbound,ct);
     interface_[i]->AssembleLinStick(*linstickmatrix_);
+    interface_[i]->AssembleLinSlip(*linslipmatrix_,frbound,ct);
   }
     
   // FillComplete() global matrices N and T and L
@@ -853,11 +854,6 @@ void CONTACT::ManagerBase::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> 
   // FillComplete() global matrix S
   smatrix_->Complete(*gsmdofs,*gactiven_);
   
-  // FillComplete() global matrix P
-  // (actually gsdofrowmap_ is in general sufficient as domain map,
-  // but in the edge node modification case, master entries occur!)
-  pmatrix_->Complete(*gsmdofs,*gactivet_);
-  
   // FillComplete() global matrices LinD, LinM
   // (again for linD gsdofrowmap_ is sufficient as domain map,
   // but in the edge node modification case, master entries occur!)
@@ -867,6 +863,9 @@ void CONTACT::ManagerBase::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> 
   // FillComplete global Matrix LinStick
   RCP<Epetra_Map> gstickt = LINALG::SplitMap(*gactivet_,*gslipt_);
   linstickmatrix_->Complete(*gsmdofs,*gstickt);
+  
+  // FillComplete global Matrix LinSlip
+  linslipmatrix_->Complete(*gsmdofs,*gslipt_);
     
   /**********************************************************************/
   /* Multiply Mortar matrices: m^ = inv(d) * m                          */
@@ -1318,7 +1317,6 @@ void CONTACT::ManagerBase::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> 
   // FD check of tangential LM derivatives (frictionless condition)
   for (int i=0; i<(int)interface_.size();++i)
   {
-    cout << *pmatrix_ << endl;
     interface_[i]->FDCheckTangLMDeriv();
   }
 #endif // #ifdef CONTACTFDTANGLM
@@ -1386,6 +1384,7 @@ void CONTACT::ManagerBase::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> 
   {
    if (gactiven_->NumGlobalElements()) kteffnew->Add(*smatrix_,false,-1.0,1.0);
    if (gstickt->NumGlobalElements()) kteffnew->Add(*linstickmatrix_,false,1.0,1.0);
+   if (gslipt_->NumGlobalElements()) kteffnew->Add(*linslipmatrix_,false,+1.0,1.0);
   }
   
   // add a submatrices to kteffnew
