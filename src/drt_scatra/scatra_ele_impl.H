@@ -206,7 +206,6 @@ public:
         const bool                            temperature, ///< temperature flag
         const bool                            conservative, ///< flag for conservative form
         const bool                            is_genalpha, ///< generalized-alpha flag
-        const bool                            is_incremental, ///< flag for incremental/non-incemental linear solver
         const enum SCATRA::TauType            whichtau, ///< flag for stabilization parameter definition
         const string                          fssgd, ///< subgrid-diff. flag
         const double                          frt, ///< factor F/RT needed for ELCH calculations

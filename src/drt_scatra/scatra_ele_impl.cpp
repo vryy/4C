@@ -378,7 +378,6 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     // calculate time derivative for time value t_0
   {
     const bool is_genalpha = params.get<bool>("using generalized-alpha time integration");
-    const bool is_incremental = params.get<bool>("incremental solver");
 
     const double time = params.get<double>("total time");
     const double dt = params.get<double>("time-step length");
@@ -506,7 +505,6 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         temperature,
         conservative,
         is_genalpha,
-        is_incremental,
         whichtau,
         fssgd,
         frt,
@@ -1755,7 +1753,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
     const bool                            temperature,
     const bool                            conservative,
     const bool                            is_genalpha,
-    const bool                            is_incremental,
     const enum SCATRA::TauType            whichtau,
     const string                          fssgd,
     const double                          frt,
@@ -1792,9 +1789,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
     EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,use2ndderiv,ele->Id());
 
     // density-weighted shape functions
-    if (temperature and conservative and is_genalpha and is_incremental)
-         densfunct_.Update(funct_);
-    else densfunct_.EMultiply(funct_,edens0);
+    if (conservative and is_genalpha) densfunct_.Update(funct_);
+    else                              densfunct_.EMultiply(funct_,edens0);
 
     // get (density-weighted) velocity at element center
     velint_.Multiply(evel0,funct_);

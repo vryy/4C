@@ -220,10 +220,6 @@ void SCATRA::TimIntGenAlpha::ComputeIntermediateValues()
     }
     else phidtnp_->Update(fact1,*phinp_,-fact1,*phin_,1.0);
 
-    // we know the first time derivative on Dirichlet boundaries
-    // so we do not need an approximation of these values!
-    ApplyDirichletBC(time_,Teuchos::null,phidtnp_);
-
     // calculation of time derivative of phi at n+alpha_M, stored on
     // history vector for comfortable later transport to element routine
     hist_->Update(alphaM_,*phidtnp_,(1.0-alphaM_),*phidtn_,0.0);
@@ -435,10 +431,6 @@ void SCATRA::TimIntGenAlpha::Update()
     const double fact1 = 1.0/(gamma_*dta_);
     const double fact2 = (-1.0/gamma_) +1.0;
     phidtn_->Update( fact1,*phinp_,-fact1,*phin_ ,fact2);
-
-    // we know the first time derivative on Dirichlet boundaries
-    // so we do not need an approximation of these values!
-    ApplyDirichletBC(time_,Teuchos::null,phidtn_);
   }
   // time deriv. of this step becomes most recent time derivative of
   // last step for incremental solver
