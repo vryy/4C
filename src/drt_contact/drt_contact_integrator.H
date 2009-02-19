@@ -151,19 +151,19 @@ public:
          Xi on a 1D slave / master overlap
           
   */
-  void DerivXiAB(CONTACT::CElement& sele, double& sxia, double& sxib,
-                 CONTACT::CElement& mele, double& mxia, double& mxib,
-                 vector<map<int,double> >& derivxi,
-                 bool& startslave, bool& endslave);
+  void DerivXiAB2D(CONTACT::CElement& sele, double& sxia, double& sxib,
+                   CONTACT::CElement& mele, double& mxia, double& mxib,
+                   vector<map<int,double> >& derivxi,
+                   bool& startslave, bool& endslave);
   
   /*!
   \brief Compute directional derivative of master Gauss point
          coordinates XiGP on a 1D slave / master overlap 
             
   */
-  void DerivXiGP(CONTACT::CElement& sele, CONTACT::CElement& mele,
-                 double& sxigp, double& mxigp, const map<int,double>& derivsxi,
-                 map<int,double>& derivmxi);
+  void DerivXiGP2D(CONTACT::CElement& sele, CONTACT::CElement& mele,
+                   double& sxigp, double& mxigp, const map<int,double>& derivsxi,
+                   map<int,double>& derivmxi);
     
   /*!
   \brief Integrate modification Mmod on a 1D slave / master overlap
@@ -174,10 +174,10 @@ public:
   the interface is curved (but only for mesh tying)!
   
   */
-  RCP<Epetra_SerialDenseMatrix> IntegrateMmod(CONTACT::CElement& sele,
-                                              double& sxia, double& sxib,
-                                              CONTACT::CElement& mele,
-                                              double& mxia, double& mxib);
+  RCP<Epetra_SerialDenseMatrix> IntegrateMmod2D(CONTACT::CElement& sele,
+                                                double& sxia, double& sxib,
+                                                CONTACT::CElement& mele,
+                                                double& mxia, double& mxib);
     
   /*!
   \brief Integrate Mortar matrix M on a 2D slave / master integration cell

@@ -1398,7 +1398,7 @@ bool CONTACT::Coupling::IntegrateOverlap2D(vector<double>& xiproj)
 
   if (modification)
   {
-    RCP<Epetra_SerialDenseMatrix> mmodseg = integrator.IntegrateMmod(sele_,sxia,sxib,mele_,mxia,mxib);
+    RCP<Epetra_SerialDenseMatrix> mmodseg = integrator.IntegrateMmod2D(sele_,sxia,sxib,mele_,mxia,mxib);
     integrator.AssembleMmod(Comm(),sele_,mele_,*mmodseg);
   }
   //--------------------------------------------------------------------*/

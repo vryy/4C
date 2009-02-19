@@ -392,7 +392,7 @@ void CONTACT::Integrator::IntegrateDerivSegment2D(
   
   // get directional derivatives of sxia, sxib, mxia, mxib
   vector<map<int,double> > ximaps(4);
-  DerivXiAB(sele,sxia,sxib,mele,mxia,mxib,ximaps,startslave,endslave);
+  DerivXiAB2D(sele,sxia,sxib,mele,mxia,mxib,ximaps,startslave,endslave);
     
   // prepare directional derivative of dual shape functions
   // this is only necessary for quadratic shape functions in 2D
@@ -496,7 +496,7 @@ void CONTACT::Integrator::IntegrateDerivSegment2D(
     
     // evalute the GP master coordinate derivatives
     map<int,double> dmxigp;
-    DerivXiGP(sele,mele,sxi[0],mxi[0],dsxigp,dmxigp);
+    DerivXiGP2D(sele,mele,sxi[0],mxi[0],dsxigp,dmxigp);
     
     // simple version (no Gauss point projection)
     //for (CI p=ximaps[2].begin();p!=ximaps[2].end();++p)
@@ -811,7 +811,7 @@ void CONTACT::Integrator::IntegrateDerivSegment2D(
 /*----------------------------------------------------------------------*
  |  Compute directional derivative of XiAB (2D)               popp 05/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Integrator::DerivXiAB(CONTACT::CElement& sele,
+void CONTACT::Integrator::DerivXiAB2D(CONTACT::CElement& sele,
                                     double& sxia, double& sxib,
                                     CONTACT::CElement& mele,
                                     double& mxia, double& mxib,
@@ -832,13 +832,13 @@ void CONTACT::Integrator::DerivXiAB(CONTACT::CElement& sele,
   for (int i=0;i<numsnode;++i)
   {
     scnodes[i] = static_cast<CONTACT::CNode*>(snodes[i]);
-    if (!scnodes[i]) dserror("ERROR: DerivXiAB: Null pointer!");
+    if (!scnodes[i]) dserror("ERROR: DerivXiAB2D: Null pointer!");
   }
   
   for (int i=0;i<nummnode;++i)
   {
     mcnodes[i] = static_cast<CONTACT::CNode*>(mnodes[i]);
-    if (!mcnodes[i]) dserror("ERROR: DerivXiAB: Null pointer!");
+    if (!mcnodes[i]) dserror("ERROR: DerivXiAB2D: Null pointer!");
   }
   
   // we also need shape function derivs in A and B
@@ -1123,7 +1123,7 @@ void CONTACT::Integrator::DerivXiAB(CONTACT::CElement& sele,
 /*----------------------------------------------------------------------*
  |  Compute directional derivative of XiGP master (2D)        popp 05/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Integrator::DerivXiGP(CONTACT::CElement& sele,
+void CONTACT::Integrator::DerivXiGP2D(CONTACT::CElement& sele,
                                     CONTACT::CElement& mele,
                                     double& sxigp, double& mxigp,
                                     const map<int,double>& derivsxi,
@@ -1143,13 +1143,13 @@ void CONTACT::Integrator::DerivXiGP(CONTACT::CElement& sele,
   for (int i=0;i<numsnode;++i)
   {
     scnodes[i] = static_cast<CONTACT::CNode*>(snodes[i]);
-    if (!scnodes[i]) dserror("ERROR: DerivXiAB: Null pointer!");
+    if (!scnodes[i]) dserror("ERROR: DerivXiAB2D: Null pointer!");
   }
   
   for (int i=0;i<nummnode;++i)
   {
     mcnodes[i] = static_cast<CONTACT::CNode*>(mnodes[i]);
-    if (!mcnodes[i]) dserror("ERROR: DerivXiAB: Null pointer!");
+    if (!mcnodes[i]) dserror("ERROR: DerivXiAB2D: Null pointer!");
   }
   
   // we also need shape function derivs in A and B
@@ -1187,7 +1187,7 @@ void CONTACT::Integrator::DerivXiGP(CONTACT::CElement& sele,
   
   // normalize interpolated GP normal back to length 1.0 !!!
   double length = sqrt(sgpn[0]*sgpn[0]+sgpn[1]*sgpn[1]+sgpn[2]*sgpn[2]);
-  if (length<1.0e-12) dserror("ERROR: DerivXiGP: Divide by zero!");
+  if (length<1.0e-12) dserror("ERROR: DerivXiGP2D: Divide by zero!");
   for (int i=0;i<3;++i) sgpn[i]/=length;
       
   // compute factors and leading constants for master
@@ -1318,7 +1318,7 @@ void CONTACT::Integrator::DerivXiGP(CONTACT::CElement& sele,
  |  element coordinates given by mxia and mxib                          |
  |  Output is an Epetra_SerialDenseMatrix holding the int. values       |
  *----------------------------------------------------------------------*/
-RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateMmod(CONTACT::CElement& sele,
+RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateMmod2D(CONTACT::CElement& sele,
                                                                  double& sxia, double& sxib,
                                                                  CONTACT::CElement& mele,
                                                                  double& mxia, double& mxib)
@@ -1328,11 +1328,11 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateMmod(CONTACT::CEleme
     
   // check input data
   if ((!sele.IsSlave()) || (mele.IsSlave()))
-    dserror("ERROR: IntegrateMmod called on a wrong type of CElement pair!");
+    dserror("ERROR: IntegrateMmod2D called on a wrong type of CElement pair!");
   if ((sxia<-1.0) || (sxib>1.0))
-    dserror("ERROR: IntegrateMmod called with infeasible slave limits!");
+    dserror("ERROR: IntegrateMmod2D called with infeasible slave limits!");
   if ((mxia<-1.0) || (mxib>1.0))
-      dserror("ERROR: IntegrateMmod called with infeasible master limits!");
+      dserror("ERROR: IntegrateMmod2D called with infeasible master limits!");
   
   // create empty mmodseg object and wrap it with RCP
   int nrow  = sele.NumNode();
@@ -1371,7 +1371,7 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateMmod(CONTACT::CEleme
       cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
       cout << "Gauss point: " << sxi[0] << " " << sxi[1] << endl;
       cout << "Projection: " << mxi[0] << " " << mxi[1] << endl;
-      dserror("ERROR: IntegrateMmod: Gauss point projection failed!");
+      dserror("ERROR: IntegrateMmod2D: Gauss point projection failed!");
     }
     
     // evaluate trace space shape functions (on both elements)
