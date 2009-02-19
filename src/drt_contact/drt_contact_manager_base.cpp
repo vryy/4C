@@ -103,28 +103,28 @@ void CONTACT::ManagerBase::InitializeMortar()
   }
 
   // intitialize Dold and Mold if not done already
-   if (dold_==null)
-   {
-     dold_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
-     dold_->Zero();
-     dold_->Complete();
-   }
-   if (mold_==null)
-   {
-     mold_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
-     mold_->Zero();
-     mold_->Complete(*gmdofrowmap_,*gsdofrowmap_);
-   }
+  if (dold_==null)
+  {
+    dold_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
+    dold_->Zero();
+    dold_->Complete();
+  }
+  if (mold_==null)
+  {
+    mold_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
+    mold_->Zero();
+    mold_->Complete(*gmdofrowmap_,*gsdofrowmap_);
+  }
    
-   // (re)setup global Mortar LINALG::SparseMatrices and Epetra_Vectors
-   dmatrix_    = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
-   mmatrix_    = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
-   mhatmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
-   g_          = LINALG::CreateVector(*gsnoderowmap_,true);
+  // (re)setup global Mortar LINALG::SparseMatrices and Epetra_Vectors
+  dmatrix_    = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
+  mmatrix_    = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
+  mhatmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
+  g_          = LINALG::CreateVector(*gsnoderowmap_,true);
    
-   // (re)setup global matrices containing fc derivatives
-   lindmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
-   linmmatrix_ = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
+  // (re)setup global matrices containing fc derivatives
+  lindmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
+  linmmatrix_ = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
 
   return;
 }
@@ -138,23 +138,30 @@ void CONTACT::ManagerBase::Initialize()
   nmatrix_ = rcp(new LINALG::SparseMatrix(*gactiven_,3));
   tmatrix_ = rcp(new LINALG::SparseMatrix(*gactivet_,3));
   
-  // (re)setup global Tresca friction matrix L and vector R
+  // (re)setup global matrix containing gap derivatives
+  smatrix_ = rcp(new LINALG::SparseMatrix(*gactiven_,3));
+  
+  // further terms depend on friction case
   string ftype   = scontact_.get<string>("friction type","none");
+  
+  // (re)setup global matrix containing "no-friction"-derivatives
+  if (ftype=="none")
+  {
+    pmatrix_ = rcp(new LINALG::SparseMatrix(*gactivet_,3));
+  }
+    
+  // (re)setup global Tresca friction
   if (ftype=="tresca")
   {
     lmatrix_ = rcp(new LINALG::SparseMatrix(*gslipt_,10));
     r_       = LINALG::CreateVector(*gslipt_,true);
+    
+    // here the calculation of gstickt is necessary
+    RCP<Epetra_Map> gstickt = LINALG::SplitMap(*gactivet_,*gslipt_);
+    linstickmatrix_ = rcp(new LINALG::SparseMatrix(*gstickt,3));
+    linslipmatrix_ = rcp(new LINALG::SparseMatrix(*gslipt_,3));
   }
   
-  // (re)setup global matrices containing derivatives
-  smatrix_ = rcp(new LINALG::SparseMatrix(*gactiven_,3));
-  pmatrix_ = rcp(new LINALG::SparseMatrix(*gactivet_,3));
-  
-  // here the calculation of gstickt is necessary
-  RCP<Epetra_Map> gstickt = LINALG::SplitMap(*gactivet_,*gslipt_);
-  linstickmatrix_ = rcp(new LINALG::SparseMatrix(*gstickt,3));
-  
-  linslipmatrix_ = rcp(new LINALG::SparseMatrix(*gslipt_,3));
   return;
 }
 
