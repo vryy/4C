@@ -1,8 +1,16 @@
+//
+// Maintainer: Alexander Popp
+//             popp@lnm.mw.tum.de
+//             http://www.lnm.mw.tum.de
+//             089 - 289-15264
+//
+// necessary defines: CCADISCRET D_SOLID3 BINIO
+//
 ==================================================================
                         General Data File CCARAT
 ==================================================================
 -------------------------------------------------------------TITLE
-Default_title
+first 3D contact tester (linear elements)
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS     129
 NODES        251
