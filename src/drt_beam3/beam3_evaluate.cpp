@@ -1036,18 +1036,12 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
   epsilonn(0) -=  1;
 
 
-  /* read material parameters using structure _MATERIAL which is defined by inclusion of      /
-   / "../drt_lib/drt_timecurve.H"; note: material parameters have to be read in the evaluation /
-   / function instead of e.g. Beam3_input.cpp or within the Beam3Register class since it is not/
-   / sure that structure _MATERIAL is declared within those scopes properly whereas it is within/
-   / the evaluation functions */
-
   // get the material law
   Teuchos::RCP<const MAT::Material> currmat = Material();
   double ym;
   double sm;
   double density;
-
+  
   //assignment of material parameters; only St.Venant material is accepted for this beam
   switch(currmat->MaterialType())
   {
