@@ -29,7 +29,6 @@ DRT::ELEMENTS::Beam3::Beam3(int id, int owner) :
 DRT::Element(id,element_beam3,owner),
 data_(),
 isinit_(false),
-material_(0),
 lrefe_(0),
 crosssec_(0),
 crosssecshear_(0),
@@ -51,7 +50,6 @@ DRT::ELEMENTS::Beam3::Beam3(const DRT::ELEMENTS::Beam3& old) :
  data_(old.data_),
  isinit_(old.isinit_),
  X_(old.X_),
- material_(old.material_),
  lrefe_(old.lrefe_),
  Qconv_(old.Qconv_),
  Qold_(old.Qold_),
@@ -143,8 +141,6 @@ void DRT::ELEMENTS::Beam3::Pack(vector<char>& data) const
   AddtoPack(data,isinit_);
   //reference coordinates
   AddtoPack(data,X_);
-  //material type
-  AddtoPack(data,material_);
   //reference length
   AddtoPack(data,lrefe_);
   //central coordinate triad and related data
@@ -199,8 +195,6 @@ void DRT::ELEMENTS::Beam3::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,isinit_);
   //reference coordinates
   ExtractfromPack(position,data,X_);
-  //material type
-  ExtractfromPack(position,data,material_);
   //reference length
   ExtractfromPack(position,data,lrefe_);
   //central coordinate triad and related data
@@ -335,7 +329,6 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const LINALG::Matrix<6,1>& xre
       betaminusalphaold_(k)  = rotrefe(k+3) - rotrefe(k);
     }  
   }
-
 
   return;
 } //DRT::ELEMENTS::Beam3::SetUpReferenceGeometry()

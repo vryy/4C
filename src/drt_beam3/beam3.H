@@ -63,7 +63,7 @@ public:
   //! @name Friends
   friend class Beam3Register;
   friend class StatMechManager;
-  friend void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& dis);
+  friend void StatMechManager::SetCrosslinkers(const Epetra_Vector& setcrosslinkercol,const Epetra_Map& nodecolmap,const Epetra_Vector& nearestneighbour,const std::map<int,LINALG::Matrix<3,1> >& currentpositions,const std::map<int,LINALG::Matrix<3,1> >& currentrotations);
   friend void StatMechTime::Integrate();
 
   //! @name Constructors and destructors and related methods
@@ -325,9 +325,6 @@ private:
   
   //!reference node position (not needed explicitly, but stored for the sake of completeness)
   LINALG::Matrix<6,1> X_;
-  
-  //! material type
-  int material_;
   
   //! length in reference configuration
   double lrefe_;

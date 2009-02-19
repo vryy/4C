@@ -1086,6 +1086,8 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
   std::cout<<"\nstressn"<<stressn;
   std::cout<<"\nstressm"<<stressm;
 */
+  
+  double torsdamp = 0.0005; //0.000005 for Actin3D_10GOLD1.dat, Actin3D_10GOLD2.dat
 
   //computing global internal forces, Crisfield Vol. 2, equation (17.79)
   //note: X = [-I 0; -S -I; I 0; -S I] with -S = T^t; and S = S(x21)/2;
@@ -1108,9 +1110,9 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
     
 
     
+    
     //artificial isotropic rotational damping
     {
-      double torsdamp = 0.000005; //0.005 is obviously sufficient for free fluctionations with 10 elements
       LINALG::Matrix<3,1> newangle;
       LINALG::Matrix<3,1> convangle;
       quaterniontoangle(Qnew_, newangle);
@@ -1172,17 +1174,12 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
     (*stiffmatrix) += Ksig2;
 
 
-
-
-
     
     //artificial isotropic rotational damping stiffness
     {
-      double torsdamp = 0.000005; //0.005 is obviously sufficient for free fluctionations with 10 elements
       LINALG::Matrix<3,1> newangle;
       quaterniontoangle(Qnew_, newangle);
       LINALG::Matrix<3,3> Hinverse = Hinv(newangle);
-
 
       Hinverse.Scale(zeta_*0.5*torsdamp / params.get<double>("delta time",0.01));
 
@@ -1198,33 +1195,6 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
       }
     }
     
-    
-    /*
-    //artificial isotropic curvature damping stiffness
-    {
-      double torsdamp = 0.05; //0.005 is obviously sufficient for free fluctionations with 10 elements
-
-      LINALG::Matrix<3,3> artstiff = Tnew;
-
-
-      artstiff.Scale(zeta_*torsdamp / (params.get<double>("delta time",0.01) * lrefe_ ));
-
-      for(int i= 0; i<3; i++)
-      {
-        for(int j=0;j<3;j++)
-        {
-          (*stiffmatrix)(3+i, 3+j) += artstiff(j,i);
-          (*stiffmatrix)(9+i, 9+j) -= artstiff(j,i);
-          (*stiffmatrix)(9+i, 3+j) += artstiff(j,i);
-          (*stiffmatrix)(3+i, 9+j) -= artstiff(j,i);
-        }
-      }
-    }
-    */
-    
-
-
-
 
 
   }
