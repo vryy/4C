@@ -57,15 +57,15 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
   statmechparams_.set("FORCE_OR_DISP",0);
   
   
-  //if dynamic crosslinkers are used additional variables are initialized
-  if(Teuchos::getIntegralValue<int>(statmechparams_,"DYN_CROSSLINKERS"))
-  {
   /*setting and deleting dynamic crosslinkers needs a special code structure for parallel search trees
    * here we provide a fully overlapping column map which is required by the search tree to look for each
    * node for all the neighbouring nodes withing a certain distance; note: we pass this fully overlapping
    * map to the discretization and adapt it accordingly; this is not efficient in parallel use, however, it
    * makes sure that it leads to at least correct results; as a consequence this implementation may be con-
-   * sidered an implementation capable for parallel use, but not optimized for it*/
+   * sidered an implementation capable for parallel use, but not optimized for it; note: the discretization's
+   * column map is turned into a fully overlapping one even in case that dynamic crosslinkers are deactivated;
+   * the reason is that also the method for Gmsh output currently relies on a fully overlapping column map
+   * in case of parallel computing (otherwise the output is not written correctly*/
     
     const Epetra_Map noderowmap = *(discret_.NodeRowMap());
 
@@ -117,11 +117,14 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
     /*rebuild discretization basd on the new column map so that each processor creates new ghost elements
      * if necessary; after the following line we have a discretization, where each processor has a fully
      * overlapping column map regardlesse of how overlapping was managed when starting BACI; having ensured
-     * this allows convenient and correct (albeit not necessarily efficient) use of search algorithms in
-     * parallel computing*/     
+     * this allows convenient and correct (albeit not necessarily efficient) use of search algorithms and
+     * crosslinkers in parallel computing*/     
     discret_.FillComplete(true,false,false);
-    
-     
+  
+  
+  //if dynamic crosslinkers are used additional variables are initialized
+  if(Teuchos::getIntegralValue<int>(statmechparams_,"DYN_CROSSLINKERS"))
+  {  
     /* crosslinkerpartner_ and filamentnumber_ is generated based on a column map vector as each node has to 
      * know about each other node its filament number in order to decide weather a crosslink may be established 
      * or not; both vectors are initalized with -1 indicating that no crosslinkers have been set so far nor
