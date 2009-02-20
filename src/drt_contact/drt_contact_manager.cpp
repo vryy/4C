@@ -501,7 +501,10 @@ void CONTACT::Manager::ReadRestart(IO::DiscretizationReader& reader,
 {
   // read restart information for contact
   reader.ReadVector(LagrMultOld(),"lagrmultold");
+  reader.ReadVector(LagrMult(),"lagrmultold");
   StoreNodalQuantities(Manager::lmold);
+  StoreNodalQuantities(Manager::lmcurrent);
+  
   RCP<Epetra_Vector> activetoggle =rcp(new Epetra_Vector(*(SlaveRowNodes())));
   reader.ReadVector(activetoggle,"activetoggle");
 
