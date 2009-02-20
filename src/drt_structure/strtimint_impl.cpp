@@ -86,6 +86,9 @@ STR::TimIntImpl::TimIntImpl
   // create empty residual force vector
   fres_ = LINALG::CreateVector(*dofrowmap_, false);
 
+  // create empty reaction force vector of full length
+  freact_ = LINALG::CreateVector(*dofrowmap_, false);
+
   // create empty interface force vector
   fifc_ = LINALG::CreateVector(*dofrowmap_, true);
 
@@ -148,12 +151,18 @@ void STR::TimIntImpl::Predict()
   // compute residual forces fres_ and stiffness stiff_
   EvaluateForceStiffResidual();
 
-  // extract reaction forces
-  freact_ = dbcmaps_->ExtractCondVector(fres_);
-
   // rotate to local co-ordinate systems
   if (locsysman_ != Teuchos::null)
     locsysman_->RotateGlobalToLocal(fres_);
+
+  // extract reaction forces
+  // reactions are negative to balance residual on DBC
+  freact_->Update(-1.0, *fres_, 0.0);
+  dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(zeros_), freact_);
+  // rotate reaction forces back to global co-ordinate system
+  if (locsysman_ != Teuchos::null)
+    locsysman_->RotateLocalToGlobal(freact_);
+
   // blank residual at DOFs on Dirichlet BC
   dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
   // rotate back to global co-ordinate system
@@ -231,12 +240,17 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
     fres_->Update(1.0, *freact, 1.0);
   }
 
-  // extract reaction forces
-  freact_ = dbcmaps_->ExtractCondVector(fres_);
-
   // rotate to local co-ordinate systems
   if (locsysman_ != Teuchos::null)
     locsysman_->RotateGlobalToLocal(fres_);
+
+  // extract reaction forces
+  freact_->Update(-1.0, *fres_, 0.0);  // reactions are negative
+  dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(zeros_), freact_);
+  // rotate reaction forces back to global co-ordinate system
+  if (locsysman_ != Teuchos::null)
+    locsysman_->RotateLocalToGlobal(freact_);
+
   // blank residual at DOFs on Dirichlet BC
   dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
   // rotate back to global co-ordinate system
@@ -518,16 +532,24 @@ void STR::TimIntImpl::NewtonFull()
     // whose components are globally oriented
     EvaluateForceStiffResidual();
 
-    // extract reaction forces
-    freact_ = dbcmaps_->ExtractCondVector(fres_);
-
     // blank residual at (locally oriented) Dirichlet DOFs
     // rotate to local co-ordinate systems
-    if (locsysman_ != Teuchos::null) locsysman_->RotateGlobalToLocal(fres_);
+    if (locsysman_ != Teuchos::null)
+      locsysman_->RotateGlobalToLocal(fres_);
+
+    // extract reaction forces
+    // reactions are negative to balance residual on DBC
+    freact_->Update(-1.0, *fres_, 0.0);
+    dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(zeros_), freact_);
+    // rotate reaction forces back to global co-ordinate system
+    if (locsysman_ != Teuchos::null)
+    locsysman_->RotateLocalToGlobal(freact_);
+
     // blank residual at DOFs on Dirichlet BC
     dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
     // rotate back to global co-ordinate system
-    if (locsysman_ != Teuchos::null) locsysman_->RotateLocalToGlobal(fres_);
+    if (locsysman_ != Teuchos::null)
+      locsysman_->RotateLocalToGlobal(fres_);
 
     // build residual force norm
     normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
@@ -701,16 +723,24 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
     conmatrix = conman_->GetConstrMatrix();
     conrhs = Teuchos::rcp(new Epetra_Vector(*(conman_->GetError())));
 
-    // extract reaction forces
-    freact_ = dbcmaps_->ExtractCondVector(fres_);
-
     // blank residual at (locally oriented) Dirichlet DOFs
     // rotate to local co-ordinate systems
-    if (locsysman_ != Teuchos::null) locsysman_->RotateGlobalToLocal(fres_);
+    if (locsysman_ != Teuchos::null)
+      locsysman_->RotateGlobalToLocal(fres_);
+
+    // extract reaction forces
+    // reactions are negative to balance residual on DBC
+    freact_->Update(-1.0, *fres_, 0.0);
+    dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(zeros_), freact_);
+    // rotate reaction forces back to global co-ordinate system
+    if (locsysman_ != Teuchos::null)
+      locsysman_->RotateLocalToGlobal(freact_);
+
     // blank residual at DOFs on Dirichlet BC
     dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
     // rotate back to global co-ordinate system
-    if (locsysman_ != Teuchos::null) locsysman_->RotateLocalToGlobal(fres_);
+    if (locsysman_ != Teuchos::null)
+      locsysman_->RotateLocalToGlobal(fres_);
 
     // build residual force norm
     normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
@@ -1094,7 +1124,10 @@ Teuchos::RCP<Epetra_Vector> STR::TimIntImpl::SolveRelaxationLinear()
 void STR::TimIntImpl::PrepareSystemForNewtonSolve()
 {
   // extract reaction forces
-  freact_ = dbcmaps_->ExtractCondVector(fres_);
+  // reactions are negative to balance residual on DBC
+  freact_->Update(-1.0, *fres_, 0.0);
+  dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(zeros_), freact_);
+
   // make the residual negative
   fres_->Scale(-1.0);
   // blank residual at DOFs on Dirichlet BCs

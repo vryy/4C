@@ -515,6 +515,14 @@ namespace STR
     virtual Teuchos::RCP<Epetra_Vector> FextNew() = 0;
 
     //! Return reaction forces
+    //!
+    //! This is a vector of length holding zeros at
+    //! free DOFs and reaction force component at DOFs on DBCs.
+    //! Mark, this is not true for DBCs with local co-ordinate
+    //! systems in which the non-global reaction force 
+    //! component is stored in global Cartesian components.
+    //! The reaction force resultant is not affected by
+    //! this operation.
     Teuchos::RCP<Epetra_Vector> Freact() { return freact_; }
 
     //! Read and set external forces from file
