@@ -3481,28 +3481,27 @@ bool CONTACT::Coupling::IntegrateCells3D()
     // integrate cell only if not neglectable
     if (intcellarea<CONTACTINTLIM*selearea) continue;
     
-    // do the two integrations
+    // do the cell integration (integrate and linearize both M and gap)
     // *******************************************************************
     // ************ Coupling with or without auxiliary plane *************
     // *******************************************************************
 #ifdef CONTACTAUXPLANE
+    // no linearization yet for the aux. plane case
     RCP<Epetra_SerialDenseMatrix> mseg = integrator.IntegrateMAuxPlane3D(sele_,mele_,Cells()[i],Auxn());
     RCP<Epetra_SerialDenseVector> gseg = integrator.IntegrateGAuxPlane3D(sele_,mele_,Cells()[i],Auxn());
 #else
-    RCP<Epetra_SerialDenseMatrix> mseg = integrator.IntegrateM3D(sele_,mele_,Cells()[i]);
-    RCP<Epetra_SerialDenseVector> gseg = integrator.IntegrateG3D(sele_,mele_,Cells()[i]);
+    int nrow = sele_.NumNode();
+    int ncol = mele_.NumNode();
+    RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
+    RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
+    integrator.IntegrateDerivCell3D(sele_,mele_,Cells()[i],mseg,gseg);
+    //RCP<Epetra_SerialDenseMatrix> mseg = integrator.IntegrateM3D(sele_,mele_,Cells()[i]);
+    //RCP<Epetra_SerialDenseVector> gseg = integrator.IntegrateG3D(sele_,mele_,Cells()[i]);
+    //integrator.DerivM3D(sele_,mele_,Cells()[i]);
+    //integrator.DerivG3D(sele_,mele_,Cells()[i]);
 #endif // #ifdef CONTACTAUXPLANE
     // *******************************************************************
-  
-    // compute directional derivative of M and store into nodes
-    // if CONTACTONEMORTARLOOP defined, then DerivM does linearization of M AND D matrices !!!
-#ifdef CONTACTAUXPLANE
-    // linearization not yet implemented
-#else
-    integrator.DerivM3D(sele_,mele_,Cells()[i]);
-    integrator.DerivG3D(sele_,mele_,Cells()[i]);
-#endif // #ifdef CONTACTAUXPLANE
- 
+    
     // do the two assemblies into the slave nodes
     // if CONTACTONEMORTARLOOP defined, then AssembleM does M AND D matrices !!!
     integrator.AssembleM(Comm(),sele_,mele_,*mseg);
@@ -3552,23 +3551,22 @@ bool CONTACT::Coupling::IntegrateCells3D(vector<vector<double> >& testgps,
     // ************ Coupling with or without auxiliary plane *************
     // *******************************************************************
 #ifdef CONTACTAUXPLANE
+    // no linearization yet for the aux. plane case
     RCP<Epetra_SerialDenseMatrix> mseg = integrator.IntegrateMAuxPlane3D(sele_,mele_,Cells()[i],Auxn());
     RCP<Epetra_SerialDenseVector> gseg = integrator.IntegrateGAuxPlane3D(sele_,mele_,Cells()[i],Auxn());
 #else
-    RCP<Epetra_SerialDenseMatrix> mseg = integrator.IntegrateM3D(sele_,mele_,Cells()[i],testgps,testgpm,testjs,testji);
-    RCP<Epetra_SerialDenseVector> gseg = integrator.IntegrateG3D(sele_,mele_,Cells()[i]);
+    int nrow = sele_.NumNode();
+    int ncol = mele_.NumNode();
+    RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
+    RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
+    integrator.IntegrateDerivCell3D(sele_,mele_,Cells()[i],mseg,gseg,testgps,testgpm,testjs,testji,printderiv);
+    //RCP<Epetra_SerialDenseMatrix> mseg = integrator.IntegrateM3D(sele_,mele_,Cells()[i],testgps,testgpm,testjs,testji);
+    //RCP<Epetra_SerialDenseVector> gseg = integrator.IntegrateG3D(sele_,mele_,Cells()[i]);
+    //integrator.DerivM3D(sele_,mele_,Cells()[i],printderiv);
+    //integrator.DerivG3D(sele_,mele_,Cells()[i]);
 #endif // #ifdef CONTACTAUXPLANE
     // *******************************************************************
-  
-    // compute directional derivative of M and store into nodes
-    // if CONTACTONEMORTARLOOP defined, then DerivM does linearization of M AND D matrices !!!
-#ifdef CONTACTAUXPLANE
-    // linearization not yet implemented
-#else
-    integrator.DerivM3D(sele_,mele_,Cells()[i],printderiv);
-    integrator.DerivG3D(sele_,mele_,Cells()[i]);
-#endif // #ifdef CONTACTAUXPLANE
- 
+    
     // do the two assemblies into the slave nodes
     // if CONTACTONEMORTARLOOP defined, then AssembleM does M AND D matrices !!!
     integrator.AssembleM(Comm(),sele_,mele_,*mseg);

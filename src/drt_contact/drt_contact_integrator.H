@@ -178,31 +178,28 @@ public:
                                                 double& sxia, double& sxib,
                                                 CONTACT::CElement& mele,
                                                 double& mxia, double& mxib);
-    
-  /*!
-  \brief Integrate Mortar matrix M on a 2D slave / master integration cell
-        
-  */
-  RCP<Epetra_SerialDenseMatrix> IntegrateM3D(CONTACT::CElement& sele,
-                                             CONTACT::CElement& mele,
-                                             RCP<CONTACT::Intcell> cell);
-  
-  // THIS IS A FINITE DIFFERENCE VERSION ONLY!!!
-  RCP<Epetra_SerialDenseMatrix> IntegrateM3D(CONTACT::CElement& sele,
-                                             CONTACT::CElement& mele,
-                                             RCP<CONTACT::Intcell> cell,
-                                             vector<vector<double> >& testgps,
-                                             vector<vector<double> >& testgpm,
-                                             vector<vector<double> >& testjs,
-                                             vector<vector<double> >& testji);
   
   /*!
-  \brief Compute directional deriv. of M on a 2D slave / master integration cell
-        
-  */
-  void DerivM3D(CONTACT::CElement& sele, CONTACT::CElement& mele,
-                RCP<CONTACT::Intcell> cell, bool printderiv=false);
-  
+ \brief Build all integrals and linearizations on a 2D slave /
+        master integration cell (i.e. M, g, LinM, Ling)
+         
+ */
+ void IntegrateDerivCell3D(
+     CONTACT::CElement& sele, CONTACT::CElement& mele,
+     RCP<CONTACT::Intcell> cell,
+     RCP<Epetra_SerialDenseMatrix> mseg,
+     RCP<Epetra_SerialDenseVector> gseg);
+ 
+ // THIS IS A FINITE DIFFERENCE VERSION ONLY!!!
+ void IntegrateDerivCell3D(
+     CONTACT::CElement& sele, CONTACT::CElement& mele,
+     RCP<CONTACT::Intcell> cell,
+     RCP<Epetra_SerialDenseMatrix> mseg,
+     RCP<Epetra_SerialDenseVector> gseg,
+     vector<vector<double> >& testgps, vector<vector<double> >& testgpm,
+     vector<vector<double> >& testjs, vector<vector<double> >& testji,
+     bool printderiv=false);
+   
   /*!
   \brief Compute directional derivative of master Gauss point
          coordinates XiGP on a 2D slave / master integration cell 
@@ -222,23 +219,6 @@ public:
                                                      RCP<CONTACT::Intcell> cell,
                                                      double* auxn);
   
-  /*!
-  \brief Integrate weighted gap g~ on a 2D slave / master integration cell
-        
-  */
-  RCP<Epetra_SerialDenseVector> IntegrateG3D(CONTACT::CElement& sele,
-                                             CONTACT::CElement& mele,
-                                             RCP<CONTACT::Intcell> cell);
-  
-  /*!
-  \brief Compute directional deriv. of weighted gap g~ on a 2D slave /
-         master integration cell
-        
-  */
-  void DerivG3D(CONTACT::CElement& sele, CONTACT::CElement& mele,
-                RCP<CONTACT::Intcell> cell);
-    
-    
   /*!
   \brief Integrate weighted gap g~ on a 2D slave / master integration cell
          NOTE: This version works with the Auxiliary Plane of 3D Coupling!
