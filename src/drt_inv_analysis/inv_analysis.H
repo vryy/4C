@@ -31,76 +31,129 @@ Maintainer: Sophie Rausch
 #include "../drt_lib/drt_element.H"
 #include "../drt_adapter/adapter_structure.H"
 #include "../drt_structure/strugenalpha.H"
+#include <Teuchos_RefCountPtr.hpp>
+#include <Epetra_SerialDenseVector.h>
+#include "../drt_lib/drt_parobject.H"
+#include "../drt_lib/standardtypes_cpp.H"
+#include "../drt_lib/linalg_fixedsizematrix.H"
 #include <math.h>
+#include "../drt_structure/strtimint.H"
 
-class Inv_analysis : public StruGenAlpha {
+namespace STR
+{
 
-	private:
-                int mp_;      // number of measurment points the
-                               // paramters should be fittet to
-		vector<double>   disp_;		                // displacment vector in all three direction
-                vector<int>      bc_nodes_;
-		vector<double>   load_;		                // displacment vector in all three direction
-                int problem_type_;
+/// Inverse Analysis of Structures
+///
+/// my long and detailed description
+/// including references to papers
+///
+/// \author rausch
+class InvAnalysis {
 
-                Epetra_SerialDenseVector final_value_;                                                // calculated displacment
-                Epetra_SerialDenseVector final_value_o_;		// calculated displacment of the previous loop
-		Epetra_SerialDenseVector measured_value_;	// measured displacment of the experiments (target value)
-		Epetra_SerialDenseVector residual_value_;	// final_disp_ - measured_disp
-		vector<double> storage_residual_value_;
+private:
 
-                double mu_;
-		double mu_plus_;
-		double mu_minus_;
-	        vector<double> storage_mu_;
+  /// my structure discretisation to work at
+  Teuchos::RCP<DRT::Discretization> discret_;
 
-                double error_;
-		double error_o_;
-		double tol_;
+  /// vector layout from the discretization to construct matching vectors and matrices
+  Epetra_Map* dofrowmap_;
 
-                int numb_run_;
+  /// linear algebraic solver
+  Teuchos::RCP<LINALG::Solver> solver_;
 
-                Epetra_SerialDenseVector p_;		        // parameter vector
-		Epetra_SerialDenseVector p_o_;                       // old parameter vector
-		vector<double> p_0_storage_;
-		vector<double> p_1_storage_;
-		vector<double> p_2_storage_;			// change of paramter to the next step
-		bool negative_material_parameters_;
+  /// context for output and restart
+  Teuchos::RCP<IO::DiscretizationWriter> output_;
 
-                double aim_function_;
-		RefCountPtr<Epetra_CrsMatrix> jacobian_;
-		vector<double> parameters_;
-		RefCountPtr<Epetra_Vector>  ref_disp_;
-		RefCountPtr<Epetra_Vector>  ref_load_;
-//		const MATERIAL& mat_;
-//		MATERIAL& nonconstmat_;
+  ///  time integrator for structural dynamics
+  Teuchos::RCP<STR::TimInt> sti_;
 
-                vector<DRT::Condition*> surfneum_;
-                vector<DRT::Condition*> surfdir_;
+  ///  number of measurment points the
+  int mp_;
+  double tstep_;                          // timestep
 
+  vector<double>   disp_;		        // displacment vector in all three direction
+  vector<int>      bc_nodes_;             // nodes with bc
+  vector<int>      bc_dof_;               // nodes with bc
+  vector<double>   load_;		        // load vector in all three direction
+  int problem_type_;		        // Neumann or Dirichlet Problem
+  int pp_;                                // number of fitted parameters (default 3, 4 with kappa)
 
-	public:
+  Epetra_SerialDenseVector ccurve_;       // calculated displacments
+  Epetra_SerialDenseVector ccurve_o_;	// calculated displacment of the previous loop
+  Epetra_SerialDenseVector mcurve_;	// measured displacment of the experiments (target value)
+  Epetra_SerialDenseVector rcurve_;	// final_disp_ - measured_disp
 
-	  Inv_analysis(ParameterList& params,
-	                          DRT::Discretization& dis,
-	                          LINALG::Solver& solver,
-	                          IO::DiscretizationWriter& output,
-	                          bool init = true);
-                void reset_parameters();
-		void get_surfneum_nodes();
-		void get_calculated_curve(const RefCountPtr<Epetra_Vector> value, int numb);
-                void calculate_new_parameters();
-		void evaluate();
-		void Integrate();
-                Teuchos::RCP<Epetra_Map> ConditionDofMap(const DRT::Discretization& dis, std::string condname);
+  double mu_;
+  double mup_;
+  double mum_;
 
-		// virtual void Integrate();
+  int precond_;
 
-};
+  double error_;
+  double error_o_;
+  double tol_;
 
+  int numb_run_;
+  int direction_;                       // gives the direction of the stretch
 
+  Epetra_SerialDenseVector p_;	      // parameter vector
+  Epetra_SerialDenseVector p_neg_;	      // parameter vector
+  Epetra_SerialDenseVector p_o_;        // old parameter vector
+  Epetra_SerialDenseVector delta_p_;    // change of parameter
 
+  /// @name Storage
+  //@{
+  Epetra_SerialDenseMatrix p_s_;
+  Epetra_SerialDenseMatrix delta_p_s_;
+  Epetra_SerialDenseMatrix ccurve_s_;
+  Epetra_SerialDenseMatrix par_s_;
+  Epetra_SerialDenseVector mu_s_;
+  Epetra_SerialDenseVector error_s_;
+  //@}
 
+  vector<DRT::Condition*> surfneum_;
+  vector<DRT::Condition*> surfdir_;
+
+public:
+
+  /// standard constructor
+  InvAnalysis(
+    Teuchos::RCP<DRT::Discretization> dis,  ///< the discretisation
+    Teuchos::RCP<LINALG::Solver> solver,  ///< algebraic solver
+    Teuchos::RCP<IO::DiscretizationWriter> output  ///< outputer
+    );
+
+  /// reset parameters for new fitting loop
+  void ResetParameters();
+
+  /// get current state of calculated curve
+  void GetCalculatedCurve(
+    const Teuchos::RCP<Epetra_Vector> value,  ///< either
+                                              ///< displacements on
+                                              ///< NBC or
+                                              ///< reaction forces on DBC
+
+    int numb  ///< time step
+    );
+
+  /// coarse fitting of parameters
+  void PrecondParameters();
+
+  /// fitting the material parameters using the Levenberg-Marquart algorithm
+  void CalcNewParameters();
+
+  ///
+  void Evaluate();
+
+  ///
+  void Integrate();
+
+  ///
+  void PrintStorage();
+
+};  // class InvAnalysis
+
+}  // namespace STR
 
 #endif /*INV_ANALYSIS_H_*/
 #endif  // #ifdef CCADISCRET

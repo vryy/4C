@@ -73,7 +73,7 @@ namespace STR
 
     //! Update configuration after time step
     //!
-    //! Thus the 'last' converged is lost and a reset of the time step 
+    //! Thus the 'last' converged is lost and a reset of the time step
     //! becomes impossible. We are ready and keen awating the next time step.
     virtual void UpdateStepState() = 0;
 
@@ -85,7 +85,7 @@ namespace STR
       // update time and step
       time_->UpdateSteps(timen_);
       step_ = stepn_;
-      // 
+      //
       timen_ += (*dt_)[0];
       stepn_ += 1;
     }
@@ -138,15 +138,22 @@ namespace STR
 
     //! Return external force \f$F_{ext,n}\f$
     virtual Teuchos::RCP<Epetra_Vector> Fext() = 0;
-    
+
+    //! Return reaction forces
+    Teuchos::RCP<Epetra_Vector> Freact()
+    {
+      dserror("Not impl.");
+      return Teuchos::null;
+    };
+
     //! Read and set external forces from file
     virtual void ReadRestartForce() = 0;
-  
+
 
     //@}
 
   protected:
-  
+
     // currently nothing
 
   };

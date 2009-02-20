@@ -63,6 +63,7 @@ STR::TimIntImpl::TimIntImpl
   disi_(Teuchos::null),
   timer_(actdis->Comm()),
   fres_(Teuchos::null),
+  freact_(Teuchos::null),
   fifc_(Teuchos::null)
 {
   // verify: if system has constraints, then Uzawa-type solver is used
@@ -147,6 +148,9 @@ void STR::TimIntImpl::Predict()
   // compute residual forces fres_ and stiffness stiff_
   EvaluateForceStiffResidual();
 
+  // extract reaction forces
+  freact_ = dbcmaps_->ExtractCondVector(fres_);
+
   // rotate to local co-ordinate systems
   if (locsysman_ != Teuchos::null)
     locsysman_->RotateGlobalToLocal(fres_);
@@ -226,6 +230,9 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
     // add linear reaction forces due to prescribed Dirichlet BCs
     fres_->Update(1.0, *freact, 1.0);
   }
+
+  // extract reaction forces
+  freact_ = dbcmaps_->ExtractCondVector(fres_);
 
   // rotate to local co-ordinate systems
   if (locsysman_ != Teuchos::null)
@@ -511,6 +518,9 @@ void STR::TimIntImpl::NewtonFull()
     // whose components are globally oriented
     EvaluateForceStiffResidual();
 
+    // extract reaction forces
+    freact_ = dbcmaps_->ExtractCondVector(fres_);
+
     // blank residual at (locally oriented) Dirichlet DOFs
     // rotate to local co-ordinate systems
     if (locsysman_ != Teuchos::null) locsysman_->RotateGlobalToLocal(fres_);
@@ -539,7 +549,7 @@ void STR::TimIntImpl::NewtonFull()
   {
     conman_->ComputeMonitorValues(disn_);
   }
-  
+
   // test whether max iterations was hit
   if (iter_ >= itermax_)
   {
@@ -690,6 +700,9 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
     // compute residual and stiffness of constraint equations
     conmatrix = conman_->GetConstrMatrix();
     conrhs = Teuchos::rcp(new Epetra_Vector(*(conman_->GetError())));
+
+    // extract reaction forces
+    freact_ = dbcmaps_->ExtractCondVector(fres_);
 
     // blank residual at (locally oriented) Dirichlet DOFs
     // rotate to local co-ordinate systems
@@ -1080,6 +1093,8 @@ Teuchos::RCP<Epetra_Vector> STR::TimIntImpl::SolveRelaxationLinear()
 /* Prepare system for solving with Newton's method */
 void STR::TimIntImpl::PrepareSystemForNewtonSolve()
 {
+  // extract reaction forces
+  freact_ = dbcmaps_->ExtractCondVector(fres_);
   // make the residual negative
   fres_->Scale(-1.0);
   // blank residual at DOFs on Dirichlet BCs

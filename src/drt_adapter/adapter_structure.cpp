@@ -218,6 +218,9 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   case INPAR::STR::pred_constdisvelacc:
     genalphaparams->set<string>("predictor","constant");
     break;
+  case INPAR::STR::pred_tangdis:
+    genalphaparams->set<string>("predictor","tangdis");
+    break;
   default:
     dserror("Cannot cope with choice of predictor");
     break;

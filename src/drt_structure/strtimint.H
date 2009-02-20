@@ -440,6 +440,9 @@ namespace STR
     //! Return external force \f$F_{ext,n}\f$
     virtual Teuchos::RCP<Epetra_Vector> Fext() = 0;
 
+    //! Return reaction forces
+    virtual Teuchos::RCP<Epetra_Vector> Freact() = 0;
+
     //! Return stiffness,
     //! i.e. force residual differentiated by displacements
     Teuchos::RCP<LINALG::SparseMatrix> Stiff() { return stiff_; }
@@ -534,7 +537,7 @@ namespace STR
 
     //! Dirichlet BCs with local co-ordinate system
     Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;
-    
+
 
     //@}
 

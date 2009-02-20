@@ -366,21 +366,21 @@ public:
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return stiff_; }
   Teuchos::RCP<Epetra_Vector> Dirichlet() { return dirichtoggle_; }
   Teuchos::RCP<DRT::Discretization> Discretization() { return Teuchos::rcp(&discret_,false); }
-  
+
   double AlphaF() { return params_.get<double>("alpha f",0.459); }
   const Epetra_Map& DomainMap() { return mass_->DomainMap(); }
   //! Return bool indicating if constraints are defined
   bool HaveConstraint() {return constrMan_->HaveConstraint(); }
-  
+
   //! Update lagrange multipliers stored in Constraint manager
   virtual void UpdateIterIncrConstr
   (
       Teuchos::RCP<Epetra_Vector> lagrincr ///< Lagrange multiplier increment
   )
   {
-    constrMan_->UpdateLagrMult(lagrincr); 
+    constrMan_->UpdateLagrMult(lagrincr);
   }
-  
+
   //! Return rcp to ConstraintManager conman_
   virtual const RCP<const UTILS::ConstrManager> GetConstraintManager()
   {
@@ -491,7 +491,7 @@ protected:
 
   /// local coordinate systems
   RCP<DRT::UTILS::LocsysManager>   locsysmanager_;
-    
+
   // For a relative convergence check, reference norms have to be
   // calculated. We need to know whether we are in the first step
   // of a simulation (either step=0 or step=genprob.restart) in

@@ -92,7 +92,7 @@ namespace STR
     //! integrator.
     virtual void PredictConstDisConsistVelAcc() = 0;
 
-    //! Predict displacements which satisfy exactly the Dirichlet BCs 
+    //! Predict displacements which satisfy exactly the Dirichlet BCs
     //! and the linearised system at the previously converged state.
     //!
     //! This is an implicit predictor, i.e. it calls the solver once.
@@ -514,6 +514,9 @@ namespace STR
     //! Return external force \f$F_{ext,n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> FextNew() = 0;
 
+    //! Return reaction forces
+    Teuchos::RCP<Epetra_Vector> Freact() { return freact_; }
+
     //! Read and set external forces from file
     virtual void ReadRestartForce() = 0;
 
@@ -579,6 +582,7 @@ namespace STR
     //! @name Various global forces
     //@{
     Teuchos::RCP<Epetra_Vector> fres_;  //!< force residual used for solution
+    Teuchos::RCP<Epetra_Vector> freact_;  //!< reaction force
     //@}
 
     //! @name Interface stuff

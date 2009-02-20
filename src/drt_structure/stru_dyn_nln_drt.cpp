@@ -34,7 +34,9 @@ Maintainer: Michael Gee
 #include "../drt_inpar/inpar_structure.H"
 #include "stru_resulttest.H"
 
+#include "str_invanalysis.H"
 #include "../drt_inv_analysis/inv_analysis.H"
+
 #include "../drt_statmech/statmech_time.H"
 
 /*----------------------------------------------------------------------*
@@ -50,31 +52,42 @@ extern "C"
 void caldyn_drt()
 {
   // get input lists
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
 
-  // major switch to different time integrators
-  switch (Teuchos::getIntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP"))
+  // do we want to do inverse analysis?
+  if ((bool)Teuchos::getIntegralValue<int>(iap,"INV_ANALYSIS"))
   {
-  case INPAR::STR::dyna_centr_diff:
-    dserror("no central differences in DRT");
-    break;
-  case INPAR::STR::dyna_gen_alfa:
-  case INPAR::STR::dyna_gen_alfa_statics:
-    dyn_nlnstructural_drt();
-    break;
-  case INPAR::STR::dyna_Gen_EMM:
-    dserror("GEMM not supported");
-    break;
-  case INPAR::STR::dyna_statics:
-  case INPAR::STR::dyna_genalpha:
-  case INPAR::STR::dyna_onesteptheta:
-  case INPAR::STR::dyna_gemm:
-  case INPAR::STR::dyna_ab2:
-    // direct time integration
-    STR::strudyn_direct();
-    break;
-  default:
-    dserror("unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());
+    STR::invanalysis();
+  }
+  else
+  {
+    // get input lists
+    const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+
+    // major switch to different time integrators
+    switch (Teuchos::getIntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP"))
+    {
+    case INPAR::STR::dyna_centr_diff:
+      dserror("no central differences in DRT");
+      break;
+    case INPAR::STR::dyna_gen_alfa:
+    case INPAR::STR::dyna_gen_alfa_statics:
+      dyn_nlnstructural_drt();
+      break;
+    case INPAR::STR::dyna_Gen_EMM:
+      dserror("GEMM not supported");
+      break;
+    case INPAR::STR::dyna_statics:
+    case INPAR::STR::dyna_genalpha:
+    case INPAR::STR::dyna_onesteptheta:
+    case INPAR::STR::dyna_gemm:
+    case INPAR::STR::dyna_ab2:
+      // direct time integration
+      STR::strudyn_direct();
+      break;
+    default:
+      dserror("unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());
+    }
   }
 }
 
@@ -239,6 +252,9 @@ void dyn_nlnstructural_drt()
         case INPAR::STR::pred_constdisvelacc:
           genalphaparams.set<string>("predictor","constant");
           break;
+        case INPAR::STR::pred_tangdis:
+          genalphaparams.set<string>("predictor","tangdis");
+          break;
         default:
           dserror("Cannot cope with choice of predictor");
           break;
@@ -293,7 +309,7 @@ void dyn_nlnstructural_drt()
         if (contact)
           tintegrator = rcp(new CONTACT::ContactStruGenAlpha(genalphaparams,*actdis,solver,output));
         if (inv_analysis)
-          tintegrator = rcp(new Inv_analysis(genalphaparams,*actdis,solver,output));
+          dserror("Inverse analysis moved ahead to STI");
         if (thermalbath)
           tintegrator = rcp(new StatMechTime(genalphaparams,*actdis,solver,output));
       }

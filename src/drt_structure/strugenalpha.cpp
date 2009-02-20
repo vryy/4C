@@ -283,6 +283,7 @@ fsisurface_(NULL)
  *----------------------------------------------------------------------*/
 void StruGenAlpha::ConstantPredictor()
 {
+  cout << "InStruGenAlpha::ConstantPredictor() " << endl;
 
   // -------------------------------------------------------------------
   // get some parameters from parameter list
@@ -465,6 +466,10 @@ void StruGenAlpha::ConstantPredictor()
   {
     if (locsysmanager_ != null) locsysmanager_->RotateGlobalToLocal(fresm_);
     Epetra_Vector fresmcopy(*fresm_);
+
+    cout << "Calculating fresm_ in the Predictor:" << endl;
+    cout << *fresm_ << endl;
+
     fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
     if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(fresm_);
   }
@@ -500,6 +505,8 @@ void StruGenAlpha::ConstantPredictor()
  *----------------------------------------------------------------------*/
 void StruGenAlpha::ConsistentPredictor()
 {
+   cout << "InStruGenAlpha::ConsistentPredictor() " << endl;
+
   // -------------------------------------------------------------------
   // get some parameters from parameter list
   // -------------------------------------------------------------------
@@ -758,6 +765,8 @@ void StruGenAlpha::ConsistentPredictor()
   {
     if (locsysmanager_ != null) locsysmanager_->RotateGlobalToLocal(fresm_);
     Epetra_Vector fresmcopy(*fresm_);
+    cout << "Calculating fresm_ in the Predictor:" << endl;
+    cout << *fresm_ << endl;
     fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
     if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(fresm_);
   }
@@ -1003,6 +1012,7 @@ void StruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
   // than contains the element loop, so we can fast forward and finish
   // up the linear system.
 
+  cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<in Evaluate>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << endl;
   if (disp!=Teuchos::null)
   {
     // set the new solution we just got
@@ -1136,7 +1146,6 @@ void StruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
     // blank residual DOFs that are on Dirichlet BC
     {
       Epetra_Vector fresmcopy(*fresm_);
-      fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
     }
   }
 
@@ -1176,6 +1185,7 @@ void StruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
  *----------------------------------------------------------------------*/
 void StruGenAlpha::FullNewton()
 {
+  cout << "In StrugenAlpha Newton" << endl;
   // -------------------------------------------------------------------
   // get some parameters from parameter list
   // -------------------------------------------------------------------
@@ -1441,7 +1451,9 @@ void StruGenAlpha::FullNewton()
     {
       if (locsysmanager_ != null) locsysmanager_->RotateGlobalToLocal(fresm_);
       Epetra_Vector fresmcopy(*fresm_);
+
       fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
+
       if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(fresm_);
     }
 
@@ -3168,6 +3180,8 @@ void StruGenAlpha::Integrate()
   int    step    = params_.get<int>   ("step" ,0);
   int    nstep   = params_.get<int>   ("nstep",5);
   double maxtime = params_.get<double>("max time",0.0);
+
+  cout << "<<<<<<<<<<<<<<<<<<<<<<<<Integrate! >>>>>>>>>>>>>>>>>>>>>>>>>" << endl;
 
   // can have values "full newton" , "modified newton" , "nonlinear cg"
   string equil = params_.get<string>("equilibrium iteration","full newton");
