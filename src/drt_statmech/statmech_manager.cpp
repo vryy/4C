@@ -900,9 +900,9 @@ void StatMechManager::SetCrosslinkers(const Epetra_Vector& setcrosslinkercol,con
        
        /*a new crosslinker element is generated according to a crosslinker dummy defined during construction 
         * of the statmech_manager; note that the dummy has already the proper owner number*/                   
-       #ifdef D_BEAM3
-             RCP<DRT::ELEMENTS::Beam3> newcrosslinker = rcp(new DRT::ELEMENTS::Beam3(*crosslinkerdummy) );
-       #endif
+#ifdef D_BEAM3
+       RCP<DRT::ELEMENTS::Beam3> newcrosslinker = rcp(new DRT::ELEMENTS::Beam3(*crosslinkerdummy) );
+       
       
        //assigning correct global Id to new crosslinker element: since each node can have one crosslinker element
        //only at the same time a unique global Id can be found by taking the number of elemnts in the discretization
@@ -926,6 +926,8 @@ void StatMechManager::SetCrosslinkers(const Epetra_Vector& setcrosslinkercol,con
        
        //add new element to discretization
        discret_.AddElement(newcrosslinker); 
+       
+#endif
        
       } //if( (discret_.lColNode(i))->Owner() == discret_.Comm().MyPID() )
     } //if(nearestneighbour[i] > -1 && (*crosslinkerpartner_)[neighbour] == -1.0)
