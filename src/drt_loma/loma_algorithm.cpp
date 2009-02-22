@@ -296,8 +296,8 @@ void LOMA::Algorithm::GenAlphaOuterLoop()
        itmax_ = 1;
   else itmax_ = itmaxpre_;
 
-  // evaluate fluid predictor step
-  FluidField().Predictor();
+  // evaluate fluid predictor step (currently not performed)
+  //FluidField().Predictor();
 
   while (stopnonliniter==false)
   {
@@ -372,7 +372,7 @@ void LOMA::Algorithm::OSTBDF2OuterLoop()
   else itmax_ = itmaxpre_;
 
   // evaluate fluid predictor step
-  FluidField().Predictor();
+  //FluidField().Predictor();
 
   while (stopnonliniter==false)
   {

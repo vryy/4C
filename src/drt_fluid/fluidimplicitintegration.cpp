@@ -1570,23 +1570,18 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
   dtsolve_  = 0.0;
 
   // -------------------------------------------------------------------
-  // parameters and declarations for nonlinear iteration
-  // (including potential skipping of element call for last iteration)
+  // parameters and variables for nonlinear iteration
   // -------------------------------------------------------------------
   const double ittol = params_.get<double>("tolerance for nonlin iter");
   int          itnum = 0;
   int          itemax = 0;
   bool         stopnonliniter = false;
-  if (params_.get<string>("CONVCHECK","L_2_norm")==
-                                      "L_2_norm_without_residual_at_itemax")
-       skiplastelecall_=true;
-  else skiplastelecall_=false;
-  double incvelnorm_L2;
-  double incprenorm_L2;
-  double velnorm_L2;
-  double prenorm_L2;
-  double vresnorm;
-  double presnorm;
+  double       incvelnorm_L2;
+  double       incprenorm_L2;
+  double       velnorm_L2;
+  double       prenorm_L2;
+  double       vresnorm;
+  double       presnorm;
 
 
   // -------------------------------------------------------------------
@@ -1618,6 +1613,11 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
   while (stopnonliniter==false)
   {
     itnum++;
+
+    // -------------------------------------------------------------------
+    // call elements to calculate system matrix and rhs and assemble
+    // -------------------------------------------------------------------
+    AssembleMatAndRHS();
 
     // -------------------------------------------------------------------
     // apply Dirichlet boundary conditions to system of equations:
@@ -1676,12 +1676,6 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
 
       GenAlphaIntermediateValues();
     }
-
-    // -------------------------------------------------------------------
-    // call elements to calculate system matrix and rhs and assemble
-    // (not called if it is the last iteration and we skip the call)
-    // -------------------------------------------------------------------
-    if (not (itnum == itemax) or not skiplastelecall_) AssembleMatAndRHS();
 
     // -------------------------------------------------------------------
     // calculate and print out norms for convergence check
