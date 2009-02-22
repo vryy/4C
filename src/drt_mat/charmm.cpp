@@ -108,17 +108,24 @@ void MAT::CHARMM::Unpack(const vector<char>& data)
 void MAT::CHARMM::Setup(DRT::Container& data_)
 {
 
-    vector<double> his_charmm(10);
-    his_charmm[0] = 0.0; // actual time
-    his_charmm[1] = 0.0; // time at last timestep
-    his_charmm[2] = 1.0;  // updated lambda(1)(t)
-    his_charmm[3] = 1.0;  // lambda(1)(t-dt)
-    his_charmm[4] = 1.0;  // updated lambda(2)(t)
-    his_charmm[5] = 1.0;  // lambda(2)(t-dt)
-    his_charmm[6] = 1.0;  // updated lambda(3)(t)
-    his_charmm[7] = 1.0;  // lambda(3)(t-dt)
-    his_charmm[8] = 3.0;  // updated I1(t)
-    his_charmm[9] = 3.0;  // I1(t-dt)
+    // The following needs to come from the parameter in the final version
+    vector<string> strain_type;
+    strain_type.push_back ("principal");
+    strain_type.push_back ("vector");
+
+    vector<double> his_charmm;
+    his_charmm.push_back(0.0); // actual time
+    his_charmm.push_back(0.0); // time at last timestep
+    for(int i=0;i<(int)strain_type.size();i++) {
+        his_charmm.push_back(1.0);  // updated lambda(1)(t)
+        his_charmm.push_back(1.0);  // lambda(1)(t-dt)
+        his_charmm.push_back(1.0);  // updated lambda(2)(t)
+        his_charmm.push_back(1.0);  // lambda(2)(t-dt)
+        his_charmm.push_back(1.0);  // updated lambda(3)(t)
+        his_charmm.push_back(1.0);  // lambda(3)(t-dt)
+        his_charmm.push_back(3.0);  // updated I1(t)
+        his_charmm.push_back(3.0);  // I1(t-dt)
+    }
     data_.Add("his_charmm",his_charmm);
 
     vector<double> his_mat(1);
@@ -140,13 +147,35 @@ void MAT::CHARMM::Evaluate( const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,
                             const LINALG::SerialDenseMatrix& xrefe,
                             const LINALG::SerialDenseMatrix& xcurr)
 {
+    #ifdef DEBUG
+    if (!glstrain || !cmat || !stress)
+    dserror("Data missing upon input in material neo hooke");
+    #endif
 
     // Parameter collection
     // evaluate lamda at origin or at gp
     bool origin = false;  // change only of xref and xcurr really working!!!!
     // length of the protein in the main pulling direction [A]
     double characteristic_length = 40.625; //50; //originally 44
-
+    // characteristic direction of the protein
+    // Possible selcetions:
+    // principal = main strain direction (biggest eigenvalue)
+    // vector = using the given vector
+    // none = don't use the direction
+    vector<string> strain_type;
+    strain_type.push_back ("principal");
+    strain_type.push_back ("vector");
+    vector<LINALG::SerialDenseVector> d;
+    LINALG::SerialDenseVector d_1(3);
+    LINALG::SerialDenseVector d_2(3);
+    d_1(0) = 0;
+    d_1(1) = 1;
+    d_1(2) = 0;
+    d_2(0) = 1;
+    d_2(1) = 0;
+    d_2(2) = 0;
+    d.push_back(d_1);
+    d.push_back(d_2);
 
     // Identity Matrix
     LINALG::Matrix<3,3> I(true);
@@ -179,40 +208,76 @@ void MAT::CHARMM::Evaluate( const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,
     /////////////////////////////////////////////////////////////////////CHARmm
     // CHARmm things come here
     if (gp == 0) {
+
         // Get the strains in the characteristic directions
+        LINALG::Matrix<3,3> V(C);
         LINALG::SerialDenseVector lambda(3);
-        EvalStrain(origin,C,xrefe,xcurr,lambda);
-        //cout << C << lambda(0) << " : " << lambda(1) << " : " << lambda(2) << endl;
+        vector<LINALG::SerialDenseVector> dir_lambdas;
+        vector<LINALG::Matrix<3,3> > dir_eigenv;
+        // go through number of directions
+        for(int i=0;i<(int)strain_type.size();i++) {
+            if ( strain_type[i].compare("principal") == 0 ) {
+                V.SetCopy(C);
+                EvalStrain(origin,xrefe,xcurr,V,lambda);
+                dir_lambdas.push_back(lambda);
+                dir_eigenv.push_back(V);
+            } else if ( strain_type[i].compare("vector") == 0 ) {
+                V.SetCopy(C);
+                for (int k=0;k<3;k++) for (int l=0;l<3;l++) V(k,l) = d[i](k) * V(k,l) * d[i](l);
+                EvalStrain(origin,xrefe,xcurr,V,lambda);
+                dir_lambdas.push_back(lambda);
+                dir_eigenv.push_back(V);
+            } else if ( strain_type[i].compare("none") == 0 ) {
+                V.Clear();
+                lambda.Zero();
+                dir_lambdas.push_back(lambda);
+                dir_eigenv.push_back(V);
+            } else {
+                dserror("No valid strain type given for CHARmm!");
+            }
+        }
+        //cout << dir_lambdas[1](0) << " : " << dir_lambdas[1](1) << " : " << dir_lambdas[1](2) << endl;
+        //cout << dir_eigenv[1] << endl;
+
 
         // Update and reconfigure history
         vector<double>* his;
         his = data_.GetMutable<vector<double> >("his_charmm");
         if ( (*his)[0] < time ) {
             (*his)[1] = (*his)[0]; // time
-            (*his)[3] = (*his)[2]; // lambda(0)
-            (*his)[5] = (*his)[4]; // lambda(1)
-            (*his)[7] = (*his)[6]; // lambda(2)
-            (*his)[9] = (*his)[8]; // I1
+            for(int i=0;i<(int)strain_type.size();i++) {
+                (*his)[3+(i*8)] = (*his)[2+(i*8)]; // lambda(0)
+                (*his)[5+(i*8)] = (*his)[4+(i*8)]; // lambda(1)
+                (*his)[7+(i*8)] = (*his)[6+(i*8)]; // lambda(2)
+                (*his)[9+(i*8)] = (*his)[8+(i*8)]; // I1
+            }
         }
         (*his)[0] = time;
-        (*his)[2] = lambda(0);
-        (*his)[4] = lambda(1);
-        (*his)[6] = lambda(2);
-        (*his)[8] = I1;
-        //cout  << (*his)[0] << " : " << (*his)[1] << " : "
-        //      << (*his)[2] << " : " << (*his)[3] << " : "
-        //      << (*his)[4] << " : " << (*his)[5] << " : "
-        //      << (*his)[6] << " : " << (*his)[7] << " : "
-        //      << (*his)[8] << " : " << (*his)[9] << " : "
-        //      <<  endl;
+        for(int i=0;i<(int)strain_type.size();i++) {
+            (*his)[2+(i*8)] = dir_lambdas[i](0);
+            (*his)[4+(i*8)] = dir_lambdas[i](1);
+            (*his)[6+(i*8)] = dir_lambdas[i](2);
+            (*his)[8+(i*8)] = I1;
+        }
+        //cout  << (*his)[0] << " : " << (*his)[1] << " : ";
+        //for(int i=0;i<(int)strain_type.size();i++) {
+        //    cout    << (*his)[2+(i*8)] << " : " << (*his)[3+(i*8)] << " : "
+        //            << (*his)[4+(i*8)] << " : " << (*his)[5+(i*8)] << " : "
+        //            << (*his)[6+(i*8)] << " : " << (*his)[7+(i*8)] << " : "
+        //            << (*his)[8+(i*8)] << " : " << (*his)[9+(i*8)] << " : ";
+        //}
+        //cout <<  endl;
 
         // Prepare and call CHARmm in its beauty itself
         // get lambda t-dt information
-        double lambda_his = (*his)[7];
+        vector<double> lambda_his;
+        for(int i=0;i<(int)strain_type.size();i++) {
+            lambda_his.push_back((*his)[7+(i*8)]);
+        }
 
         // calculate STARTD and ENDD for CHARMM
-        double STARTD = characteristic_length * (1 - lambda_his);
-        double ENDD = characteristic_length * (1 - lambda(2)); // Check for better way to choose!!!!
+        double STARTD = characteristic_length * (1 - lambda_his[0]);
+        double ENDD = characteristic_length * (1 - dir_lambdas[0](2)); // Check for better way to choose!!!!
 
         // Call API to CHARMM
         // Results vector: charmm_result
@@ -335,57 +400,59 @@ void MAT::CHARMM::Evaluate( const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,
 //! Evaluate strains in the charateristic directions
 /*----------------------------------------------------------------------*/
 void MAT::CHARMM::EvalStrain( const bool& origin,
-                        const LINALG::Matrix<3,3>& C,
                         const LINALG::SerialDenseMatrix& xrefe,
                         const LINALG::SerialDenseMatrix& xcurr,
+                        LINALG::Matrix<3,3>& C,
                         LINALG::SerialDenseVector& lambda )
 {
     LINALG::SerialDenseVector lambda2(3);
+    LINALG::SerialDenseMatrix Ctmp(3,3);
     if (origin) {
-          // vector of dN/dxsi |r=s=t=0.0
-          double dN0_vector[24] =
-               {-0.125,-0.125,-0.125,
-                +0.125,-0.125,-0.125,
-                +0.125,+0.125,-0.125,
-                -0.125,+0.125,-0.125,
-                -0.125,-0.125,+0.125,
-                +0.125,-0.125,+0.125,
-                +0.125,+0.125,+0.125,
-                -0.125,+0.125,+0.125};
+        // vector of dN/dxsi |r=s=t=0.0
+        double dN0_vector[24] =
+             {-0.125,-0.125,-0.125,
+              +0.125,-0.125,-0.125,
+              +0.125,+0.125,-0.125,
+              -0.125,+0.125,-0.125,
+              -0.125,-0.125,+0.125,
+              +0.125,-0.125,+0.125,
+              +0.125,+0.125,+0.125,
+              -0.125,+0.125,+0.125};
 
-          // shape function derivatives, evaluated at origin (r=s=t=0.0)
-          Epetra_DataAccess CV = Copy;
-          Epetra_SerialDenseMatrix dN0(CV,dN0_vector,3,3,8);
+        // shape function derivatives, evaluated at origin (r=s=t=0.0)
+        Epetra_DataAccess CV = Copy;
+        Epetra_SerialDenseMatrix dN0(CV,dN0_vector,3,3,8);
 
-          // compute Jacobian, evaluated at element origin (r=s=t=0.0)
-          LINALG::SerialDenseMatrix invJacobian0(3,3);
-          invJacobian0.Multiply('N','N',1.0,dN0,xrefe,0.0);
-          const double detJacobian0 = LINALG::NonsymInverse3x3(invJacobian0);
-          if (detJacobian0 < 0.0) dserror("Jacobian at origin negativ (CHARMMAPI)");
+        // compute Jacobian, evaluated at element origin (r=s=t=0.0)
+        LINALG::SerialDenseMatrix invJacobian0(3,3);
+        invJacobian0.Multiply('N','N',1.0,dN0,xrefe,0.0);
+        const double detJacobian0 = LINALG::NonsymInverse3x3(invJacobian0);
+        if (detJacobian0 < 0.0) dserror("Jacobian at origin negativ (CHARMMAPI)");
 
-          //cout << invJacobian0 << endl;
-          LINALG::SerialDenseMatrix N_XYZ(3,8);
-          //compute derivatives N_XYZ at gp w.r.t. material coordinates
-          // by N_XYZ = J^-1 * N_rst
-          N_XYZ.Multiply('N','N',1.0,invJacobian0,dN0,0.0);
-          // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-          LINALG::SerialDenseMatrix defgrd0(3,3);
-          defgrd0.Multiply('T','T',1.0,xcurr,N_XYZ,0.0);
-          // Right Cauchy-Green tensor = F^T * F
-          LINALG::SerialDenseMatrix C0(3,3);
-          C0.Multiply('T','N',1.0,defgrd0,defgrd0,0.0);
+        //cout << invJacobian0 << endl;
+        LINALG::SerialDenseMatrix N_XYZ(3,8);
+        //compute derivatives N_XYZ at gp w.r.t. material coordinates
+        // by N_XYZ = J^-1 * N_rst
+        N_XYZ.Multiply('N','N',1.0,invJacobian0,dN0,0.0);
+        // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
+        LINALG::SerialDenseMatrix defgrd0(3,3);
+        defgrd0.Multiply('T','T',1.0,xcurr,N_XYZ,0.0);
+        // Right Cauchy-Green tensor = F^T * F
+        LINALG::SerialDenseMatrix C0(3,3);
+        C0.Multiply('T','N',1.0,defgrd0,defgrd0,0.0);
 
-          // compute current eigenvalues of gaussian point C
-          LINALG::SerialDenseMatrix Ctmp0(C0);
-          LINALG::SymmetricEigen(Ctmp0,lambda2,'V',false);
+        // compute current eigenvalues of gaussian point C
+        for (int i=0;i<3;i++) for (int j=0;j<3;j++) Ctmp(i,j) = C0(i,j);
+        LINALG::SymmetricEigen(Ctmp,lambda2,'V',false);
+        for (int i=0;i<3;i++) for (int j=0;j<3;j++) C(i,j) = Ctmp(i,j);
     } else {
         // compute current eigenvalues of gaussian point C
         LINALG::SerialDenseMatrix Ctmp(3,3);
         for (int i=0;i<3;i++) for (int j=0;j<3;j++) Ctmp(i,j) = C(i,j);
         LINALG::SymmetricEigen(Ctmp,lambda2,'V',false);
+        for (int i=0;i<3;i++) for (int j=0;j<3;j++) C(i,j) = Ctmp(i,j);
     }
     for (int i=0;i<3;i++) lambda(i) = sqrt(lambda2(i));
-
 }
 
 

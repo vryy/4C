@@ -121,9 +121,9 @@ INPAR::MAT::m_charmm; }
                   const LINALG::SerialDenseMatrix& xcurr);
 
     void EvalStrain( const bool& origin,
-                  const LINALG::Matrix<3,3>& C,
                   const LINALG::SerialDenseMatrix& xrefe,
                   const LINALG::SerialDenseMatrix& xcurr,
+                  LINALG::Matrix<3,3>& C,
                   LINALG::SerialDenseVector& lambda );
     
     Epetra_SerialDenseVector charmmfileapi(
