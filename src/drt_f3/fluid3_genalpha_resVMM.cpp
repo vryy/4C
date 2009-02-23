@@ -9677,6 +9677,17 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   Fluid3::StabilisationAction cross    = ele->ConvertStringToStabAction(stablist.get<string>("CROSS-STRESS"));
   Fluid3::StabilisationAction reynolds = ele->ConvertStringToStabAction(stablist.get<string>("REYNOLDS-STRESS"));
 
+
+  // flag conservative form on/off 
+  string conservativestr =params.get<string>("CONVFORM");
+
+  double fac_conservative =1.0;
+  if(conservativestr=="conservative")
+  {
+    fac_conservative =-1.0;
+  }
+
+
   // select tau definition
   Fluid3::TauType whichtau = Fluid3::tau_not_defined;
   {
@@ -10230,7 +10241,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
                         +
                         velintaf_(2)*(svelaf_(0)*vderxyaf_(2,0)+
                                       svelaf_(1)*vderxyaf_(2,1)+
-                                      svelaf_(2)*vderxyaf_(2,2)));
+                                      svelaf_(2)*vderxyaf_(2,2)))*fac_conservative;
       }
       else
       {
@@ -10245,7 +10256,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
                        +
                        velintaf_(2)*(resM_(0)*vderxyaf_(2,0)+
                                      resM_(1)*vderxyaf_(2,1)+
-                                     resM_(2)*vderxyaf_(2,2)));
+                                     resM_(2)*vderxyaf_(2,2)))*fac_conservative;
       }
     }
 
@@ -10372,7 +10383,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
            +
            velintaf_(2)*(velintaf_(0)*vderxyaf_(2,0)+
                          velintaf_(1)*vderxyaf_(2,1)+
-                         velintaf_(2)*vderxyaf_(2,2)));
+                         velintaf_(2)*vderxyaf_(2,2)))*fac_conservative;
     }
 
     {
