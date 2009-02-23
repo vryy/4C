@@ -73,11 +73,11 @@ void SCATRA::ScaTraResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& 
       result = (*mysol_)[phinpmap.LID(dis_->Dof(actnode,5))];
     // we support only testing of fluxes for the first scalar
     else if (position=="fluxx")
-      result = (*myflux_)[0][phinpmap.LID(dis_->Dof(actnode,0))];
+      result = ((*myflux_)[0])[phinpmap.LID(dis_->Dof(actnode,0))];
     else if (position=="fluxy")
-      result = (*myflux_)[1][phinpmap.LID(dis_->Dof(actnode,0))];
+      result = ((*myflux_)[1])[phinpmap.LID(dis_->Dof(actnode,0))];
     else if (position=="fluxz")
-      result = (*myflux_)[2][phinpmap.LID(dis_->Dof(actnode,0))];
+      result = ((*myflux_)[2])[phinpmap.LID(dis_->Dof(actnode,0))];
     else
     {
       dserror("position '%s' not supported in result-test of scalar transport problems", position.c_str());
