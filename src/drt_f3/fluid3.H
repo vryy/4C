@@ -440,6 +440,7 @@ private:
     smoothed_franca_barrenechea_valentin_wall,
     franca_barrenechea_valentin_wall         ,
     franca_barrenechea_valentin_codina       ,
+    fbvw_gradient_based_hk                   ,
     codina                                   ,
     bazilevs                                 ,
     fbvw_wo_dt                               ,

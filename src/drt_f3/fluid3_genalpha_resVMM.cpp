@@ -237,6 +237,10 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
     {
       whichtau = Fluid3::smoothed_franca_barrenechea_valentin_wall;
     }
+    else if(taudef == "BFVW_gradient_based_hk")
+    {
+      whichtau = Fluid3::fbvw_gradient_based_hk;
+    }
     else
     {
       dserror("unknown tau definition\n");
@@ -11368,6 +11372,92 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau(
 
       tau_(2)=(hk*hk)/(CI*tau_(0));
     }
+    else if(whichtau == Fluid3::fbvw_gradient_based_hk)
+    {
+      // this copy of velintaf_ will be used to store the normed velocity
+      LINALG::Matrix<3,1> normed_velgrad;
+
+      for (int rr=0;rr<3;++rr)
+      {
+        normed_velgrad(rr)=sqrt(vderxyaf_(0,rr)*vderxyaf_(0,rr)
+                                +
+                                vderxyaf_(1,rr)*vderxyaf_(1,rr)
+                                +
+                                vderxyaf_(2,rr)*vderxyaf_(2,rr));
+      } 
+      double norm=normed_velgrad.Norm2();
+
+      // normed gradient
+      if (norm>1e-6)
+      {
+        for (int rr=0;rr<3;++rr)
+        {
+          normed_velgrad(rr)/=norm;
+        } 
+      }
+      else
+      {
+        normed_velgrad(0) = 1.;
+        for (int rr=1;rr<3;++rr)
+        {
+          normed_velgrad(rr)=0.0;
+        }      
+      }
+
+      // get length in this direction
+      double val = 0.0;
+      for (int rr=0;rr<iel;++rr) /* loop element nodes */
+      {
+        val += FABS( normed_velgrad(0)*derxy_(0,rr)         
+                    +normed_velgrad(1)*derxy_(1,rr)        
+                    +normed_velgrad(2)*derxy_(2,rr));
+      } /* end of loop over element nodes */
+      
+      const double gradle = 2.0/val;
+
+
+      //---------------------------------------------- compute tau_Mu = tau_Mp
+      /* convective : viscous forces (element reynolds number)*/
+      const double re_convectaf = (vel_normaf * gradle / visceff ) * (mk/2.0);
+      const double xi_convectaf = DMAX(re_convectaf,1.0);
+
+      /*
+               xi_convect ^
+                          |      /
+                          |     /
+                          |    /
+                        1 +---+
+                          |
+                          |
+                          |
+                          +--------------> re_convect
+                              1
+      */
+
+      /* the 4.0 instead of the Franca's definition 2.0 results from the viscous
+       * term in the Navier-Stokes-equations, which is scaled by 2.0*nu         */
+
+      tau_(0) = DSQR(gradle) / (4.0 * visceff / mk + ( 4.0 * visceff/mk) * xi_convectaf);
+
+      /*------------------------------------------------------ compute tau_C ---*/
+
+      //-- stability parameter definition according to Wall Diss. 99
+      /*
+               xi_convect ^
+                          |
+                        1 |   +-----------
+                          |  /
+                          | /
+                          |/
+                          +--------------> Re_convect
+                              1
+      */
+      const double re_convectnp = (vel_normnp * gradle / visceff ) * (mk/2.0);
+
+      const double xi_tau_c = DMIN(re_convectnp,1.0);
+
+      tau_(2) = vel_normnp * gradle * 0.5 * xi_tau_c;
+    }
     else
     {
       dserror("Unknown definition of stabilisation parameter for time-dependent formulation\n");
@@ -11789,6 +11879,90 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau(
       const double xi_tau_c = DMIN(re_convectnp,1.0);
 
       tau_(2) = vel_normnp * hk * 0.5 * xi_tau_c;
+    }
+    else if(whichtau == Fluid3::fbvw_gradient_based_hk)
+    {
+      // this copy of velintaf_ will be used to store the normed velocity
+      LINALG::Matrix<3,1> normed_velgrad;
+
+      for (int rr=0;rr<3;++rr)
+      {
+        normed_velgrad(rr)=sqrt(vderxyaf_(0,rr)*vderxyaf_(0,rr)
+                                +
+                                vderxyaf_(1,rr)*vderxyaf_(1,rr)
+                                +
+                                vderxyaf_(2,rr)*vderxyaf_(2,rr));
+      } 
+      double norm=normed_velgrad.Norm2();
+
+      // normed gradient
+      if (norm>1e-6)
+      {
+        for (int rr=0;rr<3;++rr)
+        {
+          normed_velgrad(rr)/=norm;
+        } 
+      }
+      else
+      {
+        normed_velgrad(0) = 1.;
+        for (int rr=1;rr<3;++rr)
+        {
+          normed_velgrad(rr)=0.0;
+        }      
+      }
+
+      // get length in this direction
+      double val = 0.0;
+      for (int rr=0;rr<iel;++rr) /* loop element nodes */
+      {
+        val += FABS( normed_velgrad(0)*derxy_(0,rr)         
+                    +normed_velgrad(1)*derxy_(1,rr)        
+                    +normed_velgrad(2)*derxy_(2,rr));
+      } /* end of loop over element nodes */
+      
+      const double gradle = 2.0/val;
+
+      /*----------------------------------------------------- compute tau_Mu ---*/
+      /* stability parameter definition according to
+
+              Barrenechea, G.R. and Valentin, F.: An unusual stabilized finite
+              element method for a generalized Stokes problem. Numerische
+              Mathematik, Vol. 92, pp. 652-677, 2002.
+              http://www.lncc.br/~valentin/publication.htm
+         and:
+              Franca, L.P. and Valentin, F.: On an Improved Unusual Stabilized
+              Finite Element Method for the Advective-Reactive-Diffusive
+              Equation. Computer Methods in Applied Mechanics and Enginnering,
+              Vol. 190, pp. 1785-1800, 2000.
+              http://www.lncc.br/~valentin/publication.htm                   */
+
+      // time factor
+      const double timefac = gamma*dt;
+
+      const double re1 = 4.0 * timefac * visceff / (mk * DSQR(gradle));   /* viscous : reactive forces   */
+      const double re2 = mk * vel_normaf * gradle / (2.0 * visceff);      /* convective : viscous forces */
+
+      const double xi1 = DMAX(re1,1.0);
+      const double xi2 = DMAX(re2,1.0);
+
+      tau_(0) = timefac * DSQR(gradle) / (DSQR(gradle)*xi1+( 4.0 * timefac*visceff/mk)*xi2);
+      tau_(1) = tau_(0);
+
+      // Wall Diss. 99
+      /*
+                      xi2 ^
+                          |
+                        1 |   +-----------
+                          |  /
+                          | /
+                          |/
+                          +--------------> Re2
+                              1
+      */
+      const double xi_tau_c = DMIN(re2,1.0);
+      tau_(2) = vel_normnp * gradle * 0.5 * xi_tau_c;
+
     }
     else
     {
