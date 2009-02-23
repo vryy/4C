@@ -116,11 +116,11 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions
     const int numnp = actele->NumNode();
 
     // access elements knot span
-    std::vector<blitz::Array<double,1> > knots(dim);
+    std::vector<Epetra_SerialDenseVector> knots(dim);
     (*((*nurbsdis).GetKnotVector())).GetEleKnots(knots,actele->Id());
 
     // aquire weights from nodes
-    blitz::Array<double,1> weights(numnp);
+    Epetra_SerialDenseVector weights(numnp);
 
     for (int inode=0; inode<numnp; ++inode)
     {
@@ -132,14 +132,14 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions
     }
 
     // get shapefunctions, compute all visualisation point positions
-    blitz::Array<double,1> nurbs_shape_funct(numnp);
+    Epetra_SerialDenseVector nurbs_shape_funct(numnp);
 
     switch (actele->Shape())
     {
     case DRT::Element::nurbs4:
     {
       // element local point position
-      blitz::Array<double,1> uv(2);
+      Epetra_SerialDenseVector uv(2);
 
       // standard
 
@@ -243,7 +243,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions
     case DRT::Element::nurbs9:
     {
       // element local point position
-      blitz::Array<double,1> uv(2);
+      Epetra_SerialDenseVector uv(2);
 
       {
         // standard
@@ -514,7 +514,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions
     case DRT::Element::nurbs27:
     {
       // element local point position
-      blitz::Array<double,1> uv(3);
+      Epetra_SerialDenseVector uv(3);
 
       int idu;
       int idv;
@@ -1939,11 +1939,11 @@ void EnsightWriter::WriteDofResultStepForNurbs(
     const int numnp = actele->NumNode();
 
     // access elements knot span
-    std::vector<blitz::Array<double,1> > eleknots(dim);
+    std::vector<Epetra_SerialDenseVector> eleknots(dim);
     knots->GetEleKnots(eleknots,actele->Id());
 
     // aquire weights from nodes
-    blitz::Array<double,1> weights(numnp);
+    Epetra_SerialDenseVector weights(numnp);
 
     for (int inode=0; inode<numnp; ++inode)
     {
@@ -1952,10 +1952,10 @@ void EnsightWriter::WriteDofResultStepForNurbs(
     }
 
     // get shapefunctions, compute all visualisation point positions
-    blitz::Array<double,1> nurbs_shape_funct(numnp);
+    Epetra_SerialDenseVector nurbs_shape_funct(numnp);
 
     // element local visualisation point position
-    blitz::Array<double,1> uv(dim);
+    Epetra_SerialDenseVector uv(dim);
 
     // extract local values from the global vectors
     vector<int> lm;
@@ -2364,7 +2364,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(
     case DRT::Element::nurbs27:
     {
       // element local point position
-      blitz::Array<double,1> uv(3);
+      Epetra_SerialDenseVector uv(3);
 
       int idu;
       int idv;
