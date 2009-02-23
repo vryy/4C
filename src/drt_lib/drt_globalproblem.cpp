@@ -670,6 +670,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
   RCP<DRT::Discretization> structdis_macro = null;
   RCP<DRT::Discretization> structdis_micro = null;
 
+  // decide which kind of spatial representation is required
+  const Teuchos::ParameterList& ptype = ProblemTypeParams();
 
   switch (genprob.probtyp){
   case prb_fsi:
@@ -677,9 +679,21 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     // allocate and input general old stuff....
     if (genprob.numfld!=3) dserror("numfld != 3 for fsi problem");
 
-    structdis = rcp(new DRT::Discretization("structure",reader.Comm()));
-    fluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
-    aledis = rcp(new DRT::Discretization("ale",reader.Comm()));
+    std::string distype = ptype.get<std::string>("SHAPEFCT");
+
+    if(distype == "Nurbs")
+    {
+      structdis = rcp(new DRT::NURBS::NurbsDiscretization("structure",reader.Comm()));
+      fluiddis  = rcp(new DRT::NURBS::NurbsDiscretization("fluid"    ,reader.Comm()));
+      aledis    = rcp(new DRT::NURBS::NurbsDiscretization("ale"      ,reader.Comm()));
+    }
+    else
+    {
+      structdis = rcp(new DRT::Discretization("structure",reader.Comm()));
+      fluiddis  = rcp(new DRT::Discretization("fluid"    ,reader.Comm()));
+      aledis    = rcp(new DRT::Discretization("ale"      ,reader.Comm()));
+    }
+
 
     AddDis(genprob.numsf, structdis);
     AddDis(genprob.numff, fluiddis);
@@ -719,7 +733,17 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     // allocate and input general old stuff....
     if (genprob.numfld!=1) dserror("numfld != 1 for ale problem");
 
-    aledis = rcp(new DRT::Discretization("ale",reader.Comm()));
+    std::string distype = ptype.get<std::string>("SHAPEFCT");
+
+    if(distype == "Nurbs")
+    {
+      aledis = rcp(new DRT::NURBS::NurbsDiscretization("ale",reader.Comm()));
+    }
+    else
+    {
+      aledis = rcp(new DRT::Discretization("ale",reader.Comm()));
+    }
+
     AddDis(genprob.numaf, aledis);
 
     DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
@@ -731,9 +755,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
   {
     // allocate and input general old stuff....
     if (genprob.numfld!=1) dserror("numfld != 1 for fluid problem");
-
-    // decide which kind of spatial representation is required
-    const Teuchos::ParameterList& ptype = ProblemTypeParams();
 
     std::string distype = ptype.get<std::string>("SHAPEFCT");
 
@@ -825,7 +846,17 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     // allocate and input general old stuff....
     if (genprob.numfld!=1) dserror("numfld != 1 for structural problem");
 
-    structdis = rcp(new DRT::Discretization("structure",reader.Comm()));
+    std::string distype = ptype.get<std::string>("SHAPEFCT");
+
+    if(distype == "Nurbs")
+    {
+      structdis = rcp(new DRT::NURBS::NurbsDiscretization("structure",reader.Comm()));
+    }
+    else
+    {
+      structdis = rcp(new DRT::Discretization("structure",reader.Comm()));
+    }
+
     AddDis(genprob.numsf, structdis);
 
     DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");

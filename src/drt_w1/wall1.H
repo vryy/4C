@@ -30,6 +30,8 @@ Maintainer: Markus Gitterle
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_inpar/inpar_structure.H"
 
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H" 
+
 // forward declarations
 struct _W1_DATA;  ///< additional wall element data
 
@@ -312,17 +314,18 @@ private:
   /// evaluate the element forces and stiffness and mass
   /// \author mgit \date 03/07
   void w1_nlnstiffmass(
-    const std::vector<int>& lm,  ///< location vector
-    const std::vector<double>& disp,  ///< element displacements
-    const std::vector<double>& residual,  ///< residual displacements
-    Epetra_SerialDenseMatrix* stiffmatrix,  ///< element stiffness matrix
-    Epetra_SerialDenseMatrix* massmatrix,  ///< element mass matrix
-    Epetra_SerialDenseVector* force,  ///< element internal force vector
-    Epetra_SerialDenseMatrix* elestress,  ///< element stresses
-    Epetra_SerialDenseMatrix* elestrain,  ///< element strains
-    Teuchos::RCP<const MAT::Material> material,  ///< element material
-    const INPAR::STR::StressType   iostress,   ///< stress output option
-    const INPAR::STR::StrainType   iostrain    ///< strain output option
+    const std::vector<int>               & lm         , ///< location vector
+    const std::vector<double>            & disp       , ///< element displacements
+    const std::vector<double>            & residual   , ///< residual displacements
+    std::vector<Epetra_SerialDenseVector>& myknots    , ///< knot vector for nurbs elements
+    Epetra_SerialDenseMatrix             * stiffmatrix, ///< element stiffness matrix
+    Epetra_SerialDenseMatrix             * massmatrix , ///< element mass matrix
+    Epetra_SerialDenseVector             * force      , ///< element internal force vector
+    Epetra_SerialDenseMatrix             * elestress  , ///< element stresses
+    Epetra_SerialDenseMatrix             * elestrain  , ///< element strains
+    Teuchos::RCP<const MAT::Material>      material   , ///< element material
+    const INPAR::STR::StressType           iostress   , ///< stress output option
+    const INPAR::STR::StrainType           iostrain     ///< strain output option
   );
 
  // void w1_integration_points(struct _W1_DATA& data);

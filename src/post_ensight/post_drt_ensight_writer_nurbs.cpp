@@ -1421,6 +1421,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions
       break;
     }
     default:
+      cout << *actele;
       dserror("Unknown distype for nurbs element output\n");
     }
   }
@@ -1758,13 +1759,14 @@ void EnsightWriter::WriteNurbsCell(
 
     This element data is communicated in such a way that
     all elements have access to their (dof-accessible) data.
-    Here we seperate velocity and pressure output, since
-    for velocity and pressure different dofs are required.
+    Here we seperate velocity/displacement and pressure 
+    output, since for velocity/displacement and pressure 
+    different dofs are required.
 
     Then, all elements are looped and function values are
     evaluated at visualisation points. This is the place 
     where we need the dof data (again, different data for 
-    velocity and pressure output)
+    velocity/displacement and pressure output)
 
     The resulting vector is allreduced on proc0 and written.
 
@@ -1863,20 +1865,32 @@ void EnsightWriter::WriteDofResultStepForNurbs(
     for (int inode=0; inode<actele->NumNode(); ++inode)
     {
 
-      if(name == "velocity" || name == "averaged_velocity")
+      if(name == "velocity" 
+	 ||
+	 name == "averaged_velocity"
+	)
       {
         for(int rr=0;rr<dim;++rr)
         {
           coldofset.insert(lm[inode*(dim+1)+rr]);
         }
       }
-      else if(name == "pressure" || name == "averaged_pressure")
+      else if(name == "displacement")
+      {
+        for(int rr=0;rr<dim;++rr)
+        {
+          coldofset.insert(lm[inode*dim+rr]);
+        }
+      }
+      else if(name == "pressure" 
+	      ||
+	      name == "averaged_pressure")
       {
         coldofset.insert(lm[inode*(dim+1)+dim]);
       }
       else
       {
-        dserror("up to now, I'm only able to write velocity and pressure\n");
+        dserror("up to now, I'm only able to write velocity, displacement and pressure\n");
       }
     }
   }
@@ -1950,7 +1964,10 @@ void EnsightWriter::WriteDofResultStepForNurbs(
     actele->LocationVector(*nurbsdis,lm,lmowner);
 
     vector<double> my_data(lm.size());
-    if(name == "velocity" || name == "averaged_velocity")
+    if(name == "velocity" 
+       ||
+       name == "averaged_velocity"
+      )
     {
       my_data.resize(dim*numnp);
 
@@ -1959,6 +1976,18 @@ void EnsightWriter::WriteDofResultStepForNurbs(
         for(int rr=0;rr<dim;++rr)
         {
           my_data[dim*inode+rr]=(*coldata)[(*coldata).Map().LID(lm[inode*(dim+1)+rr])];
+        }
+      }
+    }
+    else if(name == "displacement")
+    {
+      my_data.resize(dim*numnp);
+
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        for(int rr=0;rr<dim;++rr)
+        {
+          my_data[dim*inode+rr]=(*coldata)[(*coldata).Map().LID(lm[inode*dim+rr])];
         }
       }
     }
@@ -1973,7 +2002,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(
     }
     else
     {
-      dserror("up to now, I'm only able to write velocity and pressure\n");
+      dserror("up to now, I'm only able to write velocity, displacement and pressure\n");
     }
 
     switch (actele->Shape())

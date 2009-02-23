@@ -23,10 +23,11 @@ Maintainer: Peter Gamnitzer
 #define KNOTVECTOR_H
 
 #include "../drt_lib/drt_parobject.H"
+#include "../drt_lib/linalg_serialdensevector.H"
 #include "../drt_lib/drt_dserror.H"
 
 #include "Teuchos_RefCountPtr.hpp"
-#include <blitz/array.h>
+
 
 using namespace std;
 
@@ -204,8 +205,8 @@ public:
 
   */
   void GetEleKnots(
-    vector<blitz::Array<double,1> > & eleknots,
-    int                               gid
+    vector<Epetra_SerialDenseVector> & eleknots,
+    int                                gid
     );
 
   //@}

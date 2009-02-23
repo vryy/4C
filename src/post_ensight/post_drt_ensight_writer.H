@@ -309,13 +309,14 @@ protected:
 
     This element data is communicated in such a way that
     all elements have access to their (dof-accessible) data.
-    Here we seperate velocity and pressure output, since
-    for velocity and pressure different dofs are required.
+    Here we seperate velocity/displacement and pressure 
+    output, since for velocity/displacement and pressure 
+    different dofs are required.
 
     Then, all elements are looped and function values are
     evaluated at visualisation points. This is the place 
     where we need the dof data (again, different data for 
-    velocity and pressure output)
+    velocity/displacement and pressure output)
 
     The resulting vector is allreduced on proc0 and written.
 

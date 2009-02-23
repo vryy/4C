@@ -367,11 +367,11 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       const int numnp = actele->NumNode();
 
 	// access elements knot span
-      std::vector<blitz::Array<double,1> > knots(3);
+      std::vector<Epetra_SerialDenseVector> knots(3);
       (*((*nurbsdis).GetKnotVector())).GetEleKnots(knots,actele->Id());
 
       // aquire weights from nodes
-      blitz::Array<double,1> weights(numnp);
+      Epetra_SerialDenseVector weights(numnp);
 
       for (int inode=0; inode<numnp; ++inode)
       {
@@ -383,7 +383,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       }
 
       // get shapefunctions, compute all visualisation point positions
-      blitz::Array<double,1> nurbs_shape_funct(numnp);
+      Epetra_SerialDenseVector nurbs_shape_funct(numnp);
 
       switch (actele->Shape())
       {
@@ -391,7 +391,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       case DRT::Element::nurbs27:
       {
 	// element local point position
-	blitz::Array<double,1> uv(3);
+	Epetra_SerialDenseVector uv(3);
 
 	{
 	  // standard

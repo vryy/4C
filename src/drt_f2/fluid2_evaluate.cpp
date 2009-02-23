@@ -36,7 +36,8 @@ Maintainer: Peter Gamnitzer
 #include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/modpowerlaw.H"
 
-#include <blitz/array.h>
+#include "../drt_lib/linalg_serialdensematrix.H"
+#include "../drt_lib/linalg_serialdensevector.H"
 #include <Epetra_SerialDenseSolver.h>
 
 using namespace DRT::UTILS;
@@ -288,14 +289,14 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
       vector<double> myaccam(lm.size());
       DRT::UTILS::ExtractMyValues(*accam,myaccam,lm);
 
-      // create blitz matrix objects
+      // create SerialDense matrix objects
       const int numnode = NumNode();
-      blitz::Array<double, 1> eprenp    (  numnode);
-      blitz::Array<double, 2> evelnp    (2,numnode,blitz::ColumnMajorArray<2>());
-      blitz::Array<double, 2> evelaf    (2,numnode,blitz::ColumnMajorArray<2>());
-      blitz::Array<double, 2> eaccam    (2,numnode,blitz::ColumnMajorArray<2>());
-      blitz::Array<double, 2> edispnp   (2,numnode,blitz::ColumnMajorArray<2>());
-      blitz::Array<double, 2> egridvelaf(2,numnode,blitz::ColumnMajorArray<2>());
+      Epetra_SerialDenseVector eprenp    (  numnode);
+      Epetra_SerialDenseMatrix evelnp    (2,numnode);
+      Epetra_SerialDenseMatrix evelaf    (2,numnode);
+      Epetra_SerialDenseMatrix eaccam    (2,numnode);
+      Epetra_SerialDenseMatrix edispnp   (2,numnode);
+      Epetra_SerialDenseMatrix egridvelaf(2,numnode);
 
 
       // split "my_velnp" into velocity part "myvelnp" and pressure part "myprenp"
@@ -415,7 +416,7 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
 
       // --------------------------------------------------
       // Now do the nurbs specific stuff
-      std::vector<blitz::Array<double,1> > myknots(2);
+      std::vector<Epetra_SerialDenseVector> myknots(2);
 
       // for isogeometric elements
       if(this->Shape()==nurbs4 || this->Shape()==nurbs9)
@@ -489,8 +490,10 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
       //  ~n   ~n+1
       //  p <- p
       //
-      sub_pre_old_ = sub_pre_;
-
+      for(int rr=0;rr<sub_pre_old_.Length();++rr)
+      {
+	sub_pre_old_(rr) = sub_pre_(rr);
+      }
       // the old subscale acceleration for the next timestep is calculated
       // on the fly, not stored on the element
       /*
@@ -503,9 +506,17 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
       const double dt     = params.get<double>("dt");
       const double gamma  = params.get<double>("gamma");
 
-      sub_acc_old_ = (sub_vel_-sub_vel_old_)/(gamma*dt)
-                      -
-                      sub_acc_old_*(1.0-gamma)/gamma;
+
+      for(int rr=0;rr<2;++rr)
+      {
+	for(int mm=0;mm<sub_pre_old_.Length();++mm)
+	{
+	  sub_acc_old_(rr,mm) =
+	  (sub_vel_(rr,mm)-sub_vel_old_(rr,mm))/(gamma*dt)
+	    -
+	    sub_acc_old_(rr,mm)*(1.0-gamma)/gamma;
+	}
+      }
 
       // most recent subscale velocity becomes the old subscale velocity
       // for the next timestep
@@ -513,7 +524,15 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
       //  ~n   ~n+1
       //  u <- u
       //
-      sub_vel_old_=sub_vel_;
+      for(int rr=0;rr<2;++rr)
+      {
+	for(int mm=0;mm<sub_pre_old_.Length();++mm)
+	{
+	  sub_vel_old_(rr,mm)=sub_vel_(rr,mm);
+	}
+      }
+
+
     }
     case calc_fluid_genalpha_average_for_subscales_and_residual:
     {

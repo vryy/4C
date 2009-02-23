@@ -60,6 +60,20 @@ bool DRT::ELEMENTS::Wall1::ReadElement()
     frint_n("TRI6",nodes,nnode,&ierr);
     if (ierr != 1) dserror("Reading of ELEMENT Topology failed");
   }
+  frchk("NURBS4",&ierr);
+  if (ierr==1)
+  {
+    nnode = 4;
+    frint_n("NURBS4",nodes,nnode,&ierr);
+    if (ierr != 1) dserror("Reading of ELEMENT Topology of NURBS4 failed");
+  }
+  frchk("NURBS9",&ierr);
+  if (ierr==1)
+  {
+    nnode = 9;
+    frint_n("NURBS9",nodes,nnode,&ierr);
+    if (ierr != 1) dserror("Reading of ELEMENT Topology of NURBS9 failed");
+  }
   
   // reduce node numbers by one
   for (int i=0; i<nnode; ++i) nodes[i]--;
@@ -176,6 +190,8 @@ DRT::UTILS::GaussRule2D DRT::ELEMENTS::Wall1::getGaussrule(int* ngp)
     case DRT::Element::quad4:
     case DRT::Element::quad8:
     case DRT::Element::quad9:
+    case DRT::Element::nurbs4:
+    case DRT::Element::nurbs9:
     {
        if ( (ngp[0]==1) && (ngp[1]==1) )
        {
@@ -238,8 +254,6 @@ DRT::UTILS::GaussRule2D DRT::ELEMENTS::Wall1::getGaussrule(int* ngp)
   } 
   return rule;
 }
-
-
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_WALL1

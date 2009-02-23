@@ -14,7 +14,6 @@ Maintainer: Peter Gamnitzer
 #ifndef FLUID2_H
 #define FLUID2_H
 
-#include <blitz/array.h>
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_Vector.h"
 using namespace std;
@@ -362,17 +361,17 @@ private:
   DRT::Container                                  data_;
 
   //! matrices of subscale acceleration values in gausspoints of this element
-  blitz::Array<double,2>                        sub_acc_old_;
+  Epetra_SerialDenseMatrix                        sub_acc_old_;
 
   //! matrices of subscale velocity values, current iteration value, in gausspoints of this element
-  blitz::Array<double,2>                        sub_vel_;
+  Epetra_SerialDenseMatrix                        sub_vel_;
   //! matrices of subscale velocity values, last timestep, in gausspoints of this element
-  blitz::Array<double,2>                        sub_vel_old_;
+  Epetra_SerialDenseMatrix                        sub_vel_old_;
 
   //! vector of subscale pressure values, current iteration value, in gausspoints
-  blitz::Array<double,1>                        sub_pre_;
+  Epetra_SerialDenseVector                        sub_pre_;
   //! vector of subscale pressure values (history values) in gausspoints
-  blitz::Array<double,1>                        sub_pre_old_;
+  Epetra_SerialDenseVector                        sub_pre_old_;
 
   // internal calculation methods
 
@@ -793,9 +792,9 @@ private:
   vector<int>&               plm      ,
   Epetra_SerialDenseMatrix&  elemat   ,
   Epetra_SerialDenseVector&  elevec   ,
-  blitz::Array<double,2>&    pevelaf  ,
-  blitz::Array<double,2>&    pevelnp  ,
-  blitz::Array<double,1>&    peprenp  ,
+  Epetra_SerialDenseMatrix&  pevelaf  ,
+  Epetra_SerialDenseMatrix&  pevelnp  ,
+  Epetra_SerialDenseVector&  peprenp  ,
   vector<double>             val      ,
   const vector<int>*         functions,
   double                     curvefac ,

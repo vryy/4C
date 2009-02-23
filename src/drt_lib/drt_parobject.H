@@ -140,6 +140,8 @@ using namespace std;
 #define ParObject_ParMaterial           (int)133
 #define ParObject_CHARMM		(int)134
 #define ParObject_Fluid3NurbsSurface    (int)135
+#define ParObject_Wall1Nurbs            (int)136
+
 
 namespace DRT
 {

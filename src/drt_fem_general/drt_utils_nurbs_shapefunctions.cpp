@@ -24,10 +24,10 @@ Evaluate basis functions of 2d nurbs basis functions.
 */
 
 void DRT::NURBS::UTILS::nurbs_get_2D_funct(
-    blitz::Array<double,1>                 & nurbs_shape_funct  ,
-    const blitz::Array<double,1>           & uv                 ,
-    const vector<blitz::Array<double, 1> > & knots              ,
-    const blitz::Array<double, 1>          & weights            ,
+    Epetra_SerialDenseVector               & nurbs_shape_funct  ,
+    const Epetra_SerialDenseVector         & uv                 ,
+    const vector<Epetra_SerialDenseVector> & knots              ,
+    const Epetra_SerialDenseVector         & weights            ,
     const DRT::Element::DiscretizationType & distype            )
 {
 
@@ -138,7 +138,7 @@ void DRT::NURBS::UTILS::nurbs_get_2D_funct(
   //  PART I: EVALUATION OF  BEZIER SHAPE FUNCTIONS
   // -----------------------------------------------
   
-  blitz::Array<double,1> bezier_shape_funct(  size);
+  Epetra_SerialDenseVector bezier_shape_funct(  size);
     
   // allocate bspline polynomials for both direction
   DRT::NURBS::UTILS::BsplinePolynomial bspline_xi (degree,knots[0]);
@@ -248,11 +248,11 @@ of 2d nurbs basis functions.
 */
 
 void DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
-    blitz::Array<double,1>                 & nurbs_shape_funct  ,
-    blitz::Array<double,2>                 & nurbs_shape_deriv  ,
-    const blitz::Array<double,1>           & uv                 ,
-    const vector<blitz::Array<double, 1> > & knots              ,
-    const blitz::Array<double, 1>          & weights            ,
+    Epetra_SerialDenseVector               & nurbs_shape_funct  ,
+    Epetra_SerialDenseMatrix               & nurbs_shape_deriv  ,
+    const Epetra_SerialDenseVector         & uv                 ,
+    const vector<Epetra_SerialDenseVector> & knots              ,
+    const Epetra_SerialDenseVector         & weights            ,
     const DRT::Element::DiscretizationType & distype            )
 {
 
@@ -363,8 +363,8 @@ void DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
   //  PART I: EVALUATION OF  BEZIER SHAPE FUNCTIONS
   // -----------------------------------------------
   
-  blitz::Array<double,1> bezier_shape_funct(  size);
-  blitz::Array<double,2> bezier_shape_deriv(2,size);
+  Epetra_SerialDenseVector bezier_shape_funct(  size);
+  Epetra_SerialDenseMatrix bezier_shape_deriv(2,size);
     
   // allocate bspline polynomials for both direction
   DRT::NURBS::UTILS::BsplinePolynomial bspline_xi (degree,knots[0]);
@@ -559,12 +559,12 @@ element) of 2d nurbs basis functions.
 */
 
 void DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv_deriv2(
-    blitz::Array<double,1>                 & nurbs_shape_funct  ,
-    blitz::Array<double,2>                 & nurbs_shape_deriv  ,
-    blitz::Array<double,2>                 & nurbs_shape_deriv2 ,
-    const blitz::Array<double,1>           & uv                 ,
-    const vector<blitz::Array<double, 1> > & knots              ,
-    const blitz::Array<double, 1>          & weights            ,
+    Epetra_SerialDenseVector               & nurbs_shape_funct  ,
+    Epetra_SerialDenseMatrix               & nurbs_shape_deriv  ,
+    Epetra_SerialDenseMatrix               & nurbs_shape_deriv2 ,
+    const Epetra_SerialDenseVector         & uv                 ,
+    const vector<Epetra_SerialDenseVector> & knots              ,
+    const Epetra_SerialDenseVector         & weights            ,
     const DRT::Element::DiscretizationType & distype            )
 {
 
@@ -675,9 +675,9 @@ void DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv_deriv2(
   //  PART I: EVALUATION OF  BEZIER SHAPE FUNCTIONS
   // -----------------------------------------------
   
-  blitz::Array<double,1> bezier_shape_funct (  size);
-  blitz::Array<double,2> bezier_shape_deriv (2,size);
-  blitz::Array<double,2> bezier_shape_deriv2(3,size);
+  Epetra_SerialDenseVector bezier_shape_funct (  size);
+  Epetra_SerialDenseMatrix bezier_shape_deriv (2,size);
+  Epetra_SerialDenseMatrix bezier_shape_deriv2(3,size);
     
   // allocate bspline polynomials for both direction
   DRT::NURBS::UTILS::BsplinePolynomial bspline_xi (degree,knots[0]);

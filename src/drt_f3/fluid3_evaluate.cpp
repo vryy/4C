@@ -36,7 +36,6 @@ Maintainer: Georg Bauer
 #include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/modpowerlaw.H"
 
-#include <blitz/array.h>
 #include <Epetra_SerialDenseSolver.h>
 
 using namespace DRT::UTILS;
@@ -1313,7 +1312,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
     }
 
     // access elements knot span
-    std::vector<blitz::Array<double,1> > eleknots(3);
+    std::vector<Epetra_SerialDenseVector> eleknots(3);
     knots->GetEleKnots(eleknots,gid);
 
     // aquire weights from nodes
@@ -1350,7 +1349,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
     for(int rr=0;rr<endlayer;++rr)
     {
       // set gauss point coordinates
-      blitz::Array<double, 1> gp(3);
+      Epetra_SerialDenseVector gp(3);
 
       gp(1)=-1.0+rr*2.0/((double)numsublayers);
 
@@ -2434,8 +2433,6 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
     }
   }
 
-  //  restress_hat = blitz::sum(funct(k)*ereynoldsstress_hat(i,j,k),k);
-
   // get filtered modeled subgrid stress (n+alpha_F/1,i) at integration point
   //
   //
@@ -2465,8 +2462,6 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
       }
     }
   }
-
-  //filtered_modeled_subgrid_stress_hat = blitz::sum(funct(k)*efiltered_modeled_subgrid_stress_hat(i,j,k),k);
 
 
   /*

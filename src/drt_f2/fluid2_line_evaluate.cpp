@@ -267,17 +267,11 @@ int DRT::ELEMENTS::Fluid2Line::Evaluate(        ParameterList&            params
       vector<double> mypvelnp((*plm).size());
       DRT::UTILS::ExtractMyValues(*velnp,mypvelnp,*plm);
 
-      // create blitz matrix object for convenience
+      // create  matrix object for convenience
       const int numnode = parent_->NumNode();
-      blitz::Array<double, 2> pevelaf(2,
-				      numnode,
-				      blitz::ColumnMajorArray<2>());
-
-      blitz::Array<double, 2> pevelnp(2,
-				      numnode,
-				      blitz::ColumnMajorArray<2>());
-
-      blitz::Array<double, 1> peprenp(numnode);
+      Epetra_SerialDenseMatrix pevelaf(2,numnode);
+      Epetra_SerialDenseMatrix pevelnp(2,numnode);
+      Epetra_SerialDenseVector peprenp(  numnode);
 
       // extract velocities
       for (int i=0;i<numnode;++i)
@@ -356,9 +350,9 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
 
   // --------------------------------------------------
   // Now initialise the nurbs specific stuff
-  blitz::Array<double,1> myknots;
+  Epetra_SerialDenseVector myknots;
 
-  blitz::Array<double,1> weights(iel);
+  Epetra_SerialDenseVector weights(iel);
 
   // for isogeometric elements
   if(this->Shape()==nurbs2 || this->Shape()==nurbs3)
@@ -367,7 +361,7 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
       =
       dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
 
-    std::vector<blitz::Array<double,1> > surfaceknots(2);
+    std::vector<Epetra_SerialDenseVector> surfaceknots(2);
     (*((*nurbsdis).GetKnotVector())).GetEleKnots(surfaceknots,parent_->Id());
 
     //           6    7    8
@@ -381,7 +375,7 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
     //           0    1    2  
     //
     // Example: Id()=3 -> (Id())%2=1, i.e. direction v (OK)
-    myknots.resize((surfaceknots[(Id())%2]).extent(blitz::firstDim));
+    myknots.Size((surfaceknots[(Id())%2]).Length());
     myknots=surfaceknots[(Id())%2];
 
     DRT::Node** nodes = Nodes();
@@ -396,11 +390,11 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
   }
 
   // allocate vector for shape functions and matrix for derivatives
-  blitz::Array<double,1> funct(iel);
-  blitz::Array<double,1> deriv(iel);
+  Epetra_SerialDenseVector funct(iel);
+  Epetra_SerialDenseVector deriv(iel);
 
   // node coordinates
-  blitz::Array<double,2> xye(2,iel);
+  Epetra_SerialDenseMatrix xye(2,iel);
 
   // get node coordinates
   for(int i=0;i<iel;++i)
@@ -417,8 +411,8 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
   vector<double> myvedenp(lm.size());
   DRT::UTILS::ExtractMyValues(*vedenp,myvedenp,lm);
 
-  // create blitz object for density array
-  blitz::Array<double, 1> edensnp(iel);
+  // create object for density array
+  Epetra_SerialDenseVector edensnp(iel);
 
   // insert density into element array
   for (int i=0;i<iel;++i)
@@ -448,8 +442,8 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
     vector<double> myvelnp(lm.size());
     DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
 
-    // create blitz object for element array
-    blitz::Array<double, 2> evelnp(2,iel,blitz::ColumnMajorArray<2>());
+    // create object for element array
+    Epetra_SerialDenseMatrix evelnp(2,iel);
 
     // insert velocity into element array
     for (int i=0;i<iel;++i)
@@ -522,12 +516,15 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
         //                           component of
         //                          node coordinate
         //
-
-        blitz::firstIndex  i;   // Placeholder for the first index
-        blitz::secondIndex j;   // Placeholder for the second index
-
-        blitz::Array<double,1> der_par(2);
-        der_par = blitz::sum(deriv(j)*xye(i,j),j);
+        Epetra_SerialDenseVector der_par(2);
+	for(int rr=0;rr<2;++rr)
+	{
+	  der_par(rr)=0;
+	  for(int mm=0;mm<iel;++mm)
+	  {
+	    der_par(rr) += deriv(mm)*xye(rr,mm);
+	  }
+	}
 
         // compute infinitesimal line element dr for integration along the line
         const double dr = sqrt(der_par(0)*der_par(0)+der_par(1)*der_par(1));
@@ -618,12 +615,15 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
       //                           component of
       //                          node coordinate
       //
-
-      blitz::firstIndex  i;   // Placeholder for the first index
-      blitz::secondIndex j;   // Placeholder for the second index
-
-      blitz::Array<double,1> der_par(2);
-      der_par = blitz::sum(deriv(j)*xye(i,j),j);
+      Epetra_SerialDenseVector der_par(2);
+      for(int rr=0;rr<2;++rr)
+      {
+	der_par(rr)=0;
+	for(int mm=0;mm<iel;++mm)
+	{
+	  der_par(rr) += deriv(mm)*xye(rr,mm);
+	}
+      }
 
       // compute infinitesimal line element dr for integration along the line
       const double dr = sqrt(der_par(0)*der_par(0)+der_par(1)*der_par(1));
@@ -1075,9 +1075,9 @@ void DRT::ELEMENTS::Fluid2Line::EvaluateWeakDirichlet(
   vector<int>&               plm                   ,
   Epetra_SerialDenseMatrix&  elemat                ,
   Epetra_SerialDenseVector&  elevec                ,
-  blitz::Array<double,2>&    pevelaf               ,
-  blitz::Array<double,2>&    pevelnp               ,
-  blitz::Array<double,1>&    peprenp               ,
+  Epetra_SerialDenseMatrix&  pevelaf               ,
+  Epetra_SerialDenseMatrix&  pevelnp               ,
+  Epetra_SerialDenseVector&  peprenp               ,
   vector<double>             val                   ,
   const vector<int>*         functions             ,
   double                     curvefac              ,
@@ -1090,13 +1090,12 @@ void DRT::ELEMENTS::Fluid2Line::EvaluateWeakDirichlet(
 {
   //--------------------------------------------------
   // gausspoint quantites
-  blitz::Array<double,1> velintaf(2);
-  blitz::Array<double,1> velintnp(2);
-  blitz::Array<double,2> vderxyaf(2,2,blitz::ColumnMajorArray<2>());
+  Epetra_SerialDenseVector velintaf(2);
+  Epetra_SerialDenseVector velintnp(2);
+  Epetra_SerialDenseMatrix vderxyaf(2,2);
 
-  blitz::Array<double,2> pxji(2,2,blitz::ColumnMajorArray<2>());
-  blitz::Array<double,2> pxjm(2,2,blitz::ColumnMajorArray<2>());
-
+  Epetra_SerialDenseMatrix pxji(2,2);
+  Epetra_SerialDenseMatrix pxjm(2,2);
 
   //--------------------------------------------------
   //                GET PARENT DATA
@@ -1105,7 +1104,7 @@ void DRT::ELEMENTS::Fluid2Line::EvaluateWeakDirichlet(
 
   //--------------------------------------------------
   // get node coordinates
-  blitz::Array<double,2> pxye(2,piel);
+  Epetra_SerialDenseMatrix pxye(2,piel);
 
   for(int i=0;i<piel;++i)
   {
@@ -1115,9 +1114,9 @@ void DRT::ELEMENTS::Fluid2Line::EvaluateWeakDirichlet(
 
   //--------------------------------------------------
   // allocate arrays for shapefunctions and derivatives
-  blitz::Array<double,1> pfunct(  parent_->NumNode());
-  blitz::Array<double,2> pderiv(2,parent_->NumNode());
-  blitz::Array<double,2> pderxy(2,parent_->NumNode());
+  Epetra_SerialDenseVector pfunct(  parent_->NumNode());
+  Epetra_SerialDenseMatrix pderiv(2,parent_->NumNode());
+  Epetra_SerialDenseMatrix pderxy(2,parent_->NumNode());
 
   //--------------------------------------------------
   // get material of volume element this surface belongs to
@@ -1150,7 +1149,7 @@ void DRT::ELEMENTS::Fluid2Line::EvaluateWeakDirichlet(
 
   //--------------------------------------------------
   // get node coordinates
-  blitz::Array<double,2> xye(2,NumNode());
+  Epetra_SerialDenseMatrix xye(2,NumNode());
 
   for(int i=0;i<NumNode();++i)
   {
@@ -1160,12 +1159,12 @@ void DRT::ELEMENTS::Fluid2Line::EvaluateWeakDirichlet(
 
   //--------------------------------------------------
   // allocate arrays for shapefunctions and derivatives
-  blitz::Array<double,1> funct(  NumNode());
-  blitz::Array<double,2> deriv(1,NumNode());
+  Epetra_SerialDenseVector funct(  NumNode());
+  Epetra_SerialDenseMatrix deriv(1,NumNode());
 
   //--------------------------------------------------
   // array for an outward normal
-  blitz::Array<double,1> n(2);
+  Epetra_SerialDenseVector n(2);
 
   //--------------------------------------------------
   // get gausspoints to integrate over boundary element
@@ -1217,7 +1216,7 @@ void DRT::ELEMENTS::Fluid2Line::EvaluateWeakDirichlet(
   {
     startnode=startnode/3;
   }
-  // or maybe use a sweet blitz array/Epetra vector here? ;-) greetings Axel
+
   vector<vector<double> > intpointinparent(intpoints.nquad, std::vector<double>(2,0.0));
   //double intpointinparent[intpoints.nquad][2];
   switch(startnode)
@@ -1364,7 +1363,7 @@ void DRT::ELEMENTS::Fluid2Line::EvaluateWeakDirichlet(
     //      \     /    +---+          \     / 
     //                   i
     */
-    blitz::Array<double,1> dxydr(2);
+    Epetra_SerialDenseVector dxydr(2);
     dxydr=0;
     
     for(int i=0;i<NumNode();++i)
@@ -1495,13 +1494,13 @@ void DRT::ELEMENTS::Fluid2Line::EvaluateWeakDirichlet(
 
     // compute global derivates
     {
-      pderxy = 0.0;
-      blitz::firstIndex  i;   // Placeholder for the first index
-      blitz::secondIndex j;   // Placeholder for the second index
-      blitz::thirdIndex  k;   // Placeholder for the third index
-     
-      pderxy = blitz::sum(pxji(i,k)*pderiv(k,j),k);
-
+      for(int rr=0;rr<2;++rr)
+      {
+	for(int mm=0;mm<piel;++mm)
+	{
+	  pderxy(rr,mm) = pxji(rr,0)*pderiv(0,mm)+pxji(rr,1)*pderiv(1,mm);
+	}
+      }
     }
     
     /*          +-           -+   +-           -+   +-           -+
@@ -1512,7 +1511,7 @@ void DRT::ELEMENTS::Fluid2Line::EvaluateWeakDirichlet(
 	        |    i     j  |   |    i     j  |   |    i     j  |
 		+-           -+   +-           -+   +-           -+
     */
-    blitz::Array<double,2> G(2,2,blitz::ColumnMajorArray<2>());
+    Epetra_SerialDenseMatrix G(2,2);
 
     for (int nn=0;nn<2;++nn)
     {

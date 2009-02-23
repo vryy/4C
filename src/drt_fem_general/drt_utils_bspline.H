@@ -20,8 +20,7 @@ Maintainer: Peter Gamnitzer
 #include<iostream>
 #include<fstream>
 
-#include <blitz/array.h>
-
+#include "../drt_lib/linalg_serialdensevector.H"
 
 
 namespace DRT
@@ -48,7 +47,7 @@ public:
                               degree of polynomial, for
                               consistency checks
 
-      \param local_knotvector blitz::Array<double,1> (i)
+      \param local_knotvector Epetra_SerialDenseVector (i)
                               knot range that contains
                               the compact support of
                               all bsplines which are
@@ -76,8 +75,8 @@ public:
   */
   //--------------------------------------------------
   BsplinePolynomial (
-    const int                     degree,
-    const blitz::Array<double,1>  local_knotvector
+    const int                      degree,
+    const Epetra_SerialDenseVector local_knotvector
     );
   //--------------------------------------------------
   //! \brief destructor
@@ -524,23 +523,23 @@ private:
 
   //! the part of the knotvector where bspline
   //! polynomials of the center-interval are non-zero
-  blitz::Array<double,1> myknotvector_;
+  Epetra_SerialDenseVector myknotvector_;
 
   //! a working array for the construction of bsplines
-  std::vector<double>    bspline_;
+  std::vector<double>      bspline_;
 
   //! the degree of the bspline-polynomial under
   //! consideration
-  int                    degree_;
+  int                      degree_;
   //! the degree of the bspline-polynomial under
   //! consideration plus 1
-  int                    degree_plus_one_;
+  int                      degree_plus_one_;
 
   //! temporary doubles
-  double                 fact_[4];
+  double                   fact_[4];
 
   //! both bspline derivatives from the p-1 level
-  double                 pmo_deriv_[2];
+  double                   pmo_deriv_[2];
 
   //--------------------------------------------------
   //! \brief throw an errormessage

@@ -26,6 +26,7 @@ Maintainer: Markus Gitterle
 // headers
 #include "wall1.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/linalg_utils.H"
@@ -87,6 +88,37 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
   // get the material law
   Teuchos::RCP<const MAT::Material> actmat = Material();
 
+  // --------------------------------------------------
+  // Now do the nurbs specific stuff
+  std::vector<Epetra_SerialDenseVector> myknots(2);
+
+  if(Shape()==DRT::Element::nurbs4
+     ||
+     Shape()==DRT::Element::nurbs9)
+  {
+    switch(act)
+    {
+    case Wall1::calc_struct_linstiff:
+    case Wall1::calc_struct_nlnstiffmass:
+    case Wall1::calc_struct_nlnstifflmass:
+    case Wall1::calc_struct_nlnstiff:
+    case Wall1::calc_struct_internalforce:
+    case Wall1::calc_struct_stress:
+    {
+      DRT::NURBS::NurbsDiscretization* nurbsdis
+	=
+	dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+
+      (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
+      break;
+    }
+    default :
+    {
+      myknots.clear();
+    }
+    }
+  }
+
   switch(act)
   {
     case Wall1::calc_struct_linstiff:
@@ -96,7 +128,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
       for (int i=0; i<(int)mydisp.size(); ++i) mydisp[i] = 0.0;
       vector<double> myres(lm.size());
       for (int i=0; i<(int)myres.size(); ++i) myres[i] = 0.0;
-      w1_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat,
+      w1_nlnstiffmass(lm,mydisp,myres,myknots,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat,
                       INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     break;
@@ -111,7 +143,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      w1_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat,
+      w1_nlnstiffmass(lm,mydisp,myres,myknots,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat,
                       INPAR::STR::stress_none,INPAR::STR::strain_none);
       if (act==calc_struct_nlnstifflmass) w1_lumpmass(&elemat2);
     }
@@ -127,7 +159,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      w1_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,actmat,
+      w1_nlnstiffmass(lm,mydisp,myres,myknots,&elemat1,NULL,&elevec1,NULL,NULL,actmat,
                       INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     break;
@@ -145,7 +177,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
       // This matrix is not utterly useless. It is used to apply EAS-stuff in a linearised manner
       // onto the internal force vector.
       Epetra_SerialDenseMatrix myemat(lm.size(),lm.size());
-      w1_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,actmat,
+      w1_nlnstiffmass(lm,mydisp,myres,myknots,&myemat,NULL,&elevec1,NULL,NULL,actmat,
                       INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     break;
@@ -226,7 +258,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
       Epetra_SerialDenseMatrix strain(intpoints.nquad,Wall1::numstr_);
       INPAR::STR::StressType iostress = params.get<INPAR::STR::StressType>("iostress", INPAR::STR::stress_none);
       INPAR::STR::StrainType iostrain = params.get<INPAR::STR::StrainType>("iostrain", INPAR::STR::strain_none);
-      w1_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,actmat,iostress,iostrain);
+      w1_nlnstiffmass(lm,mydisp,myres,myknots,NULL,NULL,NULL,&stress,&strain,actmat,iostress,iostrain);
       AddtoPack(*stressdata, stress);
       AddtoPack(*straindata, strain);
     }
@@ -487,18 +519,19 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(ParameterList& params,
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                            mgit 03/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
-                                           const vector<double>&     disp,
-                                           const vector<double>&     residual,
-                                           Epetra_SerialDenseMatrix* stiffmatrix,
-                                           Epetra_SerialDenseMatrix* massmatrix,
-                                           Epetra_SerialDenseVector* force,
-                                           Epetra_SerialDenseMatrix* elestress,
-                                           Epetra_SerialDenseMatrix* elestrain,
-                                           Teuchos::RCP<const MAT::Material> material,
-                                           const INPAR::STR::StressType iostress,
-                                           const INPAR::STR::StrainType iostrain)
-
+void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(
+  const vector<int>                    & lm         ,
+  const vector<double>                 & disp       ,
+  const vector<double>                 & residual   ,
+  std::vector<Epetra_SerialDenseVector>& myknots    ,
+  Epetra_SerialDenseMatrix             * stiffmatrix,
+  Epetra_SerialDenseMatrix             * massmatrix ,
+  Epetra_SerialDenseVector             * force      ,
+  Epetra_SerialDenseMatrix             * elestress  ,
+  Epetra_SerialDenseMatrix             * elestrain  ,
+  Teuchos::RCP<const MAT::Material>      material   ,
+  const INPAR::STR::StressType           iostress   ,
+  const INPAR::STR::StrainType           iostrain   )
 {
   const int numnode = NumNode();
   const int numdf   = 2;
@@ -506,7 +539,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
 
 
    // general arrays
-  Epetra_SerialDenseVector      funct(numnode);
+  Epetra_SerialDenseVector funct(numnode);
   Epetra_SerialDenseMatrix deriv;
   deriv.Shape(2,numnode);
   Epetra_SerialDenseMatrix xjm;
@@ -529,7 +562,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
   C.Shape(4,4);
 
   // for EAS, in any case declare variables, sizes etc. only in eascase
-  Epetra_SerialDenseMatrix* alpha;  // EAS alphas
+  Epetra_SerialDenseMatrix* alpha=NULL;  // EAS alphas
   Epetra_SerialDenseMatrix F_enh;  // EAS matrix F_enh
   Epetra_SerialDenseMatrix F_tot;  // EAS vector F_tot
   Epetra_SerialDenseMatrix p_stress;  // first piola-kirchhoff stress vector
@@ -544,16 +577,16 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
   Epetra_SerialDenseMatrix Kaa;  // EAS matrix Kaa
   Epetra_SerialDenseVector feas; // EAS portion of internal forces
   double detJ0;  // detJ(origin)
-  Epetra_SerialDenseMatrix* oldfeas;   // EAS history
-  Epetra_SerialDenseMatrix* oldKaainv; // EAS history
-  Epetra_SerialDenseMatrix* oldKda;    // EAS history
+  Epetra_SerialDenseMatrix* oldfeas  =NULL;   // EAS history
+  Epetra_SerialDenseMatrix* oldKaainv=NULL; // EAS history
+  Epetra_SerialDenseMatrix* oldKda   =NULL;    // EAS history
 
   // ------------------------------------ check calculation of mass matrix
   double density = 0.0;
   if (massmatrix) density = Density(material);
 
   /*------- get integraton data ---------------------------------------- */
-  const DiscretizationType distype = this->Shape();
+  const DiscretizationType distype = Shape();
 
   // gaussian points
   const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
@@ -565,6 +598,21 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
     xrefe(1,k) = Nodes()[k]->X()[1];
     xcure(0,k) = xrefe(0,k) + disp[k*numdf+0];
     xcure(1,k) = xrefe(1,k) + disp[k*numdf+1];
+  }
+
+
+  /*--------------------------------- get node weights for nurbs elements */
+  Epetra_SerialDenseVector weights(numnode);
+  if(distype==DRT::Element::nurbs4 || distype==DRT::Element::nurbs9)
+  {
+    for (int inode=0; inode<numnode; ++inode)
+    {
+      DRT::NURBS::ControlPoint* cp
+        =
+        dynamic_cast<DRT::NURBS::ControlPoint* > (Nodes()[inode]);
+      
+      weights(inode) = cp->W();
+    }
   }
 
   if (iseas_ == true)
@@ -627,9 +675,30 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const vector<int>&        lm,
     const double e2 = intpoints.qxg[ip][1];
     const double wgt = intpoints.qwgt[ip];
 
-    // shape functions and their derivatives
-    DRT::UTILS::shape_function_2D(funct,e1,e2,distype);
-    DRT::UTILS::shape_function_2D_deriv1(deriv,e1,e2,distype);
+    // get values of shape functions and derivatives in the gausspoint
+    if(distype != DRT::Element::nurbs4
+       &&
+       distype != DRT::Element::nurbs9)
+    {
+    // shape functions and their derivatives for polynomials
+      DRT::UTILS::shape_function_2D       (funct,e1,e2,distype);
+      DRT::UTILS::shape_function_2D_deriv1(deriv,e1,e2,distype);
+    }
+    else
+    {
+      // nurbs version
+      Epetra_SerialDenseVector gp(2);
+      gp(0)=e1;
+      gp(1)=e2;
+
+      DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
+	(funct  ,
+	 deriv  ,
+	 gp     ,
+	 myknots,
+	 weights,
+	 distype);
+    }
 
     /*--------------------------------------- compute jacobian Matrix */
     w1_jacobianmatrix(xrefe,deriv,xjm,&det,numnode);
@@ -849,9 +918,9 @@ void DRT::ELEMENTS::Wall1::w1_jacobianmatrix(
    }
 
 /*------------------------------------------ determinant of jacobian ---*/
-     *det = xjm[0][0]* xjm[1][1] - xjm[1][0]* xjm[0][1];
+   *det = xjm[0][0]* xjm[1][1] - xjm[1][0]* xjm[0][1];
 
-      if (*det<0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
+   if (*det<0.0) dserror("NEGATIVE JACOBIAN DETERMINANT %8.5f in ELEMENT %d\n",*det,Id());
 /*----------------------------------------------------------------------*/
 
    return;
@@ -1189,7 +1258,7 @@ void DRT::ELEMENTS::Wall1::Energy(
   Epetra_SerialDenseMatrix massmatrix(lm.size(),lm.size());
 
   // for EAS, in any case declare variables, sizes etc. only allocated in EAS version
-  Epetra_SerialDenseMatrix* alphao;  // EAS alphas at t_{n}
+  Epetra_SerialDenseMatrix* alphao=NULL;  // EAS alphas at t_{n}
   Epetra_SerialDenseMatrix Fenhv;  // EAS matrix Fenhv
   Epetra_SerialDenseMatrix Fm;  // total def.grad. matrix at t_{n}
   Epetra_SerialDenseMatrix Xjm0;  // Jacobian Matrix (origin)

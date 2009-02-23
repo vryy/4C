@@ -38,32 +38,32 @@ DRT::ELEMENTS::Fluid2GenalphaResVMM::Fluid2GenalphaResVMM(int iel)
 // nodal data
 //-----------------------+------------+------------------------------------
 //                  dim  | derivative | node
-    xyze_         (  2   ,              iel_,blitz::ColumnMajorArray<2>()),
+    xyze_         (  2   ,              iel_                             ),
     weights_      (                     iel_                             ),
-    edeadaf_      (  2   ,              iel_,blitz::ColumnMajorArray<2>()),
+    edeadaf_      (  2   ,              iel_                             ),
 //-----------------------+------------+------------------------------------
 // gausspoint data
 //------------------------------------------------------------------------
 //                  dim  | derivative | node
 //-----------------------+------------+------------------------------------
     funct_        (                     iel_                             ),
-    deriv_        (            2      , iel_,blitz::ColumnMajorArray<2>()),
-    deriv2_       (            3      , iel_,blitz::ColumnMajorArray<2>()),
-    derxy_        (            2      , iel_,blitz::ColumnMajorArray<2>()),
-    derxy2_       (            3      , iel_,blitz::ColumnMajorArray<2>()),
+    deriv_        (            2      , iel_                             ),
+    deriv2_       (            3      , iel_                             ),
+    derxy_        (            2      , iel_                             ),
+    derxy2_       (            3      , iel_                             ),
     viscs2_       (  2   ,     2      , iel_,blitz::ColumnMajorArray<3>()),
-    xjm_          (  2   ,     2            ,blitz::ColumnMajorArray<2>()),
-    xji_          (  2   ,     2            ,blitz::ColumnMajorArray<2>()),
+    xjm_          (  2   ,     2                                         ),
+    xji_          (  2   ,     2                                         ),
     // for xder2, dim and derivative are interchanged
-    xder2_        (  3   ,     2            ,blitz::ColumnMajorArray<2>()),
+    xder2_        (  3   ,     2                                         ),
     accintam_     (  2                                                   ),
     velintnp_     (  2                                                   ),
     velintaf_     (  2                                                   ),
     ugrid_af_     (  2                                                   ),
     pderxynp_     (  2                                                   ),
-    vderxynp_     (  2   ,     2            ,blitz::ColumnMajorArray<2>()),
-    vderxyaf_     (  2   ,     2            ,blitz::ColumnMajorArray<2>()),
-    vderxy2af_    (  2   ,     3            ,blitz::ColumnMajorArray<2>()),
+    vderxynp_     (  2   ,     2                                         ),
+    vderxyaf_     (  2   ,     2                                         ),
+    vderxy2af_    (  2   ,     3                                         ),
     bodyforceaf_  (  2                                                   ),
     conv_c_af_    (                     iel_                             ),
     conv_r_af_    (  2   ,     2      , iel_,blitz::ColumnMajorArray<3>()),
@@ -89,15 +89,15 @@ DRT::ELEMENTS::Fluid2GenalphaResVMM::Fluid2GenalphaResVMM(int iel)
   *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
   Fluid2*                                               ele,
-  std::vector<blitz::Array<double,1> >&                 myknots,
+  std::vector<Epetra_SerialDenseVector>&                myknots,
   Epetra_SerialDenseMatrix&                             elemat,
   Epetra_SerialDenseVector&                             elevec,
-  const blitz::Array<double,2>&                         edispnp,
-  const blitz::Array<double,2>&                         egridvaf,
-  const blitz::Array<double,2>&                         evelnp,
-  const blitz::Array<double,1>&                         eprenp,
-  const blitz::Array<double,2>&                         eaccam,
-  const blitz::Array<double,2>&                         evelaf,
+  const Epetra_SerialDenseMatrix&                       edispnp,
+  const Epetra_SerialDenseMatrix&                       egridvaf,
+  const Epetra_SerialDenseMatrix&                       evelnp,
+  const Epetra_SerialDenseVector&                       eprenp,
+  const Epetra_SerialDenseMatrix&                       eaccam,
+  const Epetra_SerialDenseMatrix&                       evelaf,
   Teuchos::RCP<const MAT::Material>                     material,
   const double                                          alphaM,
   const double                                          alphaF,
@@ -116,21 +116,6 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
   const bool                                            compute_elemat
   )
 {
-
-  //------------------------------------------------------------------
-  //                     BLITZ CONFIGURATION
-  //------------------------------------------------------------------
-  //
-  // We define the variables i,j,k to be indices to blitz arrays.
-  // These are used for array expressions, that is matrix-vector
-  // products in the following.
-
-  blitz::firstIndex  i;   // Placeholder for the first index
-  blitz::secondIndex j;   // Placeholder for the second index
-  blitz::thirdIndex  k;   // Placeholder for the third index
-  blitz::fourthIndex l;   // Placeholder for the fourth index
-
-  blitz::Range       _ = blitz::Range::all();
 
   //------------------------------------------------------------------
   //           SET TIME INTEGRATION SCHEME RELATED DATA
@@ -177,7 +162,11 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
   // add displacement, when fluid nodes move in the ALE case
   if (ele->is_ale_)
   {
-    xyze_ += edispnp;
+    for (int inode=0; inode<iel_; inode++)
+    {
+      xyze_(0,inode) += edispnp(0,inode);
+      xyze_(1,inode) += edispnp(1,inode);
+    }
   }
 
   // get node weights for nurbs elements
@@ -245,12 +234,12 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
   // shape functions and derivs at element center
   const double wquad = intpoints_onepoint.qwgt[0];
         
-  blitz::Array<double, 1> gp(2);
+  Epetra_SerialDenseVector gp(2);
   gp(0)=intpoints_onepoint.qxg[0][0];
   gp(1)=intpoints_onepoint.qxg[0][1];
 
   if(distype == DRT::Element::nurbs4
-          ||
+     ||
      distype == DRT::Element::nurbs9)
   {
     DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
@@ -288,7 +277,17 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
   }
 
   // get Jacobian matrix and determinant
-  xjm_ = blitz::sum(deriv_(i,k)*xyze_(j,k),k);
+  for(int rr=0;rr<2;++rr)
+  {
+    for(int mm=0;mm<2;++mm)
+    {
+      xjm_(rr,mm)=0.0;
+      for(int i=0;i<iel_;++i)
+      {
+	xjm_(rr,mm)+=deriv_(rr,i)*xyze_(mm,i);
+      }
+    }
+  }
   const double det = xjm_(0,0)*xjm_(1,1) - xjm_(0,1)*xjm_(1,0);
 
   // check for degenerated elements
@@ -335,7 +334,17 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
   xji_(1,1) = ( xjm_(0,0))/det;
 
   // compute global derivates
-  derxy_ = blitz::sum(xji_(i,k)*deriv_(k,j),k);
+  for(int rr=0;rr<2;++rr)
+  {
+    for(int i=0;i<iel_;++i)
+    {
+      derxy_(rr,i)=0.0;
+      for(int mm=0;mm<2;++mm)
+      {
+	derxy_(rr,i)+=xji_(rr,mm)*deriv_(mm,i);
+      }
+    }
+  }
 
   // get velocities (n+alpha_F,i) at integration point
   //
@@ -346,7 +355,14 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
   //                 +-----
   //                 node j
   //
-  velintaf_ = blitz::sum(funct_(j)*evelaf(i,j),j);
+  for(int rr=0;rr<2;++rr)
+  {
+    velintaf_(rr)=0.0;
+    for(int i=0;i<iel_;++i)
+    {
+      velintaf_(rr)+=funct_(i)*evelaf(rr,i);
+    }
+  }
 
   // get velocity (n+alpha_F,i) derivatives at integration point
   //
@@ -359,7 +375,17 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
   //
   // j : direction of derivative x/y/z
   //
-  vderxyaf_ = blitz::sum(derxy_(j,k)*evelaf(i,k),k);
+  for(int rr=0;rr<2;++rr)
+  {
+    for(int mm=0;mm<2;++mm)
+    {
+      vderxyaf_(rr,mm)=0.0;
+      for(int i=0;i<iel_;++i)
+      {
+	vderxyaf_(rr,mm)+=derxy_(mm,i)*evelaf(rr,i);
+      }
+    }
+  }
 
   // get velocities (n+1,i)  at integration point
   //
@@ -370,11 +396,18 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
   //                +-----
   //                node j
   //
-  velintnp_    = blitz::sum(funct_(j)*evelnp(i,j),j);
+  for(int rr=0;rr<2;++rr)
+  {
+    velintnp_(rr)=0.0;
+    for(int i=0;i<iel_;++i)
+    {
+      velintnp_(rr)+=funct_(i)*evelnp(rr,i);
+    }
+  }
 
   // get velocity norms
-  const double vel_normaf = sqrt(blitz::sum(velintaf_*velintaf_));
-  const double vel_normnp = sqrt(blitz::sum(velintnp_*velintnp_));
+  const double vel_normaf = velintaf_.Norm2();
+  const double vel_normnp = velintnp_.Norm2();
 
   /*------------------------------------------------------------------*/
   /*                                                                  */
@@ -485,22 +518,33 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
 
 
     // this copy of velintaf_ will be used to store the normed velocity
-    blitz::Array<double,1> normed_velintaf(2);
-    normed_velintaf=velintaf_.copy();
+    Epetra_SerialDenseVector normed_velintaf(2);
+    for(int rr=0;rr<2;++rr)
+    {
+      normed_velintaf(rr)=velintaf_(rr);
+    }
 
     // normed velocity at element center (we use the copy for safety reasons!)
     if (vel_normaf>=1e-6)
     {
-      normed_velintaf = velintaf_/vel_normaf;
+      for(int rr=0;rr<2;++rr)
+      {
+	normed_velintaf(rr) = velintaf_(rr)/vel_normaf;
+      }
     }
     else
     {
-      normed_velintaf    = 0.;
+      normed_velintaf(1) = 0.;
       normed_velintaf(0) = 1.;
     }
 
     // get streamlength
-    const double val = blitz::sum(blitz::abs(blitz::sum(normed_velintaf(j)*derxy_(j,i),j)));
+    double val=0.0;
+    for (int rr=0;rr<iel_;++rr)
+    {
+      val += FABS( normed_velintaf(0)*derxy_(0,rr)         
+		  +normed_velintaf(1)*derxy_(1,rr));
+    }
     const double strle = 2.0/val;
 
     // time factor
@@ -585,40 +629,77 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
   {
     // if not available, the arrays for the subscale quantities have to
     // be resized and initialised to zero
-    if(ele->sub_acc_old_.extent(blitz::firstDim) != 2
+    if(ele->sub_acc_old_.M() != 2
        ||
-       ele->sub_acc_old_.extent(blitz::secondDim) != intpoints.nquad)
+       ele->sub_acc_old_.N() != intpoints.nquad)
     {
-      ele->sub_acc_old_ .resize(2,intpoints.nquad);
-      ele->sub_acc_old_  = 0.;
+      ele->sub_acc_old_ .Shape(2,intpoints.nquad);
+      for(int rr=0;rr<2;++rr)
+      {
+	for(int mm=0;mm<intpoints.nquad;++mm)
+	{
+	  ele->sub_acc_old_(rr,mm) = 0.;
+	}
+      }
     }
-    if(ele->sub_vel_old_.extent(blitz::firstDim) != 2
+    if(ele->sub_vel_old_.M() != 2
        ||
-       ele->sub_vel_old_.extent(blitz::secondDim) != intpoints.nquad)
+       ele->sub_vel_old_.N() != intpoints.nquad)
     {
-      ele->sub_vel_old_ .resize(2,intpoints.nquad);
-      ele->sub_vel_old_  = 0.;
 
-      ele->sub_vel_.resize(2,intpoints.nquad);
-      ele->sub_vel_ = 0.;
+      ele->sub_vel_old_.Shape(2,intpoints.nquad);
+      ele->sub_vel_    .Shape(2,intpoints.nquad);
+
+      for(int rr=0;rr<2;++rr)
+      {
+	for(int mm=0;mm<intpoints.nquad;++mm)
+	{
+	  ele->sub_vel_    (rr,mm) = 0.;
+	  ele->sub_vel_old_(rr,mm) = 0.;
+	}
+      }
     }
-    if(ele->sub_pre_old_ .extent(blitz::firstDim) != intpoints.nquad)
+    if(ele->sub_pre_old_ .Length() != intpoints.nquad)
     {
-      ele->sub_pre_old_ .resize(intpoints.nquad);
-      ele->sub_pre_old_ = 0.;
+      ele->sub_pre_old_ .Size(intpoints.nquad);
+      ele->sub_pre_     .Size(intpoints.nquad);
 
-      ele->sub_pre_.resize(intpoints.nquad);
-      ele->sub_pre_ = 0.;
+      for(int mm=0;mm<intpoints.nquad;++mm)
+      {
+	ele->sub_pre_old_(mm) = 0.;
+	ele->sub_pre_    (mm) = 0.;
+      }
     }
   }
 
   // get subscale information from element --- this is just a reference
   // to the element data
-  blitz::Array<double,2> saccn (ele->sub_acc_old_);
-  blitz::Array<double,2> sveln (ele->sub_vel_old_);
-  blitz::Array<double,2> svelnp(ele->sub_vel_    );
-  blitz::Array<double,1> spren (ele->sub_pre_old_);
-  blitz::Array<double,1> sprenp(ele->sub_pre_    );
+  Epetra_SerialDenseMatrix saccn(
+    View                   ,
+    ele->sub_acc_old_.A()  ,
+    ele->sub_acc_old_.LDA(),
+    ele->sub_acc_old_.M()  ,
+    ele->sub_acc_old_.N()  );
+  Epetra_SerialDenseMatrix sveln(
+    View,
+    ele->sub_vel_old_.A(),
+    ele->sub_vel_old_.LDA(),
+    ele->sub_vel_old_.M(),
+    ele->sub_vel_old_.N());
+  Epetra_SerialDenseMatrix svelnp(
+    View,
+    ele->sub_vel_.A(),
+    ele->sub_vel_.LDA(),
+    ele->sub_vel_.M(),
+    ele->sub_vel_.N());
+  Epetra_SerialDenseVector spren(
+    View,
+    ele->sub_pre_old_.Values(),
+    ele->sub_pre_old_.Length());
+  Epetra_SerialDenseVector sprenp(
+    View,
+    ele->sub_pre_.Values(),
+    ele->sub_pre_.Length());
 
   // just define certain constants for conveniance
   const double afgdt  = alphaF * gamma * dt;
@@ -631,7 +712,7 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
   {
 
     // set gauss point coordinates
-    blitz::Array<double, 1> gp(2);
+    Epetra_SerialDenseVector gp(2);
 
     gp(0)=intpoints.qxg[iquad][0];
     gp(1)=intpoints.qxg[iquad][1];
@@ -702,7 +783,17 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
     //                           component of
     //                          node coordinate
     //
-    xjm_ = blitz::sum(deriv_(i,k)*xyze_(j,k),k);
+    for(int rr=0;rr<2;++rr)
+    {
+      for(int mm=0;mm<2;++mm)
+      {
+	xjm_(rr,mm)=0.0;
+	for(int i=0;i<iel_;++i)
+	{
+	  xjm_(rr,mm)+=deriv_(rr,i)*xyze_(mm,i);
+	}
+      }
+    }
 
     // The determinant ist computed using Sarrus's rule
     const double det = xjm_(0,0)*xjm_(1,1)-xjm_(0,1)*xjm_(1,0);
@@ -744,7 +835,17 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
     xji_(1,1) = ( xjm_(0,0))/det;
 
     // compute global derivates
-    derxy_ = blitz::sum(xji_(i,k)*deriv_(k,j),k);
+    for(int rr=0;rr<2;++rr)
+    {
+      for(int i=0;i<iel_;++i)
+      {
+	derxy_(rr,i)=0.0;
+	for(int mm=0;mm<2;++mm)
+	{
+	  derxy_(rr,i)+=xji_(rr,mm)*deriv_(mm,i);
+	}
+      }
+    }
 
     //--------------------------------------------------------------
     //             compute second global derivative
@@ -820,7 +921,7 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
     if (higher_order_ele)
     {
       // initialize and zero out everything
-      blitz::Array<double,2> bm(3,3,blitz::ColumnMajorArray<2>());
+      Epetra_SerialDenseMatrix bm(3,3);
 
       // calculate elements of jacobian_bar matrix
       bm(0,0) =                     xjm_(0,0)*xjm_(0,0);
@@ -866,8 +967,17 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
        | 	   	   	   	        | drds   drds |
        | 	   	   	   	        +-           -+
       */
-      xder2_ = blitz::sum(deriv2_(i,k)*xyze_(j,k),k);
-
+      for(int rr=0;rr<3;++rr)
+      {
+        for(int mm=0;mm<2;++mm)
+        {
+          xder2_(rr,mm)=deriv2_(rr,0)*xyze_(mm,0);
+          for(int i=1;i<iel_;++i)
+          {
+            xder2_(rr,mm)+=deriv2_(rr,i)*xyze_(mm,i);
+          }
+        }
+      }
 
       /*
        |        0...iel-1             0 1
@@ -881,7 +991,6 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
        |
        |       chainrulerhs          xder2                 derxy
       */
-      derxy2_ = -blitz::sum(xder2_(i,k)*derxy_(k,j),k);
 
       /*
        |        0...iel-1             0...iel-1             0...iel-1
@@ -895,7 +1004,17 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
        |
        |       chainrulerhs          chainrulerhs             deriv2
       */
-      derxy2_ += deriv2_;
+      for(int rr=0;rr<3;++rr)
+      {
+        for(int i=0;i<iel_;++i)
+        {
+	  derxy2_(rr,i)=deriv2_(rr,i);
+          for(int mm=0;mm<2;++mm)
+          {
+            derxy2_(rr,i)-=xder2_(rr,mm)*derxy_(mm,i);
+          }
+        }
+      }
 
        /* make LU decomposition and solve system for all right hand sides
        * (i.e. the components of chainrulerhs)
@@ -940,7 +1059,7 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
       int ierr = 0;
 
       // Perform LU factorisation --- this call replaces bm with its factorisation
-      solver.GETRF(3,3,bm.data(),3,&(pivot[0]),&ierr);
+      solver.GETRF(3,3,bm.A(),3,&(pivot[0]),&ierr);
 
       if (ierr!=0)
       {
@@ -949,7 +1068,7 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
 
       // backward substitution. GETRS replaces the input (chainrulerhs, currently
       // stored on derxy2) with the result
-      solver.GETRS('N',3,iel_,bm.data(),3,&(pivot[0]),derxy2_.data(),3,&ierr);
+      solver.GETRS('N',3,iel_,bm.A(),3,&(pivot[0]),derxy2_.A(),3,&ierr);
 
       if (ierr!=0)
       {
@@ -958,7 +1077,13 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
     }
     else
     {
-      derxy2_  = 0.;
+      for(int rr=0;rr<2;++rr)
+      {
+	for(int mm=0;mm<3;++mm)
+	{
+	  derxy2_(rr,mm) = 0.0;
+	}
+      }
     }
 
     //--------------------------------------------------------------
@@ -976,7 +1101,14 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
     //
     // i         : space dimension u/v
     //
-    accintam_    = blitz::sum(funct_(j)*eaccam(i,j),j);
+    for(int rr=0;rr<2;++rr)
+    {
+      accintam_(rr)=0.0;
+      for(int i=0;i<iel_;++i)
+      {
+	accintam_(rr)+=funct_(i)*eaccam(rr,i);
+      }
+    }
 
     // get velocities (n+alpha_F,i) at integration point
     //
@@ -987,7 +1119,14 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
     //                 +-----
     //                 node j
     //
-    velintaf_    = blitz::sum(funct_(j)*evelaf(i,j),j);
+    for(int rr=0;rr<2;++rr)
+    {
+      velintaf_(rr)=0.0;
+      for(int i=0;i<iel_;++i)
+      {
+	velintaf_(rr)+=funct_(i)*evelaf(rr,i);
+      }
+    }
 
     if(ele->is_ale_)
     {
@@ -1000,7 +1139,14 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
       //                 +-----
       //                 node j
       //
-      ugrid_af_    = blitz::sum(funct_(j)*egridvaf(i,j),j);
+      for(int rr=0;rr<2;++rr)
+      {
+	ugrid_af_(rr)=0.0;
+	for(int i=0;i<iel_;++i)
+	{
+	  ugrid_af_(rr)+=funct_(i)*egridvaf(rr,i);
+	}
+      }
     }
 
     // get bodyforce in gausspoint, time (n+alpha_F)
@@ -1012,7 +1158,14 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
     //                 +-----
     //                 node j
     //
-    bodyforceaf_ = blitz::sum(funct_(j)*edeadaf_(i,j),j);
+    for(int rr=0;rr<2;++rr)
+    {
+      bodyforceaf_(rr)=0.0;
+      for(int i=0;i<iel_;++i)
+      {
+	bodyforceaf_(rr)+=funct_(i)*edeadaf_(rr,i);
+      }
+    }
 
     // get velocities (n+1,i)  at integration point
     //
@@ -1023,7 +1176,14 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
     //                +-----
     //                node j
     //
-    velintnp_    = blitz::sum(funct_(j)*evelnp(i,j),j);
+    for(int rr=0;rr<2;++rr)
+    {
+      velintnp_(rr)=0.0;
+      for(int i=0;i<iel_;++i)
+      {
+	velintnp_(rr)+=funct_(i)*evelnp(rr,i);
+      }
+    }
 
     // get pressure (n+1,i) at integration point
     //
@@ -1034,7 +1194,11 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
     //                +-----
     //                node i
     //
-    prenp_    = blitz::sum(funct_*eprenp);
+    prenp_=0.0;
+    for(int i=0;i<iel_;++i)
+    {
+      prenp_+=funct_(i)*eprenp(i);
+    }
 
     // get pressure gradient (n+1,i) at integration point
     //
@@ -1047,8 +1211,14 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
     //
     // i : direction of derivative
     //
-    pderxynp_ = blitz::sum(derxy_(i,j)*eprenp(j),j);
-
+    for(int mm=0;mm<2;++mm)
+    {
+      pderxynp_(mm)=0.0;
+      for(int i=0;i<iel_;++i)
+      {
+	pderxynp_(mm)+=derxy_(mm,i)*eprenp(i);
+      }
+    }
 
     // get velocity (n+alpha_F,i) derivatives at integration point
     //
@@ -1061,7 +1231,17 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
     //
     // j : direction of derivative x/y/z
     //
-    vderxyaf_ = blitz::sum(derxy_(j,k)*evelaf(i,k),k);
+    for(int rr=0;rr<2;++rr)
+    {
+      for(int mm=0;mm<2;++mm)
+      {
+	vderxyaf_(rr,mm)=0.0;
+	for(int i=0;i<iel_;++i)
+	{
+	  vderxyaf_(rr,mm)+=derxy_(mm,i)*evelaf(rr,i);
+	}
+      }
+    }
 
     // get velocity (n+1,i) derivatives at integration point
     //
@@ -1072,23 +1252,50 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
     //         j      +-----      j
     //                node k
     //
-    vderxynp_ = blitz::sum(derxy_(j,k)*evelnp(i,k),k);
+    for(int rr=0;rr<2;++rr)
+    {
+      for(int mm=0;mm<2;++mm)
+      {
+	vderxynp_(rr,mm)=0.0;
+	for(int i=0;i<iel_;++i)
+	{
+	  vderxynp_(rr,mm)+=derxy_(mm,i)*evelnp(rr,i);
+	}
+      }
+    }
 
     /*--- convective part u_old * grad (funct) --------------------------*/
     /* u_old_x * N,x  +  u_old_y * N,y + u_old_z * N,z
        with  N .. form function matrix                                   */
-    conv_c_af_  = blitz::sum(derxy_(j,i)*velintaf_(j), j);
+    for(int i=0;i<iel_;++i)
+    {
+      conv_c_af_(i)=0.0;
+      for(int mm=0;mm<2;++mm)
+      {
+	conv_c_af_(i)+=derxy_(mm,i)*velintaf_(mm);
+      }
+    }
 
 
     /*--- convective grid part u_G * grad (funct) -----------------------*/
     /* u_old_x * N,x  +  u_old_y * N,y   with  N .. form function matrix */
     if (ele->is_ale_)
     {
-      conv_g_af_ = blitz::sum(derxy_(j,i) * ugrid_af_(j), j);
+      for(int i=0;i<iel_;++i)
+      {
+	conv_g_af_(i)=0.0;
+	for(int mm=0;mm<2;++mm)
+	{
+	  conv_g_af_(i)+=derxy_(mm,i)*ugrid_af_(mm);
+	}
+      }
     }
     else
     {
-      conv_g_af_ = 0.0;
+      for(int i=0;i<iel_;++i)
+      {
+	conv_g_af_(i)=0.0;
+      }
     }
 
 
@@ -1104,11 +1311,27 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
     // j=(j1,j2) : direction of derivative x/y
     if(higher_order_ele)
     {
-      vderxy2af_ = blitz::sum(derxy2_(j,k)*evelaf(i,k),k);
+      for(int rr=0;rr<2;++rr)
+      {
+	for(int mm=0;mm<3;++mm)
+	{
+	  vderxy2af_(rr,mm)=0.0;
+	  for(int i=0;i<iel_;++i)
+	  {
+	    vderxy2af_(rr,mm) += derxy2_(mm,i)*evelaf(rr,i);
+	  }
+	}
+      }
     }
     else
     {
-      vderxy2af_ = 0.;
+      for(int rr=0;rr<2;++rr)
+      {
+	for(int mm=0;mm<3;++mm)
+	{
+	  vderxy2af_(rr,mm)=0.0;
+	}
+      }
     }
 
     /*--- reactive part funct * grad (u_old) ----------------------------*/
@@ -1118,7 +1341,17 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
               |  u_old_y,x   u_old_y,y |
               \                        /
        with  N .. form function matrix                                   */
-    conv_r_af_ = vderxyaf_(i, j)*funct_(k);
+    for(int rr=0;rr<2;++rr)
+    {
+      for(int mm=0;mm<2;++mm)
+      {
+	for(int i=0;i<iel_;++i)
+	{
+	  conv_r_af_(rr,mm,i) = vderxyaf_(rr, mm)*funct_(i);
+	}
+      }
+    }
+
 
     /*--- viscous term  grad * epsilon(u): ------------------------------*/
     /*
@@ -1137,17 +1370,27 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
              \                                             / \    /
 
     */
-    viscs2_(0,0,_) = derxy2_(0,_)+0.5*derxy2_(1,_);
-    viscs2_(0,1,_) = 0.5 * derxy2_(2,_);
-    viscs2_(1,0,_) = 0.5 * derxy2_(2,_);
-    viscs2_(1,1,_) = 0.5*derxy2_(0,_)+derxy2_(1,_);
-
+    for(int i=0;i<iel_;++i)
+    {
+      viscs2_(0,0,i) = derxy2_(0,i)+0.5*derxy2_(1,i);
+      viscs2_(0,1,i) = 0.5 * derxy2_(2,i);
+      viscs2_(1,0,i) = 0.5 * derxy2_(2,i);
+      viscs2_(1,1,i) = 0.5*derxy2_(0,i)+derxy2_(1,i);
+    }
 
     /* divergence new time step n+1 */
     const double divunp = (vderxynp_(0,0)+vderxynp_(1,1));
 
     /* Convective term  u_old * grad u_old: */
-    convaf_old_ = blitz::sum(vderxyaf_(i, j)*velintaf_(j), j);
+    for(int rr=0;rr<2;++rr)
+    {
+      convaf_old_(rr)=0.0;
+      for(int mm=0;mm<2;++mm)
+      {
+	convaf_old_(rr)+=vderxyaf_(rr,mm)*velintaf_(mm);
+      }
+    }
+
 
     /* Viscous term  div epsilon(u_old) */
     /*        /                                 \
@@ -1165,12 +1408,30 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
 
     /* compute residual in gausspoint --- the residual is based on the
                                                   effective viscosity! */
-    resM_ = accintam_ + convaf_old_ - 2*visceff*viscaf_old_ + pderxynp_ - bodyforceaf_;
+    for(int rr=0;rr<2;++rr)
+    {
+      resM_(rr) = 
+	accintam_(rr)
+	+ 
+	convaf_old_(rr) 
+	-
+	2*visceff*viscaf_old_(rr)
+	+
+	pderxynp_(rr)
+	-
+	bodyforceaf_(rr);
+    }
 
     if (ele->is_ale_)
     {
-      // correct convection with grid velocity
-      resM_ -= blitz::sum(vderxyaf_(i, j)*ugrid_af_(j), j);
+      for(int rr=0;rr<2;++rr)
+      {
+	for(int mm=0;mm<2;++mm)
+	{
+	  // correct convection with grid velocity
+	  resM_(rr) -= vderxyaf_(rr,mm)*ugrid_af_(mm);
+	}
+      }
     }
 
     /*
@@ -1183,7 +1444,10 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
       required for the cross and reynolds stress calculation
 
     */
-    conv_resM_ =  blitz::sum(resM_(j)*derxy_(j,i),j);
+    for(int i=0;i<iel_;++i)
+    {
+      conv_resM_(i)=resM_(0)*derxy_(0,i)+resM_(1)*derxy_(1,i);
+    }
 
     //--------------------------------------------------------------
     //--------------------------------------------------------------
@@ -1247,12 +1511,20 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
                                        (i)  |
                                            -+
       */
-      svelnp(_,iquad)=((alphaM*tauM+gamma*dt*(alphaF-1.0))*sveln(_,iquad)
+      svelnp(0,iquad)=((alphaM*tauM+gamma*dt*(alphaF-1.0))*sveln(0,iquad)
                        +
-                       (dt*tauM*(alphaM-gamma))           *saccn(_,iquad)
+                       (dt*tauM*(alphaM-gamma))           *saccn(0,iquad)
                        -
-                       (gamma*dt*tauM)                    *resM_(_)
+                       (gamma*dt*tauM)                    *resM_(0)
                       )*facMtau;
+
+      svelnp(1,iquad)=((alphaM*tauM+gamma*dt*(alphaF-1.0))*sveln(1,iquad)
+                       +
+                       (dt*tauM*(alphaM-gamma))           *saccn(1,iquad)
+                       -
+                       (gamma*dt*tauM)                    *resM_(1)
+                      )*facMtau;
+
 
       /*-------------------------------------------------------------------*
        *                                                                   *
@@ -1267,7 +1539,8 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
                (i)              (i)
 
       */
-      svelaf_(_) = alphaF*svelnp(_,iquad)+(1.0-alphaF)*sveln(_,iquad);
+      svelaf_(0) = alphaF*svelnp(0,iquad)+(1.0-alphaF)*sveln(0,iquad);
+      svelaf_(1) = alphaF*svelnp(1,iquad)+(1.0-alphaF)*sveln(1,iquad);
 
       /* the intermediate value of subscale acceleration is not needed to be
        * computed anymore --- we use the governing ODE to replace it ....
@@ -1288,7 +1561,10 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
                   required for the cross and reynolds stress calculation
 
       */
-      conv_subaf_ =  blitz::sum(svelaf_(j)*derxy_(j,i),j);
+      for(int i=0;i<iel_;++i)
+      {
+	conv_subaf_(i)=svelaf_(0)*derxy_(0,i)+svelaf_(1)*derxy_(1,i);
+      }
 
       /* Most recent value for subgrid velocity convective term
 
@@ -1296,8 +1572,13 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
                  | u      o nabla | u
                   \   (i)        /   (i)
       */
-
-      convsubaf_old_ = blitz::sum(vderxyaf_(i, j)*svelaf_(j), j);
+      for(int rr=0;rr<2;++rr)
+      {
+	convsubaf_old_(rr)=
+	  vderxyaf_(rr,0)*svelaf_(0)
+	  +
+	  vderxyaf_(rr,1)*svelaf_(1);
+      }
 
       //--------------------------------------------------------------
       //--------------------------------------------------------------
@@ -2242,6 +2523,7 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
 
         } // end cross
       } // end if compute_elemat
+
 
       //---------------------------------------------------------------
       //---------------------------------------------------------------
@@ -3291,10 +3573,10 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
                     \                            /
 
                 */
-                elemat(vi*3    , ui*3    ) -= fac_afgdt_tauM*edeadaf_(0)*funct_(ui)*derxy_(0,vi) ;
-                elemat(vi*3    , ui*3 + 1) -= fac_afgdt_tauM*edeadaf_(0)*funct_(ui)*derxy_(1,vi) ;
-                elemat(vi*3 + 1, ui*3    ) -= fac_afgdt_tauM*edeadaf_(1)*funct_(ui)*derxy_(0,vi) ;
-                elemat(vi*3 + 1, ui*3 + 1) -= fac_afgdt_tauM*edeadaf_(1)*funct_(ui)*derxy_(1,vi) ;
+                elemat(vi*3    , ui*3    ) -= fac_afgdt_tauM*bodyforceaf_(0)*funct_(ui)*derxy_(0,vi) ;
+                elemat(vi*3    , ui*3 + 1) -= fac_afgdt_tauM*bodyforceaf_(0)*funct_(ui)*derxy_(1,vi) ;
+                elemat(vi*3 + 1, ui*3    ) -= fac_afgdt_tauM*bodyforceaf_(1)*funct_(ui)*derxy_(0,vi) ;
+                elemat(vi*3 + 1, ui*3 + 1) -= fac_afgdt_tauM*bodyforceaf_(1)*funct_(ui)*derxy_(1,vi) ;
 
               } // end loop rows (test functions for matrix)
             } // end loop rows (solution for matrix, test function for vector)
@@ -3613,8 +3895,8 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
                \           /
           */
 
-          elevec[ui*3    ] += fac*funct_(ui)*edeadaf_(0);
-          elevec[ui*3 + 1] += fac*funct_(ui)*edeadaf_(1);
+          elevec[ui*3    ] += fac*funct_(ui)*bodyforceaf_(0);
+          elevec[ui*3 + 1] += fac*funct_(ui)*bodyforceaf_(1);
 
           /* continuity equation */
 
@@ -3849,10 +4131,11 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
           elevec[ui*3    ] -= fac_tauC*divunp*derxy_(0,ui) ;
           elevec[ui*3 + 1] -= fac_tauC*divunp*derxy_(1,ui) ;
         } // end loop rows
-
       } // end cstab
 
-      if(cross == Fluid2::cross_stress_stab_only_rhs || cross == Fluid2::cross_stress_stab)
+      if(cross == Fluid2::cross_stress_stab_only_rhs
+	 ||
+	 cross == Fluid2::cross_stress_stab)
       {
         const double fac_tauM = fac*tauM;
         for (int ui=0; ui<iel_; ++ui) // loop rows  (test functions)
@@ -3901,15 +4184,14 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
   return;
 }
 
-// this is just for comparison of dynamic/quasistatic subscales --- NOT for
-// the comparison with physical turbulence models (Smagorinsky etc.)
+// this is just for comparison of dynamic/quasistatic subscales
 
 void DRT::ELEMENTS::Fluid2GenalphaResVMM::CalcRes(
   Fluid2*                                               ele,
-  const blitz::Array<double,2>&                         evelnp,
-  const blitz::Array<double,1>&                         eprenp,
-  const blitz::Array<double,2>&                         eaccam,
-  const blitz::Array<double,2>&                         evelaf,
+  const Epetra_SerialDenseMatrix&                       evelnp,
+  const Epetra_SerialDenseVector&                       eprenp,
+  const Epetra_SerialDenseMatrix&                       eaccam,
+  const Epetra_SerialDenseMatrix&                       evelaf,
   Teuchos::RCP<const MAT::Material>                     material,
   const double                                          alphaM,
   const double                                          alphaF,
@@ -3917,10 +4199,10 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::CalcRes(
   const double                                          dt,
   const double                                          time,
   const enum Fluid2::StabilisationAction                tds,
-  blitz::Array<double,1>&                               mean_res,
-  blitz::Array<double,1>&                               mean_sacc,
-  blitz::Array<double,1>&                               mean_res_sq,
-  blitz::Array<double,1>&                               mean_sacc_sq
+  Epetra_SerialDenseVector&                             mean_res,
+  Epetra_SerialDenseVector&                             mean_sacc,
+  Epetra_SerialDenseVector&                             mean_res_sq,
+  Epetra_SerialDenseVector&                             mean_sacc_sq
   )
 {
   cout << "Fluid2GenalphaResVMM:CalcRes is empty right now\n";
@@ -3934,14 +4216,16 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::CalVisc(
   Teuchos::RCP<const MAT::Material>       material,
   double&                                 visc)
 {
-
-  blitz::firstIndex i;    // Placeholder for the first index
-  blitz::secondIndex j;   // Placeholder for the second index
-
   // compute shear rate
   double rateofshear = 0.0;
-  blitz::Array<double,2> epsilon(2,2,blitz::ColumnMajorArray<2>());   // strain rate tensor
-  epsilon = 0.5 * ( vderxyaf_(i,j) + vderxyaf_(j,i) );
+  Epetra_SerialDenseMatrix epsilon(2,2);   // strain rate tensor
+  for(int rr=0;rr<2;++rr)
+  {
+    for(int mm=0;mm<2;++mm)
+    {
+      epsilon(rr,mm) = 0.5*(vderxyaf_(rr,mm)+vderxyaf_(mm,rr));
+    }
+  }
 
   for(int rr=0;rr<2;rr++)
     for(int mm=0;mm<2;mm++)
@@ -4058,7 +4342,13 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::GetNodalBodyForce(Fluid2* ele, const d
   else
   {
     // we have no dead load
-    edeadaf_ = 0.;
+    for (int jnode=0; jnode<iel_; jnode++)
+    {
+      for(int isd=0;isd<2;isd++)
+      {
+        edeadaf_(isd,jnode) = 0.0;
+      }
+    }
   }
   return;
 }

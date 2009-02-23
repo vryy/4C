@@ -146,15 +146,15 @@ namespace DRT
         
       */
       void Sysmat(Fluid2*                                               ele,
-                  std::vector<blitz::Array<double,1> >&                 myknots,
+                  std::vector<Epetra_SerialDenseVector>&                myknots,
                   Epetra_SerialDenseMatrix&                             elemat,
                   Epetra_SerialDenseVector&                             elevec,
-                  const blitz::Array<double,2>&                         edispnp,
-                  const blitz::Array<double,2>&                         egridvaf,
-                  const blitz::Array<double,2>&                         evelnp,
-                  const blitz::Array<double,1>&                         eprenp,
-                  const blitz::Array<double,2>&                         eaccam,
-                  const blitz::Array<double,2>&                         evelaf,
+                  const Epetra_SerialDenseMatrix&                       edispnp,
+                  const Epetra_SerialDenseMatrix&                       egridvaf,
+                  const Epetra_SerialDenseMatrix&                       evelnp,
+                  const Epetra_SerialDenseVector&                       eprenp,
+                  const Epetra_SerialDenseMatrix&                       eaccam,
+                  const Epetra_SerialDenseMatrix&                       evelaf,
                   Teuchos::RCP<const MAT::Material>                     material,
                   const double                                          alphaM,
                   const double                                          alphaF,
@@ -176,10 +176,10 @@ namespace DRT
 
 
       void CalcRes(Fluid2*                                               ele,
-                   const blitz::Array<double,2>&                         evelnp,
-                   const blitz::Array<double,1>&                         eprenp,
-                   const blitz::Array<double,2>&                         eaccam,
-                   const blitz::Array<double,2>&                         evelaf,
+                   const Epetra_SerialDenseMatrix&                       evelnp,
+                   const Epetra_SerialDenseVector&                       eprenp,
+                   const Epetra_SerialDenseMatrix&                       eaccam,
+                   const Epetra_SerialDenseMatrix&                       evelaf,
                    Teuchos::RCP<const MAT::Material>                     material,
                    const double                                          alphaM,
                    const double                                          alphaF,
@@ -187,10 +187,10 @@ namespace DRT
                    const double                                          dt,
                    const double                                          time,
                    const enum Fluid2::StabilisationAction                tds,
-                   blitz::Array<double,1>&                               mean_res,
-                   blitz::Array<double,1>&                               mean_sacc,
-                   blitz::Array<double,1>&                               mean_res_sq,
-                   blitz::Array<double,1>&                               mean_sacc_sq);
+                   Epetra_SerialDenseVector&                             mean_res,
+                   Epetra_SerialDenseVector&                             mean_sacc,
+                   Epetra_SerialDenseVector&                             mean_res_sq,
+                   Epetra_SerialDenseVector&                             mean_sacc_sq);
 
      
     private:
@@ -215,24 +215,24 @@ namespace DRT
       // nodal arrays
       // ------------
       //! node coordinates
-      blitz::Array<double,2> xyze_;
+      Epetra_SerialDenseMatrix xyze_;
       //! weights for nurbs elements
-      blitz::Array<double,1> weights_;
+      Epetra_SerialDenseVector weights_;
       //! value of body force in the nodes of the element
-      blitz::Array<double,2> edeadaf_;      
+      Epetra_SerialDenseMatrix edeadaf_;      
 
       // shape functions and derivatives, mapping from reference element to actual geometry
       // ----------------------------------------------------------------------------------
       //! vector of shape functions
-      blitz::Array<double,1> funct_;
+      Epetra_SerialDenseVector funct_;
       //! vector of shape function derivatives in reference coordinate system
-      blitz::Array<double,2> deriv_;
+      Epetra_SerialDenseMatrix deriv_;
       //! vector of second shape function derivatives in reference coordinate system
-      blitz::Array<double,2> deriv2_;
+      Epetra_SerialDenseMatrix deriv2_;
       //! vector of shape function derivatives in global coordinate system
-      blitz::Array<double,2> derxy_;
+      Epetra_SerialDenseMatrix derxy_;
       //! vector of second shape function derivatives in global coordinate system
-      blitz::Array<double,2> derxy2_;
+      Epetra_SerialDenseMatrix derxy2_;
       //! derivatives needed for linearisation of viscous term including 2nd derivatives
       blitz::Array<double,3> viscs2_;
       /*  
@@ -243,56 +243,56 @@ namespace DRT
                        on the discret level
       */
       //! transpose of the jacobian matrix of the mapping (r,s,t)->(x,y,z)
-      blitz::Array<double,2> xjm_;
+      Epetra_SerialDenseMatrix xjm_;
       //! its inverse
-      blitz::Array<double,2> xji_;
+      Epetra_SerialDenseMatrix xji_;
       //! second derivatives of the mapping (r,s,t)->(x,y,z)
-      blitz::Array<double,2> xder2_;       
+      Epetra_SerialDenseMatrix xder2_;       
 
       // values of non geometrical quantities in gausspoints
       // ---------------------------------------------------
       //! pressure in gausspoint, time n+1
-      double                 prenp_;        
+      double                   prenp_;        
       //! acceleration in gausspoint, time n+am
-      blitz::Array<double,1> accintam_;
+      Epetra_SerialDenseVector accintam_;
       //! velocity in gausspoint, time n+1
-      blitz::Array<double,1> velintnp_;
+      Epetra_SerialDenseVector velintnp_;
       //! velocity in gausspoint, time n+af
-      blitz::Array<double,1> velintaf_;
+      Epetra_SerialDenseVector velintaf_;
       //! grid velocity at intermediate time level n+af
-      blitz::Array<double,1> ugrid_af_;
+      Epetra_SerialDenseVector ugrid_af_;
       //! pressure gradient in gausspoint, time n+1
-      blitz::Array<double,1> pderxynp_;
+      Epetra_SerialDenseVector pderxynp_;
       //! velocity derivatives in gausspoint, time n+1
-      blitz::Array<double,2> vderxynp_;
+      Epetra_SerialDenseMatrix vderxynp_;
       //! velocity derivatives in gausspoint, time n+af
-      blitz::Array<double,2> vderxyaf_;
+      Epetra_SerialDenseMatrix vderxyaf_;
       //! second derivatives of velocity in gausspoint, time n+af
-      blitz::Array<double,2> vderxy2af_;
+      Epetra_SerialDenseMatrix vderxy2af_;
       //! value of body force interpolated to the gauss point, time n+af
-      blitz::Array<double,1> bodyforceaf_;
+      Epetra_SerialDenseVector bodyforceaf_;
       //! linearisation of convection, convective part, time n+af
-      blitz::Array<double,1> conv_c_af_; 
+      Epetra_SerialDenseVector conv_c_af_; 
       //! linearisation of convection, reactive part, time n+af
       blitz::Array<double,3> conv_r_af_;
       //! convective part introduced by grid velocity, time n+af
-      blitz::Array<double,1> conv_g_af_; 
+      Epetra_SerialDenseVector conv_g_af_; 
 
       // element data
       // ------------
       //! the stabilisation parameters tauM,tauMp and tauC
-      blitz::Array<double,1> tau_;
-             //! matrix of subscale velocities in gausspoints of this element, time n+alphaF
-      blitz::Array<double,1> svelaf_;
+      Epetra_SerialDenseVector tau_;
+      //! matrix of subscale velocities in gausspoints of this element, time n+alphaF
+      Epetra_SerialDenseVector svelaf_;
       //! Convective term, most recent iteration value
-      blitz::Array<double,1> convaf_old_;   
+      Epetra_SerialDenseVector convaf_old_;   
       /*            
                          /  n+af        \   n+af
                         |  u     o grad  | u
                          \  (i)         /   (i)
       */
       //! Subgrid velocity convective term, most recent iteration value 
-      blitz::Array<double,1> convsubaf_old_;
+      Epetra_SerialDenseVector convsubaf_old_;
       /* Most recent value for subgrid velocity convective term
         
                         /~n+af         \   n+af
@@ -300,16 +300,16 @@ namespace DRT
                         \   (i)        /   (i)
       */
       //! Viscous term, most recent iteration value
-      blitz::Array<double,1> viscaf_old_;
+      Epetra_SerialDenseVector viscaf_old_;
       /*                          
                                         /  n+af \
                        nabla o  epsilon | u     |
                                         \  (i)  /
       */
       //! Current residual of the momentum equation
-      blitz::Array<double,1> resM_;
+      Epetra_SerialDenseVector resM_;
       //! This is the convection operator using resM_ as the convecting velocity
-      blitz::Array<double,1> conv_resM_;
+      Epetra_SerialDenseVector conv_resM_;
       /*  
 
                      /               \
@@ -317,7 +317,7 @@ namespace DRT
                      \    (i)        /
       */
       //! This is the convection operator using the subscale velocity as the convecting velocity
-      blitz::Array<double,1>  conv_subaf_; 
+      Epetra_SerialDenseVector  conv_subaf_; 
       /*  
                     /~n+af         \
                    | u      o nabla |
@@ -325,7 +325,7 @@ namespace DRT
       */
 
       //! the element area, used to define element length
-      double                  area_;
+      double                    area_;
     };
   }
 }

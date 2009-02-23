@@ -12,8 +12,6 @@ Maintainer: Peter Gamnitzer
 #ifdef CCADISCRET
 
 #include "drt_knotvector.H"
-#include <blitz/array.h>
-
 
 /*----------------------------------------------------------------------*
  |  empty ctor (public)                                      gammi 05/08|
@@ -212,8 +210,8 @@ void DRT::NURBS::Knotvector::ConvertEleGidToKnotIds(
  | get element knot vectors to a given element id   (public) gammi 05/08|
  *----------------------------------------------------------------------*/
 void DRT::NURBS::Knotvector::GetEleKnots(
-  vector<blitz::Array<double,1> > & eleknots,
-  int                               gid
+  vector<Epetra_SerialDenseVector> & eleknots,
+  int                                gid
   )
 {  
   //------------------------------------------------
@@ -250,8 +248,8 @@ void DRT::NURBS::Knotvector::GetEleKnots(
   // use them to aquire the required knots
   for(int rr=0;rr<dim_;++rr)
   {
-    (eleknots[rr]).resize(2*(degree_[npatch])[rr]+2);
-    
+    (eleknots[rr]).Size(2*(degree_[npatch])[rr]+2);
+
     for(int mm=0;mm<2*(degree_[npatch])[rr]+2;++mm)
     {
       (eleknots[rr])(mm)=(*((knot_values_[npatch])[rr]))[cartids[rr]+mm];

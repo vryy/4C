@@ -89,6 +89,7 @@ extern "C"
 #include "../drt_constraint/constraint_element2.H"
 #include "../drt_constraint/constraint_element3.H"
 #include "../drt_w1/wall1.H"
+#include "../drt_w1/wall1_nurbs.H"
 #include "../drt_so3/so_hex8.H"
 #include "../drt_so3/so_sh8.H"
 #include "../drt_so3/so_tet4.H"
@@ -261,6 +262,13 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
     {
       DRT::ELEMENTS::Wall1Register* object =
                       new DRT::ELEMENTS::Wall1Register(DRT::Element::element_wall1);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_Wall1Nurbs:
+    {
+      DRT::ELEMENTS::NURBS::Wall1Nurbs* object = new DRT::ELEMENTS::NURBS::Wall1Nurbs(-1,-1);
       object->Unpack(data);
       return object;
     }
@@ -905,7 +913,15 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
 #ifdef D_WALL1
     case wall1:
     {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Wall1(id,owner));
+      RefCountPtr<DRT::Element> ele;
+      if(eledistype=="NURBS4" || eledistype=="NURBS9")
+      {
+        ele = rcp(new DRT::ELEMENTS::NURBS::Wall1Nurbs(id,owner));
+      }
+      else
+      {
+        ele = rcp(new DRT::ELEMENTS::Wall1(id,owner));
+      }
       return ele;
     }
     break;

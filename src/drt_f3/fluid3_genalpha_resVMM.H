@@ -391,7 +391,7 @@ namespace DRT
 
       */
       void Sysmat_adv_qs(Fluid3*                                ele,
-                         std::vector<blitz::Array<double,1> >&  myknots,
+                         std::vector<Epetra_SerialDenseVector>& myknots,
                          LINALG::Matrix<4*iel,4*iel>&           elemat,
                          LINALG::Matrix<4*iel,    1>&           elevec,
                          const LINALG::Matrix<3,iel>&           edispnp,
@@ -469,7 +469,7 @@ namespace DRT
 
       */
       void Sysmat_adv_td(Fluid3*                                ele,
-                         std::vector<blitz::Array<double,1> >&  myknots,
+                         std::vector<Epetra_SerialDenseVector>& myknots,
                          LINALG::Matrix<4*iel,4*iel>&           elemat,
                          LINALG::Matrix<4*iel,    1>&           elevec,
                          const LINALG::Matrix<3,iel>&           edispnp,
@@ -546,7 +546,7 @@ namespace DRT
 
       */
       void Sysmat_cons_qs(Fluid3*                                ele,
-                          std::vector<blitz::Array<double,1> >&  myknots,
+                          std::vector<Epetra_SerialDenseVector>& myknots,
                           LINALG::Matrix<4*iel,4*iel>&           elemat,
                           LINALG::Matrix<4*iel,    1>&           elevec,
                           const LINALG::Matrix<3,iel>&           edispnp,
@@ -623,7 +623,7 @@ namespace DRT
 
       */
       void Sysmat_cons_td(Fluid3*                                ele,
-                          std::vector<blitz::Array<double,1> >&  myknots,
+                          std::vector<Epetra_SerialDenseVector>& myknots,
                           LINALG::Matrix<4*iel,4*iel>&           elemat,
                           LINALG::Matrix<4*iel,    1>&           elevec,
                           const LINALG::Matrix<3,iel>&           edispnp,
@@ -814,11 +814,11 @@ namespace DRT
 
        */
       double ShapeFunctionsFirstAndSecondDerivatives(
-        const Fluid3*                                ele      ,
-        const int                                 &  iquad    ,
-        const DRT::UTILS::IntegrationPoints3D     &  intpoints,
-        const std::vector<blitz::Array<double,1> >&  myknots  ,
-        const bool                                   hoel
+        const Fluid3*                                 ele      ,
+        const int                                  &  iquad    ,
+        const DRT::UTILS::IntegrationPoints3D      &  intpoints,
+        const std::vector<Epetra_SerialDenseVector>&  myknots  ,
+        const bool                                    hoel
         );
 
            
@@ -884,22 +884,22 @@ namespace DRT
        */                 
       void SetElementData
       (
-        Fluid3*                                     ele            ,
-        const LINALG::Matrix<3,iel>               & edispnp        ,
-        const LINALG::Matrix<3,iel>               & evelaf         ,
-        const LINALG::Matrix<3,iel>               & fsevelaf       ,
-        const std::vector<blitz::Array<double,1> >& myknots        ,
-        const double                              & timealphaF     ,
-        double                                    & hk             ,
-        double                                    & mk             ,
-        Teuchos::RCP<const MAT::Material>           material       ,
-        double                                    & visc           ,
-        const enum Fluid3::StabilisationAction      fssgv          ,
-        const enum Fluid3::TurbModelAction          turb_mod_action,
-        const double                                l_tau          ,
-        double                                    & Cs             ,
-        double                                    & Cs_delta_sq    ,
-        double                                    & visceff        );
+        Fluid3*                                      ele            ,
+        const LINALG::Matrix<3,iel>                & edispnp        ,
+        const LINALG::Matrix<3,iel>                & evelaf         ,
+        const LINALG::Matrix<3,iel>                & fsevelaf       ,
+        const std::vector<Epetra_SerialDenseVector>& myknots        ,
+        const double                               & timealphaF     ,
+        double                                     & hk             ,
+        double                                     & mk             ,
+        Teuchos::RCP<const MAT::Material>            material       ,
+        double                                     & visc           ,
+        const enum Fluid3::StabilisationAction       fssgv          ,
+        const enum Fluid3::TurbModelAction           turb_mod_action,
+        const double                                 l_tau          ,
+        double                                     & Cs             ,
+        double                                     & Cs_delta_sq    ,
+        double                                     & visceff        );
 
 
       /*!

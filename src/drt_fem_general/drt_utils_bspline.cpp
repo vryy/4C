@@ -19,8 +19,8 @@ using namespace std;
 // Constructor
 //--------------------------------------------------
 DRT::NURBS::UTILS::BsplinePolynomial::BsplinePolynomial(
-  const int                     degree,
-  const blitz::Array<double,1>  local_knotvector
+  const int                      degree,
+  const Epetra_SerialDenseVector local_knotvector
   )
 :
   myknotvector_   (local_knotvector),
@@ -120,7 +120,7 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBspline (
   //
   // check that we really have got something like this:
 
-  if(myknotvector_.extent(blitz::firstDim)!=2*degree_+2)
+  if(myknotvector_.Length()!=2*degree_+2)
   {
     std::string errorstring;
     
@@ -354,7 +354,7 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineAndDeriv(
   //
   // check that we really have got something like this:
 
-  if(myknotvector_.extent(blitz::firstDim)!=2*degree_+2)
+  if(myknotvector_.Length()!=2*degree_+2)
   {
     std::string errorstring;
     
@@ -747,7 +747,7 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineFirstAndSecondDeriv(
   //
   // check that we really have got something like this:
 
-  if(myknotvector_.extent(blitz::firstDim)!=2*degree_+2)
+  if(myknotvector_.Length()!=2*degree_+2)
   {
     std::string errorstring;
     

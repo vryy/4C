@@ -33,11 +33,11 @@ data_()
 {
   gaussrule_ = intrule2D_undefined;
   
-  sub_acc_old_.resize(0,0);
-  sub_vel_.resize(0,0);
-  sub_vel_old_.resize(0,0);
-  sub_pre_.resize(0);
-  sub_pre_old_.resize(0);
+  sub_acc_old_.Shape(0,0);
+  sub_vel_.Shape(0,0);
+  sub_vel_old_.Shape(0,0);
+  sub_pre_.Size(0);
+  sub_pre_old_.Size(0);
   
   return;
 }
@@ -105,19 +105,17 @@ void DRT::ELEMENTS::Fluid2::Pack(vector<char>& data) const
   AddtoPack(data,is_ale_);
 
   // history variables
-  AddtoPack(data,sub_acc_old_.extent(blitz::firstDim));
-  AddtoPack(data,sub_acc_old_.extent(blitz::secondDim));
+  AddtoPack(data,sub_acc_old_.M());
+  AddtoPack(data,sub_acc_old_.N());
 
-  int size = sub_acc_old_.extent(blitz::firstDim)
-             *sub_acc_old_.extent(blitz::secondDim)
-             *sizeof(double);
-  AddtoPack(data,sub_acc_old_.data(),size);
-  AddtoPack(data,sub_vel_.data()    ,size);
-  AddtoPack(data,sub_vel_old_.data(),size);
+  int size = sub_acc_old_.N()*sub_acc_old_.M()*sizeof(double);
+  AddtoPack(data,sub_acc_old_.A(),size);
+  AddtoPack(data,sub_vel_.A()    ,size);
+  AddtoPack(data,sub_vel_old_.A(),size);
 
-  size = sub_acc_old_.extent(blitz::secondDim)*sizeof(double);
-  AddtoPack(data,sub_pre_.data()    ,size);
-  AddtoPack(data,sub_pre_old_.data(),size);
+  size = sub_pre_old_.Length()*sizeof(double);
+  AddtoPack(data,sub_pre_.A()    ,size);
+  AddtoPack(data,sub_pre_old_.A(),size);
 
 
   // data_
@@ -159,21 +157,21 @@ void DRT::ELEMENTS::Fluid2::Unpack(const vector<char>& data)
     ExtractfromPack(position,data,firstdim);
     ExtractfromPack(position,data,secondim);
 
-    sub_acc_old_.resize(firstdim,secondim);
-    sub_vel_    .resize(firstdim,secondim);
-    sub_vel_old_.resize(firstdim,secondim);
+    sub_acc_old_.Shape(firstdim,secondim);
+    sub_vel_    .Shape(firstdim,secondim);
+    sub_vel_old_.Shape(firstdim,secondim);
 
     int size = firstdim*secondim*sizeof(double);
 
-    ExtractfromPack(position,data,&(sub_acc_old_.data()[0]),size);
-    ExtractfromPack(position,data,&(sub_vel_.data()[0])    ,size);
-    ExtractfromPack(position,data,&(sub_vel_old_.data()[0]),size);
+    ExtractfromPack(position,data,&(sub_acc_old_.A()[0]),size);
+    ExtractfromPack(position,data,&(sub_vel_.A()[0])    ,size);
+    ExtractfromPack(position,data,&(sub_vel_old_.A()[0]),size);
 
-    sub_pre_    .resize(secondim);
-    sub_pre_old_.resize(secondim);
+    sub_pre_    .Size(secondim);
+    sub_pre_old_.Size(secondim);
 
-    ExtractfromPack(position,data,&(sub_pre_.data()[0])    ,secondim*sizeof(double));
-    ExtractfromPack(position,data,&(sub_pre_old_.data()[0]),secondim*sizeof(double));
+    ExtractfromPack(position,data,&(sub_pre_.A()[0])    ,secondim*sizeof(double));
+    ExtractfromPack(position,data,&(sub_pre_old_.A()[0]),secondim*sizeof(double));
   }
 
   // data_

@@ -729,11 +729,11 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   // Now do the nurbs specific stuff
   double normalfac=0.0;
 
-  std::vector<blitz::Array<double,1> > mypknots(3);
-  std::vector<blitz::Array<double,1> > myknots (2);
+  std::vector<Epetra_SerialDenseVector> mypknots(3);
+  std::vector<Epetra_SerialDenseVector> myknots (2);
 
-  blitz::Array<double, 1> weights(iel);
-  LINALG::Matrix<piel,1>  pweights;
+  Epetra_SerialDenseVector weights(iel);
+  LINALG::Matrix<piel,1>   pweights;
 
 
   // for isogeometric elements --- get knotvectors for parent
@@ -768,8 +768,8 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
               +---+---+             +---+---+                
              0   1   2             0   1   2                 
       */
-      myknots[0].resize(mypknots[0].extent(blitz::firstDim));
-      myknots[1].resize(mypknots[1].extent(blitz::firstDim));
+      myknots[0].Size(mypknots[0].Length());
+      myknots[1].Size(mypknots[1].Length());
       myknots[0]=mypknots[0];
       myknots[1]=mypknots[1];
 
@@ -791,8 +791,8 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
               +---+---+             +---+---+                
             18  19  20             0   1   2                 
       */
-      myknots[0].resize(mypknots[0].extent(blitz::firstDim));
-      myknots[1].resize(mypknots[1].extent(blitz::firstDim));
+      myknots[0].Size(mypknots[0].Length());
+      myknots[1].Size(mypknots[1].Length());
       myknots[0]=mypknots[0];
       myknots[1]=mypknots[1];
 
@@ -814,8 +814,8 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
               +---+---+             +---+---+                
              0   1   2             0   1   2                 
       */
-      myknots[0].resize(mypknots[0].extent(blitz::firstDim));
-      myknots[1].resize(mypknots[2].extent(blitz::firstDim));
+      myknots[0].Size(mypknots[0].Length());
+      myknots[1].Size(mypknots[2].Length());
       myknots[0]=mypknots[0];
       myknots[1]=mypknots[2];
 
@@ -837,8 +837,8 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
               +---+---+             +---+---+                
              6   7   8             0   1   2                 
       */
-      myknots[0].resize(mypknots[0].extent(blitz::firstDim));
-      myknots[1].resize(mypknots[2].extent(blitz::firstDim));
+      myknots[0].Size(mypknots[0].Length());
+      myknots[1].Size(mypknots[2].Length());
       myknots[0]=mypknots[0];
       myknots[1]=mypknots[2];
 
@@ -860,8 +860,8 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
               +---+---+             +---+---+                
              2   5   8             0   1   2                 
       */
-      myknots[0].resize(mypknots[1].extent(blitz::firstDim));
-      myknots[1].resize(mypknots[2].extent(blitz::firstDim));
+      myknots[0].Size(mypknots[1].Length());
+      myknots[1].Size(mypknots[2].Length());
       myknots[0]=mypknots[1];
       myknots[1]=mypknots[2];
 
@@ -883,8 +883,8 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
               +---+---+             +---+---+                
              0   3   6             0   1   2                 
       */
-      myknots[0].resize(mypknots[1].extent(blitz::firstDim));
-      myknots[1].resize(mypknots[2].extent(blitz::firstDim));
+      myknots[0].Size(mypknots[1].Length());
+      myknots[1].Size(mypknots[2].Length());
       myknots[0]=mypknots[1];
       myknots[1]=mypknots[2];
 
@@ -946,12 +946,12 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     else
     {
       // this is just a temporary work-around
-      blitz::Array<double,1> gp(2);
+      Epetra_SerialDenseVector gp(2);
       gp(0)=xi;
       gp(1)=eta;
 
-      blitz::Array<double,1> tempfunct(iel);
-      blitz::Array<double,2> tempderiv(2,iel);
+      Epetra_SerialDenseVector tempfunct(iel);
+      Epetra_SerialDenseMatrix tempderiv(2,iel);
 
       DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
         (tempfunct,
