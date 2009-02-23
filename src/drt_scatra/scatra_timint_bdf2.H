@@ -90,7 +90,7 @@ protected:
   /// set time for evaluation of Neumann boundary conditions
   void SetTimeForNeumannEvaluation(ParameterList& params);
 
-  /// reset the residual vector and add actual Neumann loads with time factor
+  /// add actual Neumann loads with time factor
   void AddNeumannToResidual();
 
   /// add parameters specific for time-integration scheme
@@ -98,6 +98,9 @@ protected:
 
   /// write additional data required for restart
   void OutputRestart();
+
+  /// return the right time-scaling-factor for the true residual
+  double ResidualScaling() const { return 1.0/(dta_*theta_); }
 
 private:
 

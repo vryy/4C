@@ -268,7 +268,7 @@ protected:
   /// set time for evaluation of Neumann boundary conditions
   virtual void SetTimeForNeumannEvaluation(ParameterList& params) = 0;
 
-  /// reset the residual vector and add actual Neumann loads with time factor
+  /// add actual Neumann loads multipl. with time factor to the residual
   virtual void AddNeumannToResidual() = 0;
 
   /// add parameters specific for time-integration scheme
@@ -295,6 +295,14 @@ protected:
 
   /// write additional data required for restart
   virtual void OutputRestart() = 0;
+
+  /// compute contribution of electrode kinetics to eq. system
+  void EvaluateElectrodeKinetics(
+      RCP<LINALG::SparseOperator>& matrix,
+      RCP<Epetra_Vector>&          rhs);
+
+  /// return the right time-scaling-factor for the true residual
+  virtual double ResidualScaling() const = 0;
 
   /// write flux vectors to BINIO
   void OutputFlux();
@@ -404,6 +412,9 @@ protected:
   /// inverse values of phi at time n+1
   RCP<Epetra_Vector>    invphinp_;
 
+  /// true (rescaled) residual vector without zeros at Dirichlet conditions
+  RCP<Epetra_Vector>    trueresidual_;
+
   /// density at times n+1, n and n-1
   RCP<Epetra_Vector>    densnp_;
   RCP<Epetra_Vector>    densn_;
@@ -455,6 +466,15 @@ protected:
 
   /// vector for statistical evaluation of normal fluxes
   RCP<Epetra_SerialDenseVector> sumnormfluxintegral_;
+
+  /// number of transported scalars
+  int numscal_;
+  
+  /// the last step number when fluxes have been computed
+  int lastfluxoutputstep_;
+
+  // unit outer normal vector field for flux output
+  RCP<Epetra_MultiVector> normals_;
 
 }; // class ScaTraTimIntImpl
 

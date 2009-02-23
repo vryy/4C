@@ -191,32 +191,15 @@ public:
         const bool&             iselch   ///< problemtype elch or scatra
     );
 
-   /*!
-    brief integral of normal flux over boundary surface
+     //! integral of shape functions over boundary surface
+     void IntegrateShapeFunctions(
+         const DRT::Element*       ele,    ///< the actual boundary element
+         ParameterList&            params, ///< the parameter list
+         Epetra_SerialDenseVector& elevec1,///< result vector (to be assembled)
+         const bool                addarea ///< flag for area calculation
+     );
 
-    \param params (in/out)    : ParameterList for communication between control routine
-                                and elements
-    \param discretization (in): A reference to the underlying discretization
-    \param lm (in)            : location vector of this element
-    \param xyze (in)          : node coordinates
-    \param enormflux (in)     : normal fluxes at element nodes
-    */
-    void NormalFluxIntegral(
-        const DRT::Element*             ele,
-        ParameterList&                  params,
-        const vector<double>&           enormflux);
-
-   /*!
-    brief integral of normal diffusive flux and velocity div. over boundary surface
-
-    \param params (in/out)    : ParameterList for communication between control routine
-                                and elements
-    \param discretization (in): A reference to the underlying discretization
-    \param lm (in)            : location vector of this element
-    \param xyze (in)          : node coordinates
-    \param ediffflux (in)     : normal diffusive fluxes at element nodes
-    \param edivu (in)         : velocity divergence at element nodes
-    */
+    //! integral of normal diffusive flux and velocity div. over boundary surface
     void DifffluxAndDivuIntegral(
         const DRT::Element*             ele,
         ParameterList&                  params,

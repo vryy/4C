@@ -178,12 +178,12 @@ void SCATRA::TimIntOneStepTheta::SetTimeForNeumannEvaluation(
 
 
 /*----------------------------------------------------------------------*
- | reset the residual vector and add actual Neumann loads               |
+ | add actual Neumann loads                                             |
  | scaled with a factor resulting from time discretization     vg 11/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::AddNeumannToResidual()
 {
-  residual_->Update(theta_*dta_,*neumann_loads_,0.0);
+  residual_->Update(theta_*dta_,*neumann_loads_,1.0);
   return;
 }
 

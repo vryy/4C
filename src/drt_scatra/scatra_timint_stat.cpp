@@ -64,11 +64,11 @@ void SCATRA::TimIntStationary::SetTimeForNeumannEvaluation(
 
 
 /*----------------------------------------------------------------------*
- | reset the residual vector and add actual Neumann loads      vg 11/08 |
+ | add actual Neumann loads                                    vg 11/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntStationary::AddNeumannToResidual()
 {
-  residual_->Update(1.0,*neumann_loads_,0.0);
+  residual_->Update(1.0,*neumann_loads_,1.0);
   return;
 }
 

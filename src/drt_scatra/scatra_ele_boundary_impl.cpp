@@ -149,128 +149,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
 
   // Now, check for the action parameter
   const string action = params.get<string>("action","none");
-  if (action=="calc_condif_flux")
-  {
-    // get actual values of transported scalars
-    RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
-    if (phinp==null) dserror("Cannot get state vector 'phinp'");
-
-    // get velocity values at the nodes (needed for total flux values)
-    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
-    const DRT::ELEMENTS::Transport* parentele = ele->ParentElement();
-    const int ielparent = parentele->NumNode();
-    // we deal with a (nsd_+1)-dimensional flow field 
-    Epetra_SerialDenseVector evel((nsd_+1)*ielparent);
-    DRT::UTILS::ExtractMyNodeBasedValues(parentele,evel,velocity,nsd_+1);
-
-    // we dont know the parent element's lm vector; so we have to build it here
-    vector<int> lmparent(ielparent);
-    vector<int> lmparentowner;
-    parentele->LocationVector(discretization, lmparent, lmparentowner);
-
-    // extract local values from the global vector for the parent(!) element 
-    vector<double> myphinp(lmparent.size());
-    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lmparent);
-
-    // get the averaged normal vectors at the nodes
-    const RCP<Epetra_MultiVector> normals = params.get< RCP<Epetra_MultiVector> >("normal vectors",null);
-    LINALG::SerialDenseVector enormals((nsd_+1)*iel);
-    DRT::UTILS::ExtractMyNodeBasedValues(ele,enormals,normals,nsd_+1);
-
-    // set flag for type of scalar
-    string scaltypestr=params.get<string>("problem type");
-    bool temperature = false;
-    if (scaltypestr =="loma") temperature = true;
-
-    double frt(0.0);
-    if (scaltypestr =="elch")
-    {
-      // get parameter F/RT
-      frt = params.get<double>("frt");
-    }
-
-    // assure, that the values are in the same order as the parent element nodes
-    for(int k=0;k<ielparent;++k)
-    {
-      const Node* node = (parentele->Nodes())[k];
-      vector<int> dof = discretization.Dof(node);
-      for (unsigned int i=0 ; i< dof.size(); ++i)
-      {
-        if (dof[i]!=lmparent[k*numdofpernode_ + i])
-        {
-          cout<<"dof[i]= "<<dof[i]<<"  lmparent[k*numdofpernode + i]="<<lmparent[k*numdofpernode_ + i]<<endl;
-          dserror("Dofs are not in the same order as the element nodes. Implement some resorting!");
-        }
-      }
-    }
-
-    // access control parameter
-    string fluxtypestring = params.get<string>("fluxtype","noflux");
-
-    // define vector for normal fluxes
-    vector<double> mynormflux(lm.size());
-
-    // get node coordinates (we have a nsd_+1 dimensional domain!)
-    GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,iel> >(ele,xyze_);
-
-    // do a loop for systems of transported scalars
-    for (int j = 0; j<numscal_; ++j)
-    {
-      // compute fluxes on each node of the parent element
-      LINALG::SerialDenseMatrix eflux(3,ielparent,true);
-      DRT::Element* peleptr = (DRT::Element*) parentele;
-      DRT::ELEMENTS::ScaTraImplInterface::Impl(peleptr)->CalculateFluxSerialDense(
-          eflux,
-          peleptr,
-          myphinp,
-          mat,
-          temperature,
-          frt,
-          evel,
-          fluxtypestring,
-          j);
-
-      // handle the result dofs in the right order (compare lm with lmparent)
-      int dofcount = 0;
-      for (int i=0; i<iel; ++i)
-      {
-        for(int k = 0; k<ielparent;++k)
-        {
-          if (lm[i*numdofpernode_+j]==lmparent[k*numdofpernode_+j]) // dof ids match => assemble this value
-          {
-            dofcount++;
-            // form arithmetic mean of assembled nodal flux vectors
-            // => factor is the number of adjacent elements for each node
-            const double factor = (double) (ele->Nodes()[i])->NumElement();
-
-            // calculate normal flux at present node
-            mynormflux[i] = 0.0;
-            for (int m=0; m<(nsd_+1); m++)
-            {
-              mynormflux[i] += eflux(m,k)*enormals(i*(nsd_+1)+m);
-            }
-
-            // store normal flux vector for this node
-            elevec1_epetra[i*numdofpernode_+j]+=enormals(i*(nsd_+1))*mynormflux[i]/factor;
-            elevec2_epetra[i*numdofpernode_+j]+=enormals(i*(nsd_+1)+1)*mynormflux[i]/factor;
-            if (nsd_==2)
-            elevec3_epetra[i*numdofpernode_+j]+=enormals(i*(nsd_+1)+2)*mynormflux[i]/factor;
-          }
-        }
-      }
-      if (dofcount != iel) dserror("Expected dof for transport boundary element is missing");
-
-      // calculate integral of normal flux
-      // => only meaningful for one scalar, for the time being (take first scalar!)
-      // NOTE: add integral value only for elements which are NOT ghosted!
-      if(j==0 && ele->Owner() == discretization.Comm().MyPID())
-      {
-        NormalFluxIntegral(ele,params,mynormflux);
-      }
-
-    } // loop over numscal
-  }
-  else if (action == "calc_normal_vectors")
+  if (action == "calc_normal_vectors")
   {
     // access the global vector
     const RCP<Epetra_MultiVector> normals = params.get< RCP<Epetra_MultiVector> >("normal vectors",null);
@@ -289,13 +168,12 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
       if (normals->Map().MyGID(nodegid) )
       { // OK, the node belongs to this processor
 
-        // form arithmetic mean of normal vector
-        // => numele is the number of adjacent elements for each node
-        const double numele = (double) (ele->Nodes()[j])->NumElement();
+        // scaling to a unit vector is performed on the global level after
+        // assembly of nodal contributions since we have no reliable information 
+        // about the number of boundary elements adjacent to a node
         for (int dim=0; dim<(nsd_+1); dim++)
         {
-          const double component = normal_(dim)/numele;
-          normals->SumIntoGlobalValue(nodegid,dim,component);
+          normals->SumIntoGlobalValue(nodegid,dim,normal_(dim));
         }
       }
       //else: the node belongs to another processor; the ghosted
@@ -487,6 +365,12 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     {
       DifffluxAndDivuIntegral(ele,params,mydiffflux,mydivu);
     }
+  }
+  else if (action =="integrate_shape_functions")
+  {
+    // NOTE: add area value only for elements which are NOT ghosted!
+    const bool addarea = (ele->Owner() == discretization.Comm().MyPID());
+    IntegrateShapeFunctions(ele,params,elevec1_epetra,addarea);
   }
   else
     dserror("Unknown type of action for Scatra Implementation: %s",action.c_str());
@@ -847,8 +731,12 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
 
     // surface overpotential eta at integration point
     const double eta = (pot0 - potint);
-    //Butler-Volmer
-    const double expterm = conint * (exp(alphaa*frt*eta)-exp((-alphac)*frt*eta));
+    // Butler-Volmer
+    double expterm(0.0);
+    if (iselch)
+      expterm = conint * (exp(alphaa*frt*eta)-exp((-alphac)*frt*eta));
+    else
+      expterm = exp(alphaa*eta)-exp((-alphac)*eta);
 
     // compute integrals
     overpotentialint += eta * fac_;
@@ -913,18 +801,21 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::GetConstNormal(
 
 
 /*----------------------------------------------------------------------*
- | calculate integral of normal flux (private)                  vg 09/08|
+ |  Integrate shapefunctions over surface (private)           gjb 02/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NormalFluxIntegral(
-    const DRT::Element*             ele,
-    ParameterList&                  params,
-    const vector<double>&           enormflux
+void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::IntegrateShapeFunctions(
+    const DRT::Element*        ele,
+    ParameterList&             params,
+    Epetra_SerialDenseVector&  elevec1,
+    const bool                 addarea
 )
 {
-  // get variables with their current values
-  double normfluxintegral = params.get<double>("normfluxintegral");
+  // access boundary area variable with its actual value
   double boundaryint = params.get<double>("boundaryint");
+
+  // get node coordinates (we have a nsd_+1 dimensional domain!)
+  GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,iel> >(ele,xyze_);
 
   // integrations points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
@@ -934,19 +825,29 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NormalFluxIntegral(
   {
     EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
 
-    // compute integral of normal flux
+    // compute integral of shape functions
     for (int node=0;node<iel;++node)
     {
-      normfluxintegral += funct_(node) * enormflux[node] * fac_;
-      boundaryint += funct_(node) * fac_;
+      for (int k=0; k< numscal_; k++)
+      {
+        elevec1[node*numdofpernode_+k] += funct_(node) * fac_;
+      }
     }
-  } // loop over integration points
 
-  // add contributions to the global values
-  params.set<double>("normfluxintegral",normfluxintegral);
+    if (addarea)
+    {
+      // area calculation
+      boundaryint += fac_;
+    }
+
+  } //loop over integration points
+
+  // add contribution to the global value
   params.set<double>("boundaryint",boundaryint);
 
-} //ScaTraBoundaryImpl<distype>::NormalFluxIntegral
+  return;
+
+} //ScaTraBoundaryImpl<distype>::IntegrateShapeFunction
 
 
 /*----------------------------------------------------------------------*

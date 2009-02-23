@@ -244,12 +244,12 @@ void SCATRA::TimIntGenAlpha::SetTimeForNeumannEvaluation(
 
 
 /*----------------------------------------------------------------------*
- | reset the residual vector and add actual Neumann loads               |
+ | add actual Neumann loads                                             |
  | scaled with a factor resulting from time discretization     vg 11/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntGenAlpha::AddNeumannToResidual()
 {
-  residual_->Update(genalphafac_*dta_,*neumann_loads_,0.0);
+  residual_->Update(genalphafac_*dta_,*neumann_loads_,1.0);
   return;
 }
 
@@ -704,6 +704,17 @@ void SCATRA::TimIntGenAlpha::SetLomaVelocity(RCP<const Epetra_Vector> extvel,
   }
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ | return the right time-scaling-factor for the true residual gjb 02/09 |
+ *----------------------------------------------------------------------*/
+double SCATRA::TimIntGenAlpha::ResidualScaling() const
+{
+  if (incremental_) 
+  return (alphaF_/(genalphafac_*dta_));
+else 
+  return (alphaF_ / ((1.0-alphaF_)*genalphafac_*dta_));
 }
 
 #endif /* CCADISCRET */
