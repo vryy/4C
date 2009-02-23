@@ -762,7 +762,7 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
     //       (0)           gamma      gamma * dt
     //
     // in case of conservative form: velocity*density
-    if (convform_ == "conservative" and loma_ != "No")
+    if (loma_ != "No" and convform_ == "conservative")
     {
       accnp_->Multiply(1.0,*velnp_,*vedenp_,0.0);
       accnp_->Multiply(-1.0,*veln_,*veden_,1.0);
@@ -1974,7 +1974,7 @@ void FLD::FluidImplicitTimeInt::GenAlphaUpdateAcceleration()
   Teuchos::RCP<Epetra_Vector> onlyveln = velpressplitter_.ExtractOtherVector(veln_);
 
   // in case of conservative form: velocity*density
-  if (convform_ == "conservative")
+  if (loma_ != "No" and convform_ == "conservative")
   {
     // -------------------------------------------------------------------
     // separate current density at n+1 and at n, get result vector

@@ -217,6 +217,7 @@ Input/sotet10_patchtest.dat                             x        x        x     
 Input/scatra_graetz_problem_system.dat                  x        x        x        -        -        -
 Input/scatra_gaussian_hill_pbc.dat                      x        x        x        -        -        -
 Input/scatra_gaussian_hill_pbc_genalpha.dat             x        x        x        -        -        -
+Input/scatra_gaussian_hill_pbc_gena_cons.dat            x        x        x        -        -        -
 Input/sosh8_thin_nonlinear_pinched_hemisphere.dat       x        x        x        -        -        -
 Input/soshw6_thin_nonlinear_pinched_hemisphere.dat      x        x        x        -        -        -
 Input/sosh8_freeflying_ruler.dat                        x        x        x        -        -        -
