@@ -490,14 +490,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "RelRes_Or_AbsDis",
                                  "RelRes_And_AbsDis",
                                  "RelRes_Or_RelDis",
-                                 "RelRes_And_RelDis"),
+                                 "RelRes_And_RelDis",
+                                 "MixRes_Or_MixDis",
+                                 "MixRes_And_MixDis"),
                                tuple<INPAR::STR::ConvCheck>(
                                  INPAR::STR::convcheck_absres_or_absdis,
                                  INPAR::STR::convcheck_absres_and_absdis,
                                  INPAR::STR::convcheck_relres_or_absdis,
                                  INPAR::STR::convcheck_relres_and_absdis,
                                  INPAR::STR::convcheck_relres_or_reldis,
-                                 INPAR::STR::convcheck_relres_and_reldis),
+                                 INPAR::STR::convcheck_relres_and_reldis,
+                                 INPAR::STR::convcheck_mixres_or_mixdis,
+                                 INPAR::STR::convcheck_mixres_and_mixdis),
                                &sdyn);
 
   DoubleParameter("TOLDISP",1.0E-10,

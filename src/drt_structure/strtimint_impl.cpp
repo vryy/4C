@@ -430,6 +430,14 @@ bool STR::TimIntImpl::Converged()
     fdc = ( (normdisi_/normchardis_ < toldisi_)
             and (normfres_/normcharforce_ < tolfres_) );
     break;
+  case INPAR::STR::convcheck_mixres_or_mixdis:
+    fdc = ( ( (normdisi_ < toldisi_) or (normdisi_/normchardis_ < toldisi_) )
+            or ( (normfres_ < tolfres_) or (normfres_/normcharforce_ < tolfres_) ) );
+    break;
+  case INPAR::STR::convcheck_mixres_and_mixdis:
+    fdc = ( ( (normdisi_ < toldisi_) or (normdisi_/normchardis_ < toldisi_) )
+            and ( (normfres_ < tolfres_) or (normfres_/normcharforce_ < tolfres_) ) );
+    break;
   default:
     dserror("Requested convergence check %i is not (yet) implemented",
             itercnvchk_);
@@ -932,6 +940,16 @@ void STR::TimIntImpl::PrintNewtonIterText
         << std::setw(10) << std::setprecision(5) << std::scientific
         << normdisi_;
     break;
+  // mixed absolute-relative forces and displacements
+  case INPAR::STR::convcheck_mixres_and_mixdis:
+  case INPAR::STR::convcheck_mixres_or_mixdis:
+    oss << " mix-res-norm "
+        << std::setw(10) << std::setprecision(5) << std::scientific
+        << min(normfres_, normfres_/normcharforce_)
+        << " mix-dis-norm "
+        << std::setw(10) << std::setprecision(5) << std::scientific
+        << min(normdisi_, normdisi_/normchardis_);
+    break;
   default:
     dserror("Cannot handle requested convergence check %i", itercnvchk_);
     break;
@@ -997,6 +1015,12 @@ void STR::TimIntImpl::PrintNewtonConv()
   case INPAR::STR::convcheck_absres_or_absdis:
     oss << " absolute res-norm " << normfres_
         << " absolute dis-norm " << normdisi_;
+    break;
+  // absolute-relative forces and displacements
+  case INPAR::STR::convcheck_mixres_and_mixdis:
+  case INPAR::STR::convcheck_mixres_or_mixdis:
+    oss << " mixed res-norm " << min(normfres_, normfres_/normcharforce_)
+        << " mixed dis-norm " << min(normdisi_, normdisi_/normchardis_);
     break;
   default:
     dserror("Cannot handle requested convergence check %i", itercnvchk_);

@@ -241,6 +241,10 @@ namespace INPAR
                                    ///< OR iterative displacement increments
       convcheck_relres_and_reldis,  ///< relative norms of residual forces
                                     ///< AND iterative displacement increments
+      convcheck_mixres_or_mixdis,  ///< mixed absolute-relative norms of residual forces
+                                    ///< OR mixed absolute-relative norm of residual displacements
+      convcheck_mixres_and_mixdis,  ///< mixed absolute-relative norms of residual forces
+                                    ///< AND mixed absolute-relative norm of residual displacements
       convcheck_vague  ///< undetermined
     };
 
@@ -269,6 +273,12 @@ namespace INPAR
         break;
       case convcheck_relres_and_reldis :
         return "RelRes_And_RelDis";
+        break;
+      case convcheck_mixres_or_mixdis :
+        return "MixRes_Or_MixDis";
+        break;
+      case convcheck_mixres_and_mixdis :
+        return "MixRes_And_MixDis";
         break;
       default :
         dserror("Cannot make string for convergence check %d", name);
