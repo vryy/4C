@@ -489,11 +489,12 @@ void STRUMULTI::MicroStatic::PredictTangDis(LINALG::Matrix<3,3>* defgrd)
   solver_->Solve(stiff_->EpetraMatrix(), disi_, fresm_, true, true);
   solver_->Reset();
 
+  // store norm of displacement increments
+  disi_->Norm2(&disnorm_);
+
   //---------------------------------- update mid configuration values
   // set Dirichlet increments in displacement increments
   disi_->Update(1.0, *dbcinc, 1.0);
-  // store norm of displacement increments
-  disi_->Norm2(&disnorm_);
 
   // displacements
   // note that disi is not Inc_D{n+1} but Inc_D{n+1-alphaf} since everything
