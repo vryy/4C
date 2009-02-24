@@ -109,11 +109,11 @@ void DRT::Element::Print(ostream& os) const
 {
   os << setw(12) << Id() << " Owner " << setw(5) << Owner() << " ";
   const int nnode = NumNode();
-  const int* nodes = NodeIds();
-  if (nnode)
+  const int* nodeids = NodeIds();
+  if (nnode > 0)
   {
     os << " Nodes ";
-    for (int i=0; i<nnode; ++i) os << setw(10) << nodes[i] << " ";
+    for (int i=0; i<nnode; ++i) os << setw(10) << nodeids[i] << " ";
   }
 
 #if 0
