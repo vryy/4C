@@ -961,8 +961,8 @@ void SCATRA::ScaTraTimIntImpl::Output()
   else if ((step_%uprestart_!= 0 && step_%upres_!=0) &&
            (step_>=samstart_ && step_<=samstop_ && writeflux_!="No"))
   {
-    // calculation of statistics for normal fluxes
-    OutputFlux();
+    //calculation of statistics for normal fluxes (no output to file)
+    CalcFlux();
   }
 
   return;
