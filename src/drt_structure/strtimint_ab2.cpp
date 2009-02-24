@@ -137,9 +137,9 @@ void STR::TimIntAB2::IntegrateStep()
   // ie \f$\dot{P} = M \dot{V}_{n=1}\f$
   frimpn_->Update(1.0, *fextn_, -1.0, *fintn_, 0.0);
 //   double some, more, less;
-//   frimpn_->Norm2(&some);
-//   fextn_->Norm2(&more);
-//   fintn_->Norm2(&less);
+//some = STR::AUX::CalculateVectorNorm(iternorm_, frimpn_);
+//more = STR::AUX::CalculateVectorNorm(iternorm_, fextn_);
+//less = STR::AUX::CalculateVectorNorm(iternorm_, fintn_);
 //   cout << some << " " << more << " " << less << endl;
   if (damping_ == INPAR::STR::damp_rayleigh)
   {

@@ -162,7 +162,7 @@ double STR::TimIntStatics::CalcRefNormDisplacement()
   // points within the timestep (end point, generalized midpoint).
 
   double charnormdis = 0.0;
-  (*dis_)(0)->Norm2(&charnormdis);
+  charnormdis = STR::AUX::CalculateVectorNorm(iternorm_, (*dis_)(0));
 
   // rise your hat
   return charnormdis;
@@ -181,11 +181,11 @@ double STR::TimIntStatics::CalcRefNormForce()
 
   // norm of the internal forces
   double fintnorm = 0.0;
-  fintn_->Norm2(&fintnorm);
+  fintnorm = STR::AUX::CalculateVectorNorm(iternorm_, fintn_);
 
   // norm of the external forces
   double fextnorm = 0.0;
-  fextn_->Norm2(&fextnorm);
+  fextnorm = STR::AUX::CalculateVectorNorm(iternorm_, fextn_);
 
   // return char norm
   return max(fintnorm, fextnorm);

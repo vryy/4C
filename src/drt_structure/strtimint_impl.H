@@ -23,6 +23,7 @@ Maintainer: Burkhard Bornemann
 #include <NOX_Epetra_Group.H>
 
 #include "strtimint.H"
+#include "str_aux.H"
 
 /*----------------------------------------------------------------------*/
 /* belongs to structural dynamics namespace */

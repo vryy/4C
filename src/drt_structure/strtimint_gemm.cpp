@@ -255,7 +255,7 @@ double STR::TimIntGEMM::CalcRefNormDisplacement()
   // points within the timestep (end point, generalized midpoint).
 
   double charnormdis = 0.0;
-  (*dis_)(0)->Norm2(&charnormdis);
+  charnormdis = STR::AUX::CalculateVectorNorm(iternorm_, (*dis_)(0));
 
   // rise your hat
   return charnormdis;
@@ -274,21 +274,21 @@ double STR::TimIntGEMM::CalcRefNormForce()
 
   // norm of the internal forces
   double fintnorm = 0.0;
-  fintm_->Norm2(&fintnorm);
+  fintnorm = STR::AUX::CalculateVectorNorm(iternorm_, fintm_);
 
   // norm of the external forces
   double fextnorm = 0.0;
-  fextm_->Norm2(&fextnorm);
+  fextnorm = STR::AUX::CalculateVectorNorm(iternorm_, fextm_);
 
   // norm of the inertial forces
   double finertnorm = 0.0;
-  finertm_->Norm2(&finertnorm);
+  finertnorm = STR::AUX::CalculateVectorNorm(iternorm_, finertm_);
 
   // norm of viscous forces
   double fviscnorm = 0.0;
   if (damping_ == INPAR::STR::damp_rayleigh)
   {
-    fviscm_->Norm2(&fviscnorm);
+    fviscnorm = STR::AUX::CalculateVectorNorm(iternorm_, fviscm_);
   }
 
   // determine worst value ==> charactersitic norm

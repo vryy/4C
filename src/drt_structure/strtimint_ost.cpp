@@ -248,7 +248,7 @@ double STR::TimIntOneStepTheta::CalcRefNormDisplacement()
   // points within the timestep (end point, generalized midpoint).
 
   double charnormdis = 0.0;
-  (*dis_)(0)->Norm2(&charnormdis);
+  charnormdis = STR::AUX::CalculateVectorNorm(iternorm_, (*dis_)(0));
 
   // rise your hat
   return charnormdis;
@@ -267,21 +267,21 @@ double STR::TimIntOneStepTheta::CalcRefNormForce()
 
   // norm of the internal forces
   double fintnorm = 0.0;
-  fintn_->Norm2(&fintnorm);
+  fintnorm = STR::AUX::CalculateVectorNorm(iternorm_, fintn_);
 
   // norm of the external forces
   double fextnorm = 0.0;
-  fextn_->Norm2(&fextnorm);
+  fextnorm = STR::AUX::CalculateVectorNorm(iternorm_, fextn_);
 
   // norm of the inertial forces
   double finertnorm = 0.0;
-  finertt_->Norm2(&finertnorm);
+  finertnorm = STR::AUX::CalculateVectorNorm(iternorm_, finertt_);
 
   // norm of viscous forces
   double fviscnorm = 0.0;
   if (damping_ == INPAR::STR::damp_rayleigh)
   {
-    fvisct_->Norm2(&fviscnorm);
+    fviscnorm = STR::AUX::CalculateVectorNorm(iternorm_, fvisct_);
   }
 
   // return char norm
