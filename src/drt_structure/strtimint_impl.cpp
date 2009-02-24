@@ -850,19 +850,35 @@ void STR::TimIntImpl::PrintPredictor()
   if ( (myrank_ == 0) and printscreen_ )
   {
     // relative check of force residual
-    if ( (itercnvchk_ != INPAR::STR::convcheck_absres_or_absdis)
-         and (itercnvchk_ != INPAR::STR::convcheck_absres_and_absdis) )
+    if ( (itercnvchk_ == INPAR::STR::convcheck_relres_or_reldis)
+         or (itercnvchk_ == INPAR::STR::convcheck_relres_and_reldis)
+         or (itercnvchk_ == INPAR::STR::convcheck_relres_or_absdis)
+         or (itercnvchk_ == INPAR::STR::convcheck_relres_and_absdis) )
     {
       std::cout << "Predictor scaled res-norm "
                 << normfres_/normcharforce_
                 << std::endl;
     }
     // absolute check of force residual
-    else
+    else if ( (itercnvchk_ == INPAR::STR::convcheck_absres_or_absdis)
+              or (itercnvchk_ == INPAR::STR::convcheck_absres_and_absdis) )
     {
       std::cout << "Predictor absolute res-norm "
                 << normfres_
                 << std::endl;
+    }
+    // mixed absolute-relative check of force residual
+    else if ( (itercnvchk_ == INPAR::STR::convcheck_mixres_or_mixdis)
+              or (itercnvchk_ == INPAR::STR::convcheck_mixres_and_mixdis) )
+    {
+      std::cout << "Predictor mixed res-norm "
+                << min(normfres_, normfres_/normcharforce_)
+                << std::endl;
+    }
+    // default
+    else
+    {
+      dserror("You should not turn up here.");
     }
     // print it, now
     fflush(stdout);
