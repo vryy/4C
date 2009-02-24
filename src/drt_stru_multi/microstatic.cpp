@@ -1161,26 +1161,21 @@ bool STRUMULTI::MicroStatic::Converged()
   }
   else if (convcheck_ == INPAR::STR::convcheck_relres_or_absdis)
   {
-    if (ref_resnorm_ == 0.) ref_resnorm_ = 1.0;
-    return (disinorm_ < toldis_ or (resnorm_/ref_resnorm_) < tolres_);
+    return (disinorm_ < toldis_ or ((resnorm_/ref_resnorm_) < tolres_ or resnorm_ < tolres_));
   }
   else if (convcheck_ == INPAR::STR::convcheck_relres_and_absdis)
   {
-    if (ref_resnorm_ == 0.) ref_resnorm_ = 1.0;
-    return (disinorm_ < toldis_ and (resnorm_/ref_resnorm_) < tolres_);
+    return (disinorm_ < toldis_ and ((resnorm_/ref_resnorm_) < tolres_ or resnorm_ < tolres_));
   }
   else if (convcheck_ == INPAR::STR::convcheck_relres_or_reldis)
   {
-    if (ref_resnorm_ == 0.) ref_resnorm_ = 1.0;
-    if (ref_disinorm_ == 0.) ref_disinorm_ = 1.0;
-    return ((disinorm_/ref_disinorm_) < toldis_ or (resnorm_/ref_resnorm_) < tolres_);
+    return (((disinorm_/ref_disinorm_) < toldis_ or disinorm_ < toldis_) or
+            ((resnorm_/ref_resnorm_) < tolres_ or resnorm_ < tolres_));
   }
   else if (convcheck_ == INPAR::STR::convcheck_relres_and_reldis)
   {
-    if (ref_resnorm_ == 0.) ref_resnorm_ = 1.0;
-    if (ref_disinorm_ == 0.) ref_disinorm_ = 1.0;
-
-    return ((disinorm_/ref_disinorm_) < toldis_ and (resnorm_/ref_resnorm_) < tolres_);
+    return (((disinorm_/ref_disinorm_) < toldis_ or disinorm_ < toldis_) and
+            ((resnorm_/ref_resnorm_) < tolres_ or resnorm_ < tolres_));
   }
   else
   {
@@ -1201,7 +1196,9 @@ void STRUMULTI::MicroStatic::CalcRefNorms()
   // points within the timestep (end point, generalized midpoint).
 
   ref_disinorm_ = STR::AUX::CalculateVectorNorm(iternorm_, dis_);
+  if (ref_disinorm_ == 0.0) ref_disinorm_ = 1.0;
   ref_resnorm_ = STR::AUX::CalculateVectorNorm(iternorm_, fint_);
+  if (ref_resnorm_ == 0.0) ref_disinorm_ = 1.0;
 }
 
 /*----------------------------------------------------------------------*
