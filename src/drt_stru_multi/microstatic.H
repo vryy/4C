@@ -37,6 +37,7 @@ Maintainer: Lena Wiechert
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_inpar/inpar_structure.H"
+#include "../drt_structure/str_aux.H"
 
 
 using namespace Teuchos;
@@ -78,12 +79,6 @@ public:
 
   */
   virtual ~MicroStatic();
-
-  /*!
-  \brief Create default parameter list
-
-  */
-  static void SetDefaults(ParameterList& params);
 
   /*!
   \brief Read restart
@@ -293,13 +288,14 @@ protected:
   bool                          printscreen_;
 
   INPAR::STR::ConvCheck         convcheck_;
+  INPAR::STR::VectorNorm        iternorm_;
   double                        tolres_;
   double                        toldis_;
 
-  double                        ref_fnorm_;
-  double                        fnorm_;
-  double                        ref_disnorm_;
-  double                        disnorm_;
+  double                        ref_resnorm_;
+  double                        resnorm_;
+  double                        ref_disinorm_;
+  double                        disinorm_;
 
   RefCountPtr<LINALG::SparseMatrix> stiff_;
   RefCountPtr<LINALG::SparseMatrix> stiff_dirich_;
@@ -339,6 +335,9 @@ protected:
   RefCountPtr<Epetra_Import> importp_;
   RefCountPtr<Epetra_Import> importf_;
 };
-}
+
+
+
+} // namespace STRUMULTI
 #endif
 #endif

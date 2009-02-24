@@ -27,7 +27,6 @@ Maintainer: Lena Wiechert
 #include "../drt_io/io.H"
 #include "../drt_inpar/inpar_structure.H"
 
-//#include "../drt_fsi/fsi_debug.H"
 
 using namespace IO;
 
@@ -106,6 +105,9 @@ V0_(V0)
 
   INPAR::STR::ConvCheck convcheck = Teuchos::getIntegralValue<INPAR::STR::ConvCheck>(sdyn_micro, "CONV_CHECK");
   convcheck_ = convcheck;
+  INPAR::STR::VectorNorm iternorm = Teuchos::getIntegralValue<INPAR::STR::VectorNorm>(sdyn_micro,"ITERNORM");
+  iternorm_ = iternorm;
+
   time_ = 0.0;
   dt_ = sdyn_macro.get<double>("TIMESTEP");
   step_ = 0;
@@ -357,7 +359,7 @@ void STRUMULTI::MicroStatic::PredictConstDis(LINALG::Matrix<3,3>* defgrd)
     stiff_->Complete();
 
     // set norm of displacement increments
-    disnorm_ = 1.0e6;
+    disinorm_ = 1.0e6;
   }
 
   //-------------------------------------------- compute residual forces
@@ -374,7 +376,7 @@ void STRUMULTI::MicroStatic::PredictConstDis(LINALG::Matrix<3,3>* defgrd)
     fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
 
     // store norm of residual
-    fresm_->Norm2(&fnorm_);
+    resnorm_ = STR::AUX::CalculateVectorNorm(iternorm_, fresm_);
   }
 
   return;
@@ -490,7 +492,7 @@ void STRUMULTI::MicroStatic::PredictTangDis(LINALG::Matrix<3,3>* defgrd)
   solver_->Reset();
 
   // store norm of displacement increments
-  disi_->Norm2(&disnorm_);
+  disinorm_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
 
   //---------------------------------- update mid configuration values
   // set Dirichlet increments in displacement increments
@@ -557,7 +559,7 @@ void STRUMULTI::MicroStatic::PredictTangDis(LINALG::Matrix<3,3>* defgrd)
     fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
 
     // store norm of residual
-    fresm_->Norm2(&fnorm_);
+    resnorm_ = STR::AUX::CalculateVectorNorm(iternorm_, fresm_);
   }
 
   return;
@@ -598,7 +600,7 @@ void STRUMULTI::MicroStatic::FullNewton()
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
     if (isadapttol_ && numiter_)
     {
-      double worst = fnorm_;
+      double worst = resnorm_;
       double wanted = tolres_;
       solver_->AdaptTolerance(wanted,worst,adaptolbetter_);
     }
@@ -670,9 +672,9 @@ void STRUMULTI::MicroStatic::FullNewton()
     }
 
     //---------------------------------------------- build residual norm
-    disi_->Norm2(&disnorm_);
+    disinorm_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
 
-    fresm_->Norm2(&fnorm_);
+    resnorm_ = STR::AUX::CalculateVectorNorm(iternorm_, fresm_);
 
   //--------------------------------- increment equilibrium loop index
     ++numiter_;
@@ -1151,34 +1153,34 @@ bool STRUMULTI::MicroStatic::Converged()
 {
   if (convcheck_ == INPAR::STR::convcheck_absres_or_absdis)
   {
-    return (disnorm_ < toldis_ or fnorm_ < tolres_);
+    return (disinorm_ < toldis_ or resnorm_ < tolres_);
   }
   else if (convcheck_ == INPAR::STR::convcheck_absres_and_absdis)
   {
-    return (disnorm_ < toldis_ and fnorm_ < tolres_);
+    return (disinorm_ < toldis_ and resnorm_ < tolres_);
   }
   else if (convcheck_ == INPAR::STR::convcheck_relres_or_absdis)
   {
-    if (ref_fnorm_ == 0.) ref_fnorm_ = 1.0;
-    return (disnorm_ < toldis_ or (fnorm_/ref_fnorm_) < tolres_);
+    if (ref_resnorm_ == 0.) ref_resnorm_ = 1.0;
+    return (disinorm_ < toldis_ or (resnorm_/ref_resnorm_) < tolres_);
   }
   else if (convcheck_ == INPAR::STR::convcheck_relres_and_absdis)
   {
-    if (ref_fnorm_ == 0.) ref_fnorm_ = 1.0;
-    return (disnorm_ < toldis_ and (fnorm_/ref_fnorm_) < tolres_);
+    if (ref_resnorm_ == 0.) ref_resnorm_ = 1.0;
+    return (disinorm_ < toldis_ and (resnorm_/ref_resnorm_) < tolres_);
   }
   else if (convcheck_ == INPAR::STR::convcheck_relres_or_reldis)
   {
-    if (ref_fnorm_ == 0.) ref_fnorm_ = 1.0;
-    if (ref_disnorm_ == 0.) ref_disnorm_ = 1.0;
-    return ((disnorm_/ref_disnorm_) < toldis_ or (fnorm_/ref_fnorm_) < tolres_);
+    if (ref_resnorm_ == 0.) ref_resnorm_ = 1.0;
+    if (ref_disinorm_ == 0.) ref_disinorm_ = 1.0;
+    return ((disinorm_/ref_disinorm_) < toldis_ or (resnorm_/ref_resnorm_) < tolres_);
   }
   else if (convcheck_ == INPAR::STR::convcheck_relres_and_reldis)
   {
-    if (ref_fnorm_ == 0.) ref_fnorm_ = 1.0;
-    if (ref_disnorm_ == 0.) ref_disnorm_ = 1.0;
+    if (ref_resnorm_ == 0.) ref_resnorm_ = 1.0;
+    if (ref_disinorm_ == 0.) ref_disinorm_ = 1.0;
 
-    return ((disnorm_/ref_disnorm_) < toldis_ and (fnorm_/ref_fnorm_) < tolres_);
+    return ((disinorm_/ref_disinorm_) < toldis_ and (resnorm_/ref_resnorm_) < tolres_);
   }
   else
   {
@@ -1198,9 +1200,8 @@ void STRUMULTI::MicroStatic::CalcRefNorms()
   // mind evaluating the corresponding norms at possibly different
   // points within the timestep (end point, generalized midpoint).
 
-  dis_->Norm2(&ref_disnorm_);
-
-  fint_->Norm2(&ref_fnorm_);
+  ref_disinorm_ = STR::AUX::CalculateVectorNorm(iternorm_, dis_);
+  ref_resnorm_ = STR::AUX::CalculateVectorNorm(iternorm_, fint_);
 }
 
 /*----------------------------------------------------------------------*
@@ -1215,12 +1216,12 @@ void STRUMULTI::MicroStatic::PrintNewton(bool print_unconv, Epetra_Time timer)
 
   if (relres)
   {
-    fnorm_ /= ref_fnorm_;
+    resnorm_ /= ref_resnorm_;
   }
   if (relres_reldis)
   {
-    fnorm_ /= ref_fnorm_;
-    disnorm_  /= ref_disnorm_;
+    resnorm_ /= ref_resnorm_;
+    disinorm_  /= ref_disinorm_;
   }
 
   if (print_unconv)
@@ -1229,17 +1230,17 @@ void STRUMULTI::MicroStatic::PrintNewton(bool print_unconv, Epetra_Time timer)
     {
       if (relres)
       {
-        printf("      MICROSCALE numiter %2d scaled res-norm %10.5e absolute dis-norm %20.15E\n",numiter_+1, fnorm_, disnorm_);
+        printf("      MICROSCALE numiter %2d scaled res-norm %10.5e absolute dis-norm %20.15E\n",numiter_+1, resnorm_, disinorm_);
         fflush(stdout);
       }
       else if (relres_reldis)
       {
-        printf("      MICROSCALE numiter %2d scaled res-norm %10.5e scaled dis-norm %20.15E\n",numiter_+1, fnorm_, disnorm_);
+        printf("      MICROSCALE numiter %2d scaled res-norm %10.5e scaled dis-norm %20.15E\n",numiter_+1, resnorm_, disinorm_);
         fflush(stdout);
       }
       else
         {
-        printf("      MICROSCALE numiter %2d absolute res-norm %10.5e absolute dis-norm %20.15E\n",numiter_+1, fnorm_, disnorm_);
+        printf("      MICROSCALE numiter %2d absolute res-norm %10.5e absolute dis-norm %20.15E\n",numiter_+1, resnorm_, disinorm_);
         fflush(stdout);
       }
     }
@@ -1251,19 +1252,19 @@ void STRUMULTI::MicroStatic::PrintNewton(bool print_unconv, Epetra_Time timer)
     if (relres)
     {
       printf("      MICROSCALE Newton iteration converged: numiter %d scaled res-norm %e absolute dis-norm %e time %10.5f\n\n",
-             numiter_,fnorm_,disnorm_,timepernlnsolve);
+             numiter_,resnorm_,disinorm_,timepernlnsolve);
       fflush(stdout);
     }
     else if (relres_reldis)
     {
       printf("      MICROSCALE Newton iteration converged: numiter %d scaled res-norm %e scaled dis-norm %e time %10.5f\n\n",
-             numiter_,fnorm_,disnorm_,timepernlnsolve);
+             numiter_,resnorm_,disinorm_,timepernlnsolve);
       fflush(stdout);
     }
     else
     {
       printf("      MICROSCALE Newton iteration converged: numiter %d absolute res-norm %e absolute dis-norm %e time %10.5f\n\n",
-             numiter_,fnorm_,disnorm_,timepernlnsolve);
+             numiter_,resnorm_,disinorm_,timepernlnsolve);
       fflush(stdout);
     }
   }
@@ -1276,12 +1277,12 @@ void STRUMULTI::MicroStatic::PrintPredictor()
 {
   if (convcheck_ == INPAR::STR::convcheck_absres_or_absdis && convcheck_ != INPAR::STR::convcheck_absres_and_absdis)
   {
-    fnorm_ /= ref_fnorm_;
-    cout << "      MICROSCALE Predictor scaled res-norm " << fnorm_ << endl;
+    resnorm_ /= ref_resnorm_;
+    cout << "      MICROSCALE Predictor scaled res-norm " << resnorm_ << endl;
   }
   else
   {
-    cout << "      MICROSCALE Predictor absolute res-norm " << fnorm_ << endl;
+    cout << "      MICROSCALE Predictor absolute res-norm " << resnorm_ << endl;
   }
   fflush(stdout);
 }
