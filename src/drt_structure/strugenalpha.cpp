@@ -466,10 +466,6 @@ void StruGenAlpha::ConstantPredictor()
   {
     if (locsysmanager_ != null) locsysmanager_->RotateGlobalToLocal(fresm_);
     Epetra_Vector fresmcopy(*fresm_);
-
-    cout << "Calculating fresm_ in the Predictor:" << endl;
-    cout << *fresm_ << endl;
-
     fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
     if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(fresm_);
   }
@@ -765,8 +761,6 @@ void StruGenAlpha::ConsistentPredictor()
   {
     if (locsysmanager_ != null) locsysmanager_->RotateGlobalToLocal(fresm_);
     Epetra_Vector fresmcopy(*fresm_);
-    cout << "Calculating fresm_ in the Predictor:" << endl;
-    cout << *fresm_ << endl;
     fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
     if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(fresm_);
   }
