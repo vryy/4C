@@ -255,7 +255,7 @@ void ADAPTER::FluidGenAlpha::ReadRestart(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double ADAPTER::FluidGenAlpha::Time()
+double ADAPTER::FluidGenAlpha::Time() const
 {
   return fluid_.Time();
 }
@@ -263,7 +263,7 @@ double ADAPTER::FluidGenAlpha::Time()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int ADAPTER::FluidGenAlpha::Step()
+int ADAPTER::FluidGenAlpha::Step() const
 {
   return fluid_.Step();
 }

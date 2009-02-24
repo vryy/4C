@@ -151,10 +151,10 @@ namespace ADAPTER {
     virtual void ReadRestart(int step) = 0;
 
     /// current time value
-    virtual double Time() = 0;
+    virtual double Time() const = 0;
 
     /// current time step
-    virtual int Step() = 0;
+    virtual int Step() const = 0;
 
     /// calculation (and output) of lift&drag
     virtual void LiftDrag() = 0;

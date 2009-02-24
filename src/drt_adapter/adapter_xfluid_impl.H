@@ -115,8 +115,8 @@ namespace ADAPTER {
     virtual const LINALG::MapExtractor& FreeSurface() const { return freesurface_; }
 
     virtual void ReadRestart(int step);
-    virtual double Time();
-    virtual int Step();
+    virtual double Time() const;
+    virtual int Step() const;
     virtual void LiftDrag();
 
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces();
@@ -186,7 +186,7 @@ namespace ADAPTER {
         const Teuchos::RCP<Epetra_Vector>   vectorfield,
         const std::string filestr,
         const std::string name_in_gmsh
-        );
+        ) const;
     
     void RemoveInternalSurfElements(
         Teuchos::RCP<DRT::Discretization> soliddis

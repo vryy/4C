@@ -177,8 +177,8 @@ namespace ADAPTER
     virtual const LINALG::MapExtractor& Interface() const { return interface_; }
 
     virtual void ReadRestart(int step);
-    virtual double Time();
-    virtual int Step();
+    virtual double Time() const;
+    virtual int Step() const;
     virtual int  Itemax() const;
     virtual void SetItemax(int itemax);
 

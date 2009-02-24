@@ -342,7 +342,7 @@ void ADAPTER::XFluidImpl::PrintInterfaceVectorField(
     const Teuchos::RCP<Epetra_Vector>   vectorfield,
     const std::string filestr,
     const std::string name_in_gmsh
-    )
+    ) const
 {
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
   const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
@@ -450,6 +450,13 @@ void ADAPTER::XFluidImpl::NonlinearSolve()
   itrueresnp_->Export(*itruerescol,*conimpo,Add); 
   //LINALG::Export(*itruerescol,*itrueresnp_);
   
+//  if (TimIntScheme() == timeint_stationary)
+//  {
+//    LiftDrag();
+////    cout << *boundarydis_ << endl;
+////    exit(0);
+//  }
+  
 }
 
 
@@ -527,7 +534,7 @@ void ADAPTER::XFluidImpl::ReadRestart(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double ADAPTER::XFluidImpl::Time()
+double ADAPTER::XFluidImpl::Time() const
 {
   return fluid_.Time();
 }
@@ -535,7 +542,7 @@ double ADAPTER::XFluidImpl::Time()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int ADAPTER::XFluidImpl::Step()
+int ADAPTER::XFluidImpl::Step() const
 {
   return fluid_.Step();
 }

@@ -242,7 +242,7 @@ void ADAPTER::FluidCombust::ReadRestart(int step)
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
-double ADAPTER::FluidCombust::Time()
+double ADAPTER::FluidCombust::Time() const
 {
   return fluid_.Time();
 }
@@ -250,7 +250,7 @@ double ADAPTER::FluidCombust::Time()
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
-int ADAPTER::FluidCombust::Step()
+int ADAPTER::FluidCombust::Step() const
 {
   return fluid_.Step();
 }

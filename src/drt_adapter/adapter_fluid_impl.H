@@ -124,8 +124,8 @@ namespace ADAPTER {
     virtual const LINALG::MapExtractor& FreeSurface() const { return freesurface_; }
 
     virtual void ReadRestart(int step);
-    virtual double Time();
-    virtual int Step();
+    virtual double Time() const;
+    virtual int Step() const;
     virtual void LiftDrag();
 
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces();

@@ -288,7 +288,7 @@ void ADAPTER::FluidImpl::ReadRestart(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double ADAPTER::FluidImpl::Time()
+double ADAPTER::FluidImpl::Time() const
 {
   return fluid_.Time();
 }
@@ -296,7 +296,7 @@ double ADAPTER::FluidImpl::Time()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int ADAPTER::FluidImpl::Step()
+int ADAPTER::FluidImpl::Step() const
 {
   return fluid_.Step();
 }
