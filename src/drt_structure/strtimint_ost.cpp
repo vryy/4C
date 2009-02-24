@@ -284,8 +284,12 @@ double STR::TimIntOneStepTheta::CalcRefNormForce()
     fviscnorm = STR::AUX::CalculateVectorNorm(iternorm_, fvisct_);
   }
 
+  // norm of reaction forces
+  double freactnorm = 0.0;
+  freactnorm = STR::AUX::CalculateVectorNorm(iternorm_, freact_);
+
   // return char norm
-  return max(fviscnorm, max(finertnorm, max(fintnorm, fextnorm)));
+  return max(fviscnorm, max(finertnorm, max(fintnorm, max(fextnorm, freactnorm))));
 }
 
 /*----------------------------------------------------------------------*/

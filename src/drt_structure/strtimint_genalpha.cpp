@@ -392,8 +392,12 @@ double STR::TimIntGenAlpha::CalcRefNormForce()
     fviscnorm = STR::AUX::CalculateVectorNorm(iternorm_, fviscm_);
   }
 
+  // norm of reaction forces
+  double freactnorm = 0.0;
+  freactnorm = STR::AUX::CalculateVectorNorm(iternorm_, freact_);
+
   // determine worst value ==> charactersitic norm
-  return max(fviscnorm, max(finertnorm, max(fintnorm, fextnorm)));
+  return max(fviscnorm, max(finertnorm, max(fintnorm, max(fextnorm, freactnorm))));
 }
 
 /*----------------------------------------------------------------------*/

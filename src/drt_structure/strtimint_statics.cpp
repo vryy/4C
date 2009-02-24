@@ -187,8 +187,12 @@ double STR::TimIntStatics::CalcRefNormForce()
   double fextnorm = 0.0;
   fextnorm = STR::AUX::CalculateVectorNorm(iternorm_, fextn_);
 
+  // norm of reaction forces
+  double freactnorm = 0.0;
+  freactnorm = STR::AUX::CalculateVectorNorm(iternorm_, freact_);
+
   // return char norm
-  return max(fintnorm, fextnorm);
+  return max(fintnorm, max(fextnorm, freactnorm));
 }
 
 /*----------------------------------------------------------------------*/
