@@ -48,7 +48,7 @@ STR::TimIntImpl::TimIntImpl
   pred_(Teuchos::getIntegralValue<INPAR::STR::PredEnum>(sdynparams,"PREDICT")),
   itertype_(Teuchos::getIntegralValue<INPAR::STR::NonlinSolTech>(sdynparams,"NLNSOL")),
   itercnvchk_(Teuchos::getIntegralValue<INPAR::STR::ConvCheck>(sdynparams,"CONV_CHECK")),
-  iternorm_(INPAR::STR::norm_l2),  // ADD INPUT FEATURE
+  iternorm_(Teuchos::getIntegralValue<INPAR::STR::VectorNorm>(sdynparams,"ITERNORM")),
   itermax_(sdynparams.get<int>("MAXITER")),
   toldisi_(sdynparams.get<double>("TOLDISP")),
   tolfres_(sdynparams.get<double>("TOLRES")),

@@ -512,6 +512,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("MAXITER",50,
                "maximum number of iterations allowed for newton iteration before failure",
                &sdyn);
+  setStringToIntegralParameter<INPAR::STR::VectorNorm>("ITERNORM","L2","type of norm to be applied to residuals",
+                               tuple<std::string>(
+                                 "L1",
+                                 "L2",
+                                 "Rms",
+                                 "Inf"),
+                               tuple<INPAR::STR::VectorNorm>(
+                                 INPAR::STR::norm_l1,
+                                 INPAR::STR::norm_l2,
+                                 INPAR::STR::norm_rms,
+                                 INPAR::STR::norm_inf),
+                               &sdyn);
 
   setStringToIntegralParameter<INPAR::STR::NonlinSolTech>("NLNSOL","fullnewton","",
                                tuple<std::string>(
