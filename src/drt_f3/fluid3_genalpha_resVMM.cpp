@@ -9717,6 +9717,10 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
     {
       whichtau = Fluid3::fbvw_wo_dt;
     }
+    else if(taudef == "BFVW_gradient_based_hk")
+    {
+      whichtau = Fluid3::fbvw_gradient_based_hk;
+    }
     else
     {
       dserror("unknown tau definition\n");
