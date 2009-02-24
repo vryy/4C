@@ -134,7 +134,7 @@ void STR::TimIntImpl::Predict()
   else if (pred_ == INPAR::STR::pred_tangdis)
   {
     PredictTangDisConsistVelAcc();
-    // normdisi_ was set
+    // normdisi_ has been set
   }
   else
   {
@@ -678,7 +678,7 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
   // initialise equilibrium loop
   iter_ = 1;
   normfres_ = CalcRefNormForce();
-  normdisi_ = 1.0e6;
+  // normdisi_ was already set in predictor; this is strictly >0
   normcon_ = conman_->GetErrorNorm();
   timer_.ResetStartTime();
 
