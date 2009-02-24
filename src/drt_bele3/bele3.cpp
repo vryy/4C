@@ -143,7 +143,6 @@ void DRT::ELEMENTS::Bele3::Print(ostream& os) const
 {
   os << "Bele3 ";
   Element::Print(os);
-  os << endl;
   os << data_;
   return;
 }
