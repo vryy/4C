@@ -124,14 +124,17 @@ void STR::TimIntImpl::Predict()
   if (pred_ == INPAR::STR::pred_constdis)
   {
     PredictConstDisConsistVelAcc();
+    normdisi_ = 1.0e6;
   }
   else if (pred_ == INPAR::STR::pred_constdisvelacc)
   {
     PredictConstDisVelAcc();
+    normdisi_ = 1.0e6;
   }
   else if (pred_ == INPAR::STR::pred_tangdis)
   {
     PredictTangDisConsistVelAcc();
+    // normdisi_ was set
   }
   else
   {
@@ -171,7 +174,7 @@ void STR::TimIntImpl::Predict()
 
   // determine residual norm of predictor
   normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
-
+ 
   // determine characteristic norms
   // we set the minumum of CalcRefNormForce() and #tolfres_, because
   // we want to prevent the case of a zero characteristic fnorm
@@ -280,6 +283,9 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
   solver_->Reset();
   solver_->Solve(stiff_->EpetraMatrix(), disi_, fres_, true, true);
   solver_->Reset();
+
+  // extract norm of disi_
+  normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
 
   // set Dirichlet increments in displacement increments
   disi_->Update(1.0, *dbcinc, 1.0);
@@ -490,9 +496,8 @@ void STR::TimIntImpl::NewtonFull()
   // initialise equilibrium loop
   iter_ = 1;
   normfres_ = CalcRefNormForce();
-  normdisi_ = 1.0e6;  // this is strictly >0,toldisi_
+  // normdisi_ was already set in predictor; this is strictly >0
   timer_.ResetStartTime();
-  //bool print_unconv = true;
 
   // equilibrium iteration loop
   while ( (not Converged()) and (iter_ <= itermax_) )
