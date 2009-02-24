@@ -629,77 +629,48 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
   {
     // if not available, the arrays for the subscale quantities have to
     // be resized and initialised to zero
-    if(ele->sub_acc_old_.M() != 2
+    if(ele->saccn_.M() != 2
        ||
-       ele->sub_acc_old_.N() != intpoints.nquad)
+       ele->saccn_.N() != intpoints.nquad)
     {
-      ele->sub_acc_old_ .Shape(2,intpoints.nquad);
+      ele->saccn_ .Shape(2,intpoints.nquad);
       for(int rr=0;rr<2;++rr)
       {
 	for(int mm=0;mm<intpoints.nquad;++mm)
 	{
-	  ele->sub_acc_old_(rr,mm) = 0.;
+	  ele->saccn_(rr,mm) = 0.;
 	}
       }
     }
-    if(ele->sub_vel_old_.M() != 2
+    if(ele->sveln_.M() != 2
        ||
-       ele->sub_vel_old_.N() != intpoints.nquad)
+       ele->sveln_.N() != intpoints.nquad)
     {
 
-      ele->sub_vel_old_.Shape(2,intpoints.nquad);
-      ele->sub_vel_    .Shape(2,intpoints.nquad);
+      ele->sveln_ .Shape(2,intpoints.nquad);
+      ele->svelnp_.Shape(2,intpoints.nquad);
 
       for(int rr=0;rr<2;++rr)
       {
 	for(int mm=0;mm<intpoints.nquad;++mm)
 	{
-	  ele->sub_vel_    (rr,mm) = 0.;
-	  ele->sub_vel_old_(rr,mm) = 0.;
+	  ele->sveln_ (rr,mm) = 0.;
+	  ele->svelnp_(rr,mm) = 0.;
 	}
       }
     }
-    if(ele->sub_pre_old_ .Length() != intpoints.nquad)
+    if(ele->spren_ .Length() != intpoints.nquad)
     {
-      ele->sub_pre_old_ .Size(intpoints.nquad);
-      ele->sub_pre_     .Size(intpoints.nquad);
+      ele->spren_ .Size(intpoints.nquad);
+      ele->sprenp_.Size(intpoints.nquad);
 
       for(int mm=0;mm<intpoints.nquad;++mm)
       {
-	ele->sub_pre_old_(mm) = 0.;
-	ele->sub_pre_    (mm) = 0.;
+	ele->spren_ (mm) = 0.;
+	ele->sprenp_(mm) = 0.;
       }
     }
   }
-
-  // get subscale information from element --- this is just a reference
-  // to the element data
-  Epetra_SerialDenseMatrix saccn(
-    View                   ,
-    ele->sub_acc_old_.A()  ,
-    ele->sub_acc_old_.LDA(),
-    ele->sub_acc_old_.M()  ,
-    ele->sub_acc_old_.N()  );
-  Epetra_SerialDenseMatrix sveln(
-    View,
-    ele->sub_vel_old_.A(),
-    ele->sub_vel_old_.LDA(),
-    ele->sub_vel_old_.M(),
-    ele->sub_vel_old_.N());
-  Epetra_SerialDenseMatrix svelnp(
-    View,
-    ele->sub_vel_.A(),
-    ele->sub_vel_.LDA(),
-    ele->sub_vel_.M(),
-    ele->sub_vel_.N());
-  Epetra_SerialDenseVector spren(
-    View,
-    ele->sub_pre_old_.Values(),
-    ele->sub_pre_old_.Length());
-  Epetra_SerialDenseVector sprenp(
-    View,
-    ele->sub_pre_.Values(),
-    ele->sub_pre_.Length());
 
   // just define certain constants for conveniance
   const double afgdt  = alphaF * gamma * dt;
@@ -1481,7 +1452,7 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
         p    = --------- * p  - --------- * nabla o u
          (i)   tauC + dt        tauC + dt            (i)
       */
-      sprenp(iquad)=(spren(iquad)-dt*divunp)*factauC;
+      ele->sprenp_(iquad)=(ele->spren_(iquad)-dt*divunp)*factauC;
 
       /*-------------------------------------------------------------------*
        *                                                                   *
@@ -1511,19 +1482,19 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
                                        (i)  |
                                            -+
       */
-      svelnp(0,iquad)=((alphaM*tauM+gamma*dt*(alphaF-1.0))*sveln(0,iquad)
-                       +
-                       (dt*tauM*(alphaM-gamma))           *saccn(0,iquad)
-                       -
-                       (gamma*dt*tauM)                    *resM_(0)
-                      )*facMtau;
+      ele->svelnp_(0,iquad)=((alphaM*tauM+gamma*dt*(alphaF-1.0))*ele->sveln_(0,iquad)
+                             +
+                             (dt*tauM*(alphaM-gamma))           *ele->saccn_(0,iquad)
+                             -
+                             (gamma*dt*tauM)                    *resM_(0)
+                            )*facMtau;
 
-      svelnp(1,iquad)=((alphaM*tauM+gamma*dt*(alphaF-1.0))*sveln(1,iquad)
-                       +
-                       (dt*tauM*(alphaM-gamma))           *saccn(1,iquad)
-                       -
-                       (gamma*dt*tauM)                    *resM_(1)
-                      )*facMtau;
+      ele->svelnp_(1,iquad)=((alphaM*tauM+gamma*dt*(alphaF-1.0))*ele->sveln_(1,iquad)
+                             +
+                             (dt*tauM*(alphaM-gamma))           *ele->saccn_(1,iquad)
+                             -
+                             (gamma*dt*tauM)                    *resM_(1)
+                            )*facMtau;
 
 
       /*-------------------------------------------------------------------*
@@ -1539,8 +1510,8 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
                (i)              (i)
 
       */
-      svelaf_(0) = alphaF*svelnp(0,iquad)+(1.0-alphaF)*sveln(0,iquad);
-      svelaf_(1) = alphaF*svelnp(1,iquad)+(1.0-alphaF)*sveln(1,iquad);
+      svelaf_(0) = alphaF*ele->svelnp_(0,iquad)+(1.0-alphaF)*ele->sveln_(0,iquad);
+      svelaf_(1) = alphaF*ele->svelnp_(1,iquad)+(1.0-alphaF)*ele->sveln_(1,iquad);
 
       /* the intermediate value of subscale acceleration is not needed to be
        * computed anymore --- we use the governing ODE to replace it ....
@@ -2768,8 +2739,8 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
 
       if(pspg == Fluid2::pstab_use_pspg)
       {
-        const double fac_svelnpx                      = fac*svelnp(0,iquad);
-        const double fac_svelnpy                      = fac*svelnp(1,iquad);
+        const double fac_svelnpx                      = fac*ele->svelnp_(0,iquad);
+        const double fac_svelnpy                      = fac*ele->svelnp_(1,iquad);
 
         for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
         {
@@ -2878,7 +2849,7 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
       else if (cstab == Fluid2::continuity_stab_td)
       {
 
-        const double fac_sprenp                       = fac*sprenp(iquad);
+        const double fac_sprenp = fac*ele->sprenp_(iquad);
 
         for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
         {

@@ -33,11 +33,11 @@ data_()
 {
   gaussrule_ = intrule2D_undefined;
   
-  sub_acc_old_.Shape(0,0);
-  sub_vel_.Shape(0,0);
-  sub_vel_old_.Shape(0,0);
-  sub_pre_.Size(0);
-  sub_pre_old_.Size(0);
+  saccn_ .Shape(0,0);
+  svelnp_.Shape(0,0);
+  sveln_ .Shape(0,0);
+  sprenp_.Size(0);
+  spren_. Size(0);
   
   return;
 }
@@ -47,10 +47,15 @@ data_()
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Fluid2::Fluid2(const DRT::ELEMENTS::Fluid2& old) :
-DRT::Element(old),
-gaussrule_(old.gaussrule_),
-is_ale_(old.is_ale_),
-data_(old.data_)
+DRT::Element(old           ),
+gaussrule_  (old.gaussrule_),
+is_ale_     (old.is_ale_   ),
+data_       (old.data_     ),
+saccn_      (old.saccn_    ),
+svelnp_     (old.svelnp_   ),
+sveln_      (old.sveln_    ),
+sprenp_     (old.sprenp_   ),
+spren_      (old.spren_    ) 
 {
   return;
 }
@@ -105,17 +110,17 @@ void DRT::ELEMENTS::Fluid2::Pack(vector<char>& data) const
   AddtoPack(data,is_ale_);
 
   // history variables
-  AddtoPack(data,sub_acc_old_.M());
-  AddtoPack(data,sub_acc_old_.N());
+  AddtoPack(data,saccn_.M());
+  AddtoPack(data,saccn_.N());
 
-  int size = sub_acc_old_.N()*sub_acc_old_.M()*sizeof(double);
-  AddtoPack(data,sub_acc_old_.A(),size);
-  AddtoPack(data,sub_vel_.A()    ,size);
-  AddtoPack(data,sub_vel_old_.A(),size);
+  int size = saccn_.N()*saccn_.M()*sizeof(double);
+  AddtoPack(data,saccn_ .A(),size);
+  AddtoPack(data,svelnp_.A(),size);
+  AddtoPack(data,sveln_ .A(),size);
 
-  size = sub_pre_old_.Length()*sizeof(double);
-  AddtoPack(data,sub_pre_.A()    ,size);
-  AddtoPack(data,sub_pre_old_.A(),size);
+  size = spren_.Length()*sizeof(double);
+  AddtoPack(data,sprenp_.A(),size);
+  AddtoPack(data,spren_ .A(),size);
 
 
   // data_
@@ -157,21 +162,21 @@ void DRT::ELEMENTS::Fluid2::Unpack(const vector<char>& data)
     ExtractfromPack(position,data,firstdim);
     ExtractfromPack(position,data,secondim);
 
-    sub_acc_old_.Shape(firstdim,secondim);
-    sub_vel_    .Shape(firstdim,secondim);
-    sub_vel_old_.Shape(firstdim,secondim);
+    saccn_ .Shape(firstdim,secondim);
+    svelnp_.Shape(firstdim,secondim);
+    sveln_ .Shape(firstdim,secondim);
 
     int size = firstdim*secondim*sizeof(double);
 
-    ExtractfromPack(position,data,&(sub_acc_old_.A()[0]),size);
-    ExtractfromPack(position,data,&(sub_vel_.A()[0])    ,size);
-    ExtractfromPack(position,data,&(sub_vel_old_.A()[0]),size);
+    ExtractfromPack(position,data,&(saccn_ .A()[0]),size);
+    ExtractfromPack(position,data,&(svelnp_.A()[0]),size);
+    ExtractfromPack(position,data,&(sveln_ .A()[0]),size);
 
-    sub_pre_    .Size(secondim);
-    sub_pre_old_.Size(secondim);
+    sprenp_.Size(secondim);
+    spren_ .Size(secondim);
 
-    ExtractfromPack(position,data,&(sub_pre_.A()[0])    ,secondim*sizeof(double));
-    ExtractfromPack(position,data,&(sub_pre_old_.A()[0]),secondim*sizeof(double));
+    ExtractfromPack(position,data,&(sprenp_.A()[0]),secondim*sizeof(double));
+    ExtractfromPack(position,data,&(spren_ .A()[0]),secondim*sizeof(double));
   }
 
   // data_

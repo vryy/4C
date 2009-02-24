@@ -1364,7 +1364,8 @@ void DRT::ELEMENTS::Fluid2Line::EvaluateWeakDirichlet(
     //                   i
     */
     Epetra_SerialDenseVector dxydr(2);
-    dxydr=0;
+    dxydr(0)=0;
+    dxydr(1)=0;
     
     for(int i=0;i<NumNode();++i)
     {
@@ -1447,14 +1448,13 @@ void DRT::ELEMENTS::Fluid2Line::EvaluateWeakDirichlet(
     //              
 
     // get Jacobian matrix and determinant
-    pxjm=0;
-
-    for(int i=0;i<piel;++i)
+    for(int rr=0;rr<2;++rr)
     {
-      for(int rr=0;rr<2;++rr)
+      for(int mm=0;mm<2;++mm)
       {
-	for(int mm=0;mm<2;++mm)
-	{
+        pxjm(rr,mm)=0.0;
+        for(int i=0;i<piel;++i)
+        {
 	  pxjm(rr,mm)+=pderiv(rr,i)*pxye(mm,i);
 	}
       }
@@ -1573,7 +1573,8 @@ void DRT::ELEMENTS::Fluid2Line::EvaluateWeakDirichlet(
     //                 +-----
     //                 node j
     //
-    velintaf=0;
+    velintaf(0)=0.0;
+    velintaf(1)=0.0;
     for(int j=0;j<piel;++j)
     {
       velintaf(0)+=pfunct(j)*pevelaf(0,j);
@@ -1589,7 +1590,8 @@ void DRT::ELEMENTS::Fluid2Line::EvaluateWeakDirichlet(
     //                +-----
     //                node j
     //
-    velintnp=0;
+    velintnp(0)=0;
+    velintnp(1)=0;
     for(int j=0;j<piel;++j)
     {
       velintnp(0)+=pfunct(j)*pevelnp(0,j);
@@ -1607,11 +1609,12 @@ void DRT::ELEMENTS::Fluid2Line::EvaluateWeakDirichlet(
     //
     // j : direction of derivative x/y/z
     //
-
-    vderxyaf=0;
-    for(int k=0;k<piel;++k)
+    for (int j=0;j<2;++j)
     {
-      for (int j=0;j<2;++j)
+      vderxyaf(0,j)=0.0;
+      vderxyaf(1,j)=0.0;
+
+      for(int k=0;k<piel;++k)
       {
 	vderxyaf(0,j)+=pderxy(j,k)*pevelaf(0,k);
 	vderxyaf(1,j)+=pderxy(j,k)*pevelaf(1,k);

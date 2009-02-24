@@ -361,17 +361,17 @@ private:
   DRT::Container                                  data_;
 
   //! matrices of subscale acceleration values in gausspoints of this element
-  Epetra_SerialDenseMatrix                        sub_acc_old_;
+  Epetra_SerialDenseMatrix                        saccn_;
 
   //! matrices of subscale velocity values, current iteration value, in gausspoints of this element
-  Epetra_SerialDenseMatrix                        sub_vel_;
+  Epetra_SerialDenseMatrix                        svelnp_;
   //! matrices of subscale velocity values, last timestep, in gausspoints of this element
-  Epetra_SerialDenseMatrix                        sub_vel_old_;
+  Epetra_SerialDenseMatrix                        sveln_;
 
   //! vector of subscale pressure values, current iteration value, in gausspoints
-  Epetra_SerialDenseVector                        sub_pre_;
+  Epetra_SerialDenseVector                        sprenp_;
   //! vector of subscale pressure values (history values) in gausspoints
-  Epetra_SerialDenseVector                        sub_pre_old_;
+  Epetra_SerialDenseVector                        spren_;
 
   // internal calculation methods
 

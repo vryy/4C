@@ -490,9 +490,9 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
       //  ~n   ~n+1
       //  p <- p
       //
-      for(int rr=0;rr<sub_pre_old_.Length();++rr)
+      for(int rr=0;rr<spren_.Length();++rr)
       {
-	sub_pre_old_(rr) = sub_pre_(rr);
+	spren_(rr) = sprenp_(rr);
       }
       // the old subscale acceleration for the next timestep is calculated
       // on the fly, not stored on the element
@@ -509,12 +509,12 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
 
       for(int rr=0;rr<2;++rr)
       {
-	for(int mm=0;mm<sub_pre_old_.Length();++mm)
+	for(int mm=0;mm<spren_.Length();++mm)
 	{
-	  sub_acc_old_(rr,mm) =
-	  (sub_vel_(rr,mm)-sub_vel_old_(rr,mm))/(gamma*dt)
+	  saccn_(rr,mm) =
+	  (svelnp_(rr,mm)-sveln_(rr,mm))/(gamma*dt)
 	    -
-	    sub_acc_old_(rr,mm)*(1.0-gamma)/gamma;
+	    saccn_(rr,mm)*(1.0-gamma)/gamma;
 	}
       }
 
@@ -526,13 +526,11 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
       //
       for(int rr=0;rr<2;++rr)
       {
-	for(int mm=0;mm<sub_pre_old_.Length();++mm)
+	for(int mm=0;mm<spren_.Length();++mm)
 	{
-	  sub_vel_old_(rr,mm)=sub_vel_(rr,mm);
+	  sveln_(rr,mm)=svelnp_(rr,mm);
 	}
       }
-
-
     }
     case calc_fluid_genalpha_average_for_subscales_and_residual:
     {
