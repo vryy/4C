@@ -1912,6 +1912,10 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
     {
       eleparams_.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
     }
+
+    // parameters for usage of conservative/convective form
+    eleparams_.set("CONVFORM",params_.get<string>("form of convective term"));
+
     
     // set state vectors for element call
     for(map<string,RCP<Epetra_Vector> >::iterator state =statevecs.begin();
