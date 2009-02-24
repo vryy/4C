@@ -53,9 +53,6 @@ public:
                               const double dt,
                               const bool eleowner);
 
-  /// Set up microscale static "time integrator"
-  void SetUpMicroStatic(const double V0);
-
   /// Create and initialize "empty" EAS history map
   void EasInit();
 

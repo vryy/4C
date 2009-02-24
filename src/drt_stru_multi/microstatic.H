@@ -36,6 +36,8 @@ Maintainer: Lena Wiechert
 
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_parobject.H"
+#include "../drt_inpar/inpar_structure.H"
+
 
 using namespace Teuchos;
 using namespace std;
@@ -69,9 +71,7 @@ public:
   \brief Standard Constructor
 
   */
-  MicroStatic(RCP<ParameterList> params,
-              RCP<DRT::Discretization> dis,
-              RCP<LINALG::Solver> solver);
+  MicroStatic(const int microdisnum, const double V0);
 
   /*!
   \brief Destructor
@@ -101,7 +101,7 @@ public:
   */
   double GetTime()
   {
-    return params_->get<double>("total time", 0.);
+    return time_;
   }
 
   /*!
@@ -109,6 +109,18 @@ public:
 
   */
   void Predictor(LINALG::Matrix<3,3>* defgrd);
+
+  /*!
+  \brief Predictor step
+
+  */
+  void PredictConstDis(LINALG::Matrix<3,3>* defgrd);
+
+   /*!
+  \brief Predictor step
+
+  */
+  void PredictTangDis(LINALG::Matrix<3,3>* defgrd);
 
   /*!
   \brief Full Newton iteration
@@ -148,7 +160,7 @@ public:
   associated macroscale deformation gradient
 
   */
-  void EvaluateMicroBC(LINALG::Matrix<3,3>* defgrd);
+  void EvaluateMicroBC(LINALG::Matrix<3,3>* defgrd, RefCountPtr<Epetra_Vector> disp);
 
   /*!
   \brief Set old state given from micromaterialgp
@@ -215,9 +227,7 @@ public:
   \brief Check for Newton convergence
   */
 
-  bool Converged(const string type, const double disinorm,
-                 const double resnorm, const double toldisp,
-                 const double tolres);
+  bool Converged();
 
   /*!
   \brief Calculate reference norms for relative convergence checks
@@ -230,16 +240,14 @@ public:
 
   Note that this is currently disabled for the sake of clearness
   */
-  void PrintNewton(bool printscreen, bool print_unconv,
-                   Epetra_Time timer, int numiter, int maxiter,
-                   double fresmnorm, double disinorm, string convcheck);
+  void PrintNewton(bool print_unconv, Epetra_Time timer);
 
   /*!
   \brief Output of predictor details
 
   Note that this is currently disabled for the sake of clearness
   */
-  void PrintPredictor(string convcheck, double fresmnorm);
+  void PrintPredictor();
 
 
 
@@ -251,14 +259,47 @@ protected:
 
   RefCountPtr<UTILS::SurfStressManager>   surf_stress_man_;
 
-  RCP<ParameterList>            params_;
   RCP<DRT::Discretization>      discret_;
   RCP<LINALG::Solver>           solver_;
   int                           myrank_;
   int                           maxentriesperrow_;
 
+  double                        beta_;
+  double                        gamma_;
+  double                        alphaf_;
+  double                        alpham_;
+
+  double                        dt_;
+  double                        time_;
+
+  INPAR::STR::PredEnum          pred_;  //!< predictor
+
+  bool                          isadapttol_;
+  double                        adaptolbetter_;
+
+  int                           maxiter_;
+  int                           numiter_;
+  int                           numstep_;
+  int                           step_;
+
+  bool                          iodisp_;
+  int                           resevrydisp_;
+  INPAR::STR::StressType        iostress_;
+  int                           resevrystrs_;
+  INPAR::STR::StrainType        iostrain_;
+  bool                          iosurfactant_;
+  int                           restart_;
+  int                           restartevry_;
+  bool                          printscreen_;
+
+  INPAR::STR::ConvCheck         convcheck_;
+  double                        tolres_;
+  double                        toldis_;
+
   double                        ref_fnorm_;
+  double                        fnorm_;
   double                        ref_disnorm_;
+  double                        disnorm_;
 
   RefCountPtr<LINALG::SparseMatrix> stiff_;
   RefCountPtr<LINALG::SparseMatrix> stiff_dirich_;
@@ -271,9 +312,6 @@ protected:
   RefCountPtr<Epetra_Vector>    dism_;
   RefCountPtr<Epetra_Vector>    disi_;
   RefCountPtr<Epetra_Vector>    fint_;
-  RefCountPtr<Epetra_Vector>    fext_;
-  RefCountPtr<Epetra_Vector>    fextm_;
-  RefCountPtr<Epetra_Vector>    fextn_;
   RefCountPtr<Epetra_Vector>    fresm_;
   RefCountPtr<Epetra_Vector>    fresm_dirich_;
 
@@ -284,20 +322,20 @@ protected:
   RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKaainv_;
   RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKda_;
 
-  RefCountPtr<Epetra_MultiVector> D_;  // D Matrix following Miehe et al., 2002
-  RefCountPtr<Epetra_MultiVector> rhs_; // exported transpose of D (pdof -> dofrowmap)
+  RefCountPtr<Epetra_MultiVector> D_;  //!< D Matrix following Miehe et al., 2002
+  RefCountPtr<Epetra_MultiVector> rhs_; //!< exported transpose of D (pdof -> dofrowmap)
 
-  int                   microdisnum_;  // number of RVE
+  int                   microdisnum_;  //!< number of RVE
 
-  double                         V0_;  // initial volume of RVE
-  double                    density_;  // initial density of RVE
+  double                         V0_;  //!< initial volume of RVE
+  double                    density_;  //!< initial density of RVE
 
-  int                          ndof_;  // number of dofs overall
-  int                            np_;  // number of boundary dofs
-  RefCountPtr<Epetra_Vector>     Xp_;  // vector containing material
-                                       // coordinates of boundary nodes
-  RefCountPtr<Epetra_Map>      pdof_;  // prescribed dofs
-  RefCountPtr<Epetra_Map>      fdof_;  // free dofs
+  int                          ndof_;  //!< number of dofs overall
+  int                            np_;  //!< number of boundary dofs
+  RefCountPtr<Epetra_Vector>     Xp_;  //!< vector containing material
+                                       //!< coordinates of boundary nodes
+  RefCountPtr<Epetra_Map>      pdof_;  //!< prescribed dofs
+  RefCountPtr<Epetra_Map>      fdof_;  //!< free dofs
   RefCountPtr<Epetra_Import> importp_;
   RefCountPtr<Epetra_Import> importf_;
 };

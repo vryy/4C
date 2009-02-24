@@ -20,7 +20,6 @@ Maintainer: Lena Wiechert
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_inpar/inpar_structure.H"
-#include "../drt_inpar/inpar_structure.H"
 
 #include "../drt_stru_multi/microstatic.H"
 
@@ -69,7 +68,7 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID, const bool
   if (microstaticmap_.find(microdisnum_) == microstaticmap_.end() or microstaticmap_[microdisnum_] == Teuchos::null)
   {
     // create "time integration" class for this microstructure
-    MAT::MicroMaterialGP::SetUpMicroStatic(V0);
+    microstaticmap_[microdisnum_] = rcp(new STRUMULTI::MicroStatic(microdisnum_, V0));
     // create a counter of macroscale GP associated with this "time integration" class
     // note that the counter is immediately updated afterwards!
     microstaticcounter_[microdisnum_] = 0;
@@ -145,14 +144,18 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID, const bool
     micro_output_ = rcp(new DiscretizationWriter(microdis,microcontrol));
   }
 
-  // we are using the same structural dynamic parameters as on the
-  // macroscale, so to avoid checking the equivalence of the reader
-  // GiD sections we simply ask the macroproblem for its parameters.
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  // we are using some parameters from the macroscale input file
+  // (e.g. time step size, alphaf etc. which need to be consistent in
+  // both micro- and macroscale input file) whereas individual
+  // parameters for the microscale can be used e.g. wrt output
+  // options, kind of predictor etc.
+  const Teuchos::ParameterList& sdyn_macro = DRT::Problem::Instance()->StructuralDynamicParams();
 
   // Initialize SurfStressManager for handling surface stress conditions due to interfacial phenomena
   // Note that this has to be done _after_ finding the output file name!
-  surf_stress_man_=rcp(new UTILS::SurfStressManager(microdis, sdyn, newfilename));
+  // Note also that we are using the macroscale parameterlist here
+  // because the SurfStressManager needs to know alphaf here
+  surf_stress_man_=rcp(new UTILS::SurfStressManager(microdis, sdyn_macro, newfilename));
 
   istep_ = 0;
 
@@ -162,11 +165,11 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID, const bool
   // we set the microscale time _ALWAYS_ to 0 (also in restart case)
   // in order to handle the implicit update query!!!
   timen_ = 0.;
-  dt_    = sdyn.get<double>("TIMESTEP");
+  dt_    = sdyn_macro.get<double>("TIMESTEP");
 
   // check whether we are using modified Newton as a nonlinear solver
   // on the macroscale or not
-  if (Teuchos::getIntegralValue<INPAR::STR::NonlinSolTech>(sdyn,"NLNSOL")==INPAR::STR::soltech_newtonmod)
+  if (Teuchos::getIntegralValue<INPAR::STR::NonlinSolTech>(sdyn_macro,"NLNSOL")==INPAR::STR::soltech_newtonmod)
     mod_newton_ = true;
   else
     mod_newton_ = false;
@@ -197,97 +200,6 @@ void MAT::MicroMaterialGP::ReadRestart()
   *oldalpha_ = *lastalpha_;
 }
 
-/// Set up microscale generalized alpha
-
-void MAT::MicroMaterialGP::SetUpMicroStatic(const double V0)
-{
-  // -------------------------------------------------------------------
-  // access the discretization
-  // -------------------------------------------------------------------
-  RefCountPtr<DRT::Discretization> actdis = null;
-  actdis = DRT::Problem::Instance(microdisnum_)->Dis(genprob.numsf,0);
-
-  // set degrees of freedom in the discretization
-  if (!actdis->Filled()) actdis->FillComplete();
-
-  // -------------------------------------------------------------------
-  // set some pointers and variables
-  // -------------------------------------------------------------------
-  // currently taking the parameters of the macroscale problem here!!!
-  // -> it is generally no problem to take the ones of the microscale,
-  // but then one should check that the two inputfiles are in sync at
-  // least for the dynamic parameters so that e.g. dt is the same for
-  // both problems. output options could/should be different, but the
-  // output interval (= output every nstep) is part of StructuralDynamicsParams
-
-  const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
-  const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
-
-  // i/o options should be read from the corresponding micro-file
-  const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance(microdisnum_)->IOParams();
-
-  // -------------------------------------------------------------------
-  // create a solver
-  // -------------------------------------------------------------------
-  // always choose UMFPACK as microstructural solver
-//   RefCountPtr<ParameterList> solveparams = rcp(new ParameterList());
-//   solveparams->set("solver","umfpack");
-//   solveparams->set("symmetric",false);
-//   RefCountPtr<LINALG::Solver> solver =
-//     rcp(new LINALG::Solver(solveparams,actdis->Comm(),
-//                            DRT::Problem::Instance()->ErrorFile()->Handle()));
-//   actdis->ComputeNullSpaceIfNecessary(*solveparams);
-  RefCountPtr<LINALG::Solver> solver = rcp (new LINALG::Solver(DRT::Problem::Instance()->StructSolverParams(),
-                                                               actdis->Comm(),
-                                                               DRT::Problem::Instance()->ErrorFile()->Handle()));
-  actdis->ComputeNullSpaceIfNecessary(solver->Params());
-
-  // -------------------------------------------------------------------
-  // create a static "time integrator"
-  // -------------------------------------------------------------------
-  RefCountPtr<ParameterList> params = rcp(new ParameterList());
-  STRUMULTI::MicroStatic::SetDefaults(*params);
-
-  params->set<double>("beta",sdyn.get<double>("BETA"));
-  params->set<double>("gamma",sdyn.get<double>("GAMMA"));
-  params->set<double>("alpha m",sdyn.get<double>("ALPHA_M"));
-  params->set<double>("alpha f",sdyn.get<double>("ALPHA_F"));
-  params->set<string>("convcheck", sdyn.get<string>("CONV_CHECK"));
-  params->set<double>("total time",0.0);
-  params->set<double>("delta time",sdyn.get<double>("TIMESTEP"));
-  params->set<int>   ("step",0);
-  params->set<int>   ("nstep",sdyn.get<int>("NUMSTEP"));
-  params->set<int>   ("max iterations",sdyn.get<int>("MAXITER"));
-  params->set<int>   ("num iterations",-1);
-
-  params->set<double>("tolerance residual",sdyn.get<double>("TOLRES"));
-  params->set<double>("tolerance displacements",sdyn.get<double>("TOLDISP"));
-  params->set<bool>  ("print to screen",true);
-
-  params->set<bool>  ("io structural disp",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_DISP"));
-  params->set<int>   ("io disp every nstep",sdyn.get<int>("RESEVRYDISP"));
-
-  INPAR::STR::StressType iostress = Teuchos::getIntegralValue<INPAR::STR::StressType>(ioflags,"STRUCT_STRESS");
-  params->set<INPAR::STR::StressType>("io structural stress", iostress);
-  params->set<int>   ("io stress every nstep",sdyn.get<int>("RESEVRYSTRS"));
-
-  INPAR::STR::StrainType iostrain = Teuchos::getIntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_STRAIN");
-  params->set<INPAR::STR::StrainType>("io structural strain", iostrain);
-
-  params->set<bool>  ("io surfactant",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_SURFACTANT"));
-
-  params->set<int>   ("restart",probtype.get<int>("RESTART"));
-  params->set<int>   ("write restart every",sdyn.get<int>("RESTARTEVRY"));
-
-  params->set<bool>  ("ADAPTCONV",getIntegralValue<int>(sdyn,"ADAPTCONV")==1);
-  params->set<double>("ADAPTCONV_BETTER",sdyn.get<double>("ADAPTCONV_BETTER"));
-
-  // set initial RVE volume possibly defined in dat-file
-  params->set<double>("V0", V0);
-  params->set<int>("microdisnum", microdisnum_);
-
-  microstaticmap_[microdisnum_] = rcp(new STRUMULTI::MicroStatic(params,actdis,solver));
-}
 
 void MAT::MicroMaterialGP::EasInit()
 {

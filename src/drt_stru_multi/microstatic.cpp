@@ -40,22 +40,96 @@ extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*
  |  ctor (public)|
  *----------------------------------------------------------------------*/
-STRUMULTI::MicroStatic::MicroStatic(RCP<ParameterList> params,
-                                    RCP<DRT::Discretization> dis,
-                                    RCP<LINALG::Solver> solver):
-params_(params),
-discret_(dis),
-solver_(solver)
+STRUMULTI::MicroStatic::MicroStatic(const int microdisnum,
+                                    const double V0):
+microdisnum_(microdisnum),
+V0_(V0)
 {
-  int microdisnum_ = params_->get<int>("microdisnum", -1);
-  if (microdisnum_ == -1) dserror("problem with microdisnum in micro control routine");
+  // -------------------------------------------------------------------
+  // access the discretization
+  // -------------------------------------------------------------------
+  discret_ = DRT::Problem::Instance(microdisnum_)->Dis(genprob.numsf,0);
+
+  // set degrees of freedom in the discretization
+  if (!discret_->Filled()) discret_->FillComplete();
 
   // -------------------------------------------------------------------
-  // get some parameters from parameter list
+  // set some pointers and variables
   // -------------------------------------------------------------------
-  double time    = params_->get<double>("total time"      ,0.0);
-  double dt      = params_->get<double>("delta time"      ,0.01);
-//   int istep      = params_->get<int>   ("step"            ,0);
+  // time step size etc. need to be consistent in both input files, we
+  // choose to use the ones defined in the macroscale input file
+  // while other parameters (like output options, convergence checks)
+  // can be used individually from the microscale input file
+  const Teuchos::ParameterList& sdyn_micro  = DRT::Problem::Instance(microdisnum_)->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn_macro  = DRT::Problem::Instance()->StructuralDynamicParams();
+
+  // we can use here the parameters of the macroscale input file
+  const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
+
+  // i/o options should be read from the corresponding micro-file
+  const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance(microdisnum_)->IOParams();
+
+  // -------------------------------------------------------------------
+  // create a solver
+  // -------------------------------------------------------------------
+  solver_ = rcp (new LINALG::Solver(DRT::Problem::Instance(microdisnum_)->StructSolverParams(),
+                                    discret_->Comm(),
+                                    DRT::Problem::Instance()->ErrorFile()->Handle()));
+  discret_->ComputeNullSpaceIfNecessary(solver_->Params());
+
+  // -------------------------------------------------------------------
+  // access dynamic / io / etc. parameters
+  // -------------------------------------------------------------------
+  // new time intgration implementation -> generalized alpha
+  // parameters are located in a sublist
+  if (Teuchos::getIntegralValue<INPAR::STR::DynamicType>(sdyn_macro,"DYNAMICTYP") == INPAR::STR::dyna_genalpha)
+  {
+    const Teuchos::ParameterList& genalpha  = DRT::Problem::Instance()->StructuralDynamicParams().sublist("GENALPHA");
+    beta_ = genalpha.get<double>("BETA");
+    gamma_ = genalpha.get<double>("GAMMA");
+    alpham_ = genalpha.get<double>("ALPHA_M");
+    alphaf_ = genalpha.get<double>("ALPHA_F");
+  }
+  // old time integration implementation
+  else if (Teuchos::getIntegralValue<INPAR::STR::DynamicType>(sdyn_macro,"DYNAMICTYP") == INPAR::STR::dyna_gen_alfa)
+  {
+    beta_ = sdyn_macro.get<double>("BETA");
+    gamma_ = sdyn_macro.get<double>("GAMMA");
+    alpham_ = sdyn_macro.get<double>("ALPHA_M");
+    alphaf_ = sdyn_macro.get<double>("ALPHA_F");
+  }
+  else
+    dserror("multi-scale problems are only implemented for imr-like generalized alpha time integration schemes");
+
+  INPAR::STR::PredEnum pred = Teuchos::getIntegralValue<INPAR::STR::PredEnum>(sdyn_micro, "PREDICT");
+  pred_ = pred;
+
+  INPAR::STR::ConvCheck convcheck = Teuchos::getIntegralValue<INPAR::STR::ConvCheck>(sdyn_micro, "CONV_CHECK");
+  convcheck_ = convcheck;
+  time_ = 0.0;
+  dt_ = sdyn_macro.get<double>("TIMESTEP");
+  step_ = 0;
+  numstep_ = sdyn_macro.get<int>("NUMSTEP");
+  maxiter_ = sdyn_micro.get<int>("MAXITER");
+  numiter_ = -1;
+
+  tolres_ = sdyn_micro.get<double>("TOLRES");
+  toldis_ = sdyn_micro.get<double>("TOLDISP");
+  printscreen_ = false;
+
+  restart_ = probtype.get<int>("RESTART");
+  restartevry_ = sdyn_macro.get<int>("RESTARTEVRY");
+  iodisp_ = Teuchos::getIntegralValue<int>(ioflags,"STRUCT_DISP");
+  resevrydisp_ = sdyn_micro.get<int>("RESEVRYDISP");
+  INPAR::STR::StressType iostress = Teuchos::getIntegralValue<INPAR::STR::StressType>(ioflags,"STRUCT_STRESS");
+  iostress_ = iostress;
+  resevrystrs_ = sdyn_micro.get<int>("RESEVRYSTRS");
+  INPAR::STR::StrainType iostrain = Teuchos::getIntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_STRAIN");
+  iostrain_ = iostrain;
+  iosurfactant_ = Teuchos::getIntegralValue<int>(ioflags,"STRUCT_SURFACTANT");
+
+  isadapttol_ = (getIntegralValue<int>(sdyn_micro,"ADAPTCONV")==1);
+  adaptolbetter_ = sdyn_micro.get<double>("ADAPTCONV_BETTER");
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
@@ -101,12 +175,6 @@ solver_(solver)
 
   // internal force vector F_int at different times
   fint_ = LINALG::CreateVector(*dofrowmap,true);
-  // external force vector F_ext at last times
-  fext_ = LINALG::CreateVector(*dofrowmap,true);
-  // external mid-force vector F_{ext;n+1-alpha_f}
-  fextm_ = LINALG::CreateVector(*dofrowmap,true);
-  // external force vector F_{n+1} at new time
-  fextn_ = LINALG::CreateVector(*dofrowmap,true);
 
   // dynamic force residual at mid-time R_{n+1-alpha}
   // also known as out-of-balance-force
@@ -138,8 +206,8 @@ solver_(solver)
     // action for elements
     p.set("action","calc_struct_nlnstiff");
     // other parameters that might be needed by the elements
-    p.set("total time",time);
-    p.set("delta time",dt);
+    p.set("total time",time_);
+    p.set("delta time",dt_);
     // set vector values needed by elements
     discret_->ClearState();
     discret_->SetState("residual displacement",zeros_);
@@ -155,10 +223,6 @@ solver_(solver)
     discret_->ClearState();
   }
 
-  //------------------------------------------------------ time step index
-//   istep = 0;
-//   params_->set<int>("step",istep);
-
   // Determine dirichtoggle_ and its inverse since boundary conditions for
   // microscale simulations are due to the MicroBoundary condition
   // (and not Dirichlet BC)
@@ -170,15 +234,8 @@ solver_(solver)
   invtoggle_->PutScalar(1.0);
   invtoggle_->Update(-1.0,*dirichtoggle_,1.0);
 
-
-  double V0 = params_->get<double>("V0", -1.0);
   if (V0 > 0.0)
-  {
     V0_ = V0;
-    // just in case anyone ever wants to query the initial volume from
-    // the parameter list...
-    params_->set<double>("V0", V0_);
-  }
   else
   {
     cout << "You have not specified the initial volume of the RVE with number "
@@ -195,11 +252,7 @@ solver_(solver)
     V0_ = p.get<double>("V0", -1.0);
     if (V0_ == -1.0)
       dserror("Calculation of initial volume failed");
-    // just in case anyone ever wants to query the initial volume from
-    // the parameter list...
-    params_->set<double>("V0", V0_);
   }
-
 
   // ------------------------- Calculate initial density of microstructure
   // the macroscopic density has to be averaged over the entire
@@ -221,61 +274,43 @@ solver_(solver)
   if (density_ == 0.0)
     dserror("Density determined from homogenization procedure equals zero!");
 
-  // Initialize SurfStressManager for handling surface stress
-  // conditions due to interfacial phenomena
-  // Note that sdyn from the macro-scale is called here since we need
-  // to use identical parameters on both scales in any case!
-//   const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
-//   surf_stress_man_=rcp(new UTILS::SurfStressManager(discret_, sdyn));
-
   return;
 } // STRUMULTI::MicroStatic::MicroStatic
 
 
-//FSI::Debug dbg;
+void STRUMULTI::MicroStatic::Predictor(LINALG::Matrix<3,3>* defgrd)
+{
+  if (pred_ == INPAR::STR::pred_constdis)
+    PredictConstDis(defgrd);
+  else if (pred_ == INPAR::STR::pred_tangdis)
+    PredictTangDis(defgrd);
+  else
+    dserror("requested predictor not implemented on the micro-scale");
+  return;
+}
 
 
 /*----------------------------------------------------------------------*
  |  do predictor step (public)                               mwgee 03/07|
  *----------------------------------------------------------------------*/
-void STRUMULTI::MicroStatic::Predictor(LINALG::Matrix<3,3>* defgrd)
+void STRUMULTI::MicroStatic::PredictConstDis(LINALG::Matrix<3,3>* defgrd)
 {
-  // -------------------------------------------------------------------
-  // get some parameters from parameter list
-  // -------------------------------------------------------------------
-  double time        = params_->get<double>("total time"     ,0.0);
-  double dt          = params_->get<double>("delta time"     ,0.01);
-  string convcheck   = params_->get<string>("convcheck"      ,"AbsRes_Or_AbsDis");
-  int istep          = params_->get<int>   ("step"            ,0);
-  double alphaf    = params_->get<double>("alpha f",0.459);
-  //bool   printscreen = params_->get<bool>  ("print to screen",false);
-
-  // store norms of old displacements and maximum of norms of
-  // internal, external and inertial forces if a relative convergence
-  // check is desired
-  if (istep != 0 && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
-  {
-    CalcRefNorms();
-  }
-
   // apply new displacements at DBCs -> this has to be done with the
   // mid-displacements since the given macroscopic deformation
   // gradient is evaluated at the mid-point!
   {
     // dism then also holds prescribed new dirichlet displacements
-    EvaluateMicroBC(defgrd);
+    EvaluateMicroBC(defgrd, dism_);
+    disn_->Update(1.0, *dism_, -alphaf_, *dis_, 0.);
+    disn_->Scale(1.0/(1.0-alphaf_));
     discret_->ClearState();
-    fextn_->PutScalar(0.0);  // initialize external force vector (load vect)
   }
-
-  //------------------------------- compute interpolated external forces
-  fextm_->Scale(0.0);  // we do not have any external forces in the microproblem!
 
   //--------------------------------- set EAS internal data if necessary
 
   // this has to be done only once since the elements will remember
   // their EAS data until the end of the microscale simulation
-  // (end of macroscopic time step)
+  // (end of macroscopic iteration step)
   {
     // create the parameters for the discretization
     ParameterList p;
@@ -299,9 +334,9 @@ void STRUMULTI::MicroStatic::Predictor(LINALG::Matrix<3,3>* defgrd)
     // action for elements
     p.set("action","calc_struct_nlnstiff");
     // other parameters that might be needed by the elements
-    p.set("total time",time);
-    p.set("delta time",dt);
-    p.set("alpha f",alphaf);
+    p.set("total time",time_);
+    p.set("delta time",dt_);
+    p.set("alpha f",alphaf_);
     // set vector values needed by elements
     discret_->ClearState();
     disi_->Scale(0.0);
@@ -320,11 +355,14 @@ void STRUMULTI::MicroStatic::Predictor(LINALG::Matrix<3,3>* defgrd)
 
     // complete stiffness matrix
     stiff_->Complete();
+
+    // set norm of displacement increments
+    disnorm_ = 1.0e6;
   }
 
   //-------------------------------------------- compute residual forces
   // add static mid-balance
-  fresm_->Update(-1.0,*fint_,1.0,*fextm_,0.0);
+  fresm_->Update(-1.0,*fint_,0.0);
 
   // blank residual at DOFs on Dirichlet BC
   {
@@ -334,67 +372,220 @@ void STRUMULTI::MicroStatic::Predictor(LINALG::Matrix<3,3>* defgrd)
     fresm_dirich_->Update(1.0, fresmcopy, 0.0);
 
     fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
+
+    // store norm of residual
+    fresm_->Norm2(&fnorm_);
   }
-
-  //dbg.DumpVector("fresm", *discret_, *fresm_);
-  //dbg.DumpVector("dism", *discret_, *dism_);
-
-
-  //------------------------------------------------ build residual norm
-//   double fresmnorm = 1.0;
-
-  // store norms of displacements and maximum of norms of internal,
-  // external and inertial forces if a relative convergence check
-  // is desired and we are in the first time step
-  if (istep == 0 && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
-  {
-    CalcRefNorms();
-  }
-
-//   if (printscreen)
-//     fresm_->Norm2(&fresmnorm);
-//   if (!myrank_ && printscreen)
-//    if (ele_Id==6 && gp==7)
-//    {
-//      double fresmnorm;
-//      fresm_->Norm2(&fresmnorm);
-//      PrintPredictor(convcheck, fresmnorm);
-//    }
 
   return;
 } // STRUMULTI::MicroStatic::Predictor()
 
 
 /*----------------------------------------------------------------------*
+ |  do predictor step (public)                                  lw 01/09|
+ *----------------------------------------------------------------------*/
+void STRUMULTI::MicroStatic::PredictTangDis(LINALG::Matrix<3,3>* defgrd)
+{
+  // for displacement increments on Dirichlet boundary
+  Teuchos::RCP<Epetra_Vector> dbcinc
+    = LINALG::CreateVector(*(discret_->DofRowMap()), true);
+
+  // copy last converged displacements
+  dbcinc->Update(1.0, *dism_, 0.0);
+
+  // apply new displacements at DBCs -> this has to be done with the
+  // mid-displacements since the given macroscopic deformation
+  // gradient is evaluated at the mid-point!
+  {
+    // dbcinc then also holds prescribed new dirichlet displacements
+    EvaluateMicroBC(defgrd, dbcinc);
+    discret_->ClearState();
+  }
+
+  // subtract the displacements of the last converged step
+  // DBC-DOFs hold increments of current step
+  // free-DOFs hold zeros
+  dbcinc->Update(-1.0, *dism_, 1.0);
+
+  //--------------------------------- set EAS internal data if necessary
+
+  // this has to be done only once since the elements will remember
+  // their EAS data until the end of the microscale simulation
+  // (end of macroscopic iteration step)
+  {
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    p.set("action","eas_set_multi");
+
+    p.set("oldalpha", oldalpha_);
+    p.set("oldfeas", oldfeas_);
+    p.set("oldKaainv", oldKaainv_);
+    p.set("oldKda", oldKda_);
+
+    discret_->Evaluate(p,null,null,null,null,null);
+  }
+
+  //------------- eval fint at interpolated state, eval stiffness matrix
+  {
+    // zero out stiffness
+    stiff_->Zero();
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    p.set("action","calc_struct_nlnstiff");
+    // other parameters that might be needed by the elements
+    p.set("total time",time_);
+    p.set("delta time",dt_);
+    p.set("alpha f",alphaf_);
+    // set vector values needed by elements
+    discret_->ClearState();
+    disi_->PutScalar(0.0);
+    discret_->SetState("residual displacement",disi_);
+    discret_->SetState("displacement",dism_);
+    fint_->PutScalar(0.0);  // initialise internal force vector
+
+    discret_->Evaluate(p,stiff_,null,fint_,null,null);
+    discret_->ClearState();
+
+    if (surf_stress_man_->HaveSurfStress())
+    {
+      p.set("surfstr_man", surf_stress_man_);
+      surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,stiff_);
+    }
+  }
+
+  stiff_->Complete();
+
+  //-------------------------------------------- compute residual forces
+  // add static mid-balance
+  fresm_->Update(-1.0,*fint_,0.0);
+
+  // add linear reaction forces to residual
+  {
+    // linear reactions
+    Teuchos::RCP<Epetra_Vector> freact
+      = LINALG::CreateVector(*(discret_->DofRowMap()), true);
+    stiff_->Multiply(false, *dbcinc, *freact);
+
+    // add linear reaction forces due to prescribed Dirichlet BCs
+    fresm_->Update(-1.0, *freact, 1.0);
+  }
+
+  // blank residual at DOFs on Dirichlet BC
+  {
+    Epetra_Vector fresmcopy(*fresm_);
+    fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
+  }
+
+  // apply Dirichlet BCs to system of equations
+  disi_->PutScalar(0.0);
+  stiff_->Complete();
+  LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
+
+  // solve for disi_
+  // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
+  solver_->Reset();
+  solver_->Solve(stiff_->EpetraMatrix(), disi_, fresm_, true, true);
+  solver_->Reset();
+
+  //---------------------------------- update mid configuration values
+  // set Dirichlet increments in displacement increments
+  disi_->Update(1.0, *dbcinc, 1.0);
+  // store norm of displacement increments
+  disi_->Norm2(&disnorm_);
+
+  // displacements
+  // note that disi is not Inc_D{n+1} but Inc_D{n+1-alphaf} since everything
+  // on the microscale "lives" exclusively at the pseudo generalized
+  // mid point! This is just a quasi-static problem!
+  dism_->Update(1.0,*disi_,1.0);
+  disn_->Update(1.0/(1.0-alphaf_),*disi_,1.0);
+
+  // reset anything that needs to be reset at the element level
+  {
+    // create the parameters for the discretization
+    ParameterList p;
+    p.set("action", "calc_struct_reset_istep");
+    // go to elements
+    discret_->Evaluate(p, Teuchos::null, Teuchos::null,
+                       Teuchos::null, Teuchos::null, Teuchos::null);
+    discret_->ClearState();
+  }
+
+  //------------- eval fint at interpolated state, eval stiffness matrix
+  {
+    // zero out stiffness
+    stiff_->Zero();
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    p.set("action","calc_struct_nlnstiff");
+    // other parameters that might be needed by the elements
+    p.set("total time",time_);
+    p.set("delta time",dt_);
+    p.set("alpha f",alphaf_);
+    // set vector values needed by elements
+    discret_->ClearState();
+    disi_->PutScalar(0.0);
+    discret_->SetState("residual displacement",disi_);
+    discret_->SetState("displacement",dism_);
+    fint_->PutScalar(0.0);  // initialise internal force vector
+
+    discret_->Evaluate(p,stiff_,null,fint_,null,null);
+    discret_->ClearState();
+
+    if (surf_stress_man_->HaveSurfStress())
+    {
+      p.set("surfstr_man", surf_stress_man_);
+      surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,stiff_);
+    }
+  }
+
+  //-------------------------------------------- compute residual forces
+  // add static mid-balance
+  fresm_->Update(-1.0,*fint_,0.0);
+
+  // blank residual at DOFs on Dirichlet BC
+  {
+    Epetra_Vector fresmcopy(*fresm_);
+
+    // save this vector for homogenization
+    fresm_dirich_->Update(1.0, fresmcopy, 0.0);
+
+    fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
+
+    // store norm of residual
+    fresm_->Norm2(&fnorm_);
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  do Newton iteration (public)                             mwgee 03/07|
  *----------------------------------------------------------------------*/
 void STRUMULTI::MicroStatic::FullNewton()
 {
-  // -------------------------------------------------------------------
-  // get some parameters from parameter list
-  // -------------------------------------------------------------------
-  double time      = params_->get<double>("total time"             ,0.0);
-  double dt        = params_->get<double>("delta time"             ,0.01);
-  int    maxiter   = params_->get<int>   ("max iterations"         ,10);
-  string convcheck = params_->get<string>("convcheck"              ,"AbsRes_Or_AbsDis");
-  double toldisp   = params_->get<double>("tolerance displacements",1.0e-07);
-  double tolres    = params_->get<double>("tolerance residual"     ,1.0e-07);
-  double alphaf    = params_->get<double>("alpha f",0.459);
-  //bool printscreen = params_->get<bool>  ("print to screen",true);
-  //------------------------------ turn adaptive solver tolerance on/off
-  const bool   isadapttol    = params_->get<bool>("ADAPTCONV",true);
-  const double adaptolbetter = params_->get<double>("ADAPTCONV_BETTER",0.01);
-
   //=================================================== equilibrium loop
-  int numiter=0;
-  double fresmnorm = 1.0e6;
-  double disinorm = 1.0e6;
-  fresm_->Norm2(&fresmnorm);
+  numiter_ = 0;
+
+  // if TangDis-Predictor is employed, the number of iterations needs
+  // to be increased by one, since it involves already one solution of
+  // the non-linear system!
+  if (pred_ == INPAR::STR::pred_tangdis)
+    numiter_++;
+
+  // store norms of old displacements and maximum of norms of
+  // internal, external and inertial forces (needed for relative convergence
+  // check)
+  CalcRefNorms();
+
   Epetra_Time timer(discret_->Comm());
   timer.ResetStartTime();
   bool print_unconv = true;
 
-  while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) && numiter<=maxiter)
+  while (!Converged() && numiter_<=maxiter_)
   {
 
     //----------------------- apply dirichlet BCs to system of equations
@@ -404,18 +595,13 @@ void STRUMULTI::MicroStatic::FullNewton()
 
     //--------------------------------------------------- solve for disi
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
-//     if (!numiter)
-//       solver_->Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,true);
-//     else
-//       solver_->Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,false);
-
-    if (isadapttol && numiter)
+    if (isadapttol_ && numiter_)
     {
-      double worst = fresmnorm;
-      double wanted = tolres;
-      solver_->AdaptTolerance(wanted,worst,adaptolbetter);
+      double worst = fnorm_;
+      double wanted = tolres_;
+      solver_->AdaptTolerance(wanted,worst,adaptolbetter_);
     }
-    solver_->Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,numiter==0);
+    solver_->Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,numiter_==0);
     solver_->ResetTolerance();
 
     //---------------------------------- update mid configuration values
@@ -424,7 +610,7 @@ void STRUMULTI::MicroStatic::FullNewton()
     // on the microscale "lives" exclusively at the pseudo generalized
     // mid point! This is just a quasi-static problem!
     dism_->Update(1.0,*disi_,1.0);
-    disn_->Update(1.0/(1.0-alphaf),*disi_,1.0);
+    disn_->Update(1.0/(1.0-alphaf_),*disi_,1.0);
 
     //---------------------------- compute internal forces and stiffness
     {
@@ -435,9 +621,9 @@ void STRUMULTI::MicroStatic::FullNewton()
       // action for elements
       p.set("action","calc_struct_nlnstiff");
       // other parameters that might be needed by the elements
-      p.set("total time",time);
-      p.set("delta time",dt);
-      p.set("alpha f",alphaf);
+      p.set("total time",time_);
+      p.set("delta time",dt_);
+      p.set("alpha f",alphaf_);
       // set vector values needed by elements
       discret_->ClearState();
       // we do not need to scale disi_ here with 1-alphaf (cf. strugenalpha), since
@@ -471,7 +657,7 @@ void STRUMULTI::MicroStatic::FullNewton()
     //------------------------------------------ compute residual forces
     // add static mid-balance
     //fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
-    fresm_->Update(-1.0,*fint_,1.0,*fextm_,0.);
+    fresm_->Update(-1.0,*fint_,0.0);
     // blank residual DOFs which are on Dirichlet BC
     {
       Epetra_Vector fresmcopy(*fresm_);
@@ -483,40 +669,21 @@ void STRUMULTI::MicroStatic::FullNewton()
     }
 
     //---------------------------------------------- build residual norm
-    disi_->Norm2(&disinorm);
+    disi_->Norm2(&disnorm_);
 
-    fresm_->Norm2(&fresmnorm);
+    fresm_->Norm2(&fnorm_);
 
-    // a short message
-    //if (!myrank_ && printscreen)
-//      if (ele_ID==6 && gp==7)
-//      {
-//         PrintNewton(true,print_unconv,timer,numiter,maxiter,
-//                     fresmnorm,disinorm,convcheck);
-//      }
-
-    //--------------------------------- increment equilibrium loop index
-    ++numiter;
+  //--------------------------------- increment equilibrium loop index
+    ++numiter_;
   }
   //============================================= end equilibrium loop
   print_unconv = false;
 
-
   //-------------------------------- test whether max iterations was hit
-  if (numiter>=maxiter)
+  if (numiter_>=maxiter_)
   {
-     dserror("Newton unconverged in %d iterations",numiter);
+     dserror("Newton unconverged in %d iterations",numiter_);
   }
-//   else
-//   {
-//      if (!myrank_ && printscreen)
-//      {
-//        PrintNewton(printscreen,print_unconv,timer,numiter,maxiter,
-//                    fresmnorm,disinorm,convcheck);
-//      }
- //  }
-
-  params_->set<int>("num iterations",numiter);
 
   return;
 } // STRUMULTI::MicroStatic::FullNewton()
@@ -530,22 +697,10 @@ void STRUMULTI::MicroStatic::Output(RefCountPtr<DiscretizationWriter> output,
                                     const int istep,
                                     const double dt)
 {
-  // -------------------------------------------------------------------
-  // get some parameters from parameter list
-  // -------------------------------------------------------------------
-
-  bool   iodisp        = params_->get<bool>  ("io structural disp"     ,true);
-  int    updevrydisp   = params_->get<int>   ("io disp every nstep"    ,1);
-  INPAR::STR::StressType iostress = params_->get<INPAR::STR::StressType>("io structural stress",INPAR::STR::stress_none);
-  int    updevrystress = params_->get<int>   ("io stress every nstep"  ,10);
-  INPAR::STR::StrainType iostrain      = params_->get<INPAR::STR::StrainType>("io structural strain",INPAR::STR::strain_none);
-  int    writeresevry  = params_->get<int>   ("write restart every"    ,0);
-  bool   iosurfactant  = params_->get<bool>  ("io surfactant"          ,false);
-
   bool isdatawritten = false;
 
   //------------------------------------------------- write restart step
-  if (writeresevry and istep%writeresevry==0)
+  if (restartevry_ and step_%restartevry_==0)
   {
     output->WriteMesh(istep,time);
     output->NewStep(istep, time);
@@ -577,18 +732,18 @@ void STRUMULTI::MicroStatic::Output(RefCountPtr<DiscretizationWriter> output,
   }
 
   //----------------------------------------------------- output results
-  if (iodisp && updevrydisp && istep%updevrydisp==0 && !isdatawritten)
+  if (iodisp_ && resevrydisp_ && step_%resevrydisp_==0 && !isdatawritten)
   {
     output->NewStep(istep, time);
     output->WriteVector("displacement",dis_);
     isdatawritten = true;
 
-    if (surf_stress_man_->HaveSurfStress() && iosurfactant)
+    if (surf_stress_man_->HaveSurfStress() && iosurfactant_)
       surf_stress_man_->WriteResults(istep, time);
   }
 
   //------------------------------------- do stress calculation and output
-  if (updevrystress and !(istep%updevrystress) and iostress!=INPAR::STR::stress_none)
+  if (resevrystrs_ and !(istep%resevrystrs_) and iostress_!=INPAR::STR::stress_none)
   {
     // create the parameters for the discretization
     ParameterList p;
@@ -601,8 +756,8 @@ void STRUMULTI::MicroStatic::Output(RefCountPtr<DiscretizationWriter> output,
     Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
     p.set("stress", stress);
     p.set("strain", strain);
-    p.set("iostress", iostress);
-    p.set("iostrain", iostrain);
+    p.set("iostress", iostress_);
+    p.set("iostrain", iostrain_);
     // set vector values needed by elements
     discret_->ClearState();
     discret_->SetState("residual displacement",zeros_);
@@ -612,7 +767,7 @@ void STRUMULTI::MicroStatic::Output(RefCountPtr<DiscretizationWriter> output,
     if (!isdatawritten) output->NewStep(istep, time);
     isdatawritten = true;
 
-    switch (iostress)
+    switch (iostress_)
     {
     case INPAR::STR::stress_cauchy:
       output->WriteVector("gauss_cauchy_stresses_xyz",*stress,*discret_->ElementColMap());
@@ -626,7 +781,7 @@ void STRUMULTI::MicroStatic::Output(RefCountPtr<DiscretizationWriter> output,
       dserror ("requested stress type not supported");
     }
 
-    switch (iostrain)
+    switch (iostrain_)
     {
     case INPAR::STR::strain_ea:
       output->WriteVector("gauss_EA_strains_xyz",*strain,*discret_->ElementColMap());
@@ -643,47 +798,6 @@ void STRUMULTI::MicroStatic::Output(RefCountPtr<DiscretizationWriter> output,
 
   return;
 } // STRUMULTI::MicroStatic::Output()
-
-
-/*----------------------------------------------------------------------*
- |  set default parameter list (static/public)               mwgee 03/07|
- *----------------------------------------------------------------------*/
-void STRUMULTI::MicroStatic::SetDefaults(ParameterList& params)
-{
-  params.set<bool>  ("print to screen"        ,false);
-  params.set<bool>  ("print to err"           ,false);
-  params.set<FILE*> ("err file"               ,NULL);
-  params.set<bool>  ("damping"                ,false);
-  params.set<double>("damping factor K"       ,0.00001);
-  params.set<double>("damping factor M"       ,0.00001);
-  params.set<double>("beta"                   ,0.292);
-  params.set<double>("gamma"                  ,0.581);
-  params.set<double>("alpha m"                ,0.378);
-  params.set<double>("alpha f"                ,0.459);
-  params.set<double>("total time"             ,0.0);
-  params.set<double>("delta time"             ,0.01);
-  params.set<int>   ("step"                   ,0);
-  params.set<int>   ("nstep"                  ,5);
-  params.set<int>   ("max iterations"         ,10);
-  params.set<int>   ("num iterations"         ,-1);
-  params.set<double>("tolerance displacements",1.0e-07);
-  params.set<bool>  ("io structural disp"     ,true);
-  params.set<int>   ("io disp every nstep"    ,1);
-  params.set<INPAR::STR::StressType>("io structural stress",INPAR::STR::stress_none);
-  params.set<INPAR::STR::StrainType>("io structural strain",INPAR::STR::strain_none);
-  params.set<bool>  ("io surfactant",false);
-  params.set<int>   ("restart"                ,0);
-  params.set<int>   ("write restart every"    ,0);
-  // takes values "constant" consistent"
-  params.set<string>("predictor"              ,"constant");
-  // takes values "full newton" , "modified newton" , "nonlinear cg"
-  params.set<string>("equilibrium iteration"  ,"full newton");
-
-  params.set<bool>  ("ADAPTCONV",false);
-  params.set<double>("ADAPTCONV_BETTER",0.1);
-
-  return;
-}
 
 
 /*----------------------------------------------------------------------*
@@ -708,13 +822,8 @@ void STRUMULTI::MicroStatic::ReadRestart(int step,
   // reader.ReadMesh(step);
 
   // Override current time and step with values from file
-  params_->set<double>("total time",time);
-  params_->set<int>   ("step",rstep);
-
-  // set newstep=true for surface stresses (comparison of A_old and
-  // A_new which are nearly the same in the beginning of a new time
-  // step due to our choice of predictors)
-  params_->set<bool>("newstep", true);
+  time_ = time;
+  step_ = rstep;
 
   if (surf_stress_man->HaveSurfStress())
   {
@@ -779,7 +888,8 @@ void STRUMULTI::MicroStatic::DetermineToggle()
   np_ = np;
 }
 
-void STRUMULTI::MicroStatic::EvaluateMicroBC(LINALG::Matrix<3,3>* defgrd)
+void STRUMULTI::MicroStatic::EvaluateMicroBC(LINALG::Matrix<3,3>* defgrd,
+                                             RefCountPtr<Epetra_Vector> disp)
 {
   vector<DRT::Condition*> conds;
   discret_->GetCondition("MicroBoundary", conds);
@@ -801,7 +911,7 @@ void STRUMULTI::MicroStatic::EvaluateMicroBC(LINALG::Matrix<3,3>* defgrd)
 
       // boundary displacements are prescribed via the macroscopic
       // deformation gradient
-      double dism_prescribed[3];
+      double disp_prescribed[3];
       LINALG::Matrix<3,3> Du(defgrd->A(),false);
       LINALG::Matrix<3,3> I(true);
       I(0,0)=-1.0;
@@ -818,7 +928,7 @@ void STRUMULTI::MicroStatic::EvaluateMicroBC(LINALG::Matrix<3,3>* defgrd)
           dis += Du(k, l) * x[l];
         }
 
-        dism_prescribed[k] = dis;
+        disp_prescribed[k] = dis;
       }
 
       vector<int> dofs = discret_->Dof(actnode);
@@ -828,15 +938,12 @@ void STRUMULTI::MicroStatic::EvaluateMicroBC(LINALG::Matrix<3,3>* defgrd)
       {
         const int gid = dofs[l];
 
-        const int lid = dism_->Map().LID(gid);
+        const int lid = disp->Map().LID(gid);
         if (lid<0) dserror("Global id %d not on this proc in system vector",gid);
-        (*dism_)[lid] = dism_prescribed[l];
+        (*disp)[lid] = disp_prescribed[l];
       }
     }
   }
-  double alphaf    = params_->get<double>("alpha f",0.459);
-  disn_->Update(1.0, *dism_, -alphaf, *dis_, 0.);
-  disn_->Scale(1.0/(1.0-alphaf));
 }
 
 void STRUMULTI::MicroStatic::SetOldState(RefCountPtr<Epetra_Vector> dis,
@@ -853,9 +960,6 @@ void STRUMULTI::MicroStatic::SetOldState(RefCountPtr<Epetra_Vector> dis,
   dism_ = dism;
   disn_ = disn;
   surf_stress_man_ = surfman;
-  fext_->PutScalar(0.);     // we do not have any external loads on
-                            // the microscale, so assign all components
-                            // to zero
 
   // using RCP's here means we do not need to return EAS data explicitly
   lastalpha_ = lastalpha;
@@ -876,10 +980,7 @@ void STRUMULTI::MicroStatic::UpdateNewTimeStep(RefCountPtr<Epetra_Vector> dis,
   // -> if another time integration scheme should be used, this needs
   // to be changed accordingly
 
-  double alphaf = params_->get<double>("alpha f",0.459);
   dis->Update(1.0, *disn, 0.0);
-  //dis->Update(1.0, *dism, -alphaf);
-  //dis->Scale(1.0/(1.0-alphaf));
   dism->Update(1.0, *dis, 0.0);
   disn->Update(1.0, *dis, 0.0);
 
@@ -897,8 +998,8 @@ void STRUMULTI::MicroStatic::UpdateNewTimeStep(RefCountPtr<Epetra_Vector> dis,
     if (alphai!=null && alphao!=null) // update only those elements with EAS
     {
       Epetra_BLAS::Epetra_BLAS blas;
-      blas.SCAL(alphao->M() * alphao->N(), -alphaf/(1.0-alphaf), alphao->A());  // alphao *= -alphaf/(1.0-alphaf)
-      blas.AXPY(alphao->M() * alphao->N(), 1.0/(1.0-alphaf), alphai->A(), alphao->A());  // alphao += 1.0/(1.0-alphaf) * alpha
+      blas.SCAL(alphao->M() * alphao->N(), -alphaf_/(1.0-alphaf_), alphao->A());  // alphao *= -alphaf/(1.0-alphaf)
+      blas.AXPY(alphao->M() * alphao->N(), 1.0/(1.0-alphaf_), alphai->A(), alphao->A());  // alphao += 1.0/(1.0-alphaf) * alpha
       blas.COPY(alphai->M() * alphai->N(), alphao->A(), alphai->A());  // alpha := alphao
     }
   }
@@ -906,9 +1007,9 @@ void STRUMULTI::MicroStatic::UpdateNewTimeStep(RefCountPtr<Epetra_Vector> dis,
 
 void STRUMULTI::MicroStatic::SetTime(const double timen, const double dt, const int istep)
 {
-  params_->set<double>("total time", timen);
-  params_->set<double>("delta time", dt);
-  params_->set<int>   ("step", istep);
+  time_ = timen;
+  dt_ = dt;
+  step_ = istep;
 }
 
 //RefCountPtr<Epetra_Vector> STRUMULTI::MicroStatic::ReturnNewDism() { return rcp(new Epetra_Vector(*dism_)); }
@@ -1045,40 +1146,38 @@ void STRUMULTI::MicroStatic::SetUpHomogenization()
 /*----------------------------------------------------------------------*
  |  check convergence of Newton iteration (public)              lw 12/07|
  *----------------------------------------------------------------------*/
-bool STRUMULTI::MicroStatic::Converged(const string type, const double disinorm,
-                            const double resnorm, const double toldisp,
-                            const double tolres)
+bool STRUMULTI::MicroStatic::Converged()
 {
-  if (type == "AbsRes_Or_AbsDis")
+  if (convcheck_ == INPAR::STR::convcheck_absres_or_absdis)
   {
-    return (disinorm<toldisp or resnorm<tolres);
+    return (disnorm_ < toldis_ or fnorm_ < tolres_);
   }
-  else if (type == "AbsRes_And_AbsDis")
+  else if (convcheck_ == INPAR::STR::convcheck_absres_and_absdis)
   {
-    return (disinorm<toldisp and resnorm<tolres);
+    return (disnorm_ < toldis_ and fnorm_ < tolres_);
   }
-  else if (type == "RelRes_Or_AbsDis")
-  {
-    if (ref_fnorm_ == 0.) ref_fnorm_ = 1.0;
-    return (disinorm<toldisp or (resnorm/ref_fnorm_)<tolres);
-  }
-  else if (type == "RelRes_And_AbsDis")
+  else if (convcheck_ == INPAR::STR::convcheck_relres_or_absdis)
   {
     if (ref_fnorm_ == 0.) ref_fnorm_ = 1.0;
-    return (disinorm<toldisp and (resnorm/ref_fnorm_)<tolres);
+    return (disnorm_ < toldis_ or (fnorm_/ref_fnorm_) < tolres_);
   }
-  else if (type == "RelRes_Or_RelDis")
+  else if (convcheck_ == INPAR::STR::convcheck_relres_and_absdis)
+  {
+    if (ref_fnorm_ == 0.) ref_fnorm_ = 1.0;
+    return (disnorm_ < toldis_ and (fnorm_/ref_fnorm_) < tolres_);
+  }
+  else if (convcheck_ == INPAR::STR::convcheck_relres_or_reldis)
   {
     if (ref_fnorm_ == 0.) ref_fnorm_ = 1.0;
     if (ref_disnorm_ == 0.) ref_disnorm_ = 1.0;
-    return ((disinorm/ref_disnorm_)<toldisp or (resnorm/ref_fnorm_)<tolres);
+    return ((disnorm_/ref_disnorm_) < toldis_ or (fnorm_/ref_fnorm_) < tolres_);
   }
-  else if (type == "RelRes_And_RelDis")
+  else if (convcheck_ == INPAR::STR::convcheck_relres_and_reldis)
   {
     if (ref_fnorm_ == 0.) ref_fnorm_ = 1.0;
     if (ref_disnorm_ == 0.) ref_disnorm_ = 1.0;
 
-    return ((disinorm/ref_disnorm_)<toldisp and (resnorm/ref_fnorm_)<tolres);
+    return ((disnorm_/ref_disnorm_) < toldis_ and (fnorm_/ref_fnorm_) < tolres_);
   }
   else
   {
@@ -1100,52 +1199,46 @@ void STRUMULTI::MicroStatic::CalcRefNorms()
 
   dis_->Norm2(&ref_disnorm_);
 
-
-  double fintnorm, fextnorm;
-  fint_->Norm2(&fintnorm);
-  fextm_->Norm2(&fextnorm);
-
-  ref_fnorm_=max(fintnorm, fextnorm);
+  fint_->Norm2(&ref_fnorm_);
 }
 
 /*----------------------------------------------------------------------*
  |  print to screen and/or error file                           lw 12/07|
  *----------------------------------------------------------------------*/
-void STRUMULTI::MicroStatic::PrintNewton(bool printscreen, bool print_unconv,
-                              Epetra_Time timer, int numiter,
-                              int maxiter, double fresmnorm, double disinorm,
-                              string convcheck)
+void STRUMULTI::MicroStatic::PrintNewton(bool print_unconv, Epetra_Time timer)
 {
-  bool relres        = (convcheck == "RelRes_And_AbsDis" || convcheck == "RelRes_Or_AbsDis");
-  bool relres_reldis = (convcheck == "RelRes_And_RelDis" || convcheck == "RelRes_Or_RelDis");
+  bool relres        = (convcheck_ == INPAR::STR::convcheck_relres_and_absdis ||
+                        convcheck_ == INPAR::STR::convcheck_relres_or_absdis);
+  bool relres_reldis = (convcheck_ == INPAR::STR::convcheck_relres_and_reldis ||
+                        convcheck_ == INPAR::STR::convcheck_relres_or_reldis);
 
   if (relres)
   {
-    fresmnorm /= ref_fnorm_;
+    fnorm_ /= ref_fnorm_;
   }
   if (relres_reldis)
   {
-    fresmnorm /= ref_fnorm_;
-    disinorm  /= ref_disnorm_;
+    fnorm_ /= ref_fnorm_;
+    disnorm_  /= ref_disnorm_;
   }
 
   if (print_unconv)
   {
-    if (printscreen)
+    if (printscreen_)
     {
       if (relres)
       {
-        printf("      MICROSCALE numiter %2d scaled res-norm %10.5e absolute dis-norm %20.15E\n",numiter+1, fresmnorm, disinorm);
+        printf("      MICROSCALE numiter %2d scaled res-norm %10.5e absolute dis-norm %20.15E\n",numiter_+1, fnorm_, disnorm_);
         fflush(stdout);
       }
       else if (relres_reldis)
       {
-        printf("      MICROSCALE numiter %2d scaled res-norm %10.5e scaled dis-norm %20.15E\n",numiter+1, fresmnorm, disinorm);
+        printf("      MICROSCALE numiter %2d scaled res-norm %10.5e scaled dis-norm %20.15E\n",numiter_+1, fnorm_, disnorm_);
         fflush(stdout);
       }
       else
         {
-        printf("      MICROSCALE numiter %2d absolute res-norm %10.5e absolute dis-norm %20.15E\n",numiter+1, fresmnorm, disinorm);
+        printf("      MICROSCALE numiter %2d absolute res-norm %10.5e absolute dis-norm %20.15E\n",numiter_+1, fnorm_, disnorm_);
         fflush(stdout);
       }
     }
@@ -1157,19 +1250,19 @@ void STRUMULTI::MicroStatic::PrintNewton(bool printscreen, bool print_unconv,
     if (relres)
     {
       printf("      MICROSCALE Newton iteration converged: numiter %d scaled res-norm %e absolute dis-norm %e time %10.5f\n\n",
-             numiter,fresmnorm,disinorm,timepernlnsolve);
+             numiter_,fnorm_,disnorm_,timepernlnsolve);
       fflush(stdout);
     }
     else if (relres_reldis)
     {
       printf("      MICROSCALE Newton iteration converged: numiter %d scaled res-norm %e scaled dis-norm %e time %10.5f\n\n",
-             numiter,fresmnorm,disinorm,timepernlnsolve);
+             numiter_,fnorm_,disnorm_,timepernlnsolve);
       fflush(stdout);
     }
     else
     {
       printf("      MICROSCALE Newton iteration converged: numiter %d absolute res-norm %e absolute dis-norm %e time %10.5f\n\n",
-             numiter,fresmnorm,disinorm,timepernlnsolve);
+             numiter_,fnorm_,disnorm_,timepernlnsolve);
       fflush(stdout);
     }
   }
@@ -1178,16 +1271,16 @@ void STRUMULTI::MicroStatic::PrintNewton(bool printscreen, bool print_unconv,
 /*----------------------------------------------------------------------*
  |  print to screen                                             lw 12/07|
  *----------------------------------------------------------------------*/
-void STRUMULTI::MicroStatic::PrintPredictor(string convcheck, double fresmnorm)
+void STRUMULTI::MicroStatic::PrintPredictor()
 {
-  if (convcheck != "AbsRes_And_AbsDis" && convcheck != "AbsRes_Or_AbsDis")
+  if (convcheck_ == INPAR::STR::convcheck_absres_or_absdis && convcheck_ != INPAR::STR::convcheck_absres_and_absdis)
   {
-    fresmnorm /= ref_fnorm_;
-    cout << "      MICROSCALE Predictor scaled res-norm " << fresmnorm << endl;
+    fnorm_ /= ref_fnorm_;
+    cout << "      MICROSCALE Predictor scaled res-norm " << fnorm_ << endl;
   }
   else
   {
-    cout << "      MICROSCALE Predictor absolute res-norm " << fresmnorm << endl;
+    cout << "      MICROSCALE Predictor absolute res-norm " << fnorm_ << endl;
   }
   fflush(stdout);
 }
