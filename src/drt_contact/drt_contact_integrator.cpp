@@ -1841,12 +1841,13 @@ void CONTACT::Integrator::IntegrateDerivCell3D(
         map<int,double>& dmmap_jk = mycnode->GetDerivM()[mgid];
         
         // (1) Lin(Phi) - dual shape functions
-        for (int m=0;m<nrow;++m)
-        {
-          fac = wgt*sval[m]*mval[k]*jaccell*jacslave;
-          for (CI p=dualmap[j][m].begin();p!=dualmap[j][m].end();++p)
-            dmmap_jk[p->first] += fac*(p->second);
-        }
+        if (duallin)
+          for (int m=0;m<nrow;++m)
+          {
+            fac = wgt*sval[m]*mval[k]*jaccell*jacslave;
+            for (CI p=dualmap[j][m].begin();p!=dualmap[j][m].end();++p)
+              dmmap_jk[p->first] += fac*(p->second);
+          }
         
         // (2) Lin(Phi) - slave GP coordinates
         fac = wgt*dualderiv(j,0)*mval[k]*jaccell*jacslave;
@@ -1902,12 +1903,13 @@ void CONTACT::Integrator::IntegrateDerivCell3D(
       map<int,double>& dgmap = mycnode->GetDerivG();
       
       // (1) Lin(Phi) - dual shape functions
-      for (int m=0;m<nrow;++m)
-      {
-        fac = wgt*sval[m]*gap*jaccell*jacslave;
-        for (CI p=dualmap[j][m].begin();p!=dualmap[j][m].end();++p)
-          dgmap[p->first] += fac*(p->second);
-      }
+      if (duallin)
+        for (int m=0;m<nrow;++m)
+        {
+          fac = wgt*sval[m]*gap*jaccell*jacslave;
+          for (CI p=dualmap[j][m].begin();p!=dualmap[j][m].end();++p)
+            dgmap[p->first] += fac*(p->second);
+        }
       
       // (2) Lin(Phi) - slave GP coordinates
       fac = wgt*dualderiv(j,0)*gap*jaccell*jacslave;

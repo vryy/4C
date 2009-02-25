@@ -1313,7 +1313,11 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
           cout << "M-FD-derivative for pair S" << kcnode->Id() << " and M" << (p->first)/Dim() << endl;
           //cout << "Ref-M: " << refM[k][p->first] << endl;
           //cout << "New-M: " << newM[k][p->first] << endl;
-          cout << "Deriv: " << snode->Dofs()[fd%3] << " " << (newM[k][p->first]-refM[k][p->first])/delta << endl;
+          cout << "Deriv:      " << snode->Dofs()[fd%3] << " " << (newM[k][p->first]-refM[k][p->first])/delta << endl;
+          //map<int,map<int,double> >& derivmmap = kcnode->GetDerivM();
+          //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << derivmmap[(p->first)/Dim()][snode->Dofs()[fd%3]] << endl;
+          //if (abs(derivmmap[(p->first)/Dim()][snode->Dofs()[fd%3]]-(newM[k][p->first]-refM[k][p->first])/delta)>1.0e-5)
+          //  cout << "***WARNING*****************************************************************************" << endl;
         }
       }
     }
@@ -1537,7 +1541,11 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
           cout << "M-FD-derivative for pair S" << kcnode->Id() << " and M" << (p->first)/Dim() << endl;
           //cout << "Ref-M: " << refM[k][p->first] << endl;
           //cout << "New-M: " << newM[k][p->first] << endl;
-          cout << "Deriv: " << mnode->Dofs()[fd%3] << " " << (newM[k][p->first]-refM[k][p->first])/delta << endl;
+          cout << "Deriv:      " << mnode->Dofs()[fd%3] << " " << (newM[k][p->first]-refM[k][p->first])/delta << endl;
+          //map<int,map<int,double> >& derivmmap = kcnode->GetDerivM();
+          //cout << "Analytical: " << mnode->Dofs()[fd%3] << " " << derivmmap[(p->first)/Dim()][mnode->Dofs()[fd%3]] << endl;
+          //if (abs(derivmmap[(p->first)/Dim()][mnode->Dofs()[fd%3]]-(newM[k][p->first]-refM[k][p->first])/delta)>1.0e-5)
+          //  cout << "***WARNING*****************************************************************************" << endl;
         }
       }
     }
@@ -1582,10 +1590,13 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
       (node->GetDerivN())[j].clear();
     (node->GetDerivN()).resize(0);
     
-    // reset derivative maps of tangent vector
+    // reset derivative maps of tangent vectors
     for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
       (node->GetDerivTxi())[j].clear();
     (node->GetDerivTxi()).resize(0);
+    for (int j=0;j<(int)((node->GetDerivTeta()).size());++j)
+      (node->GetDerivTeta())[j].clear();
+    (node->GetDerivTeta()).resize(0);
         
     // reset closest node
     // (FIXME: at the moment we do not need this info. in the next
@@ -2004,7 +2015,10 @@ void CONTACT::Interface::FDCheckGapDeriv()
         cout << "G-FD-derivative for node S" << kcnode->Id() << endl;
         //cout << "Ref-G: " << refG[k] << endl;
         //cout << "New-G: " << newG[k] << endl;
-        cout << "Deriv: " << snode->Dofs()[fd%3] << " " << (newG[k]-refG[k])/delta << endl;
+        cout << "Deriv:      " << snode->Dofs()[fd%3] << " " << (newG[k]-refG[k])/delta << endl;
+        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        //if (abs(kcnode->GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
+        //  cout << "***WARNING*****************************************************************************" << endl;
       }
     }
     // undo finite difference modification
@@ -2258,7 +2272,10 @@ void CONTACT::Interface::FDCheckGapDeriv()
         cout << "G-FD-derivative for node S" << kcnode->Id() << endl;
         //cout << "Ref-G: " << refG[k] << endl;
         //cout << "New-G: " << newG[k] << endl;
-        cout << "Deriv: " << mnode->Dofs()[fd%3] << " " << (newG[k]-refG[k])/delta << endl;
+        cout << "Deriv:      " << mnode->Dofs()[fd%3] << " " << (newG[k]-refG[k])/delta << endl;
+        //cout << "Analytical: " << mnode->Dofs()[fd%3] << " " << kcnode->GetDerivG()[mnode->Dofs()[fd%3]] << endl;
+        //if (abs(kcnode->GetDerivG()[mnode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
+        //  cout << "***WARNING*****************************************************************************" << endl;
       }
     }
     
