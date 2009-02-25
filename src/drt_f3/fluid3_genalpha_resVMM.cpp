@@ -11263,6 +11263,8 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau(
 
       tau_(0) = DSQR(hk) / (4.0 * visceff / mk + ( 4.0 * visceff/mk) * xi_convectaf);
 
+      tau_(1) = tau_(0);
+      
       /*------------------------------------------------------ compute tau_C ---*/
 
       //-- stability parameter definition according to Wall Diss. 99
@@ -11340,6 +11342,8 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau(
        * term in the Navier-Stokes-equations, which is scaled by 2.0*nu         */
 
       tau_(0) = DSQR(hk) / (4.0 * visceff / mk + ( 4.0 * visceff/mk) * xi_convectaf);
+
+      tau_(1) = tau_(0);
 
       /*------------------------------------------------------ compute tau_C ---*/
 
@@ -11442,6 +11446,8 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau(
        * term in the Navier-Stokes-equations, which is scaled by 2.0*nu         */
 
       tau_(0) = DSQR(gradle) / (4.0 * visceff / mk + ( 4.0 * visceff/mk) * xi_convectaf);
+
+      tau_(1) = tau_(0);
 
       /*------------------------------------------------------ compute tau_C ---*/
 
