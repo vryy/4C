@@ -92,7 +92,7 @@ void XFEM::ElementDofManager::ComputeDependendInfo(
   {
     const int gid = nodeids[inode];
     map<int, const set <XFEM::FieldEnr> >::const_iterator entry = nodalDofSet.find(gid);
-    if (entry == nodalDofSet_.end())
+    if (entry == nodalDofSet.end())
       dserror("impossible ;-)");
     const std::set<XFEM::FieldEnr> enrfieldset = entry->second;
     
