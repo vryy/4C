@@ -45,12 +45,21 @@ class FieldEnr
         
     //! copy constructor
     FieldEnr(
-            const FieldEnr& other           ///< source
-            ) :
-              field_(other.field_), 
-              enr_(other.enr_)
+        const FieldEnr& other           ///< source
+        ) :
+        field_(other.field_), 
+        enr_(other.enr_)
     {
       assert(&other != this);
+      return;
+    }
+        
+    //! default constructor
+    explicit FieldEnr(
+    ) :
+      field_(XFEM::PHYSICS::undefinedField), 
+      enr_(XFEM::Enrichment())
+    {
       return;
     }
 
@@ -90,7 +99,6 @@ class FieldEnr
     //! inequality if any member differs
     bool operator !=(const FieldEnr& rhs) const
     {
-//        return (!(*this == rhs));
       if (field_ != rhs.field_ or getEnrichment() != rhs.getEnrichment())
         return true;
       else
@@ -100,13 +108,10 @@ class FieldEnr
 
   private:
     
-    //! hidden default constructor
-    explicit FieldEnr();
-  
     //! physical field variable to be enriched
-    const PHYSICS::Field    field_;
+    PHYSICS::Field    field_;
     //! specific enrichment for this physical field
-    const Enrichment        enr_;
+    Enrichment        enr_;
 
 }; // class FieldEnr
 

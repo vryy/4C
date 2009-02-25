@@ -141,6 +141,7 @@ using namespace std;
 #define ParObject_CHARMM		(int)134
 #define ParObject_Fluid3NurbsSurface    (int)135
 #define ParObject_Wall1Nurbs            (int)136
+#define ParObject_DofKey                (int)137
 
 
 namespace DRT

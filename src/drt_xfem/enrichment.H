@@ -42,7 +42,7 @@ namespace XFEM
       };
       
       /*!
-       * we want to be able to say, wether we approach froma particular side towards the discontinuity
+       * we want to be able to say, whether we approach from a particular side towards the discontinuity
        * this makes sense for jump or kink enrichments,
        * boundary layers or similar things might not need this
        */
@@ -144,22 +144,23 @@ namespace XFEM
       double ModifiedEnrValue(
           const LINALG::Matrix<3,1>&            actpos,            ///< \f$x\f$
           const LINALG::Matrix<3,1>&            nodalpos,          ///< \f$x_{\mathrm{Node}}\f$
-          const XFEM::InterfaceHandle&          ih,                ///< the ubiquitious interface handle with all geometry information
+          const XFEM::InterfaceHandle&          ih,                ///< the ubiquitous interface handle with all geometry information
           const XFEM::Enrichment::ApproachFrom  approachdirection  ///< approach direction
       ) const;
       
       //! calculate enrichment value based on input \f$\psi(x)\f$
       double EnrValue(
           const LINALG::Matrix<3,1>&            actpos,            ///< \f$x\f$
-          const XFEM::InterfaceHandle&          ih,                ///< the ubiquitious interface handle with all geometry information
+          const XFEM::InterfaceHandle&          ih,                ///< the ubiquitous interface handle with all geometry information
           const XFEM::Enrichment::ApproachFrom  approachdirection  ///< approach direction
       ) const;
               
     private:
+      
       //! a global id used to distuinguish several surfaces within one element
-      const int xfemconditionlabel_;
+      int xfemconditionlabel_;
       //! the specific type of enrichment
-      const EnrType type_;
+      EnrType type_;
   };
   
 }

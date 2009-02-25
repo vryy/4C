@@ -16,6 +16,7 @@ Maintainer: Axel Gerstenberger
 
 
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_parobject.H"
 #include "field_enriched.H"
 
 
@@ -54,7 +55,7 @@ namespace XFEM
    *                 when we mix them, since DofKey<onNode> is different from DofKey<onElement>.
    */
   template <DofType doftype>
-  class DofKey
+  class DofKey : public DRT::ParObject
   {
     public:
       //! standard constructor
@@ -67,6 +68,15 @@ namespace XFEM
         {
             return;
         }
+
+      //! constructor, get values from char array using Unpack member function
+      explicit DofKey(
+          vector<char>& data      ///< global id
+      )
+      {
+        Unpack(data);
+        return;
+      }
           
       //! copy constructor
       DofKey(
@@ -86,7 +96,58 @@ namespace XFEM
         s << "Dofkey: [" << dofTypeToString(doftype) << " " << setw(3) << gid_ << ", " << fieldenr_.toString() << "]";
         return s.str();
       };
-            
+      
+      virtual int UniqueParObjectId() const { return ParObject_DofKey;}
+
+      //! pack all content to char array
+      virtual void Pack(vector<char>& data) const
+      {
+        data.resize(0);
+        AddtoPack(data,UniqueParObjectId());
+        AddtoPack(data,gid_);
+        AddtoPack(data,fieldenr_.getField());
+        const int label = fieldenr_.getEnrichment().XFEMConditionLabel();
+        AddtoPack(data,label);
+
+        const XFEM::Enrichment::EnrType enrtype = fieldenr_.getEnrichment().Type();
+        AddtoPack(data,enrtype);
+      }
+      
+      //! unpack all content from char array
+      virtual void Unpack(const vector<char>& data)
+      {
+        int position = 0;
+        // extract type
+        int type = 0;
+        ExtractfromPack(position,data,type);
+        if (type != UniqueParObjectId()) dserror("wrong instance type data");
+        
+        ExtractfromPack(position,data,gid_);
+        
+        // read field
+        int field_int;
+        ExtractfromPack(position,data,field_int);
+        const PHYSICS::Field field = static_cast<PHYSICS::Field>(field_int);
+        
+        // read xfem condition label
+        int label;
+        ExtractfromPack(position,data,label);
+        
+        // read enrichment type
+        int enrtype_int;
+        ExtractfromPack(position,data,enrtype_int);
+        const XFEM::Enrichment::EnrType enrtype = static_cast<XFEM::Enrichment::EnrType>(enrtype_int);
+        
+        // check correct reading
+        if (position != (int)data.size())
+          dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+        
+        // create my enriched field
+        fieldenr_ = FieldEnr(field,Enrichment(label,enrtype));
+        
+        return;
+      }
+      
       //! return global node or element Id
       int getGid() const
       {
@@ -153,9 +214,9 @@ namespace XFEM
       //    }
       
       //! unique id among the choosen type of dof (for example: nodal global id)
-      const int       gid_;
+      int             gid_;
       //! specific enriched field
-      const XFEM::FieldEnr  fieldenr_;
+      XFEM::FieldEnr  fieldenr_;
       
   };
   
