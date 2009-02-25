@@ -286,8 +286,6 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
       //just compute the enclosed volume (e.g. for initialization)
       case calc_struct_constrvol:
       {
-        if (distype!=quad4)
-          dserror("Volume Constraint so far only works for quad4 surfaces!");
         //We are not interested in volume of ghosted elements
         if(Comm.MyPID()==Owner())
         {
@@ -300,16 +298,13 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
           LINALG::SerialDenseMatrix xscurr(NumNode(),numdim);  // material coord. of element
           SpatialConfiguration(xscurr,mydisp);
           //call submethod for volume evaluation and store rseult in third systemvector
-          double volumeele = ComputeConstrVols(xscurr);
-          elevector3[0]=volumeele;
+          double volumeele = ComputeConstrVols(xscurr,NumNode());
+          elevector3[0]= volumeele;
         }
-
       }
       break;
       case calc_struct_volconstrstiff:
       {
-        if (distype!=quad4)
-          dserror("Volume Constraint only works for quad4 surfaces!");
         // element geometry update
         RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
         if (disp==null) dserror("Cannot get state vector 'displacement'");
@@ -318,16 +313,21 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
         const int numdim =3;
         LINALG::SerialDenseMatrix xscurr(NumNode(),numdim);  // material coord. of element
         SpatialConfiguration(xscurr,mydisp);
-        //call submethods
-        ComputeVolConstrStiff(xscurr,elematrix1);
-        ComputeVolConstrDeriv(xscurr,elevector1);
+        double volumeele;
+        // first partial derivatives
+        RCP<Epetra_SerialDenseVector> Vdiff1 = rcp(new Epetra_SerialDenseVector);
+        // second partial derivatives
+        RCP<Epetra_SerialDenseMatrix> Vdiff2 = rcp(new Epetra_SerialDenseMatrix);
+
+        //call submethod to compute volume and its derivatives w.r.t. to current displ.
+        ComputeVolDeriv(xscurr, NumNode(),numdim*NumNode(), volumeele, Vdiff1, Vdiff2);
         //update corresponding column in "constraint" matrix
-        elevector2=elevector1;
+        elevector1 = *Vdiff1;
+        elevector2 = *Vdiff1;
+        elematrix1 = *Vdiff2;
         //call submethod for volume evaluation and store result in third systemvector
-        double volumeele = ComputeConstrVols(xscurr);
         elevector3[0]=volumeele;
       }
-
       break;
       case calc_init_vol:
       {
@@ -539,8 +539,6 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
       //compute the area (e.g. for initialization)
       case calc_struct_monitarea:
       {
-        if (distype!=quad4)
-          dserror("Area monitor only works for quad4 surfaces!");
         //We are not interested in volume of ghosted elements
         if(Comm.MyPID()==Owner())
         {
@@ -627,8 +625,6 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
       break;
       case calc_struct_constrarea:
       {
-        if (distype!=quad4)
-          dserror("Area Constraint only works for quad4 surfaces!");
         // element geometry update
         RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
         if (disp==null) dserror("Cannot get state vector 'displacement'");
@@ -653,8 +649,6 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
       break;
       case calc_struct_areaconstrstiff:
       {
-        if (distype!=quad4)
-           dserror("Area Constraint only works for quad4 surfaces!");
         // element geometry update
         RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
         if (disp==null) dserror("Cannot get state vector 'displacement'");
@@ -692,280 +686,157 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
  * Compute Volume between surface and xy-plane.                 tk 10/07*
  * Yields to the enclosed volume when summed up over all elements       *
  * ---------------------------------------------------------------------*/
-double DRT::ELEMENTS::StructuralSurface::ComputeConstrVols(const LINALG::SerialDenseMatrix& xc)
+double DRT::ELEMENTS::StructuralSurface::ComputeConstrVols
+(
+    const LINALG::SerialDenseMatrix& xc,
+    const int numnode
+)
 {
-  double volume =0;
+  double volume = 0.0;
   //Formula for volume computation based on calculation of Ulrich done
   //within the old code
-  volume =-(1.0/12.0)*(2*xc(0,0)*xc(1,1)*xc(0,2) -
-      2*xc(1,0)*xc(0,1)*xc(0,2) +
-      2*xc(0,0)*xc(1,1)*xc(1,2) -
-      2*xc(1,0)*xc(0,1)*xc(1,2) +
-      xc(0,0)*xc(1,1)*xc(2,2) -
-      2*xc(0,0)*xc(0,2)*xc(3,1) -
-      xc(0,0)*xc(2,1)*xc(1,2) -
-      xc(1,0)*xc(0,1)*xc(2,2) +
-      xc(1,0)*xc(0,2)*xc(2,1) +
-      xc(0,1)*xc(2,0)*xc(1,2) +
-      2*xc(0,1)*xc(0,2)*xc(3,0) -
-      xc(2,0)*xc(1,1)*xc(0,2) +
-      xc(0,0)*xc(1,1)*xc(3,2) -
-      xc(0,0)*xc(1,2)*xc(3,1) -
-      xc(1,0)*xc(0,1)*xc(3,2) +
-      xc(1,0)*xc(0,2)*xc(3,1) +
-      2*xc(1,0)*xc(2,1)*xc(1,2) +
-      xc(0,1)*xc(3,0)*xc(1,2) -
-      2*xc(2,0)*xc(1,1)*xc(1,2) -
-      xc(1,1)*xc(0,2)*xc(3,0) +
-      xc(0,0)*xc(2,1)*xc(3,2) -
-      xc(0,0)*xc(3,1)*xc(2,2) +
-      2*xc(1,0)*xc(2,1)*xc(2,2) -
-      xc(0,1)*xc(2,0)*xc(3,2) +
-      xc(0,1)*xc(3,0)*xc(2,2) -
-      2*xc(2,0)*xc(1,1)*xc(2,2) +
-      xc(2,0)*xc(0,2)*xc(3,1) -
-      xc(0,2)*xc(3,0)*xc(2,1) -
-      2*xc(0,0)*xc(3,1)*xc(3,2) +
-      xc(1,0)*xc(2,1)*xc(3,2) -
-      xc(1,0)*xc(3,1)*xc(2,2) +
-      2*xc(0,1)*xc(3,0)*xc(3,2) -
-      xc(2,0)*xc(1,1)*xc(3,2) +
-      xc(2,0)*xc(1,2)*xc(3,1) +
-      xc(1,1)*xc(3,0)*xc(2,2) -
-      xc(3,0)*xc(2,1)*xc(1,2) +
-      2*xc(2,0)*xc(3,1)*xc(2,2) -
-      2*xc(3,0)*xc(2,1)*xc(2,2) +
-      2*xc(2,0)*xc(3,1)*xc(3,2) -
-      2*xc(3,0)*xc(2,1)*xc(3,2));
+   
+  //Volume is calculated by evaluating the integral of z(r,s) over dA*,
+  //where dA* is the projection of dA on the xy-plane.
+  //Therefore separate current configuration between xy and z
+  LINALG::SerialDenseMatrix xy= xc;
+  LINALG::SerialDenseVector z (numnode);
+  for (int i = 0; i < numnode; i++)
+  {
+    xy(i,2) = 0.0; // project by z_i = 0.0
+    z(i) = xc(i,2); // extract z coordinate
+  }
+  
+  // get gaussrule
+  const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
+  int ngp = intpoints.nquad;
+  
+  // allocate vector for shape functions and matrix for derivatives
+  LINALG::SerialDenseVector  funct(numnode);
+  LINALG::SerialDenseMatrix  deriv(2,numnode);
+
+  /*----------------------------------------------------------------------*
+   |               start loop over integration points                     |
+   *----------------------------------------------------------------------*/
+  for (int gpid = 0; gpid < ngp; ++gpid)
+  { 
+    const double e0 = intpoints.qxg[gpid][0];
+    const double e1 = intpoints.qxg[gpid][1];
+
+    // get shape functions and derivatives of shape functions in the plane of the element
+    DRT::UTILS::shape_function_2D(funct,e0,e1,Shape());
+    DRT::UTILS::shape_function_2D_deriv1(deriv,e0,e1,Shape());
+    
+    double detA;
+    // compute "metric tensor" deriv*xy, which is a 2x3 matrix with zero 3rd column 
+    LINALG::SerialDenseMatrix metrictensor(2,3);
+    metrictensor.Multiply('N','N',1.0,deriv,xy,0.0);
+    //LINALG::SerialDenseMatrix metrictensor(2,2);
+    //metrictensor.Multiply('N','T',1.0,dxyzdrs,dxyzdrs,0.0);
+    detA =  metrictensor(0,0)*metrictensor(1,1)-metrictensor(0,1)*metrictensor(1,0);
+    // add weighted volume at gausspoint
+    volume -= funct.Dot(z)*detA*intpoints.qwgt[gpid];
+    
+  }  
   return volume;
 }
 
 /*----------------------------------------------------------------------*
- * Compute influence of volume constraint on stiffness matrix.  tk 10/07*
- * Second derivatives of volume with respect to the displacements       *
- * ---------------------------------------------------------------------*/
-void DRT::ELEMENTS::StructuralSurface::ComputeVolConstrStiff(const LINALG::SerialDenseMatrix& xc,
-    Epetra_SerialDenseMatrix& elematrix)
-{
-  //Second derivatives of volume with respect to the displacements.
-  //Only suitable for quad4 surfaces, since based on a symbolic calculation with mupad
-  elematrix(0,0) = 0.0 ;
-  elematrix(0,1) = 0.0 ;
-  elematrix(0,2) = xc(1,1)*(1.0/6.0) - xc(3,1)*(1.0/6.0) ;
-  elematrix(0,3) = 0.0 ;
-  elematrix(0,4) = xc(0,2)*(1.0/6.0) + xc(1,2)*(1.0/6.0) + xc(2,2)*(1.0/12.0) + xc(3,2)*(1.0/12.0) ;
-  elematrix(0,5) = xc(1,1)*(1.0/6.0) - xc(2,1)*(1.0/12.0) - xc(3,1)*(1.0/12.0) ;
-  elematrix(0,6) = 0.0 ;
-  elematrix(0,7) = xc(1,2)*(-1.0/12.0) + xc(3,2)*(1.0/12.0) ;
-  elematrix(0,8) = xc(1,1)*(1.0/12.0) - xc(3,1)*(1.0/12.0) ;
-  elematrix(0,9) = 0.0 ;
-  elematrix(0,10) = xc(0,2)*(-1.0/6.0) - xc(1,2)*(1.0/12.0) - xc(2,2)*(1.0/12.0) - xc(3,2)*(1.0/6.0) ;
-  elematrix(0,11) = xc(1,1)*(1.0/12.0) + xc(2,1)*(1.0/12.0) - xc(3,1)*(1.0/6.0) ;
-
-  elematrix(1,0) = 0.0 ;
-  elematrix(1,1) = 0.0 ;
-  elematrix(1,2) = xc(1,0)*(-1.0/6.0) + xc(3,0)*(1.0/6.0) ;
-  elematrix(1,3) = xc(0,2)*(-1.0/6.0) - xc(1,2)*(1.0/6.0) - xc(2,2)*(1.0/12.0) - xc(3,2)*(1.0/12.0) ;
-  elematrix(1,4) = 0.0 ;
-  elematrix(1,5) = xc(1,0)*(-1.0/6.0) + xc(2,0)*(1.0/12.0) + xc(3,0)*(1.0/12.0) ;
-  elematrix(1,6) = xc(1,2)*(1.0/12.0) - xc(3,2)*(1.0/12.0) ;
-  elematrix(1,7) = 0.0 ;
-  elematrix(1,8) = xc(1,0)*(-1.0/12.0) + xc(3,0)*(1.0/12.0) ;
-  elematrix(1,9) = xc(0,2)*(1.0/6.0) + xc(1,2)*(1.0/12.0) + xc(2,2)*(1.0/12.0) + xc(3,2)*(1.0/6.0) ;
-  elematrix(1,10) = 0.0 ;
-  elematrix(1,11) = xc(1,0)*(-1.0/12.0) - xc(2,0)*(1.0/12.0) + xc(3,0)*(1.0/6.0) ;
-
-  elematrix(2,0) = xc(1,1)*(1.0/6.0) - xc(3,1)*(1.0/6.0) ;
-  elematrix(2,1) = xc(1,0)*(-1.0/6.0) + xc(3,0)*(1.0/6.0) ;
-  elematrix(2,2) = 0.0 ;
-  elematrix(2,3) = xc(0,1)*(-1.0/6.0) + xc(2,1)*(1.0/12.0) + xc(3,1)*(1.0/12.0) ;
-  elematrix(2,4) = xc(0,0)*(1.0/6.0) - xc(2,0)*(1.0/12.0) - xc(3,0)*(1.0/12.0) ;
-  elematrix(2,5) = 0.0 ;
-  elematrix(2,6) = xc(1,1)*(-1.0/12.0) + xc(3,1)*(1.0/12.0) ;
-  elematrix(2,7) = xc(1,0)*(1.0/12.0) - xc(3,0)*(1.0/12.0) ;
-  elematrix(2,8) = 0.0 ;
-  elematrix(2,9) = xc(0,1)*(1.0/6.0) - xc(1,1)*(1.0/12.0) - xc(2,1)*(1.0/12.0) ;
-  elematrix(2,10) = xc(0,0)*(-1.0/6.0) + xc(1,0)*(1.0/12.0) + xc(2,0)*(1.0/12.0) ;
-  elematrix(2,11) = 0.0 ;
-
-  elematrix(3,0) = 0.0 ;
-  elematrix(3,1) = xc(0,2)*(-1.0/6.0) - xc(1,2)*(1.0/6.0) - xc(2,2)*(1.0/12.0) - xc(3,2)*(1.0/12.0) ;
-  elematrix(3,2) = xc(0,1)*(-1.0/6.0) + xc(2,1)*(1.0/12.0) + xc(3,1)*(1.0/12.0) ;
-  elematrix(3,3) = 0.0 ;
-  elematrix(3,4) = 0.0 ;
-  elematrix(3,5) = xc(0,1)*(-1.0/6.0) + xc(2,1)*(1.0/6.0) ;
-  elematrix(3,6) = 0.0 ;
-  elematrix(3,7) = xc(0,2)*(1.0/12.0) + xc(1,2)*(1.0/6.0) + xc(2,2)*(1.0/6.0) + xc(3,2)*(1.0/12.0) ;
-  elematrix(3,8) = xc(0,1)*(-1.0/12.0) + xc(2,1)*(1.0/6.0) - xc(3,1)*(1.0/12.0) ;
-  elematrix(3,9) = 0.0 ;
-  elematrix(3,10) = xc(0,2)*(1.0/12.0) - xc(2,2)*(1.0/12.0) ;
-  elematrix(3,11) = xc(0,1)*(-1.0/12.0) + xc(2,1)*(1.0/12.0) ;
-
-  elematrix(4,0) = xc(0,2)*(1.0/6.0) + xc(1,2)*(1.0/6.0) + xc(2,2)*(1.0/12.0) + xc(3,2)*(1.0/12.0) ;
-  elematrix(4,1) = 0.0 ;
-  elematrix(4,2) = xc(0,0)*(1.0/6.0) - xc(2,0)*(1.0/12.0) - xc(3,0)*(1.0/12.0) ;
-  elematrix(4,3) = 0.0 ;
-  elematrix(4,4) = 0.0 ;
-  elematrix(4,5) = xc(0,0)*(1.0/6.0) - xc(2,0)*(1.0/6.0) ;
-  elematrix(4,6) = xc(0,2)*(-1.0/12.0) - xc(1,2)*(1.0/6.0) - xc(2,2)*(1.0/6.0) - xc(3,2)*(1.0/12.0) ;
-  elematrix(4,7) = 0.0 ;
-  elematrix(4,8) = xc(0,0)*(1.0/12.0) - xc(2,0)*(1.0/6.0) + xc(3,0)*(1.0/12.0) ;
-  elematrix(4,9) = xc(0,2)*(-1.0/12.0) + xc(2,2)*(1.0/12.0) ;
-  elematrix(4,10) = 0.0 ;
-  elematrix(4,11) = xc(0,0)*(1.0/12.0) - xc(2,0)*(1.0/12.0) ;
-
-  elematrix(5,0) = xc(1,1)*(1.0/6.0) - xc(2,1)*(1.0/12.0) - xc(3,1)*(1.0/12.0) ;
-  elematrix(5,1) = xc(1,0)*(-1.0/6.0) + xc(2,0)*(1.0/12.0) + xc(3,0)*(1.0/12.0) ;
-  elematrix(5,2) = 0.0 ;
-  elematrix(5,3) = xc(0,1)*(-1.0/6.0) + xc(2,1)*(1.0/6.0) ;
-  elematrix(5,4) = xc(0,0)*(1.0/6.0) - xc(2,0)*(1.0/6.0) ;
-  elematrix(5,5) = 0.0 ;
-  elematrix(5,6) = xc(0,1)*(1.0/12.0) - xc(1,1)*(1.0/6.0) + xc(3,1)*(1.0/12.0) ;
-  elematrix(5,7) = xc(0,0)*(-1.0/12.0) + xc(1,0)*(1.0/6.0) - xc(3,0)*(1.0/12.0) ;
-  elematrix(5,8) = 0.0 ;
-  elematrix(5,9) = xc(0,1)*(1.0/12.0) - xc(2,1)*(1.0/12.0) ;
-  elematrix(5,10) = xc(0,0)*(-1.0/12.0) + xc(2,0)*(1.0/12.0) ;
-  elematrix(5,11) = 0.0 ;
-
-  elematrix(6,0) = 0.0 ;
-  elematrix(6,1) = xc(1,2)*(1.0/12.0) - xc(3,2)*(1.0/12.0) ;
-  elematrix(6,2) = xc(1,1)*(-1.0/12.0) + xc(3,1)*(1.0/12.0) ;
-  elematrix(6,3) = 0.0 ;
-  elematrix(6,4) = xc(0,2)*(-1.0/12.0) - xc(1,2)*(1.0/6.0) - xc(2,2)*(1.0/6.0) - xc(3,2)*(1.0/12.0) ;
-  elematrix(6,5) = xc(0,1)*(1.0/12.0) - xc(1,1)*(1.0/6.0) + xc(3,1)*(1.0/12.0) ;
-  elematrix(6,6) = 0.0 ;
-  elematrix(6,7) = 0.0 ;
-  elematrix(6,8) = xc(1,1)*(-1.0/6.0) + xc(3,1)*(1.0/6.0) ;
-  elematrix(6,9) = 0.0 ;
-  elematrix(6,10) = xc(0,2)*(1.0/12.0) + xc(1,2)*(1.0/12.0) + xc(2,2)*(1.0/6.0) + xc(3,2)*(1.0/6.0) ;
-  elematrix(6,11) = xc(0,1)*(-1.0/12.0) - xc(1,1)*(1.0/12.0) + xc(3,1)*(1.0/6.0) ;
-
-  elematrix(7,0) = xc(1,2)*(-1.0/12.0) + xc(3,2)*(1.0/12.0) ;
-  elematrix(7,1) = 0.0 ;
-  elematrix(7,2) = xc(1,0)*(1.0/12.0) - xc(3,0)*(1.0/12.0) ;
-  elematrix(7,3) = xc(0,2)*(1.0/12.0) + xc(1,2)*(1.0/6.0) + xc(2,2)*(1.0/6.0) + xc(3,2)*(1.0/12.0) ;
-  elematrix(7,4) = 0.0 ;
-  elematrix(7,5) = xc(0,0)*(-1.0/12.0) + xc(1,0)*(1.0/6.0) - xc(3,0)*(1.0/12.0) ;
-  elematrix(7,6) = 0.0 ;
-  elematrix(7,7) = 0.0 ;
-  elematrix(7,8) = xc(1,0)*(1.0/6.0) - xc(3,0)*(1.0/6.0) ;
-  elematrix(7,9) = xc(0,2)*(-1.0/12.0) - xc(1,2)*(1.0/12.0) - xc(2,2)*(1.0/6.0) - xc(3,2)*(1.0/6.0) ;
-  elematrix(7,10) = 0.0 ;
-  elematrix(7,11) = xc(0,0)*(1.0/12.0) + xc(1,0)*(1.0/12.0) - xc(3,0)*(1.0/6.0) ;
-
-  elematrix(8,0) = xc(1,1)*(1.0/12.0) - xc(3,1)*(1.0/12.0) ;
-  elematrix(8,1) = xc(1,0)*(-1.0/12.0) + xc(3,0)*(1.0/12.0) ;
-  elematrix(8,2) = 0.0 ;
-  elematrix(8,3) = xc(0,1)*(-1.0/12.0) + xc(2,1)*(1.0/6.0) - xc(3,1)*(1.0/12.0) ;
-  elematrix(8,4) = xc(0,0)*(1.0/12.0) - xc(2,0)*(1.0/6.0) + xc(3,0)*(1.0/12.0) ;
-  elematrix(8,5) = 0.0 ;
-  elematrix(8,6) = xc(1,1)*(-1.0/6.0) + xc(3,1)*(1.0/6.0) ;
-  elematrix(8,7) = xc(1,0)*(1.0/6.0) - xc(3,0)*(1.0/6.0) ;
-  elematrix(8,8) = 0.0 ;
-  elematrix(8,9) = xc(0,1)*(1.0/12.0) + xc(1,1)*(1.0/12.0) - xc(2,1)*(1.0/6.0) ;
-  elematrix(8,10) = xc(0,0)*(-1.0/12.0) - xc(1,0)*(1.0/12.0) + xc(2,0)*(1.0/6.0) ;
-  elematrix(8,11) = 0.0 ;
-
-  elematrix(9,0) = 0.0 ;
-  elematrix(9,1) = xc(0,2)*(1.0/6.0) + xc(1,2)*(1.0/12.0) + xc(2,2)*(1.0/12.0) + xc(3,2)*(1.0/6.0) ;
-  elematrix(9,2) = xc(0,1)*(1.0/6.0) - xc(1,1)*(1.0/12.0) - xc(2,1)*(1.0/12.0) ;
-  elematrix(9,3) = 0.0 ;
-  elematrix(9,4) = xc(0,2)*(-1.0/12.0) + xc(2,2)*(1.0/12.0) ;
-  elematrix(9,5) = xc(0,1)*(1.0/12.0) - xc(2,1)*(1.0/12.0) ;
-  elematrix(9,6) = 0.0 ;
-  elematrix(9,7) = xc(0,2)*(-1.0/12.0) - xc(1,2)*(1.0/12.0) - xc(2,2)*(1.0/6.0) - xc(3,2)*(1.0/6.0) ;
-  elematrix(9,8) = xc(0,1)*(1.0/12.0) + xc(1,1)*(1.0/12.0) - xc(2,1)*(1.0/6.0) ;
-  elematrix(9,9) = 0.0 ;
-  elematrix(9,10) = 0.0 ;
-  elematrix(9,11) = xc(0,1)*(1.0/6.0) - xc(2,1)*(1.0/6.0) ;
-
-  elematrix(10,0) = xc(0,2)*(-1.0/6.0) - xc(1,2)*(1.0/12.0) - xc(2,2)*(1.0/12.0) - xc(3,2)*(1.0/6.0) ;
-  elematrix(10,1) = 0.0 ;
-  elematrix(10,2) = xc(0,0)*(-1.0/6.0) + xc(1,0)*(1.0/12.0) + xc(2,0)*(1.0/12.0) ;
-  elematrix(10,3) = xc(0,2)*(1.0/12.0) - xc(2,2)*(1.0/12.0) ;
-  elematrix(10,4) = 0.0 ;
-  elematrix(10,5) = xc(0,0)*(-1.0/12.0) + xc(2,0)*(1.0/12.0) ;
-  elematrix(10,6) = xc(0,2)*(1.0/12.0) + xc(1,2)*(1.0/12.0) + xc(2,2)*(1.0/6.0) + xc(3,2)*(1.0/6.0) ;
-  elematrix(10,7) = 0.0 ;
-  elematrix(10,8) = xc(0,0)*(-1.0/12.0) - xc(1,0)*(1.0/12.0) + xc(2,0)*(1.0/6.0) ;
-  elematrix(10,9) = 0.0 ;
-  elematrix(10,10) = 0.0 ;
-  elematrix(10,11) = xc(0,0)*(-1.0/6.0) + xc(2,0)*(1.0/6.0) ;
-
-  elematrix(11,0) = xc(1,1)*(1.0/12.0) + xc(2,1)*(1.0/12.0) - xc(3,1)*(1.0/6.0) ;
-  elematrix(11,1) = xc(1,0)*(-1.0/12.0) - xc(2,0)*(1.0/12.0) + xc(3,0)*(1.0/6.0) ;
-  elematrix(11,2) = 0.0 ;
-  elematrix(11,3) = xc(0,1)*(-1.0/12.0) + xc(2,1)*(1.0/12.0) ;
-  elematrix(11,4) = xc(0,0)*(1.0/12.0) - xc(2,0)*(1.0/12.0) ;
-  elematrix(11,5) = 0.0 ;
-  elematrix(11,6) = xc(0,1)*(-1.0/12.0) - xc(1,1)*(1.0/12.0) + xc(3,1)*(1.0/6.0) ;
-  elematrix(11,7) = xc(0,0)*(1.0/12.0) + xc(1,0)*(1.0/12.0) - xc(3,0)*(1.0/6.0) ;
-  elematrix(11,8) = 0.0 ;
-  elematrix(11,9) = xc(0,1)*(1.0/6.0) - xc(2,1)*(1.0/6.0) ;
-  elematrix(11,10) = xc(0,0)*(-1.0/6.0) + xc(2,0)*(1.0/6.0) ;
-  elematrix(11,11) = 0.0 ;
-  return;
-}
-
-/*----------------------------------------------------------------------*
- * Compute first derivatives of volume                          tk 10/07*
+ * Compute volume and its first and second derivatives          tk 02/09*
  * with respect to the displacements                                    *
  * ---------------------------------------------------------------------*/
-void DRT::ELEMENTS::StructuralSurface::ComputeVolConstrDeriv(const LINALG::SerialDenseMatrix& xc,
-    Epetra_SerialDenseVector& elevector)
+void DRT::ELEMENTS::StructuralSurface::ComputeVolDeriv
+(
+  const LINALG::SerialDenseMatrix& xc,
+  const int numnode,
+  const int ndof,
+  double& V,
+  RCP<Epetra_SerialDenseVector> Vdiff1,
+  RCP<Epetra_SerialDenseMatrix> Vdiff2
+)
 {
+  // necessary constants
+  const int numdim = 3;
+  
+  // initialize
+  V = 0.0;
+  Vdiff1->Size(ndof);
+  if (Vdiff2!=null) Vdiff2->Shape(ndof, ndof);
+  
+  //Volume is calculated by evaluating the integral of z(r,s) over dA*,
+  //where dA* is the projection of dA on the xy-plane.
+  //Therefore separate current configuration between xy and z
+  LINALG::SerialDenseMatrix xy= xc;
+  LINALG::SerialDenseVector z (numnode);
+  for (int i = 0; i < numnode; i++)
+  {
+    xy(i,2) = 0.0; // project by z_i = 0.0
+    z(i) = xc(i,2); // extract z coordinate
+  }
+  
+  // get gaussrule
+  const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
+  int ngp = intpoints.nquad;
+  
+  // allocate vector for shape functions and matrix for derivatives
+  LINALG::SerialDenseVector  funct(numnode);
+  LINALG::SerialDenseMatrix  deriv(2,numnode);
 
-  //implementation based on symbolic calculation with mupad
-  elevector[0] = (1.0/6.0)*xc(1,1)*xc(0,2) + (1.0/6.0)*xc(1,1)*xc(1,2) + (1.0/12.0)*xc(1,1)*xc(2,2) -
-    (1.0/6.0)*xc(0,2)*xc(3,1) - (1.0/12.0)*xc(2,1)*xc(1,2) + (1.0/12.0)*xc(1,1)*xc(3,2) -
-    (1.0/12.0)*xc(1,2)*xc(3,1) + (1.0/12.0)*xc(2,1)*xc(3,2) - (1.0/12.0)*xc(3,1)*xc(2,2) -
-    (1.0/6.0)*xc(3,1)*xc(3,2) ;
-  elevector[1] = (-1.0/6.0)*xc(1,0)*xc(0,2) - (1.0/6.0)*xc(1,0)*xc(1,2) - (1.0/12.0)*xc(1,0)*xc(2,2) +
-    (1.0/12.0)*xc(2,0)*xc(1,2) + (1.0/6.0)*xc(0,2)*xc(3,0) - (1.0/12.0)*xc(1,0)*xc(3,2) +
-    (1.0/12.0)*xc(3,0)*xc(1,2) - (1.0/12.0)*xc(2,0)*xc(3,2) + (1.0/12.0)*xc(3,0)*xc(2,2) +
-    (1.0/6.0)*xc(3,0)*xc(3,2) ;
-  elevector[2] = (1.0/6.0)*xc(0,0)*xc(1,1) - (1.0/6.0)*xc(1,0)*xc(0,1) - (1.0/6.0)*xc(0,0)*xc(3,1) +
-    (1.0/12.0)*xc(1,0)*xc(2,1) + (1.0/6.0)*xc(0,1)*xc(3,0) - (1.0/12.0)*xc(2,0)*xc(1,1) +
-    (1.0/12.0)*xc(1,0)*xc(3,1) - (1.0/12.0)*xc(1,1)*xc(3,0) + (1.0/12.0)*xc(2,0)*xc(3,1) -
-    (1.0/12.0)*xc(3,0)*xc(2,1) ;
-  elevector[3] = (-1.0/6.0)*xc(0,1)*xc(0,2) - (1.0/6.0)*xc(0,1)*xc(1,2) - (1.0/12.0)*xc(0,1)*xc(2,2) +
-    (1.0/12.0)*xc(0,2)*xc(2,1) - (1.0/12.0)*xc(0,1)*xc(3,2) + (1.0/12.0)*xc(0,2)*xc(3,1) +
-    (1.0/6.0)*xc(2,1)*xc(1,2) + (1.0/6.0)*xc(2,1)*xc(2,2) + (1.0/12.0)*xc(2,1)*xc(3,2) -
-    (1.0/12.0)*xc(3,1)*xc(2,2) ;
-  elevector[4] = (1.0/6.0)*xc(0,0)*xc(0,2) + (1.0/6.0)*xc(0,0)*xc(1,2) + (1.0/12.0)*xc(0,0)*xc(2,2) -
-    (1.0/12.0)*xc(2,0)*xc(0,2) + (1.0/12.0)*xc(0,0)*xc(3,2) - (1.0/6.0)*xc(2,0)*xc(1,2) -
-    (1.0/12.0)*xc(0,2)*xc(3,0) - (1.0/6.0)*xc(2,0)*xc(2,2) - (1.0/12.0)*xc(2,0)*xc(3,2) +
-    (1.0/12.0)*xc(3,0)*xc(2,2) ;
-  elevector[5] = (1.0/6.0)*xc(0,0)*xc(1,1) - (1.0/6.0)*xc(1,0)*xc(0,1) - (1.0/12.0)*xc(0,0)*xc(2,1) +
-    (1.0/12.0)*xc(0,1)*xc(2,0) - (1.0/12.0)*xc(0,0)*xc(3,1) + (1.0/6.0)*xc(1,0)*xc(2,1) +
-    (1.0/12.0)*xc(0,1)*xc(3,0) - (1.0/6.0)*xc(2,0)*xc(1,1) + (1.0/12.0)*xc(2,0)*xc(3,1) -
-    (1.0/12.0)*xc(3,0)*xc(2,1) ;
-  elevector[6] = (1.0/12.0)*xc(0,1)*xc(1,2) - (1.0/12.0)*xc(1,1)*xc(0,2) - (1.0/6.0)*xc(1,1)*xc(1,2) -
-    (1.0/12.0)*xc(0,1)*xc(3,2) - (1.0/6.0)*xc(1,1)*xc(2,2) + (1.0/12.0)*xc(0,2)*xc(3,1) -
-    (1.0/12.0)*xc(1,1)*xc(3,2) + (1.0/12.0)*xc(1,2)*xc(3,1) + (1.0/6.0)*xc(3,1)*xc(2,2) +
-    (1.0/6.0)*xc(3,1)*xc(3,2) ;
-  elevector[7] = (-1.0/12.0)*xc(0,0)*xc(1,2) + (1.0/12.0)*xc(1,0)*xc(0,2) + (1.0/6.0)*xc(1,0)*xc(1,2) +
-    (1.0/12.0)*xc(0,0)*xc(3,2) + (1.0/6.0)*xc(1,0)*xc(2,2) - (1.0/12.0)*xc(0,2)*xc(3,0) +
-    (1.0/12.0)*xc(1,0)*xc(3,2) - (1.0/12.0)*xc(3,0)*xc(1,2) - (1.0/6.0)*xc(3,0)*xc(2,2) -
-    (1.0/6.0)*xc(3,0)*xc(3,2) ;
-  elevector[8] = (1.0/12.0)*xc(0,0)*xc(1,1) - (1.0/12.0)*xc(1,0)*xc(0,1) - (1.0/12.0)*xc(0,0)*xc(3,1) +
-    (1.0/6.0)*xc(1,0)*xc(2,1) + (1.0/12.0)*xc(0,1)*xc(3,0) - (1.0/6.0)*xc(2,0)*xc(1,1) -
-    (1.0/12.0)*xc(1,0)*xc(3,1) + (1.0/12.0)*xc(1,1)*xc(3,0) + (1.0/6.0)*xc(2,0)*xc(3,1) -
-    (1.0/6.0)*xc(3,0)*xc(2,1) ;
-  elevector[9] = (1.0/6.0)*xc(0,1)*xc(0,2) + (1.0/12.0)*xc(0,1)*xc(1,2) - (1.0/12.0)*xc(1,1)*xc(0,2) +
-    (1.0/12.0)*xc(0,1)*xc(2,2) - (1.0/12.0)*xc(0,2)*xc(2,1) + (1.0/6.0)*xc(0,1)*xc(3,2) +
-    (1.0/12.0)*xc(1,1)*xc(2,2) - (1.0/12.0)*xc(2,1)*xc(1,2) - (1.0/6.0)*xc(2,1)*xc(2,2) -
-    (1.0/6.0)*xc(2,1)*xc(3,2) ;
-  elevector[10] = (-1.0/6.0)*xc(0,0)*xc(0,2) - (1.0/12.0)*xc(0,0)*xc(1,2) + (1.0/12.0)*xc(1,0)*xc(0,2) -
-    (1.0/12.0)*xc(0,0)*xc(2,2) + (1.0/12.0)*xc(2,0)*xc(0,2) - (1.0/6.0)*xc(0,0)*xc(3,2) -
-    (1.0/12.0)*xc(1,0)*xc(2,2) + (1.0/12.0)*xc(2,0)*xc(1,2) + (1.0/6.0)*xc(2,0)*xc(2,2) +
-    (1.0/6.0)*xc(2,0)*xc(3,2) ;
-  elevector[11] = (1.0/12.0)*xc(0,0)*xc(1,1) - (1.0/12.0)*xc(1,0)*xc(0,1) + (1.0/12.0)*xc(0,0)*xc(2,1) -
-    (1.0/12.0)*xc(0,1)*xc(2,0) - (1.0/6.0)*xc(0,0)*xc(3,1) + (1.0/12.0)*xc(1,0)*xc(2,1) +
-    (1.0/6.0)*xc(0,1)*xc(3,0) - (1.0/12.0)*xc(2,0)*xc(1,1) + (1.0/6.0)*xc(2,0)*xc(3,1) -
-    (1.0/6.0)*xc(3,0)*xc(2,1) ;
+  /*----------------------------------------------------------------------*
+   |               start loop over integration points                     |
+   *----------------------------------------------------------------------*/
+  for (int gpid = 0; gpid < ngp; ++gpid)
+  { 
+    const double e0 = intpoints.qxg[gpid][0];
+    const double e1 = intpoints.qxg[gpid][1];
+
+    // get shape functions and derivatives of shape functions in the plane of the element
+    DRT::UTILS::shape_function_2D(funct,e0,e1,Shape());
+    DRT::UTILS::shape_function_2D_deriv1(deriv,e0,e1,Shape());
+    
+    // evaluate Jacobi determinant, for projected dA*
+    vector<double> normal(numdim);
+    double detA;
+    // compute "metric tensor" deriv*xy, which is a 2x3 matrix with zero 3rd column 
+    LINALG::SerialDenseMatrix metrictensor(2,numdim);
+    metrictensor.Multiply('N','N',1.0,deriv,xy,0.0);
+    //metrictensor.Multiply('N','T',1.0,dxyzdrs,dxyzdrs,0.0);
+    detA =  metrictensor(0,0)*metrictensor(1,1)-metrictensor(0,1)*metrictensor(1,0);
+    const double dotprodz = funct.Dot(z);
+    // add weighted volume at gausspoint
+    V -= dotprodz*detA*intpoints.qwgt[gpid];
+    
+    //-------- compute first derivative
+    for (int i = 0; i < numnode ; i++)
+    {
+      (*Vdiff1)[3*i]   += intpoints.qwgt[gpid]*dotprodz*(deriv(0,i)*metrictensor(1,1)-metrictensor(0,1)*deriv(1,i));
+      (*Vdiff1)[3*i+1] += intpoints.qwgt[gpid]*dotprodz*(deriv(1,i)*metrictensor(0,0)-metrictensor(1,0)*deriv(0,i));
+      (*Vdiff1)[3*i+2] += intpoints.qwgt[gpid]*funct[i]*detA;
+    }
+    
+    //-------- compute second derivative
+    if (Vdiff2!=null)
+    {
+      for (int i = 0; i < numnode ; i++)
+      {
+        for (int j = 0; j < numnode ; j++)
+        {
+          //"diagonal" (dV)^2/(dx_i dx_j) = 0, therefore only six entries have to be specified
+          (*Vdiff2)(3*i,3*j+1) += intpoints.qwgt[gpid]*dotprodz*(deriv(0,i)*deriv(1,j)-deriv(1,i)*deriv(0,j));
+          (*Vdiff2)(3*i+1,3*j) += intpoints.qwgt[gpid]*dotprodz*(deriv(0,j)*deriv(1,i)-deriv(1,j)*deriv(0,i));
+          (*Vdiff2)(3*i,3*j+2) += intpoints.qwgt[gpid]*funct[j]*(deriv(0,i)*metrictensor(1,1)-metrictensor(0,1)*deriv(1,i));
+          (*Vdiff2)(3*i+2,3*j) += intpoints.qwgt[gpid]*funct[i]*(deriv(0,j)*metrictensor(1,1)-metrictensor(0,1)*deriv(1,j));
+          (*Vdiff2)(3*i+1,3*j+2) += intpoints.qwgt[gpid]*funct[j]*(deriv(1,i)*metrictensor(0,0)-metrictensor(1,0)*deriv(0,i));
+          (*Vdiff2)(3*i+2,3*j+1) += intpoints.qwgt[gpid]*funct[i]*(deriv(1,j)*metrictensor(0,0)-metrictensor(1,0)*deriv(0,j));
+        }
+      }
+    }
+  
+  }   
+  
   return;
 }
+
 
 /*----------------------------------------------------------------------*
  * Compute surface area and its first and second derivatives    lw 05/08*

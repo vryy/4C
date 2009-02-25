@@ -296,27 +296,38 @@ protected:
     return;
   }
 
-  //! Submethod to compute the enclosed volume for vlume constraint boundary condition
-  double ComputeConstrVols(const LINALG::SerialDenseMatrix& xscurr);
+  //! Submethod to compute the enclosed volume for volume constraint boundary condition
+  double ComputeConstrVols
+  (
+      const LINALG::SerialDenseMatrix& xscurr, ///< current configuration 
+      const int numnode ///< num nodes
+  );
 
-  //! Submethod to compute necessary change to stiffness matrix due to the constraints
-  void ComputeVolConstrStiff(const LINALG::SerialDenseMatrix& xscurr,
-                             Epetra_SerialDenseMatrix& elematrix);
-
-  //! Submethod to compute first derivatives of constraint volumes w.r.t. the displacements
-  void ComputeVolConstrDeriv(const LINALG::SerialDenseMatrix& xscurr,
-                             Epetra_SerialDenseVector& elevector1);
-
+ 
   /*!
   \brief Submethod to compute interfacial area and its first and second
          derivatives w.r.t. the displacements (this is needed for surface energy problems)
   */
-  void ComputeAreaDeriv(const LINALG::SerialDenseMatrix& x,
-                        const int numnode,
-                        const int ndof,
-                        double& A,
-                        RCP<Epetra_SerialDenseVector> Adiff,
-                        RCP<Epetra_SerialDenseMatrix> Adiff2);
+  void ComputeAreaDeriv
+  (
+    const LINALG::SerialDenseMatrix& x, ///< spatial configuration
+    const int numnode, ///< number of nodes
+    const int ndof,  ///< number of degrees of freedom
+    double& A,  ///< area
+    RCP<Epetra_SerialDenseVector> Adiff, ///< first derivative
+    RCP<Epetra_SerialDenseMatrix> Adiff2 ///< second derivative
+  );
+  
+  //! Submethod to compute constraint volume and its first and second derivatives w.r.t. the displacements
+  void ComputeVolDeriv
+  (
+      const LINALG::SerialDenseMatrix& x, ///< spatial configuration
+      const int numnode, ///< number of nodes
+      const int ndof,  ///< number of degrees of freedom
+      double& V,  ///< volume
+      RCP<Epetra_SerialDenseVector> Vdiff, ///< first derivative
+      RCP<Epetra_SerialDenseMatrix> Vdiff2 ///< second derivative
+  );
 
 }; // class StructuralSurface : public DRT::Element
 
