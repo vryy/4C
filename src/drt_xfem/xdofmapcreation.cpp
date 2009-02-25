@@ -16,6 +16,10 @@ Maintainer: Axel Gerstenberger
 
 #include "xdofmapcreation.H"
 #include "enrichment_utils.H"
+#include "dofkey.H"
+#include "../drt_lib/drt_exporter.H"
+#include "../drt_lib/drt_parobject.H"
+#include "../drt_lib/drt_utils.H"
 
 
 
@@ -238,6 +242,202 @@ void XFEM::ApplyVoidEnrichmentForElement(
   }
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+static void fillNodalDofKeySet(
+    const XFEM::InterfaceHandle& ih,
+    const std::map<int, std::set<XFEM::FieldEnr> >&  nodalDofSet,
+    std::set<XFEM::DofKey<XFEM::onNode> >&      nodaldofkeyset
+)
+{
+  nodaldofkeyset.clear();
+  // loop all (non-overlapping = Row)-Nodes and store the DOF information w.t.h. of DofKeys
+  for (int i=0; i<ih.xfemdis()->NumMyColNodes(); ++i)
+  {
+    const DRT::Node* actnode = ih.xfemdis()->lColNode(i);
+    const int gid = actnode->Id();
+    std::map<int, std::set<XFEM::FieldEnr> >::const_iterator entry = nodalDofSet.find(gid);
+    if (entry == nodalDofSet.end())
+    {
+      // no dofs for this node... must be a hole or somethin'
+      continue;
+    }
+    const std::set<XFEM::FieldEnr> dofset = entry->second;
+    
+    std::set<XFEM::FieldEnr>::const_iterator fieldenr;
+    for(fieldenr = dofset.begin(); fieldenr != dofset.end(); ++fieldenr )
+    {
+      nodaldofkeyset.insert(XFEM::DofKey<XFEM::onNode>(gid, *fieldenr));
+    }
+  };
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+static void updateNodalDofMap(
+    const XFEM::InterfaceHandle& ih,
+    std::map<int, std::set<XFEM::FieldEnr> >&  nodalDofSet,
+    const std::set<XFEM::DofKey<XFEM::onNode> >&      nodaldofkeyset
+)
+{
+  // pack data on all processors
+  for(std::set<XFEM::DofKey<XFEM::onNode> >::const_iterator dofkey=nodaldofkeyset.begin();
+      dofkey != nodaldofkeyset.end();
+      ++dofkey)
+  {
+    const int nodegid = dofkey->getGid();
+    const XFEM::FieldEnr fieldenr = dofkey->getFieldEnr();
+    // is node a row node?
+//    if (ih.xfemdis()->HaveGlobalNode(nodegid))
+      nodalDofSet[nodegid].insert(fieldenr);
+  }
+}
+
+
+#ifdef PARALLEL
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+static void packDofKeys(
+    const set<XFEM::DofKey<XFEM::onNode> >&     dofkeyset,
+    vector<char>&                               dataSend )
+{
+  // pack data on all processors
+  for(std::set<XFEM::DofKey<XFEM::onNode> >::const_iterator dofkey=dofkeyset.begin(); dofkey != dofkeyset.end(); dofkey++)
+  {
+    vector<char> data;
+    dofkey->Pack(data);
+    DRT::ParObject::AddtoPack(dataSend,data);
+  }
+}           
+
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+static void unpackDofKeys(
+    int& index,
+    const vector<char>&                     dataRecv, 
+    set<XFEM::DofKey<XFEM::onNode> >&       dofkeyset )
+{       
+//  int index = 0;
+  while (index < (int) dataRecv.size())
+  {
+    vector<char> data;
+    DRT::ParObject::ExtractfromPack(index, dataRecv, data);
+    dofkeyset.insert(XFEM::DofKey<XFEM::onNode>(data));
+  }
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+static void syncNodalDofs(
+    const XFEM::InterfaceHandle& ih,
+    std::map<int, std::set<XFEM::FieldEnr> >&  nodalDofSet)
+{
+  const int myrank = ih.xfemdis()->Comm().MyPID();
+  const int numproc = ih.xfemdis()->Comm().NumProc();
+  
+  int size_one = 1;
+  
+  DRT::Exporter exporter(ih.xfemdis()->Comm());
+  
+  int dest = myrank+1;
+  if(myrank == (numproc-1))
+    dest = 0;
+  
+  int source = myrank-1;
+  if(myrank == 0)
+    source = numproc-1;
+  
+  set<XFEM::DofKey<XFEM::onNode> >  original_dofkeyset;
+  fillNodalDofKeySet(ih, nodalDofSet, original_dofkeyset);
+  
+  set<XFEM::DofKey<XFEM::onNode> >  new_dofkeyset;
+//  new_dofkeyset = original_dofkeyset;
+  for (set<XFEM::DofKey<XFEM::onNode> >::const_iterator dofkey = original_dofkeyset.begin(); dofkey != original_dofkeyset.end(); ++dofkey)
+  {
+    new_dofkeyset.insert(*dofkey);
+  }
+  
+  
+  vector<char> dataSend;
+  packDofKeys(original_dofkeyset, dataSend);
+  
+  
+  
+  
+  // send data to all procs but myself
+  for(int num = 0; num < numproc-1; num++)
+  {
+    vector<int> lengthSend(1,0);
+    lengthSend[0] = dataSend.size();
+    
+    cout << "proc " << myrank << ": sending"<< lengthSend[0] << "bytes to proc " << dest << endl;
+    
+    // send length of the datablock to be received ...
+    MPI_Request req_length_datablock;
+    int length_tag = 0;
+    exporter.ISend(myrank, dest, &(lengthSend[0]) , size_one, length_tag, req_length_datablock);
+    
+    // ... and receive length
+    vector<int> lengthRecv(1,0);
+    exporter.Receive(source, length_tag, lengthRecv, size_one);
+    exporter.Wait(req_length_datablock);   
+    
+    cout << "proc " << myrank << ": receiving"<< lengthRecv[0] << "bytes from proc " << source << endl;
+    
+//    if(lengthRecv[0] > 0)
+//    {
+      // send actual data ...
+      int data_tag = 4;
+      MPI_Request req_data;
+      exporter.ISend(myrank, dest, &(dataSend[0]), lengthSend[0], data_tag, req_data);
+      // ... and receive date
+      vector<char> dataRecv(lengthRecv[0]);
+      exporter.ReceiveAny(source, data_tag, dataRecv, lengthRecv[0]);
+      exporter.Wait(req_data);  
+      
+      
+      
+      int index = 0;//lengthRecv[0];
+      set<XFEM::DofKey<XFEM::onNode> >       dofkeyset;
+      
+      unpackDofKeys(index, dataRecv, dofkeyset);
+      cout << "proc " << myrank << ": receiving"<< dofkeyset.size() << " dofkeys from proc " << source << endl;
+//      unpackDofKeys(dataRecv, dofkeyset);
+      
+      // get all dofkeys whose nodegid is on this proc in the coloumnmap
+      set<XFEM::DofKey<XFEM::onNode> >       relevant_dofkeyset;
+      for (set<XFEM::DofKey<XFEM::onNode> >::const_iterator dofkey = dofkeyset.begin(); dofkey != dofkeyset.end(); ++dofkey)
+      {
+//        const int nodegid = dofkey->getGid();
+//        if (xfemdis->HaveGlobalNode(nodegid))
+        {
+          new_dofkeyset.insert(*dofkey);
+        }
+      }
+      // make received data the new 'to be sent' data
+      dataSend = dataRecv;
+//    }
+//    else
+//    {
+//      dataSend.clear();
+//    }
+      ih.xfemdis()->Comm().Barrier();
+    cout << endl;
+    ih.xfemdis()->Comm().Barrier();
+  }   // loop over procs 
+  
+  cout << "sync nodal dofs on proc " << myrank << ": before/after -> " << original_dofkeyset.size()<< "/" << new_dofkeyset.size() << endl;
+  
+  updateNodalDofMap(ih, nodalDofSet,new_dofkeyset);
+  
+  
+}
+
+#endif
 
 
 /*----------------------------------------------------------------------*
@@ -280,8 +480,16 @@ void XFEM::createDofMap(
     };
   };
 
-  XFEM::applyStandardEnrichmentNodalBasedApproach(ih, nodalDofSet);
+#ifdef PARALLEL
+  syncNodalDofs(ih, nodalDofSet);
+#endif
 
+  XFEM::applyStandardEnrichmentNodalBasedApproach(ih, nodalDofSet);
+  
+#ifdef PARALLEL
+  syncNodalDofs(ih, nodalDofSet);
+#endif
+  
   // create const sets from standard sets, so the sets cannot be accidently changed
   // could be removed later, if this is a performance bottleneck
   for ( std::map<int, std::set<XFEM::FieldEnr> >::const_iterator oneset = nodalDofSet.begin(); oneset != nodalDofSet.end(); ++oneset )
