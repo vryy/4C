@@ -657,12 +657,14 @@ void STRUMULTI::MicroStatic::FullNewton()
     // add static mid-balance
     fresm_->Update(-1.0,*fintm_,0.0);
 
-    // blank residual DOFs which are on Dirichlet BC
-    {
-      Epetra_Vector fresmcopy(*fresm_);
+    // extract reaction forces
+    int err = freactm_->Import(*fresm_, *importp_, Insert);
+    if (err)
+      dserror("Importing reaction forces of prescribed dofs using importer returned err=%d",err);
 
-      fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
-    }
+    // blank residual DOFs which are on Dirichlet BC
+    Epetra_Vector fresmcopy(*fresm_);
+    fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
 
     //---------------------------------------------- build residual norm
     disinorm_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
@@ -1196,10 +1198,12 @@ void STRUMULTI::MicroStatic::CalcRefNorms()
   // mind evaluating the corresponding norms at possibly different
   // points within the timestep (end point, generalized midpoint).
   // In the beginning (construction of macroscale time integrator and
-  // first macroscale predictor), the microscale reference norms are
-  // generally 0 in case of displacements, and near 0 in case of the
-  // residual. To enable convergence in these cases, the reference
-  // norm is automatically set to 1 if the calculated values are below
+  // first macroscale predictor), macro displacements are generally
+  // 0 leading to no load on the micro problem. Consequently, the
+  // microscale reference norms are 0 in case of displacements, and
+  // near 0 in case of the residual (sum of ndof numerical near zero
+  // values). To enable convergence in these cases, the reference norm
+  // is automatically set to 1 if the calculated values are below
   // the chosen tolerances. Simply testing against 0 only works for
   // the displacements, but not for the residual!
 
