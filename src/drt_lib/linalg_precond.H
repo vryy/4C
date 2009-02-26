@@ -20,6 +20,10 @@ Maintainer: Michael Gee
 
 #include <stdio.h>
 
+namespace DRT
+{
+  class Discretization;
+}
 
 namespace LINALG
 {
@@ -58,7 +62,11 @@ namespace LINALG
     /*!
       Destroy any existing one.
      */
-    void Setup(Teuchos::RCP<Epetra_Operator> matrix);
+    void Setup(Teuchos::RCP<Epetra_Operator>      matrix,
+               Teuchos::RCP<LINALG::MapExtractor> fsidofmapex    = Teuchos::null,
+               Teuchos::RCP<DRT::Discretization>  fdis           = Teuchos::null,
+               Teuchos::RCP<Epetra_Map>           inodes         = Teuchos::null,
+               bool                               structuresplit = false);
 
     /// Solve system of equations
     /*!
@@ -118,6 +126,12 @@ namespace LINALG
     /// Get number of solver calls done on this solver
     inline int Ncall() const { return ncall_; }
 
+    /// enrich the fluid nullspace in case of monolithic fsi with structure split
+    virtual void EnrichFluidNullSpace(Teuchos::ParameterList&            mllist,
+                                      Teuchos::RCP<LINALG::MapExtractor> fsidofmapex,
+                                      Teuchos::RCP<Epetra_Map>           inodes,
+                                      Teuchos::RCP<DRT::Discretization>  fdis);
+    
     /// my internal preconditioner
     Teuchos::RCP<Epetra_Operator> prec_;
 
