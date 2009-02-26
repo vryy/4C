@@ -307,9 +307,9 @@ protected:
   RefCountPtr<Epetra_Vector>    disn_;
   RefCountPtr<Epetra_Vector>    dism_;
   RefCountPtr<Epetra_Vector>    disi_;
-  RefCountPtr<Epetra_Vector>    fint_;
+  RefCountPtr<Epetra_Vector>    fintm_;
   RefCountPtr<Epetra_Vector>    fresm_;
-  RefCountPtr<Epetra_Vector>    fresm_dirich_;
+  RefCountPtr<Epetra_Vector>    freactm_;
 
   //EAS history data
   RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > lastalpha_;

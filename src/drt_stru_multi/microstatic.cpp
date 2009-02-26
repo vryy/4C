@@ -176,16 +176,11 @@ V0_(V0)
   disi_ = LINALG::CreateVector(*dofrowmap,true);
 
   // internal force vector F_int at different times
-  fint_ = LINALG::CreateVector(*dofrowmap,true);
+  fintm_ = LINALG::CreateVector(*dofrowmap,true);
 
   // dynamic force residual at mid-time R_{n+1-alpha}
   // also known as out-of-balance-force
   fresm_ = LINALG::CreateVector(*dofrowmap,false);
-
-  // dynamic force residual at mid-time R_{n+1-alpha}
-  // holding also boundary forces due to Dirichlet/Microboundary
-  // conditions
-  fresm_dirich_ = LINALG::CreateVector(*dofrowmap,false);
 
   // -------------------------------------------------------------------
   // create "empty" EAS history map
@@ -221,7 +216,7 @@ V0_(V0)
     p.set("oldKaainv", oldKaainv_);
     p.set("oldKda", oldKda_);
 
-    discret_->Evaluate(p,stiff_,null,fint_,null,null);
+    discret_->Evaluate(p,stiff_,null,fintm_,null,null);
     discret_->ClearState();
   }
 
@@ -231,6 +226,9 @@ V0_(V0)
 
   STRUMULTI::MicroStatic::DetermineToggle();
   STRUMULTI::MicroStatic::SetUpHomogenization();
+
+  // reaction force vector at different times
+  freactm_ = LINALG::CreateVector(*pdof_,true);
 
   //----------------------- compute an inverse of the dirichtoggle vector
   invtoggle_->PutScalar(1.0);
@@ -344,15 +342,15 @@ void STRUMULTI::MicroStatic::PredictConstDis(LINALG::Matrix<3,3>* defgrd)
     disi_->Scale(0.0);
     discret_->SetState("residual displacement",disi_);
     discret_->SetState("displacement",dism_);
-    fint_->PutScalar(0.0);  // initialise internal force vector
+    fintm_->PutScalar(0.0);  // initialise internal force vector
 
-    discret_->Evaluate(p,stiff_,null,fint_,null,null);
+    discret_->Evaluate(p,stiff_,null,fintm_,null,null);
     discret_->ClearState();
 
     if (surf_stress_man_->HaveSurfStress())
     {
       p.set("surfstr_man", surf_stress_man_);
-      surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,stiff_);
+      surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fintm_,stiff_);
     }
 
     // complete stiffness matrix
@@ -364,20 +362,19 @@ void STRUMULTI::MicroStatic::PredictConstDis(LINALG::Matrix<3,3>* defgrd)
 
   //-------------------------------------------- compute residual forces
   // add static mid-balance
-  fresm_->Update(-1.0,*fint_,0.0);
+  fresm_->Update(-1.0,*fintm_,0.0);
+
+  // extract reaction forces
+  int err = freactm_->Import(*fresm_, *importp_, Insert);
+  if (err)
+    dserror("Importing reaction forces of prescribed dofs using importer returned err=%d",err);
 
   // blank residual at DOFs on Dirichlet BC
-  {
-    Epetra_Vector fresmcopy(*fresm_);
+  Epetra_Vector fresmcopy(*fresm_);
+  fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
 
-    // save this vector for homogenization
-    fresm_dirich_->Update(1.0, fresmcopy, 0.0);
-
-    fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
-
-    // store norm of residual
-    resnorm_ = STR::AUX::CalculateVectorNorm(iternorm_, fresm_);
-  }
+  // store norm of residual
+  resnorm_ = STR::AUX::CalculateVectorNorm(iternorm_, fresm_);
 
   return;
 } // STRUMULTI::MicroStatic::Predictor()
@@ -445,15 +442,15 @@ void STRUMULTI::MicroStatic::PredictTangDis(LINALG::Matrix<3,3>* defgrd)
     disi_->PutScalar(0.0);
     discret_->SetState("residual displacement",disi_);
     discret_->SetState("displacement",dism_);
-    fint_->PutScalar(0.0);  // initialise internal force vector
+    fintm_->PutScalar(0.0);  // initialise internal force vector
 
-    discret_->Evaluate(p,stiff_,null,fint_,null,null);
+    discret_->Evaluate(p,stiff_,null,fintm_,null,null);
     discret_->ClearState();
 
     if (surf_stress_man_->HaveSurfStress())
     {
       p.set("surfstr_man", surf_stress_man_);
-      surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,stiff_);
+      surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fintm_,stiff_);
     }
   }
 
@@ -461,7 +458,7 @@ void STRUMULTI::MicroStatic::PredictTangDis(LINALG::Matrix<3,3>* defgrd)
 
   //-------------------------------------------- compute residual forces
   // add static mid-balance
-  fresm_->Update(-1.0,*fint_,0.0);
+  fresm_->Update(-1.0,*fintm_,0.0);
 
   // add linear reaction forces to residual
   {
@@ -533,34 +530,33 @@ void STRUMULTI::MicroStatic::PredictTangDis(LINALG::Matrix<3,3>* defgrd)
     disi_->PutScalar(0.0);
     discret_->SetState("residual displacement",disi_);
     discret_->SetState("displacement",dism_);
-    fint_->PutScalar(0.0);  // initialise internal force vector
+    fintm_->PutScalar(0.0);  // initialise internal force vector
 
-    discret_->Evaluate(p,stiff_,null,fint_,null,null);
+    discret_->Evaluate(p,stiff_,null,fintm_,null,null);
     discret_->ClearState();
 
     if (surf_stress_man_->HaveSurfStress())
     {
       p.set("surfstr_man", surf_stress_man_);
-      surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,stiff_);
+      surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fintm_,stiff_);
     }
   }
 
   //-------------------------------------------- compute residual forces
   // add static mid-balance
-  fresm_->Update(-1.0,*fint_,0.0);
+  fresm_->Update(-1.0,*fintm_,0.0);
+
+  // extract reaction forces
+  int err = freactm_->Import(*fresm_, *importp_, Insert);
+  if (err)
+    dserror("Importing reaction forces of prescribed dofs using importer returned err=%d",err);
 
   // blank residual at DOFs on Dirichlet BC
-  {
-    Epetra_Vector fresmcopy(*fresm_);
+  Epetra_Vector fresmcopy(*fresm_);
+  fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
 
-    // save this vector for homogenization
-    fresm_dirich_->Update(1.0, fresmcopy, 0.0);
-
-    fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
-
-    // store norm of residual
-    resnorm_ = STR::AUX::CalculateVectorNorm(iternorm_, fresm_);
-  }
+  // store norm of residual
+  resnorm_ = STR::AUX::CalculateVectorNorm(iternorm_, fresm_);
 
   return;
 }
@@ -635,7 +631,7 @@ void STRUMULTI::MicroStatic::FullNewton()
       // of the time step after having finished a macroscopic dt
       discret_->SetState("residual displacement",disi_);
       discret_->SetState("displacement",dism_);
-      fint_->PutScalar(0.0);  // initialise internal force vector
+      fintm_->PutScalar(0.0);  // initialise internal force vector
 
       // provide EAS history of the last step (and a place to store
       // new EAS related stuff)
@@ -644,13 +640,13 @@ void STRUMULTI::MicroStatic::FullNewton()
       p.set("oldKaainv", oldKaainv_);
       p.set("oldKda", oldKda_);
 
-      discret_->Evaluate(p,stiff_,null,fint_,null,null);
+      discret_->Evaluate(p,stiff_,null,fintm_,null,null);
       discret_->ClearState();
 
       if (surf_stress_man_->HaveSurfStress())
       {
         p.set("surfstr_man", surf_stress_man_);
-        surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,stiff_);
+        surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fintm_,stiff_);
       }
     }
 
@@ -659,14 +655,11 @@ void STRUMULTI::MicroStatic::FullNewton()
 
     //------------------------------------------ compute residual forces
     // add static mid-balance
-    //fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
-    fresm_->Update(-1.0,*fint_,0.0);
+    fresm_->Update(-1.0,*fintm_,0.0);
+
     // blank residual DOFs which are on Dirichlet BC
     {
       Epetra_Vector fresmcopy(*fresm_);
-
-      // save this vector for homogenization
-      fresm_dirich_->Update(1.0, fresmcopy, 0.0);
 
       fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
     }
@@ -1161,18 +1154,26 @@ bool STRUMULTI::MicroStatic::Converged()
   }
   else if (convcheck_ == INPAR::STR::convcheck_relres_or_absdis)
   {
-    return (disinorm_ < toldis_ or ((resnorm_/ref_resnorm_) < tolres_ or resnorm_ < tolres_));
+    return (disinorm_ < toldis_ or (resnorm_/ref_resnorm_) < tolres_);
   }
   else if (convcheck_ == INPAR::STR::convcheck_relres_and_absdis)
   {
-    return (disinorm_ < toldis_ and ((resnorm_/ref_resnorm_) < tolres_ or resnorm_ < tolres_));
+    return (disinorm_ < toldis_ and (resnorm_/ref_resnorm_) < tolres_);
   }
   else if (convcheck_ == INPAR::STR::convcheck_relres_or_reldis)
+  {
+    return ((disinorm_/ref_disinorm_) < toldis_  or (resnorm_/ref_resnorm_) < tolres_);
+  }
+  else if (convcheck_ == INPAR::STR::convcheck_relres_and_reldis)
+  {
+    return ((disinorm_/ref_disinorm_) < toldis_ and (resnorm_/ref_resnorm_) < tolres_);
+  }
+  else if (convcheck_ == INPAR::STR::convcheck_mixres_or_mixdis)
   {
     return (((disinorm_/ref_disinorm_) < toldis_ or disinorm_ < toldis_) or
             ((resnorm_/ref_resnorm_) < tolres_ or resnorm_ < tolres_));
   }
-  else if (convcheck_ == INPAR::STR::convcheck_relres_and_reldis)
+  else if (convcheck_ == INPAR::STR::convcheck_mixres_and_mixdis)
   {
     return (((disinorm_/ref_disinorm_) < toldis_ or disinorm_ < toldis_) and
             ((resnorm_/ref_resnorm_) < tolres_ or resnorm_ < tolres_));
@@ -1194,11 +1195,21 @@ void STRUMULTI::MicroStatic::CalcRefNorms()
   // purpose we only need the right order of magnitude, so we don't
   // mind evaluating the corresponding norms at possibly different
   // points within the timestep (end point, generalized midpoint).
+  // In the beginning (construction of macroscale time integrator and
+  // first macroscale predictor), the microscale reference norms are
+  // generally 0 in case of displacements, and near 0 in case of the
+  // residual. To enable convergence in these cases, the reference
+  // norm is automatically set to 1 if the calculated values are below
+  // the chosen tolerances. Simply testing against 0 only works for
+  // the displacements, but not for the residual!
 
   ref_disinorm_ = STR::AUX::CalculateVectorNorm(iternorm_, dis_);
-  if (ref_disinorm_ == 0.0) ref_disinorm_ = 1.0;
-  ref_resnorm_ = STR::AUX::CalculateVectorNorm(iternorm_, fint_);
-  if (ref_resnorm_ == 0.0) ref_disinorm_ = 1.0;
+  if (ref_disinorm_ < toldis_) ref_disinorm_ = 1.0;
+
+  double fintnorm = STR::AUX::CalculateVectorNorm(iternorm_, fintm_);
+  double freactnorm = STR::AUX::CalculateVectorNorm(iternorm_, freactm_);
+  ref_resnorm_ = max(fintnorm, freactnorm);
+  if (ref_resnorm_ < tolres_) ref_resnorm_ = 1.0;
 }
 
 /*----------------------------------------------------------------------*
@@ -1300,23 +1311,13 @@ void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::Matrix<6,1>* stress,
   // -> if a parallel version of microscale simulations is EVER wanted,
   // carefully check if/what/where things have to change
 
-  // split microscale stiffness and residual forces into parts
-  // corresponding to prescribed and free dofs -> see thesis
-  // of Kouznetsova (Computational homogenization for the multi-scale
-  // analysis of multi-phase materials, Eindhoven, 2002)
+  // split microscale stiffness into parts corresponding to prescribed
+  // and free dofs -> see thesis of Kouznetsova (Computational
+  // homogenization for the multi-scale analysis of multi-phase
+  // materials, Eindhoven, 2002)
 
-  // split residual forces -> we want to extract fp
-
-  Epetra_Vector fp(*pdof_);
-
-  int err = fp.Import(*fresm_dirich_, *importp_, Insert);
-  if (err)
-    dserror("Importing external forces of prescribed dofs using importer returned err=%d",err);
-
-  // Now we have all forces in the material description acting on the
-  // boundary nodes together in one vector
-  // -> for calculating the stresses, we need to choose the
-  // right three components corresponding to a single node and
+  // for calculating the stresses, we need to choose the
+  // right three components of freactm_ corresponding to a single node and
   // take the inner product with the material coordinates of this
   // node. The sum over all boundary nodes delivers the first
   // Piola-Kirchhoff macroscopic stress which has to be transformed
@@ -1330,10 +1331,9 @@ void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::Matrix<6,1>* stress,
   // Piola-Kirchhoff stress tensor.
 
   // IMPORTANT: the RVE has to be centered around (0,0,0), otherwise
-  // this approach does not work. This was also confirmed by
-  // Kouznetsova in a discussion during USNCCM 9.
+  // modifications of this approach are necessary.
 
-  fp.Scale(-1.0);
+  freactm_->Scale(-1.0);
 
   LINALG::Matrix<3,3> P(true);
 
@@ -1343,7 +1343,7 @@ void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::Matrix<6,1>* stress,
     {
       for (int n=0; n<np_/3; ++n)
       {
-        P(i,j) += fp[n*3+i]*(*Xp_)[n*3+j];
+        P(i,j) += (*freactm_)[n*3+i]*(*Xp_)[n*3+j];
       }
       P(i,j) /= V0_;
     }
@@ -1396,7 +1396,7 @@ void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::Matrix<6,1>* stress,
     if (error)
       dserror("Input for linear problem inconsistent");
     Amesos_Umfpack solver(linprob);
-    err = solver.NumericFactorization();   // LU decomposition of stiff_ only once
+    int err = solver.NumericFactorization();   // LU decomposition of stiff_ only once
     if (err)
       dserror("Numeric factorization of stiff_ for homogenization failed");
 
