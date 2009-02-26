@@ -127,7 +127,7 @@ namespace UTILS
 
   //! Rectangular surface of pyramid5
   const int eleNodeNumbering_pyramid5_quadsurfaces[1][4]= {
-          {0, 1, 2, 3}};
+          {0, 3, 2, 1}};
 
   //! Triangular surfaces of pyramid5
   const int eleNodeNumbering_pyramid5_trisurfaces[4][3]={
