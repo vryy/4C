@@ -56,7 +56,8 @@ void MAT::ModPowerLaw::Pack(vector<char>& data) const
   AddtoPack(data,type);
 
   // matid
-  int matid = params_->Id();
+  int matid = -1;
+  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data,matid);
 }
 
