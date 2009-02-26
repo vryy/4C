@@ -665,7 +665,7 @@ void FLD::UTILS::FluidImpedanceBc::OutflowBoundary(double time, double dta, doub
   eleparams.set("ConvolutedPressure",pressure);
 
   if (myrank_ == 0)
-    printf("Pressure from convolution: %f\n",pressure);
+    printf("Impedance condition Id: %d Pressure from convolution = %f\n",condid,pressure);
 
 
   impedancetbc_->PutScalar(0.0); // ??
@@ -674,7 +674,7 @@ void FLD::UTILS::FluidImpedanceBc::OutflowBoundary(double time, double dta, doub
   discret_->ClearState();
 
   return;
-}//FluidImplicitTimeInt::OutflowBoundary
+} //FluidImplicitTimeInt::OutflowBoundary
 
 
 
