@@ -316,11 +316,10 @@ static void packDofKeys(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 static void unpackDofKeys(
-    int& index,
     const vector<char>&                     dataRecv, 
     set<XFEM::DofKey<XFEM::onNode> >&       dofkeyset )
 {       
-//  int index = 0;
+  int index = 0;
   while (index < (int) dataRecv.size())
   {
     vector<char> data;
@@ -355,85 +354,79 @@ static void syncNodalDofs(
   fillNodalDofKeySet(ih, nodalDofSet, original_dofkeyset);
   
   set<XFEM::DofKey<XFEM::onNode> >  new_dofkeyset;
-//  new_dofkeyset = original_dofkeyset;
+  //  new_dofkeyset = original_dofkeyset;
   for (set<XFEM::DofKey<XFEM::onNode> >::const_iterator dofkey = original_dofkeyset.begin(); dofkey != original_dofkeyset.end(); ++dofkey)
   {
     new_dofkeyset.insert(*dofkey);
   }
   
-  
+  // pack date for initial send
   vector<char> dataSend;
   packDofKeys(original_dofkeyset, dataSend);
   
-  
-  
-  
-  // send data to all procs but myself
+  // send data in a circle
   for(int num = 0; num < numproc-1; num++)
   {
     vector<int> lengthSend(1,0);
     lengthSend[0] = dataSend.size();
     
+#ifdef DEBUG
     cout << "proc " << myrank << ": sending"<< lengthSend[0] << "bytes to proc " << dest << endl;
+    //    cout << "proc " << myrank << ": sending"<< dofkeyset.size() << " dofkeys to proc " << dest << endl;
+#endif
     
-    // send length of the datablock to be received ...
-    MPI_Request req_length_datablock;
+    // send length of the data to be received ...
+    MPI_Request req_length_data;
     int length_tag = 0;
-    exporter.ISend(myrank, dest, &(lengthSend[0]) , size_one, length_tag, req_length_datablock);
+    exporter.ISend(myrank, dest, &(lengthSend[0]) , size_one, length_tag, req_length_data);
     
     // ... and receive length
     vector<int> lengthRecv(1,0);
     exporter.Receive(source, length_tag, lengthRecv, size_one);
-    exporter.Wait(req_length_datablock);   
+    exporter.Wait(req_length_data);   
     
+    //    if(lengthRecv[0] > 0) ??
+    //    {
+    // send actual data ...
+    int data_tag = 4;
+    MPI_Request req_data;
+    exporter.ISend(myrank, dest, &(dataSend[0]), lengthSend[0], data_tag, req_data);
+    // ... and receive date
+    vector<char> dataRecv(lengthRecv[0]);
+    exporter.ReceiveAny(source, data_tag, dataRecv, lengthRecv[0]);
+    exporter.Wait(req_data);  
+    
+    
+    // unpack dofkeys from char array
+    set<XFEM::DofKey<XFEM::onNode> >       dofkeyset;
+    unpackDofKeys(dataRecv, dofkeyset);
+#ifdef DEBUG
     cout << "proc " << myrank << ": receiving"<< lengthRecv[0] << "bytes from proc " << source << endl;
-    
-//    if(lengthRecv[0] > 0)
-//    {
-      // send actual data ...
-      int data_tag = 4;
-      MPI_Request req_data;
-      exporter.ISend(myrank, dest, &(dataSend[0]), lengthSend[0], data_tag, req_data);
-      // ... and receive date
-      vector<char> dataRecv(lengthRecv[0]);
-      exporter.ReceiveAny(source, data_tag, dataRecv, lengthRecv[0]);
-      exporter.Wait(req_data);  
-      
-      
-      
-      int index = 0;//lengthRecv[0];
-      set<XFEM::DofKey<XFEM::onNode> >       dofkeyset;
-      
-      unpackDofKeys(index, dataRecv, dofkeyset);
-      cout << "proc " << myrank << ": receiving"<< dofkeyset.size() << " dofkeys from proc " << source << endl;
-//      unpackDofKeys(dataRecv, dofkeyset);
-      
-      // get all dofkeys whose nodegid is on this proc in the coloumnmap
-      set<XFEM::DofKey<XFEM::onNode> >       relevant_dofkeyset;
-      for (set<XFEM::DofKey<XFEM::onNode> >::const_iterator dofkey = dofkeyset.begin(); dofkey != dofkeyset.end(); ++dofkey)
+    cout << "proc " << myrank << ": receiving"<< dofkeyset.size() << " dofkeys from proc " << source << endl;
+#endif
+    // get all dofkeys whose nodegid is on this proc in the coloumnmap
+    set<XFEM::DofKey<XFEM::onNode> >       relevant_dofkeyset;
+    for (set<XFEM::DofKey<XFEM::onNode> >::const_iterator dofkey = dofkeyset.begin(); dofkey != dofkeyset.end(); ++dofkey)
+    {
+      const int nodegid = dofkey->getGid();
+      if (ih.xfemdis()->HaveGlobalNode(nodegid))
       {
-//        const int nodegid = dofkey->getGid();
-//        if (xfemdis->HaveGlobalNode(nodegid))
-        {
-          new_dofkeyset.insert(*dofkey);
-        }
+        new_dofkeyset.insert(*dofkey);
       }
-      // make received data the new 'to be sent' data
-      dataSend = dataRecv;
-//    }
-//    else
-//    {
-//      dataSend.clear();
-//    }
-      ih.xfemdis()->Comm().Barrier();
-    cout << endl;
+    }
+    // make received data the new 'to be sent' data
+    dataSend = dataRecv;
+    //    }
+    //    else
+    //    {
+    //      dataSend.clear();
+    //    }
     ih.xfemdis()->Comm().Barrier();
   }   // loop over procs 
   
   cout << "sync nodal dofs on proc " << myrank << ": before/after -> " << original_dofkeyset.size()<< "/" << new_dofkeyset.size() << endl;
   
   updateNodalDofMap(ih, nodalDofSet,new_dofkeyset);
-  
   
 }
 
@@ -486,9 +479,9 @@ void XFEM::createDofMap(
 
   XFEM::applyStandardEnrichmentNodalBasedApproach(ih, nodalDofSet);
   
-#ifdef PARALLEL
-  syncNodalDofs(ih, nodalDofSet);
-#endif
+//#ifdef PARALLEL
+//  syncNodalDofs(ih, nodalDofSet);
+//#endif
   
   // create const sets from standard sets, so the sets cannot be accidently changed
   // could be removed later, if this is a performance bottleneck
