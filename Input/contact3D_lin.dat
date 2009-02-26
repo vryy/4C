@@ -50,8 +50,8 @@ RESEVRYSTRS  1
 RESTARTEVRY  1
 NLNSOL       fullnewton // fullnewton modnewton matfreenewton nlncg ptc
 TIMESTEP     0.02
-NUMSTEP      40
-MAXTIME      0.8
+NUMSTEP      30
+MAXTIME      0.6
 BETA         0.25
 GAMMA        0.5
 ALPHA_M      0.5
@@ -69,7 +69,7 @@ BASISTRAFO           No
 FRICTION             None
 FRBOUND              0.0
 FRCOEFF              0.0
-FULL_LINEARIZATION   Yes
+FULL_LINEARIZATION   No
 SEMI_SMOOTH_NEWTON   Yes
 SEMI_SMOOTH_CN       1.0
 SEMI_SMOOTH_CT       1.0
@@ -2014,10 +2014,10 @@ MAT 2 MAT_Struct_NeoHooke  YOUNG 2100 NUE 0.3 DENS 7.8e-6 THEXPANS 0.0
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.5 FACTOR 0.0 0.0
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.5 0.8 FACTOR 0.0 0.6
+CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.5 0.6 FACTOR 0.0 0.2
 ------------------------------------------------------------CURVE2
 CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.5 FACTOR 0.0 1.0
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.5 0.8 FACTOR 1.0 1.0
+CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.5 0.6 FACTOR 1.0 1.0
 ------------------------------------------------------------CURVE3
 ------------------------------------------------------------CURVE4
 ------------------------------------------------------------CURVE5
@@ -2038,8 +2038,8 @@ CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.5 0.8 FACTOR 1.0 1.0
 // STRUCTURE 2 - 0 0 0 0 0 0
 // ALE 3 - 0 0 0 0 0 0
 ------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 67 POSITION dispx NAME ux VALUE  6.127677560796530587e-01 TOLERANCE 1e-8
-STRUCTURE DIS 1 NODE 67 POSITION dispy NAME uy VALUE  6.119350502646088152e-01 TOLERANCE 1e-8
-STRUCTURE DIS 1 NODE 67 POSITION dispz NAME uz VALUE -9.960912484850912296e-01 TOLERANCE 1e-8
+STRUCTURE DIS 1 NODE 67 POSITION dispx NAME ux VALUE  2.015680346650614019e-01 TOLERANCE 1e-8
+STRUCTURE DIS 1 NODE 67 POSITION dispy NAME uy VALUE  1.970212048504374203e-01 TOLERANCE 1e-8
+STRUCTURE DIS 1 NODE 67 POSITION dispz NAME uz VALUE -9.765446777631318076e-01 TOLERANCE 1e-8
 ---------------------------------------------------------------END
 // END

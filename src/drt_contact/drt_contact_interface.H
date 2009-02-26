@@ -475,6 +475,7 @@ public:
   
   */
   virtual bool EvaluateContactSearch();
+  virtual void EvaluateContactSearchBruteForce(double& eps);
   
   /*!
   \brief Integrate Mortar matrix D on slave element
@@ -616,12 +617,6 @@ public:
   */
   virtual void VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
                              const int step, const int iter, const bool fric);
-  
-  /*!
-  \brief Visualize node normals with gmsh
-            
-  */
-  virtual void VisualizeGmshLight();
     
   /*!
   \brief Return matrix of contact segment coordinates

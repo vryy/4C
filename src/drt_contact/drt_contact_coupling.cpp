@@ -235,6 +235,7 @@ void CONTACT::Intcell::DerivJacobian(double* xi, vector<double>& derivjac)
     // compute Jacobian derivative
     // *********************************************************************
 #ifdef CONTACTAUXPLANE
+    cout << endl << jac << endl;
     dserror("ERROR: DerivJacobian (Intcell) not yet impl. for aux. plane case!");
 #else
     // in this case, intcells live in slave element parameter space
@@ -391,10 +392,6 @@ contactsegs_(csegs)
 #ifdef CONTACTAUXPLANE
     // compute auxiliary plane for 3D coupling
     AuxiliaryPlane3D();
-    
-    //create vertex data structure
-    vector<Vertex> poly1list;
-    vector<Vertex> poly2list;
     
     // project slave element nodes onto auxiliary plane
     ProjectSlave3D();
@@ -569,10 +566,6 @@ contactsegs_(csegs)
     // compute auxiliary plane for 3D coupling
     AuxiliaryPlane3D();
     
-    //create vertex data structure
-    vector<Vertex> poly1list;
-    vector<Vertex> poly2list;
-            
     // project slave element nodes onto auxiliary plane
     ProjectSlave3D();
     
@@ -759,10 +752,6 @@ contactsegs_(csegs)
 #ifdef CONTACTAUXPLANE
     // compute auxiliary plane for 3D coupling
     AuxiliaryPlane3D();
-    
-    //create vertex data structure
-    vector<Vertex> poly1list;
-    vector<Vertex> poly2list;
     
     // project slave element nodes onto auxiliary plane
     ProjectSlave3D();
@@ -1512,8 +1501,7 @@ bool CONTACT::Coupling::ProjectSlave3D()
     SlaveVertices().push_back(Vertex(vertices,Vertex::slave,snodeids,NULL,NULL,false,false,NULL,-1.0));
           
     //cout << "->RealNode(S) " << mycnode->Id() << ": " << mycnode->xspatial()[0] << " " << mycnode->xspatial()[1] << " " << mycnode->xspatial()[2] << endl; 
-    //cout << dist << endl;
-    //cout << "->ProjNode(S) " << mycnode->Id() << ": " << vertices[i][0] << " " << vertices[i][1] << " " << vertices[i][2] << endl; 
+    //cout << "->ProjNode(S) " << mycnode->Id() << ": " << vertices[0] << " " << vertices[1] << " " << vertices[2] << endl; 
   }
   
   return true;
@@ -1554,8 +1542,7 @@ bool CONTACT::Coupling::ProjectMaster3D()
    MasterVertices().push_back(Vertex(vertices,Vertex::projmaster,mnodeids,NULL,NULL,false,false,NULL,-1.0));
        
     //cout << "->RealNode(M) " << mycnode->Id() << ": " << mycnode->xspatial()[0] << " " << mycnode->xspatial()[1] << " " << mycnode->xspatial()[2] << endl; 
-    //cout << dist << endl;
-    //cout << "->ProjNode(M) " << mycnode->Id() << ": " << vertices[i][0] << " " << vertices[i][1] << " " << vertices[i][2] << endl; 
+    //cout << "->ProjNode(M) " << mycnode->Id() << ": " << vertices[0] << " " << vertices[1] << " " << vertices[2] << endl; 
   }
     
   return true;
@@ -2349,7 +2336,7 @@ void CONTACT::Coupling::PolygonClipping3D(vector<Vertex>& poly1,
       fldist += fldiff[k]*fldiff[k];
     }
     fldist = sqrt(fldist);
-    if (fldist>1.0e-4) identical = false;
+    if (fldist>1.0e-6) identical = false;
     
     // remove last entry if so, throw dserror if not so
     if (identical) respoly.pop_back();
@@ -2648,7 +2635,7 @@ bool CONTACT::Coupling::HasProjStatus3D()
       // (its only purpose is to sort out slave nodes which
       // are not near to any int cell -> problem with g~)
       for (int k=0;k<3;++k)
-        if (abs(currpos[k]-nodepos[k])>1.0e6*CONTACTCLIPTOL) identical=false;
+        if (abs(currpos[k]-nodepos[k])>1.0e9*CONTACTCLIPTOL) identical=false;
       
       // set hasproj
       if (identical) mycnode->HasProj()=true;
@@ -2667,12 +2654,13 @@ bool CONTACT::Coupling::Triangulation3D(map<int,double>& projpar)
   vector<double> clipcenter(3);
   for (int k=0;k<3;++k) clipcenter[k] = 0.0;
   int clipsize = (int)(Clip().size());
+  vector<vector<map<int,double> > > linvertex(clipsize,vector<map<int,double> >(3));
+  vector<map<int,double> > lincenter(3);
   
 #ifndef CONTACTAUXPLANE
   //**********************************************************************
   // (1) Linearization of clip vertex coordinates
   //**********************************************************************
-  vector<vector<map<int,double> > > linvertex(clipsize,vector<map<int,double> >(3));
   VertexLinearization3D(linvertex,projpar);
 #endif // #ifndef CONTACTAUXPLANE
   
@@ -2733,7 +2721,6 @@ bool CONTACT::Coupling::Triangulation3D(map<int,double>& projpar)
   //**********************************************************************
   // (3) Linearization of clip center coordinates
   //**********************************************************************
-  vector<map<int,double> > lincenter(3);
   CenterLinearization3D(linvertex,lincenter);
 #endif // #ifndef CONTACTAUXPLANE
   
@@ -2802,12 +2789,13 @@ bool CONTACT::Coupling::Triangulation3D(map<int,double>& projpar,
   vector<double> clipcenter(3);
   for (int k=0;k<3;++k) clipcenter[k] = 0.0;
   int clipsize = (int)(Clip().size());
+  vector<vector<map<int,double> > > linvertex(clipsize,vector<map<int,double> >(3));
+  vector<map<int,double> > lincenter(3);
   
 #ifndef CONTACTAUXPLANE
   //**********************************************************************
   // (1) Linearization of clip vertex coordinates
   //**********************************************************************
-  vector<vector<map<int,double> > > linvertex(clipsize,vector<map<int,double> >(3));
   VertexLinearization3D(linvertex,projpar,printderiv);
 #endif // #ifndef CONTACTAUXPLANE
   
@@ -2887,7 +2875,6 @@ bool CONTACT::Coupling::Triangulation3D(map<int,double>& projpar,
   //**********************************************************************
   // (3) Linearization of clip center coordinates
   //**********************************************************************
-  vector<map<int,double> > lincenter(3);
   CenterLinearization3D(linvertex,lincenter);
   
   if (printderiv)
