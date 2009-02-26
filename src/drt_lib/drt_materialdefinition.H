@@ -441,7 +441,7 @@ namespace DRT
     };
 
 
-    /// definition of a valid material in BACI input
+    /// Definition of a valid material in BACI input
     ///
     /// This is basically a clone of \see ConditionDefinition which
     /// was adjusted to adhere the heterogeneous lines occuring
@@ -602,7 +602,7 @@ namespace DRT
       Teuchos::RCP<MaterialDefinition> matdef,  ///< a material defintion to which named vector of reals is added
       const std::string name, ///< name of vector of reals to add
       const std::string description,  ///< description about values
-      const std::string sizename,  ///< named entry which holds number of vector components; named entry _must_ be added _prior_ to this vector compo
+      const std::string sizename,  ///< named entry which holds number of vector components; named entry _must_ be added _prior_ to this vector component
       const bool optional=false  ///< optional parameter if true
       )
     {
@@ -628,7 +628,7 @@ namespace DRT
     /// add material definition to list of defined materials
     ///
     /// this method checks for coincidental material names or types
-    void AppendDefinedMaterial(
+    void AppendMaterialDefinition(
       std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> >& matlist,  ///< list of defined materials
       Teuchos::RCP<DRT::INPUT::MaterialDefinition> mat  ///< material to add
       );

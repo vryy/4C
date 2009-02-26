@@ -346,7 +346,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorMaterialComponent::Read(
       dserror("Trouble to get length of int vector material component.");
   }
 
-  std::vector<int> numbers(length_,0);
+  std::vector<int> numbers(length_,defaultvalue_);
 
   for (int i=0; i<length_; ++i)
   {
@@ -650,10 +650,11 @@ std::ostream& DRT::INPUT::MaterialDefinition::Print(
     endcolor = END_COLOR;
   }
 
-  // 
+  // a string holding the comment indicating symbols for DAT input file
   const std::string comment = "//";
 
   // the descriptive lines (comments)
+  stream << blue2light << comment << std::endl;
   stream << blue2light << comment << " " << magentalight << description_ << std::endl;
   for (unsigned i=0; i<inputline_.size(); ++i)
   {
@@ -679,7 +680,7 @@ std::ostream& DRT::INPUT::MaterialDefinition::Print(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::AppendDefinedMaterial(  
+void DRT::INPUT::AppendMaterialDefinition(  
   std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> >& matlist,
   Teuchos::RCP<DRT::INPUT::MaterialDefinition> mat
   )
