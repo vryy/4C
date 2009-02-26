@@ -321,7 +321,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
 
         //call submethod to compute volume and its derivatives w.r.t. to current displ.
         ComputeVolDeriv(xscurr, NumNode(),numdim*NumNode(), volumeele, Vdiff1, Vdiff2);
-        //update corresponding column in "constraint" matrix
+        //update rhs vector and corresponding column in "constraint" matrix
         elevector1 = *Vdiff1;
         elevector2 = *Vdiff1;
         elematrix1 = *Vdiff2;
@@ -693,9 +693,7 @@ double DRT::ELEMENTS::StructuralSurface::ComputeConstrVols
 )
 {
   double volume = 0.0;
-  //Formula for volume computation based on calculation of Ulrich done
-  //within the old code
-   
+  
   //Volume is calculated by evaluating the integral of z(r,s) over dA*,
   //where dA* is the projection of dA on the xy-plane.
   //Therefore separate current configuration between xy and z
