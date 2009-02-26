@@ -29,6 +29,7 @@ its parameters and conditions.
 #include "Epetra_Time.h"
 #include "Teuchos_TimeMonitor.hpp"
 #include "../drt_inpar/drt_validparameters.H"
+#include "../drt_inpar/drt_validmaterials.H"
 #include "../drt_inpar/drt_validconditions.H"
 #include "../drt_lib/drt_conditiondefinition.H"
 #include "pre_exodus_reader.H"
@@ -238,9 +239,15 @@ int main(
     }
     defaulthead << headstring;
 
+    // get valid input materials
+    {
+      Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > mlist 
+       = DRT::INPUT::ValidMaterials();
+      DRT::INPUT::PrintEmptyMaterialDefinitions(defaulthead, *mlist,false);
+    }
 
     defaulthead <<
-    "---------------------------------------------------------MATERIALS"<<endl<<
+    // "---------------------------------------------------------MATERIALS"<<endl<<
     "-------------------------------------------------------LOAD CURVES"<<endl<<
     "------------------------------------------------------------CURVE1"<<endl<<
     "------------------------------------------------------------CURVE2"<<endl<<
