@@ -258,7 +258,25 @@ public:
                               Epetra_SerialDenseVector& elevec1);
 
   /*!
-  \brief Evaluate a statistical Neumann boundary condition or a Brownian step in space together with a related damping matrix
+  \brief Evaluate damping matrix for Brownian motion
+
+  An element derived from this class uses the Evaluate method to receive commands
+  and parameters from some control routine in params and evaluates a damping matrix
+  as used in the problem type STATISTICAL MECHANICS
+
+  \param params (in/out)       : ParameterList for communication between control routine and elements
+  \param vector<double> mydisp : current nodal displacement
+  \param elemat1 (out)         : damping matrix to be filled by element
+
+  \return 0 if successful, negative otherwise
+  */
+  virtual int EvaluateBrownianDamp(ParameterList& params,
+                                    vector<double> mydisp,
+                                    double zeta,
+                                    Epetra_SerialDenseMatrix& elemat1);  
+  
+  /*!
+  \brief Evaluate forces for Brownian motion
 
   An element derived from this class uses the Evaluate method to receive commands
   and parameters from some control routine in params and evaluates a  statistical Neumann boundary condition
@@ -267,14 +285,13 @@ public:
   \param params (in/out)       : ParameterList for communication between control routine and elements
   \param vector<double> mydisp : current nodal displacement
   \param elevec1 (out)         : Force vector to be filled by element
-  \param elemat1 (out)         : damping matrix to be filled by element
 
   \return 0 if successful, negative otherwise
   */
-  virtual int EvaluateBrownian(ParameterList& params,
+  virtual int EvaluateBrownianForces(ParameterList& params,
                                     vector<double> mydisp,
-                                    Epetra_SerialDenseVector& elevec1,
-                                    Epetra_SerialDenseMatrix& elemat1);  
+                                    double zeta,
+                                    Epetra_SerialDenseVector& elevec1); 
   
   /*!
   \brief Evaluate PTC addition to stiffness for free Brownian motion
@@ -390,11 +407,23 @@ private:
   //!computing a rotation matrix R from a quaternion q
   void quaterniontotriad(const LINALG::Matrix<4,1>& q, LINALG::Matrix<3,3>& R);
   
+  //!computing a quaternion from an angle vector
+  void angletoquaternion(const LINALG::Matrix<3,1>& theta, LINALG::Matrix<4,1>& q);
+  
   //!computing an angle vector from a quaternion q
   void quaterniontoangle(const LINALG::Matrix<4,1>& q, LINALG::Matrix<3,1>& theta);
   
+  //!computing from a quaternion q the Rodrigues parameters omega, Crisfield, Vol. 2, equation (16.79)
+  void quaterniontorodrigues(const LINALG::Matrix<4,1>& q, LINALG::Matrix<3,1>& omega);
+  
   //!computing a quaternion q from a rotation matrix R
   void triadtoquaternion(const LINALG::Matrix<3,3>& R, LINALG::Matrix<4,1>& q);
+  
+  //!quaternion product q12 = q2*q1, Crisfield, Vol. 2, equation (16.71)
+  void quaternionproduct(const LINALG::Matrix<4,1>& q1,const LINALG::Matrix<4,1>& q2,LINALG::Matrix<4,1>& q12);
+  
+  //!computes inverse quaternion q^{-1} for input quaternion q
+  LINALG::Matrix<4,1> inversequaternion(const LINALG::Matrix<4,1>& q);
   
   //!inverse of matrix H which make rotation variables additive in the limit, eq. (16.94)
   LINALG::Matrix<3,3> Hinv(LINALG::Matrix<3,1> theta);
