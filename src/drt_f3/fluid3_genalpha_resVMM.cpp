@@ -9806,13 +9806,17 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
 
   // ---------------------------------------------------
   // working arrays for the quantities we want to compute
-  LINALG::Matrix<3,1>  mean_res       ;
-  LINALG::Matrix<3,1>  mean_sacc      ;
-  LINALG::Matrix<3,1>  mean_svelaf    ;
-  LINALG::Matrix<3,1>  mean_res_sq    ;
-  LINALG::Matrix<3,1>  mean_sacc_sq   ;
-  LINALG::Matrix<3,1>  mean_svelaf_sq ;
-  LINALG::Matrix<3,1>  mean_tauinvsvel;
+  LINALG::Matrix<3,1>  mean_res        ;
+  LINALG::Matrix<3,1>  mean_sacc       ;
+  LINALG::Matrix<3,1>  mean_svelaf     ;
+  LINALG::Matrix<3,1>  mean_res_sq     ;
+  LINALG::Matrix<3,1>  mean_sacc_sq    ;
+  LINALG::Matrix<3,1>  mean_svelaf_sq  ;
+  LINALG::Matrix<3,1>  mean_tauinvsvel ;
+
+  LINALG::Matrix<3,1>  mean_crossstress;
+  LINALG::Matrix<3,1>  mean_reystress  ;
+
 
   double vol             = 0.0;
 
@@ -9843,13 +9847,15 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   double eps_conv        = 0.0;
 
   
-  mean_res       .Clear();
-  mean_sacc      .Clear();
-  mean_svelaf    .Clear();
-  mean_res_sq    .Clear();
-  mean_sacc_sq   .Clear();
-  mean_svelaf_sq .Clear();
-  mean_tauinvsvel.Clear();
+  mean_res        .Clear();
+  mean_sacc       .Clear();
+  mean_svelaf     .Clear();
+  mean_res_sq     .Clear();
+  mean_sacc_sq    .Clear();
+  mean_svelaf_sq  .Clear();
+  mean_tauinvsvel .Clear();
+  mean_crossstress.Clear();
+  mean_reystress  .Clear();
 
   //------------------------------------------------------------------
   //           SET TIME INTEGRATION SCHEME RELATED DATA
@@ -10121,6 +10127,56 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
 
     // ------------------------------------------------------
     // Element average:
+    //      o cross stresses 11,22,33,12,23,31
+    //      o reynolds stresses 11,22,33,12,23,31
+    if(tds      == Fluid3::subscales_time_dependent)
+    {
+      if(cross    != Fluid3::cross_stress_stab_none)
+      {
+        mean_crossstress(0)-=fac*(svelaf_(0)*velintaf_(0)+velintaf_(0)*svelaf_(0));
+        mean_crossstress(1)-=fac*(svelaf_(1)*velintaf_(1)+velintaf_(1)*svelaf_(1));
+        mean_crossstress(2)-=fac*(svelaf_(2)*velintaf_(2)+velintaf_(2)*svelaf_(2));
+        mean_crossstress(3)-=fac*(svelaf_(0)*velintaf_(1)+velintaf_(1)*svelaf_(0));
+        mean_crossstress(4)-=fac*(svelaf_(1)*velintaf_(2)+velintaf_(2)*svelaf_(1));
+        mean_crossstress(5)-=fac*(svelaf_(2)*velintaf_(0)+velintaf_(0)*svelaf_(2));
+      }
+
+      if(reynolds != Fluid3::reynolds_stress_stab_none)
+      {
+        mean_reystress(0)  -=fac*(svelaf_(0)*svelaf_(0)+svelaf_(0)*svelaf_(0));
+        mean_reystress(1)  -=fac*(svelaf_(1)*svelaf_(1)+svelaf_(1)*svelaf_(1));
+        mean_reystress(2)  -=fac*(svelaf_(2)*svelaf_(2)+svelaf_(2)*svelaf_(2));
+        mean_reystress(3)  -=fac*(svelaf_(0)*svelaf_(1)+svelaf_(1)*svelaf_(0));
+        mean_reystress(4)  -=fac*(svelaf_(1)*svelaf_(2)+svelaf_(2)*svelaf_(1));
+        mean_reystress(5)  -=fac*(svelaf_(2)*svelaf_(0)+svelaf_(0)*svelaf_(2));
+      }
+    }
+    else
+    {
+      if(cross    != Fluid3::cross_stress_stab_none)
+      {
+        mean_crossstress(0)+=fac*tau_(1)*(resM_(0)*velintaf_(0)+velintaf_(0)*resM_(0));
+        mean_crossstress(1)+=fac*tau_(1)*(resM_(1)*velintaf_(1)+velintaf_(1)*resM_(1));
+        mean_crossstress(2)+=fac*tau_(1)*(resM_(2)*velintaf_(2)+velintaf_(2)*resM_(2));
+        mean_crossstress(3)+=fac*tau_(1)*(resM_(0)*velintaf_(1)+velintaf_(1)*resM_(0));
+        mean_crossstress(4)+=fac*tau_(1)*(resM_(1)*velintaf_(2)+velintaf_(2)*resM_(1));
+        mean_crossstress(5)+=fac*tau_(1)*(resM_(2)*velintaf_(0)+velintaf_(0)*resM_(2));
+      }
+
+      if(reynolds != Fluid3::reynolds_stress_stab_none)
+      {
+        mean_reystress(0)  -=fac*tau_(1)*tau_(1)*(resM_(0)*resM_(0)+resM_(0)*resM_(0));
+        mean_reystress(1)  -=fac*tau_(1)*tau_(1)*(resM_(1)*resM_(1)+resM_(1)*resM_(1));
+        mean_reystress(2)  -=fac*tau_(1)*tau_(1)*(resM_(2)*resM_(2)+resM_(2)*resM_(2));
+        mean_reystress(3)  -=fac*tau_(1)*tau_(1)*(resM_(0)*resM_(1)+resM_(1)*resM_(0));
+        mean_reystress(4)  -=fac*tau_(1)*tau_(1)*(resM_(1)*resM_(2)+resM_(2)*resM_(1));
+        mean_reystress(5)  -=fac*tau_(1)*tau_(1)*(resM_(2)*resM_(0)+resM_(0)*resM_(2));
+      }
+    }
+
+
+    // ------------------------------------------------------
+    // Element average:
     //      o tauM
     //      o tauC
 
@@ -10268,7 +10324,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
       }
     }
 
-    if(reynolds == Fluid3::reynolds_stress_stab_only_rhs)
+    if(reynolds != Fluid3::reynolds_stress_stab_none)
     {
       // contribution of this gausspoint to energy
       // dissipated/produced by reynolds 
@@ -10468,6 +10524,13 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
     mean_tauinvsvel (rr)/= vol;
   }
 
+
+  for(int rr=0;rr<6;++rr)
+  {
+    mean_crossstress(rr)/=vol;
+    mean_reystress  (rr)/=vol;
+  }
+
   abs_res         /= vol;
   abs_sacc        /= vol;
   abs_svel        /= vol;
@@ -10535,6 +10598,9 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   RefCountPtr<vector<double> > incr_eps_eddyvisc = params.get<RefCountPtr<vector<double> > >("incr_eps_eddyvisc");
   RefCountPtr<vector<double> > incr_eps_visc     = params.get<RefCountPtr<vector<double> > >("incr_eps_visc"    );
   RefCountPtr<vector<double> > incr_eps_conv     = params.get<RefCountPtr<vector<double> > >("incr_eps_conv"    );
+
+  RefCountPtr<vector<double> > incrcrossstress   = params.get<RefCountPtr<vector<double> > >("incrcrossstress"  );
+  RefCountPtr<vector<double> > incrreystress     = params.get<RefCountPtr<vector<double> > >("incrreystress"    );
 
 
   if(!(distype == DRT::Element::nurbs8
@@ -10642,6 +10708,13 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   (*incr_eps_eddyvisc)[nlayer] += eps_eddyvisc   ;
   (*incr_eps_visc    )[nlayer] += eps_visc       ;
   (*incr_eps_conv    )[nlayer] += eps_conv       ;
+
+  // averages of subgrid stress tensors
+  for(int mm=0;mm<6;++mm)
+  {
+    (*incrcrossstress)[6*nlayer+mm] += mean_crossstress(mm);
+    (*incrreystress  )[6*nlayer+mm] += mean_reystress  (mm);
+  }
 
   return(0);
 }

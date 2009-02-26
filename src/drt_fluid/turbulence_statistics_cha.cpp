@@ -777,6 +777,9 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     RefCountPtr<vector<double> > local_incr_eps_visc     = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
     RefCountPtr<vector<double> > local_incr_eps_conv     = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
 
+    RefCountPtr<vector<double> > local_incrcrossstress   = rcp(new vector<double> (6*(nodeplanes_->size()-1),0.0));
+    RefCountPtr<vector<double> > local_incrreystress     = rcp(new vector<double> (6*(nodeplanes_->size()-1),0.0));
+
     // pass pointers to local sum vectors to the element
     eleparams_.set<RefCountPtr<vector<double> > >("incrvol"          ,local_incrvol         );
     eleparams_.set<RefCountPtr<vector<double> > >("incrhk"           ,local_incrhk          );
@@ -811,6 +814,9 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     eleparams_.set<RefCountPtr<vector<double> > >("incr_eps_eddyvisc",local_incr_eps_eddyvisc);
     eleparams_.set<RefCountPtr<vector<double> > >("incr_eps_visc"    ,local_incr_eps_visc    );
     eleparams_.set<RefCountPtr<vector<double> > >("incr_eps_conv"    ,local_incr_eps_conv    );
+
+    eleparams_.set<RefCountPtr<vector<double> > >("incrcrossstress"  ,local_incrcrossstress  );
+    eleparams_.set<RefCountPtr<vector<double> > >("incrreystress"    ,local_incrreystress    );
 
     // means for comparison of of residual and subscale acceleration
 
@@ -879,7 +885,11 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     sum_eps_visc_->resize(nodeplanes_->size()-1,0.0);
     sum_eps_conv_=  rcp(new vector<double> );
     sum_eps_conv_->resize(nodeplanes_->size()-1,0.0);
- 
+
+    sum_crossstress_=  rcp(new vector<double> );
+    sum_crossstress_->resize(6*(nodeplanes_->size()-1),0.0);
+    sum_reystress_  =  rcp(new vector<double> );
+    sum_reystress_  ->resize(6*(nodeplanes_->size()-1),0.0);
   }
 
 
@@ -1967,8 +1977,12 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
     RefCountPtr<vector<double> > local_incr_eps_visc     = eleparams_.get<RefCountPtr<vector<double> > >("incr_eps_visc"    );
     RefCountPtr<vector<double> > local_incr_eps_conv     = eleparams_.get<RefCountPtr<vector<double> > >("incr_eps_conv"    );
 
-    int presize = local_incrresC->size();
-    int velsize = local_incrres ->size();
+    RefCountPtr<vector<double> > local_incrcrossstress   = eleparams_.get<RefCountPtr<vector<double> > >("incrcrossstress"  );
+    RefCountPtr<vector<double> > local_incrreystress     = eleparams_.get<RefCountPtr<vector<double> > >("incrreystress"    );
+
+    int presize    = local_incrresC       ->size();
+    int velsize    = local_incrres        ->size();
+    int stresssize = local_incrcrossstress->size();
 
     //--------------------------------------------------
     // vectors to sum over all procs
@@ -2055,50 +2069,60 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
     RefCountPtr<vector<double> > global_incr_eps_sacc;
     global_incr_eps_sacc  = rcp(new vector<double> (presize,0.0));
 
-    // (in plane) averaged values of dissipation by 
+    // (in plane) averaged values of dissipation by pspg term
 
     RefCountPtr<vector<double> > global_incr_eps_pspg;
     global_incr_eps_pspg  = rcp(new vector<double> (presize,0.0));
 
-    // (in plane) averaged values of dissipation by 
+    // (in plane) averaged values of dissipation by supg term
 
     RefCountPtr<vector<double> > global_incr_eps_supg;
     global_incr_eps_supg  = rcp(new vector<double> (presize,0.0));
 
-    // (in plane) averaged values of dissipation by 
+    // (in plane) averaged values of dissipation by cross term
 
     RefCountPtr<vector<double> > global_incr_eps_cross;
     global_incr_eps_cross  = rcp(new vector<double> (presize,0.0));
 
-    // (in plane) averaged values of dissipation by 
+    // (in plane) averaged values of dissipation by reynolds term
 
     RefCountPtr<vector<double> > global_incr_eps_rey;
     global_incr_eps_rey  = rcp(new vector<double> (presize,0.0));
 
-    // (in plane) averaged values of dissipation by 
+    // (in plane) averaged values of dissipation by continuity stabilisation
 
     RefCountPtr<vector<double> > global_incr_eps_cstab;
     global_incr_eps_cstab  = rcp(new vector<double> (presize,0.0));
 
-    // (in plane) averaged values of dissipation by 
+    // (in plane) averaged values of dissipation by viscous stabilisation
 
     RefCountPtr<vector<double> > global_incr_eps_vstab;
     global_incr_eps_vstab  = rcp(new vector<double> (presize,0.0));
 
-    // (in plane) averaged values of dissipation by 
+    // (in plane) averaged values of dissipation by eddy viscosity
 
     RefCountPtr<vector<double> > global_incr_eps_eddyvisc;
     global_incr_eps_eddyvisc  = rcp(new vector<double> (presize,0.0));
 
-    // (in plane) averaged values of dissipation by 
+    // (in plane) averaged values of dissipation by viscous forces
 
     RefCountPtr<vector<double> > global_incr_eps_visc;
     global_incr_eps_visc  = rcp(new vector<double> (presize,0.0));
 
-    // (in plane) averaged values of dissipation by 
+    // (in plane) averaged values of dissipation/production by convection
 
     RefCountPtr<vector<double> > global_incr_eps_conv;
     global_incr_eps_conv  = rcp(new vector<double> (presize,0.0));
+
+    // (in plane) averaged values of subgrid stresses resulting from supg and cross term
+
+    RefCountPtr<vector<double> > global_incrcrossstress;
+    global_incrcrossstress = rcp(new vector<double> (stresssize,0.0));
+
+    // (in plane) averaged values of subgrid stresses resulting from reynolds stresses
+    RefCountPtr<vector<double> > global_incrreystress;
+    global_incrreystress   = rcp(new vector<double> (stresssize,0.0));
+
 
     //--------------------------------------------------
     // global sums
@@ -2213,6 +2237,15 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
                             &((*global_incr_eps_conv )[0]),
                             presize);
 
+    // compute global sums, subgrid stresses
+    discret_->Comm().SumAll(&((*local_incrcrossstress )[0]),
+                            &((*global_incrcrossstress)[0]),
+                            stresssize);
+    discret_->Comm().SumAll(&((*local_incrreystress )[0]),
+                            &((*global_incrreystress)[0]),
+                            stresssize);
+
+
     for (int rr=0;rr<velsize;++rr)
     {
       (*sumres_          )[rr]+=(*global_incrres          )[rr];
@@ -2255,6 +2288,12 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
       (*sum_eps_conv_    )[rr]+=(*global_incr_eps_conv    )[rr];
     }
  
+    for (int rr=0;rr<stresssize;++rr)
+    {
+      (*sum_crossstress_)[rr]+=(*global_incrcrossstress)[rr];
+      (*sum_reystress_  )[rr]+=(*global_incrreystress  )[rr];
+    }
+
     // reset working arrays
     local_vol               = rcp(new vector<double> (presize,0.0));
 
@@ -2293,6 +2332,8 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
     local_incr_eps_visc     = rcp(new vector<double> (presize,0.0));
     local_incr_eps_conv     = rcp(new vector<double> (presize,0.0));
 
+    local_incrcrossstress   = rcp(new vector<double> (stresssize,0.0));
+    local_incrreystress     = rcp(new vector<double> (stresssize,0.0));
 
     eleparams_.set<RefCountPtr<vector<double> > >("incrvol"          ,local_vol              );
     eleparams_.set<RefCountPtr<vector<double> > >("incrhk"           ,local_incrhk           );
@@ -2328,6 +2369,9 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
     eleparams_.set<RefCountPtr<vector<double> > >("incr_eps_eddyvisc",local_incr_eps_eddyvisc);
     eleparams_.set<RefCountPtr<vector<double> > >("incr_eps_visc"    ,local_incr_eps_visc    );
     eleparams_.set<RefCountPtr<vector<double> > >("incr_eps_conv"    ,local_incr_eps_conv    );
+
+    eleparams_.set<RefCountPtr<vector<double> > >("incrcrossstress"  ,local_incrcrossstress  );
+    eleparams_.set<RefCountPtr<vector<double> > >("incrreystress"    ,local_incrreystress    );
   }
 
   return;
@@ -2611,7 +2655,19 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(int ste
       (*log_res) << "   strle     ";
       (*log_res) << " h_bazilevs  ";
       (*log_res) << "     Dy      ";
-      (*log_res) << "\n";
+      (*log_res) << " tau_cross_11";
+      (*log_res) << " tau_cross_22";
+      (*log_res) << " tau_cross_33";
+      (*log_res) << " tau_cross_12";
+      (*log_res) << " tau_cross_23";
+      (*log_res) << " tau_cross_31";
+      (*log_res) << " tau_rey_11  ";
+      (*log_res) << " tau_rey_22  ";
+      (*log_res) << " tau_rey_33  ";
+      (*log_res) << " tau_rey_12  ";
+      (*log_res) << " tau_rey_23  ";
+      (*log_res) << " tau_rey_31  ";
+     (*log_res) << "\n";
 
       (*log_res) << scientific;
       for (unsigned rr=0;rr<nodeplanes_->size()-1;++rr)
@@ -2674,6 +2730,20 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(int ste
         (*log_res)  << setw(11) << setprecision(4) << (*sumstrle_        )[rr]/(numele_*numsamp_) << "  ";
         (*log_res)  << setw(11) << setprecision(4) << (*sumhbazilevs_    )[rr]/(numele_*numsamp_) << "  ";
         (*log_res)  << setw(11) << setprecision(4) << (*nodeplanes_)[rr+1]-(*nodeplanes_)[rr]     << "  " ;
+
+        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr  ]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+1]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+3]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+4]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+5]/(numele_*numsamp_) << "  ";
+
+        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr  ]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+1]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+3]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+4]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+5]/(numele_*numsamp_) << "  ";
 
         (*log_res)  << &endl;
       }
@@ -3120,6 +3190,12 @@ void FLD::TurbulenceStatisticsCha::ClearStatistics()
       (*sumtauinvsvel_)[3*rr  ]=0.0;
       (*sumtauinvsvel_)[3*rr+1]=0.0;
       (*sumtauinvsvel_)[3*rr+2]=0.0;
+
+      for(int mm=0;mm<6;++mm)
+      {
+        (*sum_crossstress_)[6*rr+mm]=0.0;
+        (*sum_reystress_  )[6*rr+mm]=0.0;
+      }
     }
     for (unsigned rr=0;rr<sumresC_->size();++rr)
     {

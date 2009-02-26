@@ -536,6 +536,11 @@ private:
   //! sum over all in plane averaged dissipation rates from Galerkin convective term
   RefCountPtr<vector<double> >     sum_eps_conv_;
 
+  //! sum over all in plane averaged supg+cross stress 
+  RefCountPtr<vector<double> >     sum_crossstress_;
+  //! sum over all in plane averaged reynolds stress
+  RefCountPtr<vector<double> >     sum_reystress_;
+
 };
 
 }
