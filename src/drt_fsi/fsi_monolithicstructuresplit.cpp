@@ -4,6 +4,7 @@
 #include "fsi_monolithicstructuresplit.H"
 #include "fsi_statustest.H"
 #include "fsi_nox_linearsystem_bgs.H"
+#include "fsi_monolithic_linearsystem.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_fsi.H"
@@ -477,6 +478,7 @@ FSI::MonolithicStructureSplit::CreateLinearSystem(ParameterList& nlParams,
   Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
   Teuchos::ParameterList& newtonParams = dirParams.sublist("Newton");
   Teuchos::ParameterList* lsParams;
+  
   // in case of nonlinCG the linear solver list is somewhere else
   if (dirParams.get("Method","User Defined")=="User Defined")
     lsParams = &(newtonParams.sublist("Linear Solver"));
@@ -492,7 +494,8 @@ FSI::MonolithicStructureSplit::CreateLinearSystem(ParameterList& nlParams,
   switch (linearsolverstrategy_)
   {
   case INPAR::FSI::PreconditionedKrylov:
-    linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams,
+    linSys = Teuchos::rcp(new FSI::MonolithicLinearSystem::MonolithicLinearSystem(
+                                                               printParams,
                                                                *lsParams,
                                                                Teuchos::rcp(iJac,false),
                                                                J,

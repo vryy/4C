@@ -83,7 +83,7 @@ void FSI::BlockPreconditioningMatrix::SetupPreconditioner()
 
   // this is really evil :)
   sparse_ = Merge();
-  fluidsolver_    ->Setup(sparse_->EpetraMatrix());
+  fluidsolver_->Setup(sparse_->EpetraMatrix());
 
 #if 0
   Matrix(0,0).Dump("dump-struct");
@@ -109,7 +109,6 @@ void FSI::BlockPreconditioningMatrix::SetupPreconditioner()
 
   structuresolver_->Setup(structInnerOp.EpetraMatrix());
   fluidsolver_    ->Setup(fluidInnerOp .EpetraMatrix());
-
   if (constalesolver_==Teuchos::null)
     alesolver_    ->Setup(aleInnerOp   .EpetraMatrix());
 #endif
@@ -185,8 +184,82 @@ FSI::OverlappingBlockMatrix::OverlappingBlockMatrix(const LINALG::MultiMapExtrac
                                fomega,
                                fiterations,
                                err),
-    structuresplit_(structuresplit)
+    structuresplit_(structuresplit),
+    structure_(structure),
+    fluid_(fluid),
+    ale_(ale)
 {
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FSI::OverlappingBlockMatrix::SetupPreconditioner()
+{
+#ifdef BLOCKMATRIXMERGE
+
+  // this is really evil :)
+  sparse_ = Merge();
+  fluidsolver_->Setup(sparse_->EpetraMatrix());
+
+#if 0
+  Matrix(0,0).Dump("dump-struct");
+  Matrix(1,1).Dump("dump-fluid");
+  Matrix(2,2).Dump("dump-ale");
+
+  static int count;
+  count++;
+  std::stringstream s;
+  s << "dump-" << count;
+  cout << "write: " << s.str() << "\n";
+  sparse_->Dump(s.str());
+
+//   Epetra_Vector diagonal(sparse_->RowMap());
+//   int err = sparse_->ExtractDiagonalCopy(diagonal);
+//   diagonal.Print(cout);
+#endif
+
+#else
+  const LINALG::SparseMatrix& structInnerOp = Matrix(0,0);
+  const LINALG::SparseMatrix& fluidInnerOp  = Matrix(1,1);
+  const LINALG::SparseMatrix& aleInnerOp    = Matrix(2,2);
+  
+  RCP<LINALG::MapExtractor> fsidofmapex = null;
+  RCP<Epetra_Map>           irownodes = null;
+#if 0
+  if (structuresplit_)
+  {
+    RCP<DRT::Discretization> dis      = fluid_.Discretization();
+    const Epetra_Map*        nrowmap  = dis->NodeRowMap();
+    DRT::Condition*          fsi      = dis->GetCondition("FSICoupling");
+    if (!fsi) dserror("there should be an FSI interface condition in here...");
+    const vector<int>*       fsinodes = fsi->Nodes();
+    vector<int>              fsidofs;
+    vector<int>              fsirownodes;
+    for (int i=0; i<(int)fsinodes->size(); ++i)
+      if (nrowmap->MyGID((*fsinodes)[i]))
+      {
+        fsirownodes.push_back((*fsinodes)[i]);
+        DRT::Node* node  = dis->gNode((*fsinodes)[i]);
+        const int numdof = dis->NumDof(node);
+        for (int j=0; j<numdof; ++j)
+          fsidofs.push_back(dis->Dof(node,j));
+      }
+    RCP<Epetra_Map> fsimap = 
+      rcp(new Epetra_Map(-1,(int)fsidofs.size(),&fsidofs[0],0,dis->DofRowMap()->Comm()));
+    irownodes = rcp(new Epetra_Map(-1,(int)fsirownodes.size(),&(fsirownodes[0]),0,fsimap->Comm()));
+    fsidofmapex = rcp(new LINALG::MapExtractor(*(dis->DofRowMap()),fsimap));
+  }
+#endif  
+  
+  structuresolver_->Setup(structInnerOp.EpetraMatrix());
+  fluidsolver_->Setup(fluidInnerOp.EpetraMatrix(),
+                      fsidofmapex,
+                      fluid_.Discretization(),
+                      irownodes,
+                      structuresplit_);
+  if (constalesolver_==Teuchos::null)
+    alesolver_->Setup(aleInnerOp.EpetraMatrix());
+#endif
 }
 
 

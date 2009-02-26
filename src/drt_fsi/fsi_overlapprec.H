@@ -134,6 +134,9 @@ namespace FSI
 
     //@}
 
+    /// setup of block preconditioners
+    virtual void SetupPreconditioner();
+
   private:
 
     /// symmetric Gauss-Seidel block preconditioner
@@ -141,6 +144,11 @@ namespace FSI
 
     /// split is in structural matrix, interface equations belong to fluid block
     bool structuresplit_;
+
+    ADAPTER::Structure& structure_;
+    ADAPTER::Fluid&     fluid_;
+    ADAPTER::Ale&       ale_;
+    
   };
 }
 
