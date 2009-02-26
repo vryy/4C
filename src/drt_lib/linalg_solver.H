@@ -39,6 +39,9 @@ Maintainer: Michael Gee
 #include "ml_MultiLevelPreconditioner.h"
 
 #include "AztecOO.h"
+#include "AztecOO_StatusTestResNorm.h"
+#include "AztecOO_StatusTestCombo.h"
+#include "AztecOO_StatusTestMaxIters.h"
 
 #include "Ifpack.h"
 #include "Ifpack_AdditiveSchwarz.h"
@@ -378,17 +381,26 @@ private:
   //! counting how many times matrix was solved between resets
   int                               ncall_;
   //! an abstract amesos solver that can be any of the amesos concrete immplementations
-  RCP<Amesos_BaseSolver>    amesos_;
+  RCP<Amesos_BaseSolver>         amesos_;
   //! an aztec solver
-  RCP<AztecOO>              aztec_;
+  RCP<AztecOO>                    aztec_;
+  //! an aztex maxiter status test
+  RCP<AztecOO_StatusTestMaxIters> aztest_maxiter_;
+  //! an aztec 2-norm convergence test
+  RCP<AztecOO_StatusTestResNorm>  aztest_norm2_;
+  //! an aztec inf-norm convergence test
+  RCP<AztecOO_StatusTestResNorm>  aztest_norminf_;
+  // ! combination of the above tests
+  RCP<AztecOO_StatusTestCombo>    aztest_combo1_;
+  RCP<AztecOO_StatusTestCombo>    aztest_combo2_;
   //! a vm3 solver
-  RCP<FLD::VM3_Solver>      vm3_solver_;
+  RCP<FLD::VM3_Solver>            vm3_solver_;
 
   //! reindex linear problem for amesos
   RCP<EpetraExt::LinearProblem_Reindex> reindexer_;
 
   //! downwinding reindexer for downwind smoothers
-  RCP<LINALG::DownwindMatrix> dwind_;
+  RCP<LINALG::DownwindMatrix>           dwind_;
 
 #ifdef PARALLEL
 #ifdef SPOOLES_PACKAGE

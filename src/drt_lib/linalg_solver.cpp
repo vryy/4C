@@ -338,7 +338,9 @@ void LINALG::Solver::Solve_aztec(const bool reset)
   else if (Ncall()%reuse==0) create = true;
   
   // Allocate an aztec solver with default parameters
-  if (create)
+  // We do this every time because reusing the solver object
+  // does lead to crashes that are not understood
+  //if (create)
   {
     // create an aztec solver
     aztec_ = Teuchos::null;
@@ -518,7 +520,43 @@ void LINALG::Solver::Solve_aztec(const bool reset)
   // iterate on the solution
   int iter = azlist.get("AZ_max_iter",500);
   double tol = azlist.get("AZ_tol",1.0e-6);
+  
+  // create an aztec convergence test as combination of
+  // L2-norm and Inf-Norm to be both satisfied where we demand
+  // L2 < tol and Linf < 10*tol
+  {
+    Epetra_Operator* op  = aztec_->GetProblem()->GetOperator();
+    Epetra_Vector*   rhs = static_cast<Epetra_Vector*>(aztec_->GetProblem()->GetRHS());
+    Epetra_Vector*   lhs = static_cast<Epetra_Vector*>(aztec_->GetProblem()->GetLHS());
+    // max iterations
+    aztest_maxiter_ = rcp(new AztecOO_StatusTestMaxIters(iter));
+    // L2 norm
+    aztest_norm2_ = rcp(new AztecOO_StatusTestResNorm(*op,*lhs,*rhs,tol));
+    aztest_norm2_->DefineResForm(AztecOO_StatusTestResNorm::Implicit,
+                                 AztecOO_StatusTestResNorm::TwoNorm);
+    aztest_norm2_->DefineScaleForm(AztecOO_StatusTestResNorm::NormOfInitRes,
+                                   AztecOO_StatusTestResNorm::TwoNorm);
+    // Linf norm (demanded to be 10 times L2-norm now, to become an input parameter)
+    aztest_norminf_ = rcp(new AztecOO_StatusTestResNorm(*op,*lhs,*rhs,1.0*tol));
+    aztest_norminf_->DefineResForm(AztecOO_StatusTestResNorm::Implicit,
+                                   AztecOO_StatusTestResNorm::InfNorm);
+    aztest_norminf_->DefineScaleForm(AztecOO_StatusTestResNorm::NormOfInitRes,
+                                     AztecOO_StatusTestResNorm::InfNorm);
+    // L2 AND Linf
+    aztest_combo1_ = rcp(new AztecOO_StatusTestCombo(AztecOO_StatusTestCombo::SEQ));
+    // maxiters OR (L2 AND Linf)
+    aztest_combo2_ = rcp(new AztecOO_StatusTestCombo(AztecOO_StatusTestCombo::OR));
+    aztest_combo1_->AddStatusTest(*aztest_norm2_);
+    aztest_combo1_->AddStatusTest(*aztest_norminf_);
+    aztest_combo2_->AddStatusTest(*aztest_maxiter_);
+    aztest_combo2_->AddStatusTest(*aztest_combo1_);
+    // set status test
+    aztec_->SetStatusTest(aztest_combo2_.get());
+  }
+  
+  //------------------------------- just do it----------------------------------------
   aztec_->Iterate(iter,tol);
+  //----------------------------------------------------------------------------------
 
   // undo downwinding
   if (dwind)
