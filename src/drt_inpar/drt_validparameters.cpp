@@ -1978,7 +1978,7 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
   DoubleParameter("ML_PROLONG_SMO",0.,"damping factor for prolongator smoother (usually 1.33 or 0.0)",&list);
   DoubleParameter("ML_PROLONG_THRES",0.,"threshold for prolongator smoother/aggregation",&list);
 
-  setNumericStringParameter("ML_SMOTIMES","1 1 1 1 1 1",
+  setNumericStringParameter("ML_SMOTIMES","1 1 1 1 1",
                             "no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)",&list);
 
   setStringToIntegralParameter<int>(
