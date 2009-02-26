@@ -218,10 +218,12 @@ if (par.myrank==0 && ioflags.output_gid)
 /*------------------------ program to control execution of optimization */
 /*------------------ call control programs of static or dynamic control */
 
-switch (genprob.probtyp) {
+switch (genprob.probtyp) 
+{
 case prb_structure:
 
-  switch (genprob.timetyp) {
+  switch (genprob.timetyp) 
+  {
   case time_static:
     calsta();
 /*#ifndef CCADISCRET
