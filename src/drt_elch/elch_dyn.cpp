@@ -14,8 +14,6 @@ Maintainer: Georg Bauer
 
 #ifdef CCADISCRET
 
-//#include <string>
-//#include <iostream>
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -61,12 +59,12 @@ void elch_dyn(int disnumff,int disnumscatra, int restart)
   std::ofstream f_system("mydiscretization.pos");
   f_system<<IO::GMSH::disToString("Fluid",0,fluiddis);
 #endif  
-  // access the (typically empty) condif discretization
-  RefCountPtr<DRT::Discretization> condifdis = DRT::Problem::Instance()->Dis(disnumscatra,0);
-  if (!condifdis->Filled()) condifdis->FillComplete();
+  // access the (typically empty) scatra discretization
+  RefCountPtr<DRT::Discretization> scatradis = DRT::Problem::Instance()->Dis(disnumscatra,0);
+  if (!scatradis->Filled()) scatradis->FillComplete();
 
-  // create condif elements if the condif discretization is empty
-  if (condifdis->NumGlobalNodes()==0)
+  // create scatra elements if the scatra discretization is empty
+  if (scatradis->NumGlobalNodes()==0)
   {
     Epetra_Time time(comm);
     std::map<string,string> conditions_to_copy;
@@ -78,7 +76,14 @@ void elch_dyn(int disnumff,int disnumscatra, int restart)
     conditions_to_copy.insert(pair<string,string>("TransportVolumeNeumann","VolumeNeumann"));
     conditions_to_copy.insert(pair<string,string>("SurfacePeriodic","SurfacePeriodic"));
     conditions_to_copy.insert(pair<string,string>("FluidStressCalc","FluxCalculation")); // a hack
-    SCATRA::CreateScaTraDiscretization(fluiddis,condifdis,conditions_to_copy,false);
+
+    // access the scalar transport parameter list
+    const Teuchos::ParameterList& scatracontrol = DRT::Problem::Instance()->ScalarTransportDynamicParams();
+    const int matid = scatracontrol.get<int>("MATID");
+
+    // create the scatra discretization
+    SCATRA::CreateScaTraDiscretization(fluiddis,scatradis,conditions_to_copy,matid,false);
+
     if (comm.MyPID()==0)
     cout<<"Created scalar transport discretization from fluid field in...."
     <<time.ElapsedTime() << " secs\n\n";

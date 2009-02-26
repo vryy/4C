@@ -112,7 +112,13 @@ void combust_dyn()
     std::map<string,string> conditions_to_copy;
     conditions_to_copy.insert(pair<string,string>("TransportDirichlet","Dirichlet"));
     //conditions_to_copy.insert("FluidStressCalc","FluxCalculation"); // a hack
-    SCATRA::CreateScaTraDiscretization(fluiddis,gfuncdis,conditions_to_copy,false);
+
+    // access the scalar transport parameter list
+    const Teuchos::ParameterList& scatracontrol = DRT::Problem::Instance()->ScalarTransportDynamicParams();
+    const int matid = scatracontrol.get<int>("MATID");
+
+    SCATRA::CreateScaTraDiscretization(fluiddis,gfuncdis,conditions_to_copy,matid,false);
+
     if (comm.MyPID()==0)
       cout<<"Created G-function discretization from fluid discretization in...."
           <<time.ElapsedTime() << " secs\n\n";

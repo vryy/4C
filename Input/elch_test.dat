@@ -102,6 +102,7 @@ VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       totalflux_domain
 UPRES                           1
+MATID                           4
 --------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-8
 ITEMAX                          50

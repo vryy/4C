@@ -107,7 +107,13 @@ void scatra_dyn(int disnumff, int disnumscatra, int restart)
         conditions_to_copy.insert(pair<string,string>("TransportVolumeNeumann","VolumeNeumann"));
         conditions_to_copy.insert(pair<string,string>("SurfacePeriodic","SurfacePeriodic"));
         conditions_to_copy.insert(pair<string,string>("FluidStressCalc","FluxCalculation")); // a hack
-        SCATRA::CreateScaTraDiscretization(fluiddis,scatradis,conditions_to_copy,false);
+
+        // access the scalar transport parameter list
+        const Teuchos::ParameterList& scatracontrol = DRT::Problem::Instance()->ScalarTransportDynamicParams();
+        const int matid = scatracontrol.get<int>("MATID");
+
+        SCATRA::CreateScaTraDiscretization(fluiddis,scatradis,conditions_to_copy,matid,false);
+
         if (comm.MyPID()==0)
         cout<<"Created scalar transport discretization from fluid field in...."
         <<time.ElapsedTime() << " secs\n\n";

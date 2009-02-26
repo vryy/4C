@@ -117,6 +117,7 @@ VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       totalflux_domain
 UPRES                           1
+MATID                           5
 -------------------------------------------------------FSI DYNAMIC
 -------------------------------------------------------SSI DYNAMIC
 -------------------------------------------------------ALE DYNAMIC

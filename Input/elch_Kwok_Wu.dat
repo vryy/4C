@@ -105,6 +105,7 @@ WRITEFLUX                       totalflux_domain
 UPRES                           1
 CALCERROR                       Kwok_Wu
 BLOCKPRECOND                    Yes
+MATID                           4
 --------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL          1e-6
 ITEMAX           50

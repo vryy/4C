@@ -96,6 +96,7 @@ INITIALFIELD     field_by_function
 INITFUNCNO       2
 FSSUGRVISC       No
 WRITEFLUX        totalflux_domain
+MATID            4
 --------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL          1e-9
 ITEMAX           10

@@ -1283,6 +1283,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   //IntParameter("WRITESOLEVRY",1,"Increment for writing solution",&scatradyn);
   IntParameter("UPRES",1,"Increment for writing solution",&scatradyn);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&scatradyn);
+  IntParameter("MATID",-1,"Material Id for automatic mesh creation",&scatradyn);
 
   setStringToIntegralParameter<int>("VELOCITYFIELD","zero",
                                "type of velocity field used for scalar tranport problems",
@@ -1349,7 +1350,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Switch to block-preconditioned family of solvers, needs additional SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER block!",
                                yesnotuple,yesnovalue,&scatradyn);
 
-
+  /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scatra_nonlin = scatradyn.sublist(
       "NONLINEAR",
       false,

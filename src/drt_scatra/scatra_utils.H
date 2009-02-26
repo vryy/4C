@@ -29,8 +29,9 @@ namespace SCATRA
 void CreateScaTraDiscretization(
     Teuchos::RCP<DRT::Discretization>& fluiddis,  ///< RCP to fluid discretization
     Teuchos::RCP<DRT::Discretization>& scatradis, ///< RCP to empty scalar transport discretization
-    std::map<string,string>& conditions_to_copy,  ///< condition names to copy (and new names)
-    bool makequadratic                            ///< increase polynomial order
+    const std::map<string,string>& conditions_to_copy,  ///< condition names to copy (and new names)
+    const int matid, ///< ID of the material which generated elements will get
+    const bool makequadratic                            ///< increase polynomial order
     );
 
 }

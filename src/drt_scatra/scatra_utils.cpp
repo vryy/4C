@@ -25,6 +25,7 @@ Maintainer: Georg Bauer
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_condition_utils.H"
+#include "../drt_mat/matpar_material.H"
 #include "scatra_utils.H"
 
 // we need to know all necessary element types for the mesh creation
@@ -40,8 +41,9 @@ Maintainer: Georg Bauer
 void SCATRA::CreateScaTraDiscretization(
     Teuchos::RefCountPtr<DRT::Discretization>& fluiddis,
     Teuchos::RefCountPtr<DRT::Discretization>& scatradis,
-    std::map<string,string>& conditions_to_copy,
-    bool makequadratic
+    const std::map<string,string>& conditions_to_copy,
+    int matid,
+    const bool makequadratic
     )
 {
   // is the fluid discretization ready?
@@ -130,22 +132,13 @@ void SCATRA::CreateScaTraDiscretization(
 
   // now do the elements
 
-  // We must not add a new material type here because that might move
-  // the internal material vector. And each element material might
-  // have a pointer to that vector. Too bad.
-  // So we search for a appropriate material and take the first
-  // one we find. If we find a MatList material we take this one,
-  // if not search for convection diffusion material law.
-
-  //int nummat = DRT::Problem::Instance()->NumMaterials();
-  int matnr = -1;
-  matnr = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_matlist);
-  if (matnr <= -1)
-    matnr = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_condif);
-  if (matnr <= -1)
-    matnr = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_sutherland_condif);
-  if (matnr==-1) // we could not find any proper material
-    dserror("No appropriate material found. Cannot generate scalar transport discretization.");
+  // We take the material with the ID specified by the user
+  // Here we check first, whether this material is of admissible type
+  INPAR::MAT::MaterialType mtype = DRT::Problem::Instance()->Materials()->ById(matid)->Type();
+  if ((mtype != INPAR::MAT::m_condif) && 
+      (mtype != INPAR::MAT::m_sutherland_condif) &&
+      (mtype != INPAR::MAT::m_matlist))
+    dserror("Material with ID %d is not admissible for scalar transport elements",matid);
 
   // construct scalar transport elements
   // The order of the elements might be different from that of the
@@ -174,7 +167,7 @@ void SCATRA::CreateScaTraDiscretization(
         DRT::ELEMENTS::Transport* trans = dynamic_cast<DRT::ELEMENTS::Transport*>(scatraele.get());
         if (trans!=NULL)
         {
-          trans->SetMaterial(matnr);
+          trans->SetMaterial(matid);
           trans->SetDisType(fluidele->Shape());
         }
         else
