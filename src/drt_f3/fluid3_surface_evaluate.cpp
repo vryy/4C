@@ -1468,15 +1468,15 @@ void DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration(ParameterList& params,
                   vector<int>&               lm,
                   Epetra_SerialDenseVector&  elevec1)
 {
-  const int iel   = this->NumNode();
-  const DiscretizationType distype = this->Shape();
+  const int iel   = NumNode();
+  const DiscretizationType distype = Shape();
   const int numdf = 4;
   const double thsl = params.get("thsl",0.0);
 
   double invdensity=0.0; // inverse density of my parent element
 
   // get material of volume element this surface belongs to
-  RefCountPtr<MAT::Material> mat = parent_->Material();
+  RCP<MAT::Material> mat = parent_->Material();
 
   if( mat->MaterialType()    != INPAR::MAT::m_carreauyasuda
       && mat->MaterialType() != INPAR::MAT::m_modpowerlaw
@@ -1509,15 +1509,11 @@ void DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration(ParameterList& params,
 
 
   // allocate vector for shape functions and matrix for derivatives
-  LINALG::SerialDenseVector  	funct       (iel);
-  LINALG::SerialDenseMatrix  	deriv       (2,iel);
+  LINALG::SerialDenseVector funct(iel);
+  LINALG::SerialDenseMatrix deriv(2,iel);
 
   // node coordinates
-  LINALG::SerialDenseMatrix  	xyze (3,iel);
-
-  // the metric tensor and the area of an infintesimal surface element
-  LINALG::SerialDenseMatrix 	metrictensor (2,2);
-  double                drs;
+  LINALG::SerialDenseMatrix  x(iel,3);
 
   // pressure from time integration
   double pressure = params.get<double>("ConvolutedPressure");
@@ -1525,48 +1521,28 @@ void DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration(ParameterList& params,
   GaussRule2D  gaussrule = intrule2D_undefined;
   switch(distype)
   {
-  	case quad4:
-    gaussrule = intrule_quad_4point;
+    case quad4:
+      gaussrule = intrule_quad_4point;
     break;
     case quad8: case quad9:
-    gaussrule = intrule_quad_9point;
+      gaussrule = intrule_quad_9point;
     break;
     case tri3 :
-    gaussrule = intrule_tri_3point;
+      gaussrule = intrule_tri_3point;
     break;
     case tri6:
-    gaussrule = intrule_tri_6point;
+      gaussrule = intrule_tri_6point;
     break;
     default:
-    dserror("shape type unknown!\n");
+      dserror("shape type unknown!\n");
   }
 
-  for(int i=0;i<iel;i++)
+  for(int i=0; i<iel; ++i)
   {
-    xyze(0,i)=this->Nodes()[i]->X()[0];
-    xyze(1,i)=this->Nodes()[i]->X()[1];
-    xyze(2,i)=this->Nodes()[i]->X()[2];
+    x(i,0) = Nodes()[i]->X()[0];
+    x(i,1) = Nodes()[i]->X()[1];
+    x(i,2) = Nodes()[i]->X()[2];
   }
-
-  // Determine normal to this element
-  std::vector<double> dist1(3), dist2(3), normal(3);
-  double length;
-
-  for (int i=0; i<3; i++)
-  {
-    dist1[i] = xyze(i,1)-xyze(i,0);
-    dist2[i] = xyze(i,2)-xyze(i,0);
-  }
-
-  normal[0] = dist1[1]*dist2[2] - dist1[2]*dist2[1];
-  normal[1] = dist1[2]*dist2[0] - dist1[0]*dist2[2];
-  normal[2] = dist1[0]*dist2[1] - dist1[1]*dist2[0];
-
-  length = sqrt( normal[0]*normal[0] + normal[1]*normal[1] + normal[2]*normal[2] );
-
-  // here we need an inward normal!!!
-  for (int i=0; i<3; i++)
-    normal[i] = -normal[i] / length;
 
   const IntegrationPoints2D  intpoints(gaussrule);
   for (int gpid=0; gpid<intpoints.nquad; gpid++)
@@ -1575,25 +1551,29 @@ void DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration(ParameterList& params,
     const double e1 = intpoints.qxg[gpid][1];
 
     // get shape functions and derivatives in the plane of the element
-    shape_function_2D(funct, e0, e1, distype);
-    shape_function_2D_deriv1(deriv, e0, e1, distype);
+    shape_function_2D(funct,e0,e1,distype);
+    shape_function_2D_deriv1(deriv,e0,e1,distype);
 
-    // Calculate infinitesimal area of element (drs)
-    DRT::UTILS::ComputeMetricTensorForSurface(xyze,deriv,metrictensor,&drs);
+    vector<double> normal(3);
+    LINALG::SerialDenseMatrix dxyzdrs(2,3);
+    dxyzdrs.Multiply('N','N',1.0,deriv,x,0.0);
+    normal[0] = dxyzdrs(0,1) * dxyzdrs(1,2) - dxyzdrs(0,2) * dxyzdrs(1,1);
+    normal[1] = dxyzdrs(0,2) * dxyzdrs(1,0) - dxyzdrs(0,0) * dxyzdrs(1,2);
+    normal[2] = dxyzdrs(0,0) * dxyzdrs(1,1) - dxyzdrs(0,1) * dxyzdrs(1,0);
+    // detA is equal to length of cross product
+    const double length = sqrt( normal[0]*normal[0] + normal[1]*normal[1] + normal[2]*normal[2] );
+    // here we need an inward normal!!!
+    for (int i=0; i<3; ++i) normal[i] = -normal[i] / length;
+    printf("p %10.5e n %10.5e %10.5e %10.5e length %10.5e\n",
+    pressure,normal[0],normal[1],normal[2],length); fflush(stdout);
 
-
-    const double fac = intpoints.qwgt[gpid] * drs * thsl * pressure * invdensity;
-
+    const double fac = intpoints.qwgt[gpid] * length * thsl * pressure * invdensity;
     for (int node=0;node<iel;++node)
-    {
-      for(int dim=0;dim<3;dim++)
-      {
+      for(int dim=0;dim<3;++dim)
 	elevec1[node*numdf+dim] += funct[node] * fac * normal[dim];
-      }
-    }
   }
   return;
-}//DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration
+} //DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration
 
 #endif  // #ifdef CCADISCRET
 #endif // #ifdef D_FLUID3
