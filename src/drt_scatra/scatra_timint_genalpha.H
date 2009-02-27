@@ -97,7 +97,7 @@ protected:
   void OutputRestart();
 
   /// return the right time-scaling-factor for the true residual
-  double ResidualScaling() const;
+  double ResidualScaling() const { return 1.0/(dta_*genalphafac_); }
 
 
 private:

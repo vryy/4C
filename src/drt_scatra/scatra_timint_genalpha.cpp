@@ -524,15 +524,4 @@ void SCATRA::TimIntGenAlpha::PrepareFirstTimeStep()
   return;
 }
 
-/*----------------------------------------------------------------------*
- | return the right time-scaling-factor for the true residual gjb 02/09 |
- *----------------------------------------------------------------------*/
-double SCATRA::TimIntGenAlpha::ResidualScaling() const
-{
-  if (incremental_) 
-  return (alphaF_/(genalphafac_*dta_));
-else 
-  return (alphaF_ / ((1.0-alphaF_)*genalphafac_*dta_));
-}
-
 #endif /* CCADISCRET */
