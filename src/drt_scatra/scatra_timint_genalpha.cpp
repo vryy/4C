@@ -448,6 +448,9 @@ void SCATRA::TimIntGenAlpha::Update()
       phidtn_->Multiply(-fact1, *phin_, *densn_, 1.0);
     }
     else phidtn_->Update( fact1,*phinp_,-fact1,*phin_ ,fact2);
+
+    // set history variable to zero for not spoiling flux calculation
+    hist_->PutScalar(0.0);
   }
   // time deriv. of this step becomes most recent time derivative of
   // last step for incremental solver
