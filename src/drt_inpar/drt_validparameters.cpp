@@ -1155,6 +1155,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   DoubleParameter("C_SMAGORINSKY",0.0,"Constant for the Smagorinsky model. Something between 0.1 to 0.24",&fdyn_turbu);
 
+  DoubleParameter("C_TURBPRANDTL",0.0,"(Constant) turbulent Prandtl number for the Smagorinsky model in scalar transport.",&fdyn_turbu);
+
   setStringToIntegralParameter<int>(
     "CANONICAL_FLOW",
     "no",
@@ -1340,10 +1342,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("FSSUGRVISC","No","fine-scale subgrid diffusivity",
                                tuple<std::string>(
                                  "No",
-                                 "artificial_all",
-                                 "artificial_small"
+                                 "artificial",
+                                 "Smagorinsky_all",
+                                 "Smagorinsky_small"
                                  ),
-                               tuple<int>(0,1,2),
+                               tuple<int>(0,1,2,3),
                                &scatradyn);
 
   setStringToIntegralParameter<int>("BLOCKPRECOND","no",

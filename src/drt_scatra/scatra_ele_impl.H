@@ -69,6 +69,7 @@ public:
       LINALG::SerialDenseMatrix&      flux,
       DRT::Element*&            ele,
       vector<double>&           ephinp,
+      vector<double>&           edensnp,
       Teuchos::RCP<const MAT::Material> material,
       bool                      temperature,
       double                    frt,
@@ -152,6 +153,7 @@ public:
       LINALG::SerialDenseMatrix&      flux,
       DRT::Element*&                  ele,
       vector<double>&                 ephinp,
+      vector<double>&                 edensnp,
       Teuchos::RCP<const MAT::Material> material,
       bool                            temperature,
       double                          frt,
@@ -167,7 +169,8 @@ public:
         DRT::Element*                         ele, ///< the element those matrix is calculated
         const vector<LINALG::Matrix<iel,1> >& ephinp,///< current scalar field
         const vector<LINALG::Matrix<iel,1> >& ehist, ///< rhs from beginning of time step
-        const LINALG::Matrix<iel,1>&          edensnp, ///< current density field
+        const LINALG::Matrix<iel,1>&          edensnp, ///< density field at n+1/n+alpha_F
+        const LINALG::Matrix<iel,1>&          edensam, ///< density field at n+alpha_M
         const LINALG::Matrix<iel,1>&          epotnp, ///< el. potential at element nodes
         Epetra_SerialDenseMatrix&             sys_mat,///< element matrix to calculate
         Epetra_SerialDenseVector&             residual, ///< element rhs to calculate
@@ -181,7 +184,10 @@ public:
         const bool                            temperature, ///< temperature flag
         const bool                            conservative, ///< flag for conservative form
         const enum SCATRA::TauType            whichtau, ///< flag for stabilization parameter definition
-        const string                          fssgd, ///< subgrid-diff. flag
+        const enum SCATRA::FineSubgridDiff    fssgd, ///< subgrid-diff. flag
+        const enum SCATRA::TurbModel          turbmod, ///< flag for turbulence model
+        const double                          Cs, ///< Smagorinsky model parameter
+        const double                          tpn, ///< turbulent Prandtl number
         const bool                            is_stationary, ///< flag indicating stationary formulation
         const bool                            is_genalpha, ///< generalized-alpha flag
         const bool                            is_incremental, ///< flag for incremental/non-incemental linear solver
@@ -195,19 +201,12 @@ public:
         const vector<LINALG::Matrix<iel,1> >& ephi0, ///< initial scalar field
         const LINALG::Matrix<iel,1>&          edens0, ///< initial density field
         const LINALG::Matrix<iel,1>&          epot0,  ///< el. potential at element nodes
-        Epetra_SerialDenseMatrix&             massmat, ///< mass matrix to calculate
-        Epetra_SerialDenseVector&             rhs, ///< element rhs to calculate
-        Epetra_SerialDenseVector&             subgrdiff, ///< subgrid-diff.-scaling vector
+        Epetra_SerialDenseMatrix&             emat, ///< element matrix to calculate
+        Epetra_SerialDenseVector&             erhs, ///< element rhs to calculate
         Teuchos::RCP<const MAT::Material>     material, ///< material pointer
-        const double                          time, ///< current simulation time
-        const double                          dt, ///< current time-step length
-        const double                          timefac, ///< time discretization factor
         const LINALG::Matrix<nsd_,iel>&       evel0, ///< initial nodal velocities
         const bool                            temperature, ///< temperature flag
         const bool                            conservative, ///< flag for conservative form
-        const bool                            is_genalpha, ///< generalized-alpha flag
-        const enum SCATRA::TauType            whichtau, ///< flag for stabilization parameter definition
-        const string                          fssgd, ///< subgrid-diff. flag
         const double                          frt, ///< factor F/RT needed for ELCH calculations
         const double                          thermpressdt ///< time deriv. of therm. press. (for temp. eq.)
     );
@@ -235,18 +234,20 @@ public:
 
     //! calculate stabilization parameter
     virtual void CalTau(
-        DRT::Element*                    ele, ///< the element
-        Epetra_SerialDenseVector&        subgrdiff, ///< subgrid-diff.-scaling vector
-        const LINALG::Matrix<nsd_,iel>&  evel,///< nodal velocities
-        const LINALG::Matrix<iel,1>&     edens, ///< density
-        const LINALG::Matrix<iel,1>&     epot,  ///< el. potential at element nodes
-        const double                     dt, ///< current time-step length
-        const double&                    timefac, ///< time discretization factor
-        const enum SCATRA::TauType       whichtau, ///< flag for stabilization parameter definition
-        const string                     fssgd, ///< subgrid-diff. flag
-        const bool&                      is_stationary, ///< flag indicating stationary formulation
-        const bool                       initial, ///< flag for intitial calculation
-        const double&                    frt ///< factor F/RT needed for ELCH calculations
+        DRT::Element*                       ele, ///< the element
+        Epetra_SerialDenseVector&           subgrdiff, ///< subgrid-diff.-scaling vector
+        const LINALG::Matrix<nsd_,iel>&     evel,///< nodal velocities
+        const LINALG::Matrix<iel,1>&        edens, ///< density
+        const LINALG::Matrix<iel,1>&        epot,  ///< el. potential at element nodes
+        const double                        dt, ///< current time-step length
+        const double&                       timefac, ///< time discretization factor
+        const enum SCATRA::TauType          whichtau, ///< flag for stabilization parameter definition
+        const enum SCATRA::FineSubgridDiff  fssgd, ///< subgrid-diff. flag
+        const enum SCATRA::TurbModel        turbmod, ///< flag for turbulence model
+        const double                        Cs, ///< Smagorinsky model parameter
+        const double                        tpn, ///< turbulent Prandtl number
+        const bool&                         is_stationary, ///< flag indicating stationary formulation
+        const double&                       frt ///< factor F/RT needed for ELCH calculations
     );
 
     //! evaluate shape functions and their derivatives at current integration point
@@ -299,6 +300,7 @@ public:
         LINALG::Matrix<3,iel>&          flux,
         const DRT::Element*             ele,
         const vector<double>&           ephinp,
+        const vector<double>&           edensnp,
         Teuchos::RCP<const MAT::Material> material,
         const bool                      temperature,
         const double                    frt,
@@ -373,8 +375,23 @@ public:
 
     //! calculate momentum divergence
     inline void GetMomentumDivergence(double&                          mdiv,
-                                      const LINALG::Matrix<nsd_,nsd_>& mderxy)
+                                      const LINALG::Matrix<nsd_,iel>&  evel,
+                                      const LINALG::Matrix<iel,1>&     edens,
+                                      const LINALG::Matrix<nsd_,iel>&  derxy)
     {
+      LINALG::Matrix<nsd_,iel> densderxy;
+      LINALG::Matrix<nsd_,nsd_> mderxy;
+
+      for (int i=0; i<iel; ++i)
+      {
+        for (int j = 0; j<nsd_; ++j)
+        {
+          densderxy(j,i) = edens(i)*derxy(j,i);
+        }
+      }
+
+      mderxy.MultiplyNT(evel,densderxy);
+
       mdiv = 0.0;
       // compute (rho*vel),x  + (rho*vel),y +  (rho*vel),z at integration point
       for (int j = 0; j<nsd_; ++j)
@@ -383,6 +400,57 @@ public:
       }
       return;
     };
+
+    //! calculate rate of strain of (fine-scale) velocity
+    inline double GetStrainRate(const LINALG::Matrix<nsd_,iel>& evel,
+                                const LINALG::Matrix<nsd_,iel>& derxy,
+                                LINALG::Matrix<nsd_,nsd_>     & velderxy)
+    {
+      double rateofstrain=0;
+
+      // get velocity derivatives at integration point
+      //
+      //              +-----  dN (x)
+      //   dvel (x)    \        k        
+      //   -------- =   +     ------ * vel
+      //      dx       /        dx        k
+      //        j     +-----      j
+      //              node k
+      //
+      // j : direction of derivative x/y/z
+      //
+      velderxy.MultiplyNT(evel,derxy);
+
+      // compute (resolved) rate of strain
+      //
+      //          +-                                 -+ 1
+      //          |          /   \           /   \    | -
+      //          | 2 * eps | vel |   * eps | vel |   | 2
+      //          |          \   / ij        \   / ij |  
+      //          +-                                 -+  
+      //
+      LINALG::Matrix<nsd_,nsd_> two_epsilon;
+      for(int rr=0;rr<nsd_;++rr)
+      {
+        for(int mm=0;mm<nsd_;++mm)
+        {
+          two_epsilon(rr,mm) = velderxy(rr,mm) + velderxy(mm,rr);
+        }
+      }
+
+      for(int rr=0;rr<nsd_;rr++)
+      {
+        for(int mm=0;mm<nsd_;mm++)
+        {
+          rateofstrain += two_epsilon(rr,mm)*two_epsilon(mm,rr);
+        }
+      }
+
+      // sqrt(two_epsilon(rr,mm)*two_epsilon(mm,rr)/4.0*2.0)
+
+      return(sqrt(rateofstrain/2.0));
+    }
+
 
 
     //! number of dof per node
@@ -405,8 +473,10 @@ public:
     LINALG::Matrix<nsd_,1> xsi_;
     //! array for shape functions
     LINALG::Matrix<iel,1> funct_;
-    //! array for density-weighted shape functions
+    //! array for density-weighted shape functions at n+1/n+alpha_F
     LINALG::Matrix<iel,1> densfunct_;
+    //! array for density-weighted shape functions at n+alpha_M
+    LINALG::Matrix<iel,1> densamfunct_;
     //! array for shape function derivatives w.r.t r,s,t
     LINALG::Matrix<nsd_,iel> deriv_;
     //! array for second derivatives of shape function w.r.t r,s,t
@@ -419,6 +489,8 @@ public:
     LINALG::Matrix<nsd_,iel> derxy_;
     //! global second derivatives of shape functions w.r.t x,y,z
     LINALG::Matrix<numderiv2_,iel> derxy2_;
+    //! global velocity derivatives in gausspoint w.r.t x,y,z
+    LINALG::Matrix<nsd_,nsd_> vderxy_;
     //! rhs force in Gauss point
     vector<double> rhs_;
     //! vector containing all values from previous timelevel n in gausspoint
@@ -427,8 +499,6 @@ public:
     LINALG::Matrix<nsd_,1> velint_;
     //! migration velocity vector (divided by D_k*z_k) in gausspoint (ELCH)
     LINALG::Matrix<nsd_,1> migvelint_;
-    //! momentum (density-weighted velocity) derivatives
-    LINALG::Matrix<nsd_,nsd_> mderxy_;
     //! momentum divergence
     double mdiv_;
     //! the stabilisation parameters (one per transported scalar)

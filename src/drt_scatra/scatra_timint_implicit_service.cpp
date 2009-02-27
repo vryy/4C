@@ -19,6 +19,73 @@ Maintainer: Georg Bauer
 
 
 /*----------------------------------------------------------------------*
+ | calculate initial time derivative of phi at t=t_0           gjb 08/08|
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::CalcInitialPhidt()
+{
+  // time measurement:
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + calc inital phidt");
+  if (myrank_ == 0)
+  cout<<"SCATRA: calculating initial time derivative of phi\n"<<endl;
+
+  // are we really at step 0?
+  dsassert(step_==0,"Step counter is not 0");
+
+  // call elements to calculate matrix and right-hand-side
+  {
+    // zero out matrix entries
+    sysmat_->Zero();
+
+    // create the parameters for the discretization
+    ParameterList eleparams;
+
+    // action for elements
+    eleparams.set("action","calc_initial_time_deriv");
+    // other parameters that are needed by the elements
+    eleparams.set("problem type",prbtype_);
+    eleparams.set("incremental solver",incremental_);
+    eleparams.set("form of convective term",convform_);
+    if (prbtype_=="elch")
+      eleparams.set("frt",frt_); // factor F/RT
+    else if (prbtype_ == "loma")
+      eleparams.set("time derivative of thermodynamic pressure",thermpressdtn_);
+
+    //provide velocity field (export to column map necessary for parallel evaluation)
+    //SetState cannot be used since this Multivector is nodebased and not dofbased
+    const Epetra_Map* nodecolmap = discret_->NodeColMap();
+    RefCountPtr<Epetra_MultiVector> tmp = rcp(new Epetra_MultiVector(*nodecolmap,3));
+    LINALG::Export(*convel_,*tmp);
+    eleparams.set("velocity field",tmp);
+
+    // set vector values needed by elements
+    discret_->ClearState();
+    discret_->SetState("phi0",phin_);
+    discret_->SetState("dens0",densnp_);
+    // call loop over elements
+    discret_->Evaluate(eleparams,sysmat_,residual_);
+    discret_->ClearState();
+
+    // finalize the complete matrix
+    sysmat_->Complete();
+  }
+
+  // apply Dirichlet boundary conditions to system matrix
+  LINALG::ApplyDirichlettoSystem(sysmat_,phidtn_,residual_,phidtn_,*(dbcmaps_->CondMap()));
+
+  // solve for phidtn
+  solver_->Solve(sysmat_->EpetraOperator(),phidtn_,residual_,true,true);
+
+  // reset the matrix (and its graph!) since we solved
+  // a very special problem here that has a different sparsity pattern_
+  if (params_->get<int>("BLOCKPRECOND") )
+    ; //how to reset a block matrix ??
+  else
+    SystemMatrix()->Reset();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  | evaluate contribution of electrode kinetics to eq. system  gjb 02/09 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::EvaluateElectrodeKinetics(
@@ -325,6 +392,114 @@ void SCATRA::ScaTraTimIntImpl::ComputeDensity(const double thermpress,
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ | set velocity field for low-Mach-number flow                 vg 11/08 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::SetLomaVelocity(RCP<const Epetra_Vector> extvel,
+                                               RCP<DRT::Discretization> fluiddis)
+{
+  // store temperature and velocity of previous iteration for convergence check
+  tempincnp_->Update(1.0,*phinp_,0.0);
+  //velincnp_->Update(1.0,*convel_,0.0);
+
+  // check vector compatibility and determine space dimension
+  int numdim =-1;
+  if (extvel->MyLength()<= (4* convel_->MyLength()) and
+      extvel->MyLength() > (3* convel_->MyLength()))
+    numdim = 3;
+  else if (extvel->MyLength()<= (3* convel_->MyLength()))
+    numdim = 2;
+  else
+    dserror("fluid velocity vector too large");
+
+  // get noderowmap of scatra discretization
+  const Epetra_Map* noderowmap = discret_->NodeRowMap();
+
+  // get dofrowmap of fluid discretization
+  const Epetra_Map* dofrowmap = fluiddis->DofRowMap();
+
+  // loop over local nodes of scatra discretization
+  for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+  {
+    // first of all, assume the present node is not a slavenode
+    bool slavenode=false;
+
+    // get the processor-local scatra node
+    DRT::Node*  scatralnode = discret_->lRowNode(lnodeid);
+
+    // get the processor-local fluid node
+    DRT::Node*  fluidlnode = fluiddis->lRowNode(lnodeid);
+
+    // the set of degrees of freedom associated with the fluid node
+    vector<int> nodedofset = fluiddis->Dof(fluidlnode);
+
+    // check whether we have a pbc condition on this scatra node
+    vector<DRT::Condition*> mypbc;
+    scatralnode->GetCondition("SurfacePeriodic",mypbc);
+
+    // yes, we have a periodic boundary condition on this scatra node
+    if (mypbc.size()>0)
+    {
+      // get master and list of all his slavenodes
+      map<int, vector<int> >::iterator master = pbcmapmastertoslave_->find(scatralnode->Id());
+
+      // check whether this is a slavenode
+      if (master == pbcmapmastertoslave_->end())
+      {
+        // indeed a slavenode
+        slavenode = true;
+      }
+      else
+      {
+        // we have a masternode: set values for all slavenodes
+        vector<int>::iterator i;
+        for(i=(master->second).begin();i!=(master->second).end();++i)
+        {
+          // global and processor-local scatra node ID for slavenode
+          int globalslaveid = *i;
+          int localslaveid  = noderowmap->LID(globalslaveid);
+
+          // get the processor-local fluid slavenode
+          DRT::Node*  fluidlslavenode = fluiddis->lRowNode(localslaveid);
+
+          // the set of degrees of freedom associated with the node
+          vector<int> slavenodedofset = fluiddis->Dof(fluidlslavenode);
+
+          for(int index=0;index<numdim;++index)
+          {
+            // global and processor-local fluid dof ID
+            int gid = slavenodedofset[index];
+            int lid = dofrowmap->LID(gid);
+
+            // get velocity for this processor-local fluid dof
+            double velocity =(*extvel)[lid];
+            // insert velocity*density-value in vector
+            convel_->ReplaceMyValue(localslaveid, index, velocity);
+          }
+        }
+      }
+    }
+
+    // do this for all nodes other than slavenodes
+    if (slavenode == false)
+    {
+      for(int index=0;index<numdim;++index)
+      {
+        // global and processor-local fluid dof ID
+        int gid = nodedofset[index];
+        int lid = dofrowmap->LID(gid);
+
+        // get velocity for this processor-local fluid dof
+        double velocity = (*extvel)[lid];
+        // insert velocity*density-value in vector
+        convel_->ReplaceMyValue(lnodeid, index, velocity);
+      }
+    }
+  }
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  | convergence check for low-Mach-number flow                  vg 01/09 |
@@ -658,6 +833,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
     // set vector values needed by elements
     discret_->ClearState();
     discret_->SetState("phinp",phinp_);
+    discret_->SetState("densnp",densnp_);
 
     // evaluate fluxes in the whole computational domain (e.g., for visualization of particle path-lines)
     discret_->Evaluate(params,Teuchos::null,Teuchos::null,fluxx,fluxy,fluxz);

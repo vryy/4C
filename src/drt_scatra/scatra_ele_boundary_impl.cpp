@@ -337,6 +337,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
         eflux,
         peleptr,
         myphinp,
+        mydensnp,
         mat,
         temperature,
         frt,

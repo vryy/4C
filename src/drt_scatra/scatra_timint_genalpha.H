@@ -35,10 +35,6 @@ public:
   /// Destructor
   virtual ~TimIntGenAlpha();
 
-  /// set velocity field for low-Mach-number flow
-  void SetLomaVelocity(RCP<const Epetra_Vector> extvel,
-                       RCP<DRT::Discretization> fluiddis);
-
   /// compute initial time derivative of density field for low-Mach-number flow
   void ComputeInitialDensityDerivative();
 
@@ -103,15 +99,8 @@ protected:
   /// return the right time-scaling-factor for the true residual
   double ResidualScaling() const;
 
-  /// time derivative of solution vector phi at times t_{n+1} and t_{n}
-  RCP<Epetra_Vector>  phidtnp_;
-  RCP<Epetra_Vector>  phidtn_;
-
 
 private:
-
-  /// calculate initial value for phidtn_
-  void CalcInitialPhidt();
 
   /// solution vector at time n+alpha_F
   RCP<Epetra_Vector>  phiaf_;

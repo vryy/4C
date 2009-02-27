@@ -525,6 +525,9 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
       // parameters for stabilization
       eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
 
+      // parameters for turbulence
+      eleparams.sublist("TURBULENCE PARAMETERS") = params_->sublist("TURBULENCE PARAMETERS");
+
       // set vector values needed by elements
       discret_->ClearState();
       discret_->SetState("hist" ,hist_);
@@ -822,6 +825,9 @@ void SCATRA::ScaTraTimIntImpl::Solve()
 
     // parameters for stabilization
     eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
+
+    // parameters for turbulence
+    eleparams.sublist("TURBULENCE PARAMETERS") = params_->sublist("TURBULENCE PARAMETERS");
 
     // set vector values needed by elements
     discret_->ClearState();

@@ -157,8 +157,8 @@ public:
   virtual void ComputeIntermediateValues()=0;
 
   /// set velocity field for low-Mach-number flow
-  virtual void SetLomaVelocity(RCP<const Epetra_Vector> extvel,
-                       RCP<DRT::Discretization> fluiddis)=0;
+  void SetLomaVelocity(RCP<const Epetra_Vector> extvel,
+                       RCP<DRT::Discretization> fluiddis);
 
   /// set initial thermodynamic pressure and time derivative for low-Mach-number flow
   void SetInitialThermPressure(const double thermpress);
@@ -258,6 +258,9 @@ protected:
     step_ += 1;
     time_ += dta_;
   }
+
+  /// calculate initial value for phidtn_
+  void CalcInitialPhidt();
 
   /// initialization procedure before the first time step is done
   virtual void PrepareFirstTimeStep() = 0;
@@ -405,9 +408,13 @@ protected:
   /// The residual vector
   RCP<Epetra_Vector>    residual_;
 
-  /// phi at time n+1 and n
+  /// phi at times n+1 and n
   RCP<Epetra_Vector>    phinp_;
   RCP<Epetra_Vector>    phin_;
+
+  /// time derivative of phi at times n+1 and n
+  RCP<Epetra_Vector>  phidtnp_;
+  RCP<Epetra_Vector>  phidtn_;
 
   /// inverse values of phi at time n+1
   RCP<Epetra_Vector>    invphinp_;

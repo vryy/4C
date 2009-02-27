@@ -29,6 +29,24 @@ namespace SCATRA
     tau_zero
   };
 
+  //! options for fine-scale subgrid diffusivity
+  enum FineSubgridDiff
+  {
+    no_fssgd,
+    artificial,
+    smagorinsky_all,
+    smagorinsky_small
+  };
+
+  //! options for physical turbulence models
+  enum TurbModel
+  {
+    no_model,
+    smagorinsky,
+    smagorinsky_with_wall_damping,
+    dynamic_smagorinsky
+  };
+
   //! flux parameters recognized by scalar transport implementation class
   enum FluxType
   {

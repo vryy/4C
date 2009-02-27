@@ -34,10 +34,6 @@ public:
   /// Destructor
   virtual ~TimIntBDF2();
 
-  /// set velocity field for low-Mach-number flow
-  void SetLomaVelocity(RCP<const Epetra_Vector> extvel,
-                       RCP<DRT::Discretization> fluiddis);
-
   /// compute initial time derivative of density field for low-Mach-number flow
   void ComputeInitialDensityDerivative(){return;};
 
