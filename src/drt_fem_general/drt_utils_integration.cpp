@@ -3466,14 +3466,16 @@ DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
   {
     nquad = 7;
 
+    const double q12 = 0.5;
+    
     // weights
-    qwgt[0] = 0.225;
-    qwgt[1] = 0.125939180545;
-    qwgt[2] = 0.125939180545;
-    qwgt[3] = 0.125939180545;
-    qwgt[4] = 0.132394152789;
-    qwgt[5] = 0.132394152789;
-    qwgt[6] = 0.132394152789;
+    qwgt[0] = q12 * 0.225;
+    qwgt[1] = q12 * 0.125939180545;
+    qwgt[2] = q12 * 0.125939180545;
+    qwgt[3] = q12 * 0.125939180545;
+    qwgt[4] = q12 * 0.132394152789;
+    qwgt[5] = q12 * 0.132394152789;
+    qwgt[6] = q12 * 0.132394152789;
 
     // positions
     qxg[0][0] = 0.333333333333;
