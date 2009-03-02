@@ -335,11 +335,23 @@ void LINALG::SparseMatrix::Assemble(
 
   if (sysmat_->Filled())
   {
-    std::vector<double> values(lmcol.size());
-    std::vector<int> localcol(lmcol.size());
+    // There is the case of nodes without dofs (XFEM).
+    // If no row dofs are present on this proc, their is nothing to assemble.
+    // However, the subsequent check for coldofs (in DEBUG mode) would incorrectly fail.
+    bool doit = false;
+    for (int lrow=0; lrow<lrowdim; ++lrow)
+      if (lmrowowner[lrow] == myrank)
+      {
+        doit = true;
+        break;
+      }
+    if (!doit) return;
+
+    std::vector<double> values(lcoldim);
+    std::vector<int> localcol(lcoldim);
     for (int lcol=0; lcol<lcoldim; ++lcol)
     {
-      int cgid = lmcol[lcol];
+      const int cgid = lmcol[lcol];
       localcol[lcol] = colmap.LID(cgid);
 #ifdef DEBUG
       if (localcol[lcol]<0) dserror("Sparse matrix A does not have global column %d",cgid);
@@ -353,8 +365,8 @@ void LINALG::SparseMatrix::Assemble(
       if (lmrowowner[lrow] != myrank) continue;
 
       // check whether I have that global row
-      int rgid = lmrow[lrow];
-      int rlid = rowmap.LID(rgid);
+      const int rgid = lmrow[lrow];
+      const int rlid = rowmap.LID(rgid);
 #ifdef DEBUG
       if (rlid<0) dserror("Sparse matrix A does not have global row %d",rgid);
 #endif
@@ -363,7 +375,7 @@ void LINALG::SparseMatrix::Assemble(
       {
         values[lcol] = Aele(lrow,lcol);
       }
-      int errone = sysmat_->SumIntoMyValues(rlid,lcoldim,&values[0],&localcol[0]);
+      const int errone = sysmat_->SumIntoMyValues(rlid,lcoldim,&values[0],&localcol[0]);
       if (errone)
         dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d",errone);
     } // for (int lrow=0; lrow<ldim; ++lrow)
@@ -377,7 +389,7 @@ void LINALG::SparseMatrix::Assemble(
       if (lmrowowner[lrow] != myrank) continue;
 
       // check whether I have that global row
-      int rgid = lmrow[lrow];
+      const int rgid = lmrow[lrow];
 #ifdef DEBUG
       if (!rowmap.MyGID(rgid)) dserror("Proc %d does not have global row %d",myrank,rgid);
 #endif
@@ -389,10 +401,10 @@ void LINALG::SparseMatrix::Assemble(
 
         // Now that we do not rebuild the sparse mask in each step, we
         // are bound to assemble the whole thing. Zeros included.
-        int errone = sysmat_->SumIntoGlobalValues(rgid,1,&val,&cgid);
+        const int errone = sysmat_->SumIntoGlobalValues(rgid,1,&val,&cgid);
         if (errone>0)
         {
-          int errtwo = sysmat_->InsertGlobalValues(rgid,1,&val,&cgid);
+          const int errtwo = sysmat_->InsertGlobalValues(rgid,1,&val,&cgid);
           if (errtwo<0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned error code %d",errtwo);
         }
         else if (errone)
