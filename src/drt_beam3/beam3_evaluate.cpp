@@ -539,29 +539,42 @@ int DRT::ELEMENTS::Beam3::EvaluateBrownianForces(ParameterList& params,
 int DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
                                       Epetra_SerialDenseMatrix& elemat1)
 {
-  LINALG::Matrix<3,1> newangle;
-  quaterniontoangle(Qnew_, newangle);
-  LINALG::Matrix<3,3> Hinverse = Hinv(newangle);
+  //get PTC dti parameter
   double dti = params.get<double>("dti",0.0);
-
-  Hinverse.Scale(dti);
   
-  //adding an anisotropic term damping motion around own axis
-  double anisotropy = 100;
-  LINALG::Matrix<3,3> Triad;
-  quaterniontotriad(Qnew_,Triad);
+  double isotorsdamp = 0.0005;
+  double anisotorsdamp = 0.0005;  
+  
+  //computing angle increment from current position in comparison with last converged position for damping
+  LINALG::Matrix<4,1> deltaQ;
+  LINALG::Matrix<3,1> deltatheta;     
+  quaternionproduct(inversequaternion(Qconv_),Qnew_,deltaQ);      
+  quaterniontoangle(deltaQ,deltatheta);
+           
+  //computing special matrix for anisotropic damping
+  LINALG::Matrix<3,3> Tconv;
+  quaterniontotriad(Qconv_,Tconv);
   LINALG::Matrix<3,3> Theta;
   for(int i = 0; i<3; i++)
     for(int j = 0; j<3; j++)
-      Theta(i,j) = Triad(i,0)*Triad(j,0);
-    
-  LINALG::Matrix<3,3> aux;
-  aux.Multiply(Theta,Hinverse);
-  aux.Scale(anisotropy);
-  Hinverse += aux;
+      Theta(i,j) = Tconv(i,0)*Tconv(j,0);
   
+  //inverse exponential map
+  LINALG::Matrix<3,3> Hinverse = Hinv(deltatheta);
+     
+  //isotropic artificial stiffness
+  LINALG::Matrix<3,3> artstiff = Hinverse;
+  artstiff.Scale(zeta_*0.5*isotorsdamp / params.get<double>("delta time",0.01));    
   
+  //anisotropic artificial stiffness      
+  LINALG::Matrix<3,3> auxstiff;
+  auxstiff.Multiply(Theta,Hinverse);
+  auxstiff.Scale(anisotorsdamp*zeta_*0.5 / params.get<double>("delta time",0.01));
+  artstiff += auxstiff;
   
+  //scale artificial damping with dti parameter for PTC method
+  artstiff.Scale(dti);
+       
 
   for(int i= 0; i<3; i++)
   {
@@ -576,10 +589,10 @@ int DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
       
       
       //rotational damping
-      elemat1(3+i, 3+j) += Hinverse(i,j);
-      elemat1(9+i, 9+j) += Hinverse(i,j);
-      elemat1(9+i, 3+j) += Hinverse(i,j);
-      elemat1(3+i, 9+j) += Hinverse(i,j);
+      elemat1(3+i, 3+j) += artstiff(i,j);
+      elemat1(9+i, 9+j) += artstiff(i,j);
+      elemat1(9+i, 3+j) += artstiff(i,j);
+      elemat1(3+i, 9+j) += artstiff(i,j);
     }
   }
 
@@ -1176,8 +1189,8 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
 
   //difference between coordinates of both nodes, x21' Crisfield  Vol. 2 equ. (17.66a) and (17.72)
   for (int j=0; j<3; ++j)
-  {
-    x21(j)                = (X_(3+j) - X_(j) ) + ( disp[6+j]  - disp[j] );
+  {    
+    x21(j)                = (Nodes()[1]->X()[j]  - Nodes()[0]->X()[j] ) + ( disp[6+j]  - disp[j] );
     betaplusalphanew_(j)  = disp[9+j] + disp[3+j];
     betaminusalphanew_(j) = disp[9+j] - disp[3+j];
   }    
@@ -1187,13 +1200,13 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
 
   deltabetaminusalpha  = betaminusalphanew_;
   deltabetaminusalpha -= betaminusalphaold_;
-  
+    
 
   //calculating current central triad like in Crisfield, Vol. 2, equation (17.65), but by a quaternion product
   updatetriad(deltabetaplusalpha,Tnew);
   
   //updating local curvature
-  updatecurvature(Tnew, deltabetaplusalpha,deltabetaminusalpha);
+  updatecurvature(Tnew,deltabetaplusalpha,deltabetaminusalpha);
 
   //computing current axial and shear strain epsilon, Crisfield, Vol. 2, equation (17.67)
   epsilonn.MultiplyTN(Tnew,x21);
@@ -1232,45 +1245,14 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
   epsilonn(2) *= sm*crosssecshear_;
 
   stressn.Multiply(Tnew,epsilonn);
-        
-
+  
   //turning bending strain epsilonm into bending stress stressm
   epsilonm = curvnew_;
   epsilonm(0) *= sm*Irr_;
   epsilonm(1) *= ym*Iyy_;
   epsilonm(2) *= ym*Izz_;
   stressm.Multiply(Tnew,epsilonm);
-  
-  
-  
-  double torsdamp = 0.0005; //0.000005 for Actin3D_10GOLD1.dat, Actin3D_10GOLD2.dat, Actin3D_10GOLD4.dat
-  double anisotropy = 0;  //0 except for: 100 for Actin3D_10GOLD4.dat
-  
-  //computing angle increment from current position in comparison with last converged position for damping
-  LINALG::Matrix<4,1> deltaQ;
-  LINALG::Matrix<3,1> deltatheta;     
-  quaternionproduct(inversequaternion(Qconv_),Qnew_,deltaQ);      
-  quaterniontoangle(deltaQ,deltatheta);
-  
-
-  
-  //computing special matrix for anisotropic damping
-  LINALG::Matrix<3,3> Tconv;
-  quaterniontotriad(Qconv_,Tconv);
-  LINALG::Matrix<3,3> Theta;
-  for(int i = 0; i<3; i++)
-    for(int j = 0; j<3; j++)
-      Theta(i,j) = Tconv(i,0)*Tconv(j,0);
-  
-  if(deltabetaplusalpha.Norm2() > 1)
-  {
-    std::cout<<"\ndeltabetaplusalpha = "<<deltabetaplusalpha;
-    std::cout<<"\ndeltabetaminusalpha = "<<deltabetaminusalpha;
-    std::cout<<"\nTnew = "<<Tnew;
-    std::cout<<"\nTconv = "<<Tconv;
-    //dserror("to large increment");
-  }
-  
+    
   
   //computing global internal forces, Crisfield Vol. 2, equation (17.79)
   //note: X = [-I 0; -S -I; I 0; -S I] with -S = T^t; and S = S(x21)/2;
@@ -1287,36 +1269,8 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
       {
         (*force)(i+3) -= stressn(j)*spinx21(i,j);
         (*force)(i+9) -= stressn(j)*spinx21(i,j);
-      }
-      
+      }     
     }
-    
-
-    
-    //artificial isotropic rotational damping
-    {          
-      LINALG::Matrix<3,1> omega = deltatheta;
-      omega.Scale( torsdamp*zeta_ / params.get<double>("delta time",0.01) );
-      
-      /*
-      //additional artificial anisotropic rotational damping    
-      LINALG::Matrix<3,1> damp;
-      damp.Multiply(Theta,omega);
-      damp.Scale(anisotropy);
-      omega += damp;
-      */
-  
-      for(int i = 0; i<3; i++)
-      {
-        //node 1     
-        (*force)[3+i] += omega(i);
-        //node 2
-        (*force)[9+i] += omega(i);      
-      }
-
-    }
-      
-
   }
   
 
@@ -1342,35 +1296,72 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
     (*stiffmatrix) += Ksig2;
 
     
-    
+    //the following block adds artificial rotation damping to force vector and stiffness matrix
     {
-      //artificial isotropic rotational damping stiffness
+      double isotorsdamp = 0; //0.0005 seems a good choice for merely isotropic damping
+      double anisotorsdamp = 0.0005;  //0.0005 seems a good choice with isotorsdamp = 0;
+      
+      //computing angle increment from current position in comparison with last converged position for damping
+      LINALG::Matrix<4,1> deltaQ;
+      LINALG::Matrix<3,1> deltatheta;     
+      quaternionproduct(inversequaternion(Qconv_),Qnew_,deltaQ);      
+      quaterniontoangle(deltaQ,deltatheta);
+      
+      //angular velocity
+      LINALG::Matrix<3,1> omega = deltatheta;
+      omega.Scale(1/ params.get<double>("delta time",0.01));
+              
+      //computing special matrix for anisotropic damping
+      LINALG::Matrix<3,3> Tconv;
+      quaterniontotriad(Qconv_,Tconv);
+      LINALG::Matrix<3,3> Theta;
+      for(int i = 0; i<3; i++)
+        for(int j = 0; j<3; j++)
+          Theta(i,j) = Tconv(i,0)*Tconv(j,0);
+      
+      //inverse exponential map
       LINALG::Matrix<3,3> Hinverse = Hinv(deltatheta);
-
-      Hinverse.Scale(zeta_*0.5*torsdamp / params.get<double>("delta time",0.01));
+         
+      //isotropic artificial stiffness
+      LINALG::Matrix<3,3> artstiff = Hinverse;
+      artstiff.Scale(zeta_*0.5*isotorsdamp / params.get<double>("delta time",0.01));    
       
-      /*
-      //additional artificial anisotropic rotational damping stiffness      
-      LINALG::Matrix<3,3> aux;
-      aux.Multiply(Theta,Hinverse);
-      aux.Scale(anisotropy);
-      Hinverse += aux;
-      */
+      //anisotropic artificial stiffness      
+      LINALG::Matrix<3,3> auxstiff;
+      auxstiff.Multiply(Theta,Hinverse);
+      auxstiff.Scale(anisotorsdamp*zeta_*0.5 / params.get<double>("delta time",0.01));
+      artstiff += auxstiff;
+           
+      //isotropic artificial forces
+      LINALG::Matrix<3,1> artforce = omega;
+      artforce.Scale(isotorsdamp*zeta_);
+          
+      //anisotropic artificial forces  
+      LINALG::Matrix<3,1> auxforce;
+      auxforce.Multiply(Theta,omega);
+      auxforce.Scale(anisotorsdamp*zeta_);
+      artforce += auxforce;
       
-
+      //adding artificial contributions to stifness matrix and force vector
       for(int i= 0; i<3; i++)
       {
         for(int j=0;j<3;j++)
         {
-          (*stiffmatrix)(3+i, 3+j) += Hinverse(i,j);
-          (*stiffmatrix)(9+i, 9+j) += Hinverse(i,j);
-          (*stiffmatrix)(9+i, 3+j) += Hinverse(i,j);
-          (*stiffmatrix)(3+i, 9+j) += Hinverse(i,j);
+          (*stiffmatrix)(3+i, 3+j) += artstiff(i,j);
+          (*stiffmatrix)(9+i, 9+j) += artstiff(i,j);
+          (*stiffmatrix)(9+i, 3+j) += artstiff(i,j);
+          (*stiffmatrix)(3+i, 9+j) += artstiff(i,j);
         }
-      }      
-      
+      }    
+  
+      for(int i = 0; i<3; i++)
+      {    
+        (*force)[3+i] += artforce(i);
+        (*force)[9+i] += artforce(i);      
+      }     
     }
     
+  
 
 
   }
