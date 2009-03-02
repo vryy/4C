@@ -36,6 +36,7 @@ namespace INPAR
     {
       statout_none,  ///< no special output
       statout_endtoendlog,  ///< measuring end-to-end length of a single filament
+      statout_anisotropic,  ///< measuring anisotropic diffusion of filament
       statout_endtoendergodicity,  ///< measuring ergodicity of single filament simulations
       statout_viscoelasticity, ///< measuring viscoelastic properties of filament networks
       statout_gmsh///< writing special output in order to generate a Gmsh movie
