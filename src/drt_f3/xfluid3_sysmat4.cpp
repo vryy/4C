@@ -1793,21 +1793,21 @@ void XFLUID::callSysmat4(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
                 break;
-//            case DRT::Element::hex27:
-//                Sysmat4<DRT::Element::hex27,XFEM::standard_assembly>(
-//                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-//                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
-//                break;
+            case DRT::Element::hex27:
+                Sysmat4<DRT::Element::hex27,XFEM::standard_assembly>(
+                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
+                break;
             case DRT::Element::tet4:
                 Sysmat4<DRT::Element::tet4,XFEM::standard_assembly>(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
                 break;
-//            case DRT::Element::tet10:
-//                Sysmat4<DRT::Element::tet4,XFEM::standard_assembly>(
-//                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-//                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
-//                break;
+            case DRT::Element::tet10:
+                Sysmat4<DRT::Element::tet10,XFEM::standard_assembly>(
+                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
+                break;
             default:
                 dserror("standard_assembly Sysmat not templated yet");
         };
@@ -1826,16 +1826,21 @@ void XFLUID::callSysmat4(
                         ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
                 break;
-//            case DRT::Element::hex27:
-//                Sysmat4<DRT::Element::hex27,XFEM::xfem_assembly>(
-//                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-//                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
-//                break;
-//            case DRT::Element::tet10:
-//                Sysmat4<DRT::Element::tet4,XFEM::standard_assembly>(
-//                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
-//                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
-//                break;
+            case DRT::Element::hex27:
+                Sysmat4<DRT::Element::hex27,XFEM::xfem_assembly>(
+                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
+                break;
+            case DRT::Element::tet4:
+                Sysmat4<DRT::Element::tet4,XFEM::xfem_assembly>(
+                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
+                break;
+            case DRT::Element::tet10:
+                Sysmat4<DRT::Element::tet10,XFEM::xfem_assembly>(
+                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
+                break;
             default:
                 dserror("xfem_assembly Sysmat not templated yet");
         };

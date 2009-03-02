@@ -201,7 +201,20 @@ DRT::UTILS::GaussRule3D getXFEMGaussrule(
         }
         case DRT::Element::hex27:
         {
-          rule = DRT::UTILS::intrule_tet_343point_peano;
+          if (xeleGeoType == GEO::CARTESIAN) // constant jacobian
+            rule = DRT::UTILS::intrule_tet_45point;
+          else
+            rule = DRT::UTILS::intrule_tet_45point;
+          break;
+        }
+        case DRT::Element::tet4:
+        {
+          rule = DRT::UTILS::intrule_tet_4point;
+          break;
+        }
+        case DRT::Element::tet10:
+        {
+          rule = DRT::UTILS::intrule_tet_11point;
           break;
         }
         default:
