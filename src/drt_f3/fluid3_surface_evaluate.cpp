@@ -1564,8 +1564,6 @@ void DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration(ParameterList& params,
     const double length = sqrt( normal[0]*normal[0] + normal[1]*normal[1] + normal[2]*normal[2] );
     // here we need an inward normal!!!
     for (int i=0; i<3; ++i) normal[i] = -normal[i] / length;
-    printf("p %10.5e n %10.5e %10.5e %10.5e length %10.5e\n",
-    pressure,normal[0],normal[1],normal[2],length); fflush(stdout);
 
     const double fac = intpoints.qwgt[gpid] * length * thsl * pressure * invdensity;
     for (int node=0;node<iel;++node)
