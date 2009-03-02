@@ -295,7 +295,8 @@ private:
     none,
     calc_ale_lin_stiff,
     calc_ale_laplace,
-    calc_ale_spring
+    calc_ale_spring,
+    calc_ale_spring_const_stiff
   };
 
   //! container containing all kind of ale2 thisandthat

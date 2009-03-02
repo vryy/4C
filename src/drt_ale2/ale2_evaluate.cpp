@@ -57,6 +57,8 @@ int DRT::ELEMENTS::Ale2::Evaluate(ParameterList& params,
       act = Ale2::calc_ale_laplace;
   else if (action == "calc_ale_spring")
     act = Ale2::calc_ale_spring;
+  else if (action == "calc_ale_spring_const_stiff")
+    act = Ale2::calc_ale_spring_const_stiff;
   else
     dserror("Unknown type of action for Ale2");
 
@@ -91,6 +93,15 @@ int DRT::ELEMENTS::Ale2::Evaluate(ParameterList& params,
     vector<double> my_dispnp(lm.size());
     DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
 
+    static_ke_spring(&elemat1,my_dispnp);
+
+    break;
+  }
+  case calc_ale_spring_const_stiff:
+  {
+    // same as calc_ale_spring, however, no displ. and hence no current configuration
+    // is used for stiffness matrix computation
+    vector<double> my_dispnp(lm.size(),0.0);
     static_ke_spring(&elemat1,my_dispnp);
 
     break;
@@ -360,12 +371,12 @@ void DRT::ELEMENTS::Ale2::static_ke_spring(Epetra_SerialDenseMatrix* sys_mat,
 
   for(int i=0;i<iel;i++)
   {
-    xyze(0,i)=Nodes()[i]->X()[0] + displacements[i*2];
-    xyze(1,i)=Nodes()[i]->X()[1] + displacements[i*2+1];
+    xyze(0,i)=Nodes()[i]->X()[0];// + displacements[i*2];
+    xyze(1,i)=Nodes()[i]->X()[1];// + displacements[i*2+1];
   }
 
 
-  //lineal springs from all corner nodes to all corner nodes
+  //Linear springs from all corner nodes to all corner nodes
   //loop over all edges and diagonals of the element
   for (node_i=0; node_i<numcnd; node_i++)
   {

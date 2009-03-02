@@ -450,12 +450,10 @@ void ADAPTER::XFluidImpl::NonlinearSolve()
   itrueresnp_->Export(*itruerescol,*conimpo,Add); 
   //LINALG::Export(*itruerescol,*itrueresnp_);
   
-//  if (TimIntScheme() == timeint_stationary)
-//  {
-//    LiftDrag();
-////    cout << *boundarydis_ << endl;
-////    exit(0);
-//  }
+  if (TimIntScheme() == timeint_stationary)
+  {
+    LiftDrag();
+  }
   
 }
 
