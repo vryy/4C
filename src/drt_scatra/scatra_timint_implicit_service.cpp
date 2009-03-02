@@ -982,13 +982,10 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
               double normflux = ((*trueresidual_)[doflid])/(*integratedshapefunc)[doflid];
               if (idof == 0) // integral value only for first scalar!
               {
-                // for orientation convention we need a minus sign here!
-                // (the negative of the normal flux)
-                normfluxintegral -= (*trueresidual_)[doflid];
+                normfluxintegral += (*trueresidual_)[doflid];
               }
               // for visualization, we plot the normal flux with 
               // outward pointing normal vector
-
               for (int idim = 0; idim < 3; idim++)
               {
                 Epetra_Vector* normalcomp = (*normals_)(idim);
