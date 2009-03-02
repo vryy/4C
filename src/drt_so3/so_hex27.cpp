@@ -22,11 +22,6 @@ Maintainer: Thomas Kloeppel
 #include "../drt_mat/viscoanisotropic.H"
 #include "../drt_mat/anisotropic_balzani.H"
 
-// inverse design object
-#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
-#include "inversedesign.H"
-#endif
-
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              maf 04/07|
  |  id             (in)  this element's global id                       |
@@ -40,14 +35,6 @@ data_()
   detJ_.resize(NUMGPT_SOH27);
 //  for (int i=0; i<NUMGPT_SOH27; ++i)
 //    invJ_[i].Shape(3,3);
-
-#if defined(PRESTRESS) || defined(POSTSTRESS)
-  prestress_ = rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH27,NUMGPT_SOH27));
-#endif
-
-#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
-  invdesign_ = rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_SOH27,NUMGPT_SOH27));
-#endif
 
   return;
 }
@@ -69,14 +56,6 @@ detJ_(old.detJ_)
     //invJ_[i].Shape(old.invJ_[i].M(),old.invJ_[i].N());
     invJ_[i] = old.invJ_[i];
   }
-
-#if defined(PRESTRESS) || defined(POSTSTRESS)
-  prestress_ = rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
-#endif
-
-#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
-  invdesign_ = rcp(new DRT::ELEMENTS::InvDesign(*(old.invdesign_)));
-#endif
 
   return;
 }
@@ -122,20 +101,6 @@ void DRT::ELEMENTS::So_hex27::Pack(vector<char>& data) const
   data_.Pack(tmp);
   AddtoPack(data,tmp);
 
-#if defined(PRESTRESS) || defined(POSTSTRESS)
-  // prestress_
-  vector<char> tmpprestress(0);
-  prestress_->Pack(tmpprestress);
-  AddtoPack(data,tmpprestress);
-#endif
-
-#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
-  // invdesign_
-  vector<char> tmpinvdesign(0);
-  invdesign_->Pack(tmpinvdesign);
-  AddtoPack(data,tmpinvdesign);
-#endif
-
   // detJ_
   AddtoPack(data,detJ_);
 
@@ -170,20 +135,6 @@ void DRT::ELEMENTS::So_hex27::Unpack(const vector<char>& data)
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
-
-#if defined(PRESTRESS) || defined(POSTSTRESS)
-  // prestress_
-  vector<char> tmpprestress(0);
-  ExtractfromPack(position,data,tmpprestress);
-  prestress_->Unpack(tmpprestress);
-#endif
-
-#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
-  // invdesign_
-  vector<char> tmpinvdesign(0);
-  ExtractfromPack(position,data,tmpinvdesign);
-  invdesign_->Unpack(tmpinvdesign);
-#endif
 
   // detJ_
   ExtractfromPack(position,data,detJ_);

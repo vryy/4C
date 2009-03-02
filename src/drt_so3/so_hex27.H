@@ -29,11 +29,6 @@ using namespace Teuchos;
 #include "so_line.H"
 #include "../drt_inpar/inpar_structure.H"
 
-// prestressing object
-#if defined(PRESTRESS) || defined(POSTSTRESS)
-#include "prestress.H"
-#endif
-
 #include "../drt_mat/material.H"
 
 #include "../drt_lib/linalg_fixedsizematrix.H"
@@ -372,24 +367,8 @@ protected:
   //! determinant of Jacobian in material frame
   vector<double>                                                        detJ_;
 
-#if defined(PRESTRESS) || defined(POSTSTRESS)
-  /// Prestressing object
-  RCP<DRT::ELEMENTS::PreStress>                                         prestress_;
-
-  // compute Jacobian mapping wrt to deformed configuration
-  void UpdateJacobianMapping(const vector<double>& disp,
-                             DRT::ELEMENTS::PreStress& prestress);
-
-  // compute defgrd in all gp for given disp
-  void DefGradient(const vector<double>& disp,
-                   Epetra_SerialDenseMatrix& gpdefgrd,
-                   DRT::ELEMENTS::PreStress& prestress);
-#endif
 
   friend class DRT::ELEMENTS::InvDesign;
-#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
-  RCP<DRT::ELEMENTS::InvDesign>                                         invdesign_;
-#endif
 
 
   // internal calculation methods
