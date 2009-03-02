@@ -511,7 +511,7 @@ void DRT::ELEMENTS::XFluid3Surface::IntegrateSurfaceImpulsRate(
 //  const Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih = params.get< Teuchos::RCP< XFEM::InterfaceHandleXFSI > >("interfacehandle",null);
     
   // check, if we have not enough dofs (intersected element or element in a hole)
-  if (lm.size() != iel*4)
+  if ((int)lm.size() != iel*4)
   {
     return;
   }
