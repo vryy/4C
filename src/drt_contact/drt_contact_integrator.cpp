@@ -2543,6 +2543,594 @@ void CONTACT::Integrator::IntegrateDerivCell3D(
 }
 
 /*----------------------------------------------------------------------*
+ |  Integrate and linearize a 2D slave / master cell (3D)     popp 03/09|
+ |  This method integrates the cell M matrix and weighted gap g~        |
+ |  and stores it in mseg and gseg respectively. Moreover, derivatives  |
+ |  LinM and Ling are built and stored directly into the adjacent nodes.|
+ |  (Thus this method combines EVERYTHING before done separately in     |
+ |  IntegrateM3D, IntegrateG3D, DerivM3D and DerivG3D!)                 |
+ |  This is the auxiliary plane coupling version!!!                     |
+ *----------------------------------------------------------------------*/
+void CONTACT::Integrator::IntegrateDerivCell3DAuxPlane(
+     CONTACT::CElement& sele, CONTACT::CElement& mele,
+     RCP<CONTACT::Intcell> cell, double* auxn,
+     RCP<Epetra_SerialDenseMatrix> mseg,
+     RCP<Epetra_SerialDenseVector> gseg)
+{
+  //check for problem dimension
+  if (Dim()!=3) dserror("ERROR: 3D integration method called for non-3D problem");
+ 
+  // discretization type of master element
+  DRT::Element::DiscretizationType sdt = sele.Shape();
+  DRT::Element::DiscretizationType mdt = mele.Shape();
+  
+  // check input data
+  if ((!sele.IsSlave()) || (mele.IsSlave()))
+    dserror("ERROR: IntegrateDerivCell3DAuxPlane called on a wrong type of CElement pair!");
+  if (cell==null)
+    dserror("ERROR: IntegrateDerivCell3DAuxPlane called without integration cell");
+  
+  // number of nodes (slave, master)
+  int nrow = sele.NumNode();
+  int ncol = mele.NumNode();
+  int ndof = Dim();
+   
+  // create empty vectors for shape fct. evaluation
+  LINALG::SerialDenseVector sval(nrow);
+  LINALG::SerialDenseMatrix sderiv(nrow,2,true);
+  LINALG::SerialDenseMatrix ssecderiv(nrow,3);
+  LINALG::SerialDenseVector mval(ncol);
+  LINALG::SerialDenseMatrix mderiv(ncol,2,true);
+  LINALG::SerialDenseVector dualval(nrow);
+  LINALG::SerialDenseMatrix dualderiv(nrow,2,true);
+  
+  // get slave and master nodal coords for Jacobian / GP evaluation
+  LINALG::SerialDenseMatrix scoord(3,sele.NumNode());
+  sele.GetNodalCoords(scoord);
+  LINALG::SerialDenseMatrix mcoord(3,mele.NumNode());
+  mele.GetNodalCoords(mcoord);
+  
+  // get slave element nodes themselves for normal evaluation
+  DRT::Node** mynodes = sele.Nodes();
+  if(!mynodes) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+  
+  // map iterator
+  typedef map<int,double>::const_iterator CI;
+  
+  // prepare directional derivative of dual shape functions
+  // this is necessary for all slave element types except tri3
+  bool duallin = false;
+  vector<vector<map<int,double> > > dualmap(nrow,vector<map<int,double> >(nrow));
+  if (sele.Shape()!=CElement::tri3)
+  {
+    duallin = true;
+    sele.DerivShapeDual(dualmap);
+  }
+  
+  //**********************************************************************
+  // loop over all Gauss points for integration
+  //**********************************************************************
+  for (int gp=0;gp<nGP();++gp)
+  {
+    // coordinates and weight
+    double eta[2] = {Coordinate(gp,0), Coordinate(gp,1)};
+    double wgt = Weight(gp);
+    
+    // get global Gauss point coordinates
+    double globgp[3] = {0.0, 0.0, 0.0};
+    cell->LocalToGlobal(eta,globgp,0);
+    
+    double sxi[2] = {0.0, 0.0};
+    double mxi[2] = {0.0, 0.0};
+    
+    // project Gauss point onto slave element
+    // project Gauss point onto master element
+    CONTACT::Projector projector(3);
+    projector.ProjectGaussPointAuxn3D(globgp,auxn,sele,sxi);
+    projector.ProjectGaussPointAuxn3D(globgp,auxn,mele,mxi);
+        
+    // check GP projection (SLAVE)
+    double tol = 0.01;
+    if (sdt==DRT::Element::quad4 || sdt==DRT::Element::quad8 || sdt==DRT::Element::quad9)
+    {
+      if (sxi[0]<-1.0-tol || sxi[1]<-1.0-tol || sxi[0]>1.0+tol || sxi[1]>1.0+tol)
+      {
+        cout << "\n***Warning: IntegrateMAuxPlane3D: Gauss point projection outside!";
+        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+        cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << endl;
+      }
+    }
+    else
+    {
+      if (sxi[0]<-tol || sxi[1]<-tol || sxi[0]>1.0+tol || sxi[1]>1.0+tol || sxi[0]+sxi[1]>1.0+2*tol)
+      {
+        cout << "\n***Warning: IntegrateMAuxPlane3D: Gauss point projection outside!";
+        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+        cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << endl;
+      }
+    }
+    
+    // check GP projection (MASTER)
+    if (mdt==DRT::Element::quad4 || mdt==DRT::Element::quad8 || mdt==DRT::Element::quad9)
+    {
+      if (mxi[0]<-1.0-tol || mxi[1]<-1.0-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol)
+      {
+        cout << "\n***Warning: IntegrateMAuxPlane3D: Gauss point projection outside!";
+        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+        cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << endl;
+      }
+    }
+    else
+    {
+      if (mxi[0]<-tol || mxi[1]<-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol || mxi[0]+mxi[1]>1.0+2*tol)
+      {
+        cout << "\n***Warning: IntegrateMAuxPlane3D: Gauss point projection outside!";
+        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+        cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << endl;
+      }
+    }
+    
+    // evaluate dual space shape functions (on slave element)
+    sele.EvaluateShapeDual(sxi,dualval,dualderiv,nrow);
+    
+    // evaluate trace space shape functions (on both elements)
+    sele.EvaluateShape(sxi,sval,sderiv,nrow);
+    sele.Evaluate2ndDerivShape(sxi,ssecderiv,nrow);
+    mele.EvaluateShape(mxi,mval,mderiv,ncol);
+
+    // build interpolation of slave GP normal and coordinates
+    double gpn[3] = {0.0,0.0,0.0};
+    double sgpx[3] = {0.0, 0.0, 0.0};
+    for (int i=0;i<nrow;++i)
+    {
+      CNode* mycnode = static_cast<CNode*> (mynodes[i]);
+      gpn[0]+=sval[i]*mycnode->n()[0];
+      gpn[1]+=sval[i]*mycnode->n()[1];
+      gpn[2]+=sval[i]*mycnode->n()[2];
+            
+      sgpx[0]+=sval[i]*scoord(0,i);
+      sgpx[1]+=sval[i]*scoord(1,i);
+      sgpx[2]+=sval[i]*scoord(2,i);
+    }
+    
+    // normalize interpolated GP normal back to length 1.0 !!!
+    double length = sqrt(gpn[0]*gpn[0]+gpn[1]*gpn[1]+gpn[2]*gpn[2]);
+    if (length<1.0e-12) dserror("ERROR: IntegrateGAuxPlane3D: Divide by zero!");
+    
+    for (int i=0;i<3;++i)
+      gpn[i]/=length;
+    
+    // build interpolation of master GP coordinates
+    double mgpx[3] = {0.0, 0.0, 0.0};
+    for (int i=0;i<ncol;++i)
+    {
+      mgpx[0]+=mval[i]*mcoord(0,i);
+      mgpx[1]+=mval[i]*mcoord(1,i);
+      mgpx[2]+=mval[i]*mcoord(2,i);
+    }
+    
+    // build normal gap at current GP
+    double gap = 0.0;
+    for (int i=0;i<3;++i)
+      gap+=(mgpx[i]-sgpx[i])*gpn[i];
+    
+    // evaluate the integration cell Jacobian
+    double jac = cell->Jacobian(eta);
+
+    // evaluate linearizations *******************************************
+    
+    
+    
+    // evaluate linearizations *******************************************
+    
+    // compute cell M matrix *********************************************
+    // loop over all mseg matrix entries
+    // nrow represents the slave Lagrange multipliers !!!
+    // ncol represents the master dofs !!!
+    // (this DOES matter here for mseg, as it might
+    // sometimes be rectangular, not quadratic!)
+    for (int j=0;j<nrow*ndof;++j)
+    {
+      for (int k=0;k<ncol*ndof;++k)
+      {
+        int jindex = (int)(j/ndof);
+        int kindex = (int)(k/ndof);
+              
+        // multiply the two shape functions
+        double prod = dualval[jindex]*mval[kindex];
+       
+        // isolate the mseg entries to be filled and
+        // add current Gauss point's contribution to mseg
+        if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
+          (*mseg)(j,k) += prod*jac*wgt; 
+      }
+    }   
+    // compute cell M matrix *********************************************
+    
+    // compute cell gap vector *******************************************
+    // loop over all gseg vector entries
+    // nrow represents the slave side dofs !!!  */
+    for (int j=0;j<nrow;++j)
+    {
+      double prod = dualval[j]*gap;
+      // add current Gauss point's contribution to gseg  
+      (*gseg)(j) += prod*jac*wgt; 
+    }
+    // compute cell gap vector *******************************************
+    
+    // compute cell M linearization **************************************
+    for (int j=0;j<nrow;++j)
+    {
+      CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(mynodes[j]);
+      if (!mycnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+            
+      for (int k=0;k<ncol;++k)
+      {
+        // global master node ID
+        //int mgid = mele.Nodes()[k]->Id();
+        //double fac = 0.0;
+        
+        // get the correct map as a reference
+        //map<int,double>& dmmap_jk = mycnode->GetDerivM()[mgid];
+        
+        // (1) Lin(Phi) - dual shape functions
+        
+        // (2) Lin(Phi) - slave GP coordinates
+        
+        // (3) Lin(NMaster) - master GP coordinates
+        
+        // (4) Lin(dsxideta) - intcell GP Jacobian
+        
+      }
+    }
+    // compute cell M linearization **************************************
+    
+    // compute cell gap linearization ************************************
+    for (int j=0;j<nrow;++j)
+    {
+      CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(mynodes[j]);
+      if (!mycnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+            
+      //double fac = 0.0;
+      
+      // get the corresponding map as a reference
+      //map<int,double>& dgmap = mycnode->GetDerivG();
+      
+      // (1) Lin(Phi) - dual shape functions
+      
+      // (2) Lin(Phi) - slave GP coordinates
+      
+      // (3) Lin(g) - gap function
+      
+      // (4) Lin(dsxideta) - intcell GP Jacobian
+      
+    }
+    // compute cell gap linearization ************************************ 
+  }
+  //**********************************************************************
+  
+#ifdef CONTACTONEMORTARLOOP
+    dserror("ERROR: IntegrateDerivCell3DAuxPlane: One mortar loop case not yet impl. for 3D!");
+#endif // #ifdef CONTACTONEMORTARLOOP
+    
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Integrate and linearize a 2D slave / master cell (3D)     popp 03/09|
+ |  This method integrates the cell M matrix and weighted gap g~        |
+ |  and stores it in mseg and gseg respectively. Moreover, derivatives  |
+ |  LinM and Ling are built and stored directly into the adjacent nodes.|
+ |  (Thus this method combines EVERYTHING before done separately in     |
+ |  IntegrateM3D, IntegrateG3D, DerivM3D and DerivG3D!)                 |
+ |  This is the auxiliary plane coupling version!!!                     |
+ *----------------------------------------------------------------------*/
+void CONTACT::Integrator::IntegrateDerivCell3DAuxPlane(
+     CONTACT::CElement& sele, CONTACT::CElement& mele,
+     RCP<CONTACT::Intcell> cell, double* auxn,
+     RCP<Epetra_SerialDenseMatrix> mseg,
+     RCP<Epetra_SerialDenseVector> gseg,
+     vector<vector<double> >& testgps, vector<vector<double> >& testgpm,
+     vector<vector<double> >& testjs, vector<vector<double> >& testji,
+     bool printderiv)
+{
+  //check for problem dimension
+  if (Dim()!=3) dserror("ERROR: 3D integration method called for non-3D problem");
+ 
+  // discretization type of master element
+  DRT::Element::DiscretizationType sdt = sele.Shape();
+  DRT::Element::DiscretizationType mdt = mele.Shape();
+  
+  // check input data
+  if ((!sele.IsSlave()) || (mele.IsSlave()))
+    dserror("ERROR: IntegrateDerivCell3DAuxPlane called on a wrong type of CElement pair!");
+  if (cell==null)
+    dserror("ERROR: IntegrateDerivCell3DAuxPlane called without integration cell");
+  
+  // number of nodes (slave, master)
+  int nrow = sele.NumNode();
+  int ncol = mele.NumNode();
+  int ndof = Dim();
+   
+  // create empty vectors for shape fct. evaluation
+  LINALG::SerialDenseVector sval(nrow);
+  LINALG::SerialDenseMatrix sderiv(nrow,2,true);
+  LINALG::SerialDenseMatrix ssecderiv(nrow,3);
+  LINALG::SerialDenseVector mval(ncol);
+  LINALG::SerialDenseMatrix mderiv(ncol,2,true);
+  LINALG::SerialDenseVector dualval(nrow);
+  LINALG::SerialDenseMatrix dualderiv(nrow,2,true);
+  
+  // get slave and master nodal coords for Jacobian / GP evaluation
+  LINALG::SerialDenseMatrix scoord(3,sele.NumNode());
+  sele.GetNodalCoords(scoord);
+  LINALG::SerialDenseMatrix mcoord(3,mele.NumNode());
+  mele.GetNodalCoords(mcoord);
+  
+  // get slave element nodes themselves for normal evaluation
+  DRT::Node** mynodes = sele.Nodes();
+  if(!mynodes) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+  
+  // map iterator
+  typedef map<int,double>::const_iterator CI;
+  
+  // prepare directional derivative of dual shape functions
+  // this is necessary for all slave element types except tri3
+  bool duallin = false;
+  vector<vector<map<int,double> > > dualmap(nrow,vector<map<int,double> >(nrow));
+  if (sele.Shape()!=CElement::tri3)
+  {
+    duallin = true;
+    sele.DerivShapeDual(dualmap);
+  }
+  
+  // finite difference checks
+  vector<double> testgpscurr(12);
+  vector<double> testgpmcurr(12);
+  vector<double> testjscurr(6);
+  vector<double> testjicurr(6);
+  static int gpcounter = 0;
+    
+  //**********************************************************************
+  // loop over all Gauss points for integration
+  //**********************************************************************
+  for (int gp=0;gp<nGP();++gp)
+  {
+    // coordinates and weight
+    double eta[2] = {Coordinate(gp,0), Coordinate(gp,1)};
+    double wgt = Weight(gp);
+    
+    // get global Gauss point coordinates
+    double globgp[3] = {0.0, 0.0, 0.0};
+    cell->LocalToGlobal(eta,globgp,0);
+    
+    double sxi[2] = {0.0, 0.0};
+    double mxi[2] = {0.0, 0.0};
+    
+    // project Gauss point onto slave element
+    // project Gauss point onto master element
+    CONTACT::Projector projector(3);
+    projector.ProjectGaussPointAuxn3D(globgp,auxn,sele,sxi);
+    projector.ProjectGaussPointAuxn3D(globgp,auxn,mele,mxi);
+        
+    // check GP projection (SLAVE)
+    double tol = 0.01;
+    if (sdt==DRT::Element::quad4 || sdt==DRT::Element::quad8 || sdt==DRT::Element::quad9)
+    {
+      if (sxi[0]<-1.0-tol || sxi[1]<-1.0-tol || sxi[0]>1.0+tol || sxi[1]>1.0+tol)
+      {
+        cout << "\n***Warning: IntegrateMAuxPlane3D: Gauss point projection outside!";
+        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+        cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << endl;
+      }
+    }
+    else
+    {
+      if (sxi[0]<-tol || sxi[1]<-tol || sxi[0]>1.0+tol || sxi[1]>1.0+tol || sxi[0]+sxi[1]>1.0+2*tol)
+      {
+        cout << "\n***Warning: IntegrateMAuxPlane3D: Gauss point projection outside!";
+        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+        cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << endl;
+      }
+    }
+    
+    // check GP projection (MASTER)
+    if (mdt==DRT::Element::quad4 || mdt==DRT::Element::quad8 || mdt==DRT::Element::quad9)
+    {
+      if (mxi[0]<-1.0-tol || mxi[1]<-1.0-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol)
+      {
+        cout << "\n***Warning: IntegrateMAuxPlane3D: Gauss point projection outside!";
+        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+        cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << endl;
+      }
+    }
+    else
+    {
+      if (mxi[0]<-tol || mxi[1]<-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol || mxi[0]+mxi[1]>1.0+2*tol)
+      {
+        cout << "\n***Warning: IntegrateMAuxPlane3D: Gauss point projection outside!";
+        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+        cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << endl;
+      }
+    }
+    
+    // evaluate dual space shape functions (on slave element)
+    sele.EvaluateShapeDual(sxi,dualval,dualderiv,nrow);
+    
+    // evaluate trace space shape functions (on both elements)
+    sele.EvaluateShape(sxi,sval,sderiv,nrow);
+    sele.Evaluate2ndDerivShape(sxi,ssecderiv,nrow);
+    mele.EvaluateShape(mxi,mval,mderiv,ncol);
+
+    // build interpolation of slave GP normal and coordinates
+    double gpn[3] = {0.0,0.0,0.0};
+    double sgpx[3] = {0.0, 0.0, 0.0};
+    for (int i=0;i<nrow;++i)
+    {
+      CNode* mycnode = static_cast<CNode*> (mynodes[i]);
+      gpn[0]+=sval[i]*mycnode->n()[0];
+      gpn[1]+=sval[i]*mycnode->n()[1];
+      gpn[2]+=sval[i]*mycnode->n()[2];
+            
+      sgpx[0]+=sval[i]*scoord(0,i);
+      sgpx[1]+=sval[i]*scoord(1,i);
+      sgpx[2]+=sval[i]*scoord(2,i);
+    }
+    
+    // normalize interpolated GP normal back to length 1.0 !!!
+    double length = sqrt(gpn[0]*gpn[0]+gpn[1]*gpn[1]+gpn[2]*gpn[2]);
+    if (length<1.0e-12) dserror("ERROR: IntegrateGAuxPlane3D: Divide by zero!");
+    
+    for (int i=0;i<3;++i)
+      gpn[i]/=length;
+    
+    // build interpolation of master GP coordinates
+    double mgpx[3] = {0.0, 0.0, 0.0};
+    for (int i=0;i<ncol;++i)
+    {
+      mgpx[0]+=mval[i]*mcoord(0,i);
+      mgpx[1]+=mval[i]*mcoord(1,i);
+      mgpx[2]+=mval[i]*mcoord(2,i);
+    }
+    
+    // build normal gap at current GP
+    double gap = 0.0;
+    for (int i=0;i<3;++i)
+      gap+=(mgpx[i]-sgpx[i])*gpn[i];
+    
+    // evaluate the integration cell Jacobian
+    double jac = cell->Jacobian(eta);
+
+    // store results in testgps and testgpm for FD checks
+    // store results in testjs and testji for FD checks
+    testgpscurr[2*gp] = sxi[0];
+    testgpscurr[2*gp+1] = sxi[1];
+    testgpmcurr[2*gp] = mxi[0];
+    testgpmcurr[2*gp+1] = mxi[1];
+    testjscurr[gp] = 0.0;
+    testjicurr[gp] = jac;
+        
+    // evaluate linearizations *******************************************
+    
+    
+    
+    // evaluate linearizations *******************************************
+    
+    // finite difference checks (print to screen)
+    if (printderiv)
+    {
+      
+    }
+    
+    // compute cell M matrix *********************************************
+    // loop over all mseg matrix entries
+    // nrow represents the slave Lagrange multipliers !!!
+    // ncol represents the master dofs !!!
+    // (this DOES matter here for mseg, as it might
+    // sometimes be rectangular, not quadratic!)
+    for (int j=0;j<nrow*ndof;++j)
+    {
+      for (int k=0;k<ncol*ndof;++k)
+      {
+        int jindex = (int)(j/ndof);
+        int kindex = (int)(k/ndof);
+              
+        // multiply the two shape functions
+        double prod = dualval[jindex]*mval[kindex];
+       
+        // isolate the mseg entries to be filled and
+        // add current Gauss point's contribution to mseg
+        if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
+          (*mseg)(j,k) += prod*jac*wgt; 
+      }
+    }   
+    // compute cell M matrix *********************************************
+    
+    // compute cell gap vector *******************************************
+    // loop over all gseg vector entries
+    // nrow represents the slave side dofs !!!  */
+    for (int j=0;j<nrow;++j)
+    {
+      double prod = dualval[j]*gap;
+      // add current Gauss point's contribution to gseg  
+      (*gseg)(j) += prod*jac*wgt; 
+    }
+    // compute cell gap vector *******************************************
+    
+    // compute cell M linearization **************************************
+    for (int j=0;j<nrow;++j)
+    {
+      CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(mynodes[j]);
+      if (!mycnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+            
+      for (int k=0;k<ncol;++k)
+      {
+        // global master node ID
+        //int mgid = mele.Nodes()[k]->Id();
+        //double fac = 0.0;
+        
+        // get the correct map as a reference
+        //map<int,double>& dmmap_jk = mycnode->GetDerivM()[mgid];
+        
+        // (1) Lin(Phi) - dual shape functions
+        
+        // (2) Lin(Phi) - slave GP coordinates
+        
+        // (3) Lin(NMaster) - master GP coordinates
+        
+        // (4) Lin(dsxideta) - intcell GP Jacobian
+        
+      }
+    }
+    // compute cell M linearization **************************************
+    
+    // compute cell gap linearization ************************************
+    for (int j=0;j<nrow;++j)
+    {
+      CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(mynodes[j]);
+      if (!mycnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+            
+      //double fac = 0.0;
+      
+      // get the corresponding map as a reference
+      //map<int,double>& dgmap = mycnode->GetDerivG();
+      
+      // (1) Lin(Phi) - dual shape functions
+      
+      // (2) Lin(Phi) - slave GP coordinates
+      
+      // (3) Lin(g) - gap function
+      
+      // (4) Lin(dsxideta) - intcell GP Jacobian
+      
+    }
+    // compute cell gap linearization ************************************ 
+  }
+  //**********************************************************************
+  
+  // finite difference checks
+  testgps.push_back(testgpscurr);
+  testgpm.push_back(testgpmcurr);
+  testjs.push_back(testjscurr);
+  testji.push_back(testjicurr);
+  if (printderiv) gpcounter = gpcounter +1;
+    
+#ifdef CONTACTONEMORTARLOOP
+    dserror("ERROR: IntegrateDerivCell3DAuxPlane: One mortar loop case not yet impl. for 3D!");
+#endif // #ifdef CONTACTONEMORTARLOOP
+    
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  Compute directional derivative of XiGP master (3D)        popp 02/09|
  *----------------------------------------------------------------------*/
 void CONTACT::Integrator::DerivXiGP3D(CONTACT::CElement& sele,
@@ -2710,318 +3298,6 @@ void CONTACT::Integrator::DerivXiGP3D(CONTACT::CElement& sele,
   */
     
   return;
-}
-
-/*----------------------------------------------------------------------*
- |  Integrate M on slave / master integration cell (3D)       popp 11/08|
- |  This method integrates a slave side function (dual shape fct.)      |
- |  and a master side function (standard shape fct.) on a given tri3    |
- |  integration cell. This requires projection of the Gauss points onto |
- |  slave / master and evaluation of the Intcell Jacobian.              |
- |  NOTE: This version works in the AuxiliaryPlane of 3D Coupling!!!    |
- |  Output is an Epetra_SerialDenseMatrix holding the int. values       |
- *----------------------------------------------------------------------*/
-RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateMAuxPlane3D(
-    CONTACT::CElement& sele, CONTACT::CElement& mele,
-    RCP<CONTACT::Intcell> cell, double* auxn)
-{
-  //check for problem dimension
-  if (Dim()!=3) dserror("ERROR: 3D integration method called for non-3D problem");
-  
-  // discretization type of slave / master element
-  DRT::Element::DiscretizationType sdt = sele.Shape();
-  DRT::Element::DiscretizationType mdt = mele.Shape();
-    
-  // check input data
-  if ((!sele.IsSlave()) || (mele.IsSlave()))
-    dserror("ERROR: IntegrateMAuxPlane3D called on a wrong type of CElement pair!");
-  if (cell==null)
-    dserror("ERROR: IntegrateMAuxPlane3D called without integration cell");
-  
-  // create empty mseg object and wrap it with RCP
-  int nrow = sele.NumNode();
-  int ncol = mele.NumNode();
-  int ndof = Dim();
-  RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
-  
-  // create empty vectors for shape fct. evaluation
-  LINALG::SerialDenseVector dualval(nrow);
-  LINALG::SerialDenseMatrix dualderiv(nrow,2,true);
-  LINALG::SerialDenseVector mval(ncol);
-  LINALG::SerialDenseMatrix mderiv(ncol,2,true);
-  
-  // loop over all Gauss points for integration
-  for (int gp=0;gp<nGP();++gp)
-  {
-    double eta[2] = {Coordinate(gp,0), Coordinate(gp,1)};
-    double wgt = Weight(gp);
-    double globgp[3] = {0.0, 0.0, 0.0};
-    cell->LocalToGlobal(eta,globgp,0);
-    
-    double sxi[2] = {0.0, 0.0};
-    double mxi[2] = {0.0, 0.0};
-    
-    // project Gauss point onto slave element
-    // project Gauss point onto master element
-    CONTACT::Projector projector(3);
-    projector.ProjectGaussPointAuxn3D(globgp,auxn,sele,sxi);
-    projector.ProjectGaussPointAuxn3D(globgp,auxn,mele,mxi);
-    
-    // check GP projection (SLAVE)
-    double tol = 0.01;
-    if (sdt==DRT::Element::quad4 || sdt==DRT::Element::quad8 || sdt==DRT::Element::quad9)
-    {
-      if (sxi[0]<-1.0-tol || sxi[1]<-1.0-tol || sxi[0]>1.0+tol || sxi[1]>1.0+tol)
-      {
-        cout << "\n***Warning: IntegrateMAuxPlane3D: Gauss point projection outside!";
-        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
-        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
-        cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << endl;
-      }
-    }
-    else
-    {
-      if (sxi[0]<-tol || sxi[1]<-tol || sxi[0]>1.0+tol || sxi[1]>1.0+tol || sxi[0]+sxi[1]>1.0+2*tol)
-      {
-        cout << "\n***Warning: IntegrateMAuxPlane3D: Gauss point projection outside!";
-        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
-        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
-        cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << endl;
-      }
-    }
-    
-    // check GP projection (MASTER)
-    if (mdt==DRT::Element::quad4 || mdt==DRT::Element::quad8 || mdt==DRT::Element::quad9)
-    {
-      if (mxi[0]<-1.0-tol || mxi[1]<-1.0-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol)
-      {
-        cout << "\n***Warning: IntegrateMAuxPlane3D: Gauss point projection outside!";
-        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
-        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
-        cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << endl;
-      }
-    }
-    else
-    {
-      if (mxi[0]<-tol || mxi[1]<-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol || mxi[0]+mxi[1]>1.0+2*tol)
-      {
-        cout << "\n***Warning: IntegrateMAuxPlane3D: Gauss point projection outside!";
-        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
-        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
-        cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << endl;
-      }
-    }
-        
-    // evaluate dual space shape functions (on slave element)
-    sele.EvaluateShapeDual(sxi,dualval,dualderiv,nrow);
-    
-    // evaluate trace space shape functions (on master element)
-    mele.EvaluateShape(mxi,mval,mderiv,ncol);
-    
-    // evaluate the integration cell Jacobian
-    double jac = cell->Jacobian(eta);
-
-    /* loop over all mseg matrix entries
-       nrow represents the slave Lagrange multipliers !!!
-       ncol represents the master dofs !!!
-       (this DOES matter here for mseg, as it might
-       sometimes be rectangular, not quadratic!)              */
-    for (int j=0;j<nrow*ndof;++j)
-    {
-      for (int k=0;k<ncol*ndof;++k)
-      {
-        int jindex = (int)(j/ndof);
-        int kindex = (int)(k/ndof);
-              
-        // multiply the two shape functions
-        double prod = dualval[jindex]*mval[kindex];
-        
-        // isolate the mseg entries to be filled and
-        // add current Gauss point's contribution to mseg
-        if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
-          (*mseg)(j,k) += prod*jac*wgt; 
-      }
-    }  
-  } // for (int gp=0;gp<nGP();++gp)
-  
-  return mseg;
-}
-
-/*----------------------------------------------------------------------*
- |  Integrate gap on slave / master int. cell (3D)            popp 11/08|
- |  This method integrates a slave side function (dual shape fct.)      |
- |  and the gap function g = ( ( sx - mx ) * n ) on a given tri3        |
- |  integration cell. This requires projection of the Gauss points onto |
- |  slave / master and evaluation of the Intcell Jacobian.              |
- |  NOTE: This version works in the AuxiliaryPlane of 3D Coupling!!!    |
- |  Output is an Epetra_SerialDenseVector holding the int. values       |
- *----------------------------------------------------------------------*/
-RCP<Epetra_SerialDenseVector> CONTACT::Integrator::IntegrateGAuxPlane3D(
-    CONTACT::CElement& sele, CONTACT::CElement& mele,
-    RCP<CONTACT::Intcell> cell, double* auxn)
-{
-  //check for problem dimension
-  if (Dim()!=3) dserror("ERROR: 3D integration method called for non-3D problem");
-  
-  // discretization type of slave / master element
-  DRT::Element::DiscretizationType sdt = sele.Shape();
-  DRT::Element::DiscretizationType mdt = mele.Shape();
-    
-  // check input data
-  if ((!sele.IsSlave()) || (mele.IsSlave()))
-    dserror("ERROR: IntegrateGAuxPlane3D called on a wrong type of CElement pair!");
-  if (cell==null)
-      dserror("ERROR: IntegrateGAuxPlane3D called without integration cell");
-  
-  // create empty gseg object and wrap it with RCP
-  int nrow = sele.NumNode();
-  int ncol = mele.NumNode();
-  RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
-  
-  // create empty vectors for shape fct. evaluation
-  LINALG::SerialDenseVector sval(nrow);
-  LINALG::SerialDenseMatrix sderiv(nrow,2,true);
-  LINALG::SerialDenseVector mval(ncol);
-  LINALG::SerialDenseMatrix mderiv(ncol,2,true);
-  LINALG::SerialDenseVector dualval(nrow);
-  LINALG::SerialDenseMatrix dualderiv(nrow,2,true);
-
-  // get slave and master nodal coords for Jacobian / GP evaluation
-  LINALG::SerialDenseMatrix scoord(3,sele.NumNode());
-  sele.GetNodalCoords(scoord);
-  LINALG::SerialDenseMatrix mcoord(3,mele.NumNode());
-  mele.GetNodalCoords(mcoord);
-  
-  // get slave element nodes themselves for normal evaluation
-  DRT::Node** mynodes = sele.Nodes();
-  if(!mynodes) dserror("ERROR: IntegrateGAuxPlane3D: Null pointer!");
-  
-  //cout << "Starting G-integration on cell " << cell->Id() << endl;
-  
-  // loop over all Gauss points for integration
-  for (int gp=0;gp<nGP();++gp)
-  {
-    double eta[2] = {Coordinate(gp,0), Coordinate(gp,1)};
-    double wgt = Weight(gp);
-    double globgp[3] = {0.0, 0.0, 0.0};
-    cell->LocalToGlobal(eta,globgp,0);
-    
-    double sxi[2] = {0.0, 0.0};
-    double mxi[2] = {0.0, 0.0};
-    
-    // project Gauss point onto slave element
-    // project Gauss point onto master element
-    CONTACT::Projector projector(3);
-    projector.ProjectGaussPointAuxn3D(globgp,auxn,sele,sxi);
-    projector.ProjectGaussPointAuxn3D(globgp,auxn,mele,mxi);
-
-    // check GP projection (SLAVE)
-    double tol = 0.01;
-    if (sdt==DRT::Element::quad4 || sdt==DRT::Element::quad8 || sdt==DRT::Element::quad9)
-    {
-      if (sxi[0]<-1.0-tol || sxi[1]<-1.0-tol || sxi[0]>1.0+tol || sxi[1]>1.0+tol)
-      {
-        cout << "\n***Warning: IntegrateGAuxPlane3D: Gauss point projection outside!";
-        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
-        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
-        cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << endl;
-      }
-    }
-    else
-    {
-      if (sxi[0]<-tol || sxi[1]<-tol || sxi[0]>1.0+tol || sxi[1]>1.0+tol || sxi[0]+sxi[1]>1.0+2*tol)
-      {
-        cout << "\n***Warning: IntegrateGAuxPlane3D: Gauss point projection outside!";
-        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
-        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
-        cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << endl;
-      }
-    }
-    
-    // check GP projection (MASTER)
-    if (mdt==DRT::Element::quad4 || mdt==DRT::Element::quad8 || mdt==DRT::Element::quad9)
-    {
-      if (mxi[0]<-1.0-tol || mxi[1]<-1.0-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol)
-      {
-        cout << "\n***Warning: IntegrateGAuxPlane3D: Gauss point projection outside!";
-        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
-        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
-        cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << endl;
-      }
-    }
-    else
-    {
-      if (mxi[0]<-tol || mxi[1]<-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol || mxi[0]+mxi[1]>1.0+2*tol)
-      {
-        cout << "\n***Warning: IntegrateGAuxPlane3D: Gauss point projection outside!";
-        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
-        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
-        cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << endl;
-      }
-    }
-        
-    // evaluate dual space shape functions (on slave element)
-    sele.EvaluateShapeDual(sxi,dualval,dualderiv,nrow);
-    
-    // evaluate trace space shape functions (on both elements)
-    sele.EvaluateShape(sxi,sval,sderiv,nrow);
-    mele.EvaluateShape(mxi,mval,mderiv,ncol);
-    
-    // build interpolation of slave GP normal and coordinates
-    double gpn[3] = {0.0,0.0,0.0};
-    double sgpx[3] = {0.0, 0.0, 0.0};
-    for (int i=0;i<nrow;++i)
-    {
-      CNode* mycnode = static_cast<CNode*> (mynodes[i]);
-      gpn[0]+=sval[i]*mycnode->n()[0];
-      gpn[1]+=sval[i]*mycnode->n()[1];
-      gpn[2]+=sval[i]*mycnode->n()[2];
-            
-      sgpx[0]+=sval[i]*scoord(0,i);
-      sgpx[1]+=sval[i]*scoord(1,i);
-      sgpx[2]+=sval[i]*scoord(2,i);
-    }
-    
-    // normalize interpolated GP normal back to length 1.0 !!!
-    double length = sqrt(gpn[0]*gpn[0]+gpn[1]*gpn[1]+gpn[2]*gpn[2]);
-    if (length<1.0e-12) dserror("ERROR: IntegrateGAuxPlane3D: Divide by zero!");
-    
-    for (int i=0;i<3;++i)
-      gpn[i]/=length;
-    
-    // build interpolation of master GP coordinates
-    double mgpx[3] = {0.0, 0.0, 0.0};
-    for (int i=0;i<ncol;++i)
-    {
-      mgpx[0]+=mval[i]*mcoord(0,i);
-      mgpx[1]+=mval[i]*mcoord(1,i);
-      mgpx[2]+=mval[i]*mcoord(2,i);
-    }
-    
-    // build normal gap at current GP
-    double gap = 0.0;
-    for (int i=0;i<3;++i)
-      gap+=(mgpx[i]-sgpx[i])*gpn[i];
-    
-#ifdef DEBUG
-    //cout << "GP gap: " << gap << endl;
-#endif // #ifdef DEBUG
-    
-    // evaluate the integration cell Jacobian
-    double jac = cell->Jacobian(eta);
-
-    /* loop over all gseg vector entries
-       nrow represents the slave side dofs !!!  */
-    for (int j=0;j<nrow;++j)
-    {
-      double prod = dualval[j]*gap;
-      // add current Gauss point's contribution to gseg  
-      (*gseg)(j) += prod*jac*wgt; 
-    }
-    
-  } // for (int gp=0;gp<nGP();++gp)
-  
-  return gseg;
 }
 
 /*----------------------------------------------------------------------*

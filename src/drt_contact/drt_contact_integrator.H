@@ -180,20 +180,42 @@ public:
                                                 double& mxia, double& mxib);
   
   /*!
- \brief Build all integrals and linearizations on a 2D slave /
-        master integration cell (i.e. M, g, LinM, Ling)
+  \brief Build all integrals and linearizations on a 2D slave /
+         master integration cell (i.e. M, g, LinM, Ling)
          
- */
- void IntegrateDerivCell3D(
+  */
+  void IntegrateDerivCell3D(
      CONTACT::CElement& sele, CONTACT::CElement& mele,
      RCP<CONTACT::Intcell> cell,
      RCP<Epetra_SerialDenseMatrix> mseg,
      RCP<Epetra_SerialDenseVector> gseg);
  
- // THIS IS A FINITE DIFFERENCE VERSION ONLY!!!
- void IntegrateDerivCell3D(
+  // THIS IS A FINITE DIFFERENCE VERSION ONLY!!!
+  void IntegrateDerivCell3D(
      CONTACT::CElement& sele, CONTACT::CElement& mele,
      RCP<CONTACT::Intcell> cell,
+     RCP<Epetra_SerialDenseMatrix> mseg,
+     RCP<Epetra_SerialDenseVector> gseg,
+     vector<vector<double> >& testgps, vector<vector<double> >& testgpm,
+     vector<vector<double> >& testjs, vector<vector<double> >& testji,
+     bool printderiv=false);
+  
+  /*!
+  \brief Build all integrals and linearizations on a 2D slave /
+         master integration cell (i.e. M, g, LinM, Ling) for
+         the auxiliary plane coupling case
+         
+  */
+  void IntegrateDerivCell3DAuxPlane(
+     CONTACT::CElement& sele, CONTACT::CElement& mele,
+     RCP<CONTACT::Intcell> cell, double* auxn,
+     RCP<Epetra_SerialDenseMatrix> mseg,
+     RCP<Epetra_SerialDenseVector> gseg);
+ 
+  // THIS IS A FINITE DIFFERENCE VERSION ONLY!!!
+  void IntegrateDerivCell3DAuxPlane(
+     CONTACT::CElement& sele, CONTACT::CElement& mele,
+     RCP<CONTACT::Intcell> cell, double* auxn,
      RCP<Epetra_SerialDenseMatrix> mseg,
      RCP<Epetra_SerialDenseVector> gseg,
      vector<vector<double> >& testgps, vector<vector<double> >& testgpm,
@@ -208,27 +230,7 @@ public:
   void DerivXiGP3D(CONTACT::CElement& sele, CONTACT::CElement& mele,
                    double* sxigp, double* mxigp, const vector<map<int,double> >& derivsxi,
                    vector<map<int,double> >& derivmxi, double& alpha);
-    
-  /*!
-  \brief Integrate Mortar matrix M on a 2D slave / master integration cell
-         NOTE: This version works with the Auxiliary Plane of 3D Coupling!
-        
-  */
-  RCP<Epetra_SerialDenseMatrix> IntegrateMAuxPlane3D(CONTACT::CElement& sele,
-                                                     CONTACT::CElement& mele,
-                                                     RCP<CONTACT::Intcell> cell,
-                                                     double* auxn);
   
-  /*!
-  \brief Integrate weighted gap g~ on a 2D slave / master integration cell
-         NOTE: This version works with the Auxiliary Plane of 3D Coupling!
-        
-  */
-  RCP<Epetra_SerialDenseVector> IntegrateGAuxPlane3D(CONTACT::CElement& sele,
-                                                     CONTACT::CElement& mele,
-                                                     RCP<CONTACT::Intcell> cell,
-                                                     double* auxn);
-    
   /*!
   \brief Assemble D contribution of current overlap into slave nodes
   

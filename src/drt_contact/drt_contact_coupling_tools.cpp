@@ -620,20 +620,14 @@ bool CONTACT::Coupling::IntegrateCells3D(vector<vector<double> >& testgps,
     // *******************************************************************
     // ************ Coupling with or without auxiliary plane *************
     // *******************************************************************
-#ifdef CONTACTAUXPLANE
-    // no linearization yet for the aux. plane case
-    RCP<Epetra_SerialDenseMatrix> mseg = integrator.IntegrateMAuxPlane3D(sele_,mele_,Cells()[i],Auxn());
-    RCP<Epetra_SerialDenseVector> gseg = integrator.IntegrateGAuxPlane3D(sele_,mele_,Cells()[i],Auxn());
-#else
     int nrow = sele_.NumNode();
     int ncol = mele_.NumNode();
     RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
     RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
+#ifdef CONTACTAUXPLANE
+    integrator.IntegrateDerivCell3DAuxPlane(sele_,mele_,Cells()[i],Auxn(),mseg,gseg,testgps,testgpm,testjs,testji,printderiv);
+#else
     integrator.IntegrateDerivCell3D(sele_,mele_,Cells()[i],mseg,gseg,testgps,testgpm,testjs,testji,printderiv);
-    //RCP<Epetra_SerialDenseMatrix> mseg = integrator.IntegrateM3D(sele_,mele_,Cells()[i],testgps,testgpm,testjs,testji);
-    //RCP<Epetra_SerialDenseVector> gseg = integrator.IntegrateG3D(sele_,mele_,Cells()[i]);
-    //integrator.DerivM3D(sele_,mele_,Cells()[i],printderiv);
-    //integrator.DerivG3D(sele_,mele_,Cells()[i]);
 #endif // #ifdef CONTACTAUXPLANE
     // *******************************************************************
     

@@ -178,6 +178,16 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
           gmshfilecontent << "{" << "S" << element->Id() << "};" << endl;
         else
           gmshfilecontent << "{" << "M" << element->Id() << "};" << endl;
+        
+        // plot node numbers at the nodes
+        for (int j=1;j<nnodes;++j)
+        {
+          gmshfilecontent << "T3(" << scientific << coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << "," << 17 << ")";
+          if (element->IsSlave())
+            gmshfilecontent << "{" << "SN" << element->NodeIds()[j] << "};" << endl;
+          else
+            gmshfilecontent << "{" << "MN" << element->NodeIds()[j] << "};" << endl;
+        }
       }
 
       //******************************************************************
