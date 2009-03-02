@@ -217,6 +217,26 @@ void SetupFluidSplit(const DRT::Discretization& dis,
   \author a.ger
   \date 03/08
  */
+void SetupEnrichmentSplit(
+        const DRT::Discretization&   dis,       ///< fluid discretization
+        const RCP<XFEM::DofManager>  dofman,    ///< information about the dofs per node
+        const set<int>& ext_enr_node_gids,
+        LINALG::MapExtractor&        extractor  ///< ready made map splitter
+        );
+
+
+/// Split dof row map of discretization into velocity and pressure maps
+/*!
+
+  We assume that each node possesses ndim velocity dofs and (optionally)
+  one pressure dof. The dof row map is thus split in two.
+
+  The velocity dofs are assigned to map 0 (the other map) and the pressure
+  dofs are assigned to map 1 (the condition map).
+
+  \author a.ger
+  \date 03/08
+ */
 void SetupXFluidSplit(
         const DRT::Discretization&   dis,       ///< fluid discretization
         const RCP<XFEM::DofManager>  dofman,    ///< information about the dofs per node

@@ -194,6 +194,74 @@ void FLD::UTILS::SetupXFluidSplit(
 }
 
 
+// -------------------------------------------------------------------
+// -------------------------------------------------------------------
+void FLD::UTILS::SetupEnrichmentSplit(
+        const DRT::Discretization& dis,
+        const RCP<XFEM::DofManager> dofman,
+        const set<int>& ext_enr_node_gids,
+        LINALG::MapExtractor& extractor)
+{
+    // -------------------------------------------------------------------
+    // get a vector layout from the discretization for a vector which only
+    // contains the unenriched dofs and for one vector which only contains
+    // enriched degrees of freedom.
+    //
+    // The maps are designed assuming that every node has pressure and
+    // velocity degrees of freedom --- this won't work for inf-sup stable
+    // elements at the moment!
+    // -------------------------------------------------------------------
+
+    // Allocate integer vectors which will hold the dof number of the
+    // velocity or pressure dofs
+    vector<int> normalmapdata;
+    vector<int> enrichmapdata;
+
+    const int numdof = 4;
+    
+    // collect global dofids for velocity and pressure in vectors
+    for (int i=0; i<dis.NumMyRowNodes(); ++i) {
+        const DRT::Node* node = dis.lRowNode(i);
+        const std::set<XFEM::FieldEnr>& enrvarset(dofman->getNodeDofSet(node->Id()));
+        const vector<int> dof = dis.Dof(node);
+        dsassert(dof.size() == enrvarset.size(), "mismatch in length!");
+        std::set<XFEM::FieldEnr>::const_iterator enrvar;
+        unsigned int countdof = 0;
+        
+        if (ext_enr_node_gids.find(node->Id()) == ext_enr_node_gids.end())
+        {
+          // normal node
+          for (int i = 0;i<numdof;++i)
+          {
+            normalmapdata.push_back(dof[countdof]);
+            countdof++;
+          }
+        }
+        else
+        {
+          // enriched node
+          for (int i = 0;i<numdof;++i)
+          {
+            enrichmapdata.push_back(dof[countdof]);
+            countdof++;
+          }
+        }
+    }
+
+    // the rowmaps are generated according to the pattern provided by
+    // the data vectors
+    RCP<Epetra_Map> normalrowmap = rcp(new Epetra_Map(-1,
+        normalmapdata.size(),&normalmapdata[0],0,
+            dis.Comm()));
+    RCP<Epetra_Map> enrichrowmap = rcp(new Epetra_Map(-1,
+        enrichmapdata.size(),&enrichmapdata[0],0,
+            dis.Comm()));
+
+    const Epetra_Map* map = dis.DofRowMap();
+    extractor.Setup(*map, enrichrowmap, normalrowmap);
+}
+
+
 
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
