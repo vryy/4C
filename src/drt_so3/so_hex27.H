@@ -33,7 +33,7 @@ using namespace Teuchos;
 
 #include "../drt_lib/linalg_fixedsizematrix.H"
 
-/// Several parameters which are fixed for Solid Hex8
+/// Several parameters which are fixed for Solid Hex27
 const int NUMNOD_SOH27 = 27;      ///< number of nodes
 const int NODDOF_SOH27 = 3;      ///< number of dofs per node
 const int NUMDOF_SOH27 = 81;     ///< total dofs per element

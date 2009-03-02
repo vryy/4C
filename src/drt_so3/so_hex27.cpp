@@ -23,7 +23,7 @@ Maintainer: Thomas Kloeppel
 #include "../drt_mat/anisotropic_balzani.H"
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                              maf 04/07|
+ |  ctor (public)                                                       |
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_hex27::So_hex27(int id, int owner) :
@@ -40,7 +40,7 @@ data_()
 }
 
 /*----------------------------------------------------------------------*
- |  copy-ctor (public)                                         maf 04/07|
+ |  copy-ctor (public)                                                  |
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_hex27::So_hex27(const DRT::ELEMENTS::So_hex27& old) :
@@ -62,7 +62,6 @@ detJ_(old.detJ_)
 
 /*----------------------------------------------------------------------*
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
- |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::So_hex27::Clone() const
 {
@@ -72,16 +71,14 @@ DRT::Element* DRT::ELEMENTS::So_hex27::Clone() const
 
 /*----------------------------------------------------------------------*
  |                                                             (public) |
- |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::ELEMENTS::So_hex27::Shape() const
 {
-  return hex8;
+  return hex27;
 }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
- |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex27::Pack(vector<char>& data) const
 {
@@ -116,7 +113,6 @@ void DRT::ELEMENTS::So_hex27::Pack(vector<char>& data) const
 
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
- |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex27::Unpack(const vector<char>& data)
 {
@@ -155,7 +151,7 @@ void DRT::ELEMENTS::So_hex27::Unpack(const vector<char>& data)
 
 
 /*----------------------------------------------------------------------*
- |  dtor (public)                                              maf 04/07|
+ |  dtor (public)                                                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_hex27::~So_hex27()
 {
@@ -253,38 +249,6 @@ RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::So_hex27::ElementRegister() con
   return rcp(new DRT::ELEMENTS::Soh27Register(Type()));
 }
 
-  /*====================================================================*/
-  /* 8-node hexhedra node topology*/
-  /*--------------------------------------------------------------------*/
-  /* parameter coordinates (r,s,t) of nodes
-   * of biunit cube [-1,1]x[-1,1]x[-1,1]
-   *  8-node hexahedron: node 0,1,...,7
-   *                      t
-   *                      |
-   *             4========|================7
-   *           //|        |               /||
-   *          // |        |              //||
-   *         //  |        |             // ||
-   *        //   |        |            //  ||
-   *       //    |        |           //   ||
-   *      //     |        |          //    ||
-   *     //      |        |         //     ||
-   *     5=========================6       ||
-   *    ||       |        |        ||      ||
-   *    ||       |        o--------||---------s
-   *    ||       |       /         ||      ||
-   *    ||       0------/----------||------3
-   *    ||      /      /           ||     //
-   *    ||     /      /            ||    //
-   *    ||    /      /             ||   //
-   *    ||   /      /              ||  //
-   *    ||  /      /               || //
-   *    || /      r                ||//
-   *    ||/                        ||/
-   *     1=========================2
-   *
-   */
-  /*====================================================================*/
 
 /*----------------------------------------------------------------------*
  |  get vector of volumes (length 1) (public)                           |
@@ -553,7 +517,7 @@ void DRT::ELEMENTS::So_hex27::VisData(const string& name, vector<double>& data)
 //=======================================================================
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                              maf 04/07|
+ |  ctor (public)                                                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Soh27Register::Soh27Register(DRT::Element::ElementType etype) :
 ElementRegister(etype)
@@ -562,7 +526,7 @@ ElementRegister(etype)
 }
 
 /*----------------------------------------------------------------------*
- |  copy-ctor (public)                                         maf 04/07|
+ |  copy-ctor (public)                                                  |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Soh27Register::Soh27Register(
                                const DRT::ELEMENTS::Soh27Register& old) :
@@ -573,7 +537,6 @@ ElementRegister(old)
 
 /*----------------------------------------------------------------------*
  |  Deep copy this instance return pointer to it               (public) |
- |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Soh27Register* DRT::ELEMENTS::Soh27Register::Clone() const
 {
@@ -582,7 +545,6 @@ DRT::ELEMENTS::Soh27Register* DRT::ELEMENTS::Soh27Register::Clone() const
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
- |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Soh27Register::Pack(vector<char>& data) const
 {
@@ -602,7 +564,6 @@ void DRT::ELEMENTS::Soh27Register::Pack(vector<char>& data) const
 
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
- |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Soh27Register::Unpack(const vector<char>& data)
 {
@@ -623,7 +584,7 @@ void DRT::ELEMENTS::Soh27Register::Unpack(const vector<char>& data)
 
 
 /*----------------------------------------------------------------------*
- |  dtor (public)                                              maf 04/07|
+ |  dtor (public)                                                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Soh27Register::~Soh27Register()
 {
@@ -631,7 +592,7 @@ DRT::ELEMENTS::Soh27Register::~Soh27Register()
 }
 
 /*----------------------------------------------------------------------*
- |  print (public)                                             maf 04/07|
+ |  print (public)                                                      |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Soh27Register::Print(ostream& os) const
 {

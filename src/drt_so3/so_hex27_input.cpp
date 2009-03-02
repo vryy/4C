@@ -27,7 +27,7 @@ bool DRT::ELEMENTS::So_hex27::ReadElement()
   // read element's nodes
   int ierr=0;
   const int nnode=27;
-  int nodes[8];
+  int nodes[27];
   frchk("SOLIDH27",&ierr);
   if (ierr==1)
   {
@@ -46,7 +46,7 @@ bool DRT::ELEMENTS::So_hex27::ReadElement()
   // read number of material model
   int material = 0;
   frint("MAT",&material,&ierr);
-  if (ierr!=1) dserror("Reading of SO_HEX8 element material failed");
+  if (ierr!=1) dserror("Reading of SO_HEX27 element material failed");
   SetMaterial(material);
 
   // special element-dependent input of material parameters
@@ -91,7 +91,7 @@ bool DRT::ELEMENTS::So_hex27::ReadElement()
        kintype_ = soh27_updlag;
        dserror("Only Total Lagrange for SO_HEX27 implemented!");
    }
-   else dserror("Reading of SO_HEX8 element failed");
+   else dserror("Reading of SO_HEX27 element failed");
   }
 
   return true;

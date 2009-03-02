@@ -31,7 +31,7 @@ using namespace LINALG; // our linear algebra
 
 
 /*----------------------------------------------------------------------*
- |  evaluate the element (public)                              maf 04/07|
+ |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_hex27::Evaluate(ParameterList& params,
                                     DRT::Discretization&      discretization,
@@ -372,7 +372,7 @@ int DRT::ELEMENTS::So_hex27::Evaluate(ParameterList& params,
 
 
 /*----------------------------------------------------------------------*
- |  Integrate a Volume Neumann boundary condition (public)     maf 04/07|
+ |  Integrate a Volume Neumann boundary condition (public)               |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_hex27::EvaluateNeumann(ParameterList& params,
                                            DRT::Discretization&      discretization,
@@ -402,7 +402,7 @@ int DRT::ELEMENTS::So_hex27::EvaluateNeumann(ParameterList& params,
   // **
 
 /* ============================================================================*
-** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
+** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_27 with 27 GAUSS POINTS*
 ** ============================================================================*/
   const static vector<LINALG::Matrix<NUMNOD_SOH27,1> > shapefcts = soh27_shapefcts();
   const static vector<LINALG::Matrix<NUMDIM_SOH27,NUMNOD_SOH27> > derivs = soh27_derivs();
@@ -446,7 +446,7 @@ int DRT::ELEMENTS::So_hex27::EvaluateNeumann(ParameterList& params,
 
 
 /*----------------------------------------------------------------------*
- |  init the element jacobian mapping (protected)              gee 04/08|
+ |  init the element jacobian mapping (protected)                       |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex27::InitJacobianMapping()
 {
@@ -470,7 +470,7 @@ void DRT::ELEMENTS::So_hex27::InitJacobianMapping()
 }
 
 /*----------------------------------------------------------------------*
- |  evaluate the element (private)                             maf 04/07|
+ |  evaluate the element (private)                                      |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass(
       vector<int>&              lm,             // location matrix
@@ -486,7 +486,7 @@ void DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass(
       const INPAR::STR::StrainType   iostrain)  // strain output option
 {
 /* ============================================================================*
-** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
+** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_27 with 27 GAUSS POINTS*
 ** ============================================================================*/
   const static vector<LINALG::Matrix<NUMNOD_SOH27,1> > shapefcts = soh27_shapefcts();
   const static vector<LINALG::Matrix<NUMDIM_SOH27,NUMNOD_SOH27> > derivs = soh27_derivs();
@@ -761,7 +761,7 @@ void DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass(
 } // DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass
 
 /*----------------------------------------------------------------------*
- |  lump mass matrix (private)                               bborn 07/08|
+ |  lump mass matrix (private)                                          |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex27::soh27_lumpmass(LINALG::Matrix<NUMDOF_SOH27,NUMDOF_SOH27>* emass)
 {
@@ -783,7 +783,7 @@ void DRT::ELEMENTS::So_hex27::soh27_lumpmass(LINALG::Matrix<NUMDOF_SOH27,NUMDOF_
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate Hex8 Shape fcts at all 8 Gauss Points             maf 05/08|
+ |  Evaluate Hex27 Shape fcts at all 27 Gauss Points                     |
  *----------------------------------------------------------------------*/
 const vector<LINALG::Matrix<NUMNOD_SOH27,1> > DRT::ELEMENTS::So_hex27::soh27_shapefcts()
 {
@@ -805,7 +805,7 @@ const vector<LINALG::Matrix<NUMNOD_SOH27,1> > DRT::ELEMENTS::So_hex27::soh27_sha
 
 
 /*----------------------------------------------------------------------*
- |  Evaluate Hex8 Shape fct derivs at all 8 Gauss Points       maf 05/08|
+ |  Evaluate Hex27 Shape fct derivs at all 27 Gauss Points              |
  *----------------------------------------------------------------------*/
 const vector<LINALG::Matrix<NUMDIM_SOH27,NUMNOD_SOH27> > DRT::ELEMENTS::So_hex27::soh27_derivs()
 {
@@ -826,7 +826,7 @@ const vector<LINALG::Matrix<NUMDIM_SOH27,NUMNOD_SOH27> > DRT::ELEMENTS::So_hex27
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate Hex8 Weights at all 8 Gauss Points                maf 05/08|
+ |  Evaluate Hex27 Weights at all 27 Gauss Points                       |         
  *----------------------------------------------------------------------*/
 const vector<double> DRT::ELEMENTS::So_hex27::soh27_weights()
 {
@@ -841,7 +841,7 @@ const vector<double> DRT::ELEMENTS::So_hex27::soh27_weights()
 }
 
 /*----------------------------------------------------------------------*
- |  shape functions and derivatives for So_hex27                maf 04/07|
+ |  shape functions and derivatives for So_hex27                         |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex27::soh27_shapederiv(
       LINALG::Matrix<NUMNOD_SOH27,NUMGPT_SOH27>** shapefct,   // pointer to pointer of shapefct
@@ -898,7 +898,7 @@ void DRT::ELEMENTS::So_hex27::soh27_shapederiv(
 
 
 /*----------------------------------------------------------------------*
- |  init the element (public)                                  gee 04/08|
+ |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Soh27Register::Initialize(DRT::Discretization& dis)
 {

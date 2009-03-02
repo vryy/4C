@@ -26,7 +26,7 @@ using namespace std; // cout etc.
 
 
 /*----------------------------------------------------------------------*
- |  homogenize material density (public)                        lw 07/07|
+ |  homogenize material density (public)                                |
  *----------------------------------------------------------------------*/
 // this routine is intended to determine a homogenized material
 // density for multi-scale analyses by averaging over the initial volume
@@ -36,7 +36,7 @@ void DRT::ELEMENTS::So_hex27::soh27_homog(ParameterList&  params)
   double homogdens = 0.;
 
 /* ============================================================================*
-** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
+** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_27 with 27 GAUSS POINTS*
 ** ============================================================================*/
 /* pointer to (static) shape function array
  * for each node, evaluated at each gp*/
@@ -120,7 +120,7 @@ void DRT::ELEMENTS::So_hex27::soh27_homog(ParameterList&  params)
 
 
 /*----------------------------------------------------------------------*
- |  Read restart on the microscale                              lw 05/08|
+ |  Read restart on the microscale                                      |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex27::soh27_read_restart_multi(ParameterList& params)
 {

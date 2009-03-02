@@ -18,7 +18,7 @@ using namespace std; // cout etc.
 
 
 /*----------------------------------------------------------------------*
- |  return Center Coords in Reference System                   maf 11/07|
+ |  return Center Coords in Reference System                            |
  *----------------------------------------------------------------------*/
 const vector<double> DRT::ELEMENTS::So_hex27::soh27_ElementCenterRefeCoords()
 {
