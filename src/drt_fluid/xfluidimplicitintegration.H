@@ -35,7 +35,7 @@ namespace FLD
 {
 
 /*!
-\brief time integration for fluid problems
+\brief time integration for xfluid problems
 
 \author (gerstenberger@lnm.mw.tum.de)
 */
@@ -90,9 +90,6 @@ public:
   /// setup the variables to do a new time step
   void PrepareTimeStep();
 
-  /// setup the variables to do a new nonlinear iteration
-  void PrepareNonlinearSolve();
-
   /*!
   \brief do nonlinear iteration, e.g. full Newton, Newton like or
          Fixpoint iteration
@@ -103,11 +100,10 @@ public:
       );
 
   /*!
-  \brief compute Interface
+  \brief (multiple) corrector
+
   */
-  void ComputeInterfaceAndSetDOFs(
-      const Teuchos::RCP<DRT::Discretization>  cutterdiscret
-      );
+  void MultiCorrector();
 
   /*!
     \brief build linear system matrix and rhs
@@ -176,27 +172,6 @@ public:
 
   */
   void Output();
-
-  /*!
-  \brief output solution fields to Gmsh for debugging
-
-  */
-  void OutputToGmsh() const;
-
-  /*!
-   * \brief plot a vector field to a Gmsh postprocessing file
-   * 
-   * @param vectorfield      vector with solution values
-   * @param filestr          basic name of the output file
-   * @param name_in_gmsh     text that appears in the Gmsh window over the scale
-   * @param plot_to_gnuplot  plot some values to Gnuplot (debugging - will go away sooner or later)
-   */
-  void PlotVectorFieldToGmsh(
-      const Teuchos::RCP<Epetra_Vector>   vectorfield,
-      const std::string filestr,
-      const std::string name_in_gmsh,
-      const bool plot_to_gnuplot
-      ) const;
 
   /*!
   \brief set initial flow field for analytical test problems
@@ -305,6 +280,57 @@ protected:
   XFluidImplicitTimeInt (const XFluidImplicitTimeInt& old);
   XFluidImplicitTimeInt();
 
+  /*!
+  \brief compute values at intermediate time steps for gen.-alpha 
+
+  */
+  void GenAlphaIntermediateValues();
+
+  /*!
+  \brief call elements to calculate system matrix/rhs and assemble
+
+  */
+  void AssembleMatAndRHS();
+
+  /*!
+  \brief update acceleration for generalized-alpha time integration
+
+  */
+  void GenAlphaUpdateAcceleration();
+
+  /// setup the variables to do a new nonlinear iteration
+  void PrepareNonlinearSolve();
+
+  /*!
+  \brief output solution fields to Gmsh for debugging
+
+  */
+  void OutputToGmsh() const;
+
+
+
+  /*!
+  \brief compute Interface
+  */
+  void ComputeInterfaceAndSetDOFs(
+      const Teuchos::RCP<DRT::Discretization>  cutterdiscret
+      );
+  
+    /*!
+   * \brief plot a vector field to a Gmsh postprocessing file
+   * 
+   * @param vectorfield      vector with solution values
+   * @param filestr          basic name of the output file
+   * @param name_in_gmsh     text that appears in the Gmsh window over the scale
+   * @param plot_to_gnuplot  plot some values to Gnuplot (debugging - will go away sooner or later)
+   */
+  void PlotVectorFieldToGmsh(
+      const Teuchos::RCP<Epetra_Vector>   vectorfield,
+      const std::string filestr,
+      const std::string name_in_gmsh,
+      const bool plot_to_gnuplot
+      ) const;
+
   //! @name general algorithm parameters
   //! fluid discretization
   const Teuchos::RCP<DRT::Discretization> discret_;
@@ -313,13 +339,12 @@ protected:
   IO::DiscretizationWriter&              output_;
   
   //! the processor ID from the communicator
-  const int                     myrank_;
-  
+  const int                           myrank_;
   //!< a singular stream to stdout in parallel environment
   IO::Ostream0 cout0_;   
   
   //! do we move the fluid mesh and calculate the fluid on this moving mesh?
-  const bool                    alefluid_;
+  const bool                          alefluid_;
   //@}
 
   //! @name time stepping variables
@@ -369,6 +394,9 @@ protected:
 
   /// (standard) system matrix
   Teuchos::RCP<LINALG::SparseOperator> sysmat_;
+//  
+//  /// (standard) system matrix
+//  Teuchos::RCP<LINALG::SparseOperator> enrichsysmat_;
 
   /// maps for extracting Dirichlet and free DOF sets
   Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
@@ -379,8 +407,8 @@ protected:
   /// the vector containing body and surface forces
   Teuchos::RCP<Epetra_Vector>    neumann_loads_;
 
-  /// the vector containing potential Neumann-type outflow stabilization
-  Teuchos::RCP<Epetra_Vector>    outflow_stabil_;
+  /// the vector containing potential Neumann-type outflow terms
+  Teuchos::RCP<Epetra_Vector>    outflow_;
 
   /// (standard) residual vector (rhs for the incremental form),
   Teuchos::RCP<Epetra_Vector>    residual_;
@@ -431,6 +459,9 @@ protected:
   //! Extractor used for convergence check
   LINALG::MapExtractor      velpressplitter_;
 
+//  //! Extractor used for convergence check
+//  LINALG::MapExtractor      normalenrichedsplitter_;
+  
   //! Extractor used for output
   LINALG::MapExtractor      velpressplitterForOutput_;
 

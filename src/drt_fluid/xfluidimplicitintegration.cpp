@@ -23,6 +23,9 @@ Maintainer: Axel Gerstenberger
 
 #include <stdio.h>
 
+
+#include <Ifpack_IC.h>
+
 #include "xfluidimplicitintegration.H"
 #include "time_integration_scheme.H"
 
@@ -571,25 +574,70 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   // -------------------------------------------------------------------
 
   // This is a first estimate for the number of non zeros in a row of
-  // the matrix. Assuming a structured 3d-fluid mesh we have 27 adjacent
-  // nodes with 4 dofs each. (27*4=108)
+  // the matrix. Assuming a structured 3d-fluid mesh, for a corner node we have 
+  // 8 adjacent elements with 27nodes*4dofs = 108 dofs each -> 864 entries
   // We do not need the exact number here, just for performance reasons
   // a 'good' estimate
 
-//  if (not params_.get<int>("Simple Preconditioner",0))
-//  {
-  // initialize standard (stabilized) system matrix
-  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(newdofrowmap,108,false,true));
-//  }
-//  else
-//  {
-//    const int numdim = params_.get<int>("number of velocity degrees of freedom");
-//    Teuchos::RCP<LINALG::BlockSparseMatrix<VelPressSplitStrategy> > blocksysmat =
-//      Teuchos::rcp(new LINALG::BlockSparseMatrix<VelPressSplitStrategy>(velpressplitter_,velpressplitter_,108,false,true));
-//    blocksysmat->SetNumdim(numdim);
-//    sysmat_ = blocksysmat;
-//  }
+  // initialize system matrix
+  sysmat_ = Teuchos::null; // free memory first - otherwise we have 2 sysmats in memory
+                           // in the next line for a short time
+  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(newdofrowmap,864,false,true));
 
+#if 0
+  
+  // rotation of matrix to improve matrix condition number
+  
+  // find nodes connected to enrichments
+  set<int> enr_node_gids;
+  for (int iele=0; iele < discret_->NumMyRowElements(); iele++)
+  {
+    const DRT::Element* ele = discret_->lRowElement(iele);
+    if (ih->ElementIntersected(ele->Id()))
+    {
+      for (int inode=0;inode<ele->NumNode();inode++)
+      {
+        enr_node_gids.insert(ele->NodeIds()[inode]);
+      }
+    }
+  }
+  
+  set<int> ext_enr_ele_gids;
+  for (set<int>::const_iterator nodeid = enr_node_gids.begin(); nodeid != enr_node_gids.end();nodeid++)
+  {
+    const DRT::Node* node = discret_->gNode(*nodeid);
+    for (int iele=0;iele<node->NumElement();iele++)
+    {
+      ext_enr_ele_gids.insert(node->Elements()[iele]->Id());
+    }
+  }
+  
+  set<int> ext_enr_node_gids;
+  for (set<int>::const_iterator eleid = ext_enr_ele_gids.begin(); eleid != ext_enr_ele_gids.end();eleid++)
+  {
+    const DRT::Element* ele = discret_->lRowElement(*eleid);
+    for (int inode=0;inode<ele->NumNode();inode++)
+    {
+      ext_enr_node_gids.insert(ele->NodeIds()[inode]);
+    }
+  }
+  
+  FLD::UTILS::SetupEnrichmentSplit(*discret_,dofmanager,ext_enr_node_gids, normalenrichedsplitter_);
+  
+  const Teuchos::RCP<const Epetra_Map>& enrichmap = normalenrichedsplitter_.CondMap();
+  const Teuchos::RCP<const Epetra_Map>& normalmap = normalenrichedsplitter_.OtherMap();
+  
+  
+//  velpressplitter_.ExtractOtherVector(incvel_,onlyvel);
+  
+  // create small dofmap
+//  Epetra_Map newdofrowmap;
+  
+  
+  // create smaller matrix A
+  enrichsysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*enrichmap,108,false,true));
+#endif
+  
 }
 
 
@@ -716,7 +764,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     itnum++;
 
     // -------------------------------------------------------------------
-    // call elements to calculate system matrix
+    // call elements to calculate system matrix and RHS
     // -------------------------------------------------------------------
     {
       // time measurement: element
@@ -1145,7 +1193,8 @@ void FLD::XFluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
  |  accn_  = (velnp_-veln_) / (dt)                                      |
  |                                                                      |
  |  For low-Mach-number flow, the same is done for density values,      |
- |  which are located at the "pressure dofs" of "vede"-vectors.         |
+ |  which are located at the "pressure dofs" of "vede"-vectors and all  |
+ |  velocity values are multiplied by the respective density values.    |
  |                                                                      |
  |                                                           gammi 04/07|
  *----------------------------------------------------------------------*/
@@ -1306,8 +1355,15 @@ void FLD::XFluidImplicitTimeInt::Output()
 } // FluidImplicitTimeInt::Output
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |                                                             kue 04/07|
+ -----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::ReadRestart(int step)
 {
   IO::DiscretizationReader reader(discret_,step);
@@ -1322,8 +1378,15 @@ void FLD::XFluidImplicitTimeInt::ReadRestart(int step)
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |                                                           chfoe 01/08|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::OutputToGmsh() const
 {
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
@@ -2243,8 +2306,15 @@ void FLD::XFluidImplicitTimeInt::SolveStationaryProblem(
 } // FluidImplicitTimeInt::SolveStationaryProblem
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |  calculate traction vector at (Dirichlet) boundary (public) gjb 07/07|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 Teuchos::RCP<Epetra_Vector> FLD::XFluidImplicitTimeInt::CalcStresses()
 {
   string condstring("FluidStressCalc");
@@ -2286,8 +2356,11 @@ void FLD::XFluidImplicitTimeInt::LiftDrag() const
 
   FLD::UTILS::LiftDrag(*discret_,*trueresidual_,params_,liftdragvals);
 
+  if (liftdragvals!=Teuchos::null and discret_->Comm().MyPID() == 0)
+    FLD::UTILS::WriteLiftDragToFile(time_, step_, *liftdragvals);
+
   return;
-}//FluidImplicitTimeInt::LiftDrag
+}
 
 
 /*----------------------------------------------------------------------*/
@@ -2355,7 +2428,6 @@ void FLD::XFluidImplicitTimeInt::ComputeSurfaceImpulsRates() const
 
   return;
 }
-
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
