@@ -112,6 +112,9 @@ void ADAPTER::AleBaseAlgorithm::SetupAle()
   // restart
   params->set<int>("write restart every", fsidyn.get<int>("RESTARTEVRY"));
 
+  params->set<int>("ALE_TYPE",      Teuchos::getIntegralValue<int>(adyn,"ALE_TYPE"));
+
+  
   bool dirichletcond = true;
   if (genprob.probtyp == prb_fsi)
   {
@@ -141,7 +144,7 @@ void ADAPTER::AleBaseAlgorithm::SetupAle()
     ale_ = rcp(new AleLinear(actdis, solver, params, output, true , dirichletcond));
   else if (aletype==ALE_DYNAMIC::laplace)
     ale_ = rcp(new AleLaplace(actdis, solver, params, output, true, dirichletcond));
-  else if (aletype==ALE_DYNAMIC::springs)
+  else if (aletype==ALE_DYNAMIC::springs or aletype==ALE_DYNAMIC::springs_const_stiff)
     ale_ = rcp(new AleSprings(actdis, solver, params, output, dirichletcond));
   else
     dserror("ale type '%s' unsupported",adyn.get<std::string>("ALE_TYPE").c_str());

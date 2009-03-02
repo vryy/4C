@@ -209,9 +209,17 @@ void ADAPTER::AleSprings::EvaluateElements()
   discret_->ClearState();
 
   // action for elements
-  discret_->SetState("dispnp", dispn_);
-  eleparams.set("action", "calc_ale_spring");
-
+  if (params_->get<int>("ALE_TYPE") == ALE_DYNAMIC::springs)
+  {
+    discret_->SetState("dispnp", dispn_);
+    eleparams.set("action", "calc_ale_spring");
+  }
+  else if (params_->get<int>("ALE_TYPE") == ALE_DYNAMIC::springs_const_stiff)
+  {
+    eleparams.set("action", "calc_ale_spring_const_stiff");
+  }
+  else
+    dserror("unknown springs mesh moving algorithm variant!");
   discret_->Evaluate(eleparams,sysmat_,residual_);
   discret_->ClearState();
 
