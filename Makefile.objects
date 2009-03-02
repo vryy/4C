@@ -223,6 +223,7 @@ OBJS_DRT_CONTACT_LIB = \
                 src/drt_contact/drt_celement_shapefct.o \
                 src/drt_contact/drt_cdofset.o \
                 src/drt_contact/drt_contact_coupling.o \
+                src/drt_contact/drt_contact_coupling_tools.o \
                 src/drt_contact/drt_contact_projector.o \
                 src/drt_contact/drt_contact_integrator.o
 #----------------------------------------------------- drt version statmech
