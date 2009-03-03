@@ -205,9 +205,8 @@ void FLD::UTILS::FluidImpedanceWrapper::ReadRestart( IO::DiscretizationReader& r
   map<const int, RCP<class FluidImpedanceBc> >::iterator mapiter;
 
   for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++ )
-  {
     mapiter->second->FluidImpedanceBc::ReadRestart(reader,mapiter->first);
-  }
+
   return;
 }
 
@@ -310,7 +309,7 @@ void FLD::UTILS::FluidImpedanceBc::WriteRestart( IO::DiscretizationWriter&  outp
   // condnum contains the number of the present condition
   // condition Id numbers must not change at restart!!!!
 
-  std::stringstream stream1, stream2;
+  std::stringstream stream1, stream2, stream3;
 
   stream1 << "flowratesId" << condnum;
 
@@ -320,6 +319,10 @@ void FLD::UTILS::FluidImpedanceBc::WriteRestart( IO::DiscretizationWriter&  outp
   // also write flowratesposition of this outlet
   stream2 << "flowratesposId" << condnum;
   output.WriteInt(stream2.str(), flowratespos_);
+
+  // also write vector impedancetbc_ (previously missing, gee)
+  stream3 << "impedancetbc" << condnum;
+  output.WriteVector(stream3.str(), impedancetbc_);
 
   return;
 }
@@ -338,7 +341,7 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
   // condnum contains the number of the present condition
   // condition Id numbers must not change at restart!!!!
 
-  std::stringstream stream1, stream2;
+  std::stringstream stream1, stream2, stream3;
   stream1 << "flowratesId" << condnum;
   stream2 << "flowratesposId" << condnum;
 
@@ -349,6 +352,10 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
   // check if vector of flowrates is not empty
   if (flowrates_->size() == 0)
     dserror("could not re-read vector of flowrates");
+
+  // also read vector impedancetbc_ (previously missing, gee)
+  stream3 << "impedancetbc" << condnum;
+  reader.ReadVector(impedancetbc_,stream3.str());
 
   return;
 }
@@ -643,7 +650,7 @@ void FLD::UTILS::FluidImpedanceBc::OutflowBoundary(double time, double dta, doub
 
     // flowrate is zero if not yet a full cycle is calculated
     double actflowrate;
-    if (qindex > flowrates_->size()-1)
+    if (qindex > (int)flowrates_->size()-1)
       actflowrate = 0.0;
     else
       actflowrate = (*flowrates_)[qindex];
@@ -671,6 +678,16 @@ void FLD::UTILS::FluidImpedanceBc::OutflowBoundary(double time, double dta, doub
   impedancetbc_->PutScalar(0.0); // ??
   const string condstring("ImpedanceCond");
   discret_->EvaluateCondition(eleparams,impedancetbc_,condstring,condid);
+/*
+  double norm = 0.0;
+  impedancetbc_->Norm2(&norm);
+  if (!myrank_)
+  {
+    printf("FLD::UTILS::FluidImpedanceBc::OutflowBoundary Norm of tbc: %10.5e\n",norm);
+    fflush(stdout);
+  }
+*/
+
   discret_->ClearState();
 
   return;
@@ -692,6 +709,15 @@ void FLD::UTILS::FluidImpedanceBc::OutflowBoundary(double time, double dta, doub
 void FLD::UTILS::FluidImpedanceBc::UpdateResidual(RCP<Epetra_Vector>  residual )
 {
   residual->Update(1.0,*impedancetbc_,1.0);
+/*
+  double norm = 0.0;
+  impedancetbc_->Norm2(&norm);
+  if (!myrank_)
+  {
+    printf("FLD::UTILS::FluidImpedanceBc::UpdateResidual Norm of tbc: %10.5e\n",norm);
+    fflush(stdout);
+  }
+*/
 }
 
 
