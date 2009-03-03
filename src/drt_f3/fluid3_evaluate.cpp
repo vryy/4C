@@ -167,11 +167,6 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           stabstrtoact_["cross_rhs"              ]=cross_stress_stab_only_rhs;
           stabstrtoact_["no_reynolds"            ]=reynolds_stress_stab_none;
           stabstrtoact_["reynolds_rhs"           ]=reynolds_stress_stab_only_rhs;
-          stabstrtoact_["No"                     ]=Fluid3::fssgv_no;
-          stabstrtoact_["artificial_all"         ]=Fluid3::fssgv_artificial_all;
-          stabstrtoact_["artificial_small"       ]=Fluid3::fssgv_artificial_small;
-          stabstrtoact_["Smagorinsky_all"        ]=Fluid3::fssgv_Smagorinsky_all;
-          stabstrtoact_["Smagorinsky_small"      ]=Fluid3::fssgv_Smagorinsky_small;
         }
 
         return DRT::ELEMENTS::Fluid3ImplInterface::Impl(this)->Evaluate(
@@ -208,11 +203,6 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           stabstrtoact_["cross_rhs"              ]=cross_stress_stab_only_rhs;
           stabstrtoact_["no_reynolds"            ]=reynolds_stress_stab_none;
           stabstrtoact_["reynolds_rhs"           ]=reynolds_stress_stab_only_rhs;
-          stabstrtoact_["No"                     ]=Fluid3::fssgv_no;
-          stabstrtoact_["artificial_all"         ]=Fluid3::fssgv_artificial_all;
-          stabstrtoact_["artificial_small"       ]=Fluid3::fssgv_artificial_small;
-          stabstrtoact_["Smagorinsky_all"        ]=Fluid3::fssgv_Smagorinsky_all;
-          stabstrtoact_["Smagorinsky_small"      ]=Fluid3::fssgv_Smagorinsky_small;
         }
 
         return DRT::ELEMENTS::Fluid3StationaryImplInterface::Impl(this)->Evaluate(
@@ -260,11 +250,6 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           stabstrtoact_["no_reynolds"            ]=reynolds_stress_stab_none;
           stabstrtoact_["reynolds_complete"      ]=reynolds_stress_stab;
           stabstrtoact_["reynolds_rhs"           ]=reynolds_stress_stab_only_rhs;
-          stabstrtoact_["No"                     ]=Fluid3::fssgv_no;
-          stabstrtoact_["artificial_all"         ]=Fluid3::fssgv_artificial_all;
-          stabstrtoact_["artificial_small"       ]=Fluid3::fssgv_artificial_small;
-          stabstrtoact_["Smagorinsky_all"        ]=Fluid3::fssgv_Smagorinsky_all;
-          stabstrtoact_["Smagorinsky_small"      ]=Fluid3::fssgv_Smagorinsky_small;
         }
 
         return DRT::ELEMENTS::Fluid3GenalphaResVMMInterface::Impl(this)->Evaluate(
@@ -418,15 +403,19 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
             = discretization.GetState("u and p (n+1,converged)");
           RefCountPtr<const Epetra_Vector> vedenp
             = discretization.GetState("rho (n+1,converged)");
+          RefCountPtr<const Epetra_Vector> subgrviscnp
+            = discretization.GetState("sv (n+1,converged)");
 
-          if (velnp==null || vedenp==null)
-            dserror("Cannot get state vectors 'velnp' and/or 'vedenp'");
+          if (velnp==null || vedenp==null || subgrviscnp==null)
+            dserror("Cannot get state vectors 'velnp', 'vedenp' and/or 'subgrviscnp'");
 
           // extract local values from the global vectors
           vector<double> myvelpre(lm.size());
           vector<double> mydens(lm.size());
+          vector<double> mysv(lm.size());
           DRT::UTILS::ExtractMyValues(*velnp,myvelpre,lm);
           DRT::UTILS::ExtractMyValues(*vedenp,mydens,lm);
+          DRT::UTILS::ExtractMyValues(*subgrviscnp,mysv,lm);
 
           // get factor for equation of state
           const double eosfac = params.get<double>("eos factor",100000.0/287.0);
@@ -438,17 +427,17 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           {
           case DRT::Element::hex8:
           {
-            f3_calc_loma_means<8>(discretization,myvelpre,mydens,params,eosfac);
+            f3_calc_loma_means<8>(discretization,myvelpre,mydens,mysv,params,eosfac);
             break;
           }
           case DRT::Element::hex20:
           {
-            f3_calc_loma_means<20>(discretization,myvelpre,mydens,params,eosfac);
+            f3_calc_loma_means<20>(discretization,myvelpre,mydens,mysv,params,eosfac);
             break;
           }
           case DRT::Element::hex27:
           {
-            f3_calc_loma_means<27>(discretization,myvelpre,mydens,params,eosfac);
+            f3_calc_loma_means<27>(discretization,myvelpre,mydens,mysv,params,eosfac);
             break;
           }
           default:
@@ -1526,6 +1515,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
   DRT::Discretization&      discretization,
   vector<double>&           velocitypressure ,
   vector<double>&           density  ,
+  vector<double>&           subgrvisc  ,
   ParameterList&            params,
   const double              eosfac
   )
@@ -1533,6 +1523,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
   // get view of solution vector
   LINALG::Matrix<4*iel,1> velpre(&(velocitypressure[0]),true);
   LINALG::Matrix<4*iel,1> dens(&(density[0]),true);
+  LINALG::Matrix<4*iel,1> sv(&(subgrvisc[0]),true);
 
   // set element data
   const DiscretizationType distype = this->Shape();
@@ -1555,6 +1546,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
   RefCountPtr<vector<double> > sumT   = params.get<RefCountPtr<vector<double> > >("mean temperature T");
   RefCountPtr<vector<double> > sumrhou  = params.get<RefCountPtr<vector<double> > >("mean momentum rho*u");
   RefCountPtr<vector<double> > sumrhouT = params.get<RefCountPtr<vector<double> > >("mean rho*u*T");
+  RefCountPtr<vector<double> > sumsv = params.get<RefCountPtr<vector<double> > >("mean subgrid visc");
 
   RefCountPtr<vector<double> > sumsqu = params.get<RefCountPtr<vector<double> > >("mean value u^2");
   RefCountPtr<vector<double> > sumsqv = params.get<RefCountPtr<vector<double> > >("mean value v^2");
@@ -1562,6 +1554,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
   RefCountPtr<vector<double> > sumsqp = params.get<RefCountPtr<vector<double> > >("mean value p^2");
   RefCountPtr<vector<double> > sumsqrho = params.get<RefCountPtr<vector<double> > >("mean value rho^2");
   RefCountPtr<vector<double> > sumsqT = params.get<RefCountPtr<vector<double> > >("mean value T^2");
+  RefCountPtr<vector<double> > sumsqsv = params.get<RefCountPtr<vector<double> > >("mean value sv^2");
 
   RefCountPtr<vector<double> > sumuv  = params.get<RefCountPtr<vector<double> > >("mean value uv");
   RefCountPtr<vector<double> > sumuw  = params.get<RefCountPtr<vector<double> > >("mean value uw");
@@ -1722,6 +1715,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
       double Tbar=0;
       double rhoubar=0;
       double rhouTbar=0;
+      double svbar=0;
 
       double usqbar=0;
       double vsqbar=0;
@@ -1729,6 +1723,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
       double psqbar=0;
       double rhosqbar=0;
       double Tsqbar=0;
+      double svsqbar=0;
 
       double uvbar =0;
       double uwbar =0;
@@ -1820,6 +1815,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
         double Tgp=0;
         double rhougp=0;
         double rhouTgp=0;
+        double svgp=0;
         double usave=0;
 
         // the computation of this jacobian determinant from the 3d 
@@ -1841,6 +1837,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
           pgp    += funct(inode)*velpre(finode  );
           rhogp  += funct(inode)*dens(finode  );
           rhougp += funct(inode)*dens(finode  )*usave;
+          svgp   += funct(inode)*sv(finode  )*usave;
         }
         Tgp     = eosfac/rhogp;
         rhouTgp = eosfac*ugp;
@@ -1854,6 +1851,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
         double dTbar   = Tgp*fac;
         double drhoubar  = rhougp*fac;
         double drhouTbar = rhouTgp*fac;
+        double dsvbar  = svgp*fac;
 
         ubar   += dubar;
         vbar   += dvbar;
@@ -1863,6 +1861,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
         Tbar   += dTbar;
         rhoubar  += drhoubar;
         rhouTbar += drhouTbar;
+        svbar += dsvbar;
 
         usqbar   += ugp*dubar;
         vsqbar   += vgp*dvbar;
@@ -1870,6 +1869,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
         psqbar   += pgp*dpbar;
         rhosqbar += rhogp*drhobar;
         Tsqbar   += Tgp*dTbar;
+        svsqbar  += svgp*dsvbar;
 
         uvbar  += ugp*dvbar;
         uwbar  += ugp*dwbar;
@@ -1890,6 +1890,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
       (*sumT   )[*id] += Tbar;
       (*sumrhou)[*id] += rhoubar;
       (*sumrhouT)[*id] += rhouTbar;
+      (*sumsv)[*id]   += svbar;
 
       (*sumsqu  )[*id] += usqbar;
       (*sumsqv  )[*id] += vsqbar;
@@ -1897,6 +1898,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
       (*sumsqp  )[*id] += psqbar;
       (*sumsqrho)[*id] += rhosqbar;
       (*sumsqT  )[*id] += Tsqbar;
+      (*sumsqsv )[*id] += svsqbar;
 
       (*sumuv  )[*id] += uvbar;
       (*sumuw  )[*id] += uwbar;

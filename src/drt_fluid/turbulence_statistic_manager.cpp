@@ -181,6 +181,7 @@ namespace FLD
     mydispn_    (fluid.dispn_       ),
     mygridveln_ (fluid.gridv_       ),
     mygridvelaf_(null               ),
+    mysubgrvisc_(fluid.subgrvisc_   ),
     myforce_    (fluid.trueresidual_)
   {
     // get density
@@ -461,7 +462,7 @@ namespace FLD
         if(statistics_channel_==null)
           dserror("need statistics_channel_ to do a time sample for a turbulent channel flow at low Mach number");
 
-        statistics_channel_->DoLomaTimeSample(myvelnp_,myvedenp_,*myforce_,eosfac);
+        statistics_channel_->DoLomaTimeSample(myvelnp_,myvedenp_,mysubgrvisc_,*myforce_,eosfac);
         break;
       }
       case lid_driven_cavity:
@@ -477,7 +478,7 @@ namespace FLD
         if(statistics_ldc_==null)
           dserror("need statistics_ldc_ to do a time sample for a cavity flow at low Mach number");
 
-        statistics_ldc_->DoLomaTimeSample(myvelnp_,myvedenp_,eosfac);
+        statistics_ldc_->DoLomaTimeSample(myvelnp_,myvedenp_,mysubgrvisc_,eosfac);
         break;
       }
       case square_cylinder:

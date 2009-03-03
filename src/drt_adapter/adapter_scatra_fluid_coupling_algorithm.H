@@ -102,6 +102,12 @@ namespace ADAPTER
     /// velocity+pressure vector at imtermediate time step n+alpha_F
     RCP<const Epetra_Vector> VelocityPressureAf(){ return velpressaf_; }
 
+    /// get subgrid viscosity from fluid solver
+    void GetSubgridViscosity(){ subgrvisc_=FluidField().SubgrVisc(); }
+
+    /// subgrid viscosity
+    RCP<const Epetra_Vector> SubgridViscosity(){ return subgrvisc_; }
+
     /// get density at time step n+1 from scalar transport solver
     void GetDensityNp(){ densnp_=ScaTraField().DensNp(); }
 
@@ -159,6 +165,9 @@ namespace ADAPTER
     /// time derivatives of density at times n+1 and n
     RCP<const Epetra_Vector>    densdtnp_;
     RCP<const Epetra_Vector>    densdtn_;
+
+    /// subgrid viscosity
+    RCP<const Epetra_Vector>    subgrvisc_;
 
     /// problem-specific parameter list
     const Teuchos::ParameterList& params_;

@@ -170,7 +170,8 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   LINALG::Matrix<4*iel,4*iel> elemat1(elemat1_epetra,true);
   LINALG::Matrix<4*iel,4*iel> elemat2(elemat2_epetra,true);
   LINALG::Matrix<4*iel,    1> elevec1(elevec1_epetra,true);
-  // elevec2 and elevec3 are never used anyway
+  LINALG::Matrix<4*iel,    1> elevec2(elevec2_epetra,true);
+  // elevec3 is never used anyway
 
   //----------------------------------------------------------------------
   // get control parameters for time integration
@@ -398,8 +399,15 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   // time n+1 for all other schemes
   // ---------------------------------------------------------------------
   // get flag for fine-scale subgrid-viscosity approach
-  Fluid3::StabilisationAction fssgv =
-    ele->ConvertStringToStabAction(params.get<string>("fs subgrid viscosity","No"));
+  Fluid3::FineSubgridVisc fssgv = Fluid3::no_fssgv;
+  {
+    const string fssgvdef = params.get<string>("fs subgrid viscosity","No");
+
+    if (fssgvdef == "artificial_all")         fssgv = Fluid3::artificial_all;
+    else if (fssgvdef == "artificial_small")  fssgv = Fluid3::artificial_small;
+    else if (fssgvdef == "Smagorinsky_all")   fssgv = Fluid3::smagorinsky_all;
+    else if (fssgvdef == "Smagorinsky_small") fssgv = Fluid3::smagorinsky_small;
+  }
 
   RCP<const Epetra_Vector> fsvelnp;
   vector<double> myfsvelnp;
@@ -407,7 +415,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   // create object for element array
   LINALG::Matrix<3,numnode> fsevelnp;
 
-  if (fssgv != Fluid3::fssgv_no)
+  if (fssgv != Fluid3::no_fssgv)
   {
     fsvelnp = discretization.GetState("fsvelnp");
     if (fsvelnp==null) dserror("Cannot get state vector 'fsvelnp'");
@@ -438,9 +446,8 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   // (Since either all-scale Smagorinsky model (i.e., classical LES model
   // as will be inititalized below) or fine-scale Smagorinsky model is
   // used (and never both), the same input parameter can be exploited.)
-  if (fssgv != Fluid3::fssgv_no && turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
-    dserror("No combination of a classical (all-scale) turbulence model and a fine-scale subgrid-viscosity approach currently possible!");
-  if (fssgv != Fluid3::fssgv_no) Cs = turbmodelparams.get<double>("C_SMAGORINSKY",0.0);
+  if (fssgv != Fluid3::no_fssgv)
+    Cs = turbmodelparams.get<double>("C_SMAGORINSKY",0.0);
 
   // the default action is no model
   Fluid3::TurbModelAction turb_mod_action = Fluid3::no_model;
@@ -599,6 +606,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
          elemat1,
          elemat2,
          elevec1,
+         elevec2,
          mat,
          time,
          dt,
@@ -678,6 +686,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
   LINALG::Matrix<4*iel,4*iel>&            estif,
   LINALG::Matrix<4*iel,4*iel>&            emesh,
   LINALG::Matrix<4*iel,1>&                eforce,
+  LINALG::Matrix<4*iel,1>&                subgrvisc,
   Teuchos::RCP<const MAT::Material>       material,
   double                                  time,
   double                                  dt,
@@ -689,7 +698,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
   const bool                              conservative,
   const bool                              is_genalpha,
   const bool                              higher_order_ele,
-  const enum Fluid3::StabilisationAction  fssgv,
+  const enum Fluid3::FineSubgridVisc      fssgv,
   const enum Fluid3::StabilisationAction  pspg,
   const enum Fluid3::StabilisationAction  supg,
   const enum Fluid3::StabilisationAction  vstab,
@@ -746,6 +755,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
   //  we use the same arrays internally)
   // ---------------------------------------------------------------------
   Caltau(ele,
+         subgrvisc,
          evelnp,
          fsevelnp,
          edensnp,
@@ -861,7 +871,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
 
     // get fine-scale velocity derivatives at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    if (fssgv != Fluid3::fssgv_no) fsvderxy_.MultiplyNT(fsevelnp,derxy_);
+    if (fssgv != Fluid3::no_fssgv) fsvderxy_.MultiplyNT(fsevelnp,derxy_);
     else                           fsvderxy_.Clear();
 
     // get density-weighted convective velocity at integration point
@@ -2279,7 +2289,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
       //----------------------------------------------------------------------
       //     FINE-SCALE SUBGRID-VISCOSITY TERM (ON RIGHT HAND SIDE)
 
-      if(fssgv != Fluid3::fssgv_no)
+      if(fssgv != Fluid3::no_fssgv)
       {
         for (int vi=0; vi<numnode; ++vi)
         {
@@ -2827,6 +2837,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
   Fluid3*                                 ele,
+  LINALG::Matrix<4*iel,1>&                subgrvisc,
   const LINALG::Matrix<3,iel>&            evelnp,
   const LINALG::Matrix<3,iel>&            fsevelnp,
   const LINALG::Matrix<iel,1>&            edensnp,
@@ -2841,7 +2852,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
   double&                                 Cs_delta_sq,
   double&                                 visceff,
   double&                                 l_tau,
-  const enum Fluid3::StabilisationAction  fssgv
+  const enum Fluid3::FineSubgridVisc      fssgv
   )
 {
   // use one-point Gauss rule to calculate tau at element center
@@ -2933,134 +2944,25 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
 
   // (all-scale) rate of strain
   double rateofstrain   = -1.0e30;
-  if (material->MaterialType() != INPAR::MAT::m_fluid ||
-      fssgv            == Fluid3::fssgv_Smagorinsky_all ||
-      turb_mod_action  != Fluid3::no_model)
+  if (material->MaterialType() != INPAR::MAT::m_fluid or
+      fssgv                    == Fluid3::smagorinsky_all or
+      turb_mod_action          != Fluid3::no_model)
     rateofstrain = GetStrainRate(evelnp,derxy_,vderxy_);
 
-  /*------------------------------------------------------------------*/
-  /*                                                                  */
-  /*                 GET EFFECTIVE VISCOSITY IN GAUSSPOINT            */
-  /*                                                                  */
-  /* This part is used to specify an effective viscosity. This eff.   */
-  /* viscosity may be caused by a Smagorinsky model                   */
-  /*                                                                  */
-  /*          visc    = visc + visc                                   */
-  /*              eff              turbulent                          */
-  /*                                                                  */
-  /* here, the latter turbulent viscosity is not a material thing,    */
-  /* but a flow feature!                                              */
-  /*                                                                  */
-  /* Another cause for the necessity of an effective viscosity might  */
-  /* be the use of a shear thinning Non-Newtonian fluid               */
-  /*                                                                  */
-  /*                            /         \                           */
-  /*            visc    = visc | shearrate |                          */
-  /*                eff         \         /                           */
-  /*                                                                  */
-  /*                                                                  */
-  /* Mind that at the moment all stabilization (tau and viscous test  */
-  /* functions if applied) are based on the material viscosity not    */
-  /* the effective viscosity. We do this since we do not evaluate the */
-  /* stabilisation parameter in the gausspoints but just once in the  */
-  /* middle of the element.                                           */
-  /*------------------------------------------------------------------*/
+  // ---------------------------------------------------------------
+  // computation of nonlinear viscosity (Carreau-Yasuda model)
+  // ---------------------------------------------------------------
+  if( material->MaterialType() != INPAR::MAT::m_fluid )
+    CalVisc(material,visc,rateofstrain,dens,eosfac);
 
-  // compute nonlinear viscosity according to the Carreau-Yasuda model
-  if( material->MaterialType() != INPAR::MAT::m_fluid ) CalVisc(material,visc,rateofstrain,dens,eosfac);
+  // ---------------------------------------------------------------
+  // computation of subgrid viscosity
+  // ---------------------------------------------------------------
+  // define variable for subgrid viscosity
+  double sgvisc=0.0;
 
-  if (turb_mod_action == Fluid3::smagorinsky_with_wall_damping
-      ||
-      turb_mod_action == Fluid3::smagorinsky)
+  if (turb_mod_action != Fluid3::no_model)
   {
-    //
-    // SMAGORINSKY MODEL
-    // -----------------
-    //                                   +-                                 -+ 1
-    //                               2   |          / h \           / h \    | -
-    //    visc          = dens * lmix  * | 2 * eps | u   |   * eps | u   |   | 2
-    //        turbulent           |      |          \   / ij        \   / ij |
-    //                            |      +-                                 -+
-    //                            |
-    //                            |      |                                   |
-    //                            |      +-----------------------------------+
-    //                            |           'resolved' rate of strain
-    //                         mixing length
-    //
-    // Choices of the Smagorinsky constant Cs:
-    //
-    //             Cs = 0.17   (Lilly --- Determined from filter
-    //                          analysis of Kolmogorov spectrum of
-    //                          isotropic turbulence)
-    //
-    //             0.1 < Cs < 0.24 (depending on the flow)
-    //
-    //             Cs dynamic  (Germano model. Use several filter
-    //                          resolutions to determine Cs)
-
-    if (turb_mod_action == Fluid3::smagorinsky_with_wall_damping)
-    {
-      // since the Smagorinsky constant is only valid if hk is in the inertial
-      // subrange of turbulent flows, the mixing length is damped in the
-      // viscous near wall region using the van Driest damping function
-      /*
-                                       /         /   y+ \ \
-                     lmix = Cs * hk * | 1 - exp | - ---- | |
-                                       \         \   A+ / /
-      */
-      // A+ is a constant parameter, y+ the distance from the wall in wall
-      // units
-      const double A_plus = 26.0;
-      double y_plus;
-
-      // the integration point coordinate is defined by the isometric approach
-      /*
-                  +-----
-                   \
-              x =   +      N (x) * x
-                   /        j       j
-                  +-----
-                  node j
-      */
-     //blitz::Array<double,1> centernodecoord(3);
-      LINALG::Matrix<3,1> centernodecoord;
-      //centernodecoord = blitz::sum(funct_(j)*xyze_(i,j),j);
-      centernodecoord.Multiply(xyze_,funct_);
-
-      if(centernodecoord(1,0)>0)
-      {
-        y_plus=(1.0-centernodecoord(1,0))/l_tau;
-      }
-      else
-      {
-        y_plus=(1.0+centernodecoord(1,0))/l_tau;
-      }
-
-//      lmix *= (1.0-exp(-y_plus/A_plus));
-      // multiply with van Driest damping function
-      Cs *= (1.0-exp(-y_plus/A_plus));
-    }
-
-    // get characteristic element length for Smagorinsky model
-    const double hk = pow(vol,(1.0/3.0));
-
-    //
-    // mixing length set proportional to grid witdh
-    //
-    //                     lmix = Cs * hk
-    double lmix = Cs * hk;
-
-    Cs_delta_sq = lmix * lmix;
-
-    //
-    //          visc    = visc + visc
-    //              eff              turbulent
-
-    visceff = visc + dens * Cs_delta_sq * rateofstrain;
-  }
-  else if(turb_mod_action == Fluid3::dynamic_smagorinsky)
-  {
-
     //
     // SMAGORINSKY MODEL
     // -----------------
@@ -3074,16 +2976,84 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
     //                            |      +-----------------------------------+
     //                            |           'resolved' rate of strain
     //                    mixing length
-    //               provided by the dynamic model
-    //            procedure and stored in Cs_delta_sq
+    // -> either provided by dynamic modeling procedure and stored in Cs_delta_sq
+    // -> or computed based on fixed Smagorinsky constant Cs:
+    //             Cs = 0.17   (Lilly --- Determined from filter
+    //                          analysis of Kolmogorov spectrum of
+    //                          isotropic turbulence)
+    //             0.1 < Cs < 0.24 (depending on the flow)
     //
 
-    visceff = visc + dens * Cs_delta_sq * rateofstrain;
+    if(turb_mod_action == Fluid3::dynamic_smagorinsky)
+    {
+      // subgrid viscosity
+      sgvisc = dens * Cs_delta_sq * rateofstrain;
 
-    // for evaluation of statistics: remember the 'real' Cs
-    Cs=sqrt(Cs_delta_sq)/pow((vol),(1.0/3.0));
+      // for evaluation of statistics: remember the 'real' Cs
+      Cs=sqrt(Cs_delta_sq)/pow((vol),(1.0/3.0));
+    }
+    else
+    {
+      if (turb_mod_action == Fluid3::smagorinsky_with_wall_damping)
+      {
+        // since the Smagorinsky constant is only valid if hk is in the inertial
+        // subrange of turbulent flows, the mixing length is damped in the
+        // viscous near wall region using the van Driest damping function
+        /*
+                                       /         /   y+ \ \
+                     lmix = Cs * hk * | 1 - exp | - ---- | |
+                                       \         \   A+ / /
+        */
+        // A+ is a constant parameter, y+ the distance from the wall in wall
+       // units
+        const double A_plus = 26.0;
+        double y_plus;
+
+        // the integration point coordinate is defined by the isometric approach
+        /*
+                  +-----
+                   \
+              x =   +      N (x) * x
+                   /        j       j
+                  +-----
+                  node j
+        */
+       //blitz::Array<double,1> centernodecoord(3);
+        LINALG::Matrix<3,1> centernodecoord;
+        //centernodecoord = blitz::sum(funct_(j)*xyze_(i,j),j);
+        centernodecoord.Multiply(xyze_,funct_);
+
+        if (centernodecoord(1,0)>0) y_plus=(1.0-centernodecoord(1,0))/l_tau;
+        else                        y_plus=(1.0+centernodecoord(1,0))/l_tau;
+
+        //   lmix *= (1.0-exp(-y_plus/A_plus));
+        // multiply with van Driest damping function
+        Cs *= (1.0-exp(-y_plus/A_plus));
+      }
+
+      // get characteristic element length for Smagorinsky model
+      const double hk = pow(vol,(1.0/3.0));
+
+      // mixing length set proportional to grid witdh: lmix = Cs * hk
+      double lmix = Cs * hk;
+
+      Cs_delta_sq = lmix * lmix;
+
+      // subgrid viscosity
+      sgvisc = dens * Cs_delta_sq * rateofstrain;
+    }
+
+    // store element value for subgrid viscosity for all nodes of element
+    // in subgrid-viscosity vector (at first location)
+    for (int vi=0; vi<iel; ++vi)
+    {
+      const int fvi = 4*vi;
+      subgrvisc(fvi) = sgvisc/ele->Nodes()[vi]->NumElement();
+    }
   }
-  else visceff = visc;
+
+  // effective viscosity = physical viscosity + subgrid viscosity
+  visceff = visc + sgvisc;
 
   // ---------------------------------------------------------------
   // computation of stabilization parameter tau
@@ -3370,77 +3340,87 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Caltau(
   }
 
   // ---------------------------------------------------------------
-  // computation of fine-scale artificial subgrid viscosity
+  // computation of fine-scale subgrid (artificial) viscosity
   // ---------------------------------------------------------------
-  if (fssgv == Fluid3::fssgv_artificial_all or
-      fssgv == Fluid3::fssgv_artificial_small)
+  if (fssgv != Fluid3::no_fssgv)
   {
-    // get characteristic element length for artficial subgrid viscosity:
-    // volume-equival. diameter/sqrt(3)
-    const double hk = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
-
-    double fsvel_norm = 0.0;
-    if (fssgv == Fluid3::fssgv_artificial_small)
+    if (fssgv == Fluid3::artificial_all or fssgv == Fluid3::artificial_small)
     {
-      // get fine-scale velocities at element center
-      // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-      fsvelint_.Multiply(fsevelnp,funct_);
+      // get characteristic element length for artficial subgrid viscosity:
+      // volume-equival. diameter/sqrt(3)
+      const double hk = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
 
-      // get fine-scale velocity norm
-      fsvel_norm = fsvelint_.Norm2();
+      double fsvel_norm = 0.0;
+      if (fssgv == Fluid3::artificial_small)
+      {
+        // get fine-scale velocities at element center
+        // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+        fsvelint_.Multiply(fsevelnp,funct_);
+
+        // get fine-scale velocity norm
+        fsvel_norm = fsvelint_.Norm2();
+      }
+      // get all-scale velocity norm
+      else fsvel_norm = vel_norm;
+
+      // element Reynolds number
+      const double re = mk * dens * fsvel_norm * hk / visc;
+      const double xi = DMAX(re,1.0);
+
+      vart_ = (DSQR(hk)*mk*DSQR(dens)*DSQR(fsvel_norm))/(2.0*visc*xi);
     }
-    // get all-scale velocity norm
-    else fsvel_norm = vel_norm;
+    else if (fssgv == Fluid3::smagorinsky_all)
+    {
+      //
+      // ALL-SCALE SMAGORINSKY MODEL
+      // ---------------------------
+      //                                      +-                                 -+ 1
+      //                                  2   |          / h \           / h \    | -
+      //    visc          = dens * (C_S*h)  * | 2 * eps | u   |   * eps | u   |   | 2
+      //        turbulent                     |          \   / ij        \   / ij |
+      //                                      +-                                 -+
+      //                                      |                                   |
+      //                                      +-----------------------------------+
+      //                                            'resolved' rate of strain
+      //
 
-    // element Reynolds number
-    const double re = mk * dens * fsvel_norm * hk / visc;
-    const double xi = DMAX(re,1.0);
+      // get characteristic element length for Smagorinsky model
+      const double hk = pow(vol,(1.0/3.0));
 
-    vart_ = (DSQR(hk)*mk*DSQR(dens)*DSQR(fsvel_norm))/(2.0*visc*xi);
-  }
-  else if (fssgv == Fluid3::fssgv_Smagorinsky_all)
-  {
-    //
-    // ALL-SCALE SMAGORINSKY MODEL
-    // ---------------------------
-    //                                      +-                                 -+ 1
-    //                                  2   |          / h \           / h \    | -
-    //    visc          = dens * (C_S*h)  * | 2 * eps | u   |   * eps | u   |   | 2
-    //        turbulent                     |          \   / ij        \   / ij |
-    //                                      +-                                 -+
-    //                                      |                                   |
-    //                                      +-----------------------------------+
-    //                                            'resolved' rate of strain
-    //
+      vart_ = dens * Cs * Cs * hk * hk * rateofstrain;
+    }
+    else if (fssgv == Fluid3::smagorinsky_small)
+    {
+      //
+      // FINE-SCALE SMAGORINSKY MODEL
+      // ----------------------------
+      //                                      +-                                 -+ 1
+      //                                  2   |          /    \          /   \    | -
+      //    visc          = dens * (C_S*h)  * | 2 * eps | fsu |   * eps | fsu |   | 2
+      //        turbulent                     |          \   / ij        \   / ij |
+      //                                      +-                                 -+
+      //                                      |                                   |
+      //                                      +-----------------------------------+
+      //                                            'resolved' rate of strain
+      //
 
-    // get characteristic element length for Smagorinsky model
-    const double hk = pow(vol,(1.0/3.0));
+      // get characteristic element length for Smagorinsky model
+      const double hk = pow(vol,(1.0/3.0));
 
-    vart_ = dens * Cs * Cs * hk * hk * rateofstrain;
-  }
-  else if (fssgv == Fluid3::fssgv_Smagorinsky_small)
-  {
-    //
-    // FINE-SCALE SMAGORINSKY MODEL
-    // ----------------------------
-    //                                      +-                                 -+ 1
-    //                                  2   |          /    \          /   \    | -
-    //    visc          = dens * (C_S*h)  * | 2 * eps | fsu |   * eps | fsu |   | 2
-    //        turbulent                     |          \   / ij        \   / ij |
-    //                                      +-                                 -+
-    //                                      |                                   |
-    //                                      +-----------------------------------+
-    //                                            'resolved' rate of strain
-    //
+      // fine-scale rate of strain
+      double fsrateofstrain = -1.0e30;
+      fsrateofstrain = GetStrainRate(fsevelnp,derxy_,fsvderxy_);
 
-    // get characteristic element length for Smagorinsky model
-    const double hk = pow(vol,(1.0/3.0));
+      vart_ = dens * Cs * Cs * hk * hk * fsrateofstrain;
+    }
 
-    // fine-scale rate of strain
-    double fsrateofstrain = -1.0e30;
-    fsrateofstrain = GetStrainRate(fsevelnp,derxy_,fsvderxy_);
-
-    vart_ = dens * Cs * Cs * hk * hk * fsrateofstrain;
+    // store element value for fine-scale subgrid viscosity for all nodes of element
+    // in subgrid-viscosity vector (at first location)
+    for (int vi=0; vi<iel; ++vi)
+    {
+      const int fvi = 4*vi;
+      subgrvisc(fvi) = vart_/ele->Nodes()[vi]->NumElement();
+    }
   }
 }
 

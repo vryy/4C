@@ -28,11 +28,13 @@ Maintainer: Peter Gamnitzer
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/linalg_ana.H"
+#include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/linalg_solver.H"
+#include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_nodematchingoctree.H"
 #include "drt_periodicbc.H"
 #include "../drt_lib/drt_function.H"
 #include "fluid_utils.H"
-#include "vm3_solver.H"
 #include "fluidimpedancecondition.H"
 
 
@@ -263,6 +265,10 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // Nonlinear iteration increment vector
   incvel_ = LINALG::CreateVector(*dofrowmap,true);
 
+  // subgrid-viscosity vector (enabling statistical evaluation and
+  // transfer to coupled scalar transport solver)
+  subgrvisc_ = LINALG::CreateVector(*dofrowmap,true);
+
   // initialise vectors and flags for (dynamic) Smagorinsky model
   // ------------------------------------------------------------
   //
@@ -272,8 +278,15 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
 
   ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
 
+  string physmodel = modelparams->get<string>("PHYSICAL_MODEL","no_model");
+
   // flag for special flow: currently channel flow or flow in a lid-driven cavity
   special_flow_ = modelparams->get<string>("CANONICAL_FLOW","no");
+
+  // warning if classical (all-scale) turbulence model and fine-scale
+  // subgrid-viscosity approach are intended to be used simultaneously
+  if (fssgv_ != "No" and physmodel != "no_model")
+    dserror("No combination of classical (all-scale) turbulence model and fine-scale subgrid-viscosity approach currently possible!");
 
   if (modelparams->get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
       ==
@@ -302,8 +315,6 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
               ==
               "CLASSICAL_LES")
       {
-        string physmodel = modelparams->get<string>("PHYSICAL_MODEL");
-
         cout << "                             ";
         cout << physmodel;
         cout << &endl;
@@ -381,11 +392,9 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   //
   statisticsmanager_=rcp(new TurbulenceStatisticManager(*this));
 
+  // parameter for sampling/dumping period
   if (special_flow_ != "no")
-  {
-    // parameters for sampling/dumping period
-    samstart_  = modelparams->get<int>("SAMPLING_START",1);
-  }
+    samstart_ = modelparams->get<int>("SAMPLING_START",1);
 
   // -------------------------------------------------------------------
   // initialize outflow boundary stabilization if required
@@ -1826,6 +1835,9 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
 
   sysmat_->Zero();
 
+  // zero subgrid-viscosity vector
+  subgrvisc_->PutScalar(0.0);
+
   // add Neumann loads
   residual_->Update(1.0,*neumann_loads_,0.0);
 
@@ -1930,9 +1942,14 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   //----------------------------------------------------------------------
   if (fssgv_ != "No") AVM3Separation();
 
-  // call standard loop over elements
-  discret_->Evaluate(eleparams,sysmat_,residual_);
+  // call standard loop over elements (including subgrid-viscosity vector)
+  discret_->Evaluate(eleparams,sysmat_,null,residual_,subgrvisc_);
   discret_->ClearState();
+
+    double subnorm;
+    subgrvisc_->Norm2(&subnorm);
+    cout << "subgrid-viscosity norm: " << subnorm;
+    printf("\n");
 
   if (timealgo_==timeint_afgenalpha)
   {
@@ -2432,7 +2449,7 @@ void FLD::FluidImplicitTimeInt::UpdateGridv()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::FluidImplicitTimeInt::AVM3Preparation()
 {
-  {// time measurement: avm3
+  // time measurement: avm3
   TEUCHOS_FUNC_TIME_MONITOR("           + avm3");
 
   // zero matrix
@@ -2502,7 +2519,7 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
 
   // element evaluation for getting system matrix
   // -> we merely need matrix "structure" below, not the actual contents
-  discret_->Evaluate(eleparams,sysmat_,residual_);
+  discret_->Evaluate(eleparams,sysmat_,null,residual_,subgrvisc_);
   discret_->ClearState();
 
   // complete system matrix
@@ -2511,15 +2528,52 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
   // apply DBC to system matrix
   LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(dbcmaps_->CondMap()));
 
-  // extract ML parameters
-  ParameterList&  mllist = solver_.Params().sublist("ML Parameters");
-
-  // call VM3 constructor with system matrix for generating scale-separating matrix
+  // get scale-separation matrix
   {
-    const Teuchos::RCP<const Epetra_Vector> dirichtoggle = Dirichlet();
-    vm3_solver_ = rcp(new VM3_Solver(SystemMatrix(),dirichtoggle,mllist,true,true));
+    // this is important to have!!!
+    MLAPI::Init();
+
+    // extract the ML parameters
+    ParameterList&  mlparams = solver_.Params().sublist("ML Parameters");;
+
+    // get toggle vector for Dirchlet boundary conditions
+    const Epetra_Vector& dbct = *Dirichlet();
+
+    // get nullspace parameters
+    double* nullspace = mlparams.get("null space: vectors",(double*)NULL);
+    if (!nullspace) dserror("No nullspace supplied in parameter list");
+    int nsdim = mlparams.get("null space: dimension",1);
+
+    // modify nullspace to ensure that DBC are fully taken into account
+    if (nullspace)
+    {
+      const int length = SystemMatrix()->OperatorRangeMap().NumMyElements();
+      for (int i=0; i<nsdim; ++i)
+        for (int j=0; j<length; ++j)
+          if (dbct[j]!=0.0) nullspace[i*length+j] = 0.0;
+    }
+
+    // get plain aggregation Ptent
+    RCP<Epetra_CrsMatrix> crsPtent;
+    GetPtent(*SystemMatrix()->EpetraMatrix(),mlparams,nullspace,crsPtent);
+    LINALG::SparseMatrix Ptent(crsPtent);
+
+    // compute scale-separation matrix: S = I - Ptent*Ptent^T
+    Sep_ = LINALG::Multiply(Ptent,false,Ptent,true);
+    Sep_->Scale(-1.0);
+    RCP<Epetra_Vector> tmp = LINALG::CreateVector(Sep_->RowMap(),false);
+    tmp->PutScalar(1.0);
+    RCP<Epetra_Vector> diag = LINALG::CreateVector(Sep_->RowMap(),false);
+    Sep_->ExtractDiagonalCopy(*diag);
+    diag->Update(1.0,*tmp,1.0);
+    Sep_->ReplaceDiagonalValues(*diag);
+
+    //complete scale-separation matrix and check maps
+    Sep_->Complete(Sep_->DomainMap(),Sep_->RangeMap());
+    if (!Sep_->RowMap().SameAs(SystemMatrix()->RowMap())) dserror("rowmap not equal");
+    if (!Sep_->RangeMap().SameAs(SystemMatrix()->RangeMap())) dserror("rangemap not equal");
+    if (!Sep_->DomainMap().SameAs(SystemMatrix()->DomainMap())) dserror("domainmap not equal");
   }
-  }// time measurement: avm3
 
   return;
 }// FluidImplicitTimeInt::AVM3Preparation
@@ -2536,29 +2590,15 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::FluidImplicitTimeInt::AVM3Separation()
 {
-  {// time measurement: avm3
+  // time measurement: avm3
   TEUCHOS_FUNC_TIME_MONITOR("           + avm3");
 
-  // check whether VM3 solver exists
-  if (vm3_solver_ == null) dserror("vm3_solver not allocated");
-
-  if (timealgo_==timeint_afgenalpha)
-  {
-    // call VM3 scale separation to get fine-scale part of velocity
-    // at time n+alpha_F
-    vm3_solver_->Separate(fsvelnp_,velaf_);
-
-  }
-  else
-  {
-    // call VM3 scale separation to get fine-scale part of velocity
-    // at time n+1
-    vm3_solver_->Separate(fsvelnp_,velnp_);
-  }
+  // get fine-scale part of velocity at time n+alpha_F or n+1
+  if (timealgo_==timeint_afgenalpha) Sep_->Multiply(false,*velaf_,*fsvelnp_);
+  else                               Sep_->Multiply(false,*velnp_,*fsvelnp_);
 
   // set fine-scale vector
   discret_->SetState("fsvelnp",fsvelnp_);
-  }// time measurement: avm3
 
   return;
 }// FluidImplicitTimeInt::AVM3Separation

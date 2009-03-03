@@ -189,9 +189,16 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
   }
 
   // --------------------------------------------------
-  // get flag for fine-scale subgrid viscosity
-  Fluid3::StabilisationAction fssgv =
-    ele->ConvertStringToStabAction(params.get<string>("fs subgrid viscosity","No"));
+  // get flag for fine-scale subgrid-viscosity approach
+  Fluid3::FineSubgridVisc fssgv = Fluid3::no_fssgv;
+  {
+    const string fssgvdef = params.get<string>("fs subgrid viscosity","No");
+
+    if (fssgvdef == "artificial_all")         fssgv = Fluid3::artificial_all;
+    else if (fssgvdef == "artificial_small")  fssgv = Fluid3::artificial_small;
+    else if (fssgvdef == "Smagorinsky_all")   fssgv = Fluid3::smagorinsky_all;
+    else if (fssgvdef == "Smagorinsky_small") fssgv = Fluid3::smagorinsky_small;
+  }
 
   // --------------------------------------------------
   // set parameters for stabilisation
@@ -581,7 +588,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_qs(
   const double                            time            ,
   const enum Fluid3::LinearisationAction  newton          ,
   const bool                              higher_order_ele,
-  const enum Fluid3::StabilisationAction  fssgv           ,
+  const enum Fluid3::FineSubgridVisc      fssgv           ,
   const enum Fluid3::StabilisationAction  inertia         ,
   const enum Fluid3::StabilisationAction  pspg            ,
   const enum Fluid3::StabilisationAction  supg            ,
@@ -2431,7 +2438,7 @@ N
       } // endif (a)gls
     } // hoel
 
-    if(fssgv != Fluid3::fssgv_no)
+    if(fssgv != Fluid3::no_fssgv)
     {
       //----------------------------------------------------------------------
       //     FINE-SCALE SUBGRID-VISCOSITY TERM (ON RIGHT HAND SIDE)
@@ -2494,7 +2501,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_td(
   const double                            time            ,
   const enum Fluid3::LinearisationAction  newton          ,
   const bool                              higher_order_ele,
-  const enum Fluid3::StabilisationAction  fssgv           ,
+  const enum Fluid3::FineSubgridVisc      fssgv           ,
   const enum Fluid3::StabilisationAction  inertia         ,
   const enum Fluid3::StabilisationAction  pspg            ,
   const enum Fluid3::StabilisationAction  supg            ,
@@ -5028,7 +5035,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_qs(
   const double                                     time            ,
   const enum Fluid3::LinearisationAction           newton          ,
   const bool                                       higher_order_ele,
-  const enum Fluid3::StabilisationAction           fssgv           ,
+  const enum Fluid3::FineSubgridVisc               fssgv           ,
   const enum Fluid3::StabilisationAction           pspg            ,
   const enum Fluid3::StabilisationAction           supg            ,
   const enum Fluid3::StabilisationAction           vstab           ,
@@ -6925,7 +6932,7 @@ N
       } // endif (a)gls
     } // end hoel
 
-    if(fssgv != Fluid3::fssgv_no)
+    if(fssgv != Fluid3::no_fssgv)
     {
       //----------------------------------------------------------------------
       //     FINE-SCALE SUBGRID-VISCOSITY TERM (ON RIGHT HAND SIDE)
@@ -6956,7 +6963,7 @@ N
 				     +    derxy_(1, ui)*fsvderxyaf_(2, 1)
 				     +2.0*derxy_(2, ui)*fsvderxyaf_(2, 2));
       } // end loop ui
-    } // end not fssgv_no
+    } // end not no_fssgv
   } // end loop iquad
   return;
 } // end Sysmat_cons_qs
@@ -6988,7 +6995,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_td(
   const double                                     time            ,
   const enum Fluid3::LinearisationAction           newton          ,
   const bool                                       higher_order_ele,
-  const enum Fluid3::StabilisationAction           fssgv           ,
+  const enum Fluid3::FineSubgridVisc               fssgv           ,
   const enum Fluid3::StabilisationAction           inertia         ,
   const enum Fluid3::StabilisationAction           pspg            ,
   const enum Fluid3::StabilisationAction           supg            ,
@@ -9592,7 +9599,7 @@ N                   \                                                           
       } // endif (a)gls
     }// end if higher order ele
 
-    if(fssgv != Fluid3::fssgv_no)
+    if(fssgv != Fluid3::no_fssgv)
     {
       //----------------------------------------------------------------------
       //     FINE-SCALE SUBGRID-VISCOSITY TERM (ON RIGHT HAND SIDE)
@@ -9623,7 +9630,7 @@ N                   \                                                           
 				     +    derxy_(1, ui)*fsvderxyaf_(2, 1)
 				     +2.0*derxy_(2, ui)*fsvderxyaf_(2, 2));
       } // end loop ui
-    } // end not fssgv_no
+    } // end not no_fssgv
   } // end loop iquad
   return;
 } // end Sysmat_cons_td
@@ -9664,7 +9671,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
 
   // --------------------------------------------------
   // disable fine-scale subgrid viscosity
-  Fluid3::StabilisationAction fssgv = ele->ConvertStringToStabAction("No");
+  Fluid3::FineSubgridVisc fssgv = Fluid3::no_fssgv;
 
   // --------------------------------------------------
   // set parameters for stabilisation
@@ -10725,7 +10732,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::ExtractValuesFromGlobalVectors(
-        const Fluid3::StabilisationAction          fssgv         ,
+        const Fluid3::FineSubgridVisc              fssgv         ,
         const bool                                 is_ale        ,
         const DRT::Discretization&                 discretization,
         const vector<int>&                         lm            ,
@@ -10823,7 +10830,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::ExtractValuesFromGlobalVector
     }
 
     // get fine-scale velocity
-    if (fssgv != Fluid3::fssgv_no)
+    if (fssgv != Fluid3::no_fssgv)
     {
       RCP<const Epetra_Vector> fsvelaf;
 
@@ -10861,7 +10868,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetParametersForTurbulenceModel(
   const Fluid3*                       ele            ,
   ParameterList                     & turbmodelparams,
-  const Fluid3::StabilisationAction & fssgv          ,
+  const Fluid3::FineSubgridVisc     & fssgv          ,
   Fluid3::TurbModelAction           & turb_mod_action, 
   double                            & Cs             ,
   double                            & Cs_delta_sq    ,
@@ -10874,9 +10881,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetParametersForTurbulenceMod
   // (Since either all-scale Smagorinsky model (i.e., classical LES model
   // as will be inititalized below) or fine-scale Smagorinsky model is
   // used (and never both), the same input parameter can be exploited.)
-  if (fssgv != Fluid3::fssgv_no && turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
+  if (fssgv != Fluid3::no_fssgv && turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
     dserror("No combination of a classical (all-scale) turbulence model and a fine-scale subgrid-viscosity approach currently possible!");
-  if (fssgv != Fluid3::fssgv_no) Cs = turbmodelparams.get<double>("C_SMAGORINSKY",0.0);
+  if (fssgv != Fluid3::no_fssgv) Cs = turbmodelparams.get<double>("C_SMAGORINSKY",0.0);
 
   if (turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
   {
@@ -12619,7 +12626,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetElementData(
   double                                     & mk             ,
   Teuchos::RCP<const MAT::Material>            material       ,
   double                                     & visc           ,
-  const enum Fluid3::StabilisationAction       fssgv          ,
+  const enum Fluid3::FineSubgridVisc           fssgv          ,
   const enum Fluid3::TurbModelAction           turb_mod_action,
   const double                                 l_tau          ,
   double                                     & Cs             ,
@@ -12850,9 +12857,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetElementData(
 
   if(material->MaterialType()!= INPAR::MAT::m_fluid
      ||
-     fssgv==Fluid3::fssgv_Smagorinsky_all
+     fssgv==Fluid3::smagorinsky_all
      ||
-     fssgv==Fluid3::fssgv_Smagorinsky_small
+     fssgv==Fluid3::smagorinsky_small
      ||
      turb_mod_action !=Fluid3::no_model)
   {
@@ -12938,7 +12945,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetElementData(
     // large scale strains
     if(material->MaterialType()!=INPAR::MAT::m_fluid
        ||
-       fssgv==Fluid3::fssgv_Smagorinsky_all
+       fssgv==Fluid3::smagorinsky_all
        ||
        turb_mod_action!=Fluid3::no_model)
     {
@@ -12946,7 +12953,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetElementData(
     }
 
     // fine scale strains
-    if(fssgv==Fluid3::fssgv_Smagorinsky_small)
+    if(fssgv==Fluid3::smagorinsky_small)
     {
       fsrateofstrain=GetStrainRate(fsevelaf,derxy_,fsvderxyaf_);
     }
@@ -13097,7 +13104,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetElementData(
     // fine scale turbulence models of Smagorinsky type
     // ---------------------------------------------------------------
 
-    if (fssgv == Fluid3::fssgv_Smagorinsky_all)
+    if (fssgv == Fluid3::smagorinsky_all)
     {
       //
       // SMALL SCALE LARGE SCALE SMAGORINSKY MODEL
@@ -13124,7 +13131,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetElementData(
       //
       vart_ = Cs * Cs * hk * hk * rateofstrain;
     }
-    else if(fssgv == Fluid3::fssgv_Smagorinsky_small)
+    else if(fssgv == Fluid3::smagorinsky_small)
     {
       //
       // SMALL SCALE SMALL SCALE SMAGORINSKY MODEL
@@ -13158,12 +13165,12 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetElementData(
   // fine scale models based on artificial subgrid viscosities
   // ------------------------------------------------------------------
 
-  if (fssgv == Fluid3::fssgv_artificial_all   or
-      fssgv == Fluid3::fssgv_artificial_small
+  if (fssgv == Fluid3::artificial_all   or
+      fssgv == Fluid3::artificial_small
     )
   {
     double fsvel_normaf = 0.0;
-    if (fssgv == Fluid3::fssgv_artificial_small)
+    if (fssgv == Fluid3::artificial_small)
     {
       // SMALL SCALE ARTIFICIAL SUBGRID VISCOSITY MODEL
       // ----------------------------------------------
@@ -13232,7 +13239,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::InterpolateToGausspoint(
   const LINALG::Matrix<3,iel>               & evelaf          ,
   const LINALG::Matrix<3,iel>               & fsevelaf        ,
   const double                              & visceff         ,
-  const enum Fluid3::StabilisationAction      fssgv           ,
+  const enum Fluid3::FineSubgridVisc          fssgv           ,
   const bool                                  higher_order_ele)
 {
   // get intermediate accelerations (n+alpha_M,i) at integration point
@@ -13528,7 +13535,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::InterpolateToGausspoint(
   // j : direction of derivative x/y/z
   //
   // get fine-scale velocity (np,i) derivatives at integration point
-  if (fssgv != Fluid3::fssgv_no) fsvderxyaf_.MultiplyNT(fsevelaf,derxy_);
+  if (fssgv != Fluid3::no_fssgv) fsvderxyaf_.MultiplyNT(fsevelaf,derxy_);
   else fsvderxyaf_.Clear();
 
   if (higher_order_ele)

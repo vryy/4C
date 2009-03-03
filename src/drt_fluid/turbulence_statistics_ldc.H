@@ -100,6 +100,7 @@ public:
   */
   void DoLomaTimeSample(Teuchos::RefCountPtr<Epetra_Vector> velnp,
                         Teuchos::RefCountPtr<Epetra_Vector> vedenp,
+                        Teuchos::RefCountPtr<Epetra_Vector> subgrvisc,
                         const double                        eosfac);
 
   /*!
@@ -199,6 +200,10 @@ private:
   RefCountPtr<vector<double> >     x1sumT_;
   RefCountPtr<vector<double> >     x2sumT_;
   RefCountPtr<vector<double> >     x3sumT_;
+  //! sum over subgr. visc. (over the centerlines in x1-, x2- and x3-direction)
+  RefCountPtr<vector<double> >     x1sumsv_;
+  RefCountPtr<vector<double> >     x2sumsv_;
+  RefCountPtr<vector<double> >     x3sumsv_;
 
   //! sum over u^2 (over the centerlines in x1-, x2- and x3-direction)
   RefCountPtr<vector<double> >     x1sumsqu_;
@@ -224,6 +229,10 @@ private:
   RefCountPtr<vector<double> >     x1sumsqT_;
   RefCountPtr<vector<double> >     x2sumsqT_;
   RefCountPtr<vector<double> >     x3sumsqT_;
+  //! sum over subgr. visc.^2 (over the centerlines in x1-, x2- and x3-direction)
+  RefCountPtr<vector<double> >     x1sumsqsv_;
+  RefCountPtr<vector<double> >     x2sumsqsv_;
+  RefCountPtr<vector<double> >     x3sumsqsv_;
 
   //! sum over uv (over the centerlines in x1-, x2- and x3-direction)
   RefCountPtr<vector<double> >     x1sumuv_;

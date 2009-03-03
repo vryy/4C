@@ -93,7 +93,11 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
   meanvelnp_    = LINALG::CreateVector(*dofrowmap,true);
   // this vector is only necessary for low-Mach-number flow
-  if (loma_ != "No") meanvedenp_ = LINALG::CreateVector(*dofrowmap,true);
+  if (loma_ != "No")
+  {
+    meanvedenp_    = LINALG::CreateVector(*dofrowmap,true);
+    meansubgrvisc_ = LINALG::CreateVector(*dofrowmap,true);
+  }
 
   toggleu_      = LINALG::CreateVector(*dofrowmap,true);
   togglev_      = LINALG::CreateVector(*dofrowmap,true);
@@ -1096,6 +1100,7 @@ void FLD::TurbulenceStatisticsCha::DoTimeSample(
 void FLD::TurbulenceStatisticsCha::DoLomaTimeSample(
   Teuchos::RefCountPtr<Epetra_Vector> velnp,
   Teuchos::RefCountPtr<Epetra_Vector> vedenp,
+  Teuchos::RefCountPtr<Epetra_Vector> subgrvisc,
   Epetra_Vector &                     force,
   const double                        eosfac
   )
@@ -1106,10 +1111,11 @@ void FLD::TurbulenceStatisticsCha::DoLomaTimeSample(
   numsamp_++;
 
   //----------------------------------------------------------------------
-  // meanvelnp and meanvedenp are refcount copies of velnp and vedenp
+  // meanvelnp, meanvedenp and meansubgrvisc are refcount copies
 
   meanvelnp_->Update(1.0,*velnp,0.0);
   meanvedenp_->Update(1.0,*vedenp,0.0);
+  meansubgrvisc_->Update(1.0,*subgrvisc,0.0);
 
   //----------------------------------------------------------------------
   // loop planes and calculate pointwise means in each plane
@@ -1457,6 +1463,8 @@ const double eosfac)
   locsumrhou->resize(size,0.0);
   RefCountPtr<vector<double> > locsumrhouT =  rcp(new vector<double> );
   locsumrhouT->resize(size,0.0);
+  RefCountPtr<vector<double> > locsumsv =  rcp(new vector<double> );
+  locsumsv->resize(size,0.0);
 
   RefCountPtr<vector<double> > locsumsqu =  rcp(new vector<double> );
   locsumsqu->resize(size,0.0);
@@ -1470,6 +1478,8 @@ const double eosfac)
   locsumsqrho->resize(size,0.0);
   RefCountPtr<vector<double> > locsumsqT =  rcp(new vector<double> );
   locsumsqT->resize(size,0.0);
+  RefCountPtr<vector<double> > locsumsqsv =  rcp(new vector<double> );
+  locsumsqsv->resize(size,0.0);
 
   RefCountPtr<vector<double> > locsumuv  =  rcp(new vector<double> );
   locsumuv->resize(size,0.0);
@@ -1503,6 +1513,8 @@ const double eosfac)
   globsumrhou->resize(size,0.0);
   RefCountPtr<vector<double> > globsumrhouT =  rcp(new vector<double> );
   globsumrhouT->resize(size,0.0);
+  RefCountPtr<vector<double> > globsumsv =  rcp(new vector<double> );
+  globsumsv->resize(size,0.0);
 
   RefCountPtr<vector<double> > globsumsqu =  rcp(new vector<double> );
   globsumsqu->resize(size,0.0);
@@ -1516,6 +1528,8 @@ const double eosfac)
   globsumsqrho->resize(size,0.0);
   RefCountPtr<vector<double> > globsumsqT =  rcp(new vector<double> );
   globsumsqT->resize(size,0.0);
+  RefCountPtr<vector<double> > globsumsqsv =  rcp(new vector<double> );
+  globsumsqsv->resize(size,0.0);
 
   RefCountPtr<vector<double> > globsumuv  =  rcp(new vector<double> );
   globsumuv->resize(size,0.0);
@@ -1541,6 +1555,7 @@ const double eosfac)
   eleparams.set("mean temperature T",locsumT);
   eleparams.set("mean momentum rho*u",locsumrhou);
   eleparams.set("mean rho*u*T"      ,locsumrhouT);
+  eleparams.set("mean subgrid visc" ,locsumsv);
 
   eleparams.set("mean value u^2"  ,locsumsqu);
   eleparams.set("mean value v^2"  ,locsumsqv);
@@ -1548,6 +1563,7 @@ const double eosfac)
   eleparams.set("mean value p^2"  ,locsumsqp);
   eleparams.set("mean value rho^2",locsumsqrho);
   eleparams.set("mean value T^2"  ,locsumsqT);
+  eleparams.set("mean value sv^2" ,locsumsqsv);
 
   eleparams.set("mean value uv",locsumuv );
   eleparams.set("mean value uw",locsumuw );
@@ -1570,6 +1586,7 @@ const double eosfac)
   discret_->ClearState();
   discret_->SetState("u and p (n+1,converged)",meanvelnp_ );
   discret_->SetState("rho (n+1,converged)"    ,meanvedenp_);
+  discret_->SetState("sv (n+1,converged)"     ,meansubgrvisc_);
 
   // call loop over elements
   discret_->Evaluate(eleparams,null,null,null,null,null);
@@ -1588,6 +1605,7 @@ const double eosfac)
   discret_->Comm().SumAll(&((*locsumT)[0]),&((*globsumT)[0]),size);
   discret_->Comm().SumAll(&((*locsumrhou)[0]),&((*globsumrhou)[0]),size);
   discret_->Comm().SumAll(&((*locsumrhouT)[0]),&((*globsumrhouT)[0]),size);
+  discret_->Comm().SumAll(&((*locsumsv)[0]),&((*globsumsv)[0]),size);
 
   discret_->Comm().SumAll(&((*locsumsqu)[0]),&((*globsumsqu)[0]),size);
   discret_->Comm().SumAll(&((*locsumsqv)[0]),&((*globsumsqv)[0]),size);
@@ -1595,6 +1613,7 @@ const double eosfac)
   discret_->Comm().SumAll(&((*locsumsqp)[0]),&((*globsumsqp)[0]),size);
   discret_->Comm().SumAll(&((*locsumsqrho)[0]),&((*globsumsqrho)[0]),size);
   discret_->Comm().SumAll(&((*locsumsqT)[0]),&((*globsumsqT)[0]),size);
+  discret_->Comm().SumAll(&((*locsumsqsv)[0]),&((*globsumsqsv)[0]),size);
 
   discret_->Comm().SumAll(&((*locsumuv )[0]),&((*globsumuv )[0]),size);
   discret_->Comm().SumAll(&((*locsumuw )[0]),&((*globsumuw )[0]),size);
@@ -1622,6 +1641,7 @@ const double eosfac)
     (*sumT_)[i]  +=(*globsumT)[i]/(*globarea)[i];
     (*sumrhou_)[i]   +=(*globsumrhou)[i]/(*globarea)[i];
     (*sumrhouT_)[i]  +=(*globsumrhouT)[i]/(*globarea)[i];
+    (*sumsv_)[i]  +=(*globsumsv)[i]/(*globarea)[i];
 
     (*sumsqu_)[i]  +=(*globsumsqu)[i]/(*globarea)[i];
     (*sumsqv_)[i]  +=(*globsumsqv)[i]/(*globarea)[i];
@@ -1629,6 +1649,7 @@ const double eosfac)
     (*sumsqp_)[i]  +=(*globsumsqp)[i]/(*globarea)[i];
     (*sumsqrho_)[i]+=(*globsumsqrho)[i]/(*globarea)[i];
     (*sumsqT_)[i]  +=(*globsumsqT)[i]/(*globarea)[i];
+    (*sumsqsv_)[i]  +=(*globsumsqsv)[i]/(*globarea)[i];
 
     (*sumuv_ )[i]+=(*globsumuv )[i]/(*globarea)[i];
     (*sumuw_ )[i]+=(*globsumuw )[i]/(*globarea)[i];
@@ -3049,8 +3070,8 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(int step)
     (*log) << &endl;
 
     (*log) << "#     y";
-    (*log) << "           umean         vmean         wmean         pmean       rhomean         Tmean       mommean     rhouTmean";
-    (*log) << "        mean u^2      mean v^2      mean w^2      mean p^2    mean rho^2      mean T^2";
+    (*log) << "           umean         vmean         wmean         pmean       rhomean         Tmean       mommean     rhouTmean        svmean";
+    (*log) << "        mean u^2      mean v^2      mean w^2      mean p^2    mean rho^2      mean T^2     mean sv^2";
     (*log) << "      mean u*v      mean u*w      mean v*w      mean u*T      mean v*T      mean w*T\n";
 
     (*log) << scientific;
@@ -3065,12 +3086,14 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(int step)
       (*log) << "   " << setw(11) << setprecision(4) << (*sumT_            )[i]/aux;
       (*log) << "   " << setw(11) << setprecision(4) << (*sumrhou_         )[i]/aux;
       (*log) << "   " << setw(11) << setprecision(4) << (*sumrhouT_        )[i]/aux;
+      (*log) << "   " << setw(11) << setprecision(4) << (*sumsv_           )[i]/aux;
       (*log) << "   " << setw(11) << setprecision(4) << (*sumsqu_          )[i]/aux;
       (*log) << "   " << setw(11) << setprecision(4) << (*sumsqv_          )[i]/aux;
       (*log) << "   " << setw(11) << setprecision(4) << (*sumsqw_          )[i]/aux;
       (*log) << "   " << setw(11) << setprecision(4) << (*sumsqp_          )[i]/aux;
       (*log) << "   " << setw(11) << setprecision(4) << (*sumsqrho_        )[i]/aux;
       (*log) << "   " << setw(11) << setprecision(4) << (*sumsqT_          )[i]/aux;
+      (*log) << "   " << setw(11) << setprecision(4) << (*sumsqsv_         )[i]/aux;
       (*log) << "   " << setw(11) << setprecision(4) << (*sumuv_           )[i]/aux;
       (*log) << "   " << setw(11) << setprecision(4) << (*sumuw_           )[i]/aux;
       (*log) << "   " << setw(11) << setprecision(4) << (*sumvw_           )[i]/aux;
@@ -3144,7 +3167,11 @@ void FLD::TurbulenceStatisticsCha::ClearStatistics()
   }
 
   meanvelnp_->PutScalar(0.0);
-  if (loma_ != "No") meanvedenp_->PutScalar(0.0);
+  if (loma_ != "No")
+  {
+    meanvedenp_->PutScalar(0.0);
+    meansubgrvisc_->PutScalar(0.0);
+  }
 
   // reset smapling for dynamic Smagorinsky model
   if (smagorinsky_)

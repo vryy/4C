@@ -484,6 +484,21 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
   x3sumwT_ =  rcp(new vector<double> );
   x3sumwT_->resize(size3,0.0);
 
+  // mean and rms of subgrid viscosity
+  x1sumsv_ =  rcp(new vector<double> );
+  x1sumsv_->resize(size1,0.0);
+  x2sumsv_ =  rcp(new vector<double> );
+  x2sumsv_->resize(size2,0.0);
+  x3sumsv_ =  rcp(new vector<double> );
+  x3sumsv_->resize(size3,0.0);
+
+  x1sumsqsv_ =  rcp(new vector<double> );
+  x1sumsqsv_->resize(size1,0.0);
+  x2sumsqsv_ =  rcp(new vector<double> );
+  x2sumsqsv_->resize(size2,0.0);
+  x3sumsqsv_ =  rcp(new vector<double> );
+  x3sumsqsv_->resize(size3,0.0);
+
   // clear statistics
   this->ClearStatistics();
 
@@ -786,6 +801,7 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp
 void FLD::TurbulenceStatisticsLdc::DoLomaTimeSample(
 Teuchos::RefCountPtr<Epetra_Vector> velnp,
 Teuchos::RefCountPtr<Epetra_Vector> vedenp,
+Teuchos::RefCountPtr<Epetra_Vector> subgrvisc,
 const double                        eosfac)
 {
   //----------------------------------------------------------------------
@@ -841,7 +857,8 @@ const double                        eosfac)
     if (countnodesonallprocs)
     {
       //----------------------------------------------------------------------
-      // get values for velocity, pressure, density, temperature on this centerline
+      // get values for velocity, pressure, density, temperature, and
+      // subgrid viscosity on this centerline
       //----------------------------------------------------------------------
       double u;
       double v;
@@ -858,8 +875,12 @@ const double                        eosfac)
       // compute temperature: T = eosfac/rho
       double T = eosfac/rho;
 
+      double sv;
+      subgrvisc->Dot(*toggleu_,&sv);
+
       //----------------------------------------------------------------------
-      // calculate spatial means for vel., press., dens., temp. on this centerline
+      // calculate spatial means for vel., press., dens., temp., and 
+      // subgrid viscsosity on this centerline
       // (if more than one node contributing to this centerline node)
       //----------------------------------------------------------------------
       double usm=u/countnodesonallprocs;
@@ -868,6 +889,7 @@ const double                        eosfac)
       double psm=p/countnodesonallprocs;
       double rsm=rho/countnodesonallprocs;
       double Tsm=T/countnodesonallprocs;
+      double svsm=sv/countnodesonallprocs;
 
       //----------------------------------------------------------------------
       // add spatial mean values to statistical sample
@@ -878,6 +900,7 @@ const double                        eosfac)
       (*x1sump_)[x1nodnum]  +=psm;
       (*x1sumrho_)[x1nodnum]+=rsm;
       (*x1sumT_)[x1nodnum]  +=Tsm;
+      (*x1sumsv_)[x1nodnum] +=svsm;
 
       (*x1sumsqu_)[x1nodnum]  +=usm*usm;
       (*x1sumsqv_)[x1nodnum]  +=vsm*vsm;
@@ -885,6 +908,7 @@ const double                        eosfac)
       (*x1sumsqp_)[x1nodnum]  +=psm*psm;
       (*x1sumsqrho_)[x1nodnum]+=rsm*rsm;
       (*x1sumsqT_)[x1nodnum]  +=Tsm*Tsm;
+      (*x1sumsqsv_)[x1nodnum] +=svsm*svsm;
 
       (*x1sumuv_)[x1nodnum]+=usm*vsm;
       (*x1sumuw_)[x1nodnum]+=usm*wsm;
@@ -945,7 +969,8 @@ const double                        eosfac)
     if (countnodesonallprocs)
     {
       //----------------------------------------------------------------------
-      // get values for velocity, pressure, density, temperature on this centerline
+      // get values for velocity, pressure, density, temperature, and
+      // subgrid viscosity on this centerline
       //----------------------------------------------------------------------
       double u;
       double v;
@@ -962,8 +987,12 @@ const double                        eosfac)
       // compute temperature: T = eosfac/rho
       double T = eosfac/rho;
 
+      double sv;
+      subgrvisc->Dot(*toggleu_,&sv);
+
       //----------------------------------------------------------------------
-      // calculate spatial means for vel., press., dens., temp. on this centerline
+      // calculate spatial means for vel., press., dens., temp., and 
+      // subgrid viscsosity on this centerline
       // (if more than one node contributing to this centerline node)
       //----------------------------------------------------------------------
       double usm=u/countnodesonallprocs;
@@ -972,6 +1001,7 @@ const double                        eosfac)
       double psm=p/countnodesonallprocs;
       double rsm=rho/countnodesonallprocs;
       double Tsm=T/countnodesonallprocs;
+      double svsm=sv/countnodesonallprocs;
 
       //----------------------------------------------------------------------
       // add spatial mean values to statistical sample
@@ -982,6 +1012,7 @@ const double                        eosfac)
       (*x2sump_)[x2nodnum]  +=psm;
       (*x2sumrho_)[x2nodnum]+=rsm;
       (*x2sumT_)[x2nodnum]  +=Tsm;
+      (*x2sumsv_)[x2nodnum] +=svsm;
 
       (*x2sumsqu_)[x2nodnum]  +=usm*usm;
       (*x2sumsqv_)[x2nodnum]  +=vsm*vsm;
@@ -989,6 +1020,7 @@ const double                        eosfac)
       (*x2sumsqp_)[x2nodnum]  +=psm*psm;
       (*x2sumsqrho_)[x2nodnum]+=rsm*rsm;
       (*x2sumsqT_)[x2nodnum]  +=Tsm*Tsm;
+      (*x2sumsqsv_)[x2nodnum] +=svsm*svsm;
 
       (*x2sumuv_)[x2nodnum]+=usm*vsm;
       (*x2sumuw_)[x2nodnum]+=usm*wsm;
@@ -1048,7 +1080,8 @@ const double                        eosfac)
     if (countnodesonallprocs)
     {
       //----------------------------------------------------------------------
-      // get values for velocity, pressure, density, temperature on this centerline
+      // get values for velocity, pressure, density, temperature, and
+      // subgrid viscosity on this centerline
       //----------------------------------------------------------------------
       double u;
       double v;
@@ -1065,8 +1098,12 @@ const double                        eosfac)
       // compute temperature: T = eosfac/rho
       double T = eosfac/rho;
 
+      double sv;
+      subgrvisc->Dot(*toggleu_,&sv);
+
       //----------------------------------------------------------------------
-      // calculate spatial means for vel., press., dens., temp. on this centerline
+      // calculate spatial means for vel., press., dens., temp., and 
+      // subgrid viscsosity on this centerline
       // (if more than one node contributing to this centerline node)
       //----------------------------------------------------------------------
       double usm=u/countnodesonallprocs;
@@ -1075,6 +1112,7 @@ const double                        eosfac)
       double psm=p/countnodesonallprocs;
       double rsm=rho/countnodesonallprocs;
       double Tsm=T/countnodesonallprocs;
+      double svsm=sv/countnodesonallprocs;
 
       //----------------------------------------------------------------------
       // add spatial mean values to statistical sample
@@ -1085,6 +1123,7 @@ const double                        eosfac)
       (*x3sump_)[x3nodnum]  +=psm;
       (*x3sumrho_)[x3nodnum]+=rsm;
       (*x3sumT_)[x3nodnum]  +=Tsm;
+      (*x3sumsv_)[x3nodnum] +=svsm;
 
       (*x3sumsqu_)[x3nodnum]  +=usm*usm;
       (*x3sumsqv_)[x3nodnum]  +=vsm*vsm;
@@ -1092,6 +1131,7 @@ const double                        eosfac)
       (*x3sumsqp_)[x3nodnum]  +=psm*psm;
       (*x3sumsqrho_)[x3nodnum]+=rsm*rsm;
       (*x3sumsqT_)[x3nodnum]  +=Tsm*Tsm;
+      (*x3sumsqsv_)[x3nodnum] +=svsm*svsm;
 
       (*x3sumuv_)[x3nodnum]+=usm*vsm;
       (*x3sumuw_)[x3nodnum]+=usm*wsm;
@@ -1270,8 +1310,8 @@ void FLD::TurbulenceStatisticsLdc::DumpLomaStatistics(int step)
     (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
 
     (*log) << "#     x1";
-    (*log) << "           umean         vmean         wmean         pmean       rhomean         Tmean";
-    (*log) << "         urms          vrms          wrms          prms        rhorms          Trms";
+    (*log) << "           umean         vmean         wmean         pmean       rhomean         Tmean        svmean";
+    (*log) << "         urms          vrms          wrms          prms        rhorms          Trms         svrms";
     (*log) << "          u'v'          u'w'          v'w'          u'T'          v'T'          w'T'\n";
 
     (*log) << scientific;
@@ -1283,6 +1323,7 @@ void FLD::TurbulenceStatisticsLdc::DumpLomaStatistics(int step)
       double x1p    = (*x1sump_)[i]/numsamp_;
       double x1rho  = (*x1sumrho_)[i]/numsamp_;
       double x1T    = (*x1sumT_)[i]/numsamp_;
+      double x1sv   = (*x1sumsv_)[i]/numsamp_;
 
       double x1urms   = sqrt((*x1sumsqu_)[i]/numsamp_-x1u*x1u);
       double x1vrms   = sqrt((*x1sumsqv_)[i]/numsamp_-x1v*x1v);
@@ -1290,6 +1331,7 @@ void FLD::TurbulenceStatisticsLdc::DumpLomaStatistics(int step)
       double x1prms   = sqrt((*x1sumsqp_)[i]/numsamp_-x1p*x1p);
       double x1rhorms = sqrt((*x1sumsqrho_)[i]/numsamp_-x1rho*x1rho);
       double x1Trms   = sqrt((*x1sumsqT_)[i]/numsamp_-x1T*x1T);
+      double x1svrms  = sqrt((*x1sumsqsv_)[i]/numsamp_-x1sv*x1sv);
 
       double x1uv   = (*x1sumuv_)[i]/numsamp_-x1u*x1v;
       double x1uw   = (*x1sumuw_)[i]/numsamp_-x1u*x1w;
@@ -1305,12 +1347,14 @@ void FLD::TurbulenceStatisticsLdc::DumpLomaStatistics(int step)
       (*log) << "   " << setw(11) << setprecision(4) << x1p;
       (*log) << "   " << setw(11) << setprecision(4) << x1rho;
       (*log) << "   " << setw(11) << setprecision(4) << x1T;
+      (*log) << "   " << setw(11) << setprecision(4) << x1sv;
       (*log) << "   " << setw(11) << setprecision(4) << x1urms;
       (*log) << "   " << setw(11) << setprecision(4) << x1vrms;
       (*log) << "   " << setw(11) << setprecision(4) << x1wrms;
       (*log) << "   " << setw(11) << setprecision(4) << x1prms;
       (*log) << "   " << setw(11) << setprecision(4) << x1rhorms;
       (*log) << "   " << setw(11) << setprecision(4) << x1Trms;
+      (*log) << "   " << setw(11) << setprecision(4) << x1svrms;
       (*log) << "   " << setw(11) << setprecision(4) << x1uv;
       (*log) << "   " << setw(11) << setprecision(4) << x1uw;
       (*log) << "   " << setw(11) << setprecision(4) << x1vw;
@@ -1334,6 +1378,7 @@ void FLD::TurbulenceStatisticsLdc::DumpLomaStatistics(int step)
       double x2p    = (*x2sump_)[i]/numsamp_;
       double x2rho  = (*x2sumrho_)[i]/numsamp_;
       double x2T    = (*x2sumT_)[i]/numsamp_;
+      double x2sv   = (*x2sumsv_)[i]/numsamp_;
 
       double x2urms   = sqrt((*x2sumsqu_)[i]/numsamp_-x2u*x2u);
       double x2vrms   = sqrt((*x2sumsqv_)[i]/numsamp_-x2v*x2v);
@@ -1341,6 +1386,7 @@ void FLD::TurbulenceStatisticsLdc::DumpLomaStatistics(int step)
       double x2prms   = sqrt((*x2sumsqp_)[i]/numsamp_-x2p*x2p);
       double x2rhorms = sqrt((*x2sumsqrho_)[i]/numsamp_-x2rho*x2rho);
       double x2Trms   = sqrt((*x2sumsqT_)[i]/numsamp_-x2T*x2T);
+      double x2svrms  = sqrt((*x2sumsqsv_)[i]/numsamp_-x2sv*x2sv);
 
       double x2uv   = (*x2sumuv_)[i]/numsamp_-x2u*x2v;
       double x2uw   = (*x2sumuw_)[i]/numsamp_-x2u*x2w;
@@ -1356,12 +1402,14 @@ void FLD::TurbulenceStatisticsLdc::DumpLomaStatistics(int step)
       (*log) << "   " << setw(11) << setprecision(4) << x2p;
       (*log) << "   " << setw(11) << setprecision(4) << x2rho;
       (*log) << "   " << setw(11) << setprecision(4) << x2T;
+      (*log) << "   " << setw(11) << setprecision(4) << x2sv;
       (*log) << "   " << setw(11) << setprecision(4) << x2urms;
       (*log) << "   " << setw(11) << setprecision(4) << x2vrms;
       (*log) << "   " << setw(11) << setprecision(4) << x2wrms;
       (*log) << "   " << setw(11) << setprecision(4) << x2prms;
       (*log) << "   " << setw(11) << setprecision(4) << x2rhorms;
       (*log) << "   " << setw(11) << setprecision(4) << x2Trms;
+      (*log) << "   " << setw(11) << setprecision(4) << x2svrms;
       (*log) << "   " << setw(11) << setprecision(4) << x2uv;
       (*log) << "   " << setw(11) << setprecision(4) << x2uw;
       (*log) << "   " << setw(11) << setprecision(4) << x2vw;
@@ -1385,6 +1433,7 @@ void FLD::TurbulenceStatisticsLdc::DumpLomaStatistics(int step)
       double x3p    = (*x3sump_)[i]/numsamp_;
       double x3rho  = (*x3sumrho_)[i]/numsamp_;
       double x3T    = (*x3sumT_)[i]/numsamp_;
+      double x3sv   = (*x3sumsv_)[i]/numsamp_;
 
       double x3urms   = sqrt((*x3sumsqu_)[i]/numsamp_-x3u*x3u);
       double x3vrms   = sqrt((*x3sumsqv_)[i]/numsamp_-x3v*x3v);
@@ -1392,6 +1441,7 @@ void FLD::TurbulenceStatisticsLdc::DumpLomaStatistics(int step)
       double x3prms   = sqrt((*x3sumsqp_)[i]/numsamp_-x3p*x3p);
       double x3rhorms = sqrt((*x3sumsqrho_)[i]/numsamp_-x3rho*x3rho);
       double x3Trms   = sqrt((*x3sumsqT_)[i]/numsamp_-x3T*x3T);
+      double x3svrms  = sqrt((*x3sumsqsv_)[i]/numsamp_-x3sv*x3sv);
 
       double x3uv   = (*x3sumuv_)[i]/numsamp_-x3u*x3v;
       double x3uw   = (*x3sumuw_)[i]/numsamp_-x3u*x3w;
@@ -1407,12 +1457,14 @@ void FLD::TurbulenceStatisticsLdc::DumpLomaStatistics(int step)
       (*log) << "   " << setw(11) << setprecision(4) << x3p;
       (*log) << "   " << setw(11) << setprecision(4) << x3rho;
       (*log) << "   " << setw(11) << setprecision(4) << x3T;
+      (*log) << "   " << setw(11) << setprecision(4) << x3sv;
       (*log) << "   " << setw(11) << setprecision(4) << x3urms;
       (*log) << "   " << setw(11) << setprecision(4) << x3vrms;
       (*log) << "   " << setw(11) << setprecision(4) << x3wrms;
       (*log) << "   " << setw(11) << setprecision(4) << x3prms;
       (*log) << "   " << setw(11) << setprecision(4) << x3rhorms;
       (*log) << "   " << setw(11) << setprecision(4) << x3Trms;
+      (*log) << "   " << setw(11) << setprecision(4) << x3svrms;
       (*log) << "   " << setw(11) << setprecision(4) << x3uv;
       (*log) << "   " << setw(11) << setprecision(4) << x3uw;
       (*log) << "   " << setw(11) << setprecision(4) << x3vw;

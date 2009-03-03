@@ -262,66 +262,24 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       else if (taudef == "Bazilevs") whichtau = SCATRA::tau_bazilevs;
     }
 
-    // set flag for fine-scale subgrid diffusivity
-    SCATRA::FineSubgridDiff fssgd = SCATRA::no_fssgd; //default
+    // set flag for fine-scale subgrid diffusivity of type artificial_all
+    bool fssgd = false; //default
     {
       const string fssgdinp = params.get<string>("fs subgrid diffusivity","No");
-
-      if (fssgdinp == "artificial")
-        fssgd = SCATRA::artificial;
-      else if (fssgdinp == "Smagorinsky_all")
-        fssgd = SCATRA::smagorinsky_all;
-      else if (fssgdinp == "Smagorinsky_small")
-        fssgd = SCATRA::smagorinsky_small;
-    }
-
-    // set parameters for turbulence
-    ParameterList& turblist = params.sublist("TURBULENCE PARAMETERS");
-
-    // initialize Smagorinsky model parameter and turbulent Prandtl number
-    double Cs  = 0.0;
-    double tpn = 0.0;
-
-    // check whether a fine-scale subgrid diffusivity is to be used
-    if (fssgd != SCATRA::no_fssgd)
-    {
-      // check that no classical LES model is used simultaneously
-      if (turblist.get<string>("TURBULENCE_APPROACH", "none")=="CLASSICAL_LES")
-      dserror("No combination of a classical (all-scale) turbulence model and a fine-scale subgrid-diffusivity approach currently possible!");
-
-      // get Smagorinsky model parameter and (constant) turbulent Prandtl
-      // number for fine-scale subgrid diffusivity
-      Cs  = turblist.get<double>("C_SMAGORINSKY",0.0);
-      tpn = turblist.get<double>("C_TURBPRANDTL",0.0);
-    }
-
-
-    // set flag for classical turbulence model
-    SCATRA::TurbModel turbmod = SCATRA::no_model;
-
-    if (turblist.get<string>("TURBULENCE_APPROACH", "none")=="CLASSICAL_LES")
-    {
-      const string physical_model = turblist.get<string>("PHYSICAL_MODEL");
-
-      // standard constant-coefficient Smagorinsky model
-      if (physical_model == "Smagorinsky")
-      {
-        // the classic Smagorinsky model only requires one constant parameter
-        turbmod = SCATRA::smagorinsky;
-        Cs      = turblist.get<double>("C_SMAGORINSKY",0.0);
-      }
-      else
-        dserror("Up to now, only constant-coefficient Smagorinsky model is available");
+      if (fssgdinp == "artificial_all") fssgd = true;
     }
 
     // set flag for type of scalar whether it is temperature or not
     string scaltypestr=params.get<string>("problem type");
     bool temperature = false;
     double thermpressdt = 0.0;
-    if(scaltypestr =="loma")
+    bool turbmodel = false;
+    if (scaltypestr =="loma")
     {
       temperature = true;
       thermpressdt = params.get<double>("time derivative of thermodynamic pressure");
+      // set flag for turbulence model
+      turbmodel = params.get<bool>("turbulence model");
     }
 
     // set flag for conservative form
@@ -364,6 +322,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     LINALG::Matrix<iel,1>    edensam;
     LINALG::Matrix<nsd_,iel> evelnp;
     LINALG::Matrix<iel,1>    epotnp;
+    LINALG::Matrix<iel,1>    esubgrdiff;
 
     // fill element arrays
     for (int i=0;i<iel;++i)
@@ -390,14 +349,26 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       edensnp(i,0) = mydensnp[0+(i*numdofpernode_)];
       edensam(i,0) = mydensam[0+(i*numdofpernode_)];
 
-      if(scaltypestr =="elch")
-      {
-        // get values for el. potential at element nodes
-        epotnp(i) = myphinp[i*numdofpernode_+numscal_];
-      }
-      else
-        epotnp(i) = 0.0;
+      // get values for el. potential at element nodes
+      if(scaltypestr =="elch") epotnp(i) = myphinp[i*numdofpernode_+numscal_];
+      else                     epotnp(i) = 0.0;
     } // for i
+
+    // get subgrid-diffusivity vector if turbulence model is used
+    if (turbmodel)
+    {
+      RefCountPtr<const Epetra_Vector> sgdiff = discretization.GetState("subgrid diffusivity");
+      if (sgdiff==null) dserror("Cannot get state vector 'subgrid diffusivity'");
+
+      // extract local values from the global vector
+      vector<double> mysgdiff(lm.size());
+      DRT::UTILS::ExtractMyValues(*sgdiff,mysgdiff,lm);
+
+      for (int i=0;i<iel;++i)
+      {
+        esubgrdiff(i,0) = mysgdiff[0+(i*numdofpernode_)];
+      }
+    }
 
     // calculate element coefficient matrix and rhs
     Sysmat(
@@ -407,6 +378,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         edensnp,
         edensam,
         epotnp,
+        esubgrdiff,
         elemat1_epetra,
         elevec1_epetra,
         elevec2_epetra,
@@ -420,9 +392,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         conservative,
         whichtau,
         fssgd,
-        turbmod,
-        Cs,
-        tpn,
+        turbmodel,
         is_stationary,
         is_genalpha,
         is_incremental,
@@ -757,6 +727,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
     const LINALG::Matrix<iel,1>&          edensnp, ///< density field at n+1/n+alpha_F
     const LINALG::Matrix<iel,1>&          edensam, ///< density field at n+alpha_M
     const LINALG::Matrix<iel,1>&          epotnp, ///< el. potential at element nodes
+    const LINALG::Matrix<iel,1>&          esubgrdiff,  ///< subgrid diffusivity at element nodes
     Epetra_SerialDenseMatrix&             sys_mat,///< element matrix to calculate
     Epetra_SerialDenseVector&             residual, ///< element rhs to calculate
     Epetra_SerialDenseVector&             subgrdiff, ///< subgrid-diff.-scaling vector
@@ -769,10 +740,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
     const bool                            temperature, ///< temperature flag
     const bool                            conservative, ///< flag for conservative form
     const enum SCATRA::TauType            whichtau, ///< flag for stabilization parameter definition
-    const enum SCATRA::FineSubgridDiff    fssgd, ///< subgrid-diff. flag
-    const enum SCATRA::TurbModel          turbmod, ///< flag for turbulence model
-    const double                          Cs, ///< Smagorinsky model parameter
-    const double                          tpn, ///< turbulent Prandtl number
+    const bool                            fssgd, ///< subgrid-diff. flag
+    const bool                            turbmodel, ///< turbulence model flag
     const bool                            is_stationary, ///< stationary flag
     const bool                            is_genalpha, ///< generalized-alpha flag
     const bool                            is_incremental, ///< flag for incremental/non-incemental linear solver
@@ -800,13 +769,12 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
          evelnp,
          edensnp,
          epotnp,
+         esubgrdiff,
          dt,
          timefac,
          whichtau,
          fssgd,
-         turbmod,
-         Cs,
-         tpn,
+         turbmodel,
          is_stationary,
          frt);
 
@@ -869,7 +837,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
       if(is_genalpha) dserror("GenAlpha is not supported by ELCH!");
       CalMatElch(sys_mat,residual,ephinp,epotnp,use2ndderiv,frt,is_stationary,timefac);
     }
-
   } // integration loop
 
   return;
@@ -1062,13 +1029,12 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     const LINALG::Matrix<nsd_,iel>&     evel,
     const LINALG::Matrix<iel,1>&        edens,
     const LINALG::Matrix<iel,1>&        epot,
+    const LINALG::Matrix<iel,1>&        esubgrdiff,
     const double                        dt,
     const double&                       timefac,
     const enum SCATRA::TauType          whichtau,
-    const enum SCATRA::FineSubgridDiff  fssgd,
-    const enum SCATRA::TurbModel        turbmod,
-    const double                        Cs,
-    const double                        tpn,
+    const bool&                         fssgd,
+    const bool&                         turbmodel,
     const bool&                         is_stationary,
     const double&                       frt
   )
@@ -1098,25 +1064,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
   if (det < 1E-16)
     dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f",ele->Id(), det);
 
-  // volume of the element (2D: element surface area; 1D: element length)
-  // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
-  const double vol = wquad*det;
-
-  // get number of dimensions
-  const double dim = (double) nsd_;
-
-  // get characteristic element length
-  // There exist different definitions for 'the' characteristic element length h:
-  // 1) get element length for tau_Mp/tau_C: volume-equival. diameter -> not default
-  // const double h = pow((6.*vol/PI),(1.0/3.0));
-
-  // 2) streamlength (based on velocity vector at element centre) -> not default
-
-  // 3) use cubic root of the element volume as characteristic length -> default
-  //    2D case: characterisitc length is the square root of the element area
-  //    1D case: characteristic length is the element length
-  const double h = pow(vol,(1.0/dim));
-
   // get velocity at element center
   velint_.Multiply(evel,funct_);
 
@@ -1135,47 +1082,15 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
   for(int k = 0;k<numscal_;++k) // loop over all transported scalars
   {
     //----------------------------------------------------------------------
-    // computation of (all-scale) Smagorinsky model for subgrid diffusivity
+    // computation of subgrid diffusivity due to all-scale turbulence model
     //----------------------------------------------------------------------
-    if (turbmod == SCATRA::smagorinsky)
+    if (turbmodel)
     {
-      //
-      // SMAGORINSKY MODEL
-      // -----------------
-      //                                   +-                                 -+ 1
-      //                               2   |          / h \           / h \    | -
-      //    visc          = dens * lmix  * | 2 * eps | u   |   * eps | u   |   | 2
-      //        turbulent           |      |          \   / ij        \   / ij |
-      //                            |      +-                                 -+
-      //                            |
-      //                            |      |                                   |
-      //                            |      +-----------------------------------+
-      //                            |           'resolved' rate of strain
-      //                         mixing length
-      //
-      // Choices of the Smagorinsky constant Cs:
-      //
-      //             Cs = 0.17   (Lilly --- Determined from filter
-      //                          analysis of Kolmogorov spectrum of
-      //                          isotropic turbulence)
-      //
-      //             0.1 < Cs < 0.24 (depending on the flow)
-      //
-      //             Cs dynamic  (Germano model. Use several filter
-      //                          resolutions to determine Cs)
+      // get density at element center
+      const double sgdiff = funct_.Dot(esubgrdiff);
 
-      // compute global derivatives
-      derxy_.Multiply(xij_,deriv_);
-
-      // compute rate of strain of velocity field
-      const double rateofstrain = GetStrainRate(evel,derxy_,vderxy_);
-
-      // compute squared mixing length
-      const double Cs_h_sq = Cs * h * Cs * h;
-
-      // get new diffusivity as sum of physical and subgrid diffusivity
-      diffus_[k] += dens * Cs_h_sq * rateofstrain / ( tpn * shcacp_ );
-    }
+      diffus_[k] += sgdiff;
+   }
 
     //----------------------------------------------------------------------
     // computation of stabilization parameter
@@ -1259,6 +1174,25 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     case SCATRA::tau_franca_valentin:
     // stabilization parameter definition according to Franca and Valentin (2000)
     {
+      // volume of the element (2D: element surface area; 1D: element length)
+      // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
+      const double vol = wquad*det;
+
+      // get number of dimensions
+      const double dim = (double) nsd_;
+
+      // get characteristic element length
+      // There exist different definitions for 'the' characteristic element length h:
+      // 1) get element length for tau_Mp/tau_C: volume-equival. diameter -> not default
+      // const double h = pow((6.*vol/PI),(1.0/3.0));
+
+      // 2) streamlength (based on velocity vector at element centre) -> not default
+
+      // 3) use cubic root of the element volume as characteristic length -> default
+      //    2D case: characterisitc length is the square root of the element area
+      //    1D case: characteristic length is the element length
+      const double h = pow(vol,(1.0/dim));
+
       // get Euclidean norm of (weighted) velocity at element center
       double vel_norm;
       if (numdofpernode_ - numscal_ == 1) // ELCH
@@ -1329,48 +1263,29 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     } //switch (whichtau)
 
     //----------------------------------------------------------------------
-    // computation of artificial or subgrid diffusivity
+    // computation of artificial fine-scale subgrid diffusivity
     //----------------------------------------------------------------------
-    if (fssgd != SCATRA::no_fssgd)
+    if (fssgd)
     {
-      if (fssgd == SCATRA::artificial)
-      {
-        // velocity norm
-        const double vel_norm = velint_.Norm2();
+      // element volume (2D: element surface area; 1D: element length)
+      // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
+      const double vol = wquad*det;
 
-        // parameter relating convective and diffusive forces + respective switch
-        const double epe = mk * dens * vel_norm * h / diffus_[k];
-        const double xi = DMAX(epe,1.0);
+      // get number of dimensions
+      const double dim = (double) nsd_;
 
-        kart_[k] = (DSQR(h)*mk*DSQR(vel_norm)*DSQR(dens))/(2.0*diffus_[k]*xi);
-      }
-      else if (fssgd == SCATRA::smagorinsky_all)
-      {
-        // compute global derivatives
-        derxy_.Multiply(xij_,deriv_);
+      // get characteristic element length as cubic root of element volume
+      // (2D: square root of element area, 1D: element length)
+      const double h = pow(vol,(1.0/dim));
 
-        // compute rate of strain of velocity field
-        const double rateofstrain = GetStrainRate(evel,derxy_,vderxy_);
+      // velocity norm
+      const double vel_norm = velint_.Norm2();
 
-        // compute squared mixing length
-        const double Cs_h_sq = Cs * h * Cs * h;
+      // parameter relating convective and diffusive forces + respective switch
+      const double epe = mk * dens * vel_norm * h / diffus_[k];
+      const double xi = DMAX(epe,1.0);
 
-        kart_[k] = dens * Cs_h_sq * rateofstrain / ( tpn * shcacp_ );
-      }
-      // for the time being, identical to Smagorinsky_all
-      else if (fssgd == SCATRA::smagorinsky_small)
-      {
-        // compute global derivatives
-        derxy_.Multiply(xij_,deriv_);
-
-        // compute rate of strain of velocity field
-        const double rateofstrain = GetStrainRate(evel,derxy_,vderxy_);
-
-        // compute squared mixing length
-        const double Cs_h_sq = Cs * h * Cs * h;
-
-        kart_[k] = dens * Cs_h_sq * rateofstrain / ( tpn * shcacp_ );
-      }
+      kart_[k] = (DSQR(h)*mk*DSQR(vel_norm)*DSQR(dens))/(2.0*diffus_[k]*xi);
 
       // compute entries of subgrid-diffusivity vector
       for (int vi=0; vi<iel; ++vi)

@@ -43,12 +43,32 @@ Maintainer: Georg Bauer
 #include "Epetra_Operator.h"
 #include "Epetra_RowMatrix.h"
 
+#include <ml_common.h>
+#include <ml_include.h>
+#include <ml_epetra_utils.h>
+#include <ml_epetra.h>
+#include <ml_epetra_operator.h>
+#include <ml_MultiLevelPreconditioner.h>
+#include <ml_agg_genP.h>
+#include <ml_operator.h>
+#include <MLAPI_Error.h>
+#include <MLAPI_CompObject.h>
+#include <MLAPI_TimeObject.h>
+#include <MLAPI_Operator.h>
+#include <MLAPI_Operator_Utils.h>
+#include <MLAPI_MultiVector.h>
+#include <MLAPI_InverseOperator.h>
+#include <MLAPI_Expressions.h>
+#include <MLAPI_BaseOperator.h>
+#include <MLAPI_Workspace.h>
+#include <MLAPI_Aggregation.h>
+#include <MLAPI_Eig.h>
+
 #include <ctime>
 #include <cstdlib>
 #include <iostream>
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "../drt_fluid/avms_solver.H"
 #include "../drt_fluid/drt_periodicbc.H"
 
 #include "../drt_inpar/inpar_scatra.H"
@@ -61,6 +81,7 @@ extern "C" /* stuff which is c and is accessed from c++ */
 
 using namespace std;
 using namespace Teuchos;
+using namespace MLAPI;
 
 /// Algorithm and time integration classes for scalar transport problems
 namespace SCATRA{
@@ -158,6 +179,7 @@ public:
 
   /// set velocity field for low-Mach-number flow
   void SetLomaVelocity(RCP<const Epetra_Vector> extvel,
+                       RCP<const Epetra_Vector> extsubgrvisc,
                        RCP<DRT::Discretization> fluiddis);
 
   /// set initial thermodynamic pressure and time derivative for low-Mach-number flow
@@ -382,8 +404,14 @@ protected:
   /// fine-scale subgrid-viscosity flag
   string fssgd_;
 
-  /// ELCH-specific paramter F/RT (default value for the temperature is 298K)
+  /// ELCH-specific parameter F/RT (default value for the temperature is 298K)
   double frt_;
+
+  /// LOMA-specific parameter: flag for turbulence model
+  bool turbmodel_;
+
+  /// LOMA-specific parameter: turbulent Prandtl number
+  double tpn_;
 
   /// LOMA-specific parameter: thermodynamic pressure at n+1 and n
   double thermpressnp_;
@@ -445,15 +473,14 @@ protected:
   /// Nonlinear iteration increment vector
   RCP<Epetra_Vector>    increment_;
 
-  /// vm3 and avms solver
-  RCP<FLD::VM3_Solver> vm3_solver_;
-  RCP<FLD::AVMS_Solver> avms_solver_;
+  /// subgrid-diffusivity(-scaling) vector
+  RCP<Epetra_Vector>    subgrdiff_;
 
-  /// only necessary for vm3 solver: fine-scale subgrid-diffusivity matrix
+  /// only necessary for AVM3: fine-scale subgrid-diffusivity matrix
   RCP<LINALG::SparseMatrix> sysmat_sd_;
 
-  /// only necessary for vm3 solver: subgrid-diffusivity-scaling vector
-  RCP<Epetra_Vector>    subgrdiff_;
+  /// only necessary for AVM3: normalized fine-scale subgrid-viscosity matrix
+  RCP<LINALG::SparseMatrix> Mnsv_;
 
   /// Extractor used for convergence check of nonlinear iteration
   LINALG::MapExtractor      conpotsplitter_;

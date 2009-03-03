@@ -161,7 +161,7 @@ namespace ELEMENTS
                 const bool                                       loma,
                 const bool                                       conservative,
                 const bool                                       higher_order_ele,
-                const enum Fluid3::StabilisationAction           fssgv,
+                const enum Fluid3::FineSubgridVisc               fssgv,
                 const enum Fluid3::StabilisationAction           pspg,
                 const enum Fluid3::StabilisationAction           supg,
                 const enum Fluid3::StabilisationAction           vstab,
@@ -176,13 +176,13 @@ namespace ELEMENTS
       \brief calculate stabilization parameter for stationary formulation
     */
     void CalTauStationary(
-      Fluid3*                                          ele,
-      const LINALG::Matrix<3,iel>& evelnp,
-      const LINALG::Matrix<3,iel>& fsevelnp,
-      const LINALG::Matrix<iel,1>& edensnp,
-      const double                                     visc,
-      const enum Fluid3::StabilisationAction           fssgv,
-      const double                                     Cs);
+      Fluid3*                             ele,
+      const LINALG::Matrix<3,iel>&        evelnp,
+      const LINALG::Matrix<3,iel>&        fsevelnp,
+      const LINALG::Matrix<iel,1>&        edensnp,
+      const double                        visc,
+      const enum Fluid3::FineSubgridVisc  fssgv,
+      const double                        Cs);
 
     /*!
      * \brief calculate the body force from the nodes condition

@@ -140,6 +140,7 @@ namespace ELEMENTS
       \param estif            (o) element matrix to calculate
       \param emesh            (o) linearization wrt mesh motion
       \param eforce           (o) element rhs to calculate
+      \param subgrvisc        (o) subgrid-viscosity vector
       \param material         (i) fluid material
       \param time             (i) current simulation time
       \param dt               (i) timestep
@@ -177,6 +178,7 @@ namespace ELEMENTS
                 LINALG::Matrix<3*iel,3*iel>&             estif,
                 LINALG::Matrix<3*iel,3*iel>&             emesh,
                 LINALG::Matrix<3*iel,    1>&             eforce,
+                LINALG::Matrix<3*iel,    1>&             subgrvisc,
                 Teuchos::RCP<const MAT::Material>        material,
                 double                                   time,
                 double                                   dt,
@@ -188,7 +190,7 @@ namespace ELEMENTS
                 const bool                               conservative,
                 const bool                               is_genalpha,
                 const bool                               higher_order_ele,
-                const enum Fluid2::StabilisationAction   fssgv,
+                const enum Fluid2::FineSubgridVisc       fssgv,
                 const enum Fluid2::StabilisationAction   pspg,
                 const enum Fluid2::StabilisationAction   supg,
                 const enum Fluid2::StabilisationAction   vstab,
@@ -236,9 +238,10 @@ namespace ELEMENTS
 
     */
     void Caltau(Fluid2*                                 ele,
-                const LINALG::Matrix<2,iel>&           evelnp,
-                const LINALG::Matrix<2,iel>&           fsevelnp,
-                const LINALG::Matrix<iel,1>&           edensnp,
+                LINALG::Matrix<3*iel,1>&                subgrvisc,
+                const LINALG::Matrix<2,iel>&            evelnp,
+                const LINALG::Matrix<2,iel>&            fsevelnp,
+                const LINALG::Matrix<iel,1>&            edensnp,
                 const enum Fluid2::TauType              whichtau,
                 Teuchos::RCP<const MAT::Material>       material,
                 double&                                 visc,
@@ -248,7 +251,7 @@ namespace ELEMENTS
                 const enum Fluid2::TurbModelAction      turb_mod_action,
                 double&                                 Cs,
                 double&                                 visceff,
-                const enum Fluid2::StabilisationAction  fssgv);
+                const enum Fluid2::FineSubgridVisc      fssgv);
 
 
     /*!

@@ -417,12 +417,7 @@ private:
     cross_stress_stab_only_rhs,
     reynolds_stress_stab_none,
     reynolds_stress_stab,
-    reynolds_stress_stab_only_rhs,
-    fssgv_no,
-    fssgv_artificial_all,
-    fssgv_artificial_small,
-    fssgv_Smagorinsky_all,
-    fssgv_Smagorinsky_small
+    reynolds_stress_stab_only_rhs
   };
 
   //! linearisation actions recognized by fluid3 (genalpha implementation)
@@ -455,6 +450,16 @@ private:
     smagorinsky,
     smagorinsky_with_wall_damping,
     dynamic_smagorinsky
+  };
+
+  //! options for fine-scale subgrid viscosity
+  enum FineSubgridVisc
+  {
+    no_fssgv,
+    artificial_all,
+    artificial_small,
+    smagorinsky_all,
+    smagorinsky_small
   };
 
   //! map that converts strings to actions (stabilisation)
@@ -592,6 +597,7 @@ private:
     DRT::Discretization&      discretization,
     vector<double>&           velocitypressure ,
     vector<double>&           density  ,
+    vector<double>&           subgrvisc  ,
     ParameterList&            params,
     const double              eosfac
     );

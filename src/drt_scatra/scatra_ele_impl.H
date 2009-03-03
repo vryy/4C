@@ -172,6 +172,7 @@ public:
         const LINALG::Matrix<iel,1>&          edensnp, ///< density field at n+1/n+alpha_F
         const LINALG::Matrix<iel,1>&          edensam, ///< density field at n+alpha_M
         const LINALG::Matrix<iel,1>&          epotnp, ///< el. potential at element nodes
+        const LINALG::Matrix<iel,1>&          esubgrdiff,  ///< subgrid diffusivity at element nodes
         Epetra_SerialDenseMatrix&             sys_mat,///< element matrix to calculate
         Epetra_SerialDenseVector&             residual, ///< element rhs to calculate
         Epetra_SerialDenseVector&             subgrdiff, ///< subgrid-diff.-scaling vector
@@ -184,10 +185,8 @@ public:
         const bool                            temperature, ///< temperature flag
         const bool                            conservative, ///< flag for conservative form
         const enum SCATRA::TauType            whichtau, ///< flag for stabilization parameter definition
-        const enum SCATRA::FineSubgridDiff    fssgd, ///< subgrid-diff. flag
-        const enum SCATRA::TurbModel          turbmod, ///< flag for turbulence model
-        const double                          Cs, ///< Smagorinsky model parameter
-        const double                          tpn, ///< turbulent Prandtl number
+        const bool                            fssgd, ///< subgrid-diff. flag
+        const bool                            turbmodel, ///< flag for turbulence model
         const bool                            is_stationary, ///< flag indicating stationary formulation
         const bool                            is_genalpha, ///< generalized-alpha flag
         const bool                            is_incremental, ///< flag for incremental/non-incemental linear solver
@@ -239,13 +238,12 @@ public:
         const LINALG::Matrix<nsd_,iel>&     evel,///< nodal velocities
         const LINALG::Matrix<iel,1>&        edens, ///< density
         const LINALG::Matrix<iel,1>&        epot,  ///< el. potential at element nodes
+        const LINALG::Matrix<iel,1>&        esubgrdiff,  ///< subgrid diffusivity at element nodes
         const double                        dt, ///< current time-step length
         const double&                       timefac, ///< time discretization factor
         const enum SCATRA::TauType          whichtau, ///< flag for stabilization parameter definition
-        const enum SCATRA::FineSubgridDiff  fssgd, ///< subgrid-diff. flag
-        const enum SCATRA::TurbModel        turbmod, ///< flag for turbulence model
-        const double                        Cs, ///< Smagorinsky model parameter
-        const double                        tpn, ///< turbulent Prandtl number
+        const bool&                         fssgd, ///< subgrid-diff. flag
+        const bool&                         turbmodel, ///< turbulence model flag
         const bool&                         is_stationary, ///< flag indicating stationary formulation
         const double&                       frt ///< factor F/RT needed for ELCH calculations
     );

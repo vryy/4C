@@ -19,7 +19,6 @@ Maintainer: Peter Gamnitzer
 
 #include "../drt_fluid/fluid_genalpha_integration.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "vm3_solver.H"
 #include "fluid_utils.H"
 
 
@@ -1757,13 +1756,51 @@ void FLD::FluidGenAlphaIntegration::AVM3Preparation()
   // apply DBC to system matrix
   LINALG::ApplyDirichlettoSystem(sysmat_,increment_,residual_,zeros_,*(dbcmaps_->CondMap()));
 
-  // extract ML parameters
-  ParameterList&  mllist = solver_.Params().sublist("ML Parameters");
-
-  // call VM3 constructor with system matrix for generating scale-separating matrix
+  // get scale-separation matrix
   {
-    const Teuchos::RCP<const Epetra_Vector> dirichtoggle = Dirichlet();
-    vm3_solver_ = rcp(new VM3_Solver(SystemMatrix(),dirichtoggle,mllist,true,true));
+    // this is important to have!!!
+    MLAPI::Init();
+
+    // extract the ML parameters
+    ParameterList&  mlparams = solver_.Params().sublist("ML Parameters");;
+
+    // get toggle vector for Dirchlet boundary conditions
+    const Epetra_Vector& dbct = *Dirichlet();
+
+    // get nullspace parameters
+    double* nullspace = mlparams.get("null space: vectors",(double*)NULL);
+    if (!nullspace) dserror("No nullspace supplied in parameter list");
+    int nsdim = mlparams.get("null space: dimension",1);
+
+    // modify nullspace to ensure that DBC are fully taken into account
+    if (nullspace)
+    {
+      const int length = SystemMatrix()->OperatorRangeMap().NumMyElements();
+      for (int i=0; i<nsdim; ++i)
+        for (int j=0; j<length; ++j)
+          if (dbct[j]!=0.0) nullspace[i*length+j] = 0.0;
+    }
+
+    // get plain aggregation Ptent
+    RCP<Epetra_CrsMatrix> crsPtent;
+    GetPtent(*SystemMatrix()->EpetraMatrix(),mlparams,nullspace,crsPtent);
+    LINALG::SparseMatrix Ptent(crsPtent);
+
+    // compute scale-separation matrix: S = I - Ptent*Ptent^T
+    Sep_ = LINALG::Multiply(Ptent,false,Ptent,true);
+    Sep_->Scale(-1.0);
+    RCP<Epetra_Vector> tmp = LINALG::CreateVector(Sep_->RowMap(),false);
+    tmp->PutScalar(1.0);
+    RCP<Epetra_Vector> diag = LINALG::CreateVector(Sep_->RowMap(),false);
+    Sep_->ExtractDiagonalCopy(*diag);
+    diag->Update(1.0,*tmp,1.0);
+    Sep_->ReplaceDiagonalValues(*diag);
+
+    //complete scale-separation matrix and check maps
+    Sep_->Complete(Sep_->DomainMap(),Sep_->RangeMap());
+    if (!Sep_->RowMap().SameAs(SystemMatrix()->RowMap())) dserror("rowmap not equal");
+    if (!Sep_->RangeMap().SameAs(SystemMatrix()->RangeMap())) dserror("rangemap not equal");
+    if (!Sep_->DomainMap().SameAs(SystemMatrix()->DomainMap())) dserror("domainmap not equal");
   }
 
   return;
@@ -1781,11 +1818,8 @@ void FLD::FluidGenAlphaIntegration::AVM3Preparation()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::FluidGenAlphaIntegration::AVM3Separation()
 {
-  // check whether VM3 solver exists
-  if (vm3_solver_ == null) dserror("vm3_solver not allocated");
-
-  // call VM3 scale separation to get coarse- and fine-scale part of solution
-  vm3_solver_->Separate(fsvelaf_,velaf_);
+  // get fine-scale part of velocity
+  Sep_->Multiply(false,*velaf_,*fsvelaf_);
 
   // set fine-scale vector
   discret_->SetState("fsvelaf",fsvelaf_);

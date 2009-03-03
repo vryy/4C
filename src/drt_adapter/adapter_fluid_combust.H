@@ -63,6 +63,8 @@ namespace ADAPTER
                                                                return null; };
     virtual Teuchos::RCP<const Epetra_Vector> Veln()         { dserror("not implemented");
                                                                return fluid_.Veln(); };
+    virtual Teuchos::RCP<const Epetra_Vector> SubgrVisc()    { dserror("not implemented");
+                                                               return null; };
     virtual Teuchos::RCP<const Epetra_Vector> Dispnp()       { dserror("not implemented");
                                                                return Teuchos::null; };
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap() { dserror("not implemented");

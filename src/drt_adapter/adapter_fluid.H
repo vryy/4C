@@ -89,6 +89,9 @@ namespace ADAPTER {
     /// unknown velocities (and pressures) at t(n)
     virtual Teuchos::RCP<const Epetra_Vector> Veln() = 0;
 
+    /// subgrid viscosity
+    virtual Teuchos::RCP<const Epetra_Vector> SubgrVisc() = 0;
+
     /// mesh displacements at t(n+1)
     virtual Teuchos::RCP<const Epetra_Vector> Dispnp() = 0;
 

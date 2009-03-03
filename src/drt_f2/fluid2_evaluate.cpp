@@ -202,11 +202,6 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
         stabstrtoact_["cross_rhs"        ]=cross_stress_stab_only_rhs;
         stabstrtoact_["no_reynolds"      ]=reynolds_stress_stab_none;
         stabstrtoact_["reynolds_rhs"     ]=reynolds_stress_stab_only_rhs;
-        stabstrtoact_["No"               ]=fssgv_no;
-        stabstrtoact_["artificial_all"   ]=fssgv_artificial_all;
-        stabstrtoact_["artificial_small" ]=fssgv_artificial_small;
-        stabstrtoact_["Smagorinsky_all"  ]=fssgv_Smagorinsky_all;
-        stabstrtoact_["Smagorinsky_small"]=fssgv_Smagorinsky_small;
       }
       return DRT::ELEMENTS::Fluid2ImplInterface::Impl(this)->Evaluate(this,
                                                                       params,
@@ -241,11 +236,6 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
         stabstrtoact_["cross_rhs"        ]=cross_stress_stab_only_rhs;
         stabstrtoact_["no_reynolds"      ]=reynolds_stress_stab_none;
         stabstrtoact_["reynolds_rhs"     ]=reynolds_stress_stab_only_rhs;
-        stabstrtoact_["No"               ]=fssgv_no;
-        stabstrtoact_["artificial_all"   ]=fssgv_artificial_all;
-        stabstrtoact_["artificial_small" ]=fssgv_artificial_small;
-        stabstrtoact_["Smagorinsky_all"  ]=fssgv_Smagorinsky_all;
-        stabstrtoact_["Smagorinsky_small"]=fssgv_Smagorinsky_small;
       }
       return DRT::ELEMENTS::Fluid2StationaryInterface::Impl(this)->Evaluate(this,
                                                                             params,

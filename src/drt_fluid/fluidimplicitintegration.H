@@ -52,14 +52,35 @@ Maintainer: Peter Gamnitzer
 #include "Epetra_Operator.h"
 #include "Epetra_RowMatrix.h"
 
+#include <ml_common.h>
+#include <ml_include.h>
+#include <ml_epetra_utils.h>
+#include <ml_epetra.h>
+#include <ml_epetra_operator.h>
+#include <ml_MultiLevelPreconditioner.h>
+#include <ml_agg_genP.h>
+#include <ml_operator.h>
+#include <MLAPI_Error.h>
+#include <MLAPI_CompObject.h>
+#include <MLAPI_TimeObject.h>
+#include <MLAPI_Operator.h>
+#include <MLAPI_Operator_Utils.h>
+#include <MLAPI_MultiVector.h>
+#include <MLAPI_InverseOperator.h>
+#include <MLAPI_Expressions.h>
+#include <MLAPI_BaseOperator.h>
+#include <MLAPI_Workspace.h>
+#include <MLAPI_Aggregation.h>
+#include <MLAPI_Eig.h>
+
 #include <ctime>
 #include <cstdlib>
 #include <iostream>
 #include <Teuchos_TimeMonitor.hpp>
 
-
 using namespace std;
 using namespace Teuchos;
+using namespace MLAPI;
 
 /// fluid algorithms
 namespace FLD
@@ -210,6 +231,7 @@ public:
   Teuchos::RCP<Epetra_Vector> Velnp() { return velnp_; }
   Teuchos::RCP<Epetra_Vector> Velaf() { return velaf_; }
   Teuchos::RCP<Epetra_Vector> Veln() { return veln_; }
+  Teuchos::RCP<Epetra_Vector> SubgrVisc() { return subgrvisc_; }
   Teuchos::RCP<Epetra_Vector> GridVel() { return gridv_; }
 
   /// provide access to the Dirichlet map
@@ -506,19 +528,21 @@ protected:
   RCP<Epetra_Vector>    dispnm_;
   //@}
 
+  /// subgrid-viscosity vector
+  RCP<Epetra_Vector>    subgrvisc_;
+
+  /// only necessary for AVM3: scale-separation matrix
+  RCP<LINALG::SparseMatrix> Sep_;
+
+  /// only necessary for AVM3: fine-scale solution vector
+  RCP<Epetra_Vector>    fsvelnp_;
+
   /// grid velocity (set from the adapter!)
   RCP<Epetra_Vector>    gridv_;
 
   /// histvector --- a linear combination of velnm, veln (BDF)
   ///                or veln, accn (One-Step-Theta)
   RCP<Epetra_Vector>    hist_;
-
-  /// vm3 solver
-  RCP<VM3_Solver>       vm3_solver_;
-
-  //! @name only necessary for vm3 solver: fine-scale solution vector
-  RCP<Epetra_Vector>    fsvelnp_;
-  //@}
 
 
   //! manager for turbulence statistics 

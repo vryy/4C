@@ -105,25 +105,17 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
-  // vectors and matrices
-  //                 local <-> global dof numbering
+  // vectors and matrices: local <-> global dof numbering
   // -------------------------------------------------------------------
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   // -------------------------------------------------------------------
-  // create empty system matrix --- stiffness and mass are assembled in
-  // one system matrix!
+  // create empty system matrix (27 adjacent nodes as 'good' guess)
   // -------------------------------------------------------------------
-
-  // This is a first estimate for the number of non zeros in a row of
-  // the matrix. Assuming a structured 3d mesh we have 27 adjacent
-  // nodes with numdof DOF each.
-  // We do not need the exact number here, just for performance reasons
-  // a 'good' estimate
   numscal_ = discret_->NumDof(discret_->lRowNode(0));
   if (prbtype_ == "elch")
   {
-    // number of conncetrations transported is numdof-1
+    // number of concentrations transported is numdof-1
     numscal_ -= 1;
     // set up the concentration-el.potential splitter
     FLD::UTILS::SetupFluidSplit(*discret_,numscal_,conpotsplitter_);
@@ -147,26 +139,16 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   }
   else
   {
-    // we need the 'standard' sparse matrix
-    if (fssgd_ == "No")
-    {
-      // initialize standard (stabilized) system matrix (and save its graph!)
-      sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27,false,true));
-    }
-    else
-    {
-      // do not save the graph for this application
-      sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27));
-    }
+    // initialize standard (stabilized) system matrix (and save its graph!)
+    // in standard case, but do not save the graph if fine-scale subgrid
+    // diffusivity is used
+    if (fssgd_ == "No") sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27,false,true));
+    else sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27));
   }
 
   // -------------------------------------------------------------------
-  // create empty vectors
+  // create vectors containing problem variables
   // -------------------------------------------------------------------
-
-  // Vectors passed to the element
-  // -----------------------------
-
   // solutions at time n+1 and n
   phinp_ = LINALG::CreateVector(*dofrowmap,true);
   phin_  = LINALG::CreateVector(*dofrowmap,true);
@@ -174,25 +156,18 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // density at time n+1
   densnp_ = LINALG::CreateVector(*dofrowmap,true);
 
-  // histvector --- a linear combination of phinm, phin (BDF)
-  //                or phin, phidtn (One-Step-Theta, Generalized-alpha)
+  // history vector (a linear combination of phinm, phin (BDF)
+  // or phin, phidtn (One-Step-Theta, Generalized-alpha))
   hist_ = LINALG::CreateVector(*dofrowmap,true);
 
-  // get noderowmap of discretization
+  // convective velocity (always three velocity components per node)
+  // (get noderowmap of discretization for creating this multivector9
   const Epetra_Map* noderowmap = discret_->NodeRowMap();
-  /// convective velocity (always three velocity components per node)
   convel_ = rcp(new Epetra_MultiVector(*noderowmap,3,true));
 
-  // temperature and velocity increment at time n+1
-  if (prbtype_ == "loma")
-  {
-    tempincnp_ = LINALG::CreateVector(*dofrowmap,true);
-    //velincnp_  = rcp(new Epetra_MultiVector(*noderowmap,3,true));
-  }
-
-  // Vectors associated to boundary conditions
-  // -----------------------------------------
-
+  // -------------------------------------------------------------------
+  // create vectors associated to boundary conditions
+  // -------------------------------------------------------------------
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
   zeros_ = LINALG::CreateVector(*dofrowmap,true);
 
@@ -207,6 +182,9 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     zeros_->PutScalar(0.0); // just in case of change
   }
 
+  // -------------------------------------------------------------------
+  // create vectors associated to solution process
+  // -------------------------------------------------------------------
   // the vector containing body and surface forces
   neumann_loads_= LINALG::CreateVector(*dofrowmap,true);
 
@@ -219,32 +197,14 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // incremental solution vector
   increment_ = LINALG::CreateVector(*dofrowmap,true);
 
+  // subgrid-diffusivity(-scaling) vector
+  // (used either for AVM3 approach or temperature equation
+  //  with all-scale subgrid-diffusivity model)
+  subgrdiff_ = LINALG::CreateVector(*dofrowmap,true);
+
   // -------------------------------------------------------------------
-  // necessary only for the VM3 approach:
-  // initialize subgrid-diffusivity matrix + respective ouptput
+  // set parameters associated to potential statistical flux evaluations
   // -------------------------------------------------------------------
-  if (fssgd_ != "No")
-  {
-    sysmat_sd_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27));
-
-    if (myrank_ == 0)
-    {
-      // Output
-      cout << "Fine-scale subgrid-diffusivity approach based on AVM3: ";
-      cout << &endl << &endl;
-      cout << params_->get<string>("fs subgrid diffusivity");
-      cout << &endl << &endl;
-    }
-  }
-
-  // set initial field
-  SetInitialField(params_->get<int>("scalar initial field"), params_->get<int>("scalar initial field func number"));
-
-  // set initial density to 1.0:
-  // used throughout simulation for non-temperature case
-  // used as good initial guess for stationary temperature case
-  densnp_->PutScalar(1.0);
-
   // get fluid turbulence sublist
   ParameterList * turbparams =&(params_->sublist("TURBULENCE PARAMETERS"));
 
@@ -255,6 +215,68 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
 
   // initialize vector for statistics (assume a maximum of 10 conditions)
   sumnormfluxintegral_ = Teuchos::rcp(new Epetra_SerialDenseVector(10));
+
+  // -------------------------------------------------------------------
+  // necessary only for AVM3 approach:
+  // initialize subgrid-diffusivity matrix + respective ouptput
+  // -------------------------------------------------------------------
+  if (fssgd_ != "No")
+  {
+    sysmat_sd_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27));
+
+    // Output
+    if (myrank_ == 0)
+    {
+      cout << "Fine-scale subgrid-diffusivity approach based on AVM3: ";
+      cout << fssgd_;
+      cout << &endl << &endl;
+    }
+  }
+
+  // -------------------------------------------------------------------
+  // create specific vectors for low-Mach-number case
+  // (i.e., scalar variable is temperature)
+  // get also turbulence model and parameters
+  // -------------------------------------------------------------------
+  turbmodel_ = false;
+  if (prbtype_ == "loma")
+  {
+    // temperature and velocity increment at time n+1
+    tempincnp_ = LINALG::CreateVector(*dofrowmap,true);
+    //velincnp_  = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+
+    // potential turbulence model
+    if (turbparams->get<string>("PHYSICAL_MODEL") != "no_model")
+      turbmodel_ = true;
+
+    // warning if classical (all-scale) turbulence model and fine-scale
+    // subgrid-viscosity approach are intended to be used simultaneously
+    if (turbmodel_ and fssgd_ != "No")
+      dserror("No combination of classical (all-scale) turbulence model and fine-scale subgrid-diffusivity approach currently possible!");
+
+    // turbulent Prandtl number
+    tpn_ = turbparams->get<double>("C_TURBPRANDTL",1.0);
+
+    // Output
+    if (turbmodel_ and myrank_ == 0)
+    {
+      cout << "All-scale subgrid-diffusivity model: ";
+      cout << turbparams->get<string>("PHYSICAL_MODEL");
+      cout << &endl << &endl;
+    }
+  }
+
+  // -------------------------------------------------------------------
+  // set initial field
+  // -------------------------------------------------------------------
+  SetInitialField(params_->get<int>("scalar initial field"), params_->get<int>("scalar initial field func number"));
+
+  // -------------------------------------------------------------------
+  // set initial density to 1.0:
+  // - used throughout simulation for non-temperature case
+  // - used as good initial guess for stationary temperature case
+  // -------------------------------------------------------------------
+  densnp_->PutScalar(1.0);
 
   return;
 
@@ -513,6 +535,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
       eleparams.set("incremental solver",incremental_);
       eleparams.set("form of convective term",convform_);
       eleparams.set("fs subgrid diffusivity",fssgd_);
+      eleparams.set("turbulence model",turbmodel_);
       eleparams.set("frt",frt_);// ELCH specific factor F/RT
 
       //provide velocity field (export to column map necessary for parallel evaluation)
@@ -524,9 +547,6 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
 
       // parameters for stabilization
       eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
-
-      // parameters for turbulence
-      eleparams.sublist("TURBULENCE PARAMETERS") = params_->sublist("TURBULENCE PARAMETERS");
 
       // set vector values needed by elements
       discret_->ClearState();
@@ -815,6 +835,7 @@ void SCATRA::ScaTraTimIntImpl::Solve()
     eleparams.set("incremental solver",incremental_);
     eleparams.set("form of convective term",convform_);
     eleparams.set("fs subgrid diffusivity",fssgd_);
+    eleparams.set("turbulence model",turbmodel_);
 
     //provide velocity field (export to column map necessary for parallel evaluation)
     //SetState cannot be used since this Multivector is nodebased and not dofbased
@@ -826,24 +847,24 @@ void SCATRA::ScaTraTimIntImpl::Solve()
     // parameters for stabilization
     eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
 
-    // parameters for turbulence
-    eleparams.sublist("TURBULENCE PARAMETERS") = params_->sublist("TURBULENCE PARAMETERS");
-
     // set vector values needed by elements
     discret_->ClearState();
     discret_->SetState("hist",hist_);
+    if (turbmodel_) discret_->SetState("subgrid diffusivity",subgrdiff_);
 
     // add element parameters and density state according to time-int. scheme
     AddSpecificTimeIntegrationParameters(eleparams);
 
-    // decide whether AVM3-based solution approach or standard approach
+    // different element loop for AVM3 with artificial subgrid diffusivity
+    // and all-scale subgrid diffusivity:
+    // call loop over elements w/o subgrid-diffusivity-scaling vector
+    if (fssgd_ == "artificial_all")
+         discret_->Evaluate(eleparams,sysmat_,null,residual_,subgrdiff_);
+    else discret_->Evaluate(eleparams,sysmat_,residual_);
+    discret_->ClearState();
+
+    // AVM3 scaling
     if (fssgd_ != "No") AVM3Scaling(eleparams);
-    else
-    {
-      // call standard loop over elements
-      discret_->Evaluate(eleparams,sysmat_,residual_);
-      discret_->ClearState();
-    }
 
     // finalize the complete matrix
     sysmat_->Complete();

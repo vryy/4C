@@ -146,6 +146,7 @@ namespace ELEMENTS
       \param estif            (o) element matrix to calculate
       \param emesh            (o) linearization wrt mesh motion
       \param eforce           (o) element rhs to calculate
+      \param subgrvisc        (o) subgrid-viscosity vector
       \param material         (i) fluid material
       \param time             (i) current simulation time
       \param dt               (i) timestep
@@ -172,20 +173,21 @@ namespace ELEMENTS
                                   damping function and defined on input
       */
     void Sysmat(Fluid3*                                  ele,
-                const LINALG::Matrix<3,iel>&             evelnp_epetra,
-                const LINALG::Matrix<3,iel>&             fsevelnp_epetra,
-                const LINALG::Matrix<iel,1>&             eprenp_epetra,
-                const LINALG::Matrix<iel,1>&             edensnp_epetra,
-                const LINALG::Matrix<3,iel>&             eaccam_epetra,
-                const LINALG::Matrix<iel,1>&             ededtam_epetra,
-                const LINALG::Matrix<iel,1>&             edensam_epetra,
-                const LINALG::Matrix<3,iel>&             emhist_epetra,
-                const LINALG::Matrix<iel,1>&             echist_epetra,
-                const LINALG::Matrix<3,iel>&             edispnp_epetra,
-                const LINALG::Matrix<3,iel>&             egridv_epetra,
-                LINALG::Matrix<4*iel,4*iel>&             estif_epetra,
-                LINALG::Matrix<4*iel,4*iel>&             emesh_epetra,
-                LINALG::Matrix<4*iel,     1>&            eforce_epetra,
+                const LINALG::Matrix<3,iel>&             evelnp,
+                const LINALG::Matrix<3,iel>&             fsevelnp,
+                const LINALG::Matrix<iel,1>&             eprenp,
+                const LINALG::Matrix<iel,1>&             edensnp,
+                const LINALG::Matrix<3,iel>&             eaccam,
+                const LINALG::Matrix<iel,1>&             ededtam,
+                const LINALG::Matrix<iel,1>&             edensam,
+                const LINALG::Matrix<3,iel>&             emhist,
+                const LINALG::Matrix<iel,1>&             echist,
+                const LINALG::Matrix<3,iel>&             edispnp,
+                const LINALG::Matrix<3,iel>&             egridv,
+                LINALG::Matrix<4*iel,4*iel>&             estif,
+                LINALG::Matrix<4*iel,4*iel>&             emesh,
+                LINALG::Matrix<4*iel,    1>&             eforce,
+                LINALG::Matrix<4*iel,    1>&             subgrvisc,
                 Teuchos::RCP<const MAT::Material>        material,
                 double                                   time,
                 double                                   dt,
@@ -197,7 +199,7 @@ namespace ELEMENTS
                 const bool                               conservative,
                 const bool                               is_genalpha,
                 const bool                               higher_order_ele,
-                const enum Fluid3::StabilisationAction   fssgv,
+                const enum Fluid3::FineSubgridVisc       fssgv,
                 const enum Fluid3::StabilisationAction   pspg,
                 const enum Fluid3::StabilisationAction   supg,
                 const enum Fluid3::StabilisationAction   vstab,
@@ -251,9 +253,10 @@ namespace ELEMENTS
 
     */
     void Caltau(Fluid3*                                 ele,
-                const LINALG::Matrix<3,iel>&           evelnp,
-                const LINALG::Matrix<3,iel>&           fsevelnp,
-                const LINALG::Matrix<iel,1>&           edensnp,
+                LINALG::Matrix<4*iel,1>&                subgrvisc,
+                const LINALG::Matrix<3,iel>&            evelnp,
+                const LINALG::Matrix<3,iel>&            fsevelnp,
+                const LINALG::Matrix<iel,1>&            edensnp,
                 const enum Fluid3::TauType              whichtau,
                 Teuchos::RCP<const MAT::Material>       material,
                 double&                                 visc,
@@ -265,7 +268,7 @@ namespace ELEMENTS
                 double&                                 Cs_delta_sq,
                 double&                                 visceff,
                 double&                                 l_tau,
-                const enum Fluid3::StabilisationAction  fssgv);
+                const enum Fluid3::FineSubgridVisc      fssgv);
 
 
     /*!

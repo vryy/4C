@@ -77,6 +77,27 @@ Maintainer: Peter Gamnitzer
 #include "Epetra_Operator.h"
 #include "Epetra_RowMatrix.h"
 
+#include <ml_common.h>
+#include <ml_include.h>
+#include <ml_epetra_utils.h>
+#include <ml_epetra.h>
+#include <ml_epetra_operator.h>
+#include <ml_MultiLevelPreconditioner.h>
+#include <ml_agg_genP.h>
+#include <ml_operator.h>
+#include <MLAPI_Error.h>
+#include <MLAPI_CompObject.h>
+#include <MLAPI_TimeObject.h>
+#include <MLAPI_Operator.h>
+#include <MLAPI_Operator_Utils.h>
+#include <MLAPI_MultiVector.h>
+#include <MLAPI_InverseOperator.h>
+#include <MLAPI_Expressions.h>
+#include <MLAPI_BaseOperator.h>
+#include <MLAPI_Workspace.h>
+#include <MLAPI_Aggregation.h>
+#include <MLAPI_Eig.h>
+
 #include <ctime>
 #include <cstdlib>
 #include <iostream>
@@ -84,6 +105,7 @@ Maintainer: Peter Gamnitzer
 
 using namespace std;
 using namespace Teuchos;
+using namespace MLAPI;
 
 namespace FLD {
 
@@ -838,17 +860,14 @@ private:
   RCP<Epetra_Vector>        gridvelaf_;
   //@}
 
-  //! @name vm3 solver
-  //        ----------
-  //
-  //! vm3 solver
-  RCP<VM3_Solver>           vm3_solver_;
-
-  //! fine-scale solution vector
-  RCP<Epetra_Vector>        fsvelaf_;
-
   //! fine-scale subgrid-viscosity flag
   string                    fssgv_;
+
+  //! only necessary for AVM3: scale-separation matrix
+  RCP<LINALG::SparseMatrix> Sep_;
+
+  //! only necessary for AVM3: fine-scale solution vector
+  RCP<Epetra_Vector>        fsvelaf_;
 
   //@}
 

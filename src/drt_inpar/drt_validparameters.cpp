@@ -1345,7 +1345,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("FSSUGRVISC","No","fine-scale subgrid diffusivity",
                                tuple<std::string>(
                                  "No",
-                                 "artificial",
+                                 "artificial_all",
+                                 "artificial_small",
                                  "Smagorinsky_all",
                                  "Smagorinsky_small"
                                  ),

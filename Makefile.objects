@@ -248,9 +248,7 @@ OBJS_DRT_FLUID= src/drt_fluid/fluid_utils.o \
                 src/drt_fluid/turbulence_statistics_sqc.o \
                 src/drt_fluid/turbulence_statistics_mean_general.o \
                 src/drt_fluid/fluidresulttest.o \
-                src/drt_fluid/xfluidresulttest.o \
-                src/drt_fluid/vm3_solver.o \
-                src/drt_fluid/avms_solver.o
+                src/drt_fluid/xfluidresulttest.o
 # ---------------------------------------------- scalar transport problems
 OBJS_DRT_SCATRA=src/drt_scatra/scatra_dyn.o \
                 src/drt_scatra/scatra_timint_implicit.o \

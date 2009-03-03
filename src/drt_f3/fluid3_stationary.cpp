@@ -248,22 +248,25 @@ int DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Evaluate(
   Fluid3::StabilisationAction cross    = ele->ConvertStringToStabAction(stablist.get<string>("CROSS-STRESS"));
   Fluid3::StabilisationAction reynolds = ele->ConvertStringToStabAction(stablist.get<string>("REYNOLDS-STRESS"));
 
-  // get flag for fine-scale subgrid viscosity
-  Fluid3::StabilisationAction fssgv =
-    ele->ConvertStringToStabAction(params.get<string>("fs subgrid viscosity","No"));
+  // get flag for fine-scale subgrid-viscosity approach
+  Fluid3::FineSubgridVisc fssgv = Fluid3::no_fssgv;
+  {
+    const string fssgvdef = params.get<string>("fs subgrid viscosity","No");
+
+    if (fssgvdef == "artificial_all")         fssgv = Fluid3::artificial_all;
+    else if (fssgvdef == "artificial_small")  fssgv = Fluid3::artificial_small;
+    else if (fssgvdef == "Smagorinsky_all")   fssgv = Fluid3::smagorinsky_all;
+    else if (fssgvdef == "Smagorinsky_small") fssgv = Fluid3::smagorinsky_small;
+  }
 
   // flag for higher order elements
   bool higher_order_ele = ele->isHigherOrderElement(ele->Shape());
 
-  // get coarse- and fine-scale velocity as well as coarse-scale convective stress
-  RCP<const Epetra_Vector> csvelnp;
+  // get fine-scale velocity
   RCP<const Epetra_Vector> fsvelnp;
-  RCP<const Epetra_Vector> csconvnp;
-  LINALG::Matrix<3,numnode> csevelnp;
   LINALG::Matrix<3,numnode> fsevelnp;
-  LINALG::Matrix<3,numnode> cseconvnp;
 
-  if (fssgv != Fluid3::fssgv_no)
+  if (fssgv != Fluid3::no_fssgv)
   {
     fsvelnp = discretization.GetState("fsvelnp");
     if (fsvelnp==null) dserror("Cannot get state vector 'fsvelnp'");
@@ -364,7 +367,7 @@ void DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Sysmat(
   const bool                                       loma,
   const bool                                       conservative,
   const bool                                       higher_order_ele,
-  const enum Fluid3::StabilisationAction           fssgv,
+  const enum Fluid3::FineSubgridVisc               fssgv,
   const enum Fluid3::StabilisationAction           pspg,
   const enum Fluid3::StabilisationAction           supg,
   const enum Fluid3::StabilisationAction           vstab,
@@ -492,7 +495,7 @@ void DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Sysmat(
     mderxy_.MultiplyNT(evelnp,densderxy_);
 
     // get fine-scale velocity (np,i) derivatives at integration point
-    if (fssgv != Fluid3::fssgv_no)
+    if (fssgv != Fluid3::no_fssgv)
       //fsvderxy_ = blitz::sum(derxy_(j,k)*fsevelnp(i,k),k);
       fsvderxy_.MultiplyNT(fsevelnp,derxy_);
     else fsvderxy_ = 0.;
@@ -1648,7 +1651,7 @@ void DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Sysmat(
       //----------------------------------------------------------------------
       //     FINE-SCALE SUBGRID-VISCOSITY TERM (ON RIGHT HAND SIDE)
 
-      if(fssgv != Fluid3::fssgv_no)
+      if(fssgv != Fluid3::no_fssgv)
       {
         for (int vi=0; vi<iel; ++vi)
         {
@@ -1689,13 +1692,13 @@ void DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Sysmat(
 //
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3StationaryImpl<distype>::CalTauStationary(
-  Fluid3*                                          ele,
-  const LINALG::Matrix<3,iel>& evelnp,
-  const LINALG::Matrix<3,iel>& fsevelnp,
-  const LINALG::Matrix<iel,1>& edensnp,
-  const double                                     visc,
-  const enum Fluid3::StabilisationAction           fssgv,
-  const double                                     Cs
+  Fluid3*                             ele,
+  const LINALG::Matrix<3,iel>&        evelnp,
+  const LINALG::Matrix<3,iel>&        fsevelnp,
+  const LINALG::Matrix<iel,1>&        edensnp,
+  const double                        visc,
+  const enum Fluid3::FineSubgridVisc  fssgv,
+  const double                        Cs
   )
 {
   // use one point gauss rule to calculate tau at element center
@@ -1837,11 +1840,10 @@ void DRT::ELEMENTS::Fluid3StationaryImpl<distype>::CalTauStationary(
   tau_(2) = 0.5*vel_norm*hk*xi_tau_c/dens;
 
   /*------------------------------------------- compute subgrid viscosity ---*/
-  if (fssgv == Fluid3::fssgv_artificial_all or
-      fssgv == Fluid3::fssgv_artificial_small)
+  if (fssgv == Fluid3::artificial_all or fssgv == Fluid3::artificial_small)
   {
     double fsvel_norm = 0.0;
-    if (fssgv == Fluid3::fssgv_artificial_small)
+    if (fssgv == Fluid3::artificial_small)
     {
       // get fine-scale velocities at element center
       //fsvelint_ = blitz::sum(funct_(j)*fsevelnp(i,j),j);
@@ -1864,8 +1866,8 @@ void DRT::ELEMENTS::Fluid3StationaryImpl<distype>::CalTauStationary(
     vart_ = (DSQR(hk)*mk*DSQR(dens)*DSQR(fsvel_norm))/(2.0*visc*xi);
 
   }
-  else if (fssgv == Fluid3::fssgv_Smagorinsky_all or
-           fssgv == Fluid3::fssgv_Smagorinsky_small)
+  else if (fssgv == Fluid3::smagorinsky_all or
+           fssgv == Fluid3::smagorinsky_small)
   {
     //
     // SMAGORINSKY MODEL
@@ -1883,7 +1885,7 @@ void DRT::ELEMENTS::Fluid3StationaryImpl<distype>::CalTauStationary(
     double rateofstrain = 0.0;
     {
       // get fine-scale or all-scale velocity derivatives at element center
-      if (fssgv == Fluid3::fssgv_Smagorinsky_small)
+      if (fssgv == Fluid3::smagorinsky_small)
         //fsvderxy_ = blitz::sum(derxy_(j,k)*fsevelnp(i,k),k);
         fsvderxy_.MultiplyNT(fsevelnp,derxy_);
       else  //fsvderxy_ = blitz::sum(derxy_(j,k)*evelnp(i,k),k);

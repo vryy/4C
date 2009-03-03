@@ -163,6 +163,8 @@ private:
   RCP<Epetra_Vector>                   mygridveln_ ;
   RCP<Epetra_Vector>                   mygridvelaf_;
 
+  RCP<Epetra_Vector>                   mysubgrvisc_;
+
   RCP<Epetra_Vector>                   myforce_    ;
 
 

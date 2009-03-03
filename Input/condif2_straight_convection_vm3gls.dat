@@ -42,7 +42,7 @@ NUMSTEP      1
 TIMESTEP     0.1
 THETA        0.5
 INITIALFIELD zero_field
-FSSUGRVISC   artificial
+FSSUGRVISC   artificial_all
 VELOCITYFIELD  function
 VELFUNCNO    1
 WRITEFLUX    No
@@ -52,7 +52,7 @@ WRITEFLUX    No
 ------------------------------------------------------FLUID SOLVER
 -------------------------------------------SCALAR TRANSPORT SOLVER
 SOLVER         Aztec_MSR    // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT       1            // output every so often, 0 no output
+AZOUTPUT       0            // output every so often, 0 no output
 AZSOLVE        GMRES           // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC         ML          // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
 AZREUSE        0            // how often to recompute some preconditioners
@@ -68,7 +68,7 @@ AZGRAPH        1            // unused
 AZPOLY         5            // polynomial order for Neumann
 AZOVERLAP      0            // amount of ASM overlap for ILU, ILU, ICC, LU
 AZSCAL         none      // none sym infnorm scaling of the system
-ML_PRINT          10         // ML print-out level (0-10)
+ML_PRINT          0         // ML print-out level (0-10)
 ML_MAXCOARSESIZE  1      // ML stop coarsening when coarse ndof smaller then this
 ML_MAXLEVEL       2         // ML max number of levels
 ML_COARSEN        UC        // UC MIS METIS VBMETIS
@@ -1571,7 +1571,7 @@ FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
 -----------------------------------------------------------LOCSYS5
 --------------------------------------------------------MONITORING
 ------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS 1 NODE 4   POSITION phi     NAME phi     VALUE 1.045635973e+00 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 272 POSITION phi     NAME phi     VALUE 9.961244667e-01 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 4   POSITION phi     NAME phi     VALUE 1.045439525e+00 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 272 POSITION phi     NAME phi     VALUE 9.961240433e-01 TOLERANCE 1e-9
 ---------------------------------------------------------------END
 // END

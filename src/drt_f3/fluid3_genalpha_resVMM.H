@@ -409,7 +409,7 @@ namespace DRT
                          const double                           time,
                          const enum Fluid3::LinearisationAction newton,
                          const bool                             higher_order_ele,                  
-                         const enum Fluid3::StabilisationAction fssgv,
+                         const enum Fluid3::FineSubgridVisc     fssgv,
                          const enum Fluid3::StabilisationAction inertia,
                          const enum Fluid3::StabilisationAction pspg,
                          const enum Fluid3::StabilisationAction supg,
@@ -487,7 +487,7 @@ namespace DRT
                          const double                           time,
                          const enum Fluid3::LinearisationAction newton,
                          const bool                             higher_order_ele,                  
-                         const enum Fluid3::StabilisationAction fssgv,
+                         const enum Fluid3::FineSubgridVisc     fssgv,
                          const enum Fluid3::StabilisationAction inertia,
                          const enum Fluid3::StabilisationAction pspg,
                          const enum Fluid3::StabilisationAction supg,
@@ -564,7 +564,7 @@ namespace DRT
                           const double                           time,
                           const enum Fluid3::LinearisationAction newton,
                           const bool                             higher_order_ele,                  
-                          const enum Fluid3::StabilisationAction fssgv,
+                          const enum Fluid3::FineSubgridVisc     fssgv,
                           const enum Fluid3::StabilisationAction pspg,
                           const enum Fluid3::StabilisationAction supg,
                           const enum Fluid3::StabilisationAction vstab,
@@ -641,7 +641,7 @@ namespace DRT
                           const double                           time,
                           const enum Fluid3::LinearisationAction newton,
                           const bool                             higher_order_ele,                  
-                          const enum Fluid3::StabilisationAction fssgv,
+                          const enum Fluid3::FineSubgridVisc     fssgv,
                           const enum Fluid3::StabilisationAction inertia,
                           const enum Fluid3::StabilisationAction pspg,
                           const enum Fluid3::StabilisationAction supg,
@@ -685,7 +685,7 @@ namespace DRT
       void SetParametersForTurbulenceModel(
         const Fluid3*                       ele            ,
         ParameterList                     & turbmodelparams,
-        const Fluid3::StabilisationAction & fssgv          ,
+        const Fluid3::FineSubgridVisc     & fssgv          ,
         Fluid3::TurbModelAction           & turb_mod_action, 
         double                            & Cs             ,
         double                            & Cs_delta_sq    ,
@@ -709,7 +709,7 @@ namespace DRT
       //  \param fsevelaf       (o) fine-scale velocity
 
       void ExtractValuesFromGlobalVectors(
-        const Fluid3::StabilisationAction fssgv         ,
+        const Fluid3::FineSubgridVisc     fssgv         ,
         const bool                        is_ale        ,
         const DRT::Discretization&        discretization,
         const vector<int>&                lm            ,
@@ -894,7 +894,7 @@ namespace DRT
         double                                     & mk             ,
         Teuchos::RCP<const MAT::Material>            material       ,
         double                                     & visc           ,
-        const enum Fluid3::StabilisationAction       fssgv          ,
+        const enum Fluid3::FineSubgridVisc           fssgv          ,
         const enum Fluid3::TurbModelAction           turb_mod_action,
         const double                                 l_tau          ,
         double                                     & Cs             ,
@@ -945,7 +945,7 @@ namespace DRT
         const LINALG::Matrix<3,iel>               & evelaf          ,
         const LINALG::Matrix<3,iel>               & fsevelaf        ,
         const double                              & visceff         ,
-        const enum Fluid3::StabilisationAction      fssgv           ,
+        const enum Fluid3::FineSubgridVisc          fssgv           ,
         const bool                                  higher_order_ele);
 
       //@}

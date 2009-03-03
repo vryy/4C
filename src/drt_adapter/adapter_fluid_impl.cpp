@@ -96,6 +96,14 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidImpl::Veln()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidImpl::SubgrVisc()
+{
+  return fluid_.SubgrVisc();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidImpl::Dispnp()
 {
   return fluid_.Dispnp();

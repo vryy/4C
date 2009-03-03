@@ -203,10 +203,18 @@ int DRT::ELEMENTS::Fluid2Stationary<distype>::Evaluate(
   RCP<const Epetra_Vector> fsvelnp;
   LINALG::Matrix<2,numnode> fsevelnp;
 
-  // get flag for fine-scale subgrid viscosity
-  Fluid2::StabilisationAction fssgv =
-    ele->ConvertStringToStabAction(params.get<string>("fs subgrid viscosity","No"));
-  if (fssgv != Fluid2::fssgv_no)
+  // get flag for fine-scale subgrid-viscosity approach
+  Fluid2::FineSubgridVisc fssgv = Fluid2::no_fssgv;
+  {
+    const string fssgvdef = params.get<string>("fs subgrid viscosity","No");
+
+    if (fssgvdef == "artificial_all")         fssgv = Fluid2::artificial_all;
+    else if (fssgvdef == "artificial_small")  fssgv = Fluid2::artificial_small;
+    else if (fssgvdef == "Smagorinsky_all")   fssgv = Fluid2::smagorinsky_all;
+    else if (fssgvdef == "Smagorinsky_small") fssgv = Fluid2::smagorinsky_small;
+  }
+
+  if (fssgv != Fluid2::no_fssgv)
   {
     fsvelnp = discretization.GetState("fsvelnp");
     if (fsvelnp==null) dserror("Cannot get state vector 'fsvelnp'");
@@ -300,7 +308,7 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::Sysmat(
   const bool                              loma,
   const bool                              conservative,
   const bool                              higher_order_ele,
-  const enum Fluid2::StabilisationAction  fssgv,
+  const enum Fluid2::FineSubgridVisc      fssgv,
   const enum Fluid2::StabilisationAction  pspg,
   const enum Fluid2::StabilisationAction  supg,
   const enum Fluid2::StabilisationAction  vstab,
@@ -446,7 +454,7 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::Sysmat(
     mderxy_.MultiplyNT(evelnp, densderxy_);
 
     // get fine-scale velocity (np,i) derivatives at integration point
-    if (fssgv != Fluid2::fssgv_no) fsvderxy_.MultiplyNT(fsevelnp, derxy_);
+    if (fssgv != Fluid2::no_fssgv) fsvderxy_.MultiplyNT(fsevelnp, derxy_);
     else fsvderxy_.Clear();
 
     // get pressure gradients
@@ -1453,7 +1461,7 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::Sysmat(
       //----------------------------------------------------------------------
       //     FINE-SCALE SUBGRID-VISCOSITY TERM (ON RIGHT HAND SIDE)
 
-      if(fssgv != Fluid2::fssgv_no)
+      if(fssgv != Fluid2::no_fssgv)
       {
         for (int vi=0; vi<numnode; ++vi)
         {
@@ -1486,13 +1494,13 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::Sysmat(
 //
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid2Stationary<distype>::CalTauStationary(
-  Fluid2*                                           ele,
-  const LINALG::Matrix<2,iel>&  evelnp,
-  const LINALG::Matrix<2,iel>&  fsevelnp,
-  const LINALG::Matrix<iel,1>&  edensnp,
-  const double                                      visc,
-  const enum Fluid2::StabilisationAction            fssgv,
-  const double                                      Cs
+  Fluid2*                             ele,
+  const LINALG::Matrix<2,iel>&        evelnp,
+  const LINALG::Matrix<2,iel>&        fsevelnp,
+  const LINALG::Matrix<iel,1>&        edensnp,
+  const double                        visc,
+  const enum Fluid2::FineSubgridVisc  fssgv,
+  const double                        Cs
   )
 {
 
@@ -1652,10 +1660,10 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::CalTauStationary(
   tau_(2) = 0.5*vel_norm*hk*xi_tau_c/dens;
 
   /*------------------------------------------- compute subgrid viscosity ---*/
-  if (fssgv == Fluid2::fssgv_artificial_all || fssgv == Fluid2::fssgv_artificial_small)
+  if (fssgv == Fluid2::artificial_all or fssgv == Fluid2::artificial_small)
   {
     double fsvel_norm = 0.0;
-    if (fssgv == Fluid2::fssgv_artificial_small)
+    if (fssgv == Fluid2::artificial_small)
     {
       // get fine-scale velocities at element center
       fsvelint_.Multiply(fsevelnp, funct_);
@@ -1673,8 +1681,8 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::CalTauStationary(
     vart_ = (DSQR(hk)*mk*DSQR(dens)*DSQR(fsvel_norm))/(2.0*visc*xi_sv);
 
   }
-  else if (fssgv == Fluid2::fssgv_Smagorinsky_all or
-           fssgv == Fluid2::fssgv_Smagorinsky_small)
+  else if (fssgv == Fluid2::smagorinsky_all or
+           fssgv == Fluid2::smagorinsky_small)
   {
     //
     // SMAGORINSKY MODEL
@@ -1692,8 +1700,8 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::CalTauStationary(
     double rateofstrain = 0.0;
     {
       // get fine-scale or all-scale velocity derivatives at element center
-      if (fssgv == Fluid2::fssgv_Smagorinsky_small)
-        fsvderxy_.MultiplyNT(fsevelnp, derxy_);
+      if (fssgv == Fluid2::smagorinsky_small)
+            fsvderxy_.MultiplyNT(fsevelnp, derxy_);
       else  fsvderxy_.MultiplyNT(evelnp, derxy_);
 
       double epsilon;

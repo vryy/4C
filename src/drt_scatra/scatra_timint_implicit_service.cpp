@@ -14,8 +14,10 @@ Maintainer: Georg Bauer
 #ifdef CCADISCRET
 
 #include "scatra_timint_implicit.H"
-#include "../drt_fluid/vm3_solver.H"
 #include "../drt_lib/drt_timecurve.H"
+#include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/linalg_solver.H"
 
 
 /*----------------------------------------------------------------------*
@@ -141,7 +143,7 @@ const Teuchos::RCP<const Epetra_Vector> SCATRA::ScaTraTimIntImpl::DirichletToggl
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
 {
-  {// time measurement: avm3
+  // time measurement: avm3
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");
 
   // create normalized all-scale subgrid-diffusivity matrix
@@ -166,15 +168,58 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
   // apply DBC to normalized all-scale subgrid-diffusivity matrix
   LINALG::ApplyDirichlettoSystem(sysmat_sd_,phinp_,residual_,phinp_,*(dbcmaps_->CondMap()));
 
-  // extract the ML parameters
-  ParameterList&  mllist = solver_->Params().sublist("ML Parameters");
-
-  // call the VM3 constructor
+  // get normalized fine-scale subgrid-diffusivity matrix
   {
-    const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
-    vm3_solver_ = rcp(new FLD::VM3_Solver(sysmat_sd_,dirichtoggle,mllist,true,false) );
+    // this is important to have!!!
+    MLAPI::Init();
+
+    // extract the ML parameters
+    ParameterList&  mlparams = solver_->Params().sublist("ML Parameters");
+
+    // get toggle vector for Dirchlet boundary conditions
+    const Epetra_Vector& dbct = *DirichletToggle();
+
+    // get nullspace parameters
+    double* nullspace = mlparams.get("null space: vectors",(double*)NULL);
+    if (!nullspace) dserror("No nullspace supplied in parameter list");
+    int nsdim = mlparams.get("null space: dimension",1);
+
+    // modify nullspace to ensure that DBC are fully taken into account
+    if (nullspace)
+    {
+      const int length = sysmat_sd_->OperatorRangeMap().NumMyElements();
+      for (int i=0; i<nsdim; ++i)
+        for (int j=0; j<length; ++j)
+          if (dbct[j]!=0.0) nullspace[i*length+j] = 0.0;
+    }
+
+    // get plain aggregation Ptent
+    RCP<Epetra_CrsMatrix> crsPtent;
+    GetPtent(*sysmat_sd_->EpetraMatrix(),mlparams,nullspace,crsPtent);
+    LINALG::SparseMatrix Ptent(crsPtent);
+
+    // compute scale-separation matrix: S = I - Ptent*Ptent^T
+    RCP<LINALG::SparseMatrix> Sep;
+    Sep = LINALG::Multiply(Ptent,false,Ptent,true);
+    Sep->Scale(-1.0);
+    RCP<Epetra_Vector> tmp = LINALG::CreateVector(Sep->RowMap(),false);
+    tmp->PutScalar(1.0);
+    RCP<Epetra_Vector> diag = LINALG::CreateVector(Sep->RowMap(),false);
+    Sep->ExtractDiagonalCopy(*diag);
+    diag->Update(1.0,*tmp,1.0);
+    Sep->ReplaceDiagonalValues(*diag);
+
+    //complete scale-separation matrix and check maps
+    Sep->Complete(Sep->DomainMap(),Sep->RangeMap());
+    if (!Sep->RowMap().SameAs(sysmat_sd_->RowMap())) dserror("rowmap not equal");
+    if (!Sep->RangeMap().SameAs(sysmat_sd_->RangeMap())) dserror("rangemap not equal");
+    if (!Sep->DomainMap().SameAs(sysmat_sd_->DomainMap())) dserror("domainmap not equal");
+
+    // precomputation of unscaled S^T*M*S:
+    // pre- and post-multiply M by scale-separating operator matrix Sep
+    Mnsv_ = LINALG::Multiply(*sysmat_sd_,false,*Sep,false);
+    Mnsv_ = LINALG::Multiply(*Sep,true,*Mnsv_,false);
   }
-  }// time measurement: avm3
 
   return;
 }
@@ -185,31 +230,37 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::AVM3Scaling(ParameterList& eleparams)
 {
-
-  {// time measurement: avm3
+  // time measurement: avm3
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");
 
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  // some necessary definitions
+  int ierr;
+  double* sgvsqrt = 0;
+  int length = subgrdiff_->MyLength();
 
-  // subgrid-diffusivity-scaling vector
-  subgrdiff_ = LINALG::CreateVector(*dofrowmap,true);
-  }// time measurement: avm3
+  // square-root of subgrid-viscosity-scaling vector for left and right scaling
+  sgvsqrt = (double*)subgrdiff_->Values();
+  for (int i = 0; i < length; ++i)
+  {
+    sgvsqrt[i] = sqrt(sgvsqrt[i]);
+    subgrdiff_->ReplaceMyValues(1,&sgvsqrt[i],&i);
+  }
 
-  // call loop over elements (one matrix + subgr.-visc.-scal. vector)
-  discret_->Evaluate(eleparams,sysmat_,null,residual_,subgrdiff_);
-  discret_->ClearState();
+  // get unscaled S^T*M*S from Sep
+  sysmat_sd_ = rcp(new LINALG::SparseMatrix(*Mnsv_));
 
-  {// time measurement: avm3
-  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");
+  // left and right scaling of normalized fine-scale subgrid-viscosity matrix
+  ierr = sysmat_sd_->LeftScale(*subgrdiff_);
+  if (ierr) dserror("Epetra_CrsMatrix::LeftScale returned err=%d",ierr);
+  ierr = sysmat_sd_->RightScale(*subgrdiff_);
+  if (ierr) dserror("Epetra_CrsMatrix::RightScale returned err=%d",ierr);
 
-  // check whether VM3 solver exists
-  if (vm3_solver_ == null) dserror("vm3_solver not allocated");
-
-  // call the VM3 scaling:
-  // scale precomputed matrix product by subgrid-viscosity-scaling vector
+  // add the subgrid-viscosity-scaled fine-scale matrix to obtain complete matrix
   Teuchos::RCP<LINALG::SparseMatrix> sysmat = SystemMatrix();
-  vm3_solver_->Scale(sysmat_sd_,sysmat,zeros_,zeros_,subgrdiff_,zeros_,false );
-  }// time measurement: avm3
+  sysmat->Add(*sysmat_sd_,false,1.0,1.0);
+
+  // set subgrid-diffusivity vector to zero after scaling procedure
+  subgrdiff_->PutScalar(0.0);
 
   return;
 }
@@ -396,8 +447,10 @@ void SCATRA::ScaTraTimIntImpl::ComputeDensity(const double thermpress,
 /*----------------------------------------------------------------------*
  | set velocity field for low-Mach-number flow                 vg 11/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::SetLomaVelocity(RCP<const Epetra_Vector> extvel,
-                                               RCP<DRT::Discretization> fluiddis)
+void SCATRA::ScaTraTimIntImpl::SetLomaVelocity(
+  RCP<const Epetra_Vector> extvel,
+  RCP<const Epetra_Vector> extsubgrvisc,
+  RCP<DRT::Discretization> fluiddis)
 {
   // store temperature and velocity of previous iteration for convergence check
   tempincnp_->Update(1.0,*phinp_,0.0);
@@ -414,10 +467,13 @@ void SCATRA::ScaTraTimIntImpl::SetLomaVelocity(RCP<const Epetra_Vector> extvel,
     dserror("fluid velocity vector too large");
 
   // get noderowmap of scatra discretization
-  const Epetra_Map* noderowmap = discret_->NodeRowMap();
+  const Epetra_Map* scatranoderowmap = discret_->NodeRowMap();
 
   // get dofrowmap of fluid discretization
-  const Epetra_Map* dofrowmap = fluiddis->DofRowMap();
+  const Epetra_Map* fluiddofrowmap = fluiddis->DofRowMap();
+
+  vector<int>    Indices(1);
+  vector<double> Values(1);
 
   // loop over local nodes of scatra discretization
   for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
@@ -432,7 +488,7 @@ void SCATRA::ScaTraTimIntImpl::SetLomaVelocity(RCP<const Epetra_Vector> extvel,
     DRT::Node*  fluidlnode = fluiddis->lRowNode(lnodeid);
 
     // the set of degrees of freedom associated with the fluid node
-    vector<int> nodedofset = fluiddis->Dof(fluidlnode);
+    vector<int> fluidnodedofset = fluiddis->Dof(fluidlnode);
 
     // check whether we have a pbc condition on this scatra node
     vector<DRT::Condition*> mypbc;
@@ -458,7 +514,7 @@ void SCATRA::ScaTraTimIntImpl::SetLomaVelocity(RCP<const Epetra_Vector> extvel,
         {
           // global and processor-local scatra node ID for slavenode
           int globalslaveid = *i;
-          int localslaveid  = noderowmap->LID(globalslaveid);
+          int localslaveid  = scatranoderowmap->LID(globalslaveid);
 
           // get the processor-local fluid slavenode
           DRT::Node*  fluidlslavenode = fluiddis->lRowNode(localslaveid);
@@ -466,15 +522,30 @@ void SCATRA::ScaTraTimIntImpl::SetLomaVelocity(RCP<const Epetra_Vector> extvel,
           // the set of degrees of freedom associated with the node
           vector<int> slavenodedofset = fluiddis->Dof(fluidlslavenode);
 
-          for(int index=0;index<numdim;++index)
+          // global and processor-local fluid dof ID
+          int fgid = slavenodedofset[0];
+          int flid = fluiddofrowmap->LID(fgid);
+
+          // get velocity for this processor-local fluid dof
+          double velocity = (*extvel)[flid];
+          // insert velocity value in vector
+          convel_->ReplaceMyValue(lnodeid, 0, velocity);
+
+          // get subgrid viscosity for this processor-local fluid dof
+          // and divide by turbulent Prandtl number to get diffusivity
+          Indices[0] = localslaveid;
+          Values[0]  = (*extsubgrvisc)[flid]/tpn_;
+          subgrdiff_->ReplaceMyValues(1,&Values[0],&Indices[0]);
+
+          for(int index=1;index<numdim;++index)
           {
             // global and processor-local fluid dof ID
-            int gid = slavenodedofset[index];
-            int lid = dofrowmap->LID(gid);
+            fgid = slavenodedofset[index];
+            flid = fluiddofrowmap->LID(fgid);
 
             // get velocity for this processor-local fluid dof
-            double velocity =(*extvel)[lid];
-            // insert velocity*density-value in vector
+            double velocity =(*extvel)[flid];
+            // insert velocity value in vector
             convel_->ReplaceMyValue(localslaveid, index, velocity);
           }
         }
@@ -484,15 +555,30 @@ void SCATRA::ScaTraTimIntImpl::SetLomaVelocity(RCP<const Epetra_Vector> extvel,
     // do this for all nodes other than slavenodes
     if (slavenode == false)
     {
-      for(int index=0;index<numdim;++index)
+      // global and processor-local fluid dof ID
+      int fgid = fluidnodedofset[0];
+      int flid = fluiddofrowmap->LID(fgid);
+
+      // get velocity for this processor-local fluid dof
+      double velocity = (*extvel)[flid];
+      // insert velocity value in vector
+      convel_->ReplaceMyValue(lnodeid, 0, velocity);
+
+      // get subgrid viscosity for this processor-local fluid dof
+      // and divide by turbulent Prandtl number to get diffusivity
+      Indices[0] = lnodeid;
+      Values[0]  = (*extsubgrvisc)[flid]/tpn_;
+      subgrdiff_->ReplaceMyValues(1,&Values[0],&Indices[0]);
+
+      for(int index=1;index<numdim;++index)
       {
         // global and processor-local fluid dof ID
-        int gid = nodedofset[index];
-        int lid = dofrowmap->LID(gid);
+        fgid = fluidnodedofset[index];
+        flid = fluiddofrowmap->LID(fgid);
 
         // get velocity for this processor-local fluid dof
-        double velocity = (*extvel)[lid];
-        // insert velocity*density-value in vector
+        double velocity = (*extvel)[flid];
+        // insert velocity value in vector
         convel_->ReplaceMyValue(lnodeid, index, velocity);
       }
     }
@@ -870,6 +956,9 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
       // For nonlinear problems we already have the actual residual vector.
       // For linear problems we have to compute this information first:
 
+      // zero out matrix entries
+      sysmat_->Zero();
+
       // zero out residual vector
       residual_->PutScalar(0.0);
 
@@ -883,6 +972,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
       eleparams.set("incremental solver",true); // say yes and you get the residual!!
       eleparams.set("form of convective term",convform_);
       eleparams.set("fs subgrid diffusivity",fssgd_);
+      eleparams.set("turbulence model",turbmodel_);
       eleparams.set("frt",frt_);
 
       //provide velocity field (export to column map necessary for parallel evaluation)
@@ -898,6 +988,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
       // set vector values needed by elements
       discret_->ClearState();
       discret_->SetState("hist",hist_);
+      if (turbmodel_) discret_->SetState("subgrid diffusivity",subgrdiff_);
 
       // add element parameters and density state according to time-int. scheme
       AddSpecificTimeIntegrationParameters(eleparams);
