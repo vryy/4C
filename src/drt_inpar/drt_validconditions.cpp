@@ -303,14 +303,14 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
         Teuchos::tuple<std::string>("Inactive","Active"))));
 
   Teuchos::RCP<ConditionDefinition> linecontact =
-    Teuchos::rcp(new ConditionDefinition("CONTACT CONDITIONS 2D",
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE CONTACT CONDITIONS 2D",
                                          "Contact",
                                          "Line Contact",
                                          DRT::Condition::Contact,
                                          true,
                                          DRT::Condition::Line));
   Teuchos::RCP<ConditionDefinition> surfcontact =
-    Teuchos::rcp(new ConditionDefinition("CONTACT CONDITIONS 3D",
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURF CONTACT CONDITIONS 3D",
                                          "Contact",
                                          "Surface Contact",
                                          DRT::Condition::Contact,
