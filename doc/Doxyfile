@@ -461,7 +461,7 @@ WARN_LOGFILE           =
 
 INPUT                  = index.doc \
                          ../src/drt_lib \
-			 ../src/drt_inpar \
+                         ../src/drt_inpar \
                          ../src/drt_io \
                          ../src/drt_xfem \
                          ../src/drt_fluid \
@@ -492,7 +492,6 @@ INPUT                  = index.doc \
                          ../src/drt_elch \
                          ../src/drt_surfstress \
                          ../src/drt_constraint \
-                         ../src/drt_condif3 \
                          ../src/drt_inv_analysis \
                          ../src/drt_fem_general \
                          ../src/drt_combust \
