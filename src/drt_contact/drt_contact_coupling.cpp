@@ -1969,22 +1969,27 @@ void CONTACT::Coupling::PolygonClipping3D(vector<Vertex>& poly1,
     } while (current!=&intersec1[0] && current!=&intersec2[0]);
     
     // check if last entry is identical to first entry
+    // check on both intersection lists
     double fldiff[3] = {0.0, 0.0, 0.0};
+    double fldiff2[3] = {0.0, 0.0, 0.0};
     bool identical = true;
     double fldist = 0.0;
+    double fldist2 = 0.0;
     for (int k=0;k<3;++k)
     {
-      fldiff[k] = respoly[(int)respoly.size()-1].Coord()[k] - respoly[0].Coord()[k];
+      fldiff[k] = respoly[(int)respoly.size()-1].Coord()[k] - intersec1[0].Coord()[k];
       fldist += fldiff[k]*fldiff[k];
+      fldiff2[k] = respoly[(int)respoly.size()-1].Coord()[k] - intersec2[0].Coord()[k];
+      fldist2 += fldiff2[k]*fldiff2[k];
     }
     fldist = sqrt(fldist);
-    if (fldist>1.0e-6) identical = false;
+    if (fldist>1.0e-8 && fldist2>1.0e-8) identical = false;
     
     // remove last entry if so, throw dserror if not so
     if (identical) respoly.pop_back();
     else
     {
-      cout << "\nDifference Dist: " << fldist << endl;
+      cout << "\nDifference Dists: " << fldist << " " << fldist2 << endl;
       dserror("ERROR: We did not arrive at the starting point again...?");
      }
     
