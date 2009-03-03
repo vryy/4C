@@ -283,8 +283,6 @@ fsisurface_(NULL)
  *----------------------------------------------------------------------*/
 void StruGenAlpha::ConstantPredictor()
 {
-  cout << "InStruGenAlpha::ConstantPredictor() " << endl;
-
   // -------------------------------------------------------------------
   // get some parameters from parameter list
   // -------------------------------------------------------------------
@@ -501,8 +499,6 @@ void StruGenAlpha::ConstantPredictor()
  *----------------------------------------------------------------------*/
 void StruGenAlpha::ConsistentPredictor()
 {
-   cout << "InStruGenAlpha::ConsistentPredictor() " << endl;
-
   // -------------------------------------------------------------------
   // get some parameters from parameter list
   // -------------------------------------------------------------------
@@ -565,8 +561,6 @@ void StruGenAlpha::ConsistentPredictor()
     discret_.EvaluateNeumann(p,*fextn_);
     discret_.ClearState();
   }
-
-  //cout << *disn_ << endl;
 
   // consistent predictor
   // predicting velocity V_{n+1} (veln)
@@ -1006,7 +1000,6 @@ void StruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
   // than contains the element loop, so we can fast forward and finish
   // up the linear system.
 
-  cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<in Evaluate>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << endl;
   if (disp!=Teuchos::null)
   {
     // set the new solution we just got
@@ -1179,7 +1172,6 @@ void StruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
  *----------------------------------------------------------------------*/
 void StruGenAlpha::FullNewton()
 {
-  cout << "In StrugenAlpha Newton" << endl;
   // -------------------------------------------------------------------
   // get some parameters from parameter list
   // -------------------------------------------------------------------
@@ -3174,8 +3166,6 @@ void StruGenAlpha::Integrate()
   int    step    = params_.get<int>   ("step" ,0);
   int    nstep   = params_.get<int>   ("nstep",5);
   double maxtime = params_.get<double>("max time",0.0);
-
-  cout << "<<<<<<<<<<<<<<<<<<<<<<<<Integrate! >>>>>>>>>>>>>>>>>>>>>>>>>" << endl;
 
   // can have values "full newton" , "modified newton" , "nonlinear cg"
   string equil = params_.get<string>("equilibrium iteration","full newton");
