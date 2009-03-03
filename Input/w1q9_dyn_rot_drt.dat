@@ -322,9 +322,9 @@ DLINE 0
 -------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
 // DOBJECT
 DSURF 0
----------------------------------------------CONTACT CONDITIONS 2D
+---------------------------------DESIGN LINE CONTACT CONDITIONS 2D
 DLINE 0
----------------------------------------------CONTACT CONDITIONS 3D
+---------------------------------DESIGN SURF CONTACT CONDITIONS 3D
 DSURF 0
 -------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D
 DSURF 0

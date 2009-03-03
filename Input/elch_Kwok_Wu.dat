@@ -329,9 +329,9 @@ E 1 - 0 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0
 DLINE  0
 ---------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
 DSURF  0
----------------------------------------------CONTACT CONDITIONS 2D
+---------------------------------DESIGN LINE CONTACT CONDITIONS 2D
 DLINE  0
----------------------------------------------CONTACT CONDITIONS 3D
+---------------------------------DESIGN SURF CONTACT CONDITIONS 3D
 DSURF  0
 ------------------------------------DESIGN POINT LOCSYS CONDITIONS
 DPOINT 0

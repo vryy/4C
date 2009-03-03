@@ -291,9 +291,9 @@ DSURF  1
 E 1 - 0 1 0 0 0 0  0.0 1.0299788 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // outflow
 //E 2 - 0 1 0 0 0 0  0.0 0.0 1.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
----------------------------------------------CONTACT CONDITIONS 2D
+---------------------------------DESIGN LINE CONTACT CONDITIONS 2D
 DLINE  0
----------------------------------------------CONTACT CONDITIONS 3D
+---------------------------------DESIGN SURF CONTACT CONDITIONS 3D
 DSURF  0
 --------------------------DESIGN LINE PERIODIC BOUNDARY CONDITIONS
 DLINE  0

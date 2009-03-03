@@ -866,9 +866,9 @@ DLINE 0
 -------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
 // DOBJECT
 DSURF 0
----------------------------------------------CONTACT CONDITIONS 2D
+---------------------------------DESIGN LINE CONTACT CONDITIONS 2D
 DLINE 0
----------------------------------------------CONTACT CONDITIONS 3D
+---------------------------------DESIGN SURF CONTACT CONDITIONS 3D
 DSURF 2
 E 6 - 1 Master
 E 7 - 1 Slave

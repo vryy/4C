@@ -271,9 +271,9 @@ DSURF  2
 E 1 - 2 Butler-Volmer 1.0 none 0.5 0.5 -0.1
 // cathode
 E 2 - 2 Butler-Volmer -1.0 none 0.5 0.5 -0.1
----------------------------------------------CONTACT CONDITIONS 2D
+---------------------------------DESIGN LINE CONTACT CONDITIONS 2D
 DLINE  0
----------------------------------------------CONTACT CONDITIONS 3D
+---------------------------------DESIGN SURF CONTACT CONDITIONS 3D
 DSURF  0
 --------------------------DESIGN LINE PERIODIC BOUNDARY CONDITIONS
 DLINE  0
