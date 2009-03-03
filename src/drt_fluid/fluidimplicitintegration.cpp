@@ -1946,11 +1946,6 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   discret_->Evaluate(eleparams,sysmat_,null,residual_,subgrvisc_);
   discret_->ClearState();
 
-    double subnorm;
-    subgrvisc_->Norm2(&subnorm);
-    cout << "subgrid-viscosity norm: " << subnorm;
-    printf("\n");
-
   if (timealgo_==timeint_afgenalpha)
   {
     // For af-generalized-alpha scheme, we already have the true residual,...
