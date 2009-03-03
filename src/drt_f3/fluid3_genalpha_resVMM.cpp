@@ -10140,44 +10140,44 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
     {
       if(cross    != Fluid3::cross_stress_stab_none)
       {
-        mean_crossstress(0)-=fac*(svelaf_(0)*velintaf_(0)+velintaf_(0)*svelaf_(0));
-        mean_crossstress(1)-=fac*(svelaf_(1)*velintaf_(1)+velintaf_(1)*svelaf_(1));
-        mean_crossstress(2)-=fac*(svelaf_(2)*velintaf_(2)+velintaf_(2)*svelaf_(2));
-        mean_crossstress(3)-=fac*(svelaf_(0)*velintaf_(1)+velintaf_(1)*svelaf_(0));
-        mean_crossstress(4)-=fac*(svelaf_(1)*velintaf_(2)+velintaf_(2)*svelaf_(1));
-        mean_crossstress(5)-=fac*(svelaf_(2)*velintaf_(0)+velintaf_(0)*svelaf_(2));
+        mean_crossstress(0)+=fac*(svelaf_(0)*velintaf_(0)+svelaf_(0)*velintaf_(0));
+        mean_crossstress(1)+=fac*(svelaf_(1)*velintaf_(1)+svelaf_(1)*velintaf_(1));
+        mean_crossstress(2)+=fac*(svelaf_(2)*velintaf_(2)+svelaf_(2)*velintaf_(2));
+        mean_crossstress(3)+=fac*(svelaf_(0)*velintaf_(1)+svelaf_(1)*velintaf_(0));
+        mean_crossstress(4)+=fac*(svelaf_(1)*velintaf_(2)+svelaf_(2)*velintaf_(1));
+        mean_crossstress(5)+=fac*(svelaf_(2)*velintaf_(0)+svelaf_(0)*velintaf_(2));
       }
 
       if(reynolds != Fluid3::reynolds_stress_stab_none)
       {
-        mean_reystress(0)  -=fac*(svelaf_(0)*svelaf_(0)+svelaf_(0)*svelaf_(0));
-        mean_reystress(1)  -=fac*(svelaf_(1)*svelaf_(1)+svelaf_(1)*svelaf_(1));
-        mean_reystress(2)  -=fac*(svelaf_(2)*svelaf_(2)+svelaf_(2)*svelaf_(2));
-        mean_reystress(3)  -=fac*(svelaf_(0)*svelaf_(1)+svelaf_(1)*svelaf_(0));
-        mean_reystress(4)  -=fac*(svelaf_(1)*svelaf_(2)+svelaf_(2)*svelaf_(1));
-        mean_reystress(5)  -=fac*(svelaf_(2)*svelaf_(0)+svelaf_(0)*svelaf_(2));
+        mean_reystress(0)  +=fac*(svelaf_(0)*svelaf_(0)+svelaf_(0)*svelaf_(0));
+        mean_reystress(1)  +=fac*(svelaf_(1)*svelaf_(1)+svelaf_(1)*svelaf_(1));
+        mean_reystress(2)  +=fac*(svelaf_(2)*svelaf_(2)+svelaf_(2)*svelaf_(2));
+        mean_reystress(3)  +=fac*(svelaf_(0)*svelaf_(1)+svelaf_(1)*svelaf_(0));
+        mean_reystress(4)  +=fac*(svelaf_(1)*svelaf_(2)+svelaf_(2)*svelaf_(1));
+        mean_reystress(5)  +=fac*(svelaf_(2)*svelaf_(0)+svelaf_(0)*svelaf_(2));
       }
     }
     else
     {
       if(cross    != Fluid3::cross_stress_stab_none)
       {
-        mean_crossstress(0)+=fac*tau_(1)*(resM_(0)*velintaf_(0)+velintaf_(0)*resM_(0));
-        mean_crossstress(1)+=fac*tau_(1)*(resM_(1)*velintaf_(1)+velintaf_(1)*resM_(1));
-        mean_crossstress(2)+=fac*tau_(1)*(resM_(2)*velintaf_(2)+velintaf_(2)*resM_(2));
-        mean_crossstress(3)+=fac*tau_(1)*(resM_(0)*velintaf_(1)+velintaf_(1)*resM_(0));
-        mean_crossstress(4)+=fac*tau_(1)*(resM_(1)*velintaf_(2)+velintaf_(2)*resM_(1));
-        mean_crossstress(5)+=fac*tau_(1)*(resM_(2)*velintaf_(0)+velintaf_(0)*resM_(2));
+        mean_crossstress(0)-=fac*tau_(1)*(resM_(0)*velintaf_(0)+velintaf_(0)*resM_(0));
+        mean_crossstress(1)-=fac*tau_(1)*(resM_(1)*velintaf_(1)+velintaf_(1)*resM_(1));
+        mean_crossstress(2)-=fac*tau_(1)*(resM_(2)*velintaf_(2)+velintaf_(2)*resM_(2));
+        mean_crossstress(3)-=fac*tau_(1)*(resM_(0)*velintaf_(1)+velintaf_(0)*resM_(1));
+        mean_crossstress(4)-=fac*tau_(1)*(resM_(1)*velintaf_(2)+velintaf_(1)*resM_(2));
+        mean_crossstress(5)-=fac*tau_(1)*(resM_(2)*velintaf_(0)+velintaf_(2)*resM_(0));
       }
 
       if(reynolds != Fluid3::reynolds_stress_stab_none)
       {
-        mean_reystress(0)  -=fac*tau_(1)*tau_(1)*(resM_(0)*resM_(0)+resM_(0)*resM_(0));
-        mean_reystress(1)  -=fac*tau_(1)*tau_(1)*(resM_(1)*resM_(1)+resM_(1)*resM_(1));
-        mean_reystress(2)  -=fac*tau_(1)*tau_(1)*(resM_(2)*resM_(2)+resM_(2)*resM_(2));
-        mean_reystress(3)  -=fac*tau_(1)*tau_(1)*(resM_(0)*resM_(1)+resM_(1)*resM_(0));
-        mean_reystress(4)  -=fac*tau_(1)*tau_(1)*(resM_(1)*resM_(2)+resM_(2)*resM_(1));
-        mean_reystress(5)  -=fac*tau_(1)*tau_(1)*(resM_(2)*resM_(0)+resM_(0)*resM_(2));
+        mean_reystress(0)  +=fac*tau_(1)*tau_(1)*(resM_(0)*resM_(0)+resM_(0)*resM_(0));
+        mean_reystress(1)  +=fac*tau_(1)*tau_(1)*(resM_(1)*resM_(1)+resM_(1)*resM_(1));
+        mean_reystress(2)  +=fac*tau_(1)*tau_(1)*(resM_(2)*resM_(2)+resM_(2)*resM_(2));
+        mean_reystress(3)  +=fac*tau_(1)*tau_(1)*(resM_(0)*resM_(1)+resM_(1)*resM_(0));
+        mean_reystress(4)  +=fac*tau_(1)*tau_(1)*(resM_(1)*resM_(2)+resM_(2)*resM_(1));
+        mean_reystress(5)  +=fac*tau_(1)*tau_(1)*(resM_(2)*resM_(0)+resM_(0)*resM_(2));
       }
     }
 
