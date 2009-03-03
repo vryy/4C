@@ -28,7 +28,6 @@ FLUID_SOL         Yes
 -----------------------------------------------------FLUID DYNAMIC
 DYNAMICTYP   Nlin_Time_Int
 TIMEINTEGR   One_Step_Theta
-UPPSS        1
 UPOUT        1
 UPRES        1
 RESTARTEVRY  5
@@ -72,7 +71,6 @@ AZSUB          50
 AZOMEGA        1.0
 AZGRAPH        1
 AZPOLY         5
-PARTITION      Cut_Elements
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 8
 NDLINE  12

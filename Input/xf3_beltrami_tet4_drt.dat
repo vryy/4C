@@ -32,7 +32,6 @@ NUMTHERMDIS  0
 -----------------------------------------------------FLUID DYNAMIC
 DYNAMICTYP   Nlin_Time_Int
 TIMEINTEGR   BDF2 
-UPPSS        1
 UPOUT        1
 UPRES        1
 RESTARTEVRY  2
@@ -83,7 +82,6 @@ AZSUB          50
 AZOMEGA        1.0
 AZGRAPH        1
 AZPOLY         5
-PARTITION      Cut_Elements
 -----------------------------------------------------STRUCT SOLVER
 --------------------------------------------------------ALE SOLVER
 ----------------------------------------------------THERMAL SOLVER

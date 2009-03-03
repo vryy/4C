@@ -59,7 +59,6 @@ STEADYCHECK  L_2_norm
 STEADYSTEP   -1
 STEADYTOL    1.0E-8
 UPOUT        1
-UPPSS        1
 UPRES        1
 RESTARTEVRY  20
 NUMSTEP      1
@@ -83,7 +82,6 @@ CROSS-STRESS          no_cross
 REYNOLDS-STRESS       no_reynolds
 -------------------------------------------------------FSI DYNAMIC
 ------------------------------------------------------XFEM GENERAL
-EXP_INTERSECTION  Yes
 GMSH_DEBUG_OUT    Yes
 DLM_CONDENSATION  No
 -------------------------------------------------------SSI DYNAMIC
@@ -121,7 +119,6 @@ ML_SMOTIMES       1 0 1           // no. smoothing steps or polynomial order on 
 ML_DAMPFINE       1.0             // damping fine grid
 ML_DAMPMED        1.0             // damping med grids
 ML_DAMPCOARSE     1.0             // damping coarse grid
-PARTITION      Cut_Elements
 -----------------------------------------------------STRUCT SOLVER
 --------------------------------------------------------ALE SOLVER
 ----------------------------------------------------THERMAL SOLVER
