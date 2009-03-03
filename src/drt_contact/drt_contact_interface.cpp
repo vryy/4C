@@ -650,7 +650,7 @@ void CONTACT::Interface::Evaluate()
   // contact search algorithm
   //lComm()->Barrier();
   //const double t_start = ds_cputime();
-  double eps = 0.3;
+  double eps = 0.5;
   EvaluateContactSearchBruteForce(eps);
   //lComm()->Barrier();
   //const double t_end = ds_cputime()-t_start;
@@ -1373,7 +1373,8 @@ void CONTACT::Interface::AssembleDMG(LINALG::SparseMatrix& dglobal,
       // (otherwise wrong results possible for g~ because of non-positivity
       // of dual shape functions!!!)
       //cout << "Node ID: " << cnode->Id() << " HasProj: " << cnode->HasProj() << endl;
-      if (!cnode->HasProj()) gap = 1.0e12;
+      if (!cnode->HasProj() && cnode->Active()) dserror("ERROR: Active node without feasible projection");
+      if (!cnode->HasProj() && !cnode->Active()) gap = 1.0e12;
 
       Epetra_SerialDenseVector gnode(1);
       vector<int> lm(1);
