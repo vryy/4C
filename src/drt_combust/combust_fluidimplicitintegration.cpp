@@ -84,8 +84,13 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
 
   // soll der DofManager hier bleiben, oder soll er in den Combustion Algorithmus wandern? henke 10/08
   // apply enrichments
+  std::set<XFEM::PHYSICS::Field> fieldset;
+  fieldset.insert(XFEM::PHYSICS::Velx);
+  fieldset.insert(XFEM::PHYSICS::Vely);
+  fieldset.insert(XFEM::PHYSICS::Velz);
+  fieldset.insert(XFEM::PHYSICS::Pres);
   const COMBUST::CombustElementAnsatz elementAnsatz;
-  Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(null,elementAnsatz,true));
+  Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(null,fieldset,elementAnsatz,params_));
   /*----------------------------------------------------------------------------------------------*
    * comment missing! Axels comment: tell elements about the dofs and the integration  
    *----------------------------------------------------------------------------------------------*/
@@ -424,8 +429,13 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(Teuchos::RCP<COMBUST
 //  interfacehandle_->toGmsh(step_);
 
   // apply enrichments
+  std::set<XFEM::PHYSICS::Field> fieldset;
+  fieldset.insert(XFEM::PHYSICS::Velx);
+  fieldset.insert(XFEM::PHYSICS::Vely);
+  fieldset.insert(XFEM::PHYSICS::Velz);
+  fieldset.insert(XFEM::PHYSICS::Pres);
   COMBUST::CombustElementAnsatz elementAnsatz;
-  Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(interfacehandle_,elementAnsatz,true));
+  Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(interfacehandle_,fieldset,elementAnsatz,params_));
   
   // save dofmanager to be able to plot Gmsh stuff in Output()
   dofmanagerForOutput_ = dofmanager;

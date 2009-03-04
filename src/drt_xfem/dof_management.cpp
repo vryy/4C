@@ -32,12 +32,16 @@ Maintainer: Axel Gerstenberger
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 XFEM::DofManager::DofManager(
-    const RCP<XFEM::InterfaceHandle>& ih,
-    const XFEM::ElementAnsatz&  element_ansatz,
-    const bool DLM_condensation) :
+    const RCP<XFEM::InterfaceHandle>&      ih,
+    const std::set<XFEM::PHYSICS::Field>&  fieldset,
+    const XFEM::ElementAnsatz&             element_ansatz,
+    const Teuchos::ParameterList&          params
+    ) :
   ih_(ih)
 {
-  XFEM::createDofMap(*ih, nodalDofSet_, elementalDofs_, element_ansatz, DLM_condensation);
+      cout << params << endl;
+      
+  XFEM::createDofMap(*ih, nodalDofSet_, elementalDofs_, fieldset, element_ansatz, params);
   
   std::set<XFEM::Enrichment> unique_enrichments = GatherUniqueEnrichments();
 
@@ -476,9 +480,10 @@ void XFEM::DofManager::toGmsh(
       };
       gmshfilecontent << "};\n";
       f_system << gmshfilecontent.str();
-      f_system.close();
-      if (screen_out) std::cout << " done" << endl;
     }
+    
+    f_system.close();
+    if (screen_out) std::cout << " done" << endl;
   }
 #if 0
   if (gmshdebugout)
@@ -495,9 +500,9 @@ void XFEM::DofManager::toGmsh(
       {
         stringstream gmshfilecontent;
         gmshfilecontent << "View \" " << " NumDofPerElement() in element \" {\n";
-        for (int i=0; i<ih->xfemdis()->NumMyColElements(); ++i)
+        for (int i=0; i<ih_->xfemdis()->NumMyColElements(); ++i)
         {
-          DRT::Element* actele = ih->xfemdis()->lColElement(i);
+          DRT::Element* actele = ih_->xfemdis()->lColElement(i);
           //const int ele_gid = actele->Id();
           //double val = 0.0;
           //std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = elementalDofs_.find(ele_gid);

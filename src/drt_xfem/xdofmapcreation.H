@@ -37,29 +37,37 @@ namespace XFEM
 
 
   //! apply nodal enrichments to intersected element
-  void ApplyNodalEnrichments(
+  bool ApplyNodalEnrichments(
       const DRT::Element*                           xfemele,
       const XFEM::InterfaceHandle&                  ih,
       const int&                                    label,
+      const XFEM::Enrichment::EnrType               enrtype,
+      const std::set<XFEM::PHYSICS::Field>&         fieldset,
+      const double                                  volumeRatioLimit,
       std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet
       );
   
   
   //! apply nodal enrichments to intersected element
-  void ApplyNodalEnrichmentsNodeWise(
+  bool ApplyNodalEnrichmentsNodeWise(
       const DRT::Element*                           xfemele,
       const XFEM::InterfaceHandle&                  ih,
       const int&                                    label,
+      const XFEM::Enrichment::EnrType               enrtype,
+      const std::set<XFEM::PHYSICS::Field>&         fieldset,
+      const double                                  volumeRatioLimit,
       std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet
       );
   
   
   //! apply element enrichments to intersected element
-  void ApplyElementEnrichments(
+  bool ApplyElementEnrichments(
       const DRT::Element*                           xfemele,
       const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>&  element_ansatz,
       const XFEM::InterfaceHandle&                  ih,
       const int&                                    label,
+      const XFEM::Enrichment::EnrType               enrtype,
+      const double                                  boundaryRatioLimit,
       std::set<XFEM::FieldEnr>&                     enrfieldset
       );
   
@@ -70,8 +78,13 @@ namespace XFEM
       const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>&  element_ansatz,
       const XFEM::InterfaceHandle&                  ih,
       const int&                                    label,
+      const std::set<XFEM::PHYSICS::Field>&         fieldset,
+      const double                                  volumeRatioLimit,
+      const double                                  boundaryRatioLimit,
       std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet,
-      std::map<int, std::set<XFEM::FieldEnr> >&     elementalDofs
+      std::map<int, std::set<XFEM::FieldEnr> >&     elementalDofs,
+      bool&                                         skipped_node_enr,
+      bool&                                         skipped_elem_enr
       );
   
   
@@ -83,8 +96,9 @@ namespace XFEM
       const XFEM::InterfaceHandle&                      ih,                  ///< interface information
       std::map<int, const std::set<XFEM::FieldEnr> >&   nodalDofSetFinal,    ///< enriched fields per node
       std::map<int, const std::set<XFEM::FieldEnr> >&   elementalDofsFinal,  ///< enriched fields per element
-      const XFEM::ElementAnsatz&  elementAnsatz,
-      const bool DLM_condensation
+      const std::set<XFEM::PHYSICS::Field>&             fieldset,
+      const XFEM::ElementAnsatz&                        elementAnsatz,
+      const Teuchos::ParameterList&                     params
       );
   
   
@@ -94,6 +108,7 @@ namespace XFEM
    */
   void applyStandardEnrichment(
       const XFEM::InterfaceHandle&                  ih,
+      const std::set<XFEM::PHYSICS::Field>&         fieldset,
       std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet,
       std::map<int, std::set<XFEM::FieldEnr> >&     elementalDofs
       );
@@ -105,6 +120,7 @@ namespace XFEM
    */
   void applyStandardEnrichmentNodalBasedApproach(
       const XFEM::InterfaceHandle&                  ih,
+      const std::set<XFEM::PHYSICS::Field>&         fieldset,
       std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet
       );
 

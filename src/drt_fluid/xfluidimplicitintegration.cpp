@@ -59,6 +59,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   discret_(actdis),
   solver_ (solver),
   params_ (params),
+  xparams_(params.sublist("XFEM")),
   output_ (output),
   myrank_(discret_->Comm().MyPID()),
   cout0_(discret_->Comm(), std::cout),
@@ -103,17 +104,25 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   emptyboundarydis_->SetState("idispcolnp",tmpdisp);
   emptyboundarydis_->SetState("idispcoln",tmpdisp);
   // intersection with empty cutter will result in a complete fluid domain with no holes or intersections
-  Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih = rcp(new XFEM::InterfaceHandleXFSI(discret_,emptyboundarydis_,0,params_.get<bool>("EXP_INTERSECTION")));
+  Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih = 
+    rcp(new XFEM::InterfaceHandleXFSI(discret_,emptyboundarydis_,0,xparams_.get<bool>("EXP_INTERSECTION")));
   // apply enrichments
   
+  std::set<XFEM::PHYSICS::Field> fieldset;
+  fieldset.insert(XFEM::PHYSICS::Velx);
+  fieldset.insert(XFEM::PHYSICS::Vely);
+  fieldset.insert(XFEM::PHYSICS::Velz);
+  fieldset.insert(XFEM::PHYSICS::Pres);
   const XFLUID::FluidElementAnsatz elementAnsatz;
-  Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih, elementAnsatz, params_.get<bool>("DLM_condensation")));
+  Teuchos::RCP<XFEM::DofManager> dofmanager = 
+    rcp(new XFEM::DofManager(ih, fieldset, elementAnsatz, xparams_));
   // tell elements about the dofs and the integration
   {
     ParameterList eleparams;
     eleparams.set("action","store_xfem_info");
     eleparams.set("dofmanager",dofmanager);
-    eleparams.set("DLM_condensation",params_.get<bool>("DLM_condensation"));
+    eleparams.set("DLM_condensation",xparams_.get<bool>("DLM_condensation"));
+    eleparams.set("boundaryRatioLimit",xparams_.get<double>("boundaryRatioLimit"));
     eleparams.set("interfacehandle",ih);
     discret_->Evaluate(eleparams,null,null,null,null,null);
   }
@@ -122,7 +131,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   // sanity check
   if (  solver.Params().get<string>("solver") == "aztec" 
     and solver.Params().isSublist("ML Parameters")
-    and not params.get<bool>("DLM_condensation")
+    and not xparams_.get<bool>("DLM_condensation")
     )
   {
     dserror("for MLFLUID2, you need to set \"DLM_CONDENSATION  yes\" ");
@@ -130,7 +139,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   
   if (actdis->Comm().MyPID()==0)
   {
-    if (params.get<bool>("DLM_condensation"))
+    if (xparams_.get<bool>("DLM_condensation"))
     {
       std::cout << GREEN_LIGHT << "DLM_condensation turned on!" << END_COLOR << endl << endl;    
     }
@@ -467,12 +476,19 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   // calling this function multiple times always results in the same solution vectors
 
   // compute Intersection
-  const Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih = rcp(new XFEM::InterfaceHandleXFSI(discret_, cutterdiscret,step_,params_.get<bool>("EXP_INTERSECTION")));
+  const Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih = 
+    rcp(new XFEM::InterfaceHandleXFSI(discret_, cutterdiscret,step_,xparams_.get<bool>("EXP_INTERSECTION")));
   ih->toGmsh(step_);
 
   // apply enrichments
+  std::set<XFEM::PHYSICS::Field> fieldset;
+  fieldset.insert(XFEM::PHYSICS::Velx);
+  fieldset.insert(XFEM::PHYSICS::Vely);
+  fieldset.insert(XFEM::PHYSICS::Velz);
+  fieldset.insert(XFEM::PHYSICS::Pres);
   const XFLUID::FluidElementAnsatz elementAnsatz;
-  const Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih,elementAnsatz,params_.get<bool>("DLM_condensation")));
+  const Teuchos::RCP<XFEM::DofManager> dofmanager = 
+    rcp(new XFEM::DofManager(ih, fieldset, elementAnsatz, xparams_));
 
   // save to be able to plot Gmsh stuff in Output()
   dofmanagerForOutput_ = dofmanager;
@@ -482,7 +498,8 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
       ParameterList eleparams;
       eleparams.set("action","store_xfem_info");
       eleparams.set("dofmanager",dofmanager);
-      eleparams.set("DLM_condensation",params_.get<bool>("DLM_condensation"));
+      eleparams.set("DLM_condensation",xparams_.get<bool>("DLM_condensation"));
+      eleparams.set("boundaryRatioLimit",xparams_.get<double>("boundaryRatioLimit"));
       eleparams.set("interfacehandle",ih);
       discret_->Evaluate(eleparams,null,null,null,null,null);
   }
@@ -817,7 +834,8 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       iforcecolnp->PutScalar(0.0);
       eleparams.set("interface force",iforcecolnp);
       
-      eleparams.set("DLM_condensation",params_.get<bool>("DLM_condensation"));
+      eleparams.set("DLM_condensation",xparams_.get<bool>("DLM_condensation"));
+      eleparams.set("boundaryRatioLimit",xparams_.get<double>("boundaryRatioLimit"));
 
       // convergence check at itemax is skipped for speedup if
       // CONVCHECK is set to L_2_norm_without_residual_at_itemax
@@ -1029,7 +1047,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     }
 
     // estimate condition number of the tangent stiffness matrix
-    if (params_.get<bool>("CONDEST"))
+    if (xparams_.get<bool>("CONDEST"))
     {
       const double cond_number = LINALG::Condest(static_cast<LINALG::SparseMatrix&>(*sysmat_),Ifpack_GMRES, 100);
       // computation of significant digits might be completely bogus, so don't take it serious

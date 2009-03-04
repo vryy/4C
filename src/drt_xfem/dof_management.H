@@ -35,9 +35,11 @@ namespace XFEM
       
       //! constructor
       explicit DofManager(
-          const RCP<XFEM::InterfaceHandle>& ih,
-          const XFEM::ElementAnsatz&  element_ansatz,
-          const bool DLM_condensation);
+          const RCP<XFEM::InterfaceHandle>&      ih,
+          const std::set<XFEM::PHYSICS::Field>&  fieldset,
+          const XFEM::ElementAnsatz&             element_ansatz,
+          const Teuchos::ParameterList&          params
+          );
       
       //! copy constructor
       explicit DofManager(const XFEM::DofManager& dofman);
@@ -106,7 +108,7 @@ namespace XFEM
           const std::set<XFEM::PHYSICS::Field>&   fields_out
       ) const;
       
-      
+      //! return pointer to interface handle
       const Teuchos::RCP<XFEM::InterfaceHandle> getInterfaceHandle() const { return ih_; }
       
     private:

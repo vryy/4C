@@ -136,34 +136,6 @@ void XFEM::ElementDofManager::ComputeDependendInfo(
     }
   }
   
-  for (std::map<XFEM::PHYSICS::Field, std::vector<int> >::const_iterator it = paramsLocalEntries_.begin(); 
-       it != paramsLocalEntries_.end();
-       ++it)
-  {
-    const XFEM::PHYSICS::Field field = it->first;
-    std::vector<int> dofpositions = it->second;
-    if (field == XFEM::PHYSICS::Velx)
-    {
-      paramsLocalEntriesVelx_.resize(dofpositions.size());
-      std::copy (dofpositions.begin(), dofpositions.begin() + dofpositions.size(), paramsLocalEntriesVelx_.begin());
-    }
-    else if (field == XFEM::PHYSICS::Vely)
-    {
-      paramsLocalEntriesVely_.resize(dofpositions.size());
-      std::copy (dofpositions.begin(), dofpositions.begin() + dofpositions.size(), paramsLocalEntriesVely_.begin());
-    }
-    else if (field == XFEM::PHYSICS::Velz)
-    {
-      paramsLocalEntriesVelz_.resize(dofpositions.size());
-      std::copy (dofpositions.begin(), dofpositions.begin() + dofpositions.size(), paramsLocalEntriesVelz_.begin());
-    }
-    else if (field == XFEM::PHYSICS::Pres)
-    {
-      paramsLocalEntriesPres_.resize(dofpositions.size());
-      std::copy (dofpositions.begin(), dofpositions.begin() + dofpositions.size(), paramsLocalEntriesPres_.begin());
-    }
-  }
-  
   if (dofcounter != (numNodeDof_ + numElemDof_))
     dserror("dof number mismatch! -> bug!");
   
@@ -214,39 +186,5 @@ std::string XFEM::ElementDofManager::toString() const
   };
   return s.str();
 }
-
-
-
-//! return reference to list of local positions in a array of dofs
-template <>
-const std::vector<int>& XFEM::ElementDofManager::LocalDofPosPerField<XFEM::PHYSICS::Velx>() const
-{
-  return paramsLocalEntriesVelx_;
-}
-
-
-//! return reference to list of local positions in a array of dofs
-template <>
-const std::vector<int>& XFEM::ElementDofManager::LocalDofPosPerField<XFEM::PHYSICS::Vely>() const
-{
-  return paramsLocalEntriesVely_;
-}
-
-
-//! return reference to list of local positions in a array of dofs
-template <>
-const std::vector<int>& XFEM::ElementDofManager::LocalDofPosPerField<XFEM::PHYSICS::Velz>() const
-{
-  return paramsLocalEntriesVelz_;
-}
-
-
-//! return reference to list of local positions in a array of dofs
-template <>
-const std::vector<int>& XFEM::ElementDofManager::LocalDofPosPerField<XFEM::PHYSICS::Pres>() const
-{
-  return paramsLocalEntriesPres_;
-}
-
     
 #endif  // #ifdef CCADISCRET

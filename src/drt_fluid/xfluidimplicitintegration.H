@@ -336,6 +336,7 @@ protected:
   const Teuchos::RCP<DRT::Discretization> discret_;
   LINALG::Solver&                        solver_;
   const ParameterList&                   params_;
+  const ParameterList&                   xparams_;
   IO::DiscretizationWriter&              output_;
   
   //! the processor ID from the communicator

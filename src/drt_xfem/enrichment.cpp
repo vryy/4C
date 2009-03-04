@@ -83,13 +83,12 @@ double XFEM::Enrichment::EnrValue(
             }
             case approachUnknown:
             {
-                double actpos_enr_val = 0.0;
+//                double actpos_enr_val = 0.0;
                 if (ih.PositionWithinConditionNP(actpos) == this->XFEMConditionLabel()) {
-                    actpos_enr_val = 0.0;
+                  enrval = 0.0;
                 } else {
-                    actpos_enr_val = 1.0;
+                  enrval = 1.0;
                 }
-                enrval = actpos_enr_val;
                 break;
             }
         }
@@ -112,14 +111,11 @@ double XFEM::Enrichment::EnrValue(
             }
             case approachUnknown:
             {
-                double actpos_enr_val = 0.0;
                 if (ih.PositionWithinConditionNP(actpos) == this->XFEMConditionLabel()) {
-                    actpos_enr_val = -1.0;
+                  enrval = -1.0;
                 } else {
-                    actpos_enr_val = 1.0;
+                  enrval = 1.0;
                 }
-        
-                enrval = actpos_enr_val;
                 break;
             }
         }

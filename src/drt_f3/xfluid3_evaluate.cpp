@@ -365,6 +365,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       const Teuchos::RCP<XFEM::DofManager> globaldofman = params.get< Teuchos::RCP< XFEM::DofManager > >("dofmanager");
 
       const bool DLM_condensation = params.get<bool>("DLM_condensation");
+      const double boundaryRatioLimit = params.get<double>("boundaryRatioLimit");
       
       const XFLUID::FluidElementAnsatz elementAnsatz;
       const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_empty;
@@ -400,7 +401,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
             const bool anothervoidenrichment_in_set = XFEM::EnrichmentInDofSet(XFEM::Enrichment::typeVoid, enrfieldset);
             if (not anothervoidenrichment_in_set)
             {
-              XFEM::ApplyElementEnrichments(this, element_ansatz_filled, *ih_, label, enrfieldset);                
+              XFEM::ApplyElementEnrichments(this, element_ansatz_filled, *ih_, label, XFEM::Enrichment::typeVoid, boundaryRatioLimit, enrfieldset);                
             }
           }
         };

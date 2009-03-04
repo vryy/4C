@@ -140,12 +140,6 @@ namespace XFEM
         return xlabelset;
       }
       
-//      //! access to map
-//      std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> getDisTypePerFieldMap() const
-//      {
-//        return DisTypePerElementField_;
-//      }
-      
       //! access to map
       DRT::Element::DiscretizationType getDisTypePerField(XFEM::PHYSICS::Field field) const
       {
@@ -197,10 +191,6 @@ namespace XFEM
       
       //! local (elemental) dofpos
       std::map<XFEM::PHYSICS::Field, std::vector<int> > paramsLocalEntries_;
-      std::vector<int> paramsLocalEntriesVelx_;
-      std::vector<int> paramsLocalEntriesVely_;
-      std::vector<int> paramsLocalEntriesVelz_;
-      std::vector<int> paramsLocalEntriesPres_;
       
       //! local (elemental) dofpos
       std::map<XFEM::PHYSICS::Field, std::set<XFEM::FieldEnr> > enrichedFieldperPhysField_;
@@ -224,44 +214,6 @@ namespace XFEM
       //! private copy constructor
       ElementDofManager(const ElementDofManager& old);
   };
-  
-//  //! return reference to list of local positions in a array of dofs
-//  template <>
-//  inline const std::vector<int>& XFEM::ElementDofManager::LocalDofPosPerField<XFEM::PHYSICS::Velx>() const
-//  {
-//    return paramsLocalEntriesVelx_;
-//  }
-//  //! return reference to list of local positions in a array of dofs
-//  template <>
-//  inline const std::vector<int>& XFEM::ElementDofManager::LocalDofPosPerField<XFEM::PHYSICS::Vely>() const
-//  {
-//    return paramsLocalEntriesVely_;
-//  }
-//  //! return reference to list of local positions in a array of dofs
-//  template <>
-//  inline const std::vector<int>& XFEM::ElementDofManager::LocalDofPosPerField<XFEM::PHYSICS::Velz>() const
-//  {
-//    return paramsLocalEntriesVelz_;
-//  }
-//  //! return reference to list of local positions in a array of dofs
-//  template <>
-//  inline const std::vector<int>& XFEM::ElementDofManager::LocalDofPosPerField<XFEM::PHYSICS::Pres>() const
-//  {
-//    return paramsLocalEntriesPres_;
-//  }
-  
-  //! return reference to list of local positions in a array of dofs
-  template <>
-  const std::vector<int>& XFEM::ElementDofManager::LocalDofPosPerField<XFEM::PHYSICS::Velx>() const;
-  //! return reference to list of local positions in a array of dofs
-  template <>
-  const std::vector<int>& XFEM::ElementDofManager::LocalDofPosPerField<XFEM::PHYSICS::Vely>() const;
-  //! return reference to list of local positions in a array of dofs
-  template <>
-  const std::vector<int>& XFEM::ElementDofManager::LocalDofPosPerField<XFEM::PHYSICS::Velz>() const;
-  //! return reference to list of local positions in a array of dofs
-  template <>
-  const std::vector<int>& XFEM::ElementDofManager::LocalDofPosPerField<XFEM::PHYSICS::Pres>() const;
 
 } // namespace XFEM
 

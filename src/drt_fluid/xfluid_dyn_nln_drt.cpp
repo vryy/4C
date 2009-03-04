@@ -214,9 +214,11 @@ void xdyn_fluid_drt()
   // ----------------------------------------------- XFEM related stuff
   {
     const Teuchos::ParameterList& xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
-    fluidtimeparams.set<bool>("DLM_condensation", getIntegralValue<int>(xdyn,"DLM_CONDENSATION")==1 );
-    fluidtimeparams.set<bool>("CONDEST", getIntegralValue<int>(xdyn,"CONDEST")==1 );
-    fluidtimeparams.set<bool>("EXP_INTERSECTION", getIntegralValue<int>(xdyn,"EXP_INTERSECTION")==1 );
+    fluidtimeparams.sublist("XFEM").set<bool>("DLM_condensation", getIntegralValue<int>(xdyn,"DLM_CONDENSATION")==1 );
+    fluidtimeparams.sublist("XFEM").set<bool>("CONDEST", getIntegralValue<int>(xdyn,"CONDEST")==1 );
+    fluidtimeparams.sublist("XFEM").set<bool>("EXP_INTERSECTION", getIntegralValue<int>(xdyn,"EXP_INTERSECTION")==1 );
+    fluidtimeparams.sublist("XFEM").set<double>("volumeRatioLimit", xdyn.get<double>("volumeRatioLimit"));
+    fluidtimeparams.sublist("XFEM").set<double>("boundaryRatioLimit", xdyn.get<double>("boundaryRatioLimit"));
   }
   
   // -------------------------------------------------------------------

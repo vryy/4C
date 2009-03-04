@@ -128,45 +128,6 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
               // do nothing, this case was handled in step 1
             }
         }
-#if 0
-        // step 3: PaveMaker - level all values by using interface velocities
-        for (NodalDofPosMap::const_iterator newdof = newNodalDofDistrib_.begin();
-                                       newdof != newNodalDofDistrib_.end();
-                                       ++newdof)
-        {
-          const XFEM::DofKey<XFEM::onNode> newdofkey = newdof->first;
-          const int newdofpos = newdof->second;
-          const XFEM::PHYSICS::Field field = newdofkey.getFieldEnr().getField();
-          const int node_gid = newdofkey.getGid();
-          
-          const LINALG::Matrix<3,1> nodalpos(ih_->xfemdis()->gNode(node_gid)->X());
-          const int label = ih_->PositionWithinConditionNP(nodalpos);
-          bool in_fluid = false;
-          if (label == 0)
-          {
-            in_fluid = true;
-          }
-          else
-          {
-            in_fluid = false;
-          }
-          if (not in_fluid)
-          {
-            // reset with interface velocity - how to get velocity in non-rigid case?
-            //cout << "reset" << endl;
-            if (field == XFEM::PHYSICS::Velx)
-              (*newVector)[newdofrowmap_.LID(newdofpos)] = ivalrigid_body(0);
-            else if (field == XFEM::PHYSICS::Vely)
-              (*newVector)[newdofrowmap_.LID(newdofpos)] = ivalrigid_body(1);
-            else if (field == XFEM::PHYSICS::Velz)
-              (*newVector)[newdofrowmap_.LID(newdofpos)] = ivalrigid_body(2);
-            else
-            {
-              // keep previously set values
-            }
-          }
-        }
-#endif
 #if 1
         
         // step 4: find predecessor of new elemental dofkey
