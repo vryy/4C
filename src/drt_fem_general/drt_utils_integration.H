@@ -188,9 +188,12 @@ struct IntegrationPoints3D
   explicit IntegrationPoints3D(
       const GaussRule3D gaussrule   ///< 3d rule
       );
-  int           nquad;         ///< number of gausspoints
-  double        qxg[729][3];   ///< coordinates
-  double        qwgt[729];     ///< weights
+private:
+  static const int max_nquad = 729;  ///< size of c array
+public:
+  int           nquad;               ///< number of gausspoints
+  double        qxg[max_nquad][3];   ///< coordinates
+  double        qwgt[max_nquad];     ///< weights
 };
 
 /*!
@@ -208,9 +211,12 @@ struct IntegrationPoints2D
   explicit IntegrationPoints2D(
       const GaussRule2D gaussrule   ///< 2d rule
       );
-  int           nquad;         ///< number of gausspoints
-  double        qxg[64][2];    ///< coordinates
-  double        qwgt[64];      ///< weights
+private:
+  static const int max_nquad = 64;    ///< size of c array
+public:
+  int           nquad;                ///< number of gausspoints
+  double        qxg[max_nquad][2];    ///< coordinates
+  double        qwgt[max_nquad];      ///< weights
 };
 
 /*!
@@ -229,9 +235,12 @@ struct IntegrationPoints1D
   explicit IntegrationPoints1D(
       const GaussRule1D gaussrule   ///< 1d rule
       );
-  int           nquad;        ///< number of integration points
-  double        qxg[5][1];    ///< coordinates
-  double        qwgt[5];      ///< weights
+private:
+  static const int max_nquad = 5;     ///< size of c array
+public:
+  int           nquad;                ///< number of integration points
+  double        qxg[max_nquad][1];    ///< coordinates
+  double        qwgt[max_nquad];      ///< weights
 };
 
 
