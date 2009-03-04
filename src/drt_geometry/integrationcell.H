@@ -102,7 +102,7 @@ class DomainIntCell : public IntCell
     const LINALG::SerialDenseMatrix&  CellNodalPosXYZ() const {return nodalpos_xyz_domain_;}
     
     //! returns an array with the coordinates of the integration cell in physical coordinates
-    const LINALG::Matrix<3,1>  GetPhysicalCenterPosition() const{ return phys_center_;}
+    const LINALG::Matrix<3,1>&  GetPhysicalCenterPosition() const{ return phys_center_;}
     
     double SizeXiDomain(const DRT::Element& ele) const;
        

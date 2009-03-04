@@ -191,9 +191,9 @@ double GEO::DomainIntCell::SizeXiDomain(
 
     const double fac = intpoints.qwgt[iquad]*detcell;
 
-    if(detcell < 0.0)
+    if(detcell < -1.0e-8) // allow tiny ill-defined cells
     {
-      dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele.Id(), detcell);
+      dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT OF INTEGRATION CELL: %f", ele.Id(), detcell);
     }
        
     volume_cell += fac;
