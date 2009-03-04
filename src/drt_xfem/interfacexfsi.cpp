@@ -77,9 +77,10 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
     if (screen_out) cout << " done" << endl;
   }
 
-  GEO::Intersection is;
-  is.computeIntersection(xfemdis, cutterdis, cutterposnp_, currentXAABBs, elementalDomainIntCells_, elementalBoundaryIntCells_);  
-
+  Teuchos::RCP<GEO::Intersection> is = rcp(new GEO::Intersection());
+  is->computeIntersection(xfemdis, cutterdis, cutterposnp_, currentXAABBs, elementalDomainIntCells_, elementalBoundaryIntCells_);  
+  is = Teuchos::null;
+  
   xfemdis->Comm().Barrier();
   
   EraseTinyDomainIntCells(elementalDomainIntCells_);
@@ -217,7 +218,7 @@ void XFEM::InterfaceHandleXFSI::EraseTinyDomainIntCells(
     for (GEO::DomainIntCells::const_iterator cell = cells_old.begin(); cell != cells_old.end(); ++cell)
     {
       const double size = cell->SizeXiDomain(*xfemele);
-      if (size < small_cell_treshold)
+      if (abs(size) < small_cell_treshold)
       {
 //        cout << RED << size << END_COLOR << endl;
         small_cell_count++;
@@ -431,9 +432,9 @@ void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
       stringstream gmshfilecontent;
       gmshfilecontent << "View \" " << "Domains using CellCenter of Elements and Integration Cells \" {" << endl;
       
-      for (int i=0; i<xfemdis_->NumMyRowElements(); ++i)
+      for (int i=0; i<xfemdis_->NumMyColElements(); ++i)
       {
-        const DRT::Element* actele = xfemdis_->lRowElement(i);
+        const DRT::Element* actele = xfemdis_->lColElement(i);
         const GEO::DomainIntCells& elementDomainIntCells = this->GetDomainIntCells(actele);
         GEO::DomainIntCells::const_iterator cell;
         for(cell = elementDomainIntCells.begin(); cell != elementDomainIntCells.end(); ++cell )
