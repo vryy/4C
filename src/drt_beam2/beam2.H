@@ -45,12 +45,7 @@ namespace DRT
 namespace ELEMENTS
 {
 /*!
-\brief two dimensional nonlinear corotational Timoshenko beam element according to Crisfield, Vol.1,
-section 7.3 ("a simple corotational element using timoshenko beam theory"), p. 219 - 221; the current
-implementation sets the initial angles the theta1 and theta2 to zero, which can be done without loss
-of generality since any initial rotation cancels out in the equations (7.97) and (7.98). As a consequence
-the current nodal directors do not appear in the element, but only the values of the current director
-angles minus reference director angles, respectively 
+\brief two dimensional nonlinear corotational Timoshenko beam element according to Crisfield, Vol.1, section 7.3 
 
 \author cyron (cyron @lnm.mw.tum.de)
 */
@@ -252,24 +247,44 @@ public:
                               DRT::Condition&           condition,
                               vector<int>&              lm,
                               Epetra_SerialDenseVector& elevec1);
-  /*!
-  \brief Evaluate a statistical Neumann boundary condition
 
-  An element derived from this class uses the EvaluateNeumann method to receive commands
+  /*!
+  \brief Evaluate damping matrix for Brownian motion
+
+  An element derived from this class uses the Evaluate method to receive commands
+  and parameters from some control routine in params and evaluates a damping matrix
+  as used in the problem type STATISTICAL MECHANICS
+
+  \param params (in/out)       : ParameterList for communication between control routine and elements
+  \param vector<double> mydisp : current nodal displacement
+  \param elemat1 (out)         : damping matrix to be filled by element
+
+  \return 0 if successful, negative otherwise
+  */
+  virtual int EvaluateBrownianDamp(ParameterList& params,
+                                    vector<double> mydisp,
+                                    double zeta,
+                                    Epetra_SerialDenseMatrix& elemat1);  
+  
+  /*!
+  \brief Evaluate forces for Brownian motion
+
+  An element derived from this class uses the Evaluate method to receive commands
   and parameters from some control routine in params and evaluates a  statistical Neumann boundary condition
   as used in the problem type STATISTICAL MECHANICS
 
   \param params (in/out)       : ParameterList for communication between control routine and elements
   \param vector<double> mydisp : current nodal displacement
   \param elevec1 (out)         : Force vector to be filled by element
-  \param elemat1 (out)         : damping matrix to be filled by element
 
   \return 0 if successful, negative otherwise
   */
-  virtual int EvaluateStatForceDamp(ParameterList& params,
+  virtual int EvaluateBrownianForces(ParameterList& params,
                                     vector<double> mydisp,
-                                    Epetra_SerialDenseVector& elevec1,
-                                    Epetra_SerialDenseMatrix& elemat1);  
+                                    double zeta,
+                                    Epetra_SerialDenseVector& elevec1);
+  
+  
   //@}
 
 
@@ -291,7 +306,7 @@ private:
     calc_struct_update_istep,
     calc_struct_update_imrlike,
     calc_struct_reset_istep, //!< reset elementwise internal variables during iteration to last converged state
-    calc_stat_force_damp,
+    calc_brownian_damp,
     calc_struct_ptcstiff
   };
 
@@ -300,9 +315,6 @@ private:
   
   //! variable saving whether element has already been initialized (then isinit_ == true)
   bool isinit_;
-
-  //! material type
-  int material_;
 
   //! length in reference configuration
   double lrefe_;
@@ -314,16 +326,28 @@ private:
   double crosssecshear_;
 
   //! moment of inertia of area
-  double mominer_;
-
-  //! rounded number of half rotations the beam has already carried out counter clockwise;
-  int hrold_; //at the end of the last iteration step
-  int hrnew_; //including changes of current iteration step
-  int hrconv_; //at the end of the last converged time step
-
-  //! angle relative to x-axis in reference configuration
-  double beta0_;
+  double mominer_;  
   
+  //! number of 2*PI rotations between the aboslute element frame rotation and the angle beta in current iteration step
+  int numperiodsnew_;
+  
+  //! number of 2*PI rotations between the aboslute element frame rotation and the angle beta in last iteration step
+  int numperiodsold_;
+  
+  //! number of 2*PI rotations between the aboslute element frame rotation and the angle beta at the end of last time step
+  int numperiodsconv_;
+  
+  //! absolute angle by which beam has rotated out of x-axis including reference rotation by alpha0_ in current iteration step
+  double alphanew_;
+  
+  //! absolute angle by which beam has rotated out of x-axis including reference rotation by alpha0_ in last iteration step
+  double alphaold_;
+  
+  //! absolute angle by which beam has rotated out of x-axis including reference rotation by alpha0_ at the end of last time step
+  double alphaconv_;
+  
+  //! absolute angle between x-axis and element frame in reference configuration
+  double alpha0_;
 
   //! gaussrule_ will be initialized automatically to a 2 point integration rule
   DRT::UTILS::GaussRule1D gaussrule_;
@@ -331,16 +355,18 @@ private:
   // internal calculation methods
 
   //!internal geometric calculations
-  void b2_local_aux(LINALG::Matrix<3,6>& B_curr,
+  void local_aux(LINALG::Matrix<3,6>& B_curr,
                     LINALG::Matrix<6,1>& r_curr,
                     LINALG::Matrix<6,1>& z_curr,
-                    double& beta,
-                    const LINALG::Matrix<3,2>& x_curr,
                     const double& lcurr_,
                     const double& lrefe_);
   
+  //!computes current rotation angle beta relative to x-axis
+  void updatealpha(const LINALG::Matrix<3,2>& xcurr,
+                   const double& lcurr);
+  
   //! calculation of nonlinear stiffness and mass matrix
-  void b2_nlnstiffmass(ParameterList& params,
+  void nlnstiffmass(ParameterList& params,
                        vector<double>&           vel,  //!< element velocity vector
                        vector<double>&           disp,  //!< element displacement vector
                        Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix

@@ -49,10 +49,10 @@ bool DRT::ELEMENTS::Beam2::ReadElement()
 
   // read material parameters using structure _MATERIAL which is defined by inclusion of
   // "../drt_lib/drt_timecurve.H"
-  material_ = 0;
-  frint("MAT",&material_,&ierr);
+  int material = 0;
+  frint("MAT",&material,&ierr);
   if (ierr!=1) dserror("Reading of Beam2 element failed");
-  SetMaterial(material_);
+  SetMaterial(material);
 
   // read beam cross section
   crosssec_ = 1.0;
