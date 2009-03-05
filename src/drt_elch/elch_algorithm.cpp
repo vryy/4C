@@ -90,7 +90,7 @@ void ELCH::Algorithm::PrepareTimeStep()
   // transfer the initial(!!) convective velocity
   //(fluid initial field was set inside the constructor of fluid base class)
   if (Step()==1)
-    ScaTraField().SetVelocityField(2,ConvectiveVelocity());
+    ScaTraField().SetVelocityField(ConvectiveVelocity());
 
   // prepare time step (+ initialize one-step-theta scheme correctly with 
   // velocity given above)
@@ -119,13 +119,12 @@ void ELCH::Algorithm::DoTransportStep()
   {
     cout<<"\n******************\n TRANSPORT SOLVER \n******************\n";
   }
-  
+
   // get new velocity from Navier-Stokes solver
   GetCurrentFluidVelocity();
 
   // transfer convective velocity
-  ScaTraField().SetVelocityField(2,ConvectiveVelocity());
-  //ScaTraField().SetVelocityField(1,1);
+  ScaTraField().SetVelocityField(ConvectiveVelocity());
 
   // solve coupled transport equations for ion concentrations and electric 
   // potential

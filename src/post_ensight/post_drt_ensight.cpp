@@ -99,6 +99,7 @@ int main(
     case prb_scatra:
     {
         string basename = problem.outname();
+        // do we have a fluid discretization?
         int numfield = problem.num_discr();
         if(numfield==2)
         {
@@ -152,6 +153,11 @@ int main(
     }
     case prb_elch:
     {
+      string basename = problem.outname();
+      int numfield = problem.num_discr();
+      // do we have a fluid discretization?
+      if(numfield==2)
+      {
         string basename = problem.outname();
 
         PostField* fluidfield = problem.get_discretization(0);
@@ -162,6 +168,16 @@ int main(
         ElchEnsightWriter elchwriter(scatrafield, basename);
         elchwriter.WriteFiles();
         break;
+      }
+      else if (numfield==1)
+      {
+        PostField* scatrafield = problem.get_discretization(0);
+        ElchEnsightWriter elchwriter(scatrafield, basename);
+        elchwriter.WriteFiles();
+      }
+      else
+        dserror("number of fields does not match: got %d",numfield);
+      break;
     }
     case prb_combust:
     {

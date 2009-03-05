@@ -1012,16 +1012,14 @@ void SCATRA::ScaTraTimIntImpl::OutputState()
 /*----------------------------------------------------------------------*
  | update the velocity field                                  gjb 04/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::SetVelocityField(int veltype, int velfuncno)
+void SCATRA::ScaTraTimIntImpl::SetVelocityField()
 {
-    if (veltype != cdvel_)
-        dserror("velocity field type does not match: got %d, but expected %d!",veltype,cdvel_);
-
-    if (veltype == 0) // zero
-        convel_->PutScalar(0); // just to be sure!
-    else if (veltype == 1)  // function
-    {
-    int numdim =3;
+  if (cdvel_ == 0) // zero
+    convel_->PutScalar(0); // just to be sure!
+  else if ((cdvel_ == 1))  // function
+  {
+    const int numdim = 3; // the velocity field is always 3D
+    const int velfuncno = params_->get<int>("velocity function number");
     // loop all nodes on the processor
     for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
     {
@@ -1033,11 +1031,11 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField(int veltype, int velfuncno)
         convel_->ReplaceMyValue (lnodeid, index, value);
       }
     }
-    }
-    else
-        dserror("error in setVelocityField");
+  }
+  else
+    dserror("Wrong SetVelocity() action for velocity field type %d!",cdvel_);
 
-    return;
+  return;
 
 } // ScaTraImplicitTimeInt::SetVelocityField
 
@@ -1045,10 +1043,10 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField(int veltype, int velfuncno)
 /*----------------------------------------------------------------------*
  | update the velocity field                                  gjb 04/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::SetVelocityField(int veltype, RCP<const Epetra_Vector> extvel)
+void SCATRA::ScaTraTimIntImpl::SetVelocityField(RCP<const Epetra_Vector> extvel)
 {
-  if (veltype != cdvel_)
-    dserror("velocity field type does not match: got %d, but expected %d!",veltype,cdvel_);
+  if (cdvel_ != 2)
+    dserror("Wrong SetVelocity() action for velocity field type %d!",cdvel_);
 
   // check vector compatibility and determine space dimension
   int numdim =-1;

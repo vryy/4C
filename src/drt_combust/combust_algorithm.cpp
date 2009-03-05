@@ -229,7 +229,7 @@ void COMBUST::Algorithm::PrepareTimeStep()
 
   // transfer the initial(!!) convective velocity
   // (fluid initial field was set inside the constructor of fluid base class)
-  if (Step()==1) ScaTraField().SetVelocityField(2,ConvectiveVelocity());
+  if (Step()==1) ScaTraField().SetVelocityField(ConvectiveVelocity());
 
   // prepare time step (+ initialize one-step-theta scheme correctly with velocity given above)
   ScaTraField().PrepareTimeStep();
@@ -300,7 +300,7 @@ void COMBUST::Algorithm::DoGfuncField()
   GetCurrentFluidVelocity();
 
   // assign the fluid velocity to the G-function field as convective velocity
-  ScaTraField().SetVelocityField(2,ConvectiveVelocity());
+  ScaTraField().SetVelocityField(ConvectiveVelocity());
 
   // solve nonlinear convection-diffusion equation
   ScaTraField().NonlinearSolve();

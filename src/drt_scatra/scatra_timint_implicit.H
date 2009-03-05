@@ -165,11 +165,11 @@ public:
   /// scaling of AVM3-based subgrid-diffusivity matrix
   void AVM3Scaling(ParameterList& eleparams);
 
-  /// set the velocity field
-  void SetVelocityField(int veltype, int velfuncno);
+  /// set the velocity field (zero or field by function)
+  void SetVelocityField();
 
-  /// set the velocity field
-  void SetVelocityField(int veltype, RCP<const Epetra_Vector> extvel);
+  /// set the velocity field (Navier-Stokes solution)
+  void SetVelocityField(RCP<const Epetra_Vector> extvel);
 
   /// set the initial scalar field phi
   void SetInitialField(int init,int startfuncno);

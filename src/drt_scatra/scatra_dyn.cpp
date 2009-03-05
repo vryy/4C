@@ -77,7 +77,7 @@ void scatra_dyn(int disnumff, int disnumscatra, int restart)
 
       // set velocity field 
       //(this is done only once. Time-dependent velocity fields are not supported)
-      (scatraonly->ScaTraField()).SetVelocityField(veltype,scatradyn.get<int>("VELFUNCNO"));
+      (scatraonly->ScaTraField()).SetVelocityField();
 
       // enter time loop to solve problem with given convective velocity
       (scatraonly->ScaTraField()).TimeLoop();
@@ -92,8 +92,7 @@ void scatra_dyn(int disnumff, int disnumscatra, int restart)
     case 2:  // Navier_Stokes
     {
       // we use the fluid discretization as layout for the scalar transport discretization
-      if (fluiddis->NumGlobalNodes()==0)
-        dserror("No fluid discretization found!");
+      if (fluiddis->NumGlobalNodes()==0) dserror("Fluid discretization is empty!");
  
       // create scatra elements if the scatra discretization is empty
       if (scatradis->NumGlobalNodes()==0)
@@ -108,9 +107,8 @@ void scatra_dyn(int disnumff, int disnumscatra, int restart)
         conditions_to_copy.insert(pair<string,string>("SurfacePeriodic","SurfacePeriodic"));
         conditions_to_copy.insert(pair<string,string>("FluidStressCalc","FluxCalculation")); // a hack
 
-        // access the scalar transport parameter list
-        const Teuchos::ParameterList& scatracontrol = DRT::Problem::Instance()->ScalarTransportDynamicParams();
-        const int matid = scatracontrol.get<int>("MATID");
+        // fetch the desired material id for the transport elements
+        const int matid = scatradyn.get<int>("MATID");
 
         SCATRA::CreateScaTraDiscretization(fluiddis,scatradis,conditions_to_copy,matid,false);
 

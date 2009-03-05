@@ -81,7 +81,7 @@ void SCATRA::PassiveScaTraAlgorithm::PrepareTimeStep()
   // transfer the initial(!!) convective velocity
   //(fluid initial field was set inside the constructor of fluid base class)
   if (Step()==1)
-    ScaTraField().SetVelocityField(2,ConvectiveVelocity());
+    ScaTraField().SetVelocityField(ConvectiveVelocity());
 
   // prepare time step (+ initialize one-step-theta scheme correctly with 
   // velocity given above)
@@ -114,7 +114,7 @@ void SCATRA::PassiveScaTraAlgorithm::DoTransportStep()
   GetCurrentFluidVelocity();
 
   // transfer convective velocity to scalar transport field solver
-  ScaTraField().SetVelocityField(2,ConvectiveVelocity());
+  ScaTraField().SetVelocityField(ConvectiveVelocity());
 
   // solve the linear convection-diffusion equation(s)
   ScaTraField().Solve();

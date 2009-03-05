@@ -151,6 +151,10 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // -------------------sublist for electrochemistry-specific parameters
   if (genprob.probtyp == prb_elch)
   {
+    // Electrochemistry is always a nonlinear problem!
+    if (scatratimeparams->get<string>("solver type") != "nonlinear")
+      dserror("Set parameter SOLVERTYPE = nonlinear for electrochemistry!");
+
     scatratimeparams->set<double>("TEMPERATURE",prbdyn.get<double>("TEMPERATURE"));
 
     // -------------------------------------------------------------------

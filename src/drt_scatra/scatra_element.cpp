@@ -295,6 +295,11 @@ void DRT::ELEMENTS::Transport::VisNames(map<string,int>& names)
     const vector<double>* Pe_mig = data_.Get<vector<double> >(name);
     if (Pe_mig) names.insert(pair<string,int>(name,1));
 
+    //characteristic element length
+    name = "hk_"+temp.str();
+    const vector<double>* hk = data_.Get<vector<double> >(name);
+    if (hk) names.insert(pair<string,int>(name,1));
+
     // Stabilization parameter at element center
     name = "tau_"+temp.str();
     const vector<double>* tau = data_.Get<vector<double> >(name);
@@ -320,6 +325,7 @@ void DRT::ELEMENTS::Transport ::VisData(const string& name, vector<double>& data
     temp << k;
     if (   (name == "Pe_"+temp.str()    ) 
         || (name == "Pe_mig_"+temp.str()) 
+        || (name == "hk_"+temp.str()    ) 
         || (name == "tau_"+temp.str()   )
     )
     {
