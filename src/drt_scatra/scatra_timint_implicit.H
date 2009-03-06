@@ -315,6 +315,11 @@ protected:
     Teuchos::RCP<Epetra_Vector>& neumann_loads ///< Neumann loads
   );
 
+  /// export velocity to column map and add it to a parameter list
+  void AddVelocityToParameterList(
+      Teuchos::ParameterList& p   ///< parameter list
+      );
+
   /// write state vectors (phinp and convective velocity) to BINIO
   void OutputState();
 

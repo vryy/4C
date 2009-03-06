@@ -53,11 +53,7 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidt()
       eleparams.set("time derivative of thermodynamic pressure",thermpressdtn_);
 
     //provide velocity field (export to column map necessary for parallel evaluation)
-    //SetState cannot be used since this Multivector is nodebased and not dofbased
-    const Epetra_Map* nodecolmap = discret_->NodeColMap();
-    RefCountPtr<Epetra_MultiVector> tmp = rcp(new Epetra_MultiVector(*nodecolmap,3));
-    LINALG::Export(*convel_,*tmp);
-    eleparams.set("velocity field",tmp);
+    AddVelocityToParameterList(eleparams);
 
     // set vector values needed by elements
     discret_->ClearState();
@@ -285,12 +281,8 @@ void SCATRA::ScaTraTimIntImpl::SetInitialThermPressure(const double thermpress)
   // define element parameter list
   ParameterList eleparams;
 
-  // provide velocity field (export to column map necessary for parallel evaluation)
-  // SetState cannot be used since this Multivector is nodebased and not dofbased
-  const Epetra_Map* nodecolmap = discret_->NodeColMap();
-  RefCountPtr<Epetra_MultiVector> tmp = rcp(new Epetra_MultiVector(*nodecolmap,3));
-  LINALG::Export(*convel_,*tmp);
-  eleparams.set("velocity field",tmp);
+  //provide velocity field (export to column map necessary for parallel evaluation)
+  AddVelocityToParameterList(eleparams);
 
   // set action for elements
   eleparams.set("action","calc_domain_and_bodyforce");
@@ -911,13 +903,10 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
     params.set("action","calc_condif_flux");
     params.set("problem type",prbtype_);
     params.set("frt",frt_);
+    params.set("fluxtype",fluxtype);
 
     //provide velocity field (export to column map necessary for parallel evaluation)
-    const Epetra_Map* nodecolmap = discret_->NodeColMap();
-    RefCountPtr<Epetra_MultiVector> vel = rcp(new Epetra_MultiVector(*nodecolmap,3));
-    LINALG::Export(*convel_,*vel);
-    params.set("velocity field",vel);
-    params.set("fluxtype",fluxtype);
+    AddVelocityToParameterList(params);
 
     // set vector values needed by elements
     discret_->ClearState();
@@ -979,11 +968,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
       eleparams.set("frt",frt_);
 
       //provide velocity field (export to column map necessary for parallel evaluation)
-      //SetState cannot be used since this Multivector is nodebased and not dofbased
-      const Epetra_Map* nodecolmap = discret_->NodeColMap();
-      RefCountPtr<Epetra_MultiVector> tmp = rcp(new Epetra_MultiVector(*nodecolmap,3));
-      LINALG::Export(*convel_,*tmp);
-      eleparams.set("velocity field",tmp);
+      AddVelocityToParameterList(eleparams);
 
       // parameters for stabilization
       eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");

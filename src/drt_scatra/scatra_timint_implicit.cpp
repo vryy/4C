@@ -467,6 +467,23 @@ void SCATRA::ScaTraTimIntImpl::ApplyNeumannBC
 
 
 /*----------------------------------------------------------------------*
+ | export velocity to column map and add it to parameter list  gjb 03/09|
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::AddVelocityToParameterList(Teuchos::ParameterList& p)
+{
+  //provide velocity field for usage on element level
+  // -> export to column map is necessary for parallel evaluation
+  //SetState cannot be used since this Multivector is nodebased and not dofbased!
+  const Epetra_Map* nodecolmap = discret_->NodeColMap();
+  RefCountPtr<Epetra_MultiVector> tmp = rcp(new Epetra_MultiVector(*nodecolmap,3));
+  LINALG::Export(*convel_,*tmp);
+  p.set("velocity field",tmp);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  | contains the nonlinear iteration loop                       gjb 09/08|
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
@@ -539,11 +556,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
       eleparams.set("frt",frt_);// ELCH specific factor F/RT
 
       //provide velocity field (export to column map necessary for parallel evaluation)
-      //SetState cannot be used since this Multivector is nodebased and not dofbased
-      const Epetra_Map* nodecolmap = discret_->NodeColMap();
-      RefCountPtr<Epetra_MultiVector> tmp = rcp(new Epetra_MultiVector(*nodecolmap,3));
-      LINALG::Export(*convel_,*tmp);
-      eleparams.set("velocity field",tmp);
+      AddVelocityToParameterList(eleparams);
 
       // parameters for stabilization
       eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
@@ -838,11 +851,7 @@ void SCATRA::ScaTraTimIntImpl::Solve()
     eleparams.set("turbulence model",turbmodel_);
 
     //provide velocity field (export to column map necessary for parallel evaluation)
-    //SetState cannot be used since this Multivector is nodebased and not dofbased
-    const Epetra_Map* nodecolmap = discret_->NodeColMap();
-    RefCountPtr<Epetra_MultiVector> tmp = rcp(new Epetra_MultiVector(*nodecolmap,3));
-    LINALG::Export(*convel_,*tmp);
-    eleparams.set("velocity field",tmp);
+    AddVelocityToParameterList(eleparams);
 
     // parameters for stabilization
     eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
