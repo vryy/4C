@@ -78,7 +78,6 @@ void LINALG::SIMPLER_Operator::Setup(RCP<Epetra_Operator> A,
   if (visml)
   {
     ndofpernode = vlist_.sublist("ML Parameters").get<int>("PDE equations",0);
-    if (ndofpernode != 4 && ndofpernode !=3) dserror("You should have either 3 or 4 dofs per node at this point");
     nv     = ndofpernode-1;
     np     = 1;
     nlnode = length / ndofpernode;
