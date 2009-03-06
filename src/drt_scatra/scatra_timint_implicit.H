@@ -162,6 +162,9 @@ public:
   /// prepare AVM3-based scale separation
   void AVM3Preparation();
 
+  /// AVM3-based scale separation
+  virtual void AVM3Separation()=0;
+
   /// scaling of AVM3-based subgrid-diffusivity matrix
   void AVM3Scaling(ParameterList& eleparams);
 

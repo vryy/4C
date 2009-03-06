@@ -261,6 +261,21 @@ void SCATRA::TimIntGenAlpha::AddNeumannToResidual()
 
 
 /*----------------------------------------------------------------------*
+ | AVM3-based scale separation                                 vg 03/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntGenAlpha::AVM3Separation()
+{
+  // AVM3 separation
+  Sep_->Multiply(false,*phiaf_,*fsphiaf_);
+
+  // set fine-scale vector
+  discret_->SetState("fsphinp",fsphiaf_);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  | add parameters specific for time-integration scheme         vg 11/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntGenAlpha::AddSpecificTimeIntegrationParameters(
@@ -287,20 +302,8 @@ void SCATRA::TimIntGenAlpha::AddSpecificTimeIntegrationParameters(
     discret_->SetState("densam",densnp_);
   }
 
-  if (incremental_)
-  {
-    discret_->SetState("phinp",phiaf_);
-
-    if (fssgd_ != "No")
-    {
-      // AVM3 separation
-      Sep_->Multiply(false,*phiaf_,*fsphiaf_);
-
-      // set fine-scale vector
-      discret_->SetState("fsphinp",fsphiaf_);
-    }
-  }
-  else discret_->SetState("phinp",phin_);
+  if (incremental_) discret_->SetState("phinp",phiaf_);
+  else              discret_->SetState("phinp",phin_);
 
   return;
 }

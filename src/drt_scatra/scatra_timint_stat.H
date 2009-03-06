@@ -90,6 +90,9 @@ protected:
   /// add actual Neumann loads with time factor
   void AddNeumannToResidual();
 
+  /// AVM3-based scale separation
+  void AVM3Separation();
+
   /// add parameters specific for time-integration scheme
   void AddSpecificTimeIntegrationParameters(ParameterList& params);
 
