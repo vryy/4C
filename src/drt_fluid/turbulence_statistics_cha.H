@@ -487,6 +487,8 @@ private:
   RefCountPtr<vector<double> >     sumhbazilevs_;
   //! sum over all in plane stream lengths
   RefCountPtr<vector<double> >     sumstrle_;
+  //! sum over all in plane stream lengths
+  RefCountPtr<vector<double> >     sumgradle_;
 
   //! sum over all in plane residuals
   RefCountPtr<vector<double> >     sumtauM_;

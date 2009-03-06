@@ -9821,8 +9821,8 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   LINALG::Matrix<3,1>  mean_svelaf_sq  ;
   LINALG::Matrix<3,1>  mean_tauinvsvel ;
 
-  LINALG::Matrix<3,1>  mean_crossstress;
-  LINALG::Matrix<3,1>  mean_reystress  ;
+  LINALG::Matrix<6,1>  mean_crossstress;
+  LINALG::Matrix<6,1>  mean_reystress  ;
 
 
   double vol             = 0.0;
@@ -9830,6 +9830,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   double h               = 0.0;
   double h_bazilevs      = 0.0;
   double strle           = 0.0;
+  double gradle          = 0.0;
   double averaged_tauC   = 0.0;
   double averaged_tauM   = 0.0;
 
@@ -10009,6 +10010,49 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
                     +normed_velintaf(2)*derxy_(2,rr));
       } /* end of loop over element nodes */
       strle += 2.0/val*fac;
+    }
+
+    // element size in main gradient direction
+    {
+      // this copy of velintaf_ will be used to store the normed velocity
+      LINALG::Matrix<3,1> normed_velgrad;
+
+      for (int rr=0;rr<3;++rr)
+      {
+        normed_velgrad(rr)=sqrt(vderxyaf_(0,rr)*vderxyaf_(0,rr)
+                                +
+                                vderxyaf_(1,rr)*vderxyaf_(1,rr)
+                                +
+                                vderxyaf_(2,rr)*vderxyaf_(2,rr));
+      } 
+      double norm=normed_velgrad.Norm2();
+
+      // normed gradient
+      if (norm>1e-6)
+      {
+        for (int rr=0;rr<3;++rr)
+        {
+          normed_velgrad(rr)/=norm;
+        } 
+      }
+      else
+      {
+        normed_velgrad(0) = 1.;
+        for (int rr=1;rr<3;++rr)
+        {
+          normed_velgrad(rr)=0.0;
+        }      
+      }
+
+      // get length in this direction
+      double val = 0.0;
+      for (int rr=0;rr<iel;++rr) /* loop element nodes */
+      {
+        val += FABS( normed_velgrad(0)*derxy_(0,rr)         
+                    +normed_velgrad(1)*derxy_(1,rr)        
+                    +normed_velgrad(2)*derxy_(2,rr));
+      } /* end of loop over element nodes */
+      gradle += 2.0/val*fac;
     }
 
     // -----------------------------------------------------
@@ -10550,6 +10594,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   h               /= vol;
   h_bazilevs      /= vol;
   strle           /= vol;
+  gradle          /= vol;
 
   averaged_tauC   /= vol;
   averaged_tauM   /= vol;
@@ -10573,6 +10618,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   RefCountPtr<vector<double> > incrhk            = params.get<RefCountPtr<vector<double> > >("incrhk"           );
   RefCountPtr<vector<double> > incrhbazilevs     = params.get<RefCountPtr<vector<double> > >("incrhbazilevs"    );
   RefCountPtr<vector<double> > incrstrle         = params.get<RefCountPtr<vector<double> > >("incrstrle"        );
+  RefCountPtr<vector<double> > incrgradle        = params.get<RefCountPtr<vector<double> > >("incrgradle"       );
 
   RefCountPtr<vector<double> > incrres           = params.get<RefCountPtr<vector<double> > >("incrres"          );
   RefCountPtr<vector<double> > incrres_sq        = params.get<RefCountPtr<vector<double> > >("incrres_sq"       );
@@ -10675,6 +10721,9 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
 
   // stream length 
   (*incrstrle    )[nlayer] += strle;
+
+  // gradient based element length 
+  (*incrgradle   )[nlayer] += gradle;
 
   // averages of stabilisation parameters
   (*incrtauC     )[nlayer] += averaged_tauC;
