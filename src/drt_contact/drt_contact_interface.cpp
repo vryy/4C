@@ -661,7 +661,7 @@ void CONTACT::Interface::Evaluate()
   
 #ifdef CONTACTFDVERTEX3D
   // define test variable for FDVertex
-  vector<vector<double> > testv(0,vector<double>(5));
+  vector<vector<double> > testv(0,vector<double>(6));
 #endif // #ifdef CONTACTFDVERTEX3D
   
 #ifdef CONTACTFDGP3D
@@ -1372,8 +1372,9 @@ void CONTACT::Interface::AssembleDMG(LINALG::SparseMatrix& dglobal,
       // else, it cannot be in contact and weighted gap should be positive
       // (otherwise wrong results possible for g~ because of non-positivity
       // of dual shape functions!!!)
-      //cout << "Node ID: " << cnode->Id() << " HasProj: " << cnode->HasProj() << endl;
-      if (!cnode->HasProj() && cnode->Active()) dserror("ERROR: Active node without feasible projection");
+      //cout << "Node ID: " << cnode->Id() << " HasProj: " << cnode->HasProj()
+      //     << " IsActive: " << cnode->Active() << " Gap: " << gap << endl;
+      if (!cnode->HasProj() && cnode->Active()) dserror("ERROR: Active node ID: %i without feasible projection", cnode->Id());
       if (!cnode->HasProj() && !cnode->Active()) gap = 1.0e12;
 
       Epetra_SerialDenseVector gnode(1);

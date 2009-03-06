@@ -346,14 +346,24 @@ public:
   \brief Compute unit element normal at local coordinate xi
          This function is a real stand-alone function to be called
          for a CElement in order to compute a unit normal at any point.
+         Returns the length of the non-unit interpolated normal at xi.
   */
-  virtual void ComputeUnitNormalAtXi(double* xi, double* n);
+  virtual double ComputeUnitNormalAtXi(double* xi, double* n);
     
   /*!
   \brief Compute element normal derivative at local coordinate xi
+         Caution: This function cannot be called stand-alone! It is
+         integrated into the whole nodal normal calculation process.
   */
   virtual void DerivNormalAtXi(double* xi, int& i, Epetra_SerialDenseMatrix& elens,
                                vector<map<int,double> >& derivn);
+  
+  /*!
+  \brief Compute element unit normal derivative at local coordinate xi
+         This function is a real stand-alone function to be called
+         for a CElement in order to compute a unit normal derivative at any point.
+  */
+  virtual void DerivUnitNormalAtXi(double* xi, vector<map<int,double> >& derivn);
     
   /*!
   \brief Compute element normal at local coordinate xi

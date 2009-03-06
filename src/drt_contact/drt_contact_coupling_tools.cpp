@@ -181,6 +181,7 @@ contactsegs_(csegs)
     
     // normal is (0,0,1) in slave element parameter space
     Auxn()[0] = 0.0; Auxn()[1] = 0.0; Auxn()[2] = 1.0;
+    Lauxn() = 1.0;
     
     // tolerance for polygon clipping
     // minimum edge size in parameter space is 1
@@ -200,14 +201,16 @@ contactsegs_(csegs)
       // fill testv vector for FDVertex check
       for (int k=0;k<clipsize;++k)
       {
-        vector<double> testventry(5);
+        vector<double> testventry(6);
         testventry[0] = (Clip()[k]).Coord()[0];
         testventry[1] = (Clip()[k]).Coord()[1];
-        testventry[2] = SlaveElement().Id();
-        testventry[3] = MasterElement().Id();
-        testventry[4] = (Clip()[k]).VType();
+        testventry[2] = (Clip()[k]).Coord()[2];
+        testventry[3] = SlaveElement().Id();
+        testventry[4] = MasterElement().Id();
+        testventry[5] = (Clip()[k]).VType();
         testv.push_back(testventry);
       }
+      
       // check / set  projection status of slave nodes
       HasProjStatus3D();
       
@@ -411,92 +414,80 @@ bool CONTACT::Coupling::Triangulation3D(map<int,double>& projpar,
                                         vector<vector<double> >& testv, bool printderiv)
 {
   // preparations
-  vector<double> clipcenter(3);
-  for (int k=0;k<3;++k) clipcenter[k] = 0.0;
   int clipsize = (int)(Clip().size());
   vector<vector<map<int,double> > > linvertex(clipsize,vector<map<int,double> >(3));
   vector<map<int,double> > lincenter(3);
   
-#ifndef CONTACTAUXPLANE
   //**********************************************************************
   // (1) Linearization of clip vertex coordinates
   //**********************************************************************
   VertexLinearization3D(linvertex,projpar,printderiv);
-#endif // #ifndef CONTACTAUXPLANE
   
   //**********************************************************************
-  // (2) Find center of clipping polygon
+  // (2) Find center of clipping polygon (centroid formulas)
   //**********************************************************************
+  vector<double> clipcenter(3);
+  for (int k=0;k<3;++k) clipcenter[k] = 0.0;
+  double fac = 0.0;
   
-  // ************* Coupling with or without auxiliary plane **************
-#ifdef CONTACTAUXPLANE
-  // as a first shot we use simple node averaging here
-  // arithmetic center, NOT geometric center
+  // first we need node averaged center
+  double nac[3] = {0.0, 0.0, 0.0};
   for (int i=0;i<clipsize;++i)
     for (int k=0;k<3;++k)
-      clipcenter[k] += (Clip()[i].Coord()[k] / clipsize);
-  //cout << "Clipcenter (simple): " << clipcenter[0] << " " << clipcenter[1] << " " << clipcenter[2] << endl;
+      nac[k] += (Clip()[i].Coord()[k] / clipsize);
   
-  // fill testv vector for FDVertex check with center
-  // we use 3 for VType (because 0,1,2 are already in use)
-  vector<double> testventry(5);
-  testventry[0] = clipcenter[0];
-  testventry[1] = clipcenter[1];
-  testventry[2] = SlaveElement().Id();
-  testventry[3] = MasterElement().Id();
-  testventry[4] = 3;
-  testv.push_back(testventry);
-#else
-  // as an improved version we use centroid formulas here
-  // this really yields the geometric center
-  // (taken from: Moertel package, Trilinos, Sandia NL)
-  double A = 0.0;
-  
+  // loop over all triangles of polygon
   for (int i=0; i<clipsize; ++i)
   {
-    // check for 2D clip polygon in parameter space
-    if (abs(Clip()[i].Coord()[2])>1.0e-12) dserror("ERROR: Clip polygon point with z!=0");
-    double xi_i[2] = {0.0, 0.0};
-    double xi_ip1[2] = {0.0, 0.0};
+    double xi_i[3] = {0.0, 0.0, 0.0};
+    double xi_ip1[3] = {0.0, 0.0, 0.0};
     
     // standard case    
     if (i<clipsize-1)
     {
-      xi_i[0] = Clip()[i].Coord()[0]; xi_i[1] = Clip()[i].Coord()[1];
-      xi_ip1[0] = Clip()[i+1].Coord()[0]; xi_ip1[1] = Clip()[i+1].Coord()[1];
+      for (int k=0;k<3;++k) xi_i[k] = Clip()[i].Coord()[k];
+      for (int k=0;k<3;++k) xi_ip1[k] = Clip()[i+1].Coord()[k];
     }
     // last vertex of clip polygon
     else
     {
-      xi_i[0] = Clip()[clipsize-1].Coord()[0]; xi_i[1] = Clip()[clipsize-1].Coord()[1];
-      xi_ip1[0] = Clip()[0].Coord()[0]; xi_ip1[1] = Clip()[0].Coord()[1];
+      for (int k=0;k<3;++k) xi_i[k] = Clip()[clipsize-1].Coord()[k];
+      for (int k=0;k<3;++k) xi_ip1[k] = Clip()[0].Coord()[k];
     }
+
+    // triangle area
+    double diff1[3] = {0.0, 0.0, 0.0};
+    double diff2[3] = {0.0, 0.0, 0.0};
+    for (int k=0;k<3;++k) diff1[k] = xi_ip1[k] - xi_i[k];
+    for (int k=0;k<3;++k) diff2[k] = xi_i[k] - nac[k];
     
-    // add contribution to area and centroid coords
-    A     += xi_ip1[0]*xi_i[1] - xi_i[0]*xi_ip1[1];
-    clipcenter[0] += (xi_i[0]+xi_ip1[0])*(xi_ip1[0]*xi_i[1]-xi_i[0]*xi_ip1[1]);
-    clipcenter[1] += (xi_i[1]+xi_ip1[1])*(xi_ip1[0]*xi_i[1]-xi_i[0]*xi_ip1[1]);
+    double cross[3] = {0.0, 0.0, 0.0};
+    cross[0] = diff1[1]*diff2[2] - diff1[2]*diff2[1];
+    cross[1] = diff1[2]*diff2[0] - diff1[0]*diff2[2];
+    cross[2] = diff1[0]*diff2[1] - diff1[1]*diff2[0];
+    
+    double Atri = 0.5 * sqrt(cross[0]*cross[0]+cross[1]*cross[1]+cross[2]*cross[2]);
+    
+    // add contributions to clipcenter and fac
+    fac += Atri;
+    for (int k=0;k<3;++k) clipcenter[k] += 1.0/3.0 * (xi_i[k] + xi_ip1[k] + nac[k]) * Atri;
   }
   
-  // final centroid coords
-  clipcenter[0] /= (3.0*A);
-  clipcenter[1] /= (3.0*A);
-  //cout << "Clipcenter (centroid): " << clipcenter[0] << " " << clipcenter[1] << " " << clipcenter[2] << endl;
-  
+  //final clipcenter
+  for (int k=0;k<3;++k) clipcenter[k] /= fac; 
+  //cout << "Clipcenter: " << clipcenter[0] << " " << clipcenter[1] << " " << clipcenter[2] << endl;
+    
   // fill testv vector for FDVertex check with center
   // we use 3 for VType (because 0,1,2 are already in use)
-  vector<double> testventry(5);
+  vector<double> testventry(6);
   testventry[0] = clipcenter[0];
   testventry[1] = clipcenter[1];
-  testventry[2] = SlaveElement().Id();
-  testventry[3] = MasterElement().Id();
-  testventry[4] = 3;
+  testventry[2] = clipcenter[2];
+  testventry[3] = SlaveElement().Id();
+  testventry[4] = MasterElement().Id();
+  testventry[5] = 3;
   testv.push_back(testventry);
-        
-#endif // #ifdef CONTACTAUXPLANE
-  // *********************************************************************
   
-#ifndef CONTACTAUXPLANE
   //**********************************************************************
   // (3) Linearization of clip center coordinates
   //**********************************************************************
@@ -514,6 +505,9 @@ bool CONTACT::Coupling::Triangulation3D(map<int,double>& projpar,
       cout << "Analytical derivative for Vertex " << counter << " (y-component). VType=" << Clip()[i].VType() << endl;
       for (CI p=linvertex[i][1].begin();p!=linvertex[i][1].end();++p)
         cout << "Dof: " << p->first << "\t" << p->second << endl;
+      cout << "Analytical derivative for Vertex " << counter << " (z-component). VType=" << Clip()[i].VType() << endl;
+      for (CI p=linvertex[i][2].begin();p!=linvertex[i][2].end();++p)
+        cout << "Dof: " << p->first << "\t" << p->second << endl;
       counter = counter+1;
     }
     cout << "\nAnalytical derivative for Vertex " << counter << " (x-component). VType=" << 3 << endl;
@@ -522,9 +516,11 @@ bool CONTACT::Coupling::Triangulation3D(map<int,double>& projpar,
     cout << "Analytical derivative for Vertex " << counter << " (y-component). VType=" << 3 << endl;
     for (CI p=lincenter[1].begin();p!=lincenter[1].end();++p)
       cout << "Dof: " << p->first << "\t" << p->second << endl;
+    cout << "Analytical derivative for Vertex " << counter << " (z-component). VType=" << 3 << endl;
+    for (CI p=lincenter[2].begin();p!=lincenter[2].end();++p)
+      cout << "Dof: " << p->first << "\t" << p->second << endl;
     counter = counter+1;
   }
-#endif // #ifndef CONTACTAUXPLANE
   
   //**********************************************************************
   // (4)Triangulation -> Intcells
@@ -541,8 +537,8 @@ bool CONTACT::Coupling::Triangulation3D(map<int,double>& projpar,
         coords(k,i) = Clip()[i].Coord()[k];
     
     // create Intcell object and push back
-    Cells().push_back(rcp(new Intcell(0,3,coords,DRT::Element::tri3,
-                      linvertex[0],linvertex[1],linvertex[2])));
+    Cells().push_back(rcp(new Intcell(0,3,coords,Auxn(),DRT::Element::tri3,
+                  linvertex[0],linvertex[1],linvertex[2],GetDerivAuxn())));
     
   }
   
@@ -572,8 +568,8 @@ bool CONTACT::Coupling::Triangulation3D(map<int,double>& projpar,
         for (int k=0;k<3;++k) coords(k,2) = Clip()[num+1].Coord()[k];
       
       // create Intcell object and push back
-      Cells().push_back(rcp(new Intcell(num,3,coords,DRT::Element::tri3,
-                        lincenter,linvertex[num],linvertex[numplus1])));
+      Cells().push_back(rcp(new Intcell(num,3,coords,Auxn(),DRT::Element::tri3,
+                lincenter,linvertex[num],linvertex[numplus1],GetDerivAuxn())));
     }
   }
   

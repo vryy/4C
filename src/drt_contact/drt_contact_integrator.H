@@ -232,6 +232,17 @@ public:
                    vector<map<int,double> >& derivmxi, double& alpha);
   
   /*!
+  \brief Compute directional derivative of slave / master Gauss point
+         coordinates XiGP on a 2D slave / master integration cell
+         (This is the AuxPlane version, thus master and slave are projected)
+           
+  */
+  void DerivXiGP3DAuxPlane(CONTACT::CElement& ele, double* xigp, double* auxn,
+                   vector<map<int,double> >& derivxi, double& alpha,
+                   const vector<map<int,double> >& derivauxn,
+                   const vector<map<int,double> >& derivgp);
+  
+  /*!
   \brief Assemble D contribution of current overlap into slave nodes
   
   This method is only called if the flag CONTACTONEMORTARLOOP

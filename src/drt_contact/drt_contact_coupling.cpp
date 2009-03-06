@@ -48,10 +48,11 @@ Maintainer: Alexander Popp
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
 CONTACT::Intcell::Intcell(int id, int nvertices, Epetra_SerialDenseMatrix& coords,
-                          const DRT::Element::DiscretizationType& shape,
+                          double* auxn, const DRT::Element::DiscretizationType& shape,
                           vector<map<int,double> >& linv1,
                           vector<map<int,double> >& linv2,
-                          vector<map<int,double> >& linv3) :
+                          vector<map<int,double> >& linv3,
+                          vector<map<int,double> >& linauxn) :
 id_(id),
 nvertices_(nvertices),
 coords_(coords),
@@ -64,6 +65,9 @@ shape_(shape)
   // check dimensions of coords_
   if (coords_.M() != 3) dserror("ERROR: Inconsistent coord matrix");
   if (coords_.N() != nvertices_) dserror("ERROR: Inconsistent coord matrix");
+  
+  // store auxiliary plane normal
+  for (int k=0;k<3;++k) Auxn()[k] = auxn[k];
   
   // compute area of Intcell
   double t1[3] = {0.0, 0.0, 0.0};
@@ -80,11 +84,12 @@ shape_(shape)
   t1xt2[2] = t1[0]*t2[1]-t1[1]*t2[0]; 
   area_ = 0.5*sqrt(t1xt2[0]*t1xt2[0]+t1xt2[1]*t1xt2[1]+t1xt2[2]*t1xt2[2]);
   
-  // store vertex linearizations
+  // store vertex linearizations and auxn linearization
   linvertex_.resize(3);
   linvertex_[0] = linv1;
   linvertex_[1] = linv2;
   linvertex_[2] = linv3;
+  linauxn_ = linauxn;
   
   return;
 }
@@ -235,8 +240,8 @@ void CONTACT::Intcell::DerivJacobian(double* xi, vector<double>& derivjac)
     // compute Jacobian derivative
     // *********************************************************************
 #ifdef CONTACTAUXPLANE
-    cout << endl << jac << endl;
-    dserror("ERROR: DerivJacobian (Intcell) not yet impl. for aux. plane case!");
+    cout << jac << endl;
+    dserror("ERROR: DerivJacobian (SlaveParamSpace) called for AuxPlane case!");
 #else
     // in this case, intcells live in slave element parameter space
     // cross[0] and cross[1] are zero!
@@ -291,6 +296,105 @@ void CONTACT::Intcell::DerivJacobian(double* xi, vector<double>& derivjac)
   }
   cout << endl;
   */
+  
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Evaluate directional deriv. of Jacobian det. AuxPlane     popp 03/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::Intcell::DerivJacobian(double* xi, map<int,double>& derivjac)
+{
+  // metrics routine gives local basis vectors
+  vector<double> gxi(3);
+  vector<double> geta(3);
+  
+  for (int k=0;k<3;++k)
+  {
+    gxi[k]=Coords()(k,1)-Coords()(k,0);
+    geta[k]=Coords()(k,2)-Coords()(k,0);
+  }
+  
+  // cross product of gxi and geta
+  double cross[3] = {0.0, 0.0, 0.0};
+  cross[0] = gxi[1]*geta[2]-gxi[2]*geta[1];
+  cross[1] = gxi[2]*geta[0]-gxi[0]*geta[2];
+  cross[2] = gxi[0]*geta[1]-gxi[1]*geta[0];
+  
+  double jac = sqrt(cross[0]*cross[0]+cross[1]*cross[1]+cross[2]*cross[2]);
+  typedef map<int,double>::const_iterator CI;
+  
+  // 2D linear case (2noded line element)
+  if (Shape()==DRT::Element::tri3)
+  {
+    // *********************************************************************
+    // compute Jacobian derivative
+    // *********************************************************************
+#ifdef CONTACTAUXPLANE
+    // first vertex (Coords(k,0)) is part of gxi and geta
+    for (CI p=GetDerivVertex(0)[0].begin();p!=GetDerivVertex(0)[0].end();++p)
+    {
+      derivjac[p->first] -= 1/jac*cross[1]*gxi[2]*(p->second);
+      derivjac[p->first] += 1/jac*cross[1]*geta[2]*(p->second);
+      derivjac[p->first] += 1/jac*cross[2]*gxi[1]*(p->second);
+      derivjac[p->first] -= 1/jac*cross[2]*geta[1]*(p->second);
+    }
+    for (CI p=GetDerivVertex(0)[1].begin();p!=GetDerivVertex(0)[1].end();++p)
+    {
+      derivjac[p->first] += 1/jac*cross[0]*gxi[2]*(p->second);
+      derivjac[p->first] -= 1/jac*cross[0]*geta[2]*(p->second);
+      derivjac[p->first] -= 1/jac*cross[2]*gxi[0]*(p->second);
+      derivjac[p->first] += 1/jac*cross[2]*geta[0]*(p->second);
+    }
+    for (CI p=GetDerivVertex(0)[2].begin();p!=GetDerivVertex(0)[2].end();++p)
+    {
+      derivjac[p->first] -= 1/jac*cross[0]*gxi[1]*(p->second);
+      derivjac[p->first] += 1/jac*cross[0]*geta[1]*(p->second);
+      derivjac[p->first] += 1/jac*cross[1]*gxi[0]*(p->second);
+      derivjac[p->first] -= 1/jac*cross[1]*geta[0]*(p->second);
+    }
+    
+    // second vertex (Coords(k,1)) is part of gxi
+    for (CI p=GetDerivVertex(1)[0].begin();p!=GetDerivVertex(1)[0].end();++p)
+    {
+      derivjac[p->first] -= 1/jac*cross[1]*geta[2]*(p->second);
+      derivjac[p->first] += 1/jac*cross[2]*geta[1]*(p->second);
+    }
+    for (CI p=GetDerivVertex(1)[1].begin();p!=GetDerivVertex(1)[1].end();++p)
+    {
+      derivjac[p->first] += 1/jac*cross[0]*geta[2]*(p->second);
+      derivjac[p->first] -= 1/jac*cross[2]*geta[0]*(p->second);
+    }
+    for (CI p=GetDerivVertex(1)[2].begin();p!=GetDerivVertex(1)[2].end();++p)
+    {
+      derivjac[p->first] -= 1/jac*cross[0]*geta[1]*(p->second);
+      derivjac[p->first] += 1/jac*cross[1]*geta[0]*(p->second);
+    }
+    
+    // third vertex (Coords(k,2)) is part of geta
+    for (CI p=GetDerivVertex(2)[0].begin();p!=GetDerivVertex(2)[0].end();++p)
+    {
+      derivjac[p->first] += 1/jac*cross[1]*gxi[2]*(p->second);
+      derivjac[p->first] -= 1/jac*cross[2]*gxi[1]*(p->second);
+    }
+    for (CI p=GetDerivVertex(2)[1].begin();p!=GetDerivVertex(2)[1].end();++p)
+    {
+      derivjac[p->first] -= 1/jac*cross[0]*gxi[2]*(p->second);
+      derivjac[p->first] += 1/jac*cross[2]*gxi[0]*(p->second);
+    }
+    for (CI p=GetDerivVertex(2)[2].begin();p!=GetDerivVertex(2)[2].end();++p)
+    {
+      derivjac[p->first] += 1/jac*cross[0]*gxi[1]*(p->second);
+      derivjac[p->first] -= 1/jac*cross[1]*gxi[0]*(p->second);
+    }
+#else
+    cout << jac << endl;
+    dserror("ERROR: DerivJacobian (AuxPlane) called for SlaveParamSpace case!"); 
+#endif // #ifdef CONTACTAUXPLANE
+  }
+  
+  // unknown case
+  else dserror("ERROR: DerivJacobian (Intcell) called for unknown ele type!");
   
   return;
 }
@@ -469,6 +573,7 @@ contactsegs_(csegs)
     
     // normal is (0,0,1) in slave element parameter space
     Auxn()[0] = 0.0; Auxn()[1] = 0.0; Auxn()[2] = 1.0;
+    Lauxn() = 1.0;
     
     // tolerance for polygon clipping
     // minimum edge size in parameter space is 1
@@ -1099,7 +1204,10 @@ bool CONTACT::Coupling::AuxiliaryPlane3D()
   SlaveElement().LocalToGlobal(loccenter,Auxc(),0);
   
   // we then compute the unit normal vector at the element center
-  SlaveElement().ComputeUnitNormalAtXi(loccenter,Auxn());
+  Lauxn() = SlaveElement().ComputeUnitNormalAtXi(loccenter,Auxn());
+  
+  // also compute linearization of the unit normal vector
+  SlaveElement().DerivUnitNormalAtXi(loccenter,GetDerivAuxn());
   
   //cout << "Slave Element: " << SlaveElement().Id() << endl;
   //cout << "->Center: " << Auxc()[0] << " " << Auxc()[1] << " " << Auxc()[2] << endl;
@@ -1178,10 +1286,10 @@ bool CONTACT::Coupling::ProjectMaster3D()
     for (int k=0;k<3;++k) vertices[k] = mycnode->xspatial()[k] - dist * Auxn()[k];
     
     // get node id, too
-   mnodeids[0] = mycnode->Id();
+    mnodeids[0] = mycnode->Id();
    
-   // store into vertex data structure
-   MasterVertices().push_back(Vertex(vertices,Vertex::projmaster,mnodeids,NULL,NULL,false,false,NULL,-1.0));
+    // store into vertex data structure
+    MasterVertices().push_back(Vertex(vertices,Vertex::projmaster,mnodeids,NULL,NULL,false,false,NULL,-1.0));
        
     //cout << "->RealNode(M) " << mycnode->Id() << ": " << mycnode->xspatial()[0] << " " << mycnode->xspatial()[1] << " " << mycnode->xspatial()[2] << endl; 
     //cout << "->ProjNode(M) " << mycnode->Id() << ": " << vertices[0] << " " << vertices[1] << " " << vertices[2] << endl; 
@@ -1198,11 +1306,6 @@ void CONTACT::Coupling::PolygonClipping3D(vector<Vertex>& poly1,
                                           vector<Vertex>& respoly,
                                           double& tol)
 {
-  // print to screen
-  //cout << "\n\n*****************************************************";
-  //cout << "\n*          P O L Y G O N   C L I P P I N G          *";
-  //cout << "\n*****************************************************\n\n";
-  
   //**********************************************************************
   // STEP1: Input check
   // - input polygons must consist of min. 3 vertices each
@@ -2288,76 +2391,74 @@ bool CONTACT::Coupling::HasProjStatus3D()
 bool CONTACT::Coupling::Triangulation3D(map<int,double>& projpar)
 {
   // preparations
-  vector<double> clipcenter(3);
-  for (int k=0;k<3;++k) clipcenter[k] = 0.0;
   int clipsize = (int)(Clip().size());
+  vector<vector<map<int,double> > > linvertex(clipsize,vector<map<int,double> >(3));
+  vector<map<int,double> > lincenter(3); 
   
   //**********************************************************************
   // (1) Linearization of clip vertex coordinates
   //**********************************************************************
-  vector<vector<map<int,double> > > linvertex(clipsize,vector<map<int,double> >(3));
-  vector<map<int,double> > lincenter(3); 
   VertexLinearization3D(linvertex,projpar);
   
   //**********************************************************************
-  // (2) Find center of clipping polygon
+  // (2) Find center of clipping polygon (centroid formula)
   //**********************************************************************
+  vector<double> clipcenter(3);
+  for (int k=0;k<3;++k) clipcenter[k] = 0.0;
+  double fac = 0.0;
   
-  // ************* Coupling with or without auxiliary plane **************
-#ifdef CONTACTAUXPLANE
-  // as a first shot we use simple node averaging here
-  // arithmetic center, NOT geometric center
+  // first we need node averaged center
+  double nac[3] = {0.0, 0.0, 0.0};
   for (int i=0;i<clipsize;++i)
     for (int k=0;k<3;++k)
-      clipcenter[k] += (Clip()[i].Coord()[k] / clipsize);
-  //cout << "Clipcenter (simple): " << clipcenter[0] << " " << clipcenter[1] << " " << clipcenter[2] << endl;
+      nac[k] += (Clip()[i].Coord()[k] / clipsize);
   
-#else
-  // as an improved version we use centroid formulas here
-  // this really yields the geometric center
-  // (taken from: Moertel package, Trilinos, Sandia NL)
-  double A = 0.0;
-  
+  // loop over all triangles of polygon
   for (int i=0; i<clipsize; ++i)
   {
-    // check for 2D clip polygon in parameter space
-    if (abs(Clip()[i].Coord()[2])>1.0e-12) dserror("ERROR: Clip polygon point with z!=0");
-    double xi_i[2] = {0.0, 0.0};
-    double xi_ip1[2] = {0.0, 0.0};
+    double xi_i[3] = {0.0, 0.0, 0.0};
+    double xi_ip1[3] = {0.0, 0.0, 0.0};
     
     // standard case    
     if (i<clipsize-1)
     {
-      xi_i[0] = Clip()[i].Coord()[0]; xi_i[1] = Clip()[i].Coord()[1];
-      xi_ip1[0] = Clip()[i+1].Coord()[0]; xi_ip1[1] = Clip()[i+1].Coord()[1];
+      for (int k=0;k<3;++k) xi_i[k] = Clip()[i].Coord()[k];
+      for (int k=0;k<3;++k) xi_ip1[k] = Clip()[i+1].Coord()[k];
     }
     // last vertex of clip polygon
     else
     {
-      xi_i[0] = Clip()[clipsize-1].Coord()[0]; xi_i[1] = Clip()[clipsize-1].Coord()[1];
-      xi_ip1[0] = Clip()[0].Coord()[0]; xi_ip1[1] = Clip()[0].Coord()[1];
+      for (int k=0;k<3;++k) xi_i[k] = Clip()[clipsize-1].Coord()[k];
+      for (int k=0;k<3;++k) xi_ip1[k] = Clip()[0].Coord()[k];
     }
+
+    // triangle area
+    double diff1[3] = {0.0, 0.0, 0.0};
+    double diff2[3] = {0.0, 0.0, 0.0};
+    for (int k=0;k<3;++k) diff1[k] = xi_ip1[k] - xi_i[k];
+    for (int k=0;k<3;++k) diff2[k] = xi_i[k] - nac[k];
     
-    // add contribution to area and centroid coords
-    A     += xi_ip1[0]*xi_i[1] - xi_i[0]*xi_ip1[1];
-    clipcenter[0] += (xi_i[0]+xi_ip1[0])*(xi_ip1[0]*xi_i[1]-xi_i[0]*xi_ip1[1]);
-    clipcenter[1] += (xi_i[1]+xi_ip1[1])*(xi_ip1[0]*xi_i[1]-xi_i[0]*xi_ip1[1]);
+    double cross[3] = {0.0, 0.0, 0.0};
+    cross[0] = diff1[1]*diff2[2] - diff1[2]*diff2[1];
+    cross[1] = diff1[2]*diff2[0] - diff1[0]*diff2[2];
+    cross[2] = diff1[0]*diff2[1] - diff1[1]*diff2[0];
+    
+    double Atri = 0.5 * sqrt(cross[0]*cross[0]+cross[1]*cross[1]+cross[2]*cross[2]);
+    
+    // add contributions to clipcenter and fac
+    fac += Atri;
+    for (int k=0;k<3;++k) clipcenter[k] += 1.0/3.0 * (xi_i[k] + xi_ip1[k] + nac[k]) * Atri;
   }
   
-  // final centroid coords
-  clipcenter[0] /= (3.0*A);
-  clipcenter[1] /= (3.0*A);
-  //cout << "Clipcenter (centroid): " << clipcenter[0] << " " << clipcenter[1] << " " << clipcenter[2] << endl;
+  //final clipcenter
+  for (int k=0;k<3;++k) clipcenter[k] /= fac; 
+  //cout << "Clipcenter: " << clipcenter[0] << " " << clipcenter[1] << " " << clipcenter[2] << endl;
   
-#endif // #ifdef CONTACTAUXPLANE
-  // *********************************************************************
   
-#ifndef CONTACTAUXPLANE
   //**********************************************************************
   // (3) Linearization of clip center coordinates
   //**********************************************************************
   CenterLinearization3D(linvertex,lincenter);
-#endif // #ifndef CONTACTAUXPLANE
   
   //**********************************************************************
   // (4)Triangulation -> Intcells
@@ -2374,8 +2475,8 @@ bool CONTACT::Coupling::Triangulation3D(map<int,double>& projpar)
         coords(k,i) = Clip()[i].Coord()[k];
     
     // create Intcell object and push back
-    Cells().push_back(rcp(new Intcell(0,3,coords,DRT::Element::tri3,
-                      linvertex[0],linvertex[1],linvertex[2])));
+    Cells().push_back(rcp(new Intcell(0,3,coords,Auxn(),DRT::Element::tri3,
+                  linvertex[0],linvertex[1],linvertex[2],GetDerivAuxn())));
     
   }
   
@@ -2405,8 +2506,8 @@ bool CONTACT::Coupling::Triangulation3D(map<int,double>& projpar)
         for (int k=0;k<3;++k) coords(k,2) = Clip()[num+1].Coord()[k];
       
       // create Intcell object and push back
-      Cells().push_back(rcp(new Intcell(num,3,coords,DRT::Element::tri3,
-                        lincenter,linvertex[num],linvertex[numplus1])));
+      Cells().push_back(rcp(new Intcell(num,3,coords,Auxn(),DRT::Element::tri3,
+                lincenter,linvertex[num],linvertex[numplus1],GetDerivAuxn())));
     }
   }
   
@@ -2429,53 +2530,41 @@ bool CONTACT::Coupling::VertexLinearization3D(vector<vector<map<int,double> > >&
     Vertex& currv = Clip()[i];
     vector<map<int,double> >& currlin = linvertex[i];
     
-    //cout << "Testing current vertex" << endl;
-    //cout << "Coords: " << currv.Coord()[0] << " " << currv.Coord()[1] << " " << currv.Coord()[2] << endl;
-    //cout << "Type: " << currv.VType() << endl;
-    //cout << "Alpha: " << currv.Alpha() << endl;
-    //for (int k=0;k<(int)(currv.Nodeids().size());++k) cout << currv.Nodeids()[k] << endl;
-    
     // decision on vertex type (slave, projmaster, linclip)
     if (currv.VType()==Vertex::slave)
     {
+#ifdef CONTACTAUXPLANE
+      // get corresponding slave id
+      int sid = currv.Nodeids()[0];
+      
+      // do slave vertex linearization
+      SlaveVertexLinearization3D(currv,currlin,sid);
+#else
       // Vertex = slave node -> Linearization = 0
       // this is the easy case with nothing to do
+#endif // #ifdef CONTACTAUXPLANE    
     }
     else if (currv.VType()==Vertex::projmaster)
     {
-      //check projection alphas
-      //typedef map<int,double>::const_iterator CI;
-      //cout << "Map of master node ids and projection alphas:" << endl;
-      //for (CI p=projpar.begin();p!=projpar.end();++p)
-      //  cout << p->first << " " << p->second << endl;
-      
-      // get corresponding master projection alpha
+#ifdef CONTACTAUXPLANE
+      // get corresponding master id
+      int mid = currv.Nodeids()[0];
+            
+      // do master vertex linearization
+      MasterVertexLinearization3D(currv,currlin,mid);
+#else
+      // get corresponding master id and projection alpha
       int mid = currv.Nodeids()[0];
       double alpha = projpar[mid];
       
       //cout << "Coords: " << currv.Coord()[0] << " " << currv.Coord()[1] << endl;
       
       // do master vertex linearization
-      MasterVertexLinearization3D(currv,currlin,mid,alpha);
-      
-      /*if (printderiv)
-      {
-      cout << "\nCoords: " << currv.Coord()[0] << " " << currv.Coord()[1] << endl;
-      cout << "mid: " << mid << " alpha: " << alpha << endl;
-      cout << "(projmaster)Analytical derivative for Projmaster Vertex " << currv.Nodeids()[0] << " (x-component)" << endl;
-      for (CI p=currlin[0].begin();p!=currlin[0].end();++p)
-        cout << "Dof: " << p->first << "\t" << p->second << endl;
-      cout << "(projmaster)Analytical derivative for Projmaster Vertex " << currv.Nodeids()[0] << " (y-component)" << endl;
-      for (CI p=currlin[1].begin();p!=currlin[1].end();++p)
-        cout << "Dof: " << p->first << "\t" << p->second << endl;
-      }*/
+      MasterVertexLinearization3D(currv,currlin,mid,alpha);  
+#endif // #ifdef CONTACTAUXPLANE
     }
     else if (currv.VType()==Vertex::lineclip)
     {
-      //cout << "Doing lineclip linearization!" << endl;
-      //cout << "Slave ids:  " << currv.Nodeids()[0] << " " << currv.Nodeids()[1] << endl;
-      //cout << "Master ids: " << currv.Nodeids()[2] << " " << currv.Nodeids()[3] << endl;
-
       // get references to the two slave vertices
       int sindex1 = -1;
       int sindex2 = -1;
@@ -2508,152 +2597,252 @@ bool CONTACT::Coupling::VertexLinearization3D(vector<vector<map<int,double> > >&
       Vertex* mv1 = &MasterVertices()[mindex1];
       Vertex* mv2 = &MasterVertices()[mindex2];
       
-      // compute factor Z
-      double crossZ[3] = {0.0, 0.0, 0.0};
-      crossZ[0] = (sv1->Coord()[1]-mv1->Coord()[1])*(mv2->Coord()[2]-mv1->Coord()[2])
-               - (sv1->Coord()[2]-mv1->Coord()[2])*(mv2->Coord()[1]-mv1->Coord()[1]);
-      crossZ[1] = (sv1->Coord()[2]-mv1->Coord()[2])*(mv2->Coord()[0]-mv1->Coord()[0])
-               - (sv1->Coord()[0]-mv1->Coord()[0])*(mv2->Coord()[2]-mv1->Coord()[2]); 
-      crossZ[2] = (sv1->Coord()[0]-mv1->Coord()[0])*(mv2->Coord()[1]-mv1->Coord()[1])
-               - (sv1->Coord()[1]-mv1->Coord()[1])*(mv2->Coord()[0]-mv1->Coord()[0]);
-      double Zfac = crossZ[0]*Auxn()[0]+crossZ[1]*Auxn()[1]+crossZ[2]*Auxn()[2];
-      
-      // compute factor N
-      double crossN[3] = {0.0, 0.0, 0.0};
-      crossN[0] = (sv2->Coord()[1]-sv1->Coord()[1])*(mv2->Coord()[2]-mv1->Coord()[2])
-               - (sv2->Coord()[2]-sv1->Coord()[2])*(mv2->Coord()[1]-mv1->Coord()[1]);
-      crossN[1] = (sv2->Coord()[2]-sv1->Coord()[2])*(mv2->Coord()[0]-mv1->Coord()[0])
-               - (sv2->Coord()[0]-sv1->Coord()[0])*(mv2->Coord()[2]-mv1->Coord()[2]); 
-      crossN[2] = (sv2->Coord()[0]-sv1->Coord()[0])*(mv2->Coord()[1]-mv1->Coord()[1])
-               - (sv2->Coord()[1]-sv1->Coord()[1])*(mv2->Coord()[0]-mv1->Coord()[0]);
-      double Nfac = crossN[0]*Auxn()[0]+crossN[1]*Auxn()[1]+crossN[2]*Auxn()[2];
-      
-      // slave edge vector
-      double sedge[3] = {0.0, 0.0, 0.0};
-      for (int k=0;k<3;++k) sedge[k] = sv1->Coord()[k] - sv2->Coord()[k];
-      
-      // prepare linearization derivZ
-      double crossdZ1[3] = {0.0, 0.0, 0.0};
-      double crossdZ2[3] = {0.0, 0.0, 0.0};
-      crossdZ1[0] = Auxn()[1]*(mv2->Coord()[2]-mv1->Coord()[2])-Auxn()[2]*(mv2->Coord()[1]-mv1->Coord()[1]);
-      crossdZ1[1] = Auxn()[2]*(mv2->Coord()[0]-mv1->Coord()[0])-Auxn()[0]*(mv2->Coord()[2]-mv1->Coord()[2]);
-      crossdZ1[2] = Auxn()[0]*(mv2->Coord()[1]-mv1->Coord()[1])-Auxn()[1]*(mv2->Coord()[0]-mv1->Coord()[0]);
-      crossdZ2[0] = Auxn()[1]*(sv1->Coord()[2]-mv1->Coord()[2])-Auxn()[2]*(sv1->Coord()[1]-mv1->Coord()[1]);
-      crossdZ2[1] = Auxn()[2]*(sv1->Coord()[0]-mv1->Coord()[0])-Auxn()[0]*(sv1->Coord()[2]-mv1->Coord()[2]);
-      crossdZ2[2] = Auxn()[0]*(sv1->Coord()[1]-mv1->Coord()[1])-Auxn()[1]*(sv1->Coord()[0]-mv1->Coord()[0]);
-      
-      // prepare linearization derivN
-      double crossdN1[3] = {0.0, 0.0, 0.0};
-      crossdN1[0] = Auxn()[1]*(sv2->Coord()[2]-sv1->Coord()[2])-Auxn()[2]*(sv2->Coord()[1]-sv1->Coord()[1]);
-      crossdN1[1] = Auxn()[2]*(sv2->Coord()[0]-sv1->Coord()[0])-Auxn()[0]*(sv2->Coord()[2]-sv1->Coord()[2]);
-      crossdN1[2] = Auxn()[0]*(sv2->Coord()[1]-sv1->Coord()[1])-Auxn()[1]*(sv2->Coord()[0]-sv1->Coord()[0]);
-      
-      // master vertex linearization (2x)
-      vector<vector<map<int,double> > > masterlin(2,vector<map<int,double> >(3));
-      
-      int mid1 = currv.Nodeids()[2];
-      double alpha1 = projpar[mid1];
-      
-      bool found1 = false;
-      Vertex* masterv1 = &MasterVertices()[0];
-      for (int j=0;j<(int)MasterVertices().size();++j)
-      {
-        if (MasterVertices()[j].Nodeids()[0]==mid1)
-        {
-          found1=true;
-          masterv1 = &MasterVertices()[j];
-          break;
-        }
-      }
-      if (!found1) dserror("ERROR: Lineclip linearization, Master vertex 1 not found!");
-      
-      //cout << "Coords: " << masterv1->Coord()[0] << " " << masterv1->Coord()[1] << endl;
-      
-      MasterVertexLinearization3D(*masterv1,masterlin[0],mid1,alpha1);
-      
-      /*if (printderiv)
-      {
-      cout << "\nCoords: " << masterv1->Coord()[0] << " " << masterv1->Coord()[1] << endl;
-      cout << "mid: " << mid1 << " alpha: " << alpha1 << endl;
-      cout << "(lineclip)Analytical derivative for Projmaster Vertex " << currv.Nodeids()[2] << " (x-component)" << endl;
-      for (CI p=masterlin[0][0].begin();p!=masterlin[0][0].end();++p)
-        cout << "Dof: " << p->first << "\t" << p->second << endl;
-      cout << "(lineclip)Analytical derivative for Projmaster Vertex " << currv.Nodeids()[2] << " (y-component)" << endl;
-      for (CI p=masterlin[0][1].begin();p!=masterlin[0][1].end();++p)
-        cout << "Dof: " << p->first << "\t" << p->second << endl;
-      }*/ 
-      
-      int mid2 = currv.Nodeids()[3];
-      double alpha2 = projpar[mid2];
-      
-      bool found2 = false;
-      Vertex* masterv2 = &MasterVertices()[0];
-      for (int j=0;j<(int)MasterVertices().size();++j)
-      {
-        if (MasterVertices()[j].Nodeids()[0]==mid2)
-        {
-          found2=true;
-          masterv2 = &MasterVertices()[j];
-          break;
-        }
-      }
-      if (!found2) dserror("ERROR: Lineclip linearization, Master vertex 2 not found!");
-      
-      //cout << "Coords: " << masterv2->Coord()[0] << " " << masterv2->Coord()[1] << endl;
-      
-      MasterVertexLinearization3D(*masterv2,masterlin[1],mid2,alpha2);
-      
-      /*if (printderiv)
-      {
-      cout << "\nCoords: " << masterv2->Coord()[0] << " " << masterv2->Coord()[1] << endl;
-      cout << "mid: " << mid2 << " alpha: " << alpha2 << endl;
-      cout << "(lineclip) Analytical derivative for Projmaster Vertex " << currv.Nodeids()[3] << " (x-component)" << endl;
-      for (CI p=masterlin[1][0].begin();p!=masterlin[1][0].end();++p)
-        cout << "Dof: " << p->first << "\t" << p->second << endl;
-      cout << "(lineclip) Analytical derivative for Projmaster Vertex " << currv.Nodeids()[3] << " (y-component)" << endl;
-      for (CI p=masterlin[1][1].begin();p!=masterlin[1][1].end();++p)
-        cout << "Dof: " << p->first << "\t" << p->second << endl;
-      }*/
-      
-      // bring everything together -> lineclip vertex linearization
-      typedef map<int,double>::const_iterator CI;
-      for (int k=0;k<3;++k)
-      {
-        for (CI p=masterlin[0][k].begin();p!=masterlin[0][k].end();++p)
-        {
-          for (int dim=0;dim<2;++dim)
-          {
-          currlin[dim][p->first] += sedge[dim] * 1/Nfac * crossdZ1[k] * (p->second);
-          currlin[dim][p->first] -= sedge[dim] * 1/Nfac * crossdZ2[k] * (p->second);
-          currlin[dim][p->first] += sedge[dim] * Zfac/(Nfac*Nfac) * crossdN1[k] * (p->second);
-          }
-        }
-        for (CI p=masterlin[1][k].begin();p!=masterlin[1][k].end();++p)
-        {
-          for (int dim=0;dim<2;++dim)
-          {
-          currlin[dim][p->first] += sedge[dim] * 1/Nfac * crossdZ2[k] * (p->second);
-          currlin[dim][p->first] -= sedge[dim] * Zfac/(Nfac*Nfac) * crossdN1[k] * (p->second);
-          }
-        }
-      }
+#ifdef CONTACTAUXPLANE
+      // do lineclip vertex linearization
+      LineclipVertexLinearization3D(currv,currlin,sv1,sv2,mv1,mv2);          
+#else
+      // do lineclip vertex linearization
+      LineclipVertexLinearization3D(currv,currlin,sv1,sv2,mv1,mv2,projpar);  
+#endif // #ifdef CONTACTAUXPLANE
     }
     else
       dserror("ERROR: VertexLinearization3D: Invalid Vertex Type!");
-   
-    /*
-    // check linearization
-    typedef map<int,double>::const_iterator CI;
-    cout << "\nLinearization of current vertex (type " << currv.VType() << "):" << endl;
-    cout << "-> Coordinate 1:" << endl;
-    for (CI p=currlin[0].begin();p!=currlin[0].end();++p)
-      cout << p->first << " " << p->second << endl;
-    cout << "-> Coordinate 2:" << endl;
-    for (CI p=currlin[1].begin();p!=currlin[1].end();++p)
-        cout << p->first << " " << p->second << endl;
-    */
   }
   
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Linearization of slave vertex (3D) AuxPlane               popp 03/09|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Coupling::SlaveVertexLinearization3D(Vertex& currv,
+                                                   vector<map<int,double> >& currlin,
+                                                   int sid)
+{
+  // we first need the slave element center:
+  // for quad4, quad8, quad9 elements: xi = eta = 0.0
+  // for tri3, tri6 elements: xi = eta = 1/3
+  double scxi[2];
+    
+  DRT::Element::DiscretizationType dt = SlaveElement().Shape();
+  if (dt==CElement::tri3 || dt==CElement::tri6)
+  {
+    scxi[0] = 1.0/3;
+    scxi[1] = 1.0/3;
+  }
+  else if (dt==CElement::quad4 || dt==CElement::quad8 || dt==CElement::quad9)
+  {
+    scxi[0] = 0.0;
+    scxi[1] = 0.0;
+  }
+  else dserror("ERROR: SlaveVertexLinearization3D called for unknown element type");
+  
+  // evlauate shape functions + derivatives at scxi
+  int nrow = SlaveElement().NumNode();
+  LINALG::SerialDenseVector sval(nrow);
+  LINALG::SerialDenseMatrix sderiv(nrow,2,true);
+  SlaveElement().EvaluateShape(scxi,sval,sderiv,nrow);
+  
+  // we need all participating slave nodes
+  DRT::Node** snodes = SlaveElement().Nodes();
+  vector<CONTACT::CNode*> scnodes(nrow);
+  
+  for (int i=0;i<nrow;++i)
+  {
+    scnodes[i] = static_cast<CONTACT::CNode*>(snodes[i]);
+    if (!scnodes[i]) dserror("ERROR: SlaveVertexLinearization3D: Null pointer!");
+  }
+  
+  // we also need the corresponding slave node
+  DRT::Node* snode = Discret().gNode(sid);
+  if (!snode) dserror("ERROR: Cannot find node with gid %",sid);
+  CNode* csnode = static_cast<CNode*>(snode);
+  
+  // map iterator
+  typedef map<int,double>::const_iterator CI;
+    
+  // linearization of element center Auxc()
+  vector<map<int,double> > linauxc(3);
+
+  for (int i=0;i<nrow;++i)
+  {
+    linauxc[0][scnodes[i]->Dofs()[0]] += sval[i];
+    linauxc[1][scnodes[i]->Dofs()[1]] += sval[i];
+    linauxc[2][scnodes[i]->Dofs()[2]] += sval[i];
+  }
+  
+  // linearization of element normal Auxn()
+  vector<map<int,double> >& linauxn = GetDerivAuxn();
+  
+  // put everything together for slave vertex linearization
+  
+  // (1) slave node coordinates part
+  currlin[0][csnode->Dofs()[0]] += 1.0 - Auxn()[0] * Auxn()[0];
+  currlin[0][csnode->Dofs()[1]] -=       Auxn()[1] * Auxn()[0];
+  currlin[0][csnode->Dofs()[2]] -=       Auxn()[2] * Auxn()[0];
+  currlin[1][csnode->Dofs()[0]] -=       Auxn()[0] * Auxn()[1];
+  currlin[1][csnode->Dofs()[1]] += 1.0 - Auxn()[1] * Auxn()[1];
+  currlin[1][csnode->Dofs()[2]] -=       Auxn()[2] * Auxn()[1];
+  currlin[2][csnode->Dofs()[0]] -=       Auxn()[0] * Auxn()[2];
+  currlin[2][csnode->Dofs()[1]] -=       Auxn()[1] * Auxn()[2];
+  currlin[2][csnode->Dofs()[2]] += 1.0 - Auxn()[2] * Auxn()[2];
+  
+  // (2) slave element center coordinates (Auxc()) part
+  for (CI p=linauxc[0].begin();p!=linauxc[0].end();++p)
+    for (int k=0;k<3;++k)
+      currlin[k][p->first] += Auxn()[0] * Auxn()[k] * (p->second);
+  
+  for (CI p=linauxc[1].begin();p!=linauxc[1].end();++p)
+    for (int k=0;k<3;++k)
+      currlin[k][p->first] += Auxn()[1] * Auxn()[k] * (p->second);
+  
+  for (CI p=linauxc[2].begin();p!=linauxc[2].end();++p)
+    for (int k=0;k<3;++k)
+      currlin[k][p->first] += Auxn()[2] * Auxn()[k] * (p->second);
+  
+  // (3) slave element normal (Auxn()) part
+  double xdotn = (csnode->xspatial()[0]-Auxc()[0]) * Auxn()[0]
+               + (csnode->xspatial()[1]-Auxc()[1]) * Auxn()[1]
+               + (csnode->xspatial()[2]-Auxc()[2]) * Auxn()[2];
+                    
+  for (CI p=linauxn[0].begin();p!=linauxn[0].end();++p)
+  {
+    currlin[0][p->first] -= xdotn * (p->second);
+    for (int k=0;k<3;++k)
+      currlin[k][p->first] -= (csnode->xspatial()[0]-Auxc()[0]) * Auxn()[k] * (p->second);
+  }
+  
+  for (CI p=linauxn[1].begin();p!=linauxn[1].end();++p)
+  {
+    currlin[1][p->first] -= xdotn * (p->second);
+    for (int k=0;k<3;++k)
+      currlin[k][p->first] -= (csnode->xspatial()[1]-Auxc()[1]) * Auxn()[k] * (p->second);
+  }
+  
+  for (CI p=linauxn[2].begin();p!=linauxn[2].end();++p)
+  {
+    currlin[2][p->first] -= xdotn * (p->second);
+    for (int k=0;k<3;++k)
+      currlin[k][p->first] -= (csnode->xspatial()[2]-Auxc()[2]) * Auxn()[k] * (p->second);
+  }
+ 
+  return true;  
+}
+
+/*----------------------------------------------------------------------*
+ |  Linearization of projmaster vertex (3D) AuxPlane          popp 03/09|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Coupling::MasterVertexLinearization3D(Vertex& currv,
+                                                    vector<map<int,double> >& currlin,
+                                                    int mid)
+{
+  // we first need the slave element center:
+  // for quad4, quad8, quad9 elements: xi = eta = 0.0
+  // for tri3, tri6 elements: xi = eta = 1/3
+  double scxi[2];
+    
+  DRT::Element::DiscretizationType dt = SlaveElement().Shape();
+  if (dt==CElement::tri3 || dt==CElement::tri6)
+  {
+    scxi[0] = 1.0/3;
+    scxi[1] = 1.0/3;
+  }
+  else if (dt==CElement::quad4 || dt==CElement::quad8 || dt==CElement::quad9)
+  {
+    scxi[0] = 0.0;
+    scxi[1] = 0.0;
+  }
+  else dserror("ERROR: MasterVertexLinearization3D called for unknown element type");
+  
+  // evlauate shape functions + derivatives at scxi
+  int nrow = SlaveElement().NumNode();
+  LINALG::SerialDenseVector sval(nrow);
+  LINALG::SerialDenseMatrix sderiv(nrow,2,true);
+  SlaveElement().EvaluateShape(scxi,sval,sderiv,nrow);
+  
+  // we need all participating slave nodes
+  DRT::Node** snodes = SlaveElement().Nodes();
+  vector<CONTACT::CNode*> scnodes(nrow);
+  
+  for (int i=0;i<nrow;++i)
+  {
+    scnodes[i] = static_cast<CONTACT::CNode*>(snodes[i]);
+    if (!scnodes[i]) dserror("ERROR: MasterVertexLinearization3D: Null pointer!");
+  }
+  
+  // we also need the corresponding master node
+  DRT::Node* mnode = Discret().gNode(mid);
+  if (!mnode) dserror("ERROR: Cannot find node with gid %",mid);
+  CNode* cmnode = static_cast<CNode*>(mnode);
+  
+  // map iterator
+  typedef map<int,double>::const_iterator CI;
+    
+  // linearization of element center Auxc()
+  vector<map<int,double> > linauxc(3);
+
+  for (int i=0;i<nrow;++i)
+  {
+    linauxc[0][scnodes[i]->Dofs()[0]] += sval[i];
+    linauxc[1][scnodes[i]->Dofs()[1]] += sval[i];
+    linauxc[2][scnodes[i]->Dofs()[2]] += sval[i];
+  }
+  
+  // linearization of element normal Auxn()
+  vector<map<int,double> >& linauxn = GetDerivAuxn();
+    
+  // put everything together for master vertex linearization
+  
+  // (1) master node coordinates part
+  currlin[0][cmnode->Dofs()[0]] += 1.0 - Auxn()[0] * Auxn()[0];
+  currlin[0][cmnode->Dofs()[1]] -=       Auxn()[1] * Auxn()[0];
+  currlin[0][cmnode->Dofs()[2]] -=       Auxn()[2] * Auxn()[0];
+  currlin[1][cmnode->Dofs()[0]] -=       Auxn()[0] * Auxn()[1];
+  currlin[1][cmnode->Dofs()[1]] += 1.0 - Auxn()[1] * Auxn()[1];
+  currlin[1][cmnode->Dofs()[2]] -=       Auxn()[2] * Auxn()[1];
+  currlin[2][cmnode->Dofs()[0]] -=       Auxn()[0] * Auxn()[2];
+  currlin[2][cmnode->Dofs()[1]] -=       Auxn()[1] * Auxn()[2];
+  currlin[2][cmnode->Dofs()[2]] += 1.0 - Auxn()[2] * Auxn()[2];
+  
+  // (2) slave element center coordinates (Auxc()) part
+  for (CI p=linauxc[0].begin();p!=linauxc[0].end();++p)
+    for (int k=0;k<3;++k)
+      currlin[k][p->first] += Auxn()[0] * Auxn()[k] * (p->second);
+  
+  for (CI p=linauxc[1].begin();p!=linauxc[1].end();++p)
+    for (int k=0;k<3;++k)
+      currlin[k][p->first] += Auxn()[1] * Auxn()[k] * (p->second);
+  
+  for (CI p=linauxc[2].begin();p!=linauxc[2].end();++p)
+    for (int k=0;k<3;++k)
+      currlin[k][p->first] += Auxn()[2] * Auxn()[k] * (p->second);
+  
+  // (3) slave element normal (Auxn()) part
+  double xdotn = (cmnode->xspatial()[0]-Auxc()[0]) * Auxn()[0]
+               + (cmnode->xspatial()[1]-Auxc()[1]) * Auxn()[1]
+               + (cmnode->xspatial()[2]-Auxc()[2]) * Auxn()[2];
+                    
+  for (CI p=linauxn[0].begin();p!=linauxn[0].end();++p)
+  {
+    currlin[0][p->first] -= xdotn * (p->second);
+    for (int k=0;k<3;++k)
+      currlin[k][p->first] -= (cmnode->xspatial()[0]-Auxc()[0]) * Auxn()[k] * (p->second);
+  }
+  
+  for (CI p=linauxn[1].begin();p!=linauxn[1].end();++p)
+  {
+    currlin[1][p->first] -= xdotn * (p->second);
+    for (int k=0;k<3;++k)
+      currlin[k][p->first] -= (cmnode->xspatial()[1]-Auxc()[1]) * Auxn()[k] * (p->second);
+  }
+  
+  for (CI p=linauxn[2].begin();p!=linauxn[2].end();++p)
+  {
+    currlin[2][p->first] -= xdotn * (p->second);
+    for (int k=0;k<3;++k)
+      currlin[k][p->first] -= (cmnode->xspatial()[2]-Auxc()[2]) * Auxn()[k] * (p->second);
+  }
+    
   return true;
 }
 
@@ -2764,6 +2953,310 @@ bool CONTACT::Coupling::MasterVertexLinearization3D(Vertex& currv,
 }
 
 /*----------------------------------------------------------------------*
+ |  Linearization of lineclip vertex (3D) AuxPlane            popp 03/09|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Coupling::LineclipVertexLinearization3D(Vertex& currv,
+                                           vector<map<int,double> >& currlin,
+                                           Vertex* sv1, Vertex* sv2, Vertex* mv1, Vertex* mv2)
+{
+  // iterator
+  typedef map<int,double>::const_iterator CI;
+  
+  // compute factor Z
+  double crossZ[3] = {0.0, 0.0, 0.0};
+  crossZ[0] = (sv1->Coord()[1]-mv1->Coord()[1])*(mv2->Coord()[2]-mv1->Coord()[2])
+           - (sv1->Coord()[2]-mv1->Coord()[2])*(mv2->Coord()[1]-mv1->Coord()[1]);
+  crossZ[1] = (sv1->Coord()[2]-mv1->Coord()[2])*(mv2->Coord()[0]-mv1->Coord()[0])
+           - (sv1->Coord()[0]-mv1->Coord()[0])*(mv2->Coord()[2]-mv1->Coord()[2]); 
+  crossZ[2] = (sv1->Coord()[0]-mv1->Coord()[0])*(mv2->Coord()[1]-mv1->Coord()[1])
+           - (sv1->Coord()[1]-mv1->Coord()[1])*(mv2->Coord()[0]-mv1->Coord()[0]);
+  double Zfac = crossZ[0]*Auxn()[0]+crossZ[1]*Auxn()[1]+crossZ[2]*Auxn()[2];
+  
+  // compute factor N
+  double crossN[3] = {0.0, 0.0, 0.0};
+  crossN[0] = (sv2->Coord()[1]-sv1->Coord()[1])*(mv2->Coord()[2]-mv1->Coord()[2])
+           - (sv2->Coord()[2]-sv1->Coord()[2])*(mv2->Coord()[1]-mv1->Coord()[1]);
+  crossN[1] = (sv2->Coord()[2]-sv1->Coord()[2])*(mv2->Coord()[0]-mv1->Coord()[0])
+           - (sv2->Coord()[0]-sv1->Coord()[0])*(mv2->Coord()[2]-mv1->Coord()[2]); 
+  crossN[2] = (sv2->Coord()[0]-sv1->Coord()[0])*(mv2->Coord()[1]-mv1->Coord()[1])
+           - (sv2->Coord()[1]-sv1->Coord()[1])*(mv2->Coord()[0]-mv1->Coord()[0]);
+  double Nfac = crossN[0]*Auxn()[0]+crossN[1]*Auxn()[1]+crossN[2]*Auxn()[2];
+  
+  // slave edge vector
+  double sedge[3] = {0.0, 0.0, 0.0};
+  for (int k=0;k<3;++k) sedge[k] = sv2->Coord()[k] - sv1->Coord()[k];
+    
+  // prepare linearization derivZ
+  double crossdZ1[3] = {0.0, 0.0, 0.0};
+  double crossdZ2[3] = {0.0, 0.0, 0.0};
+  double crossdZ3[3] = {0.0, 0.0, 0.0};
+  crossdZ1[0] = (mv2->Coord()[1]-mv1->Coord()[1])*Auxn()[2]-(mv2->Coord()[2]-mv1->Coord()[2])*Auxn()[1];
+  crossdZ1[1] = (mv2->Coord()[2]-mv1->Coord()[2])*Auxn()[0]-(mv2->Coord()[0]-mv1->Coord()[0])*Auxn()[2];
+  crossdZ1[2] = (mv2->Coord()[0]-mv1->Coord()[0])*Auxn()[1]-(mv2->Coord()[1]-mv1->Coord()[1])*Auxn()[0];
+  crossdZ2[0] = Auxn()[1]*(sv1->Coord()[2]-mv1->Coord()[2])-Auxn()[2]*(sv1->Coord()[1]-mv1->Coord()[1]);
+  crossdZ2[1] = Auxn()[2]*(sv1->Coord()[0]-mv1->Coord()[0])-Auxn()[0]*(sv1->Coord()[2]-mv1->Coord()[2]);
+  crossdZ2[2] = Auxn()[0]*(sv1->Coord()[1]-mv1->Coord()[1])-Auxn()[1]*(sv1->Coord()[0]-mv1->Coord()[0]);
+  crossdZ3[0] = (sv1->Coord()[1]-mv1->Coord()[1])*(mv2->Coord()[2]-mv1->Coord()[2])-(sv1->Coord()[2]-mv1->Coord()[2])*(mv2->Coord()[1]-mv1->Coord()[1]);
+  crossdZ3[1] = (sv1->Coord()[2]-mv1->Coord()[2])*(mv2->Coord()[0]-mv1->Coord()[0])-(sv1->Coord()[0]-mv1->Coord()[0])*(mv2->Coord()[2]-mv1->Coord()[2]);
+  crossdZ3[2] = (sv1->Coord()[0]-mv1->Coord()[0])*(mv2->Coord()[1]-mv1->Coord()[1])-(sv1->Coord()[1]-mv1->Coord()[1])*(mv2->Coord()[0]-mv1->Coord()[0]);
+  
+  // prepare linearization derivN
+  double crossdN1[3] = {0.0, 0.0, 0.0};
+  double crossdN2[3] = {0.0, 0.0, 0.0};
+  double crossdN3[3] = {0.0, 0.0, 0.0};
+  crossdN1[0] = (mv2->Coord()[1]-mv1->Coord()[1])*Auxn()[2]-(mv2->Coord()[2]-mv1->Coord()[2])*Auxn()[1];
+  crossdN1[1] = (mv2->Coord()[2]-mv1->Coord()[2])*Auxn()[0]-(mv2->Coord()[0]-mv1->Coord()[0])*Auxn()[2];
+  crossdN1[2] = (mv2->Coord()[0]-mv1->Coord()[0])*Auxn()[1]-(mv2->Coord()[1]-mv1->Coord()[1])*Auxn()[0];
+  crossdN2[0] = Auxn()[1]*(sv2->Coord()[2]-sv1->Coord()[2])-Auxn()[2]*(sv2->Coord()[1]-sv1->Coord()[1]);
+  crossdN2[1] = Auxn()[2]*(sv2->Coord()[0]-sv1->Coord()[0])-Auxn()[0]*(sv2->Coord()[2]-sv1->Coord()[2]);
+  crossdN2[2] = Auxn()[0]*(sv2->Coord()[1]-sv1->Coord()[1])-Auxn()[1]*(sv2->Coord()[0]-sv1->Coord()[0]);
+  crossdN3[0] = (sv2->Coord()[1]-sv1->Coord()[1])*(mv2->Coord()[2]-mv1->Coord()[2])-(sv2->Coord()[2]-sv1->Coord()[2])*(mv2->Coord()[1]-mv1->Coord()[1]);
+  crossdN3[1] = (sv2->Coord()[2]-sv1->Coord()[2])*(mv2->Coord()[0]-mv1->Coord()[0])-(sv2->Coord()[0]-sv1->Coord()[0])*(mv2->Coord()[2]-mv1->Coord()[2]);
+  crossdN3[2] = (sv2->Coord()[0]-sv1->Coord()[0])*(mv2->Coord()[1]-mv1->Coord()[1])-(sv2->Coord()[1]-sv1->Coord()[1])*(mv2->Coord()[0]-mv1->Coord()[0]);
+  
+  // slave vertex linearization (2x)
+  vector<vector<map<int,double> > > slavelin(2,vector<map<int,double> >(3));
+  
+  int sid1 = currv.Nodeids()[0];
+  int sid2 = currv.Nodeids()[1];
+  bool sfound1 = false;
+  bool sfound2 = false;
+  Vertex* slavev1 = &SlaveVertices()[0];
+  Vertex* slavev2 = &SlaveVertices()[0];
+  
+  for (int j=0;j<(int)SlaveVertices().size();++j)
+  {
+    if (SlaveVertices()[j].Nodeids()[0]==sid1)
+    {
+      sfound1=true;
+      slavev1 = &SlaveVertices()[j];
+      break;
+    }
+  }
+  
+  if (!sfound1) dserror("ERROR: Lineclip linearization, Slave vertex 1 not found!");
+  
+  for (int j=0;j<(int)SlaveVertices().size();++j)
+  {
+    if (SlaveVertices()[j].Nodeids()[0]==sid2)
+    {
+      sfound2=true;
+      slavev2 = &SlaveVertices()[j];
+      break;
+    }
+  }
+
+  if (!sfound2) dserror("ERROR: Lineclip linearization, Slave vertex 2 not found!");
+  
+  SlaveVertexLinearization3D(*slavev1,slavelin[0],sid1);
+  SlaveVertexLinearization3D(*slavev2,slavelin[1],sid2);
+  
+  // master vertex linearization (2x)
+  vector<vector<map<int,double> > > masterlin(2,vector<map<int,double> >(3));
+  
+  int mid1 = currv.Nodeids()[2];
+  int mid2 = currv.Nodeids()[3];
+  bool mfound1 = false;
+  bool mfound2 = false;
+  Vertex* masterv1 = &MasterVertices()[0];
+  Vertex* masterv2 = &MasterVertices()[0];
+  
+  for (int j=0;j<(int)MasterVertices().size();++j)
+  {
+    if (MasterVertices()[j].Nodeids()[0]==mid1)
+    {
+      mfound1=true;
+      masterv1 = &MasterVertices()[j];
+      break;
+    }
+  }
+  
+  if (!mfound1) dserror("ERROR: Lineclip linearization, Master vertex 1 not found!");
+  
+  for (int j=0;j<(int)MasterVertices().size();++j)
+  {
+    if (MasterVertices()[j].Nodeids()[0]==mid2)
+    {
+      mfound2=true;
+      masterv2 = &MasterVertices()[j];
+      break;
+    }
+  }
+
+  if (!mfound2) dserror("ERROR: Lineclip linearization, Master vertex 2 not found!");
+  
+  MasterVertexLinearization3D(*masterv1,masterlin[0],mid1);
+  MasterVertexLinearization3D(*masterv2,masterlin[1],mid2);
+    
+  // linearization of element normal Auxn()
+  vector<map<int,double> >& linauxn = GetDerivAuxn();
+    
+  // bring everything together -> lineclip vertex linearization
+  for (int k=0;k<3;++k)
+  {
+    for (CI p=slavelin[0][k].begin();p!=slavelin[0][k].end();++p)
+    {
+      currlin[k][p->first] += (p->second);
+      currlin[k][p->first] += Zfac/Nfac * (p->second);
+      for (int dim=0;dim<3;++dim)
+      {
+        currlin[dim][p->first] -= sedge[dim] * 1/Nfac * crossdZ1[k] * (p->second);
+        currlin[dim][p->first] -= sedge[dim] * Zfac/(Nfac*Nfac) * crossdN1[k] * (p->second);
+     
+      }
+    }
+    for (CI p=slavelin[1][k].begin();p!=slavelin[1][k].end();++p)
+    {
+      currlin[k][p->first] -= Zfac/Nfac * (p->second);
+      for (int dim=0;dim<3;++dim)
+      {
+        currlin[dim][p->first] += sedge[dim] * Zfac/(Nfac*Nfac) * crossdN1[k] * (p->second);
+      }
+    }
+    for (CI p=masterlin[0][k].begin();p!=masterlin[0][k].end();++p)
+    {
+      for (int dim=0;dim<3;++dim)
+      {
+      currlin[dim][p->first] += sedge[dim] * 1/Nfac * crossdZ1[k] * (p->second);
+      currlin[dim][p->first] += sedge[dim] * 1/Nfac * crossdZ2[k] * (p->second);
+      currlin[dim][p->first] -= sedge[dim] * Zfac/(Nfac*Nfac) * crossdN2[k] * (p->second);
+      }
+    }
+    for (CI p=masterlin[1][k].begin();p!=masterlin[1][k].end();++p)
+    {
+      for (int dim=0;dim<3;++dim)
+      {
+      currlin[dim][p->first] -= sedge[dim] * 1/Nfac * crossdZ2[k] * (p->second);
+      currlin[dim][p->first] += sedge[dim] * Zfac/(Nfac*Nfac) * crossdN2[k] * (p->second);
+      }
+    }
+    for (CI p=linauxn[k].begin();p!=linauxn[k].end();++p)
+    {
+      for (int dim=0;dim<3;++dim)
+      {
+      currlin[dim][p->first] -= sedge[dim] * 1/Nfac * crossdZ3[k] * (p->second);
+      currlin[dim][p->first] += sedge[dim] * Zfac/(Nfac*Nfac) * crossdN3[k] * (p->second);
+      }
+    }
+  }
+    
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Linearization of lineclip vertex (3D)                     popp 02/09|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Coupling::LineclipVertexLinearization3D(Vertex& currv,
+                                           vector<map<int,double> >& currlin,
+                                           Vertex* sv1, Vertex* sv2, Vertex* mv1, Vertex* mv2,
+                                           map<int,double>& projpar)
+{
+  // compute factor Z
+  double crossZ[3] = {0.0, 0.0, 0.0};
+  crossZ[0] = (sv1->Coord()[1]-mv1->Coord()[1])*(mv2->Coord()[2]-mv1->Coord()[2])
+           - (sv1->Coord()[2]-mv1->Coord()[2])*(mv2->Coord()[1]-mv1->Coord()[1]);
+  crossZ[1] = (sv1->Coord()[2]-mv1->Coord()[2])*(mv2->Coord()[0]-mv1->Coord()[0])
+           - (sv1->Coord()[0]-mv1->Coord()[0])*(mv2->Coord()[2]-mv1->Coord()[2]); 
+  crossZ[2] = (sv1->Coord()[0]-mv1->Coord()[0])*(mv2->Coord()[1]-mv1->Coord()[1])
+           - (sv1->Coord()[1]-mv1->Coord()[1])*(mv2->Coord()[0]-mv1->Coord()[0]);
+  double Zfac = crossZ[0]*Auxn()[0]+crossZ[1]*Auxn()[1]+crossZ[2]*Auxn()[2];
+  
+  // compute factor N
+  double crossN[3] = {0.0, 0.0, 0.0};
+  crossN[0] = (sv2->Coord()[1]-sv1->Coord()[1])*(mv2->Coord()[2]-mv1->Coord()[2])
+           - (sv2->Coord()[2]-sv1->Coord()[2])*(mv2->Coord()[1]-mv1->Coord()[1]);
+  crossN[1] = (sv2->Coord()[2]-sv1->Coord()[2])*(mv2->Coord()[0]-mv1->Coord()[0])
+           - (sv2->Coord()[0]-sv1->Coord()[0])*(mv2->Coord()[2]-mv1->Coord()[2]); 
+  crossN[2] = (sv2->Coord()[0]-sv1->Coord()[0])*(mv2->Coord()[1]-mv1->Coord()[1])
+           - (sv2->Coord()[1]-sv1->Coord()[1])*(mv2->Coord()[0]-mv1->Coord()[0]);
+  double Nfac = crossN[0]*Auxn()[0]+crossN[1]*Auxn()[1]+crossN[2]*Auxn()[2];
+  
+  // slave edge vector
+  double sedge[3] = {0.0, 0.0, 0.0};
+  for (int k=0;k<3;++k) sedge[k] = sv1->Coord()[k] - sv2->Coord()[k];
+  
+  // prepare linearization derivZ
+  double crossdZ1[3] = {0.0, 0.0, 0.0};
+  double crossdZ2[3] = {0.0, 0.0, 0.0};
+  crossdZ1[0] = Auxn()[1]*(mv2->Coord()[2]-mv1->Coord()[2])-Auxn()[2]*(mv2->Coord()[1]-mv1->Coord()[1]);
+  crossdZ1[1] = Auxn()[2]*(mv2->Coord()[0]-mv1->Coord()[0])-Auxn()[0]*(mv2->Coord()[2]-mv1->Coord()[2]);
+  crossdZ1[2] = Auxn()[0]*(mv2->Coord()[1]-mv1->Coord()[1])-Auxn()[1]*(mv2->Coord()[0]-mv1->Coord()[0]);
+  crossdZ2[0] = Auxn()[1]*(sv1->Coord()[2]-mv1->Coord()[2])-Auxn()[2]*(sv1->Coord()[1]-mv1->Coord()[1]);
+  crossdZ2[1] = Auxn()[2]*(sv1->Coord()[0]-mv1->Coord()[0])-Auxn()[0]*(sv1->Coord()[2]-mv1->Coord()[2]);
+  crossdZ2[2] = Auxn()[0]*(sv1->Coord()[1]-mv1->Coord()[1])-Auxn()[1]*(sv1->Coord()[0]-mv1->Coord()[0]);
+  
+  // prepare linearization derivN
+  double crossdN1[3] = {0.0, 0.0, 0.0};
+  crossdN1[0] = Auxn()[1]*(sv2->Coord()[2]-sv1->Coord()[2])-Auxn()[2]*(sv2->Coord()[1]-sv1->Coord()[1]);
+  crossdN1[1] = Auxn()[2]*(sv2->Coord()[0]-sv1->Coord()[0])-Auxn()[0]*(sv2->Coord()[2]-sv1->Coord()[2]);
+  crossdN1[2] = Auxn()[0]*(sv2->Coord()[1]-sv1->Coord()[1])-Auxn()[1]*(sv2->Coord()[0]-sv1->Coord()[0]);
+  
+  // master vertex linearization (2x)
+  vector<vector<map<int,double> > > masterlin(2,vector<map<int,double> >(3));
+  
+  int mid1 = currv.Nodeids()[2];
+  double alpha1 = projpar[mid1];
+  
+  bool found1 = false;
+  Vertex* masterv1 = &MasterVertices()[0];
+  for (int j=0;j<(int)MasterVertices().size();++j)
+  {
+    if (MasterVertices()[j].Nodeids()[0]==mid1)
+    {
+      found1=true;
+      masterv1 = &MasterVertices()[j];
+      break;
+    }
+  }
+  if (!found1) dserror("ERROR: Lineclip linearization, Master vertex 1 not found!");
+  
+  MasterVertexLinearization3D(*masterv1,masterlin[0],mid1,alpha1);
+  
+  int mid2 = currv.Nodeids()[3];
+  double alpha2 = projpar[mid2];
+  
+  bool found2 = false;
+  Vertex* masterv2 = &MasterVertices()[0];
+  for (int j=0;j<(int)MasterVertices().size();++j)
+  {
+    if (MasterVertices()[j].Nodeids()[0]==mid2)
+    {
+      found2=true;
+      masterv2 = &MasterVertices()[j];
+      break;
+    }
+  }
+  if (!found2) dserror("ERROR: Lineclip linearization, Master vertex 2 not found!");
+  
+  MasterVertexLinearization3D(*masterv2,masterlin[1],mid2,alpha2);
+  
+  // bring everything together -> lineclip vertex linearization
+  typedef map<int,double>::const_iterator CI;
+  for (int k=0;k<3;++k)
+  {
+    for (CI p=masterlin[0][k].begin();p!=masterlin[0][k].end();++p)
+    {
+      for (int dim=0;dim<2;++dim)
+      {
+      currlin[dim][p->first] += sedge[dim] * 1/Nfac * crossdZ1[k] * (p->second);
+      currlin[dim][p->first] -= sedge[dim] * 1/Nfac * crossdZ2[k] * (p->second);
+      currlin[dim][p->first] += sedge[dim] * Zfac/(Nfac*Nfac) * crossdN1[k] * (p->second);
+      }
+    }
+    for (CI p=masterlin[1][k].begin();p!=masterlin[1][k].end();++p)
+    {
+      for (int dim=0;dim<2;++dim)
+      {
+      currlin[dim][p->first] += sedge[dim] * 1/Nfac * crossdZ2[k] * (p->second);
+      currlin[dim][p->first] -= sedge[dim] * Zfac/(Nfac*Nfac) * crossdN1[k] * (p->second);
+      }
+    }
+  }
+  
+  return true;
+}
+
+/*----------------------------------------------------------------------*
  |  Linearization of clip polygon center (3D)                 popp 02/09|
  *----------------------------------------------------------------------*/
 bool CONTACT::Coupling::CenterLinearization3D(const vector<vector<map<int,double> > >& linvertex,
@@ -2773,126 +3266,184 @@ bool CONTACT::Coupling::CenterLinearization3D(const vector<vector<map<int,double
   int clipsize = (int)(Clip().size());
   typedef map<int,double>::const_iterator CI;
   
-  // ************* Coupling with or without auxiliary plane **************
-#ifdef CONTACTAUXPLANE
-  // as a first shot we have used simple node averaging here
-  // arithmetic center, NOT geometric center
+  vector<double> clipcenter(3);
+  for (int k=0;k<3;++k) clipcenter[k] = 0.0;
+  double fac = 0.0;
+  
+  // first we need node averaged center
+  double nac[3] = {0.0, 0.0, 0.0};
   for (int i=0;i<clipsize;++i)
     for (int k=0;k<3;++k)
-      for (CI p=linvertex[i][k].begin();p!=linvertex[i][k].end();++p)
-        lincenter[k][p->first] += 1/clipsize * (p->second);
-#else
-  // as an improved version we have used centroid formulas here
-  // this really yields the geometric center
-  double sumci = 0.0;
-  double sumcixi = 0.0;
-  double sumcieta = 0.0;
+      nac[k] += (Clip()[i].Coord()[k] / clipsize);
   
-  // first round: prepare linearization
+  // loop over all triangles of polygon (1st round: preparations)
   for (int i=0; i<clipsize; ++i)
   {
-    double xi_i[2] = {0.0, 0.0};
-    double xi_ip1[2] = {0.0, 0.0};
+    double xi_i[3] = {0.0, 0.0, 0.0};
+    double xi_ip1[3] = {0.0, 0.0, 0.0};
     
     // standard case    
     if (i<clipsize-1)
     {
-      xi_i[0] = Clip()[i].Coord()[0]; xi_i[1] = Clip()[i].Coord()[1];
-      xi_ip1[0] = Clip()[i+1].Coord()[0]; xi_ip1[1] = Clip()[i+1].Coord()[1];
+      for (int k=0;k<3;++k) xi_i[k] = Clip()[i].Coord()[k];
+      for (int k=0;k<3;++k) xi_ip1[k] = Clip()[i+1].Coord()[k];
     }
     // last vertex of clip polygon
     else
     {
-      xi_i[0] = Clip()[i].Coord()[0]; xi_i[1] = Clip()[i].Coord()[1];
-      xi_ip1[0] = Clip()[0].Coord()[0]; xi_ip1[1] = Clip()[0].Coord()[1];
+      for (int k=0;k<3;++k) xi_i[k] = Clip()[clipsize-1].Coord()[k];
+      for (int k=0;k<3;++k) xi_ip1[k] = Clip()[0].Coord()[k];
     }
+
+    // triangle area
+    double diff1[3] = {0.0, 0.0, 0.0};
+    double diff2[3] = {0.0, 0.0, 0.0};
+    for (int k=0;k<3;++k) diff1[k] = xi_ip1[k] - xi_i[k];
+    for (int k=0;k<3;++k) diff2[k] = xi_i[k] - nac[k];
     
-    // build sum factors
-    sumci    += (xi_ip1[0]*xi_i[1] - xi_i[0]*xi_ip1[1]);
-    sumcixi  += (xi_ip1[0]*xi_i[1] - xi_i[0]*xi_ip1[1]) * (xi_i[0] + xi_ip1[0]);
-    sumcieta += (xi_ip1[0]*xi_i[1] - xi_i[0]*xi_ip1[1]) * (xi_i[1] + xi_ip1[1]);
+    double cross[3] = {0.0, 0.0, 0.0};
+    cross[0] = diff1[1]*diff2[2] - diff1[2]*diff2[1];
+    cross[1] = diff1[2]*diff2[0] - diff1[0]*diff2[2];
+    cross[2] = diff1[0]*diff2[1] - diff1[1]*diff2[0];
+    
+    double Atri = 0.5 * sqrt(cross[0]*cross[0]+cross[1]*cross[1]+cross[2]*cross[2]);
+    
+    // add contributions to clipcenter and fac
+    fac += Atri;
+    for (int k=0;k<3;++k) clipcenter[k] += 1.0/3.0 * (xi_i[k] + xi_ip1[k] + nac[k]) * Atri;
   }
   
-  // second round: compute linearization
+  // build factors for linearization
+  double z[3] = {0.0, 0.0, 0.0};
+  for (int k=0;k<3;++k) z[k] = clipcenter[k];
+  double n = fac;
+  
+  // first we need linearization of node averaged center
+  vector<map<int,double> > linnac(3);
+  
+  for (int i=0;i<clipsize;++i)
+    for (int k=0;k<3;++k)
+      for (CI p=linvertex[i][k].begin();p!=linvertex[i][k].end();++p)
+        linnac[k][p->first] += 1.0/clipsize * (p->second);
+    
+  // loop over all triangles of polygon (2nd round: linearization)
   for (int i=0; i<clipsize; ++i)
   {
-    double xi_i[2] = {0.0, 0.0};
-    double xi_ip1[2] = {0.0, 0.0};
+    double xi_i[3] = {0.0, 0.0, 0.0};
+    double xi_ip1[3] = {0.0, 0.0, 0.0};
     int iplus1 = 0;
     
     // standard case    
     if (i<clipsize-1)
     {
-      xi_i[0] = Clip()[i].Coord()[0]; xi_i[1] = Clip()[i].Coord()[1];
-      xi_ip1[0] = Clip()[i+1].Coord()[0]; xi_ip1[1] = Clip()[i+1].Coord()[1];
+      for (int k=0;k<3;++k) xi_i[k] = Clip()[i].Coord()[k];
+      for (int k=0;k<3;++k) xi_ip1[k] = Clip()[i+1].Coord()[k];
       iplus1 = i+1;
     }
     // last vertex of clip polygon
     else
     {
-      xi_i[0] = Clip()[i].Coord()[0]; xi_i[1] = Clip()[i].Coord()[1];
-      xi_ip1[0] = Clip()[0].Coord()[0]; xi_ip1[1] = Clip()[0].Coord()[1];
-      iplus1 = 0;    
+      for (int k=0;k<3;++k) xi_i[k] = Clip()[clipsize-1].Coord()[k];
+      for (int k=0;k<3;++k) xi_ip1[k] = Clip()[0].Coord()[k];
+      iplus1 = 0;
     }
+
+    // triangle area
+    double diff1[3] = {0.0, 0.0, 0.0};
+    double diff2[3] = {0.0, 0.0, 0.0};
+    for (int k=0;k<3;++k) diff1[k] = xi_ip1[k] - xi_i[k];
+    for (int k=0;k<3;++k) diff2[k] = xi_i[k] - nac[k];
     
-    // leading factor ci
-    double ci = xi_ip1[0]*xi_i[1] - xi_i[0]*xi_ip1[1];
+    double cross[3] = {0.0, 0.0, 0.0};
+    cross[0] = diff1[1]*diff2[2] - diff1[2]*diff2[1];
+    cross[1] = diff1[2]*diff2[0] - diff1[0]*diff2[2];
+    cross[2] = diff1[0]*diff2[1] - diff1[1]*diff2[0];
     
-    // sum up contributions to lincenter (i)
+    double Atri = 0.5 * sqrt(cross[0]*cross[0]+cross[1]*cross[1]+cross[2]*cross[2]);
+    
+    // linearization of cross
+    vector<map<int,double> > lincross(3);
+    
     for (CI p=linvertex[i][0].begin();p!=linvertex[i][0].end();++p)
     {
-      lincenter[0][p->first] -= 1/(3*sumci) * (xi_i[0]+xi_ip1[0]) * xi_ip1[1] * (p->second);
-      lincenter[0][p->first] += 1/(3*sumci) * ci * (p->second);
-      lincenter[0][p->first] += sumcixi/(3*sumci*sumci) * xi_ip1[1] * (p->second);
-      
-      lincenter[1][p->first] -= 1/(3*sumci) * (xi_i[1]+xi_ip1[1]) * xi_ip1[1] * (p->second);
-      lincenter[1][p->first] += sumcieta/(3*sumci*sumci) * xi_ip1[1] * (p->second);
+      lincross[1][p->first] += diff1[2] * (p->second);
+      lincross[1][p->first] += diff2[2] * (p->second);
+      lincross[2][p->first] -= diff1[1] * (p->second);
+      lincross[2][p->first] -= diff2[1] * (p->second);
     }
     for (CI p=linvertex[i][1].begin();p!=linvertex[i][1].end();++p)
     {
-      lincenter[0][p->first] += 1/(3*sumci) * (xi_i[0]+xi_ip1[0]) * xi_ip1[0] * (p->second);
-      lincenter[0][p->first] -= sumcixi/(3*sumci*sumci) * xi_ip1[0] * (p->second);
-      
-      lincenter[1][p->first] += 1/(3*sumci) * (xi_i[1]+xi_ip1[1]) * xi_ip1[0] * (p->second);
-      lincenter[1][p->first] += 1/(3*sumci) * ci * (p->second);
-      lincenter[1][p->first] -= sumcieta/(3*sumci*sumci) * xi_ip1[0] * (p->second);
+      lincross[0][p->first] -= diff1[2] * (p->second);
+      lincross[0][p->first] -= diff2[2] * (p->second);
+      lincross[2][p->first] += diff1[0] * (p->second);
+      lincross[2][p->first] += diff2[0] * (p->second);   
+    }
+    for (CI p=linvertex[i][2].begin();p!=linvertex[i][2].end();++p)
+    {
+      lincross[0][p->first] += diff1[1] * (p->second);
+      lincross[0][p->first] += diff2[1] * (p->second);
+      lincross[1][p->first] -= diff1[0] * (p->second);
+      lincross[1][p->first] -= diff2[0] * (p->second);       
     }
     
-    // sum up contributions to lincenter (i+1)
     for (CI p=linvertex[iplus1][0].begin();p!=linvertex[iplus1][0].end();++p)
     {
-      lincenter[0][p->first] += 1/(3*sumci) * (xi_i[0]+xi_ip1[0]) * xi_i[1] * (p->second);
-      lincenter[0][p->first] += 1/(3*sumci) * ci * (p->second);
-      lincenter[0][p->first] -= sumcixi/(3*sumci*sumci) * xi_i[1] * (p->second);
-      
-      lincenter[1][p->first] += 1/(3*sumci) * (xi_i[1]+xi_ip1[1]) * xi_i[1] * (p->second);
-      lincenter[1][p->first] -= sumcieta/(3*sumci*sumci) * xi_i[1] * (p->second);
+      lincross[1][p->first] -= diff2[2] * (p->second);
+      lincross[2][p->first] += diff2[1] * (p->second);       
     }
     for (CI p=linvertex[iplus1][1].begin();p!=linvertex[iplus1][1].end();++p)
     {
-      lincenter[0][p->first] -= 1/(3*sumci) * (xi_i[0]+xi_ip1[0]) * xi_i[0] * (p->second);
-      lincenter[0][p->first] += sumcixi/(3*sumci*sumci) * xi_i[0] * (p->second);
+      lincross[0][p->first] += diff2[2] * (p->second);
+      lincross[2][p->first] -= diff2[0] * (p->second);          
+    }
+    for (CI p=linvertex[iplus1][2].begin();p!=linvertex[iplus1][2].end();++p)
+    {
+      lincross[0][p->first] -= diff2[1] * (p->second);
+      lincross[1][p->first] += diff2[0] * (p->second);           
+    }
+    
+    for (CI p=linnac[0].begin();p!=linnac[0].end();++p)
+    {
+      lincross[1][p->first] -= diff1[2] * (p->second);
+      lincross[2][p->first] += diff1[1] * (p->second);    
+    }
+    for (CI p=linnac[1].begin();p!=linnac[1].end();++p)
+    {
+      lincross[0][p->first] += diff1[2] * (p->second);
+      lincross[2][p->first] -= diff1[0] * (p->second);      
+    }
+    for (CI p=linnac[2].begin();p!=linnac[2].end();++p)
+    {
+      lincross[0][p->first] -= diff1[1] * (p->second);
+      lincross[1][p->first] += diff1[0] * (p->second);     
+    }
+    
+    // linearization of triangle area
+    map<int,double> linarea; 
+    for (int k=0;k<3;++k)
+      for (CI p=lincross[k].begin();p!=lincross[k].end();++p)
+        linarea[p->first] += 0.25 / Atri * cross[k] * (p->second);
+
+    // put everything together
+    for (int k=0;k<3;++k)
+    {
+      for (CI p=linvertex[i][k].begin();p!=linvertex[i][k].end();++p)
+        lincenter[k][p->first] += 1.0/(3.0*n) * Atri * (p->second);
       
-      lincenter[1][p->first] -= 1/(3*sumci) * (xi_i[1]+xi_ip1[1]) * xi_i[0] * (p->second);
-      lincenter[1][p->first] += 1/(3*sumci) * ci * (p->second);
-      lincenter[1][p->first] += sumcieta/(3*sumci*sumci) * xi_i[0] * (p->second);
+      for (CI p=linvertex[iplus1][k].begin();p!=linvertex[iplus1][k].end();++p)
+        lincenter[k][p->first] += 1.0/(3.0*n) * Atri * (p->second);
+      
+      for (CI p=linnac[k].begin();p!=linnac[k].end();++p)
+        lincenter[k][p->first] += 1.0/(3.0*n) * Atri * (p->second);
+      
+      for (CI p=linarea.begin();p!=linarea.end();++p)
+      {
+        lincenter[k][p->first] += 1.0/n * 1.0/3.0 * (xi_i[k] + xi_ip1[k] + nac[k]) * (p->second);
+        lincenter[k][p->first] -= z[k]/(n*n) * (p->second);
+      }
     }
   }
-#endif // #ifdef CONTACTAUXPLANE
-  // *********************************************************************
   
-  /*
-  // check linearization
-  typedef map<int,double>::const_iterator CI;
-  cout << "\nLinearization of current center vertex:" << endl;
-  cout << "-> Coordinate 1:" << endl;
-  for (CI p=lincenter[0].begin();p!=lincenter[0].end();++p)
-    cout << p->first << " " << p->second << endl;
-  cout << "-> Coordinate 2:" << endl;
-  for (CI p=lincenter[1].begin();p!=lincenter[1].end();++p)
-      cout << p->first << " " << p->second << endl;
-  */
-      
   return true;
 }
 

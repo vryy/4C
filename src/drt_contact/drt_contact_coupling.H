@@ -81,10 +81,11 @@ public:
   
   */
   explicit Intcell(int id, int nvertices, Epetra_SerialDenseMatrix& coords,
-                   const DRT::Element::DiscretizationType& shape,
+                   double* auxn, const DRT::Element::DiscretizationType& shape,
                    vector<map<int,double> >& linv1,
                    vector<map<int,double> >& linv2,
-                   vector<map<int,double> >& linv3);
+                   vector<map<int,double> >& linv3,
+                   vector<map<int,double> >& linauxn);
   
   /*!
   \brief Copy Constructor
@@ -127,6 +128,12 @@ public:
   inline const Epetra_SerialDenseMatrix& Coords() { return coords_; }
   
   /*!
+  \brief Return normal of auxiliary plane of this intcell
+  
+  */
+  virtual inline double* Auxn() { return auxn_; }
+    
+  /*!
   \brief Get shape type of element
   
   */
@@ -147,7 +154,13 @@ public:
     if (i<0 || i>2) dserror("ERROR: Intcell has 3 vertex linearizations only!");
     return linvertex_[i];
   }
-    
+  
+  /*!
+  \brief Return the 'DerivAuxn' map (vector) of this intcell
+ 
+  */
+  virtual inline vector<map<int,double> >& GetDerivAuxn() { return linauxn_; }
+  
   //@}
   
   //! @name Evaluation methods
@@ -184,8 +197,10 @@ public:
   \brief Compute Jacobian determinant derivative
          Note that this is a linearization with respect to the intcell
          vertices, which themselves have to be linearized later, of course!
+         Two versions for (a) slave parameter space (b) AuxPlane case.
   */
   virtual void DerivJacobian(double* xi, vector<double>& derivjac);
+  virtual void DerivJacobian(double* xi, map<int,double>& derivjac);
    
   //@}
   
@@ -195,9 +210,11 @@ protected:
   int                        nvertices_;       // number of vertices (always 3)
   double                     area_;            // integration cell area
   Epetra_SerialDenseMatrix   coords_;          // coords of cell vertices
+  double                     auxn_[3];         // normal of auxiliary plane (3D)
   
   DRT::Element::DiscretizationType   shape_;     // shape of this element (always tri3)
-  vector<vector<map<int,double> > >  linvertex_; // directional derivative of 3 vertices
+  vector<vector<map<int,double> > >  linvertex_; // derivatives of the 3 vertices
+  vector<map<int,double> >           linauxn_;   // derivatives of auxiliary plane normal
   
 }; // class Intcell
 
@@ -485,6 +502,12 @@ public:
                                   return auxn_; }
   
   /*!
+  \brief Return length of Auxn() before normalization
+  
+  */
+  virtual inline double& Lauxn() {return lauxn_; }
+  
+  /*!
   \brief Return vector of (projected) slave node vertex objects
   
   */
@@ -507,6 +530,12 @@ public:
   
   */
   virtual inline vector<RCP<Intcell> >& Cells() {return cells_; }
+  
+  /*!
+  \brief Return the 'DerivAuxn' map (vector) of this coupling pair
+  
+  */
+  virtual inline vector<map<int,double> >& GetDerivAuxn() { return derivauxn_; }
     
   /*!
   \brief Return matrix of contact segment coordinates
@@ -670,13 +699,42 @@ public:
   /*!
   \brief Linearization of clip vertex coordinates (3D)
   
-  Sub-method of VertexLinearization for projmaster linearization.
-  NOT implemented for AuxPlane case!
+  Sub-method of VertexLinearization for slave linearization.
+  ONLY necessary for for AuxPlane case!
+  
+  */
+  virtual bool SlaveVertexLinearization3D(Vertex& currv,
+                                          vector<map<int,double> >& currlin,
+                                          int sid);
+    
+  /*!
+  \brief Linearization of clip vertex coordinates (3D)
+  
+  Sub-method of VertexLinearization for master linearization.
+  Two versions for (a) slave parameter space (b) AuxPlane case.
   
   */
   virtual bool MasterVertexLinearization3D(Vertex& currv,
-                                           vector<map<int,double> >& linmaster,
+                                           vector<map<int,double> >& currlin,
                                            int mid, double alpha);
+  virtual bool MasterVertexLinearization3D(Vertex& currv,
+                                           vector<map<int,double> >& currlin,
+                                           int mid);
+  
+  /*!
+  \brief Linearization of clip vertex coordinates (3D)
+  
+  Sub-method of VertexLinearization for lineclip linearization.
+  Two versions for (a) slave parameter space (b) AuxPlane case.
+  
+  */
+  virtual bool LineclipVertexLinearization3D(Vertex& currv,
+                                           vector<map<int,double> >& currlin,
+                                           Vertex* sv1, Vertex* sv2, Vertex* mv1, Vertex* mv2,
+                                           map<int,double>& projpar);
+  virtual bool LineclipVertexLinearization3D(Vertex& currv,
+                                           vector<map<int,double> >& currlin,
+                                           Vertex* sv1, Vertex* sv2, Vertex* mv1, Vertex* mv2);
     
   /*!
   \brief Linearization of clip vertex coordinates (3D)
@@ -727,11 +785,13 @@ protected:
     
     double                     auxc_[3];     // center of auxiliary plane (3D)
     double                     auxn_[3];     // normal of auxiliary plane (3D)
+    double                     lauxn_;       // length of interpolated Auxn() before normalization
     vector<Vertex>             svertices_;   // slave node vertex objects
     vector<Vertex>             mvertices_;   // master node vertex objects
     vector<Vertex>             clip_;        // clipped polygon vertex objects
     
-    vector<RCP<Intcell> >      cells_;       // vector of integration cells
+    vector<RCP<Intcell> >      cells_;       // vector of integration cells (3D)
+    vector<map<int,double> >   derivauxn_;   // derivatives of auxiliary plane normal (3D)
     
     Epetra_SerialDenseMatrix&  contactsegs_; // contains coordinates of contact segments (gmsh)
   

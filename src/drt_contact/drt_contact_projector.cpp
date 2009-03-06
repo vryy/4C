@@ -482,7 +482,7 @@ bool CONTACT::Projector::ProjectGaussPoint3D(CONTACT::CElement& gpele,
 bool CONTACT::Projector::ProjectGaussPointAuxn3D(const double* globgp,
                                                  const double* auxn,
                                                  CONTACT::CElement& ele,
-                                                 double* xi)
+                                                 double* xi, double& par)
 {
   if (Dim()==3)
   {
@@ -533,7 +533,7 @@ bool CONTACT::Projector::ProjectGaussPointAuxn3D(const double* globgp,
     // Newton iteration converged
     xi[0]=eta[0];
     xi[1]=eta[1];
-    
+    par = alpha;
     //cout << "Newton iteration converged in " << k << " steps!" << endl;
   }
   

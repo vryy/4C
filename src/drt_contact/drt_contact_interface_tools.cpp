@@ -2970,14 +2970,14 @@ void CONTACT::Interface::FDCheckVertex3DDeriv(vector<vector<double> >& testv)
   //for (int i=0;i<(int)testv.size();++i)
   //{
   //  cout << "\nReference for Vertex " << i << endl;
-  //  cout << "Coords: " << testv[i][0] << "\t" << testv[i][1] << endl;
-  //  cout << "Sl-ID:  " << testv[i][2] << endl;
-  //  cout << "Ma-ID:  " << testv[i][3] << endl;
-  //  cout << "VType:  " << testv[i][4] << endl;
+  //  cout << "Coords: " << testv[i][0] << "\t" << testv[i][1] << "\t" << testv[i][2]< < endl;
+  //  cout << "Sl-ID:  " << testv[i][3] << endl;
+  //  cout << "Ma-ID:  " << testv[i][4] << endl;
+  //  cout << "VType:  " << testv[i][5] << endl;
   //}
   
   // create storage for NEW vertex coordinate entries
-  vector<vector<double> > newtestv(0,vector<double>(5));
+  vector<vector<double> > newtestv(0,vector<double>(6));
   
   // global loop to apply FD scheme to all slave dofs (=3*nodes)
   for (int fd=0; fd<3*snodefullmap_->NumMyElements();++fd)
@@ -3156,9 +3156,9 @@ void CONTACT::Interface::FDCheckVertex3DDeriv(vector<vector<double> >& testv)
     for (int k=0;k<(int)newtestv.size();++k)
     {
       // check for topology change
-      for (int num=2;num<5;++num)
+      for (int num=3;num<6;++num)
         if (newtestv[k][num]!=testv[k][num])
-          dserror("ERROR: FDCheckVertex3D: Topology change!");
+          dserror("ERROR: FDCheckVertex3D: Topology change! %f %f", newtestv[k][num], testv[k][num]);
       
       // print results (derivatives) to screen
       if (abs(newtestv[k][0]-testv[k][0])>1.0e-12)
@@ -3171,6 +3171,12 @@ void CONTACT::Interface::FDCheckVertex3DDeriv(vector<vector<double> >& testv)
       {
         cout << "Derivative for Vertex " << k << " (y-component)" << endl;
         cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestv[k][1]-testv[k][1])/delta << endl; 
+      }
+      
+      if (abs(newtestv[k][2]-testv[k][2])>1.0e-12)
+      {
+        cout << "Derivative for Vertex " << k << " (z-component)" << endl;
+        cout << "Dof: " << snode->Dofs()[fd%3] << "\t" << (newtestv[k][2]-testv[k][2])/delta << endl; 
       }
     }
     
@@ -3368,9 +3374,9 @@ void CONTACT::Interface::FDCheckVertex3DDeriv(vector<vector<double> >& testv)
     for (int k=0;k<(int)newtestv.size();++k)
     {
       // check for topology change
-      for (int num=2;num<5;++num)
+      for (int num=3;num<6;++num)
         if (newtestv[k][num]!=testv[k][num])
-          dserror("ERROR: FDCheckVertex3D: Topology change!");
+          dserror("ERROR: FDCheckVertex3D: Topology change! %f %f", newtestv[k][num], testv[k][num]);
       
       // print results (derivatives) to screen
       if (abs(newtestv[k][0]-testv[k][0])>1.0e-12)
@@ -3383,6 +3389,12 @@ void CONTACT::Interface::FDCheckVertex3DDeriv(vector<vector<double> >& testv)
       {
         cout << "Derivative for Vertex " << k << " (y-component)" << endl;
         cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestv[k][1]-testv[k][1])/delta << endl; 
+      }
+      
+      if (abs(newtestv[k][2]-testv[k][2])>1.0e-12)
+      {
+        cout << "Derivative for Vertex " << k << " (z-component)" << endl;
+        cout << "Dof: " << mnode->Dofs()[fd%3] << "\t" << (newtestv[k][2]-testv[k][2])/delta << endl; 
       }
     }
     
@@ -3548,7 +3560,7 @@ void CONTACT::Interface::FDCheckVertex3DDeriv(vector<vector<double> >& testv)
   // check reference (Vertex coordinates)
   for (int i=0;i<(int)newtestv.size();++i)
   {
-    for (int k=0;k<5;++k)
+    for (int k=0;k<6;++k)
     {
       double error = abs(newtestv[i][k]-testv[i][k]);
       if (error>1.0e-12)

@@ -210,12 +210,13 @@ public:
   \param auxn(in)  : Normal of AuxPlane along which to project
   \param ele (in)  : Slave / master Celement to project on
   \param xi (out)  : Local coordinates of projection on CElement
+  \param par (out ): Projection parameter alpha
    
   */
   bool ProjectGaussPointAuxn3D(const double* globgp,
                                const double* auxn,
                                CONTACT::CElement& ele,
-                               double* xi);
+                               double* xi, double& par);
     
   /*!
   \brief Evaluate F for nodal normal projection
