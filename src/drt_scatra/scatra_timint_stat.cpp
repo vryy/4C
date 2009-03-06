@@ -27,6 +27,16 @@ SCATRA::TimIntStationary::TimIntStationary(
   RCP<IO::DiscretizationWriter> output)
 : ScaTraTimIntImpl(actdis,solver,params,output)
 {
+  // -------------------------------------------------------------------
+  // get a vector layout from the discretization to construct matching
+  // vectors and matrices
+  //                 local <-> global dof numbering
+  // -------------------------------------------------------------------
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+  // fine-scale vector
+  if (fssgd_ != "No") fsphinp_ = LINALG::CreateVector(*dofrowmap,true);
+
   return;
 }
 
@@ -86,6 +96,15 @@ void SCATRA::TimIntStationary::AddSpecificTimeIntegrationParameters(
   discret_->SetState("phinp", phinp_);
   discret_->SetState("densnp",densnp_);
   discret_->SetState("densam",densnp_);
+
+  if (incremental_ and fssgd_ != "No")
+  {
+    // AVM3 separation
+    Sep_->Multiply(false,*phinp_,*fsphinp_);
+
+    // set fine-scale vector
+    discret_->SetState("fsphinp",fsphinp_);
+  }
 
   return;
 }

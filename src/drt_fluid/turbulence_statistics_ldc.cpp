@@ -1365,8 +1365,8 @@ void FLD::TurbulenceStatisticsLdc::DumpLomaStatistics(int step)
     }
 
     (*log) << "#     x2";
-    (*log) << "           umean         vmean         wmean         pmean       rhomean         Tmean";
-    (*log) << "         urms          vrms          wrms          prms        rhorms          Trms";
+    (*log) << "           umean         vmean         wmean         pmean       rhomean         Tmean        svmean";
+    (*log) << "         urms          vrms          wrms          prms        rhorms          Trms         svrms";
     (*log) << "          u'v'          u'w'          v'w'          u'T'          v'T'          w'T'\n";
 
     (*log) << scientific;
@@ -1420,8 +1420,8 @@ void FLD::TurbulenceStatisticsLdc::DumpLomaStatistics(int step)
     }
 
     (*log) << "#     x3";
-    (*log) << "           umean         vmean         wmean         pmean       rhomean         Tmean";
-    (*log) << "         urms          vrms          wrms          prms        rhorms          Trms";
+    (*log) << "           umean         vmean         wmean         pmean       rhomean         Tmean        svmean";
+    (*log) << "         urms          vrms          wrms          prms        rhorms          Trms         svrms";
     (*log) << "          u'v'          u'w'          v'w'          u'T'          v'T'          w'T'\n";
 
     (*log) << scientific;

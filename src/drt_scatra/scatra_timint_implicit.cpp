@@ -855,16 +855,12 @@ void SCATRA::ScaTraTimIntImpl::Solve()
     // add element parameters and density state according to time-int. scheme
     AddSpecificTimeIntegrationParameters(eleparams);
 
-    // different element loop for AVM3 with artificial subgrid diffusivity
-    // and all-scale subgrid diffusivity:
-    // call loop over elements w/o subgrid-diffusivity-scaling vector
-    if (fssgd_ == "artificial_all")
-         discret_->Evaluate(eleparams,sysmat_,null,residual_,subgrdiff_);
-    else discret_->Evaluate(eleparams,sysmat_,residual_);
+    // call loop over elements with subgrid-diffusivity(-scaling) vector
+    discret_->Evaluate(eleparams,sysmat_,null,residual_,subgrdiff_);
     discret_->ClearState();
 
     // AVM3 scaling
-    if (fssgd_ != "No") AVM3Scaling(eleparams);
+    if (not incremental_ and fssgd_ != "No") AVM3Scaling(eleparams);
 
     // finalize the complete matrix
     sysmat_->Complete();

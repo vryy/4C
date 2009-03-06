@@ -100,8 +100,11 @@ protected:
 
 private:
 
-  /// solution vector phi at time t_{n-1}
+  /// solution vector phi at time n-1
   RCP<Epetra_Vector>    phinm_;
+
+  /// fine-scale solution vector at time n+1
+  RCP<Epetra_Vector>  fsphinp_;
 
   /// time factor for one-step-theta/BDF2 time integration
   double theta_;

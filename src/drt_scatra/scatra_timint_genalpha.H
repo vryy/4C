@@ -105,6 +105,9 @@ private:
   /// solution vector at time n+alpha_F
   RCP<Epetra_Vector>  phiaf_;
 
+  /// fine-scale solution vector at time n+alpha_F
+  RCP<Epetra_Vector>  fsphiaf_;
+
   /// density at times n+alpha_M and n+alpha_F
   RCP<Epetra_Vector>  densam_;
   RCP<Epetra_Vector>  densaf_;

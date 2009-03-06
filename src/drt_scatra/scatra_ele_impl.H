@@ -182,10 +182,12 @@ public:
         const double                          timefac, ///< time discretization factor
         const double                          alphaF, ///< factor for generalized-alpha time integration
         const LINALG::Matrix<nsd_,iel>&       evelnp,///< nodal velocities at t_{n+1}
+        const vector<LINALG::Matrix<iel,1> >& fsphinp,///< fine-scale part of current scalar field
         const bool                            temperature, ///< temperature flag
         const bool                            conservative, ///< flag for conservative form
         const enum SCATRA::TauType            whichtau, ///< flag for stabilization parameter definition
-        const bool                            fssgd, ///< subgrid-diff. flag
+        const bool                            assgd, ///< all-scale subgrid-diff. flag
+        const bool                            fssgd, ///< fine-scale subgrid-diff. flag
         const bool                            turbmodel, ///< flag for turbulence model
         const bool                            is_stationary, ///< flag indicating stationary formulation
         const bool                            is_genalpha, ///< generalized-alpha flag
@@ -233,19 +235,21 @@ public:
 
     //! calculate stabilization parameter
     virtual void CalTau(
-        DRT::Element*                       ele, ///< the element
-        Epetra_SerialDenseVector&           subgrdiff, ///< subgrid-diff.-scaling vector
-        const LINALG::Matrix<nsd_,iel>&     evel,///< nodal velocities
-        const LINALG::Matrix<iel,1>&        edens, ///< density
-        const LINALG::Matrix<iel,1>&        epot,  ///< el. potential at element nodes
-        const LINALG::Matrix<iel,1>&        esubgrdiff,  ///< subgrid diffusivity at element nodes
-        const double                        dt, ///< current time-step length
-        const double&                       timefac, ///< time discretization factor
-        const enum SCATRA::TauType          whichtau, ///< flag for stabilization parameter definition
-        const bool&                         fssgd, ///< subgrid-diff. flag
-        const bool&                         turbmodel, ///< turbulence model flag
-        const bool&                         is_stationary, ///< flag indicating stationary formulation
-        const double&                       frt ///< factor F/RT needed for ELCH calculations
+        DRT::Element*                       ele,
+        Epetra_SerialDenseVector&           subgrdiff,
+        const LINALG::Matrix<nsd_,iel>&     evel,
+        const LINALG::Matrix<iel,1>&        edens,
+        const LINALG::Matrix<iel,1>&        epot,
+        const LINALG::Matrix<iel,1>&        esubgrdiff,
+        const double                        dt,
+        const double&                       timefac,
+        const enum SCATRA::TauType          whichtau,
+        const bool&                         assgd,
+        const bool&                         fssgd,
+        const bool&                         turbmodel,
+        const bool&                         is_incremental,
+        const bool&                         is_stationary,
+        const double&                       frt
     );
 
     //! evaluate shape functions and their derivatives at current integration point
@@ -263,6 +267,7 @@ public:
         const vector<LINALG::Matrix<iel,1> >& ephinp,
         const bool                            use2ndderiv,
         const bool                            conservative,
+        const bool                            fssgd,
         const bool                            is_stationary,
         const bool                            is_genalpha,
         const bool                            is_incremental,
@@ -521,6 +526,8 @@ public:
     vector<double> conint_;
     //! (global) gradient of transported scalar at integration point
     LINALG::Matrix<nsd_,1> gradphi_;
+    //! (global) gradient of fine-scale part of scalar at integration point
+    LINALG::Matrix<nsd_,1> fsgradphi_;
     //! (global) Laplacian of shape functions at integration point
     LINALG::Matrix<iel,1> laplace_;
 

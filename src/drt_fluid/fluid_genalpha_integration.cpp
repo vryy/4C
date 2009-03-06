@@ -1733,17 +1733,13 @@ void FLD::FluidGenAlphaIntegration::AVM3Preparation()
   }
 
   // (fine-scale) subgrid viscosity flag
-  eleparams.set("fs subgrid viscosity",fssgv_);
+  eleparams.set("fs subgrid viscosity","No");
 
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState("u and p (n+1      ,trial)",velnp_ );
   discret_->SetState("u and p (n+alpha_F,trial)",velaf_ );
   discret_->SetState("acc     (n+alpha_M,trial)",accam_ );
-
-  // zero and set fine-scale vector required by element routines
-  fsvelaf_->PutScalar(0.0);
-  discret_->SetState("fsvelaf",fsvelaf_);
 
   // element evaluation for getting system matrix
   // -> we merely need matrix "structure" below, not the actual contents

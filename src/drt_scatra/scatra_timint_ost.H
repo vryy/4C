@@ -114,6 +114,9 @@ private:
   /// time factor for one-step-theta/BDF2 time integration
   double theta_;
 
+  /// fine-scale solution vector at time n+1
+  RCP<Epetra_Vector>  fsphinp_;
+
 }; // class TimIntOneStepTheta
 
 } // namespace SCATRA

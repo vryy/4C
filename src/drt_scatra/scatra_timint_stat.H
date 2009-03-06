@@ -101,6 +101,9 @@ protected:
 
 private:
 
+  /// fine-scale solution vector at time n+1
+  RCP<Epetra_Vector>  fsphinp_;
+
 
 }; // class TimIntStationary
 

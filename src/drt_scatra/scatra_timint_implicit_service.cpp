@@ -199,26 +199,29 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
     LINALG::SparseMatrix Ptent(crsPtent);
 
     // compute scale-separation matrix: S = I - Ptent*Ptent^T
-    RCP<LINALG::SparseMatrix> Sep;
-    Sep = LINALG::Multiply(Ptent,false,Ptent,true);
-    Sep->Scale(-1.0);
-    RCP<Epetra_Vector> tmp = LINALG::CreateVector(Sep->RowMap(),false);
+    Sep_ = LINALG::Multiply(Ptent,false,Ptent,true);
+    Sep_->Scale(-1.0);
+    RCP<Epetra_Vector> tmp = LINALG::CreateVector(Sep_->RowMap(),false);
     tmp->PutScalar(1.0);
-    RCP<Epetra_Vector> diag = LINALG::CreateVector(Sep->RowMap(),false);
-    Sep->ExtractDiagonalCopy(*diag);
+    RCP<Epetra_Vector> diag = LINALG::CreateVector(Sep_->RowMap(),false);
+    Sep_->ExtractDiagonalCopy(*diag);
     diag->Update(1.0,*tmp,1.0);
-    Sep->ReplaceDiagonalValues(*diag);
+    Sep_->ReplaceDiagonalValues(*diag);
 
     //complete scale-separation matrix and check maps
-    Sep->Complete(Sep->DomainMap(),Sep->RangeMap());
-    if (!Sep->RowMap().SameAs(sysmat_sd_->RowMap())) dserror("rowmap not equal");
-    if (!Sep->RangeMap().SameAs(sysmat_sd_->RangeMap())) dserror("rangemap not equal");
-    if (!Sep->DomainMap().SameAs(sysmat_sd_->DomainMap())) dserror("domainmap not equal");
+    Sep_->Complete(Sep_->DomainMap(),Sep_->RangeMap());
+    if (!Sep_->RowMap().SameAs(sysmat_sd_->RowMap())) dserror("rowmap not equal");
+    if (!Sep_->RangeMap().SameAs(sysmat_sd_->RangeMap())) dserror("rangemap not equal");
+    if (!Sep_->DomainMap().SameAs(sysmat_sd_->DomainMap())) dserror("domainmap not equal");
 
-    // precomputation of unscaled S^T*M*S:
-    // pre- and post-multiply M by scale-separating operator matrix Sep
-    Mnsv_ = LINALG::Multiply(*sysmat_sd_,false,*Sep,false);
-    Mnsv_ = LINALG::Multiply(*Sep,true,*Mnsv_,false);
+    // precomputation of unscaled diffusivity matrix:
+    // either two-sided S^T*M*S: multiply M by S from left- and right-hand side
+    // or one-sided M*S: only multiply M by S from left-hand side
+    if (not incremental_)
+    {
+      Mnsv_ = LINALG::Multiply(*sysmat_sd_,false,*Sep_,false);
+      //Mnsv_ = LINALG::Multiply(*Sep_,true,*Mnsv_,false);
+    }
   }
 
   return;

@@ -2460,7 +2460,7 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
   eleparams.set("thsl",theta_*dta_);
   eleparams.set("dt",dta_);
   eleparams.set("form of convective term",convform_);
-  eleparams.set("fs subgrid viscosity",fssgv_);
+  eleparams.set("fs subgrid viscosity","No");
   eleparams.set("Linearisation",newton_);
   eleparams.set("low-Mach-number solver",loma_);
   eleparams.set("eos factor",eosfac_);
@@ -2474,10 +2474,6 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
   // set general vector values needed by elements
   discret_->ClearState();
   discret_->SetState("hist"  ,hist_ );
-
-  // zero and set fine-scale vector required by element routines
-  fsvelnp_->PutScalar(0.0);
-  discret_->SetState("fsvelnp",fsvelnp_);
 
   // set scheme-specific element parameters and vector values
   if (timealgo_==timeint_stationary)

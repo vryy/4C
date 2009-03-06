@@ -479,6 +479,9 @@ protected:
   /// only necessary for AVM3: fine-scale subgrid-diffusivity matrix
   RCP<LINALG::SparseMatrix> sysmat_sd_;
 
+  /// only necessary for AVM3: scale-separation matrix
+  RCP<LINALG::SparseMatrix> Sep_;
+
   /// only necessary for AVM3: normalized fine-scale subgrid-viscosity matrix
   RCP<LINALG::SparseMatrix> Mnsv_;
 

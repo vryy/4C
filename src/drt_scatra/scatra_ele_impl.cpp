@@ -196,6 +196,7 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(int numdofpernode, int numscal)
     gradpot_(true),
     conint_(numscal_),
     gradphi_(true),
+    fsgradphi_(true),
     laplace_(true)
 {
   return;
@@ -262,12 +263,23 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       else if (taudef == "Bazilevs") whichtau = SCATRA::tau_bazilevs;
     }
 
-    // set flag for fine-scale subgrid diffusivity of type artificial_all
+    // set flag for all-scale subgrid diffusivity
+    bool assgd = false; //default
+    {
+      const string assgdinp = stablist.get<string>("STABTYPE");
+      if (assgdinp == "residual_based_plus_dc") assgd = true;
+    }
+
+    // set flag for fine-scale subgrid diffusivity
     bool fssgd = false; //default
     {
       const string fssgdinp = params.get<string>("fs subgrid diffusivity","No");
       if (fssgdinp == "artificial_all") fssgd = true;
     }
+
+    // check whether combination of all-scale and fine-scale subgrid diffusivity
+    if (assgd and fssgd)
+      dserror("No combination of all-scale and fine-scale subgrid-diffusivity approach currently possible!");
 
     // set flag for type of scalar whether it is temperature or not
     string scaltypestr=params.get<string>("problem type");
@@ -370,6 +382,27 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       }
     }
 
+    // fine-scale solution
+    vector<LINALG::Matrix<iel,1> > fsphinp(numscal_);
+
+    if (is_incremental and fssgd)
+    {
+      RCP<const Epetra_Vector> gfsphinp = discretization.GetState("fsphinp");
+      if (gfsphinp==null) dserror("Cannot get state vector 'fsphinp'");
+
+      vector<double> myfsphinp(lm.size());
+      DRT::UTILS::ExtractMyValues(*gfsphinp,myfsphinp,lm);
+
+      for (int i=0;i<iel;++i)
+      {
+        for (int k = 0; k< numscal_; ++k)
+        {
+          // split for each tranported scalar, insert into element arrays
+          fsphinp[k](i,0) = myfsphinp[k+(i*numdofpernode_)];
+        }
+      }
+    }
+
     // calculate element coefficient matrix and rhs
     Sysmat(
         ele,
@@ -388,9 +421,11 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         timefac,
         alphaF,
         evelnp,
+        fsphinp,
         temperature,
         conservative,
         whichtau,
+        assgd,
         fssgd,
         turbmodel,
         is_stationary,
@@ -737,10 +772,12 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
     const double                          timefac, ///< time discretization factor
     const double                          alphaF, ///< factor for generalized-alpha time integration
     const LINALG::Matrix<nsd_,iel>&       evelnp,///< nodal velocities at t_{n+1}
+    const vector<LINALG::Matrix<iel,1> >& fsphinp,///< fine-scale part of current scalar field
     const bool                            temperature, ///< temperature flag
     const bool                            conservative, ///< flag for conservative form
     const enum SCATRA::TauType            whichtau, ///< flag for stabilization parameter definition
-    const bool                            fssgd, ///< subgrid-diff. flag
+    const bool                            assgd, ///< all-scale subgrid-diff. flag
+    const bool                            fssgd, ///< fine-scale subgrid-diff. flag
     const bool                            turbmodel, ///< turbulence model flag
     const bool                            is_stationary, ///< stationary flag
     const bool                            is_genalpha, ///< generalized-alpha flag
@@ -773,8 +810,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
          dt,
          timefac,
          whichtau,
+         assgd,
          fssgd,
          turbmodel,
+         is_incremental,
          is_stationary,
          frt);
 
@@ -829,7 +868,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         // gradient of current scalar value
         gradphi_.Multiply(derxy_,ephinp[k]);
 
-        CalMatAndRHS(sys_mat,residual,ephinp,use2ndderiv,conservative,is_stationary,is_genalpha,is_incremental,timefac,alphaF,k);
+        // gradient of current fine-scale part of scalar value
+        if (is_incremental and fssgd) fsgradphi_.Multiply(derxy_,fsphinp[k]);
+
+        CalMatAndRHS(sys_mat,residual,ephinp,use2ndderiv,conservative,fssgd,is_stationary,is_genalpha,is_incremental,timefac,alphaF,k);
       } // loop over each scalar
     }
     else  // ELCH problems
@@ -1033,8 +1075,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     const double                        dt,
     const double&                       timefac,
     const enum SCATRA::TauType          whichtau,
+    const bool&                         assgd,
     const bool&                         fssgd,
     const bool&                         turbmodel,
+    const bool&                         is_incremental,
     const bool&                         is_stationary,
     const double&                       frt
   )
@@ -1090,7 +1134,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
       const double sgdiff = funct_.Dot(esubgrdiff);
 
       diffus_[k] += sgdiff;
-   }
+    }
 
     //----------------------------------------------------------------------
     // computation of stabilization parameter
@@ -1263,9 +1307,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     } //switch (whichtau)
 
     //----------------------------------------------------------------------
-    // computation of artificial fine-scale subgrid diffusivity
+    // computation of all-scale or fine-scale subgrid diffusivity
     //----------------------------------------------------------------------
-    if (fssgd)
+    if (assgd or (not is_incremental and fssgd))
     {
       // element volume (2D: element surface area; 1D: element length)
       // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
@@ -1287,11 +1331,22 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
 
       kart_[k] = (DSQR(h)*mk*DSQR(vel_norm)*DSQR(dens))/(2.0*diffus_[k]*xi);
 
-      // compute entries of subgrid-diffusivity vector
-      for (int vi=0; vi<iel; ++vi)
+      if (assgd) diffus_[k] += kart_[k];
+      else
       {
-        subgrdiff(vi) = kart_[k]/ele->Nodes()[vi]->NumElement();
+        // compute entries of subgrid-diffusivity-scaling vector
+        for (int vi=0; vi<iel; ++vi)
+        {
+          subgrdiff(vi) = kart_[k]/ele->Nodes()[vi]->NumElement();
+        }
       }
+    }
+    else if (is_incremental and fssgd)
+    {
+      // get density at element center
+      const double sgdiff = funct_.Dot(esubgrdiff);
+
+      kart_[k] += sgdiff;
     }
   } // end of loop over all transported scalars
 
@@ -1376,6 +1431,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
     const vector<LINALG::Matrix<iel,1> >& ephinp,
     const bool                            use2ndderiv,
     const bool                            conservative,
+    const bool                            fssgd,
     const bool                            is_stationary,
     const bool                            is_genalpha,
     const bool                            is_incremental,
@@ -1721,6 +1777,22 @@ if (use2ndderiv)
     const int fvi = vi*numdof+dofindex;
 
     erhs[fvi] -= vrhs*diff_(vi);
+  }
+}
+
+//----------------------------------------------------------------
+// fine-scale subgrid-diffusivity term on right hand side
+//----------------------------------------------------------------
+if (is_incremental and fssgd)
+{
+  vrhs = rhsfac*kart_[dofindex];
+  for (int vi=0; vi<iel; ++vi)
+  {
+    const int fvi = vi*numdof+dofindex;
+
+    double laplawf(0.0);
+    GetLaplacianWeakFormRHS(laplawf,derxy_,fsgradphi_,vi);
+    erhs[fvi] -= vrhs*laplawf;
   }
 }
 

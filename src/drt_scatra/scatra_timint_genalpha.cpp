@@ -70,6 +70,9 @@ SCATRA::TimIntGenAlpha::TimIntGenAlpha(
   if (alphaM_ < EPS12) dserror("factor alpha_M lower than or equal zero");
   genalphafac_ = gamma_/alphaM_;
 
+  // fine-scale vector at time n+alpha_F
+  if (fssgd_ != "No") fsphiaf_ = LINALG::CreateVector(*dofrowmap,true);
+
   return;
 }
 
@@ -284,8 +287,20 @@ void SCATRA::TimIntGenAlpha::AddSpecificTimeIntegrationParameters(
     discret_->SetState("densam",densnp_);
   }
 
-  if (incremental_) discret_->SetState("phinp",phiaf_);
-  else              discret_->SetState("phinp",phin_);
+  if (incremental_)
+  {
+    discret_->SetState("phinp",phiaf_);
+
+    if (fssgd_ != "No")
+    {
+      // AVM3 separation
+      Sep_->Multiply(false,*phiaf_,*fsphiaf_);
+
+      // set fine-scale vector
+      discret_->SetState("fsphinp",fsphiaf_);
+    }
+  }
+  else discret_->SetState("phinp",phin_);
 
   return;
 }

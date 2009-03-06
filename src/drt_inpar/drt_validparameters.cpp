@@ -1383,11 +1383,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Apply (un)stabilized scalar transport formulation",
                                tuple<std::string>(
                                  "no_stabilization",
-                                 "residual_based"),
+                                 "residual_based",
+                                 "residual_based_plus_dc"),
                                tuple<std::string>(
                                  "Do not use any stabilization -> only reasonable for low-Peclet-number flows",
-                                 "Use a residual-based stabilization")  ,
-                               tuple<int>(0,1),
+                                 "Use a residual-based stabilization",
+                                 "Use a residual-based stabilization and add an (all-scale) discontinuity-capturing term")  ,
+                               tuple<int>(0,1,2),
                                &scatradyn_stab);
 
   // this parameter selects the tau definition applied
