@@ -265,6 +265,9 @@ void SCATRA::TimIntGenAlpha::AddNeumannToResidual()
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntGenAlpha::AVM3Separation()
 {
+  // time measurement: avm3
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");
+
   // AVM3 separation
   Sep_->Multiply(false,*phiaf_,*fsphiaf_);
 
