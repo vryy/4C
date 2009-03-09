@@ -92,7 +92,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   const COMBUST::CombustElementAnsatz elementAnsatz;
   Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(null,fieldset,elementAnsatz,params_));
   /*----------------------------------------------------------------------------------------------*
-   * comment missing! Axels comment: tell elements about the dofs and the integration  
+   * comment missing! Axels comment: tell elements about the dofs and the integration
    *----------------------------------------------------------------------------------------------*/
   {
     ParameterList eleparams;
@@ -225,7 +225,7 @@ void FLD::CombustFluidImplicitTimeInt::TimeLoop()
 //    if (alefluid_)
 //      dserror("no ALE possible with linearised fluid");
 //      additionally it remains to mention that for the linearised
-//       fluid the stbilisation is hard coded to be SUPG/PSPG 
+//       fluid the stbilisation is hard coded to be SUPG/PSPG
   }
 
   const Epetra_Map* fluidsurface_dofcolmap = cutterdiscret->DofColMap();
@@ -264,7 +264,7 @@ void FLD::CombustFluidImplicitTimeInt::TimeLoop()
         break;
       default:
         dserror("parameter out of range: IOP\n");
-      } // end of switch(timealgo) 
+      } // end of switch(timealgo)
     }
 
     switch (dyntype)
@@ -333,7 +333,7 @@ void FLD::CombustFluidImplicitTimeInt::PrepareTimeStep()
     {
       theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
     }
-    
+
     // do a backward Euler step for the first timestep
     if (step_==1)
     {
@@ -415,7 +415,7 @@ void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
  |
- | Within this routine, no parallel re-distribution is allowed to take place. Before and after this 
+ | Within this routine, no parallel re-distribution is allowed to take place. Before and after this
  | function, it's ok to do that.
  | Calling this function multiple times always results in the same solution vectors (axels comment)
  *------------------------------------------------------------------------------------------------*/
@@ -436,7 +436,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(Teuchos::RCP<COMBUST
   fieldset.insert(XFEM::PHYSICS::Pres);
   COMBUST::CombustElementAnsatz elementAnsatz;
   Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(interfacehandle_,fieldset,elementAnsatz,params_));
-  
+
   // save dofmanager to be able to plot Gmsh stuff in Output()
   dofmanagerForOutput_ = dofmanager;
 
@@ -461,12 +461,12 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(Teuchos::RCP<COMBUST
   // print information about dofs
   const int numdof = newdofrowmap.NumGlobalElements();
   const int numnodaldof = dofmanager->NumNodalDof();
-  cout0_ << "numdof = " << numdof << ", numstressdof = "<< (numdof - numnodaldof) << endl; 
+  cout0_ << "numdof = " << numdof << ", numstressdof = "<< (numdof - numnodaldof) << endl;
 
   discret_->ComputeNullSpaceIfNecessary(solver_.Params());
 
-  XFEM::NodalDofPosMap oldNodalDofDistributionMap(state_.nodalDofDistributionMap_);
-  XFEM::ElementalDofPosMap oldElementalDofDistributionMap(state_.elementalDofDistributionMap_);
+  std::map<XFEM::DofKey<XFEM::onNode>, XFEM::DofGID> oldNodalDofDistributionMap(state_.nodalDofDistributionMap_);
+  std::map<XFEM::DofKey<XFEM::onElem>, XFEM::DofGID> oldElementalDofDistributionMap(state_.elementalDofDistributionMap_);
   dofmanager->fillDofDistributionMaps(
       state_.nodalDofDistributionMap_,
       state_.elementalDofDistributionMap_);
@@ -504,7 +504,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(Teuchos::RCP<COMBUST
     ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time",time_);
-    discret_->EvaluateDirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null, 
+    discret_->EvaluateDirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null,
                                 Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0); // just in case of change
   }
@@ -656,7 +656,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
     printf("+------------+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+\n");
     printf("|- step/max -|- tol      [norm] -|-- vel-res ---|-- pre-res ---|-- fullres ---|-- vel-inc ---|-- pre-inc ---|-- fullinc ---|\n");
   }
-  
+
   // this is a hack to make the code compile! There should be no cutterdis in here! henke 10/08
   Teuchos::RCP<DRT::Discretization>      cutterdiscret;
   cutterdiscret = null;
@@ -1020,8 +1020,8 @@ void FLD::CombustFluidImplicitTimeInt::TimeUpdate()
 
   // update old acceleration
   state_.accn_->Update(1.0,*state_.accnp_,0.0);
-  
-  // velocities/pressures of this step become most recent 
+
+  // velocities/pressures of this step become most recent
   // velocities/pressures of the last step
   state_.velnm_->Update(1.0,*state_.veln_ ,0.0);
   state_.veln_ ->Update(1.0,*state_.velnp_,0.0);
@@ -1220,7 +1220,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
           LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
               *cell, field, elementvalues, cellvalues);
-              
+
           const LINALG::SerialDenseMatrix& xyze_cell = cell->CellNodalPosXYZ();
           //LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
           //cell->NodalPosXYZ(*actele, xyze_cell);
@@ -1309,7 +1309,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh()
           LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
               *cell, field, elementvalues, cellvalues);
-          
+
           const LINALG::SerialDenseMatrix& xyze_cell = cell->CellNodalPosXYZ();
           //LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
           //cell->NodalPosXYZ(*actele, xyze_cell);
@@ -1553,7 +1553,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
         const int elegid = actele->Id();
 
         LINALG::SerialDenseMatrix xyze_xfemElement = GEO::InitialPositionArray(actele);
-                      
+
         // create local copy of information about dofs
         const COMBUST::CombustElementAnsatz elementAnsatz;
         const XFEM::ElementDofManager eledofman(*actele,elementAnsatz.getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
@@ -2097,14 +2097,14 @@ void FLD::CombustFluidImplicitTimeInt::LiftDrag() const
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::ComputeSurfaceFlowrates() const
 {
-  
+
 //  const map<int,double> volumeflowratepersurface = FLD::UTILS::ComputeSurfaceFlowrates(*discret_, state_.velnp_);
 //
 //  if (not volumeflowratepersurface.empty())
 //  {
 //    cout << "Number of flow rate conditions... " << volumeflowratepersurface.size() << endl;
 //  }
-//  
+//
 //  double overall_flowrate = 0.0;
 //  std::map<int,double>::const_iterator entry;
 //  for(entry = volumeflowratepersurface.begin(); entry != volumeflowratepersurface.end(); ++entry )

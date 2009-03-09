@@ -53,7 +53,7 @@ public:
 
   /*!
   \brief solve stationary problem
-         Even though it does not make much sense, this member function this member function belongs 
+         Even though it does not make much sense, this member function this member function belongs
          to the implicit time integration scheme for convenience. Of course, there is no time
          integration for stationary problems.
   */
@@ -77,7 +77,7 @@ public:
          iteration. Current solution becomes old solution of next
          timestep.
   <pre>
-  
+
     // -------------------------------------------------------------------
     //                         update solution
     //        current solution becomes old solution of next timestep
@@ -112,9 +112,9 @@ public:
     //  accn_  = (velnp_-veln_) / (dt)
     //
     // -------------------------------------------------------------------
-  
+
   </pre>
-         
+
   */
   void TimeUpdate();
 
@@ -123,7 +123,7 @@ public:
   */
   void StatisticsAndOutput();
 
-  
+
   /*!
   \brief update configuration and output to file/screen
 
@@ -189,7 +189,7 @@ public:
 
   /*!
    * \brief plot a vector field to a Gmsh postprocessing file
-   * 
+   *
    * @param vectorfield      vector with solution values
    * @param filestr          basic name of the output file
    * @param name_in_gmsh     text that appears in the Gmsh window over the scale
@@ -276,7 +276,7 @@ public:
    */
   Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape(std::string condname);
 
-  /// integrate mass flow over a surface 
+  /// integrate mass flow over a surface
   void ComputeSurfaceFlowrates() const;
 
   /// switch fluid field to block matrix
@@ -300,12 +300,12 @@ protected:
   LINALG::Solver&                        solver_;
   ParameterList&                         params_;
   IO::DiscretizationWriter&              output_;
-  
+
   //! the processor ID from the communicator
   const int                     myrank_;
-  
+
   //!< a singular stream to stdout in parallel environment
-  IO::Ostream0 cout0_;   
+  IO::Ostream0 cout0_;
   //@}
 
   //! @name time stepping variables
@@ -380,17 +380,17 @@ protected:
   struct State
   {
     /*! contains connection between nodal DofKey and a position in the global state arrays
-     * 
+     *
      *  should always fit to the current Epetra_Maps of this classes vectors
      */
-    XFEM::NodalDofPosMap       nodalDofDistributionMap_;
-    
+    std::map<XFEM::DofKey<XFEM::onNode>, XFEM::DofGID>    nodalDofDistributionMap_;
+
     /*! contains connection between elemental DofKey and a position in the global state arrays
-     * 
+     *
      *  should always fit to the current Epetra_Maps of this classes vectors
      */
-    XFEM::ElementalDofPosMap   elementalDofDistributionMap_;
-    
+    std::map<XFEM::DofKey<XFEM::onElem>, XFEM::DofGID>    elementalDofDistributionMap_;
+
     //! @name accelerations
     Teuchos::RCP<Epetra_Vector>    accnp_;  ///< accelerations at time n+1
     Teuchos::RCP<Epetra_Vector>    accn_;   ///< accelerations at time n
@@ -411,7 +411,7 @@ protected:
 
   //! pointer to the geometrical information about the flame front
   Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandle_;
-  
+
 }; // class CombustFluidImplicitTimeInt
 
 } // namespace FLD
