@@ -23,7 +23,7 @@ Maintainer: Axel Gerstenberger
 namespace XFEM
 {
   
-  //! Allows to distinguish between nodal and elemental dofs
+  //! A DofType to distinguish between nodal and elemental dofs
   enum DofType
   {
     onNode,
@@ -47,12 +47,17 @@ namespace XFEM
   
   /*!
    * \brief A unique identifier for a degree of freedom (DOF)
-   * 
-   * in Haskell one would write:
+   *
+   * A DofKey identifies a DOF uniquely without generating a global unique integer id.
+   * It contains all information that is necessary to know how to treat this DOF.
+   *
+   * In Haskell one would write:
    * type DofKey = (gid, FieldEnr)
-   * 
-   * \tparam doftype to distinguish between element and nodal dofs, now the compiler complains
-   *                 when we mix them, since DofKey<onNode> is different from DofKey<onElement>.
+   *
+   * \tparam doftype a DofType to distinguish between element and nodal dofs.
+   *                 the compiler will complain when we mix nodal and
+   *                 elemental DOFs, since DofKey<onNode> is different from
+   *                 DofKey<onElement>.
    */
   template <DofType doftype>
   class DofKey : public DRT::ParObject
@@ -63,6 +68,7 @@ namespace XFEM
           const int             gid,      ///< global id
           const FieldEnr        fieldenr  ///< enriched field
       ) :
+        DRT::ParObject(),
         gid_(gid),
         fieldenr_(fieldenr)
         {
@@ -71,8 +77,9 @@ namespace XFEM
 
       //! constructor, get values from char array using Unpack member function
       explicit DofKey(
-          vector<char>& data      ///< global id
-      )
+          vector<char>& data      ///< char array with data to unpack
+      ) :
+        DRT::ParObject()
       {
         Unpack(data);
         return;
@@ -82,6 +89,7 @@ namespace XFEM
       DofKey(
           const DofKey& other           ///< source
       ) :
+        DRT::ParObject(other),
         gid_(other.gid_),
         fieldenr_(other.fieldenr_)
       {
@@ -175,7 +183,7 @@ namespace XFEM
             return false;
         }
       }
-            
+      
       //! test for equality: only equal, if gid and enriched field are identical
       bool operator ==(const DofKey& rhs) const
       {
@@ -194,13 +202,13 @@ namespace XFEM
         else
           return false;
       }
-              
+      
       friend ostream& operator<<(ostream& out, const DofKey& key)
       {
-          out << key.toString();
-          return out;
+        out << key.toString();
+        return out;
       }
-              
+      
     private:
       
       //! don't want default constructor
@@ -220,14 +228,8 @@ namespace XFEM
       
   };
   
-  //! global Position in Epetra vector 
-  typedef int DofPos; 
-  
-  //! connects each dofkey on Node with a specific position in an solution vector
-  typedef std::map<XFEM::DofKey<XFEM::onNode>, XFEM::DofPos > NodalDofPosMap;
-  
-  //! connects each dofkey on Element with a specific position in an solution vector
-  typedef std::map<XFEM::DofKey<XFEM::onElem>, XFEM::DofPos > ElementalDofPosMap;
+  //! global Position in Epetra vector
+  typedef int DofGID;
   
 } // namespace XFEM
 

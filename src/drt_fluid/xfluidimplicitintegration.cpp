@@ -96,7 +96,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   alphaM_   = params_.get<double>("alpha_M");
   alphaF_   = params_.get<double>("alpha_F");
   gamma_    = params_.get<double>("gamma");
-  
+
   // create empty cutter discretization
   Teuchos::RCP<DRT::Discretization> emptyboundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(
       actdis, "schnackelzappel", "DummyBoundary", "BELE3", vector<string>(0));
@@ -104,7 +104,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   emptyboundarydis_->SetState("idispcolnp",tmpdisp);
   emptyboundarydis_->SetState("idispcoln",tmpdisp);
   // intersection with empty cutter will result in a complete fluid domain with no holes or intersections
-  Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih = 
+  Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih =
     rcp(new XFEM::InterfaceHandleXFSI(discret_,emptyboundarydis_,0,xparams_.get<bool>("EXP_INTERSECTION")));
   // apply enrichments
   
@@ -114,7 +114,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   fieldset.insert(XFEM::PHYSICS::Velz);
   fieldset.insert(XFEM::PHYSICS::Pres);
   const XFLUID::FluidElementAnsatz elementAnsatz;
-  Teuchos::RCP<XFEM::DofManager> dofmanager = 
+  Teuchos::RCP<XFEM::DofManager> dofmanager =
     rcp(new XFEM::DofManager(ih, fieldset, elementAnsatz, xparams_));
   // tell elements about the dofs and the integration
   {
@@ -129,7 +129,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   discret_->FillComplete();
 
   // sanity check
-  if (  solver.Params().get<string>("solver") == "aztec" 
+  if (  solver.Params().get<string>("solver") == "aztec"
     and solver.Params().isSublist("ML Parameters")
     and not xparams_.get<bool>("DLM_condensation")
     )
@@ -141,7 +141,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   {
     if (xparams_.get<bool>("DLM_condensation"))
     {
-      std::cout << GREEN_LIGHT << "DLM_condensation turned on!" << END_COLOR << endl << endl;    
+      std::cout << GREEN_LIGHT << "DLM_condensation turned on!" << END_COLOR << endl << endl;
     }
     else
     {
@@ -407,7 +407,6 @@ void FLD::XFluidImplicitTimeInt::PrepareTimeStep()
           state_.velnp_);
     }
   }
-  
 }
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -476,7 +475,7 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   // calling this function multiple times always results in the same solution vectors
 
   // compute Intersection
-  const Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih = 
+  const Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih =
     rcp(new XFEM::InterfaceHandleXFSI(discret_, cutterdiscret,step_,xparams_.get<bool>("EXP_INTERSECTION")));
   ih->toGmsh(step_);
 
@@ -487,7 +486,7 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   fieldset.insert(XFEM::PHYSICS::Velz);
   fieldset.insert(XFEM::PHYSICS::Pres);
   const XFLUID::FluidElementAnsatz elementAnsatz;
-  const Teuchos::RCP<XFEM::DofManager> dofmanager = 
+  const Teuchos::RCP<XFEM::DofManager> dofmanager =
     rcp(new XFEM::DofManager(ih, fieldset, elementAnsatz, xparams_));
 
   // save to be able to plot Gmsh stuff in Output()
@@ -520,11 +519,18 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
     const int numnodaldof = dofmanager->NumNodalDof();
     cout << "numdof = " << numdof << ", numstressdof = "<< (numdof - numnodaldof) << endl;
   }
+  else
+  {
+    if(discret_->Comm().MyPID() == 0)
+    {
+      cout << "numdof = " << newdofrowmap.NumGlobalElements() << endl;
+    }
+  }
   
   discret_->ComputeNullSpaceIfNecessary(solver_.Params());
 
-  const XFEM::NodalDofPosMap oldNodalDofDistributionMap(state_.nodalDofDistributionMap_);
-  const XFEM::ElementalDofPosMap oldElementalDofDistributionMap(state_.elementalDofDistributionMap_);
+  const std::map<XFEM::DofKey<XFEM::onNode>, XFEM::DofGID> oldNodalDofDistributionMap(state_.nodalDofDistributionMap_);
+  const std::map<XFEM::DofKey<XFEM::onElem>, XFEM::DofGID> oldElementalDofDistributionMap(state_.elementalDofDistributionMap_);
   dofmanager->fillDofDistributionMaps(
       state_.nodalDofDistributionMap_,
       state_.elementalDofDistributionMap_);
@@ -563,7 +569,7 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
     ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time",time_);
-    discret_->EvaluateDirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null, 
+    discret_->EvaluateDirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null,
                                 Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0); // just in case of change
   }
@@ -591,7 +597,7 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   // -------------------------------------------------------------------
 
   // This is a first estimate for the number of non zeros in a row of
-  // the matrix. Assuming a structured 3d-fluid mesh, for a corner node we have 
+  // the matrix. Assuming a structured 3d-fluid mesh, for a corner node we have
   // 8 adjacent elements with 27nodes*4dofs = 108 dofs each -> 864 entries
   // We do not need the exact number here, just for performance reasons
   // a 'good' estimate
@@ -702,7 +708,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
   const Teuchos::RCP<const Epetra_Vector> ivelcolnp = cutterdiscret->GetState("ivelcolnp");
   const Teuchos::RCP<const Epetra_Vector> ivelcoln  = cutterdiscret->GetState("ivelcoln");
 
-  if (myrank_ == 0 && ivelcolnp->MyLength() >= 3)
+  if (myrank_ == 0 and ivelcolnp->MyLength() >= 3)
   {
     std::ofstream f;
     const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
@@ -717,7 +723,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     f.close();
   }
 
-//  if (myrank_ == 0 && ivelcoln->MyLength() >= 3)
+//  if (myrank_ == 0 and ivelcoln->MyLength() >= 3)
 //  {
 //    std::ofstream f;
 //    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
@@ -732,7 +738,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 //    f.close();
 //  }
 
-//  if (myrank_ == 0 && ivelcolnp->MyLength() >= 3)
+//  if (myrank_ == 0 and ivelcolnp->MyLength() >= 3)
 //  {
 //    std::ofstream f;
 //    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
@@ -754,8 +760,8 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
   {
     cout0_ << "* Warning! Works reliable only for Backward Euler time discretization! *" << endl;
   }
-  
-  
+
+
   if (myrank_ == 0)
   {
     printf("+------------+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+\n");
@@ -767,7 +773,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
   incvel_->PutScalar(0.0);
   residual_->PutScalar(0.0);
-  
+
   // increment of the old iteration step - used for update of condensed element stresses
   const Teuchos::RCP<Epetra_Vector> oldinc = LINALG::CreateVector(*discret_->DofRowMap(),true);
 
@@ -775,7 +781,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
   double resnorm = 1.0e11;
   double oldincnorm = 1.0e12;
   double incnorm = 1.0e11;
-  
+
   while (stopnonliniter==false)
   {
     itnum++;
@@ -824,7 +830,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       discret_->SetState("veln" ,state_.veln_);
       discret_->SetState("velnm",state_.velnm_);
       discret_->SetState("accn" ,state_.accn_);
-      
+
       discret_->SetState("nodal increment",oldinc);
 
       // give interface velocity to elements
@@ -833,7 +839,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       // reset interface force and let the elements fill it
       iforcecolnp->PutScalar(0.0);
       eleparams.set("interface force",iforcecolnp);
-      
+
       eleparams.set("DLM_condensation",xparams_.get<bool>("DLM_condensation"));
       eleparams.set("boundaryRatioLimit",xparams_.get<double>("boundaryRatioLimit"));
 
@@ -854,6 +860,9 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       }
 
       // end time measurement for element
+      // to get realistic element times, this barrier results in the longest
+      // time being printed (processors with no intersected elements are too fast...)
+      discret_->Comm().Barrier();
       dtele=ds_cputime()-tcpu;
     }
 
@@ -948,7 +957,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     // this is the convergence check
     // We always require at least one solve. Otherwise the
     // perturbation at the FSI interface might get by unnoticed.
-      if (vresnorm <= ittol and 
+      if (vresnorm <= ittol and
           presnorm <= ittol and
           incvelnorm_L2/velnorm_L2 <= ittol and
           incprenorm_L2/prenorm_L2 <= ittol)
@@ -984,29 +993,29 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
         }
     }
 
-    if (resnorm > oldresnorm and
-        incnorm > oldincnorm and
-        itnum > 2)
-    {
-      cout << endl << "resnorms: " << resnorm << endl <<  "          " << oldresnorm << endl;
-      cout << endl << "incnorms: " << incnorm << endl <<  "          " << oldincnorm << endl;
-      stopnonliniter=true;
-      if (myrank_ == 0)
-      {
-        printf("+---------------------------------------------------------------+\n");
-        printf("|            >>>>>> not converged due to increasing increment!  |\n");
-        printf("+---------------------------------------------------------------+\n");
-
-        FILE* errfile = params_.get<FILE*>("err file");
-        if (errfile!=NULL)
-        {
-          fprintf(errfile,"fluid unconverged solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
-                  itnum,itemax,ittol,vresnorm,presnorm,
-                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
-        }
-      }
-      break;
-    }
+//    if (resnorm > oldresnorm and
+//        incnorm > oldincnorm and
+//        itnum > 2)
+//    {
+//      cout << endl << "resnorms: " << resnorm << endl <<  "          " << oldresnorm << endl;
+//      cout << endl << "incnorms: " << incnorm << endl <<  "          " << oldincnorm << endl;
+//      stopnonliniter=true;
+//      if (myrank_ == 0)
+//      {
+//        printf("+---------------------------------------------------------------+\n");
+//        printf("|            >>>>>> not converged due to increasing increment!  |\n");
+//        printf("+---------------------------------------------------------------+\n");
+//
+//        FILE* errfile = params_.get<FILE*>("err file");
+//        if (errfile!=NULL)
+//        {
+//          fprintf(errfile,"fluid unconverged solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
+//                  itnum,itemax,ittol,vresnorm,presnorm,
+//                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
+//        }
+//      }
+//      break;
+//    }
     oldincnorm = incnorm;
     oldresnorm = resnorm;
     
@@ -1067,7 +1076,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       const double tcpusolve=ds_cputime();
 
       // do adaptive linear solver tolerance (not in first solve)
-      if (isadapttol && itnum>1)
+      if (isadapttol and itnum>1)
       {
         double currresidual = max(vresnorm,presnorm);
         currresidual = max(currresidual,incvelnorm_L2/velnorm_L2);
@@ -1078,6 +1087,9 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       solver_.ResetTolerance();
 
       // end time measurement for solver
+      // to get realistic times, this barrier results in the longest
+      // time being printed
+      discret_->Comm().Barrier();
       dtsolve = ds_cputime()-tcpusolve;
     }
 
@@ -1094,11 +1106,6 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
   iforcecolnp->Scale(-ResidualScaling());
 
   cutterdiscret->SetState("iforcenp", iforcecolnp);
-  
-  if (timealgo_==timeint_stationary and discret_->Comm().NumProc() == 1)
-  {
-    OutputToGmsh();
-  }
   
   // reset elements to make sure, everything is build next time
   {
@@ -1231,7 +1238,7 @@ void FLD::XFluidImplicitTimeInt::TimeUpdate()
   // update old acceleration
   state_.accn_->Update(1.0,*state_.accnp_,0.0);
   
-  // velocities/pressures of this step become most recent 
+  // velocities/pressures of this step become most recent
   // velocities/pressures of the last step
   state_.velnm_->Update(1.0,*state_.veln_ ,0.0);
   state_.veln_ ->Update(1.0,*state_.velnp_,0.0);
@@ -1337,7 +1344,7 @@ void FLD::XFluidImplicitTimeInt::Output()
     if (step_==upres_)
      output_.WriteElementData();
 
-    if (uprestart_ != 0 && step_%uprestart_ == 0) //add restart data
+    if (uprestart_ != 0 and step_%uprestart_ == 0) //add restart data
     {
       output_.WriteVector("accn", state_.accn_);
       output_.WriteVector("veln", state_.veln_);
@@ -1346,7 +1353,7 @@ void FLD::XFluidImplicitTimeInt::Output()
   }
 
   // write restart also when uprestart_ is not a integer multiple of upres_
-  else if (uprestart_ != 0 && step_%uprestart_ == 0)
+  else if (uprestart_ != 0 and step_%uprestart_ == 0)
   {
     output_.NewStep    (step_,time_);
     output_.WriteVector("velnp", state_.velnp_);

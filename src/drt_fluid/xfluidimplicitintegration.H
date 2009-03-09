@@ -261,10 +261,10 @@ public:
    */
   Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape(std::string condname);
   
-  /// integrate mass flow over a surface 
+  /// integrate mass flow over a surface
   void ComputeSurfaceFlowRates() const;
   
-  /// integrate impuls flow rate over a surface 
+  /// integrate impuls flow rate over a surface
   void ComputeSurfaceImpulsRates() const;
 
   /// switch fluid field to block matrix
@@ -281,7 +281,7 @@ protected:
   XFluidImplicitTimeInt();
 
   /*!
-  \brief compute values at intermediate time steps for gen.-alpha 
+  \brief compute values at intermediate time steps for gen.-alpha
 
   */
   void GenAlphaIntermediateValues();
@@ -316,9 +316,9 @@ protected:
       const Teuchos::RCP<DRT::Discretization>  cutterdiscret
       );
   
-    /*!
+  /*!
    * \brief plot a vector field to a Gmsh postprocessing file
-   * 
+   *
    * @param vectorfield      vector with solution values
    * @param filestr          basic name of the output file
    * @param name_in_gmsh     text that appears in the Gmsh window over the scale
@@ -342,7 +342,7 @@ protected:
   //! the processor ID from the communicator
   const int                           myrank_;
   //!< a singular stream to stdout in parallel environment
-  IO::Ostream0 cout0_;   
+  IO::Ostream0 cout0_;
   
   //! do we move the fluid mesh and calculate the fluid on this moving mesh?
   const bool                          alefluid_;
@@ -429,16 +429,16 @@ protected:
   struct State
   {
     /*! contains connection between nodal DofKey and a position in the global state arrays
-     * 
+     *
      *  should always fit to the current Epetra_Maps of this classes vectors
      */
-    XFEM::NodalDofPosMap       nodalDofDistributionMap_;
+    std::map<XFEM::DofKey<XFEM::onNode>, XFEM::DofGID>   nodalDofDistributionMap_;
     
     /*! contains connection between elemental DofKey and a position in the global state arrays
-     * 
+     *
      *  should always fit to the current Epetra_Maps of this classes vectors
      */
-    XFEM::ElementalDofPosMap   elementalDofDistributionMap_;
+    std::map<XFEM::DofKey<XFEM::onElem>, XFEM::DofGID>   elementalDofDistributionMap_;
     
     //! @name accelerations
     Teuchos::RCP<Epetra_Vector>    accnp_;  ///< accelerations at time n+1
