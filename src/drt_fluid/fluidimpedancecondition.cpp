@@ -239,6 +239,7 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(RefCountPtr<DRT::Discretization> 
   period_ = (impedancecond[numcond])->GetDouble("timeperiod");
   cyclesteps_ = (int)(period_/dta+0.5);
   flowratespos_ = 0;
+  dta_ = dta;
 
   // ---------------------------------------------------------------------
   // get relevant data from impedance condition
@@ -285,20 +286,6 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(RefCountPtr<DRT::Discretization> 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- |  Destructor dtor (public)                                chfoe 04/08 |
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-FLD::UTILS::FluidImpedanceBc::~FluidImpedanceBc()
-{
-  return;
-}
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
  |  Restart writing                                         chfoe 05/08 |
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -323,6 +310,10 @@ void FLD::UTILS::FluidImpedanceBc::WriteRestart( IO::DiscretizationWriter&  outp
   // also write vector impedancetbc_ (previously missing, gee)
   stream3 << "impedancetbc" << condnum;
   output.WriteVector(stream3.str(), impedancetbc_);
+
+  // write time step size dta_ and cyclesteps_
+  output.WriteInt("ImpedanceBC_cyclesteps", cyclesteps_);
+  output.WriteDouble("ImpedanceBC_dta", dta_);
 
   return;
 }
@@ -356,6 +347,94 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
   // also read vector impedancetbc_ (previously missing, gee)
   stream3 << "impedancetbc" << condnum;
   reader.ReadVector(impedancetbc_,stream3.str());
+
+  // old time step size
+  double odta = reader.ReadDouble("ImpedanceBC_dta");
+  // new time step size
+  double ndta = dta_;
+  // old cyclesteps_ (no steps in a cycle)
+  int oncycle = reader.ReadInt("ImpedanceBC_cyclesteps");
+  // new cyclesteps_ (no steps in a cycle)
+  int nncycle = cyclesteps_;
+
+
+  // if the time step size has changed, need to interpolate flowrates
+  // accordingly
+#if 1
+  if (dta_ == odta)
+  {
+    if (!myrank_)
+      printf("Impedance restart old and new time step are the same - life is good\n");
+    return;
+  }
+#endif
+  
+  // time of restart
+  double t = reader.ReadDouble("time");
+  // old number of flowrates in vector
+  int onfr = (int)flowrates_->size();
+  // new number of flowrates in vector
+  int nnfr = (int)(onfr*odta/ndta);
+  // old current position (valid for first and subsequent periods)
+  int opos = flowratespos_ % oncycle;
+  // current time within period is opos * odta
+  double tinperiod = opos * odta;
+  // new flowratesposition = (opos*odta)/ndta
+  int npos = (int)(tinperiod / ndta);
+  
+  if (!myrank_)
+  {
+    printf("Impedance restart with time step change:\n");
+    printf("time               %10.5e \n",time);
+    printf("time in period     %10.5e \n",tinperiod);
+    printf("old time step      %10.5e \n",odta);
+    printf("new time step      %10.5e \n",ndta);
+    printf("old steps in cycle        %d \n",oncycle);
+    printf("new steps in cycle        %d \n",nncycle);
+    printf("old length of flowrates   %d \n",onfr);
+    printf("new length of flowrates   %d \n",nnfr);
+    printf("old position in flowrates %d \n",opos);
+    printf("new position in flowrates %d \n",npos);
+    fflush(stdout);
+  }
+  
+  RCP<std::vector<double> > rcpfr = rcp(new vector<double>(nnfr,0.0));
+  std::vector<double>& fr = *rcpfr;
+  
+  // loop through the new time intervals
+  for (int i=0; i<nnfr; ++i)
+  {
+    double acttime = (i+1)*ndta; // time we interpolate to
+    int j=0;
+    while ((j+1)*odta<=acttime) ++j;
+    double x1 = j*odta;
+    double x2 = (j+1)*odta;
+    double y1;
+    if (j-1<0) 
+    {
+      if (t <= period_) y1 = 0.0;                    // within first period starting value
+      else              y1 = (*flowrates_)[onfr-1];  // subsequent periods starting value
+    }
+    else       
+      y1 = (*flowrates_)[j-1];
+    double y2;
+    if (j>=onfr) y2 = 0.0;
+    else         y2 = (*flowrates_)[j];
+    double a = (y1-y2)/(x1-x2);
+    double b = y2 - a*x2;
+    fr[i] = a * acttime + b;
+    //if (myrank_==0) printf("j %d      x1 %10.5e y1 %10.5e\n",j,x1,y1);
+    //if (myrank_==0) printf("i %d acttime %10.5e fr %10.5e\n",i,acttime,fr[i]);
+    //if (myrank_==0) printf("j %d      x2 %10.5e y2 %10.5e\n\n",j,x2,y2);
+  }
+  
+  // store new values in class
+  flowratespos_ = npos;
+  flowrates_    = rcpfr;
+  
+  // finally, recompute the outflow boundary condition from last step
+  // this way the vector need not to be stored
+  OutflowBoundary(t,ndta,0.66,condnum);
 
   return;
 }
@@ -576,7 +655,7 @@ void FLD::UTILS::FluidImpedanceBc::FlowRateCalculation(double time, double dta, 
   //                 local <-> global dof numbering
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
-// get elemental flowrates ...
+  // get elemental flowrates ...
   RCP<Epetra_Vector> myStoredFlowrates=rcp(new Epetra_Vector(*dofrowmap,100));
   const string condstring("ImpedanceCond");
   discret_->EvaluateCondition(eleparams,myStoredFlowrates,condstring,condid);
@@ -584,7 +663,7 @@ void FLD::UTILS::FluidImpedanceBc::FlowRateCalculation(double time, double dta, 
   // ... as well as actual total flowrate on this proc
   double actflowrate = eleparams.get<double>("Outlet flowrate");
 
-// get total flowrate in parallel case
+  // get total flowrate in parallel case
   double parflowrate = 0.0;
   discret_->Comm().SumAll(&actflowrate,&parflowrate,1);
 
@@ -675,7 +754,7 @@ void FLD::UTILS::FluidImpedanceBc::OutflowBoundary(double time, double dta, doub
     printf("Impedance condition Id: %d Pressure from convolution = %f\n",condid,pressure);
 
 
-  impedancetbc_->PutScalar(0.0); // ??
+  impedancetbc_->PutScalar(0.0);
   const string condstring("ImpedanceCond");
   discret_->EvaluateCondition(eleparams,impedancetbc_,condstring,condid);
 /*
