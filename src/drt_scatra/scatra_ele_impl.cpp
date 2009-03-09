@@ -31,6 +31,7 @@ Maintainer: Georg Bauer
 
 //#define VISUALIZE_ELEMENT_DATA
 #include "scatra_element.H" // only for visualization of element data
+#define MIGRATIONSTAB  //activate convective stabilization with migration term
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -163,6 +164,7 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(int numdofpernode, int numscal)
   : numdofpernode_(numdofpernode),
     numscal_(numscal),
+    iselch_((numdofpernode_ - numscal_) == 1),
     xyze_(true),  // initialize to zero
     bodyforce_(numdofpernode_),
     diffus_(numscal_),
@@ -821,16 +823,13 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
   // integration loop for one element
   /*----------------------------------------------------------------------*/
 
-  // flag for higher order elements
-  const bool use2ndderiv = SCATRA::useSecondDerivatives<distype>();
-
   // integrations points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
-    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,use2ndderiv,ele->Id());
+    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
     // density-weighted shape functions at n+1/n+alpha_F
     densfunct_.EMultiply(funct_,edensnp);
@@ -861,7 +860,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
     }
 
     //----------- perform integration for entire matrix and rhs
-    if (numdofpernode_-numscal_== 0) // 'standard' scalar transport
+    if (!iselch_ ) // 'standard' scalar transport
     {
       for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
       {
@@ -871,13 +870,13 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         // gradient of current fine-scale part of scalar value
         if (is_incremental and fssgd) fsgradphi_.Multiply(derxy_,fsphinp[k]);
 
-        CalMatAndRHS(sys_mat,residual,ephinp,use2ndderiv,conservative,fssgd,is_stationary,is_genalpha,is_incremental,timefac,alphaF,k);
+        CalMatAndRHS(sys_mat,residual,ephinp,use2ndderiv_,conservative,fssgd,is_stationary,is_genalpha,is_incremental,timefac,alphaF,k);
       } // loop over each scalar
     }
     else  // ELCH problems
     {
       if(is_genalpha) dserror("GenAlpha is not supported by ELCH!");
-      CalMatElch(sys_mat,residual,ephinp,epotnp,use2ndderiv,frt,is_stationary,timefac);
+      CalMatElch(sys_mat,residual,ephinp,epotnp,use2ndderiv_,frt,is_stationary,timefac);
     }
   } // integration loop
 
@@ -977,7 +976,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::BodyForce(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
   Teuchos::RCP<const MAT::Material>        material,
-    const bool&                            temperature,
+    const bool                             temperature,
     const vector<LINALG::Matrix<iel,1> >&  ephinp
 )
 {
@@ -1073,19 +1072,16 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     const LINALG::Matrix<iel,1>&        epot,
     const LINALG::Matrix<iel,1>&        esubgrdiff,
     const double                        dt,
-    const double&                       timefac,
+    const double                        timefac,
     const enum SCATRA::TauType          whichtau,
-    const bool&                         assgd,
-    const bool&                         fssgd,
-    const bool&                         turbmodel,
-    const bool&                         is_incremental,
-    const bool&                         is_stationary,
-    const double&                       frt
+    const bool                          assgd,
+    const bool                          fssgd,
+    const bool                          turbmodel,
+    const bool                          is_incremental,
+    const bool                          is_stationary,
+    const double                        frt
   )
 {
-  // get element-type constant for tau
-  const double mk = SCATRA::MK<distype>();
-
   // use one-point Gauss rule to calculate tau at element center
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
 
@@ -1115,7 +1111,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
   const double dens = funct_.Dot(edens);
 
   // get "migration velocity" divided by D_k*z_k at element center
-  if (numdofpernode_-numscal_== 1) // ELCH
+  if (iselch_) // ELCH
   {
     // compute global derivatives
     derxy_.Multiply(xij_,deriv_);
@@ -1146,11 +1142,12 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
       // effective velocity at element center:
       // (weighted) convective velocity + individual migration velocity
       LINALG::Matrix<nsd_,1> veleff(velint_,false);
-      if (numdofpernode_ - numscal_ == 1) // ELCH
+#ifdef MIGRATIONSTAB
+      if (iselch_) // ELCH
       {
-        const double Dkzk = diffus_[k]*valence_[k];
-        veleff.Update(Dkzk,migvelint_,1.0);
+        veleff.Update(diffusvalence_[k],migvelint_,1.0);
       }
+#endif
 
       /*
                                                                 1.0
@@ -1239,17 +1236,18 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
 
       // get Euclidean norm of (weighted) velocity at element center
       double vel_norm;
-      if (numdofpernode_ - numscal_ == 1) // ELCH
+      if (iselch_) // ELCH
       {
-        const double Dkzk = diffus_[k]*valence_[k];
         // get Euclidean norm of effective velocity at element center:
         // (weighted) convective velocity + individual migration velocity
         LINALG::Matrix<nsd_,1> veleff(velint_,false);
-        veleff.Update(Dkzk,migvelint_,1.0);
+#ifdef MIGRATIONSTAB
+        veleff.Update(diffusvalence_[k],migvelint_,1.0);
+#endif
         vel_norm = veleff.Norm2();
 
 #ifdef VISUALIZE_ELEMENT_DATA
-        veleff.Update(Dkzk,migvelint_,0.0);
+        veleff.Update(diffusvalence_[k],migvelint_,0.0);
         double vel_norm_mig = veleff.Norm2();
         double migepe2 = mk * vel_norm_mig * h / diffus_[k];
 
@@ -1259,6 +1257,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
         ostringstream temp;
         temp << k;
         string name = "Pe_mig_"+temp.str();
+        actele->AddToData(name,v);
+        name = "hk_"+temp.str();
+        v[0] = h;
         actele->AddToData(name,v);
 #endif
       }
@@ -1283,16 +1284,13 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
       }
 
 #ifdef VISUALIZE_ELEMENT_DATA 
-      // visualize resultant Pe number and stabilization parameter
+      // visualize resultant Pe number
       DRT::ELEMENTS::Transport* actele = dynamic_cast<DRT::ELEMENTS::Transport*>(ele);
       if (!actele) dserror("cast to Transport* failed");
-      vector<double> v(1,epe2);
+      vector<double> v(1,epe);
       ostringstream temp;
       temp << k;
       string name = "Pe_"+temp.str();
-      actele->AddToData(name,v);
-      v[0] = tau_[k];
-      name = "tau_"+ temp.str();
       actele->AddToData(name,v);
 #endif
     }
@@ -1305,6 +1303,17 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     break;
     default: dserror("Unknown definition of tau\n");
     } //switch (whichtau)
+
+#ifdef VISUALIZE_ELEMENT_DATA 
+    // visualize stabilization parameter
+    DRT::ELEMENTS::Transport* actele = dynamic_cast<DRT::ELEMENTS::Transport*>(ele);
+    if (!actele) dserror("cast to Transport* failed");
+    vector<double> v(1,tau_[k]);
+    ostringstream temp;
+    temp << k;
+    string name = "tau_"+ temp.str();
+    actele->AddToData(name,v);
+#endif
 
     //----------------------------------------------------------------------
     // computation of all-scale or fine-scale subgrid diffusivity
@@ -1360,9 +1369,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
     const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
-    const int&                                   iquad,      ///< id of current Gauss point
-    const bool&                                  use2ndderiv,///< are second derivatives needed?
-    const int&                                   eleid       ///< the element id
+    const int                                    iquad,      ///< id of current Gauss point
+    const int                                    eleid       ///< the element id
 )
 {
   // coordinates of the current integration point
@@ -1405,7 +1413,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
   derxy_.Multiply(xij_,deriv_);
 
   // compute second global derivatives (if needed)
-  if (use2ndderiv)
+  if (use2ndderiv_)
   {
     // get the second derivatives of standard element at current GP
     DRT::UTILS::shape_function_deriv2<distype>(xsi_,deriv2_);
@@ -1440,9 +1448,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
     const int                             dofindex
     )
 {
-// number of degrees of freedom per node
-const int numdof = numdofpernode_;
-
 //----------------------------------------------------------------
 // 1) element matrix: stationary terms
 //----------------------------------------------------------------
@@ -1459,11 +1464,11 @@ const double fac_diffus = timefacfac*diffus_[dofindex];
 for (int vi=0; vi<iel; ++vi)
 {
   const double v = timefacfac*funct_(vi);
-  const int fvi = vi*numdof+dofindex;
+  const int fvi = vi*numdofpernode_+dofindex;
 
   for (int ui=0; ui<iel; ++ui)
   {
-    const int fui = ui*numdof+dofindex;
+    const int fui = ui*numdofpernode_+dofindex;
 
     emat(fvi,fui) += v*conv_(ui);
   }
@@ -1475,11 +1480,11 @@ if (conservative)
   for (int vi=0; vi<iel; ++vi)
   {
     const double v = timefacfac*funct_(vi);
-    const int fvi = vi*numdof+dofindex;
+    const int fvi = vi*numdofpernode_+dofindex;
 
     for (int ui=0; ui<iel; ++ui)
     {
-      const int fui = ui*numdof+dofindex;
+      const int fui = ui*numdofpernode_+dofindex;
 
       emat(fvi,fui) += v*funct_(ui)*mdiv_;
     }
@@ -1489,11 +1494,11 @@ if (conservative)
 // diffusive term
 for (int vi=0; vi<iel; ++vi)
 {
-  const int fvi = vi*numdof+dofindex;
+  const int fvi = vi*numdofpernode_+dofindex;
 
   for (int ui=0; ui<iel; ++ui)
   {
-    const int fui = ui*numdof+dofindex;
+    const int fui = ui*numdofpernode_+dofindex;
     double laplawf(0.0);
     GetLaplacianWeakForm(laplawf, derxy_,ui,vi);
     emat(fvi,fui) += fac_diffus*laplawf;
@@ -1507,11 +1512,11 @@ for (int vi=0; vi<iel; ++vi)
 for (int vi=0; vi<iel; ++vi)
 {
   const double v = timetaufac*conv_(vi);
-  const int fvi = vi*numdof+dofindex;
+  const int fvi = vi*numdofpernode_+dofindex;
 
   for (int ui=0; ui<iel; ++ui)
   {
-    const int fui = ui*numdof+dofindex;
+    const int fui = ui*numdofpernode_+dofindex;
 
     emat(fvi,fui) += v*conv_(ui);
   }
@@ -1530,11 +1535,11 @@ if (use2ndderiv)
   for (int vi=0; vi<iel; ++vi)
   {
     const double v = timetaufac*conv_(vi);
-    const int fvi = vi*numdof+dofindex;
+    const int fvi = vi*numdofpernode_+dofindex;
 
     for (int ui=0; ui<iel; ++ui)
     {
-      const int fui = ui*numdof+dofindex;
+      const int fui = ui*numdofpernode_+dofindex;
 
       emat(fvi,fui) -= v*diff_(ui);
     }
@@ -1545,11 +1550,11 @@ if (use2ndderiv)
   for (int vi=0; vi<iel; ++vi)
   {
     const double v = timetaufac*diff_(vi);
-    const int fvi = vi*numdof+dofindex;
+    const int fvi = vi*numdofpernode_+dofindex;
 
     for (int ui=0; ui<iel; ++ui)
     {
-      const int fui = ui*numdof+dofindex;
+      const int fui = ui*numdofpernode_+dofindex;
 
       emat(fvi,fui) += v*conv_(ui);
     }
@@ -1560,11 +1565,11 @@ if (use2ndderiv)
   for (int vi=0; vi<iel; ++vi)
   {
     const double v = timetaufac*diff_(vi);
-    const int fvi = vi*numdof+dofindex;
+    const int fvi = vi*numdofpernode_+dofindex;
 
     for (int ui=0; ui<iel; ++ui)
     {
-      const int fui = ui*numdof+dofindex;
+      const int fui = ui*numdofpernode_+dofindex;
 
       emat(fvi,fui) -= v*diff_(ui);
     }
@@ -1583,11 +1588,11 @@ if (not is_stationary)
   for (int vi=0; vi<iel; ++vi)
   {
     const double v = fac_*funct_(vi);
-    const int fvi = vi*numdof+dofindex;
+    const int fvi = vi*numdofpernode_+dofindex;
 
     for (int ui=0; ui<iel; ++ui)
     {
-      const int fui = ui*numdof+dofindex;
+      const int fui = ui*numdofpernode_+dofindex;
 
       emat(fvi,fui) += v*densamfunct_(ui);
     }
@@ -1600,11 +1605,11 @@ if (not is_stationary)
   for (int vi=0; vi<iel; ++vi)
   {
     const double v = taufac*conv_(vi);
-    const int fvi = vi*numdof+dofindex;
+    const int fvi = vi*numdofpernode_+dofindex;
 
     for (int ui=0; ui<iel; ++ui)
     {
-      const int fui = ui*numdof+dofindex;
+      const int fui = ui*numdofpernode_+dofindex;
 
       emat(fvi,fui) += v*densamfunct_(ui);
     }
@@ -1617,11 +1622,11 @@ if (not is_stationary)
     for (int vi=0; vi<iel; ++vi)
     {
       const double v = taufac*diff_(vi);
-      const int fvi = vi*numdof+dofindex;
+      const int fvi = vi*numdofpernode_+dofindex;
 
       for (int ui=0; ui<iel; ++ui)
       {
-        const int fui = ui*numdof+dofindex;
+        const int fui = ui*numdofpernode_+dofindex;
 
         emat(fvi,fui) += v*densamfunct_(ui);
       }
@@ -1659,7 +1664,7 @@ if (is_incremental and is_genalpha)
   const double vtrans = rhsfac*hist_[dofindex];
   for (int vi=0; vi<iel; ++vi)
   {
-    const int fvi = vi*numdof+dofindex;
+    const int fvi = vi*numdofpernode_+dofindex;
 
     erhs[fvi] -= vtrans*funct_(vi);
   }
@@ -1687,7 +1692,7 @@ else if (is_incremental and not is_genalpha)
     const double vtrans = fac_*dens_phi;
     for (int vi=0; vi<iel; ++vi)
     {
-      const int fvi = vi*numdof+dofindex;
+      const int fvi = vi*numdofpernode_+dofindex;
 
       erhs[fvi] -= vtrans*funct_(vi);
     }
@@ -1727,7 +1732,7 @@ if (conservative)
 double vrhs = fac_*rhsint;
 for (int vi=0; vi<iel; ++vi)
 {
-  const int fvi = vi*numdof+dofindex;
+  const int fvi = vi*numdofpernode_+dofindex;
 
   erhs[fvi] += vrhs*funct_(vi);
 }
@@ -1739,7 +1744,7 @@ for (int vi=0; vi<iel; ++vi)
 vrhs = rhsfac*conv_phi;
 for (int vi=0; vi<iel; ++vi)
 {
-  const int fvi = vi*numdof+dofindex;
+  const int fvi = vi*numdofpernode_+dofindex;
 
   erhs[fvi] -= vrhs*funct_(vi);
 }
@@ -1748,7 +1753,7 @@ for (int vi=0; vi<iel; ++vi)
 vrhs = rhsfac*diffus_[dofindex];
 for (int vi=0; vi<iel; ++vi)
 {
-  const int fvi = vi*numdof+dofindex;
+  const int fvi = vi*numdofpernode_+dofindex;
 
   double laplawf(0.0);
   GetLaplacianWeakFormRHS(laplawf,derxy_,gradphi_,vi);
@@ -1762,7 +1767,7 @@ for (int vi=0; vi<iel; ++vi)
 vrhs = rhstaufac*residual;
 for (int vi=0; vi<iel; ++vi)
 {
-  const int fvi = vi*numdof+dofindex;
+  const int fvi = vi*numdofpernode_+dofindex;
 
   erhs[fvi] -= vrhs*conv_(vi);
 }
@@ -1774,7 +1779,7 @@ if (use2ndderiv)
   // (USFEM assumed here, sign change necessary for GLS)
   for (int vi=0; vi<iel; ++vi)
   {
-    const int fvi = vi*numdof+dofindex;
+    const int fvi = vi*numdofpernode_+dofindex;
 
     erhs[fvi] -= vrhs*diff_(vi);
   }
@@ -1788,7 +1793,7 @@ if (is_incremental and fssgd)
   vrhs = rhsfac*kart_[dofindex];
   for (int vi=0; vi<iel; ++vi)
   {
-    const int fvi = vi*numdof+dofindex;
+    const int fvi = vi*numdofpernode_+dofindex;
 
     double laplawf(0.0);
     GetLaplacianWeakFormRHS(laplawf,derxy_,fsgradphi_,vi);
@@ -1833,16 +1838,13 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
   // integration loop for one element
   /*----------------------------------------------------------------------*/
 
-  // flag for higher order elements
-  const bool use2ndderiv = SCATRA::useSecondDerivatives<distype>();
-
   // integrations points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
-    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,use2ndderiv,ele->Id());
+    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
     // (density-weighted) shape functions
     if (conservative) densfunct_.Update(funct_);
@@ -1953,7 +1955,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
       }
     } // loop over each scalar k
 
-    if (numdofpernode_-numscal_== 1) // ELCH
+    if (iselch_) // ELCH
     {
       // we put a dummy mass matrix here in order to have a regular 
       // matrix in the lower right block of the whole system-matrix
@@ -2003,7 +2005,7 @@ DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<di
 // integration loop
 for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
 {
-  EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,false,ele->Id());
+  EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
   for (int k=0;k<numscal_;++k)
   {
@@ -2055,7 +2057,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
 
     // when concentration becomes zero, the coupling terms in the system matrix get lost!
     if (conint_[k] < 1e-18) 
-      dserror("species concentration %d at GP is zero or negative: %g",k,conint_[k]);
+      printf("WARNING: species concentration %d at GP is zero or negative: %g\n",k,conint_[k]);
   }
 
   // get gradient of el. potential at integration point
@@ -2128,7 +2130,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
     for (int vi=0; vi<iel; ++vi)
     {
       const int    fvi = vi*numdofpernode_+k;
-      const double timetaufac_conv_eff_vi = timetaufac*(conv_(vi)+diffus_valence_k*migconv_(vi));
+      double timetaufac_conv_eff_vi = timetaufac*conv_(vi);
+#ifdef MIGRATIONSTAB
+      timetaufac_conv_eff_vi += timetaufac*diffus_valence_k*migconv_(vi);
+#endif
       const double timefacfac_funct_vi = timefacfac*funct_(vi);
       const double timefacfac_diffus_valence_k_mig_vi = timefacfac*diffus_valence_k*migconv_(vi);
       const double valence_k_fac_funct_vi = valence_[k]*fac_*funct_(vi);
@@ -2160,7 +2165,20 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
         /* 1) convective stabilization */
 
         /* convective term */
-        emat(fvi, fui) += timetaufac_conv_eff_vi*(conv_(ui)+diffus_valence_k*migconv_(ui));
+        // partial derivative w.r.t concentration
+        emat(fvi, fui) += timetaufac_conv_eff_vi*conv_(ui);
+        emat(fvi, fui) += timetaufac_conv_eff_vi*diffus_valence_k*migconv_(ui);
+        // partial derivative w.r.t potential
+        double val_ui; GetLaplacianWeakFormRHS(val_ui, derxy_,gradphi_,ui);
+        emat(fvi,ui*numdofpernode_+numscal_) += timetaufac_conv_eff_vi*diffus_valence_k*val_ui;
+
+        // linearization w.r.t potential phi
+        /*
+        double val_ui; GetLaplacianWeakFormRHS(val_ui, derxy_,gradphi_,ui);
+        double val_vi; GetLaplacianWeakFormRHS(val_vi, derxy_,gradphi_,vi);
+        double norm = gradphi_.Norm2();
+        emat(fvi, ui*numdofpernode_+ numscal_) += timetaufac*(laplawf*norm*norm + val_vi*val_ui);
+        */
 
       } // for ui
     } // for vi
@@ -2257,7 +2275,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
       // not implemented
 
       // 1) convective stabilization
-      erhs[fvi] += (conv_(vi)+diffus_valence_k*migconv_(vi)) * taufacresidual;
+      erhs[fvi] += conv_(vi)* taufacresidual;
+#ifdef MIGRATIONSTAB
+      erhs[fvi] +=  diffus_valence_k*migconv_(vi) * taufacresidual;
+#endif
 
     } // for vi
 
@@ -2292,7 +2313,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
 
           /* 1) convective stabilization */
           /* transient term */
-          emat(fvi, fui) += taufac*(conv_(vi)+diffus_valence_k*migconv_(vi))*densfunct_(ui);
+          emat(fvi, fui) += taufac*conv_(vi)*densfunct_(ui);
+#ifdef MIGRATIONSTAB
+          emat(fvi, fui) += taufac*diffus_valence_k*migconv_(vi)*densfunct_(ui);
+#endif
 
           if (use2ndderiv)
           {
@@ -2366,7 +2390,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
   // start loop over integration points
   for (int iquad=0;iquad<intpoints.IP().nquad;iquad++)
   {
-    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,false,ele->Id());
+    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
     // get values of all transported scalars at integration point
     for (int k=0; k<2; ++k)
@@ -2627,7 +2651,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateTempAndDens(
   // integration loop
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
-    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,false,ele->Id());
+    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
     // calculate integrals of temperature or concentrations,
     // then of density and domain
@@ -2673,7 +2697,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateDomainAndBodyforce(
   // integration loop
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
-    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,false,ele->Id());
+    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
     // get bodyforce in gausspoint
     rhs_[0] = bodyforce_[0].Dot(funct_);

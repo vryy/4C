@@ -130,11 +130,17 @@ public:
   //! number of space dimensions
   static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
 
+  //! element-type specific flag if second derivatives are needed
+  static const bool use2ndderiv_ = SCATRA::Use2ndDerivs<distype>::use;
+
   //! number of components necessary to store second derivatives
   // 1 component  for nsd=1:  (N,xx)
   // 3 components for nsd=2:  (N,xx ; N,yy ; N,xy)
   // 6 components for nsd=3:  (N,xx ; N,yy ; N,zz ; N,xy ; N,xz ; N,yz)
   static const int numderiv2_ = DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
+
+  //! element-type specific constant for stabilization calculation
+  static const double mk = SCATRA::DisTypeToMK<distype>::mk;
 
   //! Evaluate
   virtual int Evaluate(DRT::Element*              ele,
@@ -229,7 +235,7 @@ public:
     //! get the material parameters
     virtual void GetMaterialParams(
         Teuchos::RCP<const MAT::Material>     material,    ///< material pointer
-        const bool&                           temperature,  ///< temperature flag
+        const bool                            temperature,  ///< temperature flag
         const vector<LINALG::Matrix<iel,1> >& ephinp      /// scalar field
     );
 
@@ -242,22 +248,21 @@ public:
         const LINALG::Matrix<iel,1>&        epot,
         const LINALG::Matrix<iel,1>&        esubgrdiff,
         const double                        dt,
-        const double&                       timefac,
+        const double                        timefac,
         const enum SCATRA::TauType          whichtau,
-        const bool&                         assgd,
-        const bool&                         fssgd,
-        const bool&                         turbmodel,
-        const bool&                         is_incremental,
-        const bool&                         is_stationary,
-        const double&                       frt
+        const bool                          assgd,
+        const bool                          fssgd,
+        const bool                          turbmodel,
+        const bool                          is_incremental,
+        const bool                          is_stationary,
+        const double                        frt
     );
 
     //! evaluate shape functions and their derivatives at current integration point
     virtual void EvalShapeFuncAndDerivsAtIntPoint(
         const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints, ///< integration points
-        const int&                                   iquad,     ///< id of current Gauss point
-        const bool&                                  higher_order_ele,///< are second derivatives needed?
-        const int&                                   eleid       ///< the element id
+        const int                                    iquad,     ///< id of current Gauss point
+        const int                                    eleid       ///< the element id
     );
 
     //! calculate element matrix and rhs vector (One-Step-Theta, BDF2, Gen.-alpha)
@@ -460,6 +465,8 @@ public:
     const int numdofpernode_;
     //! number of transported scalars (numscal_ <= numdofpernode_)
     const int numscal_;
+    //! flag for electrochemistry problems (ELCH)
+    const bool iselch_;
     //! node coordinates
     LINALG::Matrix<nsd_,iel> xyze_;
     //! bodyforce in element nodes
