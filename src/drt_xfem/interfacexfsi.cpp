@@ -317,7 +317,7 @@ void XFEM::InterfaceHandleXFSI::GenerateSpaceTimeLayer(
       }
     }
     //XFEM::SpaceTimeBoundaryCell slab(cutterele->Id(),posnp,posn);
-    stlayer_.insert(make_pair(cutterele->Id(),XFEM::SpaceTimeBoundaryCell(cutterele->Id(),posnp,posn)));
+    stlayer_.insert(make_pair(cutterele->Id(),XFEM::SpaceTimeBoundaryCell(cutterele->Id(),cutterele->Shape(),posnp,posn)));
     //cout << "XFEM::SpaceTimeBoundaryCell" << slab.getBeleId() << endl;
   }
   

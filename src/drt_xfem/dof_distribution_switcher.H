@@ -20,33 +20,33 @@ Maintainer: Axel Gerstenberger
 namespace XFEM
 {
 
-/*!
- \brief this class is used to switch from one distribution to a second
+  /*!
+  \brief this class is used to switch from one distribution to a second
 
- */
-class DofDistributionSwitcher
-{
-public:
-  
+  */
+  class DofDistributionSwitcher
+  {
+  public:
+
     //! constructor
     explicit DofDistributionSwitcher(
-            const RCP<XFEM::InterfaceHandle>&    ih,
-            const RCP<XFEM::DofManager>&         dofman,
-            const Epetra_Map&                    olddofrowmap,
-            const Epetra_Map&                    newdofrowmap,
-            const map<DofKey<onNode>, DofPos>&   oldNodalDofDistrib,
-            const map<DofKey<onNode>, DofPos>&   newNodalDofDistrib,
-            const map<DofKey<onElem>, DofPos>&   oldElementalDofDistrib,
-            const map<DofKey<onElem>, DofPos>&   newElementalDofDistrib
-            ) :
-                ih_(ih),
-                dofman_(dofman),
-                olddofrowmap_(olddofrowmap),
-                newdofrowmap_(newdofrowmap),
-                oldNodalDofDistrib_(oldNodalDofDistrib),
-                newNodalDofDistrib_(newNodalDofDistrib),
-                oldElementalDofDistrib_(oldElementalDofDistrib),
-                newElementalDofDistrib_(newElementalDofDistrib)
+        const RCP<XFEM::InterfaceHandle>&    ih,
+        const RCP<XFEM::DofManager>&         dofman,
+        const Epetra_Map&                    olddofrowmap,
+        const Epetra_Map&                    newdofrowmap,
+        const map<DofKey<onNode>, DofGID>&   oldNodalDofDistrib,
+        const map<DofKey<onNode>, DofGID>&   newNodalDofDistrib,
+        const map<DofKey<onElem>, DofGID>&   oldElementalDofDistrib,
+        const map<DofKey<onElem>, DofGID>&   newElementalDofDistrib
+    ) :
+      ih_(ih),
+      dofman_(dofman),
+      olddofrowmap_(olddofrowmap),
+      newdofrowmap_(newdofrowmap),
+      oldNodalDofDistrib_(oldNodalDofDistrib),
+      newNodalDofDistrib_(newNodalDofDistrib),
+      oldElementalDofDistrib_(oldElementalDofDistrib),
+      newElementalDofDistrib_(newElementalDofDistrib)
     {
 //        // derive information for dofkeys per node
 //        map<DofKey<onNode>, DofPos>::const_iterator dofkeyiter;
@@ -57,40 +57,30 @@ public:
 //          const XFEM::FieldEnr fieldenr = dofkey.getFieldEnr();
 //          oldEnrFieldSetNode_[gid].insert(fieldenr);
 //        }
-        return;
+      return;
     }
           
             
     //! destructor
     ~DofDistributionSwitcher()
     {
-        return;
+      return;
     }
     
     
     //! switch from old to new dof distribution
     void mapVectorToNewDofDistribution(
-            RCP<Epetra_Vector>&     vector
-            ) const
-    {
-      mapVectorToNewDofDistribution(vector,LINALG::Matrix<3,1>(true));
-    }
+        Teuchos::RCP<Epetra_Vector>&     vector
+    ) const;
     
-    
-    //! switch from old to new dof distribution
-    void mapVectorToNewDofDistribution(
-            RCP<Epetra_Vector>&     vector,
-            LINALG::Matrix<3,1>            ivelnrigid_body
-            ) const;
     
     //! switch from old to new dof distribution
     void generateTransferInformation(
-            const RCP<Epetra_Vector>&     vector
-            ) const;
-    
-    
-private:
-  
+        const RCP<Epetra_Vector>&     vector
+    ) const;
+
+  private:
+
     //! disabled copy constructor
     explicit DofDistributionSwitcher(const XFEM::DofDistributionSwitcher& dofdist);
     
@@ -102,20 +92,20 @@ private:
     const RCP<XFEM::DofManager>          dofman_;                  ///< dofmanager for this proc
     const Epetra_Map                     olddofrowmap_;            ///< dofrowmap of the old state vector
     const Epetra_Map                     newdofrowmap_;            ///< dofrowmap of the new state vector
-    const map<DofKey<onNode>, DofPos>    oldNodalDofDistrib_;      ///< old positions of dof in Epetra Vector per nodal dofkey
-    const map<DofKey<onNode>, DofPos>    newNodalDofDistrib_;      ///< new positions of dof in Epetra Vector per nodal dofkey
-    const map<DofKey<onElem>, DofPos>    oldElementalDofDistrib_;  ///< old positions of dof in Epetra Vector per element dofkey
-    const map<DofKey<onElem>, DofPos>    newElementalDofDistrib_;  ///< new positions of dof in Epetra Vector per element dofkey
-//    map<int,std::set<XFEM::FieldEnr> >   oldEnrFieldSetNode_;      ///< old enriched fields per node 
-};
+    const map<DofKey<onNode>, DofGID>    oldNodalDofDistrib_;      ///< old positions of dof in Epetra Vector per nodal dofkey
+    const map<DofKey<onNode>, DofGID>    newNodalDofDistrib_;      ///< new positions of dof in Epetra Vector per nodal dofkey
+    const map<DofKey<onElem>, DofGID>    oldElementalDofDistrib_;  ///< old positions of dof in Epetra Vector per element dofkey
+    const map<DofKey<onElem>, DofGID>    newElementalDofDistrib_;  ///< new positions of dof in Epetra Vector per element dofkey
+    //    map<int,std::set<XFEM::FieldEnr> >   oldEnrFieldSetNode_;      ///< old enriched fields per node
+  };
 
 
-//! try to find another enrichment for this physical field
-XFEM::Enrichment genAlternativeEnrichment(
-        const int                    gnodeid,
-        const XFEM::PHYSICS::Field   oldphysvar,
-        const RCP<XFEM::DofManager>& dofman
-        );
+  //! try to find another enrichment for this physical field
+  XFEM::Enrichment genAlternativeEnrichment(
+      const int                    gnodeid,
+      const XFEM::PHYSICS::Field   oldphysvar,
+      const RCP<XFEM::DofManager>& dofman
+  );
 
 
 } // namespace XFEM

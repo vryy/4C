@@ -26,40 +26,42 @@ Maintainer: Axel Gerstenberger
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 XFEM::SpaceTimeBoundaryCell::SpaceTimeBoundaryCell(
-    const int           bele_id,
-    const LINALG::SerialDenseMatrix&     posnp,
-    const LINALG::SerialDenseMatrix&     posn
+    const int                               bele_id,
+    const DRT::Element::DiscretizationType  surf_distype,
+    const LINALG::SerialDenseMatrix&        posnp,
+    const LINALG::SerialDenseMatrix&        posn
     ) :
       bele_id_(bele_id),
-      posnp_(posnp),
-      posn_(posn),
+      surf_distype_(surf_distype),
+      num_timestep_(2),
       xyzt_(getLinearPositionArray(posnp,posn))
 {
-    return;
+  if (surf_distype != DRT::Element::quad4)
+    dserror("SpaceTimeBoundaryCell implemented only for surfaces of hex8 solid elements.");
+  return;
 }
     
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 XFEM::SpaceTimeBoundaryCell::SpaceTimeBoundaryCell() :
       bele_id_(-1),
-      posnp_(),
-      posn_(),
+      num_timestep_(-1),
       xyzt_()
 {
-    return;   
+  return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 //XFEM::SpaceTimeBoundaryCell::SpaceTimeBoundaryCell(
 //    const SpaceTimeBoundaryCell& old
-//    ) : 
+//    ) :
 //      bele_id_(old.bele_id_),
 //      posnp_(old.posnp_),
 //      posn_(old.posn_),
 //      xyzt_(old.xyzt_)
 //{
-//    return;   
+//    return;
 //}
 
 /*----------------------------------------------------------------------*
@@ -69,19 +71,22 @@ LINALG::SerialDenseMatrix XFEM::SpaceTimeBoundaryCell::getLinearPositionArray(
     const LINALG::SerialDenseMatrix&      posn
     ) const
 {
-  LINALG::SerialDenseMatrix xyzt(3,8);
-  for (int inode = 0; inode != 4; ++inode) // fill n   position
+  const int numnode_boundary = DRT::UTILS::getNumberOfElementNodes(surf_distype_);
+  const int nsd = 3;
+
+  LINALG::SerialDenseMatrix xyzt(nsd,numnode_boundary*num_timestep_);
+  for (int inode = 0; inode != numnode_boundary; ++inode) // fill n   position
   {
-    for (int isd = 0; isd != 3; ++isd)
+    for (int isd = 0; isd != nsd; ++isd)
     {
       xyzt(isd,inode  ) = posn(isd,inode);
     }
   }
-  for (int inode = 0; inode != 4; ++inode) // fill n+1 position
+  for (int inode = 0; inode != numnode_boundary; ++inode) // fill n+1 position
   {
-    for (int isd = 0; isd != 3; ++isd)
+    for (int isd = 0; isd != nsd; ++isd)
     {
-      xyzt(isd,inode+4) = posnp(isd,inode);
+      xyzt(isd,inode+numnode_boundary) = posnp(isd,inode);
     }
   }
   return xyzt;

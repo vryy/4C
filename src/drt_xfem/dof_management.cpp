@@ -39,8 +39,6 @@ XFEM::DofManager::DofManager(
     ) :
   ih_(ih)
 {
-      cout << params << endl;
-      
   XFEM::createDofMap(*ih, nodalDofSet_, elementalDofs_, fieldset, element_ansatz, params);
   
   std::set<XFEM::Enrichment> unique_enrichments = GatherUniqueEnrichments();
@@ -136,8 +134,8 @@ int XFEM::DofManager::NumNodalDof() const
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void XFEM::DofManager::fillDofDistributionMaps(
-    NodalDofPosMap&      NodalDofDistributionMap,
-    ElementalDofPosMap&  ElementalDofDistributionMap
+    std::map<XFEM::DofKey<XFEM::onNode>, XFEM::DofGID>&  NodalDofDistributionMap,
+    std::map<XFEM::DofKey<XFEM::onElem>, XFEM::DofGID>&  ElementalDofDistributionMap
 ) const
 {
   NodalDofDistributionMap.clear();
@@ -207,9 +205,9 @@ void XFEM::DofManager::fillDofDistributionMaps(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> XFEM::DofManager::fillPhysicalOutputVector(
-    const Epetra_Vector&             original_vector,
-    const DRT::DofSet&               dofset_out,
-    const XFEM::NodalDofPosMap&      nodalDofDistributionMap,
+    const Epetra_Vector&                    original_vector,
+    const DRT::DofSet&                      dofset_out,
+    const map<DofKey<onNode>, DofGID>&      nodalDofDistributionMap,
     const std::set<XFEM::PHYSICS::Field>&   fields_out
 ) const
 {
@@ -251,7 +249,7 @@ Teuchos::RCP<Epetra_Vector> XFEM::DofManager::fillPhysicalOutputVector(
       {
         for(std::set<FieldEnr>::const_iterator fieldenr = dofset.begin(); fieldenr != dofset.end(); ++fieldenr )
         {
-          const XFEM::PHYSICS::Field fielditer = fieldenr->getField(); 
+          const XFEM::PHYSICS::Field fielditer = fieldenr->getField();
           if (fielditer == *field_out)
           {
             const double enrval = fieldenr->getEnrichment().EnrValue(actpos, *ih_, XFEM::Enrichment::approachUnknown);
@@ -263,7 +261,6 @@ Teuchos::RCP<Epetra_Vector> XFEM::DofManager::fillPhysicalOutputVector(
             if (gdofs[idof] < 0)
               dserror("bug!");
             (*outvec)[dofrowmap->LID(gdofs[idof])] += enrval * original_vector[xdofrowmap->LID(origpos)];
-            
           }
         }
         //cout << "LID " << dofrowmap->LID(gdofs[idof]) << " -> GID " << gdofs[idof] << endl;
@@ -345,8 +342,7 @@ void XFEM::DofManager::toGmsh(
           const double val = fieldenrset.size();
           gmshfilecontent << IO::GMSH::elementAtInitialPositionToString(val, actele);
         }
-        
-      };
+      }
       gmshfilecontent << "};\n";
       f_system << gmshfilecontent.str();
     }
