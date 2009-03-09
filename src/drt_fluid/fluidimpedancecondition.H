@@ -136,7 +136,7 @@ public:
   /*!
   \brief Destructor
   */
-  virtual ~FluidImpedanceBc();
+  virtual ~FluidImpedanceBc() {}
 
 protected:
   /*!
@@ -244,6 +244,9 @@ private:
 
   //! 'material' parameters required for artery tree
   double k1_, k2_, k3_;
+
+  //! time step size
+  double dta_;
 
   //! the processor ID from the communicator
   int                           myrank_;
