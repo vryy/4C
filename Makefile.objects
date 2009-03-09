@@ -302,8 +302,9 @@ OBJS_DRT_FSI  = src/drt_fsi/fsi_dyn.o \
 OBJS_DRT_ADAPT= src/drt_adapter/ale_dyn.o \
                 src/drt_adapter/adapter_ale.o \
                 src/drt_adapter/adapter_ale_lin.o \
-				src/drt_adapter/adapter_ale_laplace.o \
+                src/drt_adapter/adapter_ale_laplace.o \
                 src/drt_adapter/adapter_ale_springs.o \
+                src/drt_adapter/adapter_ale_springs_fixed_ref.o \
                 src/drt_adapter/adapter_fluid.o \
                 src/drt_adapter/adapter_structure.o \
                 src/drt_adapter/adapter_structure_strugenalpha.o \

@@ -19,6 +19,7 @@ Maintainer: Ulrich Kuettler
 #include "adapter_ale_lin.H"
 #include "adapter_ale_laplace.H"
 #include "adapter_ale_springs.H"
+#include "adapter_ale_springs_fixed_ref.H"
 
 // further includes for AleBaseAlgorithm:
 #include "../drt_lib/drt_globalproblem.H"
@@ -146,6 +147,8 @@ void ADAPTER::AleBaseAlgorithm::SetupAle()
     ale_ = rcp(new AleLaplace(actdis, solver, params, output, true, dirichletcond));
   else if (aletype==ALE_DYNAMIC::springs or aletype==ALE_DYNAMIC::springs_const_stiff)
     ale_ = rcp(new AleSprings(actdis, solver, params, output, dirichletcond));
+  else if (aletype==ALE_DYNAMIC::springs_fixed_ref)
+    ale_ = rcp(new AleSpringsFixedRef(actdis, solver, params, output, true, dirichletcond));
   else
     dserror("ale type '%s' unsupported",adyn.get<std::string>("ALE_TYPE").c_str());
 }
