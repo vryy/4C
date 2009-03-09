@@ -191,10 +191,6 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   // generalized-alpha: timefac = (alpha_F/alpha_M) * gamma * dt
   const double timefac = params.get<double>("thsl",-1.0);
   if (timefac < 0.0) dserror("No thsl supplied");
-  // initially set timefactor for right hand side (only required for
-  // generalized-alpha scheme in low-Mach-number case)
-  // -> will be specified below if required
-  double timefacrhs=0.0;
 
   // ---------------------------------------------------------------------
   // get control parameters for linearization, low-Mach-number solver
@@ -339,11 +335,6 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
       // extract density
       edensam(i)  = myvedeam[3+(i*4)];
     }
-
-    // set timefactor for right hand side (only required for
-    // low-Mach-number case)
-    timefacrhs = params.get<double>("timefacrhs",-1.0);
-    if (timefacrhs < 0.0) dserror("No timefacrhs supplied");
   }
   else
   {
@@ -611,7 +602,6 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
          time,
          dt,
          timefac,
-         timefacrhs,
          eosfac,
          newton,
          loma,
@@ -691,7 +681,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
   double                                  time,
   double                                  dt,
   double                                  timefac,
-  double                                  timefacrhs,
   const double                            eosfac,
   const bool                              newton,
   const bool                              loma,
@@ -1011,7 +1000,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
       double densdt = funct_.Dot(ededtam);
 
       // rhs of continuity equation (only relevant for low-Mach-number flow)
-      rhscon_ = - timefacrhs * densdt;
+      rhscon_ = -densdt;
 
       // get acceleration at time n+alpha_M at integration point
       if (conservative) accintam_.Multiply(eaccam,funct_);

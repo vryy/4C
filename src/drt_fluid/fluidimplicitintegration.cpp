@@ -952,7 +952,6 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         eleparams.set("action","calc_fluid_afgenalpha_systemmat_and_residual");
         eleparams.set("using generalized-alpha time integration",true);
         eleparams.set("total time",time_-(1-alphaF_)*dta_);
-        eleparams.set("timefacrhs",alphaM_/(gamma_*dta_));
 
         discret_->SetState("velnp", velaf_ );
         discret_->SetState("vedenp",vedeaf_);
@@ -1919,7 +1918,6 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
     eleparams.set("action","calc_fluid_afgenalpha_systemmat_and_residual");
     eleparams.set("using generalized-alpha time integration",true);
     eleparams.set("total time",time_-(1-alphaF_)*dta_);
-    eleparams.set("timefacrhs",alphaM_/(gamma_*dta_));
 
     discret_->SetState("velnp", velaf_ );
     discret_->SetState("vedenp",vedeaf_);
@@ -2100,7 +2098,6 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
     eleparams.set("action","calc_fluid_afgenalpha_systemmat_and_residual");
     eleparams.set("using generalized-alpha time integration",true);
     eleparams.set("total time",time_-(1-alphaF_)*dta_);
-    eleparams.set("timefacrhs",alphaM_/(gamma_*dta_));
 
     discret_->SetState("velnp", velaf_ );
     discret_->SetState("vedenp",vedeaf_);
@@ -2490,7 +2487,6 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
     eleparams.set("action","calc_fluid_afgenalpha_systemmat_and_residual");
     eleparams.set("using generalized-alpha time integration",true);
     eleparams.set("total time",time_-(1-alphaF_)*dta_);
-    eleparams.set("timefacrhs",alphaM_/(gamma_*dta_));
 
     discret_->SetState("velnp", velaf_ );
     discret_->SetState("vedenp",vedeaf_);
@@ -3475,7 +3471,6 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
       eleparams.set("action","calc_fluid_afgenalpha_systemmat_and_residual");
       eleparams.set("using generalized-alpha time integration",true);
       eleparams.set("total time",time_-(1-alphaF_)*dta_);
-      eleparams.set("timefacrhs",alphaM_/(gamma_*dta_));
 
       discret_->SetState("velnp", velaf_ );
       discret_->SetState("vedenp",vedeaf_);

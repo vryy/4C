@@ -192,7 +192,6 @@ namespace ELEMENTS
                 double                                   time,
                 double                                   dt,
                 double                                   timefac,
-                double                                   timefacrhs,
                 const double                             eosfac,
                 const bool                               newton,
                 const bool                               loma,
