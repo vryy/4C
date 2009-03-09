@@ -120,19 +120,24 @@ void EXODUS::ValidateElementJacobian(Mesh& mymesh, const DRT::Element::Discretiz
   RCP<map<int,vector<int> > > eleconn = eb->GetEleConn();
   map<int,vector<int> >::iterator i_ele;
   for(i_ele=eleconn->begin();i_ele!=eleconn->end();++i_ele){
+    int rewcount=0;
     for (int igp = 0; igp < intpoints.nquad; ++igp) {
       DRT::UTILS::shape_function_3D_deriv1(deriv,intpoints.qxg[igp][0],intpoints.qxg[igp][1],intpoints.qxg[igp][2],distype);
       if(!PositiveEle(i_ele->first,i_ele->second,mymesh,deriv))
       {
         // rewind the element nodes
-        i_ele->second = RewindEle(i_ele->second,distype);
-        // write info to error file
-        FILE* errfile = DRT::Problem::Instance()->ErrorFile()->Handle();
-        fprintf(errfile,"REWINDED ELEMENT %d\n",i_ele->first);
-        fflush(errfile);
+        if (rewcount==0)
+        {
+          i_ele->second = RewindEle(i_ele->second,distype);
+          // write info to error file
+          FILE* errfile = DRT::Problem::Instance()->ErrorFile()->Handle();
+          fprintf(errfile,"GAUSS POINT %d: REWINDED ELEMENT %d\n",igp, i_ele->first);
+          fflush(errfile);
+        }
         // double check
         if(!PositiveEle(i_ele->first,i_ele->second,mymesh,deriv)) 
-          dserror("Could not determine a proper rewinding for element id %d",i_ele->first);
+          dserror("No proper rewinding for element id %d at gauss point %d",i_ele->first,igp);
+        rewcount++;
       }
     }
   }
@@ -212,28 +217,26 @@ bool EXODUS::PositiveEle(const int& eleid, const vector<int>& nodes,const Mesh& 
   }
   // get Jacobian matrix and determinant
   // actually compute its transpose....
-  LINALG::SerialDenseMatrix xjm(NSD,NSD);
-  xjm.Multiply('N','T',1.0,deriv,xyze,0.0);
-  const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
-                     xjm(0,1)*xjm(1,2)*xjm(2,0)+
-                     xjm(0,2)*xjm(1,0)*xjm(2,1)-
-                     xjm(0,2)*xjm(1,1)*xjm(2,0)-
-                     xjm(0,0)*xjm(1,2)*xjm(2,1)-
-                     xjm(0,1)*xjm(1,0)*xjm(2,2);
-
-  if (abs(det) < 1E-16)
-      dserror("ZERO JACOBIAN DETERMINANT FOR ELEMENT %d: DET = %lf",eleid,det);
-
-  if (det < 0.0) 
+  if (NSD==3)
   {
-    // write info to the error log file
-    FILE* errfile = DRT::Problem::Instance()->ErrorFile()->Handle();
-    fprintf(errfile,"NEGATIVE JACOBIAN DETERMINANT FOR ELEMENT %d: DET = %lf -> REWIND\n",eleid,det);
-    fflush(errfile);
-    return false;
+    LINALG::SerialDenseMatrix xjm(NSD,NSD);
+    xjm.Multiply('N','T',1.0,deriv,xyze,0.0);
+    LINALG::Matrix<3,3> jac(xjm.A(),true);
+    const double det =  jac.Determinant();
+  
+    if (abs(det) < 1E-16)
+        dserror("ZERO JACOBIAN DETERMINANT FOR ELEMENT %d: DET = %f",eleid,det);
+  
+    if (det < 0.0) 
+    {
+      // write info to the error log file
+      FILE* errfile = DRT::Problem::Instance()->ErrorFile()->Handle();
+      fprintf(errfile,"NEGATIVE JACOBIAN DETERMINANT FOR ELEMENT %d: DET = %f -> REWIND\n",eleid,det);
+      fflush(errfile);
+      return false;
+    }
   }
-  else 
-    return true;
+  return true;
 }
 
 int EXODUS::EleSaneSign(const vector<int>& nodes,const map<int,vector<double> >& nodecoords)
