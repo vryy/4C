@@ -1082,6 +1082,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     const double                        frt
   )
 {
+  // get element-type constant for tau
+  const double mk = SCATRA::MK<distype>();
+
   // use one-point Gauss rule to calculate tau at element center
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
 

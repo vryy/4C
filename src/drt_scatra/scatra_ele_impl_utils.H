@@ -96,26 +96,46 @@ namespace SCATRA
   template<> struct DisTypeToGaussRuleForExactSol<DRT::Element::line2>   {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule1D_undefined; };
   template<> struct DisTypeToGaussRuleForExactSol<DRT::Element::line3>   {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule1D_undefined; };
 
-
   //! for each distype provide the m_k needed for stabilization computation
   template<DRT::Element::DiscretizationType DISTYPE>
-  struct DisTypeToMK {};
-  template<> struct DisTypeToMK<DRT::Element::hex8>    {static const double mk = 0.333333333333333333333;};
-  template<> struct DisTypeToMK<DRT::Element::tet4>    {static const double mk = 0.333333333333333333333;};
-  template<> struct DisTypeToMK<DRT::Element::wedge6>  {static const double mk = 0.333333333333333333333;};
-  template<> struct DisTypeToMK<DRT::Element::pyramid5>{static const double mk = 0.333333333333333333333;};
-  template<> struct DisTypeToMK<DRT::Element::quad4>   {static const double mk = 0.333333333333333333333;};
-  template<> struct DisTypeToMK<DRT::Element::tri3>    {static const double mk = 0.333333333333333333333;};
-  template<> struct DisTypeToMK<DRT::Element::line2>   {static const double mk = 0.333333333333333333333;};
-
-  template<> struct DisTypeToMK<DRT::Element::hex20>   {static const double mk = 0.083333333333333333333;};
-  template<> struct DisTypeToMK<DRT::Element::hex27>   {static const double mk = 0.083333333333333333333;};
-  template<> struct DisTypeToMK<DRT::Element::tet10>   {static const double mk = 0.083333333333333333333;};
-  template<> struct DisTypeToMK<DRT::Element::quad8>   {static const double mk = 0.083333333333333333333;};
-  template<> struct DisTypeToMK<DRT::Element::quad9>   {static const double mk = 0.083333333333333333333;};
-  template<> struct DisTypeToMK<DRT::Element::tri6>    {static const double mk = 0.083333333333333333333;};
-  template<> struct DisTypeToMK<DRT::Element::line3>   {static const double mk = 0.083333333333333333333;};
-
+  inline double MK()
+  {
+    switch (DISTYPE)
+    {
+    case DRT::Element::tet4:
+    case DRT::Element::pyramid5:
+    case DRT::Element::hex8:
+    case DRT::Element::wedge6:
+      return 0.333333333333333333333;
+      break;
+    case DRT::Element::hex20:
+    case DRT::Element::hex27:
+    case DRT::Element::tet10:
+    case DRT::Element::wedge15:
+      return 0.083333333333333333333;
+      break;
+      // do the 2D case after the more usual 3D case
+    case DRT::Element::tri3:
+    case DRT::Element::quad4:
+      return 0.333333333333333333333;
+      break;
+    case DRT::Element::tri6:
+    case DRT::Element::quad8:
+    case DRT::Element::quad9:
+      return 0.083333333333333333333;
+      break;
+      // finally, do the 1D case
+    case DRT::Element::line2:
+      return 0.333333333333333333333;
+      break;
+    case DRT::Element::line3:
+      return 0.083333333333333333333;
+      break;
+    default:
+      dserror("Element shape not supported.");
+    }   
+    return -1.0;
+  }
 
   //! Template Meta Programming version of switch over discretization type
   template<DRT::Element::DiscretizationType DISTYPE>

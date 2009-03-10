@@ -139,9 +139,6 @@ public:
   // 6 components for nsd=3:  (N,xx ; N,yy ; N,zz ; N,xy ; N,xz ; N,yz)
   static const int numderiv2_ = DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
 
-  //! element-type specific constant for stabilization calculation
-  static const double mk = SCATRA::DisTypeToMK<distype>::mk;
-
   //! Evaluate
   virtual int Evaluate(DRT::Element*              ele,
                        ParameterList&             params,
