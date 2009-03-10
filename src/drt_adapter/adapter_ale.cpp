@@ -145,7 +145,7 @@ void ADAPTER::AleBaseAlgorithm::SetupAle()
     ale_ = rcp(new AleLinear(actdis, solver, params, output, true , dirichletcond));
   else if (aletype==ALE_DYNAMIC::laplace)
     ale_ = rcp(new AleLaplace(actdis, solver, params, output, true, dirichletcond));
-  else if (aletype==ALE_DYNAMIC::springs or aletype==ALE_DYNAMIC::springs_const_stiff)
+  else if (aletype==ALE_DYNAMIC::springs)
     ale_ = rcp(new AleSprings(actdis, solver, params, output, dirichletcond));
   else if (aletype==ALE_DYNAMIC::springs_fixed_ref)
     ale_ = rcp(new AleSpringsFixedRef(actdis, solver, params, output, true, dirichletcond));

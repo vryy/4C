@@ -295,8 +295,8 @@ private:
     none,
     calc_ale_lin_stiff,
     calc_ale_laplace,
-    calc_ale_spring,
-    calc_ale_spring_const_stiff
+    calc_ale_spring,           ///< compute stiffness based on springs algorithm on last time step configuration
+    calc_ale_spring_fixed_ref  ///< compute stiffness based on springs algorithm on initial configuration
   };
 
   //! container containing all kind of ale2 thisandthat

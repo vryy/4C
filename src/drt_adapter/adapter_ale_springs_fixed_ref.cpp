@@ -255,7 +255,7 @@ void ADAPTER::AleSpringsFixedRef::EvaluateElements()
   discret_->ClearState();
 
   // action for elements
-  eleparams.set("action", "calc_ale_spring_const_stiff");
+  eleparams.set("action", "calc_ale_spring_fixed_ref");
 
   discret_->Evaluate(eleparams,sysmat_,residual_);
   discret_->ClearState();

@@ -294,11 +294,10 @@ enum
    {
                   classic_lin,   /*!< classic linear calculation */
                   incr_lin,
-		  min_Je_stiff,  /*!< incremental calculation
-		                    stiffened with min J_element^2 */
+                  min_Je_stiff,  /*!< incremental calculation
+                                      stiffened with min J_element^2 */
                   two_step,      /*!< calculation in 2 steps per timestep */
                   springs,       /*!< springs rather than continous pseudo material */
-                  springs_const_stiff,       /*!< springs using the initial configuration for stiffness computation */
                   springs_fixed_ref,    /*!< springs using the initial configuration for stiffness computation and reference */
                   laplace,       /*!< Laplace smoothing algorithm */
                   LAS            /*!< large amplitude sloshing */

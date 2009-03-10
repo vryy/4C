@@ -126,13 +126,15 @@ int DRT::ELEMENTS::Ale3::Evaluate(ParameterList& params,
     act = Ale3::calc_ale_lin_stiff;
   else if (action == "calc_ale_spring")
     act = Ale3::calc_ale_spring;
+  else if (action == "calc_ale_spring_fixed_ref")
+    act = Ale3::calc_ale_spring_fixed_ref;
   else
     dserror("Unknown type of action for Ale3");
 
   // get the material
   RefCountPtr<MAT::Material> mat = Material();
 
-  switch(act)
+  switch (act)
   {
   case calc_ale_lin_stiff:
   {
@@ -156,6 +158,14 @@ int DRT::ELEMENTS::Ale3::Evaluate(ParameterList& params,
     vector<double> my_dispnp(lm.size());
     DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
 
+    Ale3_Impl_Interface::Impl(this)->static_ke_spring(this,elemat1,my_dispnp);
+
+    break;
+  }
+
+  case calc_ale_spring_fixed_ref:
+  {
+    vector<double> my_dispnp(lm.size(),0.0);
     Ale3_Impl_Interface::Impl(this)->static_ke_spring(this,elemat1,my_dispnp);
 
     break;

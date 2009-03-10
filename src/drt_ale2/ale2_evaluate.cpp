@@ -57,8 +57,8 @@ int DRT::ELEMENTS::Ale2::Evaluate(ParameterList& params,
       act = Ale2::calc_ale_laplace;
   else if (action == "calc_ale_spring")
     act = Ale2::calc_ale_spring;
-  else if (action == "calc_ale_spring_const_stiff")
-    act = Ale2::calc_ale_spring_const_stiff;
+  else if (action == "calc_ale_spring_fixed_ref")
+    act = Ale2::calc_ale_spring_fixed_ref;
   else
     dserror("Unknown type of action for Ale2");
 
@@ -97,9 +97,9 @@ int DRT::ELEMENTS::Ale2::Evaluate(ParameterList& params,
 
     break;
   }
-  case calc_ale_spring_const_stiff:
+  case calc_ale_spring_fixed_ref:
   {
-    // same as calc_ale_spring, however, no displ. and hence no current configuration
+    // same as calc_ale_spring, however, no displ. and hence initial/reference configuration
     // is used for stiffness matrix computation
     vector<double> my_dispnp(lm.size(),0.0);
     static_ke_spring(&elemat1,my_dispnp);
