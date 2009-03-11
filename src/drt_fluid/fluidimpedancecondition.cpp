@@ -376,16 +376,18 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
   // new number of flowrates in vector
   int nnfr = (int)(onfr*odta/ndta);
   // old current position (valid for first and subsequent periods)
-  int opos = flowratespos_ % oncycle;
+  //int opos = flowratespos_ % oncycle;
+  int opos = flowratespos_;
   // current time within period is opos * odta
   double tinperiod = opos * odta;
   // new flowratesposition = (opos*odta)/ndta
-  int npos = (int)(tinperiod / ndta);
+  //int npos = (int)(tinperiod / ndta);
+  int npos = (int)(t / ndta + 0.5);
   
   if (!myrank_)
   {
     printf("Impedance restart with time step change:\n");
-    printf("time               %10.5e \n",time);
+    printf("time               %10.5e \n",t);
     printf("time in period     %10.5e \n",tinperiod);
     printf("old time step      %10.5e \n",odta);
     printf("new time step      %10.5e \n",ndta);
@@ -404,11 +406,11 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
   // loop through the new time intervals
   for (int i=0; i<nnfr; ++i)
   {
-    double acttime = (i+1)*ndta; // time we interpolate to
+    const double acttime = (i+1)*ndta; // time we interpolate to
     int j=0;
     while ((j+1)*odta<=acttime) ++j;
-    double x1 = j*odta;
-    double x2 = (j+1)*odta;
+    const double x1 = j*odta;
+    const double x2 = (j+1)*odta;
     double y1;
     if (j-1<0) 
     {
@@ -420,12 +422,12 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
     double y2;
     if (j>=onfr) y2 = 0.0;
     else         y2 = (*flowrates_)[j];
-    double a = (y1-y2)/(x1-x2);
-    double b = y2 - a*x2;
+    const double a = (y1-y2)/(x1-x2);
+    const double b = y2 - a*x2;
     fr[i] = a * acttime + b;
-    //if (myrank_==0) printf("j %d      x1 %10.5e y1 %10.5e\n",j,x1,y1);
-    //if (myrank_==0) printf("i %d acttime %10.5e fr %10.5e\n",i,acttime,fr[i]);
-    //if (myrank_==0) printf("j %d      x2 %10.5e y2 %10.5e\n\n",j,x2,y2);
+    //if (myrank_==0) printf("j %4d      x1 %10.5e y1 %15.10e\n",j,x1,y1);
+    //if (myrank_==0) printf("i %4d acttime %10.5e fr %15.10e\n",i,acttime,fr[i]);
+    //if (myrank_==0) printf("j %4d      x2 %10.5e y2 %15.10e\n\n",j,x2,y2);
   }
   
   // store new values in class
