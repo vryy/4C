@@ -246,3 +246,4 @@ Input/mat_balzaniso_plate.dat                           x        x        x     
 Input/mat_contchain_remo.dat                            x        -        x        -        -        -
 Input/mat_holzharit_remo.dat                            x        x        x        x        -        -
 Input/sohex27_patchtest_nl_cost_drt.dat                 x        x        x        x        -        -
+Input/sohex20_patchtest_nl_cost_drt.dat                 x        x        x        x        -        -
