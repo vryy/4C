@@ -110,6 +110,7 @@ public:
     element_bele3line,
     element_so_hex8,
     element_so_hex27,
+    element_so_hex20,
     element_sosh8,
     element_ale2,
     element_ale2line,

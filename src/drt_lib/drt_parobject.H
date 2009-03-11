@@ -77,6 +77,8 @@ using namespace std;
 #define ParObject_Sotet4Register        (int)62
 #define ParObject_So_hex27              (int)63
 #define ParObject_Soh27Register         (int)64
+#define ParObject_So_hex20              (int)65
+#define ParObject_Soh20Register         (int)66
 // missing ints result from removed So_ctet element
 #define ParObject_CNode                 (int)71
 #define ParObject_CElement              (int)72

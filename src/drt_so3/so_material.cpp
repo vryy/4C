@@ -19,6 +19,7 @@ Maintainer: Moritz Frenzel
 #include "mpi.h"
 #endif
 #include "so_hex27.H"
+#include "so_hex20.H"
 #include "so_hex8.H"
 #include "so_tet4.H"
 #include "so_tet10.H"
@@ -569,6 +570,172 @@ void DRT::ELEMENTS::So_hex27::soh27_mat_sel(
 
   return;
 } // of soh27_mat_sel
+
+/*----------------------------------------------------------------------*
+ | material laws for So_hex20                                   tk 02/09|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_hex20::soh20_mat_sel(
+                    LINALG::Matrix<MAT::NUM_STRESS_3D,1>* stress,
+                    LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>* cmat,
+                    double* density,
+                    LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain,
+                    LINALG::Matrix<3,3>* defgrd,
+                    const int gp,
+                    ParameterList&  params)
+{
+
+  RCP<MAT::Material> mat = Material();
+  switch (mat->MaterialType())
+  {
+    case INPAR::MAT::m_stvenant: /*------------------ st.venant-kirchhoff-material */
+    {
+      MAT::StVenantKirchhoff* stvk = static_cast <MAT::StVenantKirchhoff*>(mat.get());
+      stvk->Evaluate(*glstrain,*cmat,*stress);
+      *density = stvk->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_neohooke: /*----------------- NeoHookean Material */
+    {
+      MAT::NeoHooke* neo = static_cast <MAT::NeoHooke*>(mat.get());
+      neo->Evaluate(*glstrain,*cmat,*stress);
+      *density = neo->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_aaaneohooke: /*-- special case of generalised NeoHookean material see Raghavan, Vorp */
+    {
+      MAT::AAAneohooke* aaa = static_cast <MAT::AAAneohooke*>(mat.get());
+      aaa->Evaluate(*glstrain,*cmat,*stress);
+      *density = aaa->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_lung_ogden: /* lung tissue material with Ogden for volumetric part */
+    {
+      MAT::LungOgden* lungog = static_cast <MAT::LungOgden*>(mat.get());
+      lungog->Evaluate(glstrain,cmat,stress);
+      *density = lungog->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_lung_penalty: /* lung tissue material with penalty function for incompressibility constraint */
+    {
+      MAT::LungPenalty* lungpen = static_cast <MAT::LungPenalty*>(mat.get());
+
+      lungpen->Evaluate(glstrain,cmat,stress);
+
+      *density = lungpen->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_visconeohooke: /*----------------- Viscous NeoHookean Material */
+    {
+      MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
+      visco->Evaluate(glstrain,gp,params,cmat,stress);
+      *density = visco->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_viscoanisotropic: /*------- Viscous Anisotropic Fiber Material */
+    {
+      MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
+      visco->Evaluate(glstrain,gp,params,cmat,stress);
+      *density = visco->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_mooneyrivlin: /*----------------- Mooney-Rivlin Material */
+    {
+      MAT::MooneyRivlin* moon = static_cast <MAT::MooneyRivlin*>(mat.get());
+      moon->Evaluate(glstrain,cmat,stress);
+      *density = moon->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_yeoh: /*----------------- Mooney-Rivlin Material */
+    {
+      MAT::Yeoh* yeoh = static_cast <MAT::Yeoh*>(mat.get());
+      yeoh->Evaluate(glstrain,cmat,stress);
+      *density = yeoh->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_anisotropic_balzani:
+    {
+      MAT::AnisotropicBalzani* anba = static_cast <MAT::AnisotropicBalzani*>(mat.get());
+
+      const double time = params.get("total time",-1.0);
+      anba->Evaluate(glstrain,gp,Id(),time,cmat,stress);
+
+      *density = anba->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_contchainnetw: /*------------ Continuum Chain Network Material */
+    {
+      MAT::ContChainNetw* chain = static_cast <MAT::ContChainNetw*>(mat.get());
+      if (!chain->Initialized())
+        chain->Initialize(NUMGPT_SOH8, this->Id());
+      chain->Evaluate(glstrain,gp,params,cmat,stress,this->Id());
+      *density = chain->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_artwallremod: /*-Arterial Wall (Holzapfel) with remodeling (Hariton) */
+    {
+      MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(mat.get());
+
+      remo->Evaluate(glstrain,gp,params,cmat,stress,*defgrd);
+      *density = remo->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_struct_multiscale: /*------------------- multiscale approach */
+    {
+      MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
+
+      const double time = params.get<double>("total time",-1.0);
+      const double dt = params.get<double>("delta time",-1.0);
+
+      micro->Evaluate(defgrd, cmat, stress, density, gp, Id(), time, dt);
+      return;
+      break;
+    }
+    case INPAR::MAT::m_biocell: /*----------------- Biological Cell Material */
+    {
+      MAT::BioCell* biocell = static_cast <MAT::BioCell*>(mat.get());
+      biocell->Evaluate(glstrain,cmat,stress);
+      *density = biocell->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_charmm: /*------------------------------------ CHARmm */
+    {
+      MAT::CHARMM* charmm = static_cast <MAT::CHARMM*>(mat.get());
+
+      LINALG::SerialDenseMatrix XREFE(3,3);
+      LINALG::SerialDenseMatrix XCURR(3,3);
+      for (int i=0;i<3;i++)
+      for (int j=0;j<3;j++) {
+          //XREFE(i,j) = (*xrefe)(i,j);
+          //XCURR(i,j) = (*xcurr)(i,j);
+          XREFE(i,j) = 0.0; // Quick hack, that needs to be resoved
+          XCURR(i,j) = 0.0;
+      }
+      const double time = params.get("total time",-1.0);
+      charmm->Evaluate(glstrain,cmat,stress,Id(),gp,data_,time,XREFE,XCURR);
+      *density = charmm->Density();
+      return;
+      break;
+    }
+    default:
+      dserror("Unknown type of material");
+    break;
+  } // switch (mat->MaterialType())
+
+  return;
+} // of soh20_mat_sel
 
 /*----------------------------------------------------------------------*
  | material laws for SoDisp                                   maf 08/07|

@@ -55,6 +55,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     break;
     case DRT::Element::element_sosh8:
     case DRT::Element::element_so_hex8:
+    case DRT::Element::element_so_hex27:
     case DRT::Element::element_so_tet4:
     case DRT::Element::element_ptet:
     case DRT::Element::element_so_tet10:
@@ -157,6 +158,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     break;
     case DRT::Element::element_sosh8:
     case DRT::Element::element_so_hex8:
+    case DRT::Element::element_so_hex27:
     case DRT::Element::element_so_tet4:
     case DRT::Element::element_ptet:
     case DRT::Element::element_so_tet10:

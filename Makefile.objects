@@ -577,7 +577,12 @@ OBJS_SOH8_LIB = src/drt_so3/so_hex8.o \
                 src/drt_so3/so_hex27_evaluate.o \
                 src/drt_so3/so_hex27_input.o \
                 src/drt_so3/so_hex27_service.o \
-                src/drt_so3/so_hex27_multiscale.o
+                src/drt_so3/so_hex27_multiscale.o \
+                src/drt_so3/so_hex20.o \
+                src/drt_so3/so_hex20_evaluate.o \
+                src/drt_so3/so_hex20_input.o \
+                src/drt_so3/so_hex20_service.o \
+                src/drt_so3/so_hex20_multiscale.o
 #--------------------------------------------------------- brick1
 OBJS_BRICK1   = src/brick1/c1_out.o \
                 src/brick1/c1_gid.o \
