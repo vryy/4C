@@ -842,6 +842,12 @@ vector<double> PostResult::get_result_times(const string& fieldname)
 
     while (this->next_result())
         times.push_back(this->time());
+    
+    if (times.size() == 0)
+    {
+      dserror("PostResult::get_result_times(fieldname):\n  no solution steps found in specified timestep range! Check --start, --end, --step parameters.");
+    }
+    
     return times;
 }
 
@@ -862,6 +868,12 @@ vector<double> PostResult::get_result_times(
 
     while (this->next_result(groupname))
         times.push_back(this->time());
+    
+    if (times.size() == 0)
+    {
+      dserror("PostResult::get_result_times(fieldname, groupname):\n  no solution steps found in specified timestep range! Check --start, --end, --step parameters.");
+    }
+    
     return times;
 }
 
@@ -877,9 +889,7 @@ int PostResult::next_result()
 
   for (int i=pos_+1; i<problem->num_results(); ++i)
   {
-    INT step;
-    MAP* map;
-    map = (*problem->result_groups())[problem->num_results()-1-i];
+    MAP* map = (*problem->result_groups())[problem->num_results()-1-i];
 
     if (match_field_result(map))
     {
@@ -891,7 +901,7 @@ int PostResult::next_result()
        * here, too. If it's not, it's a bug in the input. */
       if ((map_symbol_count(map, "result_file") > 0))
       {
-	close_result_files();
+        close_result_files();
         open_result_files(map);
       }
 
@@ -900,7 +910,7 @@ int PostResult::next_result()
        * the real numbers, too. Maybe that's the best way to handle
        * it. */
       /* In case of FSI everything else hurts even more. */
-      step = map_read_int(map, "step");
+      const INT step = map_read_int(map, "step");
 
       /* we are only interessted if the result matches the slice */
       if ((step >= problem->start()) &&
@@ -967,7 +977,7 @@ void PostResult::open_result_files(MAP* field_info)
   {
     num_output_procs = 1;
   }
-  string basename = map_read_string(field_info,"result_file");
+  const string basename = map_read_string(field_info,"result_file");
   //field_->problem()->set_basename(basename);
   Epetra_Comm& comm = *field_->problem()->comm();
   file_.Open(basename,num_output_procs,comm.NumProc(),comm.MyPID());

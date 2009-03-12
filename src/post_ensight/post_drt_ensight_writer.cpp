@@ -91,7 +91,7 @@ void EnsightWriter::WriteFiles()
 
   // timesteps when the solution is written
   const vector<double> soltime = result.get_result_times(field_->name());
-  unsigned int numsoltimes = soltime.size();
+  const unsigned int numsoltimes = soltime.size();
 
   ///////////////////////////////////
   //  write geometry file          //
