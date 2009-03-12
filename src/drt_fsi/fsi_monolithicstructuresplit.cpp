@@ -95,7 +95,11 @@ FSI::MonolithicStructureSplit::MonolithicStructureSplit(Epetra_Comm& comm)
 
   // create block system matrix
 
+#if 0 // the experimental new AMG
+  systemmatrix_ = Teuchos::rcp(new OverlappingBlockMatrixFSIAMG(Extractor(),
+#else
   systemmatrix_ = Teuchos::rcp(new OverlappingBlockMatrix(Extractor(),
+#endif
                                                           StructureField(),
                                                           FluidField(),
                                                           AleField(),

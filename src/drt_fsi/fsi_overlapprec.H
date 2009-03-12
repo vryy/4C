@@ -137,7 +137,7 @@ namespace FSI
     /// setup of block preconditioners
     virtual void SetupPreconditioner();
 
-  private:
+  protected:
 
     /// symmetric Gauss-Seidel block preconditioner
     void SGS(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
@@ -150,6 +150,53 @@ namespace FSI
     ADAPTER::Ale&       ale_;
     
   };
+
+  /// special version of block matrix that includes the FSI block preconditioner
+  /*!
+    The normal block matrix is enhanced by a ApplyInverse() method that does
+    the Gauss-Seidel block preconditioning explicitly for FSI block matrices.
+    
+    This class build its own AMG hierarchy by extracting operators from 
+    the fluid and structure AMG hierachies. It can be used with ML
+    preocnditioner only
+   */
+  class OverlappingBlockMatrixFSIAMG : public OverlappingBlockMatrix
+  {
+  public:
+
+    /// construction
+    OverlappingBlockMatrixFSIAMG(const LINALG::MultiMapExtractor& maps,
+                                 ADAPTER::Structure& structure,
+                                 ADAPTER::Fluid& fluid,
+                                 ADAPTER::Ale& ale,
+                                 bool structuresplit,
+                                 int symmetric,
+                                 double omega=1.0,
+                                 int iterations=1,
+                                 double somega=1.0,
+                                 int siterations=0,
+                                 double fomega=1.0,
+                                 int fiterations=0,
+                                 FILE* err=NULL);
+
+    /** \name Attribute access functions */
+    //@{
+
+    /// Returns a character string describing the operator.
+    virtual const char* Label() const;
+
+    //@}
+
+    /// setup of block preconditioners
+    virtual void SetupPreconditioner();
+
+  private:
+
+
+    
+  };
+
+
 }
 
 #endif
