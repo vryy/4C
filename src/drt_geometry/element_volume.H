@@ -28,8 +28,7 @@ namespace GEO
     static inline double ElementVolumeT(
           const DRT::Element&           ele)
   {
-    if (ele.Shape() != DISTYPE)
-      dserror("mismatch between element shape and template parameter DISTYPE! This is a bug!");
+    dsassert(ele.Shape() == DISTYPE, "mismatch between element shape and template parameter DISTYPE! This is a bug!");
   
     // number of nodes for element
     const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;

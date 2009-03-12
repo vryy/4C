@@ -65,8 +65,7 @@ namespace GEO
       M&                       xyze
   )
   {
-    const DRT::Element::DiscretizationType distype = ele->Shape();
-    const int numnode = DRT::UTILS::getNumberOfElementNodes(distype);
+    const int numnode = ele->NumNode();
     
     const DRT::Node*const* nodes = ele->Nodes();
     dsassert(nodes != NULL, "element has no nodal pointers, so getting a position array doesn't make sense!");
