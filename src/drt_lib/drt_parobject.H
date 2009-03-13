@@ -22,7 +22,7 @@ Maintainer: Michael Gee
 using namespace std;
 
 
-// These defines are sued to have a unique identifier for every class
+// These defines are used to have a unique identifier for every class
 // that implements the pure virtual ParObject class.
 // The unique identifier is stored in a communcation array as an integer
 // so the receiving processor knows what type of class has been sent.
@@ -79,6 +79,8 @@ using namespace std;
 #define ParObject_Soh27Register         (int)64
 #define ParObject_So_hex20              (int)65
 #define ParObject_Soh20Register         (int)66
+#define ParObject_So_sh8p8              (int)67
+#define ParObject_Sosh8p8Register       (int)68
 // missing ints result from removed So_ctet element
 #define ParObject_CNode                 (int)71
 #define ParObject_CElement              (int)72

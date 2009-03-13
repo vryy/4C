@@ -38,6 +38,10 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
                                                       vector<int>&             lm,
                                                       Epetra_SerialDenseVector& elevec1)
 {
+//  cout << "SoSurface LM=" << lm.size() << " : ";
+//  for (int i=0; i<(int)lm.size(); ++i) cout << lm[i] << " ";
+//  cout << endl;
+
   // get type of condition
   enum LoadType
   {
@@ -94,7 +98,8 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
 
   // element geometry update
   const int numnode = NumNode();
-  const int numdf=3;
+  const int numdf = 3;
+  const int actnumdf = ActualNumDofPerNode(lm.size());
   LINALG::SerialDenseMatrix x(numnode,numdf);
   LINALG::SerialDenseMatrix xc;
   switch (config)
@@ -162,7 +167,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
       const double fac = intpoints.qwgt[gp] * detA * curvefac;
       for (int node=0; node < numnode; ++node)
         for(int dim=0 ; dim<3; ++dim)
-          elevec1[node*numdf+dim]+= funct[node] * (*onoff)[dim] * (*val)[dim] * fac;
+          elevec1[node*actnumdf+dim]+= funct[node] * (*onoff)[dim] * (*val)[dim] * fac;
     }
     break;
     case neum_orthopressure:
@@ -177,7 +182,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
       const double fac = intpoints.qwgt[gp] * curvefac * ortho_value;
       for (int node=0; node < numnode; ++node)
         for(int dim=0 ; dim<3; dim++)
-          elevec1[node*numdf+dim] += funct[node] * normal[dim] * fac;
+          elevec1[node*actnumdf+dim] += funct[node] * normal[dim] * fac;
     }
     break;
     default:

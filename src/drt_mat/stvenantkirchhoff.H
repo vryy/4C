@@ -133,7 +133,10 @@ namespace MAT
     double PoissonRatio() const { return params_->poissonratio_; }
 
     /// density
-    double Density() const { return params_->density_; }              
+    double Density() const { return params_->density_; }
+
+    /// shear modulus
+    double ShearMod() const { return 0.5*params_->youngs_/(1.0+params_->poissonratio_); }
 
 
   private:

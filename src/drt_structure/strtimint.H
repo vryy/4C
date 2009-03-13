@@ -538,6 +538,8 @@ namespace STR
     //! Dirichlet BCs with local co-ordinate system
     Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;
 
+    //! Map to differentiate pressure and displacement/velocity DOFs
+    Teuchos::RCP<LINALG::MapExtractor> pressure_;
 
     //@}
 

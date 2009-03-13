@@ -112,6 +112,7 @@ public:
     element_so_hex27,
     element_so_hex20,
     element_sosh8,
+    element_sosh8p8,
     element_ale2,
     element_ale2line,
     element_so_tet4,

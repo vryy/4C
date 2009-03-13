@@ -24,6 +24,7 @@ Maintainer: Burkhard Bornemann
 #include "strtimint.H"
 
 #include "../drt_io/io_control.H"
+#include "../drt_fluid/fluid_utils.H"
 
 /*----------------------------------------------------------------------*/
 /* print tea time logo */
@@ -81,6 +82,7 @@ STR::TimInt::TimInt
   surfstressman_(Teuchos::null),
   potman_(Teuchos::null),
   locsysman_(Teuchos::null),
+  pressure_(Teuchos::null),
   time_(Teuchos::null),
   timen_(0.0),
   dt_(Teuchos::null),
@@ -194,6 +196,27 @@ STR::TimInt::TimInt
     if (locsysconditions.size())
     {
       locsysman_ = Teuchos::rcp(new DRT::UTILS::LocsysManager(*discret_, true));
+    }
+  }
+
+  // check if we have elements which use a continuous displacement and pressure
+  // field
+  {
+    int numsosh8p8 = 0;
+    // Loop through all elements
+    for (int i=0; i<discret_->NumMyColElements(); ++i)
+    {
+      // get the actual element
+      if (discret_->lColElement(i)->Type() == DRT::Element::element_sosh8p8)
+        numsosh8p8 += 1;
+    }
+    if (numsosh8p8 > 0)
+    {
+      if (numsosh8p8 != discret_->NumMyColElements()) 
+        dserror("Right now, hybrid meshes consisting of Sosh8p8 and others are not allowed");
+      pressure_ = Teuchos::rcp(new LINALG::MapExtractor());
+      const int ndim = 3;
+      FLD::UTILS::SetupFluidSplit(*discret_, ndim, *pressure_);
     }
   }
 
@@ -721,7 +744,7 @@ void STR::TimInt::OutputEnergy()
                  << std::endl;
   }
 
-  // in god we trust
+  // in God we trust
   return;
 }
 
@@ -735,6 +758,28 @@ void STR::TimInt::ApplyForceExternal
   Teuchos::RCP<Epetra_Vector>& fext  //!< external force
 )
 {
+//   // only diplacements
+//   Teuchos::RCP<Epetra_Vector> cdis = Teuchos::null;
+//   if (pressure_ != Teuchos::null)
+//     cdis = pressure_->ExtractOtherVector(dis);
+//   else 
+//     cdis = dis;
+
+//   // only velocities
+//   Teuchos::RCP<Epetra_Vector> cvel = Teuchos::null;
+//   if (damping_ == INPAR::STR::damp_material)
+//     if (pressure_ != Teuchos::null)
+//       cvel = pressure_->ExtractOtherVector(vel);
+//     else 
+//       cvel = vel;
+
+//   // short external forces
+//   Teuchos::RCP<Epetra_Vector> cfext = Teuchos::null;
+//   if (pressure_ != Teuchos::null)
+//     cfext = LINALG::CreateVector(*(pressure_->OtherMap()), true);
+//   else
+//     cfext = fext;
+
   ParameterList p;
   // other parameters needed by the elements
   p.set("total time", time);
@@ -746,6 +791,11 @@ void STR::TimInt::ApplyForceExternal
   // get load vector
   discret_->EvaluateNeumann(p, *fext);
   discret_->ClearState();
+
+//   // blow up Other external force vector
+//   if (pressure_ != Teuchos::null)
+//     pressure_->AddOtherVector(1.0, cfext, fext);
+
 
   // go away
   return;
