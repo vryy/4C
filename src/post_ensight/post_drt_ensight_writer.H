@@ -60,12 +60,12 @@ typedef map<DRT::Element::DiscretizationType, vector<int> > EleGidPerDisType;
 //! defines different result types (node-based, element-based, Gauss-Points?)
 enum ResultType
 {
-  no_restype,          		// unknown result type
-  dofbased,                     // dof-based result values
-  nodebased,           		// node-based result values
-  elementbased,      		// element-based result values
-  elementdof,     		// element degree of freedom values
-  max_restype          		// end marker. must be the last entry
+  no_restype,          // unknown result type
+  dofbased,            // dof-based result values
+  nodebased,           // node-based result values
+  elementbased,        // element-based result values
+  elementdof,          // element degree of freedom values
+  max_restype          // end marker. must be the last entry
 };
 
 //! basis class for the Ensight filter

@@ -61,6 +61,7 @@ EnsightWriter::EnsightWriter(PostField* field,
   // you need to manually switch to other types distypes before querying this map
   distype2ensightstring_.clear();
   distype2ensightstring_[DRT::Element::line2] = "bar2";
+  distype2ensightstring_[DRT::Element::line3] = "bar3";
   distype2ensightstring_[DRT::Element::hex8] = "hexa8";
   distype2ensightstring_[DRT::Element::hex20] = "hexa20";
   distype2ensightstring_[DRT::Element::tet4] = "tetra4";
@@ -384,6 +385,7 @@ void EnsightWriter::WriteCells(
         switch (actele->Shape())
         {
         case DRT::Element::line2:
+        case DRT::Element::line3:
         case DRT::Element::hex8:
         case DRT::Element::quad4:
         case DRT::Element::quad8:
