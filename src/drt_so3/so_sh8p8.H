@@ -206,7 +206,7 @@ public:
   /// Kind of ANS anti-locking technique
   enum AnsType
   {
-    ans_outofplane,  ///< ANS active in t-direction
+    ans_lateral,  ///< ANS active in t-/out-of-plane/thickness direction
     ans_none   ///< DEBUG ONLY: ANS switched off
   };
 

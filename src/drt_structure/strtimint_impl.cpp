@@ -556,7 +556,7 @@ void STR::TimIntImpl::NewtonFull()
     dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(zeros_), freact_);
     // rotate reaction forces back to global co-ordinate system
     if (locsysman_ != Teuchos::null)
-    locsysman_->RotateLocalToGlobal(freact_);
+      locsysman_->RotateLocalToGlobal(freact_);
 
     // blank residual at DOFs on Dirichlet BC
     dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
@@ -568,6 +568,23 @@ void STR::TimIntImpl::NewtonFull()
     normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
     // build residual displacement norm
     normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+
+#if 0
+    if (pressure_ != Teuchos::null)
+    {
+      Teuchos::RCP<Epetra_Vector> pres = pressure_->ExtractCondVector(fres_);
+      Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector(fres_);
+      double normpres = STR::AUX::CalculateVectorNorm(iternorm_, pres);
+      double normdisp = STR::AUX::CalculateVectorNorm(iternorm_, disp);
+      cout << "ForceResid=" << normdisp << " IncompResid=" << normpres << endl;
+
+      pres = pressure_->ExtractCondVector(disi_);
+      disp = pressure_->ExtractOtherVector(disi_);
+      normpres = STR::AUX::CalculateVectorNorm(iternorm_, pres);
+      normdisp = STR::AUX::CalculateVectorNorm(iternorm_, disp);
+      cout << "DispResid=" << normdisp << " PresResid=" << normpres << endl;
+    }
+#endif
 
     // print stuff
     PrintNewtonIter();

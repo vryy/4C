@@ -116,7 +116,11 @@ namespace MAT
 
     //@}
 
+    /// material mass density
     double Density() const { return params_->density_; }
+
+    /// shear modulus
+    double ShearMod() const { return 0.5*params_->youngs_/(1.0+params_->nue_); }
 
     // material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_aaaneohooke; }

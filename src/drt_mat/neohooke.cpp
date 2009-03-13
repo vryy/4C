@@ -108,8 +108,8 @@ void MAT::NeoHooke::Evaluate(
                   LINALG::Matrix<6,1>& stress)
 {
   // get material parameters
-  double ym = params_->youngs_;    // Young's modulus
-  double nu = params_->poissonratio_; // Poisson's ratio
+  const double ym = params_->youngs_;    // Young's modulus
+  const double nu = params_->poissonratio_; // Poisson's ratio
 
   // Green-Lagrange Strain Tensor
   LINALG::Matrix<3,3> E(false);
@@ -247,8 +247,8 @@ void MAT::NeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
         LINALG::Matrix<6,1> stress(stress_e->A(),true);
 
   // get material parameters
-  double ym = params_->youngs_;    // Young's modulus
-  double nu = params_->poissonratio_; // Poisson's ratio
+  const double ym = params_->youngs_;    // Young's modulus
+  const double nu = params_->poissonratio_; // Poisson's ratio
 
   // Green-Lagrange Strain Tensor
   LINALG::Matrix<3,3> E(false);

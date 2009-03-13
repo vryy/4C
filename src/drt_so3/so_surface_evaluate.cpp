@@ -38,10 +38,6 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
                                                       vector<int>&             lm,
                                                       Epetra_SerialDenseVector& elevec1)
 {
-//  cout << "SoSurface LM=" << lm.size() << " : ";
-//  for (int i=0; i<(int)lm.size(); ++i) cout << lm[i] << " ";
-//  cout << endl;
-
   // get type of condition
   enum LoadType
   {

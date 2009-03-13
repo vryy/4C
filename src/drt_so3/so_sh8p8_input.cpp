@@ -148,12 +148,12 @@ bool DRT::ELEMENTS::So_sh8p8::ReadElement()
   }
 
   // ANS
-  ans_ = ans_outofplane;
+  ans_ = ans_lateral;
   frchar("ANS",buffer,&ierr);
   if (ierr)
   {
-    if (strncmp(buffer,"OutOfPlane",10)==0)
-      ans_ = ans_outofplane;
+    if (strncmp(buffer,"Lateral",10)==0)
+      ans_ = ans_lateral;
     else if (strncmp(buffer,"None",4)==0)
       ans_ = ans_none;
     else

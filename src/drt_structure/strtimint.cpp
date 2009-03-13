@@ -758,28 +758,6 @@ void STR::TimInt::ApplyForceExternal
   Teuchos::RCP<Epetra_Vector>& fext  //!< external force
 )
 {
-//   // only diplacements
-//   Teuchos::RCP<Epetra_Vector> cdis = Teuchos::null;
-//   if (pressure_ != Teuchos::null)
-//     cdis = pressure_->ExtractOtherVector(dis);
-//   else 
-//     cdis = dis;
-
-//   // only velocities
-//   Teuchos::RCP<Epetra_Vector> cvel = Teuchos::null;
-//   if (damping_ == INPAR::STR::damp_material)
-//     if (pressure_ != Teuchos::null)
-//       cvel = pressure_->ExtractOtherVector(vel);
-//     else 
-//       cvel = vel;
-
-//   // short external forces
-//   Teuchos::RCP<Epetra_Vector> cfext = Teuchos::null;
-//   if (pressure_ != Teuchos::null)
-//     cfext = LINALG::CreateVector(*(pressure_->OtherMap()), true);
-//   else
-//     cfext = fext;
-
   ParameterList p;
   // other parameters needed by the elements
   p.set("total time", time);
@@ -791,11 +769,6 @@ void STR::TimInt::ApplyForceExternal
   // get load vector
   discret_->EvaluateNeumann(p, *fext);
   discret_->ClearState();
-
-//   // blow up Other external force vector
-//   if (pressure_ != Teuchos::null)
-//     pressure_->AddOtherVector(1.0, cfext, fext);
-
 
   // go away
   return;

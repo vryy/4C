@@ -7,7 +7,7 @@ Raghavan and Vorp [2000]
 The material is a special case of a generalised pover law neo-Hookean material
 
 the input line should read
-  MAT 1 MAT_Struct_AAANeoHooke YOUNG 1.044E7 BETA 188.1E5 DENS 1.0
+  MAT 1 MAT_Struct_AAANeoHooke YOUNG 1.044E7 BETA 188.1E5 NUE 0.3 DENS 1.0
 
 <pre>
 Maintainer: Christiane Förster
@@ -155,14 +155,14 @@ void MAT::AAAneohooke::Evaluate(
 		  LINALG::Matrix<6,1>& stress)
 {
   // material parameters for isochoric part
-  double youngs   = params_->youngs_;    // Young's modulus
-  double beta     = params_->beta_;      // second parameter
-  double nue      = params_->nue_;       // Poisson's ratio
-  double alpha    = youngs*0.1666666666666666667;       // E = alpha * 6..
+  const double youngs   = params_->youngs_;    // Young's modulus
+  const double beta     = params_->beta_;      // second parameter
+  const double nue      = params_->nue_;       // Poisson's ratio
+  const double alpha    = youngs*0.1666666666666666667;       // E = alpha * 6..
 
   // material parameters for volumetric part
-  double beta2 = 9.0;                                   // parameter from Holzapfel
-  double komp  = 2.0*alpha / (1.0-2.0*nue);              // bulk modulus               
+  const double beta2 = 9.0;                                   // parameter from Holzapfel
+  const double komp  = (nue!=0.5) ? 2.0*alpha / (1.0-2.0*nue) : 0.0;              // bulk modulus
 
   //--------------------------------------------------------------------------------------
   // build identity tensor I
