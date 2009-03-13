@@ -841,37 +841,41 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
         InvVector9VoigtDiffByItself(WmT,invdefgrad,true);
         // WmT := WmT + fvT*fvT'
         WmT.MultiplyNT(1.0,tinvdefgrad,tinvdefgrad,1.0);
+
+        // Voigt 9-vector indices
+        const int* voigtrow9 = NULL;
+        const int* voigtcol9 = NULL;
+        Indices9VoigtTo2Tensor(voigtrow9,voigtcol9);
+        const int* voigt3x3 = NULL;
+        Indices2TensorTo9Voigt(voigt3x3);  // access is via (i,j) -> 3*i+j
+        const int* voigt3x3sym = NULL;
+        Indices2TensorTo6Voigt(voigt3x3sym);  // access is via (i,j) -> 3*i+j
+        
+        // material derivatives of shape functions
+        LINALG::Matrix<NUMDIM_SOSH8P8,NUMNOD_SOSH8P8> derivsmat;
+        derivsmat.MultiplyNN(invJ_[gp],derivs[gp]);
+
+        // linear B-op
+        // derivative of displ-based def.grad with respect to nodal displacements
+        // F^d_{aC,d}
+        LINALG::Matrix<NUMDFGR_SOSH8P8,NUMDISP_SOSH8P8> boplin(true);
+        for (int I=0; I<NUMDFGR_SOSH8P8; ++I)
+        {
+          const int i = voigtrow9[I];
+          const int j = voigtcol9[I];
+          for (int k=0; k<NUMNOD_SOSH8P8; ++k)
+          {
+            const int K = i + k*NODDISP_SOSH8P8;
+            boplin(I,K) = derivsmat(j,k);
+          }
+        }
+
         // derivative of def.grad. w.r.t. displacements Fv_{,d}
         LINALG::Matrix<NUMDFGR_SOSH8P8,NUMDISP_SOSH8P8> defgradbydisp;
-        {
-          // Voigt 9-vector indices
-          const int* voigtrow9 = NULL;
-          const int* voigtcol9 = NULL;
-          Indices9VoigtTo2Tensor(voigtrow9,voigtcol9);
-          const int* voigt3x3 = NULL;
-          Indices2TensorTo9Voigt(voigt3x3);  // access is via (i,j) -> 3*i+j
-          const int* voigt3x3sym = NULL;
-          Indices2TensorTo6Voigt(voigt3x3sym);  // access is via (i,j) -> 3*i+j
-
-          // material derivatives of shape functions
-          LINALG::Matrix<NUMDIM_SOSH8P8,NUMNOD_SOSH8P8> derivsmat;
-          derivsmat.MultiplyNN(invJ_[gp],derivs[gp]);
-
-          // linear B-op
-          // derivative of displ-based def.grad with respect to nodal displacements
-          // F^d_{aC,d}
-          LINALG::Matrix<NUMDFGR_SOSH8P8,NUMDISP_SOSH8P8> boplin(true);
-          for (int I=0; I<NUMDFGR_SOSH8P8; ++I)
-          {
-            const int i = voigtrow9[I];
-            const int j = voigtcol9[I];
-            for (int k=0; k<NUMNOD_SOSH8P8; ++k)
-            {
-              const int K = j + k*NUMDIM_SOSH8P8;
-              boplin(I,K) = derivsmat(j,i);
-            }
-          }
-
+        if (ans_ == ans_none) {
+          defgradbydisp.Update(boplin);
+        }
+        else {
           // inverse of pure disp-based material stretch tensor
           // U^{d;-1}
           LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> invrgtstrD(rgtstrD);
@@ -1426,22 +1430,20 @@ void DRT::ELEMENTS::So_sh8p8::InvVector9VoigtDiffByItself(
 {
   const int* voigtrow9 = NULL;
   const int* voigtcol9 = NULL;
-  Indices9VoigtTo2Tensor(voigtrow9,voigtcol9,transpose);
+  Indices9VoigtTo2Tensor(voigtrow9,voigtcol9);
 
   for (int I=0; I<NUMDFGR_SOSH8P8; ++I)
   {
-//    const int i = voigtrow9[I];
-//    const int k = voigtcol9[I];
     const int i = voigtrow9[I];
-    const int j = voigtcol9[I];
+    const int k = voigtcol9[I];
     for (int J=0; J<NUMDFGR_SOSH8P8; ++J)
     {
-//      const int j = voigtrow9[J];
-//      const int l = voigtcol9[J];
-//      invfderf(I,J) = -invfmat(i,k)*invfmat(j,l);
-      const int k = voigtrow9[J];
+      const int j = voigtrow9[J];
       const int l = voigtcol9[J];
-      invfderf(I,J) = -invfmat(i,k)*invfmat(l,j) - invfmat(i,l)*invfmat(k,j);
+      if (transpose)
+        invfderf(I,J) = -invfmat(i,l)*invfmat(j,k);
+      else
+        invfderf(I,J) = -invfmat(i,j)*invfmat(l,k);
     }
   }
 
