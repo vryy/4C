@@ -605,6 +605,9 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   sumrhouT_ =  rcp(new vector<double> );
   sumrhouT_->resize(size,0.0);
 
+  sumsv_ = rcp(new vector<double> );
+  sumsv_->resize(size,0.0);
+
   // now the second order moments
   sumsqu_ =  rcp(new vector<double> );
   sumsqu_->resize(size,0.0);
@@ -623,6 +626,9 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
   sumsqT_ =  rcp(new vector<double> );
   sumsqT_->resize(size,0.0);
+
+  sumsqsv_ = rcp(new vector<double> );
+  sumsqsv_->resize(size,0.0);
 
   sumuv_ =  rcp(new vector<double> );
   sumuv_->resize(size,0.0);

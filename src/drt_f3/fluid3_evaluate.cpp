@@ -1837,7 +1837,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
           pgp    += funct(inode)*velpre(finode  );
           rhogp  += funct(inode)*dens(finode  );
           rhougp += funct(inode)*dens(finode  )*usave;
-          svgp   += funct(inode)*sv(finode  )*usave;
+          svgp   += funct(inode)*sv(finode  );
         }
         Tgp     = eosfac/rhogp;
         rhouTgp = eosfac*ugp;
