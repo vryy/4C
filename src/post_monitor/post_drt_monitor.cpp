@@ -290,7 +290,8 @@ void FluidMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::vec
   RCP< Epetra_Vector > resvec = result.read_result("velnp");
   const Epetra_BlockMap& velmap = resvec->Map();
   // do output of general time step data
-  outfile << "   " << result.step() << "    " << result.time() << "  ";
+  outfile << right << std::setw(10) << result.step();
+  outfile << right << std::setw(16) << scientific << result.time();
 
   //compute second part of offset
   int offset2 = velmap.MinAllGID();
@@ -298,8 +299,8 @@ void FluidMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::vec
   // do output for velocity and pressure
   for(unsigned i=0; i < gdof.size(); ++i)
   {
-    int lid = velmap.LID(gdof[i]+offset2);
-    outfile << (*resvec)[lid] << "   ";
+    const int lid = velmap.LID(gdof[i]+offset2);
+    outfile << right << std::setw(16) << scientific << (*resvec)[lid];
   }
   outfile << "\n";
 }
@@ -377,14 +378,15 @@ void StructMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::ve
   int offset2 = dispmap.MinAllGID();
   
   // do output of general time step data
-  outfile << "   " << result.step() << "    " << result.time() << "  ";
+  outfile << right << std::setw(10) << result.step();
+  outfile << right << std::setw(16) << scientific << result.time();
 
   // do output for velocity and pressure
   for(unsigned i=0; i < gdof.size(); ++i)
   {
-    int lid = dispmap.LID(gdof[i]+offset2);
+    const int lid = dispmap.LID(gdof[i]+offset2);
     if (lid == -1) dserror("illegal gid %d at %d!",gdof[i],i);
-    outfile << (*resvec)[lid] << "   ";
+    outfile << right << std::setw(16) << scientific << (*resvec)[lid];
   }
 
   // get actual result vector velocity
@@ -397,9 +399,9 @@ void StructMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::ve
   // do output for velocity
   for(unsigned i=0; i < gdof.size(); ++i)
   {
-    int lid = velmap.LID(gdof[i]+offset2);
+    const int lid = velmap.LID(gdof[i]+offset2);
     if (lid == -1) dserror("illegal gid %d at %d!",gdof[i],i);
-    outfile << (*resvec)[lid] << "   ";
+    outfile << right << std::setw(16) << scientific << (*resvec)[lid];
   }
 
   // get actual result vector acceleration
@@ -412,9 +414,9 @@ void StructMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::ve
   // do output for acceleration
   for(unsigned i=0; i < gdof.size(); ++i)
   {
-    int lid = accmap.LID(gdof[i]+offset2);
+    const int lid = accmap.LID(gdof[i]+offset2);
     if (lid == -1) dserror("illegal gid %d at %d!",gdof[i],i);
-    outfile << (*resvec)[lid] << "   ";
+    outfile << right << std::setw(16) << scientific << (*resvec)[lid];
   }
 
   outfile << "\n";
@@ -489,7 +491,8 @@ void AleMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::vecto
   RCP< Epetra_Vector > resvec = result.read_result("displacement");
   const Epetra_BlockMap& dispmap = resvec->Map();
   // do output of general time step data
-  outfile << "   " << result.step() << "    " << result.time() << "  ";
+  outfile << right << std::setw(10) << result.step();
+  outfile << right << std::setw(16) << scientific << result.time();
 
   //compute second part of offset
   int offset2 = dispmap.MinAllGID();
@@ -497,8 +500,8 @@ void AleMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::vecto
   // do output for velocity and pressure
   for(unsigned i=0; i < gdof.size()-1; ++i)
   {
-    int lid = dispmap.LID(gdof[i]+offset2);
-    outfile << (*resvec)[lid] << "   ";
+    const int lid = dispmap.LID(gdof[i]+offset2);
+    outfile << right << std::setw(16) << scientific << (*resvec)[lid];
   }
   outfile << "\n";
 }
@@ -568,15 +571,16 @@ void FsiFluidMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::
   RCP< Epetra_Vector > resvec = result.read_result("dispnp");
   const Epetra_BlockMap& dispmap = resvec->Map();
   // do output of general time step data
-  outfile << "   " << result.step() << "    " << result.time() << "  ";
+  outfile << right << std::setw(10) << result.step();
+  outfile << right << std::setw(16) << scientific << result.time();
 
   //compute second part of offset
   int offset2 = dispmap.MinAllGID();
   
   for(unsigned i=0; i < gdof.size()-1; ++i)
   {
-    int lid = dispmap.LID(gdof[i]+offset2);
-    outfile << (*resvec)[lid] << "   ";
+    const int lid = dispmap.LID(gdof[i]+offset2);
+    outfile << right << std::setw(16) << scientific << (*resvec)[lid];
   }
 
 
@@ -590,8 +594,8 @@ void FsiFluidMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::
   // do output for velocity and pressure
   for(unsigned i=0; i < gdof.size(); ++i)
   {
-    int lid = velmap.LID(gdof[i]+offset2);
-    outfile << (*resvec)[lid] << "   ";
+    const int lid = velmap.LID(gdof[i]+offset2);
+    outfile << right << std::setw(16) << scientific << (*resvec)[lid];
   }
   outfile << "\n";
 }
