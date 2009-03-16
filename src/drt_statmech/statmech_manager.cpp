@@ -260,7 +260,7 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
 /*----------------------------------------------------------------------*
  | write special output for statistical mechanics (public)    cyron 09/08|
  *----------------------------------------------------------------------*/
-void StatMechManager::StatMechOutput(const double& time,const int& num_dof,const int& istep, const double& dt, const Epetra_Vector& dis, const Epetra_Vector& fint)
+void StatMechManager::StatMechOutput(const int ndim, const double& time,const int& num_dof,const int& istep, const double& dt, const Epetra_Vector& dis, const Epetra_Vector& fint)
 {
   switch(Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_,"SPECIAL_OUTPUT"))
   {
@@ -314,14 +314,31 @@ void StatMechManager::StatMechOutput(const double& time,const int& num_dof,const
       //as soon as system is equilibrated (after time START_FACTOR*maxtime_) a new file for storing output is generated
       if ( (time >= maxtime_ * statmechparams_.get<double>("START_FACTOR",0.0))  && (starttimeoutput_ == -1.0) )
       {
-       endtoendref_ = pow ( pow((dis)[num_dof-3]+10 - (dis)[0],2) + pow((dis)[num_dof-2] - (dis)[1],2) , 0.5);  
+        //end to end vector at reference point of time
+        LINALG::Matrix<3,1> endtoendvectorref(true);     
+        for(int i = 0; i<ndim; i++)
+        {
+          endtoendvectorref(i) -= ( discret_.gNode(0)                            )->X()[i] + dis[i];
+          endtoendvectorref(i) += ( discret_.gNode(discret_.NumMyRowNodes() - 1) )->X()[i] + dis[num_dof - discret_.NumDof(discret_.gNode(discret_.NumMyRowNodes() - 1)) + i];
+        }
+        
+        endtoendref_ = endtoendvectorref.Norm2();
+
        starttimeoutput_ = time;
        istart_ = istep;   
       }
        
       if (time > starttimeoutput_ && starttimeoutput_ > -1.0)
       { 
-        endtoend = pow ( pow((dis)[num_dof-3]+10 - (dis)[0],2) + pow((dis)[num_dof-2] - (dis)[1],2) , 0.5);
+        //end to end vector
+        LINALG::Matrix<3,1> endtoendvector(true);     
+        for(int i = 0; i<ndim; i++)
+        {
+          endtoendvector(i) -= ( discret_.gNode(0)                            )->X()[i] + dis[i];
+          endtoendvector(i) += ( discret_.gNode(discret_.NumMyRowNodes() - 1) )->X()[i] + dis[num_dof - discret_.NumDof(discret_.gNode(discret_.NumMyRowNodes() - 1)) + i];
+        }
+        
+        endtoend = endtoendvector.Norm2();
     
         //writing output: current time and end to end distance are stored without any further postprocessing
         if ( (istep - istart_) % 100 == 0 )
@@ -336,6 +353,75 @@ void StatMechManager::StatMechOutput(const double& time,const int& num_dof,const
           fclose(fp);
           }
       }
+    }
+    break;
+    //the following output allows for anisotropic diffusion simulation of a quasi stiff polymer
+    case INPAR::STATMECH::statout_anisotropic:
+    {            
+      FILE* fp = NULL; //file pointer for statistical output file
+      
+      //name of output file
+      std::ostringstream outputfilename;
+      outputfilename << "AnisotropicDiffusion"<< ".dat";
+             
+      //positions of first and last node in current time step (note: always 3D variables used; in case of 2D third compoenent just constantly zero)
+      LINALG::Matrix<3,1> beginnew(true);
+      LINALG::Matrix<3,1> endnew(true);
+
+           
+      for(int i = 0; i<ndim; i++)
+      {
+        beginnew(i) = ( discret_.gNode(0)                            )->X()[i] + dis[i];
+        endnew(i)   = ( discret_.gNode(discret_.NumMyRowNodes() - 1) )->X()[i] + dis[num_dof - discret_.NumDof(discret_.gNode(discret_.NumMyRowNodes() - 1)) + i];
+      }
+      
+     
+      //unit direction vector for filament axis in last time step
+      LINALG::Matrix<3,1> axisold;
+      axisold  = endold_;
+      axisold -= beginold_;
+      axisold.Scale(1/axisold.Norm2());
+      
+ 
+      //displacement of first and last node between last time step and current time step
+      LINALG::Matrix<3,1> dispbegin;
+      LINALG::Matrix<3,1> dispend;
+      dispbegin  = beginnew;
+      dispbegin -= beginold_;
+      dispend  = endnew;
+      dispend -= endold_;
+      
+      //displacement of middle point
+      LINALG::Matrix<3,1> dispmiddle;
+      dispmiddle  = dispbegin;
+      dispmiddle += dispend;
+      dispmiddle.Scale(0.5);
+     
+      //displacement of middle point parallel to old filament axis (computed by scalar product)
+      double disppar_square = pow(axisold(0)*dispmiddle(0) + axisold(1)*dispmiddle(1) + axisold(2)*dispmiddle(2), 2);
+
+  
+      //displacement of middle point orthogonal to old filament axis (computed by crossproduct)
+      LINALG::Matrix<3,1> aux;
+      aux(0) = dispmiddle(1)*axisold(2) - dispmiddle(2)*axisold(1);
+      aux(1) = dispmiddle(2)*axisold(0) - dispmiddle(0)*axisold(2);
+      aux(2) = dispmiddle(0)*axisold(1) - dispmiddle(1)*axisold(0);
+      double disport_square = aux.Norm2()*aux.Norm2();
+      
+      // open file and append new data line
+      fp = fopen(outputfilename.str().c_str(), "a");
+      
+      //defining temporary stringstream variable
+      std::stringstream filecontent;
+      filecontent << scientific << setprecision(15) << dt << "  " << disppar_square << "  " << disport_square<< endl;
+      
+      // move temporary stringstream to file and close it
+      fprintf(fp,filecontent.str().c_str());
+      fclose(fp);
+      
+      //new positions in this time step become old positions in last time step     
+      beginold_ = beginnew;
+      endold_   = endnew;
     }
     break;
     //measurement of viscoelastic properties should be carried out by means of force sensors
@@ -374,7 +460,7 @@ void StatMechManager::StatMechOutput(const double& time,const int& num_dof,const
       
       /*construct unique filename for gmsh output with two indices: the first one marking the time step number
        * and the second one marking the newton iteration number, where numbers are written with zeros in the front
-       * e.g. number one is written as 00001, number fourteen as 00014 and so on;*/
+       * e.g. number one is written as 000001, number fourteen as 000014 and so on;*/
       
       //note: this kind of output is possilbe for serial computing only (otherwise the following method would have to be adapted to parallel use*/   
       if(discret_.Comm().NumProc() > 1)
@@ -383,11 +469,11 @@ void StatMechManager::StatMechOutput(const double& time,const int& num_dof,const
       // first index = time step index
       std::ostringstream filename;
 
-      //creating complete file name dependent on step number with 5 digits and leading zeros
-      if (istep<100000)
-        filename << "./GmshOutput/network"<< std::setw(5) << setfill('0') << istep <<".pos";
+      //creating complete file name dependent on step number with 6 digits and leading zeros
+      if (istep<1000000)
+        filename << "./GmshOutput/network"<< std::setw(6) << setfill('0') << istep <<".pos";
       else 
-        dserror("Gmsh output implemented for a maximum of 99999 steps");
+        dserror("Gmsh output implemented for a maximum of 999999 steps");
           
       //calling method for writing Gmsh output
       GmshOutput(dis,filename,istep);     
@@ -492,7 +578,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
 /*----------------------------------------------------------------------*
  | initialize special output for statistical mechanics(public)cyron 12/08|
  *----------------------------------------------------------------------*/
-void StatMechManager::StatMechInitOutput()
+void StatMechManager::StatMechInitOutput(const int ndim)
 {
   //initializing special output for statistical mechanics by looking for a suitable name of the outputfile and setting up an empty file with this name
   
@@ -576,6 +662,30 @@ void StatMechManager::StatMechInitOutput()
       fp = fopen(outputfilename.str().c_str(), "w");
       
       fclose(fp);
+      
+    }
+    break;
+    //simulating diffusion coefficient for anisotropic friction
+    case INPAR::STATMECH::statout_anisotropic:
+    {
+      //defining name of output file
+      std::ostringstream outputfilename;
+      outputfilename << "AnisotropicDiffusion"<< ".dat";
+      
+      FILE* fp = NULL; //file pointer for statistical output file
+      
+      //making sure that there exists an now empty file named by outputfilename_
+      fp = fopen(outputfilename.str().c_str(), "w");     
+      fclose(fp);
+      
+      //initializing variables for positions of first and last node at the beginning
+      beginold_.PutScalar(0);
+      endold_.PutScalar(0);
+      for(int i = 0; i<ndim; i++)
+      {
+        beginold_(i) = ( discret_.gNode(0)                            )->X()[i];
+        endold_(i)   = ( discret_.gNode(discret_.NumMyRowNodes() - 1) )->X()[i];
+      }
       
     }
     break;
@@ -844,11 +954,12 @@ void StatMechManager::SetCrosslinkers(const Epetra_Vector& setcrosslinkercol,con
    * is set up before setting crosslinkers*/ 
   #ifdef D_BEAM3
       RCP<DRT::ELEMENTS::Beam3> crosslinkerdummy;   
-      crosslinkerdummy = rcp(new DRT::ELEMENTS::Beam3(-1,discret_.Comm().MyPID()) );     
-      crosslinkerdummy->crosssecshear_ = 19e-10*1.1;
-      crosslinkerdummy->Iyy_ = 28.74e-11;
-      crosslinkerdummy->Izz_ = 28.74e-11;
-      crosslinkerdummy->Irr_ = 57.48e-11;        
+      crosslinkerdummy = rcp(new DRT::ELEMENTS::Beam3(-1,discret_.Comm().MyPID()) );   
+      crosslinkerdummy->crosssec_ = 1.9e-09;
+      crosslinkerdummy->crosssecshear_ = 1.9e-09*1.1;
+      crosslinkerdummy->Iyy_ = 2.874e-11;
+      crosslinkerdummy->Izz_ = 2.874e-11;
+      crosslinkerdummy->Irr_ = 5.748e-11;        
   #endif      
    /*
   #ifdef D_TRUSS3
@@ -930,6 +1041,7 @@ void StatMechManager::SetCrosslinkers(const Epetra_Vector& setcrosslinkercol,con
        //add new element to discretization
        discret_.AddElement(newcrosslinker); 
        
+       
 #endif
        
       } //if( (discret_.lColNode(i))->Owner() == discret_.Comm().MyPID() )
@@ -1004,7 +1116,6 @@ void StatMechManager::StatMechBrownian(ParameterList& params, RCP<Epetra_Vector>
    * global column map vector is used*/
   pstat.set("statistical vector",browniancol);
   
-  
   //evaluation of statistical Brownian forces or displacements on column map vecotor
   discret_.SetState("displacement",dis); //during evaluation of statistical forces or steps in space access to current displacement possible
   discret_.Evaluate(pstat,damp,null,null,null,null);
@@ -1025,6 +1136,9 @@ void StatMechManager::StatMechBrownian(ParameterList& params, RCP<Epetra_Vector>
   
   //complete damping matrix
   damp->Complete();
+  
+
+
 
   return;
 } // StatMechManager::StatMechBrownian()

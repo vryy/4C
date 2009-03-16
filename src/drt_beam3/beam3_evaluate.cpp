@@ -409,7 +409,7 @@ int DRT::ELEMENTS::Beam3::EvaluateBrownianDamp(ParameterList& params,
                                            double zeta,
                                            Epetra_SerialDenseMatrix& elemat1)
 {
-  /*
+  
   // polynomial order for interpolation of stochastic line load (zero corresponds to bead spring model)
   int stochasticorder = params.get<int>("STOCH_ORDER",0);
 
@@ -424,6 +424,7 @@ int DRT::ELEMENTS::Beam3::EvaluateBrownianDamp(ParameterList& params,
     elemat1(7,7) += zeta/2.0;
     elemat1(8,8) += zeta/2.0;
   }
+  /*
   //stochastic field of line load is interpolated by first order polynomial functions
   else if (stochasticorder == 1)
   {
@@ -444,34 +445,39 @@ int DRT::ELEMENTS::Beam3::EvaluateBrownianDamp(ParameterList& params,
   }
   */
   
-  
-  //local damping matrix
-  LINALG::Matrix<3,3> dampbasis(true);
-  dampbasis(0,0) = zeta/2;
-  dampbasis(1,1) = zeta;
-  dampbasis(2,2) = zeta;
-  
-  LINALG::Matrix<3,3> Tconv;
-  quaterniontotriad(Qconv_,Tconv);
-  
-  //turning local damping matrix into global one
-  dampbasis.Multiply(Tconv,dampbasis);
-  dampbasis.MultiplyNT(dampbasis,Tconv);
+  //in case of a consistent damping matrix stochastic nodal forces are calculated consistently by methods of weighted integrals
+  else if (stochasticorder == 1)
+  {     
+    //triad to rotate local configuration into global one 
+    LINALG::Matrix<3,3> T;
+    quaterniontotriad(Qconv_,T);
 
-
-  for(int i = 0; i<3; i++)
-  {
-    for(int j = 0; j<3; j++)
-    {
-      elemat1(i,j)     += dampbasis(i,j)/3.0;
-      elemat1(i+6,j+6) += dampbasis(i,j)/3.0;
+   
+    //local damping matrix
+    LINALG::Matrix<3,3> dampbasis(true);
+    dampbasis(0,0) = zeta/2;
+    dampbasis(1,1) = zeta;
+    dampbasis(2,2) = zeta;
     
-      elemat1(i,j+6) += dampbasis(i,j)/6.0;
-      elemat1(i+6,j) += dampbasis(i,j)/6.0;
+    //turning local into global damping matrix (storing intermediate result in variable "aux")
+    LINALG::Matrix<3,3> aux;
+    aux.Multiply(T,dampbasis);
+    dampbasis.MultiplyNT(aux,T);
+
+    for(int i = 0; i<3; i++)
+    {
+      for(int j = 0; j<3; j++)
+      {
+        elemat1(i,j)     += dampbasis(i,j)/3.0;
+        elemat1(i+6,j+6) += dampbasis(i,j)/3.0;
+      
+        elemat1(i,j+6) += dampbasis(i,j)/6.0;
+        elemat1(i+6,j) += dampbasis(i,j)/6.0;
+      }
     }
   }
-  
-  
+
+
   return 0;
 } //DRT::ELEMENTS::Beam3::EvaluateBrownian
 
@@ -485,12 +491,13 @@ int DRT::ELEMENTS::Beam3::EvaluateBrownianForces(ParameterList& params,
                                            double zeta,
                                            Epetra_SerialDenseVector& elevec1)
 {
-  /*
+  
   // thermal energy responsible for statistical forces
   double kT = params.get<double>("KT",0.0);
 
   // polynomial order for interpolation of stochastic line load (zero corresponds to bead spring model)
   int stochasticorder = params.get<int>("STOCH_ORDER",0);
+
 
   //stochastic field of line load is interpolated by zeroth order polynomial functions
   if (stochasticorder == 0)
@@ -520,6 +527,7 @@ int DRT::ELEMENTS::Beam3::EvaluateBrownianForces(ParameterList& params,
     elevec1[8] += normalGen.random();
 
   }
+  /*
   //stochastic field of line load is interpolated by first order polynomial functions
   else if (stochasticorder == 1)
   {    
@@ -557,54 +565,60 @@ int DRT::ELEMENTS::Beam3::EvaluateBrownianForces(ParameterList& params,
     elevec1[8] += stat3;
   }
   */
-  
-  // thermal energy responsible for statistical forces
-  double kT = params.get<double>("KT",0.0);
 
-  //local force vectors of first and second node
-  LINALG::Matrix<3,1> force1;
-  LINALG::Matrix<3,1> force2;
   
-  LINALG::Matrix<3,3> Tconv;
-  quaterniontotriad(Qconv_,Tconv);
-  
+  //in case of a consistent damping matrix stochastic nodal forces are calculated consistently by methods of weighted integrals
+  else if (stochasticorder == 1)
+  {     
+    //triad to rotate local configuration into global one 
+    LINALG::Matrix<3,3> T;
+    quaterniontotriad(Qconv_,T);
  
-  double stand_dev_par = pow(2 * kT * (zeta/12) / params.get<double>("delta time",0.01),0.5);
-  double stand_dev_ort = pow(2 * kT * (zeta/ 6) / params.get<double>("delta time",0.01),0.5);
+    //local force vectors of first and second node
+    LINALG::Matrix<3,1> force1;
+    LINALG::Matrix<3,1> force2;
+    
+    //global force vectors of first and second node
+    LINALG::Matrix<3,1> force1g;
+    LINALG::Matrix<3,1> force2g;
+    
+ 
+    double stand_dev_par = pow(2 * kT * (zeta/12) / params.get<double>("delta time",0.01),0.5);
+    double stand_dev_ort = pow(2 * kT * (zeta/ 6) / params.get<double>("delta time",0.01),0.5);
 
-  //creating a random generator object which creates random numbers with mean = 0 and standard deviation
-  //stand_dev; using Blitz namespace "ranlib" for random number generation
-  ranlib::Normal<double> normalGenpar(0,stand_dev_par);
-  ranlib::Normal<double> normalGenort(0,stand_dev_ort);
+    //creating a random generator object which creates random numbers with mean = 0 and standard deviation
+    //stand_dev; using Blitz namespace "ranlib" for random number generation
+    ranlib::Normal<double> normalGenpar(0,stand_dev_par);
+    ranlib::Normal<double> normalGenort(0,stand_dev_ort);
 
-  //adding uncorrelated components of statistical forces
-  force1(0) = normalGenpar.random();
-  force1(1) = normalGenort.random();
-  force1(2) = normalGenort.random();
-  force2(0) = normalGenpar.random();
-  force2(1) = normalGenort.random();
-  force2(2) = normalGenort.random();
+    //adding uncorrelated components of statistical forces
+    force1(0) = normalGenpar.random();
+    force1(1) = normalGenort.random();
+    force1(2) = normalGenort.random();
+    force2(0) = normalGenpar.random();
+    force2(1) = normalGenort.random();
+    force2(2) = normalGenort.random();
 
-
-  //adding correlated components of statistical forces
-  double stat1 = normalGenpar.random();
-  double stat2 = normalGenort.random();
-  double stat3 = normalGenort.random();
-  force1(0) += stat1;
-  force1(1) += stat2;
-  force1(2) += stat3;
-  force2(0) += stat1;
-  force2(1) += stat2;
-  force2(2) += stat3;
-  
-  //transform nodal forces into global coordinates
-  force1.Multiply(Tconv,force1);
-  force2.Multiply(Tconv,force2);
-  
-  for(int i = 0; i<3; i++)
-  {
-    elevec1[i]   = force1(i);
-    elevec1[i+6] = force2(i);
+    //adding correlated components of statistical forces
+    double stat1 = normalGenpar.random();
+    double stat2 = normalGenort.random();
+    double stat3 = normalGenort.random();
+    force1(0) += stat1;
+    force1(1) += stat2;
+    force1(2) += stat3;
+    force2(0) += stat1;
+    force2(1) += stat2;
+    force2(2) += stat3;
+    
+    //transform nodal forces into global coordinates
+    force1g.Multiply(T,force1);
+    force2g.Multiply(T,force2);
+    
+    for(int i = 0; i<3; i++)
+    {
+      elevec1[i]   = force1g(i);
+      elevec1[i+6] = force2g(i);
+    }
   }
 
     

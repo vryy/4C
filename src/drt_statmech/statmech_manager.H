@@ -37,7 +37,7 @@ public:
   virtual ~StatMechManager() {};
 
   //! \brief write special output for statistical mechanics into files
-  void StatMechOutput(const double& time,const int& num_dof,const int& istep, const double& dt, const Epetra_Vector& dis, const Epetra_Vector& fint);
+  void StatMechOutput(const int ndim, const double& time,const int& num_dof,const int& istep, const double& dt, const Epetra_Vector& dis, const Epetra_Vector& fint);
    
   //! \brief saving all necessary class variables for restart
   void StatMechWriteRestart(IO::DiscretizationWriter& output);
@@ -55,7 +55,7 @@ public:
   void SetCrosslinkers(const Epetra_Vector& setcrosslinkercol,const Epetra_Map& nodecolmap,const Epetra_Vector& nearestneighbour,const std::map<int,LINALG::Matrix<3,1> >& currentpositions,const std::map<int,LINALG::Matrix<3,1> >& currentrotations);
   
   //! \brief initializing special output for statistical mechanics by looking for a suitable name of the outputfile and setting up an empty file with this name
-  void StatMechInitOutput();
+  void StatMechInitOutput(const int ndim);
   
   //! \brief write output for Gmsh postprocessing
   void GmshOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& step);
@@ -83,6 +83,12 @@ protected:
   
   //! \brief time step number at the beginning of statistical output
   int istart_; 
+  
+  //! \brief position of first node in last time step
+  LINALG::Matrix<3,1> beginold_;
+  
+  //! \brief position of last nodein last time step
+  LINALG::Matrix<3,1> endold_;
   
   //! \brief maximal radius within which crosslinkers are established
   double rlink_;

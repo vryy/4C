@@ -423,28 +423,29 @@ int DRT::ELEMENTS::Beam2::EvaluateBrownianDamp(ParameterList& params,
     T(0,1) = -sin(alphaconv_);
     T(1,0) =  sin(alphaconv_);
     T(1,1) =  cos(alphaconv_);
+
    
     //local damping matrix
     LINALG::Matrix<2,2> dampbasis(true);
     dampbasis(0,0) = zeta/2;
     dampbasis(1,1) = zeta;
     
-    //turning local into global damping matrix
-    dampbasis.Multiply(T,dampbasis);
-    dampbasis.MultiplyNT(dampbasis,T);
+    //turning local into global damping matrix (storing intermediate result in variable "aux")
+    LINALG::Matrix<2,2> aux;
+    aux.Multiply(T,dampbasis);
+    dampbasis.MultiplyNT(aux,T);
 
     for(int i = 0; i<2; i++)
     {
       for(int j = 0; j<2; j++)
       {
         elemat1(i,j) += dampbasis(i,j)/3.0;
-        elemat1(i+4,j+4) += dampbasis(i,j)/3.0;
+        elemat1(i+3,j+3) += dampbasis(i,j)/3.0;
       
-        elemat1(i,j+4) += dampbasis(i,j)/6.0;
-        elemat1(i+4,j) += dampbasis(i,j)/6.0;
+        elemat1(i,j+3) += dampbasis(i,j)/6.0;
+        elemat1(i+3,j) += dampbasis(i,j)/6.0;
       }
     }
-
   }
 
   return 0;
@@ -521,6 +522,10 @@ int DRT::ELEMENTS::Beam2::EvaluateBrownianForces(ParameterList& params,
     LINALG::Matrix<2,1> force1;
     LINALG::Matrix<2,1> force2;
     
+    //global force vectors of first and second node
+    LINALG::Matrix<2,1> force1g;
+    LINALG::Matrix<2,1> force2g;
+    
  
     double stand_dev_par = pow(2 * kT * (zeta/12) / params.get<double>("delta time",0.01),0.5);
     double stand_dev_ort = pow(2 * kT * (zeta/ 6) / params.get<double>("delta time",0.01),0.5);
@@ -545,13 +550,13 @@ int DRT::ELEMENTS::Beam2::EvaluateBrownianForces(ParameterList& params,
     force2(1) += stat2;
     
     //transform nodal forces into global coordinates
-    force1.Multiply(T,force1);
-    force2.Multiply(T,force2);
+    force1g.Multiply(T,force1);
+    force2g.Multiply(T,force2);
     
     for(int i = 0; i<2; i++)
     {
-      elevec1[i]   = force1(i);
-      elevec1[i+4] = force2(i);
+      elevec1[i]   = force1g(i);
+      elevec1[i+3] = force2g(i);
     }
   }
 

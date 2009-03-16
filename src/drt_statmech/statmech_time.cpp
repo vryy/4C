@@ -88,17 +88,18 @@ void StatMechTime::Integrate()
     ranlib::Normal<double> seedgenerator(0,1);
     //seeding random generator
     int seedvariable = time(0);
-    seedvariable = 15; //6 
+    seedvariable = 1;
     seedgenerator.seed((unsigned int)seedvariable);
   }
+  
+  //getting number of dimensions for diffusion coefficient calculation
+  const Teuchos::ParameterList& psize = DRT::Problem::Instance()->ProblemSizeParams();
+  int ndim=psize.get<int>("DIM");
 
   #ifdef D_BEAM3
 
   /*before starting statistical calculations certain elements have to be initialized in order to make them know viscosity of
    * their surrounding thermal bath*/
-  //parameters with respect to statistical mechanics into special variable for later acceess
-  Teuchos::ParameterList statisticalparams( DRT::Problem::Instance()->StatisticalMechanicsParams() );
-
   for (int num=0; num<  discret_.NumMyColElements(); ++num)
   {
     //in case that current element is not a beam3 or beam 2element there is nothing to do and we go back
@@ -117,20 +118,21 @@ void StatMechTime::Integrate()
 
   for (int i=step; i<nstep; ++i)
   {
+    
+    //the following block makes the random number generation dependent on the time step number
     {
       //random generator for seeding only (necessary for thermal noise)
       ranlib::Normal<double> seedgenerator(0,1);
       //seeding random generator
       int seedvariable = time(0);
-      seedvariable = i*9; //6 
+      seedvariable = i*5; //*5 gab gewünschten Fehler bereits bei 100.000 Schritten
       seedgenerator.seed((unsigned int)seedvariable);
     }
-    
     
     /*in the very first step and in case that special output for statistical mechanics is requested we have
      * to initialized the related output method*/
     if(i == 0)
-      statmechmanager_->StatMechInitOutput();
+      statmechmanager_->StatMechInitOutput(ndim);
         
     std::cout<<"\nAnzahl der Elemente am Beginn des Zeitschritts: "<<discret_.NumMyRowElements()<<"\n";
     
@@ -146,17 +148,17 @@ void StatMechTime::Integrate()
 
     ConsistentPredictor(); 
 
-    //FullNewton();
-    PTC();
-    
-    
-    
-   
+
+    FullNewton();
+    //PTC();
+
+       
     UpdateandOutput();
    
     //special update and output for statistical mechanics
-    statmechmanager_->StatMechOutput(time,num_dof,i,dt,*dis_,*fint_);
+    statmechmanager_->StatMechOutput(ndim,time,num_dof,i,dt,*dis_,*fint_);
     statmechmanager_->StatMechUpdate(dt,*dis_);
+
    
 
     if (time>=maxtime) break;
@@ -301,6 +303,7 @@ void StatMechTime::ConsistentPredictor()
    * dissipation theorem */
 
   statmechmanager_->StatMechBrownian(params_,dis_,fextn_,damp_);
+
   
   // constant predictor : displacement in domain
   disn_->Update(1.0,*dis_,0.0);
@@ -418,11 +421,16 @@ void StatMechTime::ConsistentPredictor()
     discret_.Evaluate(p,stiff_,null,fint_,null,null);
 
     discret_.ClearState();
+    
+
+
+
 
 
 
     // do NOT finalize the stiffness matrix, add mass and damping to it later
   }
+  
 
   //-------------------------------------------- compute residual forces
   // build residual
@@ -533,14 +541,22 @@ void StatMechTime::FullNewton()
 
   while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) and numiter<=maxiter)
   {
+
+    
     //------------------------------------------- effective rhs is fresm
     //---------------------------------------------- build effective lhs
-    stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(delta*dt),1.0);
+    //stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(delta*dt),1.0);
+    //stiff_->Complete();
+    
+    //backward Euler
+    stiff_->Add(*damp_,false,1/(dt),1.0);
     stiff_->Complete();
 
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
+    
+
 
     //--------------------------------------------------- solve for disi
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
@@ -564,9 +580,12 @@ void StatMechTime::FullNewton()
     // velocities
 
     // incremental (required for constant predictor)
-    velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
-
-    velm_->Update((delta-(1.0-alphaf)*gamma)/delta,*vel_,gamma/(delta*dt));
+    
+    //backward Euler
+    velm_->Update(1.0/dt,*dism_,-1.0/dt,*dis_,0.0);
+    
+    //velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
+    //velm_->Update((delta-(1.0-alphaf)*gamma)/delta,*vel_,gamma/(delta*dt));
 
 
     //---------------------------- compute internal forces and stiffness
@@ -609,12 +628,13 @@ void StatMechTime::FullNewton()
     //        + F_int(D_{n+1-alpha_f})
     //        - F_{ext;n+1-alpha_f}
     // add mid-inertial force
-
+    
 
     //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
     damp_->Multiply(false,*velm_,*fvisc_);
     fresm_->Update(1.0,*fvisc_,0.0);
     fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
+     
 
     // blank residual DOFs that are on Dirichlet BC
     {
@@ -625,18 +645,7 @@ void StatMechTime::FullNewton()
     //---------------------------------------------- build residual norm
     disi_->Norm2(&disinorm);
     fresm_->Norm2(&fresmnorm);
-    
 
-    
-    /*
-    for(int id = 0; id < fresm_->MyLength() ; id++)
-    {
-      if ( (*fresm_)[id] > 10 && numiter < 2 )
-      {
-        std::cout<<"\nfres["<<id<<"] = "<< (*fresm_)[id];
-      }
-    }
-    */
     
     // first index = time step index
     std::ostringstream filename;
@@ -720,7 +729,7 @@ void StatMechTime::PTC()
   if (!damp_->Filled()) dserror("damping matrix must be filled here");
 
   // hard wired ptc parameters
-  double ptcdt = 1.3e1; //1.3e1 für Actin3D_10GOLD1.dat;
+  double ptcdt = 1.3e1; //1.3e1 
   double nc;
   fresm_->NormInf(&nc);
   double dti = 1/ptcdt;
