@@ -44,7 +44,6 @@ FLD::FluidResultTest::FluidResultTest(FluidGenAlphaIntegration& fluid)
 }
 
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FLD::FluidResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& test_count)
@@ -54,11 +53,9 @@ void FLD::FluidResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& test
 
   if (fluiddis_->HaveGlobalNode(res->node))
   {
-    DRT::Node* actnode = fluiddis_->gNode(res->node);
+    const DRT::Node* actnode = fluiddis_->gNode(res->node);
 
-    // Strange! It seems we might actually have a global node around
-    // even if it does not belong to us. But here we are just
-    // interested in our nodes!
+    // Test only, if actnode is a row node
     if (actnode->Owner() != fluiddis_->Comm().MyPID())
       return;
 
@@ -68,7 +65,7 @@ void FLD::FluidResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& test
 
     const int numdim = DRT::Problem::Instance()->ProblemSizeParams().get<int>("DIM");
 
-    string position = res->position;
+    const string position = res->position;
     if (position=="velx")
     {
       result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(actnode,0))];

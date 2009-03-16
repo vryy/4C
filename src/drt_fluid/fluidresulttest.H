@@ -56,11 +56,11 @@ public:
 
 private:
 
-  /// our fluid algorithmus
-//  FluidImplicitTimeInt& fluid_;
-
+  /// pointer to fluid discretization
   RefCountPtr<DRT::Discretization> fluiddis_;
+  /// pointer to unknown vector with values 
   RefCountPtr<Epetra_Vector>       mysol_;
+  /// pointer to traction vector with values
   RefCountPtr<Epetra_Vector>       mytraction_;
 };
 

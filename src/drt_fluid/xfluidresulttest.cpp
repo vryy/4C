@@ -25,12 +25,14 @@ Maintainer: Axel Gerstenberger
 #endif
 
 
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::XFluidResultTest::XFluidResultTest(XFluidImplicitTimeInt& fluid)
 {
-  fluiddis_=fluid.discret_;
-  mysol_   =fluid.state_.velnp_ ;
+  fluiddis_= fluid.discret_;
+  mysol_   = fluid.state_.velnp_;
+  mytraction_ = fluid.CalcStresses();
 }
 
 
@@ -43,11 +45,9 @@ void FLD::XFluidResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& tes
 
   if (fluiddis_->HaveGlobalNode(res->node))
   {
-    DRT::Node* actnode = fluiddis_->gNode(res->node);
+    const DRT::Node* actnode = fluiddis_->gNode(res->node);
 
-    // Strange! It seems we might actually have a global node around
-    // even if it does not belong to us. But here we are just
-    // interested in our nodes!
+    // Test only, if actnode is a row node
     if (actnode->Owner() != fluiddis_->Comm().MyPID())
       return;
 
@@ -57,7 +57,6 @@ void FLD::XFluidResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& tes
 
     const int numdim = DRT::Problem::Instance()->ProblemSizeParams().get<int>("DIM");
 
-    // TODO: use the Dofmanager here
     const string position = res->position;
     if (position=="velx")
     {
@@ -69,6 +68,8 @@ void FLD::XFluidResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& tes
     }
     else if (position=="velz")
     {
+      if (numdim==2)
+        dserror("Cannot test result for velz in 2D case.");
       result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(actnode,2))];
     }
     else if (position=="pressure")
@@ -86,7 +87,17 @@ void FLD::XFluidResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& tes
         result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(actnode,3))];
       }
     }
-    else
+    else if (position=="tractionx")
+      result = (*mytraction_)[(mytraction_->Map()).LID(fluiddis_->Dof(actnode,0))];
+    else if (position=="tractiony")
+      result = (*mytraction_)[(mytraction_->Map()).LID(fluiddis_->Dof(actnode,1))];
+    else if (position=="tractionz")
+    {
+      if (numdim==2)
+        dserror("Cannot test result for tractionz in 2D case.");
+      result = (*mytraction_)[(mytraction_->Map()).LID(fluiddis_->Dof(actnode,2))];
+    }
+      else
     {
       dserror("position '%s' not supported in fluid testing", position.c_str());
     }
