@@ -116,16 +116,10 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   const XFLUID::FluidElementAnsatz elementAnsatz;
   Teuchos::RCP<XFEM::DofManager> dofmanager =
     rcp(new XFEM::DofManager(ih, fieldset, elementAnsatz, xparams_));
+  
   // tell elements about the dofs and the integration
-  {
-    ParameterList eleparams;
-    eleparams.set("action","store_xfem_info");
-    eleparams.set("dofmanager",dofmanager);
-    eleparams.set("DLM_condensation",xparams_.get<bool>("DLM_condensation"));
-    eleparams.set("boundaryRatioLimit",xparams_.get<double>("boundaryRatioLimit"));
-    eleparams.set("interfacehandle",ih);
-    discret_->Evaluate(eleparams,null,null,null,null,null);
-  }
+  TransferDofInformationToElements(ih, dofmanager);
+  
   discret_->FillComplete();
 
   // sanity check
@@ -462,6 +456,21 @@ void FLD::XFluidImplicitTimeInt::PrepareNonlinearSolve()
 
 }
 
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::XFluidImplicitTimeInt::TransferDofInformationToElements(
+    const Teuchos::RCP<XFEM::InterfaceHandleXFSI>  ih,
+    const Teuchos::RCP<XFEM::DofManager> dofmanager
+    )
+{
+  ParameterList eleparams;
+  eleparams.set("action","store_xfem_info");
+  eleparams.set("dofmanager",dofmanager);
+  eleparams.set("DLM_condensation",xparams_.get<bool>("DLM_condensation"));
+  eleparams.set("boundaryRatioLimit",xparams_.get<double>("boundaryRatioLimit"));
+  eleparams.set("interfacehandle",ih);
+  discret_->Evaluate(eleparams,null,null,null,null,null);
+}
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -469,10 +478,11 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
     const Teuchos::RCP<DRT::Discretization>  cutterdiscret
     )
 {
+  // dump old matrix to save memory while we construct a new matrix
+  sysmat_ = Teuchos::null; 
+  
   // within this routine, no parallel re-distribution is allowed to take place
   // before and after this function, it's ok to do that
-
-  // calling this function multiple times always results in the same solution vectors
 
   // compute Intersection
   const Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih =
@@ -489,73 +499,52 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   const Teuchos::RCP<XFEM::DofManager> dofmanager =
     rcp(new XFEM::DofManager(ih, fieldset, elementAnsatz, xparams_));
 
-  // save to be able to plot Gmsh stuff in Output()
+  // save dofmanager to be able to plot Gmsh stuff in Output()
   dofmanagerForOutput_ = dofmanager;
 
   // tell elements about the dofs and the integration
-  {
-      ParameterList eleparams;
-      eleparams.set("action","store_xfem_info");
-      eleparams.set("dofmanager",dofmanager);
-      eleparams.set("DLM_condensation",xparams_.get<bool>("DLM_condensation"));
-      eleparams.set("boundaryRatioLimit",xparams_.get<double>("boundaryRatioLimit"));
-      eleparams.set("interfacehandle",ih);
-      discret_->Evaluate(eleparams,null,null,null,null,null);
-  }
+  TransferDofInformationToElements(ih, dofmanager);
 
   // print global and element dofmanager to Gmsh
   dofmanager->toGmsh(step_);
 
 
-  // store old (proc-overlapping) dofmap, compute new one and return it
+  // get old dofmap, compute new one and get the new one, too
   const Epetra_Map olddofrowmap = *discret_->DofRowMap();
   discret_->FillComplete();
   const Epetra_Map& newdofrowmap = *discret_->DofRowMap();
-
-  // print information about dofs
-  if (discret_->Comm().NumProc() == 1)
-  {
-    const int numdof = newdofrowmap.NumGlobalElements();
-    const int numnodaldof = dofmanager->NumNodalDof();
-    cout << "numdof = " << numdof << ", numstressdof = "<< (numdof - numnodaldof) << endl;
-  }
-  else
-  {
-    if(discret_->Comm().MyPID() == 0)
-    {
-      cout << "numdof = " << newdofrowmap.NumGlobalElements() << endl;
-    }
-  }
   
   discret_->ComputeNullSpaceIfNecessary(solver_.Params());
 
-  const std::map<XFEM::DofKey<XFEM::onNode>, XFEM::DofGID> oldNodalDofDistributionMap(state_.nodalDofDistributionMap_);
-  const std::map<XFEM::DofKey<XFEM::onElem>, XFEM::DofGID> oldElementalDofDistributionMap(state_.elementalDofDistributionMap_);
-  dofmanager->fillDofDistributionMaps(
-      state_.nodalDofDistributionMap_,
-      state_.elementalDofDistributionMap_);
-
-  // create switcher
-  const XFEM::DofDistributionSwitcher dofswitch(
-          ih, dofmanager,
-          olddofrowmap, newdofrowmap,
-          oldNodalDofDistributionMap, state_.nodalDofDistributionMap_,
-          oldElementalDofDistributionMap, state_.elementalDofDistributionMap_
-          );
-
-  // --------------------------------------------
-  // switch state vectors to new dof distribution
-  // --------------------------------------------
-
-  // accelerations at time n and n-1
-  dofswitch.mapVectorToNewDofDistribution(state_.accnp_);
-  dofswitch.mapVectorToNewDofDistribution(state_.accn_);
-
-  // velocities and pressures at time n+1, n and n-1
-  dofswitch.mapVectorToNewDofDistribution(state_.velnp_); // use old velocity as start value
-  dofswitch.mapVectorToNewDofDistribution(state_.veln_);
-  dofswitch.mapVectorToNewDofDistribution(state_.velnm_);
-
+  {
+    const std::map<XFEM::DofKey<XFEM::onNode>, XFEM::DofGID> oldNodalDofDistributionMap(state_.nodalDofDistributionMap_);
+    const std::map<XFEM::DofKey<XFEM::onElem>, XFEM::DofGID> oldElementalDofDistributionMap(state_.elementalDofDistributionMap_);
+    dofmanager->fillDofDistributionMaps(
+        state_.nodalDofDistributionMap_,
+        state_.elementalDofDistributionMap_);
+  
+    // create switcher
+    const XFEM::DofDistributionSwitcher dofswitch(
+            ih, dofmanager,
+            olddofrowmap, newdofrowmap,
+            oldNodalDofDistributionMap, state_.nodalDofDistributionMap_,
+            oldElementalDofDistributionMap, state_.elementalDofDistributionMap_
+            );
+  
+    // --------------------------------------------
+    // switch state vectors to new dof distribution
+    // --------------------------------------------
+  
+    cout0_ << " Initialize system vectors..." << endl;
+    // accelerations at time n and n-1
+    dofswitch.mapVectorToNewDofDistribution(state_.accnp_);
+    dofswitch.mapVectorToNewDofDistribution(state_.accn_);
+  
+    // velocities and pressures at time n+1, n and n-1
+    dofswitch.mapVectorToNewDofDistribution(state_.velnp_); // use old velocity as start value
+    dofswitch.mapVectorToNewDofDistribution(state_.veln_);
+    dofswitch.mapVectorToNewDofDistribution(state_.velnm_);
+  }
   // --------------------------------------------------
   // create remaining vectors with new dof distribution
   // --------------------------------------------------
@@ -595,17 +584,10 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   // create empty system matrix --- stiffness and mass are assembled in
   // one system matrix!
   // -------------------------------------------------------------------
-
-  // This is a first estimate for the number of non zeros in a row of
-  // the matrix. Assuming a structured 3d-fluid mesh, for a corner node we have
-  // 8 adjacent elements with 27nodes*4dofs = 108 dofs each -> 864 entries
-  // We do not need the exact number here, just for performance reasons
-  // a 'good' estimate
-
+  cout0_ << " Initialize system matrix..." << endl;
+  
   // initialize system matrix
-  sysmat_ = Teuchos::null; // free memory first - otherwise we have 2 sysmats in memory
-                           // in the next line for a short time
-  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(newdofrowmap,864,false,true));
+  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(newdofrowmap,0,false,true));
 
 #if 0
   
@@ -661,6 +643,23 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   enrichsysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*enrichmap,108,false,true));
 #endif
   
+  // print information about dofs
+  if (discret_->Comm().NumProc() == 1)
+  {
+    const int numdof = newdofrowmap.NumGlobalElements();
+    const int numnodaldof = dofmanager->NumNodalDof();
+    cout << " DOF report: numdof = " << numdof << ", numstressdof = "<< (numdof - numnodaldof) << endl;
+  }
+  else
+  {
+    if(discret_->Comm().MyPID() == 0)
+    {
+      cout << " DOF report: numdof = " << newdofrowmap.NumGlobalElements() << endl;
+    }
+  }
+  
+  cout0_ << "Setup phase done!" << endl;
+
 }
 
 
@@ -704,56 +703,9 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
   double dtsolve = 0.0;
   double dtele   = 0.0;
 
-  // get new interface velocity
+  // get interface velocity
   const Teuchos::RCP<const Epetra_Vector> ivelcolnp = cutterdiscret->GetState("ivelcolnp");
   const Teuchos::RCP<const Epetra_Vector> ivelcoln  = cutterdiscret->GetState("ivelcoln");
-
-  if (myrank_ == 0 and ivelcolnp->MyLength() >= 3)
-  {
-    std::ofstream f;
-    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
-                            + ".outifacevelnp.txt";
-    if (step_ <= 1)
-      f.open(fname.c_str(),std::fstream::trunc);
-    else
-      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-
-    f << time_ << " " << (*ivelcolnp)[0] << "  " << "\n";
-
-    f.close();
-  }
-
-//  if (myrank_ == 0 and ivelcoln->MyLength() >= 3)
-//  {
-//    std::ofstream f;
-//    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
-//                            + ".outifaceveln.txt";
-//    if (step_ <= 1)
-//      f.open(fname.c_str(),std::fstream::trunc);
-//    else
-//      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-//
-//    f << time_ << " " << (*ivelcoln)[0] << "  " << "\n";
-//
-//    f.close();
-//  }
-
-//  if (myrank_ == 0 and ivelcolnp->MyLength() >= 3)
-//  {
-//    std::ofstream f;
-//    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
-//                            + ".outifaceanalytischvel.txt";
-//    if (step_ <= 1)
-//      f.open(fname.c_str(),std::fstream::trunc);
-//    else
-//      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-//
-//    const double periodendauer = 10.0;
-//    f << time_ << " " << (-1.5*std::sin(2.0*time_* PI/periodendauer) * PI/periodendauer) << "\n";
-//
-//    f.close();
-//  }
-
 
   // action for elements
   if (timealgo_!=timeint_stationary and theta_ < 1.0)
@@ -777,10 +729,6 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
   // increment of the old iteration step - used for update of condensed element stresses
   const Teuchos::RCP<Epetra_Vector> oldinc = LINALG::CreateVector(*discret_->DofRowMap(),true);
 
-  double oldresnorm = 1.0e12;
-  double resnorm = 1.0e11;
-  double oldincnorm = 1.0e12;
-  double incnorm = 1.0e11;
 
   while (stopnonliniter==false)
   {
@@ -794,9 +742,8 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       TEUCHOS_FUNC_TIME_MONITOR("      + element calls");
 
       // get cpu time
+      discret_->Comm().Barrier();
       const double tcpu=ds_cputime();
-
-      sysmat_->Zero();
 
       // add Neumann loads
       residual_->Update(1.0,*neumann_loads_,0.0);
@@ -833,7 +780,6 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
       discret_->SetState("nodal increment",oldinc);
 
-      // give interface velocity to elements
       eleparams.set("interface velocity",ivelcolnp);
 
       // reset interface force and let the elements fill it
@@ -851,6 +797,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
            !=
            "L_2_norm_without_residual_at_itemax"))
       {
+        sysmat_->Zero();
         // call standard loop over elements
         discret_->Evaluate(eleparams,sysmat_,residual_);
         discret_->ClearState();
@@ -917,24 +864,10 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
     // care for the case that nothing really happens in the velocity
     // or pressure field
-    if (velnorm_L2 < 1e-5)
-    {
-      velnorm_L2 = 1.0;
-    }
-    if (prenorm_L2 < 1e-5)
-    {
-      prenorm_L2 = 1.0;
-    }
-    if (fullnorm_L2 < 1e-5)
-    {
-      fullnorm_L2 = 1.0;
-    }
+    if (velnorm_L2 < 1e-5)  velnorm_L2 = 1.0;
+    if (prenorm_L2 < 1e-5)  prenorm_L2 = 1.0;
+    if (fullnorm_L2 < 1e-5) fullnorm_L2 = 1.0;
 
-    if (itnum > 1)
-    {
-      resnorm = fullresnorm;
-      incnorm = incfullnorm_L2;
-    }
     //-------------------------------------------------- output to screen
     /* special case of very first iteration step:
         - solution increment is not yet available
@@ -945,8 +878,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       {
         printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   |      --      |      --      |      --      |",
                itnum,itemax,ittol,vresnorm,presnorm,fullresnorm);
-        printf(" (      --     ,te=%10.3E",dtele);
-        printf(")");
+        printf(" (      --     ,te=%10.3E)",dtele);
       }
     }
     /* ordinary case later iteration steps:
@@ -968,8 +900,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
           printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
                  itnum,itemax,ittol,vresnorm,presnorm,fullresnorm,
                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2,incfullnorm_L2/fullnorm_L2);
-          printf(" (ts=%10.3E,te=%10.3E",dtsolve,dtele);
-          printf(")\n");
+          printf(" (ts=%10.3E,te=%10.3E)\n",dtsolve,dtele);
           printf("+------------+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+\n");
 
           FILE* errfile = params_.get<FILE*>("err file");
@@ -988,36 +919,9 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
           printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
                  itnum,itemax,ittol,vresnorm,presnorm,fullresnorm,
                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2,incfullnorm_L2/fullnorm_L2);
-          printf(" (ts=%10.3E,te=%10.3E",dtsolve,dtele);
-          printf(")");
+          printf(" (ts=%10.3E,te=%10.3E)",dtsolve,dtele);
         }
     }
-
-//    if (resnorm > oldresnorm and
-//        incnorm > oldincnorm and
-//        itnum > 2)
-//    {
-//      cout << endl << "resnorms: " << resnorm << endl <<  "          " << oldresnorm << endl;
-//      cout << endl << "incnorms: " << incnorm << endl <<  "          " << oldincnorm << endl;
-//      stopnonliniter=true;
-//      if (myrank_ == 0)
-//      {
-//        printf("+---------------------------------------------------------------+\n");
-//        printf("|            >>>>>> not converged due to increasing increment!  |\n");
-//        printf("+---------------------------------------------------------------+\n");
-//
-//        FILE* errfile = params_.get<FILE*>("err file");
-//        if (errfile!=NULL)
-//        {
-//          fprintf(errfile,"fluid unconverged solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
-//                  itnum,itemax,ittol,vresnorm,presnorm,
-//                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
-//        }
-//      }
-//      break;
-//    }
-    oldincnorm = incnorm;
-    oldresnorm = resnorm;
     
     // warn if itemax is reached without convergence, but proceed to
     // next timestep...
@@ -1064,8 +968,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       const int sign_digits = (int)floor(tmp);
       cout0_ << " cond est: " << scientific << cond_number << ", max.sign.digits: " << sign_digits;
     }
-    if (myrank_ == 0)
-      cout0_ << endl;
+    cout0_ << endl;
     
     //-------solve for residual displacements to correct incremental displacements
     {
@@ -1073,6 +976,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       TEUCHOS_FUNC_TIME_MONITOR("      + solver calls");
 
       // get cpu time
+      discret_->Comm().Barrier();
       const double tcpusolve=ds_cputime();
 
       // do adaptive linear solver tolerance (not in first solve)
@@ -1115,6 +1019,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
   }
   
   incvel_ = Teuchos::null;
+  sysmat_ = Teuchos::null; 
   
 } // FluidImplicitTimeInt::NonlinearSolve
 

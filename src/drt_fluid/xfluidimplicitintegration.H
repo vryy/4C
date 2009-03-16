@@ -311,9 +311,20 @@ protected:
 
   /*!
   \brief compute Interface
+  
+    // calling this function multiple times should always result
+    // in the same solution vectors and system matrix
   */
   void ComputeInterfaceAndSetDOFs(
       const Teuchos::RCP<DRT::Discretization>  cutterdiscret
+      );
+  
+  /*!
+  \brief give DOF information to elements
+  */
+  void TransferDofInformationToElements(
+      const Teuchos::RCP<XFEM::InterfaceHandleXFSI>  ih,
+      const Teuchos::RCP<XFEM::DofManager> dofmanager
       );
   
   /*!

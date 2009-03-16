@@ -116,7 +116,6 @@ void xdyn_fluid_drt()
   LINALG::Solver solver(DRT::Problem::Instance()->FluidSolverParams(),
                         fluiddis->Comm(),
                         DRT::Problem::Instance()->ErrorFile()->Handle());
-  fluiddis->ComputeNullSpaceIfNecessary(solver.Params());
 
   // -------------------------------------------------------------------
   // create a second solver for SIMPLER preconditioner if chosen from input
