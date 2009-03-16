@@ -374,6 +374,9 @@ private:
                        Epetra_SerialDenseVector* force,  //!< element internal force vector
                        int lumpedmass); //!< if set to one lumped mass matrix is calculated
   
+  //!sets up element reference geomtry for reference nodal position vector xrefe (may be used also after simulation start)
+  void SetUpReferenceGeometry(const LINALG::Matrix<4,1>& xrefe);
+  
   
   // don't want = operator
   Beam2& operator = (const Beam2& old);

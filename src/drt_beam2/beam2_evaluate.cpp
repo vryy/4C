@@ -389,31 +389,15 @@ int DRT::ELEMENTS::Beam2::EvaluateBrownianDamp(ParameterList& params,
   // polynomial order for interpolation of stochastic line load (zero corresponds to bead spring model)
   int stochasticorder = params.get<int>("STOCH_ORDER",0);
   
-  //in case of a lumped damping matrix stochastic forces are applied analogously
+  //simple model with isotropic Brownian motion and uncorrelated nodal forces (like bead-spring-model)
   if (stochasticorder == 0)
   {
-    //adding entries for lumped viscous damping "stiffness" (by background fluid of thermal bath)
     elemat1(0,0) += zeta/2.0;
     elemat1(1,1) += zeta/2.0;
     elemat1(3,3) += zeta/2.0;
     elemat1(4,4) += zeta/2.0;  
   }
-  /*
-  //in case of a consistent damping matrix stochastic nodal forces are calculated consistently by methods of weighted integrals
-  else if (stochasticorder == 1)
-  {
-    //adding entries for consistent viscous damping "stiffness" (by background fluid of thermal bath)
-    elemat1(0,0) += zeta/3.0;
-    elemat1(1,1) += zeta/3.0;
-    elemat1(3,3) += zeta/3.0;
-    elemat1(4,4) += zeta/3.0;
 
-    elemat1(0,3) += zeta/6.0;
-    elemat1(3,0) += zeta/6.0;
-    elemat1(1,4) += zeta/6.0;
-    elemat1(4,1) += zeta/6.0;
-  }
-  */
   //in case of a consistent damping matrix stochastic nodal forces are calculated consistently by methods of weighted integrals
   else if (stochasticorder == 1)
   {     
@@ -466,7 +450,7 @@ int DRT::ELEMENTS::Beam2::EvaluateBrownianForces(ParameterList& params,
   // polynomial order for interpolation of stochastic line load (zero corresponds to bead spring model)
   int stochasticorder = params.get<int>("STOCH_ORDER",0);
   
-  //in case of a lumped damping matrix stochastic forces are applied analogously
+  //simple isotropic model of Brownian motion with uncorrelated nodal forces
   if (stochasticorder == 0)
   {
     //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
@@ -482,32 +466,7 @@ int DRT::ELEMENTS::Beam2::EvaluateBrownianForces(ParameterList& params,
     elevec1[3] += normalGen.random();
     elevec1[4] += normalGen.random(); 
   }
-  /*
-  //in case of a consistent damping matrix stochastic nodal forces are calculated consistently by methods of weighted integrals
-  else if (stochasticorder == 1)
-  {
-    //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
-    double stand_dev_trans = pow(2.0 * kT * (zeta/6.0) / params.get<double>("delta time",0.01),0.5);
 
-    //creating a random generator object which creates random numbers with mean = 0 and standard deviation
-    //stand_dev; using Blitz namespace "ranlib" for random number generation
-    ranlib::Normal<double> normalGen(0,stand_dev_trans);
-
-    //adding uncorrelated components of statistical forces
-    elevec1[0] += normalGen.random();
-    elevec1[1] += normalGen.random();
-    elevec1[3] += normalGen.random();
-    elevec1[4] += normalGen.random();
-
-    //adding correlated components of statistical forces
-    double force1 = normalGen.random();
-    double force2 = normalGen.random();
-    elevec1[0] += force1;
-    elevec1[1] += force2;
-    elevec1[3] += force1;
-    elevec1[4] += force2;
-  }
-  */
   //in case of a consistent damping matrix stochastic nodal forces are calculated consistently by methods of weighted integrals
   else if (stochasticorder == 1)
   {     

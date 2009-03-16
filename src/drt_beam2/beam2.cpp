@@ -223,6 +223,50 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Beam2::Lines()
   return lines;
 }
 
+//sets up element reference geomtry for reference nodal position vector xrefe (may be used also after simulation start)
+void DRT::ELEMENTS::Beam2::SetUpReferenceGeometry(const LINALG::Matrix<4,1>& xrefe)
+{
+  /*this method initializes geometric variables of the element; such an initialization can only be done one time when the element is
+   * generated and never again (especially not in the frame of a restart); to make sure that this requirement is not violated this 
+   * method will initialize the geometric variables iff the class variable isinit_ == false and afterwards set this variable to 
+   * isinit_ = true; if this method is called and finds alreday isinit_ == true it will just do nothing*/ 
+  if(!isinit_)
+  {
+    isinit_ = true;
+
+    //length in reference configuration
+    lrefe_  = pow( pow(xrefe(3)-xrefe(1),2) + pow(xrefe(2)-xrefe(0),2) , 0.5 );
+
+    // beta is the rotation angle out of x-axis in a x-y-plane in reference configuration
+    double cos_alpha0 = (xrefe(2)-xrefe(0))/lrefe_;
+    double sin_alpha0 = (xrefe(3)-xrefe(1))/lrefe_;
+
+    //we calculate beta in a range between -pi < beta <= pi
+    if (cos_alpha0 >= 0)
+      alpha0_ = asin(sin_alpha0);
+    else
+    { if (sin_alpha0 >= 0)
+        alpha0_ =  acos(cos_alpha0);
+      else
+        alpha0_ = -acos(cos_alpha0);
+     }
+    
+    //initially the absolute rotation of the element frame equals the reference rotation alpha0_
+    alphanew_  = alpha0_;
+    alphaold_  = alpha0_;
+    alphaconv_ = alpha0_;
+    
+    /*the angle alpha0_ is exactly the angle beta gained from the coordinate positions by evaluation
+     * of the sine- and cosine-functions without adding or substracting any multiple of 2*PI*/
+    numperiodsnew_  = 0;
+    numperiodsold_  = 0;
+    numperiodsconv_ = 0;
+
+  }
+
+  return;
+} //DRT::ELEMENTS::Beam3::SetUpReferenceGeometry()
+
 
 
 //------------- class Beam2Register: -------------------------------------
@@ -318,64 +362,34 @@ void DRT::ELEMENTS::Beam2Register::Print(ostream& os) const
 
 int DRT::ELEMENTS::Beam2Register::Initialize(DRT::Discretization& dis)
 {
-  LINALG::SerialDenseMatrix xrefe;
-  xrefe.Shape(2,2);
-
-  //setting beam reference director correctly
-  for (int i=0; i<dis.NumMyColElements(); ++i)
-    {
-      //in case that current element is not a beam2 element there is nothing to do and we go back
-      //to the head of the loop
-      if (dis.lColElement(i)->Type() != DRT::Element::element_beam2) continue;
-
-      //if we get so far current element is a beam2 element and  we get a pointer at it
-      DRT::ELEMENTS::Beam2* currele = dynamic_cast<DRT::ELEMENTS::Beam2*>(dis.lColElement(i));
-      if (!currele) dserror("cast to Beam2* failed");
-      
-      /*the following part initializes geometric variables of the element; such an initialization can only be done one time when the element is
-       * generated and never again (especially not in the frame of a restart); to make sure that this requirement is not violated this 
-       * method will initialize the geometric variables iff the class variable isinit_ == false and afterwards set this variable to 
-       * isinit_ = true; if this part is called and finds alreday isinit_ == true it will just do nothing*/    
-      if(!currele->isinit_)
-      {
-        currele->isinit_ = true;
-
-        //getting element's reference coordinates
-        for (int k=0; k<2; ++k) //element has two nodes
-          {
-            xrefe(0,k) = currele->Nodes()[k]->X()[0];
-            xrefe(1,k) = currele->Nodes()[k]->X()[1];
-          }
   
-        //length in reference configuration
-        currele->lrefe_  = pow( pow(xrefe(0,1)-xrefe(0,0),2) + pow(xrefe(1,1)-xrefe(1,0),2) , 0.5 );
-  
-        // beta is the rotation angle out of x-axis in a x-y-plane in reference configuration
-        double cos_alpha0 = (xrefe(0,1)-xrefe(0,0))/currele->lrefe_;
-        double sin_alpha0 = (xrefe(1,1)-xrefe(1,0))/currele->lrefe_;
-  
-        //we calculate beta in a range between -pi < beta <= pi
-        if (cos_alpha0 >= 0)
-        	currele->alpha0_ = asin(sin_alpha0);
-        else
-        {	if (sin_alpha0 >= 0)
-            currele->alpha0_ =  acos(cos_alpha0);
-          else
-            currele->alpha0_ = -acos(cos_alpha0);
-         }
-        
-        //initially the absolute rotation of the element frame equals the reference rotation alpha0_
-        currele->alphanew_  = currele->alpha0_;
-        currele->alphaold_  = currele->alpha0_;
-        currele->alphaconv_ = currele->alpha0_;
-        
-        /*the angle alpha0_ is exactly the angle beta gained from the coordinate positions by evaluation
-         * of the sine- and cosine-functions without adding or substracting any multiple of 2*PI*/
-        currele->numperiodsnew_  = 0;
-        currele->numperiodsold_  = 0;
-        currele->numperiodsconv_ = 0;
-      }
-    } //for (int i=0; i<dis_.NumMyColElements(); ++i)
+  //reference node position
+  LINALG::Matrix<4,1> xrefe;
+ 
+  //setting up geometric variables for beam3 elements
+  for (int num=0; num<  dis.NumMyColElements(); ++num)
+  {    
+    //in case that current element is not a beam2 element there is nothing to do and we go back
+    //to the head of the loop
+    if (dis.lColElement(num)->Type() != DRT::Element::element_beam2) continue;
+    
+    //if we get so far current element is a beam2 element and  we get a pointer at it
+    DRT::ELEMENTS::Beam2* currele = dynamic_cast<DRT::ELEMENTS::Beam2*>(dis.lColElement(num));
+    if (!currele) dserror("cast to Beam2* failed");
+    
+    //getting element's nodal coordinates and treating them as reference configuration
+    if (currele->Nodes()[0] == NULL || currele->Nodes()[1] == NULL)
+      dserror("Cannot get nodes in order to compute reference configuration'");
+    else
+    {   
+      for (int k=0; k<2; k++) //element has two nodes
+        for(int l= 0; l < 2; l++)
+          xrefe(k*2 + l) = currele->Nodes()[k]->X()[l];
+    }
+ 
+    currele->SetUpReferenceGeometry(xrefe);
+       
+  } //for (int num=0; num<dis_.NumMyColElements(); ++num)
 
   return 0;
 }
