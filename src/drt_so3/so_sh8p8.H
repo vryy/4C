@@ -267,9 +267,10 @@ private:
     LINALG::Matrix<NUMPRES_SOSH8P8,1>* incomp,  ///< incompressibility residual
     LINALG::Matrix<NUMGPT_SOSH8P8,NUMSTR_SOSH8P8>* elestress,  ///< stresses at GP
     LINALG::Matrix<NUMGPT_SOSH8P8,NUMSTR_SOSH8P8>* elestrain,  ///< strains at GP
+    double* volume,  ///< current element volume
     Teuchos::ParameterList& params,         ///< algorithmic parameters e.g. time
-    const INPAR::STR::StressType  iostress,   ///< stress output option
-    const INPAR::STR::StrainType  iostrain    ///< strain output option
+    const INPAR::STR::StressType iostress,   ///< stress output option
+    const INPAR::STR::StrainType iostrain    ///< strain output option
     );
 
   /// Return stress at Gauss point
@@ -508,6 +509,12 @@ private:
     LINALG::Matrix<NUMDOF_SOSH8P8,1>* vct,  ///< 32x1 vector
     const LINALG::Matrix<NUMDISP_SOSH8P8,1>* vctd,  ///< 24x1 sub-vector, if NULL then 0s are inserted
     const LINALG::Matrix<NUMPRES_SOSH8P8,1>* vctp  ///< 8x1 sub-vector, if NULL then 0s are inserted
+    );
+
+  /// Assemble global volume
+  static void AssembleVolume(
+    Teuchos::ParameterList& params,  ///< parameter list for in 'n' out
+    const double& volume  ///< current element volume
     );
 
   //@}

@@ -152,7 +152,7 @@ bool DRT::ELEMENTS::So_sh8p8::ReadElement()
   frchar("ANS",buffer,&ierr);
   if (ierr)
   {
-    if (strncmp(buffer,"Lateral",10)==0)
+    if (strncmp(buffer,"Later",10)==0)
       ans_ = ans_lateral;
     else if (strncmp(buffer,"None",4)==0)
       ans_ = ans_none;

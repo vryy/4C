@@ -99,7 +99,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
       LINALG::Matrix<NUMPRES_SOSH8P8,1> incomp(true);
       ForceStiffMass(lm,mydisp,mypres,
                      NULL,&stiffmatrix,&gradmatrix,&stabmatrix,&force,&incomp,
-                     NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
+                     NULL,NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
       BuildElementMatrix(&elemat1,&stiffmatrix,&gradmatrix,NULL,&stabmatrix);
       BuildElementVector(&elevec1,&force,&incomp);
     }
@@ -121,14 +121,16 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
       LINALG::Matrix<NUMPRES_SOSH8P8,NUMPRES_SOSH8P8> stabmatrix(true);
       LINALG::Matrix<NUMDISP_SOSH8P8,1> force(true);
       LINALG::Matrix<NUMPRES_SOSH8P8,1> incomp(true);
+      double volume = 0.0;
       ForceStiffMass(lm,mydisp,mypres,
                      NULL,&stiffmatrix,&gradmatrix,&stabmatrix,&force,&incomp,
-                     NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
+                     NULL,NULL,&volume,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
 //      cout << " disp=" << mydisp.Norm2() << " pres=" << mypres.Norm2();
 //      cout << " stiff=" << stiffmatrix.Norm2() << " grad=" << gradmatrix.Norm2() << " stab=" << stabmatrix.Norm2();
 //      cout << " force=" << force.Norm2() << " incomp=" << incomp.Norm2() << endl;
       BuildElementMatrix(&elemat1,&stiffmatrix,&gradmatrix,NULL,&stabmatrix);
       BuildElementVector(&elevec1,&force,&incomp);
+      AssembleVolume(params,volume);
     }
     break;
 
@@ -150,7 +152,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
       LINALG::Matrix<NUMPRES_SOSH8P8,1> incomp(true);
       ForceStiffMass(lm,mydisp,mypres,
                      NULL,&stiffmatrix,&gradmatrix,&stabmatrix,&force,&incomp,
-                     NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
+                     NULL,NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
       BuildElementMatrix(&elemat1,&stiffmatrix,&gradmatrix,NULL,&stabmatrix);
       BuildElementVector(&elevec1,&force,&incomp);
     }
@@ -181,7 +183,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
       LINALG::Matrix<NUMPRES_SOSH8P8,1> incomp(true);
       ForceStiffMass(lm,mydisp,mypres,
                      &massmatrix,&stiffmatrix,&gradmatrix,&stabmatrix,&force,&incomp,
-                     NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
+                     NULL,NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
       // lump mass
       if (act==calc_struct_nlnstifflmass) soh8_lumpmass(&massmatrix);
       // assemble displacement pressure parts
@@ -214,7 +216,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
         = params.get<INPAR::STR::StrainType>("iostrain", INPAR::STR::strain_none);
       ForceStiffMass(lm,mydisp,mypres,
                      NULL,NULL,NULL,NULL,NULL,NULL,
-                     &stress,&strain,params,iostress,iostrain);
+                     &stress,&strain,NULL,params,iostress,iostrain);
       AddtoPack(*stressdata, stress);
       AddtoPack(*straindata, strain);
     }
@@ -461,6 +463,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
   LINALG::Matrix<NUMPRES_SOSH8P8,1>* incomp,   // incompressibility residual
   LINALG::Matrix<NUMGPT_SOSH8P8,NUMSTR_SOSH8P8>* elestress,   // stresses at GP
   LINALG::Matrix<NUMGPT_SOSH8P8,NUMSTR_SOSH8P8>* elestrain,   // strains at GP
+  double* volume,  // element volume
   Teuchos::ParameterList& params,  // algorithmic parameters e.g. time
   const INPAR::STR::StressType iostress, // stress output option
   const INPAR::STR::StrainType iostrain  // strain output option
@@ -716,7 +719,6 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
     // inverse of deformation gradient and its derivative 
     LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> invdefgrad(defgrad);
     double detdefgrad = invdefgrad.Invert();
-//    cout << "det(F)=" << detdefgrad << endl;
 
     // return gp strains if necessary
     if (iostrain != INPAR::STR::strain_none)
@@ -976,7 +978,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
         }
 
         // derivative of incompressibility residual with respect to displacements
-        // G = dFv'*fvT*pN * Fdet*detJ*wp(i);
+        // (-G) = -dFv'*fvT*pN * Fdet*detJ*wp(i);
         if (gradmatrix != NULL) {
           // AUX = fvT*pN
           LINALG::Matrix<NUMDISP_SOSH8P8,1> aux;
@@ -1001,6 +1003,11 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
         }
       }
     } // end of mass matrix
+
+    // store volume
+    if (volume != NULL)
+      *volume += detdefgrad*detJ_w;
+
    /* =========================================================================*/
   }/* ==================================================== end of Loop over GP */
    /* =========================================================================*/
@@ -1432,18 +1439,20 @@ void DRT::ELEMENTS::So_sh8p8::InvVector9VoigtDiffByItself(
   const int* voigtcol9 = NULL;
   Indices9VoigtTo2Tensor(voigtrow9,voigtcol9);
 
+  // VERIFIED
+
   for (int I=0; I<NUMDFGR_SOSH8P8; ++I)
   {
     const int i = voigtrow9[I];
-    const int k = voigtcol9[I];
-    for (int J=0; J<NUMDFGR_SOSH8P8; ++J)
+    const int j = voigtcol9[I];
+    for (int K=0; K<NUMDFGR_SOSH8P8; ++K)
     {
-      const int j = voigtrow9[J];
-      const int l = voigtcol9[J];
+      const int k = voigtrow9[K];
+      const int l = voigtcol9[K];
       if (transpose)
-        invfderf(I,J) = -invfmat(i,l)*invfmat(j,k);
+        invfderf(I,K) = -invfmat(j,k)*invfmat(l,i);
       else
-        invfderf(I,J) = -invfmat(i,j)*invfmat(l,k);
+        invfderf(I,K) = -invfmat(i,k)*invfmat(l,j);
     }
   }
 
@@ -1691,6 +1700,18 @@ void DRT::ELEMENTS::So_sh8p8::BuildElementVector(
   }
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_sh8p8::AssembleVolume(
+  Teuchos::ParameterList& params,  ///< parameter list for in 'n' out
+  const double& volume  ///< current element volume
+  )
+{
+  double totvol = params.get<double>("volume");
+  params.set("volume",totvol+volume);
+  return;
+}
 
 /*======================================================================*/
 /*======================================================================*/

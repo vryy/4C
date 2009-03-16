@@ -18,11 +18,12 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* headers */
+#include <string>
 #include <iostream>
 #include <fstream>
 
 #include "Teuchos_RefCountPtr.hpp"
-#include "Teuchos_ParameterList.hpp"
+#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "Epetra_Vector.h"
 #include "Epetra_Operator.h"

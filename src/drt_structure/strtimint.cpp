@@ -788,13 +788,14 @@ void STR::TimInt::ApplyForceStiffInternal
 )
 {
   // create the parameters for the discretization
-  ParameterList p;
+  Teuchos::ParameterList p;
   // action for elements
   const std::string action = "calc_struct_nlnstiff";
   p.set("action", action);
   // other parameters that might be needed by the elements
   p.set("total time", time);
   p.set("delta time", dt);
+  if (pressure_ != Teuchos::null) p.set("volume", 0.0);
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState("residual displacement", disi);
@@ -803,6 +804,9 @@ void STR::TimInt::ApplyForceStiffInternal
   //fintn_->PutScalar(0.0);  // initialise internal force vector
   discret_->Evaluate(p, stiff, Teuchos::null, fint, Teuchos::null, Teuchos::null);
   discret_->ClearState();
+
+  if (pressure_ != Teuchos::null)
+    cout << "Total volume=" << std::scientific << p.get<double>("volume") << endl;
 
   // that's it
   return;
