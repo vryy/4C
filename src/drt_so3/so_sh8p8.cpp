@@ -73,6 +73,7 @@ void DRT::ELEMENTS::So_sh8p8::Pack(std::vector<char>& data) const
   // techniques
   AddtoPack(data,stab_);
   AddtoPack(data,ans_);
+  AddtoPack(data,lin_);
 
   return;
 }
@@ -95,6 +96,7 @@ void DRT::ELEMENTS::So_sh8p8::Unpack(const std::vector<char>& data)
   // techniques
   ExtractfromPack(position,data,stab_);
   ExtractfromPack(position,data,ans_);
+  ExtractfromPack(position,data,lin_);
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);

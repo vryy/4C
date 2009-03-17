@@ -805,8 +805,10 @@ void STR::TimInt::ApplyForceStiffInternal
   discret_->Evaluate(p, stiff, Teuchos::null, fint, Teuchos::null, Teuchos::null);
   discret_->ClearState();
 
+#if 0
   if (pressure_ != Teuchos::null)
     cout << "Total volume=" << std::scientific << p.get<double>("volume") << endl;
+#endif
 
   // that's it
   return;

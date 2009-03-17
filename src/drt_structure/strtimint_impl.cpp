@@ -541,6 +541,17 @@ void STR::TimIntImpl::NewtonFull()
     // update end-point displacements etc
     UpdateIter(iter_);
 
+#if 0
+    if (pressure_ != Teuchos::null)
+    {
+      Teuchos::RCP<Epetra_Vector> pres = pressure_->ExtractCondVector(disn_);
+      Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector(disn_);
+      double normpres = STR::AUX::CalculateVectorNorm(iternorm_, pres);
+      double normdisp = STR::AUX::CalculateVectorNorm(iternorm_, disp);
+      cout << "DispCurr=" << normdisp << " PresCurr=" << normpres << endl;
+    }
+#endif
+
     // compute residual forces #fres_ and stiffness #stiff_
     // whose components are globally oriented
     EvaluateForceStiffResidual();

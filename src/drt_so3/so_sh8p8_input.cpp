@@ -160,6 +160,19 @@ bool DRT::ELEMENTS::So_sh8p8::ReadElement()
       dserror("Reading of SO_SH8P8 ANS type failed");
   }
 
+  // Linearization
+  lin_ = lin_half;
+  frchar("LIN",buffer,&ierr);
+  if (ierr)
+  {
+    if (strncmp(buffer,"One",3)==0)
+      lin_ = lin_one;
+    else if (strncmp(buffer,"Half",4)==0)
+      lin_ = lin_half;
+    else
+      dserror("Reading of SO_SH8P8 LIN type failed");
+  }
+
   return true;
 } // So_sh8p8::ReadElement()
 

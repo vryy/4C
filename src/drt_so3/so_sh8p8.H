@@ -213,8 +213,17 @@ public:
   /// Type of Voigt vector
   enum VoigtType
   {
-    voigt6_strain,  ///< strain-like vector [ E11, E22, E33, 2*E12, 2*E23, 2*E32 ]
-    voigt6_stress  ///< stress-like vector [ S11, S22, S33, S12, S23, S32 ]
+    voigt6_strain,  ///< strain-like vector [ E11, E22, E33, 2*E12, 2*E23, 2*E31 ]
+    voigt6_stress,  ///< stress-like vector [ S11, S22, S33, S12, S23, S31 ]
+    voigt9  ///< non-symmetric vector [ F11, F22, F33, F12, F23, F31, F13, F32, F21 ]
+  };
+
+  // LinearizationType
+  enum LinearizationType
+  {
+    lin_one,  ///< full linearisation
+    lin_half,  ///< half-way linearisation
+    lin_third ///< etc.
   };
 
 private:
@@ -250,6 +259,9 @@ private:
 
   /// kind of ANS, cf. #AnsType
   AnsType ans_;
+
+  /// kind of linearization
+  LinearizationType lin_;
 
   /// @name Evaluate force and stiffness
   //@{
@@ -323,8 +335,8 @@ private:
   ///
   /// These arrays are used to get from Voigt index to tensor index couple.
   static void Indices6VoigtTo2Tensor(
-    const int*& voigtrow6,  ///< tensor row indices
-    const int*& voigtcol6,  ///< tensor column indices
+    const int*& voigt6row,  ///< tensor row indices
+    const int*& voigt6col,  ///< tensor column indices
     const bool transpose = true  ///< deliver tranposed content if true
     );
 
@@ -332,8 +344,8 @@ private:
   ///
   /// These arrays are used to get from Voigt index to tensor index couple.
   static void Indices9VoigtTo2Tensor(
-    const int*& voigtrow9,  ///< tensor row indices
-    const int*& voigtcol9,  ///< tensor column indices
+    const int*& voigt9row,  ///< tensor row indices
+    const int*& voigt9col,  ///< tensor column indices
     const bool transpose = false  ///< deliver tranposed content if true
     );
 
@@ -379,19 +391,35 @@ private:
   ///
   /// From
   /// \f[
-  ///   [\boldsymbol{F}] = \left[\begin{array}{ccc}
-  ///   F_{11} & F_{12} & F_{31} \\ F_{12} & F_{22} & F_{23} \\ F_{31} & F_{23} & F_{33}
+  ///   [\boldsymbol{B}] = \left[\begin{array}{ccc}
+  ///   B_{11} & B_{12} & B_{31} \\ B_{12} & B_{22} & B_{23} \\ B_{31} & B_{23} & B_{33}
   ///   \end{array}\right]
   /// \f]
-  /// to
+  /// to if \i strain-like vector
   /// \f[
-  ///   \tilde{\mathbf{F}} = \left[\begin{array}{c}
-  ///   F_{11} \\ F_{22} \\ F_{33} \\ 2 F_{12} \\ 2 F_{23} \\ 2 F_{31}
+  ///   \tilde{\mathbf{B}} = \left[\begin{array}{c}
+  ///   B_{11} \\ B_{22} \\ B_{33} \\ 2 B_{12} \\ 2 B_{23} \\ 2 B_{31}
+  ///   \end{array}\right]
+  /// \f]
+  /// or to if \i stress-like vector
+  /// \f[
+  ///   \tilde{\mathbf{B}} = \left[\begin{array}{c}
+  ///   B_{11} \\ B_{22} \\ B_{33} \\ B_{12} \\ B_{23} \\ B_{31}
   ///   \end{array}\right]
   /// \f]
   static void Matrix2TensorToVector6Voigt(
-    LINALG::Matrix<NUMSTR_SOSH8P8,1>& fvct,
-    const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& fmat
+    LINALG::Matrix<NUMSTR_SOSH8P8,1>& bvct,  ///< 6-Voigt vector
+    const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& bmat,  ///< 3x3 sym 2-tensor
+    const VoigtType outvoigt6 = voigt6_strain  ///< type of 6-Voigt vector
+    );
+
+  /// convert 6-Voigt vector into matrix of 2-tensor
+  ///
+  /// opposite of #Matrix2TensorToVector6Voigt
+  static void Vector6VoigtToMatrix2Tensor(
+    LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& bmat,  ///< 3x3 sym 2-tensor
+    const LINALG::Matrix<NUMSTR_SOSH8P8,1>& bvct,  ///< 6-Voigt vector
+    const VoigtType invoigt6 = voigt6_strain   ///< type of 6-Voigt vector
     );
 
   /// Derivative of inverse of non-symmetric 2-tensor with respect to itself
@@ -417,7 +445,13 @@ private:
   /// \f]
   static void InvVector6VoigtDiffByItself(
     LINALG::Matrix<NUMSTR_SOSH8P8,NUMSTR_SOSH8P8>& invfderf,  ///< 6x6 derivative
-    const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& invfmat  ///< 3x3 inverse symmetric tensor
+    const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& invfmat  ///< 3x3 inverse symmetric 2-tensor
+    );
+
+  /// 2nd derivative of inverse of symmetric 2-tensor with respect to itself
+  static void InvVector6VoigtTwiceDiffByItself(
+    LINALG::Matrix<NUMSTR_SOSH8P8,NUMSTR_SOSH8P8*NUMSTR_SOSH8P8>& invbvdderb,  ///< 6x36 matrix
+    const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& bt  ///< 3x3 inverse symmetric 2-tensor
     );
 
   /// Derivative of square of symmetric 2-tensor by itself
@@ -430,6 +464,26 @@ private:
   static void SqVector6VoigtDiffByItself(
     LINALG::Matrix<NUMSTR_SOSH8P8,NUMSTR_SOSH8P8>& sqfderf,  ///< diff. squared matrix 
     const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& fmat  ///< symmetric 2-tensor
+    );
+
+  /// Derivative of "square" of non-symmetric 2-tensor by itself
+  ///
+  /// cf. #SqVector6VoigtDiffByItself
+  ///
+  /// In compact tensor notation
+  /// \f[
+  ///   \big( \boldsymbol{F}^T \cdot \boldsymbol{F} \big)_{,\boldsysmbol{F}}
+  /// \f]
+  static void SqVector9VoigtDiffByItself(
+    LINALG::Matrix<NUMDFGR_SOSH8P8,NUMDFGR_SOSH8P8>& sqfderf,  ///< diff. squared matrix 
+    const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& fmat,  ///< non-symmetric 2-tensor
+    const bool transpose = false  ///< transpose non-symmetric 2-tensor
+    );
+
+  /// 2nd derivative of square of symmetric 2-tensor with respect to itself
+  static void SqVector6VoigtTwiceDiffByItself(
+    LINALG::Matrix<NUMSTR_SOSH8P8,NUMSTR_SOSH8P8*NUMSTR_SOSH8P8>& sqfdderf,  ///< 2nd derivative
+    const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& fmat  ///< symmetric 2-tensor (not needed)
     );
 
   /// Build 6x9 Voigt matrix for 2-tensor-dot-2-tensor product
@@ -452,7 +506,8 @@ private:
   /// \f]
   static void Matrix2TensorToMatrix6x9Voigt(
     LINALG::Matrix<NUMSTR_SOSH8P8,NUMDFGR_SOSH8P8>& bm,  ///< (out) 6x9 Voigt matrix
-    const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& bt  ///< (in) 3x3 matrix
+    const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& bt,  ///< (in) 3x3 matrix
+    const bool transpose = true  ///< transpose entries
     );
 
   /// Build 6x6-Voigt matrix to multiply 6-Voigt with which is equivalent to

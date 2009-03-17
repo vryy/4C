@@ -229,8 +229,8 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
     // (depending on what this routine is called for from the post filter)
     case postprocess_stress:{
 
-      const Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
-        params.get<Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
+      const Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > gpstressmap
+        = params.get<Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
       if (gpstressmap==Teuchos::null)
         dserror("no gp stress/strain map available for postprocessing");
       std::string stresstype = params.get<std::string>("stresstype","ndxyz");
@@ -780,6 +780,9 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
 
       // integrate `geometric' stiffness matrix and add to keu
       // here also the ANS interpolation comes into play
+      Teuchos::RCP<LINALG::Matrix<NUMSTR_SOSH8P8,NUMNOD_SOSH8P8*NUMNOD_SOSH8P8> > bopbydisp = Teuchos::null;
+      if (lin_ == lin_one)
+        bopbydisp = Teuchos::rcp(new LINALG::Matrix<NUMSTR_SOSH8P8,NUMNOD_SOSH8P8*NUMNOD_SOSH8P8>(true));
       for (int inod=0; inod<NUMNOD_SOSH8P8; ++inod)
       {
         for (int jnod=0; jnod<NUMNOD_SOSH8P8; ++jnod)
@@ -817,6 +820,11 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
           // transformation of local(parameter) space 'back' to global(material) space
           LINALG::Matrix<NUMSTR_SOSH8P8,1> G_ij_glob;
           G_ij_glob.Multiply(TinvT, G_ij);
+
+          // store B_{aBd,k}
+          if (lin_ == lin_one)
+            for (int istr=0; istr<NUMSTR_SOSH8P8; ++istr)
+              (*bopbydisp)(istr,NUMNOD_SOSH8P8*inod+jnod) += G_ij_glob(istr);
             
           // Scalar Gij results from product of G_ij with stress, scaled with detJ*weights
           double Gij = detJ_w * stress.Dot(G_ij_glob);
@@ -838,16 +846,20 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
         // Voigt 9-vector of transposed & inverted deformation gradient fvT := F^{-T}
         LINALG::Matrix<NUMDFGR_SOSH8P8,1> tinvdefgrad;
         Matrix2TensorToVector9Voigt(tinvdefgrad,invdefgrad,true);
+
         // derivative of WmT := F^{-T}_{,F} in Voigt vector notation
         LINALG::Matrix<NUMDFGR_SOSH8P8,NUMDFGR_SOSH8P8> WmT;
         InvVector9VoigtDiffByItself(WmT,invdefgrad,true);
         // WmT := WmT + fvT*fvT'
         WmT.MultiplyNT(1.0,tinvdefgrad,tinvdefgrad,1.0);
 
-        // Voigt 9-vector indices
-        const int* voigtrow9 = NULL;
-        const int* voigtcol9 = NULL;
-        Indices9VoigtTo2Tensor(voigtrow9,voigtcol9);
+        // Voigt vector indices
+        const int* voigt6row = NULL;
+        const int* voigt6col = NULL;
+        Indices6VoigtTo2Tensor(voigt6row,voigt6col);
+        const int* voigt9row = NULL;
+        const int* voigt9col = NULL;
+        Indices9VoigtTo2Tensor(voigt9row,voigt9col);
         const int* voigt3x3 = NULL;
         Indices2TensorTo9Voigt(voigt3x3);  // access is via (i,j) -> 3*i+j
         const int* voigt3x3sym = NULL;
@@ -861,12 +873,10 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
         // derivative of displ-based def.grad with respect to nodal displacements
         // F^d_{aC,d}
         LINALG::Matrix<NUMDFGR_SOSH8P8,NUMDISP_SOSH8P8> boplin(true);
-        for (int I=0; I<NUMDFGR_SOSH8P8; ++I)
-        {
-          const int i = voigtrow9[I];
-          const int j = voigtcol9[I];
-          for (int k=0; k<NUMNOD_SOSH8P8; ++k)
-          {
+        for (int I=0; I<NUMDFGR_SOSH8P8; ++I) {
+          const int i = voigt9row[I];
+          const int j = voigt9col[I];
+          for (int k=0; k<NUMNOD_SOSH8P8; ++k) {
             const int K = i + k*NODDISP_SOSH8P8;
             boplin(I,K) = derivsmat(j,k);
           }
@@ -920,7 +930,11 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
 
           // derivative of ass. mat. stretch tensor with respect to nodal displacements
           // U^{ass}_{,d} = (C^{ass}_{,U^{ass}})^{-1} . C^{ass}_{,d}
-          LINALG::Matrix<NUMSTR_SOSH8P8,NUMDISP_SOSH8P8> rgtstrbydisp;
+          // on exit of this block the following variables are going to hold ...
+          LINALG::Matrix<NUMSTR_SOSH8P8,NUMDISP_SOSH8P8> rgtstrbydisp;  // ... U^{ass}_{,d}
+          Teuchos::RCP<LINALG::Matrix<NUMSTR_SOSH8P8,NUMDISP_SOSH8P8*NUMDISP_SOSH8P8> > rgtstrbydispdisp = Teuchos::null;  // ... U^{ass}_{DB,dk}
+          if (lin_ == lin_one)
+            rgtstrbydispdisp = Teuchos::rcp(new LINALG::Matrix<NUMSTR_SOSH8P8,NUMDISP_SOSH8P8*NUMDISP_SOSH8P8>());
           {
             // derivative of ass. right Cauchy-Green with respect to ass. material stretch tensor
             // C^{ass}_{,U^{ass}}
@@ -928,47 +942,142 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
             SqVector6VoigtDiffByItself(rcgbyrgtstr,rgtstr);
 
             // C^{ass}_{,d} = 2 * bop
+            // C^{ass}_{AB,k} = 2 B_{ABk}
 
             // U^{ass}_{,d} = (C^{ass}_{,U^{ass}})^{-1} . C^{ass}_{,d}
             {
               LINALG::FixedSizeSerialDenseSolver<NUMSTR_SOSH8P8,NUMSTR_SOSH8P8,NUMDISP_SOSH8P8> asolver;
-              asolver.SetMatrix(rcgbyrgtstr);
-              asolver.SetVectors(rgtstrbydisp,bop);
-              const int err = asolver.Solve();
+              asolver.SetMatrix(rcgbyrgtstr);  // LHS
+              asolver.SetVectors(rgtstrbydisp,bop);  // SOL, RHS
+              int err = asolver.Solve();
               if (err != 0) dserror("Failed to solve, error=%d", err);
+              if (lin_ == lin_one) {
+                err = asolver.Invert();
+                if (err != 0) dserror("Failed to invert, error=%d", err);
+              }
             }
             rgtstrbydisp.Scale(2.0);
+
+            if (lin_ == lin_one) {
+              // second derivative of assumed right Cauchy-Green tensor 
+              // w.r.t. to right stretch tensor
+              LINALG::Matrix<NUMSTR_SOSH8P8,NUMSTR_SOSH8P8*NUMSTR_SOSH8P8> rcgbyrgtstrrgtstr;
+              SqVector6VoigtTwiceDiffByItself(rcgbyrgtstrrgtstr,rgtstr);
+
+              // second derivative of right stretch tensor w.r.t. displacements
+              // U^{ass}_{DB,dk} = (C^{ass}_{,U^{ass}})_{DBEF}^{-1} 
+              //                 . ( C^{ass}_{EF,dk} - C^{ass}_{EF,GHIJ}  U^{ass}_{IJ}  U^{ass}_{GH} )
+              for (int DB=0; DB<NUMSTR_SOSH8P8; ++DB) {
+                for (int dk=0; dk<NUMDISP_SOSH8P8*NUMDISP_SOSH8P8; ++dk) {
+                  const int d = dk / NUMDISP_SOSH8P8;
+                  const int k = dk % NUMDISP_SOSH8P8;
+                  double rgtstrbydispdisp_DBdk = 0.0;
+                  for (int EF=0; EF<NUMSTR_SOSH8P8; ++EF) {
+                    for (int GH=0; GH<NUMSTR_SOSH8P8; ++GH) {
+                      for (int IJ=0; IJ<NUMSTR_SOSH8P8; ++IJ) {
+                        const int G = voigt6row[GH];
+                        const int H = voigt6col[GH];
+                        const int I = voigt6row[IJ];
+                        const int J = voigt6col[IJ];
+                        const int GHIJ = NUMSTR_SOSH8P8*GH + IJ;
+                        const double IJfact = (I==J) ? 1.0 : 0.5;
+                        const double GHfact = (G==H) ? 1.0 : 0.5;
+                        double bopbydisp_EFdk = 0.0;
+                        if ( (d%NUMNOD_SOSH8P8==0) and (k%NUMNOD_SOSH8P8==0) ) {
+                          const int nd = d / NUMNOD_SOSH8P8;
+                          const int nk = k / NUMNOD_SOSH8P8;
+                          const int ndnk = nd*NUMNOD_SOSH8P8 + nk;
+                          bopbydisp_EFdk = 2.0*(*bopbydisp)(EF,ndnk);
+                        }
+
+                        rgtstrbydispdisp_DBdk 
+                          += rcgbyrgtstr(DB,EF)
+                          * ( bopbydisp_EFdk
+                              - rcgbyrgtstrrgtstr(EF,GHIJ)  // col are strain-like 6-Voigt
+                              * IJfact*rgtstrbydisp(IJ,d)  // row are strain-like 6-Voigt too ==> correcting
+                              * GHfact*rgtstrbydisp(GH,k)  // row are strain-like 6-Voigt too ==> correcting
+                            );
+                      }
+                    }
+                  }
+                  (*rgtstrbydispdisp)(DB,dk) = rgtstrbydispdisp_DBdk;
+                }
+              }
+            }
           }
           
           // derivative of def.grad. with respect to k nodal displacements d^k
           // F_{aB,k} = F^d_{aC,k} . U^{d;-1}_{CD} . U^{ass}_{DB}
           //          + F^d_{aC} . U^{d;-1}_{CD,k} . U^{ass}_{DB}
           //          + F^d_{aC} . U^{d;-1}_{CD} . U^{ass}_{DB,k}
-          for (int ab=0; ab<NUMDFGR_SOSH8P8; ++ab)
-          {
-            for (int k=0; k<NUMDISP_SOSH8P8; ++k)
-            {
-              double defgradbydispabk = 0.0;
-              const int a = voigtrow9[ab];
-              const int b = voigtcol9[ab];
+          for (int ab=0; ab<NUMDFGR_SOSH8P8; ++ab) {
+            for (int k=0; k<NUMDISP_SOSH8P8; ++k) {
+              double defgradbydisp_abk = 0.0;
+              const int a = voigt9row[ab];
+              const int b = voigt9col[ab];
               for (int c=0; c<NUMDIM_SOSH8P8; ++c) {
                 for (int d=0; d<NUMDIM_SOSH8P8; ++d) {
                   const int ac = voigt3x3[NUMDIM_SOSH8P8*a+c];
                   const int cd = voigt3x3sym[NUMDIM_SOSH8P8*c+d];
                   const int db = voigt3x3sym[NUMDIM_SOSH8P8*d+b];
-                  const double cdfact = (c!=d) ? 0.5 : 1.0;
-                  const double dbfact = (d!=b) ? 0.5 : 1.0;
-                  defgradbydispabk += boplin(ac,k) * invrgtstrD(c,d) * rgtstr(d,b)
+                  const double cdfact = (c==d) ? 1.0 : 0.5;
+                  const double dbfact = (d==b) ? 1.0 : 0.5;
+                  defgradbydisp_abk += boplin(ac,k) * invrgtstrD(c,d) * rgtstr(d,b)
                     + defgradD(a,c) * cdfact*invrgtstrDbydisp(cd,k) * rgtstr(d,b)
                     + defgradD(a,c) * invrgtstrD(c,d) * dbfact*rgtstrbydisp(db,k);
                 }
               }
-              defgradbydisp(ab,k) = defgradbydispabk;
+              defgradbydisp(ab,k) = defgradbydisp_abk;
+            }
+          }
+
+          if (lin_ == lin_one) {
+            // contribute stuff containing second derivatives in displacements
+            // F^{-T}_{aB} F_{aB,dk}
+            // = F^{-1}_{Ba}  (F^d_{aC} U^{d;-1}_{CD} U^{ass}_{DB})_{,dk} 
+            // = F^{-1}_{Ba}  F^d_{aC,dk} U^{d;-1}_{CD} U^{ass}_{DB}         |  = 0
+            // + F^{-1}_{Ba}  F^d_{aC} U^{d;-1}_{CD,dk} U^{ass}_{DB}         |  # 0, very pricy
+            // + F^{-1}_{Ba}  F^d_{aC} U^{d;-1}_{CD} U^{ass}_{DB,dk}         |  # 0, pricy
+            // + F^{-1}_{Ba}  F^d_{aC,d} U^{d;-1}_{CD,k} U^{ass}_{DB}        |  # 0, okay
+            // + F^{-1}_{Ba}  F^d_{aC,d} U^{d;-1}_{CD} U^{ass}_{DB,k}        |  # 0, okay
+            // + F^{-1}_{Ba}  F^d_{aC,k} U^{d;-1}_{CD,d} U^{ass}_{DB}        |  # 0, okay
+            // + F^{-1}_{Ba}  F^d_{aC} U^{d;-1}_{CD,d} U^{ass}_{DB,k}        |  # 0, okay
+            // + F^{-1}_{Ba}  F^d_{aC,k} U^{d;-1}_{CD} U^{ass}_{DB,d}        |  # 0, okay
+            // + F^{-1}_{Ba}  F^d_{aC} U^{d;-1}_{CD,k} U^{ass}_{DB,d}        |  # 0, okay
+            for (int d=0; d<NUMDISP_SOSH8P8; ++d) {
+              for (int k=0; k<NUMDISP_SOSH8P8; ++k) {
+                double defgradtwicebydisp_dk = 0.0;
+                for (int B=0; B<NUMDIM_SOSH8P8; ++B) {
+                  for (int D=0; D<NUMDIM_SOSH8P8; ++D) {
+                    const int DB = voigt3x3sym[NUMDIM_SOSH8P8*D+B];
+                    const double DBfact = (D==B) ? 1.0 : 0.5;
+                    const double rgtstrbydispdisp_DBdk = (*rgtstrbydispdisp)(DB,NUMDISP_SOSH8P8*d+k);
+                    for (int a=0; a<NUMDIM_SOSH8P8; ++a) {
+                      for (int C=0; C<NUMDIM_SOSH8P8; ++C) {
+                        const int aC = voigt3x3[NUMDIM_SOSH8P8*a+C];
+                        const int CD = voigt3x3sym[NUMDIM_SOSH8P8*C+D];
+                        const double CDfact = (C==D) ? 1.0 : 0.5;
+
+                        defgradtwicebydisp_dk += invdefgrad(B,a)
+                          * ( //defgradD(a,C) * invrgtstrD(C,D) * DBfact*rgtstrbydispdisp_DBdk
+                            + boplin(aC,d) * CDfact*invrgtstrDbydisp(CD,k) * rgtstr(D,B)
+                            + boplin(aC,d) * invrgtstrD(C,D) * DBfact*rgtstrbydisp(DB,k)
+                            + boplin(aC,k) * CDfact*invrgtstrDbydisp(CD,d) * rgtstr(D,B)
+                            + defgradD(a,C) * CDfact*invrgtstrDbydisp(CD,d) * DBfact*rgtstrbydisp(DB,k)
+                            + boplin(aC,k) * invrgtstrD(C,D) * DBfact*rgtstrbydisp(DB,d)
+                            + defgradD(a,C) * CDfact*invrgtstrDbydisp(CD,k) * DBfact*rgtstrbydisp(DB,d)
+                            );
+                      }
+                    }
+                  }
+                }
+                (*stiffmatrix)(d,k) -= defgradtwicebydisp_dk * effpressure*detdefgrad*detJ_w;
+              }
             }
           }
         }
 
-        // finally contribute
+        // contribute stuff containing first derivatives in displacements
         if (stab_ != stab_puredisp) {
           // AUX = (WmT + fvT*fvT') * dFv
           LINALG::Matrix<NUMDFGR_SOSH8P8,NUMDISP_SOSH8P8> aux;
@@ -1213,15 +1322,17 @@ void DRT::ELEMENTS::So_sh8p8::AssDefGrad(
   // and pure disp-based material stretch tensor
   LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> rot(true);
   {
-//     LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> nd(true);
-//     LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> lamd(true);
-//     LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> NdT(true);
-//     LINALG::SVD(defgradD,nd,lamd,NdT);
-//     rot.MultiplyNN(nd,NdT);
-//     // pure disp-based material stretch tensor
-//     LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> aux;
-//     aux.MultiplyTN(NdT,lamd);
-//     rgtstrD.MultiplyNN(aux,NdT);
+#if 0
+    LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> nd(true);
+    LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> lamd(true);
+    LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> NdT(true);
+    LINALG::SVD(defgradD,nd,lamd,NdT);
+    rot.MultiplyNN(nd,NdT);
+    // pure disp-based material stretch tensor
+    LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> aux;
+    aux.MultiplyTN(NdT,lamd);
+    rgtstrD.MultiplyNN(aux,NdT);
+#else
     // spectral decomposition of disp-based right Cauchy-Green tensor
     LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> NdT(true);
     LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> lamd(true);
@@ -1238,6 +1349,7 @@ void DRT::ELEMENTS::So_sh8p8::AssDefGrad(
     if (detrgtstrD < 0.0) dserror("Trouble during inversion of right stretch tensor");
     // rotation matrix
     rot.MultiplyNN(defgradD,invrgtstrD);
+#endif
   }
 
   // assumed material stretch tensor
@@ -1301,417 +1413,8 @@ double DRT::ELEMENTS::So_sh8p8::ShearMod() const
   return 0;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8p8::Indices6VoigtTo2Tensor(
-  const int*& voigtrow6,
-  const int*& voigtcol6,
-  const bool transpose
-  )
-{
-  const int VoigtRow6[NUMSTR_SOSH8P8] = {0,1,2, 0,1,2};
-  const int VoigtCol6[NUMSTR_SOSH8P8] = {0,1,2, 1,2,0};
-
-  if (transpose)
-  {
-    voigtrow6 = &(VoigtCol6[0]);
-    voigtcol6 = &(VoigtRow6[0]);
-  }
-  else
-  {
-    voigtrow6 = &(VoigtRow6[0]);
-    voigtcol6 = &(VoigtCol6[0]);
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8p8::Indices9VoigtTo2Tensor(
-  const int*& voigtrow9,
-  const int*& voigtcol9,
-  const bool transpose
-  )
-{
-  // 9-Voigt C-index                      0 1 2  3 4 5  6 7 8
-  const int VoigtRow9[NUMDFGR_SOSH8P8] = {0,1,2, 0,1,2, 0,2,1};
-  const int VoigtCol9[NUMDFGR_SOSH8P8] = {0,1,2, 1,2,0, 2,1,0};
-
-  if (transpose)
-  {
-    voigtrow9 = &(VoigtCol9[0]);
-    voigtcol9 = &(VoigtRow9[0]);
-  }
-  else
-  {
-    voigtrow9 = &(VoigtRow9[0]);
-    voigtcol9 = &(VoigtCol9[0]);
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8p8::Indices2TensorTo9Voigt(
-  const int*& voigt3x3
-  )
-{
-  // tensor indices ij = 11, 12, 13, 21, 22, 23, 31, 32, 33
-  // C indices           00, 01, 02, 10, 11, 12, 20, 21, 22
-  // Access : 3*i+j
-  // 9-Voigt C-indices    0   3   6   8   1   4   5   7   2
-  const int Voigt3x3[NUMDFGR_SOSH8P8] = {0,3,6, 8,1,4, 5,7,2};
-
-  voigt3x3 = &(Voigt3x3[0]);
-
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8p8::Indices2TensorTo6Voigt(
-  const int*& voigt3x3
-  )
-{
-  // tensor indices ij = 11, 12, 13, 21, 22, 23, 31, 32, 33
-  // C indices           00, 01, 02, 10, 11, 12, 20, 21, 22
-  // Access : 3*i+j
-  // 9-Voigt C-indices    0   3   5   3   1   4   5   4   2
-  const int Voigt3x3[NUMDFGR_SOSH8P8] = {0,3,5, 3,1,4, 5,4,2};
-
-  voigt3x3 = &(Voigt3x3[0]);
-
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToVector9Voigt(
-  LINALG::Matrix<NUMDFGR_SOSH8P8,1>& fvct,
-  const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& fmat,
-  const bool transpose
-  )
-{
-  const int* voigtrow9 = NULL;
-  const int* voigtcol9 = NULL;
-  Indices9VoigtTo2Tensor(voigtrow9,voigtcol9,transpose);
-    
-  for (int I=0; I<NUMDFGR_SOSH8P8; ++I)
-    fvct(I,0) = fmat(voigtrow9[I],voigtcol9[I]);  // F_ij
-
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToVector6Voigt(
-  LINALG::Matrix<NUMSTR_SOSH8P8,1>& fvct,
-  const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& fmat
-  )
-{
-  const int* voigtrow6 = NULL;
-  const int* voigtcol6 = NULL;
-  Indices6VoigtTo2Tensor(voigtrow6,voigtcol6);
-    
-  for (int I=0; I<NUMSTR_SOSH8P8; ++I)
-    if (I < NUMDIM_SOSH8P8)
-      fvct(I) = fmat(voigtrow6[I],voigtcol6[I]);  // F_ij
-    else
-      fvct(I) = fmat(voigtrow6[I],voigtcol6[I])
-              + fmat(voigtcol6[I],voigtrow6[I]);  // F_ij+F_ji
-
-  return;
-}
 
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8p8::InvVector9VoigtDiffByItself(
-  LINALG::Matrix<NUMDFGR_SOSH8P8,NUMDFGR_SOSH8P8>& invfderf,
-  const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& invfmat,
-  const bool transpose
-  )
-{
-  const int* voigtrow9 = NULL;
-  const int* voigtcol9 = NULL;
-  Indices9VoigtTo2Tensor(voigtrow9,voigtcol9);
-
-  // VERIFIED
-
-  for (int I=0; I<NUMDFGR_SOSH8P8; ++I)
-  {
-    const int i = voigtrow9[I];
-    const int j = voigtcol9[I];
-    for (int K=0; K<NUMDFGR_SOSH8P8; ++K)
-    {
-      const int k = voigtrow9[K];
-      const int l = voigtcol9[K];
-      if (transpose)
-        invfderf(I,K) = -invfmat(j,k)*invfmat(l,i);
-      else
-        invfderf(I,K) = -invfmat(i,k)*invfmat(l,j);
-    }
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8p8::InvVector6VoigtDiffByItself(
-  LINALG::Matrix<NUMSTR_SOSH8P8,NUMSTR_SOSH8P8>& invfderf,
-  const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& invfmat
-  )
-{
-  const int voigtrow6[NUMSTR_SOSH8P8] = {0,1,2, 0,1,2};
-  const int voigtcol6[NUMSTR_SOSH8P8] = {0,1,2, 1,2,0};
-
-  for (int I=0; I<NUMSTR_SOSH8P8; ++I)
-  {
-    const int i = voigtrow6[I];
-    const int j = voigtcol6[I];
-    for (int K=0; K<NUMSTR_SOSH8P8; ++K)
-    {
-      const int k = voigtrow6[K];
-      const int l = voigtcol6[K];
-      invfderf(I,K) = -0.5*(invfmat(i,k)*invfmat(l,j) + invfmat(i,l)*invfmat(k,j));
-      if (I >= NUMDIM_SOSH8P8)
-        invfderf(I,K) += -0.5*(invfmat(j,k)*invfmat(l,i) + invfmat(j,l)*invfmat(k,i));
-    }
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtDiffByItself(
-  LINALG::Matrix<NUMSTR_SOSH8P8,NUMSTR_SOSH8P8>& sqfderf,
-  const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& fmat
-  )
-{
-  const int* voigtrow6 = NULL;
-  const int* voigtcol6 = NULL;
-  Indices6VoigtTo2Tensor(voigtrow6,voigtcol6);
-
-  // identity 2-tensor
-  LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> id(true);
-  for (int i=0; i<NUMDIM_SOSH8P8; ++i) id(i,i) = 1.0;
-
-  // (F.F)_{,F} with F^T=F
-  for (int I=0; I<NUMSTR_SOSH8P8; ++I)
-  {
-    const int i = voigtrow6[I];
-    const int j = voigtcol6[I];
-    for (int K=0; K<NUMSTR_SOSH8P8; ++K)
-    {
-      const int k = voigtrow6[K];
-      const int l = voigtcol6[K];
-      sqfderf(I,K) = id(i,k)*fmat(l,j) + id(j,l)*fmat(i,k);
-      if (I >= NUMDIM_SOSH8P8)
-        sqfderf(I,K) += id(j,k)*fmat(l,i) + id(i,l)*fmat(j,k);
-    }
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToMatrix6x9Voigt(
-  LINALG::Matrix<NUMSTR_SOSH8P8,NUMDFGR_SOSH8P8>& bm,
-  const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& bt
-  )
-{
-  const int* voigtrow6 = NULL;
-  const int* voigtcol6 = NULL;
-  Indices6VoigtTo2Tensor(voigtrow6,voigtcol6);
-
-  const int* voigtrow9 = NULL;
-  const int* voigtcol9 = NULL;
-  Indices9VoigtTo2Tensor(voigtrow9,voigtcol9);
-
-  for (int I=0; I<NUMSTR_SOSH8P8; ++I)
-  {
-    const int i = voigtrow6[I];
-    const int j = voigtcol6[I];
-    for (int K=0; K<NUMDFGR_SOSH8P8; ++K)
-    {
-      const int k = voigtrow9[K];
-      const int l = voigtcol9[K];
-      if (j == l)
-        bm(I,K) = bt(k,i);
-      else if ( (I >= NUMDIM_SOSH8P8) and (i == l) )
-        bm(I,K) = bt(k,j);
-      else
-        bm(I,K) = 0.0;
-    }
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToLeftRightProductMatrix6x6Voigt(
-  LINALG::Matrix<NUMSTR_SOSH8P8,NUMSTR_SOSH8P8>& bm,  ///< (out) 6x6 Voigt matrix
-  const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& bt,  ///< (in) 3x3 matrix of 2-tensor
-  const bool transpose, ///< 3x3 input matrix is transposed
-  const VoigtType outvoigt6,  ///< 6-Voigt vector layout on rows of 6x6 matrix
-  const VoigtType invoigt6  ///< 6-Voigt vector layout on columns of 6x6 matrix
-  )
-{
-  const int* voigtrow6 = NULL;
-  const int* voigtcol6 = NULL;
-  Indices6VoigtTo2Tensor(voigtrow6,voigtcol6);
-
-  for (int ab=0; ab<NUMSTR_SOSH8P8; ++ab)
-  {
-    const int a = voigtrow6[ab];
-    const int b = voigtcol6[ab];
-    for (int AB=0; AB<NUMSTR_SOSH8P8; ++AB)
-    {
-      const int A = voigtrow6[AB];
-      const int B = voigtcol6[AB];
-      if (transpose)
-      {
-        bm(AB,ab) = bt(A,a)*bt(B,b);
-        if (ab >= NUMSTR_SOSH8P8) bm(AB,ab) += bt(A,b)*bt(B,a);
-      }
-      else
-      {
-        bm(AB,ab) = bt(a,A)*bt(b,B);
-        if (ab >= NUMSTR_SOSH8P8) bm(AB,ab) += bt(b,A)*bt(a,B);
-      }
-      if ( (invoigt6 == voigt6_stress) and (ab >= NUMSTR_SOSH8P8) )
-        bm(AB,ab) *= 2.0;
-      if ( (outvoigt6 == voigt6_stress) and (AB >= NUMSTR_SOSH8P8) )
-        bm(AB,ab) *= 0.5;
-    }
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8p8::ExtractDispAndPres(
-  std::vector<double>& mystat,
-  LINALG::Matrix<NUMDISP_SOSH8P8,1>& mydisp,
-  LINALG::Matrix<NUMPRES_SOSH8P8,1>& mypres
-  )
-{
-  for (int inod=0; inod<NUMNOD_SOSH8P8; ++inod)
-  {
-    for (int idis=0; idis<NODDISP_SOSH8P8; ++idis)
-      mydisp(idis+(inod*NODDISP_SOSH8P8),0) = mystat[idis+(inod*NODDOF_SOSH8P8)];
-    mypres(inod,0) = mystat[3+(inod*NODDOF_SOSH8P8)];
-  }
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8p8::BuildElementMatrix(
-  LINALG::Matrix<NUMDOF_SOSH8P8,NUMDOF_SOSH8P8>* mat,
-  const LINALG::Matrix<NUMDISP_SOSH8P8,NUMDISP_SOSH8P8>* matdd,
-  const LINALG::Matrix<NUMDISP_SOSH8P8,NUMPRES_SOSH8P8>* matdp,
-  const LINALG::Matrix<NUMDISP_SOSH8P8,NUMPRES_SOSH8P8>* matpd,
-  const LINALG::Matrix<NUMPRES_SOSH8P8,NUMPRES_SOSH8P8>* matpp
-)
-{
-  const int d2dp[NUMDISP_SOSH8P8] = {0,1,2,  4,5,6,  8,9,10,   12,13,14,   16,17,18,   20,21,22,   24,25,26,   28,29,30  };
-  const int p2dp[NUMPRES_SOSH8P8] = {      3,      7,       11,         15,         19,         23,         27,        31};
-  for (int i=0; i<NUMDISP_SOSH8P8; ++i)
-  {
-    const int I = d2dp[i];
-    for (int j=0; j<NUMDISP_SOSH8P8; ++j)
-    {
-      const int J = d2dp[j];
-      if (matdd != NULL)
-        (*mat)(I,J) = (*matdd)(i,j);
-      else
-        (*mat)(I,J) = 0.0;
-    }
-
-    for (int l=0; l<NUMPRES_SOSH8P8; ++l)
-    {
-      const int L = p2dp[l];
-      if (matdp != NULL)
-        (*mat)(I,L) = (*matdp)(i,l);
-      else
-        (*mat)(I,L) = 0.0;
-    }
-  }
-  for (int k=0; k<NUMPRES_SOSH8P8; ++k)
-  {
-    const int K = p2dp[k];
-    for (int j=0; j<NUMDISP_SOSH8P8; ++j)
-    {
-      const int J = d2dp[j];
-      if (matpd != NULL)
-        (*mat)(K,J) = (*matpd)(k,j);
-      else if (matdp != NULL)
-        (*mat)(K,J) = (*matdp)(j,k);
-      else
-        (*mat)(K,J) = 0.0;
-    }
-    for (int l=0; l<NUMPRES_SOSH8P8; ++l)
-    {
-      const int L = p2dp[l];
-      if (matpp != NULL)
-        (*mat)(K,L) = (*matpp)(k,l);
-      else
-        (*mat)(K,L) = 0.0;
-    }
-  }
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8p8::BuildElementVector(
-  LINALG::Matrix<NUMDOF_SOSH8P8,1>* vct,
-  const LINALG::Matrix<NUMDISP_SOSH8P8,1>* vctd,
-  const LINALG::Matrix<NUMPRES_SOSH8P8,1>* vctp
-)
-{
-  const int d2dp[NUMDISP_SOSH8P8] = {0,1,2,  4,5,6,  8,9,10,   12,13,14,   16,17,18,   20,21,22,   24,25,26,   28,29,30  };
-  const int p2dp[NUMPRES_SOSH8P8] = {      3,      7,       11,         15,         19,         23,         27,        31};
-  vct->Clear();
-  if (vctd != NULL)
-  {
-    for (int i=0; i<NUMDISP_SOSH8P8; ++i)
-    {
-      const int I = d2dp[i];
-      (*vct)(I,0) = (*vctd)(i,0);
-    }
-  }
-  if (vctp != NULL)
-  {
-    for (int k=0; k<NUMPRES_SOSH8P8; ++k)
-    {
-      const int K = p2dp[k];
-      (*vct)(K,0) = (*vctp)(k,0);
-    }
-  }
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8p8::AssembleVolume(
-  Teuchos::ParameterList& params,  ///< parameter list for in 'n' out
-  const double& volume  ///< current element volume
-  )
-{
-  double totvol = params.get<double>("volume");
-  params.set("volume",totvol+volume);
-  return;
-}
 
 /*======================================================================*/
 /*======================================================================*/

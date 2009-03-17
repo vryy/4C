@@ -550,6 +550,7 @@ OBJS_SOH8_LIB = src/drt_so3/so_hex8.o \
                 src/drt_so3/so_sh8p8.o \
                 src/drt_so3/so_sh8p8_input.o \
                 src/drt_so3/so_sh8p8_evaluate.o \
+                src/drt_so3/so_sh8p8_auxiliar.o \
                 src/drt_so3/so_tet4.o \
                 src/drt_so3/so_tet4_evaluate.o \
                 src/drt_so3/so_tet4_input.o \
