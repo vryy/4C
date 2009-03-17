@@ -255,13 +255,17 @@ public:
   void Evaluate(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff);
   
   /*!
-  \brief Evaluate Tresca frictional contact
+  \brief Evaluate frictional contact
+  
+  Note that this includes Perfect Stick, Tresca friction and Coulomb
+  friction, of course! But it also includes the mesh tying case, as
+  this is very similar to Perfect Stick from a conceptual point of view.
   
   \param kteff (in/out): effective stiffness matrix (without -> with contact)
   \param feff (in/out): effective residual / force vector (without -> with contact)
       
   */
-  void EvaluateTresca(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff);
+  void EvaluateFriction(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff);
    
   /*!
   \brief Evaluate contact

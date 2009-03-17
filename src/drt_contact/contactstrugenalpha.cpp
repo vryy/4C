@@ -114,7 +114,7 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   // the nodal entries of mortar matrices (reference configuration) before 
   // first time step
   
-  if(firststep_ and (contactmanager_->Params()).get<string>("contact type","none")=="frictional")
+  if(firststep_ and (contactmanager_->Params()).get<string>("contact type","none")!="normal")
   {  
   	// set state and do mortar calculation 
   	contactmanager_->SetState("displacement",disn_);
@@ -474,7 +474,7 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   // the nodal entries of mortar matrices (reference configuration) before 
   // first time step
   
-  if(firststep_ and (contactmanager_->Params()).get<string>("contact type","none")=="frictional")
+  if(firststep_ and (contactmanager_->Params()).get<string>("contact type","none")!="normal")
   {  
   	// set state and do mortar calculation 
   	contactmanager_->SetState("displacement",disn_);
@@ -985,7 +985,7 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
       // here the relative movement of the contact bodies is evaluated
       // therefore the current configuration and the according mortar
       // matrices are needed
-      if((contactmanager_->Params()).get<string>("contact type","none")=="frictional")
+      if((contactmanager_->Params()).get<string>("contact type","none")!="normal")
         contactmanager_->EvaluateRelMov(disi_); 
             
       contactmanager_->Initialize();
@@ -1330,7 +1330,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
       // here the relative movement of the contact bodies is evaluated
       // therefore the current configuration and the according mortar
       // matrices are needed
-      if((contactmanager_->Params()).get<string>("contact type","none")=="frictional")
+      if((contactmanager_->Params()).get<string>("contact type","none")!="normal")
         contactmanager_->EvaluateRelMov(disi_); 
 
       // this is the correct place to update the active set!!!
@@ -1500,7 +1500,7 @@ void CONTACT::ContactStruGenAlpha::Update()
   // state) which is needed in the next time step as history
   // information/quantities. These are:
   
-  if((contactmanager_->Params()).get<string>("contact type","none")=="frictional");
+  if((contactmanager_->Params()).get<string>("contact type","none")!="normal");
   {  
   	// store contact state to contact nodes (active or inactive) 
   	contactmanager_->StoreNodalQuantities(Manager::activeold);  

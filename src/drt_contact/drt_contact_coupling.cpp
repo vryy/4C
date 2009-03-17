@@ -509,9 +509,6 @@ contactsegs_(csegs)
     double mminedge = mele.MinEdgeSize(); 
     double tol = CONTACTCLIPTOL * min(sminedge,mminedge);
     
-    // do clipping in auxiliary plane
-    PolygonClipping3D(SlaveVertices(),MasterVertices(),Clip(),tol);
-    int clipsize = (int)(Clip().size());
 #else
     
     // get some data
@@ -578,12 +575,13 @@ contactsegs_(csegs)
     // tolerance for polygon clipping
     // minimum edge size in parameter space is 1
     double tol = CONTACTCLIPTOL;
-      
-    // do clipping in slave element parameter space
-    PolygonClipping3D(SlaveVertices(),MasterVertices(),Clip(),tol);
-    int clipsize = (int)(Clip().size());
+    
 #endif // #ifdef CONTACTAUXPLANE
     // *******************************************************************
+    
+    // do polygon clipping
+    PolygonClipping3D(SlaveVertices(),MasterVertices(),Clip(),tol);
+    int clipsize = (int)(Clip().size());
     
     // proceed only if clipping polygon is at least a triangle
     bool overlap = false;

@@ -150,8 +150,8 @@ void CONTACT::ManagerBase::Initialize()
     pmatrix_ = rcp(new LINALG::SparseMatrix(*gactivet_,3));
   }
     
-  // (re)setup global Tresca friction
-  if (ftype=="tresca")
+  // (re)setup global Tresca friction / perfect stick / MeshTying
+  if (ftype=="tresca" || ftype=="stick")
   {
     lmatrix_ = rcp(new LINALG::SparseMatrix(*gslipt_,10));
     r_       = LINALG::CreateVector(*gslipt_,true);
@@ -344,22 +344,24 @@ void CONTACT::ManagerBase::EvaluateRelMov(RCP<Epetra_Vector> disi)
 void CONTACT::ManagerBase::Evaluate(RCP<LINALG::SparseMatrix> kteff,
                                     RCP<Epetra_Vector> feff)
 { 
-  // check if Tresca friction should be applied
+  // check if friction should be applied
   string ftype   = scontact_.get<string>("friction type","none");
   
-  // Tresca friction case
-  // Other cases (Frictionless, Stick, MeshTying)
-  if (ftype=="tresca") EvaluateTresca(kteff,feff);
-  else                 EvaluateContact(kteff,feff);
+  // friction case
+  // (note that this also includes Mesh Tying)
+  if (ftype=="tresca" || ftype=="stick") EvaluateFriction(kteff,feff);
+  
+  // Frictionless contact case
+  else EvaluateContact(kteff,feff);
   
   return;
 }
 
 /*----------------------------------------------------------------------*
- |  evaluate trecsa frictional contact (public)           gitterle 06/08|
+ |  evaluate frictional contact (public)                  gitterle 06/08|
  *----------------------------------------------------------------------*/
-void CONTACT::ManagerBase::EvaluateTresca(RCP<LINALG::SparseMatrix> kteff,
-                                          RCP<Epetra_Vector> feff)
+void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
+                                            RCP<Epetra_Vector> feff)
 { 
   // FIXME: Currently only the old LINALG::Multiply method is used,
   // because there are still problems with the transposed version of
@@ -1374,23 +1376,12 @@ void CONTACT::ManagerBase::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
    if (gactivet_->NumGlobalElements()) kteffnew->Add(*pmatrix_,false,-1.0,1.0);
   }
   
-  if (ftype=="none")
-  {
-    // add a submatrices to kteffnew
-    if (gactivet_->NumGlobalElements()) kteffnew->Add(*kanmod,false,1.0,1.0);
-    if (gactivet_->NumGlobalElements()) kteffnew->Add(*kammod,false,1.0,1.0);
-    if (gactivet_->NumGlobalElements()) kteffnew->Add(*kaimod,false,1.0,1.0);
-    if (gactivet_->NumGlobalElements()) kteffnew->Add(*kaamod,false,1.0,1.0);
-  }
-  else if (ftype=="stick")
-  {
-    // add matrices t and tmhata to kteffnew
-    if (gactivet_->NumGlobalElements()) kteffnew->Add(*tmatrix_,false,1.0,1.0);
-    if (gactivet_->NumGlobalElements()) kteffnew->Add(*tmhata,false,-1.0,1.0);
-  }
-  else
-    dserror("ERROR: Evaluate: Invalid type of friction law");
-  
+  // add a submatrices to kteffnew
+  if (gactivet_->NumGlobalElements()) kteffnew->Add(*kanmod,false,1.0,1.0);
+  if (gactivet_->NumGlobalElements()) kteffnew->Add(*kammod,false,1.0,1.0);
+  if (gactivet_->NumGlobalElements()) kteffnew->Add(*kaimod,false,1.0,1.0);
+  if (gactivet_->NumGlobalElements()) kteffnew->Add(*kaamod,false,1.0,1.0);
+
   // FillComplete kteffnew (square)
   kteffnew->Complete();
   
@@ -1409,28 +1400,16 @@ void CONTACT::ManagerBase::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
   LINALG::Export(*fi,*fiexp);
   if (gidofs->NumGlobalElements()) feffnew->Update(1.0,*fiexp,1.0);
   
-  if (ctype!="meshtying")
-  {
-    // add weighted gap vector to feffnew, if existing
-    RCP<Epetra_Vector> gexp = rcp(new Epetra_Vector(*problemrowmap_));
-    LINALG::Export(*gact,*gexp);
-    if (gact->GlobalLength()) feffnew->Update(1.0,*gexp,1.0);
-  }
+  // add weighted gap vector to feffnew, if existing
+  RCP<Epetra_Vector> gexp = rcp(new Epetra_Vector(*problemrowmap_));
+  LINALG::Export(*gact,*gexp);
+  if (gact->GlobalLength()) feffnew->Update(1.0,*gexp,1.0);
   
-  if (ftype=="none")
-  {
-    // add a subvector to feffnew
-    RCP<Epetra_Vector> famodexp = rcp(new Epetra_Vector(*problemrowmap_));
-    LINALG::Export(*famod,*famodexp);
-    if (gactivenodes_->NumGlobalElements())feffnew->Update(1.0,*famodexp,1.0);
-  }
-  else if (ftype=="stick")
-  {
-    // do nothing here
-  }
-  else
-    dserror("ERROR: Invalid type of friction law");  
-  
+  // add a subvector to feffnew
+  RCP<Epetra_Vector> famodexp = rcp(new Epetra_Vector(*problemrowmap_));
+  LINALG::Export(*famod,*famodexp);
+  if (gactivenodes_->NumGlobalElements())feffnew->Update(1.0,*famodexp,1.0);
+
   /**********************************************************************/
   /* Replace kteff and feff by kteffnew and feffnew                     */
   /**********************************************************************/
@@ -2339,7 +2318,7 @@ void CONTACT::ManagerBase::PrintActiveSet()
       double tz = 0.0;
       double tjump = 0.0;
            
-      if(ftype=="tresca")
+      if(ftype=="tresca" || ftype=="stick")
       {     
         // compute tangential part of Lagrange multiplier
         tz = cnode->txi()[0]*cnode->lm()[0] + cnode->txi()[1]*cnode->lm()[1];
@@ -2358,7 +2337,7 @@ void CONTACT::ManagerBase::PrintActiveSet()
       // print nodes of active set ***************************************
       else
       {
-        if (ctype != "frictional")
+        if (ctype == "normal")
           cout << "ACTIVE:   " << dbc << " " << gid << " " << nz <<  " " << wgap << endl;
         
         else
