@@ -79,7 +79,6 @@ TOLDISP      1.0E-8
 MAXITER      50
 ------------------------------------------------STRUCTURAL CONTACT
 CONTACT              Normal
-BASISTRAFO           No
 FRICTION             None
 FRBOUND              0.0
 FRCOEFF              0.0

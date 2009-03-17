@@ -255,43 +255,16 @@ public:
   void Evaluate(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff);
   
   /*!
-  \brief Evaluate Tresca friction (with basis transformation)
-  
-  \param kteff (in/out): effective stiffness matrix (without -> with contact)
-  \param feff (in/out): effective residual / force vector (without -> with contact)
-    
-  */
-  void EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff);
-  
-  /*!
-  \brief Evaluate Tresca friction (without basis transformation)
+  \brief Evaluate Tresca frictional contact
   
   \param kteff (in/out): effective stiffness matrix (without -> with contact)
   \param feff (in/out): effective residual / force vector (without -> with contact)
       
   */
-  void EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff);
+  void EvaluateTresca(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff);
    
   /*!
-  \brief Evaluate contact (with basis transformation)
-  
-  This is the main routine of our contact algorithms on a global level.
-  It contains the setup of the global linear system including contact.
-  This makes modifications to the effective stiffness K and the effective
-  load vector f necessary. As these modifications are usually applied
-  to groups of dofs (slave, master, active etc.) some matrix and vector
-  splitting and a lot of matrix-vector calculation is done! 
-  A basis transformation is applied to the displacement variables: 
-  [delta_d] := delta_d_slave - inv(D) * M * delta_d_master !
-  
-  \param kteff (in/out): effective stiffness matrix (without -> with contact)
-  \param feff (in/out): effective residual / force vector (without -> with contact)
-  
-  */
-  void EvaluateBasisTrafo(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff);
-  
-  /*!
-  \brief Evaluate contact (without basis transformation)
+  \brief Evaluate contact
   
   This is the main routine of our contact algorithms on a global level.
   It contains the setup of the global linear system including contact.
@@ -300,52 +273,26 @@ public:
   to groups of dofs (slave, master, active etc.) some matrix and vector
   splitting and a lot of matrix-vector calculation is done!
   No basis transformation is applied to the displacement variables:
-  delta_d_slave and delta_d_master are used directly as unknowns !
+  delta_d_slave and delta_d_master are used directly as unknowns!
   
   \param kteff (in/out): effective stiffness matrix (without -> with contact)
   \param feff (in/out): effective residual / force vector (without -> with contact)
        
   */
-  void EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff);
-    
+  void EvaluateContact(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff);
+  
   /*!
-  \brief Recovery method (for displacements and Lagrange multipliers)
+  \brief Recovery method
   
-  Again, this is just a tiny control routine, deciding which Recover-routine
-  of those listed below is to be called (based on input-file information)
-  
-  \param disi (in/out): displacement increment of current Newton step solution
-  
-  */
-  void Recover(RCP<Epetra_Vector> disi);
-    
-  /*!
-  \brief Recovery method (with basis transformation)
-  
-  During the setup of the global tangent stiffness the so-called basis
-  transformation introduced the incremental jump of displacements
-  [d] = d_slave - inv(D) * M * d_master into the vector of unknowns
-  instead of the incremental slave displacments. This step is reversed
-  here by recovering the incremental slave displacements.
-  Moreover we recover the Lagrange multipliers here, which had been
+  We only recover the Lagrange multipliers here, which had been
   statically condensated during the setup of the global problem!
-  
-  \param disi (in/out): displacement increment of current Newton step solution
-  
-  */
-  void RecoverBasisTrafo(RCP<Epetra_Vector> disi);
-  
-  /*!
-  \brief Recovery method (without basis transformation)
-  
-  Since no basis transformation has been applied, we only recover
-  the Lagrange multipliers here, which had been statically condensated
-  during the setup of the global problem!
+  Optionally satisfaction or violation of the contact boundary
+  conditions can be checked, too.
   
   \param disi (in): displacement increment of current Newton step solution
   
   */
-  void RecoverNoBasisTrafo(RCP<Epetra_Vector> disi);
+  void Recover(RCP<Epetra_Vector> disi);
   
   /*!
   \brief Update active set and check for convergence

@@ -395,9 +395,6 @@ bool CONTACT::Manager::ReadAndCheckInput()
       break;
   }
   
-  // read basis trafo flag
-  scontact_.set<bool> ("basis transformation",Teuchos::getIntegralValue<int>(input,"BASISTRAFO"));
-  
   // read friction type
   switch (Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(input,"FRICTION"))
   {
@@ -432,7 +429,6 @@ bool CONTACT::Manager::ReadAndCheckInput()
     
   // check contact input parameters
   string ctype   = scontact_.get<string>("contact type","none");
-  bool btrafo    = scontact_.get<bool>("basis transformation",false);
   string ftype   = scontact_.get<string>("friction type","none");
   //double frbound = scontact_.get<double>("friction bound",0.0);
   //double frcoeff = scontact_.get<double>("friction coeffiecient",0.0);
@@ -440,8 +436,6 @@ bool CONTACT::Manager::ReadAndCheckInput()
   double ct      = scontact_.get<double>("semismooth ct",0.0);
   
   // invalid parameter combinations
-  if (btrafo)
-    dserror("Basis transformed versions are not up to date");
   if (ctype=="normal" && ftype !="none")
     dserror("Friction law supplied for normal contact");
   if (ctype=="frictional" && ftype=="none")
@@ -450,8 +444,6 @@ bool CONTACT::Manager::ReadAndCheckInput()
     dserror("Coulomb friction law not yet implemented");
   if (ctype=="frictional" && fulllin)
     cout << ("Warning: Full linearization not completely implemented for friction\n") << endl;
-  if (btrafo && fulllin)
-    dserror("Full linearization not yet implemented for basis trafo case");
   if (ctype=="frictional" && ct == 0)
   	dserror("Friction Parameter ct = 0, must be greater than 0");
   

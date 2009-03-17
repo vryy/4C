@@ -286,7 +286,6 @@ ML_SMOTIMES                     1 1 1 1 1 1
 PARTITION                       Cut_Elements
 SOLVER                          UMFPACK
 -------------------------------------------------STRUCTURAL CONTACT
-BASISTRAFO                      No
 CONTACT                         None
 FRBOUND                         0
 FRCOEFF                         0

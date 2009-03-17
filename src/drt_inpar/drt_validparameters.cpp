@@ -662,9 +662,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                           INPAR::CONTACT::contact_meshtying),
                                &scontact);
 
-  setStringToIntegralParameter<int>("BASISTRAFO","No","If chosen basis transformation is applied to displacements",
-                               yesnotuple,yesnovalue,&scontact);
-
   setStringToIntegralParameter<INPAR::CONTACT::ContactFrictionType>("FRICTION","None","Type of friction law",
                                 tuple<std::string>("None","none",
                                                    "Stick","stick",

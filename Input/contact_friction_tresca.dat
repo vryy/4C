@@ -77,7 +77,6 @@ UZAWAMAXITER 20
 UZAWAALGO    direct
 ------------------------------------------------STRUCTURAL CONTACT
 CONTACT              frictional
-BASISTRAFO           No
 FRICTION             tresca
 FRBOUND              1.0
 FRCOEFF              0.0
