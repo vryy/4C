@@ -69,7 +69,7 @@ BASISTRAFO           No
 FRICTION             None
 FRBOUND              0.0
 FRCOEFF              0.0
-FULL_LINEARIZATION   No
+FULL_LINEARIZATION   Yes
 SEMI_SMOOTH_NEWTON   Yes
 SEMI_SMOOTH_CN       1.0
 SEMI_SMOOTH_CT       1.0

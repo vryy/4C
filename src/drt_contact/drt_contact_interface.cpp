@@ -1368,13 +1368,23 @@ void CONTACT::Interface::AssembleDMG(LINALG::SparseMatrix& dglobal,
       }
       */
       
-      // check if this node has a feasible projection
+      // cout << "Node ID: " << cnode->Id() << " HasProj: " << cnode->HasProj()
+      //      << " IsActive: " << cnode->Active() << " Gap: " << gap << endl;
+      
+      // check if this active node has a feasible projection
+      // else, one would at first think that a dserror has to be thrown!
+      // (but this is not true in general, as there might indeed be an
+      // active node which nervertheless has no feasible projection,
+      // e.g. a slave node which is just over the edge of the master surface)
+      // -> thus this check has been removed (popp 03/09)
+      
+      //if (!cnode->HasProj() && cnode->Active())
+      //  dserror("ERROR: Active node ID: %i without feasible projection", cnode->Id());
+      
+      // check if this inactive node has a feasible projection
       // else, it cannot be in contact and weighted gap should be positive
       // (otherwise wrong results possible for g~ because of non-positivity
       // of dual shape functions!!!)
-      //cout << "Node ID: " << cnode->Id() << " HasProj: " << cnode->HasProj()
-      //     << " IsActive: " << cnode->Active() << " Gap: " << gap << endl;
-      if (!cnode->HasProj() && cnode->Active()) dserror("ERROR: Active node ID: %i without feasible projection", cnode->Id());
       if (!cnode->HasProj() && !cnode->Active()) gap = 1.0e12;
 
       Epetra_SerialDenseVector gnode(1);
