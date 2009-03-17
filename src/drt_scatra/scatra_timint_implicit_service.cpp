@@ -38,11 +38,15 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidt()
     // zero out matrix entries
     sysmat_->Zero();
 
+    // add potential Neumann boundary condition at time t=0
+    residual_->Update(1.0,*neumann_loads_,0.0);
+
     // create the parameters for the discretization
     ParameterList eleparams;
 
     // action for elements
     eleparams.set("action","calc_initial_time_deriv");
+
     // other parameters that are needed by the elements
     eleparams.set("problem type",prbtype_);
     eleparams.set("incremental solver",incremental_);
@@ -75,10 +79,8 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidt()
 
   // reset the matrix (and its graph!) since we solved
   // a very special problem here that has a different sparsity pattern_
-  if (params_->get<int>("BLOCKPRECOND") )
-    ; //how to reset a block matrix ??
-  else
-    SystemMatrix()->Reset();
+  if (params_->get<int>("BLOCKPRECOND")) ; //how to reset a block matrix ??
+  else SystemMatrix()->Reset();
 
   return;
 }

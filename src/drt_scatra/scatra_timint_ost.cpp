@@ -422,8 +422,20 @@ void SCATRA::TimIntOneStepTheta::ReadRestart(int step)
  -----------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::PrepareFirstTimeStep()
 {
-  ApplyDirichletBC(time_, phin_,phidtn_);
+  // evaluate Dirichlet boundary conditions at time t=0
+  ApplyDirichletBC(time_,phin_,phidtn_);
+
+  // evaluate Neumann boundary conditions at time t=0
+  neumann_loads_->PutScalar(0.0);
+  ParameterList p;
+  p.set("total time",time_);
+  discret_->ClearState();
+  discret_->EvaluateNeumann(p,*neumann_loads_);
+  discret_->ClearState();
+
+  // compute time derivative of phi at time t=0
   CalcInitialPhidt();
+
   return;
 }
 
