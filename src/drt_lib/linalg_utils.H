@@ -162,6 +162,48 @@ namespace LINALG
                       const bool postproc=false);
 
   /*!
+    \brief Compute all eigenvalues and eigenvectors of a real symmetric matrix A
+
+            A = V * S * VT
+
+    \param A (in):        M-by-M matrix to be decomposed
+    \param S (out):       M-by-N matrix which is zero except for its diagonal entries holding the eigenvalues
+    \param V (out):       M-by-M orthonormal matrix of eigenvectors
+  */
+  template <unsigned int dim>
+  void SYEV(LINALG::Matrix<dim,dim>& A,
+            LINALG::Matrix<dim,dim>& S,
+            LINALG::Matrix<dim,dim>& V)
+  {
+
+    const char jobz = 'V';  // Compute eigenvalues and eigenvectors.
+    const char uplo = 'U';  // Upper triangle of A is stored;
+    const int N = dim; // The order of the matrix A.  N >= 0.
+    Matrix<dim,dim> tmp(A.A(),false);  // copy, because content of matrix ist destroyed
+    const int lda = dim;  // The leading dimension of the array A.  LDA >=max(1,N).
+    std::vector<double> w(dim);
+    const int lwork = 2*dim*dim+6*dim+1;
+    std::vector<double> work(lwork);
+    const int liwork = 3+5*dim;
+    std::vector<int> iwork(liwork);
+    int info;
+
+    Epetra_LAPACK lapack;
+    lapack.SYEVD(jobz,uplo,N,tmp.A(),lda,&(w[0]),&(work[0]),lwork,&(iwork[0]),liwork,&info);
+
+    if (info) dserror("Lapack's SYEVD returned %d",info);
+
+    // return eigenvectors
+    V.Update(tmp);
+
+    // return eigenvalues
+    S.Clear();
+    for (unsigned int i=0; i<dim; ++i) S(i,i) = w[i];
+
+    return;
+  }
+
+  /*!
   \brief Compute singular value decomposition (SVD) of a real M-by-N matrix A
                         A = U * SIGMA * transpose(V)
 

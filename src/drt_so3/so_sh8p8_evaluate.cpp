@@ -1336,6 +1336,7 @@ void DRT::ELEMENTS::So_sh8p8::AssDefGrad(
     // spectral decomposition of disp-based right Cauchy-Green tensor
     LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> NdT(true);
     LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> lamd(true);
+#if 0
     LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> Nd(true);
     LINALG::SVD(cgD,NdT,lamd,Nd);
     // spectral composition of disp-based right stretch tensor
@@ -1343,6 +1344,14 @@ void DRT::ELEMENTS::So_sh8p8::AssDefGrad(
     LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> aux;
     aux.MultiplyNN(NdT,lamd);
     rgtstrD.MultiplyNN(aux,Nd);
+#else
+    LINALG::SYEV(cgD,lamd,NdT);
+    // spectral composition of disp-based right stretch tensor
+    for (int i=0; i<NUMDIM_SOSH8P8; ++i) lamd(i,i) = sqrt(lamd(i,i));
+    LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> aux;
+    aux.MultiplyNN(NdT,lamd);
+    rgtstrD.MultiplyNT(aux,NdT);
+#endif
     // inverse disp-based right stretch tensor
     LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> invrgtstrD(rgtstrD);
     const double detrgtstrD = invrgtstrD.Invert();
@@ -1360,14 +1369,22 @@ void DRT::ELEMENTS::So_sh8p8::AssDefGrad(
     cga(0,1) = cga(1,0) = glstrain(3);
     cga(1,2) = cga(2,1) = glstrain(4);
     cga(0,2) = cga(2,0) = glstrain(5);
-    LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> NaT(true);
     LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> lama(true);
+    LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> NaT(true);
+#if 0
     LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> Na(true);
-    LINALG::SVD(cga, NaT, lama, Na);
+    LINALG::SVD(cga,NaT,lama,Na);
     for (int i=0; i<NUMDIM_SOSH8P8; ++i) lama(i,i) = sqrt(lama(i,i));
     LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> aux;
     aux.MultiplyNN(NaT,lama);
     rgtstr.MultiplyNN(aux,Na);
+#else
+    LINALG::SYEV(cga,lama,NaT);
+    for (int i=0; i<NUMDIM_SOSH8P8; ++i) lama(i,i) = sqrt(lama(i,i));
+    LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> aux;
+    aux.MultiplyNN(NaT,lama);
+    rgtstr.MultiplyNT(aux,NaT);
+#endif
   }
 
   // assumed deformation gradient
