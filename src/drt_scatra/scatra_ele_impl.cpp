@@ -2245,7 +2245,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
     }
 
     // compute residual of strong form for residual-based stabilization
-    double taufacresidual = taufac*rhsint - timetaufac*(conv_eff_k + diff_ephinp_k + migrea_k);
+    double taufacresidual = taufac*rhsint - timetaufac*(conv_eff_k - diff_ephinp_k + migrea_k);
     if (!is_stationary) // add transient term to the residual
       taufacresidual -= taufac*densfunct_ephinp_k;
 
