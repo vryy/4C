@@ -31,6 +31,7 @@ Maintainer: Christian Cyron
 
 #include <iostream>
 #include <iomanip>
+#include <cstdio>
 
 
 /*----------------------------------------------------------------------*
@@ -260,8 +261,22 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
 /*----------------------------------------------------------------------*
  | write special output for statistical mechanics (public)    cyron 09/08|
  *----------------------------------------------------------------------*/
-void StatMechManager::StatMechOutput(const int ndim, const double& time,const int& num_dof,const int& istep, const double& dt, const Epetra_Vector& dis, const Epetra_Vector& fint)
+void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, const double& time,const int& istep, const double& dt, const Epetra_Vector& dis, const Epetra_Vector& fint)
 {
+  /*in general simulations in statistical mechanics run over so many time steps that the amount of data stored in the error file
+   * may exceed the capacity even of a server hard disk; thus, we rewind the error file in each time step so that the amount of data
+   * does not increase after the first time step any longer*/  
+  bool printerr    = params.get<bool>("print to err",false);
+  FILE* errfile    = params.get<FILE*>("err file",NULL);
+  if(printerr)
+    rewind(errfile);
+  
+  
+  //the following variable makes sense in case of serial computing only; its use is not allowed for parallel computing!
+  int num_dof = dis.GlobalLength();
+  
+
+  
   switch(Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_,"SPECIAL_OUTPUT"))
   {
     case INPAR::STATMECH::statout_endtoendlog:

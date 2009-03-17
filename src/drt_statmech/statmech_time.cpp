@@ -79,9 +79,6 @@ void StatMechTime::Integrate()
 
   double dt = params_.get<double>("delta time" ,0.01);
 
-  int num_dof = (*fext_).GlobalLength();
-
-
 
   {
     //random generator for seeding only (necessary for thermal noise)
@@ -119,15 +116,18 @@ void StatMechTime::Integrate()
   for (int i=step; i<nstep; ++i)
   {
     
+    
     //the following block makes the random number generation dependent on the time step number
     {
       //random generator for seeding only (necessary for thermal noise)
       ranlib::Normal<double> seedgenerator(0,1);
       //seeding random generator
       int seedvariable = time(0);
-      seedvariable = i*5; //*5 gab gewünschten Fehler bereits bei 100.000 Schritten
+      seedvariable = i;
       seedgenerator.seed((unsigned int)seedvariable);
     }
+    
+    double time = params_.get<double>("total time",0.0);
     
     /*in the very first step and in case that special output for statistical mechanics is requested we have
      * to initialized the related output method*/
@@ -136,7 +136,7 @@ void StatMechTime::Integrate()
         
     std::cout<<"\nAnzahl der Elemente am Beginn des Zeitschritts: "<<discret_.NumMyRowElements()<<"\n";
     
-    double time = params_.get<double>("total time",0.0);
+    
 
     //pay attention: for a constant predictor an incremental velocity update is necessary, which has
     //been deleted out of the code in oder to simplify it
@@ -155,11 +155,12 @@ void StatMechTime::Integrate()
        
     UpdateandOutput();
    
-    //special update and output for statistical mechanics
-    statmechmanager_->StatMechOutput(ndim,time,num_dof,i,dt,*dis_,*fint_);
+    /*special update for statistical mechanics; this output has to be handled seperately from the time integration scheme output
+     * as it may take place independently on writing geometric output data in a specific time step or not*/
     statmechmanager_->StatMechUpdate(dt,*dis_);
+    statmechmanager_->StatMechOutput(params_,ndim,time,i,dt,*dis_,*fint_);
 
-   
+    
 
     if (time>=maxtime) break;
   }
@@ -1001,7 +1002,7 @@ void StatMechTime::Output()
 //____________________________________________________________________________________________________________    
 //note:the following block is the only difference to Output() in strugenalpha.cpp-----------------------------
 /* write restart information for statistical mechanics problems; all the information is saved as class variables
- * of StatMechManager*/   
+ * of StatMechManager*/      
     statmechmanager_->StatMechWriteRestart(output_); 
 //------------------------------------------------------------------------------------------------------------
 //____________________________________________________________________________________________________________

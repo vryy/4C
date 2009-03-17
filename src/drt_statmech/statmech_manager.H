@@ -37,7 +37,7 @@ public:
   virtual ~StatMechManager() {};
 
   //! \brief write special output for statistical mechanics into files
-  void StatMechOutput(const int ndim, const double& time,const int& num_dof,const int& istep, const double& dt, const Epetra_Vector& dis, const Epetra_Vector& fint);
+  void StatMechOutput(ParameterList& params, const int ndim, const double& time,const int& istep, const double& dt, const Epetra_Vector& dis, const Epetra_Vector& fint);
    
   //! \brief saving all necessary class variables for restart
   void StatMechWriteRestart(IO::DiscretizationWriter& output);
