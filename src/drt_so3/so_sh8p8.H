@@ -472,7 +472,7 @@ private:
   ///
   /// In compact tensor notation
   /// \f[
-  ///   \big( \boldsymbol{F}^T \cdot \boldsymbol{F} \big)_{,\boldsysmbol{F}}
+  ///   \big( \boldsymbol{F}^T \cdot \boldsymbol{F} \big)_{,\boldsymbol{F}}
   /// \f]
   static void SqVector9VoigtDiffByItself(
     LINALG::Matrix<NUMDFGR_SOSH8P8,NUMDFGR_SOSH8P8>& sqfderf,  ///< diff. squared matrix 
