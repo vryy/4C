@@ -410,7 +410,7 @@ int DRT::ELEMENTS::So_hex27::EvaluateNeumann(ParameterList& params,
 /* ============================================================================*/
 
   // update element geometry
-   LINALG::Matrix<NUMNOD_SOH27,NUMDIM_SOH27> xrefe;  // material coord. of element
+  LINALG::Matrix<NUMNOD_SOH27,NUMDIM_SOH27> xrefe;  // material coord. of element
   DRT::Node** nodes = Nodes();
   for (int i=0; i<NUMNOD_SOH27; ++i){
     const double* x = nodes[i]->X();
@@ -465,6 +465,11 @@ void DRT::ELEMENTS::So_hex27::InitJacobianMapping()
     //invJ_[gp].Shape(NUMDIM_SOH27,NUMDIM_SOH27);
     invJ_[gp].Multiply(derivs[gp],xrefe);
     detJ_[gp] = invJ_[gp].Invert();
+    if (detJ_[gp] == 0.0) 
+      dserror("ZERO JACOBIAN DETERMINANT");
+    else if (detJ_[gp] < 0.0) 
+      dserror("NEGATIVE JACOBIAN DETERMINANT");
+
   }
   return;
 }

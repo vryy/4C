@@ -465,6 +465,11 @@ void DRT::ELEMENTS::So_hex20::InitJacobianMapping()
     //invJ_[gp].Shape(NUMDIM_SOH20,NUMDIM_SOH20);
     invJ_[gp].Multiply(derivs[gp],xrefe);
     detJ_[gp] = invJ_[gp].Invert();
+    if (detJ_[gp] == 0.0) 
+      dserror("ZERO JACOBIAN DETERMINANT");
+    else if (detJ_[gp] < 0.0) 
+      dserror("NEGATIVE JACOBIAN DETERMINANT");
+
   }
   return;
 }
