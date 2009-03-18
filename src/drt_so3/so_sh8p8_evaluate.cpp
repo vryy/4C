@@ -1510,9 +1510,7 @@ int DRT::ELEMENTS::Sosh8p8Register::Initialize(DRT::Discretization& dis)
       }
       case DRT::ELEMENTS::So_sh8::undefined: {
         // here comes plan B: morph So_sh8p8 to So_hex8
-        actele->SetType(DRT::Element::element_so_hex8);
-        actele->soh8_reiniteas(DRT::ELEMENTS::So_hex8::soh8_easnone);
-        actele->InitJacobianMapping();
+        actele->SetANS(DRT::ELEMENTS::So_sh8p8::ans_none);
         num_morphed_so_hex8_easnone++;
         break;
       }
@@ -1524,13 +1522,10 @@ int DRT::ELEMENTS::Sosh8p8Register::Initialize(DRT::Discretization& dis)
     }
   }
 
-  if (num_morphed_so_hex8_easmild>0){
-    cout << endl << num_morphed_so_hex8_easmild
-    << " Sosh8p8-Elements have no clear 'thin' direction and have morphed to So_hex8 with eas_mild" << endl;
-  } 
   if (num_morphed_so_hex8_easnone>0){
     cout << endl << num_morphed_so_hex8_easnone
-    << " Sosh8p8-Elements have no clear 'thin' direction and have morphed to So_hex8 with eas_none" << endl;
+         << " Sosh8p8-Elements have no clear 'thin' direction and ANS is disabled!"
+         << endl;
   }
 
   // fill complete again to reconstruct element-node pointers,

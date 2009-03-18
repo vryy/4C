@@ -80,6 +80,42 @@ public:
   friend class Soh8Surface;
   friend class Soh8Line;
   //@}
+  
+  /// @name Properties
+  //@{
+  
+  /// Kind of stabilisation for mixed, equal-order displacement-pressure appraoch
+  enum StabilisationType
+  {
+    stab_affine,  ///< Bochev stabilisation for affine elements
+    stab_nonaffine,  ///< Bochev stabilisation for non-affine elements
+    stab_puredisp  ///< DEBUG ONLY: recover pure displacement-based approach
+  };
+
+  /// Kind of ANS anti-locking technique
+  enum AnsType
+  {
+    ans_lateral,  ///< ANS active in t-/out-of-plane/thickness direction
+    ans_none   ///< DEBUG ONLY: ANS switched off
+  };
+
+  /// Type of Voigt vector
+  enum VoigtType
+  {
+    voigt6_strain,  ///< strain-like vector [ E11, E22, E33, 2*E12, 2*E23, 2*E31 ]
+    voigt6_stress,  ///< stress-like vector [ S11, S22, S33, S12, S23, S31 ]
+    voigt9  ///< non-symmetric vector [ F11, F22, F33, F12, F23, F31, F13, F32, F21 ]
+  };
+
+  // LinearizationType
+  enum LinearizationType
+  {
+    lin_one,  ///< full linearisation
+    lin_half,  ///< half-way linearisation
+    lin_third ///< etc.
+  };
+  
+  //@}
 
   /// @name Constructors and destructors and related methods
   //@{
@@ -162,6 +198,14 @@ public:
   /// at the level of the total system of equations. Purely internal
   /// element dofs that are condensed internally should NOT be considered.
   virtual int NumDofPerElement() const { return 0; }
+  
+  /// Set ANS type
+  void SetANS(
+     const AnsType& newans  ///< ANS to set
+     ) 
+   { 
+      ans_ = newans;
+   }
 
   //@}
 
@@ -195,36 +239,7 @@ public:
                                        ///< to fill this vector
     );
 
-  /// Kind of stabilisation for mixed, equal-order displacement-pressure appraoch
-  enum StabilisationType
-  {
-    stab_affine,  ///< Bochev stabilisation for affine elements
-    stab_nonaffine,  ///< Bochev stabilisation for non-affine elements
-    stab_puredisp  ///< DEBUG ONLY: recover pure displacement-based approach
-  };
 
-  /// Kind of ANS anti-locking technique
-  enum AnsType
-  {
-    ans_lateral,  ///< ANS active in t-/out-of-plane/thickness direction
-    ans_none   ///< DEBUG ONLY: ANS switched off
-  };
-
-  /// Type of Voigt vector
-  enum VoigtType
-  {
-    voigt6_strain,  ///< strain-like vector [ E11, E22, E33, 2*E12, 2*E23, 2*E31 ]
-    voigt6_stress,  ///< stress-like vector [ S11, S22, S33, S12, S23, S31 ]
-    voigt9  ///< non-symmetric vector [ F11, F22, F33, F12, F23, F31, F13, F32, F21 ]
-  };
-
-  // LinearizationType
-  enum LinearizationType
-  {
-    lin_one,  ///< full linearisation
-    lin_half,  ///< half-way linearisation
-    lin_third ///< etc.
-  };
 
 private:
 
