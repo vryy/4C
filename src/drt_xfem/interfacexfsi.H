@@ -17,6 +17,7 @@ Maintainer: Axel Gerstenberger
 
 #include "interface.H"
 #include "spacetime_boundary.H"
+#include "../drt_geometry/position_array.H"
 
 namespace XFEM
 {
@@ -40,12 +41,6 @@ namespace XFEM
     //! return pointer to the intersecting discretization
     const Teuchos::RCP<DRT::Discretization> cutterdis() const {return cutterdis_;};
     
-    //! returns pointer to map with (current) nodal positions per node of the cutter discretization 
-    const std::map<int,LINALG::Matrix<3,1> >& cutterposnp() const {return cutterposnp_;};
-    
-    //! returns pointer to map with (current) nodal positions per node of the cutter discretization 
-    const std::map<int,LINALG::Matrix<3,1> >& cutterposn()  const {return cutterposn_;};
-    
     //! get pointer to boundary element
     const DRT::Element* GetBoundaryEle(
             const int element_gid   ///< unique global element id of a boundary element
@@ -53,7 +48,25 @@ namespace XFEM
     {
         return cutterdis_->gElement(element_gid);
     }
-
+    
+    template<class M>
+    void fillBoundaryNodalPositionsNP(
+        const DRT::Element*                   ele,                ///< element with nodal pointers
+        M&                                    xyze                ///< position array (3,numnode) to be filled
+        ) const
+    {
+      GEO::fillCurrentNodalPositions(ele, cutterposnp_, xyze);
+    }
+    
+    template<class M>
+    void fillBoundaryNodalPositionsN(
+        const DRT::Element*                   ele,                ///< element with nodal pointers
+        M&                                    xyze                ///< position array (3,numnode) to be filled
+        ) const
+    {
+      GEO::fillCurrentNodalPositions(ele, cutterposn_, xyze);
+    }
+    
     //! get domain information at x_in at timestep n+1
     int PositionWithinConditionNP(const LINALG::Matrix<3,1>&    x_in) const;
 

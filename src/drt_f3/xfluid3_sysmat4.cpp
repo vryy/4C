@@ -79,7 +79,7 @@ struct EnrViscs2
   template<> struct SizeFac<XFEM::xfem_assembly>     {static const unsigned int fac = 3;};
 
   /// generate old velocity/acceleration values, if integration point was in a void during the last time step
-  template<class M>
+  template<DRT::Element::DiscretizationType DISTYPE, class M>
   bool modifyOldTimeStepsValues(
       const DRT::Element*                        ele,           ///< the element those matrix is calculated
       const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,   ///< connection to the interface handler
@@ -97,7 +97,7 @@ struct EnrViscs2
     const unsigned nsd = 3;
     const int numnodefix_boundary = 9;
     LINALG::Matrix<nsd,1> posx_gp;
-    GEO::elementToCurrentCoordinates(ele->Shape(), xyze, posXiDomain, posx_gp);
+    GEO::elementToCurrentCoordinatesT<DISTYPE>(xyze, posXiDomain, posx_gp);
     
     const bool is_in_fluid = (0 == labelnp);
     
@@ -298,12 +298,12 @@ struct EnrViscs2
       LocalAssembler<DISTYPE,ASSTYPE,NUMDOF>&           assembler,
       const Shp<shpVecSize>&                     shp,
       const LINALG::Matrix<shpVecSizeStress,1>&  shp_tau,
-      const double fac,
-      const double timefac,
-      const double timefacfac,
-      const double  visc,
+      const double& fac,
+      const double& timefac,
+      const double& timefacfac,
+      const double& visc,
       const LINALG::Matrix<3,1>& gpvelnp,
-      const double             pres,
+      const double&             pres,
       const LINALG::Matrix<3,1>& gradp,
       const LINALG::Matrix<3,3>& vderxy,
       const LINALG::Matrix<3,1>& rhsint,
@@ -318,9 +318,9 @@ struct EnrViscs2
       const bool pstab,
       const bool supg,
       const bool cstab,
-      const double tau_stab_Mp,
-      const double tau_stab_M,
-      const double tau_stab_C
+      const double& tau_stab_Mp,
+      const double& tau_stab_M,
+      const double& tau_stab_C
         )
   {
 
@@ -1152,7 +1152,7 @@ void SysmatDomain4(
             
             if (ASSTYPE == XFEM::xfem_assembly and timealgo != timeint_stationary)
             {
-              const bool valid_spacetime_cell_found = modifyOldTimeStepsValues(ele, ih, xyze, posXiDomain, labelnp, ivelcoln, ivelcolnm, iacccoln, gpveln, gpvelnm, gpaccn);
+              const bool valid_spacetime_cell_found = modifyOldTimeStepsValues<DISTYPE>(ele, ih, xyze, posXiDomain, labelnp, ivelcoln, ivelcolnm, iacccoln, gpveln, gpvelnm, gpaccn);
               if (not valid_spacetime_cell_found)
                 continue;
             }
@@ -1380,8 +1380,8 @@ void SysmatBoundary4(
     const Teuchos::RCP<const Epetra_Vector>& ivelcol,       ///< velocity for interface nodes
     const Teuchos::RCP<Epetra_Vector>& iforcecol,     ///< reaction force due to given interface velocity
     const FLUID_TIMEINTTYPE           timealgo,      ///< time discretization type
-    const double                      dt,            ///< delta t (time step size)
-    const double                      theta,         ///< factor for one step theta scheme
+    const double&                     dt,            ///< delta t (time step size)
+    const double&                     theta,         ///< factor for one step theta scheme
     LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,
     const bool                        ifaceForceContribution
 )
@@ -1427,11 +1427,9 @@ void SysmatBoundary4(
         const int numnode_boundary = boundaryele->NumNode();
         
         // get current node coordinates
-        const std::map<int,LINALG::Matrix<3,1> >& positions(ih->cutterposnp());
-  
 //        LINALG::SerialDenseMatrix xyze_boundary(3,numnode_boundary);
         static LINALG::Matrix<3,numnodefix_boundary> xyze_boundary;
-        GEO::fillCurrentNodalPositions(boundaryele, positions, xyze_boundary);
+        ih->fillBoundaryNodalPositionsNP(boundaryele, xyze_boundary);
         
         // get interface velocities at the boundary element nodes
 //        LINALG::SerialDenseMatrix vel_boundary(3,numnode_boundary);

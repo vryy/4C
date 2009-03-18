@@ -381,7 +381,7 @@ void XFEM::InterfaceHandleXFSI::PrintStatistics() const
       numcells += cells.size();
     }
     const unsigned avgnumcellperele = numcells/numintersectedele;
-    cout << "Avg. Number of DomainIntCells per intersected xfem element: " << avgnumcellperele << endl;
+    cout << " Avg. Number of DomainIntCells per intersected xfem element: " << avgnumcellperele << endl;
   }
 }
 
