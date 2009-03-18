@@ -91,7 +91,6 @@ int DRT::UTILS::getNumberOfElementNodes(
     case DRT::Element::wedge15:      return 15;   break;
     case DRT::Element::pyramid5:     return 5;    break;
     default:
-        cout << DRT::DistypeToString(distype) << endl;
         dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
     }
 
@@ -126,7 +125,7 @@ int DRT::UTILS::getNumberOfElementCornerNodes(
             break;
         }
         default:
-            dserror("discretization type not yet implemented");
+            dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
     }
     return numCornerNodes;
 }
@@ -160,7 +159,7 @@ std::vector<int> DRT::UTILS::getNumberOfSurfaceElementCornerNodes(
             break;
         }
         default:
-            dserror("discretization type not yet implemented");
+            dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
     }
     return surfNodeMap;
 }
@@ -195,7 +194,7 @@ int DRT::UTILS::getNumberOfElementLines(
             numLines = 3;
             break;
         default:
-            dserror("discretization type not yet implemented");
+            dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
     }
     return numLines;
 }
@@ -221,7 +220,7 @@ int DRT::UTILS::getNumberOfElementSurfaces(
             numSurf = 4;
             break;
         default:
-            dserror("discretization type not yet implemented");
+            dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
     }
     return numSurf;
 }
@@ -381,7 +380,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
           break;
         }
         default:
-            dserror("discretizationtype is not yet implemented");
+          dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
     }
 
     return map;
@@ -572,7 +571,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
             break;
         }
         default:
-            dserror("discretizationtype is not yet implemented");
+            dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
     }
 
     return map;
@@ -616,7 +615,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumbering_lines_surfaces(
         }
     }
     else
-        dserror("discretizationtype not yet implemented");
+        dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
 
 
     return map;
@@ -660,7 +659,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumbering_nodes_lines(
         }
     }
     else
-        dserror("discretizationtype not yet implemented");
+        dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
 
     return map;
 }
@@ -702,7 +701,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumbering_nodes_surfaces(
         }
     }
     else
-        dserror("discretizationtype not yet implemented");
+        dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
 
     return map;
 
@@ -761,7 +760,7 @@ LINALG::SerialDenseMatrix DRT::UTILS::getEleNodeNumbering_nodes_paramspace(
             break;
         }
         default:
-            dserror("discretizationtype not yet implemented");
+            dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
     }
 
     return map;
@@ -798,7 +797,7 @@ vector<int> DRT::UTILS::getSurfaces(
         if(fabs(rst(2))         < TOL)  	surfaces.push_back(3);
     }
     else
-        dserror("discretization type not yet implemented");
+        dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
 
     return surfaces;
 }
@@ -843,7 +842,7 @@ vector<int> DRT::UTILS::getLines(
     if(fabs(rst(0)) < TOL && fabs(tcoord) < 3*TOL)      lines.push_back(5);
   }
   else
-    dserror("discretization type not yet implemented");
+    dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
 
   return lines;
 }
@@ -887,7 +886,7 @@ int DRT::UTILS::getNode(
       break;
     }
     default:
-      dserror("discretization type not yet implemented");
+      dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
     }
 
     return node;
@@ -967,7 +966,8 @@ LINALG::Matrix<3,1> DRT::UTILS::getNodeCoordinates(   const int                 
         }
         coord(2) = 0.0;
     }
-    else dserror("discretizationtype is not yet implemented");
+    else
+        dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
 
     return coord;
 }
@@ -1050,7 +1050,7 @@ LINALG::Matrix<3,1> DRT::UTILS::getLineCoordinates(
       coord(2) =  0.0;
   }
   else
-    dserror("discretization type not yet implemented");
+    dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
 
   return coord;
 }
@@ -1101,7 +1101,7 @@ int DRT::UTILS::getHigherOrderIndex(
             break;
         }
         default:
-            dserror("discretizationtype not yet implemented");
+            dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
     }
     return higherOrderIndex;
 }
@@ -1146,7 +1146,7 @@ int DRT::UTILS::getDimension(const DRT::Element::DiscretizationType distype)
         case DRT::Element::wedge15 : dim = DisTypeToDim<DRT::Element::wedge15>::dim; break;
         case DRT::Element::pyramid5: dim = DisTypeToDim<DRT::Element::pyramid5>::dim; break;
         default:
-            dserror("discretization type is not yet implemented");
+            dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
     }
     return dim;
 }
@@ -1178,7 +1178,7 @@ int DRT::UTILS::getOrder(const DRT::Element::DiscretizationType distype)
         case DRT::Element::tet4 :   order = DisTypeToEdgeOrder<DRT::Element::tet4>::order; break;
         case DRT::Element::tet10 :  order = DisTypeToEdgeOrder<DRT::Element::tet10>::order; break;
         default:
-            dserror("discretization type is not yet implemented");
+            dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
     }
     return order;
 }
@@ -1214,7 +1214,7 @@ double DRT::UTILS::getSizeInLocalCoordinates(
             size = 2.0;
             break;
         default:
-            dserror("discretization type not yet implemented");
+            dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
     };
 
     return size;

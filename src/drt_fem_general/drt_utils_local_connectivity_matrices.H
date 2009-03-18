@@ -748,7 +748,7 @@ namespace UTILS
             break;
         }
         default:
-            dserror("discretization type is not yet implemented");
+            dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
     }
     return pos;
   }
