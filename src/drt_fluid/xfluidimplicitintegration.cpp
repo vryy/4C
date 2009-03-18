@@ -161,6 +161,43 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
     if (density_ <= 0.0) dserror("received negative or zero density value from elements");
   }
 
+  // print information about element shapes
+  // (to double-check for reading the correct input)
+  if (discret_->Comm().NumProc() == 1)
+  {
+    std::set<DRT::Element::DiscretizationType> distypeset;
+    for (int i=0; i<discret_->NumMyColElements(); ++i)
+    {
+      distypeset.insert(discret_->lColElement(i)->Shape());
+    }
+    
+    cout << "Element shapes in xfluid discretization: ";
+    for (std::set<DRT::Element::DiscretizationType>::const_iterator iter = distypeset.begin(); iter != distypeset.end(); ++iter)
+    {
+      if ( iter != distypeset.begin())
+        cout << ", ";
+      cout << DRT::DistypeToString(*iter);
+    }
+    cout << endl;
+  }
+  else
+  {
+    discret_->Comm().Barrier();
+    std::set<DRT::Element::DiscretizationType> distypeset;
+    for (int i=0; i<discret_->NumMyColElements(); ++i)
+    {
+      distypeset.insert(discret_->lColElement(i)->Shape());
+    }
+    
+    cout0_ << "Element shapes in xfluid discretization: ";
+    for (std::set<DRT::Element::DiscretizationType>::const_iterator iter = distypeset.begin(); iter != distypeset.end(); ++iter)
+    {
+      cout << DRT::DistypeToString(*iter) << ", ";
+    }
+    cout0_ << endl;
+    discret_->Comm().Barrier();
+  }
+  
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
 
 

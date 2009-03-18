@@ -376,7 +376,7 @@ protected:
   double density_;
 
   /// whether we do some extrapolation at the begin of each time step
-  bool extrapolationpredictor_;
+  const bool extrapolationpredictor_;
 
   //! predictor used in nonlinear iteration
   string  predictor_;

@@ -518,8 +518,8 @@ void XFEM::createDofMap(
   syncNodalDofs(ih, nodalDofSet);
 #endif
 
-  cout << "skipped node unknowns for "<< skipped_node_enr_count << " elements (volumeratio limit:   " << std::scientific << volumeRatioLimit   << ")" << endl;
-  cout << "skipped elem unknowns for "<< skipped_elem_enr_count << " elements (boundaryratio limit: " << std::scientific << boundaryRatioLimit << ")" << endl;
+  cout << " skipped node unknowns for "<< skipped_node_enr_count << " elements (volumeratio limit:   " << std::scientific << volumeRatioLimit   << ")" << endl;
+  cout << " skipped elem unknowns for "<< skipped_elem_enr_count << " elements (boundaryratio limit: " << std::scientific << boundaryRatioLimit << ")" << endl;
   
   XFEM::applyStandardEnrichmentNodalBasedApproach(ih, fieldset, nodalDofSet);
   

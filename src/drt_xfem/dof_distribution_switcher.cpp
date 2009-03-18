@@ -27,7 +27,7 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
 ) const
 {
   // create new vector with new number of dofs
-  RCP<Epetra_Vector> newVector = LINALG::CreateVector(newdofrowmap_,true);
+  const RCP<Epetra_Vector> newVector = LINALG::CreateVector(newdofrowmap_,true);
 
   if (vector == null)
   {
