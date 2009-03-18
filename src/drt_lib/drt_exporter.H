@@ -524,7 +524,7 @@ private:
 
     virtual bool PackObject(int gid, vector<char>& sendblock)
     {
-      typename map<int,RefCountPtr<T> >::iterator curr = parobjects_.find(gid);
+      typename map<int,RefCountPtr<T> >::const_iterator curr = parobjects_.find(gid);
       if (curr!=parobjects_.end())
       {
         vector<char> data;
@@ -552,7 +552,7 @@ private:
     {
       // loop map and kick out everything that's not in TargetMap()
       map<int,RefCountPtr<T> > newmap;
-      typename map<int,RefCountPtr<T> >::iterator fool;
+      typename map<int,RefCountPtr<T> >::const_iterator fool;
       for (fool=parobjects_.begin(); fool != parobjects_.end(); ++fool)
         if (exporter->TargetMap().MyGID(fool->first))
           newmap[fool->first] = fool->second;
@@ -580,7 +580,7 @@ private:
 
     virtual bool PackObject(int gid, vector<char>& sendblock)
     {
-      typename map<int,T>::iterator curr = objects_.find(gid);
+      typename map<int,T>::const_iterator curr = objects_.find(gid);
       if (curr!=objects_.end())
       {
         unsigned pos = sendblock.size();
@@ -601,7 +601,7 @@ private:
     {
       // loop map and kick out everything that's not in TargetMap()
       map<int,T> newmap;
-      typename map<int,T>::iterator fool;
+      typename map<int,T>::const_iterator fool;
       for (fool=objects_.begin(); fool != objects_.end(); ++fool)
         if (exporter->TargetMap().MyGID(fool->first))
           newmap[fool->first] = fool->second;
@@ -629,7 +629,7 @@ private:
 
     virtual bool PackObject(int gid, vector<char>& sendblock)
     {
-      typename map<int,vector<T> >::iterator curr = objects_.find(gid);
+      typename map<int,vector<T> >::const_iterator curr = objects_.find(gid);
       if (curr!=objects_.end())
       {
         ParObject::AddtoPack(sendblock,curr->second);

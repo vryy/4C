@@ -250,7 +250,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const int sta
   // nodes from our local row map. Use that information.
   // We have to loop the gids in order. This way we will get an
   // ordered set of dofs.
-  for (map<int,int>::iterator i=nidx.begin(); i!=nidx.end(); ++i)
+  for (map<int,int>::const_iterator i=nidx.begin(); i!=nidx.end(); ++i)
   {
     int numdf = sredundantnodes[i->second];
 
@@ -324,7 +324,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const int sta
 
   // We have to loop the gids in order. This way we will get an
   // ordered set of dofs.
-  for (map<int,int>::iterator i=eidx.begin(); i!=eidx.end(); ++i)
+  for (map<int,int>::const_iterator i=eidx.begin(); i!=eidx.end(); ++i)
   {
     int numdf = sredundantelements[i->second];
 

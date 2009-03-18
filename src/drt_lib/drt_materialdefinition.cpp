@@ -568,7 +568,7 @@ void DRT::INPUT::MaterialDefinition::Read(
   if (section.size() > 0)
   {
 
-    for (std::vector<const char*>::iterator i=section.begin();
+    for (std::vector<const char*>::const_iterator i=section.begin();
          i!=section.end();
          ++i)
     {
@@ -686,7 +686,7 @@ void DRT::INPUT::AppendMaterialDefinition(
   )
 {
   // test if material was defined with same name or type
-  std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> >::iterator m;
+  std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> >::const_iterator m;
   for (m=matlist.begin(); m!=matlist.end(); ++m)
   {
     Teuchos::RCP<DRT::INPUT::MaterialDefinition> mmd = *m;

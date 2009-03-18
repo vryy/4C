@@ -948,7 +948,7 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
 void IO::DiscretizationWriter::WriteElementData()
 {
 #ifdef BINIO
-  map<string,int>::iterator fool;
+  map<string,int>::const_iterator fool;
   map<string,int> names;   // contains name and dimension of data
 
   // loop all elements and build map of data names and dimensions

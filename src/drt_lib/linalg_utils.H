@@ -882,14 +882,14 @@ namespace LINALG
     // put data from map in rdata
     rdata.clear();
     int count=0;
-    map<int,vector<int> >::iterator curr;
+    map<int,vector<int> >::const_iterator curr;
     for (curr=datamap.begin(); curr != datamap.end(); ++curr)
     {
-      vector<T>& current = curr->second;
+      const vector<T>& current = curr->second;
       const int size = (int)current.size();
       rdata.resize((int)rdata.size()+size);
       for (int i=0; i<size; ++i)
-      rdata[count+i] = current[i];
+        rdata[count+i] = current[i];
       count += size;
     }
     return;
