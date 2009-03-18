@@ -328,8 +328,6 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
         ComputeVolDeriv(xscurr, numnode, numstddf, volumeele, Vdiff1, Vdiff2);
         
         //update rhs vector and corresponding column in "constraint" matrix
-        
-
         if (actnumdf == numstddf)
         {
           // in case any node really has 3 dofs, copy matrix and vectors
@@ -342,13 +340,13 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
           // if nodes have more than 3 dofs, copy computed smaller matrix and vectors into
           // larger ones to be filled
           for (int nodec=0; nodec < numnode; ++nodec)
-            for(int dimc=0 ; dimc<3; ++dimc)
+            for(int dimc=0 ; dimc<numdim; ++dimc)
             {
               for (int nodel=0; nodel < numnode; ++nodel)
-                for(int diml=0 ; diml<3; ++diml)
+                for(int diml=0 ; diml<numdim; ++diml)
                 {
-                  elematrix1(nodec*actnumdf+dimc,nodel*actnumdf+diml) = 
-                      (*Vdiff2)(nodec*actnumdf+dimc,nodel*actnumdf+diml);
+                  elematrix1(nodec*actnumdf+dimc, nodel*actnumdf+diml) = 
+                      (*Vdiff2)(nodec*actnumdf+dimc, nodel*actnumdf+diml);
                 }
               elevector1[nodec*actnumdf+dimc] = (*Vdiff1)[nodec*actnumdf+dimc];
               elevector2[nodec*actnumdf+dimc] = (*Vdiff1)[nodec*actnumdf+dimc];
@@ -718,13 +716,13 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
           // if nodes have more than 3 dofs, copy computed smaller matrix and vectors into
           // larger ones to be filled
           for (int nodec=0; nodec < numnode; ++nodec)
-            for(int dimc=0 ; dimc<3; ++dimc)
+            for(int dimc=0 ; dimc<numdim; ++dimc)
             {
               for (int nodel=0; nodel < numnode; ++nodel)
-                for(int diml=0 ; diml<3; ++diml)
+                for(int diml=0 ; diml<numdim; ++diml)
                 {
                   elematrix1(nodec*actnumdf+dimc,nodel*actnumdf+diml) = 
-                      (*Adiff2)(nodec*actnumdf+dimc,nodel*actnumdf+diml);
+                      -(*Adiff2)(nodec*actnumdf+dimc,nodel*actnumdf+diml);
                 }
               elevector1[nodec*actnumdf+dimc] = -(*Adiff)[nodec*actnumdf+dimc];
               elevector2[nodec*actnumdf+dimc] = -(*Adiff)[nodec*actnumdf+dimc];
