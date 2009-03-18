@@ -306,13 +306,17 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
       break;
       case calc_struct_volconstrstiff:
       {
+        // compute some constants
+        const int actnumdf = ActualNumDofPerNode(lm.size());
+        const int numnode = NumNode();
+        const int numdim = 3;
+        const int numstddf = numdim*numnode;
         // element geometry update
         RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
         if (disp==null) dserror("Cannot get state vector 'displacement'");
         vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-        const int numdim =3;
-        LINALG::SerialDenseMatrix xscurr(NumNode(),numdim);  // material coord. of element
+        LINALG::SerialDenseMatrix xscurr(numnode,numdim);  // material coord. of element
         SpatialConfiguration(xscurr,mydisp);
         double volumeele;
         // first partial derivatives
@@ -321,13 +325,37 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
         RCP<Epetra_SerialDenseMatrix> Vdiff2 = rcp(new Epetra_SerialDenseMatrix);
 
         //call submethod to compute volume and its derivatives w.r.t. to current displ.
-        ComputeVolDeriv(xscurr, NumNode(),numdim*NumNode(), volumeele, Vdiff1, Vdiff2);
+        ComputeVolDeriv(xscurr, numnode, numstddf, volumeele, Vdiff1, Vdiff2);
+        
         //update rhs vector and corresponding column in "constraint" matrix
-        elevector1 = *Vdiff1;
-        elevector2 = *Vdiff1;
-        elematrix1 = *Vdiff2;
-        //call submethod for volume evaluation and store result in third systemvector
-        elevector3[0]=volumeele;
+        
+
+        if (actnumdf == numstddf)
+        {
+          // in case any node really has 3 dofs, copy matrix and vectors
+          elevector1 = *Vdiff1;
+          elevector2 = *Vdiff1;
+          elematrix1 = *Vdiff2;
+        }
+        else
+        {
+          // if nodes have more than 3 dofs, copy computed smaller matrix and vectors into
+          // larger ones to be filled
+          for (int nodec=0; nodec < numnode; ++nodec)
+            for(int dimc=0 ; dimc<3; ++dimc)
+            {
+              for (int nodel=0; nodel < numnode; ++nodel)
+                for(int diml=0 ; diml<3; ++diml)
+                {
+                  elematrix1(nodec*actnumdf+dimc,nodel*actnumdf+diml) = 
+                      (*Vdiff2)(nodec*actnumdf+dimc,nodel*actnumdf+diml);
+                }
+              elevector1[nodec*actnumdf+dimc] = (*Vdiff1)[nodec*actnumdf+dimc];
+              elevector2[nodec*actnumdf+dimc] = (*Vdiff1)[nodec*actnumdf+dimc];
+            }
+        }
+        // elevector3 stores the volume of the element 
+        elevector3[0] = volumeele;
       }
       break;
       case calc_init_vol:
@@ -626,13 +654,16 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
       break;
       case calc_struct_constrarea:
       {
+        // compute some constants
+        const int numnode = NumNode();
+        const int numdim = 3;
+        const int numstddf = numdim*numnode;
         // element geometry update
         RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
         if (disp==null) dserror("Cannot get state vector 'displacement'");
         vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-        const int numdim =3;
-        LINALG::SerialDenseMatrix xscurr(NumNode(),numdim);  // material coord. of element
+        LINALG::SerialDenseMatrix xscurr(numnode,numdim);  // material coord. of element
         SpatialConfiguration(xscurr,mydisp);
         // initialize variables
         double elearea;
@@ -642,7 +673,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
         RCP<Epetra_SerialDenseMatrix> Adiff2 = rcp(new Epetra_SerialDenseMatrix);
 
         //call submethod
-        ComputeAreaDeriv(xscurr, NumNode(),numdim*NumNode(), elearea, Adiff, Adiff2);
+        ComputeAreaDeriv(xscurr, numnode, numstddf, elearea, Adiff, Adiff2);
         // store result
         elevector3[0] = elearea;
 
@@ -650,13 +681,17 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
       break;
       case calc_struct_areaconstrstiff:
       {
+        // compute some constants
+        const int actnumdf = ActualNumDofPerNode(lm.size());
+        const int numnode = NumNode();
+        const int numdim = 3;
+        const int numstddf = numdim*numnode;
         // element geometry update
         RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
         if (disp==null) dserror("Cannot get state vector 'displacement'");
         vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-        const int numdim =3;
-        LINALG::SerialDenseMatrix xscurr(NumNode(),numdim);  // material coord. of element
+        LINALG::SerialDenseMatrix xscurr(numnode,numdim);  // material coord. of element
         SpatialConfiguration(xscurr,mydisp);
         // initialize variables
         double elearea;
@@ -666,14 +701,38 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
         RCP<Epetra_SerialDenseMatrix> Adiff2 = rcp(new Epetra_SerialDenseMatrix);
 
         //call submethod
-        ComputeAreaDeriv(xscurr, NumNode(),numdim*NumNode(), elearea, Adiff, Adiff2);
+        ComputeAreaDeriv(xscurr, numnode, numstddf, elearea, Adiff, Adiff2);
         //update elematrices and elevectors
-        elevector1 = *Adiff;
-        elevector1.Scale(-1.0);
-        elevector2 = elevector1;
-        elematrix1 = *Adiff2;
-        elematrix1.Scale(-1.0);
+        if (actnumdf == numstddf)
+        {
+          // in case any node really has 3 dofs, copy matrix and vectors
+          elevector1 = *Adiff;
+          elevector1.Scale(-1.0);
+          elevector2 = elevector1;
+          elematrix1 = *Adiff2;
+          elematrix1.Scale(-1.0);
+          elevector3[0] = elearea;
+        }
+        else
+        {
+          // if nodes have more than 3 dofs, copy computed smaller matrix and vectors into
+          // larger ones to be filled
+          for (int nodec=0; nodec < numnode; ++nodec)
+            for(int dimc=0 ; dimc<3; ++dimc)
+            {
+              for (int nodel=0; nodel < numnode; ++nodel)
+                for(int diml=0 ; diml<3; ++diml)
+                {
+                  elematrix1(nodec*actnumdf+dimc,nodel*actnumdf+diml) = 
+                      (*Adiff2)(nodec*actnumdf+dimc,nodel*actnumdf+diml);
+                }
+              elevector1[nodec*actnumdf+dimc] = -(*Adiff)[nodec*actnumdf+dimc];
+              elevector2[nodec*actnumdf+dimc] = -(*Adiff)[nodec*actnumdf+dimc];
+            }
+        }
+        // elevector3 stores the volume of the element 
         elevector3[0] = elearea;
+
       }
       break;
       default:
