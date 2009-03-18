@@ -22,7 +22,6 @@ Maintainer: Axel Gerstenberger
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Bele3::Bele3(int id, int owner) :
 DRT::Element(id,element_bele3,owner),
-data_(),
 is_moving_(true)
 {
   lines_.clear();
@@ -35,7 +34,6 @@ is_moving_(true)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Bele3::Bele3(const DRT::ELEMENTS::Bele3& old) :
 DRT::Element(old),
-data_(old.data_),
 is_moving_(old.is_moving_)
 {
   lines_.clear();
@@ -88,11 +86,6 @@ void DRT::ELEMENTS::Bele3::Pack(vector<char>& data) const
   Element::Pack(basedata);
   AddtoPack(data,basedata);
 
-  // data_
-  vector<char> tmp(0);
-  data_.Pack(tmp);
-  AddtoPack(data,tmp);
-
   return;
 }
 
@@ -112,11 +105,6 @@ void DRT::ELEMENTS::Bele3::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
-
-  // data_
-  vector<char> tmp(0);
-  ExtractfromPack(position,data,tmp);
-  data_.Unpack(tmp);
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -143,7 +131,6 @@ void DRT::ELEMENTS::Bele3::Print(ostream& os) const
 {
   os << "Bele3 ";
   Element::Print(os);
-  os << data_;
   return;
 }
 

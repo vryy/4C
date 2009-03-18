@@ -29,9 +29,8 @@ map<string,DRT::ELEMENTS::XFluid3::StabilisationAction> DRT::ELEMENTS::XFluid3::
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::XFluid3::XFluid3(int id, int owner) :
 DRT::Element(id,element_xfluid3,owner),
-is_ale_(false),
-data_(),
-eleDofManager_(rcp(new XFEM::ElementDofManager()))
+eleDofManager_(rcp(new XFEM::ElementDofManager())),
+eleDofManager_uncondensed_(rcp(new XFEM::ElementDofManager()))
 {
     return;
 }
@@ -41,9 +40,8 @@ eleDofManager_(rcp(new XFEM::ElementDofManager()))
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::XFluid3::XFluid3(const DRT::ELEMENTS::XFluid3& old) :
 DRT::Element(old),
-is_ale_(old.is_ale_),
-data_(old.data_),
-eleDofManager_(old.eleDofManager_)
+eleDofManager_(old.eleDofManager_),
+eleDofManager_uncondensed_(old.eleDofManager_uncondensed_)
 {
     return;
 }
@@ -54,8 +52,7 @@ eleDofManager_(old.eleDofManager_)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::XFluid3::Clone() const
 {
-  DRT::ELEMENTS::XFluid3* newelement = new DRT::ELEMENTS::XFluid3(*this);
-  return newelement;
+  return new DRT::ELEMENTS::XFluid3(*this);
 }
 
 /*----------------------------------------------------------------------*
@@ -74,6 +71,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::XFluid3::Shape() const
   case 15: return wedge15;
   case 20: return hex20;
   case 27: return hex27;
+  case  0: return dis_none;
   default:
     dserror("unexpected number of nodes %d", NumNode());
   }
@@ -95,13 +93,6 @@ void DRT::ELEMENTS::XFluid3::Pack(std::vector<char>& data) const
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
-  // is_ale_
-  AddtoPack(data,is_ale_);
-
-  // data_
-  vector<char> tmp(0);
-  data_.Pack(tmp);
-  AddtoPack(data,tmp);
 
   return;
 }
@@ -122,12 +113,6 @@ void DRT::ELEMENTS::XFluid3::Unpack(const std::vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
-  // is_ale_
-  ExtractfromPack(position,data,is_ale_);
-
-  vector<char> tmp(0);
-  ExtractfromPack(position,data,tmp);
-  data_.Unpack(tmp);
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -152,7 +137,6 @@ void DRT::ELEMENTS::XFluid3::Print(ostream& os) const
   os << "XFluid3 ";
   Element::Print(os);
   cout << endl;
-  cout << data_;
   return;
 }
 
@@ -330,8 +314,7 @@ DRT::ELEMENTS::XFluid3::DLMInfo::DLMInfo(const int nd, const int na)
 : oldKaainv_(LINALG::SerialDenseMatrix(na,na,true)),
   oldKad_(LINALG::SerialDenseMatrix(na,nd,true)),
   oldfa_(LINALG::SerialDenseVector(na,true)),
-  stressdofs_(LINALG::SerialDenseVector(na,true)),
-  na_(na)
+  stressdofs_(LINALG::SerialDenseVector(na,true))
 {
   return;
 }

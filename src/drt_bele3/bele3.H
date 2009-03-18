@@ -174,9 +174,6 @@ private:
       return hoel;
     };
   
-  //! container containing all kind of this and that
-  DRT::Container                                  data_;
-  
   //! vector with line elements
   vector<RCP<DRT::Element> >                      lines_;
   

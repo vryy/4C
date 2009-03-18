@@ -79,22 +79,13 @@ namespace DRT
         virtual DiscretizationType Shape() const;
         
         virtual int NumLine() const
-        {if (NumNode()==8 || NumNode()==20 || NumNode()==27) return 12;
-        else if (NumNode()==4 || NumNode()==10) return 6;
-        else {
-          dserror("Could not determine number of lines");
-          return -1;
-        }
+        {
+          return DRT::UTILS::getNumberOfElementLines(Shape());
         }
         
         virtual int NumSurface() const
-        {if (NumNode()==8 || NumNode()==20 || NumNode()==27) return 6;
-        else if (NumNode()==4 || NumNode()==10) return 4;
-        else if (NumNode()==6 || NumNode()==15 || NumNode()==5) return 5;
-        else {
-          dserror("Could not determine number of surfaces");
-          return -1;
-        }
+        {
+          return DRT::UTILS::getNumberOfElementSurfaces(Shape());
         }
         
         virtual int NumVolume() const {return 1;}
@@ -156,7 +147,7 @@ namespace DRT
         //! @name Other
         
         //! do we have a moving fluid mesh or not
-        bool IsAle() const { return is_ale_; }
+        bool IsAle() const { return false; }
         
         //@}
         
@@ -224,11 +215,6 @@ namespace DRT
         //! map that converts strings to actions (stabilization)
         static map<string,StabilisationAction>          stabstrtoact_;
         
-        //! flag for euler/ale net algorithm
-        bool                                            is_ale_;
-        //! container containing all kind of fluid3 this and that
-        DRT::Container                                  data_;
-        
         //! store information about the unknowns of this element
         //!
         //! this dofman will answer to the outside world, how many dofs this element has
@@ -265,8 +251,6 @@ namespace DRT
           DLMInfo();
           //! disabled copy constructor
           DLMInfo(const DLMInfo&);
-          //! number of stress unknowns
-          const int na_; 
         };
         
         Teuchos::RCP<DLMInfo>            DLM_info_;
@@ -404,13 +388,8 @@ namespace DRT
         virtual DiscretizationType Shape() const;
         
         virtual int NumLine() const
-        {if (NumNode()==4 || NumNode()==8 || NumNode()==9) return 4;
-        else if (NumNode()==3 || NumNode()==6) return 3;
-        else
         {
-          dserror("Could not determine number of surfaces");
-          return -1;
-        }
+          return DRT::UTILS::getNumberOfElementLines(Shape());
         }
         
         virtual std::vector<RCP<DRT::Element> > Lines();
@@ -528,17 +507,16 @@ namespace DRT
         //! @name Constructors and destructors and related methods
         
         /*!
-  \brief Standard Constructor
-
-  \param id : A unique global id
-  \param owner: Processor owning this line
-  \param nnode: Number of nodes attached to this element
-  \param nodeids: global ids of nodes attached to this element
-  \param nodes: the discretizations map of nodes to build ptrs to nodes from
-  \param parent: The parent fluid element of this line
-  \param lline: the local line number of this line w.r.t. the parent element
-         */
+          \brief Standard Constructor
         
+          \param id : A unique global id
+          \param owner: Processor owning this line
+          \param nnode: Number of nodes attached to this element
+          \param nodeids: global ids of nodes attached to this element
+          \param nodes: the discretizations map of nodes to build ptrs to nodes from
+          \param parent: The parent fluid element of this line
+          \param lline: the local line number of this line w.r.t. the parent element
+         */
         explicit XFluid3Line(
             const int id,
             const int owner,
@@ -610,6 +588,10 @@ namespace DRT
         {
           none
         };
+        
+        //! shape of the element
+        DRT::Element::DiscretizationType distype_;
+        DiscretizationType MyShape() const;
         
         // don't want = operator
         XFluid3Line& operator = (const XFluid3Line& old);
