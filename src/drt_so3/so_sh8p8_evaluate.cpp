@@ -1422,6 +1422,12 @@ double DRT::ELEMENTS::So_sh8p8::ShearMod() const
     return aaaneo->ShearMod();
     break;
   }
+  case INPAR::MAT::m_viscoanisotropic: /*-----------AAA NeoHookean Material */
+  {
+    MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(Material().get());
+    return visco->ShearMod();
+    break;
+  }
   default:
     dserror("Cannot ask material for shear modulus");
     break;
@@ -1446,7 +1452,6 @@ int DRT::ELEMENTS::Sosh8p8Register::Initialize(DRT::Discretization& dis)
 {
   //sosh8_gmshplotdis(dis);
 
-  int num_morphed_so_hex8_easmild = 0;
   int num_morphed_so_hex8_easnone = 0;
 
   // Loop through all elements

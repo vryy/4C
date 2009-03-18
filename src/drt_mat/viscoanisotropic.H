@@ -140,6 +140,10 @@ namespace MAT
 
     /// Return density
     double Density() const {return params_->density_;};
+    
+    /// Return shear modulus
+    double ShearMod() const {return params_->mue_;};
+        
 
     /// Check if history variables are already initialized
     bool Initialized() const
