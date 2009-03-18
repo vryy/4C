@@ -3083,15 +3083,15 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(int step)
     (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
 
     (*log) << "# bottom wall: tauwb, rhowb, u_taub : ";
-    (*log) << "   " << setw(11) << setprecision(4) << tauwb;
-    (*log) << "   " << setw(11) << setprecision(4) << rhowb;
-    (*log) << "   " << setw(11) << setprecision(4) << utaub;
+    (*log) << "   " << setw(15) << setprecision(8) << tauwb;
+    (*log) << "   " << setw(15) << setprecision(8) << rhowb;
+    (*log) << "   " << setw(15) << setprecision(8) << utaub;
     (*log) << &endl;
 
     (*log) << "# top wall:    tauwt, rhowt, u_taut : ";
-    (*log) << "   " << setw(11) << setprecision(4) << tauwt;
-    (*log) << "   " << setw(11) << setprecision(4) << rhowt;
-    (*log) << "   " << setw(11) << setprecision(4) << utaut;
+    (*log) << "   " << setw(15) << setprecision(8) << tauwt;
+    (*log) << "   " << setw(15) << setprecision(8) << rhowt;
+    (*log) << "   " << setw(15) << setprecision(8) << utaut;
     (*log) << &endl;
 
     (*log) << "#     y";
@@ -3102,29 +3102,29 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(int step)
     (*log) << scientific;
     for(unsigned i=0; i<planecoordinates_->size(); ++i)
     {
-      (*log) <<  " "  << setw(11) << setprecision(4) << (*planecoordinates_)[i];
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumu_            )[i]/aux;
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumv_            )[i]/aux;
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumw_            )[i]/aux;
-      (*log) << "   " << setw(11) << setprecision(4) << (*sump_            )[i]/aux;
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumrho_          )[i]/aux;
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumT_            )[i]/aux;
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumrhou_         )[i]/aux;
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumrhouT_        )[i]/aux;
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumsv_           )[i]/aux;
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumsqu_          )[i]/aux;
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumsqv_          )[i]/aux;
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumsqw_          )[i]/aux;
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumsqp_          )[i]/aux;
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumsqrho_        )[i]/aux;
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumsqT_          )[i]/aux;
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumsqsv_         )[i]/aux;
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumuv_           )[i]/aux;
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumuw_           )[i]/aux;
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumvw_           )[i]/aux;
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumuT_           )[i]/aux;
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumvT_           )[i]/aux;
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumwT_           )[i]/aux;
+      (*log) <<  " "  << setw(15) << setprecision(8) << (*planecoordinates_)[i];
+      (*log) << "   " << setw(15) << setprecision(8) << (*sumu_            )[i]/aux;
+      (*log) << "   " << setw(15) << setprecision(8) << (*sumv_            )[i]/aux;
+      (*log) << "   " << setw(15) << setprecision(8) << (*sumw_            )[i]/aux;
+      (*log) << "   " << setw(15) << setprecision(8) << (*sump_            )[i]/aux;
+      (*log) << "   " << setw(15) << setprecision(8) << (*sumrho_          )[i]/aux;
+      (*log) << "   " << setw(15) << setprecision(8) << (*sumT_            )[i]/aux;
+      (*log) << "   " << setw(15) << setprecision(8) << (*sumrhou_         )[i]/aux;
+      (*log) << "   " << setw(15) << setprecision(8) << (*sumrhouT_        )[i]/aux;
+      (*log) << "   " << setw(15) << setprecision(8) << (*sumsv_           )[i]/aux;
+      (*log) << "   " << setw(15) << setprecision(8) << (*sumsqu_          )[i]/aux;
+      (*log) << "   " << setw(15) << setprecision(8) << (*sumsqv_          )[i]/aux;
+      (*log) << "   " << setw(15) << setprecision(8) << (*sumsqw_          )[i]/aux;
+      (*log) << "   " << setw(15) << setprecision(8) << (*sumsqp_          )[i]/aux;
+      (*log) << "   " << setw(15) << setprecision(8) << (*sumsqrho_        )[i]/aux;
+      (*log) << "   " << setw(15) << setprecision(8) << (*sumsqT_          )[i]/aux;
+      (*log) << "   " << setw(15) << setprecision(8) << (*sumsqsv_         )[i]/aux;
+      (*log) << "   " << setw(15) << setprecision(8) << (*sumuv_           )[i]/aux;
+      (*log) << "   " << setw(15) << setprecision(8) << (*sumuw_           )[i]/aux;
+      (*log) << "   " << setw(15) << setprecision(8) << (*sumvw_           )[i]/aux;
+      (*log) << "   " << setw(15) << setprecision(8) << (*sumuT_           )[i]/aux;
+      (*log) << "   " << setw(15) << setprecision(8) << (*sumvT_           )[i]/aux;
+      (*log) << "   " << setw(15) << setprecision(8) << (*sumwT_           )[i]/aux;
       (*log) << "\n";
     }
     log->flush();
