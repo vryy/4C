@@ -119,7 +119,7 @@ VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       totalflux_domain
 UPRES                           1
 BLOCKPRECOND                    Yes
-MATID                           4
+MATID                           5
 --------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-6
 ITEMAX                          15
@@ -250,7 +250,8 @@ PARTITION         Cut_Elements
 MAT       1 MAT_fluid  VISCOSITY 0.001 DENSITY 1.0
 MAT       2 MAT_ion DIFFUSIVITY 0.001 VALENCE 1.0
 MAT       3 MAT_ion DIFFUSIVITY 0.001 VALENCE -2.0
-MAT       4 MAT_matlist NUMMAT 2 MATIDS 2 3
+MAT       4 MAT_ion DIFFUSIVITY 0.02  VALENCE 0.0  // neutral species for testing
+MAT       5 MAT_matlist NUMMAT 3 MATIDS 2 3 4
 ----------------------------------------------MULTILAYER MATERIALS
 ------------------------------------------------------CONTROL NODE
 -------------------------------------------------------LOAD CURVES
@@ -271,7 +272,8 @@ FUNCT2 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0
 ------------------------------------------------------------FUNCT3
 FUNCT3 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0    //initial concentration field
 FUNCT3 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.5    //initial concentration field
-FUNCT3 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0    //initial pot. field
+FUNCT3 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 1.0    //initial concentration field
+FUNCT3 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0    //initial pot. field
 ------------------------------------------------------------FUNCT4
 ------------------------------------------------------------FUNCT5
 ------------------------------------------------------------FUNCT6
@@ -289,8 +291,10 @@ SCATRA DIS 1 NODE 695 POSITION phi1    NAME phi1     VALUE  9.463629368e-01 TOLE
 SCATRA DIS 1 NODE 121 POSITION phi1    NAME phi1     VALUE  9.965712590e-01 TOLERANCE 1e-9
 SCATRA DIS 1 NODE 695 POSITION phi2    NAME phi2     VALUE  4.731814684e-01 TOLERANCE 1e-9
 SCATRA DIS 1 NODE 121 POSITION phi2    NAME phi2     VALUE  4.982856295e-01 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 695 POSITION phi3    NAME phi3     VALUE  3.504038729e-01 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 121 POSITION phi3    NAME phi3     VALUE  3.978086245e-01 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 695 POSITION phi3    NAME phi3     VALUE  1.069966869e-01 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 121 POSITION phi3    NAME phi3     VALUE  4.497373685e-01 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 695 POSITION phi4    NAME phi4     VALUE  3.504038729e-01 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 121 POSITION phi4    NAME phi4     VALUE  3.978086245e-01 TOLERANCE 1e-9
 FLUID DIS 1 NODE 695 POSITION velx     NAME velx     VALUE  2.069056104e-01 TOLERANCE 1e-9
 FLUID DIS 1 NODE 695 POSITION vely     NAME vely     VALUE -1.892884371e-06 TOLERANCE 1e-9
 FLUID DIS 1 NODE 695 POSITION velz     NAME velz     VALUE  0.000000000e+00 TOLERANCE 1e-9
@@ -351,13 +355,13 @@ DPOINT 0
 ---------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
 DLINE  0
 ---------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
-DSURF  1
+DSURF  2
 // inflow
-E 8 - 0 1 0 0 0 0  0.0 0.5 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 8 - 0 1 1 0 0 0  0.0 0.5 1.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // anode
 //E 9 - 1 1 0 0 0 0  1.0 1.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
-// cathode
-//E 10 - 0 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+// cathode (for neutral species use a Dirichlet b.c.)
+E 10 - 0 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 --------------------------------ELECTRODE KINETICS LINE CONDITIONS
 DLINE  0
 --------------------------------ELECTRODE KINETICS SURF CONDITIONS
