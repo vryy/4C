@@ -199,7 +199,7 @@ namespace XFEM
       std::set<XFEM::Enrichment> unique_enrichments_;
       
       //! used in constructor
-      void ComputeDependendInfo(
+      void ComputeDependentInfo(
           const DRT::Element& ele,
           const map<int, const std::set<XFEM::FieldEnr> >&  nodalDofSet,
           const std::set<XFEM::FieldEnr>& enrfieldset,

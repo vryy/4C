@@ -41,7 +41,7 @@ XFEM::ElementDofManager::ElementDofManager(
   nodalDofSet_(nodalDofSet),
   DisTypePerElementField_(element_ansatz)
 {
-  ComputeDependendInfo(ele, nodalDofSet, enrfieldset, element_ansatz);
+  ComputeDependentInfo(ele, nodalDofSet, enrfieldset, element_ansatz);
  
   return;
 }
@@ -50,7 +50,7 @@ XFEM::ElementDofManager::ElementDofManager(
     
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void XFEM::ElementDofManager::ComputeDependendInfo(
+void XFEM::ElementDofManager::ComputeDependentInfo(
     const DRT::Element& ele,
     const map<int, const std::set<XFEM::FieldEnr> >& nodalDofSet,
     const std::set<XFEM::FieldEnr>& enrfieldset,
@@ -165,7 +165,7 @@ XFEM::ElementDofManager::ElementDofManager(
   // element dofs for ele
   const std::set<XFEM::FieldEnr>& enrfieldset(dofman.getElementDofSet(ele.Id()));
   
-  ComputeDependendInfo(ele, nodalDofSet_, enrfieldset, element_ansatz);
+  ComputeDependentInfo(ele, nodalDofSet_, enrfieldset, element_ansatz);
 }
 
 
