@@ -2173,7 +2173,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
         emat(fvi, fui) += timetaufac_conv_eff_vi*diffus_valence_k*migconv_(ui);
         // partial derivative w.r.t potential
         double val_ui; GetLaplacianWeakFormRHS(val_ui, derxy_,gradphi_,ui);
-        emat(fvi,ui*numdofpernode_+numscal_) += timetaufac_conv_eff_vi*diffus_valence_k*val_ui;
+        emat(fvi,ui*numdofpernode_+numscal_) -= timetaufac_conv_eff_vi*diffus_valence_k*val_ui;
 
         // linearization w.r.t potential phi
         /*
