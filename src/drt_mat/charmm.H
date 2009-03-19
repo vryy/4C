@@ -131,6 +131,11 @@ INPAR::MAT::m_charmm; }
                   const double ENDD,
                   LINALG::SerialDenseVector direction,
                   LINALG::SerialDenseVector& charmm_result);
+
+    void charmmfakeapi( const double STARTD,
+                  const double ENDD,
+                  const LINALG::SerialDenseVector direction,
+                  LINALG::SerialDenseVector& charmm_result);
     
     Epetra_SerialDenseMatrix inverseTensor(
                   const Epetra_SerialDenseMatrix M,

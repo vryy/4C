@@ -177,6 +177,8 @@ void MAT::CHARMM::Evaluate( const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,
     d_2(2) = 0;
     d.push_back(d_1);
     d.push_back(d_2);
+    // Use the hard coded charmm results (charmmfakeapi == true) or call charmm really (charmmfakeapi == false)
+    bool charmmhard = true;
 
     // Identity Matrix
     LINALG::Matrix<3,3> I(true);
@@ -276,16 +278,24 @@ void MAT::CHARMM::Evaluate( const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,
             lambda_his.push_back((*his)[7+(i*8)]);
         }
 
-        // calculate STARTD and ENDD for CHARMM
+        // calculate STARTD and ENDD for CHARmm
         double STARTD = characteristic_length * (1 - lambda_his[0]);
         double ENDD = characteristic_length * (1 - dir_lambdas[0](2)); // Check for better way to choose!!!!
+        //cout << "STARTD: " << STARTD << " ENDD: " << ENDD << endl;
+        
+        // Check if results actually can be computed by CHARmm
+        //if (STARTD != ENDD) dserror("STARTD and ENDD identical! CHARmm will not produce any results.");
 
         // Call API to CHARMM
         // Results vector: charmm_result
         // (Energy STARTD, Energy ENDD, #Atoms STARTD, #Atoms ENDD, Volume STARTD, Volume ENDD)
         LINALG::SerialDenseVector direction(3);
         LINALG::SerialDenseVector charmm_result(6);
-        //if (STARTD != ENDD) charmmfileapi(STARTD,ENDD,direction,charmm_result);
+        if (charmmhard) {
+            charmmfakeapi(STARTD,ENDD,direction,charmm_result);
+        } else {
+            //if (STARTD != ENDD) charmmfileapi(STARTD,ENDD,direction,charmm_result);
+        }
 
 
     }
@@ -468,6 +478,86 @@ Epetra_SerialDenseVector MAT::CHARMM::charmmfileapi ( const double STARTD,
 	cout << "Too be implemented....." << endl;
 	exit(1);
 	return(0);
+}
+
+
+/*----------------------------------------------------------------------*/
+//! Hard coupling without calling CHARMm
+/*----------------------------------------------------------------------*/
+void MAT::CHARMM::charmmfakeapi ( const double STARTD,
+                                    const double ENDD,
+                                    const LINALG::SerialDenseVector direction,
+                                    LINALG::SerialDenseVector& charmm_result)
+{
+    // Define the number n of steps / results from CHARmm (or any MD simluation)
+    // If n=2 then it is assumes that always the same values should be used for all steps.
+    const int n = 2;
+    // Define roundoff for choosing in which step we are
+    const double roundoff = 0.005;
+    // Hard coded data structure (second variable):
+    // (STARTD, Energy, # of Atoms, Volume)
+    LINALG::SerialDenseMatrix MD(n,4);
+
+    // Hard coded results from MD
+    MD(0,0) = 0.0;
+    MD(0,1) = -330.912;
+    MD(0,2) = 1202;
+    MD(0,3) = 9954.29;
+
+    MD(1,0) = -0.8125;
+    MD(1,1) = -321.671;
+    MD(1,2) = 1141;
+    MD(1,3) = 9441.08;
+
+    // Compute the charmm_result vector
+    // (Energy STARTD, Energy ENDD, #Atoms STARTD, #Atoms ENDD, Volume STARTD, Volume ENDD)
+    ios_base::fmtflags flags = cout.flags( ); // Save original flags
+
+    for (int i=n-1; i>=0; i--) {
+        //cout << ENDD << " " << MD(i,0);
+        if (abs(ENDD) == 0.0) { // start call at the beginning; just to give some information
+            i=0;
+            cout << setw(4) << left << "MD (" << showpoint << STARTD << setw(2)  << "->" << ENDD << setw(3) << "): " << flush;
+            charmm_result[0] = NAN;
+            charmm_result[1] = MD(i,1);
+            charmm_result[2] = NAN;
+            charmm_result[3] = MD(i,2);
+            charmm_result[4] = NAN;
+            charmm_result[5] = MD(i,3);
+            cout << setw(4) << "V(0):" << setw(15) << left << scientific << setprecision(6) << (charmm_result[1]);
+            cout << setw(8) << "#Atoms:" << setw(10) << left << fixed << setprecision(0) << charmm_result[3] << setw(8) << "Volume:" << setw(12) << left << setprecision(2) << charmm_result[5] << endl;
+            i=-1; //break loop
+        } else if (abs(ENDD) < (abs(MD(i,0)) + roundoff) && abs(ENDD) > (abs(MD(i,0)) - roundoff)) {
+            // main loop where basically at every step the data is given
+            cout << setw(4) << left << "MD (" << showpoint << STARTD << setw(2)  << "->" << ENDD << setw(3) << "): " << flush;
+            charmm_result[0] = MD(i-1,1);
+            charmm_result[1] = MD(i,1);
+            charmm_result[2] = MD(i-1,2);
+            charmm_result[3] = MD(i,2);
+            charmm_result[4] = MD(i-1,3);
+            charmm_result[5] = MD(i,3);
+            cout << setw(4) << "dV:" << setw(15) << left << scientific << setprecision(6) << (charmm_result[1] - charmm_result[0]);
+            cout << setw(8) << "#Atoms:" << setw(10) << left << fixed << setprecision(0) << charmm_result[3] << setw(8) << "Volume:" << setw(12) << left << setprecision(2) << charmm_result[5] << endl;
+            i=-1; //break loop
+        } else {
+            // in case that only one dV is given, use it for all. If more then break.
+            if (n==2) {
+                cout << setw(4) << left << "MD (" << showpoint << STARTD << setw(2)  << "->" << ENDD << setw(3) << "): " << flush;
+                charmm_result[0] = MD(0,1);
+                charmm_result[1] = MD(1,1);
+                charmm_result[2] = MD(0,2);
+                charmm_result[3] = MD(1,2);
+                charmm_result[4] = MD(0,3);
+                charmm_result[5] = MD(1,3);
+                cout << setw(4) << "dV:" << setw(15) << left << scientific << setprecision(6) << (charmm_result[1] - charmm_result[0]);
+                cout << setw(8) << "#Atoms:" << setw(10) << left << fixed << setprecision(0) << charmm_result[3] << setw(8) << "Volume:" << setw(12) << left << setprecision(2) << charmm_result[5] << endl;
+                i=-1; //break loop
+            } else {
+                dserror("No appropriate MD result found for ENDD");
+            }
+        }
+    }
+    cout.flags(flags);
 }
 
 
