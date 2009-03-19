@@ -37,8 +37,8 @@ bool DRT::ELEMENTS::So_sh8p8::ReadElement()
 {
   // read element's nodes
   int ierr = 0;
-  const int nnode = NUMNOD_SOSH8P8;
-  int nodes[NUMNOD_SOSH8P8];
+  const int nnode = NUMNOD_;
+  int nodes[NUMNOD_];
   frchk("SOLIDSH8P8",&ierr);
   if (ierr==1)
   {
@@ -161,7 +161,7 @@ bool DRT::ELEMENTS::So_sh8p8::ReadElement()
   }
 
   // Linearization
-  lin_ = lin_half;
+  lin_ = lin_sixth;
   frchar("LIN",buffer,&ierr);
   if (ierr)
   {
@@ -169,6 +169,10 @@ bool DRT::ELEMENTS::So_sh8p8::ReadElement()
       lin_ = lin_one;
     else if (strncmp(buffer,"Half",4)==0)
       lin_ = lin_half;
+    else if (strncmp(buffer,"Third",5)==0)
+      lin_ = lin_third;
+    else if (strncmp(buffer,"Sixth",5)==0)
+      lin_ = lin_sixth;
     else
       dserror("Reading of SO_SH8P8 LIN type failed");
   }

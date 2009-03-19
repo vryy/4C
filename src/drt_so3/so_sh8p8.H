@@ -81,6 +81,8 @@ public:
   friend class Soh8Line;
   //@}
   
+private:
+
   /// @name Properties
   //@{
   
@@ -110,12 +112,15 @@ public:
   // LinearizationType
   enum LinearizationType
   {
-    lin_one,  ///< full linearisation
+    lin_sixth = 0,  ///< minimum linearisation to achieve anti-locking
+    lin_third,
     lin_half,  ///< half-way linearisation
-    lin_third ///< etc.
+    lin_one  ///< full linearisation
   };
   
   //@}
+
+public:
 
   /// @name Constructors and destructors and related methods
   //@{
@@ -249,23 +254,23 @@ private:
   /// @name Element constants
   //@{
 
-  static const int NUMNOD_SOSH8P8 = NUMNOD_SOH8; //8  ///< number of nodes
-  static const int NODDOF_SOSH8P8 = 4;  ///< number of dofs per node
-  static const int NODDISP_SOSH8P8 = 3;  ///< number of displacements per node
-  static const int NODPRES_SOSH8P8 = 1;  ///< number of pressures per node
-  static const int NUMDOF_SOSH8P8 = 32;  ///< total dofs per element
-  static const int NUMDISP_SOSH8P8 = 24;  ///< total discrete displacements per element
-  static const int NUMPRES_SOSH8P8 = 8;  ///< total discrete pressures per element
-  static const int NUMSTR_SOSH8P8 = NUMSTR_SOH8; //6  ///< number of strains/stresses
-  static const int NUMDFGR_SOSH8P8 = 9;  ///< number of deformation gradient components
+  static const int NUMNOD_ = NUMNOD_SOH8; //8  ///< number of nodes
+  static const int NODDOF_ = 4;  ///< number of dofs per node
+  static const int NODDISP_ = 3;  ///< number of displacements per node
+  static const int NODPRES_ = 1;  ///< number of pressures per node
+  static const int NUMDOF_ = 32;  ///< total dofs per element
+  static const int NUMDISP_ = 24;  ///< total discrete displacements per element
+  static const int NUMPRES_ = 8;  ///< total discrete pressures per element
+  static const int NUMSTR_ = NUMSTR_SOH8; //6  ///< number of strains/stresses
+  static const int NUMDFGR_ = 9;  ///< number of deformation gradient components
                                          ///< (deformation gradient is non-symmetric)
-  static const int NUMGPT_SOSH8P8 = NUMGPT_SOH8; //8  ///< total gauss points per element
-  static const int NUMDIM_SOSH8P8 = NUMDIM_SOH8; //3  ///< number of dimensions
+  static const int NUMGPT_ = NUMGPT_SOH8; //8  ///< total gauss points per element
+  static const int NUMDIM_ = NUMDIM_SOH8; //3  ///< number of dimensions
 
   /// number of ANS sampling points, here 8
-  static const int NUMSP_SOSH8P8 = 8;
+  static const int NUMSP_ = 8;
   /// number of modified ANS strains (E_rt,E_st,E_tt), here 3
-  static const int NUMANS_SOSH8P8 = 3;
+  static const int NUMANS_ = 3;
 
   //@}
 
@@ -284,16 +289,16 @@ private:
   /// Compute stiffness and mass matrix
   void ForceStiffMass(
     const std::vector<int>& lm,  ///< location matrix
-    const LINALG::Matrix<NUMDISP_SOSH8P8,1>& disp, ///< current displacements
-    const LINALG::Matrix<NUMPRES_SOSH8P8,1>& pres, ///< current pressures
-    LINALG::Matrix<NUMDISP_SOSH8P8,NUMDISP_SOSH8P8>* massmatrix,  ///< element mass matrix
-    LINALG::Matrix<NUMDISP_SOSH8P8,NUMDISP_SOSH8P8>* stiffmatrix,  ///< element stiffness matrix
-    LINALG::Matrix<NUMDISP_SOSH8P8,NUMPRES_SOSH8P8>* gradmatrix,  ///< element gradient matrix
-    LINALG::Matrix<NUMPRES_SOSH8P8,NUMPRES_SOSH8P8>* stabmatrix,  ///< element stabilisation matrix
-    LINALG::Matrix<NUMDISP_SOSH8P8,1>* force,  ///< element internal force vector
-    LINALG::Matrix<NUMPRES_SOSH8P8,1>* incomp,  ///< incompressibility residual
-    LINALG::Matrix<NUMGPT_SOSH8P8,NUMSTR_SOSH8P8>* elestress,  ///< stresses at GP
-    LINALG::Matrix<NUMGPT_SOSH8P8,NUMSTR_SOSH8P8>* elestrain,  ///< strains at GP
+    const LINALG::Matrix<NUMDISP_,1>& disp, ///< current displacements
+    const LINALG::Matrix<NUMPRES_,1>& pres, ///< current pressures
+    LINALG::Matrix<NUMDISP_,NUMDISP_>* massmatrix,  ///< element mass matrix
+    LINALG::Matrix<NUMDISP_,NUMDISP_>* stiffmatrix,  ///< element stiffness matrix
+    LINALG::Matrix<NUMDISP_,NUMPRES_>* gradmatrix,  ///< element gradient matrix
+    LINALG::Matrix<NUMPRES_,NUMPRES_>* stabmatrix,  ///< element stabilisation matrix
+    LINALG::Matrix<NUMDISP_,1>* force,  ///< element internal force vector
+    LINALG::Matrix<NUMPRES_,1>* incomp,  ///< incompressibility residual
+    LINALG::Matrix<NUMGPT_,NUMSTR_>* elestress,  ///< stresses at GP
+    LINALG::Matrix<NUMGPT_,NUMSTR_>* elestrain,  ///< strains at GP
     double* volume,  ///< current element volume
     Teuchos::ParameterList& params,         ///< algorithmic parameters e.g. time
     const INPAR::STR::StressType iostress,   ///< stress output option
@@ -302,37 +307,37 @@ private:
 
   /// Return stress at Gauss point
   void Stress(
-    LINALG::Matrix<NUMGPT_SOSH8P8,NUMSTR_SOSH8P8>* elestress,  ///< store the stress herein
+    LINALG::Matrix<NUMGPT_,NUMSTR_>* elestress,  ///< store the stress herein
     const INPAR::STR::StressType iostress,  ///< stress type
     const int gp,  ///< Gauss point index
     const double& detdefgrd,  ///< determinant of (assumed) deformation gradient
-    const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& defgrd,  ///< (assumed) deformation gradient
-    const LINALG::Matrix<NUMSTR_SOSH8P8,1>& glstrain,  ///< Green-Lagrange strain vector
-    const LINALG::Matrix<NUMSTR_SOSH8P8,1>& stress,  ///< (deviatoric) 2nd Piola-Kirchhoff stress vector
+    const LINALG::Matrix<NUMDIM_,NUMDIM_>& defgrd,  ///< (assumed) deformation gradient
+    const LINALG::Matrix<NUMSTR_,1>& glstrain,  ///< Green-Lagrange strain vector
+    const LINALG::Matrix<NUMSTR_,1>& stress,  ///< (deviatoric) 2nd Piola-Kirchhoff stress vector
     const double& pressure  ///< true pressure
     );
 
   /// Return strain at Gauss point
   void Strain(
-    LINALG::Matrix<NUMGPT_SOSH8P8,NUMSTR_SOSH8P8>* elestrain,  ///< store the strain herein
+    LINALG::Matrix<NUMGPT_,NUMSTR_>* elestrain,  ///< store the strain herein
     const INPAR::STR::StrainType iostrain,  ///< strain type
     const int gp,  ///< Gauss point index
     const double& detdefgrd,  ///< determinant of (assumed) deformation gradient
-    const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& defgrd,  ///< (assumed) deformation gradient
-    const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& invdefgrd,  ///< (assumed) inverted deformation gradient
-    const LINALG::Matrix<NUMSTR_SOSH8P8,1>& glstrain  ///< Green-Lagrange strain vector
+    const LINALG::Matrix<NUMDIM_,NUMDIM_>& defgrd,  ///< (assumed) deformation gradient
+    const LINALG::Matrix<NUMDIM_,NUMDIM_>& invdefgrd,  ///< (assumed) inverted deformation gradient
+    const LINALG::Matrix<NUMSTR_,1>& glstrain  ///< Green-Lagrange strain vector
     );
 
   /// Recover deformation gradient incoperating assumed natural GL strain
   static void AssDefGrad(
-    LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& defgrad,  ///< deformation gradient \f$[\boldsymbol{F}\f$
-    LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& rgtstr,  ///< right stretch tensor \f$[\boldsymbol{U}\f$
-    LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& defgradD,  ///< pure disp-based deformation gradient \f$[\boldsymbol{F}^d\f$
-    LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& rgtstrD,  ///< pure disp-based right stretch tensor \f$[\boldsymbol{U}^d\f$
-    const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& Jinv,  ///< inverse of transposed Jacobi matrix X_{,xi}
-    const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& Jac,  ///< transposed Jacobi matrix X_{,xi}
-    const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& jac,  ///< transposed Jacobi matrix x_{,xi}
-    const LINALG::Matrix<NUMSTR_SOSH8P8,1>& glstrain  ///< material Green-Lagrange strain vector
+    LINALG::Matrix<NUMDIM_,NUMDIM_>& defgrad,  ///< deformation gradient \f$[\boldsymbol{F}\f$
+    LINALG::Matrix<NUMDIM_,NUMDIM_>& rgtstr,  ///< right stretch tensor \f$[\boldsymbol{U}\f$
+    LINALG::Matrix<NUMDIM_,NUMDIM_>& defgradD,  ///< pure disp-based deformation gradient \f$[\boldsymbol{F}^d\f$
+    LINALG::Matrix<NUMDIM_,NUMDIM_>& rgtstrD,  ///< pure disp-based right stretch tensor \f$[\boldsymbol{U}^d\f$
+    const LINALG::Matrix<NUMDIM_,NUMDIM_>& Jinv,  ///< inverse of transposed Jacobi matrix X_{,xi}
+    const LINALG::Matrix<NUMDIM_,NUMDIM_>& Jac,  ///< transposed Jacobi matrix X_{,xi}
+    const LINALG::Matrix<NUMDIM_,NUMDIM_>& jac,  ///< transposed Jacobi matrix x_{,xi}
+    const LINALG::Matrix<NUMSTR_,1>& glstrain  ///< material Green-Lagrange strain vector
                                                       ///< in global Cartesian components
     );
 
@@ -397,8 +402,8 @@ private:
   ///   \end{array}\right]
   /// \f]
   static void Matrix2TensorToVector9Voigt(
-    LINALG::Matrix<NUMDFGR_SOSH8P8,1>& fvct,  ///< (out) 9x1 Voigt vector
-    const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& fmat,  ///< (in) 3x3 matrix
+    LINALG::Matrix<NUMDFGR_,1>& fvct,  ///< (out) 9x1 Voigt vector
+    const LINALG::Matrix<NUMDIM_,NUMDIM_>& fmat,  ///< (in) 3x3 matrix
     const bool transpose = false  ///< use transposed input 3x3 matrix
     );
 
@@ -423,8 +428,8 @@ private:
   ///   \end{array}\right]
   /// \f]
   static void Matrix2TensorToVector6Voigt(
-    LINALG::Matrix<NUMSTR_SOSH8P8,1>& bvct,  ///< 6-Voigt vector
-    const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& bmat,  ///< 3x3 sym 2-tensor
+    LINALG::Matrix<NUMSTR_,1>& bvct,  ///< 6-Voigt vector
+    const LINALG::Matrix<NUMDIM_,NUMDIM_>& bmat,  ///< 3x3 sym 2-tensor
     const VoigtType outvoigt6 = voigt6_strain  ///< type of 6-Voigt vector
     );
 
@@ -432,8 +437,8 @@ private:
   ///
   /// opposite of #Matrix2TensorToVector6Voigt
   static void Vector6VoigtToMatrix2Tensor(
-    LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& bmat,  ///< 3x3 sym 2-tensor
-    const LINALG::Matrix<NUMSTR_SOSH8P8,1>& bvct,  ///< 6-Voigt vector
+    LINALG::Matrix<NUMDIM_,NUMDIM_>& bmat,  ///< 3x3 sym 2-tensor
+    const LINALG::Matrix<NUMSTR_,1>& bvct,  ///< 6-Voigt vector
     const VoigtType invoigt6 = voigt6_strain   ///< type of 6-Voigt vector
     );
 
@@ -445,8 +450,8 @@ private:
   ///   = -(F^{-1})_{ik} \cdot (F^{-1})_{lj}
   /// \f]
   static void InvVector9VoigtDiffByItself(
-    LINALG::Matrix<NUMDFGR_SOSH8P8,NUMDFGR_SOSH8P8>& invfderf,
-    const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& invfmat,
+    LINALG::Matrix<NUMDFGR_,NUMDFGR_>& invfderf,
+    const LINALG::Matrix<NUMDIM_,NUMDIM_>& invfmat,
     const bool transpose = false  ///< use transposed input 3x3 matrix
     );
 
@@ -459,14 +464,14 @@ private:
   ///                + (F^{-1})_{il} \cdot (F^{-1})_{kj} \big)
   /// \f]
   static void InvVector6VoigtDiffByItself(
-    LINALG::Matrix<NUMSTR_SOSH8P8,NUMSTR_SOSH8P8>& invfderf,  ///< 6x6 derivative
-    const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& invfmat  ///< 3x3 inverse symmetric 2-tensor
+    LINALG::Matrix<NUMSTR_,NUMSTR_>& invfderf,  ///< 6x6 derivative
+    const LINALG::Matrix<NUMDIM_,NUMDIM_>& invfmat  ///< 3x3 inverse symmetric 2-tensor
     );
 
   /// 2nd derivative of inverse of symmetric 2-tensor with respect to itself
   static void InvVector6VoigtTwiceDiffByItself(
-    LINALG::Matrix<NUMSTR_SOSH8P8,NUMSTR_SOSH8P8*NUMSTR_SOSH8P8>& invbvdderb,  ///< 6x36 matrix
-    const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& bt  ///< 3x3 inverse symmetric 2-tensor
+    LINALG::Matrix<NUMSTR_,NUMSTR_*NUMSTR_>& invbvdderb,  ///< 6x36 matrix
+    const LINALG::Matrix<NUMDIM_,NUMDIM_>& ibt  ///< 3x3 inverted symmetric 2-tensor
     );
 
   /// Derivative of square of symmetric 2-tensor by itself
@@ -477,8 +482,8 @@ private:
   ///   = \delta_{ik}\cdot F_{il} + \delta_{jl}\cdot F_{ik}
   /// \f]
   static void SqVector6VoigtDiffByItself(
-    LINALG::Matrix<NUMSTR_SOSH8P8,NUMSTR_SOSH8P8>& sqfderf,  ///< diff. squared matrix 
-    const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& fmat  ///< symmetric 2-tensor
+    LINALG::Matrix<NUMSTR_,NUMSTR_>& sqfderf,  ///< diff. squared matrix 
+    const LINALG::Matrix<NUMDIM_,NUMDIM_>& fmat  ///< symmetric 2-tensor
     );
 
   /// Derivative of "square" of non-symmetric 2-tensor by itself
@@ -490,15 +495,15 @@ private:
   ///   \big( \boldsymbol{F}^T \cdot \boldsymbol{F} \big)_{,\boldsymbol{F}}
   /// \f]
   static void SqVector9VoigtDiffByItself(
-    LINALG::Matrix<NUMDFGR_SOSH8P8,NUMDFGR_SOSH8P8>& sqfderf,  ///< diff. squared matrix 
-    const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& fmat,  ///< non-symmetric 2-tensor
+    LINALG::Matrix<NUMDFGR_,NUMDFGR_>& sqfderf,  ///< diff. squared matrix 
+    const LINALG::Matrix<NUMDIM_,NUMDIM_>& fmat,  ///< non-symmetric 2-tensor
     const bool transpose = false  ///< transpose non-symmetric 2-tensor
     );
 
   /// 2nd derivative of square of symmetric 2-tensor with respect to itself
   static void SqVector6VoigtTwiceDiffByItself(
-    LINALG::Matrix<NUMSTR_SOSH8P8,NUMSTR_SOSH8P8*NUMSTR_SOSH8P8>& sqfdderf,  ///< 2nd derivative
-    const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& fmat  ///< symmetric 2-tensor (not needed)
+    LINALG::Matrix<NUMSTR_,NUMSTR_*NUMSTR_>& sqfdderf,  ///< 2nd derivative
+    const LINALG::Matrix<NUMDIM_,NUMDIM_>& fmat  ///< symmetric 2-tensor (not needed)
     );
 
   /// Build 6x9 Voigt matrix for 2-tensor-dot-2-tensor product
@@ -520,8 +525,8 @@ private:
   ///   \mathbf{A} = \mathbf{B} \; \tilde{\mathbf{C}}
   /// \f]
   static void Matrix2TensorToMatrix6x9Voigt(
-    LINALG::Matrix<NUMSTR_SOSH8P8,NUMDFGR_SOSH8P8>& bm,  ///< (out) 6x9 Voigt matrix
-    const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& bt,  ///< (in) 3x3 matrix
+    LINALG::Matrix<NUMSTR_,NUMDFGR_>& bm,  ///< (out) 6x9 Voigt matrix
+    const LINALG::Matrix<NUMDIM_,NUMDIM_>& bt,  ///< (in) 3x3 matrix
     const bool transpose = true  ///< transpose entries
     );
 
@@ -545,8 +550,8 @@ private:
   ///
   /// This operation is also known as 'pull back'
   static void Matrix2TensorToLeftRightProductMatrix6x6Voigt(
-    LINALG::Matrix<NUMSTR_SOSH8P8,NUMSTR_SOSH8P8>& bm,  ///< (out) 6x6 Voigt matrix
-    const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& bt,  ///< (in) 3x3 matrix of 2-tensor
+    LINALG::Matrix<NUMSTR_,NUMSTR_>& bm,  ///< (out) 6x6 Voigt matrix
+    const LINALG::Matrix<NUMDIM_,NUMDIM_>& bt,  ///< (in) 3x3 matrix of 2-tensor
     const bool transpose = false, ///< 3x3 input matrix is transposed
     const VoigtType outvoigt6 = voigt6_strain,  ///< 6-Voigt vector layout on rows of 6x6 matrix
     const VoigtType invoigt6 = voigt6_strain  ///< 6-Voigt vector layout on columns of 6x6 matrix
@@ -561,24 +566,24 @@ private:
   /// of 32x1 displacement-pressure vector
   static void ExtractDispAndPres(
     std::vector<double>& mystat,  ///< 32x1 element displacement-pressure vector
-    LINALG::Matrix<NUMDISP_SOSH8P8,1>& mydisp,  ///< 24x1 element displacement vector
-    LINALG::Matrix<NUMPRES_SOSH8P8,1>& mypres  ///< 8x1 element pressure vector
+    LINALG::Matrix<NUMDISP_,1>& mydisp,  ///< 24x1 element displacement vector
+    LINALG::Matrix<NUMPRES_,1>& mypres  ///< 8x1 element pressure vector
     );
 
   /// Build 32x32 element matrix
   static void BuildElementMatrix(
-    LINALG::Matrix<NUMDOF_SOSH8P8,NUMDOF_SOSH8P8>* mat,  ///< 32x32 matrix
-    const LINALG::Matrix<NUMDISP_SOSH8P8,NUMDISP_SOSH8P8>* matdd,  ///< 24x24 sub-matrix, if NULL then 0s are inserted
-    const LINALG::Matrix<NUMDISP_SOSH8P8,NUMPRES_SOSH8P8>* matdp,  ///< 24x8 sub-matrix, if NULL then 0s are inserted
-    const LINALG::Matrix<NUMDISP_SOSH8P8,NUMPRES_SOSH8P8>* matpd,  ///< 8x24 sub-matrix, if NULL then transpose of matdp is inserted or 0s
-    const LINALG::Matrix<NUMPRES_SOSH8P8,NUMPRES_SOSH8P8>* matpp  ///< 8x8 sub-matrix, if NULL then 0s are inserted
+    LINALG::Matrix<NUMDOF_,NUMDOF_>* mat,  ///< 32x32 matrix
+    const LINALG::Matrix<NUMDISP_,NUMDISP_>* matdd,  ///< 24x24 sub-matrix, if NULL then 0s are inserted
+    const LINALG::Matrix<NUMDISP_,NUMPRES_>* matdp,  ///< 24x8 sub-matrix, if NULL then 0s are inserted
+    const LINALG::Matrix<NUMDISP_,NUMPRES_>* matpd,  ///< 8x24 sub-matrix, if NULL then transpose of matdp is inserted or 0s
+    const LINALG::Matrix<NUMPRES_,NUMPRES_>* matpp  ///< 8x8 sub-matrix, if NULL then 0s are inserted
     );
 
   /// Build 32x1 element vector
   static void BuildElementVector(
-    LINALG::Matrix<NUMDOF_SOSH8P8,1>* vct,  ///< 32x1 vector
-    const LINALG::Matrix<NUMDISP_SOSH8P8,1>* vctd,  ///< 24x1 sub-vector, if NULL then 0s are inserted
-    const LINALG::Matrix<NUMPRES_SOSH8P8,1>* vctp  ///< 8x1 sub-vector, if NULL then 0s are inserted
+    LINALG::Matrix<NUMDOF_,1>* vct,  ///< 32x1 vector
+    const LINALG::Matrix<NUMDISP_,1>* vctd,  ///< 24x1 sub-vector, if NULL then 0s are inserted
+    const LINALG::Matrix<NUMPRES_,1>* vctp  ///< 8x1 sub-vector, if NULL then 0s are inserted
     );
 
   /// Assemble global volume

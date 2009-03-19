@@ -42,7 +42,7 @@ Maintainer: Burkhard Bornemann
 
 
 /*----------------------------------------------------------------------*
- |  evaluate the element (public)                              maf 04/07|
+ |  evaluate the element (public)                            bborn 03/08|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_sh8p8::Evaluate(
   Teuchos::ParameterList& params,
@@ -54,10 +54,10 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
   Epetra_SerialDenseVector& elevec2_epetra,
   Epetra_SerialDenseVector& elevec3_epetra)
 {
-  LINALG::Matrix<NUMDOF_SOSH8P8,NUMDOF_SOSH8P8> elemat1(elemat1_epetra.A(),true);
-  LINALG::Matrix<NUMDOF_SOSH8P8,NUMDOF_SOSH8P8> elemat2(elemat2_epetra.A(),true);
-  LINALG::Matrix<NUMDOF_SOSH8P8,1> elevec1(elevec1_epetra.A(),true);
-  LINALG::Matrix<NUMDOF_SOSH8P8,1> elevec2(elevec2_epetra.A(),true);
+  LINALG::Matrix<NUMDOF_,NUMDOF_> elemat1(elemat1_epetra.A(),true);
+  LINALG::Matrix<NUMDOF_,NUMDOF_> elemat2(elemat2_epetra.A(),true);
+  LINALG::Matrix<NUMDOF_,1> elevec1(elevec1_epetra.A(),true);
+  LINALG::Matrix<NUMDOF_,1> elevec2(elevec2_epetra.A(),true);
   // elevec3 is not used anyway
 
   // start with "none"
@@ -90,13 +90,13 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
     // linear stiffness
     case calc_struct_linstiff: {
       // need zero current displacement and residual forces
-      LINALG::Matrix<NUMDISP_SOSH8P8,1> mydisp(true);
-      LINALG::Matrix<NUMPRES_SOSH8P8,1> mypres(true);
-      LINALG::Matrix<NUMDISP_SOSH8P8,NUMDISP_SOSH8P8> stiffmatrix(true);
-      LINALG::Matrix<NUMDISP_SOSH8P8,NUMPRES_SOSH8P8> gradmatrix(true);
-      LINALG::Matrix<NUMPRES_SOSH8P8,NUMPRES_SOSH8P8> stabmatrix(true);
-      LINALG::Matrix<NUMDISP_SOSH8P8,1> force(true);
-      LINALG::Matrix<NUMPRES_SOSH8P8,1> incomp(true);
+      LINALG::Matrix<NUMDISP_,1> mydisp(true);
+      LINALG::Matrix<NUMPRES_,1> mypres(true);
+      LINALG::Matrix<NUMDISP_,NUMDISP_> stiffmatrix(true);
+      LINALG::Matrix<NUMDISP_,NUMPRES_> gradmatrix(true);
+      LINALG::Matrix<NUMPRES_,NUMPRES_> stabmatrix(true);
+      LINALG::Matrix<NUMDISP_,1> force(true);
+      LINALG::Matrix<NUMPRES_,1> incomp(true);
       ForceStiffMass(lm,mydisp,mypres,
                      NULL,&stiffmatrix,&gradmatrix,&stabmatrix,&force,&incomp,
                      NULL,NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
@@ -113,14 +113,14 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
         dserror("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mystat(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mystat,lm);
-      LINALG::Matrix<NUMDISP_SOSH8P8,1> mydisp;
-      LINALG::Matrix<NUMPRES_SOSH8P8,1> mypres;
+      LINALG::Matrix<NUMDISP_,1> mydisp;
+      LINALG::Matrix<NUMPRES_,1> mypres;
       ExtractDispAndPres(mystat,mydisp,mypres);
-      LINALG::Matrix<NUMDISP_SOSH8P8,NUMDISP_SOSH8P8> stiffmatrix(true);
-      LINALG::Matrix<NUMDISP_SOSH8P8,NUMPRES_SOSH8P8> gradmatrix(true);
-      LINALG::Matrix<NUMPRES_SOSH8P8,NUMPRES_SOSH8P8> stabmatrix(true);
-      LINALG::Matrix<NUMDISP_SOSH8P8,1> force(true);
-      LINALG::Matrix<NUMPRES_SOSH8P8,1> incomp(true);
+      LINALG::Matrix<NUMDISP_,NUMDISP_> stiffmatrix(true);
+      LINALG::Matrix<NUMDISP_,NUMPRES_> gradmatrix(true);
+      LINALG::Matrix<NUMPRES_,NUMPRES_> stabmatrix(true);
+      LINALG::Matrix<NUMDISP_,1> force(true);
+      LINALG::Matrix<NUMPRES_,1> incomp(true);
       double volume = 0.0;
       ForceStiffMass(lm,mydisp,mypres,
                      NULL,&stiffmatrix,&gradmatrix,&stabmatrix,&force,&incomp,
@@ -142,14 +142,14 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
         dserror("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mystat(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mystat,lm);
-      LINALG::Matrix<NUMDISP_SOSH8P8,1> mydisp;
-      LINALG::Matrix<NUMPRES_SOSH8P8,1> mypres;
+      LINALG::Matrix<NUMDISP_,1> mydisp;
+      LINALG::Matrix<NUMPRES_,1> mypres;
       ExtractDispAndPres(mystat,mydisp,mypres);
-      LINALG::Matrix<NUMDISP_SOSH8P8,NUMDISP_SOSH8P8> stiffmatrix(true);
-      LINALG::Matrix<NUMDISP_SOSH8P8,NUMPRES_SOSH8P8> gradmatrix(true);
-      LINALG::Matrix<NUMPRES_SOSH8P8,NUMPRES_SOSH8P8> stabmatrix(true);
-      LINALG::Matrix<NUMDISP_SOSH8P8,1> force(true);
-      LINALG::Matrix<NUMPRES_SOSH8P8,1> incomp(true);
+      LINALG::Matrix<NUMDISP_,NUMDISP_> stiffmatrix(true);
+      LINALG::Matrix<NUMDISP_,NUMPRES_> gradmatrix(true);
+      LINALG::Matrix<NUMPRES_,NUMPRES_> stabmatrix(true);
+      LINALG::Matrix<NUMDISP_,1> force(true);
+      LINALG::Matrix<NUMPRES_,1> incomp(true);
       ForceStiffMass(lm,mydisp,mypres,
                      NULL,&stiffmatrix,&gradmatrix,&stabmatrix,&force,&incomp,
                      NULL,NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
@@ -172,15 +172,15 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
         dserror("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mystat(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mystat,lm);
-      LINALG::Matrix<NUMDISP_SOSH8P8,1> mydisp;
-      LINALG::Matrix<NUMPRES_SOSH8P8,1> mypres;
+      LINALG::Matrix<NUMDISP_,1> mydisp;
+      LINALG::Matrix<NUMPRES_,1> mypres;
       ExtractDispAndPres(mystat,mydisp,mypres);
-      LINALG::Matrix<NUMDISP_SOSH8P8,NUMDISP_SOSH8P8> massmatrix(true);
-      LINALG::Matrix<NUMDISP_SOSH8P8,NUMDISP_SOSH8P8> stiffmatrix(true);
-      LINALG::Matrix<NUMDISP_SOSH8P8,NUMPRES_SOSH8P8> gradmatrix(true);
-      LINALG::Matrix<NUMPRES_SOSH8P8,NUMPRES_SOSH8P8> stabmatrix(true);
-      LINALG::Matrix<NUMDISP_SOSH8P8,1> force(true);
-      LINALG::Matrix<NUMPRES_SOSH8P8,1> incomp(true);
+      LINALG::Matrix<NUMDISP_,NUMDISP_> massmatrix(true);
+      LINALG::Matrix<NUMDISP_,NUMDISP_> stiffmatrix(true);
+      LINALG::Matrix<NUMDISP_,NUMPRES_> gradmatrix(true);
+      LINALG::Matrix<NUMPRES_,NUMPRES_> stabmatrix(true);
+      LINALG::Matrix<NUMDISP_,1> force(true);
+      LINALG::Matrix<NUMPRES_,1> incomp(true);
       ForceStiffMass(lm,mydisp,mypres,
                      &massmatrix,&stiffmatrix,&gradmatrix,&stabmatrix,&force,&incomp,
                      NULL,NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
@@ -205,11 +205,11 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
       if (straindata==Teuchos::null) dserror("Cannot get strain 'data'");
       std::vector<double> mystat(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mystat,lm);
-      LINALG::Matrix<NUMDISP_SOSH8P8,1> mydisp;
-      LINALG::Matrix<NUMPRES_SOSH8P8,1> mypres;
+      LINALG::Matrix<NUMDISP_,1> mydisp;
+      LINALG::Matrix<NUMPRES_,1> mypres;
       ExtractDispAndPres(mystat,mydisp,mypres);
-      LINALG::Matrix<NUMGPT_SOSH8P8,NUMSTR_SOSH8P8> stress;
-      LINALG::Matrix<NUMGPT_SOSH8P8,NUMSTR_SOSH8P8> strain;
+      LINALG::Matrix<NUMGPT_,NUMSTR_> stress;
+      LINALG::Matrix<NUMGPT_,NUMSTR_> strain;
       INPAR::STR::StressType iostress 
         = params.get<INPAR::STR::StressType>("iostress", INPAR::STR::stress_none);
       INPAR::STR::StrainType iostrain 
@@ -235,31 +235,31 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
         dserror("no gp stress/strain map available for postprocessing");
       std::string stresstype = params.get<std::string>("stresstype","ndxyz");
       int gid = Id();
-      LINALG::Matrix<NUMGPT_SOSH8P8,NUMSTR_SOSH8P8> gpstress(((*gpstressmap)[gid])->A(),true);
+      LINALG::Matrix<NUMGPT_,NUMSTR_> gpstress(((*gpstressmap)[gid])->A(),true);
 
       if (stresstype=="ndxyz") {
         // extrapolate stresses/strains at Gauss points to nodes
-        LINALG::Matrix<NUMNOD_SOSH8P8,NUMSTR_SOSH8P8> nodalstresses;
+        LINALG::Matrix<NUMNOD_,NUMSTR_> nodalstresses;
         soh8_expol(gpstress,nodalstresses);
 
         // average nodal stresses/strains between elements
         // -> divide by number of adjacent elements
-        std::vector<int> numadjele(NUMNOD_SOSH8P8);
+        std::vector<int> numadjele(NUMNOD_);
 
         DRT::Node** nodes = Nodes();
-        for (int i=0;i<NUMNOD_SOSH8P8;++i)
+        for (int i=0;i<NUMNOD_;++i)
         {
           DRT::Node* node = nodes[i];
           numadjele[i]=node->NumElement();
         }
 
-        for (int i=0;i<NUMNOD_SOSH8P8;++i)
+        for (int i=0;i<NUMNOD_;++i)
         {
           elevec1(3*i)=nodalstresses(i,0)/numadjele[i];
           elevec1(3*i+1)=nodalstresses(i,1)/numadjele[i];
           elevec1(3*i+2)=nodalstresses(i,2)/numadjele[i];
         }
-        for (int i=0;i<NUMNOD_SOSH8P8;++i)
+        for (int i=0;i<NUMNOD_;++i)
         {
           elevec2(3*i)=nodalstresses(i,3)/numadjele[i];
           elevec2(3*i+1)=nodalstresses(i,4)/numadjele[i];
@@ -267,65 +267,67 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
         }
       }
       else if (stresstype=="cxyz") {
-        Teuchos::RCP<Epetra_MultiVector> elestress=params.get<Teuchos::RCP<Epetra_MultiVector> >("elestress",Teuchos::null);
+        Teuchos::RCP<Epetra_MultiVector> elestress
+          = params.get<Teuchos::RCP<Epetra_MultiVector> >("elestress",Teuchos::null);
         if (elestress==Teuchos::null)
           dserror("No element stress/strain vector available");
         const Epetra_BlockMap elemap = elestress->Map();
         int lid = elemap.LID(Id());
         if (lid!=-1)
         {
-          for (int i = 0; i < NUMSTR_SOSH8P8; ++i)
+          for (int i = 0; i < NUMSTR_; ++i)
           {
             double& s = (*((*elestress)(i)))[lid]; // resolve pointer for faster access
             s = 0.;
-            for (int j = 0; j < NUMGPT_SOSH8P8; ++j)
+            for (int j = 0; j < NUMGPT_; ++j)
             {
               s += gpstress(j,i);
             }
-            s *= 1.0/NUMGPT_SOSH8P8;
+            s *= 1.0/NUMGPT_;
           }
         }
       }
       else if (stresstype=="cxyz_ndxyz") {
         // extrapolate stresses/strains at Gauss points to nodes
-        LINALG::Matrix<NUMNOD_SOSH8P8,NUMSTR_SOSH8P8> nodalstresses;
+        LINALG::Matrix<NUMNOD_,NUMSTR_> nodalstresses;
         soh8_expol(gpstress,nodalstresses);
 
         // average nodal stresses/strains between elements
         // -> divide by number of adjacent elements
-        std::vector<int> numadjele(NUMNOD_SOSH8P8);
+        std::vector<int> numadjele(NUMNOD_);
 
         DRT::Node** nodes = Nodes();
-        for (int i=0;i<NUMNOD_SOSH8P8;++i){
+        for (int i=0;i<NUMNOD_;++i){
           DRT::Node* node=nodes[i];
           numadjele[i]=node->NumElement();
         }
 
-        for (int i=0;i<NUMNOD_SOSH8P8;++i){
+        for (int i=0;i<NUMNOD_;++i){
           elevec1(3*i)=nodalstresses(i,0)/numadjele[i];
           elevec1(3*i+1)=nodalstresses(i,1)/numadjele[i];
           elevec1(3*i+2)=nodalstresses(i,2)/numadjele[i];
         }
-        for (int i=0;i<NUMNOD_SOSH8P8;++i){
+        for (int i=0;i<NUMNOD_;++i){
           elevec2(3*i)=nodalstresses(i,3)/numadjele[i];
           elevec2(3*i+1)=nodalstresses(i,4)/numadjele[i];
           elevec2(3*i+2)=nodalstresses(i,5)/numadjele[i];
         }
-        Teuchos::RCP<Epetra_MultiVector> elestress=params.get<Teuchos::RCP<Epetra_MultiVector> >("elestress",Teuchos::null);
+        Teuchos::RCP<Epetra_MultiVector> elestress
+          = params.get<Teuchos::RCP<Epetra_MultiVector> >("elestress",Teuchos::null);
         if (elestress==Teuchos::null)
           dserror("No element stress/strain vector available");
         const Epetra_BlockMap elemap = elestress->Map();
         int lid = elemap.LID(Id());
         if (lid!=-1) {
-          for (int i = 0; i < NUMSTR_SOSH8P8; ++i)
+          for (int i = 0; i < NUMSTR_; ++i)
           {
             double& s = (*((*elestress)(i)))[lid]; // resolve pointer for faster access
             s = 0.;
-            for (int j = 0; j < NUMGPT_SOSH8P8; ++j)
+            for (int j = 0; j < NUMGPT_; ++j)
             {
               s += gpstress(j,i);
             }
-            s *= 1.0/NUMGPT_SOSH8P8;
+            s *= 1.0/NUMGPT_;
           }
         }
       }
@@ -453,16 +455,16 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
   const std::vector<int>& lm,             // location matrix
-  const LINALG::Matrix<NUMDISP_SOSH8P8,1>& disp,           // current displacements
-  const LINALG::Matrix<NUMPRES_SOSH8P8,1>& pres,       // current pressures
-  LINALG::Matrix<NUMDISP_SOSH8P8,NUMDISP_SOSH8P8>* massmatrix,  // element mass matrix
-  LINALG::Matrix<NUMDISP_SOSH8P8,NUMDISP_SOSH8P8>* stiffmatrix, // element stiffness matrix
-  LINALG::Matrix<NUMDISP_SOSH8P8,NUMPRES_SOSH8P8>* gradmatrix, // element gradient matrix
-  LINALG::Matrix<NUMPRES_SOSH8P8,NUMPRES_SOSH8P8>* stabmatrix,  // element stabilisation matrix
-  LINALG::Matrix<NUMDISP_SOSH8P8,1>* force,                 // element internal force vector
-  LINALG::Matrix<NUMPRES_SOSH8P8,1>* incomp,   // incompressibility residual
-  LINALG::Matrix<NUMGPT_SOSH8P8,NUMSTR_SOSH8P8>* elestress,   // stresses at GP
-  LINALG::Matrix<NUMGPT_SOSH8P8,NUMSTR_SOSH8P8>* elestrain,   // strains at GP
+  const LINALG::Matrix<NUMDISP_,1>& disp,           // current displacements
+  const LINALG::Matrix<NUMPRES_,1>& pres,       // current pressures
+  LINALG::Matrix<NUMDISP_,NUMDISP_>* massmatrix,  // element mass matrix
+  LINALG::Matrix<NUMDISP_,NUMDISP_>* stiffmatrix, // element stiffness matrix
+  LINALG::Matrix<NUMDISP_,NUMPRES_>* gradmatrix, // element gradient matrix
+  LINALG::Matrix<NUMPRES_,NUMPRES_>* stabmatrix,  // element stabilisation matrix
+  LINALG::Matrix<NUMDISP_,1>* force,                 // element internal force vector
+  LINALG::Matrix<NUMPRES_,1>* incomp,   // incompressibility residual
+  LINALG::Matrix<NUMGPT_,NUMSTR_>* elestress,   // stresses at GP
+  LINALG::Matrix<NUMGPT_,NUMSTR_>* elestrain,   // strains at GP
   double* volume,  // element volume
   Teuchos::ParameterList& params,  // algorithmic parameters e.g. time
   const INPAR::STR::StressType iostress, // stress output option
@@ -472,25 +474,25 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
 ** ============================================================================*/
-  const static std::vector<LINALG::Matrix<NUMNOD_SOSH8P8,1> > shapefcts = soh8_shapefcts();
-  const static std::vector<LINALG::Matrix<NUMDIM_SOSH8P8,NUMNOD_SOSH8P8> > derivs = soh8_derivs();
+  const static std::vector<LINALG::Matrix<NUMNOD_,1> > shapefcts = soh8_shapefcts();
+  const static std::vector<LINALG::Matrix<NUMDIM_,NUMNOD_> > derivs = soh8_derivs();
   const static std::vector<double> gpweights = soh8_weights();
 /* ============================================================================*/
 
   // update element geometry
-  LINALG::Matrix<NUMNOD_SOSH8P8,NUMDIM_SOSH8P8> xrefe;  // material coord. of element
-  LINALG::Matrix<NUMNOD_SOSH8P8,NUMDIM_SOSH8P8> xcurr;  // current  coord. of element
+  LINALG::Matrix<NUMNOD_,NUMDIM_> xrefe;  // material coord. of element
+  LINALG::Matrix<NUMNOD_,NUMDIM_> xcurr;  // current  coord. of element
   DRT::Node** nodes = Nodes();
-  for (int i=0; i<NUMNOD_SOSH8P8; ++i)
+  for (int i=0; i<NUMNOD_; ++i)
   {
     const double* x = nodes[i]->X();
     xrefe(i,0) = x[0];
     xrefe(i,1) = x[1];
     xrefe(i,2) = x[2];
 
-    xcurr(i,0) = xrefe(i,0) + disp(i*NODDISP_SOSH8P8+0,0);
-    xcurr(i,1) = xrefe(i,1) + disp(i*NODDISP_SOSH8P8+1,0);
-    xcurr(i,2) = xrefe(i,2) + disp(i*NODDISP_SOSH8P8+2,0);
+    xcurr(i,0) = xrefe(i,0) + disp(i*NODDISP_+0,0);
+    xcurr(i,1) = xrefe(i,1) + disp(i*NODDISP_+1,0);
+    xcurr(i,2) = xrefe(i,2) + disp(i*NODDISP_+2,0);
   }
 
   /*
@@ -501,33 +503,33 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
   // modified B-operator in local(parameter) element space
 
   // ANS modified rows of bop in local(parameter) coords
-  //LINALG::Matrix<NUMANS_SOSH8P8*NUMSP_SOSH8P8,NUMDOF_SOSH8P8> B_ans_loc(true); //set to 0
-  LINALG::Matrix<NUMANS_SOSH8P8*NUMSP_SOSH8P8,NUMDISP_SOSH8P8> B_ans_loc;
+  //LINALG::Matrix<NUMANS_*NUMSP_,NUMDOF_> B_ans_loc(true); //set to 0
+  LINALG::Matrix<NUMANS_*NUMSP_,NUMDISP_> B_ans_loc;
   // Jacobian evaluated at all ANS sampling points
-  std::vector<LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> > jac_sps(NUMSP_SOSH8P8);
+  std::vector<LINALG::Matrix<NUMDIM_,NUMDIM_> > jac_sps(NUMSP_);
   // CURRENT Jacobian evaluated at all ANS sampling points
-  std::vector<LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> > jac_cur_sps(NUMSP_SOSH8P8);
+  std::vector<LINALG::Matrix<NUMDIM_,NUMDIM_> > jac_cur_sps(NUMSP_);
   // pointer to derivs evaluated at all sampling points
-  std::vector<LINALG::Matrix<NUMDIM_SOSH8P8,NUMNOD_SOSH8P8> >* deriv_sp = NULL;
+  std::vector<LINALG::Matrix<NUMDIM_,NUMNOD_> >* deriv_sp = NULL;
   // evaluate all necessary variables for ANS
   sosh8_anssetup(xrefe,xcurr,&deriv_sp,jac_sps,jac_cur_sps,B_ans_loc);
   // (r,s) gp-locations of fully integrated linear 8-node Hex
   // necessary for ANS interpolation
   const double gploc    = 1.0/sqrt(3.0);    // gp sampling point value for linear fct
-  const double r[NUMGPT_SOSH8P8] = {-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc,-gploc};
-  const double s[NUMGPT_SOSH8P8] = {-gploc,-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc};
+  const double r[NUMGPT_] = {-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc,-gploc};
+  const double s[NUMGPT_] = {-gploc,-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc};
 
   // ---------------------------------------------------------------------
   // first loop over Gauss point
   // stabilisation matrices
   LINALG::Matrix<1,1> estabd(true); // element volume
-  LINALG::Matrix<1,NUMNOD_SOSH8P8> estabe(true); // integral of pressure shape functions across element
-  LINALG::Matrix<NUMNOD_SOSH8P8,NUMNOD_SOSH8P8> estabm(true);  // mass-like matrix
-  std::vector<LINALG::Matrix<1,1> > estaba(NUMGPT_SOSH8P8);  // shape functions for projected Q0/constant pressure
-  for (int gp=0; gp<NUMGPT_SOSH8P8; ++gp)
+  LINALG::Matrix<1,NUMNOD_> estabe(true); // integral of pressure shape functions across element
+  LINALG::Matrix<NUMNOD_,NUMNOD_> estabm(true);  // mass-like matrix
+  std::vector<LINALG::Matrix<1,1> > estaba(NUMGPT_);  // shape functions for projected Q0/constant pressure
+  for (int gp=0; gp<NUMGPT_; ++gp)
   {
     // (transposed) material-to-parametric Jacobian J = (X_{,xi})^T
-    LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> Jac;
+    LINALG::Matrix<NUMDIM_,NUMDIM_> Jac;
     Jac.Multiply(derivs[gp],xrefe);
     const double detJ = Jac.Determinant();
 
@@ -554,7 +556,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
-  for (int gp=0; gp<NUMGPT_SOSH8P8; ++gp)
+  for (int gp=0; gp<NUMGPT_; ++gp)
   {
 
     /* compute the Jacobian matrix which looks like:
@@ -562,7 +564,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
     **     J = [ x_,s  y_,s  z_,s ]
     **         [ x_,t  y_,t  z_,t ]
     */
-    LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> jac;
+    LINALG::Matrix<NUMDIM_,NUMDIM_> jac;
     jac.Multiply(derivs[gp],xrefe);
 
     // compute determinant of Jacobian by Sarrus' rule
@@ -576,13 +578,13 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
     **         [ xcurr_,t  ycurr_,t  zcurr_,t ]
     ** Used to transform the global displacements into parametric space
     */
-    LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> jac_cur;
+    LINALG::Matrix<NUMDIM_,NUMDIM_> jac_cur;
     jac_cur.Multiply(derivs[gp],xcurr);
 
     // set up B-Operator in local(parameter) element space including ANS
-    LINALG::Matrix<NUMSTR_SOSH8P8,NUMDISP_SOSH8P8> bop_loc;
-    for (int inode = 0; inode < NUMNOD_SOSH8P8; ++inode) {
-      for (int dim = 0; dim < NUMDIM_SOSH8P8; ++dim) {
+    LINALG::Matrix<NUMSTR_,NUMDISP_> bop_loc;
+    for (int inode = 0; inode < NUMNOD_; ++inode) {
+      for (int dim = 0; dim < NUMDIM_; ++dim) {
         // B_loc_rr = N_r.X_r
         bop_loc(0,inode*3+dim) = derivs[gp](0,inode) * jac_cur(0,dim);
         // B_loc_ss = N_s.X_s
@@ -604,32 +606,32 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
           // B_loc_tt = interpolation along (r x s) of ANS B_loc_tt
           //          = (1-r)(1-s)/4 * B_ans(SP E) + (1+r)(1-s)/4 * B_ans(SP F)
           //           +(1+r)(1+s)/4 * B_ans(SP G) + (1-r)(1+s)/4 * B_ans(SP H)
-          bop_loc(2,inode*3+dim) = 0.25*(1-r[gp])*(1-s[gp]) * B_ans_loc(0+4*NUMANS_SOSH8P8,inode*3+dim)
-                                 + 0.25*(1+r[gp])*(1-s[gp]) * B_ans_loc(0+5*NUMANS_SOSH8P8,inode*3+dim)
-                                 + 0.25*(1+r[gp])*(1+s[gp]) * B_ans_loc(0+6*NUMANS_SOSH8P8,inode*3+dim)
-                                 + 0.25*(1-r[gp])*(1+s[gp]) * B_ans_loc(0+7*NUMANS_SOSH8P8,inode*3+dim);
+          bop_loc(2,inode*3+dim) = 0.25*(1-r[gp])*(1-s[gp]) * B_ans_loc(0+4*NUMANS_,inode*3+dim)
+                                 + 0.25*(1+r[gp])*(1-s[gp]) * B_ans_loc(0+5*NUMANS_,inode*3+dim)
+                                 + 0.25*(1+r[gp])*(1+s[gp]) * B_ans_loc(0+6*NUMANS_,inode*3+dim)
+                                 + 0.25*(1-r[gp])*(1+s[gp]) * B_ans_loc(0+7*NUMANS_,inode*3+dim);
           // B_loc_st = interpolation along r of ANS B_loc_st
           //          = (1+r)/2 * B_ans(SP B) + (1-r)/2 * B_ans(SP D)
-          bop_loc(4,inode*3+dim) = 0.5*(1.0+r[gp]) * B_ans_loc(1+1*NUMANS_SOSH8P8,inode*3+dim)
-                                 + 0.5*(1.0-r[gp]) * B_ans_loc(1+3*NUMANS_SOSH8P8,inode*3+dim);
+          bop_loc(4,inode*3+dim) = 0.5*(1.0+r[gp]) * B_ans_loc(1+1*NUMANS_,inode*3+dim)
+                                 + 0.5*(1.0-r[gp]) * B_ans_loc(1+3*NUMANS_,inode*3+dim);
           // B_loc_rt = interpolation along s of ANS B_loc_rt
           //          = (1-s)/2 * B_ans(SP A) + (1+s)/2 * B_ans(SP C)
-          bop_loc(5,inode*3+dim) = 0.5*(1.0-s[gp]) * B_ans_loc(2+0*NUMANS_SOSH8P8,inode*3+dim)
-                                 + 0.5*(1.0+s[gp]) * B_ans_loc(2+2*NUMANS_SOSH8P8,inode*3+dim);
+          bop_loc(5,inode*3+dim) = 0.5*(1.0-s[gp]) * B_ans_loc(2+0*NUMANS_,inode*3+dim)
+                                 + 0.5*(1.0+s[gp]) * B_ans_loc(2+2*NUMANS_,inode*3+dim);
         }
       }
     }
 
     // transformation from local (parameter) element space to global(material) space
     // with famous 'T'-matrix already used for EAS but now evaluated at each gp
-    LINALG::Matrix<NUMSTR_SOSH8P8,NUMSTR_SOSH8P8> TinvT;
+    LINALG::Matrix<NUMSTR_,NUMSTR_> TinvT;
     sosh8_evaluateT(jac,TinvT);
-    LINALG::Matrix<NUMSTR_SOSH8P8,NUMDISP_SOSH8P8> bop;
+    LINALG::Matrix<NUMSTR_,NUMDISP_> bop;
     bop.Multiply(TinvT,bop_loc);
 
     // local GL strain vector lstrain={E11,E22,E33,2*E12,2*E23,2*E31}
     // but with modified ANS strains E33, E23 and E13
-    LINALG::Matrix<NUMSTR_SOSH8P8,1> lstrain;
+    LINALG::Matrix<NUMSTR_,1> lstrain;
     // evaluate glstrains in local(parameter) coords
     // Err = 0.5 * (dx/dr * dx/dr^T - dX/dr * dX/dr^T)
     lstrain(0) = 0.5 * (
@@ -670,7 +672,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
       double dzdt_H = 0.0; double dZdt_H = 0.0;
 
       // vector product of rows of jacobians at corresponding sampling point    cout << jac_cur_sps;
-      for (int dim = 0; dim < NUMDIM_SOSH8P8; ++dim) {
+      for (int dim = 0; dim < NUMDIM_; ++dim) {
         dydt_A += jac_cur_sps[0](0,dim) * jac_cur_sps[0](2,dim);
         dYdt_A += jac_sps[0](0,dim)     * jac_sps[0](2,dim);
         dxdt_B += jac_cur_sps[1](1,dim) * jac_cur_sps[1](2,dim);
@@ -706,18 +708,22 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
     // ANS modification of strains ************************************** ANS
 
     // push local/natural/parametric glstrains forward to global/material space
-    LINALG::Matrix<NUMSTR_SOSH8P8,1> glstrain;
+    LINALG::Matrix<NUMSTR_,1> glstrain;
     glstrain.Multiply(TinvT,lstrain);
 
     // recover deformation gradient incoperating assumed natural GL strain
-    LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> defgrad(true);  // assumed def.grad.
-    LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> rgtstr(true);  // assumed material stretch
-    LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> defgradD(true);  // pure disp-based def.grad.
-    LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> rgtstrD(true);  // pure disp.-based material stretch
+    LINALG::Matrix<NUMDIM_,NUMDIM_> defgrad(true);  // assumed def.grad.
+    LINALG::Matrix<NUMDIM_,NUMDIM_> rgtstr(true);  // assumed material stretch
+    LINALG::Matrix<NUMDIM_,NUMDIM_> defgradD(true);  // pure disp-based def.grad.
+    LINALG::Matrix<NUMDIM_,NUMDIM_> rgtstrD(true);  // pure disp.-based material stretch
     AssDefGrad(defgrad,rgtstr,defgradD,rgtstrD,invJ_[gp],jac,jac_cur,glstrain);
+    
+    // assumend right material stretch 6-Voigt vector
+    LINALG::Matrix<NUMSTR_,1> rgtstrv;
+    Matrix2TensorToVector6Voigt(rgtstrv,rgtstr,voigt6_strain);
 
     // inverse of deformation gradient and its derivative 
-    LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> invdefgrad(defgrad);
+    LINALG::Matrix<NUMDIM_,NUMDIM_> invdefgrad(defgrad);
     double detdefgrad = invdefgrad.Invert();
 
     // return gp strains if necessary
@@ -730,8 +736,8 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
     ** every necessary data must be passed.
     */
     double density = 0.0;
-    LINALG::Matrix<NUMSTR_SOSH8P8,NUMSTR_SOSH8P8> cmat(true);
-    LINALG::Matrix<NUMSTR_SOSH8P8,1> stress(true);
+    LINALG::Matrix<NUMSTR_,NUMSTR_> cmat(true);
+    LINALG::Matrix<NUMSTR_,1> stress(true);
     soh8_mat_sel(&stress,&cmat,&density,&glstrain,&defgrad,gp,params);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -743,7 +749,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
       Stress(elestress,iostress,gp,detdefgrad,defgrad,glstrain,stress,pressure);
 
     // effective shape function of scalar pressure field at current Gauss point
-    LINALG::Matrix<NUMPRES_SOSH8P8,1> prshfct;
+    LINALG::Matrix<NUMPRES_,1> prshfct;
     if (stab_ == stab_nonaffine)
       prshfct.MultiplyTN(1.0/estabd(0,0),estabe,estaba[gp]);
     else if (stab_ == stab_affine)
@@ -774,20 +780,20 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
     {
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
-      LINALG::Matrix<NUMSTR_SOSH8P8,NUMDISP_SOSH8P8> cb;
+      LINALG::Matrix<NUMSTR_,NUMDISP_> cb;
       cb.Multiply(cmat,bop); // temporary C . B
       stiffmatrix->MultiplyTN(detJ_w,bop,cb,1.0);
 
       // integrate `geometric' stiffness matrix and add to keu
       // here also the ANS interpolation comes into play
-      Teuchos::RCP<LINALG::Matrix<NUMSTR_SOSH8P8,NUMNOD_SOSH8P8*NUMNOD_SOSH8P8> > bopbydisp = Teuchos::null;
-      if (lin_ == lin_one)
-        bopbydisp = Teuchos::rcp(new LINALG::Matrix<NUMSTR_SOSH8P8,NUMNOD_SOSH8P8*NUMNOD_SOSH8P8>(true));
-      for (int inod=0; inod<NUMNOD_SOSH8P8; ++inod)
+      Teuchos::RCP<LINALG::Matrix<NUMSTR_,NUMNOD_*NUMNOD_> > bopbydisp = Teuchos::null;
+      if (lin_ > lin_sixth)
+        bopbydisp = Teuchos::rcp(new LINALG::Matrix<NUMSTR_,NUMNOD_*NUMNOD_>(true));
+      for (int inod=0; inod<NUMNOD_; ++inod)
       {
-        for (int jnod=0; jnod<NUMNOD_SOSH8P8; ++jnod)
+        for (int jnod=0; jnod<NUMNOD_; ++jnod)
         {
-          LINALG::Matrix<NUMSTR_SOSH8P8,1> G_ij;
+          LINALG::Matrix<NUMSTR_,1> G_ij;
           G_ij(0) = derivs[gp](0, inod) * derivs[gp](0, jnod); // rr-dir
           G_ij(1) = derivs[gp](1, inod) * derivs[gp](1, jnod); // ss-dir
           G_ij(3) = derivs[gp](0, inod) * derivs[gp](1, jnod)
@@ -818,37 +824,38 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
           }
 
           // transformation of local(parameter) space 'back' to global(material) space
-          LINALG::Matrix<NUMSTR_SOSH8P8,1> G_ij_glob;
+          LINALG::Matrix<NUMSTR_,1> G_ij_glob;
           G_ij_glob.Multiply(TinvT, G_ij);
 
           // store B_{aBd,k}
-          if (lin_ == lin_one)
-            for (int istr=0; istr<NUMSTR_SOSH8P8; ++istr)
-              (*bopbydisp)(istr,NUMNOD_SOSH8P8*inod+jnod) += G_ij_glob(istr);
+          if (lin_ > lin_sixth)
+            for (int istr=0; istr<NUMSTR_; ++istr)
+              (*bopbydisp)(istr,NUMNOD_*inod+jnod) += G_ij_glob(istr);
             
           // Scalar Gij results from product of G_ij with stress, scaled with detJ*weights
           double Gij = detJ_w * stress.Dot(G_ij_glob);
 
           // add "geometric part" Gij times detJ*weights to stiffness matrix
-          (*stiffmatrix)(NUMDIM_SOSH8P8*inod+0, NUMDIM_SOSH8P8*jnod+0) += Gij;
-          (*stiffmatrix)(NUMDIM_SOSH8P8*inod+1, NUMDIM_SOSH8P8*jnod+1) += Gij;
-          (*stiffmatrix)(NUMDIM_SOSH8P8*inod+2, NUMDIM_SOSH8P8*jnod+2) += Gij;
+          (*stiffmatrix)(NUMDIM_*inod+0, NUMDIM_*jnod+0) += Gij;
+          (*stiffmatrix)(NUMDIM_*inod+1, NUMDIM_*jnod+1) += Gij;
+          (*stiffmatrix)(NUMDIM_*inod+2, NUMDIM_*jnod+2) += Gij;
         }
       } // end of integrate `geometric' stiffness
 
       // add (incomplete) derivative of pressure-proportional force w.r.t. displacements
-      // Kp = Kp + dFv'*fvT*(pN*ep')*fvT'*dFv * Fdet*detJ*wp(i) ...
-      //          + (pN*ep')*dFv'*WmT*dFv * Fdet*detJ*wp(i)
+      // Kp = Kp + dFv'*fvT*(pN*ep')*fvT'*dFv * Fdet*detJ*wp(i)
+      //         + (pN*ep')*dFv'*WmT*dFv * Fdet*detJ*wp(i)
+      //         + ddFv * Fdet*detJ*wp(i)
       // Ke = Keu + Kg - Kp;
       {
         // effective pressure at Gauss point
         const double effpressure = prshfct.Dot(pres);  // pN*ep'
         // Voigt 9-vector of transposed & inverted deformation gradient fvT := F^{-T}
-        LINALG::Matrix<NUMDFGR_SOSH8P8,1> tinvdefgrad;
+        LINALG::Matrix<NUMDFGR_,1> tinvdefgrad;
         Matrix2TensorToVector9Voigt(tinvdefgrad,invdefgrad,true);
 
         // derivative of WmT := F^{-T}_{,F} in Voigt vector notation
-        LINALG::Matrix<NUMDFGR_SOSH8P8,NUMDFGR_SOSH8P8> WmT;
+        LINALG::Matrix<NUMDFGR_,NUMDFGR_> WmT;
         InvVector9VoigtDiffByItself(WmT,invdefgrad,true);
         // WmT := WmT + fvT*fvT'
         WmT.MultiplyNT(1.0,tinvdefgrad,tinvdefgrad,1.0);
@@ -866,79 +873,101 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
         Indices2TensorTo6Voigt(voigt3x3sym);  // access is via (i,j) -> 3*i+j
         
         // material derivatives of shape functions
-        LINALG::Matrix<NUMDIM_SOSH8P8,NUMNOD_SOSH8P8> derivsmat;
+        LINALG::Matrix<NUMDIM_,NUMNOD_> derivsmat;
         derivsmat.MultiplyNN(invJ_[gp],derivs[gp]);
 
         // linear B-op
         // derivative of displ-based def.grad with respect to nodal displacements
         // F^d_{aC,d}
-        LINALG::Matrix<NUMDFGR_SOSH8P8,NUMDISP_SOSH8P8> boplin(true);
-        for (int I=0; I<NUMDFGR_SOSH8P8; ++I) {
-          const int i = voigt9row[I];
-          const int j = voigt9col[I];
-          for (int k=0; k<NUMNOD_SOSH8P8; ++k) {
-            const int K = i + k*NODDISP_SOSH8P8;
-            boplin(I,K) = derivsmat(j,k);
+        LINALG::Matrix<NUMDFGR_,NUMDISP_> boplin(true);
+        for (int ij=0; ij<NUMDFGR_; ++ij) {
+          const int i = voigt9row[ij];
+          const int j = voigt9col[ij];
+          for (int k=0; k<NUMNOD_; ++k) {
+            const int K = k*NODDISP_ + i;
+            boplin(ij,K) = derivsmat(j,k);
           }
         }
 
         // derivative of def.grad. w.r.t. displacements Fv_{,d}
-        LINALG::Matrix<NUMDFGR_SOSH8P8,NUMDISP_SOSH8P8> defgradbydisp;
+        LINALG::Matrix<NUMDFGR_,NUMDISP_> defgradbydisp;
         if (ans_ == ans_none) {
           defgradbydisp.Update(boplin);
         }
         else {
           // inverse of pure disp-based material stretch tensor
           // U^{d;-1}
-          LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> invrgtstrD(rgtstrD);
-          double detrgtstrD = invrgtstrD.Invert();
+          LINALG::Matrix<NUMDIM_,NUMDIM_> invrgtstrD(rgtstrD);
+          const double detrgtstrD = invrgtstrD.Invert();
           if (detrgtstrD < 0.0) dserror("Trouble in inverting right stretch tensor");
+//          LINALG::Matrix<NUMSTR_,1> invrgtstrDv;
+//          Matrix2TensorToVector6Voigt(invrgtstrDv,invrgtstrD,voigt6_strain);
           
           // derivative of pure-disp. inverse material stretch tensor with respect to nodal displacements
           // U^{d;-1}_{,d} = U^{d;-1}_{,U} . (C^d_{,U^d})^{-1} . C^d_{,d}
-          LINALG::Matrix<NUMSTR_SOSH8P8,NUMDISP_SOSH8P8> invrgtstrDbydisp;
+          // on exit of this block the following variables are going to hold ...
+          LINALG::Matrix<NUMSTR_,NUMDISP_> invrgtstrDbydisp; // ...U^{d;-1}_{,d}  // (-)
+          LINALG::Matrix<NUMSTR_,NUMSTR_> invrgtstrDbyrgtstrD; // ...U^{d;-1}_{,U}  // (-)
+          LINALG::Matrix<NUMSTR_,NUMSTR_> rcgDbyrgtstrD; // ...(C^d_{,U^d})^{-1}  // (+)
+          LINALG::Matrix<NUMSTR_,NUMDISP_> rgtstrDbydisp; // ...U^d_{,d}  // (+)
           {
-             // U^{d;-1}_{,U}
-            LINALG::Matrix<NUMSTR_SOSH8P8,NUMSTR_SOSH8P8> invrgtstrDbyrgtstrD;
+            // U^{d;-1}_{,U}
+            //LINALG::Matrix<NUMSTR_,NUMSTR_> invrgtstrDbyrgtstrD;
             InvVector6VoigtDiffByItself(invrgtstrDbyrgtstrD,invrgtstrD);
 
             // C^d_{,U^d} = (U^d . U^d)_{,U^d}
-            LINALG::Matrix<NUMSTR_SOSH8P8,NUMSTR_SOSH8P8> rcgDbyrgtstrD;
+            //LINALG::Matrix<NUMSTR_,NUMSTR_> rcgDbyrgtstrD;
             SqVector6VoigtDiffByItself(rcgDbyrgtstrD,rgtstrD);
 
             // deformation gradient as Voigt matrix
-            LINALG::Matrix<NUMSTR_SOSH8P8,NUMDFGR_SOSH8P8> defgradm;
+            LINALG::Matrix<NUMSTR_,NUMDFGR_> defgradm;
             Matrix2TensorToMatrix6x9Voigt(defgradm,defgrad);
 
             // C^d_{,d} = 2 * Fm * Boplin, 6x24
-            LINALG::Matrix<NUMSTR_SOSH8P8,NUMDISP_SOSH8P8> rcgDbydisp;
+            LINALG::Matrix<NUMSTR_,NUMDISP_> rcgDbydisp;
             rcgDbydisp.MultiplyNN(2.0,defgradm,boplin);
             
-            // AUX = (C^d_{,U^d})^{-1} . C^d_{,d}
-            LINALG::Matrix<NUMSTR_SOSH8P8,NUMDISP_SOSH8P8> aux;
+            // U^d_{,d} = (C^d_{,U^d})^{-1} . C^d_{,d}
+            //LINALG::Matrix<NUMSTR_,NUMDISP_> rgtstrDbydisp;
             {
-              LINALG::FixedSizeSerialDenseSolver<NUMSTR_SOSH8P8,NUMSTR_SOSH8P8,NUMDISP_SOSH8P8> asolver;
+              LINALG::FixedSizeSerialDenseSolver<NUMSTR_,NUMSTR_,NUMDISP_> asolver;
               asolver.SetMatrix(rcgDbyrgtstrD);
-              asolver.SetVectors(aux,rcgDbydisp);
+              asolver.SetVectors(rgtstrDbydisp,rcgDbydisp);
               const int err = asolver.Solve();
               if (err != 0) dserror("Failed to solve, error=%d", err);
+              if (lin_ >= lin_one) {
+                const int err = asolver.Invert();
+                if (err != 0) dserror("Failed to invert, error=%d", err);
+              }
             }
 
-            // U^{d;-1}_{,d} = U^{d;-1}_{,U} . AUX
-            invrgtstrDbydisp.Multiply(invrgtstrDbyrgtstrD,aux);
+            // U^{d;-1}_{,d} = U^{d;-1}_{,U} . U^d_{,d}
+            invrgtstrDbydisp.MultiplyNN(invrgtstrDbyrgtstrD,rgtstrDbydisp);
           }
 
           // derivative of ass. mat. stretch tensor with respect to nodal displacements
           // U^{ass}_{,d} = (C^{ass}_{,U^{ass}})^{-1} . C^{ass}_{,d}
           // on exit of this block the following variables are going to hold ...
-          LINALG::Matrix<NUMSTR_SOSH8P8,NUMDISP_SOSH8P8> rgtstrbydisp;  // ... U^{ass}_{,d}
-          Teuchos::RCP<LINALG::Matrix<NUMSTR_SOSH8P8,NUMDISP_SOSH8P8*NUMDISP_SOSH8P8> > rgtstrbydispdisp = Teuchos::null;  // ... U^{ass}_{DB,dk}
-          if (lin_ == lin_one)
-            rgtstrbydispdisp = Teuchos::rcp(new LINALG::Matrix<NUMSTR_SOSH8P8,NUMDISP_SOSH8P8*NUMDISP_SOSH8P8>());
+          LINALG::Matrix<NUMSTR_,NUMDISP_> rgtstrbydisp;  // ... U^{ass}_{,d}  // (+)
+          Teuchos::RCP<LINALG::Matrix<NUMSTR_,NUMDISP_*NUMDISP_> > rgtstrbybydisp; // ... U^{ass}_{DB,dk}
+          if (lin_ > lin_sixth)
+            rgtstrbybydisp = Teuchos::rcp(new LINALG::Matrix<NUMSTR_,NUMDISP_*NUMDISP_>());
+          else
+            rgtstrbybydisp = Teuchos::null;
+          Teuchos::RCP<LINALG::Matrix<NUMSTR_,NUMDISP_*NUMDISP_> > rgtstrDbybydisp; // ... U^{d}_{DB,dk}
+          if (lin_ > lin_sixth)
+            rgtstrDbybydisp = Teuchos::rcp(new LINALG::Matrix<NUMSTR_,NUMDISP_*NUMDISP_>());
+          else
+            rgtstrDbybydisp = Teuchos::null;
+          Teuchos::RCP<LINALG::Matrix<NUMSTR_,NUMDISP_*NUMDISP_> > invrgtstrDbybydisp; // ... U^{d-1}_{DB,dk}
+          if (lin_ >= lin_one)
+            invrgtstrDbybydisp = Teuchos::rcp(new LINALG::Matrix<NUMSTR_,NUMDISP_*NUMDISP_>());
+          else
+            invrgtstrDbybydisp = Teuchos::null;
           {
             // derivative of ass. right Cauchy-Green with respect to ass. material stretch tensor
             // C^{ass}_{,U^{ass}}
-            LINALG::Matrix<NUMSTR_SOSH8P8,NUMSTR_SOSH8P8> rcgbyrgtstr;
+            LINALG::Matrix<NUMSTR_,NUMSTR_> rcgbyrgtstr;  // (+)
             SqVector6VoigtDiffByItself(rcgbyrgtstr,rgtstr);
 
             // C^{ass}_{,d} = 2 * bop
@@ -946,92 +975,151 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
 
             // U^{ass}_{,d} = (C^{ass}_{,U^{ass}})^{-1} . C^{ass}_{,d}
             {
-              LINALG::FixedSizeSerialDenseSolver<NUMSTR_SOSH8P8,NUMSTR_SOSH8P8,NUMDISP_SOSH8P8> asolver;
+              LINALG::FixedSizeSerialDenseSolver<NUMSTR_,NUMSTR_,NUMDISP_> asolver;
               asolver.SetMatrix(rcgbyrgtstr);  // LHS
               asolver.SetVectors(rgtstrbydisp,bop);  // SOL, RHS
               int err = asolver.Solve();
               if (err != 0) dserror("Failed to solve, error=%d", err);
-              if (lin_ == lin_one) {
+              if (lin_ > lin_sixth) {
                 err = asolver.Invert();
                 if (err != 0) dserror("Failed to invert, error=%d", err);
               }
             }
             rgtstrbydisp.Scale(2.0);
 
-            if (lin_ == lin_one) {
+            if (lin_ > lin_sixth) {
               // second derivative of assumed right Cauchy-Green tensor 
               // w.r.t. to right stretch tensor
-              LINALG::Matrix<NUMSTR_SOSH8P8,NUMSTR_SOSH8P8*NUMSTR_SOSH8P8> rcgbyrgtstrrgtstr;
-              SqVector6VoigtTwiceDiffByItself(rcgbyrgtstrrgtstr,rgtstr);
+              // C^{ass}_{,U^{ass} U^{ass}}
+              LINALG::Matrix<NUMSTR_,NUMSTR_*NUMSTR_> rcgbybyrgtstr;  // (+)
+              SqVector6VoigtTwiceDiffByItself(rcgbybyrgtstr,rgtstr);
 
-              // second derivative of right stretch tensor w.r.t. displacements
+              // second derivative of disp-based right Cauchy-Green tensor 
+              // w.r.t. to right stretch tensor
+              // C^{d}_{,U^{d} U^{d}}
+              LINALG::Matrix<NUMSTR_,NUMSTR_*NUMSTR_> rcgDbybyrgtstrD;  // (+)
+              SqVector6VoigtTwiceDiffByItself(rcgDbybyrgtstrD,rgtstrD);
+
+              // second derivative of disp-based inverse right stretch tensor
+              // w.r.t. disp-based right stretch tensor
+              // U^{d-1}_{,U^d U^d}
+              LINALG::Matrix<NUMSTR_,NUMSTR_*NUMSTR_> invrgtstrDbybyrgtstrD;  // (+)
+              InvVector6VoigtTwiceDiffByItself(invrgtstrDbybyrgtstrD,invrgtstrD);
+
+              // second derivative of assumed right stretch tensor w.r.t. displacements
               // U^{ass}_{DB,dk} = (C^{ass}_{,U^{ass}})_{DBEF}^{-1} 
               //                 . ( C^{ass}_{EF,dk} - C^{ass}_{EF,GHIJ}  U^{ass}_{IJ}  U^{ass}_{GH} )
-              for (int DB=0; DB<NUMSTR_SOSH8P8; ++DB) {
-                for (int dk=0; dk<NUMDISP_SOSH8P8*NUMDISP_SOSH8P8; ++dk) {
-                  const int d = dk / NUMDISP_SOSH8P8;
-                  const int k = dk % NUMDISP_SOSH8P8;
-                  double rgtstrbydispdisp_DBdk = 0.0;
-                  for (int EF=0; EF<NUMSTR_SOSH8P8; ++EF) {
-                    for (int GH=0; GH<NUMSTR_SOSH8P8; ++GH) {
-                      for (int IJ=0; IJ<NUMSTR_SOSH8P8; ++IJ) {
-                        const int G = voigt6row[GH];
-                        const int H = voigt6col[GH];
-                        const int I = voigt6row[IJ];
-                        const int J = voigt6col[IJ];
-                        const int GHIJ = NUMSTR_SOSH8P8*GH + IJ;
-                        const double IJfact = (I==J) ? 1.0 : 0.5;
-                        const double GHfact = (G==H) ? 1.0 : 0.5;
-                        double bopbydisp_EFdk = 0.0;
-                        if ( (d%NUMNOD_SOSH8P8==0) and (k%NUMNOD_SOSH8P8==0) ) {
-                          const int nd = d / NUMNOD_SOSH8P8;
-                          const int nk = k / NUMNOD_SOSH8P8;
-                          const int ndnk = nd*NUMNOD_SOSH8P8 + nk;
-                          bopbydisp_EFdk = 2.0*(*bopbydisp)(EF,ndnk);
-                        }
-
-                        rgtstrbydispdisp_DBdk 
-                          += rcgbyrgtstr(DB,EF)
-                          * ( bopbydisp_EFdk
-                              - rcgbyrgtstrrgtstr(EF,GHIJ)  // col are strain-like 6-Voigt
-                              * IJfact*rgtstrbydisp(IJ,d)  // row are strain-like 6-Voigt too ==> correcting
-                              * GHfact*rgtstrbydisp(GH,k)  // row are strain-like 6-Voigt too ==> correcting
-                            );
+              // and
+              // second derivative of pure-disp right stretch tensor w.r.t. displacements
+              // U^{d}_{DB,dk} = (C^{d}_{,U^{d}})_{DBEF}^{-1} 
+              //               . ( C^{d}_{EF,dk} - C^{d}_{EF,GHIJ}  U^{d}_{IJ}  U^{d}_{GH} )
+              for (int DB=0; DB<NUMSTR_; ++DB) {
+                for (int dk=0; dk<NUMDISP_*NUMDISP_; ++dk) {
+                  const int d = dk / NUMDISP_;
+                  const int k = dk % NUMDISP_;
+                  int ndnk = -1;
+                  if (d%NODDISP_ == k%NODDISP_) {
+                    const int nd = d / NODDISP_;
+                    const int nk = k / NODDISP_;
+                    ndnk = nd*NUMNOD_ + nk;
+//                    cout << "d=" << d << ", k=" << k << ", nd=" << nd << ", nk=" << nk << ", ndnk=" << ndnk << endl;
+                  }
+                  double rgtstrbybydisp_DBdk = 0.0;
+                  double rgtstrDbybydisp_DBdk = 0.0;
+                  for (int EF=0; EF<NUMSTR_; ++EF) {
+                    const int E = voigt9row[EF];
+                    const int F = voigt9col[EF];
+                    // C^{ass}_{,UU} . U^{ass}_{,d} . U^{ass}_{,d}
+                    // and
+                    // C^{d}_{,UU} . U^{d}_{,d} . U^{d}_{,d}
+                    double temp_EFdk = 0.0;
+                    double tempD_EFdk = 0.0;
+                    for (int GH=0; GH<NUMSTR_; ++GH) {
+                      for (int IJ=0; IJ<NUMSTR_; ++IJ) {
+                        const int GHIJ = NUMSTR_*GH + IJ;
+                        // C^{ass}_{,UU} . U^{ass}_{,d} . U^{ass}_{,d}
+                        temp_EFdk += rcgbybyrgtstr(EF,GHIJ)*rgtstrbydisp(IJ,d)*rgtstrbydisp(GH,k);
+                        // C^{d}_{,UU} . U^{d}_{,d} . U^{d}_{,d}
+                        tempD_EFdk += rcgDbybyrgtstrD(EF,GHIJ)*rgtstrDbydisp(IJ,d)*rgtstrDbydisp(GH,k);
                       }
                     }
+                    // U^{ass}_{DB,dk}
+                    if (ndnk != -1)
+                      rgtstrbybydisp_DBdk += rcgbyrgtstr(DB,EF) * 2.0*(*bopbydisp)(EF,ndnk);
+                    rgtstrbybydisp_DBdk -= rcgbyrgtstr(DB,EF) * temp_EFdk;
+                    // C^{d}_{EF,dk}
+                    double rcgDbybydisp_EFdk = 0.0;
+                    for (int m=0; m<NUMDIM_; ++m) {
+                      const int Em = voigt3x3[NUMDIM_*E+m];
+                      const int mF = voigt3x3[NUMDIM_*m+F];
+                      rcgDbybydisp_EFdk += 2.0*boplin(Em,d)*boplin(mF,k);
+                    }
+                    // (C^{d}_{,U^{d}})_{DBEF}^{-1}
+                    const double rcgDbyrgtstrD_DBEF = rcgDbyrgtstrD(DB,EF);
+                    // U^{d}_{DB,dk}
+                    rgtstrDbybydisp_DBdk += rcgDbyrgtstrD_DBEF * ( rcgDbybydisp_EFdk - tempD_EFdk);
                   }
-                  (*rgtstrbydispdisp)(DB,dk) = rgtstrbydispdisp_DBdk;
+                  (*rgtstrbybydisp)(DB,dk) = rgtstrbybydisp_DBdk;
+                  (*rgtstrDbybydisp)(DB,dk) = rgtstrDbybydisp_DBdk;
                 }
               }
-            }
-          }
+
+              // second derivative of pure-disp inverse right stretch tensor w.r.t. displacements
+              // U^{d-1}_{CD,dk} = U^{d-1}_{CD,EFGH} U^{d}_{GH,k} U^{d}_{EF,d}
+              //                 + U^{d-1}_{CD,EF} U^{d}_{EF,dk}
+              if (lin_ >= lin_one) {
+                for (int CD=0; CD<NUMSTR_; ++CD) {
+                  for (int dk=0; dk<NUMDISP_*NUMDISP_; ++dk) {
+                    const int d = dk / NUMDISP_;
+                    const int k = dk % NUMDISP_;
+                    double invrgtstrDbybydisp_CDdk = 0.0;
+                    for (int EF=0; EF<NUMSTR_; ++EF) {
+                      const double rgtstrDbybydisp_EFdk = (*rgtstrDbybydisp)(EF,dk);
+                      invrgtstrDbybydisp_CDdk 
+                        += invrgtstrDbyrgtstrD(CD,EF) * rgtstrDbybydisp_EFdk;
+                      for (int GH=0; GH<NUMSTR_; ++GH) {
+                        const int EFGH = NUMSTR_*EF + GH;
+                        invrgtstrDbybydisp_CDdk 
+                          += invrgtstrDbybyrgtstrD(CD,EFGH)  // col are strain-like 6-Voigt
+                          * rgtstrDbydisp(GH,k)  // row are strain-like 6-Voigt too
+                          * rgtstrDbydisp(EF,d);  // row are strain-like 6-Voigt too
+                      }
+                    }
+                    (*invrgtstrDbybydisp)(CD,dk) = invrgtstrDbybydisp_CDdk;
+                  }
+                }
+              } // if (lin_ >= lin_one) else
+
+            } //  if (lin_ > lin_sixth)
+          } // if (lin_ >= lin_one) else
           
           // derivative of def.grad. with respect to k nodal displacements d^k
           // F_{aB,k} = F^d_{aC,k} . U^{d;-1}_{CD} . U^{ass}_{DB}
           //          + F^d_{aC} . U^{d;-1}_{CD,k} . U^{ass}_{DB}
           //          + F^d_{aC} . U^{d;-1}_{CD} . U^{ass}_{DB,k}
-          for (int ab=0; ab<NUMDFGR_SOSH8P8; ++ab) {
-            for (int k=0; k<NUMDISP_SOSH8P8; ++k) {
-              double defgradbydisp_abk = 0.0;
-              const int a = voigt9row[ab];
-              const int b = voigt9col[ab];
-              for (int c=0; c<NUMDIM_SOSH8P8; ++c) {
-                for (int d=0; d<NUMDIM_SOSH8P8; ++d) {
-                  const int ac = voigt3x3[NUMDIM_SOSH8P8*a+c];
-                  const int cd = voigt3x3sym[NUMDIM_SOSH8P8*c+d];
-                  const int db = voigt3x3sym[NUMDIM_SOSH8P8*d+b];
-                  const double cdfact = (c==d) ? 1.0 : 0.5;
-                  const double dbfact = (d==b) ? 1.0 : 0.5;
-                  defgradbydisp_abk += boplin(ac,k) * invrgtstrD(c,d) * rgtstr(d,b)
-                    + defgradD(a,c) * cdfact*invrgtstrDbydisp(cd,k) * rgtstr(d,b)
-                    + defgradD(a,c) * invrgtstrD(c,d) * dbfact*rgtstrbydisp(db,k);
+          for (int aB=0; aB<NUMDFGR_; ++aB) {
+            for (int k=0; k<NUMDISP_; ++k) {
+              double defgradbydisp_aBk = 0.0;
+              const int a = voigt9row[aB];
+              const int B = voigt9col[aB];
+              for (int C=0; C<NUMDIM_; ++C) {
+                for (int D=0; D<NUMDIM_; ++D) {
+                  const int aC = voigt3x3[NUMDIM_*a+C];
+                  const int CD = voigt3x3sym[NUMDIM_*C+D];
+                  const int DB = voigt3x3sym[NUMDIM_*D+B];
+                  const double CDfact = (C==D) ? 1.0 : 0.5;
+                  const double DBfact = (D==B) ? 1.0 : 0.5;
+                  defgradbydisp_aBk 
+                    += boplin(aC,k) * invrgtstrD(C,D) * rgtstrv(DB)
+                    + defgradD(a,C) * CDfact*invrgtstrDbydisp(CD,k) * rgtstrv(DB)
+                    + defgradD(a,C) * invrgtstrD(C,D) * DBfact*rgtstrbydisp(DB,k);
                 }
               }
-              defgradbydisp(ab,k) = defgradbydisp_abk;
+              defgradbydisp(aB,k) = defgradbydisp_aBk;
             }
           }
 
-          if (lin_ == lin_one) {
+          if (lin_ > lin_sixth) {
             // contribute stuff containing second derivatives in displacements
             // F^{-T}_{aB} F_{aB,dk}
             // = F^{-1}_{Ba}  (F^d_{aC} U^{d;-1}_{CD} U^{ass}_{DB})_{,dk} 
@@ -1044,43 +1132,55 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
             // + F^{-1}_{Ba}  F^d_{aC} U^{d;-1}_{CD,d} U^{ass}_{DB,k}        |  # 0, okay
             // + F^{-1}_{Ba}  F^d_{aC,k} U^{d;-1}_{CD} U^{ass}_{DB,d}        |  # 0, okay
             // + F^{-1}_{Ba}  F^d_{aC} U^{d;-1}_{CD,k} U^{ass}_{DB,d}        |  # 0, okay
-            for (int d=0; d<NUMDISP_SOSH8P8; ++d) {
-              for (int k=0; k<NUMDISP_SOSH8P8; ++k) {
-                double defgradtwicebydisp_dk = 0.0;
-                for (int B=0; B<NUMDIM_SOSH8P8; ++B) {
-                  for (int D=0; D<NUMDIM_SOSH8P8; ++D) {
-                    const int DB = voigt3x3sym[NUMDIM_SOSH8P8*D+B];
+            for (int d=0; d<NUMDISP_; ++d) {
+              for (int k=0; k<NUMDISP_; ++k) {
+                double defgradbybydisp_dk = 0.0;
+                for (int D=0; D<NUMDIM_; ++D) {
+                  for (int B=0; B<NUMDIM_; ++B) {
+                    const int DB = voigt3x3sym[NUMDIM_*D+B];
                     const double DBfact = (D==B) ? 1.0 : 0.5;
-                    const double rgtstrbydispdisp_DBdk = (*rgtstrbydispdisp)(DB,NUMDISP_SOSH8P8*d+k);
-                    for (int a=0; a<NUMDIM_SOSH8P8; ++a) {
-                      for (int C=0; C<NUMDIM_SOSH8P8; ++C) {
-                        const int aC = voigt3x3[NUMDIM_SOSH8P8*a+C];
-                        const int CD = voigt3x3sym[NUMDIM_SOSH8P8*C+D];
-                        const double CDfact = (C==D) ? 1.0 : 0.5;
-
-                        defgradtwicebydisp_dk += invdefgrad(B,a)
-                          * ( //defgradD(a,C) * invrgtstrD(C,D) * DBfact*rgtstrbydispdisp_DBdk
-                            + boplin(aC,d) * CDfact*invrgtstrDbydisp(CD,k) * rgtstr(D,B)
-                            + boplin(aC,d) * invrgtstrD(C,D) * DBfact*rgtstrbydisp(DB,k)
-                            + boplin(aC,k) * CDfact*invrgtstrDbydisp(CD,d) * rgtstr(D,B)
-                            + defgradD(a,C) * CDfact*invrgtstrDbydisp(CD,d) * DBfact*rgtstrbydisp(DB,k)
-                            + boplin(aC,k) * invrgtstrD(C,D) * DBfact*rgtstrbydisp(DB,d)
-                            + defgradD(a,C) * CDfact*invrgtstrDbydisp(CD,k) * DBfact*rgtstrbydisp(DB,d)
-                            );
+                    double rgtstrbybydisp_DBdk = 0.0;
+                    if (lin_ >= lin_half)
+                      rgtstrbybydisp_DBdk = (*rgtstrbybydisp)(DB,NUMDISP_*d+k);
+                    for (int C=0; C<NUMDIM_; ++C) {
+                      const int CD = voigt3x3sym[NUMDIM_*C+D];
+                      const double CDfact = (C==D) ? 1.0 : 0.5;
+                      double invrgtstrDbybydisp_CDdk = 0.0;
+                      if (lin_ >= lin_one)
+                        invrgtstrDbybydisp_CDdk = (*invrgtstrDbybydisp)(CD,NUMDISP_*d+k);
+                      for (int a=0; a<NUMDIM_; ++a) {
+                        const int aC = voigt3x3[NUMDIM_*a+C];
+                        if (lin_ >= lin_third)
+                          defgradbybydisp_dk += invdefgrad(a,B)
+                            * ( boplin(aC,d) * CDfact*invrgtstrDbydisp(CD,k) * rgtstr(D,B)
+                                + boplin(aC,d) * invrgtstrD(C,D) * DBfact*rgtstrbydisp(DB,k)
+                                + boplin(aC,k) * CDfact*invrgtstrDbydisp(CD,d) * rgtstr(D,B)
+                                + defgradD(a,C) * CDfact*invrgtstrDbydisp(CD,d) * DBfact*rgtstrbydisp(DB,k)
+                                + boplin(aC,k) * invrgtstrD(C,D) * DBfact*rgtstrbydisp(DB,d)
+                                + defgradD(a,C) * CDfact*invrgtstrDbydisp(CD,k) * DBfact*rgtstrbydisp(DB,d)
+                              );
+                        if (lin_ >= lin_half)
+                          defgradbybydisp_dk += invdefgrad(a,B) 
+                            * defgradD(a,C) * invrgtstrD(C,D) * DBfact*rgtstrbybydisp_DBdk;
+                        if (lin_ >= lin_one)
+                          defgradbybydisp_dk += invdefgrad(a,B)
+                            * defgradD(a,C) * CDfact*invrgtstrDbybydisp_CDdk * rgtstr(D,B);
                       }
                     }
                   }
                 }
-                (*stiffmatrix)(d,k) -= defgradtwicebydisp_dk * effpressure*detdefgrad*detJ_w;
+                (*stiffmatrix)(d,k) -= defgradbybydisp_dk * effpressure*detdefgrad*detJ_w;
               }
             }
-          }
-        }
+
+          }  // if (lin_ > lin_sixth)
+
+        }  // if (ans_ == ans_none) else
 
         // contribute stuff containing first derivatives in displacements
         if (stab_ != stab_puredisp) {
           // AUX = (WmT + fvT*fvT') * dFv
-          LINALG::Matrix<NUMDFGR_SOSH8P8,NUMDISP_SOSH8P8> aux;
+          LINALG::Matrix<NUMDFGR_,NUMDISP_> aux;
           aux.MultiplyNN(WmT,defgradbydisp);
           // K -= dFv' * AUX * detJ * w(gp)
           stiffmatrix->MultiplyTN(-effpressure*detdefgrad*detJ_w,defgradbydisp,aux,1.0);
@@ -1090,7 +1190,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
         // (-G) = -dFv'*fvT*pN * Fdet*detJ*wp(i);
         if (gradmatrix != NULL) {
           // AUX = fvT*pN
-          LINALG::Matrix<NUMDISP_SOSH8P8,1> aux;
+          LINALG::Matrix<NUMDISP_,1> aux;
           aux.MultiplyTN(defgradbydisp,tinvdefgrad);
           // contribute to G-op
           gradmatrix->MultiplyNT(-detdefgrad*detJ_w,aux,prshfct,1.0);
@@ -1102,13 +1202,13 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
     if (massmatrix != NULL) {
       // integrate consistent mass matrix
       const double factor = detJ_w * density;
-      for (int inod=0; inod<NUMNOD_SOSH8P8; ++inod) {
+      for (int inod=0; inod<NUMNOD_; ++inod) {
         const double ifactor = shapefcts[gp](inod) * factor;
-        for (int jnod=0; jnod<NUMNOD_SOSH8P8; ++jnod) {
+        for (int jnod=0; jnod<NUMNOD_; ++jnod) {
           const double massfactor = shapefcts[gp](jnod) * ifactor;     // intermediate factor
-          (*massmatrix)(NUMDIM_SOSH8P8*inod+0,NUMDIM_SOSH8P8*jnod+0) += massfactor;
-          (*massmatrix)(NUMDIM_SOSH8P8*inod+1,NUMDIM_SOSH8P8*jnod+1) += massfactor;
-          (*massmatrix)(NUMDIM_SOSH8P8*inod+2,NUMDIM_SOSH8P8*jnod+2) += massfactor;
+          (*massmatrix)(NUMDIM_*inod+0,NUMDIM_*jnod+0) += massfactor;
+          (*massmatrix)(NUMDIM_*inod+1,NUMDIM_*jnod+1) += massfactor;
+          (*massmatrix)(NUMDIM_*inod+2,NUMDIM_*jnod+2) += massfactor;
         }
       }
     } // end of mass matrix
@@ -1152,7 +1252,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
     if (stabmatrix != NULL)
     {
       stabmatrix->Clear();
-      for (int i=0; i<NUMPRES_SOSH8P8; ++i) (*stabmatrix)(i,i) = 1.0;
+      for (int i=0; i<NUMPRES_; ++i) (*stabmatrix)(i,i) = 1.0;
     }
   }
 
@@ -1164,13 +1264,13 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_sh8p8::Stress(
-  LINALG::Matrix<NUMGPT_SOSH8P8,NUMSTR_SOSH8P8>* elestress,
+  LINALG::Matrix<NUMGPT_,NUMSTR_>* elestress,
   const INPAR::STR::StressType iostress,
   const int gp,
   const double& detdefgrd,
-  const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& defgrd,
-  const LINALG::Matrix<NUMSTR_SOSH8P8,1>& glstrain,
-  const LINALG::Matrix<NUMSTR_SOSH8P8,1>& stress,
+  const LINALG::Matrix<NUMDIM_,NUMDIM_>& defgrd,
+  const LINALG::Matrix<NUMSTR_,1>& glstrain,
+  const LINALG::Matrix<NUMSTR_,1>& stress,
   const double& pressure
 )
 {
@@ -1183,19 +1283,19 @@ void DRT::ELEMENTS::So_sh8p8::Stress(
       if (stab_ == stab_puredisp)
       {
         // store stress
-        for (int i=0; i<NUMSTR_SOSH8P8; ++i)
+        for (int i=0; i<NUMSTR_; ++i)
           (*elestress)(gp,i) = stress(i);
       }
       else
       {
         // inverted right Cauchy-Green strain tensor
-        LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> invcg;
+        LINALG::Matrix<NUMDIM_,NUMDIM_> invcg;
         invcg.MultiplyTN(defgrd,defgrd);
         invcg.Invert();
-        LINALG::Matrix<NUMSTR_SOSH8P8,1> invcgv;
+        LINALG::Matrix<NUMSTR_,1> invcgv;
         Matrix2TensorToVector6Voigt(invcgv,invcg);
         // store stress
-        for (int i=0; i<NUMSTR_SOSH8P8; ++i)
+        for (int i=0; i<NUMSTR_; ++i)
           (*elestress)(gp,i) = stress(i) - pressure*detdefgrd*invcgv(i);
       }
     }
@@ -1204,11 +1304,11 @@ void DRT::ELEMENTS::So_sh8p8::Stress(
     {
       if (elestress == NULL) dserror("stress data not available");
       // pull back
-      LINALG::Matrix<NUMSTR_SOSH8P8,NUMSTR_SOSH8P8> defgraddefgradT;
+      LINALG::Matrix<NUMSTR_,NUMSTR_> defgraddefgradT;
       Matrix2TensorToLeftRightProductMatrix6x6Voigt(defgraddefgradT,defgrd,
                                                     true,voigt6_stress,voigt6_stress);
       // (deviatoric) Cauchy stress vector
-      LINALG::Matrix<NUMSTR_SOSH8P8,1> cauchyv;
+      LINALG::Matrix<NUMSTR_,1> cauchyv;
       cauchyv.MultiplyNN(1.0/detdefgrd,defgraddefgradT,stress);
 
 
@@ -1216,17 +1316,17 @@ void DRT::ELEMENTS::So_sh8p8::Stress(
       if (stab_ == stab_puredisp)
       {
         // store stress
-        for (int i=0; i<NUMSTR_SOSH8P8; ++i)
+        for (int i=0; i<NUMSTR_; ++i)
           (*elestress)(gp,i) = cauchyv(i);
       }
       else
       {
         // above computed #cauchyv is deviatoric true stress
         // isochoric Cauchy stress vector
-        LINALG::Matrix<NUMSTR_SOSH8P8,1> isocauchyv(true);
-        for (int i=0; i<NUMDIM_SOSH8P8; ++i) isocauchyv = -pressure;
+        LINALG::Matrix<NUMSTR_,1> isocauchyv(true);
+        for (int i=0; i<NUMDIM_; ++i) isocauchyv = -pressure;
         // store stress
-        for (int i=0; i<NUMSTR_SOSH8P8; ++i)
+        for (int i=0; i<NUMSTR_; ++i)
           (*elestress)(gp,i) = cauchyv(i) + isocauchyv(i);
       }
     }
@@ -1243,13 +1343,13 @@ void DRT::ELEMENTS::So_sh8p8::Stress(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_sh8p8::Strain(
-  LINALG::Matrix<NUMGPT_SOSH8P8,NUMSTR_SOSH8P8>* elestrain,  ///< store the strain herein
+  LINALG::Matrix<NUMGPT_,NUMSTR_>* elestrain,  ///< store the strain herein
   const INPAR::STR::StrainType iostrain,
   const int gp,  ///< Gauss point index
   const double& detdefgrd,  ///< determinant of (assumed) deformation gradient
-  const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& defgrd,  ///< (assumed) deformation gradient
-  const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& invdefgrd,  ///< (assumed) inverted deformation gradient
-  const LINALG::Matrix<NUMSTR_SOSH8P8,1>& glstrain  ///< Green-Lagrange strain vector
+  const LINALG::Matrix<NUMDIM_,NUMDIM_>& defgrd,  ///< (assumed) deformation gradient
+  const LINALG::Matrix<NUMDIM_,NUMDIM_>& invdefgrd,  ///< (assumed) inverted deformation gradient
+  const LINALG::Matrix<NUMSTR_,1>& glstrain  ///< Green-Lagrange strain vector
   )
 {
   switch (iostrain)
@@ -1258,9 +1358,9 @@ void DRT::ELEMENTS::So_sh8p8::Strain(
     {
       if (elestrain == NULL) dserror("strain data not available");
       // store
-      for (int i=0; i<NUMDIM_SOSH8P8; ++i)
+      for (int i=0; i<NUMDIM_; ++i)
         (*elestrain)(gp,i) = glstrain(i);
-      for (int i=NUMDIM_SOSH8P8; i<NUMSTR_SOSH8P8; ++i)
+      for (int i=NUMDIM_; i<NUMSTR_; ++i)
         (*elestrain)(gp,i) = 0.5 * glstrain(i);
     }
     break;
@@ -1268,16 +1368,16 @@ void DRT::ELEMENTS::So_sh8p8::Strain(
     {
       if (elestrain == NULL) dserror("strain data not available");
       // create push forward 6x6 matrix
-      LINALG::Matrix<NUMSTR_SOSH8P8,NUMSTR_SOSH8P8> invdefgradTdefgrad;
+      LINALG::Matrix<NUMSTR_,NUMSTR_> invdefgradTdefgrad;
       Matrix2TensorToLeftRightProductMatrix6x6Voigt(invdefgradTdefgrad,invdefgrd,
                                                     false,voigt6_strain,voigt6_strain);
       // push forward
-      LINALG::Matrix<NUMSTR_SOSH8P8,1> eastrain;
+      LINALG::Matrix<NUMSTR_,1> eastrain;
       eastrain.MultiplyNN(invdefgradTdefgrad,glstrain);
       // store
-      for (int i=0; i<NUMDIM_SOSH8P8; ++i)
+      for (int i=0; i<NUMDIM_; ++i)
         (*elestrain)(gp,i) = eastrain(i);
-      for (int i=NUMDIM_SOSH8P8; i<NUMSTR_SOSH8P8; ++i)
+      for (int i=NUMDIM_; i<NUMSTR_; ++i)
         (*elestrain)(gp,i) = 0.5 * eastrain(i);
     }
     break;
@@ -1295,18 +1395,18 @@ void DRT::ELEMENTS::So_sh8p8::Strain(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_sh8p8::AssDefGrad(
-  LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& defgrad,
-  LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& rgtstr,
-  LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& defgradD,
-  LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& rgtstrD,
-  const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& Jinv,
-  const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& Jac,
-  const LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8>& jac,
-  const LINALG::Matrix<NUMSTR_SOSH8P8,1>& glstrain
+  LINALG::Matrix<NUMDIM_,NUMDIM_>& defgrad,
+  LINALG::Matrix<NUMDIM_,NUMDIM_>& rgtstr,
+  LINALG::Matrix<NUMDIM_,NUMDIM_>& defgradD,
+  LINALG::Matrix<NUMDIM_,NUMDIM_>& rgtstrD,
+  const LINALG::Matrix<NUMDIM_,NUMDIM_>& Jinv,
+  const LINALG::Matrix<NUMDIM_,NUMDIM_>& Jac,
+  const LINALG::Matrix<NUMDIM_,NUMDIM_>& jac,
+  const LINALG::Matrix<NUMSTR_,1>& glstrain
   )
 {
   // inverse material Jacobian (X_{,xi})^T
-  LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> JinvX(Jac);
+  LINALG::Matrix<NUMDIM_,NUMDIM_> JinvX(Jac);
   double Jdet = JinvX.Invert();  // (X_{,xi})^{-T}
   if (Jdet < 0.0) dserror("Trouble during inversion of Jacobian");
 
@@ -1315,45 +1415,45 @@ void DRT::ELEMENTS::So_sh8p8::AssDefGrad(
   defgradD.MultiplyTT(jac,JinvX);
   
   // pure displacement-based right Cauchy-Green strain
-  LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> cgD;
+  LINALG::Matrix<NUMDIM_,NUMDIM_> cgD;
   cgD.MultiplyTN(defgradD,defgradD);
 
   // rotation matrix in pure displacement based deformation gradient
   // and pure disp-based material stretch tensor
-  LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> rot(true);
+  LINALG::Matrix<NUMDIM_,NUMDIM_> rot(true);
   {
 #if 0
-    LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> nd(true);
-    LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> lamd(true);
-    LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> NdT(true);
+    LINALG::Matrix<NUMDIM_,NUMDIM_> nd(true);
+    LINALG::Matrix<NUMDIM_,NUMDIM_> lamd(true);
+    LINALG::Matrix<NUMDIM_,NUMDIM_> NdT(true);
     LINALG::SVD(defgradD,nd,lamd,NdT);
     rot.MultiplyNN(nd,NdT);
     // pure disp-based material stretch tensor
-    LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> aux;
+    LINALG::Matrix<NUMDIM_,NUMDIM_> aux;
     aux.MultiplyTN(NdT,lamd);
     rgtstrD.MultiplyNN(aux,NdT);
 #else
     // spectral decomposition of disp-based right Cauchy-Green tensor
-    LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> NdT(true);
-    LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> lamd(true);
+    LINALG::Matrix<NUMDIM_,NUMDIM_> NdT(true);
+    LINALG::Matrix<NUMDIM_,NUMDIM_> lamd(true);
 #if 0
-    LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> Nd(true);
+    LINALG::Matrix<NUMDIM_,NUMDIM_> Nd(true);
     LINALG::SVD(cgD,NdT,lamd,Nd);
     // spectral composition of disp-based right stretch tensor
-    for (int i=0; i<NUMDIM_SOSH8P8; ++i) lamd(i,i) = sqrt(lamd(i,i));
-    LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> aux;
+    for (int i=0; i<NUMDIM_; ++i) lamd(i,i) = sqrt(lamd(i,i));
+    LINALG::Matrix<NUMDIM_,NUMDIM_> aux;
     aux.MultiplyNN(NdT,lamd);
     rgtstrD.MultiplyNN(aux,Nd);
 #else
     LINALG::SYEV(cgD,lamd,NdT);
     // spectral composition of disp-based right stretch tensor
-    for (int i=0; i<NUMDIM_SOSH8P8; ++i) lamd(i,i) = sqrt(lamd(i,i));
-    LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> aux;
+    for (int i=0; i<NUMDIM_; ++i) lamd(i,i) = sqrt(lamd(i,i));
+    LINALG::Matrix<NUMDIM_,NUMDIM_> aux;
     aux.MultiplyNN(NdT,lamd);
     rgtstrD.MultiplyNT(aux,NdT);
 #endif
     // inverse disp-based right stretch tensor
-    LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> invrgtstrD(rgtstrD);
+    LINALG::Matrix<NUMDIM_,NUMDIM_> invrgtstrD(rgtstrD);
     const double detrgtstrD = invrgtstrD.Invert();
     if (detrgtstrD < 0.0) dserror("Trouble during inversion of right stretch tensor");
     // rotation matrix
@@ -1363,25 +1463,25 @@ void DRT::ELEMENTS::So_sh8p8::AssDefGrad(
 
   // assumed material stretch tensor
   {
-    LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> cga;
-    for (int i=0; i<NUMDIM_SOSH8P8; ++i) cga(i,i) = 2.0*glstrain(i,0) + 1.0;
+    LINALG::Matrix<NUMDIM_,NUMDIM_> cga;
+    for (int i=0; i<NUMDIM_; ++i) cga(i,i) = 2.0*glstrain(i,0) + 1.0;
     // off-diagonal terms are already twice in the Voigt-GLstrain-vector
     cga(0,1) = cga(1,0) = glstrain(3);
     cga(1,2) = cga(2,1) = glstrain(4);
     cga(0,2) = cga(2,0) = glstrain(5);
-    LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> lama(true);
-    LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> NaT(true);
+    LINALG::Matrix<NUMDIM_,NUMDIM_> lama(true);
+    LINALG::Matrix<NUMDIM_,NUMDIM_> NaT(true);
 #if 0
-    LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> Na(true);
+    LINALG::Matrix<NUMDIM_,NUMDIM_> Na(true);
     LINALG::SVD(cga,NaT,lama,Na);
-    for (int i=0; i<NUMDIM_SOSH8P8; ++i) lama(i,i) = sqrt(lama(i,i));
-    LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> aux;
+    for (int i=0; i<NUMDIM_; ++i) lama(i,i) = sqrt(lama(i,i));
+    LINALG::Matrix<NUMDIM_,NUMDIM_> aux;
     aux.MultiplyNN(NaT,lama);
     rgtstr.MultiplyNN(aux,Na);
 #else
     LINALG::SYEV(cga,lama,NaT);
-    for (int i=0; i<NUMDIM_SOSH8P8; ++i) lama(i,i) = sqrt(lama(i,i));
-    LINALG::Matrix<NUMDIM_SOSH8P8,NUMDIM_SOSH8P8> aux;
+    for (int i=0; i<NUMDIM_; ++i) lama(i,i) = sqrt(lama(i,i));
+    LINALG::Matrix<NUMDIM_,NUMDIM_> aux;
     aux.MultiplyNN(NaT,lama);
     rgtstr.MultiplyNT(aux,NaT);
 #endif
@@ -1468,7 +1568,7 @@ int DRT::ELEMENTS::Sosh8p8Register::Initialize(DRT::Discretization& dis)
         actele->thickdir_ = actele->sosh8_findthickdir();
       }
 
-      int new_nodeids[DRT::ELEMENTS::So_sh8p8::NUMNOD_SOSH8P8];
+      int new_nodeids[DRT::ELEMENTS::So_sh8p8::NUMNOD_];
 
       switch (actele->thickdir_) {
       case DRT::ELEMENTS::So_sh8::autor:
@@ -1484,7 +1584,7 @@ int DRT::ELEMENTS::Sosh8p8Register::Initialize(DRT::Discretization& dis)
         new_nodeids[7] = actele->NodeIds()[2];
 //        actele->sosh8_gmshplotlabeledelement(actele->NodeIds());
 //        actele->sosh8_gmshplotlabeledelement(new_nodeids);
-        actele->SetNodeIds(DRT::ELEMENTS::So_sh8p8::NUMNOD_SOSH8P8, new_nodeids);
+        actele->SetNodeIds(DRT::ELEMENTS::So_sh8p8::NUMNOD_, new_nodeids);
         actele->nodes_rearranged_ = true;
         break;
       }
@@ -1499,7 +1599,7 @@ int DRT::ELEMENTS::Sosh8p8Register::Initialize(DRT::Discretization& dis)
         new_nodeids[5] = actele->NodeIds()[6];
         new_nodeids[6] = actele->NodeIds()[2];
         new_nodeids[7] = actele->NodeIds()[3];
-        actele->SetNodeIds(DRT::ELEMENTS::So_sh8p8::NUMNOD_SOSH8P8, new_nodeids);
+        actele->SetNodeIds(DRT::ELEMENTS::So_sh8p8::NUMNOD_, new_nodeids);
         actele->nodes_rearranged_ = true;
         break;
       }
@@ -1509,7 +1609,7 @@ int DRT::ELEMENTS::Sosh8p8Register::Initialize(DRT::Discretization& dis)
         for (int node = 0; node < 8; ++node) {
           new_nodeids[node] = actele->NodeIds()[node];
         }
-        actele->SetNodeIds(DRT::ELEMENTS::So_sh8p8::NUMNOD_SOSH8P8, new_nodeids);
+        actele->SetNodeIds(DRT::ELEMENTS::So_sh8p8::NUMNOD_, new_nodeids);
         actele->nodes_rearranged_ = true;
         break;
       }
@@ -1543,7 +1643,7 @@ int DRT::ELEMENTS::Sosh8p8Register::Initialize(DRT::Discretization& dis)
     if (dis.lColElement(i)->Type() != DRT::Element::element_sosh8p8) continue;
     DRT::ELEMENTS::So_sh8p8* actele = dynamic_cast<DRT::ELEMENTS::So_sh8p8*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_sh8p8* failed");
-    actele->InitJacobianMapping();
+    actele->InitJacobianMapping();  // this sets #invJ_ in So_hex8
   }
 
   // **************** debug printout ot gmesh **********************************
