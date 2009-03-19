@@ -23,9 +23,12 @@
 
 // we need to know all element types for the ale mesh creation
 #include "../drt_f2/fluid2.H"
+#include "../drt_f2/fluid2_nurbs.H"
 #include "../drt_f3/fluid3.H"
 
 #include "../drt_ale2/ale2.H"
+
+#include "../drt_ale2/ale2_nurbs.H"
 #include "../drt_ale3/ale3.H"
 
 #ifdef PARALLEL
@@ -159,6 +162,11 @@ void FSI::UTILS::CreateAleDiscretization()
   RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(genprob.numff,0);
   RCP<DRT::Discretization> aledis   = DRT::Problem::Instance()->Dis(genprob.numaf,0);
 
+  // try to cast fluiddis to NurbsDiscretisation
+  DRT::NURBS::NurbsDiscretization* nurbsdis
+    =
+    dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*(fluiddis)));
+
   if (!fluiddis->Filled()) fluiddis->FillComplete();
 
   if (aledis->NumGlobalElements() or aledis->NumGlobalNodes())
@@ -236,34 +244,52 @@ void FSI::UTILS::CreateAleDiscretization()
   }
 
   // construct ale nodes
-  for (int i=0; i<noderowmap->NumMyElements(); ++i)
+  if(nurbsdis==NULL)
   {
-    int gid = noderowmap->GID(i);
-    if (rownodeset.find(gid)!=rownodeset.end())
+    for (int i=0; i<noderowmap->NumMyElements(); ++i)
     {
-      DRT::Node* fluidnode = fluiddis->lRowNode(i);
-      aledis->AddNode(rcp(new DRT::Node(gid, fluidnode->X(), myrank)));
+      int gid = noderowmap->GID(i);
+      if (rownodeset.find(gid)!=rownodeset.end())
+      {
+	DRT::Node* fluidnode = fluiddis->lRowNode(i);
+	aledis->AddNode(rcp(new DRT::Node(gid, fluidnode->X(), myrank)));
+      }
     }
   }
+  else
+  {
+    for (int i=0; i<noderowmap->NumMyElements(); ++i)
+    {
+      int gid = noderowmap->GID(i);
+      if (rownodeset.find(gid)!=rownodeset.end())
+      {
+	DRT::NURBS::ControlPoint* fluidnode 
+	  =
+	  dynamic_cast<DRT::NURBS::ControlPoint* >(fluiddis->lRowNode(i));
+	aledis->AddNode(rcp(new DRT::NURBS::ControlPoint(gid, fluidnode->X(),fluidnode->W(),myrank)));
+      }
+    }
+  }
+  
 
   // we get the node maps almost for free
 
   vector<int> alenoderowvec(rownodeset.begin(), rownodeset.end());
   rownodeset.clear();
   RCP<Epetra_Map> alenoderowmap = rcp(new Epetra_Map(-1,
-                                                             alenoderowvec.size(),
-                                                             &alenoderowvec[0],
-                                                             0,
-                                                             aledis->Comm()));
+						     alenoderowvec.size(),
+						     &alenoderowvec[0],
+						     0,
+						     aledis->Comm()));
   alenoderowvec.clear();
 
   vector<int> alenodecolvec(colnodeset.begin(), colnodeset.end());
   colnodeset.clear();
   RCP<Epetra_Map> alenodecolmap = rcp(new Epetra_Map(-1,
-                                                             alenodecolvec.size(),
-                                                             &alenodecolvec[0],
-                                                             0,
-                                                             aledis->Comm()));
+						     alenodecolvec.size(),
+						     &alenodecolvec[0],
+						     0,
+						     aledis->Comm()));
   alenodecolvec.clear();
 
   // now do the elements
@@ -281,12 +307,37 @@ void FSI::UTILS::CreateAleDiscretization()
   // The order of the ale elements might be different from that of the
   // fluid elements. We don't care. There are not dofs to these
   // elements.
+  string eletype="Polynomial";
+
   for (unsigned i=0; i<egid.size(); ++i)
   {
     DRT::Element* fluidele = fluiddis->gElement(egid[i]);
 
+
+    string eletype;
+    if(nurbsdis!=NULL)
+    {
+      if(fluidele->NumNode()==9)
+      {
+	eletype="NURBS9";
+      }
+      else if(fluidele->NumNode()==4)
+      {
+	eletype="NURBS4";
+      }
+      else if(fluidele->NumNode()==27)
+      {
+	eletype="NURBS27";
+      }
+      else
+      {
+	dserror("unknown type of nurbs element\n");
+      }
+    }
+
+
     // create the ale element with the same global element id
-    RCP<DRT::Element> aleele = DRT::UTILS::Factory(aletype[i],"Polynomial",egid[i], myrank);
+    RCP<DRT::Element> aleele = DRT::UTILS::Factory(aletype[i],eletype,egid[i], myrank);
 
     // get global node ids of fluid element
     vector<int> nids;
@@ -301,26 +352,42 @@ void FSI::UTILS::CreateAleDiscretization()
     // This is again really ugly as we have to extract the actual
     // element type in order to access the material property
 #ifdef D_ALE
-    DRT::ELEMENTS::Ale2* ale2 = dynamic_cast<DRT::ELEMENTS::Ale2*>(aleele.get());
-    if (ale2!=NULL)
+    if(nurbsdis==NULL)
     {
-      ale2->SetMaterial(matnr);
-    }
-    else
-#endif
-    {
-#ifdef D_ALE
-      DRT::ELEMENTS::Ale3* ale3 = dynamic_cast<DRT::ELEMENTS::Ale3*>(aleele.get());
-      if (ale3!=NULL)
+      DRT::ELEMENTS::Ale2* ale2 = dynamic_cast<DRT::ELEMENTS::Ale2*>(aleele.get());
+      if (ale2!=NULL)
       {
-        ale3->SetMaterial(matnr);
+	ale2->SetMaterial(matnr);
       }
       else
-#endif
       {
-        dserror("unsupported ale element type '%s'", typeid(*aleele).name());
+	DRT::ELEMENTS::Ale3* ale3 = dynamic_cast<DRT::ELEMENTS::Ale3*>(aleele.get());
+	if (ale3!=NULL)
+	{
+	  ale3->SetMaterial(matnr);
+	}
+	else
+	{
+	  dserror("unsupported ale element type '%s'", typeid(*aleele).name());
+	}
       }
     }
+    else
+    {
+      DRT::ELEMENTS::NURBS::Ale2Nurbs* ale2 = dynamic_cast<DRT::ELEMENTS::NURBS::Ale2Nurbs*>(aleele.get());
+      if (ale2!=NULL)
+      {
+	ale2->SetMaterial(matnr);
+      }
+      else
+      {
+	{
+	  dserror("unsupported ale element type '%s'", typeid(*aleele).name());
+	}
+      }
+    }
+#endif
+
 
     // add ale element
     aledis->AddElement(aleele);

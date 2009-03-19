@@ -84,6 +84,7 @@ extern "C"
 #include "../drt_f3/xfluid3.H"
 #include "../drt_combust/combust3.H"
 #include "../drt_ale2/ale2.H"
+#include "../drt_ale2/ale2_nurbs.H"
 #include "../drt_ale3/ale3.H"
 #include "../drt_bele3/bele3.H"
 #include "../drt_constraint/constraint_element2.H"
@@ -384,6 +385,13 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
     {
       DRT::ELEMENTS::Ale2Register* object =
                       new DRT::ELEMENTS::Ale2Register(DRT::Element::element_ale2);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_Ale2_Nurbs:
+    {
+      DRT::ELEMENTS::NURBS::Ale2Nurbs* object = new DRT::ELEMENTS::NURBS::Ale2Nurbs(-1,-1);
       object->Unpack(data);
       return object;
     }
@@ -940,7 +948,17 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
 #ifdef D_ALE
     case ale2:
     {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Ale2(id,owner));
+      RefCountPtr<DRT::Element> ele;
+
+      if(eledistype=="NURBS4" || eledistype=="NURBS9")
+      {
+        ele = rcp(new DRT::ELEMENTS::NURBS::Ale2Nurbs(id,owner));
+      }
+      else
+      {
+        ele = rcp(new DRT::ELEMENTS::Ale2(id,owner));
+      }
+
       return ele;
     }
     break;

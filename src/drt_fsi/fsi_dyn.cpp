@@ -61,7 +61,14 @@ void fluid_ale_drt()
 
   // create ale elements if the ale discretization is empty
   if (aledis->NumGlobalNodes()==0)
+  {
     FSI::UTILS::CreateAleDiscretization();
+
+    if(comm.MyPID()==0)
+    {
+      cout << "\n\nCreating ALE discretisation ....\n\n";
+    }
+  }
 
   Teuchos::RCP<FSI::FluidAleAlgorithm> fluid = Teuchos::rcp(new FSI::FluidAleAlgorithm(comm));
   if (genprob.restart)

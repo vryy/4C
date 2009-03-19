@@ -18,6 +18,7 @@
 
 #include "ale2.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
@@ -36,7 +37,7 @@ extern struct _MATERIAL  *mat;
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            g.bau 03/07|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Ale2::Evaluate(ParameterList& params,
+int DRT::ELEMENTS::Ale2::Evaluate(ParameterList&            params,
                                   DRT::Discretization&      discretization,
                                   vector<int>&              lm,
                                   Epetra_SerialDenseMatrix& elemat1,
@@ -73,7 +74,7 @@ int DRT::ELEMENTS::Ale2::Evaluate(ParameterList& params,
     //vector<double> my_dispnp(lm.size());
     //DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
 
-    static_ke(lm,&elemat1,&elevec1,mat,params);
+    static_ke(discretization,lm,&elemat1,&elevec1,mat,params);
 
     break;
   }
@@ -83,7 +84,7 @@ int DRT::ELEMENTS::Ale2::Evaluate(ParameterList& params,
     //vector<double> my_dispnp(lm.size());
     //DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
 
-    static_ke_laplace(lm,&elemat1,&elevec1,mat,params);
+    static_ke_laplace(discretization,lm,&elemat1,&elevec1,mat,params);
 
     break;
   }
@@ -509,16 +510,17 @@ void DRT::ELEMENTS::Ale2::static_ke_spring(Epetra_SerialDenseMatrix* sys_mat,
 
 
 
-void DRT::ELEMENTS::Ale2::static_ke(vector<int>&              lm,
-                                    Epetra_SerialDenseMatrix* sys_mat,
-                                    Epetra_SerialDenseVector* residual,
-				    RefCountPtr<MAT::Material> material,
-				    ParameterList&            params)
+void DRT::ELEMENTS::Ale2::static_ke(
+  DRT::Discretization       &dis     ,
+  vector<int>               &lm      ,
+  Epetra_SerialDenseMatrix  *sys_mat ,
+  Epetra_SerialDenseVector  *residual,
+  RefCountPtr<MAT::Material> material,
+  ParameterList             &params  )
 {
   const int iel = NumNode();
   const int nd  = 2 * iel;
   const DiscretizationType distype = this->Shape();
-
 
   // get material using class StVenantKirchhoff
   if (material->MaterialType()!=INPAR::MAT::m_stvenant)
@@ -534,13 +536,38 @@ void DRT::ELEMENTS::Ale2::static_ke(vector<int>&              lm,
     xyze(1,i)=Nodes()[i]->X()[1];
   }
 
+  // --------------------------------------------------
+  // Now do the nurbs specific stuff
+  std::vector<Epetra_SerialDenseVector> myknots(2);
+  Epetra_SerialDenseVector              weights(iel);
+
+  if(distype==DRT::Element::nurbs4
+     ||
+     distype==DRT::Element::nurbs9)
+  {
+    DRT::NURBS::NurbsDiscretization* nurbsdis
+      =
+      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(dis));
+    
+    (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
+
+    for (int inode=0; inode<iel; ++inode)
+    {
+      DRT::NURBS::ControlPoint* cp
+        =
+        dynamic_cast<DRT::NURBS::ControlPoint* > (Nodes()[inode]);
+      
+      weights(inode) = cp->W();
+    }
+  }
+
   /*----------------------------------------- declaration of variables ---*/
-  Epetra_SerialDenseVector  funct(iel);
-  Epetra_SerialDenseMatrix 	deriv(2,iel);
-  Epetra_SerialDenseMatrix 	xjm(2,2);
-  Epetra_SerialDenseMatrix 	xji(2,2);
-  Epetra_SerialDenseMatrix 	bop(3,2*iel);
-  Epetra_SerialDenseMatrix 	d(4,4);
+  Epetra_SerialDenseVector funct(iel);
+  Epetra_SerialDenseMatrix deriv(2,iel);
+  Epetra_SerialDenseMatrix xjm(2,2);
+  Epetra_SerialDenseMatrix xji(2,2);
+  Epetra_SerialDenseMatrix bop(3,2*iel);
+  Epetra_SerialDenseMatrix d(4,4);
 
   // gaussian points
   const GaussRule2D gaussrule = getOptimalGaussrule(distype);
@@ -552,9 +579,30 @@ void DRT::ELEMENTS::Ale2::static_ke(vector<int>&              lm,
       const double e1 = intpoints.qxg[iquad][0];
       const double e2 = intpoints.qxg[iquad][1];
 
-      // shape functions and their derivatives
-      DRT::UTILS::shape_function_2D(funct,e1,e2,distype);
-      DRT::UTILS::shape_function_2D_deriv1(deriv,e1,e2,distype);
+      // get values of shape functions and derivatives in the gausspoint
+      if(distype != DRT::Element::nurbs4
+	 &&
+	 distype != DRT::Element::nurbs9)
+      {
+	// shape functions and their derivatives for polynomials
+	DRT::UTILS::shape_function_2D       (funct,e1,e2,distype);
+	DRT::UTILS::shape_function_2D_deriv1(deriv,e1,e2,distype);
+      }
+      else
+      {
+	// nurbs version
+	Epetra_SerialDenseVector gp(2);
+	gp(0)=e1;
+	gp(1)=e2;
+	
+	DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
+	  (funct  ,
+	   deriv  ,
+	   gp     ,
+	   myknots,
+	   weights,
+	   distype);
+      }
 
       // compute jacobian matrix
 
@@ -574,6 +622,10 @@ void DRT::ELEMENTS::Ale2::static_ke(vector<int>&              lm,
 
       // determinant of jacobian
       const double det = xjm(0,0)*xjm(1,1) - xjm(0,1)*xjm(1,0);
+      if(abs(det)<1.0e-6)
+      {
+	dserror("det %12.5e in ale element %d\n",det,Id());
+      }
       const double fac = intpoints.qwgt[iquad]*det;
 
       // calculate operator B
@@ -595,6 +647,11 @@ void DRT::ELEMENTS::Ale2::static_ke(vector<int>&              lm,
 
         const double h1 = xji(0,0)*hr + xji(0,1)*hs;
         const double h2 = xji(1,0)*hr + xji(1,1)*hs;
+	/*
+             | Nk,x    0   |
+             |   0    Nk,y |, k=0...iel-1
+             | Nk,y   Nk,x |
+	*/
 
         bop(0,node_start+0) = h1 ;
         bop(0,node_start+1) = 0.0;
@@ -679,11 +736,13 @@ return;
 
 
 
-void DRT::ELEMENTS::Ale2::static_ke_laplace(vector<int>&              lm,
-                                    Epetra_SerialDenseMatrix* sys_mat,
-                                    Epetra_SerialDenseVector* residual,
-                                    RefCountPtr<MAT::Material> material,
-                                    ParameterList&            params)
+void DRT::ELEMENTS::Ale2::static_ke_laplace(
+  DRT::Discretization        &dis     ,
+  vector<int>                &lm      ,
+  Epetra_SerialDenseMatrix   *sys_mat ,
+  Epetra_SerialDenseVector   *residual,
+  RefCountPtr<MAT::Material>  material,
+  ParameterList              &params  )
 {
   const int iel = NumNode();
 //  const int nd  = 2 * iel;
@@ -702,6 +761,31 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(vector<int>&              lm,
   {
     xyze(0,i)=Nodes()[i]->X()[0];
     xyze(1,i)=Nodes()[i]->X()[1];
+  }
+
+  // --------------------------------------------------
+  // Now do the nurbs specific stuff
+  std::vector<Epetra_SerialDenseVector> myknots(2);
+  Epetra_SerialDenseVector              weights(iel);
+
+  if(distype==DRT::Element::nurbs4
+     ||
+     distype==DRT::Element::nurbs9)
+  {
+    DRT::NURBS::NurbsDiscretization* nurbsdis
+      =
+      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(dis));
+    
+    (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
+
+    for (int inode=0; inode<iel; ++inode)
+    {
+      DRT::NURBS::ControlPoint* cp
+        =
+        dynamic_cast<DRT::NURBS::ControlPoint* > (Nodes()[inode]);
+      
+      weights(inode) = cp->W();
+    }
   }
 
   /*----------------------------------------- declaration of variables ---*/
@@ -725,9 +809,30 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(vector<int>&              lm,
       const double e1 = intpoints.qxg[iquad][0];
       const double e2 = intpoints.qxg[iquad][1];
 
-      // shape functions and their derivatives
-      DRT::UTILS::shape_function_2D(funct,e1,e2,distype);
-      DRT::UTILS::shape_function_2D_deriv1(deriv,e1,e2,distype);
+      // get values of shape functions and derivatives in the gausspoint
+      if(distype != DRT::Element::nurbs4
+	 &&
+	 distype != DRT::Element::nurbs9)
+      {
+	// shape functions and their derivatives for polynomials
+	DRT::UTILS::shape_function_2D       (funct,e1,e2,distype);
+	DRT::UTILS::shape_function_2D_deriv1(deriv,e1,e2,distype);
+      }
+      else
+      {
+	// nurbs version
+	Epetra_SerialDenseVector gp(2);
+	gp(0)=e1;
+	gp(1)=e2;
+	
+	DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
+	  (funct  ,
+	   deriv  ,
+	   gp     ,
+	   myknots,
+	   weights,
+	   distype);
+      }
 
       // compute jacobian matrix
 

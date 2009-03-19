@@ -591,11 +591,6 @@ void DRT::Problem::ReadKnots(const DRT::INPUT::DatFileReader& reader)
           =
           dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*actdis));
 
-        if(i!=0 || j!=0)
-        {
-          dserror("up to now I'm only supporting single field and single dis isogeometric analysis!\n");
-        }
-
         // allocate a knot vector object
         Teuchos::RCP<DRT::NURBS::Knotvector> disknots
 	  =
@@ -817,8 +812,18 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     // allocate and input general old stuff....
     if (genprob.numfld!=2) dserror("numfld != 2 for fluid problem on ale");
 
-    fluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
-    aledis = rcp(new DRT::Discretization("ale",reader.Comm()));
+    std::string distype = ptype.get<std::string>("SHAPEFCT");
+
+    if(distype == "Nurbs")
+    {
+      fluiddis  = rcp(new DRT::NURBS::NurbsDiscretization("fluid"    ,reader.Comm()));
+      aledis    = rcp(new DRT::NURBS::NurbsDiscretization("ale"      ,reader.Comm()));
+    }
+    else
+    {
+      fluiddis  = rcp(new DRT::Discretization("fluid"    ,reader.Comm()));
+      aledis    = rcp(new DRT::Discretization("ale"      ,reader.Comm()));
+    }
 
     AddDis(genprob.numff, fluiddis);
     AddDis(genprob.numaf, aledis);

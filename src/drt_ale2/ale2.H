@@ -23,6 +23,7 @@ using namespace Teuchos;
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H" 
 
 struct _MATERIAL;
 
@@ -269,16 +270,20 @@ public:
 
 private:
 
-  void static_ke(vector<int>&              lm,
-                 Epetra_SerialDenseMatrix* sys_mat,
-                 Epetra_SerialDenseVector* residual,
-		 RefCountPtr<MAT::Material> material,
-                 ParameterList& 	   params);
-  void static_ke_laplace(vector<int>&              lm,
-                 Epetra_SerialDenseMatrix* sys_mat,
-                 Epetra_SerialDenseVector* residual,
-                 RefCountPtr<MAT::Material> material,
-                 ParameterList&            params);
+  void static_ke(
+    DRT::Discretization&       dis,
+    vector<int>&               lm,
+    Epetra_SerialDenseMatrix*  sys_mat,
+    Epetra_SerialDenseVector*  residual,
+    RefCountPtr<MAT::Material> material,
+    ParameterList&             params);
+  void static_ke_laplace(
+    DRT::Discretization&       dis,
+    vector<int>&               lm,
+    Epetra_SerialDenseMatrix*  sys_mat,
+    Epetra_SerialDenseVector*  residual,
+    RefCountPtr<MAT::Material> material,
+    ParameterList&             params);
   void static_ke_spring(Epetra_SerialDenseMatrix* sys_mat, vector<double>& displacements);
   void edge_geometry(int i, int j, const Epetra_SerialDenseMatrix& xyze,
                      double* length, double* sin_alpha, double* cos_alpha);

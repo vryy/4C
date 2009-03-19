@@ -1868,8 +1868,15 @@ void EnsightWriter::WriteDofResultStepForNurbs(
       if(name == "velocity" 
 	 ||
 	 name == "averaged_velocity"
+	 ||
+	 name == "ale_displacement"
 	)
       {
+	if(dim!=numdf)
+	{
+	  dserror("dim and numdf not matching for field %s",name.c_str());
+	}
+
         for(int rr=0;rr<dim;++rr)
         {
           coldofset.insert(lm[inode*(dim+1)+rr]);
@@ -1877,6 +1884,10 @@ void EnsightWriter::WriteDofResultStepForNurbs(
       }
       else if(name == "displacement")
       {
+	if(dim!=numdf)
+	{
+	  dserror("dim and numdf not matching for field %s",name.c_str());
+	}
         for(int rr=0;rr<dim;++rr)
         {
           coldofset.insert(lm[inode*dim+rr]);
@@ -1967,6 +1978,8 @@ void EnsightWriter::WriteDofResultStepForNurbs(
     if(name == "velocity" 
        ||
        name == "averaged_velocity"
+       ||
+       name == "ale_displacement"
       )
     {
       my_data.resize(dim*numnp);

@@ -195,7 +195,7 @@ void ADAPTER::AleLinear::Solve()
   eleparams.set("delta time", dt_);
   // the DOFs with Dirchlet BCs are not rebuild, they are assumed to be correct
   discret_->EvaluateDirichlet(eleparams,dispnp_,null,null,Teuchos::null,Teuchos::null);
-
+  
   LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,*(dbcmaps_->CondMap()));
 
   solver_->Solve(sysmat_->EpetraOperator(),dispnp_,residual_,true);
