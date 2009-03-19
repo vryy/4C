@@ -523,6 +523,7 @@ OBJS_DRT_ALE_LIB = src/drt_ale3/ale3.o \
                 src/drt_ale3/ale3_surface.o \
                 src/drt_ale2/ale2.o \
                 src/drt_ale2/ale2_line.o \
+                src/drt_ale2/ale2_nurbs.o \
                 src/drt_ale3/ale3_evaluate.o \
                 src/drt_ale3/ale3_input.o \
                 src/drt_ale3/ale3_surface_evaluate.o \
