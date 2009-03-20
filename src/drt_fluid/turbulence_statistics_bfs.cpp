@@ -294,9 +294,6 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
   x1sumT_ =  rcp(new Epetra_SerialDenseMatrix);
   x1sumT_->Reshape(2,numx1coor_);
 
-  x1sumqw_ =  rcp(new Epetra_SerialDenseMatrix);
-  x1sumqw_->Reshape(2,numx1coor_);
-
   // x2-direction
   // first-order moments
   x2sumu_ =  rcp(new Epetra_SerialDenseMatrix);
@@ -670,46 +667,32 @@ const double                        eosfac)
         if (x2nodnum == 0)
         {
           double tauw = 0.0;
-          double qw   = 0.0;
           for(int rr=0;rr<(*toggleu_).MyLength();++rr)
           {
             tauw += force[rr]*(*toggleu_)[rr];
           }
-          for(int rr=0;rr<(*togglep_).MyLength();++rr)
-          {
-            qw += force[rr]*(*togglep_)[rr];
-          }
           double tauwsm = tauw/countnodesonallprocs;
-          double qwsm   = qw/countnodesonallprocs;
 
           (*x1sump_)(0,x1nodnum)+=psm;
           (*x1sumtauw_)(0,x1nodnum)+=tauwsm;
 
           (*x1sumrho_)(0,x1nodnum)+=rhosm;
           (*x1sumT_)(0,x1nodnum)+=Tsm;
-          (*x1sumqw_)(0,x1nodnum)+=qwsm;
         }
         else if (x2nodnum == (numx2coor_-1))
         {
           double tauw = 0.0;
-          double qw   = 0.0;
           for(int rr=0;rr<(*toggleu_).MyLength();++rr)
           {
             tauw += force[rr]*(*toggleu_)[rr];
           }
-          for(int rr=0;rr<(*togglep_).MyLength();++rr)
-          {
-            qw += force[rr]*(*togglep_)[rr];
-          }
           double tauwsm = tauw/countnodesonallprocs;
-          double qwsm   = qw/countnodesonallprocs;
 
           (*x1sump_)(1,x1nodnum)+=psm;
           (*x1sumtauw_)(1,x1nodnum)+=tauwsm;
 
           (*x1sumrho_)(1,x1nodnum)+=rhosm;
           (*x1sumT_)(1,x1nodnum)+=Tsm;
-          (*x1sumqw_)(1,x1nodnum)+=qwsm;
         }
       }
     }
@@ -838,7 +821,7 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step,
     (*log) << "\n";
     (*log) << "# lower wall behind step and complete upper wall\n";
     (*log) << "#     x1";
-    (*log) << "        lw-pmean       lw-tauw       lw-utau    lw-rhomean      lw-Tmean         lw-qw       lw-Ttau      uw-pmean       uw-tauw       uw-utau    uw-rhomean      uw-Tmean         uw-qw       uw-Ttau\n";
+    (*log) << "        lw-pmean       lw-tauw       lw-utau    lw-rhomean      lw-Tmean      uw-pmean       uw-tauw       uw-utau    uw-rhomean      uw-Tmean\n";
 
     for(unsigned i=0; i<x1coordinates_->size(); ++i)
     {
@@ -848,10 +831,6 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step,
 
       double lwx1rho  = (*x1sumrho_)(0,i)/numsamp_;
       double lwx1T    = (*x1sumT_)(0,i)/numsamp_;
-      double lwx1qw   = (*x1sumqw_)(0,i)/numsamp_;
-      double lwx1Ttau = 0.0;
-      if (lwx1rho*lwx1utau < -2e-9 or lwx1rho*lwx1utau > 2e-9)
-        lwx1Ttau = lwx1qw/(lwx1rho*lwx1utau);
 
       double uwx1p   = (*x1sump_)(1,i)/numsamp_;
       double uwx1tauw = (*x1sumtauw_)(1,i)/numsamp_;
@@ -859,10 +838,6 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step,
 
       double uwx1rho  = (*x1sumrho_)(1,i)/numsamp_;
       double uwx1T    = (*x1sumT_)(1,i)/numsamp_;
-      double uwx1qw   = (*x1sumqw_)(1,i)/numsamp_;
-      double uwx1Ttau = 0.0;
-      if (uwx1rho*uwx1utau < -2e-9 or uwx1rho*uwx1utau > 2e-9)
-        uwx1Ttau = uwx1qw/(uwx1rho*uwx1utau);
 
       (*log) <<  " "  << setw(11) << setprecision(4) << (*x1coordinates_)[i];
       (*log) << "   " << setw(11) << setprecision(4) << lwx1p;
@@ -870,15 +845,11 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step,
       (*log) << "   " << setw(11) << setprecision(4) << lwx1utau;
       (*log) << "   " << setw(11) << setprecision(4) << lwx1rho;
       (*log) << "   " << setw(11) << setprecision(4) << lwx1T;
-      (*log) << "   " << setw(11) << setprecision(4) << lwx1qw;
-      (*log) << "   " << setw(11) << setprecision(4) << lwx1Ttau;
       (*log) << "   " << setw(11) << setprecision(4) << uwx1p;
       (*log) << "   " << setw(11) << setprecision(4) << uwx1tauw;
       (*log) << "   " << setw(11) << setprecision(4) << uwx1utau;
       (*log) << "   " << setw(11) << setprecision(4) << uwx1rho;
       (*log) << "   " << setw(11) << setprecision(4) << uwx1T;
-      (*log) << "   " << setw(11) << setprecision(4) << uwx1qw;
-      (*log) << "   " << setw(11) << setprecision(4) << uwx1Ttau;
       (*log) << "\n";
     }
 

@@ -188,7 +188,6 @@ private:
 
   RCP<Epetra_SerialDenseMatrix>     x1sumrho_;
   RCP<Epetra_SerialDenseMatrix>     x1sumT_;
-  RCP<Epetra_SerialDenseMatrix>     x1sumqw_;
 
   RCP<Epetra_SerialDenseMatrix>     x2sumu_;
   RCP<Epetra_SerialDenseMatrix>     x2sumv_;
