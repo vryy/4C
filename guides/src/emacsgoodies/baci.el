@@ -37,7 +37,7 @@
    '("^//.*" . font-lock-comment-face)  ;; comments
    '("[ ]+//.*" . font-lock-comment-face)  ;; comments
    '("^[-]+[-A-Z0-9 _&]+" . font-lock-reference-face)  ;; sections
-   '("[/]+[A-Z0-9 _&]+" . font-lock-type-face)  ;; subsections
+   '("[/]+[A-Z0-9 _&'-]+" . font-lock-type-face)  ;; subsections
 ;   '("^[A-Z_]+" . font-lock-function-name-face) ;; core keywords
 ;   '("[A-Z_]+" . font-lock-keyword-face) ;; core keywords
 ;;   '("[\t]+" . highlight) ;; tabs
