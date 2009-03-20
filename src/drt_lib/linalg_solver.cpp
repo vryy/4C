@@ -260,11 +260,13 @@ void LINALG::Solver::ResetTolerance()
 /*----------------------------------------------------------------------*
  |  solve (public)                                           mwgee 02/07|
  *----------------------------------------------------------------------*/
-void LINALG::Solver::Solve(RefCountPtr<Epetra_Operator>  matrix,
-                           RefCountPtr<Epetra_Vector>    x,
-                           RefCountPtr<Epetra_Vector>    b,
-                           bool refactor,
-                           bool reset)
+void LINALG::Solver::Solve(RefCountPtr<Epetra_Operator>     matrix  ,
+                           RefCountPtr<Epetra_Vector>       x       ,
+                           RefCountPtr<Epetra_Vector>       b       ,
+                           bool                             refactor,
+                           bool                             reset   ,
+                           RefCountPtr<Epetra_MultiVector>  kernel  ,
+                           bool                             project )
 {
 
   // reset data flags on demand
@@ -289,8 +291,14 @@ void LINALG::Solver::Solve(RefCountPtr<Epetra_Operator>  matrix,
 
   // decide what solver to use
   string solvertype = Params().get("solver","none");
+
+  if("aztec"!=solvertype && project)
+  {
+    dserror("a projection of Krylov space basis vectors is possible only for aztec type iterative solvers\n");
+  }
+  
   if ("aztec"  ==solvertype)
-    Solve_aztec(reset);
+  Solve_aztec(reset,project,kernel);
   else if ("klu"    ==solvertype)
     Solve_klu(reset);
   else if ("umfpack"==solvertype)
@@ -319,7 +327,11 @@ void LINALG::Solver::Solve(RefCountPtr<Epetra_Operator>  matrix,
 /*----------------------------------------------------------------------*
  |  solve (protected)                                        mwgee 02/07|
  *----------------------------------------------------------------------*/
-void LINALG::Solver::Solve_aztec(const bool reset)
+void LINALG::Solver::Solve_aztec(
+  const bool                    reset  , 
+  const bool                    project,
+  const RCP<Epetra_MultiVector> kernel
+  )
 {
   if (!Params().isSublist("Aztec Parameters"))
     dserror("Do not have aztec parameter list");
@@ -454,64 +466,95 @@ void LINALG::Solver::Solve_aztec(const bool reset)
   aztec_->SetParameters(azlist,false);
   azlist.set("scaling",scaling);
 
-  // do ifpack if desired
-  if (create && doifpack)
+  // create preconditioner if necessary
+  if(create)
   {
-    ParameterList&  ifpacklist = Params().sublist("IFPACK Parameters");
-    // create a copy of the scaled matrix
-    // so we can reuse the preconditioner
-    Pmatrix_ = Teuchos::null;
+    // dump old preconditioner
     P_ = Teuchos::null;
-    Pmatrix_ = rcp(new Epetra_CrsMatrix(*A));
-    // get the type of ifpack preconditioner from aztec
-    string prectype = azlist.get("preconditioner","ILU");
-    int    overlap  = azlist.get("AZ_overlap",0);
-    Ifpack Factory;
-    Ifpack_Preconditioner* prec = Factory.Create(prectype,Pmatrix_.get(),overlap);
-    prec->SetParameters(ifpacklist);
-    prec->Initialize();
-    prec->Compute();
-    P_ = rcp(prec);
-  }
 
-  // do ml if desired
-  if (create && doml)
-  {
-    ParameterList&  mllist = Params().sublist("ML Parameters");
-    // see whether we use standard ml or our own mlapi operator
-    const bool domlapioperator = mllist.get<bool>("LINALG::AMG_Operator",false);
-    if (domlapioperator)
+    // do ifpack if desired
+    if (doifpack)
     {
+      // parameter list (ifpack parameters)
+      ParameterList&  ifpacklist = Params().sublist("IFPACK Parameters");
+ 
+      // free old matrix to avoid usage of (temporary) memory during copy procedure
+      Pmatrix_ = Teuchos::null;
+
       // create a copy of the scaled matrix
-      // so we can reuse the preconditioner several times
-      Pmatrix_ = Teuchos::null;
-      P_ = Teuchos::null;
+      // so we can reuse the preconditioner
       Pmatrix_ = rcp(new Epetra_CrsMatrix(*A));
-      P_ = rcp(new LINALG::AMG_Operator(Pmatrix_,mllist,true));
-    }
-    else
-    {
-      // create a copy of the scaled (and downwinded) matrix
-      // so we can reuse the preconditioner several times
-      Pmatrix_ = Teuchos::null;
-      P_ = Teuchos::null;
-      Pmatrix_ = rcp(new Epetra_CrsMatrix(*A));
-      P_ = rcp(new ML_Epetra::MultiLevelPreconditioner(*Pmatrix_,mllist,true));
-      // for debugging ML
-      //dynamic_cast<ML_Epetra::MultiLevelPreconditioner&>(*P_).PrintUnused(0);
-    }
-  }
 
-  if (create && dosimpler)
-  {
+      // get the type of ifpack preconditioner from aztec
+      string prectype = azlist.get("preconditioner","ILU");
+      int    overlap  = azlist.get("AZ_overlap",0);
+      Ifpack Factory;
+      Ifpack_Preconditioner* prec = Factory.Create(prectype,Pmatrix_.get(),overlap);
+      prec->SetParameters(ifpacklist);
+      prec->Initialize();
+      prec->Compute();
+
+      P_ = rcp(new LINALG::LinalgPrecondOperator::LinalgPrecondOperator(rcp(prec),project));
+    }
+    
+    // do ml if desired
+    if(doml)
+    {
+      // parameter list (ml parameters)
+      ParameterList&  mllist = Params().sublist("ML Parameters");
+
+      // free old matrix to avoid usage of (temporary) memory during copy procedure
+      Pmatrix_ = Teuchos::null;
+
+      // create a copy of the scaled matrix
+      // so we can reuse the preconditioner
+      Pmatrix_ = rcp(new Epetra_CrsMatrix(*A));
+
+      // see whether we use standard ml or our own mlapi operator
+      const bool domlapioperator = mllist.get<bool>("LINALG::AMG_Operator",false);
+      if (domlapioperator)
+      {
+        Teuchos::RCP<LINALG::AMG_Operator> linalgAMG
+          = rcp(new LINALG::AMG_Operator(Pmatrix_,mllist,true));
+
+        P_ = rcp(new LINALG::LinalgPrecondOperator::LinalgPrecondOperator(linalgAMG,project));
+      }
+      else
+      {
+        Teuchos::RCP<ML_Epetra::MultiLevelPreconditioner> linalgML
+          = rcp(new ML_Epetra::MultiLevelPreconditioner(*Pmatrix_,mllist,true));
+
+        P_ = rcp(new LINALG::LinalgPrecondOperator::LinalgPrecondOperator(linalgML,project));
+        // for debugging ML
+        //dynamic_cast<ML_Epetra::MultiLevelPreconditioner&>(*P_).PrintUnused(0);
+      }
+    }
+    
+    // do simpler if desired
+    if(dosimpler)
+    {
       // SIMPLER does not need copy of preconditioning matrix to live
       // SIMPLER does not use the downwinding installed here, it does
       // its own downwinding inside if desired
-      P_ = Teuchos::null;
-      P_ = rcp(new LINALG::SIMPLER_Operator(A_,Params(),
-                                            Params().sublist("SIMPLER"),
-                                            outfile_));
+
+      Teuchos::RCP<LINALG::SIMPLER_Operator> SimplerOperator
+          = rcp(new LINALG::SIMPLER_Operator(A_,Params(),
+                                             Params().sublist("SIMPLER"),
+                                             outfile_));
+      
+      P_ = rcp(new LINALG::LinalgPrecondOperator::LinalgPrecondOperator(SimplerOperator,project));
+
       Pmatrix_ = null;
+    }
+
+    // in case of singular matrices, the kernel has to be projected 
+    // out of the krylov space
+    //
+    // -> has to be provided for the modified Preconditioner inverse apply 
+    if(project)
+    {
+      P_->SetKernelSpace(kernel);
+    }
   }
 
   // set preconditioner

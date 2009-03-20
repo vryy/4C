@@ -1097,6 +1097,50 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   }
   condlist.push_back(surfimpulsrate);
 
+  /*--------------------------------------------------------------------*/
+  // specify a (rigid body) mode orthogonal to the Krylov space
+  //
+  // this option could be used for purely Dirichlet constrained fluid
+  // problems or insufficiently supported static structural problems
+  // (i.e. for the linear iterative solution of singular matrix-systems 
+  //  using reduced solution spaces)
+
+  std::vector<Teuchos::RCP<ConditionComponent> > rigidbodymodecomponents;
+
+  rigidbodymodecomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("onoff",6)));
+
+  rigidbodymodecomponents.push_back(
+    Teuchos::rcp(
+      new StringConditionComponent(
+        "weights based on integration or point values --- for example in the case of rigid body modes for structures, integration would lead to the  exact center of gravity whereas point values would assume that all points have the same mass and thus would not keep the centroid fixed",
+        "integration",
+        Teuchos::tuple<std::string>("integration","pointvalues"),
+        Teuchos::tuple<std::string>("integration","pointvalues"))));
+
+  Teuchos::RCP<ConditionDefinition> surfrigidbodymode =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURF MODE FOR KRYLOV SPACE PROJECTION",
+                                         "Mode for Krylov space projection",
+                                         "Surface mode for Krylov space projection",
+                                         DRT::Condition::SurfaceModeKrylovProjection,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  Teuchos::RCP<ConditionDefinition> volrigidbodymode =
+    Teuchos::rcp(new ConditionDefinition("DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION",
+                                         "Mode for Krylov space projection",
+                                         "Volume mode for Krylov space projection",
+                                         DRT::Condition::VolumeModeKrylovProjection,
+                                         true,
+                                         DRT::Condition::Volume));
+
+  for (unsigned i=0; i<rigidbodymodecomponents.size(); ++i)
+  {
+    surfrigidbodymode->AddComponent(rigidbodymodecomponents[i]);
+    volrigidbodymode ->AddComponent(rigidbodymodecomponents[i]);
+  }
+  condlist.push_back(surfrigidbodymode);
+  condlist.push_back(volrigidbodymode);
+
   return vc;
 }
 

@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file linalg_solver.H
+\file  linalg_solver.H
 
 <pre>
 Maintainer: Michael Gee
@@ -57,6 +57,8 @@ Maintainer: Michael Gee
 
 #include "drt_dserror.H"
 #include "../drt_inpar/inpar_solver.H"
+
+#include "linalg_precond_operator.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -170,18 +172,25 @@ public:
   /*!
   \brief Solve system of equations
 
-  \param matrix (in/out): system of equations
-  \param x      (in/out): initial guess on input, solution on output
-  \param b      (in)    : right hand side vector
-  \param refactor (in)  : flag indicating whether system should be refactorized
-  \param reset  (in)    : flag indicating whether all data from previous solves should
-                           be recalculated including preconditioners
+  \param matrix   (in/out): system of equations
+  \param x        (in/out): initial guess on input, solution on output
+  \param b        (in)    : right hand side vector
+  \param refactor (in)    : flag indicating whether system should be refactorized
+  \param reset    (in)    : flag indicating whether all data from previous solves should
+                            be recalculated including preconditioners
+  \param kernel   (in)    : Basis for nullspace of matrix. Necessary if project!=false
+                            Krylov space will be orthogonalized to this basis! 
+                            (Aztec only option)
+  \param project  (in)    : flag indicating whether several modes will be projected 
+                            out of the Krylov space (Aztec only option)
   */
-  void Solve(RCP<Epetra_Operator>  matrix,
-             RCP<Epetra_Vector>    x,
-             RCP<Epetra_Vector>    b,
-             bool refactor,
-             bool reset = false);
+  void Solve(RCP<Epetra_Operator>     matrix                 ,
+             RCP<Epetra_Vector>       x                      ,
+             RCP<Epetra_Vector>       b                      ,
+             bool                     refactor               ,
+             bool                     reset   = false        ,
+             RCP<Epetra_MultiVector>  kernel  = Teuchos::null,
+             bool                     project = false        );
 
   /*!
   \brief Reset the solver and clear data
@@ -348,40 +357,44 @@ private:
   \brief Solve using aztec
 
   */
-  virtual void Solve_aztec(const bool reset);
+  virtual void Solve_aztec(
+    const bool                    reset  , 
+    const bool                    project,
+    const RCP<Epetra_MultiVector> kernel
+    );
 
   //! a communicator
-  const Epetra_Comm&        comm_;
+  const Epetra_Comm&                 comm_;
   //! (internal) parameter list
-  RCP<ParameterList>        params_;
+  RCP<ParameterList>                 params_;
   //! file to write output to (proc 0 only, can be NULL on input)
-  FILE*                     outfile_;
+  FILE*                              outfile_;
   //! system of equations
-  RCP<Epetra_Operator>      A_;
+  RCP<Epetra_Operator>               A_;
   //! modified system of equations
-  RCP<Epetra_CrsMatrix>     Aplus_;
+  RCP<Epetra_CrsMatrix>              Aplus_;
   //! Preconditioner (currently an ML, Ifpack, MLAPI or SIMPLER operator)
-  RCP<Epetra_Operator>      P_;
+  RCP<LINALG::LinalgPrecondOperator> P_;
   //! system of equations used for preconditioning used by P_ only
-  RCP<Epetra_RowMatrix>     Pmatrix_;
+  RCP<Epetra_RowMatrix>              Pmatrix_;
   //! initial guess and solution
-  RCP<Epetra_Vector>        x_;
+  RCP<Epetra_Vector>                 x_;
   //! right hand side vector
-  RCP<Epetra_Vector>        b_;
+  RCP<Epetra_Vector>                 b_;
   //int x_LDA_;
   //int b_LDA_;
   //! a linear problem wrapper class used by Trilinos and for scaling of the system
-  RCP<Epetra_LinearProblem> lp_;
+  RCP<Epetra_LinearProblem>          lp_;
   //! Epetra multivector: initial guess and solution
-  Epetra_MultiVector *              X_;
+  Epetra_MultiVector *               X_;
   //! Epetra multivector: right hand side
-  Epetra_MultiVector *              B_;
+  Epetra_MultiVector *               B_;
   //! flag indicating whether matrix was factored before
-  bool                              factored_;
+  bool                               factored_;
   //! counting how many times matrix was solved between resets
-  int                               ncall_;
+  int                                ncall_;
   //! an abstract amesos solver that can be any of the amesos concrete immplementations
-  RCP<Amesos_BaseSolver>         amesos_;
+  RCP<Amesos_BaseSolver>          amesos_;
   //! an aztec solver
   RCP<AztecOO>                    aztec_;
   //! an aztex maxiter status test

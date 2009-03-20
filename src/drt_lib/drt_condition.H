@@ -139,7 +139,9 @@ public:
     FilamentNumber,
     ForceSensor,
     FlowRateThroughSurface_3D,
-    ImpulsRateThroughSurface_3D
+    ImpulsRateThroughSurface_3D,
+    SurfaceModeKrylovProjection,
+    VolumeModeKrylovProjection
   };
 
   /*!
