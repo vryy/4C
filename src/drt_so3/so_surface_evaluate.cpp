@@ -328,7 +328,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
         ComputeVolDeriv(xscurr, numnode, numstddf, volumeele, Vdiff1, Vdiff2);
         
         //update rhs vector and corresponding column in "constraint" matrix
-        if (actnumdf == numstddf)
+        if (actnumdf == numdim)
         {
           // in case any node really has 3 dofs, copy matrix and vectors
           elevector1 = *Vdiff1;
@@ -701,7 +701,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
         //call submethod
         ComputeAreaDeriv(xscurr, numnode, numstddf, elearea, Adiff, Adiff2);
         //update elematrices and elevectors
-        if (actnumdf == numstddf)
+        if (actnumdf == numdim)
         {
           // in case any node really has 3 dofs, copy matrix and vectors
           elevector1 = *Adiff;
@@ -709,7 +709,6 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
           elevector2 = elevector1;
           elematrix1 = *Adiff2;
           elematrix1.Scale(-1.0);
-          elevector3[0] = elearea;
         }
         else
         {
