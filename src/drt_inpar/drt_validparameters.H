@@ -84,7 +84,25 @@ namespace INPUT {
   void PrintDefaultParameters(std::ostream& stream, const Teuchos::ParameterList& list);
 
   /// print flag sections of dat file with given list
-  void PrintDatHeader(std::ostream& stream, const Teuchos::ParameterList& list, std::string parentname="", bool color=false);
+  void PrintDatHeader(std::ostream& stream, 
+                      const Teuchos::ParameterList& list,
+                      std::string parentname="",
+                      bool color=false);
+
+  /// provide string to keep flag for printing equal signs
+  ///
+  /// This is needed for the NOX parameters whose key words
+  /// and value have white spaces and thus '=' are inserted
+  /// to distinguish them.
+  std::string PrintEqualSign();
+
+  /// set printing equal signs
+  void SetPrintEqualSign(Teuchos::ParameterList& list,
+                         const bool& pes);
+
+  /// Does the actual parameter list need to print equal signs?
+  bool NeedToPrintEqualSign(const Teuchos::ParameterList& list);
+
 }
 }
 

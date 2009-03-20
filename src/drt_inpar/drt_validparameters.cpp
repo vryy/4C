@@ -52,7 +52,10 @@ void PrintValidParameters()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::PrintDatHeader(std::ostream& stream, const Teuchos::ParameterList& list, std::string parentname, bool color)
+void DRT::INPUT::PrintDatHeader(std::ostream& stream, 
+                                const Teuchos::ParameterList& list, 
+                                std::string parentname, 
+                                bool color)
 {
   std::string blue2light = "";
   std::string bluelight = "";
@@ -85,9 +88,10 @@ void DRT::INPUT::PrintDatHeader(std::ostream& stream, const Teuchos::ParameterLi
       if (entry.isList() && j==0) continue;
       if ((!entry.isList()) && j==1) continue;
       const std::string &name = list.name(i);
+      if (name == PrintEqualSign()) continue;
       Teuchos::RCP<const Teuchos::ParameterEntryValidator> validator = entry.validator();
-
       stream << blue2light << "//" << endcolor << '\n';
+      const bool printequalsign = NeedToPrintEqualSign(list);
 
       std::string doc = entry.docString();
       if (doc!="")
@@ -142,6 +146,7 @@ void DRT::INPUT::PrintDatHeader(std::ostream& stream, const Teuchos::ParameterLi
         stream << bluelight << name << endcolor;
         unsigned l = name.length();
         for (int i=0; i<std::max<int>(31-l,0); ++i) stream << ' ';
+        if (printequalsign) stream << " =";
         stream << ' ' << yellowlight << v << endcolor << '\n';
       }
     }
@@ -2083,6 +2088,8 @@ void DRT::INPUT::SetValidTimeAdaptivityParameters(Teuchos::ParameterList& list)
 /*----------------------------------------------------------------------*/
 void DRT::INPUT::SetValidNoxParameters(Teuchos::ParameterList& list)
 {
+  SetPrintEqualSign(list,true);
+
   {
     Teuchos::Array<std::string> st = Teuchos::tuple<std::string>(
       "Line Search Based",
@@ -2097,6 +2104,7 @@ void DRT::INPUT::SetValidNoxParameters(Teuchos::ParameterList& list)
 
   // sub-list direction
   Teuchos::ParameterList& direction = list.sublist("Direction",false,"");
+  SetPrintEqualSign(direction,true);
 
   {
     Teuchos::Array<std::string> st = Teuchos::tuple<std::string>(
@@ -2112,6 +2120,7 @@ void DRT::INPUT::SetValidNoxParameters(Teuchos::ParameterList& list)
 
   // sub-sub-list "Newton"
   Teuchos::ParameterList& newton = direction.sublist("Newton",false,"");
+  SetPrintEqualSign(newton,true);
 
   {
     Teuchos::Array<std::string> forcingtermmethod = Teuchos::tuple<std::string>(
@@ -2132,6 +2141,7 @@ void DRT::INPUT::SetValidNoxParameters(Teuchos::ParameterList& list)
 
   // sub-sub-list "Steepest Descent"
   Teuchos::ParameterList& steepestdescent = direction.sublist("Steepest Descent",false,"");
+  SetPrintEqualSign(steepestdescent,true);
 
   {
     Teuchos::Array<std::string> scalingtype = Teuchos::tuple<std::string>(
@@ -2147,6 +2157,7 @@ void DRT::INPUT::SetValidNoxParameters(Teuchos::ParameterList& list)
 
   // sub-list "Line Search"
   Teuchos::ParameterList& linesearch = list.sublist("Line Search",false,"");
+  SetPrintEqualSign(linesearch,true);
 
   {
     Teuchos::Array<std::string> method = Teuchos::tuple<std::string>(
@@ -2163,6 +2174,7 @@ void DRT::INPUT::SetValidNoxParameters(Teuchos::ParameterList& list)
 
   // sub-sub-list "Full Step"
   Teuchos::ParameterList& fullstep = linesearch.sublist("Full Step",false,"");
+  SetPrintEqualSign(fullstep,true);
 
   {
     DoubleParameter("Full Step",1.0,"length of a full step",&fullstep);
@@ -2170,6 +2182,7 @@ void DRT::INPUT::SetValidNoxParameters(Teuchos::ParameterList& list)
 
   // sub-sub-list "Backtrack"
   Teuchos::ParameterList& backtrack = linesearch.sublist("Backtrack",false,"");
+  SetPrintEqualSign(backtrack,true);
 
   {
     DoubleParameter("Default Step",1.0,"starting step length",&backtrack);
@@ -2181,6 +2194,7 @@ void DRT::INPUT::SetValidNoxParameters(Teuchos::ParameterList& list)
 
   // sub-sub-list "Polynomial"
   Teuchos::ParameterList& polynomial = linesearch.sublist("Polynomial",false,"");
+  SetPrintEqualSign(polynomial,true);
 
   {
     DoubleParameter("Default Step",1.0,"Starting step length",&polynomial);
@@ -2221,6 +2235,7 @@ void DRT::INPUT::SetValidNoxParameters(Teuchos::ParameterList& list)
 
   // sub-sub-list "More'-Thuente"
   Teuchos::ParameterList& morethuente = linesearch.sublist("More'-Thuente",false,"");
+  SetPrintEqualSign(morethuente,true);
 
   {
     DoubleParameter("Sufficient Decrease",1.0e-4,"The ftol in the sufficient decrease condition",&morethuente);
@@ -2251,6 +2266,7 @@ void DRT::INPUT::SetValidNoxParameters(Teuchos::ParameterList& list)
 
   // sub-list "Trust Region"
   Teuchos::ParameterList& trustregion = list.sublist("Trust Region",false,"");
+  SetPrintEqualSign(trustregion,true);
 
   {
     DoubleParameter("Minimum Trust Region Radius",1.0e-6,"Minimum allowable trust region radius",&trustregion);
@@ -2265,6 +2281,7 @@ void DRT::INPUT::SetValidNoxParameters(Teuchos::ParameterList& list)
 
   // sub-list "Printing"
   Teuchos::ParameterList& printing = list.sublist("Printing",false,"");
+  SetPrintEqualSign(printing,true);
 
   {
     BoolParameter("Error","No","",&printing);
@@ -2283,6 +2300,38 @@ void DRT::INPUT::SetValidNoxParameters(Teuchos::ParameterList& list)
     */
     BoolParameter("Debug","No","",&printing);
   }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::string DRT::INPUT::PrintEqualSign()
+{
+  return "*PrintEqualSign*";
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::SetPrintEqualSign(Teuchos::ParameterList& list, const bool& pes)
+{
+  std::string printequalsign = PrintEqualSign();
+  list.set<bool>(printequalsign,pes);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool DRT::INPUT::NeedToPrintEqualSign(const Teuchos::ParameterList& list)
+{
+  const std::string printequalsign = PrintEqualSign();
+  bool pes = false;
+  try 
+  {
+    pes = list.get<bool>(printequalsign);
+  }
+  catch (Teuchos::Exceptions::InvalidParameter)
+  {
+    pes = false;
+  }
+  return pes;
 }
 
 #endif
