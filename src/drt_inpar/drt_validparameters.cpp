@@ -91,7 +91,6 @@ void DRT::INPUT::PrintDatHeader(std::ostream& stream,
       if (name == PrintEqualSign()) continue;
       Teuchos::RCP<const Teuchos::ParameterEntryValidator> validator = entry.validator();
       stream << blue2light << "//" << endcolor << '\n';
-      const bool printequalsign = NeedToPrintEqualSign(list);
 
       std::string doc = entry.docString();
       if (doc!="")
@@ -146,7 +145,7 @@ void DRT::INPUT::PrintDatHeader(std::ostream& stream,
         stream << bluelight << name << endcolor;
         unsigned l = name.length();
         for (int i=0; i<std::max<int>(31-l,0); ++i) stream << ' ';
-        if (printequalsign) stream << " =";
+        if (NeedToPrintEqualSign(list)) stream << " =";
         stream << ' ' << yellowlight << v << endcolor << '\n';
       }
     }
