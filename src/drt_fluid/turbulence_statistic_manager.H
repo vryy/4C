@@ -28,6 +28,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_fluid/turbulence_statistics_mean_general.H"
 #include "../drt_fluid/turbulence_statistics_cha.H"
 #include "../drt_fluid/turbulence_statistics_ldc.H"
+#include "../drt_fluid/turbulence_statistics_bfs.H"
 #include "../drt_fluid/turbulence_statistics_sqc.H"
 
 
@@ -85,7 +86,7 @@ public:
   \brief Write (dump) the statistics to a file
 
   */
-  void DoOutput(IO::DiscretizationWriter& output, int step);
+  void DoOutput(IO::DiscretizationWriter& output, int step, const double eosfac);
 
   /*!
   \brief Clear all statistics collected up to now
@@ -175,6 +176,8 @@ private:
     loma_channel_flow_of_height_2 ,
     lid_driven_cavity             ,
     loma_lid_driven_cavity        ,
+    backward_facing_step          ,
+    loma_backward_facing_step     ,
     square_cylinder               ,
     square_cylinder_nurbs         }    flow_;
 
@@ -197,6 +200,9 @@ private:
 
   //! turbulence statistics for lid-driven cavity
   RCP<TurbulenceStatisticsLdc>         statistics_ldc_;
+
+  //! turbulence statistics for backward-facing step
+  RCP<TurbulenceStatisticsBfs>         statistics_bfs_;
 
   //! turbulence statistics for square cylinder
   RCP<TurbulenceStatisticsSqc>         statistics_sqc_;

@@ -459,6 +459,10 @@ private:
   //! sum over nodal forces on boundary in w direction
   double                           sumforcetw_;
 
+  //! heat flux on bottom and top boundary
+  double                           sumqwb_;
+  double                           sumqwt_;
+
   //!--------------------------------------------------
   //!  averaged quantities from dynamic Smagorinsky
   //!--------------------------------------------------

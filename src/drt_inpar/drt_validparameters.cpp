@@ -1164,19 +1164,23 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       "no",
       "channel_flow_of_height_2",
       "lid_driven_cavity",
+      "backward_facing_step",
       "square_cylinder",
       "square_cylinder_nurbs",
       "loma_channel_flow_of_height_2",
-      "loma_lid_driven_cavity"),
+      "loma_lid_driven_cavity",
+      "loma_backward_facing_step"),
     tuple<std::string>(
       "The flow is not further specified, so spatial averaging \nand hence the standard sampling procedure is not possible",
       "For this flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow.",
       "For this flow, all statistical data are evaluated on the center lines of the xy-midplane, averaged only over time.",
+      "For this flow, statistical data are evaluated on various lines, averaged over time and z.",
       "For this flow, statistical data are evaluated on various lines of the xy-midplane, averaged only over time.",
       "For this flow, statistical data are evaluated on various lines of the xy-midplane, averaged over time and eventually in one hom.direction.",
       "For this low-Mach-number flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow.",
-      "For this low-Mach-number flow, all statistical data are evaluated on the center lines of the xy-midplane, averaged only over time."),
-    tuple<int>(0,1,2,3,4,5,6),
+      "For this low-Mach-number flow, all statistical data are evaluated on the center lines of the xy-midplane, averaged only over time.",
+      "For this low-Mach-number flow, statistical data are evaluated on various lines, averaged over time and z."),
+    tuple<int>(0,1,2,3,4,5,6,7,8),
     &fdyn_turbu);
 
   setStringToIntegralParameter<int>(
@@ -1443,12 +1447,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     tuple<std::string>(
       "no",
       "loma_channel_flow_of_height_2",
-      "loma_lid_driven_cavity"),
+      "loma_lid_driven_cavity",
+      "loma_backward_facing_step"),
     tuple<std::string>(
       "The flow is not further specified.",
       "low-Mach-number in channel",
-      "low-Mach-number flow in lid-driven cavity"),
-    tuple<int>(0,1,2),
+      "low-Mach-number flow in lid-driven cavity",
+      "low-Mach-number flow over a backward-facing step"),
+    tuple<int>(0,1,2,3),
     &lomacontrol);
   IntParameter("SAMPLING_START",1,"Time step after when sampling shall be started",&lomacontrol);
 

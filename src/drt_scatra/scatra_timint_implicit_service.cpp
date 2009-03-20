@@ -943,7 +943,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
 
     // was the residual already prepared? (Important only for
     // the result test)
-    if ((!nonlinear_) && (lastfluxoutputstep_ != step_))
+    if (not incremental_ and lastfluxoutputstep_ != step_)
     {
       lastfluxoutputstep_ = step_;
 

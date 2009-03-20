@@ -138,6 +138,12 @@ namespace ADAPTER
     /// time derivative of density at time step n from scalar transport solver
     RCP<const Epetra_Vector> DensityDtN(){ return densdtn_; }
 
+    /// get trueresidual at time step n+1 from scalar transport solver
+    void GetScatraResidual(){ scatraresidual_=ScaTraField().TrueResidual(); }
+
+    /// time derivative of density at time step n from scalar transport solver
+    RCP<const Epetra_Vector> ScatraResidual(){ return scatraresidual_; }
+
     /// increment time and step value
     void IncrementTimeAndStep()
     {
@@ -168,6 +174,9 @@ namespace ADAPTER
 
     /// subgrid viscosity
     RCP<const Epetra_Vector>    subgrvisc_;
+
+    /// SCATRA trueresidual
+    RCP<const Epetra_Vector>    scatraresidual_;
 
     /// problem-specific parameter list
     const Teuchos::ParameterList& params_;

@@ -2263,7 +2263,7 @@ void FLD::FluidImplicitTimeInt::StatisticsAndOutput()
   // -------------------------------------------------------------------
   //          dumping of turbulence statistics if required
   // -------------------------------------------------------------------
-  statisticsmanager_->DoOutput(output_,step_);
+  statisticsmanager_->DoOutput(output_,step_,eosfac_);
 
   return;
 } // FluidImplicitTimeInt::StatisticsAndOutput
@@ -2816,6 +2816,7 @@ void FLD::FluidImplicitTimeInt::SetTimeLomaFields(
    RCP<const Epetra_Vector> densnp,
    RCP<const Epetra_Vector> densn,
    RCP<const Epetra_Vector> densnm,
+   RCP<const Epetra_Vector> scatraresidual,
    const double             eosfac)
 {
   // get factor for equation of state (i.e., therm. press. / gas constant)
@@ -2947,6 +2948,15 @@ void FLD::FluidImplicitTimeInt::SetTimeLomaFields(
         vedenm_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
       }
     }
+  }
+
+  // add scatraresidual to trueresidual at pre-dofs
+  for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+  {
+    Indices[numdim] = lnodeid*numdof + numdim;
+
+    Values[numdim] = (*scatraresidual)[lnodeid];
+    trueresidual_->ReplaceMyValues(1,&Values[numdim],&Indices[numdim]);
   }
 
   return;

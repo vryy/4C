@@ -246,6 +246,9 @@ public:
   /// routine to return time deriv. of density at time step n+1 for low-Mach-number flow
   Teuchos::RCP<Epetra_Vector> DensDtNp() { return densdtnp_; }
 
+  /// routine to return trueresidual at time step n+1 for low-Mach-number flow
+  Teuchos::RCP<Epetra_Vector> TrueResidual() { return trueresidual_; }
+
   /// routine to return discretization
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
 
@@ -514,11 +517,11 @@ protected:
 
   /// number of transported scalars
   int numscal_;
-  
+
   /// the last step number when fluxes have been computed
   int lastfluxoutputstep_;
 
-  // unit outer normal vector field for flux output
+  /// unit outer normal vector field for flux output
   RCP<Epetra_MultiVector> normals_;
 
 }; // class ScaTraTimIntImpl

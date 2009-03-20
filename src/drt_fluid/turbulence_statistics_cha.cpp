@@ -1148,6 +1148,7 @@ void FLD::TurbulenceStatisticsCha::DoLomaTimeSample(
       toggleu_->PutScalar(0.0);
       togglev_->PutScalar(0.0);
       togglew_->PutScalar(0.0);
+      togglep_->PutScalar(0.0);
 
       // activate toggles for in plane dofs
       for (int nn=0; nn<discret_->NumMyRowNodes(); ++nn)
@@ -1163,6 +1164,7 @@ void FLD::TurbulenceStatisticsCha::DoLomaTimeSample(
           toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
           togglev_->ReplaceGlobalValues(1,&one,&(dof[1]));
           togglew_->ReplaceGlobalValues(1,&one,&(dof[2]));
+          togglep_->ReplaceGlobalValues(1,&one,&(dof[3]));
         }
       }
 
@@ -1175,6 +1177,9 @@ void FLD::TurbulenceStatisticsCha::DoLomaTimeSample(
       inc=0.0;
       force.Dot(*togglew_,&inc);
       sumforcebw_+=inc;
+      inc=0.0;
+      force.Dot(*togglep_,&inc);
+      sumqwb_+=inc;
     }
 
     // only true for top plane
@@ -1187,6 +1192,7 @@ void FLD::TurbulenceStatisticsCha::DoLomaTimeSample(
       toggleu_->PutScalar(0.0);
       togglev_->PutScalar(0.0);
       togglew_->PutScalar(0.0);
+      togglep_->PutScalar(0.0);
 
       // activate toggles for in plane dofs
       for (int nn=0; nn<discret_->NumMyRowNodes(); ++nn)
@@ -1202,6 +1208,7 @@ void FLD::TurbulenceStatisticsCha::DoLomaTimeSample(
           toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
           togglev_->ReplaceGlobalValues(1,&one,&(dof[1]));
           togglew_->ReplaceGlobalValues(1,&one,&(dof[2]));
+          togglep_->ReplaceGlobalValues(1,&one,&(dof[3]));
         }
       }
 
@@ -1214,6 +1221,9 @@ void FLD::TurbulenceStatisticsCha::DoLomaTimeSample(
       inc=0.0;
       force.Dot(*togglew_,&inc);
       sumforcetw_+=inc;
+      inc=0.0;
+      force.Dot(*togglep_,&inc);
+      sumqwt_+=inc;
     }
   }
 
@@ -3064,9 +3074,16 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(int step)
   else
     dserror("Cannot determine flow direction by traction (appears not unique)");
 
+  const double qwb = sumqwb_/areanumsamp;
+  const double qwt = sumqwt_/areanumsamp;
+
   // u_tau and l_tau at bottom and top wall as well as mean values
   const double utaub = sqrt(tauwb/rhowb);
   const double utaut = sqrt(tauwt/rhowt);
+  double Ttaub = 0.0;
+  if (rhowb*utaub < -2e-9 or rhowb*utaub > 2e-9) Ttaub = qwb/(rhowb*utaub);
+  double Ttaut = 0.0;
+  if (rhowt*utaut < -2e-9 or rhowt*utaut > 2e-9) Ttaut = qwt/(rhowt*utaut);
 
   //----------------------------------------------------------------------
   // output to log-file
@@ -3082,22 +3099,26 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(int step)
     (*log) << "# Statistics record ";
     (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
 
-    (*log) << "# bottom wall: tauwb, rhowb, u_taub : ";
+    (*log) << "# bottom wall: tauwb, rhowb, u_taub, qwb, Ttaub : ";
     (*log) << "   " << setw(15) << setprecision(8) << tauwb;
     (*log) << "   " << setw(15) << setprecision(8) << rhowb;
     (*log) << "   " << setw(15) << setprecision(8) << utaub;
+    (*log) << "   " << setw(15) << setprecision(8) << qwb;
+    (*log) << "   " << setw(15) << setprecision(8) << Ttaub;
     (*log) << &endl;
 
-    (*log) << "# top wall:    tauwt, rhowt, u_taut : ";
+    (*log) << "# top wall:    tauwt, rhowt, u_taut, qwt, Ttaut : ";
     (*log) << "   " << setw(15) << setprecision(8) << tauwt;
     (*log) << "   " << setw(15) << setprecision(8) << rhowt;
     (*log) << "   " << setw(15) << setprecision(8) << utaut;
+    (*log) << "   " << setw(15) << setprecision(8) << qwt;
+    (*log) << "   " << setw(15) << setprecision(8) << Ttaut;
     (*log) << &endl;
 
-    (*log) << "#     y";
-    (*log) << "           umean         vmean         wmean         pmean       rhomean         Tmean       mommean     rhouTmean        svmean";
-    (*log) << "        mean u^2      mean v^2      mean w^2      mean p^2    mean rho^2      mean T^2     mean sv^2";
-    (*log) << "      mean u*v      mean u*w      mean v*w      mean u*T      mean v*T      mean w*T\n";
+    (*log) << "#       y";
+    (*log) << "               umean             vmean             wmean             pmean           rhomean             Tmean           mommean         rhouTmean            svmean";
+    (*log) << "            mean u^2          mean v^2          mean w^2          mean p^2        mean rho^2          mean T^2         mean sv^2";
+    (*log) << "          mean u*v          mean u*w          mean v*w          mean u*T          mean v*T          mean w*T\n";
 
     (*log) << scientific;
     for(unsigned i=0; i<planecoordinates_->size(); ++i)

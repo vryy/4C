@@ -101,6 +101,7 @@ public:
   void DoLomaTimeSample(Teuchos::RefCountPtr<Epetra_Vector> velnp,
                         Teuchos::RefCountPtr<Epetra_Vector> vedenp,
                         Teuchos::RefCountPtr<Epetra_Vector> subgrvisc,
+                        Epetra_Vector &                     force,
                         const double                        eosfac);
 
   /*!

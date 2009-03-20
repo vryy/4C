@@ -232,13 +232,16 @@ void LOMA::Algorithm::GenAlphaPrepareTimeStep()
   // predict density field and time derivative
   ScaTraField().PredictDensity();
 
-  // get density at n+1 and n as well as density time derivative at n
+  // get density at n+1 and n, density time derivative at n as well as
+  // SCATRA trueresidual at n+1
   GetDensityNp();
   GetDensityN();
   GetDensityDtN();
+  GetScatraResidual();
 
-  // set density at n+1 and n, density time derivative at n and eos factor
-  FluidField().SetTimeLomaFields(DensityNp(),DensityN(),DensityDtN(),eosfac_);
+  // set density at n+1 and n, density time derivative at n, SCATRA trueresidual
+  // and eos factor
+  FluidField().SetTimeLomaFields(DensityNp(),DensityN(),DensityDtN(),ScatraResidual(),eosfac_);
 
   // prepare fluid time step, particularly predict velocity field
   FluidField().PrepareTimeStep();
@@ -268,13 +271,14 @@ void LOMA::Algorithm::OSTBDF2PrepareTimeStep()
   // predict density field and time derivative
   ScaTraField().PredictDensity();
 
-  // get density at n+1, n and n-1
+  // get density at n+1, n and n-1 as well as SCATRA trueresidual at n+1
   GetDensityNp();
   GetDensityN();
   GetDensityNm();
+  GetScatraResidual();
 
-  // set density at n+1, n and n-1 as well as eos factor
-  FluidField().SetTimeLomaFields(DensityNp(),DensityN(),DensityNm(),eosfac_);
+  // set density at n+1, n and n-1, SCATRA trueresidual and eos factor
+  FluidField().SetTimeLomaFields(DensityNp(),DensityN(),DensityNm(),ScatraResidual(),eosfac_);
 
   // prepare fluid time step, particularly predict velocity field
   FluidField().PrepareTimeStep();
@@ -446,13 +450,16 @@ void LOMA::Algorithm::GenAlphaUpdate()
   // update density
   ScaTraField().UpdateDensity();
 
-  // get density at n+1 and n as well as density time derivative at n
+  // get density at n+1 and n, density time derivative at n as well as
+  // SCATRA trueresidual at n+1
   GetDensityNp();
   GetDensityN();
   GetDensityDtN();
+  GetScatraResidual();
 
-  // set density at n+1 and n, density time derivative at n and eos factor
-  FluidField().SetTimeLomaFields(DensityNp(),DensityN(),DensityDtN(),eosfac_);
+  // set density at n+1 and n, density time derivative at n, SCATRA trueresidual
+  // and eos factor
+  FluidField().SetTimeLomaFields(DensityNp(),DensityN(),DensityDtN(),ScatraResidual(),eosfac_);
 
   // update fluid
   FluidField().Update();
@@ -477,13 +484,14 @@ void LOMA::Algorithm::OSTBDF2Update()
   // update density
   ScaTraField().UpdateDensity();
 
-  // get density at n+1, n and n-1
+  // get density at n+1, n and n-1 as well as SCATRA trueresidual at n+1
   GetDensityNp();
   GetDensityN();
   GetDensityNm();
+  GetScatraResidual();
 
-  // set density at n+1, n and n-1 as well as eos factor
-  FluidField().SetTimeLomaFields(DensityNp(),DensityN(),DensityNm(),eosfac_);
+  // set density at n+1, n and n-1, SCATRA trueresidual and eos factor
+  FluidField().SetTimeLomaFields(DensityNp(),DensityN(),DensityNm(),ScatraResidual(),eosfac_);
 
   // update fluid
   FluidField().Update();

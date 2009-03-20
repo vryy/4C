@@ -885,6 +885,10 @@ void SCATRA::ScaTraTimIntImpl::Solve()
   // incremental or non-incremental case
   if (incremental_)
   {
+    // scaling to get true residual vector for all time integration schemes:
+    // boundary flux values can be computed from trueresidual
+    trueresidual_->Update(ResidualScaling(),*residual_,0.0);
+
     // blank residual DOFs which are on Dirichlet BC
     // We can do this because the values at the Dirichlet positions
     // are not used anyway.

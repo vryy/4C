@@ -2,7 +2,7 @@
 
 Manage the computation of averages for several 
 canonical flows like channel flow, flow around a square 
-cylinder, flow in a lid driven cavity etc.
+cylinder, flow in a lid driven cavity, flow over a backward-facing step etc.
 
 The manager is intended to remove as much of the averaging
 overhead as possible from the time integration method.
@@ -109,6 +109,28 @@ namespace FLD
       // allocate one instance of the averaging procedure for
       // the flow under consideration
       statistics_ldc_    =rcp(new TurbulenceStatisticsLdc(discret_,params_));
+    }
+    else if(fluid.special_flow_=="backward_facing_step")
+    {
+      flow_=backward_facing_step;
+
+      // do the time integration independent setup
+      Setup();
+
+      // allocate one instance of the averaging procedure for
+      // the flow under consideration
+      statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,params_));
+    }
+    else if(fluid.special_flow_=="loma_backward_facing_step")
+    {
+      flow_=loma_backward_facing_step;
+
+      // do the time integration independent setup
+      Setup();
+
+      // allocate one instance of the averaging procedure for
+      // the flow under consideration
+      statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,params_));
     }
     else if(fluid.special_flow_=="square_cylinder")
     {
@@ -245,6 +267,28 @@ namespace FLD
       // allocate one instance of the averaging procedure for
       // the flow under consideration
       statistics_ldc_    =rcp(new TurbulenceStatisticsLdc(discret_,params_));
+    }
+    else if(fluid.special_flow_=="backward_facing_step")
+    {
+      flow_=backward_facing_step;
+
+      // do the time integration independent setup
+      Setup();
+
+      // allocate one instance of the averaging procedure for
+      // the flow under consideration
+      statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,params_));
+    }
+    else if(fluid.special_flow_=="loma_backward_facing_step")
+    {
+      flow_=loma_backward_facing_step;
+
+      // do the time integration independent setup
+      Setup();
+
+      // allocate one instance of the averaging procedure for
+      // the flow under consideration
+      statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,params_));
     }
     else if(fluid.special_flow_=="square_cylinder")
     {
@@ -478,7 +522,23 @@ namespace FLD
         if(statistics_ldc_==null)
           dserror("need statistics_ldc_ to do a time sample for a cavity flow at low Mach number");
 
-        statistics_ldc_->DoLomaTimeSample(myvelnp_,myvedenp_,mysubgrvisc_,eosfac);
+        statistics_ldc_->DoLomaTimeSample(myvelnp_,myvedenp_,mysubgrvisc_,*myforce_,eosfac);
+        break;
+      }
+      case backward_facing_step:
+      {
+        if(statistics_bfs_==null)
+          dserror("need statistics_bfs_ to do a time sample for a flow over a backward-facing step");
+
+        statistics_bfs_->DoTimeSample(myvelnp_,mysubgrvisc_,*myforce_);
+        break;
+      }
+      case loma_backward_facing_step:
+      {
+        if(statistics_bfs_==null)
+          dserror("need statistics_bfs_ to do a time sample for a flow over a backward-facing step at low Mach number");
+
+        statistics_bfs_->DoLomaTimeSample(myvelnp_,myvedenp_,mysubgrvisc_,*myforce_,eosfac);
         break;
       }
       case square_cylinder:
@@ -584,9 +644,10 @@ namespace FLD
     Write (dump) the statistics to a file
 
   ----------------------------------------------------------------------*/
-  void TurbulenceStatisticManager::DoOutput(IO::DiscretizationWriter& output, int step)
+  void TurbulenceStatisticManager::DoOutput(IO::DiscretizationWriter& output,
+                                            int                       step,
+                                            const double              eosfac)
   {
-
     // sampling takes place only in the sampling period
     if(step>=samstart_ && step<=samstop_ && flow_ != no_special_flow)
     {
@@ -660,6 +721,24 @@ namespace FLD
 
         if(outputformat == write_single_record)
           statistics_ldc_->DumpLomaStatistics(step);
+        break;
+      }
+      case backward_facing_step:
+      {
+        if(statistics_bfs_==null)
+          dserror("need statistics_bfs_ to do a time sample for a flow over a backward-facing step");
+
+        if(outputformat == write_single_record)
+          statistics_bfs_->DumpStatistics(step);
+        break;
+      }
+      case loma_backward_facing_step:
+      {
+        if(statistics_bfs_==null)
+          dserror("need statistics_bfs_ to do a time sample for a flow over a backward-facing step at low Mach number");
+
+        if(outputformat == write_single_record)
+          statistics_bfs_->DumpLomaStatistics(step,eosfac);
         break;
       }
       case square_cylinder:
@@ -752,6 +831,8 @@ namespace FLD
     }
     case lid_driven_cavity:
     case loma_lid_driven_cavity:
+    case backward_facing_step:
+    case loma_backward_facing_step:
     case square_cylinder:
     {
       // nothing to do here

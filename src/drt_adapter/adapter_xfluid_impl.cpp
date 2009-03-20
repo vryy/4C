@@ -869,7 +869,7 @@ void ADAPTER::XFluidImpl::SetInitialFlowField(int whichinitialfield,int startfun
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::XFluidImpl::SetTimeLomaFields(RCP<const Epetra_Vector> densnp,RCP<const Epetra_Vector> densn,RCP<const Epetra_Vector> densnm,const double eosfac)
+void ADAPTER::XFluidImpl::SetTimeLomaFields(RCP<const Epetra_Vector> densnp,RCP<const Epetra_Vector> densn,RCP<const Epetra_Vector> densnm,RCP<const Epetra_Vector> scatraresidual,const double eosfac)
 {
    dserror("not implemented!");
    return;
