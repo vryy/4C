@@ -137,6 +137,7 @@ Input/fsi_tank3D.dat                                    x        -        x     
 Input/fsi_tank3D_par.dat                                -        -        -        -        -        -
 Input/fsi-pw-mfsi-be.dat                                x        x        x        -        x        x
 Input/fsi-pw-mfsi-be-structsplit.dat                    x        x        x        -        x        x
+Input/fsi-pw-mfsi-fsiamg-be-structsplit.dat             x        x        x        -        x        x
 Input/fsi-pw-mfsi-gena.dat                              x        x        x        -        x        x
 Input/fsi_potential_LJ.dat                              x        -        x        -        x        -
 Input/fsi_potential_LJ_par.dat                          -        x        -        x        -        x
