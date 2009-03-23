@@ -461,6 +461,7 @@ void CONTACT::Manager::WriteRestart(IO::DiscretizationWriter& output)
 {
   // quantities to be written for restart
   RCP<Epetra_Vector> activetoggle = rcp(new Epetra_Vector(*gsnoderowmap_));
+  RCP<Epetra_Vector> sliptoggle = rcp(new Epetra_Vector(*gsnoderowmap_));
   
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
@@ -475,12 +476,14 @@ void CONTACT::Manager::WriteRestart(IO::DiscretizationWriter& output)
       
       // set value active / inactive in toggle vector
       if (cnode->Active()) (*activetoggle)[j]=1;
+      if (cnode->Slip()) (*sliptoggle)[j]=1; 
     }
   }
   
   // write restart information for contact
   output.WriteVector("lagrmultold",LagrMultOld());
-  output.WriteVector("activetoggle",activetoggle);   
+  output.WriteVector("activetoggle",activetoggle);
+  output.WriteVector("sliptoggle",sliptoggle); 
   
   return;
 }
@@ -500,6 +503,9 @@ void CONTACT::Manager::ReadRestart(IO::DiscretizationReader& reader,
   RCP<Epetra_Vector> activetoggle =rcp(new Epetra_Vector(*(SlaveRowNodes())));
   reader.ReadVector(activetoggle,"activetoggle");
 
+  RCP<Epetra_Vector> sliptoggle =rcp(new Epetra_Vector(*(SlaveRowNodes())));
+  reader.ReadVector(sliptoggle,"sliptoggle");
+  
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
   {
@@ -515,6 +521,10 @@ void CONTACT::Manager::ReadRestart(IO::DiscretizationReader& reader,
       
         // set value active / inactive in cnode
         cnode->Active()=true;
+        
+        // set value stick / slip in cnode
+        if ((*sliptoggle)[j]==1) 
+        cnode->Slip()=true;
       }
     }
   }
@@ -542,6 +552,8 @@ void CONTACT::Manager::ReadRestart(IO::DiscretizationReader& reader,
   InitializeMortar();
   EvaluateMortar();
   StoreDM("old");
+  StoreNodalQuantities(Manager::activeold);
+  StoreDMToNodes();
  
   return;
 }

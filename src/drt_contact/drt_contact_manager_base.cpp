@@ -159,7 +159,11 @@ void CONTACT::ManagerBase::Initialize()
     // here the calculation of gstickt is necessary
     RCP<Epetra_Map> gstickt = LINALG::SplitMap(*gactivet_,*gslipt_);
     linstickmatrix_ = rcp(new LINALG::SparseMatrix(*gstickt,3));
-    linslipmatrix_ = rcp(new LINALG::SparseMatrix(*gslipt_,3));
+    
+    linslipLM_ = rcp(new LINALG::SparseMatrix(*gslipt_,3));
+    linslipDIS_ = rcp(new LINALG::SparseMatrix(*gslipt_,3));
+    linslipRHS_ = LINALG::CreateVector(*gslipt_,true);
+       
   }
   
   return;
@@ -358,7 +362,7 @@ void CONTACT::ManagerBase::Evaluate(RCP<LINALG::SparseMatrix> kteff,
 }
 
 /*----------------------------------------------------------------------*
- |  evaluate frictional contact (public)                  gitterle 06/08|
+ | evaluate frictional contact (public)                    gitterle 06/08|
  *----------------------------------------------------------------------*/
 void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
                                             RCP<Epetra_Vector> feff)
@@ -409,11 +413,11 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
     interface_[i]->AssembleNT(*nmatrix_,*tmatrix_);
     interface_[i]->AssembleS(*smatrix_);
     interface_[i]->AssembleLinDM(*lindmatrix_,*linmmatrix_);
-    interface_[i]->AssembleTresca(*lmatrix_,*r_,frbound,ct);
     interface_[i]->AssembleLinStick(*linstickmatrix_);
-    interface_[i]->AssembleLinSlip(*linslipmatrix_,frbound,ct);
+    interface_[i]->AssembleLinSlip(*linslipLM_,*linslipDIS_,*linslipRHS_,frbound,ct);
+    interface_[i]->AssembleTresca(*lmatrix_,*r_,frbound,ct);
   }
-    
+
   // FillComplete() global matrices N and T and L
   nmatrix_->Complete(*gactivedofs_,*gactiven_);
   tmatrix_->Complete(*gactivedofs_,*gactivet_);
@@ -434,9 +438,10 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
   RCP<Epetra_Map> gstickt = LINALG::SplitMap(*gactivet_,*gslipt_);
   linstickmatrix_->Complete(*gsmdofs,*gstickt);
   
-  // FillComplete global Matrix LinSlip
-  linslipmatrix_->Complete(*gsmdofs,*gslipt_);
-    
+  // FillComplete global Matrix linslipLM and linslipDIS
+  linslipLM_->Complete(*gslipdofs_,*gslipt_);
+  linslipDIS_->Complete(*gsmdofs,*gslipt_);
+  
   /**********************************************************************/
   /* Multiply Mortar matrices: m^ = inv(d) * m                          */
   /**********************************************************************/
@@ -526,6 +531,37 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
   LINALG::SplitMatrix2x2(kms,gmdofrowmap_,tempmap,gactivedofs_,gidofs,kma,kmi,tempmtx1,tempmtx2);
   
   /**********************************************************************/
+  /* Split LinD and LinM into blocks                                    */
+  /**********************************************************************/
+  // we want to split lindmatrix_ into 3 groups a,i,m = 3 blocks
+  RCP<LINALG::SparseMatrix> lindai, lindaa, lindam, lindas;
+  
+  // we want to split linmmatrix_ into 3 groups a,i,m = 3 blocks
+  RCP<LINALG::SparseMatrix> linmmi, linmma, linmmm, linmms;
+  
+  if (fulllin)
+  {
+    // do the splitting
+    LINALG::SplitMatrix2x2(lindmatrix_,gactivedofs_,gidofs,gmdofrowmap_,gsdofrowmap_,lindam,lindas,tempmtx1,tempmtx2);
+    LINALG::SplitMatrix2x2(lindas,gactivedofs_,tempmap,gactivedofs_,gidofs,lindaa,lindai,tempmtx1,tempmtx2);
+    LINALG::SplitMatrix2x2(linmmatrix_,gmdofrowmap_,tempmap,gmdofrowmap_,gsdofrowmap_,linmmm,linmms,tempmtx1,tempmtx2);
+    LINALG::SplitMatrix2x2(linmms,gmdofrowmap_,tempmap,gactivedofs_,gidofs,linmma,linmmi,tempmtx1,tempmtx2);
+  
+    // modification of kai, kaa, kam
+    // (this has to be done first as they are needed below)
+    // (note, that kai, kaa, kam have to be UNcompleted again first!!!)
+    kai->UnComplete();
+    kaa->UnComplete();
+    kam->UnComplete();
+    kai->Add(*lindai,false,1.0-alphaf_,1.0);
+    kaa->Add(*lindaa,false,1.0-alphaf_,1.0);
+    kam->Add(*lindam,false,1.0-alphaf_,1.0);
+    kai->Complete(*gidofs,*gactivedofs_);
+    kaa->Complete();
+    kam->Complete(*gmdofrowmap_,*gactivedofs_);
+  }
+ 
+  /**********************************************************************/
   /* Split active quantities into slip / stick                          */
   /**********************************************************************/
 
@@ -612,37 +648,6 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
   LINALG::SplitMatrix2x2(tmatrix_,gslipt_,gstickt,gslipdofs_,tmap,tslmatrix,tm1,tm2,tstmatrix);
     
   /**********************************************************************/
-  /* Split LinD and LinM into blocks                                    */
-  /**********************************************************************/
-  // we want to split lindmatrix_ into 3 groups a,i,m = 3 blocks
-  RCP<LINALG::SparseMatrix> lindai, lindaa, lindam, lindas;
-  
-  // we want to split linmmatrix_ into 3 groups a,i,m = 3 blocks
-  RCP<LINALG::SparseMatrix> linmmi, linmma, linmmm, linmms;
-  
-  if (fulllin)
-  {
-    // do the splitting
-    LINALG::SplitMatrix2x2(lindmatrix_,gactivedofs_,gidofs,gmdofrowmap_,gsdofrowmap_,lindam,lindas,tempmtx1,tempmtx2);
-    LINALG::SplitMatrix2x2(lindas,gactivedofs_,tempmap,gactivedofs_,gidofs,lindaa,lindai,tempmtx1,tempmtx2);
-    LINALG::SplitMatrix2x2(linmmatrix_,gmdofrowmap_,tempmap,gmdofrowmap_,gsdofrowmap_,linmmm,linmms,tempmtx1,tempmtx2);
-    LINALG::SplitMatrix2x2(linmms,gmdofrowmap_,tempmap,gactivedofs_,gidofs,linmma,linmmi,tempmtx1,tempmtx2);
-  
-    // modification of kai, kaa, kam
-    // (this has to be done first as they are needed below)
-    // (note, that kai, kaa, kam have to be UNcompleted again first!!!)
-    kai->UnComplete();
-    kaa->UnComplete();
-    kam->UnComplete();
-    kai->Add(*lindai,false,1.0-alphaf_,1.0);
-    kaa->Add(*lindaa,false,1.0-alphaf_,1.0);
-    kam->Add(*lindam,false,1.0-alphaf_,1.0);
-    kai->Complete(*gidofs,*gactivedofs_);
-    kaa->Complete();
-    kam->Complete(*gmdofrowmap_,*gactivedofs_);
-  }
-  
-  /**********************************************************************/
   /* Build the final K and f blocks                                     */
   /**********************************************************************/
   // knn: nothing to do
@@ -713,9 +718,10 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
   // Tst.(Dn+1-Dn)
   RCP<LINALG::SparseMatrix> tstdiffD = LINALG::Multiply(*tstmatrix,false,*diffDst,false,true);
 #endif
-
-  // nmatrix: nothing to do
   
+ // nmatrix: nothing to do
+  
+#ifdef CONTACTRELVELMATERIAL  
   // ksln: multiply with tslmatrix
   RCP<LINALG::SparseMatrix> kslnmod = LINALG::Multiply(*tslmatrix,false,*invdsl,false,true);
   kslnmod = LINALG::Multiply(*kslnmod,false,*ksln,false,true);
@@ -723,9 +729,7 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
   // kslm: multiply with tslmatrix
   RCP<LINALG::SparseMatrix> kslmmod = LINALG::Multiply(*tslmatrix,false,*invdsl,false,true);
   kslmmod = LINALG::Multiply(*kslmmod,false,*kslm,false,false);
-
-#ifdef CONTACTRELVELMATERIAL
- 
+  
   // lmatrix: multiply with tslmatrix, also multiply with mhatslip
   // L.Tsl.Mhatsl 
 
@@ -737,58 +741,55 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
   kslmmod->Complete(kslm->DomainMap(),kslm->RowMap());
 #else
   
-  // lmatrix: multiply with tslmatrix, also multiply with DiffM
-  // L.Tsl.(Mn+1-Mn)
-    RCP<LINALG::SparseMatrix> ltmatrix = LINALG::Multiply(*lmatrix_,false,*tslmatrix,false,true);
-    
-  // create a merged map of domain map of M and Mold
-  const Epetra_Map& mmatrixdofs = mmatrixsl->DomainMap();
-  const Epetra_Map& molddofs = moldsl->DomainMap();
-  RCP<Epetra_Map> mdiffdofs = LINALG::MergeMap(mmatrixdofs,molddofs,true);
-  
-  // Create a new Matrix, add M and -Mold
-  RCP<LINALG::SparseMatrix> diffM = rcp(new LINALG::SparseMatrix(mmatrixsl->RowMap(),81));
-  diffM->Add(*mmatrixsl,false,+1.0,0.0);
-  diffM->Add(*moldsl,false,-1.0,1.0);
-  diffM->Complete(*mdiffdofs,mmatrixsl->RowMap());
-  
-  // do the multiplication
-  RCP<LINALG::SparseMatrix> ltmatrixdiffm = LINALG::Multiply(*ltmatrix,false,*diffM,false,true);
+  // ksln: multiply with linslipLM
+  RCP<LINALG::SparseMatrix> kslnmod = LINALG::Multiply(*linslipLM_,false,*invdsl,false,true);
+  kslnmod = LINALG::Multiply(*kslnmod,false,*ksln,false,true);
+  kslnmod->Complete(ksln->DomainMap(),ksln->RowMap());
 
-  // subtract ltmatrixdiffm from kslmmod
-  kslmmod->Add(*ltmatrixdiffm,false,-1.0,1.0);
+  // kslm: multiply with linslipLM
+  RCP<LINALG::SparseMatrix> kslmmod = LINALG::Multiply(*linslipLM_,false,*invdsl,false,true);
+  kslmmod = LINALG::Multiply(*kslmmod,false,*kslm,false,false);
   kslmmod->Complete(kslm->DomainMap(),kslm->RowMap());
-#endif  
+#endif
   
-   // ksli: multiply with tslmatrix
+#ifdef CONTACTRELVELMATERIAL 
+
+  // ksli: multiply with tslmatrix
   RCP<LINALG::SparseMatrix> kslimod = LINALG::Multiply(*tslmatrix,false,*invdsl,false,true);
   kslimod = LINALG::Multiply(*kslimod,false,*ksli,false,true);
   
   // kslsl: multiply with tslmatrix
   RCP<LINALG::SparseMatrix> kslslmod = LINALG::Multiply(*tslmatrix,false,*invdsl,false,true);
   kslslmod = LINALG::Multiply(*kslslmod,false,*kslsl,false,true);
-
-#ifdef CONTACTRELVELMATERIAL
-
+  
   // add ltmatirx to kslslmod
   kslslmod->Add(*ltmatrix,false,1.0,1.0);
   kslslmod->Complete(kslsl->DomainMap(),kslsl->RowMap());
 #else
-  
-  // lmatrix: Multiply with tslipmatrix, also multiply with diffD    
-  RCP<LINALG::SparseMatrix> diffD = dmatrixsl;
-  diffD->Add(*doldsl,false,-1.0,1.0);
-  RCP<LINALG::SparseMatrix> ltmatrixdiffd = LINALG::Multiply(*ltmatrix,false,*diffD,false,true);
-  
-  //add ltmatrixdiffD to kslslmod
-  kslslmod->Add(*ltmatrixdiffd,false,-1.0,1.0);
+
+  // ksli: multiply with linslipLM
+  RCP<LINALG::SparseMatrix> kslimod = LINALG::Multiply(*linslipLM_,false,*invdsl,false,true);
+  kslimod = LINALG::Multiply(*kslimod,false,*ksli,false,true);
+  kslimod->Complete(ksli->DomainMap(),ksli->RowMap());
+
+  // kslsl: multiply with linslipLM
+  RCP<LINALG::SparseMatrix> kslslmod = LINALG::Multiply(*linslipLM_,false,*invdsl,false,true);
+  kslslmod = LINALG::Multiply(*kslslmod,false,*kslsl,false,true);
   kslslmod->Complete(kslsl->DomainMap(),kslsl->RowMap());
 #endif
-  
+
+#ifdef CONTACTCREATEINMANAGER  
+
   // slstmod: multiply with tslmatrix
   RCP<LINALG::SparseMatrix> kslstmod = LINALG::Multiply(*tslmatrix,false,*invdsl,false,true);
   kslstmod = LINALG::Multiply(*kslstmod,false,*kslst,false,true);
-    
+#else
+
+  // slstmod: multiply with linslipLM
+  RCP<LINALG::SparseMatrix> kslstmod = LINALG::Multiply(*linslipLM_,false,*invdsl,false,true);
+  kslstmod = LINALG::Multiply(*kslstmod,false,*kslst,false,true);
+  kslstmod->Complete(kslst->DomainMap(),kslst->RowMap());
+#endif
   // fn: nothing to do
   
   // fi: subtract alphaf * old contact forces (t_n)
@@ -836,7 +837,9 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
   RCP<Epetra_Vector> fmmod = rcp(new Epetra_Vector(*gmdofrowmap_));
   mhata->Multiply(true,*fa,*fmmod);
   fmmod->Update(1.0,*fm,1.0);
-  
+
+#ifdef CONTACTRELVELMATERIAL  
+
   // fsl: mutliply with tmatrix
   // (this had to wait as we had to modify fm first)
   RCP<Epetra_Vector> fslmod = rcp(new Epetra_Vector(*gslipt_));
@@ -850,6 +853,19 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
   // add r to fslmod
   fslmod->Update(1.0,*r_,1.0);
   }  
+#else
+
+  // fsl: mutliply with linslipLM
+  // (this had to wait as we had to modify fm first)
+  RCP<Epetra_Vector> fslmod = rcp(new Epetra_Vector(*gslipt_));
+  RCP<LINALG::SparseMatrix> temp = LINALG::Multiply(*linslipLM_,false,*invdsl,false,true);
+  
+  if(gslipdofs_->NumGlobalElements())
+  {
+    temp->Multiply(false,*fsl,*fslmod);
+  }  
+#endif
+  
   // gactive: nothing to do
   
   // add jump from stick nodes to r.h.s.
@@ -890,7 +906,31 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
     interface_[i]->FDCheckTangLMDeriv();
   }
 #endif // #ifdef CONTACTFDTANGLM
-    
+
+#ifdef CONTACTFDSLIPTRESCA
+ 
+  if (gslipnodes_->NumGlobalElements())
+  {
+  // FD check of tresca slip condition
+ for (int i=0; i<(int)interface_.size(); ++i)
+ {
+   RCP<LINALG::SparseMatrix> deriv1 = rcp(new LINALG::SparseMatrix(*gactivet_,81));
+   RCP<LINALG::SparseMatrix> deriv2 = rcp(new LINALG::SparseMatrix(*gactivet_,81));
+      
+   deriv1->Add(*linslipLM_,false,1.0,1.0);
+   deriv1->Complete(*gsmdofs,*gactivet_);
+      
+   deriv2->Add(*linslipDIS_,false,1.0,1.0);
+   deriv2->Complete(*gsmdofs,*gactivet_);
+   
+   cout << *deriv1 << endl;
+   cout << *deriv2 << endl;
+      
+   interface_[i]->FDCheckSlipTrescaDeriv(frbound,ct);
+ }
+  }
+#endif // #ifdef CONTACTFDSLIPTRESCA
+  
   /**********************************************************************/
   /* Global setup of kteffnew, feffnew (including contact)              */
   /**********************************************************************/
@@ -930,32 +970,37 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
   
   // add matrix tmhatst to kteffnew
   if(tmhatst!=null) kteffnew->Add(*tmhatst,false,-1.0,1.0);
- 
-    
-  
 #else
 
   // add matrix tstdiffD to kteffnew
   if(tstdiffD!=null) 
-  {
    	kteffnew->Add(*tstdiffD,false,-1.0,1.0);
-   	
-  }
   
   // add matrix tstdiffM to kteffnew
-  {
-    if(tstdiffM!=null) 
+  if(tstdiffM!=null) 
     kteffnew->Add(*tstdiffM,false,+1.0,1.0);
-  }
 #endif  
   
   // add full linearization terms to kteffnew
-  if (fulllin)
+ if (fulllin)
   {
    if (gactiven_->NumGlobalElements()) kteffnew->Add(*smatrix_,false,-1.0,1.0);
    if (gstickt->NumGlobalElements()) kteffnew->Add(*linstickmatrix_,false,1.0,1.0);
-   if (gslipt_->NumGlobalElements()) kteffnew->Add(*linslipmatrix_,false,+1.0,1.0);
   }
+  
+#ifdef CONTACTRELVELMATERIAL
+#else
+  
+  // add terms of linearization to kteffnew and feffnew
+  if (gslipt_->NumGlobalElements())
+  {
+   	kteffnew->Add(*linslipDIS_,false,-1.0,+1.0);
+  	
+  	RCP<Epetra_Vector> linslipRHSexp = rcp(new Epetra_Vector(*problemrowmap_));
+   	LINALG::Export(*linslipRHS_,*linslipRHSexp);
+    feffnew->Update(-1.0,*linslipRHSexp,1.0);
+ }
+#endif  
   
   // add a submatrices to kteffnew
   if (gslipt_->NumGlobalElements()) kteffnew->Add(*kslnmod,false,1.0,1.0);

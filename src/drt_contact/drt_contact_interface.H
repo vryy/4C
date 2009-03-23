@@ -586,7 +586,9 @@ public:
   nodal tangents and of the Mortar matrices D  and M.
   
   */
-  virtual void AssembleLinSlip(LINALG::SparseMatrix& linslipglobal,
+  virtual void AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
+  		                         LINALG::SparseMatrix& linslipDISglobal,
+  		                         Epetra_Vector& linslipRHSglobal,
   		                         double& frbound, double& ct);
   
   /*!
@@ -654,6 +656,12 @@ public:
   */
   virtual void FDCheckTangLMDeriv();
   
+  /*!
+  \brief Check slip condition (tresca) derivatives with finite differences
+         
+  */
+  virtual void FDCheckSlipTrescaDeriv(double& frbound, double& ct);
+    
   /*!
   \brief Check 3D coupling vertex derivatives with finite differences
            

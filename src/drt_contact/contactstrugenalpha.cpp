@@ -114,7 +114,7 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   // the nodal entries of mortar matrices (reference configuration) before 
   // first time step
   
-  if(firststep_ and (contactmanager_->Params()).get<string>("contact type","none")!="normal")
+  if(params_.get<int>("step") == 0 and (contactmanager_->Params()).get<string>("contact type","none")=="frictional")
   {  
   	// set state and do mortar calculation 
   	contactmanager_->SetState("displacement",disn_);
@@ -474,7 +474,7 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   // the nodal entries of mortar matrices (reference configuration) before 
   // first time step
   
-  if(firststep_ and (contactmanager_->Params()).get<string>("contact type","none")!="normal")
+  if(params_.get<int>("step") == 0 and (contactmanager_->Params()).get<string>("contact type","none")=="frictional")
   {  
   	// set state and do mortar calculation 
   	contactmanager_->SetState("displacement",disn_);

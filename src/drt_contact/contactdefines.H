@@ -48,9 +48,8 @@ Maintainer: Alexander Popp
 //#define CONTACTWNORMAL         /* flag for weighted nodal normal calc. */
 //#define CONTACTBOUNDMOD        /* flag for modification of boundary nodes */
 //#define CONTACTONEMORTARLOOP   /* flag for computing D and M in one loop */
-#define CONTACTAUXPLANE        /* flag for aux plane usage in 3D coupling */
-#define CONTACTRELVELMATERIAL  /* rel. velocity with dif. of material vel */ 
-
+#define CONTACTAUXPLANE          /* flag for aux plane usage in 3D coupling */
+//#define CONTACTRELVELMATERIAL  /* rel. velocity with dif. of material vel */ 
 /************************************************************************/
 /* Debugging options                                                    */
 /************************************************************************/
@@ -59,6 +58,7 @@ Maintainer: Alexander Popp
 //#define CONTACTFDMORTARD       /* flag for FD check of mortar matrix D */
 //#define CONTACTFDMORTARM       /* flag for FD check of mortar matrix M */
 //#define CONTACTFDGAP           /* flag for FD check of weighted gap g */
+//#define CONTACTFDSLIPTRESCA      /* flag for FD check of tresca slip condition */
 //#define CONTACTFDTANGLM        /* flag for FD check of tangential LM */
 //#define CONTACTFDVERTEX3D      /* flag for FD check of vertices in 3D */
 //#define CONTACTFDGP3D          /* flag for FD check of GP + Jacs in 3D */

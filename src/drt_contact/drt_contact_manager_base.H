@@ -452,7 +452,6 @@ protected:
   RCP<LINALG::SparseMatrix>          lindmatrix_;      // global Matrix LinD containing slave fc derivatives
   RCP<LINALG::SparseMatrix>          linmmatrix_;      // global Matrix LinM containing master fc derivatives
   RCP<LINALG::SparseMatrix>          linstickmatrix_;  // global Matrix LinStick containing derivatives of stick condition
-  RCP<LINALG::SparseMatrix>          linslipmatrix_;   // global Matrix LinSlip containing derivatives of slip condition
   
   RCP<LINALG::SparseMatrix>          dold_;            // global Mortar matrix D (last end-point t_n)
   RCP<LINALG::SparseMatrix>          mold_;            // global Mortar matrix D (last end-point t_n)
@@ -481,6 +480,9 @@ protected:
   RCP<LINALG::SparseMatrix>          lmatrix_;        // global matrix L for Tresca friction slip nodes
   RCP<Epetra_Vector>                 r_;              // r.h.s vector for Tresca friction slip nodes
   RCP<Epetra_Vector>                 rstick_;         // r.h.s vector for fricton stick nodes   
+  RCP<LINALG::SparseMatrix>          linslipLM_;      // global matrix containing derivatives (LM) of slip condition
+  RCP<LINALG::SparseMatrix>          linslipDIS_;     // global matrix containing derivatives (DIS) of slip condition
+  RCP<Epetra_Vector>                 linslipRHS_;      // r.h.s vector for Tresca friction slip nodes
   
 }; // class ManagerBase
 } // namespace CONTACT
