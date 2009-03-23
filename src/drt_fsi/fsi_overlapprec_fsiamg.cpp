@@ -47,6 +47,8 @@ FSI::OverlappingBlockMatrixFSIAMG::OverlappingBlockMatrixFSIAMG(
  *----------------------------------------------------------------------*/
 void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
 {
+  if (!structuresplit_) dserror("FSIAMG only with structuresplit monoFSI");
+  
   MLAPI::Init();
   const int myrank = Matrix(0,0).Comm().MyPID();
 
