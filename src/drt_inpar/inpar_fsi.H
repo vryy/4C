@@ -35,6 +35,7 @@ namespace INPAR
     enum LinearBlockSolver
     {
       PreconditionedKrylov,
+      FSIAMG,
       PartitionedAitken,
       PartitionedVectorExtrapolation,
       PartitionedJacobianFreeNewtonKrylov,

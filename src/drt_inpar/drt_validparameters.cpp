@@ -1680,6 +1680,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "block Gauss-Seidel methods as well.",
                                tuple<std::string>(
                                  "PreconditionedKrylov",
+                                 "FSIAMG",
                                  "PartitionedAitken",
                                  "PartitionedVectorExtrapolation",
                                  "PartitionedJacobianFreeNewtonKrylov",
@@ -1689,6 +1690,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  ),
                                tuple<INPAR::FSI::LinearBlockSolver>(
                                  INPAR::FSI::PreconditionedKrylov,
+                                 INPAR::FSI::FSIAMG,
                                  INPAR::FSI::PartitionedAitken,
                                  INPAR::FSI::PartitionedVectorExtrapolation,
                                  INPAR::FSI::PartitionedJacobianFreeNewtonKrylov,
@@ -1742,12 +1744,20 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("FLUIDPCITER",0,
                "Number of Richardson iterations on fluid block in MFSI block preconditioner",
                &fsidyn);
-  DoubleParameter("PCOMEGA",1.,
-                  "Relaxation factor for Richardson iteration on whole MFSI block preconditioner",
-                  &fsidyn);
-  IntParameter("PCITER",1,
-               "Number of Richardson iterations on whole MFSI block preconditioner",
-               &fsidyn);
+  //DoubleParameter("PCOMEGA",1.,
+  //                "Relaxation factor for Richardson iteration on whole MFSI block preconditioner",
+  //                &fsidyn);
+  
+  setNumericStringParameter("PCOMEGA","1.0 1.0 1.0",
+                            "Relaxation factor for Richardson iteration on whole MFSI block preconditioner",
+                            &fsidyn);
+
+  setNumericStringParameter("PCITER","1 1 3",
+                            "Number of Richardson iterations on whole MFSI block preconditioner",
+                            &fsidyn);
+  //IntParameter("PCITER",1,
+  //             "Number of Richardson iterations on whole MFSI block preconditioner",
+  //             &fsidyn);
 
   setStringToIntegralParameter<int>("INFNORMSCALING","Yes","Scale Blocks in Mono-FSI with row infnorm?",
                                      yesnotuple,yesnovalue,&fsidyn);
