@@ -126,21 +126,18 @@ INPAR::MAT::m_charmm; }
                   LINALG::Matrix<3,3>& C,
                   LINALG::SerialDenseVector& lambda );
     
-    Epetra_SerialDenseVector charmmfileapi(
-                  const double STARTD,
-                  const double ENDD,
-                  LINALG::SerialDenseVector direction,
+    void charmmfileapi(
+                  const double FCD_STARTD,
+                  const double FCD_ENDD,
+                  LINALG::SerialDenseVector FCD_direction,
+                  const double SCD_STARTD,
+                  const double SCD_ENDD,
+                  LINALG::SerialDenseVector SCD_direction,
                   LINALG::SerialDenseVector& charmm_result);
 
     void charmmfakeapi( const double STARTD,
                   const double ENDD,
-                  const LINALG::SerialDenseVector direction,
                   LINALG::SerialDenseVector& charmm_result);
-    
-    Epetra_SerialDenseMatrix inverseTensor(
-                  const Epetra_SerialDenseMatrix M,
-		  const double I3);
-
 
     /// density
     inline double Density() const { return params_->density_; }

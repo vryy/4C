@@ -157,7 +157,11 @@ void MAT::CHARMM::Evaluate( const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,
     // evaluate lamda at origin or at gp
     bool origin = false;  // change only of xref and xcurr really working!!!!
     // length of the protein in the main pulling direction [A]
-    double characteristic_length = 40.625; //50; //originally 44
+    vector<double> characteristic_length(2);
+    // Integrin length !!!!
+    characteristic_length[0] = 40.625; //50; //originally 44
+    // Collagen length !!!!
+    characteristic_length[1] = 100.0;
     // characteristic direction of the protein
     // Possible selcetions:
     // principal = main strain direction (biggest eigenvalue)
@@ -178,7 +182,7 @@ void MAT::CHARMM::Evaluate( const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,
     d.push_back(d_1);
     d.push_back(d_2);
     // Use the hard coded charmm results (charmmfakeapi == true) or call charmm really (charmmfakeapi == false)
-    bool charmmhard = true;
+    bool charmmhard = false;
 
     // Identity Matrix
     LINALG::Matrix<3,3> I(true);
@@ -240,7 +244,7 @@ void MAT::CHARMM::Evaluate( const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,
             }
         }
         //cout << dir_lambdas[1](0) << " : " << dir_lambdas[1](1) << " : " << dir_lambdas[1](2) << endl;
-        //cout << dir_eigenv[1] << endl;
+        //cout << dir_eigenv[0] << endl;
 
 
         // Update and reconfigure history
@@ -278,11 +282,30 @@ void MAT::CHARMM::Evaluate( const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,
             lambda_his.push_back((*his)[7+(i*8)]);
         }
 
-        // calculate STARTD and ENDD for CHARmm
-        double STARTD = characteristic_length * (1 - lambda_his[0]);
-        double ENDD = characteristic_length * (1 - dir_lambdas[0](2)); // Check for better way to choose!!!!
-        //cout << "STARTD: " << STARTD << " ENDD: " << ENDD << endl;
-        
+        // Data preparation for CHARmm
+        // First charateristic direction (FCD)
+        // calculate STARTD and ENDD for CHARmm (integrin)
+        double FCD_STARTD = characteristic_length[0] * (1 - lambda_his[0]);
+        double FCD_ENDD = characteristic_length[0] * (1 - dir_lambdas[0](2)); // Check for better way to choose!!!!
+        // get direction for FCD (integrin)
+        LINALG::SerialDenseVector FCD_direction(3);
+        FCD_direction(0) = dir_eigenv[0](0,2);
+        FCD_direction(1) = dir_eigenv[0](1,2);
+        FCD_direction(2) = dir_eigenv[0](2,2);
+        //cout << "FCD: " << "STARTD: " << FCD_STARTD << " ENDD: " << FCD_ENDD << FCD_direction << endl;
+
+        // Second charateristic direction (SCD)
+        // calculate STARTD and ENDD for CHARmm (collagen)
+        double SCD_STARTD = characteristic_length[1] * (1 - lambda_his[1]);
+        double SCD_ENDD = characteristic_length[1] * (1 - dir_lambdas[1](2));
+        // get direction for SCD (collagen)
+        LINALG::SerialDenseVector SCD_direction(3);
+        SCD_direction(0) = dir_eigenv[1](0,2);
+        SCD_direction(1) = dir_eigenv[1](1,2);
+        SCD_direction(2) = dir_eigenv[1](2,2);
+        //cout << "SCD: " << "STARTD: " << SCD_STARTD << " ENDD: " << SCD_ENDD << SCD_direction << endl;
+
+
         // Check if results actually can be computed by CHARmm
         //if (STARTD != ENDD) dserror("STARTD and ENDD identical! CHARmm will not produce any results.");
 
@@ -292,10 +315,23 @@ void MAT::CHARMM::Evaluate( const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,
         LINALG::SerialDenseVector direction(3);
         LINALG::SerialDenseVector charmm_result(6);
         if (charmmhard) {
-            charmmfakeapi(STARTD,ENDD,direction,charmm_result);
+            // Just give the starting and ending strain in hard coded case
+            charmmfakeapi(FCD_STARTD,FCD_ENDD,charmm_result);
         } else {
-            //if (STARTD != ENDD) charmmfileapi(STARTD,ENDD,direction,charmm_result);
+            charmmfileapi(FCD_STARTD,FCD_ENDD,FCD_direction,SCD_STARTD,SCD_ENDD,SCD_direction,charmm_result);
         }
+
+        // Calculate new c (Neo-Hooke) parameter
+        // c = E_FE / (I1 - 3) [N/m^2]
+        // E_FE = E_MD * 1000 * 4.1868 * ( #Atoms / N_a )
+        //double E_MD = charmm_result[1] - charmm_result[0]; // kcal/mole
+        //double Volume = ( charmm_result[4] ) * 1E-30; // A^3 *  (10^-10)^3
+        ////double Volume = 1 * 1E-27; // nm^3 *  (10^-9)^3
+        //double noAtoms = charmm_result[3];
+        //double I1_lastt = (*his)[9];
+        //c =  1/( I1 - I1_lastt + 3 ) * 1/Volume  * E_MD * 1000 * 4.1868 * ( noAtoms/6.02214E23 );
+        //if (isnan(c)) c = 0;
+        //if (isinf(c)) c = 0;
 
 
     }
@@ -470,14 +506,88 @@ void MAT::CHARMM::EvalStrain( const bool& origin,
 /*----------------------------------------------------------------------*
  |  File based API to CHARMM                                    rm 03/08|
  *----------------------------------------------------------------------*/
-Epetra_SerialDenseVector MAT::CHARMM::charmmfileapi ( const double STARTD,
-                                    const double ENDD,
-                                    const LINALG::SerialDenseVector direction,
+void MAT::CHARMM::charmmfileapi (
+                                    const double FCD_STARTD,
+                                    const double FCD_ENDD,
+                                    const LINALG::SerialDenseVector FCD_direction,
+                                    const double SCD_STARTD,
+                                    const double SCD_ENDD,
+                                    const LINALG::SerialDenseVector SCD_direction,
                                     LINALG::SerialDenseVector& charmm_result)
 {
-	cout << "Too be implemented....." << endl;
-	exit(1);
-	return(0);
+
+    FILE* tty;
+    int debug = 0; // write more for debug output
+    ostringstream output(ios_base::out);
+    ostringstream energy(ios_base::out);
+    ostringstream volume(ios_base::out);
+    struct stat outfileinfo;
+    struct stat energyfileinfo;
+    struct stat volumefileinfo;
+    ios_base::fmtflags flags = cout.flags( ); // Save original flags
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Variables needed for CHARMM and getting the results
+    // Decide if parallel or seriell
+    const bool dont_use_old_results = true;
+    const string serpar = "ser"; // ser = seriell; par = mpirun; pbs = PBS Torque
+    char* path = "/home/metzke/ccarat.dev/codedev/charmm.fe.codedev/";
+    char* charmm = "/home/metzke/bin/charmm";
+    char* mpicharmm = "/home/metzke/bin/mpicharmm";
+    //char* input = "1dzi_fem.inp";
+    char* input = "1dzi_fem_min.inp";
+    //char* output = "output/FE_cold.out";
+    //char* energy = "output/energy_coupling_0kbt.out";
+    //char* volume = "output/volume_coupling_0kbt.out";
+    output << "output/ACEcold_" << FCD_STARTD << "_" << FCD_ENDD << ".out";
+    energy << "output/energy_" << FCD_STARTD << "_" << FCD_ENDD << ".out";
+    volume << "output/volume_" << FCD_STARTD << "_" << FCD_ENDD << ".out";
+    ////////////////////////////////////////////////////////////////////////////
+
+    // Assemble all file and path names first
+    ostringstream outputfile(ios_base::out);
+    outputfile << path << output.str();
+    ostringstream energyfile(ios_base::out);
+    energyfile << path << energy.str();
+    ostringstream volumefile(ios_base::out);
+    volumefile << path << volume.str();
+
+    // Print out the beginning of the CHARMM info line
+    if (debug == 0) cout << setw(4) << left << "MD (" << showpoint << FCD_STARTD << setw(2)  << "->" << FCD_ENDD << setw(3) << "): " << flush;
+
+    // Check if the results files already exists
+    // In that case skip the charmm call
+    if (stat(outputfile.str().c_str(), &outfileinfo) != 0 ||  stat(energyfile.str().c_str(), &energyfileinfo) != 0 || stat(volumefile.str().c_str(), &volumefileinfo) != 0 || dont_use_old_results)
+    {
+        // Assemble the command line for charmm
+        ostringstream command(ios_base::out);
+        if (serpar.compare("ser")==0) {
+            command << "cd " << path << " && "
+                    << charmm << " FCD_STARTD=" << FCD_STARTD << " FCD_ENDD=" << FCD_ENDD
+                    << " FCD_X=" << FCD_direction(0) << " FCD_Y=" << FCD_direction(1) << " FCD_Z=" << FCD_direction(2)
+                    << " SCD_STARTD=" << SCD_STARTD << " SCD_ENDD=" << SCD_ENDD
+                    << " SCD_X=" << SCD_direction(0) << " SCD_Y=" << SCD_direction(1) << " SCD_Z=" << SCD_direction(2)
+                    << " < " << input << " > " << output.str();
+        } else if (serpar.compare("par")==0) {
+            command << "cd " << path << " && "
+                    << "mpirun -np 4 " << mpicharmm << " STARTD=" << FCD_STARTD
+                    << " ENDD=" << FCD_ENDD
+                    << " < " << "stream.inp" << " > " << output.str();
+        } else dserror("What you want now? Parallel or not!");
+        if (debug == 1) cout << "CHARMM command:" << endl << command.str() << endl;
+        // Open terminal and execute CHARMM
+        if (debug == 0) cout << "0|" << flush;
+        if ( (tty = popen(command.str().c_str(),"r")) == NULL ) dserror("CHARMM can not be started!");
+        int runresult = pclose(tty);
+        if (debug == 1) cout << "Run Result (popen): " << runresult << endl;
+        if (debug == 0) cout << runresult << "|";
+    } else {
+        if (debug == 0) cout << "-1|-1|" << flush;
+    }
+
+
+    cout << endl;
+    cout.flags(flags);  // Set the flags to the way they were
 }
 
 
@@ -486,7 +596,6 @@ Epetra_SerialDenseVector MAT::CHARMM::charmmfileapi ( const double STARTD,
 /*----------------------------------------------------------------------*/
 void MAT::CHARMM::charmmfakeapi ( const double STARTD,
                                     const double ENDD,
-                                    const LINALG::SerialDenseVector direction,
                                     LINALG::SerialDenseVector& charmm_result)
 {
     // Define the number n of steps / results from CHARmm (or any MD simluation)
@@ -498,6 +607,7 @@ void MAT::CHARMM::charmmfakeapi ( const double STARTD,
     // (STARTD, Energy, # of Atoms, Volume)
     LINALG::SerialDenseMatrix MD(n,4);
 
+    ////////////////////////////////////////////////////////////////////////////
     // Hard coded results from MD
     MD(0,0) = 0.0;
     MD(0,1) = -330.912;
@@ -508,6 +618,8 @@ void MAT::CHARMM::charmmfakeapi ( const double STARTD,
     MD(1,1) = -321.671;
     MD(1,2) = 1141;
     MD(1,3) = 9441.08;
+    //
+    ////////////////////////////////////////////////////////////////////////////
 
     // Compute the charmm_result vector
     // (Energy STARTD, Energy ENDD, #Atoms STARTD, #Atoms ENDD, Volume STARTD, Volume ENDD)
