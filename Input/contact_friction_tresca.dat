@@ -80,7 +80,7 @@ CONTACT              frictional
 FRICTION             tresca
 FRBOUND              1.0
 FRCOEFF              0.0
-FULL_LINEARIZATION   No
+FULL_LINEARIZATION   Yes
 SEMI_SMOOTH_NEWTON   No
 SEMI_SMOOTH_CN       1.0
 SEMI_SMOOTH_CT       1.0
