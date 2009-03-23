@@ -330,15 +330,18 @@ private:
 
   /// Recover deformation gradient incoperating assumed natural GL strain
   static void AssDefGrad(
+    double& detdefgrad,  ///< determinat of deformation gradient
     LINALG::Matrix<NUMDIM_,NUMDIM_>& defgrad,  ///< deformation gradient \f$[\boldsymbol{F}\f$
+    LINALG::Matrix<NUMDIM_,NUMDIM_>& invdefgrad,  ///< inverse deformation gradient \f$[\boldsymbol{F}^{-1}\f$
     LINALG::Matrix<NUMDIM_,NUMDIM_>& rgtstr,  ///< right stretch tensor \f$[\boldsymbol{U}\f$
     LINALG::Matrix<NUMDIM_,NUMDIM_>& defgradD,  ///< pure disp-based deformation gradient \f$[\boldsymbol{F}^d\f$
     LINALG::Matrix<NUMDIM_,NUMDIM_>& rgtstrD,  ///< pure disp-based right stretch tensor \f$[\boldsymbol{U}^d\f$
+    LINALG::Matrix<NUMDIM_,NUMDIM_>& invrgtstrD,  ///< inverted pure disp-based right stretch tensor \f$[\boldsymbol{U}^{d-1}\f$
     const LINALG::Matrix<NUMDIM_,NUMDIM_>& Jinv,  ///< inverse of transposed Jacobi matrix X_{,xi}
     const LINALG::Matrix<NUMDIM_,NUMDIM_>& Jac,  ///< transposed Jacobi matrix X_{,xi}
     const LINALG::Matrix<NUMDIM_,NUMDIM_>& jac,  ///< transposed Jacobi matrix x_{,xi}
     const LINALG::Matrix<NUMSTR_,1>& glstrain  ///< material Green-Lagrange strain vector
-                                                      ///< in global Cartesian components
+                                               ///< in global Cartesian components
     );
 
   /// Retrieve shear modulus
@@ -504,6 +507,14 @@ private:
   static void SqVector6VoigtTwiceDiffByItself(
     LINALG::Matrix<NUMSTR_,NUMSTR_*NUMSTR_>& sqfdderf,  ///< 2nd derivative
     const LINALG::Matrix<NUMDIM_,NUMDIM_>& fmat  ///< symmetric 2-tensor (not needed)
+    );
+
+  /// 2nd derivative of square of symmetric 2-tensor with respect to itself
+  ///
+  /// cf. #SqVector6VoigtTwiceDiffByItself bit with sparse storage of 6-tensor
+  static void SqVector6VoigtTwiceDiffByItself(
+    int* isqfdderf,  ///< indices
+    LINALG::Matrix<NUMSTR_,6>& sqfdderf  ///< 2nd derivative data (sparsely stored)
     );
 
   /// Build 6x9 Voigt matrix for 2-tensor-dot-2-tensor product

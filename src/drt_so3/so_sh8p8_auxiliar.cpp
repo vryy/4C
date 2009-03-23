@@ -349,6 +349,7 @@ void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtDiffByItself(
 
   // VERIFIED
 
+#if 0
   // identity 2-tensor
   LINALG::Matrix<NUMDIM_,NUMDIM_> id(true);
   for (int i=0; i<NUMDIM_; ++i) id(i,i) = 1.0;
@@ -375,6 +376,44 @@ void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtDiffByItself(
     }
 //    cout << "]," << endl;
   }
+#else
+  sqfderf(0,0) = 2.0*fmat(0,0);
+  sqfderf(1,0) = 0.0;
+  sqfderf(2,0) = 0.0;
+  sqfderf(3,0) = fmat(1,0)+fmat(0,1);
+  sqfderf(4,0) = 0.0;
+  sqfderf(5,0) = fmat(2,0)+fmat(0,2);
+  sqfderf(0,1) = 0.0;
+  sqfderf(1,1) = 2.0*fmat(1,1);
+  sqfderf(2,1) = 0.0;
+  sqfderf(3,1) = fmat(1,0)+fmat(0,1);
+  sqfderf(4,1) = fmat(2,1)+fmat(1,2);
+  sqfderf(5,1) = 0.0;
+  sqfderf(0,2) = 0.0;
+  sqfderf(1,2) = 0.0;
+  sqfderf(2,2) = 2.0*fmat(2,2);
+  sqfderf(3,2) = 0.0;
+  sqfderf(4,2) = fmat(2,1)+fmat(1,2);
+  sqfderf(5,2) = fmat(2,0)+fmat(0,2);
+  sqfderf(0,3) = fmat(0,1);
+  sqfderf(1,3) = fmat(0,1);
+  sqfderf(2,3) = 0.0;
+  sqfderf(3,3) = fmat(1,1)+fmat(0,0);
+  sqfderf(4,3) = fmat(0,2);
+  sqfderf(5,3) = fmat(2,1);
+  sqfderf(0,4) = 0.0;
+  sqfderf(1,4) = fmat(1,2);
+  sqfderf(2,4) = fmat(1,2);
+  sqfderf(3,4) = fmat(0,2);
+  sqfderf(4,4) = fmat(2,2)+fmat(1,1);
+  sqfderf(5,4) = fmat(1,0);
+  sqfderf(0,5) = fmat(2,0);
+  sqfderf(1,5) = 0.0;
+  sqfderf(2,5) = fmat(2,0);
+  sqfderf(3,5) = fmat(2,1);
+  sqfderf(4,5) = fmat(1,0);
+  sqfderf(5,5) = fmat(2,2)+fmat(0,0);
+#endif
 
   return;
 }
@@ -429,6 +468,7 @@ void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtTwiceDiffByItself(
   const LINALG::Matrix<NUMDIM_,NUMDIM_>& fmat
   )
 {
+#if 0
   const int* voigt6row = NULL;
   const int* voigt6col = NULL;
   Indices6VoigtTo2Tensor(voigt6row,voigt6col);
@@ -474,6 +514,94 @@ void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtTwiceDiffByItself(
     }
 //    cout << "],\n";       
   }
+#else
+  sqfdderf.Clear();
+  sqfdderf(0,0) = 2.0;
+  sqfdderf(0,21) = 0.5;
+  sqfdderf(0,35) = 0.5;
+
+  sqfdderf(1,7) = 2.0;
+  sqfdderf(1,21) = 0.5;
+  sqfdderf(1,28) = 0.5;
+
+  sqfdderf(2,14) = 2.0;
+  sqfdderf(2,28) = 0.5;
+  sqfdderf(2,35) = 0.5;
+
+  sqfdderf(3,3) = 1.0;
+  sqfdderf(3,9) = 1.0;
+  sqfdderf(3,18) = 1.0;
+  sqfdderf(3,19) = 1.0;
+  sqfdderf(3,29) = 0.5;
+  sqfdderf(3,34) = 0.5;
+
+  sqfdderf(4,9) = 1.0;
+  sqfdderf(4,16) = 1.0;
+  sqfdderf(4,23) = 0.5;
+  sqfdderf(4,25) = 1.0;
+  sqfdderf(4,26) = 1.0;
+  sqfdderf(4,33) = 0.5;
+
+  sqfdderf(5,5) = 1.0;
+  sqfdderf(5,17) = 1.0;
+  sqfdderf(5,22) = 0.5;
+  sqfdderf(5,27) = 0.5;
+  sqfdderf(5,30) = 1.0;
+  sqfdderf(5,32) = 1.0;
+#endif
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtTwiceDiffByItself(
+  int* isqfdderf,  //[NUMSTR_*6];
+  LINALG::Matrix<NUMSTR_,6>& sqfdderf
+  )
+{
+//  sqfdderf.Clear();
+  isqfdderf[NUMSTR_*0+0] = 0;  sqfdderf(0,0) = 2.0;
+  isqfdderf[NUMSTR_*0+1] = 21;  sqfdderf(0,1) = 0.5;
+  isqfdderf[NUMSTR_*0+2] = 35;  sqfdderf(0,2) = 0.5;
+  isqfdderf[NUMSTR_*0+3] = -1;
+  isqfdderf[NUMSTR_*0+4] = -1;
+  isqfdderf[NUMSTR_*0+5] = -1;
+
+  isqfdderf[NUMSTR_*1+0] = 7;   sqfdderf(1,0) = 2.0;
+  isqfdderf[NUMSTR_*1+1] = 21;  sqfdderf(1,1) = 0.5;
+  isqfdderf[NUMSTR_*1+2] = 28;  sqfdderf(1,2) = 0.5;
+  isqfdderf[NUMSTR_*1+3] = -1;
+  isqfdderf[NUMSTR_*1+4] = -1;
+  isqfdderf[NUMSTR_*1+5] = -1;
+
+  isqfdderf[NUMSTR_*2+0] = 14;  sqfdderf(2,0) = 2.0;
+  isqfdderf[NUMSTR_*2+1] = 28;  sqfdderf(2,1) = 0.5;
+  isqfdderf[NUMSTR_*2+2] = 35;  sqfdderf(2,2) = 0.5;
+  isqfdderf[NUMSTR_*2+3] = -1;
+  isqfdderf[NUMSTR_*2+4] = -1;
+  isqfdderf[NUMSTR_*2+5] = -1;
+
+  isqfdderf[NUMSTR_*3+0] = 3;  sqfdderf(3,0) = 1.0;
+  isqfdderf[NUMSTR_*3+1] = 9;  sqfdderf(3,1) = 1.0;
+  isqfdderf[NUMSTR_*3+2] = 18;  sqfdderf(3,2) = 1.0;
+  isqfdderf[NUMSTR_*3+3] = 19;  sqfdderf(3,3) = 1.0;
+  isqfdderf[NUMSTR_*3+4] = 29;  sqfdderf(3,4) = 0.5;
+  isqfdderf[NUMSTR_*3+5] = 34;  sqfdderf(3,5) = 0.5;
+
+  isqfdderf[NUMSTR_*4+0] = 9;  sqfdderf(4,0) = 1.0;
+  isqfdderf[NUMSTR_*4+1] = 16;  sqfdderf(4,1) = 1.0;
+  isqfdderf[NUMSTR_*4+2] = 23;  sqfdderf(4,2) = 0.5;
+  isqfdderf[NUMSTR_*4+3] = 25;  sqfdderf(4,3) = 1.0;
+  isqfdderf[NUMSTR_*4+4] = 26;  sqfdderf(4,4) = 1.0;
+  isqfdderf[NUMSTR_*4+5] = 33;  sqfdderf(4,5) = 0.5;
+
+  isqfdderf[NUMSTR_*5+0] = 5;  sqfdderf(5,0) = 1.0;
+  isqfdderf[NUMSTR_*5+1] = 17;  sqfdderf(5,1) = 1.0;
+  isqfdderf[NUMSTR_*5+2] = 22;  sqfdderf(5,2) = 0.5;
+  isqfdderf[NUMSTR_*5+3] = 27;  sqfdderf(5,3) = 0.5;
+  isqfdderf[NUMSTR_*5+4] = 30;  sqfdderf(5,4) = 1.0;
+  isqfdderf[NUMSTR_*5+5] = 32;  sqfdderf(5,5) = 1.0;
 
   return;
 }
