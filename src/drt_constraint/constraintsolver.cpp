@@ -222,6 +222,15 @@ void UTILS::ConstraintSolver::SolveIterative
       or numiter_uzawa < minstep)
   {
     LINALG::ApplyDirichlettoSystem(stiff,dispinc,fresmcopy,zeros,*(dbcmaps_->CondMap()));
+    
+#if 0
+    const double cond_number = LINALG::Condest(static_cast<LINALG::SparseMatrix&>(*stiff),Ifpack_GMRES, 1000);
+    // computation of significant digits might be completely bogus, so don't take it serious
+    const double tmp = std::abs(std::log10(cond_number*1.11022e-16));
+    const int sign_digits = (int)floor(tmp);
+    cout << " cond est: " << scientific << cond_number << ", max.sign.digits: " << sign_digits;
+#endif
+    
     // solve for disi
     // Solve K . IncD = -R  ===>  IncD_{n+1}
     if (isadapttol_ && counter_ && numiter_uzawa)
@@ -356,6 +365,14 @@ void UTILS::ConstraintSolver::SolveDirect
 
   // apply dirichlet boundary conditions
   LINALG::ApplyDirichlettoSystem(mergedmatrix,mergedsol,mergedrhs,mergedzeros,*(dbcmaps_->CondMap()));
+  
+#if 0
+    const double cond_number = LINALG::Condest(static_cast<LINALG::SparseMatrix&>(*mergedmatrix),Ifpack_GMRES, 100);
+    // computation of significant digits might be completely bogus, so don't take it serious
+    const double tmp = std::abs(std::log10(cond_number*1.11022e-16));
+    const int sign_digits = (int)floor(tmp);
+    cout << " cond est: " << scientific << cond_number << ", max.sign.digits: " << sign_digits;
+#endif
   
   // solve
   solver_->Solve(mergedmatrix->EpetraMatrix(),mergedsol,mergedrhs,true,counter_==0);
