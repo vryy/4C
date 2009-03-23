@@ -51,16 +51,7 @@ using namespace std;
 namespace CONTACT
 {
 
-//! identifies node types in a tree
-enum BinaryTreeNodeType {
-    SLAVE_INNER,   			///< indicates a slave inner node (has children)
-    SLAVE_LEAF,   	 		///< indicates a slave leaf node (no further children)
-    MASTER_INNER,  			///< indicates a master inner node (has children)
-    MASTER_LEAF,	    	///< indicates a master leaf node (no further children)
-    NOSLAVE_ELEMENTS,		///< inidicates that there are no slave elements on this (root) treenode
-    NOMASTER_ELEMENTS,	///< inidicates that there are no master elements on this (root) treenode
-    UNDEFINED           ///< indiactes an undefined tree node
-};
+
   
 // forward declarations
 
@@ -73,8 +64,31 @@ enum BinaryTreeNodeType {
 
 class BinaryTree
 {
-  private: class BinaryTreeNode{
-     
+public:
+  
+    //! @name Enums and Friends
+  enum BinaryTreeNodeType
+  {
+    SLAVE_INNER,        ///< indicates a slave inner node (has children)
+    SLAVE_LEAF,         ///< indicates a slave leaf node (no further children)
+    MASTER_INNER,       ///< indicates a master inner node (has children)
+    MASTER_LEAF,        ///< indicates a master leaf node (no further children)
+    NOSLAVE_ELEMENTS,   ///< inidicates that there are no slave elements on this (root) treenode
+    NOMASTER_ELEMENTS,  ///< inidicates that there are no master elements on this (root) treenode
+    UNDEFINED           ///< indiactes an undefined tree node
+  };
+  
+  //@}
+  
+private:
+  
+  /*!
+  \brief A class representing one tree node of the binary search tree
+  
+  \author popp (popp@lnm.mw.tum.de)
+  */
+  class BinaryTreeNode
+  {   
   private:
     
     //! type of BinaryTreeNode
