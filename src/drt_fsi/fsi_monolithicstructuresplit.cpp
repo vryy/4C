@@ -94,25 +94,60 @@ FSI::MonolithicStructureSplit::MonolithicStructureSplit(Epetra_Comm& comm)
   // build ale system matrix in splitted system
   AleField().BuildSystemMatrix(false);
 
+  // get the PCITER from inputfile
+  vector<int> pciter;
+  vector<double> pcomega;
+  {
+    std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsidyn,"PCITER"));
+    std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsidyn,"PCOMEGA"));
+    std::string word1;
+    std::string word2;
+    while (pciterstream >> word1)
+      pciter.push_back(std::atoi(word1.c_str()));
+    while (pcomegastream >> word2)
+      pcomega.push_back(std::atof(word2.c_str()));
+  }
+  
   // create block system matrix
-
-#if 0 // the experimental new AMG
-  systemmatrix_ = Teuchos::rcp(new OverlappingBlockMatrixFSIAMG(Extractor(),
-#else
-  systemmatrix_ = Teuchos::rcp(new OverlappingBlockMatrix(Extractor(),
-#endif
+  switch(linearsolverstrategy_)
+  {
+  case INPAR::FSI::FSIAMG:
+    systemmatrix_ = Teuchos::rcp(new OverlappingBlockMatrixFSIAMG(
+                                                          Extractor(),
                                                           StructureField(),
                                                           FluidField(),
                                                           AleField(),
                                                           true,
                                                           Teuchos::getIntegralValue<int>(fsidyn,"SYMMETRICPRECOND"),
-                                                          fsidyn.get<double>("PCOMEGA"),
-                                                          fsidyn.get<int>("PCITER"),
+                                                          pcomega,
+                                                          pciter,
                                                           fsidyn.get<double>("STRUCTPCOMEGA"),
                                                           fsidyn.get<int>("STRUCTPCITER"),
                                                           fsidyn.get<double>("FLUIDPCOMEGA"),
                                                           fsidyn.get<int>("FLUIDPCITER"),
                                                           DRT::Problem::Instance()->ErrorFile()->Handle()));
+  break;
+  case INPAR::FSI::PreconditionedKrylov:
+    systemmatrix_ = Teuchos::rcp(new OverlappingBlockMatrix(
+                                                          Extractor(),
+                                                          StructureField(),
+                                                          FluidField(),
+                                                          AleField(),
+                                                          true,
+                                                          Teuchos::getIntegralValue<int>(fsidyn,"SYMMETRICPRECOND"),
+                                                          pcomega[0],
+                                                          pciter[0],
+                                                          fsidyn.get<double>("STRUCTPCOMEGA"),
+                                                          fsidyn.get<int>("STRUCTPCITER"),
+                                                          fsidyn.get<double>("FLUIDPCOMEGA"),
+                                                          fsidyn.get<int>("FLUIDPCITER"),
+                                                          DRT::Problem::Instance()->ErrorFile()->Handle()));
+  break;
+  default:
+    dserror("Unsupported type of monolithic solver");
+  break;
+  }
+
 }
 
 
@@ -499,6 +534,7 @@ FSI::MonolithicStructureSplit::CreateLinearSystem(ParameterList& nlParams,
   switch (linearsolverstrategy_)
   {
   case INPAR::FSI::PreconditionedKrylov:
+  case INPAR::FSI::FSIAMG:
     linSys = Teuchos::rcp(new FSI::MonolithicLinearSystem::MonolithicLinearSystem(
                                                                printParams,
                                                                *lsParams,

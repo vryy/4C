@@ -20,8 +20,8 @@ FSI::OverlappingBlockMatrixFSIAMG::OverlappingBlockMatrixFSIAMG(
                                                     ADAPTER::Ale& ale,
                                                     bool structuresplit,
                                                     int symmetric,
-                                                    double omega,
-                                                    int iterations,
+                                                    vector<double>& omega,
+                                                    vector<int>& iterations,
                                                     double somega,
                                                     int siterations,
                                                     double fomega,
@@ -33,13 +33,15 @@ FSI::OverlappingBlockMatrixFSIAMG::OverlappingBlockMatrixFSIAMG(
                            ale,
                            structuresplit,
                            symmetric,
-                           omega,
-                           iterations,
+                           omega[0],
+                           iterations[0],
                            somega,
                            siterations,
                            fomega,
                            fiterations,
-                           err)
+                           err),
+pciter_(iterations),
+pcomega_(omega)
 {
 }
 
@@ -108,6 +110,11 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   // min of number of grids over fields
   minnlevel_ = min(snlevel_,fnlevel_);
   minnlevel_ = min(minnlevel_,anlevel_);
+  
+  // check whether we have enough iteration and damping factors
+  if ((int)pciter_.size() < minnlevel_ ||
+      (int)pcomega_.size() < minnlevel_)
+    dserror("You need at least %d values of PCITER and PCOMEGA in input file",minnlevel_);
   
   if (!myrank)
   {
@@ -292,76 +299,8 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     AAF_[0] = Aaf_;
   }
   
-  //---------------- explicit FSI off-diagonal blocks on coarse levels
-  {
-    for (int i=0; i<minnlevel_-1; ++i)
-    {
-      //------ Asf (trouble maker)
-      if (!i) RAPfine(ASF_[i+1],Rss_[i],Matrix(0,1).EpetraMatrix(),Pff_[i]);
-      else    
-      {
-        RAPcoarse(ASF_[i+1],Rss_[i],ASF_[i],Pff_[i]);
-#if 0
-        MLAPI::MultiVector in(ASF_[i+1].GetDomainSpace(),1,true);
-        in = 1000.0;
-        MLAPI::MultiVector out;
-        out = ASF_[i+1] * in;
-        MLAPI::MultiVector out2;
-        out2 = ProlongateMultiplyRestrict(i+1,in,Rss_,ASF_[0],Pff_);
-        cout << out;
-        cout << out2;
-#endif
-      }
-      //------ Afs (trouble maker)
-      if (!i) RAPfine(AFS_[i+1],Rff_[i],Matrix(1,0).EpetraMatrix(),Pss_[i]);
-      else    
-      {
-        RAPcoarse(AFS_[i+1],Rff_[i],AFS_[i],Pss_[i]);
-#if 0
-        MLAPI::MultiVector in(AFS_[i+1].GetDomainSpace(),1,true);
-        in = 1000.0;
-        MLAPI::MultiVector out;
-        out = AFS_[i+1] * in;
-        MLAPI::MultiVector out2;
-        out2 = ProlongateMultiplyRestrict(i+1,in,Rff_,AFS_[0],Pss_);
-        cout << out;
-        cout << out2;
-#endif
-      }
-      //------ Afa
-      if (!i) RAPfine(AFA_[i+1],Rff_[i],Matrix(1,2).EpetraMatrix(),Paa_[i]);
-      else    
-      {
-        RAPcoarse(AFA_[i+1],Rff_[i],AFA_[i],Paa_[i]);
-#if 0
-        MLAPI::MultiVector in(AFA_[i+1].GetDomainSpace(),1,true);
-        in = 1000.0;
-        MLAPI::MultiVector out;
-        out = AFA_[i+1] * in;
-        MLAPI::MultiVector out2;
-        out2 = ProlongateMultiplyRestrict(i+1,in,Rff_,AFA_[0],Paa_);
-        cout << out;
-        cout << out2;
-#endif
-      }
-      //------ Aaf
-      if (!i) RAPfine(AAF_[i+1],Raa_[i],Matrix(2,1).EpetraMatrix(),Pff_[i]);
-      else    
-      {
-        RAPcoarse(AAF_[i+1],Raa_[i],AAF_[i],Pff_[i]);
-#if 0
-        MLAPI::MultiVector in(AAF_[i+1].GetDomainSpace(),1,true);
-        in = 1000.0;
-        MLAPI::MultiVector out;
-        out = AAF_[i+1] * in;
-        MLAPI::MultiVector out2;
-        out2 = ProlongateMultiplyRestrict(i+1,in,Raa_,AAF_[0],Pff_);
-        cout << out;
-        cout << out2;
-#endif
-      }
-    }
-  }
+  //==================== explicit FSI off-diagonal blocks on coarse levels
+  RAPoffdiagonals();
 
   //================set up MLAPI smoothers for structure, fluid, ale on each level
   MLAPI::InverseOperator S;
@@ -416,6 +355,29 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FSI::OverlappingBlockMatrixFSIAMG::RAPoffdiagonals()
+{
+  for (int i=0; i<minnlevel_-1; ++i)
+  {
+    //------ Asf (trouble maker)
+    if (!i) RAPfine(ASF_[i+1],Rss_[i],Matrix(0,1).EpetraMatrix(),Pff_[i]);
+    else    RAPcoarse(ASF_[i+1],Rss_[i],ASF_[i],Pff_[i]);
+    //------ Afs (trouble maker)
+    if (!i) RAPfine(AFS_[i+1],Rff_[i],Matrix(1,0).EpetraMatrix(),Pss_[i]);
+    else    RAPcoarse(AFS_[i+1],Rff_[i],AFS_[i],Pss_[i]);
+    //------ Afa
+    if (!i) RAPfine(AFA_[i+1],Rff_[i],Matrix(1,2).EpetraMatrix(),Paa_[i]);
+    else    RAPcoarse(AFA_[i+1],Rff_[i],AFA_[i],Paa_[i]);
+    //------ Aaf
+    if (!i) RAPfine(AAF_[i+1],Raa_[i],Matrix(2,1).EpetraMatrix(),Pff_[i]);
+    else    RAPcoarse(AAF_[i+1],Raa_[i],AAF_[i],Pff_[i]);
+  }
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -614,9 +576,7 @@ MLAPI::MultiVector FSI::OverlappingBlockMatrixFSIAMG::ProlongateMultiplyRestrict
   }
 
   // prolongate to fine level
-  //cout << "coarse\n" << coarse << "P[level-1]\n" << P[level-1];
   tmp = P[level-1] * coarse;
-  //cout << "tmp\n" << tmp;
   for (int i=level-1; i>0; --i)
     tmp = P[i-1] * tmp;
   
@@ -726,7 +686,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::BlockGaussSeidelSmoother(
   MLAPI::MultiVector fz(mlfy.GetVectorSpace(),1,false);
   MLAPI::MultiVector az(mlay.GetVectorSpace(),1,false);
   
-  for (int run=0; run<iterations_+level; ++run)
+  for (int run=0; run<pciter_[level]; ++run)
   {
     // copy of original residual
     sx.Update(mlsx);
@@ -748,7 +708,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::BlockGaussSeidelSmoother(
       sz = 0.0; 
       if (!amgsolve) Sss_[level].Apply(sx,sz);
       else           Vcycle(level,snlevel_,sz,sx,Ass_,Sss_,Pss_,Rss_);
-      mlsy.Update(omega_,sz,1.0);
+      mlsy.Update(pcomega_[level],sz,1.0);
     }
     
     //-------------------- ale block
@@ -765,7 +725,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::BlockGaussSeidelSmoother(
       az = 0.0;
       if (!amgsolve) Saa_[level].Apply(ax,az);
       else           Vcycle(level,anlevel_,az,ax,Aaa_,Saa_,Paa_,Raa_);
-      mlay.Update(omega_,az,1.0);
+      mlay.Update(pcomega_[level],az,1.0);
     }
     
     //------------------ fluid block
@@ -787,10 +747,10 @@ void FSI::OverlappingBlockMatrixFSIAMG::BlockGaussSeidelSmoother(
       fz = 0.0;
       if (!amgsolve) Sff_[level].Apply(fx,fz);
       else           Vcycle(level,fnlevel_,fz,fx,Aff_,Sff_,Pff_,Rff_);
-      mlfy.Update(omega_,fz,1.0);
+      mlfy.Update(pcomega_[level],fz,1.0);
     }
     
-  } // for (int run=0; run<iterations_; ++run)
+  } // for (int run=0; run<pciter_[level]; ++run)
   
   return;
 }                                  
@@ -814,7 +774,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::ExplicitBlockGaussSeidelSmoother(
   MLAPI::MultiVector fz(mlfy.GetVectorSpace(),1,false);
   MLAPI::MultiVector az(mlay.GetVectorSpace(),1,false);
   
-  for (int run=0; run<iterations_+level; ++run)
+  for (int run=0; run<pciter_[level]; ++run)
   {
     //-------------- structure block
     {
@@ -825,7 +785,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::ExplicitBlockGaussSeidelSmoother(
       sz = 0.0; 
       if (!amgsolve) Sss_[level].Apply(sx,sz);
       else           Vcycle(level,snlevel_,sz,sx,Ass_,Sss_,Pss_,Rss_);
-      mlsy.Update(omega_,sz,1.0);
+      mlsy.Update(pcomega_[level],sz,1.0);
     }
     
     //-------------------- ale block
@@ -837,7 +797,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::ExplicitBlockGaussSeidelSmoother(
       az = 0.0;
       if (!amgsolve) Saa_[level].Apply(ax,az);
       else           Vcycle(level,anlevel_,az,ax,Aaa_,Saa_,Paa_,Raa_);
-      mlay.Update(omega_,az,1.0);
+      mlay.Update(pcomega_[level],az,1.0);
     }
     
     //------------------ fluid block
@@ -850,10 +810,10 @@ void FSI::OverlappingBlockMatrixFSIAMG::ExplicitBlockGaussSeidelSmoother(
       fz = 0.0;
       if (!amgsolve) Sff_[level].Apply(fx,fz);
       else           Vcycle(level,fnlevel_,fz,fx,Aff_,Sff_,Pff_,Rff_);
-      mlfy.Update(omega_,fz,1.0);
+      mlfy.Update(pcomega_[level],fz,1.0);
     }
     
-  } // for (int run=0; run<iterations_; ++run)
+  } // for (int run=0; run<pciter_[level]; ++run)
   
   return;
 }                                  
@@ -869,13 +829,6 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
   if (!structuresplit_) dserror("FSIAMG for structuresplit monoFSI only");
   if (symmetric_)       dserror("FSIAMG symmetric Block Gauss-Seidel not impl.");
 
-  //const LINALG::SparseMatrix& structInnerOp = Matrix(0,0); // Ass
-  //const LINALG::SparseMatrix& structBoundOp = Matrix(0,1); // Asf
-  //const LINALG::SparseMatrix& fluidBoundOp  = Matrix(1,0); // Afs
-  //const LINALG::SparseMatrix& fluidInnerOp  = Matrix(1,1); // Aff
-  //const LINALG::SparseMatrix& fluidMeshOp   = Matrix(1,2); // Afa
-  //const LINALG::SparseMatrix& aleBoundOp    = Matrix(2,1); // Aaf
-  //const LINALG::SparseMatrix& aleInnerOp    = Matrix(2,2); // Aaa
   // rewrap the matrix every time as Uli shoots them irrespective
   // of whether the precond is reused or not.
   {
@@ -887,11 +840,13 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
     MLAPI::Space dspace(Matrix(0,1).EpetraMatrix()->DomainMap());
     MLAPI::Space rspace(Matrix(0,1).EpetraMatrix()->RangeMap());
     Asf_.Reshape(dspace,rspace,Matrix(0,1).EpetraMatrix().get(),false);
+    ASF_[0] = Asf_;
   }
   {
     MLAPI::Space dspace(Matrix(1,0).EpetraMatrix()->DomainMap());
     MLAPI::Space rspace(Matrix(1,0).EpetraMatrix()->RangeMap());
     Afs_.Reshape(dspace,rspace,Matrix(1,0).EpetraMatrix().get(),false);
+    AFS_[0] = Afs_;
   }
   {
     MLAPI::Space dspace(Matrix(1,1).EpetraMatrix()->DomainMap());
@@ -902,11 +857,13 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
     MLAPI::Space dspace(Matrix(1,2).EpetraMatrix()->DomainMap());
     MLAPI::Space rspace(Matrix(1,2).EpetraMatrix()->RangeMap());
     Afa_.Reshape(dspace,rspace,Matrix(1,2).EpetraMatrix().get(),false);
+    AFA_[0] = Afa_;
   }
   {
     MLAPI::Space dspace(Matrix(2,1).EpetraMatrix()->DomainMap());
     MLAPI::Space rspace(Matrix(2,1).EpetraMatrix()->RangeMap());
     Aaf_.Reshape(dspace,rspace,Matrix(2,1).EpetraMatrix().get(),false);
+    AAF_[0] = Aaf_;
   }
   {
     MLAPI::Space dspace(Matrix(2,2).EpetraMatrix()->DomainMap());
@@ -944,7 +901,9 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
 
 
   // run FSIAMG
+  // using implicit off-diagonals on coarse levels
   //BlockVcycle(0,minnlevel_,mlsy,mlfy,mlay,mlsx,mlfx,mlax);
+  // using explicit off-diagonals on coarse levels
   ExplicitBlockVcycle(0,minnlevel_,mlsy,mlfy,mlay,mlsx,mlfx,mlax);
 
 

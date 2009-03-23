@@ -84,6 +84,19 @@ FSI::MonolithicOverlap::MonolithicOverlap(Epetra_Comm& comm)
   // build ale system matrix in splitted system
   AleField().BuildSystemMatrix(false);
 
+  vector<int> pciter;
+  vector<double> pcomega;
+  {
+    std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsidyn,"PCITER"));
+    std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsidyn,"PCOMEGA"));
+    std::string word1;
+    std::string word2;
+    while (pciterstream >> word1)
+      pciter.push_back(std::atoi(word1.c_str()));
+    while (pcomegastream >> word2)
+      pcomega.push_back(std::atof(word2.c_str()));
+  }
+
   // create block system matrix
 
   systemmatrix_ = Teuchos::rcp(new OverlappingBlockMatrix(Extractor(),
@@ -92,8 +105,8 @@ FSI::MonolithicOverlap::MonolithicOverlap(Epetra_Comm& comm)
                                                           AleField(),
                                                           false,
                                                           Teuchos::getIntegralValue<int>(fsidyn,"SYMMETRICPRECOND"),
-                                                          fsidyn.get<double>("PCOMEGA"),
-                                                          fsidyn.get<int>("PCITER"),
+                                                          pcomega[0],
+                                                          pciter[0],
                                                           fsidyn.get<double>("STRUCTPCOMEGA"),
                                                           fsidyn.get<int>("STRUCTPCITER"),
                                                           fsidyn.get<double>("FLUIDPCOMEGA"),

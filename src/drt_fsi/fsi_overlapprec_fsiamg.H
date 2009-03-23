@@ -27,12 +27,12 @@ namespace FSI
                                  ADAPTER::Ale& ale,
                                  bool structuresplit,
                                  int symmetric,
-                                 double omega=1.0,
-                                 int iterations=1,
-                                 double somega=1.0,
-                                 int siterations=0,
-                                 double fomega=1.0,
-                                 int fiterations=0,
+                                 vector<double>& omega,
+                                 vector<int>& iterations,
+                                 double somega,
+                                 int siterations,
+                                 double fomega,
+                                 int fiterations,
                                  FILE* err=NULL);
 
     /** \name Attribute access functions */
@@ -128,8 +128,12 @@ namespace FSI
                    const MLAPI::Operator& A,
                    const MLAPI::Operator& P);
 
+    void RAPoffdiagonals();
+
 
     int                             minnlevel_; /// min of the below nlevel_
+    vector<int>                     pciter_;
+    vector<double>                  pcomega_;
 
     int                             snlevel_;   /// num level in structure AMG
     Teuchos::ParameterList          sparams_;
