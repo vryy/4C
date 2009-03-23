@@ -885,12 +885,14 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
         // linear B-op
         // derivative of displ-based def.grad with respect to nodal displacements
         // F^d_{aC,d}
+        int iboplin[NUMDFGR_*NUMNOD_];  // index entries which are non-equal zero
         LINALG::Matrix<NUMDFGR_,NUMDISP_> boplin(true);
         for (int ij=0; ij<NUMDFGR_; ++ij) {
           const int i = voigt9row[ij];
           const int j = voigt9col[ij];
           for (int k=0; k<NUMNOD_; ++k) {
             const int K = k*NODDISP_ + i;
+            iboplin[NUMDFGR_*ij+k] = K;
             boplin(ij,K) = derivsmat(j,k);
           }
         }
@@ -1019,7 +1021,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
               // second derivative of disp-based right Cauchy-Green tensor 
               // w.r.t. to right stretch tensor
               // C^{d}_{,U^{d} U^{d}} = const
-              // MARK: not needed as same as for assumed right CG tensor (above)
+              // MARK: an extra variable is not needed as same as for assumed right CG tensor (above)
 
               // second derivative of disp-based inverse right stretch tensor
               // w.r.t. disp-based right stretch tensor
@@ -1120,8 +1122,9 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
         
 
               // 
-              LINALG::Matrix<NUMSTR_,NUMDISP_> invdefgradtimesboplin;
-              for (int d=0; d<NUMDISP_; ++d) {
+              LINALG::Matrix<NUMSTR_,NUMDISP_> invdefgradtimesboplin(true);
+              for (int n=0; n<NUMNOD_; ++n) {
+                const int d = iboplin[n];
                 for (int BC=0; BC<NUMSTR_; ++BC) {
                   const int B = voigt6row[BC];
                   const int C = voigt6col[BC];
@@ -1153,7 +1156,9 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
               // + F^{-1}_{Ba}  F^d_{aC,k} U^{d;-1}_{CD} U^{ass}_{DB,d}        |  # 0, okay
               // + F^{-1}_{Ba}  F^d_{aC} U^{d;-1}_{CD,k} U^{ass}_{DB,d}        |  # 0, okay
               for (int d=0; d<NUMDISP_; ++d) {
+                const int n = d / NODDISP_;
                 for (int k=0; k<NUMDISP_; ++k) {
+                  const int m = k / NODDISP_;
                   double defgradbybydisp_dk = 0.0;
                   for (int B=0; B<NUMDIM_; ++B) {
                     for (int D=0; D<NUMDIM_; ++D) {
@@ -1167,13 +1172,17 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                         const double CDfact = (C==D) ? 1.0 : 0.5;
                         const int BC = voigt3x3sym[NUMDIM_*B+C];
                         const double BCfact = (B==C) ? 1.0 : 0.5;
-                        if (lin_ >= lin_third)
+                        if ( (lin_ >= lin_third) and (d == iboplin[n]) )
                           defgradbybydisp_dk
                             += BCfact*invdefgradtimesboplin(BC,d) * CDfact*invrgtstrDbydisp(CD,k) * rgtstr(D,B)
-                            + BCfact*invdefgradtimesboplin(BC,d) * invrgtstrD(C,D) * DBfact*rgtstrbydisp(DB,k)
-                            + BCfact*invdefgradtimesboplin(BC,k) * CDfact*invrgtstrDbydisp(CD,d) * rgtstr(D,B)
-                            + invdefgradtimesdefgradD(B,C) * CDfact*invrgtstrDbydisp(CD,d) * DBfact*rgtstrbydisp(DB,k)
-                            + BCfact*invdefgradtimesboplin(BC,k) * invrgtstrD(C,D) * DBfact*rgtstrbydisp(DB,d)
+                            + BCfact*invdefgradtimesboplin(BC,d) * invrgtstrD(C,D) * DBfact*rgtstrbydisp(DB,k);
+                        if ( (lin_ >= lin_third) and (k == iboplin[m]) )
+                          defgradbybydisp_dk
+                            += BCfact*invdefgradtimesboplin(BC,k) * CDfact*invrgtstrDbydisp(CD,d) * rgtstr(D,B)
+                            + BCfact*invdefgradtimesboplin(BC,k) * invrgtstrD(C,D) * DBfact*rgtstrbydisp(DB,d);
+                        if (lin_ >= lin_third)
+                          defgradbybydisp_dk
+                            += invdefgradtimesdefgradD(B,C) * CDfact*invrgtstrDbydisp(CD,d) * DBfact*rgtstrbydisp(DB,k)
                             + invdefgradtimesdefgradD(B,C) * CDfact*invrgtstrDbydisp(CD,k) * DBfact*rgtstrbydisp(DB,d);
                         if (lin_ >= lin_half)
                           defgradbybydisp_dk
