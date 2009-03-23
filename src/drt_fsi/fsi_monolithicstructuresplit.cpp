@@ -2,6 +2,7 @@
 #ifdef CCADISCRET
 
 #include "fsi_monolithicstructuresplit.H"
+#include "fsi_overlapprec_fsiamg.H"
 #include "fsi_statustest.H"
 #include "fsi_nox_linearsystem_bgs.H"
 #include "fsi_monolithic_linearsystem.H"
@@ -481,7 +482,7 @@ FSI::MonolithicStructureSplit::CreateLinearSystem(ParameterList& nlParams,
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
   Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
   Teuchos::ParameterList& newtonParams = dirParams.sublist("Newton");
-  Teuchos::ParameterList* lsParams;
+  Teuchos::ParameterList* lsParams = NULL;
   
   // in case of nonlinCG the linear solver list is somewhere else
   if (dirParams.get("Method","User Defined")=="User Defined")

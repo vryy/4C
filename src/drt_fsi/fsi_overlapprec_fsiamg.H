@@ -76,6 +76,16 @@ namespace FSI
                      const MLAPI::MultiVector& mlfx,
                      const MLAPI::MultiVector& mlax) const;
     
+    /// FSIAMG multigrid with explicit coarse off-diagonals
+    virtual void ExplicitBlockVcycle(const int level,
+                     const int nlevel,
+                     MLAPI::MultiVector& mlsy,
+                     MLAPI::MultiVector& mlfy,
+                     MLAPI::MultiVector& mlay,
+                     const MLAPI::MultiVector& mlsx,
+                     const MLAPI::MultiVector& mlfx,
+                     const MLAPI::MultiVector& mlax) const;
+
     /// block Gauss-Seidel smoother within one level
     virtual void BlockGaussSeidelSmoother(
                      const int level,
@@ -87,18 +97,17 @@ namespace FSI
                      const MLAPI::MultiVector& mlax,
                      const bool amgsolve) const;
     
-    /// prolongate from current to fine level 
-    virtual MLAPI::MultiVector ProlongateToFine(
+    /// block Gauss-Seidel smoother within one level (explicit off-diagonals)
+    virtual void ExplicitBlockGaussSeidelSmoother(
                      const int level,
-                     const MLAPI::MultiVector& coarse,
-                     const vector<MLAPI::Operator>& P) const;
-    
-    /// restruct from fine to current level 
-    virtual MLAPI::MultiVector RestrictToCoarse(
-                     const int level,
-                     const MLAPI::MultiVector& fine,
-                     const vector<MLAPI::Operator>& R) const;
-    
+                     MLAPI::MultiVector& mlsy,
+                     MLAPI::MultiVector& mlfy,
+                     MLAPI::MultiVector& mlay,
+                     const MLAPI::MultiVector& mlsx,
+                     const MLAPI::MultiVector& mlfx,
+                     const MLAPI::MultiVector& mlax,
+                     const bool amgsolve) const;
+
     /// prolongate to fine grid, multiply and restrict solution back
     virtual MLAPI::MultiVector ProlongateMultiplyRestrict(
                      const int                      level,
@@ -107,6 +116,19 @@ namespace FSI
                      const MLAPI::Operator&         A,
                      const vector<MLAPI::Operator>& P) const;
     
+    /// triple matrix product with fine level operator only
+    void RAPfine(MLAPI::Operator& RAP,
+                 const MLAPI::Operator& R, 
+                 Teuchos::RCP<Epetra_CrsMatrix> A,
+                 const MLAPI::Operator& P);
+
+    /// triple matrix product with coarse level operators
+    void RAPcoarse(MLAPI::Operator& RAP,
+                   const MLAPI::Operator& R, 
+                   const MLAPI::Operator& A,
+                   const MLAPI::Operator& P);
+
+
     int                             minnlevel_; /// min of the below nlevel_
 
     int                             snlevel_;   /// num level in structure AMG
@@ -130,10 +152,18 @@ namespace FSI
     vector<MLAPI::Operator>         Paa_;
     vector<MLAPI::Operator>         Raa_;
 
+    // these are for implicit off-diagonal in block smoother
     mutable MLAPI::Operator         Asf_;
     mutable MLAPI::Operator         Afs_;
     mutable MLAPI::Operator         Afa_;
     mutable MLAPI::Operator         Aaf_;
+
+    // these are for explicit coarse off-diagonals in block smoother
+    mutable vector<MLAPI::Operator> ASF_;
+    mutable vector<MLAPI::Operator> AFS_;
+    mutable vector<MLAPI::Operator> AFA_;
+    mutable vector<MLAPI::Operator> AAF_;
+
   };
 
 
