@@ -159,6 +159,14 @@ void LINALG::Preconditioner::Solve(Teuchos::RCP<Epetra_Operator>  matrix,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+Teuchos::ParameterList& LINALG::Preconditioner::Params()
+{
+  return solver_->Params();
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void LINALG::Preconditioner::EnrichFluidNullSpace(
                                       Teuchos::ParameterList&            mllist,
                                       Teuchos::RCP<LINALG::MapExtractor> fsidofmapex,

@@ -83,6 +83,13 @@ namespace LINALG
                bool refactor,
                bool reset = false);
 
+    
+    /// get underlying preconditioner Epetra_Operator
+    Teuchos::RCP<Epetra_Operator> EpetraOperator() { return prec_; }
+    
+    /// get underlying solver parameter list
+    Teuchos::ParameterList& Params();
+    
     /// @name Attribute set methods
 
     /// If set true, transpose of this operator will be applied.
