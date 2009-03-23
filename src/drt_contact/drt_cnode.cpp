@@ -382,7 +382,7 @@ void CONTACT::CNode::StoreDMOld()
 {
   // copy drows_ to drowsold_  
   
-   // reset old nodal Mortar maps
+  // reset old nodal Mortar maps
   for (int j=0;j<(int)(GetDOld().size());++j)
   (GetDOld())[j].clear();
   for (int j=0;j<(int)((GetMOld()).size());++j)

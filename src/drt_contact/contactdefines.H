@@ -54,35 +54,34 @@ Maintainer: Alexander Popp
 /* Debugging options                                                    */
 /************************************************************************/
 
-//#define CONTACTFDNORMAL        /* flag for FD check of normal derivative */
-//#define CONTACTFDMORTARD       /* flag for FD check of mortar matrix D */
-//#define CONTACTFDMORTARM       /* flag for FD check of mortar matrix M */
-//#define CONTACTFDGAP           /* flag for FD check of weighted gap g */
-//#define CONTACTFDSLIPTRESCA      /* flag for FD check of tresca slip condition */
-//#define CONTACTFDTANGLM        /* flag for FD check of tangential LM */
-//#define CONTACTFDVERTEX3D      /* flag for FD check of vertices in 3D */
-//#define CONTACTFDGP3D          /* flag for FD check of GP + Jacs in 3D */
-//#define CONTACTGMSH1           /* flag for gmsh output in each time step */
-//#define CONTACTGMSH2           /* flag for gmsh output in each iteration */
+//#define CONTACTFDNORMAL       /* flag for FD check of normal derivative */
+//#define CONTACTFDMORTARD      /* flag for FD check of mortar matrix D */
+//#define CONTACTFDMORTARM      /* flag for FD check of mortar matrix M */
+//#define CONTACTFDGAP          /* flag for FD check of weighted gap g */
+//#define CONTACTFDSLIPTRESCA   /* flag for FD check of tresca slip condition */
+//#define CONTACTFDTANGLM       /* flag for FD check of tangential LM */
+//#define CONTACTFDVERTEX3D     /* flag for FD check of vertices in 3D */
+//#define CONTACTFDGP3D         /* flag for FD check of GP + Jacs in 3D */
+//#define CONTACTGMSH1          /* flag for gmsh output in each time step */
+//#define CONTACTGMSH2          /* flag for gmsh output in each iteration */
+//#define CONTACTGMSHTN         /* flag for gmsh output of all treenodes */
+//#define CONTACTGMSHCTN        /* flag for gmsh output of contact treenodes */
 
 /************************************************************************/
 /* Contact algorithm parameters                                         */
 /************************************************************************/
 
-// CONTACT SEARCH
-#define CONTACTCRITDIST 2      /* crit. distance for potential contact */
-
-// CONTACT PROJECTION AND INTEGRATION (2D/3D)
-#define CONTACTMAXITER 10        /* max. no. iterations for local Newton */
-#define CONTACTCONVTOL 1.0e-12   /* convergence tolerance for local Newton */
+// CONTACT PROJECTION (2D/3D)
+#define CONTACTMAXITER 10       /* max. no. iterations for local Newton */
+#define CONTACTCONVTOL 1.0e-12  /* convergence tolerance for local Newton */
 
 // CONTACT PROJECTION AND INTEGRATION (2D)
-#define CONTACTPROJTOL 0.05      /* projection tolerance for overlap (2D)*/
-#define CONTACTPROJLIM 1.0e-8    /* exact projection tolerance (2D) */
+#define CONTACTPROJTOL 0.05     /* projection tolerance for overlap (2D)*/
+#define CONTACTPROJLIM 1.0e-8   /* exact projection tolerance (2D) */
 
 // CONTACT PROJECTION AND INTEGRATION (3D)
-#define CONTACTCLIPTOL 1.0e-12   /* tolerance for polygon clipping (3D) */
-#define CONTACTINTLIM 1.0e-6     /* min(area-%) cell/slave for integration */
+#define CONTACTCLIPTOL 1.0e-12  /* tolerance for polygon clipping (3D) */
+#define CONTACTINTLIM 1.0e-6    /* min(area-%) cell/slave for integration */
 
 #endif  // #ifndef CONTACTDEFINES_H
 #endif  // #ifdef CCADISCRET

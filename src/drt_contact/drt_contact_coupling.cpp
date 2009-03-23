@@ -695,7 +695,7 @@ bool CONTACT::Coupling::DetectOverlap2D(vector<bool>& hasproj,
   // For the non-overlapping cases, the possibility of an identical local
   // node numbering direction for both sides is taken into account!!
   // (this can happen, when elements far from each other are projected,
-  // which actually should be impossible due to the CONTACTCRITDIST
+  // which actually should be impossible due to the search radius
   // condition in the potential contact pair search above!
   // But you never know...)
 
@@ -703,7 +703,7 @@ bool CONTACT::Coupling::DetectOverlap2D(vector<bool>& hasproj,
   // node numbering directions are opposite!!
   // (this is the case, when the elements are sufficiently near each other,
   // which is ensured by only processing nodes that fulfill the
-  // CONTACTCRITDIST condition above!)
+  // search radius condition above!)
 
   // CAUTION: The bool output variable in this method is a REAL output
   // variable, determining whether there is an overlap or not!

@@ -84,7 +84,8 @@ FULL_LINEARIZATION   No
 SEMI_SMOOTH_NEWTON   No
 SEMI_SMOOTH_CN       1.0
 SEMI_SMOOTH_CT       1.0
-
+SEARCH_ALGORITHM     BruteForceEleBased
+SEARCH_PARAM         0.3
 -----------------------------------------------------FLUID DYNAMIC
 DYNAMICTYP       Nlin_Time_Int
 INITIALFIELD     zero_field

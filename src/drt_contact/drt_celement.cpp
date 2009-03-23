@@ -613,7 +613,8 @@ void CONTACT::CElement::DerivUnitNormalAtXi(double* xi, vector<map<int,double> >
 /*----------------------------------------------------------------------*
  |  Get nodal coordinates of the element                      popp 01/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CElement::GetNodalCoords(LINALG::SerialDenseMatrix& coord)
+void CONTACT::CElement::GetNodalCoords(LINALG::SerialDenseMatrix& coord,
+                                       bool isinit)
 {
   int nnodes = NumNode();
   DRT::Node** mynodes = Nodes();
@@ -624,9 +625,18 @@ void CONTACT::CElement::GetNodalCoords(LINALG::SerialDenseMatrix& coord)
   {
     CNode* mycnode = static_cast<CNode*> (mynodes[i]);
     if (!mycnode) dserror("ERROR: GetNodalCoords: Null pointer!");
-    coord(0,i) = mycnode->xspatial()[0];
-    coord(1,i) = mycnode->xspatial()[1];
-    coord(2,i) = mycnode->xspatial()[2];
+    if (isinit)
+    {
+      coord(0,i) = mycnode->X()[0];
+      coord(1,i) = mycnode->X()[1];
+      coord(2,i) = mycnode->X()[2];
+    }
+    else
+    {
+      coord(0,i) = mycnode->xspatial()[0];
+      coord(1,i) = mycnode->xspatial()[1];
+      coord(2,i) = mycnode->xspatial()[2];
+    }
   }
   
   return;
@@ -1095,20 +1105,24 @@ bool CONTACT::CElement::LocalToGlobal(const double* xi, double* globcoord,
 /*----------------------------------------------------------------------*
  |  Compute minimal edge size of CElement                     popp 11/08|
  *----------------------------------------------------------------------*/
-double CONTACT::CElement::MinEdgeSize()
+double CONTACT::CElement::MinEdgeSize(bool isinit)
 {
   double minedgesize = 1.0e12;
   DRT::Element::DiscretizationType dt = Shape();
   
   // get coordinates of element nodes
   LINALG::SerialDenseMatrix coord(3,NumNode());
-  GetNodalCoords(coord);
+  GetNodalCoords(coord,isinit);
     
   // 2D case (2noded and 3noded line elements)
   if (dt==line2 || dt==line3)
   {
     // there is only one edge
-    minedgesize = Area();
+    // (we approximate the quadratic case as linear)
+    double diff[3] = {0.0, 0.0, 0.0};
+    for (int k=0;k<3;++k)
+      diff[k] = coord(k,1)-coord(k,0);
+    minedgesize = sqrt(diff[0]*diff[0]+diff[1]*diff[1]+diff[2]*diff[2]);
   }
   
   // 3D tri case (3noded and 6noded triangular elements)
@@ -1158,20 +1172,24 @@ double CONTACT::CElement::MinEdgeSize()
 /*----------------------------------------------------------------------*
  |  Compute maximal edge size of CElement                     popp 11/08|
  *----------------------------------------------------------------------*/
-double CONTACT::CElement::MaxEdgeSize()
+double CONTACT::CElement::MaxEdgeSize(bool isinit)
 {
   double maxedgesize = 0.0;
   DRT::Element::DiscretizationType dt = Shape();
   
   // get coordinates of element nodes
   LINALG::SerialDenseMatrix coord(3,NumNode());
-  GetNodalCoords(coord);
+  GetNodalCoords(coord,isinit);
     
   // 2D case (2noded and 3noded line elements)
   if (dt==line2 || dt==line3)
   {
     // there is only one edge
-    maxedgesize = Area();
+    // (we approximate the quadratic case as linear)
+    double diff[3] = {0.0, 0.0, 0.0};
+    for (int k=0;k<3;++k)
+      diff[k] = coord(k,1)-coord(k,0);
+    maxedgesize = sqrt(diff[0]*diff[0]+diff[1]*diff[1]+diff[2]*diff[2]);
   }
   
   // 3D tri case (3noded and 6noded triangular elements)
@@ -1239,9 +1257,23 @@ bool CONTACT::CElement::AddSearchElements(const vector<int>& gids)
         found = true;
     
     // add new gid to vector of search candidates
-    if (!found)
-      searchelements_.push_back(gids[i]);
+    if (!found) SearchElements().push_back(gids[i]);
   }
+  
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Add one CElement to potential contact partners            popp 01/08|
+ *----------------------------------------------------------------------*/
+bool CONTACT::CElement::AddSearchElements(const int & gid)
+{
+  // check input data and calling element type
+  if (!IsSlave())
+    dserror("ERROR: AddSearchElements called for non-slave CElement!");
+  
+  // add new gid to vector of search candidates
+  SearchElements().push_back(gid);
   
   return true;
 }

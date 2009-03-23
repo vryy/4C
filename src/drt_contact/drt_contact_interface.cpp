@@ -46,6 +46,7 @@ Maintainer: Michael Gee
 #include "drt_contact_coupling.H"
 #include "drt_cdofset.H"
 #include "contactdefines.H"
+#include "drt_contact_binarytree.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -53,10 +54,13 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
-CONTACT::Interface::Interface(const int id, const Epetra_Comm& comm, const int dim) :
+CONTACT::Interface::Interface(const int id, const Epetra_Comm& comm,
+                              const int dim, const string stype, const double sp) :
 id_(id),
 comm_(comm),
-dim_(dim)
+dim_(dim),
+stype_(stype),
+sp_(sp)
 {
   RCP<Epetra_Comm> com = rcp(Comm().Clone());
   if (Dim()!=2 && Dim()!=3) dserror("ERROR: Contact problem must be 2D or 3D");
@@ -431,10 +435,26 @@ void CONTACT::Interface::FillComplete()
     mdoffullmap_ = rcp(new Epetra_Map(-1,(int)mcfull.size(),&mcfull[0],0,Comm()));
     mdofcolmap_ = rcp(new Epetra_Map(-1,(int)mc.size(),&mc[0],0,Comm()));
   }
+  
+  // warning 
+#ifdef CONTACTGMSHCTN
+  if (Dim()==3 && Comm().MyPID()==0)
+  {
+    cout << "\n******************************************************************\n";
+    cout << "GMSH output of all contact tree nodes in 3D needs a lot of memory!\n";
+    cout << "******************************************************************\n";
+  }
+#endif //CONTACTGMSHCTN
 
-  // create binarytree object for contact search
-  // binarytree_ = rcp(new CONTACT::BinaryTree(Discret(),selecolmap_,melefullmap_,Dim()));
-   
+  if (SearchAlg()=="binarytree")
+  {
+    // create binary tree object for contact search
+	  binarytree_ = rcp(new CONTACT::BinaryTree(Discret(),selecolmap_,melefullmap_,Dim(),SearchParam()));
+
+	  // initialize active contact nodes via binarytree
+	  //binarytree_->SearchContactInit(binarytree_->Sroot(), binarytree_->Mroot());
+  }
+  
   return;
 }
 
@@ -611,6 +631,14 @@ void CONTACT::Interface::SetState(const string& statename, const RCP<Epetra_Vect
         node->uold()[j]=myolddisp[j];
       }
     }
+
+    // loop over all elements to set current element length / area
+    // (use fully overlapping column map)
+    for (int i=0;i<idiscret_->NumMyColElements();++i)
+    {
+      CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(i));
+      element->Area()=element->ComputeArea();
+    }
   }
 
   return;
@@ -647,18 +675,22 @@ void CONTACT::Interface::Evaluate()
     cnode->BuildAveragedNormal();
   }
  
+  //**********************************************************************
   // contact search algorithm
+  //**********************************************************************
   //lComm()->Barrier();
   //const double t_start = ds_cputime();
-  double eps = 0.5;
-  EvaluateContactSearchBruteForce(eps);
+  
+  if (SearchAlg()=="nodes")           EvaluateContactSearch();
+  else if (SearchAlg()=="elements")   EvaluateContactSearchBruteForce(SearchParam());
+  else if (SearchAlg()=="binarytree") EvaluateContactSearchBinarytree();
+  else                                dserror("ERROR: Invalid contact search algorithm");
+
   //lComm()->Barrier();
   //const double t_end = ds_cputime()-t_start;
   //if (lComm()->MyPID()==0)
-  // {
-  //  cout << "Brute-force search: " << t_end << " seconds\n";
-  //}
-  
+  //  cout << "Search Time (overall): " << t_end << " seconds\n";
+
 #ifdef CONTACTFDVERTEX3D
   // define test variable for FDVertex
   vector<vector<double> > testv(0,vector<double>(6));
@@ -746,7 +778,7 @@ void CONTACT::Interface::Evaluate()
 }
 
 /*----------------------------------------------------------------------*
- |  Search for potentially contacting sl/ma pairs (public)    popp 01/08|
+ |  Contact search node-based ("brute force") (public)        popp 01/08|
  *----------------------------------------------------------------------*/
 bool CONTACT::Interface::EvaluateContactSearch()
 {
@@ -776,7 +808,7 @@ bool CONTACT::Interface::EvaluateContactSearch()
     snode->ClosestNode() = closestnode->Id();
 
     // proceed only if nodes are not far from each other!!!
-    if (mindist<=CONTACTCRITDIST)
+    if (mindist<=SearchParam())
     {
       // get adjacent elements to current slave node and to closest node
       int neles = snode->NumElement();
@@ -814,7 +846,7 @@ bool CONTACT::Interface::EvaluateContactSearch()
     mnode->ClosestNode() = closestnode->Id();
 
     // proceed only if nodes are not far from each other!!!
-    if (mindist<=CONTACTCRITDIST)
+    if (mindist<=SearchParam())
     {
       // get adjacent elements to current master node and to closest node
       int nelem = mnode->NumElement();
@@ -842,66 +874,45 @@ bool CONTACT::Interface::EvaluateContactSearch()
 /*----------------------------------------------------------------------*
  |  Contact search element-based "brute force" (public)       popp 10/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::EvaluateContactSearchBruteForce(double& eps)
+void CONTACT::Interface::EvaluateContactSearchBruteForce(const double& eps)
 {
-  //calc min length fe-elements
-  double mincurrent, lmin, enlarge;
-  //only if there are elements on proc.
-  if (selecolmap_->NumMyElements()!=0)
+  // calculate minimal element length
+  double lmin = 1.0e12;
+  double enlarge = 0.0;
+  
+  // loop over all slave elements on this proc.
+  for (int i=0;i<selecolmap_->NumMyElements();++i)
   {
     DRT::Element* element = idiscret_->gElement(selecolmap_->GID(0));
-    if (!element) 
-      dserror("ERROR: Cannot find element with gid %\n",selecolmap_->GID(0));
+    if (!element) dserror("ERROR: Cannot find element with gid %\n",selecolmap_->GID(0));
     CONTACT::CElement* celement = (CElement*) element;
-    lmin=celement->MinEdgeSize();
+    if (celement->MinEdgeSize() < lmin)
+      lmin= celement->MinEdgeSize();
+  }
   
-    for (int i=1;i<selecolmap_->NumMyElements();++i)
-    {
-      int gid = selecolmap_->GID(i);
-      DRT::Element* element = idiscret_->gElement(gid);
-      if (!element) 
-        dserror("ERROR: Cannot find element with gid %\n",gid);
-      CONTACT::CElement* celement = (CElement*) element;
-      mincurrent=celement->MinEdgeSize();
-      if (mincurrent<lmin)
-        lmin=mincurrent;
-    }
-  }
-  // if there are no slave elements, initialize lmin with first master elements length!
-  else if (selecolmap_->NumMyElements()==0)
-  {
-    DRT::Element* element = idiscret_->gElement(melefullmap_->GID(0));
-    if (!element) 
-      dserror("ERROR: Cannot find element with gid %\n",melefullmap_->GID(0));
-    CONTACT::CElement* celement = (CElement*) element;
-    lmin=celement->MinEdgeSize();
-  }
-  // calc lmin of master elements!
+  // loop over all master elements on this proc.
   for (int i=0;i<melefullmap_->NumMyElements();++i)
   {
-    int gid = melefullmap_->GID(i);
-    DRT::Element* element = idiscret_->gElement(gid);
-    if (!element) 
-      dserror("ERROR: Cannot find element with gid %\n",gid);
+    DRT::Element* element = idiscret_->gElement(melefullmap_->GID(i));
+    if (!element) dserror("ERROR: Cannot find element with gid %\n",melefullmap_->GID(i));
     CONTACT::CElement* celement = (CElement*) element;
-    mincurrent=celement->MinEdgeSize();
-    if (mincurrent < lmin)
-      lmin=mincurrent;
+    if (celement->MinEdgeSize() < lmin)
+      lmin= celement->MinEdgeSize();
   }
+  
+  // compute DOP inflation length
   enlarge=eps*lmin;
   
-  // defines dopnormals, slave and master slabs
-  Epetra_SerialDenseMatrix dopnormals, sslabs, mslabs;
-
-  int kdop=0;
   // define dopnormals
+  Epetra_SerialDenseMatrix dopnormals;
+  int kdop=0;
+  
   if (dim_==2)
   {
     kdop=8;
     
     // setup normals for DOP
-    dopnormals.Reshape(4,3);//(Zeile,Spalte)
-    
+    dopnormals.Reshape(4,3);
     dopnormals(0,0)= 1; dopnormals(0,1)= 0; dopnormals(0,2)= 0;
     dopnormals(1,0)= 0; dopnormals(1,1)= 1; dopnormals(1,2)= 0;
     dopnormals(2,0)= 1; dopnormals(2,1)= 1; dopnormals(2,2)= 0;
@@ -910,9 +921,9 @@ void CONTACT::Interface::EvaluateContactSearchBruteForce(double& eps)
   else if (dim_==3)
   {
     kdop=18;
-    // setup normals for DOP
-    dopnormals.Reshape(9,3);//(Zeile,Spalte)
     
+    // setup normals for DOP
+    dopnormals.Reshape(9,3);
     dopnormals(0,0)= 1; dopnormals(0,1)= 0; dopnormals(0,2)= 0;
     dopnormals(1,0)= 0; dopnormals(1,1)= 1; dopnormals(1,2)= 0;
     dopnormals(2,0)= 0; dopnormals(2,1)= 0; dopnormals(2,2)= 1;
@@ -925,146 +936,134 @@ void CONTACT::Interface::EvaluateContactSearchBruteForce(double& eps)
   }
   else
     dserror("ERROR: Problem dimension must be 2D or 3D!");
-  sslabs.Reshape(kdop/2,2);
-  mslabs.Reshape(kdop/2,2);
+ 
+  // define slave and master slabs
+  Epetra_SerialDenseMatrix sslabs(kdop/2,2);
+  Epetra_SerialDenseMatrix mslabs(kdop/2,2);
   
+  //**********************************************************************
+  // perform brute-force contact search (element-based)
+  //**********************************************************************
+  // for every slave element
   for (int i=0; i<selecolmap_->NumMyElements();i++)
   {
-    // calculate slabs of current slave element
+    // calculate slabs
     double dcurrent = 0.0;
+    
     //initialize slabs with first node
     int sgid=selecolmap_->GID(i);
     DRT::Element* element= idiscret_->gElement(sgid);
     if (!element) dserror("ERROR: Cannot find element with gid %\n",sgid);
     DRT::Node** node= element->Nodes();
     CNode* cnode=static_cast<CNode*>(node[0]);
-    const double* posnode = cnode->xspatial();    
+    const double* posnode = cnode->xspatial();  
+    
     // calculate slabs initialization
     for (int j=0; j<kdop/2; j++)
-      {
-        //= ax+by+cz=d/sqrt(aa+bb+cc)
-        sslabs(j,0)=sslabs(j,1) = (dopnormals(j,0)*posnode[0]+dopnormals(j,1)*posnode[1]+dopnormals(j,2)*posnode[2])
-           /sqrt((dopnormals(j,0)*dopnormals(j,0))+(dopnormals(j,1)*dopnormals(j,1))+(dopnormals(j,2)*dopnormals(j,2)));
-      } 
+    {
+      //= ax+by+cz=d/sqrt(aa+bb+cc)
+      sslabs(j,0)=sslabs(j,1) = (dopnormals(j,0)*posnode[0]+dopnormals(j,1)*posnode[1]+dopnormals(j,2)*posnode[2])
+        /sqrt((dopnormals(j,0)*dopnormals(j,0))+(dopnormals(j,1)*dopnormals(j,1))+(dopnormals(j,2)*dopnormals(j,2)));
+    } 
       
-    // for int j=1, because of initialization done before!
+    // for int j=1, because of initialization done before
     for (int j=1;j<element->NumNode();j++)
-     {
-        CNode* cnode=static_cast<CNode*>(node[j]);
-        posnode = cnode->xspatial();
-        //cout <<"\n" <<Comm().MyPID()<< "SlaveElement: "<< sgid<<" knotennr.: "<< node[j]->Id() 
-        //<<" Knotenpositionen: x:"<< posnode[0]<<" y: "<<posnode[1]<<" z: "<<posnode[2];
-
-        for(int k=0; k<kdop/2;k++)
-        {
-          //= ax+by+cz=d/sqrt(aa+bb+cc)
-          dcurrent = (dopnormals(k,0)*posnode[0]+dopnormals(k,1)*posnode[1]+dopnormals(k,2)*posnode[2])
-                         /sqrt((dopnormals(k,0)*dopnormals(k,0))+(dopnormals(k,1)*dopnormals(k,1))+(dopnormals(k,2)*dopnormals(k,2)));
-          if (dcurrent > sslabs(k,1))
-            sslabs(k,1)=dcurrent;
-          if (dcurrent < sslabs(k,0))
-            sslabs(k,0)=dcurrent;
-        }
-     }
-    // add auxiliary positions
-    //for all last converged positions node is slave!
-    for (int j=0;j<element->NumNode();j++)
     {
       CNode* cnode=static_cast<CNode*>(node[j]);
-      //get pointer to lastconverged node
-      double auxpos [3];
+      posnode = cnode->xspatial();
+      
+      for(int k=0;k<kdop/2;k++)
+      {
+        //= ax+by+cz=d/sqrt(aa+bb+cc)
+        dcurrent = (dopnormals(k,0)*posnode[0]+dopnormals(k,1)*posnode[1]+dopnormals(k,2)*posnode[2])
+          /sqrt((dopnormals(k,0)*dopnormals(k,0))+(dopnormals(k,1)*dopnormals(k,1))+(dopnormals(k,2)*dopnormals(k,2)));
+        if (dcurrent > sslabs(k,1))
+          sslabs(k,1)=dcurrent;
+        if (dcurrent < sslabs(k,0))
+          sslabs(k,0)=dcurrent;
+      }
+    }
+    
+    // add auxiliary positions
+    // (last converged positions for all slave nodes)
+    for (int j=0;j<element->NumNode();j++)
+    {
+      //get pointer to slave node
+      CNode* cnode=static_cast<CNode*>(node[j]);
+      
+      double auxpos [3] = {0.0, 0.0, 0.0};
       double scalar=0.0;
-      for (int k=0; k<dim_; k++)
-      {
-        scalar=scalar+(cnode->X()[k]+cnode->uold()[k]-cnode->xspatial()[k])*cnode->n()[k];
-      }
+      for (int k=0; k<dim_;k++)
+        scalar+=(cnode->X()[k]+cnode->uold()[k]-cnode->xspatial()[k])*cnode->n()[k];
       for (int k=0;k<dim_;k++)
-      {
         auxpos[k]= cnode->xspatial()[k]+scalar*cnode->n()[k];
-      }
-      if (dim_==2)
-        auxpos[2]=0;
-      for(int j=0; j<kdop/2;j++)
+      
+      for(int j=0;j<kdop/2;j++)
       {
         //= ax+by+cz=d/sqrt(aa+bb+cc)
         dcurrent = (dopnormals(j,0)*auxpos[0]+dopnormals(j,1)*auxpos[1]+dopnormals(j,2)*auxpos[2])
-                       /sqrt((dopnormals(j,0)*dopnormals(j,0))+(dopnormals(j,1)*dopnormals(j,1))+(dopnormals(j,2)*dopnormals(j,2)));
+          /sqrt((dopnormals(j,0)*dopnormals(j,0))+(dopnormals(j,1)*dopnormals(j,1))+(dopnormals(j,2)*dopnormals(j,2)));
         if (dcurrent > sslabs(j,1))
           sslabs(j,1)=dcurrent;
         if (dcurrent < sslabs(j,0))
           sslabs(j,0)=dcurrent;
-      }
-      
+      }  
     } 
-    // slabs enlarged with auxiliary positions
-    // enlarge slabs with scalar enlarge
-    for (int j=0 ; j<kdop/2 ; j++)
+    
+    // enlarge slabs with scalar factor
+    for (int j=0;j<kdop/2;j++)
     {
       sslabs(j,0)=sslabs(j,0)-enlarge;  
       sslabs(j,1)=sslabs(j,1)+enlarge;
     }
 
-
     // for every master element
     for (int j=0; j<melefullmap_->NumMyElements();j++)
     {
       // calculate slabs
-  
       double dcurrent = 0.0;
+      
       //initialize slabs with first node
       int mgid=melefullmap_->GID(j);
       DRT::Element* element= idiscret_->gElement(mgid);
       if (!element) dserror("ERROR: Cannot find element with gid %\n",mgid);
       DRT::Node** node= element->Nodes();
       CNode* cnode=static_cast<CNode*>(node[0]);
-      const double* posnode = cnode->xspatial();    
+      const double* posnode = cnode->xspatial();
+      
       // calculate slabs initialization
-      for (int k=0; k<kdop/2; k++)
-        {
-          //= ax+by+cz=d/sqrt(aa+bb+cc)
-          mslabs(k,0)=mslabs(k,1) = (dopnormals(k,0)*posnode[0]+dopnormals(k,1)*posnode[1]+dopnormals(k,2)*posnode[2])
-             /sqrt((dopnormals(k,0)*dopnormals(k,0))+(dopnormals(k,1)*dopnormals(k,1))+(dopnormals(k,2)*dopnormals(k,2)));
-        } 
+      for (int k=0; k<kdop/2;k++)
+      {
+        //= ax+by+cz=d/sqrt(aa+bb+cc)
+        mslabs(k,0)=mslabs(k,1) = (dopnormals(k,0)*posnode[0]+dopnormals(k,1)*posnode[1]+dopnormals(k,2)*posnode[2])
+          /sqrt((dopnormals(k,0)*dopnormals(k,0))+(dopnormals(k,1)*dopnormals(k,1))+(dopnormals(k,2)*dopnormals(k,2)));
+      } 
         
-      // for int k=1, because of initialization done before!
+      // for int k=1, because of initialization done before
       for (int k=1;k<element->NumNode();k++)
-       {
-          CNode* cnode=static_cast<CNode*>(node[k]);
-          posnode = cnode->xspatial();
-          //cout <<"\n" <<Comm().MyPID()<< "MasterElement: "<< mgid<<" knotennr.: "<< node[k]->Id() 
-          //<<" Knotenpositionen: x:"<< posnode[0]<<" y: "<<posnode[1]<<" z: "<<posnode[2];
+      {
+        CNode* cnode=static_cast<CNode*>(node[k]);
+        posnode = cnode->xspatial();
+        
+        for(int l=0; l<kdop/2; l++)
+        {
+          //= d=ax+by+cz/sqrt(aa+bb+cc)
+          dcurrent = (dopnormals(l,0)*posnode[0]+dopnormals(l,1)*posnode[1]+dopnormals(l,2)*posnode[2])
+            /sqrt((dopnormals(l,0)*dopnormals(l,0))+(dopnormals(l,1)*dopnormals(l,1))+(dopnormals(l,2)*dopnormals(l,2)));
+          if (dcurrent > mslabs(l,1))
+            mslabs(l,1)=dcurrent;
+          if (dcurrent < mslabs(l,0))
+            mslabs(l,0)=dcurrent;
+        }
+      }
 
-          for(int l=0; l<kdop/2; l++)
-          {
-            //= d=ax+by+cz/sqrt(aa+bb+cc)
-            dcurrent = (dopnormals(l,0)*posnode[0]+dopnormals(l,1)*posnode[1]+dopnormals(l,2)*posnode[2])
-                           /sqrt((dopnormals(l,0)*dopnormals(l,0))+(dopnormals(l,1)*dopnormals(l,1))+(dopnormals(l,2)*dopnormals(l,2)));
-            if (dcurrent > mslabs(l,1))
-              mslabs(l,1)=dcurrent;
-            if (dcurrent < mslabs(l,0))
-              mslabs(l,0)=dcurrent;
-          }
-       }
-
-      // enlarge slabs
+      // enlarge slabs with scalar factor
       for (int k=0 ; k<kdop/2 ; k++)
       {
         mslabs(k,0)=mslabs(k,0)-enlarge;  
         mslabs(k,1)=mslabs(k,1)+enlarge;
       }
-      /*
-       cout << endl << Comm().MyPID() << "************************************************************";
-       cout << "sslabs:";
-       for (int k=0;k<sslabs.M();k++)
-        cout << "\nsslab: "<<k <<" min: "<< sslabs.operator ()(k,0) << " max: "<< sslabs.operator ()(k,1);
-       cout << "\n**********************************************************\n";
-
-       cout << endl << Comm().MyPID() << "************************************************************";
-       cout << "mslabs:";
-       for (int k=0;k<mslabs.M();k++)
-        cout << "\nmslab: "<<k<<" min: "<< mslabs.operator ()(k,0) << " max: "<< mslabs.operator ()(k,1);
-       cout << "\n**********************************************************\n";
-       */
+      
       // check if slabs of current master and slave element intercept
       int nintercepts=0;
       for (int k=0;k<kdop/2;k++)
@@ -1077,24 +1076,54 @@ void CONTACT::Interface::EvaluateContactSearchBruteForce(double& eps)
           nintercepts++;
         }
       }
+      
       //cout <<"\n"<< Comm().MyPID() << " Number of intercepts found: " << nintercepts ;
-      //treenodes intercept 
+      
+      // slabs of current master and slave element do intercept
       if (nintercepts==kdop/2)
       {
-        
-        //cout <<"\n"<< Comm().MyPID() << "Contact found between slave-Element: " 
-        //    << sgid <<" and master-Element: "<< mgid; 
+        //cout << Comm().MyPID() << "\nContact found between slave element: " 
+        //     << sgid <<" and master element: "<< mgid; 
         DRT::Element* element= idiscret_->gElement(sgid);
         CONTACT::CElement* selement = static_cast<CONTACT::CElement*>(element);
-        vector<int> gids(1);
-        gids[0]=mgid;
-        selement->AddSearchElements(gids);
-         
+        selement->AddSearchElements(mgid);   
       }
-    }//for all master elements
+    } // for all master elements
   } // for all slave elements 
   
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Search for potentially contacting sl/ma pairs (public)    popp 10/08|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Interface::EvaluateContactSearchBinarytree()
+{
+	// calculate minimal element length
+	binarytree_->SetEnlarge(false);
+	
+	// call update routine for binary tree class
+
+	// update tree in a top down way
+	//binarytree_->UpdateTreeTopDown();
+
+	// update tree in a bottom up way  
+	//binarytree_->UpdateTreeBottomUp();  
+  
+#ifdef CONTACTGMSHCTN
+  for (int i=0;i<(int)(binarytree_->ContactMap().size());i++)
+    binarytree_->ContactMap()[i].clear();
+  binarytree_->ContactMap().clear();
+  binarytree_->ContactMap().resize(2);
+#endif //CONTACTGMSHCTN
+  
+  // search for contact with a separate algorithm
+	//binarytree_->SearchContactSeparate(); 
+  
+  // search for contact with an combined algorithm
+  binarytree_->SearchContactCombined();
+  
+	return true;
 }
 
 /*----------------------------------------------------------------------*

@@ -366,9 +366,12 @@ public:
   virtual void DerivUnitNormalAtXi(double* xi, vector<map<int,double> >& derivn);
     
   /*!
-  \brief Compute element normal at local coordinate xi
+  \brief Get nodal reference / spatial coords of current element
+  
+  \param isinit (in): true if called for reference coords
   */
-  virtual void GetNodalCoords(LINALG::SerialDenseMatrix& coord);
+  virtual void GetNodalCoords(LINALG::SerialDenseMatrix& coord,
+                              bool isinit = false);
   
   /*!
   \brief Evaluate element metrics (local basis vectors)
@@ -466,19 +469,39 @@ public:
 
   /*!
   \brief Evaluate minimal edge size of CElement
+  
+  \param isinit (in): true if called for reference coords
   */
-  virtual double MinEdgeSize();
+  virtual double MinEdgeSize(bool isinit = false);
   
   /*!
   \brief Evaluate maximal edge size of CElement
+  
+  \param isinit (in): true if called for reference coords
   */
-  virtual double MaxEdgeSize();
+  virtual double MaxEdgeSize(bool isinit = false);
   
   /*!
   \brief Add CElements to this CElement's potential contact partners
+  
+  This is for the classical node-based brute-force search. We have to
+  additionally check, if the given CElements have already been added
+  to this CElement's potential contact partners before, in order to
+  avoid double integrations!!
+  
   */
   virtual bool AddSearchElements(const vector<int>& gids);
   
+  /*!
+  \brief Add one CElement to this CElement's potential contact partners
+  
+  This is for the element-based brute-force search and for the new
+  binary search tree. We do NOT have to additionally check, if the
+  given CElement has already been added to this CElement's potential
+  contact partners before. This cannot happen by construction!
+  
+  */
+  virtual bool AddSearchElements(const int& gid);
   //@}
 
 

@@ -39,6 +39,7 @@ Maintainer: Alexander Popp
 #ifdef CCADISCRET
 
 #include "drt_contact_interface.H"
+#include "drt_contact_binarytree.H"
 #include "drt_cdofset.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_io/io_gmsh.H"
@@ -313,6 +314,295 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
     }
     lComm()->Barrier();
   }
+  
+#ifdef CONTACTGMSHTN
+
+  //******************************************************************
+  // plot dops of Binary Tree 
+  //******************************************************************
+  //cout << endl << "im contact-interface-tools plot binarytree" << endl;
+  //binarytree_->VisualizeDops(filenametreenodes, step, iter);
+  // get max. number of layers for every proc.
+  
+  //defines local and global number of treelayers for slave and master tree!
+  int lnslayers=binarytree_->Streenodesmap().size();
+  int gnmlayers=binarytree_->Mtreenodesmap().size();
+  //******************************************************************
+  // Master elements are equal on each proc!!
+  //******************************************************************
+  	
+  int gnslayers;
+ 	// bestimmung Anzahl globales max. an layern nochmal überprüfen!!!!!!
+
+  //cout << endl << lComm()->MyPID()  << "local number of slave layers: "<<lnslayers;
+
+  lComm()->MaxAll(&lnslayers, &gnslayers,1);
+
+  //cout << endl << lComm()->MyPID() << "global number of slave layers: "<< gnslayers;
+  //cout << endl << lComm()->MyPID() << "global number of master layers: "<< gnmlayers;
+  
+  // create files for visualization of slave dops for every layer 
+  std::ostringstream filenametn;
+  const std::string filebasetn = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  filenametn << "o/gmsh_output/" << filebasetn << "_";
+
+  if (step<10)
+    filenametn << 0 << 0 << 0 << 0;
+  else if (step<100)
+    filenametn << 0 << 0 << 0;
+  else if (step<1000)
+    filenametn << 0 << 0;
+  else if (step<10000)
+    filenametn << 0;
+  else if (step>99999)
+    dserror("Gmsh output implemented for a maximum of 99.999 time steps");
+  filenametn << step;
+     
+  // construct unique filename for gmsh output
+  // second index = Newton iteration index
+#ifdef CONTACTGMSH2
+  filenametn << "_";
+  if (iter<10)
+    filenametn << 0;
+  else if (iter>99)
+    dserror("Gmsh output implemented for a maximum of 99 iterations");
+  filenametn << iter;
+#endif // #ifdef CONTACTGMSH2
+
+  if (lComm()->MyPID()==0)
+  {
+  	for (int i=0; i<gnslayers;i++)
+  	{
+  		std::ostringstream currentfilename;
+  		currentfilename << filenametn.str().c_str() << "_s_tnlayer_" <<  i << ".pos";
+  		//cout << endl << lComm()->MyPID()<< "filename: " << currentfilename.str().c_str();
+  		fp = fopen(currentfilename.str().c_str(), "w");
+  		std::stringstream gmshfile;
+  		gmshfile << "View \" Step " << step << " Iter " << iter << " stl " << i << " \" {" << endl;
+      fprintf(fp,gmshfile.str().c_str());
+      fclose(fp);
+    }
+  }
+
+  lComm()->Barrier();
+
+  // for every proc, one after another, put data of slabs into files
+  for (int i=0;i<lComm()->NumProc();i++)
+  {
+    if ((i==lComm()->MyPID())&&(binarytree_->Sroot()->Type()!=4))
+    {
+      //print full tree with treenodesmap
+      for (int j=0;j < (int)binarytree_->Streenodesmap().size();j++)
+      {
+        for (int k=0;k < (int)binarytree_->Streenodesmap()[j].size();k++)
+        {
+          //if proc !=0 and first treenode to plot->create new sheet in gmsh
+          if (i!=0 && k==0)
+          {
+            //create new sheet "Treenode" in gmsh
+            std::ostringstream currentfilename;
+            currentfilename << filenametn.str().c_str() << "_s_tnlayer_" <<  j << ".pos";
+            fp = fopen(currentfilename.str().c_str(), "a");
+            std::stringstream gmshfile;
+            gmshfile << "};" << endl << "View \" Treenode \" { " << endl;
+            fprintf(fp,gmshfile.str().c_str());
+            fclose(fp);
+          }
+          //cout << endl << "plot streenode level: " << j << "treenode: " << k;
+          std::ostringstream currentfilename;
+          currentfilename << filenametn.str().c_str() << "_s_tnlayer_" <<  j << ".pos";
+          binarytree_->Streenodesmap()[j][k]->PrintDopsForGmsh(currentfilename.str().c_str());
+          
+          //if there is another treenode to plot
+          if (k<((int)binarytree_->Streenodesmap()[j].size()-1))
+          {
+            //create new sheet "Treenode" in gmsh
+            std::ostringstream currentfilename;
+            currentfilename << filenametn.str().c_str() << "_s_tnlayer_" <<  j << ".pos";
+            fp = fopen(currentfilename.str().c_str(), "a");
+            std::stringstream gmshfile;
+            gmshfile << "};" << endl << "View \" Treenode \" { " << endl;
+            fprintf(fp,gmshfile.str().c_str());
+            fclose(fp);
+          }
+        }
+      }
+    }
+          
+    lComm()->Barrier();
+  }
+
+  lComm()->Barrier();
+  //close all slave-gmsh files
+  if (lComm()->MyPID()==0)
+  {
+  	for (int i=0; i<gnslayers;i++)
+  	{
+  		std::ostringstream currentfilename;
+  		currentfilename << filenametn.str().c_str() << "_s_tnlayer_" << i << ".pos";
+  		//cout << endl << lComm()->MyPID()<< "current filename: " << currentfilename.str().c_str();
+  		fp = fopen(currentfilename.str().c_str(), "a");
+  		std::stringstream gmshfilecontent;
+  		gmshfilecontent  << "};" ;
+      fprintf(fp,gmshfilecontent.str().c_str());
+      fclose(fp);
+  	}
+  }
+ 	lComm()->Barrier();
+
+  // create master slabs
+  if (lComm()->MyPID()==0)
+  {
+  	for (int i=0; i<gnmlayers;i++)
+  	{
+  		std::ostringstream currentfilename;
+  		currentfilename << filenametn.str().c_str() << "_m_tnlayer_" <<  i << ".pos";
+  		//cout << endl << lComm()->MyPID()<< "filename: " << currentfilename.str().c_str();
+  		fp = fopen(currentfilename.str().c_str(), "w");
+  		std::stringstream gmshfile;
+  		gmshfile << "View \" Step " << step << " Iter " << iter << " mtl " << i << " \" {" << endl;
+      fprintf(fp,gmshfile.str().c_str());
+      fclose(fp);
+    }
+  	
+    //print full tree with treenodesmap
+    for (int j=0;j < (int)binarytree_->Mtreenodesmap().size();j++)
+    {
+      for (int k=0;k < (int)binarytree_->Mtreenodesmap()[j].size();k++)
+      {
+        std::ostringstream currentfilename;
+        currentfilename << filenametn.str().c_str() << "_m_tnlayer_" <<  j << ".pos";
+        binarytree_->Mtreenodesmap()[j][k]->PrintDopsForGmsh(currentfilename.str().c_str());
+         
+        //if there is another treenode to plot
+        if (k<((int)binarytree_->Mtreenodesmap()[j].size()-1))
+        {
+          //create new sheet "Treenode" in gmsh
+          std::ostringstream currentfilename;
+          currentfilename << filenametn.str().c_str() << "_m_tnlayer_" <<  j << ".pos";
+          fp = fopen(currentfilename.str().c_str(), "a");
+          std::stringstream gmshfile;
+          gmshfile << "};" << endl << "View \" Treenode \" { " << endl;
+          fprintf(fp,gmshfile.str().c_str());
+          fclose(fp);
+        }
+      }
+    }
+    
+    //binarytree_->Mroot()->PrintDopsForGmsh(filenametn.str().c_str(), false);
+    //close all master files
+  	for (int i=0; i<gnmlayers;i++)
+  	{
+  		std::ostringstream currentfilename;
+  		currentfilename << filenametn.str().c_str() << "_m_tnlayer_" << i << ".pos";
+  		fp = fopen(currentfilename.str().c_str(), "a");
+  		std::stringstream gmshfilecontent;
+  		gmshfilecontent << endl << "};";
+      fprintf(fp,gmshfilecontent.str().c_str());
+      fclose(fp);
+    }
+  }
+#endif // ifdef CONTACTGMSHTN
+  
+#ifdef CONTACTGMSHCTN
+  std::ostringstream filenamectn;
+  const std::string filebasectn = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  filenamectn << "o/gmsh_output/" << filebasectn << "_";
+  if (step<10)
+    filenamectn << 0 << 0 << 0 << 0;
+  else if (step<100)
+    filenamectn << 0 << 0 << 0;
+  else if (step<1000)
+    filenamectn << 0 << 0;
+  else if (step<10000)
+    filenamectn << 0;
+  else if (step>99999)
+    dserror("Gmsh output implemented for a maximum of 99.999 time steps");
+  filenamectn << step;
+   
+  // construct unique filename for gmsh output
+  // second index = Newton iteration index
+#ifdef CONTACTGMSH2
+  filenamectn << "_";
+  if (iter<10)
+    filenamectn << 0;
+  else if (iter>99)
+    dserror("Gmsh output implemented for a maximum of 99 iterations");
+  filenamectn << iter;
+#endif // #ifdef CONTACTGMSH2
+
+ 	int lcontactmapsize=(int)(binarytree_->ContactMap()[0].size());
+ 	int gcontactmapsize;
+
+ 	lComm()->MaxAll(&lcontactmapsize, &gcontactmapsize,1);
+
+ 	if (gcontactmapsize>0)
+ 	{
+  	// open/create new file
+  	if (lComm()->MyPID()==0)
+  	{
+  		std::ostringstream currentfilename;
+			currentfilename << filenamectn.str().c_str() << "_ct.pos";
+			//cout << endl << lComm()->MyPID()<< "filename: " << currentfilename.str().c_str();
+			fp = fopen(currentfilename.str().c_str(), "w");
+			std::stringstream gmshfile;
+			gmshfile << "View \" Step " << step << " Iter " << iter << " contacttn  \" {" << endl;
+	    fprintf(fp,gmshfile.str().c_str());
+	    fclose(fp);
+	  }
+
+   	//every proc should plot its contacting treenodes!
+	  for (int i=0;i<lComm()->NumProc();i++)
+	  {
+	  	if (lComm()->MyPID()==i)
+	   	{
+	  	  if ( (int)(binarytree_->ContactMap()[0]).size() != (int)(binarytree_->ContactMap()[1]).size() )
+	   		dserror("ERROR: Binarytree ContactMap does not have right size!");
+	  	  
+	  	  for (int j=0; j<(int)((binarytree_->ContactMap()[0]).size());j++)
+	   		{
+	   	    std::ostringstream currentfilename;
+	   	    currentfilename << filenamectn.str().c_str() << "_ct.pos";
+	   	  	(binarytree_->ContactMap()[0][j])->PrintDopsForGmsh(currentfilename.str().c_str());
+	    
+          //create new sheet "Treenode" in gmsh
+          fp = fopen(currentfilename.str().c_str(), "a");
+          std::stringstream gmshfile;
+          gmshfile << "};" << endl << "View \" CM-Treenode \" { " << endl;
+          fprintf(fp,gmshfile.str().c_str());
+          fclose(fp);
+         
+	   			(binarytree_->ContactMap()[1][j])->PrintDopsForGmsh(currentfilename.str().c_str());
+	    			
+	   			if (j<(int)((binarytree_->ContactMap()).size())-1)
+	   			{
+	          //create new sheet "Treenode" in gmsh
+            fp = fopen(currentfilename.str().c_str(), "a");
+            std::stringstream gmshfile;
+            gmshfile << "};" << endl << "View \" CS-Treenode \" { " << endl;
+            fprintf(fp,gmshfile.str().c_str());
+            fclose(fp);
+	   			}  			
+	    	}
+	    }
+	   	
+	  	lComm()->Barrier();
+	  }
+
+	  //close file
+	  if (lComm()->MyPID()==0)
+	  {
+	    std::ostringstream currentfilename;
+	  	currentfilename << filenamectn.str().c_str() << "_ct.pos";
+	    //cout << endl << lComm()->MyPID()<< "filename: " << currentfilename.str().c_str();
+	  	fp = fopen(currentfilename.str().c_str(), "a");
+	  	std::stringstream gmshfile;
+	    gmshfile  << "};" ;
+	    fprintf(fp,gmshfile.str().c_str());
+	  	fclose(fp);
+	  }
+  }	
+#endif //CONTACTGMSHCTN
 
   return;
 }

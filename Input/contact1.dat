@@ -86,6 +86,8 @@ FULL_LINEARIZATION   Yes
 SEMI_SMOOTH_NEWTON   Yes
 SEMI_SMOOTH_CN       1.0
 SEMI_SMOOTH_CT       1.0
+SEARCH_ALGORITHM     Binarytree
+SEARCH_PARAM         0.3
 -----------------------------------------------------FLUID DYNAMIC
 -------------------------------------------------------FSI DYNAMIC
 -------------------------------------------------------ALE DYNAMIC

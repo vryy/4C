@@ -44,6 +44,7 @@ Maintainer: Michael Gee
 #include "drt_celement.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_sparsematrix.H"
+#include "../drt_contact/drt_contact_binarytree.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -75,9 +76,12 @@ public:
   \param id (in): Unique interface id
   \param comm (in): A communicator object
   \param dim (in): Global problem dimension
+  \param stype (in): type of contact search algorithm
+  \param sp (in): contact search algorithm parameter
   
   */
-  explicit Interface(const int id, const Epetra_Comm& comm, const int dim);
+  explicit Interface(const int id, const Epetra_Comm& comm, const int dim,
+                     const string stype, const double sp);
 
   /*!
   \brief Destructor
@@ -128,6 +132,18 @@ public:
     
   */
   virtual inline const int& Dim() {return dim_;};
+  
+  /*!
+  \brief Get type of contact search algorithm
+    
+  */
+  virtual inline const string& SearchAlg() {return stype_;};
+  
+  /*!
+  \brief Get contact search algorithm parameter
+    
+  */
+  virtual inline const double& SearchParam() {return sp_;};
     
   /*!
   \brief Get row map of slave nodes (Filled()==true is prerequisite)
@@ -470,13 +486,26 @@ public:
   virtual void Evaluate();
   
   /*!
-  \brief Naive contact search algorithm for potentially contacting slave / master pairs
-         (node-based algorithm)
+  \brief Brute force contact search algorithm for potentially contacting
+         slave / master pairs (node-based algorithm)
   
   */
   virtual bool EvaluateContactSearch();
-  virtual void EvaluateContactSearchBruteForce(double& eps);
   
+  /*!
+  \brief Brute force contact search algorithm for potentially contacting
+         slave / master pairs (element-based algorithm)
+    
+  */  
+  virtual void EvaluateContactSearchBruteForce(const double& eps);
+  
+  /*!
+  \brief Binary tree contact search algorithm for potentially contacting
+         slave / master pairs (element-based algorithm, SA T. Eberl)
+    
+  */ 
+  virtual bool EvaluateContactSearchBinarytree();
+
   /*!
   \brief Integrate Mortar matrix D on slave element
   
@@ -694,6 +723,8 @@ protected:
   
   RCP<DRT::Discretization>    idiscret_;      // the discretization of the contact interface
   int                         dim_;           // dimension of problem (2D or 3D)
+  string                      stype_;         // type of contact search algorithm
+  double                      sp_;            // contact search algorithm parameter
   
   RCP<Epetra_Map>             snoderowmap_;   // row map of all slave nodes
   RCP<Epetra_Map>             snodecolmap_;   // column map of all slave nodes
@@ -727,7 +758,9 @@ protected:
   RCP<Epetra_Map>             activen_;       // row map of global N-matrix
   RCP<Epetra_Map>             activet_;       // row map of global T-matrix
   RCP<Epetra_Map>             slipt_;         // row map of part of T-matrix (slip nodes)
-
+  
+  RCP<CONTACT::BinaryTree>    binarytree_;    // binary tree for contact search
+  
   Epetra_SerialDenseMatrix    contactsegs_;   // contains coordinates of all contact segments (gmsh)
   
 }; // class Interface

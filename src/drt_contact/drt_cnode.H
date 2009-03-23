@@ -167,6 +167,19 @@ public:
   inline virtual bool IsInitActive() const
   { if (!IsSlave()) dserror("ERROR: InitActive requested for Master node");
     return initactive_; }
+  
+  /*!
+  \brief Modify initial active status of slave node
+  
+  This belated modification is necessary to be able to use
+  the binary search tree for contact initialization in the
+  load-controlled quasistatic case (instead of input file
+  information Active/Inactive)
+   
+  */
+  inline virtual bool& SetActive()
+  { if (!IsSlave()) dserror("ERROR: InitActive requested for Master node");
+    return initactive_; }
     
   /*!
   \brief Is Node on boundary of slave side of contact interface

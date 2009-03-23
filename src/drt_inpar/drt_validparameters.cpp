@@ -689,6 +689,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("SEMI_SMOOTH_CN",0.0,"Weighting factor cn for semi-smooth PDASS",&scontact);
   DoubleParameter("SEMI_SMOOTH_CT",0.0,"Weighting factor ct for semi-smooth PDASS",&scontact);
 
+  setStringToIntegralParameter<INPAR::CONTACT::ContactSearchAlgorithm>("SEARCH_ALGORITHM","BruteForceEleBased","Type of contact search",
+                               tuple<std::string>("BruteForceNodeBased","bruteforcenodebased",
+                                                  "BruteForceEleBased","bruteforceelebased",
+                                                  "BinaryTree","Binarytree","binarytree"),
+                               tuple<INPAR::CONTACT::ContactSearchAlgorithm>(INPAR::CONTACT::search_bfnode,INPAR::CONTACT::search_bfnode,
+                                          INPAR::CONTACT::search_bfele,INPAR::CONTACT::search_bfele,
+                                          INPAR::CONTACT::search_binarytree,INPAR::CONTACT::search_binarytree,
+                                          INPAR::CONTACT::search_binarytree),
+                               &scontact);
+  
+  DoubleParameter("SEARCH_PARAM",0.3,"Radius / Bounding volume inflation for contact search",&scontact);
+  
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& bromotion = list->sublist("BROWNIAN MOTION",false,"");

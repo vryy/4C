@@ -67,6 +67,10 @@ discret_(discret)
   // read and check contact input parameters
   ReadAndCheckInput();
   
+  // get contact search algorithm information
+  const string stype   = scontact_.get<string>("search algorithm","elements");
+  const double sp = scontact_.get<double>("search parameter",0.3);
+  
   // check for FillComplete of discretization
   if (!Discret().Filled()) dserror("Discretization is not fillcomplete");
 
@@ -127,7 +131,7 @@ discret_(discret)
     ++numgroupsfound;
 
     // create an empty interface and store it in this Manager
-    interface_.push_back(rcp(new CONTACT::Interface(groupid1,Comm(),Dim())));
+    interface_.push_back(rcp(new CONTACT::Interface(groupid1,Comm(),Dim(),stype,sp)));
     
     // get it again
     RCP<CONTACT::Interface> interface = interface_[(int)interface_.size()-1];
@@ -426,6 +430,26 @@ bool CONTACT::Manager::ReadAndCheckInput()
   scontact_.set<bool> ("semismooth newton",Teuchos::getIntegralValue<int>(input,"SEMI_SMOOTH_NEWTON"));
   scontact_.set<double>("semismooth cn",input.get<double>("SEMI_SMOOTH_CN"));
   scontact_.set<double>("semismooth ct",input.get<double>("SEMI_SMOOTH_CT"));
+  
+  // read search algorithm type
+  switch (Teuchos::getIntegralValue<INPAR::CONTACT::ContactSearchAlgorithm>(input,"SEARCH_ALGORITHM"))
+  {
+    case INPAR::CONTACT::search_bfnode:
+      scontact_.set<string>("search algorithm","nodes");
+      break;
+    case INPAR::CONTACT::search_bfele:
+      scontact_.set<string>("search algorithm","elements");
+      break;
+    case INPAR::CONTACT::search_binarytree:
+      scontact_.set<string>("search algorithm","binarytree");
+      break;
+    default:
+      dserror("Cannot cope with choice of search algorithm");
+      break;
+  }
+  
+  // read contact search parameter
+  scontact_.set<double> ("search parameter",input.get<double>("SEARCH_PARAM"));
     
   // check contact input parameters
   string ctype   = scontact_.get<string>("contact type","none");
@@ -434,6 +458,8 @@ bool CONTACT::Manager::ReadAndCheckInput()
   //double frcoeff = scontact_.get<double>("friction coeffiecient",0.0);
   bool fulllin   = scontact_.get<bool>("full linearization",false);
   double ct      = scontact_.get<double>("semismooth ct",0.0);
+  string stype   = scontact_.get<string>("search algorithm","elements");
+  double sp      = scontact_.get<double>("search parameter",0.3);
   
   // invalid parameter combinations
   if (ctype=="normal" && ftype !="none")
@@ -442,10 +468,16 @@ bool CONTACT::Manager::ReadAndCheckInput()
     dserror("No friction law supplied for frictional contact");
   if (ctype=="frictional" && ftype=="coulomb")
     dserror("Coulomb friction law not yet implemented");
+  if (ctype=="frictional" && ct==0.0)
+  	dserror("Friction Parameter ct = 0, must be greater than 0");
+  if (stype=="nodes" && sp==0.0)
+    dserror("Search radius sp = 0, muste be greater than 0 for node-based search");
+  
+  // warnings
   if (ctype=="frictional" && fulllin)
     cout << ("Warning: Full linearization not completely implemented for friction\n") << endl;
-  if (ctype=="frictional" && ct == 0)
-  	dserror("Friction Parameter ct = 0, must be greater than 0");
+  if ((stype=="elements" || stype=="binarytree") && sp==0.0)
+    cout << ("Warning: Ele-based / binary tree search called without inflation of bounding volumes\n") << endl;
   
   // overrule input in certain cases
   if (ctype=="meshtying" && ftype!="stick")
