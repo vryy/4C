@@ -300,7 +300,8 @@ OBJS_DRT_FSI  = src/drt_fsi/fsi_dyn.o \
                 src/drt_fsi/fsi_debugwriter.o \
                 src/drt_fsi/fsi_statustest.o \
                 src/drt_fsi/fsi_lagrangeprec.o \
-                src/drt_fsi/fsi_overlapprec.o
+                src/drt_fsi/fsi_overlapprec.o \
+                src/drt_fsi/fsi_overlapprec_fsiamg.o
 OBJS_DRT_ADAPT= src/drt_adapter/ale_dyn.o \
                 src/drt_adapter/adapter_ale.o \
                 src/drt_adapter/adapter_ale_lin.o \
