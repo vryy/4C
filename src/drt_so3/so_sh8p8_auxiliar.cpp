@@ -280,8 +280,13 @@ void DRT::ELEMENTS::So_sh8p8::InvVector6VoigtTwiceDiffByItself(
   const int* voigt6col = NULL;
   Indices6VoigtTo2Tensor(voigt6row,voigt6col);
 
+  // VERIFIED
+
+//  cout << endl;
+//  cout << endl;
   for (int ij=0; ij<NUMSTR_; ++ij)
   {
+//    cout << "[\n";
     const int i = voigt6row[ij];
     const int j = voigt6col[ij];
     for (int kl=0; kl<NUMSTR_; ++kl)
@@ -294,20 +299,37 @@ void DRT::ELEMENTS::So_sh8p8::InvVector6VoigtTwiceDiffByItself(
         const int n = voigt6col[mn];
         const int klmn = NUMSTR_*kl + mn;
         invbvdderb(ij,klmn) = 0.25*(
-          ( ibt(i,m)*ibt(n,k) + ibt(i,n)*ibt(m,k) )*ibt(l,j)
-          + ibt(i,k)*( ibt(l,m)*ibt(n,j) + ibt(l,n)*ibt(m,j) )
-          + ( ibt(i,m)*ibt(n,l) + ibt(i,n)*ibt(m,l) )*ibt(k,j)
-          + ibt(i,l)*( ibt(k,m)*ibt(n,j) + ibt(k,n)*ibt(m,j) )
+            ( ibt(i,m)*ibt(n,k) + ibt(i,n)*ibt(m,k) )*ibt(l,j)
+            + ibt(i,k)*( ibt(l,m)*ibt(n,j) + ibt(l,n)*ibt(m,j) )
+            + ( ibt(i,m)*ibt(n,l) + ibt(i,n)*ibt(m,l) )*ibt(k,j)
+            + ibt(i,l)*( ibt(k,m)*ibt(n,j) + ibt(k,n)*ibt(m,j) )
           );
-        if (ij >= NUMDIM_)  // swap i 'n' j 
+//        cout << ""
+//             << "(ct["<<i+1<<","<<m+1<<"]*ct["<<n+1<<","<<k+1<<"]+ct["<<i+1<<","<<n+1<<"]*ct["<<m+1<<","<<k+1<<"])*ct["<<l+1<<","<<j+1<<"]"
+//             << "+ct["<<i+1<<","<<k+1<<"]*(ct["<<l+1<<","<<m+1<<"]*ct["<<n+1<<","<<j+1<<"]+ct["<<l+1<<","<<n+1<<"]*ct["<<m+1<<","<<j+1<<"])"
+//             << "+(ct["<<i+1<<","<<m+1<<"]*ct["<<n+1<<","<<l+1<<"]+ct["<<i+1<<","<<n+1<<"]*ct["<<m+1<<","<<l+1<<"])*ct["<<k+1<<","<<j+1<<"]"
+//             << "+ct["<<i+1<<","<<l+1<<"]*(ct["<<k+1<<","<<m+1<<"]*ct["<<n+1<<","<<j+1<<"]+ct["<<k+1<<","<<n+1<<"]*ct["<<m+1<<","<<j+1<<"])"
+//             << "";
+        if (ij >= NUMDIM_)  // swap 'i' and 'j' 
+        {
           invbvdderb(ij,klmn) += 0.25*(
-            ( ibt(j,m)*ibt(n,k) + ibt(j,n)*ibt(m,k) )*ibt(l,i)
-            + ibt(j,k)*( ibt(l,m)*ibt(n,i) + ibt(l,n)*ibt(m,i) )
-            + ( ibt(j,m)*ibt(n,l) + ibt(j,n)*ibt(m,l) )*ibt(k,i)
-            + ibt(j,l)*( ibt(k,m)*ibt(n,i) + ibt(k,n)*ibt(m,i) )
+              ( ibt(j,m)*ibt(n,k) + ibt(j,n)*ibt(m,k) )*ibt(l,i)
+              + ibt(j,k)*( ibt(l,m)*ibt(n,i) + ibt(l,n)*ibt(m,i) )
+              + ( ibt(j,m)*ibt(n,l) + ibt(j,n)*ibt(m,l) )*ibt(k,i)
+              + ibt(j,l)*( ibt(k,m)*ibt(n,i) + ibt(k,n)*ibt(m,i) )
             );
+//          cout << ""
+//               << "+(ct["<<j+1<<","<<m+1<<"]*ct["<<n+1<<","<<k+1<<"]+ct["<<j+1<<","<<n+1<<"]*ct["<<m+1<<","<<k+1<<"])*ct["<<l+1<<","<<i+1<<"]"
+//               << "+ct["<<j+1<<","<<k+1<<"]*(ct["<<l+1<<","<<m+1<<"]*ct["<<n+1<<","<<i+1<<"]+ct["<<l+1<<","<<n+1<<"]*ct["<<m+1<<","<<i+1<<"])"
+//               << "+(ct["<<j+1<<","<<m+1<<"]*ct["<<n+1<<","<<l+1<<"]+ct["<<j+1<<","<<n+1<<"]*ct["<<m+1<<","<<l+1<<"])*ct["<<k+1<<","<<i+1<<"]"
+//               << "+ct["<<j+1<<","<<l+1<<"]*(ct["<<k+1<<","<<m+1<<"]*ct["<<n+1<<","<<i+1<<"]+ct["<<k+1<<","<<n+1<<"]*ct["<<m+1<<","<<i+1<<"])"
+//               << "";
+        }
+//        cout << ",\n";
       }
+//      cout << "";
     }
+//    cout << "],\n";
   }
 
   return;
@@ -359,6 +381,7 @@ void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtDiffByItself(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+/*
 void DRT::ELEMENTS::So_sh8p8::SqVector9VoigtDiffByItself(
   LINALG::Matrix<NUMDFGR_,NUMDFGR_>& sqfderf,
   const LINALG::Matrix<NUMDIM_,NUMDIM_>& fmat,
@@ -397,6 +420,7 @@ void DRT::ELEMENTS::So_sh8p8::SqVector9VoigtDiffByItself(
 
   return;
 }
+*/
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -413,9 +437,13 @@ void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtTwiceDiffByItself(
   LINALG::Matrix<NUMDIM_,NUMDIM_> id(true);
   for (int i=0; i<NUMDIM_; ++i) id(i,i) = 1.0;
 
+  // VERIFIED
+
   // (F^T.F)_{,FF} with F^T=F
+//  cout << endl;
   for (int ij=0; ij<NUMSTR_; ++ij)
   {
+//    cout << "[";
     const int i = voigt6row[ij];
     const int j = voigt6col[ij];
     for (int kl=0; kl<NUMSTR_; ++kl)
@@ -427,11 +455,24 @@ void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtTwiceDiffByItself(
         const int m = voigt6row[mn];
         const int n = voigt6col[mn];
         const int klmn = NUMSTR_*kl + mn;
-        sqfdderf(ij,klmn) = id(k,m)*id(i,n)*id(j,l) + id(i,l)*id(k,m)*id(j,n);
-        if (ij >= NUMDIM_)
-          sqfdderf(ij,klmn) += id(k,m)*id(j,n)*id(i,l) + id(j,l)*id(k,m)*id(i,n);
+        double sqfdderf_ijklmn = 0.25*(id(i,k)*id(l,m)*id(j,n)+id(j,l)*id(i,m)*id(k,n)
+                                       +id(i,k)*id(l,n)*id(j,m)+id(j,l)*id(i,n)*id(k,m)  // swap 'm' and 'n'
+                                       +id(i,l)*id(k,m)*id(j,n)+id(j,k)*id(i,m)*id(l,n)  // swap 'k' and 'l'
+                                       +id(i,l)*id(k,n)*id(j,m)+id(j,k)*id(i,n)*id(l,m));  // swap 'm' and 'n' as well as 'k' and 'l'
+        if (ij >= NUMDIM_)  // swap 'i' and 'j'
+        {
+          sqfdderf_ijklmn += 0.25*(id(j,k)*id(l,m)*id(i,n)+id(i,l)*id(j,m)*id(k,n)  // swap 'i' and 'j'
+                                   +id(j,k)*id(l,n)*id(i,m)+id(i,l)*id(j,n)*id(k,m)  // swap 'i' and 'j' as well as 'm' and 'n'
+                                   +id(j,l)*id(k,m)*id(i,n)+id(i,k)*id(j,m)*id(l,n)  // swap 'i' and 'j' as well as 'k' and 'l'
+                                   +id(j,l)*id(k,n)*id(i,m)+id(i,k)*id(j,n)*id(l,m) );  // swap 'i' and 'j' as well as 'm' and 'n' as well as 'k' and 'l'
+        }
+        sqfdderf(ij,klmn) = sqfdderf_ijklmn;
+//        cout << sqfdderf_ijklmn;
+//        cout << ", ";
       }
+//      cout << "\n";
     }
+//    cout << "],\n";       
   }
 
   return;
@@ -454,8 +495,12 @@ void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToMatrix6x9Voigt(
   const int* voigt9col = NULL;
   Indices9VoigtTo2Tensor(voigt9row,voigt9col);
 
+  // VERIFIED
+
+//  cout << endl;
   for (int ij=0; ij<NUMSTR_; ++ij)
   {
+//    cout << "[";
     const int i = voigt6row[ij];
     const int j = voigt6col[ij];
     for (int kl=0; kl<NUMDFGR_; ++kl)
@@ -463,12 +508,29 @@ void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToMatrix6x9Voigt(
       const int k = voigt9row[kl];
       const int l = voigt9col[kl];
       if (j == l)
-        bm(ij,kl) = (transpose) ? bt(k,i) : bt(i,k);
+        if (transpose)
+        {
+          bm(ij,kl) = bt(k,i);
+//      cout << "bt["<<k+1<<","<<i+1<<"]";
+        }
+        else
+          bm(ij,kl) = bt(i,k);
       else if ( (ij >= NUMDIM_) and (i == l) )
-        bm(ij,kl) = (transpose) ? bt(k,j) : bt(j,k);
+        if (transpose)
+        {
+          bm(ij,kl) = bt(k,j);
+//      cout << "bt["<<k+1<<","<<j+1<<"]";
+        }
+        else
+          bm(ij,kl) = bt(j,k);
       else
+      {
         bm(ij,kl) = 0.0;
+//      cout << "0";
+      }
+//      cout << ", ";
     }
+//    cout << "]," << endl;    
   }
 
   return;
