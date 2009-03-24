@@ -146,10 +146,10 @@ inline DRT::UTILS::GaussRule3D getOptimalVelocityGaussrule(DRT::Element::Discret
         rule = DRT::UTILS::intrule_hex_27point;
         break;
     case DRT::Element::tet4:
-        rule = DRT::UTILS::intrule_tet_4point;
+        rule = DRT::UTILS::intrule_tet_5point;
         break;
     case DRT::Element::tet10:
-        rule = DRT::UTILS::intrule_tet_11point;
+        rule = DRT::UTILS::intrule_tet_24point;
         break;
     default:
         dserror("unknown distype for gaussrule initialization");
@@ -214,7 +214,7 @@ DRT::UTILS::GaussRule3D getXFEMGaussrule(
         }
         case DRT::Element::tet10:
         {
-          rule = DRT::UTILS::intrule_tet_11point;
+          rule = DRT::UTILS::intrule_tet_24point;
           break;
         }
         default:
@@ -249,31 +249,6 @@ bool secondDerivativesAvailable()
     hoel = true;
     break;
   case DRT::Element::tet4:
-    hoel = false;
-    break;
-  default:
-    dserror("DISTYPE unknown!");
-  }
-  return hoel;
-}
-
-//! decide, whether second derivatives can occur
-template <DRT::Element::DiscretizationType  DISTYPE>
-bool isHigherOrderElement()
-{
-  bool hoel = true;
-  switch (DISTYPE)
-  {
-  case DRT::Element::hex8:
-  case DRT::Element::hex20:
-  case DRT::Element::hex27:
-  case DRT::Element::tet10:
-  case DRT::Element::wedge15:
-    hoel = true;
-    break;
-  case DRT::Element::tet4:
-  case DRT::Element::wedge6:
-  case DRT::Element::pyramid5:
     hoel = false;
     break;
   default:

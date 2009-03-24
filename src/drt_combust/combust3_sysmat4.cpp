@@ -351,8 +351,7 @@ static void SysmatDomain4(
     const double visc = actmat->Viscosity();
 
     // flag for higher order elements
-    const bool higher_order_ele = XFLUID::isHigherOrderElement<DISTYPE>();
-    //const bool higher_order_ele = secondDerivativesAvailable<DISTYPE>();
+    const bool higher_order_ele = XFLUID::secondDerivativesAvailable<DISTYPE>();
     
     const DRT::Element::DiscretizationType stressdistype = COMBUST::StressInterpolation3D<DISTYPE>::distype;
     
