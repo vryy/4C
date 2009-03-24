@@ -129,7 +129,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // account for potential Neuman inflow terms if required
   // -------------------------------------------------------------------
   neumanninflow_ = false;
-  if (params_.get<string>("NEUMANNINFLOW") == "yes") neumanninflow_ = true;
+  if (params_.get<string>("NEUMANNINFLOW","no") == "yes") neumanninflow_ = true;
 
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
