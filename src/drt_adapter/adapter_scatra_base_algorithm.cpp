@@ -125,8 +125,11 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // -------------------- compute error compared to analytical solution
   scatratimeparams->set<int>("CALCERROR",Teuchos::getIntegralValue<int>(scatradyn,"CALCERROR"));
 
-  // -------------------------------- (fine-scale) subgrid diffusivity?
+  // ------------------------------------------ form of convective term
   scatratimeparams->set<string>("form of convective term",scatradyn.get<string>("CONVFORM"));
+
+  // ------------------------------------------ form of convective term
+  scatratimeparams->set<string>("Neumann inflow",scatradyn.get<string>("NEUMANNINFLOW"));
 
   // -------------------------------- (fine-scale) subgrid diffusivity?
   scatratimeparams->set<string>("fs subgrid diffusivity",scatradyn.get<string>("FSSUGRVISC"));

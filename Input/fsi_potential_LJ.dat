@@ -121,7 +121,6 @@ UPRES                           1
 CROSS-STRESS                    no_cross
 CSTAB                           cstab_qs
 DEFINITION_TAU                  Barrenechea_Franca_Valentin_Wall
-OUTFLOW_STAB                    no_outstab
 PSPG                            yes_pspg
 REYNOLDS-STRESS                 no_reynolds
 STABTYPE                        residual_based

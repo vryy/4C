@@ -135,6 +135,8 @@ public:
     MPC_NodeOnLine_2D,
     LJ_Potential,
     ElectrodeKinetics,
+    TransportNeumannInflow,
+    FluidNeumannInflow,
     Brownian_Motion,
     FilamentNumber,
     ForceSensor,

@@ -121,6 +121,40 @@ void SCATRA::ScaTraTimIntImpl::EvaluateElectrodeKinetics(
 
 
 /*----------------------------------------------------------------------*
+ | compute potential Neumann inflow                            vg 03/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow(
+    RCP<LINALG::SparseOperator>& matrix,
+    RCP<Epetra_Vector>&          rhs)
+{
+  // time measurement: evaluate condition 'Neumann inflow'
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'TransportNeumannInflow'");
+
+  // create parameter list
+  ParameterList condparams;
+
+  // action for elements
+  condparams.set("action","calc_Neumann_inflow");
+  condparams.set("incremental solver",incremental_);
+
+  // add velocity field (export to column map necessary for parallel evaluation)
+  AddVelocityToParameterList(condparams);
+
+  // set vector values needed by elements
+  discret_->ClearState();
+
+  // add element parameters and density state according to time-int. scheme
+  AddSpecificTimeIntegrationParameters(condparams);
+
+  std::string condstring("TransportNeumannInflow");
+  discret_->EvaluateCondition(condparams,matrix,Teuchos::null,rhs,Teuchos::null,Teuchos::null,condstring);
+  discret_->ClearState();
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  | construct toggle vector for Dirichlet dofs                  gjb 11/08|
  | assures backward compatibility for avm3 solver; should go away once  |
  *----------------------------------------------------------------------*/

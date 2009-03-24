@@ -1069,7 +1069,8 @@ private:
     calc_node_normal,
     calc_surface_tension,
     enforce_weak_dbc,
-    conservative_outflow_bc
+    conservative_outflow_bc,
+    calc_Neumann_inflow
   };
 
   // don't want = operator
@@ -1179,6 +1180,25 @@ private:
 
   */
   void SurfaceConservativeOutflowConsistency(
+    ParameterList&             params,
+    DRT::Discretization&       discretization,
+    vector<int>&               lm,
+    Epetra_SerialDenseMatrix&  elemat1,
+    Epetra_SerialDenseVector&  elevec1);
+
+  /*!
+  \brief compute potential Neumann inflow
+
+  \param params (in)        : ParameterList for communication between control routine
+  \param discretization (in): A reference to the underlying discretization
+  \param lm (in)            : location vector of this element
+  \param elemat1 (out)      : matrix to be filled by element. If NULL on input,
+                              the controling method does not epxect the element to fill
+                              this matrix.                          and elements
+  \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+
+  */
+  void NeumannInflow(
     ParameterList&             params,
     DRT::Discretization&       discretization,
     vector<int>&               lm,

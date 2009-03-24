@@ -68,7 +68,8 @@ void loma_dyn(int disnumff,int disnumscatra, int restart)
     conditions_to_copy.insert(pair<string,string>("TransportSurfaceNeumann","SurfaceNeumann"));
     conditions_to_copy.insert(pair<string,string>("TransportVolumeNeumann","VolumeNeumann"));
     conditions_to_copy.insert(pair<string,string>("SurfacePeriodic","SurfacePeriodic"));
-    conditions_to_copy.insert(pair<string,string>("FluidStressCalc","FluxCalculation")); // a hack
+    conditions_to_copy.insert(pair<string,string>("TransportNeumannInflow","TransportNeumannInflow"));
+    conditions_to_copy.insert(pair<string,string>("FluidStressCalc","FluxCalculation"));
 
     // access the scalar transport parameter list
     const Teuchos::ParameterList& scatracontrol = DRT::Problem::Instance()->ScalarTransportDynamicParams();

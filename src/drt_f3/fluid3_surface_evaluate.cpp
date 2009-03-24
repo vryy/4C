@@ -66,6 +66,8 @@ int DRT::ELEMENTS::Fluid3Surface::Evaluate(     ParameterList&            params
         act = Fluid3Surface::enforce_weak_dbc;
     else if (action == "conservative_outflow_bc")
         act = Fluid3Surface::conservative_outflow_bc;
+    else if (action == "calc_Neumann_inflow")
+        act = Fluid3Surface::conservative_outflow_bc;
     else dserror("Unknown type of action for Fluid3_Surface");
 
     switch(act)
@@ -141,6 +143,16 @@ int DRT::ELEMENTS::Fluid3Surface::Evaluate(     ParameterList&            params
         elevec1);
       break;
     }
+    case calc_Neumann_inflow:
+    {
+      NeumannInflow(
+        params,
+        discretization,
+        lm,
+        elemat1,
+        elevec1);
+      break;
+    }
     case calc_surface_tension:
     {
 
@@ -199,21 +211,36 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
   // there are 3 velocities and 1 pressure
   const int numdf = 4;
 
+  // find out whether we will use a time curve
+  bool usetime = true;
+  const double time = params.get("total time",-1.0);
+  if (time<0.0) usetime = false;
+
+  // get time-curve factor
+  const vector<int>* curve  = condition.Get<vector<int> >("curve");
+  int curvenum = -1;
+  if (curve) curvenum = (*curve)[0];
+  double curvefac = 1.0;
+  if (curvenum>=0 && usetime)
+    curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
+
+  // get values, switches and spatial functions from the condition
+  // (assumed to be constant on element boundary)
+  const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
+  const vector<double>* val   = condition.Get<vector<double> >("val"  );
+  const vector<int>*    func  = condition.Get<vector<int> >   ("funct");
+
   // get time parameter
   const double thsl = params.get("thsl",0.0);
 
   // get constant density (only relevant for incompressible flow)
   //const double inc_dens = params.get("inc_density",0.0);
 
-  // get flag whether outflow stabilization or not
-  string outflowstabstr = params.get("outflow stabilization","no_outstab");
-  bool outflowstab = false;
-  if(outflowstabstr =="yes_outstab") outflowstab = true;
-
+  // get discretization type
   const DiscretizationType distype = this->Shape();
 
   // set number of nodes
-  const int iel   = this->NumNode();
+  const int iel = this->NumNode();
 
   // Gaussian points
   GaussRule2D  gaussrule = intrule2D_undefined;
@@ -272,170 +299,67 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
     edensnp(i) = myvedenp[3+(i*4)];
   }
 
-  // this part will be run when an outflow stabilization term is required
-  if (outflowstab)
+  /*----------------------------------------------------------------------*
+  |               start loop over integration points                     |
+  *----------------------------------------------------------------------*/
+  for (int gpid=0; gpid<intpoints.nquad; gpid++)
   {
-    // Determine normal to this element
-    std::vector<double> dist1(3), dist2(3), normal(3);
-    double length;
+    const double e0 = intpoints.qxg[gpid][0];
+    const double e1 = intpoints.qxg[gpid][1];
 
-    for (int i=0; i<3; i++)
+    // get shape functions and derivatives in the plane of the element
+    shape_function_2D(funct, e0, e1, distype);
+    shape_function_2D_deriv1(deriv, e0, e1, distype);
+
+    // compute measure tensor for surface element and the infinitesimal
+    // area element drs for the integration
+    DRT::UTILS::ComputeMetricTensorForSurface(xyze,deriv,metrictensor,&drs);
+
+    // values are multiplied by the product from inf. area element,
+    // the gauss weight, the timecurve factor and the constant
+    // belonging to the time integration algorithm (theta*dt for
+    // one step theta, 2/3 for bdf with dt const.)
+    // Furthermore, there may be a divison by the constant scalar density,
+    // only relevant (i.e., it may be unequal 1.0) in incompressible flow case
+    const double fac = intpoints.qwgt[gpid] * drs * curvefac * thsl;
+
+    // factor given by spatial function
+    double functfac = 1.0;
+    // determine coordinates of current Gauss point
+    double coordgp[3];
+    coordgp[0]=0.0;
+    coordgp[1]=0.0;
+    coordgp[2]=0.0;
+    for (int i = 0; i< iel; i++)
     {
-      dist1[i] = xyze(i,1)-xyze(i,0);
-      dist2[i] = xyze(i,2)-xyze(i,0);
+      coordgp[0] += xyze(0,i) * funct[i];
+      coordgp[1] += xyze(1,i) * funct[i];
+      coordgp[2] += xyze(2,i) * funct[i];
     }
 
-    normal[0] = dist1[1]*dist2[2] - dist1[2]*dist2[1];
-    normal[1] = dist1[2]*dist2[0] - dist1[0]*dist2[2];
-    normal[2] = dist1[0]*dist2[1] - dist1[1]*dist2[0];
+    int functnum = -1;
+    const double* coordgpref = &coordgp[0]; // needed for function evaluation
 
-    length = sqrt(normal[0]*normal[0]+normal[1]*normal[1]+normal[2]*normal[2]);
-
-    // outward pointing normal of length 1
-    for (int i=0; i<3; i++) normal[i] = normal[i] / length;
-
-    RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
-    if (velnp==null) dserror("Cannot get state vector 'velnp'");
-
-    // extract local values from the global vectors
-    vector<double> myvelnp(lm.size());
-    DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
-
-    // create blitz object for element array
-    blitz::Array<double, 2> evelnp(3,iel,blitz::ColumnMajorArray<2>());
-
-    // insert velocity into element array
-    for (int i=0;i<iel;++i)
+    for (int node=0;node<iel;++node)
     {
-      evelnp(0,i) = myvelnp[0+(i*4)];
-      evelnp(1,i) = myvelnp[1+(i*4)];
-      evelnp(2,i) = myvelnp[2+(i*4)];
-    }
-
-    /*----------------------------------------------------------------------*
-    |               start loop over integration points                     |
-    *----------------------------------------------------------------------*/
-    for (int gpid=0; gpid<intpoints.nquad; gpid++)
-    {
-      const double e0 = intpoints.qxg[gpid][0];
-      const double e1 = intpoints.qxg[gpid][1];
-
-      // get shape functions and derivatives in the plane of the element
-      shape_function_2D(funct, e0, e1, distype);
-
-      std::vector<double> vel(3);
-      double normvel=0.0;
       for(int dim=0;dim<3;dim++)
       {
-        vel[dim] = 0.0;
-        for (int node=0;node<iel;++node)
+        if (func) functnum = (*func)[dim];
         {
-          vel[dim]+= funct[node] * evelnp(dim,node);
-        }
-        normvel += vel[dim]*normal[dim];
-      }
-
-      if (normvel<-0.0001)
-      {
-        // compute measure tensor for surface element and the infinitesimal
-        // area element drs for the integration
-        shape_function_2D_deriv1(deriv, e0, e1, distype);
-        DRT::UTILS::ComputeMetricTensorForSurface(xyze,deriv,metrictensor,&drs);
-
-        const double fac = intpoints.qwgt[gpid] * drs * thsl * normvel;
-
-        for (int node=0;node<iel;++node)
-        {
-          for(int dim=0;dim<3;dim++)
+          if (functnum>0)
           {
-            elevec1[node*numdf+dim] += funct[node] * edensnp(node) * evelnp(dim,node) * fac;
+            // evaluate function at current gauss point
+            functfac = DRT::UTILS::FunctionManager::Instance().Funct(functnum-1).Evaluate(dim,coordgpref);
           }
+          else
+            functfac = 1.0;
         }
+
+        elevec1[node*numdf+dim]+= edensnp(node)*funct[node]*(*onoff)[dim]*(*val)[dim]*fac*functfac;
       }
-    } /* end of loop over integration points gpid */
+    }
   }
-  else
-  {
-    // find out whether we will use a time curve
-    bool usetime = true;
-    const double time = params.get("total time",-1.0);
-    if (time<0.0) usetime = false;
 
-    // find out whether we will use a time curve and get the factor
-    const vector<int>* curve  = condition.Get<vector<int> >("curve");
-    int curvenum = -1;
-    if (curve) curvenum = (*curve)[0];
-    double curvefac = 1.0;
-    if (curvenum>=0 && usetime)
-      curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
-
-    // get values, switches and spatial functions from the condition
-    // (assumed to be constant on element boundary)
-    const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
-    const vector<double>* val   = condition.Get<vector<double> >("val"  );
-    const vector<int>*    func  = condition.Get<vector<int> >   ("funct");
-
-    /*----------------------------------------------------------------------*
-    |               start loop over integration points                     |
-    *----------------------------------------------------------------------*/
-    for (int gpid=0; gpid<intpoints.nquad; gpid++)
-    {
-      const double e0 = intpoints.qxg[gpid][0];
-      const double e1 = intpoints.qxg[gpid][1];
-
-      // get shape functions and derivatives in the plane of the element
-      shape_function_2D(funct, e0, e1, distype);
-      shape_function_2D_deriv1(deriv, e0, e1, distype);
-
-      // compute measure tensor for surface element and the infinitesimal
-      // area element drs for the integration
-      DRT::UTILS::ComputeMetricTensorForSurface(xyze,deriv,metrictensor,&drs);
-
-      // values are multiplied by the product from inf. area element,
-      // the gauss weight, the timecurve factor and the constant
-      // belonging to the time integration algorithm (theta*dt for
-      // one step theta, 2/3 for bdf with dt const.)
-      // Furthermore, there may be a divison by the constant scalar density,
-      // only relevant (i.e., it may be unequal 1.0) in incompressible flow case
-      const double fac = intpoints.qwgt[gpid] * drs * curvefac * thsl;
-
-      // factor given by spatial function
-      double functfac = 1.0;
-      // determine coordinates of current Gauss point
-      double coordgp[3];
-      coordgp[0]=0.0;
-      coordgp[1]=0.0;
-      coordgp[2]=0.0;
-      for (int i = 0; i< iel; i++)
-      {
-        coordgp[0] += xyze(0,i) * funct[i];
-        coordgp[1] += xyze(1,i) * funct[i];
-        coordgp[2] += xyze(2,i) * funct[i];
-      }
-
-      int functnum = -1;
-      const double* coordgpref = &coordgp[0]; // needed for function evaluation
-
-      for (int node=0;node<iel;++node)
-      {
-        for(int dim=0;dim<3;dim++)
-        {
-          if (func) functnum = (*func)[dim];
-          {
-            if (functnum>0)
-            {
-              // evaluate function at current gauss point
-              functfac = DRT::UTILS::FunctionManager::Instance().Funct(functnum-1).Evaluate(dim,coordgpref);
-            }
-            else
-              functfac = 1.0;
-          }
-
-          elevec1[node*numdf+dim]+= edensnp(node)*funct[node]*(*onoff)[dim]*(*val)[dim]*fac*functfac;
-        }
-      }
-    } /* end of loop over integration points gpid */
-  }
   return 0;
 }
 
@@ -736,6 +660,207 @@ void DRT::ELEMENTS::Fluid3Surface::SurfaceConservativeOutflowConsistency(
   } // end gaussloop
   return;
 }// DRT::ELEMENTS::Fluid3Surface::SurfaceConservativeOutflowConsistency
+
+
+/*----------------------------------------------------------------------*
+ | compute potential Neumann inflow                            vg 03/09 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Fluid3Surface::NeumannInflow(
+    ParameterList&             params,
+    DRT::Discretization&       discretization,
+    vector<int>&               lm,
+    Epetra_SerialDenseMatrix&  elemat1,
+    Epetra_SerialDenseVector&  elevec1)
+{
+  //----------------------------------------------------------------------
+  // get control parameters for time integration
+  //----------------------------------------------------------------------
+  // check whether we have a generalized-alpha time-integration scheme
+  const bool is_genalpha = params.get<bool>("using generalized-alpha time integration");
+
+  // get timefactor for left hand side
+  // One-step-Theta:    timefac = theta*dt
+  // BDF2:              timefac = 2/3 * dt
+  // generalized-alpha: timefac = (alpha_F/alpha_M) * gamma * dt
+  const double timefac = params.get<double>("thsl",-1.0);
+  if (timefac < 0.0) dserror("No thsl supplied");
+
+  // get discretization type
+  const DiscretizationType distype = this->Shape();
+
+  // set number of nodes
+  const int iel = this->NumNode();
+
+  // Gaussian points
+  GaussRule2D  gaussrule = intrule2D_undefined;
+  switch(distype)
+  {
+  case quad4:
+      gaussrule = intrule_quad_4point;
+      break;
+  case quad8: case quad9:
+      gaussrule = intrule_quad_9point;
+      break;
+  case tri3 :
+      gaussrule = intrule_tri_3point;
+      break;
+  case tri6:
+      gaussrule = intrule_tri_6point;
+      break;
+  default:
+      dserror("shape type unknown!\n");
+  }
+  const IntegrationPoints2D  intpoints(gaussrule);
+
+  // (density-weighted) shape functions and first derivatives
+  Epetra_SerialDenseVector funct(iel);
+  Epetra_SerialDenseVector densfunct(iel);
+  Epetra_SerialDenseVector deriv(iel);
+
+  // node coordinates
+  Epetra_SerialDenseMatrix xyze(3,iel);
+
+  // the element's normal vector
+  Epetra_SerialDenseVector normal(3);
+
+  // velocity and momentum at gausspoint
+  Epetra_SerialDenseVector velint(3);
+  Epetra_SerialDenseVector momint(3);
+
+  // metric tensor and area of infinitesimal surface element
+  Epetra_SerialDenseMatrix  metrictensor(2,2);
+  double                    drs;
+
+  // get node coordinates
+  for(int i=0;i<iel;++i)
+  {
+    xyze(0,i)=this->Nodes()[i]->X()[0];
+    xyze(1,i)=this->Nodes()[i]->X()[1];
+    xyze(2,i)=this->Nodes()[i]->X()[1];
+  }
+
+  // determine outward-pointing normal to this element
+  normal(0) = (xyze(1,1)-xyze(1,0))*(xyze(2,2)-xyze(2,0))-(xyze(2,1)-xyze(2,0))*(xyze(1,2)-xyze(1,0));
+  normal(1) = (xyze(2,1)-xyze(2,0))*(xyze(0,2)-xyze(0,0))-(xyze(0,1)-xyze(0,0))*(xyze(2,2)-xyze(2,0));
+  normal(2) = (xyze(0,1)-xyze(0,0))*(xyze(1,2)-xyze(1,0))-(xyze(1,1)-xyze(1,0))*(xyze(0,2)-xyze(0,0));
+
+  // length of normal
+  double length = 0.0;
+  length = sqrt(normal(0)*normal(0)+normal(1)*normal(1)+normal(2)*normal(2));
+
+  // outward-pointing normal of unit length
+  for(int inode=0;inode<3;inode++)
+  {
+    normal(inode) = normal(inode)/length;
+  }
+
+  // get velocity and density vector
+  RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
+  RCP<const Epetra_Vector> vedenp = discretization.GetState("vedenp");
+  if (velnp==null or vedenp==null)
+    dserror("Cannot get state vector 'velnp' and/or 'vedenp'");
+
+  // extract local values from global vector
+  vector<double> myvelnp(lm.size());
+  vector<double> myvedenp(lm.size());
+  DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
+  DRT::UTILS::ExtractMyValues(*vedenp,myvedenp,lm);
+
+  // create blitz object for density array
+  Epetra_SerialDenseMatrix evelnp(3,iel);
+  Epetra_SerialDenseVector edensnp(iel);
+
+  // insert velocity and density into element array
+  for (int i=0;i<iel;++i)
+  {
+    evelnp(0,i) = myvelnp[0+(i*4)];
+    evelnp(1,i) = myvelnp[1+(i*4)];
+    evelnp(2,i) = myvelnp[2+(i*4)];
+
+    edensnp(i) = myvedenp[3+(i*4)];
+  }
+
+  /*----------------------------------------------------------------------*
+   |               start loop over integration points                     |
+   *----------------------------------------------------------------------*/
+  for (int gpid=0; gpid<intpoints.nquad; gpid++)
+  {
+    const double e0 = intpoints.qxg[gpid][0];
+    const double e1 = intpoints.qxg[gpid][1];
+
+    // get shape functions and derivatives in the plane of the element
+    shape_function_2D(funct,e0,e1,distype);
+
+    // compute momentum (i.e., density times velocity) and normal momentum
+    // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+    double normmom = 0.0;
+    for (int j=0;j<2;++j)
+    {
+      velint(j) = 0.0;
+      momint(j) = 0.0;
+      for (int i=0;i<iel;++i)
+      {
+        velint(j) += funct(i)*evelnp(j,i);
+        momint(j) += edensnp(i)*velint(j);
+      }
+      normmom += momint(j)*normal(j);
+    }
+
+    // computation only required for negative normal momentum
+    if (normmom<-0.0001)
+    {
+      // compute measure tensor for surface element, infinitesimal area
+      // element drs for the integration and integration factor
+      shape_function_2D_deriv1(deriv,e0,e1,distype);
+      DRT::UTILS::ComputeMetricTensorForSurface(xyze,deriv,metrictensor,&drs);
+      const double fac = intpoints.qwgt[gpid] * drs;
+
+      // integration factor for left- and right-hand side
+      const double lhsfac = normmom*timefac*fac;
+      double rhsfac = normmom*fac;
+      if (not is_genalpha) rhsfac *= timefac;
+
+      // matrix
+      for (int vi=0; vi<iel; ++vi)
+      {
+        const double vlhs = lhsfac*funct(vi);
+
+        const int fvi   = 4*vi;
+        const int fvip  = fvi+1;
+        const int fvipp = fvi+2;
+
+        for (int ui=0; ui<iel; ++ui)
+        {
+          const int fui   = 4*ui;
+          const int fuip  = fui+1;
+          const int fuipp = fui+2;
+
+          elemat1(fvi  ,fui  ) -= vlhs*funct(ui);
+          elemat1(fvip ,fuip ) -= vlhs*funct(ui);
+          elemat1(fvipp,fuipp) -= vlhs*funct(ui);
+        }
+      }
+
+      // rhs
+      const double vrhs0 = rhsfac*velint(0);
+      const double vrhs1 = rhsfac*velint(1);
+      const double vrhs2 = rhsfac*velint(2);
+      for (int vi=0; vi<iel; ++vi)
+      {
+        const int fvi   =4*vi;
+        const int fvip  =fvi+1;
+        const int fvipp =fvi+2;
+
+        elevec1(fvi  ) += funct(vi)*vrhs0;
+        elevec1(fvip ) += funct(vi)*vrhs1;
+        elevec1(fvipp) += funct(vi)*vrhs2;
+      }
+    }
+  }
+
+  return;
+}// DRT::ELEMENTS::Fluid3Surface::NeumannInflow
+
 
 /*----------------------------------------------------------------------*
  |  Integrate shapefunctions over surface (private)            gjb 07/07|

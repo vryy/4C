@@ -126,6 +126,12 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   fssgv_ = params_.get<string>("fs subgrid viscosity","No");
 
   // -------------------------------------------------------------------
+  // account for potential Neuman inflow terms if required
+  // -------------------------------------------------------------------
+  neumanninflow_ = false;
+  if (params_.get<string>("NEUMANNINFLOW") == "yes") neumanninflow_ = true;
+
+  // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
   // -------------------------------------------------------------------
   pbc_ = rcp(new PeriodicBoundaryConditions (discret_));
@@ -395,18 +401,6 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // parameter for sampling/dumping period
   if (special_flow_ != "no")
     samstart_ = modelparams->get<int>("SAMPLING_START",1);
-
-  // -------------------------------------------------------------------
-  // initialize outflow boundary stabilization if required
-  // -------------------------------------------------------------------
-  ParameterList *  stabparams=&(params_.sublist("STABILIZATION"));
-
-  // flag for potential Neumann-type outflow stabilization
-  outflow_stab_ = stabparams->get<string>("OUTFLOW_STAB","no_outstab");
-
-  // vector containing potential Neumann-type outflow stabilization term
-  if (outflow_stab_ == "yes_outstab")
-    outflow_= LINALG::CreateVector(*dofrowmap,true);
 
   // -------------------------------------------------------------------
   // necessary only for the VM3 approach:
@@ -692,7 +686,8 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
   }
 
   // -------------------------------------------------------------------
-  //         evaluate Dirichlet and Neumann boundary conditions
+  //  evaluate Dirichlet and Neumann boundary conditions
+  //  (the latter here only if no Neumann inflow)
   // -------------------------------------------------------------------
   {
     ParameterList eleparams;
@@ -859,39 +854,14 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 
       sysmat_->Zero();
 
+      // create the parameters for the discretization
+      ParameterList eleparams;
+
       // add Neumann loads
       residual_->Update(1.0,*neumann_loads_,0.0);
 
       // update impedance boundary condition
       impedancebc_->UpdateResidual(residual_);
-
-      // create the parameters for the discretization
-      ParameterList eleparams;
-
-      // add potential Neumann-type outflow stabilization term
-      if (outflow_stab_ == "yes_outstab")
-      {
-        discret_->ClearState();
-        eleparams.set("outflow stabilization",outflow_stab_);
-        if (timealgo_==timeint_afgenalpha)
-        {
-          eleparams.set("thsl",1.0);
-          discret_->SetState("velnp",velaf_);
-          discret_->SetState("vedenp",vedeaf_);
-        }
-        else
-        {
-          eleparams.set("thsl",theta_*dta_);
-          discret_->SetState("velnp",velnp_);
-          discret_->SetState("vedenp",vedenp_);
-        }
-        outflow_->PutScalar(0.0);
-        discret_->EvaluateNeumann(eleparams,*outflow_);
-        discret_->ClearState();
-
-        // add Neumann-type outflow term to residual vector
-        residual_->Update(1.0,*outflow_,1.0);
-      }
 
       // Filter velocity for dynamic Smagorinsky model --- this provides
       // the necessary dynamic constant
@@ -1036,6 +1006,28 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           discret_->ClearState();
         }
         //---------------------------end of surface tension update
+
+        // account for potential Neumann inflow terms
+        if (neumanninflow_)
+        {
+          discret_->ClearState();
+          eleparams.set("Neumann inflow",neumanninflow_);
+          if (timealgo_==timeint_afgenalpha)
+          {
+            eleparams.set("thsl",1.0);
+            discret_->SetState("velnp",velaf_);
+            discret_->SetState("vedenp",vedeaf_);
+          }
+          else
+          {
+            eleparams.set("thsl",theta_*dta_);
+            discret_->SetState("velnp",velnp_);
+            discret_->SetState("vedenp",vedenp_);
+          }
+          neumann_loads_->PutScalar(0.0);
+          discret_->EvaluateNeumann(eleparams,*neumann_loads_);
+         discret_->ClearState();
+        }
 
         if (timealgo_==timeint_afgenalpha)
         {
@@ -1837,39 +1829,14 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   // zero subgrid-viscosity vector
   subgrvisc_->PutScalar(0.0);
 
+  // create the parameters for the discretization
+  ParameterList eleparams;
+
   // add Neumann loads
   residual_->Update(1.0,*neumann_loads_,0.0);
 
   // update impedance boundary condition
   impedancebc_->UpdateResidual(residual_);
-
-  // create the parameters for the discretization
-  ParameterList eleparams;
-
-  // add potential Neumann-type outflow stabilization term
-  if (outflow_stab_ == "yes_outstab")
-  {
-    discret_->ClearState();
-    eleparams.set("outflow stabilization",outflow_stab_);
-    if (timealgo_==timeint_afgenalpha)
-    {
-      eleparams.set("thsl",1.0);
-      discret_->SetState("velnp",velaf_);
-      discret_->SetState("vedenp",vedeaf_);
-    }
-    else
-    {
-      eleparams.set("thsl",theta_*dta_);
-      discret_->SetState("velnp",velnp_);
-      discret_->SetState("vedenp",vedenp_);
-    }
-    outflow_->PutScalar(0.0);
-    discret_->EvaluateNeumann(eleparams,*outflow_);
-    discret_->ClearState();
-
-    // add Neumann-type outflow term to residual vector
-    residual_->Update(1.0,*outflow_,1.0);
-  }
 
   if (dynamic_smagorinsky_)
   {
@@ -1943,6 +1910,36 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   // call standard loop over elements (including subgrid-viscosity vector)
   discret_->Evaluate(eleparams,sysmat_,null,residual_,subgrvisc_);
   discret_->ClearState();
+
+  // account for potential Neumann inflow terms
+  if (neumanninflow_)
+  {
+    // create parameter list
+    ParameterList condparams;
+
+    // action for elements
+    condparams.set("action","calc_Neumann_inflow");
+    condparams.set("thsl",theta_*dta_);
+
+    // set vector values needed by elements
+    discret_->ClearState();
+    if (timealgo_==timeint_afgenalpha)
+    {
+      condparams.set("using generalized-alpha time integration",true);
+      discret_->SetState("velnp",velaf_);
+      discret_->SetState("vedenp",vedeaf_);
+    }
+    else
+    {
+      condparams.set("using generalized-alpha time integration",false);
+      discret_->SetState("velnp",velnp_);
+      discret_->SetState("vedenp",vedenp_);
+    }
+
+    std::string condstring("FluidNeumannInflow");
+    discret_->EvaluateCondition(condparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null,condstring);
+    discret_->ClearState();
+  }
 
   if (timealgo_==timeint_afgenalpha)
   {

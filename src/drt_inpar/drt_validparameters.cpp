@@ -922,6 +922,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,1),
                                &fdyn);
 
+  setStringToIntegralParameter<int>("NEUMANNINFLOW",
+                               "no",
+                               "Flag to (de)activate potential Neumann inflow term(s)",
+                               tuple<std::string>(
+                                 "no",
+                                 "yes"),
+                               tuple<std::string>(
+                                 "No Neumann inflow term(s)",
+                                 "Neumann inflow term(s) might occur"),
+                               tuple<int>(0,1),
+                               &fdyn);
+
   setStringToIntegralParameter<int>("FSSUGRVISC","No","fine-scale subgrid viscosity",
                                tuple<std::string>(
                                  "No",
@@ -1119,18 +1131,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "tau_M and tau_C (Bazilevs, based on G_ij and g_i)",
                                  "tau_M and tau_C: Codina")  ,
                                     tuple<int>(0,1,2,3,4,5,6),
-                               &fdyn_stab);
-
-  setStringToIntegralParameter<int>("OUTFLOW_STAB",
-                               "no_outstab",
-                               "Flag to (de)activate outflow stabilization term",
-                               tuple<std::string>(
-                                 "no_outstab",
-                                 "yes_outstab"),
-                               tuple<std::string>(
-                                 "No outflow stabilization term",
-                                 "Add outflow stabilization term."),
-                               tuple<int>(0,1),
                                &fdyn_stab);
 
   /*----------------------------------------------------------------------*/
@@ -1356,6 +1356,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "convective",
                                  "conservative"
                                  ),
+                               tuple<int>(0,1),
+                               &scatradyn);
+
+  setStringToIntegralParameter<int>("NEUMANNINFLOW",
+                               "no",
+                               "Flag to (de)activate potential Neumann inflow term(s)",
+                               tuple<std::string>(
+                                 "no",
+                                 "yes"),
+                               tuple<std::string>(
+                                 "No Neumann inflow term(s)",
+                                 "Neumann inflow term(s) might occur"),
                                tuple<int>(0,1),
                                &scatradyn);
 

@@ -55,6 +55,8 @@ int DRT::ELEMENTS::Fluid2Line::Evaluate(        ParameterList&            params
         act = Fluid2Line::calc_surface_tension;
     else if (action == "enforce_weak_dbc")
         act = Fluid2Line::enforce_weak_dbc;
+    else if (action == "calc_Neumann_inflow")
+        act = Fluid2Line::calc_Neumann_inflow;
     else dserror("Unknown type of action for Fluid2_Line");
 
     switch(act)
@@ -304,6 +306,16 @@ int DRT::ELEMENTS::Fluid2Line::Evaluate(        ParameterList&            params
 
       break;
     }
+    case calc_Neumann_inflow:
+    {
+      NeumannInflow(
+        params,
+        discretization,
+        lm,
+        elemat1,
+        elevec1);
+      break;
+    }
     default:
         dserror("Unknown type of action for Fluid2Line");
     } // end of switch(act)
@@ -328,21 +340,36 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
   // there are 2 velocities and 1 pressure
   const int numdf = 3;
 
+  // find out whether we will use a time curve
+  bool usetime = true;
+  const double time = params.get("total time",-1.0);
+  if (time<0.0) usetime = false;
+
+  // get time-curve factor
+  const vector<int>* curve  = condition.Get<vector<int> >("curve");
+  int curvenum = -1;
+  if (curve) curvenum = (*curve)[0];
+  double curvefac = 1.0;
+  if (curvenum>=0 && usetime)
+    curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
+
+  // get values, switches and spatial functions from the condition
+  // (assumed to be constant on element boundary)
+  const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
+  const vector<double>* val   = condition.Get<vector<double> >("val"  );
+  const vector<int>*    func  = condition.Get<vector<int> >   ("funct");
+
   // get time parameter
   const double thsl = params.get("thsl",0.0);
 
   // get constant density (only relevant for incompressible flow)
   //const double inc_dens = params.get("inc_density",0.0);
 
-  // get flag whether outflow stabilization or not
-  string outflowstabstr = params.get("outflow stabilization","no_outstab");
-  bool outflowstab = false;
-  if(outflowstabstr =="yes_outstab") outflowstab = true;
-
+  // get discretization type
   const DiscretizationType distype = this->Shape();
 
   // set number of nodes
-  const int iel   = this->NumNode();
+  const int iel = this->NumNode();
 
   // Gaussian points
   const GaussRule1D gaussrule = getOptimalGaussrule(distype);
@@ -420,46 +447,14 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
     edensnp(i) = myvedenp[2+(i*3)];
   }
 
-  // this part will be run when an outflow stabilization term is required
-  if (outflowstab)
+  // loop over integration points
+  for (int gpid=0;gpid<intpoints.nquad;gpid++)
   {
-    // Determine normal to this element
-    std::vector<double> normal(2);
-    double length;
+    const double e1 = intpoints.qxg[gpid][0];
 
-    normal[0] = xye(1,1) - xye(1,0);
-    normal[1] = (-1.0)*(xye(0,1) - xye(0,0));
-
-    length = sqrt(normal[0]*normal[0]+normal[1]*normal[1]);
-
-    // outward pointing normal of length 1
-    for (int i=0; i<2; i++) normal[i] = normal[i] / length;
-
-    RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
-    if (velnp==null) dserror("Cannot get state vector 'velnp'");
-
-    // extract local values from global vector
-    vector<double> myvelnp(lm.size());
-    DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
-
-    // create object for element array
-    Epetra_SerialDenseMatrix evelnp(2,iel);
-
-    // insert velocity into element array
-    for (int i=0;i<iel;++i)
+    // get shape functions and derivatives for line element
+    if(!(distype == DRT::Element::nurbs2 || distype == DRT::Element::nurbs3))
     {
-      evelnp(0,i) = myvelnp[0+(i*3)];
-      evelnp(1,i) = myvelnp[1+(i*3)];
-    }
-
-    /*----------------------------------------------------------------------*
-    |               start loop over integration points                     |
-    *----------------------------------------------------------------------*/
-    for (int gpid=0; gpid<intpoints.nquad; gpid++)
-    {
-      const double e1 = intpoints.qxg[gpid][0];
-
-      // get shape functions and derivatives for linear element
       DRT::UTILS::shape_function_1D(funct,e1,distype);
       // explicit determination of first derivatives, since respective function
       //DRT::UTILS::shape_function_1D_deriv1(deriv,e1,distype);
@@ -487,95 +482,213 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
         default:
            dserror("distype unknown\n");
       }
+    }
+    else
+      DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv(funct,deriv,e1,myknots,weights,distype);
 
-      std::vector<double> vel(2);
-      double normvel=0;
+    // The Jacobian is computed using the formula
+    //
+    //            +-----
+    //   dx_j(u)   \      dN_k(r)
+    //   -------  = +     ------- * (x_j)_k
+    //     du      /       du         |
+    //            +-----    |         |
+    //            node k    |         |
+    //                  derivative    |
+    //                   of shape     |
+    //                   function     |
+    //                           component of
+    //                          node coordinate
+    //
+    Epetra_SerialDenseVector der_par(2);
+    for(int rr=0;rr<2;++rr)
+    {
+      der_par(rr)=0;
+      for(int mm=0;mm<iel;++mm)
+      {
+        der_par(rr) += deriv(mm)*xye(rr,mm);
+      }
+    }
+
+    // compute infinitesimal line element dr for integration along the line
+    const double dr = sqrt(der_par(0)*der_par(0)+der_par(1)*der_par(1));
+
+    // values are multiplied by the product from inf. area element,
+    // the gauss weight, the timecurve factor and the constant
+    // belonging to the time integration algorithm (theta*dt for
+    // one step theta, 2/3 for bdf with dt const.)
+    // Furthermore, there may be a divison by the constant scalar density,
+    // only relevant (i.e., it may be unequal 1.0) in incompressible flow case
+    const double fac = intpoints.qwgt[gpid] *dr* curvefac * thsl;
+
+    // factor given by spatial function
+    double functfac = 1.0;
+    // determine coordinates of current Gauss point
+    double coordgp[2];
+    coordgp[0]=0.0;
+    coordgp[1]=0.0;
+    for (int i = 0; i< iel; i++)
+    {
+      coordgp[0]+=xye(0,i)*funct(i);
+      coordgp[1]+=xye(1,i)*funct(i);
+    }
+
+    int functnum = -1;
+    const double* coordgpref = &coordgp[0]; // needed for function evaluation
+
+    for (int node=0;node<iel;++node)
+    {
       for(int dim=0;dim<2;dim++)
       {
-        vel[dim] = 0;
-        for (int node=0;node<iel;++node)
+        // factor given by spatial function
+        if (func) functnum = (*func)[dim];
         {
-          vel[dim]+= funct(node) * evelnp(dim,node);
-        }
-        normvel += vel[dim]*normal[dim];
-      }
-
-      if (normvel<-0.0001)
-      {
-        // The Jacobian is computed using the formula
-        //
-        //            +-----
-        //   dx_j(u)   \      dN_k(r)
-        //   -------  = +     ------- * (x_j)_k
-        //     du      /       du         |
-        //            +-----    |         |
-        //            node k    |         |
-        //                  derivative    |
-        //                   of shape     |
-        //                   function     |
-        //                           component of
-        //                          node coordinate
-        //
-        Epetra_SerialDenseVector der_par(2);
-	for(int rr=0;rr<2;++rr)
-	{
-	  der_par(rr)=0;
-	  for(int mm=0;mm<iel;++mm)
-	  {
-	    der_par(rr) += deriv(mm)*xye(rr,mm);
-	  }
-	}
-
-        // compute infinitesimal line element dr for integration along the line
-        const double dr = sqrt(der_par(0)*der_par(0)+der_par(1)*der_par(1));
-
-        const double fac = intpoints.qwgt[gpid] * dr * thsl * normvel;
-
-        for (int node=0;node<iel;++node)
-        {
-          for(int dim=0;dim<2;dim++)
+          if (functnum>0)
           {
-            elevec1[node*numdf+dim] += funct(node) * edensnp(node) * evelnp(dim,node) * fac;
+            // evaluate function at current gauss point
+            functfac = DRT::UTILS::FunctionManager::Instance().Funct(functnum-1).Evaluate(dim,coordgpref);
           }
+          else
+            functfac = 1.0;
         }
+
+        elevec1[node*numdf+dim]+= edensnp(node)*funct(node)*(*onoff)[dim]*(*val)[dim]*fac*functfac;
       }
-    } /* end of loop over integration points gpid */
+    }
   }
-  else
+
+  return 0;
+}
+
+
+/*----------------------------------------------------------------------*
+ | compute potential Neumann inflow                            vg 03/09 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Fluid2Line::NeumannInflow(
+    ParameterList&             params,
+    DRT::Discretization&       discretization,
+    vector<int>&               lm,
+    Epetra_SerialDenseMatrix&  elemat1,
+    Epetra_SerialDenseVector&  elevec1)
+{
+  //----------------------------------------------------------------------
+  // get control parameters for time integration
+  //----------------------------------------------------------------------
+  // check whether we have a generalized-alpha time-integration scheme
+  const bool is_genalpha = params.get<bool>("using generalized-alpha time integration");
+
+  // get timefactor for left hand side
+  // One-step-Theta:    timefac = theta*dt
+  // BDF2:              timefac = 2/3 * dt
+  // generalized-alpha: timefac = (alpha_F/alpha_M) * gamma * dt
+  const double timefac = params.get<double>("thsl",-1.0);
+  if (timefac < 0.0) dserror("No thsl supplied");
+
+  // get discretization type
+  const DiscretizationType distype = this->Shape();
+
+  // set number of nodes
+  const int iel = this->NumNode();
+
+  // Gaussian points
+  const GaussRule1D gaussrule = getOptimalGaussrule(distype);
+  const IntegrationPoints1D  intpoints(gaussrule);
+
+  // (density-weighted) shape functions and first derivatives
+  Epetra_SerialDenseVector funct(iel);
+  Epetra_SerialDenseVector densfunct(iel);
+  Epetra_SerialDenseVector deriv(iel);
+
+  // node coordinates
+  Epetra_SerialDenseMatrix xye(2,iel);
+
+  // the element's normal vector
+  Epetra_SerialDenseVector normal(2);
+
+  // velocity and momentum at gausspoint
+  Epetra_SerialDenseVector velint(2);
+  Epetra_SerialDenseVector momint(2);
+
+  // Jacobian
+  Epetra_SerialDenseVector der_par(2);
+
+  // get node coordinates
+  for(int i=0;i<iel;++i)
   {
-    // find out whether we will use a time curve
-    bool usetime = true;
-    const double time = params.get("total time",-1.0);
-    if (time<0.0) usetime = false;
+    xye(0,i)=this->Nodes()[i]->X()[0];
+    xye(1,i)=this->Nodes()[i]->X()[1];
+  }
 
-    // find out whether we will use a time curve and get the factor
-    const vector<int>* curve  = condition.Get<vector<int> >("curve");
-    int curvenum = -1;
-    if (curve) curvenum = (*curve)[0];
-    double curvefac = 1.0;
-    if (curvenum>=0 && usetime)
-      curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
+  // determine outward-pointing normal to this element
+  normal(0) = xye(1,1)-xye(1,0);
+  normal(1) = (-1.0)*(xye(0,1)-xye(0,0));
 
-    // get values, switches and spatial functions from the condition
-    // (assumed to be constant on element boundary)
-    const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
-    const vector<double>* val   = condition.Get<vector<double> >("val"  );
-    const vector<int>*    func  = condition.Get<vector<int> >   ("funct");
+  // length of normal
+  double length = 0.0;
+  length = sqrt(normal(0)*normal(0)+normal(1)*normal(1));
 
-    // loop over integration points
-    for (int gpid=0;gpid<intpoints.nquad;gpid++)
+  // outward-pointing normal of unit length
+  for(int inode=0;inode<2;inode++)
+  {
+    normal(inode) = normal(inode)/length;
+  }
+
+  // get velocity and density vector
+  RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
+  RCP<const Epetra_Vector> vedenp = discretization.GetState("vedenp");
+  if (velnp==null or vedenp==null)
+    dserror("Cannot get state vector 'velnp' and/or 'vedenp'");
+
+  // extract local values from global vector
+  vector<double> myvelnp(lm.size());
+  vector<double> myvedenp(lm.size());
+  DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
+  DRT::UTILS::ExtractMyValues(*vedenp,myvedenp,lm);
+
+  // create blitz object for density array
+  Epetra_SerialDenseMatrix evelnp(2,iel);
+  Epetra_SerialDenseVector edensnp(iel);
+
+  // insert velocity and density into element array
+  for (int i=0;i<iel;++i)
+  {
+    evelnp(0,i) = myvelnp[0+(i*3)];
+    evelnp(1,i) = myvelnp[1+(i*3)];
+
+    edensnp(i) = myvedenp[2+(i*3)];
+  }
+
+  /*----------------------------------------------------------------------*
+   |               start loop over integration points                     |
+   *----------------------------------------------------------------------*/
+  for (int gpid=0; gpid<intpoints.nquad; gpid++)
+  {
+    const double e = intpoints.qxg[gpid][0];
+
+    // get shape functions
+    DRT::UTILS::shape_function_1D(funct,e,distype);
+
+    // compute momentum (i.e., density times velocity) and normal momentum
+    // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+    double normmom = 0.0;
+    for (int j=0;j<2;++j)
     {
-      const double e1 = intpoints.qxg[gpid][0];
-
-      // get shape functions and derivatives for line element
-      if(!(distype == DRT::Element::nurbs2 || distype == DRT::Element::nurbs3))
+      velint(j) = 0.0;
+      momint(j) = 0.0;
+      for (int i=0;i<iel;++i)
       {
-        DRT::UTILS::shape_function_1D(funct,e1,distype);
-        // explicit determination of first derivatives, since respective function
-        //DRT::UTILS::shape_function_1D_deriv1(deriv,e1,distype);
-        // provides mismatch due to matrix/vector inconsistency
-        switch (distype)
-        {
+        velint(j) += funct(i)*evelnp(j,i);
+        momint(j) += edensnp(i)*velint(j);
+      }
+      normmom += momint(j)*normal(j);
+    }
+
+    // computation only required for negative normal momentum
+    if (normmom<-0.0001)
+    {
+      // first derivatives
+      switch (distype)
+      {
         case DRT::Element::point1:
         {
           deriv(0) = 0.0;
@@ -589,17 +702,14 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
         }
         case DRT::Element::line3:
         {
-          deriv(0)= e1 - 0.5;
-          deriv(1)= e1 + 0.5;
-          deriv(2)= -2.0*e1;
+          deriv(0)= e - 0.5;
+          deriv(1)= e + 0.5;
+          deriv(2)= -2.0*e;
           break;
         }
         default:
            dserror("distype unknown\n");
-        }
       }
-      else
-        DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv(funct,deriv,e1,myknots,weights,distype);
 
       // The Jacobian is computed using the formula
       //
@@ -615,66 +725,60 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
       //                           component of
       //                          node coordinate
       //
-      Epetra_SerialDenseVector der_par(2);
       for(int rr=0;rr<2;++rr)
       {
-	der_par(rr)=0;
-	for(int mm=0;mm<iel;++mm)
-	{
-	  der_par(rr) += deriv(mm)*xye(rr,mm);
-	}
+        der_par(rr)=0;
+        for(int mm=0;mm<iel;++mm)
+        {
+          der_par(rr) += deriv(mm)*xye(rr,mm);
+        }
       }
 
       // compute infinitesimal line element dr for integration along the line
       const double dr = sqrt(der_par(0)*der_par(0)+der_par(1)*der_par(1));
 
-      // values are multiplied by the product from inf. area element,
-      // the gauss weight, the timecurve factor and the constant
-      // belonging to the time integration algorithm (theta*dt for
-      // one step theta, 2/3 for bdf with dt const.)
-      // Furthermore, there may be a divison by the constant scalar density,
-      // only relevant (i.e., it may be unequal 1.0) in incompressible flow case
-      const double fac = intpoints.qwgt[gpid] *dr* curvefac * thsl;
+      // integration factor
+      const double fac = intpoints.qwgt[gpid] * dr;
 
-      // factor given by spatial function
-      double functfac = 1.0;
-      // determine coordinates of current Gauss point
-      double coordgp[2];
-      coordgp[0]=0.0;
-      coordgp[1]=0.0;
-      for (int i = 0; i< iel; i++)
+      // integration factor for left- and right-hand side
+      const double lhsfac = normmom*timefac*fac;
+      double rhsfac = normmom*fac;
+      if (not is_genalpha) rhsfac *= timefac;
+
+      // matrix
+      for (int vi=0; vi<iel; ++vi)
       {
-        coordgp[0]+=xye(0,i)*funct(i);
-        coordgp[1]+=xye(1,i)*funct(i);
-      }
+        const double vlhs = lhsfac*funct(vi);
 
-      int functnum = -1;
-      const double* coordgpref = &coordgp[0]; // needed for function evaluation
+        const int fvi   = 3*vi;
+        const int fvip  = fvi+1;
 
-      for (int node=0;node<iel;++node)
-      {
-        for(int dim=0;dim<2;dim++)
+        for (int ui=0; ui<iel; ++ui)
         {
-          // factor given by spatial function
-          if (func) functnum = (*func)[dim];
-          {
-            if (functnum>0)
-            {
-              // evaluate function at current gauss point
-              functfac = DRT::UTILS::FunctionManager::Instance().Funct(functnum-1).Evaluate(dim,coordgpref);
-            }
-            else
-              functfac = 1.0;
-          }
+          const int fui   = 3*ui;
+          const int fuip  = fui+1;
 
-          elevec1[node*numdf+dim]+= edensnp(node)*funct(node)*(*onoff)[dim]*(*val)[dim]*fac*functfac;
+          elemat1(fvi  ,fui  ) -= vlhs*funct(ui);
+          elemat1(fvip ,fuip ) -= vlhs*funct(ui);
         }
       }
-    } //end of loop over integrationen points
+
+      // rhs
+      const double vrhs0 = rhsfac*velint(0);
+      const double vrhs1 = rhsfac*velint(1);
+      for (int vi=0; vi<iel; ++vi)
+      {
+        const int fvi   =3*vi;
+        const int fvip  =fvi+1;
+
+        elevec1(fvi  ) += funct(vi)*vrhs0;
+        elevec1(fvip ) += funct(vi)*vrhs1;
+      }
+    }
   }
 
-  return 0;
-}
+  return;
+}// DRT::ELEMENTS::Fluid2Line::NeumannInflow
 
 
 /*----------------------------------------------------------------------*

@@ -122,7 +122,6 @@ VSTAB                 no_vstab
 CSTAB                 cstab_qs
 CROSS-STRESS          no_cross
 REYNOLDS-STRESS       no_reynolds
-OUTFLOW_STAB          no_outstab
 ------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 TURBULENCE_APPROACH   DNS_OR_RESVMM_LES
 PHYSICAL_MODEL        no_model

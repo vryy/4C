@@ -212,6 +212,20 @@ public:
         const LINALG::Matrix<nsd_+1,iel>&    xyze    ///< element node coordinates
         );
 
+    //! calculate potential Neumann inflow terms
+    void NeumannInflow(
+        const DRT::Element*                   ele,
+        const vector<LINALG::Matrix<iel,1> >& ephinp,
+        const LINALG::Matrix<iel,1>&          edensnp,
+        const LINALG::Matrix<nsd_+1,iel>&     evelnp,
+        Epetra_SerialDenseMatrix&             emat,
+        Epetra_SerialDenseVector&             erhs,
+        const bool                            is_stationary,
+        const bool                            is_genalpha,
+        const bool                            is_incremental,
+        const double                          timefac,
+        const double                          alphaF);
+
     //! number of dof per node
     const int numdofpernode_;
     //! number of transported scalars (numscal_ <= numdofpernode_)
@@ -230,12 +244,16 @@ public:
     LINALG::Matrix<nsd_,1> xsi_;
     //! array for shape functions
     LINALG::Matrix<iel,1> funct_;
+    //! array for density-weighted shape functions at n+1/n+alpha_F
+    LINALG::Matrix<iel,1> densfunct_;
     //! array for shape function derivatives w.r.t r,s,t
     LINALG::Matrix<nsd_,iel> deriv_;
     //! global derivatives of shape functions w.r.t x,y,z
     LINALG::Matrix<nsd_,iel> derxy_;
     //! unit normal vector at integration point
     LINALG::Matrix<nsd_+1,1> normal_;
+    //! velocity vector in gausspoint
+    LINALG::Matrix<nsd_+1,1> velint_;
     //! metric tensor at integration point
     LINALG::Matrix<nsd_,nsd_>  metrictensor_;
     //! integration factor for current GP: fac = GaussWeight * drs

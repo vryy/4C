@@ -513,6 +513,48 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
    condlist.push_back(surfconsistentoutflowconsistency);
 
   /*--------------------------------------------------------------------*/
+  // Neumann inflow for FLUID
+
+  Teuchos::RCP<ConditionDefinition> linefluidneumanninflow =
+    Teuchos::rcp(new ConditionDefinition("FLUID NEUMANN INFLOW LINE CONDITIONS",
+                                         "FluidNeumannInflow",
+                                         "Line Fluid Neumann Inflow",
+                                         DRT::Condition::FluidNeumannInflow,
+                                         true,
+                                         DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> surffluidneumanninflow =
+    Teuchos::rcp(new ConditionDefinition("FLUID NEUMANN INFLOW SURF CONDITIONS",
+                                         "FluidNeumannInflow",
+                                         "Surface Fluid Neumann Inflow",
+                                         DRT::Condition::FluidNeumannInflow,
+                                         true,
+                                         DRT::Condition::Surface));
+
+   condlist.push_back(linefluidneumanninflow);
+   condlist.push_back(surffluidneumanninflow);
+
+  /*--------------------------------------------------------------------*/
+  // Neumann inflow for SCATRA
+
+  Teuchos::RCP<ConditionDefinition> linetransportneumanninflow =
+    Teuchos::rcp(new ConditionDefinition("TRANSPORT NEUMANN INFLOW LINE CONDITIONS",
+                                         "TransportNeumannInflow",
+                                         "Line Transport Neumann Inflow",
+                                         DRT::Condition::TransportNeumannInflow,
+                                         true,
+                                         DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> surftransportneumanninflow =
+    Teuchos::rcp(new ConditionDefinition("TRANSPORT NEUMANN INFLOW SURF CONDITIONS",
+                                         "TransportNeumannInflow",
+                                         "Surface Transport Neumann Inflow",
+                                         DRT::Condition::TransportNeumannInflow,
+                                         true,
+                                         DRT::Condition::Surface));
+
+   condlist.push_back(linetransportneumanninflow);
+   condlist.push_back(surftransportneumanninflow);
+
+  /*--------------------------------------------------------------------*/
   // FSI
 
   std::vector<Teuchos::RCP<ConditionComponent> > fsicomponents;

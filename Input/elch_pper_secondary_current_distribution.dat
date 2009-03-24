@@ -89,7 +89,6 @@ VSTAB                 no_vstab
 CSTAB                 cstab_qs
 CROSS-STRESS          no_cross
 REYNOLDS-STRESS       no_reynolds
-OUTFLOW_STAB          no_outstab
 ------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE       nonlinear

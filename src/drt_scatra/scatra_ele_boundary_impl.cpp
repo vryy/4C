@@ -117,9 +117,11 @@ DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ScaTraBoundaryImpl
     shcacp_(0.0),
     xsi_(true),
     funct_(true),
+    densfunct_(true),
     deriv_(true),
     derxy_(true),
     normal_(true),
+    velint_(true),
     metrictensor_(true),
     fac_(0.0)
     {
@@ -286,32 +288,29 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
   } 
   else if (action =="calc_therm_press")
   {
-    // get actual values of transported scalars
-    RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
-    if (phinp==null) dserror("Cannot get state vector 'phinp'");
-
-    // get velocity values at the nodes (needed for total flux values)
-    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
-    DRT::ELEMENTS::Transport* parentele = ele->ParentElement();
-    const int ielparent = parentele->NumNode();
-    // we deal with a (nsd_+1)-dimensional flow field 
-    Epetra_SerialDenseVector evel((nsd_+1)*ielparent);
-    DRT::UTILS::ExtractMyNodeBasedValues(parentele,evel,velocity,nsd_+1);
-
-    // get actual values of density
-    RefCountPtr<const Epetra_Vector> densnp = discretization.GetState("densnp");
-    if (densnp==null) dserror("Cannot get state vector 'densnp'");
-
     // we dont know the parent element's lm vector; so we have to build it here
+    const int ielparent = parentele->NumNode();
     vector<int> lmparent(ielparent);
     vector<int> lmparentowner;
     parentele->LocationVector(discretization, lmparent, lmparentowner);
 
+    // get velocity values at nodes
+    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
+    // we deal with a (nsd_+1)-dimensional flow field
+    Epetra_SerialDenseVector evel((nsd_+1)*ielparent);
+    DRT::UTILS::ExtractMyNodeBasedValues(parentele,evel,velocity,nsd_+1);
+
+    // get values of density and solution
+    RefCountPtr<const Epetra_Vector> densnp = discretization.GetState("densnp");
+    RefCountPtr<const Epetra_Vector> phinp  = discretization.GetState("phinp");
+    if (densnp==null || phinp==null)
+      dserror("Cannot get state vector 'densnp' and/or 'phinp'");
+
     // extract local values from the global vectors for the parent(!) element 
     vector<double> mydensnp(lmparent.size());
     vector<double> myphinp(lmparent.size());
-    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lmparent);
     DRT::UTILS::ExtractMyValues(*densnp,mydensnp,lmparent);
+    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lmparent);
 
     // this routine is only for low-mach-number flow
     bool temperature = true;
@@ -373,6 +372,88 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     const bool addarea = (ele->Owner() == discretization.Comm().MyPID());
     IntegrateShapeFunctions(ele,params,elevec1_epetra,addarea);
   }
+  else if (action =="calc_Neumann_inflow")
+  {
+    // get control parameters
+    const bool is_stationary  = params.get<bool>("using stationary formulation");
+    const bool is_genalpha    = params.get<bool>("using generalized-alpha time integration");
+    const bool is_incremental = params.get<bool>("incremental solver");
+
+    // get time factor and alpha_F if required
+    // one-step-Theta:    timefac = theta*dt
+    // BDF2:              timefac = 2/3 * dt
+    // generalized-alpha: timefac = alphaF * (gamma*/alpha_M) * dt
+    double timefac = 1.0;
+    double alphaF  = 1.0;
+    if (not is_stationary)
+    {
+      timefac = params.get<double>("time factor");
+      if (is_genalpha)
+      {
+        alphaF = params.get<double>("alpha_F");
+        timefac *= alphaF;
+      }
+      if (timefac < 0.0) dserror("time factor is negative.");
+    }
+
+    // we dont know the parent element's lm vector; so we have to build it here
+    const int ielparent = parentele->NumNode();
+    vector<int> lmparent(ielparent);
+    vector<int> lmparentowner;
+    parentele->LocationVector(discretization, lmparent, lmparentowner);
+
+    // get velocity values at nodes
+    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
+    // we deal with a (nsd_+1)-dimensional flow field
+    Epetra_SerialDenseVector evel((nsd_+1)*ielparent);
+    DRT::UTILS::ExtractMyNodeBasedValues(parentele,evel,velocity,nsd_+1);
+
+    // get values of density and solution
+    RefCountPtr<const Epetra_Vector> densnp = discretization.GetState("densnp");
+    RefCountPtr<const Epetra_Vector> phinp  = discretization.GetState("phinp");
+    if (densnp==null || phinp==null)
+      dserror("Cannot get state vector 'densnp' and/or 'phinp'");
+
+    // extract local values from the global vectors for the parent(!) element 
+    vector<double> mydensnp(lmparent.size());
+    vector<double> myphinp(lmparent.size());
+    DRT::UTILS::ExtractMyValues(*densnp,mydensnp,lmparent);
+    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lmparent);
+
+    // create object for density and solution array
+    LINALG::Matrix<iel,1>          edensnp;
+    vector<LINALG::Matrix<iel,1> > ephinp(numscal_);
+    LINALG::Matrix<nsd_+1,iel>     evelnp;
+
+    // insert into element arrays
+    for (int i=0;i<iel;++i)
+    {
+      for (int k = 0; k< numscal_; ++k)
+      {
+        // split for each tranported scalar, insert into element arrays
+        ephinp[k](i,0) = myphinp[k+(i*numdofpernode_)];
+      }
+      edensnp(i) = mydensnp[0+(i*numdofpernode_)];
+
+      // insert velocity field into element array
+      for (int idim=0 ; idim < nsd_+1 ; idim++)
+      {
+        evelnp(idim,i) = evel[idim + (i*nsd_+1)];
+      }
+    }
+
+    NeumannInflow(ele,
+                  ephinp,
+                  edensnp,
+                  evelnp,
+                  elemat1_epetra,
+                  elevec1_epetra,
+                  is_stationary,
+                  is_genalpha,
+                  is_incremental,
+                  timefac,
+                  alphaF);
+  }
   else
     dserror("Unknown type of action for Scatra Implementation: %s",action.c_str());
 
@@ -391,7 +472,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
     DRT::Condition&           condition,
     vector<int>&              lm,
     Epetra_SerialDenseVector& elevec1)
-    {
+{
   // get node coordinates (we have a nsd_+1 dimensional domain!)
   GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,iel> >(ele,xyze_);
 
@@ -469,7 +550,101 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
   } //end of loop over integration points
 
   return 0;
+}
+
+
+/*----------------------------------------------------------------------*
+ | calculate Neumann inflow boundary conditions                vg 03/09 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
+    const DRT::Element*                   ele,
+    const vector<LINALG::Matrix<iel,1> >& ephinp,
+    const LINALG::Matrix<iel,1>&          edensnp,
+    const LINALG::Matrix<nsd_+1,iel>&     evelnp,
+    Epetra_SerialDenseMatrix&             emat,
+    Epetra_SerialDenseVector&             erhs,
+    const bool                            is_stationary,
+    const bool                            is_genalpha,
+    const bool                            is_incremental,
+    const double                          timefac,
+    const double                          alphaF)
+{
+  // get node coordinates (we have a nsd_+1 dimensional domain!)
+  GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,iel> >(ele,xyze_);
+
+  // integrations points and weights
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // determine constant normal to this element
+  GetConstNormal(normal_,xyze_);
+
+  // integration loop
+  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+  {
+    EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id());
+
+    // density-weighted shape functions at n+1/n+alpha_F
+    densfunct_.EMultiply(funct_,edensnp);
+
+    // get (density-weighted) velocity at integration point
+    velint_.Multiply(evelnp,densfunct_);
+
+    // normal (density-weighted) velocity
+    const double normvel = velint_.Dot(normal_);
+
+    if (normvel<-0.0001)
+    {
+      // integration factor for left-hand side
+      const double lhsfac = normvel*timefac*fac_;
+
+      // integration factor for right-hand side
+      double rhsfac    = 0.0;
+      if (is_incremental and is_genalpha)
+        rhsfac = lhsfac/alphaF;
+      else if (not is_incremental and is_genalpha)
+        rhsfac = lhsfac*(1.0-alphaF)/alphaF;
+      else if (is_incremental and not is_genalpha)
+      {
+        if (not is_stationary) rhsfac = lhsfac;
+        else                   rhsfac = normvel*fac_;
+      }
+
+      for(int k=0;k<numdofpernode_;++k)
+      {
+        // matrix
+        for (int vi=0; vi<iel; ++vi)
+        {
+          const double vlhs = lhsfac*funct_(vi);
+
+          const int fvi = vi*numdofpernode_+k;
+
+          for (int ui=0; ui<iel; ++ui)
+          {
+            const int fui = ui*numdofpernode_+k;
+
+            emat(fvi,fui) -= vlhs*funct_(ui);
+          }
+        }
+
+        // scalar at integration point
+        const double phi = funct_.Dot(ephinp[k]);
+
+        // rhs
+        const double vrhs = rhsfac*phi;
+        for (int vi=0; vi<iel; ++vi)
+        {
+          const int fvi = vi*numdofpernode_+k;
+
+          erhs[fvi] += vrhs*funct_(vi);
+        }
+      }
     }
+  }
+
+  return;
+
+} //ScaTraBoundaryImpl<distype>::NeumannInflow
 
 
 /*----------------------------------------------------------------------*

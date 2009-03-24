@@ -337,6 +337,11 @@ protected:
       RCP<LINALG::SparseOperator>& matrix,
       RCP<Epetra_Vector>&          rhs);
 
+  /// compute potential Neumann inflow
+  void ComputeNeumannInflow(
+      RCP<LINALG::SparseOperator>& matrix,
+      RCP<Epetra_Vector>&          rhs);
+
   /// return the right time-scaling-factor for the true residual
   virtual double ResidualScaling() const = 0;
 
@@ -411,6 +416,10 @@ protected:
 
   /// form of convective term
   string convform_;
+
+  /// flag for potential Neumann inflow
+  string neumannin_;
+  bool neumanninflow_;
 
   /// fine-scale subgrid-viscosity flag
   string fssgd_;

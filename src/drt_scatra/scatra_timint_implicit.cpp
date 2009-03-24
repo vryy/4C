@@ -66,6 +66,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   dtp_      (params_->get<double>("time step size")),
   cdvel_    (params_->get<int>("velocity field")),
   convform_ (params_->get<string>("form of convective term")),
+  neumannin_(params_->get<string>("Neumann inflow")),
   fssgd_    (params_->get<string>("fs subgrid diffusivity")),
   frt_      (96485.3399/(8.314472 * params_->get<double>("TEMPERATURE",298.15))),
   errfile_  (params_->get<FILE*>("err file")),
@@ -89,6 +90,12 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     incremental_ = false;
     nonlinear_   = false;
   }
+
+  // -------------------------------------------------------------------
+  // determine whether Neumann inflow terms need to be accounted for
+  // -------------------------------------------------------------------
+  neumanninflow_ = false;
+  if (neumannin_ == "yes") neumanninflow_ = true;
 
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
@@ -590,10 +597,13 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
     // boundaries the boundary flux values can be computed form the trueresidual
     trueresidual_->Update(ResidualScaling(),*residual_,0.0);
 
-    // add actual Neumann loads scaled with a factor due to time discretization
+    // add Neumann b.c. scaled with a factor due to time discretization
     AddNeumannToResidual();
 
-    //add contributions due to electrode kinetics conditions
+    // add potential Neumann inflow
+    if (neumanninflow_) ComputeNeumannInflow(sysmat_,residual_);
+
+    // add contributions due to electrode kinetics conditions
     EvaluateElectrodeKinetics(sysmat_,residual_);
 
     // blank residual DOFs which are on Dirichlet BC
@@ -833,9 +843,6 @@ void SCATRA::ScaTraTimIntImpl::Solve()
     // reset the residual vector 
     residual_->PutScalar(0.0);
 
-    // add actual Neumann loads scaled with a factor due to time discretization
-    AddNeumannToResidual();
-
     // create the parameters for the discretization
     ParameterList eleparams;
 
@@ -881,14 +888,20 @@ void SCATRA::ScaTraTimIntImpl::Solve()
     dtele_=ds_cputime()-tcpu;
   }
 
+  // scaling to get true residual vector for all time integration schemes
+  // in incremental case: boundary flux values can be computed from trueresidual
+  if (incremental_) trueresidual_->Update(ResidualScaling(),*residual_,0.0);
+
+  // add Neumann b.c. scaled with a factor due to time discretization
+  AddNeumannToResidual();
+
+  // add potential Neumann inflow
+  if (neumanninflow_) ComputeNeumannInflow(sysmat_,residual_);
+
   // Apply Dirichlet boundary conditions to system matrix and solve system in
   // incremental or non-incremental case
   if (incremental_)
   {
-    // scaling to get true residual vector for all time integration schemes:
-    // boundary flux values can be computed from trueresidual
-    trueresidual_->Update(ResidualScaling(),*residual_,0.0);
-
     // blank residual DOFs which are on Dirichlet BC
     // We can do this because the values at the Dirichlet positions
     // are not used anyway.

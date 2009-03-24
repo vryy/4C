@@ -455,8 +455,8 @@ protected:
   /// flag for special flow: currently channel flow or flow in a lid-driven cavity
   string special_flow_;
 
-  /// flag for potential Neumann-type outflow stabilization
-  string outflow_stab_;
+  /// flag for potential Neumann inflow
+  bool neumanninflow_;
 
   /// form of convective term
   string convform_;
