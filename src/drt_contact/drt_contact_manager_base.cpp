@@ -158,12 +158,12 @@ void CONTACT::ManagerBase::Initialize()
     
     // here the calculation of gstickt is necessary
     RCP<Epetra_Map> gstickt = LINALG::SplitMap(*gactivet_,*gslipt_);
-    linstickmatrix_ = rcp(new LINALG::SparseMatrix(*gstickt,3));
+    linstickDIS_ = rcp(new LINALG::SparseMatrix(*gstickt,3));
+    linstickRHS_ = LINALG::CreateVector(*gstickt,true);
     
     linslipLM_ = rcp(new LINALG::SparseMatrix(*gslipt_,3));
     linslipDIS_ = rcp(new LINALG::SparseMatrix(*gslipt_,3));
     linslipRHS_ = LINALG::CreateVector(*gslipt_,true);
-       
   }
   
   return;
@@ -413,8 +413,8 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
     interface_[i]->AssembleNT(*nmatrix_,*tmatrix_);
     interface_[i]->AssembleS(*smatrix_);
     interface_[i]->AssembleLinDM(*lindmatrix_,*linmmatrix_);
-    interface_[i]->AssembleLinStick(*linstickmatrix_);
-    interface_[i]->AssembleLinSlip(*linslipLM_,*linslipDIS_,*linslipRHS_,frbound,ct);
+    interface_[i]->AssembleLinStick(*linstickDIS_,*linstickRHS_);
+    interface_[i]->AssembleLinSlip(*linslipLM_,*linslipDIS_,*linslipRHS_,frbound,ct,fulllin);
     interface_[i]->AssembleTresca(*lmatrix_,*r_,frbound,ct);
   }
 
@@ -436,7 +436,7 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
   
   // FillComplete global Matrix LinStick
   RCP<Epetra_Map> gstickt = LINALG::SplitMap(*gactivet_,*gslipt_);
-  linstickmatrix_->Complete(*gsmdofs,*gstickt);
+  linstickDIS_->Complete(*gsmdofs,*gstickt);
   
   // FillComplete global Matrix linslipLM and linslipDIS
   linslipLM_->Complete(*gslipdofs_,*gslipt_);
@@ -696,27 +696,6 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
 
   // t*mbarstick: do the multiplication
   RCP<LINALG::SparseMatrix> tmhatst = LINALG::Multiply(*tstmatrix,false,*mhatst,false,true);
-#else
-   
-  // create a merged map of domain map of M and Mold
-  const Epetra_Map& mmatrixdofsst = mmatrixst->DomainMap();
-  const Epetra_Map& molddofsst = moldst->DomainMap();
-  RCP<Epetra_Map> mdiffdofsst = LINALG::MergeMap(mmatrixdofsst,molddofsst,true);
-  
-  // Create a new Matrix, add M and -Mold
-  RCP<LINALG::SparseMatrix> diffMst = rcp(new LINALG::SparseMatrix(mmatrixst->RowMap(),81));
-  diffMst->Add(*mmatrixst,false,+1.0,0.0);
-  diffMst->Add(*moldst,false,-1.0,1.0);
-  diffMst->Complete(*mdiffdofsst,mmatrixst->RowMap());
-
-  // Tst.(Mn+1-Mn)
-  RCP<LINALG::SparseMatrix> tstdiffM = LINALG::Multiply(*tstmatrix,false,*diffMst,false,true);
-  
-  RCP<LINALG::SparseMatrix> diffDst = dmatrixst;
-  diffDst->Add(*doldst,false,-1.0,1.0);
-  
-  // Tst.(Dn+1-Dn)
-  RCP<LINALG::SparseMatrix> tstdiffD = LINALG::Multiply(*tstmatrix,false,*diffDst,false,true);
 #endif
   
  // nmatrix: nothing to do
@@ -790,6 +769,7 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
   kslstmod = LINALG::Multiply(*kslstmod,false,*kslst,false,true);
   kslstmod->Complete(kslst->DomainMap(),kslst->RowMap());
 #endif
+
   // fn: nothing to do
   
   // fi: subtract alphaf * old contact forces (t_n)
@@ -868,23 +848,6 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
   
   // gactive: nothing to do
   
-  // add jump from stick nodes to r.h.s.
-  // mostly nonzero, not when changing a slip node to a stick one within
-  // a time step in the semi-smooth Newton
-  
-  // temporary RCPs
-  RCP<Epetra_Map> tmap1;
-  
-  // temporary vector
-  RCP<Epetra_Vector> restjump;
-  
-  RCP<Epetra_Vector> stjump = rcp(new Epetra_Vector(*gstdofs));
-  if (gstdofs->NumGlobalElements()) LINALG::Export(*jump_,*stjump);
-  
-  RCP<Epetra_Vector> tstjump = rcp(new Epetra_Vector(*gstickt));
-  
-  tstmatrix->Multiply(false,*stjump,*tstjump);
-      
  #ifdef CONTACTFDGAP
   // FD check of weighted gap g derivatives
   for (int i=0; i<(int)interface_.size(); ++i)
@@ -907,28 +870,47 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
   }
 #endif // #ifdef CONTACTFDTANGLM
 
-#ifdef CONTACTFDSLIPTRESCA
+#ifdef CONTACTFDSTICK
  
+  if (gstickt->NumGlobalElements())
+  {
+  // FD check of stick condition
+    for (int i=0; i<(int)interface_.size(); ++i)
+    {
+      RCP<LINALG::SparseMatrix> deriv = rcp(new LINALG::SparseMatrix(*gactivet_,81));
+      
+      deriv->Add(*linstickDIS_,false,1.0,1.0);
+      deriv->Complete(*gsmdofs,*gactivet_);
+
+      cout << *deriv << endl;
+      
+      interface_[i]->FDCheckStickDeriv();
+    }
+  }
+#endif // #ifdef CONTACTFDSTICK
+  
+#ifdef CONTACTFDSLIPTRESCA
+
   if (gslipnodes_->NumGlobalElements())
   {
   // FD check of tresca slip condition
- for (int i=0; i<(int)interface_.size(); ++i)
- {
-   RCP<LINALG::SparseMatrix> deriv1 = rcp(new LINALG::SparseMatrix(*gactivet_,81));
-   RCP<LINALG::SparseMatrix> deriv2 = rcp(new LINALG::SparseMatrix(*gactivet_,81));
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    RCP<LINALG::SparseMatrix> deriv1 = rcp(new LINALG::SparseMatrix(*gactivet_,81));
+    RCP<LINALG::SparseMatrix> deriv2 = rcp(new LINALG::SparseMatrix(*gactivet_,81));
       
-   deriv1->Add(*linslipLM_,false,1.0,1.0);
-   deriv1->Complete(*gsmdofs,*gactivet_);
+    deriv1->Add(*linslipLM_,false,1.0,1.0);
+    deriv1->Complete(*gsmdofs,*gactivet_);
       
-   deriv2->Add(*linslipDIS_,false,1.0,1.0);
-   deriv2->Complete(*gsmdofs,*gactivet_);
+    deriv2->Add(*linslipDIS_,false,1.0,1.0);
+    deriv2->Complete(*gsmdofs,*gactivet_);
    
-   cout << *deriv1 << endl;
-   cout << *deriv2 << endl;
+    cout << *deriv1 << endl;
+    cout << *deriv2 << endl;
       
-   interface_[i]->FDCheckSlipTrescaDeriv(frbound,ct);
- }
+    interface_[i]->FDCheckSlipTrescaDeriv(frbound,ct);
   }
+}
 #endif // #ifdef CONTACTFDSLIPTRESCA
   
   /**********************************************************************/
@@ -970,28 +952,21 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
   
   // add matrix tmhatst to kteffnew
   if(tmhatst!=null) kteffnew->Add(*tmhatst,false,-1.0,1.0);
-#else
-
-  // add matrix tstdiffD to kteffnew
-  if(tstdiffD!=null) 
-   	kteffnew->Add(*tstdiffD,false,-1.0,1.0);
-  
-  // add matrix tstdiffM to kteffnew
-  if(tstdiffM!=null) 
-    kteffnew->Add(*tstdiffM,false,+1.0,1.0);
-#endif  
+#endif
   
   // add full linearization terms to kteffnew
  if (fulllin)
   {
    if (gactiven_->NumGlobalElements()) kteffnew->Add(*smatrix_,false,-1.0,1.0);
-   if (gstickt->NumGlobalElements()) kteffnew->Add(*linstickmatrix_,false,1.0,1.0);
   }
-  
+
 #ifdef CONTACTRELVELMATERIAL
 #else
   
-  // add terms of linearization to kteffnew and feffnew
+  // add terms of linearization of sick condition to kteffnew
+  if (gstickt->NumGlobalElements()) kteffnew->Add(*linstickDIS_,false,1.0,1.0);
+  
+  // add terms of linearization of slip condition to kteffnew and feffnew
   if (gslipt_->NumGlobalElements())
   {
    	kteffnew->Add(*linslipDIS_,false,-1.0,+1.0);
@@ -999,9 +974,19 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
   	RCP<Epetra_Vector> linslipRHSexp = rcp(new Epetra_Vector(*problemrowmap_));
    	LINALG::Export(*linslipRHS_,*linslipRHSexp);
     feffnew->Update(-1.0,*linslipRHSexp,1.0);
- }
-#endif  
+  }
+#endif
   
+  // add terms of linearization feffnew
+  // this is done also for evalutating the relative velocity with material
+  // velocities
+   if (gstickt->NumGlobalElements())
+   {
+     	RCP<Epetra_Vector> linstickRHSexp = rcp(new Epetra_Vector(*problemrowmap_));
+   	  LINALG::Export(*linstickRHS_,*linstickRHSexp);
+      //feffnew->Update(+1.0,*linstickRHSexp,1.0);
+   }
+ 
   // add a submatrices to kteffnew
   if (gslipt_->NumGlobalElements()) kteffnew->Add(*kslnmod,false,1.0,1.0);
   if (gslipt_->NumGlobalElements()) kteffnew->Add(*kslmmod,false,1.0,1.0);
@@ -1031,14 +1016,6 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
   RCP<Epetra_Vector> fslmodexp = rcp(new Epetra_Vector(*problemrowmap_));
   LINALG::Export(*fslmod,*fslmodexp);
   if (gslipnodes_->NumGlobalElements())feffnew->Update(1.0,*fslmodexp,1.0);
-  
-  //stick nodes: add tstjump to r.h.s
-  if(gstdofs->NumGlobalElements())
-  { 
-  RCP<Epetra_Vector> tstjumpexp = rcp(new Epetra_Vector(*problemrowmap_));
-  LINALG::Export(*tstjump,*tstjumpexp);
-  //feffnew->Update(-1.0,*tstjumpexp,+1.0);
-  }
   
   // add weighted gap vector to feffnew, if existing
   RCP<Epetra_Vector> gexp = rcp(new Epetra_Vector(*problemrowmap_));

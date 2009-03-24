@@ -59,6 +59,7 @@ Maintainer: Alexander Popp
 //#define CONTACTFDMORTARD      /* flag for FD check of mortar matrix D */
 //#define CONTACTFDMORTARM      /* flag for FD check of mortar matrix M */
 //#define CONTACTFDGAP          /* flag for FD check of weighted gap g */
+//#define CONTACTFDSTICK          /* flag for FD check of stick condition */
 //#define CONTACTFDSLIPTRESCA   /* flag for FD check of tresca slip condition */
 //#define CONTACTFDTANGLM       /* flag for FD check of tangential LM */
 //#define CONTACTFDVERTEX3D     /* flag for FD check of vertices in 3D */

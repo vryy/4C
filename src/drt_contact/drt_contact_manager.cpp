@@ -472,10 +472,11 @@ bool CONTACT::Manager::ReadAndCheckInput()
   	dserror("Friction Parameter ct = 0, must be greater than 0");
   if (stype=="nodes" && sp==0.0)
     dserror("Search radius sp = 0, muste be greater than 0 for node-based search");
-  
+#ifdef CONTACTRELVELMATERIAL 
+  if (fulllin) dserror ("Full linearization only running for evaluating\n"
+  		"the relative velocity with change of projection");
+#endif  
   // warnings
-  if (ctype=="frictional" && fulllin)
-    cout << ("Warning: Full linearization not completely implemented for friction\n") << endl;
   if ((stype=="elements" || stype=="binarytree") && sp==0.0)
     cout << ("Warning: Ele-based / binary tree search called without inflation of bounding volumes\n") << endl;
   

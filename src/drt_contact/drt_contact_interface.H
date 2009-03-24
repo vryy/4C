@@ -604,8 +604,8 @@ public:
   nodal tangents and of the Mortar matrices D  and M.
   
   */
-  virtual void AssembleLinStick(LINALG::SparseMatrix& linstickglobal);
-
+  virtual void AssembleLinStick(LINALG::SparseMatrix& linstickDISglobal,
+                                Epetra_Vector& linstickRHSglobal);
   /*!
   \brief Assemble matrix LinSlip containing linearizations
   
@@ -618,7 +618,8 @@ public:
   virtual void AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
   		                         LINALG::SparseMatrix& linslipDISglobal,
   		                         Epetra_Vector& linslipRHSglobal,
-  		                         double& frbound, double& ct);
+  		                         double& frbound, double& ct,
+  		                         bool& fulllin);
   
   /*!
   \brief Initialize active set of this interface (t=0)
@@ -685,6 +686,12 @@ public:
   */
   virtual void FDCheckTangLMDeriv();
   
+  /*!
+  \brief Check stick condition derivatives with finite differences
+         
+  */
+  virtual void FDCheckStickDeriv();
+
   /*!
   \brief Check slip condition (tresca) derivatives with finite differences
          
