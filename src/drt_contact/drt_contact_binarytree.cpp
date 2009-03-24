@@ -736,47 +736,46 @@ void CONTACT::BinaryTree::BinaryTreeNode::PrintDopsForGmsh(std::string filename)
 	  //PrintSlabs();
 
 	  // Matrix containing coordinates of points defining kdop (x,y,z)
- 	  double position[kdop_][3];
-
-	  for (int i=0;i<kdop_;i++)
-			position[i][2]=0.0;
+  	Epetra_SerialDenseMatrix position(kdop_,3);
+  	
+	  for (int i=0;i<kdop_;i++) position(i,2)=0.0;
 
 		//point 0
-		position[0][0]=(sqrt(2)*slabs_(2,0))-slabs_(1,0);
-		position[0][1]=slabs_(1,0);
+		position(0,0)=(sqrt(2)*slabs_(2,0))-slabs_(1,0);
+		position(0,1)=slabs_(1,0);
 		//point 1
-		position[1][0]=slabs_(1,0)-(sqrt(2)*slabs_(3,0));
-		position[1][1]=slabs_(1,0);
+		position(1,0)=slabs_(1,0)-(sqrt(2)*slabs_(3,0));
+		position(1,1)=slabs_(1,0);
 		//point 2
-		position[2][0]=slabs_(0,1);
-		position[2][1]=slabs_(0,1)+(sqrt(2)*slabs_(3,0));
+		position(2,0)=slabs_(0,1);
+		position(2,1)=slabs_(0,1)+(sqrt(2)*slabs_(3,0));
 		//point 3
-		position[3][0]=slabs_(0,1);
-		position[3][1]=-slabs_(0,1)+(sqrt(2)*slabs_(2,1));
+		position(3,0)=slabs_(0,1);
+		position(3,1)=-slabs_(0,1)+(sqrt(2)*slabs_(2,1));
 		//point 4
-		position[4][0]=(sqrt(2)*slabs_(2,1))-slabs_(1,1);
-		position[4][1]=slabs_(1,1);
+		position(4,0)=(sqrt(2)*slabs_(2,1))-slabs_(1,1);
+		position(4,1)=slabs_(1,1);
 		//point 5
-		position[5][0]=slabs_(1,1)-(sqrt(2)*slabs_(3,1));
-		position[5][1]=slabs_(1,1);
+		position(5,0)=slabs_(1,1)-(sqrt(2)*slabs_(3,1));
+		position(5,1)=slabs_(1,1);
 		//point 6
-		position[6][0]=slabs_(0,0);
-		position[6][1]=slabs_(0,0)+(sqrt(2)*slabs_(3,1));
+		position(6,0)=slabs_(0,0);
+		position(6,1)=slabs_(0,0)+(sqrt(2)*slabs_(3,1));
 		//point 7
-		position[7][0]=slabs_(0,0);
-		position[7][1]=-slabs_(0,0)+(sqrt(2)*slabs_(2,0));
+		position(7,0)=slabs_(0,0);
+		position(7,1)=-slabs_(0,0)+(sqrt(2)*slabs_(2,0));
 
 
 	  for (int i=0;i<(kdop_-1);i++)
 	  {
-	  	gmshfilecontent <<"SL(" << scientific << position[i][0] << "," << position[i][1] << ","
-	  	                        << position[i][2] << "," << position[i+1][0] << "," << position[i+1][1] << ","
-	  	                        << position[i+1][2] << ")";
+	  	gmshfilecontent <<"SL(" << scientific << position(i,0) << "," << position(i,1) << ","
+	  	                        << position(i,2) << "," << position(i+1,0) << "," << position(i+1,1) << ","
+	  	                        << position(i+1,2) << ")";
 	  	gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
 	  }
-	  gmshfilecontent << "SL(" << scientific << position[7][0] << "," << position[7][1] << "," 
-	                << position[7][2] << "," << position[0][0] << "," << position[0][1] << ","
-                  << position[0][2] << ")";
+	  gmshfilecontent << "SL(" << scientific << position(7,0) << "," << position(7,1) << "," 
+	                << position(7,2) << "," << position(0,0) << "," << position(0,1) << ","
+                  << position(0,2) << ")";
 	  gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
 	  fprintf(fp,gmshfilecontent.str().c_str());
 	  fclose(fp);
@@ -819,15 +818,15 @@ void CONTACT::BinaryTree::BinaryTreeNode::PrintDopsForGmsh(std::string filename)
                 double norm2=sqrt((dopnormals_(k,0)*dopnormals_(k,0))+
                     (dopnormals_(k,1)*dopnormals_(k,1))+(dopnormals_(k,2)*dopnormals_(k,2)));
                 // cout << endl << "norm0: " << norm0 << " 1: " << norm1 << " 2: " << norm2;
-                A(0,0)=static_cast<double>(dopnormals_(i,0))/norm0;
-                A(0,1)=static_cast<double>(dopnormals_(i,1))/norm0;
-                A(0,2)=static_cast<double>(dopnormals_(i,2))/norm0;
-                A(1,0)=static_cast<double>(dopnormals_(j,0))/norm1;
-                A(1,1)=static_cast<double>(dopnormals_(j,1))/norm1;
-                A(1,2)=static_cast<double>(dopnormals_(j,2))/norm1;
-                A(2,0)=static_cast<double>(dopnormals_(k,0))/norm2;
-                A(2,1)=static_cast<double>(dopnormals_(k,1))/norm2;
-                A(2,2)=static_cast<double>(dopnormals_(k,2))/norm2;
+                A(0,0)=(dopnormals_(i,0))/norm0;
+                A(0,1)=(dopnormals_(i,1))/norm0;
+                A(0,2)=(dopnormals_(i,2))/norm0;
+                A(1,0)=(dopnormals_(j,0))/norm1;
+                A(1,1)=(dopnormals_(j,1))/norm1;
+                A(1,2)=(dopnormals_(j,2))/norm1;
+                A(2,0)=(dopnormals_(k,0))/norm2;
+                A(2,1)=(dopnormals_(k,1))/norm2;
+                A(2,2)=(dopnormals_(k,2))/norm2;
                 
                 //only if matrix a is not singular
                 if (A.Determinant()!=0)

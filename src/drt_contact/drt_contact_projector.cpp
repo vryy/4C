@@ -938,12 +938,7 @@ bool CONTACT::Projector::EvaluateFGaussPointAuxn3D(
        xi      coords of nodes of element to project on
        globgp  coords of AuxPlaneGP to be projected
        auxn    normal of AuxPlane along which to project            */
-
-  // collect necessary data
-  int nnodes = ele.NumNode();
-  LINALG::SerialDenseVector val(nnodes);
-  LINALG::SerialDenseMatrix deriv(nnodes,2,true);
-    
+ 
   // build interpolation of ele node coordinates for current eta
   double nx[3] = {0.0, 0.0, 0.0};
   ele.LocalToGlobal(eta,nx,0);
@@ -974,11 +969,6 @@ bool CONTACT::Projector::EvaluateGradFGaussPointAuxn3D(
        globgp  coords of AuxPlaneGP to be projected
        auxn    normal of AuxPlane along which to project            */
   
-  // collect necessary data
-  int nnodes = ele.NumNode();
-  LINALG::SerialDenseVector val(nnodes);
-  LINALG::SerialDenseMatrix deriv(nnodes,2,true);
-    
   // build interpolation of ele node coordinates for current eta
   double nxeta1[3] = {0.0, 0.0, 0.0};
   double nxeta2[3] = {0.0, 0.0, 0.0};
