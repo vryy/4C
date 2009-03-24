@@ -1504,7 +1504,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaCalcIncrement(const double nlnres)
       
       presmode->PutScalar((*mode)[predof]);
 
-      // export to vector to normalize against
+      /* export to vector to normalize against
       //
       // Note that in the case of definition pointvalue based,
       // the average pressure will vanish in a pointwise sense 
@@ -1514,7 +1514,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaCalcIncrement(const double nlnres)
       //      +   p_i  = 0
       //     / 
       //    +---+
-      //
+      */
       LINALG::Export(*presmode,*w_);
 
       // export to vector of ones
@@ -1537,7 +1537,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaCalcIncrement(const double nlnres)
 	discret_->SetState("dispnp",dispnp_);
       }
       
-      // evaluate KrylovSpaceProjection condition in order to get
+      /* evaluate KrylovSpaceProjection condition in order to get
       // integrated nodal basis functions w_
       // Note that in the case of definition integration based,
       // the average pressure will vanish in an integral sense 
@@ -1547,6 +1547,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaCalcIncrement(const double nlnres)
       //  | w_*p | = p_i * | N_i(x) dx =  | | N_i(x)*p_i | dx =  | | p(x) | dx = 0
       //   \    /          |              |  \          /        |  \    / 
       //  	          /  	         /  		        /  
+      */
 
       discret_->EvaluateCondition
       (mode_params        ,
@@ -1567,8 +1568,6 @@ void FLD::FluidGenAlphaIntegration::GenAlphaCalcIncrement(const double nlnres)
 	  dserror("expecting only an undetermined pressure");
 	}
       }
-
-      int predof = numdim_;
       
       Teuchos::RCP<Epetra_Vector> presmode = velpressplitter_.ExtractCondVector(*w_);
       
