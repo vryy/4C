@@ -389,7 +389,8 @@ private:
     calc_loma_statistics,
     calc_fluid_box_filter,
     calc_smagorinsky_const,
-    get_density
+    get_density,
+    integrate_shape
   };
 
   //! stabilisation actions recognized by fluid3 (genalpha implementation)
@@ -709,6 +710,16 @@ void f3_calc_smag_const_LijMij_and_MijMij(
   DRT::UTILS::GaussRule3D getOptimalGaussrule(
     const DiscretizationType&  distype  ///< switch gausrule based on this discretization type
     );
+
+  /*!
+   * \brief integrate shape functions over volume element
+   * \return 
+   */
+  template<int iel> 
+  void integrateShapefunction(
+    DRT::Discretization&      discretization,
+    vector<int>&              lm            ,
+    Epetra_SerialDenseVector& elevec1       );
 
   /*!
    * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary

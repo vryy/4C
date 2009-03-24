@@ -47,6 +47,8 @@ namespace ELEMENTS
   template<> struct DisTypeToNumCornerNodes<DRT::Element::pyramid5> {static const int numCornerNodes = 5;};
   template<> struct DisTypeToNumCornerNodes<DRT::Element::wedge6>   {static const int numCornerNodes = 6;};
   template<> struct DisTypeToNumCornerNodes<DRT::Element::wedge15>  {static const int numCornerNodes = 6;};
+  template<> struct DisTypeToNumCornerNodes<DRT::Element::nurbs8>   {static const int numCornerNodes = 8;};
+  template<> struct DisTypeToNumCornerNodes<DRT::Element::nurbs27>  {static const int numCornerNodes = 8;};
 
 
 
@@ -334,6 +336,7 @@ public:
                                 Epetra_SerialDenseMatrix& sys_mat,
                                 const vector<double>&     displacements) = 0;
   virtual void static_ke(Ale3*                      ele,
+			 DRT::Discretization&       discretization,
                          vector<int>&               lm,
                          Epetra_SerialDenseMatrix&  sys_mat,
                          Epetra_SerialDenseVector&  residual,
@@ -358,6 +361,7 @@ public:
                         Epetra_SerialDenseMatrix& sys_mat,
                         const vector<double>&     displacements);
   void static_ke(Ale3*                      ele,
+		 DRT::Discretization&       discretization,
                  vector<int>&               lm,
                  Epetra_SerialDenseMatrix&  sys_mat,
                  Epetra_SerialDenseVector&  residual,
@@ -424,6 +428,9 @@ private:
                                       const LINALG::Matrix<3,iel>& xyze);
   inline void ale3_tors_spring_hex8(LINALG::Matrix<3*iel,3*iel>& sys_mat,
                                     const LINALG::Matrix<3,iel>& xyze);
+  inline void ale3_tors_spring_nurbs27(LINALG::Matrix<3*iel,3*iel>& sys_mat,
+				       const LINALG::Matrix<3,iel>& xyze);
+
 
   inline DRT::UTILS::GaussRule3D getOptimalGaussrule();
 

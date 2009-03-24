@@ -90,6 +90,8 @@ DRT::ELEMENTS::Fluid3::ActionType DRT::ELEMENTS::Fluid3::convertStringToActionTy
     act = Fluid3::calc_smagorinsky_const;
   else if (action == "get_density")
     act = Fluid3::get_density;
+  else if (action == "integrate_shape")
+    act = Fluid3::integrate_shape;
   else
     dserror("Unknown type of action for Fluid3");
   return act;
@@ -626,6 +628,56 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           dserror("no fluid material found");
       }
       break;
+      case integrate_shape:
+      {
+
+        // integrate the shape function for this element
+        // the results are assembled into the element vector
+
+        const DiscretizationType distype = this->Shape();
+        switch (distype)
+        {
+        case DRT::Element::hex27: 
+        case DRT::Element::nurbs27: 
+        {
+          this->integrateShapefunction<27>(
+	    discretization,
+	    lm            ,
+	    elevec1       );
+	  break;
+	}
+        case DRT::Element::hex20: 
+        {
+          this->integrateShapefunction<20>(
+	    discretization,
+	    lm            ,
+	    elevec1       );
+	  break;
+	}
+        case DRT::Element::hex8:
+        case DRT::Element::nurbs8:
+        {
+          this->integrateShapefunction<8>(
+	    discretization,
+	    lm            ,
+	    elevec1       );
+          break;
+        }
+        case DRT::Element::tet4:
+        {
+          this->integrateShapefunction<4>(
+	    discretization,
+	    lm            ,
+	    elevec1       );
+          break;
+        }
+        default:
+        {
+          dserror("Unknown element type for shape function integration\n");
+        }
+        }
+	break;
+      }
       default:
         dserror("Unknown type of action for Fluid3");
   } // end of switch(act)
@@ -2547,6 +2599,228 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
   return;
 } // DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij
 
+template<int iel> 
+void DRT::ELEMENTS::Fluid3::integrateShapefunction(
+    DRT::Discretization&      discretization,
+ 
+    vector<int>&              lm            ,
+    Epetra_SerialDenseVector& elevec1       )
+{
+  // --------------------------------------------------
+  // construct views
+  LINALG::Matrix<4*iel,    1> w(elevec1.A(),true);
+
+  // --------------------------------------------------
+  // create matrix objects for nodal values
+  LINALG::Matrix<3,iel>       edispnp;
+
+  if(is_ale_)
+  {
+    // get most recent displacements
+    RefCountPtr<const Epetra_Vector> dispnp
+      =
+      discretization.GetState("dispnp");
+      
+    if (dispnp==null)
+    {
+      dserror("Cannot get state vector 'dispnp'");
+    }
+    
+    vector<double> mydispnp(lm.size());
+    DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
+    
+    // extract velocity part from "mygridvelaf" and get
+    // set element displacements
+    for (int i=0;i<iel;++i)
+    {
+      int fi    =4*i;
+      int fip   =fi+1;
+      int fipp  =fip+1;
+      edispnp(0,i)    = mydispnp   [fi  ];
+      edispnp(1,i)    = mydispnp   [fip ];
+      edispnp(2,i)    = mydispnp   [fipp];
+    }
+  }
+
+  // set element data
+  const DiscretizationType distype = this->Shape();
+
+  // gaussian points
+  const GaussRule3D          gaussrule = getOptimalGaussrule(distype);
+  const IntegrationPoints3D  intpoints(gaussrule);
+
+  //----------------------------------------------------------------------------
+  //                         ELEMENT GEOMETRY
+  //----------------------------------------------------------------------------
+  LINALG::Matrix<3,iel>  xyze;
+
+  // get node coordinates
+  DRT::Node** nodes = Nodes();
+  for (int inode=0; inode<iel; inode++)
+  {
+    const double* x = nodes[inode]->X();
+    xyze(0,inode) = x[0];
+    xyze(1,inode) = x[1];
+    xyze(2,inode) = x[2];
+  }
+
+  // add displacement, when fluid nodes move in the ALE case
+  if (is_ale_)
+  {
+    for (int inode=0; inode<iel; inode++)
+    {
+      xyze(0,inode) += edispnp(0,inode);
+      xyze(1,inode) += edispnp(1,inode);
+      xyze(2,inode) += edispnp(2,inode);
+    }
+  }
+ 
+  // --------------------------------------------------
+  // Now do the nurbs specific stuff
+  std::vector<Epetra_SerialDenseVector> myknots(3);
+  LINALG::Matrix<iel,1>  weights;
+
+  // for isogeometric elements
+  if(Shape()==Fluid3::nurbs8 || Shape()==Fluid3::nurbs27)
+  {
+    DRT::NURBS::NurbsDiscretization* nurbsdis
+      =
+      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+
+    (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
+    
+    // get node weights for nurbs elements
+    for (int inode=0; inode<iel; inode++)
+    {
+      DRT::NURBS::ControlPoint* cp
+        =
+        dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
+      
+      weights(inode) = cp->W();
+    }
+  }
+ 
+
+  //------------------------------------------------------------------
+  //                       INTEGRATION LOOP
+  //------------------------------------------------------------------
+  Epetra_SerialDenseVector  funct(iel);
+  Epetra_SerialDenseMatrix  xjm(3,3);
+  Epetra_SerialDenseMatrix  deriv(3,iel);
+  Epetra_SerialDenseMatrix  bm(6,6);
+
+  for (int iquad=0;iquad<intpoints.nquad;++iquad)
+  {
+    // set gauss point coordinates
+    LINALG::Matrix<3,1> gp;
+
+    gp(0)=intpoints.qxg[iquad][0];
+    gp(1)=intpoints.qxg[iquad][1];
+    gp(2)=intpoints.qxg[iquad][2];
+    
+    if(!(distype == DRT::Element::nurbs8
+         ||
+         distype == DRT::Element::nurbs27))
+    {
+      // get values of shape functions and derivatives in the gausspoint
+      DRT::UTILS::shape_function_3D       (funct,gp(0),gp(1),gp(2),distype);
+      DRT::UTILS::shape_function_3D_deriv1(deriv,gp(0),gp(1),gp(2),distype);
+    }
+    else
+    {
+      DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv
+	(funct  ,
+	 deriv  ,
+	 gp     ,
+	 myknots,
+	 weights,
+	 distype);
+    }
+    
+    // get transposed Jacobian matrix and determinant
+    //
+    //        +-            -+ T      +-            -+
+    //        | dx   dx   dx |        | dx   dy   dz |
+    //        | --   --   -- |        | --   --   -- |
+    //        | dr   ds   dt |        | dr   dr   dr |
+    //        |              |        |              |
+    //        | dy   dy   dy |        | dx   dy   dz |
+    //        | --   --   -- |   =    | --   --   -- |
+    //        | dr   ds   dt |        | ds   ds   ds |
+    //        |              |        |              |
+    //        | dz   dz   dz |        | dx   dy   dz |
+    //        | --   --   -- |        | --   --   -- |
+    //        | dr   ds   dt |        | dt   dt   dt |
+    //        +-            -+        +-            -+
+    //
+    // The Jacobian is computed using the formula
+    //
+    //            +-----
+    //   dx_j(r)   \      dN_k(r)
+    //   -------  = +     ------- * (x_j)_k
+    //    dr_i     /       dr_i       |
+    //            +-----    |         |
+    //            node k    |         |
+    //                  derivative    |
+    //                   of shape     |
+    //                   function     |
+    //                           component of
+    //                          node coordinate
+    //
+    for(int rr=0;rr<3;++rr)
+    {
+      for(int mm=0;mm<3;++mm)
+      {
+        xjm(rr,mm)=deriv(rr,0)*xyze(mm,0);
+        for(int nn=1;nn<iel;++nn)
+        {
+          xjm(rr,mm)+=deriv(rr,nn)*xyze(mm,nn);
+        }
+      }
+    }
+
+    // the bm as well as the other const doubles values 
+    // here will be reused later for the linear system 
+    // for the second derivatives
+    bm(3,3) = xjm(0,0)*xjm(1,1);
+    bm(3,4) = xjm(0,0)*xjm(1,2);
+    bm(3,5) = xjm(0,1)*xjm(1,2);
+
+    bm(4,3) = xjm(0,0)*xjm(2,1);
+    bm(4,4) = xjm(0,0)*xjm(2,2);
+    bm(4,5) = xjm(0,1)*xjm(2,2);
+
+    bm(5,3) = xjm(1,0)*xjm(2,1);
+    bm(5,4) = xjm(1,0)*xjm(2,2);
+    bm(5,5) = xjm(1,1)*xjm(2,2);
+   
+    // The determinant ist computed using Sarrus's rule
+    const double det = xjm(0,0)*bm(5,5)+
+                       xjm(2,0)*bm(3,5)+
+                       xjm(0,2)*(bm(5,3)-xjm(2,0)*xjm(1,1))-
+                       xjm(2,1)*bm(3,4)-
+                       xjm(0,1)*bm(5,4);
+
+    // check for degenerated elements
+    if (det < 0.0)
+    {
+      dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", Id(), det);
+    }
+
+    // set total integration factor
+    double fac = intpoints.qwgt[iquad]*det;
+
+    for (int ui=0; ui<iel; ++ui) // loop rows  (test functions)
+    {
+      int fuippp=4*ui+3;
+
+
+      w(fuippp)+=fac*funct(ui);
+    }
+  }
+
+  return;
+}
 
 //
 // check for higher order derivatives for shape functions

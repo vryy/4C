@@ -524,6 +524,7 @@ OBJS_ALE      = src/ale3/ale_call_stiff.o \
                 src/ale3/ale3_main.o \
                 src/ale3/ale3_static_ke.o
 OBJS_DRT_ALE_LIB = src/drt_ale3/ale3.o \
+                src/drt_ale3/ale3_nurbs.o \
                 src/drt_ale3/ale3_surface.o \
                 src/drt_ale2/ale2.o \
                 src/drt_ale2/ale2_line.o \

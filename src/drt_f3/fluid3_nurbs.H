@@ -150,7 +150,7 @@ private:
 };
 /*----------------------------------------------------------------------
 
-  \brief Fluid3Surface class. his is a warning. Nurbs surfaces are only 
+  \brief Fluid3Surface class. this is a warning. Nurbs surfaces are only 
          valid if the corresponding knotvektor is interpolating.
 
   \author gammi (gamnitzer@lnm.mw.tum.de), 02/09

@@ -260,13 +260,15 @@ void LINALG::Solver::ResetTolerance()
 /*----------------------------------------------------------------------*
  |  solve (public)                                           mwgee 02/07|
  *----------------------------------------------------------------------*/
-void LINALG::Solver::Solve(RefCountPtr<Epetra_Operator>     matrix  ,
-                           RefCountPtr<Epetra_Vector>       x       ,
-                           RefCountPtr<Epetra_Vector>       b       ,
-                           bool                             refactor,
-                           bool                             reset   ,
-                           RefCountPtr<Epetra_MultiVector>  kernel  ,
-                           bool                             project )
+void LINALG::Solver::Solve(
+  RefCountPtr<Epetra_Operator>     matrix             ,
+  RefCountPtr<Epetra_Vector>       x                  ,
+  RefCountPtr<Epetra_Vector>       b                  ,
+  bool                             refactor           ,
+  bool                             reset              ,
+  RefCountPtr<Epetra_MultiVector>  weighted_basis_mean,
+  RefCountPtr<Epetra_MultiVector>  kernel_c           ,
+  bool                             project            )
 {
 
   // reset data flags on demand
@@ -298,7 +300,7 @@ void LINALG::Solver::Solve(RefCountPtr<Epetra_Operator>     matrix  ,
   }
   
   if ("aztec"  ==solvertype)
-  Solve_aztec(reset,project,kernel);
+  Solve_aztec(reset,project,weighted_basis_mean,kernel_c);
   else if ("klu"    ==solvertype)
     Solve_klu(reset);
   else if ("umfpack"==solvertype)
@@ -328,9 +330,10 @@ void LINALG::Solver::Solve(RefCountPtr<Epetra_Operator>     matrix  ,
  |  solve (protected)                                        mwgee 02/07|
  *----------------------------------------------------------------------*/
 void LINALG::Solver::Solve_aztec(
-  const bool                    reset  , 
-  const bool                    project,
-  const RCP<Epetra_MultiVector> kernel
+  const bool                    reset              , 
+  const bool                    project            ,
+  const RCP<Epetra_MultiVector> weighted_basis_mean,
+  const RCP<Epetra_MultiVector> kernel_c
   )
 {
   if (!Params().isSublist("Aztec Parameters"))
@@ -553,7 +556,7 @@ void LINALG::Solver::Solve_aztec(
     // -> has to be provided for the modified Preconditioner inverse apply 
     if(project)
     {
-      P_->SetKernelSpace(kernel);
+      P_->SetKernelSpace(weighted_basis_mean,kernel_c);
     }
   }
 

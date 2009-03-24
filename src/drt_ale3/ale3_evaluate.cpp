@@ -18,7 +18,9 @@
 
 #include "ale3.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_mat/stvenantkirchhoff.H"
@@ -96,7 +98,20 @@ DRT::ELEMENTS::Ale3_Impl_Interface* DRT::ELEMENTS::Ale3_Impl_Interface::Impl(DRT
       ap5 = new Ale3_Impl<DRT::Element::pyramid5>();
     return ap5;
   }
-
+  case DRT::Element::nurbs8:
+  {
+    static Ale3_Impl<DRT::Element::nurbs8>* an8;
+    if (an8==NULL)
+      an8 = new Ale3_Impl<DRT::Element::nurbs8>();
+    return an8;
+  }
+  case DRT::Element::nurbs27:
+  {
+    static Ale3_Impl<DRT::Element::nurbs27>* an27;
+    if (an27==NULL)
+      an27 = new Ale3_Impl<DRT::Element::nurbs27>();
+    return an27;
+  }
   default:
     dserror("shape %d (%d nodes) not supported", ele->Shape(), ele->NumNode());
   }
@@ -147,7 +162,15 @@ int DRT::ELEMENTS::Ale3::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
     }
 
-    Ale3_Impl_Interface::Impl(this)->static_ke(this,lm,elemat1,elevec1,incremental,my_dispnp,mat,params);
+    Ale3_Impl_Interface::Impl(this)->static_ke(this,
+					       discretization,
+					       lm,
+					       elemat1,
+					       elevec1,
+					       incremental,
+					       my_dispnp,
+					       mat,
+					       params);
 
     break;
   }
@@ -657,6 +680,138 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_hex8(
   ale3_add_tetra_stiffness(3,4,6,7,sys_mat,xyze);
 }
 
+//////
+// divide nurbs into tetras
+template <DRT::Element::DiscretizationType distype>
+inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_nurbs27(
+  LINALG::Matrix<3*iel,3*iel>& sys_mat,
+  const LINALG::Matrix<3,iel>& xyze)
+{
+
+  //                          v
+  //                         /
+  //                        / 
+  //          X---------X---------X      
+  //         /|24      /|25      /|26       
+  //  w     / |       / |       / |       
+  //  ^    /  |      /  |      /  |       
+  //  |   X---------X---------X   |     
+  //  |  /|21 |    /|22 |    /|23 |       
+  //  | / |   X---/-|---X---/-|---X        
+  //   /  |  /|15/  |  /|16/  |  /|17                X---------X   	     
+  //  X---------X---------X   | / |                 /|7       /|6     0,1,3,4   
+  //  |18 |/  | |19 |/  | |20 |/  |                / |       / |      0,1,2,5   
+  //  |   X-----|---X-----|---X   |               /  |      /  |      1,2,3,6   
+  //  |  /|12 | |  /|13 | |  /|14 |              X---------X   |      0,2,3,7   
+  //  | / |   X-|-/-|---X-|-/-|---X              |4  |     |5  |	             
+  //  |/  |  /6 |/  |  /7 |/  |  /8              |   X-----|---X      0,4,5,7   
+  //  X---------X---------X   | /                |  /3     |  /2      1,4,5,6   
+  //  |9  |/    |10 |/    |11 |/    	         | /       | /        2,5,6,7   
+  //  |   X-----|---X-----|---X     	         |/        |/         3,4,6,7   
+  //  |  /3     |  /4     |  /5		         X---------X		     
+  //  | /       | /       | /		          0         1                   
+  //  |/        |/        |/
+  //  X---------X---------X ----->u
+  //   0         1         2
+  //
+
+  //Use 8 tetrahedra to prevent node-face-penetration
+
+  ale3_add_tetra_stiffness(0, 1, 3, 9,sys_mat,xyze);
+  ale3_add_tetra_stiffness(0, 1, 4,10,sys_mat,xyze);
+  ale3_add_tetra_stiffness(1, 4, 3,13,sys_mat,xyze);
+  ale3_add_tetra_stiffness(0, 4, 3,12,sys_mat,xyze);
+			             
+  ale3_add_tetra_stiffness(0, 9,10,12,sys_mat,xyze);
+  ale3_add_tetra_stiffness(1, 9,10,13,sys_mat,xyze);
+  ale3_add_tetra_stiffness(4,10,13,12,sys_mat,xyze);
+  ale3_add_tetra_stiffness(3, 9,13,12,sys_mat,xyze);
+  
+  // -----------------------------------------------  
+
+  ale3_add_tetra_stiffness(1, 2, 4,10,sys_mat,xyze);
+  ale3_add_tetra_stiffness(1, 2, 5,11,sys_mat,xyze);
+  ale3_add_tetra_stiffness(2, 5, 4,14,sys_mat,xyze);
+  ale3_add_tetra_stiffness(1, 5, 4,13,sys_mat,xyze);
+			   	    
+  ale3_add_tetra_stiffness(1,10,11,13,sys_mat,xyze);
+  ale3_add_tetra_stiffness(2,10,11,14,sys_mat,xyze);
+  ale3_add_tetra_stiffness(5,11,14,13,sys_mat,xyze);
+  ale3_add_tetra_stiffness(4,10,14,13,sys_mat,xyze);
+
+  // -----------------------------------------------  
+
+  ale3_add_tetra_stiffness(4, 5, 7,13,sys_mat,xyze);
+  ale3_add_tetra_stiffness(4, 5, 8,14,sys_mat,xyze);
+  ale3_add_tetra_stiffness(5, 8, 7,17,sys_mat,xyze);
+  ale3_add_tetra_stiffness(4, 8, 7,16,sys_mat,xyze);
+			   	    
+  ale3_add_tetra_stiffness(4,13,14,16,sys_mat,xyze);
+  ale3_add_tetra_stiffness(5,13,14,17,sys_mat,xyze);
+  ale3_add_tetra_stiffness(8,14,17,16,sys_mat,xyze);
+  ale3_add_tetra_stiffness(7,13,17,16,sys_mat,xyze);
+
+  // -----------------------------------------------  
+
+  ale3_add_tetra_stiffness(3, 4, 6,12,sys_mat,xyze);
+  ale3_add_tetra_stiffness(3, 4, 7,13,sys_mat,xyze);
+  ale3_add_tetra_stiffness(4, 7, 6,16,sys_mat,xyze);
+  ale3_add_tetra_stiffness(3, 7, 6,15,sys_mat,xyze);
+			   	    
+  ale3_add_tetra_stiffness(3,12,13,15,sys_mat,xyze);
+  ale3_add_tetra_stiffness(4,12,13,16,sys_mat,xyze);
+  ale3_add_tetra_stiffness(7,13,16,15,sys_mat,xyze);
+  ale3_add_tetra_stiffness(6,12,16,15,sys_mat,xyze);
+
+  // -----------------------------------------------  
+  
+  ale3_add_tetra_stiffness( 9,10,12,18,sys_mat,xyze);
+  ale3_add_tetra_stiffness( 9,10,13,19,sys_mat,xyze);
+  ale3_add_tetra_stiffness(10,13,12,22,sys_mat,xyze);
+  ale3_add_tetra_stiffness( 9,13,12,21,sys_mat,xyze);
+			   	    
+  ale3_add_tetra_stiffness( 9,18,19,21,sys_mat,xyze);
+  ale3_add_tetra_stiffness(10,18,19,22,sys_mat,xyze);
+  ale3_add_tetra_stiffness(13,19,22,21,sys_mat,xyze);
+  ale3_add_tetra_stiffness(12,18,22,21,sys_mat,xyze);
+
+  // -----------------------------------------------  
+
+  ale3_add_tetra_stiffness(10,11,13,19,sys_mat,xyze);
+  ale3_add_tetra_stiffness(10,11,14,20,sys_mat,xyze);
+  ale3_add_tetra_stiffness(11,14,13,23,sys_mat,xyze);
+  ale3_add_tetra_stiffness(10,14,13,22,sys_mat,xyze);
+			   	    
+  ale3_add_tetra_stiffness(10,19,20,22,sys_mat,xyze);
+  ale3_add_tetra_stiffness(11,19,20,23,sys_mat,xyze);
+  ale3_add_tetra_stiffness(14,20,23,22,sys_mat,xyze);
+  ale3_add_tetra_stiffness(13,19,23,22,sys_mat,xyze);
+
+  // -----------------------------------------------  
+ 
+  ale3_add_tetra_stiffness(13,14,16,22,sys_mat,xyze);
+  ale3_add_tetra_stiffness(13,14,17,23,sys_mat,xyze);
+  ale3_add_tetra_stiffness(14,17,16,26,sys_mat,xyze);
+  ale3_add_tetra_stiffness(13,17,16,25,sys_mat,xyze);
+			   	    
+  ale3_add_tetra_stiffness(13,22,23,25,sys_mat,xyze);
+  ale3_add_tetra_stiffness(14,22,23,26,sys_mat,xyze);
+  ale3_add_tetra_stiffness(17,23,26,25,sys_mat,xyze);
+  ale3_add_tetra_stiffness(16,22,26,25,sys_mat,xyze);
+
+  // -----------------------------------------------  
+
+  ale3_add_tetra_stiffness(12,13,15,21,sys_mat,xyze);
+  ale3_add_tetra_stiffness(12,13,16,22,sys_mat,xyze);
+  ale3_add_tetra_stiffness(13,16,15,25,sys_mat,xyze);
+  ale3_add_tetra_stiffness(12,16,15,24,sys_mat,xyze);
+			   	    
+  ale3_add_tetra_stiffness(12,21,22,24,sys_mat,xyze);
+  ale3_add_tetra_stiffness(13,21,22,25,sys_mat,xyze);
+  ale3_add_tetra_stiffness(16,22,25,24,sys_mat,xyze);
+  ale3_add_tetra_stiffness(15,21,25,24,sys_mat,xyze);
+}
+
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_spring(
   Ale3*                     ele,
@@ -1073,14 +1228,15 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_spring(
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke(
-  Ale3*                     ele,
-  vector<int>&              lm,
-  Epetra_SerialDenseMatrix& sys_mat_epetra,
-  Epetra_SerialDenseVector& /*residual*/,
-  bool                      incremental,
-  std::vector<double>&      my_dispnp,
+  Ale3*                      ele,
+  DRT::Discretization&       dis,
+  vector<int>&               lm,
+  Epetra_SerialDenseMatrix&  sys_mat_epetra,
+  Epetra_SerialDenseVector&  /*residual*/,
+  bool                       incremental,
+  std::vector<double>&       my_dispnp,
   RefCountPtr<MAT::Material> material,
-  ParameterList&            params)
+  ParameterList&             params)
 {
   const int nd  = 3 * iel;
   // A view to sys_mat_epetra
@@ -1113,6 +1269,31 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke(
     }
   }
 
+  // --------------------------------------------------
+  // Now do the nurbs specific stuff
+  std::vector<Epetra_SerialDenseVector> myknots(3);
+  LINALG::Matrix<iel,1  >               weights(iel);
+
+  if(distype==DRT::Element::nurbs8
+     ||
+     distype==DRT::Element::nurbs27)
+  {
+    DRT::NURBS::NurbsDiscretization* nurbsdis
+      =
+      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(dis));
+    
+    (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,ele->Id());
+
+    for (int inode=0; inode<iel; ++inode)
+    {
+      DRT::NURBS::ControlPoint* cp
+        =
+        dynamic_cast<DRT::NURBS::ControlPoint* > (ele->Nodes()[inode]);
+      
+      weights(inode) = cp->W();
+    }
+  }
+
   /*----------------------------------------- declaration of variables ---*/
   LINALG::Matrix<iel,1  > funct;
   LINALG::Matrix<3,  iel> deriv;
@@ -1121,7 +1302,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke(
   LINALG::Matrix<6,  nd > bop;
   LINALG::Matrix<6,  6  > D(true);
 
-  double                        vol=0.;
+  double vol=0.;
 
   // gaussian points
   const GaussRule3D gaussrule = getOptimalGaussrule();
@@ -1133,9 +1314,33 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke(
     const double e1 = intpoints.qxg[iquad][0];
     const double e2 = intpoints.qxg[iquad][1];
     const double e3 = intpoints.qxg[iquad][2];
-    // shape functions and their derivatives
-    DRT::UTILS::shape_function_3D(funct,e1,e2,e3,distype);
-    DRT::UTILS::shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
+    
+
+    // get values of shape functions and derivatives in the gausspoint
+    if(distype != DRT::Element::nurbs8
+       &&
+       distype != DRT::Element::nurbs27)
+    {
+      // shape functions and their derivatives for polynomials
+      DRT::UTILS::shape_function_3D       (funct,e1,e2,e3,distype);
+      DRT::UTILS::shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
+    }
+    else
+    {
+      // nurbs version
+      Epetra_SerialDenseVector gp(3);
+      gp(0)=e1;
+      gp(1)=e2;
+      gp(2)=e3;
+	
+      DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv
+	(funct  ,
+	 deriv  ,
+	 gp     ,
+	 myknots,
+	 weights,
+	 distype);
+    }
 
     // compute jacobian matrix
 
@@ -1475,9 +1680,11 @@ inline GaussRule3D DRT::ELEMENTS::Ale3_Impl<distype>::getOptimalGaussrule()
     switch (distype)
     {
     case DRT::Element::hex8:
+    case DRT::Element::nurbs8:
       return intrule_hex_8point;
     case DRT::Element::hex20:
     case DRT::Element::hex27:
+    case DRT::Element::nurbs27:
       return intrule_hex_27point;
     case DRT::Element::tet4:
       return intrule_tet_4point;

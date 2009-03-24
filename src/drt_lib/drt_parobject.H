@@ -149,6 +149,8 @@ using namespace std;
 #define ParObject_Wall1Nurbs            (int)136
 #define ParObject_DofKey                (int)137
 #define ParObject_Ale2_Nurbs            (int)138
+#define ParObject_Ale3_Nurbs            (int)139
+#define ParObject_So_Nurbs27            (int)140
 
 
 namespace DRT

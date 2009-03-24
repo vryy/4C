@@ -68,20 +68,23 @@ public:
   ~LinalgPrecondOperator();
 
   //! @name Special atribute set methods
-  void SetKernelSpace (Teuchos::RCP<Epetra_MultiVector> w)
+  void SetKernelSpace(
+    Teuchos::RCP<Epetra_MultiVector> w,
+    Teuchos::RCP<Epetra_MultiVector> c
+    )
   {
     if(project_)
     {
-      if(w==Teuchos::null)
+      if(w==Teuchos::null || c==Teuchos::null)
       {
         dserror("no kernel supplied for projection (but projection flag was set)");
       }
     }
 
     w_=w;
+    c_=c;
     return;
   }
-  
   //! @}
 
   //! @name Atribute set methods required to support the Epetra_Operator interface
@@ -152,7 +155,15 @@ public:
                                   T
                                  w * c
 
-    w is the vector of weights, c a vector of ones.
+
+                                      T
+                                 c * w
+                        P  = 1 - ------
+                                  T
+                                 w * c
+
+
+    w is the vector of weights, c a vector of ones (in the dofs under consideration).
 
     The system we are solving with this procedure is not Au=f for u (since A 
     might be singular), but we are solving 
@@ -190,8 +201,13 @@ private:
   //! the actual preconditioner
   Teuchos::RCP<Epetra_Operator>      precond_;
 
-  //! a set of vectors defining the projector
+  //! a set of vectors defining weighted basis mean vector for the projector
   Teuchos::RCP<Epetra_MultiVector>   w_;
+
+  //! a set of vectors defining the vectors of ones (in the respective components) 
+  //! for the matrix kernel
+  Teuchos::RCP<Epetra_MultiVector>   c_;
+
 };
 
 

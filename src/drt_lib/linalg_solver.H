@@ -172,25 +172,31 @@ public:
   /*!
   \brief Solve system of equations
 
-  \param matrix   (in/out): system of equations
-  \param x        (in/out): initial guess on input, solution on output
-  \param b        (in)    : right hand side vector
-  \param refactor (in)    : flag indicating whether system should be refactorized
-  \param reset    (in)    : flag indicating whether all data from previous solves should
-                            be recalculated including preconditioners
-  \param kernel   (in)    : Basis for nullspace of matrix. Necessary if project!=false
-                            Krylov space will be orthogonalized to this basis! 
-                            (Aztec only option)
-  \param project  (in)    : flag indicating whether several modes will be projected 
-                            out of the Krylov space (Aztec only option)
+  \param matrix              (in/out): system of equations
+  \param x                   (in/out): initial guess on input, solution on output
+  \param b                   (in)    : right hand side vector
+  \param refactor            (in)    : flag indicating whether system should be refactorized
+  \param reset               (in)    : flag indicating whether all data from previous solves should
+                                       be recalculated including preconditioners
+  \param weighted_basis_mean (in)    : Basis for nullspace of matrix. Necessary if project!=false
+                                       Krylov space will be orthogonalized to this basis! 
+                                       (Aztec only option)
+  \param kernel_c            (in)    : Vector of ones in the respective components. Necessary if 
+                                       project!=false.
+                                       Krylov space will be orthogonalized to this basis! 
+                                       (Aztec only option)
+  \param project             (in)    : flag indicating whether several modes will be projected 
+                                       out of the Krylov space (Aztec only option)
   */
-  void Solve(RCP<Epetra_Operator>     matrix                 ,
-             RCP<Epetra_Vector>       x                      ,
-             RCP<Epetra_Vector>       b                      ,
-             bool                     refactor               ,
-             bool                     reset   = false        ,
-             RCP<Epetra_MultiVector>  kernel  = Teuchos::null,
-             bool                     project = false        );
+  void Solve(
+    RCP<Epetra_Operator>     matrix                            ,
+    RCP<Epetra_Vector>       x                                 ,
+    RCP<Epetra_Vector>       b                                 ,
+    bool                     refactor                          ,
+    bool                     reset   = false                   ,
+    RCP<Epetra_MultiVector>  weighted_basis_mean= Teuchos::null,
+    RCP<Epetra_MultiVector>  kernel_c= Teuchos::null           ,
+    bool                     project = false                   );
 
   /*!
   \brief Reset the solver and clear data
@@ -358,9 +364,10 @@ private:
 
   */
   virtual void Solve_aztec(
-    const bool                    reset  , 
-    const bool                    project,
-    const RCP<Epetra_MultiVector> kernel
+    const bool                    reset              , 
+    const bool                    project            ,
+    const RCP<Epetra_MultiVector> weighted_basis_mean,
+    const RCP<Epetra_MultiVector> kernel_c
     );
 
   //! a communicator

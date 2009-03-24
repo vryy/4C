@@ -661,9 +661,16 @@ private:
   //! @name input arguments of the constructor
   //
   //! the discretization
-  RCP<DRT::Discretization>  discret_;
+  RCP<DRT::Discretization>    discret_;
   //! solver object
-  LINALG::Solver&           solver_ ;
+  LINALG::Solver&             solver_;
+  //! project nullspace (useful for completely Dirichlet bounded problems)
+  bool                        project_;
+  //! integrated basis vector (pressure component)
+  Teuchos::RCP<Epetra_Vector> w_;
+  //! basis vector for nullspace (vector of ones in the pressure component)
+  Teuchos::RCP<Epetra_Vector> c_;
+
   //! parameterlist including time params, stabilization params and turbulence sublist
   ParameterList&            params_ ;
   //! io writer/reader
@@ -778,23 +785,23 @@ private:
   RCP<LINALG::SparseOperator> sysmat_;
 
   //! (standard) residual vector (rhs for the incremental form),
-  RCP<Epetra_Vector>        residual_;
+  RCP<Epetra_Vector>          residual_;
 
   //! maps for extracting Dirichlet and free DOF sets
-  RCP<LINALG::MapExtractor> dbcmaps_;
+  RCP<LINALG::MapExtractor>   dbcmaps_;
 
   //! a vector of zeros to be used to enforce zero dirichlet boundary conditions
-  RCP<Epetra_Vector>        zeros_;
+  RCP<Epetra_Vector>          zeros_;
 
   //! the vector containing body and surface forces
-  RCP<Epetra_Vector>        neumann_loads_;
+  RCP<Epetra_Vector>          neumann_loads_;
 
   //! the vector containing potential Neumann-type outflow stabilization
-  RCP<Epetra_Vector>        outflow_stabil_;
+  RCP<Epetra_Vector>          outflow_stabil_;
 
   //! Nonlinear iteration increment vector contains accleeration
   //! and pressure increment
-  RCP<Epetra_Vector>        increment_;
+  RCP<Epetra_Vector>          increment_;
   //@}
 
 
@@ -806,7 +813,7 @@ private:
   //! "equilibrium" would be a better name - but for the Dirichlet
   //! nodes, this vector contains the consistent (normed) force on
   //! boundary nodes
-  RCP<Epetra_Vector>        force_;
+  RCP<Epetra_Vector>          force_;
   //@}
 
 
@@ -822,52 +829,52 @@ private:
   //! in accnp_, every component associated to a pressure dof is
   //! completely meaningless --- the Navier Stokes equations are a differential
   //! algebraic equation, there's no evolution equation for the pressure!
-  RCP<Epetra_Vector>        accnp_;
+  RCP<Epetra_Vector>          accnp_;
   //! acceleration at time n
   //! in  accn_, every component associated to a pressure dof is
   //! completely meaningless --- the Navier Stokes equations are a differential
   //! algebraic equation, there's no evolution equation for the pressure!
-  RCP<Epetra_Vector>        accn_;
+  RCP<Epetra_Vector>          accn_;
   //! acceleration at intermediate time step n+alpha_M
   //! in accam_, every component associated to a pressure dof is
   //! completely meaningless --- the Navier Stokes equations are a differential
   //! algebraic equation, there's no evolution equation for the pressure!
-  RCP<Epetra_Vector>        accam_;
+  RCP<Epetra_Vector>          accam_;
 
   //! velocities and pressures at time n+1
-  RCP<Epetra_Vector>        velnp_;
+  RCP<Epetra_Vector>          velnp_;
   //! velocities and pressures at time n
-  RCP<Epetra_Vector>        veln_;
+  RCP<Epetra_Vector>          veln_;
   //! velocities at intermediate time step n+alpha_F
   //! in velaf_, every component associated to a pressure dof is completely
   //! meaningless since the pressure is treated implicitly.
-  RCP<Epetra_Vector>        velaf_;
+  RCP<Epetra_Vector>          velaf_;
 
   //! velocities and pressure at time n-1
   //! required only for the constant increment predictor
-  RCP<Epetra_Vector>        velnm_;
+  RCP<Epetra_Vector>          velnm_;
 
   //! velocities and densities at times n+1
-  RCP<Epetra_Vector>        vedenp_;
+  RCP<Epetra_Vector>          vedenp_;
 
   //! ALE related stuff: grid displacements, time n+1
-  RCP<Epetra_Vector>        dispnp_   ;
+  RCP<Epetra_Vector>          dispnp_   ;
   //! ALE related stuff: most recent grid displacements, time n
-  RCP<Epetra_Vector>        dispn_    ;
+  RCP<Epetra_Vector>          dispn_    ;
   //! ALE related stuff: grid velocities, most recent time step n
-  RCP<Epetra_Vector>        gridveln_ ;
+  RCP<Epetra_Vector>          gridveln_ ;
   //! ALE related stuff: intermediate grid velocities at time n+af
-  RCP<Epetra_Vector>        gridvelaf_;
+  RCP<Epetra_Vector>          gridvelaf_;
   //@}
 
   //! fine-scale subgrid-viscosity flag
-  string                    fssgv_;
+  string                      fssgv_;
 
   //! only necessary for AVM3: scale-separation matrix
-  RCP<LINALG::SparseMatrix> Sep_;
+  RCP<LINALG::SparseMatrix>   Sep_;
 
   //! only necessary for AVM3: fine-scale solution vector
-  RCP<Epetra_Vector>        fsvelaf_;
+  RCP<Epetra_Vector>          fsvelaf_;
 
   //@}
 
@@ -875,7 +882,7 @@ private:
   //         ----------------------------------
 
   //! extracts velocities and pressure dofs from dofmap
-  LINALG::MapExtractor      velpressplitter_;
+  LINALG::MapExtractor        velpressplitter_;
   //@}
 
 
@@ -890,7 +897,7 @@ private:
   //        -------------------------
 
   //! one instance of the filter object
-  RCP<DynSmagFilter> DynSmag_;
+  RCP<DynSmagFilter>          DynSmag_;
 
   //@}
 

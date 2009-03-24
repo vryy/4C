@@ -1107,19 +1107,19 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   std::vector<Teuchos::RCP<ConditionComponent> > rigidbodymodecomponents;
 
-  rigidbodymodecomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("onoff",6)));
+  rigidbodymodecomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("mode",6)));
 
   rigidbodymodecomponents.push_back(
     Teuchos::rcp(
       new StringConditionComponent(
-        "weights based on integration or point values --- for example in the case of rigid body modes for structures, integration would lead to the  exact center of gravity whereas point values would assume that all points have the same mass and thus would not keep the centroid fixed",
+        "weight vector definition",
         "integration",
         Teuchos::tuple<std::string>("integration","pointvalues"),
         Teuchos::tuple<std::string>("integration","pointvalues"))));
 
   Teuchos::RCP<ConditionDefinition> surfrigidbodymode =
     Teuchos::rcp(new ConditionDefinition("DESIGN SURF MODE FOR KRYLOV SPACE PROJECTION",
-                                         "Mode for Krylov space projection",
+                                         "KrylovSpaceProjection",
                                          "Surface mode for Krylov space projection",
                                          DRT::Condition::SurfaceModeKrylovProjection,
                                          true,
@@ -1127,7 +1127,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   Teuchos::RCP<ConditionDefinition> volrigidbodymode =
     Teuchos::rcp(new ConditionDefinition("DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION",
-                                         "Mode for Krylov space projection",
+                                         "KrylovSpaceProjection",
                                          "Volume mode for Krylov space projection",
                                          DRT::Condition::VolumeModeKrylovProjection,
                                          true,
@@ -1140,8 +1140,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   }
   condlist.push_back(surfrigidbodymode);
   condlist.push_back(volrigidbodymode);
-
   return vc;
+
 }
 
 #endif
