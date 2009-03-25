@@ -42,6 +42,7 @@ Maintainer: Lena Wiechert
 #include "ion.H"
 #include "compogden.H"
 #include "charmm.H"
+#include "itskov.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -229,6 +230,13 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
       curmat->SetParameter(new MAT::PAR::CompOgden(curmat));
     MAT::PAR::CompOgden* params = static_cast<MAT::PAR::CompOgden*>(curmat->Parameter());
     return Teuchos::rcp(new CompOgden(params));
+  }
+  case INPAR::MAT::m_itskov:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::Itskov(curmat));
+    MAT::PAR::Itskov* params = static_cast<MAT::PAR::Itskov*>(curmat->Parameter());
+    return Teuchos::rcp(new Itskov(params));
   }
   case INPAR::MAT::m_pl_mises_3D:
   case INPAR::MAT::m_pl_mises:

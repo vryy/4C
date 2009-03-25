@@ -128,6 +128,7 @@ extern "C"
 #include "../drt_contact/drt_celement.H"
 #include "drt_dserror.H"
 #include "standardtypes_cpp.H"
+#include "../drt_mat/itskov.H"
 
 
 /*----------------------------------------------------------------------*
@@ -708,6 +709,12 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       MAT::CHARMM* charmm = new MAT::CHARMM();
       charmm->Unpack(data);
       return charmm;
+    }
+    case ParObject_Itskov:
+    {
+      MAT::Itskov* its = new MAT::Itskov();
+      its->Unpack(data);
+      return its;
     }
     case ParObject_MatList:
     {

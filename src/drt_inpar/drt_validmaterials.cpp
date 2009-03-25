@@ -314,7 +314,25 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     
     AppendMaterialDefinition(matlist,m);
   }
+  /*--------------------------------------------------------------------*/
+  // Itskov material law
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_ITSKOV",
+                                            "Itskov material law",
+                                            INPAR::MAT::m_itskov));
 
+    AddNamedReal(m,"ALPHA","material parameter fibers");
+    AddNamedReal(m,"BETA","material parameter fibers");
+    AddNamedReal(m,"MU_FIBERS","mu fibers");
+    AddNamedReal(m,"MU_GS","mu ground substance");
+    AddNamedReal(m,"EPSILON","penalty parameter");
+    AddNamedReal(m,"GAMMA","penalty parameter");
+    AddNamedReal(m,"C","variable incompressibility");
+    AddNamedReal(m,"DENS","mass density");
+
+    AppendMaterialDefinition(matlist,m);
+  }
   /*--------------------------------------------------------------------*/
   // MFOC
   {

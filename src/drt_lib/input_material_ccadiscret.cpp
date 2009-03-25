@@ -543,6 +543,21 @@ while(strncmp(fractplace(),"------",6)!=0)
      frdouble("K2"      ,&(localmat.m.lung_ogden->k2)      ,&ierr);
      frdouble("DENS"    ,&(localmat.m.lung_ogden->density) ,&ierr);
    }
+   //Material Law based on Itskov et al.
+   frchk("MAT_ITSKOV",&ierr);
+   if (ierr==1)
+   {
+      localmat.mattyp      = m_itskov;
+      localmat.m.itskov = new ITSKOV();
+      frdouble("MU_GS"     	,&(localmat.m.itskov->mu_GS)       ,&ierr);
+      frdouble("MU_FIBERS"  ,&(localmat.m.itskov->mu_fibers)       ,&ierr);
+      frdouble("ALPHA"     	,&(localmat.m.itskov->alpha)       ,&ierr);
+      frdouble("BETA"   	,&(localmat.m.itskov->beta)     ,&ierr);
+      frdouble("EPSILON"   	,&(localmat.m.itskov->epsilon)     ,&ierr);
+      frdouble("GAMMA" 		,&(localmat.m.itskov->gamma)   ,&ierr);
+      frdouble("C" 			,&(localmat.m.itskov->comp)   ,&ierr);
+      frdouble("DENS"   	,&(localmat.m.itskov->density)  ,&ierr);
+   }
    // Anisotropic Polyconvex Material Law based on Balzani et. al.
    frchk("MAT_ANISOTROPIC_BALZANI",&ierr);
    if (ierr==1)

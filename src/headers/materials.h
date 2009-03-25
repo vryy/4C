@@ -662,11 +662,13 @@ typedef struct _LUNG_OGDEN
  *----------------------------------------------------------------------*/
 typedef struct _ITSKOV
 {
-     DOUBLE                    mu;	/* material parameter */
-     DOUBLE                    alpha;	/* material parameters */
-     DOUBLE                    beta;
-     DOUBLE                    epsilon; /* Penalty function */
-     DOUBLE                    gamma;
+     DOUBLE                    mu_GS;		/* material parameter ground substance*/
+     DOUBLE                    mu_fibers;	/* material parameter fibers*/
+     DOUBLE                    alpha;		/* material parameter fibers*/
+     DOUBLE                    beta;		/* material parameter fibers*/
+     DOUBLE                    epsilon; 	/* Penalty function */
+     DOUBLE                    gamma;		/* Penalty function */
+     DOUBLE                    comp;		/*desired incompressibility*/
      DOUBLE					   density;
 } ITSKOV;
 /*----------------------------------------------------------------------*

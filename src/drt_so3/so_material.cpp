@@ -50,6 +50,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/biocell.H"
 #include "../drt_mat/material.H"
 #include "../drt_mat/charmm.H"
+#include "../drt_mat/itskov.H"
 
 
 using namespace std; // cout etc.
@@ -166,6 +167,15 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       anba->Evaluate(glstrain,gp,Id(),time,cmat,stress);
 
       *density = anba->Density();
+      return;
+      break;
+    }
+      case INPAR::MAT::m_itskov: //----------------- Itskov Material
+    {
+      MAT::Itskov* its = static_cast <MAT::Itskov*>(mat.get());
+      const double time = params.get("total time",-1.0);
+      its->Evaluate(*glstrain,gp,Id(),data_,time,*cmat,*stress);
+      *density = its->Density();
       return;
       break;
     }
