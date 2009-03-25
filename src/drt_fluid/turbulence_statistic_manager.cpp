@@ -46,6 +46,7 @@ namespace FLD
     mydispn_    (fluid.dispn_    ),
     mygridveln_ (fluid.gridveln_ ),
     mygridvelaf_(fluid.gridvelaf_),
+    mysubgrvisc_(null            ),
     myforce_    (fluid.force_    )
   {
     // get density
@@ -498,7 +499,7 @@ namespace FLD
         if(statistics_channel_==null)
           dserror("need statistics_channel_ to do a time sample for a turbulent channel flow");
 
-        statistics_channel_->DoTimeSample(myvelnp_,*myforce_);
+        statistics_channel_->DoTimeSample(myvelnp_,mysubgrvisc_,*myforce_);
         break;
       }
       case loma_channel_flow_of_height_2:

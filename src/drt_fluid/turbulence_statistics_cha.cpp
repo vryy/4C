@@ -91,13 +91,10 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   // allocate some (toggle) vectors
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
-  meanvelnp_    = LINALG::CreateVector(*dofrowmap,true);
+  meanvelnp_     = LINALG::CreateVector(*dofrowmap,true);
+  meansubgrvisc_ = LINALG::CreateVector(*dofrowmap,true);
   // this vector is only necessary for low-Mach-number flow
-  if (loma_ != "No")
-  {
-    meanvedenp_    = LINALG::CreateVector(*dofrowmap,true);
-    meansubgrvisc_ = LINALG::CreateVector(*dofrowmap,true);
-  }
+  if (loma_ != "No") meanvedenp_ = LINALG::CreateVector(*dofrowmap,true);
 
   toggleu_      = LINALG::CreateVector(*dofrowmap,true);
   togglev_      = LINALG::CreateVector(*dofrowmap,true);
@@ -970,6 +967,7 @@ FLD::TurbulenceStatisticsCha::~TurbulenceStatisticsCha()
  -----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsCha::DoTimeSample(
   Teuchos::RefCountPtr<Epetra_Vector> velnp,
+  Teuchos::RefCountPtr<Epetra_Vector> subgrvisc,
   Epetra_Vector & force
   )
 {
@@ -979,6 +977,7 @@ void FLD::TurbulenceStatisticsCha::DoTimeSample(
   // meanvelnp is a refcount copy of velnp
 
   meanvelnp_->Update(1.0,*velnp,0.0);
+  meansubgrvisc_->Update(1.0,*subgrvisc,0.0);
 
   //----------------------------------------------------------------------
   // loop planes and calculate integral means in each plane
@@ -1277,6 +1276,9 @@ void FLD::TurbulenceStatisticsCha::EvaluateIntegralMeanValuesInPlanes()
   RefCountPtr<vector<double> > locsump =  rcp(new vector<double> );
   locsump->resize(size,0.0);
 
+  RefCountPtr<vector<double> > locsumsv =  rcp(new vector<double> );
+  locsumsv->resize(size,0.0);
+
   RefCountPtr<vector<double> > locsumsqu =  rcp(new vector<double> );
   locsumsqu->resize(size,0.0);
 
@@ -1298,6 +1300,9 @@ void FLD::TurbulenceStatisticsCha::EvaluateIntegralMeanValuesInPlanes()
   RefCountPtr<vector<double> > locsumsqp =  rcp(new vector<double> );
   locsumsqp->resize(size,0.0);
 
+  RefCountPtr<vector<double> > locsumsqsv =  rcp(new vector<double> );
+  locsumsqsv->resize(size,0.0);
+
   RefCountPtr<vector<double> > globarea =  rcp(new vector<double> );
   globarea->resize(size,0.0);
 
@@ -1312,6 +1317,9 @@ void FLD::TurbulenceStatisticsCha::EvaluateIntegralMeanValuesInPlanes()
 
   RefCountPtr<vector<double> > globsump =  rcp(new vector<double> );
   globsump->resize(size,0.0);
+
+  RefCountPtr<vector<double> > globsumsv =  rcp(new vector<double> );
+  globsumsv->resize(size,0.0);
 
   RefCountPtr<vector<double> > globsumsqu =  rcp(new vector<double> );
   globsumsqu->resize(size,0.0);
@@ -1334,12 +1342,16 @@ void FLD::TurbulenceStatisticsCha::EvaluateIntegralMeanValuesInPlanes()
   RefCountPtr<vector<double> > globsumsqp =  rcp(new vector<double> );
   globsumsqp->resize(size,0.0);
 
+  RefCountPtr<vector<double> > globsumsqsv =  rcp(new vector<double> );
+  globsumsqsv->resize(size,0.0);
+
   // communicate pointers to the result vectors to the element
   eleparams.set("element layer area"  ,locarea );
   eleparams.set("mean velocity u"     ,locsumu);
   eleparams.set("mean velocity v"     ,locsumv);
   eleparams.set("mean velocity w"     ,locsumw);
   eleparams.set("mean pressure p"     ,locsump);
+  eleparams.set("mean subgrid visc"   ,locsumsv);
 
   eleparams.set("mean value u^2",locsumsqu);
   eleparams.set("mean value v^2",locsumsqv);
@@ -1348,6 +1360,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateIntegralMeanValuesInPlanes()
   eleparams.set("mean value uw" ,locsumuw );
   eleparams.set("mean value vw" ,locsumvw );
   eleparams.set("mean value p^2",locsumsqp);
+  eleparams.set("mean value sv^2" ,locsumsqsv);
 
   // counts the number of elements in the lowest homogeneous plane
   // (the number is the same for all planes, since we use a structured
@@ -1359,6 +1372,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateIntegralMeanValuesInPlanes()
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState("u and p (n+1,converged)"    ,meanvelnp_   );
+  discret_->SetState("sv (n+1,converged)"         ,meansubgrvisc_);
   if(alefluid_)
   {
     discret_->SetState("dispnp"                   ,dispnp_      );
@@ -1377,6 +1391,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateIntegralMeanValuesInPlanes()
   discret_->Comm().SumAll(&((*locsumv)[0]),&((*globsumv)[0]),size);
   discret_->Comm().SumAll(&((*locsumw)[0]),&((*globsumw)[0]),size);
   discret_->Comm().SumAll(&((*locsump)[0]),&((*globsump)[0]),size);
+  discret_->Comm().SumAll(&((*locsumsv)[0]),&((*globsumsv)[0]),size);
 
   discret_->Comm().SumAll(&((*locsumsqu)[0]),&((*globsumsqu)[0]),size);
   discret_->Comm().SumAll(&((*locsumsqv)[0]),&((*globsumsqv)[0]),size);
@@ -1385,6 +1400,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateIntegralMeanValuesInPlanes()
   discret_->Comm().SumAll(&((*locsumuw )[0]),&((*globsumuw )[0]),size);
   discret_->Comm().SumAll(&((*locsumvw )[0]),&((*globsumvw )[0]),size);
   discret_->Comm().SumAll(&((*locsumsqp)[0]),&((*globsumsqp)[0]),size);
+  discret_->Comm().SumAll(&((*locsumsqsv)[0]),&((*globsumsqsv)[0]),size);
 
 
   //----------------------------------------------------------------------
@@ -1416,6 +1432,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateIntegralMeanValuesInPlanes()
     (*sumv_)[i]  +=(*globsumv)[i]/(*globarea)[i];
     (*sumw_)[i]  +=(*globsumw)[i]/(*globarea)[i];
     (*sump_)[i]  +=(*globsump)[i]/(*globarea)[i];
+    (*sumsv_)[i] +=(*globsumsv)[i]/(*globarea)[i];
 
     (*sumsqu_)[i]+=(*globsumsqu)[i]/(*globarea)[i];
     (*sumsqv_)[i]+=(*globsumsqv)[i]/(*globarea)[i];
@@ -1424,6 +1441,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateIntegralMeanValuesInPlanes()
     (*sumuw_ )[i]+=(*globsumuw )[i]/(*globarea)[i];
     (*sumvw_ )[i]+=(*globsumvw )[i]/(*globarea)[i];
     (*sumsqp_)[i]+=(*globsumsqp)[i]/(*globarea)[i];
+    (*sumsqsv_)[i]+=(*globsumsqsv)[i]/(*globarea)[i];
   }
 
   return;
@@ -2893,9 +2911,9 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(int step)
     (*log) << &endl;
 
     (*log) << "#     y            y+";
-    (*log) << "           umean         vmean         wmean         pmean";
-    (*log) << "        mean u^2      mean v^2      mean w^2";
-    (*log) << "      mean u*v      mean u*w      mean v*w        Varp   \n";
+    (*log) << "           umean         vmean         wmean         pmean        svmean";
+    (*log) << "        mean u^2      mean v^2      mean w^2     mean p^2     mean sv^2";
+    (*log) << "      mean u*v      mean u*w      mean v*w\n";
 
     (*log) << scientific;
     for(unsigned i=0; i<planecoordinates_->size(); ++i)
@@ -2906,22 +2924,16 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(int step)
       (*log) << "   " << setw(11) << setprecision(4) << (*sumv_       )[i]/aux;
       (*log) << "   " << setw(11) << setprecision(4) << (*sumw_       )[i]/aux;
       (*log) << "   " << setw(11) << setprecision(4) << (*sump_       )[i]/aux;
+      (*log) << "   " << setw(11) << setprecision(8) << (*sumsv_      )[i]/aux;
       (*log) << "   " << setw(11) << setprecision(4) << (*sumsqu_     )[i]/aux;
       (*log) << "   " << setw(11) << setprecision(4) << (*sumsqv_     )[i]/aux;
       (*log) << "   " << setw(11) << setprecision(4) << (*sumsqw_     )[i]/aux;
+      (*log) << "   " << setw(11) << setprecision(4) << (*sumsqp_     )[i]/aux;
+      (*log) << "   " << setw(11) << setprecision(8) << (*sumsqsv_    )[i]/aux;
       (*log) << "   " << setw(11) << setprecision(4) << (*sumuv_      )[i]/aux;
       (*log) << "   " << setw(11) << setprecision(4) << (*sumuw_      )[i]/aux;
       (*log) << "   " << setw(11) << setprecision(4) << (*sumvw_      )[i]/aux;
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumsqp_     )[i]/aux;
-      (*log) << "   " << setw(11) << setprecision(4) << (*pointsumu_  )[i]/numsamp_;
-      (*log) << "   " << setw(11) << setprecision(4) << (*pointsumv_  )[i]/numsamp_;
-      (*log) << "   " << setw(11) << setprecision(4) << (*pointsumw_  )[i]/numsamp_;
-      (*log) << "   " << setw(11) << setprecision(4) << (*pointsump_  )[i]/numsamp_;
-      (*log) << "   " << setw(11) << setprecision(4) << (*pointsumsqu_)[i]/numsamp_;
-      (*log) << "   " << setw(11) << setprecision(4) << (*pointsumsqv_)[i]/numsamp_;
-      (*log) << "   " << setw(11) << setprecision(4) << (*pointsumsqw_)[i]/numsamp_;
-      (*log) << "   " << setw(11) << setprecision(4) << (*pointsumsqp_)[i]/numsamp_;
-      (*log) << "   \n";
+      (*log) << "\n";
     }
     log->flush();
   }
@@ -3186,6 +3198,7 @@ void FLD::TurbulenceStatisticsCha::ClearStatistics()
     (*sump_)[i]  =0;
     (*sumrho_)[i]  =0;
     (*sumT_)[i]  =0;
+    (*sumsv_)[i]  =0;
 
     (*sumsqu_)[i]=0;
     (*sumsqv_)[i]=0;
@@ -3193,6 +3206,7 @@ void FLD::TurbulenceStatisticsCha::ClearStatistics()
     (*sumsqp_)[i]=0;
     (*sumsqrho_)[i]=0;
     (*sumsqT_)[i]=0;
+    (*sumsqsv_)[i]=0;
 
     (*sumuv_ )[i]=0;
     (*sumuw_ )[i]=0;
@@ -3213,11 +3227,8 @@ void FLD::TurbulenceStatisticsCha::ClearStatistics()
   }
 
   meanvelnp_->PutScalar(0.0);
-  if (loma_ != "No")
-  {
-    meanvedenp_->PutScalar(0.0);
-    meansubgrvisc_->PutScalar(0.0);
-  }
+  meansubgrvisc_->PutScalar(0.0);
+  if (loma_ != "No") meanvedenp_->PutScalar(0.0);
 
   // reset smapling for dynamic Smagorinsky model
   if (smagorinsky_)

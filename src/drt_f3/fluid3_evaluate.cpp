@@ -326,16 +326,17 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           // velocity and pressure values (n+1)
           RefCountPtr<const Epetra_Vector> velnp
             = discretization.GetState("u and p (n+1,converged)");
+          RefCountPtr<const Epetra_Vector> subgrviscnp
+            = discretization.GetState("sv (n+1,converged)");
 
-
-          if (velnp==null)
-          {
-            dserror("Cannot get state vectors 'velnp'");
-          }
+          if (velnp==null || subgrviscnp==null)
+            dserror("Cannot get state vectors 'velnp' and/or 'subgrviscnp'");
 
           // extract local values from the global vectors
           vector<double> mysol  (lm.size());
+          vector<double> mysv   (lm.size());
           DRT::UTILS::ExtractMyValues(*velnp,mysol,lm);
+          DRT::UTILS::ExtractMyValues(*subgrviscnp,mysv,lm);
 
           vector<double> mydisp(lm.size());
           if(is_ale_)
@@ -344,12 +345,12 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
             RefCountPtr<const Epetra_Vector> dispnp
               =
               discretization.GetState("dispnp");
-                        
+
             if (dispnp==null)
             {
               dserror("Cannot get state vectors 'dispnp'");
             }
-            
+
             DRT::UTILS::ExtractMyValues(*dispnp,mydisp,lm);
           }
 
@@ -360,27 +361,27 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           {
           case DRT::Element::hex8:
           {
-            f3_calc_means<8>(discretization,mysol,mydisp,params);
+            f3_calc_means<8>(discretization,mysol,mysv,mydisp,params);
             break;
           }
           case DRT::Element::hex20:
           {
-            f3_calc_means<20>(discretization,mysol,mydisp,params);
+            f3_calc_means<20>(discretization,mysol,mysv,mydisp,params);
             break;
           }
           case DRT::Element::hex27:
           {
-            f3_calc_means<27>(discretization,mysol,mydisp,params);
+            f3_calc_means<27>(discretization,mysol,mysv,mydisp,params);
             break;
           }
           case DRT::Element::nurbs8:
           {
-            f3_calc_means<8>(discretization,mysol,mydisp,params);
+            f3_calc_means<8>(discretization,mysol,mysv,mydisp,params);
             break;
           }
           case DRT::Element::nurbs27:
           {
-            f3_calc_means<27>(discretization,mysol,mydisp,params);
+            f3_calc_means<27>(discretization,mysol,mysv,mydisp,params);
             break;
           }
           default:
@@ -923,12 +924,14 @@ template<int iel>
 void DRT::ELEMENTS::Fluid3::f3_calc_means(
   DRT::Discretization&      discretization,
   vector<double>&           solution      ,
+  vector<double>&           subgrvisc  ,
   vector<double>&           displacement  ,
   ParameterList& 	    params
   )
 {
-  // get view of solution vector
+  // get view of solution and subgrid-viscosity vector
   LINALG::Matrix<4*iel,1> sol(&(solution[0]),true);
+  LINALG::Matrix<4*iel,1> sv(&(subgrvisc[0]),true);
 
   // set element data
   const DiscretizationType distype = this->Shape();
@@ -947,6 +950,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
   RefCountPtr<vector<double> > sumv   = params.get<RefCountPtr<vector<double> > >("mean velocity v");
   RefCountPtr<vector<double> > sumw   = params.get<RefCountPtr<vector<double> > >("mean velocity w");
   RefCountPtr<vector<double> > sump   = params.get<RefCountPtr<vector<double> > >("mean pressure p");
+  RefCountPtr<vector<double> > sumsv = params.get<RefCountPtr<vector<double> > >("mean subgrid visc");
 
   RefCountPtr<vector<double> > sumsqu = params.get<RefCountPtr<vector<double> > >("mean value u^2");
   RefCountPtr<vector<double> > sumsqv = params.get<RefCountPtr<vector<double> > >("mean value v^2");
@@ -955,6 +959,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
   RefCountPtr<vector<double> > sumuw  = params.get<RefCountPtr<vector<double> > >("mean value uw");
   RefCountPtr<vector<double> > sumvw  = params.get<RefCountPtr<vector<double> > >("mean value vw");
   RefCountPtr<vector<double> > sumsqp = params.get<RefCountPtr<vector<double> > >("mean value p^2");
+  RefCountPtr<vector<double> > sumsqsv = params.get<RefCountPtr<vector<double> > >("mean value sv^2");
 
   // get node coordinates of element
   LINALG::Matrix<3,iel>  xyze;
@@ -1129,6 +1134,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
       double vbar=0;
       double wbar=0;
       double pbar=0;
+      double svbar=0;
 
       double usqbar=0;
       double vsqbar=0;
@@ -1137,6 +1143,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
       double uwbar =0;
       double vwbar =0;
       double psqbar=0;
+      double svsqbar=0;
 
       // get the integration point in wall normal direction
       double e[3];
@@ -1251,6 +1258,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 	double vgp=0;
 	double wgp=0;
 	double pgp=0;
+        double svgp=0;
 
         // the computation of this jacobian determinant from the 3d 
         // mapping is based on the assumption that we do not deform 
@@ -1264,10 +1272,11 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 	{
           int finode=inode*4;
 
-	  ugp += funct(inode)*sol(finode++);
-          vgp += funct(inode)*sol(finode++);
-	  wgp += funct(inode)*sol(finode++);
-	  pgp += funct(inode)*sol(finode  );
+	  svgp += funct(inode)*sv (finode  );
+	  ugp  += funct(inode)*sol(finode++);
+          vgp  += funct(inode)*sol(finode++);
+	  wgp  += funct(inode)*sol(finode++);
+	  pgp  += funct(inode)*sol(finode  );
 	}
 
 	// add contribution to integral
@@ -1276,11 +1285,13 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 	double dvbar  = vgp*fac;
 	double dwbar  = wgp*fac;
 	double dpbar  = pgp*fac;
+	double dsvbar = svgp*fac;
 
 	ubar   += dubar;
 	vbar   += dvbar;
 	wbar   += dwbar;
 	pbar   += dpbar;
+        svbar  += dsvbar;
 
 	usqbar += ugp*dubar;
 	vsqbar += vgp*dvbar;
@@ -1289,6 +1300,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 	uwbar  += ugp*dwbar;
 	vwbar  += vgp*dwbar;
 	psqbar += pgp*dpbar;
+        svsqbar+= svgp*dsvbar;
       } // end loop integration points
 
       // add increments from this layer to processor local vectors
@@ -1298,6 +1310,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
       (*sumv   )[*id] += vbar;
       (*sumw   )[*id] += wbar;
       (*sump   )[*id] += pbar;
+      (*sumsv  )[*id] += svbar;
 
       (*sumsqu )[*id] += usqbar;
       (*sumsqv )[*id] += vsqbar;
@@ -1306,6 +1319,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
       (*sumuw  )[*id] += uwbar;
       (*sumvw  )[*id] += vwbar;
       (*sumsqp )[*id] += psqbar;
+      (*sumsqsv)[*id] += svsqbar;
 
       // jump to the next layer in the element.
       // in case of an hex8 element, the two coordinates are -1 and 1(+2)
@@ -1883,13 +1897,13 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
           int finode=inode*4;
 
           usave  = velpre(finode);
+          svgp   += funct(inode)*sv(finode  );
           ugp    += funct(inode)*velpre(finode++);
           vgp    += funct(inode)*velpre(finode++);
           wgp    += funct(inode)*velpre(finode++);
           pgp    += funct(inode)*velpre(finode  );
           rhogp  += funct(inode)*dens(finode  );
           rhougp += funct(inode)*dens(finode  )*usave;
-          svgp   += funct(inode)*sv(finode  );
         }
         Tgp     = eosfac/rhogp;
         rhouTgp = eosfac*ugp;

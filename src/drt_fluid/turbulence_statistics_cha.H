@@ -122,10 +122,9 @@ public:
   moments for velocities, pressure and Cs are added to global
   'sum' vectors.
   */
-  void DoTimeSample(
-    Teuchos::RefCountPtr<Epetra_Vector> velnp,
-    Epetra_Vector & force
-    );
+  void DoTimeSample(Teuchos::RefCountPtr<Epetra_Vector> velnp,
+                    Teuchos::RefCountPtr<Epetra_Vector> subgrvisc,
+                    Epetra_Vector & force);
 
 
   /*!

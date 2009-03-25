@@ -952,8 +952,8 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
            !=
            "L_2_norm_without_residual_at_itemax"))
       {
-        // call standard loop over elements
-        discret_->Evaluate(eleparams,sysmat_,residual_);
+        // call standard loop over elements (including subgrid-viscosity vector)
+        discret_->Evaluate(eleparams,sysmat_,null,residual_,subgrvisc_);
 
         discret_->ClearState();
 
