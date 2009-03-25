@@ -146,7 +146,7 @@ inline DRT::UTILS::GaussRule3D getOptimalVelocityGaussrule(DRT::Element::Discret
         rule = DRT::UTILS::intrule_hex_27point;
         break;
     case DRT::Element::tet4:
-        rule = DRT::UTILS::intrule_tet_5point;
+        rule = DRT::UTILS::intrule_tet_4point;
         break;
     case DRT::Element::tet10:
         rule = DRT::UTILS::intrule_tet_24point;
