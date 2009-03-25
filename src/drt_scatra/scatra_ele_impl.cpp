@@ -1,4 +1,4 @@
-/*----------------------------------------------------------------------*/
+ /*----------------------------------------------------------------------*/
 /*!
 \file scatra_ele_impl.cpp
 
@@ -31,7 +31,9 @@ Maintainer: Georg Bauer
 
 //#define VISUALIZE_ELEMENT_DATA
 #include "scatra_element.H" // only for visualization of element data
-#define MIGRATIONSTAB  //activate convective stabilization with migration term
+//#define MIGRATIONSTAB  //activate convective stabilization with migration term
+//#define PRINT_ELCH_DEBUG
+//#define TAU_EXACT
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -1114,6 +1116,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
   const double dens = funct_.Dot(edens);
 
   // get "migration velocity" divided by D_k*z_k at element center
+#ifdef MIGRATIONSTAB
   if (iselch_) // ELCH
   {
     // compute global derivatives
@@ -1121,6 +1124,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
 
     migvelint_.Multiply(-frt,derxy_,epot);
   } // if ELCH
+#endif
 
   for(int k = 0;k<numscal_;++k) // loop over all transported scalars
   {
@@ -1239,14 +1243,15 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
 
       // get Euclidean norm of (weighted) velocity at element center
       double vel_norm;
+
+#ifdef MIGRATIONSTAB
       if (iselch_) // ELCH
       {
         // get Euclidean norm of effective velocity at element center:
         // (weighted) convective velocity + individual migration velocity
         LINALG::Matrix<nsd_,1> veleff(velint_,false);
-#ifdef MIGRATIONSTAB
+
         veleff.Update(diffusvalence_[k],migvelint_,1.0);
-#endif
         vel_norm = veleff.Norm2();
 
 #ifdef VISUALIZE_ELEMENT_DATA
@@ -1266,17 +1271,44 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
         actele->AddToData(name,v);
 #endif
       }
-      else vel_norm = velint_.Norm2();
+      else 
+#endif
+        vel_norm = velint_.Norm2();
 
       // check whether there is zero diffusivity
       if (diffus_[k] == 0.0) dserror("diffusivity is zero: Preventing division by zero at evaluation of stabilization parameter");
 
       // parameter relating convective and diffusive forces + respective switch
+#ifndef TAU_EXACT
       const double epe = mk * dens * vel_norm * h / diffus_[k];
       const double xi = DMAX(epe,1.0);
-
+#else
+      // optimal tau (stationary 1D problem using linear shape functions)
+      double resultantdiff = diffus_[0]*diffus_[1]*(valence_[0]-valence_[1])/(diffusvalence_[0]-diffusvalence_[1]);
+      double epe = 0.5 * dens * vel_norm * h / resultantdiff;
+      const double pp = exp(epe);
+      const double pm = exp(-epe);
+      double xi = 0.0;
+      if (epe > EPS15)
+      {
+        // xi = coth(epe) - 1/epe
+        xi = (((pp+pm)/(pp-pm))-(1.0/epe));
+        cout<<"epe = "<<epe<<endl;
+        cout<<"xi_opt  = "<<xi<<endl;
+        cout<<"vel_norm  = "<<vel_norm<<endl;
+        cout<<"tau_opt = "<<0.5*h*xi/vel_norm<<endl<<endl;
+      }
+#endif
       // stabilization parameter for stationary and instationary case
-      if (is_stationary == true) tau_[k] = (DSQR(h)*mk)/(2.0*diffus_[k]*xi);
+      if (is_stationary == true) 
+#ifndef TAU_EXACT
+        tau_[k] = (DSQR(h)*mk)/(2.0*diffus_[k]*xi);
+#else
+        if (vel_norm > 0.0)
+          tau_[k] = 0.5*h*xi/vel_norm;
+        else
+          tau_[k] = 0.0;
+#endif
       else
       {
         // parameter relating diffusive and reactive forces + respective switch
@@ -2172,17 +2204,16 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
         emat(fvi, fui) += timetaufac_conv_eff_vi*conv_(ui);
         emat(fvi, fui) += timetaufac_conv_eff_vi*diffus_valence_k*migconv_(ui);
         // partial derivative w.r.t potential
+#if 1
         double val_ui; GetLaplacianWeakFormRHS(val_ui, derxy_,gradphi_,ui);
         emat(fvi,ui*numdofpernode_+numscal_) -= timetaufac_conv_eff_vi*diffus_valence_k*val_ui;
-
+#else
         // linearization w.r.t potential phi
-        /*
         double val_ui; GetLaplacianWeakFormRHS(val_ui, derxy_,gradphi_,ui);
         double val_vi; GetLaplacianWeakFormRHS(val_vi, derxy_,gradphi_,vi);
         double norm = gradphi_.Norm2();
         emat(fvi, ui*numdofpernode_+ numscal_) += timetaufac*(laplawf*norm*norm + val_vi*val_ui);
-        */
-
+#endif
       } // for ui
     } // for vi
 
@@ -2248,6 +2279,19 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
     double taufacresidual = taufac*rhsint - timetaufac*(conv_eff_k - diff_ephinp_k + migrea_k);
     if (!is_stationary) // add transient term to the residual
       taufacresidual -= taufac*densfunct_ephinp_k;
+
+#ifdef PRINT_ELCH_DEBUG
+    cout<<"tau["<<k<<"]    = "<<tau_[k]<<endl;
+    cout<<"taufac["<<k<<"] = "<<taufac<<endl;
+    if (tau_[k] != 0.0)
+      cout<<"residual["<<k<<"] = "<< taufacresidual/taufac<<endl;
+    cout<<"conv_eff_k    = "<<conv_eff_k<<endl;
+    cout<<"conv_ephinp_k  = "<<conv_ephinp_k<<endl;
+    cout<<"Dkzk_mig_ephinp_k = "<<Dkzk_mig_ephinp_k<<endl;
+    cout<<"diff_ephinp_k = "<<diff_ephinp_k<<endl;
+    cout<<"migrea_k      = "<<migrea_k <<endl;
+    cout<<endl;
+#endif
 
     //------------residual formulation (Newton iteration)
     for (int vi=0; vi<iel; ++vi)
