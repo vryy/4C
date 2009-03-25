@@ -348,7 +348,8 @@ void DRT::ELEMENTS::So_sh8p8::InvVector6VoigtTwiceDiffByItself(
 /*----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtDiffByItself(
   LINALG::Matrix<NUMSTR_,NUMSTR_>& sqfderf,
-  const LINALG::Matrix<NUMDIM_,NUMDIM_>& fmat
+  const LINALG::Matrix<NUMDIM_,NUMDIM_>& fmat,
+  const VoigtType outvoigt6
   )
 {
   const int* voigt6row = NULL;
@@ -375,7 +376,7 @@ void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtDiffByItself(
       const int l = voigt6col[kl];
       sqfderf(ij,kl) = id(i,k)*fmat(l,j) + id(j,l)*fmat(i,k);
 //      cout << "id["<<i+1<<","<<k+1<<"]*St["<<l+1<<","<<j+1<<"]+id["<<j+1<<","<<l+1<<"]*St["<<i+1<<","<<k+1<<"]";
-      if (ij >= NUMDIM_)
+      if ( (outvoigt6 == voigt6_strain) and (ij >= NUMDIM_) )
       {
         sqfderf(ij,kl) += id(j,k)*fmat(l,i) + id(i,l)*fmat(j,k);
 //        cout << "+id["<<j+1<<","<<k+1<<"]*St["<<l+1<<","<<i+1<<"]+id["<<i+1<<","<<l+1<<"]*St["<<j+1<<","<<k+1<<"]";
@@ -385,6 +386,8 @@ void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtDiffByItself(
 //    cout << "]," << endl;
   }
 #else
+  if (outvoigt6 != voigt6_strain)
+    dserror("Can only produce row of strain-like type");
   sqfderf(0,0) = 2.0*fmat(0,0);
   sqfderf(1,0) = 0.0;
   sqfderf(2,0) = 0.0;
@@ -568,27 +571,26 @@ void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtTwiceDiffByItself(
   LINALG::Matrix<NUMSTR_,6>& sqfdderf
   )
 {
-//  sqfdderf.Clear();
   isqfdderf[NUMSTR_*0+0] = 0;  sqfdderf(0,0) = 2.0;
   isqfdderf[NUMSTR_*0+1] = 21;  sqfdderf(0,1) = 0.5;
   isqfdderf[NUMSTR_*0+2] = 35;  sqfdderf(0,2) = 0.5;
-  isqfdderf[NUMSTR_*0+3] = -1;
-  isqfdderf[NUMSTR_*0+4] = -1;
-  isqfdderf[NUMSTR_*0+5] = -1;
+  isqfdderf[NUMSTR_*0+3] = -1;  sqfdderf(0,3) = 0.0;  // dummy
+  isqfdderf[NUMSTR_*0+4] = -1;  sqfdderf(0,4) = 0.0;  // dummy
+  isqfdderf[NUMSTR_*0+5] = -1;  sqfdderf(0,5) = 0.0;  // dummy
 
   isqfdderf[NUMSTR_*1+0] = 7;   sqfdderf(1,0) = 2.0;
   isqfdderf[NUMSTR_*1+1] = 21;  sqfdderf(1,1) = 0.5;
   isqfdderf[NUMSTR_*1+2] = 28;  sqfdderf(1,2) = 0.5;
-  isqfdderf[NUMSTR_*1+3] = -1;
-  isqfdderf[NUMSTR_*1+4] = -1;
-  isqfdderf[NUMSTR_*1+5] = -1;
+  isqfdderf[NUMSTR_*1+3] = -1;  sqfdderf(1,3) = 0.0;  // dummy
+  isqfdderf[NUMSTR_*1+4] = -1;  sqfdderf(1,4) = 0.0;  // dummy
+  isqfdderf[NUMSTR_*1+5] = -1;  sqfdderf(1,5) = 0.0;  // dummy
 
   isqfdderf[NUMSTR_*2+0] = 14;  sqfdderf(2,0) = 2.0;
   isqfdderf[NUMSTR_*2+1] = 28;  sqfdderf(2,1) = 0.5;
   isqfdderf[NUMSTR_*2+2] = 35;  sqfdderf(2,2) = 0.5;
-  isqfdderf[NUMSTR_*2+3] = -1;
-  isqfdderf[NUMSTR_*2+4] = -1;
-  isqfdderf[NUMSTR_*2+5] = -1;
+  isqfdderf[NUMSTR_*2+3] = -1;  sqfdderf(2,3) = 0.0;  // dummy
+  isqfdderf[NUMSTR_*2+4] = -1;  sqfdderf(2,4) = 0.0;  // dummy
+  isqfdderf[NUMSTR_*2+5] = -1;  sqfdderf(2,5) = 0.0;  // dummy
 
   isqfdderf[NUMSTR_*3+0] = 3;  sqfdderf(3,0) = 1.0;
   isqfdderf[NUMSTR_*3+1] = 9;  sqfdderf(3,1) = 1.0;

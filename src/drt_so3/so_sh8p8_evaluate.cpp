@@ -938,13 +938,13 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
             // U^d_{,d} = (C^d_{,U^d})^{-1} . C^d_{,d}
             //LINALG::Matrix<NUMSTR_,NUMDISP_> rgtstrDbydisp;
             {
-              LINALG::FixedSizeSerialDenseSolver<NUMSTR_,NUMSTR_,NUMDISP_> asolver;
-              asolver.SetMatrix(rcgDbyrgtstrD);  // LHS
-              asolver.SetVectors(rgtstrDbydisp,rcgDbydisp);  // SOL, RHS
-              const int err = asolver.Solve();
+              LINALG::FixedSizeSerialDenseSolver<NUMSTR_,NUMSTR_,NUMDISP_> rcgDbyrgtstrDsolver;
+              rcgDbyrgtstrDsolver.SetMatrix(rcgDbyrgtstrD);  // LHS
+              rcgDbyrgtstrDsolver.SetVectors(rgtstrDbydisp,rcgDbydisp);  // SOL, RHS
+              const int err = rcgDbyrgtstrDsolver.Solve();
               if (err != 0) dserror("Failed to solve, error=%d", err);
               if (lin_ >= lin_one) {
-                const int err = asolver.Invert();
+                const int err = rcgDbyrgtstrDsolver.Invert();
                 if (err != 0) dserror("Failed to invert, error=%d", err);
               }
             }
@@ -967,11 +967,11 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
             // derivative of ass. mat. stretch tensor with respect to nodal displacements
             // U^{ass}_{,d} = (C^{ass}_{,U^{ass}})^{-1} . C^{ass}_{,d}
             LINALG::Matrix<NUMSTR_,NUMDISP_> rgtstrbydisp;  // ... U^{ass}_{,d}
-            LINALG::FixedSizeSerialDenseSolver<NUMSTR_,NUMSTR_,NUMDISP_> asolver;
+            LINALG::FixedSizeSerialDenseSolver<NUMSTR_,NUMSTR_,NUMDISP_> rcgbyrgtstrsolver;
             {
-              asolver.SetMatrix(rcgbyrgtstr);  // LHS
-              asolver.SetVectors(rgtstrbydisp,bop);  // SOL, RHS
-              int err = asolver.Solve();
+              rcgbyrgtstrsolver.SetMatrix(rcgbyrgtstr);  // LHS
+              rcgbyrgtstrsolver.SetVectors(rgtstrbydisp,bop);  // SOL, RHS
+              const int err = rcgbyrgtstrsolver.Solve();
               if (err != 0) dserror("Failed to solve, error=%d", err);
             }
             rgtstrbydisp.Scale(2.0);
@@ -1007,7 +1007,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
             if (lin_ > lin_sixth) {
               // on #rcgbyrgtstr is stored the inverse of C^{ass}_{,U^{ass}}
               {
-                const int err = asolver.Invert();
+                const int err = rcgbyrgtstrsolver.Invert();
                 if (err != 0) dserror("Failed to invert, error=%d", err);
               }
 
@@ -1042,6 +1042,9 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                 for (int dk=0; dk<NUMDISP_*NUMDISP_; ++dk) {
                   const int d = dk / NUMDISP_;
                   const int k = dk % NUMDISP_;
+                  if (k < d)  // symmetric in d and k : only upper 'triangle' is computed
+                    continue;
+                  const int kd = NUMDISP_*k + d;
                   int ndnk = -1;
                   if (d%NODDISP_ == k%NODDISP_) {
                     const int nd = d / NODDISP_;
@@ -1078,7 +1081,13 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                     for (int m=0; m<NUMDIM_; ++m) {
                       const int mE = voigt3x3[NUMDIM_*m+E];
                       const int mF = voigt3x3[NUMDIM_*m+F];
-                      rcgDbybydisp_EFdk += 2.0*boplin(mE,d)*boplin(mF,k);
+                      if (E == F)  // make strain-like 6-Voigt vector
+                        rcgDbybydisp_EFdk 
+                          += 2.0*boplin(mE,d)*boplin(mF,k);
+                      else  // thus setting  V_EF + V_FE if E!=F
+                        rcgDbybydisp_EFdk 
+                          += 2.0*boplin(mE,d)*boplin(mF,k)
+                          +  2.0*boplin(mF,d)*boplin(mE,k);
                     }
                     // (C^{d}_{,U^{d}})_{DBEF}^{-1}
                     const double rcgDbyrgtstrD_DBEF = rcgDbyrgtstrD(DB,EF);
@@ -1086,7 +1095,9 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                     rgtstrDbybydisp_DBdk += rcgDbyrgtstrD_DBEF * ( rcgDbybydisp_EFdk - tempD_EFdk);
                   }
                   rgtstrbybydisp(DB,dk) = rgtstrbybydisp_DBdk;
+                  if (k != d) rgtstrbybydisp(DB,kd) = rgtstrbybydisp_DBdk;
                   rgtstrDbybydisp(DB,dk) = rgtstrDbybydisp_DBdk;
+                  if (k != d) rgtstrDbybydisp(DB,kd) = rgtstrDbybydisp_DBdk;
                 }
               }
 
@@ -1101,6 +1112,9 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                 for (int dk=0; dk<NUMDISP_*NUMDISP_; ++dk) {
                   const int d = dk / NUMDISP_;
                   const int k = dk % NUMDISP_;
+                  if (k < d)  // symmetric in d and k : only upper triangle is computed
+                    continue;
+                  const int kd = NUMDISP_*k + d;
                   for (int CD=0; CD<NUMSTR_; ++CD) {
                     double invrgtstrDbybydisp_CDdk = 0.0;
                     for (int EF=0; EF<NUMSTR_; ++EF) {
@@ -1116,13 +1130,15 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                       }
                     }
                     (*invrgtstrDbybydisp)(CD,dk) = invrgtstrDbybydisp_CDdk;
+                    if (k != d) (*invrgtstrDbybydisp)(CD,kd) = invrgtstrDbybydisp_CDdk;
                   }
                 }
               } // if (lin_ >= lin_one) else
         
 
-              // 
-              LINALG::Matrix<NUMSTR_,NUMDISP_> invdefgradtimesboplin(true);
+              // inverse assumed deformation gradient times boblin
+              // F^{-T} . B_L = F^{-T} . F^d_{,d}
+              LINALG::Matrix<NUMSTR_,NUMDISP_> invdefgradtimesboplin(true);  // sparse, 1/3 non-zeros
               for (int n=0; n<NUMNOD_; ++n) {
                 const int d = iboplin[n];
                 for (int BC=0; BC<NUMSTR_; ++BC) {
@@ -1131,8 +1147,14 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                   double invdefgradtimesboplin_BCd = 0.0;
                   for (int a=0; a<NUMDIM_; ++a) {
                     const int aC = voigt3x3[NUMDIM_*a+C];
-                    invdefgradtimesboplin_BCd += invdefgrad(a,B)*boplin(aC,d);
-                    if (BC >= NUMDIM_) invdefgradtimesboplin_BCd *= 2.0;
+                    const int aB = voigt3x3[NUMDIM_*a+B];
+                    if (B == C)  // make strain-like 6-Voigt vector
+                      invdefgradtimesboplin_BCd 
+                        += invdefgrad(a,B)*boplin(aC,d);
+                    else  // thus setting  V_BC + V_CB if C!=B
+                      invdefgradtimesboplin_BCd 
+                        += invdefgrad(a,B)*boplin(aC,d)
+                        +  invdefgrad(a,C)*boplin(aB,d);
                   }
                   invdefgradtimesboplin(BC,d) = invdefgradtimesboplin_BCd;
                 }
@@ -1157,7 +1179,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
               // + F^{-1}_{Ba}  F^d_{aC} U^{d;-1}_{CD,k} U^{ass}_{DB,d}        |  # 0, okay
               for (int d=0; d<NUMDISP_; ++d) {
                 const int n = d / NODDISP_;
-                for (int k=0; k<NUMDISP_; ++k) {
+                for (int k=d; k<NUMDISP_; ++k) {  // symmetric matrix : only upper right triangle is computed 
                   const int m = k / NODDISP_;
                   double defgradbybydisp_dk = 0.0;
                   for (int B=0; B<NUMDIM_; ++B) {
@@ -1180,7 +1202,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                           defgradbybydisp_dk
                             += BCfact*invdefgradtimesboplin(BC,k) * CDfact*invrgtstrDbydisp(CD,d) * rgtstr(D,B)
                             + BCfact*invdefgradtimesboplin(BC,k) * invrgtstrD(C,D) * DBfact*rgtstrbydisp(DB,d);
-                        if (lin_ >= lin_third)
+                        if ( (lin_ >= lin_third) )
                           defgradbybydisp_dk
                             += invdefgradtimesdefgradD(B,C) * CDfact*invrgtstrDbydisp(CD,d) * DBfact*rgtstrbydisp(DB,k)
                             + invdefgradtimesdefgradD(B,C) * CDfact*invrgtstrDbydisp(CD,k) * DBfact*rgtstrbydisp(DB,d);
@@ -1197,6 +1219,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                     }
                   }
                   (*stiffmatrix)(d,k) -= defgradbybydisp_dk * effpressure*detdefgrad*detJ_w;
+                  if (k != d) (*stiffmatrix)(k,d) -= defgradbybydisp_dk * effpressure*detdefgrad*detJ_w;
                 }
               }
 

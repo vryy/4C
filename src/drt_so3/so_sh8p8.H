@@ -486,7 +486,8 @@ private:
   /// \f]
   static void SqVector6VoigtDiffByItself(
     LINALG::Matrix<NUMSTR_,NUMSTR_>& sqfderf,  ///< diff. squared matrix 
-    const LINALG::Matrix<NUMDIM_,NUMDIM_>& fmat  ///< symmetric 2-tensor
+    const LINALG::Matrix<NUMDIM_,NUMDIM_>& fmat,  ///< symmetric 2-tensor
+    const VoigtType outvoigt6 = voigt6_strain  ///< 6-Voigt row type of resulting matrix
     );
 
   /// Derivative of "square" of non-symmetric 2-tensor by itself
