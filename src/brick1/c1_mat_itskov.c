@@ -161,7 +161,7 @@ ITSKOV *mat,
     /* Parameter der strain-energy function */
     alpha=mat->alpha;
     beta=mat->beta;
-    m=mat->mu;
+    m=mat->mu_fibers;
     /*Parameter der Straffunktion nach Balzani*/
     epsilonPen=mat->epsilon;
     gammaPen=mat->gamma;
