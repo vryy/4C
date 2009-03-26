@@ -2457,10 +2457,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
     const double D = frt*((valence_[0]*diffus_[0]*diffus_[1]) - (valence_[1]*diffus_[1]*diffus_[0]))/d;
 
     // compute analytical solution for cation and anion concentrations
-    const double A0 = 5.0;
-    const double m = 2.0;
+    const double A0 = 2.0;
+    const double m = 1.0;
     const double n = 2.0;
-    const double k = 2.0;
+    const double k = 3.0;
     const double A_mnk = 1.0;
     double expterm;
     double c_0_0_0_t;
