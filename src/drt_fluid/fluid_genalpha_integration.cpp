@@ -1492,10 +1492,10 @@ void FLD::FluidGenAlphaIntegration::GenAlphaCalcIncrement(const double nlnres)
 
       for(int rr=0;rr<numdim_;++rr)
       {
-	if(abs((*mode)[rr]>1e-14))
-	{
-	  dserror("expecting only an undetermined pressure");
-	}
+        if(abs((*mode)[rr]>1e-14))
+        {
+          dserror("expecting only an undetermined pressure");
+        }
       }
 
       int predof = numdim_;
@@ -1534,7 +1534,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaCalcIncrement(const double nlnres)
 
       if (alefluid_)
       {
-	discret_->SetState("dispnp",dispnp_);
+        discret_->SetState("dispnp",dispnp_);
       }
       
       /* evaluate KrylovSpaceProjection condition in order to get
@@ -1563,10 +1563,10 @@ void FLD::FluidGenAlphaIntegration::GenAlphaCalcIncrement(const double nlnres)
 
       for(int rr=0;rr<numdim_;++rr)
       {
-	if(abs((*mode)[rr]>1e-14))
-	{
-	  dserror("expecting only an undetermined pressure");
-	}
+        if(abs((*mode)[rr]>1e-14))
+        {
+          dserror("expecting only an undetermined pressure");
+        }
       }
       
       Teuchos::RCP<Epetra_Vector> presmode = velpressplitter_.ExtractCondVector(*w_);
@@ -1586,9 +1586,9 @@ void FLD::FluidGenAlphaIntegration::GenAlphaCalcIncrement(const double nlnres)
                 residual_                ,
                 refactor                 ,
                 reset                    ,
-		w_                       ,
-		c_                       ,
-		project_                 );
+                w_                       ,
+                c_                       ,
+                project_                 );
 
   solver_.ResetTolerance();
 

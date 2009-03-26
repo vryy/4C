@@ -388,6 +388,12 @@ protected:
   //! fluid discretization
   RCP<DRT::Discretization>      discret_;
   LINALG::Solver&               solver_;
+  //! project nullspace (useful for completely Dirichlet bounded problems)
+  bool                        project_;
+  //! integrated basis vector (pressure component)
+  Teuchos::RCP<Epetra_Vector> w_;
+  //! basis vector for nullspace (vector of ones in the pressure component)
+  Teuchos::RCP<Epetra_Vector> c_;
   ParameterList&                params_;
   IO::DiscretizationWriter&     output_;
   //! the processor ID from the communicator
