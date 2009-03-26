@@ -68,6 +68,7 @@ Maintainer: Alexander Popp
 //#define CONTACTGMSH2          /* flag for gmsh output in each iteration */
 //#define CONTACTGMSHTN         /* flag for gmsh output of all treenodes */
 //#define CONTACTGMSHCTN        /* flag for gmsh output of contact treenodes */
+//#define CONTACTTIME           /* flag for contact time measurement */ 
 
 /************************************************************************/
 /* Contact algorithm parameters                                         */

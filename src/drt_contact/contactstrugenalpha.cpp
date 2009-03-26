@@ -1117,6 +1117,10 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
   while ((!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) ||
           !contactmanager_->ActiveSetConverged()) && numiter<maxiter)
   {
+#ifdef CONTACTTIME
+    const double t_start0 = ds_cputime();
+    const double t_start = ds_cputime();
+#endif // #ifdef CONTACTTIME
     //-----------------------------transform to local coordinate systems
     if (locsysmanager_ != null) locsysmanager_->RotateGlobalToLocal(stiff_,fresm_);
 
@@ -1137,7 +1141,11 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
 
     //----------------------- transform back to global coordinate system
     if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(disi_);
-
+#ifdef CONTACTTIME
+    const double t_end = ds_cputime()-t_start;
+    cout << "\n***\nSolve: " << t_end << " seconds\n***\n";
+#endif // #ifdef CONTACTTIME
+    
     //--------------------------------------- recover disi and Lag. Mult.
     contactmanager_->Recover(disi_);
 
@@ -1196,7 +1204,10 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
       velm_->PutScalar(0.0);
       accm_->PutScalar(0.0);
     }
-
+#ifdef CONTACTTIME
+    const double t_start2 = ds_cputime();
+#endif // #ifdef CONTACTTIME
+    
     //---------------------------- compute internal forces and stiffness
     {
       // zero out stiffness
@@ -1257,6 +1268,10 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
         }
       }
     }
+#ifdef CONTACTTIME
+    const double t_end2 = ds_cputime()-t_start2;
+    cout << "\n***\nDiscret.Evaluate: " << t_end2 << " seconds\n***\n";
+#endif // #ifdef CONTACTTIME
 
     //------------------------------------------ compute dynamic equilibrium
     // Res = M . A_{n+1-alpha_m}
@@ -1317,14 +1332,32 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
 
     // keep a copy of fresm for contact forces / equilibrium check
     RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
-
+#ifdef CONTACTTIME
+    const double t_start3 = ds_cputime();
+#endif // #ifdef CONTACTTIME
+    
     //-------------------------make contact modifications to lhs and rhs
     //-------------------- update active set for semi-smooth Newton case
     {
+#ifdef CONTACTTIME
+      const double t_start31 = ds_cputime();
+#endif // #ifdef CONTACTTIME
       contactmanager_->SetState("displacement",disn_);
-
+#ifdef CONTACTTIME
+      const double t_end31 = ds_cputime()-t_start31;
+      cout << "\n***\nContact.SetState: " << t_end31 << " seconds";
+      const double t_start32 = ds_cputime();
+#endif // #ifdef CONTACTTIME
       contactmanager_->InitializeMortar();
+#ifdef CONTACTTIME
+      const double t_end321 = ds_cputime()-t_start32;
+#endif // #ifdef CONTACTTIME
       contactmanager_->EvaluateMortar();
+#ifdef CONTACTTIME
+      const double t_end322 = ds_cputime()-t_start32;
+      cout << "\nContact.InitMortar: " << t_end321 << " seconds";
+      cout << "\nContact.EvalMortar: " << t_end322 << " seconds";
+#endif // #ifdef CONTACTTIME
       
       // friction
       // here the relative movement of the contact bodies is evaluated
@@ -1337,14 +1370,29 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
       // (on the one hand we need the new weighted gap vector g, which is
       // computed in EvaluateMortar() above and on the other hand we want to
       // run the Evaluate()routine below with the NEW active set already)
+#ifdef CONTACTTIME
+      const double t_start33 = ds_cputime();
+#endif // #ifdef CONTACTTIME
       contactmanager_->UpdateActiveSetSemiSmooth();
-
+#ifdef CONTACTTIME
+      const double t_end33 = ds_cputime()-t_start33;
+      cout << "\nContact.UpdateActiveSet: " << t_end33 << " seconds";
+      const double t_start34 = ds_cputime();
+#endif // #ifdef CONTACTTIME
       contactmanager_->Initialize();
       contactmanager_->Evaluate(stiff_,fresm_);
+#ifdef CONTACTTIME
+      const double t_end34 = ds_cputime()-t_start34;
+      cout << "\nContact.StiffFresm: " << t_end34 << " seconds";
+#endif // #ifdef CONTACTTIME
     }
 
     //--------------------------------------------------- contact forces
     contactmanager_->ContactForces(fresmcopy);
+#ifdef CONTACTTIME
+    const double t_end3 = ds_cputime()-t_start3;
+    cout << "\n->Contact.Evaluate: " << t_end3 << " seconds\n***\n";
+#endif // #ifdef CONTACTTIME
     
 #ifdef CONTACTGMSH2
     int step  = params_.get<int>("step",0);
@@ -1364,7 +1412,11 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
     //---------------------------------------------- build residual norm
     disi_->Norm2(&disinorm);
     fresm_->Norm2(&fresmnorm);
-
+#ifdef CONTACTTIME
+    const double t_end0 = ds_cputime()-t_start0;
+    cout << "\n***\nIteration Step (overall): " << t_end0 << " seconds\n***\n";
+#endif // #ifdef CONTACTTIME
+    
     // a short message
     if (!myrank_ and (printscreen or printerr))
     {
@@ -1766,6 +1818,10 @@ void CONTACT::ContactStruGenAlpha::Integrate()
     // LOOP1: time steps
     for (int i=step; i<nstep; ++i)
     {
+#ifdef CONTACTTIME
+      const double t_start = ds_cputime();
+#endif // #ifdef CONTACTTIME
+       
       // initialize convergence status and step no. for active set
       contactmanager_->ActiveSetConverged() = false;
       contactmanager_->ActiveSetSteps() = 1;
@@ -1778,6 +1834,12 @@ void CONTACT::ContactStruGenAlpha::Integrate()
       SemiSmoothNewton();
 
       UpdateandOutput();
+      
+#ifdef CONTACTTIME
+      const double t_end = ds_cputime()-t_start;
+      cout << "\n***\nTime Step (overall): " << t_end << " seconds\n***\n";
+#endif // #ifdef CONTACTTIME
+      
       double time = params_.get<double>("total time",0.0);
       if (time>=maxtime) break;
     }
