@@ -41,7 +41,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(ParameterList& params,
     neum_orthopressure
   };
   
-  LoadType ltype;
+  LoadType ltype = neum_none;
   const string* type = condition.Get<string>("type");
   if      (*type == "neum_live")          ltype = neum_live;
   else if (*type == "neum_orthopressure") ltype = neum_orthopressure;
