@@ -55,12 +55,12 @@ Maintainer: Michael Gee
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
 CONTACT::Interface::Interface(const int id, const Epetra_Comm& comm,
-                              const int dim, const string stype, const double sp) :
+                              const int dim, 
+                              const Teuchos::ParameterList& icontact) :
 id_(id),
 comm_(comm),
 dim_(dim),
-stype_(stype),
-sp_(sp)
+icontact_(icontact)
 {
   RCP<Epetra_Comm> com = rcp(Comm().Clone());
   if (Dim()!=2 && Dim()!=3) dserror("ERROR: Contact problem must be 2D or 3D");
@@ -2388,9 +2388,7 @@ void CONTACT::Interface::AssembleLinStick(LINALG::SparseMatrix& linstickDISgloba
 *----------------------------------------------------------------------*/
 void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
 		  		                               LINALG::SparseMatrix& linslipDISglobal,
-		  		                               Epetra_Vector& linslipRHSglobal,
-		                                     double& frbound, double& ct,
-		                                     bool& fulllin)
+		  		                               Epetra_Vector& linslipRHSglobal)
 {
 	// get out of here if not participating in interface
   if (!lComm())
@@ -2399,10 +2397,16 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
   // nothing to do if no slip nodes
   if (slipnodes_->NumMyElements()==0)
     return;
+  
+  // information from interface contact parameter list
+  double frbound = IParams().get<double>("friction bound",0.0);
+  //double frcoeff = IParams().get<double>("friction coefficient",0.0);
+  double ct = IParams().get<double>("semismooth ct",0.0);
+  bool fulllin = IParams().get<bool>("full linearization",false);
  
- // not yet implemented for 3D
-	  if (Dim()==3)
-	    dserror("ERROR: AssembleLinSlip: 3D not yet implemented");
+  // not yet implemented for 3D
+	if (Dim()==3)
+	  dserror("ERROR: AssembleLinSlip: 3D not yet implemented");
 
 	// loop over all slip nodes of the interface
 	for (int i=0;i<slipnodes_->NumMyElements();++i)

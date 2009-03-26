@@ -151,7 +151,7 @@ void CONTACT::ManagerBase::Initialize()
   }
     
   // (re)setup global Tresca friction / perfect stick / MeshTying
-  if (ftype=="tresca" || ftype=="stick")
+  if (ftype=="tresca" || ftype == "coulomb" || ftype=="stick")
   {
     lmatrix_ = rcp(new LINALG::SparseMatrix(*gslipt_,10));
     r_       = LINALG::CreateVector(*gslipt_,true);
@@ -353,7 +353,7 @@ void CONTACT::ManagerBase::Evaluate(RCP<LINALG::SparseMatrix> kteff,
   
   // friction case
   // (note that this also includes Mesh Tying)
-  if (ftype=="tresca" || ftype=="stick") EvaluateFriction(kteff,feff);
+  if (ftype=="tresca" || ftype=="coulomb" || ftype=="stick" ) EvaluateFriction(kteff,feff);
   
   // Frictionless contact case
   else EvaluateContact(kteff,feff);
@@ -414,7 +414,7 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
     interface_[i]->AssembleS(*smatrix_);
     interface_[i]->AssembleLinDM(*lindmatrix_,*linmmatrix_);
     interface_[i]->AssembleLinStick(*linstickDIS_,*linstickRHS_);
-    interface_[i]->AssembleLinSlip(*linslipLM_,*linslipDIS_,*linslipRHS_,frbound,ct,fulllin);
+    interface_[i]->AssembleLinSlip(*linslipLM_,*linslipDIS_,*linslipRHS_);
     interface_[i]->AssembleTresca(*lmatrix_,*r_,frbound,ct);
   }
 
@@ -1587,10 +1587,11 @@ void CONTACT::ManagerBase::UpdateActiveSet()
       }
       
       // friction
+      
       double tz = 0.0;
       double tjump = 0.0;
       
-      if(ftype=="tresca")
+      if(ftype=="tresca" || ftype=="coulomb")
       { 
         // compute tangential part of Lagrange multiplier
         tz = cnode->txi()[0]*cnode->lm()[0] + cnode->txi()[1]*cnode->lm()[1];
@@ -1636,7 +1637,7 @@ void CONTACT::ManagerBase::UpdateActiveSet()
             cnode->Active() = false;
             
             // friction
-            if(ftype=="tresca")
+            if(ftype=="tresca" || ftype=="coulomb")
             {
               cnode->Slip() = false;    
             }
@@ -1652,7 +1653,8 @@ void CONTACT::ManagerBase::UpdateActiveSet()
         // friction
         else
         {
-          if(ftype=="tresca")
+          // friction tresca        	
+        	if(ftype=="tresca")
           {
             double frbound = scontact_.get<double>("friction bound",0.0);
             double ct = scontact_.get<double>("semismooth ct",0.0);
@@ -1680,6 +1682,36 @@ void CONTACT::ManagerBase::UpdateActiveSet()
               }
             }
           } // if(ftype=="tresca")
+          
+        	// friction coulomb
+          if(ftype=="coulomb")
+          {
+            double frcoeff = scontact_.get<double>("friction coefficient",0.0);
+            double ct = scontact_.get<double>("semismooth ct",0.0);
+            
+            if(cnode->Slip() == false)  
+            {
+              // check (tz+ct*tjump)-frbound <= 0
+              if(abs(tz+ct*tjump)-frcoeff*nz <= 0) {}
+                // do nothing (stick was correct)
+              else
+              {
+                 cnode->Slip() = true;
+                 activesetconv_ = false;
+              }
+            }
+            else
+            {
+              // check (tz+ct*tjump)-frbound > 0
+              if(abs(tz+ct*tjump)-frcoeff*nz > 0) {}
+                // do nothing (slip was correct)
+              else
+              {
+               cnode->Slip() = false;
+               activesetconv_ = false;
+              }
+            }
+          } // if(ftype=="coulomb")
         } // if (nz <= 0)
       } // if (cnode->Active()==false)
     } // loop over all slave nodes
@@ -2340,7 +2372,7 @@ void CONTACT::ManagerBase::PrintActiveSet()
       double tz = 0.0;
       double tjump = 0.0;
            
-      if(ftype=="tresca" || ftype=="stick")
+      if(ftype=="tresca" || ftype=="coulomb" || ftype=="stick")
       {     
         // compute tangential part of Lagrange multiplier
         tz = cnode->txi()[0]*cnode->lm()[0] + cnode->txi()[1]*cnode->lm()[1];

@@ -67,10 +67,6 @@ discret_(discret)
   // read and check contact input parameters
   ReadAndCheckInput();
   
-  // get contact search algorithm information
-  const string stype   = scontact_.get<string>("search algorithm","elements");
-  const double sp = scontact_.get<double>("search parameter",0.3);
-  
   // check for FillComplete of discretization
   if (!Discret().Filled()) dserror("Discretization is not fillcomplete");
 
@@ -131,7 +127,7 @@ discret_(discret)
     ++numgroupsfound;
 
     // create an empty interface and store it in this Manager
-    interface_.push_back(rcp(new CONTACT::Interface(groupid1,Comm(),Dim(),stype,sp)));
+    interface_.push_back(rcp(new CONTACT::Interface(groupid1,Comm(),Dim(),Params())));
     
     // get it again
     RCP<CONTACT::Interface> interface = interface_[(int)interface_.size()-1];
@@ -456,7 +452,6 @@ bool CONTACT::Manager::ReadAndCheckInput()
   string ftype   = scontact_.get<string>("friction type","none");
   //double frbound = scontact_.get<double>("friction bound",0.0);
   //double frcoeff = scontact_.get<double>("friction coeffiecient",0.0);
-  bool fulllin   = scontact_.get<bool>("full linearization",false);
   double ct      = scontact_.get<double>("semismooth ct",0.0);
   string stype   = scontact_.get<string>("search algorithm","elements");
   double sp      = scontact_.get<double>("search parameter",0.3);
@@ -466,19 +461,23 @@ bool CONTACT::Manager::ReadAndCheckInput()
     dserror("Friction law supplied for normal contact");
   if (ctype=="frictional" && ftype=="none")
     dserror("No friction law supplied for frictional contact");
-  if (ctype=="frictional" && ftype=="coulomb")
-    dserror("Coulomb friction law not yet implemented");
   if (ctype=="frictional" && ct==0.0)
   	dserror("Friction Parameter ct = 0, must be greater than 0");
   if (stype=="nodes" && sp==0.0)
     dserror("Search radius sp = 0, muste be greater than 0 for node-based search");
 #ifdef CONTACTRELVELMATERIAL 
+  // check full linearization
+  bool fulllin   = scontact_.get<bool>("full linearization",false);
   if (fulllin) dserror ("Full linearization only running for evaluating\n"
   		"the relative velocity with change of projection");
 #endif  
   // warnings
   if ((stype=="elements" || stype=="binarytree") && sp==0.0)
     cout << ("Warning: Ele-based / binary tree search called without inflation of bounding volumes\n") << endl;
+
+  if (ctype=="frictional" && ftype=="coulomb")
+  	cout << ("Warning: Coulomb friction law not completely implemented\n") << endl;
+
   
   // overrule input in certain cases
   if (ctype=="meshtying" && ftype!="stick")

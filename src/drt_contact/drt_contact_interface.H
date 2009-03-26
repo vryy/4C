@@ -81,7 +81,7 @@ public:
   
   */
   explicit Interface(const int id, const Epetra_Comm& comm, const int dim,
-                     const string stype, const double sp);
+                     const Teuchos::ParameterList& icontact);
 
   /*!
   \brief Destructor
@@ -134,16 +134,22 @@ public:
   virtual inline const int& Dim() {return dim_;};
   
   /*!
+  \brief Get interface contact parameter list 
+    
+  */
+  virtual inline Teuchos::ParameterList& IParams() {return icontact_;};
+    
+  /*!
   \brief Get type of contact search algorithm
     
   */
-  virtual inline const string& SearchAlg() {return stype_;};
+  virtual inline const string& SearchAlg() {return icontact_.get<string>("search algorithm","elements");};
   
   /*!
   \brief Get contact search algorithm parameter
     
   */
-  virtual inline const double& SearchParam() {return sp_;};
+  virtual inline const double& SearchParam() {return icontact_.get<double>("search parameter",0.3);};
     
   /*!
   \brief Get row map of slave nodes (Filled()==true is prerequisite)
@@ -617,9 +623,7 @@ public:
   */
   virtual void AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
   		                         LINALG::SparseMatrix& linslipDISglobal,
-  		                         Epetra_Vector& linslipRHSglobal,
-  		                         double& frbound, double& ct,
-  		                         bool& fulllin);
+  		                         Epetra_Vector& linslipRHSglobal);
   
   /*!
   \brief Initialize active set of this interface (t=0)
@@ -730,8 +734,7 @@ protected:
   
   RCP<DRT::Discretization>    idiscret_;      // the discretization of the contact interface
   int                         dim_;           // dimension of problem (2D or 3D)
-  string                      stype_;         // type of contact search algorithm
-  double                      sp_;            // contact search algorithm parameter
+  Teuchos::ParameterList      icontact_;      // containing contact input parameters of interface
   
   RCP<Epetra_Map>             snoderowmap_;   // row map of all slave nodes
   RCP<Epetra_Map>             snodecolmap_;   // column map of all slave nodes
