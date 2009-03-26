@@ -123,6 +123,9 @@ namespace MAT
 
     /// return density
     double Density() const { return params_->density_; }
+    
+    /// Return shear modulus
+    double ShearMod() const {return params_->c1_/2.0;};
 
   private:
 

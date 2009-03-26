@@ -38,6 +38,7 @@ Maintainer: Burkhard Bornemann
 #include "../drt_mat/aaaneohooke.H"
 #include "../drt_mat/visconeohooke.H"
 #include "../drt_mat/viscoanisotropic.H"
+#include "../drt_mat/yeoh.H"
 
 
 
@@ -1600,6 +1601,18 @@ double DRT::ELEMENTS::So_sh8p8::ShearMod() const
   {
     MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(Material().get());
     return visco->ShearMod();
+    break;
+  }
+  case INPAR::MAT::m_yeoh: /*-----------AAA NeoHookean Material */
+  {
+    MAT::Yeoh* yeoh = static_cast <MAT::Yeoh*>(Material().get());
+    return yeoh->ShearMod();
+    break;
+  }
+  case INPAR::MAT::m_visconeohooke: /*-----------AAA NeoHookean Material */
+  {
+    MAT::ViscoNeoHooke* visconeo = static_cast <MAT::ViscoNeoHooke*>(Material().get());
+    return visconeo->ShearMod();
     break;
   }
   default:
