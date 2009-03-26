@@ -2521,6 +2521,37 @@ bool CONTACT::Coupling::VertexLinearization3D(vector<vector<map<int,double> > >&
 {
   typedef map<int,double>::const_iterator CI;
   
+  // linearize all aux.plane slave and master nodes only ONCE
+  // and use these linearizations later during lineclip linearization
+  // (this speeds up the vertex linearizations in most cases, as we
+  // never linearize the SAME slave or master vertex more than once)
+#ifdef CONTACTAUXPLANE
+  // number of nodes
+  int nsrows = SlaveElement().NumNode();
+  int nmrows = MasterElement().NumNode();
+  
+  // prepare storage for slave and master linearizations
+  vector<vector<map<int,double> > > linsnodes(nsrows,vector<map<int,double> >(3));
+  vector<vector<map<int,double> > > linmnodes(nmrows,vector<map<int,double> >(3));
+  
+  // compute slave linearizations (nsrows)
+  for (int i=0;i<nsrows;++i)
+  {
+    int sid = SlaveElement().NodeIds()[i];
+    SlaveVertexLinearization3D(linsnodes[i],sid);
+  }
+  
+  // compute master linearizations (nmrows)
+  for (int i=0;i<nmrows;++i)
+  {
+    int mid = MasterElement().NodeIds()[i];
+    MasterVertexLinearization3D(linmnodes[i],mid);
+  }
+#endif // #ifdef CONTACTAUXPLANE
+  
+  //**********************************************************************
+  // Clip polygon vertex linearization
+  //**********************************************************************
   // loop over all clip polygon vertices
   for (int i=0;i<(int)Clip().size();++i)
   {
@@ -2535,8 +2566,18 @@ bool CONTACT::Coupling::VertexLinearization3D(vector<vector<map<int,double> > >&
       // get corresponding slave id
       int sid = currv.Nodeids()[0];
       
-      // do slave vertex linearization
-      SlaveVertexLinearization3D(currv,currlin,sid);
+      // find corresponding slave node linearization
+      int k=0;
+      while (k<nsrows){
+        if (SlaveElement().NodeIds()[k]==sid) break;
+        ++k;
+      }
+      
+      // dserror if not found
+      if (k==nsrows) dserror("ERROR: Slave Id not found!");
+      
+      // get the correct slave node linearization
+      currlin = linsnodes[k];
 #else
       // Vertex = slave node -> Linearization = 0
       // this is the easy case with nothing to do
@@ -2548,8 +2589,18 @@ bool CONTACT::Coupling::VertexLinearization3D(vector<vector<map<int,double> > >&
       // get corresponding master id
       int mid = currv.Nodeids()[0];
             
-      // do master vertex linearization
-      MasterVertexLinearization3D(currv,currlin,mid);
+      // find corresponding master node linearization
+      int k=0;
+      while (k<nmrows){
+        if (MasterElement().NodeIds()[k]==mid) break;
+        ++k;
+      }
+      
+      // dserror if not found
+      if (k==nmrows) dserror("ERROR: Master Id not found!");
+      
+      // get the correct master node linearization
+      currlin = linmnodes[k];
 #else
       // get corresponding master id and projection alpha
       int mid = currv.Nodeids()[0];
@@ -2597,7 +2648,7 @@ bool CONTACT::Coupling::VertexLinearization3D(vector<vector<map<int,double> > >&
       
 #ifdef CONTACTAUXPLANE
       // do lineclip vertex linearization
-      LineclipVertexLinearization3D(currv,currlin,sv1,sv2,mv1,mv2);          
+      LineclipVertexLinearization3D(currv,currlin,sv1,sv2,mv1,mv2,linsnodes,linmnodes);      
 #else
       // do lineclip vertex linearization
       LineclipVertexLinearization3D(currv,currlin,sv1,sv2,mv1,mv2,projpar);  
@@ -2613,8 +2664,7 @@ bool CONTACT::Coupling::VertexLinearization3D(vector<vector<map<int,double> > >&
 /*----------------------------------------------------------------------*
  |  Linearization of slave vertex (3D) AuxPlane               popp 03/09|
  *----------------------------------------------------------------------*/
-bool CONTACT::Coupling::SlaveVertexLinearization3D(Vertex& currv,
-                                                   vector<map<int,double> >& currlin,
+bool CONTACT::Coupling::SlaveVertexLinearization3D(vector<map<int,double> >& currlin,
                                                    int sid)
 {
   // we first need the slave element center:
@@ -2730,8 +2780,7 @@ bool CONTACT::Coupling::SlaveVertexLinearization3D(Vertex& currv,
 /*----------------------------------------------------------------------*
  |  Linearization of projmaster vertex (3D) AuxPlane          popp 03/09|
  *----------------------------------------------------------------------*/
-bool CONTACT::Coupling::MasterVertexLinearization3D(Vertex& currv,
-                                                    vector<map<int,double> >& currlin,
+bool CONTACT::Coupling::MasterVertexLinearization3D(vector<map<int,double> >& currlin,
                                                     int mid)
 {
   // we first need the slave element center:
@@ -2955,8 +3004,14 @@ bool CONTACT::Coupling::MasterVertexLinearization3D(Vertex& currv,
  *----------------------------------------------------------------------*/
 bool CONTACT::Coupling::LineclipVertexLinearization3D(Vertex& currv,
                                            vector<map<int,double> >& currlin,
-                                           Vertex* sv1, Vertex* sv2, Vertex* mv1, Vertex* mv2)
+                                           Vertex* sv1, Vertex* sv2, Vertex* mv1, Vertex* mv2,
+                                           vector<vector<map<int,double> > >& linsnodes,
+                                           vector<vector<map<int,double> > >& linmnodes)
 {
+  // number of nodes
+  int nsrows = SlaveElement().NumNode();
+  int nmrows = MasterElement().NumNode();
+    
   // iterator
   typedef map<int,double>::const_iterator CI;
   
@@ -3013,78 +3068,62 @@ bool CONTACT::Coupling::LineclipVertexLinearization3D(Vertex& currv,
   crossdN3[2] = (sv2->Coord()[0]-sv1->Coord()[0])*(mv2->Coord()[1]-mv1->Coord()[1])-(sv2->Coord()[1]-sv1->Coord()[1])*(mv2->Coord()[0]-mv1->Coord()[0]);
   
   // slave vertex linearization (2x)
-  vector<vector<map<int,double> > > slavelin(2,vector<map<int,double> >(3));
-  
   int sid1 = currv.Nodeids()[0];
   int sid2 = currv.Nodeids()[1];
-  bool sfound1 = false;
-  bool sfound2 = false;
-  Vertex* slavev1 = &SlaveVertices()[0];
-  Vertex* slavev2 = &SlaveVertices()[0];
   
-  for (int j=0;j<(int)SlaveVertices().size();++j)
-  {
-    if (SlaveVertices()[j].Nodeids()[0]==sid1)
-    {
-      sfound1=true;
-      slavev1 = &SlaveVertices()[j];
-      break;
-    }
+  // find corresponding slave node linearizations
+  int k=0;
+  while (k<nsrows){
+    if (SlaveElement().NodeIds()[k]==sid1) break;
+    ++k;
   }
   
-  if (!sfound1) dserror("ERROR: Lineclip linearization, Slave vertex 1 not found!");
+  // dserror if not found
+  if (k==nsrows) dserror("ERROR: Slave Id1 not found!");
   
-  for (int j=0;j<(int)SlaveVertices().size();++j)
-  {
-    if (SlaveVertices()[j].Nodeids()[0]==sid2)
-    {
-      sfound2=true;
-      slavev2 = &SlaveVertices()[j];
-      break;
-    }
+  // get the correct slave node linearization
+  vector<map<int,double> >& slavelin0 = linsnodes[k];
+  
+  k=0;
+  while (k<nsrows){
+    if (SlaveElement().NodeIds()[k]==sid2) break;
+    ++k;
   }
-
-  if (!sfound2) dserror("ERROR: Lineclip linearization, Slave vertex 2 not found!");
   
-  SlaveVertexLinearization3D(*slavev1,slavelin[0],sid1);
-  SlaveVertexLinearization3D(*slavev2,slavelin[1],sid2);
+  // dserror if not found
+  if (k==nsrows) dserror("ERROR: Slave Id2 not found!");
+  
+  // get the correct slave node linearization
+  vector<map<int,double> >& slavelin1 = linsnodes[k];
   
   // master vertex linearization (2x)
-  vector<vector<map<int,double> > > masterlin(2,vector<map<int,double> >(3));
-  
   int mid1 = currv.Nodeids()[2];
   int mid2 = currv.Nodeids()[3];
-  bool mfound1 = false;
-  bool mfound2 = false;
-  Vertex* masterv1 = &MasterVertices()[0];
-  Vertex* masterv2 = &MasterVertices()[0];
   
-  for (int j=0;j<(int)MasterVertices().size();++j)
-  {
-    if (MasterVertices()[j].Nodeids()[0]==mid1)
-    {
-      mfound1=true;
-      masterv1 = &MasterVertices()[j];
-      break;
-    }
+  // find corresponding master node linearizations
+  k=0;
+  while (k<nmrows){
+    if (MasterElement().NodeIds()[k]==mid1) break;
+    ++k;
   }
   
-  if (!mfound1) dserror("ERROR: Lineclip linearization, Master vertex 1 not found!");
+  // dserror if not found
+  if (k==nmrows) dserror("ERROR: Master Id1 not found!");
   
-  for (int j=0;j<(int)MasterVertices().size();++j)
-  {
-    if (MasterVertices()[j].Nodeids()[0]==mid2)
-    {
-      mfound2=true;
-      masterv2 = &MasterVertices()[j];
-      break;
-    }
+  // get the correct master node linearization
+  vector<map<int,double> >& masterlin0 = linmnodes[k];
+  
+  k=0;
+  while (k<nmrows){
+    if (MasterElement().NodeIds()[k]==mid2) break;
+    ++k;
   }
-
-  if (!mfound2) dserror("ERROR: Lineclip linearization, Master vertex 2 not found!");
   
-  MasterVertexLinearization3D(*masterv1,masterlin[0],mid1);
-  MasterVertexLinearization3D(*masterv2,masterlin[1],mid2);
+  // dserror if not found
+  if (k==nmrows) dserror("ERROR: Master Id2 not found!");
+  
+  // get the correct master node linearization
+  vector<map<int,double> >& masterlin1 = linmnodes[k];
     
   // linearization of element normal Auxn()
   vector<map<int,double> >& linauxn = GetDerivAuxn();
@@ -3092,7 +3131,7 @@ bool CONTACT::Coupling::LineclipVertexLinearization3D(Vertex& currv,
   // bring everything together -> lineclip vertex linearization
   for (int k=0;k<3;++k)
   {
-    for (CI p=slavelin[0][k].begin();p!=slavelin[0][k].end();++p)
+    for (CI p=slavelin0[k].begin();p!=slavelin0[k].end();++p)
     {
       currlin[k][p->first] += (p->second);
       currlin[k][p->first] += Zfac/Nfac * (p->second);
@@ -3103,7 +3142,7 @@ bool CONTACT::Coupling::LineclipVertexLinearization3D(Vertex& currv,
      
       }
     }
-    for (CI p=slavelin[1][k].begin();p!=slavelin[1][k].end();++p)
+    for (CI p=slavelin1[k].begin();p!=slavelin1[k].end();++p)
     {
       currlin[k][p->first] -= Zfac/Nfac * (p->second);
       for (int dim=0;dim<3;++dim)
@@ -3111,7 +3150,7 @@ bool CONTACT::Coupling::LineclipVertexLinearization3D(Vertex& currv,
         currlin[dim][p->first] += sedge[dim] * Zfac/(Nfac*Nfac) * crossdN1[k] * (p->second);
       }
     }
-    for (CI p=masterlin[0][k].begin();p!=masterlin[0][k].end();++p)
+    for (CI p=masterlin0[k].begin();p!=masterlin0[k].end();++p)
     {
       for (int dim=0;dim<3;++dim)
       {
@@ -3120,7 +3159,7 @@ bool CONTACT::Coupling::LineclipVertexLinearization3D(Vertex& currv,
       currlin[dim][p->first] -= sedge[dim] * Zfac/(Nfac*Nfac) * crossdN2[k] * (p->second);
       }
     }
-    for (CI p=masterlin[1][k].begin();p!=masterlin[1][k].end();++p)
+    for (CI p=masterlin1[k].begin();p!=masterlin1[k].end();++p)
     {
       for (int dim=0;dim<3;++dim)
       {

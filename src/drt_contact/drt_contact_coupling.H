@@ -703,8 +703,7 @@ public:
   ONLY necessary for for AuxPlane case!
   
   */
-  virtual bool SlaveVertexLinearization3D(Vertex& currv,
-                                          vector<map<int,double> >& currlin,
+  virtual bool SlaveVertexLinearization3D(vector<map<int,double> >& currlin,
                                           int sid);
     
   /*!
@@ -717,8 +716,7 @@ public:
   virtual bool MasterVertexLinearization3D(Vertex& currv,
                                            vector<map<int,double> >& currlin,
                                            int mid, double alpha);
-  virtual bool MasterVertexLinearization3D(Vertex& currv,
-                                           vector<map<int,double> >& currlin,
+  virtual bool MasterVertexLinearization3D(vector<map<int,double> >& currlin,
                                            int mid);
   
   /*!
@@ -726,6 +724,9 @@ public:
   
   Sub-method of VertexLinearization for lineclip linearization.
   Two versions for (a) slave parameter space (b) AuxPlane case.
+  For the AuxPlane case version, we just combine the correct
+  slave and master vertex linearizations here, which were already
+  computed earlier in VertexLinearization3D!
   
   */
   virtual bool LineclipVertexLinearization3D(Vertex& currv,
@@ -734,7 +735,9 @@ public:
                                            map<int,double>& projpar);
   virtual bool LineclipVertexLinearization3D(Vertex& currv,
                                            vector<map<int,double> >& currlin,
-                                           Vertex* sv1, Vertex* sv2, Vertex* mv1, Vertex* mv2);
+                                           Vertex* sv1, Vertex* sv2, Vertex* mv1, Vertex* mv2,
+                                           vector<vector<map<int,double> > >& linsnodes,
+                                           vector<vector<map<int,double> > >& linmnodes);
     
   /*!
   \brief Linearization of clip vertex coordinates (3D)

@@ -92,8 +92,8 @@ bool CONTACT::Projector::ProjectNodalNormal(CONTACT::CNode& node,
       // This iteration sometimes diverges, when the projection is far off.
       // These cases are harmless, as these nodes then do not participate in
       // the overlap detection anyway!
-      cout << "***WARNING*** ProjectNodalNormal:" << " Newton unconverged for NodeID "
-           << node.Id() << " and CElementID " << ele.Id() << endl;  
+      //cout << "***WARNING*** ProjectNodalNormal:" << " Newton unconverged for NodeID "
+      //     << node.Id() << " and CElementID " << ele.Id() << endl;  
     }
     
     /*         
@@ -147,8 +147,8 @@ bool CONTACT::Projector::ProjectElementNormal(CONTACT::CNode& node,
       // This iteration sometimes diverges, when the projection is far off.
       // These cases are harmless, as these nodes then do not participate in
       // the overlap detection anyway!
-      cout << "***WARNING*** ProjectElementNormal:" << " Newton unconverged for NodeID "
-           << node.Id() << " and CElementID " << ele.Id() << endl;
+      //cout << "***WARNING*** ProjectElementNormal:" << " Newton unconverged for NodeID "
+      //     << node.Id() << " and CElementID " << ele.Id() << endl;
     }
     
     /*    
