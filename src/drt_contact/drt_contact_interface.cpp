@@ -43,7 +43,8 @@ Maintainer: Michael Gee
 #endif
 #include "drt_contact_interface.H"
 #include "drt_contact_integrator.H"
-#include "drt_contact_coupling.H"
+#include "drt_contact_coupling2d.H"
+#include "drt_contact_coupling3d.H"
 #include "drt_cdofset.H"
 #include "contactdefines.H"
 #include "drt_contact_binarytree.H"
@@ -1169,7 +1170,12 @@ bool CONTACT::Interface::IntegrateCoupling(CONTACT::CElement& sele,
   // do interface coupling within a new class
   // (projection slave and master, overlap detection, integration and
   // linearization of the Mortar matrix M)
-  CONTACT::Coupling coup(Discret(),sele,mele,Dim(),CSegs());
+  if (Dim()==2)
+    CONTACT::Coupling2d coup(Discret(),Dim(),sele,mele,CSegs());
+  else if (Dim()==3)
+    CONTACT::Coupling3d coup(Discret(),Dim(),sele,mele);
+  else
+    dserror("ERROR: Dimension for Mortar coupling must be 2D or 3D!");
       
   return true;
 }
@@ -1186,7 +1192,12 @@ bool CONTACT::Interface::IntegrateCoupling(CONTACT::CElement& sele,
   // do interface coupling within a new class
   // (projection slave and master, overlap detection, integration and
   // linearization of the Mortar matrix M)
-  CONTACT::Coupling coup(Discret(),sele,mele,Dim(),CSegs(),testv,printderiv);
+  if (Dim()==2)
+    dserror("ERROR: FD check of coupling vertices only for 3D!");
+  else if (Dim()==3)
+    CONTACT::Coupling3d coup(Discret(),Dim(),sele,mele,testv,printderiv);
+  else
+    dserror("ERROR: Dimension for Mortar coupling must be 2D or 3D!");
       
   return true;
 }
@@ -1206,8 +1217,12 @@ bool CONTACT::Interface::IntegrateCoupling(CONTACT::CElement& sele,
   // do interface coupling within a new class
   // (projection slave and master, overlap detection, integration and
   // linearization of the Mortar matrix M)
-  CONTACT::Coupling coup(Discret(),sele,mele,Dim(),CSegs(),
-                         testgps,testgpm,testjs,testji,printderiv);
+  if (Dim()==2)
+    dserror("ERROR: FD check of Gauss points and Jacobian only for 3D!");
+  else if (Dim()==3)
+    CONTACT::Coupling3d coup(Discret(),Dim(),sele,mele,testgps,testgpm,testjs,testji,printderiv);
+  else
+    dserror("ERROR: Dimension for Mortar coupling must be 2D or 3D!");
       
   return true;
 }

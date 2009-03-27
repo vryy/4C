@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file drt_contact_coupling.H
+\file drt_contact_coupling3d.H
 
 <pre>
 -------------------------------------------------------------------------
@@ -36,8 +36,8 @@ Maintainer: Alexander Popp
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifndef DRT_CONTACT_COUPLING_H
-#define DRT_CONTACT_COUPLING_H
+#ifndef DRT_CONTACT_COUPLING3D_H
+#define DRT_CONTACT_COUPLING3D_H
 
 #include "Epetra_Comm.h"
 #include "drt_celement.H"
@@ -388,7 +388,7 @@ protected:
 /*!
 \brief A class representing the framework for mortar coupling of ONE
        slave element and ONE master element of a contact interface in
-       2D and 3D. Concretely, this class controls projection, overlap
+       3D. Concretely, this class controls projection, overlap
        detection and finally integration of the mortar coupling matrix M
        and the weighted gap vector g~.
        Note that 3D Coupling can EITHER be done in physical space (this is
@@ -399,7 +399,7 @@ protected:
 \author popp (popp@lnm.mw.tum.de)
 */
 
-class Coupling{
+class Coupling3d{
   
 public:
   
@@ -411,9 +411,8 @@ public:
   performed in parallel by individual processes.
   
   */
-  explicit Coupling(DRT::Discretization& idiscret,
-                    CONTACT::CElement& sele, CONTACT::CElement& mele,
-                    int dim, Epetra_SerialDenseMatrix& csegs);
+  explicit Coupling3d(DRT::Discretization& idiscret, int dim,
+                      CONTACT::CElement& sele, CONTACT::CElement& mele);
   
   /*!
   \brief Standard constructor
@@ -424,10 +423,9 @@ public:
   performed in parallel by individual processes.
   
   */
-  explicit Coupling(DRT::Discretization& idiscret,
-                    CONTACT::CElement& sele, CONTACT::CElement& mele,
-                    int dim, Epetra_SerialDenseMatrix& csegs,
-                    vector<vector<double> >& testv, bool printderiv);
+  explicit Coupling3d(DRT::Discretization& idiscret, int dim,
+                      CONTACT::CElement& sele, CONTACT::CElement& mele,
+                      vector<vector<double> >& testv, bool printderiv);
   
   /*!
   \brief Standard constructor
@@ -438,18 +436,17 @@ public:
   performed in parallel by individual processes.
   
   */
-  explicit Coupling(DRT::Discretization& idiscret,
-                    CONTACT::CElement& sele, CONTACT::CElement& mele,
-                    int dim, Epetra_SerialDenseMatrix& csegs,
-                    vector<vector<double> >& testgps, vector<vector<double> >& testgpm,
-                    vector<vector<double> >& testjs, vector<vector<double> >& testji,
-                    bool printderiv);
+  explicit Coupling3d(DRT::Discretization& idiscret, int dim,
+                      CONTACT::CElement& sele, CONTACT::CElement& mele,
+                      vector<vector<double> >& testgps, vector<vector<double> >& testgpm,
+                      vector<vector<double> >& testjs, vector<vector<double> >& testji,
+                      bool printderiv);
 
   /*!
   \brief Destructor
 
   */
-  virtual ~Coupling() {}
+  virtual ~Coupling3d() {}
   
   //! @name Access methods
   
@@ -476,30 +473,24 @@ public:
 
   */
   virtual inline CONTACT::CElement& MasterElement() const { return mele_; }
-    
-  /*!
-  \brief Get problem dimension
   
-  Note that only 2D and 3D are possible here as this refers to the global
-  problem dimension. On interface level this corresponds to 1D interfaces
-  (dim_==2) and 2D interfaces (dim_==3)!
-      
+  /*!
+  \brief Get problem dimension (here: 3D)
+
   */
   virtual inline const int& Dim() {return dim_;};
-  
+    
   /*!
-  \brief Return center of auxiliary plane (3D only)
+  \brief Return center of auxiliary plane
   
   */
-  virtual inline double* Auxc() { if (dim_!=3) dserror("Aux. only for 3D!");
-                                  return auxc_; }
+  virtual inline double* Auxc() { return auxc_; }
   
   /*!
-  \brief Return normal of auxiliary plane (3D only)
+  \brief Return normal of auxiliary plane
   
   */
-  virtual inline double* Auxn() { if (dim_!=3) dserror("Aux. only for 3D!");
-                                  return auxn_; }
+  virtual inline double* Auxn() { return auxn_; }
   
   /*!
   \brief Return length of Auxn() before normalization
@@ -537,55 +528,9 @@ public:
   */
   virtual inline vector<map<int,double> >& GetDerivAuxn() { return derivauxn_; }
     
-  /*!
-  \brief Return matrix of contact segment coordinates
-  
-  */
-  virtual Epetra_SerialDenseMatrix& CSegs() {return contactsegs_;};
-    
   //@}
     
   //! @name Evlauation methods
-  
-  /*!
-  \brief Projection of slave / master pair (2D)
-  
-  This method projects the nodes of the slave CElement sele_ onto
-  the master CElement mele_ and vice versa. The parameter hasproj
-  stores a boolean variable for each of the 4 end nodes, indicating
-  whether a feasible projection was found or not. The local element
-  coordinates of the 4 projection points are stored in xiproj.
-  
-  */
-  virtual bool Project2D(vector<bool>& hasproj,
-                         vector<double>& xiproj);
-  
-  /*!
-  \brief Detect overlap of slave / master pair (2D)
-  
-  This method evaluates the overlap of the current CElement pair
-  sele_ / mele_ based on the projection status of the 4 end nodes
-  (hasproj) and the coordinates of the projection points (xiproj).
-  According to the detected overlap case, the integration limits
-  are determined and written into xiproj and the overlap status
-  is returned by a boolean variable.
-  
-  */
-  virtual bool DetectOverlap2D(vector<bool>& hasproj,
-                               vector<double>& xiproj);
-  
-  /*!
-  \brief Integrate overlap of slave / master pair (2D)
-  
-  This method integrates the overlap of the current CElement
-  pair sele_ / mele_ based on the integration limits (xiproj). The
-  integration always includes the Mortar matrix M and the gap g.
-  In some cases it also includes the Mortar matrix D (if the
-  flag CONTACTONEMORTARLOOP is chosen) and the Mortar matrix
-  Mmod (if the respective conditions are fulfilled).
-        
-  */
-  virtual bool IntegrateOverlap2D(vector<double>& xiproj);
   
   /*!
   \brief Checks roughly whether the two elements are near (3D)
@@ -594,7 +539,7 @@ public:
   If they are not close, then coupling is stopped for the pair.
         
   */
-  virtual bool RoughCheck3D();
+  virtual bool RoughCheck();
   
   /*!
   \brief Build auxiliary plane from slave element (3D)
@@ -604,7 +549,7 @@ public:
   defined by the slave normal at the slave element center.
         
   */
-  virtual bool AuxiliaryPlane3D();
+  virtual bool AuxiliaryPlane();
   
   /*!
   \brief Projection of slave element onto aux. plane (3D)
@@ -613,7 +558,7 @@ public:
   onto the auxiliary plane derived before.
   
   */
-  virtual bool ProjectSlave3D();
+  virtual bool ProjectSlave();
     
   /*!
   \brief Projection of master element onto aux. plane (3D)
@@ -622,7 +567,7 @@ public:
   onto the auxiliary plane derived from the slave CElement before.
   
   */
-  virtual bool ProjectMaster3D();
+  virtual bool ProjectMaster();
   
   /*!
   \brief Clipping of slave and master element (3D)
@@ -650,10 +595,10 @@ public:
   \param tol (in): clipping tolerance for close vertices detection 
   
   */
-  virtual void PolygonClipping3D(vector<Vertex>& poly1list,
-                                 vector<Vertex>& poly2list,
-                                 vector<Vertex>& respoly,
-                                 double& tol);
+  virtual void PolygonClipping(vector<Vertex>& poly1list,
+                               vector<Vertex>& poly2list,
+                               vector<Vertex>& respoly,
+                               double& tol);
   
   /*!
   \brief Check / set projection status of slave nodes (3D)
@@ -662,7 +607,7 @@ public:
   polygon (equal to any vertex). If so the HasProj status is set true!
   
   */
-  virtual bool HasProjStatus3D();
+  virtual bool HasProjStatus();
     
   /*!
   \brief Triangulation of clip polygon (3D)
@@ -676,12 +621,12 @@ public:
   necessary. The method stores these cells in the variable cells_.
   
   */
-  virtual bool Triangulation3D(map<int,double>& projpar);
+  virtual bool Triangulation(map<int,double>& projpar);
   
   // THIS IS A PURE FINITE DIFFERENCE VERSION!!! 
-  virtual bool Triangulation3D(map<int,double>& projpar,
-                               vector<vector<double> >& testv,
-                               bool printderiv=false);
+  virtual bool Triangulation(map<int,double>& projpar,
+                             vector<vector<double> >& testv,
+                             bool printderiv=false);
   
   /*!
   \brief Linearization of clip vertex coordinates (3D)
@@ -693,8 +638,8 @@ public:
   slave element paramater space. NOT implemented for AuxPlane case!
   
   */
-  virtual bool VertexLinearization3D(vector<vector<map<int,double> > >& linvertex,
-                                     map<int,double>& projpar, bool printderiv=false);
+  virtual bool VertexLinearization(vector<vector<map<int,double> > >& linvertex,
+                                   map<int,double>& projpar, bool printderiv=false);
   
   /*!
   \brief Linearization of clip vertex coordinates (3D)
@@ -703,8 +648,8 @@ public:
   ONLY necessary for for AuxPlane case!
   
   */
-  virtual bool SlaveVertexLinearization3D(vector<map<int,double> >& currlin,
-                                          int sid);
+  virtual bool SlaveVertexLinearization(vector<map<int,double> >& currlin,
+                                        int sid);
     
   /*!
   \brief Linearization of clip vertex coordinates (3D)
@@ -713,11 +658,11 @@ public:
   Two versions for (a) slave parameter space (b) AuxPlane case.
   
   */
-  virtual bool MasterVertexLinearization3D(Vertex& currv,
-                                           vector<map<int,double> >& currlin,
-                                           int mid, double alpha);
-  virtual bool MasterVertexLinearization3D(vector<map<int,double> >& currlin,
-                                           int mid);
+  virtual bool MasterVertexLinearization(Vertex& currv,
+                                         vector<map<int,double> >& currlin,
+                                         int mid, double alpha);
+  virtual bool MasterVertexLinearization(vector<map<int,double> >& currlin,
+                                         int mid);
   
   /*!
   \brief Linearization of clip vertex coordinates (3D)
@@ -729,11 +674,11 @@ public:
   computed earlier in VertexLinearization3D!
   
   */
-  virtual bool LineclipVertexLinearization3D(Vertex& currv,
+  virtual bool LineclipVertexLinearization(Vertex& currv,
                                            vector<map<int,double> >& currlin,
                                            Vertex* sv1, Vertex* sv2, Vertex* mv1, Vertex* mv2,
                                            map<int,double>& projpar);
-  virtual bool LineclipVertexLinearization3D(Vertex& currv,
+  virtual bool LineclipVertexLinearization(Vertex& currv,
                                            vector<map<int,double> >& currlin,
                                            Vertex* sv1, Vertex* sv2, Vertex* mv1, Vertex* mv2,
                                            vector<vector<map<int,double> > >& linsnodes,
@@ -748,8 +693,8 @@ public:
   for AuxPlane case!
   
   */
-  virtual bool CenterLinearization3D(const vector<vector<map<int,double> > >& linvertex,
-                                     vector<map<int,double> >& lincenter);
+  virtual bool CenterLinearization(const vector<vector<map<int,double> > >& linvertex,
+                                   vector<map<int,double> >& lincenter);
     
   /*!
   \brief Integrate the integration cells (3D)
@@ -762,14 +707,14 @@ public:
   and assembled into the slave element nodes.
   
   */
-  virtual bool IntegrateCells3D();
+  virtual bool IntegrateCells();
   
   // THIS IS A FINITE DIFFERENCE VERSION ONLY!!!
-  virtual bool IntegrateCells3D(vector<vector<double> >& testgps,
-                                vector<vector<double> >& testgpm,
-                                vector<vector<double> >& testjs,
-                                vector<vector<double> >& testji,
-                                bool printderiv=false);
+  virtual bool IntegrateCells(vector<vector<double> >& testgps,
+                              vector<vector<double> >& testgpm,
+                              vector<vector<double> >& testjs,
+                              vector<vector<double> >& testji,
+                              bool printderiv=false);
     
   //@}
     
@@ -777,31 +722,28 @@ public:
 protected:
     
     // don't want = operator and cctor
-    Coupling operator = (const Coupling& old);
-    Coupling(const Coupling& old);
+    Coupling3d operator = (const Coupling3d& old);
+    Coupling3d(const Coupling3d& old);
   
     
     DRT::Discretization&       idiscret_;    // discretization of the contact interface
+    int                        dim_;         // problem dimension (here: 3D)
     CONTACT::CElement&         sele_;        // slave element to perform coupling for
     CONTACT::CElement&         mele_;        // master element to perform coupling for
-    int                        dim_;         // dimension of problem (2D or 3D)
-    
-    double                     auxc_[3];     // center of auxiliary plane (3D)
-    double                     auxn_[3];     // normal of auxiliary plane (3D)
+
+    double                     auxc_[3];     // center of auxiliary plane
+    double                     auxn_[3];     // normal of auxiliary plane
     double                     lauxn_;       // length of interpolated Auxn() before normalization
     vector<Vertex>             svertices_;   // slave node vertex objects
     vector<Vertex>             mvertices_;   // master node vertex objects
     vector<Vertex>             clip_;        // clipped polygon vertex objects
     
-    vector<RCP<Intcell> >      cells_;       // vector of integration cells (3D)
-    vector<map<int,double> >   derivauxn_;   // derivatives of auxiliary plane normal (3D)
-    
-    Epetra_SerialDenseMatrix&  contactsegs_; // contains coordinates of contact segments (gmsh)
+    vector<RCP<Intcell> >      cells_;       // vector of integration cells
+    vector<map<int,double> >   derivauxn_;   // derivatives of auxiliary plane normal
   
-
-}; // class Coupling
+}; // class Coupling3d
 }  // namespace CONTACT
 
 
-#endif  // #ifndef DRT_CONTACT_COUPLING_H
+#endif  // #ifndef DRT_CONTACT_COUPLING3D_H
 #endif  // #ifdef CCADISCRET

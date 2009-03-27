@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
-\file drt_contact_coupling.cpp
+\file drt_contact_coupling3d.cpp
 \brief A class for mortar coupling of ONE slave element and ONE master
-       element of a contact interface in 2D and 3D.
+       element of a contact interface in 3D.
 
 <pre>
 -------------------------------------------------------------------------
@@ -39,7 +39,7 @@ Maintainer: Alexander Popp
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#include "drt_contact_coupling.H"
+#include "drt_contact_coupling3d.H"
 #include "drt_contact_projector.H"
 #include "drt_contact_integrator.H"
 #include "contactdefines.H"
@@ -440,711 +440,144 @@ alpha_(old.alpha_)
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
-CONTACT::Coupling::Coupling(DRT::Discretization& idiscret,
-                            CONTACT::CElement& sele, CONTACT::CElement& mele,
-                            int dim, Epetra_SerialDenseMatrix& csegs) :
+CONTACT::Coupling3d::Coupling3d(DRT::Discretization& idiscret, int dim,
+                                CONTACT::CElement& sele, CONTACT::CElement& mele) :
 idiscret_(idiscret),
-sele_(sele),
-mele_(mele),
 dim_(dim),
-contactsegs_(csegs)
+sele_(sele),
+mele_(mele)
 {
-  // check sanity of dimension
-  if (Dim()!=2 && Dim()!=3) dserror("Dim. must be 2D or 3D!");
-  
-  // *********************************************************************
-  // the two-dimensional case
-  // *********************************************************************
-  if (Dim()==2)
-  {
-    // prepare overlap integration
-    vector<bool> hasproj(4);
-    vector<double> xiproj(4);
-    bool overlap = false;
-  
-    // project the element pair
-    Project2D(hasproj,xiproj);
-  
-    // check for element overlap
-    overlap = DetectOverlap2D(hasproj,xiproj);
-  
-    // integrate the element overlap
-    if (overlap) IntegrateOverlap2D(xiproj);
-  }
-  
   // *********************************************************************
   // the three-dimensional case
   // *********************************************************************
-  else if (Dim()==3)
-  {
-    // check for quadratic elements
-    if (sele.Shape()!=DRT::Element::tri3 && sele.Shape()!=DRT::Element::quad4)
-      dserror("ERROR: 3D mortar coupling not yet impl. for quadratic elements");
-    if (mele.Shape()!=DRT::Element::tri3 && mele.Shape()!=DRT::Element::quad4)
-      dserror("ERROR: 3D mortar coupling not yet impl. for quadratic elements");
+  // check for quadratic elements
+  if (sele.Shape()!=DRT::Element::tri3 && sele.Shape()!=DRT::Element::quad4)
+    dserror("ERROR: 3D mortar coupling not yet impl. for quadratic elements");
+  if (mele.Shape()!=DRT::Element::tri3 && mele.Shape()!=DRT::Element::quad4)
+    dserror("ERROR: 3D mortar coupling not yet impl. for quadratic elements");
 
-    // rough check whether elements are "near"
-    bool near = RoughCheck3D();
-    if (!near) return;
-    
-    // map to store projection parameter alpha for each master node
-    // (currently only necessary for non-AUXPLANE case)
-    map<int,double> projpar;
-    
-    // *******************************************************************
-    // ************ Coupling with or without auxiliary plane *************
-    // *******************************************************************
+  // rough check whether elements are "near"
+  bool near = RoughCheck();
+  if (!near) return;
+  
+  // map to store projection parameter alpha for each master node
+  // (currently only necessary for non-AUXPLANE case)
+  map<int,double> projpar;
+  
+  // *******************************************************************
+  // ************ Coupling with or without auxiliary plane *************
+  // *******************************************************************
 #ifdef CONTACTAUXPLANE
-    // compute auxiliary plane for 3D coupling
-    AuxiliaryPlane3D();
-    
-    // project slave element nodes onto auxiliary plane
-    ProjectSlave3D();
-    
-    // project master element nodes onto auxiliary plane
-    ProjectMaster3D();
-    
-    // tolerance for polygon clipping
-    double sminedge = sele.MinEdgeSize();
-    double mminedge = mele.MinEdgeSize(); 
-    double tol = CONTACTCLIPTOL * min(sminedge,mminedge);
-    
+  // compute auxiliary plane for 3D coupling
+  AuxiliaryPlane();
+  
+  // project slave element nodes onto auxiliary plane
+  ProjectSlave();
+  
+  // project master element nodes onto auxiliary plane
+  ProjectMaster();
+  
+  // tolerance for polygon clipping
+  double sminedge = sele.MinEdgeSize();
+  double mminedge = mele.MinEdgeSize(); 
+  double tol = CONTACTCLIPTOL * min(sminedge,mminedge);
+  
 #else
+  
+  // get some data
+  int nsnodes = SlaveElement().NumNode();
+  int nmnodes = MasterElement().NumNode();
+  
+  // get slave vertices in slave element parameter space (direct)
+  // additionally get slave vertex Ids for later linearization
+  vector<vector<double> > svertices(nsnodes,vector<double>(3));
+  vector<int> snodeids(1);
+  
+  for (int i=0;i<nsnodes;++i)
+  {     
+    double xi[2] = {0.0, 0.0};
+    SlaveElement().LocalCoordinatesOfNode(i,xi);
+    svertices[i][0] = xi[0];
+    svertices[i][1] = xi[1];
+    svertices[i][2] = 0.0;
+ 
+    // relevant ids (here only slave node id itself)
+    snodeids[0] = SlaveElement().NodeIds()[i];
     
-    // get some data
-    int nsnodes = SlaveElement().NumNode();
-    int nmnodes = MasterElement().NumNode();
+    // store into vertex data structure
+    SlaveVertices().push_back(Vertex(svertices[i],Vertex::slave,snodeids,NULL,NULL,false,false,NULL,-1.0));
+  }
+  
+  // get master vertices in slave element parameter space (project)
+  // additionally get master vertex Ids for later linearization
+  vector<vector<double> > mvertices(nmnodes,vector<double>(3));
+  vector<int> mnodeids(1);
+  for (int i=0;i<nmnodes;++i)
+  {
+    int gid = MasterElement().NodeIds()[i];
+    DRT::Node* node = Discret().gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    CNode* mnode = static_cast<CNode*>(node);
     
-    // get slave vertices in slave element parameter space (direct)
-    // additionally get slave vertex Ids for later linearization
-    vector<vector<double> > svertices(nsnodes,vector<double>(3));
-    vector<int> snodeids(1);
+    // do the projection
+    // the third component of sxi will be the proj. parameter alpha!
+    double sxi[2] = {0.0, 0.0};
+    double alpha = 0.0;
+    CONTACT::Projector projector(3);
+    //cout << "Projecting master node ID: " << mnode->Id() << endl;
+    projector.ProjectElementNormal3D(*mnode,SlaveElement(),sxi,alpha);
     
-    for (int i=0;i<nsnodes;++i)
-    {     
-      double xi[2] = {0.0, 0.0};
-      SlaveElement().LocalCoordinatesOfNode(i,xi);
-      svertices[i][0] = xi[0];
-      svertices[i][1] = xi[1];
-      svertices[i][2] = 0.0;
-   
-      // relevant ids (here only slave node id itself)
-      snodeids[0] = SlaveElement().NodeIds()[i];
-      
-      // store into vertex data structure
-      SlaveVertices().push_back(Vertex(svertices[i],Vertex::slave,snodeids,NULL,NULL,false,false,NULL,-1.0));
-    }
+    mvertices[i][0] = sxi[0];
+    mvertices[i][1] = sxi[1];
+    mvertices[i][2] = 0.0;
     
-    // get master vertices in slave element parameter space (project)
-    // additionally get master vertex Ids for later linearization
-    vector<vector<double> > mvertices(nmnodes,vector<double>(3));
-    vector<int> mnodeids(1);
-    for (int i=0;i<nmnodes;++i)
-    {
-      int gid = MasterElement().NodeIds()[i];
-      DRT::Node* node = Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      CNode* mnode = static_cast<CNode*>(node);
-      
-      // do the projection
-      // the third component of sxi will be the proj. parameter alpha!
-      double sxi[2] = {0.0, 0.0};
-      double alpha = 0.0;
-      CONTACT::Projector projector(3);
-      //cout << "Projecting master node ID: " << mnode->Id() << endl;
-      projector.ProjectElementNormal3D(*mnode,SlaveElement(),sxi,alpha);
-      
-      mvertices[i][0] = sxi[0];
-      mvertices[i][1] = sxi[1];
-      mvertices[i][2] = 0.0;
-      
-      // relevant ids (here only master node id itself)
-      mnodeids[0] = gid;
-      
-      // store proj. parameter for later linearization
-      projpar[gid] = alpha;
-      
-      // store into vertex data structure
-      MasterVertices().push_back(Vertex(mvertices[i],Vertex::projmaster,mnodeids,NULL,NULL,false,false,NULL,-1.0));
-    }
+    // relevant ids (here only master node id itself)
+    mnodeids[0] = gid;
     
-    // normal is (0,0,1) in slave element parameter space
-    Auxn()[0] = 0.0; Auxn()[1] = 0.0; Auxn()[2] = 1.0;
-    Lauxn() = 1.0;
+    // store proj. parameter for later linearization
+    projpar[gid] = alpha;
     
-    // tolerance for polygon clipping
-    // minimum edge size in parameter space is 1
-    double tol = CONTACTCLIPTOL;
-    
+    // store into vertex data structure
+    MasterVertices().push_back(Vertex(mvertices[i],Vertex::projmaster,mnodeids,NULL,NULL,false,false,NULL,-1.0));
+  }
+  
+  // normal is (0,0,1) in slave element parameter space
+  Auxn()[0] = 0.0; Auxn()[1] = 0.0; Auxn()[2] = 1.0;
+  Lauxn() = 1.0;
+  
+  // tolerance for polygon clipping
+  // minimum edge size in parameter space is 1
+  double tol = CONTACTCLIPTOL;
+  
 #endif // #ifdef CONTACTAUXPLANE
-    // *******************************************************************
-    
-    // do polygon clipping
-    PolygonClipping3D(SlaveVertices(),MasterVertices(),Clip(),tol);
-    int clipsize = (int)(Clip().size());
-    
-    // proceed only if clipping polygon is at least a triangle
-    bool overlap = false;
-    if (clipsize>=3) overlap = true;
-    if (overlap)
-    {
-      // check / set  projection status of slave nodes
-      HasProjStatus3D();
-      
-      // do linearization + triangulation of clip polygon
-      Triangulation3D(projpar);
-      
-      // do integration of integration cells
-      IntegrateCells3D();
-    }
-  }
+  // *******************************************************************
   
-  // *********************************************************************
-  // invalid cases for dim (other than 2D or 3D)
-  // *********************************************************************
-  else dserror("ERROR: Coupling can only be called for 2D or 3D!");
+  // do polygon clipping
+  PolygonClipping(SlaveVertices(),MasterVertices(),Clip(),tol);
+  int clipsize = (int)(Clip().size());
   
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Project slave / master element pair (public)              popp 04/08|
- *----------------------------------------------------------------------*/
-bool CONTACT::Coupling::Project2D(vector<bool>& hasproj,
-                                  vector<double>& xiproj)
-{
-  // initialize projection status
-  hasproj[0] = false;   // slave 0 end node
-  hasproj[1] = false;   // slave 1 end node
-  hasproj[2] = false;   // master 0 end node
-  hasproj[3] = false;   // master 1 end node
-  
-  // get slave and master element nodes
-  DRT::Node** mysnodes = sele_.Nodes();
-  if (!mysnodes)
-    dserror("ERROR: IntegrateOverlap2D: Null pointer for mysnodes!");
-  DRT::Node** mymnodes = mele_.Nodes();
-  if (!mymnodes)
-      dserror("ERROR: IntegrateOverlap2D: Null pointer for mymnodes!");
-
-  // create a projector instance of problem dimension Dim()
-  CONTACT::Projector projector(Dim());
-
-  // project slave nodes onto master element
-  for (int i=0;i<sele_.NumNode();++i)
-  {
-    CONTACT::CNode* snode = static_cast<CONTACT::CNode*>(mysnodes[i]);
-    double xi[2] = {0.0, 0.0};
-    projector.ProjectNodalNormal(*snode,mele_,xi);
-
-    // save projection if it is feasible
-    // we need an expanded feasible domain in order to check pathological
-    // cases due to round-off error and iteration tolerances later!
-    if ((-1.0-CONTACTPROJTOL<=xi[0]) && (xi[0]<=1.0+CONTACTPROJTOL))
-    {
-      // for element overlap only the outer nodes are of interest
-      if (i<2)
-      {
-        hasproj[i]=true;
-        xiproj[i]=xi[0];
-      }
-      // nevertheless we need the inner node projection status later (weighted gap)
-      snode->HasProj()=true;
-    }
-  }
-
-  // project master nodes onto slave element
-  for (int i=0;i<2;++i)
-  {
-    CONTACT::CNode* mnode = static_cast<CONTACT::CNode*>(mymnodes[i]);
-    double xi[2] = {0.0, 0.0};
-    projector.ProjectElementNormal(*mnode,sele_,xi);
-
-    // save projection if it is feasible
-    // we need an expanded feasible domain in order to check pathological
-    // cases due to round-off error and iteration tolerances later!!!
-    if ((-1.0-CONTACTPROJTOL<=xi[0]) && (xi[0]<=1.0+CONTACTPROJTOL))
-    {
-      // for element overlap only the outer nodes are of interest
-      if (i<2)
-      {
-        hasproj[i+2]=true;
-        xiproj[i+2]=xi[0];
-      }
-    }
-  }
-
-  return true;
-}
-
-/*----------------------------------------------------------------------*
- |  Detect overlap of slave / master pair (public)            popp 04/08|
- *----------------------------------------------------------------------*/
-bool CONTACT::Coupling::DetectOverlap2D(vector<bool>& hasproj,
-                                        vector<double>& xiproj)
-{
-  /**********************************************************************/
-  /* OVERLAP CASES                                                      */
-  /* Depending on mxi and sxi overlap will be decided!                  */
-  /* Even for 3noded CElements only the two end nodes matter in 2D!     */
-  /* There are several cases how the 2 elements can overlap. Handle all */
-  /* of them, including the ones that they don't overlap at all!        */
-  /**********************************************************************/
-
-  // For the non-overlapping cases, the possibility of an identical local
-  // node numbering direction for both sides is taken into account!!
-  // (this can happen, when elements far from each other are projected,
-  // which actually should be impossible due to the search radius
-  // condition in the potential contact pair search above!
-  // But you never know...)
-
-  // For the overlapping cases, it is a prerequisite that the two local
-  // node numbering directions are opposite!!
-  // (this is the case, when the elements are sufficiently near each other,
-  // which is ensured by only processing nodes that fulfill the
-  // search radius condition above!)
-
-  // CAUTION: The bool output variable in this method is a REAL output
-  // variable, determining whether there is an overlap or not!
-
-  // initialize local working variables
+  // proceed only if clipping polygon is at least a triangle
   bool overlap = false;
-  double sxia = 0.0;
-  double sxib = 0.0;
-  double mxia = 0.0;
-  double mxib = 0.0;
-
-  // local working copies of input variables
-  bool s0hasproj = hasproj[0];
-  bool s1hasproj = hasproj[1];
-  bool m0hasproj = hasproj[2];
-  bool m1hasproj = hasproj[3];
-
-  vector<double> sprojxi(2);
-  sprojxi[0] = xiproj[0];
-  sprojxi[1] = xiproj[1];
-
-  vector<double> mprojxi(2);
-  mprojxi[0] = xiproj[2];
-  mprojxi[1] = xiproj[3];
-
-
-  /* CASE 1 (NO OVERLAP):
-     no feasible projection found for any of the 4 outer element nodes  */
-
-  if (!s0hasproj && !s1hasproj && !m0hasproj && !m1hasproj)
-  {
-    //do nothing
-  }
-
-  /* CASES 2-5 (NO OVERLAP):
-     feasible projection found only for 1 of the 4 outer element nodes
-     (this can happen due to the necessary projection tolerance!!!)     */
-
-  else if  (s0hasproj && !s1hasproj && !m0hasproj && !m1hasproj)
-  {
-    if ((-1.0+CONTACTPROJTOL<=sprojxi[0]) && (sprojxi[0]<=1.0-CONTACTPROJTOL))
-    {
-      cout << "SElement Node IDs: " << (sele_.Nodes()[0])->Id() << " " << (sele_.Nodes()[1])->Id() << endl;
-      cout << "MElement Node IDs: " << (mele_.Nodes()[0])->Id() << " " << (mele_.Nodes()[1])->Id() << endl;
-      cout << "SPROJXI_0: " << sprojxi[0] << " SPROJXI_1: " << sprojxi[1] << endl;
-      cout << "MPROJXI_0: " << mprojxi[0] << " MPROJXI_1: " << mprojxi[1] << endl;
-      dserror("ERROR: IntegrateOverlap2D: Significant overlap ignored S%i M%i!", sele_.Id(), mele_.Id());
-    }
-  }
-
-  else if  (!s0hasproj && s1hasproj && !m0hasproj && !m1hasproj)
-  {
-    if ((-1.0+CONTACTPROJTOL<=sprojxi[1]) && (sprojxi[1]<=1.0-CONTACTPROJTOL))
-    {
-      cout << "SElement Node IDs: " << (sele_.Nodes()[0])->Id() << " " << (sele_.Nodes()[1])->Id() << endl;
-      cout << "MElement Node IDs: " << (mele_.Nodes()[0])->Id() << " " << (mele_.Nodes()[1])->Id() << endl;
-      cout << "SPROJXI_0: " << sprojxi[0] << " SPROJXI_1: " << sprojxi[1] << endl;
-      cout << "MPROJXI_0: " << mprojxi[0] << " MPROJXI_1: " << mprojxi[1] << endl;
-      dserror("ERROR: IntegrateOverlap2D: Significant overlap ignored S%i M%i!", sele_.Id(), mele_.Id());
-    }
-  }
-
-  else if  (!s0hasproj && !s1hasproj && m0hasproj && !m1hasproj)
-  {
-    if ((-1.0+CONTACTPROJTOL<=mprojxi[0]) && (mprojxi[0]<=1.0-CONTACTPROJTOL))
-    {
-      cout << "SElement Node IDs: " << (sele_.Nodes()[0])->Id() << " " << (sele_.Nodes()[1])->Id() << endl;
-      cout << "MElement Node IDs: " << (mele_.Nodes()[0])->Id() << " " << (mele_.Nodes()[1])->Id() << endl;
-      cout << "SPROJXI_0: " << sprojxi[0] << " SPROJXI_1: " << sprojxi[1] << endl;
-      cout << "MPROJXI_0: " << mprojxi[0] << " MPROJXI_1: " << mprojxi[1] << endl;
-      dserror("ERROR: IntegrateOverlap2D: Significant overlap ignored S%i M%i!", sele_.Id(), mele_.Id());
-    }
-  }
-
-  else if  (!s0hasproj && !s1hasproj && !m0hasproj && m1hasproj)
-  {
-    if ((-1.0+CONTACTPROJTOL<=mprojxi[1]) && (mprojxi[1]<=1.0-CONTACTPROJTOL))
-    {
-      cout << "SElement Node IDs: " << (sele_.Nodes()[0])->Id() << " " << (sele_.Nodes()[1])->Id() << endl;
-      cout << "MElement Node IDs: " << (mele_.Nodes()[0])->Id() << " " << (mele_.Nodes()[1])->Id() << endl;
-      cout << "SPROJXI_0: " << sprojxi[0] << " SPROJXI_1: " << sprojxi[1] << endl;
-      cout << "MPROJXI_0: " << mprojxi[0] << " MPROJXI_1: " << mprojxi[1] << endl;
-      dserror("ERROR: IntegrateOverlap2D: Significant overlap ignored S%i M%i!", sele_.Id(), mele_.Id());
-    }
-  }
-
-  /* CASE 6 (OVERLAP):
-     feasible projection found for all 4 outer element nodes
-     (this can happen due to the necessary projection tolerance!!!)     */
-
-  else if (s0hasproj && s1hasproj && m0hasproj && m1hasproj)
-  {
-    overlap = true;
-
-    // internal case 1 for global CASE 6
-    // (equivalent to global CASE 7, slave fully projects onto master)
-    if ((sprojxi[0]<1.0) && (sprojxi[1]>-1.0))
-    {
-      sxia = -1.0;
-      sxib = 1.0;
-      mxia = sprojxi[1];      // local node numbering always anti-clockwise!!!
-      mxib = sprojxi[0];
-      //cout << "Problem solved with internal case 1!" << endl;
-    }
-
-    // internal case 2 for global CASE 6
-    // (equivalent to global CASE 8, master fully projects onto slave)
-    else if ((mprojxi[0]<1.0) && (mprojxi[1]>-1.0))
-    {
-      mxia = -1.0;
-      mxib = 1.0;
-      sxia = mprojxi[1];      // local node numbering always anti-clockwise!!!
-      sxib = mprojxi[0];
-      //cout << "Problem solved with internal case 2!" << endl;
-    }
-
-    // internal case 3 for global CASE 6
-    // (equivalent to global CASE 9, both nodes no. 0 project successfully)
-    else if ((sprojxi[0]<1.0+CONTACTPROJLIM) && (mprojxi[0]<1.0+CONTACTPROJLIM))
-    {
-      sxia = -1.0;
-      sxib = mprojxi[0];      // local node numbering always anti-clockwise!!!
-      mxia = -1.0;
-      mxib = sprojxi[0];
-      //cout << "Problem solved with internal case 3!" << endl;
-    }
-
-    // internal case 4 for global CASE 6
-    // (equivalent to global CASE 10, both nodes no. 1 project successfully)
-    else if ((sprojxi[1]>-1.0-CONTACTPROJLIM) && (mprojxi[1]>-1.0-CONTACTPROJLIM))
-    {
-      sxia = mprojxi[1];
-      sxib = 1.0;            // local node numbering always anti-clockwise!!!
-      mxia = sprojxi[1];
-      mxib = 1.0;
-      //cout << "Problem solved with internal case 4!" << endl;
-    }
-
-    // unknown internal case for global CASE 6
-    else
-    {
-      cout << "CONTACT::Interface::IntegrateOverlap2D "<< endl << "has detected '4 projections'-case for Sl./Ma. pair "
-           << sele_.Id() << "/" << mele_.Id() << endl;
-      cout << "SElement Node IDs: " << (sele_.Nodes()[0])->Id() << " " << (sele_.Nodes()[1])->Id() << endl;
-      cout << "MElement Node IDs: " << (mele_.Nodes()[0])->Id() << " " << (mele_.Nodes()[1])->Id() << endl;
-      cout << "SPROJXI_0: " << sprojxi[0] << " SPROJXI_1: " << sprojxi[1] << endl;
-      cout << "MPROJXI_0: " << mprojxi[0] << " MPROJXI_1: " << mprojxi[1] << endl;
-      dserror("ERROR: IntegrateOverlap2D: Unknown overlap case found in global case 6!");
-    }
-  }
-
-  /* CASES 7-8 (OVERLAP):
-     feasible projections found for both nodes of one element, this
-      means one of the two elements is projecting fully onto the other!  */
-
-  else if (s0hasproj && s1hasproj && !m0hasproj && !m1hasproj)
-  {
-    overlap = true;
-    sxia = -1.0;
-    sxib = 1.0;
-    mxia = sprojxi[1];      // local node numbering always anti-clockwise!!!
-    mxib = sprojxi[0];
-  }
-
-  else if (!s0hasproj && !s1hasproj && m0hasproj && m1hasproj)
-  {
-    overlap = true;
-    mxia = -1.0;
-    mxib = 1.0;
-    sxia = mprojxi[1];      // local node numbering always anti-clockwise!!!
-    sxib = mprojxi[0];
-  }
-
-  /* CASES 9-10 (OVERLAP):
-     feasible projections found for one node of each element, due to
-     node numbering only identical local node ID pairs possible!        */
-
-  else if (s0hasproj && !s1hasproj && m0hasproj && !m1hasproj)
-  {
-    // do the two elements really have an overlap?
-    if ((sprojxi[0]>-1.0+CONTACTPROJLIM) && (mprojxi[0]>-1.0+CONTACTPROJLIM))
-    {
-      overlap = true;
-      sxia = -1.0;
-      sxib = mprojxi[0];      // local node numbering always anti-clockwise!!!
-      mxia = -1.0;
-      mxib = sprojxi[0];
-    }
-  }
-
-  else if (!s0hasproj && s1hasproj && !m0hasproj && m1hasproj)
-  {
-    // do the two elements really have an overlap?
-    if ((sprojxi[1]<1.0-CONTACTPROJLIM) && (mprojxi[1]<1.0-CONTACTPROJLIM))
-    {
-      overlap = true;
-      sxia = mprojxi[1];
-      sxib = 1.0;            // local node numbering always anti-clockwise!!!
-      mxia = sprojxi[1];
-      mxib = 1.0;
-    }
-  }
-
-  /* CASES 11-14 (OVERLAP):
-     feasible projections found for 3 out of the total 4 nodes,
-     this can either lead to cases 7/8 or 9/10!                         */
-  else if (s0hasproj && s1hasproj && m0hasproj && !m1hasproj)
-  {
-    overlap = true;
-    // equivalent to global case 7
-    if (mprojxi[0]>1.0)
-    {
-      sxia = -1.0;
-      sxib = 1.0;
-      mxia = sprojxi[1];    // local node numbering always anti-clockwise!!!
-      mxib = sprojxi[0];
-    }
-    // equivalent to global case 9
-    else
-    {
-      sxia = -1.0;
-      sxib = mprojxi[0];    // local node numbering always anti-clockwise!!!
-      mxia = -1.0;
-      mxib = sprojxi[0];
-    }
-  }
-
-  else if (s0hasproj && s1hasproj && !m0hasproj && m1hasproj)
-  {
-    overlap = true;
-    // equivalent to global case 7
-    if (mprojxi[1]<-1.0)
-    {
-      sxia = -1.0;
-      sxib = 1.0;
-      mxia = sprojxi[1];  // local node numbering always anti-clockwise!!!
-      mxib = sprojxi[0];
-    }
-    // equivalent to global case 10
-    else
-    {
-      sxia = mprojxi[1];
-      sxib = 1.0;          // local node numbering always anti-clockwise!!!
-      mxia = sprojxi[1];
-      mxib = 1.0;
-    }
-  }
-
-  else if (s0hasproj && !s1hasproj && m0hasproj && m1hasproj)
-  {
-    overlap = true;
-    // equivalent to global case 8
-    if (sprojxi[0]>1.0)
-    {
-      mxia = -1.0;
-      mxib = 1.0;
-      sxia = mprojxi[1];      // local node numbering always anti-clockwise!!!
-      sxib = mprojxi[0];
-    }
-    // equivalent to global case 9
-    else
-    {
-      sxia = -1.0;
-      sxib = mprojxi[0];    // local node numbering always anti-clockwise!!!
-      mxia = -1.0;
-      mxib = sprojxi[0];
-    }
-  }
-
-  else if (!s0hasproj && s1hasproj && m0hasproj && m1hasproj)
-  {
-    overlap = true;
-    // equivalent to global case 8
-    if (sprojxi[1]<-1.0)
-    {
-      mxia = -1.0;
-      mxib = 1.0;
-      sxia = mprojxi[1];  // local node numbering always anti-clockwise!!!
-      sxib = mprojxi[0];
-    }
-    // equivalent to global case 10
-    else
-    {
-      sxia = mprojxi[1];
-      sxib = 1.0;          // local node numbering always anti-clockwise!!!
-      mxia = sprojxi[1];
-      mxib = 1.0;
-    }
-  }
-
-  /* CASE DEFAULT: unknown overlap case                                  */
-  else
-  {
-    cout << "SElement: " << sele_.NodeIds()[0] << " " << sele_.NodeIds()[1] << endl;
-    cout << "MElement: " << mele_.NodeIds()[0] << " " << mele_.NodeIds()[1] << endl;
-    cout << "s0: " << s0hasproj << " s1: " << s1hasproj << endl;
-    cout << "m0: " << m0hasproj << " m1: " << m1hasproj << endl;
-    dserror("ERROR: IntegrateOverlap2D: Unknown overlap case found!");
-  }
-
-  // check for 1:1 node projections and for infeasible limits
-  if ((sxia<-1.0) || (sxib>1.0) || (mxia<-1.0) || (mxib>1.0))
-  {
-    if (abs(sxia+1.0)<CONTACTPROJLIM) sxia=-1.0;
-    if (abs(sxib-1.0)<CONTACTPROJLIM) sxib= 1.0;
-    if (abs(mxia+1.0)<CONTACTPROJLIM) mxia=-1.0;
-    if (abs(mxib-1.0)<CONTACTPROJLIM) mxib= 1.0;
-
-    if ((sxia<-1.0) || (sxib>1.0) || (mxia<-1.0) || (mxib>1.0))
-    {
-      cout << "Slave: " << sxia << " " << sxib << endl;
-      cout << "Master: " << mxia << " " << mxib << endl;
-      dserror("ERROR: IntegrateOverlap2D: Determined infeasible limits!");
-    }
-  }
-
-  // update integration limits in xiproj
-  xiproj[0]=sxia;
-  xiproj[1]=sxib;
-  xiproj[2]=mxia;
-  xiproj[3]=mxib;
-
-  // prepare gmsh visualization
-#ifdef DEBUG
+  if (clipsize>=3) overlap = true;
   if (overlap)
   {
-    double sxialoc[2] = {sxia, 0.0};
-    double sxibloc[2] = {sxib, 0.0};
-    double mxialoc[2] = {mxia, 0.0};
-    double mxibloc[2] = {mxib, 0.0};
-
-    double sxiaglob[3] = {0.0, 0.0, 0.0};
-    double sxibglob[3] = {0.0, 0.0, 0.0};
-    double mxiaglob[3] = {0.0, 0.0, 0.0};
-    double mxibglob[3] = {0.0, 0.0, 0.0};
-
-    sele_.LocalToGlobal(sxialoc,sxiaglob,0);
-    sele_.LocalToGlobal(sxibloc,sxibglob,0);
-    mele_.LocalToGlobal(mxialoc,mxiaglob,0);
-    mele_.LocalToGlobal(mxibloc,mxibglob,0);
-
-    Epetra_SerialDenseMatrix& segs = CSegs();
-    segs.Reshape(segs.M()+1,12);
-    segs(segs.M()-1,0)  = sxiaglob[0];
-    segs(segs.M()-1,1)  = sxiaglob[1];
-    segs(segs.M()-1,2)  = sxiaglob[2];
-    segs(segs.M()-1,3)  = mxibglob[0];
-    segs(segs.M()-1,4)  = mxibglob[1];
-    segs(segs.M()-1,5)  = mxibglob[2];
-    segs(segs.M()-1,6)  = mxiaglob[0];
-    segs(segs.M()-1,7)  = mxiaglob[1];
-    segs(segs.M()-1,8)  = mxiaglob[2];
-    segs(segs.M()-1,9)  = sxibglob[0];
-    segs(segs.M()-1,10) = sxibglob[1];
-    segs(segs.M()-1,11) = sxibglob[2];
-  }
-#endif // #ifdef DEBUG
-
-  return overlap;
-}
-
-/*----------------------------------------------------------------------*
- |  Integrate slave / master overlap (public)                 popp 04/08|
- *----------------------------------------------------------------------*/
-bool CONTACT::Coupling::IntegrateOverlap2D(vector<double>& xiproj)
-{
-  /**********************************************************************/
-  /* INTEGRATION                                                        */
-  /* Depending on overlap and the xiproj entries integrate the Mortar   */
-  /* matrix M and the weighted gap function g~ on the overlap of the    */
-  /* current slave / master CElement pair                               */
-  /**********************************************************************/
-
-  //local working copies of input variables
-  double sxia = xiproj[0];
-  double sxib = xiproj[1];
-  double mxia = xiproj[2];
-  double mxib = xiproj[3];
-
-  // create an integrator instance with correct NumGP and Dim
-  CONTACT::Integrator integrator(sele_.Shape());
-
-  // do the overlap integration (integrate and linearize both M and gap)
-  // if CONTACTONEMORTARLOOP defined, then this does linearization of M AND D matrices !!!
-  int nrow = sele_.NumNode();
-  int ncol = mele_.NumNode();
-  RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
-  RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
-  integrator.IntegrateDerivSegment2D(sele_,sxia,sxib,mele_,mxia,mxib,mseg,gseg);
+    // check / set  projection status of slave nodes
+    HasProjStatus();
     
-  // do the two assemblies into the slave nodes
-  // if CONTACTONEMORTARLOOP defined, then AssembleM does M AND D matrices !!!
-  integrator.AssembleM(Comm(),sele_,mele_,*mseg);
-  integrator.AssembleG(Comm(),sele_,*gseg);
-
-  /*----------------------------------------------------------------------
-  // check for the modification of the M matrix for curved interfaces
-  // (based on the paper by M. Puso / B. Wohlmuth, IJNME, 2005)
-  // (note: we assume that the modification is not useful for mortar CONTACT,
-  // but only for mortar MESH TYING as published!)
-  //----------------------------------------------------------------------
-  bool modification = false;
-
-  // conditions for modification
-  // (1) linear shape functions for the slave elements
-  // (2) 2D problems (3D unknown / unpublished ??)
-  // (3) curved interface, n1!=n2
-  // (4) use of dual shape functions for LM (always true in our case !!)
-  if (sele_.Shape()==DRT::Element::line2)
-  {
-    if (integrator.Dim()==2)
-    {
-      CNode* snode0 = static_cast<CNode*>(sele_.Nodes()[0]);
-      CNode* snode1 = static_cast<CNode*>(sele_.Nodes()[1]);
-
-      const double* n0 = snode0->n();
-      const double* n1 = snode1->n();
-      double delta = (n0[0]-n1[0])*(n0[0]-n1[0]) + (n0[1]-n1[1])*(n0[1]-n1[1]);
-
-      if (delta>1.0e-8)
-        modification = true;
-    }
+    // do linearization + triangulation of clip polygon
+    Triangulation(projpar);
+    
+    // do integration of integration cells
+    IntegrateCells();
   }
 
-  // integrate and assemble the modification, if necessary
-
-  if (modification)
-  {
-    RCP<Epetra_SerialDenseMatrix> mmodseg = integrator.IntegrateMmod2D(sele_,sxia,sxib,mele_,mxia,mxib);
-    integrator.AssembleMmod(Comm(),sele_,mele_,*mmodseg);
-  }
-  //--------------------------------------------------------------------*/
-  
-  return true;
+  return;
 }
-
 
 /*----------------------------------------------------------------------*
  |  Rough check if elements are near (3D)                     popp 11/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::Coupling::RoughCheck3D()
+bool CONTACT::Coupling3d::RoughCheck()
 {
   double sme = SlaveElement().MaxEdgeSize();
   double mme = MasterElement().MaxEdgeSize(); 
@@ -1178,7 +611,7 @@ bool CONTACT::Coupling::RoughCheck3D()
 /*----------------------------------------------------------------------*
  |  Build auxiliary plane from slave element (public)         popp 11/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::Coupling::AuxiliaryPlane3D()
+bool CONTACT::Coupling3d::AuxiliaryPlane()
 {
   // we first need the element center:
   // for quad4, quad8, quad9 elements: xi = eta = 0.0
@@ -1196,7 +629,7 @@ bool CONTACT::Coupling::AuxiliaryPlane3D()
     loccenter[0] = 0.0;
     loccenter[1] = 0.0;
   }
-  else dserror("ERROR: AuxiliaryPlane3D called for unknown element type");
+  else dserror("ERROR: AuxiliaryPlane called for unknown element type");
   
   // compute element center via shape fct. interpolation
   SlaveElement().LocalToGlobal(loccenter,Auxc(),0);
@@ -1217,12 +650,12 @@ bool CONTACT::Coupling::AuxiliaryPlane3D()
 /*----------------------------------------------------------------------*
  |  Project slave element onto auxiliary plane (public)       popp 11/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::Coupling::ProjectSlave3D()
+bool CONTACT::Coupling3d::ProjectSlave()
 {
   // project slave nodes onto auxiliary plane
   int nnodes = SlaveElement().NumNode();
   DRT::Node** mynodes = SlaveElement().Nodes();
-  if (!mynodes) dserror("ERROR: ProjectSlave3D: Null pointer!");
+  if (!mynodes) dserror("ERROR: ProjectSlave: Null pointer!");
   
   // initialize storage for slave coords + their ids
   vector<double> vertices(3);
@@ -1231,7 +664,7 @@ bool CONTACT::Coupling::ProjectSlave3D()
   for (int i=0;i<nnodes;++i)
   {
     CNode* mycnode = static_cast<CNode*> (mynodes[i]);
-    if (!mycnode) dserror("ERROR: ProjectSlave3D: Null pointer!");
+    if (!mycnode) dserror("ERROR: ProjectSlave: Null pointer!");
     
     // first build difference of point and element center
     // and then dot product with unit normal at center
@@ -1258,12 +691,12 @@ bool CONTACT::Coupling::ProjectSlave3D()
 /*----------------------------------------------------------------------*
  |  Project master element onto auxiliary plane (public)      popp 11/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::Coupling::ProjectMaster3D()
+bool CONTACT::Coupling3d::ProjectMaster()
 {
   // project master nodes onto auxiliary plane
   int nnodes = MasterElement().NumNode();
   DRT::Node** mynodes = MasterElement().Nodes();
-  if (!mynodes) dserror("ERROR: ProjectMaster3D: Null pointer!");
+  if (!mynodes) dserror("ERROR: ProjectMaster: Null pointer!");
   
   // initialize storage for master coords + their ids
   vector<double> vertices(3);
@@ -1272,7 +705,7 @@ bool CONTACT::Coupling::ProjectMaster3D()
   for (int i=0;i<nnodes;++i)
   {
     CNode* mycnode = static_cast<CNode*> (mynodes[i]);
-    if (!mycnode) dserror("ERROR: ProjectMaster3D: Null pointer!");
+    if (!mycnode) dserror("ERROR: ProjectMaster: Null pointer!");
     
     // first build difference of point and element center
     // and then dot product with unit normal at center
@@ -1299,7 +732,7 @@ bool CONTACT::Coupling::ProjectMaster3D()
 /*----------------------------------------------------------------------*
  |  Clipping of two polygons                                  popp 11/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Coupling::PolygonClipping3D(vector<Vertex>& poly1,
+void CONTACT::Coupling3d::PolygonClipping(vector<Vertex>& poly1,
                                           vector<Vertex>& poly2,
                                           vector<Vertex>& respoly,
                                           double& tol)
@@ -1758,7 +1191,7 @@ void CONTACT::Coupling::PolygonClipping3D(vector<Vertex>& poly1,
   //**********************
   // do clipping
   //**********************
-  if ((int)respoly.size()!=0) dserror("ERROR: PolygonClipping3D: Respoly!=0 at beginning...");
+  if ((int)respoly.size()!=0) dserror("ERROR: PolygonClipping: Respoly!=0 at beginning...");
     
   //**********************************************************************
   // STEP5: Find result polygon for no intersection case
@@ -2351,18 +1784,18 @@ void CONTACT::Coupling::PolygonClipping3D(vector<Vertex>& poly1,
 /*----------------------------------------------------------------------*
  |  Check /set projection status of slave nodes (3D)          popp 11/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::Coupling::HasProjStatus3D()
+bool CONTACT::Coupling3d::HasProjStatus()
 {
   // check all nodes
   int nnodes = SlaveElement().NumNode();
   DRT::Node** mynodes = SlaveElement().Nodes();
-  if (!mynodes) dserror("ERROR: HasProjStatus3D: Null pointer!");
+  if (!mynodes) dserror("ERROR: HasProjStatus: Null pointer!");
     
   // loop over all slave nodes
   for (int i=0;i<nnodes;++i)
   {
     CNode* mycnode = static_cast<CNode*> (mynodes[i]);
-    if (!mycnode) dserror("ERROR: HasProjStatus3D: Null pointer!");
+    if (!mycnode) dserror("ERROR: HasProjStatus: Null pointer!");
     
     // loop over all vertices of clip polygon
     for (int j=0;j<(int)(Clip().size());++j)
@@ -2386,7 +1819,7 @@ bool CONTACT::Coupling::HasProjStatus3D()
 /*----------------------------------------------------------------------*
  |  Triangulation of clip polygon (3D)                        popp 11/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::Coupling::Triangulation3D(map<int,double>& projpar)
+bool CONTACT::Coupling3d::Triangulation(map<int,double>& projpar)
 {
   // preparations
   int clipsize = (int)(Clip().size());
@@ -2396,7 +1829,7 @@ bool CONTACT::Coupling::Triangulation3D(map<int,double>& projpar)
   //**********************************************************************
   // (1) Linearization of clip vertex coordinates
   //**********************************************************************
-  VertexLinearization3D(linvertex,projpar);
+  VertexLinearization(linvertex,projpar);
   
   //**********************************************************************
   // (2) Find center of clipping polygon (centroid formula)
@@ -2456,7 +1889,7 @@ bool CONTACT::Coupling::Triangulation3D(map<int,double>& projpar)
   //**********************************************************************
   // (3) Linearization of clip center coordinates
   //**********************************************************************
-  CenterLinearization3D(linvertex,lincenter);
+  CenterLinearization(linvertex,lincenter);
   
   //**********************************************************************
   // (4)Triangulation -> Intcells
@@ -2516,7 +1949,7 @@ bool CONTACT::Coupling::Triangulation3D(map<int,double>& projpar)
 /*----------------------------------------------------------------------*
  |  Linearization of clip polygon vertices (3D)               popp 02/09|
  *----------------------------------------------------------------------*/
-bool CONTACT::Coupling::VertexLinearization3D(vector<vector<map<int,double> > >& linvertex,
+bool CONTACT::Coupling3d::VertexLinearization(vector<vector<map<int,double> > >& linvertex,
                                               map<int,double>& projpar, bool printderiv)
 {
   typedef map<int,double>::const_iterator CI;
@@ -2538,14 +1971,14 @@ bool CONTACT::Coupling::VertexLinearization3D(vector<vector<map<int,double> > >&
   for (int i=0;i<nsrows;++i)
   {
     int sid = SlaveElement().NodeIds()[i];
-    SlaveVertexLinearization3D(linsnodes[i],sid);
+    SlaveVertexLinearization(linsnodes[i],sid);
   }
   
   // compute master linearizations (nmrows)
   for (int i=0;i<nmrows;++i)
   {
     int mid = MasterElement().NodeIds()[i];
-    MasterVertexLinearization3D(linmnodes[i],mid);
+    MasterVertexLinearization(linmnodes[i],mid);
   }
 #endif // #ifdef CONTACTAUXPLANE
   
@@ -2609,7 +2042,7 @@ bool CONTACT::Coupling::VertexLinearization3D(vector<vector<map<int,double> > >&
       //cout << "Coords: " << currv.Coord()[0] << " " << currv.Coord()[1] << endl;
       
       // do master vertex linearization
-      MasterVertexLinearization3D(currv,currlin,mid,alpha);  
+      MasterVertexLinearization(currv,currlin,mid,alpha);  
 #endif // #ifdef CONTACTAUXPLANE
     }
     else if (currv.VType()==Vertex::lineclip)
@@ -2648,14 +2081,14 @@ bool CONTACT::Coupling::VertexLinearization3D(vector<vector<map<int,double> > >&
       
 #ifdef CONTACTAUXPLANE
       // do lineclip vertex linearization
-      LineclipVertexLinearization3D(currv,currlin,sv1,sv2,mv1,mv2,linsnodes,linmnodes);      
+      LineclipVertexLinearization(currv,currlin,sv1,sv2,mv1,mv2,linsnodes,linmnodes);      
 #else
       // do lineclip vertex linearization
-      LineclipVertexLinearization3D(currv,currlin,sv1,sv2,mv1,mv2,projpar);  
+      LineclipVertexLinearization(currv,currlin,sv1,sv2,mv1,mv2,projpar);  
 #endif // #ifdef CONTACTAUXPLANE
     }
     else
-      dserror("ERROR: VertexLinearization3D: Invalid Vertex Type!");
+      dserror("ERROR: VertexLinearization: Invalid Vertex Type!");
   }
   
   return true;
@@ -2664,7 +2097,7 @@ bool CONTACT::Coupling::VertexLinearization3D(vector<vector<map<int,double> > >&
 /*----------------------------------------------------------------------*
  |  Linearization of slave vertex (3D) AuxPlane               popp 03/09|
  *----------------------------------------------------------------------*/
-bool CONTACT::Coupling::SlaveVertexLinearization3D(vector<map<int,double> >& currlin,
+bool CONTACT::Coupling3d::SlaveVertexLinearization(vector<map<int,double> >& currlin,
                                                    int sid)
 {
   // we first need the slave element center:
@@ -2683,7 +2116,7 @@ bool CONTACT::Coupling::SlaveVertexLinearization3D(vector<map<int,double> >& cur
     scxi[0] = 0.0;
     scxi[1] = 0.0;
   }
-  else dserror("ERROR: SlaveVertexLinearization3D called for unknown element type");
+  else dserror("ERROR: SlaveVertexLinearization called for unknown element type");
   
   // evlauate shape functions + derivatives at scxi
   int nrow = SlaveElement().NumNode();
@@ -2698,7 +2131,7 @@ bool CONTACT::Coupling::SlaveVertexLinearization3D(vector<map<int,double> >& cur
   for (int i=0;i<nrow;++i)
   {
     scnodes[i] = static_cast<CONTACT::CNode*>(snodes[i]);
-    if (!scnodes[i]) dserror("ERROR: SlaveVertexLinearization3D: Null pointer!");
+    if (!scnodes[i]) dserror("ERROR: SlaveVertexLinearization: Null pointer!");
   }
   
   // we also need the corresponding slave node
@@ -2780,7 +2213,7 @@ bool CONTACT::Coupling::SlaveVertexLinearization3D(vector<map<int,double> >& cur
 /*----------------------------------------------------------------------*
  |  Linearization of projmaster vertex (3D) AuxPlane          popp 03/09|
  *----------------------------------------------------------------------*/
-bool CONTACT::Coupling::MasterVertexLinearization3D(vector<map<int,double> >& currlin,
+bool CONTACT::Coupling3d::MasterVertexLinearization(vector<map<int,double> >& currlin,
                                                     int mid)
 {
   // we first need the slave element center:
@@ -2799,7 +2232,7 @@ bool CONTACT::Coupling::MasterVertexLinearization3D(vector<map<int,double> >& cu
     scxi[0] = 0.0;
     scxi[1] = 0.0;
   }
-  else dserror("ERROR: MasterVertexLinearization3D called for unknown element type");
+  else dserror("ERROR: MasterVertexLinearization called for unknown element type");
   
   // evlauate shape functions + derivatives at scxi
   int nrow = SlaveElement().NumNode();
@@ -2814,7 +2247,7 @@ bool CONTACT::Coupling::MasterVertexLinearization3D(vector<map<int,double> >& cu
   for (int i=0;i<nrow;++i)
   {
     scnodes[i] = static_cast<CONTACT::CNode*>(snodes[i]);
-    if (!scnodes[i]) dserror("ERROR: MasterVertexLinearization3D: Null pointer!");
+    if (!scnodes[i]) dserror("ERROR: MasterVertexLinearization: Null pointer!");
   }
   
   // we also need the corresponding master node
@@ -2896,7 +2329,7 @@ bool CONTACT::Coupling::MasterVertexLinearization3D(vector<map<int,double> >& cu
 /*----------------------------------------------------------------------*
  |  Linearization of projmaster vertex (3D)                   popp 02/09|
  *----------------------------------------------------------------------*/
-bool CONTACT::Coupling::MasterVertexLinearization3D(Vertex& currv,
+bool CONTACT::Coupling3d::MasterVertexLinearization(Vertex& currv,
                                                     vector<map<int,double> >& currlin,
                                                     int mid, double alpha)
 {
@@ -3002,7 +2435,7 @@ bool CONTACT::Coupling::MasterVertexLinearization3D(Vertex& currv,
 /*----------------------------------------------------------------------*
  |  Linearization of lineclip vertex (3D) AuxPlane            popp 03/09|
  *----------------------------------------------------------------------*/
-bool CONTACT::Coupling::LineclipVertexLinearization3D(Vertex& currv,
+bool CONTACT::Coupling3d::LineclipVertexLinearization(Vertex& currv,
                                            vector<map<int,double> >& currlin,
                                            Vertex* sv1, Vertex* sv2, Vertex* mv1, Vertex* mv2,
                                            vector<vector<map<int,double> > >& linsnodes,
@@ -3183,7 +2616,7 @@ bool CONTACT::Coupling::LineclipVertexLinearization3D(Vertex& currv,
 /*----------------------------------------------------------------------*
  |  Linearization of lineclip vertex (3D)                     popp 02/09|
  *----------------------------------------------------------------------*/
-bool CONTACT::Coupling::LineclipVertexLinearization3D(Vertex& currv,
+bool CONTACT::Coupling3d::LineclipVertexLinearization(Vertex& currv,
                                            vector<map<int,double> >& currlin,
                                            Vertex* sv1, Vertex* sv2, Vertex* mv1, Vertex* mv2,
                                            map<int,double>& projpar)
@@ -3247,7 +2680,7 @@ bool CONTACT::Coupling::LineclipVertexLinearization3D(Vertex& currv,
   }
   if (!found1) dserror("ERROR: Lineclip linearization, Master vertex 1 not found!");
   
-  MasterVertexLinearization3D(*masterv1,masterlin[0],mid1,alpha1);
+  MasterVertexLinearization(*masterv1,masterlin[0],mid1,alpha1);
   
   int mid2 = currv.Nodeids()[3];
   double alpha2 = projpar[mid2];
@@ -3265,7 +2698,7 @@ bool CONTACT::Coupling::LineclipVertexLinearization3D(Vertex& currv,
   }
   if (!found2) dserror("ERROR: Lineclip linearization, Master vertex 2 not found!");
   
-  MasterVertexLinearization3D(*masterv2,masterlin[1],mid2,alpha2);
+  MasterVertexLinearization(*masterv2,masterlin[1],mid2,alpha2);
   
   // bring everything together -> lineclip vertex linearization
   typedef map<int,double>::const_iterator CI;
@@ -3296,7 +2729,7 @@ bool CONTACT::Coupling::LineclipVertexLinearization3D(Vertex& currv,
 /*----------------------------------------------------------------------*
  |  Linearization of clip polygon center (3D)                 popp 02/09|
  *----------------------------------------------------------------------*/
-bool CONTACT::Coupling::CenterLinearization3D(const vector<vector<map<int,double> > >& linvertex,
+bool CONTACT::Coupling3d::CenterLinearization(const vector<vector<map<int,double> > >& linvertex,
                                               vector<map<int,double> >& lincenter)
 {
   // preparations
@@ -3487,7 +2920,7 @@ bool CONTACT::Coupling::CenterLinearization3D(const vector<vector<map<int,double
 /*----------------------------------------------------------------------*
  |  Integration of cells (3D)                                 popp 11/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::Coupling::IntegrateCells3D()
+bool CONTACT::Coupling3d::IntegrateCells()
 {
   /**********************************************************************/
   /* INTEGRATION                                                        */
@@ -3510,7 +2943,7 @@ bool CONTACT::Coupling::IntegrateCells3D()
       selearea = 4.0;
     else if (dt==DRT::Element::tri3 || dt==DRT::Element::tri6)
       selearea = 0.5;
-    else dserror("ERROR: IntegrateCells3D: Invalid 3D slave element type");
+    else dserror("ERROR: IntegrateCells: Invalid 3D slave element type");
     
     // integrate cell only if not neglectable
     if (intcellarea<CONTACTINTLIM*selearea) continue;

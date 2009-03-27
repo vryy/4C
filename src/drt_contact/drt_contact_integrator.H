@@ -42,7 +42,7 @@ Maintainer: Alexander Popp
 #include "Epetra_Comm.h"
 #include "drt_celement.H"
 #include "drt_contact_interface.H"
-#include "drt_contact_coupling.H"
+#include "drt_contact_coupling3d.H"
 
 using namespace std;
 
