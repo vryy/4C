@@ -720,8 +720,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
               for (int nodel=0; nodel < numnode; ++nodel)
                 for(int diml=0 ; diml<numdim; ++diml)
                 {
-                  elematrix1(nodec*actnumdf+dimc,nodel*numdim+diml) = 
-                      -(*Adiff2)(nodec*actnumdf+dimc,nodel*numdim+diml);
+                  elematrix1(nodec*actnumdf+dimc,nodel*actnumdf+diml) = 
+                      -(*Adiff2)(nodec*numdim+dimc,nodel*numdim+diml);
                 }
               elevector1[nodec*actnumdf+dimc] = -(*Adiff)[nodec*numdim+dimc];
               elevector2[nodec*actnumdf+dimc] = -(*Adiff)[nodec*numdim+dimc];
