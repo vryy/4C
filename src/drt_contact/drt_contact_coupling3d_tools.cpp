@@ -49,12 +49,14 @@ Maintainer: Alexander Popp
  *----------------------------------------------------------------------*/
 CONTACT::Coupling3d::Coupling3d(DRT::Discretization& idiscret, int dim,
                                 CONTACT::CElement& sele, CONTACT::CElement& mele,
+                                bool auxplane,
                                 vector<vector<double> >& testv,
                                 bool printderiv) :
 idiscret_(idiscret),
 dim_(dim),
 sele_(sele),
-mele_(mele)
+mele_(mele),
+auxplane_(auxplane)
 {
   // *********************************************************************
   // the three-dimensional case
@@ -75,98 +77,100 @@ mele_(mele)
   // *******************************************************************
   // ************ Coupling with or without auxiliary plane *************
   // *******************************************************************
-#ifdef CONTACTAUXPLANE
-  // compute auxiliary plane for 3D coupling
-  AuxiliaryPlane();
-  
-  // project slave element nodes onto auxiliary plane
-  ProjectSlave();
-  
-  // project master element nodes onto auxiliary plane
-  ProjectMaster();
-  
-  // tolerance for polygon clipping
-  double sminedge = sele.MinEdgeSize();
-  double mminedge = mele.MinEdgeSize(); 
-  double tol = CONTACTCLIPTOL * min(sminedge,mminedge);
-  
-  
-  // do clipping in auxiliary plane
-  PolygonClipping(SlaveVertices(),MasterVertices(),Clip(),tol);
-  int clipsize = (int)(Clip().size());
-#else
-  
-  // get some data
-  int nsnodes = SlaveElement().NumNode();
-  int nmnodes = MasterElement().NumNode();
-  
-  // get slave vertices in slave element parameter space (direct)
-  // additionally get slave vertex Ids for later linearization
-  vector<vector<double> > svertices(nsnodes,vector<double>(3));
-  vector<int> snodeids(1);
-  
-  for (int i=0;i<nsnodes;++i)
-  {     
-    double xi[2] = {0.0, 0.0};
-    SlaveElement().LocalCoordinatesOfNode(i,xi);
-    svertices[i][0] = xi[0];
-    svertices[i][1] = xi[1];
-    svertices[i][2] = 0.0;
- 
-    // relevant ids (here only slave node id itself)
-    snodeids[0] = SlaveElement().NodeIds()[i];
-    
-    // store into vertex data structure
-    SlaveVertices().push_back(Vertex(svertices[i],Vertex::slave,snodeids,NULL,NULL,false,false,NULL,-1.0));
-  }
-  
-  // get master vertices in slave element parameter space (project)
-  // additionally get master vertex Ids for later linearization
-  vector<vector<double> > mvertices(nmnodes,vector<double>(3));
-  vector<int> mnodeids(1);
-  for (int i=0;i<nmnodes;++i)
+  if (CouplingInAuxPlane())
   {
-    int gid = MasterElement().NodeIds()[i];
-    DRT::Node* node = Discret().gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    CNode* mnode = static_cast<CNode*>(node);
+    // compute auxiliary plane for 3D coupling
+    AuxiliaryPlane();
     
-    // do the projection
-    double sxi[2] = {0.0, 0.0};
-    double alpha = 0.0;
-    CONTACT::Projector projector(3);
-    //cout << "Projecting master node ID: " << mnode->Id() << endl;
-    projector.ProjectElementNormal3D(*mnode,SlaveElement(),sxi,alpha);
+    // project slave element nodes onto auxiliary plane
+    ProjectSlave();
     
-    mvertices[i][0] = sxi[0];
-    mvertices[i][1] = sxi[1];
-    mvertices[i][2] = 0.0;
+    // project master element nodes onto auxiliary plane
+    ProjectMaster();
     
-    // relevant ids (here only master node id itself)
-    mnodeids[0] = gid;
+    // tolerance for polygon clipping
+    double sminedge = sele.MinEdgeSize();
+    double mminedge = mele.MinEdgeSize(); 
+    double tol = CONTACTCLIPTOL * min(sminedge,mminedge);
     
-    // store proj. parameter for later linearization
-    projpar[gid] = alpha;
     
-    // store into vertex data structure
-    MasterVertices().push_back(Vertex(mvertices[i],Vertex::projmaster,mnodeids,NULL,NULL,false,false,NULL,-1.0));
+    // do clipping in auxiliary plane
+    PolygonClipping(SlaveVertices(),MasterVertices(),Clip(),tol);
   }
-  
-  // normal is (0,0,1) in slave element parameter space
-  Auxn()[0] = 0.0; Auxn()[1] = 0.0; Auxn()[2] = 1.0;
-  Lauxn() = 1.0;
-  
-  // tolerance for polygon clipping
-  // minimum edge size in parameter space is 1
-  double tol = CONTACTCLIPTOL;
+  // *******************************************************************
+  else //(!CouplingInAuxPlane())
+  {
+    // get some data
+    int nsnodes = SlaveElement().NumNode();
+    int nmnodes = MasterElement().NumNode();
     
-  // do clipping in slave element parameter space
-  PolygonClipping(SlaveVertices(),MasterVertices(),Clip(),tol);
-  int clipsize = (int)(Clip().size());
-#endif // #ifdef CONTACTAUXPLANE
+    // get slave vertices in slave element parameter space (direct)
+    // additionally get slave vertex Ids for later linearization
+    vector<vector<double> > svertices(nsnodes,vector<double>(3));
+    vector<int> snodeids(1);
+    
+    for (int i=0;i<nsnodes;++i)
+    {     
+      double xi[2] = {0.0, 0.0};
+      SlaveElement().LocalCoordinatesOfNode(i,xi);
+      svertices[i][0] = xi[0];
+      svertices[i][1] = xi[1];
+      svertices[i][2] = 0.0;
+   
+      // relevant ids (here only slave node id itself)
+      snodeids[0] = SlaveElement().NodeIds()[i];
+      
+      // store into vertex data structure
+      SlaveVertices().push_back(Vertex(svertices[i],Vertex::slave,snodeids,NULL,NULL,false,false,NULL,-1.0));
+    }
+    
+    // get master vertices in slave element parameter space (project)
+    // additionally get master vertex Ids for later linearization
+    vector<vector<double> > mvertices(nmnodes,vector<double>(3));
+    vector<int> mnodeids(1);
+    for (int i=0;i<nmnodes;++i)
+    {
+      int gid = MasterElement().NodeIds()[i];
+      DRT::Node* node = Discret().gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CNode* mnode = static_cast<CNode*>(node);
+      
+      // do the projection
+      double sxi[2] = {0.0, 0.0};
+      double alpha = 0.0;
+      CONTACT::Projector projector(3);
+      //cout << "Projecting master node ID: " << mnode->Id() << endl;
+      projector.ProjectElementNormal3D(*mnode,SlaveElement(),sxi,alpha);
+      
+      mvertices[i][0] = sxi[0];
+      mvertices[i][1] = sxi[1];
+      mvertices[i][2] = 0.0;
+      
+      // relevant ids (here only master node id itself)
+      mnodeids[0] = gid;
+      
+      // store proj. parameter for later linearization
+      projpar[gid] = alpha;
+      
+      // store into vertex data structure
+      MasterVertices().push_back(Vertex(mvertices[i],Vertex::projmaster,mnodeids,NULL,NULL,false,false,NULL,-1.0));
+    }
+    
+    // normal is (0,0,1) in slave element parameter space
+    Auxn()[0] = 0.0; Auxn()[1] = 0.0; Auxn()[2] = 1.0;
+    Lauxn() = 1.0;
+    
+    // tolerance for polygon clipping
+    // minimum edge size in parameter space is 1
+    double tol = CONTACTCLIPTOL;
+      
+    // do clipping in slave element parameter space
+    PolygonClipping(SlaveVertices(),MasterVertices(),Clip(),tol);
+  }
   // *******************************************************************
   
   // proceed only if clipping polygon is at least a triangle
+  int clipsize = (int)(Clip().size());
   bool overlap = false;
   if (clipsize>=3) overlap = true;
   if (overlap)
@@ -203,6 +207,7 @@ mele_(mele)
  *----------------------------------------------------------------------*/
 CONTACT::Coupling3d::Coupling3d(DRT::Discretization& idiscret, int dim,
                                 CONTACT::CElement& sele, CONTACT::CElement& mele,
+                                bool auxplane,
                                 vector<vector<double> >& testgps,
                                 vector<vector<double> >& testgpm,
                                 vector<vector<double> >& testjs,
@@ -211,7 +216,8 @@ CONTACT::Coupling3d::Coupling3d(DRT::Discretization& idiscret, int dim,
 idiscret_(idiscret),
 dim_(dim),
 sele_(sele),
-mele_(mele)
+mele_(mele),
+auxplane_(auxplane)
 {
   // *********************************************************************
   // the three-dimensional case
@@ -232,97 +238,99 @@ mele_(mele)
   // *******************************************************************
   // ************ Coupling with or without auxiliary plane *************
   // *******************************************************************
-#ifdef CONTACTAUXPLANE
-  // compute auxiliary plane for 3D coupling
-  AuxiliaryPlane();
-  
-  // project slave element nodes onto auxiliary plane
-  ProjectSlave();
-  
-  // project master element nodes onto auxiliary plane
-  ProjectMaster();
-  
-  // tolerance for polygon clipping
-  double sminedge = sele.MinEdgeSize();
-  double mminedge = mele.MinEdgeSize(); 
-  double tol = CONTACTCLIPTOL * min(sminedge,mminedge);
-  
-  // do clipping in auxiliary plane
-  PolygonClipping(SlaveVertices(),MasterVertices(),Clip(),tol);
-  int clipsize = (int)(Clip().size());
-#else
-  
-  // get some data
-  int nsnodes = SlaveElement().NumNode();
-  int nmnodes = MasterElement().NumNode();
-  
-  // get slave vertices in slave element parameter space (direct)
-  // additionally get slave vertex Ids for later linearization
-  vector<vector<double> > svertices(nsnodes,vector<double>(3));
-  vector<int> snodeids(1);
-  
-  for (int i=0;i<nsnodes;++i)
-  {     
-    double xi[2] = {0.0, 0.0};
-    SlaveElement().LocalCoordinatesOfNode(i,xi);
-    svertices[i][0] = xi[0];
-    svertices[i][1] = xi[1];
-    svertices[i][2] = 0.0;
- 
-    // relevant ids (here only slave node id itself)
-    snodeids[0] = SlaveElement().NodeIds()[i];
-    
-    // store into vertex data structure
-    SlaveVertices().push_back(Vertex(svertices[i],Vertex::slave,snodeids,NULL,NULL,false,false,NULL,-1.0));
-  }
-  
-  // get master vertices in slave element parameter space (project)
-  // additionally get master vertex Ids for later linearization
-  vector<vector<double> > mvertices(nmnodes,vector<double>(3));
-  vector<int> mnodeids(1);
-  for (int i=0;i<nmnodes;++i)
+  if (CouplingInAuxPlane())
   {
-    int gid = MasterElement().NodeIds()[i];
-    DRT::Node* node = Discret().gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    CNode* mnode = static_cast<CNode*>(node);
+    // compute auxiliary plane for 3D coupling
+    AuxiliaryPlane();
     
-    // do the projection
-    // the third component of sxi will be the proj. parameter alpha!
-    double sxi[2] = {0.0, 0.0};
-    double alpha = 0.0;
-    CONTACT::Projector projector(3);
-    //cout << "Projecting master node ID: " << mnode->Id() << endl;
-    projector.ProjectElementNormal3D(*mnode,SlaveElement(),sxi,alpha);
+    // project slave element nodes onto auxiliary plane
+    ProjectSlave();
     
-    mvertices[i][0] = sxi[0];
-    mvertices[i][1] = sxi[1];
-    mvertices[i][2] = 0.0;
+    // project master element nodes onto auxiliary plane
+    ProjectMaster();
     
-    // relevant ids (here only master node id itself)
-    mnodeids[0] = gid;
+    // tolerance for polygon clipping
+    double sminedge = sele.MinEdgeSize();
+    double mminedge = mele.MinEdgeSize(); 
+    double tol = CONTACTCLIPTOL * min(sminedge,mminedge);
     
-    // store proj. parameter for later linearization
-    projpar[gid] = alpha;
-    
-    // store into vertex data structure
-    MasterVertices().push_back(Vertex(mvertices[i],Vertex::projmaster,mnodeids,NULL,NULL,false,false,NULL,-1.0));
+    // do clipping in auxiliary plane
+    PolygonClipping(SlaveVertices(),MasterVertices(),Clip(),tol);
   }
-  
-  // normal is (0,0,1) in slave element parameter space
-  Auxn()[0] = 0.0; Auxn()[1] = 0.0; Auxn()[2] = 1.0;
-  
-  // tolerance for polygon clipping
-  // minimum edge size in parameter space is 1
-  double tol = CONTACTCLIPTOL;
+  // *******************************************************************
+  else //(!CouplingInAuxPlane())
+  {
+    // get some data
+    int nsnodes = SlaveElement().NumNode();
+    int nmnodes = MasterElement().NumNode();
     
-  // do clipping in slave element parameter space
-  PolygonClipping(SlaveVertices(),MasterVertices(),Clip(),tol);
-  int clipsize = (int)(Clip().size());
-#endif // #ifdef CONTACTAUXPLANE
+    // get slave vertices in slave element parameter space (direct)
+    // additionally get slave vertex Ids for later linearization
+    vector<vector<double> > svertices(nsnodes,vector<double>(3));
+    vector<int> snodeids(1);
+    
+    for (int i=0;i<nsnodes;++i)
+    {     
+      double xi[2] = {0.0, 0.0};
+      SlaveElement().LocalCoordinatesOfNode(i,xi);
+      svertices[i][0] = xi[0];
+      svertices[i][1] = xi[1];
+      svertices[i][2] = 0.0;
+   
+      // relevant ids (here only slave node id itself)
+      snodeids[0] = SlaveElement().NodeIds()[i];
+      
+      // store into vertex data structure
+      SlaveVertices().push_back(Vertex(svertices[i],Vertex::slave,snodeids,NULL,NULL,false,false,NULL,-1.0));
+    }
+    
+    // get master vertices in slave element parameter space (project)
+    // additionally get master vertex Ids for later linearization
+    vector<vector<double> > mvertices(nmnodes,vector<double>(3));
+    vector<int> mnodeids(1);
+    for (int i=0;i<nmnodes;++i)
+    {
+      int gid = MasterElement().NodeIds()[i];
+      DRT::Node* node = Discret().gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CNode* mnode = static_cast<CNode*>(node);
+      
+      // do the projection
+      // the third component of sxi will be the proj. parameter alpha!
+      double sxi[2] = {0.0, 0.0};
+      double alpha = 0.0;
+      CONTACT::Projector projector(3);
+      //cout << "Projecting master node ID: " << mnode->Id() << endl;
+      projector.ProjectElementNormal3D(*mnode,SlaveElement(),sxi,alpha);
+      
+      mvertices[i][0] = sxi[0];
+      mvertices[i][1] = sxi[1];
+      mvertices[i][2] = 0.0;
+      
+      // relevant ids (here only master node id itself)
+      mnodeids[0] = gid;
+      
+      // store proj. parameter for later linearization
+      projpar[gid] = alpha;
+      
+      // store into vertex data structure
+      MasterVertices().push_back(Vertex(mvertices[i],Vertex::projmaster,mnodeids,NULL,NULL,false,false,NULL,-1.0));
+    }
+    
+    // normal is (0,0,1) in slave element parameter space
+    Auxn()[0] = 0.0; Auxn()[1] = 0.0; Auxn()[2] = 1.0;
+    
+    // tolerance for polygon clipping
+    // minimum edge size in parameter space is 1
+    double tol = CONTACTCLIPTOL;
+      
+    // do clipping in slave element parameter space
+    PolygonClipping(SlaveVertices(),MasterVertices(),Clip(),tol);
+  }
   // *******************************************************************
   
   // proceed only if clipping polygon is at least a triangle
+  int clipsize = (int)(Clip().size());
   bool overlap = false;
   if (clipsize>=3) overlap = true;
   if (overlap)
@@ -472,7 +480,7 @@ bool CONTACT::Coupling3d::Triangulation(map<int,double>& projpar,
     
     // create Intcell object and push back
     Cells().push_back(rcp(new Intcell(0,3,coords,Auxn(),DRT::Element::tri3,
-                  linvertex[0],linvertex[1],linvertex[2],GetDerivAuxn())));
+      CouplingInAuxPlane(),linvertex[0],linvertex[1],linvertex[2],GetDerivAuxn())));
     
   }
   
@@ -503,7 +511,7 @@ bool CONTACT::Coupling3d::Triangulation(map<int,double>& projpar,
       
       // create Intcell object and push back
       Cells().push_back(rcp(new Intcell(num,3,coords,Auxn(),DRT::Element::tri3,
-                lincenter,linvertex[num],linvertex[numplus1],GetDerivAuxn())));
+        CouplingInAuxPlane(),lincenter,linvertex[num],linvertex[numplus1],GetDerivAuxn())));
     }
   }
   
@@ -554,11 +562,11 @@ bool CONTACT::Coupling3d::IntegrateCells(vector<vector<double> >& testgps,
     int ncol = mele_.NumNode();
     RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
     RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
-#ifdef CONTACTAUXPLANE
-    integrator.IntegrateDerivCell3DAuxPlane(sele_,mele_,Cells()[i],Auxn(),mseg,gseg,testgps,testgpm,testjs,testji,printderiv);
-#else
-    integrator.IntegrateDerivCell3D(sele_,mele_,Cells()[i],mseg,gseg,testgps,testgpm,testjs,testji,printderiv);
-#endif // #ifdef CONTACTAUXPLANE
+    
+    if (CouplingInAuxPlane())
+      integrator.IntegrateDerivCell3DAuxPlane(sele_,mele_,Cells()[i],Auxn(),mseg,gseg,testgps,testgpm,testjs,testji,printderiv);
+    else //(!CouplingInAuxPlane())
+      integrator.IntegrateDerivCell3D(sele_,mele_,Cells()[i],mseg,gseg,testgps,testgpm,testjs,testji,printderiv);
     // *******************************************************************
     
     // do the two assemblies into the slave nodes

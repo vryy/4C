@@ -82,6 +82,7 @@ public:
   */
   explicit Intcell(int id, int nvertices, Epetra_SerialDenseMatrix& coords,
                    double* auxn, const DRT::Element::DiscretizationType& shape,
+                   bool auxplane,
                    vector<map<int,double> >& linv1,
                    vector<map<int,double> >& linv2,
                    vector<map<int,double> >& linv3,
@@ -139,6 +140,17 @@ public:
   */
   virtual DRT::Element::DiscretizationType Shape() const { return shape_;}
   
+  /*!
+  \brief Get 3D coupling strategy (true = auxiliary plane)
+
+  Note that 3D Coupling can EITHER be done in physical space (this is
+  the case when an auxiliary plane is used) or in the slave element
+  parameter space (this is the case when everything is done directly
+  on the slave surface without any auxiliary plane).
+       
+  */
+  virtual inline const bool& CouplingInAuxPlane() {return auxplane_;};
+    
   /*!
   \brief Return one of the three 'DerivVertex' maps (vectors) of this node
     
@@ -213,6 +225,7 @@ protected:
   double                     auxn_[3];         // normal of auxiliary plane (3D)
   
   DRT::Element::DiscretizationType   shape_;     // shape of this element (always tri3)
+  bool                               auxplane_;  // flag indicating coupling strategy (true = aux. plane)
   vector<vector<map<int,double> > >  linvertex_; // derivatives of the 3 vertices
   vector<map<int,double> >           linauxn_;   // derivatives of auxiliary plane normal
   
@@ -394,7 +407,8 @@ protected:
        Note that 3D Coupling can EITHER be done in physical space (this is
        the case when an auxiliary plane is used) or in the slave element
        parameter space (this is the case when everything is done directly
-       on the slave surface without any auxiliary plane).
+       on the slave surface without any auxiliary plane). The boolean class
+       variable auxplane_ decides about this (true = auxiliary plane).
 
 \author popp (popp@lnm.mw.tum.de)
 */
@@ -412,7 +426,8 @@ public:
   
   */
   explicit Coupling3d(DRT::Discretization& idiscret, int dim,
-                      CONTACT::CElement& sele, CONTACT::CElement& mele);
+                      CONTACT::CElement& sele, CONTACT::CElement& mele,
+                      bool auxplane);
   
   /*!
   \brief Standard constructor
@@ -425,6 +440,7 @@ public:
   */
   explicit Coupling3d(DRT::Discretization& idiscret, int dim,
                       CONTACT::CElement& sele, CONTACT::CElement& mele,
+                      bool auxplane,
                       vector<vector<double> >& testv, bool printderiv);
   
   /*!
@@ -438,6 +454,7 @@ public:
   */
   explicit Coupling3d(DRT::Discretization& idiscret, int dim,
                       CONTACT::CElement& sele, CONTACT::CElement& mele,
+                      bool auxplane,
                       vector<vector<double> >& testgps, vector<vector<double> >& testgpm,
                       vector<vector<double> >& testjs, vector<vector<double> >& testji,
                       bool printderiv);
@@ -461,6 +478,12 @@ public:
 
   */
   virtual const Epetra_Comm& Comm() const { return idiscret_.Comm();}
+  
+  /*!
+  \brief Get problem dimension (here: 3D)
+
+  */
+  virtual inline const int& Dim() {return dim_;};
     
   /*!
   \brief Get coupling slave element
@@ -475,10 +498,15 @@ public:
   virtual inline CONTACT::CElement& MasterElement() const { return mele_; }
   
   /*!
-  \brief Get problem dimension (here: 3D)
+  \brief Get 3D coupling strategy (true = auxiliary plane)
 
+  Note that 3D Coupling can EITHER be done in physical space (this is
+  the case when an auxiliary plane is used) or in the slave element
+  parameter space (this is the case when everything is done directly
+  on the slave surface without any auxiliary plane).
+       
   */
-  virtual inline const int& Dim() {return dim_;};
+  virtual inline const bool& CouplingInAuxPlane() {return auxplane_;};
     
   /*!
   \brief Return center of auxiliary plane
@@ -730,6 +758,7 @@ protected:
     int                        dim_;         // problem dimension (here: 3D)
     CONTACT::CElement&         sele_;        // slave element to perform coupling for
     CONTACT::CElement&         mele_;        // master element to perform coupling for
+    bool                       auxplane_;    // flag indicating coupling strategy (true = aux. plane)
 
     double                     auxc_[3];     // center of auxiliary plane
     double                     auxn_[3];     // normal of auxiliary plane

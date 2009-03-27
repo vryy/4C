@@ -446,6 +446,9 @@ bool CONTACT::Manager::ReadAndCheckInput()
   
   // read contact search parameter
   scontact_.set<double> ("search parameter",input.get<double>("SEARCH_PARAM"));
+  
+  // read auxiliary plane coupling flag (3D)
+  scontact_.set<bool> ("coupling auxplane",Teuchos::getIntegralValue<int>(input,"COUPLING_AUXPLANE"));
     
   // check contact input parameters
   string ctype   = scontact_.get<string>("contact type","none");
@@ -455,6 +458,7 @@ bool CONTACT::Manager::ReadAndCheckInput()
   double ct      = scontact_.get<double>("semismooth ct",0.0);
   string stype   = scontact_.get<string>("search algorithm","elements");
   double sp      = scontact_.get<double>("search parameter",0.3);
+  bool auxplane  = scontact_.get<bool>("coupling auxplane",false);
   
   // invalid parameter combinations
   if (ctype=="normal" && ftype !="none")
@@ -464,13 +468,16 @@ bool CONTACT::Manager::ReadAndCheckInput()
   if (ctype=="frictional" && ct==0.0)
   	dserror("Friction Parameter ct = 0, must be greater than 0");
   if (stype=="nodes" && sp==0.0)
-    dserror("Search radius sp = 0, muste be greater than 0 for node-based search");
+    dserror("Search radius sp = 0, must be greater than 0 for node-based search");
+  if (auxplane && Dim()==2)
+    dserror("Coupling in auxiliary planes only possible for 3D contact");
 #ifdef CONTACTRELVELMATERIAL 
   // check full linearization
   bool fulllin   = scontact_.get<bool>("full linearization",false);
   if (fulllin) dserror ("Full linearization only running for evaluating\n"
   		"the relative velocity with change of projection");
-#endif  
+#endif
+  
   // warnings
   if ((stype=="elements" || stype=="binarytree") && sp==0.0)
     cout << ("Warning: Ele-based / binary tree search called without inflation of bounding volumes\n") << endl;
@@ -478,7 +485,6 @@ bool CONTACT::Manager::ReadAndCheckInput()
   if (ctype=="frictional" && ftype=="coulomb")
   	cout << ("Warning: Coulomb friction law not completely implemented\n") << endl;
 
-  
   // overrule input in certain cases
   if (ctype=="meshtying" && ftype!="stick")
     scontact_.set<string>("friction type","stick");

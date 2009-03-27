@@ -684,7 +684,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                yesnotuple,yesnovalue,&scontact);
 
   setStringToIntegralParameter<int>("SEMI_SMOOTH_NEWTON","No","If chosen semi-smooth Newton concept is applied",
-                                 yesnotuple,yesnovalue,&scontact);
+                               yesnotuple,yesnovalue,&scontact);
 
   DoubleParameter("SEMI_SMOOTH_CN",0.0,"Weighting factor cn for semi-smooth PDASS",&scontact);
   DoubleParameter("SEMI_SMOOTH_CT",0.0,"Weighting factor ct for semi-smooth PDASS",&scontact);
@@ -701,6 +701,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   
   DoubleParameter("SEARCH_PARAM",0.3,"Radius / Bounding volume inflation for contact search",&scontact);
   
+  setStringToIntegralParameter<int>("COUPLING_AUXPLANE","No","If chosen auxiliary planes are used for 3D coupling",
+                               yesnotuple,yesnovalue,&scontact);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& bromotion = list->sublist("BROWNIAN MOTION",false,"");

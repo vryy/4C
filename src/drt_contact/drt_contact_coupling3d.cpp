@@ -49,6 +49,7 @@ Maintainer: Alexander Popp
  *----------------------------------------------------------------------*/
 CONTACT::Intcell::Intcell(int id, int nvertices, Epetra_SerialDenseMatrix& coords,
                           double* auxn, const DRT::Element::DiscretizationType& shape,
+                          bool auxplane,
                           vector<map<int,double> >& linv1,
                           vector<map<int,double> >& linv2,
                           vector<map<int,double> >& linv3,
@@ -56,7 +57,8 @@ CONTACT::Intcell::Intcell(int id, int nvertices, Epetra_SerialDenseMatrix& coord
 id_(id),
 nvertices_(nvertices),
 coords_(coords),
-shape_(shape)
+shape_(shape),
+auxplane_(auxplane)
 {
    // check nvertices_ and shape_
   if (nvertices_!=3) dserror("ERROR: Integration cell must have 3 vertices");
@@ -239,20 +241,20 @@ void CONTACT::Intcell::DerivJacobian(double* xi, vector<double>& derivjac)
     // *********************************************************************
     // compute Jacobian derivative
     // *********************************************************************
-#ifdef CONTACTAUXPLANE
-    cout << jac << endl;
-    dserror("ERROR: DerivJacobian (SlaveParamSpace) called for AuxPlane case!");
-#else
-    // in this case, intcells live in slave element parameter space
-    // cross[0] and cross[1] are zero!
-    for (int i=0;i<nnodes;++i)
-    {    
-      derivjac[2*i]   += 1/jac * cross[2] * geta[1] * deriv(i,0);
-      derivjac[2*i]   -= 1/jac * cross[2] * gxi[1]  * deriv(i,1);
-      derivjac[2*i+1] -= 1/jac * cross[2] * geta[0] * deriv(i,0);
-      derivjac[2*i+1] += 1/jac * cross[2] * gxi[0]  * deriv(i,1);
+    if (CouplingInAuxPlane())
+      dserror("ERROR: DerivJacobian (SlaveParamSpace) called for AuxPlane case!");
+    else //(!CouplingInAuxPlane())
+    {
+      // in this case, intcells live in slave element parameter space
+      // cross[0] and cross[1] are zero!
+      for (int i=0;i<nnodes;++i)
+      {    
+        derivjac[2*i]   += 1/jac * cross[2] * geta[1] * deriv(i,0);
+        derivjac[2*i]   -= 1/jac * cross[2] * gxi[1]  * deriv(i,1);
+        derivjac[2*i+1] -= 1/jac * cross[2] * geta[0] * deriv(i,0);
+        derivjac[2*i+1] += 1/jac * cross[2] * gxi[0]  * deriv(i,1);
+      }
     }
-#endif // #ifdef CONTACTAUXPLANE
   }
   
   // unknown case
@@ -330,67 +332,67 @@ void CONTACT::Intcell::DerivJacobian(double* xi, map<int,double>& derivjac)
     // *********************************************************************
     // compute Jacobian derivative
     // *********************************************************************
-#ifdef CONTACTAUXPLANE
-    // first vertex (Coords(k,0)) is part of gxi and geta
-    for (CI p=GetDerivVertex(0)[0].begin();p!=GetDerivVertex(0)[0].end();++p)
+    if (CouplingInAuxPlane())
     {
-      derivjac[p->first] -= 1/jac*cross[1]*gxi[2]*(p->second);
-      derivjac[p->first] += 1/jac*cross[1]*geta[2]*(p->second);
-      derivjac[p->first] += 1/jac*cross[2]*gxi[1]*(p->second);
-      derivjac[p->first] -= 1/jac*cross[2]*geta[1]*(p->second);
+      // first vertex (Coords(k,0)) is part of gxi and geta
+      for (CI p=GetDerivVertex(0)[0].begin();p!=GetDerivVertex(0)[0].end();++p)
+      {
+        derivjac[p->first] -= 1/jac*cross[1]*gxi[2]*(p->second);
+        derivjac[p->first] += 1/jac*cross[1]*geta[2]*(p->second);
+        derivjac[p->first] += 1/jac*cross[2]*gxi[1]*(p->second);
+        derivjac[p->first] -= 1/jac*cross[2]*geta[1]*(p->second);
+      }
+      for (CI p=GetDerivVertex(0)[1].begin();p!=GetDerivVertex(0)[1].end();++p)
+      {
+        derivjac[p->first] += 1/jac*cross[0]*gxi[2]*(p->second);
+        derivjac[p->first] -= 1/jac*cross[0]*geta[2]*(p->second);
+        derivjac[p->first] -= 1/jac*cross[2]*gxi[0]*(p->second);
+        derivjac[p->first] += 1/jac*cross[2]*geta[0]*(p->second);
+      }
+      for (CI p=GetDerivVertex(0)[2].begin();p!=GetDerivVertex(0)[2].end();++p)
+      {
+        derivjac[p->first] -= 1/jac*cross[0]*gxi[1]*(p->second);
+        derivjac[p->first] += 1/jac*cross[0]*geta[1]*(p->second);
+        derivjac[p->first] += 1/jac*cross[1]*gxi[0]*(p->second);
+        derivjac[p->first] -= 1/jac*cross[1]*geta[0]*(p->second);
+      }
+      
+      // second vertex (Coords(k,1)) is part of gxi
+      for (CI p=GetDerivVertex(1)[0].begin();p!=GetDerivVertex(1)[0].end();++p)
+      {
+        derivjac[p->first] -= 1/jac*cross[1]*geta[2]*(p->second);
+        derivjac[p->first] += 1/jac*cross[2]*geta[1]*(p->second);
+      }
+      for (CI p=GetDerivVertex(1)[1].begin();p!=GetDerivVertex(1)[1].end();++p)
+      {
+        derivjac[p->first] += 1/jac*cross[0]*geta[2]*(p->second);
+        derivjac[p->first] -= 1/jac*cross[2]*geta[0]*(p->second);
+      }
+      for (CI p=GetDerivVertex(1)[2].begin();p!=GetDerivVertex(1)[2].end();++p)
+      {
+        derivjac[p->first] -= 1/jac*cross[0]*geta[1]*(p->second);
+        derivjac[p->first] += 1/jac*cross[1]*geta[0]*(p->second);
+      }
+      
+      // third vertex (Coords(k,2)) is part of geta
+      for (CI p=GetDerivVertex(2)[0].begin();p!=GetDerivVertex(2)[0].end();++p)
+      {
+        derivjac[p->first] += 1/jac*cross[1]*gxi[2]*(p->second);
+        derivjac[p->first] -= 1/jac*cross[2]*gxi[1]*(p->second);
+      }
+      for (CI p=GetDerivVertex(2)[1].begin();p!=GetDerivVertex(2)[1].end();++p)
+      {
+        derivjac[p->first] -= 1/jac*cross[0]*gxi[2]*(p->second);
+        derivjac[p->first] += 1/jac*cross[2]*gxi[0]*(p->second);
+      }
+      for (CI p=GetDerivVertex(2)[2].begin();p!=GetDerivVertex(2)[2].end();++p)
+      {
+        derivjac[p->first] += 1/jac*cross[0]*gxi[1]*(p->second);
+        derivjac[p->first] -= 1/jac*cross[1]*gxi[0]*(p->second);
+      }
     }
-    for (CI p=GetDerivVertex(0)[1].begin();p!=GetDerivVertex(0)[1].end();++p)
-    {
-      derivjac[p->first] += 1/jac*cross[0]*gxi[2]*(p->second);
-      derivjac[p->first] -= 1/jac*cross[0]*geta[2]*(p->second);
-      derivjac[p->first] -= 1/jac*cross[2]*gxi[0]*(p->second);
-      derivjac[p->first] += 1/jac*cross[2]*geta[0]*(p->second);
-    }
-    for (CI p=GetDerivVertex(0)[2].begin();p!=GetDerivVertex(0)[2].end();++p)
-    {
-      derivjac[p->first] -= 1/jac*cross[0]*gxi[1]*(p->second);
-      derivjac[p->first] += 1/jac*cross[0]*geta[1]*(p->second);
-      derivjac[p->first] += 1/jac*cross[1]*gxi[0]*(p->second);
-      derivjac[p->first] -= 1/jac*cross[1]*geta[0]*(p->second);
-    }
-    
-    // second vertex (Coords(k,1)) is part of gxi
-    for (CI p=GetDerivVertex(1)[0].begin();p!=GetDerivVertex(1)[0].end();++p)
-    {
-      derivjac[p->first] -= 1/jac*cross[1]*geta[2]*(p->second);
-      derivjac[p->first] += 1/jac*cross[2]*geta[1]*(p->second);
-    }
-    for (CI p=GetDerivVertex(1)[1].begin();p!=GetDerivVertex(1)[1].end();++p)
-    {
-      derivjac[p->first] += 1/jac*cross[0]*geta[2]*(p->second);
-      derivjac[p->first] -= 1/jac*cross[2]*geta[0]*(p->second);
-    }
-    for (CI p=GetDerivVertex(1)[2].begin();p!=GetDerivVertex(1)[2].end();++p)
-    {
-      derivjac[p->first] -= 1/jac*cross[0]*geta[1]*(p->second);
-      derivjac[p->first] += 1/jac*cross[1]*geta[0]*(p->second);
-    }
-    
-    // third vertex (Coords(k,2)) is part of geta
-    for (CI p=GetDerivVertex(2)[0].begin();p!=GetDerivVertex(2)[0].end();++p)
-    {
-      derivjac[p->first] += 1/jac*cross[1]*gxi[2]*(p->second);
-      derivjac[p->first] -= 1/jac*cross[2]*gxi[1]*(p->second);
-    }
-    for (CI p=GetDerivVertex(2)[1].begin();p!=GetDerivVertex(2)[1].end();++p)
-    {
-      derivjac[p->first] -= 1/jac*cross[0]*gxi[2]*(p->second);
-      derivjac[p->first] += 1/jac*cross[2]*gxi[0]*(p->second);
-    }
-    for (CI p=GetDerivVertex(2)[2].begin();p!=GetDerivVertex(2)[2].end();++p)
-    {
-      derivjac[p->first] += 1/jac*cross[0]*gxi[1]*(p->second);
-      derivjac[p->first] -= 1/jac*cross[1]*gxi[0]*(p->second);
-    }
-#else
-    cout << jac << endl;
-    dserror("ERROR: DerivJacobian (AuxPlane) called for SlaveParamSpace case!"); 
-#endif // #ifdef CONTACTAUXPLANE
+    else //(!CouplingInAuxPlane())
+      dserror("ERROR: DerivJacobian (AuxPlane) called for SlaveParamSpace case!"); 
   }
   
   // unknown case
@@ -441,11 +443,13 @@ alpha_(old.alpha_)
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
 CONTACT::Coupling3d::Coupling3d(DRT::Discretization& idiscret, int dim,
-                                CONTACT::CElement& sele, CONTACT::CElement& mele) :
+                                CONTACT::CElement& sele, CONTACT::CElement& mele,
+                                bool auxplane) :
 idiscret_(idiscret),
 dim_(dim),
 sele_(sele),
-mele_(mele)
+mele_(mele),
+auxplane_(auxplane)
 {
   // *********************************************************************
   // the three-dimensional case
@@ -460,6 +464,9 @@ mele_(mele)
   bool near = RoughCheck();
   if (!near) return;
   
+  // tolerance for polygon clipping
+  double tol= 0.0;
+  
   // map to store projection parameter alpha for each master node
   // (currently only necessary for non-AUXPLANE case)
   map<int,double> projpar;
@@ -467,89 +474,91 @@ mele_(mele)
   // *******************************************************************
   // ************ Coupling with or without auxiliary plane *************
   // *******************************************************************
-#ifdef CONTACTAUXPLANE
-  // compute auxiliary plane for 3D coupling
-  AuxiliaryPlane();
-  
-  // project slave element nodes onto auxiliary plane
-  ProjectSlave();
-  
-  // project master element nodes onto auxiliary plane
-  ProjectMaster();
-  
-  // tolerance for polygon clipping
-  double sminedge = sele.MinEdgeSize();
-  double mminedge = mele.MinEdgeSize(); 
-  double tol = CONTACTCLIPTOL * min(sminedge,mminedge);
-  
-#else
-  
-  // get some data
-  int nsnodes = SlaveElement().NumNode();
-  int nmnodes = MasterElement().NumNode();
-  
-  // get slave vertices in slave element parameter space (direct)
-  // additionally get slave vertex Ids for later linearization
-  vector<vector<double> > svertices(nsnodes,vector<double>(3));
-  vector<int> snodeids(1);
-  
-  for (int i=0;i<nsnodes;++i)
-  {     
-    double xi[2] = {0.0, 0.0};
-    SlaveElement().LocalCoordinatesOfNode(i,xi);
-    svertices[i][0] = xi[0];
-    svertices[i][1] = xi[1];
-    svertices[i][2] = 0.0;
- 
-    // relevant ids (here only slave node id itself)
-    snodeids[0] = SlaveElement().NodeIds()[i];
-    
-    // store into vertex data structure
-    SlaveVertices().push_back(Vertex(svertices[i],Vertex::slave,snodeids,NULL,NULL,false,false,NULL,-1.0));
-  }
-  
-  // get master vertices in slave element parameter space (project)
-  // additionally get master vertex Ids for later linearization
-  vector<vector<double> > mvertices(nmnodes,vector<double>(3));
-  vector<int> mnodeids(1);
-  for (int i=0;i<nmnodes;++i)
+  if (CouplingInAuxPlane())
   {
-    int gid = MasterElement().NodeIds()[i];
-    DRT::Node* node = Discret().gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    CNode* mnode = static_cast<CNode*>(node);
+    // compute auxiliary plane for 3D coupling
+    AuxiliaryPlane();
     
-    // do the projection
-    // the third component of sxi will be the proj. parameter alpha!
-    double sxi[2] = {0.0, 0.0};
-    double alpha = 0.0;
-    CONTACT::Projector projector(3);
-    //cout << "Projecting master node ID: " << mnode->Id() << endl;
-    projector.ProjectElementNormal3D(*mnode,SlaveElement(),sxi,alpha);
+    // project slave element nodes onto auxiliary plane
+    ProjectSlave();
     
-    mvertices[i][0] = sxi[0];
-    mvertices[i][1] = sxi[1];
-    mvertices[i][2] = 0.0;
+    // project master element nodes onto auxiliary plane
+    ProjectMaster();
     
-    // relevant ids (here only master node id itself)
-    mnodeids[0] = gid;
-    
-    // store proj. parameter for later linearization
-    projpar[gid] = alpha;
-    
-    // store into vertex data structure
-    MasterVertices().push_back(Vertex(mvertices[i],Vertex::projmaster,mnodeids,NULL,NULL,false,false,NULL,-1.0));
+    // tolerance for polygon clipping
+    double sminedge = sele.MinEdgeSize();
+    double mminedge = mele.MinEdgeSize(); 
+    tol = CONTACTCLIPTOL * min(sminedge,mminedge);
   }
   
-  // normal is (0,0,1) in slave element parameter space
-  Auxn()[0] = 0.0; Auxn()[1] = 0.0; Auxn()[2] = 1.0;
-  Lauxn() = 1.0;
-  
-  // tolerance for polygon clipping
-  // minimum edge size in parameter space is 1
-  double tol = CONTACTCLIPTOL;
-  
-#endif // #ifdef CONTACTAUXPLANE
+  // *******************************************************************
+  else //(!CouplingInAuxPlane())
+  {
+    // get some data
+    int nsnodes = SlaveElement().NumNode();
+    int nmnodes = MasterElement().NumNode();
+    
+    // get slave vertices in slave element parameter space (direct)
+    // additionally get slave vertex Ids for later linearization
+    vector<vector<double> > svertices(nsnodes,vector<double>(3));
+    vector<int> snodeids(1);
+    
+    for (int i=0;i<nsnodes;++i)
+    {     
+      double xi[2] = {0.0, 0.0};
+      SlaveElement().LocalCoordinatesOfNode(i,xi);
+      svertices[i][0] = xi[0];
+      svertices[i][1] = xi[1];
+      svertices[i][2] = 0.0;
+   
+      // relevant ids (here only slave node id itself)
+      snodeids[0] = SlaveElement().NodeIds()[i];
+      
+      // store into vertex data structure
+      SlaveVertices().push_back(Vertex(svertices[i],Vertex::slave,snodeids,NULL,NULL,false,false,NULL,-1.0));
+    }
+    
+    // get master vertices in slave element parameter space (project)
+    // additionally get master vertex Ids for later linearization
+    vector<vector<double> > mvertices(nmnodes,vector<double>(3));
+    vector<int> mnodeids(1);
+    for (int i=0;i<nmnodes;++i)
+    {
+      int gid = MasterElement().NodeIds()[i];
+      DRT::Node* node = Discret().gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CNode* mnode = static_cast<CNode*>(node);
+      
+      // do the projection
+      // the third component of sxi will be the proj. parameter alpha!
+      double sxi[2] = {0.0, 0.0};
+      double alpha = 0.0;
+      CONTACT::Projector projector(3);
+      //cout << "Projecting master node ID: " << mnode->Id() << endl;
+      projector.ProjectElementNormal3D(*mnode,SlaveElement(),sxi,alpha);
+      
+      mvertices[i][0] = sxi[0];
+      mvertices[i][1] = sxi[1];
+      mvertices[i][2] = 0.0;
+      
+      // relevant ids (here only master node id itself)
+      mnodeids[0] = gid;
+      
+      // store proj. parameter for later linearization
+      projpar[gid] = alpha;
+      
+      // store into vertex data structure
+      MasterVertices().push_back(Vertex(mvertices[i],Vertex::projmaster,mnodeids,NULL,NULL,false,false,NULL,-1.0));
+    }
+    
+    // normal is (0,0,1) in slave element parameter space
+    Auxn()[0] = 0.0; Auxn()[1] = 0.0; Auxn()[2] = 1.0;
+    Lauxn() = 1.0;
+    
+    // tolerance for polygon clipping
+    // minimum edge size in parameter space is 1
+    tol = CONTACTCLIPTOL;
+  }
   // *******************************************************************
   
   // do polygon clipping
@@ -1907,7 +1916,7 @@ bool CONTACT::Coupling3d::Triangulation(map<int,double>& projpar)
     
     // create Intcell object and push back
     Cells().push_back(rcp(new Intcell(0,3,coords,Auxn(),DRT::Element::tri3,
-                  linvertex[0],linvertex[1],linvertex[2],GetDerivAuxn())));
+      CouplingInAuxPlane(),linvertex[0],linvertex[1],linvertex[2],GetDerivAuxn())));
     
   }
   
@@ -1938,7 +1947,7 @@ bool CONTACT::Coupling3d::Triangulation(map<int,double>& projpar)
       
       // create Intcell object and push back
       Cells().push_back(rcp(new Intcell(num,3,coords,Auxn(),DRT::Element::tri3,
-                lincenter,linvertex[num],linvertex[numplus1],GetDerivAuxn())));
+        CouplingInAuxPlane(),lincenter,linvertex[num],linvertex[numplus1],GetDerivAuxn())));
     }
   }
   
@@ -1958,29 +1967,31 @@ bool CONTACT::Coupling3d::VertexLinearization(vector<vector<map<int,double> > >&
   // and use these linearizations later during lineclip linearization
   // (this speeds up the vertex linearizations in most cases, as we
   // never linearize the SAME slave or master vertex more than once)
-#ifdef CONTACTAUXPLANE
+  
   // number of nodes
   int nsrows = SlaveElement().NumNode();
   int nmrows = MasterElement().NumNode();
-  
+      
   // prepare storage for slave and master linearizations
   vector<vector<map<int,double> > > linsnodes(nsrows,vector<map<int,double> >(3));
   vector<vector<map<int,double> > > linmnodes(nmrows,vector<map<int,double> >(3));
   
-  // compute slave linearizations (nsrows)
-  for (int i=0;i<nsrows;++i)
+  if (CouplingInAuxPlane())
   {
-    int sid = SlaveElement().NodeIds()[i];
-    SlaveVertexLinearization(linsnodes[i],sid);
+    // compute slave linearizations (nsrows)
+    for (int i=0;i<nsrows;++i)
+    {
+      int sid = SlaveElement().NodeIds()[i];
+      SlaveVertexLinearization(linsnodes[i],sid);
+    }
+    
+    // compute master linearizations (nmrows)
+    for (int i=0;i<nmrows;++i)
+    {
+      int mid = MasterElement().NodeIds()[i];
+      MasterVertexLinearization(linmnodes[i],mid);
+    }
   }
-  
-  // compute master linearizations (nmrows)
-  for (int i=0;i<nmrows;++i)
-  {
-    int mid = MasterElement().NodeIds()[i];
-    MasterVertexLinearization(linmnodes[i],mid);
-  }
-#endif // #ifdef CONTACTAUXPLANE
   
   //**********************************************************************
   // Clip polygon vertex linearization
@@ -1995,55 +2006,61 @@ bool CONTACT::Coupling3d::VertexLinearization(vector<vector<map<int,double> > >&
     // decision on vertex type (slave, projmaster, linclip)
     if (currv.VType()==Vertex::slave)
     {
-#ifdef CONTACTAUXPLANE
-      // get corresponding slave id
-      int sid = currv.Nodeids()[0];
-      
-      // find corresponding slave node linearization
-      int k=0;
-      while (k<nsrows){
-        if (SlaveElement().NodeIds()[k]==sid) break;
-        ++k;
+      if (CouplingInAuxPlane())
+      {
+        // get corresponding slave id
+        int sid = currv.Nodeids()[0];
+        
+        // find corresponding slave node linearization
+        int k=0;
+        while (k<nsrows){
+          if (SlaveElement().NodeIds()[k]==sid) break;
+          ++k;
+        }
+        
+        // dserror if not found
+        if (k==nsrows) dserror("ERROR: Slave Id not found!");
+        
+        // get the correct slave node linearization
+        currlin = linsnodes[k];
       }
-      
-      // dserror if not found
-      if (k==nsrows) dserror("ERROR: Slave Id not found!");
-      
-      // get the correct slave node linearization
-      currlin = linsnodes[k];
-#else
-      // Vertex = slave node -> Linearization = 0
-      // this is the easy case with nothing to do
-#endif // #ifdef CONTACTAUXPLANE    
+      else //(!CouplingInAuxPlane())
+      {
+        // Vertex = slave node -> Linearization = 0
+        // this is the easy case with nothing to do
+      }
     }
     else if (currv.VType()==Vertex::projmaster)
     {
-#ifdef CONTACTAUXPLANE
-      // get corresponding master id
-      int mid = currv.Nodeids()[0];
-            
-      // find corresponding master node linearization
-      int k=0;
-      while (k<nmrows){
-        if (MasterElement().NodeIds()[k]==mid) break;
-        ++k;
+      if (CouplingInAuxPlane())
+      {
+        // get corresponding master id
+        int mid = currv.Nodeids()[0];
+              
+        // find corresponding master node linearization
+        int k=0;
+        while (k<nmrows){
+          if (MasterElement().NodeIds()[k]==mid) break;
+          ++k;
+        }
+        
+        // dserror if not found
+        if (k==nmrows) dserror("ERROR: Master Id not found!");
+        
+        // get the correct master node linearization
+        currlin = linmnodes[k];
       }
-      
-      // dserror if not found
-      if (k==nmrows) dserror("ERROR: Master Id not found!");
-      
-      // get the correct master node linearization
-      currlin = linmnodes[k];
-#else
-      // get corresponding master id and projection alpha
-      int mid = currv.Nodeids()[0];
-      double alpha = projpar[mid];
-      
-      //cout << "Coords: " << currv.Coord()[0] << " " << currv.Coord()[1] << endl;
-      
-      // do master vertex linearization
-      MasterVertexLinearization(currv,currlin,mid,alpha);  
-#endif // #ifdef CONTACTAUXPLANE
+      else //(!CouplingInAuxPlane())
+      {
+        // get corresponding master id and projection alpha
+        int mid = currv.Nodeids()[0];
+        double alpha = projpar[mid];
+        
+        //cout << "Coords: " << currv.Coord()[0] << " " << currv.Coord()[1] << endl;
+        
+        // do master vertex linearization
+        MasterVertexLinearization(currv,currlin,mid,alpha);  
+      }
     }
     else if (currv.VType()==Vertex::lineclip)
     {
@@ -2079,16 +2096,14 @@ bool CONTACT::Coupling3d::VertexLinearization(vector<vector<map<int,double> > >&
       Vertex* mv1 = &MasterVertices()[mindex1];
       Vertex* mv2 = &MasterVertices()[mindex2];
       
-#ifdef CONTACTAUXPLANE
       // do lineclip vertex linearization
-      LineclipVertexLinearization(currv,currlin,sv1,sv2,mv1,mv2,linsnodes,linmnodes);      
-#else
-      // do lineclip vertex linearization
-      LineclipVertexLinearization(currv,currlin,sv1,sv2,mv1,mv2,projpar);  
-#endif // #ifdef CONTACTAUXPLANE
+      if (CouplingInAuxPlane())
+        LineclipVertexLinearization(currv,currlin,sv1,sv2,mv1,mv2,linsnodes,linmnodes);
+      else
+        LineclipVertexLinearization(currv,currlin,sv1,sv2,mv1,mv2,projpar);  
     }
-    else
-      dserror("ERROR: VertexLinearization: Invalid Vertex Type!");
+    
+    else dserror("ERROR: VertexLinearization: Invalid Vertex Type!");
   }
   
   return true;
@@ -2956,11 +2971,11 @@ bool CONTACT::Coupling3d::IntegrateCells()
     int ncol = mele_.NumNode();
     RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
     RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
-#ifdef CONTACTAUXPLANE
-    integrator.IntegrateDerivCell3DAuxPlane(sele_,mele_,Cells()[i],Auxn(),mseg,gseg);
-#else
-    integrator.IntegrateDerivCell3D(sele_,mele_,Cells()[i],mseg,gseg);
-#endif // #ifdef CONTACTAUXPLANE
+    
+    if (CouplingInAuxPlane())
+      integrator.IntegrateDerivCell3DAuxPlane(sele_,mele_,Cells()[i],Auxn(),mseg,gseg);
+    else //(!CouplingInAuxPlane())
+      integrator.IntegrateDerivCell3D(sele_,mele_,Cells()[i],mseg,gseg);
     // *******************************************************************
     
     // do the two assemblies into the slave nodes

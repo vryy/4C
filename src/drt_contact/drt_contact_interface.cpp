@@ -1173,7 +1173,10 @@ bool CONTACT::Interface::IntegrateCoupling(CONTACT::CElement& sele,
   if (Dim()==2)
     CONTACT::Coupling2d coup(Discret(),Dim(),sele,mele,CSegs());
   else if (Dim()==3)
-    CONTACT::Coupling3d coup(Discret(),Dim(),sele,mele);
+  {
+    bool auxplane = IParams().get<bool>("coupling auxplane",false);
+    CONTACT::Coupling3d coup(Discret(),Dim(),sele,mele,auxplane);
+  }
   else
     dserror("ERROR: Dimension for Mortar coupling must be 2D or 3D!");
       
@@ -1195,7 +1198,10 @@ bool CONTACT::Interface::IntegrateCoupling(CONTACT::CElement& sele,
   if (Dim()==2)
     dserror("ERROR: FD check of coupling vertices only for 3D!");
   else if (Dim()==3)
-    CONTACT::Coupling3d coup(Discret(),Dim(),sele,mele,testv,printderiv);
+  {
+    bool auxplane = IParams().get<bool>("coupling auxplane",false);
+    CONTACT::Coupling3d coup(Discret(),Dim(),sele,mele,auxplane,testv,printderiv);
+  }
   else
     dserror("ERROR: Dimension for Mortar coupling must be 2D or 3D!");
       
@@ -1220,7 +1226,10 @@ bool CONTACT::Interface::IntegrateCoupling(CONTACT::CElement& sele,
   if (Dim()==2)
     dserror("ERROR: FD check of Gauss points and Jacobian only for 3D!");
   else if (Dim()==3)
-    CONTACT::Coupling3d coup(Discret(),Dim(),sele,mele,testgps,testgpm,testjs,testji,printderiv);
+  {
+    bool auxplane = IParams().get<bool>("coupling auxplane",false);
+    CONTACT::Coupling3d coup(Discret(),Dim(),sele,mele,auxplane,testgps,testgpm,testjs,testji,printderiv);
+  }
   else
     dserror("ERROR: Dimension for Mortar coupling must be 2D or 3D!");
       
