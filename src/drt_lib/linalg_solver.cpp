@@ -1022,6 +1022,9 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
       mllist.set("aggregation: threshold"          ,inparams.get<double>("ML_PROLONG_THRES"));
       mllist.set("aggregation: damping factor"     ,inparams.get<double>("ML_PROLONG_SMO"));
       mllist.set("aggregation: nodes per aggregate",inparams.get<int>("ML_AGG_SIZE"));
+      // override the default sweeps=2 with a default sweeps=1
+      // individual level sweeps are set below  
+      mllist.set("smoother: sweeps",1);
       switch (Teuchos::getIntegralValue<int>(inparams,"ML_COARSEN"))
       {
         case 0:  mllist.set("aggregation: type","Uncoupled");  break;
