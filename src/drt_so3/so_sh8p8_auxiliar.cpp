@@ -1013,12 +1013,13 @@ int DRT::ELEMENTS::So_sh8p8::SymSpectralDecompJacIter(
   const int itermax
   )
 {
-  // sum of all entries (moduli) in at
-  double asum = at.Norm1();
+  // sum of all entries (moduli) in #at
+  double asum = 0.0;
 
   //--------------------------------------------------------------------
   // initialise eigenvalue tensor and eigenvector tensor
 #if 0
+  asum = at.Norm1();
   ew.Update(at);
   ev.Clear();
   for (int idim=0; idim<NUMDIM_; idim++) ev(idim,idim) = 1.0;
