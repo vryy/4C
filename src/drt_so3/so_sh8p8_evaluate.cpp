@@ -1494,6 +1494,15 @@ void DRT::ELEMENTS::So_sh8p8::AssDefGrad(
     LINALG::Matrix<NUMDIM_,NUMDIM_> NdT;
     LINALG::Matrix<NUMDIM_,NUMDIM_> lamd;
 #if 0
+#if 0
+    const int err = SymSpectralDecompJacIter(lamd,NdT,cgD,EPS15,15);
+    if (err!=0) dserror("spectral decomposition failed");
+    // spectral composition of disp-based right stretch tensor
+    for (int i=0; i<NUMDIM_; ++i) lamd(i,i) = sqrt(lamd(i,i));
+    LINALG::Matrix<NUMDIM_,NUMDIM_> aux;
+    aux.MultiplyNN(NdT,lamd);
+    rgtstrD.MultiplyNT(aux,NdT);
+#else
     LINALG::Matrix<NUMDIM_,NUMDIM_> Nd(true);
     LINALG::SVD(cgD,NdT,lamd,Nd);
     // spectral composition of disp-based right stretch tensor
@@ -1501,6 +1510,7 @@ void DRT::ELEMENTS::So_sh8p8::AssDefGrad(
     LINALG::Matrix<NUMDIM_,NUMDIM_> aux;
     aux.MultiplyNN(NdT,lamd);
     rgtstrD.MultiplyNN(aux,Nd);
+#endif
 #else
     LINALG::SYEV(cgD,lamd,NdT);
     // spectral composition of disp-based right stretch tensor

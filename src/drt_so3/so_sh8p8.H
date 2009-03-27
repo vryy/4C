@@ -260,6 +260,7 @@ private:
   static const int NODPRES_ = 1;  ///< number of pressures per node
   static const int NUMDOF_ = 32;  ///< total dofs per element
   static const int NUMDISP_ = 24;  ///< total discrete displacements per element
+  static const int NUMDISPSQSYM_ = 300;  ///< (NUMDISP_*NUMDISP_ + NUMDISP_)/2, number of relevant entries if symmetric in element displacements
   static const int NUMPRES_ = 8;  ///< total discrete pressures per element
   static const int NUMSTR_ = NUMSTR_SOH8; //6  ///< number of strains/stresses
   static const int NUMDFGR_ = 9;  ///< number of deformation gradient components
@@ -570,6 +571,58 @@ private:
     );
 
   //@}
+
+  /// determine (inverse) right stretch tensor
+  ///
+  /// The right stretch tensor is obtained by polar decomposition 
+  // of the right Cauchy-Green 2-tensor in 3 dimensions.
+  ///
+  /// About:
+  ///   Polar decomposition is often applied to the material deformation
+  /// tensor F, i.e.
+  ///      F = R . U = v . R
+  /// in which R is the rotation matrix (two-point tensor), U the material
+  /// stretch tensor (refers to the undeformed configuration) and v the
+  /// spatial stretch tensor (refers to the deformed configuration).
+  ///   This polar decomposition is also applied to the isoparametric
+  /// Jacobian tensor (mapping quantities in parameter space to material
+  /// configuration). However, the local variables are denoted for the
+  /// case of a deformation tensor.
+  ///
+  /// References:
+  /// [1] A. Hoger & D.E. Carlson, "Determination of the stretch and
+  ///        rotation in the polar decomposition of the deformation
+  ///        gradient", Quart. Appl. Math., 42(2):113-117, 1984.
+  /// [2] G.A. Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
+  ///        esp. Section 2.6
+  /// [3] I.N. Bronstein & K.A. Semendjajew, "Taschenbuch der
+  ///        Mathematik", Teubner, 25.ed, 1991.
+  /// [4] A. Andrade-Campos, L.F. Menezes, F. Teixeira-Dias, "Numerical analysis
+  ///        of large deformation processes at elevated temperatures",
+  ///        Comput. Methods Appl. Mech. Engrg., 195, 3947-3959, 2006.
+  static void StretchTensor(
+    double* detut,  ///< determinant of material stretch tensor
+    LINALG::Matrix<NUMDIM_,NUMDIM_>* ut,  ///< material stretch tensor
+    LINALG::Matrix<NUMDIM_,NUMDIM_>* invut,  ///< inverse material stretch tensor
+    const LINALG::Matrix<NUMDIM_,NUMDIM_>& ct  ///< right Cauchy-Green tensor
+    );
+
+  /// Spectral decomposition of symmetric 2-tensor calculated
+  /// iteratively using Jacobi's method
+  ///
+  /// References:
+  /// [1] I.N. Bronstein & K.A. Semendjajew, "Taschenbuch der
+  ///     Mathematik", Teubner, 25.ed, 1991.
+  ///     esp. p. 741 ff.
+  ///
+  /// \return error: 0=success, 1=failure
+  static int SymSpectralDecompJacIter(
+    LINALG::Matrix<NUMDIM_,NUMDIM_>& ew,  ///< diagional matrix of eigenvalues
+    LINALG::Matrix<NUMDIM_,NUMDIM_>& ev,  ///< orthornormal eigenvectors (direction cosines)
+    const LINALG::Matrix<NUMDIM_,NUMDIM_>& at,  ///<  _symmetric_ input matrix
+    const double itertol,  ///< tolerance
+    const int itermax  ///< maximally allowd iteration steps
+    );
 
   /// @name Local assemble of displacement and pressure quantities
   //@{

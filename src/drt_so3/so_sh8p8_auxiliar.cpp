@@ -718,6 +718,430 @@ void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToLeftRightProductMatrix6x6Voigt(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+// WARNING : WORKS BADLY, DON'T USE
+void DRT::ELEMENTS::So_sh8p8::StretchTensor(
+  double* detut,  // determinant of material stretch tensor
+  LINALG::Matrix<NUMDIM_,NUMDIM_>* ut,  // material stretch tensor
+  LINALG::Matrix<NUMDIM_,NUMDIM_>* invut,  // inverse material stretch tensor
+  const LINALG::Matrix<NUMDIM_,NUMDIM_>& ct  // right Cauchy-Green tensor
+  )
+{
+  if ( (ut == NULL) and (invut == NULL) )
+    dserror("Senseless call: You do not want to compute anything");
+
+  // pi
+//  const double PI = 3.14159265358979323846;
+
+  // set identity tensor
+  LINALG::Matrix<NUMDIM_,NUMDIM_> it(true);
+  for (int i=0; i<NUMDIM_; ++i) it(i,i) = 1.0;
+
+  // squared right Cauchy-Green deformation tensor
+  // C^2 = C . C
+  LINALG::Matrix<NUMDIM_,NUMDIM_> c2t;
+  c2t.MultiplyNN(ct,ct);
+
+  // invariants of right Cauchy-Green tensor
+  // 1st principal invariant: I_C = tr(C)
+  const double ci = ct(0,0) + ct(1,1) + ct(2,2);
+  // 2nd principal invariant: II_C = 1/2 ( tr(C)^2 - tr(C^2) )
+  const double c2i = c2t(0,0) + c2t(1,1) + c2t(2,2);
+  const double cii = 0.5*(ci*ci - c2i);
+  // 3rd principal invariant: III_C = det(C)
+  const double ciii = ct.Determinant();
+
+
+  //--------------------------------------------------------------------
+  // determination of I_U 
+  double ui = 0.0;
+#if 0
+  // determination of I_U acc. to [1],
+  // ==> BUT FAILS ==> next block 'working' alternative
+  {
+    // auxiliar variables to get trace of material stretch tensor U
+    const double xi = 32.0*(2.0*ci*ci*ci - 9.0*ci*cii + 27.0*ciii)/27.0;
+    const double eta = 1024.0*(4.0*cii*cii*cii - ci*ci*cii*cii + 4.0*ci*ci*ci*ciii
+                               - 18.0*ci*cii*ciii + 27.0*ciii*ciii)/27.0;
+    const double zeta = -2.0*ci/3.0 + pow(xi+sqrt(eta), 1.0/3.0)
+                      + pow(xi-sqrt(eta), 1.0/3.0);
+
+    // invariants of material stretch tensor U
+    // 1st invariant: I_U = tr(U)
+    if (fabs(zeta+2.0*ci) < EPS12)
+    {
+      ui = sqrt(ci + 2.0*sqrt(cii));
+    }
+    else
+    {
+      ui = 0.5*(sqrt(2.0*ci+zeta)
+                + sqrt(2.0*ci-zeta+16.0*sqrt(ciii)/sqrt(2.0*ci+zeta)));
+    }
+  }
+#else
+  // 1st invariant of the material stretch tensor U
+  // Summary:
+  //     The 1st invariant I_U depends non-linearly
+  //     on I_C, II_C and III_C.
+  //
+  // Derivation:
+  // This relation is found by Cayley-Hamilton's theorem applied to
+  // the material stretch tensor U
+  //     U^3 - I_U*U^2 + II_U*U - III_U*I = 0                        (1)
+  // in which U^2 = U . U and U^3 = U . U . U and I is the indentity
+  // tensor in 3dim.
+  // The trace of this equation is
+  //     tr(U^3) - I_U*tr(U^2) + II_U*tr(U) - 3*III_U = 0
+  // Equivalently with tr(U^2)=tr(C)=I_C, tr(U) = I_U it is obtained
+  //     tr(U^3) - I_U*I_C + II_U*I_U - 3*III_U = 0                  (2)
+  // The problem is the unknown tr(U^3). II_U and III_U can be referred
+  // back to I_U and the invariants if C.
+  //     II_U = 1/2*(tr(U)^2 - tr(U^2)) = 1/2*(I_U^2 - I_C)          (3)
+  //     III_U = det(U) = sqrt(det(U)*det(U))
+  //           = sqrt(det(U . U)) = sqrt(det(C)) = sqrt(III_C)       (4)
+  //
+  // We can resolve the problem by
+  // considering Eq.(*) multiplied with U, ie
+  //     U^4 - I_U*U^3 + II_U*U^2 - III_U*U = 0
+  // The trace of this matrix equation reveals
+  //     tr(U^4) - I_U*tr(U^3) + II_U*tr(U^2) - III_U*tr(U) = 0
+  // or with tr(U^4)=tr(C^2)=I_C^2 - 2*II_C,
+  //     I_C^2 - 2*II_C - I_U*tr(U^3) + II_U*I_C - III_U*I_U = 0     (5)
+  //
+  // Eqs (2) and (5) can be used to eliminate tr(U^3), and we end up at
+  //     I_U^4 - 2*I_C*I_U^2 - 8*sqrt(III_C)*I_U
+  //                                        + I_C^2 - 4*II_C = 0     (6)
+  // in which advantage is taken of Eqs (3) and (4).
+  // This quartic polynomial of I_U needs to be solved.
+  // It is not done by the formulas presented in [1], because they seem
+  // to fail even for the simple test case in which the deformation
+  // gradient is a diagonal matrix with >1 entries on the diagonal.
+  // The solution found in [3] is applied.
+  {
+
+    // solution of quartic polynomial of y = I_U = tr(U)
+    //     y^4 + p*y^2 + q*y + r = 0
+    // with
+    const double p = -2.0*ci;  // p = -2*I_C
+    const double q = -8.0*sqrt(ciii);  // q = -8*(III_C)^{1/2} likely always < 0
+    const double r = ci*ci - 4.0*cii;  // r = I_C^2 - 4*II_C
+
+    // associated cubic resolvent
+    //     z^3 + 2*p*z^2 + (p^2-4*r)*z - q^2 = 0
+  
+
+    // normalised cubic resolvent with z = x - 2*p/3 (or x = z + 2*p/3)
+    //     x^3 + pp*x + qq = 0
+    // and
+    const double pp = -(p*p + 12.0*r)/3.0;
+    const double qq = (-2.0*p*p*p + 72.0*p*r - 27.0*q*q)/27.0;
+    // solution with Cardan's formulae
+    const double disc = (4.0*pp*pp*pp + 27.0*qq*qq)/108.0;  // discriminant
+    // the roots
+    double x1, x2, x3;  // roots of normalised cubic resolvent
+    double z1, z2, z3;  // roots of cubic resolvent
+    double z1rt, z2rt, z3rt;  // radicals of roots of cubic resolvent
+    // discriminant==0  ==>  3 real roots in x
+    if (fabs(disc) < EPS12)
+    {
+      // triple real root  :  x^3 = 0
+      if ( (fabs(pp) < EPS12) && (fabs(qq) < EPS12) )
+      {
+        x1 = 0.0;  // triple real solution
+        z1 = (3.0*x1 - 2.0*p)/3.0;  // triple real solution
+        z1rt = sqrt(z1);
+        if (fabs(-z1rt*z1rt*z1rt - q) < EPS12)
+        {
+          ui = 1.5*z1rt;
+        }
+        else
+        {
+          dserror("Trouble with radicals: %g>%g\n", fabs(-z1rt*z1rt*z1rt - q), EPS12);
+        }
+      }
+      // 1 real root and 1 real double x root
+      else
+      {
+        // should always be the case, but you never know ...
+        if (pp < 0.0)
+        {
+          // roots of normal form of cubic resolvent
+          if (qq > 0.0)
+          {
+            x1 = -2.0*sqrt(-pp/3.0);  // single root
+            x2 = sqrt(-pp/3.0);  // double root
+          }
+          else
+          {
+            x1 = 2.0*sqrt(-pp/3.0);  // single root
+            x2 = -sqrt(-pp/3.0);  // double root
+          }
+          // roots of cubic resolvent
+          z1 = (3.0*x1 - 2.0*p)/3.0;
+          z2 = (3.0*x2 - 2.0*p)/3.0;
+          // radicals of roots of cubic resolvent
+          z1rt = sqrt(z1);  // single
+          z2rt = sqrt(z2);  // double
+          if (fabs(-z1rt*z2rt*z2rt - q) < fabs(q)*EPS12)
+          {
+            ui = 0.5*(z1rt + 2.0*z2rt);
+          }
+          else
+          {
+            dserror("Trouble with radicals: %g>%g\n", fabs(-z1rt*z2rt*z2rt - q), fabs(q)*EPS12);
+          }
+        }
+        else
+        {
+          dserror("Error in finding roots\n");
+        }
+      }
+    }
+    // discriminant<0  ==>  3 different real roots in x 
+    else if (disc < 0.0)
+    {
+      const double rho = sqrt(-pp*pp*pp/27.0);
+      const double phi = acos(-qq/2.0/rho);
+      const double rhort = 2.0 * pow(rho, 1.0/3.0);
+      // roots of normal form of cubic resolvent
+      x1 = rhort * cos(phi/3.0);
+      x2 = rhort * cos((phi + 2.0*PI)/3.0);
+      x3 = rhort * cos((phi + 4.0*PI)/3.0);
+      // roots of cubic resolvent
+      z1 = (3.0*x1 - 2.0*p)/3.0;
+      z2 = (3.0*x2 - 2.0*p)/3.0;
+      z3 = (3.0*x3 - 2.0*p)/3.0;
+      // radicals of roots of cubic resolvent
+      z1rt = sqrt(z1);
+      z2rt = sqrt(z2);
+      z3rt = sqrt(z3);
+      if (fabs(-z1rt*z2rt*z3rt - q) < EPS12)
+      {
+        ui = 0.5*(z1rt + z2rt + z3rt);
+      }
+      else
+      {
+        dserror("Trouble with radicals\n");
+      }
+    }
+    // discriminant>0  ==>  1 real and 2 complex roots in x
+    else
+    {
+      // 1 real and 2 conjugated complex x roots
+      dserror("Discriminant is positive!\n");
+    }
+  }
+#endif
+
+
+  //--------------------------------------------------------------------
+  // 2nd and 3rd invariant of material stretch tensor U
+  // 2nd invariant: II_U = 1/2 * (I_U^2 - I_C)
+  const double uii = 0.5*(ui*ui - ci);
+  // 3rd invariant: III_U = det(U) = sqrt(III_C)
+  const double uiii = sqrt(ciii);
+
+  //--------------------------------------------------------------------
+  // inverse of material stretch tensor U^{-1}
+  // Hoger & Carlson [1] identified
+  //     U^{-1} = [ III_U^2*(III_U+I_U*I_C)
+  //                + I_U^2*(I_U*III_C + III_U*II_C) ]^{-1}
+  //            * [ I_U*(I_U*II_U - III_U)*C^2
+  //                - (I_U*II_U - III_U)*(III_U +I_U*I_C)*C
+  //                + { II_U*III_U*(III_U+I_U*I_C)
+  //                    + I_U^2*(II_U*II_C+III_C) }*I ]
+  //            = 1/denom * [ pc2*C^2 + pc*C + pi*I ]
+  if (invut != NULL)
+  {                                                        /// alternative of [4]
+    const double denom = uiii*uiii*(uiii + ui*ci)          /// uiii*(ui*uii-uiii)
+                       + ui*ui*(ui*ciii + uiii*cii);
+    const double pc2 = ui*(ui*uii - uiii);                 /// ui
+    const double pc = -(ui*uii - uiii)*(uiii + ui*ci);     /// -uiii-ui*(ui*ui-uii)
+    const double pi = uii*uiii*(uiii + ui*ci)              /// ui*uii*uii-uiii*(ui*ui-uii)
+                    + ui*ui*(uii*cii + ciii);
+    for (int j=0; j<NUMDIM_; j++)
+    {
+      for (int i=0; i<NUMDIM_; i++)
+      {
+        const double invut_ij = (pc2*c2t(i,j) + pc*ct(i,j) + pi*it(i,j))/denom;
+        (*invut)(i,j) = invut_ij;
+      }
+    }
+  }
+
+  //--------------------------------------------------------------------
+  // material stretch tensor U
+  // Hoger & Carlson [1] wrote
+  //     U = [ II_U * { II_U * (II_U + I_C) } + III_C ]^{-1}
+  //       * [ -(I_U*II_U - III_U)*C^2
+  //           + (I_U*II_U - III_U)*(II_U + I_C)*C
+  //           + { I_U*III_U + III_U * ( II_U*(II_U+I_C)+II_C ) }*I ]
+  //       = 1/denom * [ pc2*C^2 + pc*C + pi*I ]
+  //
+  // alternative:
+  // U could be calculated based on R later: U = R^T . F
+  if (ut != NULL)
+  {
+    const double denom = uii*(uii*(uii+ci) + cii) + ciii;
+    const double pc2 = -(ui*uii - uiii);
+    const double pc = (ui*uii - uiii)*(uii + ci);
+    const double pi = ui*ciii + uiii*(uii*(uii+ci) + cii);
+    for (int j=0; j<NUMDIM_; j++)
+    {
+      for (int i=0; i<NUMDIM_; i++)
+      {
+        const double ut_ij = (pc2*c2t(i,j) + pc*ct(i,j) + pi*it(i,j))/denom;
+        (*ut)(i,j) = ut_ij;
+      }
+    }
+  }
+
+  //--------------------------------------------------------------------
+  // determinat of right stretch tensor
+  if (detut != NULL)
+    *detut = uiii;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+int DRT::ELEMENTS::So_sh8p8::SymSpectralDecompJacIter(
+  LINALG::Matrix<NUMDIM_,NUMDIM_>& ew,
+  LINALG::Matrix<NUMDIM_,NUMDIM_>& ev,
+  const LINALG::Matrix<NUMDIM_,NUMDIM_>& at,
+  const double itertol,
+  const int itermax
+  )
+{
+  // sum of all entries (moduli) in at
+  double asum = at.Norm1();
+
+  //--------------------------------------------------------------------
+  // initialise eigenvalue tensor and eigenvector tensor
+#if 0
+  ew.Update(at);
+  ev.Clear();
+  for (int idim=0; idim<NUMDIM_; idim++) ev(idim,idim) = 1.0;
+#else
+  {
+    asum = 0.0;
+    for (int jdim=0; jdim<NUMDIM_; jdim++)    
+    {
+      for (int idim=0; idim<NUMDIM_; idim++)
+      {
+        asum += fabs(at(idim,jdim));
+        ew(idim,jdim) = at(idim,jdim);
+        ev(idim,jdim) = 0.0;
+      }
+      ev(jdim,jdim) = 1.0;
+    }
+  }
+#endif
+
+  //--------------------------------------------------------------------
+  // check for trivial problem
+  if (asum < EPS12)
+  {
+    ew.Clear();
+    return 0;
+  }
+
+  //--------------------------------------------------------------------
+  // scale sum of at compenents to achieve relative convergence check
+  asum /= (double) (NUMDIM_ * NUMDIM_);
+
+  //--------------------------------------------------------------------
+  // reduce ew to diagonal (the eigenvalues)
+  double itercnt = 0;  // initialise iteration index <i>
+  while (itercnt < itermax)
+  {
+    double vsum = 0.0;  // sum of all subtriangluar entries
+    // loop lower triangle
+    for (int jdim=1; jdim<NUMDIM_; jdim++)
+    {
+      for (int idim=0; idim<jdim; idim++)
+      {
+        // sum of all triag entries
+        vsum += ew(idim,jdim);
+        //--------------------------------------------------------------
+        // rotation angle th
+        // 2*th = atan(2*evt(idim,jdim)/(ew[idim,idim]-ew[jdim,jdim])
+        const double th = 0.5*atan2(2.0*ew(idim,jdim),ew(idim,idim)-ew(jdim,jdim));
+        const double sith = sin(th);  // sine of rotation angle
+        const double coth = cos(th);  // cosine of rotation angle
+        // this defines the rotation matrix,
+        // e.g.
+        //
+        //             [ T_{idim,idim}  0  T_{idim,jdim} ]
+        //   T^<i+1> = [             0  1              0 ]
+        //             [ T_{jdim,idim}  0  T_{jdim,jdim} ]
+        //
+        //       [ cos(th)  0  -sin(th) ]
+        //     = [       0  1         0 ]
+        //       [ sin(th)  0   cos(th) ]
+        
+        //--------------------------------------------------------------
+        // update eigenvector matrix by right-multiplying with T
+        // T is mostly 0 thus it is more efficient to do explicitly
+        //    ev^<i+1> = ev^<i> . T^<i+1>
+        for (int kdim=0; kdim<NUMDIM_; kdim++)
+        {
+          const double evki = ev(kdim,idim);
+          ev(kdim,idim) = coth*evki + sith*ev(kdim,jdim);
+          ev(kdim,jdim) = -sith*evki + coth*ev(kdim,jdim);
+        }
+        //--------------------------------------------------------------
+        // update eigenvalue tensor by right-multiplying with T and
+        // left-multiplying with transposed T
+        //    ew^<i+1> = transposed(T^<i+1>) . ew^<i> . T^<i+1>
+        // modify "idim" and "jdim" columns
+        for (int kdim=0; kdim<NUMDIM_; kdim++)
+        {
+          const double ewki = ew(kdim,idim);
+          ew(kdim,idim) = coth*ewki + sith*ew(kdim,jdim);
+          ew(kdim,jdim) = -sith*ewki + coth*ew(kdim,jdim);
+        }
+        // modify diagonal terms
+        ew(idim,idim) = coth*ew(idim,idim) + sith*ew(jdim,idim);
+        ew(jdim,jdim) = -sith*ew(idim,jdim) + coth*ew(jdim,jdim);
+        ew(idim,jdim) = 0.0;
+        // make symmetric
+        for (int kdim=0; kdim<NUMDIM_; kdim++)
+        {
+          ew(idim,kdim) = ew(kdim,idim);
+          ew(jdim,kdim) = ew(kdim,jdim);
+        }
+      }
+    }
+    //------------------------------------------------------------------
+    // check convergence
+    if (fabs(vsum)/asum < itertol)
+    {
+      break;
+    }
+    // increment iteration index
+    itercnt += 1;
+  }
+
+  //--------------------------------------------------------------------
+  // check if iteration loop diverged
+  int err = 1;
+  if (itercnt == itermax)
+  {
+    err = 1;  // failed
+    dserror("Divergent spectral decomposition (Jacobi's iterative method)!");
+  }
+  else
+  {
+    err = 0;  // passed
+  }
+
+  return err;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_sh8p8::ExtractDispAndPres(
   std::vector<double>& mystat,
   LINALG::Matrix<NUMDISP_,1>& mydisp,
