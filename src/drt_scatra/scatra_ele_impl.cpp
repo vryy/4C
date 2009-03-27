@@ -1,4 +1,4 @@
- /*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 /*!
 \file scatra_ele_impl.cpp
 
@@ -31,7 +31,7 @@ Maintainer: Georg Bauer
 
 //#define VISUALIZE_ELEMENT_DATA
 #include "scatra_element.H" // only for visualization of element data
-//#define MIGRATIONSTAB  //activate convective stabilization with migration term
+#define MIGRATIONSTAB  //activate convective stabilization with migration term
 //#define PRINT_ELCH_DEBUG
 //#define TAU_EXACT
 

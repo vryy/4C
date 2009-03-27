@@ -122,7 +122,7 @@ MATID                           5
 --------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-6
 ITEMAX                          15
-EXPLPREDICT                     yes
+EXPLPREDICT                     no // yes -> oszillations for neutral
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 ------------------------------------------------------ELCH CONTROL
@@ -257,6 +257,7 @@ MAT       5 MAT_matlist NUMMAT 3 MATIDS 2 3 4
 ------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC 0.5*(sin((t*(pi/2)/6)-(pi/4)))+0.5  t1 0.0 t2 6.0
 ------------------------------------------------------------CURVE2
+CURVE2 on EXPR FUNC (-0.5)*(sin((t*(pi/2)/6)-(pi/4)))+0.5  t1 0.0 t2 6.0
 ------------------------------------------------------------CURVE3
 ------------------------------------------------------------CURVE4
 ------------------------------------------------------------CURVE5
@@ -290,8 +291,8 @@ SCATRA DIS 1 NODE 695 POSITION phi1    NAME phi1     VALUE  9.463629368e-01 TOLE
 SCATRA DIS 1 NODE 121 POSITION phi1    NAME phi1     VALUE  9.965712590e-01 TOLERANCE 1e-9
 SCATRA DIS 1 NODE 695 POSITION phi2    NAME phi2     VALUE  4.731814684e-01 TOLERANCE 1e-9
 SCATRA DIS 1 NODE 121 POSITION phi2    NAME phi2     VALUE  4.982856295e-01 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 695 POSITION phi3    NAME phi3     VALUE  1.069966869e-01 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 121 POSITION phi3    NAME phi3     VALUE  4.497373685e-01 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 695 POSITION phi3    NAME phi3     VALUE  2.375146842e-01 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 121 POSITION phi3    NAME phi3     VALUE  5.301530374e-01 TOLERANCE 1e-9
 SCATRA DIS 1 NODE 695 POSITION phi4    NAME phi4     VALUE  3.504038729e-01 TOLERANCE 1e-9
 SCATRA DIS 1 NODE 121 POSITION phi4    NAME phi4     VALUE  3.978086245e-01 TOLERANCE 1e-9
 FLUID DIS 1 NODE 695 POSITION velx     NAME velx     VALUE  2.069056104e-01 TOLERANCE 1e-9
@@ -360,7 +361,7 @@ E 8 - 0 1 1 0 0 0  0.0 0.5 1.0 0.0 0.0 0.0  none none none none none none  0 0 0
 // anode
 //E 9 - 1 1 0 0 0 0  1.0 1.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // cathode (for neutral species use a Dirichlet b.c.)
-E 10 - 0 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 10 - 0 0 1 0 0 0  0.0 0.0 1.0 0.0 0.0 0.0  none none 2 none none none  0 0 0 0 0 0
 --------------------------------ELECTRODE KINETICS LINE CONDITIONS
 DLINE  0
 --------------------------------ELECTRODE KINETICS SURF CONDITIONS
