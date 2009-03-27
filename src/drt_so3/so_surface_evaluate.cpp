@@ -346,10 +346,10 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
                 for(int diml=0 ; diml<numdim; ++diml)
                 {
                   elematrix1(nodec*actnumdf+dimc, nodel*actnumdf+diml) = 
-                      (*Vdiff2)(nodec*actnumdf+dimc, nodel*actnumdf+diml);
+                      (*Vdiff2)(nodec*numdim+dimc, nodel*numdim+diml);
                 }
-              elevector1[nodec*actnumdf+dimc] = (*Vdiff1)[nodec*actnumdf+dimc];
-              elevector2[nodec*actnumdf+dimc] = (*Vdiff1)[nodec*actnumdf+dimc];
+              elevector1[nodec*actnumdf+dimc] = (*Vdiff1)[nodec*numdim+dimc];
+              elevector2[nodec*actnumdf+dimc] = (*Vdiff1)[nodec*numdim+dimc];
             }
         }
         // elevector3 stores the volume of the element 
