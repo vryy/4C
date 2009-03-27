@@ -1597,19 +1597,19 @@ double DRT::ELEMENTS::So_sh8p8::ShearMod() const
     return aaaneo->ShearMod();
     break;
   }
-  case INPAR::MAT::m_viscoanisotropic: /*-----------AAA NeoHookean Material */
+  case INPAR::MAT::m_viscoanisotropic: /*-----------Anisotropic Viscous Material */
   {
     MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(Material().get());
     return visco->ShearMod();
     break;
   }
-  case INPAR::MAT::m_yeoh: /*-----------AAA NeoHookean Material */
+  case INPAR::MAT::m_yeoh: /*-----------3rd Order Yeoh Material */
   {
     MAT::Yeoh* yeoh = static_cast <MAT::Yeoh*>(Material().get());
     return yeoh->ShearMod();
     break;
   }
-  case INPAR::MAT::m_visconeohooke: /*-----------AAA NeoHookean Material */
+  case INPAR::MAT::m_visconeohooke: /*-----------Viscous NeoHookean Material */
   {
     MAT::ViscoNeoHooke* visconeo = static_cast <MAT::ViscoNeoHooke*>(Material().get());
     return visconeo->ShearMod();
@@ -1701,7 +1701,7 @@ int DRT::ELEMENTS::Sosh8p8Register::Initialize(DRT::Discretization& dis)
         break;
       }
       case DRT::ELEMENTS::So_sh8::undefined: {
-        // here comes plan B: morph So_sh8p8 to So_hex8
+        // here comes plan B: switch off ANS
         actele->SetANS(DRT::ELEMENTS::So_sh8p8::ans_none);
         num_morphed_so_hex8_easnone++;
         break;
