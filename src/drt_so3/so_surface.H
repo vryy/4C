@@ -351,7 +351,7 @@ protected:
         return totdof/numnode; 
       else
       {
-        dserror("cannot determine total number of DOFs per node");
+        dserror("cannot determine actual number of DOFs per node");
         return -1;
       }
     else
