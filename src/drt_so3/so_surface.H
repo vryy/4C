@@ -345,8 +345,9 @@ protected:
   {
     const int numdofpernode = 3;
     const int numnode = NumNode();
+    const int numdofperelement = NumDofPerElement();
     if (totdof != numdofpernode*numnode)
-      if (totdof%numnode == 0)
+      if ( (totdof%numnode == 0) and (numdofperelement == 0) )
         return totdof/numnode; 
       else
       {
