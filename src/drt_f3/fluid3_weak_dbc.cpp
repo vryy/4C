@@ -297,11 +297,11 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   {
     const int fi=4*i;
 
-    pevelnp_(0,i) = mypvelaf[  fi];
-    pevelnp_(1,i) = mypvelaf[1+fi];
-    pevelnp_(2,i) = mypvelaf[2+fi];
+    pevelnp_(0,i) = mypvelnp[  fi];
+    pevelnp_(1,i) = mypvelnp[1+fi];
+    pevelnp_(2,i) = mypvelnp[2+fi];
 
-    peprenp_(  i) = mypvelaf[3+fi];
+    peprenp_(  i) = mypvelnp[3+fi];
   }
 
   if (surfele->parent_->IsAle())
@@ -1425,7 +1425,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     }
 
     //--------------------------------------------------
-    // partially integrated pressure term
+    // partially integrated pressure term, rescaled by gamma*dt
     /*
     // factor: 1.0
     //
@@ -1440,9 +1440,9 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     {
       for (int vi=0; vi<piel; ++vi) 
       {
-        elemat(vi*4  ,ui*4+3) += fac*pfunct_(vi)*pfunct_(ui)*n_(0);
-        elemat(vi*4+1,ui*4+3) += fac*pfunct_(vi)*pfunct_(ui)*n_(1);
-        elemat(vi*4+2,ui*4+3) += fac*pfunct_(vi)*pfunct_(ui)*n_(2);
+        elemat(vi*4  ,ui*4+3) += fac*gdt*pfunct_(vi)*pfunct_(ui)*n_(0);
+        elemat(vi*4+1,ui*4+3) += fac*gdt*pfunct_(vi)*pfunct_(ui)*n_(1);
+        elemat(vi*4+2,ui*4+3) += fac*gdt*pfunct_(vi)*pfunct_(ui)*n_(2);
       }
     }
 
@@ -1451,6 +1451,48 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       elevec(vi*4    ) -= fac*pfunct_(vi)*n_(0)*prenp_;
       elevec(vi*4 + 1) -= fac*pfunct_(vi)*n_(1)*prenp_;
       elevec(vi*4 + 2) -= fac*pfunct_(vi)*n_(2)*prenp_;
+    }
+
+    //--------------------------------------------------
+    // adjoint consistency term, pressure/continuity part
+    /*
+    // factor: gdt
+    //
+    //             /              \
+    //            |                |
+    //          - |  q , Dacc * n  |
+    //            |                |
+    //             \              / boundaryele
+    //
+    */
+    for (int ui=0; ui<piel; ++ui) 
+    {
+      for (int vi=0; vi<piel; ++vi) 
+      { 
+        elemat(vi*4+3,ui*4  ) -= fac*gdt*pfunct_(vi)*pfunct_(ui)*n_(0);
+        elemat(vi*4+3,ui*4+1) -= fac*gdt*pfunct_(vi)*pfunct_(ui)*n_(1);
+        elemat(vi*4+3,ui*4+2) -= fac*gdt*pfunct_(vi)*pfunct_(ui)*n_(2);
+      }
+    }
+
+    /*
+    // factor: 1.0
+    //
+    //             /                       \
+    //            |       / n+1     \       |
+    //          + |  q , | u   - u   | * n  |
+    //            |       \ (i)   B /       |
+    //             \                       / boundaryele
+    //
+    */
+    for (int vi=0; vi<piel; ++vi) 
+    {
+      elevec(vi*4+3) += fac*pfunct_(vi)*
+        ((velintnp_(0)-(*val)[0]*functionfac(0)*curvefac)*n_(0)
+         +
+         (velintnp_(1)-(*val)[1]*functionfac(1)*curvefac)*n_(1)
+         +
+         (velintnp_(2)-(*val)[2]*functionfac(2)*curvefac)*n_(2));
     }
 
     //--------------------------------------------------
@@ -1545,49 +1587,6 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
         elevec(vi*4 + 2) += pfunct_(vi)*nabla_u_o_n[2];
       }
     }
-
-    //--------------------------------------------------
-    // adjoint consistency term, pressure/continuity part
-    /*
-    // factor: gdt
-    //
-    //             /              \
-    //            |                |
-    //          - |  q , Dacc * n  |
-    //            |                |
-    //             \              / boundaryele
-    //
-    */
-    for (int ui=0; ui<piel; ++ui) 
-    {
-      for (int vi=0; vi<piel; ++vi) 
-      { 
-        elemat(vi*4+3,ui*4  ) -= fac*gdt*pfunct_(vi)*pfunct_(ui)*n_(0);
-        elemat(vi*4+3,ui*4+1) -= fac*gdt*pfunct_(vi)*pfunct_(ui)*n_(1);
-        elemat(vi*4+3,ui*4+2) -= fac*gdt*pfunct_(vi)*pfunct_(ui)*n_(2);
-      }
-    }
-
-    /*
-    // factor: 1.0
-    //
-    //             /                       \
-    //            |       / n+1     \       |
-    //          + |  q , | u   - u   | * n  |
-    //            |       \ (i)   B /       |
-    //             \                       / boundaryele
-    //
-    */
-    for (int vi=0; vi<piel; ++vi) 
-    {
-      elevec(vi*4+3) += fac*pfunct_(vi)*
-        ((velintnp_(0)-(*val)[0]*functionfac(0)*curvefac)*n_(0)
-         +
-         (velintnp_(1)-(*val)[1]*functionfac(1)*curvefac)*n_(1)
-         +
-         (velintnp_(2)-(*val)[2]*functionfac(2)*curvefac)*n_(2));
-    }
-
 
     //--------------------------------------------------
     // (adjoint) consistency term, viscous part
@@ -1769,12 +1768,9 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       
       for (int vi=0; vi<piel; ++vi) 
       {
-        elevec(vi*4    ) += fluxfac*pfunct_(vi)*
-          (velintaf_(0)-(*val)[0]*functionfac(0)*curvefac);
-        elevec(vi*4 + 1) += fluxfac*pfunct_(vi)*
-          (velintaf_(1)-(*val)[1]*functionfac(1)*curvefac);
-        elevec(vi*4 + 2) += fluxfac*pfunct_(vi)*
-          (velintaf_(2)-(*val)[2]*functionfac(2)*curvefac);
+        elevec(vi*4    ) += fluxfac*pfunct_(vi)*(velintaf_(0)-(*val)[0]*functionfac(0)*curvefac);
+        elevec(vi*4 + 1) += fluxfac*pfunct_(vi)*(velintaf_(1)-(*val)[1]*functionfac(1)*curvefac);
+        elevec(vi*4 + 2) += fluxfac*pfunct_(vi)*(velintaf_(2)-(*val)[2]*functionfac(2)*curvefac);
       }
 
     } // end if flux<0, i.e. boundary is an inflow boundary
