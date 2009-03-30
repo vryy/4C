@@ -39,7 +39,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/dof_distribution_switcher.H"
 #include "../drt_xfem/enrichment_utils.H"
 #include "../drt_xfem/element_ansatz.H"
-#include "../drt_xfem/load_balancing.H"
+//#include "../drt_xfem/load_balancing.H"
 #include "../drt_geometry/position_array.H"
 #include "fluid_utils.H"
 #include "../drt_f3/xfluid3_interpolation.H"
@@ -713,11 +713,11 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
   ComputeInterfaceAndSetDOFs(cutterdiscret);
   
-  DRT::PAR::LoadBalancer balancer(discret_);
-  balancer.Partition();
-  
-  ComputeInterfaceAndSetDOFs(cutterdiscret);
-  
+//  DRT::PAR::LoadBalancer balancer(discret_);
+//  balancer.Partition();
+//  
+//  ComputeInterfaceAndSetDOFs(cutterdiscret);
+//  
   PrepareNonlinearSolve();
   
   // ---------------------------------------------- nonlinear iteration
