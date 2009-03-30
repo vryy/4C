@@ -266,12 +266,11 @@ protected:
                                    const vector<double> disp) const
   {
     const int numnode = NumNode();
-    const int totnoddof = ActualNumDofPerNode(disp.size());
     for (int i=0; i<numnode; ++i)
     {
-      x(i,0) = Nodes()[i]->X()[0] + disp[i*totnoddof+0];
-      x(i,1) = Nodes()[i]->X()[1] + disp[i*totnoddof+1];
-      x(i,2) = Nodes()[i]->X()[2] + disp[i*totnoddof+2];
+      x(i,0) = Nodes()[i]->X()[0] + disp[i*3+0];
+      x(i,1) = Nodes()[i]->X()[1] + disp[i*3+1];
+      x(i,2) = Nodes()[i]->X()[2] + disp[i*3+2];
     }
     return;
   }
@@ -288,12 +287,11 @@ protected:
                                    const vector<double> disp) const
   {
     const int numnode = NumNode();
-    const int totnoddof = ActualNumDofPerNode(disp.size());
     for (int i=0; i<numnode; ++i)
     {
-      x(i,0) = xrefe(i,0) + disp[i*totnoddof+0];
-      x(i,1) = xrefe(i,1) + disp[i*totnoddof+1];
-      x(i,2) = xrefe(i,2) + disp[i*totnoddof+2];
+      x(i,0) = xrefe(i,0) + disp[i*3+0];
+      x(i,1) = xrefe(i,1) + disp[i*3+1];
+      x(i,2) = xrefe(i,2) + disp[i*3+2];
     }
     return;
   }
@@ -330,34 +328,6 @@ protected:
       RCP<Epetra_SerialDenseVector> Vdiff, ///< first derivative
       RCP<Epetra_SerialDenseMatrix> Vdiff2 ///< second derivative
   );
-
-  //! Determine actual number of DOFs per node
-  //!
-  //! Expected are 3 DOFs, but in mixed approaches with several global C0-continuous
-  //! fields (e.g. displacement and pressure) the actually/totally retrieved number may be larger.
-  //! The actual/total number of DOFs per node is determined and used
-  //! to extract the <b>first 3 components</b> of disassembled element quantities
-  //! (i.e. my "displacements")
-  int ActualNumDofPerNode
-  (
-    const int& totdof  ///< total number of displacement DOFs
-  ) const
-  {
-    const int numdofpernode = 3;
-    const int numnode = NumNode();
-    const int numdofperelement = NumDofPerElement();
-    if (totdof != numdofpernode*numnode)
-      if ( (totdof%numnode == 0) and (numdofperelement == 0) )
-        return totdof/numnode; 
-      else
-      {
-        dserror("cannot determine actual number of DOFs per node");
-        return -1;
-      }
-    else
-      return numdofpernode;
-  }
-
 
 }; // class StructuralSurface : public DRT::Element
 
