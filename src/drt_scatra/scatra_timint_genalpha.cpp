@@ -15,6 +15,7 @@ Maintainer: Volker Gravemeier
 #ifdef CCADISCRET
 
 #include "scatra_timint_genalpha.H"
+#include <Teuchos_TimeMonitor.hpp>
 
 
 /*----------------------------------------------------------------------*

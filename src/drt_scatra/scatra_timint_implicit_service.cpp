@@ -18,6 +18,28 @@ Maintainer: Georg Bauer
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_solver.H"
+#include <Teuchos_TimeMonitor.hpp>
+// for AVM3 solver:
+#include <ml_common.h>
+#include <ml_include.h>
+#include <ml_epetra_utils.h>
+#include <ml_epetra.h>
+#include <ml_epetra_operator.h>
+#include <ml_MultiLevelPreconditioner.h>
+#include <ml_agg_genP.h>
+#include <ml_operator.h>
+#include <MLAPI_Error.h>
+#include <MLAPI_CompObject.h>
+#include <MLAPI_TimeObject.h>
+#include <MLAPI_Operator.h>
+#include <MLAPI_Operator_Utils.h>
+#include <MLAPI_MultiVector.h>
+#include <MLAPI_InverseOperator.h>
+#include <MLAPI_Expressions.h>
+#include <MLAPI_BaseOperator.h>
+#include <MLAPI_Workspace.h>
+#include <MLAPI_Aggregation.h>
+#include <MLAPI_Eig.h>
 
 
 /*----------------------------------------------------------------------*
@@ -227,7 +249,7 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
 
     // get plain aggregation Ptent
     RCP<Epetra_CrsMatrix> crsPtent;
-    GetPtent(*sysmat_sd_->EpetraMatrix(),mlparams,nullspace,crsPtent);
+    MLAPI::GetPtent(*sysmat_sd_->EpetraMatrix(),mlparams,nullspace,crsPtent);
     LINALG::SparseMatrix Ptent(crsPtent);
 
     // compute scale-separation matrix: S = I - Ptent*Ptent^T

@@ -60,6 +60,7 @@ Maintainer: Florian Henke
 #include "combust_utils.H"
 #include "combust_algorithm.H"
 #include "../drt_scatra/scatra_utils.H"
+#include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |

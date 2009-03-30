@@ -25,7 +25,7 @@ Maintainer: Georg Bauer
 #include "elch_dyn.H"
 #include "elch_algorithm.H"
 #include "../drt_scatra/scatra_utils.H"
-//#include <Teuchos_TimeMonitor.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 //#include <Teuchos_Time.hpp>
 #include "../drt_lib/drt_globalproblem.H"
 //#include <Epetra_Time.h>

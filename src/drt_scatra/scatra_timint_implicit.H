@@ -38,50 +38,15 @@ Maintainer: Georg Bauer
 #include "../drt_lib/linalg_sparsematrix.H"
 #include "../drt_io/io.H"
 #include "../drt_inpar/drt_validparameters.H"
-
-#include "Epetra_Vector.h"
-#include "Epetra_Operator.h"
-#include "Epetra_RowMatrix.h"
-
-#include <ml_common.h>
-#include <ml_include.h>
-#include <ml_epetra_utils.h>
-#include <ml_epetra.h>
-#include <ml_epetra_operator.h>
-#include <ml_MultiLevelPreconditioner.h>
-#include <ml_agg_genP.h>
-#include <ml_operator.h>
-#include <MLAPI_Error.h>
-#include <MLAPI_CompObject.h>
-#include <MLAPI_TimeObject.h>
-#include <MLAPI_Operator.h>
-#include <MLAPI_Operator_Utils.h>
-#include <MLAPI_MultiVector.h>
-#include <MLAPI_InverseOperator.h>
-#include <MLAPI_Expressions.h>
-#include <MLAPI_BaseOperator.h>
-#include <MLAPI_Workspace.h>
-#include <MLAPI_Aggregation.h>
-#include <MLAPI_Eig.h>
-
-#include <ctime>
-#include <cstdlib>
-#include <iostream>
-#include <Teuchos_TimeMonitor.hpp>
-
-#include "../drt_fluid/drt_periodicbc.H"
-
 #include "../drt_inpar/inpar_scatra.H"
 
 
-extern "C" /* stuff which is c and is accessed from c++ */
-{
-#include "../fluid_full/fluid_prototypes.h"
-}
+//forward declarations
+class PeriodicBoundaryConditions;
+
 
 using namespace std;
 using namespace Teuchos;
-using namespace MLAPI;
 
 /// Algorithm and time integration classes for scalar transport problems
 namespace SCATRA{
