@@ -202,18 +202,20 @@ STR::TimInt::TimInt
   // check if we have elements which use a continuous displacement and pressure
   // field
   {
-    int numsosh8p8 = 0;
-    // Loop through all elements
+    int locnumsosh8p8 = 0;
+    // Loop through all elements on processor
     for (int i=0; i<discret_->NumMyColElements(); ++i)
     {
       // get the actual element
       if (discret_->lColElement(i)->Type() == DRT::Element::element_sosh8p8)
-        numsosh8p8 += 1;
+        locnumsosh8p8 += 1;
     }
-    if (numsosh8p8 > 0)
+    // Was at least one SoSh8P8 found on one processor?
+    int glonumsosh8p8 = 0;
+    discret_->Comm().MaxAll(&locnumsosh8p8, &glonumsosh8p8, 1);
+    // Yes, it was. Go ahead for all processors (even if they do not carry any SoSh8P8 elements)
+    if (glonumsosh8p8 > 0)
     {
-      if (numsosh8p8 != discret_->NumMyColElements()) 
-        dserror("Right now, hybrid meshes consisting of Sosh8p8 and others are not allowed");
       pressure_ = Teuchos::rcp(new LINALG::MapExtractor());
       const int ndim = 3;
       FLD::UTILS::SetupFluidSplit(*discret_, ndim, *pressure_);
