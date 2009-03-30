@@ -344,7 +344,8 @@ void DRT::Element::LocationVector(const Discretization& dis,
       }
       const int owner = nodes[i]->Owner();
       vector<int> dof = dis.Dof(nodes[i]);
-      for (unsigned j=0; j<dof.size(); ++j)
+      const int size = NumDofPerNode(*(nodes[i]));
+      for (int j=0; j<size; ++j)
       {
         if (flag && (*flag)[j])
           lmdirich.push_back(1);
@@ -402,7 +403,7 @@ void DRT::Element::LocationVector(const Discretization& dis, vector<int>& lm, ve
     for (int i=0; i<numnode; ++i)
     {
       const Node* node = nodes[i];
-      dis.Dof(node,lm);
+      dis.Dof(this,node,lm);
       lmowner.resize(lm.size(),node->Owner());
     }
   }
