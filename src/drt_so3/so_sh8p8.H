@@ -575,7 +575,7 @@ private:
   /// determine (inverse) right stretch tensor
   ///
   /// The right stretch tensor is obtained by polar decomposition 
-  // of the right Cauchy-Green 2-tensor in 3 dimensions.
+  /// of the right Cauchy-Green 2-tensor in 3 dimensions.
   ///
   /// About:
   ///   Polar decomposition is often applied to the material deformation
@@ -595,11 +595,6 @@ private:
   ///        gradient", Quart. Appl. Math., 42(2):113-117, 1984.
   /// [2] G.A. Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
   ///        esp. Section 2.6
-  /// [3] I.N. Bronstein & K.A. Semendjajew, "Taschenbuch der
-  ///        Mathematik", Teubner, 25.ed, 1991.
-  /// [4] A. Andrade-Campos, L.F. Menezes, F. Teixeira-Dias, "Numerical analysis
-  ///        of large deformation processes at elevated temperatures",
-  ///        Comput. Methods Appl. Mech. Engrg., 195, 3947-3959, 2006.
   static void StretchTensor(
     double* detut,  ///< determinant of material stretch tensor
     LINALG::Matrix<NUMDIM_,NUMDIM_>* ut,  ///< material stretch tensor

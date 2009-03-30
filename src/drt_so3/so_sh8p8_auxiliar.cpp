@@ -297,11 +297,12 @@ void DRT::ELEMENTS::So_sh8p8::InvVector6VoigtTwiceDiffByItself(
     {
       const int k = voigt6row[kl];
       const int l = voigt6col[kl];
-      for (int mn=0; mn<NUMSTR_; ++mn)
+      for (int mn=kl; mn<NUMSTR_; ++mn)
       {
         const int m = voigt6row[mn];
         const int n = voigt6col[mn];
         const int klmn = NUMSTR_*kl + mn;
+        const int mnkl = NUMSTR_*mn + kl;
         invbvdderb(ij,klmn) = 0.25*(
             ( ibt(i,m)*ibt(n,k) + ibt(i,n)*ibt(m,k) )*ibt(l,j)
             + ibt(i,k)*( ibt(l,m)*ibt(n,j) + ibt(l,n)*ibt(m,j) )
@@ -333,6 +334,8 @@ void DRT::ELEMENTS::So_sh8p8::InvVector6VoigtTwiceDiffByItself(
 //               << "+ct["<<j+1<<","<<l+1<<"]*(ct["<<k+1<<","<<m+1<<"]*ct["<<n+1<<","<<i+1<<"]+ct["<<k+1<<","<<n+1<<"]*ct["<<m+1<<","<<i+1<<"])"
 //               << "";
         }
+        if (mn != kl)
+          invbvdderb(ij,mnkl) = invbvdderb(ij,klmn);
 //        cout << ",\n";
       }
 //      cout << "";
@@ -718,7 +721,6 @@ void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToLeftRightProductMatrix6x6Voigt(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-// WARNING : WORKS BADLY, DON'T USE
 void DRT::ELEMENTS::So_sh8p8::StretchTensor(
   double* detut,  // determinant of material stretch tensor
   LINALG::Matrix<NUMDIM_,NUMDIM_>* ut,  // material stretch tensor
@@ -739,7 +741,7 @@ void DRT::ELEMENTS::So_sh8p8::StretchTensor(
   // squared right Cauchy-Green deformation tensor
   // C^2 = C . C
   LINALG::Matrix<NUMDIM_,NUMDIM_> c2t;
-  c2t.MultiplyNN(ct,ct);
+  c2t.MultiplyTN(ct,ct);
 
   // invariants of right Cauchy-Green tensor
   // 1st principal invariant: I_C = tr(C)
@@ -750,20 +752,35 @@ void DRT::ELEMENTS::So_sh8p8::StretchTensor(
   // 3rd principal invariant: III_C = det(C)
   const double ciii = ct.Determinant();
 
-
   //--------------------------------------------------------------------
-  // determination of I_U 
+  // determination of I_U acc. to [1]
   double ui = 0.0;
-#if 0
-  // determination of I_U acc. to [1],
-  // ==> BUT FAILS ==> next block 'working' alternative
   {
     // auxiliar variables to get trace of material stretch tensor U
-    const double xi = 32.0*(2.0*ci*ci*ci - 9.0*ci*cii + 27.0*ciii)/27.0;
-    const double eta = 1024.0*(4.0*cii*cii*cii - ci*ci*cii*cii + 4.0*ci*ci*ci*ciii
-                               - 18.0*ci*cii*ciii + 27.0*ciii*ciii)/27.0;
-    const double zeta = -2.0*ci/3.0 + pow(xi+sqrt(eta), 1.0/3.0)
-                      + pow(xi-sqrt(eta), 1.0/3.0);
+    double xi = (2.0*ci*ci*ci - 9.0*ci*cii + 27.0*ciii)/27.0;
+
+    double eta = (4.0*cii*cii*cii - ci*ci*cii*cii + 4.0*ci*ci*ci*ciii
+                  - 18.0*ci*cii*ciii + 27.0*ciii*ciii)/27.0;
+    if (eta < 0.0)
+      if (fabs(eta) < EPS6)
+        eta = 0.0;
+      else
+        dserror("Trouble with negative eta=%g", eta);
+
+    // const double zeta = -2.0*ci/3.0
+    //                   + pow(xi+sqrt(eta), 1.0/3.0)
+    //                   + pow(xi-sqrt(eta), 1.0/3.0);
+    double zeta = -2.0*ci/3.0;
+    const double xiplussqrteta = 32.0*(xi+sqrt(eta));
+    if (xiplussqrteta < 0.0)
+      zeta -= pow(fabs(xiplussqrteta), (1.0/3.0));
+    else
+      zeta += pow(xiplussqrteta, (1.0/3.0));
+    const double ximinussqrteta = 32.0*(xi-sqrt(eta));
+    if (ximinussqrteta < 0.0)
+      zeta -= pow(fabs(ximinussqrteta), (1.0/3.0));
+    else
+      zeta += pow(ximinussqrteta, (1.0/3.0));
 
     // invariants of material stretch tensor U
     // 1st invariant: I_U = tr(U)
@@ -773,170 +790,15 @@ void DRT::ELEMENTS::So_sh8p8::StretchTensor(
     }
     else
     {
-      ui = 0.5*(sqrt(2.0*ci+zeta)
-                + sqrt(2.0*ci-zeta+16.0*sqrt(ciii)/sqrt(2.0*ci+zeta)));
+      const double aux = sqrt(2.0*ci+zeta);
+      ui = 0.5*(aux + sqrt(2.0*ci-zeta+16.0*sqrt(ciii)/aux));
     }
   }
-#else
-  // 1st invariant of the material stretch tensor U
-  // Summary:
-  //     The 1st invariant I_U depends non-linearly
-  //     on I_C, II_C and III_C.
-  //
-  // Derivation:
-  // This relation is found by Cayley-Hamilton's theorem applied to
-  // the material stretch tensor U
-  //     U^3 - I_U*U^2 + II_U*U - III_U*I = 0                        (1)
-  // in which U^2 = U . U and U^3 = U . U . U and I is the indentity
-  // tensor in 3dim.
-  // The trace of this equation is
-  //     tr(U^3) - I_U*tr(U^2) + II_U*tr(U) - 3*III_U = 0
-  // Equivalently with tr(U^2)=tr(C)=I_C, tr(U) = I_U it is obtained
-  //     tr(U^3) - I_U*I_C + II_U*I_U - 3*III_U = 0                  (2)
-  // The problem is the unknown tr(U^3). II_U and III_U can be referred
-  // back to I_U and the invariants if C.
-  //     II_U = 1/2*(tr(U)^2 - tr(U^2)) = 1/2*(I_U^2 - I_C)          (3)
-  //     III_U = det(U) = sqrt(det(U)*det(U))
-  //           = sqrt(det(U . U)) = sqrt(det(C)) = sqrt(III_C)       (4)
-  //
-  // We can resolve the problem by
-  // considering Eq.(*) multiplied with U, ie
-  //     U^4 - I_U*U^3 + II_U*U^2 - III_U*U = 0
-  // The trace of this matrix equation reveals
-  //     tr(U^4) - I_U*tr(U^3) + II_U*tr(U^2) - III_U*tr(U) = 0
-  // or with tr(U^4)=tr(C^2)=I_C^2 - 2*II_C,
-  //     I_C^2 - 2*II_C - I_U*tr(U^3) + II_U*I_C - III_U*I_U = 0     (5)
-  //
-  // Eqs (2) and (5) can be used to eliminate tr(U^3), and we end up at
-  //     I_U^4 - 2*I_C*I_U^2 - 8*sqrt(III_C)*I_U
-  //                                        + I_C^2 - 4*II_C = 0     (6)
-  // in which advantage is taken of Eqs (3) and (4).
-  // This quartic polynomial of I_U needs to be solved.
-  // It is not done by the formulas presented in [1], because they seem
-  // to fail even for the simple test case in which the deformation
-  // gradient is a diagonal matrix with >1 entries on the diagonal.
-  // The solution found in [3] is applied.
-  {
-
-    // solution of quartic polynomial of y = I_U = tr(U)
-    //     y^4 + p*y^2 + q*y + r = 0
-    // with
-    const double p = -2.0*ci;  // p = -2*I_C
-    const double q = -8.0*sqrt(ciii);  // q = -8*(III_C)^{1/2} likely always < 0
-    const double r = ci*ci - 4.0*cii;  // r = I_C^2 - 4*II_C
-
-    // associated cubic resolvent
-    //     z^3 + 2*p*z^2 + (p^2-4*r)*z - q^2 = 0
-  
-
-    // normalised cubic resolvent with z = x - 2*p/3 (or x = z + 2*p/3)
-    //     x^3 + pp*x + qq = 0
-    // and
-    const double pp = -(p*p + 12.0*r)/3.0;
-    const double qq = (-2.0*p*p*p + 72.0*p*r - 27.0*q*q)/27.0;
-    // solution with Cardan's formulae
-    const double disc = (4.0*pp*pp*pp + 27.0*qq*qq)/108.0;  // discriminant
-    // the roots
-    double x1, x2, x3;  // roots of normalised cubic resolvent
-    double z1, z2, z3;  // roots of cubic resolvent
-    double z1rt, z2rt, z3rt;  // radicals of roots of cubic resolvent
-    // discriminant==0  ==>  3 real roots in x
-    if (fabs(disc) < EPS12)
-    {
-      // triple real root  :  x^3 = 0
-      if ( (fabs(pp) < EPS12) && (fabs(qq) < EPS12) )
-      {
-        x1 = 0.0;  // triple real solution
-        z1 = (3.0*x1 - 2.0*p)/3.0;  // triple real solution
-        z1rt = sqrt(z1);
-        if (fabs(-z1rt*z1rt*z1rt - q) < EPS12)
-        {
-          ui = 1.5*z1rt;
-        }
-        else
-        {
-          dserror("Trouble with radicals: %g>%g\n", fabs(-z1rt*z1rt*z1rt - q), EPS12);
-        }
-      }
-      // 1 real root and 1 real double x root
-      else
-      {
-        // should always be the case, but you never know ...
-        if (pp < 0.0)
-        {
-          // roots of normal form of cubic resolvent
-          if (qq > 0.0)
-          {
-            x1 = -2.0*sqrt(-pp/3.0);  // single root
-            x2 = sqrt(-pp/3.0);  // double root
-          }
-          else
-          {
-            x1 = 2.0*sqrt(-pp/3.0);  // single root
-            x2 = -sqrt(-pp/3.0);  // double root
-          }
-          // roots of cubic resolvent
-          z1 = (3.0*x1 - 2.0*p)/3.0;
-          z2 = (3.0*x2 - 2.0*p)/3.0;
-          // radicals of roots of cubic resolvent
-          z1rt = sqrt(z1);  // single
-          z2rt = sqrt(z2);  // double
-          if (fabs(-z1rt*z2rt*z2rt - q) < fabs(q)*EPS12)
-          {
-            ui = 0.5*(z1rt + 2.0*z2rt);
-          }
-          else
-          {
-            dserror("Trouble with radicals: %g>%g\n", fabs(-z1rt*z2rt*z2rt - q), fabs(q)*EPS12);
-          }
-        }
-        else
-        {
-          dserror("Error in finding roots\n");
-        }
-      }
-    }
-    // discriminant<0  ==>  3 different real roots in x 
-    else if (disc < 0.0)
-    {
-      const double rho = sqrt(-pp*pp*pp/27.0);
-      const double phi = acos(-qq/2.0/rho);
-      const double rhort = 2.0 * pow(rho, 1.0/3.0);
-      // roots of normal form of cubic resolvent
-      x1 = rhort * cos(phi/3.0);
-      x2 = rhort * cos((phi + 2.0*PI)/3.0);
-      x3 = rhort * cos((phi + 4.0*PI)/3.0);
-      // roots of cubic resolvent
-      z1 = (3.0*x1 - 2.0*p)/3.0;
-      z2 = (3.0*x2 - 2.0*p)/3.0;
-      z3 = (3.0*x3 - 2.0*p)/3.0;
-      // radicals of roots of cubic resolvent
-      z1rt = sqrt(z1);
-      z2rt = sqrt(z2);
-      z3rt = sqrt(z3);
-      if (fabs(-z1rt*z2rt*z3rt - q) < EPS12)
-      {
-        ui = 0.5*(z1rt + z2rt + z3rt);
-      }
-      else
-      {
-        dserror("Trouble with radicals\n");
-      }
-    }
-    // discriminant>0  ==>  1 real and 2 complex roots in x
-    else
-    {
-      // 1 real and 2 conjugated complex x roots
-      dserror("Discriminant is positive!\n");
-    }
-  }
-#endif
-
 
   //--------------------------------------------------------------------
   // 2nd and 3rd invariant of material stretch tensor U
   // 2nd invariant: II_U = 1/2 * (I_U^2 - I_C)
-  const double uii = 0.5*(ui*ui - ci);
+  const double uii = 0.5*(ui*ui - ci);  // OR // sqrt(cii + 2.0*sqrt(ciii)*ui);
   // 3rd invariant: III_U = det(U) = sqrt(III_C)
   const double uiii = sqrt(ciii);
 
@@ -951,12 +813,12 @@ void DRT::ELEMENTS::So_sh8p8::StretchTensor(
   //                    + I_U^2*(II_U*II_C+III_C) }*I ]
   //            = 1/denom * [ pc2*C^2 + pc*C + pi*I ]
   if (invut != NULL)
-  {                                                        /// alternative of [4]
-    const double denom = uiii*uiii*(uiii + ui*ci)          /// uiii*(ui*uii-uiii)
+  {
+    const double denom = uiii*uiii*(uiii + ui*ci)
                        + ui*ui*(ui*ciii + uiii*cii);
-    const double pc2 = ui*(ui*uii - uiii);                 /// ui
-    const double pc = -(ui*uii - uiii)*(uiii + ui*ci);     /// -uiii-ui*(ui*ui-uii)
-    const double pi = uii*uiii*(uiii + ui*ci)              /// ui*uii*uii-uiii*(ui*ui-uii)
+    const double pc2 = ui*(ui*uii - uiii);
+    const double pc = -(ui*uii - uiii)*(uiii + ui*ci);
+    const double pi = uii*uiii*(uiii + ui*ci)
                     + ui*ui*(uii*cii + ciii);
     for (int j=0; j<NUMDIM_; j++)
     {
@@ -971,7 +833,7 @@ void DRT::ELEMENTS::So_sh8p8::StretchTensor(
   //--------------------------------------------------------------------
   // material stretch tensor U
   // Hoger & Carlson [1] wrote
-  //     U = [ II_U * { II_U * (II_U + I_C) } + III_C ]^{-1}
+  //     U = [ II_U * { II_U * (II_U + I_C) + II_C } + III_C ]^{-1}
   //       * [ -(I_U*II_U - III_U)*C^2
   //           + (I_U*II_U - III_U)*(II_U + I_C)*C
   //           + { I_U*III_U + III_U * ( II_U*(II_U+I_C)+II_C ) }*I ]

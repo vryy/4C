@@ -1460,13 +1460,6 @@ void DRT::ELEMENTS::So_sh8p8::AssDefGrad(
   const LINALG::Matrix<NUMSTR_,1>& glstrain
   )
 {
-/*
-  // inverse material Jacobian (X_{,xi})^T
-  LINALG::Matrix<NUMDIM_,NUMDIM_> JinvX(Jac);
-  double Jdet = JinvX.Invert();  // (X_{,xi})^{-T}
-  if (Jdet < 0.0) dserror("Trouble during inversion of Jacobian");
-*/
-
   // pure displacement-based deformation gradient
   // F = x_{,X} = x_{,xi} . xi_{,X} = x_{,xi} . (X_{,xi})^{-1} = jac^T . Jinv^T
   defgradD.MultiplyTT(jac,Jinv);
@@ -1477,8 +1470,13 @@ void DRT::ELEMENTS::So_sh8p8::AssDefGrad(
 
   // rotation matrix in pure displacement based deformation gradient
   // and pure disp-based material stretch tensor
-  LINALG::Matrix<NUMDIM_,NUMDIM_> rot(true);
+  LINALG::Matrix<NUMDIM_,NUMDIM_> rot;
   {
+#if 0
+    StretchTensor(NULL,&rgtstrD,&invrgtstrD,cgD);
+    // rotation matrix
+    rot.MultiplyNN(defgradD,invrgtstrD);
+#else
 #if 0
     LINALG::Matrix<NUMDIM_,NUMDIM_> nd(true);
     LINALG::Matrix<NUMDIM_,NUMDIM_> lamd(true);
@@ -1525,6 +1523,7 @@ void DRT::ELEMENTS::So_sh8p8::AssDefGrad(
     if (detrgtstrD < 0.0) dserror("Trouble during inversion of right stretch tensor");
     // rotation matrix
     rot.MultiplyNN(defgradD,invrgtstrD);
+#endif
 #endif
   }
 
