@@ -111,6 +111,8 @@ void FLD::TIMEINT_THETA_BDF2::ExplicitPredictor(
       velnp->Update( fact2,*velnm,1.0);
       break;
     }
+    default:
+      dserror("Time integration scheme unknown!");
   }
 
   return;
