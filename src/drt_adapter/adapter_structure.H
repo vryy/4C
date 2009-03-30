@@ -255,6 +255,7 @@ namespace ADAPTER {
 
     /// structural field solver
     Structure& StructureField() { return *structure_; }
+    /// const version of structural field solver
     const Structure& StructureField() const { return *structure_; }
 
   private:

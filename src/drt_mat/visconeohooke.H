@@ -151,7 +151,7 @@ namespace MAT
     Teuchos::RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > artstresscurr_;  ///< current artificial stress
     Teuchos::RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > artstresslast_;  ///< artificial stress in last converged state
 
-    bool isinit_;  ///< indicates if #Initialize routine has been called
+    bool isinit_;  ///< indicates if #Initialized routine has been called
 
   };
 }

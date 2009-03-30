@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file consraintdofset.H
+\file constraintdofset.H
 
 \brief A set of degrees of freedom
 
