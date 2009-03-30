@@ -39,6 +39,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/dof_distribution_switcher.H"
 #include "../drt_xfem/enrichment_utils.H"
 #include "../drt_xfem/element_ansatz.H"
+#include "../drt_xfem/load_balancing.H"
 #include "../drt_geometry/position_array.H"
 #include "fluid_utils.H"
 #include "../drt_f3/xfluid3_interpolation.H"
@@ -163,40 +164,23 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
 
   // print information about element shapes
   // (to double-check for reading the correct input)
-  if (discret_->Comm().NumProc() == 1)
+  std::set<DRT::Element::DiscretizationType> distypeset;
+  for (int i=0; i<discret_->NumMyColElements(); ++i)
   {
-    std::set<DRT::Element::DiscretizationType> distypeset;
-    for (int i=0; i<discret_->NumMyColElements(); ++i)
-    {
-      distypeset.insert(discret_->lColElement(i)->Shape());
-    }
-    
-    cout << "Element shapes in xfluid discretization: ";
-    for (std::set<DRT::Element::DiscretizationType>::const_iterator iter = distypeset.begin(); iter != distypeset.end(); ++iter)
-    {
-      if ( iter != distypeset.begin())
-        cout << ", ";
-      cout << DRT::DistypeToString(*iter);
-    }
+    distypeset.insert(discret_->lColElement(i)->Shape());
+  }
+  
+  cout0_ << "Element shapes in xfluid discretization: ";
+  discret_->Comm().Barrier();
+  for (std::set<DRT::Element::DiscretizationType>::const_iterator iter = distypeset.begin(); iter != distypeset.end(); ++iter)
+  {
+    cout << DRT::DistypeToString(*iter) << ", ";
+  }
+  if (actdis->Comm().MyPID()==0)
+  {
     cout << endl;
   }
-  else
-  {
-    discret_->Comm().Barrier();
-    std::set<DRT::Element::DiscretizationType> distypeset;
-    for (int i=0; i<discret_->NumMyColElements(); ++i)
-    {
-      distypeset.insert(discret_->lColElement(i)->Shape());
-    }
-    
-    cout0_ << "Element shapes in xfluid discretization: ";
-    for (std::set<DRT::Element::DiscretizationType>::const_iterator iter = distypeset.begin(); iter != distypeset.end(); ++iter)
-    {
-      cout << DRT::DistypeToString(*iter) << ", ";
-    }
-    cout0_ << endl;
-    discret_->Comm().Barrier();
-  }
+  discret_->Comm().Barrier();
   
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
 
@@ -222,11 +206,13 @@ void FLD::XFluidImplicitTimeInt::Integrate(
   //const int    numstasteps         =params_.get<int>   ("number of start steps");
 
   // output of stabilization details
-  const ParameterList *  stabparams=&(params_.sublist("STABILIZATION"));
+  if (myrank_==0)
+  {
+    const ParameterList *  stabparams=&(params_.sublist("STABILIZATION"));
 
-  cout0_ << "Stabilization type         : " << stabparams->get<string>("STABTYPE") << "\n";
-  cout0_ << "                             " << stabparams->get<string>("TDS")<< "\n";
-  cout0_ << "\n";
+    cout << "Stabilization type         : " << stabparams->get<string>("STABTYPE") << "\n";
+    cout << "                             " << stabparams->get<string>("TDS")<< "\n";
+    cout << "\n";
 
     if(stabparams->get<string>("TDS") == "quasistatic")
     {
@@ -235,14 +221,15 @@ void FLD::XFluidImplicitTimeInt::Integrate(
         dserror("The quasistatic version of the residual-based stabilization currently does not support the incorporation of the transient term.");
       }
     }
-  cout0_ <<  "                             " << "TRANSIENT       = " << stabparams->get<string>("TRANSIENT")      <<"\n";
-  cout0_ <<  "                             " << "SUPG            = " << stabparams->get<string>("SUPG")           <<"\n";
-  cout0_ <<  "                             " << "PSPG            = " << stabparams->get<string>("PSPG")           <<"\n";
-  cout0_ <<  "                             " << "VSTAB           = " << stabparams->get<string>("VSTAB")          <<"\n";
-  cout0_ <<  "                             " << "CSTAB           = " << stabparams->get<string>("CSTAB")          <<"\n";
-  cout0_ <<  "                             " << "CROSS-STRESS    = " << stabparams->get<string>("CROSS-STRESS")   <<"\n";
-  cout0_ <<  "                             " << "REYNOLDS-STRESS = " << stabparams->get<string>("REYNOLDS-STRESS")<<"\n";
-  cout0_ << "\n";
+    cout <<  "                             " << "TRANSIENT       = " << stabparams->get<string>("TRANSIENT")      <<"\n";
+    cout <<  "                             " << "SUPG            = " << stabparams->get<string>("SUPG")           <<"\n";
+    cout <<  "                             " << "PSPG            = " << stabparams->get<string>("PSPG")           <<"\n";
+    cout <<  "                             " << "VSTAB           = " << stabparams->get<string>("VSTAB")          <<"\n";
+    cout <<  "                             " << "CSTAB           = " << stabparams->get<string>("CSTAB")          <<"\n";
+    cout <<  "                             " << "CROSS-STRESS    = " << stabparams->get<string>("CROSS-STRESS")   <<"\n";
+    cout <<  "                             " << "REYNOLDS-STRESS = " << stabparams->get<string>("REYNOLDS-STRESS")<<"\n";
+    cout << "\n";
+  }
 
   // distinguish stationary and instationary case
   if (timealgo_==timeint_stationary) SolveStationaryProblem(cutterdiscret);
@@ -517,6 +504,13 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
 {
   // dump old matrix to save memory while we construct a new matrix
   sysmat_ = Teuchos::null; 
+#if DEBUG
+  {
+    ParameterList eleparams;
+    eleparams.set("action","reset");
+    discret_->Evaluate(eleparams,null,null,null,null,null);
+  }
+#endif
   
   // within this routine, no parallel re-distribution is allowed to take place
   // before and after this function, it's ok to do that
@@ -717,6 +711,11 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
   // time measurement: nonlinear iteration
   TEUCHOS_FUNC_TIME_MONITOR("   + nonlin. iteration/lin. solve");
 
+  ComputeInterfaceAndSetDOFs(cutterdiscret);
+  
+  DRT::PAR::LoadBalancer balancer(discret_);
+  balancer.Partition();
+  
   ComputeInterfaceAndSetDOFs(cutterdiscret);
   
   PrepareNonlinearSolve();
@@ -1005,7 +1004,10 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       const int sign_digits = (int)floor(tmp);
       cout0_ << " cond est: " << scientific << cond_number << ", max.sign.digits: " << sign_digits;
     }
-    cout0_ << endl;
+    if (myrank_ == 0)
+    {
+      cout << endl;
+    }
     
     //-------solve for residual displacements to correct incremental displacements
     {
@@ -1047,13 +1049,6 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
   iforcecolnp->Scale(-ResidualScaling());
 
   cutterdiscret->SetState("iforcenp", iforcecolnp);
-  
-  // reset elements to make sure, everything is build next time
-  {
-    ParameterList eleparams;
-    eleparams.set("action","reset");
-    discret_->Evaluate(eleparams,null,null,null,null,null);
-  }
   
   incvel_ = Teuchos::null;
   sysmat_ = Teuchos::null; 
