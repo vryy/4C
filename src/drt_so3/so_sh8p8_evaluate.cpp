@@ -966,14 +966,13 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
             LINALG::Matrix<NUMDIM_,NUMDIM_> invrgtstrDtimesrgtstr;
             invrgtstrDtimesrgtstr.MultiplyNN(invrgtstrD,rgtstr);
 
+#if 0
             // AUXR_{CBk} = U^{d;-1}_{CD,k} . U^{ass}_{DB}
             // AUXL_{CBk} = U^{d;-1}_{CD} . U^{ass}_{DB,k}
-            LINALG::Matrix<NUMSTR_,NUMDISP_> auxleft(true);
-            LINALG::Matrix<NUMSTR_,NUMDISP_> auxright(true);
+            LINALG::Matrix<NUMSTR_,NUMDISP_> aux;
             for (int k=0; k<NUMDISP_; ++k) {
               for (int CB=0; CB<NUMSTR_; ++CB) {
-                double auxleft_CBk = 0.0;
-                double auxright_CBk = 0.0;
+                double aux_CBk = 0.0;
                 const int C = voigt6row[CB];
                 const int B = voigt6row[CB];
                 for (int D=0; D<NUMDIM_; ++D) {
@@ -985,15 +984,14 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                   const double DCfact = (D==C) ? 1.0 : 0.5;
                   const int BD = voigt3x3sym[NUMDIM_*B+D];
                   const double BDfact = (B==D) ? 1.0 : 0.5;
-                  auxleft_CBk += CDfact*invrgtstrDbydisp(CD,k) * rgtstr(D,B);
-                  auxright_CBk += invrgtstrD(C,D) * DBfact*rgtstrbydisp(DB,k);
+                  aux_CBk += CDfact*invrgtstrDbydisp(CD,k) * rgtstr(D,B);
+                  aux_CBk += invrgtstrD(C,D) * DBfact*rgtstrbydisp(DB,k);
                   if (CB >= NUMDIM_) {
-                    auxleft_CBk += BDfact*invrgtstrDbydisp(BD,k) * rgtstr(D,C);
-                    auxright_CBk += invrgtstrD(B,D) * DCfact*rgtstrbydisp(DC,k);
+                    aux_CBk += BDfact*invrgtstrDbydisp(BD,k) * rgtstr(D,C);
+                    aux_CBk += invrgtstrD(B,D) * DCfact*rgtstrbydisp(DC,k);
                   }
                 }
-                auxleft(CB,k) = auxleft_CBk;
-                auxright(CB,k) = auxright_CBk;
+                aux(CB,k) = aux_CBk;
               }
             }
 
@@ -1011,14 +1009,40 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                   const int CB = voigt3x3sym[NUMDIM_*C+B];
                   const double CBfact = (C==B) ? 1.0 : 0.5;
                   defgradbydisp_aBk
-                    += defgradD(a,C) * CBfact*auxleft(CB,k)
-                    + defgradD(a,C) * CBfact*auxright(CB,k);
+                    += defgradD(a,C) * CBfact*aux(CB,k);
                   defgradbydisp_aBk
                     += boplin(aC,k) * invrgtstrDtimesrgtstr(C,B);
                 }
                 defgradbydisp(aB,k) = defgradbydisp_aBk;
               }
             }
+#else
+            // derivative of def.grad. with respect to k nodal displacements d^k
+            // F_{aB,k} = F^d_{aC,k} . U^{d;-1}_{CD} . U^{ass}_{DB}
+            //          + F^d_{aC} . U^{d;-1}_{CD,k} . U^{ass}_{DB}
+            //          + F^d_{aC} . U^{d;-1}_{CD} . U^{ass}_{DB,k}
+            for (int k=0; k<NUMDISP_; ++k) {
+              for (int aB=0; aB<NUMDFGR_; ++aB) {
+                double defgradbydisp_aBk = 0.0;
+                const int a = voigt9row[aB];
+                const int B = voigt9col[aB];
+                for (int C=0; C<NUMDIM_; ++C) {
+                  const int aC = voigt3x3[NUMDIM_*a+C];
+                  for (int D=0; D<NUMDIM_; ++D) {
+                    const int CD = voigt3x3sym[NUMDIM_*C+D];
+                    const int DB = voigt3x3sym[NUMDIM_*D+B];
+                    const double CDfact = (C==D) ? 1.0 : 0.5;
+                    const double DBfact = (D==B) ? 1.0 : 0.5;
+                    defgradbydisp_aBk 
+                      += boplin(aC,k) * invrgtstrD(C,D) * rgtstr(D,B)
+                      + defgradD(a,C) * CDfact*invrgtstrDbydisp(CD,k) * rgtstr(D,B)
+                      + defgradD(a,C) * invrgtstrD(C,D) * DBfact*rgtstrbydisp(DB,k);
+                  }
+                }
+                defgradbydisp(aB,k) = defgradbydisp_aBk;
+              }
+            }
+#endif
 
 
             // ext(p)ensive computation to achieve full tangent
@@ -1201,6 +1225,141 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
               LINALG::Matrix<NUMDIM_,NUMDIM_> invdefgradtimesdefgradDtimesinvrgtstrD;
               invdefgradtimesdefgradDtimesinvrgtstrD.MultiplyNN(invdefgradtimesdefgradD,invrgtstrD);
 
+#if 0
+              // BDdk
+              LINALG::Matrix<NUMSTR_,NUMDISPSQSYM_> someDB;
+              LINALG::Matrix<NUMSTR_,NUMDISPSQSYM_> someCD;
+              LINALG::Matrix<NUMSTR_,NUMDISPSQSYM_> someBC;
+              for (int d=0; d<NUMDISP_; ++d) {
+                const int n = d / NODDISP_;
+                for (int k=d; k<NUMDISP_; ++k) {  // symmetric matrix : only upper right triangle is computed 
+                  const int m = k / NODDISP_;
+                  const int dk = NUMDISP_*d - d*(d+1)/2 + k;
+                  // someDB
+                  for (int D=0; D<NUMDIM_; ++D) {
+                    for (int B=D; B<NUMDIM_; ++B) {
+                      double someDB_dk = 0.0;
+                      const int DB = voigt3x3sym[NUMDIM_*D+B];
+                      for (int C=0; C<NUMDIM_; ++C) {
+                        const int CD = voigt3x3sym[NUMDIM_*C+D];
+                        const double CDfact = (C==D) ? 1.0 : 0.5;
+                        const int BC = voigt3x3sym[NUMDIM_*B+C];
+                        const double BCfact = (B==C) ? 1.0 : 0.5;
+                        if ( (lin_ >= lin_third) and (d == iboplin[n]) ) {
+                          someDB_dk += BCfact*invdefgradtimesboplin(BC,d) * CDfact*invrgtstrDbydisp(CD,k);
+                        }
+                        if ( (lin_ >= lin_third) and (k == iboplin[m]) ) {
+                          someDB_dk += BCfact*invdefgradtimesboplin(BC,k) * CDfact*invrgtstrDbydisp(CD,d);
+                        }
+                      }
+                      if (D == B)
+                        someDB(DB,dk) = someDB_dk;
+                      else
+                        someDB(DB,dk) = 2.0*someDB_dk;
+                    }
+                  }
+                  // someCD
+                  for (int C=0; C<NUMDIM_; ++C) {
+                    for (int D=C; D<NUMDIM_; ++D) {
+                      double someCD_dk = 0.0;
+                      const int CD = voigt3x3sym[NUMDIM_*C+D];
+                      for (int B=0; B<NUMDIM_; ++B) {
+                        const int DB = voigt3x3sym[NUMDIM_*D+B];
+                        const double DBfact = (D==B) ? 1.0 : 0.5;
+                        const int BC = voigt3x3sym[NUMDIM_*B+C];
+                        const double BCfact = (B==C) ? 1.0 : 0.5;
+                        if ( (lin_ >= lin_third) and (d == iboplin[n]) ) {
+                          someCD_dk += BCfact*invdefgradtimesboplin(BC,d) * DBfact*rgtstrbydisp(DB,k);
+                        }
+                        if ( (lin_ >= lin_third) and (k == iboplin[m]) ) {
+                          someCD_dk += BCfact*invdefgradtimesboplin(BC,k) * DBfact*rgtstrbydisp(DB,d);
+                        }
+                      }
+                      if (C == D)
+                        someCD(CD,dk) = someCD_dk;
+                      else
+                        someCD(CD,dk) = 2.0*someCD_dk;
+                    }
+                  }
+                  // someBC
+                  for (int B=0; B<NUMDIM_; ++B) {
+                    for (int C=B; C<NUMDIM_; ++C) {
+                      double someBC_dk = 0.0;
+                      const int BC = voigt3x3sym[NUMDIM_*B+C];
+                      for (int D=0; D<NUMDIM_; ++D) {
+                        const int CD = voigt3x3sym[NUMDIM_*C+D];
+                        const double CDfact = (C==D) ? 1.0 : 0.5;
+                        const int DB = voigt3x3sym[NUMDIM_*D+B];
+                        const double DBfact = (D==B) ? 1.0 : 0.5;
+                        if (lin_ >= lin_third) {
+                          someBC_dk
+                            += CDfact*invrgtstrDbydisp(CD,d) * DBfact*rgtstrbydisp(DB,k)
+                            + CDfact*invrgtstrDbydisp(CD,k) * DBfact*rgtstrbydisp(DB,d);
+                        }
+                        if (lin_ >= lin_one)
+                        {
+                          const double invrgtstrDbybydisp_CDdk = (*invrgtstrDbybydisp)(CD,dk);
+                          someBC_dk += CDfact*invrgtstrDbybydisp_CDdk * rgtstr(D,B);
+                        }
+                      }
+                      if (B == C)
+                        someBC(BC,dk) = someBC_dk;
+                      else
+                        someBC(BC,dk) = 2.0*someBC_dk;
+                    }
+                  }
+                }
+              }
+
+              // contribute stuff containing second derivatives in displacements
+              // F^{-T}_{aB} F_{aB,dk}
+              // = F^{-1}_{Ba}  (F^d_{aC} U^{d;-1}_{CD} U^{ass}_{DB})_{,dk} 
+              // = F^{-1}_{Ba}  F^d_{aC,dk} U^{d;-1}_{CD} U^{ass}_{DB}         |  = 0
+              // + F^{-1}_{Ba}  F^d_{aC} U^{d;-1}_{CD,dk} U^{ass}_{DB}         |  # 0, very pricy
+              // + F^{-1}_{Ba}  F^d_{aC} U^{d;-1}_{CD} U^{ass}_{DB,dk}         |  # 0, pricy
+              // + F^{-1}_{Ba}  F^d_{aC,d} U^{d;-1}_{CD,k} U^{ass}_{DB}        |  # 0, okay
+              // + F^{-1}_{Ba}  F^d_{aC,d} U^{d;-1}_{CD} U^{ass}_{DB,k}        |  # 0, okay
+              // + F^{-1}_{Ba}  F^d_{aC,k} U^{d;-1}_{CD,d} U^{ass}_{DB}        |  # 0, okay
+              // + F^{-1}_{Ba}  F^d_{aC} U^{d;-1}_{CD,d} U^{ass}_{DB,k}        |  # 0, okay
+              // + F^{-1}_{Ba}  F^d_{aC,k} U^{d;-1}_{CD} U^{ass}_{DB,d}        |  # 0, okay
+              // + F^{-1}_{Ba}  F^d_{aC} U^{d;-1}_{CD,k} U^{ass}_{DB,d}        |  # 0, okay
+              for (int d=0; d<NUMDISP_; ++d) {
+                for (int k=d; k<NUMDISP_; ++k) {  // symmetric matrix : only upper right triangle is computed 
+                  const int dk = NUMDISP_*d - d*(d+1)/2 + k;
+                  double defgradbybydisp_dk = 0.0;
+                  for (int D=0; D<NUMDIM_; ++D) {
+                    for (int B=D; B<NUMDIM_; ++B) {
+                      const int DB = voigt3x3sym[NUMDIM_*D+B];
+                      const double DBfact = (D==B) ? 1.0 : 0.5;
+                      const int BD = voigt3x3sym[NUMDIM_*B+D];
+                      const double BDfact = (B==D) ? 1.0 : 0.5;
+                      defgradbybydisp_dk += someDB(DB,dk) * rgtstr(D,B);
+                      if (lin_ >= lin_half) {
+                        const double rgtstrbybydisp_BDdk = rgtstrbybydisp(BD,dk);
+                        defgradbybydisp_dk
+                          += invdefgradtimesdefgradDtimesinvrgtstrD(B,D) * rgtstrbybydisp_BDdk;
+                      }
+                    }
+                  }
+                  for (int C=0; C<NUMDIM_; ++C) {
+                    for (int D=C; D<NUMDIM_; ++D) {
+                      const int CD = voigt3x3sym[NUMDIM_*C+D];
+                      const double CDfact = (C==D) ? 1.0 : 0.5;
+                      defgradbybydisp_dk += someCD(CD,dk) * invrgtstrD(C,D);
+                    }
+                  }
+                  for (int B=0; B<NUMDIM_; ++B) {
+                    for (int C=B; C<NUMDIM_; ++C) {
+                      const int BC = voigt3x3sym[NUMDIM_*B+C];
+                      const double BCfact = (B==C) ? 1.0 : 0.5;
+                      defgradbybydisp_dk += someBC(BC,dk) * invdefgradtimesdefgradD(B,C);
+                    }
+                  }
+                  (*stiffmatrix)(d,k) -= defgradbybydisp_dk * effpressure*detdefgrad*detJ_w;
+                  if (k != d) (*stiffmatrix)(k,d) -= defgradbybydisp_dk * effpressure*detdefgrad*detJ_w;
+                }
+              }
+#else
               // contribute stuff containing second derivatives in displacements
               // F^{-T}_{aB} F_{aB,dk}
               // = F^{-1}_{Ba}  (F^d_{aC} U^{d;-1}_{CD} U^{ass}_{DB})_{,dk} 
@@ -1259,6 +1418,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                   if (k != d) (*stiffmatrix)(k,d) -= defgradbybydisp_dk * effpressure*detdefgrad*detJ_w;
                 }
               }
+#endif
 
             } //  if (lin_ > lin_sixth)
           } // end block
