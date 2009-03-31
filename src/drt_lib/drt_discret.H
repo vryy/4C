@@ -932,11 +932,11 @@ public:
                                  contributions.
   */
   virtual void Evaluate(Teuchos::ParameterList&        params,
-                        Teuchos::RCP<LINALG::SparseOperator> systemmatrix1=Teuchos::null,
-                        Teuchos::RCP<LINALG::SparseOperator> systemmatrix2=Teuchos::null,
-                        Teuchos::RCP<Epetra_Vector>    systemvector1=Teuchos::null,
-                        Teuchos::RCP<Epetra_Vector>    systemvector2=Teuchos::null,
-                        Teuchos::RCP<Epetra_Vector>    systemvector3=Teuchos::null);
+                        Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+                        Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+                        Teuchos::RCP<Epetra_Vector>    systemvector1,
+                        Teuchos::RCP<Epetra_Vector>    systemvector2,
+                        Teuchos::RCP<Epetra_Vector>    systemvector3);
 
 
   /// Call elements to evaluate

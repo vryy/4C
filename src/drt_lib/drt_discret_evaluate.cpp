@@ -205,7 +205,7 @@ void DRT::Discretization::Evaluate(Teuchos::ParameterList&              params,
                                    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
                                    Teuchos::RCP<Epetra_Vector>          systemvector)
 {
-  Evaluate(params, systemmatrix, Teuchos::null, systemvector);
+  Evaluate(params, systemmatrix, Teuchos::null, systemvector, Teuchos::null, Teuchos::null);
 }
 
 
