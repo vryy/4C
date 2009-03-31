@@ -895,14 +895,6 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
           defgradbydisp.Update(boplin);
         }
         else {
-//          // inverse of pure disp-based material stretch tensor
-//          // U^{d;-1}
-//          LINALG::Matrix<NUMDIM_,NUMDIM_> invrgtstrD(rgtstrD);
-//          const double detrgtstrD = invrgtstrD.Invert();
-//          if (detrgtstrD < 0.0) dserror("Trouble in inverting right stretch tensor");
-//          LINALG::Matrix<NUMSTR_,1> invrgtstrDv;
-//          Matrix2TensorToVector6Voigt(invrgtstrDv,invrgtstrD,voigt6_strain);
-          
           // derivative of pure-disp. inverse material stretch tensor with respect to nodal displacements
           // U^{d;-1}_{,d} = U^{d;-1}_{,U} . (C^d_{,U^d})^{-1} . C^d_{,d}
           // on exit of this block the following variables are going to hold ...
@@ -978,8 +970,8 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                 const int a = voigt9row[aB];
                 const int B = voigt9col[aB];
                 for (int C=0; C<NUMDIM_; ++C) {
+                  const int aC = voigt3x3[NUMDIM_*a+C];
                   for (int D=0; D<NUMDIM_; ++D) {
-                    const int aC = voigt3x3[NUMDIM_*a+C];
                     const int CD = voigt3x3sym[NUMDIM_*C+D];
                     const int DB = voigt3x3sym[NUMDIM_*D+B];
                     const double CDfact = (C==D) ? 1.0 : 0.5;
@@ -1194,7 +1186,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                           defgradbybydisp_dk
                             += BCfact*invdefgradtimesboplin(BC,k) * CDfact*invrgtstrDbydisp(CD,d) * rgtstr(D,B)
                             + BCfact*invdefgradtimesboplin(BC,k) * invrgtstrD(C,D) * DBfact*rgtstrbydisp(DB,d);
-                        if ( (lin_ >= lin_third) )
+                        if (lin_ >= lin_third)
                           defgradbybydisp_dk
                             += invdefgradtimesdefgradD(B,C) * CDfact*invrgtstrDbydisp(CD,d) * DBfact*rgtstrbydisp(DB,k)
                             + invdefgradtimesdefgradD(B,C) * CDfact*invrgtstrDbydisp(CD,k) * DBfact*rgtstrbydisp(DB,d);
