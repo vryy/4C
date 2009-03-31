@@ -42,8 +42,8 @@ void DRT::ELEMENTS::So_sh8p8::Indices6VoigtTo2Tensor(
   const bool transpose
   )
 {
-  const int Voigt6Row[NUMSTR_] = {0,1,2, 0,1,2};
-  const int Voigt6Col[NUMSTR_] = {0,1,2, 1,2,0};
+  const static int Voigt6Row[NUMSTR_] = {0,1,2, 0,1,2};
+  const static int Voigt6Col[NUMSTR_] = {0,1,2, 1,2,0};
 
   if (transpose)
   {
@@ -67,9 +67,9 @@ void DRT::ELEMENTS::So_sh8p8::Indices9VoigtTo2Tensor(
   const bool transpose
   )
 {
-  // 9-Voigt C-index                      0 1 2  3 4 5  6 7 8
-  const int Voigt9Row[NUMDFGR_] = {0,1,2, 0,1,2, 0,2,1};
-  const int Voigt9Col[NUMDFGR_] = {0,1,2, 1,2,0, 2,1,0};
+  // 9-Voigt C-index               0 1 2  3 4 5  6 7 8
+  const static int Voigt9Row[NUMDFGR_] = {0,1,2, 0,1,2, 0,2,1};
+  const static int Voigt9Col[NUMDFGR_] = {0,1,2, 1,2,0, 2,1,0};
 
   if (transpose)
   {
@@ -95,7 +95,7 @@ void DRT::ELEMENTS::So_sh8p8::Indices2TensorTo9Voigt(
   // C indices           00, 01, 02, 10, 11, 12, 20, 21, 22
   // Access : 3*i+j
   // 9-Voigt C-indices    0   3   6   8   1   4   5   7   2
-  const int Voigt3x3[NUMDFGR_] = {0,3,6, 8,1,4, 5,7,2};
+  const static int Voigt3x3[NUMDFGR_] = {0,3,6, 8,1,4, 5,7,2};
 
   voigt3x3 = &(Voigt3x3[0]);
 
@@ -112,7 +112,7 @@ void DRT::ELEMENTS::So_sh8p8::Indices2TensorTo6Voigt(
   // C indices           00, 01, 02, 10, 11, 12, 20, 21, 22
   // Access : 3*i+j
   // 6-Voigt C-indices    0   3   5   3   1   4   5   4   2
-  const int Voigt3x3[NUMDFGR_] = {0,3,5, 3,1,4, 5,4,2};
+  const static int Voigt3x3[NUMDFGR_] = {0,3,5, 3,1,4, 5,4,2};
 
   voigt3x3 = &(Voigt3x3[0]);
 
@@ -752,12 +752,11 @@ void DRT::ELEMENTS::So_sh8p8::StretchTensor(
   // 3rd principal invariant: III_C = det(C)
   const double ciii = ct.Determinant();
 
-  //--------------------------------------------------------------------
   // determination of I_U acc. to [1]
   double ui = 0.0;
   {
     // auxiliar variables to get trace of material stretch tensor U
-    double xi = (2.0*ci*ci*ci - 9.0*ci*cii + 27.0*ciii)/27.0;
+    const double xi = (2.0*ci*ci*ci - 9.0*ci*cii + 27.0*ciii)/27.0;
 
     double eta = (4.0*cii*cii*cii - ci*ci*cii*cii + 4.0*ci*ci*ci*ciii
                   - 18.0*ci*cii*ciii + 27.0*ciii*ciii)/27.0;
@@ -795,14 +794,12 @@ void DRT::ELEMENTS::So_sh8p8::StretchTensor(
     }
   }
 
-  //--------------------------------------------------------------------
   // 2nd and 3rd invariant of material stretch tensor U
   // 2nd invariant: II_U = 1/2 * (I_U^2 - I_C)
   const double uii = 0.5*(ui*ui - ci);  // OR // sqrt(cii + 2.0*sqrt(ciii)*ui);
   // 3rd invariant: III_U = det(U) = sqrt(III_C)
   const double uiii = sqrt(ciii);
 
-  //--------------------------------------------------------------------
   // inverse of material stretch tensor U^{-1}
   // Hoger & Carlson [1] identified
   //     U^{-1} = [ III_U^2*(III_U+I_U*I_C)
@@ -830,7 +827,6 @@ void DRT::ELEMENTS::So_sh8p8::StretchTensor(
     }
   }
 
-  //--------------------------------------------------------------------
   // material stretch tensor U
   // Hoger & Carlson [1] wrote
   //     U = [ II_U * { II_U * (II_U + I_C) + II_C } + III_C ]^{-1}
@@ -857,11 +853,13 @@ void DRT::ELEMENTS::So_sh8p8::StretchTensor(
     }
   }
 
-  //--------------------------------------------------------------------
   // determinat of right stretch tensor
   if (detut != NULL)
+  {
     *detut = uiii;
+  }
 
+  // bye
   return;
 }
 
@@ -878,7 +876,6 @@ int DRT::ELEMENTS::So_sh8p8::SymSpectralDecompJacIter(
   // sum of all entries (moduli) in #at
   double asum = 0.0;
 
-  //--------------------------------------------------------------------
   // initialise eigenvalue tensor and eigenvector tensor
 #if 0
   asum = at.Norm1();
@@ -901,7 +898,6 @@ int DRT::ELEMENTS::So_sh8p8::SymSpectralDecompJacIter(
   }
 #endif
 
-  //--------------------------------------------------------------------
   // check for trivial problem
   if (asum < EPS12)
   {
@@ -909,11 +905,9 @@ int DRT::ELEMENTS::So_sh8p8::SymSpectralDecompJacIter(
     return 0;
   }
 
-  //--------------------------------------------------------------------
   // scale sum of at compenents to achieve relative convergence check
   asum /= (double) (NUMDIM_ * NUMDIM_);
 
-  //--------------------------------------------------------------------
   // reduce ew to diagonal (the eigenvalues)
   double itercnt = 0;  // initialise iteration index <i>
   while (itercnt < itermax)
@@ -926,12 +920,13 @@ int DRT::ELEMENTS::So_sh8p8::SymSpectralDecompJacIter(
       {
         // sum of all triag entries
         vsum += ew(idim,jdim);
-        //--------------------------------------------------------------
+
         // rotation angle th
         // 2*th = atan(2*evt(idim,jdim)/(ew[idim,idim]-ew[jdim,jdim])
         const double th = 0.5*atan2(2.0*ew(idim,jdim),ew(idim,idim)-ew(jdim,jdim));
         const double sith = sin(th);  // sine of rotation angle
         const double coth = cos(th);  // cosine of rotation angle
+
         // this defines the rotation matrix,
         // e.g.
         //
@@ -943,7 +938,6 @@ int DRT::ELEMENTS::So_sh8p8::SymSpectralDecompJacIter(
         //     = [       0  1         0 ]
         //       [ sin(th)  0   cos(th) ]
         
-        //--------------------------------------------------------------
         // update eigenvector matrix by right-multiplying with T
         // T is mostly 0 thus it is more efficient to do explicitly
         //    ev^<i+1> = ev^<i> . T^<i+1>
@@ -953,7 +947,7 @@ int DRT::ELEMENTS::So_sh8p8::SymSpectralDecompJacIter(
           ev(kdim,idim) = coth*evki + sith*ev(kdim,jdim);
           ev(kdim,jdim) = -sith*evki + coth*ev(kdim,jdim);
         }
-        //--------------------------------------------------------------
+
         // update eigenvalue tensor by right-multiplying with T and
         // left-multiplying with transposed T
         //    ew^<i+1> = transposed(T^<i+1>) . ew^<i> . T^<i+1>
@@ -976,7 +970,7 @@ int DRT::ELEMENTS::So_sh8p8::SymSpectralDecompJacIter(
         }
       }
     }
-    //------------------------------------------------------------------
+
     // check convergence
     if (fabs(vsum)/asum < itertol)
     {
@@ -986,7 +980,6 @@ int DRT::ELEMENTS::So_sh8p8::SymSpectralDecompJacIter(
     itercnt += 1;
   }
 
-  //--------------------------------------------------------------------
   // check if iteration loop diverged
   int err = 1;
   if (itercnt == itermax)
@@ -1032,49 +1025,89 @@ void DRT::ELEMENTS::So_sh8p8::BuildElementMatrix(
 {
   const int d2dp[NUMDISP_] = {0,1,2,  4,5,6,  8,9,10,   12,13,14,   16,17,18,   20,21,22,   24,25,26,   28,29,30  };
   const int p2dp[NUMPRES_] = {      3,      7,       11,         15,         19,         23,         27,        31};
-  for (int i=0; i<NUMDISP_; ++i)
-  {
-    const int I = d2dp[i];
-    for (int j=0; j<NUMDISP_; ++j)
-    {
-      const int J = d2dp[j];
+
+  // k_dd
+  for (int j=0; j<NUMDISP_; ++j) {
+    const int J = d2dp[j];
+    for (int i=0; i<NUMDISP_; ++i) {
+      const int I = d2dp[i];
       if (matdd != NULL)
         (*mat)(I,J) = (*matdd)(i,j);
       else
         (*mat)(I,J) = 0.0;
     }
+  }
 
-    for (int l=0; l<NUMPRES_; ++l)
-    {
+  // k_dp
+  if (matdp != NULL) {
+    for (int l=0; l<NUMPRES_; ++l) {
       const int L = p2dp[l];
-      if (matdp != NULL)
+      for (int i=0; i<NUMDISP_; ++i) {
+        const int I = d2dp[i];
         (*mat)(I,L) = (*matdp)(i,l);
-      else
-        (*mat)(I,L) = 0.0;
+      }
     }
   }
-  for (int k=0; k<NUMPRES_; ++k)
-  {
-    const int K = p2dp[k];
-    for (int j=0; j<NUMDISP_; ++j)
-    {
-      const int J = d2dp[j];
-      if (matpd != NULL)
-        (*mat)(K,J) = (*matpd)(k,j);
-      else if (matdp != NULL)
-        (*mat)(K,J) = (*matdp)(j,k);
-      else
-        (*mat)(K,J) = 0.0;
-    }
-    for (int l=0; l<NUMPRES_; ++l)
-    {
+  else {
+    for (int l=0; l<NUMPRES_; ++l) {
       const int L = p2dp[l];
-      if (matpp != NULL)
-        (*mat)(K,L) = (*matpp)(k,l);
-      else
-        (*mat)(K,L) = 0.0;
+      for (int i=0; i<NUMDISP_; ++i) {
+        const int I = d2dp[i];
+        (*mat)(I,L) = 0.0;
+      }
     }
   }
+
+  // k_pd
+  if (matpd != NULL) {
+    for (int j=0; j<NUMDISP_; ++j) {
+      const int J = d2dp[j];
+      for (int k=0; k<NUMPRES_; ++k) {
+        const int K = p2dp[k];
+        (*mat)(K,J) = (*matpd)(k,j);
+      }
+    }
+  }
+  else if (matdp != NULL) {
+    for (int j=0; j<NUMDISP_; ++j) {
+      const int J = d2dp[j];
+      for (int k=0; k<NUMPRES_; ++k) {
+        const int K = p2dp[k];
+        (*mat)(K,J) = (*matdp)(j,k);
+      }
+    }
+  }
+  else {
+    for (int j=0; j<NUMDISP_; ++j) {
+      const int J = d2dp[j];
+      for (int k=0; k<NUMPRES_; ++k) {
+        const int K = p2dp[k];
+        (*mat)(K,J) = 0.0;
+      }
+    }
+  }
+
+  // k_pp
+  if (matpp != NULL) {
+    for (int l=0; l<NUMPRES_; ++l) {
+      const int L = p2dp[l];
+      for (int k=0; k<NUMPRES_; ++k) {
+        const int K = p2dp[k];
+        (*mat)(K,L) = (*matpp)(k,l);
+      }
+    }
+  }
+  else {
+    for (int l=0; l<NUMPRES_; ++l) {
+      const int L = p2dp[l];
+      for (int k=0; k<NUMPRES_; ++k) {
+        const int K = p2dp[k];
+        (*mat)(K,L) = 0.0;
+      }
+    }
+  }
+
+  // done
   return;
 }
 
@@ -1088,23 +1121,27 @@ void DRT::ELEMENTS::So_sh8p8::BuildElementVector(
 {
   const int d2dp[NUMDISP_] = {0,1,2,  4,5,6,  8,9,10,   12,13,14,   16,17,18,   20,21,22,   24,25,26,   28,29,30  };
   const int p2dp[NUMPRES_] = {      3,      7,       11,         15,         19,         23,         27,        31};
+
   vct->Clear();
-  if (vctd != NULL)
-  {
-    for (int i=0; i<NUMDISP_; ++i)
-    {
+  
+  // r_d
+  if (vctd != NULL) {
+    for (int i=0; i<NUMDISP_; ++i) {
       const int I = d2dp[i];
       (*vct)(I,0) = (*vctd)(i,0);
     }
   }
-  if (vctp != NULL)
-  {
-    for (int k=0; k<NUMPRES_; ++k)
-    {
+
+  // r_p
+  if (vctp != NULL) {
+    for (int k=0; k<NUMPRES_; ++k) {
       const int K = p2dp[k];
       (*vct)(K,0) = (*vctp)(k,0);
     }
   }
+
+  // What shall we do with a drunken sailor?
+  return; 
 }
 
 
@@ -1115,7 +1152,7 @@ void DRT::ELEMENTS::So_sh8p8::AssembleVolume(
   const double& volume  ///< current element volume
   )
 {
-  double totvol = params.get<double>("volume");
+  const double totvol = params.get<double>("volume");
   params.set("volume",totvol+volume);
   return;
 }

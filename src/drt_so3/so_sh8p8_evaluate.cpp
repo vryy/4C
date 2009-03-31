@@ -721,16 +721,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
     static LINALG::Matrix<NUMDIM_,NUMDIM_> rgtstrD;  // pure disp.-based material stretch
     static LINALG::Matrix<NUMDIM_,NUMDIM_> invrgtstrD;  // inverse of pure disp-based material stretch tensor U^{d;-1}
     AssDefGrad(detdefgrad,defgrad,invdefgrad,rgtstr,defgradD,rgtstrD,invrgtstrD,invJ_[gp],jac,jac_cur,glstrain);
-//    cout << defgrad << invdefgrad << rgtstr << defgradD << rgtstrD << invrgtstrD << endl << endl;
     
-    // assumend right material stretch 6-Voigt vector
-//    LINALG::Matrix<NUMSTR_,1> rgtstrv;
-//    Matrix2TensorToVector6Voigt(rgtstrv,rgtstr,voigt6_strain);
-
-    // inverse of deformation gradient and its derivative 
-//    LINALG::Matrix<NUMDIM_,NUMDIM_> invdefgrad(defgrad);
-//    double detdefgrad = invdefgrad.Invert();
-
     // return gp strains if necessary
     if (iostrain != INPAR::STR::strain_none)
       Strain(elestrain,iostrain,gp,detdefgrad,defgrad,invdefgrad,glstrain);

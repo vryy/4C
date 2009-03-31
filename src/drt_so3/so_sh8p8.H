@@ -614,7 +614,7 @@ private:
   static int SymSpectralDecompJacIter(
     LINALG::Matrix<NUMDIM_,NUMDIM_>& ew,  ///< diagional matrix of eigenvalues
     LINALG::Matrix<NUMDIM_,NUMDIM_>& ev,  ///< orthornormal eigenvectors (direction cosines)
-    const LINALG::Matrix<NUMDIM_,NUMDIM_>& at,  ///<  _symmetric_ input matrix
+    const LINALG::Matrix<NUMDIM_,NUMDIM_>& at,  ///< <i>symmetric</i> input matrix
     const double itertol,  ///< tolerance
     const int itermax  ///< maximally allowd iteration steps
     );
