@@ -272,7 +272,7 @@ T Parser<T>::EvaluateFunct(double x, double y, double z)
 template <class T>
 SyntaxTreeNode<T>* Parser<T>::ParsePrimary()
 {
-  SyntaxTreeNode<T>* lhs;
+  SyntaxTreeNode<T>* lhs = NULL;
 
   switch (tok_)
   {
@@ -511,7 +511,7 @@ SyntaxTreeNode<T>* Parser<T>::ParseExpr()
 template <class T>
 T Parser<T>::Interpret(SyntaxTreeNode<T>* node)
 {
-  T res;  // the result
+  T res = 0;  // the result
 
   switch (node->type_)
   {
