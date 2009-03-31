@@ -31,7 +31,8 @@ MAT::PAR::ViscoAnisotropic::ViscoAnisotropic(
   numstresstypes_(3),
   beta_(),
   relax_(),
-  tensonly_(matdata->Getint("TENSION_ONLY"))
+  tensonly_(matdata->Getint("TENSION_ONLY")),
+  elethick_(matdata->Getint("ELETHICKDIR"))
 {
   beta_[0] = matdata->GetDouble("BETA_ISO");
   beta_[1] = matdata->GetDouble("BETA_ANISO");
@@ -182,13 +183,17 @@ void MAT::ViscoAnisotropic::Unpack(const vector<char>& data)
  *----------------------------------------------------------------------*/
 void MAT::ViscoAnisotropic::Setup(const int numgp)
 {
+ 
+  /*fiber directions can be defined in the element line  
+    or by element thickness direction.
+    Since we do not know know if thickness direction is defined, fibers are 
+    related to a local element cosy which has to be specified in the element line */
+
   a1_ = rcp(new vector<vector<double> > (numgp));
   a2_ = rcp(new vector<vector<double> > (numgp));
   if ((params_->gamma_<0) || (params_->gamma_ >90)) dserror("Fiber angle not in [0,90]");
   const double gamma = (params_->gamma_*PI)/180.; //convert
 
-  /* fibers are always related to a local element cosy
-     which has to be specified in the element line */
   int ierr=0;
   int error = 1;
   // read local (cylindrical) cosy-directions at current element
@@ -253,6 +258,52 @@ void MAT::ViscoAnisotropic::Setup(const int numgp)
   return;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MAT::ViscoAnisotropic::Setup(const int numgp, const vector<double> thickvec)
+{
+ 
+  /*fiber directions can be defined by element thickness direction if specified 
+    in material definition */
+  if (params_->elethick_==1)
+  {
+    a1_ = rcp(new vector<vector<double> > (numgp));
+    a2_ = rcp(new vector<vector<double> > (numgp));
+    if (abs(params_->gamma_)>=1.0E-6) dserror("Fibers can only be aligned in thickness direction for gamma = 0.0!");
+    const double gamma = (params_->gamma_*PI)/180.; //convert
+    
+    /* Fibers are related to the element thickness direction */
+    vector<double> rad = thickvec;
+    vector<double> axi = thickvec;
+    vector<double> cir = thickvec;
+  
+    LINALG::Matrix<3,3> locsys;
+    // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
+    double radnorm=0.; double axinorm=0.; double cirnorm=0.;
+    for (int i = 0; i < 3; ++i) {
+      radnorm += rad[i]*rad[i]; axinorm += axi[i]*axi[i]; cirnorm += cir[i]*cir[i];
+    }
+    radnorm = sqrt(radnorm); axinorm = sqrt(axinorm); cirnorm = sqrt(cirnorm);
+    for (int i=0; i<3; ++i){
+      locsys(i,0) = rad[i]/radnorm;
+      locsys(i,1) = axi[i]/axinorm;
+      locsys(i,2) = cir[i]/cirnorm;
+    }
+    for (int gp = 0; gp < numgp; ++gp) {
+      a1_->at(gp).resize(3);
+      a2_->at(gp).resize(3);
+      for (int i = 0; i < 3; ++i) {
+        // a1 = cos gamma e3 + sin gamma e2
+        a1_->at(gp)[i] = cos(gamma)*locsys(i,2) + sin(gamma)*locsys(i,1);
+        // a2 = cos gamma e3 - sin gamma e2
+        a2_->at(gp)[i] = cos(gamma)*locsys(i,2) - sin(gamma)*locsys(i,1);
+      }
+    }
+  }
+  
+  return;
+
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

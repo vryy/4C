@@ -50,6 +50,7 @@ namespace MAT
       double beta_[2];
       double relax_[2];
       const int tensonly_;
+      const int elethick_;
       //@}
 
     };  // class ViscoAnisotropic
@@ -116,6 +117,13 @@ namespace MAT
     (
       const int numgp  ///< number of Gauss points
     );
+    
+    /// Setup and Initialize internal stress variables and align fibers based on a given vector
+     void Setup
+     (
+       const int numgp,  ///< number of Gauss points
+       const vector<double> fibervec  ///< direction fibers should be oriented in 
+     );
 
     /// Update internal stress variables
     void Update();

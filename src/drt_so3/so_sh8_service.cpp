@@ -25,6 +25,7 @@ Maintainer: Moritz Frenzel
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_mat/anisotropic_balzani.H"
+#include "../drt_mat/viscoanisotropic.H"
 #include "../drt_mat/material.H"
 
 using namespace std; // cout etc.
@@ -122,6 +123,11 @@ DRT::ELEMENTS::So_sh8::ThicknessDirection DRT::ELEMENTS::So_sh8::sosh8_findthick
   thickvec_.resize(3);
   thickvec_[0] = glo_thickvec(0); thickvec_[1] = glo_thickvec(1); thickvec_[2] = glo_thickvec(2);
 
+  // special element-dependent input of material parameters
+  if (Material()->MaterialType() ==  INPAR::MAT::m_viscoanisotropic){
+    MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(Material().get());
+    visco->Setup(NUMGPT_SOH8,thickvec_);
+  }
 
   return thickdir;
 }

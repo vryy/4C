@@ -626,14 +626,14 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   {
     Teuchos::RCP<MaterialDefinition> m
       = Teuchos::rcp(new MaterialDefinition("MAT_YEOH",
-                                            "???",
+                                            "hyperelastic material based on Yeoh",
                                             INPAR::MAT::m_yeoh));
 
-    AddNamedReal(m,"C1","???");
-    AddNamedReal(m,"C2","???");
-    AddNamedReal(m,"C3","???");
-    AddNamedReal(m,"KAPPA","???");
-    AddNamedReal(m,"DENS","???");
+    AddNamedReal(m,"C1","linear shear stiffness");
+    AddNamedReal(m,"C2","quadratic shear stiffness");
+    AddNamedReal(m,"C3","cubic shear stiffness");
+    AddNamedReal(m,"KAPPA","volume dilatation modulus");
+    AddNamedReal(m,"DENS","density");
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -664,17 +664,18 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             "visco-elastic anisotropic fibre material law",
                                             INPAR::MAT::m_viscoanisotropic));
 
-    AddNamedReal(m,"KAPPA","???");
-    AddNamedReal(m,"MUE","???");
-    AddNamedReal(m,"DENS","???");
-    AddNamedReal(m,"K1","???");
-    AddNamedReal(m,"K2","???");
-    AddNamedReal(m,"GAMMA","???");
-    AddNamedReal(m,"BETA_ISO","???");
-    AddNamedReal(m,"BETA_ANISO","???");
-    AddNamedReal(m,"RELAX_ISO","???");
-    AddNamedReal(m,"RELAX_ANISO","???");
-    AddNamedInt(m,"TENSION_ONLY","???");
+    AddNamedReal(m,"KAPPA","dilatation modulus");
+    AddNamedReal(m,"MUE","Shear Modulus");
+    AddNamedReal(m,"DENS","Density");
+    AddNamedReal(m,"K1","Parameter for linear fiber stiffness");
+    AddNamedReal(m,"K2","Parameter for exponetial fiber stiffness");
+    AddNamedReal(m,"GAMMA","angle between fibers");
+    AddNamedReal(m,"BETA_ISO","ratio between elasticities in generalized Maxweel body");
+    AddNamedReal(m,"BETA_ANISO","ratio between elasticities in generalized Maxweel body");
+    AddNamedReal(m,"RELAX_ISO","isotropic relaxation time");
+    AddNamedReal(m,"RELAX_ANISO","anisotropic relaxation time");
+    AddNamedInt(m,"TENSION_ONLY","1: only tension for fibers, 0: compression allowed");
+    AddNamedInt(m,"ELETHICKDIR","Element thickness direction applies also to fibers (only sosh)");
 
     AppendMaterialDefinition(matlist,m);
   }
