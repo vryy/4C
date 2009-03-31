@@ -19,6 +19,7 @@ Maintainer: Burkhard Bornemann
 #include <iostream>
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
+#include "Teuchos_TimeMonitor.hpp"
 
 #include "strtimint_mstep.H"
 #include "strtimint.H"
@@ -876,6 +877,9 @@ void STR::TimInt::Integrate()
     // write output
     OutputStep();
   }
+
+  // print monitoring of time consumption
+  TimeMonitor::summarize();
 
   // that's it
   return;
