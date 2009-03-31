@@ -93,12 +93,12 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
   Epetra_SerialDenseMatrix C(4,4);
 
   // for EAS, in any case declare variables, sizes etc. only allocated in EAS version
-  Epetra_SerialDenseMatrix* alphao;  // EAS alphas at t_{n}
-  Epetra_SerialDenseMatrix* alpha;  // EAS alphas at t_{n+1}
-  Epetra_SerialDenseMatrix* oldfeas;  // EAS history
-  Epetra_SerialDenseMatrix* oldKaainv;  // EAS history
-  Epetra_SerialDenseMatrix* oldKda;  // EAS history
-  Epetra_SerialDenseMatrix* oldKad;  // EAS history
+  Epetra_SerialDenseMatrix* alphao = NULL;  // EAS alphas at t_{n}
+  Epetra_SerialDenseMatrix* alpha = NULL;  // EAS alphas at t_{n+1}
+  Epetra_SerialDenseMatrix* oldfeas = NULL;  // EAS history
+  Epetra_SerialDenseMatrix* oldKaainv = NULL;  // EAS history
+  Epetra_SerialDenseMatrix* oldKda = NULL;  // EAS history
+  Epetra_SerialDenseMatrix* oldKad = NULL;  // EAS history
   Epetra_SerialDenseMatrix Fenhvo;  // EAS matrix Fenhv
   Epetra_SerialDenseMatrix Fenhv;  // EAS matrix Fenhv
   LINALG::SerialDenseMatrix Fmo;  // total def.grad. matrix at t_{n}
