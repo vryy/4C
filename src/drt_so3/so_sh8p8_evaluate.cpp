@@ -904,11 +904,9 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
           static LINALG::Matrix<NUMSTR_,NUMDISP_> rgtstrDbydisp; // ...U^d_{,d}
           {
             // U^{d;-1}_{,U}
-            //LINALG::Matrix<NUMSTR_,NUMSTR_> invrgtstrDbyrgtstrD;
             InvVector6VoigtDiffByItself(invrgtstrDbyrgtstrD,invrgtstrD);
 
             // C^d_{,U^d} = (U^d . U^d)_{,U^d}
-            //LINALG::Matrix<NUMSTR_,NUMSTR_> rcgDbyrgtstrD;
             SqVector6VoigtDiffByItself(rcgDbyrgtstrD,rgtstrD);
 
             // deformation gradient as Voigt matrix
@@ -920,7 +918,6 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
             rcgDbydisp.MultiplyNN(2.0,defgradm,boplin);
             
             // U^d_{,d} = (C^d_{,U^d})^{-1} . C^d_{,d}
-            //LINALG::Matrix<NUMSTR_,NUMDISP_> rgtstrDbydisp;
             {
               LINALG::FixedSizeSerialDenseSolver<NUMSTR_,NUMSTR_,NUMDISP_> rcgDbyrgtstrDsolver;
               rcgDbyrgtstrDsolver.SetMatrix(rcgDbyrgtstrD);  // LHS
@@ -964,8 +961,8 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
             // F_{aB,k} = F^d_{aC,k} . U^{d;-1}_{CD} . U^{ass}_{DB}
             //          + F^d_{aC} . U^{d;-1}_{CD,k} . U^{ass}_{DB}
             //          + F^d_{aC} . U^{d;-1}_{CD} . U^{ass}_{DB,k}
-            for (int aB=0; aB<NUMDFGR_; ++aB) {
-              for (int k=0; k<NUMDISP_; ++k) {
+            for (int k=0; k<NUMDISP_; ++k) {
+              for (int aB=0; aB<NUMDFGR_; ++aB) {
                 double defgradbydisp_aBk = 0.0;
                 const int a = voigt9row[aB];
                 const int B = voigt9col[aB];
@@ -1142,6 +1139,10 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
               LINALG::Matrix<NUMDIM_,NUMDIM_> invdefgradtimesdefgradD;
               invdefgradtimesdefgradD.MultiplyTN(invdefgrad,defgradD);
 
+              // R_{BD} = F^{-T}_{Ba} . F^{d}_{aC} . U^{d;-1}_{CD}
+              LINALG::Matrix<NUMDIM_,NUMDIM_>  invdefgradtimesdefgradDtimesinvrgtstrD;
+              invdefgradtimesdefgradDtimesinvrgtstrD.MultiplyNN(invdefgradtimesdefgradD,invrgtstrD);
+
 
               // contribute stuff containing second derivatives in displacements
               // F^{-T}_{aB} F_{aB,dk}
@@ -1185,9 +1186,6 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                           defgradbybydisp_dk
                             += invdefgradtimesdefgradD(B,C) * CDfact*invrgtstrDbydisp(CD,d) * DBfact*rgtstrbydisp(DB,k)
                             + invdefgradtimesdefgradD(B,C) * CDfact*invrgtstrDbydisp(CD,k) * DBfact*rgtstrbydisp(DB,d);
-                        if (lin_ >= lin_half)
-                          defgradbybydisp_dk
-                            += invdefgradtimesdefgradD(B,C) * invrgtstrD(C,D) * DBfact*rgtstrbybydisp_DBdk;
                         if (lin_ >= lin_one)
                         {
                           const double invrgtstrDbybydisp_CDdk = (*invrgtstrDbybydisp)(CD,dk);
@@ -1195,6 +1193,9 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                             += invdefgradtimesdefgradD(B,C) * CDfact*invrgtstrDbybydisp_CDdk * rgtstr(D,B);
                         }
                       }
+                      if (lin_ >= lin_half)
+                        defgradbybydisp_dk
+                          += invdefgradtimesdefgradDtimesinvrgtstrD(B,D) * DBfact*rgtstrbybydisp_DBdk;
                     }
                   }
                   (*stiffmatrix)(d,k) -= defgradbybydisp_dk * effpressure*detdefgrad*detJ_w;
