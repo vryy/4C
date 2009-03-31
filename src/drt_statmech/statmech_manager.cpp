@@ -115,7 +115,7 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
     //pass new fully overlapping column map to discretization
     discret_.ExportColumnNodes(*newnodecolmap);
 
-    /*rebuild discretization basd on the new column map so that each processor creates new ghost elements
+    /*rebuild discretization based on the new column map so that each processor creates new ghost elements
      * if necessary; after the following line we have a discretization, where each processor has a fully
      * overlapping column map regardlesse of how overlapping was managed when starting BACI; having ensured
      * this allows convenient and correct (albeit not necessarily efficient) use of search algorithms and
@@ -857,7 +857,7 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& disro
     
     for(int i = 0; i < delcrosslinkercol.MyLength(); i++)
     {
-      if( delcrosslinkercol[i] <  -1.0 + 2*punlink && (*crosslinkerpartner_)[i] != -1.0 && nodecolmap.GID(i) < nodecolmap.GID( (*crosslinkerpartner_)[i] )  )
+      if( delcrosslinkercol[i] <  -1.0 + 2*punlink && (*crosslinkerpartner_)[i] != -1.0 && nodecolmap.GID(i) < nodecolmap.GID( (int)(*crosslinkerpartner_)[i] )  )
         delcrosslinkercol[i] = 1;
       else
         delcrosslinkercol[i] = 0;
@@ -1000,7 +1000,7 @@ void StatMechManager::SetCrosslinkers(const Epetra_Vector& setcrosslinkercol,con
     * that the neighbour has a higher GID; note that the latter condition makes sure that for each crosslinker always
     * the node with the lower GID is kind of the owner: it has to establish it, to delete it, and it is respondible 
     * for the element GID of the crosslinker */
-    if(setcrosslinkercol[i] && nearestneighbour[i] > -1 && (*crosslinkerpartner_)[ (int)nearestneighbour[i] ] == -1.0 && nodecolmap.GID(i) < nodecolmap.GID(nearestneighbour[i]))
+    if(setcrosslinkercol[i] && nearestneighbour[i] > -1 && (*crosslinkerpartner_)[ (int)nearestneighbour[i] ] == -1.0 && nodecolmap.GID(i) < nodecolmap.GID((int)nearestneighbour[i]))
     {
       //the crosslinker to be established is registered in the variable crosslinkerpartner_
       (*crosslinkerpartner_)[i] = (int)nearestneighbour[i];

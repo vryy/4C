@@ -503,12 +503,12 @@ void StatMechTime::FullNewton()
   double dt        = params_.get<double>("delta time"             ,0.01);
   double timen     = time + dt;
   int    maxiter   = params_.get<int>   ("max iterations"         ,10);
-  double beta      = params_.get<double>("beta"                   ,0.292);
+  //double beta      = params_.get<double>("beta"                   ,0.292);
 #ifdef STRUGENALPHA_BE
   double delta     = params_.get<double>("delta"                  ,beta);
 #endif
-  double gamma     = params_.get<double>("gamma"                  ,0.581);
-  double alpham    = params_.get<double>("alpha m"                ,0.378);
+  //double gamma     = params_.get<double>("gamma"                  ,0.581);
+  //double alpham    = params_.get<double>("alpha m"                ,0.378);
   double alphaf    = params_.get<double>("alpha f"                ,0.459);
   string convcheck = params_.get<string>("convcheck"              ,"AbsRes_Or_AbsDis");
   double toldisp   = params_.get<double>("tolerance displacements",1.0e-07);
@@ -528,7 +528,7 @@ void StatMechTime::FullNewton()
 
 
 #ifndef STRUGENALPHA_BE
-  double delta = beta;
+  //double delta = beta;
 #endif
 
   //=================================================== equilibrium loop
@@ -703,8 +703,8 @@ void StatMechTime::PTC()
   double dt        = params_.get<double>("delta time"             ,0.01);
   double timen     = time + dt;
   int    maxiter   = params_.get<int>   ("max iterations"         ,10);
-  double beta      = params_.get<double>("beta"                   ,0.292);
-  double gamma     = params_.get<double>("gamma"                  ,0.581);
+  //double beta      = params_.get<double>("beta"                   ,0.292);
+  //double gamma     = params_.get<double>("gamma"                  ,0.581);
   double alphaf    = params_.get<double>("alpha f"                ,0.459);
   string convcheck = params_.get<string>("convcheck"              ,"AbsRes_Or_AbsDis");
   double toldisp   = params_.get<double>("tolerance displacements",1.0e-07);
@@ -714,7 +714,7 @@ void StatMechTime::PTC()
   FILE* errfile    = params_.get<FILE*> ("err file",NULL);
   
   #ifndef STRUGENALPHA_BE
-    double delta = beta;
+    //double delta = beta;
   #endif
   
   if (!errfile) printerr = false;
