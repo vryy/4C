@@ -209,6 +209,43 @@ void DRT::Discretization::Evaluate(Teuchos::ParameterList&              params,
 }
 
 
+/*----------------------------------------------------------------------*
+ |  evaluate (public)                                        a.ger 03/09|
+ *----------------------------------------------------------------------*/
+void DRT::Discretization::Evaluate(
+    Teuchos::ParameterList&              params
+    )
+{
+
+  // test only for Filled()!Dof information is not required
+  if (not Filled()) dserror("FillComplete() was not called");
+
+  // define empty element matrices and vectors
+  Epetra_SerialDenseMatrix elematrix1;
+  Epetra_SerialDenseMatrix elematrix2;
+  Epetra_SerialDenseVector elevector1;
+  Epetra_SerialDenseVector elevector2;
+  Epetra_SerialDenseVector elevector3;
+
+  vector<int> lm;
+
+  // loop over column elements
+  const int numcolele = NumMyColElements();
+  for (int i=0; i<numcolele; ++i)
+  {
+    DRT::Element* actele = lColElement(i);
+
+    // call the element evaluate method
+    const int err = actele->Evaluate(params,*this,lm,elematrix1,elematrix2,
+                               elevector1,elevector2,elevector3);
+    if (err)
+      dserror("Proc %d: Element %d returned err=%d",Comm().MyPID(),actele->Id(),err);
+
+  }
+  return;
+}
+
+
 
 /*----------------------------------------------------------------------*
  |  evaluate Neumann conditions (public)                     mwgee 12/06|

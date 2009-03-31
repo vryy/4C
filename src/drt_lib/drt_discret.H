@@ -964,6 +964,22 @@ public:
                 Teuchos::RCP<Epetra_Vector>    systemvector);
 
 
+  /// Call elements to evaluate
+  /*!
+  Call element routines to perform tasks defined in the parameter list and 
+  return element information via the parameter list. The element loop
+  is over all col elements, hence, Filled() status is tested.
+  HaveDofs() is NOT tested and the lm vector is empty. No assembly is performed.
+  All states are cleared to avoid errors.
+
+  \param params (in/out): Parameter list past to the elements containing
+                          commands and parameters for the elements and
+                          containing assembly instructions
+ */
+  void Evaluate(
+      Teuchos::ParameterList&  params
+      );
+  
   /*!
   \brief Evaluate Neumann boundary conditions
 
@@ -1405,9 +1421,6 @@ protected:
   RCP<Epetra_Comm>                      comm_;              // an Epetra_comm
   bool                                  filled_;            // flag indicating whether getOrganized has been called
   bool                                  havedof_;           // flag indicating whether degrees of freedom where assigned
-
-  RCP<Epetra_Map>                       dofrowmap_;         // unique row map of degrees of freedom (node and element dofs))
-  RCP<Epetra_Map>                       dofcolmap_;         // unique column map of degrees of freedom (node and element dofs))
 
   RCP<Epetra_Map>                       elerowmap_;         // unique distribution of element ownerships
   RCP<Epetra_Map>                       elecolmap_;         // distribution of elements including ghost elements

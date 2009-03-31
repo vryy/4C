@@ -60,8 +60,7 @@ void DRT::Discretization::Reset(bool killdofs)
     for (unsigned i=0; i<dofsets_.size(); ++i)
       dofsets_[i]->Reset();
   }
-  dofrowmap_ = null;
-  dofcolmap_ = null;
+
   elerowmap_ = null;
   elecolmap_ = null;
   elerowptr_.clear();
