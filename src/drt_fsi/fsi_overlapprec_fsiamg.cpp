@@ -188,7 +188,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   {
     // fine space matching Epetra objects
     MLAPI::Space finespace(fluidInnerOp.RowMap());
-    if (!myrank) printf("Fluid:     NumGlobalElements fine space %d\n",fluidInnerOp.RowMap().NumGlobalElements());
+    if (!myrank) printf("Fluid    : NumGlobalElements fine space %d\n",fluidInnerOp.RowMap().NumGlobalElements());
     
     // extract transfer operator P,R from ML
     MLAPI::Space fspace;
@@ -230,7 +230,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   {
     // fine space matching Epetra objects
     MLAPI::Space finespace(aleInnerOp.RowMap());
-    if (!myrank) printf("Ale      : NumGlobalElements fine space %d\n",structInnerOp.RowMap().NumGlobalElements());
+    if (!myrank) printf("Ale      : NumGlobalElements fine space %d\n",aleInnerOp.RowMap().NumGlobalElements());
     
     // extract transfer operator P,R from ML
     MLAPI::Space fspace;
