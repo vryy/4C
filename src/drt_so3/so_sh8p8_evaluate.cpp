@@ -151,11 +151,13 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
       LINALG::Matrix<NUMPRES_,NUMPRES_> stabmatrix(true);
       LINALG::Matrix<NUMDISP_,1> force(true);
       LINALG::Matrix<NUMPRES_,1> incomp(true);
+      double volume = 0.0;
       ForceStiffMass(lm,mydisp,mypres,
                      NULL,&stiffmatrix,&gradmatrix,&stabmatrix,&force,&incomp,
-                     NULL,NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
+                     NULL,NULL,&volume,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
       BuildElementMatrix(&elemat1,&stiffmatrix,&gradmatrix,NULL,&stabmatrix);
       BuildElementVector(&elevec1,&force,&incomp);
+      AssembleVolume(params,volume);
     }
     break;
 
@@ -182,15 +184,17 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
       LINALG::Matrix<NUMPRES_,NUMPRES_> stabmatrix(true);
       LINALG::Matrix<NUMDISP_,1> force(true);
       LINALG::Matrix<NUMPRES_,1> incomp(true);
+      double volume = 0.0;
       ForceStiffMass(lm,mydisp,mypres,
                      &massmatrix,&stiffmatrix,&gradmatrix,&stabmatrix,&force,&incomp,
-                     NULL,NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
+                     NULL,NULL,&volume,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
       // lump mass
       if (act==calc_struct_nlnstifflmass) soh8_lumpmass(&massmatrix);
       // assemble displacement pressure parts
       BuildElementMatrix(&elemat2,&massmatrix,NULL,NULL,NULL);
       BuildElementMatrix(&elemat1,&stiffmatrix,&gradmatrix,NULL,&stabmatrix);
       BuildElementVector(&elevec1,&force,&incomp);
+      AssembleVolume(params,volume);
     }
     break;
 
@@ -785,9 +789,9 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
       Teuchos::RCP<LINALG::Matrix<NUMSTR_,NUMNOD_*NUMNOD_> > bopbydisp = Teuchos::null;
       if (lin_ > lin_sixth)
         bopbydisp = Teuchos::rcp(new LINALG::Matrix<NUMSTR_,NUMNOD_*NUMNOD_>());
-      for (int inod=0; inod<NUMNOD_; ++inod)
+      for (int jnod=0; jnod<NUMNOD_; ++jnod) 
       {
-        for (int jnod=0; jnod<NUMNOD_; ++jnod)
+        for (int inod=0; inod<NUMNOD_; ++inod)
         {
           LINALG::Matrix<NUMSTR_,1> G_ij;
           G_ij(0) = derivs[gp](0, inod) * derivs[gp](0, jnod); // rr-dir
@@ -1457,9 +1461,9 @@ void DRT::ELEMENTS::So_sh8p8::AssDefGrad(
     rot.MultiplyNN(defgradD,invrgtstrD);
 #else
 #if 0
-    LINALG::Matrix<NUMDIM_,NUMDIM_> nd(true);
-    LINALG::Matrix<NUMDIM_,NUMDIM_> lamd(true);
-    LINALG::Matrix<NUMDIM_,NUMDIM_> NdT(true);
+    LINALG::Matrix<NUMDIM_,NUMDIM_> nd;
+    LINALG::Matrix<NUMDIM_,NUMDIM_> lamd;
+    LINALG::Matrix<NUMDIM_,NUMDIM_> NdT;
     LINALG::SVD(defgradD,nd,lamd,NdT);
     rot.MultiplyNN(nd,NdT);
     // pure disp-based material stretch tensor
@@ -1472,7 +1476,7 @@ void DRT::ELEMENTS::So_sh8p8::AssDefGrad(
     LINALG::Matrix<NUMDIM_,NUMDIM_> lamd;
 #if 0
 #if 0
-    const int err = SymSpectralDecompJacIter(lamd,NdT,cgD,EPS15,15);
+    const int err = SymSpectralDecompJacIter(lamd,NdT,cgD,EPS12,12);
     if (err!=0) dserror("spectral decomposition failed");
     // spectral composition of disp-based right stretch tensor
     for (int i=0; i<NUMDIM_; ++i) lamd(i,i) = sqrt(lamd(i,i));
@@ -1480,7 +1484,7 @@ void DRT::ELEMENTS::So_sh8p8::AssDefGrad(
     aux.MultiplyNN(NdT,lamd);
     rgtstrD.MultiplyNT(aux,NdT);
 #else
-    LINALG::Matrix<NUMDIM_,NUMDIM_> Nd(true);
+    LINALG::Matrix<NUMDIM_,NUMDIM_> Nd;
     LINALG::SVD(cgD,NdT,lamd,Nd);
     // spectral composition of disp-based right stretch tensor
     for (int i=0; i<NUMDIM_; ++i) lamd(i,i) = sqrt(lamd(i,i));
@@ -1491,15 +1495,28 @@ void DRT::ELEMENTS::So_sh8p8::AssDefGrad(
 #else
     LINALG::SYEV(cgD,lamd,NdT);
     // spectral composition of disp-based right stretch tensor
-    for (int i=0; i<NUMDIM_; ++i) lamd(i,i) = sqrt(lamd(i,i));
+    for (int al=0; al<NUMDIM_; ++al) lamd(al,al) = sqrt(lamd(al,al));
     LINALG::Matrix<NUMDIM_,NUMDIM_> aux;
     aux.MultiplyNN(NdT,lamd);
     rgtstrD.MultiplyNT(aux,NdT);
 #endif
     // inverse disp-based right stretch tensor
+#if 0
     invrgtstrD.Update(rgtstrD);
     const double detrgtstrD = invrgtstrD.Invert();
     if (detrgtstrD < 0.0) dserror("Trouble during inversion of right stretch tensor");
+#else
+    invrgtstrD.Clear();
+    //double detdefgradD = 1.0;
+    for (int al=0; al<NUMDIM_; ++al) {
+      //detdefgradD *= lamd(al,al);
+      for (int j=0; j<NUMDIM_; ++j) {
+        const double NdT_jal_by_lamd_alal = NdT(j,al)/lamd(al,al);
+        for (int i=0; i<NUMDIM_; ++i)
+          invrgtstrD(i,j) += NdT(i,al)*NdT_jal_by_lamd_alal;
+      }
+    }
+#endif
     // rotation matrix
     rot.MultiplyNN(defgradD,invrgtstrD);
 #endif
@@ -1510,15 +1527,17 @@ void DRT::ELEMENTS::So_sh8p8::AssDefGrad(
   LINALG::Matrix<NUMDIM_,NUMDIM_> invrgtstr;
   {
     LINALG::Matrix<NUMDIM_,NUMDIM_> cga;
-    for (int i=0; i<NUMDIM_; ++i) cga(i,i) = 2.0*glstrain(i,0) + 1.0;
-    // off-diagonal terms are already twice in the Voigt-GLstrain-vector
-    cga(0,1) = cga(1,0) = glstrain(3);
-    cga(1,2) = cga(2,1) = glstrain(4);
-    cga(0,2) = cga(2,0) = glstrain(5);
-    LINALG::Matrix<NUMDIM_,NUMDIM_> lama(true);
-    LINALG::Matrix<NUMDIM_,NUMDIM_> NaT(true);
+    {
+      for (int i=0; i<NUMDIM_; ++i) cga(i,i) = 2.0*glstrain(i,0) + 1.0;
+      // off-diagonal terms are already twice in the Voigt-GLstrain-vector
+      cga(0,1) = glstrain(3);  cga(1,0) = glstrain(3);
+      cga(1,2) = glstrain(4);  cga(2,1) = glstrain(4);
+      cga(0,2) = glstrain(5);  cga(2,0) = glstrain(5);
+    }
+    LINALG::Matrix<NUMDIM_,NUMDIM_> lama;
+    LINALG::Matrix<NUMDIM_,NUMDIM_> NaT;
 #if 0
-    LINALG::Matrix<NUMDIM_,NUMDIM_> Na(true);
+    LINALG::Matrix<NUMDIM_,NUMDIM_> Na;
     LINALG::SVD(cga,NaT,lama,Na);
     for (int i=0; i<NUMDIM_; ++i) lama(i,i) = sqrt(lama(i,i));
     LINALG::Matrix<NUMDIM_,NUMDIM_> aux;
@@ -1526,10 +1545,21 @@ void DRT::ELEMENTS::So_sh8p8::AssDefGrad(
     rgtstr.MultiplyNN(aux,Na);
 #else
     LINALG::SYEV(cga,lama,NaT);
-    for (int i=0; i<NUMDIM_; ++i) lama(i,i) = sqrt(lama(i,i));
+    for (int al=0; al<NUMDIM_; ++al) lama(al,al) = sqrt(lama(al,al));
+#if 0
+    rgtstr.Clear();
+    for (int al=0; al<NUMDIM_; ++al) {
+      for (int j=0; j<NUMDIM_; ++j) {
+        const double NaT_jal_times_lama_alal = NaT(j,al)*lama(al,al);
+        for (int i=0; i<NUMDIM_; ++i)
+          rgtstr(i,j) += NaT(i,al)*NaT_jal_times_lama_alal;
+      }
+    }
+#else
     LINALG::Matrix<NUMDIM_,NUMDIM_> aux;
     aux.MultiplyNN(NaT,lama);
     rgtstr.MultiplyNT(aux,NaT);
+#endif
 #endif
 #if 0
     invrgtstr.Update(rgtstr);
@@ -1537,12 +1567,13 @@ void DRT::ELEMENTS::So_sh8p8::AssDefGrad(
 #else
     invrgtstr.Clear();
     detdefgrad = 1.0;
-    for (int al=0; al<NUMDIM_; ++al)
-    {
+    for (int al=0; al<NUMDIM_; ++al) {
       detdefgrad *= lama(al,al);
-      for (int j=0; j<NUMDIM_; ++j)
+      for (int j=0; j<NUMDIM_; ++j) {
+        const double NaT_jal_by_lama_alal = NaT(j,al)/lama(al,al);
         for (int i=0; i<NUMDIM_; ++i)
-          invrgtstr(i,j) += NaT(i,al)*NaT(j,al)/lama(al,al);
+          invrgtstr(i,j) += NaT(i,al)*NaT_jal_by_lama_alal;
+      }
     }
 #endif
   }
