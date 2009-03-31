@@ -158,7 +158,6 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     for (int i=1; i<snlevel_; ++i)
     {
       ML_Operator* Pml = &(sml->Pmat[i]);
-      //if (!myrank) printf("Structure P: level %d domain %d range %d\n",i,Pml->invec_leng,Pml->outvec_leng);
       if (i==1) fspace = finespace;
       else      fspace.Reshape(-1,Pml->outvec_leng);
       cspace.Reshape(-1,Pml->invec_leng);
@@ -166,7 +165,6 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
       if (SisPetrovGalerkin)
       {
         ML_Operator* Rml = &(sml->Rmat[i-1]);
-        //if (!myrank) printf("Structure R: level %d domain %d range %d\n",i,Rml->invec_leng,Rml->outvec_leng);
         R.Reshape(fspace,cspace,Rml,false);
       }
       else 
@@ -200,7 +198,6 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     for (int i=1; i<fnlevel_; ++i)
     {
       ML_Operator* Pml = &(fml->Pmat[i]);
-      //if (!myrank) printf("Fluid P: level %d domain %d range %d\n",i,Pml->invec_leng,Pml->outvec_leng);
       if (i==1) fspace = finespace;
       else      fspace.Reshape(-1,Pml->outvec_leng);
       cspace.Reshape(-1,Pml->invec_leng);
@@ -208,7 +205,6 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
       if (FisPetrovGalerkin)
       {
         ML_Operator* Rml = &(fml->Rmat[i-1]);
-        //if (!myrank) printf("Fluid R: level %d domain %d range %d\n",i,Rml->invec_leng,Rml->outvec_leng);
         R.Reshape(fspace,cspace,Rml,false);
       }
       else 
@@ -244,7 +240,6 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     for (int i=1; i<anlevel_; ++i)
     {
       ML_Operator* Pml = &(aml->Pmat[i]);
-      //if (!myrank) printf("Ale P: level %d domain %d range %d\n",i,Pml->invec_leng,Pml->outvec_leng);
       if (i==1) fspace = finespace;
       else      fspace.Reshape(-1,Pml->outvec_leng);
       cspace.Reshape(-1,Pml->invec_leng);
@@ -252,7 +247,6 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
       if (AisPetrovGalerkin)
       {
         ML_Operator* Rml = &(aml->Rmat[i-1]);
-        //if (!myrank) printf("Ale R: level %d domain %d range %d\n",i,Rml->invec_leng,Rml->outvec_leng);
         R.Reshape(fspace,cspace,Rml,false);
       }
       else
@@ -308,12 +302,14 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   for (int i=0; i<snlevel_-1; ++i)
   {
     Teuchos::ParameterList p;
+    Teuchos::ParameterList pushlist;
     char levelstr[11];
     sprintf(levelstr,"(level %d)",i);
     Teuchos::ParameterList& subp = sparams_.sublist("smoother: list "+(string)levelstr);
     string type = "";
-    SelectMLAPISmoother(type,subp,p);
-    S.Reshape(Ass_[i],type,p);
+    SelectMLAPISmoother(type,i,subp,p,pushlist);
+    if (type=="ILU") WrapILUSmoother(sml,Ass_[i],S,i);
+    else             S.Reshape(Ass_[i],type,p,&pushlist);
     Sss_[i] = S;
   }
   // coarse grid:
@@ -323,12 +319,14 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   for (int i=0; i<fnlevel_-1; ++i)
   {
     Teuchos::ParameterList p;
+    Teuchos::ParameterList pushlist;
     char levelstr[11];
     sprintf(levelstr,"(level %d)",i);
     Teuchos::ParameterList& subp = fparams_.sublist("smoother: list "+(string)levelstr);
     string type = "";
-    SelectMLAPISmoother(type,subp,p);
-    S.Reshape(Aff_[i],type,p);
+    SelectMLAPISmoother(type,i,subp,p,pushlist);
+    if (type=="ILU") WrapILUSmoother(fml,Aff_[i],S,i);
+    else             S.Reshape(Aff_[i],type,p,&pushlist);
     Sff_[i] = S;
   }
   // coarse grid:
@@ -338,12 +336,14 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   for (int i=0; i<anlevel_-1; ++i)
   {
     Teuchos::ParameterList p;
+    Teuchos::ParameterList pushlist;
     char levelstr[11];
     sprintf(levelstr,"(level %d)",i);
     Teuchos::ParameterList& subp = aparams_.sublist("smoother: list "+(string)levelstr);
     string type = "";
-    SelectMLAPISmoother(type,subp,p);
-    S.Reshape(Aaa_[i],type,p);
+    SelectMLAPISmoother(type,i,subp,p,pushlist);
+    if (type=="ILU") WrapILUSmoother(aml,Aaa_[i],S,i);
+    else             S.Reshape(Aaa_[i],type,p,&pushlist);
     Saa_[i] = S;
   }
   // coarse grid:
@@ -449,9 +449,29 @@ void FSI::OverlappingBlockMatrixFSIAMG::RAPcoarse(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void FSI::OverlappingBlockMatrixFSIAMG::WrapILUSmoother(ML* ml,
+                                                        MLAPI::Operator& A,
+                                                        MLAPI::InverseOperator& S,
+                                                        const int level)
+{
+  // we use pre == post smoother here, so get postsmoother from ml
+  void* data = ml->post_smoother[level].smoother->data;
+  Ifpack_Preconditioner* prec = static_cast<Ifpack_Preconditioner*>(data);
+  // make sure this really is an Epetra_Operator
+  std::string test = prec->Label();
+  if (!prec->Comm().MyPID()) cout << test << endl;
+  S.Reshape(prec,A,false);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void FSI::OverlappingBlockMatrixFSIAMG::SelectMLAPISmoother(std::string& type,
+                                                            const int level,
                                                             Teuchos::ParameterList& subp,
-                                                            Teuchos::ParameterList& p)
+                                                            Teuchos::ParameterList& p,
+                                                            Teuchos::ParameterList& pushlist)
 {
   type = subp.get("smoother: type","none");
   if (type=="none") dserror("Cannot find msoother type");
@@ -464,9 +484,17 @@ void FSI::OverlappingBlockMatrixFSIAMG::SelectMLAPISmoother(std::string& type,
   }
   else if (type=="IFPACK")
   {
-    type             = subp.get("smoother: ifpack type","ILU");
-    const double lof = subp.get<double>("smoother: ifpack level-of-fill",0);
-    p.set("fact: level-of-fill",lof);
+    type                 = subp.get("smoother: ifpack type","ILU");
+    const double lof     = subp.get<double>("smoother: ifpack level-of-fill",0);
+    const double damping = subp.get("smoother: damping factor",1.0);
+    p.set("smoother: ilu fill",(int)lof); 
+    p.set("smoother: damping factor",damping);
+    p.set("schwarz: reordering type","rcm");
+    pushlist.set("ILU: sweeps", (int)lof);
+    pushlist.set("fact: absolute threshold",0.0);
+    pushlist.set("fact: ict level-of-fill",lof);
+    pushlist.set("fact: ilut level-of-fill",lof);
+    pushlist.set("schwarz: reordering type","rcm");
   }
   else if (type=="MLS")
   {
@@ -821,7 +849,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::ExplicitBlockGaussSeidelSmoother(
 
 #if 1
 /*----------------------------------------------------------------------*
-strongly coupled AMG-BlockGauss-Seidel
+strongly coupled AMG-Block-Gauss-Seidel
  *----------------------------------------------------------------------*/
 void FSI::OverlappingBlockMatrixFSIAMG::SGS(
                  const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
@@ -928,13 +956,13 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
   if (!structuresplit_) dserror("FSIAMG for structuresplit monoFSI only");
   if (symmetric_)       dserror("FSIAMG symmetric Block Gauss-Seidel not impl.");
 
-  //const LINALG::SparseMatrix& structInnerOp = Matrix(0,0); // Ass
-  //const LINALG::SparseMatrix& structBoundOp = Matrix(0,1); // Asf
-  //const LINALG::SparseMatrix& fluidBoundOp  = Matrix(1,0); // Afs
-  //const LINALG::SparseMatrix& fluidInnerOp  = Matrix(1,1); // Aff
-  //const LINALG::SparseMatrix& fluidMeshOp   = Matrix(1,2); // Afa
-  //const LINALG::SparseMatrix& aleBoundOp    = Matrix(2,1); // Aaf
-  //const LINALG::SparseMatrix& aleInnerOp    = Matrix(2,2); // Aaa
+  // Matrix(0,0); // Ass
+  // Matrix(0,1); // Asf
+  // Matrix(1,0); // Afs
+  // Matrix(1,1); // Aff
+  // Matrix(1,2); // Afa
+  // Matrix(2,1); // Aaf
+  // Matrix(2,2); // Aaa
   // rewrap the matrix every time as Uli shoots them irrespective
   // of whether the precond is reused or not.
   {
@@ -1069,7 +1097,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
       mlfx.Update(-1.0,tmp,1.0);
 
       // solve fluid block
-      Vcycle(0,fnlevel_,mlfz,mlfx,Aff_,Sff_,Pff_,Rff_);
+      Vcycle(0,fnlevel_,mlfz,mlfx,Aff_,Sff_,Pff_,Rff_,true);
       //mlfz = 0.0; Sff_[0].Apply(mlfx,mlfz);
 
       if (!run) mlfy.Update(omega_,mlfz);
@@ -1085,45 +1113,6 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
 }
 #endif
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void FSI::OverlappingBlockMatrixFSIAMG::Vcycle(const int level,
-                                               const int nlevel,
-                                               MLAPI::MultiVector& z,
-                                               const MLAPI::MultiVector& b,
-                                               const vector<MLAPI::Operator>& A,
-                                               const vector<MLAPI::InverseOperator>& S,
-                                               const vector<MLAPI::Operator>& P,
-                                               const vector<MLAPI::Operator>& R) const
-{
-  // coarse solve
-  if (level==nlevel-1)
-  {
-    z = S[level] * b;
-    return;
-  }
-  
-  // presmoothing
-  S[level].Apply(b,z);
-  
-  // coarse level residual and correction
-  MLAPI::MultiVector bc;
-  MLAPI::MultiVector zc(P[level].GetDomainSpace(),1,true);
-
-  // compute residual and restrict to coarser level
-  bc = R[level] * ( b - A[level] * z );
-  
-  // solve coarse problem
-  Vcycle(level+1,nlevel,zc,bc,A,S,P,R);
-  
-  // prolongate correction
-  z = z + P[level] * zc;
-  
-  // postsmoothing
-  S[level].Apply(b,z);
-
-  return;
-}                
 
 
 
@@ -1239,6 +1228,63 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
   RangeExtractor().InsertVector(*ay,2,y);
 }
 #endif
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FSI::OverlappingBlockMatrixFSIAMG::Vcycle(const int level,
+                                               const int nlevel,
+                                               MLAPI::MultiVector& z,
+                                               const MLAPI::MultiVector& b,
+                                               const vector<MLAPI::Operator>& A,
+                                               const vector<MLAPI::InverseOperator>& S,
+                                               const vector<MLAPI::Operator>& P,
+                                               const vector<MLAPI::Operator>& R,
+                                               const bool trigger) const
+{
+  // in presmoothing, the initial guess has to be zero, we do this manually here.
+  // in postsmoothing, the initial guess has to be nonzero. This is tricky, as
+  // SGS smoothers assume nonzero initial guess, but ILU smoothers ALWAYS assume
+  // zero guess. We circumvent this by reformulating the postsmoothing step (see below)
+  // such that the initial guess can be zero by hand.
+  
+  
+  // coarse solve
+  if (level==nlevel-1)
+  {
+    z = S[level] * b;
+    return;
+  }
+  
+  // presmoothing (initial guess = 0)
+  z = 0.0;
+  S[level].Apply(b,z);
+
+  // coarse level residual and correction
+  MLAPI::MultiVector bc;
+  MLAPI::MultiVector zc(P[level].GetDomainSpace(),1,true);
+
+  // compute residual and restrict to coarser level
+  bc = R[level] * ( b - A[level] * z );
+  
+  // solve coarse problem
+  Vcycle(level+1,nlevel,zc,bc,A,S,P,R);
+  
+  // prolongate correction
+  z = z + P[level] * zc;
+  
+  
+  // postsmoothing (initial guess != 0 !!)
+  MLAPI::MultiVector r(b.GetVectorSpace(),true);
+  MLAPI::MultiVector dz(b.GetVectorSpace(),true);
+  r = A[level] * z;
+  r.Update(1.0,b,-1.0);
+  S[level].Apply(r,dz);
+  z.Update(1.0,dz,1.0);
+  
+
+  return;
+}                
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

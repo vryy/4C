@@ -53,8 +53,16 @@ namespace FSI
 
     /// do list for MLAPI smoother
     void SelectMLAPISmoother(std::string& type,
+                             const int level,
                              Teuchos::ParameterList& subp,
-                             Teuchos::ParameterList& p);
+                             Teuchos::ParameterList& p,
+                             Teuchos::ParameterList& pushlist);
+    
+    /// wrap ILU smoother from ML
+    void WrapILUSmoother(ML* ml,
+                         MLAPI::Operator& A,
+                         MLAPI::InverseOperator& S,const int level);
+    
     
     /// generic Vcycle that works on all fields
     virtual void Vcycle(const int level,
@@ -64,7 +72,8 @@ namespace FSI
                      const vector<MLAPI::Operator>& A,
                      const vector<MLAPI::InverseOperator>& S,
                      const vector<MLAPI::Operator>& P,
-                     const vector<MLAPI::Operator>& R) const;
+                     const vector<MLAPI::Operator>& R,
+                     const bool trigger = false) const;
     
     /// FSIAMG multigrid
     virtual void BlockVcycle(const int level,
