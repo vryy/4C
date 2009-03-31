@@ -79,8 +79,8 @@ DRT::ELEMENTS::So_sh8::ThicknessDirection DRT::ELEMENTS::So_sh8::sosh8_findthick
   // minimal stretch equivalents with "thinnest" direction
   double max_stretch = max(r_stretch, max(s_stretch, t_stretch));
 
-  ThicknessDirection thickdir; // of actual element
-  int thick_index;
+  ThicknessDirection thickdir = none; // of actual element
+  int thick_index = -1;
 
   if (max_stretch == r_stretch) {
     if ((max_stretch / s_stretch <= 1.5) || (max_stretch / t_stretch <=1.5)) {
@@ -112,6 +112,9 @@ DRT::ELEMENTS::So_sh8::ThicknessDirection DRT::ELEMENTS::So_sh8::sosh8_findthick
     thickdir = autot;
     thick_index = 2;
   }
+
+  if (thick_index == -1)
+    dserror("Trouble with thick_index=%g", thick_index);
 
   // thickness-vector in parameter-space, has 1.0 in thickness-coord
   Epetra_SerialDenseVector loc_thickvec(3);
