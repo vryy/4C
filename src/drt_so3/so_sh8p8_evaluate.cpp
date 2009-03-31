@@ -1020,101 +1020,95 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
               // second derivative of pure-disp right stretch tensor w.r.t. displacements
               // U^{d}_{DB,dk} = (C^{d}_{,U^{d}})_{DBEF}^{-1} 
               //               . ( C^{d}_{EF,dk} - C^{d}_{EF,GHIJ}  U^{d}_{IJ,d}  U^{d}_{GH,k} )
-              LINALG::Matrix<NUMSTR_,NUMDISP_*NUMDISP_> rgtstrbybydisp;
-              LINALG::Matrix<NUMSTR_,NUMDISP_*NUMDISP_> rgtstrDbybydisp;
-              for (int DB=0; DB<NUMSTR_; ++DB) {
-                for (int dk=0; dk<NUMDISP_*NUMDISP_; ++dk) {
-                  const int d = dk / NUMDISP_;
-                  const int k = dk % NUMDISP_;
-                  if (k < d)  // symmetric in d and k : only upper 'triangle' is computed
-                    continue;
-                  const int kd = NUMDISP_*k + d;
+              LINALG::Matrix<NUMSTR_,NUMDISPSQSYM_> rgtstrbybydisp;
+              LINALG::Matrix<NUMSTR_,NUMDISPSQSYM_> rgtstrDbybydisp;
+              for (int d=0; d<NUMDISP_; ++d) {
+                for (int k=d; k<NUMDISP_; ++k) {  // symmetric in d,k
+                  const int dk = NUMDISP_*d - d*(d+1)/2 + k;
                   int ndnk = -1;
                   if (d%NODDISP_ == k%NODDISP_) {
                     const int nd = d / NODDISP_;
                     const int nk = k / NODDISP_;
                     ndnk = nd*NUMNOD_ + nk;
                   }
-                  double rgtstrbybydisp_DBdk = 0.0;
-                  double rgtstrDbybydisp_DBdk = 0.0;
-                  for (int EF=0; EF<NUMSTR_; ++EF) {
-                    const int E = voigt9row[EF];
-                    const int F = voigt9col[EF];
-                    // C^{ass}_{,UU} . U^{ass}_{,d} . U^{ass}_{,d}
-                    // and
-                    // C^{d}_{,UU} . U^{d}_{,d} . U^{d}_{,d}
-                    double temp_EFdk = 0.0;
-                    double tempD_EFdk = 0.0;
-                    for (int GHIJ=0; GHIJ<6; ++GHIJ) {
-                      if (ircgbybyrgtstr[NUMSTR_*EF+GHIJ] != -1) {
-                        const int GH = ircgbybyrgtstr[NUMSTR_*EF+GHIJ] / NUMSTR_;
-                        const int IJ = ircgbybyrgtstr[NUMSTR_*EF+GHIJ] % NUMSTR_;
-                        // C^{ass}_{,UU} . U^{ass}_{,d} . U^{ass}_{,d}
-                        temp_EFdk += rcgbybyrgtstr(EF,GHIJ)*rgtstrbydisp(IJ,d)*rgtstrbydisp(GH,k);
-                        // C^{d}_{,UU} . U^{d}_{,d} . U^{d}_{,d}
-                        // C^{d}_{,U^d U^d} = C^{ass}_{,U^ass U^ass} = const
-                        tempD_EFdk += rcgbybyrgtstr(EF,GHIJ)*rgtstrDbydisp(IJ,d)*rgtstrDbydisp(GH,k);
+                  for (int DB=0; DB<NUMSTR_; ++DB) {
+                    double rgtstrbybydisp_DBdk = 0.0;
+                    double rgtstrDbybydisp_DBdk = 0.0;
+                    for (int EF=0; EF<NUMSTR_; ++EF) {
+                      const int E = voigt9row[EF];
+                      const int F = voigt9col[EF];
+                      // C^{ass}_{,UU} . U^{ass}_{,d} . U^{ass}_{,d}
+                      // and
+                      // C^{d}_{,UU} . U^{d}_{,d} . U^{d}_{,d}
+                      double temp_EFdk = 0.0;
+                      double tempD_EFdk = 0.0;
+                      for (int GHIJ=0; GHIJ<6; ++GHIJ) {
+                        if (ircgbybyrgtstr[NUMSTR_*EF+GHIJ] != -1) {
+                          const int GH = ircgbybyrgtstr[NUMSTR_*EF+GHIJ] / NUMSTR_;
+                          const int IJ = ircgbybyrgtstr[NUMSTR_*EF+GHIJ] % NUMSTR_;
+                          // C^{ass}_{,UU} . U^{ass}_{,d} . U^{ass}_{,d}
+                          temp_EFdk += rcgbybyrgtstr(EF,GHIJ)*rgtstrbydisp(IJ,d)*rgtstrbydisp(GH,k);
+                          // C^{d}_{,UU} . U^{d}_{,d} . U^{d}_{,d}
+                          // C^{d}_{,U^d U^d} = C^{ass}_{,U^ass U^ass} = const
+                          tempD_EFdk += rcgbybyrgtstr(EF,GHIJ)*rgtstrDbydisp(IJ,d)*rgtstrDbydisp(GH,k);
+                        }
                       }
+                      // U^{ass}_{DB,dk}
+                      if (ndnk != -1)
+                        rgtstrbybydisp_DBdk += rcgbyrgtstr(DB,EF) * 2.0*(*bopbydisp)(EF,ndnk);
+                      rgtstrbybydisp_DBdk -= rcgbyrgtstr(DB,EF) * temp_EFdk;
+                      // C^{d}_{EF,dk}
+                      double rcgDbybydisp_EFdk = 0.0;
+                      for (int m=0; m<NUMDIM_; ++m) {
+                        const int mE = voigt3x3[NUMDIM_*m+E];
+                        const int mF = voigt3x3[NUMDIM_*m+F];
+                        if (E == F)  // make strain-like 6-Voigt vector
+                          rcgDbybydisp_EFdk 
+                            += 2.0*boplin(mE,d)*boplin(mF,k);
+                        else  // thus setting  V_EF + V_FE if E!=F
+                          rcgDbybydisp_EFdk 
+                            += 2.0*boplin(mE,d)*boplin(mF,k)
+                            +  2.0*boplin(mF,d)*boplin(mE,k);
+                      }
+                      // (C^{d}_{,U^{d}})_{DBEF}^{-1}
+                      const double rcgDbyrgtstrD_DBEF = rcgDbyrgtstrD(DB,EF);
+                      // U^{d}_{DB,dk}
+                      rgtstrDbybydisp_DBdk += rcgDbyrgtstrD_DBEF * ( rcgDbybydisp_EFdk - tempD_EFdk);
                     }
-                    // U^{ass}_{DB,dk}
-                    if (ndnk != -1)
-                      rgtstrbybydisp_DBdk += rcgbyrgtstr(DB,EF) * 2.0*(*bopbydisp)(EF,ndnk);
-                    rgtstrbybydisp_DBdk -= rcgbyrgtstr(DB,EF) * temp_EFdk;
-                    // C^{d}_{EF,dk}
-                    double rcgDbybydisp_EFdk = 0.0;
-                    for (int m=0; m<NUMDIM_; ++m) {
-                      const int mE = voigt3x3[NUMDIM_*m+E];
-                      const int mF = voigt3x3[NUMDIM_*m+F];
-                      if (E == F)  // make strain-like 6-Voigt vector
-                        rcgDbybydisp_EFdk 
-                          += 2.0*boplin(mE,d)*boplin(mF,k);
-                      else  // thus setting  V_EF + V_FE if E!=F
-                        rcgDbybydisp_EFdk 
-                          += 2.0*boplin(mE,d)*boplin(mF,k)
-                          +  2.0*boplin(mF,d)*boplin(mE,k);
-                    }
-                    // (C^{d}_{,U^{d}})_{DBEF}^{-1}
-                    const double rcgDbyrgtstrD_DBEF = rcgDbyrgtstrD(DB,EF);
-                    // U^{d}_{DB,dk}
-                    rgtstrDbybydisp_DBdk += rcgDbyrgtstrD_DBEF * ( rcgDbybydisp_EFdk - tempD_EFdk);
+                    rgtstrbybydisp(DB,dk) = rgtstrbybydisp_DBdk;
+                    rgtstrDbybydisp(DB,dk) = rgtstrDbybydisp_DBdk;
                   }
-                  rgtstrbybydisp(DB,dk) = rgtstrbybydisp_DBdk;
-                  if (k != d) rgtstrbybydisp(DB,kd) = rgtstrbybydisp_DBdk;
-                  rgtstrDbybydisp(DB,dk) = rgtstrDbybydisp_DBdk;
-                  if (k != d) rgtstrDbybydisp(DB,kd) = rgtstrDbybydisp_DBdk;
                 }
               }
 
               // second derivative of pure-disp inverse right stretch tensor w.r.t. displacements
               // U^{d-1}_{CD,dk} = U^{d-1}_{CD,EFGH} U^{d}_{GH,k} U^{d}_{EF,d}
               //                 + U^{d-1}_{CD,EF} U^{d}_{EF,dk}
-              Teuchos::RCP<LINALG::Matrix<NUMSTR_,NUMDISP_*NUMDISP_> > invrgtstrDbybydisp = Teuchos::null; // ... U^{d-1}_{DB,dk}
+              Teuchos::RCP<LINALG::Matrix<NUMSTR_,NUMDISPSQSYM_> > invrgtstrDbybydisp = Teuchos::null; // ... U^{d-1}_{DB,dk}
               if (lin_ >= lin_one) {
-                invrgtstrDbybydisp = Teuchos::rcp(new LINALG::Matrix<NUMSTR_,NUMDISP_*NUMDISP_>());
+                // allocate
+                invrgtstrDbybydisp = Teuchos::rcp(new LINALG::Matrix<NUMSTR_,NUMDISPSQSYM_>());
 
                 // compute U^{d-1}_{DB,dk}
-                for (int dk=0; dk<NUMDISP_*NUMDISP_; ++dk) {
-                  const int d = dk / NUMDISP_;
-                  const int k = dk % NUMDISP_;
-                  if (k < d)  // symmetric in d and k : only upper triangle is computed
-                    continue;
-                  const int kd = NUMDISP_*k + d;
-                  for (int CD=0; CD<NUMSTR_; ++CD) {
-                    double invrgtstrDbybydisp_CDdk = 0.0;
-                    for (int EF=0; EF<NUMSTR_; ++EF) {
-                      const double rgtstrDbybydisp_EFdk = rgtstrDbybydisp(EF,dk);
-                      invrgtstrDbybydisp_CDdk 
-                        += invrgtstrDbyrgtstrD(CD,EF) * rgtstrDbybydisp_EFdk;
-                      for (int GH=0; GH<NUMSTR_; ++GH) {
-                        const int EFGH = NUMSTR_*EF + GH;
+                for (int d=0; d<NUMDISP_; ++d) {
+                  for (int k=d; k<NUMDISP_; ++k) {  // symmetric in d,k
+                    const int dk = NUMDISP_*d - d*(d+1)/2 + k;
+                    for (int CD=0; CD<NUMSTR_; ++CD) {
+                      double invrgtstrDbybydisp_CDdk = 0.0;
+                      for (int EF=0; EF<NUMSTR_; ++EF) {
+                        const double rgtstrDbybydisp_EFdk = rgtstrDbybydisp(EF,dk);
                         invrgtstrDbybydisp_CDdk 
-                          += invrgtstrDbybyrgtstrD(CD,EFGH)  // col are strain-like 6-Voigt
-                          * rgtstrDbydisp(GH,k)  // row are strain-like 6-Voigt too
-                          * rgtstrDbydisp(EF,d);  // row are strain-like 6-Voigt too
+                          += invrgtstrDbyrgtstrD(CD,EF) * rgtstrDbybydisp_EFdk;
+                        for (int GH=0; GH<NUMSTR_; ++GH) {
+                          const int EFGH = NUMSTR_*EF + GH;
+                          invrgtstrDbybydisp_CDdk 
+                            += invrgtstrDbybyrgtstrD(CD,EFGH)  // col are strain-like 6-Voigt
+                            * rgtstrDbydisp(GH,k)  // row are strain-like 6-Voigt too
+                            * rgtstrDbydisp(EF,d);  // row are strain-like 6-Voigt too
+                        }
                       }
+                      (*invrgtstrDbybydisp)(CD,dk) = invrgtstrDbybydisp_CDdk;
                     }
-                    (*invrgtstrDbybydisp)(CD,dk) = invrgtstrDbybydisp_CDdk;
-                    if (k != d) (*invrgtstrDbybydisp)(CD,kd) = invrgtstrDbybydisp_CDdk;
                   }
                 }
               } // if (lin_ >= lin_one) else
@@ -1165,6 +1159,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                 const int n = d / NODDISP_;
                 for (int k=d; k<NUMDISP_; ++k) {  // symmetric matrix : only upper right triangle is computed 
                   const int m = k / NODDISP_;
+                  const int dk = NUMDISP_*d - d*(d+1)/2 + k;
                   double defgradbybydisp_dk = 0.0;
                   for (int B=0; B<NUMDIM_; ++B) {
                     for (int D=0; D<NUMDIM_; ++D) {
@@ -1172,7 +1167,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                       const double DBfact = (D==B) ? 1.0 : 0.5;
                       double rgtstrbybydisp_DBdk = 0.0;
                       if (lin_ >= lin_half)
-                        rgtstrbybydisp_DBdk = rgtstrbybydisp(DB,NUMDISP_*d+k);
+                        rgtstrbybydisp_DBdk = rgtstrbybydisp(DB,dk);
                       for (int C=0; C<NUMDIM_; ++C) {
                         const int CD = voigt3x3sym[NUMDIM_*C+D];
                         const double CDfact = (C==D) ? 1.0 : 0.5;
@@ -1195,7 +1190,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                             += invdefgradtimesdefgradD(B,C) * invrgtstrD(C,D) * DBfact*rgtstrbybydisp_DBdk;
                         if (lin_ >= lin_one)
                         {
-                          const double invrgtstrDbybydisp_CDdk = (*invrgtstrDbybydisp)(CD,NUMDISP_*d+k);
+                          const double invrgtstrDbybydisp_CDdk = (*invrgtstrDbybydisp)(CD,dk);
                           defgradbybydisp_dk
                             += invdefgradtimesdefgradD(B,C) * CDfact*invrgtstrDbybydisp_CDdk * rgtstr(D,B);
                         }

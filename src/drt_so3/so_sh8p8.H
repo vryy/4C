@@ -120,6 +120,30 @@ private:
   
   //@}
 
+  /// @name Element constants
+  //@{
+
+  static const int NUMNOD_ = NUMNOD_SOH8; //8  ///< number of nodes
+  static const int NODDOF_ = 4;  ///< number of dofs per node
+  static const int NODDISP_ = 3;  ///< number of displacements per node
+  static const int NODPRES_ = 1;  ///< number of pressures per node
+  static const int NUMDOF_ = 32;  ///< total dofs per element
+  static const int NUMDISP_ = 24;  ///< total discrete displacements per element
+  static const int NUMDISPSQSYM_ = 300;  ///< (NUMDISP_*NUMDISP_ + NUMDISP_)/2, number of relevant entries if symmetric in element displacements
+  static const int NUMPRES_ = 8;  ///< total discrete pressures per element
+  static const int NUMSTR_ = NUMSTR_SOH8; //6  ///< number of strains/stresses
+  static const int NUMDFGR_ = 9;  ///< number of deformation gradient components
+                                         ///< (deformation gradient is non-symmetric)
+  static const int NUMGPT_ = NUMGPT_SOH8; //8  ///< total gauss points per element
+  static const int NUMDIM_ = NUMDIM_SOH8; //3  ///< number of dimensions
+
+  /// number of ANS sampling points, here 8
+  static const int NUMSP_ = 8;
+  /// number of modified ANS strains (E_rt,E_st,E_tt), here 3
+  static const int NUMANS_ = 3;
+
+  //@}
+
 public:
 
   /// @name Constructors and destructors and related methods
@@ -248,32 +272,8 @@ public:
 
 private:
 
-  // don't want = operator
+  /// don't want = operator
   So_sh8p8& operator = (const So_sh8p8& old);
-
-  /// @name Element constants
-  //@{
-
-  static const int NUMNOD_ = NUMNOD_SOH8; //8  ///< number of nodes
-  static const int NODDOF_ = 4;  ///< number of dofs per node
-  static const int NODDISP_ = 3;  ///< number of displacements per node
-  static const int NODPRES_ = 1;  ///< number of pressures per node
-  static const int NUMDOF_ = 32;  ///< total dofs per element
-  static const int NUMDISP_ = 24;  ///< total discrete displacements per element
-  static const int NUMDISPSQSYM_ = 300;  ///< (NUMDISP_*NUMDISP_ + NUMDISP_)/2, number of relevant entries if symmetric in element displacements
-  static const int NUMPRES_ = 8;  ///< total discrete pressures per element
-  static const int NUMSTR_ = NUMSTR_SOH8; //6  ///< number of strains/stresses
-  static const int NUMDFGR_ = 9;  ///< number of deformation gradient components
-                                         ///< (deformation gradient is non-symmetric)
-  static const int NUMGPT_ = NUMGPT_SOH8; //8  ///< total gauss points per element
-  static const int NUMDIM_ = NUMDIM_SOH8; //3  ///< number of dimensions
-
-  /// number of ANS sampling points, here 8
-  static const int NUMSP_ = 8;
-  /// number of modified ANS strains (E_rt,E_st,E_tt), here 3
-  static const int NUMANS_ = 3;
-
-  //@}
 
   /// kind of stabilisation, cf. #StabilisationType
   StabilisationType stab_;
