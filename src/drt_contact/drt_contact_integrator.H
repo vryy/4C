@@ -221,7 +221,20 @@ public:
      vector<vector<double> >& testgps, vector<vector<double> >& testgpm,
      vector<vector<double> >& testjs, vector<vector<double> >& testji,
      bool printderiv=false);
-   
+  
+  /*!
+  \brief Build all integrals and linearizations on a 2D slave /
+         master integration cell (i.e. M, g, LinM, Ling) for
+         the auxiliary plane coupling case with quadratic interpolation
+         
+  */
+  void IntegrateDerivCell3DAuxPlaneQuad(
+     CONTACT::CElement& sele, CONTACT::CElement& mele,
+     CONTACT::IntElement& sintele, CONTACT::IntElement& mintele,
+     RCP<CONTACT::Intcell> cell, double* auxn,
+     RCP<Epetra_SerialDenseMatrix> mseg,
+     RCP<Epetra_SerialDenseVector> gseg);
+    
   /*!
   \brief Compute directional derivative of master Gauss point
          coordinates XiGP on a 2D slave / master integration cell 

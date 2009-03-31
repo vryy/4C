@@ -505,28 +505,7 @@ bool CONTACT::Coupling3d::EvaluateCoupling()
   // ************ Coupling with or without auxiliary plane *************
   // *******************************************************************
   if (CouplingInAuxPlane())
-  {
-    // store integration elements for quadratic aux. plane case
-    if (Quad())
-    {
-      cout << endl;
-      cout << "Slave type: " << SlaveElement().Shape() << endl;
-      cout << "SlaveElement Nodes:";
-      for (int k=0;k<SlaveElement().NumNode();++k) cout << " " << SlaveElement().NodeIds()[k];
-      cout << "\nMaster type: " << MasterElement().Shape() << endl;
-      cout << "MasterElement Nodes:";
-      for (int k=0;k<MasterElement().NumNode();++k) cout << " " << MasterElement().NodeIds()[k];
-      cout << endl;      
-      cout << "SlaveSub type: " << SlaveIntElement().Shape() << endl;
-      cout << "SlaveSubElement Nodes:";
-      for (int k=0;k<SlaveIntElement().NumNode();++k) cout << " " << SlaveIntElement().NodeIds()[k];
-      cout << "\nMasterSub type: " << MasterIntElement().Shape() << endl;
-      cout << "MasterSubElement Nodes:";
-      for (int k=0;k<MasterIntElement().NumNode();++k) cout << " " << MasterIntElement().NodeIds()[k];
-      
-      dserror("ERROR: 3D mortar coupling for quadratic elements under construction...");
-    }
-        
+  {   
     // compute auxiliary plane for 3D coupling
     AuxiliaryPlane();
     
@@ -3029,8 +3008,20 @@ bool CONTACT::Coupling3d::IntegrateCells()
     RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
     
     if (CouplingInAuxPlane())
-      integrator.IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),mseg,gseg);
-    else //(!CouplingInAuxPlane())
+    {
+      if (Quad())
+      {
+        // static_cast to make sure to pass in IntElement&
+        CONTACT::IntElement& sintref = static_cast<CONTACT::IntElement&>(SlaveIntElement());
+        CONTACT::IntElement& mintref = static_cast<CONTACT::IntElement&>(MasterIntElement());
+        integrator.IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),
+                 sintref,mintref,Cells()[i],Auxn(),mseg,gseg);
+      }
+      else
+        integrator.IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),
+                                                  Cells()[i],Auxn(),mseg,gseg);
+    }
+    else /*(!CouplingInAuxPlane()*/
       integrator.IntegrateDerivCell3D(SlaveElement(),MasterElement(),Cells()[i],mseg,gseg);
     // *******************************************************************
     

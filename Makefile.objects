@@ -228,6 +228,7 @@ OBJS_DRT_CONTACT_LIB = \
                 src/drt_contact/drt_contact_coupling3d_tools.o \
                 src/drt_contact/drt_contact_projector.o \
                 src/drt_contact/drt_contact_integrator.o \
+                src/drt_contact/drt_contact_integrator_tools.o \
                 src/drt_contact/drt_contact_binarytree.o
 #----------------------------------------------------- drt version statmech
 OBJS_DRT_STATMECH = \
