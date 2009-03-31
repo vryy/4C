@@ -934,6 +934,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
               }
             }
 
+
             // U^{d;-1}_{,d} = U^{d;-1}_{,U} . U^d_{,d}
             invrgtstrDbydisp.MultiplyNN(invrgtstrDbyrgtstrD,rgtstrDbydisp);
           }
@@ -1014,6 +1015,62 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
               LINALG::Matrix<NUMSTR_,NUMSTR_*NUMSTR_> invrgtstrDbybyrgtstrD;
               InvVector6VoigtTwiceDiffByItself(invrgtstrDbybyrgtstrD,invrgtstrD);
 
+              // second derivative of pure-disp right Cauchy-Green tensor w.r.t. displacements
+              // TEMP^ass = C^{ass}_{EF,dk} - C^{ass}_{,UU} . U^{ass}_{,d} . U^{ass}_{,d}
+              // TEMP^d = C^{d}_{EF,dk} - C^{d}_{,UU} . U^{d}_{,d} . U^{d}_{,d}
+              LINALG::Matrix<NUMSTR_,NUMDISPSQSYM_> temp;
+              LINALG::Matrix<NUMSTR_,NUMDISPSQSYM_> tempD;
+              for (int d=0; d<NUMDISP_; ++d) {
+                for (int k=d; k<NUMDISP_; ++k) {  // symmetric in d,k
+                  const int dk = NUMDISP_*d - d*(d+1)/2 + k;
+                  int ndnk = -1;
+                  if (d%NODDISP_ == k%NODDISP_) {
+                    const int nd = d / NODDISP_;
+                    const int nk = k / NODDISP_;
+                    ndnk = nd*NUMNOD_ + nk;
+                  }
+                  for (int EF=0; EF<NUMSTR_; ++EF) {
+                    const int E = voigt9row[EF];
+                    const int F = voigt9col[EF];
+                    // C^{ass}_{,UU} . U^{ass}_{,d} . U^{ass}_{,d}
+                    // and
+                    // C^{d}_{,UU} . U^{d}_{,d} . U^{d}_{,d}
+                    double temp_EFdk = 0.0;
+                    double tempD_EFdk = 0.0;
+                    // this looks terrible, but speed is everything
+                    for (int GHIJ=0; GHIJ<6; ++GHIJ) {
+                      if (ircgbybyrgtstr[NUMSTR_*EF+GHIJ] != -1) {
+                        const int GH = ircgbybyrgtstr[NUMSTR_*EF+GHIJ] / NUMSTR_;
+                        const int IJ = ircgbybyrgtstr[NUMSTR_*EF+GHIJ] % NUMSTR_;
+                        // C^{ass}_{,UU} . U^{ass}_{,d} . U^{ass}_{,d}
+                        temp_EFdk += rcgbybyrgtstr(EF,GHIJ)*rgtstrbydisp(IJ,d)*rgtstrbydisp(GH,k);
+                        // C^{d}_{,UU} . U^{d}_{,d} . U^{d}_{,d}
+                        // C^{d}_{,U^d U^d} = C^{ass}_{,U^ass U^ass} = const
+                        tempD_EFdk += rcgbybyrgtstr(EF,GHIJ)*rgtstrDbydisp(IJ,d)*rgtstrDbydisp(GH,k);
+                      }
+                    }
+                    // U^{ass}_{DB,dk}
+                    double rcgbybydisp_EFdk = 0.0;
+                    if (ndnk != -1)
+                      rcgbybydisp_EFdk = 2.0*(*bopbydisp)(EF,ndnk);
+                    double rcgDbybydisp_EFdk = 0.0;
+                    for (int m=0; m<NUMDIM_; ++m) {
+                      const int mE = voigt3x3[NUMDIM_*m+E];
+                      const int mF = voigt3x3[NUMDIM_*m+F];
+                      if (E == F)  // make strain-like 6-Voigt vector
+                        rcgDbybydisp_EFdk 
+                          += 2.0*boplin(mE,d)*boplin(mF,k);
+                      else  // thus setting  V_EF + V_FE if E!=F
+                        rcgDbybydisp_EFdk 
+                          += 2.0*boplin(mE,d)*boplin(mF,k)
+                          +  2.0*boplin(mF,d)*boplin(mE,k);
+                    }
+                    temp(EF,dk) = rcgbybydisp_EFdk - temp_EFdk;
+                    tempD(EF,dk) = rcgDbybydisp_EFdk - tempD_EFdk;
+                  }
+                }
+              }
+
               // second derivative of assumed right stretch tensor w.r.t. displacements
               // U^{ass}_{DB,dk} = (C^{ass}_{,U^{ass}})_{DBEF}^{-1} 
               //                 . ( C^{ass}_{EF,dk} - C^{ass}_{EF,GHIJ}  U^{ass}_{IJ,d}  U^{ass}_{GH,k} )
@@ -1026,55 +1083,20 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
               for (int d=0; d<NUMDISP_; ++d) {
                 for (int k=d; k<NUMDISP_; ++k) {  // symmetric in d,k
                   const int dk = NUMDISP_*d - d*(d+1)/2 + k;
-                  int ndnk = -1;
-                  if (d%NODDISP_ == k%NODDISP_) {
-                    const int nd = d / NODDISP_;
-                    const int nk = k / NODDISP_;
-                    ndnk = nd*NUMNOD_ + nk;
-                  }
                   for (int DB=0; DB<NUMSTR_; ++DB) {
                     double rgtstrbybydisp_DBdk = 0.0;
                     double rgtstrDbybydisp_DBdk = 0.0;
                     for (int EF=0; EF<NUMSTR_; ++EF) {
-                      const int E = voigt9row[EF];
-                      const int F = voigt9col[EF];
-                      // C^{ass}_{,UU} . U^{ass}_{,d} . U^{ass}_{,d}
-                      // and
-                      // C^{d}_{,UU} . U^{d}_{,d} . U^{d}_{,d}
-                      double temp_EFdk = 0.0;
-                      double tempD_EFdk = 0.0;
-                      for (int GHIJ=0; GHIJ<6; ++GHIJ) {
-                        if (ircgbybyrgtstr[NUMSTR_*EF+GHIJ] != -1) {
-                          const int GH = ircgbybyrgtstr[NUMSTR_*EF+GHIJ] / NUMSTR_;
-                          const int IJ = ircgbybyrgtstr[NUMSTR_*EF+GHIJ] % NUMSTR_;
-                          // C^{ass}_{,UU} . U^{ass}_{,d} . U^{ass}_{,d}
-                          temp_EFdk += rcgbybyrgtstr(EF,GHIJ)*rgtstrbydisp(IJ,d)*rgtstrbydisp(GH,k);
-                          // C^{d}_{,UU} . U^{d}_{,d} . U^{d}_{,d}
-                          // C^{d}_{,U^d U^d} = C^{ass}_{,U^ass U^ass} = const
-                          tempD_EFdk += rcgbybyrgtstr(EF,GHIJ)*rgtstrDbydisp(IJ,d)*rgtstrDbydisp(GH,k);
-                        }
-                      }
+                      // TEMP^ass = C^{ass}_{EF,dk} - C^{ass}_{,UU} . U^{ass}_{,d} . U^{ass}_{,d}
+                      const double temp_EFdk = temp(EF,dk);
                       // U^{ass}_{DB,dk}
-                      if (ndnk != -1)
-                        rgtstrbybydisp_DBdk += rcgbyrgtstr(DB,EF) * 2.0*(*bopbydisp)(EF,ndnk);
-                      rgtstrbybydisp_DBdk -= rcgbyrgtstr(DB,EF) * temp_EFdk;
-                      // C^{d}_{EF,dk}
-                      double rcgDbybydisp_EFdk = 0.0;
-                      for (int m=0; m<NUMDIM_; ++m) {
-                        const int mE = voigt3x3[NUMDIM_*m+E];
-                        const int mF = voigt3x3[NUMDIM_*m+F];
-                        if (E == F)  // make strain-like 6-Voigt vector
-                          rcgDbybydisp_EFdk 
-                            += 2.0*boplin(mE,d)*boplin(mF,k);
-                        else  // thus setting  V_EF + V_FE if E!=F
-                          rcgDbybydisp_EFdk 
-                            += 2.0*boplin(mE,d)*boplin(mF,k)
-                            +  2.0*boplin(mF,d)*boplin(mE,k);
-                      }
+                      rgtstrbybydisp_DBdk += rcgbyrgtstr(DB,EF) * temp_EFdk;
+                      // TEMP^d = C^{d}_{EF,dk} - C^{d}_{,UU} . U^{d}_{,d} . U^{d}_{,d}
+                      const double tempD_EFdk = tempD(EF,dk);
                       // (C^{d}_{,U^{d}})_{DBEF}^{-1}
                       const double rcgDbyrgtstrD_DBEF = rcgDbyrgtstrD(DB,EF);
                       // U^{d}_{DB,dk}
-                      rgtstrDbybydisp_DBdk += rcgDbyrgtstrD_DBEF * ( rcgDbybydisp_EFdk - tempD_EFdk);
+                      rgtstrDbybydisp_DBdk += rcgDbyrgtstrD_DBEF * tempD_EFdk;
                     }
                     rgtstrbybydisp(DB,dk) = rgtstrbybydisp_DBdk;
                     rgtstrDbybydisp(DB,dk) = rgtstrDbybydisp_DBdk;
@@ -1521,6 +1543,39 @@ void DRT::ELEMENTS::So_sh8p8::AssDefGrad(
     rot.MultiplyNN(defgradD,invrgtstrD);
 #endif
 #endif
+
+//     // U_{,C}
+//     // correct, but same speed as solution with Lapack and inaccurate
+//     {
+//       const int* voigt6row = NULL;
+//       const int* voigt6col = NULL;
+//       Indices6VoigtTo2Tensor(voigt6row,voigt6col);
+//
+//       for (int kl=0; kl<NUMSTR_; ++kl) {
+//         const int k = voigt6row[kl];
+//         const int l = voigt6col[kl];
+//         for (int ij=0; ij<NUMSTR_; ++ij) {
+//           const int i = voigt6row[ij];
+//           const int j = voigt6col[ij];
+//           double rgtstrDbyrcgD_ijkl = 0.0;
+//           for (int al=0; al<NUMDIM_; ++al) {
+//             for (int be=0; be<NUMDIM_; ++be) {
+//               rgtstrDbyrcgD_ijkl
+//                 += 0.5*( NdT(i,al)*NdT(k,al)*NdT(l,be)*NdT(j,be)
+//                      + NdT(j,al)*NdT(l,al)*NdT(i,be)*NdT(k,be)
+//                   ) / (2.0*lamd(be,be));
+//               if (ij >= NUMDIM_)
+//                 rgtstrDbyrcgD_ijkl
+//                   +=  0.5*( NdT(j,al)*NdT(k,al)*NdT(l,be)*NdT(i,be)
+//                         + NdT(i,al)*NdT(l,al)*NdT(j,be)*NdT(k,be)
+//                     ) / (2.0*lamd(be,be));
+//             }
+//           }
+//           rgtstrDbyrcgD(ij,kl) = rgtstrDbyrcgD_ijkl;
+//         }
+//       }
+//     }
+
   }
 
   // assumed material stretch tensor
@@ -1539,7 +1594,7 @@ void DRT::ELEMENTS::So_sh8p8::AssDefGrad(
 #if 0
     LINALG::Matrix<NUMDIM_,NUMDIM_> Na;
     LINALG::SVD(cga,NaT,lama,Na);
-    for (int i=0; i<NUMDIM_; ++i) lama(i,i) = sqrt(lama(i,i));
+    for (int al=0; al<NUMDIM_; ++al) lama(al,al) = sqrt(lama(al,al));
     LINALG::Matrix<NUMDIM_,NUMDIM_> aux;
     aux.MultiplyNN(NaT,lama);
     rgtstr.MultiplyNN(aux,Na);
