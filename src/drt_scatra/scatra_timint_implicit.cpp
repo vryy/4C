@@ -875,7 +875,7 @@ void SCATRA::ScaTraTimIntImpl::Solve()
     AddSpecificTimeIntegrationParameters(eleparams);
 
     // call loop over elements with subgrid-diffusivity(-scaling) vector
-    discret_->Evaluate(eleparams,sysmat_,null,residual_,subgrdiff_);
+    discret_->Evaluate(eleparams,sysmat_,null,residual_,subgrdiff_,null);
     discret_->ClearState();
 
     // AVM3 scaling

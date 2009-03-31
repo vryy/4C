@@ -969,7 +969,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
            "L_2_norm_without_residual_at_itemax"))
       {
         // call standard loop over elements (including subgrid-viscosity vector)
-        discret_->Evaluate(eleparams,sysmat_,null,residual_,subgrvisc_);
+        discret_->Evaluate(eleparams,sysmat_,null,residual_,subgrvisc_,null);
 
         discret_->ClearState();
 
@@ -2033,7 +2033,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   if (fssgv_ != "No") AVM3Separation();
 
   // call standard loop over elements (including subgrid-viscosity vector)
-  discret_->Evaluate(eleparams,sysmat_,null,residual_,subgrvisc_);
+  discret_->Evaluate(eleparams,sysmat_,null,residual_,subgrvisc_,null);
   discret_->ClearState();
 
   // account for potential Neumann inflow terms
@@ -2628,7 +2628,7 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
 
   // element evaluation for getting system matrix
   // -> we merely need matrix "structure" below, not the actual contents
-  discret_->Evaluate(eleparams,sysmat_,null,residual_,subgrvisc_);
+  discret_->Evaluate(eleparams,sysmat_,null,residual_,subgrvisc_,null);
   discret_->ClearState();
 
   // complete system matrix
@@ -3621,7 +3621,7 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
     }
 
     // call loop over elements
-    discret_->Evaluate(eleparams,sysmat_,meshmatrix_,residual_);
+    discret_->Evaluate(eleparams,sysmat_,meshmatrix_,residual_,null,null);
     discret_->ClearState();
 
     // finalize the system matrix
