@@ -962,6 +962,41 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
             }
             rgtstrbydisp.Scale(2.0);
 
+            // U^{d;-1}_{CD} . U^{ass}_{DB}
+            LINALG::Matrix<NUMDIM_,NUMDIM_> invrgtstrDtimesrgtstr;
+            invrgtstrDtimesrgtstr.MultiplyNN(invrgtstrD,rgtstr);
+
+            // AUXR_{CBk} = U^{d;-1}_{CD,k} . U^{ass}_{DB}
+            // AUXL_{CBk} = U^{d;-1}_{CD} . U^{ass}_{DB,k}
+            LINALG::Matrix<NUMSTR_,NUMDISP_> auxleft(true);
+            LINALG::Matrix<NUMSTR_,NUMDISP_> auxright(true);
+            for (int k=0; k<NUMDISP_; ++k) {
+              for (int CB=0; CB<NUMSTR_; ++CB) {
+                double auxleft_CBk = 0.0;
+                double auxright_CBk = 0.0;
+                const int C = voigt6row[CB];
+                const int B = voigt6row[CB];
+                for (int D=0; D<NUMDIM_; ++D) {
+                  const int CD = voigt3x3sym[NUMDIM_*C+D];
+                  const int DB = voigt3x3sym[NUMDIM_*D+B];
+                  const double CDfact = (C==D) ? 1.0 : 0.5;
+                  const double DBfact = (D==B) ? 1.0 : 0.5;
+                  const int DC = voigt3x3sym[NUMDIM_*D+C];
+                  const double DCfact = (D==C) ? 1.0 : 0.5;
+                  const int BD = voigt3x3sym[NUMDIM_*B+D];
+                  const double BDfact = (B==D) ? 1.0 : 0.5;
+                  auxleft_CBk += CDfact*invrgtstrDbydisp(CD,k) * rgtstr(D,B);
+                  auxright_CBk += invrgtstrD(C,D) * DBfact*rgtstrbydisp(DB,k);
+                  if (CB >= NUMDIM_) {
+                    auxleft_CBk += BDfact*invrgtstrDbydisp(BD,k) * rgtstr(D,C);
+                    auxright_CBk += invrgtstrD(B,D) * DCfact*rgtstrbydisp(DC,k);
+                  }
+                }
+                auxleft(CB,k) = auxleft_CBk;
+                auxright(CB,k) = auxright_CBk;
+              }
+            }
+
             // derivative of def.grad. with respect to k nodal displacements d^k
             // F_{aB,k} = F^d_{aC,k} . U^{d;-1}_{CD} . U^{ass}_{DB}
             //          + F^d_{aC} . U^{d;-1}_{CD,k} . U^{ass}_{DB}
@@ -973,16 +1008,13 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                 const int B = voigt9col[aB];
                 for (int C=0; C<NUMDIM_; ++C) {
                   const int aC = voigt3x3[NUMDIM_*a+C];
-                  for (int D=0; D<NUMDIM_; ++D) {
-                    const int CD = voigt3x3sym[NUMDIM_*C+D];
-                    const int DB = voigt3x3sym[NUMDIM_*D+B];
-                    const double CDfact = (C==D) ? 1.0 : 0.5;
-                    const double DBfact = (D==B) ? 1.0 : 0.5;
-                    defgradbydisp_aBk 
-                      += boplin(aC,k) * invrgtstrD(C,D) * rgtstr(D,B)
-                      + defgradD(a,C) * CDfact*invrgtstrDbydisp(CD,k) * rgtstr(D,B)
-                      + defgradD(a,C) * invrgtstrD(C,D) * DBfact*rgtstrbydisp(DB,k);
-                  }
+                  const int CB = voigt3x3sym[NUMDIM_*C+B];
+                  const double CBfact = (C==B) ? 1.0 : 0.5;
+                  defgradbydisp_aBk
+                    += defgradD(a,C) * CBfact*auxleft(CB,k)
+                    + defgradD(a,C) * CBfact*auxright(CB,k);
+                  defgradbydisp_aBk
+                    += boplin(aC,k) * invrgtstrDtimesrgtstr(C,B);
                 }
                 defgradbydisp(aB,k) = defgradbydisp_aBk;
               }
@@ -1166,9 +1198,8 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
               invdefgradtimesdefgradD.MultiplyTN(invdefgrad,defgradD);
 
               // R_{BD} = F^{-T}_{Ba} . F^{d}_{aC} . U^{d;-1}_{CD}
-              LINALG::Matrix<NUMDIM_,NUMDIM_>  invdefgradtimesdefgradDtimesinvrgtstrD;
+              LINALG::Matrix<NUMDIM_,NUMDIM_> invdefgradtimesdefgradDtimesinvrgtstrD;
               invdefgradtimesdefgradDtimesinvrgtstrD.MultiplyNN(invdefgradtimesdefgradD,invrgtstrD);
-
 
               // contribute stuff containing second derivatives in displacements
               // F^{-T}_{aB} F_{aB,dk}
