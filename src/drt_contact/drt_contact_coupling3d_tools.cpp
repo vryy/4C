@@ -47,25 +47,26 @@ Maintainer: Alexander Popp
  |  ctor (public)                                             popp 02/09|
  |  THIS IS A PURE FINITE DIFFERENCE VERSION!!!                         |
  *----------------------------------------------------------------------*/
-CONTACT::Coupling3d::Coupling3d(DRT::Discretization& idiscret, int dim,
-                                CONTACT::CElement& sele, CONTACT::CElement& mele,
+CONTACT::Coupling3d::Coupling3d(DRT::Discretization& idiscret, int dim, bool quad,
                                 bool auxplane,
+                                CONTACT::CElement& sele, CONTACT::CElement& mele,
                                 vector<vector<double> >& testv,
                                 bool printderiv) :
 idiscret_(idiscret),
 dim_(dim),
+quad_(quad),
+auxplane_(auxplane),
 sele_(sele),
-mele_(mele),
-auxplane_(auxplane)
+mele_(mele)
 {
   // *********************************************************************
   // the three-dimensional case
   // *********************************************************************
   // check for quadratic elements
   if (sele.Shape()!=DRT::Element::tri3 && sele.Shape()!=DRT::Element::quad4)
-    dserror("ERROR: 3D mortar coupling not yet impl. for quadratic elements");
+    dserror("ERROR: FD check for 3D mortar coupling not yet impl. for quadratic elements");
   if (mele.Shape()!=DRT::Element::tri3 && mele.Shape()!=DRT::Element::quad4)
-    dserror("ERROR: 3D mortar coupling not yet impl. for quadratic elements");
+    dserror("ERROR: FD check for 3D mortar coupling not yet impl. for quadratic elements");
 
   // rough check whether elements are "near"
   bool near = RoughCheck();
@@ -205,9 +206,9 @@ auxplane_(auxplane)
  |  ctor (public)                                             popp 02/09|
  |  THIS IS A PURE FINITE DIFFERENCE VERSION!!!                         |
  *----------------------------------------------------------------------*/
-CONTACT::Coupling3d::Coupling3d(DRT::Discretization& idiscret, int dim,
-                                CONTACT::CElement& sele, CONTACT::CElement& mele,
+CONTACT::Coupling3d::Coupling3d(DRT::Discretization& idiscret, int dim, bool quad,
                                 bool auxplane,
+                                CONTACT::CElement& sele, CONTACT::CElement& mele,
                                 vector<vector<double> >& testgps,
                                 vector<vector<double> >& testgpm,
                                 vector<vector<double> >& testjs,
@@ -215,18 +216,19 @@ CONTACT::Coupling3d::Coupling3d(DRT::Discretization& idiscret, int dim,
                                 bool printderiv) :
 idiscret_(idiscret),
 dim_(dim),
+quad_(quad),
+auxplane_(auxplane),
 sele_(sele),
-mele_(mele),
-auxplane_(auxplane)
+mele_(mele)
 {
   // *********************************************************************
   // the three-dimensional case
   // *********************************************************************
   // check for quadratic elements
   if (sele.Shape()!=DRT::Element::tri3 && sele.Shape()!=DRT::Element::quad4)
-    dserror("ERROR: 3D mortar coupling not yet impl. for quadratic elements");
+    dserror("ERROR: FD check for 3D mortar coupling not yet impl. for quadratic elements");
   if (mele.Shape()!=DRT::Element::tri3 && mele.Shape()!=DRT::Element::quad4)
-    dserror("ERROR: 3D mortar coupling not yet impl. for quadratic elements");
+    dserror("ERROR: FD check for 3D mortar coupling not yet impl. for quadratic elements");
 
   // rough check whether elements are "near"
   bool near = RoughCheck();

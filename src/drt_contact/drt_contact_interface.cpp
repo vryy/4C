@@ -1167,18 +1167,56 @@ bool CONTACT::Interface::IntegrateSlave(CONTACT::CElement& sele)
 bool CONTACT::Interface::IntegrateCoupling(CONTACT::CElement& sele,
                                            CONTACT::CElement& mele)
 {
+  // *********************************************************************
   // do interface coupling within a new class
   // (projection slave and master, overlap detection, integration and
   // linearization of the Mortar matrix M)
+  // ************************************************************** 2D ***
   if (Dim()==2)
     CONTACT::Coupling2d coup(Discret(),Dim(),sele,mele,CSegs());
+  // ************************************************************** 3D ***
   else if (Dim()==3)
   {
     bool auxplane = IParams().get<bool>("coupling auxplane",false);
-    CONTACT::Coupling3d coup(Discret(),Dim(),sele,mele,auxplane);
+    
+    // ************************************************** quadratic 3D ***
+    if (sele.IsQuad() || mele.IsQuad())
+    {
+      // only for auxiliary plane 3D version
+      if (!auxplane) dserror("ERROR: Quadratic 3D contact only for AuxPlane case!");
+      
+      // build linear integration elements from quadratic CElements
+      vector<RCP<CONTACT::IntElement> > sauxelements(0);
+      vector<RCP<CONTACT::IntElement> > mauxelements(0);
+      SplitIntElements(sele,sauxelements);
+      SplitIntElements(mele,mauxelements);
+      
+      // loop over all IntElement pairs for coupling
+      for (int i=0;i<(int)sauxelements.size();++i)
+      {
+        for (int j=0;j<(int)mauxelements.size();++j)
+        {
+          // create instance of coupling class
+          CONTACT::Coupling3dQuad coup(Discret(),Dim(),true,auxplane,
+                        sele,mele,*sauxelements[i],*mauxelements[j]);  
+          // do coupling
+          coup.EvaluateCoupling();
+        }
+      }
+    }
+    
+    // ***************************************************** linear 3D ***
+    else
+    {
+      // create instance of coupling class
+      CONTACT::Coupling3d coup(Discret(),Dim(),false,auxplane,sele,mele);    
+      // do coupling
+      coup.EvaluateCoupling();
+    }
   }
   else
     dserror("ERROR: Dimension for Mortar coupling must be 2D or 3D!");
+  // *********************************************************************
       
   return true;
 }
@@ -1200,7 +1238,8 @@ bool CONTACT::Interface::IntegrateCoupling(CONTACT::CElement& sele,
   else if (Dim()==3)
   {
     bool auxplane = IParams().get<bool>("coupling auxplane",false);
-    CONTACT::Coupling3d coup(Discret(),Dim(),sele,mele,auxplane,testv,printderiv);
+    // here the EvaluateCoupling routine is part of the constructor!
+    CONTACT::Coupling3d coup(Discret(),Dim(),false,auxplane,sele,mele,testv,printderiv);
   }
   else
     dserror("ERROR: Dimension for Mortar coupling must be 2D or 3D!");
@@ -1228,11 +1267,273 @@ bool CONTACT::Interface::IntegrateCoupling(CONTACT::CElement& sele,
   else if (Dim()==3)
   {
     bool auxplane = IParams().get<bool>("coupling auxplane",false);
-    CONTACT::Coupling3d coup(Discret(),Dim(),sele,mele,auxplane,testgps,testgpm,testjs,testji,printderiv);
+    // here the EvaluateCoupling routine is part of the constructor!
+    CONTACT::Coupling3d coup(Discret(),Dim(),false,auxplane,sele,mele,testgps,testgpm,testjs,testji,printderiv);
   }
   else
     dserror("ERROR: Dimension for Mortar coupling must be 2D or 3D!");
       
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ | Split CElementsinto IntElements for 3D quad. coupling      popp 03/09|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Interface::SplitIntElements(CONTACT::CElement& ele,
+                       vector<RCP<CONTACT::IntElement> >& auxele)
+{
+  // make sure we are supposed to be here
+  if (ele.Owner() != Comm().MyPID())
+    dserror("ERROR: SplitIntElements called for off-proc element!");
+  
+  // *********************************************************************
+  // do splitting for given element
+  // *********************************************************** quad9 ***
+  if (ele.Shape()==DRT::Element::quad9)
+  {
+    // split into for quad4 elements
+    int numnode = 4;
+    DRT::Element::DiscretizationType dt = DRT::Element::quad4;
+    
+    // first integration element
+    // containing parent nodes 0,4,8,7
+    int nodeids[4] = {0,0,0,0};
+    nodeids[0] = ele.NodeIds()[0];
+    nodeids[1] = ele.NodeIds()[4];
+    nodeids[2] = ele.NodeIds()[8];
+    nodeids[3] = ele.NodeIds()[7];
+    
+    vector<DRT::Node*> nodes(4);
+    nodes[0] = ele.Nodes()[0];
+    nodes[1] = ele.Nodes()[4];
+    nodes[2] = ele.Nodes()[8];
+    nodes[3] = ele.Nodes()[7];
+
+    auxele.push_back(rcp(new IntElement(0,ele.Id(),ele.Type(),ele.Owner(),
+       dt,numnode,nodeids,nodes,ele.IsSlave())));
+    
+    // second integration element
+    // containing parent nodes 4,1,5,8
+    nodeids[0] = ele.NodeIds()[4];
+    nodeids[1] = ele.NodeIds()[1];
+    nodeids[2] = ele.NodeIds()[5];
+    nodeids[3] = ele.NodeIds()[8];
+    
+    nodes[0] = ele.Nodes()[4];
+    nodes[1] = ele.Nodes()[1];
+    nodes[2] = ele.Nodes()[5];
+    nodes[3] = ele.Nodes()[8];
+    
+    auxele.push_back(rcp(new IntElement(1,ele.Id(),ele.Type(),ele.Owner(),
+       dt,numnode,nodeids,nodes,ele.IsSlave())));
+    
+    // third integration element
+    // containing parent nodes 8,5,2,6
+    nodeids[0] = ele.NodeIds()[8];
+    nodeids[1] = ele.NodeIds()[5];
+    nodeids[2] = ele.NodeIds()[2];
+    nodeids[3] = ele.NodeIds()[6];
+    
+    nodes[0] = ele.Nodes()[8];
+    nodes[1] = ele.Nodes()[5];
+    nodes[2] = ele.Nodes()[2];
+    nodes[3] = ele.Nodes()[6];
+    
+    auxele.push_back(rcp(new IntElement(2,ele.Id(),ele.Type(),ele.Owner(),
+       dt,numnode,nodeids,nodes,ele.IsSlave())));
+    
+    // fourth integration element
+    // containing parent nodes 7,8,6,3
+    nodeids[0] = ele.NodeIds()[7];
+    nodeids[1] = ele.NodeIds()[8];
+    nodeids[2] = ele.NodeIds()[6];
+    nodeids[3] = ele.NodeIds()[3];
+
+    nodes[0] = ele.Nodes()[7];
+    nodes[1] = ele.Nodes()[8];
+    nodes[2] = ele.Nodes()[6];
+    nodes[3] = ele.Nodes()[3];
+    
+    auxele.push_back(rcp(new IntElement(3,ele.Id(),ele.Type(),ele.Owner(),
+       dt,numnode,nodeids,nodes,ele.IsSlave())));
+  }
+  
+  // *********************************************************** quad8 ***
+  else if (ele.Shape()==DRT::Element::quad8)
+  {
+    // split into four tri3 elements and one quad4 element
+    int numnodetri = 3;
+    int numnodequad = 4;
+    DRT::Element::DiscretizationType dttri = DRT::Element::tri3;
+    DRT::Element::DiscretizationType dtquad = DRT::Element::quad4;
+    
+    // first integration element
+    // containing parent nodes 0,4,7
+    int nodeids[3] = {0,0,0};
+    nodeids[0] = ele.NodeIds()[0];
+    nodeids[1] = ele.NodeIds()[4];
+    nodeids[2] = ele.NodeIds()[7];
+    
+    vector<DRT::Node*> nodes(3);
+    nodes[0] = ele.Nodes()[0];
+    nodes[1] = ele.Nodes()[4];
+    nodes[2] = ele.Nodes()[7];
+
+    auxele.push_back(rcp(new IntElement(0,ele.Id(),ele.Type(),ele.Owner(),
+       dttri,numnodetri,nodeids,nodes,ele.IsSlave())));
+    
+    // second integration element
+    // containing parent nodes 1,5,4
+    nodeids[0] = ele.NodeIds()[1];
+    nodeids[1] = ele.NodeIds()[5];
+    nodeids[2] = ele.NodeIds()[4];
+    
+    nodes[0] = ele.Nodes()[1];
+    nodes[1] = ele.Nodes()[5];
+    nodes[2] = ele.Nodes()[4];
+
+    auxele.push_back(rcp(new IntElement(1,ele.Id(),ele.Type(),ele.Owner(),
+       dttri,numnodetri,nodeids,nodes,ele.IsSlave())));
+    
+    // third integration element
+    // containing parent nodes 2,6,5
+    nodeids[0] = ele.NodeIds()[2];
+    nodeids[1] = ele.NodeIds()[6];
+    nodeids[2] = ele.NodeIds()[5];
+    
+    nodes[0] = ele.Nodes()[2];
+    nodes[1] = ele.Nodes()[6];
+    nodes[2] = ele.Nodes()[5];
+
+    auxele.push_back(rcp(new IntElement(2,ele.Id(),ele.Type(),ele.Owner(),
+       dttri,numnodetri,nodeids,nodes,ele.IsSlave())));
+    
+    // fourth integration element
+    // containing parent nodes 3,7,6
+    nodeids[0] = ele.NodeIds()[3];
+    nodeids[1] = ele.NodeIds()[7];
+    nodeids[2] = ele.NodeIds()[6];
+    
+    nodes[0] = ele.Nodes()[3];
+    nodes[1] = ele.Nodes()[7];
+    nodes[2] = ele.Nodes()[6];
+
+    auxele.push_back(rcp(new IntElement(3,ele.Id(),ele.Type(),ele.Owner(),
+       dttri,numnodetri,nodeids,nodes,ele.IsSlave())));
+    
+    // fifth integration element
+    // containing parent nodes 4,5,6,7
+    int nodeidsquad[4] = {0,0,0,0};
+    nodeidsquad[0] = ele.NodeIds()[4];
+    nodeidsquad[1] = ele.NodeIds()[5];
+    nodeidsquad[2] = ele.NodeIds()[6];
+    nodeidsquad[3] = ele.NodeIds()[7];
+    
+    vector<DRT::Node*> nodesquad(4);
+    nodesquad[0] = ele.Nodes()[4];
+    nodesquad[1] = ele.Nodes()[5];
+    nodesquad[2] = ele.Nodes()[6];
+    nodesquad[3] = ele.Nodes()[7];
+
+    auxele.push_back(rcp(new IntElement(4,ele.Id(),ele.Type(),ele.Owner(),
+       dtquad,numnodequad,nodeidsquad,nodesquad,ele.IsSlave())));
+  }
+  
+  // ************************************************************ tri6 ***
+  else if (ele.Shape()==DRT::Element::tri6)
+  {
+    // split into for tri3 elements
+    int numnode = 3;
+    DRT::Element::DiscretizationType dt = DRT::Element::tri3;
+    
+    // first integration element
+    // containing parent nodes 0,3,5
+    int nodeids[3] = {0,0,0};
+    nodeids[0] = ele.NodeIds()[0];
+    nodeids[1] = ele.NodeIds()[3];
+    nodeids[2] = ele.NodeIds()[5];
+    
+    vector<DRT::Node*> nodes(3);
+    nodes[0] = ele.Nodes()[0];
+    nodes[1] = ele.Nodes()[3];
+    nodes[2] = ele.Nodes()[5];
+
+    auxele.push_back(rcp(new IntElement(0,ele.Id(),ele.Type(),ele.Owner(),
+       dt,numnode,nodeids,nodes,ele.IsSlave())));
+    
+    // second integration element
+    // containing parent nodes 3,1,4
+    nodeids[0] = ele.NodeIds()[3];
+    nodeids[1] = ele.NodeIds()[1];
+    nodeids[2] = ele.NodeIds()[4];
+    
+    nodes[0] = ele.Nodes()[3];
+    nodes[1] = ele.Nodes()[1];
+    nodes[2] = ele.Nodes()[4];
+    
+    auxele.push_back(rcp(new IntElement(1,ele.Id(),ele.Type(),ele.Owner(),
+       dt,numnode,nodeids,nodes,ele.IsSlave())));
+    
+    // third integration element
+    // containing parent nodes 5,4,2
+    nodeids[0] = ele.NodeIds()[5];
+    nodeids[1] = ele.NodeIds()[4];
+    nodeids[2] = ele.NodeIds()[2];
+    
+    nodes[0] = ele.Nodes()[5];
+    nodes[1] = ele.Nodes()[4];
+    nodes[2] = ele.Nodes()[2];
+    
+    auxele.push_back(rcp(new IntElement(2,ele.Id(),ele.Type(),ele.Owner(),
+       dt,numnode,nodeids,nodes,ele.IsSlave())));
+    
+    // fourth integration element
+    // containing parent nodes 4,5,3
+    nodeids[0] = ele.NodeIds()[4];
+    nodeids[1] = ele.NodeIds()[5];
+    nodeids[2] = ele.NodeIds()[3];
+
+    nodes[0] = ele.Nodes()[4];
+    nodes[1] = ele.Nodes()[5];
+    nodes[2] = ele.Nodes()[3];
+    
+    auxele.push_back(rcp(new IntElement(3,ele.Id(),ele.Type(),ele.Owner(),
+       dt,numnode,nodeids,nodes,ele.IsSlave())));
+  }
+  
+  // *********************************************************** quad4 ***
+  else if (ele.Shape()==DRT::Element::quad4)
+  {
+    // 1:1 conversion to IntElement
+    vector<DRT::Node*> nodes(4);
+    nodes[0] = ele.Nodes()[0];
+    nodes[1] = ele.Nodes()[1];
+    nodes[2] = ele.Nodes()[2];
+    nodes[3] = ele.Nodes()[3];
+    
+    auxele.push_back(rcp(new IntElement(0,ele.Id(),ele.Type(),ele.Owner(),
+       ele.Shape(),ele.NumNode(),ele.NodeIds(),nodes,ele.IsSlave())));
+  }
+  
+  // ************************************************************ tri3 ***
+  else if (ele.Shape()==DRT::Element::tri3)
+  {
+    // 1:1 conversion to IntElement
+    vector<DRT::Node*> nodes(3);
+    nodes[0] = ele.Nodes()[0];
+    nodes[1] = ele.Nodes()[1];
+    nodes[2] = ele.Nodes()[2];
+    
+    auxele.push_back(rcp(new IntElement(0,ele.Id(),ele.Type(),ele.Owner(),
+       ele.Shape(),ele.NumNode(),ele.NodeIds(),nodes,ele.IsSlave())));
+  }
+  
+  // ********************************************************* invalid ***
+  else
+    dserror("ERROR: SplitIntElements called for unknown element shape!");
+  
+  // *********************************************************************
+  
   return true;
 }
 

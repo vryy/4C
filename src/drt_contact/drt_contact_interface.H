@@ -42,6 +42,7 @@ Maintainer: Michael Gee
 #include "Epetra_Comm.h"
 #include "drt_cnode.H"
 #include "drt_celement.H"
+#include "drt_contact_coupling3d.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_sparsematrix.H"
 #include "../drt_contact/drt_contact_binarytree.H"
@@ -543,6 +544,13 @@ public:
                                  vector<vector<double> >& testjs,
                                  vector<vector<double> >& testji,
                                  bool printderiv=false);
+  
+  /*!
+  \brief Split CElements into IntElements for 3D quadratic coupling
+          
+  */
+  virtual bool SplitIntElements(CONTACT::CElement& ele,
+                                vector<RCP<CONTACT::IntElement> >& auxele);
     
   /*!
   \brief Assemble Mortar matrices and weighted gap

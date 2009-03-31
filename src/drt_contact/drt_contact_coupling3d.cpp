@@ -45,6 +45,34 @@ Maintainer: Alexander Popp
 #include "contactdefines.H"
 
 /*----------------------------------------------------------------------*
+ |  ctor (public)                                             popp 03/09|
+ *----------------------------------------------------------------------*/
+CONTACT::IntElement::IntElement(int lid, int id, ElementType etype, int owner, 
+                                const DRT::Element::DiscretizationType& shape, 
+                                const int numnode,
+                                const int* nodeids,
+                                vector<DRT::Node*> nodes,
+                                const bool isslave) :
+CONTACT::CElement(id,etype,owner,shape,numnode,nodeids,isslave),
+lid_(lid)
+{
+  // check for consistency of nodeids and nodes
+  for (int i=0;i<NumNode();++i)
+    if (nodes[i]->Id()!=nodeids[i])
+      dserror("ERROR: IntElement: Inconsistency Nodes and NodeIds!");
+  
+  // store given nodes into class variable
+  quadnode_.resize((int)nodes.size());
+  for (int i=0;i<(int)nodes.size();++i)
+    quadnode_[i] = nodes[i];
+  
+  // as discretization is already evaluated, compute area
+  Area()=ComputeArea();
+  
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
 CONTACT::Intcell::Intcell(int id, int nvertices, Epetra_SerialDenseMatrix& coords,
@@ -442,27 +470,29 @@ alpha_(old.alpha_)
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
-CONTACT::Coupling3d::Coupling3d(DRT::Discretization& idiscret, int dim,
-                                CONTACT::CElement& sele, CONTACT::CElement& mele,
-                                bool auxplane) :
+CONTACT::Coupling3d::Coupling3d(DRT::Discretization& idiscret, int dim, bool quad,
+                  bool auxplane, CONTACT::CElement& sele, CONTACT::CElement& mele) :
 idiscret_(idiscret),
 dim_(dim),
+quad_(quad),
+auxplane_(auxplane),
 sele_(sele),
-mele_(mele),
-auxplane_(auxplane)
+mele_(mele)
 {
-  // *********************************************************************
-  // the three-dimensional case
-  // *********************************************************************
-  // check for quadratic elements
-  if (sele.Shape()!=DRT::Element::tri3 && sele.Shape()!=DRT::Element::quad4)
-    dserror("ERROR: 3D mortar coupling not yet impl. for quadratic elements");
-  if (mele.Shape()!=DRT::Element::tri3 && mele.Shape()!=DRT::Element::quad4)
-    dserror("ERROR: 3D mortar coupling not yet impl. for quadratic elements");
+  // empty constructor body
+  return;
+}
 
+/*----------------------------------------------------------------------*
+ |  Evaluate coupling (3D)                                    popp 03/09|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Coupling3d::EvaluateCoupling()
+{
   // rough check whether elements are "near"
+  // whether or not quadratic 3d coupling is performed, we only
+  // check the distance of the parent slave and master elements
   bool near = RoughCheck();
-  if (!near) return;
+  if (!near) return false;
   
   // tolerance for polygon clipping
   double tol= 0.0;
@@ -476,6 +506,27 @@ auxplane_(auxplane)
   // *******************************************************************
   if (CouplingInAuxPlane())
   {
+    // store integration elements for quadratic aux. plane case
+    if (Quad())
+    {
+      cout << endl;
+      cout << "Slave type: " << SlaveElement().Shape() << endl;
+      cout << "SlaveElement Nodes:";
+      for (int k=0;k<SlaveElement().NumNode();++k) cout << " " << SlaveElement().NodeIds()[k];
+      cout << "\nMaster type: " << MasterElement().Shape() << endl;
+      cout << "MasterElement Nodes:";
+      for (int k=0;k<MasterElement().NumNode();++k) cout << " " << MasterElement().NodeIds()[k];
+      cout << endl;      
+      cout << "SlaveSub type: " << SlaveIntElement().Shape() << endl;
+      cout << "SlaveSubElement Nodes:";
+      for (int k=0;k<SlaveIntElement().NumNode();++k) cout << " " << SlaveIntElement().NodeIds()[k];
+      cout << "\nMasterSub type: " << MasterIntElement().Shape() << endl;
+      cout << "MasterSubElement Nodes:";
+      for (int k=0;k<MasterIntElement().NumNode();++k) cout << " " << MasterIntElement().NodeIds()[k];
+      
+      dserror("ERROR: 3D mortar coupling for quadratic elements under construction...");
+    }
+        
     // compute auxiliary plane for 3D coupling
     AuxiliaryPlane();
     
@@ -486,8 +537,8 @@ auxplane_(auxplane)
     ProjectMaster();
     
     // tolerance for polygon clipping
-    double sminedge = sele.MinEdgeSize();
-    double mminedge = mele.MinEdgeSize(); 
+    double sminedge = SlaveIntElement().MinEdgeSize();
+    double mminedge = MasterIntElement().MinEdgeSize(); 
     tol = CONTACTCLIPTOL * min(sminedge,mminedge);
   }
   
@@ -495,8 +546,8 @@ auxplane_(auxplane)
   else //(!CouplingInAuxPlane())
   {
     // get some data
-    int nsnodes = SlaveElement().NumNode();
-    int nmnodes = MasterElement().NumNode();
+    int nsnodes = SlaveIntElement().NumNode();
+    int nmnodes = MasterIntElement().NumNode();
     
     // get slave vertices in slave element parameter space (direct)
     // additionally get slave vertex Ids for later linearization
@@ -506,13 +557,13 @@ auxplane_(auxplane)
     for (int i=0;i<nsnodes;++i)
     {     
       double xi[2] = {0.0, 0.0};
-      SlaveElement().LocalCoordinatesOfNode(i,xi);
+      SlaveIntElement().LocalCoordinatesOfNode(i,xi);
       svertices[i][0] = xi[0];
       svertices[i][1] = xi[1];
       svertices[i][2] = 0.0;
    
       // relevant ids (here only slave node id itself)
-      snodeids[0] = SlaveElement().NodeIds()[i];
+      snodeids[0] = SlaveIntElement().NodeIds()[i];
       
       // store into vertex data structure
       SlaveVertices().push_back(Vertex(svertices[i],Vertex::slave,snodeids,NULL,NULL,false,false,NULL,-1.0));
@@ -524,7 +575,7 @@ auxplane_(auxplane)
     vector<int> mnodeids(1);
     for (int i=0;i<nmnodes;++i)
     {
-      int gid = MasterElement().NodeIds()[i];
+      int gid = MasterIntElement().NodeIds()[i];
       DRT::Node* node = Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
       CNode* mnode = static_cast<CNode*>(node);
@@ -535,7 +586,7 @@ auxplane_(auxplane)
       double alpha = 0.0;
       CONTACT::Projector projector(3);
       //cout << "Projecting master node ID: " << mnode->Id() << endl;
-      projector.ProjectElementNormal3D(*mnode,SlaveElement(),sxi,alpha);
+      projector.ProjectElementNormal3D(*mnode,SlaveIntElement(),sxi,alpha);
       
       mvertices[i][0] = sxi[0];
       mvertices[i][1] = sxi[1];
@@ -580,7 +631,7 @@ auxplane_(auxplane)
     IntegrateCells();
   }
 
-  return;
+  return true;  
 }
 
 /*----------------------------------------------------------------------*
@@ -627,7 +678,7 @@ bool CONTACT::Coupling3d::AuxiliaryPlane()
   // for tri3, tri6 elements: xi = eta = 1/3
   double loccenter[2];
     
-  DRT::Element::DiscretizationType dt = SlaveElement().Shape();
+  DRT::Element::DiscretizationType dt = SlaveIntElement().Shape();
   if (dt==CElement::tri3 || dt==CElement::tri6)
   {
     loccenter[0] = 1.0/3;
@@ -641,15 +692,15 @@ bool CONTACT::Coupling3d::AuxiliaryPlane()
   else dserror("ERROR: AuxiliaryPlane called for unknown element type");
   
   // compute element center via shape fct. interpolation
-  SlaveElement().LocalToGlobal(loccenter,Auxc(),0);
+  SlaveIntElement().LocalToGlobal(loccenter,Auxc(),0);
   
   // we then compute the unit normal vector at the element center
-  Lauxn() = SlaveElement().ComputeUnitNormalAtXi(loccenter,Auxn());
+  Lauxn() = SlaveIntElement().ComputeUnitNormalAtXi(loccenter,Auxn());
   
   // also compute linearization of the unit normal vector
-  SlaveElement().DerivUnitNormalAtXi(loccenter,GetDerivAuxn());
+  SlaveIntElement().DerivUnitNormalAtXi(loccenter,GetDerivAuxn());
   
-  //cout << "Slave Element: " << SlaveElement().Id() << endl;
+  //cout << "Slave Element: " << SlaveIntElement().Id() << endl;
   //cout << "->Center: " << Auxc()[0] << " " << Auxc()[1] << " " << Auxc()[2] << endl;
   //cout << "->Normal: " << Auxn()[0] << " " << Auxn()[1] << " " << Auxn()[2] << endl;
   
@@ -662,8 +713,8 @@ bool CONTACT::Coupling3d::AuxiliaryPlane()
 bool CONTACT::Coupling3d::ProjectSlave()
 {
   // project slave nodes onto auxiliary plane
-  int nnodes = SlaveElement().NumNode();
-  DRT::Node** mynodes = SlaveElement().Nodes();
+  int nnodes = SlaveIntElement().NumNode();
+  DRT::Node** mynodes = SlaveIntElement().Nodes();
   if (!mynodes) dserror("ERROR: ProjectSlave: Null pointer!");
   
   // initialize storage for slave coords + their ids
@@ -703,8 +754,8 @@ bool CONTACT::Coupling3d::ProjectSlave()
 bool CONTACT::Coupling3d::ProjectMaster()
 {
   // project master nodes onto auxiliary plane
-  int nnodes = MasterElement().NumNode();
-  DRT::Node** mynodes = MasterElement().Nodes();
+  int nnodes = MasterIntElement().NumNode();
+  DRT::Node** mynodes = MasterIntElement().Nodes();
   if (!mynodes) dserror("ERROR: ProjectMaster: Null pointer!");
   
   // initialize storage for master coords + their ids
@@ -1796,8 +1847,8 @@ void CONTACT::Coupling3d::PolygonClipping(vector<Vertex>& poly1,
 bool CONTACT::Coupling3d::HasProjStatus()
 {
   // check all nodes
-  int nnodes = SlaveElement().NumNode();
-  DRT::Node** mynodes = SlaveElement().Nodes();
+  int nnodes = SlaveIntElement().NumNode();
+  DRT::Node** mynodes = SlaveIntElement().Nodes();
   if (!mynodes) dserror("ERROR: HasProjStatus: Null pointer!");
     
   // loop over all slave nodes
@@ -1969,8 +2020,8 @@ bool CONTACT::Coupling3d::VertexLinearization(vector<vector<map<int,double> > >&
   // never linearize the SAME slave or master vertex more than once)
   
   // number of nodes
-  int nsrows = SlaveElement().NumNode();
-  int nmrows = MasterElement().NumNode();
+  int nsrows = SlaveIntElement().NumNode();
+  int nmrows = MasterIntElement().NumNode();
       
   // prepare storage for slave and master linearizations
   vector<vector<map<int,double> > > linsnodes(nsrows,vector<map<int,double> >(3));
@@ -1981,14 +2032,14 @@ bool CONTACT::Coupling3d::VertexLinearization(vector<vector<map<int,double> > >&
     // compute slave linearizations (nsrows)
     for (int i=0;i<nsrows;++i)
     {
-      int sid = SlaveElement().NodeIds()[i];
+      int sid = SlaveIntElement().NodeIds()[i];
       SlaveVertexLinearization(linsnodes[i],sid);
     }
     
     // compute master linearizations (nmrows)
     for (int i=0;i<nmrows;++i)
     {
-      int mid = MasterElement().NodeIds()[i];
+      int mid = MasterIntElement().NodeIds()[i];
       MasterVertexLinearization(linmnodes[i],mid);
     }
   }
@@ -2014,7 +2065,7 @@ bool CONTACT::Coupling3d::VertexLinearization(vector<vector<map<int,double> > >&
         // find corresponding slave node linearization
         int k=0;
         while (k<nsrows){
-          if (SlaveElement().NodeIds()[k]==sid) break;
+          if (SlaveIntElement().NodeIds()[k]==sid) break;
           ++k;
         }
         
@@ -2040,7 +2091,7 @@ bool CONTACT::Coupling3d::VertexLinearization(vector<vector<map<int,double> > >&
         // find corresponding master node linearization
         int k=0;
         while (k<nmrows){
-          if (MasterElement().NodeIds()[k]==mid) break;
+          if (MasterIntElement().NodeIds()[k]==mid) break;
           ++k;
         }
         
@@ -2120,7 +2171,7 @@ bool CONTACT::Coupling3d::SlaveVertexLinearization(vector<map<int,double> >& cur
   // for tri3, tri6 elements: xi = eta = 1/3
   double scxi[2];
     
-  DRT::Element::DiscretizationType dt = SlaveElement().Shape();
+  DRT::Element::DiscretizationType dt = SlaveIntElement().Shape();
   if (dt==CElement::tri3 || dt==CElement::tri6)
   {
     scxi[0] = 1.0/3;
@@ -2134,13 +2185,13 @@ bool CONTACT::Coupling3d::SlaveVertexLinearization(vector<map<int,double> >& cur
   else dserror("ERROR: SlaveVertexLinearization called for unknown element type");
   
   // evlauate shape functions + derivatives at scxi
-  int nrow = SlaveElement().NumNode();
+  int nrow = SlaveIntElement().NumNode();
   LINALG::SerialDenseVector sval(nrow);
   LINALG::SerialDenseMatrix sderiv(nrow,2,true);
-  SlaveElement().EvaluateShape(scxi,sval,sderiv,nrow);
+  SlaveIntElement().EvaluateShape(scxi,sval,sderiv,nrow);
   
   // we need all participating slave nodes
-  DRT::Node** snodes = SlaveElement().Nodes();
+  DRT::Node** snodes = SlaveIntElement().Nodes();
   vector<CONTACT::CNode*> scnodes(nrow);
   
   for (int i=0;i<nrow;++i)
@@ -2236,7 +2287,7 @@ bool CONTACT::Coupling3d::MasterVertexLinearization(vector<map<int,double> >& cu
   // for tri3, tri6 elements: xi = eta = 1/3
   double scxi[2];
     
-  DRT::Element::DiscretizationType dt = SlaveElement().Shape();
+  DRT::Element::DiscretizationType dt = SlaveIntElement().Shape();
   if (dt==CElement::tri3 || dt==CElement::tri6)
   {
     scxi[0] = 1.0/3;
@@ -2250,13 +2301,13 @@ bool CONTACT::Coupling3d::MasterVertexLinearization(vector<map<int,double> >& cu
   else dserror("ERROR: MasterVertexLinearization called for unknown element type");
   
   // evlauate shape functions + derivatives at scxi
-  int nrow = SlaveElement().NumNode();
+  int nrow = SlaveIntElement().NumNode();
   LINALG::SerialDenseVector sval(nrow);
   LINALG::SerialDenseMatrix sderiv(nrow,2,true);
-  SlaveElement().EvaluateShape(scxi,sval,sderiv,nrow);
+  SlaveIntElement().EvaluateShape(scxi,sval,sderiv,nrow);
   
   // we need all participating slave nodes
-  DRT::Node** snodes = SlaveElement().Nodes();
+  DRT::Node** snodes = SlaveIntElement().Nodes();
   vector<CONTACT::CNode*> scnodes(nrow);
   
   for (int i=0;i<nrow;++i)
@@ -2354,17 +2405,17 @@ bool CONTACT::Coupling3d::MasterVertexLinearization(Vertex& currv,
   sxi[1] = currv.Coord()[1];
   
   // evlauate shape functions + derivatives at sxi
-  int nrow = SlaveElement().NumNode();
+  int nrow = SlaveIntElement().NumNode();
   LINALG::SerialDenseVector sval(nrow);
   LINALG::SerialDenseMatrix sderiv(nrow,2,true);
-  SlaveElement().EvaluateShape(sxi,sval,sderiv,nrow);
+  SlaveIntElement().EvaluateShape(sxi,sval,sderiv,nrow);
   
   // build 3x3 factor matrix L
   LINALG::Matrix<3,3> lmatrix(true);
   
   for (int z=0;z<nrow;++z)
   {
-    int gid = SlaveElement().NodeIds()[z];
+    int gid = SlaveIntElement().NodeIds()[z];
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CNode* snode = static_cast<CNode*>(node);
@@ -2412,7 +2463,7 @@ bool CONTACT::Coupling3d::MasterVertexLinearization(Vertex& currv,
   // (3) all slave nodes normals part
   for (int z=0;z<nrow;++z)
   {
-    int gid = SlaveElement().NodeIds()[z];
+    int gid = SlaveIntElement().NodeIds()[z];
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CNode* snode = static_cast<CNode*>(node);
@@ -2457,8 +2508,8 @@ bool CONTACT::Coupling3d::LineclipVertexLinearization(Vertex& currv,
                                            vector<vector<map<int,double> > >& linmnodes)
 {
   // number of nodes
-  int nsrows = SlaveElement().NumNode();
-  int nmrows = MasterElement().NumNode();
+  int nsrows = SlaveIntElement().NumNode();
+  int nmrows = MasterIntElement().NumNode();
     
   // iterator
   typedef map<int,double>::const_iterator CI;
@@ -2522,7 +2573,7 @@ bool CONTACT::Coupling3d::LineclipVertexLinearization(Vertex& currv,
   // find corresponding slave node linearizations
   int k=0;
   while (k<nsrows){
-    if (SlaveElement().NodeIds()[k]==sid1) break;
+    if (SlaveIntElement().NodeIds()[k]==sid1) break;
     ++k;
   }
   
@@ -2534,7 +2585,7 @@ bool CONTACT::Coupling3d::LineclipVertexLinearization(Vertex& currv,
   
   k=0;
   while (k<nsrows){
-    if (SlaveElement().NodeIds()[k]==sid2) break;
+    if (SlaveIntElement().NodeIds()[k]==sid2) break;
     ++k;
   }
   
@@ -2551,7 +2602,7 @@ bool CONTACT::Coupling3d::LineclipVertexLinearization(Vertex& currv,
   // find corresponding master node linearizations
   k=0;
   while (k<nmrows){
-    if (MasterElement().NodeIds()[k]==mid1) break;
+    if (MasterIntElement().NodeIds()[k]==mid1) break;
     ++k;
   }
   
@@ -2563,7 +2614,7 @@ bool CONTACT::Coupling3d::LineclipVertexLinearization(Vertex& currv,
   
   k=0;
   while (k<nmrows){
-    if (MasterElement().NodeIds()[k]==mid2) break;
+    if (MasterIntElement().NodeIds()[k]==mid2) break;
     ++k;
   }
   
@@ -2950,15 +3001,20 @@ bool CONTACT::Coupling3d::IntegrateCells()
   // loop over all integration cells
   for (int i=0;i<(int)(Cells().size());++i)
   {
-    // compare intcell area with slave element area
+    // compare intcell area with slave integration element area
     double intcellarea = Cells()[i]->Area();
     double selearea = 0.0;
-    DRT::Element::DiscretizationType dt = SlaveElement().Shape();
-    if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
-      selearea = 4.0;
-    else if (dt==DRT::Element::tri3 || dt==DRT::Element::tri6)
-      selearea = 0.5;
-    else dserror("ERROR: IntegrateCells: Invalid 3D slave element type");
+    if (!CouplingInAuxPlane())
+      selearea = SlaveIntElement().Area();
+    else
+    {
+      DRT::Element::DiscretizationType dt = SlaveIntElement().Shape();
+      if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
+        selearea = 4.0;
+      else if (dt==DRT::Element::tri3 || dt==DRT::Element::tri6)
+        selearea = 0.5;
+      else dserror("ERROR: IntegrateCells: Invalid 3D slave element type");
+    }
     
     // integrate cell only if not neglectable
     if (intcellarea<CONTACTINTLIM*selearea) continue;
@@ -2967,23 +3023,46 @@ bool CONTACT::Coupling3d::IntegrateCells()
     // *******************************************************************
     // ************ Coupling with or without auxiliary plane *************
     // *******************************************************************
-    int nrow = sele_.NumNode();
-    int ncol = mele_.NumNode();
+    int nrow = SlaveElement().NumNode();
+    int ncol = MasterElement().NumNode();
     RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
     RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
     
     if (CouplingInAuxPlane())
-      integrator.IntegrateDerivCell3DAuxPlane(sele_,mele_,Cells()[i],Auxn(),mseg,gseg);
+      integrator.IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),mseg,gseg);
     else //(!CouplingInAuxPlane())
-      integrator.IntegrateDerivCell3D(sele_,mele_,Cells()[i],mseg,gseg);
+      integrator.IntegrateDerivCell3D(SlaveElement(),MasterElement(),Cells()[i],mseg,gseg);
     // *******************************************************************
     
     // do the two assemblies into the slave nodes
     // if CONTACTONEMORTARLOOP defined, then AssembleM does M AND D matrices !!!
-    integrator.AssembleM(Comm(),sele_,mele_,*mseg);
-    integrator.AssembleG(Comm(),sele_,*gseg);
+    integrator.AssembleM(Comm(),SlaveElement(),MasterElement(),*mseg);
+    integrator.AssembleG(Comm(),SlaveElement(),*gseg);
   }
   return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  ctor (public)                                             popp 11/08|
+ *----------------------------------------------------------------------*/
+CONTACT::Coupling3dQuad::Coupling3dQuad(DRT::Discretization& idiscret, int dim, bool quad,
+                                bool auxplane,
+                                CONTACT::CElement& sele, CONTACT::CElement& mele,
+                                CONTACT::IntElement& sintele,
+                                CONTACT::IntElement& mintele) :
+CONTACT::Coupling3d(idiscret,dim,quad,auxplane,sele,mele),
+sintele_(sintele),
+mintele_(mintele)
+{
+  // 3D quadratic coupling only for aux. plane case
+  if (!CouplingInAuxPlane())
+    dserror("ERROR: Coupling3dQuad only for auxiliary plane case!");
+  
+  //  3D quadratic coupling only for quadratic ansatz type
+  if (!Quad())
+    dserror("ERROR: Coupling3dQuad called for non-quadratic andatz!");
+  
+  return;
 }
 
 #endif //#ifdef CCADISCRET

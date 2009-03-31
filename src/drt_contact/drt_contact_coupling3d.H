@@ -55,6 +55,89 @@ namespace CONTACT
 // forward declarations
 
 /*!
+\brief A class representing a special contact element for 3D quadratic
+       mortar coupling with the use auf auxiliary planes. This approach
+       is based on "Puso, M.A., Laursen, T.A., Solberg, J., A segment-to-
+       segment mortar contact method for quadratic elements and large
+       deformations, CMAME, 197, 2008, pp. 555-566". For this type of
+       quadratic formulation, a quadratic CElement is split into several
+       linear IntElements, on which the geometrical coupling is performed.
+       Note that this is a derived class from CONTACT::CElement, with the
+       only difference that we explicitly set the node pointers here!
+
+\author popp (popp@lnm.mw.tum.de)
+*/
+
+class IntElement : public CElement{
+  
+public:
+  
+  /*!
+  \brief Standard constructor
+
+  \param lid   (in): A locally unique element id
+  \param id    (in): Parent element global id
+  \param etype (in): Type of element
+  \param owner (in): owner processor of the element
+  \param shape (in): shape of this element
+  \param numnode (in): Number of nodes to this element
+  \param nodeids (in): ids of nodes adjacent to this element
+  \param nodes (in): pointers to nodes adjacent to this element
+  \param isslave (in): flag indicating whether element is slave or master side
+  */
+  explicit IntElement(int lid, int id, ElementType etype, int owner, 
+                      const DRT::Element::DiscretizationType& shape, 
+                      const int numnode,
+                      const int* nodeids,
+                      vector<DRT::Node*> nodes,
+                      const bool isslave);
+  
+  /*!
+  \brief Copy Constructor
+
+  Makes a deep copy of an IntElement
+
+  */
+  IntElement(const IntElement& old);
+  
+  /*!
+  \brief Destructor
+
+  */
+  virtual ~IntElement() {}
+  
+  /*!
+  \brief Return local id of this IntElement
+  
+  */
+  inline int Lid() const { return lid_; }
+    
+  /*!
+  \brief Get vector of ptrs to nodes
+
+  The pointers to the nodes are usually built in
+  DRT::Discretization::FillComplete. A standalone
+  element that has not been added to a discretization
+  (or the discretization has not been called FillComplete),
+  such as is the case here, does not have pointers to nodes,
+  unless we explicitly define them. Thus, we hand them in
+  to the constructur here and overload the base class method
+  Nodes() such that the user-provided nodes are used first!
+
+  */
+  virtual inline DRT::Node** Nodes()
+  { if (quadnode_.size()) return &quadnode_[0]; else return NULL;}
+      
+
+protected:
+  
+  int                  lid_;        // local IntElement id
+  vector<DRT::Node*>   quadnode_;   // explicit node pointers (only valid if (isquad3d_==true)
+  
+}; //class IntElement
+
+
+/*!
 \brief A class representing one Integration Cell after triangulation
        of the clip polygon of slave and master element from the Coupling
        class. This class provides some basic funcitonality a CElement would
@@ -425,9 +508,9 @@ public:
   performed in parallel by individual processes.
   
   */
-  explicit Coupling3d(DRT::Discretization& idiscret, int dim,
-                      CONTACT::CElement& sele, CONTACT::CElement& mele,
-                      bool auxplane);
+  explicit Coupling3d(DRT::Discretization& idiscret, int dim, bool quad,
+                      bool auxplane,
+                      CONTACT::CElement& sele, CONTACT::CElement& mele);
   
   /*!
   \brief Standard constructor
@@ -438,9 +521,9 @@ public:
   performed in parallel by individual processes.
   
   */
-  explicit Coupling3d(DRT::Discretization& idiscret, int dim,
-                      CONTACT::CElement& sele, CONTACT::CElement& mele,
+  explicit Coupling3d(DRT::Discretization& idiscret, int dim, bool quad,
                       bool auxplane,
+                      CONTACT::CElement& sele, CONTACT::CElement& mele,
                       vector<vector<double> >& testv, bool printderiv);
   
   /*!
@@ -452,9 +535,9 @@ public:
   performed in parallel by individual processes.
   
   */
-  explicit Coupling3d(DRT::Discretization& idiscret, int dim,
-                      CONTACT::CElement& sele, CONTACT::CElement& mele,
+  explicit Coupling3d(DRT::Discretization& idiscret, int dim, bool quad,
                       bool auxplane,
+                      CONTACT::CElement& sele, CONTACT::CElement& mele,
                       vector<vector<double> >& testgps, vector<vector<double> >& testgpm,
                       vector<vector<double> >& testjs, vector<vector<double> >& testji,
                       bool printderiv);
@@ -484,6 +567,12 @@ public:
 
   */
   virtual inline const int& Dim() {return dim_;};
+  
+  /*!
+  \brief Get coupling / FE ansatz type (true = quadratic)
+
+  */
+  virtual inline const bool& Quad() {return quad_;};
     
   /*!
   \brief Get coupling slave element
@@ -497,6 +586,28 @@ public:
   */
   virtual inline CONTACT::CElement& MasterElement() const { return mele_; }
   
+  /*!
+  \brief Get coupling slave integration element
+  
+  Note that (here) for linear ansatz functions in 3D, this is IDENTICAL to
+  the SlaveElement() as no splitting of the CElements is performed.
+  For the 3D quadratic case with the use of auxiliary planes, this
+  methd is overloaded by the derived class CONTACT::Coupling3dQuad!
+
+  */
+  virtual inline CONTACT::CElement& SlaveIntElement() const { return sele_; }
+  
+  /*!
+  \brief Get coupling master integration element
+  
+  Note that (here) for linear ansatz functions in 3D, this is IDENTICAL to
+  the SlaveElement() as no splitting of the CElements is performed.
+  For the 3D quadratic case with the use of auxiliary planes, this
+  methd is overloaded by the derived class CONTACT::Coupling3dQuad!
+
+  */
+  virtual inline CONTACT::CElement& MasterIntElement() const{ return mele_; }
+    
   /*!
   \brief Get 3D coupling strategy (true = auxiliary plane)
 
@@ -560,6 +671,12 @@ public:
     
   //! @name Evlauation methods
   
+  /*!
+  \brief Evaluate coupling (3D)
+        
+  */
+  virtual bool EvaluateCoupling();
+    
   /*!
   \brief Checks roughly whether the two elements are near (3D)
   
@@ -756,9 +873,10 @@ protected:
     
     DRT::Discretization&       idiscret_;    // discretization of the contact interface
     int                        dim_;         // problem dimension (here: 3D)
+    bool                       quad_;        // flag indicating coupling type (true = quadratic)
+    bool                       auxplane_;    // flag indicating coupling strategy (true = aux. plane)
     CONTACT::CElement&         sele_;        // slave element to perform coupling for
     CONTACT::CElement&         mele_;        // master element to perform coupling for
-    bool                       auxplane_;    // flag indicating coupling strategy (true = aux. plane)
 
     double                     auxc_[3];     // center of auxiliary plane
     double                     auxn_[3];     // normal of auxiliary plane
@@ -771,6 +889,74 @@ protected:
     vector<map<int,double> >   derivauxn_;   // derivatives of auxiliary plane normal
   
 }; // class Coupling3d
+
+/*!
+\brief A class representing the framework for mortar coupling of ONE
+       slave element and ONE master element of a contact interface in
+       3D. Concretely, this class controls projection, overlap
+       detection and finally integration of the mortar coupling matrix M
+       and the weighted gap vector g~. This is a special derived class
+       for 3D quadratic mortar coupling with the use of auxiliary planes
+       This approach is based on "Puso, M.A., Laursen, T.A., Solberg, J.,
+       A segment-to-segment mortar contact method for quadratic elements
+       and large deformations, CMAME, 197, 2008, pp. 555-566". For this
+       type of formulation, a quadratic CElement is split into several
+       linear IntElements, on which the geometrical coupling is performed.
+       Thus, we additionally hand in in two IntElements to Coupling3dQuad.
+
+\author popp (popp@lnm.mw.tum.de)
+*/
+
+class Coupling3dQuad : public Coupling3d{
+  
+public:
+  
+  /*!
+  \brief Standard constructor
+  
+  Constructs an instance of this class.<br>
+  Note that this is \b not a collective call as coupling is
+  performed in parallel by individual processes.
+  
+  */
+  explicit Coupling3dQuad(DRT::Discretization& idiscret, int dim, bool quad,
+                          bool auxplane,
+                          CONTACT::CElement& sele, CONTACT::CElement& mele,
+                          CONTACT::IntElement& sintele,
+                          CONTACT::IntElement& mintele);
+
+  /*!
+  \brief Destructor
+
+  */
+  virtual ~Coupling3dQuad() {}
+  
+  //! @name Access methods
+
+  /*!
+  \brief Get coupling slave integration element
+
+  */
+  inline CONTACT::IntElement& SlaveIntElement() const { return sintele_; }
+  
+  /*!
+  \brief Get coupling master integration element
+
+  */
+  inline CONTACT::IntElement& MasterIntElement() const { return mintele_; }
+  
+  //@}
+      
+protected:
+    
+    // don't want = operator and cctor
+    Coupling3dQuad operator = (const Coupling3dQuad& old);
+    Coupling3dQuad(const Coupling3dQuad& old);
+  
+    CONTACT::IntElement&   sintele_;     // slave sub-integration element
+    CONTACT::IntElement&   mintele_;     // slave sub-integration element
+  
+}; // class Coupling3dQuad
 }  // namespace CONTACT
 
 

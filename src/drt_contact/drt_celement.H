@@ -256,6 +256,16 @@ public:
   virtual inline bool IsSlave() { return isslave_; }
   
   /*!
+  \brief Return ansatz type (true = quad) of element
+
+  */
+  virtual inline bool IsQuad()
+  {
+    if (Shape()==quad8 || Shape()==quad9 || Shape()==tri6) return true;
+    else return false;
+  }
+    
+  /*!
   \brief Return number of potentially contacting elements
   
   */
