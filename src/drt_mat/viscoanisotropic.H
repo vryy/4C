@@ -49,7 +49,7 @@ namespace MAT
       const int numstresstypes_;
       double beta_[2];
       double relax_[2];
-      const int tensonly_;
+      const double minstretch_;
       const int elethick_;
       //@}
 

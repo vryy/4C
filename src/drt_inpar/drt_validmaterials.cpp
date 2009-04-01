@@ -674,7 +674,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"BETA_ANISO","ratio between elasticities in generalized Maxweel body");
     AddNamedReal(m,"RELAX_ISO","isotropic relaxation time");
     AddNamedReal(m,"RELAX_ANISO","anisotropic relaxation time");
-    AddNamedInt(m,"TENSION_ONLY","1: only tension for fibers, 0: compression allowed");
+    AddNamedReal(m,"MINSTRETCH","minimal principal stretch fibers do respond to");
     AddNamedInt(m,"ELETHICKDIR","Element thickness direction applies also to fibers (only sosh)");
 
     AppendMaterialDefinition(matlist,m);

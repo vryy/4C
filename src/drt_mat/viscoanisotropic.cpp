@@ -31,7 +31,7 @@ MAT::PAR::ViscoAnisotropic::ViscoAnisotropic(
   numstresstypes_(3),
   beta_(),
   relax_(),
-  tensonly_(matdata->Getint("TENSION_ONLY")),
+  minstretch_(matdata->GetDouble("MINSTRETCH")),
   elethick_(matdata->Getint("ELETHICKDIR"))
 {
   beta_[0] = matdata->GetDouble("BETA_ISO");
@@ -341,7 +341,7 @@ void MAT::ViscoAnisotropic::Evaluate
   const double kappa = params_->kappa_;
   const double k1 = params_->k1_;
   const double k2 = params_->k2_;
-  const int    tensonly = params_->tensonly_;
+  const double minstretch = params_->minstretch_;
   
   // right Cauchy-Green Tensor  C = 2 * E + I
   // build identity tensor I
@@ -433,9 +433,9 @@ void MAT::ViscoAnisotropic::Evaluate
   // modified (fiber-) invariants Ibar_{4,6} = J_{4,6} = J^{-2/3} I_{4,6}
   // Voigt: trace(AB) =  a11 b11 + 2 a12 b12 + 2 a13 b13 + a22 b22 + 2 a23 b23 + a33 b33
   // however factor 2 for shear terms is already in C
-  const double J4 = incJ * ( A1(0)*C(0) + A1(1)*C(1) + A1(2)*C(2)
+  double J4 = incJ * ( A1(0)*C(0) + A1(1)*C(1) + A1(2)*C(2)
                     + 1.*(A1(3)*C(3) + A1(4)*C(4) + A1(5)*C(5))); //J4 = trace(A1:C^dev)
-  const double J6 = incJ * ( A2(0)*C(0) + A2(1)*C(1) + A2(2)*C(2)
+  double J6 = incJ * ( A2(0)*C(0) + A2(1)*C(1) + A2(2)*C(2)
                     + 1.*(A2(3)*C(3) + A2(4)*C(4) + A2(5)*C(5))); //J6 = trace(A2:C^dev)
   const double exp1 = exp(k2*(J4-1.)*(J4-1.));
   const double exp2 = exp(k2*(J6-1.)*(J6-1.));
@@ -443,17 +443,23 @@ void MAT::ViscoAnisotropic::Evaluate
   // 'tensonly' determines if fibers can only take tension or not
   double fib1_tension = 1.;
   double fib2_tension = 1.;
-  if (tensonly==1)
-  { 
-    if (J4 < 1.0) fib1_tension = 0.;
-    if (J6 < 1.0) fib2_tension = 0.;
+
+  if (J4 < minstretch) 
+  {
+    J4 = minstretch;
+    fib1_tension = 0.;
+  }
+  if (J6 < minstretch)
+  {
+    J6 = minstretch;
+    fib2_tension = 0.;
   }
 
   // PK2 fiber part in splitted formulation, see Holzapfel p. 271
   LINALG::Matrix<NUM_STRESS_3D,1> SisoEla_fib1(A1); // first compute Sfbar1 = dWf/dJ4 A1
   LINALG::Matrix<NUM_STRESS_3D,1> SisoEla_fib2(A2); // first compute Sfbar2 = dWf/dJ6 A2
-  const double fib1 = fib1_tension* 2.*(k1*(J4-1.)*exp1);  // 2 dWf/dJ4
-  const double fib2 = fib2_tension* 2.*(k1*(J6-1.)*exp2);  // 2 dWf/dJ6
+  const double fib1 = 2.*(k1*(J4-1.)*exp1);  // 2 dWf/dJ4
+  const double fib2 = 2.*(k1*(J6-1.)*exp2);  // 2 dWf/dJ6
   SisoEla_fib1.Scale(fib1);
   SisoEla_fib2.Scale(fib2);
 
