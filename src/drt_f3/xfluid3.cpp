@@ -29,8 +29,9 @@ map<string,DRT::ELEMENTS::XFluid3::StabilisationAction> DRT::ELEMENTS::XFluid3::
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::XFluid3::XFluid3(int id, int owner) :
 DRT::Element(id,element_xfluid3,owner),
-eleDofManager_(rcp(new XFEM::ElementDofManager())),
-eleDofManager_uncondensed_(rcp(new XFEM::ElementDofManager()))
+eleDofManager_(Teuchos::null),
+eleDofManager_uncondensed_(Teuchos::null),
+output_mode_(false)
 {
     return;
 }
@@ -41,7 +42,8 @@ eleDofManager_uncondensed_(rcp(new XFEM::ElementDofManager()))
 DRT::ELEMENTS::XFluid3::XFluid3(const DRT::ELEMENTS::XFluid3& old) :
 DRT::Element(old),
 eleDofManager_(old.eleDofManager_),
-eleDofManager_uncondensed_(old.eleDofManager_uncondensed_)
+eleDofManager_uncondensed_(old.eleDofManager_uncondensed_),
+output_mode_(old.output_mode_)
 {
     return;
 }
@@ -93,6 +95,8 @@ void DRT::ELEMENTS::XFluid3::Pack(std::vector<char>& data) const
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
+  
+  AddtoPack(data,output_mode_);
 
   return;
 }
@@ -113,6 +117,8 @@ void DRT::ELEMENTS::XFluid3::Unpack(const std::vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
+  
+  ExtractfromPack(position,data,output_mode_);
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -135,6 +141,8 @@ DRT::ELEMENTS::XFluid3::~XFluid3()
 void DRT::ELEMENTS::XFluid3::Print(ostream& os) const
 {
   os << "XFluid3 ";
+  if (output_mode_)
+    os << "(outputmode=true)";
   Element::Print(os);
   cout << endl;
   return;

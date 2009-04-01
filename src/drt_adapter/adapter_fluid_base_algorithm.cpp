@@ -65,14 +65,31 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
   // -------------------------------------------------------------------
-  if (!actdis->HaveDofs()) actdis->FillComplete();
+  if (!actdis->HaveDofs())
+  {
+    if (genprob.probtyp == prb_fsi_xfem or 
+        genprob.probtyp == prb_fluid_xfem or
+        genprob.probtyp == prb_combust)
+    {
+      actdis->FillComplete(false,false,false);
+    }
+    else
+    {
+      actdis->FillComplete();
+    }
+  }
 
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
   RCP<IO::DiscretizationWriter> output =
     rcp(new IO::DiscretizationWriter(actdis));
-  output->WriteMesh(0,0.0);
+  if (genprob.probtyp == prb_fsi_xfem or 
+      genprob.probtyp == prb_fluid_xfem or
+      genprob.probtyp == prb_combust)
+  {
+    output->WriteMesh(0,0.0);
+  }
 
   // -------------------------------------------------------------------
   // set some pointers and variables
@@ -92,7 +109,12 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     rcp(new LINALG::Solver(DRT::Problem::Instance()->FluidSolverParams(),
                            actdis->Comm(),
                            DRT::Problem::Instance()->ErrorFile()->Handle()));
-  actdis->ComputeNullSpaceIfNecessary(solver->Params());
+  if (genprob.probtyp == prb_fsi_xfem or 
+      genprob.probtyp == prb_fluid_xfem or
+      genprob.probtyp == prb_combust)
+  {
+    actdis->ComputeNullSpaceIfNecessary(solver->Params());
+  }
 
   // -------------------------------------------------------------------
   // create a second solver for SIMPLER preconditioner if chosen from input
@@ -339,7 +361,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
       if (!soliddis->Filled()) soliddis->FillComplete();
 
-      fluid_ = rcp(new ADAPTER::XFluidImpl(actdis, soliddis, solver, fluidtimeparams, output));
+      fluid_ = rcp(new ADAPTER::XFluidImpl(actdis, soliddis, fluidtimeparams));
     }
     else if (genprob.probtyp == prb_combust)
     {

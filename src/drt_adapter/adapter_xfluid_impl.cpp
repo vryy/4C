@@ -35,14 +35,10 @@ Maintainer: Axel Gerstenberger
 ADAPTER::XFluidImpl::XFluidImpl(
         Teuchos::RCP<DRT::Discretization> dis,
         const Teuchos::RCP<DRT::Discretization> soliddis,
-        Teuchos::RCP<LINALG::Solver> solver,
-        Teuchos::RCP<ParameterList> params,
-        Teuchos::RCP<IO::DiscretizationWriter> output)
-  : fluid_(dis, *solver, *params, *output),
+        Teuchos::RCP<ParameterList> params)
+  : fluid_(dis, *params),
     dis_(dis),
-    solver_(solver),
-    params_(params),
-    output_(output)
+    params_(params)
 {
   vector<string> conditions_to_copy;
   conditions_to_copy.push_back("FSICoupling");

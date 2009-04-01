@@ -30,7 +30,7 @@ map<string,DRT::ELEMENTS::Combust3::StabilisationAction> DRT::ELEMENTS::Combust3
 DRT::ELEMENTS::Combust3::Combust3(int id, int owner) :
 DRT::Element(id,element_combust3,owner),
 data_(),
-eleDofManager_(rcp(new XFEM::ElementDofManager()))
+eleDofManager_(Teuchos::null)
 {
     return;
 }
@@ -145,13 +145,15 @@ DRT::ELEMENTS::Combust3::~Combust3()
 void DRT::ELEMENTS::Combust3::Print(ostream& os) const
 {
   os << "Combust3 ";
+  if (output_mode_)
+    os << "(outputmode=true)";
   Element::Print(os);
   std::cout << endl;
   std::cout << data_;
   return;
 }
-//
-//
+
+
 /*----------------------------------------------------------------------*
  |  allocate and return Fluid3Register (public)              mwgee 02/08|
  *----------------------------------------------------------------------*/

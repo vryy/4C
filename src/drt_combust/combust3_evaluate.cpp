@@ -50,6 +50,10 @@ DRT::ELEMENTS::Combust3::ActionType DRT::ELEMENTS::Combust3::convertStringToActi
     act = Combust3::store_xfem_info;
   else if (action == "get_density")
     act = Combust3::get_density;
+  else if (action == "reset")
+    act = Combust3::reset;
+  else if (action == "set_output_mode")
+    act = Combust3::set_output_mode;
   else
     dserror("Unknown type of action for Combust3");
   return act;
@@ -113,7 +117,23 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       params.set("density", actmat->Density());
       break;
     }
-    // One-step-theta scheme
+    case reset:
+    {
+      // reset all information and make element unusable (e.g. it can't answer the numdof question anymore)
+      // this way, one can see, if all information are generated correctly or whether something is left
+      // from the last nonlinear iteration
+      eleDofManager_ = Teuchos::null;
+      ih_ = Teuchos::null;
+      break;
+    }
+    case set_output_mode:
+    {
+      output_mode_ = true;
+      // reset dof managers if present
+      eleDofManager_ = Teuchos::null;
+      ih_ = Teuchos::null;
+      break;
+    }
     case calc_fluid_systemmat_and_residual:
     {
       TEUCHOS_FUNC_TIME_MONITOR("COMBUST3 - evaluate - calc_fluid_systemmat_and_residual");

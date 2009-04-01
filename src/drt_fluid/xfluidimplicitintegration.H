@@ -52,9 +52,10 @@ public:
   */
   explicit XFluidImplicitTimeInt(
       Teuchos::RCP<DRT::Discretization>  dis,
-      LINALG::Solver&                    solver,
-      const ParameterList&               params,
-      IO::DiscretizationWriter&          output);
+//      LINALG::Solver&                    solver,
+      const ParameterList&               params
+//      IO::DiscretizationWriter&          output
+      );
 
 
   /*!
@@ -228,6 +229,7 @@ public:
 
   double Time() const { return time_; }
   int Step() const { return step_; }
+  Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
 
   int Itemax() const { return itemax_; }
   void SetItemax(int itemax) { itemax_ = itemax; }
@@ -344,11 +346,11 @@ protected:
 
   //! @name general algorithm parameters
   //! fluid discretization
-  const Teuchos::RCP<DRT::Discretization> discret_;
-  LINALG::Solver&                        solver_;
-  const ParameterList&                   params_;
-  const ParameterList&                   xparams_;
-  IO::DiscretizationWriter&              output_;
+  const Teuchos::RCP<DRT::Discretization>      discret_;
+  const Teuchos::RCP<LINALG::Solver>           solver_;
+  const ParameterList&                         params_;
+  const ParameterList&                         xparams_;
+  const Teuchos::RCP<IO::DiscretizationWriter> output_;
   
   //! the processor ID from the communicator
   const int                           myrank_;

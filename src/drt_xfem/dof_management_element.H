@@ -74,15 +74,11 @@ namespace XFEM
       
       //! function that returns node specific number of dofs or the given default number
       int NumDofPerNode(
-          const int gid,            ///< unique global node id
-          const int defaultnumdof   ///< default number of degrees of freedom to be returned
+          const int gid             ///< unique global node id
       ) const
       {
         map<int,int>::const_iterator tmp = nodalNumDof_.find(gid);
-        if (tmp == nodalNumDof_.end())
-        {
-          return defaultnumdof;
-        }
+        dsassert(tmp != nodalNumDof_.end(), "node not found");
         return tmp->second;
       };
       

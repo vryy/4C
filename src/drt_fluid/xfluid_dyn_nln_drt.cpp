@@ -77,7 +77,19 @@ void xdyn_fluid_drt()
   // set degrees of freedom in the discretization
   // -------------------------------------------------------------------
   if (!soliddis->HaveDofs()) soliddis->FillComplete();
-  if (!fluiddis->HaveDofs()) fluiddis->FillComplete();
+  
+  if (!fluiddis->HaveDofs())
+  {
+    if (genprob.probtyp == prb_fsi_xfem or genprob.probtyp == prb_fluid_xfem)
+    {
+      fluiddis->FillComplete(false,false,false);
+    }
+    else
+    {
+      fluiddis->FillComplete();
+    }
+  }
+  
 
   // -------------------------------------------------------------------
   // context for output and restart
@@ -96,8 +108,8 @@ void xdyn_fluid_drt()
 //      soliddispnp_->PutScalar(0.0);
 //      solidoutput_.WriteVector("soliddispnp", soliddispnp_);
   }
-  IO::DiscretizationWriter fluidoutput(fluiddis);
-  fluidoutput.WriteMesh(0,0.0);
+//  IO::DiscretizationWriter fluidoutput(fluiddis);
+//  fluidoutput.WriteMesh(0,0.0);
 
   // -------------------------------------------------------------------
   // set some pointers and variables
@@ -109,22 +121,6 @@ void xdyn_fluid_drt()
 
   if (fluiddis->Comm().MyPID()==0)
     DRT::INPUT::PrintDefaultParameters(std::cout, fdyn);
-
-  // -------------------------------------------------------------------
-  // create a solver
-  // -------------------------------------------------------------------
-  LINALG::Solver solver(DRT::Problem::Instance()->FluidSolverParams(),
-                        fluiddis->Comm(),
-                        DRT::Problem::Instance()->ErrorFile()->Handle());
-
-  // -------------------------------------------------------------------
-  // create a second solver for SIMPLER preconditioner if chosen from input
-  // -------------------------------------------------------------------
-  if (getIntegralValue<int>(fdyn,"SIMPLER"))
-  {
-    solver.PutSolverParamsToSubParams("SIMPLER",
-                                      DRT::Problem::Instance()->FluidPressureSolverParams());
-  }
 
   // -------------------------------------------------------------------
   // set parameters in list required for all schemes
@@ -281,9 +277,8 @@ void xdyn_fluid_drt()
     //------------------------------------------------------------------
     FLD::XFluidImplicitTimeInt fluidimplicit(
         fluiddis,
-        solver,
-        fluidtimeparams,
-        fluidoutput);
+        fluidtimeparams
+        );
 
     // initial field from restart or calculated by given function
     if (probtype.get<int>("RESTART"))

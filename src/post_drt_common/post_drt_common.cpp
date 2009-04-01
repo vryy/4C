@@ -226,8 +226,6 @@ RCP<Epetra_Comm> PostProblem::comm()
  *----------------------------------------------------------------------*/
 void PostProblem::setup_filter(string control_file_name, string output_name)
 {
-  int length;
-  MAP* table;
   MAP temp_table;
 
 #ifdef PARALLEL
@@ -246,7 +244,7 @@ void PostProblem::setup_filter(string control_file_name, string output_name)
    * important. */
   basename_ = control_file_name.substr(0,control_file_name.length()-8);
   outname_ = output_name;
-  length = output_name.length();
+  const int length = output_name.length();
   strcpy(allfiles.outputfile_name, outname_.c_str());
   strcpy(allfiles.outputfile_name+length-8, ".post.log");
   allfiles.out_err = fopen(allfiles.outputfile_name, "w");
@@ -264,7 +262,7 @@ void PostProblem::setup_filter(string control_file_name, string output_name)
    * memory. If one step is written several times the last version is
    * used. */
 
-  table = &control_table_;
+  MAP* table = &control_table_;
 
   /* copy directory information */
   string::size_type separator = basename_.rfind('/', string::npos);
@@ -279,12 +277,6 @@ void PostProblem::setup_filter(string control_file_name, string output_name)
 
   while (map_symbol_count(table, "restarted_run") > 0)
   {
-    FILE* f;
-    SYMBOL* first_result;
-    SYMBOL* previous_results;
-    INT first_step;
-    SYMBOL dummy_symbol;
-    INT counter;
 
     /* copy directory information */
     control_file_name = input_dir_;
@@ -294,7 +286,7 @@ void PostProblem::setup_filter(string control_file_name, string output_name)
     control_file_name += ".control";
 
     /* test open to see if it exists */
-    f = fopen(control_file_name.c_str(), "rb");
+    FILE* f = fopen(control_file_name.c_str(), "rb");
     if (f == NULL)
     {
       printf("Restarted control file '%s' does not exist. Skip previous results.\n",
@@ -308,7 +300,7 @@ void PostProblem::setup_filter(string control_file_name, string output_name)
 
     /*------------------------------------------------------------------*/
     /* find the first result in the current table */
-    first_result = map_find_symbol(&control_table_, "result");
+    SYMBOL* first_result = map_find_symbol(&control_table_, "result");
     if (first_result == NULL)
     {
       dserror("no result sections in control file '%s'\n", control_file_name.c_str());
@@ -317,7 +309,7 @@ void PostProblem::setup_filter(string control_file_name, string output_name)
     {
       first_result = first_result->next;
     }
-    first_step = map_read_int(symbol_map(first_result), "step");
+    const INT first_step = map_read_int(symbol_map(first_result), "step");
 
 
     /*------------------------------------------------------------------*/
@@ -338,13 +330,14 @@ void PostProblem::setup_filter(string control_file_name, string output_name)
 
     /* find the previous results */
 
-    counter = 0;
+    INT counter = 0;
 
     /*
      * the dummy_symbol is a hack that allows us to treat all results
      * in the list the same way (use the same code). Without it we'd
      * need special conditions for the first entry. */
-    previous_results = &dummy_symbol;
+    SYMBOL dummy_symbol;
+    SYMBOL* previous_results = &dummy_symbol;
     previous_results->next = map_find_symbol(table, "result");
     while (previous_results->next != NULL)
     {
@@ -471,33 +464,46 @@ void PostProblem::read_meshes()
       // read knot vectors for nurbs discretisations
       if(spatial_approx_=="Nurbs")
       {
-	RCP<vector<char> > packed_knots =
-	  reader.ReadKnotvector(step);
-
-	RefCountPtr<DRT::NURBS::Knotvector> knots=Teuchos::rcp(new DRT::NURBS::Knotvector());
-
-	knots->Unpack(*packed_knots);
-
-	knots->FinishKnots();
-
-	// try a dynamic cast of the discretisation to a nurbs discretisation
-	DRT::NURBS::NurbsDiscretization* nurbsdis
-	  =
-	  dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*currfield.discretization()));
-
-	nurbsdis->SetKnotVector(knots);
+        RCP<vector<char> > packed_knots =
+          reader.ReadKnotvector(step);
+        
+        RefCountPtr<DRT::NURBS::Knotvector> knots=Teuchos::rcp(new DRT::NURBS::Knotvector());
+        
+        knots->Unpack(*packed_knots);
+        
+        knots->FinishKnots();
+        
+        // try a dynamic cast of the discretisation to a nurbs discretisation
+        DRT::NURBS::NurbsDiscretization* nurbsdis
+        =
+          dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*currfield.discretization()));
+          
+          nurbsdis->SetKnotVector(knots);
       }
-
-      // read XFEMCoupling boundary conditions if available
-      RCP<vector<char> > cond_xfem =
-        reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "XFEMCoupling");
-      currfield.discretization()->UnPackCondition(cond_xfem, "XFEMCoupling");
 
       // setup of parallel layout: create ghosting of already distributed nodes+elems
 #ifdef PARALLEL
       if (currfield.discretization()->Comm().NumProc() != 1)
         setup_ghosting(currfield.discretization());
 #endif
+      // to avoid building dofmanagers, in output mode elements answer
+      // with a fixed number of nodal unknowns
+      if (currfield.problem()->Problemtype() == prb_fluid_xfem or 
+          currfield.problem()->Problemtype() == prb_fsi_xfem or
+          currfield.problem()->Problemtype() == prb_combust)
+      {
+        cout << "Name = " << currfield.discretization()->Name();
+        if (currfield.discretization()->Name() == "fluid")
+        {
+          cout << " ->set output mode for xfem elements" << endl;
+          currfield.discretization()->FillComplete(false,false,false);
+          ParameterList eleparams;
+          eleparams.set("action","set_output_mode");
+          currfield.discretization()->Evaluate(eleparams);
+        }
+        cout << endl;
+      }
+      
 
       //distribute_drt_grids();
       currfield.discretization()->FillComplete();
@@ -521,9 +527,9 @@ void PostProblem::read_meshes()
  *----------------------------------------------------------------------*/
 PostField PostProblem::getfield(MAP* field_info)
 {
-  char* field_name = map_read_string(field_info, "field");
-  int numnd = map_read_int(field_info, "num_nd");
-  int numele = map_read_int(field_info, "num_ele");
+  const char* field_name = map_read_string(field_info, "field");
+  const int numnd = map_read_int(field_info, "num_nd");
+  const int numele = map_read_int(field_info, "num_ele");
   int type=0;
 
 
@@ -557,7 +563,7 @@ void PostProblem::setup_ghosting(RCP<DRT::Discretization> dis)
   // reference: src/drt_lib/drt_inputreader.cpp
   // ToDo: make PostProblem::setup_ghosting a method of the dicretization class itself
 
-  int numnode=dis->NumMyColNodes();
+  const int numnode=dis->NumMyColNodes();
   vector<int> nids(numnode);         // vector for global node ids
 
   // we have to know about the global node ids on each processor.
@@ -595,7 +601,7 @@ void PostProblem::setup_ghosting(RCP<DRT::Discretization> dis)
   // loop over all elements located on this processor (no ghosting existent)
   list<vector<int> > elementnodes;
 
-  int numele = dis->NumMyColElements();
+  const int numele = dis->NumMyColElements();
   int elecount=0;
   int elegid=0;
   while(elecount < numele)
@@ -633,7 +639,7 @@ void PostProblem::setup_ghosting(RCP<DRT::Discretization> dis)
        ++i)
   {
     // get the node ids of this element
-    int  numelnodes = static_cast<int>(i->size());
+    const int  numelnodes = static_cast<int>(i->size());
     int* nodeids = &(*i)[0];
 
     // loop nodes and add this topology to the row in the graph of every node
@@ -1043,10 +1049,10 @@ PostResult::read_result_serialdensematrix(const string name)
  *----------------------------------------------------------------------*/
 RCP<Epetra_MultiVector> PostResult::read_multi_result(const string name)
 {
-  RCP<Epetra_Comm> comm = field_->problem()->comm();
+  const RCP<Epetra_Comm> comm = field_->problem()->comm();
   MAP* result = map_read_map(group_, name.c_str());
-  string id_path = map_read_string(result, "ids");
-  string value_path = map_read_string(result, "values");
+  const string id_path = map_read_string(result, "ids");
+  const string value_path = map_read_string(result, "values");
   int columns;
   if (not map_find_int(result,"columns",&columns))
   {

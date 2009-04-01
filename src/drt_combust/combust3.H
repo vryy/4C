@@ -117,9 +117,45 @@ namespace DRT
         
         //! @name Access methods
 
-        virtual int NumDofPerNode(const DRT::Node& node) const {return eleDofManager_->NumDofPerNode(node.Id(), 4);}
+        virtual int NumDofPerNode(const DRT::Node& node) const
+        {
+          if (output_mode_)
+          {
+            return 4;
+          }
+          else
+          {
+            if (eleDofManager_ != Teuchos::null)
+            {
+              return eleDofManager_->NumDofPerNode(node.Id());
+            }
+            else
+            {
+              dserror("no element dof information available!");
+              return 0;
+            }
+          }
+        }
 
-        virtual int NumDofPerElement() const {return eleDofManager_->NumElemDof();}
+        virtual int NumDofPerElement() const
+        {
+          if (output_mode_)
+          {
+            return 0;
+          }
+          else
+          {
+            if (eleDofManager_ != Teuchos::null)
+            {
+              return eleDofManager_->NumElemDof();
+            }
+            else
+            {
+              dserror("no element dof information available!");
+              return 0;
+            }
+          }
+        }
         
         void Print(ostream& os) const;
         
@@ -168,7 +204,9 @@ namespace DRT
           calc_fluid_box_filter,
           calc_smagorinsky_const,
           store_xfem_info,
-          get_density
+          get_density,
+          reset,
+          set_output_mode
         };
         
         //! stabilization actions recognized by fluid3 (genalpha implementation)
@@ -228,6 +266,12 @@ namespace DRT
         //!
         //! this dofman will answer to the outside world, how many dofs this element has
         Teuchos::RCP<XFEM::ElementDofManager>                         eleDofManager_;
+        
+        //! for postprocessing in the filters
+        //! then element has always 4 unknowns per node
+        //! so if element is in output mode, it will answer without
+        //! the elementdofmanager
+        bool                             output_mode_;
         
         //! store information about the intersection handle
         Teuchos::RCP<XFEM::InterfaceHandleXFSI>                       ih_;

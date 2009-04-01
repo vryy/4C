@@ -52,16 +52,17 @@ Maintainer: Axel Gerstenberger
 /*----------------------------------------------------------------------*/
 FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
     const Teuchos::RCP<DRT::Discretization> actdis,
-    LINALG::Solver&                         solver,
-    const ParameterList&                    params,
-    IO::DiscretizationWriter&               output
+    const ParameterList&                    params
+//    IO::DiscretizationWriter&               output
     ) :
   // call constructor for "nontrivial" objects
   discret_(actdis),
-  solver_ (solver),
+  solver_ (rcp(new LINALG::Solver(DRT::Problem::Instance()->FluidSolverParams(),
+                                  actdis->Comm(),
+                                  DRT::Problem::Instance()->ErrorFile()->Handle()))),
   params_ (params),
   xparams_(params.sublist("XFEM")),
-  output_ (output),
+  output_ (rcp(new IO::DiscretizationWriter(actdis))),
   myrank_(discret_->Comm().MyPID()),
   cout0_(discret_->Comm(), std::cout),
   alefluid_(false),
@@ -123,9 +124,13 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   
   discret_->FillComplete();
 
+  
+  output_->WriteMesh(0,0.0);
+  
+  
   // sanity check
-  if (  solver.Params().get<string>("solver") == "aztec"
-    and solver.Params().isSublist("ML Parameters")
+  if (  solver_->Params().get<string>("solver") == "aztec"
+    and solver_->Params().isSublist("ML Parameters")
     and not xparams_.get<bool>("DLM_condensation")
     )
   {
@@ -157,7 +162,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   {
     ParameterList eleparams;
     eleparams.set("action","get_density");
-    discret_->Evaluate(eleparams,null,null,null,null,null);
+    discret_->Evaluate(eleparams);
     density_ = eleparams.get<double>("density");
     if (density_ <= 0.0) dserror("received negative or zero density value from elements");
   }
@@ -493,7 +498,7 @@ void FLD::XFluidImplicitTimeInt::TransferDofInformationToElements(
   eleparams.set("DLM_condensation",xparams_.get<bool>("DLM_condensation"));
   eleparams.set("boundaryRatioLimit",xparams_.get<double>("boundaryRatioLimit"));
   eleparams.set("interfacehandle",ih);
-  discret_->Evaluate(eleparams,null,null,null,null,null);
+  discret_->Evaluate(eleparams);
 }
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -504,13 +509,11 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
 {
   // dump old matrix to save memory while we construct a new matrix
   sysmat_ = Teuchos::null; 
-#if DEBUG
   {
     ParameterList eleparams;
     eleparams.set("action","reset");
-    discret_->Evaluate(eleparams,null,null,null,null,null);
+    discret_->Evaluate(eleparams);
   }
-#endif
   
   // within this routine, no parallel re-distribution is allowed to take place
   // before and after this function, it's ok to do that
@@ -545,7 +548,7 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   discret_->FillComplete();
   const Epetra_Map& newdofrowmap = *discret_->DofRowMap();
   
-  discret_->ComputeNullSpaceIfNecessary(solver_.Params());
+  discret_->ComputeNullSpaceIfNecessary(solver_->Params());
 
   {
     const std::map<XFEM::DofKey<XFEM::onNode>, XFEM::DofGID> oldNodalDofDistributionMap(state_.nodalDofDistributionMap_);
@@ -1024,10 +1027,10 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
         double currresidual = max(vresnorm,presnorm);
         currresidual = max(currresidual,incvelnorm_L2/velnorm_L2);
         currresidual = max(currresidual,incprenorm_L2/prenorm_L2);
-        solver_.AdaptTolerance(ittol,currresidual,adaptolbetter);
+        solver_->AdaptTolerance(ittol,currresidual,adaptolbetter);
       }
-      solver_.Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1);
-      solver_.ResetTolerance();
+      solver_->Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1);
+      solver_->ResetTolerance();
 
       // end time measurement for solver
       // to get realistic times, this barrier results in the longest
@@ -1248,8 +1251,8 @@ void FLD::XFluidImplicitTimeInt::Output()
 
   if (step_%upres_ == 0)  //write solution
   {
-    output_.NewStep    (step_,time_);
-    //output_.WriteVector("velnp", state_.velnp_);
+    output_->NewStep    (step_,time_);
+    //output_->WriteVector("velnp", state_.velnp_);
     std::set<XFEM::PHYSICS::Field> fields_out;
     fields_out.insert(XFEM::PHYSICS::Velx);
     fields_out.insert(XFEM::PHYSICS::Vely);
@@ -1257,55 +1260,55 @@ void FLD::XFluidImplicitTimeInt::Output()
     fields_out.insert(XFEM::PHYSICS::Pres);
     Teuchos::RCP<Epetra_Vector> velnp_out = dofmanagerForOutput_->fillPhysicalOutputVector(
         *state_.velnp_, dofset_out_, state_.nodalDofDistributionMap_, fields_out);
-    output_.WriteVector("velnp", velnp_out);
+    output_->WriteVector("velnp", velnp_out);
 //    Teuchos::RCP<Epetra_Vector> accn_out = dofmanagerForOutput_->fillPhysicalOutputVector(
 //        *state_.accn_, dofset_out_, nodalDofDistributionMap_, fields_out);
-//    output_.WriteVector("accn", accn_out);
+//    output_->WriteVector("accn", accn_out);
 
     // output (hydrodynamic) pressure
     Teuchos::RCP<Epetra_Vector> pressure = velpressplitterForOutput_.ExtractCondVector(velnp_out);
     pressure->Scale(density_);
-    output_.WriteVector("pressure", pressure);
+    output_->WriteVector("pressure", pressure);
 
-    //output_.WriteVector("residual", trueresidual_);
+    //output_->WriteVector("residual", trueresidual_);
 
     //only perform stress calculation when output is needed
     if (writestresses_)
     {
       dserror("not supported, yet");
       Teuchos::RCP<Epetra_Vector> traction = CalcStresses();
-      output_.WriteVector("traction",traction);
+      output_->WriteVector("traction",traction);
     }
 
     // write domain decomposition for visualization (only once!)
     if (step_==upres_)
-     output_.WriteElementData();
+     output_->WriteElementData();
 
     if (uprestart_ != 0 and step_%uprestart_ == 0) //add restart data
     {
-      output_.WriteVector("accn", state_.accn_);
-      output_.WriteVector("veln", state_.veln_);
-      output_.WriteVector("velnm", state_.velnm_);
+      output_->WriteVector("accn", state_.accn_);
+      output_->WriteVector("veln", state_.veln_);
+      output_->WriteVector("velnm", state_.velnm_);
     }
   }
 
   // write restart also when uprestart_ is not a integer multiple of upres_
   else if (uprestart_ != 0 and step_%uprestart_ == 0)
   {
-    output_.NewStep    (step_,time_);
-    output_.WriteVector("velnp", state_.velnp_);
-    //output_.WriteVector("residual", trueresidual_);
+    output_->NewStep    (step_,time_);
+    output_->WriteVector("velnp", state_.velnp_);
+    //output_->WriteVector("residual", trueresidual_);
 
     //only perform stress calculation when output is needed
     if (writestresses_)
     {
       Teuchos::RCP<Epetra_Vector> traction = CalcStresses();
-      output_.WriteVector("traction",traction);
+      output_->WriteVector("traction",traction);
     }
 
-    output_.WriteVector("accn", state_.accn_);
-    output_.WriteVector("veln", state_.veln_);
-    output_.WriteVector("velnm", state_.velnm_);
+    output_->WriteVector("accn", state_.accn_);
+    output_->WriteVector("veln", state_.veln_);
+    output_->WriteVector("velnm", state_.velnm_);
   }
 
   if (discret_->Comm().NumProc() == 1)
@@ -1859,6 +1862,7 @@ void FLD::XFluidImplicitTimeInt::SetInitialFlowField(
     int startfuncno
     )
 {
+  cout << "SetInitialFlowField" << endl;
   // create zero displacement vector to use initial position of interface
   {
     const Epetra_Map* fluidsurface_dofcolmap = cutterdiscret->DofColMap();

@@ -35,9 +35,16 @@ EnsightWriter::EnsightWriter(PostField* field,
                              const string filename)
   : field_(field),
     filename_(filename),
-    myrank_(((field->problem())->comm())->MyPID()),
     nodeidgiven_(true)
 {
+  cout << filename << endl;
+  
+  cout << *(field->discretization()) << endl;
+  
+  cout << field->name() << endl;
+  
+  myrank_ = ((field->problem())->comm())->MyPID();
+  
   // initialize proc0map_ correctly
   const RCP<DRT::Discretization> dis = field_->discretization();
   const Epetra_Map* noderowmap = dis->NodeRowMap();

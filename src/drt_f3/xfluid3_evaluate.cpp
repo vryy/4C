@@ -48,6 +48,8 @@ DRT::ELEMENTS::XFluid3::ActionType DRT::ELEMENTS::XFluid3::convertStringToAction
     act = XFluid3::get_density;
   else if (action == "reset")
     act = XFluid3::reset;
+  else if (action == "set_output_mode")
+    act = XFluid3::set_output_mode;
   else
     dserror("Unknown type of action for XFluid3");
   return act;
@@ -113,6 +115,16 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       // reset all information and make element unusable (e.g. it can't answer the numdof question anymore)
       // this way, one can see, if all information are generated correctly or whether something is left
       // from the last nonlinear iteration
+      eleDofManager_ = Teuchos::null;
+      eleDofManager_uncondensed_ = Teuchos::null;
+      ih_ = Teuchos::null;
+      DLM_info_ = Teuchos::null;
+      break;
+    }
+    case set_output_mode:
+    {
+      output_mode_ = true;
+      // reset dof managers if present
       eleDofManager_ = Teuchos::null;
       eleDofManager_uncondensed_ = Teuchos::null;
       ih_ = Teuchos::null;

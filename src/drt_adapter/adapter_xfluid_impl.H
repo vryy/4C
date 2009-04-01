@@ -67,9 +67,7 @@ namespace ADAPTER {
     explicit XFluidImpl(
             Teuchos::RCP<DRT::Discretization> dis,
             const Teuchos::RCP<DRT::Discretization> soliddis,
-            Teuchos::RCP<LINALG::Solver> solver,
-            Teuchos::RCP<ParameterList> params,
-            Teuchos::RCP<IO::DiscretizationWriter> output);
+            Teuchos::RCP<ParameterList> params);
 
     virtual Teuchos::RCP<const Epetra_Vector> InitialGuess();
     virtual Teuchos::RCP<const Epetra_Vector> RHS();
@@ -95,7 +93,7 @@ namespace ADAPTER {
     virtual void NonlinearSolve();
 
     /// get the linear solver object used for this field
-    virtual Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
+    virtual Teuchos::RCP<LINALG::Solver> LinearSolver() { return fluid_.LinearSolver(); }
 
     /// the interface map contains all velocity dofs at the interface
     virtual Teuchos::RCP<const Epetra_Map>    InnerVelocityRowMap();
@@ -208,9 +206,7 @@ namespace ADAPTER {
     //! @name local copies of input parameters
     Teuchos::RCP<DRT::Discretization>      dis_;
     Teuchos::RCP<DRT::Discretization>      boundarydis_;
-    Teuchos::RCP<LINALG::Solver>           solver_;
     Teuchos::RCP<Teuchos::ParameterList>   params_;
-    Teuchos::RCP<IO::DiscretizationWriter> output_;
     Teuchos::RCP<IO::DiscretizationWriter> boundaryoutput_;
     //@}
 
