@@ -966,30 +966,22 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
             LINALG::Matrix<NUMDIM_,NUMDIM_> invrgtstrDtimesrgtstr;
             invrgtstrDtimesrgtstr.MultiplyNN(invrgtstrD,rgtstr);
 
-#if 0
-            // AUXR_{CBk} = U^{d;-1}_{CD,k} . U^{ass}_{DB}
-            // AUXL_{CBk} = U^{d;-1}_{CD} . U^{ass}_{DB,k}
-            LINALG::Matrix<NUMSTR_,NUMDISP_> aux;
+            // AUX_{CBk} = U^{d;-1}_{CD,k} . U^{ass}_{DB}
+            //           + U^{d;-1}_{CD} . U^{ass}_{DB,k}
+            LINALG::Matrix<NUMDFGR_,NUMDISP_> aux;
             for (int k=0; k<NUMDISP_; ++k) {
-              for (int CB=0; CB<NUMSTR_; ++CB) {
+              for (int CB=0; CB<NUMDFGR_; ++CB) {
                 double aux_CBk = 0.0;
-                const int C = voigt6row[CB];
-                const int B = voigt6row[CB];
+                const int C = voigt9row[CB];
+                const int B = voigt9col[CB];
                 for (int D=0; D<NUMDIM_; ++D) {
                   const int CD = voigt3x3sym[NUMDIM_*C+D];
                   const int DB = voigt3x3sym[NUMDIM_*D+B];
                   const double CDfact = (C==D) ? 1.0 : 0.5;
                   const double DBfact = (D==B) ? 1.0 : 0.5;
-                  const int DC = voigt3x3sym[NUMDIM_*D+C];
-                  const double DCfact = (D==C) ? 1.0 : 0.5;
-                  const int BD = voigt3x3sym[NUMDIM_*B+D];
-                  const double BDfact = (B==D) ? 1.0 : 0.5;
-                  aux_CBk += CDfact*invrgtstrDbydisp(CD,k) * rgtstr(D,B);
-                  aux_CBk += invrgtstrD(C,D) * DBfact*rgtstrbydisp(DB,k);
-                  if (CB >= NUMDIM_) {
-                    aux_CBk += BDfact*invrgtstrDbydisp(BD,k) * rgtstr(D,C);
-                    aux_CBk += invrgtstrD(B,D) * DCfact*rgtstrbydisp(DC,k);
-                  }
+                  aux_CBk 
+                    += CDfact*invrgtstrDbydisp(CD,k) * rgtstr(D,B)
+                    + invrgtstrD(C,D) * DBfact*rgtstrbydisp(DB,k);
                 }
                 aux(CB,k) = aux_CBk;
               }
@@ -1006,44 +998,14 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                 const int B = voigt9col[aB];
                 for (int C=0; C<NUMDIM_; ++C) {
                   const int aC = voigt3x3[NUMDIM_*a+C];
-                  const int CB = voigt3x3sym[NUMDIM_*C+B];
-                  const double CBfact = (C==B) ? 1.0 : 0.5;
+                  const int CB = voigt3x3[NUMDIM_*C+B];
                   defgradbydisp_aBk
-                    += defgradD(a,C) * CBfact*aux(CB,k);
-                  defgradbydisp_aBk
-                    += boplin(aC,k) * invrgtstrDtimesrgtstr(C,B);
+                    += defgradD(a,C) * aux(CB,k)
+                    + boplin(aC,k) * invrgtstrDtimesrgtstr(C,B);
                 }
                 defgradbydisp(aB,k) = defgradbydisp_aBk;
               }
             }
-#else
-            // derivative of def.grad. with respect to k nodal displacements d^k
-            // F_{aB,k} = F^d_{aC,k} . U^{d;-1}_{CD} . U^{ass}_{DB}
-            //          + F^d_{aC} . U^{d;-1}_{CD,k} . U^{ass}_{DB}
-            //          + F^d_{aC} . U^{d;-1}_{CD} . U^{ass}_{DB,k}
-            for (int k=0; k<NUMDISP_; ++k) {
-              for (int aB=0; aB<NUMDFGR_; ++aB) {
-                double defgradbydisp_aBk = 0.0;
-                const int a = voigt9row[aB];
-                const int B = voigt9col[aB];
-                for (int C=0; C<NUMDIM_; ++C) {
-                  const int aC = voigt3x3[NUMDIM_*a+C];
-                  for (int D=0; D<NUMDIM_; ++D) {
-                    const int CD = voigt3x3sym[NUMDIM_*C+D];
-                    const int DB = voigt3x3sym[NUMDIM_*D+B];
-                    const double CDfact = (C==D) ? 1.0 : 0.5;
-                    const double DBfact = (D==B) ? 1.0 : 0.5;
-                    defgradbydisp_aBk 
-                      += boplin(aC,k) * invrgtstrD(C,D) * rgtstr(D,B)
-                      + defgradD(a,C) * CDfact*invrgtstrDbydisp(CD,k) * rgtstr(D,B)
-                      + defgradD(a,C) * invrgtstrD(C,D) * DBfact*rgtstrbydisp(DB,k);
-                  }
-                }
-                defgradbydisp(aB,k) = defgradbydisp_aBk;
-              }
-            }
-#endif
-
 
             // ext(p)ensive computation to achieve full tangent
             if (lin_ > lin_sixth) {
