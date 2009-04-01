@@ -154,7 +154,7 @@ void MonWriter::WriteMonFile(PostProblem& problem, string& infieldtype, int node
     // global nodal dof numbers
     gdof = mydiscrete->Dof(mynode);
     // set some dummy values
-    for(int i=0;i < gdof.size();i++)
+    for(unsigned  i=0;i < gdof.size();i++)
     {
       gdof[i]+=offset1;
     }
