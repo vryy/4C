@@ -116,6 +116,7 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
         CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lRowElement(i));
         int nnodes = element->NumNode();
         LINALG::SerialDenseMatrix coord(3,nnodes);
+        element->GetNodalCoords(coord);
         double color = (double)element->IsSlave();
 
         //local center
@@ -124,8 +125,6 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
         // 2D linear case (2noded line elements)
         if (element->Shape()==DRT::Element::line2)
         {
-          element->GetNodalCoords(coord);
-
           gmshfilecontent << "SL(" << scientific << coord(0,0) << "," << coord(1,0) << ","
                               << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
                               << coord(2,1) << ")";
@@ -135,8 +134,6 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
         // 2D quadratic case (3noded line elements)
         if (element->Shape()==DRT::Element::line3)
         {
-          element->GetNodalCoords(coord);
-
           gmshfilecontent << "SL2(" << scientific << coord(0,0) << "," << coord(1,0) << ","
                               << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
                               << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
@@ -147,8 +144,6 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
         // 3D linear case (3noded triangular elements)
         if (element->Shape()==DRT::Element::tri3)
         {
-          element->GetNodalCoords(coord);
-  
           gmshfilecontent << "ST(" << scientific << coord(0,0) << "," << coord(1,0) << ","
                               << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
                               << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
@@ -160,8 +155,6 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
         // 3D bilinear case (4noded quadrilateral elements)
         if (element->Shape()==DRT::Element::quad4)
         {
-          element->GetNodalCoords(coord);
-  
           gmshfilecontent << "SQ(" << scientific << coord(0,0) << "," << coord(1,0) << ","
                               << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
                               << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
@@ -170,6 +163,69 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
           gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "," << color << "};" << endl;
         }
         
+        // 3D quadratic case (6noded triangular elements)
+        if (element->Shape()==DRT::Element::tri6)
+        {
+          gmshfilecontent << "ST2(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+                              << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
+                              << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
+                              << coord(2,2) << "," << coord(0,3) << "," << coord(1,3) << ","
+                              << coord(2,3) << "," << coord(0,4) << "," << coord(1,4) << ","
+                              << coord(2,4) << "," << coord(0,5) << "," << coord(1,5) << ","
+                              << coord(2,5) << ")";
+          gmshfilecontent << "{" << scientific << color << "," << color << "," << color << ","
+                          << color << "," << color << "," << color <<"};" << endl;
+          xi[0] = 1.0/3; xi[1] = 1.0/3;
+        }
+        
+        // 3D serendipity case (8noded quadrilateral elements)
+        if (element->Shape()==DRT::Element::quad8)
+        {
+          gmshfilecontent << "ST(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+                              << coord(2,0) << "," << coord(0,4) << "," << coord(1,4) << ","
+                              << coord(2,4) << "," << coord(0,7) << "," << coord(1,7) << ","
+                              << coord(2,7) << ")";
+          gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "};" << endl;
+          gmshfilecontent << "ST(" << scientific << coord(0,1) << "," << coord(1,1) << ","
+                              << coord(2,1) << "," << coord(0,5) << "," << coord(1,5) << ","
+                              << coord(2,5) << "," << coord(0,4) << "," << coord(1,4) << ","
+                              << coord(2,4) << ")";
+          gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "};" << endl;
+          gmshfilecontent << "ST(" << scientific << coord(0,2) << "," << coord(1,2) << ","
+                              << coord(2,2) << "," << coord(0,6) << "," << coord(1,6) << ","
+                              << coord(2,6) << "," << coord(0,5) << "," << coord(1,5) << ","
+                              << coord(2,5) << ")";
+          gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "};" << endl;
+          gmshfilecontent << "ST(" << scientific << coord(0,3) << "," << coord(1,3) << ","
+                              << coord(2,3) << "," << coord(0,7) << "," << coord(1,7) << ","
+                              << coord(2,7) << "," << coord(0,6) << "," << coord(1,6) << ","
+                              << coord(2,6) << ")";
+          gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "};" << endl;
+          gmshfilecontent << "SQ(" << scientific << coord(0,4) << "," << coord(1,4) << ","
+                              << coord(2,4) << "," << coord(0,5) << "," << coord(1,5) << ","
+                              << coord(2,5) << "," << coord(0,6) << "," << coord(1,6) << ","
+                              << coord(2,6) << "," << coord(0,7) << "," << coord(1,7) << ","
+                              << coord(2,7) << ")";
+          gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "," << color << "};" << endl;
+        }
+        
+        // 3D biquadratic case (9noded quadrilateral elements)
+        if (element->Shape()==DRT::Element::quad9)
+        {
+          gmshfilecontent << "SQ2(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+                              << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
+                              << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
+                              << coord(2,2) << "," << coord(0,3) << "," << coord(1,3) << ","
+                              << coord(2,3) << "," << coord(0,4) << "," << coord(1,4) << ","
+                              << coord(2,4) << "," << coord(0,5) << "," << coord(1,5) << ","
+                              << coord(2,5) << "," << coord(0,6) << "," << coord(1,6) << ","
+                              << coord(2,6) << "," << coord(0,7) << "," << coord(1,7) << ","
+                              << coord(2,7) << "," << coord(0,8) << "," << coord(1,8) << ","
+                              << coord(2,8) << ")";
+          gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "," << color << ","
+                          << color << "," << color << "," << color << "," << color << "," << color << "};" << endl;
+        }
+                
         // plot element number in element center
         double elec[3];
         element->LocalToGlobal(xi,elec,0);
