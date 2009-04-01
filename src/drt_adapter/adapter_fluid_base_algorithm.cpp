@@ -84,9 +84,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // -------------------------------------------------------------------
   RCP<IO::DiscretizationWriter> output =
     rcp(new IO::DiscretizationWriter(actdis));
-  if (genprob.probtyp == prb_fsi_xfem or 
-      genprob.probtyp == prb_fluid_xfem or
-      genprob.probtyp == prb_combust)
+  if (genprob.probtyp != prb_fsi_xfem and 
+      genprob.probtyp != prb_fluid_xfem and
+      genprob.probtyp != prb_combust)
   {
     output->WriteMesh(0,0.0);
   }
@@ -109,9 +109,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     rcp(new LINALG::Solver(DRT::Problem::Instance()->FluidSolverParams(),
                            actdis->Comm(),
                            DRT::Problem::Instance()->ErrorFile()->Handle()));
-  if (genprob.probtyp == prb_fsi_xfem or 
-      genprob.probtyp == prb_fluid_xfem or
-      genprob.probtyp == prb_combust)
+  if (genprob.probtyp != prb_fsi_xfem and 
+      genprob.probtyp != prb_fluid_xfem and
+      genprob.probtyp != prb_combust)
   {
     actdis->ComputeNullSpaceIfNecessary(solver->Params());
   }
