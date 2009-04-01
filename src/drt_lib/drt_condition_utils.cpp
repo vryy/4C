@@ -101,8 +101,10 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
   RCP<Epetra_Comm> com = rcp(sourcedis->Comm().Clone());
   RCP<DRT::Discretization> conditiondis = rcp(new DRT::Discretization(discret_name,com));
 
+  // make sure connectivity is all set
+  // we don't care, whether dofs exist or not
   if (!sourcedis->Filled())
-    sourcedis->FillComplete();
+    sourcedis->FillComplete(false,true,true);
 
   const int myrank = conditiondis->Comm().MyPID();
   const Epetra_Map* sourcenoderowmap = sourcedis->NodeRowMap();
