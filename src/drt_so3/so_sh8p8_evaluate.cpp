@@ -1189,86 +1189,74 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
 
 #if 0
               // BDdk
-              LINALG::Matrix<NUMSTR_,NUMDISPSQSYM_> someDB;
-              LINALG::Matrix<NUMSTR_,NUMDISPSQSYM_> someCD;
-              LINALG::Matrix<NUMSTR_,NUMDISPSQSYM_> someBC;
+              LINALG::Matrix<NUMDFGR_,NUMDISPSQSYM_> someDB;
+              LINALG::Matrix<NUMDFGR_,NUMDISPSQSYM_> someCD;
+              LINALG::Matrix<NUMDFGR_,NUMDISPSQSYM_> someBC;
               for (int d=0; d<NUMDISP_; ++d) {
                 const int n = d / NODDISP_;
                 for (int k=d; k<NUMDISP_; ++k) {  // symmetric matrix : only upper right triangle is computed 
                   const int m = k / NODDISP_;
                   const int dk = NUMDISP_*d - d*(d+1)/2 + k;
                   // someDB
-                  for (int D=0; D<NUMDIM_; ++D) {
-                    for (int B=D; B<NUMDIM_; ++B) {
-                      double someDB_dk = 0.0;
-                      const int DB = voigt3x3sym[NUMDIM_*D+B];
-                      for (int C=0; C<NUMDIM_; ++C) {
-                        const int CD = voigt3x3sym[NUMDIM_*C+D];
-                        const double CDfact = (C==D) ? 1.0 : 0.5;
-                        const int BC = voigt3x3sym[NUMDIM_*B+C];
-                        const double BCfact = (B==C) ? 1.0 : 0.5;
-                        if ( (lin_ >= lin_third) and (d == iboplin[n]) ) {
-                          someDB_dk += BCfact*invdefgradtimesboplin(BC,d) * CDfact*invrgtstrDbydisp(CD,k);
-                        }
-                        if ( (lin_ >= lin_third) and (k == iboplin[m]) ) {
-                          someDB_dk += BCfact*invdefgradtimesboplin(BC,k) * CDfact*invrgtstrDbydisp(CD,d);
-                        }
+                  for (int DB=0; DB<NUMDFGR_; ++DB) {
+                    const int D = voigt9row[DB];
+                    const int B = voigt9col[DB];
+                    double someDB_dk = 0.0;
+                    for (int C=0; C<NUMDIM_; ++C) {
+                      const int CD = voigt3x3sym[NUMDIM_*C+D];
+                      const double CDfact = (C==D) ? 1.0 : 0.5;
+                      const int BC = voigt3x3sym[NUMDIM_*B+C];
+                      const double BCfact = (B==C) ? 1.0 : 0.5;
+                      if ( (lin_ >= lin_third) and (d == iboplin[n]) ) {
+                        someDB_dk += BCfact*invdefgradtimesboplin(BC,d) * CDfact*invrgtstrDbydisp(CD,k);
                       }
-                      if (D == B)
-                        someDB(DB,dk) = someDB_dk;
-                      else
-                        someDB(DB,dk) = 2.0*someDB_dk;
+                      if ( (lin_ >= lin_third) and (k == iboplin[m]) ) {
+                        someDB_dk += BCfact*invdefgradtimesboplin(BC,k) * CDfact*invrgtstrDbydisp(CD,d);
+                      }
                     }
+                    someDB(DB,dk) = someDB_dk;
                   }
                   // someCD
-                  for (int C=0; C<NUMDIM_; ++C) {
-                    for (int D=C; D<NUMDIM_; ++D) {
-                      double someCD_dk = 0.0;
-                      const int CD = voigt3x3sym[NUMDIM_*C+D];
-                      for (int B=0; B<NUMDIM_; ++B) {
-                        const int DB = voigt3x3sym[NUMDIM_*D+B];
-                        const double DBfact = (D==B) ? 1.0 : 0.5;
-                        const int BC = voigt3x3sym[NUMDIM_*B+C];
-                        const double BCfact = (B==C) ? 1.0 : 0.5;
-                        if ( (lin_ >= lin_third) and (d == iboplin[n]) ) {
-                          someCD_dk += BCfact*invdefgradtimesboplin(BC,d) * DBfact*rgtstrbydisp(DB,k);
-                        }
-                        if ( (lin_ >= lin_third) and (k == iboplin[m]) ) {
-                          someCD_dk += BCfact*invdefgradtimesboplin(BC,k) * DBfact*rgtstrbydisp(DB,d);
-                        }
+                  for (int CD=0; CD<NUMDFGR_; ++CD) {
+                    const int C = voigt9row[CD];
+                    const int D = voigt9col[CD];
+                    double someCD_dk = 0.0;
+                    for (int B=0; B<NUMDIM_; ++B) {
+                      const int DB = voigt3x3sym[NUMDIM_*D+B];
+                      const double DBfact = (D==B) ? 1.0 : 0.5;
+                      const int BC = voigt3x3sym[NUMDIM_*B+C];
+                      const double BCfact = (B==C) ? 1.0 : 0.5;
+                      if ( (lin_ >= lin_third) and (d == iboplin[n]) ) {
+                        someCD_dk += BCfact*invdefgradtimesboplin(BC,d) * DBfact*rgtstrbydisp(DB,k);
                       }
-                      if (C == D)
-                        someCD(CD,dk) = someCD_dk;
-                      else
-                        someCD(CD,dk) = 2.0*someCD_dk;
+                      if ( (lin_ >= lin_third) and (k == iboplin[m]) ) {
+                        someCD_dk += BCfact*invdefgradtimesboplin(BC,k) * DBfact*rgtstrbydisp(DB,d);
+                      }
                     }
+                    someCD(CD,dk) = someCD_dk;
                   }
                   // someBC
-                  for (int B=0; B<NUMDIM_; ++B) {
-                    for (int C=B; C<NUMDIM_; ++C) {
-                      double someBC_dk = 0.0;
-                      const int BC = voigt3x3sym[NUMDIM_*B+C];
-                      for (int D=0; D<NUMDIM_; ++D) {
-                        const int CD = voigt3x3sym[NUMDIM_*C+D];
-                        const double CDfact = (C==D) ? 1.0 : 0.5;
-                        const int DB = voigt3x3sym[NUMDIM_*D+B];
-                        const double DBfact = (D==B) ? 1.0 : 0.5;
-                        if (lin_ >= lin_third) {
-                          someBC_dk
-                            += CDfact*invrgtstrDbydisp(CD,d) * DBfact*rgtstrbydisp(DB,k)
-                            + CDfact*invrgtstrDbydisp(CD,k) * DBfact*rgtstrbydisp(DB,d);
-                        }
-                        if (lin_ >= lin_one)
-                        {
-                          const double invrgtstrDbybydisp_CDdk = (*invrgtstrDbybydisp)(CD,dk);
-                          someBC_dk += CDfact*invrgtstrDbybydisp_CDdk * rgtstr(D,B);
-                        }
+                  for (int BC=0; BC<NUMDFGR_; ++BC) {
+                    const int B = voigt9row[BC];
+                    const int C = voigt9col[BC];
+                    double someBC_dk = 0.0;
+                    for (int D=0; D<NUMDIM_; ++D) {
+                      const int CD = voigt3x3sym[NUMDIM_*C+D];
+                      const double CDfact = (C==D) ? 1.0 : 0.5;
+                      const int DB = voigt3x3sym[NUMDIM_*D+B];
+                      const double DBfact = (D==B) ? 1.0 : 0.5;
+                      if (lin_ >= lin_third) {
+                        someBC_dk
+                          += CDfact*invrgtstrDbydisp(CD,d) * DBfact*rgtstrbydisp(DB,k)
+                          + CDfact*invrgtstrDbydisp(CD,k) * DBfact*rgtstrbydisp(DB,d);
                       }
-                      if (B == C)
-                        someBC(BC,dk) = someBC_dk;
-                      else
-                        someBC(BC,dk) = 2.0*someBC_dk;
+                      if (lin_ >= lin_one)
+                      {
+                        const double invrgtstrDbybydisp_CDdk = (*invrgtstrDbybydisp)(CD,dk);
+                        someBC_dk += CDfact*invrgtstrDbybydisp_CDdk * rgtstr(D,B);
+                      }
                     }
+                    someBC(BC,dk) = someBC_dk;
                   }
                 }
               }
@@ -1289,33 +1277,27 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                 for (int k=d; k<NUMDISP_; ++k) {  // symmetric matrix : only upper right triangle is computed 
                   const int dk = NUMDISP_*d - d*(d+1)/2 + k;
                   double defgradbybydisp_dk = 0.0;
-                  for (int D=0; D<NUMDIM_; ++D) {
-                    for (int B=D; B<NUMDIM_; ++B) {
-                      const int DB = voigt3x3sym[NUMDIM_*D+B];
-                      const double DBfact = (D==B) ? 1.0 : 0.5;
-                      const int BD = voigt3x3sym[NUMDIM_*B+D];
-                      const double BDfact = (B==D) ? 1.0 : 0.5;
-                      defgradbybydisp_dk += someDB(DB,dk) * rgtstr(D,B);
-                      if (lin_ >= lin_half) {
-                        const double rgtstrbybydisp_BDdk = rgtstrbybydisp(BD,dk);
-                        defgradbybydisp_dk
-                          += invdefgradtimesdefgradDtimesinvrgtstrD(B,D) * rgtstrbybydisp_BDdk;
-                      }
+                  for (int DB=0; DB<NUMDFGR_; ++DB) {
+                    const int D = voigt9row[DB];
+                    const int B = voigt9col[DB];
+                    const int BD = voigt3x3sym[NUMDIM_*B+D];
+                    const double BDfact = (B==D) ? 1.0 : 0.5;
+                    defgradbybydisp_dk += someDB(DB,dk) * rgtstr(D,B);
+                    if (lin_ >= lin_half) {
+                      const double rgtstrbybydisp_BDdk = rgtstrbybydisp(BD,dk);
+                      defgradbybydisp_dk
+                        += invdefgradtimesdefgradDtimesinvrgtstrD(B,D) * BDfact*rgtstrbybydisp_BDdk;
                     }
                   }
-                  for (int C=0; C<NUMDIM_; ++C) {
-                    for (int D=C; D<NUMDIM_; ++D) {
-                      const int CD = voigt3x3sym[NUMDIM_*C+D];
-                      const double CDfact = (C==D) ? 1.0 : 0.5;
-                      defgradbybydisp_dk += someCD(CD,dk) * invrgtstrD(C,D);
-                    }
+                  for (int CD=0; CD<NUMDFGR_; ++CD) {
+                    const int C = voigt9row[CD];
+                    const int D = voigt9col[CD];
+                    defgradbybydisp_dk += someCD(CD,dk) * invrgtstrD(C,D);
                   }
-                  for (int B=0; B<NUMDIM_; ++B) {
-                    for (int C=B; C<NUMDIM_; ++C) {
-                      const int BC = voigt3x3sym[NUMDIM_*B+C];
-                      const double BCfact = (B==C) ? 1.0 : 0.5;
-                      defgradbybydisp_dk += someBC(BC,dk) * invdefgradtimesdefgradD(B,C);
-                    }
+                  for (int BC=0; BC<NUMDFGR_; ++BC) {
+                    const int B = voigt9row[BC];
+                    const int C = voigt9col[BC];
+                    defgradbybydisp_dk += someBC(BC,dk) * invdefgradtimesdefgradD(B,C);
                   }
                   (*stiffmatrix)(d,k) -= defgradbybydisp_dk * effpressure*detdefgrad*detJ_w;
                   if (k != d) (*stiffmatrix)(k,d) -= defgradbybydisp_dk * effpressure*detdefgrad*detJ_w;
