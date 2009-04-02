@@ -70,6 +70,7 @@ void InterfaceEnsightWriter::WriteAllResults(PostField* field)
   EnsightWriter::WriteResult("iveln", "iveln", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("ivelnm", "ivelnm", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("iaccn", "iaccn", dofbased, field->problem()->num_dim());
+  EnsightWriter::WriteResult("itrueresnp", "itrueresnp", dofbased, field->problem()->num_dim());
   WriteElementResults(field);
 }
 

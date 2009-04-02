@@ -283,9 +283,6 @@ void ADAPTER::XFluidImpl::StatisticsAndOutput()
 /*----------------------------------------------------------------------*/
 void ADAPTER::XFluidImpl::Output()
 {
-  // first fluid output
-  fluid_.StatisticsAndOutput();
-  
   // now the interface output
   boundaryoutput_->NewStep(Step(),Time());
   boundaryoutput_->WriteVector("idispnp", idispnp_);
@@ -294,6 +291,12 @@ void ADAPTER::XFluidImpl::Output()
   boundaryoutput_->WriteVector("iveln", iveln_);
   boundaryoutput_->WriteVector("ivelnm", ivelnm_);
   boundaryoutput_->WriteVector("iaccn", iaccn_);
+  boundaryoutput_->WriteVector("itrueresnp", itrueresnp_);
+  
+  // first fluid output
+  fluid_.StatisticsAndOutput();
+  
+
 //  boundaryoutput_->WriteVector("interface force", itrueres_);
 
   // now interface gmsh output
@@ -532,6 +535,18 @@ void ADAPTER::XFluidImpl::ReadRestart(int step)
   Teuchos::RCP<Epetra_Vector> idispcolnp = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
   Teuchos::RCP<Epetra_Vector> idispcoln  = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
 
+  IO::DiscretizationReader reader(boundarydis_,step);
+  reader.ReadDouble("time");
+  reader.ReadInt("step");
+  // read interface position
+  reader.ReadVector(idispnp_,"idispnp");
+  reader.ReadVector(idispn_, "idispn");
+  reader.ReadVector(ivelnp_, "ivelnp");
+  reader.ReadVector(iveln_, "iveln");
+  reader.ReadVector(ivelnm_, "ivelnm");
+  reader.ReadVector(iaccn_, "iaccn");
+  reader.ReadVector(itrueresnp_, "itrueresnp");
+  
   // map to fluid parallel distribution
   LINALG::Export(*idispnp_,*idispcolnp);
   LINALG::Export(*idispn_ ,*idispcoln);
