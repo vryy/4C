@@ -137,12 +137,13 @@ public:
     
   /*!
   \brief Build all integrals and linearizations on a 1D slave /
-         master overlap (i.e. M, g, LinM, Ling)
+         master overlap (i.e. M, g, LinM, Ling and possibly D, LinD)
           
   */
   void IntegrateDerivSegment2D(
       CONTACT::CElement& sele, double& sxia, double& sxib,
       CONTACT::CElement& mele, double& mxia, double& mxib,
+      RCP<Epetra_SerialDenseMatrix> dseg,
       RCP<Epetra_SerialDenseMatrix> mseg,
       RCP<Epetra_SerialDenseVector> gseg);
     
@@ -181,12 +182,13 @@ public:
   
   /*!
   \brief Build all integrals and linearizations on a 2D slave /
-         master integration cell (i.e. M, g, LinM, Ling)
+         master integration cell (i.e. M, g, LinM, Ling and possibly D, LinD)
          
   */
   void IntegrateDerivCell3D(
      CONTACT::CElement& sele, CONTACT::CElement& mele,
      RCP<CONTACT::Intcell> cell,
+     RCP<Epetra_SerialDenseMatrix> dseg,
      RCP<Epetra_SerialDenseMatrix> mseg,
      RCP<Epetra_SerialDenseVector> gseg);
  
@@ -202,13 +204,14 @@ public:
   
   /*!
   \brief Build all integrals and linearizations on a 2D slave /
-         master integration cell (i.e. M, g, LinM, Ling) for
-         the auxiliary plane coupling case
+         master integration cell (i.e. M, g, LinM, Ling and possibly D, LinD)
+         for the auxiliary plane coupling case
          
   */
   void IntegrateDerivCell3DAuxPlane(
      CONTACT::CElement& sele, CONTACT::CElement& mele,
      RCP<CONTACT::Intcell> cell, double* auxn,
+     RCP<Epetra_SerialDenseMatrix> dseg,
      RCP<Epetra_SerialDenseMatrix> mseg,
      RCP<Epetra_SerialDenseVector> gseg);
  
@@ -232,6 +235,7 @@ public:
      CONTACT::CElement& sele, CONTACT::CElement& mele,
      CONTACT::IntElement& sintele, CONTACT::IntElement& mintele,
      RCP<CONTACT::Intcell> cell, double* auxn,
+     RCP<Epetra_SerialDenseMatrix> dseg,
      RCP<Epetra_SerialDenseMatrix> mseg,
      RCP<Epetra_SerialDenseVector> gseg);
     

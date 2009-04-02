@@ -3386,6 +3386,7 @@ bool CONTACT::Coupling3d::IntegrateCells()
     // *******************************************************************
     int nrow = SlaveElement().NumNode();
     int ncol = MasterElement().NumNode();
+    RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
     RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
     RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
     
@@ -3397,18 +3398,20 @@ bool CONTACT::Coupling3d::IntegrateCells()
         CONTACT::IntElement& sintref = static_cast<CONTACT::IntElement&>(SlaveIntElement());
         CONTACT::IntElement& mintref = static_cast<CONTACT::IntElement&>(MasterIntElement());
         integrator.IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),
-                 sintref,mintref,Cells()[i],Auxn(),mseg,gseg);
+                 sintref,mintref,Cells()[i],Auxn(),dseg,mseg,gseg);
       }
       else
         integrator.IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),
-                                                  Cells()[i],Auxn(),mseg,gseg);
+                                                  Cells()[i],Auxn(),dseg,mseg,gseg);
     }
     else /*(!CouplingInAuxPlane()*/
-      integrator.IntegrateDerivCell3D(SlaveElement(),MasterElement(),Cells()[i],mseg,gseg);
+      integrator.IntegrateDerivCell3D(SlaveElement(),MasterElement(),Cells()[i],dseg,mseg,gseg);
     // *******************************************************************
     
     // do the two assemblies into the slave nodes
-    // if CONTACTONEMORTARLOOP defined, then AssembleM does M AND D matrices !!!
+#ifdef CONTACTONEMORTARLOOP
+    integrator.AssembleD(Comm(),SlaveElement(),*dseg);
+#endif // #ifdef CONTACTONEMORTARLOOP
     integrator.AssembleM(Comm(),SlaveElement(),MasterElement(),*mseg);
     integrator.AssembleG(Comm(),SlaveElement(),*gseg);
   }

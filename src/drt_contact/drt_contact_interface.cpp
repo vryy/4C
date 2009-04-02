@@ -722,7 +722,7 @@ void CONTACT::Interface::Evaluate()
     // two separate Mortar loops for D and M. If CONTACTONEMORTARLOOP
     // is applied, we combine the construction of D with the construction
     // of M in the method Integrator::AssembleM() and linearization of D
-    // with the linearization of M in the method Integrator::DerivM()! 
+    // with the linearization of M in Integrator::IntegrateDerivSegment2D()! 
     //********************************************************************
 #ifndef CONTACTONEMORTARLOOP
     IntegrateSlave(*selement);
@@ -2319,21 +2319,8 @@ void CONTACT::Interface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
       {
         int col = colcurr->first;
         double val = lm[j] * (colcurr->second);
-        //cout << "Assemble LinD: " << row << " " << col << " " << val << endl;
-        
-        // check entries for the one mortar loop case
-        // (due to tolerances and round-off errors, we might get spurious entries)
-        bool assemble = true;
-#ifdef CONTACTONEMORTARLOOP
-        if (sdoffullmap_->LID(col) < 0)
-        {
-          //FIXME: popp 04/09
-          //assemble=false;
-          //if(abs(val)>1.0e-6) dserror("ERROR: AssembleLinDM: Invalid non-zero master entry in LinD");
-        }
-#endif // #ifdef CONTACTONEMORTARLOOP
-        
-        if (assemble && abs(val)>1.0e-12) lindglobal.Assemble(val,row,col);
+        //cout << "Assemble LinD: " << row << " " << col << " " << val << endl;    
+        if (abs(val)>1.0e-12) lindglobal.Assemble(val,row,col);
       }
     }
   }

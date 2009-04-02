@@ -557,15 +557,17 @@ bool CONTACT::Coupling2d::IntegrateOverlap(vector<double>& xiproj)
   CONTACT::Integrator integrator(sele_.Shape());
 
   // do the overlap integration (integrate and linearize both M and gap)
-  // if CONTACTONEMORTARLOOP defined, then this does linearization of M AND D matrices !!!
   int nrow = sele_.NumNode();
   int ncol = mele_.NumNode();
+  RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
   RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
   RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
-  integrator.IntegrateDerivSegment2D(sele_,sxia,sxib,mele_,mxia,mxib,mseg,gseg);
+  integrator.IntegrateDerivSegment2D(sele_,sxia,sxib,mele_,mxia,mxib,dseg,mseg,gseg);
     
   // do the two assemblies into the slave nodes
-  // if CONTACTONEMORTARLOOP defined, then AssembleM does M AND D matrices !!!
+#ifdef CONTACTONEMORTARLOOP
+  integrator.AssembleD(Comm(),sele_,*dseg);
+#endif // #ifdef CONTACTONEMORTARLOOP
   integrator.AssembleM(Comm(),sele_,mele_,*mseg);
   integrator.AssembleG(Comm(),sele_,*gseg);
 

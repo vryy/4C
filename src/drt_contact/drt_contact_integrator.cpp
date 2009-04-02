@@ -324,6 +324,7 @@ void CONTACT::Integrator::IntegrateDerivSlave2D3D(
 void CONTACT::Integrator::IntegrateDerivSegment2D(
      CONTACT::CElement& sele, double& sxia, double& sxib,
      CONTACT::CElement& mele, double& mxia, double& mxib,
+     RCP<Epetra_SerialDenseMatrix> dseg,
      RCP<Epetra_SerialDenseMatrix> mseg,
      RCP<Epetra_SerialDenseVector> gseg)
 {
@@ -605,8 +606,13 @@ void CONTACT::Integrator::IntegrateDerivSegment2D(
     }
     // evaluate linearizations *******************************************
     
+    // decide whether D and LinD have to be integrated or not
+    bool dod = false;
+#ifdef CONTACTONEMORTARLOOP
+    dod = true;
+#endif // #ifdef CONTACTONEMORTARLOOP
     
-    // compute segment M matrix ******************************************
+    // compute segment D/M matrix ****************************************
     // loop over all mseg matrix entries
     // nrow represents the slave Lagrange multipliers !!!
     // ncol represents the master dofs !!!
@@ -625,10 +631,13 @@ void CONTACT::Integrator::IntegrateDerivSegment2D(
         // isolate the mseg entries to be filled and
         // add current Gauss point's contribution to mseg
         if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
-          (*mseg)(j,k) += prod*dxdsxi*dsxideta*wgt; 
+        {
+          (*mseg)(j,k) += prod*dxdsxi*dsxideta*wgt;
+          if(dod) (*dseg)(j,j) += prod*dxdsxi*dsxideta*wgt;
+        }
       }
     }
-    // compute segment M matrix ******************************************
+    // compute segment D/M matrix ****************************************
     
     // compute segment gap vector ****************************************
     // loop over all gseg vector entries
@@ -641,11 +650,18 @@ void CONTACT::Integrator::IntegrateDerivSegment2D(
     }
     // compute segment gap vector ****************************************
     
-    // compute segment M linearization ***********************************
+    // compute segment D/M linearization *********************************
+    // In the case with separate loops for D and M, this is done by the
+    // method IntegrateDerivSlave2D3D(). But in the CONTACTONEMORTARLOOP
+    // case we want to combine the linearization of D and M, just as we
+    // combine the computation of D and M itself.
     for (int j=0;j<nrow;++j)
     {
       CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(mynodes[j]);
       if (!mycnode) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+      
+      // get the D-map as a reference
+      map<int,double>& ddmap_jj = mycnode->GetDerivD();
             
       for (int k=0;k<ncol;++k)
       {
@@ -661,99 +677,59 @@ void CONTACT::Integrator::IntegrateDerivSegment2D(
         {
           fac = wgt*sval[m]*mval[k]*dsxideta*dxdsxi;
           for (CI p=dualmap[j][m].begin();p!=dualmap[j][m].end();++p)
+          {
             dmmap_jk[p->first] += fac*(p->second);
+            if(dod) ddmap_jj[p->first] += fac*(p->second);
+          }
         }
         
         // (2) Lin(Phi) - slave GP coordinates
         fac = wgt*dualderiv(j,0)*mval[k]*dsxideta*dxdsxi;
         for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
+        {
           dmmap_jk[p->first] += fac*(p->second);
+          if(dod) ddmap_jj[p->first] += fac*(p->second);
+        }
         
         // (3) Lin(NMaster) - master GP coordinates
         fac = wgt*dualval(j,0)*mderiv(k,0)*dsxideta*dxdsxi;
         for (CI p=dmxigp.begin();p!=dmxigp.end();++p)
+        {
           dmmap_jk[p->first] += fac*(p->second);
+          if(dod) ddmap_jj[p->first] += fac*(p->second);
+        }
         
         // (4) Lin(dsxideta) - segment end coordinates
         fac = wgt*dualval[j]*mval[k]*dxdsxi;
         for (CI p=ximaps[0].begin();p!=ximaps[0].end();++p)
+        {
           dmmap_jk[p->first] -= 0.5*fac*(p->second);
+          if(dod) ddmap_jj[p->first] -= 0.5*fac*(p->second);
+        }
         for (CI p=ximaps[1].begin();p!=ximaps[1].end();++p)
+        {
           dmmap_jk[p->first] += 0.5*fac*(p->second);
+          if(dod) ddmap_jj[p->first] += 0.5*fac*(p->second);
+        }
         
         // (5) Lin(dxdsxi) - slave GP Jacobian
         fac = wgt*dualval[j]*mval[k]*dsxideta;
         for (CI p=testmap.begin();p!=testmap.end();++p)
+        {
           dmmap_jk[p->first] += fac*(p->second);
+          if(dod) ddmap_jj[p->first] += fac*(p->second);
+        }
         
         // (6) Lin(dxdsxi) - slave GP coordinates
         fac = wgt*dualval[j]*mval[k]*dsxideta*dxdsxidsxi;
         for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
+        {
           dmmap_jk[p->first] += fac*(p->second);
+          if(dod) ddmap_jj[p->first] += fac*(p->second);
+        }
       }
     }
-    
-    //********************************************************************
-    // Compute directional derivative of D
-    //********************************************************************
-    // In the case with separate loops for D and M, this is done by the
-    // method IntegrateDerivSlave2D3D(). But in the CONTACTONEMORTARLOOP
-    // case we want to combine the linearization of D and M, just as we
-    // combine the computation of D and M itself.
-    // Of course, this means we get additional terms for the linearization
-    // of D because the slave segment end coordinates can now vary. In
-    // the case with separate D and M loops we simply could integrate on
-    // the full slave element from xi=-1 to xi=1, now we have to consider
-    // the coordinates sxia,sxib and their linearizations!
-    //********************************************************************
-#ifdef CONTACTONEMORTARLOOP
-    // contributions to DerivD_jj
-    for (int j=0;j<nrow;++j)
-    {
-      CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(mynodes[j]);
-      if (!mycnode) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
-      double fac = 0.0;
-      
-      // get the D-map as a reference
-      map<int,double>& ddmap_jj = mycnode->GetDerivD();
-      
-      // (1) Lin(Phi) - dual shape functions
-      for (int k=0;k<nrow;++k)
-      {
-        fac = wgt*sval[j]*sval[k]*dsxideta*dxdsxi;
-        for (CI p=dualmap[j][k].begin();p!=dualmap[j][k].end();++p)
-          ddmap_jj[p->first] += fac*(p->second);
-      }
-      
-      // (2) Lin(Phi) - slave GP coordinates
-      fac = wgt*dualderiv(j,0)*sval[j]*dsxideta*dxdsxi;
-      for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
-        ddmap_jj[p->first] += fac*(p->second);
-      
-      // (3) Lin(NSlave) - slave GP coordinates
-      fac = wgt*dualval[j]*sderiv(j,0)*dsxideta*dxdsxi;
-      for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
-        ddmap_jj[p->first] += fac*(p->second);
-      
-      // (4) Lin(dsxideta) - segment end coordinates
-      fac = wgt*dualval[j]*sval[j]*dxdsxi;
-      for (CI p=ximaps[0].begin();p!=ximaps[0].end();++p)
-        ddmap_jj[p->first] -= 0.5*fac*(p->second);
-      for (CI p=ximaps[1].begin();p!=ximaps[1].end();++p)
-        ddmap_jj[p->first] += 0.5*fac*(p->second);
-      
-      // (5) Lin(dxdsxi) - slave GP Jacobian
-      fac = wgt*dualval[j]*sval[j]*dsxideta;
-      for (CI p=testmap.begin();p!=testmap.end();++p)
-        ddmap_jj[p->first] += fac*(p->second);
-      
-      // (6) Lin(dxdsxi) - slave GP coordinates
-      fac = wgt*dualval[j]*sval[j]*dsxideta*dxdsxidsxi;
-      for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
-        ddmap_jj[p->first] += fac*(p->second);
-    }
-#endif // #ifdef CONTACTONEMORTARLOOP
-    // compute segment M linearization ***********************************
+    // compute segment D/M linearization *********************************
     
     // compute segment gap linearization *********************************
     for (int j=0;j<nrow;++j)
@@ -1457,6 +1433,7 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateMmod2D(CONTACT::CEle
 void CONTACT::Integrator::IntegrateDerivCell3D(
      CONTACT::CElement& sele, CONTACT::CElement& mele,
      RCP<CONTACT::Intcell> cell,
+     RCP<Epetra_SerialDenseMatrix> dseg,
      RCP<Epetra_SerialDenseMatrix> mseg,
      RCP<Epetra_SerialDenseVector> gseg)
 {
@@ -1791,7 +1768,13 @@ void CONTACT::Integrator::IntegrateDerivCell3D(
     }
     // evaluate linearizations *******************************************
     
-    // compute cell M matrix *********************************************
+    // decide whether D and LinD have to be integrated or not
+    bool dod = false;
+#ifdef CONTACTONEMORTARLOOP
+    dod = true;
+#endif // #ifdef CONTACTONEMORTARLOOP
+        
+    // compute cell D/M matrix *******************************************
     // loop over all mseg matrix entries
     // nrow represents the slave Lagrange multipliers !!!
     // ncol represents the master dofs !!!
@@ -1810,10 +1793,13 @@ void CONTACT::Integrator::IntegrateDerivCell3D(
         // isolate the mseg entries to be filled and
         // add current Gauss point's contribution to mseg  
         if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
-          (*mseg)(j,k) += prod*jaccell*jacslave*wgt; 
+        {
+          (*mseg)(j,k) += prod*jaccell*jacslave*wgt;
+          if (dod) (*dseg)(j,j) += prod*jaccell*jacslave*wgt;
+        }
       }
     }  
-    // compute cell M matrix *********************************************
+    // compute cell D/M matrix *******************************************
     
     // compute cell gap vector *******************************************
     // loop over all gseg vector entries
@@ -1826,11 +1812,18 @@ void CONTACT::Integrator::IntegrateDerivCell3D(
     }
     // compute cell gap vector *******************************************
     
-    // compute cell M linearization **************************************
+    // compute cell D/M linearization ************************************
+    // In the case with separate loops for D and M, this is done by the
+    // method IntegrateDerivSlave2D3D(). But in the CONTACTONEMORTARLOOP
+    // case we want to combine the linearization of D and M, just as we
+    // combine the computation of D and M itself.
     for (int j=0;j<nrow;++j)
     {
       CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(mynodes[j]);
       if (!mycnode) dserror("ERROR: IntegrateDerivCell3D: Null pointer!");
+      
+      // get the D-map as a reference
+      map<int,double>& ddmap_jj = mycnode->GetDerivD();
             
       for (int k=0;k<ncol;++k)
       {
@@ -1847,24 +1840,39 @@ void CONTACT::Integrator::IntegrateDerivCell3D(
           {
             fac = wgt*sval[m]*mval[k]*jaccell*jacslave;
             for (CI p=dualmap[j][m].begin();p!=dualmap[j][m].end();++p)
+            {
               dmmap_jk[p->first] += fac*(p->second);
+              if (dod) ddmap_jj[p->first] += fac*(p->second);
+            }
           }
         
         // (2) Lin(Phi) - slave GP coordinates
         fac = wgt*dualderiv(j,0)*mval[k]*jaccell*jacslave;
         for (CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
+        {
           dmmap_jk[p->first] += fac*(p->second);
+          if (dod) ddmap_jj[p->first] += fac*(p->second);
+        }
         fac = wgt*dualderiv(j,1)*mval[k]*jaccell*jacslave;
         for (CI p=dsxigp[1].begin();p!=dsxigp[1].end();++p)
+        {
           dmmap_jk[p->first] += fac*(p->second);
+          if (dod) ddmap_jj[p->first] += fac*(p->second);
+        }
         
         // (3) Lin(NMaster) - master GP coordinates
         fac = wgt*dualval[j]*mderiv(k,0)*jaccell*jacslave;
         for (CI p=dmxigp[0].begin();p!=dmxigp[0].end();++p)
+        {
           dmmap_jk[p->first] += fac*(p->second);
+          if (dod) ddmap_jj[p->first] += fac*(p->second);
+        }
         fac = wgt*dualval[j]*mderiv(k,1)*jaccell*jacslave;
         for (CI p=dmxigp[1].begin();p!=dmxigp[1].end();++p)
+        {
           dmmap_jk[p->first] += fac*(p->second);
+          if (dod) ddmap_jj[p->first] += fac*(p->second);
+        }
         
         // (4) Lin(dsxideta) - intcell GP Jacobian
         fac = wgt*dualval[j]*mval[k]*jacslave;
@@ -1873,94 +1881,36 @@ void CONTACT::Integrator::IntegrateDerivCell3D(
           int v = m/2;   // which vertex?
           int dof = m%2; // which dof?
           for (CI p=(cell->GetDerivVertex(v))[dof].begin();p!=(cell->GetDerivVertex(v))[dof].end();++p)
+          {
             dmmap_jk[p->first] += fac * jacintcellvec[m] * (p->second);
+            if (dod) ddmap_jj[p->first] += fac * jacintcellvec[m] *(p->second);
+          }
         }
         
         // (5) Lin(dxdsxi) - slave GP Jacobian
         fac = wgt*dualval[j]*mval[k]*jaccell;
         for (CI p=jacslavemap.begin();p!=jacslavemap.end();++p)
+        {
           dmmap_jk[p->first] += fac*(p->second);
+          if (dod) ddmap_jj[p->first] += fac*(p->second);
+        }
                 
         // (6) Lin(dxdsxi) - slave GP coordinates
         fac = wgt*dualval[j]*mval[k]*jaccell*djacdxi[0];
         for (CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
+        {
           dmmap_jk[p->first] += fac*(p->second);
+          if (dod) ddmap_jj[p->first] += fac*(p->second);
+        }
         fac = wgt*dualval[j]*mval[k]*jaccell*djacdxi[1];
         for (CI p=dsxigp[1].begin();p!=dsxigp[1].end();++p)
-          dmmap_jk[p->first] += fac*(p->second);
-      }
-    }
-    // compute cell M linearization **************************************
-    
-    //********************************************************************
-    // Compute directional derivative of D
-    //********************************************************************
-    // In the case with separate loops for D and M, this is done by the
-    // method IntegrateDerivSlave2D3D(). But in the CONTACTONEMORTARLOOP
-    // case we want to combine the linearization of D and M, just as we
-    // combine the computation of D and M itself.
-    //********************************************************************
-#ifdef CONTACTONEMORTARLOOP
-    // contributions to DerivD_jj
-    for (int j=0;j<nrow;++j)
-    {
-      CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(mynodes[j]);
-      if (!mycnode) dserror("ERROR: IntegrateDerivCell3D: Null pointer!");
-      double fac = 0.0;
-      
-      // get the D-map as a reference
-      map<int,double>& ddmap_jj = mycnode->GetDerivD();
-      
-      // (1) Lin(Phi) - dual shape functions
-      if (duallin)
-        for (int k=0;k<nrow;++k)
         {
-          fac = wgt*sval[j]*sval[k]*jaccell*jacslave;
-          for (CI p=dualmap[j][k].begin();p!=dualmap[j][k].end();++p)
-            ddmap_jj[p->first] += fac*(p->second);
+          dmmap_jk[p->first] += fac*(p->second);
+          if (dod) ddmap_jj[p->first] += fac*(p->second);
         }
-      
-      // (2) Lin(Phi) - slave GP coordinates
-      fac = wgt*dualderiv(j,0)*sval[j]*jaccell*jacslave;
-      for (CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
-        ddmap_jj[p->first] += fac*(p->second);
-      fac = wgt*dualderiv(j,1)*sval[j]*jaccell*jacslave;
-      for (CI p=dsxigp[1].begin();p!=dsxigp[1].end();++p)
-        ddmap_jj[p->first] += fac*(p->second);
-      
-      // (3) Lin(NSlave) - slave GP coordinates
-      fac = wgt*dualval[j]*sderiv(j,0)*jaccell*jacslave;
-      for (CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
-        ddmap_jj[p->first] += fac*(p->second);
-      fac = wgt*dualval[j]*sderiv(j,1)*jaccell*jacslave;
-      for (CI p=dsxigp[1].begin();p!=dsxigp[1].end();++p)
-        ddmap_jj[p->first] += fac*(p->second);
-      
-      // (4) Lin(dsxideta) - intcell GP Jacobian
-      fac = wgt*dualval[j]*sval[j]*jacslave;
-      for (int m=0;m<(int)jacintcellvec.size();++m)
-      {
-        int v = m/2;   // which vertex?
-        int dof = m%2; // which dof?
-        for (CI p=(cell->GetDerivVertex(v))[dof].begin();p!=(cell->GetDerivVertex(v))[dof].end();++p)
-          ddmap_jj[p->first] += fac * jacintcellvec[m] * (p->second);
       }
-      
-      // (5) Lin(dxdsxi) - slave GP Jacobian
-      fac = wgt*dualval[j]*sval[j]*jaccell;
-      for (CI p=jacslavemap.begin();p!=jacslavemap.end();++p)
-        ddmap_jj[p->first] += fac*(p->second);
-              
-      // (6) Lin(dxdsxi) - slave GP coordinates
-      fac = wgt*dualval[j]*sval[j]*jaccell*djacdxi[0];
-      for (CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
-        ddmap_jj[p->first] += fac*(p->second);
-      fac = wgt*dualval[j]*sval[j]*jaccell*djacdxi[1];
-      for (CI p=dsxigp[1].begin();p!=dsxigp[1].end();++p)
-        ddmap_jj[p->first] += fac*(p->second);
     }
-#endif // #ifdef CONTACTONEMORTARLOOP
-    // compute cell D linearization **************************************
+    // compute cell D/M linearization ************************************
     
     // compute cell gap linearization ************************************
     for (int j=0;j<nrow;++j)
@@ -2037,6 +1987,7 @@ void CONTACT::Integrator::IntegrateDerivCell3D(
 void CONTACT::Integrator::IntegrateDerivCell3DAuxPlane(
      CONTACT::CElement& sele, CONTACT::CElement& mele,
      RCP<CONTACT::Intcell> cell, double* auxn,
+     RCP<Epetra_SerialDenseMatrix> dseg,
      RCP<Epetra_SerialDenseMatrix> mseg,
      RCP<Epetra_SerialDenseVector> gseg)
 {
@@ -2372,7 +2323,13 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlane(
     }
     // evaluate linearizations *******************************************
     
-    // compute cell M matrix *********************************************
+    // decide whether D and LinD have to be integrated or not
+    bool dod = false;
+#ifdef CONTACTONEMORTARLOOP
+    dod = true;
+#endif // #ifdef CONTACTONEMORTARLOOP
+        
+    // compute cell D/M matrix *******************************************
     // loop over all mseg matrix entries
     // nrow represents the slave Lagrange multipliers !!!
     // ncol represents the master dofs !!!
@@ -2391,10 +2348,13 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlane(
         // isolate the mseg entries to be filled and
         // add current Gauss point's contribution to mseg
         if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
-          (*mseg)(j,k) += prod*jac*wgt; 
+        {
+          (*mseg)(j,k) += prod*jac*wgt;
+          if (dod) (*dseg)(j,j) += prod*jac*wgt;
+        }
       }
     }   
-    // compute cell M matrix *********************************************
+    // compute cell D/M matrix *******************************************
     
     // compute cell gap vector *******************************************
     // loop over all gseg vector entries
@@ -2407,11 +2367,18 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlane(
     }
     // compute cell gap vector *******************************************
     
-    // compute cell M linearization **************************************
+    // compute cell D/M linearization ************************************
+    // In the case with separate loops for D and M, this is done by the
+    // method IntegrateDerivSlave2D3D(). But in the CONTACTONEMORTARLOOP
+    // case we want to combine the linearization of D and M, just as we
+    // combine the computation of D and M itself.
     for (int j=0;j<nrow;++j)
     {
       CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(mynodes[j]);
       if (!mycnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+      
+      // get the D-map as a reference
+      map<int,double>& ddmap_jj = mycnode->GetDerivD();
             
       for (int k=0;k<ncol;++k)
       {
@@ -2428,85 +2395,51 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlane(
           {
             fac = wgt*sval[m]*mval[k]*jac;
             for (CI p=dualmap[j][m].begin();p!=dualmap[j][m].end();++p)
+            {
               dmmap_jk[p->first] += fac*(p->second);
+              if (dod) ddmap_jj[p->first] += fac*(p->second);
+            }
           }
         
         // (2) Lin(Phi) - slave GP coordinates
         fac = wgt*dualderiv(j,0)*mval[k]*jac;
         for (CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
+        {
           dmmap_jk[p->first] += fac*(p->second);
+          if (dod) ddmap_jj[p->first] += fac*(p->second);
+        }
         fac = wgt*dualderiv(j,1)*mval[k]*jac;
         for (CI p=dsxigp[1].begin();p!=dsxigp[1].end();++p)
+        {
           dmmap_jk[p->first] += fac*(p->second);
+          if (dod) ddmap_jj[p->first] += fac*(p->second);
+        }
         
         // (3) Lin(NMaster) - master GP coordinates
         fac = wgt*dualval[j]*mderiv(k,0)*jac;
         for (CI p=dmxigp[0].begin();p!=dmxigp[0].end();++p)
+        {
           dmmap_jk[p->first] += fac*(p->second);
+          if (dod) ddmap_jj[p->first] += fac*(p->second);
+        }
         fac = wgt*dualval[j]*mderiv(k,1)*jac;
         for (CI p=dmxigp[1].begin();p!=dmxigp[1].end();++p)
+        {
           dmmap_jk[p->first] += fac*(p->second);
+          if (dod) ddmap_jj[p->first] += fac*(p->second);
+        }
         
         // (4) Lin(dsxideta) - intcell GP Jacobian
         fac = wgt*dualval[j]*mval[k];
         for (CI p=jacintcellmap.begin();p!=jacintcellmap.end();++p)
+        {
           dmmap_jk[p->first] += fac*(p->second);
+          if (dod) ddmap_jj[p->first] += fac*(p->second);
+        }
       }
     }
-    // compute cell M linearization **************************************
+    // compute cell D/M linearization ************************************
     
-    //********************************************************************
-    // Compute directional derivative of D
-    //********************************************************************
-    // In the case with separate loops for D and M, this is done by the
-    // method IntegrateDerivSlave2D3D(). But in the CONTACTONEMORTARLOOP
-    // case we want to combine the linearization of D and M, just as we
-    // combine the computation of D and M itself.
-    //********************************************************************
-#ifdef CONTACTONEMORTARLOOP
-    // contributions to DerivD_jj
-    for (int j=0;j<nrow;++j)
-    {
-      CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(mynodes[j]);
-      if (!mycnode) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
-      double fac = 0.0;
-      
-      // get the D-map as a reference
-      map<int,double>& ddmap_jj = mycnode->GetDerivD();
-      
-      // (1) Lin(Phi) - dual shape functions
-      if (duallin)
-        for (int k=0;k<nrow;++k)
-        {
-          fac = wgt*sval[j]*sval[k]*jac;
-          for (CI p=dualmap[j][k].begin();p!=dualmap[j][k].end();++p)
-            ddmap_jj[p->first] += fac*(p->second);
-        }
-      
-      // (2) Lin(Phi) - slave GP coordinates
-      fac = wgt*dualderiv(j,0)*sval[j]*jac;
-      for (CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
-        ddmap_jj[p->first] += fac*(p->second);
-      fac = wgt*dualderiv(j,1)*sval[j]*jac;
-      for (CI p=dsxigp[1].begin();p!=dsxigp[1].end();++p)
-        ddmap_jj[p->first] += fac*(p->second);
-      
-      // (3) Lin(NSlave) - slave GP coordinates
-      fac = wgt*dualval[j]*sderiv(j,0)*jac;
-      for (CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
-        ddmap_jj[p->first] += fac*(p->second);
-      fac = wgt*dualval[j]*sderiv(j,1)*jac;
-      for (CI p=dsxigp[1].begin();p!=dsxigp[1].end();++p)
-        ddmap_jj[p->first] += fac*(p->second);
-      
-      // (4) Lin(dsxideta) - intcell GP Jacobian
-      fac = wgt*dualval[j]*sval[j];
-      for (CI p=jacintcellmap.begin();p!=jacintcellmap.end();++p)
-        ddmap_jj[p->first] += fac*(p->second);
-    }
-#endif // #ifdef CONTACTONEMORTARLOOP
-    // compute cell D linearization **************************************
-        
     // compute cell gap linearization ************************************
     for (int j=0;j<nrow;++j)
     {
@@ -2566,6 +2499,7 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneQuad(
      CONTACT::CElement& sele, CONTACT::CElement& mele,
      CONTACT::IntElement& sintele, CONTACT::IntElement& mintele,
      RCP<CONTACT::Intcell> cell, double* auxn,
+     RCP<Epetra_SerialDenseMatrix> dseg,
      RCP<Epetra_SerialDenseMatrix> mseg,
      RCP<Epetra_SerialDenseVector> gseg)
 {
@@ -2935,7 +2869,13 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneQuad(
     }
     // evaluate linearizations *******************************************
     
-    // compute cell M matrix *********************************************
+    // decide whether D and LinD have to be integrated or not
+    bool dod = false;
+#ifdef CONTACTONEMORTARLOOP
+    dod = true;
+#endif // #ifdef CONTACTONEMORTARLOOP
+        
+    // compute cell D/M matrix *******************************************
     // loop over all mseg matrix entries
     // nrow represents the slave Lagrange multipliers !!!
     // ncol represents the master dofs !!!
@@ -2954,10 +2894,13 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneQuad(
         // isolate the mseg entries to be filled and
         // add current Gauss point's contribution to mseg
         if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
-          (*mseg)(j,k) += prod*jac*wgt; 
+        {
+          (*mseg)(j,k) += prod*jac*wgt;
+          if (dod) (*dseg)(j,j) += prod*jac*wgt;
+        }
       }
     }   
-    // compute cell M matrix *********************************************
+    // compute cell D/M matrix *******************************************
     
     // compute cell gap vector *******************************************
     // loop over all gseg vector entries
@@ -2970,12 +2913,19 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneQuad(
     }
     // compute cell gap vector *******************************************
     
-    // compute cell M linearization **************************************
+    // compute cell D/M linearization ************************************
+    // In the case with separate loops for D and M, this is done by the
+    // method IntegrateDerivSlave2D3D(). But in the CONTACTONEMORTARLOOP
+    // case we want to combine the linearization of D and M, just as we
+    // combine the computation of D and M itself.
     for (int j=0;j<nrow;++j)
     {
       CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(mynodes[j]);
       if (!mycnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
-            
+      
+      // get the D-map as a reference
+      map<int,double>& ddmap_jj = mycnode->GetDerivD();
+      
       for (int k=0;k<ncol;++k)
       {
         // global master node ID
@@ -2991,85 +2941,51 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneQuad(
           {
             fac = wgt*sval[m]*mval[k]*jac;
             for (CI p=dualmap[j][m].begin();p!=dualmap[j][m].end();++p)
+            {
               dmmap_jk[p->first] += fac*(p->second);
+              if (dod) ddmap_jj[p->first] += fac*(p->second);
+            }
           }
         
         // (2) Lin(Phi) - slave GP coordinates
         fac = wgt*dualderiv(j,0)*mval[k]*jac;
         for (CI p=dpsxigp[0].begin();p!=dpsxigp[0].end();++p)
+        {
           dmmap_jk[p->first] += fac*(p->second);
+          if (dod) ddmap_jj[p->first] += fac*(p->second);
+        }
         fac = wgt*dualderiv(j,1)*mval[k]*jac;
         for (CI p=dpsxigp[1].begin();p!=dpsxigp[1].end();++p)
+        {
           dmmap_jk[p->first] += fac*(p->second);
+          if (dod) ddmap_jj[p->first] += fac*(p->second);
+        }
         
         // (3) Lin(NMaster) - master GP coordinates
         fac = wgt*dualval[j]*mderiv(k,0)*jac;
         for (CI p=dpmxigp[0].begin();p!=dpmxigp[0].end();++p)
+        {
           dmmap_jk[p->first] += fac*(p->second);
+          if (dod) ddmap_jj[p->first] += fac*(p->second);
+        }
         fac = wgt*dualval[j]*mderiv(k,1)*jac;
         for (CI p=dpmxigp[1].begin();p!=dpmxigp[1].end();++p)
+        {
           dmmap_jk[p->first] += fac*(p->second);
+          if (dod) ddmap_jj[p->first] += fac*(p->second);
+        }
         
         // (4) Lin(dsxideta) - intcell GP Jacobian
         fac = wgt*dualval[j]*mval[k];
         for (CI p=jacintcellmap.begin();p!=jacintcellmap.end();++p)
+        {
           dmmap_jk[p->first] += fac*(p->second);
+          if (dod) ddmap_jj[p->first] += fac*(p->second);
+        }
       }
     }
-    // compute cell M linearization **************************************
+    // compute cell D/M linearization ************************************
     
-    //********************************************************************
-    // Compute directional derivative of D
-    //********************************************************************
-    // In the case with separate loops for D and M, this is done by the
-    // method IntegrateDerivSlave2D3D(). But in the CONTACTONEMORTARLOOP
-    // case we want to combine the linearization of D and M, just as we
-    // combine the computation of D and M itself.
-    //********************************************************************
-#ifdef CONTACTONEMORTARLOOP
-    // contributions to DerivD_jj
-    for (int j=0;j<nrow;++j)
-    {
-      CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(mynodes[j]);
-      if (!mycnode) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
-      double fac = 0.0;
-      
-      // get the D-map as a reference
-      map<int,double>& ddmap_jj = mycnode->GetDerivD();
-      
-      // (1) Lin(Phi) - dual shape functions
-      if (duallin)
-        for (int k=0;k<nrow;++k)
-        {
-          fac = wgt*sval[j]*sval[k]*jac;
-          for (CI p=dualmap[j][k].begin();p!=dualmap[j][k].end();++p)
-            ddmap_jj[p->first] += fac*(p->second);
-        }
-      
-      // (2) Lin(Phi) - slave GP coordinates
-      fac = wgt*dualderiv(j,0)*sval[j]*jac;
-      for (CI p=dpsxigp[0].begin();p!=dpsxigp[0].end();++p)
-        ddmap_jj[p->first] += fac*(p->second);
-      fac = wgt*dualderiv(j,1)*sval[j]*jac;
-      for (CI p=dpsxigp[1].begin();p!=dpsxigp[1].end();++p)
-        ddmap_jj[p->first] += fac*(p->second);
-      
-      // (3) Lin(Nslave) - slave GP coordinates
-      fac = wgt*dualval[j]*sderiv(j,0)*jac;
-      for (CI p=dpsxigp[0].begin();p!=dpsxigp[0].end();++p)
-        ddmap_jj[p->first] += fac*(p->second);
-      fac = wgt*dualval[j]*sderiv(j,1)*jac;
-      for (CI p=dpsxigp[1].begin();p!=dpsxigp[1].end();++p)
-        ddmap_jj[p->first] += fac*(p->second);
-      
-      // (4) Lin(dsxideta) - intcell GP Jacobian
-      fac = wgt*dualval[j]*sval[j];
-      for (CI p=jacintcellmap.begin();p!=jacintcellmap.end();++p)
-        ddmap_jj[p->first] += fac*(p->second);
-    }
-#endif // #ifdef CONTACTONEMORTARLOOP
-    // compute cell D linearization **************************************
-          
     // compute cell gap linearization ************************************
     for (int j=0;j<nrow;++j)
     {
@@ -3504,10 +3420,6 @@ bool CONTACT::Integrator::AssembleM(const Epetra_Comm& comm,
   for (int slave=0;slave<sele.NumNode();++slave)
   {
     CONTACT::CNode* snode = static_cast<CONTACT::CNode*>(snodes[slave]);
-#ifdef CONTACTONEMORTARLOOP
-    const int* sdofs = snode->Dofs();
-#endif // #ifdef CONTACTONEMORTARLOOP
-    
     int sndof = snode->NumDof();
     
     // only process slave node rows that belong to this proc
@@ -3522,9 +3434,6 @@ bool CONTACT::Integrator::AssembleM(const Epetra_Comm& comm,
     // loop over all dofs of the slave node
     for (int sdof=0;sdof<sndof;++sdof)
     {
-      // initialize sum(M) of current row
-      double msum=0.0;
-      
       // loop over all master nodes
       for (int master=0;master<mele.NumNode();++master)
       {
@@ -3537,19 +3446,9 @@ bool CONTACT::Integrator::AssembleM(const Epetra_Comm& comm,
         {
           int col = mdofs[mdof];
           double val = mseg(slave*sndof+sdof,master*mndof+mdof);
-          msum+=val;
           snode->AddMValue(sdof,col,val);
         }
       }
-      
-#ifdef CONTACTONEMORTARLOOP
-      // we know that D(snode) = sum_mnode (M(mnode,snode))
-      int col = sdofs[sdof];
-      snode->AddDValue(sdof,col,msum);
-  #ifdef CONTACTBOUNDMOD
-      dserror("ERROR: Combination 1 mortar loop <-> boundary modification not yet impl.");
-  #endif // #ifdef CONTACTBOUNDMOD
-#endif // #ifdef CONTACTONEMORTARLOOP
     }
     /*
 #ifdef DEBUG
