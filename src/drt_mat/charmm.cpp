@@ -530,7 +530,7 @@ void MAT::CHARMM::charmmfileapi (
     // Variables needed for CHARMM and getting the results
     // Decide if parallel or seriell
     const bool dont_use_old_results = true;
-    const string serpar = "ser"; // ser = seriell; par = mpirun; pbs = PBS Torque
+    const string serpar = "par"; // ser = seriell; par = mpirun; pbs = PBS Torque
     char* path = "/home/metzke/ccarat.dev/codedev/charmm.fe.codedev/";
     char* charmm = "/home/metzke/bin/charmm";
     char* mpicharmm = "/home/metzke/bin/mpicharmm";
@@ -563,15 +563,18 @@ void MAT::CHARMM::charmmfileapi (
         ostringstream command(ios_base::out);
         if (serpar.compare("ser")==0) {
             command << "cd " << path << " && "
-                    << charmm << " FCD_STARTD=" << FCD_STARTD << " FCD_ENDD=" << FCD_ENDD
-                    << " FCD_X=" << FCD_direction(0) << " FCD_Y=" << FCD_direction(1) << " FCD_Z=" << FCD_direction(2)
-                    << " SCD_STARTD=" << SCD_STARTD << " SCD_ENDD=" << SCD_ENDD
-                    << " SCD_X=" << SCD_direction(0) << " SCD_Y=" << SCD_direction(1) << " SCD_Z=" << SCD_direction(2)
+                    << charmm << " FCDSTARTD=" << FCD_STARTD << " FCDENDD=" << FCD_ENDD
+                    << " FCDX=" << FCD_direction(0) << " FCDY=" << FCD_direction(1) << " FCDZ=" << FCD_direction(2)
+                    << " SCDSTARTD=" << SCD_STARTD << " SCDENDD=" << SCD_ENDD
+                    << " SCDX=" << SCD_direction(0) << " SCDY=" << SCD_direction(1) << " SCDZ=" << SCD_direction(2)
                     << " < " << input << " > " << output.str();
         } else if (serpar.compare("par")==0) {
             command << "cd " << path << " && "
-                    << "mpirun -np 4 " << mpicharmm << " STARTD=" << FCD_STARTD
-                    << " ENDD=" << FCD_ENDD
+                    << "mpirun -np 4 " << mpicharmm << " FCDSTARTD=" << FCD_STARTD << " FCDENDD=" << FCD_ENDD
+                    << " FCDX=" << FCD_direction(0) << " FCDY=" << FCD_direction(1) << " FCDZ=" << FCD_direction(2)
+                    << " SCDSTARTD=" << SCD_STARTD << " SCDENDD=" << SCD_ENDD
+                    << " SCDX=" << SCD_direction(0) << " SCDY=" << SCD_direction(1) << " SCDZ=" << SCD_direction(2)
+                    << " INPUTFILE=" << input
                     << " < " << "stream.inp" << " > " << output.str();
         } else dserror("What you want now? Parallel or not!");
         if (debug == 1) cout << "CHARMM command:" << endl << command.str() << endl;
@@ -584,7 +587,6 @@ void MAT::CHARMM::charmmfileapi (
     } else {
         if (debug == 0) cout << "-1|-1|" << flush;
     }
-
 
     cout << endl;
     cout.flags(flags);  // Set the flags to the way they were
