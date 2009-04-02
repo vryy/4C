@@ -129,6 +129,11 @@ if [ x$PARALLEL = "xyes" ] ; then
     DEFINES=" -DPARALLEL $DEFINES"
 fi
 
+#  on altix methods based on superlu have to be excluded and one more compile time flag
+if [ x$HAVENOT_SUPERLU = "xyes" ] ; then
+    DEFINES=" -DHAVENOT_SUPERLU $DEFINES"
+fi
+
 # define the length of the loops for fast elements
 DEFINES="$DEFINES $LOOPL"
 
