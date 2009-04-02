@@ -682,6 +682,8 @@ void LINALG::Solver::Solve_aztec(
  *----------------------------------------------------------------------*/
 void LINALG::Solver::Solve_superlu(const bool reset)
 {
+  
+#ifndef HAVENOT_SUPERLU
 #ifdef PARALLEL
   if (reset || !IsFactored())
   {
@@ -705,6 +707,7 @@ void LINALG::Solver::Solve_superlu(const bool reset)
 #else
   dserror("Distributed SuperLU only in parallel");
 #endif    //! system of equations
+#endif
   RefCountPtr<Epetra_CrsMatrix>     A_;
 
   return;

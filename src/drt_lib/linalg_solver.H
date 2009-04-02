@@ -52,7 +52,9 @@ Maintainer: Michael Gee
 
 // Trilinos is configured with SuperLUDIST only in the parallel version
 #ifdef PARALLEL
+#ifndef HAVENOT_SUPERLU
 #include "Amesos_Superludist.h"
+#endif
 #endif
 
 #include "drt_dserror.H"
