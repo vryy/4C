@@ -113,7 +113,6 @@ private:
   enum LinearizationType
   {
     lin_sixth = 0,  ///< minimum linearisation to achieve anti-locking
-    lin_third,
     lin_half,  ///< half-way linearisation
     lin_one  ///< full linearisation
   };

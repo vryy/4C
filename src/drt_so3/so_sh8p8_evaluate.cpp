@@ -881,14 +881,14 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
         // linear B-op
         // derivative of displ-based def.grad with respect to nodal displacements
         // F^d_{aC,d}
-        int iboplin[NUMDFGR_*NUMNOD_];  // index entries which are non-equal zero
+        int iboplin[NUMNOD_][NUMDFGR_];  // index entries which are non-equal zero
         LINALG::Matrix<NUMDFGR_,NUMDISP_> boplin(true);
-        for (int ij=0; ij<NUMDFGR_; ++ij) {
-          const int i = voigt9row[ij];
-          const int j = voigt9col[ij];
-          for (int k=0; k<NUMNOD_; ++k) {
+        for (int k=0; k<NUMNOD_; ++k) {
+          for (int ij=0; ij<NUMDFGR_; ++ij) {
+            const int i = voigt9row[ij];
+            const int j = voigt9col[ij];
             const int K = k*NODDISP_ + i;
-            iboplin[NUMDFGR_*ij+k] = K;
+            iboplin[k][ij] = K;
             boplin(ij,K) = derivsmat(j,k);
           }
         }
@@ -902,10 +902,10 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
           // derivative of pure-disp. inverse material stretch tensor with respect to nodal displacements
           // U^{d;-1}_{,d} = U^{d;-1}_{,U} . (C^d_{,U^d})^{-1} . C^d_{,d}
           // on exit of this block the following variables are going to hold ...
-          static LINALG::Matrix<NUMSTR_,NUMDISP_> invrgtstrDbydisp; // ...U^{d;-1}_{,d}
-          static LINALG::Matrix<NUMSTR_,NUMSTR_> invrgtstrDbyrgtstrD; // ...U^{d;-1}_{,U}
-          static LINALG::Matrix<NUMSTR_,NUMSTR_> rcgDbyrgtstrD; // ...(C^d_{,U^d})^{-1}
-          static LINALG::Matrix<NUMSTR_,NUMDISP_> rgtstrDbydisp; // ...U^d_{,d}
+          LINALG::Matrix<NUMSTR_,NUMDISP_> invrgtstrDbydisp; // ...U^{d;-1}_{,d}
+          LINALG::Matrix<NUMSTR_,NUMSTR_> invrgtstrDbyrgtstrD; // ...U^{d;-1}_{,U}
+          LINALG::Matrix<NUMSTR_,NUMSTR_> rcgDbyrgtstrD; // ...(C^d_{,U^d})^{-1}
+          LINALG::Matrix<NUMSTR_,NUMDISP_> rgtstrDbydisp; // ...U^d_{,d}
           {
             // U^{d;-1}_{,U}
             InvVector6VoigtDiffByItself(invrgtstrDbyrgtstrD,invrgtstrD);
@@ -934,7 +934,6 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
               }
             }
 
-
             // U^{d;-1}_{,d} = U^{d;-1}_{,U} . U^d_{,d}
             invrgtstrDbydisp.MultiplyNN(invrgtstrDbyrgtstrD,rgtstrDbydisp);
           }
@@ -962,129 +961,136 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
             }
             rgtstrbydisp.Scale(2.0);
 
-            // U^{d;-1}_{CD} . U^{ass}_{DB}
-            LINALG::Matrix<NUMDIM_,NUMDIM_> invrgtstrDtimesrgtstr;
-            invrgtstrDtimesrgtstr.MultiplyNN(invrgtstrD,rgtstr);
-
-            // AUX_{CBk} = U^{d;-1}_{CD,k} . U^{ass}_{DB}
-            //           + U^{d;-1}_{CD} . U^{ass}_{DB,k}
-            LINALG::Matrix<NUMDFGR_,NUMDISP_> aux;
-            for (int k=0; k<NUMDISP_; ++k) {
-              for (int CB=0; CB<NUMDFGR_; ++CB) {
-                double aux_CBk = 0.0;
-                const int C = voigt9row[CB];
-                const int B = voigt9col[CB];
-                for (int D=0; D<NUMDIM_; ++D) {
-                  const int CD = voigt3x3sym[NUMDIM_*C+D];
-                  const int DB = voigt3x3sym[NUMDIM_*D+B];
-                  const double CDfact = (C==D) ? 1.0 : 0.5;
-                  const double DBfact = (D==B) ? 1.0 : 0.5;
-                  aux_CBk 
-                    += CDfact*invrgtstrDbydisp(CD,k) * rgtstr(D,B)
-                    + invrgtstrD(C,D) * DBfact*rgtstrbydisp(DB,k);
-                }
-                aux(CB,k) = aux_CBk;
-              }
-            }
-
             // derivative of def.grad. with respect to k nodal displacements d^k
-            // F_{aB,k} = F^d_{aC,k} . U^{d;-1}_{CD} . U^{ass}_{DB}
-            //          + F^d_{aC} . U^{d;-1}_{CD,k} . U^{ass}_{DB}
-            //          + F^d_{aC} . U^{d;-1}_{CD} . U^{ass}_{DB,k}
-            for (int k=0; k<NUMDISP_; ++k) {
-              for (int aB=0; aB<NUMDFGR_; ++aB) {
-                double defgradbydisp_aBk = 0.0;
-                const int a = voigt9row[aB];
-                const int B = voigt9col[aB];
-                for (int C=0; C<NUMDIM_; ++C) {
-                  const int aC = voigt3x3[NUMDIM_*a+C];
-                  const int CB = voigt3x3[NUMDIM_*C+B];
-                  defgradbydisp_aBk
-                    += defgradD(a,C) * aux(CB,k)
-                    + boplin(aC,k) * invrgtstrDtimesrgtstr(C,B);
+            {
+              // U^{d;-1}_{CD} . U^{ass}_{DB}
+              LINALG::Matrix<NUMDIM_,NUMDIM_> invrgtstrDtimesrgtstr;
+              invrgtstrDtimesrgtstr.MultiplyNN(invrgtstrD,rgtstr);
+
+              // AUX_{CBk} = U^{d;-1}_{CD,k} . U^{ass}_{DB}
+              //           + U^{d;-1}_{CD} . U^{ass}_{DB,k}
+              LINALG::Matrix<NUMDFGR_,NUMDISP_> aux;
+              for (int k=0; k<NUMDISP_; ++k) {
+                for (int CB=0; CB<NUMDFGR_; ++CB) {
+                  double aux_CBk = 0.0;
+                  const int C = voigt9row[CB];
+                  const int B = voigt9col[CB];
+                  for (int D=0; D<NUMDIM_; ++D) {
+                    const int CD = voigt3x3sym[NUMDIM_*C+D];
+                    const int DB = voigt3x3sym[NUMDIM_*D+B];
+                    const double CDfact = (C==D) ? 1.0 : 0.5;
+                    const double DBfact = (D==B) ? 1.0 : 0.5;
+                    aux_CBk 
+                      += CDfact*invrgtstrDbydisp(CD,k) * rgtstr(D,B)
+                      + invrgtstrD(C,D) * DBfact*rgtstrbydisp(DB,k);
+                  }
+                  aux(CB,k) = aux_CBk;
                 }
-                defgradbydisp(aB,k) = defgradbydisp_aBk;
+              }
+
+              // derivative of def.grad. with respect to k nodal displacements d^k
+              // F_{aB,k} = F^d_{aC,k} . U^{d;-1}_{CD} . U^{ass}_{DB}
+              //          + F^d_{aC} . U^{d;-1}_{CD,k} . U^{ass}_{DB}
+              //          + F^d_{aC} . U^{d;-1}_{CD} . U^{ass}_{DB,k}
+              for (int k=0; k<NUMDISP_; ++k) {
+                const int m = k / NODDISP_;
+                for (int aB=0; aB<NUMDFGR_; ++aB) {
+                  double defgradbydisp_aBk = 0.0;
+                  const int a = voigt9row[aB];
+                  const int B = voigt9col[aB];
+                  for (int C=0; C<NUMDIM_; ++C) {
+                    const int CB = voigt3x3[NUMDIM_*C+B];
+                    defgradbydisp_aBk
+                      += defgradD(a,C) * aux(CB,k);
+                  }
+                  for (int C=0; C<NUMDIM_; ++C) {
+                    const int aC = voigt3x3[NUMDIM_*a+C];
+                    if (k == iboplin[m][aC])
+                      defgradbydisp_aBk
+                        += boplin(aC,k) * invrgtstrDtimesrgtstr(C,B);
+                  }
+                  defgradbydisp(aB,k) = defgradbydisp_aBk;
+                }
               }
             }
 
             // ext(p)ensive computation to achieve full tangent
-            if (lin_ > lin_sixth) {
+            if (lin_ > lin_half) {
               // on #rcgbyrgtstr is stored the inverse of C^{ass}_{,U^{ass}}
               {
                 const int err = rcgbyrgtstrsolver.Invert();
                 if (err != 0) dserror("Failed to invert, error=%d", err);
               }
 
-              // second derivative of assumed right Cauchy-Green tensor 
-              // w.r.t. to right stretch tensor
-              // C^{ass}_{,U^{ass} U^{ass}} = const
-              int ircgbybyrgtstr[NUMSTR_*6];  // for sparse access
-              LINALG::Matrix<NUMSTR_,6> rcgbybyrgtstr;
-              SqVector6VoigtTwiceDiffByItself(ircgbybyrgtstr,rcgbybyrgtstr);
-
-              // second derivative of disp-based right Cauchy-Green tensor 
-              // w.r.t. to right stretch tensor
-              // C^{d}_{,U^{d} U^{d}} = const
-              // MARK: an extra variable is not needed as same as for assumed right CG tensor (above)
-
-              // second derivative of disp-based inverse right stretch tensor
-              // w.r.t. disp-based right stretch tensor
-              // U^{d-1}_{,U^d U^d}
-              LINALG::Matrix<NUMSTR_,NUMSTR_*NUMSTR_> invrgtstrDbybyrgtstrD;
-              InvVector6VoigtTwiceDiffByItself(invrgtstrDbybyrgtstrD,invrgtstrD);
-
               // second derivative of pure-disp right Cauchy-Green tensor w.r.t. displacements
               // TEMP^ass = C^{ass}_{EF,dk} - C^{ass}_{,UU} . U^{ass}_{,d} . U^{ass}_{,d}
               // TEMP^d = C^{d}_{EF,dk} - C^{d}_{,UU} . U^{d}_{,d} . U^{d}_{,d}
               LINALG::Matrix<NUMSTR_,NUMDISPSQSYM_> temp;
               LINALG::Matrix<NUMSTR_,NUMDISPSQSYM_> tempD;
-              for (int d=0; d<NUMDISP_; ++d) {
-                for (int k=d; k<NUMDISP_; ++k) {  // symmetric in d,k
-                  const int dk = NUMDISP_*d - d*(d+1)/2 + k;
-                  int ndnk = -1;
-                  if (d%NODDISP_ == k%NODDISP_) {
-                    const int nd = d / NODDISP_;
-                    const int nk = k / NODDISP_;
-                    ndnk = nd*NUMNOD_ + nk;
-                  }
-                  for (int EF=0; EF<NUMSTR_; ++EF) {
-                    const int E = voigt9row[EF];
-                    const int F = voigt9col[EF];
-                    // C^{ass}_{,UU} . U^{ass}_{,d} . U^{ass}_{,d}
-                    // and
-                    // C^{d}_{,UU} . U^{d}_{,d} . U^{d}_{,d}
-                    double temp_EFdk = 0.0;
-                    double tempD_EFdk = 0.0;
-                    // this looks terrible, but speed is everything
-                    for (int GHIJ=0; GHIJ<6; ++GHIJ) {
-                      if (ircgbybyrgtstr[NUMSTR_*EF+GHIJ] != -1) {
-                        const int GH = ircgbybyrgtstr[NUMSTR_*EF+GHIJ] / NUMSTR_;
-                        const int IJ = ircgbybyrgtstr[NUMSTR_*EF+GHIJ] % NUMSTR_;
-                        // C^{ass}_{,UU} . U^{ass}_{,d} . U^{ass}_{,d}
-                        temp_EFdk += rcgbybyrgtstr(EF,GHIJ)*rgtstrbydisp(IJ,d)*rgtstrbydisp(GH,k);
-                        // C^{d}_{,UU} . U^{d}_{,d} . U^{d}_{,d}
-                        // C^{d}_{,U^d U^d} = C^{ass}_{,U^ass U^ass} = const
-                        tempD_EFdk += rcgbybyrgtstr(EF,GHIJ)*rgtstrDbydisp(IJ,d)*rgtstrDbydisp(GH,k);
+              {
+                // second derivative of assumed right Cauchy-Green tensor 
+                // w.r.t. to right stretch tensor
+                // C^{ass}_{,U^{ass} U^{ass}} = const
+                int ircgbybyrgtstr[NUMSTR_*6];  // for sparse access
+                LINALG::Matrix<NUMSTR_,6> rcgbybyrgtstr;
+                SqVector6VoigtTwiceDiffByItself(ircgbybyrgtstr,rcgbybyrgtstr);
+
+                // second derivative of disp-based right Cauchy-Green tensor 
+                // w.r.t. to right stretch tensor
+                // C^{d}_{,U^{d} U^{d}} = const
+                // MARK: an extra variable is not needed as same as for assumed right CG tensor (above)
+
+                // second derivative of pure-disp right Cauchy-Green tensor w.r.t. displacements
+                // TEMP^ass = C^{ass}_{EF,dk} - C^{ass}_{,UU} . U^{ass}_{,d} . U^{ass}_{,d}
+                // TEMP^d = C^{d}_{EF,dk} - C^{d}_{,UU} . U^{d}_{,d} . U^{d}_{,d}
+                for (int d=0; d<NUMDISP_; ++d) {
+                  for (int k=d; k<NUMDISP_; ++k) {  // symmetric in d,k
+                    const int dk = NUMDISP_*d - d*(d+1)/2 + k;
+                    int ndnk = -1;
+                    if (d%NODDISP_ == k%NODDISP_) {
+                      const int nd = d / NODDISP_;
+                      const int nk = k / NODDISP_;
+                      ndnk = nd*NUMNOD_ + nk;
+                    }
+                    for (int EF=0; EF<NUMSTR_; ++EF) {
+                      const int E = voigt9row[EF];
+                      const int F = voigt9col[EF];
+                      // C^{ass}_{,UU} . U^{ass}_{,d} . U^{ass}_{,d}
+                      // and
+                      // C^{d}_{,UU} . U^{d}_{,d} . U^{d}_{,d}
+                      double temp_EFdk = 0.0;
+                      double tempD_EFdk = 0.0;
+                      // this looks terrible, but speed is everything
+                      for (int GHIJ=0; GHIJ<6; ++GHIJ) {
+                        if (ircgbybyrgtstr[NUMSTR_*EF+GHIJ] != -1) {
+                          const int GH = ircgbybyrgtstr[NUMSTR_*EF+GHIJ] / NUMSTR_;
+                          const int IJ = ircgbybyrgtstr[NUMSTR_*EF+GHIJ] % NUMSTR_;
+                          // C^{ass}_{,UU} . U^{ass}_{,d} . U^{ass}_{,d}
+                          temp_EFdk += rcgbybyrgtstr(EF,GHIJ)*rgtstrbydisp(IJ,d)*rgtstrbydisp(GH,k);
+                          // C^{d}_{,UU} . U^{d}_{,d} . U^{d}_{,d}
+                          // C^{d}_{,U^d U^d} = C^{ass}_{,U^ass U^ass} = const
+                          tempD_EFdk += rcgbybyrgtstr(EF,GHIJ)*rgtstrDbydisp(IJ,d)*rgtstrDbydisp(GH,k);
+                        }
                       }
+                      // U^{ass}_{DB,dk}
+                      double rcgbybydisp_EFdk = 0.0;
+                      if (ndnk != -1)
+                        rcgbybydisp_EFdk = 2.0*(*bopbydisp)(EF,ndnk);
+                      double rcgDbybydisp_EFdk = 0.0;
+                      for (int a=0; a<NUMDIM_; ++a) {
+                        const int aE = voigt3x3[NUMDIM_*a+E];
+                        const int aF = voigt3x3[NUMDIM_*a+F];
+                        if (E == F)  // make strain-like 6-Voigt vector
+                          rcgDbybydisp_EFdk 
+                            += 2.0*boplin(aE,d)*boplin(aF,k);
+                        else  // thus setting  V_EF + V_FE if E!=F
+                          rcgDbybydisp_EFdk 
+                            += 2.0*boplin(aE,d)*boplin(aF,k)
+                            +  2.0*boplin(aF,d)*boplin(aE,k);
+                      }
+                      temp(EF,dk) = rcgbybydisp_EFdk - temp_EFdk;
+                      tempD(EF,dk) = rcgDbybydisp_EFdk - tempD_EFdk;
                     }
-                    // U^{ass}_{DB,dk}
-                    double rcgbybydisp_EFdk = 0.0;
-                    if (ndnk != -1)
-                      rcgbybydisp_EFdk = 2.0*(*bopbydisp)(EF,ndnk);
-                    double rcgDbybydisp_EFdk = 0.0;
-                    for (int m=0; m<NUMDIM_; ++m) {
-                      const int mE = voigt3x3[NUMDIM_*m+E];
-                      const int mF = voigt3x3[NUMDIM_*m+F];
-                      if (E == F)  // make strain-like 6-Voigt vector
-                        rcgDbybydisp_EFdk 
-                          += 2.0*boplin(mE,d)*boplin(mF,k);
-                      else  // thus setting  V_EF + V_FE if E!=F
-                        rcgDbybydisp_EFdk 
-                          += 2.0*boplin(mE,d)*boplin(mF,k)
-                          +  2.0*boplin(mF,d)*boplin(mE,k);
-                    }
-                    temp(EF,dk) = rcgbybydisp_EFdk - temp_EFdk;
-                    tempD(EF,dk) = rcgDbybydisp_EFdk - tempD_EFdk;
                   }
                 }
               }
@@ -1122,15 +1128,20 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                 }
               }
 
-              // second derivative of pure-disp inverse right stretch tensor w.r.t. displacements
-              // U^{d-1}_{CD,dk} = U^{d-1}_{CD,EFGH} U^{d}_{GH,k} U^{d}_{EF,d}
-              //                 + U^{d-1}_{CD,EF} U^{d}_{EF,dk}
-              Teuchos::RCP<LINALG::Matrix<NUMSTR_,NUMDISPSQSYM_> > invrgtstrDbybydisp = Teuchos::null; // ... U^{d-1}_{DB,dk}
+              // add (very pricy) contribution of second derivative with respect
+              // to element displacements of (assumed) deformation gradient
               if (lin_ >= lin_one) {
-                // allocate
-                invrgtstrDbybydisp = Teuchos::rcp(new LINALG::Matrix<NUMSTR_,NUMDISPSQSYM_>());
 
-                // compute U^{d-1}_{DB,dk}
+                // second derivative of disp-based inverse <right stretch tensor
+                // w.r.t. disp-based right stretch tensor
+                // U^{d-1}_{,U^d U^d}
+                LINALG::Matrix<NUMSTR_,NUMSTR_*NUMSTR_> invrgtstrDbybyrgtstrD;
+                InvVector6VoigtTwiceDiffByItself(invrgtstrDbybyrgtstrD,invrgtstrD);
+
+                // second derivative of pure-disp inverse right stretch tensor w.r.t. displacements
+                // U^{d-1}_{CD,dk} = U^{d-1}_{CD,EFGH} U^{d}_{GH,k} U^{d}_{EF,d}
+                //                 + U^{d-1}_{CD,EF} U^{d}_{EF,dk}
+                LINALG::Matrix<NUMSTR_,NUMDISPSQSYM_> invrgtstrDbybydisp; // ... U^{d-1}_{DB,dk}
                 for (int d=0; d<NUMDISP_; ++d) {
                   for (int k=d; k<NUMDISP_; ++k) {  // symmetric in d,k
                     const int dk = NUMDISP_*d - d*(d+1)/2 + k;
@@ -1148,223 +1159,97 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                             * rgtstrDbydisp(EF,d);  // row are strain-like 6-Voigt too
                         }
                       }
-                      (*invrgtstrDbybydisp)(CD,dk) = invrgtstrDbybydisp_CDdk;
+                      invrgtstrDbybydisp(CD,dk) = invrgtstrDbybydisp_CDdk;
                     }
                   }
                 }
-              } // if (lin_ >= lin_one) else
         
 
-              // inverse assumed deformation gradient times boblin
-              // F^{-T} . B_L = F^{-T} . F^d_{,d}
-              LINALG::Matrix<NUMSTR_,NUMDISP_> invdefgradtimesboplin(true);  // sparse, 1/3 non-zeros
-              for (int n=0; n<NUMNOD_; ++n) {
-                const int d = iboplin[n];
-                for (int BC=0; BC<NUMSTR_; ++BC) {
-                  const int B = voigt6row[BC];
-                  const int C = voigt6col[BC];
-                  double invdefgradtimesboplin_BCd = 0.0;
-                  for (int a=0; a<NUMDIM_; ++a) {
-                    const int aC = voigt3x3[NUMDIM_*a+C];
-                    const int aB = voigt3x3[NUMDIM_*a+B];
-                    if (B == C)  // make strain-like 6-Voigt vector
-                      invdefgradtimesboplin_BCd 
-                        += invdefgrad(a,B)*boplin(aC,d);
-                    else  // thus setting  V_BC + V_CB if C!=B
-                      invdefgradtimesboplin_BCd 
-                        += invdefgrad(a,B)*boplin(aC,d)
-                        +  invdefgrad(a,C)*boplin(aB,d);
-                  }
-                  invdefgradtimesboplin(BC,d) = invdefgradtimesboplin_BCd;
-                }
-              }
-
-              // I^{assd}_{BC} = F^{-T}_{Ba} . F^{d}_{aC}
-              LINALG::Matrix<NUMDIM_,NUMDIM_> invdefgradtimesdefgradD;
-              invdefgradtimesdefgradD.MultiplyTN(invdefgrad,defgradD);
-
-              // R_{BD} = F^{-T}_{Ba} . F^{d}_{aC} . U^{d;-1}_{CD}
-              LINALG::Matrix<NUMDIM_,NUMDIM_> invdefgradtimesdefgradDtimesinvrgtstrD;
-              invdefgradtimesdefgradDtimesinvrgtstrD.MultiplyNN(invdefgradtimesdefgradD,invrgtstrD);
-
-#if 0
-              // BDdk
-              LINALG::Matrix<NUMDFGR_,NUMDISPSQSYM_> someDB;
-              LINALG::Matrix<NUMDFGR_,NUMDISPSQSYM_> someCD;
-              LINALG::Matrix<NUMDFGR_,NUMDISPSQSYM_> someBC;
-              for (int d=0; d<NUMDISP_; ++d) {
-                const int n = d / NODDISP_;
-                for (int k=d; k<NUMDISP_; ++k) {  // symmetric matrix : only upper right triangle is computed 
-                  const int m = k / NODDISP_;
-                  const int dk = NUMDISP_*d - d*(d+1)/2 + k;
-                  // someDB
-                  for (int DB=0; DB<NUMDFGR_; ++DB) {
-                    const int D = voigt9row[DB];
-                    const int B = voigt9col[DB];
-                    double someDB_dk = 0.0;
-                    for (int C=0; C<NUMDIM_; ++C) {
-                      const int CD = voigt3x3sym[NUMDIM_*C+D];
-                      const double CDfact = (C==D) ? 1.0 : 0.5;
-                      const int BC = voigt3x3sym[NUMDIM_*B+C];
-                      const double BCfact = (B==C) ? 1.0 : 0.5;
-                      if ( (lin_ >= lin_third) and (d == iboplin[n]) ) {
-                        someDB_dk += BCfact*invdefgradtimesboplin(BC,d) * CDfact*invrgtstrDbydisp(CD,k);
-                      }
-                      if ( (lin_ >= lin_third) and (k == iboplin[m]) ) {
-                        someDB_dk += BCfact*invdefgradtimesboplin(BC,k) * CDfact*invrgtstrDbydisp(CD,d);
-                      }
+                // inverse assumed deformation gradient times #boplin
+                // F^{-T} . B_L = F^{-T} . F^d_{,d}
+                LINALG::Matrix<NUMSTR_,NUMDISP_> invdefgradtimesboplin;
+                for (int d=0; d<NUMDISP_; ++d) {
+                  for (int BC=0; BC<NUMSTR_; ++BC) {
+                    const int B = voigt6row[BC];
+                    const int C = voigt6col[BC];
+                    double invdefgradtimesboplin_BCd = 0.0;
+                    for (int a=0; a<NUMDIM_; ++a) {
+                      const int aC = voigt3x3[NUMDIM_*a+C];
+                      const int aB = voigt3x3[NUMDIM_*a+B];
+                      if (B == C)  // make strain-like 6-Voigt vector
+                        invdefgradtimesboplin_BCd 
+                          += invdefgrad(a,B)*boplin(aC,d);
+                      else  // thus setting  V_BC + V_CB if C!=B
+                        invdefgradtimesboplin_BCd 
+                          += invdefgrad(a,B)*boplin(aC,d)
+                          + invdefgrad(a,C)*boplin(aB,d);
                     }
-                    someDB(DB,dk) = someDB_dk;
+                    invdefgradtimesboplin(BC,d) = invdefgradtimesboplin_BCd;
                   }
-                  // someCD
-                  for (int CD=0; CD<NUMDFGR_; ++CD) {
-                    const int C = voigt9row[CD];
-                    const int D = voigt9col[CD];
-                    double someCD_dk = 0.0;
+                }
+
+                // I^{assd}_{BC} = F^{-T}_{Ba} . F^{d}_{aC}
+                LINALG::Matrix<NUMDIM_,NUMDIM_> invdefgradtimesdefgradD;
+                invdefgradtimesdefgradD.MultiplyTN(invdefgrad,defgradD);
+
+                // R_{BD} = F^{-T}_{Ba} . F^{d}_{aC} . U^{d;-1}_{CD}
+                LINALG::Matrix<NUMDIM_,NUMDIM_> invdefgradtimesdefgradDtimesinvrgtstrD;
+                invdefgradtimesdefgradDtimesinvrgtstrD.MultiplyNN(invdefgradtimesdefgradD,invrgtstrD);
+
+                // contribute stuff containing second derivatives in displacements
+                // F^{-T}_{aB} F_{aB,dk}
+                // = F^{-1}_{Ba}  (F^d_{aC} U^{d;-1}_{CD} U^{ass}_{DB})_{,dk} 
+                // = F^{-1}_{Ba}  F^d_{aC,dk} U^{d;-1}_{CD} U^{ass}_{DB}         |  = 0
+                // + F^{-1}_{Ba}  F^d_{aC} U^{d;-1}_{CD,dk} U^{ass}_{DB}         |  # 0, very pricy
+                // + F^{-1}_{Ba}  F^d_{aC} U^{d;-1}_{CD} U^{ass}_{DB,dk}         |  # 0, pricy
+                // + F^{-1}_{Ba}  F^d_{aC,d} U^{d;-1}_{CD,k} U^{ass}_{DB}        |  # 0, okay
+                // + F^{-1}_{Ba}  F^d_{aC,d} U^{d;-1}_{CD} U^{ass}_{DB,k}        |  # 0, okay
+                // + F^{-1}_{Ba}  F^d_{aC,k} U^{d;-1}_{CD,d} U^{ass}_{DB}        |  # 0, okay
+                // + F^{-1}_{Ba}  F^d_{aC} U^{d;-1}_{CD,d} U^{ass}_{DB,k}        |  # 0, okay
+                // + F^{-1}_{Ba}  F^d_{aC,k} U^{d;-1}_{CD} U^{ass}_{DB,d}        |  # 0, okay
+                // + F^{-1}_{Ba}  F^d_{aC} U^{d;-1}_{CD,k} U^{ass}_{DB,d}        |  # 0, okay
+                for (int d=0; d<NUMDISP_; ++d) {
+                  //const int n = d / NODDISP_;
+                  for (int k=d; k<NUMDISP_; ++k) {  // symmetric matrix : only upper right triangle is computed 
+                    //const int m = k / NODDISP_;
+                    const int dk = NUMDISP_*d - d*(d+1)/2 + k;
+                    double defgradbybydisp_dk = 0.0;
                     for (int B=0; B<NUMDIM_; ++B) {
-                      const int DB = voigt3x3sym[NUMDIM_*D+B];
-                      const double DBfact = (D==B) ? 1.0 : 0.5;
-                      const int BC = voigt3x3sym[NUMDIM_*B+C];
-                      const double BCfact = (B==C) ? 1.0 : 0.5;
-                      if ( (lin_ >= lin_third) and (d == iboplin[n]) ) {
-                        someCD_dk += BCfact*invdefgradtimesboplin(BC,d) * DBfact*rgtstrbydisp(DB,k);
-                      }
-                      if ( (lin_ >= lin_third) and (k == iboplin[m]) ) {
-                        someCD_dk += BCfact*invdefgradtimesboplin(BC,k) * DBfact*rgtstrbydisp(DB,d);
-                      }
-                    }
-                    someCD(CD,dk) = someCD_dk;
-                  }
-                  // someBC
-                  for (int BC=0; BC<NUMDFGR_; ++BC) {
-                    const int B = voigt9row[BC];
-                    const int C = voigt9col[BC];
-                    double someBC_dk = 0.0;
-                    for (int D=0; D<NUMDIM_; ++D) {
-                      const int CD = voigt3x3sym[NUMDIM_*C+D];
-                      const double CDfact = (C==D) ? 1.0 : 0.5;
-                      const int DB = voigt3x3sym[NUMDIM_*D+B];
-                      const double DBfact = (D==B) ? 1.0 : 0.5;
-                      if (lin_ >= lin_third) {
-                        someBC_dk
-                          += CDfact*invrgtstrDbydisp(CD,d) * DBfact*rgtstrbydisp(DB,k)
-                          + CDfact*invrgtstrDbydisp(CD,k) * DBfact*rgtstrbydisp(DB,d);
-                      }
-                      if (lin_ >= lin_one)
-                      {
-                        const double invrgtstrDbybydisp_CDdk = (*invrgtstrDbybydisp)(CD,dk);
-                        someBC_dk += CDfact*invrgtstrDbybydisp_CDdk * rgtstr(D,B);
-                      }
-                    }
-                    someBC(BC,dk) = someBC_dk;
-                  }
-                }
-              }
-
-              // contribute stuff containing second derivatives in displacements
-              // F^{-T}_{aB} F_{aB,dk}
-              // = F^{-1}_{Ba}  (F^d_{aC} U^{d;-1}_{CD} U^{ass}_{DB})_{,dk} 
-              // = F^{-1}_{Ba}  F^d_{aC,dk} U^{d;-1}_{CD} U^{ass}_{DB}         |  = 0
-              // + F^{-1}_{Ba}  F^d_{aC} U^{d;-1}_{CD,dk} U^{ass}_{DB}         |  # 0, very pricy
-              // + F^{-1}_{Ba}  F^d_{aC} U^{d;-1}_{CD} U^{ass}_{DB,dk}         |  # 0, pricy
-              // + F^{-1}_{Ba}  F^d_{aC,d} U^{d;-1}_{CD,k} U^{ass}_{DB}        |  # 0, okay
-              // + F^{-1}_{Ba}  F^d_{aC,d} U^{d;-1}_{CD} U^{ass}_{DB,k}        |  # 0, okay
-              // + F^{-1}_{Ba}  F^d_{aC,k} U^{d;-1}_{CD,d} U^{ass}_{DB}        |  # 0, okay
-              // + F^{-1}_{Ba}  F^d_{aC} U^{d;-1}_{CD,d} U^{ass}_{DB,k}        |  # 0, okay
-              // + F^{-1}_{Ba}  F^d_{aC,k} U^{d;-1}_{CD} U^{ass}_{DB,d}        |  # 0, okay
-              // + F^{-1}_{Ba}  F^d_{aC} U^{d;-1}_{CD,k} U^{ass}_{DB,d}        |  # 0, okay
-              for (int d=0; d<NUMDISP_; ++d) {
-                for (int k=d; k<NUMDISP_; ++k) {  // symmetric matrix : only upper right triangle is computed 
-                  const int dk = NUMDISP_*d - d*(d+1)/2 + k;
-                  double defgradbybydisp_dk = 0.0;
-                  for (int DB=0; DB<NUMDFGR_; ++DB) {
-                    const int D = voigt9row[DB];
-                    const int B = voigt9col[DB];
-                    const int BD = voigt3x3sym[NUMDIM_*B+D];
-                    const double BDfact = (B==D) ? 1.0 : 0.5;
-                    defgradbybydisp_dk += someDB(DB,dk) * rgtstr(D,B);
-                    if (lin_ >= lin_half) {
-                      const double rgtstrbybydisp_BDdk = rgtstrbybydisp(BD,dk);
-                      defgradbybydisp_dk
-                        += invdefgradtimesdefgradDtimesinvrgtstrD(B,D) * BDfact*rgtstrbybydisp_BDdk;
-                    }
-                  }
-                  for (int CD=0; CD<NUMDFGR_; ++CD) {
-                    const int C = voigt9row[CD];
-                    const int D = voigt9col[CD];
-                    defgradbybydisp_dk += someCD(CD,dk) * invrgtstrD(C,D);
-                  }
-                  for (int BC=0; BC<NUMDFGR_; ++BC) {
-                    const int B = voigt9row[BC];
-                    const int C = voigt9col[BC];
-                    defgradbybydisp_dk += someBC(BC,dk) * invdefgradtimesdefgradD(B,C);
-                  }
-                  (*stiffmatrix)(d,k) -= defgradbybydisp_dk * effpressure*detdefgrad*detJ_w;
-                  if (k != d) (*stiffmatrix)(k,d) -= defgradbybydisp_dk * effpressure*detdefgrad*detJ_w;
-                }
-              }
-#else
-              // contribute stuff containing second derivatives in displacements
-              // F^{-T}_{aB} F_{aB,dk}
-              // = F^{-1}_{Ba}  (F^d_{aC} U^{d;-1}_{CD} U^{ass}_{DB})_{,dk} 
-              // = F^{-1}_{Ba}  F^d_{aC,dk} U^{d;-1}_{CD} U^{ass}_{DB}         |  = 0
-              // + F^{-1}_{Ba}  F^d_{aC} U^{d;-1}_{CD,dk} U^{ass}_{DB}         |  # 0, very pricy
-              // + F^{-1}_{Ba}  F^d_{aC} U^{d;-1}_{CD} U^{ass}_{DB,dk}         |  # 0, pricy
-              // + F^{-1}_{Ba}  F^d_{aC,d} U^{d;-1}_{CD,k} U^{ass}_{DB}        |  # 0, okay
-              // + F^{-1}_{Ba}  F^d_{aC,d} U^{d;-1}_{CD} U^{ass}_{DB,k}        |  # 0, okay
-              // + F^{-1}_{Ba}  F^d_{aC,k} U^{d;-1}_{CD,d} U^{ass}_{DB}        |  # 0, okay
-              // + F^{-1}_{Ba}  F^d_{aC} U^{d;-1}_{CD,d} U^{ass}_{DB,k}        |  # 0, okay
-              // + F^{-1}_{Ba}  F^d_{aC,k} U^{d;-1}_{CD} U^{ass}_{DB,d}        |  # 0, okay
-              // + F^{-1}_{Ba}  F^d_{aC} U^{d;-1}_{CD,k} U^{ass}_{DB,d}        |  # 0, okay
-              for (int d=0; d<NUMDISP_; ++d) {
-                const int n = d / NODDISP_;
-                for (int k=d; k<NUMDISP_; ++k) {  // symmetric matrix : only upper right triangle is computed 
-                  const int m = k / NODDISP_;
-                  const int dk = NUMDISP_*d - d*(d+1)/2 + k;
-                  double defgradbybydisp_dk = 0.0;
-                  for (int B=0; B<NUMDIM_; ++B) {
-                    for (int D=0; D<NUMDIM_; ++D) {
-                      const int DB = voigt3x3sym[NUMDIM_*D+B];
-                      const double DBfact = (D==B) ? 1.0 : 0.5;
-                      double rgtstrbybydisp_DBdk = 0.0;
-                      if (lin_ >= lin_half)
-                        rgtstrbybydisp_DBdk = rgtstrbybydisp(DB,dk);
-                      for (int C=0; C<NUMDIM_; ++C) {
-                        const int CD = voigt3x3sym[NUMDIM_*C+D];
-                        const double CDfact = (C==D) ? 1.0 : 0.5;
-                        const int BC = voigt3x3sym[NUMDIM_*B+C];
-                        const double BCfact = (B==C) ? 1.0 : 0.5;
-                        if ( (lin_ >= lin_third) and (d == iboplin[n]) )
+                      for (int D=0; D<NUMDIM_; ++D) {
+                        const int DB = voigt3x3sym[NUMDIM_*D+B];
+                        const double DBfact = (D==B) ? 1.0 : 0.5;
+                        for (int C=0; C<NUMDIM_; ++C) {
+                          const int CD = voigt3x3sym[NUMDIM_*C+D];
+                          const double CDfact = (C==D) ? 1.0 : 0.5;
+                          const int BC = voigt3x3sym[NUMDIM_*B+C];
+                          const double BCfact = (B==C) ? 1.0 : 0.5;
                           defgradbybydisp_dk
-                            += BCfact*invdefgradtimesboplin(BC,d) * CDfact*invrgtstrDbydisp(CD,k) * rgtstr(D,B)
-                            + BCfact*invdefgradtimesboplin(BC,d) * invrgtstrD(C,D) * DBfact*rgtstrbydisp(DB,k);
-                        if ( (lin_ >= lin_third) and (k == iboplin[m]) )
+                            += BCfact*invdefgradtimesboplin(BC,d) * CDfact*invrgtstrDbydisp(CD,k) * rgtstr(D,B);
                           defgradbybydisp_dk
-                            += BCfact*invdefgradtimesboplin(BC,k) * CDfact*invrgtstrDbydisp(CD,d) * rgtstr(D,B)
-                            + BCfact*invdefgradtimesboplin(BC,k) * invrgtstrD(C,D) * DBfact*rgtstrbydisp(DB,d);
-                        if (lin_ >= lin_third)
+                            += BCfact*invdefgradtimesboplin(BC,d) * invrgtstrD(C,D) * DBfact*rgtstrbydisp(DB,k);
                           defgradbybydisp_dk
-                            += invdefgradtimesdefgradD(B,C) * CDfact*invrgtstrDbydisp(CD,d) * DBfact*rgtstrbydisp(DB,k)
-                            + invdefgradtimesdefgradD(B,C) * CDfact*invrgtstrDbydisp(CD,k) * DBfact*rgtstrbydisp(DB,d);
-                        if (lin_ >= lin_one)
-                        {
-                          const double invrgtstrDbybydisp_CDdk = (*invrgtstrDbybydisp)(CD,dk);
+                            += BCfact*invdefgradtimesboplin(BC,k) * CDfact*invrgtstrDbydisp(CD,d) * rgtstr(D,B);
                           defgradbybydisp_dk
-                            += invdefgradtimesdefgradD(B,C) * CDfact*invrgtstrDbybydisp_CDdk * rgtstr(D,B);
+                            += BCfact*invdefgradtimesboplin(BC,k) * invrgtstrD(C,D) * DBfact*rgtstrbydisp(DB,d);
+                          defgradbybydisp_dk
+                            += invdefgradtimesdefgradD(B,C) * CDfact*invrgtstrDbydisp(CD,d) * DBfact*rgtstrbydisp(DB,k);
+                          defgradbybydisp_dk
+                            += invdefgradtimesdefgradD(B,C) * CDfact*invrgtstrDbydisp(CD,k) * DBfact*rgtstrbydisp(DB,d);
+                          defgradbybydisp_dk
+                            += invdefgradtimesdefgradD(B,C) * CDfact*invrgtstrDbybydisp(CD,dk) * rgtstr(D,B);
                         }
-                      }
-                      if (lin_ >= lin_half)
+                        const double rgtstrbybydisp_DBdk = DBfact*rgtstrbybydisp(DB,dk);
                         defgradbybydisp_dk
-                          += invdefgradtimesdefgradDtimesinvrgtstrD(B,D) * DBfact*rgtstrbybydisp_DBdk;
+                          += invdefgradtimesdefgradDtimesinvrgtstrD(B,D) * rgtstrbybydisp_DBdk;
+                      }
                     }
+                    (*stiffmatrix)(d,k) -= defgradbybydisp_dk * effpressure*detdefgrad*detJ_w;
+                    if (k != d) (*stiffmatrix)(k,d) -= defgradbybydisp_dk * effpressure*detdefgrad*detJ_w;
                   }
-                  (*stiffmatrix)(d,k) -= defgradbybydisp_dk * effpressure*detdefgrad*detJ_w;
-                  if (k != d) (*stiffmatrix)(k,d) -= defgradbybydisp_dk * effpressure*detdefgrad*detJ_w;
                 }
-              }
-#endif
 
-            } //  if (lin_ > lin_sixth)
+              } // if (lin_ >= lin_one)
+            } //  if (lin_ > lin_half)
           } // end block
 
         }  // if (ans_ == ans_none) else
