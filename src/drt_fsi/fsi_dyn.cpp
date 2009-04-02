@@ -113,7 +113,7 @@ void fluid_freesurf_drt()
 
 
 /*----------------------------------------------------------------------*/
-// entry point for FSI in DRT
+// entry point for FSI using ALE in DRT
 /*----------------------------------------------------------------------*/
 void fsi_ale_drt()
 {
@@ -254,14 +254,7 @@ void xfsi_drt()
   Epetra_SerialComm comm;
 #endif
 
-//  cout << endl << endl;
-//  cout << YELLOW_LIGHT << "      @..@        _     _ _______ _______ _____" << END_COLOR << endl;
-//  cout << YELLOW_LIGHT << "     (----)        \\\\__/  |______ |______   |  " << END_COLOR << endl;
-//  cout << YELLOW_LIGHT << "    ( >__< )      _/  \\\\_ |       ______| __|__" << END_COLOR << endl;
-//  cout << YELLOW_LIGHT << "    ^^ ~~ ^^  " << END_COLOR << endl;
-//  cout << endl << endl << endl;
-  Teuchos::RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(genprob.numff,0);
-  if (fluiddis->Comm().MyPID() == 0)
+  if (comm.MyPID() == 0)
   {
     cout << endl;
     cout << YELLOW_LIGHT << "       @..@    " << END_COLOR << endl;
