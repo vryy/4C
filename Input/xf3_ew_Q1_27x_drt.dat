@@ -19,6 +19,7 @@ PROBLEMTYP   Fluid_XFEM
 NUMFIELD     2
 TIMETYP      Dynamic
 RESTART      0
+//!RESTART      15
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  1
 NUMSTRUCDIS  1

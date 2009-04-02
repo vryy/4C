@@ -19,6 +19,7 @@ PROBLEMTYP   Fluid_Structure_Interaction_XFEM
 NUMFIELD     2
 TIMETYP      Dynamic
 RESTART      0
+//!RESTART      15
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  1
 NUMSTRUCDIS  1
@@ -47,15 +48,11 @@ DYNAMICTYP   Statics
 EIGEN        0
 RESEVRYDISP  1
 RESEVRYSTRS  1
-RESTARTEVRY  20
+RESTARTEVRY  5
 NLNSOL       fullnewton // fullnewton modnewton nlncg ptc
 TIMESTEP     0.05
 NUMSTEP      200
 MAXTIME      5.0
-BETA         0.25
-GAMMA        0.5
-ALPHA_M      0.5
-ALPHA_F      0.5
 DAMPING      No
 M_DAMP       0.5
 K_DAMP       0.5
@@ -70,7 +67,6 @@ MAXITER      50
 -----------------------------------------------------FLUID DYNAMIC
 DYNAMICTYP       Nlin_Time_Int
 INITIALFIELD     zero_field
-RESSTEP          -1
 STARTFUNCNO      2
 TIMEINTEGR       One_Step_Theta
 STARTINGALGO     One_Step_Theta
@@ -83,7 +79,7 @@ STEADYSTEP       -1
 STEADYTOL        1.0E-6
 UPOUT            1
 UPRES            1
-RESTARTEVRY      20
+RESTARTEVRY      5
 NUMSTEP          1
 NUMSTASTEPS      1
 MAXTIME          1000.0
@@ -102,7 +98,7 @@ MAXTIME      1000.0
 TIMESTEP     0.5
 NUMSTEP      20
 UPRES        1
-RESTARTEVRY  20
+RESTARTEVRY  5
 IALE         Pseudo_Structure
 COUPALGO     iter_stagg_AITKEN_rel_param
 PREDICTOR    d(n)

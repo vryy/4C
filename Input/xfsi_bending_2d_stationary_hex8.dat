@@ -20,6 +20,7 @@ NUMFIELD     2
 TIMETYP      Dynamic
 ALGEBRA      Trilinos           // ccarat/Trilinos
 RESTART      0
+//!RESTART      5
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  1
 NUMSTRUCDIS  1
@@ -46,7 +47,7 @@ DYNAMICTYP                      Static //Gen_Alfa
 EIGEN        0
 RESEVRYDISP  1
 RESEVRYSTRS  1
-RESTARTEVRY  20
+RESTARTEVRY  5
 TIMESTEP     1.0
 NUMSTEP      30
 MAXTIME      30.0
@@ -69,7 +70,6 @@ MAXITER      50
 -----------------------------------------------------FLUID DYNAMIC
 DYNAMICTYP       Nlin_Time_Int
 INITIALFIELD     zero_field
-RESSTEP          -1
 STARTFUNCNO      2
 TIMEINTEGR       Stationary
 STARTINGALGO     One_Step_Theta
@@ -82,7 +82,7 @@ STEADYSTEP       -1
 STEADYTOL        1.0E-6
 UPOUT            1
 UPRES            1
-RESTARTEVRY      20
+RESTARTEVRY      5
 NUMSTEP          30
 NUMSTASTEPS      0
 MAXTIME          1000.0
@@ -101,7 +101,7 @@ MAXTIME      10000.0
 TIMESTEP     1.0
 NUMSTEP      1
 UPRES        1
-RESTARTEVRY  20
+RESTARTEVRY  5
 IALE         Pseudo_Structure
 COUPALGO     iter_stagg_AITKEN_rel_param
 PREDICTOR    d(n)
