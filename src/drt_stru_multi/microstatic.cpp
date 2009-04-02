@@ -503,6 +503,12 @@ void STRUMULTI::MicroStatic::PredictTangDis(LINALG::Matrix<3,3>* defgrd)
   disn_->Update(1.0/(1.0-alphaf_),*disi_,1.0);
 
   // reset anything that needs to be reset at the element level
+
+  // strictly speaking, this (as well as the resetting of disi) is not
+  // mandatory here, we do it just to be in line with the classical
+  // time intgrator sti. there tangdis is assumed to be a predictor only, no
+  // update of EAS parameters etc is desired. perhaps this might be
+  // changed when speed should be optimized later on.
   {
     // create the parameters for the discretization
     ParameterList p;
