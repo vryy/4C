@@ -139,8 +139,9 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     // we need a block sparse matrix here
     if (prbtype_ != "elch") 
       dserror("Block-Preconditioning is only for ELCH problems");
+    // initial guess for non-zeros per row: 27 neighboring nodes for hex8 times (numscal_+1) dofs
     Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy> > blocksysmat =
-      Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy>(conpotsplitter_,conpotsplitter_,27,false,true));
+      Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy>(conpotsplitter_,conpotsplitter_,27*(numscal_+1),false,true));
     blocksysmat->SetNumdim(numscal_);
     sysmat_ = blocksysmat;
   }
