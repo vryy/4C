@@ -1075,8 +1075,9 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
       CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(j));
       element->Area()=element->ComputeArea();
     } 
-        
+    
     // compute new D-Matrix entries
+#ifndef CONTACTONEMORTARLOOP
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
     for (int j=0; j<selecolmap_->NumMyElements();++j)
@@ -1086,11 +1087,10 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
       if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
       CElement* selement = static_cast<CElement*>(ele1);
       
-  #ifndef CONTACTONEMORTARLOOP
       // integrate Mortar matrix D (lives on slave side only!)
       IntegrateSlave(*selement);
-  #endif // #ifndef CONTACTONEMORTARLOOP
     }
+#endif // #ifndef CONTACTONEMORTARLOOP
     
     // compute finite difference derivative
     for (int k=0;k<snoderowmap_->NumMyElements();++k)
@@ -1229,20 +1229,20 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
   // contact search algorithm
   EvaluateContactSearch();
 
+#ifndef CONTACTONEMORTARLOOP
   // loop over proc's slave elements of the interface for integration
   // use standard column map to include processor's ghosted elements
-  for (int i=0; i<selecolmap_->NumMyElements();++i)
+  for (int j=0; j<selecolmap_->NumMyElements();++j)
   {
-    int gid1 = selecolmap_->GID(i);
+    int gid1 = selecolmap_->GID(j);
     DRT::Element* ele1 = idiscret_->gElement(gid1);
     if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
     CElement* selement = static_cast<CElement*>(ele1);
-
-#ifndef CONTACTONEMORTARLOOP
+    
     // integrate Mortar matrix D (lives on slave side only!)
     IntegrateSlave(*selement);
-#endif // #ifndef CONTACTONEMORTARLOOP
   }
+#endif // #ifndef CONTACTONEMORTARLOOP
   
   // loop over proc's slave elements of the interface for integration
   // use standard column map to include processor's ghosted elements
@@ -1453,20 +1453,20 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     // contact search algorithm
     EvaluateContactSearch();
     
+#ifndef CONTACTONEMORTARLOOP
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
-    for (int i=0; i<selecolmap_->NumMyElements();++i)
+    for (int j=0; j<selecolmap_->NumMyElements();++j)
     {
-      int gid1 = selecolmap_->GID(i);
+      int gid1 = selecolmap_->GID(j);
       DRT::Element* ele1 = idiscret_->gElement(gid1);
       if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
       CElement* selement = static_cast<CElement*>(ele1);
-
-  #ifndef CONTACTONEMORTARLOOP
+      
       // integrate Mortar matrix D (lives on slave side only!)
       IntegrateSlave(*selement);
-  #endif // #ifndef CONTACTONEMORTARLOOP
     }
+#endif // #ifndef CONTACTONEMORTARLOOP
     
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
@@ -1682,20 +1682,20 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     // contact search algorithm
     EvaluateContactSearch();
 
+#ifndef CONTACTONEMORTARLOOP
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
-    for (int i=0; i<selecolmap_->NumMyElements();++i)
+    for (int j=0; j<selecolmap_->NumMyElements();++j)
     {
-      int gid1 = selecolmap_->GID(i);
+      int gid1 = selecolmap_->GID(j);
       DRT::Element* ele1 = idiscret_->gElement(gid1);
       if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
       CElement* selement = static_cast<CElement*>(ele1);
-
-  #ifndef CONTACTONEMORTARLOOP
+      
       // integrate Mortar matrix D (lives on slave side only!)
       IntegrateSlave(*selement);
-  #endif // #ifndef CONTACTONEMORTARLOOP
     }
+#endif // #ifndef CONTACTONEMORTARLOOP
     
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
@@ -1882,20 +1882,20 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
   // contact search algorithm
   EvaluateContactSearch();
 
+#ifndef CONTACTONEMORTARLOOP
   // loop over proc's slave elements of the interface for integration
   // use standard column map to include processor's ghosted elements
-  for (int i=0; i<selecolmap_->NumMyElements();++i)
+  for (int j=0; j<selecolmap_->NumMyElements();++j)
   {
-    int gid1 = selecolmap_->GID(i);
+    int gid1 = selecolmap_->GID(j);
     DRT::Element* ele1 = idiscret_->gElement(gid1);
     if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
     CElement* selement = static_cast<CElement*>(ele1);
-
-#ifndef CONTACTONEMORTARLOOP
+    
     // integrate Mortar matrix D (lives on slave side only!)
     IntegrateSlave(*selement);
-#endif // #ifndef CONTACTONEMORTARLOOP
   }
+#endif // #ifndef CONTACTONEMORTARLOOP
   
   // loop over proc's slave elements of the interface for integration
   // use standard column map to include processor's ghosted elements
@@ -2128,20 +2128,20 @@ void CONTACT::Interface::FDCheckGapDeriv()
     // contact search algorithm
     EvaluateContactSearch();
     
+#ifndef CONTACTONEMORTARLOOP
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
-    for (int i=0; i<selecolmap_->NumMyElements();++i)
+    for (int j=0; j<selecolmap_->NumMyElements();++j)
     {
-      int gid1 = selecolmap_->GID(i);
+      int gid1 = selecolmap_->GID(j);
       DRT::Element* ele1 = idiscret_->gElement(gid1);
       if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
       CElement* selement = static_cast<CElement*>(ele1);
-
-  #ifndef CONTACTONEMORTARLOOP
+      
       // integrate Mortar matrix D (lives on slave side only!)
       IntegrateSlave(*selement);
-  #endif // #ifndef CONTACTONEMORTARLOOP
     }
+#endif // #ifndef CONTACTONEMORTARLOOP
     
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
@@ -2385,20 +2385,20 @@ void CONTACT::Interface::FDCheckGapDeriv()
     // contact search algorithm
     EvaluateContactSearch();
     
+#ifndef CONTACTONEMORTARLOOP
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
-    for (int i=0; i<selecolmap_->NumMyElements();++i)
+    for (int j=0; j<selecolmap_->NumMyElements();++j)
     {
-      int gid1 = selecolmap_->GID(i);
+      int gid1 = selecolmap_->GID(j);
       DRT::Element* ele1 = idiscret_->gElement(gid1);
       if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
       CElement* selement = static_cast<CElement*>(ele1);
-
-  #ifndef CONTACTONEMORTARLOOP
+      
       // integrate Mortar matrix D (lives on slave side only!)
       IntegrateSlave(*selement);
-  #endif // #ifndef CONTACTONEMORTARLOOP
     }
+#endif // #ifndef CONTACTONEMORTARLOOP
     
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
@@ -2611,20 +2611,20 @@ void CONTACT::Interface::FDCheckGapDeriv()
   // contact search algorithm
   EvaluateContactSearch();
   
+#ifndef CONTACTONEMORTARLOOP
   // loop over proc's slave elements of the interface for integration
   // use standard column map to include processor's ghosted elements
-  for (int i=0; i<selecolmap_->NumMyElements();++i)
+  for (int j=0; j<selecolmap_->NumMyElements();++j)
   {
-    int gid1 = selecolmap_->GID(i);
+    int gid1 = selecolmap_->GID(j);
     DRT::Element* ele1 = idiscret_->gElement(gid1);
     if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
     CElement* selement = static_cast<CElement*>(ele1);
-
-#ifndef CONTACTONEMORTARLOOP
+    
     // integrate Mortar matrix D (lives on slave side only!)
     IntegrateSlave(*selement);
-#endif // #ifndef CONTACTONEMORTARLOOP
   }
+#endif // #ifndef CONTACTONEMORTARLOOP
   
   // loop over proc's slave elements of the interface for integration
   // use standard column map to include processor's ghosted elements
@@ -2825,20 +2825,20 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     // contact search algorithm
     EvaluateContactSearch();
     
+#ifndef CONTACTONEMORTARLOOP
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
-    for (int i=0; i<selecolmap_->NumMyElements();++i)
+    for (int j=0; j<selecolmap_->NumMyElements();++j)
     {
-      int gid1 = selecolmap_->GID(i);
+      int gid1 = selecolmap_->GID(j);
       DRT::Element* ele1 = idiscret_->gElement(gid1);
       if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
       CElement* selement = static_cast<CElement*>(ele1);
-
-  #ifndef CONTACTONEMORTARLOOP
+      
       // integrate Mortar matrix D (lives on slave side only!)
       IntegrateSlave(*selement);
-  #endif // #ifndef CONTACTONEMORTARLOOP
     }
+#endif // #ifndef CONTACTONEMORTARLOOP
     
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
@@ -3054,20 +3054,20 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     // contact search algorithm
     EvaluateContactSearch();
     
+#ifndef CONTACTONEMORTARLOOP
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
-    for (int i=0; i<selecolmap_->NumMyElements();++i)
+    for (int j=0; j<selecolmap_->NumMyElements();++j)
     {
-      int gid1 = selecolmap_->GID(i);
+      int gid1 = selecolmap_->GID(j);
       DRT::Element* ele1 = idiscret_->gElement(gid1);
       if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
       CElement* selement = static_cast<CElement*>(ele1);
-
-  #ifndef CONTACTONEMORTARLOOP
+      
       // integrate Mortar matrix D (lives on slave side only!)
       IntegrateSlave(*selement);
-  #endif // #ifndef CONTACTONEMORTARLOOP
     }
+#endif // #ifndef CONTACTONEMORTARLOOP
     
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
@@ -3251,20 +3251,20 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
   // contact search algorithm
   EvaluateContactSearch();
 
-  // loop over proc's slave elements of the interface for integration
-  // use standard column map to include processor's ghosted elements
-  for (int i=0; i<selecolmap_->NumMyElements();++i)
-  {
-    int gid1 = selecolmap_->GID(i);
-    DRT::Element* ele1 = idiscret_->gElement(gid1);
-    if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
-    CElement* selement = static_cast<CElement*>(ele1);
-
 #ifndef CONTACTONEMORTARLOOP
-    // integrate Mortar matrix D (lives on slave side only!)
-    IntegrateSlave(*selement);
+    // loop over proc's slave elements of the interface for integration
+    // use standard column map to include processor's ghosted elements
+    for (int j=0; j<selecolmap_->NumMyElements();++j)
+    {
+      int gid1 = selecolmap_->GID(j);
+      DRT::Element* ele1 = idiscret_->gElement(gid1);
+      if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
+      CElement* selement = static_cast<CElement*>(ele1);
+      
+      // integrate Mortar matrix D (lives on slave side only!)
+      IntegrateSlave(*selement);
+    }
 #endif // #ifndef CONTACTONEMORTARLOOP
-  }
   
   // loop over proc's slave elements of the interface for integration
   // use standard column map to include processor's ghosted elements
@@ -3504,20 +3504,20 @@ void CONTACT::Interface::FDCheckStickDeriv()
     // contact search algorithm
     EvaluateContactSearch();
     
+#ifndef CONTACTONEMORTARLOOP
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
-    for (int i=0; i<selecolmap_->NumMyElements();++i)
+    for (int j=0; j<selecolmap_->NumMyElements();++j)
     {
-      int gid1 = selecolmap_->GID(i);
+      int gid1 = selecolmap_->GID(j);
       DRT::Element* ele1 = idiscret_->gElement(gid1);
       if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
       CElement* selement = static_cast<CElement*>(ele1);
-
-  #ifndef CONTACTONEMORTARLOOP
+      
       // integrate Mortar matrix D (lives on slave side only!)
       IntegrateSlave(*selement);
-  #endif // #ifndef CONTACTONEMORTARLOOP
     }
+#endif // #ifndef CONTACTONEMORTARLOOP
     
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
@@ -3767,20 +3767,20 @@ void CONTACT::Interface::FDCheckStickDeriv()
     // contact search algorithm
     EvaluateContactSearch();
     
+#ifndef CONTACTONEMORTARLOOP
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
-    for (int i=0; i<selecolmap_->NumMyElements();++i)
+    for (int j=0; j<selecolmap_->NumMyElements();++j)
     {
-      int gid1 = selecolmap_->GID(i);
+      int gid1 = selecolmap_->GID(j);
       DRT::Element* ele1 = idiscret_->gElement(gid1);
       if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
       CElement* selement = static_cast<CElement*>(ele1);
-
-  #ifndef CONTACTONEMORTARLOOP
+      
       // integrate Mortar matrix D (lives on slave side only!)
       IntegrateSlave(*selement);
-  #endif // #ifndef CONTACTONEMORTARLOOP
     }
+#endif // #ifndef CONTACTONEMORTARLOOP
     
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
@@ -3997,20 +3997,20 @@ void CONTACT::Interface::FDCheckStickDeriv()
   // contact search algorithm
   EvaluateContactSearch();
   
-  // loop over proc's slave elements of the interface for integration
-  // use standard column map to include processor's ghosted elements
-  for (int i=0; i<selecolmap_->NumMyElements();++i)
-  {
-    int gid1 = selecolmap_->GID(i);
-    DRT::Element* ele1 = idiscret_->gElement(gid1);
-    if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
-    CElement* selement = static_cast<CElement*>(ele1);
-
 #ifndef CONTACTONEMORTARLOOP
-    // integrate Mortar matrix D (lives on slave side only!)
-    IntegrateSlave(*selement);
+    // loop over proc's slave elements of the interface for integration
+    // use standard column map to include processor's ghosted elements
+    for (int j=0; j<selecolmap_->NumMyElements();++j)
+    {
+      int gid1 = selecolmap_->GID(j);
+      DRT::Element* ele1 = idiscret_->gElement(gid1);
+      if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
+      CElement* selement = static_cast<CElement*>(ele1);
+      
+      // integrate Mortar matrix D (lives on slave side only!)
+      IntegrateSlave(*selement);
+    }
 #endif // #ifndef CONTACTONEMORTARLOOP
-  }
   
   // loop over proc's slave elements of the interface for integration
   // use standard column map to include processor's ghosted elements
@@ -4377,20 +4377,20 @@ void CONTACT::Interface::FDCheckSlipTrescaDeriv(double& frbound, double& ct)
     // contact search algorithm
     EvaluateContactSearch();
     
+#ifndef CONTACTONEMORTARLOOP
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
-    for (int i=0; i<selecolmap_->NumMyElements();++i)
+    for (int j=0; j<selecolmap_->NumMyElements();++j)
     {
-      int gid1 = selecolmap_->GID(i);
+      int gid1 = selecolmap_->GID(j);
       DRT::Element* ele1 = idiscret_->gElement(gid1);
       if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
       CElement* selement = static_cast<CElement*>(ele1);
-
-  #ifndef CONTACTONEMORTARLOOP
+      
       // integrate Mortar matrix D (lives on slave side only!)
       IntegrateSlave(*selement);
-  #endif // #ifndef CONTACTONEMORTARLOOP
     }
+#endif // #ifndef CONTACTONEMORTARLOOP
     
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
@@ -4642,20 +4642,20 @@ void CONTACT::Interface::FDCheckSlipTrescaDeriv(double& frbound, double& ct)
     // contact search algorithm
     EvaluateContactSearch();
     
+#ifndef CONTACTONEMORTARLOOP
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
-    for (int i=0; i<selecolmap_->NumMyElements();++i)
+    for (int j=0; j<selecolmap_->NumMyElements();++j)
     {
-      int gid1 = selecolmap_->GID(i);
+      int gid1 = selecolmap_->GID(j);
       DRT::Element* ele1 = idiscret_->gElement(gid1);
       if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
       CElement* selement = static_cast<CElement*>(ele1);
-
-  #ifndef CONTACTONEMORTARLOOP
+      
       // integrate Mortar matrix D (lives on slave side only!)
       IntegrateSlave(*selement);
-  #endif // #ifndef CONTACTONEMORTARLOOP
     }
+#endif // #ifndef CONTACTONEMORTARLOOP
     
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
@@ -4877,20 +4877,20 @@ void CONTACT::Interface::FDCheckSlipTrescaDeriv(double& frbound, double& ct)
   // contact search algorithm
   EvaluateContactSearch();
   
-  // loop over proc's slave elements of the interface for integration
-  // use standard column map to include processor's ghosted elements
-  for (int i=0; i<selecolmap_->NumMyElements();++i)
-  {
-    int gid1 = selecolmap_->GID(i);
-    DRT::Element* ele1 = idiscret_->gElement(gid1);
-    if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
-    CElement* selement = static_cast<CElement*>(ele1);
-
 #ifndef CONTACTONEMORTARLOOP
-    // integrate Mortar matrix D (lives on slave side only!)
-    IntegrateSlave(*selement);
+    // loop over proc's slave elements of the interface for integration
+    // use standard column map to include processor's ghosted elements
+    for (int j=0; j<selecolmap_->NumMyElements();++j)
+    {
+      int gid1 = selecolmap_->GID(j);
+      DRT::Element* ele1 = idiscret_->gElement(gid1);
+      if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
+      CElement* selement = static_cast<CElement*>(ele1);
+      
+      // integrate Mortar matrix D (lives on slave side only!)
+      IntegrateSlave(*selement);
+    }
 #endif // #ifndef CONTACTONEMORTARLOOP
-  }
   
   // loop over proc's slave elements of the interface for integration
   // use standard column map to include processor's ghosted elements
@@ -5080,20 +5080,20 @@ void CONTACT::Interface::FDCheckVertex3DDeriv(vector<vector<double> >& testv)
     // contact search algorithm
     EvaluateContactSearch();
     
+#ifndef CONTACTONEMORTARLOOP
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
-    for (int i=0; i<selecolmap_->NumMyElements();++i)
+    for (int j=0; j<selecolmap_->NumMyElements();++j)
     {
-      int gid1 = selecolmap_->GID(i);
+      int gid1 = selecolmap_->GID(j);
       DRT::Element* ele1 = idiscret_->gElement(gid1);
       if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
       CElement* selement = static_cast<CElement*>(ele1);
-
-  #ifndef CONTACTONEMORTARLOOP
+      
       // integrate Mortar matrix D (lives on slave side only!)
       IntegrateSlave(*selement);
-  #endif // #ifndef CONTACTONEMORTARLOOP
     }
+#endif // #ifndef CONTACTONEMORTARLOOP
     
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
@@ -5298,20 +5298,20 @@ void CONTACT::Interface::FDCheckVertex3DDeriv(vector<vector<double> >& testv)
     // contact search algorithm
     EvaluateContactSearch();
 
+#ifndef CONTACTONEMORTARLOOP
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
-    for (int i=0; i<selecolmap_->NumMyElements();++i)
+    for (int j=0; j<selecolmap_->NumMyElements();++j)
     {
-      int gid1 = selecolmap_->GID(i);
+      int gid1 = selecolmap_->GID(j);
       DRT::Element* ele1 = idiscret_->gElement(gid1);
       if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
       CElement* selement = static_cast<CElement*>(ele1);
-
-  #ifndef CONTACTONEMORTARLOOP
+      
       // integrate Mortar matrix D (lives on slave side only!)
       IntegrateSlave(*selement);
-  #endif // #ifndef CONTACTONEMORTARLOOP
     }
+#endif // #ifndef CONTACTONEMORTARLOOP
     
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
@@ -5485,20 +5485,20 @@ void CONTACT::Interface::FDCheckVertex3DDeriv(vector<vector<double> >& testv)
   // contact search algorithm
   EvaluateContactSearch();
 
+#ifndef CONTACTONEMORTARLOOP
   // loop over proc's slave elements of the interface for integration
   // use standard column map to include processor's ghosted elements
-  for (int i=0; i<selecolmap_->NumMyElements();++i)
+  for (int j=0; j<selecolmap_->NumMyElements();++j)
   {
-    int gid1 = selecolmap_->GID(i);
+    int gid1 = selecolmap_->GID(j);
     DRT::Element* ele1 = idiscret_->gElement(gid1);
     if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
     CElement* selement = static_cast<CElement*>(ele1);
-
-#ifndef CONTACTONEMORTARLOOP
+    
     // integrate Mortar matrix D (lives on slave side only!)
     IntegrateSlave(*selement);
-#endif // #ifndef CONTACTONEMORTARLOOP
   }
+#endif // #ifndef CONTACTONEMORTARLOOP
   
   // loop over proc's slave elements of the interface for integration
   // use standard column map to include processor's ghosted elements
@@ -5707,20 +5707,20 @@ void CONTACT::Interface::FDCheckGP3DDeriv(vector<vector<double> >& testgps,
     // contact search algorithm
     EvaluateContactSearch();
     
+#ifndef CONTACTONEMORTARLOOP
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
-    for (int i=0; i<selecolmap_->NumMyElements();++i)
+    for (int j=0; j<selecolmap_->NumMyElements();++j)
     {
-      int gid1 = selecolmap_->GID(i);
+      int gid1 = selecolmap_->GID(j);
       DRT::Element* ele1 = idiscret_->gElement(gid1);
       if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
       CElement* selement = static_cast<CElement*>(ele1);
-
-  #ifndef CONTACTONEMORTARLOOP
+      
       // integrate Mortar matrix D (lives on slave side only!)
       IntegrateSlave(*selement);
-  #endif // #ifndef CONTACTONEMORTARLOOP
     }
+#endif // #ifndef CONTACTONEMORTARLOOP
     
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
@@ -6101,20 +6101,20 @@ void CONTACT::Interface::FDCheckGP3DDeriv(vector<vector<double> >& testgps,
     // contact search algorithm
     EvaluateContactSearch();
 
+#ifndef CONTACTONEMORTARLOOP
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
-    for (int i=0; i<selecolmap_->NumMyElements();++i)
+    for (int j=0; j<selecolmap_->NumMyElements();++j)
     {
-      int gid1 = selecolmap_->GID(i);
+      int gid1 = selecolmap_->GID(j);
       DRT::Element* ele1 = idiscret_->gElement(gid1);
       if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
       CElement* selement = static_cast<CElement*>(ele1);
-
-  #ifndef CONTACTONEMORTARLOOP
+      
       // integrate Mortar matrix D (lives on slave side only!)
       IntegrateSlave(*selement);
-  #endif // #ifndef CONTACTONEMORTARLOOP
     }
+#endif // #ifndef CONTACTONEMORTARLOOP
     
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
@@ -6464,20 +6464,20 @@ void CONTACT::Interface::FDCheckGP3DDeriv(vector<vector<double> >& testgps,
   // contact search algorithm
   EvaluateContactSearch();
 
+#ifndef CONTACTONEMORTARLOOP
   // loop over proc's slave elements of the interface for integration
   // use standard column map to include processor's ghosted elements
-  for (int i=0; i<selecolmap_->NumMyElements();++i)
+  for (int j=0; j<selecolmap_->NumMyElements();++j)
   {
-    int gid1 = selecolmap_->GID(i);
+    int gid1 = selecolmap_->GID(j);
     DRT::Element* ele1 = idiscret_->gElement(gid1);
     if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
     CElement* selement = static_cast<CElement*>(ele1);
-
-#ifndef CONTACTONEMORTARLOOP
+    
     // integrate Mortar matrix D (lives on slave side only!)
     IntegrateSlave(*selement);
-#endif // #ifndef CONTACTONEMORTARLOOP
   }
+#endif // #ifndef CONTACTONEMORTARLOOP
   
   // loop over proc's slave elements of the interface for integration
   // use standard column map to include processor's ghosted elements

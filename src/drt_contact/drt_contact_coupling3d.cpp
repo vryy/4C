@@ -48,13 +48,15 @@ Maintainer: Alexander Popp
  |  ctor (public)                                             popp 03/09|
  *----------------------------------------------------------------------*/
 CONTACT::IntElement::IntElement(int lid, int id, ElementType etype, int owner, 
+                                const DRT::Element::DiscretizationType& parshape, 
                                 const DRT::Element::DiscretizationType& shape, 
                                 const int numnode,
                                 const int* nodeids,
                                 vector<DRT::Node*> nodes,
                                 const bool isslave) :
 CONTACT::CElement(id,etype,owner,shape,numnode,nodeids,isslave),
-lid_(lid)
+lid_(lid),
+parshape_(parshape)
 {
   // check for consistency of nodeids and nodes
   for (int i=0;i<NumNode();++i)
@@ -70,6 +72,386 @@ lid_(lid)
   Area()=ComputeArea();
   
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  map IntElement coords to Element coords (public)          popp 03/09|
+ *----------------------------------------------------------------------*/
+bool CONTACT::IntElement::MapToParent(const double* xi, double* parxi)
+{
+  // *********************************************************************
+  // do mapping for given IntElement and Element
+  // *********************************************************** quad9 ***
+  if (ParShape()==DRT::Element::quad9)
+  {
+    // do mapping according to sub-element id
+    switch(Lid())
+    {
+    case 0:
+    {
+      parxi[0] = 0.5 * xi[0] - 0.5;
+      parxi[1] = 0.5 * xi[1] - 0.5;
+      break;
+    }
+    case 1:
+    {
+      parxi[0] = 0.5 * xi[0] + 0.5;
+      parxi[1] = 0.5 * xi[1] - 0.5;
+      break;
+    }
+    case 2:
+    {
+      parxi[0] = 0.5 * xi[0] + 0.5;
+      parxi[1] = 0.5 * xi[1] + 0.5;
+      break;
+    }
+    case 3:
+    {
+      parxi[0] = 0.5 * xi[0] - 0.5;
+      parxi[1] = 0.5 * xi[1] + 0.5;
+      break;
+    }
+    default:
+    {
+      dserror("ERROR: MapToParent: Invalid local IntElement Id!");
+      break;
+    }
+    }
+  }
+  // *********************************************************** quad8 ***
+  else if (ParShape()==DRT::Element::quad8)
+  {
+    // do mapping according to sub-element id
+    switch(Lid())
+    {
+    case 0:
+    {
+      parxi[0] =  xi[0] - 1;
+      parxi[1] =  xi[1] - 1;
+      break;
+    }
+    case 1:
+    {
+      parxi[0] = -xi[1] + 1;
+      parxi[1] =  xi[0] - 1;
+      break;
+    }
+    case 2:
+    {
+      parxi[0] = -xi[0] + 1;
+      parxi[1] = -xi[1] + 1;
+      break;
+    }
+    case 3:
+    {
+      parxi[0] =  xi[1] - 1;
+      parxi[1] = -xi[0] + 1;
+      break;
+    }
+    case 4:
+    {
+      parxi[0] = 0.5 * xi[0] - 0.5 * xi[1];
+      parxi[1] = 0.5 * xi[0] + 0.5 * xi[1];
+      break;
+    }
+    default:
+    {
+      dserror("ERROR: MapToParent: Invalid local IntElement Id!");
+      break;
+    }
+    }
+  }
+  // ************************************************************ tri6 ***
+  else if (ParShape()==DRT::Element::tri6)
+  {
+    // do mapping according to sub-element id
+    switch(Lid())
+    {
+    case 0:
+    {
+      parxi[0] = 0.5 * xi[0];
+      parxi[1] = 0.5 * xi[1];
+      break;
+    }
+    case 1:
+    {
+      parxi[0] = 0.5 * xi[0] + 0.5;
+      parxi[1] = 0.5 * xi[1];
+      break;
+    }
+    case 2:
+    {
+      parxi[0] = 0.5 * xi[0];
+      parxi[1] = 0.5 * xi[1] + 0.5;
+      break;
+    }
+    case 3:
+    {
+      parxi[0] = -0.5 * xi[0] + 0.5;
+      parxi[1] = -0.5 * xi[1] + 0.5;
+      break;
+    }
+    default:
+    {
+      dserror("ERROR: MapToParent: Invalid local IntElement Id!");
+      break;
+    }
+    }
+  }
+  // *********************************************************** quad4 ***
+  else if (ParShape()==DRT::Element::quad4)
+  {
+    // do mapping according to sub-element id
+    switch(Lid())
+    {
+    case 0:
+    {
+      parxi[0] = xi[0];
+      parxi[1] = xi[1];
+      break;
+    }
+    default:
+    {
+      dserror("ERROR: MapToParent: Invalid local IntElement Id!");
+      break;
+    }
+    }
+  }
+  // ************************************************************ tri3 ***
+  else if (ParShape()==DRT::Element::tri3)
+  {
+    // do mapping according to sub-element id
+    switch(Lid())
+    {
+    case 0:
+    {
+      parxi[0] = xi[0];
+      parxi[1] = xi[1];
+      break;
+    }
+    default:
+    {
+      dserror("ERROR: MapToParent: Invalid local IntElement Id!");
+      break;
+    }
+    }
+  }
+  // ********************************************************* invalid ***
+  else
+    dserror("ERROR: MapToParent called for invalid parent element type!");
+  // *********************************************************************
+  
+  return true;  
+}
+
+/*----------------------------------------------------------------------*
+ |  map IntElement coord derivatives to Element (public)      popp 03/09|
+ *----------------------------------------------------------------------*/
+bool CONTACT::IntElement::MapToParent(const vector<map<int,double> >& dxi,
+                                      vector<map<int,double> >& dparxi)
+{
+  // map iterator
+  typedef map<int,double>::const_iterator CI;
+  
+  // *********************************************************************
+  // do mapping for given IntElement and Element
+  // *********************************************************** quad9 ***
+  if (ParShape()==DRT::Element::quad9)
+  {
+    // do mapping according to sub-element id
+    switch(Lid())
+    {
+    case 0:
+    {
+      for (CI p=dxi[0].begin();p!=dxi[0].end();++p)
+        dparxi[0][p->first] = 0.5 * (p->second);
+      for (CI p=dxi[1].begin();p!=dxi[1].end();++p)
+        dparxi[1][p->first] = 0.5 * (p->second);
+      break;
+    }
+    case 1:
+    {
+      for (CI p=dxi[0].begin();p!=dxi[0].end();++p)
+        dparxi[0][p->first] = 0.5 * (p->second);
+      for (CI p=dxi[1].begin();p!=dxi[1].end();++p)
+        dparxi[1][p->first] = 0.5 * (p->second);
+      break;
+    }
+    case 2:
+    {
+      for (CI p=dxi[0].begin();p!=dxi[0].end();++p)
+        dparxi[0][p->first] = 0.5 * (p->second);
+      for (CI p=dxi[1].begin();p!=dxi[1].end();++p)
+        dparxi[1][p->first] = 0.5 * (p->second);
+      break;
+    }
+    case 3:
+    {
+      for (CI p=dxi[0].begin();p!=dxi[0].end();++p)
+        dparxi[0][p->first] = 0.5 * (p->second);
+      for (CI p=dxi[1].begin();p!=dxi[1].end();++p)
+        dparxi[1][p->first] = 0.5 * (p->second);
+      break;
+    }
+    default:
+    {
+      dserror("ERROR: MapToParent: Invalid local IntElement Id!");
+      break;
+    }
+    }
+  }
+  // *********************************************************** quad8 ***
+  else if (ParShape()==DRT::Element::quad8)
+  {
+    // do mapping according to sub-element id
+    switch(Lid())
+    {
+    case 0:
+    {
+      for (CI p=dxi[0].begin();p!=dxi[0].end();++p)
+        dparxi[0][p->first] = 1.0 * (p->second);
+      for (CI p=dxi[1].begin();p!=dxi[1].end();++p)
+        dparxi[1][p->first] = 1.0 * (p->second);
+      break;
+    }
+    case 1:
+    {
+      for (CI p=dxi[0].begin();p!=dxi[0].end();++p)
+        dparxi[1][p->first] =  1.0 * (p->second);
+      for (CI p=dxi[1].begin();p!=dxi[1].end();++p)
+        dparxi[0][p->first] = -1.0 * (p->second);
+      break;
+    }
+    case 2:
+    {
+      for (CI p=dxi[0].begin();p!=dxi[0].end();++p)
+        dparxi[0][p->first] = -1.0 * (p->second);
+      for (CI p=dxi[1].begin();p!=dxi[1].end();++p)
+        dparxi[1][p->first] = -1.0 * (p->second);
+      break;
+    }
+    case 3:
+    {
+      for (CI p=dxi[0].begin();p!=dxi[0].end();++p)
+        dparxi[1][p->first] = -1.0 * (p->second);
+      for (CI p=dxi[1].begin();p!=dxi[1].end();++p)
+        dparxi[0][p->first] =  1.0 * (p->second);
+      break;
+    }
+    case 4:
+    {
+      for (CI p=dxi[0].begin();p!=dxi[0].end();++p)
+      {
+        dparxi[0][p->first] =  0.5 * (p->second);
+        dparxi[1][p->first] =  0.5 * (p->second);
+      }
+      for (CI p=dxi[1].begin();p!=dxi[1].end();++p)
+      {
+        dparxi[0][p->first] = -0.5 * (p->second);
+        dparxi[1][p->first] =  0.5 * (p->second);
+      }
+      break;
+    }
+    default:
+    {
+      dserror("ERROR: MapToParent: Invalid local IntElement Id!");
+      break;
+    }
+    }
+  }
+  // ************************************************************ tri6 ***
+  else if (ParShape()==DRT::Element::tri6)
+  {
+    // do mapping according to sub-element id
+    switch(Lid())
+    {
+    case 0:
+    {
+      for (CI p=dxi[0].begin();p!=dxi[0].end();++p)
+        dparxi[0][p->first] = 0.5 * (p->second);
+      for (CI p=dxi[1].begin();p!=dxi[1].end();++p)
+        dparxi[1][p->first] = 0.5 * (p->second);
+      break;
+    }
+    case 1:
+    {
+      for (CI p=dxi[0].begin();p!=dxi[0].end();++p)
+        dparxi[0][p->first] = 0.5 * (p->second);
+      for (CI p=dxi[1].begin();p!=dxi[1].end();++p)
+        dparxi[1][p->first] = 0.5 * (p->second);
+      break;
+    }
+    case 2:
+    {
+      for (CI p=dxi[0].begin();p!=dxi[0].end();++p)
+        dparxi[0][p->first] = 0.5 * (p->second);
+      for (CI p=dxi[1].begin();p!=dxi[1].end();++p)
+        dparxi[1][p->first] = 0.5 * (p->second);
+      break;
+    }
+    case 3:
+    {
+      for (CI p=dxi[0].begin();p!=dxi[0].end();++p)
+        dparxi[0][p->first] = -0.5 * (p->second);
+      for (CI p=dxi[1].begin();p!=dxi[1].end();++p)
+        dparxi[1][p->first] = -0.5 * (p->second);
+      break;
+    }
+    default:
+    {
+      dserror("ERROR: MapToParent: Invalid local IntElement Id!");
+      break;
+    }
+    }
+  }
+  // *********************************************************** quad4 ***
+  else if (ParShape()==DRT::Element::quad4)
+  {
+    // do mapping according to sub-element id
+    switch(Lid())
+    {
+    case 0:
+    {
+      for (CI p=dxi[0].begin();p!=dxi[0].end();++p)
+        dparxi[0][p->first] = 1.0 * (p->second);
+      for (CI p=dxi[1].begin();p!=dxi[1].end();++p)
+        dparxi[1][p->first] = 1.0 * (p->second);
+      break;
+    }
+    default:
+    {
+      dserror("ERROR: MapToParent: Invalid local IntElement Id!");
+      break;
+    }
+    }
+  }
+  // ************************************************************ tri3 ***
+  else if (ParShape()==DRT::Element::tri3)
+  {
+    // do mapping according to sub-element id
+    switch(Lid())
+    {
+    case 0:
+    {
+      for (CI p=dxi[0].begin();p!=dxi[0].end();++p)
+        dparxi[0][p->first] = 1.0 * (p->second);
+      for (CI p=dxi[1].begin();p!=dxi[1].end();++p)
+        dparxi[1][p->first] = 1.0 * (p->second);
+      break;
+    }
+    default:
+    {
+      dserror("ERROR: MapToParent: Invalid local IntElement Id!");
+      break;
+    }
+    }
+  }
+  // ********************************************************* invalid ***
+  else
+    dserror("ERROR: MapToParent called for invalid parent element type!");
+  // *********************************************************************
+  
+  return true;  
 }
 
 /*----------------------------------------------------------------------*
@@ -3051,7 +3433,7 @@ mintele_(mintele)
   
   //  3D quadratic coupling only for quadratic ansatz type
   if (!Quad())
-    dserror("ERROR: Coupling3dQuad called for non-quadratic andatz!");
+    dserror("ERROR: Coupling3dQuad called for non-quadratic ansatz!");
   
   return;
 }

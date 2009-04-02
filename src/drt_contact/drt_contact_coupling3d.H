@@ -79,13 +79,15 @@ public:
   \param id    (in): Parent element global id
   \param etype (in): Type of element
   \param owner (in): owner processor of the element
+  \param parshape (in): shape of parent element
   \param shape (in): shape of this element
   \param numnode (in): Number of nodes to this element
   \param nodeids (in): ids of nodes adjacent to this element
   \param nodes (in): pointers to nodes adjacent to this element
   \param isslave (in): flag indicating whether element is slave or master side
   */
-  explicit IntElement(int lid, int id, ElementType etype, int owner, 
+  explicit IntElement(int lid, int id, ElementType etype, int owner,
+                      const DRT::Element::DiscretizationType& parshape,
                       const DRT::Element::DiscretizationType& shape, 
                       const int numnode,
                       const int* nodeids,
@@ -127,12 +129,31 @@ public:
   */
   virtual inline DRT::Node** Nodes()
   { if (quadnode_.size()) return &quadnode_[0]; else return NULL;}
-      
+  
+  /*!
+  \brief Get shape type of parent element
+  
+  */
+  virtual inline DiscretizationType ParShape() const { return parshape_;}
+  
+  /*!
+  \brief Affine map of IntElement coordinates to parent element
+  
+  */
+  virtual bool MapToParent(const double* xi, double* parxi);
+  
+  /*!
+  \brief Affine map of IntElement coordinate derivatives to parent element
+  
+  */
+  virtual bool MapToParent(const vector<map<int,double> >& dxi,
+                             vector<map<int,double> >& dparxi);
 
 protected:
   
   int                  lid_;        // local IntElement id
-  vector<DRT::Node*>   quadnode_;   // explicit node pointers (only valid if (isquad3d_==true)
+  vector<DRT::Node*>   quadnode_;   // explicit node pointers
+  DRT::Element::DiscretizationType   parshape_;   // shape of parent element
   
 }; //class IntElement
 

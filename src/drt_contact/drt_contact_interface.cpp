@@ -1282,15 +1282,13 @@ bool CONTACT::Interface::IntegrateCoupling(CONTACT::CElement& sele,
 bool CONTACT::Interface::SplitIntElements(CONTACT::CElement& ele,
                        vector<RCP<CONTACT::IntElement> >& auxele)
 {
-  // make sure we are supposed to be here
-  if (ele.Owner() != Comm().MyPID())
-    dserror("ERROR: SplitIntElements called for off-proc element!");
-  
   // *********************************************************************
   // do splitting for given element
   // *********************************************************** quad9 ***
   if (ele.Shape()==DRT::Element::quad9)
   {
+    //dserror("ERROR: Quadratic 3D contact for quad9 under construction...");
+    
     // split into for quad4 elements
     int numnode = 4;
     DRT::Element::DiscretizationType dt = DRT::Element::quad4;
@@ -1310,7 +1308,7 @@ bool CONTACT::Interface::SplitIntElements(CONTACT::CElement& ele,
     nodes[3] = ele.Nodes()[7];
 
     auxele.push_back(rcp(new IntElement(0,ele.Id(),ele.Type(),ele.Owner(),
-       dt,numnode,nodeids,nodes,ele.IsSlave())));
+        ele.Shape(),dt,numnode,nodeids,nodes,ele.IsSlave())));
     
     // second integration element
     // containing parent nodes 4,1,5,8
@@ -1325,7 +1323,7 @@ bool CONTACT::Interface::SplitIntElements(CONTACT::CElement& ele,
     nodes[3] = ele.Nodes()[8];
     
     auxele.push_back(rcp(new IntElement(1,ele.Id(),ele.Type(),ele.Owner(),
-       dt,numnode,nodeids,nodes,ele.IsSlave())));
+        ele.Shape(),dt,numnode,nodeids,nodes,ele.IsSlave())));
     
     // third integration element
     // containing parent nodes 8,5,2,6
@@ -1340,7 +1338,7 @@ bool CONTACT::Interface::SplitIntElements(CONTACT::CElement& ele,
     nodes[3] = ele.Nodes()[6];
     
     auxele.push_back(rcp(new IntElement(2,ele.Id(),ele.Type(),ele.Owner(),
-       dt,numnode,nodeids,nodes,ele.IsSlave())));
+        ele.Shape(),dt,numnode,nodeids,nodes,ele.IsSlave())));
     
     // fourth integration element
     // containing parent nodes 7,8,6,3
@@ -1355,12 +1353,14 @@ bool CONTACT::Interface::SplitIntElements(CONTACT::CElement& ele,
     nodes[3] = ele.Nodes()[3];
     
     auxele.push_back(rcp(new IntElement(3,ele.Id(),ele.Type(),ele.Owner(),
-       dt,numnode,nodeids,nodes,ele.IsSlave())));
+        ele.Shape(),dt,numnode,nodeids,nodes,ele.IsSlave())));
   }
   
   // *********************************************************** quad8 ***
   else if (ele.Shape()==DRT::Element::quad8)
   {
+    dserror("ERROR: Quadratic 3D contact for quad8 under construction...");
+    
     // split into four tri3 elements and one quad4 element
     int numnodetri = 3;
     int numnodequad = 4;
@@ -1380,7 +1380,7 @@ bool CONTACT::Interface::SplitIntElements(CONTACT::CElement& ele,
     nodes[2] = ele.Nodes()[7];
 
     auxele.push_back(rcp(new IntElement(0,ele.Id(),ele.Type(),ele.Owner(),
-       dttri,numnodetri,nodeids,nodes,ele.IsSlave())));
+        ele.Shape(),dttri,numnodetri,nodeids,nodes,ele.IsSlave())));
     
     // second integration element
     // containing parent nodes 1,5,4
@@ -1393,7 +1393,7 @@ bool CONTACT::Interface::SplitIntElements(CONTACT::CElement& ele,
     nodes[2] = ele.Nodes()[4];
 
     auxele.push_back(rcp(new IntElement(1,ele.Id(),ele.Type(),ele.Owner(),
-       dttri,numnodetri,nodeids,nodes,ele.IsSlave())));
+        ele.Shape(),dttri,numnodetri,nodeids,nodes,ele.IsSlave())));
     
     // third integration element
     // containing parent nodes 2,6,5
@@ -1406,7 +1406,7 @@ bool CONTACT::Interface::SplitIntElements(CONTACT::CElement& ele,
     nodes[2] = ele.Nodes()[5];
 
     auxele.push_back(rcp(new IntElement(2,ele.Id(),ele.Type(),ele.Owner(),
-       dttri,numnodetri,nodeids,nodes,ele.IsSlave())));
+        ele.Shape(),dttri,numnodetri,nodeids,nodes,ele.IsSlave())));
     
     // fourth integration element
     // containing parent nodes 3,7,6
@@ -1419,7 +1419,7 @@ bool CONTACT::Interface::SplitIntElements(CONTACT::CElement& ele,
     nodes[2] = ele.Nodes()[6];
 
     auxele.push_back(rcp(new IntElement(3,ele.Id(),ele.Type(),ele.Owner(),
-       dttri,numnodetri,nodeids,nodes,ele.IsSlave())));
+        ele.Shape(),dttri,numnodetri,nodeids,nodes,ele.IsSlave())));
     
     // fifth integration element
     // containing parent nodes 4,5,6,7
@@ -1436,12 +1436,14 @@ bool CONTACT::Interface::SplitIntElements(CONTACT::CElement& ele,
     nodesquad[3] = ele.Nodes()[7];
 
     auxele.push_back(rcp(new IntElement(4,ele.Id(),ele.Type(),ele.Owner(),
-       dtquad,numnodequad,nodeidsquad,nodesquad,ele.IsSlave())));
+        ele.Shape(),dtquad,numnodequad,nodeidsquad,nodesquad,ele.IsSlave())));
   }
   
   // ************************************************************ tri6 ***
   else if (ele.Shape()==DRT::Element::tri6)
   {
+    dserror("ERROR: Quadratic 3D contact for tri6 under construction...");
+    
     // split into for tri3 elements
     int numnode = 3;
     DRT::Element::DiscretizationType dt = DRT::Element::tri3;
@@ -1459,7 +1461,7 @@ bool CONTACT::Interface::SplitIntElements(CONTACT::CElement& ele,
     nodes[2] = ele.Nodes()[5];
 
     auxele.push_back(rcp(new IntElement(0,ele.Id(),ele.Type(),ele.Owner(),
-       dt,numnode,nodeids,nodes,ele.IsSlave())));
+        ele.Shape(),dt,numnode,nodeids,nodes,ele.IsSlave())));
     
     // second integration element
     // containing parent nodes 3,1,4
@@ -1472,7 +1474,7 @@ bool CONTACT::Interface::SplitIntElements(CONTACT::CElement& ele,
     nodes[2] = ele.Nodes()[4];
     
     auxele.push_back(rcp(new IntElement(1,ele.Id(),ele.Type(),ele.Owner(),
-       dt,numnode,nodeids,nodes,ele.IsSlave())));
+        ele.Shape(),dt,numnode,nodeids,nodes,ele.IsSlave())));
     
     // third integration element
     // containing parent nodes 5,4,2
@@ -1485,7 +1487,7 @@ bool CONTACT::Interface::SplitIntElements(CONTACT::CElement& ele,
     nodes[2] = ele.Nodes()[2];
     
     auxele.push_back(rcp(new IntElement(2,ele.Id(),ele.Type(),ele.Owner(),
-       dt,numnode,nodeids,nodes,ele.IsSlave())));
+        ele.Shape(),dt,numnode,nodeids,nodes,ele.IsSlave())));
     
     // fourth integration element
     // containing parent nodes 4,5,3
@@ -1498,7 +1500,7 @@ bool CONTACT::Interface::SplitIntElements(CONTACT::CElement& ele,
     nodes[2] = ele.Nodes()[3];
     
     auxele.push_back(rcp(new IntElement(3,ele.Id(),ele.Type(),ele.Owner(),
-       dt,numnode,nodeids,nodes,ele.IsSlave())));
+        ele.Shape(),dt,numnode,nodeids,nodes,ele.IsSlave())));
   }
   
   // *********************************************************** quad4 ***
@@ -1512,7 +1514,7 @@ bool CONTACT::Interface::SplitIntElements(CONTACT::CElement& ele,
     nodes[3] = ele.Nodes()[3];
     
     auxele.push_back(rcp(new IntElement(0,ele.Id(),ele.Type(),ele.Owner(),
-       ele.Shape(),ele.NumNode(),ele.NodeIds(),nodes,ele.IsSlave())));
+       ele.Shape(),ele.Shape(),ele.NumNode(),ele.NodeIds(),nodes,ele.IsSlave())));
   }
   
   // ************************************************************ tri3 ***
@@ -1525,7 +1527,7 @@ bool CONTACT::Interface::SplitIntElements(CONTACT::CElement& ele,
     nodes[2] = ele.Nodes()[2];
     
     auxele.push_back(rcp(new IntElement(0,ele.Id(),ele.Type(),ele.Owner(),
-       ele.Shape(),ele.NumNode(),ele.NodeIds(),nodes,ele.IsSlave())));
+       ele.Shape(),ele.Shape(),ele.NumNode(),ele.NodeIds(),nodes,ele.IsSlave())));
   }
   
   // ********************************************************* invalid ***
@@ -2325,8 +2327,9 @@ void CONTACT::Interface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
 #ifdef CONTACTONEMORTARLOOP
         if (sdoffullmap_->LID(col) < 0)
         {
-          assemble=false;
-          if(abs(val)>1.0e-6) dserror("ERROR: AssembleLinDM: Invalid non-zero master entry in LinD");
+          //FIXME: popp 04/09
+          //assemble=false;
+          //if(abs(val)>1.0e-6) dserror("ERROR: AssembleLinDM: Invalid non-zero master entry in LinD");
         }
 #endif // #ifdef CONTACTONEMORTARLOOP
         
