@@ -43,7 +43,7 @@ ADAPTER::XFluidImpl::XFluidImpl(
   vector<string> conditions_to_copy;
   conditions_to_copy.push_back("FSICoupling");
   conditions_to_copy.push_back("XFEMCoupling");
-  boundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(soliddis, "FSICoupling", "Boundary", "BELE3", conditions_to_copy);
+  boundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(soliddis, "FSICoupling", "boundary", "BELE3", conditions_to_copy);
   dsassert(boundarydis_->NumGlobalNodes() > 0, "empty discretization detected. FSICoupling condition applied?");
   
   // sanity check
@@ -73,6 +73,9 @@ ADAPTER::XFluidImpl::XFluidImpl(
   // Now we are done. :)
   const int err = boundarydis_->FillComplete();
   if (err) dserror("FillComplete() returned err=%d",err);
+  
+  boundaryoutput_ = rcp(new IO::DiscretizationWriter(boundarydis_));
+  boundaryoutput_->WriteMesh(0,0.0);
 
   DRT::UTILS::SetupNDimExtractor(*boundarydis_,"FSICoupling",interface_);
   DRT::UTILS::SetupNDimExtractor(*boundarydis_,"FREESURFCoupling",freesurface_);
@@ -280,18 +283,21 @@ void ADAPTER::XFluidImpl::StatisticsAndOutput()
 /*----------------------------------------------------------------------*/
 void ADAPTER::XFluidImpl::Output()
 {
-//  fluid_.Output();
-  
+  // first fluid output
   fluid_.StatisticsAndOutput();
-
-//  boundaryoutput_->NewStep(Step(),Time());
-//  boundaryoutput_->WriteVector("interface displacement", idisp_);
-//  boundaryoutput_->WriteVector("interface velocity", ivel_);
-//  boundaryoutput_->WriteVector("interface velocity (n)", iveln_);
-//  boundaryoutput_->WriteVector("interface velocity (n-1)", ivelnm_);
-//  boundaryoutput_->WriteVector("interface acceleration (n)", iaccn_);
+  
+  // now the interface output
+  boundaryoutput_->NewStep(Step(),Time());
+  boundaryoutput_->WriteVector("idispnp", idispnp_);
+  boundaryoutput_->WriteVector("idispn", idispn_);
+  boundaryoutput_->WriteVector("ivelnp", ivelnp_);
+  boundaryoutput_->WriteVector("iveln", iveln_);
+  boundaryoutput_->WriteVector("ivelnm", ivelnm_);
+  boundaryoutput_->WriteVector("iaccn", iaccn_);
 //  boundaryoutput_->WriteVector("interface force", itrueres_);
 
+  // now interface gmsh output
+  
   // create interface DOF vectors using the fluid parallel distribution
   Teuchos::RCP<Epetra_Vector> ivelnpcol   = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
 //  Teuchos::RCP<Epetra_Vector> ivelncol    = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
@@ -522,7 +528,18 @@ double ADAPTER::XFluidImpl::TimeScaling() const
 /*----------------------------------------------------------------------*/
 void ADAPTER::XFluidImpl::ReadRestart(int step)
 {
-  fluid_.ReadRestart(step);
+  // create interface DOF vectors using the fluid parallel distribution
+  Teuchos::RCP<Epetra_Vector> idispcolnp = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
+  Teuchos::RCP<Epetra_Vector> idispcoln  = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
+
+  // map to fluid parallel distribution
+  LINALG::Export(*idispnp_,*idispcolnp);
+  LINALG::Export(*idispn_ ,*idispcoln);
+
+  boundarydis_->SetState("idispcolnp",idispcolnp);
+  boundarydis_->SetState("idispcoln" ,idispcoln);
+  
+  fluid_.ReadRestart(step,boundarydis_);
 }
 
 

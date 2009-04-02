@@ -30,9 +30,7 @@ namespace XFEM
     //! constructor
     explicit InterfaceHandleXFSI(
              const Teuchos::RCP<DRT::Discretization>&  xfemdis,   ///< discretization that will be intersected
-             const Teuchos::RCP<DRT::Discretization>&  cutterdis, ///< discretization with boundary elements
-             const int step,                                      ///< counter to control file numbering of gmsh debug output
-             const bool experimental_intersection                 ///< choose intersection class
+             const Teuchos::RCP<DRT::Discretization>&  cutterdis  ///< discretization with boundary elements
              );
     
     //! destructor

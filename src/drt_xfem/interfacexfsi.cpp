@@ -38,9 +38,7 @@ Maintainer: Axel Gerstenberger
  *----------------------------------------------------------------------*/
 XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
     const Teuchos::RCP<DRT::Discretization>&  xfemdis,
-    const Teuchos::RCP<DRT::Discretization>&  cutterdis,
-    const int step,
-    const bool experimental_intersection
+    const Teuchos::RCP<DRT::Discretization>&  cutterdis
     ) : InterfaceHandle(xfemdis),
         cutterdis_(cutterdis)
 {
@@ -63,11 +61,11 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
 
   if (gmshdebugout)
   {
-    // debug: write both meshes to file in Gmsh format
+    // debug: write both meshes to file in Gmsh format, we will not keep old files, since this is only for debugging
     std::stringstream filename;
     std::stringstream filenamedel;
-    filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".uncut_elements_coupled_system_" << std::setw(5) << setfill('0') << step   << ".p" << myrank << ".pos";
-    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".uncut_elements_coupled_system_" << std::setw(5) << setfill('0') << step-5 << ".p" << myrank << ".pos";
+    filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".uncut_elements_coupled_system"<< ".p" << myrank << ".pos";
+    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".uncut_elements_coupled_system"<< ".p" << myrank << ".pos";
     std::remove(filenamedel.str().c_str());
     if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());

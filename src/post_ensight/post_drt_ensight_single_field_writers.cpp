@@ -59,6 +59,20 @@ void FluidEnsightWriter::WriteAllResults(PostField* field)
   WriteElementResults(field);
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void InterfaceEnsightWriter::WriteAllResults(PostField* field)
+{
+  EnsightWriter::WriteResult("idispnp", "idispnp", dofbased, field->problem()->num_dim());
+  EnsightWriter::WriteResult("idispn", "idispn", dofbased, field->problem()->num_dim());
+  EnsightWriter::WriteResult("ivelnp", "ivelnp", dofbased, field->problem()->num_dim());
+  EnsightWriter::WriteResult("iveln", "iveln", dofbased, field->problem()->num_dim());
+  EnsightWriter::WriteResult("ivelnm", "ivelnm", dofbased, field->problem()->num_dim());
+  EnsightWriter::WriteResult("iaccn", "iaccn", dofbased, field->problem()->num_dim());
+  WriteElementResults(field);
+}
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DGFEMFluidEnsightWriter::WriteAllResults(PostField* field)

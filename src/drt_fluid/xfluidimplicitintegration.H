@@ -52,9 +52,7 @@ public:
   */
   explicit XFluidImplicitTimeInt(
       Teuchos::RCP<DRT::Discretization>  dis,
-//      LINALG::Solver&                    solver,
       const ParameterList&               params
-//      IO::DiscretizationWriter&          output
       );
 
 
@@ -201,7 +199,10 @@ public:
   \brief read restart data
 
   */
-  void ReadRestart(int step);
+  void ReadRestart(
+      int                                     step,             ///< read restart for this timestep
+      const Teuchos::RCP<DRT::Discretization> cutterdiscret     ///< surface discretization used to intersect fluid elements
+      );
 
   //! @name access methods for composite algorithms
   /// monolithic FSI needs to access the linear fluid problem
@@ -254,7 +255,7 @@ public:
    */
   void SetFSISurface(const LINALG::MapExtractor* fsisurface) { fsisurface_ = fsisurface; }
 
-  /// calculate lift&drag forces and angular momenta
+  /// calculate lift&drag forces and angular moments
   void LiftDrag() const;
 
   /// integrate shape functions at nodes marked by condition
@@ -307,7 +308,10 @@ protected:
   \brief output solution fields to Gmsh for debugging
 
   */
-  void OutputToGmsh() const;
+  void OutputToGmsh(
+      const int     step,
+      const double  time
+      ) const;
 
 
 
@@ -341,7 +345,9 @@ protected:
       const Teuchos::RCP<Epetra_Vector>   vectorfield,
       const std::string filestr,
       const std::string name_in_gmsh,
-      const bool plot_to_gnuplot
+      const bool plot_to_gnuplot,
+      const int step,
+      const double time
       ) const;
 
   //! @name general algorithm parameters

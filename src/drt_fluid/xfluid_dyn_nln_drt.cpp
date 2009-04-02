@@ -230,7 +230,7 @@ void xdyn_fluid_drt()
 
     vector<string> conditions_to_copy;
     conditions_to_copy.push_back("XFEMCoupling");
-    Teuchos::RCP<DRT::Discretization> boundarydis = DRT::UTILS::CreateDiscretizationFromCondition(soliddis, "XFEMCoupling", "Boundary", "BELE3", conditions_to_copy);
+    Teuchos::RCP<DRT::Discretization> boundarydis = DRT::UTILS::CreateDiscretizationFromCondition(soliddis, "XFEMCoupling", "boundary", "BELE3", conditions_to_copy);
     if (boundarydis->NumGlobalNodes() == 0 and fluiddis->Comm().MyPID() == 0)
       std::cout << "empty discretization detected. XFEMCoupling condition applied?" << endl;
     
@@ -284,7 +284,7 @@ void xdyn_fluid_drt()
     if (probtype.get<int>("RESTART"))
     {
       // read the restart information, set vectors and variables
-      fluidimplicit.ReadRestart(probtype.get<int>("RESTART"));
+      fluidimplicit.ReadRestart(probtype.get<int>("RESTART"),boundarydis);
     }
     else
     {

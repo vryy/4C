@@ -136,6 +136,11 @@ int main(
         PostField* fluidfield = problem.get_discretization(1);
         FluidEnsightWriter fluidwriter(fluidfield, basename);
         fluidwriter.WriteFiles();
+        
+        cout << "  Interface Field" << endl;
+        PostField* ifacefield = problem.get_discretization(2);
+        InterfaceEnsightWriter ifacewriter(ifacefield, basename);
+        ifacewriter.WriteFiles();
         break;
     }
     case prb_loma:

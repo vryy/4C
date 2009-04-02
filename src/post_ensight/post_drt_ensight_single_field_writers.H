@@ -139,6 +139,26 @@ protected:
 
 
 /*!
+ \brief Writer for interface fields in XFEM
+ */
+class InterfaceEnsightWriter : public EnsightWriter
+{
+public:
+    InterfaceEnsightWriter(
+            PostField* field,
+            string filename) :
+        EnsightWriter(field, filename)
+    {
+    }
+
+protected:
+
+    virtual void WriteAllResults(
+            PostField* field);
+};
+
+
+/*!
  \brief Writer for scalar transport problems
 
  \author gjb

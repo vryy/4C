@@ -63,15 +63,15 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   params_ (params),
   xparams_(params.sublist("XFEM")),
   output_ (rcp(new IO::DiscretizationWriter(actdis))),
-  myrank_(discret_->Comm().MyPID()),
-  cout0_(discret_->Comm(), std::cout),
+  myrank_(actdis->Comm().MyPID()),
+  cout0_(actdis->Comm(), std::cout),
   alefluid_(false),
   time_(0.0),
   step_(0),
-  stepmax_(params_.get<int>   ("max number timesteps")),
-  maxtime_(params_.get<double>("total time")),
-  timealgo_(params_.get<FLUID_TIMEINTTYPE>("time int algo")),
-  itemax_(params_.get<int>("max nonlin iter steps")),
+  stepmax_(params.get<int>   ("max number timesteps")),
+  maxtime_(params.get<double>("total time")),
+  timealgo_(params.get<FLUID_TIMEINTTYPE>("time int algo")),
+  itemax_(params.get<int>("max nonlin iter steps")),
   extrapolationpredictor_(params.get<bool>("do explicit predictor")),
   uprestart_(params.get<int>("write restart every")),
   upres_(params.get<int>("write solution every")),
@@ -101,15 +101,15 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
 
   // create empty cutter discretization
   Teuchos::RCP<DRT::Discretization> emptyboundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(
-      actdis, "schnackelzappel", "DummyBoundary", "BELE3", vector<string>(0));
+      actdis, "schnackelzappel", "boundary", "BELE3", vector<string>(0));
   Teuchos::RCP<Epetra_Vector> tmpdisp = LINALG::CreateVector(*emptyboundarydis_->DofRowMap(),true);
   emptyboundarydis_->SetState("idispcolnp",tmpdisp);
   emptyboundarydis_->SetState("idispcoln",tmpdisp);
   // intersection with empty cutter will result in a complete fluid domain with no holes or intersections
   Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih =
-    rcp(new XFEM::InterfaceHandleXFSI(discret_,emptyboundarydis_,0,xparams_.get<bool>("EXP_INTERSECTION")));
+    rcp(new XFEM::InterfaceHandleXFSI(discret_,emptyboundarydis_));
+
   // apply enrichments
-  
   std::set<XFEM::PHYSICS::Field> fieldset;
   fieldset.insert(XFEM::PHYSICS::Velx);
   fieldset.insert(XFEM::PHYSICS::Vely);
@@ -177,9 +177,13 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   
   cout0_ << "Element shapes in xfluid discretization: ";
   discret_->Comm().Barrier();
+  bool moreThanOne = false;
   for (std::set<DRT::Element::DiscretizationType>::const_iterator iter = distypeset.begin(); iter != distypeset.end(); ++iter)
   {
+    if (moreThanOne)
+      cout << ", ";
     cout << DRT::DistypeToString(*iter) << ", ";
+    moreThanOne = true;
   }
   if (actdis->Comm().MyPID()==0)
   {
@@ -520,7 +524,7 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
 
   // compute Intersection
   const Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih =
-    rcp(new XFEM::InterfaceHandleXFSI(discret_, cutterdiscret,step_,xparams_.get<bool>("EXP_INTERSECTION")));
+    rcp(new XFEM::InterfaceHandleXFSI(discret_, cutterdiscret));
   ih->toGmsh(step_);
 
   // apply enrichments
@@ -691,6 +695,13 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
       cout << " DOF report: numdof = " << newdofrowmap.NumGlobalElements() << endl;
     }
   }
+  
+//  cout0_ << *state_.accnp_ << endl;
+//  cout0_ << *state_.accn_ << endl;
+//  
+//  cout0_ << *state_.velnp_ << endl;
+//  cout0_ << *state_.veln_ << endl;
+//  cout0_ << *state_.velnm_ << endl;
   
   cout0_ << "Setup phase done!" << endl;
 
@@ -1313,7 +1324,7 @@ void FLD::XFluidImplicitTimeInt::Output()
 
   if (discret_->Comm().NumProc() == 1)
   {
-    OutputToGmsh();
+    OutputToGmsh(step_, time_);
   }
 
   return;
@@ -1329,17 +1340,74 @@ void FLD::XFluidImplicitTimeInt::Output()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::XFluidImplicitTimeInt::ReadRestart(int step)
+void FLD::XFluidImplicitTimeInt::ReadRestart(
+    int step,
+    const Teuchos::RCP<DRT::Discretization> cutterdiscret
+    )
 {
+  
+  const int output_test_step = 999999;
+  
+  const Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih =
+    rcp(new XFEM::InterfaceHandleXFSI(discret_, cutterdiscret));
+  ih->toGmsh(output_test_step);
+  
+  // apply enrichments
+  std::set<XFEM::PHYSICS::Field> fieldset;
+  fieldset.insert(XFEM::PHYSICS::Velx);
+  fieldset.insert(XFEM::PHYSICS::Vely);
+  fieldset.insert(XFEM::PHYSICS::Velz);
+  fieldset.insert(XFEM::PHYSICS::Pres);
+  const XFLUID::FluidElementAnsatz elementAnsatz;
+  const Teuchos::RCP<XFEM::DofManager> dofmanager =
+    rcp(new XFEM::DofManager(ih, fieldset, elementAnsatz, xparams_));
+  
+  // save dofmanager to be able to plot Gmsh stuff in Output()
+  dofmanagerForOutput_ = dofmanager;
+  
+  // tell elements about the dofs and the integration
+  TransferDofInformationToElements(ih, dofmanager);
+  
+  // print global and element dofmanager to Gmsh
+  dofmanager->toGmsh(output_test_step);
+  
+  
+  // get old dofmap, compute new one and get the new one, too
+  discret_->FillComplete();
+  
+  dofmanager->fillDofDistributionMaps(
+      state_.nodalDofDistributionMap_,
+      state_.elementalDofDistributionMap_);
+  
+  
+  
   IO::DiscretizationReader reader(discret_,step);
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
 
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  
+  // Vectors passed to the element
+  // -----------------------------
+  // velocity/pressure at time n+1, n and n-1
+  state_.velnp_        = LINALG::CreateVector(*dofrowmap,true);
+  state_.veln_         = LINALG::CreateVector(*dofrowmap,true);
+  state_.velnm_        = LINALG::CreateVector(*dofrowmap,true);
+
+  // acceleration at time n+1 and n
+  state_.accnp_        = LINALG::CreateVector(*dofrowmap,true);
+  state_.accn_         = LINALG::CreateVector(*dofrowmap,true);
+  
   reader.ReadVector(state_.velnp_,"velnp");
   reader.ReadVector(state_.veln_, "veln");
   reader.ReadVector(state_.velnm_,"velnm");
   reader.ReadVector(state_.accn_ ,"accn");
 
+  if (discret_->Comm().NumProc() == 1)
+  {
+    OutputToGmsh(output_test_step, time_);
+  }
+  
 }
 
 
@@ -1352,7 +1420,10 @@ void FLD::XFluidImplicitTimeInt::ReadRestart(int step)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::XFluidImplicitTimeInt::OutputToGmsh() const
+void FLD::XFluidImplicitTimeInt::OutputToGmsh(
+    const int step,
+    const double time
+    ) const
 {
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
   const bool gmshdebugout = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
@@ -1365,8 +1436,8 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh() const
 
     std::stringstream filename;
     std::stringstream filenamedel;
-    filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".solution_pressure_" << std::setw(5) << setfill('0') << step_   << ".pos";
-    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".solution_pressure_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
+    filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".solution_pressure_" << std::setw(5) << setfill('0') << step   << ".pos";
+    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".solution_pressure_" << std::setw(5) << setfill('0') << step-5 << ".pos";
     std::remove(filenamedel.str().c_str());
     if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
@@ -1426,13 +1497,13 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh() const
           std::ofstream f;
           const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
                                   + ".outflowpres.txt";
-          if (step_ <= 1)
+          if (step <= 1)
             f.open(fname.c_str(),std::fstream::trunc);
           else
             f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
 
           //f << time_ << " " << (-1.5*std::sin(0.1*2.0*time_* PI) * PI*0.1) << "  " << elementvalues(0,0) << endl;
-          f << time_ << "  " << elementvalues(0) << "\n";
+          f << time << "  " << elementvalues(0) << "\n";
 
           f.close();
         }
@@ -1449,8 +1520,8 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh() const
     std::stringstream filename;
     std::stringstream filenamedel;
     const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
-    filename    << filebase << ".solution_pressure_disc_" << std::setw(5) << setfill('0') << step_   << ".pos";
-    filenamedel << filebase << ".solution_pressure_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
+    filename    << filebase << ".solution_pressure_disc_" << std::setw(5) << setfill('0') << step   << ".pos";
+    filenamedel << filebase << ".solution_pressure_disc_" << std::setw(5) << setfill('0') << step-5 << ".pos";
     std::remove(filenamedel.str().c_str());
     if (screen_out) std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
@@ -1530,20 +1601,20 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh() const
     std::stringstream filenameyzdel;
     //filename   << "solution_tau_disc_"   << std::setw(5) << setfill('0') << step_ << ".pos";
     const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
-    filename   << filebase << ".solution_sigma_disc_"   << std::setw(5) << setfill('0') << step_ << ".pos";
-    filenamexx << filebase << ".solution_sigmaxx_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
-    filenameyy << filebase << ".solution_sigmayy_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
-    filenamezz << filebase << ".solution_sigmazz_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
-    filenamexy << filebase << ".solution_sigmaxy_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
-    filenamexz << filebase << ".solution_sigmaxz_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
-    filenameyz << filebase << ".solution_sigmayz_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
-    filenamedel   << filebase << ".solution_sigma_disc_"   << std::setw(5) << setfill('0') << step_-5 << ".pos";
-    filenamexxdel << filebase << ".solution_sigmaxx_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
-    filenameyydel << filebase << ".solution_sigmayy_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
-    filenamezzdel << filebase << ".solution_sigmazz_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
-    filenamexydel << filebase << ".solution_sigmaxy_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
-    filenamexzdel << filebase << ".solution_sigmaxz_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
-    filenameyzdel << filebase << ".solution_sigmayz_disc_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
+    filename   << filebase << ".solution_sigma_disc_"   << std::setw(5) << setfill('0') << step << ".pos";
+    filenamexx << filebase << ".solution_sigmaxx_disc_" << std::setw(5) << setfill('0') << step << ".pos";
+    filenameyy << filebase << ".solution_sigmayy_disc_" << std::setw(5) << setfill('0') << step << ".pos";
+    filenamezz << filebase << ".solution_sigmazz_disc_" << std::setw(5) << setfill('0') << step << ".pos";
+    filenamexy << filebase << ".solution_sigmaxy_disc_" << std::setw(5) << setfill('0') << step << ".pos";
+    filenamexz << filebase << ".solution_sigmaxz_disc_" << std::setw(5) << setfill('0') << step << ".pos";
+    filenameyz << filebase << ".solution_sigmayz_disc_" << std::setw(5) << setfill('0') << step << ".pos";
+    filenamedel   << filebase << ".solution_sigma_disc_"   << std::setw(5) << setfill('0') << step-5 << ".pos";
+    filenamexxdel << filebase << ".solution_sigmaxx_disc_" << std::setw(5) << setfill('0') << step-5 << ".pos";
+    filenameyydel << filebase << ".solution_sigmayy_disc_" << std::setw(5) << setfill('0') << step-5 << ".pos";
+    filenamezzdel << filebase << ".solution_sigmazz_disc_" << std::setw(5) << setfill('0') << step-5 << ".pos";
+    filenamexydel << filebase << ".solution_sigmaxy_disc_" << std::setw(5) << setfill('0') << step-5 << ".pos";
+    filenamexzdel << filebase << ".solution_sigmaxz_disc_" << std::setw(5) << setfill('0') << step-5 << ".pos";
+    filenameyzdel << filebase << ".solution_sigmayz_disc_" << std::setw(5) << setfill('0') << step-5 << ".pos";
     std::remove(filenamedel.str().c_str());
     std::remove(filenamexxdel.str().c_str());
     std::remove(filenameyydel.str().c_str());
@@ -1694,7 +1765,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh() const
 #endif
 
 
-  PlotVectorFieldToGmsh(state_.velnp_, ".solution_velocity_","Velocity Solution (Physical) n+1",true);
+  PlotVectorFieldToGmsh(state_.velnp_, ".solution_velocity_","Velocity Solution (Physical) n+1",true, step, time);
 //  PlotVectorFieldToGmsh(state_.veln_,  ".solution_velocity_old_step_","Velocity Solution (Physical) n",false);
 //  PlotVectorFieldToGmsh(state_.velnm_, ".solution_velocity_old2_step_","Velocity Solution (Physical) n-1",false);
 //  PlotVectorFieldToGmsh(state_.accn_,  ".solution_acceleration_old_step_","Acceleration Solution (Physical) n",false);
@@ -1707,7 +1778,9 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
     const Teuchos::RCP<Epetra_Vector>   vectorfield,
     const std::string filestr,
     const std::string name_in_gmsh,
-    const bool plot_to_gnuplot
+    const bool plot_to_gnuplot,
+    const int step,
+    const double time
     ) const
 {
 
@@ -1723,8 +1796,8 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
     std::stringstream filename;
     std::stringstream filenamedel;
     const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
-    filename    << filebase << filestr << std::setw(5) << std::setfill('0') << step_ << ".pos";
-    filenamedel << filebase << filestr << std::setw(5) << std::setfill('0') << step_-5 << ".pos";
+    filename    << filebase << filestr << std::setw(5) << std::setfill('0') << step << ".pos";
+    filenamedel << filebase << filestr << std::setw(5) << std::setfill('0') << step-5 << ".pos";
     std::remove(filenamedel.str().c_str());
     if (screen_out) std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
@@ -1827,13 +1900,13 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
           std::ofstream f;
           const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
                                   + ".outflowvel.txt";
-          if (step_ <= 1)
+          if (step <= 1)
             f.open(fname.c_str(),std::fstream::trunc);
           else
             f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
 
           //f << time_ << " " << (-1.5*std::sin(0.1*2.0*time_* PI) * PI*0.1) << "  " << elementvalues(0,0) << endl;
-          f << time_ << "  " << elementvalues(0,0) << "\n";
+          f << time << "  " << elementvalues(0,0) << "\n";
 
           f.close();
         }
