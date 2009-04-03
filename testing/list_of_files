@@ -204,8 +204,8 @@ Input/xf3_pure_shear_forces_ost.dat                     x        x        x     
 Input/xf3_pure_shear_forces.dat                         x        x        x        x        -        -
 Input/xfsi_fluid_pusher_bdf2.dat                        x        -        x        -        x        -
 Input/xfsi_fluid_pusher_ost.dat                         x        -        x        -        x        -
-Input/xfsi_bending_2d_stationary_hex20.dat              x        x        x        x        x        -
-Input/xfsi_bending_2d_stationary_hex8.dat               x        x        x        x        x        -
+Input/xfsi_bending_2d_stationary_hex20.dat              x        x        x        x        -        -
+Input/xfsi_bending_2d_stationary_hex8.dat               x        x        x        x        -        -
 Input/xfsi_multibody_hex20_exp_intersection.dat         x        x        x        -        -        -
 Input/xfsi_multibody_hex20.dat                          x        x        x        -        -        -
 Input/sohex8_disp_patchtest.dat                         x        x        x        -        -        -
