@@ -1100,6 +1100,22 @@ void CONTACT::Interface::EvaluateContactSearchBruteForce(const double& eps)
  *----------------------------------------------------------------------*/
 bool CONTACT::Interface::EvaluateContactSearchBinarytree()
 {
+  // *********************************************************************
+  // Possible versions:
+  // *********************************************************************
+  //
+  // 1) Combined Update and Contact Search
+  // -> In this case we only have to call SearchCOntactCombined(), which
+  //    doed buth top-down update (where necessary) and search
+  //
+  // 2) Separate Update and Contact Search
+  // -> In this case we have to explicitly call and updating routine, i.e.
+  //    UpdateTreeTopDown() or UpdateTreeBottomUp() before calling the
+  //    search routine SearchContactSeparate(). Of course, the bottom-up
+  //    update makes more sense here!
+  //
+  // *********************************************************************
+  
 	// calculate minimal element length
 	binarytree_->SetEnlarge(false);
 	
