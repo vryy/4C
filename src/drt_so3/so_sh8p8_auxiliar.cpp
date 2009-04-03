@@ -124,18 +124,26 @@ void DRT::ELEMENTS::So_sh8p8::InvVector9VoigtDiffByItself(
 {
   // VERIFIED
 
+  const int* voigt9row = NULL;
+  const int* voigt9col = NULL;
+  if (transpose) {
+    voigt9row = &(VOIGT9COL_[0]);
+    voigt9col = &(VOIGT9ROW_[0]);
+  }
+  else {
+    voigt9row = &(VOIGT9ROW_[0]);
+    voigt9col = &(VOIGT9COL_[0]);
+  }
+
   for (int kl=0; kl<NUMDFGR_; ++kl)
   {
     const int k = VOIGT9ROW_[kl];
     const int l = VOIGT9COL_[kl];
     for (int ij=0; ij<NUMDFGR_; ++ij)
     {
-      const int i = VOIGT9ROW_[ij];
-      const int j = VOIGT9COL_[ij];
-      if (transpose)
-        invfderf(ij,kl) = -invfmat(j,k)*invfmat(l,i);
-      else
-        invfderf(ij,kl) = -invfmat(i,k)*invfmat(l,j);
+      const int i = voigt9row[ij];
+      const int j = voigt9col[ij];
+      invfderf(ij,kl) = -invfmat(i,k)*invfmat(l,j);
     }
   }
 
@@ -629,10 +637,6 @@ void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToLeftRightProductMatrix6x6Voigt(
   const VoigtType invoigt6  ///< 6-Voigt vector layout on columns of 6x6 matrix
   )
 {
-//  const int* voigt6row = NULL;
-//  const int* voigt6col = NULL;
-//  Indices6VoigtTo2Tensor(voigt6row,voigt6col);
-
   for (int ab=0; ab<NUMSTR_; ++ab)
   {
     const int a = VOIGT6ROW_[ab];
@@ -1091,11 +1095,11 @@ void DRT::ELEMENTS::So_sh8p8::BuildElementVector(
 /*----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_sh8p8::AssembleVolume(
   Teuchos::ParameterList& params,  ///< parameter list for in 'n' out
-  const double& volume  ///< current element volume
+  const double& elevol  ///< current element volume
   )
 {
   const double totvol = params.get<double>("volume");
-  params.set("volume",totvol+volume);
+  params.set("volume",totvol+elevol);
   return;
 }
 

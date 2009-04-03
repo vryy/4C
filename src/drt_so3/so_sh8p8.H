@@ -628,7 +628,7 @@ private:
   /// Assemble global volume
   static void AssembleVolume(
     Teuchos::ParameterList& params,  ///< parameter list for in 'n' out
-    const double& volume  ///< current element volume
+    const double& elevol  ///< current element volume
     );
 
   //@}
