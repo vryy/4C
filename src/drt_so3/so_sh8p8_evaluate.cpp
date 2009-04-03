@@ -861,20 +861,6 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
         // WmT := WmT + fvT*fvT'
         WmT.MultiplyNT(1.0,tinvdefgrad,tinvdefgrad,1.0);
 
-/*
-        // Voigt vector indices
-        const int* voigt6row = &(VOIGT6ROW_[0]);
-        const int* voigt6col = NULL;
-        Indices6VoigtTo2Tensor(voigt6row,voigt6col);
-        const int* voigt9row = NULL;
-        const int* voigt9col = NULL;
-        Indices9VoigtTo2Tensor(voigt9row,voigt9col);
-        const int* voigt3x3 = NULL;
-        Indices2TensorTo9Voigt(voigt3x3);  // access is via (i,j) -> 3*i+j
-        const int* voigt3x3sym = NULL;
-        Indices2TensorTo6Voigt(voigt3x3sym);  // access is via (i,j) -> 3*i+j
-*/
-        
         // material derivatives of shape functions
         LINALG::Matrix<NUMDIM_,NUMNOD_> derivsmat;
         derivsmat.MultiplyNN(invJ_[gp],derivs[gp]);

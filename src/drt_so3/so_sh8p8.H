@@ -148,6 +148,10 @@ private:
   static const int VOIGT9COL_[];  ///< 9-Voigt column index of corresponding 2-tensor
   static const int VOIGT3X3_[];  ///< access by [NUMDIM_*i+j] for any i,j=0,1,2
   static const int VOIGT3X3SYM_[]; ///< access by [NUMDIM_*i+j] for any i,j=0,1,2
+
+  /// Ordering of element displacement and pressure DOFs
+  static const int DISPTODISPPRES_[];  ///< 24 displacement into 32 total DOFs
+  static const int PRESTODISPPRES_[];  ///< 8 pressures into 32 total DOFs
   //@}
 
 public:
@@ -360,42 +364,6 @@ private:
 
   /// @name Voigt vector/matrix converters
   //@{
-
-  /// Provide tensor indices of Voigt 6-vector notation
-  ///
-  /// These arrays are used to get from Voigt index to tensor index couple.
-  static void Indices6VoigtTo2Tensor(
-    const int*& voigt6row,  ///< tensor row indices
-    const int*& voigt6col,  ///< tensor column indices
-    const bool transpose = true  ///< deliver tranposed content if true
-    );
-
-  /// Provide tensor indices of Voigt 9-vector notation
-  ///
-  /// These arrays are used to get from Voigt index to tensor index couple.
-  static void Indices9VoigtTo2Tensor(
-    const int*& voigt9row,  ///< tensor row indices
-    const int*& voigt9col,  ///< tensor column indices
-    const bool transpose = false  ///< deliver tranposed content if true
-    );
-
-  /// Provide Voigt 9-indices 
-  ///
-  /// This array is used get from tensor couple to Voigt index
-  /// access is via
-  /// (i,j) -> 3*i+j
-  static void Indices2TensorTo9Voigt(
-    const int*& voigt3x3  ///< Voigt indices
-    );
-
-  /// Provide Voigt 6-indices 
-  ///
-  /// This array is used get from symmetric tensor couple to Voigt index
-  /// access is via
-  /// (i,j) -> 3*i+j
-  static void Indices2TensorTo6Voigt(
-    const int*& voigt3x3  ///< Voigt indices
-    );
 
   /// Convert 3x3 matrix of non-sym 2-tensor in 9x1 Voigt vector
   ///

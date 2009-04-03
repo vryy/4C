@@ -36,91 +36,6 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8p8::Indices6VoigtTo2Tensor(
-  const int*& voigt6row,
-  const int*& voigt6col,
-  const bool transpose
-  )
-{
-//  const static int Voigt6Row[NUMSTR_] = {0,1,2, 0,1,2};
-//  const static int Voigt6Col[NUMSTR_] = {0,1,2, 1,2,0};
-
-  if (transpose)
-  {
-    voigt6row = &(VOIGT6COL_[0]);
-    voigt6col = &(VOIGT6ROW_[0]);
-  }
-  else
-  {
-    voigt6row = &(VOIGT6ROW_[0]);
-    voigt6col = &(VOIGT6COL_[0]);
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8p8::Indices9VoigtTo2Tensor(
-  const int*& voigt9row,
-  const int*& voigt9col,
-  const bool transpose
-  )
-{
-  // 9-Voigt C-index               0 1 2  3 4 5  6 7 8
-//  const static int Voigt9Row[NUMDFGR_] = {0,1,2, 0,1,2, 0,2,1};
-//  const static int Voigt9Col[NUMDFGR_] = {0,1,2, 1,2,0, 2,1,0};
-
-  if (transpose)
-  {
-    voigt9row = &(VOIGT9COL_[0]);
-    voigt9col = &(VOIGT9ROW_[0]);
-  }
-  else
-  {
-    voigt9row = &(VOIGT9ROW_[0]);
-    voigt9col = &(VOIGT9COL_[0]);
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8p8::Indices2TensorTo9Voigt(
-  const int*& voigt3x3
-  )
-{
-  // tensor indices ij = 11, 12, 13, 21, 22, 23, 31, 32, 33
-  // C indices           00, 01, 02, 10, 11, 12, 20, 21, 22
-  // Access : 3*i+j
-  // 9-Voigt C-indices    0   3   6   8   1   4   5   7   2
-//  const static int Voigt3x3[NUMDFGR_] = {0,3,6, 8,1,4, 5,7,2};
-
-  voigt3x3 = &(VOIGT3X3_[0]);
-
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8p8::Indices2TensorTo6Voigt(
-  const int*& voigt3x3
-  )
-{
-  // tensor indices ij = 11, 12, 13, 21, 22, 23, 31, 32, 33
-  // C indices           00, 01, 02, 10, 11, 12, 20, 21, 22
-  // Access : 3*i+j
-  // 6-Voigt C-indices    0   3   5   3   1   4   5   4   2
-//  const static int Voigt3x3sym[NUMDFGR_] = {0,3,5, 3,1,4, 5,4,2};
-
-  voigt3x3 = &(VOIGT3X3SYM_[0]);
-
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToVector9Voigt(
   LINALG::Matrix<NUMDFGR_,1>& fvct,
   const LINALG::Matrix<NUMDIM_,NUMDIM_>& fmat,
@@ -129,10 +44,16 @@ void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToVector9Voigt(
 {
   const int* voigt9row = NULL;
   const int* voigt9col = NULL;
-  Indices9VoigtTo2Tensor(voigt9row,voigt9col,transpose);
+  if (transpose) {
+    voigt9row = &(VOIGT9COL_[0]);
+    voigt9col = &(VOIGT9ROW_[0]);
+  }
+  else {
+    voigt9row = &(VOIGT9ROW_[0]);
+    voigt9col = &(VOIGT9COL_[0]);
+  }
     
-  for (int ij=0; ij<NUMDFGR_; ++ij)
-  {
+  for (int ij=0; ij<NUMDFGR_; ++ij) {
     const int i = voigt9row[ij];
     const int j = voigt9col[ij];
     fvct(ij,0) = fmat(i,j);  // F_ij
@@ -149,10 +70,6 @@ void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToVector6Voigt(
   const VoigtType outvoigt6
   )
 {
-//  const int* voigt6row = NULL;
-//  const int* voigt6col = NULL;
-//  Indices6VoigtTo2Tensor(voigt6row,voigt6col);
-    
   for (int ij=0; ij<NUMSTR_; ++ij)
   {
     const int i = VOIGT6ROW_[ij];
@@ -178,9 +95,6 @@ void DRT::ELEMENTS::So_sh8p8::Vector6VoigtToMatrix2Tensor(
   const VoigtType invoigt6
   )
 {
-//  const int* voigt3x3sym = NULL;
-//  Indices2TensorTo6Voigt(voigt3x3sym);  // access is via (i,j) -> 3*i+j  
-
   for (int j=0; j<NUMDIM_; ++j)
   {
     for (int i=0; i<NUMDIM_; ++ i)
@@ -208,10 +122,6 @@ void DRT::ELEMENTS::So_sh8p8::InvVector9VoigtDiffByItself(
   const bool transpose
   )
 {
-//  const int* voigt9row = NULL;
-//  const int* voigt9col = NULL;
-//  Indices9VoigtTo2Tensor(voigt9row,voigt9col);
-
   // VERIFIED
 
   for (int kl=0; kl<NUMDFGR_; ++kl)
@@ -240,9 +150,6 @@ void DRT::ELEMENTS::So_sh8p8::InvVector6VoigtDiffByItself(
   )
 {
 #if 0
-//  const int voigt6row[NUMSTR_] = {0,1,2, 0,1,2};
-//  const int voigt6col[NUMSTR_] = {0,1,2, 1,2,0};
-
   // VERIFIED
 
 //  cout << endl;
@@ -330,10 +237,6 @@ void DRT::ELEMENTS::So_sh8p8::InvVector6VoigtTwiceDiffByItself(
   const LINALG::Matrix<NUMDIM_,NUMDIM_>& ibt
   )
 {
-//  const int* voigt6row = NULL;
-//  const int* voigt6col = NULL;
-//  Indices6VoigtTo2Tensor(voigt6row,voigt6col);
-
   // VERIFIED
 
 //  cout << endl;
@@ -408,10 +311,6 @@ void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtDiffByItself(
   const VoigtType outvoigt6
   )
 {
-//  const int* voigt6row = NULL;
-//  const int* voigt6col = NULL;
-//  Indices6VoigtTo2Tensor(voigt6row,voigt6col);
-
   // VERIFIED
 
 #if 0
@@ -500,10 +399,6 @@ void DRT::ELEMENTS::So_sh8p8::SqVector9VoigtDiffByItself(
   const bool transpose
   )
 {
-//  const int* voigt9row = NULL;
-//  const int* voigt9col = NULL;
-//  Indices9VoigtTo2Tensor(voigt9row,voigt9col);
-
   // identity 2-tensor
   LINALG::Matrix<NUMDIM_,NUMDIM_> id(true);
   for (int i=0; i<NUMDIM_; ++i) id(i,i) = 1.0;
@@ -542,10 +437,6 @@ void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtTwiceDiffByItself(
   )
 {
 #if 0
-//  const int* voigt6row = NULL;
-//  const int* voigt6col = NULL;
-//  Indices6VoigtTo2Tensor(voigt6row,voigt6col);
-
   // identity 2-tensor
   LINALG::Matrix<NUMDIM_,NUMDIM_> id(true);
   for (int i=0; i<NUMDIM_; ++i) id(i,i) = 1.0;
@@ -687,14 +578,6 @@ void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToMatrix6x9Voigt(
   const bool transpose
   )
 {
-//  const int* voigt6row = NULL;
-//  const int* voigt6col = NULL;
-//  Indices6VoigtTo2Tensor(voigt6row,voigt6col);
-
-//  const int* voigt9row = NULL;
-//  const int* voigt9col = NULL;
-//  Indices9VoigtTo2Tensor(voigt9row,voigt9col);
-
   // VERIFIED
 
 //  cout << endl;
@@ -1082,8 +965,8 @@ void DRT::ELEMENTS::So_sh8p8::BuildElementMatrix(
   const LINALG::Matrix<NUMPRES_,NUMPRES_>* matpp
 )
 {
-  const int d2dp[NUMDISP_] = {0,1,2,  4,5,6,  8,9,10,   12,13,14,   16,17,18,   20,21,22,   24,25,26,   28,29,30  };
-  const int p2dp[NUMPRES_] = {      3,      7,       11,         15,         19,         23,         27,        31};
+  const int* d2dp = &(DISPTODISPPRES_[0]);
+  const int* p2dp = &(PRESTODISPPRES_[0]);
 
   // k_dd
   for (int j=0; j<NUMDISP_; ++j) {
@@ -1178,8 +1061,8 @@ void DRT::ELEMENTS::So_sh8p8::BuildElementVector(
   const LINALG::Matrix<NUMPRES_,1>* vctp
 )
 {
-  const int d2dp[NUMDISP_] = {0,1,2,  4,5,6,  8,9,10,   12,13,14,   16,17,18,   20,21,22,   24,25,26,   28,29,30  };
-  const int p2dp[NUMPRES_] = {      3,      7,       11,         15,         19,         23,         27,        31};
+  const int* d2dp = &(DISPTODISPPRES_[0]);
+  const int* p2dp = &(PRESTODISPPRES_[0]);
 
   vct->Clear();
   

@@ -27,12 +27,31 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*
  |  initialise static arrays                                 bborn 03/09|
  *----------------------------------------------------------------------*/
+// 6-Voigt C-index                                        0 1 2  3 4 5
 const int DRT::ELEMENTS::So_sh8p8::VOIGT6ROW_[NUMSTR_] = {0,1,2, 0,1,2};
 const int DRT::ELEMENTS::So_sh8p8::VOIGT6COL_[NUMSTR_] = {0,1,2, 1,2,0};
+
+// 9-Voigt C-index                                         0 1 2  3 4 5  6 7 8
 const int DRT::ELEMENTS::So_sh8p8::VOIGT9ROW_[NUMDFGR_] = {0,1,2, 0,1,2, 0,2,1};
 const int DRT::ELEMENTS::So_sh8p8::VOIGT9COL_[NUMDFGR_] = {0,1,2, 1,2,0, 2,1,0};
+
+// tensor indices ij = 11, 12, 13, 21, 22, 23, 31, 32, 33
+// C indices           00, 01, 02, 10, 11, 12, 20, 21, 22
+// Access : 3*i+j
+// 9-Voigt C-indices    0   3   6   8   1   4   5   7   2
 const int DRT::ELEMENTS::So_sh8p8::VOIGT3X3_[NUMDFGR_] = {0,3,6, 8,1,4, 5,7,2};
+
+// tensor indices ij = 11, 12, 13, 21, 22, 23, 31, 32, 33
+// C indices           00, 01, 02, 10, 11, 12, 20, 21, 22
+// Access : 3*i+j
+// 6-Voigt C-indices    0   3   5   3   1   4   5   4   2
 const int DRT::ELEMENTS::So_sh8p8::VOIGT3X3SYM_[NUMDFGR_] = {0,3,5, 3,1,4, 5,4,2};
+
+// 24 displacement and 8 pressure DOFs into 32 total element DOFs
+const int DRT::ELEMENTS::So_sh8p8::DISPTODISPPRES_[NUMDISP_] 
+  = {0,1,2,  4,5,6,  8,9,10,   12,13,14,   16,17,18,   20,21,22,   24,25,26,   28,29,30  };
+const int DRT::ELEMENTS::So_sh8p8::PRESTODISPPRES_[NUMPRES_]
+  = {      3,      7,       11,         15,         19,         23,         27,        31};
 
 
 /*----------------------------------------------------------------------*
