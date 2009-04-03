@@ -128,7 +128,9 @@ private:
   static const int NODPRES_ = 1;  ///< number of pressures per node
   static const int NUMDOF_ = 32;  ///< total dofs per element
   static const int NUMDISP_ = 24;  ///< total discrete displacements per element
-  static const int NUMDISPSQSYM_ = 300;  ///< (NUMDISP_*NUMDISP_ + NUMDISP_)/2, number of relevant entries if symmetric in element displacements
+  static const int NUMDISPSQSYM_ = 300;  ///< (NUMDISP_*NUMDISP_ + NUMDISP_)/2, number
+                                         ///< of relevant entries 
+                                         ///< if symmetric in element displacements
   static const int NUMPRES_ = 8;  ///< total discrete pressures per element
   static const int NUMSTR_ = NUMSTR_SOH8; //6  ///< number of strains/stresses
   static const int NUMDFGR_ = 9;  ///< number of deformation gradient components
@@ -146,8 +148,10 @@ private:
   static const int VOIGT6COL_[];  ///< 6-Voigt column index of corresponding 2-tensor
   static const int VOIGT9ROW_[];  ///< 9-Voigt row index of corresponding 2-tensor
   static const int VOIGT9COL_[];  ///< 9-Voigt column index of corresponding 2-tensor
-  static const int VOIGT3X3_[];  ///< access by [NUMDIM_*i+j] for any i,j=0,1,2
-  static const int VOIGT3X3SYM_[]; ///< access by [NUMDIM_*i+j] for any i,j=0,1,2
+  static const int VOIGT3X3_[];  ///< go from 2-tensor index pair to 9-Voigt index 
+                                 ///< by [NUMDIM_*i+j] for any i,j=0,1,2
+  static const int VOIGT3X3SYM_[]; ///< go from symmtric 2-tensor index pair to 6-Voigt index
+                                   ///< by [NUMDIM_*i+j] for any i,j=0,1,2
 
   /// Ordering of element displacement and pressure DOFs
   static const int DISPTODISPPRES_[];  ///< 24 displacement into 32 total DOFs
