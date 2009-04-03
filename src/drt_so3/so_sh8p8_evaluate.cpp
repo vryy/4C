@@ -1552,7 +1552,7 @@ void DRT::ELEMENTS::So_sh8p8::AssDefGrad(
 #endif
 
 //     // U_{,C}
-//     // correct, but same speed as solution with Lapack and inaccurate
+//     // correct, but same speed like solution with Lapack and inaccurate
 //     {
 //       const int* voigt6row = NULL;
 //       const int* voigt6col = NULL;
@@ -1726,7 +1726,9 @@ int DRT::ELEMENTS::Sosh8p8Register::Initialize(DRT::Discretization& dis)
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {
     // get the actual element
-    if (dis.lColElement(i)->Type() != DRT::Element::element_sosh8p8) continue;
+    if (dis.lColElement(i)->Type() != DRT::Element::element_sosh8p8)
+      continue;
+    // go on for So_sh8p elements
     DRT::ELEMENTS::So_sh8p8* actele = dynamic_cast<DRT::ELEMENTS::So_sh8p8*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_sh8p8* failed");
 
@@ -1787,7 +1789,8 @@ int DRT::ELEMENTS::Sosh8p8Register::Initialize(DRT::Discretization& dis)
         num_morphed_so_hex8_easnone++;
         break;
       }
-      case DRT::ELEMENTS::So_sh8::none: break;
+      case DRT::ELEMENTS::So_sh8::none:
+        break;
       default:
         dserror("no thickness direction for So_sh8p8");
       }

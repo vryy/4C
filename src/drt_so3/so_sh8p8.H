@@ -156,6 +156,7 @@ private:
   /// Ordering of element displacement and pressure DOFs
   static const int DISPTODISPPRES_[];  ///< 24 displacement into 32 total DOFs
   static const int PRESTODISPPRES_[];  ///< 8 pressures into 32 total DOFs
+
   //@}
 
 public:
@@ -613,7 +614,7 @@ private:
     LINALG::Matrix<NUMDOF_,NUMDOF_>* mat,  ///< 32x32 matrix
     const LINALG::Matrix<NUMDISP_,NUMDISP_>* matdd,  ///< 24x24 sub-matrix, if NULL then 0s are inserted
     const LINALG::Matrix<NUMDISP_,NUMPRES_>* matdp,  ///< 24x8 sub-matrix, if NULL then 0s are inserted
-    const LINALG::Matrix<NUMDISP_,NUMPRES_>* matpd,  ///< 8x24 sub-matrix, if NULL then transpose of matdp is inserted or 0s
+    const LINALG::Matrix<NUMDISP_,NUMPRES_>* matpd,  ///< 8x24 sub-matrix, if NULL then transpose of #matdp is inserted or 0s
     const LINALG::Matrix<NUMPRES_,NUMPRES_>* matpp  ///< 8x8 sub-matrix, if NULL then 0s are inserted
     );
 
