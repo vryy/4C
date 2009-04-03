@@ -26,6 +26,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/dof_management.H"
 #include "../drt_lib/linalg_mapextractor.H"
 #include "../drt_lib/linalg_blocksparsematrix.H"
+#include <Teuchos_TimeMonitor.hpp>
 
 namespace FLD
 {
@@ -43,12 +44,19 @@ namespace UTILS
 
     /// construct with a block matrix base
     explicit VelPressSplitStrategy(LINALG::BlockSparseMatrixBase& mat)
-      : mat_(mat), numdim_(-1) {}
+      : mat_(mat),
+      matrix00_(mat_.Matrix(0,0)),
+      matrix01_(mat_.Matrix(0,1)),
+      matrix10_(mat_.Matrix(1,0)),
+      matrix11_(mat_.Matrix(1,1)),
+      numdim_(-1),
+      numdofpernode_(-1)
+    {}
 
     /// find row block to a given row gid
     int RowBlock(int lrow, int rgid)
     {
-      if ((lrow%(numdim_+1))<numdim_)
+      if ((lrow%numdofpernode_)<numdim_)
         return 0;
       return 1;
     }
@@ -56,44 +64,170 @@ namespace UTILS
     /// find column block to a given column gid
     int ColBlock(int rblock, int lcol, int cgid)
     {
-      if ((lcol%(numdim_+1))<numdim_)
+      if ((lcol%numdofpernode_)<numdim_)
         return 0;
       return 1;
     }
 
     /// assemble into the given block
     void Assemble(int eid,
-                  int myrank,
-                  const Epetra_SerialDenseMatrix& Aele,
-                  const std::vector<int>& lmrow,
-                  const std::vector<int>& lmrowowner,
-                  const std::vector<int>& lmcol)
+        int myrank,
+        const Epetra_SerialDenseMatrix& Aele,
+        const std::vector<int>& lmrow,
+        const std::vector<int>& lmrowowner,
+        const std::vector<int>& lmcol)
     {
       const int lrowdim = (int)lmrow.size();
       const int lcoldim = (int)lmcol.size();
 
-      // loop rows of local matrix
-      for (int lrow=0; lrow<lrowdim; ++lrow)
+      if (mat_.Filled())
       {
+        // We use the maps of the matrix to gain fast access to the LID's.
+        // Assembling with SumIntoMyValues based on LID's is two times faster 
+        // than inserting single values based on the global row and column ids.
 
-        // check ownership of row
-        if (lmrowowner[lrow]!=myrank)
-          continue;
+        // There is the case of nodes without dofs (XFEM).
+        // If no row dofs are present on this proc, their is nothing to assemble.
+        // However, the subsequent check for coldofs (in DEBUG mode) would incorrectly fail.
+        bool doit = false;
+        for (int lrow=0; lrow<lrowdim; ++lrow)
+          if (lmrowowner[lrow] == myrank)
+          {
+            doit = true; // This proc owns at least one row of interest
+            break;
+          }
+        if (!doit) return;
 
-        int rgid = lmrow[lrow];
-        int rblock = RowBlock(lrow,rgid);
+        // get the maps
+        const Epetra_Map& colmap00 = mat_.Matrix(0,0).ColMap();
+        const Epetra_Map& colmap01 = mat_.Matrix(0,1).ColMap();
+        const Epetra_Map& colmap10 = mat_.Matrix(1,0).ColMap();
+        const Epetra_Map& colmap11 = mat_.Matrix(1,1).ColMap();
+        const Epetra_Map& rowmap00 = mat_.Matrix(0,0).RowMap();
+        const Epetra_Map& rowmap01 = mat_.Matrix(0,1).RowMap();
+        const Epetra_Map& rowmap10 = mat_.Matrix(1,0).RowMap();
+        const Epetra_Map& rowmap11 = mat_.Matrix(1,1).RowMap();
 
+        // prepare vectors for holding column local ids and the values to be assembled
+        const int nnode = lcoldim/numdofpernode_;
+        std::vector<double> values0(numdim_*nnode);
+        std::vector<double> values1(nnode);
+        std::vector<int> localcol00(numdim_*nnode);
+        std::vector<int> localcol01(nnode);
+        std::vector<int> localcol10(numdim_*nnode);
+        std::vector<int> localcol11(nnode);
+
+        // fill vectors with the LID's
+        int nodespassed = 0;
         for (int lcol=0; lcol<lcoldim; ++lcol)
         {
-          double val = Aele(lrow,lcol);
-          int cgid = lmcol[lcol];
-          int cblock = ColBlock(rblock,lcol,cgid);
+          const int cgid = lmcol[lcol];
+          const int rest = (lcol%numdofpernode_);
+          if (rest<numdim_)
+          {
+            const int pos = nodespassed*numdim_ + rest;
+            localcol00[pos] = (colmap00.LID(cgid));
+            localcol10[pos] = (colmap10.LID(cgid));
+          }
+          else
+          {
+            const int pos = nodespassed;
+            localcol01[pos] = (colmap01.LID(cgid));
+            localcol11[pos] = (colmap11.LID(cgid));
+            nodespassed++;
+          }
+        }
 
-          LINALG::SparseMatrix& matrix = mat_.Matrix(rblock,cblock);
-          matrix.Assemble(val,rgid,cgid);
+          // loop rows of local matrix
+          for (int lrow=0; lrow<lrowdim; ++lrow)
+          {
+            // check ownership of row
+            if (lmrowowner[lrow] != myrank) continue;
+
+            const int rgid = lmrow[lrow];
+            int rlid0;
+            int rlid1;
+            int rowblock = RowBlock(lrow,rgid);;
+            if (rowblock==0)
+            {
+              rlid0 = rowmap00.LID(rgid);
+              rlid1 = rowmap01.LID(rgid);
+            }
+            else
+            {
+              rlid0 = rowmap10.LID(rgid);
+              rlid1 = rowmap11.LID(rgid);
+            }
+#ifdef DEBUG
+            if (rlid0<0) dserror("Sparse matrix A does not have global row %d",rgid);
+            if (rlid1<0) dserror("Sparse matrix A does not have global row %d",rgid);
+#endif
+            int errone = 0;
+            // separate the values of the current row
+            nodespassed = 0;
+            for (int lcol=0; lcol<lcoldim; ++lcol)
+            {
+              double val = Aele(lrow,lcol);
+              const int rest = lcol%numdofpernode_;
+              if (rest<numdim_)
+              {
+                int pos = nodespassed*numdim_ + rest;
+                values0[pos] = val;
+              }
+              else
+              {
+                values1[nodespassed] = val;
+                nodespassed++;
+              }
+            }
+
+            // now assemble
+            if (rowblock == 0)
+            { // rowblock 0
+              errone = matrix00_.EpetraMatrix()->SumIntoMyValues(rlid0,nnode*numdim_,&values0[0],&localcol00[0]);
+              if (errone)
+                dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d",errone);
+              errone = matrix01_.EpetraMatrix()->SumIntoMyValues(rlid1,nnode,&values1[0],&localcol01[0]);
+              if (errone)
+                dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d",errone);
+            }
+            else
+            { // rowblock 1
+              errone = matrix10_.EpetraMatrix()->SumIntoMyValues(rlid0,nnode*numdim_,&values0[0],&localcol10[0]);
+              if (errone)
+                dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d",errone);
+              errone = matrix11_.EpetraMatrix()->SumIntoMyValues(rlid1,nnode,&values1[0],&localcol11[0]);
+              if (errone)
+                dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d",errone);
+            }
+          } // for (int lrow=0; lrow<ldim; ++lrow)
+        }
+        else
+        { 
+          // the maps of the blockmatrix are not yet available; use global ids instead
+
+          // loop rows of local matrix
+          for (int lrow=0; lrow<lrowdim; ++lrow)
+          {
+            // check ownership of row
+            if (lmrowowner[lrow]!=myrank)
+              continue;
+
+            int rgid = lmrow[lrow];
+            int rblock = RowBlock(lrow,rgid);
+
+            for (int lcol=0; lcol<lcoldim; ++lcol)
+            {
+              double val = Aele(lrow,lcol);
+              int cgid = lmcol[lcol];
+              int cblock = ColBlock(rblock,lcol,cgid);
+
+              LINALG::SparseMatrix& matrix = mat_.Matrix(rblock,cblock);
+              matrix.Assemble(val,rgid,cgid);
+            }
+          }
         }
       }
-    }
 
     /// assemble into the given block
     void Assemble(double val, int rgid, int cgid)
@@ -108,15 +242,27 @@ namespace UTILS
     void Complete() {}
 
     /// set number of velocity dofs
-    void SetNumdim(int numdim) { numdim_ = numdim; }
+    void SetNumdim(int numdim)
+    { numdim_ = numdim; 
+      numdofpernode_ = numdim +1;}
 
   private:
 
     /// my block matrix base
     LINALG::BlockSparseMatrixBase& mat_;
 
+    // the four sub-matrices of the whole matrix
+    LINALG::SparseMatrix& matrix00_;
+    LINALG::SparseMatrix& matrix01_;
+    LINALG::SparseMatrix& matrix10_;
+    LINALG::SparseMatrix& matrix11_;
+
     /// number of velocity dofs
     int numdim_;
+
+    /// number of dofs per node (= numdim_ +1)
+    int numdofpernode_;
+
   };
 
 
