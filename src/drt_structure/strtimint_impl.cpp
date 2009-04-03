@@ -748,6 +748,25 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
                     disi_, lagrincr,
                     fres_, conrhs);
 
+#if 0
+    if (pressure_ != Teuchos::null)
+    {
+      Teuchos::RCP<Epetra_Vector> pres = pressure_->ExtractCondVector(fres_);
+      Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector(fres_);
+      double normpres = STR::AUX::CalculateVectorNorm(iternorm_, pres);
+      double normdisp = STR::AUX::CalculateVectorNorm(iternorm_, disp);
+      if (myrank_ == 0) 
+        cout << "ForceResid=" << normdisp << " IncompResid=" << normpres << endl;
+
+      pres = pressure_->ExtractCondVector(disi_);
+      disp = pressure_->ExtractOtherVector(disi_);
+      normpres = STR::AUX::CalculateVectorNorm(iternorm_, pres);
+      normdisp = STR::AUX::CalculateVectorNorm(iternorm_, disp);
+      if (myrank_ == 0)
+        cout << "DispResid=" << normdisp << " PresResid=" << normpres << endl;
+    }
+#endif
+    
     // transform back to global co-ordinate system
     if (locsysman_ != Teuchos::null)
       locsysman_->RotateLocalToGlobal(disi_);
