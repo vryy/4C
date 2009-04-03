@@ -1359,7 +1359,7 @@ bool CONTACT::Interface::SplitIntElements(CONTACT::CElement& ele,
   // *********************************************************** quad8 ***
   else if (ele.Shape()==DRT::Element::quad8)
   {
-    dserror("ERROR: Quadratic 3D contact for quad8 under construction...");
+    //dserror("ERROR: Quadratic 3D contact for quad8 under construction...");
     
     // split into four tri3 elements and one quad4 element
     int numnodetri = 3;
@@ -1442,7 +1442,7 @@ bool CONTACT::Interface::SplitIntElements(CONTACT::CElement& ele,
   // ************************************************************ tri6 ***
   else if (ele.Shape()==DRT::Element::tri6)
   {
-    dserror("ERROR: Quadratic 3D contact for tri6 under construction...");
+    //dserror("ERROR: Quadratic 3D contact for tri6 under construction...");
     
     // split into for tri3 elements
     int numnode = 3;

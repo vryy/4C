@@ -264,33 +264,33 @@ bool CONTACT::IntElement::MapToParent(const vector<map<int,double> >& dxi,
     case 0:
     {
       for (CI p=dxi[0].begin();p!=dxi[0].end();++p)
-        dparxi[0][p->first] = 0.5 * (p->second);
+        dparxi[0][p->first] += 0.5 * (p->second);
       for (CI p=dxi[1].begin();p!=dxi[1].end();++p)
-        dparxi[1][p->first] = 0.5 * (p->second);
+        dparxi[1][p->first] += 0.5 * (p->second);
       break;
     }
     case 1:
     {
       for (CI p=dxi[0].begin();p!=dxi[0].end();++p)
-        dparxi[0][p->first] = 0.5 * (p->second);
+        dparxi[0][p->first] += 0.5 * (p->second);
       for (CI p=dxi[1].begin();p!=dxi[1].end();++p)
-        dparxi[1][p->first] = 0.5 * (p->second);
+        dparxi[1][p->first] += 0.5 * (p->second);
       break;
     }
     case 2:
     {
       for (CI p=dxi[0].begin();p!=dxi[0].end();++p)
-        dparxi[0][p->first] = 0.5 * (p->second);
+        dparxi[0][p->first] += 0.5 * (p->second);
       for (CI p=dxi[1].begin();p!=dxi[1].end();++p)
-        dparxi[1][p->first] = 0.5 * (p->second);
+        dparxi[1][p->first] += 0.5 * (p->second);
       break;
     }
     case 3:
     {
       for (CI p=dxi[0].begin();p!=dxi[0].end();++p)
-        dparxi[0][p->first] = 0.5 * (p->second);
+        dparxi[0][p->first] += 0.5 * (p->second);
       for (CI p=dxi[1].begin();p!=dxi[1].end();++p)
-        dparxi[1][p->first] = 0.5 * (p->second);
+        dparxi[1][p->first] += 0.5 * (p->second);
       break;
     }
     default:
@@ -309,46 +309,46 @@ bool CONTACT::IntElement::MapToParent(const vector<map<int,double> >& dxi,
     case 0:
     {
       for (CI p=dxi[0].begin();p!=dxi[0].end();++p)
-        dparxi[0][p->first] = 1.0 * (p->second);
+        dparxi[0][p->first] += 1.0 * (p->second);
       for (CI p=dxi[1].begin();p!=dxi[1].end();++p)
-        dparxi[1][p->first] = 1.0 * (p->second);
+        dparxi[1][p->first] += 1.0 * (p->second);
       break;
     }
     case 1:
     {
       for (CI p=dxi[0].begin();p!=dxi[0].end();++p)
-        dparxi[1][p->first] =  1.0 * (p->second);
+        dparxi[1][p->first] += 1.0 * (p->second);
       for (CI p=dxi[1].begin();p!=dxi[1].end();++p)
-        dparxi[0][p->first] = -1.0 * (p->second);
+        dparxi[0][p->first] -= 1.0 * (p->second);
       break;
     }
     case 2:
     {
       for (CI p=dxi[0].begin();p!=dxi[0].end();++p)
-        dparxi[0][p->first] = -1.0 * (p->second);
+        dparxi[0][p->first] -= 1.0 * (p->second);
       for (CI p=dxi[1].begin();p!=dxi[1].end();++p)
-        dparxi[1][p->first] = -1.0 * (p->second);
+        dparxi[1][p->first] -= 1.0 * (p->second);
       break;
     }
     case 3:
     {
       for (CI p=dxi[0].begin();p!=dxi[0].end();++p)
-        dparxi[1][p->first] = -1.0 * (p->second);
+        dparxi[1][p->first] -= 1.0 * (p->second);
       for (CI p=dxi[1].begin();p!=dxi[1].end();++p)
-        dparxi[0][p->first] =  1.0 * (p->second);
+        dparxi[0][p->first] += 1.0 * (p->second);
       break;
     }
     case 4:
     {
       for (CI p=dxi[0].begin();p!=dxi[0].end();++p)
       {
-        dparxi[0][p->first] =  0.5 * (p->second);
-        dparxi[1][p->first] =  0.5 * (p->second);
+        dparxi[0][p->first] += 0.5 * (p->second);
+        dparxi[1][p->first] += 0.5 * (p->second);
       }
       for (CI p=dxi[1].begin();p!=dxi[1].end();++p)
       {
-        dparxi[0][p->first] = -0.5 * (p->second);
-        dparxi[1][p->first] =  0.5 * (p->second);
+        dparxi[0][p->first] -= 0.5 * (p->second);
+        dparxi[1][p->first] += 0.5 * (p->second);
       }
       break;
     }
@@ -368,33 +368,33 @@ bool CONTACT::IntElement::MapToParent(const vector<map<int,double> >& dxi,
     case 0:
     {
       for (CI p=dxi[0].begin();p!=dxi[0].end();++p)
-        dparxi[0][p->first] = 0.5 * (p->second);
+        dparxi[0][p->first] += 0.5 * (p->second);
       for (CI p=dxi[1].begin();p!=dxi[1].end();++p)
-        dparxi[1][p->first] = 0.5 * (p->second);
+        dparxi[1][p->first] += 0.5 * (p->second);
       break;
     }
     case 1:
     {
       for (CI p=dxi[0].begin();p!=dxi[0].end();++p)
-        dparxi[0][p->first] = 0.5 * (p->second);
+        dparxi[0][p->first] += 0.5 * (p->second);
       for (CI p=dxi[1].begin();p!=dxi[1].end();++p)
-        dparxi[1][p->first] = 0.5 * (p->second);
+        dparxi[1][p->first] += 0.5 * (p->second);
       break;
     }
     case 2:
     {
       for (CI p=dxi[0].begin();p!=dxi[0].end();++p)
-        dparxi[0][p->first] = 0.5 * (p->second);
+        dparxi[0][p->first] += 0.5 * (p->second);
       for (CI p=dxi[1].begin();p!=dxi[1].end();++p)
-        dparxi[1][p->first] = 0.5 * (p->second);
+        dparxi[1][p->first] += 0.5 * (p->second);
       break;
     }
     case 3:
     {
       for (CI p=dxi[0].begin();p!=dxi[0].end();++p)
-        dparxi[0][p->first] = -0.5 * (p->second);
+        dparxi[0][p->first] -= 0.5 * (p->second);
       for (CI p=dxi[1].begin();p!=dxi[1].end();++p)
-        dparxi[1][p->first] = -0.5 * (p->second);
+        dparxi[1][p->first] -= 0.5 * (p->second);
       break;
     }
     default:
