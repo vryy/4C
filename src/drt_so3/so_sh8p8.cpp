@@ -25,6 +25,17 @@ Maintainer: Burkhard Bornemann
 
 
 /*----------------------------------------------------------------------*
+ |  initialise static arrays                                 bborn 03/09|
+ *----------------------------------------------------------------------*/
+const int DRT::ELEMENTS::So_sh8p8::VOIGT6ROW_[NUMSTR_] = {0,1,2, 0,1,2};
+const int DRT::ELEMENTS::So_sh8p8::VOIGT6COL_[NUMSTR_] = {0,1,2, 1,2,0};
+const int DRT::ELEMENTS::So_sh8p8::VOIGT9ROW_[NUMDFGR_] = {0,1,2, 0,1,2, 0,2,1};
+const int DRT::ELEMENTS::So_sh8p8::VOIGT9COL_[NUMDFGR_] = {0,1,2, 1,2,0, 2,1,0};
+const int DRT::ELEMENTS::So_sh8p8::VOIGT3X3_[NUMDFGR_] = {0,3,6, 8,1,4, 5,7,2};
+const int DRT::ELEMENTS::So_sh8p8::VOIGT3X3SYM_[NUMDFGR_] = {0,3,5, 3,1,4, 5,4,2};
+
+
+/*----------------------------------------------------------------------*
  |  ctor (public)                                            bborn 03/09|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/

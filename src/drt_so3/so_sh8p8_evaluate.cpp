@@ -41,7 +41,6 @@ Maintainer: Burkhard Bornemann
 #include "../drt_mat/yeoh.H"
 
 
-
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            bborn 03/08|
  *----------------------------------------------------------------------*/
@@ -862,8 +861,9 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
         // WmT := WmT + fvT*fvT'
         WmT.MultiplyNT(1.0,tinvdefgrad,tinvdefgrad,1.0);
 
+/*
         // Voigt vector indices
-        const int* voigt6row = NULL;
+        const int* voigt6row = &(VOIGT6ROW_[0]);
         const int* voigt6col = NULL;
         Indices6VoigtTo2Tensor(voigt6row,voigt6col);
         const int* voigt9row = NULL;
@@ -873,6 +873,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
         Indices2TensorTo9Voigt(voigt3x3);  // access is via (i,j) -> 3*i+j
         const int* voigt3x3sym = NULL;
         Indices2TensorTo6Voigt(voigt3x3sym);  // access is via (i,j) -> 3*i+j
+*/
         
         // material derivatives of shape functions
         LINALG::Matrix<NUMDIM_,NUMNOD_> derivsmat;
@@ -883,13 +884,13 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
         // F^d_{aC,d}
         int iboplin[NUMNOD_][NUMDFGR_];  // index entries which are non-equal zero
         LINALG::Matrix<NUMDFGR_,NUMDISP_> boplin(true);
-        for (int k=0; k<NUMNOD_; ++k) {
+        for (int m=0; m<NUMNOD_; ++m) {
           for (int ij=0; ij<NUMDFGR_; ++ij) {
-            const int i = voigt9row[ij];
-            const int j = voigt9col[ij];
-            const int K = k*NODDISP_ + i;
-            iboplin[k][ij] = K;
-            boplin(ij,K) = derivsmat(j,k);
+            const int i = VOIGT9ROW_[ij];
+            const int j = VOIGT9COL_[ij];
+            const int k = m*NODDISP_ + i;
+            iboplin[m][ij] = k;
+            boplin(ij,k) = derivsmat(j,m);
           }
         }
 
@@ -973,11 +974,11 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
               for (int k=0; k<NUMDISP_; ++k) {
                 for (int CB=0; CB<NUMDFGR_; ++CB) {
                   double aux_CBk = 0.0;
-                  const int C = voigt9row[CB];
-                  const int B = voigt9col[CB];
+                  const int C = VOIGT9ROW_[CB];
+                  const int B = VOIGT9COL_[CB];
                   for (int D=0; D<NUMDIM_; ++D) {
-                    const int CD = voigt3x3sym[NUMDIM_*C+D];
-                    const int DB = voigt3x3sym[NUMDIM_*D+B];
+                    const int CD = VOIGT3X3SYM_[NUMDIM_*C+D];
+                    const int DB = VOIGT3X3SYM_[NUMDIM_*D+B];
                     const double CDfact = (C==D) ? 1.0 : 0.5;
                     const double DBfact = (D==B) ? 1.0 : 0.5;
                     aux_CBk 
@@ -996,15 +997,15 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                 const int m = k / NODDISP_;
                 for (int aB=0; aB<NUMDFGR_; ++aB) {
                   double defgradbydisp_aBk = 0.0;
-                  const int a = voigt9row[aB];
-                  const int B = voigt9col[aB];
+                  const int a = VOIGT9ROW_[aB];
+                  const int B = VOIGT9COL_[aB];
                   for (int C=0; C<NUMDIM_; ++C) {
-                    const int CB = voigt3x3[NUMDIM_*C+B];
+                    const int CB = VOIGT3X3_[NUMDIM_*C+B];
                     defgradbydisp_aBk
                       += defgradD(a,C) * aux(CB,k);
                   }
                   for (int C=0; C<NUMDIM_; ++C) {
-                    const int aC = voigt3x3[NUMDIM_*a+C];
+                    const int aC = VOIGT3X3_[NUMDIM_*a+C];
                     if (k == iboplin[m][aC])
                       defgradbydisp_aBk
                         += boplin(aC,k) * invrgtstrDtimesrgtstr(C,B);
@@ -1053,8 +1054,8 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                       ndnk = nd*NUMNOD_ + nk;
                     }
                     for (int EF=0; EF<NUMSTR_; ++EF) {
-                      const int E = voigt9row[EF];
-                      const int F = voigt9col[EF];
+                      const int E = VOIGT9ROW_[EF];
+                      const int F = VOIGT9COL_[EF];
                       // C^{ass}_{,UU} . U^{ass}_{,d} . U^{ass}_{,d}
                       // and
                       // C^{d}_{,UU} . U^{d}_{,d} . U^{d}_{,d}
@@ -1078,8 +1079,8 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                         rcgbybydisp_EFdk = 2.0*(*bopbydisp)(EF,ndnk);
                       double rcgDbybydisp_EFdk = 0.0;
                       for (int a=0; a<NUMDIM_; ++a) {
-                        const int aE = voigt3x3[NUMDIM_*a+E];
-                        const int aF = voigt3x3[NUMDIM_*a+F];
+                        const int aE = VOIGT3X3_[NUMDIM_*a+E];
+                        const int aF = VOIGT3X3_[NUMDIM_*a+F];
                         if (E == F)  // make strain-like 6-Voigt vector
                           rcgDbybydisp_EFdk 
                             += 2.0*boplin(aE,d)*boplin(aF,k);
@@ -1170,12 +1171,12 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                 LINALG::Matrix<NUMSTR_,NUMDISP_> invdefgradtimesboplin;
                 for (int d=0; d<NUMDISP_; ++d) {
                   for (int BC=0; BC<NUMSTR_; ++BC) {
-                    const int B = voigt6row[BC];
-                    const int C = voigt6col[BC];
+                    const int B = VOIGT6ROW_[BC];
+                    const int C = VOIGT6COL_[BC];
                     double invdefgradtimesboplin_BCd = 0.0;
                     for (int a=0; a<NUMDIM_; ++a) {
-                      const int aC = voigt3x3[NUMDIM_*a+C];
-                      const int aB = voigt3x3[NUMDIM_*a+B];
+                      const int aC = VOIGT3X3_[NUMDIM_*a+C];
+                      const int aB = VOIGT3X3_[NUMDIM_*a+B];
                       if (B == C)  // make strain-like 6-Voigt vector
                         invdefgradtimesboplin_BCd 
                           += invdefgrad(a,B)*boplin(aC,d);
@@ -1216,12 +1217,12 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                     double defgradbybydisp_dk = 0.0;
                     for (int B=0; B<NUMDIM_; ++B) {
                       for (int D=0; D<NUMDIM_; ++D) {
-                        const int DB = voigt3x3sym[NUMDIM_*D+B];
+                        const int DB = VOIGT3X3SYM_[NUMDIM_*D+B];
                         const double DBfact = (D==B) ? 1.0 : 0.5;
                         for (int C=0; C<NUMDIM_; ++C) {
-                          const int CD = voigt3x3sym[NUMDIM_*C+D];
+                          const int CD = VOIGT3X3SYM_[NUMDIM_*C+D];
                           const double CDfact = (C==D) ? 1.0 : 0.5;
-                          const int BC = voigt3x3sym[NUMDIM_*B+C];
+                          const int BC = VOIGT3X3SYM_[NUMDIM_*B+C];
                           const double BCfact = (B==C) ? 1.0 : 0.5;
                           defgradbybydisp_dk
                             += BCfact*invdefgradtimesboplin(BC,d) * CDfact*invrgtstrDbydisp(CD,k) * rgtstr(D,B);
@@ -1572,11 +1573,11 @@ void DRT::ELEMENTS::So_sh8p8::AssDefGrad(
 //       Indices6VoigtTo2Tensor(voigt6row,voigt6col);
 //
 //       for (int kl=0; kl<NUMSTR_; ++kl) {
-//         const int k = voigt6row[kl];
-//         const int l = voigt6col[kl];
+//         const int k = VOIGT6ROW_[kl];
+//         const int l = VOIGT6COL_[kl];
 //         for (int ij=0; ij<NUMSTR_; ++ij) {
-//           const int i = voigt6row[ij];
-//           const int j = voigt6col[ij];
+//           const int i = VOIGT6ROW_[ij];
+//           const int j = VOIGT6COL_[ij];
 //           double rgtstrDbyrcgD_ijkl = 0.0;
 //           for (int al=0; al<NUMDIM_; ++al) {
 //             for (int be=0; be<NUMDIM_; ++be) {
