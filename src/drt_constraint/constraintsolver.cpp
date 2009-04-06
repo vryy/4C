@@ -228,7 +228,8 @@ void UTILS::ConstraintSolver::SolveIterative
     // computation of significant digits might be completely bogus, so don't take it serious
     const double tmp = std::abs(std::log10(cond_number*1.11022e-16));
     const int sign_digits = (int)floor(tmp);
-    cout << " cond est: " << scientific << cond_number << ", max.sign.digits: " << sign_digits;
+    if (!myrank)
+      cout << " cond est: " << scientific << cond_number << ", max.sign.digits: " << sign_digits;
 #endif
     
     // solve for disi
@@ -332,6 +333,7 @@ void UTILS::ConstraintSolver::SolveDirect
   const RCP<Epetra_Vector> rhsconstr
 )
 {
+  
   // define maps of standard dofs and additional lagrange multipliers
   RCP<Epetra_Map> standrowmap = rcp(new Epetra_Map(stiff->RowMap()));
   RCP<Epetra_Map> conrowmap = rcp(new Epetra_Map(constr->DomainMap()));
@@ -367,11 +369,13 @@ void UTILS::ConstraintSolver::SolveDirect
   LINALG::ApplyDirichlettoSystem(mergedmatrix,mergedsol,mergedrhs,mergedzeros,*(dbcmaps_->CondMap()));
   
 #if 0
+    const int myrank=(actdisc_->Comm().MyPID());
     const double cond_number = LINALG::Condest(static_cast<LINALG::SparseMatrix&>(*mergedmatrix),Ifpack_GMRES, 100);
     // computation of significant digits might be completely bogus, so don't take it serious
     const double tmp = std::abs(std::log10(cond_number*1.11022e-16));
     const int sign_digits = (int)floor(tmp);
-    cout << " cond est: " << scientific << cond_number << ", max.sign.digits: " << sign_digits;
+    if (!myrank)
+      cout << " cond est: " << scientific << cond_number << ", max.sign.digits: " << sign_digits<<endl;
 #endif
   
   // solve
