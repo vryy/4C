@@ -3636,7 +3636,7 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
     //          residual displacements are supposed to be zero at
     //          boundary conditions
     dirichletlines_ = Teuchos::null;
-    dirichletlines_ = SystemMatrix()->ExtractDirichletLines(*(dbcmaps_->CondMap()));
+    dirichletlines_ = SystemMatrix()->ExtractDirichletRows(*(dbcmaps_->CondMap()));
     sysmat_->ApplyDirichlet(*(dbcmaps_->CondMap()));
   }
 
