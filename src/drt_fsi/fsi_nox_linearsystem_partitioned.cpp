@@ -32,7 +32,7 @@ NOX::FSI::LinearPartitioned::LinearPartitioned(::FSI::PartitionedMonolithic& alg
 
   // extract interface Dirichlet lines from fluid matrix and remove them
   // afterwards
-  fluiddirichlet_ = f_->ExtractDirichletLines(*fluidfield_.Interface().CondMap());
+  fluiddirichlet_ = f_->ExtractDirichletRows(*fluidfield_.Interface().CondMap());
   f_->ApplyDirichlet(*fluidfield_.Interface().CondMap(),true);
 
   // get an idea of interface displacement
