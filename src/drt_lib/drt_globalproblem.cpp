@@ -1035,7 +1035,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
 /*----------------------------------------------------------------------*/
 void DRT::Problem::setParameterList(Teuchos::RCP< Teuchos::ParameterList > const &paramList)
 {
-  try {
+  try 
+  {
 
     // Test parameter list against valid parameters, set default values
     // and set validator objects to extract numerical values for string
