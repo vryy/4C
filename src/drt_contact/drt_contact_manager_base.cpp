@@ -1569,11 +1569,6 @@ void CONTACT::ManagerBase::UpdateActiveSet()
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
       CNode* cnode = static_cast<CNode*>(node);
       
-      // get weighting factor from nodal D-map
-      double wii;
-      if ((int)((cnode->GetD()).size())==0) wii = 0.0;
-      else wii = (cnode->GetD()[0])[cnode->Dofs()[0]];
-      
       // compute weighted gap
       double wgap = (*g_)[g_->Map().LID(gid)];
       
@@ -1875,11 +1870,6 @@ void CONTACT::ManagerBase::UpdateActiveSetSemiSmooth()
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
       CNode* cnode = static_cast<CNode*>(node);
-      
-      // get weighting factor from nodal D-map
-      double wii;
-      if ((int)((cnode->GetD()).size())==0) wii = 0.0;
-      else wii = (cnode->GetD()[0])[cnode->Dofs()[0]];
       
       // compute weighted gap
       double wgap = (*g_)[g_->Map().LID(gid)];
@@ -2350,11 +2340,6 @@ void CONTACT::ManagerBase::PrintActiveSet()
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
       CNode* cnode = static_cast<CNode*>(node);
-      
-      // get weighting factor from nodal D-map
-      double wii;
-      if ((int)((cnode->GetD()).size())==0) wii = 0.0;
-      else wii = (cnode->GetD()[0])[cnode->Dofs()[0]];
       
       // compute weighted gap
       double wgap = (*g_)[g_->Map().LID(gid)];
