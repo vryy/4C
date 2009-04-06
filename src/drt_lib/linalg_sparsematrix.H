@@ -321,10 +321,10 @@ class SparseMatrix : public SparseOperator
 
 
     /// create matrix that contains all Dirichlet lines from my
-    Teuchos::RCP<SparseMatrix> ExtractDirichletLines(const Teuchos::RCP<Epetra_Vector> dbctoggle);
+    Teuchos::RCP<SparseMatrix> ExtractDirichletRows(const Teuchos::RCP<Epetra_Vector> dbctoggle);
 
     /// create matrix that contains all Dirichlet lines from my
-    Teuchos::RCP<SparseMatrix> ExtractDirichletLines(const Epetra_Map& dbctoggle);
+    Teuchos::RCP<SparseMatrix> ExtractDirichletRows(const Epetra_Map& dbctoggle);
 
     //@}
 

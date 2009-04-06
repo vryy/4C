@@ -22,15 +22,6 @@ Maintainer: Alexander Popp
 using namespace std;
 using namespace Teuchos;
 
-/*-------------------------------------------------------------------*
- |  ctor (public)                                          popp 09/08|
- *-------------------------------------------------------------------*/
-DRT::UTILS::LocsysManager::LocsysManager(DRT::Discretization& discret):
-discret_(discret),
-transformleftonly_(false)
-{
-  Setup();
-}
 
 /*-------------------------------------------------------------------*
  |  ctor (public)                                         bborn 12/08|
@@ -72,7 +63,7 @@ void DRT::UTILS::LocsysManager::Setup()
   const Epetra_Map* noderowmap = discret_.NodeRowMap();
   
   // create locsys vector and initialize to -1
-  locsystoggle_ = LINALG::CreateVector(*noderowmap,true);
+  locsystoggle_ = LINALG::CreateVector(*noderowmap,false);
   for (int i=0;i<noderowmap->NumMyElements();++i)
     (*locsystoggle_)[i]= -1;
   
@@ -89,7 +80,7 @@ void DRT::UTILS::LocsysManager::Setup()
   // are evaluated first, followed by Surface and Line locsys conditions
   // and finally Point locsys conditions. This means that nodes carrying
   // different types of locsys conditions are dominated by the rule "Point
-  // above Line above Surface above Volume". When two locsys condtions of
+  // above Line above Surface above Volume". When two locsys conditions of
   // the same type are defined for one node, ordering in the input file matters!
   
   //**********************************************************************
@@ -118,11 +109,11 @@ void DRT::UTILS::LocsysManager::Setup()
       else
       {
         // normal has to be provided
-        if (ln==0.0)
+        if (ln==0.0 || n->size() != 3)
           dserror("ERROR: No normal provided for 3D locsys definition");
         
         // tangent has to be provided
-        if (lt==0.0)
+        if (lt==0.0 || t->size() != 3)
           dserror("ERROR: No tangent provided for 3D locsys definition");
         
         // tangent has to be orthogonal
@@ -185,7 +176,7 @@ void DRT::UTILS::LocsysManager::Setup()
       if (Dim()==2)
       {
         // normal has to be provided
-        if (ln==0.0)
+        if (ln==0.0 || n->size()!=3)
           dserror("ERROR: No normal provided for 2D locsys definition");
                 
         // normal must lie in x1x2-plane
@@ -207,11 +198,11 @@ void DRT::UTILS::LocsysManager::Setup()
       else
       {
         // normal has to be provided
-        if (ln==0.0)
+        if (ln==0.0 || n->size()!=3)
           dserror("ERROR: No normal provided for 3D locsys definition");
         
         // tangent has to be provided
-        if (lt==0.0)
+        if (lt==0.0 || t->size()!=3)
           dserror("ERROR: No tangent provided for 3D locsys definition");
         
         // tangent has to be orthogonal
@@ -452,7 +443,7 @@ void DRT::UTILS::LocsysManager::Setup()
   // get dof row layout of discretization
   const Epetra_Map* dofrowmap = discret_.DofRowMap();
 
-  // numbe of nodes subjected to local co-ordinate systems
+  // number of nodes subjected to local co-ordinate systems
   set<int> locsysdofset;
     
   trafo_ = rcp(new LINALG::SparseMatrix(*dofrowmap,3));
@@ -479,7 +470,7 @@ void DRT::UTILS::LocsysManager::Setup()
     {
       Epetra_SerialDenseMatrix nodetrafo(numdof,numdof);
       
-      // first create an identity matrix od size numdof
+      // first create an identity matrix of size numdof
       for (int k=0;k<numdof;++k) nodetrafo(k,k)=1.0;
       
       // trafo for 2D and 3D case
@@ -539,7 +530,7 @@ void DRT::UTILS::LocsysManager::Setup()
   // transformation matrix for relevent DOFs with local system
   if (transformleftonly_)
   {
-    subtrafo_ = trafo_->ExtractDirichletLines(*locsysdofmap_);
+    subtrafo_ = trafo_->ExtractDirichletRows(*locsysdofmap_);
     //cout << "Subtrafo: nummyrows=" << subtrafo_->EpetraMatrix()->NumMyRows() 
     //     << " nummycols=" << subtrafo_->EpetraMatrix()->NumMyCols() 
     //     << endl;

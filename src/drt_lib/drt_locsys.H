@@ -17,9 +17,6 @@ Maintainer: Alexander Popp
 #include "Teuchos_RefCountPtr.hpp"
 #include "../drt_lib/drt_discret.H"
 
-using namespace std;
-using namespace Teuchos;
-
 namespace DRT {
 namespace UTILS {
 
@@ -38,13 +35,6 @@ public:
   
   //@}
 
-  /*!
-   * \brief Standard Constructor
-   *
-   * \param discret (in): A discretization containing locsys boundary conditions
-   *
-   */
-  explicit LocsysManager(DRT::Discretization& discret);
 
   /*!
    * \brief Standard Constructor
@@ -54,7 +44,7 @@ public:
    *                                to be applied on sysmatrix, if true
    *
    */
-  explicit LocsysManager(DRT::Discretization& discret, const bool transformleftonly);
+  explicit LocsysManager(DRT::Discretization& discret, const bool transformleftonly = false);
 
   /*!
    * \brief Set-up stuff common to all constructors

@@ -944,7 +944,7 @@ void LINALG::SparseMatrix::ApplyDirichletWithTrafo(Teuchos::RCP<const LINALG::Sp
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> LINALG::SparseMatrix::ExtractDirichletLines(
+Teuchos::RCP<LINALG::SparseMatrix> LINALG::SparseMatrix::ExtractDirichletRows(
     const Teuchos::RCP<Epetra_Vector> dbctoggle)
 {
   if (not Filled())
@@ -987,7 +987,7 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::SparseMatrix::ExtractDirichletLines(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> LINALG::SparseMatrix::ExtractDirichletLines(const Epetra_Map& dbctoggle)
+Teuchos::RCP<LINALG::SparseMatrix> LINALG::SparseMatrix::ExtractDirichletRows(const Epetra_Map& dbctoggle)
 {
   if (not Filled())
     dserror("expect filled matrix to extract dirichlet lines");

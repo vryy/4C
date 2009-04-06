@@ -1363,7 +1363,8 @@ void DRT::UTILS::ExtractMyNodeBasedValues(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis, std::string condname, std::vector<int>& nodes)
+void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis, 
+                                      std::string condname, std::vector<int>& nodes)
 {
   std::vector<DRT::Condition*> conds;
   dis.GetCondition(condname, conds);
