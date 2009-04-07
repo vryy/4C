@@ -52,10 +52,6 @@ namespace MAT
 	
 	 MAT 1 MAT_ITSKOV  MU_GS 0.0 MU_FIBERS 2.026255352 ALPHA 20.0 BETA 20.0 EPSILON 100.0 GAMMA 10.0 C 0.0 DENS 1.0E-6
 	 
-	 Reference:
-	 Itskov, M.; Ehret, A. & Mavrilas, D.
-	 A polyconvex anisotropic strain energy function for soft collagenous tissues
-	 Biomechanics and Modeling in Mechanobiology, 2006, 5, 17-26
 	*/
     class Itskov : public Parameter
     {
@@ -94,7 +90,40 @@ namespace MAT
     };  // class CHARMM
 
   }  // namespace PAR
-  
+  	
+  /*----------------------------------------------------------------------*/
+  /*!
+  \brief polyconvex Itskov material law including adaptive penalty approach
+
+  Here the polyconvex framework on strain and tension of Itskov is implemented using
+   the same material formulation as for the Holzapfel lung model. Meaning that there
+   exists some ground substane in a Neo-Hookean formulation and a exponential function
+   to capture the nature of collagen. Both formulations are isotropic. Anisotropic
+   formulations exist as external code, but have been not included. Feel free to pop by
+   for a coffee to get them.
+   
+  Adaptive Penaly Approach: In order to avoid problems in the high strain regime (and
+   therefore the collagen dominant strain regime) a new method was developed to adaptiveley
+   change the penalty parameters according to a maximum deviation from the ideal compressible
+   case.
+   
+  The input line should read like that:
+   
+  MAT 1 MAT_ITSKOV  MU_GS 0.0 MU_FIBERS 2.026255352 ALPHA 20.0 BETA 20.0 EPSILON 100.0 GAMMA 10.0 C 0.0 DENS 1.0E-6
+	 
+  References:
+	 
+  Itskov, M.; Ehret, A. & Mavrilas, D.
+  A polyconvex anisotropic strain energy function for soft collagenous tissues
+  Biomechanics and Modeling in Mechanobiology, 2006, 5, 17-26
+	 
+  Ehret, A. & Itskov, M.
+  A polyconvex hyperelastic model for fiber-reinforced materials in application to soft tissues
+  Journal of Materials Science, 2007, 42, 8853-8863
+	 
+  \author Robert Metzke
+  \date 03/09
+  */
   class Itskov : public Material
   {
   public:
@@ -144,27 +173,22 @@ namespace MAT
     //@}
 
     /// material type
-        virtual INPAR::MAT::MaterialType MaterialType() const { return
-INPAR::MAT::m_itskov; }
+	virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_itskov; }
     
+	/// Computation of stresses and constitutive tensor
     void Evaluate(const LINALG::Matrix<6,1>& glstrain,
     			const int gp, const int ele_ID, 
     			DRT::Container& data_,
     			const double time,
-                  LINALG::Matrix<6,6>& cmat,
-                  LINALG::Matrix<6,1>& stress);
-                  
-    /*void Evaluate(const LINALG::Matrix<6,1> *glstrain,
-            		const int gp, const int ele_ID, const double time,
-                  LINALG::Matrix<6,6> *cmat,
-                  LINALG::Matrix<6,1> *stress);*/
+				LINALG::Matrix<6,6>& cmat,
+				LINALG::Matrix<6,1>& stress);
 
     inline double Density() const { return params_->density_; }
 
 
   private:
 
-    /// my material parameters
+    /// Itskov material parameters
     MAT::PAR::Itskov* params_;
 
     void calc_factors (	LINALG::Matrix<3,3>&C, 
@@ -175,7 +199,7 @@ INPAR::MAT::m_itskov; }
 				DOUBLE mu, 
 				DOUBLE *factors);
 
-   void calc_Itskov (	LINALG::Matrix<3,3>&C, 
+    void calc_Itskov (	LINALG::Matrix<3,3>&C, 
 						LINALG::Matrix<3,3>&Cinv, 
 						LINALG::Matrix<3,3>&L, 
 						LINALG::Matrix<3,3>&PK2_, 
