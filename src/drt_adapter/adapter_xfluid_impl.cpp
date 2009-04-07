@@ -44,7 +44,10 @@ ADAPTER::XFluidImpl::XFluidImpl(
   conditions_to_copy.push_back("FSICoupling");
   conditions_to_copy.push_back("XFEMCoupling");
   boundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(soliddis, "FSICoupling", "boundary", "BELE3", conditions_to_copy);
-  dsassert(boundarydis_->NumGlobalNodes() > 0, "empty discretization detected. FSICoupling condition applied?");
+  if (boundarydis_->NumGlobalNodes() == 0)
+  {
+    cout << "Empty boundary discretization detected. No FSI coupling will be performed..." << endl;
+  }
   
   // sanity check
   vector< DRT::Condition * >      conditions;
@@ -75,8 +78,9 @@ ADAPTER::XFluidImpl::XFluidImpl(
   if (err) dserror("FillComplete() returned err=%d",err);
   
   boundaryoutput_ = rcp(new IO::DiscretizationWriter(boundarydis_));
-  boundaryoutput_->WriteMesh(0,0.0);
-
+  if (boundarydis_->NumGlobalNodes() > 0)
+    boundaryoutput_->WriteMesh(0,0.0);
+  
   DRT::UTILS::SetupNDimExtractor(*boundarydis_,"FSICoupling",interface_);
   DRT::UTILS::SetupNDimExtractor(*boundarydis_,"FREESURFCoupling",freesurface_);
 
@@ -891,7 +895,7 @@ void ADAPTER::XFluidImpl::MultiCorrector()
 /*----------------------------------------------------------------------*/
 void ADAPTER::XFluidImpl::SetInitialFlowField(int whichinitialfield,int startfuncno)
 {
-  dserror("not implemented!");
+  fluid_.SetInitialFlowField(boundarydis_,whichinitialfield,startfuncno);
   return;
 }
 
