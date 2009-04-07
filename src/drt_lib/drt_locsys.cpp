@@ -457,12 +457,11 @@ void DRT::UTILS::LocsysManager::Setup()
     int numdof = (int)dofs.size();
     int locsysindex = (int)(*locsystoggle_)[i];
     
-    // unity matrix for non-locsys node
+    // unity matrix for non-locsys node (programmed late at night)
     if (locsysindex<0)
     {
       for (int r=0;r<numdof;++r)
-        for (int c=0;c<numdof;++c)
-          if (r==c) trafo_->Assemble(1.0,dofs[r],dofs[c]);
+        trafo_->Assemble(1.0,dofs[r],dofs[r]);
     }
     
     // trafo matrix for locsys node
@@ -509,6 +508,7 @@ void DRT::UTILS::LocsysManager::Setup()
   //**********************************************************************
 
   // create unique/row map of DOFs subjected to local co-ordinate change
+  // transformation matrix for relevent DOFs with local system
   if (transformleftonly_)
   {
     int nummyentries = 0;
@@ -525,11 +525,7 @@ void DRT::UTILS::LocsysManager::Setup()
                                        discret_.DofRowMap()->IndexBase(), 
                                        discret_.Comm()));
     if (locsysdofmap_ == null) dserror("Creation failed.");
-  }
 
-  // transformation matrix for relevent DOFs with local system
-  if (transformleftonly_)
-  {
     subtrafo_ = trafo_->ExtractDirichletRows(*locsysdofmap_);
     //cout << "Subtrafo: nummyrows=" << subtrafo_->EpetraMatrix()->NumMyRows() 
     //     << " nummycols=" << subtrafo_->EpetraMatrix()->NumMyCols() 
