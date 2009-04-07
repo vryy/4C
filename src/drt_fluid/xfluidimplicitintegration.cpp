@@ -100,14 +100,17 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   gamma_    = params_.get<double>("gamma");
 
   // create empty cutter discretization
-  Teuchos::RCP<DRT::Discretization> emptyboundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(
-      actdis, "schnackelzappel", "boundary", "BELE3", vector<string>(0));
-  Teuchos::RCP<Epetra_Vector> tmpdisp = LINALG::CreateVector(*emptyboundarydis_->DofRowMap(),true);
-  emptyboundarydis_->SetState("idispcolnp",tmpdisp);
-  emptyboundarydis_->SetState("idispcoln",tmpdisp);
+  vector<string> conditions;
+  Teuchos::RCP<DRT::Discretization> emptyboundarydis = DRT::UTILS::CreateDiscretizationFromCondition(
+      actdis, "dummydiscretizationame", "boundary", "BELE3", conditions);
+  cout << (*emptyboundarydis->DofRowMap()) << endl;
+  Teuchos::RCP<Epetra_Vector> tmpdisp1 = LINALG::CreateVector(*emptyboundarydis->DofRowMap(),true);
+  Teuchos::RCP<Epetra_Vector> tmpdisp2 = LINALG::CreateVector(*emptyboundarydis->DofRowMap(),true);
+  emptyboundarydis->SetState("idispcolnp",tmpdisp1);
+  emptyboundarydis->SetState("idispcoln",tmpdisp2);
   // intersection with empty cutter will result in a complete fluid domain with no holes or intersections
   Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih =
-    rcp(new XFEM::InterfaceHandleXFSI(discret_,emptyboundarydis_));
+    rcp(new XFEM::InterfaceHandleXFSI(discret_,emptyboundarydis));
 
   // apply enrichments
   std::set<XFEM::PHYSICS::Field> fieldset;
@@ -517,6 +520,7 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
     ParameterList eleparams;
     eleparams.set("action","reset");
     discret_->Evaluate(eleparams);
+    dofmanagerForOutput_ = Teuchos::null;
   }
   
   // within this routine, no parallel re-distribution is allowed to take place
@@ -1819,7 +1823,7 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 
         vector<int> lm;
         vector<int> lmowner;
-        actele->LocationVector(*(discret_), lm, lmowner);
+        actele->LocationVector(*discret_, lm, lmowner);
 
         // extract local values from the global vector
         vector<double> myvelnp(lm.size());

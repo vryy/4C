@@ -50,6 +50,8 @@ ADAPTER::XFluidImpl::XFluidImpl(
     cout << "Empty boundary discretization detected. No FSI coupling will be performed..." << endl;
   }
   
+  cout << "hallo" << endl;
+  
   // sanity check
   vector< DRT::Condition * >      conditions;
   boundarydis_->GetCondition ("XFEMCoupling", conditions);
@@ -78,11 +80,14 @@ ADAPTER::XFluidImpl::XFluidImpl(
   const int err = boundarydis_->FillComplete();
   if (err) dserror("FillComplete() returned err=%d",err);
   
-  boundaryoutput_ = rcp(new IO::DiscretizationWriter(boundarydis_));
-  if (boundarydis_->NumGlobalNodes() > 0)
-    boundaryoutput_->WriteMesh(0,0.0);
-  
   DRT::UTILS::PrintParallelDistribution(*boundarydis_);
+  
+  boundaryoutput_ = rcp(new IO::DiscretizationWriter(boundarydis_));
+  // mesh output is only needed for post processing in paraview
+  // or if element date is read during restart
+  // if some procs have no row elements, this WriteMesh() call fails currently
+//  if (boundarydis_->NumMyRowElements() > 0)
+//    boundaryoutput_->WriteMesh(0,0.0);
   
   DRT::UTILS::SetupNDimExtractor(*boundarydis_,"FSICoupling",interface_);
   DRT::UTILS::SetupNDimExtractor(*boundarydis_,"FREESURFCoupling",freesurface_);
