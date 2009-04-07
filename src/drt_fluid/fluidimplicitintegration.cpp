@@ -2410,22 +2410,22 @@ void FLD::FluidImplicitTimeInt::StatisticsAndOutput()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::FluidImplicitTimeInt::Output()
 {
-
-  //-------------------------------------------- output of solution
-
-  if (step_%upres_ == 0)  //write solution
+  // output of solution
+  if (step_%upres_ == 0)
   {
-    output_.NewStep    (step_,time_);
-    output_.WriteVector("velnp", velnp_);
+    // step number and time
+    output_.NewStep(step_,time_);
 
-    // output (hydrodynamic) pressure
+    // velocity/pressure vector
+    output_.WriteVector("velnp",velnp_);
+
+    // (hydrodynamic) pressure
     Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_.ExtractCondVector(velnp_);
     pressure->Scale(density_);
     output_.WriteVector("pressure", pressure);
 
     //output_.WriteVector("residual", trueresidual_);
-    if (alefluid_)
-      output_.WriteVector("dispnp", dispnp_);
+    if (alefluid_) output_.WriteVector("dispnp", dispnp_);
 
     //only perform stress calculation when output is needed
     if (writestresses_)
@@ -2435,31 +2435,45 @@ void FLD::FluidImplicitTimeInt::Output()
     }
 
     // write domain decomposition for visualization (only once!)
-    if (step_==upres_)
-     output_.WriteElementData();
+    if (step_==upres_) output_.WriteElementData();
 
     if (uprestart_ != 0 && step_%uprestart_ == 0) //add restart data
     {
+      // acceleration vector at time n+1 and n, velocity/pressure vector at time n and n-1
+      output_.WriteVector("accnp",accnp_);
       output_.WriteVector("accn", accn_);
       output_.WriteVector("veln", veln_);
-      output_.WriteVector("velnm", velnm_);
+      output_.WriteVector("velnm",velnm_);
+
+      // vectors only required for low-Mach-number flow
+      if (loma_ != "No")
+      {
+        // velocity/density vector at time n+1, n and n-1
+        output_.WriteVector("vedenp",vedenp_);
+        output_.WriteVector("veden", veden_);
+        output_.WriteVector("vedenm",vedenm_);
+      }
 
       if (alefluid_)
       {
         output_.WriteVector("dispn", dispn_);
         output_.WriteVector("dispnm",dispnm_);
       }
+
       // also write impedance bc information if required
       // Note: this method acts only if there is an impedance BC
       impedancebc_->WriteRestart(output_);
     }
   }
-
   // write restart also when uprestart_ is not a integer multiple of upres_
   else if (uprestart_ != 0 && step_%uprestart_ == 0)
   {
-    output_.NewStep    (step_,time_);
-    output_.WriteVector("velnp", velnp_);
+    // step number and time
+    output_.NewStep(step_,time_);
+
+    // velocity/pressure vector
+    output_.WriteVector("velnp",velnp_);
+
     //output_.WriteVector("residual", trueresidual_);
     if (alefluid_)
     {
@@ -2475,9 +2489,20 @@ void FLD::FluidImplicitTimeInt::Output()
       output_.WriteVector("traction",traction);
     }
 
+    // acceleration vector at time n+1 and n, velocity/pressure vector at time n and n-1
+    output_.WriteVector("accnp",accnp_);
     output_.WriteVector("accn", accn_);
     output_.WriteVector("veln", veln_);
-    output_.WriteVector("velnm", velnm_);
+    output_.WriteVector("velnm",velnm_);
+
+    // vectors only required for low-Mach-number flow
+    if (loma_ != "No")
+    {
+      // velocity/density vector at time n+1, n and n-1
+      output_.WriteVector("vedenp",vedenp_);
+      output_.WriteVector("veden", veden_);
+      output_.WriteVector("vedenm",vedenm_);
+    }
 
     // also write impedance bc information if required
     // Note: this method acts only if there is an impedance BC
@@ -2506,7 +2531,16 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
   reader.ReadVector(velnp_,"velnp");
   reader.ReadVector(veln_, "veln");
   reader.ReadVector(velnm_,"velnm");
+  reader.ReadVector(accnp_,"accnp");
   reader.ReadVector(accn_ ,"accn");
+
+  // vectors only required for low-Mach-number flow
+  if (loma_ != "No")
+  {
+    reader.ReadVector(vedenp_,"vedenp");
+    reader.ReadVector(veden_, "veden");
+    reader.ReadVector(vedenm_,"vedenm");
+  }
 
   if (alefluid_)
   {

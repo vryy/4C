@@ -397,6 +397,15 @@ void SCATRA::TimIntOneStepTheta::OutputRestart()
   output_->WriteVector("phidtn", phidtn_);
   output_->WriteVector("phin", phin_);
 
+  // additional state vectors that are needed for One-Step-Theta restart
+  // in low-Mach-number case
+  if (prbtype_ == "loma")
+  {
+    output_->WriteVector("densdtn",densdtn_);
+    output_->WriteVector("densn",  densn_);
+    output_->WriteVector("densnm", densnm_);
+  }
+
   return;
 }
 
@@ -411,9 +420,19 @@ void SCATRA::TimIntOneStepTheta::ReadRestart(int step)
   step_ = reader.ReadInt("step");
 
   // read state vectors that are needed for One-Step-Theta restart
-  reader.ReadVector(phinp_,"phinp");
-  reader.ReadVector(phin_, "phin");
-  reader.ReadVector(phidtn_, "phidtn");
+  reader.ReadVector(phinp_, "phinp");
+  reader.ReadVector(phin_,  "phin");
+  reader.ReadVector(phidtn_,"phidtn");
+
+  // read state vectors that are needed for One-Step-Theta restart
+  // in low-Mach-number case
+  if (prbtype_ == "loma")
+  {
+    reader.ReadVector(densnp_, "densnp");
+    reader.ReadVector(densn_,  "densn");
+    reader.ReadVector(densnm_, "densnm");
+    reader.ReadVector(densdtn_,"densdtn");
+  }
 
   return;
 }

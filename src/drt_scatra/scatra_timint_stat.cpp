@@ -130,8 +130,11 @@ void SCATRA::TimIntStationary::ReadRestart(int step)
   step_ = reader.ReadInt("step");
 
   // read state vectors that are needed for restart
-  reader.ReadVector(phinp_,"phinp");
-  reader.ReadVector(phin_, "phin");
+  reader.ReadVector(phinp_, "phinp");
+
+  // read state vectors that are needed for restart
+  // in low-Mach-number case
+  if (prbtype_ == "loma") reader.ReadVector(densnp_,"densnp");
 
   return;
 }

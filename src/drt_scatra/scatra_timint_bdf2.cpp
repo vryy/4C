@@ -37,7 +37,7 @@ SCATRA::TimIntBDF2::TimIntBDF2(
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   // state vector for solution at time t_{n-1}
-  phinm_      = LINALG::CreateVector(*dofrowmap,true);
+  phinm_ = LINALG::CreateVector(*dofrowmap,true);
 
   // only required for low-Mach-number flow
   if (prbtype_ == "loma")
@@ -375,6 +375,14 @@ void SCATRA::TimIntBDF2::OutputRestart()
   output_->WriteVector("phin", phin_);
   output_->WriteVector("phinm", phinm_);
 
+  // additional state vectors that are needed for BDF2 restart
+  // in low-Mach-number case
+  if (prbtype_ == "loma")
+  {
+    output_->WriteVector("densn", densn_);
+    output_->WriteVector("densnm",densnm_);
+  }
+
   return;
 }
 
@@ -392,6 +400,15 @@ void SCATRA::TimIntBDF2::ReadRestart(int step)
   reader.ReadVector(phinp_,"phinp");
   reader.ReadVector(phin_, "phin");
   reader.ReadVector(phinm_,"phinm");
+
+  // read state vectors that are needed for BDF2 restart
+  // in low-Mach-number case
+  if (prbtype_ == "loma")
+  {
+    reader.ReadVector(densnp_,"densnp");
+    reader.ReadVector(densn_, "densn");
+    reader.ReadVector(densnm_,"densnm");
+  }
 
   return;
 }

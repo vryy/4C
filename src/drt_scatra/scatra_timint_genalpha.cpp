@@ -515,8 +515,18 @@ void SCATRA::TimIntGenAlpha::UpdateDensity()
 void SCATRA::TimIntGenAlpha::OutputRestart()
 {
   // additional state vectors that are needed for generalized-alpha restart
+  output_->WriteVector("phidtnp",phidtnp_);
   output_->WriteVector("phidtn", phidtn_);
-  output_->WriteVector("phin", phin_);
+  output_->WriteVector("phin",   phin_);
+
+  // additional state vectors that are needed for generalized-alpha restart
+  // in low-Mach-number case
+  if (prbtype_ == "loma")
+  {
+    output_->WriteVector("densdtnp",densdtnp_);
+    output_->WriteVector("densdtn", densdtn_);
+    output_->WriteVector("densn",   densn_);
+  }
 
   return;
 }
@@ -534,7 +544,18 @@ void SCATRA::TimIntGenAlpha::ReadRestart(int step)
   // read state vectors that are needed for generalized-alpha restart
   reader.ReadVector(phinp_,  "phinp");
   reader.ReadVector(phin_,   "phin");
+  reader.ReadVector(phidtnp_,"phidtnp");
   reader.ReadVector(phidtn_, "phidtn");
+
+  // read state vectors that are needed for generalized-alpha restart
+  // in low-Mach-number case
+  if (prbtype_ == "loma")
+  {
+    reader.ReadVector(densnp_,  "densnp");
+    reader.ReadVector(densn_,   "densn");
+    reader.ReadVector(densdtnp_,"densdtnp");
+    reader.ReadVector(densdtn_, "densdtn");
+  }
 
   return;
 }

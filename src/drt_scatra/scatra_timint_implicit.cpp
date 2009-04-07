@@ -983,39 +983,25 @@ void SCATRA::ScaTraTimIntImpl::Output()
   // time measurement: output of solution
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:    + output of solution");
 
-  // 3 opportunities for entering output routines:
-  // 1) anyway as soon as an upres-step is reached,
-  // 2) as soon as a restart-step is reached,
-  // 3) as soon as sampling period is reached if statistical data is required.
-  if (step_%upres_==0)
+  // write domain decomposition for visualization (only once at step "upres"!)
+  if (step_==upres_) output_->WriteElementData();
+
+  // solution output and potentially restart data and/or flux data
+  if (step_%upres_==0 or step_%uprestart_==0)
   {
     // write state vectors
     OutputState();
 
-    // write domain decomposition for visualization (only once!)
-    if (step_==upres_)
-      output_->WriteElementData();
-
-    //add restart data
-    if (step_%uprestart_==0)
-      OutputRestart();
+    // add restart data
+    if (step_%uprestart_==0) OutputRestart();
 
     // write flux vector field
-    if (writeflux_!="No")
-      OutputFlux();
+    if (writeflux_!="No") OutputFlux();
   }
-  else if ((step_%upres_!=0) && (step_%uprestart_== 0))
+  else
   {
-    OutputState();   // write state vectors
-    OutputRestart(); // add restart data
-    if (writeflux_!="No") // write flux vector field
-      OutputFlux();
-  }
-  else if ((step_%uprestart_!= 0 && step_%upres_!=0) &&
-           (step_>=samstart_ && step_<=samstop_ && writeflux_!="No"))
-  {
-    //calculation of statistics for normal fluxes (no output to file)
-    CalcFlux();
+    // calculation of statistics for normal fluxes (no output to file)
+    if (step_>=samstart_ and step_<=samstop_ and writeflux_!="No") CalcFlux();
   }
 
   return;
@@ -1027,8 +1013,16 @@ void SCATRA::ScaTraTimIntImpl::Output()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::OutputState()
 {
-  output_->NewStep    (step_,time_);
+  // step number and time
+  output_->NewStep(step_,time_);
+
+  // solution
   output_->WriteVector("phinp", phinp_);
+
+  // density (only required in low-Mach-number case)
+  if (prbtype_ == "loma") output_->WriteVector("densnp", densnp_);
+
+  // velocity
   output_->WriteVector("convec_velocity", convel_,IO::DiscretizationWriter::nodevector);
 
   return;
