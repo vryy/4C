@@ -129,7 +129,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // account for potential Neuman inflow terms if required
   // -------------------------------------------------------------------
   neumanninflow_ = false;
-  if (params_.get<string>("NEUMANNINFLOW","no") == "yes") neumanninflow_ = true;
+  if (params_.get<string>("Neumann inflow","no") == "yes") neumanninflow_ = true;
 
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
@@ -1026,23 +1026,31 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         // account for potential Neumann inflow terms
         if (neumanninflow_)
         {
+          // create parameter list
+          ParameterList condparams;
+
+          // action for elements
+          condparams.set("action","calc_Neumann_inflow");
+          condparams.set("thsl",theta_*dta_);
+
+          // set vector values needed by elements
           discret_->ClearState();
-          eleparams.set("Neumann inflow",neumanninflow_);
           if (timealgo_==timeint_afgenalpha)
           {
-            eleparams.set("thsl",1.0);
+            condparams.set("using generalized-alpha time integration",true);
             discret_->SetState("velnp",velaf_);
             discret_->SetState("vedenp",vedeaf_);
           }
           else
           {
-            eleparams.set("thsl",theta_*dta_);
+            condparams.set("using generalized-alpha time integration",false);
             discret_->SetState("velnp",velnp_);
             discret_->SetState("vedenp",vedenp_);
           }
-          neumann_loads_->PutScalar(0.0);
-          discret_->EvaluateNeumann(eleparams,*neumann_loads_);
-         discret_->ClearState();
+
+          std::string condstring("FluidNeumannInflow");
+          discret_->EvaluateCondition(condparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null,condstring);
+          discret_->ClearState();
         }
 
         if (timealgo_==timeint_afgenalpha)

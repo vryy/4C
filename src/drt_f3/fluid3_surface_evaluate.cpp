@@ -67,7 +67,7 @@ int DRT::ELEMENTS::Fluid3Surface::Evaluate(     ParameterList&            params
     else if (action == "conservative_outflow_bc")
         act = Fluid3Surface::conservative_outflow_bc;
     else if (action == "calc_Neumann_inflow")
-        act = Fluid3Surface::conservative_outflow_bc;
+        act = Fluid3Surface::calc_Neumann_inflow;
     else dserror("Unknown type of action for Fluid3_Surface");
 
     switch(act)
@@ -1011,7 +1011,7 @@ void DRT::ELEMENTS::Fluid3Surface::NeumannInflow(
   // (density-weighted) shape functions and first derivatives
   Epetra_SerialDenseVector funct(iel);
   Epetra_SerialDenseVector densfunct(iel);
-  Epetra_SerialDenseVector deriv(iel);
+  Epetra_SerialDenseMatrix deriv(2,iel);
 
   // node coordinates
   Epetra_SerialDenseMatrix xyze(3,iel);
@@ -1032,7 +1032,7 @@ void DRT::ELEMENTS::Fluid3Surface::NeumannInflow(
   {
     xyze(0,i)=this->Nodes()[i]->X()[0];
     xyze(1,i)=this->Nodes()[i]->X()[1];
-    xyze(2,i)=this->Nodes()[i]->X()[1];
+    xyze(2,i)=this->Nodes()[i]->X()[2];
   }
 
   // determine outward-pointing normal to this element
@@ -1090,7 +1090,7 @@ void DRT::ELEMENTS::Fluid3Surface::NeumannInflow(
     // compute momentum (i.e., density times velocity) and normal momentum
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
     double normmom = 0.0;
-    for (int j=0;j<2;++j)
+    for (int j=0;j<3;++j)
     {
       velint(j) = 0.0;
       momint(j) = 0.0;

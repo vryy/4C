@@ -205,6 +205,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // ------------------------------------------ form of convective term
   fluidtimeparams->set<string> ("form of convective term", fdyn.get<string>("CONVFORM"));
 
+  // ------------------------------------ potential Neumann inflow terms
+  fluidtimeparams->set<string> ("Neumann inflow",fdyn.get<string>("NEUMANNINFLOW"));
+
   // ---------------------------- fine-scale subgrid viscosity approach
   fluidtimeparams->set<string>           ("fs subgrid viscosity"   ,fdyn.get<string>("FSSUGRVISC"));
 

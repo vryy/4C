@@ -128,7 +128,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // ------------------------------------------ form of convective term
   scatratimeparams->set<string>("form of convective term",scatradyn.get<string>("CONVFORM"));
 
-  // ------------------------------------------ form of convective term
+  // ------------------------------------ potential Neumann inflow terms
   scatratimeparams->set<string>("Neumann inflow",scatradyn.get<string>("NEUMANNINFLOW"));
 
   // -------------------------------- (fine-scale) subgrid diffusivity?
