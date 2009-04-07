@@ -141,7 +141,7 @@ void MAT::LogNeoHooke::Evaluate(
   if (iiinv < 0.0)
     dserror("fatal failure in logarithmic neo-Hooke material");
   // determinant of deformation gradient
-  const double detf = sqrt(iiinv); 
+  const double detf = std::sqrt(iiinv); 
 
   // invert right Cauchy-Green tensor
   LINALG::Matrix<6,1> invc(false);
@@ -158,7 +158,7 @@ void MAT::LogNeoHooke::Evaluate(
   {
     LINALG::Matrix<6,1> pk2(identity);
     pk2.Scale(mue);
-    pk2.Update(-mue+lambda*log(detf), invc, 1.0);
+    pk2.Update(-mue+lambda*std::log(detf), invc, 1.0);
     stress.Update(pk2);
   }
 
@@ -167,7 +167,7 @@ void MAT::LogNeoHooke::Evaluate(
   {
     // deltas (see also Holzapfel [2] at p.261)
     const double delta6 = lambda;
-    const double delta7 = 2.0*(mue - lambda*log(detf));
+    const double delta7 = 2.0*(mue - lambda*std::log(detf));
     
     // contribution: Cinv \otimes Cinv
     for (int j=0; j<6; j++)
