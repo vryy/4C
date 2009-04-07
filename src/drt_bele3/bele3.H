@@ -138,7 +138,7 @@ public:
 
   //! @name Other
   //! does this element have non-zero displacements or not
-  bool IsMoving() const { return is_moving_; }
+//  bool IsMoving() const { return is_moving_; }
 
   //@}
 
@@ -175,10 +175,10 @@ private:
     };
   
   //! vector with line elements
-  vector<RCP<DRT::Element> >                      lines_;
+//  vector<RCP<DRT::Element> >                      lines_;
   
   //! flag for fixed or moving boundary
-  const bool                                      is_moving_;
+//  const bool                                      is_moving_;
 
   //! don't want = operator
   Bele3& operator = (const Bele3& old);

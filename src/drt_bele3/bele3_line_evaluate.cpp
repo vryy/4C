@@ -49,7 +49,7 @@ int DRT::ELEMENTS::Bele3Line::Evaluate(
       RefCountPtr<const Epetra_Vector> dispnp;
       vector<double> mydispnp;
 
-      if (parent_->IsMoving())
+//      if (parent_->IsMoving())
       {
         dispnp = discretization.GetState("dispnp");
         if (dispnp!=null)
@@ -268,7 +268,7 @@ void DRT::ELEMENTS::Bele3Line::IntegrateShapeFunction(ParameterList& params,
     xye(1,i)=this->Nodes()[i]->X()[1];
   }
 
-  if (parent_->IsMoving())
+//  if (parent_->IsMoving())
   {
     dsassert(edispnp.size()!=0,"paranoid");
 

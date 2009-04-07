@@ -21,10 +21,10 @@ Maintainer: Axel Gerstenberger
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Bele3::Bele3(int id, int owner) :
-DRT::Element(id,element_bele3,owner),
-is_moving_(true)
+DRT::Element(id,element_bele3,owner)
+//is_moving_(true)
 {
-  lines_.clear();
+//  lines_.clear();
   return;
 }
 
@@ -33,10 +33,10 @@ is_moving_(true)
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Bele3::Bele3(const DRT::ELEMENTS::Bele3& old) :
-DRT::Element(old),
-is_moving_(old.is_moving_)
+DRT::Element(old)
+//is_moving_(old.is_moving_)
 {
-  lines_.clear();
+//  lines_.clear();
   return;
 }
 
@@ -47,7 +47,7 @@ is_moving_(old.is_moving_)
 DRT::Element* DRT::ELEMENTS::Bele3::Clone() const
 {
   DRT::ELEMENTS::Bele3* newelement = new DRT::ELEMENTS::Bele3(*this);
-  newelement->lines_.clear();
+//  newelement->lines_.clear();
   return newelement;
 }
 
@@ -109,7 +109,7 @@ void DRT::ELEMENTS::Bele3::Unpack(const vector<char>& data)
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   
-  lines_.clear();
+//  lines_.clear();
   
   return;
 }
@@ -147,12 +147,12 @@ RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Bele3::ElementRegister() const
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::Bele3::Lines()
 {
-  if (lines_.empty())
-  {
-    // so we have to allocate new line elements:
-    lines_ = DRT::UTILS::ElementBoundaryFactory<Bele3Line,Bele3>(DRT::UTILS::buildLines,this);
-  }
-  return lines_;
+//  if (lines_.empty())
+//  {
+//    // so we have to allocate new line elements:
+//    lines_ = DRT::UTILS::ElementBoundaryFactory<Bele3Line,Bele3>(DRT::UTILS::buildLines,this);
+//  }
+  return DRT::UTILS::ElementBoundaryFactory<Bele3Line,Bele3>(DRT::UTILS::buildLines,this);;
 }
 
 
