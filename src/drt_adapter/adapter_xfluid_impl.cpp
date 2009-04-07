@@ -20,6 +20,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/linalg_blocksparsematrix.H"
 #include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/drt_utils.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_io/io_control.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -80,6 +81,8 @@ ADAPTER::XFluidImpl::XFluidImpl(
   boundaryoutput_ = rcp(new IO::DiscretizationWriter(boundarydis_));
   if (boundarydis_->NumGlobalNodes() > 0)
     boundaryoutput_->WriteMesh(0,0.0);
+  
+  DRT::UTILS::PrintParallelDistribution(*boundarydis_);
   
   DRT::UTILS::SetupNDimExtractor(*boundarydis_,"FSICoupling",interface_);
   DRT::UTILS::SetupNDimExtractor(*boundarydis_,"FREESURFCoupling",freesurface_);

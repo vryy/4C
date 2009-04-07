@@ -1719,4 +1719,51 @@ Teuchos::RCP<std::set<int> > DRT::UTILS::ConditionElementMap(const DRT::Discreti
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::UTILS::PrintParallelDistribution(const DRT::Discretization& dis)
+{
+  const int numproc=dis.Comm().NumProc();
+
+  if(numproc>1)
+  {
+    const int myrank=dis.Comm().MyPID();
+    
+    vector<int> my_n_nodes     (numproc,0);
+    vector<int>    n_nodes     (numproc,0);
+    vector<int> my_n_ghostnodes(numproc,0);
+    vector<int>    n_ghostnodes(numproc,0);
+    vector<int> my_n_elements  (numproc,0);
+    vector<int>    n_elements  (numproc,0);
+    vector<int> my_n_ghostele  (numproc,0);
+    vector<int>    n_ghostele  (numproc,0);
+    
+    my_n_nodes     [myrank]=dis.NumMyRowNodes();
+    my_n_ghostnodes[myrank]=dis.NumMyColNodes()-my_n_nodes[myrank];
+    my_n_elements  [myrank]=dis.NumMyRowElements();
+    my_n_ghostele  [myrank]=dis.NumMyColElements()-my_n_elements[myrank];
+    
+    dis.Comm().SumAll(&my_n_nodes     [0],&n_nodes     [0],numproc);
+    dis.Comm().SumAll(&my_n_ghostnodes[0],&n_ghostnodes[0],numproc);
+    dis.Comm().SumAll(&my_n_elements  [0],&n_elements  [0],numproc);
+    dis.Comm().SumAll(&my_n_ghostele  [0],&n_ghostele  [0],numproc);
+    
+    if(myrank==0)
+    {
+      cout << endl;
+      cout <<"   Discretization: " << dis.Name() << endl;
+      printf("   +-----+---------------+--------------+-----------------+----------------+\n");
+      printf("   | PID |  n_rownodes   | n_ghostnodes |  n_rowelements  |   n_ghostele   |\n");
+      printf("   +-----+---------------+--------------+-----------------+----------------+\n");
+      for(int npid=0;npid<numproc;++npid)
+      {
+        printf("   | %3d | %13d | %12d | %15d | %14d |\n",npid,n_nodes[npid],n_ghostnodes[npid],n_elements[npid],n_ghostele[npid]);
+        printf("   +-----+---------------+--------------+-----------------+----------------+\n");
+      }
+      cout << endl;
+    }
+  }
+}
+
+
 #endif  // #ifdef CCADISCRET

@@ -324,7 +324,9 @@ namespace UTILS
   Teuchos::RCP<std::set<int> > ConditionElementMap(const DRT::Discretization& dis,
                                                    std::string condname);
 
-
+  /// print information about parallel mesh distribution
+  void PrintParallelDistribution(const DRT::Discretization& dis);
+  
 } // namespace UTILS
 } // namespace DRT
 
