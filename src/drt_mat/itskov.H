@@ -47,7 +47,16 @@ namespace MAT
   {
 
     /*----------------------------------------------------------------------*/
-    /// material parameters for neo-Hooke
+    /*!
+	\brief material parameters for Itskov material law
+	
+	 MAT 1 MAT_ITSKOV  MU_GS 0.0 MU_FIBERS 2.026255352 ALPHA 20.0 BETA 20.0 EPSILON 100.0 GAMMA 10.0 C 0.0 DENS 1.0E-6
+	 
+	 Reference:
+	 Itskov, M.; Ehret, A. & Mavrilas, D.
+	 A polyconvex anisotropic strain energy function for soft collagenous tissues
+	 Biomechanics and Modeling in Mechanobiology, 2006, 5, 17-26
+	*/
     class Itskov : public Parameter
     {
     public:
@@ -63,14 +72,21 @@ namespace MAT
       /// @name material parameters
       //@{
 
-      /// mass density
+      /// alpha parameter fibers
       const double alpha_;
+	  /// beta parameter fibers
       const double beta_;
+	  /// mu fibers
       const double mu_fibers_;
+	  /// mu ground substance
       const double mu_GS_;
+	  /// penalty parameter epsilon
       const double epsilon_;
+	  /// penalty parameter gamma
       const double gamma_;
-      const double comp_;
+      /// I3 deviation parameter
+	  const double comp_;
+      /// mass density
       const double density_;
 
       //@}
