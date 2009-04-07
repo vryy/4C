@@ -307,17 +307,13 @@ protected:
     sodisp_stress_ndrst,
     sodisp_stress_nd123
   };
-  //! kinematic type
-  KinematicType                                   kintype_;
-  //! type of stress evaluation
-  StressType                                      stresstype_;
-  //! container containing all kind of solid3 thisandthat
-  DRT::Container                                  data_;
-  //! Gaussrule
-  DRT::UTILS::GaussRule3D                         gaussrule_;
+  
+  KinematicType              kintype_;    ///< kinematic type
+  StressType                 stresstype_; ///< type of stress evaluation
+  DRT::UTILS::GaussRule3D    gaussrule_;  ///< Gaussrule
 
   int numnod_disp_;      ///< number of nodes
-  int numdof_disp_;     ///< total dofs per element
+  int numdof_disp_;      ///< total dofs per element
   int numgpt_disp_;      ///< total gauss points per element
 
 

@@ -30,7 +30,12 @@ using namespace DRT::UTILS;
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::SoDisp::SoDisp(int id, int owner) :
 DRT::Element(id,element_sodisp,owner),
-data_()
+kintype_(sodisp_totlag),
+stresstype_(sodisp_stress_none),
+gaussrule_(intrule3D_undefined),
+numnod_disp_(-1),
+numdof_disp_(-1),
+numgpt_disp_(-1)
 {
   return;
 }
@@ -41,7 +46,12 @@ data_()
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::SoDisp::SoDisp(const DRT::ELEMENTS::SoDisp& old) :
 DRT::Element(old),
-data_(old.data_)
+kintype_(old.kintype_),
+stresstype_(old.stresstype_),
+gaussrule_(old.gaussrule_),
+numnod_disp_(old.numnod_disp_),
+numdof_disp_(old.numdof_disp_),
+numgpt_disp_(old.numgpt_disp_)
 {
   return;
 }
@@ -93,14 +103,13 @@ void DRT::ELEMENTS::SoDisp::Pack(vector<char>& data) const
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
-  // stresstype_
+
   AddtoPack(data,stresstype_);
-  // kintype_
   AddtoPack(data,kintype_);
-  // data_
-  vector<char> tmp(0);
-  data_.Pack(tmp);
-  AddtoPack(data,tmp);
+  AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
+  AddtoPack(data,numnod_disp_);
+  AddtoPack(data,numdof_disp_);
+  AddtoPack(data,numgpt_disp_);
 
   return;
 }
@@ -121,15 +130,18 @@ void DRT::ELEMENTS::SoDisp::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
-  // stresstype_
+  
   ExtractfromPack(position,data,stresstype_);
-  // kintype_
   ExtractfromPack(position,data,kintype_);
-  // data_
-  vector<char> tmp(0);
-  ExtractfromPack(position,data,tmp);
-  data_.Unpack(tmp);
+  
+  int gausrule_integer;
+  ExtractfromPack(position,data,gausrule_integer);
+  gaussrule_ = GaussRule3D(gausrule_integer); //explicit conversion from integer to enum
 
+  ExtractfromPack(position,data,numnod_disp_);
+  ExtractfromPack(position,data,numdof_disp_);
+  ExtractfromPack(position,data,numgpt_disp_);
+  
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
@@ -153,7 +165,6 @@ void DRT::ELEMENTS::SoDisp::Print(ostream& os) const
   os << "SoDisp ";
   Element::Print(os);
   cout << endl;
-  cout << data_;
   return;
 }
 
