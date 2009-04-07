@@ -701,7 +701,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   
   DoubleParameter("SEARCH_PARAM",0.3,"Radius / Bounding volume inflation for contact search",&scontact);
   
-  setStringToIntegralParameter<int>("COUPLING_AUXPLANE","No","If chosen auxiliary planes are used for 3D coupling",
+  setStringToIntegralParameter<int>("COUPLING_AUXPLANE","Yes","If chosen auxiliary planes are used for 3D coupling",
                                yesnotuple,yesnovalue,&scontact);
 
   /*----------------------------------------------------------------------*/
