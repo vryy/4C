@@ -160,7 +160,7 @@ namespace INPUT
   {
   public:
 
-    /// constuct a separator component that does read a string without setting a variable
+    /// construct a separator component that does read a string without setting a variable
     SeparatorConditionComponent(std::string separator);
 
     virtual void DefaultLine(std::ostream& stream);
