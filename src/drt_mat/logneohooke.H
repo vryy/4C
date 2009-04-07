@@ -139,7 +139,7 @@ namespace MAT
     /// here is \f$I_{\boldsymbol{C}}\f$ the first principal invariant
     /// of the right Cauchy--Green strain tensor \f$\boldsymbol{C}\f$ 
     /// and \f$I\!I\!I_{\boldsymbol{C}}\f$ its third.
-    /// The isochoric part is the part proportional to \f$\mu\f$,
+    /// The isochoric part is proportional to \f$\mu\f$,
     /// wheras the \f$\lambda\f$-proportional part constitutes the volumetric contribution.
     ///
     /// The 2nd Piola--Kirchhoff stress is

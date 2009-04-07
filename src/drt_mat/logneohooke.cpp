@@ -145,13 +145,14 @@ void MAT::LogNeoHooke::Evaluate(
 
   // invert right Cauchy-Green tensor
   LINALG::Matrix<6,1> invc(false);
-  invc(0) = rcg(1)*rcg(2) - 0.25*rcg(4)*rcg(4);
-  invc(1) = rcg(0)*rcg(2) - 0.25*rcg(5)*rcg(5);
-  invc(2) = rcg(0)*rcg(1) - 0.25*rcg(3)*rcg(3);
-  invc(3) = 0.25*rcg(5)*rcg(4) - 0.5*rcg(3)*rcg(2);
-  invc(4) = 0.25*rcg(3)*rcg(5) - 0.5*rcg(0)*rcg(4);
-  invc(5) = 0.25*rcg(3)*rcg(4) - 0.5*rcg(5)*rcg(1);
-  invc.Scale(1.0/iiinv);
+  {
+    invc(0) = ( rcg(1)*rcg(2) - 0.25*rcg(4)*rcg(4) ) / iiinv;
+    invc(1) = ( rcg(0)*rcg(2) - 0.25*rcg(5)*rcg(5) ) / iiinv;
+    invc(2) = ( rcg(0)*rcg(1) - 0.25*rcg(3)*rcg(3) ) / iiinv;
+    invc(3) = ( 0.25*rcg(5)*rcg(4) - 0.5*rcg(3)*rcg(2) ) / iiinv;
+    invc(4) = ( 0.25*rcg(3)*rcg(5) - 0.5*rcg(0)*rcg(4) ) / iiinv;
+    invc(5) = ( 0.25*rcg(3)*rcg(4) - 0.5*rcg(5)*rcg(1) ) / iiinv;
+  }
 
   // 2nd Piola Kirchhoff stresses
   {
@@ -160,7 +161,6 @@ void MAT::LogNeoHooke::Evaluate(
     pk2.Update(-mue+lambda*log(detf), invc, 1.0);
     stress.Update(pk2);
   }
-
 
   // constitutive tensor
   // It is an implicit law that cmat is zero upon input
