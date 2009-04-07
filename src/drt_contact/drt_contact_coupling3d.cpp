@@ -3413,7 +3413,17 @@ bool CONTACT::Coupling3d::IntegrateCells()
     integrator.AssembleD(Comm(),SlaveElement(),*dseg);
 #endif // #ifdef CONTACTONEMORTARLOOP
     integrator.AssembleM(Comm(),SlaveElement(),MasterElement(),*mseg);
-    integrator.AssembleG(Comm(),SlaveElement(),*gseg);
+    
+    if (CouplingInAuxPlane() && Quad())
+    {
+#ifdef CONTACTPETROVGALERKIN
+      integrator.AssembleG(Comm(),SlaveIntElement(),*gseg);
+#else
+      integrator.AssembleG(Comm(),SlaveElement(),*gseg);
+#endif // #ifdef CONTACTPETROVGALERKIN
+    }
+    else
+      integrator.AssembleG(Comm(),SlaveElement(),*gseg);
   }
   return true;
 }
