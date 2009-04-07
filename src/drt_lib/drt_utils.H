@@ -136,8 +136,42 @@ namespace UTILS
     const DRT::Element* ele,                ///< pointer to current element
     Epetra_SerialDenseVector& local,        ///< local vector on element-level
     const RCP<Epetra_MultiVector>& global,  ///< global vector
-    const int nsd                           ///< number of space dimensions (default is 3)
+    const int nsd                           ///< number of space dimensions
     );
+
+
+  /// Locally extract a subset of values from a (column)-nodemap-based Epetra_MultiVector
+  /// and fill a local matrix that has implemented the (.,.) operator
+  /*  \author g.bau 
+   *  \date 04/09
+   */
+  template <class M>
+  void ExtractMyNodeBasedValues(
+      const DRT::Element* ele,              ///< pointer to current element
+      M& localmatrix,                       ///< local matrix on element-level
+      const RCP<Epetra_MultiVector>& global,///< global vector
+      const int nsd                         ///< number of space dimensions
+      )
+  {
+    if (global==null) dserror("received a TEUCHOS::null pointer");
+    if (nsd > global->NumVectors()) 
+      dserror("Requested %d of %d available columns", nsd,global->NumVectors());
+    const int iel = ele->NumNode(); // number of nodes
+
+    for (int i=0; i<nsd; i++)
+    {
+      // access actual component column of multi-vector
+      double* globalcolumn = (*global)[i];
+      // loop over the element nodes
+      for (int j=0;j<iel;j++)
+      {
+        const int nodegid = (ele->Nodes()[j])->Id();
+        const int lid = global->Map().LID(nodegid);
+        localmatrix(i,j) = globalcolumn[lid];
+      }
+    }
+    return;
+  }
 
 
   /// find all local nodes from discretization marked with condition
