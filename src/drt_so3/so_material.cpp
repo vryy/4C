@@ -39,6 +39,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/neohooke.H"
 #include "../drt_mat/anisotropic_balzani.H"
 #include "../drt_mat/aaaneohooke.H"
+#include "../drt_mat/logneohooke.H"
 #include "../drt_mat/mooneyrivlin.H"
 #include "../drt_mat/yeoh.H"
 #include "../drt_mat/lung_penalty.H"
@@ -103,6 +104,14 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       MAT::AAAneohooke* aaa = static_cast <MAT::AAAneohooke*>(mat.get());
       aaa->Evaluate(*glstrain,*cmat,*stress);
       *density = aaa->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_logneohooke: /*-- logarithmic neo-Hookean material */
+    {
+      MAT::LogNeoHooke* logneo = static_cast <MAT::LogNeoHooke*>(mat.get());
+      logneo->Evaluate(*glstrain,*cmat,*stress);
+      *density = logneo->Density();
       return;
       break;
     }
@@ -366,6 +375,14 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       return;
       break;
     }
+    case INPAR::MAT::m_logneohooke: /*-- logarithmic neo-Hookean material */
+    {
+      MAT::LogNeoHooke* logneo = static_cast <MAT::LogNeoHooke*>(mat.get());
+      logneo->Evaluate(*glstrain,*cmat,*stress);
+      *density = logneo->Density();
+      return;
+      break;
+    }
     case INPAR::MAT::m_lung_ogden: /* lung tissue material with Ogden for volumetric part */
     {
       MAT::LungOgden* lungog = static_cast <MAT::LungOgden*>(mat.get());
@@ -452,6 +469,14 @@ void DRT::ELEMENTS::So_hex27::soh27_mat_sel(
       MAT::AAAneohooke* aaa = static_cast <MAT::AAAneohooke*>(mat.get());
       aaa->Evaluate(*glstrain,*cmat,*stress);
       *density = aaa->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_logneohooke: /*-- logarithmic neo-Hookean material */
+    {
+      MAT::LogNeoHooke* logneo = static_cast <MAT::LogNeoHooke*>(mat.get());
+      logneo->Evaluate(*glstrain,*cmat,*stress);
+      *density = logneo->Density();
       return;
       break;
     }
@@ -618,6 +643,14 @@ void DRT::ELEMENTS::So_hex20::soh20_mat_sel(
       MAT::AAAneohooke* aaa = static_cast <MAT::AAAneohooke*>(mat.get());
       aaa->Evaluate(*glstrain,*cmat,*stress);
       *density = aaa->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_logneohooke: /*-- logarithmic neo-Hookean material */
+    {
+      MAT::LogNeoHooke* logneo = static_cast <MAT::LogNeoHooke*>(mat.get());
+      logneo->Evaluate(*glstrain,*cmat,*stress);
+      *density = logneo->Density();
       return;
       break;
     }
@@ -794,6 +827,14 @@ void DRT::ELEMENTS::SoDisp::sodisp_mat_sel(
       return;
       break;
     }
+    case INPAR::MAT::m_logneohooke: /*-- logarithmic neo-Hookean material */
+    {
+      MAT::LogNeoHooke* logneo = static_cast <MAT::LogNeoHooke*>(mat.get());
+      logneo->Evaluate(*glstrain,*cmat,*stress);
+      *density = logneo->Density();
+      return;
+      break;
+    }
     case INPAR::MAT::m_lung_ogden: /* lung tissue material with Ogden for volumetric part */
     {
       MAT::LungOgden* lungog = static_cast <MAT::LungOgden*>(mat.get());
@@ -886,6 +927,14 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
       return;
       break;
     }
+    case INPAR::MAT::m_logneohooke: /*-- logarithmic neo-Hookean material */
+    {
+      MAT::LogNeoHooke* logneo = static_cast <MAT::LogNeoHooke*>(mat.get());
+      logneo->Evaluate(*glstrain,*cmat,*stress);
+      *density = logneo->Density();
+      return;
+      break;
+    }
     case INPAR::MAT::m_mooneyrivlin: /*----------------- Mooney-Rivlin Material */
     {
       MAT::MooneyRivlin* moon = static_cast <MAT::MooneyRivlin*>(mat.get());
@@ -955,6 +1004,14 @@ void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
       MAT::AAAneohooke* aaa = static_cast <MAT::AAAneohooke*>(mat.get());
       aaa->Evaluate(*glstrain,*cmat,*stress);
       *density = aaa->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_logneohooke: /*-- logarithmic neo-Hookean material */
+    {
+      MAT::LogNeoHooke* logneo = static_cast <MAT::LogNeoHooke*>(mat.get());
+      logneo->Evaluate(*glstrain,*cmat,*stress);
+      *density = logneo->Density();
       return;
       break;
     }

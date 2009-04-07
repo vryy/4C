@@ -24,6 +24,7 @@ Maintainer: Lena Wiechert
 #include "micromaterial.H"
 #include "neohooke.H"
 #include "aaaneohooke.H"
+#include "logneohooke.H"
 #include "convecdiffus.H"
 #include "sutherland_condif.H"
 #include "anisotropic_balzani.H"
@@ -160,6 +161,13 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
       curmat->SetParameter(new MAT::PAR::AAAneohooke(curmat));
     MAT::PAR::AAAneohooke* params = static_cast<MAT::PAR::AAAneohooke*>(curmat->Parameter());
     return Teuchos::rcp(new AAAneohooke(params));
+  }
+  case INPAR::MAT::m_logneohooke:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::LogNeoHooke(curmat));
+    MAT::PAR::LogNeoHooke* params = static_cast<MAT::PAR::LogNeoHooke*>(curmat->Parameter());
+    return Teuchos::rcp(new LogNeoHooke(params));
   }
   case INPAR::MAT::m_condif:
   {

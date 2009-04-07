@@ -83,6 +83,7 @@ namespace INPAR
       m_biocell,       ///< biological cell model 
       m_ion,            ///< properties of an ion species in an electrolyte solution
       m_charmm,		///< CHARmm API
+      m_logneohooke,   ///< logarithmic Neo-Hooke material
       m_none          ///< undefined
     };
 

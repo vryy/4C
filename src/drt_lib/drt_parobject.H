@@ -152,6 +152,7 @@ using namespace std;
 #define ParObject_Ale3_Nurbs            (int)139
 #define ParObject_So_Nurbs27            (int)140
 #define ParObject_Itskov                (int)141
+#define ParObject_LogNeoHooke           (int)142
 
 
 namespace DRT
