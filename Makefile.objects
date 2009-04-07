@@ -239,7 +239,6 @@ OBJS_DRT_STATMECH_LIB = src/drt_statmech/bromotion_manager.o
 # --------------------------------------------------- drt version of fluid
 OBJS_DRT_FLUID= src/drt_fluid/fluid_utils.o \
                 src/drt_fluid/fluid_dyn_nln_drt.o \
-                src/drt_fluid/xfluid_dyn_nln_drt.o \
                 src/drt_fluid/time_integration_scheme.o \
                 src/drt_fluid/fluidimplicitintegration.o \
                 src/drt_fluid/xfluidimplicitintegration.o \
@@ -287,6 +286,7 @@ OBJS_DRT_FSI  = src/drt_fsi/fsi_dyn.o \
                 src/drt_fsi/fsi_monolithic_linearsystem.o \
                 src/drt_fsi/fsi_partitionedmonolithic.o \
                 src/drt_fsi/fsi_fluid_ale.o \
+                src/drt_fsi/fsi_fluid_xfem.o \
                 src/drt_fsi/fsi_nox_newton.o \
                 src/drt_fsi/fsi_nox_fixpoint.o \
                 src/drt_fsi/fsi_nox_aitken.o \

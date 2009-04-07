@@ -18,6 +18,7 @@
 #include "fsi_partitionedmonolithic.H"
 #include "fsi_structureale.H"
 #include "fsi_fluid_ale.H"
+#include "fsi_fluid_xfem.H"
 #include "fsi_utils.H"
 
 #include "../drt_inpar/inpar_fsi.H"
@@ -80,6 +81,32 @@ void fluid_ale_drt()
 
   DRT::ResultTestManager testmanager(comm);
   testmanager.AddFieldTest(fluid->MBFluidField().CreateFieldTest());
+  testmanager.TestAll();
+}
+
+
+/*----------------------------------------------------------------------*/
+// entry point for Fluid on Ale in DRT
+/*----------------------------------------------------------------------*/
+void fluid_xfem_drt()
+{
+#ifdef PARALLEL
+  Epetra_MpiComm comm(MPI_COMM_WORLD);
+#else
+  Epetra_SerialComm comm;
+#endif
+
+
+  Teuchos::RCP<FSI::FluidXFEMAlgorithm> xfluid = Teuchos::rcp(new FSI::FluidXFEMAlgorithm(comm));
+  if (genprob.restart)
+  {
+    // read the restart information, set vectors and variables
+    xfluid->ReadRestart(genprob.restart);
+  }
+  xfluid->Timeloop();
+
+  DRT::ResultTestManager testmanager(comm);
+  testmanager.AddFieldTest(xfluid->MBFluidField().CreateFieldTest());
   testmanager.TestAll();
 }
 

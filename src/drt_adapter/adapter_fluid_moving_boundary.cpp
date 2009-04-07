@@ -24,8 +24,10 @@ Maintainer: Ulrich Kuettler
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::FluidMovingBoundaryBaseAlgorithm::FluidMovingBoundaryBaseAlgorithm(const Teuchos::ParameterList& prbdyn,
-                                                              std::string condname)
+ADAPTER::FluidMovingBoundaryBaseAlgorithm::FluidMovingBoundaryBaseAlgorithm(
+    const Teuchos::ParameterList& prbdyn,
+    std::string condname
+    )
 {
     const Teuchos::ParameterList& list = DRT::Problem::Instance()->ProblemTypeParams();
     const PROBLEM_TYP probtyp = Teuchos::getIntegralValue<PROBLEM_TYP>(list,"PROBLEMTYP");
@@ -41,6 +43,7 @@ ADAPTER::FluidMovingBoundaryBaseAlgorithm::FluidMovingBoundaryBaseAlgorithm(cons
       fluid_ = Teuchos::rcp(new FluidAle(prbdyn,condname));
       break;
     }
+    case prb_fluid_xfem:
     case prb_fsi_xfem:
     {
       //std::cout << "using FluidXFEM as FluidMovingBoundary" << endl;

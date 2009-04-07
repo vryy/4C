@@ -281,7 +281,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     }
   }
   // sanity checks and default flags
-  if (genprob.probtyp == prb_fsi_xfem)
+  if (genprob.probtyp == prb_fsi_xfem or
+      genprob.probtyp == prb_fluid_xfem)
   {
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
     fluidtimeparams->set<bool>("interface second order", Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER"));
@@ -355,14 +356,10 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     // integration (call the constructor);
     // the only parameter from the list required here is the number of
     // velocity degrees of freedom
-    if (genprob.probtyp == prb_fsi_xfem)
+    if (genprob.probtyp == prb_fsi_xfem or
+        genprob.probtyp == prb_fluid_xfem)
     {
-      // This is temporary until I found a solution how to model the non-exising interface mesh of a XFEM fluid
-      // this is solely for the XFEM development and will go away (a.ger 04/08)
-      RCP<DRT::Discretization> soliddis = null;
-      soliddis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
-
-      if (!soliddis->Filled()) soliddis->FillComplete();
+      RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
 
       fluid_ = rcp(new ADAPTER::XFluidImpl(actdis, soliddis, fluidtimeparams));
     }

@@ -70,7 +70,6 @@ extern struct _FIELD      *sm_field;
 #ifdef CCADISCRET
 #include "../drt_lib/global_inp_control2.H"
 #include "../drt_fluid/fluid_dyn_nln_drt.H"
-#include "../drt_fluid/xfluid_dyn_nln_drt.H"
 #include "../drt_scatra/scatra_dyn.H"
 #include "../drt_adapter/ale_dyn.H"
 #include "../drt_fsi/fsi_dyn.H"
@@ -279,7 +278,7 @@ case prb_scatra:
   break;
 case prb_fluid_xfem:
 #ifdef CCADISCRET
-  xdyn_fluid_drt();
+  fluid_xfem_drt();
 #else
   dserror("prb_fluid_xfem without DRT not implemented");
 #endif

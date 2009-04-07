@@ -11,6 +11,7 @@ extern "C"
 /* headers and prototypes of functions also accessible from c */
 
 void fluid_ale_drt();
+void fluid_xfem_drt();
 void fluid_freesurf_drt();
 void fsi_ale_drt();
 void xfsi_drt();
