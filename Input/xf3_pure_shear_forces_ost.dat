@@ -15,7 +15,7 @@ DIM                3
 MATERIALS          2
 NUMDF        6
 -------------------------------------------------------PROBLEM TYP
-PROBLEMTYP   Fluid_Structure_Interaction_XFEM
+PROBLEMTYP   Fluid_XFEM
 NUMFIELD     2
 TIMETYP      Dynamic
 RESTART      0
@@ -80,10 +80,10 @@ STEADYTOL        1.0E-6
 UPOUT            1
 UPRES            1
 RESTARTEVRY      5
-NUMSTEP          1
+NUMSTEP          20
 NUMSTASTEPS      1
 MAXTIME          1000.0
-TIMESTEP         0.05
+TIMESTEP         0.5
 THETA            0.66
 START_THETA      1.0
 ALPHA_F          1.00
@@ -93,20 +93,6 @@ FSSUGRVISC       No
 ADAPTCONV        Yes
 ADAPTCONV_BETTER 0.1
 SIMPLER          No
--------------------------------------------------------FSI DYNAMIC
-MAXTIME      1000.0
-TIMESTEP     0.5
-NUMSTEP      20
-UPRES        1
-RESTARTEVRY  5
-IALE         Pseudo_Structure
-COUPALGO     iter_stagg_AITKEN_rel_param
-PREDICTOR    d(n)
-RELAX        1.0
-ITEMAX       1
-CONVTOL      1.0E0
-COUPMETHOD   conforming
-COUPVARIABLE Displacement
 ------------------------------------------------------FLUID SOLVER
 SOLVER         UMFPACK          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 -----------------------------------------------------STRUCT SOLVER

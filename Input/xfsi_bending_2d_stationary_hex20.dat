@@ -20,7 +20,6 @@ NUMFIELD     2
 TIMETYP      Dynamic
 ALGEBRA      Trilinos           // ccarat/Trilinos
 RESTART      0
-//!RESTART      5
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  1
 NUMSTRUCDIS  1

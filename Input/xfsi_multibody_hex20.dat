@@ -71,7 +71,6 @@ MAXITER      50
 -----------------------------------------------------FLUID DYNAMIC
 DYNAMICTYP       Nlin_Time_Int
 INITIALFIELD     zero_field
-RESSTEP          -1
 STARTFUNCNO      2
 TIMEINTEGR       Stationary
 STARTINGALGO     One_Step_Theta

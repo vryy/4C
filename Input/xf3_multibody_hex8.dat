@@ -15,7 +15,7 @@ DIM                3
 MATERIALS          2
 NUMDF        6
 -------------------------------------------------------PROBLEM TYP
-PROBLEMTYP   Fluid_Structure_Interaction_XFEM
+PROBLEMTYP   Fluid_XFEM
 NUMFIELD     2
 TIMETYP      Dynamic
 ALGEBRA      Trilinos           // ccarat/Trilinos
@@ -71,7 +71,6 @@ MAXITER      50
 -----------------------------------------------------FLUID DYNAMIC
 DYNAMICTYP       Nlin_Time_Int
 INITIALFIELD     zero_field
-RESSTEP          -1
 STARTFUNCNO      2
 TIMEINTEGR       Stationary
 STARTINGALGO     One_Step_Theta
@@ -88,7 +87,7 @@ RESTARTEVRY      200
 NUMSTEP          1
 NUMSTASTEPS      0
 MAXTIME          1000.0
-TIMESTEP         0.05
+TIMESTEP         1.0
 THETA            0.66
 START_THETA      0.67
 ALPHA_F          1.00
