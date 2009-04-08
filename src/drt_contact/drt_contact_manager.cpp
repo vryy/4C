@@ -458,7 +458,7 @@ bool CONTACT::Manager::ReadAndCheckInput()
   double ct      = scontact_.get<double>("semismooth ct",0.0);
   string stype   = scontact_.get<string>("search algorithm","elements");
   double sp      = scontact_.get<double>("search parameter",0.3);
-  bool auxplane  = scontact_.get<bool>("coupling auxplane",false);
+  //bool auxplane  = scontact_.get<bool>("coupling auxplane",false);
   
   // invalid parameter combinations
   if (ctype=="normal" && ftype !="none")
@@ -469,8 +469,8 @@ bool CONTACT::Manager::ReadAndCheckInput()
   	dserror("Friction Parameter ct = 0, must be greater than 0");
   if (stype=="nodes" && sp==0.0)
     dserror("Search radius sp = 0, must be greater than 0 for node-based search");
-  if (auxplane && Dim()==2)
-    dserror("Coupling in auxiliary planes only possible for 3D contact");
+  //if (auxplane && Dim()==2)
+  //  dserror("Coupling in auxiliary planes only possible for 3D contact");
 #ifdef CONTACTRELVELMATERIAL 
   // check full linearization
   bool fulllin   = scontact_.get<bool>("full linearization",false);

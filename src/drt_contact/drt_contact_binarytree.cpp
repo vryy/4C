@@ -48,175 +48,6 @@ Maintainer: Alexander Popp
 
 
 /*----------------------------------------------------------------------*
- |  ctor BinaryTree(public)                                   popp 10/08|
- *----------------------------------------------------------------------*/
-CONTACT::BinaryTree::BinaryTree(DRT::Discretization& discret,
-                                RCP<Epetra_Map> selements,
-                                RCP<Epetra_Map> melements,
-                                int dim,
-                                double eps) :
-idiscret_(discret),
-selements_(selements),
-melements_(melements),
-dim_(dim),
-eps_(eps)
-{
-  // initialize sizes
-  streenodesmap_.resize(1);
-  mtreenodesmap_.resize(1);
-  contactmap_.resize(2);
-  sleafsmap_.resize(2);
-  mleafsmap_.resize(2);
-
-  // claculates minimal element length
-  SetEnlarge(true);
-
-  //**********************************************************************
-  // check for problem dimension
-  //**********************************************************************
-  if (dim_==2)
-  {
-    // set number of DOP sides to 8 
-    kdop_=8;
-    
-    // setup normals for DOP
-    dopnormals_.Reshape(4,3); 
-    dopnormals_(0,0)= 1; dopnormals_(0,1)= 0; dopnormals_(0,2)= 0;
-    dopnormals_(1,0)= 0; dopnormals_(1,1)= 1; dopnormals_(1,2)= 0;
-    dopnormals_(2,0)= 1; dopnormals_(2,1)= 1; dopnormals_(2,2)= 0;
-    dopnormals_(3,0)=-1; dopnormals_(3,1)= 1; dopnormals_(3,2)= 0;
-  }
-  else if (dim_==3)
-  {
-    // set number of DOP sides to  18
-    kdop_=18;
-    
-    // setup normals for DOP
-    dopnormals_.Reshape(9,3); 
-    dopnormals_(0,0)= 1; dopnormals_(0,1)= 0; dopnormals_(0,2)= 0;
-    dopnormals_(1,0)= 0; dopnormals_(1,1)= 1; dopnormals_(1,2)= 0;
-    dopnormals_(2,0)= 0; dopnormals_(2,1)= 0; dopnormals_(2,2)= 1;
-    dopnormals_(3,0)= 1; dopnormals_(3,1)= 1; dopnormals_(3,2)= 0;
-    dopnormals_(4,0)= 1; dopnormals_(4,1)= 0; dopnormals_(4,2)= 1;
-    dopnormals_(5,0)= 0; dopnormals_(5,1)= 1; dopnormals_(5,2)= 1;
-    dopnormals_(6,0)= 1; dopnormals_(6,1)= 0; dopnormals_(6,2)=-1;
-    dopnormals_(7,0)= 1; dopnormals_(7,1)=-1; dopnormals_(7,2)= 0;
-    dopnormals_(8,0)= 0; dopnormals_(8,1)= 1; dopnormals_(8,2)=-1;
-  }
-  else
-    dserror("ERROR: Problem dimension must be 2D or 3D!");
-
-  //**********************************************************************
-  // initialize binary tree root nodes
-  //**********************************************************************
-  // create element lists
-  vector<int> slist;
-  vector<int> mlist;
- 
-  for (int i=0;i<selements_->NumMyElements();++i)
-  {
-    int gid = selements_->GID(i);
-    slist.push_back(gid);
-  }
-  
-  for (int i=0;i<melements_->NumMyElements();++i)
-  {
-    int gid = melements_->GID(i);
-    mlist.push_back(gid);
-  }
-  
-  // check slave root node case
-  if (slist.size()>=2)
-  {
-  	sroot_ = rcp(new BinaryTreeNode(SLAVE_INNER,idiscret_,sroot_ ,slist,DopNormals(),
-  					 Kdop(),Dim(),0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
-  	
-  	// do initialization
-  	streenodesmap_[0].push_back(sroot_);
-  	sroot_->InitializeTree(enlarge_);  
-  }
-  else if (slist.size()==1)
-  {
-    sroot_ = rcp(new BinaryTreeNode(SLAVE_LEAF,idiscret_,sroot_,slist,DopNormals(),
-    				 Kdop(),Dim(),0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
-    
-    // trivial initialization
-    streenodesmap_[0].push_back(sroot_);
-		sleafsmap_[0].push_back(sroot_);
-  }
-  else
-  {
-    sroot_ = rcp(new BinaryTreeNode(NOSLAVE_ELEMENTS,idiscret_,sroot_,slist,DopNormals(),
-    				 Kdop(),Dim(),0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
-    
-    // trivial initialization
-    streenodesmap_[0].push_back(sroot_);
-  }
-  
-  // check master root node case
-  if (mlist.size()>=2)
-  {
-  	mroot_ = rcp(new BinaryTreeNode(MASTER_INNER,idiscret_,mroot_,mlist,DopNormals(),
-  					 Kdop(),Dim(),0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
-  	
-  	// do initialization
-  	mtreenodesmap_[0].push_back(mroot_);
-  	mroot_->InitializeTree(enlarge_);
-  }
-  else if (mlist.size()==1)
-  {
-  	mroot_ = rcp(new BinaryTreeNode(MASTER_LEAF,idiscret_,mroot_,mlist,DopNormals(),
-  					 Kdop(),Dim(),0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
-  	
-  	// trivial initialization
-  	mtreenodesmap_[0].push_back(mroot_);
-		mleafsmap_[0].push_back(mroot_);
-  }
-  else
-  {
-  	mroot_ = rcp(new BinaryTreeNode(NOMASTER_ELEMENTS,idiscret_,mroot_,mlist,DopNormals(),
-  					 Kdop(),Dim(),0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
-  	
-  	// trivial initialization / error
-  	mtreenodesmap_[0].push_back(mroot_);
-  	dserror("No master element for Binarytree initialization on this processor");
-  }
-  
-  /*
-  // print binarytree to std::cout 
-  for (int k=0;k<Comm().NumProc();++k)
-  {
-  	Comm().Barrier();
-  	if (Comm().MyPID()==k)
-  	{
-  		cout << "\n" << Comm().MyPID() << " Print tree with direct print function" << endl;
-  	  cout <<"\n" <<Comm().MyPID()<< " Slave Tree:";
-  		PrintTree(sroot_);
-  	  cout <<"\n" <<Comm().MyPID()<< " Master Tree:";
-  		PrintTree(mroot_);		
-  	}
-  	Comm().Barrier();
-  }
-  
-  for (int k=0;k<Comm().NumProc();++k)
-  {
-  	Comm().Barrier();
-  	if (Comm().MyPID()==k)
-  	{
-  		cout << "\n" << Comm().MyPID() << " Print tree with print function of slave and master treemap" << endl;
-  	  cout <<"\n" <<Comm().MyPID()<< " Slave Tree:";
-  		PrintTreeOfMap(streenodesmap_);
-  	  cout <<"\n" <<Comm().MyPID()<< " Master Tree:";
-  		PrintTreeOfMap(mtreenodesmap_);		
-  	}
-  	Comm().Barrier();
-  }
-  */
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
  |  ctor BinaryTreeNode (public)                              popp 10/08|
  *----------------------------------------------------------------------*/
 CONTACT::BinaryTree::BinaryTreeNode::BinaryTreeNode(
@@ -1058,6 +889,175 @@ void CONTACT::BinaryTree::BinaryTreeNode::EnlargeGeometry(double& enlarge)
 	}
 	//PrintSlabs();
 	return;
+}
+
+/*----------------------------------------------------------------------*
+ |  ctor BinaryTree(public)                                   popp 10/08|
+ *----------------------------------------------------------------------*/
+CONTACT::BinaryTree::BinaryTree(DRT::Discretization& discret,
+                                RCP<Epetra_Map> selements,
+                                RCP<Epetra_Map> melements,
+                                int dim,
+                                double eps) :
+idiscret_(discret),
+selements_(selements),
+melements_(melements),
+dim_(dim),
+eps_(eps)
+{
+  // initialize sizes
+  streenodesmap_.resize(1);
+  mtreenodesmap_.resize(1);
+  contactmap_.resize(2);
+  sleafsmap_.resize(2);
+  mleafsmap_.resize(2);
+
+  // claculates minimal element length
+  SetEnlarge(true);
+
+  //**********************************************************************
+  // check for problem dimension
+  //**********************************************************************
+  if (dim_==2)
+  {
+    // set number of DOP sides to 8 
+    kdop_=8;
+    
+    // setup normals for DOP
+    dopnormals_.Reshape(4,3); 
+    dopnormals_(0,0)= 1; dopnormals_(0,1)= 0; dopnormals_(0,2)= 0;
+    dopnormals_(1,0)= 0; dopnormals_(1,1)= 1; dopnormals_(1,2)= 0;
+    dopnormals_(2,0)= 1; dopnormals_(2,1)= 1; dopnormals_(2,2)= 0;
+    dopnormals_(3,0)=-1; dopnormals_(3,1)= 1; dopnormals_(3,2)= 0;
+  }
+  else if (dim_==3)
+  {
+    // set number of DOP sides to  18
+    kdop_=18;
+    
+    // setup normals for DOP
+    dopnormals_.Reshape(9,3); 
+    dopnormals_(0,0)= 1; dopnormals_(0,1)= 0; dopnormals_(0,2)= 0;
+    dopnormals_(1,0)= 0; dopnormals_(1,1)= 1; dopnormals_(1,2)= 0;
+    dopnormals_(2,0)= 0; dopnormals_(2,1)= 0; dopnormals_(2,2)= 1;
+    dopnormals_(3,0)= 1; dopnormals_(3,1)= 1; dopnormals_(3,2)= 0;
+    dopnormals_(4,0)= 1; dopnormals_(4,1)= 0; dopnormals_(4,2)= 1;
+    dopnormals_(5,0)= 0; dopnormals_(5,1)= 1; dopnormals_(5,2)= 1;
+    dopnormals_(6,0)= 1; dopnormals_(6,1)= 0; dopnormals_(6,2)=-1;
+    dopnormals_(7,0)= 1; dopnormals_(7,1)=-1; dopnormals_(7,2)= 0;
+    dopnormals_(8,0)= 0; dopnormals_(8,1)= 1; dopnormals_(8,2)=-1;
+  }
+  else
+    dserror("ERROR: Problem dimension must be 2D or 3D!");
+
+  //**********************************************************************
+  // initialize binary tree root nodes
+  //**********************************************************************
+  // create element lists
+  vector<int> slist;
+  vector<int> mlist;
+ 
+  for (int i=0;i<selements_->NumMyElements();++i)
+  {
+    int gid = selements_->GID(i);
+    slist.push_back(gid);
+  }
+  
+  for (int i=0;i<melements_->NumMyElements();++i)
+  {
+    int gid = melements_->GID(i);
+    mlist.push_back(gid);
+  }
+  
+  // check slave root node case
+  if (slist.size()>=2)
+  {
+    sroot_ = rcp(new BinaryTreeNode(SLAVE_INNER,idiscret_,sroot_ ,slist,DopNormals(),
+             Kdop(),Dim(),0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
+    
+    // do initialization
+    streenodesmap_[0].push_back(sroot_);
+    sroot_->InitializeTree(enlarge_);  
+  }
+  else if (slist.size()==1)
+  {
+    sroot_ = rcp(new BinaryTreeNode(SLAVE_LEAF,idiscret_,sroot_,slist,DopNormals(),
+             Kdop(),Dim(),0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
+    
+    // trivial initialization
+    streenodesmap_[0].push_back(sroot_);
+    sleafsmap_[0].push_back(sroot_);
+  }
+  else
+  {
+    sroot_ = rcp(new BinaryTreeNode(NOSLAVE_ELEMENTS,idiscret_,sroot_,slist,DopNormals(),
+             Kdop(),Dim(),0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
+    
+    // trivial initialization
+    streenodesmap_[0].push_back(sroot_);
+  }
+  
+  // check master root node case
+  if (mlist.size()>=2)
+  {
+    mroot_ = rcp(new BinaryTreeNode(MASTER_INNER,idiscret_,mroot_,mlist,DopNormals(),
+             Kdop(),Dim(),0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
+    
+    // do initialization
+    mtreenodesmap_[0].push_back(mroot_);
+    mroot_->InitializeTree(enlarge_);
+  }
+  else if (mlist.size()==1)
+  {
+    mroot_ = rcp(new BinaryTreeNode(MASTER_LEAF,idiscret_,mroot_,mlist,DopNormals(),
+             Kdop(),Dim(),0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
+    
+    // trivial initialization
+    mtreenodesmap_[0].push_back(mroot_);
+    mleafsmap_[0].push_back(mroot_);
+  }
+  else
+  {
+    mroot_ = rcp(new BinaryTreeNode(NOMASTER_ELEMENTS,idiscret_,mroot_,mlist,DopNormals(),
+             Kdop(),Dim(),0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
+    
+    // trivial initialization / error
+    mtreenodesmap_[0].push_back(mroot_);
+    dserror("No master element for Binarytree initialization on this processor");
+  }
+  
+  /*
+  // print binarytree to std::cout 
+  for (int k=0;k<Comm().NumProc();++k)
+  {
+    Comm().Barrier();
+    if (Comm().MyPID()==k)
+    {
+      cout << "\n" << Comm().MyPID() << " Print tree with direct print function" << endl;
+      cout <<"\n" <<Comm().MyPID()<< " Slave Tree:";
+      PrintTree(sroot_);
+      cout <<"\n" <<Comm().MyPID()<< " Master Tree:";
+      PrintTree(mroot_);    
+    }
+    Comm().Barrier();
+  }
+  
+  for (int k=0;k<Comm().NumProc();++k)
+  {
+    Comm().Barrier();
+    if (Comm().MyPID()==k)
+    {
+      cout << "\n" << Comm().MyPID() << " Print tree with print function of slave and master treemap" << endl;
+      cout <<"\n" <<Comm().MyPID()<< " Slave Tree:";
+      PrintTreeOfMap(streenodesmap_);
+      cout <<"\n" <<Comm().MyPID()<< " Master Tree:";
+      PrintTreeOfMap(mtreenodesmap_);   
+    }
+    Comm().Barrier();
+  }
+  */
+
+  return;
 }
 
 /*----------------------------------------------------------------------*

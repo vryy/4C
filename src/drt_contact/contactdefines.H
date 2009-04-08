@@ -84,7 +84,7 @@ Maintainer: Alexander Popp
 
 // CONTACT PROJECTION AND INTEGRATION (3D)
 #define CONTACTCLIPTOL 1.0e-12  /* tolerance for polygon clipping (3D) */
-#define CONTACTINTLIM 1.0e-12    /* min(area-%) cell/slave for integration */
+#define CONTACTINTLIM 1.0e-12   /* min(area-%) cell/slave for integration */
 
 #endif  // #ifndef CONTACTDEFINES_H
 #endif  // #ifdef CCADISCRET
