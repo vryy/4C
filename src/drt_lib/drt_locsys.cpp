@@ -56,6 +56,7 @@ void DRT::UTILS::LocsysManager::Setup()
   
   // get problem dimension (2D or 3D) and store into dim_
   dim_ = DRT::Problem::Instance()->ProblemSizeParams().get<int>("DIM");
+  
   if (Dim()!= 2 && Dim()!=3) dserror("ERROR: Locsys problem must be 2D or 3D");
     
   // get node row layout of discretization
@@ -63,8 +64,7 @@ void DRT::UTILS::LocsysManager::Setup()
   
   // create locsys vector and initialize to -1
   locsystoggle_ = LINALG::CreateVector(*noderowmap,false);
-  for (int i=0;i<noderowmap->NumMyElements();++i)
-    (*locsystoggle_)[i]= -1;
+  locsystoggle_->PutScalar(-1.0);
   
   // check for locsys boundary conditions
   Discret().GetCondition("Locsys",locsysconds_);
