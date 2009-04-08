@@ -137,10 +137,13 @@ int main(
         FluidEnsightWriter fluidwriter(fluidfield, basename);
         fluidwriter.WriteFiles();
         
-        cout << "  Interface Field" << endl;
-        PostField* ifacefield = problem.get_discretization(2);
-        InterfaceEnsightWriter ifacewriter(ifacefield, basename);
-        ifacewriter.WriteFiles();
+        // in the future, we might also write the interface
+        // but at the moment, some procs might have no row elements
+        // and the HDF5 writing process can not handle this 
+//        cout << "  Interface Field" << endl;
+//        PostField* ifacefield = problem.get_discretization(2);
+//        InterfaceEnsightWriter ifacewriter(ifacefield, basename);
+//        ifacewriter.WriteFiles();
         break;
     }
     case prb_loma:
