@@ -28,7 +28,6 @@ Maintainer: Michael Gee
 
 using UTILS::SurfStressManager;
 using UTILS::PotentialManager;
-using UTILS::BroMotion_Manager;
 
 /*----------------------------------------------------------------------*
  * Integrate a Surface Neumann boundary condition (public)     gee 04/08|
@@ -525,21 +524,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
       // compute stochastical forces due to Brownian Motion
       case calc_brownian_motion:
       {
-        RefCountPtr<BroMotion_Manager> bromotion_manager =
-          params.get<RefCountPtr<BroMotion_Manager> >("bromo_man", null);
-        if (bromotion_manager==null)
-          dserror("No Brownian Manager in Solid3 Surface available");
-
-        RefCountPtr<DRT::Condition> cond = params.get<RefCountPtr<DRT::Condition> >("condition",null);
-         if (cond==null)
-           dserror("Condition not available in Solid3 Surface");
-
-        if (cond->Type()==DRT::Condition::Brownian_Motion) // Brownian Motion
-        {
-          bromotion_manager->StochasticalForces(this, gaussrule_, params, elevector1);
-        }
-        else
-          dserror("Unknown condition type %d",cond->Type());
+          dserror("not yet comitted");
       }
       break;
 
