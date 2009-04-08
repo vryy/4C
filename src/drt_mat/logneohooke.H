@@ -34,7 +34,7 @@ namespace MAT
     /// material parameters for logarithmic neo-Hooke material
     ///
     /// <h3>Input line</h3>
-    /// MAT 1 MAT_Struct_AAANeoHooke YOUNG 1.044E7 NUE 0.3 DENS 1.0
+    /// MAT 1 MAT_Struct_LogNeoHooke YOUNG 1.044E7 NUE 0.3 DENS 1.0
     class LogNeoHooke : public Parameter
     {
     public:
@@ -69,10 +69,20 @@ namespace MAT
   /// This is a compressible, hyperelastic, isotropic material 
   /// of the most simple kind.
   ///
+  /// You can easily get a purely incompressible (or isochoric) response
+  /// by setting Poisson's ration to 0.5. However be warned, this will only
+  /// work with an elment capable of purely incompressible response without
+  /// addressing a volumetric strain-stress relation.
+  ///
   /// <h3>References</h3>
-  /// [1] J Bonet and RD Wood, "Nonlinear continuum mechanics for finite 
-  ///     element analysis", Cambridge, 1997.
-  /// [2] GA Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
+  /// <ul>
+  /// <li> [1] J Bonet and RD Wood, "Nonlinear continuum mechanics for finite 
+  ///          element analysis", Cambridge, 1997.
+  /// <li> [2] GA Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
+  /// </ul>
+  ///
+  /// \author bborn
+  /// \date 04/09
   class LogNeoHooke : public Material
   {
 
@@ -85,6 +95,7 @@ namespace MAT
     LogNeoHooke(MAT::PAR::LogNeoHooke* params);
 
     /// @name Packing and Unpacking
+    //@{
 
     /// Return unique ParObject id
     ///
@@ -116,6 +127,9 @@ namespace MAT
 
     //@}
 
+    /// @name Access material constants
+    //@{
+
     /// material mass density
     double Density() const { return params_->density_; }
 
@@ -125,22 +139,24 @@ namespace MAT
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_logneohooke; }
 
+    //@}
+
     /// Main material call to determine 2nd PK stress and material constitutive tensor
     ///
-    /// The strain energy density function
+    /// The material strain energy density function is
     ///\f[
     /// \Psi = \frac{\mu}{2} (I_{\boldsymbol{C}} - 3)
-    ///      - \mu \log(\sqrt{I\!I\!I_{\boldsymbol{C}}})
+    ///       - \mu \log(\sqrt{I\!I\!I_{\boldsymbol{C}}})
     ///      + \frac{\lambda}{2} \big( \log(\sqrt{I\!I\!I_{\boldsymbol{C}}}) \big)^2
     ///\f]
-    /// taken from [1].
+    /// which was taken from [1].
     ///
     ///
     /// here is \f$I_{\boldsymbol{C}}\f$ the first principal invariant
     /// of the right Cauchy--Green strain tensor \f$\boldsymbol{C}\f$ 
     /// and \f$I\!I\!I_{\boldsymbol{C}}\f$ its third.
     /// The isochoric part is proportional to \f$\mu\f$,
-    /// wheras the \f$\lambda\f$-proportional part constitutes the volumetric contribution.
+    /// whereas the \f$\lambda\f$-proportional part constitutes the volumetric contribution.
     ///
     /// The 2nd Piola--Kirchhoff stress is
     ///\f[
@@ -148,12 +164,15 @@ namespace MAT
     ///                + \lambda \, \log(\sqrt{I\!I\!I_{\boldsymbol{C}}}) \,  \boldsymbol{C}^{-1}
     ///\f]
     ///
-    /// The material constitutive 4-tensor \f$\boldsymbol{C}_\text{m}=C_{IJKL}\boldsymbol{E}^I\otimes\boldsymbol{E}^J\otimes\boldsymbol{E}^K\otimes\boldsymbol{E}^L\f$ is determined by
+    /// The material constitutive 4-tensor
+    /// \f$\boldsymbol{C}_\text{m}=C_{IJKL}\boldsymbol{E}^I\otimes\boldsymbol{E}^J\otimes\boldsymbol{E}^K\otimes\boldsymbol{E}^L\f$
+    /// is determined by
     ///\f[
-    /// C_{IJKL} = \lambda (\boldsymbol{C}^{-1})_{IJ} \, (\boldsymbol{C}^{-1})_{KL}
-    ///          + 2\big(\mu-\lambda \log(\sqrt{I\!I\!I_{\boldsymbol{C}}})\big)
-    ///            \, \frac{1}{2} \big( \boldsymbol{C}^{-1})_{IK} \, (\boldsymbol{C}^{-1})_{JL}
-    ///                                 + (\boldsymbol{C}^{-1})_{IL} \, (\boldsymbol{C}^{-1})_{JK} \big)
+    /// C_{IJKL} 
+    /// = \lambda (\boldsymbol{C}^{-1})_{IJ} \, (\boldsymbol{C}^{-1})_{KL}
+    /// + 2\big(\mu-\lambda \log(\sqrt{I\!I\!I_{\boldsymbol{C}}})\big)
+    ///   \, \frac{1}{2} \big( \boldsymbol{C}^{-1})_{IK} \, (\boldsymbol{C}^{-1})_{JL}
+    ///                        + (\boldsymbol{C}^{-1})_{IL} \, (\boldsymbol{C}^{-1})_{JK} \big)
     ///\f]
     /// or
     ///\f[
