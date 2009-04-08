@@ -1618,7 +1618,7 @@ void GEO::Intersection::computeCDT(
   tetgenio::polygon *p;
 
 
-  const double scalefactor =  1e8;
+  const double scalefactor =  1e7;
   // allocate pointlist
   in.numberofpoints = pointList_.size();
   in.pointlist = new REAL[in.numberofpoints * dim];
