@@ -178,6 +178,13 @@ public:
                     The numbers in the picture are control
 		    point gids (see above)
 
+   \return bool zero_size
+           If the integration elements size in the knotspace 
+           is zero, this value will be returned true (and
+           otherwise false)
+           Zero sized elements are simply to be skipped during 
+           integration.
+
       \verbatim
 
       knots_[0]
@@ -204,7 +211,7 @@ public:
       \endverbatim
 
   */
-  void GetEleKnots(
+  bool GetEleKnots(
     vector<Epetra_SerialDenseVector> & eleknots,
     int                                gid
     );
@@ -323,6 +330,16 @@ public:
       }
       return(n_x_m_x_l_[npatch]);
     };
+
+  /*!
+  \brief Return number of zero sized elements in each direction of
+         knotspan of this patch
+
+         \return vector number of zero sized elements in knotspan of 
+                 this patch
+  */
+  virtual vector<int> Return_n_zerosize_ele(const int npatch);
+
 
   /*!
   \brief Return the element sizes of the nurbs patch

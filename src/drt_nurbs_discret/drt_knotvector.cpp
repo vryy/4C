@@ -209,7 +209,7 @@ void DRT::NURBS::Knotvector::ConvertEleGidToKnotIds(
 /*----------------------------------------------------------------------*
  | get element knot vectors to a given element id   (public) gammi 05/08|
  *----------------------------------------------------------------------*/
-void DRT::NURBS::Knotvector::GetEleKnots(
+bool DRT::NURBS::Knotvector::GetEleKnots(
   vector<Epetra_SerialDenseVector> & eleknots,
   int                                gid
   )
@@ -256,7 +256,24 @@ void DRT::NURBS::Knotvector::GetEleKnots(
     }
   }
 
-  return;
+  // check local knotspan for multiple knots indicating zero
+  // sized elements
+  bool zero_size=false;
+
+  for(int rr=0;rr<dim_;++rr)
+  {
+    const double size=
+      (eleknots[rr])((degree_[npatch])[rr]  )
+      -
+      (eleknots[rr])((degree_[npatch])[rr]+1);
+
+    if(fabs(size)<1e-12)
+    {
+      zero_size=true;
+    }
+  }
+
+  return(zero_size);
 }
 
 
@@ -619,5 +636,102 @@ void DRT::NURBS::Knotvector::Unpack(const vector<char>& data)
 
   return;
 }
+
+
+/*----------------------------------------------------------------------*
+ |  Return number of zero sized elements in knotspan of this patch      |
+ |  (public)                                                gammi 05/08 |
+ *----------------------------------------------------------------------*/
+vector<int> DRT::NURBS::Knotvector::Return_n_zerosize_ele(const int npatch)
+{
+  if(!filled_)
+  {
+    dserror("can't access data. knotvector not completed\n");
+  }
+
+  vector<int> num_zero_sized(dim_);
+  
+  switch(dim_)
+  {
+  case 1:
+  {
+    for(int rr=(degree_[npatch])[0];rr<(n_x_m_x_l_[npatch])[0]-(degree_[npatch])[0]-1;++rr)
+    {
+      double size=1.0;
+
+      size*=(*(knot_values_[npatch])[0])[rr+1]-(*(knot_values_[npatch])[0])[rr];
+          
+      if(fabs(size)<1e-12)
+      {
+        ++(num_zero_sized[0]);
+        break;
+      }
+    }
+    break;
+  }
+  case 2:
+  {
+    double size=0.0;
+    for(int rr=(degree_[npatch])[0];rr<(n_x_m_x_l_[npatch])[0]-(degree_[npatch])[0]-1;++rr)
+    {
+      size=(*(knot_values_[npatch])[0])[rr+1]-(*(knot_values_[npatch])[0])[rr];
+      if(fabs(size)<1e-12)
+      {
+        ++(num_zero_sized[0]);
+      }
+    }
+    for(int mm=(degree_[npatch])[1];mm<(n_x_m_x_l_[npatch])[1]-(degree_[npatch])[1]-1;++mm)
+    {
+
+      size=(*(knot_values_[npatch])[1])[mm+1]-(*(knot_values_[npatch])[1])[mm];
+          
+      if(fabs(size)<1e-12)
+      {
+        ++(num_zero_sized[1]);
+        break;
+      }
+    }
+    break;
+  }
+  case 3:
+  {
+    double size=0.0;
+    for(int rr=(degree_[npatch])[0];rr<(n_x_m_x_l_[npatch])[0]-(degree_[npatch])[0]-1;++rr)
+    {
+      size=(*(knot_values_[npatch])[0])[rr+1]-(*(knot_values_[npatch])[0])[rr];
+      if(fabs(size)<1e-12)
+      {
+        ++(num_zero_sized[0]);
+      }
+    }
+    for(int mm=(degree_[npatch])[1];mm<(n_x_m_x_l_[npatch])[1]-(degree_[npatch])[1]-1;++mm)
+    {
+      size=(*(knot_values_[npatch])[1])[mm+1]-(*(knot_values_[npatch])[1])[mm];
+          
+      if(fabs(size)<1e-12)
+      {
+        ++(num_zero_sized[1]);
+        break;
+      }
+    }
+    for(int kk=(degree_[npatch])[2];kk<(n_x_m_x_l_[npatch])[2]-(degree_[npatch])[2]-1;++kk)
+    {
+      size=(*(knot_values_[npatch])[2])[kk+1]-(*(knot_values_[npatch])[2])[kk];
+          
+      if(fabs(size)<1e-12)
+      {
+        ++(num_zero_sized[2]);
+        break;
+      }
+    }
+    break;
+  }
+  default: 
+    dserror("implemented only for 1,2 and 3 dimensions\n");
+  }
+
+  return(num_zero_sized);
+}
+
 
 #endif
