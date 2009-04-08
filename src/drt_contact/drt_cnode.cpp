@@ -472,6 +472,19 @@ void CONTACT::CNode::BuildAveragedNormal()
   }
   else if (NumDof()==3)
   {
+#ifdef CONTACTPSEUDO2D
+    // we want to treat a 3D mesh as pseudo 2D contact problem
+    // with all nodes fixed in z-direction
+    // thus, the second tangent is fixed to (0,0,1)
+    teta()[0] = 0.0;
+    teta()[1] = 0.0;
+    teta()[2] = 1.0;
+    
+    // txi follows from corkscrew rule (txi = teta x n)
+    txi()[0] = teta()[1]*n()[2]-teta()[2]*n()[1];
+    txi()[1] = teta()[2]*n()[0]-teta()[0]*n()[2];
+    txi()[2] = teta()[0]*n()[1]-teta()[1]*n()[0]; 
+#else
     // arbitrary definition for txi
     if (abs(n()[2])>1.0e-6)
     {
@@ -501,6 +514,7 @@ void CONTACT::CNode::BuildAveragedNormal()
     teta()[0] = n()[1]*txi()[2]-n()[2]*txi()[1];
     teta()[1] = n()[2]*txi()[0]-n()[0]*txi()[2];
     teta()[2] = n()[0]*txi()[1]-n()[1]*txi()[0]; 
+#endif // #ifdef CONTACTPSEUDO2D
   }
   else
     dserror("ERROR: Contact problems must be either 2D or 3D");
@@ -621,6 +635,33 @@ void CONTACT::CNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
   //**********************************************************************
   else
   {
+#ifdef CONTACTPSEUDO2D
+    // trivial tangent derivative teta
+    // this is 0 as teta is fixed to (0,0,1)
+    
+    // get normalized tangent derivative txi
+    // use corkscrew rule from BuildAveragedNormal()
+    map<int,double>& derivtxix = GetDerivTxi()[0];
+    map<int,double>& derivtxiy = GetDerivTxi()[1];
+    map<int,double>& derivtxiz = GetDerivTxi()[2];
+    
+    for (CI p=derivnx.begin();p!=derivnx.end();++p)
+    {
+      derivtxiy[p->first] += teta()[2]*(p->second);
+      derivtxiz[p->first] -= teta()[1]*(p->second);
+    }
+    for (CI p=derivny.begin();p!=derivny.end();++p)
+    {
+      derivtxix[p->first] -= teta()[2]*(p->second);
+      derivtxiz[p->first] += teta()[0]*(p->second);
+    }
+    for (CI p=derivnz.begin();p!=derivnz.end();++p)
+    {
+      derivtxix[p->first] += teta()[1]*(p->second);
+      derivtxiy[p->first] -= teta()[0]*(p->second);
+    }
+  }
+#else
     // unnormalized tangent derivative txi
     // use definitions for txi from BuildAveragedNormal()
     if (abs(n()[2])>1.0e-6)
@@ -758,6 +799,7 @@ void CONTACT::CNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
       derivtetay[p->first] -= n()[0]*(p->second);
     }
   }
+#endif // #ifdef CONTACTPSEUDO2D
   
   return;
 }

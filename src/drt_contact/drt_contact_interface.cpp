@@ -1757,7 +1757,12 @@ void CONTACT::Interface::AssembleDMG(LINALG::SparseMatrix& dglobal,
       // else, it cannot be in contact and weighted gap should be positive
       // (otherwise wrong results possible for g~ because of non-positivity
       // of dual shape functions!!!)
+      // when applying a Petrov-Galerkin scheme with standard shape functions
+      // for the weighted gap interpolation this problem does not exist
+      // FIXME: Only the linear case considered here (popp 04/09)
+#ifndef CONTACTPETROVGALERKIN
       if (!cnode->HasProj() && !cnode->Active()) gap = 1.0e12;
+#endif // #ifndef CONTACTPETROVGALERKIN
 
       Epetra_SerialDenseVector gnode(1);
       vector<int> lm(1);

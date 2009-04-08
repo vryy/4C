@@ -2255,14 +2255,15 @@ void CONTACT::ManagerBase::StoreNodalQuantities(ManagerBase::QuantityType type,
             cout << "***WARNING***: Non-D.B.C. inactive node " << cnode->Id() << " has non-zero Lag. Mult.: dof "
                  << cnode->Dofs()[k] << " lm " << (*vectorinterface)[locindex+k] << endl;
           
+#ifndef CONTACTPSEUDO2D
           // throw a dserror if node is Active and DBC
-          // TODO implement properly for pseudo 3d problems
-          //if (cnode->Dbc()[k] && cnode->Active())
-          //  dserror("ERROR: Slave Node %i is active and at the same time carries D.B.C.s!", cnode->Id());
+          if (cnode->Dbc()[k] && cnode->Active())
+            dserror("ERROR: Slave Node %i is active and at the same time carries D.B.C.s!", cnode->Id());
           
           // explicity set global Lag. Mult. to zero for D.B.C nodes
           if (cnode->IsDbc())
             (*vectorinterface)[locindex+k] = 0.0;
+#endif // #ifndef CONTACTPSEUDO2D
           
           // store updated LM into node
           cnode->lm()[k] = (*vectorinterface)[locindex+k];
