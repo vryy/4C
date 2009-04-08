@@ -749,7 +749,12 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
     RefCountPtr<DRT::NURBS::Knotvector> knots=(*nurbsdis).GetKnotVector();
 
-    knots->GetEleKnots(mypknots,surfele->parent_->Id());
+    bool zero_sized_parent=knots->GetEleKnots(mypknots,surfele->parent_->Id());
+    if(zero_sized_parent)
+    {
+      return 0;
+    }
+
 
     switch(surfaceid)
     {

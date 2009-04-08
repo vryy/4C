@@ -336,7 +336,15 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
       =
       dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
 
-    (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,ele->Id());
+    bool zero_size = false;
+    zero_size = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,ele->Id());
+
+    // if we have a zero sized element due to a interpolated 
+    // point --- exit here
+    if(zero_size)
+    {
+      return(0);
+    }
   }
 
   // on output of Sysmat, visceff will contain the computed effective viscosity
@@ -9799,7 +9807,15 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
       =
       dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
 
-    (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,ele->Id());
+    bool zero_size = false;
+    zero_size = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,ele->Id());
+
+    // if we have a zero sized element due to a interpolated 
+    // point --- exit here
+    if(zero_size)
+    {
+      return(0);
+    }
   }
 
   // visceff will contain the computed effective viscosity
@@ -10699,7 +10715,15 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
       =
       dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
 
-    (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,ele->Id());
+    bool zero_size = false;
+    zero_size = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,ele->Id());
+
+    // if we have a zero sized element due to a interpolated 
+    // point --- exit here
+    if(zero_size)
+    {
+      return(0);
+    }
       
     int patchid=0;
     int gid    =ele->Id();

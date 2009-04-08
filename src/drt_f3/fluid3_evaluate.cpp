@@ -709,10 +709,10 @@ GaussRule3D DRT::ELEMENTS::Fluid3::getOptimalGaussrule(const DiscretizationType&
     GaussRule3D rule = intrule3D_undefined;
     switch (distype)
     {
-    case hex8:
+    case hex8: case nurbs8:
         rule = intrule_hex_8point;
         break;
-    case hex20: case hex27:
+    case hex20: case hex27: case nurbs27:
         rule = intrule_hex_27point;
         break;
     case tet4:
@@ -1368,7 +1368,16 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 
     // access elements knot span
     std::vector<Epetra_SerialDenseVector> eleknots(3);
-    knots->GetEleKnots(eleknots,gid);
+
+    bool zero_size = false;
+    zero_size = knots->GetEleKnots(eleknots,gid);
+
+    // if we have a zero sized element due to a interpolated 
+    // point --- exit here
+    if(zero_size)
+    {
+      return;
+    }
 
     // aquire weights from nodes
     LINALG::Matrix<iel,1> weights;
@@ -2701,8 +2710,16 @@ void DRT::ELEMENTS::Fluid3::integrateShapefunction(
       =
       dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
 
-    (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
-    
+    bool zero_size = false;
+    zero_size = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
+
+    // if we have a zero sized element due to a interpolated 
+    // point --- exit here
+    if(zero_size)
+    {
+      return;
+    }
+
     // get node weights for nurbs elements
     for (int inode=0; inode<iel; inode++)
     {
