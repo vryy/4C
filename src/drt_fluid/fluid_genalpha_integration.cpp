@@ -1433,47 +1433,10 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
                                    zeros_,*(dbcmaps_->CondMap()));
   }
 
-  // end time measurement for application of dirichlet conditions
-  tm4_ref_=null;
-
-  // end measurement element call
-  dtele_=ds_cputime()-tcpu;
-
-  return;
-} // FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | Solve linear problem                                      gammi 06/07|
- -----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::FluidGenAlphaIntegration::GenAlphaCalcIncrement(const double nlnres)
-{
-  bool   isadapttol    = params_.get<bool>  ("ADAPTCONV"                ,true  );
-  double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER"         ,0.01  );
-  double nlntolsol     = params_.get<double>("tolerance for nonlin iter",1.e-10);
-
-  //--------------------------- adapt tolerance  in the convergence limit
-  if (isadapttol && itenum_>1)
-  {
-    solver_.AdaptTolerance(nlntolsol,nlnres,adaptolbetter);
-  }
-
-  //-------solve for residual displacements to correct incremental displacements
-  increment_->PutScalar(0.0);
-
-  // always refactor the matrix for a new solver call --- we assume that
-  // it has changed since the last call
-  bool refactor=true;
-  // never reset solver from time integration level
-  // the preconditioner does the job on its own according to the AZreuse
-  // parameter
-  bool reset   =false;
-
+  // -------------------------------------------------------------------
+  // If necessary, remove pressure mean from residual, i.e. the first
+  // Krylov vector
+  // -------------------------------------------------------------------
   if (project_)
   {
     DRT::Condition* KSPcond=discret_->GetCondition("KrylovSpaceProjection");
@@ -1579,7 +1542,79 @@ void FLD::FluidGenAlphaIntegration::GenAlphaCalcIncrement(const double nlnres)
     {
       dserror("unknown definition of weight vector w for restriction of Krylov space");
     }
+
+    // loop basis vector of kernel and orthogonalize against it
+    /*
+                   T
+                  w * c
+    */
+    double wTc=0.0;
+      
+    c_->Dot(*w_,&wTc);
+  
+    if(fabs(wTc)<1e-14)
+    {
+      dserror("weight vector must not be orthogonal to c");
+    }
+  
+    /*
+                   T
+                  c * Y
+    */
+    double cTY=0.0;
+      
+    c_->Dot(*(residual_),&cTY);
+
+    /*
+                                  T
+                       T         c * Y
+                      P Y = Y - ------- * w
+                                  T
+                                 w * c
+    */
+    (residual_)->Update(-cTY/wTc,*w_,1.0);
   }
+
+  // end time measurement for application of dirichlet conditions
+  tm4_ref_=null;
+
+  // end measurement element call
+  dtele_=ds_cputime()-tcpu;
+
+  return;
+} // FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | Solve linear problem                                      gammi 06/07|
+ -----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::FluidGenAlphaIntegration::GenAlphaCalcIncrement(const double nlnres)
+{
+  bool   isadapttol    = params_.get<bool>  ("ADAPTCONV"                ,true  );
+  double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER"         ,0.01  );
+  double nlntolsol     = params_.get<double>("tolerance for nonlin iter",1.e-10);
+
+  //--------------------------- adapt tolerance  in the convergence limit
+  if (isadapttol && itenum_>1)
+  {
+    solver_.AdaptTolerance(nlntolsol,nlnres,adaptolbetter);
+  }
+
+  //-------solve for residual displacements to correct incremental displacements
+  increment_->PutScalar(0.0);
+
+  // always refactor the matrix for a new solver call --- we assume that
+  // it has changed since the last call
+  bool refactor=true;
+  // never reset solver from time integration level
+  // the preconditioner does the job on its own according to the AZreuse
+  // parameter
+  bool reset   =false;
   
   solver_.Solve(sysmat_->EpetraOperator(),
                 increment_               ,
