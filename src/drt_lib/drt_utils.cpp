@@ -107,6 +107,7 @@ extern "C"
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../drt_mat/micromaterial.H"
 #include "../drt_mat/neohooke.H"
+#include "../drt_mat/logneohooke.H"
 #include "../drt_mat/aaaneohooke.H"
 #include "../drt_mat/lung_penalty.H"
 #include "../drt_mat/lung_ogden.H"
@@ -664,15 +665,21 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
     }
     case ParObject_NeoHooke:
     {
-	MAT::NeoHooke* neo = new MAT::NeoHooke();
-	neo->Unpack(data);
-	return neo;
+      MAT::NeoHooke* neo = new MAT::NeoHooke();
+      neo->Unpack(data);
+      return neo;
+    }
+    case ParObject_LogNeoHooke:
+    {
+      MAT::LogNeoHooke* logneo = new MAT::LogNeoHooke();
+      logneo->Unpack(data);
+      return logneo;
     }
     case ParObject_AAAneohooke:
     {
-	MAT::AAAneohooke* aaa = new MAT::AAAneohooke();
-	aaa->Unpack(data);
-	return aaa;
+      MAT::AAAneohooke* aaa = new MAT::AAAneohooke();
+      aaa->Unpack(data);
+      return aaa;
     }
     case ParObject_ConvecDiffus:
     {
