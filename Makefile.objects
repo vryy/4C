@@ -137,8 +137,6 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_geometry/intersection_math.o \
                 src/drt_geometry/intersection_service.o \
                 src/drt_geometry/intersection.o \
-                src/drt_tetgen/predicates.o \
-                src/drt_tetgen/tetgen.o \
                 src/drt_geometry/integrationcell.o \
                 src/drt_lib/drt_locsys.o
 #               input parameters and definitions

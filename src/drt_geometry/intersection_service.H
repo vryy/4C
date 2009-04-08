@@ -45,6 +45,7 @@ Maintainer: Ursula Mayer
 #define INTERSECTION_SERVICE_H_
 
 #include "../drt_geometry/intersection_service_templates.H"
+#include "../drt_geometry/intersection_interfacepoint.H"
 #include "../drt_geometry/element_normals.H"
 #include "../drt_geometry/position_array.H"
 
@@ -84,10 +85,16 @@ namespace GEO
      }
 
      
-     const std::map<int,LINALG::Matrix<3,2> > getCurrentXAABBs(
-         const DRT::Discretization&                dis,
-         const std::map<int,LINALG::Matrix<3,1> >& currentpositions
-         );
+    const std::map<int,LINALG::Matrix<3,2> > getCurrentXAABBs(
+       const DRT::Discretization&                dis,
+       const std::map<int,LINALG::Matrix<3,1> >& currentpositions
+       );
+         
+      
+    const std::map<int,LINALG::Matrix<3,2> > getTriangleXAABBs(
+      const std::vector<vector<int> >&                triangleList,
+      const std::vector<GEO::InterfacePoint>&         pointList
+      );
     
     
     /*!
@@ -97,7 +104,7 @@ namespace GEO
     \param xyze           (in)  nodal position array (3,numnodes)
     \return extended axis-aligned bounding box  (XAABB) for an element
      */
-    LINALG::Matrix<6,2> compute18Dop( 
+    LINALG::Matrix<6,2> computeContact18Dop( 
         const DRT::Element*                 element,
         const LINALG::SerialDenseMatrix&    xyze
         );
@@ -111,10 +118,10 @@ namespace GEO
     \param xfemDOP     (in)         : DOP of the xfem element
     \return true if the DOP's intersect or false otherwise
      */
-    bool intersectionOf18Dop(  
-        const LINALG::Matrix<6,2>&    cutterDOP,
-        const LINALG::Matrix<6,2>&    xfemDOP
-        );
+    bool intersectionOfKDOPs(  
+      const LINALG::Matrix<9,2>&    cutterDOP,
+      const LINALG::Matrix<9,2>&    xfemDOP
+      );
 
 
     /*!

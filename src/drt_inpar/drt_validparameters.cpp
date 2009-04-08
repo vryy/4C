@@ -425,7 +425,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "GenAlpha",
                                  "OneStepTheta",
                                  "GEMM",
-                                 "AdamsBashforth2"),
+                                 "AdamsBashforth2",
+                                 "EulerMaruyama",
+                                 "EulerImpStoch"),
                                tuple<INPAR::STR::DynamicType>(
                                  INPAR::STR::dyna_centr_diff,
                                  INPAR::STR::dyna_Gen_EMM,
@@ -435,7 +437,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::STR::dyna_genalpha,
                                  INPAR::STR::dyna_onesteptheta,
                                  INPAR::STR::dyna_gemm,
-                                 INPAR::STR::dyna_ab2),
+                                 INPAR::STR::dyna_ab2,
+                                 INPAR::STR::dyna_euma,
+                                 INPAR::STR::dyna_euimsto),
                                &sdyn);
   // a temporary flag
   setStringToIntegralParameter<int>("ADAPTERDRIVE","No",
@@ -469,7 +473,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Yes",
                                  "YES",
                                  "Rayleigh",
-                                 "Material"),
+                                 "Material",
+                                 "BrownianMotion"),
                                tuple<INPAR::STR::DampKind>(
                                  INPAR::STR::damp_none,
                                  INPAR::STR::damp_none,
@@ -478,7 +483,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::STR::damp_rayleigh,
                                  INPAR::STR::damp_rayleigh,
                                  INPAR::STR::damp_rayleigh,
-                                 INPAR::STR::damp_material),
+                                 INPAR::STR::damp_material,
+                                 INPAR::STR::damp_brownianmotion),
                                &sdyn);
   DoubleParameter("M_DAMP",0.5,"",&sdyn);
   DoubleParameter("K_DAMP",0.5,"",&sdyn);

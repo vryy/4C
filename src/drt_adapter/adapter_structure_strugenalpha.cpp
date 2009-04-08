@@ -479,4 +479,16 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::StructureGenAlpha::CreateFieldTest()
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+ADAPTER::ContactStructureGenAlpha::ContactStructureGenAlpha
+    (Teuchos::RCP<Teuchos::ParameterList> params,
+     Teuchos::RCP<DRT::Discretization> dis,
+     Teuchos::RCP<LINALG::Solver> solver,
+     Teuchos::RCP<IO::DiscretizationWriter> output):
+       ADAPTER::StructureGenAlpha(params, dis, solver,output)
+{
+}
+
+
 #endif

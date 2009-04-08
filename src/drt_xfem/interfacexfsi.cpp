@@ -49,9 +49,6 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
   FillCurrentCutterPositionMap(cutterdis, *cutterdis->GetState("idispcoln") , cutterposn_ );
   currentXAABBs_ = GEO::getCurrentXAABBs(*cutterdis, cutterposnp_);
   
-  static std::map<int,LINALG::Matrix<3,2> > currentXAABBs; 
-  currentXAABBs = GEO::getCurrentXAABBs(*cutterdis, cutterposnp_);
-  
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
   const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
 
@@ -75,8 +72,13 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
     if (screen_out) cout << " done" << endl;
   }
 
+  // call before intersection
+  // collect elements by xfem label for tree and invert
+  DRT::UTILS::CollectElementsByConditionLabel(*cutterdis, elementsByLabel_, "XFEMCoupling");
+  InvertElementsPerLabel();
+  
   Teuchos::RCP<GEO::Intersection> is = rcp(new GEO::Intersection());
-  is->computeIntersection(xfemdis, cutterdis, cutterposnp_, currentXAABBs, elementalDomainIntCells_, elementalBoundaryIntCells_);  
+  is->computeIntersection(xfemdis, cutterdis, cutterposnp_, currentXAABBs_, elementalDomainIntCells_, elementalBoundaryIntCells_, labelPerElementId_);  
   is = Teuchos::null;
   
   xfemdis->Comm().Barrier();
@@ -86,10 +88,6 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
   xfemdis->Comm().Barrier();
    
   PrintStatistics();
-  
-  // collect elements by xfem label for tree and invert
-  DRT::UTILS::CollectElementsByConditionLabel(*cutterdis, elementsByLabel_, "XFEMCoupling");
-  InvertElementsPerLabel();
   
   const LINALG::Matrix<3,2> cutterAABB = GEO::getXAABBofDis(*cutterdis,cutterposnp_);
   const LINALG::Matrix<3,2> xfemAABB =GEO::getXAABBofDis(*xfemdis);
@@ -215,7 +213,7 @@ void XFEM::InterfaceHandleXFSI::EraseTinyDomainIntCells(
     const DRT::Element* xfemele = xfemdis_->gElement(entry->first);
     for (GEO::DomainIntCells::const_iterator cell = cells_old.begin(); cell != cells_old.end(); ++cell)
     {
-      const double size = cell->SizeXiDomain(*xfemele);
+      const double size = cell->VolumeInXiDomain(*xfemele);
       if (abs(size) < small_cell_treshold)
       {
 //        cout << RED << size << END_COLOR << endl;

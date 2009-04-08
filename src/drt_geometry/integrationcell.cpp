@@ -146,14 +146,12 @@ void GEO::DomainIntCell::setLabel(const int   label)
 
 
 /*----------------------------------------------------------------------*
- * compute size in XiDomain coordinates
+ * compute volume in XiDomain coordinates
  *----------------------------------------------------------------------*/
-double GEO::DomainIntCell::SizeXiDomain(
+double GEO::DomainIntCell::VolumeInXiDomain(
         const DRT::Element&           ele
         ) const
 {
-  double volume_cell = 0.0;
-  
   DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule3D_undefined;
   switch (this->Shape())
   {
@@ -174,6 +172,7 @@ double GEO::DomainIntCell::SizeXiDomain(
   // gaussian points
   const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
 
+  double volume_cell = 0.0;
   // integration loop
   for (int iquad=0; iquad<intpoints.nquad; ++iquad)
   {
@@ -182,20 +181,14 @@ double GEO::DomainIntCell::SizeXiDomain(
     pos_eta_domain(0) = intpoints.qxg[iquad][0];
     pos_eta_domain(1) = intpoints.qxg[iquad][1];
     pos_eta_domain(2) = intpoints.qxg[iquad][2];
-
-
-    // coordinates of the current integration point in element coordinates \xi
-    static LINALG::Matrix<3,1> posXiDomain;
-    GEO::mapEtaToXi3D<XFEM::xfem_assembly>(*this, pos_eta_domain, posXiDomain);
+    
     const double detcell = GEO::detEtaToXi3D<XFEM::xfem_assembly>(*this, pos_eta_domain);
-
     const double fac = intpoints.qwgt[iquad]*detcell;
 
-    if(detcell < -1.0e-8) // allow tiny ill-defined cells
+    if(detcell < -1.0e-5) // allow tiny ill-defined cells
     {
-      dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT OF INTEGRATION CELL: %f", ele.Id(), detcell);
-    }
-       
+      dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT OF INTEGRATION CELL: %20.16f", ele.Id(), detcell);
+    }    
     volume_cell += fac;
 
   } // end loop over gauss points

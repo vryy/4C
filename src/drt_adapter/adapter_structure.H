@@ -26,6 +26,7 @@ Maintainer: Ulrich Kuettler
 
 #include "../drt_lib/drt_utils.H"
 #include "../drt_structure/strugenalpha.H"
+#include "../drt_contact/contactstrugenalpha.H"
 #include "../drt_structure/stru_resulttest.H"
 
 

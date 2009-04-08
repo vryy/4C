@@ -24,6 +24,7 @@ namespace GEO
 
 
   //! calculates the volume of an element in initial configuration      a.ger
+  //! displacements not considered
   template <DRT::Element::DiscretizationType DISTYPE>
     static inline double ElementVolumeT(
           const DRT::Element&           ele)

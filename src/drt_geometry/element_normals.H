@@ -105,12 +105,12 @@ inline void computeNormalToSurfaceElementT(
 */
 template <class M>
 inline void computeNormalToSurfaceElement(
-    const DRT::Element*           surfaceElement,    
-    const M&                      xyze_surfaceElement,                
-    const LINALG::Matrix<2,1>&    eleCoord,               
-    LINALG::Matrix<3,1>&          unitnormalvec)
+    const DRT::Element::DiscretizationType  distype,   
+    const M&                                xyze_surfaceElement,                
+    const LINALG::Matrix<2,1>&              eleCoord,               
+    LINALG::Matrix<3,1>&                    unitnormalvec)
 {
-  switch (surfaceElement->Shape())
+  switch (distype)
   {
   case DRT::Element::quad4:
     computeNormalToSurfaceElementT<DRT::Element::quad4>(xyze_surfaceElement, eleCoord, unitnormalvec);
@@ -128,7 +128,7 @@ inline void computeNormalToSurfaceElement(
     computeNormalToSurfaceElementT<DRT::Element::tri6>(xyze_surfaceElement, eleCoord, unitnormalvec);
     break;
   default:
-    cout << DRT::DistypeToString(surfaceElement->Shape()) << " not found!" << endl;
+    cout << DRT::DistypeToString(distype) << " not found!" << endl;
     dserror("please add your distype!");
   }
   return;

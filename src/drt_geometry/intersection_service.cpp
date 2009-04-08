@@ -144,10 +144,37 @@ const std::map<int,LINALG::Matrix<3,2> > GEO::getCurrentXAABBs(
 
 
 /*----------------------------------------------------------------------*
+ | delivers a axis-aligned bounding box for a given          u.may 02/09|
+ | triangle list                                                        |
+ *----------------------------------------------------------------------*/
+const std::map<int,LINALG::Matrix<3,2> > GEO::getTriangleXAABBs(
+    const std::vector<vector<int> >&                triangleList,
+    const std::vector<GEO::InterfacePoint>&       pointList)
+{
+  std::map<int,LINALG::Matrix<3,2> >  triangleXAABBs;
+  // loop over elements and merge XAABB with their eXtendedAxisAlignedBoundingBox
+  for (int i = 0; i < (int) triangleList.size(); ++i) 
+  {
+    LINALG::SerialDenseMatrix xyze_triElement(3,3);
+    for(int j = 0; j < 3; i++)
+    {
+      LINALG::Matrix<3,1> node = pointList[triangleList[i][j]].getCoord();
+      for(int k = 0; k < 3; k++)
+        xyze_triElement(j,k) = node(k);
+    }
+    const LINALG::Matrix<3,2> xaabbEle = GEO::computeFastXAABB(DRT::Element::tri3, xyze_triElement, GEO::LINEAR);
+    triangleXAABBs[i] = xaabbEle;
+  }
+  return triangleXAABBs;
+}
+
+
+
+/*----------------------------------------------------------------------*
  |  ICS:    computes 18Dops                                  u.may 12/08|
  |          (only the slabs which are not present in an XAABB)          |
  *----------------------------------------------------------------------*/
-LINALG::Matrix<6,2> GEO::compute18Dop( 
+LINALG::Matrix<6,2> GEO::computeContact18Dop( 
     const DRT::Element*                 element,
     const LINALG::SerialDenseMatrix&    xyze)
 {
@@ -169,38 +196,40 @@ LINALG::Matrix<6,2> GEO::compute18Dop(
         slabs(j,0)=dcurrent;
     }  
   
+  //CONTACT::CElement* selement = static_cast<CONTACT::CElement*>(element);
+  //double area = selement->Area();
+  double area = 0.01;
   // inflation of slabs by tolerance
   for(int j=0; j<6;j++)
   {
-    slabs(j,0) -= GEO::TOL7;
-    slabs(j,1) += GEO::TOL7;
+    slabs(j,0) -= 0.1*area;
+    slabs(j,1) += 0.1*area;
   }
   
   // if higher order include proper extension
-  
   return slabs;
 }
 
 
 
 /*----------------------------------------------------------------------*
- |  ICS:    checks if two 18DOPs intersect                   u.may 12/08|
- |          if their XAABB's intersect                                  |
+ |  ICS:    checks if two 18DOPs intersect                   u.may 12/08|                                  |
  *----------------------------------------------------------------------*/
-bool GEO::intersectionOf18Dop(  
-    const LINALG::Matrix<6,2>&    cutterDOP,
-    const LINALG::Matrix<6,2>&    xfemDOP)
+bool GEO::intersectionOfKDOPs(  
+    const LINALG::Matrix<9,2>&    cutterDOP,
+    const LINALG::Matrix<9,2>&    xfemDOP)
 {
-  // check the remaing slabs for intersection
-  for(int i = 0; i < 6; i++)
+  // check intersection of 18 kdops
+  for(int i = 0; i < 9; i++)
     if(! (  ((cutterDOP(i,0)  > (xfemDOP(i,0)   -GEO::TOL7))  && ( cutterDOP(i,0) < (xfemDOP(i,1)   +GEO::TOL7)) )  || 
             ((cutterDOP(i,1)  > (xfemDOP(i,0)   -GEO::TOL7))  && ( cutterDOP(i,1) < (xfemDOP(i,1)   +GEO::TOL7)) )  || 
             ((xfemDOP(i,0)    > (cutterDOP(i,0) -GEO::TOL7))  && ( xfemDOP(i,0)   < (cutterDOP(i,1) +GEO::TOL7)) )  || 
             ((xfemDOP(i,1)    > (cutterDOP(i,0) -GEO::TOL7))  && ( xfemDOP(i,1)   < (cutterDOP(i,1) +GEO::TOL7)) )  ))
       return false;
-  
+      
   return true;
 }
+
 
 
 /*----------------------------------------------------------------------*
@@ -242,7 +271,7 @@ bool GEO::searchForNearestPointOnSurface(
   
   // normal vector at position xsi
   static LINALG::Matrix<3,1> eleNormalAtXsi;
-  computeNormalToSurfaceElement(surfaceElement, xyze_surfaceElement, eleCoord, eleNormalAtXsi);
+  computeNormalToSurfaceElement(surfaceElement->Shape(), xyze_surfaceElement, eleCoord, eleNormalAtXsi);
   
   LINALG::Matrix<3,1> x_surface_phys;
   elementToCurrentCoordinates(surfaceElement->Shape(), xyze_surfaceElement, eleCoord, x_surface_phys);

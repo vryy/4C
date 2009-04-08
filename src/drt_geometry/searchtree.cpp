@@ -140,9 +140,33 @@ int GEO::SearchTree::queryXFEMFSIPointType(
     dserror("tree is not yet initialized !!!");
 
   if(!treeRoot_->getElementList().empty())
-    return treeRoot_->queryXFEMFSIPointType(dis, currentpositions,currentXAABBs, point);
+    return treeRoot_->queryXFEMFSIPointType(dis, currentpositions, currentXAABBs, point);
   else 
     return 0;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ | fix intersection for contact with xfem FSI              u.may   02/09|
+ *----------------------------------------------------------------------*/
+void GEO::SearchTree::moveContactNodes(
+    const vector<vector<int> >&                   triangleList,
+    vector< GEO::InterfacePoint >&                pointList, 
+    const std::map<int,LINALG::Matrix<3,2> >&     triangleXAABBs,  
+    const LINALG::Matrix<3,1>&                    querypoint,
+    const int                                     querypointId)
+{
+  
+  TEUCHOS_FUNC_TIME_MONITOR("GEO::SearchTree - queryTime");
+  
+  if(treeRoot_ == Teuchos::null)
+    dserror("tree is not yet initialized !!!");
+
+  if(!treeRoot_->getElementList().empty())
+    treeRoot_->moveContactNodes( triangleList, pointList, triangleXAABBs,  querypoint, querypointId);
+
+  return;
 }
 
 
@@ -237,26 +261,26 @@ void GEO::SearchTree::queryIntersectionCandidates(
 
 
 /*----------------------------------------------------------------------*
- | returns intersection elements (CONTACT)                    popp 07/08|
+ | returns contact elements for a given element              u.may 02/09|
+ | for multibody contact                                                |                
  *----------------------------------------------------------------------*/
-std::vector<int> GEO::SearchTree::searchIntersectionElements(
-    const DRT::Discretization&                  dis,
-    const std::map<int,LINALG::Matrix<3,1> >&   currentpositions, 
-    DRT::Element*                               element) 
+void GEO::SearchTree::searchMultibodyContactElements(
+    const std::map<int,LINALG::Matrix<9,2> >&   currentKDOPs, 
+    const LINALG::Matrix<9,2>&                  queryKDOP,
+    const int                                   label,
+    std::set<int>&                              contactEleIds)
 {
   TEUCHOS_FUNC_TIME_MONITOR("SearchTree - queryTime");
-
-  std::vector<int> elementset;
 
   if(treeRoot_ == Teuchos::null)
     dserror("tree is not yet initialized !!!");
 
   if(!treeRoot_->getElementList().empty())
-    elementset = treeRoot_->searchIntersectionElements(dis, currentpositions, element);
+    treeRoot_->searchMultibodyContactElements(currentKDOPs, queryKDOP, label, contactEleIds);
   else
     dserror("element list is empty");
 
-  return elementset;
+  return;
 }
 
 
@@ -677,6 +701,37 @@ void GEO::SearchTree::TreeNode::createChildren(
   // this node becomes an inner tree node
   treeNodeType_ = INNER_NODE;
 }
+
+
+
+/*----------------------------------------------------------------------*
+ | create children using KDOPS                             u.may   02/09|
+ *----------------------------------------------------------------------*/
+void GEO::SearchTree::TreeNode::createChildren(
+    const std::map<int,LINALG::Matrix<9,2> >&      currentKDOPs)
+{
+  // create empty children
+  static LINALG::Matrix<3,2> childNodeBox;
+  for(int index = 0; index < getNumChildren(); index++)
+  { 
+    getChildNodeBox(index, childNodeBox );
+    children_[index] = rcp(new TreeNode(this, (treedepth_-1), childNodeBox, treeType_));
+  }
+  
+  static std::vector<int> elementClassification;
+  // insert elements into child node
+  for (std::map<int, std::set<int> >::const_iterator labelIter = elementList_.begin(); labelIter != elementList_.end(); labelIter++)
+  {
+    for (std::set<int>::const_iterator eleIter = (labelIter->second).begin(); eleIter != (labelIter->second).end(); eleIter++)
+    {    
+      classifyKDOP(currentKDOPs.find(*eleIter)->second, elementClassification);
+      for(unsigned int count = 0; count < elementClassification.size(); count++)
+        children_[elementClassification[count]]->insertElement(labelIter->first,*eleIter);
+    }
+  }
+  // this node becomes an inner tree node
+  treeNodeType_ = INNER_NODE;
+}
   
 
 
@@ -695,6 +750,27 @@ void GEO::SearchTree::TreeNode::setXFEMLabelOfEmptyChildren(
       const LINALG::Matrix<3,1>  childNodeCenter(children_[index]->getCenterCoord());
       // xfem label has to be computed on this level because child is empty
       children_[index]->setLabel(getXFEMLabel(dis, currentpositions, childNodeCenter, elementList_));
+    }
+  }
+}
+
+
+
+/*----------------------------------------------------------------------*
+ | set XFEM label of empty children                        u.may   02/09|
+ *----------------------------------------------------------------------*/
+void GEO::SearchTree::TreeNode::setXFEMLabelOfEmptyChildren(
+    const vector<vector<int> >&                   triangleList,
+    const std::vector<GEO::InterfacePoint>&       pointList)
+{    
+  for(int index = 0; index < getNumChildren(); index++)
+  {
+    // if one of the created children is empty, set label immediately
+    if ((children_[index]->getElementList()).empty())
+    {
+      const LINALG::Matrix<3,1>  childNodeCenter(children_[index]->getCenterCoord());
+      // xfem label has to be computed on this level because child is empty
+      children_[index]->setLabel(getXFEMLabel(triangleList, pointList, childNodeCenter, elementList_));
     }
   }
 }
@@ -752,7 +828,6 @@ const int GEO::SearchTree::TreeNode::classifyPoint(
 std::vector<int> GEO::SearchTree::TreeNode::classifyXAABB(
     const LINALG::Matrix<3,2>&   AABB) const 
 {
-  
   // collect all children the XAABB is lying in
   // use tolerances such that it is ensured that no child is left behind :-) 
   // XAABB s which are lying between plane-tol and plane + tol are collected in each of the two chlidren
@@ -842,8 +917,6 @@ std::vector<int> GEO::SearchTree::TreeNode::classifyXAABB(
 
 
 
-
-
 /*----------------------------------------------------------------------*
  | classifiy AABB in node                                  u.may   07/08|
  *----------------------------------------------------------------------*/
@@ -919,6 +992,84 @@ void GEO::SearchTree::TreeNode::classifyXAABB(
   }
   return;
 }
+
+
+/*----------------------------------------------------------------------*
+ | classifiy AABB in node                                  u.may   02/09|
+ *----------------------------------------------------------------------*/
+void GEO::SearchTree::TreeNode::classifyKDOP(
+    const LINALG::Matrix<9,2>&    KDOP,
+    std::vector<int>&             octants) const 
+{
+  
+  // collect all children the XAABB is lying in
+  // use tolerances such that it is ensured that no child is left behind :-) 
+  // XAABB s which are lying between plane-tol and plane + tol are collected in each of the two chlidren
+  
+  octants.clear();
+  octants.reserve(8);
+  
+  // check max_x greater than x-plane
+  if (KDOP(0, 1) > (xPlaneCoordinate_ - GEO::TOL7) ) 
+  {
+    // check max_y greater than y-plane
+    if (KDOP(1, 1) > (yPlaneCoordinate_ - GEO::TOL7) ) 
+    {
+        // check max_z greater than z-plane
+        if (KDOP(2, 1) > (zPlaneCoordinate_ - GEO::TOL7) )
+          octants.push_back(7);
+
+        // check min_z less than z-plane
+        if (KDOP(2, 0) < (zPlaneCoordinate_ + GEO::TOL7) )
+          octants.push_back(3);
+
+    }
+    
+    // check min_y less than y-plane
+    if (KDOP(1, 0) < ( yPlaneCoordinate_ + GEO::TOL7) ) 
+    {
+        // check max_z greater than z-plane
+        if (KDOP(2, 1) > ( zPlaneCoordinate_ - GEO::TOL7) )
+          octants.push_back(5);
+              
+        // check min_z less than z-plane
+        if (KDOP(2, 0) < ( zPlaneCoordinate_ + GEO::TOL7) )
+          octants.push_back(1);
+    }
+  }
+
+  // check min_x less than x-plane
+  if (KDOP(0, 0) < ( xPlaneCoordinate_ + GEO::TOL7) ) 
+  {
+    // check min_y less than y-plane
+    if (KDOP(1, 0) < ( yPlaneCoordinate_ + GEO::TOL7) ) 
+    {
+        // check min_z less than z-plane
+        if (KDOP(2, 0) < ( zPlaneCoordinate_ + GEO::TOL7) )
+          octants.push_back(0);
+      
+        // check max_z greater than z-plane
+        if (KDOP(2, 1) > ( zPlaneCoordinate_ - GEO::TOL7) )
+          octants.push_back(4);
+
+    }
+    
+    // check max_y greater than y-plane
+    if (KDOP(1, 1) > ( yPlaneCoordinate_ - GEO::TOL7) ) 
+    {       
+        // check max_z greater than z-plane
+        if (KDOP(2, 1) > ( zPlaneCoordinate_ - GEO::TOL7) )
+          octants.push_back(6);
+      
+        // check min_z less than z-plane
+        if (KDOP(2, 0) < ( zPlaneCoordinate_ + GEO::TOL7) )
+          octants.push_back(2);
+
+    }
+  }
+  return;
+}
+
 
 
 
@@ -1106,6 +1257,186 @@ bool GEO::SearchTree::TreeNode::classifyXAABB(
 
 
 /*----------------------------------------------------------------------*
+ | classifiy KDOP in node                                  u.may   02/09|
+ *----------------------------------------------------------------------*/
+bool GEO::SearchTree::TreeNode::classifyKDOP(
+    int&                         index,
+    const LINALG::Matrix<9,2>&   KDOP) const 
+{
+  // collect all children the XAABB is lying in
+  // use tolerances such that it is ensured that no child is left behind :-) 
+  // XAABB s which are lying between plane-tol and plane + tol are collected in each of the two chlidren
+  bool oneIndex = true;
+  index = -1;
+  
+  // check max_x greater than x-plane
+  if (KDOP(0, 1) > (xPlaneCoordinate_ - GEO::TOL7) ) 
+  {
+    // check max_y greater than y-plane
+    if (KDOP(1, 1) > (yPlaneCoordinate_ - GEO::TOL7) ) 
+    {
+      if(treeType_ == OCTTREE)
+      {
+        // check max_z greater than z-plane
+        if (KDOP(2, 1) > (zPlaneCoordinate_ - GEO::TOL7) )
+        {
+          if(index == -1)
+            index = 7;
+          else
+          {
+            index = -1;
+            return false;
+          }
+        }
+        // check min_z less than z-plane
+        if (KDOP(2, 0) < (zPlaneCoordinate_ + GEO::TOL7) )
+        {
+          if(index == -1)
+            index = 3;
+          else
+          {
+            index = -1;
+            return false;
+          }
+        }
+      }
+      else if (treeType_ == QUADTREE)
+        if(index == -1)
+          index = 3;
+        else
+        {
+          index = -1;
+          return false;
+        }
+    }
+    
+    // check min_y less than y-plane
+    if (KDOP(1, 0) < ( yPlaneCoordinate_ + GEO::TOL7) ) 
+    {
+      if(treeType_ == OCTTREE)
+      {
+        // check max_z greater than z-plane
+        if (KDOP(2, 1) > ( zPlaneCoordinate_ - GEO::TOL7) )
+        {
+          if(index == -1)
+            index = 5;
+          else
+          {
+            index = -1;
+            return false;
+          }
+        }
+              
+        // check min_z less than z-plane
+        if (KDOP(2, 0) < ( zPlaneCoordinate_ + GEO::TOL7) )
+        {
+          if(index == -1)
+            index = 1;
+          else
+          {
+            index = -1;
+            return false;
+          }
+        }
+      }
+      else if(treeType_ == QUADTREE)
+        if(index == -1)
+          index = 1;
+        else
+        {
+          index = -1;
+          return false;
+        }
+    }
+  }
+
+  // check min_x less than x-plane
+  if (KDOP(0, 0) < ( xPlaneCoordinate_ + GEO::TOL7) ) 
+  {
+    // check min_y less than y-plane
+    if (KDOP(1, 0) < ( yPlaneCoordinate_ + GEO::TOL7) ) 
+    {
+      
+      if(treeType_ == OCTTREE)
+      {
+        // check min_z less than z-plane
+        if (KDOP(2, 0) < ( zPlaneCoordinate_ + GEO::TOL7) )
+        {
+          if(index == -1)
+            index = 0;
+          else
+          {
+            index = -1;
+            return false;
+          }
+        }
+        // check max_z greater than z-plane
+        if (KDOP(2, 1) > ( zPlaneCoordinate_ - GEO::TOL7) )
+        {
+          if(index == -1)
+            index = 4;
+          else
+          {
+            index = -1;
+            return false;
+          }
+        }
+      }
+      else if(treeType_ == QUADTREE)
+        if(index == -1)
+          index = 0;
+        else
+        {
+          index = -1;
+          return false;
+        }
+    }
+    
+    // check max_y greater than y-plane
+    if (KDOP(1, 1) > ( yPlaneCoordinate_ - GEO::TOL7) ) 
+    {       
+      if(treeType_ == OCTTREE)
+      {
+        // check max_z greater than z-plane
+        if (KDOP(2, 1) > ( zPlaneCoordinate_ - GEO::TOL7) )
+        {
+          if(index == -1)
+            index = 6;
+          else
+          {
+            index = -1;
+            return false;
+          }
+        }
+      
+        // check min_z less than z-plane
+        if (KDOP(2, 0) < ( zPlaneCoordinate_ + GEO::TOL7) )
+        {
+          if(index == -1)
+            index = 2;
+          else
+          {
+            index = -1;
+            return false;
+          }
+        }
+      }
+      else if(treeType_ == QUADTREE)
+        if(index == -1)
+          index = 2;
+        else
+        {
+          index = -1;
+          return false;
+        }
+    }
+  }
+  return oneIndex;
+}
+
+
+
+/*----------------------------------------------------------------------*
  | classifiy element in node                               peder   07/08|
  *----------------------------------------------------------------------*/
 std::vector<int> GEO::SearchTree::TreeNode::classifyElement(
@@ -1198,6 +1529,7 @@ int GEO::SearchTree::TreeNode::queryFSINearestObject(
     GEO::NearestObject&                             nearestObject
     ) 
 {
+  
   switch (treeNodeType_) 
   {
     case INNER_NODE:
@@ -1276,8 +1608,15 @@ int GEO::SearchTree::TreeNode::queryXFEMFSIPointType(
         int xfemLabel = GEO::getXFEMLabelAndNearestObject(dis, currentpositions, point, elementList_, nearestObjectInNode);
         
         const TreeNode* workingNode = this;
+        //cout << "point = " << nearestObjectInNode.getPhysCoord() <<  endl;
+        //cout << "nodebox = " << workingNode->nodeBox_ <<  endl;
+        
         while(!GEO::pointInTreeNode(nearestObjectInNode.getPhysCoord(), workingNode->nodeBox_))
         {
+          //cout << "point = " << nearestObjectInNode.getPhysCoord() <<  endl;
+          //cout << "nodebox = " << workingNode->nodeBox_ <<  endl;
+          
+          
           if(!workingNode->hasParent())
             dserror("this treenode has no parent");
           
@@ -1299,6 +1638,75 @@ int GEO::SearchTree::TreeNode::queryXFEMFSIPointType(
       dserror("should not get here\n");
   }
   return -1;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ | fix intersection for contact with xfem FSI              u.may   02/09|
+ *----------------------------------------------------------------------*/
+void GEO::SearchTree::TreeNode::moveContactNodes(
+    const vector<vector<int> >&                   triangleList,
+    vector< GEO::InterfacePoint >&                pointList,
+    const std::map<int,LINALG::Matrix<3,2> >&     triangleXAABBs,  
+    const LINALG::Matrix<3,1>&                    querypoint,
+    const int                                     querypointId)
+{ 
+  switch (treeNodeType_) 
+  {
+    case INNER_NODE:
+    {       
+      return children_[classifyPoint(querypoint)]->moveContactNodes(triangleList, pointList, triangleXAABBs,  querypoint, querypointId);
+      break; 
+    }
+    case LEAF_NODE:   
+    {
+      if(elementList_.empty())
+      { 
+        // point outside of a structure
+        if(label_ == 0)
+          return;
+          
+        // point inside a structure, step up and compute
+        const TreeNode* workingNode = this;
+        if(!workingNode->hasParent())
+          dserror("this treenode has no parent");
+          
+        workingNode = workingNode->getParent();
+        GEO::moveNodeOutOfStructure(triangleList, pointList, querypointId, elementList_);
+        return;
+      }
+      // max depth reached, counts reverse
+      if (treedepth_ <= 0 || (elementList_.size()==1 && (elementList_.begin()->second).size() == 1) )
+      {
+        // nearest object refers only to the nearest object found in this particular tree node
+        GEO::NearestObject nearestObjectInNode;
+        GEO::moveNodeOutOfStructure(triangleList, pointList, querypointId, elementList_);
+    
+        const TreeNode* workingNode = this;
+        while(!GEO::pointInTreeNode(nearestObjectInNode.getPhysCoord(), workingNode->nodeBox_))
+        {
+          if(!workingNode->hasParent())
+            dserror("this treenode has no parent");
+          
+          workingNode = workingNode->getParent();
+          GEO::moveNodeOutOfStructure(triangleList, pointList, querypointId, elementList_);
+        }
+        return;
+      }
+      
+      // dynamically grow tree otherwise, create children and set label for empty children
+      createChildren(triangleXAABBs);
+      setXFEMLabelOfEmptyChildren(triangleList, pointList);
+      // search in apropriate child node
+      children_[classifyPoint(querypoint)]->moveContactNodes(triangleList, pointList, triangleXAABBs,  querypoint, querypointId);
+      return;
+      break;
+    }
+    default:
+      dserror("should not get here\n");
+  }
+  return;
 }
 
 
@@ -1475,57 +1883,62 @@ void GEO::SearchTree::TreeNode::queryIntersectionCandidates(
 
 
 /*----------------------------------------------------------------------*
- | returns intersection elements (CONTACT)                    popp 07/08|
+ | returns contact elements based on kdops (CONTACT)         u.may 02/09|
  *----------------------------------------------------------------------*/
-std::vector<int> GEO::SearchTree::TreeNode::searchIntersectionElements(
-    const DRT::Discretization&                  dis,
-    const std::map<int,LINALG::Matrix<3,1> >&   currentpositions, 
-    DRT::Element*                               element) 
-{
-  std::vector<int> elementset;
-  
+void GEO::SearchTree::TreeNode::searchMultibodyContactElements(
+    const std::map<int,LINALG::Matrix<9,2> >&   currentKDOPs, 
+    const LINALG::Matrix<9,2>&                  queryKDOP,
+    const int                                   label,
+    std::set<int>&                              contactEleIds) 
+{ 
   switch (treeNodeType_) 
   {
     case INNER_NODE:
     {     
-      const vector<int> childindex = classifyElement(element,currentpositions);
-      if(childindex.size() < 1)
-        dserror("no child found\n");
-      else if (childindex.size() ==1)
-        return children_[childindex[0]]->searchIntersectionElements(dis, currentpositions, element);
+      int index = -1;
+      if(classifyKDOP(index, queryKDOP))
+      {
+        children_[index]->searchMultibodyContactElements(currentKDOPs, queryKDOP, label, contactEleIds);
+        return;
+      }
       else
-        return GEO::getIntersectionElements(dis, currentpositions, element, elementList_); 
-        
+      {
+        GEO::searchMultibodyContactElements(currentKDOPs, queryKDOP, label, elementList_, contactEleIds);
+        return;
+      }
       break;
     }
     case LEAF_NODE:   
     {
       if(elementList_.empty())
-        return elementset;
+        return;
 
       // max depth reached, counts reverse
       if (treedepth_ <= 0 || (elementList_.begin()->second).size() == 1)
-        return GEO::getIntersectionElements(dis, currentpositions, element, elementList_);
-  
+      {
+        GEO::searchMultibodyContactElements(currentKDOPs, queryKDOP, label, elementList_, contactEleIds);
+        return;
+      }
       // dynamically grow tree otherwise, create children and set label for empty children
       // search in apropriate child node  
-      const vector<int> childindex = classifyElement(element,currentpositions);
-      if((int)childindex.size() < 1)
-        dserror("no child found\n");
-      else if ((int)childindex.size() == 1)
+      int index = -1;
+      if(classifyKDOP(index, queryKDOP))
       {
-        createChildren(dis, currentpositions);
-        return children_[childindex[0]]->searchIntersectionElements(dis, currentpositions, element);
+        createChildren(currentKDOPs);
+        children_[index]->searchMultibodyContactElements(currentKDOPs, queryKDOP, label, contactEleIds);
+        return;
       }
       else
-        return GEO::getIntersectionElements(dis, currentpositions, element, elementList_); 
-
+      {
+        GEO::searchMultibodyContactElements(currentKDOPs, queryKDOP, label, elementList_, contactEleIds);
+        return;
+      }
       break;
     }
     default:
       dserror("should not get here\n");
   }
-  return elementset;
+  return;
 }
 
 

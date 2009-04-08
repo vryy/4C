@@ -35,13 +35,15 @@ Maintainer: Ursula Mayer
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 
-#include "intersection.H"
 
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_io/io_control.H"
+
+#include "intersection.H"
+
 
 
 /*----------------------------------------------------------------------*
@@ -56,7 +58,8 @@ void GEO::Intersection::computeIntersection(
     const std::map<int,LINALG::Matrix<3,1> >&      currentcutterpositions,
     const std::map<int,LINALG::Matrix<3,2> >&      currentXAABBs,
     std::map< int, DomainIntCells >&               domainintcells,
-    std::map< int, BoundaryIntCells >&             boundaryintcells)
+    std::map< int, BoundaryIntCells >&             boundaryintcells,
+    const std::map<int,int>&                       labelPerElementId)
 {
 
   TEUCHOS_FUNC_TIME_MONITOR(" GEO::Intersection");
@@ -67,18 +70,17 @@ void GEO::Intersection::computeIntersection(
   countMissedPoints_ = 0;
   const double t_start = ds_cputime();
   
+  // stop intersection if cutterdis is empty
+  if(cutterdis->NumMyColElements()==0)
+    return;
+  
   // initialize tree for intersection candidates search
   const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofDis(*cutterdis, currentcutterpositions);
   Teuchos::RCP<GEO::SearchTree> octTree = rcp(new GEO::SearchTree(20));
   octTree->initializeTree(rootBox, *cutterdis, GEO::TreeType(GEO::OCTTREE));
   std::vector< LINALG::Matrix<3,2> > structure_AABBs = GEO::computeXAABBForLabeledStructures(*cutterdis, currentcutterpositions, octTree->getRoot()->getElementList());
   
-  // stop intersection if cutterdis is empty
-  if(cutterdis->NumMyColElements()==0)
-    return;
-  
   // xfemdis->NumMyColElements()
-  
   for(int k = 0; k < xfemdis->NumMyColElements(); ++k)
   {
     //printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!eleid = %d\n", k);
@@ -97,7 +99,7 @@ void GEO::Intersection::computeIntersection(
     if(cutterElementIds.size()==0)
       continue;
     
-    debugIntersection(xfemElement, cutterElementIds, cutterdis);
+    // debugIntersection(xfemElement, cutterElementIds, cutterdis);
     vector<RCP<DRT::Element> > xfemElementSurfaces;
     xfemElementSurfaces = xfemElement->Surfaces();
     vector<RCP<DRT::Element> > xfemElementLines;
@@ -116,7 +118,7 @@ void GEO::Intersection::computeIntersection(
       const vector<RCP<DRT::Element> > cutterElementLines = cutterElement->Lines();
       const DRT::Node*const* cutterElementNodes = cutterElement->Nodes();
 
-      debugIntersectionOfSingleElements(xfemElement, cutterElement, currentcutterpositions);
+      // debugIntersectionOfSingleElements(xfemElement, cutterElement, currentcutterpositions);
 
       std::map< LINALG::Matrix<3,1>, InterfacePoint, ComparePoint>  interfacePoints((ComparePoint()));
 
@@ -169,6 +171,7 @@ void GEO::Intersection::computeIntersection(
 
     if(checkIfCDT())
     {
+      //quickFixForIntersectingStructures(xfemElement, labelPerElementId, currentcutterpositions);
       completePLC();
       //debugTetgenDataStructure(xfemElement);
       computeCDT(xfemElement, currentcutterpositions, domainintcells, boundaryintcells);
@@ -1491,9 +1494,92 @@ void GEO::Intersection::roundOnXFEMTetSurface1(
 
 
 /*----------------------------------------------------------------------*
+ |  CDT:    rounds points on tetrahedral XFEM elements       u.may 07/08|
+ |          only surface 1 needs special treatment                      |
+ *----------------------------------------------------------------------*/
+void GEO::Intersection::quickFixForIntersectingStructures(
+    const DRT::Element*                             xfemElement,
+    const std::map<int,int>&                        labelPerElementId,
+    const std::map<int,LINALG::Matrix<3,1> >&       currentcutterpositions)
+{
+  std::set<int> labelList;
+  // check if more than two labels so more than to structures 
+  // are within a fluid element 
+  for(unsigned int i = 0; i < intersectingCutterElements_.size(); i++)
+    labelList.insert(labelPerElementId.find(intersectingCutterElements_[i]->Id())->second);
+  
+  // only one or no structure is within the xfem element
+  if(labelList.size() <= 1)
+    return;
+  
+  // order triangle corner points such that normal points outward of the structure
+  std::map<int,std::set<int> > triByLabel; 
+  for(unsigned int i = 0; i < triangleList_.size(); i++)
+  {
+    // store for each label a set of triangle ids
+    int facemarker = faceMarker_[i] + facetMarkerOffset_;
+    triByLabel[facemarker].insert(i);
+    
+    // obtain triangle coordinates and midpoint
+    LINALG::Matrix<3,3> xyze_triElement;
+    LINALG::Matrix<3,1> midpoint(true);
+    for(int j = 0; j < 3; j++)
+    {
+      int index = triangleList_[i][j];
+      for(int k = 0; k < 3; k++)
+        xyze_triElement(i,k) = (pointList_[index].getCoord())(k);
+      midpoint += pointList_[index].getCoord();
+    }
+    
+    midpoint.Scale(1.0/3.0);
+    LINALG::Matrix<2,1> eleMidpoint(true);
+    CurrentToSurfaceElementCoordinates(DRT::Element::tri3, xyze_triElement, midpoint, eleMidpoint);
+    
+    // compute element normal
+    LINALG::Matrix<3,1> eleNormal;
+    computeNormalToSurfaceElement(intersectingCutterElements_[facemarker]->Shape(), 
+                                  GEO::getCurrentNodalPositions(intersectingCutterElements_[facemarker], currentcutterpositions), 
+                                  eleMidpoint, eleNormal);
+    
+    // compute triangle normal 
+    LINALG::Matrix<3,1> triNormal;
+    LINALG::Matrix<2,1> triMidpoint;
+    triMidpoint.PutScalar(0.5);
+    computeNormalToSurfaceElement(DRT::Element::tri3, xyze_triElement, triMidpoint, triNormal);
+    
+    // compare normals in case that normals point in opposite directions renumber triangles
+    // from 1 - 2 - 3 to 1 -3 - 2
+    const double scalarproduct = triNormal(0)*eleNormal(0) + triNormal(1)*eleNormal(1) + triNormal(2)*eleNormal(2);
+    if(!(scalarproduct >= GEO::TOL7)) 
+    {
+      int index1 = triangleList_[i][1];
+      triangleList_[i][1] = triangleList_[i][2];
+      triangleList_[i][2] = index1;
+    }
+  }
+  
+  // check for each point is it lies inside another structure,
+  // if yes move it out of that structure
+  const LINALG::Matrix<3,2> rootBox = computeFastXAABB(xfemDistype_, xyze_xfemElement_, GEO::EleGeoType(HIGHERORDER));
+  Teuchos::RCP<GEO::SearchTree> triTree = rcp(new GEO::SearchTree(10));
+  triTree->initializeTree(rootBox, triByLabel, GEO::TreeType(GEO::OCTTREE));
+  std::map<int, LINALG::Matrix<3,2> >triangleXAABBs = GEO::getTriangleXAABBs(triangleList_, pointList_);
+  
+  for(int i = 0; i < (int) pointList_.size(); i++)
+  {
+    triTree->moveContactNodes( triangleList_, pointList_,
+                               triangleXAABBs,  pointList_[i].getCoord(), i);
+  }  
+  
+  return;
+}
+
+
+
+/*----------------------------------------------------------------------*
  |  CDT:    computes the Constrained Delaunay                u.may 06/07|
  |          Tetrahedralization in 3D with help of Tetgen library        |
- |  for an intersected xfem element in element configuration          |
+ |  for an intersected xfem element in element configuration            |
  |  TetGen provides the method                                          |
  |  void "tetrahedralize(char *switches, tetgenio* in, tetgenio* out)"  |
  |  as an interface for its use within other codes.                     |
@@ -1532,7 +1618,7 @@ void GEO::Intersection::computeCDT(
   tetgenio::polygon *p;
 
 
-  const double scalefactor =  1e6;
+  const double scalefactor =  1e8;
   // allocate pointlist
   in.numberofpoints = pointList_.size();
   in.pointlist = new REAL[in.numberofpoints * dim];
@@ -1542,7 +1628,8 @@ void GEO::Intersection::computeCDT(
   for(int i = 0; i <  in.numberofpoints; i++)
     for(int j = 0; j < dim; j++)
     {
-      in.pointlist[fill] = (REAL) (pointList_[i].getCoord()(j) * scalefactor);
+      int coord = (int) (pointList_[i].getCoord()(j) * scalefactor);
+      in.pointlist[fill] = (REAL) coord;
       fill++;
     }
 
@@ -1639,15 +1726,19 @@ void GEO::Intersection::computeCDT(
   for(int i = 0; i < in.numberoffacets; i ++)
       in.facetmarkerlist[i] = faceMarker_[i] + facetMarkerOffset_;
 
-  in.save_nodes("tetin");
-  in.save_poly("tetin");
+  // check if structures are intersecting
+  // if(labelcount > 1)
+  // quickFixForIntersectingStructures(in);
+  
+  //in.save_nodes("tetin");
+  //in.save_poly("tetin");
 
   //  Tetrahedralize the PLC. Switches are chosen to read a PLC (p),
   //  do quality mesh generation (q) with a specified quality bound
   //  (1.414), and apply a maximum volume constraint (a0.1)
-  //printf("tetgen start\n");
+  // printf("tetgen start\n");
   tetrahedralize(switches, &in, &out);
-  //printf("tetgen end\n");
+  // printf("tetgen end\n");
 
   //Debug
   //vector<int> elementIds;

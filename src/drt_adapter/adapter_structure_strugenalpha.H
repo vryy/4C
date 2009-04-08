@@ -182,6 +182,17 @@ namespace ADAPTER {
 
     //@}
   };
+  
+  
+  class ContactStructureGenAlpha : public StructureGenAlpha
+  {
+    public:
+
+    ContactStructureGenAlpha(Teuchos::RCP<Teuchos::ParameterList> params,
+                     Teuchos::RCP<DRT::Discretization> dis,
+                     Teuchos::RCP<LINALG::Solver> solver,
+                     Teuchos::RCP<IO::DiscretizationWriter> output);
+  };
 
 }
 

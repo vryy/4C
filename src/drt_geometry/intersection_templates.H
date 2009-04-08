@@ -255,11 +255,11 @@ namespace GEO
              class M2,
              class V1, class V2, class V3>
     bool computeCurveSurfaceIntersectionT(
-        const M1&                     	xyze_surfaceElement,
-        const M2&                   	xyze_lineElement,
-        V1&                           	xsi,
-        const V2&        				upLimit,
-        const V3&        				loLimit,
+        const M1&                     	 xyze_surfaceElement,
+        const M2&                   	   xyze_lineElement,
+        V1&                           	 xsi,
+        const V2&        				         upLimit,
+        const V3&        				         loLimit,
         const bool                     	doSVD
     )
     {

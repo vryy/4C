@@ -44,7 +44,9 @@ namespace INPAR
                                        ///< new style (implicit)
       dyna_onesteptheta,               ///< one-step-theta time integrator (implicit)
       dyna_gemm,                       ///< generalised energy-momementum method
-      dyna_ab2                         ///< Adams-Bashforth 2nd order (explicit)
+      dyna_ab2,                        ///< Adams-Bashforth 2nd order (explicit)
+      dyna_euma,                       ///< Euler-Maruyama scheme (stochastic, explicit)
+      dyna_euimsto                     ///< Euler implicit scheme for SDE's (stochastic, implicit)
     };
 
     /// Map time integrator to string
@@ -92,8 +94,9 @@ namespace INPAR
     {
       damp_none = 0,            ///< damping off
       damp_rayleigh,            ///< globally applied Rayleigh damping
-      damp_material             ///< element-wise applied damping by 
+      damp_material,            ///< element-wise applied damping
                                 ///< using element velocities
+      damp_brownianmotion       ///< damping due to brownian motion
     };
 
     /// Mid-average type of internal forces for generalised-alpha-like

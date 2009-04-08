@@ -716,22 +716,81 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   /*--------------------------------------------------------------------*/
   // Lennard Jones potential
   
-  Teuchos::RCP<ConditionDefinition> lj_potential =
+  Teuchos::RCP<ConditionDefinition> lj_potential_3D =
     Teuchos::rcp(new ConditionDefinition("DESIGN SURF LJ_POTENTIAL CONDITIONS",
                                          "Potential",
-                                         "LJ_Potential",
-                                         DRT::Condition::LJ_Potential,
+                                         "LJ_Potential_3D",
+                                         DRT::Condition::LJ_Potential_3D,
                                          true,
                                          DRT::Condition::Surface));
 
-  lj_potential->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
-  AddNamedInt(lj_potential,"label");
-  AddNamedReal(lj_potential,"depth");
-  AddNamedReal(lj_potential,"rootDist");
-  AddNamedReal(lj_potential,"cutOff");
+  lj_potential_3D->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
+  AddNamedInt(lj_potential_3D,"label");
+  AddNamedReal(lj_potential_3D,"depth");
+  AddNamedReal(lj_potential_3D,"rootDist");
+  AddNamedReal(lj_potential_3D,"cutOff");
 
-  condlist.push_back(lj_potential);
+  condlist.push_back(lj_potential_3D);
+  
+  
+  /*-------------------------------------------------------------------*/
+  // Zeta Potential
+  Teuchos::RCP<ConditionDefinition> zeta_potential_3D =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURF ZETA_POTENTIAL CONDITIONS",
+                                       "Potential",
+                                       "Zeta_Potential_3D",
+                                       DRT::Condition::Zeta_Potential_3D,
+                                       true,
+                                       DRT::Condition::Surface));
 
+  zeta_potential_3D->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
+  AddNamedInt(zeta_potential_3D,"label");
+  AddNamedReal(zeta_potential_3D,"zeta_param_1");
+  AddNamedReal(zeta_potential_3D,"zeta_param_2");
+  AddNamedReal(zeta_potential_3D,"cutOff");
+
+  condlist.push_back(zeta_potential_3D);
+  
+  
+  /*--------------------------------------------------------------------*/
+  // Lennard Jones potential 2D
+  Teuchos::RCP<ConditionDefinition> lj_potential_2D =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE LJ_POTENTIAL CONDITIONS",
+                                         "Potential",
+                                         "LJ_Potential_2D",
+                                         DRT::Condition::LJ_Potential_2D,
+                                         true,
+                                         DRT::Condition::Line));
+
+  lj_potential_2D->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
+  AddNamedInt(lj_potential_2D,"label");
+  AddNamedReal(lj_potential_2D,"depth");
+  AddNamedReal(lj_potential_2D,"rootDist");
+  AddNamedReal(lj_potential_2D,"cutOff");
+
+  condlist.push_back(lj_potential_2D);
+
+  
+  /*-------------------------------------------------------------------*/
+  // Zeta Potential 2D
+  
+  Teuchos::RCP<ConditionDefinition> zeta_potential_2D =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE ZETA_POTENTIAL CONDITIONS",
+                                         "Potential",
+                                         "Zeta_Potential_2D",
+                                         DRT::Condition::Zeta_Potential_2D,
+                                         true,
+                                         DRT::Condition::Line));
+
+  zeta_potential_2D->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
+  AddNamedInt(zeta_potential_2D,"label");
+  AddNamedReal(zeta_potential_2D,"zeta_param_1");
+  AddNamedReal(zeta_potential_2D,"zeta_param_2");
+  AddNamedReal(zeta_potential_2D,"cutOff");
+
+  condlist.push_back(zeta_potential_2D);
+  
+ 
   /*--------------------------------------------------------------------*/
   // Brownian Motion 
   

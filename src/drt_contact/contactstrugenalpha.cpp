@@ -302,6 +302,13 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
     discret_.Evaluate(p,stiff_,null,fint_,null,null);
 #endif
     discret_.ClearState();
+    
+    // include potential conditions in fint_ and stiff_
+    if (pot_man_!=null)
+    {
+      p.set("pot_man", pot_man_);
+      pot_man_->EvaluatePotential(p,dism_,fint_,stiff_);
+    }
 
     // do NOT finalize the stiffness matrix, add mass and damping to it later
   }
@@ -585,6 +592,13 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
     discret_.Evaluate(p,stiff_,null,fint_,null,null);
 #endif
     discret_.ClearState();
+    
+    // include potential conditions in fint_ and stiff_
+    if (pot_man_!=null)
+    {
+      p.set("pot_man", pot_man_);
+      pot_man_->EvaluatePotential(p,dism_,fint_,stiff_);
+    }
 
     // do NOT finalize the stiffness matrix, add mass and damping to it later
   }
@@ -887,6 +901,13 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
       discret_.Evaluate(p,stiff_,null,fint_,null,null);
 #endif
       discret_.ClearState();
+      
+      // include potential conditions in fint_ and stiff_
+      if (pot_man_!=null)
+      {
+        p.set("pot_man", pot_man_);
+        pot_man_->EvaluatePotential(p,dism_,fint_,stiff_);
+      }
 
       // do NOT finalize the stiffness matrix to add masses to it later
 
@@ -1242,6 +1263,13 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
       discret_.Evaluate(p,stiff_,null,fint_,null,null);
 #endif
       discret_.ClearState();
+      
+      // include potential conditions in fint_ and stiff_
+      if (pot_man_!=null)
+      {
+        p.set("pot_man", pot_man_);
+        pot_man_->EvaluatePotential(p,dism_,fint_,stiff_);
+      }
 
       // do NOT finalize the stiffness matrix to add masses to it later
 

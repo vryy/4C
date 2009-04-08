@@ -672,7 +672,7 @@ void ADAPTER::XFluidImpl::RemoveInternalSurfElements(
     GEO::elementToCurrentCoordinates(surfele->Shape(), xyze_surf, localcenterpos, physicalcenterpos);
     
     LINALG::Matrix<3,1> unitnormalvec;
-    GEO::computeNormalToSurfaceElement(surfele, xyze_surf, localcenterpos, unitnormalvec);
+    GEO::computeNormalToSurfaceElement(surfele->Shape(), xyze_surf, localcenterpos, unitnormalvec);
     
     for (int ivol=0; ivol<soliddis->NumMyColElements(); ++ivol)
     {

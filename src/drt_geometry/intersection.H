@@ -15,14 +15,13 @@ Maintainer: Ursula Mayer
 #ifndef INTERSECTION_H
 #define INTERSECTION_H
 
-
+#include <tetgen.h>
 #include "../drt_geometry/intersection_interfacepoint.H"
 #include "../drt_geometry/intersection_templates.H"
 #include "../drt_geometry/intersection_service.H"
 #include "../drt_geometry/integrationcell.H"
 #include "../drt_geometry/searchtree.H"
 #include "../drt_geometry/position_array.H"
-#include "../drt_tetgen/tetgen.h"
 
 
 #ifdef PARALLEL
@@ -74,7 +73,8 @@ class Intersection
       const std::map<int,LINALG::Matrix<3,1> >&   currentcutterpositions,  ///< current positions of all cutter nodes
       const std::map<int,LINALG::Matrix<3,2> >&   currentXAABBs,           ///< XAABBs of current elements
       map< int, DomainIntCells >&                 domainintcells,          ///< domainintegrationcells for each intersected element
-      map< int, BoundaryIntCells >&               boundaryintcells         ///< boundaryintegrationcells for each intersected element
+      map< int, BoundaryIntCells >&               boundaryintcells,        ///< boundaryintegrationcells for each intersected element
+      const std::map<int,int>&                    labelPerElementId
       );
 
 
@@ -653,6 +653,17 @@ class Intersection
       );
         
         
+  /*!
+  \brief  fix intersection for contact 
+
+  */     
+  void quickFixForIntersectingStructures(
+    const DRT::Element*                             xfemElement,
+    const std::map<int,int>&                        labelPerElementId,
+    const std::map<int,LINALG::Matrix<3,1> >&       currentcutterpositions
+    );
+    
+    
   /*!
   \brief finds the next segment of a convex hull in clockwise order
 

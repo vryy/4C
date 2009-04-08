@@ -144,7 +144,10 @@ void DRT::Condition::Print(ostream& os) const
   else if (Type()==ImpedanceCond)               os << "Impedance boundary condition";
   else if (Type()==MPC_NodeOnPlane_3D)          os << "Multipoint constraint on a plane";
   else if (Type()==MPC_NodeOnLine_2D)           os << "Multipoint constraint on a line";
-  else if (Type()==LJ_Potential)                os << "Lennard-Jones potential on a surface";
+  else if (Type()==LJ_Potential_3D)             os << "Lennard-Jones potential on a surface";
+  else if (Type()==Zeta_Potential_3D)           os << "Zeta potential on a surface";
+  else if (Type()==LJ_Potential_2D)             os << "Lennard-Jones potential on a line";
+  else if (Type()==Zeta_Potential_2D)           os << "Zeta potential on a line";
   else if (Type()==LineWeakDirichlet)           os << "line weak Dirichlet condition";
   else if (Type()==LinePeriodic)                os << "line periodic boundary condition";
   else if (Type()==SurfacePeriodic)             os << "surface periodic boundary condition";

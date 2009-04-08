@@ -50,7 +50,7 @@ Maintainer: Michael Gee
 #include "Amesos_Umfpack.h"
 #include "Amesos_Lapack.h"
 
-// Trilinos is configured with SuperLUDIST only in the parallel version
+// Trilinos is configured with SuperLUDIST only in the parallel version (not on altix)
 #ifdef PARALLEL
 #ifndef HAVENOT_SUPERLU
 #include "Amesos_Superludist.h"

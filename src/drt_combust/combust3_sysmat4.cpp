@@ -1599,7 +1599,7 @@ static void SysmatBoundary4(
             
             // get normal vector (in physical coordinates) to surface element at integration point
             LINALG::Matrix<3,1> normalvec_solid;
-            GEO::computeNormalToSurfaceElement(boundaryele, xyze_boundary, posXiBoundary, normalvec_solid);
+            GEO::computeNormalToSurfaceElement(boundaryele->Shape(), xyze_boundary, posXiBoundary, normalvec_solid);
 //            cout << "normalvec " << normalvec << ", " << endl;
             LINALG::Matrix<3,1> normalvec_fluid(true);
             normalvec_fluid -= normalvec_solid;

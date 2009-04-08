@@ -154,12 +154,14 @@ public:
     
     //! get integration point position
     Vec Position() const { return position_; }
+    
     //! get integration point weight
     double Weight() const { return weight_; }
     
 private:
     //! 1d, 2d or 3d position of integration point in element coordinates
     const Vec position_;
+    
     //! integration weight
     const double weight_;
     

@@ -696,6 +696,28 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
 
   // t*mbarstick: do the multiplication
   RCP<LINALG::SparseMatrix> tmhatst = LINALG::Multiply(*tstmatrix,false,*mhatst,false,true);
+#else
+   
+  // create a merged map of domain map of M and Mold
+  const Epetra_Map& mmatrixdofsst = mmatrixst->DomainMap();
+  const Epetra_Map& molddofsst = moldst->DomainMap();
+  RCP<Epetra_Map> mdiffdofsst = LINALG::MergeMap(mmatrixdofsst,molddofsst,true);
+  
+  // Create a new Matrix, add M and -Mold
+  RCP<LINALG::SparseMatrix> diffMst = rcp(new LINALG::SparseMatrix(mmatrixst->RowMap(),81, true, false, mmatrixst->GetMatrixtype()));
+  //RCP<LINALG::SparseMatrix> diffMst = rcp(new LINALG::SparseMatrix(mmatrixst->RowMap(),81));
+  diffMst->Add(*mmatrixst,false,+1.0,0.0);
+  diffMst->Add(*moldst,false,-1.0,1.0);
+  diffMst->Complete(*mdiffdofsst,mmatrixst->RowMap());
+
+  // Tst.(Mn+1-Mn)
+  RCP<LINALG::SparseMatrix> tstdiffM = LINALG::Multiply(*tstmatrix,false,*diffMst,false,true);
+  
+  RCP<LINALG::SparseMatrix> diffDst = dmatrixst;
+  diffDst->Add(*doldst,false,-1.0,1.0);
+  
+  // Tst.(Dn+1-Dn)
+  RCP<LINALG::SparseMatrix> tstdiffD = LINALG::Multiply(*tstmatrix,false,*diffDst,false,true);
 #endif
   
  // nmatrix: nothing to do
@@ -916,7 +938,7 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
   /**********************************************************************/
   /* Global setup of kteffnew, feffnew (including contact)              */
   /**********************************************************************/
-  RCP<LINALG::SparseMatrix> kteffnew = rcp(new LINALG::SparseMatrix(*problemrowmap_,81));
+  RCP<LINALG::SparseMatrix> kteffnew = rcp(new LINALG::SparseMatrix(*problemrowmap_,81, true, false, kteff->GetMatrixtype()));
   RCP<Epetra_Vector> feffnew = LINALG::CreateVector(*problemrowmap_);
   
   // add n submatrices to kteffnew
@@ -1363,7 +1385,7 @@ void CONTACT::ManagerBase::EvaluateContact(RCP<LINALG::SparseMatrix> kteff,
   /**********************************************************************/
   /* Global setup of kteffnew, feffnew (including contact)              */
   /**********************************************************************/
-  RCP<LINALG::SparseMatrix> kteffnew = rcp(new LINALG::SparseMatrix(*problemrowmap_,81));
+  RCP<LINALG::SparseMatrix> kteffnew = rcp(new LINALG::SparseMatrix(*problemrowmap_,81, true, false, kteff->GetMatrixtype()));
   RCP<Epetra_Vector> feffnew = LINALG::CreateVector(*problemrowmap_);
   
   // add n submatrices to kteffnew
@@ -2234,8 +2256,9 @@ void CONTACT::ManagerBase::StoreNodalQuantities(ManagerBase::QuantityType type,
                  << cnode->Dofs()[k] << " lm " << (*vectorinterface)[locindex+k] << endl;
           
           // throw a dserror if node is Active and DBC
-          if (cnode->Dbc()[k] && cnode->Active())
-            dserror("ERROR: Slave Node %i is active and at the same time carries D.B.C.s!", cnode->Id());
+          // TODO implement properly for pseudo 3d problems
+          //if (cnode->Dbc()[k] && cnode->Active())
+          //  dserror("ERROR: Slave Node %i is active and at the same time carries D.B.C.s!", cnode->Id());
           
           // explicity set global Lag. Mult. to zero for D.B.C nodes
           if (cnode->IsDbc())

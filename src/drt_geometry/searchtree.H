@@ -150,6 +150,17 @@ private:
       const LINALG::Matrix<3,2>&    AABB,
       std::vector<int>&             octants
       ) const; 
+      
+   
+  /*!
+  \brief returns the child node indices which overlaps with a given AABB
+  \param AABB            AABB
+  \param octants         vector of octantcs
+  */   
+  void classifyKDOP(
+    const LINALG::Matrix<9,2>&    KDOP,
+    std::vector<int>&             octants
+    ) const;
   
   
   /*!
@@ -171,7 +182,19 @@ private:
   bool classifyXAABB(
       int&                         index,
       const LINALG::Matrix<3,2>&   AABB
-      ) const; 
+      ) const;
+
+
+  /*!
+  \brief returns the index of the child node which overlaps with a given AABB
+  \param index               index     
+  \param AABB                AABB
+  \return vector of childen indices
+  */
+  bool classifyKDOP(
+    int&                         index,
+    const LINALG::Matrix<9,2>&   KDOP
+    ) const;
 
   
   /*!
@@ -230,6 +253,17 @@ private:
   void createChildren(
       const std::map<int,LINALG::Matrix<3,2> >&      currentXAABBs
       );
+      
+  
+   /*!
+   \brief create children of a treenode and insert elements 
+          a lot more efficient than the method above
+
+   \param currentKDOPs        current elemental kdops
+   */ 
+  void createChildren(
+    const std::map<int,LINALG::Matrix<9,2> >&      currentKDOPs
+    );
   
   
   /*!
@@ -241,6 +275,17 @@ private:
       const DRT::Discretization&                  dis,
       const std::map<int,LINALG::Matrix<3,1> >&   currentpositions
       );
+  
+  
+   /*!
+   \brief set XFEM label of empty children
+   \param triangleList         triangleList
+   \param currentpositions     current nodal positions in discretization
+   */
+  void setXFEMLabelOfEmptyChildren(
+    const vector<vector<int> >&                   triangleList,
+    const std::vector<GEO::InterfacePoint>&       pointList
+    );
   
   
   /*!
@@ -290,7 +335,7 @@ public:
   bool hasParent()const {if (parent_!=NULL)
                           return true;
                          else
-                             return false;};
+                           return false;};
 
   
   /*!
@@ -433,6 +478,25 @@ public:
       const std::map<int,LINALG::Matrix<3,2> >&     currentXAABBs,
       const LINALG::Matrix<3,1>&                    point
       );
+      
+     
+  /*!
+  \brief fi intersection for contact with XFEM FSI
+  \param triangleList                   discretization
+  \param interfacePointList             list of interface interfacePointList
+  \param currentpositions               current nodal positions in discretization
+  \param currentXAABBs                  current XAABBs
+  \param querypoint                     point to be examined
+  \param querypointId                   point id in triangle list
+  \return 0->fluid 1..n->Solid with XFEM-Coupling condition
+   */ 
+  void moveContactNodes(
+    const vector<vector<int> >&                   triangleList,
+    vector< GEO::InterfacePoint >&                pointList, 
+    const std::map<int,LINALG::Matrix<3,2> >&     triangleXAABBs,  
+    const LINALG::Matrix<3,1>&                    querypoint,
+    const int                                     querypointId
+    );
   
   
   /*!
@@ -491,11 +555,12 @@ public:
   \param element              given slave contact element
   \return vector of master contact element gids
    */
-  std::vector<int> searchIntersectionElements(
-      const DRT::Discretization&                  dis,
-      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions, 
-      DRT::Element*                               element
-      );
+  void searchMultibodyContactElements( 
+    const std::map<int,LINALG::Matrix<9,2> >&   currentKDOPs, 
+    const LINALG::Matrix<9,2>&                  queryKDOP,
+    const int                                   label,
+    std::set<int>&                              contactEleIds
+    );
     
   
   /*!
@@ -622,7 +687,24 @@ public:
         const std::map<int,LINALG::Matrix<3,2> >&   currentXAABBs,
         const LINALG::Matrix<3,1>&                  point
         );
-
+        
+        
+  /*!
+  \brief fix intersection for contact with XFEM FSI
+  \param triangleList                   discretization
+  \param interfacePointList             list of interface interfacePointList
+  \param currentpositions               current nodal positions in discretization
+  \param currentXAABBs                  current XAABBs
+  \param querypoint                     point to be examined
+  \param querypointId                   point id in triangle list
+   */ 
+  void moveContactNodes(
+    const vector<vector<int> >&                   triangleList,
+    vector< GEO::InterfacePoint >&                pointList, 
+    const std::map<int,LINALG::Matrix<3,2> >&     triangleXAABBs,  
+    const LINALG::Matrix<3,1>&                    querypoint,
+    const int                                     querypointId
+    );
     
   /*!
   \brief returns a set of gids of nodes lying in a radius around a given point for each object
@@ -665,11 +747,13 @@ public:
   \param element              given slave contact element
   \return vector of master contact element gids
    */
-  std::vector<int> searchIntersectionElements(
-      const DRT::Discretization&                  dis,
-      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions, 
-      DRT::Element*                               element
-      );
+  void searchMultibodyContactElements( 
+    const std::map<int,LINALG::Matrix<9,2> >&   currentKDOPs, 
+    const LINALG::Matrix<9,2>&                  queryKDOP,
+    const int                                   label,
+    std::set<int>&                              contactEleIds
+    );
+    
     
   /*!
   \brief prints entire tree to gmsh file

@@ -47,6 +47,7 @@ Maintainer: Ursula Mayer
 #include "../drt_geometry/element_coordtrafo.H"
 #include "../drt_geometry/intersection_service_templates.H"
 #include "../drt_geometry/searchtree_nearestobject.H"
+#include "../drt_geometry/intersection_interfacepoint.H"
 
 namespace GEO
 {
@@ -102,8 +103,41 @@ namespace GEO
       const std::map<int,LINALG::Matrix<3,1> >&   currentpositions, 	
       const LINALG::Matrix<3,1>&                  querypoint,
       const std::map<int, std::set<int> >&        elementList
-      );  	
-
+      ); 
+      
+    
+    /*!
+  \brief Returns the label for a point and a given map of elements
+  \param triangleList         triangleList
+  \param currentpositions     current nodal positions in discretization
+  \param querypoint           point to be examined
+  \param elementList          map of elements label gid
+  \return                     label
+   */  
+  int getXFEMLabel(
+    const std::vector<std::vector<int> >&         triangleList,    
+    const std::vector<GEO::InterfacePoint>&       pointList,
+    const LINALG::Matrix<3,1>&                    querypoint,
+    const std::map<int, std::set<int> >&          elementList
+    );       	
+  
+  
+  /*!
+  \brief Returns the label for a point and a given map of elements
+  \param triangleList         list of triangles
+  \param interfacePointList   list of interface points
+  \param currentpositions     current nodal positions in discretization
+  \param querypoint           point to be examined
+  \param elementList          map of elements label gid
+  \return                     label
+   */
+  void moveNodeOutOfStructure(
+    const vector<vector<int> >&                   triangleList,
+    vector< GEO::InterfacePoint >&                pointList,
+    const int                                     querypointId,
+    const std::map<int, std::set<int> >&          elementList
+    ); 
+  
   
   /*!
   \brief Returns the label and the nearest object for a point and a given map of elements
@@ -169,11 +203,13 @@ namespace GEO
   \param elementList          map of elements label gid
   \return                     label
    */
-  std::vector<int> getIntersectionElements(
-      const DRT::Discretization&                  dis,    
-      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,   
-      DRT::Element*                               element,
-      std::map<int, std::set<int> >&              elementList);
+  void searchMultibodyContactElements(
+    const std::map<int,LINALG::Matrix<9,2> >&   currentKDOPs, 
+    const LINALG::Matrix<9,2>&                  queryKDOP,
+    const int                                   label,
+    const std::map<int, std::set<int> >&        elementList,
+    std::set<int>&                              contactEleIds
+    );  
   
   
   /*!
@@ -206,6 +242,26 @@ namespace GEO
       LINALG::Matrix<3,1>&                        minDistanceVec,
       GEO::NearestObject&                         nearestObject
       );
+  
+  
+  /*!
+  \brief Returns the nearest object to a point 
+  \param triangleList         list of linear triangular elements
+  \param currentpositions     current nodal positions in discretization
+  \param elementList          element list
+  \param point                point to be examined
+  \param x_surface_phys       basis point in current coordinates
+  \param nearestObject        info about nearest object
+  \return label of nearest object
+   */
+  int nearestObjectInNode(
+    const vector<vector<int> >&                 triangleList,
+    const std::vector<GEO::InterfacePoint>&     pointList,
+    const std::map<int, std::set<int> >&        elementList,
+    const LINALG::Matrix<3,1>&                  point,
+    LINALG::Matrix<3,1>&                        minDistanceVec,
+    GEO::NearestObject&                         nearestObject
+    );
 
 
   /*!
@@ -227,6 +283,24 @@ namespace GEO
 
 
   /*!
+  \brief Searches for the nearest linear triangular element to a given point
+  \param triElement           triangular element
+  \param currentpositions     current nodal positions in discretization
+  \param point                point to be examined
+  \param x_surface_phys       physical coordinates 
+  \param distance             distance to nearest element 
+  \return true if nearest surface element found
+   */
+  bool getDistanceToSurface(
+      const std::vector<int>&                     triElement,
+      const std::vector<GEO::InterfacePoint>&     pointList,
+      const LINALG::Matrix<3,1>&                  point,
+      LINALG::Matrix<3,1>&                        x_surface_phys,
+      double&                                     distance
+      );
+  
+  
+  /*!
   \brief Searches for the nearest line element to a given point
   \param lineElement          lineElement
   \param currentpositions     current nodal positions in discretization
@@ -242,21 +316,54 @@ namespace GEO
       LINALG::Matrix<3,1>&                        x_line_phys,
       double&                                     distance
       );
-
+  
+  
+  /*!
+  \brief Searches for the nearest line element to a given point
+  \param lineElement          lineElement
+  \param currentpositions     current nodal positions in discretization
+  \param point                point to be examined
+  \param x_line_phys          physical coordinates 
+  \param distance             distance to nearest point
+  \return true if nearest line element found
+  */
+  bool getDistanceToLine(
+      const vector<int>&                          lineElement,
+      const std::vector<GEO::InterfacePoint>&     pointList,
+      const LINALG::Matrix<3,1>&                  point,
+      LINALG::Matrix<3,1>&                        x_line_phys,
+      double&                                     distance
+      );
+  
   
   /*!
   \brief Searches for the nearest node to a given point
-  \param dis                  discretization
+  \param nodeId               nodeId
   \param currentpositions     current nodal positions in discretization
   \param point                point to be examined
   \param distance             distance to nearest point
    */
   void getDistanceToPoint(
-      const DRT::Node*                            node,
-      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
+      const int                                   nodeId,
+      const std::vector<GEO::InterfacePoint>&     pointList,
       const LINALG::Matrix<3,1>&                  point,
       double&                                     distance
       );
+       
+  
+  /*!
+  \brief Searches for the nearest node to a given point
+  \param node                 node
+  \param currentpositions     current nodal positions in discretization
+  \param point                point to be examined
+  \param distance             distance to nearest point
+   */    
+  void getDistanceToPoint(
+    const DRT::Node*                            node,
+    const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
+    const LINALG::Matrix<3,1>&                  point,
+    double&                                     distance
+    );
 
 
   /*!
@@ -272,6 +379,21 @@ namespace GEO
       const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
       GEO::NearestObject&                         nearestObject
       );
+      
+      
+    /*!
+  \brief  Returns the normal to a surface element or a an average normal 
+          of all surface elements adjacent to a line or node
+  \param triangleList         triangleList 
+  \param currentpositions     current nodal positions in discretization
+  \param nearestObject        info about nearest object
+  \return normal vector in physical coordinates 
+   */
+  LINALG::Matrix<3,1> getNormalAtSurfacePoint(
+    const std::vector< std::vector<int> >&      triangleList,
+    const std::vector<GEO::InterfacePoint>&     pointList,
+    GEO::NearestObject&                         nearestObject
+    );
 
   
   /*!
@@ -284,6 +406,34 @@ namespace GEO
       const DRT::Node*                        node1, 
       const DRT::Node*                        node2  
       );
+      
+  
+  /*!
+  \brief  Finds all elements adjacent to a line described by two end points
+  \param node1         node 1
+  \param node2         node 2
+  \return list of common elements
+   */    
+  std::vector<int> getAdjacentTriElementsToLine(
+    const std::vector< vector<int> >& triangleList,
+    const int                         triangleId,
+    const int                         node1,
+    const int                         node2
+    );
+    
+    
+  /*!
+  \brief  Finds all elements adjacent to a node
+  \param triangleList       list of trianglea
+  \param triangleId         triangle id
+  \param node               node id
+  \return list of common elements
+   */  
+  std::vector<int> getAdjacentTriElementsToNode(
+    const std::vector< vector<int> >& triangleList,
+    const int                         triangleId,
+    const int                         node
+    );
 
   
   /*!
@@ -367,7 +517,7 @@ namespace GEO
       const std::map<int,LINALG::Matrix<3,2> >&   currentXAABBs, 
       const LINALG::Matrix<3,2>&                  xfemXAABB,
       const std::map<int, std::set<int> >&        elementList,
-      std::set<int>&                           intersectionCandidateIds
+      std::set<int>&                              intersectionCandidateIds
       );
 
 

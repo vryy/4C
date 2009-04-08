@@ -470,7 +470,7 @@ void DRT::ELEMENTS::XFluid3Surface::IntegrateSurfaceFlowRate(
     
     // get normal vector (in x coordinates) to surface element at integration point
     LINALG::Matrix<3,1> n(true);
-    GEO::computeNormalToSurfaceElement(this, xyze, xi_gp, n);
+    GEO::computeNormalToSurfaceElement(this->Shape(), xyze, xi_gp, n);
 
     // flowrate = u_i * n_i
     const double flowrate = gpvelnp(0)*n(0) + gpvelnp(1)*n(1) + gpvelnp(2)*n(2);
@@ -591,7 +591,7 @@ void DRT::ELEMENTS::XFluid3Surface::IntegrateSurfaceImpulsRate(
 
     // get normal vector (in x coordinates) to surface element at integration point
     LINALG::Matrix<3,1> n(true);
-    GEO::computeNormalToSurfaceElement(this, xyze, xi_gp, n);
+    GEO::computeNormalToSurfaceElement(this->Shape(), xyze, xi_gp, n);
 
     // flowrate = u_i * n_i
     const double flowrate = gpvelnp(0)*n(0) + gpvelnp(1)*n(1) + gpvelnp(2)*n(2);
