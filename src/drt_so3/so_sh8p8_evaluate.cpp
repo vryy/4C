@@ -39,6 +39,7 @@ Maintainer: Burkhard Bornemann
 #include "../drt_mat/visconeohooke.H"
 #include "../drt_mat/viscoanisotropic.H"
 #include "../drt_mat/yeoh.H"
+#include "../drt_mat/logneohooke.H"
 
 
 /*----------------------------------------------------------------------*
@@ -1694,6 +1695,12 @@ double DRT::ELEMENTS::So_sh8p8::ShearMod() const
   {
     MAT::ViscoNeoHooke* visconeo = static_cast <MAT::ViscoNeoHooke*>(Material().get());
     return visconeo->ShearMod();
+    break;
+  }
+  case INPAR::MAT::m_logneohooke: /*-----------Viscous NeoHookean Material */
+  {
+    MAT::LogNeoHooke* logneo = static_cast <MAT::LogNeoHooke*>(Material().get());
+    return logneo->ShearMod();
     break;
   }
   default:
