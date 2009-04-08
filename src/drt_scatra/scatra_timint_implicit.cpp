@@ -983,12 +983,15 @@ void SCATRA::ScaTraTimIntImpl::Output()
   // time measurement: output of solution
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:    + output of solution");
 
-  // write domain decomposition for visualization (only once at step "upres"!)
-  if (step_==upres_) output_->WriteElementData();
-
   // solution output and potentially restart data and/or flux data
-  if (step_%upres_==0 or step_%uprestart_==0)
+  if ((step_%upres_==0 )or (step_%uprestart_==0))
   {
+    // step number and time (only after that data output is possible)
+    output_->NewStep(step_,time_);
+
+    // write domain decomposition for visualization (only once at step "upres"!)
+    if (step_==upres_) output_->WriteElementData();
+
     // write state vectors
     OutputState();
 
@@ -1013,9 +1016,6 @@ void SCATRA::ScaTraTimIntImpl::Output()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::OutputState()
 {
-  // step number and time
-  output_->NewStep(step_,time_);
-
   // solution
   output_->WriteVector("phinp", phinp_);
 
