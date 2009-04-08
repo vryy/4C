@@ -258,15 +258,15 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
 
         for (int i=0;i<NUMNOD_;++i)
         {
-          elevec1(3*i)=nodalstresses(i,0)/numadjele[i];
-          elevec1(3*i+1)=nodalstresses(i,1)/numadjele[i];
-          elevec1(3*i+2)=nodalstresses(i,2)/numadjele[i];
+          elevec1(NODDOF_*i)=nodalstresses(i,0)/numadjele[i];
+          elevec1(NODDOF_*i+1)=nodalstresses(i,1)/numadjele[i];
+          elevec1(NODDOF_*i+2)=nodalstresses(i,2)/numadjele[i];
         }
         for (int i=0;i<NUMNOD_;++i)
         {
-          elevec2(3*i)=nodalstresses(i,3)/numadjele[i];
-          elevec2(3*i+1)=nodalstresses(i,4)/numadjele[i];
-          elevec2(3*i+2)=nodalstresses(i,5)/numadjele[i];
+          elevec2(NODDOF_*i)=nodalstresses(i,3)/numadjele[i];
+          elevec2(NODDOF_*i+1)=nodalstresses(i,4)/numadjele[i];
+          elevec2(NODDOF_*i+2)=nodalstresses(i,5)/numadjele[i];
         }
       }
       else if (stresstype=="cxyz") {
@@ -306,14 +306,14 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
         }
 
         for (int i=0;i<NUMNOD_;++i){
-          elevec1(3*i)=nodalstresses(i,0)/numadjele[i];
-          elevec1(3*i+1)=nodalstresses(i,1)/numadjele[i];
-          elevec1(3*i+2)=nodalstresses(i,2)/numadjele[i];
+          elevec1(NODDOF_*i)=nodalstresses(i,0)/numadjele[i];
+          elevec1(NODDOF_*i+1)=nodalstresses(i,1)/numadjele[i];
+          elevec1(NODDOF_*i+2)=nodalstresses(i,2)/numadjele[i];
         }
         for (int i=0;i<NUMNOD_;++i){
-          elevec2(3*i)=nodalstresses(i,3)/numadjele[i];
-          elevec2(3*i+1)=nodalstresses(i,4)/numadjele[i];
-          elevec2(3*i+2)=nodalstresses(i,5)/numadjele[i];
+          elevec2(NODDOF_*i)=nodalstresses(i,3)/numadjele[i];
+          elevec2(NODDOF_*i+1)=nodalstresses(i,4)/numadjele[i];
+          elevec2(NODDOF_*i+2)=nodalstresses(i,5)/numadjele[i];
         }
         Teuchos::RCP<Epetra_MultiVector> elestress
           = params.get<Teuchos::RCP<Epetra_MultiVector> >("elestress",Teuchos::null);
@@ -1356,7 +1356,7 @@ void DRT::ELEMENTS::So_sh8p8::Stress(
         invcg.MultiplyTN(defgrd,defgrd);
         invcg.Invert();
         LINALG::Matrix<NUMSTR_,1> invcgv;
-        Matrix2TensorToVector6Voigt(invcgv,invcg);
+        Matrix2TensorToVector6Voigt(invcgv,invcg,voigt6_stress);
         // store stress
         for (int i=0; i<NUMSTR_; ++i)
           (*elestress)(gp,i) = stress(i) - pressure*detdefgrd*invcgv(i);

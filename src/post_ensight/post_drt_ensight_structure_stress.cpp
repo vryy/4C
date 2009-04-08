@@ -227,12 +227,16 @@ void StructureEnsightWriter::WriteNodalStressStep(ofstream& file,
   {
     for (int i=0;i<numnodes;++i)
     {
-      (*((*nodal_stresses)(0)))[i] = (*normal_stresses)[3*i];
-      (*((*nodal_stresses)(1)))[i] = (*normal_stresses)[3*i+1];
-      (*((*nodal_stresses)(2)))[i] = (*normal_stresses)[3*i+2];
-      (*((*nodal_stresses)(3)))[i] = (*shear_stresses)[3*i];
-      (*((*nodal_stresses)(4)))[i] = (*shear_stresses)[3*i+1];
-      (*((*nodal_stresses)(5)))[i] = (*shear_stresses)[3*i+2];
+      const DRT::Node* lnode = dis->lRowNode(i);
+      const std::vector<int> lnodedofs = dis->Dof(lnode);
+      if (lnodedofs.size() < 3)
+        dserror("Too few DOFs at node of interest"); 
+      (*((*nodal_stresses)(0)))[i] = (*normal_stresses)[lnodedofs[0]];
+      (*((*nodal_stresses)(1)))[i] = (*normal_stresses)[lnodedofs[1]];
+      (*((*nodal_stresses)(2)))[i] = (*normal_stresses)[lnodedofs[2]];
+      (*((*nodal_stresses)(3)))[i] = (*shear_stresses)[lnodedofs[0]];
+      (*((*nodal_stresses)(4)))[i] = (*shear_stresses)[lnodedofs[1]];
+      (*((*nodal_stresses)(5)))[i] = (*shear_stresses)[lnodedofs[2]];
     }
   }
   if (numdf==3)
