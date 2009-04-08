@@ -55,8 +55,7 @@ void DRT::UTILS::LocsysManager::Setup()
   //   Multiply for the transformation of global vectors and matrices)
   
   // get problem dimension (2D or 3D) and store into dim_
-  const ParameterList& psize = DRT::Problem::Instance()->ProblemSizeParams();
-  dim_=psize.get<int>("DIM");
+  dim_ = DRT::Problem::Instance()->ProblemSizeParams().get<int>("DIM");
   if (Dim()!= 2 && Dim()!=3) dserror("ERROR: Locsys problem must be 2D or 3D");
     
   // get node row layout of discretization
@@ -553,11 +552,6 @@ void DRT::UTILS::LocsysManager::Print(ostream& os) const
 {
   if (Comm().MyPID()==0)
   {
-    os << "\n***************************************************";
-    os << "\n*                       WARNING                   *";
-    os << "\n* LocsysManager is still in an experimental stage *";
-    os << "\n* and not yet fully tested (e.g. no fluid test!)  *";
-    os << "\n***************************************************\n";
     os << "\n-------------------------------------DRT::UTILS::LocysManager\n";
     for (int i=0;i<NumLocsys();++i)
     {
@@ -582,20 +576,8 @@ void DRT::UTILS::LocsysManager::Print(ostream& os) const
 void DRT::UTILS::LocsysManager::RotateGlobalToLocal(RCP<LINALG::SparseMatrix> sysmat,
                                                     RCP<Epetra_Vector> rhs)
 {
-  // get dof row layout of discretization
-  const Epetra_Map* dofrowmap = discret_.DofRowMap();
-  
   // transform rhs vector
-  if (transformleftonly_)
-  {
-    RotateGlobalToLocal(rhs);
-  }
-  else
-  {
-    RCP<Epetra_Vector> modrhs = LINALG::CreateVector(*dofrowmap);
-    trafo_->Multiply(false,*rhs,*modrhs);
-    rhs->Update(1.0,*modrhs,0.0);
-  }
+  RotateGlobalToLocal(rhs);
   
   // transform system matrix
   if (transformleftonly_)
@@ -623,14 +605,8 @@ void DRT::UTILS::LocsysManager::RotateGlobalToLocal(RCP<LINALG::SparseMatrix> sy
  *----------------------------------------------------------------------*/
 void DRT::UTILS::LocsysManager::RotateGlobalToLocal(RCP<Epetra_Vector> vec)
 {
-  // get dof row layout of discretization
-  const Epetra_Map* dofrowmap = discret_.DofRowMap();
-      
-  // transform vec
-  RCP<Epetra_Vector> modvec = LINALG::CreateVector(*dofrowmap);
-  trafo_->Multiply(false,*vec,*modvec);
-  vec->Update(1.0,*modvec,0.0);
-    
+  Epetra_Vector tmp(*vec);
+  trafo_->Multiply(false,tmp,*vec);
   return;
 }
 
@@ -642,18 +618,11 @@ void DRT::UTILS::LocsysManager::RotateLocalToGlobal(RCP<Epetra_Vector> result,
                                                RCP<LINALG::SparseMatrix> sysmat,
                                                RCP<Epetra_Vector> rhs)
 {
-  // get dof row layout of discretization
-  const Epetra_Map* dofrowmap = discret_.DofRowMap();
-    
   // transform result
-  RCP<Epetra_Vector> modres = LINALG::CreateVector(*dofrowmap);
-  trafo_->Multiply(true,*result,*modres);
-  result->Update(1.0,*modres,0.0);
+  RotateLocalToGlobal(result);
   
   // transform rhs vector
-  RCP<Epetra_Vector> modrhs = LINALG::CreateVector(*dofrowmap);
-  trafo_->Multiply(true,*rhs,*modrhs);
-  rhs->Update(1.0,*modrhs,0.0);
+  RotateLocalToGlobal(rhs);
     
   // transform system matrix
   RCP<LINALG::SparseMatrix> temp;
@@ -670,14 +639,8 @@ void DRT::UTILS::LocsysManager::RotateLocalToGlobal(RCP<Epetra_Vector> result,
  *----------------------------------------------------------------------*/
 void DRT::UTILS::LocsysManager::RotateLocalToGlobal(RCP<Epetra_Vector> vec)
 {
-  // get dof row layout of discretization
-  const Epetra_Map* dofrowmap = discret_.DofRowMap();
-      
-  // transform vec
-  RCP<Epetra_Vector> modvec = LINALG::CreateVector(*dofrowmap);
-  trafo_->Multiply(true,*vec,*modvec);
-  vec->Update(1.0,*modvec,0.0);
-    
+  Epetra_Vector tmp(*vec);
+  trafo_->Multiply(true,tmp,*vec);
   return;
 }
 
