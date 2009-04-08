@@ -1541,6 +1541,7 @@ class Intersection
   \param elementIds  	     (in)       : vector of element-ids
   \param timestepcounter   (in)       : timestepcounter
   */
+#ifdef QHULL
  	void debugTetgenOutput(
  	  tetgenio&             in,
  	  tetgenio&             out,
@@ -1548,7 +1549,7 @@ class Intersection
     vector<int>&          elementIds,
     int                   timestepcounter
     ) const;
-
+#endif
 
   /*!
   \brief  computes unique coordinates for a certain region in the
