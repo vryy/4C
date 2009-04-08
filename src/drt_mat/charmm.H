@@ -135,6 +135,14 @@ INPAR::MAT::m_charmm; }
                   LINALG::SerialDenseVector SCD_direction,
                   LINALG::SerialDenseVector& charmm_result);
 
+    void readcoldresults(
+		  const ostringstream& outputfile,
+		  const ostringstream& energyfile,
+		  const ostringstream& volumefile,
+		  const int debug,
+		  LINALG::SerialDenseVector& charmm_result);
+
+
     void charmmfakeapi( const double STARTD,
                   const double ENDD,
                   LINALG::SerialDenseVector& charmm_result);

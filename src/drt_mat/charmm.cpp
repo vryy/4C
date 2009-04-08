@@ -539,6 +539,7 @@ void MAT::CHARMM::charmmfileapi (
     //char* output = "output/FE_cold.out";
     //char* energy = "output/energy_coupling_0kbt.out";
     //char* volume = "output/volume_coupling_0kbt.out";
+    const string mdnature = "cold"; // cold = minimization; hot = fully dynamic with thermal energy; pert = pertubation
     output << "output/ACEcold_" << FCD_STARTD << "_" << FCD_ENDD << ".out";
     energy << "output/energy_" << FCD_STARTD << "_" << FCD_ENDD << ".out";
     volume << "output/volume_" << FCD_STARTD << "_" << FCD_ENDD << ".out";
@@ -588,13 +589,129 @@ void MAT::CHARMM::charmmfileapi (
         if (debug == 0) cout << "-1|-1|" << flush;
     }
 
-    cout << endl;
+
+    // Read the results
+    if (mdnature.compare("cold")==0) {
+	readcoldresults(outputfile,energyfile,volumefile,debug,charmm_result);
+    } else {
+	dserror("No included MD Simulation technique given!.");
+    }
+
     cout.flags(flags);  // Set the flags to the way they were
 }
 
 
 /*----------------------------------------------------------------------*/
-//! Hard coupling without calling CHARMm
+//! Read results from cold CHARmm results files
+/*----------------------------------------------------------------------*/
+void MAT::CHARMM::readcoldresults ( const ostringstream& outputfile,
+					const ostringstream& energyfile,
+					const ostringstream& volumefile,
+					const int debug,
+					LINALG::SerialDenseVector& charmm_result)
+{
+   
+    // Check charmm result file for success
+    string line;
+    // The text line in the outputfile, which shows that the CHARmm execution ended normal
+    string charmm_success ("                    NORMAL TERMINATION BY NORMAL STOP");
+    int resultstatus = 1;
+    if (debug == 1) cout << "Outputfile path: " << endl << outputfile.str() << endl;
+    ifstream outputstream (outputfile.str().c_str());
+    if (outputstream.is_open()) {
+        while (! outputstream.eof()) {
+            getline (outputstream,line);
+            if (charmm_success.compare(line) == 0) resultstatus = 0;
+        }
+        outputstream.close();
+    } else dserror("CHARMM API: CHARMM Ouput cannot be read!");
+    if (debug == 1) cout << "Result File Check: " << resultstatus << endl;
+    if (debug == 0) cout << setw(5) << left << resultstatus << flush;
+    if (resultstatus == 1) dserror("CHARMM API: CHARMM run error!");
+
+    // Read energy results
+    double ene_old, ene_new;
+    vector<string> tokens;
+    if (debug == 1) cout << "Energyfile path: " << endl << energyfile.str().c_str() << endl;
+    ifstream energystream (energyfile.str().c_str());
+    if (energystream.is_open()) {
+        while (! energystream.eof()) {
+            getline(energystream,line);
+            if (line.compare(0,5,"PRIN>") == 0) {
+                //cout << line << endl;
+                string buf;
+                stringstream linestream(line);
+                while (linestream >> buf)
+                    tokens.push_back(buf);
+            }
+        }
+        energystream.close();
+    } else dserror("CHARMM API: Energy File cannot be opened!");
+    ene_old = atof(tokens[2].c_str());
+    ene_new = atof(tokens[7].c_str());
+    tokens.clear();
+    // Output for energy
+    if (debug == 1) cout << setw(35) << left << "Energy (string) old | new: " << tokens[2] << " | " << tokens[7] << endl;
+    if (debug == 1) cout << setw(35) << left << "Energy (double) old | new | dV: " << setprecision(10) << ene_old << " | " << ene_new << " | " << (ene_old - ene_new) << endl;
+    if (debug == 0) cout << setw(4) << "dV:" << setw(15) << left << scientific << setprecision(6) << (ene_new - ene_old);
+
+    // Read # of atoms and volume from file
+    double nofatoms_old, nofatoms_new, volume_old, volume_new;
+    vector<string> volutokens;
+    if (debug == 1) cout << "Volumefile path: " << endl << volumefile.str().c_str() << endl;
+    ifstream volumestream (volumefile.str().c_str());
+    if (volumestream.is_open()) {
+        while (! volumestream.eof()) {
+            getline(volumestream,line);
+            if (line.compare(0,8," SELRPN>") == 0) {
+                //cout << line << endl;
+                string buf;
+                stringstream linestream(line);
+                while (linestream >> buf)
+                    tokens.push_back(buf);
+            }
+            if (line.compare(0,15," TOTAL OCCUPIED") == 0) {
+                //cout << line << endl;
+                string buf;
+                stringstream linestream(line);
+                while (linestream >> buf)
+                    volutokens.push_back(buf);
+            }
+        }
+        volumestream.close();
+    } else dserror("CHARMM API: Volume file can not be opened!");
+    // Check if enough text has been found. If not, then unbinding has taken place.
+    if (tokens.size() <= 11) tokens.resize(11,"NAN");
+    if (volutokens.size() <= 10) volutokens.resize(10,"NAN");
+    // Change string to double 
+    nofatoms_old = atof(tokens[1].c_str());
+    nofatoms_new = atof(tokens[10].c_str());
+    volume_old = atof(volutokens[4].c_str());
+    volume_new = atof(volutokens[9].c_str());
+    // Output for # of atoms and volume
+    if (debug == 1) cout << setw(35) << left << "# Atoms (string) old | new: " << tokens[1] << " | " << tokens[10] << endl;
+    if (debug == 1) cout << setw(35) << left << "# Atoms (double) old | new | d#: " << nofatoms_old << " | " << nofatoms_new << " | " << (nofatoms_old - nofatoms_new) << endl;
+    if (debug == 1) cout << setw(35) << left << "Volume (string) old | new: " << volutokens[4] << " | " << volutokens[9] << endl;
+    if (debug == 1) cout << setw(35) << left << "Volume (string) old | new | dVol: " << volume_old << " | " << volume_new << " | " << (volume_old - volume_new) << endl;
+    if (debug == 0) cout << setw(8) << "#Atoms:" << setw(10) << left << fixed << setprecision(0) << nofatoms_new << setw(8) << "Volume:" << setw(12) << left << setprecision(2) << volume_new << endl;
+    tokens.clear();
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Results vector: charmm_result
+    // (Energy STARTD, Energy ENDD, #Atoms STARTD, #Atoms ENDD, Volume STARTD, Volume ENDD)
+    charmm_result[0] = ene_old;
+    charmm_result[1] = ene_new;
+    charmm_result[2] = nofatoms_old;
+    charmm_result[3] = nofatoms_new;
+    charmm_result[4] = volume_old;
+    charmm_result[5] = volume_new;
+    ////////////////////////////////////////////////////////////////////////////
+
+}
+
+
+/*----------------------------------------------------------------------*/
+//! Hard coupling without calling CHARmm
 /*----------------------------------------------------------------------*/
 void MAT::CHARMM::charmmfakeapi ( const double STARTD,
                                     const double ENDD,
