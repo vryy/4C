@@ -21,7 +21,9 @@ Maintainer: Markus Gitterle
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../drt_surfstress/drt_potential_manager.H"
 
+using UTILS::PotentialManager;
 
 /*----------------------------------------------------------------------*
  |  Integrate a Line Neumann boundary condition (public)      mgit 03/07|
@@ -246,7 +248,8 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(ParameterList& params,
   string action = params.get<string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action=="calc_struct_constrarea")       act = Wall1Line::calc_struct_constrarea;
-  else if (action=="calc_struct_areaconstrstiff")  act= Wall1Line::calc_struct_areaconstrstiff;
+  else if (action=="calc_struct_areaconstrstiff")  act = Wall1Line::calc_struct_areaconstrstiff;
+  else if (action=="calc_potential_stiff")         act = Wall1Line::calc_potential_stiff;
   else dserror("Unknown type of action for Wall1_Line");
   //create communicator
   const Epetra_Comm& Comm = discretization.Comm();
@@ -319,6 +322,34 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(ParameterList& params,
       elevector3[0] = areaele;
     }
     break;
+    
+        // compute additional stresses due to intermolecular potential forces
+    case calc_potential_stiff:
+    {
+      RefCountPtr<PotentialManager> potentialmanager =
+        params.get<RefCountPtr<PotentialManager> >("pot_man_", null);
+      if (potentialmanager==null)
+        dserror("No PotentialManager in Wall1 line available");
+
+      RefCountPtr<DRT::Condition> cond = params.get<RefCountPtr<DRT::Condition> >("condition",null);
+      if (cond==null)
+        dserror("Condition not available in Wall1 line");
+        
+      const DRT::UTILS::GaussRule1D gaussrule = getOptimalGaussrule(distype); 
+
+      if (cond->Type()==DRT::Condition::LJ_Potential_2D) // Lennard-Jones potential
+      {
+        potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule, params,lm, elematrix1, elevector1);
+      }
+      else if (cond->Type()==DRT::Condition::Zeta_Potential_2D) // Zeta potential
+      {
+     	  potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule, params,lm, elematrix1, elevector1);
+      }
+      else
+        dserror("Unknown condition type %d",cond->Type());
+    }
+    break;
+      
     default:
       dserror("Unimplemented type of action for Soh8Surface");
 

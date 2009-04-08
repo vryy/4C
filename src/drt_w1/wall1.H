@@ -921,7 +921,8 @@ private:
   {
     none,  ///< undetermined
     calc_struct_areaconstrstiff,
-    calc_struct_constrarea
+    calc_struct_constrarea,
+    calc_potential_stiff
   };
 
   /// don't want = operator
