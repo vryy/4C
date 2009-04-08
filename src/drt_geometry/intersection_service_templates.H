@@ -119,6 +119,41 @@ namespace GEO
     }
     return true;
   }
+  
+  
+  //! checks if a some test points lie in a plane defined by 3 points 
+  template <class M1, class M2>
+    static inline bool pointsInPlaneSurfaceElement(   
+          const M1&                              xyze,       ///< (3,3)             plane made of 3 points
+          const M2&                              xyze_points ///< (3,numtestpoints) test points
+          ) 
+  {
+    // normal vector on plane xyze
+    static LINALG::Matrix<3,1> elenorm;
+    // xyze 3 x ...
+    
+    // cross product -> normal vector
+    elenorm(0)= -(xyze(2,0)*xyze(1,1)) + xyze(1,0)*xyze(2,1) + xyze(2,0)*xyze(1,2) -
+                  xyze(2,1)*xyze(1,2)  - xyze(1,0)*xyze(2,2) + xyze(1,1)*xyze(2,2);
+    elenorm(1)=   xyze(2,0)*xyze(0,1)  - xyze(0,0)*xyze(2,1) - xyze(2,0)*xyze(0,2) +
+                  xyze(2,1)*xyze(0,2)  + xyze(0,0)*xyze(2,2) - xyze(0,1)*xyze(2,2);
+    elenorm(2)= -(xyze(1,0)*xyze(0,1)) + xyze(0,0)*xyze(1,1) + xyze(1,0)*xyze(0,2) -
+                  xyze(1,1)*xyze(0,2)  - xyze(0,0)*xyze(1,2) + xyze(0,1)*xyze(1,2);
+
+    const int numtestpoints = xyze_points.Cols();
+    for(int i = 0; i < numtestpoints; i++)
+    {
+      const double distance =   (elenorm(0)*( xyze_points(0,i) - xyze(0,0) ) + 
+                                 elenorm(1)*( xyze_points(1,i) - xyze(1,0) ) + 
+                                 elenorm(2)*( xyze_points(2,i) - xyze(2,0) )   )/elenorm.Norm2();
+  
+      if(fabs(distance) >= GEO::TOL7)
+      {
+        return false;
+      }
+    }
+    return true;
+  }
 
 
 

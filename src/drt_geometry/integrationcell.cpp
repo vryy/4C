@@ -14,8 +14,12 @@ Maintainer: Ursula Mayer
 #ifdef CCADISCRET
 
 #include "integrationcell.H"
+#include "../drt_lib/linalg_fixedsizematrix.H"
 #include "../drt_geometry/integrationcell_coordtrafo.H"
+#include "../drt_geometry/intersection_service_templates.H"
 #include "../drt_fem_general/drt_utils_integration.H"
+#include "../drt_io/io_gmsh.H"
+//#include "../drt_io/io_gmsh_xfem_extension.H"
 
 
 
@@ -108,15 +112,56 @@ GEO::DomainIntCell::~DomainIntCell()
 {}
 
 
+static string PosToString(double x, double y, double z)
+{
+  std::stringstream s;
+  s << "(" << std::setw(14) << scientific << x <<
+       "," << std::setw(14) << scientific << y <<
+       "," << std::setw(14) << scientific << z << ")";
+  return s.str();
+}
+
 /*----------------------------------------------------------------------*
  *  to string                                                           *
  *----------------------------------------------------------------------*/
 std::string GEO::DomainIntCell::toString() const
 {
   std::stringstream s;
-  s << "DomainIntCell" << endl;
-  s << nodalpos_xi_domain_ << endl;
+  s << "DomainIntCell:" << endl;
+  s << " position in xi coordinates: " << endl;
+  for (int inode = 0; inode < 4; ++inode)
+    s << "   " << PosToString(nodalpos_xi_domain_(0,inode),nodalpos_xi_domain_(1,inode),nodalpos_xi_domain_(2,inode)) << endl;
+  s << " position in xyz coordinates: " << endl;
+  for (int inode = 0; inode < 4; ++inode)
+    s << "   " << PosToString(nodalpos_xyz_domain_(0,inode),nodalpos_xyz_domain_(1,inode),nodalpos_xyz_domain_(2,inode)) << endl;
+  
+  s << endl << " Center : " << PosToString(phys_center_(0),phys_center_(1),phys_center_(2)) << endl;
+  
+//  s << phys_center_ << endl;
   return s.str();
+}
+
+
+/*----------------------------------------------------------------------*
+ *  to string                                                           *
+ *----------------------------------------------------------------------*/
+void GEO::DomainIntCell::toGmsh(const std::string& filename) const
+{
+  std::ofstream f_system(filename.c_str());
+  {
+    // stringstream for domains
+    stringstream gmshfilecontent;
+    gmshfilecontent << "View \" " << "Bad Cell \" {" << endl;
+    
+    
+    const LINALG::SerialDenseMatrix& cellpos = this->CellNodalPosXYZ();
+    const LINALG::Matrix<3,1> cellcenterpos(this->GetPhysicalCenterPosition());
+    gmshfilecontent << IO::GMSH::cellWithScalarToString(this->Shape(), 0.0, cellpos) << endl;
+    gmshfilecontent << "};" << endl;
+    gmshfilecontent << "View[0].Axes = 3;\nView[0].AxesMikado = 1;" << endl;
+    f_system << gmshfilecontent.str();
+  }
+  f_system.close();
 }
 
 
@@ -146,12 +191,41 @@ void GEO::DomainIntCell::setLabel(const int   label)
 
 
 /*----------------------------------------------------------------------*
+ * check for coplanar corner points
+ *----------------------------------------------------------------------*/
+bool GEO::DomainIntCell::CoplanarCornerPoints() const
+{
+  const bool tetcell = ((Shape() == DRT::Element::tet4) or (Shape() == DRT::Element::tet10));
+  dsassert(tetcell,"test for coplanar points only for tetrahedral integration cells");
+  
+  // create plane of first 3 nodes
+  LINALG::Matrix<3,3> plane;
+  for (int ipoint = 0; ipoint < 3; ++ipoint)
+    for (int isd = 0; isd < 3; ++isd)
+      plane(isd,ipoint) = nodalpos_xi_domain_(isd,ipoint);
+  
+  // 4th node is the test point
+  LINALG::Matrix<3,1> testpoint;
+  for (int isd = 0; isd < 3; ++isd)
+    testpoint(isd,0) = nodalpos_xi_domain_(isd,3);
+  
+  // check for coplanar points
+  return GEO::pointsInPlaneSurfaceElement(plane,testpoint);
+}
+
+/*----------------------------------------------------------------------*
  * compute volume in XiDomain coordinates
  *----------------------------------------------------------------------*/
 double GEO::DomainIntCell::VolumeInXiDomain(
         const DRT::Element&           ele
         ) const
 {
+  if (CoplanarCornerPoints())
+  {
+    cout << "coplanar" << endl;
+    return 0.0;
+  }
+
   DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule3D_undefined;
   switch (this->Shape())
   {
@@ -185,8 +259,11 @@ double GEO::DomainIntCell::VolumeInXiDomain(
     const double detcell = GEO::detEtaToXi3D<XFEM::xfem_assembly>(*this, pos_eta_domain);
     const double fac = intpoints.qwgt[iquad]*detcell;
 
-    if(detcell < -1.0e-5) // allow tiny ill-defined cells
+    if(detcell < 0.0)
     {
+      cout << scientific << detcell << endl;
+      cout << this->toString() << endl;
+      this->toGmsh("cell.pos");
       dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT OF INTEGRATION CELL: %20.16f", ele.Id(), detcell);
     }    
     volume_cell += fac;

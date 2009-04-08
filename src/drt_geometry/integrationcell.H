@@ -105,9 +105,14 @@ class DomainIntCell : public IntCell
     const LINALG::Matrix<3,1>&  GetPhysicalCenterPosition() const{ return phys_center_;}
     
     double VolumeInXiDomain(const DRT::Element& ele) const;
+    
+    bool CoplanarCornerPoints() const;
        
     //! return string representation of the DomainIntCell
     virtual std::string toString() const;
+    
+    //! return string representation of the DomainIntCell
+    virtual void toGmsh(const std::string& filename) const;
     
     //! return label of domain intcell
     int getLabel() const {return label_; }

@@ -42,6 +42,9 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
     ) : InterfaceHandle(xfemdis),
         cutterdis_(cutterdis)
 {
+  if (cutterdis == Teuchos::null)
+    dserror("We need a real boundary discretization here!");
+      
   if (xfemdis->Comm().MyPID() == 0)
     std::cout << "Constructing InterfaceHandle" << std::endl;
       
@@ -214,7 +217,10 @@ void XFEM::InterfaceHandleXFSI::EraseTinyDomainIntCells(
     for (GEO::DomainIntCells::const_iterator cell = cells_old.begin(); cell != cells_old.end(); ++cell)
     {
       const double size = cell->VolumeInXiDomain(*xfemele);
-      if (abs(size) < small_cell_treshold)
+      if (size < 0.0)
+        dserror("no negative integration cells allowed!");
+      
+      if (size < small_cell_treshold)
       {
 //        cout << RED << size << END_COLOR << endl;
         small_cell_count++;
