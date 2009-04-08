@@ -103,7 +103,6 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   vector<string> conditions;
   Teuchos::RCP<DRT::Discretization> emptyboundarydis = DRT::UTILS::CreateDiscretizationFromCondition(
       actdis, "dummydiscretizationame", "boundary", "BELE3", conditions);
-  cout << (*emptyboundarydis->DofRowMap()) << endl;
   Teuchos::RCP<Epetra_Vector> tmpdisp1 = LINALG::CreateVector(*emptyboundarydis->DofRowMap(),true);
   Teuchos::RCP<Epetra_Vector> tmpdisp2 = LINALG::CreateVector(*emptyboundarydis->DofRowMap(),true);
   emptyboundarydis->SetState("idispcolnp",tmpdisp1);

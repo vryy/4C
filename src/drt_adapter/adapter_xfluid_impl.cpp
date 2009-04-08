@@ -50,8 +50,6 @@ ADAPTER::XFluidImpl::XFluidImpl(
     cout << "Empty boundary discretization detected. No FSI coupling will be performed..." << endl;
   }
   
-  cout << "hallo" << endl;
-  
   // sanity check
   vector< DRT::Condition * >      conditions;
   boundarydis_->GetCondition ("XFEMCoupling", conditions);
