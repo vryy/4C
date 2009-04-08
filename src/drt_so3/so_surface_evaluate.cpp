@@ -28,6 +28,7 @@ Maintainer: Michael Gee
 
 using UTILS::SurfStressManager;
 using UTILS::PotentialManager;
+using UTILS::BroMotion_Manager;
 
 /*----------------------------------------------------------------------*
  * Integrate a Surface Neumann boundary condition (public)     gee 04/08|
@@ -272,12 +273,14 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
   else if (action=="calc_surfstress_stiff")        act = StructuralSurface::calc_surfstress_stiff;
   else if (action=="calc_potential_stiff")         act = StructuralSurface::calc_potential_stiff;
   else if (action=="calc_brownian_motion")         act = StructuralSurface::calc_brownian_motion;
-  else
+  else if (action=="calc_brownian_motion_damping") act = StructuralSurface::calc_brownian_motion_damping;
+  else 
+
   {
     cout << action << endl;
     dserror("Unknown type of action for StructuralSurface");
   }
-
+  
   //create communicator
   const Epetra_Comm& Comm = discretization.Comm();
   // what the element has to do
@@ -506,9 +509,13 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
         if (cond==null)
           dserror("Condition not available in Solid3 Surface");
 
-        if (cond->Type()==DRT::Condition::LJ_Potential) // Lennard-Jones potential
+        if (cond->Type()==DRT::Condition::LJ_Potential_3D) // Lennard-Jones potential
         {
-          potentialmanager->StiffnessAndInternalForcesLJPotential(this, gaussrule_, params,lm, elematrix1, elevector1);
+          potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule_, params,lm, elematrix1, elevector1);
+        }
+        else if (cond->Type()==DRT::Condition::Zeta_Potential_3D) // Zeta potential
+        {
+        	potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule_, params,lm, elematrix1, elevector1);
         }
         else
           dserror("Unknown condition type %d",cond->Type());
@@ -529,10 +536,17 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
 
         if (cond->Type()==DRT::Condition::Brownian_Motion) // Brownian Motion
         {
-          bromotion_manager->StochasticalForces(this, gaussrule_, params,lm, elematrix1, elevector1);
+          bromotion_manager->StochasticalForces(this, gaussrule_, params, elevector1);
         }
         else
           dserror("Unknown condition type %d",cond->Type());
+      }
+      break;
+
+      // compute damping matrix due to Brownian Motion
+      case calc_brownian_motion_damping:
+      {
+          dserror("not yet comitted");
       }
       break;
 

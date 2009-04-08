@@ -22,6 +22,14 @@ Maintainer: Ursula Mayer
 #include <cstdlib>
 
 
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+
 /*-------------------------------------------------------------------*
  |  ctor (public)                                          umay 06/08|
  *-------------------------------------------------------------------*/
@@ -31,11 +39,22 @@ UTILS::PotentialManager::PotentialManager(
     discretRCP_(discretRCP),
     discret_(discret)
 {
+  cout << "pot man"  << endl;
+  
+  // get problem dimension
+  prob_dim_  = genprob.ndim; 
+  
   // create discretization from potential boundary elements and distribute them
   // on every processor
   vector<string> conditions_to_copy;
   conditions_to_copy.push_back("Potential");
-  boundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(discretRCP_, "Potential", "PotBoundary", "BELE3", conditions_to_copy);
+  
+  if(prob_dim_ == 2)
+    boundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(discretRCP_, "Potential", "PotBoundary", "BELE3LINE", conditions_to_copy);
+  else if(prob_dim_ == 3)
+    boundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(discretRCP_, "Potential", "PotBoundary", "BELE3", conditions_to_copy);
+  else
+    dserror("problem dimension not correct");
   dsassert(boundarydis_->NumGlobalNodes() > 0, "empty discretization detected. Potential conditions applied?");
 
   // set new dof set
@@ -89,9 +108,19 @@ UTILS::PotentialManager::PotentialManager(
 
   // set up tree
   const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofDis(*boundarydis_);
-  octTree_      = rcp(new GEO::SearchTree(8));
-  CollectElementsByPotentialCouplingLabel(elementsByLabel_);
-  octTree_->initializeTree(rootBox, elementsByLabel_, GEO::TreeType(GEO::OCTTREE));
+  DRT::UTILS::CollectElementsByConditionLabel(*boundarydis_, elementsByLabel_,"Potential" );
+  searchTree_      = rcp(new GEO::SearchTree(8));
+  if(prob_dim_ == 2)
+  {
+    searchTree_->initializeTree(rootBox, elementsByLabel_, GEO::TreeType(GEO::QUADTREE));
+  }
+  else if(prob_dim_ == 3)
+  {
+    searchTree_->initializeTree(rootBox, elementsByLabel_, GEO::TreeType(GEO::OCTTREE));
+  }
+  else
+    dserror("problem dimension not correct");
+  
   
   // std::cout << "Potential manager constructor done" << endl;
 }
@@ -130,7 +159,7 @@ void UTILS::PotentialManager::EvaluatePotential(  ParameterList& p,
 | Calculate additional internal forces and corresponding stiffness   |
 | on element level for Lennard-Jones potential interaction forces    |
 *--------------------------------------------------------------------*/
-void UTILS::PotentialManager::StiffnessAndInternalForcesLJPotential( 
+void UTILS::PotentialManager::StiffnessAndInternalForcesPotential( 
     const DRT::Element*             element,
     const DRT::UTILS::GaussRule2D&  gaussrule,
     ParameterList&                  params,
@@ -150,15 +179,60 @@ void UTILS::PotentialManager::StiffnessAndInternalForcesLJPotential(
     const DRT::Node* node = element->Nodes()[i];
     const LINALG::Matrix<3,1> x_node = currentboundarypositions_.find(node->Id())->second;
     // octtree search
-    octTreeSearchElementsInCutOffRadius(x_node, potentialElementIds, cutOff, label);
+    treeSearchElementsInCutOffRadius(x_node, potentialElementIds, cutOff, label);
     // serial search
     // searchElementsInCutOffRadius(eleId, potentialElementIds, cutOff);
   } 
+ 
+  // initialize time variables
+  const int    curvenum = cond->Getint("curve");
+  const double time     = params.get<double>("total time",-1.0);
+  //const double dt     = params.get<double>("delta time",0.0);
+  const double t_end    = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).end();
+  double curvefac       = 1.0;
+  // apply potential forces gradually
+  if (time <= t_end)
+    curvefac      = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
   
   // compute internal force and stiffness matrix
-  // initialize potential variables
-  const double  depth     = cond->GetDouble("depth");
-  const double  rootDist  = cond->GetDouble("rootDist");
+  // TODO if poteles empty don t do assembly
+  computeFandK(element, gaussrule, potentialElementIds, lm, K_surf, F_int, cond, label, curvefac);
+  // cout << "stiffness stop" << endl;
+  return;
+}
+
+
+
+/*-------------------------------------------------------------------*
+| (public)                                                umay  06/08|
+|                                                                    |
+| Calculate additional internal forces and corresponding stiffness   |
+| for line elements                                                  |
+*--------------------------------------------------------------------*/
+void UTILS::PotentialManager::StiffnessAndInternalForcesPotential( 
+    const DRT::Element*             element,
+    const DRT::UTILS::GaussRule1D&  gaussrule,
+    ParameterList&                  params,
+    vector<int>&                    lm,
+    Epetra_SerialDenseMatrix&       K_surf,
+    Epetra_SerialDenseVector&       F_int)
+{
+  // initialize Lennard Jones potential constant variables
+  RefCountPtr<DRT::Condition> cond = params.get<RefCountPtr<DRT::Condition> >("condition",null); 
+
+  // find nodal ids influencing a given element
+  const int     label     = cond->Getint("label");
+  const double  cutOff    = cond->GetDouble("cutOff");
+  std::map<int,std::set<int> > potentialElementIds;
+  for(int i = 0; i < DRT::UTILS::getNumberOfElementCornerNodes(element->Shape()); i++)
+  {
+    const DRT::Node* node = element->Nodes()[i];
+    const LINALG::Matrix<3,1> x_node = currentboundarypositions_.find(node->Id())->second;
+    // octtree search
+    treeSearchElementsInCutOffRadius(x_node, potentialElementIds, cutOff, label);
+    // serial search
+    // searchElementsInCutOffRadius(eleId, potentialElementIds, cutOff);
+  } 
   
   // initialize time variables
   const int    curvenum = cond->Getint("curve");
@@ -172,7 +246,7 @@ void UTILS::PotentialManager::StiffnessAndInternalForcesLJPotential(
   
   // compute internal force and stiffness matrix
   // TODO if poteles empty don t do assembly
-  computeFandK(element, gaussrule, potentialElementIds, lm, K_surf, F_int, label, depth, rootDist, curvefac);
+  computeFandK(element, gaussrule, potentialElementIds, lm, K_surf, F_int, cond, label, curvefac);
   // cout << "stiffness stop" << endl;
   return;
 }
@@ -220,7 +294,16 @@ void UTILS::PotentialManager::UpdateDisplacementsOfBoundaryDiscretization(
   
   // reinitialize search tree
   const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofDis(*boundarydis_, currentboundarypositions_);
-  octTree_->initializeTree(rootBox, elementsByLabel_, GEO::TreeType(GEO::OCTTREE));
+  if(prob_dim_ == 2)
+  {
+    searchTree_->initializeTree(rootBox, elementsByLabel_, GEO::TreeType(GEO::QUADTREE));
+  }
+  else if(prob_dim_ == 3)
+  {
+    searchTree_->initializeTree(rootBox, elementsByLabel_, GEO::TreeType(GEO::OCTTREE));
+  }
+  else
+    dserror("problem dimension not correct");
 }
 
 
@@ -238,8 +321,7 @@ void UTILS::PotentialManager::searchElementsInCutOffRadius(
     std::map<int,std::set<int> >&     potentialElementIds,
     const double                      radius)
 {
-
-const double tol =  1e-7;
+  const double tol =  1e-7;
 
 // only for testing no labels are distinguished
   for (int lid = 0; lid < boundarydis_->NumMyColNodes(); ++lid)
@@ -276,65 +358,17 @@ const double tol =  1e-7;
 | checks, if a node lies within a given cut off radius               |
 | in this case the element ids of adjacent elements are stored       |
 *--------------------------------------------------------------------*/
-void UTILS::PotentialManager::octTreeSearchElementsInCutOffRadius(
+void UTILS::PotentialManager::treeSearchElementsInCutOffRadius(
     const LINALG::Matrix<3,1>&        point,
     std::map<int,std::set<int> >&     potentialElementIds,
     const double                      radius,
     const int                         label)
 {
   potentialElementIds = 
-    octTree_->searchElementsInRadius(*boundarydis_, currentboundarypositions_, point, radius, label);
+    searchTree_->searchElementsInRadius(*boundarydis_, currentboundarypositions_, point, radius, label);
   
   return;
 }
-
-
-
-/*-------------------------------------------------------------------*
-| (private)                                               umay  08/08|
-|                                                                    |
-| collects all emement ids that belong to certain label              |
-*--------------------------------------------------------------------*/
-void UTILS::PotentialManager::CollectElementsByPotentialCouplingLabel(
-    std::map<int,std::set<int> >&        elementsByLabel)
-{
-  // Reset
-  elementsByLabel.clear();
-  
-  // get condition
-  vector< DRT::Condition * >  potConditions;
-  boundarydis_->GetCondition("Potential", potConditions);
-  
-  // collect elements by xfem coupling label
-  for(vector<DRT::Condition*>::const_iterator conditer = potConditions.begin(); conditer!=potConditions.end(); ++conditer)
-  {
-    DRT::Condition* potCondition = *conditer;
-    const int label = potCondition->Getint("label");
-    // here the node have to be visitied because the element geometry map doesn t 
-    // have ghosted elements
-    const vector<int> geometryMap = *potCondition->Nodes();
-    vector<int>::const_iterator iterNode;
-    for(iterNode = geometryMap.begin(); iterNode != geometryMap.end(); ++iterNode )
-    {
-      const int nodegid = *iterNode;
-      const DRT::Node* node = boundarydis_->gNode(nodegid);
-      const DRT::Element*const* elements = node->Elements();
-      for (int iele=0; iele < node->NumElement(); ++iele)
-      {
-        const DRT::Element* boundaryele = elements[iele];
-        elementsByLabel[label].insert(boundaryele->Id());
-      }
-    }
-  }
-  
-  int numOfCollectedIds = 0;
-  for(unsigned int i = 0; i < elementsByLabel.size(); i++)
-    numOfCollectedIds += elementsByLabel[i].size();
-  
-  if (boundarydis_->NumMyColElements() != numOfCollectedIds)
-    dserror("not all elements collected.");
-}
-
 
 
 /*-------------------------------------------------------------------*
@@ -462,9 +496,8 @@ void UTILS::PotentialManager::computeFandK(
    vector<int>&                     lm,
    Epetra_SerialDenseMatrix&        K_surf,
    Epetra_SerialDenseVector&        F_int,
+   RefCountPtr<DRT::Condition> 			cond,
    const int                        label,
-   const double                     depth,
-   const double                     rootDist,
    const double                     curvefac)
 {
   
@@ -544,9 +577,9 @@ void UTILS::PotentialManager::computeFandK(
                                                 gp_pot, x_pot_gp, curvefac);
            
             // evaluate Lennard Jones potential and its derivatives    
-           LINALG::Matrix<3,1>     potderiv1;
+           LINALG::Matrix<3,1>  potderiv1;
            LINALG::Matrix<3,3>  potderiv2;
-           EvaluateLennardJonesPotential(depth, rootDist, x_gp, x_pot_gp, potderiv1, potderiv2);
+           EvaluatePotentialfromCondition(cond, x_gp, x_pot_gp, potderiv1, potderiv2);
             //cout << "potderiv1 = " << potderiv1 << endl;
             //cout << "potderiv2 = " << potderiv2 << endl;
           
@@ -578,6 +611,130 @@ void UTILS::PotentialManager::computeFandK(
       } // loop over all potential elements
   } // loop over all gauss points of the actual element
   
+  return;
+}
+
+
+
+/*-------------------------------------------------------------------*
+| (private)                                               umay  08/08|
+|                                                                    |
+| compute internal force vector and stiffness matrix for line        |
+| elements (2D problems)                                             |
+*--------------------------------------------------------------------*/
+void UTILS::PotentialManager::computeFandK(
+   const DRT::Element*              actEle,
+   const DRT::UTILS::GaussRule1D&   gaussrule,
+   std::map<int,std::set<int> >&    potElements,
+   vector<int>&                     lm,
+   Epetra_SerialDenseMatrix&        K_surf,
+   Epetra_SerialDenseVector&        F_int,
+   RefCountPtr<DRT::Condition>      cond,
+   const int                        label,
+   const double                     curvefac)
+{
+  
+  // determine global row indices (lmrow) and global colum indices (lm)
+  vector<int> lmrow = lm;
+  CollectLmcol(potElements, lm);
+  // resize matrix and vector and zero out
+  const int ndofrow    = lmrow.size();  
+  const int ndofcol    = lm.size(); 
+  F_int.Size(ndofrow);
+  K_surf.Shape(ndofrow, ndofcol);
+
+  // number of atoms (~0.2 nm) per surface area in reference configuration
+  // here equal for all bodies in n/µm^2
+  const double beta = 25000000;
+  const DRT::UTILS::IntegrationPoints1D intpoints(gaussrule);
+  
+  //----------------------------------------------------------------------
+  // loop over all gauss points of the actual element
+  //----------------------------------------------------------------------
+  for (int gp = 0; gp < intpoints.nquad; gp++)
+  {
+    // compute func, deriv, x_gp and factor 
+    const int numnode = actEle->NumNode();
+    LINALG::SerialDenseVector   funct(numnode);
+    LINALG::SerialDenseMatrix   deriv(1,numnode);
+    LINALG::Matrix<3,1>         x_gp(true);
+   
+    const double fac = ComputeFactor(actEle, funct, deriv, intpoints, gp, x_gp, curvefac);
+    //----------------------------------------------------------------------
+    // run over all influencing elements called element_pot
+    //----------------------------------------------------------------------
+    for(std::map<int, std::set<int> >::const_iterator labelIter = potElements.begin(); labelIter != potElements.end(); labelIter++)
+      for(std::set<int>::const_iterator eleIter = (labelIter->second).begin(); eleIter != (labelIter->second).end(); eleIter++)
+      {
+         const DRT::Element* element_pot = boundarydis_->gElement(*eleIter);
+         
+         // obtain current potential dofs
+         vector<int> lmpot;
+         vector<int> lmowner;
+         element_pot->LocationVector(*boundarydis_,lmpot,lmowner);
+         
+         // obtain Gaussrule and integration points
+         DRT::UTILS::GaussRule1D rule_pot = DRT::UTILS::intrule1D_undefined;
+         switch (element_pot->Shape())
+         {
+            case DRT::Element::line2:
+               rule_pot = DRT::UTILS::intrule_line_2point;
+               break;
+            case DRT::Element::line3: 
+              rule_pot = DRT::UTILS::intrule_line_3point;
+              break;
+            default:
+               dserror("unknown number of nodes for gaussrule initialization");
+         }
+         const DRT::UTILS::IntegrationPoints1D intpoints_pot(rule_pot);
+         //----------------------------------------------------------------------
+         // run over all gauss points of a influencing element
+         //----------------------------------------------------------------------
+         for (int gp_pot = 0; gp_pot < intpoints_pot.nquad; gp_pot++)
+         {
+           // compute func, deriv, x_gp and factor 
+           const int numnode_pot = element_pot->NumNode();
+           LINALG::SerialDenseVector  funct_pot(numnode_pot);
+           LINALG::SerialDenseMatrix  deriv_pot(1,numnode_pot);
+           LINALG::Matrix<3,1>        x_pot_gp(true);
+           
+           const double fac_pot = ComputeFactor(element_pot, funct_pot, deriv_pot, intpoints_pot, 
+                                                gp_pot, x_pot_gp, curvefac);
+           
+            // evaluate Lennard Jones potential and its derivatives    
+           LINALG::Matrix<3,1>  potderiv1;
+           LINALG::Matrix<3,3>  potderiv2;
+           EvaluatePotentialfromCondition(cond, x_gp, x_pot_gp, potderiv1, potderiv2);
+            //cout << "potderiv1 = " << potderiv1 << endl;
+            //cout << "potderiv2 = " << potderiv2 << endl;
+          
+           const int numdof = 3;
+            
+           // computation of internal forces (possibly with non-local values)
+           for (int inode = 0; inode < numnode; inode++)
+             for(int dim = 0; dim < 3; dim++)    
+               F_int[inode*numdof+dim] += funct(inode)*beta*fac*(beta*potderiv1(dim)*fac_pot);
+                         
+           // computation of stiffness matrix (possibly with non-local values)
+           for (int inode = 0;inode < numnode; ++inode)
+             for(int dim = 0; dim < 3; dim++)
+             {
+               // k,ii
+               for (int jnode = 0; jnode < numnode; ++jnode)
+                 for(int dim_pot = 0; dim_pot < 3; dim_pot++)
+                   K_surf(inode*numdof+dim, jnode*numdof+dim_pot) += 
+                     funct(inode)*beta*fac*(beta*potderiv2(dim,dim_pot)*funct(jnode)*fac_pot);
+                
+               // k,ij
+               for (int jnode = 0;jnode < numnode_pot; ++jnode)
+                 for(int dim_pot = 0; dim_pot < 3; dim_pot++)
+                   K_surf(inode*numdof+dim, GetLocalIndex(lm,lmpot[jnode*numdof+dim_pot]) ) += 
+                      funct(inode)*beta*fac*(beta*(-1)*potderiv2(dim,dim_pot)*funct_pot(jnode)*fac_pot);
+          
+              }
+         } // loop over all gauss points of the potential element
+      } // loop over all potential elements
+  } // loop over all gauss points of the actual element
   
   return;
 }
@@ -585,10 +742,46 @@ void UTILS::PotentialManager::computeFandK(
 
 
 /*-------------------------------------------------------------------*
+| (private)                                               umay  02/09|
+|                                                                    |
+| evaluate potential                                                 |
+*--------------------------------------------------------------------*/
+void UTILS::PotentialManager::EvaluatePotentialfromCondition(
+		RefCountPtr<DRT::Condition> 	cond,
+		const LINALG::Matrix<3,1>&    x,
+    const LINALG::Matrix<3,1>&    y,
+    LINALG::Matrix<3,1>&          potderiv1,
+    LINALG::Matrix<3,3>&          potderiv2)
+{
+
+	if (cond->Type()==DRT::Condition::LJ_Potential_3D || cond->Type()==DRT::Condition::LJ_Potential_2D)
+	{
+		const double depth    = cond->GetDouble("depth");
+		const double rootDist = cond->GetDouble("rootDist");
+		
+		EvaluateLennardJonesPotential(depth, rootDist, x, y, potderiv1, potderiv2);
+		
+	}
+	else if (cond->Type()==DRT::Condition::Zeta_Potential_3D || cond->Type()==DRT::Condition::Zeta_Potential_2D)
+	{
+		const double zeta_param_1 = cond->GetDouble("zeta_param_1");
+		const double zeta_param_2 = cond->GetDouble("zeta_param_2");
+		
+		EvaluateZetaPotential(zeta_param_1, zeta_param_2, x, y, potderiv1, potderiv2);
+	}
+	else
+	{
+		dserror("cannot evaluate potential - condition unknown");
+	}
+	return;
+}
+
+
+
+/*-------------------------------------------------------------------*
 | (private)                                               umay  07/08|
 |                                                                    |
-| update displacements in redundant boundary discretization          |
-| from solid discretization                                          |
+| evaluate Lennard Jones potential                                   |
 *--------------------------------------------------------------------*/
 void UTILS::PotentialManager::EvaluateLennardJonesPotential(
     const double                  depth,
@@ -632,6 +825,53 @@ void UTILS::PotentialManager::EvaluateLennardJonesPotential(
 
 
 /*-------------------------------------------------------------------*
+| (private)                                               umay  07/08|
+|                                                                    |
+| evaluate Zeta potential                                            |
+| not yet the correct formula, just an exponantial function          |
+*--------------------------------------------------------------------*/
+void UTILS::PotentialManager::EvaluateZetaPotential(
+    const double                  zeta_param_1,   //depth
+    const double                  zeta_param_2,		//rootdist
+    const LINALG::Matrix<3,1>&    x,
+    const LINALG::Matrix<3,1>&    y,
+    LINALG::Matrix<3,1>&          potderiv1,
+    LINALG::Matrix<3,3>&          potderiv2)
+{
+
+  // evaluate distance related stuff
+  double                    distance      = 0.0;
+  LINALG::Matrix<3,1>       distance_vec(true);
+  LINALG::Matrix<3,1>       distance_unit(true);
+  LINALG::Matrix<3,3>       du_tensor_du;
+  computeDistance(x,y, du_tensor_du, distance_vec, distance_unit, distance);
+
+  //----------------------------------------------------------------------
+  // evaluate 1.derivative dphi/du_i
+  //----------------------------------------------------------------------
+  const double dpotdr = zeta_param_1*exp((-1)*zeta_param_2*distance);
+  for(int i = 0; i < 3; i++)
+    potderiv1(i) = dpotdr*distance_unit(i);
+
+  //----------------------------------------------------------------------
+  // evaluate 2.derivative dphi/du_i d_uiI  (this is not a mistake !!!!)
+  //----------------------------------------------------------------------
+  const double dpotdrdr = (-1)*zeta_param_1*zeta_param_2*exp((-1)*zeta_param_2*distance);
+  for(int i = 0; i < 3; i++)
+    for(int j = 0; j < 3; j++)
+      potderiv2(i,j) = 0.0;
+  
+  for(int i = 0; i < 3; i++)
+  {
+      potderiv2(i,i) += dpotdr/distance;
+      for(int j = 0; j < 3; j++)
+        potderiv2(i,j) += (dpotdrdr - (dpotdr/distance))*du_tensor_du(i,j);
+  }
+}
+
+
+
+/*-------------------------------------------------------------------*
 | (private)                                               umay  08/08|
 |                                                                    |
 | computes distance vector, distance, the distance unit vector       |
@@ -646,17 +886,14 @@ void UTILS::PotentialManager::computeDistance(
     double&                     distance)
 {
   // compute distance vector
-  dist_vec(0) = x(0) - y(0);
-  dist_vec(1) = x(1) - y(1);
-  dist_vec(2) = x(2) - y(2);
-
+  dist_vec.Update(1.0, x, -1.0, y);
+  
   // compute distance
   distance = dist_vec.Norm2();
 
   // compute distance unit vector
-  dist_unit(0) = dist_vec(0)/distance;
-  dist_unit(1) = dist_vec(1)/distance;
-  dist_unit(2) = dist_vec(2)/distance;
+  dist_unit = dist_vec;
+  dist_unit.Scale(1.0/distance);
 
   // compute r_unit tensorproduct tensor_product
   for(int i=0; i<3; i++)
@@ -764,7 +1001,7 @@ void UTILS::PotentialManager::SpatialConfiguration(
 
 
 /*----------------------------------------------------------------------*
- |  compute factor funct, deriv, x_gp,                       u.may 08/08|
+ |  compute factor funct, deriv, x_gp, for surface elements  u.may 08/08|
  *----------------------------------------------------------------------*/
 double UTILS::PotentialManager::ComputeFactor(
     const DRT::Element*                     element, 
@@ -796,6 +1033,50 @@ double UTILS::PotentialManager::ComputeFactor(
   // detA maps the reference configuration to the parameter space domain
   const double detA = sqrt(  metrictensor(0,0)*metrictensor(1,1)
                             -metrictensor(0,1)*metrictensor(1,0));
+  double factor = intpoints.qwgt[gp] * detA * curve_fac;
+  
+  x_gp = 0.0;
+  // compute gauss point in physical coordinates
+  for (int inode = 0; inode < numnode; inode++)
+    for(int dim = 0; dim < 3; dim++)
+      x_gp(dim) += funct(inode)*x(inode,dim);
+  
+  return factor;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  compute factor funct, deriv, x_gp,  for line elements    u.may 02/09|
+ *----------------------------------------------------------------------*/
+double UTILS::PotentialManager::ComputeFactor(
+    const DRT::Element*                     element, 
+    LINALG::SerialDenseVector&              funct, 
+    LINALG::SerialDenseMatrix&              deriv, 
+    const DRT::UTILS::IntegrationPoints1D&  intpoints,
+    const int                               gp,
+    LINALG::Matrix<3,1>&                    x_gp,
+    const double                            curve_fac)
+{
+  
+  const int numnode = element->NumNode();
+  const double e0 = intpoints.qxg[gp][0];
+  
+  // get shape functions and derivatives of the element
+  DRT::UTILS::shape_function_1D(funct,e0,element->Shape());
+  DRT::UTILS::shape_function_1D_deriv1(deriv,e0,element->Shape());
+  
+  LINALG::SerialDenseMatrix dXYZdr(1,3);
+  LINALG::SerialDenseMatrix X(numnode,3);
+  ReferenceConfiguration(element,X,3);
+  LINALG::SerialDenseMatrix x(numnode,3);
+  SpatialConfiguration(element,x,3);
+  dXYZdr.Multiply('N','N',1.0,deriv,X,0.0);
+  LINALG::SerialDenseMatrix  metrictensor(1,1);
+  metrictensor.Multiply('N','T',1.0,dXYZdr,dXYZdr,0.0);
+  
+  // detA maps the reference configuration to the parameter space domain
+  const double detA = metrictensor(0,0);
   double factor = intpoints.qwgt[gp] * detA * curve_fac;
   
   x_gp = 0.0;
