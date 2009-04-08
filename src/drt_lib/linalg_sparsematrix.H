@@ -512,12 +512,12 @@ class SparseMatrix : public SparseOperator
 
     /// Multiply a (transposed) matrix with another (transposed): C = A(^T)*B(^T)
     /*!
-      Multiply one matrix with another. Both matrices must be completed. Sparsity
+      Multiply one matrix with another. Both matrices must be completed.
       Respective Range, Row and Domain maps of A(^T) and B(^T) have to match.
 
       \note This is a true parallel multiplication, even in the transposed case.
 
-      \note Does not call complete on C upon exit.
+      \note Does call complete on C upon exit by default.
 
       \param A              (in)     : Matrix to multiply with B (must have Filled()==true)
       \param transA         (in)     : flag indicating whether transposed of A should be used
