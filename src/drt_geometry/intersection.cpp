@@ -174,7 +174,9 @@ void GEO::Intersection::computeIntersection(
       //quickFixForIntersectingStructures(xfemElement, labelPerElementId, currentcutterpositions);
       completePLC();
       //debugTetgenDataStructure(xfemElement);
+#ifdef QHULL
       computeCDT(xfemElement, currentcutterpositions, domainintcells, boundaryintcells);
+#endif
     }
   }// for-loop over all  actdis->NumMyColElements()
   
@@ -1604,6 +1606,7 @@ void GEO::Intersection::quickFixForIntersectingStructures(
  |  These two pointers must NOT be null at any time.                    |
  |  For further information please consult the TetGen manual            |
  *----------------------------------------------------------------------*/
+#ifdef QHULL
 void GEO::Intersection::computeCDT(
         const DRT::Element*                     xfemElement,
         const map<int,LINALG::Matrix<3,1> >&    currentcutterpositions,
@@ -1778,7 +1781,7 @@ void GEO::Intersection::computeCDT(
   // store domain integration cells
   addCellsToDomainIntCellsMap(xfemElement, domainintcells, out, higherorder);
 }
-
+#endif
 
 
 /*----------------------------------------------------------------------*
@@ -2771,7 +2774,6 @@ void GEO::Intersection::liftSteinerPointOnSurface(
     }
     else
     {
-       //printf("xsi = %20.16f   %20.16f   %20.16f\n", xsi(0), xsi(1), xsi(2));
       // loop over all individual normals
       vector< LINALG::Matrix<3,1> >::const_iterator normalptr;
       for(normalptr = normals.begin(); normalptr != normals.end(); ++normalptr )
@@ -2941,16 +2943,21 @@ void GEO::Intersection::liftSteinerPointOnBoundary(
     xsi.Clear();
     DRT::Element* cutterElement = intersectingCutterElements_[faceIndex];
     const LINALG::SerialDenseMatrix xyze_cutterElement(GEO::getCurrentNodalPositions(cutterElement, currentcutterpositions));   
+    
+    //cout << "COMPUTE STEINER POINT ON BOUNDARY" << endl;
+    
     const bool intersected = computeRecoveryNormal(cutterElement, xyze_cutterElement, plane, xsi, true);
    
     
     if(intersected)
-    {
+    {      
         storeHigherOrderNode(   true, adjacentFacesList[steinerIndex][0], -1, xsi,
                                 intersectingCutterElements_[faceIndex], currentcutterpositions, out);
     }
     else
     {
+        //cout << "point on boundary not found " << endl;
+        //printf("xsi = %f   %f   %f \n", xsi(0), xsi(1), xsi(2)  );
         countMissedPoints_++;
         printf("STEINER POINT NOT LIFTED in liftSteinerPointOnBoundary()!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
     }
@@ -3384,8 +3391,11 @@ void GEO::Intersection::computeIntersectionNormalC(
 
     // normal of the plane
     LINALG::Matrix<3,1>  n = computeCrossProduct(r1, r2);
+    //n.Scale(10000);
+    //cout << "normal = " << n << endl;
     //normalizeVectorInPLace(n);
     n.Scale(1.0/n.Norm2());
+    //cout << "normal = " << n << endl;
     // direction vector of the intersection line
     LINALG::Matrix<3,1>  r = computeCrossProduct(n, r2);
     //normalizeVectorInPLace(r);
@@ -3411,6 +3421,16 @@ void GEO::Intersection::computeIntersectionNormalC(
     elementToCurrentCoordinatesInPlace(xfemDistype_, xyze_xfemElement_, p2);
    
     plane.push_back(p2);
+    
+    /*
+    for(unsigned int i = 0; i < plane.size(); i++)
+    {
+        for(int j = 0; j < 3 ; j++)
+            printf("plane = %f\t", plane[i](j));
+
+        printf("\n");
+    }
+    */
 }
 
 
@@ -4101,6 +4121,7 @@ void GEO::Intersection::debugTetgenDataStructure(
 /*----------------------------------------------------------------------*
  |  Debug only                                               u.may 06/07|
  *----------------------------------------------------------------------*/
+#ifdef QHULL
 void GEO::Intersection::debugTetgenOutput( 	
     tetgenio& 				in,
     tetgenio& 				out,
@@ -4112,6 +4133,8 @@ void GEO::Intersection::debugTetgenOutput(
 	std::string tetgenOut = "tetgenMesh";
 	char tetgenInId[30];
 	char tetgenOutId[30];
+	
+	
 
 	for(unsigned int i = 0; i < elementIds.size(); i++)
 	{
@@ -4135,7 +4158,7 @@ void GEO::Intersection::debugTetgenOutput(
 	    }
     }
 }
-
+#endif
 
 
 /*----------------------------------------------------------------------*
