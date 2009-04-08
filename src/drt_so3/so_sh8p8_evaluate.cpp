@@ -146,16 +146,14 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
       LINALG::Matrix<NUMDISP_,1> mydisp;
       LINALG::Matrix<NUMPRES_,1> mypres;
       ExtractDispAndPres(mystat,mydisp,mypres);
-      LINALG::Matrix<NUMDISP_,NUMDISP_> stiffmatrix(true);
       LINALG::Matrix<NUMDISP_,NUMPRES_> gradmatrix(true);
       LINALG::Matrix<NUMPRES_,NUMPRES_> stabmatrix(true);
       LINALG::Matrix<NUMDISP_,1> force(true);
       LINALG::Matrix<NUMPRES_,1> incomp(true);
       double volume = 0.0;
       ForceStiffMass(lm,mydisp,mypres,
-                     NULL,&stiffmatrix,&gradmatrix,&stabmatrix,&force,&incomp,
+                     NULL,NULL,&gradmatrix,&stabmatrix,&force,&incomp,
                      NULL,NULL,&volume,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
-      BuildElementMatrix(&elemat1,&stiffmatrix,&gradmatrix,NULL,&stabmatrix);
       BuildElementVector(&elevec1,&force,&incomp);
       AssembleVolume(params,volume);
     }

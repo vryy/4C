@@ -257,6 +257,7 @@ void STR::TimInt::DetermineMassDampConsistAccel()
     // other parameters that might be needed by the elements
     p.set("total time", (*time_)[0]);
     p.set("delta time", (*dt_)[0]);
+    if (pressure_ != Teuchos::null) p.set("volume", 0.0);
     // set vector values needed by elements
     discret_->ClearState();
     discret_->SetState("residual displacement", zeros_);
@@ -837,6 +838,7 @@ void STR::TimInt::ApplyForceInternal
   // other parameters that might be needed by the elements
   p.set("total time", time);
   p.set("delta time", dt);
+  if (pressure_ != Teuchos::null) p.set("volume", 0.0);
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState("residual displacement", disi);  // these are incremental

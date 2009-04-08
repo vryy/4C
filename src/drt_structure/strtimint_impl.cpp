@@ -597,7 +597,8 @@ void STR::TimIntImpl::NewtonFull()
       disp = pressure_->ExtractOtherVector(disi_);
       normpres = STR::AUX::CalculateVectorNorm(iternorm_, pres);
       normdisp = STR::AUX::CalculateVectorNorm(iternorm_, disp);
-      cout << "DispResid=" << normdisp << " PresResid=" << normpres << endl;
+      if (myrank_ == 0)
+        cout << "DispResid=" << normdisp << " PresResid=" << normpres << endl;
     }
 #endif
 
@@ -751,25 +752,6 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
     consolv_->Solve(stiff_, conmatrix,
                     disi_, lagrincr,
                     fres_, conrhs);
-
-#if 0
-    if (pressure_ != Teuchos::null)
-    {
-      Teuchos::RCP<Epetra_Vector> pres = pressure_->ExtractCondVector(fres_);
-      Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector(fres_);
-      double normpres = STR::AUX::CalculateVectorNorm(iternorm_, pres);
-      double normdisp = STR::AUX::CalculateVectorNorm(iternorm_, disp);
-      if (myrank_ == 0) 
-        cout << "ForceResid=" << normdisp << " IncompResid=" << normpres << endl;
-
-      pres = pressure_->ExtractCondVector(disi_);
-      disp = pressure_->ExtractOtherVector(disi_);
-      normpres = STR::AUX::CalculateVectorNorm(iternorm_, pres);
-      normdisp = STR::AUX::CalculateVectorNorm(iternorm_, disp);
-      if (myrank_ == 0)
-        cout << "DispResid=" << normdisp << " PresResid=" << normpres << endl;
-    }
-#endif
     
     // transform back to global co-ordinate system
     if (locsysman_ != Teuchos::null)
@@ -812,6 +794,25 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
     normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
     // build residual Lagrange multiplier norm
     normcon_ = conman_->GetErrorNorm();
+    
+#if 0
+    if (pressure_ != Teuchos::null)
+    {
+      Teuchos::RCP<Epetra_Vector> pres = pressure_->ExtractCondVector(fres_);
+      Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector(fres_);
+      double normpres = STR::AUX::CalculateVectorNorm(iternorm_, pres);
+      double normdisp = STR::AUX::CalculateVectorNorm(iternorm_, disp);
+      if (myrank_ == 0) 
+        cout << "ForceResid=" << normdisp << " IncompResid=" << normpres << endl;
+
+      pres = pressure_->ExtractCondVector(disi_);
+      disp = pressure_->ExtractOtherVector(disi_);
+      normpres = STR::AUX::CalculateVectorNorm(iternorm_, pres);
+      normdisp = STR::AUX::CalculateVectorNorm(iternorm_, disp);
+      if (myrank_ == 0)
+        cout << "DispResid=" << normdisp << " PresResid=" << normpres << endl;
+    }
+#endif
 
     // print stuff
     PrintNewtonIter();
