@@ -166,8 +166,7 @@ OBJS_DRT      = \
                 src/drt_lib/linalg_precond_operator.o \
                 src/drt_lib/linalg_mlapi_operator.o \
                 src/drt_lib/simpler_operator.o \
-                src/drt_lib/linalg_downwindmatrix.o \
-                src/drt_lib/input_material_ccadiscret.o
+                src/drt_lib/linalg_downwindmatrix.o
 #-------------------------------------------------------structural drivers
 OBJS_DRT_STRUCTURE      = \
                 src/drt_structure/stru_dyn_nln_drt.o \
