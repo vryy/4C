@@ -141,6 +141,10 @@ void STR::TimIntImpl::Predict()
     dserror("Trouble in determining predictor %i", pred_);
   }
 
+  // zerofy pressure DOFs
+  if (pressure_ != Teuchos::null)
+    pressure_->InsertCondVector(pressure_->ExtractCondVector(zeros_), disn_);
+
   // apply Dirichlet BCs
   ApplyDirichletBC(timen_, disn_, veln_, accn_, false);
 
