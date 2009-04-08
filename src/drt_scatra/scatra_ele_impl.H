@@ -453,13 +453,30 @@ public:
     }
 
 
-
     //! number of dof per node
     const int numdofpernode_;
     //! number of transported scalars (numscal_ <= numdofpernode_)
     const int numscal_;
     //! flag for electrochemistry problems (ELCH)
     const bool iselch_;
+
+    //! nodal velocity values
+    LINALG::Matrix<nsd_,iel> evelnp_;
+    //! actual values of transported scalars
+    vector<LINALG::Matrix<iel,1> > ephinp_;
+    //! history vector of transported scalars
+    vector<LINALG::Matrix<iel,1> > ehist_;
+    //! density values at t_(n+1) (LOMA)
+    LINALG::Matrix<iel,1> edensnp_;
+    //! density values at t_(n+alpham) (LOMA)
+    LINALG::Matrix<iel,1> edensam_;
+    //! actual electric potential (ELCH)
+    LINALG::Matrix<iel,1> epotnp_; 
+    //! subgrid diffusivity
+    LINALG::Matrix<iel,1> esubgrdiff_;
+    //! fine-scale solution
+    vector<LINALG::Matrix<iel,1> > fsphinp_;
+
     //! node coordinates
     LINALG::Matrix<nsd_,iel> xyze_;
     //! bodyforce in element nodes

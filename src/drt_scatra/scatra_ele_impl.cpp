@@ -167,7 +167,15 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(int numdofpernode, int numscal)
   : numdofpernode_(numdofpernode),
     numscal_(numscal),
     iselch_((numdofpernode_ - numscal_) == 1),
-    xyze_(true),  // initialize to zero
+    evelnp_(true),   // initialize to zero
+    ephinp_(numscal_),
+    ehist_(numdofpernode_),
+    edensnp_(true),
+    edensam_(true),
+    epotnp_(true),
+    esubgrdiff_(true),
+    fsphinp_(numscal_),
+    xyze_(true),
     bodyforce_(numdofpernode_),
     diffus_(numscal_),
     valence_(numscal_),
@@ -279,11 +287,10 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     {
       const string fssgdinp = params.get<string>("fs subgrid diffusivity","No");
       if (fssgdinp == "artificial_all") fssgd = true;
+      // check whether combination of all-scale and fine-scale subgrid diffusivity
+      if (assgd and fssgd)
+        dserror("No combination of all-scale and fine-scale subgrid-diffusivity approach currently possible!");
     }
-
-    // check whether combination of all-scale and fine-scale subgrid diffusivity
-    if (assgd and fssgd)
-      dserror("No combination of all-scale and fine-scale subgrid-diffusivity approach currently possible!");
 
     // set flag for type of scalar whether it is temperature or not
     string scaltypestr=params.get<string>("problem type");
@@ -303,72 +310,66 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     bool conservative = false;
     if(convform =="conservative") conservative = true;
 
-    // get parameter F/RT needed for ELCH ;-)
-    double frt(0.0);
-    if(scaltypestr =="elch") frt = params.get<double>("frt");
+    // get velocity at nodes
+    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
+    DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,velocity,nsd_);
 
-    // need current history, two different density as well as solution vector
+    // extract local values from the global vectors
     RefCountPtr<const Epetra_Vector> hist = discretization.GetState("hist");
-    RefCountPtr<const Epetra_Vector> densnp = discretization.GetState("densnp");
-    RefCountPtr<const Epetra_Vector> densam = discretization.GetState("densam");
     RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
-    if (hist==null || densnp==null || densam==null || phinp==null)
-      dserror("Cannot get state vector 'hist', 'densnp' and/or 'phinp'");
-
-    // extract local values from the global vector
+    if (hist==null || phinp==null)
+        dserror("Cannot get state vector 'hist' and/or 'phinp'");
     vector<double> myhist(lm.size());
-    vector<double> mydensnp(lm.size());
-    vector<double> mydensam(lm.size());
     vector<double> myphinp(lm.size());
     DRT::UTILS::ExtractMyValues(*hist,myhist,lm);
-    DRT::UTILS::ExtractMyValues(*densnp,mydensnp,lm);
-    DRT::UTILS::ExtractMyValues(*densam,mydensam,lm);
     DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
 
-    // get velocity at nodes
-    // compare also with DRT::UTILS::ExtractMyValues()
-    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
-    Epetra_SerialDenseVector evel(nsd_*iel);
-    DRT::UTILS::ExtractMyNodeBasedValues(ele,evel,velocity,nsd_);
-
-    // create objects for element arrays
-    vector<LINALG::Matrix<iel,1> > ephinp(numscal_);
-    vector<LINALG::Matrix<iel,1> > ehist(numdofpernode_);
-    LINALG::Matrix<iel,1>    edensnp;
-    LINALG::Matrix<iel,1>    edensam;
-    LINALG::Matrix<nsd_,iel> evelnp;
-    LINALG::Matrix<iel,1>    epotnp;
-    LINALG::Matrix<iel,1>    esubgrdiff;
-
-    // fill element arrays
+    // fill all element arrays
     for (int i=0;i<iel;++i)
     {
       for (int k = 0; k< numscal_; ++k)
       {
         // split for each tranported scalar, insert into element arrays
-        ephinp[k](i,0) = myphinp[k+(i*numdofpernode_)];
+        ephinp_[k](i,0) = myphinp[k+(i*numdofpernode_)];
       }
       for (int k = 0; k< numdofpernode_; ++k)
       {
         // the history vectors contains information of time step t_n
-        ehist[k](i,0) = myhist[k+(i*numdofpernode_)];
+        ehist_[k](i,0) = myhist[k+(i*numdofpernode_)];
       }
-
-      // insert velocity field into element array
-      for (int idim=0 ; idim < nsd_ ; idim++)
-      {
-        evelnp(idim,i) = evel[idim + (i*nsd_) ];
-      }
-
-      // insert density vectors into element arrays
-      // (only take values belonging to the first transported scalar!)
-      edensnp(i,0) = mydensnp[0+(i*numdofpernode_)];
-      edensam(i,0) = mydensam[0+(i*numdofpernode_)];
-
-      // get values for el. potential at element nodes
-      if(scaltypestr =="elch") epotnp(i) = myphinp[i*numdofpernode_+numscal_];
-      else                     epotnp(i) = 0.0;
     } // for i
+
+    // extract additional local values from the global vectors
+    RefCountPtr<const Epetra_Vector> densnp = discretization.GetState("densnp");
+    RefCountPtr<const Epetra_Vector> densam = discretization.GetState("densam");
+    if (densnp==null || densam==null)
+          dserror("Cannot get state vector 'densnp'");
+    vector<double> mydensnp(lm.size());
+    vector<double> mydensam(lm.size());
+    DRT::UTILS::ExtractMyValues(*densnp,mydensnp,lm);
+    DRT::UTILS::ExtractMyValues(*densam,mydensam,lm);
+
+    // insert density vectors into element arrays
+    // (only take values belonging to the first transported scalar!)
+    for (int i=0;i<iel;++i)
+    {
+      edensnp_(i,0) = mydensnp[0+(i*numdofpernode_)];
+      edensam_(i,0) = mydensam[0+(i*numdofpernode_)];
+    } // for i
+
+    double frt(0.0);
+    if(scaltypestr =="elch")
+    {
+      // get values for el. potential at element nodes
+      for (int i=0;i<iel;++i)
+      {
+        epotnp_(i) = myphinp[i*numdofpernode_+numscal_];
+      }
+      // get parameter F/RT needed for ELCH ;-)
+      frt = params.get<double>("frt");
+    }
+    else
+      epotnp_.Clear();
 
     // get subgrid-diffusivity vector if turbulence model is used
     if (turbmodel)
@@ -382,12 +383,9 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
 
       for (int i=0;i<iel;++i)
       {
-        esubgrdiff(i,0) = mysgdiff[0+(i*numdofpernode_)];
+        esubgrdiff_(i,0) = mysgdiff[0+(i*numdofpernode_)];
       }
     }
-
-    // fine-scale solution
-    vector<LINALG::Matrix<iel,1> > fsphinp(numscal_);
 
     if (is_incremental and fssgd)
     {
@@ -402,7 +400,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         for (int k = 0; k< numscal_; ++k)
         {
           // split for each tranported scalar, insert into element arrays
-          fsphinp[k](i,0) = myfsphinp[k+(i*numdofpernode_)];
+          fsphinp_[k](i,0) = myfsphinp[k+(i*numdofpernode_)];
         }
       }
     }
@@ -410,12 +408,12 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     // calculate element coefficient matrix and rhs
     Sysmat(
         ele,
-        ephinp,
-        ehist,
-        edensnp,
-        edensam,
-        epotnp,
-        esubgrdiff,
+        ephinp_,
+        ehist_,
+        edensnp_,
+        edensam_,
+        epotnp_,
+        esubgrdiff_,
         elemat1_epetra,
         elevec1_epetra,
         elevec2_epetra,
@@ -424,8 +422,8 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         dt,
         timefac,
         alphaF,
-        evelnp,
-        fsphinp,
+        evelnp_,
+        fsphinp_,
         temperature,
         conservative,
         whichtau,
@@ -441,6 +439,46 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
   else if (action =="calc_initial_time_deriv")
     // calculate time derivative for time value t_0
   {
+    // set flag for conservative form
+    string convform = params.get<string>("form of convective term");
+    bool conservative = false;
+    if(convform =="conservative") conservative = true;
+
+    // get initial velocity values at the nodes
+    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
+    DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,velocity,nsd_);
+
+    // need initial field
+    RefCountPtr<const Epetra_Vector> phi0 = discretization.GetState("phi0");
+    if (phi0==null)
+      dserror("Cannot get state vector 'phi0'");
+
+    // extract local values from the global vector
+    vector<double> myphi0(lm.size());
+    DRT::UTILS::ExtractMyValues(*phi0,myphi0,lm);
+
+    // fill element arrays
+    for (int i=0;i<iel;++i)
+    {
+      for (int k = 0; k< numscal_; ++k)
+      {
+        // split for each tranported scalar, insert into element arrays
+        ephinp_[k](i,0) = myphi0[k+(i*numdofpernode_)];
+      }
+    } // for i
+
+    // insert density vector into element array
+    // (only take values belonging to the first transported scalar!)
+    RefCountPtr<const Epetra_Vector> dens0 = discretization.GetState("dens0");
+    if (dens0==null)
+      dserror("Cannot get state vector 'dens0'");
+    vector<double> mydens0(lm.size());
+    DRT::UTILS::ExtractMyValues(*dens0,mydens0,lm);
+    for (int i=0;i<iel;++i)
+    {
+      edensnp_(i,0) = mydens0[0+(i*numdofpernode_)];
+    }
+
     // set flag for type of scalar whether it is temperature or not
     string scaltypestr=params.get<string>("problem type");
     bool temperature = false;
@@ -451,77 +489,31 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       thermpressdt = params.get<double>("time derivative of thermodynamic pressure");
     }
 
-    // set flag for conservative form
-    string convform = params.get<string>("form of convective term");
-    bool conservative = false;
-    if(convform =="conservative") conservative = true;
-
-    // need initial field
-    RefCountPtr<const Epetra_Vector> phi0 = discretization.GetState("phi0");
-    RefCountPtr<const Epetra_Vector> dens0 = discretization.GetState("dens0");
-    if (phi0==null || dens0==null)
-      dserror("Cannot get state vector 'phi0' and/or 'densnp'");
-
-    // extract local values from the global vector
-    vector<double> myphi0(lm.size());
-    vector<double> mydens0(lm.size());
-    DRT::UTILS::ExtractMyValues(*phi0,myphi0,lm);
-    DRT::UTILS::ExtractMyValues(*dens0,mydens0,lm);
-
-    // get initial velocity values at the nodes
-    // compare also with DRT::UTILS::ExtractMyValues()
-    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
-    Epetra_SerialDenseVector evel(nsd_*iel);
-    DRT::UTILS::ExtractMyNodeBasedValues(ele,evel,velocity,nsd_);
-
-    // create objects for element arrays
-    vector<LINALG::Matrix<iel,1> > ephi0(numscal_);
-    LINALG::Matrix<iel,1> edens0;
-    LINALG::Matrix<nsd_,iel> evel0;
-    LINALG::Matrix<iel,1> epot0;
-
-    // fill element arrays
-    for (int i=0;i<iel;++i)
+    double frt(0.0);
+    if(scaltypestr =="elch")
     {
-      for (int k = 0; k< numscal_; ++k)
-      {
-        // split for each tranported scalar, insert into element arrays
-        ephi0[k](i,0) = myphi0[k+(i*numdofpernode_)];
-      }
-
-      // split for each tranported scalar, insert into element arrays
-      for (int idim = 0; idim< nsd_; idim++)
-      {
-        evel0(idim,i) = evel[idim + (i*nsd_)];
-      }
-
-      // insert density vector into element array
-      // (only take values belonging to the first transported scalar!)
-      edens0(i,0) = mydens0[0+(i*numdofpernode_)];
-
-      if(scaltypestr =="elch")
+      for (int i=0;i<iel;++i)
       {
         // get values for el. potential at element nodes
-        epot0(i) = myphi0[i*numdofpernode_+numscal_];
-      }
-      else
-        epot0(i) = 0.0;
-    } // for i
+        epotnp_(i) = myphi0[i*numdofpernode_+numscal_];
+      } // for i
 
-    // get parameter F/RT
-    double frt(0.0);
-    if(scaltypestr =="elch") frt = params.get<double>("frt");
+      // get parameter F/RT
+      frt = params.get<double>("frt");
+    }
+    else
+      epotnp_.Clear();
 
-    // calculate mass matrix and rhs
+    // calculate matrix and rhs
     InitialTimeDerivative(
         ele,
-        ephi0,
-        edens0,
-        epot0,
+        ephinp_,
+        edensnp_,
+        epotnp_,
         elemat1_epetra,
         elevec1_epetra,
         mat,
-        evel0,
+        evelnp_,
         temperature,
         conservative,
         frt,
@@ -683,28 +675,26 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     vector<double> myphinp(lm.size());
     DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
 
-    // create objects for element arrays
-    vector<LINALG::Matrix<iel,1> > ephinp(2);
-    LINALG::Matrix<iel,1> epotnp;
+    if (numscal_ != 2) 
+      dserror("Numscal_ != 2 for error calculation of Kwok & Wu example");
 
     // fill element arrays
     for (int i=0;i<iel;++i)
     {
-      for (int k = 0; k< 2; ++k)
+      // split for each tranported scalar, insert into element arrays
+      for (int k = 0; k< numscal_; ++k)
       {
-        // split for each tranported scalar, insert into element arrays
-        ephinp[k](i) = myphinp[k+(i*numdofpernode_)];
+        ephinp_[k](i) = myphinp[k+(i*numdofpernode_)];
       }
-
       // get values for el. potential at element nodes
-      epotnp(i) = myphinp[i*numdofpernode_+numscal_];
+      epotnp_(i) = myphinp[i*numdofpernode_+numscal_];
     } // for i
 
     CalErrorComparedToAnalytSolution(
         ele,
         params,
-        ephinp,
-        epotnp,
+        ephinp_,
+        epotnp_,
         elevec1_epetra,
         mat);
   }
@@ -2146,7 +2136,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
     gradphi_.Multiply(derxy_,ephinp[k]);
 
     // factor D_k * z_k
-    diffus_valence_k = diffus_[k]*valence_[k];
+    diffus_valence_k = diffusvalence_[k];
 
     if (use2ndderiv)
     {
