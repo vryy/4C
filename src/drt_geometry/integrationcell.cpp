@@ -147,20 +147,13 @@ std::string GEO::DomainIntCell::toString() const
  *----------------------------------------------------------------------*/
 void GEO::DomainIntCell::toGmsh(const std::string& filename) const
 {
+  const LINALG::SerialDenseMatrix& cellpos = this->CellNodalPosXiDomain();
+  
   std::ofstream f_system(filename.c_str());
-  {
-    // stringstream for domains
-    stringstream gmshfilecontent;
-    gmshfilecontent << "View \" " << "Bad Cell \" {" << endl;
-    
-    
-    const LINALG::SerialDenseMatrix& cellpos = this->CellNodalPosXYZ();
-    const LINALG::Matrix<3,1> cellcenterpos(this->GetPhysicalCenterPosition());
-    gmshfilecontent << IO::GMSH::cellWithScalarToString(this->Shape(), 0.0, cellpos) << endl;
-    gmshfilecontent << "};" << endl;
-    gmshfilecontent << "View[0].Axes = 3;\nView[0].AxesMikado = 1;" << endl;
-    f_system << gmshfilecontent.str();
-  }
+  f_system << "View \" " << "Bad Cell \" {\n";
+  f_system << IO::GMSH::cellWithScalarToString(this->Shape(), 0.0, cellpos) << "\n";
+  f_system << "};\n";
+  f_system << "View[0].Axes = 3;\nView[0].AxesMikado = 1;\n";
   f_system.close();
 }
 
@@ -208,6 +201,12 @@ bool GEO::DomainIntCell::CoplanarCornerPoints() const
   LINALG::Matrix<3,1> testpoint;
   for (int isd = 0; isd < 3; ++isd)
     testpoint(isd,0) = nodalpos_xi_domain_(isd,3);
+  
+  const bool coplanar_tet  = GEO::testForCoplanarTet(nodalpos_xi_domain_);
+  const bool coplanar_tet2 = GEO::pointsInPlaneSurfaceElement(plane,testpoint);
+  
+  if (coplanar_tet != coplanar_tet2)
+    dserror("which method is better?");
   
   // check for coplanar points
   return GEO::pointsInPlaneSurfaceElement(plane,testpoint);

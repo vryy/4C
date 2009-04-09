@@ -154,6 +154,88 @@ namespace GEO
     }
     return true;
   }
+  
+  
+  //! checks for a coplanar 4-node tetraeder
+  template <class M1>
+    inline bool testForCoplanarTet(   
+          const M1&      xyze       ///< (3,4)             plane made of 4 points
+          ) 
+  {
+    // create plane of first 3 nodes
+    LINALG::Matrix<3,1> v01;
+    LINALG::Matrix<3,1> v02;
+    LINALG::Matrix<3,1> v03;
+    LINALG::Matrix<3,1> v12;
+    LINALG::Matrix<3,1> v13;
+    for (int isd = 0; isd < 3; ++isd)  v01(isd,0) = xyze(isd,1)-xyze(isd,0);
+    for (int isd = 0; isd < 3; ++isd)  v02(isd,0) = xyze(isd,2)-xyze(isd,0);
+    for (int isd = 0; isd < 3; ++isd)  v03(isd,0) = xyze(isd,3)-xyze(isd,0);
+    for (int isd = 0; isd < 3; ++isd)  v12(isd,0) = xyze(isd,2)-xyze(isd,1);
+    for (int isd = 0; isd < 3; ++isd)  v13(isd,0) = xyze(isd,3)-xyze(isd,1);
+    
+    // create 4 normal vectors to each tet surface plane
+    const LINALG::Matrix<3,1> nplane012 = GEO::computeCrossProduct(v01,v02);
+    const LINALG::Matrix<3,1> nplane013 = GEO::computeCrossProduct(v01,v03);
+    const LINALG::Matrix<3,1> nplane023 = GEO::computeCrossProduct(v02,v03);
+    const LINALG::Matrix<3,1> nplane123 = GEO::computeCrossProduct(v12,v13);
+    
+    // compute norm (area) of each plane
+    const double norm012 = nplane012.Norm2();
+    const double norm013 = nplane013.Norm2();
+    const double norm023 = nplane023.Norm2();
+    const double norm123 = nplane123.Norm2();
+    
+    const double maxnorm = max(max(max(norm012,norm013),norm023),norm123);
+    const double minnorm = min(min(min(norm012,norm013),norm023),norm123);
+    
+    // ratio between smallest to largest plane
+    if (minnorm/maxnorm < 1.0e-7)
+    {
+      cout << "totally degenerated" << endl;
+      return true;
+    }
+    
+    // compute normal distance of point to plane of the three remaining points
+    double distance = 0.0;
+    if      (maxnorm == norm012)
+    {
+      distance = (nplane012(0)*v03(0) + 
+                  nplane012(1)*v03(1) + 
+                  nplane012(2)*v03(2)   )/norm012;
+    }
+    else if (maxnorm == norm013)
+    {
+      distance = (nplane013(0)*v02(0) + 
+                  nplane013(1)*v02(1) + 
+                  nplane013(2)*v02(2)   )/norm013;
+    }
+    else if (maxnorm == norm023)
+    {
+      distance = (nplane023(0)*v01(0) + 
+                  nplane023(1)*v01(1) + 
+                  nplane023(2)*v01(2)   )/norm023;
+    }
+    else if (maxnorm == norm123)
+    {
+      distance = (nplane123(0)*v01(0) + 
+                  nplane123(1)*v01(1) + 
+                  nplane123(2)*v01(2)   )/norm123;
+    }
+    else
+    {
+      dserror("impossible");
+    }
+    
+    if(std::abs(distance) >= GEO::TOL7)
+    {
+      return false;
+    }
+    else
+    {
+      return true;
+    }
+  }
 
 
 
