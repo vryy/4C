@@ -156,6 +156,50 @@ public:
     int         &  npatch     ,
     vector<int> &  loc_cart_id);
 
+
+/*!
+      \brief convert an element local id + patch number to its corresponding gid
+
+      \param  npatch (i)	     
+              The number of the patch this element 
+              belongs to.
+
+      \param  loc_cart_id (i)
+              patch local cartesian base indices 
+              for knotvectors, elements and control points
+
+      \return gid
+              given the base indices of the elements 'local' knotspans and the id
+              of the local knotspan, i.e. the patch number, a global element id 
+              will be returned
+
+             
+      \note This method heavily relies on the 
+            cartesian structure of the knotspan.
+            We assume a element/control point numbering
+	    as follows:
+	    
+      \verbatim
+      
+            patch local cartesian element index: 
+	    
+	             (num_u,num_v,num_w)
+
+	    gid = patchoffset+num_u+num_v*nele                 (2d)
+
+	    gid = patchoffset+num_u+num_v*nele+num_w*nele*mele (3d)
+	    
+      \endverbatim
+
+      \note This is the inverse method to ConvertEleGidToKnotIds. See its docu
+            for further details
+
+*/
+  int ConvertEleKnotIdsToGid(
+    const int         &  npatch     ,
+    const vector<int> &  loc_cart_id);
+
+
   /*!
     \brief get element knot vectors to a given element id
 
@@ -331,6 +375,7 @@ public:
       return(n_x_m_x_l_[npatch]);
     };
 
+
   /*!
   \brief Return number of zero sized elements in each direction of
          knotspan of this patch
@@ -339,6 +384,20 @@ public:
                  this patch
   */
   virtual vector<int> Return_n_zerosize_ele(const int npatch);
+
+
+  /*!
+  \brief Return the global id of the next nonzero sized element in 
+         the knotspan
+
+         This method is required for postprocessing only, where
+         we visualize dummy elements as a replacement for zero-sized 
+         elements (to maintain the connectivity and the cartesian
+         knot-span structure)
+
+         \return gid of the next nonzero sized element in knotspan
+  */
+  virtual int Return_next_nonzero_ele_gid(const int zero_ele_gid);
 
 
   /*!

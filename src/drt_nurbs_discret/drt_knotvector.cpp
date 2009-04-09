@@ -731,7 +731,108 @@ vector<int> DRT::NURBS::Knotvector::Return_n_zerosize_ele(const int npatch)
   }
 
   return(num_zero_sized);
-}
+} // DRT::NURBS::Knotvector::Return_n_zerosize_ele(const int npatch)
 
+
+
+/*----------------------------------------------------------------------*
+ |  Return the global id of the next nonzero sized element in the       |
+ |  knotspan                  (public)                      gammi 04/09 |
+ *----------------------------------------------------------------------*/
+int DRT::NURBS::Knotvector::Return_next_nonzero_ele_gid(
+  const int zero_ele_gid)
+{
+  vector<int> zero_ele_cart_id(dim_);
+  vector<int> nonzero_ele_cart_id(dim_);
+
+  int npatch=-1;
+
+  ConvertEleGidToKnotIds(zero_ele_gid,npatch,zero_ele_cart_id);
+
+  vector<int> count(dim_,-1);
+
+  for(int dir=0;dir<dim_;++dir)
+  {
+    int location;
+    location=zero_ele_cart_id[dir]+degree_[npatch][dir];
+    
+    double size=0.0;
+    while(fabs(size)<1e-12)
+    {
+      size=(*(knot_values_[npatch])[dir])[location+1]-(*(knot_values_[npatch])[dir])[location];
+      ++location;
+      ++count[dir];
+    }
+  }
+
+  for(int dir=0;dir<dim_;++dir)
+  {
+    nonzero_ele_cart_id[dir]=zero_ele_cart_id[dir]+count[dir];
+  }
+  int nextnonzero_gid=ConvertEleKnotIdsToGid(npatch,nonzero_ele_cart_id);
+  
+  return(nextnonzero_gid);
+} // DRT::NURBS::Knotvector::Return_next_nonzero_ele_gid
+
+/*----------------------------------------------------------------------*
+ | convert an element local id + patch number to its corresponding gid  |
+ |                                                  (public) gammi 04/09|
+ *----------------------------------------------------------------------*/
+int DRT::NURBS::Knotvector::ConvertEleKnotIdsToGid(
+  const int         &  npatch     ,
+  const vector<int> &  loc_cart_id)
+{
+  if(!filled_)
+  {
+    dserror("can't access data. knotvector not completed\n");
+  }
+
+  int gid=-1;
+
+  switch(dim_)
+  {
+  case 1:
+  {
+    //   gid = num_u+num_v*nele                     (1d)
+    //         |              |
+    //         +--------------+ 
+    //            inthislayer   
+    gid  = loc_cart_id[0];
+    gid += offsets_[npatch];
+
+    break;
+  }
+  case 2:
+  {
+    //   gid = num_u+num_v*nele                     (2d)
+    //         |              |
+    //         +--------------+ 
+    //            inthislayer   
+    gid  = loc_cart_id[1]*nele_x_mele_x_lele_[npatch][0];
+    gid += loc_cart_id[0];
+    gid += offsets_[npatch];
+
+    break;
+  }
+  case 3:
+  {
+    //   gid = num_u+num_v*nele+num_w*nele*mele     (3d)
+    //         |              |       |       |
+    //         +--------------+       +-------+
+    //            inthislayer          uv_layer
+
+    gid  = loc_cart_id[2]*nele_x_mele_x_lele_[npatch][0]*nele_x_mele_x_lele_[npatch][1];
+    gid += loc_cart_id[1]*nele_x_mele_x_lele_[npatch][0];
+    gid += loc_cart_id[0];
+    gid += offsets_[npatch];
+
+    break;
+  }
+  default: 
+    dserror("implemented only for 1,2 and 3 dimensions\n");
+  }
+
+  return(gid);
+} // DRT::NURBS::Knotvector::ConvertEleKnotIdsToGid
 
 #endif
