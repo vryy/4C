@@ -352,11 +352,12 @@ protected:
   //! lump mass matrix (bborn 07/08)
   void so_tet10_lumpmass(LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* emass);
 
+  /// Extrapolate Gauss-point values (e.g. stresses) to nodes and store them in elevecs
   void so_tet10_expol
   (
-      LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10>& stresses,
-      LINALG::Matrix<NUMDOF_SOTET10,1>& elevec1,
-      LINALG::Matrix<NUMDOF_SOTET10,1>& elevec1
+      LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10>& stresses, ///< gp stresses
+      LINALG::Matrix<NUMDOF_SOTET10,1>& elevec1, ///< nodal normal stresses
+      LINALG::Matrix<NUMDOF_SOTET10,1>& elevec2  ///< nodal shear stresses
   );
 
   // These functions are basically copied from the So_integrator,

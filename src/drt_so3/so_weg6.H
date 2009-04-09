@@ -442,11 +442,12 @@ protected:
   //! lump mass matrix (bborn 07/08)
   void sow6_lumpmass(LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6>* emass);
 
+  /// Extrapolate Gauss-point values (e.g. stresses) to nodes and store them in elevecs
   void soweg6_expol
   (
-      LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>& stresses,
-      LINALG::Matrix<NUMDOF_WEG6,1>& elevec1,
-      LINALG::Matrix<NUMDOF_WEG6,1>& elevec2    
+      LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>& stresses, ///< gp stresses
+      LINALG::Matrix<NUMDOF_WEG6,1>& elevec1, ///< nodal normal stresses
+      LINALG::Matrix<NUMDOF_WEG6,1>& elevec2  ///< nodal shear stresses
   );
 
 

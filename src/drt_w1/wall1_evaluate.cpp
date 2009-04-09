@@ -280,33 +280,10 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
 
       if (stresstype=="ndxyz")
       {
-        int numnode = NumNode();
-
         // extrapolate stresses/strains at Gauss points to nodes
-        Epetra_SerialDenseMatrix nodalstresses(numnode,Wall1::numstr_);
-        w1_expol(*gpstress,nodalstresses);
+        w1_expol(*gpstress, elevec1, elevec2);
 
-        // average nodal stresses/strains between elements
-        // -> divide by number of adjacent elements
-        vector<int> numadjele(numnode);
-
-        for (int i=0;i<numnode;++i)
-        {
-          DRT::Node* node=Nodes()[i];
-          numadjele[i]=node->NumElement();
-        }
-
-        for (int i=0;i<numnode;++i)
-        {
-          elevec1(2*i)=nodalstresses(i,0)/numadjele[i];
-          elevec1(2*i+1)=nodalstresses(i,1)/numadjele[i];
-        }
-        for (int i=0;i<numnode;++i)
-        {
-          elevec2(2*i)=nodalstresses(i,2)/numadjele[i];
-          elevec2(2*i+1)=nodalstresses(i,3)/numadjele[i];
-        }
-      }
+     }
       else if (stresstype=="cxyz")
       {
         RCP<Epetra_MultiVector> elestress=params.get<RCP<Epetra_MultiVector> >("elestress",null);
@@ -330,29 +307,9 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
       }
       else if (stresstype=="cxyz_ndxyz")
       {
-        int numnode = NumNode();
-
         // extrapolate stresses/strains at Gauss points to nodes
-        Epetra_SerialDenseMatrix nodalstresses(numnode,Wall1::numstr_);
-        w1_expol(*gpstress,nodalstresses);
+        w1_expol(*gpstress, elevec1, elevec2);
 
-        // average nodal stresses/strains between elements
-        // -> divide by number of adjacent elements
-        vector<int> numadjele(numnode);
-
-        for (int i=0;i<numnode;++i){
-          DRT::Node* node=Nodes()[i];
-          numadjele[i]=node->NumElement();
-        }
-
-        for (int i=0;i<numnode;++i){
-          elevec1(2*i)=nodalstresses(i,0)/numadjele[i];
-          elevec1(2*i+1)=nodalstresses(i,1)/numadjele[i];
-        }
-        for (int i=0;i<numnode;++i){
-          elevec2(2*i)=nodalstresses(i,2)/numadjele[i];
-          elevec2(2*i+1)=nodalstresses(i,3)/numadjele[i];
-        }
         RCP<Epetra_MultiVector> elestress=params.get<RCP<Epetra_MultiVector> >("elestress",null);
         if (elestress==null)
           dserror("No element stress/strain vector available");

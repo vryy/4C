@@ -373,12 +373,12 @@ protected:
   void so_tet4_lumpmass(LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* emass);  //!< element mass matrix
 
 
-  //! Extrapolate Gauss-point values (e.g. stresses) to nodes
+  /// Extrapolate Gauss-point values (e.g. stresses) to nodes and store them in elevecs
   void so_tet4_expol
   (
-      LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>& stresses,
-      LINALG::Matrix<NUMDOF_SOTET4,1>& elevec1,
-      LINALG::Matrix<NUMDOF_SOTET4,1>& elevec2
+      LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>& stresses, ///< gp stresses
+      LINALG::Matrix<NUMDOF_SOTET4,1>& elevec1, ///< nodal normal stresses
+      LINALG::Matrix<NUMDOF_SOTET4,1>& elevec2  ///< nodal shear stresses
   );
 
   //! Evaluate Tet4 Shapefcts at 1 gausspoint to keep them static

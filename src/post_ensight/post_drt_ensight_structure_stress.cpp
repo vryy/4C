@@ -249,10 +249,9 @@ void StructureEnsightWriter::WriteNodalStressStep(ofstream& file,
       if (lnodedofs.size() < 2)
         dserror("Too few DOFs at node of interest"); 
       const int adjele = lnode->NumElement();
-      (*((*nodal_stresses)(0)))[i] = (*normal_stresses)[lnodedofs[0]];
-      (*((*nodal_stresses)(1)))[i] = (*normal_stresses)[lnodedofs[1]];
-      (*((*nodal_stresses)(2)))[i] = (*shear_stresses)[lnodedofs[0]];
-      
+      (*((*nodal_stresses)(0)))[i] = (*normal_stresses)[lnodedofs[0]]/adjele;
+      (*((*nodal_stresses)(1)))[i] = (*normal_stresses)[lnodedofs[1]]/adjele;
+      (*((*nodal_stresses)(2)))[i] = (*shear_stresses)[lnodedofs[0]]/adjele;
     }
   }
 

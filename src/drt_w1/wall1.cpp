@@ -227,23 +227,23 @@ vector<RCP<DRT::Element> >  DRT::ELEMENTS::Wall1::Surfaces()
 /*----------------------------------------------------------------------*
  |  extrapolation of quantities at the GPs to the nodes      popp 08/08 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1::w1_expol(Epetra_SerialDenseMatrix& stresses,
-                                    Epetra_SerialDenseMatrix& nodalstresses)
+void DRT::ELEMENTS::Wall1::w1_expol
+(
+    Epetra_SerialDenseMatrix& stresses,
+    Epetra_SerialDenseVector& elevec1,
+    Epetra_SerialDenseVector& elevec2
+)
 {
   const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
   const DiscretizationType dt = this->Shape();
-  int numgp = intpoints.nquad;
-  int numnode = NumNode();
+  const int numgp = intpoints.nquad;
+  const int numnode = NumNode();
   Epetra_SerialDenseVector funct(numnode);
 
   static Epetra_SerialDenseMatrix expol(numnode,numgp);
   static bool isfilled;
 
-  if (isfilled==true)
-  {
-    nodalstresses.Multiply('N','N',1.0,expol,stresses,0.0);
-  }
-  else
+  if (isfilled==false)
   { 
   	// tri3, quad4, tri6, quad8 and quad9
     if (dt==tri3 or dt==tri6 or dt==quad4 or dt==quad8 or dt==quad9)
@@ -286,12 +286,27 @@ void DRT::ELEMENTS::Wall1::w1_expol(Epetra_SerialDenseMatrix& stresses,
         	expol(ip,i)=funct(i);
         }
       } 
-      nodalstresses.Multiply('N','N',1.0,expol,stresses,0.0);
       isfilled = true;
     }
         
     else dserror("extrapolation not yet implemented for this element type");
   }
+  
+  Epetra_SerialDenseMatrix nodalstresses(numnode,Wall1::numstr_);
+  nodalstresses.Multiply('N','N',1.0,expol,stresses,0.0);
+  
+  // distribute nodal stresses to elevectors for assembling 
+  for (int i=0;i<numnode;++i)
+  {
+    elevec1(2*i)=nodalstresses(i,0);
+    elevec1(2*i+1)=nodalstresses(i,1);
+  }
+  for (int i=0;i<numnode;++i)
+  {
+    elevec2(2*i)=nodalstresses(i,2);
+    elevec2(2*i+1)=nodalstresses(i,3);
+  }  
+  
 }
 
 
