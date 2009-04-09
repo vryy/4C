@@ -251,3 +251,5 @@ Input/mat_holzharit_remo.dat                            x        x        x     
 Input/mat_itskov.dat                                    x        -        x        -        -        -
 Input/sohex27_patchtest_nl_cost_drt.dat                 x        x        x        x        -        -
 Input/sohex20_patchtest_nl_cost_drt.dat                 x        x        x        x        -        -
+Input/sosh8p8_patchtest.dat                             x        x        x        x        -        -
+Input/sosh8p8_hybrid_patchtest.dat                      x        x        x        x        -        -
