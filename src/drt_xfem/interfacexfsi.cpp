@@ -214,13 +214,11 @@ void XFEM::InterfaceHandleXFSI::EraseTinyDomainIntCells(
     cells.clear();
     
     const DRT::Element* xfemele = xfemdis_->gElement(entry->first);
+    double cellFillFactor = 0.0;
     for (GEO::DomainIntCells::const_iterator cell = cells_old.begin(); cell != cells_old.end(); ++cell)
     {
       const double size = cell->VolumeInXiDomain(*xfemele);
-      if (size < 0.0)
-        dserror("no negative integration cells allowed!");
-      
-      if (size < small_cell_treshold)
+      if (abs(size) < small_cell_treshold)
       {
 //        cout << RED << size << END_COLOR << endl;
         small_cell_count++;
@@ -228,8 +226,15 @@ void XFEM::InterfaceHandleXFSI::EraseTinyDomainIntCells(
       else
       {
         cells.push_back(*cell);
+        cellFillFactor += size;
 //        cout << GREEN << size << END_COLOR << endl;
       }
+    }
+    if (std::abs(1.0 - cellFillFactor) > 1.0e-9)
+    {
+      cout << "unit element volume integrated by using integration cells does not sum up to 1" << endl;
+      cout << scientific << (1.0-cellFillFactor) << endl;
+      dserror("");
     }
   }
   cout << " " << small_cell_count << " small cells ( v_ele / v_cell < " << small_cell_treshold << " % ) deleted." << endl;
