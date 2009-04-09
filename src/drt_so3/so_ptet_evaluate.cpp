@@ -224,31 +224,19 @@ int DRT::ELEMENTS::Ptet::Evaluate(ParameterList& params,
       int gid = Id();
       LINALG::Matrix<NUMNOD_PTET,NUMSTR_PTET> gpstress(((*gpstressmap)[gid])->A(),true);
 
-      // make sure that nodal values are not summed up -> divide by
-      // number of adjacent elements
-      vector<int> numadjele(NUMNOD_PTET);
-
-      DRT::Node** nodes = Nodes();
-      for (int i=0;i<NUMNOD_PTET;++i)
-      {
-        DRT::Node* node = nodes[i];
-        numadjele[i]=node->NumElement();
-      }
-
-
       if (stresstype=="ndxyz")
       {
         for (int i=0;i<NUMNOD_PTET;++i)
         {
-          elevec1(3*i)=gpstress(i,0)/numadjele[i];
-          elevec1(3*i+1)=gpstress(i,1)/numadjele[i];
-          elevec1(3*i+2)=gpstress(i,2)/numadjele[i];
+          elevec1(3*i)=gpstress(i,0);
+          elevec1(3*i+1)=gpstress(i,1);
+          elevec1(3*i+2)=gpstress(i,2);
         }
         for (int i=0;i<NUMNOD_PTET;++i)
         {
-          elevec2(3*i)=gpstress(i,3)/numadjele[i];
-          elevec2(3*i+1)=gpstress(i,4)/numadjele[i];
-          elevec2(3*i+2)=gpstress(i,5)/numadjele[i];
+          elevec2(3*i)=gpstress(i,3);
+          elevec2(3*i+1)=gpstress(i,4);
+          elevec2(3*i+2)=gpstress(i,5);
         }
       }
       else if (stresstype=="cxyz" || stresstype=="cxyz_ndxyz")

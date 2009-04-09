@@ -364,6 +364,14 @@ private:
   ///
   /// Shear modulus is needed for stabilisation
   double ShearMod() const;
+  
+  //! Extrapolate Gauss-point values (e.g. stresses) to nodes and store results in elevectors
+  void sosh8p8_expol
+  (
+      LINALG::Matrix<NUMGPT_,NUMSTR_>& stresses,
+      LINALG::Matrix<NUMDOF_,1>& elevec1,
+      LINALG::Matrix<NUMDOF_,1>& elevec2
+  );
 
   //@}
 

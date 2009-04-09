@@ -187,6 +187,7 @@ int DRT::ELEMENTS::So_hex20::Evaluate(ParameterList& params,
 
       if (stresstype=="ndxyz")
       {
+        dserror("No nodal stress output for Hex20 available yet!");
         // extrapolate stresses/strains at Gauss points to nodes
         LINALG::Matrix<NUMNOD_SOH20,NUMSTR_SOH20> nodalstresses;
         soh20_expol(gpstress,nodalstresses);

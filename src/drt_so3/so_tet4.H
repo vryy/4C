@@ -374,8 +374,12 @@ protected:
 
 
   //! Extrapolate Gauss-point values (e.g. stresses) to nodes
-  void so_tet4_expol(LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>& stresses,
-                     LINALG::Matrix<NUMNOD_SOTET4,NUMSTR_SOTET4>& nodalstresses);
+  void so_tet4_expol
+  (
+      LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>& stresses,
+      LINALG::Matrix<NUMDOF_SOTET4,1>& elevec1,
+      LINALG::Matrix<NUMDOF_SOTET4,1>& elevec2
+  );
 
   //! Evaluate Tet4 Shapefcts at 1 gausspoint to keep them static
   const vector<LINALG::Matrix<NUMNOD_SOTET4,1> > so_tet4_1gp_shapefcts();

@@ -242,32 +242,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
 
       if (stresstype=="ndxyz") {
         // extrapolate stresses/strains at Gauss points to nodes
-        LINALG::Matrix<NUMNOD_,NUMSTR_> nodalstresses;
-        soh8_expol(gpstress,nodalstresses);
-
-        // average nodal stresses/strains between elements
-        // -> divide by number of adjacent elements
-        std::vector<int> numadjele(NUMNOD_);
-
-        DRT::Node** nodes = Nodes();
-        for (int i=0;i<NUMNOD_;++i)
-        {
-          DRT::Node* node = nodes[i];
-          numadjele[i]=node->NumElement();
-        }
-
-        for (int i=0;i<NUMNOD_;++i)
-        {
-          elevec1(NODDOF_*i)=nodalstresses(i,0)/numadjele[i];
-          elevec1(NODDOF_*i+1)=nodalstresses(i,1)/numadjele[i];
-          elevec1(NODDOF_*i+2)=nodalstresses(i,2)/numadjele[i];
-        }
-        for (int i=0;i<NUMNOD_;++i)
-        {
-          elevec2(NODDOF_*i)=nodalstresses(i,3)/numadjele[i];
-          elevec2(NODDOF_*i+1)=nodalstresses(i,4)/numadjele[i];
-          elevec2(NODDOF_*i+2)=nodalstresses(i,5)/numadjele[i];
-        }
+        sosh8p8_expol(gpstress, elevec1, elevec2);
       }
       else if (stresstype=="cxyz") {
         Teuchos::RCP<Epetra_MultiVector> elestress
@@ -292,29 +267,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
       }
       else if (stresstype=="cxyz_ndxyz") {
         // extrapolate stresses/strains at Gauss points to nodes
-        LINALG::Matrix<NUMNOD_,NUMSTR_> nodalstresses;
-        soh8_expol(gpstress,nodalstresses);
-
-        // average nodal stresses/strains between elements
-        // -> divide by number of adjacent elements
-        std::vector<int> numadjele(NUMNOD_);
-
-        DRT::Node** nodes = Nodes();
-        for (int i=0;i<NUMNOD_;++i){
-          DRT::Node* node=nodes[i];
-          numadjele[i]=node->NumElement();
-        }
-
-        for (int i=0;i<NUMNOD_;++i){
-          elevec1(NODDOF_*i)=nodalstresses(i,0)/numadjele[i];
-          elevec1(NODDOF_*i+1)=nodalstresses(i,1)/numadjele[i];
-          elevec1(NODDOF_*i+2)=nodalstresses(i,2)/numadjele[i];
-        }
-        for (int i=0;i<NUMNOD_;++i){
-          elevec2(NODDOF_*i)=nodalstresses(i,3)/numadjele[i];
-          elevec2(NODDOF_*i+1)=nodalstresses(i,4)/numadjele[i];
-          elevec2(NODDOF_*i+2)=nodalstresses(i,5)/numadjele[i];
-        }
+        sosh8p8_expol(gpstress, elevec1, elevec2);
         Teuchos::RCP<Epetra_MultiVector> elestress
           = params.get<Teuchos::RCP<Epetra_MultiVector> >("elestress",Teuchos::null);
         if (elestress==Teuchos::null)
@@ -1359,7 +1312,9 @@ void DRT::ELEMENTS::So_sh8p8::Stress(
         Matrix2TensorToVector6Voigt(invcgv,invcg,voigt6_stress);
         // store stress
         for (int i=0; i<NUMSTR_; ++i)
+        {
           (*elestress)(gp,i) = stress(i) - pressure*detdefgrd*invcgv(i);
+        }
       }
     }
     break;

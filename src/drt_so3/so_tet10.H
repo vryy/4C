@@ -352,8 +352,12 @@ protected:
   //! lump mass matrix (bborn 07/08)
   void so_tet10_lumpmass(LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* emass);
 
-  void so_tet10_expol(LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10>& stresses,
-                      LINALG::Matrix<NUMNOD_SOTET10,NUMSTR_SOTET10>& nodalstresses);
+  void so_tet10_expol
+  (
+      LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10>& stresses,
+      LINALG::Matrix<NUMDOF_SOTET10,1>& elevec1,
+      LINALG::Matrix<NUMDOF_SOTET10,1>& elevec1
+  );
 
   // These functions are basically copied from the So_integrator,
   // along with the rather inconsitent matrix sizes.

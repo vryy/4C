@@ -137,18 +137,17 @@ void DRT::ELEMENTS::So_tet10::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  extrapolation of quantities at the GPs to the nodes      lw 03/08   |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_tet10::so_tet10_expol(LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10>& stresses,
-                                             LINALG::Matrix<NUMNOD_SOTET10,NUMSTR_SOTET10>& nodalstresses)
+void DRT::ELEMENTS::So_tet10::so_tet10_expol
+(
+    LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10>& stresses,
+    LINALG::Matrix<NUMDOF_SOTET10,1>& elevec1,
+    LINALG::Matrix<NUMDOF_SOTET10,1>& elevec2
+)
 {
   static LINALG::Matrix<NUMNOD_SOTET10,NUMGPT_SOTET10> expol;
   static bool isfilled;
 
-  if (isfilled==true)
-  {
-    nodalstresses.Multiply(expol,stresses);
-    //multiply<NUMNOD_SOTET10,NUMGPT_SOTET10,NUMSTR_SOTET10>(nodalstresses,expol,stresses);
-  }
-  else
+  if (isfilled==false)
   {
     double sq5=sqrt(5.0);
     expol(0,0)= (0.75+0.05*sq5)*sq5;
@@ -201,11 +200,24 @@ void DRT::ELEMENTS::So_tet10::so_tet10_expol(LINALG::Matrix<NUMGPT_SOTET10,NUMST
     expol(9,2)= (0.25+0.05*sq5)*sq5;
     expol(9,3)= (0.25+0.05*sq5)*sq5;
 
-    nodalstresses.Multiply(expol,stresses);
-    //multiply<NUMNOD_SOTET10,NUMGPT_SOTET10,NUMSTR_SOTET10>(nodalstresses,expol,stresses);
-
     isfilled = true;
   }
+  
+  LINALG::Matrix<NUMNOD_SOTET10,NUMSTR_SOTET10> nodalstresses;
+  nodalstresses.Multiply(expol,stresses);
+
+  for (int i=0;i<NUMNOD_SOTET10;++i){
+    elevec1(3*i)=nodalstresses(i,0);
+    elevec1(3*i+1)=nodalstresses(i,1);
+    elevec1(3*i+2)=nodalstresses(i,2);
+  }
+  for (int i=0;i<NUMNOD_SOTET10;++i){
+    elevec2(3*i)=nodalstresses(i,3);
+    elevec2(3*i+1)=nodalstresses(i,4);
+    elevec2(3*i+2)=nodalstresses(i,5);
+  }
+  
+  
 }
 
 

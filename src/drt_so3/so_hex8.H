@@ -458,9 +458,13 @@ protected:
   //! Lump mass matrix (bborn 07/08)
   void soh8_lumpmass(LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* emass);
 
-  //! Extrapolate Gauss-point values (e.g. stresses) to nodes
-  void soh8_expol(LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>& stresses,
-                  LINALG::Matrix<NUMNOD_SOH8,NUMSTR_SOH8>& nodalstresses);
+  //! Extrapolate Gauss-point values (e.g. stresses) to nodes and store results in elevectors
+  void soh8_expol
+  (
+      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>& stresses,
+      LINALG::Matrix<NUMDOF_SOH8,1>& elevec1,
+      LINALG::Matrix<NUMDOF_SOH8,1>& elevec2
+  );
 
   //! Evaluate Hex8 Shapefcts to keep them static
   const vector<LINALG::Matrix<NUMNOD_SOH8,1> > soh8_shapefcts();

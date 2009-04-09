@@ -155,12 +155,97 @@ void DRT::ELEMENTS::So_sh8p8::Print(std::ostream& os) const
 }
 
 /*----------------------------------------------------------------------*
+ |  extrapolation of quantities at the GPs to the nodes      tk 04/09   |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_sh8p8::sosh8p8_expol
+(
+    LINALG::Matrix<NUMGPT_,NUMSTR_>& stresses,
+    LINALG::Matrix<NUMDOF_,1>& elevec1,
+    LINALG::Matrix<NUMDOF_,1>& elevec2
+)
+{
+  // static variables, that are the same for every element
+  static LINALG::Matrix<NUMNOD_,NUMGPT_> expol;
+  static bool isfilled;
+
+  
+  if (isfilled==false)
+  {
+    double sq3=sqrt(3.0);
+    expol(0,0)=1.25+0.75*sq3;
+    expol(0,1)=-0.25-0.25*sq3;
+    expol(0,2)=-0.25+0.25*sq3;
+    expol(0,3)=-0.25-0.25*sq3;
+    expol(0,4)=-0.25-0.25*sq3;
+    expol(0,5)=-0.25+0.25*sq3;
+    expol(0,6)=1.25-0.75*sq3;
+    expol(0,7)=-0.25+0.25*sq3;
+    expol(1,1)=1.25+0.75*sq3;
+    expol(1,2)=-0.25-0.25*sq3;
+    expol(1,3)=-0.25+0.25*sq3;
+    expol(1,4)=-0.25+0.25*sq3;
+    expol(1,5)=-0.25-0.25*sq3;
+    expol(1,6)=-0.25+0.25*sq3;
+    expol(1,7)=1.25-0.75*sq3;
+    expol(2,2)=1.25+0.75*sq3;
+    expol(2,3)=-0.25-0.25*sq3;
+    expol(2,4)=1.25-0.75*sq3;
+    expol(2,5)=-0.25+0.25*sq3;
+    expol(2,6)=-0.25-0.25*sq3;
+    expol(2,7)=-0.25+0.25*sq3;
+    expol(3,3)=1.25+0.75*sq3;
+    expol(3,4)=-0.25+0.25*sq3;
+    expol(3,5)=1.25-0.75*sq3;
+    expol(3,6)=-0.25+0.25*sq3;
+    expol(3,7)=-0.25-0.25*sq3;
+    expol(4,4)=1.25+0.75*sq3;
+    expol(4,5)=-0.25-0.25*sq3;
+    expol(4,6)=-0.25+0.25*sq3;
+    expol(4,7)=-0.25-0.25*sq3;
+    expol(5,5)=1.25+0.75*sq3;
+    expol(5,6)=-0.25-0.25*sq3;
+    expol(5,7)=-0.25+0.25*sq3;
+    expol(6,6)=1.25+0.75*sq3;
+    expol(6,7)=-0.25-0.25*sq3;
+    expol(7,7)=1.25+0.75*sq3;
+
+    for (int i=0;i<NUMNOD_;++i)
+    {
+      for (int j=0;j<i;++j)
+      {
+        expol(i,j)=expol(j,i);
+      }
+    }
+    isfilled = true;
+  }
+
+  LINALG::Matrix<NUMNOD_,NUMSTR_> nodalstresses;
+
+  //nodalstresses.Multiply('N','N',1.0,expol,stresses,0.0);
+  nodalstresses.Multiply(expol, stresses);
+
+  for (int i=0;i<NUMNOD_;++i){
+    elevec1(NODDOF_*i)=nodalstresses(i,0);
+    elevec1(NODDOF_*i+1)=nodalstresses(i,1);
+    elevec1(NODDOF_*i+2)=nodalstresses(i,2);
+  }
+  for (int i=0;i<NUMNOD_;++i){
+    elevec2(NODDOF_*i)=nodalstresses(i,3);
+    elevec2(NODDOF_*i+1)=nodalstresses(i,4);
+    elevec2(NODDOF_*i+2)=nodalstresses(i,5);
+  }
+  
+}
+
+
+/*----------------------------------------------------------------------*
  |  allocate and return Sosh8p8Register (public)             bborn 03/09|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::ElementRegister> DRT::ELEMENTS::So_sh8p8::ElementRegister() const
 {
   return Teuchos::rcp(new DRT::ELEMENTS::Sosh8p8Register(Type()));
 }
+
 
 //=======================================================================
 //=======================================================================

@@ -236,22 +236,22 @@ void DRT::ELEMENTS::So_hex8::Print(ostream& os) const
   return;
 }
 
-
 /*----------------------------------------------------------------------*
  |  extrapolation of quantities at the GPs to the nodes      lw 02/08   |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8::soh8_expol(LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>& stresses,
-                                        LINALG::Matrix<NUMNOD_SOH8,NUMSTR_SOH8>& nodalstresses)
+void DRT::ELEMENTS::So_hex8::soh8_expol
+(
+    LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>& stresses,
+    LINALG::Matrix<NUMDOF_SOH8,1>& elevec1,
+    LINALG::Matrix<NUMDOF_SOH8,1>& elevec2
+)
 {
+  // static variables, that are the same for every element
   static LINALG::Matrix<NUMNOD_SOH8,NUMGPT_SOH8> expol;
   static bool isfilled;
 
-  if (isfilled==true)
-  {
-    //nodalstresses.Multiply('N','N',1.0,expol,stresses,0.0);
-    nodalstresses.Multiply(expol, stresses);
-  }
-  else
+  
+  if (isfilled==false)
   {
     double sq3=sqrt(3.0);
     expol(0,0)=1.25+0.75*sq3;
@@ -298,11 +298,23 @@ void DRT::ELEMENTS::So_hex8::soh8_expol(LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>&
         expol(i,j)=expol(j,i);
       }
     }
-
-    //nodalstresses.Multiply('N','N',1.0,expol,stresses,0.0);
-    nodalstresses.Multiply(expol, stresses);
-
     isfilled = true;
+  }
+
+  LINALG::Matrix<NUMNOD_SOH8,NUMSTR_SOH8> nodalstresses;
+
+  //nodalstresses.Multiply('N','N',1.0,expol,stresses,0.0);
+  nodalstresses.Multiply(expol, stresses);
+
+  for (int i=0;i<NUMNOD_SOH8;++i){
+    elevec1(NODDOF_SOH8*i) = nodalstresses(i,0);
+    elevec1(NODDOF_SOH8*i+1) = nodalstresses(i,1);
+    elevec1(NODDOF_SOH8*i+2) = nodalstresses(i,2);
+  }
+  for (int i=0;i<NUMNOD_SOH8;++i){
+    elevec2(NODDOF_SOH8*i) = nodalstresses(i,3);
+    elevec2(NODDOF_SOH8*i+1) = nodalstresses(i,4);
+    elevec2(NODDOF_SOH8*i+2) = nodalstresses(i,5);
   }
 }
 

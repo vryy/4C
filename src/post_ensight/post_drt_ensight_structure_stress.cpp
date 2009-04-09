@@ -231,21 +231,27 @@ void StructureEnsightWriter::WriteNodalStressStep(ofstream& file,
       const std::vector<int> lnodedofs = dis->Dof(lnode);
       if (lnodedofs.size() < 3)
         dserror("Too few DOFs at node of interest"); 
-      (*((*nodal_stresses)(0)))[i] = (*normal_stresses)[lnodedofs[0]];
-      (*((*nodal_stresses)(1)))[i] = (*normal_stresses)[lnodedofs[1]];
-      (*((*nodal_stresses)(2)))[i] = (*normal_stresses)[lnodedofs[2]];
-      (*((*nodal_stresses)(3)))[i] = (*shear_stresses)[lnodedofs[0]];
-      (*((*nodal_stresses)(4)))[i] = (*shear_stresses)[lnodedofs[1]];
-      (*((*nodal_stresses)(5)))[i] = (*shear_stresses)[lnodedofs[2]];
+      const int adjele = lnode->NumElement();
+      (*((*nodal_stresses)(0)))[i] = (*normal_stresses)[lnodedofs[0]]/adjele;
+      (*((*nodal_stresses)(1)))[i] = (*normal_stresses)[lnodedofs[1]]/adjele;
+      (*((*nodal_stresses)(2)))[i] = (*normal_stresses)[lnodedofs[2]]/adjele;
+      (*((*nodal_stresses)(3)))[i] = (*shear_stresses)[lnodedofs[0]]/adjele;
+      (*((*nodal_stresses)(4)))[i] = (*shear_stresses)[lnodedofs[1]]/adjele;
+      (*((*nodal_stresses)(5)))[i] = (*shear_stresses)[lnodedofs[2]]/adjele;
     }
   }
   if (numdf==3)
   {
     for (int i=0;i<numnodes;++i)
     {
-      (*((*nodal_stresses)(0)))[i] = (*normal_stresses)[2*i];
-      (*((*nodal_stresses)(1)))[i] = (*normal_stresses)[2*i+1];
-      (*((*nodal_stresses)(2)))[i] = (*shear_stresses)[2*i];
+      const DRT::Node* lnode = dis->lRowNode(i);
+      const std::vector<int> lnodedofs = dis->Dof(lnode);
+      if (lnodedofs.size() < 2)
+        dserror("Too few DOFs at node of interest"); 
+      const int adjele = lnode->NumElement();
+      (*((*nodal_stresses)(0)))[i] = (*normal_stresses)[lnodedofs[0]];
+      (*((*nodal_stresses)(1)))[i] = (*normal_stresses)[lnodedofs[1]];
+      (*((*nodal_stresses)(2)))[i] = (*shear_stresses)[lnodedofs[0]];
     }
   }
 

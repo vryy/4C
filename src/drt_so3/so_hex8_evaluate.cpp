@@ -213,32 +213,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
       if (stresstype=="ndxyz")
       {
         // extrapolate stresses/strains at Gauss points to nodes
-        LINALG::Matrix<NUMNOD_SOH8,NUMSTR_SOH8> nodalstresses;
-        soh8_expol(gpstress,nodalstresses);
-
-        // average nodal stresses/strains between elements
-        // -> divide by number of adjacent elements
-        vector<int> numadjele(NUMNOD_SOH8);
-
-        DRT::Node** nodes = Nodes();
-        for (int i=0;i<NUMNOD_SOH8;++i)
-        {
-          DRT::Node* node = nodes[i];
-          numadjele[i]=node->NumElement();
-        }
-
-        for (int i=0;i<NUMNOD_SOH8;++i)
-        {
-          elevec1(3*i)=nodalstresses(i,0)/numadjele[i];
-          elevec1(3*i+1)=nodalstresses(i,1)/numadjele[i];
-          elevec1(3*i+2)=nodalstresses(i,2)/numadjele[i];
-        }
-        for (int i=0;i<NUMNOD_SOH8;++i)
-        {
-          elevec2(3*i)=nodalstresses(i,3)/numadjele[i];
-          elevec2(3*i+1)=nodalstresses(i,4)/numadjele[i];
-          elevec2(3*i+2)=nodalstresses(i,5)/numadjele[i];
-        }
+        soh8_expol(gpstress, elevec1, elevec2);
+        
       }
       else if (stresstype=="cxyz")
       {
@@ -264,29 +240,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
       else if (stresstype=="cxyz_ndxyz")
       {
         // extrapolate stresses/strains at Gauss points to nodes
-        LINALG::Matrix<NUMNOD_SOH8,NUMSTR_SOH8> nodalstresses;
-        soh8_expol(gpstress,nodalstresses);
-
-        // average nodal stresses/strains between elements
-        // -> divide by number of adjacent elements
-        vector<int> numadjele(NUMNOD_SOH8);
-
-        DRT::Node** nodes = Nodes();
-        for (int i=0;i<NUMNOD_SOH8;++i){
-          DRT::Node* node=nodes[i];
-          numadjele[i]=node->NumElement();
-        }
-
-        for (int i=0;i<NUMNOD_SOH8;++i){
-          elevec1(3*i)=nodalstresses(i,0)/numadjele[i];
-          elevec1(3*i+1)=nodalstresses(i,1)/numadjele[i];
-          elevec1(3*i+2)=nodalstresses(i,2)/numadjele[i];
-        }
-        for (int i=0;i<NUMNOD_SOH8;++i){
-          elevec2(3*i)=nodalstresses(i,3)/numadjele[i];
-          elevec2(3*i+1)=nodalstresses(i,4)/numadjele[i];
-          elevec2(3*i+2)=nodalstresses(i,5)/numadjele[i];
-        }
+        soh8_expol(gpstress, elevec1, elevec2);
+        
         RCP<Epetra_MultiVector> elestress=params.get<RCP<Epetra_MultiVector> >("elestress",null);
         if (elestress==null)
           dserror("No element stress/strain vector available");
