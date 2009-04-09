@@ -280,7 +280,6 @@ public:
         Epetra_SerialDenseVector&             erhs,   ///< element rhs
         const vector<LINALG::Matrix<iel,1> >& ephinp, ///< current scalar field
         const LINALG::Matrix<iel,1>&          epotnp, ///< el. potential at element nodes
-        const bool                            use2ndderiv, ///< are second derivatives needed?
         const double                          frt,    ///< factor F/RT
         const bool                            is_stationary, ///< flag indicating stationary formulation
         const double                          timefac ///< time discretization factor
