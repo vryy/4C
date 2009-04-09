@@ -49,7 +49,7 @@ DYNAMICTYP   Gen_Alfa
 EIGEN        0
 RESEVRYDISP  1
 RESEVRYSTRS  1
-RESTARTEVRY  20
+RESTARTEVRY  5
 NLNSOL       fullnewton // fullnewton modnewton nlncg ptc
 TIMESTEP     0.05
 NUMSTEP      200
@@ -69,9 +69,6 @@ TOLCONSTR    1.0E-06
 ADAPTCONV        No
 ADAPTCONV_BETTER 0.1
 MAXITER      50
-UZAWAPARAM   1.0
-UZAWAMAXITER 20
-UZAWAALGO    iterative
 -----------------------------------------------------FLUID DYNAMIC
 DYNAMICTYP       Nlin_Time_Int
 INITIALFIELD     zero_field
@@ -106,7 +103,7 @@ MAXTIME      2.0
 TIMESTEP     0.01
 NUMSTEP      30
 UPRES        1
-RESTARTEVRY  20
+RESTARTEVRY  5
 IALE         Pseudo_Structure
 COUPALGO     iter_stagg_AITKEN_rel_param
 PREDICTOR    d(n)
@@ -854,11 +851,11 @@ DSURF 0
 DSURF 0
 ---------------------------------DESIGN SURFACE AREA CONSTRAINT 3D
 DSURF 0
----------------------------- DESIGN SURFACE MULTIPNT CONSTRAINT 3D
+-----------------------------DESIGN SURFACE MULTIPNT CONSTRAINT 3D
 DSURF 0
 ------------------------------------DESIGN LINE AREA CONSTRAINT 2D
 DLINE 0
-------------------------------- DESIGN LINE MULTIPNT CONSTRAINT 2D
+--------------------------------DESIGN LINE MULTIPNT CONSTRAINT 2D
 DLINE 0
 ----------------------------------DESIGN SURFACE VOLUME MONITOR 3D
 DSURF 0
