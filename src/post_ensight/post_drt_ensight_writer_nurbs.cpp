@@ -66,10 +66,10 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions
   int dim = (nurbsdis->Return_nele_x_mele_x_lele(0)).size();
 
   // get the knotvector itself
-  RefCountPtr<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
+  RefCountPtr<DRT::NURBS::Knotvector> knotvec=nurbsdis->GetKnotVector();
 
   // detrmine number of patches from knotvector
-  int npatches=knots->ReturnNP();
+  int npatches=knotvec->ReturnNP();
 
   // get vispoint offsets among patches
   vector<int> vpoff(npatches);
@@ -98,15 +98,38 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions
   // loop all available elements
   for (int iele=0; iele<elementmap->NumMyElements(); ++iele)
   {
-    DRT::Element* const actele = nurbsdis->gElement(elementmap->GID(iele));
-    DRT::Node**   nodes = actele->Nodes();
+    DRT::Element* actele = nurbsdis->gElement(elementmap->GID(iele));
+
+    // access elements knot span
+    std::vector<Epetra_SerialDenseVector> knots(dim);
+    bool zero_size=(*knotvec).GetEleKnots(knots,actele->Id());
 
     // get gid, location in the patch
     int gid = actele->Id();
 
     vector<int> ele_cart_id(dim);
     int np=-1;
-    knots->ConvertEleGidToKnotIds(gid,np,ele_cart_id);
+
+    knotvec->ConvertEleGidToKnotIds(gid,np,ele_cart_id);
+
+    // zero sized elements in knot span cannot be visualised
+    if(zero_size)
+    {
+      // if we just skip them, we would loose some connectivity
+      // in the result;
+      // as a work-around, we replace the zero-sized element
+      // with the next nonzero element --- this preserves the 
+      // connectivity, and everything looks nice and smooth again.
+      // Note: This work-around will not work in parallel (or a
+      //       special ghosting for elements along interpolated 
+      //       boundries has to be applied)
+      // Note: The following element will be plotted twice
+
+      actele = nurbsdis->gElement(knotvec->Return_next_nonzero_ele_gid(actele->Id()));
+      (*knotvec).GetEleKnots(knots,actele->Id());
+    }
+
+    DRT::Node**   nodes = actele->Nodes();
 
     // get nurbs dis' element numbers
     vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(np));
@@ -116,8 +139,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions
     const int numnp = actele->NumNode();
 
     // access elements knot span
-    std::vector<Epetra_SerialDenseVector> knots(dim);
-    (*((*nurbsdis).GetKnotVector())).GetEleKnots(knots,actele->Id());
+    zero_size=(*knotvec).GetEleKnots(knots,actele->Id());
 
     // aquire weights from nodes
     Epetra_SerialDenseVector weights(numnp);
@@ -1530,7 +1552,7 @@ void EnsightWriter::WriteNurbsCell(
   // get the knotvector itself
   RefCountPtr<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
 
-  // detrmine number of patches from knotvector
+  // determine number of patches from knotvector
   int npatches=knots->ReturnNP();
 
   // get vispoint offsets among patches
@@ -1821,7 +1843,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(
   } // end loop over patches
 
     // get the knotvector itself
-  RefCountPtr<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
+  RefCountPtr<DRT::NURBS::Knotvector> knotvec=nurbsdis->GetKnotVector();
 
   // get vispoint offsets among patches
   vector<int> vpoff(npatches);
@@ -1854,7 +1876,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(
   std::set<int> coldofset;
   for (int iele=0; iele<elementmap->NumMyElements(); ++iele)
   {
-    DRT::Element* const actele = nurbsdis->gElement(elementmap->GID(iele));
+    DRT::Element*  actele = nurbsdis->gElement(elementmap->GID(iele));
 
     vector<int> lm;
     vector<int> lmowner;
@@ -1933,25 +1955,40 @@ void EnsightWriter::WriteDofResultStepForNurbs(
   // loop all available elements
   for (int iele=0; iele<elementmap->NumMyElements(); ++iele)
   {
-    DRT::Element* const actele = nurbsdis->gElement(elementmap->GID(iele));
-    DRT::Node**   nodes = actele->Nodes();
+    DRT::Element* actele = nurbsdis->gElement(elementmap->GID(iele));
 
-    // get gid, location in the patch and the number of the patch
-    int gid = actele->Id();
-
-    int npatch  =-1;
+    // get gid, location in the patch
     vector<int> ele_cart_id(dim);
-    knots->ConvertEleGidToKnotIds(gid,npatch,ele_cart_id);
+    int gid = actele->Id();
+    int np=-1;
 
-    // get nele_x_mele_x_lele array
-    vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(npatch));
+    // access elements knot span
+    std::vector<Epetra_SerialDenseVector> knots(dim);
+    bool zero_size=(*knotvec).GetEleKnots(knots,actele->Id());
+
+    knotvec->ConvertEleGidToKnotIds(gid,np,ele_cart_id);
+    
+    // zero sized elements in knot span cannot be visualised
+    if(zero_size)
+    {
+      // if we just skip them, we would loose some connectivity
+      // in the result;
+      // as a work-around, we replace the zero-sized element
+      // with the next nonzero element --- this preserves the 
+      // connectivity, and everything looks nice and smooth again.
+      // Note: This work-around will not work in parallel (or a
+      //       special ghosting for elements along interpolated 
+      //       boundries has to be applied)
+      // Note: The following element will be plotted twice
+
+      actele = nurbsdis->gElement(knotvec->Return_next_nonzero_ele_gid(actele->Id()));
+      (*knotvec).GetEleKnots(knots,actele->Id());
+    }
+
+    DRT::Node**   nodes = actele->Nodes();
 
     // number of all control points of the element
     const int numnp = actele->NumNode();
-
-    // access elements knot span
-    std::vector<Epetra_SerialDenseVector> eleknots(dim);
-    knots->GetEleKnots(eleknots,actele->Id());
 
     // aquire weights from nodes
     Epetra_SerialDenseVector weights(numnp);
@@ -1962,17 +1999,26 @@ void EnsightWriter::WriteDofResultStepForNurbs(
       weights(inode) = cp->W();
     }
 
+    // extract local values from the global vectors
+    vector<int> lm;
+    vector<int> lmowner;
+
+    actele->LocationVector(*nurbsdis,lm,lmowner); // get gid, location in the patch and the number of the patch
+
+    int npatch  =np;
+
+    // get nele_x_mele_x_lele array
+    vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(npatch));
+
+    // access elements knot span
+    std::vector<Epetra_SerialDenseVector> eleknots(dim);
+    knotvec->GetEleKnots(eleknots,actele->Id());
+
     // get shapefunctions, compute all visualisation point positions
     Epetra_SerialDenseVector nurbs_shape_funct(numnp);
 
     // element local visualisation point position
     Epetra_SerialDenseVector uv(dim);
-
-    // extract local values from the global vectors
-    vector<int> lm;
-    vector<int> lmowner;
-
-    actele->LocationVector(*nurbsdis,lm,lmowner);
 
     vector<double> my_data(lm.size());
     if(name == "velocity" 

@@ -308,7 +308,7 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 
   if (myrank_==0)
   {
-    cout << "(computing) coordinates for  a ";
+    cout << "(computing) coordinates for a ";
     cout << field_->problem()->SpatialApproximation();
     cout << " approximation\n";
   }
@@ -368,8 +368,6 @@ void EnsightWriter::WriteCells(
       cout << "writing "<< iter->second<< " "<< DRT::DistypeToString(distypeiter) << " element(s) as "
            << ne << " " << ensightCellType << " ensight cell(s)..." << endl;
       Write(geofile, ensightCellType);
-
-
       Write(geofile,ne);
     }
 
