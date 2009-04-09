@@ -252,6 +252,7 @@ void StructureEnsightWriter::WriteNodalStressStep(ofstream& file,
       (*((*nodal_stresses)(0)))[i] = (*normal_stresses)[lnodedofs[0]];
       (*((*nodal_stresses)(1)))[i] = (*normal_stresses)[lnodedofs[1]];
       (*((*nodal_stresses)(2)))[i] = (*shear_stresses)[lnodedofs[0]];
+      
     }
   }
 
