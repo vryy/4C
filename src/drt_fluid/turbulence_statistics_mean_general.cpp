@@ -178,7 +178,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
     {
       // get the processor local node
       DRT::Node*  lnode      = discret_->lRowNode(nn);
-      
+
       double xdim = (lnode->X())[dim];
       
       if(lminxdim>xdim)
@@ -207,6 +207,71 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
       // get the processor local node
       DRT::Node*  lnode      = discret_->lRowNode(nn);
       
+      // check for slave nodes  to skip them
+      vector<DRT::Condition*> mypbcs;
+      lnode->GetCondition("SurfacePeriodic",mypbcs);
+
+      // check whether a periodic boundary condition is active on this node
+      if (mypbcs.size()>0)
+      {
+        bool is_slave=false;
+
+        // yes, we have one
+        for (unsigned numcond=0;numcond<mypbcs.size();++numcond)
+        {
+          DRT::Condition* pbc=mypbcs[numcond];
+
+          // see whether pbc is active in plane orthogonal to sampling plane
+          const string* dofsforpbcplanename
+            =
+            pbc->Get<string>("degrees of freedom for the pbc plane");
+                
+          bool active=false;
+
+          if(*dofsforpbcplanename=="xyz")
+          {
+            active=true;
+          }
+          else if(*dofsforpbcplanename=="xy")
+          {
+            if(dim==2)
+            {
+              active=true;
+            }
+          }
+          else if(*dofsforpbcplanename=="xz")
+          {
+            if(dim==1)
+            {
+              active=true;
+            }
+          }
+          else if(*dofsforpbcplanename=="yz")
+          {
+            if(dim==0)
+            {
+              active=true;
+            }
+          }
+
+          if(active)
+          {
+            // see whether we have a slave node
+            const string* mymasterslavetoggle
+              = pbc->Get<string>("Is slave periodic boundary condition");
+
+            if(*mymasterslavetoggle=="Slave")
+            {
+              is_slave=true;
+            }
+          }
+        }
+        if(is_slave)
+        {
+          continue;
+        }
+      }
+
       xdim = (lnode->X())[dim];
 
       // this is a value on the very bottom in dim direction
@@ -392,6 +457,71 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
         // get the processor local node
         DRT::Node*  lnode      = discret_->lRowNode(nn);
         
+        // check for slave nodes  to skip them
+        vector<DRT::Condition*> mypbcs;
+        lnode->GetCondition("SurfacePeriodic",mypbcs);
+
+        // check whether a periodic boundary condition is active on this node
+        if (mypbcs.size()>0)
+        {
+          bool is_slave=false;
+
+          // yes, we have one
+          for (unsigned numcond=0;numcond<mypbcs.size();++numcond)
+          {
+            DRT::Condition* pbc=mypbcs[numcond];
+
+            // see whether pbc is active in plane orthogonal to sampling plane
+            const string* dofsforpbcplanename
+              =
+              pbc->Get<string>("degrees of freedom for the pbc plane");
+                
+            bool active=false;
+
+            if(*dofsforpbcplanename=="xyz")
+            {
+              active=true;
+            }
+            else if(*dofsforpbcplanename=="xy")
+            {
+              if(dim==2)
+              {
+                active=true;
+              }
+            }
+            else if(*dofsforpbcplanename=="xz")
+            {
+              if(dim==1)
+              {
+                active=true;
+              }
+            }
+            else if(*dofsforpbcplanename=="yz")
+            {
+              if(dim==0)
+              {
+                active=true;
+              }
+            }
+
+            if(active)
+            {
+              // see whether we have a slave node
+              const string* mymasterslavetoggle
+                = pbc->Get<string>("Is slave periodic boundary condition");
+
+              if(*mymasterslavetoggle=="Slave")
+              {
+                is_slave=true;
+              }
+            }
+          }
+          if(is_slave)
+          {
+            continue;
+          }
+        }
+
         double xodim[2];
         
         xodim[0]= (lnode->X())[odim[0]];
@@ -500,6 +630,11 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
   // divide vectors by number of layers along lines
   for(unsigned i=0;i<x.size();++i)
   {
+    if(count[i]==0)
+    {
+      dserror("no layers have been detected along line %d\n",i);
+    }
+
     avg_u[i]/=count[i];
     avg_v[i]/=count[i];
     avg_w[i]/=count[i];
@@ -613,6 +748,71 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
       // get the processor local node
       DRT::Node*  lnode      = discret_->lRowNode(nn);
       
+      // check for slave nodes  to skip them
+      vector<DRT::Condition*> mypbcs;
+      lnode->GetCondition("SurfacePeriodic",mypbcs);
+
+      // check whether a periodic boundary condition is active on this node
+      if (mypbcs.size()>0)
+      {
+        bool is_slave=false;
+
+        // yes, we have one
+        for (unsigned numcond=0;numcond<mypbcs.size();++numcond)
+        {
+          DRT::Condition* pbc=mypbcs[numcond];
+
+          // see whether pbc is active in plane orthogonal to sampling plane
+          const string* dofsforpbcplanename
+            =
+            pbc->Get<string>("degrees of freedom for the pbc plane");
+                
+          bool active=false;
+
+          if(*dofsforpbcplanename=="xyz")
+          {
+            active=true;
+          }
+          else if(*dofsforpbcplanename=="xy")
+          {
+            if(dim==2)
+            {
+              active=true;
+            }
+          }
+          else if(*dofsforpbcplanename=="xz")
+          {
+            if(dim==1)
+            {
+              active=true;
+            }
+          }
+          else if(*dofsforpbcplanename=="yz")
+          {
+            if(dim==0)
+            {
+              active=true;
+            }
+          }
+
+          if(active)
+          {
+            // see whether we have a slave node
+            const string* mymasterslavetoggle
+              = pbc->Get<string>("Is slave periodic boundary condition");
+
+            if(*mymasterslavetoggle=="Slave")
+            {
+              is_slave=true;
+            }
+          }
+        }
+        if(is_slave)
+        {
+          continue;
+        }
+      }
+
       double xodim[2];
 
       xodim[0]= (lnode->X())[odim[0]];
