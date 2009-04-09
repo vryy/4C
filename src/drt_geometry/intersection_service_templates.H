@@ -159,10 +159,10 @@ namespace GEO
   //! checks for a coplanar 4-node tetraeder
   template <class M1>
     inline bool testForCoplanarTet(   
-          const M1&      xyze       ///< (3,4)             plane made of 4 points
+          const M1&      xyze       ///< tet made of 4 points, xyze(nsd = 3,numnode = 4)
           ) 
   {
-    // create plane of first 3 nodes
+    // create planes consisting of 3 nodes each
     LINALG::Matrix<3,1> v01;
     LINALG::Matrix<3,1> v02;
     LINALG::Matrix<3,1> v03;
@@ -192,7 +192,14 @@ namespace GEO
     // ratio between smallest to largest plane
     if (minnorm/maxnorm < 1.0e-7)
     {
-      cout << "totally degenerated" << endl;
+      cout << "degenerated area (minnorm/maxnorm)" << endl;
+      return true;
+    }
+    
+    // smallest area
+    if (minnorm < 1.0e-6)
+    {
+      cout << "degenerated area (minnorm)" << endl;
       return true;
     }
     
@@ -227,7 +234,7 @@ namespace GEO
       dserror("impossible");
     }
     
-    if(std::abs(distance) >= GEO::TOL7)
+    if(std::abs(distance) >= 1.0e-6)
     {
       return false;
     }

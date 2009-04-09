@@ -19,7 +19,6 @@ Maintainer: Ursula Mayer
 #include "../drt_geometry/intersection_service_templates.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_io/io_gmsh.H"
-//#include "../drt_io/io_gmsh_xfem_extension.H"
 
 
 
@@ -203,13 +202,13 @@ bool GEO::DomainIntCell::CoplanarCornerPoints() const
     testpoint(isd,0) = nodalpos_xi_domain_(isd,3);
   
   const bool coplanar_tet  = GEO::testForCoplanarTet(nodalpos_xi_domain_);
-  const bool coplanar_tet2 = GEO::pointsInPlaneSurfaceElement(plane,testpoint);
+//  const bool coplanar_tet2 = GEO::pointsInPlaneSurfaceElement(plane,testpoint);
   
-  if (coplanar_tet != coplanar_tet2)
-    dserror("which method is better?");
+//  if (coplanar_tet != coplanar_tet2)
+//    dserror("which method is better?");
   
   // check for coplanar points
-  return GEO::pointsInPlaneSurfaceElement(plane,testpoint);
+  return coplanar_tet;
 }
 
 /*----------------------------------------------------------------------*
@@ -219,11 +218,11 @@ double GEO::DomainIntCell::VolumeInXiDomain(
         const DRT::Element&           ele
         ) const
 {
-  if (CoplanarCornerPoints())
-  {
-    cout << "coplanar" << endl;
-    return 0.0;
-  }
+//  if (CoplanarCornerPoints())
+//  {
+//    cout << "coplanar" << endl;
+//    return 0.0;
+//  }
 
   DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule3D_undefined;
   switch (this->Shape())
@@ -268,7 +267,10 @@ double GEO::DomainIntCell::VolumeInXiDomain(
     volume_cell += fac;
 
   } // end loop over gauss points
-  return volume_cell/DRT::UTILS::getSizeInLocalCoordinates(ele.Shape());
+  
+  const double normed_cell_volume = volume_cell/DRT::UTILS::getSizeInLocalCoordinates(ele.Shape());
+  
+  return normed_cell_volume;
 }
 
 
