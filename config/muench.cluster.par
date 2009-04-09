@@ -60,7 +60,7 @@ UMFPACK_LIB="-lumfpack-gcc-3.3 -lamd-gcc-3.3"
 
 # qhull
 QHULL_INC=
-QHULL_LIB="-lqhull"
+QHULL_LIB="-lqhull -ltet"
 
 # fast elements
 LOOPL="-DLOOPL=15"
