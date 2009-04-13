@@ -648,6 +648,8 @@ void StatMechTime::FullNewton()
     fresm_->Norm2(&fresmnorm);
 
     
+    //if code is compiled with DEBUG flag each iteration is written into file for Gmsh visualization    
+#ifdef DEBUG
     // first index = time step index
     std::ostringstream filename;
 
@@ -657,7 +659,8 @@ void StatMechTime::FullNewton()
     else 
       dserror("Gmsh output implemented for a maximum of 99999 steps");
     
-    statmechmanager_->GmshOutput(*dism_,filename,numiter);
+    statmechmanager_->GmshOutput(*dism_,filename,numiter);  
+#endif  // #ifdef D_BEAM3
     
 
     // a short message
