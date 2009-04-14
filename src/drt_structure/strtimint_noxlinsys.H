@@ -60,12 +60,12 @@ namespace STR {
 
     /// constructor
     LinearSystem(
-      Teuchos::ParameterList& printParams,
-      Teuchos::ParameterList& linearSolverParams,
-      const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
-      const Teuchos::RCP<Epetra_Operator>& J,
+      Teuchos::ParameterList& printParams,  ///< printing parameters
+      Teuchos::ParameterList& linearSolverParams,  ///< parameters for linear solution
+      const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,  ///< NOX interface to Jacobian, i.e. #STR::TimIntImpl
+      const Teuchos::RCP<Epetra_Operator>& J,  ///< the Jacobian or stiffness matrix
       const NOX::Epetra::Vector& cloneVector,
-      Teuchos::RCP<LINALG::Solver> structure_solver,
+      Teuchos::RCP<LINALG::Solver> structure_solver,  ///< (used-defined) linear algebraic solver
       const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject = Teuchos::null
       );
 
@@ -204,8 +204,10 @@ namespace STR {
     bool zeroInitialGuess_;
     bool manualScaling_;
 
+    /// index of Newton iteration
     int callcount_;
 
+    /// linear algebraic solver
     Teuchos::RCP<LINALG::Solver> structureSolver_;
 
     Epetra_Time timer_;
