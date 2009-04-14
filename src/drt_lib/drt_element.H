@@ -111,6 +111,7 @@ public:
     element_so_hex8,
     element_so_hex27,
     element_so_hex20,
+    element_so_nurbs27,
     element_sosh8,
     element_sosh8p8,
     element_ale2,

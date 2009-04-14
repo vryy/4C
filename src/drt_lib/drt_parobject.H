@@ -153,7 +153,8 @@ using namespace std;
 #define ParObject_So_Nurbs27            (int)140
 #define ParObject_Itskov                (int)141
 #define ParObject_LogNeoHooke           (int)142
-
+#define ParObject_So_Nurbs27_Surface    (int)143
+#define ParObject_So_Nurbs27_Register   (int)144
 
 namespace DRT
 {

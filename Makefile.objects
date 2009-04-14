@@ -587,6 +587,9 @@ OBJS_SOH8_LIB = src/drt_so3/so_hex8.o \
                 src/drt_so3/so_hex27_input.o \
                 src/drt_so3/so_hex27_service.o \
                 src/drt_so3/so_hex27_multiscale.o \
+                src/drt_so3/so_nurbs27.o \
+                src/drt_so3/so_nurbs27_input.o \
+                src/drt_so3/so_nurbs27_evaluate.o \
                 src/drt_so3/so_hex20.o \
                 src/drt_so3/so_hex20_evaluate.o \
                 src/drt_so3/so_hex20_input.o \

@@ -18,6 +18,7 @@ Maintainer: Moritz Frenzel
 #ifdef PARALLEL
 #include "mpi.h"
 #endif
+#include "so_nurbs27.H"
 #include "so_hex27.H"
 #include "so_hex20.H"
 #include "so_hex8.H"
@@ -431,6 +432,49 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
   } // switch (mat->MaterialType())
 
 }  // of sow6_mat_sel
+
+
+/*----------------------------------------------------------------------*
+ | material laws for So_nurbs27                              gammi 04/09|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_nurbs27::sonurbs27_mat_sel(
+  LINALG::Matrix<MAT::NUM_STRESS_3D,1>*                  stress  ,
+  LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>* cmat    ,
+  double*                                                density ,
+  LINALG::Matrix<MAT::NUM_STRESS_3D,1>*                  glstrain,
+  LINALG::Matrix<3,3>*                                   defgrd  ,
+  const int                                              gp      ,
+  ParameterList&                                         params  
+  )
+{
+
+  RCP<MAT::Material> mat = Material();
+  switch (mat->MaterialType())
+  {
+    case INPAR::MAT::m_stvenant: /*------------------ st.venant-kirchhoff-material */
+    {
+      MAT::StVenantKirchhoff* stvk = static_cast <MAT::StVenantKirchhoff*>(mat.get());
+      stvk->Evaluate(*glstrain,*cmat,*stress);
+      *density = stvk->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_neohooke: /*----------------- NeoHookean Material */
+    {
+      MAT::NeoHooke* neo = static_cast <MAT::NeoHooke*>(mat.get());
+      neo->Evaluate(*glstrain,*cmat,*stress);
+      *density = neo->Density();
+      return;
+      break;
+    }
+    default:
+      dserror("Unknown type of material for nurbs27 implementation");
+    break;
+  } // switch (mat->MaterialType())
+
+  return;
+} // of sonurbs27_mat_sel
+
 
 /*----------------------------------------------------------------------*
  | material laws for So_hex27                                    tk 02/09|
