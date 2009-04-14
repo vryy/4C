@@ -705,10 +705,10 @@ public:
   virtual void FDCheckStickDeriv();
 
   /*!
-  \brief Check slip condition (tresca) derivatives with finite differences
+  \brief Check slip condition derivatives with finite differences
          
   */
-  virtual void FDCheckSlipTrescaDeriv(double& frbound, double& ct);
+  virtual void FDCheckSlipDeriv();
     
   /*!
   \brief Check 3D coupling vertex derivatives with finite differences

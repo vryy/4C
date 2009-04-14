@@ -49,6 +49,7 @@ Maintainer: Alexander Popp
 //#define CONTACTBOUNDMOD        /* flag for modification of boundary nodes */
 //#define CONTACTONEMORTARLOOP   /* flag for computing D and M in one loop */
 //#define CONTACTRELVELMATERIAL  /* rel. velocity with dif. of material vel */
+//#define CONTACTSLIPFIRST       /* flag for frictionless contact in first contact step */
 //#define CONTACTPETROVGALERKIN  /* flag for PetrovGalerkin approach for LM */
 //#define CONTACTPSEUDO2D        /* flag for pseudo-3D in 2D situations (u_z=0)*/
 
@@ -61,7 +62,7 @@ Maintainer: Alexander Popp
 //#define CONTACTFDMORTARM      /* flag for FD check of mortar matrix M */
 //#define CONTACTFDGAP          /* flag for FD check of weighted gap g */
 //#define CONTACTFDSTICK        /* flag for FD check of stick condition */
-//#define CONTACTFDSLIPTRESCA   /* flag for FD check of tresca slip condition */
+//#define CONTACTFDSLIP         /* flag for FD check of slip condition */
 //#define CONTACTFDTANGLM       /* flag for FD check of tangential LM */
 //#define CONTACTFDVERTEX3D     /* flag for FD check of vertices in 3D */
 //#define CONTACTFDGP3D         /* flag for FD check of GP + Jacs in 3D */

@@ -1580,8 +1580,13 @@ void CONTACT::ContactStruGenAlpha::Update()
   // state) which is needed in the next time step as history
   // information/quantities. These are:
   
-  if((contactmanager_->Params()).get<string>("contact type","none")!="normal");
-  {  
+  if((contactmanager_->Params()).get<string>("contact type","none")!="normal")
+  { 
+  	
+#ifdef CONTACTSLIPFIRST  	
+  	contactmanager_->CorrectSlip();
+#endif
+  	
   	// store contact state to contact nodes (active or inactive) 
   	contactmanager_->StoreNodalQuantities(Manager::activeold);  
   	  	

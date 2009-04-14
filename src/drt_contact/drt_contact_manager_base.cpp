@@ -329,7 +329,7 @@ void CONTACT::ManagerBase::EvaluateRelMov(RCP<Epetra_Vector> disi)
   RCP<Epetra_Vector> diffMx = rcp(new Epetra_Vector(*gsdofrowmap_)); 
   diffM->Multiply(false,*masterconfiguration,*diffMx);
     
-  //RCP<Epetra_Vector> jump1 = rcp(new Epetra_Vector(*gsdofrowmap_));
+  //RCP<Epetra_Vector> jump = rcp(new Epetra_Vector(*gsdofrowmap_));
   jump_->Update(-1.0,*diffDx,0.0);
   jump_->Update(+1.0,*diffMx,1.0);
   
@@ -911,7 +911,7 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
   }
 #endif // #ifdef CONTACTFDSTICK
   
-#ifdef CONTACTFDSLIPTRESCA
+#ifdef CONTACTFDSLIP
 
   if (gslipnodes_->NumGlobalElements())
   {
@@ -930,7 +930,7 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
     cout << *deriv1 << endl;
     cout << *deriv2 << endl;
       
-    interface_[i]->FDCheckSlipTrescaDeriv(frbound,ct);
+    interface_[i]->FDCheckSlipDeriv();
   }
 }
 #endif // #ifdef CONTACTFDSLIPTRESCA
@@ -1006,7 +1006,7 @@ void CONTACT::ManagerBase::EvaluateFriction(RCP<LINALG::SparseMatrix> kteff,
    {
      	RCP<Epetra_Vector> linstickRHSexp = rcp(new Epetra_Vector(*problemrowmap_));
    	  LINALG::Export(*linstickRHS_,*linstickRHSexp);
-      //feffnew->Update(+1.0,*linstickRHSexp,1.0);
+      feffnew->Update(+1.0,*linstickRHSexp,1.0);
    }
  
   // add a submatrices to kteffnew
@@ -1632,6 +1632,9 @@ void CONTACT::ManagerBase::UpdateActiveSet()
         {
           cnode->Active() = true;
           activesetconv_ = false;
+#ifdef CONTACTSLIPFIRST
+       if (cnode->ActiveOld()==false) cnode->Slip() = true;
+#endif          
         }
       }
       
@@ -1694,9 +1697,19 @@ void CONTACT::ManagerBase::UpdateActiveSet()
                 // do nothing (slip was correct)
               else
               {
-               cnode->Slip() = false;
-               activesetconv_ = false;
-              }
+#ifdef CONTACTSLIPFIRST
+                if(cnode->ActiveOld()==false)        	
+                {}
+                else
+                {
+                 cnode->Slip() = false;
+                 activesetconv_ = false;
+                }
+#else
+                cnode->Slip() = false;
+                activesetconv_ = false;
+#endif                
+              }  
             }
           } // if(ftype=="tresca")
           
@@ -1724,8 +1737,18 @@ void CONTACT::ManagerBase::UpdateActiveSet()
                 // do nothing (slip was correct)
               else
               {
-               cnode->Slip() = false;
-               activesetconv_ = false;
+#ifdef CONTACTSLIPFIRST
+                if(cnode->ActiveOld()==false)        	
+                {}
+                else
+                {
+                 cnode->Slip() = false;
+                 activesetconv_ = false;
+                }
+#else
+                cnode->Slip() = false;
+                activesetconv_ = false;
+#endif                
               }
             }
           } // if(ftype=="coulomb")
@@ -1802,7 +1825,7 @@ void CONTACT::ManagerBase::UpdateActiveSet()
   // *********************************************************************
   bool zigzagging = false;
 
-  if(ftype!="tresca") // FIXGIT: For tresca friction zig-zagging is not eliminated 
+  if(ftype!="tresca" and ftype!="coulomb") // FIXGIT: For tresca friction zig-zagging is not eliminated 
   {
     if (ActiveSetSteps()>2)
     {
@@ -1909,7 +1932,7 @@ void CONTACT::ManagerBase::UpdateActiveSetSemiSmooth()
       double tz = 0.0;
       double tjump = 0.0;
       
-      if(ftype=="tresca")
+      if(ftype=="tresca" || ftype == "coulomb")
       { 
         // compute tangential part of Lagrange multiplier
         tz = cnode->txi()[0]*cnode->lm()[0] + cnode->txi()[1]*cnode->lm()[1];
@@ -1930,8 +1953,10 @@ void CONTACT::ManagerBase::UpdateActiveSetSemiSmooth()
         if (nz - cn*wgap > 0)
         {
           cnode->Active() = true;
-//          cnode->Slip() = true;
           activesetconv_ = false;
+#ifdef CONTACTSLIPFIRST
+        if (cnode->ActiveOld()==false) cnode->Slip() = true;
+#endif          
         }
       }
       
@@ -1952,7 +1977,7 @@ void CONTACT::ManagerBase::UpdateActiveSetSemiSmooth()
             cnode->Active() = false;
             
             // friction
-            if(ftype=="tresca")
+            if(ftype=="tresca" || ftype == "coulomb")
             {
               cnode->Slip() = false;    
             }
@@ -1968,7 +1993,8 @@ void CONTACT::ManagerBase::UpdateActiveSetSemiSmooth()
         // friction
         else
         {
-          if(ftype=="tresca")
+          // friction tresca
+        	if(ftype=="tresca")
           {
             double frbound = scontact_.get<double>("friction bound",0.0);
             double ct = scontact_.get<double>("semismooth ct",0.0);
@@ -1991,11 +2017,61 @@ void CONTACT::ManagerBase::UpdateActiveSetSemiSmooth()
                // do nothing (slip was correct)
               else
               {
-               cnode->Slip() = false;
-               activesetconv_ = false;
+#ifdef CONTACTSLIPFIRST
+                if(cnode->ActiveOld()==false)        	
+                {}
+                else
+                {
+                 cnode->Slip() = false;
+                 activesetconv_ = false;
+                }
+#else
+                cnode->Slip() = false;
+                activesetconv_ = false;
+#endif                
               }
             }
           } // if (fytpe=="tresca")
+          
+        	// friction coulomb
+          if(ftype=="coulomb")
+          {
+            double frcoeff = scontact_.get<double>("friction coefficient",0.0);
+            double ct = scontact_.get<double>("semismooth ct",0.0);
+            
+            if(cnode->Slip() == false)  
+            {
+              // check (tz+ct*tjump)-frbound <= 0
+              if(abs(tz+ct*tjump)-frcoeff*nz <= 0) {}
+                // do nothing (stick was correct)
+              else
+              {
+                 cnode->Slip() = true;
+                 activesetconv_ = false;
+              }
+            }
+            else
+            {
+              // check (tz+ct*tjump)-frbound > 0
+              if(abs(tz+ct*tjump)-frcoeff*nz > 0) {}
+                // do nothing (slip was correct)
+              else
+              {
+#ifdef CONTACTSLIPFIRST
+                if(cnode->ActiveOld()==false)        	
+                {}
+                else
+                {
+                 cnode->Slip() = false;
+                 activesetconv_ = false;
+                }
+#else
+                cnode->Slip() = false;
+                activesetconv_ = false;
+#endif                
+              }
+            }
+          } // if(ftype=="coulomb")
         } // if (nz - cn*wgap <= 0)
       } // if (cnode->Active()==false)
     } // loop over all slave nodes
@@ -2290,6 +2366,51 @@ void CONTACT::ManagerBase::StoreNodalQuantities(ManagerBase::QuantityType type,
 }
 
 /*----------------------------------------------------------------------*
+ |  Correct slip status for nodes coming into contact     gitterle 04/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::ManagerBase::CorrectSlip()
+{
+  
+	// loop over all interfaces
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    // currently this only works safely for 1 interface
+    if (i>0) dserror("ERROR: StoreDMToNodes: Double active node check needed for n interfaces!");
+      
+    // loop over all slave row nodes on the current interface
+    for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
+    {
+      int gid = interface_[i]->SlaveRowNodes()->GID(j);
+      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CNode* cnode = static_cast<CNode*>(node);
+
+      if (cnode->ActiveOld() == false and cnode->Active() == true)
+      {
+    	  cnode->Slip() = false;
+      }
+    }
+  }
+  
+   // (re)setup active global Epetra_Maps
+
+  gslipnodes_ = null;
+  gslipdofs_ = null;
+  gslipt_ = null;
+  
+  // update active sets of all interfaces
+  // (these maps are NOT allowed to be overlapping !!!)
+  for (int i=0;i<(int)interface_.size();++i)
+  {
+    interface_[i]->BuildActiveSet();
+    gslipnodes_ = LINALG::MergeMap(gslipnodes_,interface_[i]->SlipNodes(),false);
+    gslipdofs_ = LINALG::MergeMap(gslipdofs_,interface_[i]->SlipDofs(),false);
+    gslipt_ = LINALG::MergeMap(gslipt_,interface_[i]->SlipTDofs(),false);
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  Store DM to Nodes (in vecor of last conv. time step)  gitterle 02/09|
  *----------------------------------------------------------------------*/
 void CONTACT::ManagerBase::StoreDMToNodes()
@@ -2406,11 +2527,22 @@ void CONTACT::ManagerBase::PrintActiveSet()
         else
         {
           if (cnode->Slip() == false)
-            cout << "ACTIVE:   " << dbc << " " << gid << " " << nz <<  " " << wgap << " STICK" << " " << tz << endl;
+            cout << "ACTIVE:   " << dbc << " " << gid << " " << nz <<  " " << wgap << " STICK" << " " << tz << " " << tjump << endl;
           else
-            cout << "ACTIVE:   " << dbc << " " << gid << " " << nz << " " << wgap << " SLIP" << " " << tjump << endl;
+            cout << "ACTIVE:   " << dbc << " " << gid << " " << nz << " " << wgap << " SLIP" << " " << tz << " " << tjump << endl;
         }
       }
+//     if(cnode->Active())
+//     {
+//       if(cnode->Slip())
+//       {
+//         	cout << "SLIP " << gid << " Normal " << nz << " Tangential " << tz << " X " << cnode->X()[0] << " x " << cnode->xspatial()[0] << endl;
+//       }
+//       else
+//       {
+//       	cout << "STICK " << gid << " Normal " << nz << " Tangential " << tz << " X " << cnode->X()[0] << " x " << cnode->xspatial()[0] << endl;
+//      	}
+//     }
     }
   }
 

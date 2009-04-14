@@ -59,6 +59,7 @@ dofs_(dofs),
 closestnode_(-1),
 hasproj_(false),
 active_(false),
+activeold_(false),
 slip_(false),
 grow_(1.0e12)
 {

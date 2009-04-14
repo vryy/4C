@@ -4047,13 +4047,19 @@ void CONTACT::Interface::FDCheckStickDeriv()
 
 
 /*----------------------------------------------------------------------*
- | Finite difference check of tresca slip condition derivatives mgit 03/09|
+ | Finite difference check of slip condition derivatives mgit      03/09|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::FDCheckSlipTrescaDeriv(double& frbound, double& ct)
+void CONTACT::Interface::FDCheckSlipDeriv()
 {
   // get out of here if not participating in interface
   if (!lComm())
     return;
+  
+  // information from interface contact parameter list
+  string ftype   = IParams().get<string>("friction type","none");  
+  double frbound = IParams().get<double>("friction bound",0.0);
+  double frcoeff = IParams().get<double>("friction coefficient",0.0);
+  double ct = IParams().get<double>("semismooth ct",0.0);
   
   // create storage for values of complementary function C
   int nrow = snoderowmap_->NumMyElements();
@@ -4072,6 +4078,7 @@ void CONTACT::Interface::FDCheckSlipTrescaDeriv(double& frbound, double& ct)
     
     double jumptan = 0;
     double ztan = 0;
+    double znor = 0;
     
     if (cnode->Slip())
     {
@@ -4082,7 +4089,8 @@ void CONTACT::Interface::FDCheckSlipTrescaDeriv(double& frbound, double& ct)
       for (int dim=0;dim<cnode->NumDof();++dim)
       {
       	jumptan -= (cnode->txi()[dim])*(D-Dold)*(cnode->xspatial()[dim]);
-        ztan += (cnode->txi()[dim])*(cnode->lm()[dim]);      
+        ztan += (cnode->txi()[dim])*(cnode->lm()[dim]);
+        znor += (cnode->n()[dim])*(cnode->lm()[dim]);
       }           
       
       vector<map<int,double> > mmap = cnode->GetM();
@@ -4120,9 +4128,10 @@ void CONTACT::Interface::FDCheckSlipTrescaDeriv(double& frbound, double& ct)
       } //  loop over master nodes
     } // if cnode == Slip
   
-  // store C in vector
-  refC[i] = (abs(ztan+ct*jumptan))*ztan - frbound*(ztan+ct*jumptan);
-  
+    // store C in vector
+    if (ftype=="tresca") refC[i] = (abs(ztan+ct*jumptan))*ztan-frbound*(ztan+ct*jumptan);
+    else if (ftype=="coulomb") refC[i] = (abs(ztan+ct*jumptan))*ztan-(frcoeff*znor)*(ztan+ct*jumptan);
+    else dserror ("ERROR: Friction law is neiter Tresca nor Coulomb");  	
   } // loop over procs slave nodes
   
   // global loop to apply FD scheme for LM to all slave dofs (=3*nodes)
@@ -4167,6 +4176,7 @@ void CONTACT::Interface::FDCheckSlipTrescaDeriv(double& frbound, double& ct)
        
        double jumptan = 0;
        double ztan = 0;
+       double znor = 0;
        
        if (kcnode->Slip())
        {
@@ -4177,7 +4187,8 @@ void CONTACT::Interface::FDCheckSlipTrescaDeriv(double& frbound, double& ct)
          for (int dim=0;dim<kcnode->NumDof();++dim)
          {
          	jumptan -= (kcnode->txi()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
-           ztan += (kcnode->txi()[dim])*(kcnode->lm()[dim]);      
+           ztan += (kcnode->txi()[dim])*(kcnode->lm()[dim]); 
+           znor += (kcnode->n()[dim])*(kcnode->lm()[dim]); 
          }           
          
          vector<map<int,double> > mmap = kcnode->GetM();
@@ -4216,8 +4227,9 @@ void CONTACT::Interface::FDCheckSlipTrescaDeriv(double& frbound, double& ct)
        } // if cnode == Slip
      
        // store C in vector
-       newC[k] = (abs(ztan+ct*jumptan))*ztan - frbound*(ztan+ct*jumptan);
-     
+       if (ftype=="tresca") newC[k] = (abs(ztan+ct*jumptan))*ztan-frbound*(ztan+ct*jumptan);
+       else if (ftype=="coulomb") newC[k] = (abs(ztan+ct*jumptan))*ztan-(frcoeff*znor)*(ztan+ct*jumptan);
+       else dserror ("ERROR: Friction law is neiter Tresca nor Coulomb");  	
      
        // print results (derivatives) to screen
        if (abs(newC[k]-refC[k]) > 1e-12)
@@ -4430,6 +4442,7 @@ void CONTACT::Interface::FDCheckSlipTrescaDeriv(double& frbound, double& ct)
       
       double jumptan = 0;
       double ztan = 0;
+      double znor = 0;
       
       if (kcnode->Slip())
       {
@@ -4440,7 +4453,8 @@ void CONTACT::Interface::FDCheckSlipTrescaDeriv(double& frbound, double& ct)
         for (int dim=0;dim<kcnode->NumDof();++dim)
         {
         	jumptan -= (kcnode->txi()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
-          ztan += (kcnode->txi()[dim])*(kcnode->lm()[dim]);      
+          ztan += (kcnode->txi()[dim])*(kcnode->lm()[dim]);     
+          znor += (kcnode->n()[dim])*(kcnode->lm()[dim]);
         }           
         
         vector<map<int,double> > mmap = kcnode->GetM();
@@ -4479,8 +4493,9 @@ void CONTACT::Interface::FDCheckSlipTrescaDeriv(double& frbound, double& ct)
       } // if cnode == Slip
     
       // store C in vector
-      newC[k] = (abs(ztan+ct*jumptan))*ztan - frbound*(ztan+ct*jumptan);
-    
+      if (ftype=="tresca") newC[k] = (abs(ztan+ct*jumptan))*ztan-frbound*(ztan+ct*jumptan);
+      else if (ftype=="coulomb") newC[k] = (abs(ztan+ct*jumptan))*ztan-(frcoeff*znor)*(ztan+ct*jumptan);
+      else dserror ("ERROR: Friction law is neiter Tresca nor Coulomb");  	
     
       // print results (derivatives) to screen
       if (abs(newC[k]-refC[k]) > 1e-12)
@@ -4695,6 +4710,8 @@ void CONTACT::Interface::FDCheckSlipTrescaDeriv(double& frbound, double& ct)
       
       double jumptan = 0;
       double ztan = 0;
+      double znor = 0;
+            
       
       if (kcnode->Slip())
       {
@@ -4705,7 +4722,8 @@ void CONTACT::Interface::FDCheckSlipTrescaDeriv(double& frbound, double& ct)
         for (int dim=0;dim<kcnode->NumDof();++dim)
         {
         	jumptan -= (kcnode->txi()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
-          ztan += (kcnode->txi()[dim])*(kcnode->lm()[dim]);      
+          ztan += (kcnode->txi()[dim])*(kcnode->lm()[dim]); 
+          znor += (kcnode->n()[dim])*(kcnode->lm()[dim]);
         }           
         
         vector<map<int,double> > mmap = kcnode->GetM();
@@ -4744,10 +4762,9 @@ void CONTACT::Interface::FDCheckSlipTrescaDeriv(double& frbound, double& ct)
       } // if cnode == Slip
     
       // store C in vector
-      newC[k] = (abs(ztan+ct*jumptan))*ztan - frbound*(ztan+ct*jumptan);
-    
-      
-      
+      if (ftype=="tresca") newC[k] = (abs(ztan+ct*jumptan))*ztan-frbound*(ztan+ct*jumptan);
+      else if (ftype=="coulomb") newC[k] = (abs(ztan+ct*jumptan))*ztan-(frcoeff*znor)*(ztan+ct*jumptan);
+      else dserror ("ERROR: Friction law is neiter Tresca nor Coulomb");  	
       
       // print results (derivatives) to screen
       if (abs(newC[k]-refC[k]) > 1e-12)
