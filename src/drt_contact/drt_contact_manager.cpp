@@ -453,8 +453,8 @@ bool CONTACT::Manager::ReadAndCheckInput()
   // check contact input parameters
   string ctype   = scontact_.get<string>("contact type","none");
   string ftype   = scontact_.get<string>("friction type","none");
-  //double frbound = scontact_.get<double>("friction bound",0.0);
-  //double frcoeff = scontact_.get<double>("friction coeffiecient",0.0);
+  double frbound = scontact_.get<double>("friction bound",0.0);
+  double frcoeff = scontact_.get<double>("friction coefficient",0.0);
   double ct      = scontact_.get<double>("semismooth ct",0.0);
   string stype   = scontact_.get<string>("search algorithm","elements");
   double sp      = scontact_.get<double>("search parameter",0.3);
@@ -467,6 +467,10 @@ bool CONTACT::Manager::ReadAndCheckInput()
     dserror("No friction law supplied for frictional contact");
   if (ctype=="frictional" && ct==0.0)
   	dserror("Friction Parameter ct = 0, must be greater than 0");
+  if (ftype=="tresca" && frbound <= 0.0)
+    dserror("No valid Tresca friction bound provided, must be greater than 0");
+  if (ftype=="coulomb" && frcoeff <= 0.0)
+    dserror("No valid Coulomb friction coefficient provided, must be greater than 0");
   if (stype=="nodes" && sp==0.0)
     dserror("Search radius sp = 0, must be greater than 0 for node-based search");
   //if (auxplane && Dim()==2)
