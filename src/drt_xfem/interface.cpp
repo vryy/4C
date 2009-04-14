@@ -146,13 +146,28 @@ GEO::BoundaryIntCells XFEM::InterfaceHandle::GetBoundaryIntCells(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+std::set<int> XFEM::InterfaceHandle::GetAvailableBoundaryLabels() const 
+{
+  std::set<int> labels;
+  for(std::map<int,std::set<int> >::const_iterator conditer = boundaryElementsByLabel_.begin();
+      conditer!=boundaryElementsByLabel_.end();
+      ++conditer)
+  {
+    labels.insert(conditer->first);
+  }
+  return labels;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 bool XFEM::InterfaceHandle::ElementIntersected(
     const int element_gid) const
 {
   if (elementalDomainIntCells_.find(element_gid) == elementalDomainIntCells_.end())   
     return false;
-
-  return true;
+  else
+    return true;
 }
 
 
@@ -162,12 +177,12 @@ bool XFEM::InterfaceHandle::ElementHasLabel(
     const int element_gid,
     const int label) const
 {
-  const GEO::BoundaryIntCells& bcells = elementalBoundaryIntCells().find(element_gid)->second;
+  const GEO::BoundaryIntCells& bcells = elementalBoundaryIntCells_.find(element_gid)->second;
   bool has_label = false;
   for (GEO::BoundaryIntCells::const_iterator bcell = bcells.begin(); bcell != bcells.end(); ++bcell)
   {
     const int surface_ele_gid = bcell->GetSurfaceEleGid();
-    const int label_for_current_bele = labelPerElementId_.find(surface_ele_gid)->second;
+    const int label_for_current_bele = labelPerBoundaryElementId_.find(surface_ele_gid)->second;
     if (label == label_for_current_bele)
     {
       has_label = true;
@@ -184,7 +199,7 @@ std::set<int> XFEM::InterfaceHandle::LabelsPerElement(
     const int element_gid) const
 {
   std::set<int> labelset;
-  const GEO::BoundaryIntCells& bcells = elementalBoundaryIntCells().find(element_gid)->second;
+  const GEO::BoundaryIntCells& bcells = elementalBoundaryIntCells_.find(element_gid)->second;
   for (GEO::BoundaryIntCells::const_iterator bcell = bcells.begin(); bcell != bcells.end(); ++bcell)
   {
     labelset.insert(bcell->GetSurfaceEleGid());
@@ -197,16 +212,18 @@ std::set<int> XFEM::InterfaceHandle::LabelsPerElement(
  *----------------------------------------------------------------------*/
 void XFEM::InterfaceHandle::InvertElementsPerLabel()
 {
-  labelPerElementId_.clear();
-  for(std::map<int,std::set<int> >::const_iterator conditer = elementsByLabel_.begin(); conditer!=elementsByLabel_.end(); ++conditer)
+  labelPerBoundaryElementId_.clear();
+  for(std::map<int,std::set<int> >::const_iterator conditer = boundaryElementsByLabel_.begin();
+      conditer!=boundaryElementsByLabel_.end();
+      ++conditer)
   {
     const int xfemlabel = conditer->first;
     for(std::set<int>::const_iterator eleiditer = conditer->second.begin(); eleiditer!=conditer->second.end(); ++eleiditer)
     {
       const int eleid = *eleiditer;
-      if (labelPerElementId_.count(eleid) == 1)
+      if (labelPerBoundaryElementId_.count(eleid) == 1)
         dserror("Assumption violation: there should be exactly ONE xfem condition per boundary element id!");
-      labelPerElementId_[eleid] = xfemlabel;
+      labelPerBoundaryElementId_[eleid] = xfemlabel;
     }
   }
   return;

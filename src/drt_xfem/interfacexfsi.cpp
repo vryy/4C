@@ -77,11 +77,11 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
 
   // call before intersection
   // collect elements by xfem label for tree and invert
-  DRT::UTILS::CollectElementsByConditionLabel(*cutterdis, elementsByLabel_, "XFEMCoupling");
+  DRT::UTILS::CollectElementsByConditionLabel(*cutterdis, boundaryElementsByLabel_, "XFEMCoupling");
   InvertElementsPerLabel();
   
   Teuchos::RCP<GEO::Intersection> is = rcp(new GEO::Intersection());
-  is->computeIntersection(xfemdis, cutterdis, cutterposnp_, currentXAABBs_, elementalDomainIntCells_, elementalBoundaryIntCells_, labelPerElementId_);  
+  is->computeIntersection(xfemdis, cutterdis, cutterposnp_, currentXAABBs_, elementalDomainIntCells_, elementalBoundaryIntCells_, labelPerBoundaryElementId_);  
   is = Teuchos::null;
   
   xfemdis->Comm().Barrier();
@@ -96,8 +96,8 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
   const LINALG::Matrix<3,2> xfemAABB =GEO::getXAABBofDis(*xfemdis);
   const LINALG::Matrix<3,2> AABB = GEO::mergeAABB(cutterAABB, xfemAABB);
 
-  octTreenp_->initializeTree(AABB, elementsByLabel_, GEO::TreeType(GEO::OCTTREE));
-  octTreen_->initializeTree(AABB, elementsByLabel_, GEO::TreeType(GEO::OCTTREE));
+  octTreenp_->initializeTree(AABB, boundaryElementsByLabel_, GEO::TreeType(GEO::OCTTREE));
+  octTreen_->initializeTree(AABB, boundaryElementsByLabel_, GEO::TreeType(GEO::OCTTREE));
   
   ClassifyIntegrationCells();
  
@@ -128,18 +128,21 @@ void XFEM::InterfaceHandleXFSI::FillCurrentCutterPositionMap(
 {
   currentcutterpositions.clear();
   
-  vector<int> lm(3);
   for (int lid = 0; lid < cutterdis->NumMyColNodes(); ++lid)
   {
     const DRT::Node* node = cutterdis->lColNode(lid);
-    cutterdis->Dof(node, 0, lm);
-    vector<double> mydisp(3);
+    vector<int> lm;
+    cutterdis->Dof(node, lm);
+    vector<double> mydisp;
     DRT::UTILS::ExtractMyValues(idispcol,mydisp,lm);
+    if (mydisp.size() != 3)
+      dserror("we need 3 displacements here");
+    
     LINALG::Matrix<3,1> currpos;
     currpos(0) = node->X()[0] + mydisp[0];
     currpos(1) = node->X()[1] + mydisp[1];
     currpos(2) = node->X()[2] + mydisp[2];
-    currentcutterpositions[node->Id()] = currpos;
+    currentcutterpositions.insert(make_pair(node->Id(),currpos));
   }
 }
 

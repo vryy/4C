@@ -250,18 +250,18 @@ void XFEM::ApplyVoidEnrichmentForElement(
     bool&                                         skipped_elem_enr
     )
 {
-  const int element_gid = xfemele->Id();
+  const int xele_gid = xfemele->Id();
 
   const XFEM::Enrichment::EnrType enrtype = XFEM::Enrichment::typeVoid;
   
-  if (ih.ElementIntersected(element_gid))
+  if (ih.ElementIntersected(xele_gid))
   {
-    if (ih.ElementHasLabel(element_gid, label))
+    if (ih.ElementHasLabel(xele_gid, label))
     {
       skipped_node_enr = ApplyNodalEnrichments(xfemele, ih, label, enrtype, fieldset, volumeRatioLimit, nodalDofSet);
       //ApplyNodalEnrichmentsNodeWise(xfemele, ih, label, enrtype, fieldset, 2.0e-2, nodalDofSet); 
 
-      skipped_elem_enr = ApplyElementEnrichments(xfemele, element_ansatz, ih, label, enrtype, boundaryRatioLimit, elementalDofs[element_gid]);
+      skipped_elem_enr = ApplyElementEnrichments(xfemele, element_ansatz, ih, label, enrtype, boundaryRatioLimit, elementalDofs[xele_gid]);
     }
   }
 }
@@ -327,7 +327,7 @@ static void packDofKeys(
     vector<char>&                               dataSend )
 {
   // pack data on all processors
-  for(std::set<XFEM::DofKey<XFEM::onNode> >::const_iterator dofkey=dofkeyset.begin(); dofkey != dofkeyset.end(); dofkey++)
+  for(std::set<XFEM::DofKey<XFEM::onNode> >::const_iterator dofkey=dofkeyset.begin(); dofkey != dofkeyset.end(); ++dofkey)
   {
     vector<char> data;
     dofkey->Pack(data);
@@ -472,8 +472,8 @@ void XFEM::createDofMap(
   std::map<int, std::set<XFEM::FieldEnr> >  nodalDofSet;
   std::map<int, std::set<XFEM::FieldEnr> >  elementalDofs;
 
-  // get elements for each coupling label
-  const std::map<int,std::set<int> >& elementsByLabel = ih.elementsByLabel(); 
+  // get list of coupling label
+  const std::set<int> labels = ih.GetAvailableBoundaryLabels(); 
 
   const double volumeRatioLimit = params.get<double>("volumeRatioLimit");
   const double boundaryRatioLimit = params.get<double>("boundaryRatioLimit");
@@ -482,9 +482,9 @@ void XFEM::createDofMap(
   int skipped_elem_enr_count = 0;
   
   // loop condition labels
-  for(std::map<int,std::set<int> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
+  for(std::set<int>::const_iterator labeliter = labels.begin(); labeliter!=labels.end(); ++labeliter)
   {
-    const int label = conditer->first;
+    const int label = *labeliter;
 
     // for surface with label, loop my col elements and add enrichments to each elements member nodes
     for (int i=0; i<ih.xfemdis()->NumMyColElements(); ++i)

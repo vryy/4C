@@ -51,11 +51,6 @@ namespace XFEM
     //! return pointer to the intersected discretization
     Teuchos::RCP<DRT::Discretization> xfemdis() const {return xfemdis_;}
 
-    //! get pointer to map with all domain integration cells on this proc
-    const std::map<int,GEO::DomainIntCells>& elementalDomainIntCells() const {return elementalDomainIntCells_;}
-    //! get pointer to map with all boundary integration cells on this proc
-    const std::map<int,GEO::BoundaryIntCells>& elementalBoundaryIntCells() const {return elementalBoundaryIntCells_;}
-
     //! get pointer to oct tree
     Teuchos::RCP<GEO::SearchTree> getSearchTree() const {return octTreenp_;}
 
@@ -66,8 +61,11 @@ namespace XFEM
         return;
     }
 
-    //! get pointer to elementsByLabel_
-    const std::map<int,std::set<int> >& elementsByLabel() const {return elementsByLabel_;}
+//    //! get pointer to elementsByLabel_
+//    const std::map<int,std::set<int> >& BoundaryElementsByLabel() const {return boundaryElementsByLabel_;}
+    
+    //! get set of all available labels
+    std::set<int> GetAvailableBoundaryLabels() const;
 
     //! tell me, whether the element is intersected or not
     bool ElementIntersected(const int element_gid) const;
@@ -116,10 +114,10 @@ namespace XFEM
     std::map<int,GEO::BoundaryIntCells >      elementalBoundaryIntCells_;
 
     //! for each xfem condition label there is a set of boundary elements
-    std::map<int,std::set<int> >              elementsByLabel_;
+    std::map<int,std::set<int> >              boundaryElementsByLabel_;
     
      //! each boundary element belongs to one label (inverted information of elementsByLabel_)
-    std::map<int,int>                         labelPerElementId_;
+    std::map<int,int>                         labelPerBoundaryElementId_;
 
     //! SearchTree octtree for timestep n+1
     const Teuchos::RCP<GEO::SearchTree>       octTreenp_;
