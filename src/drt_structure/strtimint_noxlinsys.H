@@ -28,7 +28,6 @@
 #include <Teuchos_RefCountPtr.hpp>
 
 #include "../drt_lib/linalg_blocksparsematrix.H"
-//#include "../drt_inpar/inpar_fsi.H"
 
 /*----------------------------------------------------------------------*/
 /* forward declarations */
@@ -39,8 +38,12 @@ class LINALG::Solver;
 namespace NOX {
 namespace STR {
 
-  /// This class enables #NOX to use #LINALG::Solver for its
-  /// non-linear solution technique. 
+  /// This class enables the structural time integration #STR::TimIntImpl to use
+  /// #NOX as non-linear solution technique while preserving the user-defined
+  /// linear algebraic solver #LINALG::Solver.
+  ///
+  /// \author bborn
+  /// \date 04/09
   class LinearSystem : public NOX::Epetra::LinearSystem
   {
   protected:
@@ -73,7 +76,9 @@ namespace STR {
     ~LinearSystem();
 
     /// provide storage pattern of tangent matrix, i.e. the operator
-    virtual OperatorType getOperatorType(const Epetra_Operator& o);
+    virtual OperatorType getOperatorType(
+      const Epetra_Operator& Op
+      );
 
     /// 
     virtual void reset(Teuchos::ParameterList& linearSolverParams);
