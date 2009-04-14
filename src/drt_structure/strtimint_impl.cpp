@@ -267,11 +267,6 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
   // make negative residual
   fres_->Scale(-1.0);
 
-  // transformation matrix
-  Teuchos::RCP<const LINALG::SparseMatrix> trafo = Teuchos::null;
-  if (locsysman_ != Teuchos::null)
-    trafo = locsysman_->Trafo();
-
   // transform to local co-ordinate systems
   if (locsysman_ != Teuchos::null)
     locsysman_->RotateGlobalToLocal(stiff_, fres_);
@@ -280,7 +275,7 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
   disi_->PutScalar(0.0);
   stiff_->Complete();
   LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
-                                 trafo, zeros_, *(dbcmaps_->CondMap()));
+                                 GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
 
   // solve for disi_
   // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
@@ -517,11 +512,6 @@ void STR::TimIntImpl::NewtonFull()
     // make negative residual
     fres_->Scale(-1.0);
 
-    // transformation matrix
-    Teuchos::RCP<const LINALG::SparseMatrix> trafo = Teuchos::null;
-    if (locsysman_ != Teuchos::null)
-      trafo = locsysman_->Trafo();
-
     // transform to local co-ordinate systems
     if (locsysman_ != Teuchos::null)
       locsysman_->RotateGlobalToLocal(stiff_, fres_);
@@ -529,7 +519,7 @@ void STR::TimIntImpl::NewtonFull()
     // apply Dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
-                                   trafo, zeros_, *(dbcmaps_->CondMap()));
+                                   GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
 
     // solve for disi_
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
@@ -732,11 +722,6 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
 //    // uncomplete stiffness matrix, so stuff can be inserted again
 //    stiff_->UnComplete();
 
-    // transformation matrix
-    Teuchos::RCP<const LINALG::SparseMatrix> trafo = Teuchos::null;
-    if (locsysman_ != Teuchos::null)
-      trafo = locsysman_->Trafo();
-
     // transform to local co-ordinate systems
     if (locsysman_ != Teuchos::null)
       locsysman_->RotateGlobalToLocal(stiff_, fres_);
@@ -744,7 +729,7 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
     // apply Dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
-                                   trafo, zeros_, *(dbcmaps_->CondMap()));
+                                   GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
 
     // prepare residual Lagrange multiplier
     lagrincr->PutScalar(0.0);
@@ -1220,10 +1205,18 @@ Teuchos::RCP<Epetra_Vector> STR::TimIntImpl::SolveRelaxationLinear()
 /* Prepare system for solving with Newton's method */
 void STR::TimIntImpl::PrepareSystemForNewtonSolve()
 {
+
+  // rotate residual to local co-ordinate systems
+  if (locsysman_ != Teuchos::null)
+    locsysman_->RotateGlobalToLocal(fres_);
+
   // extract reaction forces
   // reactions are negative to balance residual on DBC
   freact_->Update(-1.0, *fres_, 0.0);
   dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(zeros_), freact_);
+  // rotate reaction forces back to global co-ordinate system
+  if (locsysman_ != Teuchos::null)
+    locsysman_->RotateLocalToGlobal(freact_);
 
   // make the residual negative
   fres_->Scale(-1.0);
@@ -1232,7 +1225,8 @@ void STR::TimIntImpl::PrepareSystemForNewtonSolve()
   // apply Dirichlet BCs to system of equations
   disi_->PutScalar(0.0);  // Useful? depends on solver and more
   LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
-                                 zeros_, *(dbcmaps_->CondMap()));
+                                 GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
+
   // final sip
   return;
 }

@@ -473,6 +473,11 @@ namespace STR
       return dbcmaps_;
     }
 
+    //! Return (rotatory) transformation matrix of local co-ordinate systems
+    Teuchos::RCP<const LINALG::SparseMatrix> GetLocSysTrafo() const
+    {
+      return (locsysman_ != Teuchos::null) ? locsysman_->Trafo() : Teuchos::null;
+    }
 
     //@}
 

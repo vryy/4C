@@ -22,6 +22,7 @@ Maintainer: Burkhard Bornemann
 #include "strtimint.H"
 #include "strtimint_impl.H"
 #include "strtimint_noxgroup.H"
+#include "strtimint_noxlinsys.H"
 #include "../drt_inpar/drt_boolifyparameters.H"
 
 
@@ -136,14 +137,36 @@ Teuchos::RCP<NOX::StatusTest::Combo> STR::TimIntImpl::NoxCreateStatusTest
             INPAR::STR::VectorNormString(iternorm_).c_str());
   }
 
+  // combined residual force and displacement test
+  Teuchos::RCP<NOX::StatusTest::Combo> combo2 = Teuchos::null;
+  if ( (itercnvchk_ == INPAR::STR::convcheck_absres_and_absdis)
+       or (itercnvchk_ == INPAR::STR::convcheck_relres_and_absdis)
+       or (itercnvchk_ == INPAR::STR::convcheck_relres_and_reldis)
+       or (itercnvchk_ == INPAR::STR::convcheck_mixres_and_mixdis) )
+  {
+    combo2 = Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::AND));
+  }
+  else if ( (itercnvchk_ == INPAR::STR::convcheck_absres_or_absdis)
+            or (itercnvchk_ == INPAR::STR::convcheck_relres_or_absdis)
+            or (itercnvchk_ == INPAR::STR::convcheck_relres_or_reldis)
+            or (itercnvchk_ == INPAR::STR::convcheck_mixres_or_mixdis) )
+  {
+    combo2 = Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
+  }
+  else
+  {
+    dserror("Cannot handle convergence check");
+  }
+
+
   // convergence tests for force residual
-  Teuchos::RCP<NOX::StatusTest::NormF> statusTestNormFres = Teuchos::null;
   if ( (itercnvchk_ == INPAR::STR::convcheck_absres_or_absdis)
        or (itercnvchk_ == INPAR::STR::convcheck_absres_and_absdis) )
   {
     // absolute test
-    statusTestNormFres 
+    Teuchos::RCP<NOX::StatusTest::NormF> statusTestNormFres 
       = Teuchos::rcp(new NOX::StatusTest::NormF(tolfres_, norm, scalefres));
+    combo2->addStatusTest(statusTestNormFres);
   }
   else if ( (itercnvchk_ == INPAR::STR::convcheck_relres_or_absdis)
             or (itercnvchk_ == INPAR::STR::convcheck_relres_and_absdis)
@@ -151,8 +174,25 @@ Teuchos::RCP<NOX::StatusTest::Combo> STR::TimIntImpl::NoxCreateStatusTest
             or (itercnvchk_ == INPAR::STR::convcheck_relres_and_reldis) )
   {
     // relative
-    statusTestNormFres 
+    Teuchos::RCP<NOX::StatusTest::NormF> statusTestNormFres 
       = Teuchos::rcp(new NOX::StatusTest::NormF(*grp, tolfres_, norm, scalefres));
+    combo2->addStatusTest(statusTestNormFres);
+  }
+  else if ( (itercnvchk_ == INPAR::STR::convcheck_mixres_or_mixdis)
+            or (itercnvchk_ == INPAR::STR::convcheck_mixres_and_mixdis) )
+  {
+    // mixed
+    Teuchos::RCP<NOX::StatusTest::Combo> combo3
+      = Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::AND));
+    combo2->addStatusTest(combo3);
+    // absolute test
+    Teuchos::RCP<NOX::StatusTest::NormF> statusTestNormFresAbs 
+      = Teuchos::rcp(new NOX::StatusTest::NormF(tolfres_, norm, scalefres));
+    combo3->addStatusTest(statusTestNormFresAbs);
+    // AND relative
+    Teuchos::RCP<NOX::StatusTest::NormF> statusTestNormFresRel 
+      = Teuchos::rcp(new NOX::StatusTest::NormF(*grp, tolfres_, norm, scalefres));
+    combo3->addStatusTest(statusTestNormFresRel);
   }
   else
   {
@@ -160,45 +200,47 @@ Teuchos::RCP<NOX::StatusTest::Combo> STR::TimIntImpl::NoxCreateStatusTest
   }
 
   // convergence tests for residual displacements
-  Teuchos::RCP<NOX::StatusTest::NormUpdate> statusTestNormDisi = Teuchos::null;
   if ( (itercnvchk_ == INPAR::STR::convcheck_absres_or_absdis)
        or (itercnvchk_ == INPAR::STR::convcheck_absres_and_absdis)
        or (itercnvchk_ == INPAR::STR::convcheck_relres_or_absdis)
        or (itercnvchk_ == INPAR::STR::convcheck_relres_and_absdis) )
   {
     // absolute test
-    statusTestNormDisi
+    Teuchos::RCP<NOX::StatusTest::NormUpdate> statusTestNormDisi
       = Teuchos::rcp(new NOX::StatusTest::NormUpdate(toldisi_, norm, scaledisi));
+    combo2->addStatusTest(statusTestNormDisi);
   }
   else if ( (itercnvchk_ == INPAR::STR::convcheck_relres_or_reldis)
             or (itercnvchk_ == INPAR::STR::convcheck_relres_and_reldis) )
   {
     // relative test
+    // NOT AVAILABLE
     dserror("Not available");
+  }
+  else if ( (itercnvchk_ == INPAR::STR::convcheck_mixres_or_mixdis)
+            or (itercnvchk_ == INPAR::STR::convcheck_mixres_and_mixdis) )
+  {
+    // mixed
+    //Teuchos::RCP<NOX::StatusTest::Combo> combo3
+    //  = Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::AND));
+    //combo2->addStatusTest(combo3);
+    // absolute test
+    Teuchos::RCP<NOX::StatusTest::NormUpdate> statusTestNormDisi
+      = Teuchos::rcp(new NOX::StatusTest::NormUpdate(toldisi_, norm, scaledisi));
+    combo2->addStatusTest(statusTestNormDisi);
+    // relative test
+    // NOT AVAILABLE
   }
   else
   {
     dserror("Type of convergence control is not available");
   }
 
-  // combined residual force and displacement test
-  Teuchos::RCP<NOX::StatusTest::Combo> combo2 = Teuchos::null;
-  if ( (itercnvchk_ == INPAR::STR::convcheck_absres_and_absdis)
-       or (itercnvchk_ == INPAR::STR::convcheck_relres_and_absdis)
-       or (itercnvchk_ == INPAR::STR::convcheck_relres_and_reldis) )
-    combo2 =  Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::AND));
-  else if ( (itercnvchk_ == INPAR::STR::convcheck_absres_or_absdis)
-            or (itercnvchk_ == INPAR::STR::convcheck_relres_or_absdis)
-            or (itercnvchk_ == INPAR::STR::convcheck_relres_or_reldis) )
-    combo2 =  Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
-  else
-    dserror("Cannot handle convergence check");
-  combo2->addStatusTest(statusTestNormFres);
-  combo2->addStatusTest(statusTestNormDisi);
 
   // maximum iteration
   Teuchos::RCP<NOX::StatusTest::MaxIters> statusTestMaxIters
     = Teuchos::rcp(new NOX::StatusTest::MaxIters(itermax_));
+
 
   // the combined test object
   Teuchos::RCP<NOX::StatusTest::Combo> combo
@@ -244,7 +286,7 @@ Teuchos::RCP<Teuchos::ParameterList> STR::TimIntImpl::NoxCreatePrintParameters
   Teuchos::RCP<Teuchos::ParameterList> printParams 
     = Teuchos::rcp(new Teuchos::ParameterList());
   (*printParams).set("MyPID", myrank_); 
-  (*printParams).set("Output Precision", 3);
+  (*printParams).set("Output Precision", 6);
   (*printParams).set("Output Processor", 0);
   if (verbose)
   {
@@ -297,7 +339,7 @@ bool STR::TimIntImpl::computeF
   //   brings #disn_ in sync with #x, so we are ready for next call here
   UpdateIter(0);
 
-  // make forec residual and tangent, disi is needed for elementwise variables
+  // make force residual and tangent, disi is needed for elementwise variables
   EvaluateForceStiffResidual();
 
   // blank DBC stuff etc.
@@ -354,11 +396,11 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> STR::TimIntImpl::NoxCreateLinearSystem
   Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
 
   NOX::Epetra::Interface::Jacobian* iJac = this;
-  NOX::Epetra::Interface::Preconditioner* iPrec = this;
-  const Teuchos::RCP< Epetra_Operator > J = stiff_;
-  const Teuchos::RCP< Epetra_Operator > M = stiff_;
+  const Teuchos::RCP<Epetra_Operator> J = stiff_;
 
-#if 1
+#if 0
+  NOX::Epetra::Interface::Preconditioner* iPrec = this;
+  const Teuchos::RCP<Epetra_Operator> M = stiff_;
   linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams,
                                                              lsParams,
                                                              Teuchos::rcp(iJac,false),
@@ -367,14 +409,12 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> STR::TimIntImpl::NoxCreateLinearSystem
                                                              M,
                                                              noxSoln));
 #else
-  linSys = Teuchos::rcp(new NOX::FSI::LinearBGSSolver(printParams,
-                                                      lsParams,
-                                                      Teuchos::rcp(iJac,false),
-                                                      J,
-                                                      noxSoln,
-                                                      StructureField().LinearSolver(),
-                                                      FluidField().LinearSolver(),
-                                                      AleField().LinearSolver()));
+  linSys = Teuchos::rcp(new NOX::STR::LinearSystem(printParams,
+                                                   lsParams,
+                                                   Teuchos::rcp(iJac,false),
+                                                   J,
+                                                   noxSoln,
+                                                   solver_));
 #endif
 
   // just a half-empty tin of cat food
@@ -387,11 +427,6 @@ void STR::TimIntImpl::NoxSolve()
 {
   // extract parameter lists
   Teuchos::ParameterList& nlParams = *noxparams_;
-//  cout << nlParams << endl;
-//  Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
-  //Teuchos::ParameterList& solverOptions = nlParams.sublist("Solver Options");
-//  Teuchos::ParameterList& newtonParams = dirParams.sublist("Newton");
-//  Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
 
   // create intial guess vector of predictor result
@@ -427,21 +462,6 @@ void STR::TimIntImpl::NoxSolve()
 
   // extract number of iteration steps
   iter_ = solver->getNumIterations();
-
-  // Print the parameter list
-//  std::cout << "\n" << "-- Parameter List From Solver --" << "\n";
-//  solver->getList().print(cout);
-
-  // Get the answer
-//  grp = solver->getSolutionGroup();
-
-  // Print the answer
-//  std::cout << "\n" << "-- Final Solution From Solver --" << "\n";
-//  grp->printSolution();
-
-  // inform keenly hoping user
-  //if (myrank_ == 0)
-  //  std::cout << "Solution absolute res-norm " << grp->getNormF() << std::endl;
 
   // return to sender
   return;
