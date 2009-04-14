@@ -952,7 +952,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   volumeconstraint->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
   volumeconstraint->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
   volumeconstraint->AddComponent(Teuchos::rcp(new RealConditionComponent("activTime")));
-
+  volumeconstraint->AddComponent(Teuchos::rcp(new StringConditionComponent("projection","none",
+      Teuchos::tuple<std::string>("none","xy","yz","xz"),
+      Teuchos::tuple<std::string>("none","xy","yz","xz"),
+      true)));
+  
   condlist.push_back(volumeconstraint);
 
   /*--------------------------------------------------------------------*/

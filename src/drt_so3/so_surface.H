@@ -327,7 +327,9 @@ protected:
       const int ndof,  ///< number of degrees of freedom
       double& V,  ///< volume
       RCP<Epetra_SerialDenseVector> Vdiff, ///< first derivative
-      RCP<Epetra_SerialDenseMatrix> Vdiff2 ///< second derivative
+      RCP<Epetra_SerialDenseMatrix> Vdiff2, ///< second derivative
+      const int minind = 0,  ///<minimal index to compute enclosed volume with
+      const int maxind = 2   ///<maximal index to compute enclosed volume with
   );
 
 }; // class StructuralSurface : public DRT::Element

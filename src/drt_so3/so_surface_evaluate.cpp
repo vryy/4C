@@ -321,8 +321,28 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
         // second partial derivatives
         RCP<Epetra_SerialDenseMatrix> Vdiff2 = rcp(new Epetra_SerialDenseMatrix);
 
+        //get projection method
+        RCP<DRT::Condition> condition = params.get<RefCountPtr<DRT::Condition> >("condition");
+        const string* projtype = condition->Get<string>("projection");
+
         //call submethod to compute volume and its derivatives w.r.t. to current displ.
-        ComputeVolDeriv(xscurr, NumNode(),numdim*NumNode(), volumeele, Vdiff1, Vdiff2);
+        if (*projtype == "yz")
+        {
+          ComputeVolDeriv(xscurr, NumNode(),numdim*NumNode(), volumeele, Vdiff1, Vdiff2, 0, 0);
+        }
+        else if (*projtype == "xz")
+        {
+          ComputeVolDeriv(xscurr, NumNode(),numdim*NumNode(), volumeele, Vdiff1, Vdiff2, 1, 1);
+        }
+        else if (*projtype == "xy")
+        {
+          ComputeVolDeriv(xscurr, NumNode(),numdim*NumNode(), volumeele, Vdiff1, Vdiff2, 2, 2);
+        }
+        else
+        {
+          ComputeVolDeriv(xscurr, NumNode(),numdim*NumNode(), volumeele, Vdiff1, Vdiff2);
+        }
+
         //update rhs vector and corresponding column in "constraint" matrix
         elevector1 = *Vdiff1;
         elevector2 = *Vdiff1;
@@ -550,43 +570,26 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
           LINALG::SerialDenseMatrix xscurr(NumNode(),numdim);  // material coord. of element
           SpatialConfiguration(xscurr,mydisp);
 
-
-          //get required projection method
-          enum ProjType
-          {
-            none,
-            xy,
-            yz,
-            xz
-          };
-          ProjType protype;
-
           RCP<DRT::Condition> condition = params.get<RefCountPtr<DRT::Condition> >("condition");
-          const string* type = condition->Get<string>("projection");
-
-          protype = none;
-          if (!type);
-          else if (*type == "xy") protype = xy;
-          else if (*type == "yz") protype = yz;
-          else if (*type == "xz") protype = xz;
+          const string* projtype = condition->Get<string>("projection");
 
           // To compute monitored area consider required projection method
           // and set according coordinates to zero
-          if (protype == yz)
+          if (*projtype == "yz")
           {
             xscurr(0,0)=0;
             xscurr(1,0)=0;
             xscurr(2,0)=0;
             xscurr(3,0)=0;
           }
-          else if (protype == xz)
+          else if (*projtype == "xz")
           {
             xscurr(0,1)=0;
             xscurr(1,1)=0;
             xscurr(2,1)=0;
             xscurr(3,1)=0;
           }
-          else if (protype == xy)
+          else if (*projtype == "xy")
           {
             xscurr(0,2)=0;
             xscurr(1,2)=0;
@@ -758,12 +761,14 @@ void DRT::ELEMENTS::StructuralSurface::ComputeVolDeriv
   const int ndof,
   double& V,
   RCP<Epetra_SerialDenseVector> Vdiff1,
-  RCP<Epetra_SerialDenseMatrix> Vdiff2
+  RCP<Epetra_SerialDenseMatrix> Vdiff2,
+  const int minindex,
+  const int maxindex
 )
 {
   // necessary constants
   const int numdim = 3;
-  const double third = 1.0/3.0;
+  const double invnumind = 1.0/(maxindex-minindex+1.0);
   
   // initialize
   V = 0.0;
@@ -774,7 +779,7 @@ void DRT::ELEMENTS::StructuralSurface::ComputeVolDeriv
   // 1/3*int_A(x dydz + y dxdz + z dxdy)
   
   // we compute the three volumes separately
-  for (int indc = 0; indc < 3; indc++)
+  for (int indc = minindex; indc < maxindex+1; indc++)
   {  
     //split current configuration between "ab" and "c"
     // where a!=b!=c and a,b,c are in {x,y,z}
@@ -824,9 +829,9 @@ void DRT::ELEMENTS::StructuralSurface::ComputeVolDeriv
       //-------- compute first derivative
       for (int i = 0; i < numnode ; i++)
       {
-        (*Vdiff1)[3*i+inda] += third*intpoints.qwgt[gpid]*dotprodc*(deriv(0,i)*metrictensor(1,indb)-metrictensor(0,indb)*deriv(1,i));
-        (*Vdiff1)[3*i+indb] += third*intpoints.qwgt[gpid]*dotprodc*(deriv(1,i)*metrictensor(0,inda)-metrictensor(1,inda)*deriv(0,i));
-        (*Vdiff1)[3*i+indc] += third*intpoints.qwgt[gpid]*funct[i]*detA;
+        (*Vdiff1)[3*i+inda] += invnumind*intpoints.qwgt[gpid]*dotprodc*(deriv(0,i)*metrictensor(1,indb)-metrictensor(0,indb)*deriv(1,i));
+        (*Vdiff1)[3*i+indb] += invnumind*intpoints.qwgt[gpid]*dotprodc*(deriv(1,i)*metrictensor(0,inda)-metrictensor(1,inda)*deriv(0,i));
+        (*Vdiff1)[3*i+indc] += invnumind*intpoints.qwgt[gpid]*funct[i]*detA;
       }
       
       //-------- compute second derivative
@@ -837,19 +842,19 @@ void DRT::ELEMENTS::StructuralSurface::ComputeVolDeriv
           for (int j = 0; j < numnode ; j++)
           {
             //"diagonal" (dV)^2/(dx_i dx_j) = 0, therefore only six entries have to be specified
-            (*Vdiff2)(3*i+inda,3*j+indb) += third*intpoints.qwgt[gpid]*dotprodc*(deriv(0,i)*deriv(1,j)-deriv(1,i)*deriv(0,j));
-            (*Vdiff2)(3*i+indb,3*j+inda) += third*intpoints.qwgt[gpid]*dotprodc*(deriv(0,j)*deriv(1,i)-deriv(1,j)*deriv(0,i));
-            (*Vdiff2)(3*i+inda,3*j+indc) += third*intpoints.qwgt[gpid]*funct[j]*(deriv(0,i)*metrictensor(1,indb)-metrictensor(0,indb)*deriv(1,i));
-            (*Vdiff2)(3*i+indc,3*j+inda) += third*intpoints.qwgt[gpid]*funct[i]*(deriv(0,j)*metrictensor(1,indb)-metrictensor(0,indb)*deriv(1,j));
-            (*Vdiff2)(3*i+indb,3*j+indc) += third*intpoints.qwgt[gpid]*funct[j]*(deriv(1,i)*metrictensor(0,inda)-metrictensor(1,inda)*deriv(0,i));
-            (*Vdiff2)(3*i+indc,3*j+indb) += third*intpoints.qwgt[gpid]*funct[i]*(deriv(1,j)*metrictensor(0,inda)-metrictensor(1,inda)*deriv(0,j));
+            (*Vdiff2)(3*i+inda,3*j+indb) += invnumind*intpoints.qwgt[gpid]*dotprodc*(deriv(0,i)*deriv(1,j)-deriv(1,i)*deriv(0,j));
+            (*Vdiff2)(3*i+indb,3*j+inda) += invnumind*intpoints.qwgt[gpid]*dotprodc*(deriv(0,j)*deriv(1,i)-deriv(1,j)*deriv(0,i));
+            (*Vdiff2)(3*i+inda,3*j+indc) += invnumind*intpoints.qwgt[gpid]*funct[j]*(deriv(0,i)*metrictensor(1,indb)-metrictensor(0,indb)*deriv(1,i));
+            (*Vdiff2)(3*i+indc,3*j+inda) += invnumind*intpoints.qwgt[gpid]*funct[i]*(deriv(0,j)*metrictensor(1,indb)-metrictensor(0,indb)*deriv(1,j));
+            (*Vdiff2)(3*i+indb,3*j+indc) += invnumind*intpoints.qwgt[gpid]*funct[j]*(deriv(1,i)*metrictensor(0,inda)-metrictensor(1,inda)*deriv(0,i));
+            (*Vdiff2)(3*i+indc,3*j+indb) += invnumind*intpoints.qwgt[gpid]*funct[i]*(deriv(1,j)*metrictensor(0,inda)-metrictensor(1,inda)*deriv(0,j));
           }
         }
       }
     
     }   
   }
-  V*=third;
+  V*=invnumind;
   return;
 }
 
