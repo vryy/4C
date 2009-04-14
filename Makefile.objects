@@ -245,6 +245,7 @@ OBJS_DRT_FLUID= src/drt_fluid/fluid_utils.o \
                 src/drt_fluid/fluidimpedancecondition.o \
                 src/drt_fluid/turbulence_statistic_manager.o \
                 src/drt_fluid/turbulence_statistics_cha.o \
+                src/drt_fluid/turbulence_statistics_ccy.o \
                 src/drt_fluid/turbulence_statistics_ldc.o \
                 src/drt_fluid/turbulence_statistics_bfs.o \
                 src/drt_fluid/turbulence_statistics_sqc.o \

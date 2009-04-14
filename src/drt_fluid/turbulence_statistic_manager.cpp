@@ -151,6 +151,20 @@ namespace FLD
       // do the time integration independent setup
       Setup();
     }
+    if(fluid.special_flow_=="rotating_circular_cylinder_nurbs")
+    {
+      flow_=rotating_circular_cylinder_nurbs;
+
+      // do the time integration independent setup
+      Setup();
+
+      // allocate one instance of the averaging procedure for
+      // the flow under consideration
+      statistics_ccy_=rcp(new TurbulenceStatisticsCcy(discret_            ,
+                                                      alefluid_           ,
+                                                      mydispnp_           ,
+                                                      params_             ));
+    }
     else
     {
       flow_=no_special_flow;
@@ -566,6 +580,15 @@ namespace FLD
         }
         break;
       }
+      case rotating_circular_cylinder_nurbs:
+      {
+        
+        if(statistics_ccy_==null)
+          dserror("need statistics_ccy_ to do a time sample for a flow in a rotating circular cylinder");
+
+        statistics_ccy_->DoTimeSample(myvelnp_);
+        break;
+      }
       default:
       {
         break;
@@ -749,6 +772,16 @@ namespace FLD
 
         if (outputformat == write_single_record)
           statistics_sqc_->DumpStatistics(step);
+        break;
+      }
+      case rotating_circular_cylinder_nurbs:
+      {
+        
+        if(statistics_ccy_==null)
+          dserror("need statistics_ccy_ to do a time sample for a flow in a rotating circular cylinder");
+
+        statistics_ccy_->TimeAverageMeansAndOutputOfStatistics(step);
+        statistics_ccy_->ClearStatistics();
         break;
       }
       default:

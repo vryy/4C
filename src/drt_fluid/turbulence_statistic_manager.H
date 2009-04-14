@@ -26,6 +26,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_fluid/fluid_utils.H"
 
 #include "../drt_fluid/turbulence_statistics_mean_general.H"
+#include "../drt_fluid/turbulence_statistics_ccy.H"
 #include "../drt_fluid/turbulence_statistics_cha.H"
 #include "../drt_fluid/turbulence_statistics_ldc.H"
 #include "../drt_fluid/turbulence_statistics_bfs.H"
@@ -171,15 +172,16 @@ private:
 
   //! specifies the special flow
   enum SpecialFlow
-  { no_special_flow               ,
-    channel_flow_of_height_2      ,
-    loma_channel_flow_of_height_2 ,
-    lid_driven_cavity             ,
-    loma_lid_driven_cavity        ,
-    backward_facing_step          ,
-    loma_backward_facing_step     ,
-    square_cylinder               ,
-    square_cylinder_nurbs         }    flow_;
+  { no_special_flow                 ,
+    channel_flow_of_height_2        ,
+    loma_channel_flow_of_height_2   ,
+    lid_driven_cavity               ,
+    loma_lid_driven_cavity          ,
+    backward_facing_step            ,
+    loma_backward_facing_step       ,
+    square_cylinder                 ,
+    square_cylinder_nurbs           ,
+    rotating_circular_cylinder_nurbs}    flow_;
 
   //! toggle evaluation of dynamic Smagorinsky/Smagorinsky with 
   //! wall damping quantities
@@ -197,6 +199,9 @@ private:
 
   //! turbulence statistics for turbulent channel flow
   RCP<TurbulenceStatisticsCha>         statistics_channel_;
+
+  //! turbulence statistics for a rotating circular cylinder
+  RCP<TurbulenceStatisticsCcy>         statistics_ccy_;
 
   //! turbulence statistics for lid-driven cavity
   RCP<TurbulenceStatisticsLdc>         statistics_ldc_;
