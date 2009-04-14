@@ -167,17 +167,6 @@ namespace STR {
       const Teuchos::RCP<const Epetra_Operator>& solvePrecOp
       );
 
-  private:
-
-    /// 
-    void LinSys(
-      const LINALG::BlockSparseMatrixBase& A,
-      NOX::Epetra::Vector& result,
-      const NOX::Epetra::Vector& input,
-      int& maxit,
-      double& tol
-      );
-
   protected:
 
     /// throw an error
