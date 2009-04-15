@@ -479,7 +479,7 @@ namespace DRT
  |  just get an int back                                       (public) |
  |                                                          chfoe 11/07 |
  *----------------------------------------------------------------------*/
-int DRT::Container::Getint(const string& name) const
+int DRT::Container::GetInt(const string& name) const
 {
   const vector<int>* vecptr = Get<vector<int> >(name);
   if(vecptr==NULL) dserror("An integer cannot be read from the container.");

@@ -319,7 +319,7 @@ public:
   int mynumber = Container::Getint("name_of_my_number")
   \endcode
   */
-  int Getint(const string& name) const;
+  int GetInt(const string& name) const;
 
   /*!
   \brief Get a single double back without all that hassle

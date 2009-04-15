@@ -226,7 +226,7 @@ void DRT::INPUT::IntMaterialComponent::Print(
   const MAT::PAR::Material* cond
   )
 {
-  stream << cond->Getint(Name());
+  stream << cond->GetInt(Name());
 }
 
 
@@ -341,7 +341,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorMaterialComponent::Read(
   if (length_ == -1)
   {
     if (lengthname_ != "*UNDEFINED*")
-      length_ = material->Getint(lengthname_);
+      length_ = material->GetInt(lengthname_);
     else
       dserror("Trouble to get length of int vector material component.");
   }
@@ -513,7 +513,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealVectorMaterialComponent::Read(
   if (length_ == -1)
   {
     if (lengthname_ != "*UNDEFINED*")
-      length_ = material->Getint(lengthname_);
+      length_ = material->GetInt(lengthname_);
     else
       dserror("Trouble to get length of real vector material component.");
   }

@@ -264,7 +264,7 @@ void DRT::UTILS::CollectElementsByConditionLabel(
   for(vector<DRT::Condition*>::const_iterator conditer = conditions.begin(); conditer!= conditions.end(); ++conditer)
   {
     DRT::Condition* condition = *conditer;
-    const int label = condition->Getint("label");
+    const int label = condition->GetInt("label");
     const vector<int> geometryMap = *condition->Nodes();
     vector<int>::const_iterator iterNode;
     for(iterNode = geometryMap.begin(); iterNode != geometryMap.end(); ++iterNode )

@@ -175,7 +175,7 @@ void DRT::INPUT::IntConditionComponent::DefaultLine(std::ostream& stream)
  *----------------------------------------------------------------------*/
 void DRT::INPUT::IntConditionComponent::Print(std::ostream& stream, const DRT::Condition* cond)
 {
-  int n = cond->Getint(Name());
+  int n = cond->GetInt(Name());
   if (noneallowed_ and n==-1)
     stream << "none ";
   else

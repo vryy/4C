@@ -28,7 +28,10 @@ using namespace Teuchos;
  *-------------------------------------------------------------------*/
 DRT::UTILS::LocsysManager::LocsysManager(DRT::Discretization& discret, const bool transformleftonly):
 discret_(discret),
-transformleftonly_(transformleftonly)
+transformleftonly_(transformleftonly),
+type_(DRT::UTILS::LocsysManager::def),
+dim_(-1),
+numlocsys_(-1)
 {
   Setup();
 }
@@ -69,11 +72,26 @@ void DRT::UTILS::LocsysManager::Setup()
   // check for locsys boundary conditions
   Discret().GetCondition("Locsys",locsysconds_);
   numlocsys_ = (int)locsysconds_.size();
+  type_.resize(numlocsys_);
+  id_.resize(numlocsys_);
   typelocsys_.resize(numlocsys_);
   normals_.Reshape(numlocsys_,3);
   tangents_.Reshape(numlocsys_,3);
   thirddir_.Reshape(numlocsys_,3);
   
+  for (int i=0; i<NumLocsys(); ++i)
+  {
+    id_[i] = locsysconds_[i]->Id();
+    const std::string* type = locsysconds_[i]->Get<std::string>("Type");
+    if (*type=="default") 
+      type_[i] = DRT::UTILS::LocsysManager::def;
+    else if (*type=="FunctionEvaluation")
+      type_[i] = DRT::UTILS::LocsysManager::functionevaluation;
+    else if (*type=="OriginRadialSliding")
+      type_[i] = DRT::UTILS::LocsysManager::originradialsliding;
+    else dserror("Unknown type of locsys");
+    cout << *type << " id: " << id_[i] << endl;
+  }
   // As for Dirichlet conditions, we keep to a very strict hierarchy
   // for evaluation of the Locsys conditions: Volume locsys conditions
   // are evaluated first, followed by Surface and Line locsys conditions

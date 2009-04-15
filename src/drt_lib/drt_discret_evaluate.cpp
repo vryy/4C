@@ -656,7 +656,7 @@ void DRT::Discretization::EvaluateCondition
     if (fool->first == condstring)
     {
       DRT::Condition& cond = *(fool->second);
-      if (condid == -1 || condid ==cond.Getint("ConditionID"))
+      if (condid == -1 || condid ==cond.GetInt("ConditionID"))
       {
         map<int,RefCountPtr<DRT::Element> >& geom = cond.Geometry();
         // if (geom.empty()) dserror("evaluation of condition with empty geometry");
@@ -764,7 +764,7 @@ void DRT::Discretization::EvaluateConditionUsingParentData(
     if (fool->first == condstring)
     {
       DRT::Condition& cond = *(fool->second);
-      if (condid == -1 || condid ==cond.Getint("ConditionID"))
+      if (condid == -1 || condid ==cond.GetInt("ConditionID"))
       {
 	map<int,RefCountPtr<DRT::Element> >& geom = cond.Geometry();
 	// no check for empty geometry here since in parallel computations

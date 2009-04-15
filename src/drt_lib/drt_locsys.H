@@ -182,6 +182,18 @@ protected:
   /// transform system matrix only by left-multiplying
   bool                                     transformleftonly_;
   
+  /// type of locsys
+  enum Type
+  {
+    def,
+    functionevaluation,
+    originradialsliding
+  };
+  vector<DRT::UTILS::LocsysManager::Type>  type_;
+  
+  /// id of locsys condition
+  vector<int>                              id_;
+  
   /// problem dimension
   int                                      dim_;
   
@@ -191,7 +203,7 @@ protected:
   /// number of local systems
   int                                      numlocsys_;
   
-  /// types of local systems
+  /// types of local systems conditions
   vector<DRT::Condition::ConditionType>    typelocsys_;
   
   /// local system normals / tangents
