@@ -762,32 +762,32 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
       for (int jnod=0; jnod<NUMNOD_; ++jnod) {
         for (int inod=0; inod<NUMNOD_; ++inod) {
           LINALG::Matrix<NUMSTR_,1> G_ij;
-          G_ij(0) = derivs[gp](0, inod) * derivs[gp](0, jnod); // rr-dir
-          G_ij(1) = derivs[gp](1, inod) * derivs[gp](1, jnod); // ss-dir
-          G_ij(3) = derivs[gp](0, inod) * derivs[gp](1, jnod)
-                  + derivs[gp](1, inod) * derivs[gp](0, jnod); // rs-dir
+          G_ij(0) = derivs[gp](0,inod) * derivs[gp](0,jnod); // rr-dir
+          G_ij(1) = derivs[gp](1,inod) * derivs[gp](1,jnod); // ss-dir
+          G_ij(3) = derivs[gp](0,inod) * derivs[gp](1,jnod)
+                  + derivs[gp](1,inod) * derivs[gp](0,jnod); // rs-dir
           if (ans_ == ans_none) {
-            G_ij(2) = derivs[gp](2, inod) * derivs[gp](2, jnod); // tt-dir
-            G_ij(4) = derivs[gp](1, inod) * derivs[gp](2, jnod)
-                    + derivs[gp](2, inod) * derivs[gp](1, jnod); // st-dir
-            G_ij(5) = derivs[gp](2, inod) * derivs[gp](0, jnod)
-                    + derivs[gp](0, inod) * derivs[gp](2, jnod); // tr-dir
+            G_ij(2) = derivs[gp](2,inod) * derivs[gp](2,jnod); // tt-dir
+            G_ij(4) = derivs[gp](1,inod) * derivs[gp](2,jnod)
+                    + derivs[gp](2,inod) * derivs[gp](1,jnod); // st-dir
+            G_ij(5) = derivs[gp](2,inod) * derivs[gp](0,jnod)
+                    + derivs[gp](0,inod) * derivs[gp](2,jnod); // tr-dir
           }
           else {
             // ANS modification in tt-dir
-            G_ij(2) = 0.25*(1-r[gp])*(1-s[gp]) * (*deriv_sp)[4](2,inod) * (*deriv_sp)[4](2,jnod)
-                    + 0.25*(1+r[gp])*(1-s[gp]) * (*deriv_sp)[5](2,inod) * (*deriv_sp)[5](2,jnod)
-                    + 0.25*(1+r[gp])*(1+s[gp]) * (*deriv_sp)[6](2,inod) * (*deriv_sp)[6](2,jnod)
-                    + 0.25*(1-r[gp])*(1+s[gp]) * (*deriv_sp)[7](2,inod) * (*deriv_sp)[7](2,jnod);
+            G_ij(2) = 0.25*(1.0-r[gp])*(1.0-s[gp]) * (*deriv_sp)[4](2,inod) * (*deriv_sp)[4](2,jnod)
+                    + 0.25*(1.0+r[gp])*(1.0-s[gp]) * (*deriv_sp)[5](2,inod) * (*deriv_sp)[5](2,jnod)
+                    + 0.25*(1.0+r[gp])*(1.0+s[gp]) * (*deriv_sp)[6](2,inod) * (*deriv_sp)[6](2,jnod)
+                    + 0.25*(1.0-r[gp])*(1.0+s[gp]) * (*deriv_sp)[7](2,inod) * (*deriv_sp)[7](2,jnod);
             // ANS modification in st-dir
-            G_ij(4) = 0.5*((1+r[gp]) * ((*deriv_sp)[1](1,inod) * (*deriv_sp)[1](2,jnod)
-                                       +(*deriv_sp)[1](2,inod) * (*deriv_sp)[1](1,jnod))
-                          +(1-r[gp]) * ((*deriv_sp)[3](1,inod) * (*deriv_sp)[3](2,jnod)
-                                       +(*deriv_sp)[3](2,inod) * (*deriv_sp)[3](1,jnod)));
+            G_ij(4) = 0.5*((1.0+r[gp]) * ((*deriv_sp)[1](1,inod) * (*deriv_sp)[1](2,jnod)
+                                         +(*deriv_sp)[1](2,inod) * (*deriv_sp)[1](1,jnod))
+                          +(1.0-r[gp]) * ((*deriv_sp)[3](1,inod) * (*deriv_sp)[3](2,jnod)
+                                         +(*deriv_sp)[3](2,inod) * (*deriv_sp)[3](1,jnod)));
             // ANS modification in rt-dir
-            G_ij(5) = 0.5*((1-s[gp]) * ((*deriv_sp)[0](0,inod) * (*deriv_sp)[0](2,jnod)
-                                       +(*deriv_sp)[0](2,inod) * (*deriv_sp)[0](0,jnod))
-                          +(1+s[gp]) * ((*deriv_sp)[2](0,inod) * (*deriv_sp)[2](2,jnod)
+            G_ij(5) = 0.5*((1.0-s[gp]) * ((*deriv_sp)[0](0,inod) * (*deriv_sp)[0](2,jnod)
+                                         +(*deriv_sp)[0](2,inod) * (*deriv_sp)[0](0,jnod))
+                          +(1.0+s[gp]) * ((*deriv_sp)[2](0,inod) * (*deriv_sp)[2](2,jnod)
                                        +(*deriv_sp)[2](2,inod) * (*deriv_sp)[2](0,jnod)));
           }
 
@@ -980,6 +980,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
             // ext(p)ensive computation to achieve full tangent
             if (lin_ > lin_half) {
 
+              // REMARK:
               // on #rcgDbyrgtstrD is stored the inverse of C^{d}_{,U^{d}}
               // on #rcgbyrgtstr is stored the inverse of C^{ass}_{,U^{ass}}
 
@@ -1130,7 +1131,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
 
                 // inverse assumed deformation gradient times #boplin
                 // Z^{assd}_{BCd} = F^{-1}_{Ba}  F^d_{aC,d}
-                // WARNING: Z^{assd}_{BCd} might non-symmetric in BC 
+                // WARNING: Z^{assd}_{BCd} might be non-symmetric in BC 
                 LINALG::Matrix<NUMDFGR_,NUMDISP_> invdefgradtimesboplin;
                 for (int d=0; d<NUMDISP_; ++d) {
                   for (int BC=0; BC<NUMDFGR_; ++BC) {
@@ -1200,9 +1201,9 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                         const int DB = VOIGT3X3SYM_[NUMDIM_*D+B];
                         const double DBfact = (D==B) ? 1.0 : 0.5;
                         for (int C=0; C<NUMDIM_; ++C) {
+                          const int BC = VOIGT3X3_[NUMDIM_*B+C];
                           const int CD = VOIGT3X3SYM_[NUMDIM_*C+D];
                           const double CDfact = (C==D) ? 1.0 : 0.5;
-                          const int BC = VOIGT3X3_[NUMDIM_*B+C];
                           defgradbybydisp_dk
                             += invdefgradtimesboplin(BC,d) * CDfact*invrgtstrDbydisp(CD,k) * rgtstr(D,B)  // (1)
                             + invdefgradtimesboplin(BC,d) * invrgtstrD(C,D) * DBfact*rgtstrbydisp(DB,k);  // (2)
