@@ -32,7 +32,7 @@ MAT::PAR::ViscoAnisotropic::ViscoAnisotropic(
   beta_(),
   relax_(),
   minstretch_(matdata->GetDouble("MINSTRETCH")),
-  elethick_(matdata->Getint("ELETHICKDIR"))
+  elethick_(matdata->GetInt("ELETHICKDIR"))
 {
   beta_[0] = matdata->GetDouble("BETA_ISO");
   beta_[1] = matdata->GetDouble("BETA_ANISO");

@@ -41,7 +41,7 @@ MAT::PAR::MicroMaterial::MicroMaterial(
   )
 : Parameter(matdata),
   microfile_(*(matdata->Get<std::string>("MICROFILE"))),
-  microdisnum_(matdata->Getint("MICRODIS_NUM")),
+  microdisnum_(matdata->GetInt("MICRODIS_NUM")),
   initvol_(matdata->GetDouble("INITVOL"))
 {
 }

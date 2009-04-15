@@ -19,7 +19,7 @@ MAT::PAR::MatList::MatList(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
-  nummat_(matdata->Getint("NUMMAT")),
+  nummat_(matdata->GetInt("NUMMAT")),
   matids_(matdata->Get<std::vector<int> >("MATIDS"))
 {
   // check if sizes fit

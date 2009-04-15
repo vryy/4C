@@ -37,9 +37,9 @@ MAT::PAR::ArtWallRemod::ArtWallRemod(Teuchos::RCP<MAT::PAR::Material> matdata)
     k1_(matdata->GetDouble("K1")),
     k2_(matdata->GetDouble("K2")),
     gamma_(matdata->GetDouble("GAMMA")),
-    init_(matdata->Getint("INIT")),
+    init_(matdata->GetInt("INIT")),
     rembegt_(matdata->GetDouble("REMBEGT")),
-    tensonly_(matdata->Getint("TENSION_ONLY"))
+    tensonly_(matdata->GetInt("TENSION_ONLY"))
 {
 }
 

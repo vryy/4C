@@ -40,9 +40,9 @@ MAT::PAR::ContChainNetw::ContChainNetw(
   persl_a_(matdata->GetDouble("PERSL_A")),
   r0_(matdata->GetDouble("R0")),
   relax_(matdata->GetDouble("RELAX")),
-  initran_(matdata->Getint("INITRAN")),
+  initran_(matdata->GetInt("INITRAN")),
   rembegt_(matdata->GetDouble("REMBEGT")),
-  updrate_(matdata->Getint("UPDRATE")),
+  updrate_(matdata->GetInt("UPDRATE")),
   difftol_(matdata->GetDouble("DIFFTOL"))
 {
 }

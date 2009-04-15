@@ -31,7 +31,7 @@ MAT::PAR::AnisotropicBalzani::AnisotropicBalzani(
   alpha1_(matdata->GetDouble("ALPHA1")),
   alpha2_(matdata->GetDouble("ALPHA2")),
   dens_(matdata->GetDouble("DENS")),
-  aloc_(matdata->Getint("ALOC")),
+  aloc_(matdata->GetInt("ALOC")),
   a1_(),
   alpha1_2_(matdata->GetDouble("ALPHA1_2")),
   alpha2_2_(matdata->GetDouble("ALPHA2_2")),
