@@ -171,7 +171,7 @@ void UTILS::PotentialManager::StiffnessAndInternalForcesPotential(
   RefCountPtr<DRT::Condition> cond = params.get<RefCountPtr<DRT::Condition> >("condition",null); 
 
   // find nodal ids influencing a given element
-  const int     label     = cond->Getint("label");
+  const int     label     = cond->GetInt("label");
   const double  cutOff    = cond->GetDouble("cutOff");
   std::map<int,std::set<int> > potentialElementIds;
   for(int i = 0; i < DRT::UTILS::getNumberOfElementCornerNodes(element->Shape()); i++)
@@ -185,7 +185,7 @@ void UTILS::PotentialManager::StiffnessAndInternalForcesPotential(
   } 
  
   // initialize time variables
-  const int    curvenum = cond->Getint("curve");
+  const int    curvenum = cond->GetInt("curve");
   const double time     = params.get<double>("total time",-1.0);
   //const double dt     = params.get<double>("delta time",0.0);
   const double t_end    = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).end();
@@ -221,7 +221,7 @@ void UTILS::PotentialManager::StiffnessAndInternalForcesPotential(
   RefCountPtr<DRT::Condition> cond = params.get<RefCountPtr<DRT::Condition> >("condition",null); 
 
   // find nodal ids influencing a given element
-  const int     label     = cond->Getint("label");
+  const int     label     = cond->GetInt("label");
   const double  cutOff    = cond->GetDouble("cutOff");
   std::map<int,std::set<int> > potentialElementIds;
   for(int i = 0; i < DRT::UTILS::getNumberOfElementCornerNodes(element->Shape()); i++)
@@ -235,7 +235,7 @@ void UTILS::PotentialManager::StiffnessAndInternalForcesPotential(
   } 
   
   // initialize time variables
-  const int    curvenum = cond->Getint("curve");
+  const int    curvenum = cond->GetInt("curve");
   const double time     = params.get<double>("total time",-1.0);
   //const double dt     = params.get<double>("delta time",0.0);
   const double t_end    = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).end();
