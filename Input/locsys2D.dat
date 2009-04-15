@@ -384,8 +384,8 @@ DPOINT 0
 -------------------------------------DESIGN LINE LOCSYS CONDITIONS
 // DOBJECT Id - LocsysId
 DLINE 2
-E 2 - normal -0.894427191 -0.447213596 0 tangent 0.0 0.0 0.0 origin 0.0 0.0 0.0 Type
-E 4 - normal  0.894427191 -0.447213596 0 tangent 0.0 0.0 0.0 origin 0.0 0.0 0.0 Type
+E 2 - normal -0.894427191 -0.447213596 0 tangent 0.0 0.0 0.0 origin 0.0 0.0 0.0 Type default
+E 4 - normal  0.894427191 -0.447213596 0 tangent 0.0 0.0 0.0 origin 0.0 0.0 0.0 Type default
 -------------------------------------DESIGN SURF LOCSYS CONDITIONS
 // DOBJECT Id - LocsysId
 DSURF 0
