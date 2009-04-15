@@ -1536,14 +1536,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  timeint_stationary,
                                  timeint_one_step_theta),
                                &combustcontrol);
-  setStringToIntegralParameter<INPAR::COMBUST::ReInitialActionGfunc>("REINITGFUNCTION","Signed Distance Function","Type of reinitialization level set",
-                               tuple<std::string>(
-                                 "Function",
-                                 "Signed Distance Function"),
-                               tuple<INPAR::COMBUST::ReInitialActionGfunc>(
-                                 INPAR::COMBUST::reinitialize_by_function,
-                                 INPAR::COMBUST::compute_signeddistancefunction),
-                               &combustcontrol);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& combustcontrolfluid = combustcontrol.sublist("COMBUSTION FLUID",false,"");
@@ -1554,7 +1546,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& combustcontrolgfunc = combustcontrol.sublist("COMBUSTION GFUNCTION",false,"");
 
-  IntParameter("REINITFUNCNO",-1,"function number for reinitialization of G-function field",&combustcontrolgfunc);
+  setStringToIntegralParameter<INPAR::COMBUST::ReInitialActionGfunc>("REINITIALIZATION","Signed_Distance_Function",
+                               "Type of reinitialization strategy for level set function",
+                               tuple<std::string>(
+                                 "Function",
+                                 "Signed_Distance_Function"),
+                               tuple<INPAR::COMBUST::ReInitialActionGfunc>(
+                                 INPAR::COMBUST::reinitialize_by_function,
+                                 INPAR::COMBUST::compute_signeddistancefunction),
+                               &combustcontrolgfunc);
+  IntParameter("REINITFUNCNO",-1,"function number for reinitialization of level set (G-function) field",&combustcontrolgfunc);
+  setStringToIntegralParameter<int>("REFINEMENT","No","Turn refinement strategy for level set function on/off",
+                                     yesnotuple,yesnovalue,&combustcontrolgfunc);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fsidyn = list->sublist(

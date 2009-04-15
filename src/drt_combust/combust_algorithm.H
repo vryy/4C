@@ -26,8 +26,11 @@ Maintainer: Florian Henke
 
 #include <Epetra_Comm.h>
 
-#include "../drt_adapter/adapter_scatra_fluid_coupling_algorithm.H"
 #include "../drt_inpar/inpar_combust.H"
+#include "../drt_adapter/adapter_scatra_fluid_coupling_algorithm.H"
+#include "combust_interface.H"
+#include "combust_flamefront.H"
+
 
 /*!
 \brief namespace of the combustion module in BACI
@@ -51,7 +54,7 @@ namespace COMBUST
   public:
 
     /// constructor using a Epetra_Comm
-    explicit Algorithm(Epetra_Comm& comm, Teuchos::ParameterList& combustdyn);
+    explicit Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& combustdyn);
 
     /// virtual destructor to support polymorph destruction
     virtual ~Algorithm();
@@ -114,6 +117,12 @@ namespace COMBUST
     INPAR::COMBUST::ReInitialActionGfunc reinitializationaction_;
 
     const Teuchos::ParameterList& combustdyn_;
+//    const Teuchos::ParameterList& xparams_;
+
+    Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandle_;
+
+    Teuchos::RCP<COMBUST::FlameFront> flamefront_;
+
   };
 
 } // namespace COMBUST

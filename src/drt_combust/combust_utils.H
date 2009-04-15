@@ -15,7 +15,8 @@ Maintainer: Florian Henke
 #define COMBUST_UTILS_H
 
 #include "../drt_xfem/dof_management.H"
-#include "../drt_xfem/interfacexfsi.H"
+#include "../drt_xfem/interface.H"
+//#include "combust_interface.H"
 #include "../drt_xfem/field_enriched.H"
 
 namespace COMBUST

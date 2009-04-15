@@ -31,6 +31,11 @@ Maintainer: Ulrich Kuettler
 
 #include "../drt_lib/standardtypes_cpp.H"
 
+// This should be generalized     henke
+//#include "../drt_xfem/interface.H"
+#include "../drt_combust/combust_interface.H"
+#include "../drt_combust/combust_flamefront.H"
+
 /// Algorithm adapter classes for use in multi-field problems
 namespace ADAPTER {
 
@@ -225,9 +230,27 @@ namespace ADAPTER {
     /// Some applications need only access to velocity-related values of an fluid result vector.
     virtual Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres) = 0;
 
-    /// Multi field problems which involve an implicitly defined interface, e.g. via level set
+    //@}
+
+    //! @name Import geometrical coupling information about an implicitely defined interface from a different field
+
+    /// A fluid in multi field problems which involve an implicitly defined interface, e.g. via level set
     /// methods, might need to access a second discretization.
     virtual void ImportDiscretization(Teuchos::RCP<const DRT::Discretization> importdis)
+    {
+      dserror("This function is not implemented for this type of fluid! Only available for combustion!");
+    };
+
+    /// A fluid in multi field problems which involve an implicitly defined interface, e.g. via level set
+    /// methods, might need to know the interface geometry
+    virtual void ImportInterface(const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& importinterface)
+    {
+      dserror("This function is not implemented for this type of fluid! Only available for combustion!");
+    };
+
+    /// A fluid in multi field problems which involve an implicitly defined interface, e.g. via level set
+    /// methods, might need to know the interface geometry
+    virtual void ImportFlameFront(Teuchos::RCP<const COMBUST::FlameFront> importflamefront)
     {
       dserror("This function is not implemented for this type of fluid! Only available for combustion!");
     };

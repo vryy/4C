@@ -31,24 +31,35 @@ Maintainer: Florian Henke
  | constructor                                                                         henke 10/08 | 
  *------------------------------------------------------------------------------------------------*/
 COMBUST::InterfaceHandleCombust::InterfaceHandleCombust(
-    const Teuchos::RCP<DRT::Discretization>  fluiddis,
-    const Teuchos::RCP<DRT::Discretization>  gfuncdis
+    const Teuchos::RCP<DRT::Discretization> fluiddis,
+    const Teuchos::RCP<const DRT::Discretization> gfuncdis,
+    const Teuchos::RCP<const COMBUST::FlameFront> flamefront
     ) : InterfaceHandle(fluiddis),
         gfuncdis_(gfuncdis),
-        flamefront_(Teuchos::null) // pointer to the flame front is a dummy for the time being!
+        flamefront_(flamefront)
 {
   if (fluiddis->Comm().MyPID() == 0)
-    std::cout << "Constructing InterfaceHandle" << std::endl;
+    std::cout << "Construct InterfaceHandleCombust" << std::endl;
 
-  // construct a flame front
-  Teuchos::RCP<COMBUST::FlameFront> flamefront_ = rcp(new COMBUST::FlameFront(fluiddis,gfuncdis,elementalDomainIntCells_,elementalBoundaryIntCells_));
+/* Ich muss erstmal schauen, ob die DomainIntCell für meine Zwecke sinnvoll ist. Falls nicht, steht
+ * das ganze InterfaceHanlde in Frage. Es könnte auch alles in die FlameFront integriert werden.
+ * 
+ * henke 03/09 */
 
-// Kläre was mit diesen Bäumen passieren soll!
-//  octTreenp_ = rcp( new GEO::SearchTree(5));
-//  octTreenp_->initializeTree(AABB, elementsByLabel_, GEO::TreeType(GEO::OCTTREE));
-//  octTreen_ = rcp( new GEO::SearchTree(5));
-//  octTreen_->initializeTree(AABB, elementsByLabel_, GEO::TreeType(GEO::OCTTREE));
+  std::cout << "Hier passiert absolut nichts" << std::endl;
+  // Dinge, die hier passieren müssen, sind in diesen Funktionen zu finden:
+  // computeIntersection
+  // computePLC
+  // computeCDT
 
+  if (fluiddis->Comm().MyPID() == 0)
+    std::cout << "Construct InterfaceHandleCombust done" << std::endl;
+
+  // Kläre was mit diesen Bäumen passieren soll!
+  //  octTreenp_ = rcp( new GEO::SearchTree(5));
+  //  octTreenp_->initializeTree(AABB, elementsByLabel_, GEO::TreeType(GEO::OCTTREE));
+  //  octTreen_ = rcp( new GEO::SearchTree(5));
+  //  octTreen_->initializeTree(AABB, elementsByLabel_, GEO::TreeType(GEO::OCTTREE));
 }
 /*------------------------------------------------------------------------------------------------*
  | destructor                                                                         henke 10/08 | 
@@ -58,12 +69,17 @@ COMBUST::InterfaceHandleCombust::~InterfaceHandleCombust()
   return;
 }
 
-
 //! implement this function if needed for combustion!
 void COMBUST::InterfaceHandleCombust::toGmsh(const int step) const
 {
   dserror ("not implemented");
   return;
+}
+
+void COMBUST::InterfaceHandleCombust::UpdateInterfaceHandle()
+{
+  // das ist die Funktion, die die Integrationszellen tatsächlich bauen soll.
+  dserror("UpdateInterfaceHandle not ready yet!");
 }
 
 //! implement this function if needed for combustion!

@@ -72,7 +72,7 @@ bool XFEM::ApplyNodalEnrichments(
     const XFEM::Enrichment::EnrType               enrtype,
     const std::set<XFEM::PHYSICS::Field>&         fieldset,
     const double                                  volumeRatioLimit,
-    std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet) 
+    std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet)
 {
   const double volumeratio = XFEM::DomainCoverageRatio(*xfemele,ih);
   const bool almost_empty_element = (fabs(1.0-volumeratio) < volumeRatioLimit);
@@ -80,8 +80,8 @@ bool XFEM::ApplyNodalEnrichments(
   const XFEM::Enrichment voidenr(label, enrtype);
 
   bool skipped_element = false;
-  
-  if ( not almost_empty_element)  
+
+  if ( not almost_empty_element)
   { // void enrichments for everybody !!!
     const int nen = xfemele->NumNode();
     const int* nodeidptrs = xfemele->NodeIds();
@@ -127,7 +127,76 @@ bool XFEM::ApplyNodalEnrichments(
   return skipped_element;
 }
 
+/*------------------------------------------------------------------------------------------------*
+ | original function: XFEM::ApplyNodalEnrichments                                     henke 03/09 |
+ *------------------------------------------------------------------------------------------------*/
+bool XFEM::ApplyJumpEnrichmentCombust(
+    const DRT::Element*                       xfemele,
+    const std::set<XFEM::PHYSICS::Field>&     fieldset,
+    const double                              volumeRatioLimit,
+    std::map<int, std::set<XFEM::FieldEnr> >& nodeDofMap)
+{
+  // type of enrichment determined by name of function; label (first argument) = 0
+  const XFEM::Enrichment jumpenr(0, XFEM::Enrichment::typeJump);
 
+//  const double volumeratio = XFEM::DomainCoverageRatio(*xfemele,ih);
+//  const bool almost_empty_element = (fabs(1.0-volumeratio) < volumeRatioLimit);
+
+  bool skipped_element = false;
+
+//  if ( not almost_empty_element)
+//  {
+
+    // jump enrichments for all nodes of intersected element
+    // remark: already existing standard enrichments are overwritten, this might be inefficient
+    const int numnodes = xfemele->NumNode();
+    const int* nodeidptrs = xfemele->NodeIds();
+    for (int inode = 0; inode<numnodes; ++inode)
+    {
+      const int nodeid = nodeidptrs[inode];
+//      const bool anothervoidenrichment_in_set = XFEM::EnrichmentInNodalDofSet(node_gid, enrtype, nodalDofSet);
+//      if (not anothervoidenrichment_in_set)
+//      {
+        for (std::set<XFEM::PHYSICS::Field>::const_iterator field = fieldset.begin();field != fieldset.end();++field)
+        {
+          nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, jumpenr));
+//          std::cout << "Jump Enrichment applied for node " << nodeid << std::endl;
+        }
+//      }
+    };
+
+  //  }
+
+  /* almost_empty_element: diesen Fall schließen wir erstmal aus!   henke 03/09
+  else
+  { // void enrichments only in the fluid domain
+    const int nen = xfemele->NumNode();
+    const int* nodeidptrs = xfemele->NodeIds();
+    for (int inen = 0; inen<nen; ++inen)
+    {
+      const int node_gid = nodeidptrs[inen];
+      const LINALG::Matrix<3,1> nodalpos(ih.xfemdis()->gNode(node_gid)->X());
+      const int label = ih.PositionWithinConditionNP(nodalpos);
+      const bool in_fluid = (0 == label);
+
+      if (in_fluid)
+      {
+        const bool anothervoidenrichment_in_set = EnrichmentInNodalDofSet(node_gid, enrtype, nodalDofSet);
+        if (not anothervoidenrichment_in_set)
+        {
+          for (std::set<XFEM::PHYSICS::Field>::const_iterator field = fieldset.begin();field != fieldset.end();++field)
+          {
+            nodalDofSet[node_gid].insert(XFEM::FieldEnr(*field, voidenr));
+          }
+        }
+      }
+    };
+    skipped_element = true;
+//    cout << "skipped interior void unknowns for element: "<< xfemele->Id() << ", volumeratio limit: " << std::scientific << volumeRatioLimit << ", volumeratio: abs (" << std::scientific << (1.0 - volumeratio) << " )" << endl;
+  }*/
+
+  return skipped_element;
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -138,28 +207,28 @@ bool XFEM::ApplyNodalEnrichmentsNodeWise(
     const XFEM::Enrichment::EnrType               enrtype,
     const std::set<XFEM::PHYSICS::Field>&         fieldset,
     const double                                  volumeRatioLimit,
-    std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet) 
+    std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet)
 {
   const vector<double> ratios = XFEM::DomainCoverageRatioPerNode(*xfemele,ih);
 
   const XFEM::Enrichment voidenr(label, XFEM::Enrichment::typeVoid);
 
   bool skipped_element = false;
-  
+
   const int nen = xfemele->NumNode();
   const int* nodeidptrs = xfemele->NodeIds();
   for (int inen = 0; inen<nen; ++inen)
   {
     const int node_gid = nodeidptrs[inen];
-    
+
     const bool anothervoidenrichment_in_set = EnrichmentInNodalDofSet(node_gid, enrtype, nodalDofSet);
-    
+
     if (not anothervoidenrichment_in_set)
     {
-    
+
       const bool usefull_contribution = (fabs(ratios[inen]) > volumeRatioLimit);
-      if ( usefull_contribution)  
-      {      
+      if ( usefull_contribution)
+      {
         for (std::set<XFEM::PHYSICS::Field>::const_iterator field = fieldset.begin();field != fieldset.end();++field)
         {
           nodalDofSet[node_gid].insert(XFEM::FieldEnr(*field, voidenr));
@@ -172,7 +241,7 @@ bool XFEM::ApplyNodalEnrichmentsNodeWise(
         const LINALG::Matrix<3,1> nodalpos(ih.xfemdis()->gNode(node_gid)->X());
         const int label = ih.PositionWithinConditionNP(nodalpos);
         const bool in_fluid = (0 == label);
-  
+
         if (in_fluid)
         {
           for (std::set<XFEM::PHYSICS::Field>::const_iterator field = fieldset.begin();field != fieldset.end();++field)
@@ -206,12 +275,12 @@ bool XFEM::ApplyElementEnrichments(
   // check, how much area for integration we have (from BoundaryIntcells)
   const double boundarysize = XFEM::BoundaryCoverageRatio(*xfemele,ih);
   const bool almost_zero_surface = (fabs(boundarysize) < boundaryRatioLimit);
-  
+
   bool skipped_element = false;
-  
+
   const XFEM::Enrichment enr(label, enrtype);
   //  const XFEM::Enrichment stdenr(0, XFEM::Enrichment::typeStandard);
-  if ( not almost_zero_surface) 
+  if ( not almost_zero_surface)
   {
     const bool anothervoidenrichment_in_set = EnrichmentInDofSet(enrtype, enrfieldset);
     if (not anothervoidenrichment_in_set)
@@ -253,13 +322,13 @@ void XFEM::ApplyVoidEnrichmentForElement(
   const int xele_gid = xfemele->Id();
 
   const XFEM::Enrichment::EnrType enrtype = XFEM::Enrichment::typeVoid;
-  
+
   if (ih.ElementIntersected(xele_gid))
   {
     if (ih.ElementHasLabel(xele_gid, label))
     {
       skipped_node_enr = ApplyNodalEnrichments(xfemele, ih, label, enrtype, fieldset, volumeRatioLimit, nodalDofSet);
-      //ApplyNodalEnrichmentsNodeWise(xfemele, ih, label, enrtype, fieldset, 2.0e-2, nodalDofSet); 
+      //ApplyNodalEnrichmentsNodeWise(xfemele, ih, label, enrtype, fieldset, 2.0e-2, nodalDofSet);
 
       skipped_elem_enr = ApplyElementEnrichments(xfemele, element_ansatz, ih, label, enrtype, boundaryRatioLimit, elementalDofs[xele_gid]);
     }
@@ -333,16 +402,16 @@ static void packDofKeys(
     dofkey->Pack(data);
     DRT::ParObject::AddtoPack(dataSend,data);
   }
-}           
+}
 
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 static void unpackDofKeys(
-    const vector<char>&                     dataRecv, 
+    const vector<char>&                     dataRecv,
     set<XFEM::DofKey<XFEM::onNode> >&       dofkeyset )
-{       
+{
   int index = 0;
   while (index < (int) dataRecv.size())
   {
@@ -361,54 +430,54 @@ static void syncNodalDofs(
 {
   const int myrank = ih.xfemdis()->Comm().MyPID();
   const int numproc = ih.xfemdis()->Comm().NumProc();
-  
+
   int size_one = 1;
-  
+
   DRT::Exporter exporter(ih.xfemdis()->Comm());
-  
+
   int dest = myrank+1;
   if(myrank == (numproc-1))
     dest = 0;
-  
+
   int source = myrank-1;
   if(myrank == 0)
     source = numproc-1;
-  
+
   set<XFEM::DofKey<XFEM::onNode> >  original_dofkeyset;
   fillNodalDofKeySet(ih, nodalDofSet, original_dofkeyset);
-  
+
   set<XFEM::DofKey<XFEM::onNode> >  new_dofkeyset;
   //  new_dofkeyset = original_dofkeyset;
   for (set<XFEM::DofKey<XFEM::onNode> >::const_iterator dofkey = original_dofkeyset.begin(); dofkey != original_dofkeyset.end(); ++dofkey)
   {
     new_dofkeyset.insert(*dofkey);
   }
-  
+
   // pack date for initial send
   vector<char> dataSend;
   packDofKeys(original_dofkeyset, dataSend);
-  
+
   // send data in a circle
   for(int num = 0; num < numproc-1; num++)
   {
     vector<int> lengthSend(1,0);
     lengthSend[0] = dataSend.size();
-    
+
 #ifdef DEBUG
     cout << "proc " << myrank << ": sending"<< lengthSend[0] << "bytes to proc " << dest << endl;
     //    cout << "proc " << myrank << ": sending"<< dofkeyset.size() << " dofkeys to proc " << dest << endl;
 #endif
-    
+
     // send length of the data to be received ...
     MPI_Request req_length_data;
     int length_tag = 0;
     exporter.ISend(myrank, dest, &(lengthSend[0]) , size_one, length_tag, req_length_data);
-    
+
     // ... and receive length
     vector<int> lengthRecv(1,0);
     exporter.Receive(source, length_tag, lengthRecv, size_one);
-    exporter.Wait(req_length_data);   
-    
+    exporter.Wait(req_length_data);
+
     //    if(lengthRecv[0] > 0) ??
     //    {
     // send actual data ...
@@ -418,9 +487,9 @@ static void syncNodalDofs(
     // ... and receive date
     vector<char> dataRecv(lengthRecv[0]);
     exporter.ReceiveAny(source, data_tag, dataRecv, lengthRecv[0]);
-    exporter.Wait(req_data);  
-    
-    
+    exporter.Wait(req_data);
+
+
     // unpack dofkeys from char array
     set<XFEM::DofKey<XFEM::onNode> >       dofkeyset;
     unpackDofKeys(dataRecv, dofkeyset);
@@ -446,12 +515,12 @@ static void syncNodalDofs(
     //      dataSend.clear();
     //    }
     ih.xfemdis()->Comm().Barrier();
-  }   // loop over procs 
-  
+  }   // loop over procs
+
   cout << "sync nodal dofs on proc " << myrank << ": before/after -> " << original_dofkeyset.size()<< "/" << new_dofkeyset.size() << endl;
-  
+
   updateNodalDofMap(ih, nodalDofSet,new_dofkeyset);
-  
+
 }
 
 #endif
@@ -540,7 +609,106 @@ void XFEM::createDofMap(
   };
 }
 
+/*------------------------------------------------------------------------------------------------*
+ | create a DofMap: used for combustion problems only; derived from createDofMap()    henke 03/09 |
+ *------------------------------------------------------------------------------------------------*/
+void XFEM::createDofMapCombust(
+  const COMBUST::InterfaceHandleCombust&    ih,
+  std::map<int, std::set<XFEM::FieldEnr> >& nodeDofMap,
+  std::map<int, std::set<XFEM::FieldEnr> >& elementDofMap,
+  const std::set<XFEM::PHYSICS::Field>&     fieldset,
+  const Teuchos::ParameterList&             params
+  )
+{
+  std::cout << "Creating DofMap for combustion problem" << std::endl;
 
+  const double volumeRatioLimit = params.get<double>("volumeRatioLimit");
+
+  bool skipped_node_enr = false;
+
+  // loop my column elements and add enrichments to nodes of each element
+  for (int i=0; i < ih.xfemdis()->NumMyColElements(); ++i)
+  {
+    const DRT::Element* xfemele = ih.xfemdis()->lColElement(i);
+
+    /* the following procedure can be abbreviated as soon as the interfacehandle holds domain
+     * integration cells. Then the following line will do the job:
+     *
+     * if (ih.ElementIntersected(xfemele->Id()))
+     *
+     * Since ElementIntersected() is a member function of the base class InterfaceHandle, then not
+     * the specific InterfaceHandleCombust will have to be given to createDofMap(), but a base class
+     * instance will do. The following "if" statement is the only reason a InterfaceHandleCombust is
+     * needed in here!
+     *
+     * henke 03/09 */
+
+    // initialization call of DofManager in CombustFluidImplicitTimeInt constructor will end up here
+    if (ih.FlameFront() == Teuchos::null)
+    {
+      std::cout << "dof initialization: element "<< xfemele->Id() << " gets standard enrichments (= 4 dofs)" << std::endl;
+      ApplyStandardEnrichmentCombust(xfemele, fieldset, nodeDofMap);
+    }
+    // any regular call of DofManager (existing flame front) will end up here
+    else
+    {
+      // get the refinement cell belonging to a fluid element
+      std::map<int,const Teuchos::RCP<const COMBUST::RefinementCell> >::const_iterator iter = ih.FlameFront()->FlameFrontPatches().find(xfemele->Id());
+      // ask refinement cell if it is intersected
+      if (iter->second->Intersected())
+      {
+        std::cout << "Element "<< xfemele->Id() << " ist geschnitten und Knoten werden angereichert" << std::endl;
+        // apply jump enrichments to all nodes of an intersected element
+        // remark: Brauche ich hier tatsächlich einen Rückgabewert, nur um zu checken, ob die
+        //         Anreicherung funktioniert hat?
+        skipped_node_enr = ApplyJumpEnrichmentCombust(xfemele, fieldset, volumeRatioLimit, nodeDofMap);
+        // in case there are enriched element dofs they have to be applied now   henke 04/09
+//        ApplyElementEnrichments();
+      }
+      else
+      {
+        std::cout << "Element "<< xfemele->Id() << " ist nicht geschnitten" << std::endl;
+        // apply standard enrichments to all nodes of an intersected element
+        ApplyStandardEnrichmentCombust(xfemele, fieldset, nodeDofMap);
+        /*
+         * Funktion sollte checken, ob schon JumpEnrichments (andere Enrichments) vorliegen. Sollen
+         * diese überschrieben werden? Kläre die Theorie dazu!
+         */
+      }
+    }
+  }
+
+#ifdef PARALLEL
+  syncNodalDofs(ih, nodeDofMap);
+#endif
+
+}
+
+/*------------------------------------------------------------------------------------------------*
+ | original function: XFEM::ApplyStandardEnrichment                                   henke 03/09 |
+ *------------------------------------------------------------------------------------------------*/
+void XFEM::ApplyStandardEnrichmentCombust(
+    const DRT::Element*                           xfemele,
+    const std::set<XFEM::PHYSICS::Field>&         fieldset,
+    std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet)
+{
+  // type of enrichment determined by name of function; label (first argument) = 0
+  const XFEM::Enrichment stdenr(0, XFEM::Enrichment::typeStandard);
+
+  // standard enrichments for all nodes of element
+  // remark: already existing standard enrichments are overwritten, this might be inefficient
+  const int numnodes = xfemele->NumNode();
+  const int* nodeidptrs = xfemele->NodeIds();
+  for (int inode = 0; inode<numnodes; ++inode)
+  {
+    const int nodeid = nodeidptrs[inode];
+    for (std::set<XFEM::PHYSICS::Field>::const_iterator field = fieldset.begin();field != fieldset.end();++field)
+    {
+      nodalDofSet[nodeid].insert(XFEM::FieldEnr(*field, stdenr));
+//      std::cout << "Standard Enrichment applied for node " << nodeid << std::endl;
+    }
+  };
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -623,7 +791,7 @@ void XFEM::applyStandardEnrichmentNodalBasedApproach(
     const LINALG::Matrix<3,1> nodalpos(node->X());
 
     const bool voidenrichment_in_set = EnrichmentInNodalDofSet(node->Id(), XFEM::Enrichment::typeVoid, nodalDofSet);
-    
+
     if (not voidenrichment_in_set)
     {
       const int label = ih.PositionWithinConditionNP(nodalpos);

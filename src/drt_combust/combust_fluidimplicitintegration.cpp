@@ -27,9 +27,9 @@ Maintainer: Florian Henke
 #include "../drt_xfem/dof_management.H"
 #include "../drt_xfem/dof_distribution_switcher.H"
 #include "../drt_xfem/enrichment_utils.H"
+
 #include "../drt_fluid/fluid_utils.H"
 #include "combust3_interpolation.H"
-#include "combust_interface.H" // nötig?
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_io/io_gmsh.H"
 #include <Teuchos_TimeMonitor.hpp>
@@ -47,80 +47,126 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   discret_(actdis),
   solver_ (solver),
   params_ (params),
+  xparams_(params.sublist("XFEM")),
   output_ (output),
   myrank_(discret_->Comm().MyPID()),
   cout0_(discret_->Comm(), std::cout),
-  time_(0.0),
   step_(0),
-  stepmax_(params_.get<int>   ("max number timesteps")),
-  maxtime_(params_.get<double>("total time")),
+  time_(0.0),
+  stepmax_ (params_.get<int>   ("max number timesteps")),
+  maxtime_ (params_.get<double>("total time")),
+  dta_     (params_.get<double> ("time step size")),
+  dtp_     (params_.get<double> ("time step size")), // Was soll das? Brauch ich den?
   timealgo_(params_.get<FLUID_TIMEINTTYPE>("time int algo")),
+  theta_   (params_.get<double>("theta")),
   extrapolationpredictor_(params.get("do explicit predictor",true)),
   uprestart_(params.get("write restart every", -1)),
   upres_(params.get("write solution every", -1)),
   writestresses_(params.get<int>("write stresses", 0))
 {
 
+  std::cout << "CombustFluidImplicitTimeInt constructor start" << endl;
+
+  //------------------------------------------------------------------------------------------------
   // time measurement: initialization
+  //------------------------------------------------------------------------------------------------
   TEUCHOS_FUNC_TIME_MONITOR(" + initialization");
-  /*----------------------------------------------------------------------------------------------*
-   * comment missing! Axels comment: get the basic parameters first
-   *----------------------------------------------------------------------------------------------*/
-  timealgo_ = params_.get<FLUID_TIMEINTTYPE>("time int algo");
-  dtp_ = dta_ = params_.get<double>("time step size");
-  theta_    = params_.get<double>("theta");
-  // af-generalized-alpha parameters: gamma_ = 0.5 + alphaM_ - alphaF_
-  // (may be reset below when starting algorithm is used)
-  alphaM_   = params_.get<double>("alpha_M");
-  alphaF_   = params_.get<double>("alpha_F");
-  gamma_    = params_.get<double>("gamma");
 
-  // not needed for COMBUST: create empty cutter discretization
-//  Teuchos::RCP<DRT::Discretization> emptyboundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(
-//      actdis, "schnackelzappel", "DummyBoundary", "BELE3", vector<string>(0));
-//  Teuchos::RCP<Epetra_Vector> tmpdisp = LINALG::CreateVector(*emptyboundarydis_->DofRowMap(),true);
-//  emptyboundarydis_->SetState("idispcolnp",tmpdisp);
-//  emptyboundarydis_->SetState("idispcoln",tmpdisp);
+  //------------------------------------------------------------------------------------------------
+  // future: connect degrees of freedom for periodic boundary conditions                 henke 01/09
+  //------------------------------------------------------------------------------------------------
 
-  // soll der DofManager hier bleiben, oder soll er in den Combustion Algorithmus wandern? henke 10/08
-  // apply enrichments
-  std::set<XFEM::PHYSICS::Field> fieldset;
-  fieldset.insert(XFEM::PHYSICS::Velx);
-  fieldset.insert(XFEM::PHYSICS::Vely);
-  fieldset.insert(XFEM::PHYSICS::Velz);
-  fieldset.insert(XFEM::PHYSICS::Pres);
-  const COMBUST::CombustElementAnsatz elementAnsatz;
-  Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(null,fieldset,elementAnsatz,params_));
-  /*----------------------------------------------------------------------------------------------*
-   * comment missing! Axels comment: tell elements about the dofs and the integration
-   *----------------------------------------------------------------------------------------------*/
-  {
-    ParameterList eleparams;
-    eleparams.set("action","store_xfem_info");
-    eleparams.set("dofmanager",dofmanager);
-    eleparams.set("interfacehandle",null);  // klären, wie das interfacehandle hier rein kommt!
-    discret_->Evaluate(eleparams,null,null,null,null,null);
-  }
+  //------------------------------------------------------------------------------------------------
+  // prepare XFEM (degree of freedom management)
+  //------------------------------------------------------------------------------------------------
 
-  /*----------------------------------------------------------------------------------------------*
-   * comment missing!
-   *----------------------------------------------------------------------------------------------*/
+  // declare physical fields to be enriched (XFEM fields)
+  xfemfields_.insert(XFEM::PHYSICS::Velx);
+  xfemfields_.insert(XFEM::PHYSICS::Vely);
+  xfemfields_.insert(XFEM::PHYSICS::Velz);
+  xfemfields_.insert(XFEM::PHYSICS::Pres);
+
+  // create dummy instance of interfacehandle holding no flamefront and hence no integration cells
+  Teuchos::RCP<COMBUST::InterfaceHandleCombust> ihdummy = rcp(new COMBUST::InterfaceHandleCombust(discret_,Teuchos::null,Teuchos::null));
+  // create dummy instance of dof manager assigning standard enrichments to all nodes
+  const Teuchos::RCP<XFEM::DofManager> dofmanagerdummy = rcp(new XFEM::DofManager(ihdummy,xfemfields_,xparams_));
+
+  // pass dof information to elements
+  TransferDofInformationToElements(ihdummy, dofmanagerdummy);
+
+  // ensure that degrees of freedom in the discretization have been set
   discret_->FillComplete();
 
-  //output_.WriteMesh(0,0.0);
+/*
+  for (int inode = 0; inode < discret_->NumMyColNodes(); ++inode)
+  {
+    const DRT::Node* node = discret_->lColNode(inode);
+  }
+*/
+  output_.WriteMesh(0,0.0);
 
-  // store a dofset with the complete fluid unknowns
-  dofset_out_.Reset();
-  dofset_out_.AssignDegreesOfFreedom(*discret_,0);
-  // split based on complete fluid field
-  FLD::UTILS::SetupFluidSplit(*discret_,dofset_out_,3,velpressplitterForOutput_);
+  //------------------------------------------------------------------------------------------------
+  // get dof layout from the discretization to construct vectors and matrices
+  //------------------------------------------------------------------------------------------------
+
+  // parallel dof distribution contained in dofrowmap: local (LID) <-> global (GID) dof numbering
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+//  std::cout << "dofrowmap: " << *dofrowmap << "\n" << endl;
+
+  // get layout of velocity and pressure dofs in a vector
+  const int numdim = params_.get<int>("number of velocity degrees of freedom");
+  FLD::UTILS::SetupFluidSplit(*discret_,numdim,velpressplitter_);
+
+  //------------------------------------------------------------------------------------------------
+  // create empty system matrix - stiffness and mass are assembled in one system matrix!
+  //------------------------------------------------------------------------------------------------
+
+  // initialize standard (stabilized) system matrix (and save its graph!)
+  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27,false,true));
+
+  //------------------------------------------------------------------------------------------------
+  // create empty vectors - used for different purposes
+  //------------------------------------------------------------------------------------------------
+
+  //-------------------------------
+  // vectors passed to the element
+  //-------------------------------
+  // velocity/pressure at time step n+1, n and n-1
+  state_.velnp_ = LINALG::CreateVector(*dofrowmap,true);
+  state_.veln_  = LINALG::CreateVector(*dofrowmap,true);
+  state_.velnm_ = LINALG::CreateVector(*dofrowmap,true);
+
+  // acceleration at time n+1 and n
+  state_.accnp_ = LINALG::CreateVector(*dofrowmap,true);
+  state_.accn_  = LINALG::CreateVector(*dofrowmap,true);
 
   state_.nodalDofDistributionMap_.clear();
   state_.elementalDofDistributionMap_.clear();
 
-  /*----------------------------------------------------------------------------------------------*
-   * get density from elements
-   *----------------------------------------------------------------------------------------------*/
+  // history vector: scheint in state-Konstrukt nicht nötig zu sein!
+//  hist_ = LINALG::CreateVector(*dofrowmap,true);
+
+  //---------------------------------------------
+  // vectors associated with boundary conditions
+  //---------------------------------------------
+
+  // a vector of zeros to be used to enforce zero dirichlet boundary conditions
+  zeros_ = LINALG::CreateVector(*dofrowmap,true);
+
+  //-----------------------------------
+  // vectors used for solution process
+  //-----------------------------------
+
+  // rhs: standard (stabilized) residual vector (rhs for the incremental form)
+  residual_     = LINALG::CreateVector(*dofrowmap,true);
+  trueresidual_ = LINALG::CreateVector(*dofrowmap,true);
+
+  // nonlinear iteration increment vector
+  incvel_ = LINALG::CreateVector(*dofrowmap,true);
+
+  //------------------------------------------------------------------------------------------------
+  // get density from elements
+  //---.--------------------------------------------------------------------------------------------
   {
     ParameterList eleparams;
     eleparams.set("action","get_density");
@@ -129,7 +175,9 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
     if (density_ <= 0.0) dserror("received negative or zero density value from elements");
   }
 
-} // FluidImplicitTimeInt::FluidImplicitTimeInt
+  std::cout << "CombustFluidImplicitTimeInt constructor done \n" << endl;
+
+} // CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt
 
 /*------------------------------------------------------------------------------------------------*
  | destructor: Steht in xfluidimplicitintegration.cpp weiter unten!                   henke 08/08 |
@@ -412,68 +460,67 @@ void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
 
 }
 
+void FLD::CombustFluidImplicitTimeInt::TransferDofInformationToElements(
+    const Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandle,
+    const Teuchos::RCP<XFEM::DofManager> dofmanager
+    )
+{
+  ParameterList eleparams;
+  eleparams.set("action","store_xfem_info");
+  eleparams.set("dofmanager",dofmanager);
+  eleparams.set("DLM_condensation",xparams_.get<bool>("DLM_condensation"));
+  eleparams.set("boundaryRatioLimit",xparams_.get<double>("boundaryRatioLimit"));
+  eleparams.set("interfacehandle",interfacehandle);
+  discret_->Evaluate(eleparams);
+}
+
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
  |
  | Within this routine, no parallel re-distribution is allowed to take place. Before and after this
  | function, it's ok to do that.
- | Calling this function multiple times always results in the same solution vectors (axels comment)
  *------------------------------------------------------------------------------------------------*/
-void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandle)
+void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
+       const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandle)
 {
-  // import information about interface from Adapter class ADAPTER::FluidCombust
-  interfacehandle_ = interfacehandle;
+  // import information about interface from Adapter class ADAPTER::FluidCombust::ImportInterface()
 
-//  std::cout << "tree after interfaceconstructor" << endl;
-//  interfacehandle_->PrintTreeInformation(step_);
-//  interfacehandle_->toGmsh(step_);
+  /* momentan gebe ich den ElementAnsatz (Lagrange Multiplier Zeug) nicht an den DofManager weiter,
+   * vielleicht brauche ich es aber. Hängt das hier eigentlich nicht direkt von InputParametern ab? */
+//  const COMBUST::CombustElementAnsatz elementAnsatz;
 
-  // apply enrichments
-  std::set<XFEM::PHYSICS::Field> fieldset;
-  fieldset.insert(XFEM::PHYSICS::Velx);
-  fieldset.insert(XFEM::PHYSICS::Vely);
-  fieldset.insert(XFEM::PHYSICS::Velz);
-  fieldset.insert(XFEM::PHYSICS::Pres);
-  COMBUST::CombustElementAnsatz elementAnsatz;
-  Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(interfacehandle_,fieldset,elementAnsatz,params_));
+  /* ich baue den DofManager in jedem Zeitschritt neu, weil sich die Freiheitsgrade dauernd in
+   * Position und Anzahl verändern*/
+
+  const Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(interfacehandle,xfemfields_,xparams_));
 
   // save dofmanager to be able to plot Gmsh stuff in Output()
   dofmanagerForOutput_ = dofmanager;
 
   // tell elements about the dofs and the integration
-  {
-      ParameterList eleparams;
-      eleparams.set("action","store_xfem_info");
-      eleparams.set("dofmanager",dofmanager);
-      eleparams.set("interfacehandle",interfacehandle_);
-      discret_->Evaluate(eleparams,null,null,null,null,null);
-  }
+  TransferDofInformationToElements(interfacehandle, dofmanager);
 
   // print global and element dofmanager to Gmsh
 //  dofmanager->toGmsh(step_);
 
 
-  // store old (proc-overlapping) dofmap, compute new one and return it
-  Epetra_Map olddofrowmap = *discret_->DofRowMap();
+  // get old dofmap, compute new one and get the new one, too
+  const Epetra_Map olddofrowmap = *discret_->DofRowMap();
   discret_->FillComplete();
-  Epetra_Map newdofrowmap = *discret_->DofRowMap();
-
-  // print information about dofs
-  const int numdof = newdofrowmap.NumGlobalElements();
-  const int numnodaldof = dofmanager->NumNodalDof();
-  cout0_ << "numdof = " << numdof << ", numstressdof = "<< (numdof - numnodaldof) << endl;
+  const Epetra_Map& newdofrowmap = *discret_->DofRowMap();
 
   discret_->ComputeNullSpaceIfNecessary(solver_.Params());
 
-  std::map<XFEM::DofKey<XFEM::onNode>, XFEM::DofGID> oldNodalDofDistributionMap(state_.nodalDofDistributionMap_);
-  std::map<XFEM::DofKey<XFEM::onElem>, XFEM::DofGID> oldElementalDofDistributionMap(state_.elementalDofDistributionMap_);
+  {
+  const std::map<XFEM::DofKey<XFEM::onNode>, XFEM::DofGID> oldNodalDofDistributionMap(state_.nodalDofDistributionMap_);
+  const std::map<XFEM::DofKey<XFEM::onElem>, XFEM::DofGID> oldElementalDofDistributionMap(state_.elementalDofDistributionMap_);
   dofmanager->fillDofDistributionMaps(
       state_.nodalDofDistributionMap_,
       state_.elementalDofDistributionMap_);
 
   // create switcher
   const XFEM::DofDistributionSwitcher dofswitch(
-          interfacehandle_, dofmanager,
+          interfacehandle, dofmanager,
           olddofrowmap, newdofrowmap,
           oldNodalDofDistributionMap, state_.nodalDofDistributionMap_,
           oldElementalDofDistributionMap, state_.elementalDofDistributionMap_
@@ -483,6 +530,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(Teuchos::RCP<COMBUST
   // switch state vectors to new dof distribution
   // --------------------------------------------
 
+    cout0_ << " Initialize system vectors..." << endl;
   // accelerations at time n and n-1
   dofswitch.mapVectorToNewDofDistribution(state_.accnp_);
   dofswitch.mapVectorToNewDofDistribution(state_.accn_);
@@ -491,7 +539,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(Teuchos::RCP<COMBUST
   dofswitch.mapVectorToNewDofDistribution(state_.velnp_); // use old velocity as start value
   dofswitch.mapVectorToNewDofDistribution(state_.veln_);
   dofswitch.mapVectorToNewDofDistribution(state_.velnm_);
-
+  }
   // --------------------------------------------------
   // create remaining vectors with new dof distribution
   // --------------------------------------------------
@@ -515,7 +563,6 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(Teuchos::RCP<COMBUST
   // Vectors used for solution process
   // ---------------------------------
   residual_     = LINALG::CreateVector(newdofrowmap,true);
-  //trueresidual_ = LINALG::CreateVector(newdofrowmap,true);
   trueresidual_ = Teuchos::null;
   incvel_       = LINALG::CreateVector(newdofrowmap,true);
 
@@ -531,26 +578,10 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(Teuchos::RCP<COMBUST
   // create empty system matrix --- stiffness and mass are assembled in
   // one system matrix!
   // -------------------------------------------------------------------
+  cout0_ << " Initialize system matrix..." << endl;
 
-  // This is a first estimate for the number of non zeros in a row of
-  // the matrix. Assuming a structured 3d-fluid mesh we have 27 adjacent
-  // nodes with 4 dofs each. (27*4=108)
-  // We do not need the exact number here, just for performance reasons
-  // a 'good' estimate
-
-//  if (not params_.get<int>("Simple Preconditioner",0))
-//  {
-  // initialize standard (stabilized) system matrix
-  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(newdofrowmap,108,false,true));
-//  }
-//  else
-//  {
-//    const int numdim = params_.get<int>("number of velocity degrees of freedom");
-//    Teuchos::RCP<LINALG::BlockSparseMatrix<VelPressSplitStrategy> > blocksysmat =
-//      Teuchos::rcp(new LINALG::BlockSparseMatrix<VelPressSplitStrategy>(velpressplitter_,velpressplitter_,108,false,true));
-//    blocksysmat->SetNumdim(numdim);
-//    sysmat_ = blocksysmat;
-//  }
+  // initialize system matrix
+  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(newdofrowmap,0,false,true));
 
 }
 
@@ -571,8 +602,8 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
   const double  ittol     =params_.get<double>("tolerance for nonlin iter");
 
   //------------------------------ turn adaptive solver tolerance on/off
-  const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
-  const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
+  const bool   isadapttol    = params_.get<bool>("ADAPTCONV");
+  const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER");
 
   //const bool fluidrobin = params_.get<bool>("fluidrobin", false);
 
@@ -660,6 +691,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
   // this is a hack to make the code compile! There should be no cutterdis in here! henke 10/08
   Teuchos::RCP<DRT::Discretization>      cutterdiscret;
   cutterdiscret = null;
+  // this line causes a segmentation fault!
   const Epetra_Map* fluidsurface_dofcolmap = cutterdiscret->DofColMap();
   const Teuchos::RCP<Epetra_Vector> iforcecolnp = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
 
@@ -697,7 +729,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       eleparams.set("timealgo",timealgo_);
       eleparams.set("dt",dta_);
       eleparams.set("theta",theta_);
-      eleparams.set("include reactive terms for linearisation",params_.get<bool>("Use reaction terms for linearisation",false));
+      eleparams.set("include reactive terms for linearisation",params_.get<bool>("Use reaction terms for linearisation"));
 
       // parameters for stabilization
       eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
@@ -723,7 +755,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       // CONVCHECK is set to L_2_norm_without_residual_at_itemax
       if ((itnum != itemax)
           ||
-          (params_.get<string>("CONVCHECK","L_2_norm")
+          (params_.get<string>("CONVCHECK")
            !=
            "L_2_norm_without_residual_at_itemax"))
       {
@@ -847,7 +879,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
           printf(")\n");
           printf("+------------+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+\n");
 
-          FILE* errfile = params_.get<FILE*>("err file",NULL);
+          FILE* errfile = params_.get<FILE*>("err file");
           if (errfile!=NULL)
           {
             fprintf(errfile,"fluid solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
@@ -883,7 +915,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
         printf("|            >>>>>> not converged in itemax steps!              |\n");
         printf("+---------------------------------------------------------------+\n");
 
-        FILE* errfile = params_.get<FILE*>("err file",NULL);
+        FILE* errfile = params_.get<FILE*>("err file");
         if (errfile!=NULL)
         {
           fprintf(errfile,"fluid unconverged solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
@@ -1664,26 +1696,14 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
  | henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
-    Teuchos::RCP<DRT::Discretization> cutterdiscret,
     int whichinitialfield,
     int startfuncno)
 {
-  /* Die member Funktion in CombustFluid ist nicht implementiert und erzeugt einen dserror!
-   * Es kann auf diese Funktion eigentlich nur direkt zugegriffen werden (ist das so? warum?)*/
+  std::cout << "SetInitialFlowField() wird ausgeführt!" << endl;
 
   // create zero displacement vector to use initial position of interface
   {
-    const Epetra_Map* fluidsurface_dofcolmap = cutterdiscret->DofColMap();
-    Teuchos::RCP<Epetra_Vector> idispcolnp  = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-    Teuchos::RCP<Epetra_Vector> ivelcolnp   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-
-    Teuchos::RCP<Epetra_Vector> idispcoln   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-    Teuchos::RCP<Epetra_Vector> ivelcoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-    Teuchos::RCP<Epetra_Vector> ivelcolnm   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-    Teuchos::RCP<Epetra_Vector> iacccoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-
     //IncorporateInterface();
-    cutterdiscret->ClearState();
   }
 
   //------------------------------------------------------- beltrami flow
@@ -1800,7 +1820,7 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
 
       // random noise is perc percent of the initial profile
 
-      double perc = params_.sublist("TURBULENCE MODEL").get<double>("CHAN_AMPL_INIT_DIST",0.1);
+      double perc = params_.sublist("TURBULENCE MODEL").get<double>("CHAN_AMPL_INIT_DIST");
 
       // out to screen
       if (myrank_==0)

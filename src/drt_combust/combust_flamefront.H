@@ -1,7 +1,7 @@
 /*!-----------------------------------------------------------------------------------------------*
  \file combust_flamefront.H
 
- \brief 
+ \brief
 
 <pre>
 Maintainer: Florian Henke
@@ -15,7 +15,7 @@ Maintainer: Florian Henke
 #define COMBUST_FLAMEFRONT_H
 
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_geometry/integrationcell.H"
+#include "combust_refinementcell.H"
 
 namespace COMBUST
 {
@@ -33,7 +33,7 @@ namespace COMBUST
 
     refinement
     - initialize the searchtree
-    - start a recursive loop to refine the region around the flame front until the maximal number 
+    - start a recursive loop to refine the region around the flame front until the maximal number
       of refinements is reached
       {
         - identify the intersection points (zeros of the level set function (G-equation) on the
@@ -55,102 +55,64 @@ namespace COMBUST
   public:
     /// constructor
     explicit FlameFront(
-             Teuchos::RCP<const DRT::Discretization>  fluiddis,     ///< fluid discretization (combust3 elements) which will be intersected
-             Teuchos::RCP<const DRT::Discretization>  gfuncdis,  ///< G-function discretization (condif3 elements) describing the level set function
-             map< int, GEO::DomainIntCells >&   domainintcells,     ///< domainintegrationcells for intersected fluid element
-             map< int, GEO::BoundaryIntCells >& flamefrontintcells  ///< interface integration cells for flame front
+             const Teuchos::RCP<const DRT::Discretization>  fluiddis, ///< fluid discretization (combust3 elements) which will be intersected
+             Teuchos::RCP<DRT::Discretization>  gfuncdis  ///< G-function discretization (condif3 elements) describing the level set function
              );
     /// destructor
     ~FlameFront();
 
-    // flame front control routine
-    void ProcessFlameFront();
+    /// remote access method to flame front patches
+    const std::map< int,const Teuchos::RCP<const COMBUST::RefinementCell> > FlameFrontPatches() const
+        { return flamefrontpatches_; }
+
+    /// flame front control routine
+    void ProcessFlameFront(
+           const Teuchos::ParameterList& combustdyn,
+           const Teuchos::RCP<Epetra_Vector> phinp);
 
   private:
 
     /// don't want default constructor
     explicit FlameFront();
-    
+
     /// don't want copy constructor
     explicit FlameFront(const FlameFront&);
 
     /// refine the region around flame front
-    void RefineFlameFront();
+    void RefineFlameFront(const Teuchos::RCP<const COMBUST::RefinementCell> cell);
 
-    /// capture flame front to provide integration cells
-    void CaptureFlameFront();
+    /// find the flame front within a refinement cell according to G-function field
+    void FindFlameFront(
+           const Teuchos::RCP<Epetra_Vector>           phi,
+           const Teuchos::RCP<COMBUST::RefinementCell> cell);
 
-    void FindFlameFront();
-    void RefineCell();
+    /// find intersection points of G-function (level set zero iso-surface) with refinement cell edges
+    void FindIntersectionPoints(const Teuchos::RCP<COMBUST::RefinementCell> cell);
+
+    /// capture flame front within one refinement cell to provide integration cells
+    void CaptureFlameFront(const Teuchos::RCP<const COMBUST::RefinementCell> cell);
 
     void TriangulateFlameFront();
+
+    // these 3 should be moved to a class accepting the 2D flame front as an input and producing 3D
+    // integration cells as an output
     void buildPLC();
     void CreateIntegrationCells();
     void TransformIntegrationCells();
 
+    /// pointer to fluid discretization
+    const Teuchos::RCP<const DRT::Discretization> fluiddis_;
 
-    //! octree for refinement of interface zone
-    //GEO::SearchTree                     refinementtree_;
+    /// pointer to level set (G-function) discretization that intersects the fluiddis_
+    const Teuchos::RCP<DRT::Discretization> gfuncdis_;
 
-    //! offset in facet marker list
-    static const int                    facetMarkerOffset_ = 11;
+    /// vector on fluid NodeColMap holding G-function values originally stored in phinp
+    const Teuchos::RCP<Epetra_Vector> phinp_;
 
-    //! discretization type of the xfem element
-    DRT::Element::DiscretizationType     xfemDistype_;
-
-    //! discretization type of the cutter element
-    DRT::Element::DiscretizationType     levelsetDistype_;
-
-    //! number of surfaces of the xfem element
-    int                                   numXFEMSurfaces_;
-
-    //! number of corner nodes of the xfem element
-    int                                   numXFEMCornerNodes_;
-
-    //! current nodal coordinates of the XFEM element
-    LINALG::SerialDenseMatrix             xyze_xfemElement_;
-      
-    //! counts missed points during the recovery
-    int                                   countMissedPoints_;
-
-    //! vector of nodes for each surface of a single element
-    vector<vector<int> >                  eleNumberingSurfaces_;
-      
-    //! vector of nodes for each line of a single element
-    vector<vector<int> >                  eleNumberingLines_;
-
-    //! vector of adjacent surfaces for each node of a single element
-    vector<vector<int> >                  eleNodesSurfaces_;
-    
-    //! vector of adjacent surfaces for each node of a single element
-    vector<vector<int> >                  eleNodesLines_;
-
-    //! vector of adjacent surfaces for each line of a single element
-    vector<vector<int> >                  eleLinesSurfaces_;
-
-    //! nodal element coordinate
-    vector<vector<double> >               eleRefCoordinates_;
-
-    //! list of interface points to be stored in the Tetgen data structure
-//    vector<InterfacePoint >               pointList_;
-
-    //! list of segments to be stored in the Tetgen data structure
-    vector<vector<int> >                  segmentList_;
-
-    //! list of single points on a xfem surface to be stored in the Tetgen data structure
-    vector<vector<int> >                  isolatedPointList_;
-
-    //! list of triangles to be stored in the Tetgen data structure
-    vector<vector<int> >                  triangleList_;
-
-    //! list of triangles lying on a xfem surface to be stored in the Tetgen data structure
-    map< int, vector<vector<int> > >      surfaceTriangleList_;
-    
-    //! list of intersecting cutter elements
-    vector<DRT::Element* >                intersectingCutterElements_;
-
-    //! list of face markers numbered in the order of the intersected surface elments
-    vector<int>                           faceMarker_;
+    /// map containing for each fluid element flame front geometry to be exported to the interfacehandle
+    // this is preliminary, just to have a "flame front" for now: it should hold the interface information
+    std::map< int,const Teuchos::RCP<const COMBUST::RefinementCell> > flamefrontpatches_;
+//    std::map< int, PLC_per_element > flamefrontpatches_;
 
   }; // class FlameFront
 } // namespace COMBUST

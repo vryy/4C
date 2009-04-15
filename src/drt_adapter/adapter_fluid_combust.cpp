@@ -39,9 +39,23 @@ ADAPTER::FluidCombust::FluidCombust(Teuchos::RCP<DRT::Discretization> dis,
     solver_(solver),
     params_(params),
     output_(output)
-    //interfacehandle_(Teuchos::null) // Null pointer auf ein InterfaceHandleCombust
 {
-  std::cout << "FluidCombust constructor done" << endl;
+  std::cout << "ADAPTER::FluidCombust constructor done \n" << endl;
+}
+
+void ADAPTER::FluidCombust::SetInitialFlowField(int whichinitialfield, int startfuncno)
+{
+  return fluid_.SetInitialFlowField(whichinitialfield, startfuncno);
+}
+
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidCombust::Veln()
+{
+  return fluid_.Veln();
+}
+
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidCombust::Velnp()
+{
+  return fluid_.Velnp();
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -88,14 +102,14 @@ void ADAPTER::FluidCombust::Update()
 
 //  const double beta = 1.0/4.0;
 //  const double gamma = 1.0/2.0;
-//  
+//
 //  iaccnp->Update(-(1.0-(2.0*beta))/(2.0*beta),*iaccn_,0.0);
 //  iaccnp->Update(-1.0/(beta*dt),*iveln_,1.0);
 //  iaccnp->Update(1.0/(beta*dt*dt),*idispnp_,-1.0/(beta*dt*dt),*idispn_,1.0);
-//  
+//
 //  ivelnp->Update(1.0,*iveln_,0.0);
 //  ivelnp->Update(gamma*dt,*iaccnp,(1-gamma)*dt,*iaccn_,1.0);
-  
+
   // update acceleration n
   iaccn_->Update(1.0,*iaccnp,0.0);
 
@@ -137,7 +151,7 @@ void ADAPTER::FluidCombust::PrintInterfaceVectorField(
     std::remove(filenamedel.str().c_str());
     std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
-    
+
     {
       stringstream gmshfilecontent;
       gmshfilecontent << "View \" " << name_in_gmsh << " \" {" << endl;
@@ -148,14 +162,14 @@ void ADAPTER::FluidCombust::PrintInterfaceVectorField(
         vector<int> lm;
         vector<int> lmowner;
         actele->LocationVector(*boundarydis_, lm, lmowner);
-        
+
         // extract local values from the global vector
         vector<double> myvelnp(lm.size());
         DRT::UTILS::ExtractMyValues(*vectorfield, myvelnp, lm);
-        
+
         vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*displacementfield, mydisp, lm);
-        
+
         const int nsd = 3;
         const int numnode = actele->NumNode();
         LINALG::SerialDenseMatrix elementvalues(nsd,numnode);
@@ -175,7 +189,7 @@ void ADAPTER::FluidCombust::PrintInterfaceVectorField(
         }
         //      cout << elementpositions << endl;
         //      exit(1);
-        
+
         gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
             actele->Shape(), elementvalues, elementpositions) << endl;
       }
@@ -268,7 +282,8 @@ int ADAPTER::FluidCombust::Itemax() const
  *------------------------------------------------------------------------------------------------*/
 void ADAPTER::FluidCombust::SetItemax(int itemax)
 {
-  fluid_.SetItemax(itemax);
+  dserror("Thou shalt not call this function!");
+  //fluid_.SetItemax(itemax);
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -322,17 +337,27 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidCombust::ExtractVelocityPart(Teu
   return (fluid_.VelPresSplitter()).ExtractOtherVector(velpres);
 }
 
-void ADAPTER::FluidCombust::ImportDiscretization(const Teuchos::RCP<DRT::Discretization> importdis)
+void ADAPTER::FluidCombust::ImportDiscretization(Teuchos::RCP<DRT::Discretization> importdis)
 {
+  /* This function is not needed, because the ImportInterface is used instead. Besides, it does not work
+   * anymore, since the InterfaceHandle receives a FlameFront and the discretizations. henke 01/09 */
+  dserror("Thou shalt not call this function!");
+
   // import level set discretization from combustion algorithm
-  gfuncdis_=importdis;
+  gfuncdis_ = importdis;
 
   // construct a combustion interface handle (couldn't we also construct a flame front here!) and
   // thus automatically process the flame front
-  interfacehandle_ = rcp(new COMBUST::InterfaceHandleCombust(fluiddis_,gfuncdis_));
+//  interfacehandle = rcp(new COMBUST::InterfaceHandleCombust(fluiddis_,gfuncdis_));
 
-  // pass geometrical information aboout flame front to the fluid time integration
-  fluid_.IncorporateInterface(interfacehandle_);
+  // pass geometrical information aboout flame front to fluid time integration scheme
+//  fluid_.IncorporateInterface(interfacehandle);
+}
+
+void ADAPTER::FluidCombust::ImportInterface(const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandle)
+{
+  // pass geometrical information aboout flame front to fluid time integration scheme
+  fluid_.IncorporateInterface(interfacehandle);
 }
 
 #endif  // #ifdef CCADISCRET

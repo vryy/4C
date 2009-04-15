@@ -24,6 +24,7 @@ Maintainer: Florian Henke
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/linalg_serialdensematrix.H"
 #include "../drt_lib/linalg_serialdensevector.H"
+#include "combust_interface.H"
 
 namespace DRT
 {
@@ -257,11 +258,6 @@ namespace DRT
         //! map that converts strings to actions (stabilization)
         static map<string,StabilisationAction>          stabstrtoact_;
         
-        //! container containing all kind of fluid3 this and that
-        DRT::Container                                  data_;
-        
-      private:
-        
         //! store information about the unknowns of this element
         //!
         //! this dofman will answer to the outside world, how many dofs this element has
@@ -274,7 +270,7 @@ namespace DRT
         bool                             output_mode_;
         
         //! store information about the intersection handle
-        Teuchos::RCP<XFEM::InterfaceHandleXFSI>                       ih_;
+        Teuchos::RCP<COMBUST::InterfaceHandleCombust>                       ih_;
         
         // internal calculation methods
         
@@ -460,11 +456,13 @@ namespace DRT
         const int                    lsurface_;
 
         //!  compute kovariant metric tensor G for fluid surface element
-        void f3_metric_tensor_for_surface(
+        void ComputeMetricTensorForSurface(
+            const int                       numnode,
             const Epetra_SerialDenseMatrix& xyze,
             const Epetra_SerialDenseMatrix& deriv,
-            Epetra_SerialDenseMatrix&       metrictensor,
-            double&                         drs);
+            LINALG::Matrix<2,2>&            metrictensor,
+            double&                         detmetric
+            ) const;
         
         //! integrate shapefunction over surface element
         virtual void IntegrateShapeFunction(

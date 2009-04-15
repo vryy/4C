@@ -53,9 +53,9 @@ public:
 
   /*!
   \brief solve stationary problem
-         Even though it does not make much sense, this member function this member function belongs
-         to the implicit time integration scheme for convenience. Of course, there is no time
-         integration for stationary problems.
+         Even though it does not make much sense, this member function belongs to the implicit time
+         integration scheme for convenience. Of course, there is no time integration for stationary
+         problems.
   */
   void SolveStationaryProblem();
 
@@ -65,7 +65,7 @@ public:
   /// prepare a nonlinear iteration
   void PrepareNonlinearSolve();
 
-  void IncorporateInterface(Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandle);
+  void IncorporateInterface(const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandle);
 
   /*!
   \brief do nonlinear iteration, e.g. full Newton, Newton like or fixpoint iteration
@@ -131,12 +131,9 @@ public:
   void Output();
 
   /*!
-  \brief set initial flow field for analytical test problems
+  \brief set initial flow field, also for analytical test problems
   */
-  void SetInitialFlowField(
-      Teuchos::RCP<DRT::Discretization> cutterdiscret,     ///< surface discretization used to intersect fluid elements
-      int whichinitialfield,
-      int startfuncno);
+  void SetInitialFlowField(int whichinitialfield, int startfuncno);
 
   /*!
   \brief calculate error between a analytical solution and the
@@ -211,19 +208,19 @@ public:
 
   //! @name access methods for composite algorithms
 
-  Teuchos::RCP<Epetra_Vector> InitialGuess()  { return incvel_; }
-  Teuchos::RCP<Epetra_Vector> Residual()      { return residual_; }
-  Teuchos::RCP<Epetra_Vector> TrueResidual()  { return trueresidual_; }
-  Teuchos::RCP<Epetra_Vector> Velnp()         { return state_.velnp_; }
-  Teuchos::RCP<Epetra_Vector> Veln()          { return state_.veln_; }
+  Teuchos::RCP<Epetra_Vector>& InitialGuess()  { return incvel_; }
+  Teuchos::RCP<Epetra_Vector>& Residual()      { return residual_; }
+  Teuchos::RCP<Epetra_Vector>& TrueResidual()  { return trueresidual_; }
+  Teuchos::RCP<Epetra_Vector>& Velnp()         { return state_.velnp_; }
+  Teuchos::RCP<Epetra_Vector>& Veln()          { return state_.veln_; }
 
   /// provide access to the Dirichlet map
   const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
 
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_); }
-  Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
-  Teuchos::RCP<Epetra_Vector> RobinRHS()      { return robinrhs_; }
+  Teuchos::RCP<DRT::Discretization>& Discretization() { return discret_; }
+  Teuchos::RCP<Epetra_Vector>& RobinRHS()      { return robinrhs_; }
 
   LINALG::MapExtractor& VelPresSplitter()         { return velpressplitter_; }
   Teuchos::RCP<const Epetra_Map> VelocityRowMap() { return velpressplitter_.OtherMap(); }
@@ -234,7 +231,6 @@ public:
   double Time() const { return time_; }
   int Step()    const { return step_; }
   int Itemax()  const { return params_.get<int>("max nonlin iter steps"); }
-  void SetItemax(int itemax) { params_.set<int>("max nonlin iter steps", itemax); }
 
   /*!
   \brief return type of time integration scheme
@@ -294,11 +290,20 @@ protected:
   CombustFluidImplicitTimeInt (const CombustFluidImplicitTimeInt& old);
   CombustFluidImplicitTimeInt();
 
+  /*!
+  \brief give DOF information to elements
+  */
+  void TransferDofInformationToElements(
+      const Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandle,
+      const Teuchos::RCP<XFEM::DofManager> dofmanager
+      );
+
   //! @name general algorithm parameters
   //! fluid discretization
   Teuchos::RCP<DRT::Discretization>      discret_;
   LINALG::Solver&                        solver_;
-  ParameterList&                         params_;
+  const ParameterList&                   params_;
+  const ParameterList&                   xparams_;
   IO::DiscretizationWriter&              output_;
 
   //! the processor ID from the communicator
@@ -309,17 +314,26 @@ protected:
   //@}
 
   //! @name time stepping variables
-  double  time_;    ///< physical time
   int     step_;    ///< timestep
+  double  time_;    ///< physical time
   const int     stepmax_; ///< maximal number of timesteps
   const double  maxtime_; ///< maximal physical computation time
+  //@}
+
+  //! @name time step sizes
+  double dta_;
+  double dtp_;
   //@}
 
   /// time algorithm flag
   FLUID_TIMEINTTYPE timealgo_;
 
-  /// density extracted from element material
-  double density_;
+  //! @name time-integration-scheme factors
+  double theta_;
+//  double alphaM_;
+//  double alphaF_;
+//  double gamma_;
+  //@}
 
   /// whether we do some extrapolation at the beginning of each time step
   bool extrapolationpredictor_;
@@ -330,17 +344,8 @@ protected:
   const int writestresses_;
   //@}
 
-  //! @name time step sizes
-  double dta_;
-  double dtp_;
-  //@}
-
-  //! @name time-integration-scheme factors
-  double theta_;
-  double alphaM_;
-  double alphaF_;
-  double gamma_;
-  //@}
+  /// density extracted from element material
+  double density_;
 
   //! store dof distribution information for output
   Teuchos::RCP<XFEM::DofManager>      dofmanagerForOutput_;
@@ -409,8 +414,8 @@ protected:
   //! Extractor used for output
   LINALG::MapExtractor      velpressplitterForOutput_;
 
-  //! pointer to the geometrical information about the flame front
-  Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandle_;
+  //! physical fields to be enriched (XFEM fields)
+  std::set<XFEM::PHYSICS::Field> xfemfields_;
 
 }; // class CombustFluidImplicitTimeInt
 

@@ -27,9 +27,9 @@ namespace ADAPTER
   /// adapter to normal fluid algorithm
   /*!
     <h3> title? </h3>
-    
+
     Documentation of class FluidCombust is still missing!
-    
+
     \author henke
     \date 08/08
   */
@@ -43,13 +43,13 @@ namespace ADAPTER
              Teuchos::RCP<ParameterList> params,
              Teuchos::RCP<IO::DiscretizationWriter> output);
 
-    /*--------------------------------------------------------------------------------------------* 
+    /*--------------------------------------------------------------------------------------------*
      * group of member functions which are not implemented or used
      *
      * The idea is to keep all member functions which are not used in a combustion problem, but
      * inherited from class "Fluid", in the header file. Thus adapter_fluid_combust.cpp only
-     * contains functions which can be called 
-     * 
+     * contains functions which can be called
+     *
      * These are the unused member functions.                                            henke 08/08
      *--------------------------------------------------------------------------------------------*/
 
@@ -59,12 +59,10 @@ namespace ADAPTER
                                                                return fluid_.Residual(); };
     virtual Teuchos::RCP<const Epetra_Vector> TrueResidual() { dserror("not implemented");
                                                                return null; };
-    virtual Teuchos::RCP<const Epetra_Vector> Velnp()        { dserror("not implemented");
-                                                               return fluid_.Velnp(); };
+    virtual Teuchos::RCP<const Epetra_Vector> Veln();
+    virtual Teuchos::RCP<const Epetra_Vector> Velnp();
     virtual Teuchos::RCP<const Epetra_Vector> Velaf()        { dserror("not implemented");
                                                                return null; };
-    virtual Teuchos::RCP<const Epetra_Vector> Veln()         { dserror("not implemented");
-                                                               return fluid_.Veln(); };
     virtual Teuchos::RCP<const Epetra_Vector> SubgrVisc()    { dserror("not implemented");
                                                                return null; };
     virtual Teuchos::RCP<const Epetra_Vector> Dispnp()       { dserror("not implemented");
@@ -134,17 +132,13 @@ namespace ADAPTER
     virtual void StatisticsAndOutput(){ dserror("not implemented!");
                                         return; };
 
-    /// set initial flow field
-    virtual void SetInitialFlowField(int whichinitialfield,int startfuncno){ dserror("not implemented!");
-                                                                             return; };
-
     ///  set time-step-related fields for low-Mach-number flow
     virtual void SetTimeLomaFields(RCP<const Epetra_Vector> densnp,
                                    RCP<const Epetra_Vector> densn,
                                    RCP<const Epetra_Vector> densnm,
                                    RCP<const Epetra_Vector> scatraresidual,
                                    const double eosfac){ dserror("not implemented!");
-                                                                     return; };
+                                                         return; };
 
     /// set outer-iteration-related fields for low-Mach-number flow
     virtual void SetIterLomaFields(RCP<const Epetra_Vector> densnp,
@@ -152,11 +146,14 @@ namespace ADAPTER
                                    const double eosfac){ dserror("not implemented!");
                                                                      return; };
 
-    /*--------------------------------------------------------------------------------------------* 
+    /*--------------------------------------------------------------------------------------------*
      * group member functions which are implemented and used
-     * 
+     *
      * These are the used member functions                                               henke 08/08
      *------------------------------------------------------------------------------------------- */
+
+    /// set initial flow field
+    virtual void SetInitialFlowField(int whichinitialfield, int startfuncno);
 
     virtual Teuchos::RCP<DRT::Discretization> Discretization() { return fluiddis_; }
     virtual void PrepareTimeStep();
@@ -169,7 +166,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
 
     /// the interface map contains all velocity dofs at the interface
-    virtual Teuchos::RCP<const Epetra_Map> InnerVelocityRowMap() { return null; } // only used for FSI
+    virtual Teuchos::RCP<const Epetra_Map> InnerVelocityRowMap() { return Teuchos::null; } // only used for FSI
     virtual Teuchos::RCP<const Epetra_Map> VelocityRowMap();
     virtual Teuchos::RCP<const Epetra_Map> PressureRowMap();
 
@@ -200,7 +197,10 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres);
 
     /// combustion fluid imports level set discretization (that is, a ScaTra Discretization!)
-    virtual void ImportDiscretization(const Teuchos::RCP<DRT::Discretization> importdis);
+    virtual void ImportDiscretization(Teuchos::RCP<DRT::Discretization> importdis);
+
+    /// combustion fluid imports geometrical interface information from combustion algorithm
+    virtual void ImportInterface(const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandle);
 
     virtual Teuchos::RCP<DRT::ResultTest>  CreateFieldTest();
 
@@ -241,12 +241,6 @@ namespace ADAPTER
     /// pointer to the level set discretization
     // this is the link to the interface information contained in the level set discretization
     Teuchos::RCP<DRT::Discretization> gfuncdis_;
-
-    /// pointer to the interface handle provides level set interface information for fluid field
-    /* open question:
-     * is the interfacehandle really needed here? I could also have a flame front directly here!
-     */
-    Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandle_;
 
   };
 

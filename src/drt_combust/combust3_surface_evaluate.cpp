@@ -227,12 +227,30 @@ int DRT::ELEMENTS::Combust3Surface::EvaluateNeumann(
  they are needed for the integration over the surface element
 
 */
-void  DRT::ELEMENTS::Combust3Surface::f3_metric_tensor_for_surface(
-  const Epetra_SerialDenseMatrix& xyze,
-  const Epetra_SerialDenseMatrix& deriv,
-  Epetra_SerialDenseMatrix&       metrictensor,
-  double&                         sqrtdetg)
+void  DRT::ELEMENTS::Combust3Surface::ComputeMetricTensorForSurface(
+    const int                       numnode,
+    const Epetra_SerialDenseMatrix& xyze,
+    const Epetra_SerialDenseMatrix& deriv,
+    LINALG::Matrix<2,2>&            metrictensor,
+    double&                         detmetric
+    ) const
 {
+  // get jacobian matrix d x / d \xi  (3x2)
+  LINALG::Matrix<3,2> dxyzdrs;
+  // dxyzdrs(i,j) = xyze_boundary(i,k)*deriv_boundary(j,k);
+  xyze.GEMM('N','T',3,2,numnode,1.0,xyze.A(),xyze.LDA(),deriv.A(),deriv.LDA(),0.0,dxyzdrs.A(),dxyzdrs.M());
+  
+  // compute covariant metric tensor G for surface element (2x2)
+  // metric = dxyzdrs(k,i)*dxyzdrs(k,j);
+  metrictensor.MultiplyTN(dxyzdrs,dxyzdrs);
+  
+  detmetric = sqrt(metrictensor.Determinant());
+
+  return;
+  
+  // this is old documentation
+  // nomenclature has changed, but tis might still ne helpfull to understand   henke
+  
   /*
   |                                              0 1 2
   |                                             +-+-+-+
@@ -259,9 +277,6 @@ void  DRT::ELEMENTS::Combust3Surface::f3_metric_tensor_for_surface(
   |                                     +-            -+
   |
   */
-  Epetra_SerialDenseMatrix dxyzdrs (2,3);
-
-  dxyzdrs.Multiply('N','T',1.0,deriv,xyze,0.0);
 
   /*
   |
@@ -277,7 +292,6 @@ void  DRT::ELEMENTS::Combust3Surface::f3_metric_tensor_for_surface(
   |
   | the calculation of g21 is redundant since g21=g12
   */
-  metrictensor.Multiply('N','T',1.0,dxyzdrs,dxyzdrs,0.0);
 
 /*
                           +--------------+
@@ -285,12 +299,6 @@ void  DRT::ELEMENTS::Combust3Surface::f3_metric_tensor_for_surface(
            sqrtdetg =   /  g11*g22-g12^2
                       \/
 */
-
-  sqrtdetg   = sqrt(metrictensor(0,0)*metrictensor(1,1)
-                    -
-                    metrictensor(0,1)*metrictensor(1,0));
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -347,7 +355,7 @@ void DRT::ELEMENTS::Combust3Surface::IntegrateShapeFunction(
   Epetra_SerialDenseMatrix      xyze        (3,iel);
 
   // the metric tensor and the area of an infintesimal surface element
-  Epetra_SerialDenseMatrix      metrictensor(2,2);
+  LINALG::Matrix<2,2>           metrictensor;
   double                        drs;
 
   // get node coordinates
@@ -385,7 +393,7 @@ void DRT::ELEMENTS::Combust3Surface::IntegrateShapeFunction(
     // compute measure tensor for surface element and the infinitesimal
     // area element drs for the integration
 
-    f3_metric_tensor_for_surface(xyze,deriv,metrictensor,drs);
+    ComputeMetricTensorForSurface(iel,xyze,deriv,metrictensor,drs);
 
     // values are multiplied by the product from inf. area element,
     // the gauss weight and the constant
@@ -456,7 +464,7 @@ void DRT::ELEMENTS::Combust3Surface::IntegrateSurfaceFlow(
   Epetra_SerialDenseMatrix      evelnp      (3,iel);
 
   // the metric tensor and the area of an infintesimal surface element
-  Epetra_SerialDenseMatrix      metrictensor(2,2);
+  LINALG::Matrix<2,2>           metrictensor;
   double                        drs;
 
   // get node coordinates
@@ -492,7 +500,7 @@ void DRT::ELEMENTS::Combust3Surface::IntegrateSurfaceFlow(
 
     // compute measure tensor for surface element and the infinitesimal
     // area element drs for the integration
-    f3_metric_tensor_for_surface(xyze,deriv,metrictensor,drs);
+    ComputeMetricTensorForSurface(iel,xyze,deriv,metrictensor,drs);
     
     // values are multiplied by the product from inf. area element and gauss weight
     const double fac = drs * intpoints.qwgt[gpid];

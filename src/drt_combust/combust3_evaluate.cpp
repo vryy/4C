@@ -26,7 +26,6 @@ Maintainer: Florian Henke
 #include "../drt_xfem/enrichment_utils.H"
 
 
-
 // converts a string into an Action for this element
 DRT::ELEMENTS::Combust3::ActionType DRT::ELEMENTS::Combust3::convertStringToActionType(
               const string& action) const
@@ -323,7 +322,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       TEUCHOS_FUNC_TIME_MONITOR("COMBUST3 - evaluate - store_xfem_info");
 
       // store pointer to interface handle
-      ih_ = params.get< Teuchos::RCP< XFEM::InterfaceHandleXFSI > >("interfacehandle",null);
+      ih_ = params.get< Teuchos::RCP< COMBUST::InterfaceHandleCombust > >("interfacehandle",null);
 
       // get access to global dofman
       const Teuchos::RCP<XFEM::DofManager> globaldofman = params.get< Teuchos::RCP< XFEM::DofManager > >("dofmanager");

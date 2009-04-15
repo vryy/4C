@@ -32,7 +32,7 @@ namespace COMBUST
   void callSysmat4(
           const XFEM::AssemblyType          assembly_type,
           const DRT::ELEMENTS::Combust3*     ele,
-          const Teuchos::RCP<XFEM::InterfaceHandleXFSI>  ih,
+          const Teuchos::RCP<COMBUST::InterfaceHandleCombust>  ih,
           const XFEM::ElementDofManager&    eleDofManager,
           const DRT::ELEMENTS::Combust3::MyState&  mystate,   ///< element state variables
           const Teuchos::RCP<const Epetra_Vector> ivelcol,

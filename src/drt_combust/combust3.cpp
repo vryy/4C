@@ -29,8 +29,8 @@ map<string,DRT::ELEMENTS::Combust3::StabilisationAction> DRT::ELEMENTS::Combust3
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Combust3::Combust3(int id, int owner) :
 DRT::Element(id,element_combust3,owner),
-data_(),
-eleDofManager_(Teuchos::null)
+eleDofManager_(Teuchos::null),
+output_mode_(false)
 {
     return;
 }
@@ -41,12 +41,12 @@ eleDofManager_(Teuchos::null)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Combust3::Combust3(const DRT::ELEMENTS::Combust3& old) :
 DRT::Element(old),
-data_(old.data_),
-eleDofManager_(old.eleDofManager_)
+eleDofManager_(old.eleDofManager_),
+output_mode_(old.output_mode_)
 {
     return;
 }
-//
+
 /*----------------------------------------------------------------------*
  |  Deep copy this instance of Combust3 and return pointer to it (public)|
  |                                                          gammi 02/08 |
@@ -56,7 +56,7 @@ DRT::Element* DRT::ELEMENTS::Combust3::Clone() const
   DRT::ELEMENTS::Combust3* newelement = new DRT::ELEMENTS::Combust3(*this);
   return newelement;
 }
-//
+
 /*----------------------------------------------------------------------*
  |                                                             (public) |
  |                                                          u.kue 03/07 |
@@ -95,10 +95,7 @@ void DRT::ELEMENTS::Combust3::Pack(std::vector<char>& data) const
   Element::Pack(basedata);
   AddtoPack(data,basedata);
 
-  // data_
-  vector<char> tmp(0);
-  data_.Pack(tmp);
-  AddtoPack(data,tmp);
+  AddtoPack(data,output_mode_);
 
   return;
 }
@@ -120,9 +117,7 @@ void DRT::ELEMENTS::Combust3::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
 
-  vector<char> tmp(0);
-  ExtractfromPack(position,data,tmp);
-  data_.Unpack(tmp);
+  ExtractfromPack(position,data,output_mode_);
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -148,8 +143,7 @@ void DRT::ELEMENTS::Combust3::Print(ostream& os) const
   if (output_mode_)
     os << "(outputmode=true)";
   Element::Print(os);
-  std::cout << endl;
-  std::cout << data_;
+  cout << endl;
   return;
 }
 
@@ -168,9 +162,9 @@ RCP<DRT::ElementRegister> DRT::ELEMENTS::Combust3::ElementRegister() const
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::Combust3::Lines()
 {
-  // do NOT store line or surface elements inside the parent element 
+  // do NOT store line or surface elements inside the parent element
   // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization, 
+  // Reason: if a Redistribute() is performed on the discretization,
   // stored node ids and node pointers owned by these boundary elements might
   // have become illegal and you will get a nice segmentation fault ;-)
 
@@ -184,9 +178,9 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Combust3::Lines()
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::Combust3::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element 
+  // do NOT store line or surface elements inside the parent element
   // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization, 
+  // Reason: if a Redistribute() is performed on the discretization,
   // stored node ids and node pointers owned by these boundary elements might
   // have become illegal and you will get a nice segmentation fault ;-)
 

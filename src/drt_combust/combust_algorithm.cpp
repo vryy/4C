@@ -21,56 +21,65 @@ Maintainer: Florian Henke
 #include "combust_fluidimplicitintegration.H"
 
 /*------------------------------------------------------------------------------------------------*
- | constructor                                                                        henke 06/08 | 
+ | constructor                                                                        henke 06/08 |
  *------------------------------------------------------------------------------------------------*/
   /* Der constructor sollte den gesamten Algorithmus initialisieren.
    * Hier müssen alle Variablen, die den Einzelfeldern übergeordnet sind, initialisiert werden.
-   * 
+   *
    * das heisst:
    * o G-Funktionsvektor (t und ig+1) auf initial value setzen
    * o Geschwindigkeitsvektor (t und iu+1) auf initial value setzen
    * o alle Zähler auf 0 setzen (step_(0), f_giter_(0), g_iter_(0), f_iter_(0))
    * o alle Normen und Grenzwerte auf 0 setzen
-   * 
-   * Zusammenfassend kann an sagen, dass alles was in der Verbrennungsrechnung vor der Zeitschleife 
+   *
+   * Zusammenfassend kann an sagen, dass alles was in der Verbrennungsrechnung vor der Zeitschleife
    * passieren soll, hier passieren muss, weil die combust dyn gleich die Zeitschleife ruft.
   */
-COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, Teuchos::ParameterList& combustdyn)
+COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& combustdyn)
 : ScaTraFluidCouplingAlgorithm(comm, combustdyn),
 // initialize member variables
   fgiter_(0),
   fgitermax_(combustdyn.get<int>("ITEMAX")),
 //  fgvelnormL2_(?),
 //  fggfuncnormL2_(?),
-/* hier müssen noch mehr Parameter eingelesen werden, nämlich genau die, die für die FGI-Schleife 
-   nötig sind. Die für die Schleifen über die Einzelfelder existieren inden Zeitintegrationsschemata. */
-  reinitializationaction_(combustdyn.get<INPAR::COMBUST::ReInitialActionGfunc>("REINITGFUNCTION")),
-  combustdyn_(combustdyn)
+/* hier müssen noch mehr Parameter eingelesen werden, nämlich genau die, die für die FGI-Schleife
+   nötig sind. Die für die Schleifen über die Einzelfelder existieren in den Zeitintegrationsschemata. */
+//  reinitializationaction_(combustdyn.sublist("COMBUSTION GFUNCTION").get<INPAR::COMBUST::ReInitialActionGfunc>("REINITIALIZATION")),
+  reinitializationaction_(Teuchos::getIntegralValue<INPAR::COMBUST::ReInitialActionGfunc>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REINITIALIZATION")),
+  combustdyn_(combustdyn),
+  interfacehandle_(Teuchos::null),
+  flamefront_(Teuchos::null)
   {
+
+  // transfer the initial convective velocity from initial fluid field to scalar transport field
+  ScaTraField().SetVelocityField(ConvectiveVelocity());
+//  std::cout << "initial convection velocity: " << *(ScaTraField().Convel()) << endl;
+
+  // get pointers to the discretizations from the time integration scheme of each field
+  /* remark: fluiddis cannot be of type "const Teuchos::RCP<const DRT::Dis...>", because parent
+   * class. InterfaceHandle only accepts "const Teuchos::RCP<DRT::Dis...>"            henke 01/09.*/
+  const Teuchos::RCP<DRT::Discretization> fluiddis = FluidField().Discretization();
+  const Teuchos::RCP<DRT::Discretization> gfuncdis = ScaTraField().Discretization();
 
   /*----------------------------------------------------------------------------------------------*
    * initialize all data structures needed for the combustion algorithm
-   * 
-   * - initialize G-function by scalar function field
+   *
    * - capture the flame front and create interface geometry (triangulation)
    * - determine initial enrichment (DofManager wird bereits mit dem Element d.h. Diskretisierung angelegt)
    * - ...
    *----------------------------------------------------------------------------------------------*/
+  // construct initial flame front
+  flamefront_ = rcp(new COMBUST::FlameFront(fluiddis,gfuncdis));
+  flamefront_->ProcessFlameFront(combustdyn_,ScaTraField().Phinp());
 
-  // get pointers to the discretizations from the time integration scheme of each field
-//  Teuchos::RCP<DRT::Discretization> fluiddis = FluidField().Discretization();
-//  Teuchos::RCP<DRT::Discretization> gfuncdis = ScaTraField().Discretization();
+  // construct interfacehandle using initial flame front
+  interfacehandle_ = rcp(new COMBUST::InterfaceHandleCombust(fluiddis,gfuncdis,flamefront_));
 
-  // initialize flame front
-
-  /* hier brauchen wir entweder ein "new" für ein FlameFront-Objekt, oder aber der Algorithmus muss
-   * ein privates FlameFront-Objekt haben. Dieses kann aber erst initialisiert werden, nachdem die
-   * G-function initialisiert ist. Dies ist hier aber schon geschehen, weil das autom. beim Bau des 
-   * ScaTraTimIntImpl-Objektes passiert.*/
+  std::cout << "Combustion Algorithm constructor done \n" << endl;
 }
 
 /*------------------------------------------------------------------------------------------------*
- | destructor                                                                         henke 06/08 | 
+ | destructor                                                                         henke 06/08 |
  *------------------------------------------------------------------------------------------------*/
 COMBUST::Algorithm::~Algorithm()
 {
@@ -82,13 +91,10 @@ COMBUST::Algorithm::~Algorithm()
 void COMBUST::Algorithm::TimeLoop()
 {
 
-/*
   if (Comm().MyPID()==0)
   {
-    cout<<"\n Combustion Algorithmus Timeloop \n";
-    cout<<"\n time step in timeloop: "<< Step() << &endl;
+    std::cout << "Combustion Algorithm Timeloop starting \n" << endl;
   }
-*/
 
   // time loop
   while (NotFinished())
@@ -96,9 +102,9 @@ void COMBUST::Algorithm::TimeLoop()
     // prepare next time step
     PrepareTimeStep();
 
-    // reinitialize G-function 
+    // reinitialize G-function
     ReinitializeGfunc(reinitializationaction_);
-    
+
     // Fluid-G-function-Interaction loop
     while (NotConvergedFGI())
     {
@@ -113,9 +119,9 @@ void COMBUST::Algorithm::TimeLoop()
 
       // update field vectors
       UpdateFGIteration();
-      
+
     } // Fluid-G-function-Interaction loop
-    
+
     // update all field solvers
     UpdateTimeStep();
 
@@ -136,14 +142,15 @@ void COMBUST::Algorithm::SolveStationaryProblem()
 }
 
 /*------------------------------------------------------------------------------------------------*
- |  protected: reinitialize G-function                                                henke 06/08 |
+ | protected: reinitialize G-function                                                 henke 06/08 |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::Algorithm::ReinitializeGfunc(INPAR::COMBUST::ReInitialActionGfunc action)
 {
   /* Here, the G-function is reinitialized, because we suspect that the signed distance property has
-   * been lost due to numerical inaccuracies. There are various options to reinitialize the 
-   * G-function. For the time being we use an exact, but expensive, procedure to ensure this 
+   * been lost due to numerical inaccuracies. There are various options to reinitialize the
+   * G-function. For the time being we use an exact, but expensive, procedure to ensure this
    * property which computes the distance for every point. (SignedDistFunc)           henke 06/08 */
+  std::cout << "This is the ReinitializeGfunc() function \n" << endl;
   switch (action)
   {
     case INPAR::COMBUST::reinitialize_by_function:
@@ -160,7 +167,7 @@ void COMBUST::Algorithm::ReinitializeGfunc(INPAR::COMBUST::ReInitialActionGfunc 
 }
 
 /*------------------------------------------------------------------------------------------------*
- |  protected: build signed distance function                                         henke 06/08 |
+ | protected: build signed distance function                                          henke 06/08 |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::Algorithm::SignedDistFunc()
 {
@@ -182,23 +189,36 @@ void COMBUST::Algorithm::SignedDistFunc()
     vector<int> nodedofset = gfuncdis->Dof(lnode); // this should not be a vector, but a scalar
 
     int numdofs = nodedofset.size(); // this should be 1 (scalar field!)
-    if (numdofs != 0)
+    if (numdofs != 1)
       dserror("There are more than 1 dof for a node in a scalar field!");
+
     for (int k=0;k< numdofs;++k) // Ich lasse die Schleife erstmal drin -> mehr als eine level set Function möglich
     {
       const int dofgid = nodedofset[k];
       int doflid = dofrowmap->LID(dofgid);
-      // compute evaluate component k of spatial function; there should be only 1 component (scalar field!)
-//      double distance = computeDistance(k,lnode->X(),gfuncdis); // Alex fragen, ob es schon so eine Funktion gibt
-//      phin_->ReplaceMyValues(1,&distance,&doflid);
-//      phinp_->ReplaceMyValues(1,&distance,&doflid);
+      // compute value of signed distance function for this doflid
+      // evaluate component k of spatial function
+      // remark: if there is only 1 level set function, there should be only 1 component (scalar field!)
+//      double distance = GEO::computeDistance(lnode->X(),flamefront_,k);
+      double distance = 2.3; // hack to compile the code: Complete nonsense!
+/*
+ *  klären ob es eine solche Funktion schon gibt und ob sie im GEO namespace sein soll
+ *
+ *  Der Input für "computeDistance" sind:
+ *  - Koordinaten für einen Knoten
+ *  - Beschreibung aller Flächen, aus denen sich das Interface zusammensetzt
+ *  - "k" wird wahrscheinlich sehr lange nicht gebraucht werden.
+ */
+        // assign new values of signed distance function to the G-function field
+        ScaTraField().Phin()->ReplaceMyValues(1,&distance,&doflid);
+//        ScaTraField().Phin()->ReplaceMyValues(1,&distance,&doflid);
     }
   }
   return;
 }
 
 /*------------------------------------------------------------------------------------------------*
- |  protected: FGI iteration converged?                                               henke 06/08 |
+ | protected: FGI iteration converged?                                                henke 06/08 |
  *------------------------------------------------------------------------------------------------*/
 bool COMBUST::Algorithm::NotConvergedFGI()
 {
@@ -217,7 +237,7 @@ void COMBUST::Algorithm::PrepareTimeStep()
   fgvelnormL2_ = 1.0;
   // fgnormfluid = large value
   fggfuncnormL2_ = 1.0;
-    
+
   if (Comm().MyPID()==0)
   {
     //cout<<"---------------------------------------  time step  ------------------------------------------\n";
@@ -233,12 +253,12 @@ void COMBUST::Algorithm::PrepareTimeStep()
 
   // prepare time step (+ initialize one-step-theta scheme correctly with velocity given above)
   ScaTraField().PrepareTimeStep();
-  
+
   // synchronicity check between combust algorithm and base algorithms
   if (FluidField().Time() != Time())
-    dserror("Time in Fluid differs from time in combustion algorithm");
+    dserror("Time in Fluid time integration differs from time in combustion algorithm");
   if (ScaTraField().Time() != Time())
-    dserror("Time in ScaTra differs from time in combustion algorithm");
+    dserror("Time in ScaTra time integration  differs from time in combustion algorithm");
 
   return;
 }
@@ -257,7 +277,7 @@ void COMBUST::Algorithm::PrepareFGIteration()
 }
 
 /*------------------------------------------------------------------------------------------------*
- * protected: perform a fluid time integration step                                   henke 06/08 |
+ | protected: perform a fluid time integration step                                   henke 06/08 |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::Algorithm::DoFluidField()
 {
@@ -265,15 +285,9 @@ void COMBUST::Algorithm::DoFluidField()
   {
     cout<<"\n---------------------------------------  FLUID SOLVER  ---------------------------------------\n";
   }
-  
 
-  // export interface (flame front) information to the fluid time integration
-  FluidField().ImportDiscretization(ScaTraField().Discretization());
-
-  /*
-   * Hier findet jetzt im Fluid die Lage der Flammenfront bestimmt und alle nötigen Vorbereitungen
-   * getroffen, damit das Fluid anschließend mit XFEM gelöst werden kann.              henke 11/08
-   */
+  // export interface information to the fluid time integration
+  FluidField().ImportInterface(interfacehandle_);
 
   // solve nonlinear Navier-Stokes equations
   FluidField().NonlinearSolve();
@@ -306,6 +320,7 @@ void COMBUST::Algorithm::DoGfuncField()
   ScaTraField().NonlinearSolve();
   // solve linear convection-diffusion equation
 //  ScaTraField().Solve();
+
   return;
 }
 
@@ -314,8 +329,14 @@ void COMBUST::Algorithm::DoGfuncField()
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::Algorithm::UpdateFGIteration()
 {
-	// update the Fluid and the FGI vector at the end of the FGI loop
-	return;
+  // update flame front according to evolved G-function field
+  flamefront_->ProcessFlameFront(combustdyn_,ScaTraField().Phinp());
+
+  // update interfacehandle according to updated flame front
+  interfacehandle_->UpdateInterfaceHandle();
+
+  // update the Fluid and the FGI vector at the end of the FGI loop
+  return;
 }
 
 /*------------------------------------------------------------------------------------------------*

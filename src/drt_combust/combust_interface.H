@@ -36,13 +36,21 @@ namespace COMBUST
     /// constructor
     explicit InterfaceHandleCombust(
              const Teuchos::RCP<DRT::Discretization> fluiddis,  ///< discretization (combust3 elements) which will be intersected
-             const Teuchos::RCP<DRT::Discretization> gfuncdis   ///< discretization (condif3 elements) with level set function (G-function)
+             const Teuchos::RCP<const DRT::Discretization> gfuncdis,  ///< discretization (condif3 elements) with level set function (G-function)
+             const Teuchos::RCP<const COMBUST::FlameFront> flamefront  ///< geometrical interface (flame front) information
              );
+
     /// destructor
     ~InterfaceHandleCombust();
 
-    //! return pointer to the intersecting discretization
-    Teuchos::RCP<const DRT::Discretization> gfuncdis() { return gfuncdis_; }
+    //! return pointer to the intersecting discretization (does anyone need this?)
+    const Teuchos::RCP<const DRT::Discretization>& gfuncdis() const { return gfuncdis_; }
+
+    //! return pointer to flame front (does anyone need this?)
+    const Teuchos::RCP<const COMBUST::FlameFront>& FlameFront() const { return flamefront_; }
+
+    //! update interfacehandle according to current flame front
+    void UpdateInterfaceHandle();
 
     //! implement this function if needed for combustion!
     void toGmsh(const int step) const;
@@ -61,21 +69,19 @@ namespace COMBUST
     int PositionWithinConditionN(const LINALG::Matrix<3,1>&     x_in,
                                  GEO::NearestObject&  nearestobject) const;
 
-    Teuchos::RCP<COMBUST::FlameFront> FlameFront() { return flamefront_; }
-
   private:
 
     /// don't want default constructor, therefore declared private!
     explicit InterfaceHandleCombust();
-    
+
     /// don't want copy constructor, therefore declared private!
     explicit InterfaceHandleCombust(const InterfaceHandleCombust&);
 
     /// pointer to level set (G-function) discretization that intersects the fluiddis_
-    Teuchos::RCP<const DRT::Discretization> gfuncdis_;
+    const Teuchos::RCP<const DRT::Discretization> gfuncdis_;
 
     /// pointer to the flame front
-    Teuchos::RCP<COMBUST::FlameFront> flamefront_;
+    const Teuchos::RCP<const COMBUST::FlameFront> flamefront_;
 
   }; // class InterfaceHandleCombust
 } // namespace COMBUST

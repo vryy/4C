@@ -3,38 +3,38 @@
 
 \brief control routine for dynamic combustion analysis
 
-	The approach to simulation of premixed combustion followed by 
-	the Emmy-Noether-Group at LNM consists of solving a coupled 
-	two-field problem. One field is the fluid and the second field 
-	is the level-set function indicating the location of the flame 
-	interface. The level-set function is a scalar transport equation 
+	The approach to simulation of premixed combustion followed by
+	the Emmy-Noether-Group at LNM consists of solving a coupled
+	two-field problem. One field is the fluid and the second field
+	is the level-set function indicating the location of the flame
+	interface. The level-set function is a scalar transport equation
 	of convection (and diffusion)-type. The scalar is called "G" and
 	therefore the level-set function is often called the "G-function".
-	
+
 	Implementing the interaction between both fields with the FEM,
-	results in solving both (non-linear) systems of equations separately 
-	and coupling them via exchanging information at the flame interface. 
-	Two discretizations are created in BACI, one of type "fluid" and 
+	results in solving both (non-linear) systems of equations separately
+	and coupling them via exchanging information at the flame interface.
+	Two discretizations are created in BACI, one of type "fluid" and
 	another one of type "condif".
-	
-	"combust_dyn" is the upper most control routine for the dynamic 
+
+	"combust_dyn" is the upper most control routine for the dynamic
 	combustion analysis in the DRT::COMBUST module.
 	It controls the following tasks:
-	
+
 	o create the G-function discretization from the fluid discretization
 	o call a combustion algorithm to solve the multi-field problem
 	o check the results
 
 	remark: in this function, the notation is changed from 	"condif"-
-	style to "gfunc"-style . That is, even though we are still dealing 
+	style to "gfunc"-style . That is, even though we are still dealing
 	with a convection-diffusion field using condif elements and so on,
-	for convenience the "condif" discretization is from now on named 
-	after the G-funciton: 
-	
+	for convenience the "condif" discretization is from now on named
+	after the G-funciton:
+
 	disnumcdf -> disnumgff
 	condifdis -> gfuncdis
 	...
-	
+
 
 \author henke
 \date 06/08
@@ -92,13 +92,13 @@ void combust_dyn()
   // get discretization ids
   int disnumff = genprob.numff; // discretization number fluid; typically 0
   int disnumgff = genprob.numscatra; // discretization number G-function; typically 1
-  /* remark: precisely here the ScaTra discretization (genprob.numscatra) is named according to its 
+  /* remark: precisely here the ScaTra discretization (genprob.numscatra) is named according to its
    * physical meaning in the combustion context, (namely the G-function (disnumgff)).
    * -> Here ScaTra becomes Combustion! */
-  
+
   // access fluid discretization
   RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(disnumff,0);
-  if (!fluiddis->Filled()) fluiddis->FillComplete();
+  if (!fluiddis->Filled()) fluiddis->FillComplete(false,false,false);
   if (fluiddis->NumGlobalNodes()==0)
     dserror("No fluid discretization found!");
 
@@ -106,13 +106,18 @@ void combust_dyn()
   RCP<DRT::Discretization> gfuncdis = DRT::Problem::Instance()->Dis(disnumgff,0);
   if (!gfuncdis->Filled()) gfuncdis->FillComplete();
 
-  // create G-function discretization (fill with condif elements)
+  // create G-function discretization (fill with scatra elements)
   if (gfuncdis->NumGlobalNodes()==0)
   {
     Epetra_Time time(comm);
     std::map<string,string> conditions_to_copy;
     conditions_to_copy.insert(pair<string,string>("TransportDirichlet","Dirichlet"));
-    //conditions_to_copy.insert("FluidStressCalc","FluxCalculation"); // a hack
+    conditions_to_copy.insert(pair<string,string>("TransportPointNeumann","PointNeumann"));
+    conditions_to_copy.insert(pair<string,string>("TransportLineNeumann","LineNeumann"));
+    conditions_to_copy.insert(pair<string,string>("TransportSurfaceNeumann","SurfaceNeumann"));
+    conditions_to_copy.insert(pair<string,string>("TransportVolumeNeumann","VolumeNeumann"));
+    conditions_to_copy.insert(pair<string,string>("SurfacePeriodic","SurfacePeriodic"));
+    conditions_to_copy.insert(pair<string,string>("FluidStressCalc","FluxCalculation")); // a hack
 
     // access the scalar transport parameter list
     const Teuchos::ParameterList& scatracontrol = DRT::Problem::Instance()->ScalarTransportDynamicParams();
@@ -131,13 +136,13 @@ void combust_dyn()
    * create a combustion algorithm
    *----------------------------------------------------------------------------------------------*/
   // get the combustion parameter list
-  Teuchos::ParameterList combustdyn = DRT::Problem::Instance()->CombustionDynamicParams();
+  const Teuchos::ParameterList combustdyn = DRT::Problem::Instance()->CombustionDynamicParams();
   // create a COMBUST::Algorithm instance
   Teuchos::RCP<COMBUST::Algorithm> combust_ = Teuchos::rcp(new COMBUST::Algorithm(comm, combustdyn));
 
-  /*----------------------------------------------------------------------------------------------* 
+  /*----------------------------------------------------------------------------------------------*
    * restart stuff; what exactly does this do?; comment has to be completed
-   *----------------------------------------------------------------------------------------------*/ 
+   *----------------------------------------------------------------------------------------------*/
   if (genprob.restart)
   {
     // read the restart information, set vectors and variables
@@ -152,9 +157,9 @@ void combust_dyn()
   {
     // solve a dynamic combustion problem
     combust_->TimeLoop();
-    /* Hier kann auch z.B. Genalpha mit combust->TimeLoop() gerufen werden, weil der combustion 
+    /* Hier kann auch z.B. Genalpha mit combust->TimeLoop() gerufen werden, weil der combustion
      * Algorithmus ja schon weiss welche Zeitintegration er hat. Es muss dann eine Klasse
-     * "GenalphaTimeInt" existieren, die eine Funktion TimeLoop() hat. Dann muss allerdings auch 
+     * "GenalphaTimeInt" existieren, die eine Funktion TimeLoop() hat. Dann muss allerdings auch
      * das ADAPTER::FluidCombust ein entsprechendes Object GenalphaTimeInt haben. Momentan hat ein
      * FluidCombust immer ein CombustFluidImplicitTimeInt! */
   }
