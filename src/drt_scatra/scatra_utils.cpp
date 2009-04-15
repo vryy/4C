@@ -47,7 +47,8 @@ void SCATRA::CreateScaTraDiscretization(
     )
 {
   // is the fluid discretization ready?
-  if (!fluiddis->Filled() or !fluiddis->HaveDofs()) fluiddis->FillComplete();
+//  if (!fluiddis->Filled() or !fluiddis->HaveDofs()) fluiddis->FillComplete();
+  if (!fluiddis->Filled()) fluiddis->FillComplete(false,false,false);
 
   // is the second discretization really empty?
   if (scatradis->NumGlobalElements() or scatradis->NumGlobalNodes())
@@ -135,7 +136,7 @@ void SCATRA::CreateScaTraDiscretization(
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
   INPAR::MAT::MaterialType mtype = DRT::Problem::Instance()->Materials()->ById(matid)->Type();
-  if ((mtype != INPAR::MAT::m_condif) && 
+  if ((mtype != INPAR::MAT::m_condif) &&
       (mtype != INPAR::MAT::m_sutherland_condif) &&
       (mtype != INPAR::MAT::m_matlist))
     dserror("Material with ID %d is not admissible for scalar transport elements",matid);
