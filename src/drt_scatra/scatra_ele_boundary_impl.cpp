@@ -198,9 +198,9 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
 
     // access parameters of the condition
     const std::string* kinetics = cond->Get<std::string>("kinetic model");
-    const int    reactantid = cond->Getint("reactant id");
+    const int    reactantid = cond->GetInt("reactant id");
     double       pot0 = cond->GetDouble("pot0");
-    const int    curvenum = cond->Getint("curve");
+    const int    curvenum = cond->GetInt("curve");
     const double alphaa = cond->GetDouble("alpha_a");
     const double alphac = cond->GetDouble("alpha_c");
     double       i0 = cond->GetDouble("i0");

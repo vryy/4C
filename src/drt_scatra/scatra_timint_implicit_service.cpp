@@ -869,7 +869,7 @@ void SCATRA::ScaTraTimIntImpl::OutputElectrodeInfo()
 
     // access some parameters of the actual condition
     double pot0 = cond[condid]->GetDouble("pot0");
-    const int curvenum = cond[condid]->Getint("curve");
+    const int curvenum = cond[condid]->GetInt("curve");
     if (curvenum>=0)
     {
       const double curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time_);
