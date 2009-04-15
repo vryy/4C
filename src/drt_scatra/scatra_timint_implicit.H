@@ -194,6 +194,15 @@ public:
   /// output of mean temperature and density for low-Mach-number flow
   void OutputMeanTempAndDens();
 
+  /// routine to return scalar field phi at time step n
+  Teuchos::RCP<Epetra_Vector> Phin() { return phin_; }
+
+  /// routine to return scalar field phi at time step n+1
+  Teuchos::RCP<Epetra_Vector> Phinp() { return phinp_; }
+
+  /// routine to return scalar field convective velocity at time step n+1
+  Teuchos::RCP<Epetra_MultiVector> Convel() { return convel_; }
+
   /// output of electrode information to screen
   void OutputElectrodeInfo();
 
@@ -495,11 +504,11 @@ protected:
 
   /// number of transported scalars
   int numscal_;
-
+  
   /// the last step number when fluxes have been computed
   int lastfluxoutputstep_;
 
-  /// unit outer normal vector field for flux output
+  // unit outer normal vector field for flux output
   RCP<Epetra_MultiVector> normals_;
 
 }; // class ScaTraTimIntImpl
