@@ -111,6 +111,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
     vector<double> mydisp(lm.size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
     SpatialConfiguration(xc,mydisp);
+//    MaterialConfiguration(xc);
 #else
 // in inverse design analysis, the current configuration is the reference
     MaterialConfiguration(xc);
@@ -472,7 +473,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
 
         if (cond->Type()==DRT::Condition::Surfactant)     // dynamic surfactant model
         {
-          int curvenum = cond->Getint("curve");
+          int curvenum = cond->GetInt("curve");
           double k1xC = cond->GetDouble("k1xCbulk");
           double k2 = cond->GetDouble("k2");
           double m1 = cond->GetDouble("m1");
@@ -504,7 +505,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
         }
         else if (cond->Type()==DRT::Condition::SurfaceTension) // ideal liquid
         {
-          int curvenum = cond->Getint("curve");
+          int curvenum = cond->GetInt("curve");
           double const_gamma = cond->GetDouble("gamma");
           RCP<Epetra_SerialDenseVector> Adiffnew = rcp(new Epetra_SerialDenseVector);
           surfstressman->StiffnessAndInternalForces(curvenum, A, Adiff, Adiff2, 0., Adiffnew, elevector1, elematrix1, this->Id(),
