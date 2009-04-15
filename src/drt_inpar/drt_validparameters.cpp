@@ -524,7 +524,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                   "tolerance in the constr error norm for the newton iteration",
                   &sdyn);
   IntParameter("MAXITER",50,
-               "maximum number of iterations allowed for newton iteration before failure",
+               "maximum number of iterations allowed for Newton-Raphson iteration before failure",
+               &sdyn);
+  IntParameter("MINITER",0,
+               "minimum number of iterations to be done within Newton-Raphson loop",
                &sdyn);
   setStringToIntegralParameter<INPAR::STR::VectorNorm>("ITERNORM","L2","type of norm to be applied to residuals",
                                tuple<std::string>(
@@ -538,6 +541,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::STR::norm_rms,
                                  INPAR::STR::norm_inf),
                                &sdyn);
+  setStringToIntegralParameter<int>("DIVERCONT","No",
+                                    "Go on with time integration even if Newton-Raphson iteration failed",
+                                    yesnotuple,yesnovalue,&sdyn);
 
   setStringToIntegralParameter<INPAR::STR::NonlinSolTech>("NLNSOL","fullnewton","",
                                tuple<std::string>(

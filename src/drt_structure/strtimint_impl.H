@@ -571,10 +571,13 @@ namespace STR
     enum INPAR::STR::VectorNorm iternorm_;  //!< vector norm to
     //!< check with
     int itermax_;  //!< maximally permitted iterations
+    int itermin_;  //!< minimally requested iterations
+    bool iterdivercont_;  //!< if TRUE then go on with time integration
+                          //!< even if Newton-Raphson iteration failed
     double toldisi_;  //!< tolerance residual displacements
     double tolfres_;  //!< tolerance force residual
     double uzawaparam_;  //!< Parameter for Uzawa algorithm dealing
-    //!< with Lagrange multipliers
+                         //!< with Lagrange multipliers
     int uzawaitermax_;  //!< maximally permitted Uzawa iterations
     double tolcon_;  //!< tolerance constraint
     int iter_;  //!< iteration step

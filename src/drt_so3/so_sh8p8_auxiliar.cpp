@@ -29,6 +29,8 @@ Maintainer: Burkhard Bornemann
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/linalg_utils.H"
+#include "../drt_io/io_control.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "Epetra_Time.h"
 #include "Teuchos_TimeMonitor.hpp"
 
@@ -965,7 +967,7 @@ void DRT::ELEMENTS::So_sh8p8::BuildElementMatrix(
   LINALG::Matrix<NUMDOF_,NUMDOF_>* mat,
   const LINALG::Matrix<NUMDISP_,NUMDISP_>* matdd,
   const LINALG::Matrix<NUMDISP_,NUMPRES_>* matdp,
-  const LINALG::Matrix<NUMDISP_,NUMPRES_>* matpd,
+  const LINALG::Matrix<NUMPRES_,NUMDISP_>* matpd,
   const LINALG::Matrix<NUMPRES_,NUMPRES_>* matpp
 )
 {
@@ -1103,6 +1105,142 @@ void DRT::ELEMENTS::So_sh8p8::AssembleVolume(
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_sh8p8::GnuplotOut(
+  Teuchos::ParameterList& params,  ///< parameter list for in 'n' out
+  std::vector<double>& state,  ///< current state vector, i.e. displacements and pressure DOFs
+  LINALG::Matrix<NUMDOF_,1>& resid,  ///< current internal force / incompressibility residual
+  LINALG::Matrix<NUMDOF_,NUMDOF_>& tangent  ///< current tangent of inter force WRT state
+  )
+{
+  // last call time: we iterate to find solution, but we only want to write final state
+  static double lasttime;
+  static double oldtime = 0.0;
+  // store current output line
+  static std::ostringstream txtline;
+
+  // store
+  static std::vector<double> laststate(NUMDOF_,0);
+  static std::vector<double> oldstate(NUMDOF_,0);
+  static LINALG::Matrix<NUMDOF_,NUMDOF_> lasttangent;
+
+  const double time = params.get<double>("total time");
+  const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  const std::string txtname = filebase + ".sosh8p8.txt";
+
+  // store last converged state
+  if (not (time == lasttime))
+  {
+    oldtime = lasttime;
+    oldstate = laststate;
+  }
+
+  // control file
+  if (time == 0.0) {
+     const std::string gpltname = filebase + ".sosh8p8.gplt";
+     std::ofstream gpltfile;
+     gpltfile.open(gpltname.c_str(), std::ios_base::out);
+
+     // header
+     gpltfile << "# Gnuplot script" << std::endl;
+
+     // print residual over time
+     gpltfile << "plot \\" << std::endl;
+//     for (int d=0; d<NUMDOF_; d+=4) {  // x-dir
+     for (int d=3; d<NUMDOF_; d+=4) {  // pres
+//     for (int d=0; d<NUMDOF_; d+=1) {  // all
+       gpltfile << " \"" << txtname << "\""
+                << " using " << 1 << ":" <<  2+4*8+d+1
+                << " title \"res" << d+1 << "\""
+                << " with l linetype " << d/NODDOF_+1 << " linewidth 2";
+       gpltfile << ", \"" << txtname << "\""
+                << " every 5 using " << 1 << ":" <<  2+4*8+d+1
+                << " title \"res" << d+1 << "\""
+                << " with p linetype " << d/NODDOF_+1 << " linewidth 2";
+       gpltfile << ", \"" << txtname << "\""
+                << " every 5 using " << 1 << ":" << 2+4*8+d+1 << ":(3*($" << 1 << "-$" << 2 << ")):(3*$" << 2+2*4*8+d+1 << ")"
+                << " title \"incres" << d+1 << "\""
+                << " with vector linetype " << d/NODDOF_+1 << " linewidth 1";
+       gpltfile << ", \"" << txtname << "\""
+                << " every 5 using " << 1 << ":" << 2+4*8+d+1 << ":(-3*($" << 1 << "-$" << 2 << ")):(-3*$" << 2+2*4*8+d+1 << ")"
+                << " title \"incres" << d+1 << "\""
+                << " with vector nohead linetype " << d/NODDOF_+1 << " linewidth 1";
+       if (d+1 < NUMDOF_)
+         gpltfile << ", \\";
+       gpltfile << std::endl;
+     }
+  
+     // wait for user's activity
+     gpltfile << "pause -1" << std::endl;
+
+     gpltfile.close();
+  }
+
+
+  // data file
+  std::ofstream txtfile;
+  if (time == 0.0) {
+    txtfile.open(txtname.c_str(), std::ios_base::out);
+    txtfile << "# time"
+            << " disX^1 disY^1 disZ^1 pres^1 ... disX^8 disY^8 disZ^8 pres^8"
+            << " fintX^1 fintY^1 fintZ^1 incom^1 ... fintX^8 fintY^8 fintZ^8 incom^8"
+            << " incfintX^1 incfintY^1 incfintZ^1 incincom^1 ... incfintX^8 incfintY^8 incfintZ^8 incincom^8"
+            << std::endl;
+    txtfile.close();
+  }
+  else {
+    if (time != lasttime) {
+      txtfile.open(txtname.c_str(), std::ios_base::app);
+      txtfile << txtline.str();
+      txtfile.close();
+    }
+  }
+
+  // remove stored line of last call
+  txtline.str("");
+
+  // time
+  txtline << std::scientific << time
+          << " " << std::scientific << oldtime;
+
+  // state
+  for (std::vector<double>::iterator is=state.begin(); is!=state.end(); ++is)
+    txtline << std::scientific << " " << *is;
+
+  txtline << "  ";
+
+  // residual
+  for (int ir=0; ir<NUMDOF_; ++ir)
+    txtline << std::scientific << " " << resid(ir);
+
+  txtline << "  ";
+
+  // linearised residual
+  {
+    LINALG::Matrix<NUMDOF_,1> os = LINALG::Matrix<NUMDOF_,1>(&(oldstate[0]));
+    LINALG::Matrix<NUMDOF_,1> ls = LINALG::Matrix<NUMDOF_,1>(&(laststate[0]));
+    LINALG::Matrix<NUMDOF_,1> is;
+    is = ls;
+    is -= os;
+    LINALG::Matrix<NUMDOF_,1> incresid;
+    incresid.MultiplyNN(lasttangent,is);
+
+    for (int ir=0; ir<NUMDOF_; ++ir)
+      txtline << std::scientific << " " << incresid(ir);
+  }
+
+  // finish of line 
+  txtline << std::endl;
+
+  // store last time
+  lasttime = time;
+  laststate = state;
+  lasttangent = tangent;
+
+  //
+  return;
+}
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3

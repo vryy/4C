@@ -141,6 +141,8 @@ bool DRT::ELEMENTS::So_sh8p8::ReadElement()
       stab_ = stab_affine;
     else if (strncmp(buffer,"NonAff",6)==0)
       stab_ = stab_nonaffine;
+    else if (strncmp(buffer,"Spatial",7)==0)
+      stab_ = stab_spatial;
     else if (strncmp(buffer,"PureDisp",8)==0)
       stab_ = stab_puredisp;
     else
@@ -169,7 +171,7 @@ bool DRT::ELEMENTS::So_sh8p8::ReadElement()
       lin_ = lin_one;
     else if (strncmp(buffer,"Half",4)==0)
       lin_ = lin_half;
-    else if (strncmp(buffer,"Sixth",4)==0)
+    else if (strncmp(buffer,"Sixth",5)==0)
       lin_ = lin_sixth;
     else
       dserror("Reading of SO_SH8P8 LIN type failed");

@@ -50,6 +50,8 @@ STR::TimIntImpl::TimIntImpl
   itercnvchk_(Teuchos::getIntegralValue<INPAR::STR::ConvCheck>(sdynparams,"CONV_CHECK")),
   iternorm_(Teuchos::getIntegralValue<INPAR::STR::VectorNorm>(sdynparams,"ITERNORM")),
   itermax_(sdynparams.get<int>("MAXITER")),
+  itermin_(sdynparams.get<int>("MINITER")),
+  iterdivercont_(Teuchos::getIntegralValue<int>(sdynparams,"DIVERCONT")==1),
   toldisi_(sdynparams.get<double>("TOLDISP")),
   tolfres_(sdynparams.get<double>("TOLRES")),
   uzawaparam_(sdynparams.get<double>("UZAWAPARAM")),
@@ -507,7 +509,7 @@ void STR::TimIntImpl::NewtonFull()
   timer_.ResetStartTime();
 
   // equilibrium iteration loop
-  while ( (not Converged()) and (iter_ <= itermax_) )
+  while ( ( (not Converged()) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
   {
     // make negative residual
     fres_->Scale(-1.0);
@@ -542,7 +544,8 @@ void STR::TimIntImpl::NewtonFull()
       Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector(disn_);
       double normpres = STR::AUX::CalculateVectorNorm(iternorm_, pres);
       double normdisp = STR::AUX::CalculateVectorNorm(iternorm_, disp);
-      cout << "DispCurr=" << normdisp << " PresCurr=" << normpres << endl;
+      if (myrank_ == 0)
+        cout << std::scientific << "DispCurr=" << normdisp << " PresCurr=" << normpres;
     }
 #endif
 
@@ -581,14 +584,15 @@ void STR::TimIntImpl::NewtonFull()
       Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector(fres_);
       double normpres = STR::AUX::CalculateVectorNorm(iternorm_, pres);
       double normdisp = STR::AUX::CalculateVectorNorm(iternorm_, disp);
-      cout << "ForceResid=" << normdisp << " IncompResid=" << normpres << endl;
+      if (myrank_ == 0)
+        cout <<  std::scientific << " ForceResid=" << normdisp << " IncompResid=" << normpres;
 
       pres = pressure_->ExtractCondVector(disi_);
       disp = pressure_->ExtractOtherVector(disi_);
       normpres = STR::AUX::CalculateVectorNorm(iternorm_, pres);
       normdisp = STR::AUX::CalculateVectorNorm(iternorm_, disp);
       if (myrank_ == 0)
-        cout << "DispResid=" << normdisp << " PresResid=" << normpres << endl;
+        cout <<  std::scientific << " DispResid=" << normdisp << " PresResid=" << normpres << endl;
     }
 #endif
 
@@ -609,9 +613,13 @@ void STR::TimIntImpl::NewtonFull()
   }
 
   // test whether max iterations was hit
-  if (iter_ >= itermax_)
+  if ( (iter_ >= itermax_) and (not iterdivercont_) )
   {
     dserror("Newton unconverged in %d iterations", iter_);
+  }
+  else if ( (iter_ >= itermax_) and (iterdivercont_) and (myrank_ == 0) )
+  {
+    printf("Newton unconverged in %d iterations ... continuing\n", iter_);
   }
   else if ( (Converged()) and (myrank_ == 0) )
   {

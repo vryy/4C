@@ -91,14 +91,15 @@ private:
   {
     stab_affine,  ///< Bochev stabilisation for affine elements
     stab_nonaffine,  ///< Bochev stabilisation for non-affine elements
+    stab_spatial,  ///< Bochev stabilisation for non-affine elements in spatial element domain
     stab_puredisp  ///< DEBUG ONLY: recover pure displacement-based approach
   };
 
   /// Kind of ANS anti-locking technique
   enum AnsType
   {
-    ans_lateral,  ///< ANS active in t-/out-of-plane/thickness direction
-    ans_none   ///< DEBUG ONLY: ANS switched off
+    ans_none,  ///< DEBUG ONLY: ANS switched off
+    ans_lateral  ///< ANS active in t-/out-of-plane/thickness direction
   };
 
   /// Type of Voigt vector
@@ -122,21 +123,21 @@ private:
   /// @name Element constants
   //@{
 
-  static const int NUMNOD_ = NUMNOD_SOH8; //8  ///< number of nodes
-  static const int NODDOF_ = 4;  ///< number of dofs per node
+  static const int NUMNOD_ = 8;  ///< number of nodes
+  static const int NODDOF_ = 4;  ///< number of DOFs per node
   static const int NODDISP_ = 3;  ///< number of displacements per node
   static const int NODPRES_ = 1;  ///< number of pressures per node
-  static const int NUMDOF_ = 32;  ///< total dofs per element
+  static const int NUMDOF_ = 32;  ///< total DOFs per element
   static const int NUMDISP_ = 24;  ///< total discrete displacements per element
   static const int NUMDISPSQSYM_ = 300;  ///< (NUMDISP_*NUMDISP_ + NUMDISP_)/2, number
                                          ///< of relevant entries 
                                          ///< if symmetric in element displacements
   static const int NUMPRES_ = 8;  ///< total discrete pressures per element
-  static const int NUMSTR_ = NUMSTR_SOH8; //6  ///< number of strains/stresses
+  static const int NUMSTR_ = 6;  ///< number of strains/stresses
   static const int NUMDFGR_ = 9;  ///< number of deformation gradient components
                                          ///< (deformation gradient is non-symmetric)
-  static const int NUMGPT_ = NUMGPT_SOH8; //8  ///< total gauss points per element
-  static const int NUMDIM_ = NUMDIM_SOH8; //3  ///< number of dimensions
+  static const int NUMGPT_ = 8;  ///< total gauss points per element
+  static const int NUMDIM_ = 3;  ///< number of dimensions, it's 3D
 
   /// number of ANS sampling points, here 8
   static const int NUMSP_ = 8;
@@ -310,6 +311,7 @@ private:
     LINALG::Matrix<NUMDISP_,NUMDISP_>* massmatrix,  ///< element mass matrix
     LINALG::Matrix<NUMDISP_,NUMDISP_>* stiffmatrix,  ///< element stiffness matrix
     LINALG::Matrix<NUMDISP_,NUMPRES_>* gradmatrix,  ///< element gradient matrix
+    LINALG::Matrix<NUMPRES_,NUMDISP_>* dragmatrix,  ///< element 'transposed' gradient matrix
     LINALG::Matrix<NUMPRES_,NUMPRES_>* stabmatrix,  ///< element stabilisation matrix
     LINALG::Matrix<NUMDISP_,1>* force,  ///< element internal force vector
     LINALG::Matrix<NUMPRES_,1>* incomp,  ///< incompressibility residual
@@ -347,17 +349,17 @@ private:
   /// Recover deformation gradient incoperating assumed natural GL strain
   static void AssDefGrad(
     double& detdefgrad,  ///< determinat of deformation gradient
-    LINALG::Matrix<NUMDIM_,NUMDIM_>& defgrad,  ///< deformation gradient \f$[\boldsymbol{F}\f$
-    LINALG::Matrix<NUMDIM_,NUMDIM_>& invdefgrad,  ///< inverse deformation gradient \f$[\boldsymbol{F}^{-1}\f$
-    LINALG::Matrix<NUMDIM_,NUMDIM_>& rgtstr,  ///< right stretch tensor \f$[\boldsymbol{U}\f$
-    LINALG::Matrix<NUMDIM_,NUMDIM_>& defgradD,  ///< pure disp-based deformation gradient \f$[\boldsymbol{F}^d\f$
-    LINALG::Matrix<NUMDIM_,NUMDIM_>& rgtstrD,  ///< pure disp-based right stretch tensor \f$[\boldsymbol{U}^d\f$
-    LINALG::Matrix<NUMDIM_,NUMDIM_>& invrgtstrD,  ///< inverted pure disp-based right stretch tensor \f$[\boldsymbol{U}^{d-1}\f$
-    const LINALG::Matrix<NUMDIM_,NUMDIM_>& Jinv,  ///< inverse of transposed Jacobi matrix X_{,xi}
-    const LINALG::Matrix<NUMDIM_,NUMDIM_>& Jac,  ///< transposed Jacobi matrix X_{,xi}
-    const LINALG::Matrix<NUMDIM_,NUMDIM_>& jac,  ///< transposed Jacobi matrix x_{,xi}
+    LINALG::Matrix<NUMDIM_,NUMDIM_>& defgrad,  ///< deformation gradient \f$[\boldsymbol{F}]\f$
+    LINALG::Matrix<NUMDIM_,NUMDIM_>& invdefgrad,  ///< inverse deformation gradient \f$[\boldsymbol{F}^{-1}]\f$
+    LINALG::Matrix<NUMDIM_,NUMDIM_>& rgtstr,  ///< right stretch tensor \f$[\boldsymbol{U}]\f$
+    LINALG::Matrix<NUMDIM_,NUMDIM_>& defgradD,  ///< pure disp-based deformation gradient \f$[\boldsymbol{F}^d]\f$
+    LINALG::Matrix<NUMDIM_,NUMDIM_>& rgtstrD,  ///< pure disp-based right stretch tensor \f$[\boldsymbol{U}^d]\f$
+    LINALG::Matrix<NUMDIM_,NUMDIM_>& invrgtstrD,  ///< inverted pure disp-based right stretch tensor \f$[\boldsymbol{U}^{d-1}]\f$
+    const LINALG::Matrix<NUMDIM_,NUMDIM_>& Jinv,  ///< inverse of transposed material Jacobi matrix \f$[X_{,\xi}]\f$
+    const LINALG::Matrix<NUMDIM_,NUMDIM_>& Jac,  ///< transposed material Jacobi matrix \f$[X_{,\xi}]^T\f$
+    const LINALG::Matrix<NUMDIM_,NUMDIM_>& jac,  ///< transposed spatial Jacobi matrix \f$[x_{,\xi}]^T\f$
     const LINALG::Matrix<NUMSTR_,1>& glstrain  ///< material Green-Lagrange strain vector
-                                               ///< in global Cartesian components
+                                               ///< in global Cartesian components \f$[\boldsymbol{E}]\f$
     );
 
   /// Retrieve shear modulus
@@ -381,17 +383,17 @@ private:
   /// Convert 3x3 matrix of non-sym 2-tensor in 9x1 Voigt vector
   ///
   /// From
-  /// \f[
+  ///\f[
   ///   [\boldsymbol{F}] = \left[\begin{array}{ccc}
   ///   F_{11} & F_{12} & F_{13} \\ F_{21} & F_{22} & F_{23} \\ F_{31} & F_{32} & F_{33}
   ///   \end{array}\right]
-  /// \f]
+  ///\f]
   /// to
-  /// \f[
+  ///\f[
   ///   \tilde{\mathbf{F}} = \left[\begin{array}{c}
   ///   F_{11} \\ F_{22} \\ F_{33} \\ F_{12} \\ F_{23} \\ F_{31} \\ F_{13} \\ F_{32} \\ F_{21}
   ///   \end{array}\right]
-  /// \f]
+  ///\f]
   static void Matrix2TensorToVector9Voigt(
     LINALG::Matrix<NUMDFGR_,1>& fvct,  ///< (out) 9x1 Voigt vector
     const LINALG::Matrix<NUMDIM_,NUMDIM_>& fmat,  ///< (in) 3x3 matrix
@@ -401,23 +403,23 @@ private:
   /// Convert 3x3 matrix of sym 2-tensor in 9-Voigt vector
   ///
   /// From
-  /// \f[
+  ///\f[
   ///   [\boldsymbol{B}] = \left[\begin{array}{ccc}
   ///   B_{11} & B_{12} & B_{31} \\ B_{12} & B_{22} & B_{23} \\ B_{31} & B_{23} & B_{33}
   ///   \end{array}\right]
-  /// \f]
+  ///\f]
   /// to if \i strain-like vector
-  /// \f[
+  ///\f[
   ///   \tilde{\mathbf{B}} = \left[\begin{array}{c}
   ///   B_{11} \\ B_{22} \\ B_{33} \\ 2 B_{12} \\ 2 B_{23} \\ 2 B_{31}
   ///   \end{array}\right]
-  /// \f]
+  ///\f]
   /// or to if \i stress-like vector
-  /// \f[
+  ///\f[
   ///   \tilde{\mathbf{B}} = \left[\begin{array}{c}
   ///   B_{11} \\ B_{22} \\ B_{33} \\ B_{12} \\ B_{23} \\ B_{31}
   ///   \end{array}\right]
-  /// \f]
+  ///\f]
   static void Matrix2TensorToVector6Voigt(
     LINALG::Matrix<NUMSTR_,1>& bvct,  ///< 6-Voigt vector
     const LINALG::Matrix<NUMDIM_,NUMDIM_>& bmat,  ///< 3x3 sym 2-tensor
@@ -436,10 +438,10 @@ private:
   /// Derivative of inverse of non-symmetric 2-tensor with respect to itself
   ///
   /// In index notation:
-  /// \f[
+  ///\f[
   ///   \frac{\partial (F^{-1})_{ij}}{\partial F_{kl}}
   ///   = -(F^{-1})_{ik} \cdot (F^{-1})_{lj}
-  /// \f]
+  ///\f]
   static void InvVector9VoigtDiffByItself(
     LINALG::Matrix<NUMDFGR_,NUMDFGR_>& invfderf,
     const LINALG::Matrix<NUMDIM_,NUMDIM_>& invfmat,
@@ -449,11 +451,11 @@ private:
   /// Derivative of inverse of symmetric 2-tensor with respect to itself
   ///
   /// In index notation:
-  /// \f[
+  ///\f[
   ///   \frac{\partial (F^{-1})_{ij}}{\partial F_{kl}}
   ///   = -1/2*\big( (F^{-1})_{ik} \cdot (F^{-1})_{lj} 
   ///                + (F^{-1})_{il} \cdot (F^{-1})_{kj} \big)
-  /// \f]
+  ///\f]
   static void InvVector6VoigtDiffByItself(
     LINALG::Matrix<NUMSTR_,NUMSTR_>& invfderf,  ///< 6x6 derivative
     const LINALG::Matrix<NUMDIM_,NUMDIM_>& invfmat  ///< 3x3 inverse symmetric 2-tensor
@@ -468,10 +470,10 @@ private:
   /// Derivative of square of symmetric 2-tensor by itself
   ///
   /// In index notation:
-  /// \f[
+  ///\f[
   ///   \frac{\partial F_{im} F_{mj}}{\partial F_{kl}}
   ///   = \delta_{ik}\cdot F_{il} + \delta_{jl}\cdot F_{ik}
-  /// \f]
+  ///\f]
   static void SqVector6VoigtDiffByItself(
     LINALG::Matrix<NUMSTR_,NUMSTR_>& sqfderf,  ///< diff. squared matrix 
     const LINALG::Matrix<NUMDIM_,NUMDIM_>& fmat,  ///< symmetric 2-tensor
@@ -483,9 +485,9 @@ private:
   /// cf. #SqVector6VoigtDiffByItself
   ///
   /// In compact tensor notation
-  /// \f[
+  ///\f[
   ///   \big( \boldsymbol{F}^T \cdot \boldsymbol{F} \big)_{,\boldsymbol{F}}
-  /// \f]
+  ///\f]
   static void SqVector9VoigtDiffByItself(
     LINALG::Matrix<NUMDFGR_,NUMDFGR_>& sqfderf,  ///< diff. squared matrix 
     const LINALG::Matrix<NUMDIM_,NUMDIM_>& fmat,  ///< non-symmetric 2-tensor
@@ -513,17 +515,17 @@ private:
   ///
   /// The operation in
   /// (1) compact tensor notation
-  /// \f[
+  ///\f[
   ///   \boldsymbol{A} = \boldsymbol{A}^T = \boldsymbol{B}^T \cdot \boldsymbol{C}
-  /// \f]
+  ///\f]
   /// or (2) in index tensor notation
-  /// \f[
+  ///\f[
   ///   A_{ij} = A_{ji} = B_{ki} \cdot C_{kj}
-  /// \f]
+  ///\f]
   /// or (3) in Voigt 9-vector by 6x9-matrix product, i.e.
-  /// \f[
+  ///\f[
   ///   \mathbf{A} = \mathbf{B} \; \tilde{\mathbf{C}}
-  /// \f]
+  ///\f]
   static void Matrix2TensorToMatrix6x9Voigt(
     LINALG::Matrix<NUMSTR_,NUMDFGR_>& bm,  ///< (out) 6x9 Voigt matrix
     const LINALG::Matrix<NUMDIM_,NUMDIM_>& bt,  ///< (in) 3x3 matrix
@@ -536,17 +538,17 @@ private:
   ///
   /// The operation in
   /// (1) compact tensor notation
-  /// \f[
+  ///\f[
   ///    \boldsymbol{E} = \boldsymbol{F}^T \cdot \boldsymbol{e} \cdot \boldsymbol{F}
-  /// \f]
+  ///\f]
   /// or (2) in index tensor notation
-  /// \f[
-  ///    E_AB = F_A^a  \cdot e_ab  \cdot F^b_B
-  /// \f]
+  ///\f[
+  ///    E_{AB} = F_A{}^a  \cdot e_{ab}  \cdot F^b{}_B
+  ///\f]
   /// or  (3) in Voigt 6-vector by 6x6-matrix product, i.e.
-  /// \f[
+  ///\f[
   ///    \mathbf{E} = \mathbf{B} \; \mathbf{e}
-  /// \f]
+  ///\f]
   ///
   /// This operation is also known as 'pull back'
   static void Matrix2TensorToLeftRightProductMatrix6x6Voigt(
@@ -622,7 +624,7 @@ private:
     LINALG::Matrix<NUMDOF_,NUMDOF_>* mat,  ///< 32x32 matrix
     const LINALG::Matrix<NUMDISP_,NUMDISP_>* matdd,  ///< 24x24 sub-matrix, if NULL then 0s are inserted
     const LINALG::Matrix<NUMDISP_,NUMPRES_>* matdp,  ///< 24x8 sub-matrix, if NULL then 0s are inserted
-    const LINALG::Matrix<NUMDISP_,NUMPRES_>* matpd,  ///< 8x24 sub-matrix, if NULL then transpose of #matdp is inserted or 0s
+    const LINALG::Matrix<NUMPRES_,NUMDISP_>* matpd,  ///< 8x24 sub-matrix, if NULL then transpose of #matdp is inserted or 0s
     const LINALG::Matrix<NUMPRES_,NUMPRES_>* matpp  ///< 8x8 sub-matrix, if NULL then 0s are inserted
     );
 
@@ -637,6 +639,27 @@ private:
   static void AssembleVolume(
     Teuchos::ParameterList& params,  ///< parameter list for in 'n' out
     const double& elevol  ///< current element volume
+    );
+
+  //@}
+
+  /// @name Methods for debugging
+  //@{
+
+  /// Print files for visualising with Gnuplot
+  ///
+  /// The routine is for <b>debugging only</b> and should be used
+  /// with <b>extreme care</b>. If everything works out well, you achieve
+  /// two files: xxx.sosh8p8.gplt and xxx.sosh8p8.txt. The latter
+  /// holds the data for the Gnuplot GPLT driver file. Execution
+  /// of the GPLT file is going to produce nice graphs of
+  /// internal force/incompressibility conditions and tangents
+  /// with respect to the element displacements and pressures thereof.
+  static void GnuplotOut(
+    Teuchos::ParameterList& params,  ///< parameter list for in 'n' out
+    std::vector<double>& state,  ///< current state vector, i.e. displacements and pressure DOFs
+    LINALG::Matrix<NUMDOF_,1>& resid,  ///< current internal force / incompressibility residual
+    LINALG::Matrix<NUMDOF_,NUMDOF_>& tangent  ///< current tangent of inter force WRT state
     );
 
   //@}
