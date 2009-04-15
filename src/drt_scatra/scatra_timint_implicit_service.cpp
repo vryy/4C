@@ -503,6 +503,7 @@ void SCATRA::ScaTraTimIntImpl::ComputeDensity(const double thermpress,
 void SCATRA::ScaTraTimIntImpl::SetLomaVelocity(
   RCP<const Epetra_Vector> extvel,
   RCP<const Epetra_Vector> extsubgrvisc,
+  RCP<const Epetra_Vector> extresidual,
   RCP<DRT::Discretization> fluiddis)
 {
   // store temperature and velocity of previous iteration for convergence check
@@ -584,6 +585,11 @@ void SCATRA::ScaTraTimIntImpl::SetLomaVelocity(
           // insert velocity value in vector
           convel_->ReplaceMyValue(lnodeid, 0, velocity);
 
+          // get fluid residual value for this processor-local fluid dof
+          double residual = (*extresidual)[flid];
+          // insert fluid residual value in vector
+          fluidres_->ReplaceMyValue(lnodeid, 0, residual);
+
           // get subgrid viscosity for this processor-local fluid dof
           // and divide by turbulent Prandtl number to get diffusivity
           Indices[0] = localslaveid;
@@ -600,7 +606,12 @@ void SCATRA::ScaTraTimIntImpl::SetLomaVelocity(
             double velocity =(*extvel)[flid];
             // insert velocity value in vector
             convel_->ReplaceMyValue(localslaveid, index, velocity);
-          }
+
+            // get fluid residual value for this processor-local fluid dof
+            double residual = (*extresidual)[flid];
+            // insert fluid residual value in vector
+            fluidres_->ReplaceMyValue(lnodeid, index, residual);
+         }
         }
       }
     }
@@ -616,6 +627,11 @@ void SCATRA::ScaTraTimIntImpl::SetLomaVelocity(
       double velocity = (*extvel)[flid];
       // insert velocity value in vector
       convel_->ReplaceMyValue(lnodeid, 0, velocity);
+
+      // get fluid residual value for this processor-local fluid dof
+      double residual = (*extresidual)[flid];
+      // insert fluid residual value in vector
+      fluidres_->ReplaceMyValue(lnodeid, 0, residual);
 
       // get subgrid viscosity for this processor-local fluid dof
       // and divide by turbulent Prandtl number to get diffusivity
@@ -633,6 +649,11 @@ void SCATRA::ScaTraTimIntImpl::SetLomaVelocity(
         double velocity = (*extvel)[flid];
         // insert velocity value in vector
         convel_->ReplaceMyValue(lnodeid, index, velocity);
+
+        // get fluid residual value for this processor-local fluid dof
+        double residual = (*extresidual)[flid];
+        // insert fluid residual value in vector
+        fluidres_->ReplaceMyValue(lnodeid, index, residual);
       }
     }
   }

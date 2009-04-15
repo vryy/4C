@@ -397,6 +397,8 @@ namespace ELEMENTS
     LINALG::Matrix<3,1> ndwvelint_;
     //! fine-scale velocity vector in gausspoint
     LINALG::Matrix<3,1> fsvelint_;
+    //! subgrid-scale velocity vector in gausspoint
+    LINALG::Matrix<3,1> sgvelint_;
     //! density-weighted ale convective velocity in gausspoint, c=rho*u-rho*u_G
     LINALG::Matrix<3,1> convvelint_;
     //! acceleration vector at n+alphaM in gausspoint
@@ -409,8 +411,10 @@ namespace ELEMENTS
     // to one.
     //! viscous term including 2nd derivatives
     LINALG::Matrix<3*3,iel> viscs2_;
-    //! linearisation of convect, convective part
+    //! linearisation of convection, convective part
     LINALG::Matrix<iel,1> conv_c_;
+    //! linearisation of subgrid-scale convection, convective part
+    LINALG::Matrix<iel,1> sgconv_c_;
     //! momentum divergence
     double mdiv_;
     //! velocity divergence
@@ -425,10 +429,6 @@ namespace ELEMENTS
     LINALG::Matrix<3,1> visc_old_;
     //! the old residual
     LINALG::Matrix<3,1> res_old_;
-    //! density-weighted old residual
-    LINALG::Matrix<3,1> dwres_old_;
-    //! convection by subgrid-scale velocity
-    LINALG::Matrix<iel,1> conv_resM_;
     //! 2nd derivatives of coord.-functions w.r.t r,s,t
     LINALG::Matrix<6,3> xder2_;
 

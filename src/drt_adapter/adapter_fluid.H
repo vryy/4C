@@ -80,6 +80,9 @@ namespace ADAPTER {
     /// rhs of Newton's method
     virtual Teuchos::RCP<const Epetra_Vector> RHS() = 0;
 
+    /// true residual
+    virtual Teuchos::RCP<const Epetra_Vector> TrueResidual() = 0;
+
     /// unknown velocities (and pressures) at t(n+1)
     virtual Teuchos::RCP<const Epetra_Vector> Velnp() = 0;
 

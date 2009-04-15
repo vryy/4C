@@ -1091,15 +1091,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Flag to (de)activate cross-stress term -> residual-based VMM.",
                                tuple<std::string>(
                                  "no_cross",
-                                 "cross_complete",
-                                 "cross_rhs"
+                                 "yes_cross",
+                                 "cross_rhs",
+                                 "cross_complete"
                                  ),
                                tuple<std::string>(
                                  "No cross-stress term",
                                  "Include the cross-stress term with a linearization of the convective part",
                                  "Include cross-stress term, but only explicitly on right hand side"
                                  ),
-                               tuple<int>(0,1,2),
+                               tuple<int>(0,1,2,3),
                                &fdyn_stab);
 
   setStringToIntegralParameter<int>("REYNOLDS-STRESS",
@@ -1107,6 +1108,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Flag to (de)activate Reynolds-stress term -> residual-based VMM.",
                                tuple<std::string>(
                                  "no_reynolds",
+                                 "yes_reynolds",
                                  "reynolds_rhs",
                                  "reynolds_complete"
                                  ),
@@ -1115,7 +1117,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Include Reynolds-stress term explicitly on right hand side",
                                  "Include Reynolds-stress term with linearisation"
                                  ),
-                               tuple<int>(0,1,2),
+                               tuple<int>(0,1,2,3),
                                &fdyn_stab);
 
   // this parameter selects the tau definition applied
@@ -1423,12 +1425,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>(
                                  "no_stabilization",
                                  "residual_based",
-                                 "residual_based_plus_dc"),
+                                 "residual_based_plus_sgvel",
+                                 "residual_based_plus_dc",
+                                 "residual_based_plus_sgvel_and_dc"),
                                tuple<std::string>(
                                  "Do not use any stabilization -> only reasonable for low-Peclet-number flows",
                                  "Use a residual-based stabilization",
-                                 "Use a residual-based stabilization and add an (all-scale) discontinuity-capturing term")  ,
-                               tuple<int>(0,1,2),
+                                 "Use a residual-based stabilization and add the subgrid-scale velocity",
+                                 "Use a residual-based stabilization and add an (all-scale) discontinuity-capturing term",
+                                 "Use a residual-based stabilization and add the subgrid-scale velocity as well as an (all-scale) discontinuity-capturing term")  ,
+                               tuple<int>(0,1,2,3,4),
                                &scatradyn_stab);
 
   // this parameter selects the tau definition applied

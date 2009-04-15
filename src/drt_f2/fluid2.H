@@ -320,6 +320,7 @@ private:
     cross_stress_stab,
     cross_stress_stab_only_rhs,
     reynolds_stress_stab_none,
+    reynolds_stress_stab,
     reynolds_stress_stab_only_rhs
   };
 

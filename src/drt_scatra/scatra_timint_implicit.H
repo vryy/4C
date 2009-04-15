@@ -148,6 +148,7 @@ public:
   /// set velocity field for low-Mach-number flow
   void SetLomaVelocity(RCP<const Epetra_Vector> extvel,
                        RCP<const Epetra_Vector> extsubgrvisc,
+                       RCP<const Epetra_Vector> extresidual,
                        RCP<DRT::Discretization> fluiddis);
 
   /// set initial thermodynamic pressure and time derivative for low-Mach-number flow
@@ -454,6 +455,9 @@ protected:
 
   /// actual convective velocity
   RCP<Epetra_MultiVector>    convel_;
+
+  /// fluid momentum residual (for obtaining subgrid-scale velocity)
+  RCP<Epetra_MultiVector>    fluidres_;
 
   /// Nonlinear iteration increment vector
   RCP<Epetra_Vector>    increment_;

@@ -130,12 +130,14 @@ DRT::ELEMENTS::Fluid3Impl<distype>::Fluid3Impl()
     velint_(),
     ndwvelint_(),
     fsvelint_(),
+    sgvelint_(),
     convvelint_(),
     accintam_(),
     gradp_(),
     tau_(),
     viscs2_(),
     conv_c_(),
+    sgconv_c_(true),  // initialize to zero
     mdiv_(),
     vdiv_(),
     rhsmom_(),
@@ -143,8 +145,6 @@ DRT::ELEMENTS::Fluid3Impl<distype>::Fluid3Impl()
     conv_old_(),
     visc_old_(),
     res_old_(true),  // initialize to zero
-    dwres_old_(true),
-    conv_resM_(true),
     xder2_(),
     vderiv_()
 {
@@ -885,14 +885,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     //--------------------------------------------------------------------
     // get numerical representation of some single operators
     //--------------------------------------------------------------------
-    /*--- convective part u_old * grad (funct) --------------------------*/
-    /* u_old_x * N,x  +  u_old_y * N,y + u_old_z * N,z
-       with  N .. form function matrix                                   */
-    conv_c_.MultiplyTN(derxy_,convvelint_);
-
-    /* Convective term  u_old * grad u_old: */
-    conv_old_.Multiply(vderxy_,convvelint_);
-
     if (higher_order_ele)
     {
       /*--- viscous term: div(epsilon(u)) --------------------------------*/
@@ -968,8 +960,14 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
       visc_old_.Clear();
     }
 
-    // momentum and velocity divergence
-    // (the later is only required for low-Mach-number flow)
+    // convective term from previous iteration
+    conv_old_.Multiply(vderxy_,convvelint_);
+
+    // compute convective operator
+    conv_c_.MultiplyTN(derxy_,convvelint_);
+
+    // momentum and velocity divergence from previous iteration
+    // (the later only required for low-Mach-number flow)
     mdiv_ = mderxy_(0, 0) + mderxy_(1, 1) + mderxy_(2, 2);
     if (loma) vdiv_ = vderxy_(0, 0) + vderxy_(1, 1) + vderxy_(2, 2);
 
@@ -991,7 +989,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     // calculation of rhs for momentum/continuity equation and residual
     // (different for generalized-alpha and other schemes)
     //--------------------------------------------------------------------
-    if(is_genalpha)
+    if (is_genalpha)
     {
       // rhs of momentum equation: only bodyforce at n+alpha_F
       rhsmom_.Update(1.0,bodyforce_,0.0);
@@ -1034,31 +1032,36 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     }
 
     //--------------------------------------------------------------------
-    // calculation of additional terms when cross- and Reynolds-stress
-    // are included
+    // calculation of additional subgrid-scale velocity when cross- and
+    // Reynolds-stress are included:
+    // - Cross- and Reynolds-stress are always included simultaneously.
+    // - They are included in a complete form on left- and right-hand side.
+    // - For this purpose, a subgrid-scale convective term is computed.
+    // - Within a Newton linearization, the present formulation is not
+    //   consistent for the reactive terms.
+    // - To turn them off, both flags must be "no".
     //--------------------------------------------------------------------
-    if (cross    == Fluid3::cross_stress_stab ||
-        cross    == Fluid3::cross_stress_stab_only_rhs ||
-        reynolds == Fluid3::reynolds_stress_stab_only_rhs)
+    if (cross    != Fluid3::cross_stress_stab_none or
+        reynolds != Fluid3::reynolds_stress_stab_none)
     {
-      // get density at element center
+      // get density
       const double dens = funct_.Dot(edensnp);
 
-      // get density-weighted residual
-      dwres_old_.Update(dens,res_old_,0.0);
+      // multiply density by tau_M with minus sign
+      const double denstauM = -dens*tau_M;
 
-      /*
-        This is the operator
+      // compute subgrid-scale velocity
+      sgvelint_.Update(denstauM,res_old_,0.0);
 
-                  /                      \
-                 | (rho*resM)    o nabla |
-                  \         (i)          /
+      // compute subgrid-scale convective operator
+      sgconv_c_.MultiplyTN(derxy_,sgvelint_);
 
-                  required for (lhs) cross- and (rhs) Reynolds-stress calculation
-
-      */
-      conv_resM_.MultiplyTN (derxy_,dwres_old_);
+      // re-calculate convective term from previous iteration if cross-stress
+      // is included
+      convvelint_.Update(1.0,sgvelint_,1.0);
+      conv_old_.Multiply(vderxy_,convvelint_);
     }
+    else sgconv_c_.Clear();
 
     //------------------------------------------------------------------------
     // perform integration for element matrix and right hand side
@@ -1070,7 +1073,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
       //----------------------------------------------------------------------
       // computation of inertia term and convection term (convective and
       // reactive part) for convective form of convection term including
-      // right-hand-side contribution
+      // right-hand-side contribution and potential cross-stress term
       //----------------------------------------------------------------------
       for (int ui=0; ui<numnode; ++ui)
       {
@@ -1079,7 +1082,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
         const int fuipp = fui+2;
         const double v = fac*densamfunct_(ui)
 #if 1
-                         + timefacfac*conv_c_(ui)
+                         + timefacfac*(conv_c_(ui)+sgconv_c_(ui))
 #endif
                          ;
         for (int vi=0; vi<numnode; ++vi)
@@ -1144,7 +1147,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
         }
       }
 
-      if(is_genalpha)
+      if (is_genalpha)
       {
         for (int vi=0; vi<numnode; ++vi)
         {
@@ -1673,9 +1676,10 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
 
             */
 
-            estif(fvi,   fui)   += v*conv_c_(vi);
-            estif(fvip,  fuip)  += v*conv_c_(vi);
-            estif(fvipp, fuipp) += v*conv_c_(vi);
+            const double v2 = v*(conv_c_(vi)+sgconv_c_(vi));
+            estif(fvi,   fui)   += v2;
+            estif(fvip,  fuip)  += v2;
+            estif(fvipp, fuipp) += v2;
           }
         }
 
@@ -1684,7 +1688,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
           const int fvi   = 4*vi;
           const int fvip  = fvi+1;
           const int fvipp = fvi+2;
-          const double v = timetauM*conv_c_(vi,0);
+          const double v = timetauM*(conv_c_(vi)+sgconv_c_(vi));
           for (int ui=0; ui<numnode; ++ui)
           {
             const int fuippp = 4*ui + 3;
@@ -1709,7 +1713,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
             const int fvi   = 4*vi;
             const int fvip  = fvi+1;
             const int fvipp = fvi+2;
-            const double v = -2.0*visceff*timetauM*conv_c_(vi);
+            const double v = -2.0*visceff*timetauM*(conv_c_(vi)+sgconv_c_(vi));
             for (int ui=0; ui<numnode; ++ui)
             {
               const int fui   = 4*ui;
@@ -1948,7 +1952,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
         {
           const int fvi = 4*vi;
           // supg stabilisation
-          double v = -tau_M*conv_c_(vi);
+          const double v = -tau_M*(conv_c_(vi)+sgconv_c_(vi));
           eforce(fvi)     += v*res_old_(0) ;
           eforce(fvi + 1) += v*res_old_(1) ;
           eforce(fvi + 2) += v*res_old_(2) ;
@@ -2197,83 +2201,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
           }
         }
       }
-
-      //----------------------------------------------------------------------
-      //     STABILIZATION, CROSS-STRESS PART (RESIDUAL-BASED VMM)
-
-      if (cross == Fluid3::cross_stress_stab_only_rhs || cross == Fluid3::cross_stress_stab)
-      {
-        if (cross == Fluid3::cross_stress_stab)
-        {
-          for (int ui=0; ui<numnode; ++ui)
-          {
-            double v = timetauM*conv_resM_(ui,0);
-            for (int vi=0; vi<numnode; ++vi)
-            {
-              /* cross-stress part on lhs */
-              /*
-
-                          /                               \
-                         |  /                  \          |
-                      -  | | (rho*resM) o nabla | Du , v  |
-                         |  \                  /          |
-                          \                               /
-              */
-              double v2 = v*funct_(vi,0);
-              estif(vi*4    , ui*4    ) -= v2 ;
-              estif(vi*4 + 1, ui*4 + 1) -= v2 ;
-              estif(vi*4 + 2, ui*4 + 2) -= v2 ;
-            }
-          }
-        } // end cross-stress part on left hand side
-
-        for (int vi=0; vi<numnode; ++vi)
-        {
-          /* cross-stress part on rhs */
-          /*
-
-                          /                                \
-                         |  /                  \           |
-                         | | (rho*resM) o nabla | u   , v  |
-                         |  \                  /  (i)      |
-                          \                               /
-          */
-          double v = tau_M*funct_(vi,0);
-          eforce(vi*4)     += v*(dwres_old_(0,0)*vderxy_(0,0) +
-                                 dwres_old_(1,0)*vderxy_(0,1) +
-                                 dwres_old_(2,0)*vderxy_(0,2));
-          eforce(vi*4 + 1) += v*(dwres_old_(0,0)*vderxy_(1,0) +
-                                 dwres_old_(1,0)*vderxy_(1,1) +
-                                 dwres_old_(2,0)*vderxy_(1,2));
-          eforce(vi*4 + 2) += v*(dwres_old_(0,0)*vderxy_(2,0) +
-                                 dwres_old_(1,0)*vderxy_(2,1) +
-                                 dwres_old_(2,0)*vderxy_(2,2));
-        }
-      } // end cross-stress part on right hand side
-
-      //----------------------------------------------------------------------
-      //     STABILIZATION, REYNOLDS-STRESS PART (RESIDUAL-BASED VMM)
-
-      if (reynolds == Fluid3::reynolds_stress_stab_only_rhs)
-      {
-        const double tauMtauM = tau_M*tau_M/fac;
-        for (int vi=0; vi<numnode; ++vi)
-        {
-          /* Reynolds-stress part on rhs */
-          /*
-
-                  /                                    \
-                 |                                     |
-                 |  resM   ,   (rho*resM) o nabla ) v  |
-                 |                                     |
-                  \                                    /
-          */
-          double v = tauMtauM*conv_resM_(vi);
-          eforce(vi*4    ) += v*res_old_(0);
-          eforce(vi*4 + 1) += v*res_old_(1);
-          eforce(vi*4 + 2) += v*res_old_(2);
-        }
-      } // end Reynolds-stress part on right hand side
 
       //----------------------------------------------------------------------
       //     FINE-SCALE SUBGRID-VISCOSITY TERM (ON RIGHT HAND SIDE)

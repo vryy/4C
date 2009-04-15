@@ -181,10 +181,12 @@ public:
         const double                          timefac, ///< time discretization factor
         const double                          alphaF, ///< factor for generalized-alpha time integration
         const LINALG::Matrix<nsd_,iel>&       evelnp,///< nodal velocities at t_{n+1}
+        const LINALG::Matrix<nsd_,iel>&       efresnp,///< nodal fluid residual values at t_{n+1}
         const vector<LINALG::Matrix<iel,1> >& fsphinp,///< fine-scale part of current scalar field
         const bool                            temperature, ///< temperature flag
         const bool                            conservative, ///< flag for conservative form
         const enum SCATRA::TauType            whichtau, ///< flag for stabilization parameter definition
+        const bool                            sgvel, ///< subgrid-scale velocity flag
         const bool                            assgd, ///< all-scale subgrid-diff. flag
         const bool                            fssgd, ///< fine-scale subgrid-diff. flag
         const bool                            turbmodel, ///< flag for turbulence model
@@ -461,6 +463,8 @@ public:
 
     //! nodal velocity values
     LINALG::Matrix<nsd_,iel> evelnp_;
+    //! nodal fluid residual values
+    LINALG::Matrix<nsd_,iel> efresnp_;
     //! actual values of transported scalars
     vector<LINALG::Matrix<iel,1> > ephinp_;
     //! history vector of transported scalars
@@ -516,6 +520,8 @@ public:
     vector<double> hist_;
     //! velocity vector in gausspoint
     LINALG::Matrix<nsd_,1> velint_;
+    //! subgrid-scale velocity vector in gausspoint
+    LINALG::Matrix<nsd_,1> sgvelint_;
     //! migration velocity vector (divided by D_k*z_k) in gausspoint (ELCH)
     LINALG::Matrix<nsd_,1> migvelint_;
     //! momentum divergence
@@ -528,8 +534,10 @@ public:
     LINALG::Matrix<numderiv2_,nsd_> xder2_;
     //! integration factor for current GP: fac = GaussWeight * det(J)
     double fac_;
-    //! convective part used in stabilization terms
+    //! convective term
     LINALG::Matrix<iel,1> conv_;
+    //! subgrid-scale convective term
+    LINALG::Matrix<iel,1> sgconv_;
     //! diffusive part used in stabilization terms
     LINALG::Matrix<iel,1> diff_;
     //! convective part of migration term (divided by D_k*z_k) used in stabilization terms (ELCH)

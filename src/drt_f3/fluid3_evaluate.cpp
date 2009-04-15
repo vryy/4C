@@ -153,22 +153,21 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         // if not available, define map from string to action
         if(stabstrtoact_.empty())
         {
-          stabstrtoact_["no_pspg"                ]=pstab_assume_inf_sup_stable;
-          stabstrtoact_["yes_pspg"               ]=pstab_use_pspg;
-          stabstrtoact_["no_supg"                ]=convective_stab_none;
-          stabstrtoact_["yes_supg"               ]=convective_stab_supg;
-          stabstrtoact_["no_vstab"               ]=viscous_stab_none;
-          stabstrtoact_["vstab_gls"              ]=viscous_stab_gls;
-          stabstrtoact_["vstab_gls_rhs"          ]=viscous_stab_gls_only_rhs;
-          stabstrtoact_["vstab_usfem"            ]=viscous_stab_usfem;
-          stabstrtoact_["vstab_usfem_rhs"        ]=viscous_stab_usfem_only_rhs;
-          stabstrtoact_["no_cstab"               ]=continuity_stab_none;
-          stabstrtoact_["cstab_qs"               ]=continuity_stab_yes;
-          stabstrtoact_["no_cross"               ]=cross_stress_stab_none;
-          stabstrtoact_["cross_complete"         ]=cross_stress_stab;
-          stabstrtoact_["cross_rhs"              ]=cross_stress_stab_only_rhs;
-          stabstrtoact_["no_reynolds"            ]=reynolds_stress_stab_none;
-          stabstrtoact_["reynolds_rhs"           ]=reynolds_stress_stab_only_rhs;
+          stabstrtoact_["no_pspg"        ]=pstab_assume_inf_sup_stable;
+          stabstrtoact_["yes_pspg"       ]=pstab_use_pspg;
+          stabstrtoact_["no_supg"        ]=convective_stab_none;
+          stabstrtoact_["yes_supg"       ]=convective_stab_supg;
+          stabstrtoact_["no_vstab"       ]=viscous_stab_none;
+          stabstrtoact_["vstab_gls"      ]=viscous_stab_gls;
+          stabstrtoact_["vstab_gls_rhs"  ]=viscous_stab_gls_only_rhs;
+          stabstrtoact_["vstab_usfem"    ]=viscous_stab_usfem;
+          stabstrtoact_["vstab_usfem_rhs"]=viscous_stab_usfem_only_rhs;
+          stabstrtoact_["no_cstab"       ]=continuity_stab_none;
+          stabstrtoact_["cstab_qs"       ]=continuity_stab_yes;
+          stabstrtoact_["no_cross"       ]=cross_stress_stab_none;
+          stabstrtoact_["yes_cross"      ]=cross_stress_stab;
+          stabstrtoact_["no_reynolds"    ]=reynolds_stress_stab_none;
+          stabstrtoact_["yes_reynolds"   ]=reynolds_stress_stab;
         }
 
         return DRT::ELEMENTS::Fluid3ImplInterface::Impl(this)->Evaluate(
@@ -189,22 +188,21 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         // if not available, define map from string to action
         if(stabstrtoact_.empty())
         {
-          stabstrtoact_["no_pspg"                ]=pstab_assume_inf_sup_stable;
-          stabstrtoact_["yes_pspg"               ]=pstab_use_pspg;
-          stabstrtoact_["no_supg"                ]=convective_stab_none;
-          stabstrtoact_["yes_supg"               ]=convective_stab_supg;
-          stabstrtoact_["no_vstab"               ]=viscous_stab_none;
-          stabstrtoact_["vstab_gls"              ]=viscous_stab_gls;
-          stabstrtoact_["vstab_gls_rhs"          ]=viscous_stab_gls_only_rhs;
-          stabstrtoact_["vstab_usfem"            ]=viscous_stab_usfem;
-          stabstrtoact_["vstab_usfem_rhs"        ]=viscous_stab_usfem_only_rhs;
-          stabstrtoact_["no_cstab"               ]=continuity_stab_none;
-          stabstrtoact_["cstab_qs"               ]=continuity_stab_yes;
-          stabstrtoact_["no_cross"               ]=cross_stress_stab_none;
-          stabstrtoact_["cross_complete"         ]=cross_stress_stab;
-          stabstrtoact_["cross_rhs"              ]=cross_stress_stab_only_rhs;
-          stabstrtoact_["no_reynolds"            ]=reynolds_stress_stab_none;
-          stabstrtoact_["reynolds_rhs"           ]=reynolds_stress_stab_only_rhs;
+          stabstrtoact_["no_pspg"        ]=pstab_assume_inf_sup_stable;
+          stabstrtoact_["yes_pspg"       ]=pstab_use_pspg;
+          stabstrtoact_["no_supg"        ]=convective_stab_none;
+          stabstrtoact_["yes_supg"       ]=convective_stab_supg;
+          stabstrtoact_["no_vstab"       ]=viscous_stab_none;
+          stabstrtoact_["vstab_gls"      ]=viscous_stab_gls;
+          stabstrtoact_["vstab_gls_rhs"  ]=viscous_stab_gls_only_rhs;
+          stabstrtoact_["vstab_usfem"    ]=viscous_stab_usfem;
+          stabstrtoact_["vstab_usfem_rhs"]=viscous_stab_usfem_only_rhs;
+          stabstrtoact_["no_cstab"       ]=continuity_stab_none;
+          stabstrtoact_["cstab_qs"       ]=continuity_stab_yes;
+          stabstrtoact_["no_cross"       ]=cross_stress_stab_none;
+          stabstrtoact_["yes_cross"      ]=cross_stress_stab;
+          stabstrtoact_["no_reynolds"    ]=reynolds_stress_stab_none;
+          stabstrtoact_["yes_reynolds"   ]=reynolds_stress_stab;
         }
 
         return DRT::ELEMENTS::Fluid3StationaryImplInterface::Impl(this)->Evaluate(

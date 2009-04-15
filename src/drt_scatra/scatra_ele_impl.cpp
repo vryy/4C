@@ -168,6 +168,7 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(int numdofpernode, int numscal)
     numscal_(numscal),
     iselch_((numdofpernode_ - numscal_) == 1),
     evelnp_(true),   // initialize to zero
+    efresnp_(true),
     ephinp_(numscal_),
     ehist_(numdofpernode_),
     edensnp_(true),
@@ -195,6 +196,7 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(int numdofpernode, int numscal)
     rhs_(numdofpernode_),
     hist_(numdofpernode_),
     velint_(true),
+    sgvelint_(true),
     migvelint_(true),
     mdiv_(0.0),
     tau_(numscal_),
@@ -202,6 +204,7 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(int numdofpernode, int numscal)
     xder2_(true),
     fac_(0.0),
     conv_(true),
+    sgconv_(true),
     diff_(true),
     migconv_(true),
     migrea_(true),
@@ -263,35 +266,6 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       if (timefac < 0.0) dserror("time factor is negative.");
     }
 
-    // set parameters for stabilization
-    ParameterList& stablist = params.sublist("STABILIZATION");
-
-    // select tau definition
-    SCATRA::TauType whichtau = SCATRA::tau_franca_valentin; //default
-    {
-      const string taudef = stablist.get<string>("DEFINITION_TAU");
-
-      if      (taudef == "Zero")     whichtau = SCATRA::tau_zero;
-      else if (taudef == "Bazilevs") whichtau = SCATRA::tau_bazilevs;
-    }
-
-    // set flag for all-scale subgrid diffusivity
-    bool assgd = false; //default
-    {
-      const string assgdinp = stablist.get<string>("STABTYPE");
-      if (assgdinp == "residual_based_plus_dc") assgd = true;
-    }
-
-    // set flag for fine-scale subgrid diffusivity
-    bool fssgd = false; //default
-    {
-      const string fssgdinp = params.get<string>("fs subgrid diffusivity","No");
-      if (fssgdinp == "artificial_all") fssgd = true;
-      // check whether combination of all-scale and fine-scale subgrid diffusivity
-      if (assgd and fssgd)
-        dserror("No combination of all-scale and fine-scale subgrid-diffusivity approach currently possible!");
-    }
-
     // set flag for type of scalar whether it is temperature or not
     string scaltypestr=params.get<string>("problem type");
     bool temperature = false;
@@ -310,9 +284,55 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     bool conservative = false;
     if(convform =="conservative") conservative = true;
 
+    // set parameters for stabilization
+    ParameterList& stablist = params.sublist("STABILIZATION");
+
+    // select tau definition
+    SCATRA::TauType whichtau = SCATRA::tau_franca_valentin; //default
+    {
+      const string taudef = stablist.get<string>("DEFINITION_TAU");
+
+      if      (taudef == "Zero")     whichtau = SCATRA::tau_zero;
+      else if (taudef == "Bazilevs") whichtau = SCATRA::tau_bazilevs;
+    }
+
+    // set flags for subgrid-scale velocity and all-scale subgrid diffusivity
+    bool sgvel = false; //default
+    bool assgd = false; //default
+    {
+      const string stabinp = stablist.get<string>("STABTYPE");
+      if (stabinp == "residual_based_plus_sgvel" and scaltypestr =="loma")
+        sgvel = true;
+      else if (stabinp == "residual_based_plus_dc")
+        assgd = true;
+      else if (stabinp == "residual_based_plus_sgvel_and_dc" and scaltypestr =="loma")
+      {
+        assgd = true;
+        sgvel = true;
+      }
+    }
+
+    // set flag for fine-scale subgrid diffusivity
+    bool fssgd = false; //default
+    {
+      const string fssgdinp = params.get<string>("fs subgrid diffusivity","No");
+      if (fssgdinp == "artificial_all") fssgd = true;
+      // check whether combination of all-scale and fine-scale subgrid diffusivity
+      if (assgd and fssgd)
+        dserror("No combination of all-scale and fine-scale subgrid-diffusivity approach currently possible!");
+    }
+
     // get velocity at nodes
     const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
     DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,velocity,nsd_);
+
+    // for low-Mach-number flow, also get fluid momentum residual for
+    // obtaining subgrid-scale velocity field
+    if (scaltypestr =="loma" and sgvel)
+    {
+      const RCP<Epetra_MultiVector> fluidres = params.get< RCP<Epetra_MultiVector> >("fluid momentum residual",null);
+      DRT::UTILS::ExtractMyNodeBasedValues(ele,efresnp_,fluidres,nsd_);
+    }
 
     // extract local values from the global vectors
     RefCountPtr<const Epetra_Vector> hist = discretization.GetState("hist");
@@ -429,10 +449,12 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         timefac,
         alphaF,
         evelnp_,
+        efresnp_,
         fsphinp_,
         temperature,
         conservative,
         whichtau,
+        sgvel,
         assgd,
         fssgd,
         turbmodel,
@@ -772,10 +794,12 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
     const double                          timefac, ///< time discretization factor
     const double                          alphaF, ///< factor for generalized-alpha time integration
     const LINALG::Matrix<nsd_,iel>&       evelnp,///< nodal velocities at t_{n+1}
+    const LINALG::Matrix<nsd_,iel>&       efresnp,///< nodal fluid residual values at t_{n+1}
     const vector<LINALG::Matrix<iel,1> >& fsphinp,///< fine-scale part of current scalar field
     const bool                            temperature, ///< temperature flag
     const bool                            conservative, ///< flag for conservative form
     const enum SCATRA::TauType            whichtau, ///< flag for stabilization parameter definition
+    const bool                            sgvel, ///< subgrid-scale velocity flag
     const bool                            assgd, ///< all-scale subgrid-diff. flag
     const bool                            fssgd, ///< fine-scale subgrid-diff. flag
     const bool                            turbmodel, ///< turbulence model flag
@@ -876,6 +900,28 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
 
       for (int k = 0;k<numdofpernode_;++k)     // loop of each transported sclar
       {
+        // computations for including subgrid-scale velocity
+        if (sgvel)
+        {
+          // get density
+          const double dens = funct_.Dot(edensnp);
+
+          // multiply density by tau with minus sign
+          const double denstau = -dens*tau_[k];
+
+          // compute subgrid-scale velocity
+          sgvelint_.Multiply(efresnp,funct_);
+          sgvelint_.Scale(denstau);
+
+          // subgrid-scale convective part
+          sgconv_.MultiplyTN(derxy_,sgvelint_);
+        }
+        else
+        {
+          sgvelint_.Clear();
+          sgconv_.Clear();
+        }
+
         // get history data (or  at integration point
         if (is_genalpha and not conservative) hist_[k] = densamfunct_.Dot(ehist[k]);
         else                                  hist_[k] = funct_.Dot(ehist[k]);
@@ -1524,7 +1570,7 @@ for (int vi=0; vi<iel; ++vi)
   {
     const int fui = ui*numdofpernode_+dofindex;
 
-    emat(fvi,fui) += v*conv_(ui);
+    emat(fvi,fui) += v*(conv_(ui)+sgconv_(ui));
   }
 }
 
@@ -1565,7 +1611,7 @@ for (int vi=0; vi<iel; ++vi)
 // convective stabilization of convective term (in convective form)
 for (int vi=0; vi<iel; ++vi)
 {
-  const double v = timetaufac*conv_(vi);
+  const double v = timetaufac*(conv_(vi)+sgconv_(vi));
   const int fvi = vi*numdofpernode_+dofindex;
 
   for (int ui=0; ui<iel; ++ui)
@@ -1588,7 +1634,7 @@ if (use2ndderiv)
   // convective stabilization of diffusive term (in convective form)
   for (int vi=0; vi<iel; ++vi)
   {
-    const double v = timetaufac*conv_(vi);
+    const double v = timetaufac*(conv_(vi)+sgconv_(vi));
     const int fvi = vi*numdofpernode_+dofindex;
 
     for (int ui=0; ui<iel; ++ui)
@@ -1658,7 +1704,7 @@ if (not is_stationary)
   // convective stabilization of transient term (in convective form)
   for (int vi=0; vi<iel; ++vi)
   {
-    const double v = taufac*conv_(vi);
+    const double v = taufac*(conv_(vi)+sgconv_(vi));
     const int fvi = vi*numdofpernode_+dofindex;
 
     for (int ui=0; ui<iel; ++ui)
@@ -1769,6 +1815,11 @@ else
   rhstaufac = taufac;
 }
 
+// addition to convective term due to subgrid-scale velocity
+// (not included in residual)
+const double sgconv_phi = sgvelint_.Dot(gradphi_);
+conv_phi += sgconv_phi;
+
 // addition to convective term for conservative form
 // (not included in residual)
 if (conservative)
@@ -1823,7 +1874,7 @@ for (int vi=0; vi<iel; ++vi)
 {
   const int fvi = vi*numdofpernode_+dofindex;
 
-  erhs[fvi] -= vrhs*conv_(vi);
+  erhs[fvi] -= vrhs*(conv_(vi)+sgconv_(vi));
 }
 
 // diffusive rhs stabilization

@@ -138,6 +138,12 @@ namespace ADAPTER
     /// time derivative of density at time step n from scalar transport solver
     RCP<const Epetra_Vector> DensityDtN(){ return densdtn_; }
 
+    /// get trueresidual at time step n+1 from fluid solver
+    void GetFluidResidual(){ fluidresidual_=FluidField().TrueResidual(); }
+
+    /// time derivative of density at time step n from scalar transport solver
+    RCP<const Epetra_Vector> FluidResidual(){ return fluidresidual_; }
+
     /// get trueresidual at time step n+1 from scalar transport solver
     void GetScatraResidual(){ scatraresidual_=ScaTraField().TrueResidual(); }
 
@@ -174,6 +180,9 @@ namespace ADAPTER
 
     /// subgrid viscosity
     RCP<const Epetra_Vector>    subgrvisc_;
+
+    /// FLUID trueresidual
+    RCP<const Epetra_Vector>    fluidresidual_;
 
     /// SCATRA trueresidual
     RCP<const Epetra_Vector>    scatraresidual_;

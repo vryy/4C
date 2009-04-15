@@ -72,6 +72,14 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidImpl::RHS()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidImpl::TrueResidual()
+{
+  return fluid_.TrueResidual();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidImpl::Velnp()
 {
   return fluid_.Velnp();

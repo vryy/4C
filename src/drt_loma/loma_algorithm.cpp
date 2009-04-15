@@ -183,12 +183,15 @@ void LOMA::Algorithm::InitialCalculations()
   // get initial subgrid viscosity (zero values)
   GetSubgridViscosity();
 
-  // compute initial convective density-weighted velocity field for scalar
-  // transport solver using initial fluid velocity (and pressure) field
+  // get initial fluid trueresidual
+  GetFluidResidual();
+
+  // compute initial convective velocity field for scalar transport solver
+  // using initial fluid velocity (and pressure) field
   // (For generalized-alpha time-integration scheme, velocity at n+1
   // is weighted by density at n+alpha_F, which is identical to density
   // at n+1, since density at n was set equal to n+1 above.)
-  ScaTraField().SetLomaVelocity(VelocityPressureNp(),SubgridViscosity(),fluiddiscret_);
+  ScaTraField().SetLomaVelocity(VelocityPressureNp(),SubgridViscosity(),FluidResidual(),fluiddiscret_);
 
   // (if not constant) set initial value of thermodynamic pressure in SCATRA
   // and (if not based on mass conservation) compute also time derivative
@@ -319,8 +322,11 @@ void LOMA::Algorithm::GenAlphaOuterLoop()
     // get subgrid viscosity
     GetSubgridViscosity();
 
-    // set field vectors: density-weighted convective velocity + density
-    ScaTraField().SetLomaVelocity(VelocityPressureAf(),SubgridViscosity(),fluiddiscret_);
+    // get fluid trueresidual
+    GetFluidResidual();
+
+    // set field vectors: velocity, subgrid viscosity and fluid trueresidual
+    ScaTraField().SetLomaVelocity(VelocityPressureAf(),SubgridViscosity(),FluidResidual(),fluiddiscret_);
 
     // solve transport equation for temperature
     if (Comm().MyPID()==0) cout<<"\n******************************************\n   GENERALIZED-ALPHA TEMPERATURE SOLVER\n******************************************\n";
@@ -394,8 +400,11 @@ void LOMA::Algorithm::OSTBDF2OuterLoop()
     // get subgrid viscosity
     GetSubgridViscosity();
 
-    // set field vectors: density-weighted convective velocity + density
-    ScaTraField().SetLomaVelocity(VelocityPressureNp(),SubgridViscosity(),fluiddiscret_);
+    // get fluid trueresidual
+    GetFluidResidual();
+
+    // set field vectors: velocity, subgrid viscosity and fluid trueresidual
+    ScaTraField().SetLomaVelocity(VelocityPressureNp(),SubgridViscosity(),FluidResidual(),fluiddiscret_);
 
     // solve transport equation for temperature
     if (Comm().MyPID()==0) cout<<"\n******************************************\n  ONE-STEP-THETA/BDF2 TEMPERATURE SOLVER\n******************************************\n";
