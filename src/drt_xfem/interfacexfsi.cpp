@@ -240,7 +240,7 @@ void XFEM::InterfaceHandleXFSI::EraseTinyDomainIntCells(
       dserror("");
     }
   }
-  cout << " " << small_cell_count << " small cells ( v_ele / v_cell < " << small_cell_treshold << " % ) deleted." << endl;
+  cout << " " << small_cell_count << " small cells ( v_cell / v_ele  < " << small_cell_treshold << " % ) deleted." << endl;
   return;
 }
 
