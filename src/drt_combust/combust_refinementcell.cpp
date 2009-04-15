@@ -9,7 +9,10 @@ Maintainer: Florian Henke
             http://www.lnm.mw.tum.de
             089 - 289-15265
 </pre>
+
  *------------------------------------------------------------------------------------------------*/
+#ifdef CCADISCRET
+
 #include "combust_refinementcell.H"
 
 /*------------------------------------------------------------------------------------------------*
@@ -131,3 +134,5 @@ void COMBUST::RefinementCell::RefineCell() // input: a refinement cell; output: 
 */
   return;
 }
+
+#endif // #ifdef CCADISCRET
