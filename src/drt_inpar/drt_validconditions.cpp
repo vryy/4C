@@ -337,6 +337,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   locsyscomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("tangent",3)));
   locsyscomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("origin")));
   locsyscomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("origin",3)));
+  locsyscomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("Type")));
   locsyscomponents.push_back(Teuchos::rcp(new StringConditionComponent("Type","default",
                                                                        Teuchos::tuple<std::string>("default","OriginRadialSliding","FunctionEvaluation"),
                                                                        Teuchos::tuple<std::string>("default","OriginRadialSliding","FunctionEvaluation"),
