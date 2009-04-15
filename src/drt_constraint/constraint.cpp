@@ -78,7 +78,7 @@ actdisc_(discr)
     for (unsigned int i=0; i<constrcond_.size();i++)
     {
       vector<double> myinittime=*(constrcond_[i]->Get<vector<double> >("activTime"));
-      int condID=constrcond_[i]->Getint("ConditionID");
+      int condID=constrcond_[i]->GetInt("ConditionID");
       if (myinittime.size())
       {
         inittimes_.insert(pair<int,double>(condID,myinittime[0]));
@@ -161,7 +161,7 @@ void UTILS::Constraint::Initialize
     DRT::Condition& cond = *(constrcond_[i]);
 
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID=cond.Getint("ConditionID");
+    int condID=cond.GetInt("ConditionID");
    
     // if current time (at) is larger than activation time of the condition, activate it 
     if((inittimes_.find(condID)->second<=time) && (activecons_.find(condID)->second==false)) 
@@ -243,7 +243,7 @@ void UTILS::Constraint::EvaluateConstraint(
     double scConMat = params.get("scaleConstrMat",1.0);
 
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID=cond.Getint("ConditionID");
+    int condID=cond.GetInt("ConditionID");
     params.set("ConditionID",condID);
     
     // is conditions supposed to be active?
@@ -375,7 +375,7 @@ void UTILS::Constraint::InitializeConstraint(
 
     // Get ConditionID of current condition if defined and write value in parameterlist
 
-    int condID=cond.Getint("ConditionID");
+    int condID=cond.GetInt("ConditionID");
     params.set("ConditionID",condID);
     
     // if current time is larger than initialization time of the condition, start computing

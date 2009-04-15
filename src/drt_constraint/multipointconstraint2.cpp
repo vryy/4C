@@ -69,7 +69,7 @@ void UTILS::MPConstraint2::Initialize
     DRT::Condition& cond = *(constrcond_[i]);
 
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID=cond.Getint("ConditionID");
+    int condID=cond.GetInt("ConditionID");
    
     // if current time (at) is larger than activation time of the condition, activate it 
     if((inittimes_.find(condID)->second < time) && (!activecons_.find(condID)->second))
@@ -103,10 +103,10 @@ void UTILS::MPConstraint2::Initialize(
   for (unsigned int i=0;i<constrcond_.size();i++)
   {
     DRT::Condition& cond = *(constrcond_[i]);
-    int condID=cond.Getint("ConditionID");
+    int condID=cond.GetInt("ConditionID");
     if(inittimes_.find(condID)->second<=time)
     {
-      const int    MPCcondID  = constrcond_[i]->Getint("ConditionID");
+      const int    MPCcondID  = constrcond_[i]->GetInt("ConditionID");
       amplit[i] = constrcond_[i]->GetDouble("amplitude");
       const int mid=params.get("OffsetID",0);
       IDs[i] = MPCcondID-mid;
@@ -269,9 +269,9 @@ void UTILS::MPConstraint2::ReorderConstraintNodes
   vector<int> temp=nodeids;
   if (nodeids.size()==3)
   {
-    nodeids[0]=temp[cond->Getint("constrNode 1")-1];
-    nodeids[1]=temp[cond->Getint("constrNode 2")-1];
-    nodeids[2]=temp[cond->Getint("constrNode 3")-1];
+    nodeids[0]=temp[cond->GetInt("constrNode 1")-1];
+    nodeids[1]=temp[cond->GetInt("constrNode 2")-1];
+    nodeids[2]=temp[cond->GetInt("constrNode 3")-1];
   }
   else
   {
@@ -324,7 +324,7 @@ void UTILS::MPConstraint2::EvaluateConstraint(RCP<DRT::Discretization> disc,
   {
     DRT::Element* actele = disc->lColElement(i);
     DRT::Condition& cond = *(constrcond_[actele->Id()]);
-    int condID=cond.Getint("ConditionID");
+    int condID=cond.GetInt("ConditionID");
     
     // computation only if time is larger or equal than initialization time for constraint
     if(inittimes_.find(condID)->second<=time)
