@@ -162,7 +162,7 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
     for (int i=0; i<(int)filamentnumberconditions.size(); ++i)
     {
       //get filament number described by the current condition
-      int filamentnumber = filamentnumberconditions[i]->Getint("Filament Number") ;
+      int filamentnumber = filamentnumberconditions[i]->GetInt("Filament Number") ;
       
       //get a pointer to nodal cloud coverd by the current condition
       const vector<int>* nodeids = filamentnumberconditions[i]->Nodes();
@@ -196,7 +196,7 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
     for (int i=0; i<(int)forcesensorconditions.size(); ++i)
     {
       //get number of nodal dof with respect to which force is to be measured; note: numbering starts with zero
-      int nodedofnumber = forcesensorconditions[i]->Getint("DOF Number") ;
+      int nodedofnumber = forcesensorconditions[i]->GetInt("DOF Number") ;
       
       //get a pointer to nodal cloud coverd by the current condition
       const vector<int>* nodeids = forcesensorconditions[i]->Nodes();
