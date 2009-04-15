@@ -303,7 +303,7 @@ void FLD::UTILS::LiftDrag(
       for( unsigned i=0; i<ldconds.size(); ++i) // loop L&D conditions (i.e. lines in .dat file)
       {
         /* get label of present LiftDrag condition  */
-        const unsigned int label = ldconds[i]->Getint("label");
+        const unsigned int label = ldconds[i]->GetInt("label");
 
         ((*liftdragvals)).insert(pair<int,vector<double> >(label,vector<double> (6,0.0)));
       }
@@ -327,7 +327,7 @@ void FLD::UTILS::LiftDrag(
       for( unsigned i=0; i<ldconds.size(); ++i) // loop L&D conditions (i.e. lines in .dat file)
       {
         /* get label of present LiftDrag condition  */
-        const unsigned int label = ldconds[i]->Getint("label");
+        const unsigned int label = ldconds[i]->GetInt("label");
 
         /* get new nodeset for new label OR:
            return pointer to nodeset for known label ... */
@@ -524,7 +524,7 @@ std::map<int,double> FLD::UTILS::ComputeSurfaceFlowRates(
   {
     const DRT::Condition* cond = *conditer;
     
-    const int condID = cond->Getint("ConditionID");
+    const int condID = cond->GetInt("ConditionID");
     
     // get a vector layout from the discretization to construct matching
     // vectors and matrices
@@ -577,7 +577,7 @@ std::map<int,LINALG::Matrix<3,1> > FLD::UTILS::ComputeSurfaceImpulsRates(
   {
     const DRT::Condition* cond = *conditer;
     
-    const int condID = cond->Getint("ConditionID");
+    const int condID = cond->GetInt("ConditionID");
 
     // create vector (+ initialization with zeros)
     const Epetra_BlockMap mappy = velnp->Map();

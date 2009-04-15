@@ -59,7 +59,7 @@ FLD::UTILS::FluidImpedanceWrapper::FluidImpedanceWrapper(RefCountPtr<DRT::Discre
     // -------------------------------------------------------------------
     for (int i=0; i<numcondlines; i++)
     {
-      int condid = (impedancecond[i])->Getint("ConditionID");
+      int condid = (impedancecond[i])->GetInt("ConditionID");
 
       double thisperiod = (impedancecond[i])->GetDouble("timeperiod");
       if (thisperiod != period)
