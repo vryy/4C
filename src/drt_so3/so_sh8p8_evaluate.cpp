@@ -1148,13 +1148,22 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
 
                 // pseudo identity matrix
                 // I^{assd}_{BC} = F^{-1}_{Ba} . F^{d}_{aC}
-                //               = (R . U)^{-1}_{Ba} . (R . U)^{d}_{aC}
-                //               = 
+                //               = (R_{aE} . U_{EB})^{-1}_{Ba} . (R_{aD} . U_{DC})^{d}_{aC}
+                //               = U^{-1}_{BE} . (R^{-1})_{Ea} . R^{d}_{aD} . U^{d}_{DC}
+                // because we have only one rotation matrix R^{d}=R
+                // I^{assd}_{BC} = U^{-1}_{BE} . (R^{-1})_{Ea} . R_{aD} . U^{d}_{DC}
+                //               = U^{-1}_{BE} . I_{ED} . U^{d}_{DC}
+                //               = U^{-1}_{BD} . U^{d}_{DC}
                 LINALG::Matrix<NUMDIM_,NUMDIM_> invdefgradtimesdefgradD;
                 invdefgradtimesdefgradD.MultiplyNN(invdefgrad,defgradD);
 
                 // pseudo inverse disp-based right stretch tensor
                 // U^{assd-1}_{BD} = ( F^{-1}_{Ba} . F^{d}_{aC} ) . U^{d;-1}_{CD}
+                //                 = I^{assd}_{BC} . U^{d;-1}_{CD}
+                // By the way, we have the identity
+                // U^{assd-1}_{BD} = U^{-1}_{BE} . U^{d}_{EC} . U^{d;-1}_{CD}
+                //                 = U^{-1}_{BE} . I_{ED}
+                //                 = U^{-1}_{BD}
                 LINALG::Matrix<NUMDIM_,NUMDIM_> invdefgradtimesdefgradDtimesinvrgtstrD;
                 invdefgradtimesdefgradDtimesinvrgtstrD.MultiplyNN(invdefgradtimesdefgradD,invrgtstrD);
 
