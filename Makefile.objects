@@ -146,12 +146,13 @@ OBJS_DRT_INPAR = \
                 src/drt_inpar/drt_validmaterials.o \
                 src/drt_inpar/drt_boolifyparameters.o
 #               nurbs discretization for isogeometric fe (c++)
-OBJS_DRT_NURBS_DISCRET = \
+OBJS_DRT_NURBS_DISCRET_LIB = \
                 src/drt_fem_general/drt_utils_nurbs_shapefunctions.o \
                 src/drt_fem_general/drt_utils_bspline.o \
                 src/drt_nurbs_discret/drt_nurbs_discret.o \
                 src/drt_nurbs_discret/drt_control_point.o \
-                src/drt_nurbs_discret/drt_knotvector.o \
+                src/drt_nurbs_discret/drt_knotvector.o
+OBJS_DRT_NURBS_DISCRET = \
                 src/drt_nurbs_discret/drt_apply_nurbs_initial_condition.o
 OBJS_DRT      = \
                 src/drt_lib/drt_resulttest.o \
