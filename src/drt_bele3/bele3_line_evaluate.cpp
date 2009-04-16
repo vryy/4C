@@ -111,8 +111,8 @@ int DRT::ELEMENTS::Bele3Line::EvaluateNeumann(
   const vector<double>* val   = condition.Get<vector<double> >("val"  );
   const vector<int>*    functions = condition.Get<vector<int> >("funct");
 
-    // set number of nodes
-  const int iel   = this->NumNode();
+  // set number of nodes
+  const size_t iel   = this->NumNode();
 
   const DiscretizationType distype = this->Shape();
 
@@ -129,7 +129,7 @@ int DRT::ELEMENTS::Bele3Line::EvaluateNeumann(
   Epetra_SerialDenseMatrix xye(2,iel);
 
   // get node coordinates
-  for(int i=0;i<iel;++i)
+  for(size_t i=0;i<iel;++i)
   {
     xye(0,i)=this->Nodes()[i]->X()[0];
     xye(1,i)=this->Nodes()[i]->X()[1];
@@ -160,7 +160,7 @@ int DRT::ELEMENTS::Bele3Line::EvaluateNeumann(
     double coordgp[2];
     coordgp[0]=0.0;
     coordgp[0]=0.0;
-    for (int i = 0; i< iel; i++)
+    for (size_t i = 0; i< iel; i++)
       {
        coordgp[0]+=xye(0,i)*funct[i];
        coordgp[1]+=xye(1,i)*funct[i];
@@ -169,19 +169,19 @@ int DRT::ELEMENTS::Bele3Line::EvaluateNeumann(
     int functnum = -1;
     const double* coordgpref = &coordgp[0]; // needed for function evaluation
 
-    for (int node=0;node<iel;++node)
+    for (size_t node=0;node<iel;++node)
       {
-       for(int dim=0;dim<3;dim++)
+       for(size_t dim=0;dim<3;dim++)
         {
          // factor given by spatial function
-	 if (functions) functnum = (*functions)[dim];
-       	   {
+         if (functions) functnum = (*functions)[dim];
+         {
             if (functnum>0)
               // evaluate function at current gauss point
               functionfac = DRT::UTILS::FunctionManager::Instance().Funct(functnum-1).Evaluate(dim,coordgpref);
             else
               functionfac = 1.0;
-       	   }
+         }
 
           elevec1[node*numdf+dim]+=
           funct[node] * (*onoff)[dim] * (*val)[dim] * fac * functionfac;
@@ -247,7 +247,7 @@ void DRT::ELEMENTS::Bele3Line::IntegrateShapeFunction(ParameterList& params,
 */
 
   // set number of nodes
-  const int iel   = this->NumNode();
+  const size_t iel   = this->NumNode();
 
   // gaussian points
   const DiscretizationType distype = this->Shape();
@@ -262,7 +262,7 @@ void DRT::ELEMENTS::Bele3Line::IntegrateShapeFunction(ParameterList& params,
   Epetra_SerialDenseMatrix 	xye(2,iel);
 
   // get node coordinates
-  for(int i=0;i<iel;++i)
+  for(size_t i=0;i<iel;++i)
   {
     xye(0,i)=this->Nodes()[i]->X()[0];
     xye(1,i)=this->Nodes()[i]->X()[1];
@@ -272,7 +272,7 @@ void DRT::ELEMENTS::Bele3Line::IntegrateShapeFunction(ParameterList& params,
   {
     dsassert(edispnp.size()!=0,"paranoid");
 
-    for (int i=0;i<iel;i++)
+    for (size_t i=0;i<iel;i++)
     {
       xye(0,i) += edispnp[3*i];
       xye(1,i) += edispnp[3*i+1];
@@ -298,13 +298,13 @@ void DRT::ELEMENTS::Bele3Line::IntegrateShapeFunction(ParameterList& params,
     //double fac = intpoints.qwgt[gpid] *dr * thsl;
     const double fac = intpoints.qwgt[gpid] *dr;
 
-    for (int node=0;node<iel;++node)
+    for (size_t node=0;node<iel;++node)
+    {
+      for(size_t dim=0;dim<3;dim++)
       {
-       for(int dim=0;dim<3;dim++)
-        {
-          elevec1[node*numdf+dim]+=funct[node] * fac;
-        }
+        elevec1[node*numdf+dim]+=funct[node] * fac;
       }
+    }
   } //end of loop over integrationen points
 
 return;

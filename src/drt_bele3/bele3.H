@@ -95,7 +95,7 @@ public:
 
   //! @name Access methods
 
-  virtual int NumDofPerNode(const DRT::Node& node) const {return 3;}
+  virtual int NumDofPerNode(const DRT::Node&) const {return 3;}
   virtual int NumDofPerElement() const { return 0; }
   void Print(ostream& os) const;
   virtual Teuchos::RCP<DRT::ElementRegister> ElementRegister() const;
@@ -241,7 +241,7 @@ public:
 
   //@}
 
-  //! @name Acess methods
+  //! @name Access methods
 
   void Print(ostream& os) const;
 
@@ -321,8 +321,7 @@ public:
 
   For this 3D boundary element, we have 3 displacements, if needed
   */
-  virtual int NumDofPerNode(const DRT::Node& node) const
-  {return 3;}
+  virtual int NumDofPerNode(const DRT::Node&) const { return 3; }
 
   virtual int NumDofPerElement() const { return 0; }
 

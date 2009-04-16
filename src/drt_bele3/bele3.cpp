@@ -22,38 +22,27 @@ Maintainer: Axel Gerstenberger
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Bele3::Bele3(int id, int owner) :
 DRT::Element(id,element_bele3,owner)
-//is_moving_(true)
 {
-//  lines_.clear();
   return;
 }
 
 /*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       gammi 11/06|
- |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Bele3::Bele3(const DRT::ELEMENTS::Bele3& old) :
 DRT::Element(old)
-//is_moving_(old.is_moving_)
 {
-//  lines_.clear();
   return;
 }
 
 /*----------------------------------------------------------------------*
- |  Deep copy this instance of Bele3 and return pointer to it (public) |
- |                                                          gammi 11/06 |
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::Bele3::Clone() const
 {
   DRT::ELEMENTS::Bele3* newelement = new DRT::ELEMENTS::Bele3(*this);
-//  newelement->lines_.clear();
   return newelement;
 }
 
 /*----------------------------------------------------------------------*
- |                                                             (public) |
- |                                                          u.kue 03/07 |
  *----------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::ELEMENTS::Bele3::Shape() const
 {
@@ -71,8 +60,6 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Bele3::Shape() const
 }
 
 /*----------------------------------------------------------------------*
- |  Pack data                                                  (public) |
- |                                                          gammi 02/07 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Bele3::Pack(vector<char>& data) const
 {
@@ -91,8 +78,6 @@ void DRT::ELEMENTS::Bele3::Pack(vector<char>& data) const
 
 
 /*----------------------------------------------------------------------*
- |  Unpack data                                                (public) |
- |                                                          gammi 02/07 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Bele3::Unpack(const vector<char>& data)
 {
@@ -100,23 +85,18 @@ void DRT::ELEMENTS::Bele3::Unpack(const vector<char>& data)
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+  dsassert(type == UniqueParObjectId(), "wrong instance type data");
   // extract base class Element
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
 
   if (position != (int)data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
-  
-//  lines_.clear();
-  
-  return;
+    dserror("Mismatch in size of data %d <-> %d",data.size(),position);
 }
 
 
 /*----------------------------------------------------------------------*
- |  dtor (public)                                            gammi 11/06|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Bele3::~Bele3()
 {
@@ -125,7 +105,6 @@ DRT::ELEMENTS::Bele3::~Bele3()
 
 
 /*----------------------------------------------------------------------*
- |  print this element (public)                              gammi 11/06|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Bele3::Print(ostream& os) const
 {
@@ -135,7 +114,6 @@ void DRT::ELEMENTS::Bele3::Print(ostream& os) const
 }
 
 /*----------------------------------------------------------------------*
- |  allocate and return Bele3Register (public)              gammi 04/07|
  *----------------------------------------------------------------------*/
 RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Bele3::ElementRegister() const
 {
@@ -147,12 +125,14 @@ RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Bele3::ElementRegister() const
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::Bele3::Lines()
 {
-//  if (lines_.empty())
-//  {
-//    // so we have to allocate new line elements:
-//    lines_ = DRT::UTILS::ElementBoundaryFactory<Bele3Line,Bele3>(DRT::UTILS::buildLines,this);
-//  }
-  return DRT::UTILS::ElementBoundaryFactory<Bele3Line,Bele3>(DRT::UTILS::buildLines,this);;
+  // do NOT store line or surface elements inside the parent element 
+  // after their creation.
+  // Reason: if a Redistribute() is performed on the discretization, 
+  // stored node ids and node pointers owned by these boundary elements might
+  // have become illegal and you will get a nice segmentation fault ;-)
+
+  // so we have to allocate new line elements:
+  return DRT::UTILS::ElementBoundaryFactory<Bele3Line,Bele3>(DRT::UTILS::buildLines,this);
 }
 
 
@@ -260,7 +240,7 @@ void DRT::ELEMENTS::Bele3Register::Unpack(const vector<char>& data)
   ElementRegister::Unpack(basedata);
 
   if (position != (int)data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+    dserror("Mismatch in size of data %d <-> %d",data.size(),position);
   return;
 }
 
