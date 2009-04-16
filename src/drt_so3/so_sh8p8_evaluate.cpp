@@ -1333,11 +1333,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
   //        + ((-Ce) . ep)_{,d}  // will be done later
   if ( (dragmatrix != NULL) and (gradmatrix != NULL) ) {
     // copy ordinary part from gradmatrix by transposing
-    for (int idisp=0; idisp<NUMDISP_; ++ idisp) {
-      for (int ipres=0; ipres<NUMPRES_; ++ipres) {
-        (*dragmatrix)(ipres,idisp) = (*gradmatrix)(idisp,ipres);
-      }
-    }
+    dragmatrix->UpdateT(*gradmatrix);
     // spatially described stabilisation matrix
     if (stab_ == stab_spatial) {
       // shear modulus
@@ -1353,7 +1349,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
       stabHAtimesinvstabAAbydisp.MultiplyNN(-1.0/stabAA(0,0)/stabAA(0,0),stabHA,*stabAAbydisp);
       // -1./shearmod * (Eem_ . inv(Dem)_,d) . (-Eem' . ep)
       dragmatrix->Update(+1.0/shearmod*stabHA.Dot(pres),stabHAtimesinvstabAAbydisp,1.0);
-      // Eem_{,d}^T . ep = (ep^T . Eem_{,d})^T
+      // (ep^T . Eem_{,d})^T = Eem_{,d}^T . ep
       LINALG::Matrix<1,NUMDISP_> prestimesstabHAbydisp;
       prestimesstabHAbydisp.MultiplyTN(pres,*stabHAbydisp);
       // -1./shearmod * (-Eem . inv(Dem)) . (ep^T . Eem_{,d})^T
@@ -1365,6 +1361,8 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
   if (stab_ == stab_puredisp) {
     if (gradmatrix != NULL)
       gradmatrix->Clear();
+    if (dragmatrix != NULL)
+      dragmatrix->Clear();
     if (stabmatrix != NULL) {
       stabmatrix->Clear();
       for (int i=0; i<NUMPRES_; ++i) (*stabmatrix)(i,i) = 1.0;
