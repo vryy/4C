@@ -87,7 +87,7 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
 
   // ensure that degrees of freedom in the discretization have been set
   if (!discret_->Filled() || !actdis->HaveDofs()) discret_->FillComplete();
-
+  
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
@@ -99,7 +99,6 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // init some class variables (parallelism)
 
   // get the processor ID from the communicator
-
   myrank_  = discret_->Comm().MyPID();
 
   //--------------------------------------------------------------------
@@ -1611,10 +1610,14 @@ void FLD::FluidGenAlphaIntegration::GenAlphaCalcIncrement(const double nlnres)
   // always refactor the matrix for a new solver call --- we assume that
   // it has changed since the last call
   bool refactor=true;
-  // never reset solver from time integration level
+  // never reset solver from time integration level unless it is the first step
   // the preconditioner does the job on its own according to the AZreuse
   // parameter
-  bool reset   =false;
+  bool reset=false;
+  if(step_==1)
+  {
+    reset=true;
+  }
   
   solver_.Solve(sysmat_->EpetraOperator(),
                 increment_               ,
@@ -2023,6 +2026,17 @@ void FLD::FluidGenAlphaIntegration::SetInitialFlowField(
         veln_ ->ReplaceGlobalValues(1,&initialval,&gid);
       }
     }
+
+    DRT::NURBS::apply_nurbs_initial_condition(
+      *discret_  ,
+      solver_    ,
+      numdim_    ,
+      startfuncno,
+      velnp_     );
+    veln_->Update(1.0,*velnp_ ,0.0);
+
+
+
     //----------------------------------------------------------------------
     // random perturbations for field
     //----------------------------------------------------------------------

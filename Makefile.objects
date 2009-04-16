@@ -151,7 +151,8 @@ OBJS_DRT_NURBS_DISCRET = \
                 src/drt_fem_general/drt_utils_bspline.o \
                 src/drt_nurbs_discret/drt_nurbs_discret.o \
                 src/drt_nurbs_discret/drt_control_point.o \
-                src/drt_nurbs_discret/drt_knotvector.o
+                src/drt_nurbs_discret/drt_knotvector.o \
+                src/drt_nurbs_discret/drt_apply_nurbs_initial_condition.o
 OBJS_DRT      = \
                 src/drt_lib/drt_resulttest.o \
                 src/drt_lib/drt_init_control.o \

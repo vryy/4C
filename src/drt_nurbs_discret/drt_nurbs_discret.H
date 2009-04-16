@@ -18,6 +18,7 @@ Maintainer: Peter Gamnitzer
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_nurbs_discret/drt_knotvector.H"
+#include "../drt_nurbs_discret/drt_control_point.H"
 
 /*!
 \brief DRT: namespace of the ccarat discretization module
