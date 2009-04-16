@@ -68,7 +68,7 @@ void StruResultTest::TestNode(const _RESULTDESCR* res, int& nerr, int& test_coun
    */
   if (strudisc_->HaveGlobalNode(res->node))
   {
-    DRT::Node* actnode = strudisc_->gNode(res->node);
+    const DRT::Node* actnode = strudisc_->gNode(res->node);
 
     // Strange! It seems we might actually have a global node around
     // even if it does not belong to us. But here we are just
@@ -79,11 +79,11 @@ void StruResultTest::TestNode(const _RESULTDESCR* res, int& nerr, int& test_coun
     // verbose output
     //cout << "TESTING STRUCTURE RESULTS with StruResultTest::TestNode(..)" << endl;
 
-    double result = 0;  // will hold the actual result of run
-    string position = res->position;  // type of result value
+    const string position = res->position;  // type of result value
     bool unknownpos = true;  // make sure the result value string can be handled
+    double result = 0.0;  // will hold the actual result of run
 
-    // test displacements
+    // test displacements or pressure
     if (dis_ != null)
     {
       const Epetra_BlockMap& disnpmap = dis_->Map();
@@ -102,6 +102,11 @@ void StruResultTest::TestNode(const _RESULTDESCR* res, int& nerr, int& test_coun
       {
         unknownpos = false;
         result = (*dis_)[disnpmap.LID(strudisc_->Dof(actnode,2))];
+      }
+      else if (position=="press")
+      {
+        unknownpos = false;
+        result = (*dis_)[disnpmap.LID(strudisc_->Dof(actnode,3))];
       }
     }
 
@@ -154,12 +159,12 @@ void StruResultTest::TestNode(const _RESULTDESCR* res, int& nerr, int& test_coun
       dserror("position '%s' not supported in structure testing", position.c_str());
 
     // compare values
-    int err = CompareValues(result, res);
+    const int err = CompareValues(result, res);
     nerr += err;
     test_count++;
 
     // verbose output
-    cout.precision(18);
+    cout.precision(16);
     cout << "RESULT "  << test_count
          << " IS " << std::scientific << result
          << " AND " << ((err==0) ? "OKAY" : "INCORRECT")
