@@ -53,9 +53,9 @@ ADAPTER::XFluidImpl::XFluidImpl(
   // sanity check
   vector< DRT::Condition * >      conditions;
   boundarydis_->GetCondition ("XFEMCoupling", conditions);
-  const unsigned numxfemcond = conditions.size();
+  const std::size_t numxfemcond = conditions.size();
   boundarydis_->GetCondition ("FSICoupling", conditions);
-  const unsigned numfsicond = conditions.size();
+  const std::size_t numfsicond = conditions.size();
   if (numxfemcond != numfsicond)
     dserror("number of xfem conditions has to match number of fsi conditions");
   
