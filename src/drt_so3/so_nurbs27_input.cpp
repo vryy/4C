@@ -21,7 +21,7 @@ Maintainer: Peter Gamnitzer
 /*----------------------------------------------------------------------*
  |  read element input (public)                                maf 04/07|
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::So_nurbs27::ReadElement()
+bool DRT::ELEMENTS::NURBS::So_nurbs27::ReadElement()
 {
   // read element's nodes
   int ierr=0;

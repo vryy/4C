@@ -33,7 +33,7 @@ using namespace LINALG; // our linear algebra
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_nurbs27::Evaluate(
+int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(
   ParameterList&            params        ,
   DRT::Discretization&      discretization,
   vector<int>&              lm            ,
@@ -49,7 +49,7 @@ int DRT::ELEMENTS::So_nurbs27::Evaluate(
   LINALG::Matrix<81, 1> elevec2(elevec2_epetra.A(),true);
 
   // start with "none"
-  DRT::ELEMENTS::So_nurbs27::ActionType act = So_nurbs27::none;
+  DRT::ELEMENTS::NURBS::So_nurbs27::ActionType act = So_nurbs27::none;
 
   // get the required action
   string action = params.get<string>("action","none");
@@ -165,7 +165,7 @@ int DRT::ELEMENTS::So_nurbs27::Evaluate(
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)              |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_nurbs27::EvaluateNeumann(
+int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(
   ParameterList&            params        ,
   DRT::Discretization&      discretization,
   DRT::Condition&           condition     ,
@@ -292,7 +292,7 @@ int DRT::ELEMENTS::So_nurbs27::EvaluateNeumann(
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping (protected)                       |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_nurbs27::InitJacobianMapping(DRT::Discretization& dis)
+void DRT::ELEMENTS::NURBS::So_nurbs27::InitJacobianMapping(DRT::Discretization& dis)
 {
 
   // --------------------------------------------------
@@ -361,7 +361,7 @@ void DRT::ELEMENTS::So_nurbs27::InitJacobianMapping(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                                      |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_nurbs27::sonurbs27_nlnstiffmass(
+void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
   vector<int>&           lm            , // location matrix
   DRT::Discretization&   discretization, // discretisation to extract knot vector
   vector<double>&        disp          , // current displacements
@@ -596,7 +596,7 @@ void DRT::ELEMENTS::So_nurbs27::sonurbs27_nlnstiffmass(
 /*----------------------------------------------------------------------*
  |  Evaluate nurbs27 Shape fcts at all 27 Gauss Points                     |
  *----------------------------------------------------------------------*/
-const vector<LINALG::Matrix<27,1> > DRT::ELEMENTS::So_nurbs27::sonurbs27_shapefcts(
+const vector<LINALG::Matrix<27,1> > DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_shapefcts(
   const std::vector<Epetra_SerialDenseVector> & myknots,
   const LINALG::Matrix<27,1>                  & weights
   )
@@ -629,7 +629,7 @@ const vector<LINALG::Matrix<27,1> > DRT::ELEMENTS::So_nurbs27::sonurbs27_shapefc
 /*----------------------------------------------------------------------*
  |  Evaluate nurbs27 Shape fct derivs at all 27 Gauss Points              |
  *----------------------------------------------------------------------*/
-const vector<LINALG::Matrix<3,27> > DRT::ELEMENTS::So_nurbs27::sonurbs27_derivs(
+const vector<LINALG::Matrix<3,27> > DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_derivs(
   const std::vector<Epetra_SerialDenseVector> & myknots,
   const LINALG::Matrix<27,1>                  & weights
 )
@@ -664,7 +664,7 @@ const vector<LINALG::Matrix<3,27> > DRT::ELEMENTS::So_nurbs27::sonurbs27_derivs(
 /*----------------------------------------------------------------------*
  |  Evaluate nurbs27 Weights at all 27 Gauss Points                     |         
  *----------------------------------------------------------------------*/
-const vector<double> DRT::ELEMENTS::So_nurbs27::sonurbs27_gpweights()
+const vector<double> DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_gpweights()
 {
   const int numgp=27;
 
@@ -682,12 +682,12 @@ const vector<double> DRT::ELEMENTS::So_nurbs27::sonurbs27_gpweights()
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Sonurbs27Register::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::NURBS::Sonurbs27Register::Initialize(DRT::Discretization& dis)
 {
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->Type() != DRT::Element::element_so_nurbs27) continue;
-    DRT::ELEMENTS::So_nurbs27* actele = dynamic_cast<DRT::ELEMENTS::So_nurbs27*>(dis.lColElement(i));
+    DRT::ELEMENTS::NURBS::So_nurbs27* actele = dynamic_cast<DRT::ELEMENTS::NURBS::So_nurbs27*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_nurbs27* failed");
     actele->InitJacobianMapping(dis);
   }

@@ -22,7 +22,7 @@ Maintainer: Peter Gamnitzer
  |  ctor (public)                                                       |
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_nurbs27::So_nurbs27(int id, int owner) :
+DRT::ELEMENTS::NURBS::So_nurbs27::So_nurbs27(int id, int owner) :
 DRT::Element(id,element_so_nurbs27,owner),
 data_()
 {
@@ -38,7 +38,7 @@ data_()
  |  copy-ctor (public)                                                  |
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_nurbs27::So_nurbs27(const DRT::ELEMENTS::So_nurbs27& old) :
+DRT::ELEMENTS::NURBS::So_nurbs27::So_nurbs27(const DRT::ELEMENTS::NURBS::So_nurbs27& old) :
 DRT::Element(old),
 kintype_(old.kintype_),
 data_   (old.data_   ),
@@ -56,16 +56,16 @@ detJ_   (old.detJ_   )
 /*----------------------------------------------------------------------*
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::So_nurbs27::Clone() const
+DRT::Element* DRT::ELEMENTS::NURBS::So_nurbs27::Clone() const
 {
-  DRT::ELEMENTS::So_nurbs27* newelement = new DRT::ELEMENTS::So_nurbs27(*this);
+  DRT::ELEMENTS::NURBS::So_nurbs27* newelement = new DRT::ELEMENTS::NURBS::So_nurbs27(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------*
  |                                                             (public) |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::So_nurbs27::Shape() const
+DRT::Element::DiscretizationType DRT::ELEMENTS::NURBS::So_nurbs27::Shape() const
 {
   return nurbs27;
 }
@@ -73,7 +73,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::So_nurbs27::Shape() const
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_nurbs27::Pack(vector<char>& data) const
+void DRT::ELEMENTS::NURBS::So_nurbs27::Pack(vector<char>& data) const
 {
   data.resize(0);
 
@@ -107,7 +107,7 @@ void DRT::ELEMENTS::So_nurbs27::Pack(vector<char>& data) const
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_nurbs27::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::NURBS::So_nurbs27::Unpack(const vector<char>& data)
 {
   int position = 0;
   // extract type
@@ -145,7 +145,7 @@ void DRT::ELEMENTS::So_nurbs27::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_nurbs27::~So_nurbs27()
+DRT::ELEMENTS::NURBS::So_nurbs27::~So_nurbs27()
 {
   return;
 }
@@ -154,7 +154,7 @@ DRT::ELEMENTS::So_nurbs27::~So_nurbs27()
 /*----------------------------------------------------------------------*
  |  print this element (public)                                         |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_nurbs27::Print(ostream& os) const
+void DRT::ELEMENTS::NURBS::So_nurbs27::Print(ostream& os) const
 {
   os << "So_nurbs27 ";
   Element::Print(os);
@@ -167,16 +167,16 @@ void DRT::ELEMENTS::So_nurbs27::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  allocate and return So_nurbs27Register (public)                     |
  *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::So_nurbs27::ElementRegister() const
+RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::NURBS::So_nurbs27::ElementRegister() const
 {
-  return rcp(new DRT::ELEMENTS::Sonurbs27Register(Type()));
+  return rcp(new DRT::ELEMENTS::NURBS::Sonurbs27Register(Type()));
 }
 
 
 /*----------------------------------------------------------------------*
  |  get vector of volumes (length 1) (public)                           |
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::So_nurbs27::Volumes()
+vector<RCP<DRT::Element> > DRT::ELEMENTS::NURBS::So_nurbs27::Volumes()
 {
   vector<RCP<Element> > volumes(1);
   volumes[0]= rcp(this, false);
@@ -187,7 +187,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::So_nurbs27::Volumes()
  |  get vector of surfaces (public)                                      |
  |  surface normals always point outward                                 |
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::So_nurbs27::Surfaces()
+vector<RCP<DRT::Element> > DRT::ELEMENTS::NURBS::So_nurbs27::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -208,7 +208,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::So_nurbs27::Surfaces()
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                                        |
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::So_nurbs27::Lines()
+vector<RCP<DRT::Element> > DRT::ELEMENTS::NURBS::So_nurbs27::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -234,7 +234,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::So_nurbs27::Lines()
 /*----------------------------------------------------------------------*
  |  ctor (public)                                                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Sonurbs27Register::Sonurbs27Register(DRT::Element::ElementType etype) :
+DRT::ELEMENTS::NURBS::Sonurbs27Register::Sonurbs27Register(DRT::Element::ElementType etype) :
 ElementRegister(etype)
 {
   return;
@@ -243,8 +243,8 @@ ElementRegister(etype)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                                  |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Sonurbs27Register::Sonurbs27Register(
-                               const DRT::ELEMENTS::Sonurbs27Register& old) :
+DRT::ELEMENTS::NURBS::Sonurbs27Register::Sonurbs27Register(
+                               const DRT::ELEMENTS::NURBS::Sonurbs27Register& old) :
 ElementRegister(old)
 {
   return;
@@ -253,15 +253,15 @@ ElementRegister(old)
 /*----------------------------------------------------------------------*
  |  Deep copy this instance return pointer to it               (public) |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Sonurbs27Register* DRT::ELEMENTS::Sonurbs27Register::Clone() const
+DRT::ELEMENTS::NURBS::Sonurbs27Register* DRT::ELEMENTS::NURBS::Sonurbs27Register::Clone() const
 {
-  return new DRT::ELEMENTS::Sonurbs27Register(*this);
+  return new DRT::ELEMENTS::NURBS::Sonurbs27Register(*this);
 }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Sonurbs27Register::Pack(vector<char>& data) const
+void DRT::ELEMENTS::NURBS::Sonurbs27Register::Pack(vector<char>& data) const
 {
   data.resize(0);
 
@@ -280,7 +280,7 @@ void DRT::ELEMENTS::Sonurbs27Register::Pack(vector<char>& data) const
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Sonurbs27Register::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::NURBS::Sonurbs27Register::Unpack(const vector<char>& data)
 {
   int position = 0;
   // extract type
@@ -301,7 +301,7 @@ void DRT::ELEMENTS::Sonurbs27Register::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Sonurbs27Register::~Sonurbs27Register()
+DRT::ELEMENTS::NURBS::Sonurbs27Register::~Sonurbs27Register()
 {
   return;
 }
@@ -309,7 +309,7 @@ DRT::ELEMENTS::Sonurbs27Register::~Sonurbs27Register()
 /*----------------------------------------------------------------------*
  |  print (public)                                                      |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Sonurbs27Register::Print(ostream& os) const
+void DRT::ELEMENTS::NURBS::Sonurbs27Register::Print(ostream& os) const
 {
   os << "Sonurbs27Register ";
   ElementRegister::Print(os);

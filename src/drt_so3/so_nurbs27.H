@@ -25,6 +25,7 @@ using namespace Teuchos;
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_node.H"
+
 //@=
 //#include "so_surface.H"
 //#include "so_line.H"
@@ -50,6 +51,15 @@ class Discretization;
 
 namespace ELEMENTS
 {
+
+/*!
+\brief NURBS: namespace of all isogeometric analysis tools
+
+*/
+namespace NURBS
+{  
+
+
 // forward declarations
 class Sonurbs27Register;
 
@@ -390,7 +400,7 @@ public:
   Makes a deep copy of an Sonurbs27Register
 
   */
-  Sonurbs27Register(const DRT::ELEMENTS::Sonurbs27Register& old);
+  Sonurbs27Register(const DRT::ELEMENTS::NURBS::Sonurbs27Register& old);
 
   /*!
   \brief Deep copy this instance of Sonurbs27Register and return pointer to the copy
@@ -399,7 +409,7 @@ public:
   where the type of the derived class is unknown and a copy-ctor is needed
 
   */
-  DRT::ELEMENTS::Sonurbs27Register* Clone() const;
+  DRT::ELEMENTS::NURBS::Sonurbs27Register* Clone() const;
 
   /*!
   \brief Return unique ParObject id
@@ -467,6 +477,7 @@ private:
 
 
 
+} // namespace NURBS
 } // namespace ELEMENTS
 } // namespace DRT
 

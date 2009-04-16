@@ -437,7 +437,7 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
 /*----------------------------------------------------------------------*
  | material laws for So_nurbs27                              gammi 04/09|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_nurbs27::sonurbs27_mat_sel(
+void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_mat_sel(
   LINALG::Matrix<MAT::NUM_STRESS_3D,1>*                  stress  ,
   LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>* cmat    ,
   double*                                                density ,
