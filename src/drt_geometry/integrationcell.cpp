@@ -257,13 +257,13 @@ double GEO::DomainIntCell::VolumeInXiDomain(
     const double detcell = GEO::detEtaToXi3D<XFEM::xfem_assembly>(*this, pos_eta_domain);
     const double fac = intpoints.qwgt[iquad]*detcell;
 
-    if(detcell < 0.0)
-    {
-      cout << scientific << detcell << endl;
-      cout << this->toString() << endl;
-      this->toGmsh("cell.pos");
-      dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT OF INTEGRATION CELL: %20.16f", ele.Id(), detcell);
-    }    
+//    if(detcell < 0.0)
+//    {
+//      cout << scientific << detcell << endl;
+//      cout << this->toString() << endl;
+//      this->toGmsh("cell_with_negative_volume.pos");
+//      dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT OF INTEGRATION CELL: %20.16f", ele.Id(), detcell);
+//    }    
     volume_cell += fac;
 
   } // end loop over gauss points
