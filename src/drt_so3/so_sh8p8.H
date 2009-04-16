@@ -133,6 +133,8 @@ private:
                                          ///< of relevant entries 
                                          ///< if symmetric in element displacements
   static const int NUMPRES_ = 8;  ///< total discrete pressures per element
+  static const int NUMPRESBRO_ = 1;  ///< total number of discrete, discontinuous/broken
+                                     ///< pressures per element  
   static const int NUMSTR_ = 6;  ///< number of strains/stresses
   static const int NUMDFGR_ = 9;  ///< number of deformation gradient components
                                          ///< (deformation gradient is non-symmetric)

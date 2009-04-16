@@ -141,7 +141,7 @@ bool DRT::ELEMENTS::So_sh8p8::ReadElement()
       stab_ = stab_affine;
     else if (strncmp(buffer,"NonAff",6)==0)
       stab_ = stab_nonaffine;
-    else if (strncmp(buffer,"Spatial",7)==0)
+    else if (strncmp(buffer,"Spat",4)==0)
       stab_ = stab_spatial;
     else if (strncmp(buffer,"PureDisp",8)==0)
       stab_ = stab_puredisp;

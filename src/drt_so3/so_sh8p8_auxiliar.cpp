@@ -490,6 +490,7 @@ void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtTwiceDiffByItself(
   }
 #else
   sqfdderf.Clear();
+
   sqfdderf(0,0) = 2.0;
   sqfdderf(0,21) = 0.5;
   sqfdderf(0,35) = 0.5;
@@ -1107,6 +1108,7 @@ void DRT::ELEMENTS::So_sh8p8::AssembleVolume(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+/* DEBUG ONLY */
 void DRT::ELEMENTS::So_sh8p8::GnuplotOut(
   Teuchos::ParameterList& params,  ///< parameter list for in 'n' out
   std::vector<double>& state,  ///< current state vector, i.e. displacements and pressure DOFs
@@ -1147,9 +1149,9 @@ void DRT::ELEMENTS::So_sh8p8::GnuplotOut(
 
      // print residual over time
      gpltfile << "plot \\" << std::endl;
-//     for (int d=0; d<NUMDOF_; d+=4) {  // x-dir
+     //for (int d=0; d<NUMDOF_; d+=4) {  // x-dir
      for (int d=3; d<NUMDOF_; d+=4) {  // pres
-//     for (int d=0; d<NUMDOF_; d+=1) {  // all
+     //for (int d=0; d<NUMDOF_; d+=1) {  // all
        gpltfile << " \"" << txtname << "\""
                 << " using " << 1 << ":" <<  2+4*8+d+1
                 << " title \"res" << d+1 << "\""
