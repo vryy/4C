@@ -552,6 +552,9 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
     if (fabs(detJ) <= EPS10) dserror("JACOBIAN DETERMINANT CLOSE TO ZERO");
     else if (detJ < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
 
+    // integration factor
+    const double detJ_w = detJ*gpweights[gp];
+
     /* compute the CURRENT Jacobian matrix which looks like:
     **         [ xcurr_,r  ycurr_,r  zcurr_,r ]
     **  Jcur = [ xcurr_,s  ycurr_,s  zcurr_,s ]
@@ -701,7 +704,10 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
     LINALG::Matrix<NUMDIM_,NUMDIM_> invrgtstrD;  // inverse of pure disp-based material stretch tensor U^{d;-1}
     AssDefGrad(detdefgrad,defgrad,invdefgrad,rgtstr,defgradD,rgtstrD,invrgtstrD,
                invJ_[gp],jac,jac_cur,glstrain);
-    
+
+    // Gauss weighted Jacobian mapping volume of spatial to parameter configuration
+    const double vol_w = detdefgrad * detJ_w;
+
     // return gp strains if necessary
     if (iostrain != INPAR::STR::strain_none)
       Strain(elestrain,iostrain,gp,detdefgrad,defgrad,invdefgrad,glstrain);
@@ -735,9 +741,6 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
     else
       dserror("Cannot handle requested stabilisation type %d", stab_);
  
-    // integration factor
-    const double detJ_w = detJ*gpweights[gp];
-
     // internal force
     if (force != NULL)
     {
@@ -1234,8 +1237,8 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                           += invdefgradtimesdefgradDtimesinvrgtstrD(B,D) * DBfact*rgtstrbybydisp(DB,dk);  // (8)
                       }
                     }
-                    (*stiffmatrix)(d,k) -= defgradbybydisp_dk * effpressure*detdefgrad*detJ_w;
-                    if (k != d) (*stiffmatrix)(k,d) -= defgradbybydisp_dk * effpressure*detdefgrad*detJ_w;
+                    (*stiffmatrix)(d,k) -= defgradbybydisp_dk * effpressure*vol_w;
+                    if (k != d) (*stiffmatrix)(k,d) -= defgradbybydisp_dk * effpressure*vol_w;
                   }
                 }
 
@@ -1251,7 +1254,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
           LINALG::Matrix<NUMDFGR_,NUMDISP_> aux;
           aux.MultiplyNN(WmT,defgradbydisp);
           // K -= dFv' * AUX * detJ * w(gp)
-          stiffmatrix->MultiplyTN(-effpressure*detdefgrad*detJ_w,defgradbydisp,aux,1.0);
+          stiffmatrix->MultiplyTN(-effpressure*vol_w,defgradbydisp,aux,1.0);
         }
 
         // deformation gradient differentiated with respect to displacements
@@ -1265,19 +1268,18 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
         // (-G) = -(dFv'*fvT)*pN * Fdet*detJ*wp(i);
         if (gradmatrix != NULL) {
           // contribute to G-op
-          gradmatrix->MultiplyNT(-detdefgrad*detJ_w,defgradbydisptimestinvdefgrad,prshfct,1.0);
+          gradmatrix->MultiplyNT(-vol_w,defgradbydisptimestinvdefgrad,prshfct,1.0);
         }
 
         // derivatives of spatially evaluated stabilisation matrix
         if (dragmatrix != NULL) {
           if (stab_ == stab_spatial) {
-            const double detdefgrad_detJ_w = detdefgrad * detJ_w;
             // Mem_,d . ep
-            stabHHbydisp->MultiplyNT(pressure*detdefgrad_detJ_w,shapefcts[gp],defgradbydisptimestinvdefgrad,1.0);
+            stabHHbydisp->MultiplyNT(pressure*vol_w,shapefcts[gp],defgradbydisptimestinvdefgrad,1.0);
             // Eem_,d
-            stabHAbydisp->MultiplyNT(stabA[gp](0,0)*detdefgrad_detJ_w,shapefcts[gp],defgradbydisptimestinvdefgrad,1.0);
+            stabHAbydisp->MultiplyNT(stabA[gp](0,0)*vol_w,shapefcts[gp],defgradbydisptimestinvdefgrad,1.0);
             // Dem_,d
-            stabAAbydisp->MultiplyTT(stabA[gp](0,0)*detdefgrad_detJ_w,stabA[gp],defgradbydisptimestinvdefgrad,1.0);
+            stabAAbydisp->MultiplyTT(stabA[gp](0,0)*vol_w,stabA[gp],defgradbydisptimestinvdefgrad,1.0);
           }
         }
 
@@ -1301,7 +1303,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
 
     // store volume
     if (volume != NULL)
-      *volume += detdefgrad*detJ_w;
+      *volume += vol_w;
 
    /* =========================================================================*/
   }/* ==================================================== end of Loop over GP */
