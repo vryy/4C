@@ -133,18 +133,16 @@ namespace XFEM
         ExtractfromPack(position,data,gid_);
         
         // read field
-        int field_int;
-        ExtractfromPack(position,data,field_int);
-        const PHYSICS::Field field = static_cast<PHYSICS::Field>(field_int);
+        PHYSICS::Field field;
+        ExtractfromPack(position,data,field);
         
         // read xfem condition label
         int label;
         ExtractfromPack(position,data,label);
         
         // read enrichment type
-        int enrtype_int;
-        ExtractfromPack(position,data,enrtype_int);
-        const XFEM::Enrichment::EnrType enrtype = static_cast<XFEM::Enrichment::EnrType>(enrtype_int);
+        XFEM::Enrichment::EnrType enrtype;
+        ExtractfromPack(position,data,enrtype);
         
         // check correct reading
         if (position != (int)data.size())
