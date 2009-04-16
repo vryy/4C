@@ -37,9 +37,6 @@ std::string IO::GMSH::XdisToString(
       for (GEO::DomainIntCells::const_iterator cell = cells.begin(); cell
           != cells.end(); ++cell)
       {
-        //static LINALG::SerialDenseMatrix dxyz_ele(3, 27);
-        //cell->NodalPosXYZ(*actele, dxyz_ele);
-        // TODO remove
         const LINALG::SerialDenseMatrix& dxyz_ele = cell->CellNodalPosXYZ();
         gmshfilecontent << IO::GMSH::cellWithScalarToString(cell->Shape(),
             scalar, dxyz_ele) << "\n";
@@ -48,9 +45,6 @@ std::string IO::GMSH::XdisToString(
       for (GEO::BoundaryIntCells::const_iterator bcell = bcells.begin(); bcell
           != bcells.end(); ++bcell)
       {
-        //static LINALG::SerialDenseMatrix bxyz_ele(3, 9);
-        //bcell->NodalPosXYZ(*actele, bxyz_ele);
-        // TODO remove
         const LINALG::SerialDenseMatrix& bxyz_ele = bcell->CellNodalPosXYZ();
         gmshfilecontent << IO::GMSH::cellWithScalarToString(bcell->Shape(),
             scalar, bxyz_ele) << "\n";
