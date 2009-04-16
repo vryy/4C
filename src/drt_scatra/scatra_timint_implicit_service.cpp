@@ -585,7 +585,7 @@ void SCATRA::ScaTraTimIntImpl::SetLomaVelocity(
           // insert velocity value in vector
           convel_->ReplaceMyValue(lnodeid, 0, velocity);
 
-          // get fluid residual value for this processor-local fluid dof
+          // get (negative) fluid residual value for this processor-local fluid dof
           double residual = (*extresidual)[flid];
           // insert fluid residual value in vector
           fluidres_->ReplaceMyValue(lnodeid, 0, residual);
@@ -607,7 +607,7 @@ void SCATRA::ScaTraTimIntImpl::SetLomaVelocity(
             // insert velocity value in vector
             convel_->ReplaceMyValue(localslaveid, index, velocity);
 
-            // get fluid residual value for this processor-local fluid dof
+            // get (negative) fluid residual value for this processor-local fluid dof
             double residual = (*extresidual)[flid];
             // insert fluid residual value in vector
             fluidres_->ReplaceMyValue(lnodeid, index, residual);
@@ -628,7 +628,7 @@ void SCATRA::ScaTraTimIntImpl::SetLomaVelocity(
       // insert velocity value in vector
       convel_->ReplaceMyValue(lnodeid, 0, velocity);
 
-      // get fluid residual value for this processor-local fluid dof
+      // get (negative) fluid residual value for this processor-local fluid dof
       double residual = (*extresidual)[flid];
       // insert fluid residual value in vector
       fluidres_->ReplaceMyValue(lnodeid, 0, residual);
@@ -650,7 +650,7 @@ void SCATRA::ScaTraTimIntImpl::SetLomaVelocity(
         // insert velocity value in vector
         convel_->ReplaceMyValue(lnodeid, index, velocity);
 
-        // get fluid residual value for this processor-local fluid dof
+        // get (negative) fluid residual value for this processor-local fluid dof
         double residual = (*extresidual)[flid];
         // insert fluid residual value in vector
         fluidres_->ReplaceMyValue(lnodeid, index, residual);

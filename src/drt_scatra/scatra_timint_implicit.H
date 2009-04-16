@@ -465,7 +465,7 @@ protected:
   /// actual convective velocity
   RCP<Epetra_MultiVector>    convel_;
 
-  /// fluid momentum residual (for obtaining subgrid-scale velocity)
+  /// (negative) fluid momentum residual (for obtaining subgrid-scale velocity)
   RCP<Epetra_MultiVector>    fluidres_;
 
   /// Nonlinear iteration increment vector

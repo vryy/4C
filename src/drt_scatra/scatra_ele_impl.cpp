@@ -326,7 +326,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
     DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,velocity,nsd_);
 
-    // for low-Mach-number flow, also get fluid momentum residual for
+    // for low-Mach-number flow, also get (negative) fluid momentum residual for
     // obtaining subgrid-scale velocity field
     if (scaltypestr =="loma" and sgvel)
     {
@@ -794,7 +794,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
     const double                          timefac, ///< time discretization factor
     const double                          alphaF, ///< factor for generalized-alpha time integration
     const LINALG::Matrix<nsd_,iel>&       evelnp,///< nodal velocities at t_{n+1}
-    const LINALG::Matrix<nsd_,iel>&       efresnp,///< nodal fluid residual values at t_{n+1}
+    const LINALG::Matrix<nsd_,iel>&       efresnp,///< nodal (negative) fluid residual values at t_{n+1}
     const vector<LINALG::Matrix<iel,1> >& fsphinp,///< fine-scale part of current scalar field
     const bool                            temperature, ///< temperature flag
     const bool                            conservative, ///< flag for conservative form
@@ -906,10 +906,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
           // get density
           const double dens = funct_.Dot(edensnp);
 
-          // multiply density by tau with minus sign
-          const double denstau = -dens*tau_[k];
+          // multiply density by tau
+          const double denstau = dens*tau_[k];
 
-          // compute subgrid-scale velocity
+          // compute subgrid-scale velocity using negative fluid residual
           sgvelint_.Multiply(efresnp,funct_);
           sgvelint_.Scale(denstau);
 

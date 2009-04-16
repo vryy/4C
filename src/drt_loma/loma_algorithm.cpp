@@ -183,7 +183,7 @@ void LOMA::Algorithm::InitialCalculations()
   // get initial subgrid viscosity (zero values)
   GetSubgridViscosity();
 
-  // get initial fluid trueresidual
+  // get initial (negative) fluid trueresidual
   GetFluidResidual();
 
   // compute initial convective velocity field for scalar transport solver
@@ -322,10 +322,10 @@ void LOMA::Algorithm::GenAlphaOuterLoop()
     // get subgrid viscosity
     GetSubgridViscosity();
 
-    // get fluid trueresidual
+    // get (negative) fluid trueresidual
     GetFluidResidual();
 
-    // set field vectors: velocity, subgrid viscosity and fluid trueresidual
+    // set field vectors: velocity, subgrid viscosity, (negative) fluid trueresidual
     ScaTraField().SetLomaVelocity(VelocityPressureAf(),SubgridViscosity(),FluidResidual(),fluiddiscret_);
 
     // solve transport equation for temperature
@@ -400,10 +400,10 @@ void LOMA::Algorithm::OSTBDF2OuterLoop()
     // get subgrid viscosity
     GetSubgridViscosity();
 
-    // get fluid trueresidual
+    // get (negative) fluid trueresidual
     GetFluidResidual();
 
-    // set field vectors: velocity, subgrid viscosity and fluid trueresidual
+    // set field vectors: velocity, subgrid viscosity, (negative) fluid trueresidual
     ScaTraField().SetLomaVelocity(VelocityPressureNp(),SubgridViscosity(),FluidResidual(),fluiddiscret_);
 
     // solve transport equation for temperature

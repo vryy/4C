@@ -173,7 +173,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   const Epetra_Map* noderowmap = discret_->NodeRowMap();
   convel_ = rcp(new Epetra_MultiVector(*noderowmap,3,true));
 
-  // fluid momentum residual (always three velocity components per node)
+  // (negative) fluid momentum residual (always three velocity components per node)
   // (get noderowmap of discretization for creating this multivector9
   fluidres_ = rcp(new Epetra_MultiVector(*noderowmap,3,true));
 
@@ -491,7 +491,7 @@ void SCATRA::ScaTraTimIntImpl::AddVelocityToParameterList(Teuchos::ParameterList
   LINALG::Export(*convel_,*tmp);
   p.set("velocity field",tmp);
 
-  // for low-Mach-number flow, also provide fluid momentum residual for
+  // for low-Mach-number flow, also provide (negative) fluid momentum residual for
   // obtaining subgrid-scale velocity field for usage on element level
   if (prbtype_ == "loma")
   {
