@@ -1674,10 +1674,32 @@ void FLD::FluidGenAlphaIntegration::GenAlphaNonlinearUpdate()
   //             + gamma * dt * dacc = vel     +  gamma * dt * dacc =
   //                                      (i)
   //               n+1
-  //          = vel     +   dvel
-  //               (i)
-  accinc->Scale(gamma_*dt_);
-  velpressplitter_.AddOtherVector(accinc,velnp_);
+  //          = vel     +   dvel  
+  //               (i)           ,
+  //
+  // the velocity could be updated incremently.
+  //
+  // Incremental updates seem to be dangerous in this place. Round-off 
+  // errors could evolve on velocity and pressure seperately through the
+  // nonlinear process. That means that accelerations and velocities at 
+  // the current iteration level might get decoupled due to numerical
+  // errors.
+  //
+  // For this reason we use a different update formula here, making sure 
+  // that accelerations and velocities at the current iteration level are
+  // alway syncronised:
+  //
+  //    n+1         n    +-         -+           n                   n+1    
+  // vel      =  vel   + | 1 - gamma | * dt * acc  + gamma * dt * acc     
+  //    (i+1)            +-         -+                               (i+1)
+  Teuchos::RCP<Epetra_Vector> vel    = velpressplitter_.ExtractOtherVector(veln_ );
+  Teuchos::RCP<Epetra_Vector> accold = velpressplitter_.ExtractOtherVector(accn_ );
+  Teuchos::RCP<Epetra_Vector> accnew = velpressplitter_.ExtractOtherVector(accnp_);
+
+  vel->Update((1.0-gamma_)*dt_,*accold,gamma_*dt_,*accnew,1.0);
+  velpressplitter_.InsertOtherVector(vel,velnp_);
+
+
 
   // ------------------------------------------------------
   // update pressure
@@ -1698,6 +1720,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaNonlinearUpdate()
   {
     velpressplitter_.AddCondVector(preinc,velnp_);
   }
+
   return;
 } // FluidGenAlphaIntegration::GenAlphaNonlinearUpdate
 
