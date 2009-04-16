@@ -273,7 +273,7 @@ void DRT::ELEMENTS::XFluid3Surface::IntegrateShapeFunction(
 {
   // there are 3 velocities and 1 pressure
   return;
-  const int numdf = 4;
+  const std::size_t numdf = 4;
 
 //  const double thsl = params.get("thsl",1.0);
 
@@ -286,7 +286,7 @@ void DRT::ELEMENTS::XFluid3Surface::IntegrateShapeFunction(
 */
 
   // set number of nodes
-  const int iel   = this->NumNode();
+  const std::size_t iel   = this->NumNode();
 
   DRT::UTILS::GaussRule2D  gaussrule = DRT::UTILS::intrule2D_undefined;
   switch(distype)
@@ -319,7 +319,7 @@ void DRT::ELEMENTS::XFluid3Surface::IntegrateShapeFunction(
   double                        drs;
 
   // get node coordinates
-  for(int i=0;i<iel;i++)
+  for(std::size_t i=0;i<iel;i++)
   {
     xyze(0,i)=this->Nodes()[i]->X()[0];
     xyze(1,i)=this->Nodes()[i]->X()[1];
@@ -328,7 +328,7 @@ void DRT::ELEMENTS::XFluid3Surface::IntegrateShapeFunction(
 
   if (not edispnp.empty())
   {
-    for (int i=0;i<iel;i++)
+    for (std::size_t i=0;i<iel;i++)
     {
       xyze(0,i) += edispnp[4*i];
       xyze(1,i) += edispnp[4*i+1];
@@ -363,9 +363,9 @@ void DRT::ELEMENTS::XFluid3Surface::IntegrateShapeFunction(
     //const double fac = intpoints.qwgt[gpid] * drs * thsl;
     const double fac = intpoints.qwgt[gpid] * drs;
 
-    for (int node=0;node<iel;++node)
+    for (std::size_t node=0;node<iel;++node)
     {
-      for(int dim=0;dim<3;dim++)
+      for(std::size_t dim=0;dim<3;dim++)
       {
         elevec1[node*numdf+dim]+=
           funct[node] * fac;
@@ -388,12 +388,12 @@ void DRT::ELEMENTS::XFluid3Surface::IntegrateSurfaceFlowRate(
     const std::vector<double>&       myvelnp)
 {
   // there are 3 velocities and 1 pressure
-  const int numdf = 4;
+  const std::size_t numdf = 4;
 
   const DiscretizationType distype = this->Shape();
 
   // set number of nodes
-  const int iel   = this->NumNode();
+  const std::size_t iel   = this->NumNode();
 
   DRT::UTILS::GaussRule2D  gaussrule = DRT::UTILS::intrule2D_undefined;
   switch(distype)
@@ -428,7 +428,7 @@ void DRT::ELEMENTS::XFluid3Surface::IntegrateSurfaceFlowRate(
   double                        drs;
 
   // get node coordinates
-  for(int i=0;i<iel;i++)
+  for(std::size_t i=0;i<iel;i++)
   {
     xyze(0,i)=this->Nodes()[i]->X()[0];
     xyze(1,i)=this->Nodes()[i]->X()[1];
@@ -436,7 +436,7 @@ void DRT::ELEMENTS::XFluid3Surface::IntegrateSurfaceFlowRate(
   }
   
   // get element velocities
-  for(int i=0;i<iel;i++)
+  for(std::size_t i=0;i<iel;i++)
   {
     evelnp(0,i)=myvelnp[i*numdf+0];
     evelnp(1,i)=myvelnp[i*numdf+1];
@@ -477,7 +477,7 @@ void DRT::ELEMENTS::XFluid3Surface::IntegrateSurfaceFlowRate(
     
     // store flowrate at first dof of each node
     // use negatve value so that inflow is positiv
-    for (int node=0;node<iel;++node)
+    for (std::size_t node=0;node<iel;++node)
     {
       elevec1[node*numdf] -= funct[node] * fac * flowrate;
     }
@@ -497,7 +497,7 @@ void DRT::ELEMENTS::XFluid3Surface::IntegrateSurfaceImpulsRate(
     const std::vector<double>&       myvelnp)
 {
   // there are 3 velocities and 1 pressure
-  const int numdf = 4;
+  const std::size_t numdf = 4;
 
   for (int idof=0;idof<elevec1.Length();++idof)
   {
@@ -507,11 +507,11 @@ void DRT::ELEMENTS::XFluid3Surface::IntegrateSurfaceImpulsRate(
   const DiscretizationType distype = this->Shape();
 
   // set number of nodes
-  const int iel   = this->NumNode();
+  const std::size_t iel   = this->NumNode();
 //  const Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih = params.get< Teuchos::RCP< XFEM::InterfaceHandleXFSI > >("interfacehandle",null);
     
   // check, if we have not enough dofs (intersected element or element in a hole)
-  if ((int)lm.size() != iel*4)
+  if (lm.size() != iel*4)
   {
     return;
   }
@@ -549,7 +549,7 @@ void DRT::ELEMENTS::XFluid3Surface::IntegrateSurfaceImpulsRate(
   double                        drs;
 
   // get node coordinates
-  for(int i=0;i<iel;i++)
+  for(std::size_t i=0;i<iel;i++)
   {
     xyze(0,i)=this->Nodes()[i]->X()[0];
     xyze(1,i)=this->Nodes()[i]->X()[1];
@@ -557,7 +557,7 @@ void DRT::ELEMENTS::XFluid3Surface::IntegrateSurfaceImpulsRate(
   }
   
   // get element velocities
-  for(int i=0;i<iel;i++)
+  for(std::size_t i=0;i<iel;i++)
   {
     evelnp(0,i)=myvelnp[i*numdf+0];
     evelnp(1,i)=myvelnp[i*numdf+1];
@@ -600,7 +600,7 @@ void DRT::ELEMENTS::XFluid3Surface::IntegrateSurfaceImpulsRate(
       dserror("abnormal values!");
     // store impuls rate
     // use negative value so that inflow is positiv
-    for (int node=0;node<iel;++node)
+    for (std::size_t node=0;node<iel;++node)
     {
       elevec1[node*numdf+0] -= funct[node] * fac * gpvelnp(0) * flowrate;
       elevec1[node*numdf+1] -= funct[node] * fac * gpvelnp(1) * flowrate;
