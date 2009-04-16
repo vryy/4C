@@ -103,7 +103,7 @@ Maintainer: Peter Gamnitzer
 #include <iostream>
 #include <Teuchos_TimeMonitor.hpp>
 
-#include <../drt_nurbs_discret/drt_apply_nurbs_initial_condition.H>
+#include "../drt_nurbs_discret/drt_apply_nurbs_initial_condition.H"
 
 using namespace std;
 using namespace Teuchos;
