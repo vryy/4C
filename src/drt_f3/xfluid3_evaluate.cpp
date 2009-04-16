@@ -123,12 +123,81 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
     }
     case set_output_mode:
     {
-      output_mode_ = true;
+      output_mode_ = params.get<bool>("output_mode");
       // reset dof managers if present
       eleDofManager_ = Teuchos::null;
       eleDofManager_uncondensed_ = Teuchos::null;
       ih_ = Teuchos::null;
       DLM_info_ = Teuchos::null;
+      break;
+    }
+    case store_xfem_info:
+    {
+      output_mode_ = false;
+      
+      // store pointer to interface handle
+      ih_ = params.get< Teuchos::RCP< XFEM::InterfaceHandleXFSI > >("interfacehandle");
+
+      // get access to global dofman
+      const Teuchos::RCP<XFEM::DofManager> globaldofman = params.get< Teuchos::RCP< XFEM::DofManager > >("dofmanager");
+
+      const bool DLM_condensation = params.get<bool>("DLM_condensation");
+      const double boundaryRatioLimit = params.get<double>("boundaryRatioLimit");
+      
+      const XFLUID::FluidElementAnsatz elementAnsatz;
+      const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_empty;
+      const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_filled(elementAnsatz.getElementAnsatz(this->Shape()));
+      
+      // always build the eledofman that fits to the global dofs
+      // problem: tight connectivity to xdofmapcreation
+      if (not DLM_condensation)
+      {
+        // assume stress unknowns for the element
+        eleDofManager_ = rcp(new XFEM::ElementDofManager(*this, element_ansatz_filled, *globaldofman));
+      }
+      else
+      {
+        // assume no stress unknowns for the element
+        eleDofManager_ = rcp(new XFEM::ElementDofManager(*this, element_ansatz_empty, *globaldofman));
+      }
+
+      // create an eledofman that has stress unknowns only for intersected elements
+      // Note: condensation for unintersected elements is not handled, but also not needed
+      if (ih_->ElementIntersected(Id()))
+      {
+        std::set<XFEM::FieldEnr> enrfieldset;
+
+        const std::set<int> xlabelset(eleDofManager_->getUniqueEnrichmentLabels());
+        // loop condition labels
+        for(std::set<int>::const_iterator labeliter = xlabelset.begin(); labeliter!=xlabelset.end(); ++labeliter)
+        {
+          const int label = *labeliter;
+          // for surface with label, loop my col elements and add void enrichments to each elements member nodes
+          if (ih_->ElementHasLabel(this->Id(), label))
+          {
+            const bool anothervoidenrichment_in_set = XFEM::EnrichmentInDofSet(XFEM::Enrichment::typeVoid, enrfieldset);
+            if (not anothervoidenrichment_in_set)
+            {
+              XFEM::ApplyElementEnrichments(this, element_ansatz_filled, *ih_, label, XFEM::Enrichment::typeVoid, boundaryRatioLimit, enrfieldset);                
+            }
+          }
+        };
+
+        // nodal dofs for ele
+        eleDofManager_uncondensed_ = 
+          rcp(new XFEM::ElementDofManager(*this, eleDofManager_->getNodalDofSet(), enrfieldset, element_ansatz_filled));
+
+        const int nd = eleDofManager_uncondensed_->NumNodeDof();
+        const int na = eleDofManager_uncondensed_->NumElemDof();
+//        if (na == 0)
+//          dserror("this happens, when element is intersected, but we skip the stress unknown due to small surface integral");
+        DLM_info_ = Teuchos::rcp(new DLMInfo(nd,na));
+      }
+      else
+      {
+        eleDofManager_uncondensed_ = Teuchos::null;
+        DLM_info_ = Teuchos::null;
+      }
       break;
     }
     case calc_fluid_systemmat_and_residual:
@@ -366,73 +435,6 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           }
           else
 #endif
-      break;
-    }
-    case store_xfem_info:
-    {
-      // store pointer to interface handle
-      ih_ = params.get< Teuchos::RCP< XFEM::InterfaceHandleXFSI > >("interfacehandle",null);
-
-      // get access to global dofman
-      const Teuchos::RCP<XFEM::DofManager> globaldofman = params.get< Teuchos::RCP< XFEM::DofManager > >("dofmanager");
-
-      const bool DLM_condensation = params.get<bool>("DLM_condensation");
-      const double boundaryRatioLimit = params.get<double>("boundaryRatioLimit");
-      
-      const XFLUID::FluidElementAnsatz elementAnsatz;
-      const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_empty;
-      const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_filled(elementAnsatz.getElementAnsatz(this->Shape()));
-      
-      // always build the eledofman that fits to the global dofs
-      // problem: tight connectivity to xdofmapcreation
-      if (not DLM_condensation)
-      {
-        // assume stress unknowns for the element
-        eleDofManager_ = rcp(new XFEM::ElementDofManager(*this, element_ansatz_filled, *globaldofman));
-      }
-      else
-      {
-        // assume no stress unknowns for the element
-        eleDofManager_ = rcp(new XFEM::ElementDofManager(*this, element_ansatz_empty, *globaldofman));
-      }
-
-      // create an eledofman that has stress unknowns only for intersected elements
-      // Note: condensation for unintersected elements is not handled, but also not needed
-      if (ih_->ElementIntersected(Id()))
-      {
-        std::set<XFEM::FieldEnr> enrfieldset;
-
-        const std::set<int> xlabelset(eleDofManager_->getUniqueEnrichmentLabels());
-        // loop condition labels
-        for(std::set<int>::const_iterator labeliter = xlabelset.begin(); labeliter!=xlabelset.end(); ++labeliter)
-        {
-          const int label = *labeliter;
-          // for surface with label, loop my col elements and add void enrichments to each elements member nodes
-          if (ih_->ElementHasLabel(this->Id(), label))
-          {
-            const bool anothervoidenrichment_in_set = XFEM::EnrichmentInDofSet(XFEM::Enrichment::typeVoid, enrfieldset);
-            if (not anothervoidenrichment_in_set)
-            {
-              XFEM::ApplyElementEnrichments(this, element_ansatz_filled, *ih_, label, XFEM::Enrichment::typeVoid, boundaryRatioLimit, enrfieldset);                
-            }
-          }
-        };
-
-        // nodal dofs for ele
-        eleDofManager_uncondensed_ = 
-          rcp(new XFEM::ElementDofManager(*this, eleDofManager_->getNodalDofSet(), enrfieldset, element_ansatz_filled));
-
-        const int nd = eleDofManager_uncondensed_->NumNodeDof();
-        const int na = eleDofManager_uncondensed_->NumElemDof();
-//        if (na == 0)
-//          dserror("this happens, when element is intersected, but we skip the stress unknown due to small surface integral");
-        DLM_info_ = Teuchos::rcp(new DLMInfo(nd,na));
-      }
-      else
-      {
-        eleDofManager_uncondensed_ = Teuchos::null;
-        DLM_info_ = Teuchos::null;
-      }
       break;
     }
     default:

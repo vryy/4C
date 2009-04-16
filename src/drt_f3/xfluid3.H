@@ -180,14 +180,6 @@ namespace DRT
         
         //@}
         
-        //! @name Other
-        
-        //! do we have a moving fluid mesh or not
-        bool IsAle() const { return false; }
-        
-        //@}
-        
-        
       private:
         
         //! action parameters recognized by fluid3
@@ -264,10 +256,9 @@ namespace DRT
         //! will remove all dofs that are not in eleDofManager_
         Teuchos::RCP<XFEM::ElementDofManager>                         eleDofManager_uncondensed_;
         
-        //! for postprocessing in the filters
-        //! then element has always 4 unknowns per node
-        //! so if element is in output mode, it will answer without
-        //! the elementdofmanager
+        //! if no dofmanager is present, we want to answer the number of dof question with 4
+        //! for this purpose, one has to set the element output mode -> true
+        //! when creating the elementdofmanager, output_mode_ is set to false
         bool                             output_mode_;
         
         //! store information about the intersection handle

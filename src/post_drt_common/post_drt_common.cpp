@@ -499,6 +499,7 @@ void PostProblem::read_meshes()
           currfield.discretization()->FillComplete(false,false,false);
           ParameterList eleparams;
           eleparams.set("action","set_output_mode");
+          eleparams.set("output_mode",true);
           currfield.discretization()->Evaluate(eleparams);
         }
         cout << endl;

@@ -100,9 +100,10 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   gamma_    = params_.get<double>("gamma");
 
   // create empty cutter discretization
+#if 0
   vector<string> conditions;
   Teuchos::RCP<DRT::Discretization> emptyboundarydis = DRT::UTILS::CreateDiscretizationFromCondition(
-      actdis, "dummydiscretizationame", "boundary", "BELE3", conditions);
+      actdis, "dummydiscretizationame", "empty boundary", "BELE3", conditions);
   Teuchos::RCP<Epetra_Vector> tmpdisp1 = LINALG::CreateVector(*emptyboundarydis->DofRowMap(),true);
   Teuchos::RCP<Epetra_Vector> tmpdisp2 = LINALG::CreateVector(*emptyboundarydis->DofRowMap(),true);
   emptyboundarydis->SetState("idispcolnp",tmpdisp1);
@@ -123,6 +124,14 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   
   // tell elements about the dofs and the integration
   TransferDofInformationToElements(ih, dofmanager);
+#else
+  {
+    ParameterList eleparams;
+    eleparams.set("action","set_output_mode");
+    eleparams.set("output_mode",true);
+    discret_->Evaluate(eleparams);
+  }
+#endif
   
   discret_->FillComplete();
 
@@ -160,6 +169,13 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   state_.nodalDofDistributionMap_.clear();
   state_.elementalDofDistributionMap_.clear();
 
+  {
+    ParameterList eleparams;
+    eleparams.set("action","set_output_mode");
+    eleparams.set("output_mode",false);
+    discret_->Evaluate(eleparams);
+  }
+  
   // get constant density variable for incompressible flow
   {
     ParameterList eleparams;
@@ -1018,7 +1034,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       const double cond_number = LINALG::Condest(static_cast<LINALG::SparseMatrix&>(*sysmat_),Ifpack_GMRES, 100);
       // computation of significant digits might be completely bogus, so don't take it serious
       const double tmp = std::abs(std::log10(cond_number*1.11022e-16));
-      const int sign_digits = (int)floor(tmp);
+      const int sign_digits = (int)std::floor(tmp);
       cout0_ << " cond est: " << scientific << cond_number << ", max.sign.digits: " << sign_digits;
     }
     if (myrank_ == 0)
