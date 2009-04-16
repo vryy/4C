@@ -63,16 +63,42 @@ extern "C"
 namespace DRT {
 namespace UTILS {
 
-  /// abstract interface for spatial functions
+  
+  /*!
+
+  \brief abstract interface for spatial functions. 
+
+  Spatial functions can be defined either scalar-valued or vector-valued. 
+
+  There exist function definitions using explicitly defined spatial functions 
+  for test problems (beltrami, kim-moin etc).
+
+  Spatial function based on parsed expressions are provided as well.
+  
+  */
   class Function
   {
   public:
     virtual ~Function() {}
 
-    /// evaluate function at given position in space
+    /*!
+
+    \brief evaluate function at given position in space
+
+    \param index (i) For vector-valued functions, index defines the
+                     function-component which should be evaluated
+                     For scalar functionsb, index is always set to 0
+    \param x     (i) The point in 3-dimensional space in which the 
+                     function will be evaluated
+
+    */
     virtual double Evaluate(int index, const double* x) = 0;
 
-    /// output operator
+    /*!
+
+    \brief output operator
+
+    */
     friend std::ostream& operator<<(std::ostream& out, const Function& funct);
   };
 
@@ -81,31 +107,108 @@ namespace UTILS {
   class ExprFunction : public Function
   {
   public:
-    /// construct function from expression with given origin
-    /// (one function for all dimensions)
+    /*!
+
+    \brief construct spatial function from expression with given origin
+
+    \note  Upon construction, the object defines a spatial function
+           returning the same function value for every spatial dimension.
+           If a vector-valued spatial function is required, further 
+           expressions can be added via the AddExpr function. In this 
+           case, the spatial function defined upon construction will be
+           the first component of the vector-valued spatial function.
+
+    \param buf (i) (c-string) expression to be parsed during evaluation
+    \param x   (i) x-coordinate of the origin of the coordinate system
+    \param y   (i) y-coordinate of the origin of the coordinate system
+    \param z   (i) z-coordinate of the origin of the coordinate system
+    
+    */
     ExprFunction(char* buf, double x, double y, double z);
 
+    /*!
 
-    /// Default constructor creating empty object. Expressions are added with add function
+    \brief Default constructor creating empty object. Expressions are 
+           added with add function
+    
+    */
     ExprFunction();
 
-    /// clean up parse tree
+    /*!
+
+    \brief clean up parse tree
+    
+    */
     ~ExprFunction();
 
-    /// evaluate function at given position in space
+
+    /*!
+
+    \brief evaluate function at given position in space
+
+    \param index (i) For vector-valued functions, index defines the
+                     function-component which should be evaluated
+                     For scalar functionsb, index is always set to 0
+    \param x     (i) The point in 3-dimensional space in which the 
+                     function will be evaluated
+
+    */
     double Evaluate(int index, const double* x);
 
-    /// add expression
+    /*!
+
+    \brief add expression to an existing ExprFunction in order to extend
+           it to a vector-valued spatial function.
+
+           Every call to AddExpr adds one more component to the 
+           vector-valued function.
+
+    \param buf (i) (c-string) expression to be parsed during evaluation of this component
+    \param x   (i) x-coordinate of the origin of the coordinate system of this component
+    \param y   (i) y-coordinate of the origin of the coordinate system of this component
+    \param z   (i) z-coordinate of the origin of the coordinate system of this component
+    
+    */
     void AddExpr(char* buf, double x, double y, double z);
 
   private:
 
-    std::vector<double> x_;
-    std::vector<double> y_;
-    std::vector<double> z_;
+    /*
+      for scalar spatial functions returning the same value for all
+      dimensions:
 
-    /// expression syntax tree
-    std::vector<_ST_NODE*> expr_;
+     -----------------------------------------+-------+-------+-------
+      spatial function for dimension          |   0   |   1   |   2 
+     -----------------------------------------+-------+-------+-------
+      origin of spatial function, x-component |         x_[0]                 
+     -----------------------------------------+-----------------------                                                                 
+      origin of spatial function, y-component |         y_[0]                
+     -----------------------------------------+-------+-------+-------                                                                  
+      origin of spatial function, x-component |         z_[0]                
+     -----------------------------------------+-------+-------+-------
+
+
+      for vector-valued spatial functions, returning seperate values
+      for all dimensions:
+
+     -----------------------------------------+-------+-------+-------
+      spatial function for dimension          |   0   |   1   |   2 
+     -----------------------------------------+-------+-------+-------
+      origin of spatial function, x-component | x_[0] | x_[1] | x_[2] 
+     -----------------------------------------+-------+-------+-------                                                                 
+      origin of spatial function, y-component | y_[0] | y_[1] | y_[2]
+     -----------------------------------------+-------+-------+-------                                                                  
+      origin of spatial function, x-component | z_[0] | z_[1] | z_[2]
+     -----------------------------------------+-------+-------+-------
+
+    */
+
+
+    std::vector<double> x_; //! origin(s) of spatial function, x-component 
+    std::vector<double> y_; //! origin(s) of spatial function, y-component 
+    std::vector<double> z_; //! origin(s) of spatial function, z-component 
+
+    std::vector<_ST_NODE*> expr_; //! expression syntax tree(s)
   };
 
 
@@ -113,7 +216,16 @@ namespace UTILS {
   class BeltramiFunction : public Function
   {
   public:
-    /// evaluate function at given position in space
+    /*!
+
+    \brief evaluate function at given position in space
+
+    \param index (i) index defines the function-component which will 
+                     be evaluated
+    \param x     (i) The point in space in which the function will be 
+                     evaluated
+
+    */
     double Evaluate(int index, const double* x);
   };
 
@@ -122,7 +234,16 @@ namespace UTILS {
   class KimMoinFunction : public Function
   {
   public:
-    /// evaluate function at given position in space
+    /*!
+
+    \brief evaluate function at given position in space
+
+    \param index (i) index defines the function-component which will 
+                     be evaluated
+    \param x     (i) The point in space in which the function will be 
+                     evaluated
+
+    */
     double Evaluate(int index, const double* x);
   };
 
