@@ -734,9 +734,9 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
     LINALG::Matrix<NUMPRES_,1> prshfct;
     if (stab_ == stab_nonaffine)
       prshfct.MultiplyNT(1.0/stabAA(0,0),stabHA,stabA[gp]);
-    else if (stab_ == stab_affine)
-      prshfct.Update(shapefcts[gp]);
-    else if (stab_ == stab_spatial)
+    else if ( (stab_ == stab_affine)
+              or (stab_ == stab_spatial)
+              or (stab_ == stab_puredisp) )
       prshfct.Update(shapefcts[gp]);
     else
       dserror("Cannot handle requested stabilisation type %d", stab_);
