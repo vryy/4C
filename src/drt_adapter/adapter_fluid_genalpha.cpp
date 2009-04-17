@@ -314,7 +314,19 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidGenAlpha::ExtractInterfaceVeln()
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidGenAlpha::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
 {
+  // --------------------------------------------------
+  // apply new Dirichlet values to velnp according to interface velocity
   interface_.InsertCondVector(ivel,fluid_.Velnp());
+
+  // adjust accnp according to new Dirichlet values of velnp
+  //
+  //                                  n+1     n
+  //                               vel   - vel
+  //       n+1      n  gamma-1.0      (0)
+  //    acc    = acc * --------- + ------------
+  //       (0)           gamma      gamma * dt
+  //
+  fluid_.GenAlphaCalcInitialAccelerations();
 
   // this is very easy, but there are two dangers:
   // - We change ivel here. It must not be used afterwards.
