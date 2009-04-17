@@ -96,14 +96,22 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
       LINALG::Matrix<NUMPRES_,1> mypres(true);
       LINALG::Matrix<NUMDISP_,NUMDISP_> stiffmatrix(true);
       LINALG::Matrix<NUMDISP_,NUMPRES_> gradmatrix(true);
-      LINALG::Matrix<NUMPRES_,NUMDISP_> dragmatrix(true);
       LINALG::Matrix<NUMPRES_,NUMPRES_> stabmatrix(true);
       LINALG::Matrix<NUMDISP_,1> force(true);
       LINALG::Matrix<NUMPRES_,1> incomp(true);
-      ForceStiffMass(lm,mydisp,mypres,
-                     NULL,&stiffmatrix,&gradmatrix,NULL,&stabmatrix,&force,&incomp,
-                     NULL,NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
-      BuildElementMatrix(&elemat1,&stiffmatrix,&gradmatrix,NULL,&stabmatrix);
+      if (stab_ == stab_spatial) {
+        LINALG::Matrix<NUMPRES_,NUMDISP_> dragmatrix;
+        ForceStiffMass(lm,mydisp,mypres,
+                       NULL,&stiffmatrix,&gradmatrix,NULL,&stabmatrix,&force,&incomp,
+                       NULL,NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
+        BuildElementMatrix(&elemat1,&stiffmatrix,&gradmatrix,&dragmatrix,&stabmatrix);
+      }
+      else {
+        ForceStiffMass(lm,mydisp,mypres,
+                       NULL,&stiffmatrix,NULL,NULL,&stabmatrix,&force,&incomp,
+                       NULL,NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
+        BuildElementMatrix(&elemat1,&stiffmatrix,NULL,NULL,&stabmatrix);
+      }
       BuildElementVector(&elevec1,&force,&incomp);
     }
     break;
@@ -121,15 +129,23 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
       ExtractDispAndPres(mystat,mydisp,mypres);
       LINALG::Matrix<NUMDISP_,NUMDISP_> stiffmatrix(true);
       LINALG::Matrix<NUMDISP_,NUMPRES_> gradmatrix(true);
-      LINALG::Matrix<NUMPRES_,NUMDISP_> dragmatrix(true);
       LINALG::Matrix<NUMPRES_,NUMPRES_> stabmatrix(true);
       LINALG::Matrix<NUMDISP_,1> force(true);
       LINALG::Matrix<NUMPRES_,1> incomp(true);
       double volume = 0.0;
-      ForceStiffMass(lm,mydisp,mypres,
-                     NULL,&stiffmatrix,&gradmatrix,&dragmatrix,&stabmatrix,&force,&incomp,
-                     NULL,NULL,&volume,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
-      BuildElementMatrix(&elemat1,&stiffmatrix,&gradmatrix,&dragmatrix,&stabmatrix);
+      if (stab_ == stab_spatial) {
+        LINALG::Matrix<NUMPRES_,NUMDISP_> dragmatrix;        
+        ForceStiffMass(lm,mydisp,mypres,
+                       NULL,&stiffmatrix,&gradmatrix,&dragmatrix,&stabmatrix,&force,&incomp,
+                       NULL,NULL,&volume,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
+        BuildElementMatrix(&elemat1,&stiffmatrix,&gradmatrix,&dragmatrix,&stabmatrix);
+      }
+      else {
+        ForceStiffMass(lm,mydisp,mypres,
+                       NULL,&stiffmatrix,&gradmatrix,NULL,&stabmatrix,&force,&incomp,
+                       NULL,NULL,&volume,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
+        BuildElementMatrix(&elemat1,&stiffmatrix,&gradmatrix,NULL,&stabmatrix);
+      }
       BuildElementVector(&elevec1,&force,&incomp);
       AssembleVolume(params,volume);
       // a desperate call for help
@@ -149,13 +165,12 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
       LINALG::Matrix<NUMPRES_,1> mypres;
       ExtractDispAndPres(mystat,mydisp,mypres);
       LINALG::Matrix<NUMDISP_,NUMPRES_> gradmatrix(true);
-      LINALG::Matrix<NUMPRES_,NUMDISP_> dragmatrix(true);
       LINALG::Matrix<NUMPRES_,NUMPRES_> stabmatrix(true);
       LINALG::Matrix<NUMDISP_,1> force(true);
       LINALG::Matrix<NUMPRES_,1> incomp(true);
       double volume = 0.0;
       ForceStiffMass(lm,mydisp,mypres,
-                     NULL,NULL,&gradmatrix,&dragmatrix,&stabmatrix,&force,&incomp,
+                     NULL,NULL,&gradmatrix,NULL,&stabmatrix,&force,&incomp,
                      NULL,NULL,&volume,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
       BuildElementVector(&elevec1,&force,&incomp);
       AssembleVolume(params,volume);
@@ -182,19 +197,27 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
       LINALG::Matrix<NUMDISP_,NUMDISP_> massmatrix(true);
       LINALG::Matrix<NUMDISP_,NUMDISP_> stiffmatrix(true);
       LINALG::Matrix<NUMDISP_,NUMPRES_> gradmatrix(true);
-      LINALG::Matrix<NUMPRES_,NUMDISP_> dragmatrix(true);
       LINALG::Matrix<NUMPRES_,NUMPRES_> stabmatrix(true);
       LINALG::Matrix<NUMDISP_,1> force(true);
       LINALG::Matrix<NUMPRES_,1> incomp(true);
       double volume = 0.0;
-      ForceStiffMass(lm,mydisp,mypres,
-                     &massmatrix,&stiffmatrix,&gradmatrix,&dragmatrix,&stabmatrix,&force,&incomp,
-                     NULL,NULL,&volume,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
+      if (stab_ == stab_spatial) {
+        LINALG::Matrix<NUMPRES_,NUMDISP_> dragmatrix;        
+        ForceStiffMass(lm,mydisp,mypres,
+                       &massmatrix,&stiffmatrix,&gradmatrix,&dragmatrix,&stabmatrix,&force,&incomp,
+                       NULL,NULL,&volume,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
+        BuildElementMatrix(&elemat1,&stiffmatrix,&gradmatrix,&dragmatrix,&stabmatrix);
+      }
+      else {
+        ForceStiffMass(lm,mydisp,mypres,
+                       &massmatrix,&stiffmatrix,&gradmatrix,NULL,&stabmatrix,&force,&incomp,
+                       NULL,NULL,&volume,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
+        BuildElementMatrix(&elemat1,&stiffmatrix,&gradmatrix,NULL,&stabmatrix);
+      }
       // lump mass
       if (act==calc_struct_nlnstifflmass) soh8_lumpmass(&massmatrix);
       // assemble displacement pressure parts
       BuildElementMatrix(&elemat2,&massmatrix,NULL,NULL,NULL);
-      BuildElementMatrix(&elemat1,&stiffmatrix,&gradmatrix,&dragmatrix,&stabmatrix);
       BuildElementVector(&elevec1,&force,&incomp);
       AssembleVolume(params,volume);
     }
