@@ -222,7 +222,7 @@ namespace DRT
       The stabilisation flags as well as turbulence model options have been read
       from the input file and are passed through the evaluate interface.
 
-      \auther gammi
+      \author gammi
       \date 04/08
     */
 
