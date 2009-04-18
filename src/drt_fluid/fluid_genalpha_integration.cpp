@@ -1558,18 +1558,18 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   
     /*
                    T
-                  c * Y
+                  c * res
     */
     double cTY=0.0;
       
     c_->Dot(*(residual_),&cTY);
 
     /*
-                                  T
-                       T         c * Y
-                      P Y = Y - ------- * w
-                                  T
-                                 w * c
+                                    T
+                       T           c * res
+                      P res = Y - --------- * w
+                                     T
+                                    w * c
     */
     (residual_)->Update(-cTY/wTc,*w_,1.0);
   }
@@ -1692,6 +1692,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaNonlinearUpdate()
   //    n+1         n    +-         -+           n                   n+1    
   // vel      =  vel   + | 1 - gamma | * dt * acc  + gamma * dt * acc     
   //    (i+1)            +-         -+                               (i+1)
+  //
   Teuchos::RCP<Epetra_Vector> vel    = velpressplitter_.ExtractOtherVector(veln_ );
   Teuchos::RCP<Epetra_Vector> accold = velpressplitter_.ExtractOtherVector(accn_ );
   Teuchos::RCP<Epetra_Vector> accnew = velpressplitter_.ExtractOtherVector(accnp_);

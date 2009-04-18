@@ -149,18 +149,18 @@ public:
     multivector, for example rigid body modes etc., using the projector 
     defined by
 
-                                      T
-                         T       w * c
-                        P  = 1 - ------
-                                  T
-                                 w * c
+                                        T
+                         T         w * c
+                        P  x = x - ------ x
+                                    T
+                                   w * c
 
 
-                                      T
-                                 c * w
-                        P  = 1 - ------
-                                  T
-                                 w * c
+                                    T   
+                                   x * w
+                        P  x = x - ------ c
+                                    T
+                                   w * c
 
 
     w is the vector of weights, c a vector of ones (in the dofs under consideration).
@@ -170,9 +170,19 @@ public:
 
                         / T  \       T
                        | P AP | u = P f
-                        \    /
+                        \    / 
                         
     for the projection of the solution Pu.
+
+    Projection takes place in several steps: 
+    
+    o Take a new candidate X for the Krylov-space, apply full matrix
+  
+                   / T                        \ 
+                  | P * InversePrecond * A * P |
+                   \                          / 
+
+    o Apply preconditioner
                        
     See the following article for further reading:
 

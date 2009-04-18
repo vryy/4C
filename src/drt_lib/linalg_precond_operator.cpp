@@ -40,15 +40,55 @@ int LINALG::LinalgPrecondOperator::ApplyInverse(
   const Epetra_MultiVector &X, 
   Epetra_MultiVector       &Y
   ) const
-{
-  // Apply the inverse preconditioner to get new basis vector for the
-  // Krylov space
-  int ierr=precond_->ApplyInverse(X,Y);
+{ 
+
+  int ierr=0;
 
   // if necessary, project out matrix kernel
   if(project_)
   {
     const int kerneldim = w_->NumVectors();
+    Epetra_MultiVector PX(X);
+
+    const int num= PX.NumVectors();
+  
+    // loop all solution vectors
+    for(int v=0;v<num;++v)
+    {
+      // loop all basis vectors of kernel and orthogonalize against them
+      for(int rr=0;rr<kerneldim;++rr)
+      {
+        /*
+                   T
+                  w * c
+        */
+        double wTc=0.0;
+
+        c_->Dot(*((*w_)(rr)),&wTc);
+
+	if(fabs(wTc)<1e-14)
+	{
+	  dserror("weight vector must not be orthogonal to c");
+	}
+
+        /*
+                   T
+                  w * X
+        */
+        double wTX=0.0;
+ 
+        (PX(v))->Dot(*((*w_)(rr)),&wTX);
+
+        (PX(v))->Update(-wTX/wTc,*c_,1.0);
+      }
+      
+
+    }   
+
+    // Apply the inverse preconditioner to get new basis vector for the
+    // Krylov space
+    ierr=precond_->ApplyInverse(PX,Y);
+
     const int numsolvecs= Y.NumVectors();
 
     // check for vectors for matrix kernel and weighted basis mean vector
@@ -94,8 +134,28 @@ int LINALG::LinalgPrecondOperator::ApplyInverse(
         */
         (Y(sv))->Update(-cTY/wTc,*((*w_)(rr)),1.0);
 
+        /*
+                   T
+                  w * Y 
+        */
+        double wTY=0.0;
+ 
+        (Y(sv))->Dot(*((*w_)(rr)),&wTY);
+
+        //        (Y(sv))->Update(-wTY/wTc,*c_,1.0);
+
       } // loop kernel basis vectors
     } // loop all solution vectors
+
+  }
+  else
+  {
+    ierr=precond_->ApplyInverse(X,Y);
+  }
+
+  // if necessary, project out matrix kernel
+  if(project_)
+  {
   } // if (project_)
 
   return(ierr);
