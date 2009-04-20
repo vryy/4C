@@ -59,10 +59,10 @@ MAXTIME      1000.0
 NUMSTEP      1000
 TIMESTEP     0.05
 THETA        1.0
-NONLINITER   fixed_point_like
+NONLINITER   Newton
 ITEMAX       10 
 CONVCHECK    L_2_norm
-CONVTOL      1.0E-8
+CONVTOL      1.0E-6
 STEADYCHECK  L_2_norm
 STEADYSTEP   5
 STEADYTOL    1.0E-6
@@ -80,7 +80,7 @@ TDS                   quasistatic
 TRANSIENT             no_transient
 SUPG                  yes_supg
 PSPG                  yes_pspg
-VSTAB                 vstab_gls
+VSTAB                 no_vstab
 CSTAB                 cstab_qs
 CROSS-STRESS          no_cross
 REYNOLDS-STRESS       no_reynolds
@@ -7384,8 +7384,8 @@ CURVE1 on Explicit FUNC f(t)=1-cos(2*PI*C1*t) c1 0.2 c2 1.0
 ------------------------------------------------------------CURVE4
 ------------------------------------------------------------CURVE5
 ------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 2155 POSITION vely NAME vely VALUE 3.291056698e-04 TOLERANCE 1e-8
-FLUID DIS 1 NODE 2155 POSITION pressure NAME pressure VALUE -2.357883580e-03 TOLERANCE 1e-8
+FLUID DIS 1 NODE 2155 POSITION vely NAME vely VALUE 3.431237884e-04 TOLERANCE 1e-8
+FLUID DIS 1 NODE 2155 POSITION pressure NAME pressure VALUE -2.454937194e-03 TOLERANCE 1e-8
 //STRUCTURE DIS 1 NODE 1782 POSITION sol(1,2) NAME dy VALUE -0.0000026252202840 TOLERANCE 1e-8
 ---------------------------------------------------------------END
 // END
