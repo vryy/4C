@@ -722,6 +722,7 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
   timer_.ResetStartTime();
 
   // equilibrium iteration loop
+  while ( ( (not Converged()) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
   while ( (not Converged()) and (iter_ <= itermax_) )
   {
     // make negative residual
@@ -818,25 +819,34 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
   iter_ -= 1;
 
   // test whether max iterations was hit
-  if (iter_ >= itermax_)
+  if ( (iter_ >= itermax_) and (not iterdivercont_) )
   {
-     dserror("Newton unconverged in %d iterations", iter_);
+    dserror("Newton unconverged in %d iterations", iter_);
   }
-  else
+  else if ( (iter_ >= itermax_) and (iterdivercont_) )
   {
-    // monitor values
+    // print newton message on proc 0
+    if (myrank_ == 0)
+      printf("Newton unconverged in %d iterations ... continuing\n", iter_);
+    
+    // compute and print monitor values
     if (conman_->HaveMonitor())
-    {
-       conman_->ComputeMonitorValues(disn_);
-    }
-
-    // print message
-    if ( Converged() and (myrank_ == 0) )
-    {
-      PrintNewtonConv();
-    }
+      conman_->ComputeMonitorValues(disn_);
+    
   }
-
+  else if ( Converged() )
+  {
+    // compute and print monitor values
+    if (conman_->HaveMonitor())
+      conman_->ComputeMonitorValues(disn_);
+    
+    // print newton message on proc 0
+    if (myrank_ == 0)
+      PrintNewtonConv();
+    
+  }
+  
+ 
   // good evening
   return;
 }
