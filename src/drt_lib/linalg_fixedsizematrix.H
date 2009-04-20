@@ -1681,6 +1681,10 @@ namespace LINALG
     template <unsigned int i, unsigned int j, unsigned int k>
     inline void multiply(double* out, const double* const left, const double* const right)
     {
+#ifdef DEBUG
+      if (out==left) dserror("'out' and 'left' point to same memory location");
+      if (out==right) dserror("'out' and 'right' point to same memory location");
+#endif
       for (unsigned int c1=0; c1 < j*k; c1 += j) {
         for (unsigned int c2=0; c2 < i; ++c2) {
           double tmp = left[c2]*right[c1];
@@ -1696,6 +1700,10 @@ namespace LINALG
     template <unsigned int i, unsigned int j, unsigned int k>
     inline void multiplyNN(double* out, const double* const left, const double* const right)
     {
+#ifdef DEBUG
+      if (out==left) dserror("'out' and 'left' point to same memory location");
+      if (out==right) dserror("'out' and 'right' point to same memory location");
+#endif
       for (unsigned int c1=0; c1 < j*k; c1 += j) {
         for (unsigned int c2=0; c2 < i; ++c2) {
           double tmp = left[c2]*right[c1];
@@ -1711,6 +1719,10 @@ namespace LINALG
     template <unsigned int i, unsigned int j, unsigned int k>
     inline void multiplyNT(double* out, const double* const left, const double* const right)
     {
+#ifdef DEBUG
+      if (out==left) dserror("'out' and 'left' point to same memory location");
+      if (out==right) dserror("'out' and 'right' point to same memory location");
+#endif
       for (unsigned int c1=0; c1 < k; ++c1) {
         for (unsigned int c2=0; c2 < i; ++c2) {
           double tmp = left[c2]*right[c1];
@@ -1726,6 +1738,10 @@ namespace LINALG
     template <unsigned int i, unsigned int j, unsigned int k>
     inline void multiplyTN(double* out, const double* const left, const double* const right)
     {
+#ifdef DEBUG
+      if (out==left) dserror("'out' and 'left' point to same memory location");
+      if (out==right) dserror("'out' and 'right' point to same memory location");
+#endif
       for (unsigned int c1=0; c1 < j*k; c1 += j) {
         for (unsigned int c2=0; c2 < i*j; c2 += j) {
           double tmp = left[c2]*right[c1];
@@ -1741,6 +1757,10 @@ namespace LINALG
     template <unsigned int i, unsigned int j, unsigned int k>
     inline void multiplyTT(double* out, const double* const left, const double* const right)
     {
+#ifdef DEBUG
+      if (out==left) dserror("'out' and 'left' point to same memory location");
+      if (out==right) dserror("'out' and 'right' point to same memory location");
+#endif
       for (unsigned int c1=0; c1 < k; ++c1) {
         for (unsigned int c2=0; c2 < i*j; c2 += j) {
           double tmp = left[c2]*right[c1];
@@ -1757,6 +1777,10 @@ namespace LINALG
     inline void multiply(double* out, const double infac,
                          const double* const left, const double* const right)
     {
+#ifdef DEBUG
+      if (out==left) dserror("'out' and 'left' point to same memory location");
+      if (out==right) dserror("'out' and 'right' point to same memory location");
+#endif
       for (unsigned int c1=0; c1 < j*k; c1 += j) {
         for (unsigned int c2=0; c2 < i; ++c2) {
           double tmp = left[c2]*right[c1];
@@ -1773,6 +1797,10 @@ namespace LINALG
     inline void multiplyNN(double* out, const double infac,
                            const double* const left, const double* const right)
     {
+#ifdef DEBUG
+      if (out==left) dserror("'out' and 'left' point to same memory location");
+      if (out==right) dserror("'out' and 'right' point to same memory location");
+#endif
       for (unsigned int c1=0; c1 < j*k; c1 += j) {
         for (unsigned int c2=0; c2 < i; ++c2) {
           double tmp = left[c2]*right[c1];
@@ -1789,6 +1817,10 @@ namespace LINALG
     inline void multiplyNT(double* out, const double infac,
                            const double* const left, const double* const right)
     {
+#ifdef DEBUG
+      if (out==left) dserror("'out' and 'left' point to same memory location");
+      if (out==right) dserror("'out' and 'right' point to same memory location");
+#endif
       for (unsigned int c1=0; c1 < k; ++c1) {
         for (unsigned int c2=0; c2 < i; ++c2) {
           double tmp = left[c2]*right[c1];
@@ -1805,6 +1837,10 @@ namespace LINALG
     inline void multiplyTN(double* out, const double infac,
                            const double* const left, const double* const right)
     {
+#ifdef DEBUG
+      if (out==left) dserror("'out' and 'left' point to same memory location");
+      if (out==right) dserror("'out' and 'right' point to same memory location");
+#endif
       for (unsigned int c1=0; c1 < j*k; c1 += j) {
         for (unsigned int c2=0; c2 < i*j; c2 += j) {
           double tmp = left[c2]*right[c1];
@@ -1821,6 +1857,10 @@ namespace LINALG
     inline void multiplyTT(double* out, const double infac,
                            const double* const left, const double* const right)
     {
+#ifdef DEBUG
+      if (out==left) dserror("'out' and 'left' point to same memory location");
+      if (out==right) dserror("'out' and 'right' point to same memory location");
+#endif
       for (unsigned int c1=0; c1 < k; ++c1) {
         for (unsigned int c2=0; c2 < i*j; c2 += j) {
           double tmp = left[c2]*right[c1];
@@ -1837,6 +1877,10 @@ namespace LINALG
     inline void multiply(const double outfac, double* out, const double infac,
                          const double* const left, const double* const right)
     {
+#ifdef DEBUG
+      if (out==left) dserror("'out' and 'left' point to same memory location");
+      if (out==right) dserror("'out' and 'right' point to same memory location");
+#endif
       for (unsigned int c1=0; c1 < j*k; c1 += j) {
         for (unsigned int c2=0; c2 < i; ++c2) {
           double tmp = left[c2]*right[c1];
@@ -1853,6 +1897,10 @@ namespace LINALG
     inline void multiplyNN(const double outfac, double* out, const double infac,
                            const double* const left, const double* const right)
     {
+#ifdef DEBUG
+      if (out==left) dserror("'out' and 'left' point to same memory location");
+      if (out==right) dserror("'out' and 'right' point to same memory location");
+#endif
       for (unsigned int c1=0; c1 < j*k; c1 += j) {
         for (unsigned int c2=0; c2 < i; ++c2) {
           double tmp = left[c2]*right[c1];
@@ -1869,6 +1917,10 @@ namespace LINALG
     inline void multiplyNT(const double outfac, double* out, const double infac,
                            const double* const left, const double* const right)
     {
+#ifdef DEBUG
+      if (out==left) dserror("'out' and 'left' point to same memory location");
+      if (out==right) dserror("'out' and 'right' point to same memory location");
+#endif
       for (unsigned int c1=0; c1 < k; ++c1) {
         for (unsigned int c2=0; c2 < i; ++c2) {
           double tmp = left[c2]*right[c1];
@@ -1885,6 +1937,10 @@ namespace LINALG
     inline void multiplyTN(const double outfac, double* out, const double infac,
                            const double* const left, const double* const right)
     {
+#ifdef DEBUG
+      if (out==left) dserror("'out' and 'left' point to same memory location");
+      if (out==right) dserror("'out' and 'right' point to same memory location");
+#endif
       for (unsigned int c1=0; c1 < j*k; c1 += j) {
         for (unsigned int c2=0; c2 < i*j; c2 += j) {
           double tmp = left[c2]*right[c1];
@@ -1901,6 +1957,10 @@ namespace LINALG
     inline void multiplyTT(const double outfac, double* out, const double infac,
                            const double* const left, const double* const right)
     {
+#ifdef DEBUG
+      if (out==left) dserror("'out' and 'left' point to same memory location");
+      if (out==right) dserror("'out' and 'right' point to same memory location");
+#endif
       for (unsigned int c1=0; c1 < k; ++c1) {
         for (unsigned int c2=0; c2 < i*j; c2 += j) {
           double tmp = left[c2]*right[c1];
@@ -1916,6 +1976,9 @@ namespace LINALG
     template <unsigned int i, unsigned int j>
     inline double invert(double* out, const double* in)
     {
+#ifdef DEBUG
+      if (out==in) dserror("'out' and 'in' point to same memory location");
+#endif
       DENSEERROR::Checker<i==j>::Cannot_compute_inverse_of_nonsquare_matrix();
       DENSEERROR::Checker<(i < 4)>::Use_FixedSizeSerialDenseSolver_for_matrices_bigger_than_3x3();
       return 0.0;
@@ -1924,6 +1987,9 @@ namespace LINALG
     template<>
     inline double invert<1,1>(double* out, const double* in)
     {
+#ifdef DEBUG
+      if (out==in) dserror("'out' and 'in' point to same memory location");
+#endif
       const double det = in[0];
       if (det == 0.0) dserror("Determinant of 1x1 matrix is zero");
       out[0] = 1.0/in[0];
@@ -1933,6 +1999,9 @@ namespace LINALG
     template<>
     inline double invert<2,2>(double* out, const double* in)
     {
+#ifdef DEBUG
+      if (out==in) dserror("'out' and 'in' point to same memory location");
+#endif
       const double det = in[0]*in[1+1*2] - in[1]*in[1*2];
       if (det == 0.0) dserror("Determinant of 2x2 matrix is zero");
       const double invdet = 1.0/det;
@@ -1947,6 +2016,9 @@ namespace LINALG
     template<>
     inline double invert<3,3>(double* out, const double* in)
     {
+#ifdef DEBUG
+      if (out==in) dserror("'out' and 'in' point to same memory location");
+#endif
       out[0] = in[1+1*3]*in[2+2*3] - in[2+1*3]*in[1+2*3];
       out[1] = in[2    ]*in[1+2*3] - in[1    ]*in[2+2*3];
       out[2] = in[1    ]*in[2+1*3] - in[2    ]*in[1+1*3];
@@ -2089,12 +2161,18 @@ namespace LINALG
     template <unsigned int i, unsigned int j>
     inline void update(double* out, const double* in)
     {
+#ifdef DEBUG
+      if (out==in) dserror("'out' and 'in' point to same memory location");
+#endif
       std::memcpy(out, in, i*j*sizeof(double));
     }
 
     template <unsigned int i, unsigned int j>
     inline void update(double* out, const double infac, const double* in)
     {
+#ifdef DEBUG
+      if (out==in) dserror("'out' and 'in' point to same memory location");
+#endif
       *out = infac*(*in);
       for (unsigned int c = 1; c < i*j; ++c)
         *(++out) = infac*(*(++in));
@@ -2103,6 +2181,9 @@ namespace LINALG
     template <unsigned int i, unsigned int j>
     inline void update(const double outfac, double* out, const double infac, const double* in)
     {
+#ifdef DEBUG
+      if (out==in) dserror("'out' and 'in' point to same memory location");
+#endif
       if (outfac == 0.0) { // cannot handle this case here, because 0*nan==nan
         update<i,j>(out,infac,in);
         return;
@@ -2119,6 +2200,10 @@ namespace LINALG
     inline
     void update(double* out, const double* left, const double* right)
     {
+#ifdef DEBUG
+      if (out==left) dserror("'out' and 'left' point to same memory location");
+      if (out==right) dserror("'out' and 'right' point to same memory location");
+#endif
       *out = *left + *right;
       for (unsigned int c = 1; c < i*j; ++c)
         *(++out) = *(++left) + *(++right);
@@ -2128,6 +2213,10 @@ namespace LINALG
     inline
     void update(double* out, const double leftfac, const double* left, const double rightfac, const double* right)
     {
+#ifdef DEBUG
+      if (out==left) dserror("'out' and 'left' point to same memory location");
+      if (out==right) dserror("'out' and 'right' point to same memory location");
+#endif
       *out = leftfac*(*left) + rightfac*(*right);
       for (unsigned int c = 1; c < i*j; ++c)
         *(++out) = leftfac*(*(++left)) + rightfac*(*(++right));
@@ -2138,6 +2227,10 @@ namespace LINALG
     void update(const double outfac, double* out, const double leftfac, const double* left,
                    const double rightfac, const double* right)
     {
+#ifdef DEBUG
+      if (out==left) dserror("'out' and 'left' point to same memory location");
+      if (out==right) dserror("'out' and 'right' point to same memory location");
+#endif
       if (outfac == 0.0) { // cannot handle this case here, because 0*nan==nan
         update<i,j>(out,leftfac,left,rightfac,right);
         return;
@@ -2153,6 +2246,9 @@ namespace LINALG
     template <unsigned int i, unsigned int j>
     inline void updateT(double* out, const double* in)
     {
+#ifdef DEBUG
+      if (out==in) dserror("'out' and 'in' point to same memory location");
+#endif
       for (unsigned int c2=0; c2 < j; c2 += 1)
         for (unsigned int c1=0; c1 < i; c1 += 1)
           *(out++) = in[c2+c1*j];
@@ -2161,6 +2257,9 @@ namespace LINALG
     template <unsigned int i, unsigned int j>
     inline void updateT(double* out, const double infac, const double* in)
     {
+#ifdef DEBUG
+      if (out==in) dserror("'out' and 'in' point to same memory location");
+#endif
       for (unsigned int c2=0; c2 < j; c2 += 1)
         for (unsigned int c1=0; c1 < i; c1 += 1)
           *(out++) = infac*in[c2+c1*j];
@@ -2169,6 +2268,9 @@ namespace LINALG
     template <unsigned int i, unsigned int j>
     inline void eMultiply(double* out, const double* in)
     {
+#ifdef DEBUG
+      if (out==in) dserror("'out' and 'in' point to same memory location");
+#endif
       *out *= *in;
       for (unsigned c=1; c < i*j; ++c)
         *(++out) *= *(++in);
@@ -2177,6 +2279,9 @@ namespace LINALG
     template <unsigned int i, unsigned int j>
     inline void eMultiply(const double fac, double* out, const double* in)
     {
+#ifdef DEBUG
+      if (out==in) dserror("'out' and 'in' point to same memory location");
+#endif
       *out *= fac*(*in);
       for (unsigned c=1; c < i*j; ++c)
         *(++out) *= fac*(*(++in));
@@ -2185,6 +2290,10 @@ namespace LINALG
     template <unsigned int i, unsigned int j>
     inline void eMultiply(double* out, const double* left, const double* right)
     {
+#ifdef DEBUG
+      if (out==left) dserror("'out' and 'left' point to same memory location");
+      if (out==right) dserror("'out' and 'right' point to same memory location");
+#endif
       *out = (*left) * (*right);
       for (unsigned c=1; c < i*j; ++c)
         *(++out) = (*(++left)) * (*(++right));
@@ -2193,6 +2302,10 @@ namespace LINALG
     template <unsigned int i, unsigned int j>
     inline void eMultiply(double* out, const double infac, const double* left, const double* right)
     {
+#ifdef DEBUG
+      if (out==left) dserror("'out' and 'left' point to same memory location");
+      if (out==right) dserror("'out' and 'right' point to same memory location");
+#endif
       *out = infac * (*left) * (*right);
       for (unsigned c=1; c < i*j; ++c)
         *(++out) = infac * (*(++left)) * (*(++right));
@@ -2201,6 +2314,10 @@ namespace LINALG
     template <unsigned int i, unsigned int j>
     inline void eMultiply(const double outfac, double* out, const double infac, const double* left, const double* right)
     {
+#ifdef DEBUG
+      if (out==left) dserror("'out' and 'left' point to same memory location");
+      if (out==right) dserror("'out' and 'right' point to same memory location");
+#endif
       if (outfac == 0.0) {
         eMultiply<i,j>(out,infac,left,right);
         return;
@@ -2215,6 +2332,9 @@ namespace LINALG
     template <unsigned int i, unsigned int j>
     inline void eDivide(double* out, const double* in)
     {
+#ifdef DEBUG
+      if (out==in) dserror("'out' and 'in' point to same memory location");
+#endif
       *out /= *in;
       for (unsigned c=1; c < i*j; ++c)
         *(++out) /= *(++in);
@@ -2223,6 +2343,9 @@ namespace LINALG
     template <unsigned int i, unsigned int j>
     inline void eDivide(const double fac, double* out, const double* in)
     {
+#ifdef DEBUG
+      if (out==in) dserror("'out' and 'in' point to same memory location");
+#endif
       *out = fac * (*out) / (*in);
       for (unsigned c=1; c < i*j; ++c) {
         ++out; ++in;
@@ -2233,6 +2356,10 @@ namespace LINALG
     template <unsigned int i, unsigned int j>
     inline void eDivide(double* out, const double* left, const double* right)
     {
+#ifdef DEBUG
+      if (out==left) dserror("'out' and 'left' point to same memory location");
+      if (out==right) dserror("'out' and 'right' point to same memory location");
+#endif
       *out = (*left) / (*right);
       for (unsigned c=1; c < i*j; ++c)
         *(++out) = (*(++left)) / (*(++right));
@@ -2241,6 +2368,10 @@ namespace LINALG
     template <unsigned int i, unsigned int j>
     inline void eDivide(double* out, const double infac, const double* left, const double* right)
     {
+#ifdef DEBUG
+      if (out==left) dserror("'out' and 'left' point to same memory location");
+      if (out==right) dserror("'out' and 'right' point to same memory location");
+#endif
       *out = infac * (*left) / (*right);
       for (unsigned c=1; c < i*j; ++c)
         *(++out) = infac * (*(++left)) / (*(++right));
@@ -2249,6 +2380,10 @@ namespace LINALG
     template <unsigned int i, unsigned int j>
     inline void eDivide(const double outfac, double* out, const double infac, const double* left, const double* right)
     {
+#ifdef DEBUG
+      if (out==left) dserror("'out' and 'left' point to same memory location");
+      if (out==right) dserror("'out' and 'right' point to same memory location");
+#endif
       if (outfac == 0.0) {
         eDivide<i,j>(out,infac,left,right);
         return;
@@ -2300,6 +2435,9 @@ namespace LINALG
     template <unsigned int i, unsigned int j>
     inline void abs(double* out, const double* in)
     {
+#ifdef DEBUG
+      if (out==in) dserror("'out' and 'in' point to same memory location");
+#endif
       *out = *in >= 0 ? *in : -*in;
       for (unsigned int c = 1; c < i*j; ++c) {
         ++out; ++in;
@@ -2310,6 +2448,9 @@ namespace LINALG
     template <unsigned int i, unsigned int j>
     inline void reciprocal(double* out, const double* in)
     {
+#ifdef DEBUG
+      if (out==in) dserror("'out' and 'in' point to same memory location");
+#endif
       *out = 1.0/(*in);
       for (unsigned int c = 1; c < i*j; ++c) {
         ++out; ++in;
@@ -2387,6 +2528,10 @@ namespace LINALG
     template<unsigned int i, unsigned int j>
     inline void reciprocalMultiply(double* out, const double* left, const double* right)
     {
+#ifdef DEBUG
+      if (out==left) dserror("'out' and 'left' point to same memory location");
+      if (out==right) dserror("'out' and 'right' point to same memory location");
+#endif
       *out = (*right)/(*left);
       for (unsigned int c = 1; c < i*j; ++c) {
         ++out; ++right; ++left;
@@ -2397,6 +2542,10 @@ namespace LINALG
     template<unsigned int i, unsigned int j>
     inline void reciprocalMultiply(const double outfac, double* out, const double prodfac, const double* left, const double* right)
     {
+#ifdef DEBUG
+      if (out==left) dserror("'out' and 'left' point to same memory location");
+      if (out==right) dserror("'out' and 'right' point to same memory location");
+#endif
       *out = *out*outfac + prodfac*(*right)/(*left);
       for (unsigned int c = 1; c < i*j; ++c) {
         ++out; ++right; ++left;
