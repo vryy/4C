@@ -437,7 +437,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     } // for (int i=0; i<NumMyRowNodes(); ++i)
   } // else if (ele->Type() == DRT::Element::element_beam2)
   
-  //there are three rigid body modes for beam2
+  //there are three rigid body modes for beam2r
 
  else if (ele->Type() == DRT::Element::element_beam2r)
  {
@@ -481,7 +481,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
    } // for (int i=0; i<NumMyRowNodes(); ++i)
  } // else if (ele->Type() == DRT::Element::element_beam2r)
 
-  //there are three rigid body modes for beam2
+  //there are six rigid body modes for beam3
 
  else if (ele->Type() == DRT::Element::element_beam3)
  {

@@ -844,6 +844,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     so_shw6,
     sodisp,
     beam2,
+    beam2r,
     beam3,
     truss3,
     constrele2,
@@ -876,6 +877,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
   else if (eletype=="SOLIDSHW6") type = so_shw6;
   else if (eletype=="SOLID3") type = sodisp;
   else if (eletype=="BEAM2") type = beam2;
+  else if (eletype=="BEAM2R") type = beam2r;
   else if (eletype=="BEAM3") type = beam3;
   else if (eletype=="TRUSS3") type = truss3;
   else if (eletype=="CONSTRELE2") type = constrele2;
@@ -895,6 +897,14 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     case beam2:
     {
       RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Beam2(id,owner));
+      return ele;
+    }
+    break;
+#endif
+#ifdef D_BEAM2R
+    case beam2r:
+    {
+      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Beam2r(id,owner));
       return ele;
     }
     break;
