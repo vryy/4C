@@ -73,6 +73,7 @@ extern "C"
 #include "drt_dofset.H"
 #include "drt_discret.H"
 #include "../drt_beam2/beam2.H"
+#include "../drt_beam2r/beam2r.H"
 #include "../drt_beam3/beam3.H"
 #include "../drt_truss3/truss3.H"
 #include "../drt_s8/shell8.H"
@@ -200,6 +201,23 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
     {
       DRT::ELEMENTS::Beam2Register* object =
                       new DRT::ELEMENTS::Beam2Register(DRT::Element::element_beam2);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+#endif
+#ifdef D_BEAM2R
+    case ParObject_Beam2r:
+    {
+      DRT::ELEMENTS::Beam2r* object = new DRT::ELEMENTS::Beam2r(-1,-1);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_Beam2rRegister:
+    {
+      DRT::ELEMENTS::Beam2rRegister* object =
+                      new DRT::ELEMENTS::Beam2rRegister(DRT::Element::element_beam2r);
       object->Unpack(data);
       return object;
     }

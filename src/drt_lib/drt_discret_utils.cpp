@@ -44,6 +44,9 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     case DRT::Element::element_beam2:
       nv = 3;
     break;
+    case DRT::Element::element_beam2r:
+      nv = 3;
+    break;
     case DRT::Element::element_beam3:
       nv = 6;
     break;
@@ -137,6 +140,10 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   switch (ele->Type())
   {
     case DRT::Element::element_beam2:
+      numdf = 3;
+      dimns = 3;
+    break;
+    case DRT::Element::element_beam2r:
       numdf = 3;
       dimns = 3;
     break;
@@ -429,6 +436,50 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
       } // for (int j=0; j<actnode->Dof().NumDof(); ++j)
     } // for (int i=0; i<NumMyRowNodes(); ++i)
   } // else if (ele->Type() == DRT::Element::element_beam2)
+  
+  //there are three rigid body modes for beam2
+
+ else if (ele->Type() == DRT::Element::element_beam2r)
+ {
+   for (int i=0; i<NumMyRowNodes(); ++i)
+   {
+     DRT::Node* actnode = lRowNode(i);
+     const double* x = actnode->X();
+     vector<int> dofs = Dof(actnode);
+     for (unsigned j=0; j<dofs.size(); ++j)
+     {
+       const int dof = dofs[j];
+       const int lid = rowmap->LID(dof);
+       if (lid<0) dserror("Cannot find dof");
+       switch (j) // j is degree of freedom
+       {
+       //translation of element in x-direction
+       case 0:
+         mode[0][lid] = 1.0;
+         mode[1][lid] = 0.0;
+         mode[2][lid] = 0.0;
+       break;
+       //translation of element in y-direction
+       case 1:
+         mode[0][lid] = 0.0;
+         mode[1][lid] = 1.0;
+         mode[2][lid] = 0.0;
+       break;
+       //rotation of element about z-axis
+       //(e.g. x[0]-x0[0] is the arm of lever for translation in y-direction in case of rotation about z-axis)
+       //(hence x[0]-x0[0] is the translation in y-direction in case of unit rotation about z-axis)
+       case 2:
+         mode[0][lid] = -x[1] + x0[1];
+         mode[1][lid] =  x[0] - x0[0];
+         mode[2][lid] = 1.0;
+       break;
+       default:
+         dserror("Only dofs 0 - 2 supported");
+       break;
+       } // switch (j)
+     } // for (int j=0; j<actnode->Dof().NumDof(); ++j)
+   } // for (int i=0; i<NumMyRowNodes(); ++i)
+ } // else if (ele->Type() == DRT::Element::element_beam2r)
 
   //there are three rigid body modes for beam2
 

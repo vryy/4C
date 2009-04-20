@@ -155,6 +155,8 @@ using namespace std;
 #define ParObject_LogNeoHooke           (int)142
 #define ParObject_So_Nurbs27_Surface    (int)143
 #define ParObject_So_Nurbs27_Register   (int)144
+#define ParObject_Beam2r                (int)145
+#define ParObject_Beam2rRegister        (int)146
 
 namespace DRT
 {

@@ -126,6 +126,7 @@ public:
     element_contact,
     element_so_shw6,
     element_beam2,
+    element_beam2r,
     element_beam3,
     element_truss3,
     element_dgfluid2,

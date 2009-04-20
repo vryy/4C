@@ -172,6 +172,11 @@ if grep '^[[:blank:]]*D_BEAM2' "$definefile" 2>&1 > /dev/null ; then
     OBJECTS="$OBJECTS \$(OBJS_DRT_B2) \$(OBJS_DRT_B2_LIB)"
 fi
 
+# BEAM2R
+if grep '^[[:blank:]]*D_BEAM2R' "$definefile" 2>&1 > /dev/null ; then
+    OBJECTS="$OBJECTS \$(OBJS_DRT_B2R) \$(OBJS_DRT_B2R_LIB)"
+fi
+
 # BEAM3
 if grep '^[[:blank:]]*D_BEAM3' "$definefile" 2>&1 > /dev/null ; then
     OBJECTS="$OBJECTS \$(OBJS_DRT_B3) \$(OBJS_DRT_B3_LIB)"
