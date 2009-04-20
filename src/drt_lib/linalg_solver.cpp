@@ -292,7 +292,14 @@ void LINALG::Solver::Solve(
   // fill the linear problem
   lp_->SetRHS(b_.get());
   lp_->SetLHS(x_.get());
-  lp_->SetOperator(A_.get());
+  if(project)
+  {
+    lp_->SetOperator(A_.get());
+  }
+  else
+  {
+    lp_->SetOperator(A_->UnprojectedOperator().get());
+  }
 
   // decide what solver to use
   string solvertype = Params().get("solver","none");
