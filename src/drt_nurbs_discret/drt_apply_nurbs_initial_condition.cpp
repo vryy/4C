@@ -466,7 +466,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(
   {
     printf("\n");
     printf("\n");
-    printf("Solving least-squares problem:\n");
+    printf("Solving least-squares problem: ");
   }
 
   // -------------------------------------------------------------------
@@ -493,7 +493,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(
 
   if(myrank==0)
   {
-    printf("Initial field set.\n");
+    printf("Initial field set.\n\n");
   }
 
   return;
