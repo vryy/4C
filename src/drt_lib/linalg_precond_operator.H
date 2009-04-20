@@ -4,8 +4,8 @@
 \brief A common interface for ifpack, ml and simpler preconditioners. 
        This interface allows a modification of the vector returned
        by the ApplyInverse call, which is necessary to do a solution on
-       a Krylov space orthogonalized to certain (for example rigid body)
-       modes.
+       a Krylov space orthogonalized to certain (for example rigid body
+       or zero pressure) modes.
 
 <pre>
 Maintainer: Peter Gamnitzer
@@ -47,6 +47,8 @@ namespace LINALG
 
   Only the ApplyInverse method is modified.
 
+  See linalg_projected_operator.H for related docu and code.
+
   \author gammi
   \date 03/09
   */
@@ -68,6 +70,17 @@ public:
   ~LinalgPrecondOperator();
 
   //! @name Special atribute set methods
+  /*!
+
+  \brief Set kernel space and weight vectors.
+    
+                 T
+  The projector P  is completely defined by w and c.
+
+  \param w vector(s) of weights 
+  \param c kernel basis vector(s)
+
+  */
   void SetKernelSpace(
     Teuchos::RCP<Epetra_MultiVector> w,
     Teuchos::RCP<Epetra_MultiVector> c
@@ -144,9 +157,9 @@ public:
   /*
     (Modified) ApplyInverse call
 
-    This method calls ApplyInverse on the actual preconditioner. Afterwards, 
-    the solution is orthogonalized against a set of vectors provided in a
-    multivector, for example rigid body modes etc., using the projector 
+    This method calls ApplyInverse on the actual preconditioner and, the 
+    solution is orthogonalized against a set of vectors provided in a
+    multivector, for example rigid body modes etc., using the projectors
     defined by
 
                                         T
@@ -154,7 +167,8 @@ public:
                         P  x = x - ------ x
                                     T
                                    w * c
-
+                                   
+    and
 
                                     T   
                                    x * w
@@ -162,28 +176,30 @@ public:
                                     T
                                    w * c
 
-
     w is the vector of weights, c a vector of ones (in the dofs under consideration).
 
     The system we are solving with this procedure is not Au=f for u (since A 
     might be singular), but we are solving 
 
-                        / T  \       T
-                       | P AP | u = P f
-                        \    / 
-                        
-    for the projection of the solution Pu.
+                        / T \         T
+                       | P A | P u = P f ,
+                        \   /          
 
-    Projection takes place in several steps: 
-    
-    o Take a new candidate X for the Krylov-space, apply full matrix
+    for the projection of the solution Pu, i.e. in the preconditioned case
   
-                   / T                        \ 
-                  | P * InversePrecond * A * P |
-                   \                          / 
+                   T                    /             \ 
+                  P * InversePrecond * | A * P * u -f  | = 0
+                  |                |    \             / 
+                  +----------------+
+                   included in the 
+                  preconditioner's
+                   modified apply
+                    inverse call
 
-    o Apply preconditioner
-                       
+             T
+    Hence, P  is always associated with the apply inverse call of the 
+    preconditioner.
+
     See the following article for further reading:
 
     @article{1055401,
@@ -211,7 +227,7 @@ private:
   //! the actual preconditioner
   Teuchos::RCP<Epetra_Operator>      precond_;
 
-  //! a set of vectors defining weighted basis mean vector for the projector
+  //! a set of vectors defining weighted (basis integral) vector for the projector
   Teuchos::RCP<Epetra_MultiVector>   w_;
 
   //! a set of vectors defining the vectors of ones (in the respective components) 
@@ -220,13 +236,7 @@ private:
 
 };
 
-
 } // namespace LINALG
-
-
-
-
-
 
 #endif // LINALG_PRECOND_OPERATOR_H_
 

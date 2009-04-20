@@ -1433,8 +1433,8 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   }
 
   // -------------------------------------------------------------------
-  // If necessary, remove pressure mean from residual, i.e. the first
-  // Krylov vector
+  // For purely Dirichlet bounded problems, compute mean basis function 
+  // weight vector and define nullspace for matrix
   // -------------------------------------------------------------------
   if (project_)
   {
@@ -1541,37 +1541,6 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
     {
       dserror("unknown definition of weight vector w for restriction of Krylov space");
     }
-
-    // loop basis vector of kernel and orthogonalize against it
-    /*
-                   T
-                  w * c
-    */
-    double wTc=0.0;
-      
-    c_->Dot(*w_,&wTc);
-  
-    if(fabs(wTc)<1e-14)
-    {
-      dserror("weight vector must not be orthogonal to c");
-    }
-  
-    /*
-                   T
-                  c * res
-    */
-    double cTY=0.0;
-      
-    c_->Dot(*(residual_),&cTY);
-
-    /*
-                                    T
-                       T           c * res
-                      P res = Y - --------- * w
-                                     T
-                                    w * c
-    */
-    (residual_)->Update(-cTY/wTc,*w_,1.0);
   }
 
   // end time measurement for application of dirichlet conditions

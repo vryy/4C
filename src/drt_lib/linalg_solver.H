@@ -61,6 +61,7 @@ Maintainer: Michael Gee
 #include "../drt_inpar/inpar_solver.H"
 
 #include "linalg_precond_operator.H"
+#include "linalg_projected_operator.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -174,31 +175,33 @@ public:
   /*!
   \brief Solve system of equations
 
-  \param matrix              (in/out): system of equations
-  \param x                   (in/out): initial guess on input, solution on output
-  \param b                   (in)    : right hand side vector
-  \param refactor            (in)    : flag indicating whether system should be refactorized
-  \param reset               (in)    : flag indicating whether all data from previous solves should
-                                       be recalculated including preconditioners
-  \param weighted_basis_mean (in)    : Basis for nullspace of matrix. Necessary if project!=false
-                                       Krylov space will be orthogonalized to this basis! 
-                                       (Aztec only option)
-  \param kernel_c            (in)    : Vector of ones in the respective components. Necessary if 
-                                       project!=false.
-                                       Krylov space will be orthogonalized to this basis! 
-                                       (Aztec only option)
-  \param project             (in)    : flag indicating whether several modes will be projected 
-                                       out of the Krylov space (Aztec only option)
+  \param matrix                (in/out): system of equations
+  \param x                     (in/out): initial guess on input, solution on output
+  \param b                     (in/out): right hand side vector
+                                         if project!=false it might be modified if not orthognal
+                                         to matrix kernel.
+  \param refactor              (in)    : flag indicating whether system should be refactorized
+  \param reset                 (in)    : flag indicating whether all data from previous solves
+                                         should be recalculated including preconditioners
+  \param weighted_basis_mean_w (in)    : weight vector defining projector for iterative solution 
+                                         of singluar problems using iterative solvers. Required 
+                                         if project!=false. (Aztec only option)
+                                         x will be orthogonalized to these weights on output.
+  \param kernel_c              (in)    : Vector of ones in the respective components. Necessary 
+                                         if project!=false. (Aztec only option)
+                                         Krylov space will be orthogonalized to this basis! 
+  \param project               (in)    : flag indicating whether several modes will be projected 
+                                         out of the Krylov space (Aztec only option)
   */
   void Solve(
-    RCP<Epetra_Operator>     matrix                            ,
-    RCP<Epetra_Vector>       x                                 ,
-    RCP<Epetra_Vector>       b                                 ,
-    bool                     refactor                          ,
-    bool                     reset   = false                   ,
-    RCP<Epetra_MultiVector>  weighted_basis_mean= Teuchos::null,
-    RCP<Epetra_MultiVector>  kernel_c= Teuchos::null           ,
-    bool                     project = false                   );
+    RCP<Epetra_Operator>     matrix                              ,
+    RCP<Epetra_Vector>       x                                   ,
+    RCP<Epetra_Vector>       b                                   ,
+    bool                     refactor                            ,
+    bool                     reset   = false                     ,
+    RCP<Epetra_MultiVector>  weighted_basis_mean_w= Teuchos::null,
+    RCP<Epetra_MultiVector>  kernel_c= Teuchos::null             ,
+    bool                     project = false                     );
 
   /*!
   \brief Reset the solver and clear data
@@ -362,67 +365,88 @@ private:
   virtual void Solve_lapack(const bool reset);
 
   /*!
-  \brief Solve using aztec
+  \brief Solve using aztec. If project==false, system-matrix has to be 
+         non-singular. For project==true, the user can specify the
+         matrix kernel and a weight vector to solve the problem
+         iteratively on a residue class modulo the kernel.
+         The representative returned in x_ will be orthogonal to
+         the weighted_basis_mean_w vector.
+
+  \param (i) reset        
+             flag indicating whether all data from previous solves
+             should be recalculated including preconditioners
+  \param (i) project              
+             flag indicating whether several modes will be projected 
+             out of the Krylov space (Aztec only option)
+  \param (i) weighted_basis_mean_w
+             weight vector defining projector for iterative solution 
+             of singluar problems using iterative solvers. Required 
+             if project!=false.
+             x will be orthogonalized to these weights on output.
+  \param (i) kernel_c             
+             Vector of ones in the respective components. Necess
+             if project!=false.
+             Krylov space will be orthogonalized to this basis! 
 
   */
   virtual void Solve_aztec(
-    const bool                    reset              , 
-    const bool                    project            ,
-    const RCP<Epetra_MultiVector> weighted_basis_mean,
-    const RCP<Epetra_MultiVector> kernel_c
+    const bool                    reset                ,
+    const bool                    project              ,
+    const RCP<Epetra_MultiVector> weighted_basis_mean_w,
+    const RCP<Epetra_MultiVector> kernel_c             
     );
 
   //! a communicator
-  const Epetra_Comm&                 comm_;
+  const Epetra_Comm&                    comm_;
   //! (internal) parameter list
-  RCP<ParameterList>                 params_;
+  RCP<ParameterList>                    params_;
   //! file to write output to (proc 0 only, can be NULL on input)
-  FILE*                              outfile_;
+  FILE*                                 outfile_;
   //! system of equations
-  RCP<Epetra_Operator>               A_;
+  RCP<LINALG::LinalgProjectedOperator>  A_;
   //! modified system of equations
-  RCP<Epetra_CrsMatrix>              Aplus_;
+  RCP<Epetra_CrsMatrix>                 Aplus_;
   //! Preconditioner (currently an ML, Ifpack, MLAPI or SIMPLER operator)
-  RCP<LINALG::LinalgPrecondOperator> P_;
+  RCP<LINALG::LinalgPrecondOperator>    P_;
   //! system of equations used for preconditioning used by P_ only
-  RCP<Epetra_RowMatrix>              Pmatrix_;
+  RCP<Epetra_RowMatrix>                 Pmatrix_;
   //! initial guess and solution
-  RCP<Epetra_Vector>                 x_;
+  RCP<Epetra_Vector>                    x_;
   //! right hand side vector
-  RCP<Epetra_Vector>                 b_;
+  RCP<Epetra_Vector>                    b_;
   //int x_LDA_;
   //int b_LDA_;
   //! a linear problem wrapper class used by Trilinos and for scaling of the system
-  RCP<Epetra_LinearProblem>          lp_;
+  RCP<Epetra_LinearProblem>             lp_;
   //! Epetra multivector: initial guess and solution
-  Epetra_MultiVector *               X_;
+  Epetra_MultiVector *                  X_;
   //! Epetra multivector: right hand side
-  Epetra_MultiVector *               B_;
+  Epetra_MultiVector *                  B_;
   //! flag indicating whether matrix was factored before
-  bool                               factored_;
+  bool                                  factored_;
   //! counting how many times matrix was solved between resets
-  int                                ncall_;
+  int                                   ncall_;
   //! an abstract amesos solver that can be any of the amesos concrete immplementations
-  RCP<Amesos_BaseSolver>          amesos_;
+  RCP<Amesos_BaseSolver>                amesos_;
   //! an aztec solver
-  RCP<AztecOO>                    aztec_;
+  RCP<AztecOO>                          aztec_;
   //! an aztex maxiter status test
-  RCP<AztecOO_StatusTestMaxIters> aztest_maxiter_;
+  RCP<AztecOO_StatusTestMaxIters>       aztest_maxiter_;
   //! an aztec 2-norm convergence test
-  RCP<AztecOO_StatusTestResNorm>  aztest_norm2_;
+  RCP<AztecOO_StatusTestResNorm>        aztest_norm2_;
   //! an aztec inf-norm convergence test
-  RCP<AztecOO_StatusTestResNorm>  aztest_norminf_;
+  RCP<AztecOO_StatusTestResNorm>        aztest_norminf_;
   // ! combination of the above tests
-  RCP<AztecOO_StatusTestCombo>    aztest_combo1_;
-  RCP<AztecOO_StatusTestCombo>    aztest_combo2_;
+  RCP<AztecOO_StatusTestCombo>          aztest_combo1_;
+  RCP<AztecOO_StatusTestCombo>          aztest_combo2_;
   //! a vm3 solver
-  RCP<FLD::VM3_Solver>            vm3_solver_;
+  RCP<FLD::VM3_Solver>                  vm3_solver_;
 
   //! reindex linear problem for amesos
   RCP<EpetraExt::LinearProblem_Reindex> reindexer_;
 
   //! downwinding reindexer for downwind smoothers
-  RCP<LINALG::DownwindMatrix>           dwind_;
+  RCP<LINALG::DownwindMatrix>            dwind_;
 
 #ifdef PARALLEL
 #ifdef SPOOLES_PACKAGE

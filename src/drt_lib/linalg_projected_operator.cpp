@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file  linalg_precond_operator.cpp
+\file  linalg_projected_operator.cpp
 
 <pre>
 Maintainer: Peter Gamnitzer
@@ -11,59 +11,61 @@ Maintainer: Peter Gamnitzer
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#include "linalg_precond_operator.H"
+#include "linalg_projected_operator.H"
 
 /* --------------------------------------------------------------------
                           Constructor
    -------------------------------------------------------------------- */
-LINALG::LinalgPrecondOperator::LinalgPrecondOperator(
-  Teuchos::RCP<Epetra_Operator> precond,
+LINALG::LinalgProjectedOperator::LinalgProjectedOperator(
+  Teuchos::RCP<Epetra_Operator> A      ,
   bool                          project) :
   project_(project),
-  precond_(precond)
+  A_      (A)
 {
   return;
-} // LINALG::LinalgPrecondOperator::LinalgPrecondOperator
+} // LINALG::LinalgProjectedOperator::LinalgProjectedOperator
 
 /* --------------------------------------------------------------------
-                          Destructor
+                           Destructor
    -------------------------------------------------------------------- */
-LINALG::LinalgPrecondOperator::~LinalgPrecondOperator()
+LINALG::LinalgProjectedOperator::~LinalgProjectedOperator()
 {
   return;
-} // LINALG::LinalgPrecondOperator::~LinalgPrecondOperator
+} // LINALG::LinalgProjectedOperator::~LinalgProjectedOperator
 
 /* --------------------------------------------------------------------
-                    (Modified) ApplyInverse call
+                      (Modified) Apply call
    -------------------------------------------------------------------- */
-int LINALG::LinalgPrecondOperator::ApplyInverse(
+int LINALG::LinalgProjectedOperator::Apply(
   const Epetra_MultiVector &X, 
   Epetra_MultiVector       &Y
   ) const
 { 
-
   int ierr=0;
 
   // if necessary, project out matrix kernel
   if(project_)
   {
-    // Apply the inverse preconditioner to get new basis vector for the
-    // Krylov space
-    ierr=precond_->ApplyInverse(X,Y);
-
-    // check for vectors for matrix kernel and weighted basis mean vector
-    if(c_ == Teuchos::null || w_ == Teuchos::null)
+    // safety checks
+    if(w_ == Teuchos::null)
     {
-      dserror("no c_ and w_ supplied");
+      dserror("weight vector has not been set\n");
+    }
+    if(c_ == Teuchos::null)
+    {
+      dserror("kernel vector has not been set\n");
     }
 
+    // get a copy of the input vector to apply projector P
+    Epetra_MultiVector PX(X);
+
     // loop all solution vectors
-    for(int sv=0;sv<Y.NumVectors();++sv)
+    for(int v=0;v<PX.NumVectors();++v)
     {
-      // loop all basis vectors of kernel and orthogonalize against them
+      // loop all basis vectors of kernel
       for(int mm=0;mm<c_->NumVectors();++mm)
       {
-        // loop all weight vectors 
+        // loop all weight vectors and orthogonalize against them
         for(int rr=0;rr<w_->NumVectors();++rr)
         {
           /*
@@ -73,7 +75,7 @@ int LINALG::LinalgPrecondOperator::ApplyInverse(
           double wTc=0.0;
 
           ((*c_)(mm))->Dot(*((*w_)(rr)),&wTc);
-          
+
           if(fabs(wTc)<1e-14)
           {
             dserror("weight vector must not be orthogonal to c");
@@ -81,32 +83,37 @@ int LINALG::LinalgPrecondOperator::ApplyInverse(
 
           /*
                    T
-                  c * Y
+                  w * X
           */
-          double cTY=0.0;
-
-          ((*c_)(mm))->Dot(*(Y(sv)),&cTY);
+          double wTX=0.0;
+ 
+          (PX(v))->Dot(*((*w_)(rr)),&wTX);
 
           /*
-                                  T
-                       T         c * Y
-                      P Y = Y - ------- * w
-                                  T
-                                 w * c
+
+                                    T   
+                                   x * w
+                        P x = x - ------- c
+                                    T
+                                   w * c
+
           */
-          (Y(sv))->Update(-cTY/wTc,*((*w_)(rr)),1.0);
-          
-        } // loop all weight vectors
-      } // loop kernel basis vectors
-    } // loop all solution vectors
+          (PX(v))->Update(-wTX/wTc,*((*c_)(mm)),1.0);
+        } // rr
+      } // mm
+    } // v
+
+    // Apply the operator to the projected input vector in order 
+    // to get new basis vector for the Krylov space
+    ierr=A_->Apply(PX,Y);
   }
   else
   {
-    ierr=precond_->ApplyInverse(X,Y);
+    ierr=A_->Apply(X,Y);
   }
 
   return(ierr);
-} // LINALG::LinalgPrecondOperator::ApplyInverse
+} // LINALG::LinalgProjectedOperator::Apply
 
 
 #endif // CCADISCRET

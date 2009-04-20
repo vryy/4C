@@ -270,7 +270,6 @@ void LINALG::Solver::Solve(
   RefCountPtr<Epetra_MultiVector>  kernel_c           ,
   bool                             project            )
 {
-
   // reset data flags on demand
   if (reset)
   {
@@ -279,7 +278,11 @@ void LINALG::Solver::Solve(
   }
 
   // set the data passed to the method
-  if (refactor) A_ = matrix;
+  if (refactor) 
+  {
+    A_ = rcp(new LINALG::LinalgProjectedOperator::LinalgProjectedOperator(matrix,project));
+  }
+
   x_ = x;
   b_ = b;
 
@@ -341,8 +344,58 @@ void LINALG::Solver::Solve_aztec(
   ParameterList& azlist = Params().sublist("Aztec Parameters");
   int azoutput = azlist.get<int>("AZ_output",0);
 
-  // see whether Operator is a Epetra_CrsMatrix
-  Epetra_CrsMatrix* A = dynamic_cast<Epetra_CrsMatrix*>(A_.get());
+  // see whether unprojected Operator is a Epetra_CrsMatrix
+  Epetra_CrsMatrix* A = dynamic_cast<Epetra_CrsMatrix*>((A_->UnprojectedOperator()).get());
+
+  if (!A && project)
+  {
+    dserror("Projection out nullspaces is only possible for Epetra_CrsMatrix-type Operators\n");
+  }
+
+  // For singular systems, forcing (i.e. right hand side, residual etc) 
+  // must be orthogonal to matrix kernel. Make sure we that this is true:
+  if(project)
+  {
+    // loop all basis vectors of kernel
+    for(int mm=0;mm<kernel_c->NumVectors();++mm)
+    {
+      // loop all weight vectors
+      for(int rr=0;rr<weighted_basis_mean->NumVectors();++rr)
+      {
+        // -------------------------------------
+        // loop basis vector of matrix kernel and orthogonalize residual against it
+        
+        /*
+                   T
+                  w * c
+        */
+        double wTc=0.0;
+      
+        ((*kernel_c)(mm))->Dot(*((*weighted_basis_mean)(rr)),&wTc);
+        
+        if(fabs(wTc)<1e-14)
+        {
+          dserror("weight vector must not be orthogonal to c");
+        }
+  
+        /*
+                   T
+                  c * b
+        */
+        double cTres=0.0;
+        ((*kernel_c)(mm))->Dot(*(b_),&cTres);
+
+        /*
+                                  T
+                       T         c * b
+                      P b = b - ------- * w
+                                  T
+                                 w * c
+        */
+        (b_)->Update(-cTres/wTc,*((*weighted_basis_mean)(rr)),1.0);
+      }
+    }
+  } // if(project)
 
   // decide whether we recreate preconditioners
   bool create = false;
@@ -549,19 +602,30 @@ void LINALG::Solver::Solve_aztec(
 
       Pmatrix_ = null;
     }
-
-    // in case of singular matrices, the kernel has to be projected 
-    // out of the krylov space
-    //
-    // -> has to be provided for the modified Preconditioner inverse apply 
-    if(project)
-    {
-      P_->SetKernelSpace(weighted_basis_mean,kernel_c);
-    }
   }
 
   // set preconditioner
-  if (doifpack || doml || dosimpler) aztec_->SetPrecOperator(P_.get());
+  if (doifpack || doml || dosimpler)
+  {
+    // in case of singular matrices, the kernel has to be projected 
+    // out of the krylov space
+    //
+    // -> has to be provided for the modified Preconditioner ApplyInverse
+    //    and the matrices Apply call
+    if(project)
+    {
+      if(P_==Teuchos::null)
+      {
+        dserror("Preconditioner not existent during projection\n");
+      }
+
+      P_->SetKernelSpace(weighted_basis_mean,kernel_c);
+      A_->SetKernelSpace(weighted_basis_mean,kernel_c);
+    } // if(project)
+
+    // finally set the preconditioner
+    aztec_->SetPrecOperator(P_.get());
+  }
 
   // iterate on the solution
   int iter = azlist.get("AZ_max_iter",500);
@@ -663,6 +727,49 @@ void LINALG::Solver::Solve_aztec(
   }
 
 
+  // For singular systems, compute the representative returned in x_ 
+  // orthogonal to the weighted basis mean vector w:
+  if(project)
+  {
+    // loop all basis vectors of kernel
+    for(int mm=0;mm<kernel_c->NumVectors();++mm)
+    {
+      // loop all weight vectors and orthogonalize against them
+      for(int rr=0;rr<weighted_basis_mean->NumVectors();++rr)
+      {
+        /*
+                    T
+                   w * c
+        */
+        double wTc=0.0;
+
+        ((*kernel_c)(mm))->Dot(*((*weighted_basis_mean)(rr)),&wTc);
+      
+        if(fabs(wTc)<1e-14)
+        {
+          dserror("weight vector must not be orthogonal to c");
+        }
+      
+        /*
+                    T
+                   w * x
+        */
+        double wTX=0.0;
+ 
+        x_->Dot(*((*weighted_basis_mean)(rr)),&wTX);
+        /*
+
+                       T   
+                      x * w
+           P x = x - ------- c
+                       T
+                      w * c
+
+        */
+        x_->Update(-wTX/wTc,*((*kernel_c)(mm)),1.0);
+      }
+    }
+  } // if(project)
 
   // print some output if desired
   if (Comm().MyPID()==0 && outfile_)
