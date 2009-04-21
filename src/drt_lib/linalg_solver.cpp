@@ -601,7 +601,7 @@ void LINALG::Solver::Solve_aztec(
       // its own downwinding inside if desired
 
       Teuchos::RCP<LINALG::SIMPLER_Operator> SimplerOperator
-          = rcp(new LINALG::SIMPLER_Operator(A_,Params(),
+          = rcp(new LINALG::SIMPLER_Operator(A_->UnprojectedOperator(),Params(),
                                              Params().sublist("SIMPLER"),
                                              outfile_));
       
@@ -681,7 +681,7 @@ void LINALG::Solver::Solve_aztec(
     // undo reordering of lhs, don't care for rhs
     dwind_->InvPermute(dwproblem->GetLHS(),lp_->GetLHS());
     // undo reordering of matrix (by pointing to original matrix)
-    if (A) A = dynamic_cast<Epetra_CrsMatrix*>(A_.get());
+    if (A) A = dynamic_cast<Epetra_CrsMatrix*>(A_->UnprojectedOperator().get());
     // trash temporary data
     dwproblem = null;
     dwA = null;
