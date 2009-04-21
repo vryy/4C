@@ -88,7 +88,7 @@ void DRT::Discretization::Evaluate(
   // that does nothing
   {
     TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate PreEvaluate");
-    map<int,RefCountPtr<ElementRegister> >::iterator curr;
+    map<int,RCP<ElementRegister> >::iterator curr;
     for (curr=elementregister_.begin(); curr != elementregister_.end(); ++curr)
       curr->second->PreEvaluate(*this,params,systemmatrix1,systemmatrix2,
                                 systemvector1,systemvector2,systemvector3);
@@ -213,12 +213,12 @@ void DRT::Discretization::Evaluate(Teuchos::ParameterList&              params,
  |  evaluate (public)                                        a.ger 03/09|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::Evaluate(
-    Teuchos::ParameterList&              params
-    )
+                                    Teuchos::ParameterList& params
+                                   )
 {
 
   // test only for Filled()!Dof information is not required
-  if (not Filled()) dserror("FillComplete() was not called");
+  if (!Filled()) dserror("FillComplete() was not called");
 
   // define empty element matrices and vectors
   Epetra_SerialDenseMatrix elematrix1;
@@ -322,7 +322,6 @@ void DRT::Discretization::EvaluateNeumann(ParameterList& params, Epetra_Vector& 
         curr->second->LocationVector(*this,lm,lmowner);
         elevector.Size((int)lm.size());
         curr->second->EvaluateNeumann(params,*this,cond,lm,elevector);
-        //cout << "Neumann load curve factor on element " << elevector << endl;
         LINALG::Assemble(systemvector,elevector,lm,lmowner);
       }
     }
@@ -356,17 +355,6 @@ static void DoDirichletCondition(DRT::Condition&             cond,
                                  Teuchos::RCP<std::set<int> > dbcgids);
 
 
-//--------------------------------------------------------------------
-/*!
-\brief evaluate spatial function (public)
-\author g.bau
-\date 03/07
-*/
-//--------------------------------------------------------------------
-static double EvaluateFunction(DRT::Node*        node,
-		               int               index,
-			       int		 funct_num);
-
 
 /*----------------------------------------------------------------------*
  |  evaluate Dirichlet conditions (public)                   mwgee 01/07|
@@ -390,7 +378,7 @@ void DRT::Discretization::EvaluateDirichlet(ParameterList& params,
   Teuchos::RCP<std::set<int> > dbcgids = Teuchos::null;
   if (dbcmapextractor != Teuchos::null) dbcgids = Teuchos::rcp(new std::set<int>());
 
-  multimap<string,RefCountPtr<Condition> >::iterator fool;
+  multimap<string,RCP<Condition> >::iterator fool;
   //--------------------------------------------------------
   // loop through Dirichlet conditions and evaluate them
   //--------------------------------------------------------
@@ -534,7 +522,7 @@ void DoDirichletCondition(DRT::Condition&             cond,
         continue;
       }
       const int gid = dofs[j];
-      vector<double> value(deg+1, (*val)[j]);
+      vector<double> value(deg+1,(*val)[j]);
 
       // factor given by time curve
       std::vector<double> curvefac(deg+1, 1.0);
@@ -544,9 +532,6 @@ void DoDirichletCondition(DRT::Condition&             cond,
         curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).FctDer(time,deg);
       else
         for (unsigned i=1; i<(deg+1); ++i) curvefac[i] = 0.0;
-      //cout << "Dirichlet curve factor: ";
-      //for (unsigned i=0; i<deg; ++i) cout << curvefac[i] << ", ";
-      //cout << curvefac[deg] << endl;
 
       // factor given by spatial function
       double functfac = 1.0;
@@ -554,9 +539,9 @@ void DoDirichletCondition(DRT::Condition&             cond,
       if (funct) funct_num = (*funct)[j];
       {
          if (funct_num>0)
-           functfac = EvaluateFunction(actnode,j,funct_num);
+           functfac = 
+             DRT::UTILS::FunctionManager::Instance().Funct(funct_num-1).Evaluate(j,actnode->X());
       }
-      //cout << "Dirichlet value " << value << " functfac " <<  functfac << endl;
 
       // apply factors to Dirichlet value
       for (unsigned i=0; i<deg+1; ++i)
@@ -826,16 +811,6 @@ void DRT::Discretization::EvaluateConditionUsingParentData(
   } //for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
   return;
 } // end of DRT::Discretization::EvaluateConditionUsingParentData
-
-/*----------------------------------------------------------------------*
- |  evaluate spatial function (public)                       g.bau 03/07|
- *----------------------------------------------------------------------*/
-double EvaluateFunction(DRT::Node*      node,
-                        int index,
-                        int funct_num)
-{
-  return DRT::UTILS::FunctionManager::Instance().Funct(funct_num-1).Evaluate(index,node->X());
-}
 
 
 /*----------------------------------------------------------------------*
