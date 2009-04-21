@@ -130,8 +130,8 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
      * know about each other node its filament number in order to decide weather a crosslink may be established 
      * or not; both vectors are initalized with -1 indicating that no crosslinkers have been set so far nor
      * filament numbers*/
-    crosslinkerpartner_ = rcp( new Epetra_Vector(*discret_.NodeColMap()) ); 
-    filamentnumber_ = rcp( new Epetra_Vector(*discret_.NodeColMap()) );
+    crosslinkerpartner_ = rcp( new Epetra_Vector(*(discret_.NodeColMap())) ); 
+    filamentnumber_ = rcp( new Epetra_Vector(*(discret_.NodeColMap())) );
     crosslinkerpartner_->PutScalar(-1);
     filamentnumber_->PutScalar(-1);
     
@@ -142,7 +142,7 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
      * displacement, but also about whether this has a force sensor; as a consequence each processor can write the
      * complete information gathered by all force sensors into a file of its own without any additional communication
      * with any other processor; initialization with -1 indicates that so far no forcesensors have been set*/
-    forcesensor_ = rcp( new Epetra_Vector(*discret_.DofColMap()) );
+    forcesensor_ = rcp( new Epetra_Vector(*(discret_.DofColMap())) );
     forcesensor_->PutScalar(-1);
     
     //basiselements_ is the number of elements existing in the discretization from the very beginning on
@@ -180,7 +180,8 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
         if(nodenumber > -1)
           (*filamentnumber_)[nodenumber] = filamentnumber;     
       }
-     }  
+     } 
+    
     
     /*Young's modulus and loss modulus are to be measured by means of the reaction forces at certain sensor points; example: if for a
      * an actin network between two rheometer plates the stiffness is to be deterimined this can be done by measuring the forces exerted
@@ -201,26 +202,29 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
       //get a pointer to nodal cloud coverd by the current condition
       const vector<int>* nodeids = forcesensorconditions[i]->Nodes();
       
+           
       //loop through all the nodes of the nodal cloud
       for(int j = 0; j < (int)nodeids->size() ; j++)
       {
         //get the node's global id
         int nodenumber = (*nodeids)[j];
+                
         
         //testing whether current nodedofnumber makes sense for current node
         if( nodedofnumber < 0 || nodedofnumber >= discret_.NumDof(discret_.gNode(nodenumber)) )
           dserror("ForceSensor condition applied with improper local dof number");
         
         //global id of degree of freedom at which force is to be measured
-        int dofnumber = discret_.Dof( discret_.gNode(nodenumber), nodedofnumber );
+        int dofnumber = discret_.Dof( discret_.gNode(nodenumber), nodedofnumber-1 );
         
         
         /*if the node does not belong to current processor Id is set by LID() to -1 and the node is ignored; otherwise the degrees of
          * freedom affected by this condition are marked in the vector *forcesensor_ by an one entry*/
         if(nodenumber > -1)
-          (*forcesensor_)[dofnumber] = 1;     
+          (*forcesensor_)[dofnumber] = 1;   
       }
      } 
+    
   
       //we construct a search tree with maximal depth of 8 (different numbers might be tried out, too)
       octTree_ = rcp(new GEO::SearchTree(8));
@@ -459,9 +463,14 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
       
       filecontent << endl << endl << endl << scientific << setprecision(10) << "measurement data in timestep " << istep << ", time = " << time << endl << endl;
       
+#ifdef DEBUG
+      if(forcesensor_ == null)
+        dserror("forcesensor_ is NULL pointer; possible reason: dynamic crosslinkers not activated and forcesensor applicable in this case only");
+#endif  // #ifdef DEBUG
+      
       for(int i = 0; i < forcesensor_->MyLength(); i++)
         if( (*forcesensor_)[i] == 1)
-          filecontent << "displacement = "<< dis[i] << "  internal force = "<< fint[i] << endl;
+          filecontent << "displacement = "<< dis[i] << "  internal force = "<< fint[i] << endl; 
          
       //writing filecontent into output file and closing it
       fprintf(fp,filecontent.str().c_str());
@@ -1120,10 +1129,9 @@ void StatMechManager::StatMechBrownian(ParameterList& params, RCP<Epetra_Vector>
   pstat.set("KT",statmechparams_.get<double>("KT",0.0));
   pstat.set("ETA",statmechparams_.get<double>("ETA",0.0));
   pstat.set("STOCH_ORDER",statmechparams_.get<int>("STOCH_ORDER",0));
-  pstat.set("FORCE_OR_DISP",statmechparams_.get<int>("FORCE_OR_DISP",0));
   
   
-  /*note: the column map statistical force or movement vector is passed down via the parameter list and not as a systemvector 
+  /*note: the column map statistical force vector is passed down via the parameter list and not as a systemvector 
    * so that assembly is not done by the evaluate method itself, but elementwise; this is in order to account for the
    * special assembly needs of randomly evaluated variables: the evaluate method of the discretization uses the LINALG
    * assembly method in which a processor assembles to the element of the global vector only if the processor is the 
@@ -1131,7 +1139,7 @@ void StatMechManager::StatMechBrownian(ParameterList& params, RCP<Epetra_Vector>
    * global column map vector is used*/
   pstat.set("statistical vector",browniancol);
   
-  //evaluation of statistical Brownian forces or displacements on column map vecotor
+  //evaluation of statistical Brownian forces  on column map vecotor
   discret_.SetState("displacement",dis); //during evaluation of statistical forces or steps in space access to current displacement possible
   discret_.Evaluate(pstat,damp,null,null,null,null);
   discret_.ClearState();
@@ -1143,17 +1151,12 @@ void StatMechManager::StatMechBrownian(ParameterList& params, RCP<Epetra_Vector>
   Epetra_Export dofexporter(*discret_.DofColMap(),*discret_.DofRowMap());
   brownianrow->Export(*browniancol,dofexporter,Add);
   
-  //adding Brownian forces to external forces passed to this method or adding Brownian displacements to current displacements
-  if(statmechparams_.get<int>("FORCE_OR_DISP",0) == 0)
-    fext->Update(1.0,*brownianrow,1.0);
-  else
-    dis->Update(1.0,*brownianrow,1.0);
+  //adding Brownian forces to external forces passed to this method 
+  fext->Update(1.0,*brownianrow,1.0);
   
   //complete damping matrix
   damp->Complete();
   
-
-
 
   return;
 } // StatMechManager::StatMechBrownian()

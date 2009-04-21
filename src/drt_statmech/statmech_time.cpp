@@ -267,11 +267,9 @@ void StatMechTime::ConsistentPredictor()
   //int istep = step + 1;  // n+1
   
   
-
-
-
+  // constant predictor : displacement in domain
+  disn_->Update(1.0,*dis_,0.0);
  
-
   /*compute new ordinary external forces (if dependent on displacement with respect to old displacemnet for a
    * semi-implicit-time-integration scheme)*/
   {
@@ -297,19 +295,13 @@ void StatMechTime::ConsistentPredictor()
     discret_.ClearState();
   }
   
-  /*The Brownian term in the Ito integral is evaluated either by means of statistical forces or by means of a random
-   *  step in space; these statistical variables are to be evaluated in the configuration of the last time step 
-   * (semi-implicit-time integration !!!) to ensure convergence to the correct solution to the stochastical proceess;
-   *  together with the random variables also the related damping matrix is evaluated according to the fluctuation 
-   * dissipation theorem */
-
+  /*Statistical mechanics includes some Brownian forces. These are evaluated at the beginning of a time step, i.e. in the sense
+   * of an Ito integral by means of random numbers. Thus currently a semi-implicit time step scheme is applied (implicit in drift
+   * term and explicit in noise term). The Brownian forces are evaluated in such a way that the resulting Langevin equation goes
+   * along with the correct Fokker-Planck-Diffusion equation*/
   statmechmanager_->StatMechBrownian(params_,dis_,fextn_,damp_);
 
   
-  // constant predictor : displacement in domain
-  disn_->Update(1.0,*dis_,0.0);
-  
-
 
   //cout << *disn_ << endl;
 
@@ -555,8 +547,7 @@ void StatMechTime::FullNewton()
 
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
-    LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
-    
+    LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);    
 
 
     //--------------------------------------------------- solve for disi

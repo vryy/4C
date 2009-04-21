@@ -505,14 +505,8 @@ int DRT::ELEMENTS::Beam3::EvaluateBrownianForces(ParameterList& params,
 
     //calculating standard deviation of statistical forces or Brownian steps according to fluctuation dissipation theorem   
     double stand_dev_trans = 0;
-    //if FORCE_OR_DISP == 0 a statistical force is evaluated
-    if(params.get<int>("FORCE_OR_DISP",0) == 0)
-      stand_dev_trans = pow(2 * kT * (zeta/2) / params.get<double>("delta time",0.01),0.5);
-    //if FORCE_OR_DISP == 1 a statistical displacement is evaluated
-    else
-      stand_dev_trans = pow(2 * kT * params.get<double>("delta time",0.01) / (zeta/2),0.5);
-    
 
+    stand_dev_trans = pow(2 * kT * (zeta/2) / params.get<double>("delta time",0.01),0.5);
 
     //creating a random generator object which creates random numbers with mean = 0 and standard deviation
     //stand_dev; using Blitz namespace "ranlib" for random number generation
@@ -533,12 +527,9 @@ int DRT::ELEMENTS::Beam3::EvaluateBrownianForces(ParameterList& params,
   {    
     //calculating standard deviation of statistical forces or Brownian steps according to fluctuation dissipation theorem   
     double stand_dev_trans = 0;
-    //if FORCE_OR_DISP == 0 a statistical force is evaluated
-    if(params.get<int>("FORCE_OR_DISP",0) == 0)
-      stand_dev_trans = pow(2 * kT * (zeta/6) / params.get<double>("delta time",0.01),0.5);
-    //if FORCE_OR_DISP == 1 a statistical displacement is evaluated
-    else
-      stand_dev_trans = pow(2 * kT * params.get<double>("delta time",0.01) / (zeta/6),0.5);
+
+    stand_dev_trans = pow(2 * kT * (zeta/6) / params.get<double>("delta time",0.01),0.5);
+
 
     
     //creating a random generator object which creates random numbers with mean = 0 and standard deviation
