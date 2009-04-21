@@ -44,6 +44,7 @@ Maintainer: Lena Wiechert
 #include "compogden.H"
 #include "charmm.H"
 #include "itskov.H"
+#include "protein.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -217,6 +218,13 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
       curmat->SetParameter(new MAT::PAR::CHARMM(curmat));
     MAT::PAR::CHARMM* params = static_cast<MAT::PAR::CHARMM*>(curmat->Parameter());
     return Teuchos::rcp(new CHARMM(params));
+  }
+  case INPAR::MAT::m_protein:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::PROTEIN(curmat));
+    MAT::PAR::PROTEIN* params = static_cast<MAT::PAR::PROTEIN*>(curmat->Parameter());
+    return Teuchos::rcp(new PROTEIN(params));
   }
   case INPAR::MAT::m_ion:
   {

@@ -330,6 +330,18 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
   /*--------------------------------------------------------------------*/
+  // CHARMM API for proteins
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_PROTEIN",
+                                            "CHARmm API for Proteins",
+                                            INPAR::MAT::m_protein));
+
+    AddNamedReal(m,"DENS","mass density");
+    
+    AppendMaterialDefinition(matlist,m);
+  }
+  /*--------------------------------------------------------------------*/
   // Itskov material law
   {
     Teuchos::RCP<MaterialDefinition> m

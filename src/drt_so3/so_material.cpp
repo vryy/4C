@@ -53,6 +53,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/material.H"
 #include "../drt_mat/charmm.H"
 #include "../drt_mat/itskov.H"
+#include "../drt_mat/protein.H"
 
 
 using namespace std; // cout etc.
@@ -298,7 +299,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       return;
       break;
     }
-    case INPAR::MAT::m_charmm: /*------------------------------------ CHARmm */
+    case INPAR::MAT::m_charmm: /*------------------------------------ CHARMm */
     {
       MAT::CHARMM* charmm = static_cast <MAT::CHARMM*>(mat.get());
 
@@ -317,6 +318,26 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       return;
       break;
     }
+    case INPAR::MAT::m_protein: /*--------------------------- CHARMm Protein */
+    {
+      MAT::PROTEIN* protein = static_cast <MAT::PROTEIN*>(mat.get());
+
+      LINALG::SerialDenseMatrix XREFE(3,3);
+      LINALG::SerialDenseMatrix XCURR(3,3);
+      for (int i=0;i<3;i++)
+      for (int j=0;j<3;j++) {
+          //XREFE(i,j) = (*xrefe)(i,j);
+          //XCURR(i,j) = (*xcurr)(i,j);
+          XREFE(i,j) = 0.0; // Quick hack, that needs to be resoved
+          XCURR(i,j) = 0.0;
+      }
+      const double time = params.get("total time",-1.0);
+      protein->Evaluate(glstrain,cmat,stress,Id(),gp,data_,time,XREFE,XCURR);
+      *density = protein->Density();
+      return;
+      break;
+    }
+
     default:
       dserror("Unknown type of material");
     break;

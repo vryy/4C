@@ -1010,7 +1010,8 @@ OBJS_DRT_MAT_LIB = src/drt_mat/matpar_bundle.o \
                 src/drt_mat/matlist.o \
                 src/drt_mat/ion.o \
                 src/drt_mat/compogden.o \
-				src/drt_mat/charmm.o \
+		src/drt_mat/charmm.o \
+		src/drt_mat/protein.o \
                 src/drt_mat/itskov.o
 #
 OBJS_DRT_MAT  = src/drt_mat/micromaterialgp_static.o \

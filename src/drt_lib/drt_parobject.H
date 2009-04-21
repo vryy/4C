@@ -157,6 +157,7 @@ using namespace std;
 #define ParObject_So_Nurbs27_Register   (int)144
 #define ParObject_Beam2r                (int)145
 #define ParObject_Beam2rRegister        (int)146
+#define ParObject_Protein		(int)147
 
 namespace DRT
 {
