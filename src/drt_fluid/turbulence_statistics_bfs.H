@@ -159,6 +159,10 @@ private:
   int  numx1coor_;
   int  numx2coor_;
 
+  //! number of locations in x1- and x2-direction for statistical evaluation
+  int  numx1statlocations_;
+  int  numx2statlocations_;
+
   //! bounds for extension of backward-facing step in x3-direction
   double  x3min_;
   double  x3max_;
@@ -178,9 +182,13 @@ private:
   RCP<Epetra_Vector>       togglew_;
   RCP<Epetra_Vector>       togglep_;
 
-  //! the coordinates of various lines
+  //! available x1- and x2-coordinates
   RCP<vector<double> >     x1coordinates_;
   RCP<vector<double> >     x2coordinates_;
+
+  //! coordinates of locations in x1- and x2-direction for statistical evaluation
+  LINALG::Matrix<21,1> x1statlocations_;
+  LINALG::Matrix<2,1>  x2statlocations_;
 
   //! matrices containing values
   RCP<Epetra_SerialDenseMatrix>     x1sump_;
