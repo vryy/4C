@@ -92,6 +92,7 @@ void DRT::UTILS::LocsysManager::Setup()
     else dserror("Unknown type of locsys");
     cout << *type << " id: " << id_[i] << endl;
   }
+
   // As for Dirichlet conditions, we keep to a very strict hierarchy
   // for evaluation of the Locsys conditions: Volume locsys conditions
   // are evaluated first, followed by Surface and Line locsys conditions
@@ -152,15 +153,16 @@ void DRT::UTILS::LocsysManager::Setup()
       thirddir_(i,2) = normals_(i,0)*tangents_(i,1)-normals_(i,1)*tangents_(i,0);
       
       // build locsystoggle vector with locsys IDs
-      for (int k=0;k<(int)nodes->size();++k)
-      {
-        bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
-        if (!havenode) continue;
+      if (type_[i] == DRT::UTILS::LocsysManager::def)
+        for (int k=0;k<(int)nodes->size();++k)
+        {
+          bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
+          if (!havenode) continue;
         
-        int indices = (*nodes)[k];
-        double values  = i;
-        locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
-      }
+          int indices = (*nodes)[k];
+          double values  = i;
+          locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
+        }
     }
     else if (currlocsys->Type() == DRT::Condition::SurfaceLocsys ||
              currlocsys->Type() == DRT::Condition::LineLocsys ||
@@ -241,15 +243,16 @@ void DRT::UTILS::LocsysManager::Setup()
       thirddir_(i,2) = normals_(i,0)*tangents_(i,1)-normals_(i,1)*tangents_(i,0);
       
       // build locsystoggle vector with locsys IDs
-      for (int k=0;k<(int)nodes->size();++k)
-      {
-        bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
-        if (!havenode) continue;
+      if (type_[i] == DRT::UTILS::LocsysManager::def)
+        for (int k=0;k<(int)nodes->size();++k)
+        {
+          bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
+          if (!havenode) continue;
         
-        int indices = (*nodes)[k];
-        double values  = i;
-        locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
-      }
+          int indices = (*nodes)[k];
+          double values  = i;
+          locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
+        }
     }
     else if (currlocsys->Type() == DRT::Condition::VolumeLocsys ||
              currlocsys->Type() == DRT::Condition::LineLocsys ||
@@ -330,15 +333,16 @@ void DRT::UTILS::LocsysManager::Setup()
       thirddir_(i,2) = normals_(i,0)*tangents_(i,1)-normals_(i,1)*tangents_(i,0);
       
       // build locsystoggle vector with locsys IDs
-      for (int k=0;k<(int)nodes->size();++k)
-      {
-        bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
-        if (!havenode) continue;
+      if (type_[i] == DRT::UTILS::LocsysManager::def)
+        for (int k=0;k<(int)nodes->size();++k)
+        {
+          bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
+          if (!havenode) continue;
         
-        int indices = (*nodes)[k];
-        double values  = i;
-        locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
-      }
+          int indices = (*nodes)[k];
+          double values  = i;
+          locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
+        }
     }
     else if (currlocsys->Type() == DRT::Condition::VolumeLocsys ||
              currlocsys->Type() == DRT::Condition::SurfaceLocsys ||
@@ -419,15 +423,16 @@ void DRT::UTILS::LocsysManager::Setup()
       thirddir_(i,2) = normals_(i,0)*tangents_(i,1)-normals_(i,1)*tangents_(i,0);
       
       // build locsystoggle vector with locsys IDs
-      for (int k=0;k<(int)nodes->size();++k)
-      {
-        bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
-        if (!havenode) continue;
+      if (type_[i] == DRT::UTILS::LocsysManager::def)
+        for (int k=0;k<(int)nodes->size();++k)
+        {
+          bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
+          if (!havenode) continue;
         
-        int indices = (*nodes)[k];
-        double values  = i;
-        locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
-      }
+          int indices = (*nodes)[k];
+          double values  = i;
+          locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
+        }
     }
     else if (currlocsys->Type() == DRT::Condition::VolumeLocsys ||
              currlocsys->Type() == DRT::Condition::SurfaceLocsys ||
@@ -480,7 +485,6 @@ void DRT::UTILS::LocsysManager::Setup()
       for (int r=0;r<numdof;++r)
         trafo_->Assemble(1.0,dofs[r],dofs[r]);
     }
-    
     // trafo matrix for locsys node
     else
     {
@@ -573,14 +577,29 @@ void DRT::UTILS::LocsysManager::Print(ostream& os) const
     os << "\n-------------------------------------DRT::UTILS::LocysManager\n";
     for (int i=0;i<NumLocsys();++i)
     {
-      os << "Locsys ID: " << i << "\t";
-      if (TypeLocsys(i)==DRT::Condition::PointLocsys) os << "Point\t";
-      else if (TypeLocsys(i)==DRT::Condition::LineLocsys) os << "Line\t";
-      else if (TypeLocsys(i)==DRT::Condition::SurfaceLocsys) os << "Surface\t";
-      else if (TypeLocsys(i)==DRT::Condition::VolumeLocsys) os << "Volume\t";
+      printf("Locsys entity ID: %3d ",locsysconds_[i]->Id());
+      if (TypeLocsys(i)==DRT::Condition::PointLocsys)        printf("Point   "); 
+      else if (TypeLocsys(i)==DRT::Condition::LineLocsys)    printf("Line    "); 
+      else if (TypeLocsys(i)==DRT::Condition::SurfaceLocsys) printf("Surface ");
+      else if (TypeLocsys(i)==DRT::Condition::VolumeLocsys)  printf("Volume  ");
       else dserror("ERROR: Unknown type of locsys condition!");
-      os << "Normal:  " << normals_(i,0) << " " << normals_(i,1) << " " << normals_(i,2) << "\t";
-      os << "Tangent: " << tangents_(i,0) << " " << tangents_(i,1) << " " << tangents_(i,2) << "\n";
+      printf("Normal: %8.4e %8.4e %8.4e Tangent1: %8.4e %8.4e %8.4e Tangent2: %8.4e %8.4e %8.4e Type: ",
+      normals_(i,0),normals_(i,1),normals_(i,2),
+      tangents_(i,0),tangents_(i,1),tangents_(i,2),
+      thirddir_(i,0),thirddir_(i,1),thirddir_(i,2));
+      switch(type_[i])
+      {
+        case DRT::UTILS::LocsysManager::def:                 printf("default");
+        break;
+        case DRT::UTILS::LocsysManager::functionevaluation:  printf("functionevaluation");
+        break;
+        case DRT::UTILS::LocsysManager::originradialsliding: printf("originradialsliding");
+        break;
+        default:
+          dserror("Unknown type of locsys");
+        break;
+      }
+      printf("\n");
     }    
     os << "-------------------------------------------------------------\n\n";
   }
