@@ -128,7 +128,7 @@ void elch_dyn(int disnumff,int disnumscatra, int restart)
           <<time.ElapsedTime() << " secs\n\n";
       }
       else
-        dserror("Fluid AND ConDif discretization present. This is not supported.");
+        dserror("Fluid AND ScaTra discretization present. This is not supported.");
 
       // create an ELCH::Algorithm instance
       Teuchos::RCP<ELCH::Algorithm> elch = Teuchos::rcp(new ELCH::Algorithm(comm,elchcontrol));
