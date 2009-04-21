@@ -2114,7 +2114,7 @@ void NodeReader::Read()
 
   if (!myrank && !reader_.MyOutputFlag())
   {
-    cout << "Read, create and partition nodes         in...." << flush;
+    cout << "Read, create and partition nodes\n" << flush;
   }
 
   // We will read the nodes block wise. we will use one block per processor
@@ -2204,7 +2204,14 @@ void NodeReader::Read()
         else
           dserror("unexpected word '%s'",tmp.c_str());
       } // for (filecount; file; ++filecount)
+
+      if (!reader_.MyOutputFlag())
+      {
+        printf("Read node block %3d of size %6d on proc 0 ",block,bcount);
+        fflush(stdout);    
+      }
     } // if (0==myrank)
+
 
     // export block of nodes to other processors as reflected in rownodes,
     // changes ownership of nodes
@@ -2213,7 +2220,17 @@ void NodeReader::Read()
       ereader_[i]->dis_->ExportRowNodes(*ereader_[i]->rownodes_);
     }
 
+    if (!myrank && !reader_.MyOutputFlag())
+    {
+      printf("and exported it according to nodal rowmap\n");
+      fflush(stdout);
+    }
   } // for (int block=0; block<nblock; ++block)
+
+  if (!myrank && !reader_.MyOutputFlag())
+  {
+    cout << "\nFinished reading of nodes. Exporting ghosting...\n" << flush;
+  }
 
   // last thing to do here is to produce nodal ghosting/overlap
   for (unsigned i=0; i<ereader_.size(); ++i)
@@ -2223,14 +2240,14 @@ void NodeReader::Read()
 
   if (!myrank && !reader_.MyOutputFlag())
   {
-    cout << time.ElapsedTime() << " secs\n" << endl;
+    cout << "Done all node reading in " << time.ElapsedTime() << "  secs\n" << endl;
   }
   
   for (unsigned i=0; i<ereader_.size(); ++i)
   {
     ereader_[i]->Complete();
   }
-}
+} // NodeReader::Read
 
 }
 }
