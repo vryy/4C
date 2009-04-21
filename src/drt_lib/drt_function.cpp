@@ -221,6 +221,19 @@ void DRT::UTILS::FunctionManager::ReadInput()
         functions_.push_back(rcp(new KimMoinFunction()));
       }
 
+      frchk("WOMERSLEY",&ierr);
+      if (ierr==1)
+      {
+        int e = -1;
+        bool localcoordsystem = false;
+        frint("Local",&e,&ierr);
+        if (ierr) localcoordsystem = true;
+        
+        // input other stuff here....
+        
+        functions_.push_back(rcp(new WomersleyFunction(localcoordsystem,e)));
+      }
+
       frchk("CYLINDER_3D",&ierr);
       if (ierr==1)
       {
@@ -238,7 +251,7 @@ void DRT::UTILS::FunctionManager::ReadInput()
       frchk("EXPR",&ierr);
       if (ierr==1)
       {
-        Teuchos::RefCountPtr<ExprFunction> vecfunc = rcp(new ExprFunction());
+        Teuchos::RCP<ExprFunction> vecfunc = rcp(new ExprFunction());
         
         for (int j=0;;++j)
         {
@@ -434,6 +447,22 @@ double DRT::UTILS::KimMoinFunction::Evaluate(int index, const double* xp)
   default:
     return 1.0;
   }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+DRT::UTILS::WomersleyFunction::WomersleyFunction(bool locsys, int e) :
+Function(),
+locsys_(locsys),
+locsysid_(e)
+{
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp)
+{
+  dserror("WomersleyFunction Evaluate not yet implemented");
+  return -999.0;
 }
 
 

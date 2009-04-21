@@ -248,6 +248,25 @@ namespace UTILS {
   };
 
 
+  /// special implementation for Womersley blood flow
+  class WomersleyFunction : public Function
+  {
+  public:
+    
+    /// ctor
+    WomersleyFunction(bool locsys, int e);
+    
+    
+    /// evaluate function at given position in space
+    double Evaluate(int index, const double* x);
+  
+  private:
+  
+    bool locsys_;
+    int  locsysid_;
+  
+  };
+
   /// Singleton class that manages all defined spatial functions
   class FunctionManager
   {
