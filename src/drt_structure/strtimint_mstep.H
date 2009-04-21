@@ -40,7 +40,7 @@ namespace STR
    *        \f$\ldots\f$, or time points \f$t_n\f$, \f$t_{n-1}\f$,
    *        \f$t_{n-2}\f$, \f$\ldots\f$, etc.
    *
-   * Multi-step quantities occur surprisingly indeed in multi-step time
+   * Multi-step quantities occur --surprisingly indeed-- in multi-step time
    * integrators. However, they are needed in single-step integrators
    * as well, if the auxiliar scheme is multi-step. The idea is to be
    * able to resize the multi-step quantities dynamically and have 
@@ -110,7 +110,8 @@ namespace STR
       state_()
     {
       // verify a positive #steps_
-      dsassert(steps_>0, "Past step must be lower or equal to future step");
+      if (steps_ <= 0)
+        dserror("Past step must be lower or equal to future step");
 
       // bye
       return;
@@ -202,7 +203,8 @@ namespace STR
   /*====================================================================*/
   /*!
    * \brief General derived class for multi-step quantities of
-   *        simple type. This going to be used with \c double and \c int
+   *        simple type.
+   *        This is going to be used with \c double and \c int
    */
   template <typename STATE> class TimIntMStep
   : public TimIntMStepBase<STATE>
