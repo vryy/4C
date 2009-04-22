@@ -289,7 +289,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(
             
             for(int rr=0;rr<spacedim;++rr)
             {
-              initialval(rr)=DRT::UTILS::FunctionManager::Instance().Funct(startfuncno-1).Evaluate(rr,position.Values());
+              initialval(rr)=DRT::UTILS::FunctionManager::Instance().Funct(startfuncno-1).Evaluate(rr,position.Values(),0.0,NULL);
             }
 
 
@@ -415,7 +415,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(
             
             for(int rr=0;rr<spacedim;++rr)
             {
-              initialval(rr)=DRT::UTILS::FunctionManager::Instance().Funct(startfuncno-1).Evaluate(rr,position.Values());
+              initialval(rr)=DRT::UTILS::FunctionManager::Instance().Funct(startfuncno-1).Evaluate(rr,position.Values(),0.0,NULL);
             }
 
             // check for degenerated elements
