@@ -28,6 +28,12 @@ Input/ale_3d_umfpack_fastass.dat                        x        -        x     
 Input/axishell.dat                                      x        -        x        -        -        -
 Input/b3_elast.dat                                      x        x        x        x        -        -
 Input/b3_matnln.dat                                     x        x        -        -        -        -
+Input/beam2test1.dat                                    x        x        x        -        -        -
+Input/beam2test2.dat                                    x        x        x        -        -        -
+Input/beam3test1.dat                                    x        x        x        -        -        -
+Input/beam3test2.dat                                    x        x        x        -        -        -
+Input/truss3test1.dat                                   x        -        -        -        -        -
+Input/force_sensor_test.dat                             x        x        x        -        -        -
 Input/c1_elast.dat                                      x        x        x        x        -        -
 Input/c1_elast_geonln.dat                               x        -        x        -        -        -
 Input/c1_elast_geonln_sd.dat                            x        -        x        -        -        -
