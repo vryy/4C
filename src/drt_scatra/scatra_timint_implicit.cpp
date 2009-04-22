@@ -1060,7 +1060,7 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField()
       DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
       for(int index=0;index<numdim;++index)
       {
-        double value=DRT::UTILS::FunctionManager::Instance().Funct(velfuncno-1).Evaluate(index,lnode->X());
+        double value=DRT::UTILS::FunctionManager::Instance().Funct(velfuncno-1).Evaluate(index,lnode->X(),0.0,NULL);
         convel_->ReplaceMyValue (lnodeid, index, value);
       }
     }
@@ -1138,7 +1138,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
         const int dofgid = nodedofset[k];
         int doflid = dofrowmap->LID(dofgid);
         // evaluate component k of spatial function
-        double initialval = DRT::UTILS::FunctionManager::Instance().Funct(startfuncno-1).Evaluate(k,lnode->X());
+        double initialval = DRT::UTILS::FunctionManager::Instance().Funct(startfuncno-1).Evaluate(k,lnode->X(),0.0,NULL);
         phin_->ReplaceMyValues(1,&initialval,&doflid);
         // initialize also the solution vector. These values are a pretty good guess for the
         // solution after the first time step (much better than starting with a zero vector)

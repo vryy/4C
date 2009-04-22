@@ -533,7 +533,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
           if (functnum>0)
           {
             // evaluate function at current gauss point
-            functfac = DRT::UTILS::FunctionManager::Instance().Funct(functnum-1).Evaluate(dof,coordgpref);
+            functfac = DRT::UTILS::FunctionManager::Instance().Funct(functnum-1).Evaluate(dof,coordgpref,0.0,NULL);
           }
           else
             functfac = 1.0;
