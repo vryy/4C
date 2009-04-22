@@ -134,7 +134,6 @@ private:
   void EvaluateElements();
 
   //! @name restart
-  int restartstep_;
   int uprestart_;
   //@}
 

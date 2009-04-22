@@ -35,7 +35,6 @@ ADAPTER::AleSpringsFixedRef::AleSpringsFixedRef(RCP<DRT::Discretization> actdis,
     time_(0.0),
     incremental_(incremental),
     sysmat_(null),
-    restartstep_(0),
     uprestart_(params->get("write restart every", -1))
 {
   numstep_ = params_->get<int>("numstep");
@@ -210,14 +209,10 @@ void ADAPTER::AleSpringsFixedRef::Output()
   // We do not need any output -- the fluid writes its
   // displacements itself. But we need restart.
 
-  restartstep_ += 1;
-
-  if (restartstep_ == uprestart_)
+  if (uprestart_ != 0 and step_ % uprestart_ == 0)
   {
     output_->NewStep    (step_,time_);
     output_->WriteVector("dispnp", dispnp_);
-
-    restartstep_ = 0;
 
     // add restart data
     output_->WriteVector("dispn", dispn_);

@@ -25,17 +25,17 @@ namespace ADAPTER {
 /// springs ALE algorithm
 /*!
   Incremental springs algorithm with fixed initial reference and constant stiffness.
-  
+
   When compared to the original springs, this algorithm shines, when periodic
   mesh deformation is expected. It does not "forget" its initial configuration,
   hence it can not degrade over time as the original springs algorithm.
   On the downside, the maximal mesh deformation that can be achieved is less than
   the original springs algorithm. If one time, large mesh deformation is expected,
   use the original springs.
-  
+
   The implementation is copied from the classic_lin ALE implementation.
   Only the element call was modified to the springs_fixed_ref calculation.
-  
+
   \author axel gerstenberger
  */
 class AleSpringsFixedRef : public Ale
@@ -151,7 +151,6 @@ private:
   void EvaluateElements();
 
   //! @name restart
-  int restartstep_;
   int uprestart_;
   //@}
 

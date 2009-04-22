@@ -42,7 +42,6 @@ ADAPTER::AleLinear::AleLinear(RCP<DRT::Discretization> actdis,
     time_(0.0),
     incremental_(incremental),
     sysmat_(null),
-    restartstep_(0),
     uprestart_(params->get("write restart every", -1))
 {
   numstep_ = params_->get<int>("numstep");
@@ -195,7 +194,7 @@ void ADAPTER::AleLinear::Solve()
   eleparams.set("delta time", dt_);
   // the DOFs with Dirchlet BCs are not rebuild, they are assumed to be correct
   discret_->EvaluateDirichlet(eleparams,dispnp_,null,null,Teuchos::null,Teuchos::null);
-  
+
   LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,*(dbcmaps_->CondMap()));
 
   solver_->Solve(sysmat_->EpetraOperator(),dispnp_,residual_,true);
@@ -217,14 +216,10 @@ void ADAPTER::AleLinear::Output()
   // We do not need any output -- the fluid writes its
   // displacements itself. But we need restart.
 
-  restartstep_ += 1;
-
-  if (restartstep_ == uprestart_)
+  if (uprestart_ != 0 and step_ % uprestart_ == 0)
   {
     output_->NewStep    (step_,time_);
     output_->WriteVector("dispnp", dispnp_);
-
-    restartstep_ = 0;
 
     // add restart data
     output_->WriteVector("dispn", dispn_);
