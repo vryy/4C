@@ -474,6 +474,9 @@ INPUT                  = index.doc \
                          ../src/drt_beam3 \
                          ../src/drt_bele3 \
                          ../src/drt_truss3 \
+                         ../src/drt_truss2 \
+                         ../src/drt_torsion3 \
+                         ../src/drt_torsion2 \
                          ../src/io \
                          ../src/drt_adapter \
                          ../src/drt_fsi \
@@ -493,6 +496,7 @@ INPUT                  = index.doc \
                          ../src/drt_surfstress \
                          ../src/drt_constraint \
                          ../src/drt_inv_analysis \
+		         ../src/drt_statmech \
                          ../src/drt_fem_general \
                          ../src/drt_combust \
                          ../src/drt_scatra \
@@ -1065,6 +1069,9 @@ PREDEFINED             = __cplusplus \
                          D_BEAM2 \
                          D_BEAM3 \
                          D_TRUSS3 \
+                         D_TRUSS2 \
+                         D_TORSION3 \
+                         D_TORSION2 \
                          D_ALE \
                          D_FLUID2 \
                          D_FLUID3 \

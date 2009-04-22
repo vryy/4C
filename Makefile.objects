@@ -463,6 +463,21 @@ OBJS_DRT_T3_LIB   = src/drt_truss3/truss3.o \
                 src/drt_truss3/truss3_input.o \
                 src/drt_truss3/truss3_evaluate.o
 OBJS_DRT_T3   =
+# -------------------------------------------------- drt version of truss2
+OBJS_DRT_T2_LIB   = src/drt_truss2/truss2.o \
+                src/drt_truss2/truss2_input.o \
+                src/drt_truss2/truss2_evaluate.o
+OBJS_DRT_T2   =
+# -------------------------------------------------- drt version of torsion3
+OBJS_DRT_TO3_LIB   = src/drt_torsion3/torsion3.o \
+                src/drt_torsion3/torsion3_input.o \
+                src/drt_torsion3/torsion3_evaluate.o
+OBJS_DRT_TO3   =
+# -------------------------------------------------- drt version of torsion2
+OBJS_DRT_TO2_LIB   = src/drt_torsion2/torsion2.o \
+                src/drt_torsion2/torsion2_input.o \
+                src/drt_torsion2/torsion2_evaluate.o
+OBJS_DRT_TO2   =
 #-------------------------------------------------- old version of shell8
 OBJS_SHELL8   = src/shell8/s8_main.o \
                 src/shell8/s8_restart.o \

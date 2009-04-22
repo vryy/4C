@@ -259,6 +259,36 @@ $(OBJS_DRT_T3):
 	@mkdir -p ${DEST}/${@D}
 	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
 	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr	
+	
+$(OBJS_DRT_T2_LIB):
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
+	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr
+	
+$(OBJS_DRT_T2):
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
+	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr
+	
+$(OBJS_DRT_TO3_LIB):
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
+	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr
+	
+$(OBJS_DRT_TO3):
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
+	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr	
+	
+$(OBJS_DRT_TO2_LIB):
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
+	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr
+	
+$(OBJS_DRT_TO2):
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
+	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr
 
 $(OBJS_SHELL8):
 	@mkdir -p ${DEST}/${@D}

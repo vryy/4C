@@ -76,6 +76,9 @@ extern "C"
 #include "../drt_beam2r/beam2r.H"
 #include "../drt_beam3/beam3.H"
 #include "../drt_truss3/truss3.H"
+#include "../drt_truss2/truss2.H"
+#include "../drt_torsion3/torsion3.H"
+#include "../drt_torsion2/torsion2.H"
 #include "../drt_s8/shell8.H"
 #include "../drt_f2/fluid2.H"
 #include "../drt_f2/fluid2_nurbs.H"
@@ -252,6 +255,57 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
     {
       DRT::ELEMENTS::Truss3Register* object =
                       new DRT::ELEMENTS::Truss3Register(DRT::Element::element_truss3);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+#endif
+#ifdef D_TRUSS2
+    case ParObject_Truss2:
+    {
+      DRT::ELEMENTS::Truss2* object = new DRT::ELEMENTS::Truss2(-1,-1);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_Truss2Register:
+    {
+      DRT::ELEMENTS::Truss2Register* object =
+                      new DRT::ELEMENTS::Truss2Register(DRT::Element::element_truss2);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+#endif
+#ifdef D_TORSION3
+    case ParObject_Torsion3:
+    {
+      DRT::ELEMENTS::Torsion3* object = new DRT::ELEMENTS::Torsion3(-1,-1);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_Torsion3Register:
+    {
+      DRT::ELEMENTS::Torsion3Register* object =
+                      new DRT::ELEMENTS::Torsion3Register(DRT::Element::element_torsion3);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+#endif
+#ifdef D_TORSION2
+    case ParObject_Torsion2:
+    {
+      DRT::ELEMENTS::Torsion2* object = new DRT::ELEMENTS::Torsion2(-1,-1);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_Torsion2Register:
+    {
+      DRT::ELEMENTS::Torsion2Register* object =
+                      new DRT::ELEMENTS::Torsion2Register(DRT::Element::element_torsion2);
       object->Unpack(data);
       return object;
     }
@@ -847,6 +901,9 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     beam2r,
     beam3,
     truss3,
+    truss2,
+    torsion3,
+    torsion2,
     constrele2,
     constrele3,
     transport
@@ -880,6 +937,9 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
   else if (eletype=="BEAM2R") type = beam2r;
   else if (eletype=="BEAM3") type = beam3;
   else if (eletype=="TRUSS3") type = truss3;
+  else if (eletype=="TRUSS2") type = truss2;
+  else if (eletype=="TORSION3") type = torsion3;
+  else if (eletype=="TORSION2") type = torsion2;
   else if (eletype=="CONSTRELE2") type = constrele2;
   else if (eletype=="CONSTRELE3") type = constrele3;
   else if (eletype=="TRANSP") type = transport;
@@ -921,6 +981,30 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     case truss3:
     {
       RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Truss3(id,owner));
+      return ele;
+    }
+    break;
+#endif
+#ifdef D_TRUSS2
+    case truss2:
+    {
+      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Truss2(id,owner));
+      return ele;
+    }
+    break;
+#endif
+#ifdef D_TORSION3
+    case torsion3:
+    {
+      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Torsion3(id,owner));
+      return ele;
+    }
+    break;
+#endif
+#ifdef D_TORSION2
+    case torsion2:
+    {
+      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Torsion2(id,owner));
       return ele;
     }
     break;

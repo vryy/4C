@@ -11,14 +11,14 @@ Maintainer: Christian Cyron
 </pre>
 *----------------------------------------------------------------------*/
 // line in order to swith on and off by comment in defines.drt
-#ifdef D_TRUSS3
+#ifdef D_TRUSS2
 
 // administrative line in order to make a difference between BACI and Ccarat files
 #ifdef CCADISCRET
 
 //header file only included if not yet included!
-#ifndef TRUSS3_H
-#define TRUSS3_H
+#ifndef TRUSS2_H
+#define TRUSS2_H
 
 
 #include "Teuchos_RefCountPtr.hpp"
@@ -53,12 +53,12 @@ namespace ELEMENTS
 
 \author cyron (cyron @lnm.mw.tum.de)
 */
-class Truss3 : public DRT::Element
+class Truss2 : public DRT::Element
 {
 public:
 
   //! @name Friends
-  friend class Truss3Register;
+  friend class Truss2Register;
   friend class StatMechManager;
   friend void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& dis);
   friend void StatMechTime::Integrate();
@@ -73,22 +73,22 @@ public:
   \param etype (in): Type of element
   \param owner (in): owner processor of the element
   */
-  Truss3(int id, int owner);
+  Truss2(int id, int owner);
 
   /*!
   \brief Copy Constructor
 
   Makes a deep copy of a Element
   */
-  Truss3(const Truss3& old);
+  Truss2(const Truss2& old);
 
   /*!
   \brief Destructor
   */
-  virtual ~Truss3();
+  virtual ~Truss2();
 
   /*!
-  \brief Deep copy this instance of Truss3 and return pointer to the copy
+  \brief Deep copy this instance of Truss2 and return pointer to the copy
     
   The Clone() method is used by the virtual base class Element in cases
   where the type of the derived class is unknown and a copy-ctor is needed
@@ -108,7 +108,7 @@ public:
   Every class implementing ParObject needs a unique id defined at the
   top of drt_parobject.H
   */
-  virtual int UniqueParObjectId() const { return ParObject_Truss3; }
+  virtual int UniqueParObjectId() const { return ParObject_Truss2; }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -296,7 +296,7 @@ public:
   
 private:
 
-  //! action parameters recognized by Truss3
+  //! action parameters recognized by Truss2
   enum ActionType
   {
     calc_none,
@@ -326,7 +326,7 @@ private:
     tr3_engstrain
   };
   
-  //! container containing all kind of Truss3 thisandthat
+  //! container containing all kind of Truss2 thisandthat
   DRT::Container data_; 
   
   //! variable saving whether element has already been initialized (then isinit_ == true)
@@ -360,7 +360,7 @@ private:
   //! @name Internal calculation methods
               
   //!calculation of nonlinear stiffness and mass matrix switching between total lagrange and enginerring strains
-  void t3_nlnstiffmass(vector<double>&           disp, 
+  void t2_nlnstiffmass(vector<double>&           disp, 
                        Epetra_SerialDenseMatrix* stiffmatrix,
                        Epetra_SerialDenseMatrix* massmatrix,
                        Epetra_SerialDenseVector* force,
@@ -368,7 +368,7 @@ private:
   
   
   //!calculation of nonlinear stiffness and mass matrix
-  void t3_nlnstiffmass_totlag( vector<double>& disp,
+  void t2_nlnstiffmass_totlag( vector<double>& disp,
       Epetra_SerialDenseMatrix* stiffmatrix,
       Epetra_SerialDenseMatrix* massmatrix,
       Epetra_SerialDenseVector* force,
@@ -377,26 +377,26 @@ private:
   /*! 
    * \brief calculate force, nonlinear stiffness and mass matrix using a engineering strain measure.
    * 
-   * Unlike the fully nonlinear implementation of #t3_nlnstiffmass_totlag, this function uses \f$\varepsilon=\Delta d / d\f$
+   * Unlike the fully nonlinear implementation of #t2_nlnstiffmass_totlag, this function uses \f$\varepsilon=\Delta d / d\f$
    * as strain measure. 
    *  
   */ 
-  void t3_nlnstiffmass_engstr( vector<double>& disp,
+  void t2_nlnstiffmass_engstr( vector<double>& disp,
       Epetra_SerialDenseMatrix* stiffmatrix,
       Epetra_SerialDenseMatrix* massmatrix,
       Epetra_SerialDenseVector* force,
       int& ActNumDof0);
   
   //! lump mass matrix
-  void t3_lumpmass(Epetra_SerialDenseMatrix* emass);
+  void t2_lumpmass(Epetra_SerialDenseMatrix* emass);
   
   //@}
 			    
   // don't want = operator
-  Truss3& operator = (const Truss3& old);
+  Truss2& operator = (const Truss2& old);
   
 
-}; // class Truss3
+}; // class Truss2
 
 
 
@@ -404,19 +404,19 @@ private:
 ostream& operator << (ostream& os, const DRT::Element& ele);
 
 
-//------------- class Truss3Register: -------------------------------------------
+//------------- class Truss2Register: -------------------------------------------
 
 /*!
-\brief A register for Truss3 element
+\brief A register for Truss2 element
 
 \author cyron (cyron@lnm.mw.tum.de)
 */
-class Truss3Register : public DRT::ElementRegister
+class Truss2Register : public DRT::ElementRegister
 {
 public:
 	
   //! @name Friends
-  friend class Truss3;
+  friend class Truss2;
 
   //! @name Constructors and destructors and related methods
 
@@ -424,24 +424,24 @@ public:
   \brief Standard Constructor
   
   */
-  Truss3Register(DRT::Element::ElementType etype);
+  Truss2Register(DRT::Element::ElementType etype);
 
   /*!
   \brief Copy Constructor
 
-  Makes a deep copy of an Truss3Register
+  Makes a deep copy of an Truss2Register
   
   */
-  Truss3Register(const DRT::ELEMENTS::Truss3Register& old);
+  Truss2Register(const DRT::ELEMENTS::Truss2Register& old);
 
   /*!
-  \brief Deep copy this instance of Truss3Register and return pointer to the copy
+  \brief Deep copy this instance of Truss2Register and return pointer to the copy
   
   The Clone() method is used from the virtual base class Element in cases
   where the type of the derived class is unknown and a copy-ctor is needed
   
   */
-  DRT::ELEMENTS::Truss3Register* Clone() const;
+  DRT::ELEMENTS::Truss2Register* Clone() const;
 
   /*!
   \brief Return unique ParObject id
@@ -449,7 +449,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Truss3Register;}
+  virtual int UniqueParObjectId() const { return ParObject_Truss2Register;}
 
   /*!
   \brief Pack this class so it can be communicated
@@ -471,7 +471,7 @@ public:
   \brief Destructor
 
   */
-  virtual ~Truss3Register();
+  virtual ~Truss2Register();
 
   //@}
 
@@ -489,7 +489,7 @@ public:
   /*!
   \brief Call Element init routines
   
-  The method performs all steps needed to init the Truss3 elements. it e.g. calculates the
+  The method performs all steps needed to init the Truss2 elements. it e.g. calculates the
   field of averaged directors at nodes.
   */
   int Initialize(DRT::Discretization& dis);
@@ -499,13 +499,13 @@ public:
 private:
 
 
-}; // class Truss3Register
+}; // class Truss2Register
 } // namespace Elements
 } // namespace DRT
 
 
 
 
-#endif  // #ifndef TRUSS3_H
+#endif  // #ifndef TRUSS2_H
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_TRUSS3
+#endif  // #ifdef D_TRUSS2
