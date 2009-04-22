@@ -546,7 +546,7 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
           if (functnum>0)
           {
             // evaluate function at current gauss point
-            functfac = DRT::UTILS::FunctionManager::Instance().Funct(functnum-1).Evaluate(dim,coordgpref);
+            functfac = DRT::UTILS::FunctionManager::Instance().Funct(functnum-1).Evaluate(dim,coordgpref,0.0,NULL);
           }
           else
             functfac = 1.0;
@@ -1529,7 +1529,7 @@ void DRT::ELEMENTS::Fluid2Line::EvaluateWeakDirichlet(
 	  if (functnum>0)
 	  {
 	    // evaluate function at current gauss point
-	    functionfac[dim] = DRT::UTILS::FunctionManager::Instance().Funct(functnum-1).Evaluate(dim,coordgpref);
+	    functionfac[dim] = DRT::UTILS::FunctionManager::Instance().Funct(functnum-1).Evaluate(dim,coordgpref,0.0,NULL);
 	  }
 	  else
 	  {

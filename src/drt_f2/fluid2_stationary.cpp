@@ -1801,7 +1801,7 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::BodyForce(Fluid2*      ele,
         if (functnum>0)
         {
           // evaluate function at the position of the current node
-          functionfac = DRT::UTILS::FunctionManager::Instance().Funct(functnum-1).Evaluate(isd,x);
+          functionfac = DRT::UTILS::FunctionManager::Instance().Funct(functnum-1).Evaluate(isd,x,time,NULL);
         }
         else
           functionfac = 1.0;
