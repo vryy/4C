@@ -61,6 +61,9 @@ extern "C"
 
 
 namespace DRT {
+
+  class Discretization;
+
 namespace UTILS {
 
   
@@ -92,7 +95,7 @@ namespace UTILS {
                      function will be evaluated
 
     */
-    virtual double Evaluate(int index, const double* x) = 0;
+    virtual double Evaluate(int index, const double* x, double t, DRT::Discretization* dis) = 0;
 
     /*!
 
@@ -153,7 +156,7 @@ namespace UTILS {
                      function will be evaluated
 
     */
-    double Evaluate(int index, const double* x);
+    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
 
     /*!
 
@@ -226,7 +229,7 @@ namespace UTILS {
                      evaluated
 
     */
-    double Evaluate(int index, const double* x);
+    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
   };
 
 
@@ -244,7 +247,7 @@ namespace UTILS {
                      evaluated
 
     */
-    double Evaluate(int index, const double* x);
+    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
   };
 
 
@@ -254,16 +257,21 @@ namespace UTILS {
   public:
     
     /// ctor
-    WomersleyFunction(bool locsys, int e);
+    WomersleyFunction(bool locsys, int e, double radius, int mat);
     
     
     /// evaluate function at given position in space
-    double Evaluate(int index, const double* x);
+    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
   
   private:
   
-    bool locsys_;
-    int  locsysid_;
+    bool   isinit_;
+    bool   locsys_;
+    int    locsysid_;
+    double radius_;
+    int    mat_;
+    double viscosity_;
+    double density_;
   
   };
 

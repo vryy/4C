@@ -540,7 +540,10 @@ void DoDirichletCondition(DRT::Condition&             cond,
       {
          if (funct_num>0)
            functfac = 
-             DRT::UTILS::FunctionManager::Instance().Funct(funct_num-1).Evaluate(j,actnode->X());
+             DRT::UTILS::FunctionManager::Instance().Funct(funct_num-1).Evaluate(j,
+                                                                                 actnode->X(),
+                                                                                 time,
+                                                                                 &dis);
       }
 
       // apply factors to Dirichlet value

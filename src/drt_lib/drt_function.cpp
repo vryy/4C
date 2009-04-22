@@ -52,6 +52,8 @@ Maintainer: Ulrich Kuettler
 #include <iostream>
 
 #include "drt_function.H"
+#include "drt_globalproblem.H"
+#include "../drt_mat/newtonianfluid.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -228,10 +230,16 @@ void DRT::UTILS::FunctionManager::ReadInput()
         bool localcoordsystem = false;
         frint("Local",&e,&ierr);
         if (ierr) localcoordsystem = true;
+        double radius = -1.0;
+        frdouble("Radius",&radius,&ierr);
+        int mat = -1;
+        frint("MAT",&mat,&ierr);
+        if (!ierr) dserror("Word MAT missing in WOMERSLEY FUNCT");
+        
         
         // input other stuff here....
         
-        functions_.push_back(rcp(new WomersleyFunction(localcoordsystem,e)));
+        functions_.push_back(rcp(new WomersleyFunction(localcoordsystem,e,radius,mat)));
       }
 
       frchk("CYLINDER_3D",&ierr);
@@ -385,7 +393,7 @@ void DRT::UTILS::ExprFunction::AddExpr(char* buf,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double DRT::UTILS::ExprFunction::Evaluate(int index, const double* x)
+double DRT::UTILS::ExprFunction::Evaluate(int index, const double* x, double t, DRT::Discretization* dis)
 {
   // single expression for all components. Reset index to 0!
   if(expr_.size()==1)
@@ -403,7 +411,7 @@ double DRT::UTILS::ExprFunction::Evaluate(int index, const double* x)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double DRT::UTILS::BeltramiFunction::Evaluate(int index, const double* xp)
+double DRT::UTILS::BeltramiFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
 {
   double a = M_PI/4.0;
   double d = M_PI/2.0;
@@ -432,7 +440,7 @@ double DRT::UTILS::BeltramiFunction::Evaluate(int index, const double* xp)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double DRT::UTILS::KimMoinFunction::Evaluate(int index, const double* xp)
+double DRT::UTILS::KimMoinFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
 {
   double a = 2.0;
 
@@ -451,16 +459,34 @@ double DRT::UTILS::KimMoinFunction::Evaluate(int index, const double* xp)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::UTILS::WomersleyFunction::WomersleyFunction(bool locsys, int e) :
+DRT::UTILS::WomersleyFunction::WomersleyFunction(bool locsys, int e, double radius, int mat) :
 Function(),
+isinit_(false),
 locsys_(locsys),
-locsysid_(e)
+locsysid_(e),
+radius_(radius),
+mat_(mat),
+viscosity_(-999.0e99),
+density_(-999.0e99)
 {
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp)
+double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
 {
+  if (!isinit_)
+  {
+    Teuchos::RCP<MAT::PAR::Material > mat = DRT::Problem::Instance()->Materials()->ById(mat_);
+    if (mat->Type() != INPAR::MAT::m_fluid) dserror("Material %d is not a fluid",mat_);
+    MAT::PAR::Parameter* params = mat->Parameter();
+    MAT::PAR::NewtonianFluid* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
+    if (!fparams) dserror("Material does not cast to Newtonian fluid");
+    viscosity_ = fparams->viscosity_;
+    density_ = fparams->density_;
+    isinit_ = true;
+  }
+  
+  
   dserror("WomersleyFunction Evaluate not yet implemented");
   return -999.0;
 }
