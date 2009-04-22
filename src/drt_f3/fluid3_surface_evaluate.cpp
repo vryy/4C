@@ -349,7 +349,7 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
           if (functnum>0)
           {
             // evaluate function at current gauss point
-            functfac = DRT::UTILS::FunctionManager::Instance().Funct(functnum-1).Evaluate(dim,coordgpref);
+            functfac = DRT::UTILS::FunctionManager::Instance().Funct(functnum-1).Evaluate(dim,coordgpref,time,NULL);
           }
           else
             functfac = 1.0;

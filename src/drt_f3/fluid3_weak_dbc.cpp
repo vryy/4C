@@ -1124,7 +1124,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 	  if (functnum>0)
 	  {
 	    // evaluate function at current gauss point
-	    functionfac(dim) = DRT::UTILS::FunctionManager::Instance().Funct(functnum-1).Evaluate(dim,coordgp.A());
+	    functionfac(dim) = DRT::UTILS::FunctionManager::Instance().Funct(functnum-1).Evaluate(dim,coordgp.A(),0.0,NULL);
 	  }
 	  else
 	  {

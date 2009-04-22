@@ -1019,7 +1019,7 @@ void DRT::ELEMENTS::Fluid3lin_Impl<distype>::BodyForce( Fluid3* ele,
         if (functnum>0)
         {
           // evaluate function at the position of the current node
-          functionfac = DRT::UTILS::FunctionManager::Instance().Funct(functnum-1).Evaluate(isd,(ele->Nodes()[jnode])->X());
+          functionfac = DRT::UTILS::FunctionManager::Instance().Funct(functnum-1).Evaluate(isd,(ele->Nodes()[jnode])->X(),time,NULL);
         }
         else functionfac = 1.0;
 
