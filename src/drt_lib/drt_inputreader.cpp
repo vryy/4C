@@ -2116,14 +2116,33 @@ void NodeReader::Read()
 
   if (!myrank && !reader_.MyOutputFlag())
   {
-    cout << "Read, create and partition nodes\n" << flush;
+    cout << "Read, create and partition nodes " << flush;
+#ifdef PARMETIS
+    cout << "block " << flush;
+#else
+    cout << "        " << flush;
+#endif
   }
 
   // We will read the nodes block wise. we will use one block per processor
   // so the number of blocks is numproc
   // determine a rough blocksize
-  const int nblock = numproc;
+  int nblock = numproc;
   int bsize = max(numnodes/nblock, 1);
+
+  // for block sizes larger than about 50000 elements (empirical value !)
+  // the code sometimes hangs during ExportRowElements 
+  // Therefore an upper limit for bsize is ensured below.
+  int maxblocksize = 50000;
+
+  if (bsize > maxblocksize)
+  {
+    // without an additional increase of nblock by 1 the last block size
+    // could reach a maximum value of (2*maxblocksize)-1, potentially
+    // violating the intended upper limit!
+    nblock = 1+ static_cast<int>(numnodes/maxblocksize);
+    bsize = maxblocksize;
+  }
 
   // open input file at the right position
   // note that stream is valid on proc 0 only!
@@ -2141,6 +2160,22 @@ void NodeReader::Read()
   {
     if (0==myrank)
     {
+#ifdef PARMETIS
+      if (!reader_.MyOutputFlag())
+      {
+        printf("%d",block);
+        if(block != nblock-1)
+        {
+          printf(",");
+        }
+        else
+        {
+          printf(" ");
+        }
+        fflush(stdout);    
+      }
+#endif
+
       int bcount=0;
       for (; file; ++filecount)
       {
@@ -2206,12 +2241,6 @@ void NodeReader::Read()
         else
           dserror("unexpected word '%s'",tmp.c_str());
       } // for (filecount; file; ++filecount)
-
-      if (!reader_.MyOutputFlag())
-      {
-        printf("Read node block %3d of size %6d on proc 0 ",block,bcount);
-        fflush(stdout);
-      }
     } // if (0==myrank)
 
 
@@ -2221,18 +2250,7 @@ void NodeReader::Read()
     {
       ereader_[i]->dis_->ExportRowNodes(*ereader_[i]->rownodes_);
     }
-
-    if (!myrank && !reader_.MyOutputFlag())
-    {
-      printf("and exported it according to nodal rowmap\n");
-      fflush(stdout);
-    }
   } // for (int block=0; block<nblock; ++block)
-
-  if (!myrank && !reader_.MyOutputFlag())
-  {
-    cout << "\nFinished reading of nodes. Exporting ghosting...\n" << flush;
-  }
 
   // last thing to do here is to produce nodal ghosting/overlap
   for (unsigned i=0; i<ereader_.size(); ++i)
@@ -2242,7 +2260,7 @@ void NodeReader::Read()
 
   if (!myrank && !reader_.MyOutputFlag())
   {
-    cout << "Done all node reading in " << time.ElapsedTime() << "  secs\n" << endl;
+    cout << "in...." << time.ElapsedTime() << " secs\n" << endl;
   }
 
   for (unsigned i=0; i<ereader_.size(); ++i)
