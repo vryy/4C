@@ -178,7 +178,7 @@ int DRT::ELEMENTS::Bele3Line::EvaluateNeumann(
          {
             if (functnum>0)
               // evaluate function at current gauss point
-              functionfac = DRT::UTILS::FunctionManager::Instance().Funct(functnum-1).Evaluate(dim,coordgpref);
+              functionfac = DRT::UTILS::FunctionManager::Instance().Funct(functnum-1).Evaluate(dim,coordgpref,time,NULL);
             else
               functionfac = 1.0;
          }
