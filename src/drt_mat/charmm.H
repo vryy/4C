@@ -191,6 +191,17 @@ namespace MAT {
 		LINALG::SerialDenseVector& lambda
 	);
 
+	void EvalAccForce(
+		const double& FCD_STARTD,
+		const double& FCD_ENDD,
+		const double& time_STARTD,
+		const double& time_ENDD,
+		const double& atomic_mass,
+		const double& Facc_scale,
+		double& a,
+		double& Force
+	);
+
 	/*!
 	 \brief Call external Charmm binary
 

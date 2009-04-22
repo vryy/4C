@@ -183,8 +183,13 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
     ds_2(2) = 0;
     ds.push_back(ds_1);
     ds.push_back(ds_2);
+    // Use FCD to compute the acceleration in that direction to compute the
+    // pulling force in CHARMm
+    bool FCDAcc = true;
+    double atomic_mass = 18; // amu; water
+    double Facc_scale = 1E26;
     // Use the hard coded charmm results (charmmfakeapi == true) or call charmm really (charmmfakeapi == false)
-    bool charmmhard = false;
+    bool charmmhard = true;
     // Scale factor (by default c_CHARMm will be in N/m^2. This should be revised)
     const double c_scale = 1E-9;
 
@@ -308,6 +313,11 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
 	FCD_direction(1) = dir_eigenv[0](1, 2);
 	FCD_direction(2) = dir_eigenv[0](2, 2);
 	//cout << "FCD: " << time << " STARTD: " << FCD_STARTD << " ENDD: " << FCD_ENDD << endl;
+	
+	// Compute the acceleration in FCD direction
+	double a;
+	double Force;
+	if (FCDAcc) EvalAccForce(FCD_STARTD,FCD_ENDD,(*his)[1],time,atomic_mass,Facc_scale,a,Force);
 
 	// Second charateristic direction (SCD)
 	// calculate STARTD and ENDD for CHARMm (collagen)
@@ -531,6 +541,30 @@ void MAT::CHARMM::EvalStrain(const bool& origin,
     for (int i = 0; i < 3; i++) lambda(i) = sqrt(lambda2(i));
 }
 
+
+/*----------------------------------------------------------------------*/
+//! Compute acceleration and force in characteristic direction
+/*----------------------------------------------------------------------*/
+void MAT::CHARMM::EvalAccForce(
+	const double& FCD_STARTD,
+	const double& FCD_ENDD,
+	const double& time_STARTD,
+	const double& time_ENDD,
+	const double& atomic_mass,
+	const double& Facc_scale,
+	double& a,
+	double& Force) {
+
+    double amu_to_kg = 1.66053886E-27;
+    double v_0 = 0.0;
+
+    double v = abs(FCD_ENDD - FCD_STARTD) / (time_ENDD - time_STARTD);
+    a = (v - v_0) / (time_ENDD - time_STARTD);
+    Force = atomic_mass * amu_to_kg * a * Facc_scale;
+
+    //cout << "ACC: " << a << " " << Force << " " << FCD_STARTD << " " << FCD_ENDD << " " << time_STARTD << " " << time_ENDD << endl;
+
+}
 
 /*----------------------------------------------------------------------*/
 //! File based API to CHARMM
