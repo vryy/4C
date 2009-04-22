@@ -28,9 +28,9 @@ Maintainer: Ulrich Kuettler
 typedef int idxtype;
 extern "C"
 {
-  void ParMETIS_V3_PartKway(idxtype *vtxdist, idxtype *xadj, idxtype *adjncy, idxtype *vwgt, 
-                            idxtype *adjwgt, int *wgtflag, int *numflag, int *ncon, int *nparts, 
-                            float *tpwgts, float *ubvec, int *options, int *edgecut, idxtype *part, 
+  void ParMETIS_V3_PartKway(idxtype *vtxdist, idxtype *xadj, idxtype *adjncy, idxtype *vwgt,
+                            idxtype *adjwgt, int *wgtflag, int *numflag, int *ncon, int *nparts,
+                            float *tpwgts, float *ubvec, int *options, int *edgecut, idxtype *part,
                             MPI_Comm *comm);
 }
 #endif
@@ -694,6 +694,8 @@ void DatFileReader::ReadDat()
       // take the last "--" and all that follows as section name
       std::string::size_type loc = line.rfind("--");
       std::string sectionname = line.substr(loc);
+      if (positions_.find(sectionname)!=positions_.end())
+        dserror("section '%s' defined more than once", sectionname.c_str());
       positions_[sectionname] = i;
     }
   }
@@ -757,16 +759,16 @@ void ElementReader::Partition()
 
   // - read global ids of elements of this discretization
   //   (this is one fully redundant vector for elements)
-  // - determine a preliminary element distribution. The fully redundant 
+  // - determine a preliminary element distribution. The fully redundant
   //   vector is trashed after the construction.
   // - define blocksizes for blocks of elements we read (not necessarily
   //   the same as it was used to construct the map --- we may have a
   //   smaller blocksize here).
-  // - read elements of this discretization and distribute according 
-  //   to a linear map. While reading, remember node gids an assemble 
+  // - read elements of this discretization and distribute according
+  //   to a linear map. While reading, remember node gids an assemble
   //   them into a second fully redundant vector (mapping vertex id->gid).
-  //   In addition, we keep them in a fully redundant set (required by 
-  //   node reader). Construct reverse lookup from gids to vertex ids. 
+  //   In addition, we keep them in a fully redundant set (required by
+  //   node reader). Construct reverse lookup from gids to vertex ids.
   //   Again, this is a global, fully redundant map!
   // - define preliminary linear distributed nodal row map
   // - determine adjacency array (i.e. the infos for the node graph)
@@ -776,13 +778,13 @@ void ElementReader::Partition()
   // - do partitioning using parmetis
   //   Results are distributed to other procs using two global vectors!
   // - build final nodal row map, export graph to the new map
-  // 
+  //
 
   // --------------------------------------------------
   // - read global ids of elements of this discretization
 
-  // vector of all global element ids 
-  vector<int> eids;            
+  // vector of all global element ids
+  vector<int> eids;
   int numele = 0;
   string inputfile_name = reader_.MyInputfileName();
 
@@ -869,8 +871,8 @@ void ElementReader::Partition()
   }
 
   // --------------------------------------------------
-  // - read elements of this discretization and distribute according 
-  //   to a linear map. While reading, remember node gids an assemble 
+  // - read elements of this discretization and distribute according
+  //   to a linear map. While reading, remember node gids an assemble
   //   them into a second fully redundant vector.
 
   // open input file at correct position,
@@ -930,7 +932,7 @@ void ElementReader::Partition()
           const int  numnode = ele->NumNode();
           const int* nodeids = ele->NodeIds();
 
-          // all node gids of this element are inserted into a set of 
+          // all node gids of this element are inserted into a set of
           // node ids --- it will be used later during reading of nodes
           // to add the node to one or more discretisations
           copy(nodeids, nodeids+numnode, inserter(nodes_, nodes_.begin()));
@@ -956,7 +958,7 @@ void ElementReader::Partition()
 
   // global node ids --- this will be a fully redundant vector!
   int numnodes=0;
-  vector<int> nids;           
+  vector<int> nids;
 
   if (myrank==0)
   {
@@ -981,48 +983,48 @@ void ElementReader::Partition()
   // just skip the partitioning.
   if (numnodes>0)
   {
-    // construct reverse lookup from gids to vertex ids. Again, 
+    // construct reverse lookup from gids to vertex ids. Again,
     // this is a global, fully redundant map!
-    // We need this lookup for the construction of the parmetis 
+    // We need this lookup for the construction of the parmetis
     // adjacency array
     //
-    //        
-    //                         gidtoidx 
+    //
+    //                         gidtoidx
     //                      ------------->
     //                gid_i                vertexid
     //                      <-------------
     //                           nids
-    //            
+    //
     map<int,int> gidtoidx;
     for (int i=0;i<numnodes;++i)
     {
       gidtoidx[nids[i]]=i;
     }
-    
+
     if (myrank==0)
     {
-      
+
       if (!reader_.MyOutputFlag())
       cout << time.ElapsedTime() << " secs\n";
       time.ResetStartTime();
-      
+
       if (!reader_.MyOutputFlag())
       {
         cout << "Build initial node graph, call PARMETIS  in....";
         fflush(stdout);
       }
     }
-    
+
     // --------------------------------------------------
     // - define distributed nodal row map
-    
-    // vertices and nodes --- the parmetis call will be based on a 
-    // consecutive numbering of vertices. We will use a lookup 
+
+    // vertices and nodes --- the parmetis call will be based on a
+    // consecutive numbering of vertices. We will use a lookup
     // for global node ids which will map the gid to its vertex id.
     // We need this for the construction of the adjacency array.
     //
     //         rownode gid   | (row)vertex id            vtxdist
-    //                       |                          
+    //                       |
     //      -----------------+----------------------------+---+
     //   +-        gid0      |      0.....................| 0 |
     //   |         gid1      |      1                     +---+
@@ -1034,7 +1036,7 @@ void ElementReader::Partition()
     //   |         gid7      |      7                       |
     //   |         gid8      |      8                       |
     //   +-        gid9      |      9                       v
-    //      -----------------+----------------------------+---+ 
+    //      -----------------+----------------------------+---+
     //  .+-       gid10      |     10.....................| 10|
     //  p|        gid11      |     11                     +---+
     //  r|        gid12      |     12                       ^
@@ -1053,15 +1055,15 @@ void ElementReader::Partition()
     //      ..............................................| 23|
     //                                                    +---+
     //
-    
+
     // number of node id junks
     int nbsize = numnodes/nblock;
-    
+
     // create a simple (pseudo linear) map for nodes
     int mynsize = nbsize;
     if (myrank==numproc-1)
     mynsize = numnodes-(numproc-1)*nbsize;
-    
+
     // construct the initial linear node rowmap
     RCP<Epetra_Map> lin_noderowmap = rcp(new Epetra_Map(-1,mynsize,&nids[myrank*nbsize],0,*comm_));
 
@@ -1078,39 +1080,39 @@ void ElementReader::Partition()
     //   using the nodal row distribution and a round robin communication
     //   of element connectivity information
 
-    // this is a set of gids of all nodes for which we have a 
+    // this is a set of gids of all nodes for which we have a
     // connectivity information on this proc
     set<int> procnodes;
-    
-    // loop all eles on this proc and determine all gids for 
+
+    // loop all eles on this proc and determine all gids for
     // which we have some connectivity information
     for(int lid=0;lid<roweles_->NumMyElements();++lid)
     {
       int gid=roweles_->GID(lid);
-      
+
       DRT::Element* ele=dis_->gElement(gid);
-      
+
       // get the node ids of this element
       const int  numnode = ele->NumNode();
       const int* nodeids = ele->NodeIds();
-      
-      // all node gids of this element are inserted into a set of 
+
+      // all node gids of this element are inserted into a set of
       // node ids
       copy(nodeids, nodeids+numnode, inserter(procnodes,procnodes.begin()));
     }
-  
+
     // ---------------------
     // build a processor local node connectivity
 
 
-    //     node gid contained in one of the elements 
+    //     node gid contained in one of the elements
     //                    on this proc
     //                         |
     //                         | lcon
     //                         |
     //                         v
     //    set of all gids of adjacent nodes on this proc
-    //          
+    //
     map<int,set<int> > lcon;
 
     // construct empty local map
@@ -1121,14 +1123,14 @@ void ElementReader::Partition()
       lcon.insert(pair<int, set<int> >(*procnode,set<int> ()));
     }
 
-    // loop all eles on this proc and construct the local 
+    // loop all eles on this proc and construct the local
     // connectivity information
     map<int,set<int> >::iterator gidinlcon;
 
     for(int lid=0;lid<roweles_->NumMyElements();++lid)
     {
       int gid=roweles_->GID(lid);
-      
+
       DRT::Element* ele=dis_->gElement(gid);
 
       // get the node ids of this element
@@ -1140,15 +1142,15 @@ void ElementReader::Partition()
       {
         // find gid of rr in map
         gidinlcon=lcon.find(nodeids[rr]);
-        
+
         if(gidinlcon==lcon.end())
         {
           dserror("GID %d should be already contained in the map",nodeids[rr]);
         }
 
-        // add nodeids to local connectivity 
-        copy(nodeids, 
-             nodeids+numnode, 
+        // add nodeids to local connectivity
+        copy(nodeids,
+             nodeids+numnode,
              inserter((gidinlcon->second),(gidinlcon->second).begin()));
       }
     }
@@ -1156,7 +1158,7 @@ void ElementReader::Partition()
     //-------------------------
     // (incomplete) round robin loop to build complete node
     //  connectivity for local nodes across all processors
-    
+
     //       node gid of one row node on this proc
     //                         |
     //                         | gcon
@@ -1169,7 +1171,7 @@ void ElementReader::Partition()
     for(int j=0;j<lin_noderowmap->NumMyElements();++j)
     {
       int gid=lin_noderowmap->GID(j);
-      
+
       gcon.insert(pair<int, set<int> >(gid,set<int> ()));
     }
 
@@ -1177,7 +1179,7 @@ void ElementReader::Partition()
 #ifdef PARALLEL
       // create an exporter for point to point comunication
       DRT::Exporter exporter(dis_->Comm());
-      
+
       // necessary variables
       MPI_Request request;
 
@@ -1185,21 +1187,21 @@ void ElementReader::Partition()
       int         frompid=-1;
       int         topid  =-1;
       int         length =-1;
-      
+
       // define send and receive blocks
       vector<char> sblock;
       vector<char> rblock;
- 
+
 #endif
-      
+
       for (int np=0;np<numproc;++np)
       {
         // in the first step, we cannot receive anything
-        if(np >0) 
+        if(np >0)
         {
 #ifdef PARALLEL
           //----------------------
-          // Unpack local graph from the receive block from the 
+          // Unpack local graph from the receive block from the
           // last proc
 
           // make sure that you do not think you received something if
@@ -1212,12 +1214,12 @@ void ElementReader::Partition()
           // receive from predecessor
           frompid=(myrank+numproc-1)%numproc;
           exporter.ReceiveAny(frompid,tag,rblock,length);
-          
+
           if(tag!=(myrank+numproc-1)%numproc)
           {
             dserror("received wrong message (ReceiveAny)");
           }
-          
+
           exporter.Wait(request);
 
           // for safety
@@ -1230,9 +1232,9 @@ void ElementReader::Partition()
         }
 
         // -----------------------
-        // add local connectivity passing by to global 
+        // add local connectivity passing by to global
         // connectivity on this proc
-      
+
         // loop this procs global connectivity
         map<int,set<int> >::iterator gidingcon;
 
@@ -1241,10 +1243,10 @@ void ElementReader::Partition()
 
           // search in (other) procs local connectivity
           gidinlcon=lcon.find(gidingcon->first);
-          
+
           if(gidinlcon!=lcon.end())
           {
-            // in this case we do have some additional 
+            // in this case we do have some additional
             // connectivity info from the proc owning lcon
 
             copy((gidinlcon->second).begin(),
@@ -1274,23 +1276,23 @@ void ElementReader::Partition()
         }
       }
     }
-    
+
     lcon.clear();
-  
+
     // --------------------------------------------------
     // - do partitioning using parmetis
-    
+
     //    gid(i)           gid(i+1)                        index gids
     //      |^                 |^
     //  nids||             nids||
-    //      ||gidtoidxd        ||gidtoidx        
-    //      ||                 || 
+    //      ||gidtoidxd        ||gidtoidx
+    //      ||                 ||
     //      v|                 v|
     //   nodegid(i)       nodegid(i+1)                      node gids
     //      ^                 ^
-    //      |                 |  
-    //      | lin_noderowmap  | lin_noderowmap       
-    //      |                 | 
+    //      |                 |
+    //      | lin_noderowmap  | lin_noderowmap
+    //      |                 |
     //      v                 v
     //      i                i+1                        local equivalent indices
     //      |                 |
@@ -1302,18 +1304,18 @@ void ElementReader::Partition()
     //     +-+-+-+-+-+-+-+-+-+-+                -+-+-+
     //
     //     |     gid(i)'s    |   gid(i+1)'s
-    //     |    neighbours   |   neighbours           (numbered by global equivalent 
-    //                                                 indices, mapping by nids vector 
+    //     |    neighbours   |   neighbours           (numbered by global equivalent
+    //                                                 indices, mapping by nids vector
     //                                                 to global ids)
     //
-  
-    // xadj points from vertex index i to the index of the 
+
+    // xadj points from vertex index i to the index of the
     // first adjacent vertex.
     vector<int> xadj(lin_noderowmap->NumMyElements()+1);
 
     // a list of adjacent nodes, adressed using xadj
     vector<int> adjncy;
-    
+
     int count=0;
     xadj[0] = 0;
 
@@ -1321,7 +1323,7 @@ void ElementReader::Partition()
     {
       // get global node id of rownode
       int  growid =lin_noderowmap->GID(idx);
-    
+
       map<int,set<int> >::iterator gidingcon;
       set<int>::iterator           nbgid;
 
@@ -1360,7 +1362,7 @@ void ElementReader::Partition()
     }
 
     /*
-      This is used to indicate if the graph is weighted. 
+      This is used to indicate if the graph is weighted.
       wgtflag can take one of four values:
       0  No weights (vwgt and adjwgt are both NULL).
       1  Weights on the edges only (vwgt is NULL).
@@ -1377,97 +1379,97 @@ void ElementReader::Partition()
     */
     int numflag=0;
     /*
-      This is used to specify the number of weights that 
+      This is used to specify the number of weights that
       each vertex has. It is also the number of balance
       constraints that must be satisfied.
     */
     int ncon=1;
     /*
-      This is used to specify the number of sub-domains 
-      that are desired. Note that the number of sub-domains 
-      is independent of the number of processors that call 
+      This is used to specify the number of sub-domains
+      that are desired. Note that the number of sub-domains
+      is independent of the number of processors that call
       this routine.
     */
     int npart=numproc;
     /*
-      This is an array of integers that is used to pass 
+      This is an array of integers that is used to pass
       additional parameters for the routine. If options[0]=0,
-      then the default values are used. If options[0]=1, 
-      then the remaining two elements of options are 
+      then the default values are used. If options[0]=1,
+      then the remaining two elements of options are
       interpreted as follows:
-      options[1]     This specifies the level of information 
-                     to be returned during the execution of 
-                     the algorithm. Timing information can be 
-                     obtained by setting this to 1. Additional 
-                     options for this parameter can be obtained 
-                     by looking at the the file defs.h in the 
-                     ParMETIS-Lib directory. The numerical values 
-                     there should be added to obtain the correct 
+      options[1]     This specifies the level of information
+                     to be returned during the execution of
+                     the algorithm. Timing information can be
+                     obtained by setting this to 1. Additional
+                     options for this parameter can be obtained
+                     by looking at the the file defs.h in the
+                     ParMETIS-Lib directory. The numerical values
+                     there should be added to obtain the correct
                      value. The default value is 0.
-      options[2]     This is the random number seed for the routine. 
+      options[2]     This is the random number seed for the routine.
                      The default value is 15.
     */
     int options[3] = { 0,0,15 };
     /*
-      Upon successful completion, the number of edges that are cut 
+      Upon successful completion, the number of edges that are cut
       by the partitioning is written to this parameter.
     */
     int edgecut=0;
     /*
       This is an array of size equal to the number of locally-stored
-      vertices. Upon successful completion the partition vector of 
+      vertices. Upon successful completion the partition vector of
       the locally-stored vertices is written to this array.
-      Note that this vector will not be redistributed by metis, it 
+      Note that this vector will not be redistributed by metis, it
       will just contain the information how to redistribute.
     */
     vector<int> part(lin_noderowmap->NumMyElements());
     /*
-      An array of size ncon that is used to specify the imbalance 
-      tolerance for each vertex weight, with 1 being perfect balance 
-      and nparts being perfect imbalance. A value of 1.05 for each 
+      An array of size ncon that is used to specify the imbalance
+      tolerance for each vertex weight, with 1 being perfect balance
+      and nparts being perfect imbalance. A value of 1.05 for each
       of the ncon weights is recommended.
     */
     float ubvec =1.05;
     /*
-      An array of size ncon x nparts that is used to specify 
-      the fraction of vertex weight that should be distributed 
-      to each sub-domain for each balance constraint. If all 
-      of the sub-domains are to be of the same size for every 
-      vertex weight, then each of the ncon x nparts elements 
-      should be set to a value of 1/nparts. If ncon is greater 
+      An array of size ncon x nparts that is used to specify
+      the fraction of vertex weight that should be distributed
+      to each sub-domain for each balance constraint. If all
+      of the sub-domains are to be of the same size for every
+      vertex weight, then each of the ncon x nparts elements
+      should be set to a value of 1/nparts. If ncon is greater
       than one, the target sub-domain weights for each sub-domain
-      are stored contiguously (similar to the vwgt array). Note 
-      that the sum of all of the tpwgts for a give vertex weight 
+      are stored contiguously (similar to the vwgt array). Note
+      that the sum of all of the tpwgts for a give vertex weight
       should be one.
     */
     vector<float> tpwgts(npart,1.0/(double)npart);
     /*
-      This is a pointer to the MPI communicator of the processes that 
-      call PARMETIS. 
+      This is a pointer to the MPI communicator of the processes that
+      call PARMETIS.
     */
     MPI_Comm mpicomm=(dynamic_cast<const Epetra_MpiComm*>(&(dis_->Comm())))->Comm();
 
     ParMETIS_V3_PartKway(
-      &(vtxdist[0]), 
-      &(xadj   [0]), 
-      &(adjncy [0]), 
-      &(vwgt   [0]), 
-      NULL         , 
-      &wgtflag     , 
-      &numflag     , 
-      &ncon        , 
-      &npart       , 
-      &(tpwgts[0]) , 
+      &(vtxdist[0]),
+      &(xadj   [0]),
+      &(adjncy [0]),
+      &(vwgt   [0]),
+      NULL         ,
+      &wgtflag     ,
+      &numflag     ,
+      &ncon        ,
+      &npart       ,
+      &(tpwgts[0]) ,
       &ubvec       ,
-      &(options[0]), 
-      &edgecut     , 
-      &(part[0])   , 
+      &(options[0]),
+      &edgecut     ,
+      &(part[0])   ,
       &mpicomm);
 
-    // for each vertex j, the proc number to which this vertex 
-    // belongs was written to part[j]. Note that PARMETIS does 
-    // not redistribute the graph according to the new partitioning, 
-    // it simply computes the partitioning and writes it to 
+    // for each vertex j, the proc number to which this vertex
+    // belongs was written to part[j]. Note that PARMETIS does
+    // not redistribute the graph according to the new partitioning,
+    // it simply computes the partitioning and writes it to
     // the part array.
 
     // construct epetra graph on linear noderowmap
@@ -1487,7 +1489,7 @@ void ElementReader::Partition()
       int err = graph->InsertGlobalIndices(gid->first,row.size(),&row[0]);
       if (err<0) dserror("graph->InsertGlobalIndices returned %d",err);
     }
-    
+
     // trash the stl based graph
     gcon.clear();
 
@@ -1507,12 +1509,12 @@ void ElementReader::Partition()
 
     // finally broadcast partition results
     comm_->SumAll(&(lglobalpart[0]),&(globalpart[0]),numnodes);
-    
+
     lglobalpart.clear();
 
     // --------------------------------------------------
-    // - build final nodal row map 
-    
+    // - build final nodal row map
+
     // resize part array to new size
     count=0;
     for (unsigned i=0; i<globalpart.size(); ++i)
@@ -1534,7 +1536,7 @@ void ElementReader::Partition()
         ++count;
       }
     }
-  
+
     nids.clear();
 
     // create map with new layout
@@ -1754,7 +1756,7 @@ void ElementReader::Partition()
 
     // export junk of elements to other processors
     dis_->ExportRowElements(*roweles_);
-  } 
+  }
 
   vector<int> nids;             // global node ids
 
@@ -1980,7 +1982,7 @@ void ElementReader::PackLocalConnectivity(
 {
   map<int,set<int> >::iterator gidinlcon;
   set<int>::iterator           adjacentgid;
-  
+
   sblock.clear();
   // size (number of nodes we have a connectivity for)
   int size=lcon.size();
@@ -1993,7 +1995,7 @@ void ElementReader::PackLocalConnectivity(
 
     // add number of nodes adjacent to this one
     DRT::ParObject::AddtoPack<int>(sblock,(int)(gidinlcon->second).size());
-    
+
     // add list of neighbours to this node
     for(adjacentgid =(gidinlcon->second).begin();
         adjacentgid!=(gidinlcon->second).end();
@@ -2002,9 +2004,9 @@ void ElementReader::PackLocalConnectivity(
       DRT::ParObject::AddtoPack(sblock,*adjacentgid);
     }
   }
-  
+
   lcon.clear();
-  
+
   return;
 } // end Pack_lcon
 
@@ -2019,7 +2021,7 @@ void ElementReader::UnpackLocalConnectivity(
   {
     dserror("trying to extract information from an empty receive block\n");
   }
-  
+
   lcon.clear();
 
   // position to extract
@@ -2028,7 +2030,7 @@ void ElementReader::UnpackLocalConnectivity(
   // extract size (number of nodes we have a connectivity for)
   int size=0;
   DRT::ParObject::ExtractfromPack<int>(position,rblock,size);
-  
+
   for(int i=0;i<size;++i)
   {
     // extract node gid we store the connectivity for
@@ -2058,7 +2060,7 @@ void ElementReader::UnpackLocalConnectivity(
       DRT::ParObject::ExtractfromPack(position,rblock,nbgid);
       neighbourset.insert(nbgid);
     }
-    
+
     // add this node connectivity to local connectivity map
     lcon.insert(pair<int,set<int> >(gid,neighbourset));
   }
@@ -2208,7 +2210,7 @@ void NodeReader::Read()
       if (!reader_.MyOutputFlag())
       {
         printf("Read node block %3d of size %6d on proc 0 ",block,bcount);
-        fflush(stdout);    
+        fflush(stdout);
       }
     } // if (0==myrank)
 
@@ -2242,7 +2244,7 @@ void NodeReader::Read()
   {
     cout << "Done all node reading in " << time.ElapsedTime() << "  secs\n" << endl;
   }
-  
+
   for (unsigned i=0; i<ereader_.size(); ++i)
   {
     ereader_[i]->Complete();
