@@ -2075,7 +2075,7 @@ void FLD::XFluidImplicitTimeInt::SetInitialFlowField(
       {
         int gid = nodedofset[index];
 
-        double initialval=DRT::UTILS::FunctionManager::Instance().Funct(startfuncno-1).Evaluate(index,lnode->X());
+        double initialval=DRT::UTILS::FunctionManager::Instance().Funct(startfuncno-1).Evaluate(index,lnode->X(),0.0,NULL);
 
         state_.velnp_->ReplaceGlobalValues(1,&initialval,&gid);
         state_.veln_ ->ReplaceGlobalValues(1,&initialval,&gid);
