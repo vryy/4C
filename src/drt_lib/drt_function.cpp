@@ -44,19 +44,11 @@ Maintainer: Ulrich Kuettler
 
 #ifdef CCADISCRET
 
-#include <string>
-#include <sstream>
-#include <vector>
-#include <algorithm>
-#include <cstdlib>
-#include <iostream>
-
+#include "drt_discret.H"
 #include "drt_function.H"
 #include "drt_globalproblem.H"
 #include "../drt_mat/newtonianfluid.H"
 
-using namespace std;
-using namespace Teuchos;
 
 /*----------------------------------------------------------------------*/
 // the static instance
@@ -239,7 +231,7 @@ void DRT::UTILS::FunctionManager::ReadInput()
         
         // input other stuff here....
         
-        functions_.push_back(rcp(new WomersleyFunction(localcoordsystem,e,radius,mat)));
+        functions_.push_back(rcp(new WomersleyFunction(localcoordsystem,e-1,radius,mat)));
       }
 
       frchk("CYLINDER_3D",&ierr);
@@ -467,7 +459,8 @@ locsysid_(e),
 radius_(radius),
 mat_(mat),
 viscosity_(-999.0e99),
-density_(-999.0e99)
+density_(-999.0e99),
+locsyscond_(NULL)
 {
 }
 /*----------------------------------------------------------------------*/
@@ -476,6 +469,7 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
 {
   if (!isinit_)
   {
+    // get material parameters for fluid
     Teuchos::RCP<MAT::PAR::Material > mat = DRT::Problem::Instance()->Materials()->ById(mat_);
     if (mat->Type() != INPAR::MAT::m_fluid) dserror("Material %d is not a fluid",mat_);
     MAT::PAR::Parameter* params = mat->Parameter();
@@ -483,12 +477,41 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
     if (!fparams) dserror("Material does not cast to Newtonian fluid");
     viscosity_ = fparams->viscosity_;
     density_ = fparams->density_;
+    // get local coord system if any
+    if (locsys_)
+    {
+      if (!dis) dserror("Have to pass a discretization to allow for local coord systems");
+      vector<DRT::Condition*> locsys;
+      dis->GetCondition("Locsys",locsys);
+      if (!locsys.size()) dserror("No locsys conditions in discretization");
+      for (int i=0; i<(int)locsys.size(); ++i)
+        if (locsys[i]->Id() == locsysid_)
+          locsyscond_ = locsys[i];
+      if (!locsyscond_) dserror("Cannot find local coord system %d",locsysid_);
+      const std::string* type  = locsyscond_->Get<std::string>("Type");
+      if (*type != "FunctionEvaluation") dserror("Locsys is of wrong type %s",type->c_str());
+      const vector<double>* n  = locsyscond_->Get<vector<double> >("normal");
+      const vector<double>* t1 = locsyscond_->Get<vector<double> >("tangent");
+      const vector<double>* o  = locsyscond_->Get<vector<double> >("origin");
+      if (!n || !t1 || !o) dserror("Condition components missing");
+      normal_   = *n;
+      tangent1_ = *t1;
+      origin_   = *o;
+      tangent2_.resize(tangent1_.size());
+      tangent2_[0] = normal_[1]*tangent1_[2]-normal_[2]*tangent1_[1];
+      tangent2_[1] = normal_[2]*tangent1_[0]-normal_[0]*tangent1_[2];
+      tangent2_[2] = normal_[0]*tangent1_[1]-normal_[1]*tangent1_[0];
+      printf("---------------------\n");
+      printf("n %f %f %f \nt1 %f %f %f \nt2 %f %f %f \no %f %f %f\n",
+      normal_[0],normal_[1],normal_[2],tangent1_[0],tangent1_[1],tangent1_[2],
+      tangent2_[0],tangent2_[1],tangent2_[2],origin_[0],origin_[1],origin_[2]);
+    }
     isinit_ = true;
   }
   
   
-  dserror("WomersleyFunction Evaluate not yet implemented");
-  return -999.0;
+  //dserror("WomersleyFunction Evaluate not yet implemented");
+  return 0.0;
 }
 
 

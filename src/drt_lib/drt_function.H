@@ -63,6 +63,7 @@ extern "C"
 namespace DRT {
 
   class Discretization;
+  class Condition;
 
 namespace UTILS {
 
@@ -265,14 +266,23 @@ namespace UTILS {
   
   private:
   
-    bool   isinit_;
-    bool   locsys_;
-    int    locsysid_;
-    double radius_;
-    int    mat_;
-    double viscosity_;
-    double density_;
-  
+    bool                 isinit_;
+    bool                 locsys_;
+    int                  locsysid_;
+    double               radius_;
+    // exist after init phase:
+    int                  mat_;
+    double               viscosity_;
+    double               density_;
+    
+    // exist after init phase if locsys_==true
+    // to do: move this stuff to separate class in locsys.H/.cpp
+    // with functionality to transform spatial vectors from/to local system
+    Condition*           locsyscond_;
+    std::vector<double>  normal_;
+    std::vector<double>  tangent1_;
+    std::vector<double>  tangent2_;
+    std::vector<double>  origin_;
   };
 
   /// Singleton class that manages all defined spatial functions
