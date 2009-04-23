@@ -50,7 +50,8 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   step_(0),
   uprestart_(params.get("write restart every", -1)),
   upres_(params.get("write solution every", -1)),
-  writestresses_(params.get("write stresses", 0))
+  writestresses_(params.get("write stresses", 0)),
+  locsysman_(Teuchos::null)
 {
 
   // -------------------------------------------------------------------
@@ -84,6 +85,18 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   pbcmapmastertoslave_ = pbc.ReturnAllCoupledNodesOnThisProc();
 
   discret_->ComputeNullSpaceIfNecessary(solver_.Params(),true);
+
+  // -------------------------------------------------------------------
+  // check whether we have locsys BCs and create LocSysManager if so
+  // -------------------------------------------------------------------
+  {
+    std::vector<DRT::Condition*> locsysconditions(0);
+    discret_->GetCondition("Locsys", locsysconditions);
+    if (locsysconditions.size())
+    {
+      locsysman_ = Teuchos::rcp(new DRT::UTILS::LocsysManager(*discret_,true));
+    }
+  }
 
   // ensure that degrees of freedom in the discretization have been set
   if (!discret_->Filled() || !actdis->HaveDofs()) discret_->FillComplete();
@@ -524,6 +537,14 @@ void FLD::FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
   this->GenAlphaAssembleResidualAndMatrix();
 
   {
+
+    // in the case of local systems we have to rotate back for the 
+    // convergence check ...
+    if (locsysman_ != Teuchos::null)
+    {
+      locsysman_->RotateLocalToGlobal(residual_);
+    }
+
     Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_.ExtractOtherVector(residual_);
     Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_.ExtractCondVector (residual_);
 
@@ -533,6 +554,12 @@ void FLD::FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
 
     onlypre->Norm2(&L2preresnorm_);
     onlyvel->Norm2(&L2velresnorm_);
+
+    // in the case of local systems we have to forward again ...
+    if (locsysman_ != Teuchos::null)
+    {
+      locsysman_->RotateGlobalToLocal(residual_);
+    }
   }
 
   //--------------------------------------------------------------------
@@ -736,9 +763,15 @@ void FLD::FluidGenAlphaIntegration::GenAlphaApplyDirichletAndNeumann()
   // --------------------------------------------------
   // apply Dirichlet conditions to velnp
 
+  // in the case of local systems we have to rotate forward ...
+  if (locsysman_ != Teuchos::null)
+  {
+    locsysman_->RotateGlobalToLocal(velnp_);
+  }
+
   ParameterList eleparams;
 
-    // total time required for Dirichlet conditions
+  // total time required for Dirichlet conditions
   eleparams.set("total time",time_);
   // set vector values needed by elements
   discret_->ClearState();
@@ -747,6 +780,13 @@ void FLD::FluidGenAlphaIntegration::GenAlphaApplyDirichletAndNeumann()
   // velnp then also holds prescribed new dirichlet values
   discret_->EvaluateDirichlet(eleparams,velnp_,null,null,null,dbcmaps_);
   discret_->ClearState();
+
+  // in the case of local systems we have to rotate back into global 
+  // Cartesian frame
+  if (locsysman_ != Teuchos::null)
+  {
+    locsysman_->RotateLocalToGlobal(velnp_);
+  }
 
   // --------------------------------------------------
   // evaluate Neumann conditions
@@ -1320,6 +1360,13 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   }
   force_->Update(density_,*residual_,0.0);
 
+  // rotate forces from global to local co-ordinate system
+  if (locsysman_ != Teuchos::null)
+  {
+    locsysman_->RotateGlobalToLocal(force_);
+  }
+
+
   //----------------------------------------------------------------------
   // apply weak Dirichlet boundary conditions to sysmat_ and residual_
   //----------------------------------------------------------------------
@@ -1420,16 +1467,36 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
 
   // -------------------------------------------------------------------
   // Apply strong Dirichlet boundary conditions to system of equations 
-  // residual displacements are supposed to be zero at boundary 
-  // conditions
+  // residuals are supposed to be zero at boundary conditions
   // -------------------------------------------------------------------
   // start time measurement for application of dirichlet conditions
   tm4_ref_ = rcp(new TimeMonitor(*timeapplydirich_));
 
-  zeros_->PutScalar(0.0);
   {
-    LINALG::ApplyDirichlettoSystem(sysmat_,increment_,residual_,
-                                   zeros_,*(dbcmaps_->CondMap()));
+    // cast EpetraOperator sysmat_ to a LINALG::SparseMatrix in order to
+    // use the matrix-multiply capabilities in the locsysmanager
+    LINALG::SparseMatrix* A = dynamic_cast<LINALG::SparseMatrix*>(sysmat_.get());
+    if (A==NULL)
+    {
+      dserror("expecting LINALG::SparseMatrix as a SparseOperator.\n");
+    }
+
+    // transform to local co-ordinate systems
+    if (locsysman_!=Teuchos::null)
+    {
+      locsysman_->RotateGlobalToLocal(rcp(A,false),residual_);
+    }
+    
+    // apply the dirichlet conditions to the (rotated) system
+    zeros_->PutScalar(0.0);
+    {
+      LINALG::ApplyDirichlettoSystem(rcp(A,false)           ,
+                                     increment_             ,
+                                     residual_              ,
+                                     GetLocSysTrafo()       ,
+                                     zeros_                 ,
+                                     *(dbcmaps_->CondMap()));
+    }
   }
 
   // -------------------------------------------------------------------
@@ -1755,7 +1822,6 @@ bool FLD::FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck(double& ba
   onlypre = velpressplitter_.ExtractCondVector (residual_);
 
   onlypre->Norm2(&L2preresnorm_);
-
   onlyvel->Norm2(&L2velresnorm_);
 
   badestnlnnorm = max(L2preresnorm_,L2velresnorm_);

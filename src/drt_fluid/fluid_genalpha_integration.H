@@ -51,11 +51,22 @@ Maintainer: Peter Gamnitzer
 #ifndef FLUID_GENALPHA_INTEGRATION_H
 #define FLUID_GENALPHA_INTEGRATION_H
 
-#include "../drt_lib/drt_nodematchingoctree.H"
-#include "drt_periodicbc.H"
-#include "turbulence_statistic_manager.H"
-
+#include "../drt_fluid/drt_periodicbc.H"
+#include "../drt_fluid/turbulence_statistic_manager.H"
 #include "../drt_fluid/dyn_smag.H"
+
+#include "../drt_io/io.H"
+
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_function.H"
+#include "../drt_lib/drt_locsys.H"
+#include "../drt_lib/drt_nodematchingoctree.H"
+#include "../drt_lib/linalg_solver.H"
+#include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/linalg_mapextractor.H"
+#include "../drt_lib/linalg_sparsematrix.H"
+
+#include "../drt_nurbs_discret/drt_apply_nurbs_initial_condition.H"
 
 #ifdef PARALLEL
 #include "Epetra_MpiComm.h"
@@ -65,13 +76,6 @@ Maintainer: Peter Gamnitzer
 
 #include "Teuchos_RefCountPtr.hpp"
 #include "Teuchos_ParameterList.hpp"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/linalg_solver.H"
-#include "../drt_lib/linalg_utils.H"
-#include "../drt_lib/drt_function.H"
-#include "../drt_lib/linalg_mapextractor.H"
-#include "../drt_lib/linalg_sparsematrix.H"
-#include "../drt_io/io.H"
 
 #include "Epetra_Vector.h"
 #include "Epetra_Operator.h"
@@ -102,8 +106,6 @@ Maintainer: Peter Gamnitzer
 #include <cstdlib>
 #include <iostream>
 #include <Teuchos_TimeMonitor.hpp>
-
-#include "../drt_nurbs_discret/drt_apply_nurbs_initial_condition.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -657,6 +659,17 @@ public:
   void LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax);
 
 
+  /*! 
+    Return (rotatory) transformation matrix of local co-ordinate systems if
+    existent. Else return Teuchos::null.
+    
+   */
+  Teuchos::RCP<const LINALG::SparseMatrix> GetLocSysTrafo() const
+  {
+    return (locsysman_ != Teuchos::null) ? locsysman_->Trafo() : Teuchos::null;
+  }
+
+
 protected:
 
 private:
@@ -894,6 +907,15 @@ private:
   //! the connection between master and slave nodes on this proc
   RCP<map<int,vector<int> > > pbcmapmastertoslave_;
   //@}
+
+
+  //! @name Dirichlet BCs with local co-ordinate system
+  //         --------------------------------------------------------
+  //
+  //! Dirichlet BCs with local co-ordinate system
+  Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;
+  //@}
+
 
   //! @name Dynamic Smagorinsky model: methods and variables
   //        -------------------------
