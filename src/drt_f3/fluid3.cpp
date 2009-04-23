@@ -202,7 +202,7 @@ void DRT::ELEMENTS::Fluid3::Print(ostream& os) const
 {
   os << "Fluid3 ";
   Element::Print(os);
-  cout << endl;
+  //cout << endl;
   cout << data_;
   return;
 }
