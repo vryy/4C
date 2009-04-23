@@ -456,7 +456,6 @@ void DRT::Problem::ReadConditions(const DRT::INPUT::DatFileReader& reader)
   // - add the conditions to the appropiate discretizations
   //
   // Note that this will reset (un-FillComplete) the discretizations.
-
   for (unsigned c=0; c<condlist.size(); ++c)
   {
     std::multimap<int,Teuchos::RCP<DRT::Condition> > cond;
@@ -509,7 +508,6 @@ void DRT::Problem::ReadConditions(const DRT::INPUT::DatFileReader& reader)
         for (unsigned j=0; j<NumDis(i); ++j)
         {
           Teuchos::RCP<DRT::Discretization> actdis = Dis(i,j);
-
           const vector<int>* nodes = curr->second->Nodes();
           if (nodes->size()==0)
             dserror("%s condition %d has no nodal cloud",
