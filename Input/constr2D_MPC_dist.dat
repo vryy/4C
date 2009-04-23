@@ -8,8 +8,6 @@
 //
 -------------------------------------------------------------TITLE
 Move node relative to a fixed line controlling the dist 
--------------------------------------------------------------TITLE
-created by pre_exodus 
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS 	80
 NODES    	123
