@@ -156,9 +156,9 @@ void DRT::Condition::Print(ostream& os) const
   else if (Type()==ForceSensor)                 os << "marking points in a system where force sensors are applied";
   else if (Type()==FlowRateThroughSurface_3D)   os << "Monitor flow rate through a interface";
   else if (Type()==ImpulsRateThroughSurface_3D) os << "Monitor impuls rate through a interface";
-  
-  
+  else if (Type()==FluidNeumannInflow)          os << "Fluid Neumann inflow ";
   else dserror("no output string for condition defined in DRT::Condition::Print");
+
   Container::Print(os);
   if ((int)geometry_.size())
   {
