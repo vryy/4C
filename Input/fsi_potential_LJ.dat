@@ -74,11 +74,6 @@ LAMINAR_FLAMESPEED              1
 MARKSTEIN_LENGTH                0
 ----------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
 ----------------------------------------------------CONDITION NAMES
--------------------------------------------------DESIGN DESCRIPTION
-NDLINE                          0
-NDPOINT                         0
-NDSURF                          0
-NDVOL                           0
 -----------------------------------------------------DISCRETISATION
 NUMALEDIS                       1
 NUMFLUIDDIS                     1

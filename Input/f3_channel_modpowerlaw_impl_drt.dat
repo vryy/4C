@@ -62,11 +62,6 @@ ML_SMOTIMES                     1 1 1 1 1 1
 PARTITION                       Cut_Elements
 SOLVER                          UMFPACK
 ----------------------------------------------------CONDITION NAMES
--------------------------------------------------DESIGN DESCRIPTION
-NDLINE                          0
-NDPOINT                         0
-NDSURF                          0
-NDVOL                           0
 -----------------------------------------------------DISCRETISATION
 NUMALEDIS                       0
 NUMFLUIDDIS                     1
