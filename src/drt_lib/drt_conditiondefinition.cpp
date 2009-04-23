@@ -436,7 +436,7 @@ void DRT::INPUT::ConditionDefinition::Read(const Problem& problem,
   std::string name = "--";
   name += sectionname_;
   std::vector<const char*> section = reader.Section(name);
-
+  
   if (section.size()>0)
   {
     std::stringstream line(section[0]);
