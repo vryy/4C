@@ -196,8 +196,10 @@ namespace MAT {
 		const double& FCD_ENDD,
 		const double& time_STARTD,
 		const double& time_ENDD,
+		const double& v_his,
 		const double& atomic_mass,
 		const double& Facc_scale,
+		double& FCD_v,
 		double& a,
 		double& Force
 	);
@@ -220,6 +222,7 @@ namespace MAT {
 		const double FCD_STARTD,
 		const double FCD_ENDD,
 		const LINALG::SerialDenseVector FCD_direction,
+		const double FCD_Force,
 		const double SCD_STARTD,
 		const double SCD_ENDD,
 		const LINALG::SerialDenseVector SCD_direction,

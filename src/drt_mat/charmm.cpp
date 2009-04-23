@@ -117,6 +117,8 @@ void MAT::CHARMM::Setup(DRT::Container& data_) {
 	his_charmm.push_back(1.0); // lambda(3)(t-dt)
 	his_charmm.push_back(3.0); // updated I1(t)
 	his_charmm.push_back(3.0); // I1(t-dt)
+	his_charmm.push_back(0.0); // updated v(t)
+	his_charmm.push_back(0.0); // v(t-dt)
     }
     data_.Add("his_charmm", his_charmm);
 
@@ -273,25 +275,27 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
 	if ((*his)[0] < time) {
 	    (*his)[1] = (*his)[0]; // time
 	    for (int i = 0; i < (int) strain_type.size(); i++) {
-		(*his)[3 + (i * 8)] = (*his)[2 + (i * 8)]; // lambda(0)
-		(*his)[5 + (i * 8)] = (*his)[4 + (i * 8)]; // lambda(1)
-		(*his)[7 + (i * 8)] = (*his)[6 + (i * 8)]; // lambda(2)
-		(*his)[9 + (i * 8)] = (*his)[8 + (i * 8)]; // I1
+		(*his)[3 + (i * 10)] = (*his)[2 + (i * 10)]; // lambda(0)
+		(*his)[5 + (i * 10)] = (*his)[4 + (i * 10)]; // lambda(1)
+		(*his)[7 + (i * 10)] = (*his)[6 + (i * 10)]; // lambda(2)
+		(*his)[9 + (i * 10)] = (*his)[8 + (i * 10)]; // I1
+		(*his)[11 + (i * 10)] = (*his)[10 + (i * 10)]; // v
 	    }
 	}
 	(*his)[0] = time;
 	for (int i = 0; i < (int) strain_type.size(); i++) {
-	    (*his)[2 + (i * 8)] = dir_lambdas[i](0);
-	    (*his)[4 + (i * 8)] = dir_lambdas[i](1);
-	    (*his)[6 + (i * 8)] = dir_lambdas[i](2);
-	    (*his)[8 + (i * 8)] = I1;
+	    (*his)[2 + (i * 10)] = dir_lambdas[i](0);
+	    (*his)[4 + (i * 10)] = dir_lambdas[i](1);
+	    (*his)[6 + (i * 10)] = dir_lambdas[i](2);
+	    (*his)[8 + (i * 10)] = I1;
 	}
 	//cout  << (*his)[0] << " : " << (*his)[1] << " : ";
 	//for(int i=0;i<(int)strain_type.size();i++) {
 	//    cout    << (*his)[2+(i*8)] << " : " << (*his)[3+(i*8)] << " : "
 	//            << (*his)[4+(i*8)] << " : " << (*his)[5+(i*8)] << " : "
 	//            << (*his)[6+(i*8)] << " : " << (*his)[7+(i*8)] << " : "
-	//            << (*his)[8+(i*8)] << " : " << (*his)[9+(i*8)] << " : ";
+	//            << (*his)[8+(i*8)] << " : " << (*his)[9+(i*8)] << " : "
+	//	      << (*his)[8+(i*8)] << " : " << (*his)[9+(i*8)] << " : ";
 	//}
 	//cout <<  endl;
 
@@ -315,9 +319,13 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
 	//cout << "FCD: " << time << " STARTD: " << FCD_STARTD << " ENDD: " << FCD_ENDD << endl;
 	
 	// Compute the acceleration in FCD direction
-	double a;
-	double Force;
-	if (FCDAcc) EvalAccForce(FCD_STARTD,FCD_ENDD,(*his)[1],time,atomic_mass,Facc_scale,a,Force);
+	double FCD_v;
+	double FCD_a;
+	double FCD_Force;
+	if (FCDAcc) {
+	    EvalAccForce(FCD_STARTD,FCD_ENDD,(*his)[1],time,(*his)[11],atomic_mass,Facc_scale,FCD_v,FCD_a,FCD_Force);
+	    (*his)[10] = FCD_v;
+	}
 
 	// Second charateristic direction (SCD)
 	// calculate STARTD and ENDD for CHARMm (collagen)
@@ -344,7 +352,7 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
 	    CHARMmfakeapi(FCD_STARTD, FCD_ENDD, charmm_result);
 	} else {
 	    if (FCD_STARTD != FCD_ENDD) {
-		CHARMmfileapi(FCD_STARTD, FCD_ENDD, FCD_direction, SCD_STARTD, SCD_ENDD, SCD_direction, charmm_result);
+		CHARMmfileapi(	FCD_STARTD, FCD_ENDD, FCD_direction, FCD_Force, SCD_STARTD, SCD_ENDD, SCD_direction, charmm_result);
 	    }
 	}
 
@@ -550,19 +558,33 @@ void MAT::CHARMM::EvalAccForce(
 	const double& FCD_ENDD,
 	const double& time_STARTD,
 	const double& time_ENDD,
+	const double& v_his,
 	const double& atomic_mass,
 	const double& Facc_scale,
+	double& v,
 	double& a,
 	double& Force) {
 
     double amu_to_kg = 1.66053886E-27;
-    double v_0 = 0.0;
-
-    double v = abs(FCD_ENDD - FCD_STARTD) / (time_ENDD - time_STARTD);
+    double v_0 = v_his;
+    v = 0.0;
+    // Compute velocity
+    v = abs(FCD_ENDD - FCD_STARTD) / (time_ENDD - time_STARTD);
+    // Round v and v_0 off, otherwise comparison is not working
+    int d = 5;
+    double n = v;
+    v = floor(n * pow(10., d) + .5) / pow(10., d);
+    n = v_0;
+    v_0 = floor(n * pow(10., d) + .5) / pow(10., d);
+    if (v == v_his) v_0 = 0.0; // Switch between tangent and secant?? Sure to do that??
+    // Compute acceleration and Force
     a = (v - v_0) / (time_ENDD - time_STARTD);
     Force = atomic_mass * amu_to_kg * a * Facc_scale;
 
-    //cout << "ACC: " << a << " " << Force << " " << FCD_STARTD << " " << FCD_ENDD << " " << time_STARTD << " " << time_ENDD << endl;
+    cout    << "ACC: " << a << " " << Force << " "
+	    << FCD_STARTD << " " << FCD_ENDD << " "
+	    << time_STARTD << " " << time_ENDD << " "
+	    << v << " " << v_his << endl;
 
 }
 
@@ -573,6 +595,7 @@ void MAT::CHARMM::CHARMmfileapi(
 	const double FCD_STARTD,
 	const double FCD_ENDD,
 	const LINALG::SerialDenseVector FCD_direction,
+	const double FCD_Force,
 	const double SCD_STARTD,
 	const double SCD_ENDD,
 	const LINALG::SerialDenseVector SCD_direction,
@@ -632,6 +655,7 @@ void MAT::CHARMM::CHARMmfileapi(
 	    command << "cd " << path << " && "
 		    << charmm << " FCDSTARTD=" << FCD_STARTD << " FCDENDD=" << FCD_ENDD
 		    << " FCDX=" << FCD_direction(0) << " FCDY=" << FCD_direction(1) << " FCDZ=" << FCD_direction(2)
+		    << " FCDForce=" << FCD_Force
 		    << " SCDSTARTD=" << SCD_STARTD << " SCDENDD=" << SCD_ENDD
 		    << " SCDX=" << SCD_direction(0) << " SCDY=" << SCD_direction(1) << " SCDZ=" << SCD_direction(2)
 		    << " < " << input << " > " << output.str();
@@ -639,6 +663,7 @@ void MAT::CHARMM::CHARMmfileapi(
 	    command << "cd " << path << " && "
 		    << "openmpirun -np 2 " << mpicharmm << " FCDSTARTD=" << FCD_STARTD << " FCDENDD=" << FCD_ENDD
 		    << " FCDX=" << FCD_direction(0) << " FCDY=" << FCD_direction(1) << " FCDZ=" << FCD_direction(2)
+		    << " FCDForce=" << FCD_Force
 		    << " SCDSTARTD=" << SCD_STARTD << " SCDENDD=" << SCD_ENDD
 		    << " SCDX=" << SCD_direction(0) << " SCDY=" << SCD_direction(1) << " SCDZ=" << SCD_direction(2)
 		    << " INPUTFILE=" << input
