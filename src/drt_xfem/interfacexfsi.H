@@ -91,8 +91,7 @@ namespace XFEM
     ) const;
     
     //! test domain integration cells
-    void TestDomainIntCells(
-        std::map<int,GEO::DomainIntCells >& elementalDomainIntCells) const;
+    void TestDomainIntCells() const;
 
     //! print statistics (Debug)
     void PrintStatistics() const;

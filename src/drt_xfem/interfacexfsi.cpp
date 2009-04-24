@@ -195,11 +195,10 @@ void XFEM::InterfaceHandleXFSI::ClassifyIntegrationCells()
 /*----------------------------------------------------------------------*
  * check if intcell fill their xfem ele                     u.may 04/09 *
  *----------------------------------------------------------------------*/
-void XFEM::InterfaceHandleXFSI::TestDomainIntCells(
-    std::map<int,GEO::DomainIntCells >& elementalDomainIntCells) const
+void XFEM::InterfaceHandleXFSI::TestDomainIntCells() const
 {
-  std::map<int,GEO::DomainIntCells >::iterator entry;
-  for (entry = elementalDomainIntCells.begin(); entry != elementalDomainIntCells.end(); ++entry)
+  std::map<int,GEO::DomainIntCells >::const_iterator entry;
+  for (entry = elementalDomainIntCells_.begin(); entry != elementalDomainIntCells_.end(); ++entry)
   {
     const GEO::DomainIntCells cells = entry->second;
     const DRT::Element* xfemele = xfemdis_->gElement(entry->first);
