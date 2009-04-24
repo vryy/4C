@@ -90,12 +90,9 @@ namespace XFEM
         LINALG::Matrix<3,1>&              rst
     ) const;
     
-    //! delete tiny domain integration cells
-    //!  
-    //! purely for efficiency - conditioning is not influenced
-    void EraseTinyDomainIntCells(
-        std::map<int,GEO::DomainIntCells >& elementalDomainIntCells
-        ) const;
+    //! test domain integration cells
+    void TestDomainIntCells(
+        std::map<int,GEO::DomainIntCells >& elementalDomainIntCells) const;
 
     //! print statistics (Debug)
     void PrintStatistics() const;

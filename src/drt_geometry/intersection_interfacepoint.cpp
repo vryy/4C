@@ -34,6 +34,10 @@ nnode_(0),
 nline_(0),
 nsurf_(0)
 {
+  nodeId_ = -1;
+  lineId_.clear();
+  surfId_.clear();
+  coord_.Clear();
   return;
 }
 
@@ -76,7 +80,33 @@ coord_(old.coord_)
   return;
 }
 
+    
 
+/*----------------------------------------------------------------------*
+ |  ctor (public)                                            u.may 07/08|
+ *----------------------------------------------------------------------*/
+GEO::InterfacePoint::~InterfacePoint()
+{
+    return;
+}
+
+
+/*----------------------------------------------------------------------*
+ * assignment operator                                       u.may 07/08|
+ *----------------------------------------------------------------------*/
+GEO::InterfacePoint& GEO::InterfacePoint::operator=(const GEO::InterfacePoint& point)
+{ 
+  pType_ = point.pType_;
+  nnode_ = point.nnode_;
+  nline_ = point.nline_;
+  nsurf_ = point.nsurf_;
+  nodeId_ = point.nodeId_;
+  lineId_ = point.lineId_;
+  surfId_ = point.surfId_;
+  coord_ = point.coord_;
+  return *this;
+}
+      
     
 /*----------------------------------------------------------------------*
  |  set xfem number of nodes, lines, surfaces the interface  u.may 07/08|

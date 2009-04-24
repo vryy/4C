@@ -1810,8 +1810,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  yesnotuple,yesnovalue,&xfem_general);
   setStringToIntegralParameter<int>("CONDEST","No","Do you want to estimate the condition number? It is somewhat costly.",
                                    yesnotuple,yesnovalue,&xfem_general);
-  setStringToIntegralParameter<int>("EXP_INTERSECTION","No","Do you want to use the experimental intersection class?",
-                                     yesnotuple,yesnovalue,&xfem_general);
   DoubleParameter("volumeRatioLimit",1.0e-2,"don't enrich nodes of elements, when less than this fraction of the element is on one side of the interface",&xfem_general);
   DoubleParameter("boundaryRatioLimit",1.0e-4,"don't enrich element, when less than this area fraction is within this element",&xfem_general);
 

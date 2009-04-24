@@ -40,6 +40,8 @@ class IntCell
     
     //! virtual destructor
     virtual ~IntCell();
+    
+    IntCell& operator=(const IntCell& intcell);
 
     //! brief returns the shape of the integration cell
     DRT::Element::DiscretizationType Shape() const {return distype_;};
@@ -56,6 +58,7 @@ class IntCell
     //! hidden default constructor
     explicit IntCell();
     
+  protected:
     //! shape
     DRT::Element::DiscretizationType distype_;   
 };
@@ -95,6 +98,9 @@ class DomainIntCell : public IntCell
     //! virtual destructor
     virtual ~DomainIntCell();
     
+    //! assignment operator
+    DomainIntCell& operator=(const DomainIntCell& domainintcell);
+    
      //! returns the coordinates of the integration cell in domain element coordinates
     const LINALG::SerialDenseMatrix&  CellNodalPosXiDomain() const {return nodalpos_xi_domain_;};
     
@@ -105,8 +111,6 @@ class DomainIntCell : public IntCell
     const LINALG::Matrix<3,1>&  GetPhysicalCenterPosition() const{ return phys_center_;}
     
     double VolumeInXiDomain(const DRT::Element& ele) const;
-    
-    bool CoplanarCornerPoints() const;
        
     //! return string representation of the DomainIntCell
     virtual std::string toString() const;
@@ -142,7 +146,7 @@ class DomainIntCell : public IntCell
     LINALG::Matrix<3,1>                             phys_center_;
     
     // xfem label if fluid label = 0; otherwise label = solid id
-    int label_;
+    int                                             label_;
 };
 
 //! shortcut for a vector of DomainIntCells
@@ -173,6 +177,9 @@ class BoundaryIntCell : public IntCell
       
     //! virtual destructor
     virtual ~BoundaryIntCell();
+    
+    //! assignment operator
+    BoundaryIntCell& operator=(const BoundaryIntCell& boundaryintcell);
     
     //! returns the coordinates of the integration cell in parent element coordinates xsi
     const LINALG::SerialDenseMatrix&  CellNodalPosXiDomain() const {return nodalpos_xi_domain_;};
@@ -206,6 +213,7 @@ class BoundaryIntCell : public IntCell
      
     //! coordinates of the nodes of the integration cell in physical coordinates
     LINALG::SerialDenseMatrix             nodalpos_xyz_domain_;
+   
 };
 
 //! shortcut for a vector of BoundaryIntCells

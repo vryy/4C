@@ -60,6 +60,13 @@ public:
       Teuchos::RCP<DRT::Discretization>     discretRCP,
       DRT::Discretization&            discret
       );
+  
+  
+  PotentialManager(
+      Teuchos::RCP<DRT::Discretization> xfemdis,
+      Teuchos::RCP<DRT::Discretization> discretRCP,
+      DRT::Discretization& discret
+      );
 
   /*!
     \brief Destructor

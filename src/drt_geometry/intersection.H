@@ -56,6 +56,12 @@ class Intersection
 {
 
   public:
+    
+  //! constructor
+  Intersection();
+  
+  //! destructor
+  ~Intersection();
 
   /*!
    * \brief  computes the intersection of two discretizations.
@@ -1643,6 +1649,20 @@ class Intersection
     const LINALG::SerialDenseMatrix&    cutterXAABB,
     const LINALG::SerialDenseMatrix&    xfemXAABB
      ) const;
+  
+  
+  /*!
+  \brief  debug tet volumes (DEBUG ONLY)
+
+  \param xfemElement        (in)        : xfemElement
+  \param out                (in)        : out
+  */
+  #ifdef QHULL
+  void debugTetVolumes(
+      const DRT::Element*       xfemElement, 
+      tetgenio&                 out
+      );
+  #endif
 
 };
 }

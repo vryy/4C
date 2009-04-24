@@ -45,6 +45,21 @@ Maintainer: Ursula Mayer
 #include "intersection.H"
 
 
+/*----------------------------------------------------------------------*
+ | constructor intersection                                  u.may 07/08|
+ *----------------------------------------------------------------------*/
+GEO::Intersection::Intersection()     
+{}
+
+
+/*----------------------------------------------------------------------*
+ * destructor                                                u.may 07/08|
+ *----------------------------------------------------------------------*/
+GEO::Intersection::~Intersection()
+{
+    return;
+}
+
 
 /*----------------------------------------------------------------------*
  |  MAIN:   computes the interface between the xfem          u.may 06/07|
@@ -83,7 +98,7 @@ void GEO::Intersection::computeIntersection(
   // xfemdis->NumMyColElements()
   for(int k = 0; k < xfemdis->NumMyColElements(); ++k)
   {
-    //printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!eleid = %d\n", k);
+    // printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!eleid = %d\n", k);
     DRT::Element* xfemElement = xfemdis->lColElement(k);
     initializeXFEM(k, xfemElement);
     EleGeoType xfemGeoType = HIGHERORDER;
@@ -119,7 +134,7 @@ void GEO::Intersection::computeIntersection(
       const DRT::Node*const* cutterElementNodes = cutterElement->Nodes();
 
       // debugIntersectionOfSingleElements(xfemElement, cutterElement, currentcutterpositions);
-
+     
       std::map< LINALG::Matrix<3,1>, InterfacePoint, ComparePoint>  interfacePoints((ComparePoint()));
 
       // collect internal points
@@ -158,15 +173,15 @@ void GEO::Intersection::computeIntersection(
       if( interfacePoints.size() > 0)
       {
         intersectingCutterElements_.push_back(cutterElement);
-        intersectingCutterXYZE_.push_back(xyze_cutterElement);
+        intersectingCutterXYZE_.push_back(xyze_cutterElement);  
 #ifdef QHULL
 
         preparePLC(xfemGeoType, cutterElement, xyze_cutterElement, interfacePoints); 
         interfacePoints.clear();
 #else
         dserror("Set QHULL flag to use XFEM intersections!!!");
-#endif
-      }
+#endif 
+      }  
     }// for-loop over all cutter elements
 
     if(checkIfCDT())
@@ -1723,7 +1738,6 @@ void GEO::Intersection::computeCDT(
     for(int j = 0; j < p->numberofvertices; j ++)
       p->vertexlist[j] = triangleList_[i - numXFEMSurfaces_][j];
   }
-
   
   // set facetmarkers
   for(int i = 0; i < in.numberoffacets; i ++)
@@ -1739,9 +1753,9 @@ void GEO::Intersection::computeCDT(
   //  Tetrahedralize the PLC. Switches are chosen to read a PLC (p),
   //  do quality mesh generation (q) with a specified quality bound
   //  (1.414), and apply a maximum volume constraint (a0.1)
-  // printf("tetgen start\n");
+  //printf("tetgen start\n");
   tetrahedralize(switches, &in, &out);
-  // printf("tetgen end\n");
+  //printf("tetgen end\n");
 
   //Debug
   //vector<int> elementIds;
@@ -1762,7 +1776,7 @@ void GEO::Intersection::computeCDT(
   
   const bool higherorder = false;
   const bool recovery = false;
-
+  
   if(higherorder)
   {
     std::cout << "DO RECOVERY " << endl;
@@ -1780,6 +1794,11 @@ void GEO::Intersection::computeCDT(
   //printTetViewOutput(element->Id(), out);
   // store domain integration cells
   addCellsToDomainIntCellsMap(xfemElement, domainintcells, out, higherorder);
+  
+  
+  // debugTetVolumes(xfemElement, out);
+ 
+  
 }
 #endif
 
@@ -2396,6 +2415,9 @@ void GEO::Intersection::recoverCurvedInterface(
       getTetrahedronInformation(tetIndex, i, tetraCornerIndices, order, out );
       getTetrahedronNodes(tetraCornerNodes, tetraCornerIndices, out);
 
+      // check for degenerate triangle if yes continue
+      
+      
       // run over each triface
       for(int index1 = 0; index1 < 3 ;index1++)
       {
@@ -2455,7 +2477,7 @@ void GEO::Intersection::storeIntCells(
     storeSurfaceIntCells(false, currentcutterpositions,listBoundaryICPerElement);
 
   // lifts all corner points into the curved interface
-  liftAllSteinerPoints(currentcutterpositions, out);
+  // liftAllSteinerPoints(currentcutterpositions, out);
 
   for(int i=0; i<out.numberoftrifaces; i++)
   {
@@ -2479,7 +2501,8 @@ void GEO::Intersection::storeIntCells(
       listBoundaryICPerElement.push_back(BoundaryIntCell(DRT::Element::tri3, ele_gid, eleDomainCoord, eleBoundaryCoord, physDomainCoord));
     }
   }
-  boundaryintcells.insert(make_pair(xfemElement->Id(),listBoundaryICPerElement));
+  //boundaryintcells.insert(make_pair(xfemElement->Id(),listBoundaryICPerElement));
+  boundaryintcells[xfemElement->Id()] = listBoundaryICPerElement;
   intersectingCutterElements_.clear();
 }
 
@@ -3392,9 +3415,9 @@ void GEO::Intersection::computeIntersectionNormalC(
     // normal of the plane
     LINALG::Matrix<3,1>  n = computeCrossProduct(r1, r2);
     //n.Scale(10000);
-    //cout << "normal = " << n << endl;
+    cout << "normal = " << n << endl;
     //normalizeVectorInPLace(n);
-    n.Scale(1.0/n.Norm2());
+    //n.Scale(1.0/n.Norm2());
     //cout << "normal = " << n << endl;
     // direction vector of the intersection line
     LINALG::Matrix<3,1>  r = computeCrossProduct(n, r2);
@@ -3753,7 +3776,10 @@ void GEO::Intersection::addCellsToDomainIntCellsMap(
         for(int k = 0; k < 3; k++)
           physTetrahedronCoord(k,j) = tetCoord(k);
       }
-      listDomainICPerElement.push_back(DomainIntCell(distype, tetrahedronCoord, physTetrahedronCoord));
+      
+      // if degenerate don t store
+      if(!checkDegenerateTet(numTetNodes, tetrahedronCoord, physTetrahedronCoord))
+        listDomainICPerElement.push_back(DomainIntCell(distype, tetrahedronCoord, physTetrahedronCoord));
     }
     domainintcells.insert(make_pair(xfemElement->Id(),listDomainICPerElement));
 }
@@ -4464,6 +4490,48 @@ void GEO::Intersection::debugXAABBs(
   f_system.close();
 }
 
+
+/*----------------------------------------------------------------------*
+ |  DB:     Debug only                                       u.may 04/09|
+ *----------------------------------------------------------------------*/
+#ifdef QHULL
+void GEO::Intersection::debugTetVolumes(
+    const DRT::Element*       xfemElement, 
+    tetgenio&                 out)
+{
+  // test volume
+  double tot_vol = 0.0;
+  for(int i=0; i<out.numberoftetrahedra; i++ )
+  {
+    LINALG::SerialDenseMatrix tetrahedronCoord(3, 4);
+    LINALG::SerialDenseMatrix physTetrahedronCoord(3, 4);
+    for(int j = 0; j < 4; j++)
+    {
+      static LINALG::Matrix<3,1> tetCoord;
+      for(int k = 0; k < 3; k++)
+        tetrahedronCoord(k,j) = out.pointlist[out.tetrahedronlist[i*4+j]*3+k];
+    }
+    
+    LINALG::Matrix<3,1> v01;
+    LINALG::Matrix<3,1> v02;
+    LINALG::Matrix<3,1> v03;
+    for (int isd = 0; isd < 3; ++isd)  v01(isd,0) = tetrahedronCoord(isd,1)-tetrahedronCoord(isd,0);
+    for (int isd = 0; isd < 3; ++isd)  v02(isd,0) = tetrahedronCoord(isd,2)-tetrahedronCoord(isd,0);
+    for (int isd = 0; isd < 3; ++isd)  v03(isd,0) = tetrahedronCoord(isd,3)-tetrahedronCoord(isd,0);
+        
+    const LINALG::Matrix<3,1> nplane012 = GEO::computeCrossProduct(v01,v02);
+    const double vol_vec = (std::abs(  nplane012(0)*v03(0) + 
+                                       nplane012(1)*v03(1) + 
+                                       nplane012(2)*v03(2)   ))/6.0;
+    tot_vol += vol_vec;
+  }  
+  
+  if(std::abs(DRT::UTILS::getSizeInLocalCoordinates(xfemElement->Shape()) - tot_vol) > GEO::TOL7)
+    dserror("tetrahedra don't add up to the full volume element , diff = %f\n", (xfemElement->Shape() - tot_vol));
+
+  return;
+}
+#endif
 
 
 #endif  // #ifdef CCADISCRET

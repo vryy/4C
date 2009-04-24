@@ -24,8 +24,6 @@ Maintainer: Ursula Mayer
 
 namespace GEO
 {
- 
-  // TODO extend all methods for non cartesian parent elements
 
   /////////////////////  Domain Integration Cell ////////////////////////////////
 

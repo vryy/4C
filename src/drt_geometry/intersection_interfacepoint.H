@@ -71,6 +71,15 @@ class InterfacePoint
         const GEO::InterfacePoint& old
         );
 
+    
+    //! destructor
+    ~InterfacePoint();
+    
+    
+    //! assignemnent operator
+    InterfacePoint& operator=(const InterfacePoint& point);
+    
+    
     /*!
     \brief  set number of xfem nodes lines and surfaces the interface point is lying
 

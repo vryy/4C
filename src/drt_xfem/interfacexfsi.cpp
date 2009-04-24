@@ -85,15 +85,13 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
   is = Teuchos::null;
   
   xfemdis->Comm().Barrier();
-  
-  EraseTinyDomainIntCells(elementalDomainIntCells_);
-  
-  xfemdis->Comm().Barrier();
    
   PrintStatistics();
   
-  const LINALG::Matrix<3,2> cutterAABB = GEO::getXAABBofDis(*cutterdis,cutterposnp_);
-  const LINALG::Matrix<3,2> xfemAABB =GEO::getXAABBofDis(*xfemdis);
+  const LINALG::Matrix<3,2> cutterAABBnp = GEO::getXAABBofDis(*cutterdis,cutterposnp_);
+  const LINALG::Matrix<3,2> cutterAABBn = GEO::getXAABBofDis(*cutterdis,cutterposn_);
+  const LINALG::Matrix<3,2> cutterAABB = GEO::mergeAABB(cutterAABBn, cutterAABBnp);
+  const LINALG::Matrix<3,2> xfemAABB = GEO::getXAABBofDis(*xfemdis);
   const LINALG::Matrix<3,2> AABB = GEO::mergeAABB(cutterAABB, xfemAABB);
 
   octTreenp_->initializeTree(AABB, boundaryElementsByLabel_, GEO::TreeType(GEO::OCTTREE));
@@ -191,56 +189,32 @@ void XFEM::InterfaceHandleXFSI::ClassifyIntegrationCells()
   return;
 }
 
+
+
+
 /*----------------------------------------------------------------------*
- * delete tiny cells, if they are only a small fraction
- * of the parent element
- * 
- * this is purely for speedup, conditioning of the tangent stiffness
- * is not affected 
+ * check if intcell fill their xfem ele                     u.may 04/09 *
  *----------------------------------------------------------------------*/
-void XFEM::InterfaceHandleXFSI::EraseTinyDomainIntCells(
+void XFEM::InterfaceHandleXFSI::TestDomainIntCells(
     std::map<int,GEO::DomainIntCells >& elementalDomainIntCells) const
 {
-  
-  unsigned small_cell_count = 0;
-  const double small_cell_treshold = 1.0e-12;
-  
-  // check size of each cell and delete, if to small
-  // implementation copies each cell ones!!!
-  // not very efficient - improve such that no copy is necessary
-  // (can't find command to erase from vector without killing the iterator)
   std::map<int,GEO::DomainIntCells >::iterator entry;
   for (entry = elementalDomainIntCells.begin(); entry != elementalDomainIntCells.end(); ++entry)
   {
-    const GEO::DomainIntCells cells_old = entry->second;
-    GEO::DomainIntCells& cells = entry->second;
-    cells.clear();
-    
+    const GEO::DomainIntCells cells = entry->second;
     const DRT::Element* xfemele = xfemdis_->gElement(entry->first);
     double cellFillFactor = 0.0;
-    for (GEO::DomainIntCells::const_iterator cell = cells_old.begin(); cell != cells_old.end(); ++cell)
-    {
-      const double size = cell->VolumeInXiDomain(*xfemele);
-      if (abs(size) < small_cell_treshold)
-      {
-//        cout << RED << size << END_COLOR << endl;
-        small_cell_count++;
-      }
-      else
-      {
-        cells.push_back(*cell);
-        cellFillFactor += size;
-//        cout << GREEN << size << END_COLOR << endl;
-      }
-    }
-    if (std::abs(1.0 - cellFillFactor) > 1.0e-9)
+    
+    for (GEO::DomainIntCells::const_iterator cell = cells.begin(); cell != cells.end(); ++cell)
+      cellFillFactor += cell->VolumeInXiDomain(*xfemele);
+
+    if (std::abs(1.0 - cellFillFactor) > 1.0e-7)
     {
       cout << "unit element volume integrated by using integration cells does not sum up to 1" << endl;
       cout << scientific << (1.0-cellFillFactor) << endl;
       dserror("");
     }
   }
-  cout << " " << small_cell_count << " small cells ( v_cell / v_ele  < " << small_cell_treshold << " % ) deleted." << endl;
   return;
 }
 

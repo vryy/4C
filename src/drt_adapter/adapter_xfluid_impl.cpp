@@ -16,6 +16,9 @@ Maintainer: Axel Gerstenberger
 
 #include "adapter_xfluid_impl.H"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+#include <Epetra_Export.h>
+
 #include "../drt_fluid/xfluidresulttest.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/linalg_blocksparsematrix.H"
@@ -25,11 +28,12 @@ Maintainer: Axel Gerstenberger
 #include "../drt_io/io_control.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_geometry/position_array.H"
-#include "../drt_geometry/element_volume.H"
 #include "../drt_geometry/intersection_service.H"
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include <Epetra_Export.h>
+#include "../drt_geometry/element_volume.H"
+// only for intersection tests without xfem
+// #include "../drt_surfstress/drt_potential_manager.H"
+
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -41,6 +45,12 @@ ADAPTER::XFluidImpl::XFluidImpl(
     dis_(dis),
     params_(params)
 {
+          
+  //if (!soliddis->Filled()) cout << " solid dis is not filled"<< endl;
+  // test intersection without XFEM
+  //Teuchos::RCP< UTILS::PotentialManager > pot_man =rcp(new UTILS::PotentialManager(dis, soliddis, *soliddis));
+  // test intersection without XFEM     
+               
   vector<string> conditions_to_copy;
   conditions_to_copy.push_back("FSICoupling");
   conditions_to_copy.push_back("XFEMCoupling");
@@ -691,7 +701,8 @@ void ADAPTER::XFluidImpl::RemoveInternalSurfElements(
       {
         LINALG::SerialDenseMatrix          solidxyze(3,solidele->NumNode());
         GEO::fillInitialPositionArray(solidele,solidxyze);
-        const double length = pow(GEO::ElementVolume(*solidele),1.0/3.0);
+        const double volume = GEO::ElementVolume(solidele->Shape(), solidxyze);
+        const double length = pow(volume,1.0/3.0);
         
         LINALG::Matrix<3,1> normalvector = unitnormalvec;
         normalvector.Scale(length/10.0);
@@ -920,5 +931,7 @@ void ADAPTER::XFluidImpl::SetIterLomaFields(RCP<const Epetra_Vector> densnp,RCP<
    dserror("not implemented!");
    return;
 }
+
+
 
 #endif  // #ifdef CCADISCRET

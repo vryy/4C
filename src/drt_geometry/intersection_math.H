@@ -39,6 +39,8 @@ namespace GEO
     //! named tolerance for easy search/grep
     const double                 TOL6 = 1e-6;
     //! named tolerance for easy search/grep
+    const double                 TOL5 = 1e-5;
+    //! named tolerance for easy search/grep
     const double                 TOL4 = 1e-4;
     //! named tolerance for easy search/grep
     const double                 TOL3 = 1e-3;

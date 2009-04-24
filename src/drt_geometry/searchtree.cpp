@@ -10,6 +10,7 @@ Maintainer: Ursula Mayer
             089 - 289-15257
 </pre>
  */
+
 #ifdef CCADISCRET
 #include "searchtree.H"
 #include "intersection_service.H"

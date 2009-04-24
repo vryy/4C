@@ -13,11 +13,11 @@ Maintainer: Ursula Mayer
 
 #ifdef CCADISCRET
 
+
 #include "integrationcell.H"
+#include "../drt_geometry/element_volume.H"
 #include "../drt_lib/linalg_fixedsizematrix.H"
-#include "../drt_geometry/integrationcell_coordtrafo.H"
 #include "../drt_geometry/intersection_service_templates.H"
-#include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_io/io_gmsh.H"
 
 
@@ -32,6 +32,7 @@ GEO::IntCell::IntCell(
             distype_(distype)
 {}
 
+        
 
 /*----------------------------------------------------------------------*
  * copy constructor                                                     *
@@ -40,7 +41,19 @@ GEO::IntCell::IntCell(
         const IntCell& old) : 
             distype_(old.distype_)
 {}
+        
+         
+        
+/*----------------------------------------------------------------------*
+ * assignment operator                                                  *
+ *----------------------------------------------------------------------*/
+GEO::IntCell& GEO::IntCell::operator=(const IntCell& intcell)
+{
+  distype_ = intcell.distype_;
+  return *this;
+}
  
+        
  
 /*----------------------------------------------------------------------*
  * destructor                                                           *
@@ -49,6 +62,7 @@ GEO::IntCell::~IntCell()
 {}
 
  
+
 /*----------------------------------------------------------------------*
  * to string                                                            *
  *----------------------------------------------------------------------*/
@@ -75,7 +89,8 @@ GEO::DomainIntCell::DomainIntCell(
             label_(-1)
 {}
 
-         
+   
+        
 /*----------------------------------------------------------------------*
  * Constructor                                                          *
  * Domain integration cell == xfem element if not intersected           *
@@ -89,10 +104,11 @@ GEO::DomainIntCell::DomainIntCell(
             phys_center_(ComputePhysicalCenterPosition(distype, xyze_ele)),
             label_(-1)
 {}
-       
+    
+        
         
 /*----------------------------------------------------------------------*
- * Constructor Domain integration cell                                  *
+ * Copy Constructor Domain integration cell                             *
  *----------------------------------------------------------------------*/
 GEO::DomainIntCell::DomainIntCell(
       const DomainIntCell& old) :
@@ -104,6 +120,22 @@ GEO::DomainIntCell::DomainIntCell(
 {}
 
 
+    
+/*----------------------------------------------------------------------*
+ * assignment operator                                                  *
+ *----------------------------------------------------------------------*/
+GEO::DomainIntCell& GEO::DomainIntCell::operator=(const GEO::DomainIntCell& domainintcell)
+{
+  distype_ = domainintcell.distype_;
+  nodalpos_xi_domain_ = domainintcell.nodalpos_xi_domain_;
+  nodalpos_xyz_domain_ = domainintcell.nodalpos_xyz_domain_;
+  phys_center_ = domainintcell.phys_center_;
+  label_ = domainintcell.label_;
+  return *this;
+}
+      
+      
+      
 /*----------------------------------------------------------------------*
  * destructor                                                           *
  *----------------------------------------------------------------------*/
@@ -111,6 +143,10 @@ GEO::DomainIntCell::~DomainIntCell()
 {}
 
 
+
+/*----------------------------------------------------------------------*
+ * output                                                           *
+ *----------------------------------------------------------------------*/
 static string PosToString(double x, double y, double z)
 {
   std::stringstream s;
@@ -119,6 +155,8 @@ static string PosToString(double x, double y, double z)
        "," << std::setw(14) << scientific << z << ")";
   return s.str();
 }
+
+
 
 /*----------------------------------------------------------------------*
  *  to string                                                           *
@@ -141,6 +179,7 @@ std::string GEO::DomainIntCell::toString() const
 }
 
 
+
 /*----------------------------------------------------------------------*
  *  to string                                                           *
  *----------------------------------------------------------------------*/
@@ -155,6 +194,7 @@ void GEO::DomainIntCell::toGmsh(const std::string& filename) const
   f_system << "View[0].Axes = 3;\nView[0].AxesMikado = 1;\n";
   f_system.close();
 }
+
 
 
 /*----------------------------------------------------------------------*
@@ -182,34 +222,6 @@ void GEO::DomainIntCell::setLabel(const int   label)
 }
 
 
-/*----------------------------------------------------------------------*
- * check for coplanar corner points
- *----------------------------------------------------------------------*/
-bool GEO::DomainIntCell::CoplanarCornerPoints() const
-{
-  const bool tetcell = ((Shape() == DRT::Element::tet4) or (Shape() == DRT::Element::tet10));
-  dsassert(tetcell,"test for coplanar points only for tetrahedral integration cells");
-  
-  // create plane of first 3 nodes
-  LINALG::Matrix<3,3> plane;
-  for (int ipoint = 0; ipoint < 3; ++ipoint)
-    for (int isd = 0; isd < 3; ++isd)
-      plane(isd,ipoint) = nodalpos_xi_domain_(isd,ipoint);
-  
-  // 4th node is the test point
-  LINALG::Matrix<3,1> testpoint;
-  for (int isd = 0; isd < 3; ++isd)
-    testpoint(isd,0) = nodalpos_xi_domain_(isd,3);
-  
-  const bool coplanar_tet  = GEO::testForCoplanarTet(nodalpos_xi_domain_);
-//  const bool coplanar_tet2 = GEO::pointsInPlaneSurfaceElement(plane,testpoint);
-  
-//  if (coplanar_tet != coplanar_tet2)
-//    dserror("which method is better?");
-  
-  // check for coplanar points
-  return coplanar_tet;
-}
 
 /*----------------------------------------------------------------------*
  * compute volume in XiDomain coordinates
@@ -218,58 +230,14 @@ double GEO::DomainIntCell::VolumeInXiDomain(
         const DRT::Element&           ele
         ) const
 {
-//  if (CoplanarCornerPoints())
-//  {
-//    cout << "coplanar" << endl;
-//    return 0.0;
-//  }
-
-  DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule3D_undefined;
-  switch (this->Shape())
+  const double volume_cell = GEO::ElementVolume(this->Shape(), nodalpos_xi_domain_);
+  if(volume_cell <= 0.0)
   {
-    case DRT::Element::hex8: case DRT::Element::hex20: case DRT::Element::hex27:
-    {
-      gaussrule = DRT::UTILS::intrule_hex_8point;
-      break;
-    }
-    case DRT::Element::tet4: case DRT::Element::tet10:
-    {
-      gaussrule = DRT::UTILS::intrule_tet_4point;
-      break;
-    }
-    default:
-      dserror("add your element type here...");
-  }
-  
-  // gaussian points
-  const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
-
-  double volume_cell = 0.0;
-  // integration loop
-  for (int iquad=0; iquad<intpoints.nquad; ++iquad)
-  {
-    // coordinates of the current integration point in cell coordinates \eta
-    static LINALG::Matrix<3,1> pos_eta_domain;
-    pos_eta_domain(0) = intpoints.qxg[iquad][0];
-    pos_eta_domain(1) = intpoints.qxg[iquad][1];
-    pos_eta_domain(2) = intpoints.qxg[iquad][2];
-    
-    const double detcell = GEO::detEtaToXi3D<XFEM::xfem_assembly>(*this, pos_eta_domain);
-    const double fac = intpoints.qwgt[iquad]*detcell;
-
-//    if(detcell < 0.0)
-//    {
-//      cout << scientific << detcell << endl;
-//      cout << this->toString() << endl;
-//      this->toGmsh("cell_with_negative_volume.pos");
-//      dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT OF INTEGRATION CELL: %20.16f", ele.Id(), detcell);
-//    }    
-    volume_cell += fac;
-
-  } // end loop over gauss points
-  
+    cout << this->toString() << endl;
+    this->toGmsh("cell_with_negative_volume.pos");
+    dserror("GLOBAL ELEMENT NO.%i\n NEGATIVE VOLUME OF INTEGRATION CELL: %20.16f", ele.Id(), volume_cell);
+  }    
   const double normed_cell_volume = volume_cell/DRT::UTILS::getSizeInLocalCoordinates(ele.Shape());
-  
   return normed_cell_volume;
 }
 
@@ -291,10 +259,11 @@ GEO::BoundaryIntCell::BoundaryIntCell(
             nodalpos_xi_boundary_(  eleBoundaryCoordinates),
             nodalpos_xyz_domain_(   physDomainCoordinates)
 {}
-         
+ 
+        
         
 /*----------------------------------------------------------------------*
- * constructor Boundary integration cells                               *
+ * copy constructor Boundary integration cells                          *
  *----------------------------------------------------------------------*/
 GEO::BoundaryIntCell::BoundaryIntCell(
         const BoundaryIntCell& old) :
@@ -306,12 +275,29 @@ GEO::BoundaryIntCell::BoundaryIntCell(
 {}
  
  
+        
 /*----------------------------------------------------------------------*
  * destructor                                                           *
  *----------------------------------------------------------------------*/
 GEO::BoundaryIntCell::~BoundaryIntCell()
 {}
+
+
+
+/*----------------------------------------------------------------------*
+ * assignment operator                                                  *
+ *----------------------------------------------------------------------*/
+GEO::BoundaryIntCell& GEO::BoundaryIntCell::operator=(const GEO::BoundaryIntCell& boundaryintcell)
+{ 
+  distype_ = boundaryintcell.distype_;
+  surface_ele_gid_ = boundaryintcell.surface_ele_gid_;
+  nodalpos_xi_domain_ = boundaryintcell.nodalpos_xi_domain_;
+  nodalpos_xi_boundary_ = boundaryintcell.nodalpos_xi_boundary_;
+  nodalpos_xyz_domain_ = boundaryintcell.nodalpos_xyz_domain_;
+  return *this;
+}
  
+
  
 /*----------------------------------------------------------------------*
  * to string                                                            *
@@ -323,6 +309,7 @@ std::string GEO::BoundaryIntCell::toString() const
   s << nodalpos_xi_domain_ << endl;
   return s.str();
 }
+
 
 
 #endif  // #ifdef CCADISCRET

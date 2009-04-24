@@ -21,6 +21,10 @@ Maintainer: Ursula Mayer
 #include "../drt_lib/drt_timecurve.H"
 #include <cstdlib>
 
+// only xfem test
+#include "../drt_geometry/integrationcell.H"
+#include "../drt_geometry/intersection.H"
+
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -126,6 +130,149 @@ UTILS::PotentialManager::PotentialManager(
 }
 
 
+    
+/*-------------------------------------------------------------------*
+ |  ctor (public) for testing the intersection without xfemumay 06/08|
+ *-------------------------------------------------------------------*/
+UTILS::PotentialManager::PotentialManager(
+    Teuchos::RCP<DRT::Discretization> xfemdis,
+    Teuchos::RCP<DRT::Discretization> discretRCP,
+    DRT::Discretization& discret):
+    discretRCP_(discretRCP),
+    discret_(discret) 
+{
+  cout << "pot man"  << endl;
+  int err1 = discretRCP->FillComplete();
+  if (err1) dserror("FillComplete() returned err=%d",err1);
+  
+  std::map<int,GEO::DomainIntCells >        elementalDomainIntCells;
+  std::map<int,GEO::BoundaryIntCells >      elementalBoundaryIntCells;
+  // here empty
+  std::map<int,int>                         labelPerBoundaryElementId;
+  
+  // get problem dimension
+  prob_dim_  = genprob.ndim; 
+  
+  // create discretization from potential boundary elements and distribute them
+  // on every processor
+  vector<string> conditions_to_copy;
+  conditions_to_copy.push_back("FSICoupling");
+  
+  if(prob_dim_ == 2)
+    boundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(discretRCP_, "FSICoupling", "PotBoundary", "BELE3LINE", conditions_to_copy);
+  else if(prob_dim_ == 3)
+    boundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(discretRCP_, "FSICoupling", "PotBoundary", "BELE3", conditions_to_copy);
+  else
+    dserror("problem dimension not correct");
+  dsassert(boundarydis_->NumGlobalNodes() > 0, "empty discretization detected. Potential conditions applied?");
+
+  cout << "boundary dis copied" << endl;
+  
+  // set new dof set
+  RCP<UTILS::PotentialDofSet> pdofset = rcp(new UTILS::PotentialDofSet(discretRCP_));
+  (*boundarydis_).ReplaceDofSet(pdofset);
+  (*boundarydis_).FillComplete(false, false, false);
+
+  cout << "dofset replaced" << endl;
+  // create node and element distribution with elements and nodes ghosted on all processors
+  const Epetra_Map noderowmap = *(boundarydis_->NodeRowMap());
+  const Epetra_Map elemrowmap = *(boundarydis_->ElementRowMap());
+  
+  cout << "dofset replaced" << endl;
+  
+  // put all boundary nodes and elements onto all processors
+  const Teuchos::RCP<const Epetra_Map> nodecolmap = LINALG::AllreduceEMap(*(boundarydis_->NodeRowMap()));
+  const Teuchos::RCP<const Epetra_Map> elemcolmap = LINALG::AllreduceEMap(*(boundarydis_->ElementRowMap()));
+  
+  cout << "dofset replaced" << endl;
+  // redistribute nodes and elements to column (ghost) map
+  boundarydis_->ExportColumnNodes(*nodecolmap);
+  boundarydis_->ExportColumnElements(*elemcolmap);
+ 
+  cout << "dofset replaced" << endl;
+  // Now we are done. :)
+  // fill complete calls the assgin degrees of fredom method
+  // provided by PotentialDofSet class
+  const int err = boundarydis_->FillComplete();
+  if (err) dserror("FillComplete() returned err=%d",err);
+  
+  int err2 = xfemdis->FillComplete();
+   
+  cout << "assign degrees of freedom" << endl;
+  
+  // split dof vector of soliddiscretization into a dof vector of potential boundary condition and 
+  // remaining dofs
+  DRT::UTILS::SetupNDimExtractor(*discretRCP_ ,"Potential", potboundary_);
+  
+  cout << "set up dim" << endl;
+  // create potential surface dof row map using the solid parallel distribution
+  // for all potential surface elements belonging to the solid discretization on a single 
+  // processor
+  const Teuchos::RCP< const Epetra_Map > potsurface_condmap_onOneProc = potboundary_.CondMap();
+  
+  if(! potsurface_condmap_onOneProc->UniqueGIDs() ) dserror("cond_map not unique");
+  
+  if(! (potsurface_condmap_onOneProc->PointSameAs(*(*boundarydis_).DofRowMap())))
+    dserror("maps are not point equal");
+  
+  if(! (potsurface_condmap_onOneProc->SameAs(*(*boundarydis_).DofRowMap())))
+    dserror("maps are not equal");
+  // create disp vector for boundary discretization corresponding to the 
+  // potential condition elements stored on one proc
+  idisp_onproc_    = LINALG::CreateVector(*potsurface_condmap_onOneProc,true);
+  
+  // create potential surface dof col map based on the boundayr dis
+  // that is distributed redundantly on all processors
+  const Epetra_Map* potsurface_dofcolmap_total = boundarydis_->DofColMap();
+  // create disp vector for boundary discretization redundant on all procs
+  idisp_total_    = LINALG::CreateVector(*potsurface_dofcolmap_total,true);
+  
+  // create importer
+  importer_ = rcp(new Epetra_Import(idisp_total_->Map(),idisp_onproc_->Map()));
+  
+  cout << "importer created" << endl;
+  
+  currentboundarypositions_.clear();
+  {
+    for (int lid = 0; lid < boundarydis_->NumMyColNodes(); ++lid)
+    {
+      const DRT::Node* node = boundarydis_->lColNode(lid);
+      LINALG::Matrix<3,1> currpos;
+      currpos(0) = node->X()[0] ;
+      currpos(1) = node->X()[1] ;
+      currpos(2) = node->X()[2] ;
+      currentboundarypositions_[node->Id()] = currpos;
+    }
+  }
+ 
+  cout << "copy current positions" << endl;
+  
+  std::map<int,LINALG::Matrix<3,2> > currentXAABBs = GEO::getCurrentXAABBs(*boundarydis_, currentboundarypositions_);
+  
+  Teuchos::RCP<GEO::Intersection> is = rcp(new GEO::Intersection());
+  is->computeIntersection(xfemdis, boundarydis_, currentboundarypositions_, currentXAABBs, elementalDomainIntCells, elementalBoundaryIntCells, labelPerBoundaryElementId);  
+  is = Teuchos::null;
+  
+  // set up tree
+  const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofDis(*boundarydis_);
+  DRT::UTILS::CollectElementsByConditionLabel(*boundarydis_, elementsByLabel_,"Potential" );
+  searchTree_      = rcp(new GEO::SearchTree(8));
+  if(prob_dim_ == 2)
+  {
+    searchTree_->initializeTree(rootBox, elementsByLabel_, GEO::TreeType(GEO::QUADTREE));
+  }
+  else if(prob_dim_ == 3)
+  {
+    searchTree_->initializeTree(rootBox, elementsByLabel_, GEO::TreeType(GEO::OCTTREE));
+  }
+  else
+    dserror("problem dimension not correct");
+  
+  
+  std::cout << "Potential manager constructor done" << endl;
+}
+
+    
 
 /*-------------------------------------------------------------------*
 | (public)                                                 umay 06/08|
