@@ -1476,26 +1476,42 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
     // cast EpetraOperator sysmat_ to a LINALG::SparseMatrix in order to
     // use the matrix-multiply capabilities in the locsysmanager
     LINALG::SparseMatrix* A = dynamic_cast<LINALG::SparseMatrix*>(sysmat_.get());
-    if (A==NULL)
+    if (A!=NULL)
     {
-      dserror("expecting LINALG::SparseMatrix as a SparseOperator.\n");
-    }
-
-    // transform to local co-ordinate systems
-    if (locsysman_!=Teuchos::null)
-    {
-      locsysman_->RotateGlobalToLocal(rcp(A,false),residual_);
-    }
+      // transform to local co-ordinate systems
+      if (locsysman_!=Teuchos::null)
+      {
+        locsysman_->RotateGlobalToLocal(rcp(A,false),residual_);
+      }
     
-    // apply the dirichlet conditions to the (rotated) system
-    zeros_->PutScalar(0.0);
+      // apply the dirichlet conditions to the (rotated) system
+      zeros_->PutScalar(0.0);
+      {
+        LINALG::ApplyDirichlettoSystem(rcp(A,false)           ,
+                                       increment_             ,
+                                       residual_              ,
+                                       GetLocSysTrafo()       ,
+                                       zeros_                 ,
+                                       *(dbcmaps_->CondMap()));
+      }
+    }
+    else
     {
-      LINALG::ApplyDirichlettoSystem(rcp(A,false)           ,
-                                     increment_             ,
-                                     residual_              ,
-                                     GetLocSysTrafo()       ,
-                                     zeros_                 ,
-                                     *(dbcmaps_->CondMap()));
+      // transform to local co-ordinate systems
+      if (locsysman_!=Teuchos::null)
+      {
+        dserror("expecting LINALG::SparseMatrix as a SparseOperator. Cannot use locsys.\n");
+      }
+
+      // apply the dirichlet conditions to the (rotated) system
+      zeros_->PutScalar(0.0);
+      {
+        LINALG::ApplyDirichlettoSystem(sysmat_                ,
+                                       increment_             ,
+                                       residual_              ,
+                                       zeros_                 ,
+                                       *(dbcmaps_->CondMap()));
+      }
     }
   }
 
@@ -1654,7 +1670,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaCalcIncrement(const double nlnres)
   {
     reset=true;
   }
-  
+
   solver_.Solve(sysmat_->EpetraOperator(),
                 increment_               ,
                 residual_                ,
