@@ -95,8 +95,7 @@ public:
   nodal values after a certain amount of timesteps.
   */
   void DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp,
-                    Teuchos::RCP<Epetra_Vector> subgrvisc,
-                    Epetra_Vector &             force);
+                    Teuchos::RCP<Epetra_Vector> subgrvisc);
 
   /*!
   \brief The values of velocity, pressure, temperature and its squared
@@ -106,7 +105,6 @@ public:
   void DoLomaTimeSample(Teuchos::RCP<Epetra_Vector> velnp,
                         Teuchos::RCP<Epetra_Vector> vedenp,
                         Teuchos::RCP<Epetra_Vector> subgrvisc,
-                        Epetra_Vector &             force,
                         const double                eosfac);
 
   /*!
@@ -190,9 +188,12 @@ private:
   LINALG::Matrix<21,1> x1statlocations_;
   LINALG::Matrix<2,1>  x2statlocations_;
 
+  //! coordinates of supplementary locations in x2-direction for velocity derivative
+  LINALG::Matrix<2,1>  x2supplocations_;
+
   //! matrices containing values
+  RCP<Epetra_SerialDenseMatrix>     x1sumu_;
   RCP<Epetra_SerialDenseMatrix>     x1sump_;
-  RCP<Epetra_SerialDenseMatrix>     x1sumtauw_;
 
   RCP<Epetra_SerialDenseMatrix>     x1sumrho_;
   RCP<Epetra_SerialDenseMatrix>     x1sumT_;

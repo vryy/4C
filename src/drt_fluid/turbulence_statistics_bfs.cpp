@@ -312,6 +312,14 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
     x1statlocations_(18) = 0.738;
     x1statlocations_(19) = 0.779;
     x1statlocations_(20) = 0.82;
+
+    //----------------------------------------------------------------------
+    // define supplementary locations in x2-direction for statistical
+    // evaluation of velocity derivative at wall
+    // (first nodes off lower and upper wall, respectively, coarse discret.)
+    //----------------------------------------------------------------------
+    x2supplocations_(0) = -0.0389218666;
+    x2supplocations_(1) = 0.080080628;
   }
   else
   {
@@ -340,6 +348,14 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
     x1statlocations_(18) = 0.738;
     x1statlocations_(19) = 0.779;
     x1statlocations_(20) = 0.82;
+
+    //----------------------------------------------------------------------
+    // define supplementary locations in x2-direction for statistical
+    // evaluation of velocity derivative at wall
+    // (first nodes off lower and upper wall, respectively, fine discret.)
+    //----------------------------------------------------------------------
+    x2supplocations_(0) = -0.040752954;
+    x2supplocations_(1) = 0.081752896;
   }
 
   //----------------------------------------------------------------------
@@ -357,8 +373,8 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
   x1sump_ =  rcp(new Epetra_SerialDenseMatrix);
   x1sump_->Reshape(numx2statlocations_,numx1coor_);
 
-  x1sumtauw_ =  rcp(new Epetra_SerialDenseMatrix);
-  x1sumtauw_->Reshape(numx2statlocations_,numx1coor_);
+  x1sumu_ =  rcp(new Epetra_SerialDenseMatrix);
+  x1sumu_->Reshape(numx2statlocations_,numx1coor_);
 
   // the following vectors are only necessary for low-Mach-number flow
   x1sumrho_ =  rcp(new Epetra_SerialDenseMatrix);
@@ -457,8 +473,7 @@ FLD::TurbulenceStatisticsBfs::~TurbulenceStatisticsBfs()
 //----------------------------------------------------------------------
 void FLD::TurbulenceStatisticsBfs::DoTimeSample(
 Teuchos::RefCountPtr<Epetra_Vector> velnp,
-Teuchos::RefCountPtr<Epetra_Vector> subgrvisc,
-Epetra_Vector &                     force
+Teuchos::RefCountPtr<Epetra_Vector> subgrvisc
 )
 {
   //----------------------------------------------------------------------
@@ -478,8 +493,11 @@ Epetra_Vector &                     force
 
     for (int x2nodnum=0;x2nodnum<numx2statlocations_;++x2nodnum)
     {
-      // current x2-coordinate
-      double x2c = x2statlocations_(x2nodnum);
+      // current x2-coordinate of respective wall
+      double x2cwall = x2statlocations_(x2nodnum);
+
+      // current x2-coordinate of supplementary location to respective wall
+      double x2csupp = x2supplocations_(x2nodnum);
 
       // toggle vectors are one in the position of a dof of this node,
       // else 0
@@ -493,17 +511,25 @@ Epetra_Vector &                     force
       {
         DRT::Node* node = discret_->lRowNode(nn);
 
-        // this is the node
+        // this is the wall node
         if ((node->X()[0]<(*x1line+2e-9) and node->X()[0]>(*x1line-2e-9)) and
-            (node->X()[1]<(x2c+2e-5)     and node->X()[1]>(x2c-2e-5)))
+            (node->X()[1]<(x2cwall+2e-5) and node->X()[1]>(x2cwall-2e-5)))
+        {
+          vector<int> dof = discret_->Dof(node);
+          double      one = 1.0;
+
+          togglep_->ReplaceGlobalValues(1,&one,&(dof[3]));
+
+          countnodes++;
+        }
+        // this is the supplementary node
+        else if ((node->X()[0]<(*x1line+2e-9) and node->X()[0]>(*x1line-2e-9)) and
+                 (node->X()[1]<(x2csupp+2e-5) and node->X()[1]>(x2csupp-2e-5)))
         {
           vector<int> dof = discret_->Dof(node);
           double      one = 1.0;
 
           toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
-          togglep_->ReplaceGlobalValues(1,&one,&(dof[3]));
-
-          countnodes++;
         }
       }
 
@@ -517,27 +543,24 @@ Epetra_Vector &                     force
       if (countnodesonallprocs)
       {
         //----------------------------------------------------------------------
-        // get values for pressure and wall shear stress
+        // get values for velocity derivative and pressure
         //----------------------------------------------------------------------
+        double u;
+        velnp->Dot(*toggleu_,&u);
         double p;
         velnp->Dot(*togglep_,&p);
-        double tauw=0.0;
-        for(int rr=0;rr<(*toggleu_).MyLength();++rr)
-        {
-          tauw += force[rr]*(*toggleu_)[rr];
-        }
 
         //----------------------------------------------------------------------
         // calculate spatial means
         //----------------------------------------------------------------------
+        double usm=u/countnodesonallprocs;
         double psm=p/countnodesonallprocs;
-        double tauwsm=tauw/countnodesonallprocs;
 
         //----------------------------------------------------------------------
         // add spatial mean values to statistical sample
         //----------------------------------------------------------------------
-        (*x1sump_)(x2nodnum,x1nodnum)   +=psm;
-        (*x1sumtauw_)(x2nodnum,x1nodnum)+=tauwsm;
+        (*x1sumu_)(x2nodnum,x1nodnum)+=usm;
+        (*x1sump_)(x2nodnum,x1nodnum)+=psm;
       }
     }
   }
@@ -656,7 +679,6 @@ void FLD::TurbulenceStatisticsBfs::DoLomaTimeSample(
 Teuchos::RefCountPtr<Epetra_Vector> velnp,
 Teuchos::RefCountPtr<Epetra_Vector> vedenp,
 Teuchos::RefCountPtr<Epetra_Vector> subgrvisc,
-Epetra_Vector &                     force,
 const double                        eosfac)
 {
   //----------------------------------------------------------------------
@@ -676,8 +698,11 @@ const double                        eosfac)
 
     for (int x2nodnum=0;x2nodnum<numx2statlocations_;++x2nodnum)
     {
-      // current x2-coordinate
-      double x2c = x2statlocations_(x2nodnum);
+      // current x2-coordinate of respective wall
+      double x2cwall = x2statlocations_(x2nodnum);
+
+      // current x2-coordinate of supplementary location to respective wall
+      double x2csupp = x2supplocations_(x2nodnum);
 
       // toggle vectors are one in the position of a dof of this node,
       // else 0
@@ -691,17 +716,25 @@ const double                        eosfac)
       {
         DRT::Node* node = discret_->lRowNode(nn);
 
-        // this is the node
+        // this is the wall node
         if ((node->X()[0]<(*x1line+2e-9) and node->X()[0]>(*x1line-2e-9)) and
-            (node->X()[1]<(x2c+2e-5)     and node->X()[1]>(x2c-2e-5)))
+            (node->X()[1]<(x2cwall+2e-5) and node->X()[1]>(x2cwall-2e-5)))
+        {
+          vector<int> dof = discret_->Dof(node);
+          double      one = 1.0;
+
+          togglep_->ReplaceGlobalValues(1,&one,&(dof[3]));
+
+          countnodes++;
+        }
+        // this is the supplementary node
+        else if ((node->X()[0]<(*x1line+2e-9) and node->X()[0]>(*x1line-2e-9)) and
+                 (node->X()[1]<(x2csupp+2e-5) and node->X()[1]>(x2csupp-2e-5)))
         {
           vector<int> dof = discret_->Dof(node);
           double      one = 1.0;
 
           toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
-          togglep_->ReplaceGlobalValues(1,&one,&(dof[3]));
-
-          countnodes++;
         }
       }
 
@@ -715,23 +748,20 @@ const double                        eosfac)
       if (countnodesonallprocs)
       {
         //----------------------------------------------------------------------
-        // get values for pressure, wall shear stress and density
+        // get values for velocity derivative, pressure and density
         //----------------------------------------------------------------------
+        double u;
+        velnp->Dot(*toggleu_,&u);
         double p;
         velnp->Dot(*togglep_,&p);
-        double tauw=0.0;
-        for(int rr=0;rr<(*toggleu_).MyLength();++rr)
-        {
-          tauw += force[rr]*(*toggleu_)[rr];
-        }
         double rho;
         vedenp->Dot(*togglep_,&rho);
 
         //----------------------------------------------------------------------
         // calculate spatial means
         //----------------------------------------------------------------------
+        double usm=u/countnodesonallprocs;
         double psm=p/countnodesonallprocs;
-        double tauwsm=tauw/countnodesonallprocs;
         double rhosm=rho/countnodesonallprocs;
         // compute temperature: T = eosfac/rho
         double Tsm=eosfac/rhosm;
@@ -739,10 +769,10 @@ const double                        eosfac)
         //----------------------------------------------------------------------
         // add spatial mean values to statistical sample
         //----------------------------------------------------------------------
-        (*x1sump_)(x2nodnum,x1nodnum)   +=psm;
-        (*x1sumtauw_)(x2nodnum,x1nodnum)+=tauwsm;
-        (*x1sumrho_)(x2nodnum,x1nodnum) +=rhosm;
-        (*x1sumT_)(x2nodnum,x1nodnum)   +=Tsm;
+        (*x1sumu_)(x2nodnum,x1nodnum)  +=usm;
+        (*x1sump_)(x2nodnum,x1nodnum)  +=psm;
+        (*x1sumrho_)(x2nodnum,x1nodnum)+=rhosm;
+        (*x1sumT_)(x2nodnum,x1nodnum)  +=Tsm;
       }
     }
   }
@@ -894,20 +924,22 @@ void FLD::TurbulenceStatisticsBfs::DumpStatistics(int step)
     (*log) << "\n";
     (*log) << "# lower wall behind step\n";
     (*log) << "#     x1";
-    (*log) << "           pmean          tauw          utau\n";
+    (*log) << "           duxdy         pmean\n";
+
+    // distance from wall to first node off wall
+    double dist = x2supplocations_(0) - x2statlocations_(0);
 
     for (unsigned i=0; i<x1coordinates_->size(); ++i)
     {
       if ((*x1coordinates_)[i] > -2e-9)
       {
-        double lwx1p    = (*x1sump_)(0,i)/numsamp_;
-        double lwx1tauw = (*x1sumtauw_)(0,i)/numsamp_;
-        double lwx1utau = sqrt(lwx1tauw);
+        double lwx1u     = (*x1sumu_)(0,i)/numsamp_;
+        double lwx1duxdy = lwx1u/dist;
+        double lwx1p     = (*x1sump_)(0,i)/numsamp_;
 
         (*log) <<  " "  << setw(11) << setprecision(4) << (*x1coordinates_)[i];
+        (*log) << "   " << setw(11) << setprecision(4) << lwx1duxdy;
         (*log) << "   " << setw(11) << setprecision(4) << lwx1p;
-        (*log) << "   " << setw(11) << setprecision(4) << lwx1tauw;
-        (*log) << "   " << setw(11) << setprecision(4) << lwx1utau;
         (*log) << "\n";
       }
     }
@@ -915,18 +947,20 @@ void FLD::TurbulenceStatisticsBfs::DumpStatistics(int step)
     (*log) << "\n";
     (*log) << "# upper wall\n";
     (*log) << "#     x1";
-    (*log) << "           pmean          tauw          utau\n";
+    (*log) << "           duxdy         pmean\n";
+
+    // distance from wall to first node off wall
+    dist = x2statlocations_(1) - x2supplocations_(1);
 
     for (unsigned i=0; i<x1coordinates_->size(); ++i)
     {
-      double uwx1p    = (*x1sump_)(1,i)/numsamp_;
-      double uwx1tauw = (*x1sumtauw_)(1,i)/numsamp_;
-      double uwx1utau = sqrt(uwx1tauw);
+      double uwx1u     = (*x1sumu_)(1,i)/numsamp_;
+      double uwx1duxdy = uwx1u/dist;
+      double uwx1p     = (*x1sump_)(1,i)/numsamp_;
 
       (*log) <<  " "  << setw(11) << setprecision(4) << (*x1coordinates_)[i];
+      (*log) << "   " << setw(11) << setprecision(4) << uwx1duxdy;
       (*log) << "   " << setw(11) << setprecision(4) << uwx1p;
-      (*log) << "   " << setw(11) << setprecision(4) << uwx1tauw;
-      (*log) << "   " << setw(11) << setprecision(4) << uwx1utau;
       (*log) << "\n";
     }
 
@@ -1005,23 +1039,25 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step,
     (*log) << "\n";
     (*log) << "# lower wall behind step\n";
     (*log) << "#     x1";
-    (*log) << "           pmean          tauw          utau       rhomean         Tmean\n";
+    (*log) << "           duxdy         pmean       rhomean         Tmean\n";
+
+    // distance from wall to first node off wall
+    double dist = x2supplocations_(0) - x2statlocations_(0);
 
     for (unsigned i=0; i<x1coordinates_->size(); ++i)
     {
       if ((*x1coordinates_)[i] > -2e-9)
       {
-        double lwx1p    = (*x1sump_)(0,i)/numsamp_;
-        double lwx1tauw = (*x1sumtauw_)(0,i)/numsamp_;
-        double lwx1utau = sqrt(lwx1tauw);
+        double lwx1u     = (*x1sumu_)(0,i)/numsamp_;
+        double lwx1duxdy = lwx1u/dist;
+        double lwx1p     = (*x1sump_)(0,i)/numsamp_;
 
         double lwx1rho  = (*x1sumrho_)(0,i)/numsamp_;
         double lwx1T    = (*x1sumT_)(0,i)/numsamp_;
 
         (*log) <<  " "  << setw(11) << setprecision(4) << (*x1coordinates_)[i];
+        (*log) << "   " << setw(11) << setprecision(4) << lwx1duxdy;
         (*log) << "   " << setw(11) << setprecision(4) << lwx1p;
-        (*log) << "   " << setw(11) << setprecision(4) << lwx1tauw;
-        (*log) << "   " << setw(11) << setprecision(4) << lwx1utau;
         (*log) << "   " << setw(11) << setprecision(4) << lwx1rho;
         (*log) << "   " << setw(11) << setprecision(4) << lwx1T;
         (*log) << "\n";
@@ -1031,21 +1067,23 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step,
     (*log) << "\n";
     (*log) << "# upper wall\n";
     (*log) << "#     x1";
-    (*log) << "           pmean          tauw          utau       rhomean         Tmean\n";
+    (*log) << "           duxdy         pmean       rhomean         Tmean\n";
+
+    // distance from wall to first node off wall
+    dist = x2statlocations_(1) - x2supplocations_(1);
 
     for (unsigned i=0; i<x1coordinates_->size(); ++i)
     {
-      double uwx1p    = (*x1sump_)(1,i)/numsamp_;
-      double uwx1tauw = (*x1sumtauw_)(1,i)/numsamp_;
-      double uwx1utau = sqrt(uwx1tauw);
+      double uwx1u     = (*x1sumu_)(1,i)/numsamp_;
+      double uwx1duxdy = uwx1u/dist;
+      double uwx1p     = (*x1sump_)(1,i)/numsamp_;
 
       double uwx1rho  = (*x1sumrho_)(1,i)/numsamp_;
       double uwx1T    = (*x1sumT_)(1,i)/numsamp_;
 
       (*log) <<  " "  << setw(11) << setprecision(4) << (*x1coordinates_)[i];
+      (*log) << "   " << setw(11) << setprecision(4) << uwx1duxdy;
       (*log) << "   " << setw(11) << setprecision(4) << uwx1p;
-      (*log) << "   " << setw(11) << setprecision(4) << uwx1tauw;
-      (*log) << "   " << setw(11) << setprecision(4) << uwx1utau;
       (*log) << "   " << setw(11) << setprecision(4) << uwx1rho;
       (*log) << "   " << setw(11) << setprecision(4) << uwx1T;
       (*log) << "\n";

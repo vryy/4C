@@ -545,7 +545,7 @@ namespace FLD
         if(statistics_bfs_==null)
           dserror("need statistics_bfs_ to do a time sample for a flow over a backward-facing step");
 
-        statistics_bfs_->DoTimeSample(myvelnp_,mysubgrvisc_,*myforce_);
+        statistics_bfs_->DoTimeSample(myvelnp_,mysubgrvisc_);
         break;
       }
       case loma_backward_facing_step:
@@ -553,7 +553,7 @@ namespace FLD
         if(statistics_bfs_==null)
           dserror("need statistics_bfs_ to do a time sample for a flow over a backward-facing step at low Mach number");
 
-        statistics_bfs_->DoLomaTimeSample(myvelnp_,myvedenp_,mysubgrvisc_,*myforce_,eosfac);
+        statistics_bfs_->DoLomaTimeSample(myvelnp_,myvedenp_,mysubgrvisc_,eosfac);
         break;
       }
       case square_cylinder:
