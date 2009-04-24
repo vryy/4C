@@ -242,6 +242,14 @@ private:
       const DRT::Discretization&                    dis,    
       const std::map<int, LINALG::Matrix<3,1> >&    currentpositions
       );
+  
+  /*!
+   \brief create children of a treenode and insert tree elements
+   \param currentpositions     current nodal positions in discretization
+   */
+  void createChildren(   
+      const std::map<int, LINALG::Matrix<3,1> >&    currentpositions
+      );
     
   
   /*!
@@ -257,7 +265,6 @@ private:
   
    /*!
    \brief create children of a treenode and insert elements 
-          a lot more efficient than the method above
 
    \param currentKDOPs        current elemental kdops
    */ 
@@ -518,17 +525,15 @@ public:
   
   
   /*!
-  \brief returns a set of gids of nodes lying in a radius around a given point
-  \param dis                  discretization
-  \param currentpositions     current nodal positions in discretization
-  \param point                point to be examined
+  \brief returns a vector of Ids of points closer than radius to the querypoint
+  \param currentpositions     current positions of a number of points assigned to a unique Id
+  \param querypoint           point around which should be searched
   \param radius               radius
   \return set of node gids
    */
-  std::map<int,std::set<int> > searchNodesInRadius(
-      const DRT::Discretization&                  dis,
+  std::vector<int>  searchPointsInRadius(
       const std::map<int,LINALG::Matrix<3,1> >&   currentpositions, 
-      const LINALG::Matrix<3,1>&                  point, //point around which should be searched
+      const LINALG::Matrix<3,1>&                  querypoint, //point around which should be searched
       const double                                radius); 
   
   
@@ -642,6 +647,21 @@ public:
       const TreeType              treetype
       );
   
+  /*!
+  \brief destroys the old tree if its exists and builds the root node of a 
+         new tree with a possibly different discretization;no label sorting;
+         tree elements are not finite elements in discretization dis, but
+         nodes in discretization dis
+  \param nodebox              nodeBox
+  \param dis                  discretization
+  \param treetype             octtree or quadtree
+   */
+  void initializePointTree(
+      const LINALG::Matrix<3,2>&  nodeBox,
+      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
+      const TreeType              treetype
+      );
+  
 
   /*!
   \brief updates tree for labeled structures due to movements of these structures.
@@ -722,6 +742,18 @@ public:
       const double                                radius,
       const int                                   label
       );
+  
+  /*!
+  \brief returns a vector of Ids of points in a radius around a given querypoint
+  \param currentpositions     current positions of a number of points assigned to a unique Id
+  \param querypoint           point around which should be searched
+  \param radius               radius
+  \return set of point Ids
+   */
+  std::vector<int>  searchPointsInRadius(
+      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions, 
+      const LINALG::Matrix<3,1>&                  querypoint, //point around which should be searched
+      const double                                radius); 
   
   
   /*!

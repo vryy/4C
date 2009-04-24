@@ -230,9 +230,9 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
       octTree_ = rcp(new GEO::SearchTree(8));
      
       
-      /*after having generated a search tree and a discretization with fully overlapping column map we initialize a search tree
+      /*after having generated a search tree and a discretization with fully overlapping column map we initialize the search tree
        * for accelerated search for each nodes neighbouring nodes; note: the tree is based on a bounding box
-       * with respect to the reference positions (which are the current positions at the beginning of the simulation;
+       * with respect to the reference positions (which are the positions at the beginning of the simulation;
        * in case of large overall deformations of the fiber network such an initialization would have to be carried 
        * out in each time step with respect to the current node positions*/
 
@@ -254,7 +254,7 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
       const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofDis(discret_, currentpositions);
    
       //initialize search tree
-      octTree_->initializeTree(rootBox, discret_, GEO::TreeType(GEO::OCTTREE));
+      octTree_->initializePointTree(rootBox,currentpositions,GEO::TreeType(GEO::OCTTREE));
     
   }//if(Teuchos::getIntegralValue<int>(statmechparams_,"DYN_CROSSLINKERS"))
 
@@ -799,7 +799,7 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& disro
 
     
     //define map between the column map LID of a node and the column map LIDs of all its neighbours
-    std::map<int,std::set<int> > neighbours;   
+    std::map<int,std::vector<int> > neighbours;   
        
     //probability with which a crosslinker is established between neighbouring nodes
     double plink = 1.0 - exp( -dt*statmechparams_.get<double>("K_ON",0.0)*statmechparams_.get<double>("C_CROSSLINKER",0.0) );
@@ -874,19 +874,20 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& disro
     
     
     //after having determined for which nodes crosslinkers may be set or deleted we search for each node all its neighbours
-    
-    //the clever way to do so is using a search tree
-    //neighbours = octree_->searchNodesInRadius(discret_,currentpositions,xrefe,rlink)
-    
-    //the brute force way is to consider all the other nodes as potential neighbours
     for(int i = 0; i < discret_.NumMyColNodes(); i++)
     { 
       //for each node the set of all potential neighbours consists of all column map LIDs
-      std::set<int> itset;
+      std::vector<int> idvector;
       for(int id = 0; id < discret_.NumMyColNodes(); id++)
-        itset.insert(id);
+        idvector.push_back(id);
       
-      neighbours.insert(make_pair(i,itset));
+      //the brute force way to determine possible neighbours is to consider all the other nodes as potential neighbours
+      neighbours.insert(make_pair(i,idvector));
+      
+      //the clever way to determine possible neighbours is using a search tree
+      //neighbours.insert(make_pair(i,octTree_->searchPointsInRadius(currentpositions,(currentpositions.find(i))->second,rlink)));
+
+      
     }
     
     //from the above preselection of neighbours we select the nearest neighbour which is not on the same filament
@@ -895,10 +896,10 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& disro
       /*declaring constant iterator for access to elements of map "neighbours" related with number i; this iterator
        * hast two components which can be addressed by "->first" and "->second", where the first component is the
        * number i itself and the second one the set at which number i points*/
-      map< int,std::set<int> >::iterator mapit = neighbours.find(i);
+      map< int,std::vector<int> >::iterator mapit = neighbours.find(i);
       
       //getting set at which number i points in map neighbours;
-      std::set<int> ineighbourset = mapit->second;
+      std::vector<int> ineighbourvector = mapit->second;
       
       //distance of the so far nearest neighbour (initialized with rlink) 
       double rneighbour = rlink;
@@ -906,21 +907,17 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& disro
       //getting current position of node i from map currentpositions
       map< int,LINALG::Matrix<3,1> >::iterator posi = currentpositions.find(i);
                       
-      for(int j = 0; j < (int)ineighbourset.size(); j++) //iterating through set ineighbourset
-      {
-        /*declaring constant iterator for access to elements of set "neighbours" related with number j; this iterator 
-         * can be handled as a pointer at the number j points at in the set*/
-        std::set<int>::const_iterator setit = ineighbourset.find(j);
-        
-        //getting current position of node *setit from map currentpositions
-        map< int,LINALG::Matrix<3,1> >::iterator posj = currentpositions.find(*setit);
+      for(int j = 0; j < (int)ineighbourvector.size(); j++) //iterating through set ineighbourset
+      {    
+        //getting current position of node ineighbourvector[j] from map currentpositions
+        map< int,LINALG::Matrix<3,1> >::iterator posj = currentpositions.find(ineighbourvector[j]);
         
         
         /*crosslinkers are established only if either two nodes belong to the same filament or if the filament
          * numbering is deactivated (-> all filamentnumbers set to -1); furthermore the node with the higher
          * global Id decides whether a crosslinker is established between two nodes so that we search only the
          * nodes with lower global Ids whether they are close to a certain node */
-         if( (*filamentnumber_)[i] != (*filamentnumber_)[*setit] || (*filamentnumber_)[i] == -1)
+         if( (*filamentnumber_)[i] != (*filamentnumber_)[ ineighbourvector[j] ] || (*filamentnumber_)[i] == -1)
          {
            //difference vector between node i and j
            LINALG::Matrix<3,1> difference;                
@@ -930,7 +927,7 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& disro
            
            if(difference.Norm2() < rneighbour)
            {
-             nearestneighbour[i] = *setit;
+             nearestneighbour[i] = ineighbourvector[j];
              rneighbour = difference.Norm2();
            }           
           }
@@ -1045,8 +1042,9 @@ void StatMechManager::SetCrosslinkers(const Epetra_Vector& setcrosslinkercol,con
        //assigning correct global Id to new crosslinker element: since each node can have one crosslinker element
        //only at the same time a unique global Id can be found by taking the number of elemnts in the discretization
        //before starting dealing with crosslinkers and adding to the smaller one of the two involved global nodal Ids     
-       newcrosslinker->SetId( basiselements_ + min(nodecolmap.GID(i),nodecolmap.GID((int)nearestneighbour[i])) );          
-                
+       newcrosslinker->SetId( basiselements_ + min(nodecolmap.GID(i),nodecolmap.GID((int)nearestneighbour[i])) ); 
+       
+       
        //nodes are assigned to the new crosslinker element by first assigning global node Ids and then assigning nodal pointers
        int globalnodeids[] = {nodecolmap.GID(i), nodecolmap.GID((int)nearestneighbour[i])};      
        newcrosslinker->SetNodeIds(2, globalnodeids);

@@ -314,45 +314,37 @@ std::map<int,std::set<int> > GEO::getElementsInRadius(
 
 
 
-/*----------------------------------------------------------------------*
- | a set of nodes in a given radius                          cyron 02/09|
- | from a query point                                                   |
- *----------------------------------------------------------------------*/
-std::map<int,std::set<int> > GEO::getNodesInRadius(
-    const DRT::Discretization&                  dis,    
+/*------------------------------------------------------------------------*
+ | returns vector with GIDs of nodes within given radius around querypoint|                         
+ |                                                             cyron 02/09|
+ *------------------------------------------------------------------------*/
+std::vector<int> GEO::getPointsInRadius(  
     const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,   
     const LINALG::Matrix<3,1>&                  querypoint,
     const double                                radius,
     std::map<int, std::set<int> >&              elementList)  
 {
-  std::map< int, std::set<int> >  nodeList;
-  std::map<int,std::set<int> >    nodeMap;
+  std::vector<int> nodes;
   
-  // collect all nodes with different label
-  for(std::map<int, std::set<int> >::const_iterator labelIter = elementList.begin(); labelIter != elementList.end(); labelIter++)
+  //get set of (unlabled) elements in elementList
+  std::set<int> pointlist = elementList[-1];
+  
+  /*looping through the set of points assigned to current tree node and checking for each
+   * whether it's closer to querypoint than radius*/
+  for(std::set<int>::const_iterator pointIter = pointlist.begin(); pointIter != pointlist.end(); pointIter++)
   {
-      for(std::set<int>::const_iterator eleIter = (labelIter->second).begin(); eleIter != (labelIter->second).end(); eleIter++)
-      {
-        DRT::Element* element = dis.gElement(*eleIter);
-        for(int i = 0; i < DRT::UTILS::getNumberOfElementCornerNodes(element->Shape()); i++)
-          nodeList[labelIter->first].insert(element->NodeIds()[i]);
-      }
+    //difference vector between querypoint and current point listed in pointList
+    LINALG::Matrix<3,1> difference = querypoint;
+    difference -= (currentpositions.find(*pointIter))->second;
+    
+    /*if absolute value of difference is smaller than radius we add the GID of the node represented 
+     * by the i-th element of currentpositions to the vector with the GIDs of nodes within a given radius*/
+    if(difference.Norm2() < radius)
+      nodes.push_back(*pointIter);
+    
   }
   
-  for(std::map<int, std::set<int> >::const_iterator labelIter = nodeList.begin(); labelIter != nodeList.end(); labelIter++)
-    for(std::set<int>::const_iterator nodeIter = (labelIter->second).begin(); nodeIter != (labelIter->second).end(); nodeIter++)
-    {
-      double distance = GEO::LARGENUMBER;
-      const DRT::Node* node = dis.gNode(*nodeIter);
-      GEO::getDistanceToPoint(node, currentpositions, querypoint, distance);
-      if(distance < (radius + GEO::TOL7) )
-      {
-        for(int i=0; i<dis.gNode(*nodeIter)->NumElement();i++)  
-          nodeMap[labelIter->first].insert(dis.gNode(*nodeIter)->Id()); 
-      }
-    }
-  
-  return nodeMap;
+  return nodes;
 }
 
 

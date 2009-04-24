@@ -637,6 +637,7 @@ void StatMechTime::FullNewton()
     //---------------------------------------------- build residual norm
     disi_->Norm2(&disinorm);
     fresm_->Norm2(&fresmnorm);
+    
 
     
     //if code is compiled with DEBUG flag each iteration is written into file for Gmsh visualization    

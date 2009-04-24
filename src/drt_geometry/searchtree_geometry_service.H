@@ -177,7 +177,7 @@ namespace GEO
       );
   
   /*!
-  \brief Returns a map of element ids lying in a circle of a given querypoint and a radius
+  \brief returns vector with GIDs of nodes within given radius around querypoint
   \param dis                  discretization
   \param currentpositions     current nodal positions in discretization
   \param querypoint           point to be examined
@@ -185,8 +185,7 @@ namespace GEO
   \param elementList          map of elements label gid
   \return                     label
    */
-  std::map<int,std::set<int> > getNodesInRadius(
-      const DRT::Discretization&                  dis,    
+  std::vector<int> getPointsInRadius(   
       const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,   
       const LINALG::Matrix<3,1>&                  querypoint,
       const double                                radius,

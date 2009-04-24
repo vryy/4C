@@ -78,6 +78,38 @@ void GEO::SearchTree::initializeTree(
     treeRoot_->insertElement(-1, dis.lColElement(i)->Id());
 }
 
+/*-----------------------------------------------------------------------*
+ | initialize or rebuild tree with possibly new              cyron 04/09 | 
+ | discretization, nodes are taken unsortedly from discretization; note: |
+ | this initialization does not work with any specific data of the nodes;|
+ | rather it just generally organizes a tree whose root node has as many |
+ | tree elements  as the discretization nodes; any more specific action  |
+ | is taken not before a specific query is applied                       |
+ *----------------------------------------------------------------------*/
+void GEO::SearchTree::initializePointTree(
+    const LINALG::Matrix<3,2>&  nodeBox,
+    const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
+    const TreeType              treetype) 
+{
+
+  treeRoot_ = Teuchos::null;
+  treeRoot_ = rcp( new TreeNode(NULL, max_depth_, nodeBox, treetype)); 
+    
+  /*as each node of the tree the root node stores its elements in the class
+   * variable elementList_, which is of type std::map<int, std::set<int> >;
+   * thus this list allows not only for saving identification numbers for a list
+   * of element assigned to the node; in addition to that it allows for saving 
+   * several lists of such identification numbers separated by the label which is
+   * stored in the int-component of the map; here we do not make use of this 
+   * possibility and just apply the label -1 and one single related set which
+   * contains all the identification numbers of all the elements assinged to
+   * this tree node; the identification numbers of all points stores in
+   * current positions are given by the first components of this map, respectively*/  
+  for(std::map<int,LINALG::Matrix<3,1> >::const_iterator mapit = currentpositions.begin(); mapit != currentpositions.end(); mapit++)
+    treeRoot_->insertElement(-1,mapit->first);
+
+}
+
 
 
 /*----------------------------------------------------------------------*
@@ -196,33 +228,6 @@ std::map<int,std::set<int> > GEO::SearchTree::searchElementsInRadius(
 
   return nodeset;
 }
-
-
-/*----------------------------------------------------------------------*
- | returns nodes in the radius of a given point              cyron 02/09|
- *----------------------------------------------------------------------*/
-/*
-std::map<int,std::set<int> > GEO::SearchTree::searchNodesInRadius(
-    const DRT::Discretization&                  dis,
-    const std::map<int,LINALG::Matrix<3,1> >&   currentpositions, 
-    const LINALG::Matrix<3,1>&                  point, //point around which should be searched
-    const double                                radius) 
-{
-  TEUCHOS_FUNC_TIME_MONITOR("SearchTree - queryTime");
-
-  std::map<int,std::set<int> > nodeset;
-
-  if(treeRoot_ == Teuchos::null)
-    dserror("tree is not yet initialized !!!");
-
-  if(!(treeRoot_->getElementList().empty()))
-    nodeset = treeRoot_->searchNodesInRadius(dis, currentpositions, point, radius);
-  else
-    dserror("element list is empty");
-
-  return nodeset;
-}
-*/
 
 
 /*----------------------------------------------------------------------*
@@ -672,6 +677,37 @@ void GEO::SearchTree::TreeNode::createChildren(
   treeNodeType_ = INNER_NODE;
 }
 
+/*----------------------------------------------------------------------*
+ | create children for a search tree; this method was written especially|
+ | for search trees which are concerned with searching points close to  |
+ | other points                                            cyron   04/09|
+ *----------------------------------------------------------------------*/
+void GEO::SearchTree::TreeNode::createChildren(
+    const std::map<int,LINALG::Matrix<3,1> >&      currentpositions)
+{
+  /*create getNumChildren (for Octree e.g. 8) empty children; each child is a tree node itself; the child
+   *node gets its volume (node box) at once; however, the elements situated in this node box are not yet 
+   *assigned to the child; this happens only in the next step*/
+  for(int index = 0; index < getNumChildren(); index++)
+    children_[index] = rcp(new TreeNode(this, (treedepth_-1), getChildNodeBox(index), treeType_));
+   
+  /*insert tree elements into child node; we first loop throug all different lables in the variable elementList_;
+   * in case that just points close to other points are looked for there is typically just one label so that the outer
+   * loop is run through one time only; for each label the inner loop runs through all the elements in the set assigend
+   * to this label*/
+  
+  
+  for (std::map<int, std::set<int> >::const_iterator labelIter = elementList_.begin(); labelIter != elementList_.end(); labelIter++)
+    for (std::set<int>::const_iterator pointIter = (labelIter->second).begin(); pointIter != (labelIter->second).end(); pointIter++)
+    {
+      int pointClassification = classifyPoint((currentpositions.find(*pointIter))->second);
+      children_[pointClassification]->insertElement(labelIter->first,*pointIter);
+    }
+
+  // this node becomes an inner tree node, because now it has at least one child
+  treeNodeType_ = INNER_NODE;
+}
+
 
 
 /*----------------------------------------------------------------------*
@@ -803,9 +839,10 @@ void GEO::SearchTree::TreeNode::setXFEMLabelAndNearestObjectOfEmptyChildren(
 
 
 /*----------------------------------------------------------------------*
- | classifiy point in node                                  peder   07/08|
+ | classifies point, i.e. returns for each point the index of the child |
+ | node in whose node box it is situated                   peder   07/08|
  *----------------------------------------------------------------------*/
-const int GEO::SearchTree::TreeNode::classifyPoint(
+inline const int GEO::SearchTree::TreeNode::classifyPoint(
     const LINALG::Matrix<3,1>&   point) const
 {
   
@@ -1478,6 +1515,9 @@ std::vector<int> GEO::SearchTree::TreeNode::classifyRadius(
     const LINALG::Matrix<3,1>&	point
     ) const
 {
+  
+  /*coordinates of axis-aligned boundary box around point, which stretechs over 
+   * length radius in each coordinate direction*/
   LINALG::Matrix<3,2> radiusXAABB;  
 
   for(int dim = 0; dim < 3; dim++)
@@ -1492,6 +1532,7 @@ std::vector<int> GEO::SearchTree::TreeNode::classifyRadius(
     radiusXAABB(2,1) = 0.0;
   }
    
+  //return indices of childs which overlap with given axis-aligned boundary box of edge length 2*radius around point
   return classifyXAABB(radiusXAABB);
 }
 
@@ -1766,58 +1807,160 @@ std::map<int,std::set<int> > GEO::SearchTree::TreeNode::searchElementsInRadius(
   return eleMap;
 }
 
-
-/*----------------------------------------------------------------------*
- | returns nodes in the radius of a given point              cyron 02/09|
- *----------------------------------------------------------------------*/
-std::map<int,std::set<int> > GEO::SearchTree::TreeNode::searchNodesInRadius(
-    const DRT::Discretization&                    dis,
+/*-----------------------------------------------------------------------*
+ |currentpositions assings a unique Id to a point, respectively. If the  |
+ |points in currentpositions are nodes of a finite element discretization|
+ |this unique Id is typically the GID of the finite elment nodes.        |
+ |This method searches in the map currentpositions points at a distance  |
+ |closer than radius to the querypoint and returns the Ids of these      |
+ |points in a vector. Searching the tree is started by calling this      |
+ |method for the tree itself; this method does not search itself. Rahter |
+ |it starts a recursive search through all the nodes of the tree starting|
+ |at the root node. The actual search is then carried out by the method  |
+ |                                                            cyron 04/09|
+ *-----------------------------------------------------------------------*/
+std::vector<int> GEO::SearchTree::searchPointsInRadius(
     const std::map<int,LINALG::Matrix<3,1> >&     currentpositions, 
-    const LINALG::Matrix<3,1>&                    point,
+    const LINALG::Matrix<3,1>&                    querypoint,
+    const double                                  radius) 
+{
+  TEUCHOS_FUNC_TIME_MONITOR("SearchTree - queryTime");
+
+  std::vector<int> nodes;
+
+  /*treeRoot_ is the very node of the search tree which is no the highest level; 
+   * chilren are nodes on a lower level than the root node; leaf nodes are nodes
+   * on the lowest level; inner nodes are nodes neither on the highest nor lowest
+   * level; stepping down the levels each node may split into several nodes on the
+   * level below; these nodes below are called children of the node above;
+   * 
+   *                      0 (root node)
+   *                    /   \
+   *     (inner node)  0     0  (inner node & leaf node)
+   *                 /  \   
+   *    (leaf node) 0    0  (leaf node)
+   *
+   * each tree needs to have at least one node, which is the root node; each
+   * node has certain elements; these elements are not necessarily finite
+   * elements, but may be of any kind of entities, e.g. also nodes in a
+   * finite element discretization; the elements of each node in the search
+   * tree are administrated in the variable elementList_*/
+  if(treeRoot_ == Teuchos::null)
+    dserror("tree is not yet initialized !!!");
+
+  if(!(treeRoot_->getElementList().empty()))
+    nodes = treeRoot_->searchPointsInRadius(currentpositions,querypoint,radius);
+  else
+    dserror("tree element list is empty");
+
+  return nodes;
+}
+
+
+
+/*-------------------------------------------------------------------------------*
+ |returns vector of Ids of points closer radius to querypoint. This method       |
+ |searches elements assigned to this tree node only; these elements represent a  |
+ |subset of the points in currentpositions. In this subset the method searches   |
+ |for points closer than radius to the querypoint.                    cyron 04/09|
+ *------------------------------------------------------------------------------*/
+std::vector<int> GEO::SearchTree::TreeNode::searchPointsInRadius(
+    const std::map<int,LINALG::Matrix<3,1> >&     currentpositions, 
+    const LINALG::Matrix<3,1>&                    querypoint,
     const double                                  radius) 
 {  
-  std::map<int,std::set<int> > eleMap;
+  /*note: the tree is built dynamically upon query; first it needs to be initialized 
+   * and has the root node only at this point; then once a query get in the root node
+   * is identified as LEAF_NODE and in this method always the case LEAF_NODE applies;
+   * in this case the tree is built up branch by branch as decribed in for the case
+   * LEAF_NODE; at the same time for each node of the tree the variable elementList_
+   * is defined; only as many new nodes are created as necessary to answer the very
+   * query currently applied; as soon as new queries are applied for these queries the
+   * already existing structure of children created for former queries may be applied;
+   * then in this method the case INNER_NODE applies; however, it may also be that
+   * the nodes of the tree created for former queries are not enough for the current
+   * query; then again the case LEAF_NODE applies and the same procedure as throughout
+   * the whole first query necessary is applied*/
+  
+  //vector for GIDs of nodes in the radius of a given querypoint
+  std::vector<int> points;
+
 
   switch (treeNodeType_) 
   {
+    /*if node is not at the lowest level of the tree; this case applies if current query has
+     * not yet required any node structure of the tree which does not already exist from former
+     * queries*/
     case INNER_NODE:
     {       
-      const vector<int> childindex = classifyRadius(radius, point);
-      if(childindex.size() < 1)
+      /*get indices of all children nodes whose volume overlaps with an axis-aligned 
+       * boundary box of edge length 2*radius around querypoint*/
+      const vector<int> childindex = classifyRadius(radius,querypoint);
+      
+      //child node of tree found, which encloses AABB of querypoint completely; thus step down
+      if (childindex.size() ==1) 
+        return children_[childindex[0]]->searchPointsInRadius(currentpositions, querypoint, radius);
+      
+      /*no child overlaps AABB of querypoint; this has to be an error as stepping down 
+       * the tree levels only happens if a child was found which comprises the AABB of
+       * the querypoint completely; this child (i.e. the current tree node) has necessarily
+       * one or more children itself which overlap with the querpoint's AABB*/     
+      else if(childindex.size() < 1)
         dserror("no child found\n");
-      else if (childindex.size() ==1) // child node found which encloses AABB so step down
-        return children_[childindex[0]]->searchNodesInRadius(dis, currentpositions, point, radius);
+                
+      /*several children found which overlap with AABB; so current tree node is the lowest one
+       * which contains all the elements in the AABB of the querypoint; thus searching points
+       * close to query point means searching among all the elements of the current tree node*/
       else
-        return GEO::getNodesInRadius(dis, currentpositions, point, radius, elementList_); 
+        return GEO::getPointsInRadius(currentpositions,querypoint,radius,elementList_); 
       break;
     }
+    
+    /*if node is at the lowest level of the tree; this means that a query requires a substructure of the
+     * tree which does not yet exist; throughout the first query this case always applies*/   
     case LEAF_NODE:   
     {
+      /*if volume of this tree node does not contain any tree elements then return points, which
+       * is currently just an empty map*/ 
       if(elementList_.empty())
-        return eleMap;
+        return points;
 
       // max depth reached, counts reverse
       if (treedepth_ <= 0 || (elementList_.size()==1 && (elementList_.begin()->second).size() == 1) )
-        return GEO::getNodesInRadius(dis, currentpositions, point, radius, elementList_); 
+        return GEO::getPointsInRadius(currentpositions, querypoint, radius,elementList_); 
 
-      // dynamically grow tree otherwise, create children and set label for empty children
-      // search in apropriate child node 
-      const vector<int> childindex = classifyRadius(radius, point);
+      /*in the following the tree grows dynamically first the vector childindex finds out with which
+       * potential children of the current node the AABB of the querypoint would overlap; note that
+       * these children do not exist yet. childindex just gives the indices of the childredn which
+       * would matter if they already existed*/
+      const vector<int> childindex = classifyRadius(radius, querypoint);
+      
+      /*if there is not even one potential child which would overlap with the AABB of the querypoint
+       * there must be something wrong since stepping down to this node is only possible if at least
+       * one of the elements of this node is relevant for the search; this element has to lie somewhere
+       * in the volume of this node and this volume equals the union of all childrens' volumes*/
       if(childindex.size() < 1)
         dserror("no child found\n");
+      
+      /*there is only one potential child in whose volume there are elements relevant for this search;
+       * create this child and step down to it to continue search within this child*/
       else if (childindex.size() ==1) // child node found which encloses AABB so refine further
       { 
-        createChildren(dis, currentpositions);
-        return children_[childindex[0]]->searchNodesInRadius(dis, currentpositions, point, radius);
+        createChildren(currentpositions);
+        return children_[childindex[0]]->searchPointsInRadius(currentpositions, querypoint, radius);
       }
-      else // AABB does not fit into a single child node box anymore so don t refine any further
-        return GEO::getNodesInRadius(dis, currentpositions, point, radius, elementList_); 
+      
+      /*there are several potential children which are relevant for this search; thus there is no
+       * need for further refinement of the tree; rather it's enough to search among the tree elements
+       * of this very tree node*/ 
+      else 
+        return GEO::getPointsInRadius(currentpositions,querypoint,radius,elementList_); 
       break;
     }
     default:
       dserror("should not get here\n");
   }
-  return eleMap;
+  return points;
 }
 
 
