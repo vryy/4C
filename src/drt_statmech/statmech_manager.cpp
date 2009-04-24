@@ -837,7 +837,7 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& disro
        
     for(int i = 0; i < setcrosslinkercol.MyLength(); i++)
     {
-      if( setcrosslinkercol[i] <  -1.0 + 2*plink && (*crosslinkerpartner_)[i] == -1.0)
+      if( setcrosslinkercol[i] <  -1.0 + 2*plink)
         setcrosslinkercol[i] = 1;
       else
         setcrosslinkercol[i] = 0;
@@ -866,11 +866,12 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& disro
     
     for(int i = 0; i < delcrosslinkercol.MyLength(); i++)
     {
-      if( delcrosslinkercol[i] <  -1.0 + 2*punlink && (*crosslinkerpartner_)[i] != -1.0 && nodecolmap.GID(i) < nodecolmap.GID( (int)(*crosslinkerpartner_)[i] )  )
+      if( delcrosslinkercol[i] <  -1.0 + 2*punlink && (*crosslinkerpartner_)[i] > -0.5 && nodecolmap.GID(i) < nodecolmap.GID( (int)(*crosslinkerpartner_)[i] )  )
         delcrosslinkercol[i] = 1;
       else
         delcrosslinkercol[i] = 0;
     }  
+    
     
     
     //after having determined for which nodes crosslinkers may be set or deleted we search for each node all its neighbours
@@ -882,10 +883,10 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& disro
         idvector.push_back(id);
       
       //the brute force way to determine possible neighbours is to consider all the other nodes as potential neighbours
-      neighbours.insert(make_pair(i,idvector));
+      //neighbours.insert(make_pair(i,idvector));
       
       //the clever way to determine possible neighbours is using a search tree
-      //neighbours.insert(make_pair(i,octTree_->searchPointsInRadius(currentpositions,(currentpositions.find(i))->second,rlink)));
+      neighbours.insert(make_pair(i,octTree_->searchPointsInRadius(currentpositions,(currentpositions.find(i))->second,rlink)));
 
       
     }
@@ -932,7 +933,7 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& disro
            }           
           }
         }
-      } //for(int i = 0; i < discret_.NumMyRowNodes(); i++)
+      } //for(int i = 0; i < discret_.NumMyColNodes(); i++)
     
     //setting the crosslinkers of nodes marked by a one entry in vector delcrosslinkercol
     SetCrosslinkers(setcrosslinkercol,nodecolmap,nearestneighbour,currentpositions,currentrotations);
@@ -1001,12 +1002,15 @@ void StatMechManager::SetCrosslinkers(const Epetra_Vector& setcrosslinkercol,con
     map< int,LINALG::Matrix<3,1> >::const_iterator rotneighbour = currentrotations.find((int)nearestneighbour[i]);
    
     
-    /*if a neighbour within the prescribed maximal distance has been found and this neighbour node has not yet
-    * a crosslinker itself a crosslinker has to be established in case that also the probability check was passed and
-    * that the neighbour has a higher GID; note that the latter condition makes sure that for each crosslinker always
+    /*to set a crosslinker the following conditions have to be satisfied: the node passed the probability check for
+    * setting a crosslinker. And there is some neighbour closer than rlink. And the node has currently not yet any
+    * crosslinker partner (note: this has to be checked right here and not already before as it may change while
+    * looping through all the nodes). And the nearest neighbour with which the node shall be crosslinked has not yet
+    * a crosslinker either. And the GID of the node is smaller than the GID of the node with which it should be
+    * crosslinked. Note that the latter condition makes sure that for each crosslinker always
     * the node with the lower GID is kind of the owner: it has to establish it, to delete it, and it is respondible 
     * for the element GID of the crosslinker */
-    if(setcrosslinkercol[i] && nearestneighbour[i] > -1 && (*crosslinkerpartner_)[ (int)nearestneighbour[i] ] == -1.0 && nodecolmap.GID(i) < nodecolmap.GID((int)nearestneighbour[i]))
+    if(setcrosslinkercol[i] && nearestneighbour[i] > -1 && (*crosslinkerpartner_)[i] == -1.0 && (*crosslinkerpartner_)[ (int)nearestneighbour[i] ] == -1.0 && nodecolmap.GID(i) < nodecolmap.GID((int)nearestneighbour[i]))
     {
       //the crosslinker to be established is registered in the variable crosslinkerpartner_
       (*crosslinkerpartner_)[i] = (int)nearestneighbour[i];
@@ -1085,11 +1089,11 @@ void StatMechManager::DelCrosslinkers(const Epetra_Vector& delcrosslinkercol,con
    * operations only possible on a discretization on which already FillComplete() has been called*/ 
   for(int i = 0; i < discret_.NumMyColNodes(); i++)
   {
-    if(delcrosslinkercol[i])
-    {        
+    if(delcrosslinkercol[i] > 0.5)
+    {      
       //we compute the global Id of the crosslinker to be deleted 
       int crosslinkerid = basiselements_ + min(nodecolmap.GID(i),nodecolmap.GID((int)(*crosslinkerpartner_)[i]));
-      
+
       //regardless of whether the node belongs to this processor or not it has to be stored that it looses its crosslinker
       (*crosslinkerpartner_)[(int)(*crosslinkerpartner_)[i]] = -1;
       (*crosslinkerpartner_)[i] = -1;
