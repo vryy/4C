@@ -21,7 +21,7 @@ Maintainer: Christian Cyron
  *----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::Beam2r::ReadElement()
 {
-  // read element's nodes; in case of a beam element always line2 shape
+  // read element's nodes; in case of a beam element always LINE2 shape
   int ierr=0;
 
   //note: BACI intern type is LINE2, but gid input files work with LIN2

@@ -8,7 +8,7 @@ Maintainer: Christian Cyron
             089 - 289-15264
 </pre>
 *----------------------------------------------------------------------*/
-// line in order to swith on and off by comment in defines.drt
+// line in order to switch on and off by comment in defines.drt
 #ifdef D_BEAM2R
 
 // administrative line in order to make a difference between BACI and Ccarat files
@@ -45,7 +45,7 @@ namespace DRT
 namespace ELEMENTS
 {
 /*!
-\brief two dimensional nonlinear corotational Timoshenko beam element according to Crisfield, Vol.1, section 7.3 
+\brief two dimensional nonlinear beam element using Reissner`s beam theory according to Crisfield, Vol.1, section 7.4 
 
 \author cyron (cyron @lnm.mw.tum.de)
 */
@@ -322,49 +322,28 @@ private:
   //! cross section area
   double crosssec_;
 
-   //! cross section area including shear corretion factor
+   //! cross section area including shear correction factor
   double crosssecshear_;
 
   //! moment of inertia of area
   double mominer_;  
   
-  //! number of 2*PI rotations between the aboslute element frame rotation and the angle beta in current iteration step
-  int numperiodsnew_;
-  
-  //! number of 2*PI rotations between the aboslute element frame rotation and the angle beta in last iteration step
-  int numperiodsold_;
-  
-  //! number of 2*PI rotations between the aboslute element frame rotation and the angle beta at the end of last time step
-  int numperiodsconv_;
-  
-  //! absolute angle by which beam has rotated out of x-axis including reference rotation by alpha0_ in current iteration step
-  double alphanew_;
-  
-  //! absolute angle by which beam has rotated out of x-axis including reference rotation by alpha0_ in last iteration step
-  double alphaold_;
-  
-  //! absolute angle by which beam has rotated out of x-axis including reference rotation by alpha0_ at the end of last time step
-  double alphaconv_;
-  
-  //! absolute angle between x-axis and element frame in reference configuration
-  double alpha0_;
+  //! average absolute angle in reference configuration according to Crisfield Vol.1 section 7.4 Figure 7.9
+  double thetaav0_;
 
   //! gaussrule_ will be initialized automatically to a 2 point integration rule
   DRT::UTILS::GaussRule1D gaussrule_;
 
-  // internal calculation methods
+  //!internal geometric calculations according to Crisfield Vol.1 (7.118)-(7.121)
+  void local_aux(LINALG::Matrix<3,6>& Bcurr,
+                                          LINALG::Matrix<6,1>& rcurr,
+                                          LINALG::Matrix<6,1>& zcurr,
+                                          LINALG::Matrix<6,1>& s,
+                                          const double& lcurr,
+                                          const double& thetaav,
+                                          const double& c1,
+                                          const double& c2);
 
-  //!internal geometric calculations
-  void local_aux(LINALG::Matrix<3,6>& B_curr,
-                    LINALG::Matrix<6,1>& r_curr,
-                    LINALG::Matrix<6,1>& z_curr,
-                    const double& lcurr_,
-                    const double& lrefe_);
-  
-  //!computes current rotation angle beta relative to x-axis
-  void updatealpha(const LINALG::Matrix<3,2>& xcurr,
-                   const double& lcurr);
-  
   //! calculation of nonlinear stiffness and mass matrix
   void nlnstiffmass(ParameterList& params,
                        vector<double>&           vel,  //!< element velocity vector
@@ -374,7 +353,7 @@ private:
                        Epetra_SerialDenseVector* force,  //!< element internal force vector
                        int lumpedmass); //!< if set to one lumped mass matrix is calculated
   
-  //!sets up element reference geomtry for reference nodal position vector xrefe (may be used also after simulation start)
+  //!sets up element reference geometry for reference nodal position vector xrefe (may be used also after simulation start)
   void SetUpReferenceGeometry(const LINALG::Matrix<4,1>& xrefe);
   
   
@@ -393,7 +372,7 @@ ostream& operator << (ostream& os, const DRT::Element& ele);
 //------------- class Beam2rRegister: -------------------------------------------
 
 /*!
-\brief A register for Beam2r element
+\brief A register for the Beam2r element
 
 \author cyron (cyron@lnm.mw.tum.de)
 */

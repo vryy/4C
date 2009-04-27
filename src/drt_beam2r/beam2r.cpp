@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file beam2.cpp
-\brief two dimensional nonlinear corotational Timoshenko beam element
-
+\brief two dimensional nonlinear beam element using Reissner`s theory.
+\According to Crisfield Non-linear finite element analysis of solids and structures Vol.1 section 7.4
 <pre>
 Maintainer: Christian Cyron
             cyron@lnm.mw.tum.de
@@ -34,13 +34,7 @@ lrefe_(0),
 crosssec_(0),
 crosssecshear_(0),
 mominer_(0),
-numperiodsnew_(0),
-numperiodsold_(0),
-numperiodsconv_(0),
-alphanew_(0),
-alphaold_(0),
-alphaconv_(0),
-alpha0_(0),
+thetaav0_(0),
 //note: for corotational approach integration for Neumann conditions only
 //hence enough to integrate 3rd order polynomials exactly
 gaussrule_(DRT::UTILS::intrule_line_2point)
@@ -58,13 +52,7 @@ lrefe_(old.lrefe_),
 crosssec_(old.crosssec_),
 crosssecshear_(old.crosssecshear_),
 mominer_(old.mominer_),
-numperiodsnew_(old.numperiodsnew_),
-numperiodsold_(old.numperiodsold_),
-numperiodsconv_(old.numperiodsconv_),
-alphanew_(old.alphanew_),
-alphaold_(old.alphaold_),
-alphaconv_(old.alphaconv_),
-alpha0_(old.alpha0_),
+thetaav0_(old.thetaav0_),
 gaussrule_(old.gaussrule_)
 
 {
@@ -145,16 +133,8 @@ void DRT::ELEMENTS::Beam2r::Pack(vector<char>& data) const
   AddtoPack(data,crosssecshear_);
   //moment of inertia of area
   AddtoPack(data,mominer_);
-  //number of 2*PI rotations of element frame compared to angle gained from sine- and cosine evaluatoin
-  AddtoPack(data,numperiodsnew_);
-  AddtoPack(data,numperiodsold_);
-  AddtoPack(data,numperiodsconv_);
-  //absolute angle of element frame
-  AddtoPack(data,alphanew_);
-  AddtoPack(data,alphaold_);
-  AddtoPack(data,alphaconv_);
-  //angle relative to x-axis in reference configuration
-  AddtoPack(data,alpha0_);
+  // average absolute angle in reference configuration
+  AddtoPack(data,thetaav0_);
   // gaussrule_
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   vector<char> tmp(0);
@@ -190,16 +170,8 @@ void DRT::ELEMENTS::Beam2r::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,crosssecshear_);
   //moment of inertia of area
   ExtractfromPack(position,data,mominer_);
-  //number of 2*PI rotations of element frame compared to angle gained from sine- and cosine evaluatoin
-  ExtractfromPack(position,data,numperiodsnew_);
-  ExtractfromPack(position,data,numperiodsold_);
-  ExtractfromPack(position,data,numperiodsconv_);
-  //absolute angle of element frame
-  ExtractfromPack(position,data,alphanew_);
-  ExtractfromPack(position,data,alphaold_);
-  ExtractfromPack(position,data,alphaconv_);
-  //angle relative to x-axis in reference configuration
-  ExtractfromPack(position,data,alpha0_);
+  //average absolute angle in reference configuration
+  ExtractfromPack(position,data,thetaav0_);
   // gaussrule_
   int gausrule_integer;
   ExtractfromPack(position,data,gausrule_integer);
@@ -226,9 +198,9 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Beam2r::Lines()
 //sets up element reference geomtry for reference nodal position vector xrefe (may be used also after simulation start)
 void DRT::ELEMENTS::Beam2r::SetUpReferenceGeometry(const LINALG::Matrix<4,1>& xrefe)
 {
-  /*this method initializes geometric variables of the element; such an initialization can only be done one time when the element is
+  /*this method initializes geometric variables of the element; such an initialization can only be done once when the element is
    * generated and never again (especially not in the frame of a restart); to make sure that this requirement is not violated this 
-   * method will initialize the geometric variables iff the class variable isinit_ == false and afterwards set this variable to 
+   * method will initialize the geometric variables if the class variable isinit_ == false and afterwards set this variable to 
    * isinit_ = true; if this method is called and finds alreday isinit_ == true it will just do nothing*/ 
   if(!isinit_)
   {
@@ -237,35 +209,27 @@ void DRT::ELEMENTS::Beam2r::SetUpReferenceGeometry(const LINALG::Matrix<4,1>& xr
     //length in reference configuration
     lrefe_  = pow( pow(xrefe(3)-xrefe(1),2) + pow(xrefe(2)-xrefe(0),2) , 0.5 );
 
-    // beta is the rotation angle out of x-axis in a x-y-plane in reference configuration
-    double cos_alpha0 = (xrefe(2)-xrefe(0))/lrefe_;
-    double sin_alpha0 = (xrefe(3)-xrefe(1))/lrefe_;
+    /*note: thetaav0 is here chosen as if the beam has no curvature in reference configuration.
+     * This is an assumption but we can prove that this leads to no stresses in reference configuration. 
+     * The current thetaav can later be computed from thataav0 and the increments of theta1 and theta2 */
+    //thetaav0 in reference configuration
+    double cos_thetaav0 = (xrefe(2)-xrefe(0))/lrefe_;
+    double sin_thetaav0 = (xrefe(3)-xrefe(1))/lrefe_;
 
-    //we calculate beta in a range between -pi < beta <= pi
-    if (cos_alpha0 >= 0)
-      alpha0_ = asin(sin_alpha0);
+    //we calculate thetaav0 in a range between -pi < thetaav0 <= pi, Crisfield Vol. 1 (7.60)
+    if (cos_thetaav0 >= 0)
+      thetaav0_ = asin(sin_thetaav0);
     else
-    { if (sin_alpha0 >= 0)
-        alpha0_ =  acos(cos_alpha0);
+    { if (sin_thetaav0 >= 0)
+    	thetaav0_ =  acos(cos_thetaav0);
       else
-        alpha0_ = -acos(cos_alpha0);
-     }
+    	  thetaav0_ = -acos(cos_thetaav0);
+    }
     
-    //initially the absolute rotation of the element frame equals the reference rotation alpha0_
-    alphanew_  = alpha0_;
-    alphaold_  = alpha0_;
-    alphaconv_ = alpha0_;
-    
-    /*the angle alpha0_ is exactly the angle beta gained from the coordinate positions by evaluation
-     * of the sine- and cosine-functions without adding or substracting any multiple of 2*PI*/
-    numperiodsnew_  = 0;
-    numperiodsold_  = 0;
-    numperiodsconv_ = 0;
-
   }
 
   return;
-} //DRT::ELEMENTS::Beam3::SetUpReferenceGeometry()
+} //DRT::ELEMENTS::Beam2r::SetUpReferenceGeometry()
 
 
 
@@ -366,7 +330,7 @@ int DRT::ELEMENTS::Beam2rRegister::Initialize(DRT::Discretization& dis)
   //reference node position
   LINALG::Matrix<4,1> xrefe;
  
-  //setting up geometric variables for beam3 elements
+  //setting up geometric variables for beam2r elements
   for (int num=0; num<  dis.NumMyColElements(); ++num)
   {    
     //in case that current element is not a beam2r element there is nothing to do and we go back

@@ -63,67 +63,67 @@ int DRT::ELEMENTS::Beam2r::Evaluate(ParameterList& params,
   {
     case Beam2r::calc_struct_ptcstiff:
     {
-      //Beam2r element does'nt need any special ptc tools to allow stable implicit dynamics with acceptable time step size
+    	dserror("Beam2r element does'nt need any special ptc tools to allow stable implicit dynamics with acceptable time step size");
     }
     break;
     //action type for evaluating statistical forces
     case Beam2r::calc_brownian_damp:
     {
-      /*calculation of Brownian forces and damping is based on drag coefficient; this coefficient per unit
-       * length is approximated by the one of an infinitely long staff for friciton orthogonal to staff axis*/
-      double zeta = 4 * PI * lrefe_ * params.get<double>("ETA",0.0);
-          
-      // get element displacements (for use in shear flow fields)
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp==null) dserror("Cannot get state vector 'displacement'");
-      vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      
-      
-      //first we evaluate the damping matrix
-      EvaluateBrownianDamp(params,mydisp,zeta,elemat1);
-      
-      /*in case of parallel computing the random forces have to be handled in a special way: normally
-       * in the frame of evaluation each processor evaluates forces for its column elements (including
-       * ghost elements); later on in the assembly each processor adds the thereby gained forces only
-       * for those DOF of whose owner it is. In case of random forces such an assembly would render it
-       * impossible to establish certain correlations between forces related to nodes with different ownerss
-       * (for each nodes the random forces would be evaluated in an identical process, but due to 
-       * independent random numbers); as correlation between forces is restricted to the support of at
-       * the maximum one element a solution to this problem is, to evaluate all the forces of one element
-       * only by means of one specific processor (here we employ the elemnet owner processor); these
-       * forces are assembled in a column map vector and later exported to a row map force vector; this 
-       * export is carried out additively so that it is important not to evaluate any forces at all if
-       * this processor is not owner of the element;
-       * note: the crucial difference between this assembly and the common one is that for certain nodal
-       * forces not the owner of the node is responsible, but the owner of the element*/
-      
-      //test whether this processor is row map owner of the element (otherwise no forces added)
-      if(this->Owner() != discretization.Comm().MyPID()) return 0;
-     
-      //evaluation of statistical forces or displacements
-      Epetra_SerialDenseVector brownian(lm.size());
-      EvaluateBrownianForces(params,mydisp,zeta,brownian);
+    	/*calculation of Brownian forces and damping is based on drag coefficient; this coefficient per unit
+    	 * length is approximated by the one of an infinitely long staff for friciton orthogonal to staff axis*/
+    	 double zeta = 4 * PI * lrefe_ * params.get<double>("ETA",0.0);
+    	          
+    	 // get element displacements (for use in shear flow fields)
+    	 RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+    	 if (disp==null) dserror("Cannot get state vector 'displacement'");
+    	 vector<double> mydisp(lm.size());
+    	 DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+    	      
+    	      
+    	 //first we evaluate the damping matrix
+    	 EvaluateBrownianDamp(params,mydisp,zeta,elemat1);
+    	      
+    	/*in case of parallel computing the random forces have to be handled in a special way: normally
+    	 * in the frame of evaluation each processor evaluates forces for its column elements (including
+    	 * ghost elements); later on in the assembly each processor adds the thereby gained forces only
+    	 * for those DOF of whose owner it is. In case of random forces such an assembly would render it
+    	 * impossible to establish certain correlations between forces related to nodes with different ownerss
+    	 * (for each nodes the random forces would be evaluated in an identical process, but due to 
+    	 * independent random numbers); as correlation between forces is restricted to the support of at
+    	 * the maximum one element a solution to this problem is, to evaluate all the forces of one element
+    	 * only by means of one specific processor (here we employ the elemnet owner processor); these
+    	 * forces are assembled in a column map vector and later exported to a row map force vector; this 
+    	 * export is carried out additively so that it is important not to evaluate any forces at all if
+    	 * this processor is not owner of the element;
+    	 * note: the crucial difference between this assembly and the common one is that for certain nodal
+    	 * forces not the owner of the node is responsible, but the owner of the element*/
+    	      
+    	 //test whether this processor is row map owner of the element (otherwise no forces added)
+    	 if(this->Owner() != discretization.Comm().MyPID()) return 0;
+    	     
+    	 //evaluation of statistical forces or displacements
+    	 Epetra_SerialDenseVector brownian(lm.size());
+    	 EvaluateBrownianForces(params,mydisp,zeta,brownian);
 
-      /*all the above evaluated forces or movements are assembled*/
-      //note carefully: a space between the two subsequal ">" signs is mandatory for the C++ parser in order to avoid confusion with ">>" for streams
-      RCP<Epetra_Vector>    browniancol = params.get<  RCP<Epetra_Vector> >("statistical vector",Teuchos::null);
+    	 /*all the above evaluated forces or movements are assembled*/
+    	 //note carefully: a space between the two subsequal ">" signs is mandatory for the C++ parser in order to avoid confusion with ">>" for streams
+    	 RCP<Epetra_Vector>    browniancol = params.get<  RCP<Epetra_Vector> >("statistical vector",Teuchos::null);
 
-      for(unsigned int i = 0; i < lm.size(); i++)
-      {
-        //note: lm contains the global Ids of the degrees of freedom of this element
-        //testing whether the browniancol vector has really an element related with the i-th element of brownian by the i-the entry of lm
-        if (!(browniancol->Map()).MyGID(lm[i])) dserror("Sparse vector browniancol does not have global row %d",lm[i]);
+    	 for(unsigned int i = 0; i < lm.size(); i++)
+    	  {
+    		 //note: lm contains the global Ids of the degrees of freedom of this element
+    	     //testing whether the browniancol vector has really an element related with the i-th element of brownian by the i-the entry of lm
+    	     if (!(browniancol->Map()).MyGID(lm[i])) dserror("Sparse vector browniancol does not have global row %d",lm[i]);
 
-        //get local Id of the fstatcol vector related with a certain element of fstat
-        int lid = (browniancol->Map()).LID(lm[i]);
+    	     //get local Id of the fstatcol vector related with a certain element of fstat
+    	     int lid = (browniancol->Map()).LID(lm[i]);
 
-        //add to the related element of fstatcol the contribution of fstat
-        (*browniancol)[lid] += brownian[i];
-      }
+    	     //add to the related element of fstatcol the contribution of fstat
+    	     (*browniancol)[lid] += brownian[i];
+    	  }
     }
     break;
-    /*in case that only linear stiffness matrix is required b2_nlstiffmass is called with zero dispalcement and
+    /*in case that only linear stiffness matrix is required b2_nlstiffmass is called with zero displacement and
      residual values*/
     case Beam2r::calc_struct_linstiff:
     {
@@ -142,9 +142,9 @@ int DRT::ELEMENTS::Beam2r::Evaluate(ParameterList& params,
       if (act==Beam2r::calc_struct_nlnstifflmass) lumpedmass = 1;
 
       // need current global displacement and residual forces and get them from discretization
-      // making use of the local-to-global map lm one can extract current displacemnet and residual values for each degree of freedom
+      // making use of the local-to-global map lm one can extract current displacement and residual values for each degree of freedom
       //
-      // get element displcements
+      // get element displacements
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==null) dserror("Cannot get state vectors 'displacement'");
       vector<double> mydisp(lm.size());
@@ -172,10 +172,6 @@ int DRT::ELEMENTS::Beam2r::Evaluate(ParameterList& params,
       else if  (act ==  calc_struct_internalforce)
         nlnstiffmass(params,myvel,mydisp,NULL,NULL,&elevec1,lumpedmass);
       
-      /*at the end of an iteration step the geometric ocnfiguration has to be updated: the starting point for the
-       * next iteration step is the configuration at the end of the current step */
-      numperiodsold_ = numperiodsnew_;
-      alphaold_ = alphanew_;
 
       /*
       //the following code block can be used to check quickly whether the nonlinear stiffness matrix is calculated
@@ -259,24 +255,7 @@ int DRT::ELEMENTS::Beam2r::Evaluate(ParameterList& params,
     break;
     case calc_struct_update_istep:
     case calc_struct_update_imrlike:
-    {
-      /*the action calc_struct_update_istep is called in the very end of a time step when the new dynamic
-       * equilibrium has finally been found; this is the point where the variable representing the geomatric
-       * status of the beam have to be updated;*/
-      numperiodsconv_ = numperiodsnew_;
-      alphaconv_ = alphanew_;
-    }
     case calc_struct_reset_istep:
-    {
-      /*the action calc_struct_reset_istep is called by the adaptive time step controller; carries out one test
-       * step whose purpose is only figuring out a suitabel timestep; thus this step may be a very bad one in order
-       * to iterated towards the new dynamic equilibrium and the thereby gained new geometric configuration should
-       * not be applied as starting point for any further iteration step; as a consequence the thereby generated change
-       * of the geometric configuration should be canceled and the configuration should be reset to the value at the
-       * beginning of the time step*/
-      numperiodsold_ = numperiodsconv_;
-      alphaold_ = alphaconv_;
-    }
     break;
     case calc_struct_stress:
       dserror("No stress output implemented for beam2r elements");
@@ -386,54 +365,25 @@ int DRT::ELEMENTS::Beam2r::EvaluateBrownianDamp(ParameterList& params,
                                               double zeta,
                                               Epetra_SerialDenseMatrix& elemat1)
 {
-  // polynomial order for interpolation of stochastic line load (zero corresponds to bead spring model)
-  int stochasticorder = params.get<int>("STOCH_ORDER",0);
-  
-  //simple model with isotropic Brownian motion and uncorrelated nodal forces (like bead-spring-model)
-  if (stochasticorder == 0)
-  {
-    elemat1(0,0) += zeta/2.0;
-    elemat1(1,1) += zeta/2.0;
-    elemat1(3,3) += zeta/2.0;
-    elemat1(4,4) += zeta/2.0;  
-  }
+	// polynomial order for interpolation of stochastic line load (zero corresponds to bead spring model)
+	  int stochasticorder = params.get<int>("STOCH_ORDER",0);
+	  
+	  //simple model with isotropic Brownian motion and uncorrelated nodal forces (like bead-spring-model)
+	  if (stochasticorder == 0)
+	  {
+	    elemat1(0,0) += zeta/2.0;
+	    elemat1(1,1) += zeta/2.0;
+	    elemat1(3,3) += zeta/2.0;
+	    elemat1(4,4) += zeta/2.0;  
+	  }
 
-  //in case of a consistent damping matrix stochastic nodal forces are calculated consistently by methods of weighted integrals
-  else if (stochasticorder == 1)
-  {     
-    //triad to rotate local configuration into global one due to beta
-    LINALG::Matrix<2,2> T;
-    T(0,0) =  cos(alphaconv_);
-    T(0,1) = -sin(alphaconv_);
-    T(1,0) =  sin(alphaconv_);
-    T(1,1) =  cos(alphaconv_);
-
-   
-    //local damping matrix
-    LINALG::Matrix<2,2> dampbasis(true);
-    dampbasis(0,0) = zeta/2;
-    dampbasis(1,1) = zeta;
-    
-    //turning local into global damping matrix (storing intermediate result in variable "aux")
-    LINALG::Matrix<2,2> aux;
-    aux.Multiply(T,dampbasis);
-    dampbasis.MultiplyNT(aux,T);
-
-    for(int i = 0; i<2; i++)
-    {
-      for(int j = 0; j<2; j++)
-      {
-        elemat1(i,j) += dampbasis(i,j)/3.0;
-        elemat1(i+3,j+3) += dampbasis(i,j)/3.0;
-      
-        elemat1(i,j+3) += dampbasis(i,j)/6.0;
-        elemat1(i+3,j) += dampbasis(i,j)/6.0;
-      }
-    }
-  }
-
-  return 0;
-} //DRT::ELEMENTS::Beam3::EvaluateBrownianDamp
+	  //in case of a consistent damping matrix stochastic nodal forces are calculated consistently by methods of weighted integrals
+	  else if (stochasticorder == 1)
+	  {     
+		  dserror("Consistent damp matrix called but not implemented. (stochasticorder=1)");
+	  }
+}
+ //DRT::ELEMENTS::Beam2r::EvaluateBrownianDamp
 
 /*-----------------------------------------------------------------------------------------------------------*
  | Evaluate forces for Brownian motion (public)                                                  cyron 03/09|
@@ -444,175 +394,81 @@ int DRT::ELEMENTS::Beam2r::EvaluateBrownianForces(ParameterList& params,
                                                 double zeta,
                                                 Epetra_SerialDenseVector& elevec1)
 {
-  // thermal energy responsible for statistical forces
-  double kT = params.get<double>("KT",0.0);
+	// thermal energy responsible for statistical forces
+	  double kT = params.get<double>("KT",0.0);
 
-  // polynomial order for interpolation of stochastic line load (zero corresponds to bead spring model)
-  int stochasticorder = params.get<int>("STOCH_ORDER",0);
-  
-  //simple isotropic model of Brownian motion with uncorrelated nodal forces
-  if (stochasticorder == 0)
-  {
-    //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
-    double stand_dev_trans = pow(2.0 * kT * (zeta/2.0) / params.get<double>("delta time",0.01),0.5);
+	  // polynomial order for interpolation of stochastic line load (zero corresponds to bead spring model)
+	  int stochasticorder = params.get<int>("STOCH_ORDER",0);
+	  
+	  //simple isotropic model of Brownian motion with uncorrelated nodal forces
+	  if (stochasticorder == 0)
+	  {
+	    //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
+	    double stand_dev_trans = pow(2.0 * kT * (zeta/2.0) / params.get<double>("delta time",0.01),0.5);
 
-    //creating a random generator object which creates random numbers with mean = 0 and standard deviation
-    //stand_dev; using Blitz namespace "ranlib" for random number generation
-    ranlib::Normal<double> normalGen(0,stand_dev_trans);
+	    //creating a random generator object which creates random numbers with mean = 0 and standard deviation
+	    //stand_dev; using Blitz namespace "ranlib" for random number generation
+	    ranlib::Normal<double> normalGen(0,stand_dev_trans);
 
-    //adding statistical forces
-    elevec1[0] += normalGen.random();
-    elevec1[1] += normalGen.random();
-    elevec1[3] += normalGen.random();
-    elevec1[4] += normalGen.random(); 
-  }
+	    //adding statistical forces
+	    elevec1[0] += normalGen.random();
+	    elevec1[1] += normalGen.random();
+	    elevec1[3] += normalGen.random();
+	    elevec1[4] += normalGen.random(); 
+	  }
 
-  //in case of a consistent damping matrix stochastic nodal forces are calculated consistently by methods of weighted integrals
-  else if (stochasticorder == 1)
-  {     
-    //triad to rotate local configuration into global one due to beta
-    LINALG::Matrix<2,2> T;
-    T(0,0) =  cos(alphaconv_);
-    T(0,1) = -sin(alphaconv_);
-    T(1,0) =  sin(alphaconv_);
-    T(1,1) =  cos(alphaconv_);
- 
-    //local force vectors of first and second node
-    LINALG::Matrix<2,1> force1;
-    LINALG::Matrix<2,1> force2;
-    
-    //global force vectors of first and second node
-    LINALG::Matrix<2,1> force1g;
-    LINALG::Matrix<2,1> force2g;
-    
- 
-    double stand_dev_par = pow(2 * kT * (zeta/12) / params.get<double>("delta time",0.01),0.5);
-    double stand_dev_ort = pow(2 * kT * (zeta/ 6) / params.get<double>("delta time",0.01),0.5);
+	  //in case of a consistent damping matrix stochastic nodal forces are calculated consistently by methods of weighted integrals
+	  else if (stochasticorder == 1)
+	  {     
+		  dserror("Consistent damp matrix called but not implemented. (stochasticorder=1)");
+	  }
 
-    //creating a random generator object which creates random numbers with mean = 0 and standard deviation
-    //stand_dev; using Blitz namespace "ranlib" for random number generation
-    ranlib::Normal<double> normalGenpar(0,stand_dev_par);
-    ranlib::Normal<double> normalGenort(0,stand_dev_ort);
-
-    //adding uncorrelated components of statistical forces
-    force1(0) = normalGenpar.random();
-    force1(1) = normalGenort.random();
-    force2(0) = normalGenpar.random();
-    force2(1) = normalGenort.random();
-
-    //adding correlated components of statistical forces
-    double stat1 = normalGenpar.random();
-    double stat2 = normalGenort.random();
-    force1(0) += stat1;
-    force1(1) += stat2;
-    force2(0) += stat1;
-    force2(1) += stat2;
-    
-    //transform nodal forces into global coordinates
-    force1g.Multiply(T,force1);
-    force2g.Multiply(T,force2);
-    
-    for(int i = 0; i<2; i++)
-    {
-      elevec1[i]   = force1g(i);
-      elevec1[i+3] = force2g(i);
-    }
-  }
-
-  return 0;
-} //DRT::ELEMENTS::Beam3::EvaluateStatisticalNeumann
+	  return 0;
+} //DRT::ELEMENTS::Beam2r::EvaluateBrownianForces
 
 
 /*-----------------------------------------------------------------------------------------------------------*
- | compute current rotation absolute rotation angle of element frame out of x-axisrr              cyron 03/09|
+ | evaluate auxiliary vectors and matrices for Reissner`s formulation (private)                   cyron 01/08|
  *----------------------------------------------------------------------------------------------------------*/
-inline void DRT::ELEMENTS::Beam2r::updatealpha(const LINALG::Matrix<3,2>& xcurr,const double& lcurr)
-{
-  /*befor computing the absolute rotation angle of the element frame we first compute an angle beta \in [-PI;PI[
-   * from the current nodal positions; beta denotes a rotation out of the x-axis in a x-y-plane; note that 
-   * this angle may differ from the absolute rotation angle alpha by a multiple of 2*PI;*/
-  double beta;
-  
-  // beta is the rotation angle out of x-axis in a x-y-plane
-  double cos_beta = (xcurr(0,1)-xcurr(0,0))/lcurr;
-  double sin_beta = (xcurr(1,1)-xcurr(1,0))/lcurr;
-  
-  //computation of beta according to Crisfield, Vol. 1, (7.60)
-  
-  //if coc_beta >= 0 we know -PI/2 <= beta <= PI/2
-  if (cos_beta >= 0)
-    beta = asin(sin_beta);
-  //else we know  beta > PI/2 or beta < -PI/2
-  else
-  { 
-    //if sin_beta >=0 we know beta > PI/2
-    if(sin_beta >= 0)
-      beta =  acos(cos_beta);
-    //elss we know beta > -PI/2
-    else
-      beta = -acos(cos_beta);
-  }
-  
-  /* by default we assume that the difference between beta and the absolute rotation angle alpha is the same
-   * multiple of 2*PI as in the iteration step before; then beta + numperiodsnew_*2*PI would be the new absolute
-   * rotation angle alpha; if the difference between this angle and the absolute angle in the last converged step
-   * is smaller than minus PI we assume that beta, which is evaluated in [-PI; PI[ has exceeded the upper limit of 
-   * this interval in positive direciton from the last to this iteration step; then alpha can be computed from 
-   * beta by adding (numperiodsnew_ + 1)*2*PI; analogously with a difference greater than +PI we assume that beta 
-   * has exceeded the lower limit of the interval [-PI; PI[ in negative direction so that alpha can be computed
-   * adding (numperiodsnew_ - 1)*2*PI  */
-  numperiodsnew_ = numperiodsold_;
-  
-  if(beta + numperiodsnew_*2*PI - alphaold_ < -PI)
-    numperiodsnew_ ++;
-  else if(beta + numperiodsnew_*2*PI - alphaold_ > PI)
-    numperiodsnew_ --;
-    
- 
-  alphanew_ = beta + 2*PI*numperiodsnew_;
-  
-}
-
-/*-----------------------------------------------------------------------------------------------------------*
- | evaluate auxiliary vectors and matrices for corotational formulation                           cyron 01/08|
- *----------------------------------------------------------------------------------------------------------*/
-//notation for this function similar to Crisfield, Volume 1;
+//notation for this function similar to Crisfield, Volume 1, section 7.4;
 inline void DRT::ELEMENTS::Beam2r::local_aux(LINALG::Matrix<3,6>& Bcurr,
                                         LINALG::Matrix<6,1>& rcurr,
                                         LINALG::Matrix<6,1>& zcurr,
+                                        LINALG::Matrix<6,1>& s,
                                         const double& lcurr,
-                                        const double& lrefe_)
+                                        const double& thetaav,
+                                        const double& c1,
+                                        const double& c2)
+
 {
-  double cos_alpha = cos(alphanew_);
-  double sin_alpha = sin(alphanew_);
+  double cos_thetaav = cos(thetaav);
+  double sin_thetaav = sin(thetaav);
   
   //vector r according to Crisfield, Vol. 1, (7.62)
-  rcurr(0) = -cos_alpha;
-  rcurr(1) = -sin_alpha;
+  rcurr(0) = -cos_thetaav;
+  rcurr(1) = -sin_thetaav;
   rcurr(2) = 0;
-  rcurr(3) = cos_alpha;
-  rcurr(4) = sin_alpha;
+  rcurr(3) = cos_thetaav;
+  rcurr(4) = sin_thetaav;
   rcurr(5) = 0;
 
   //vector z according to Crisfield, Vol. 1, (7.66)
-  zcurr(0) = sin_alpha;
-  zcurr(1) = -cos_alpha;
+  zcurr(0) = sin_thetaav;
+  zcurr(1) = -cos_thetaav;
   zcurr(2) = 0;
-  zcurr(3) = -sin_alpha;
-  zcurr(4) = cos_alpha;
+  zcurr(3) = -sin_thetaav;
+  zcurr(4) = cos_thetaav;
   zcurr(5) = 0;
-
-  //assigning values to each element of the Bcurr matrix, Crisfield, Vol. 1, (7.99)
+  
+  //assigning values to each element of the Bcurr matrix, Crisfield, Vol. 1, (7.118)
   for(int id_col=0; id_col<6; id_col++)
     {
-      Bcurr(0,id_col) = rcurr(id_col);
+      Bcurr(0,id_col) = rcurr(id_col) + c2 * s(id_col);
       Bcurr(1,id_col) = 0;
-      Bcurr(2,id_col) = (lrefe_ / lcurr) * zcurr(id_col);
+      Bcurr(2,id_col) = zcurr(id_col) + c1 * s(id_col);
     }
-    Bcurr(2,2) -= (lrefe_ / 2);
-    Bcurr(2,5) -= (lrefe_ / 2);
-    Bcurr(1,2) += 1;
-    Bcurr(1,5) -= 1;
+    Bcurr(1,2) = -1;
+    Bcurr(1,5) =  1;
 
   return;
 } /* DRT::ELEMENTS::Beam2r::local_aux */
@@ -630,15 +486,16 @@ void DRT::ELEMENTS::Beam2r::nlnstiffmass( ParameterList& params,
 {
   const int numdf = 3;
   const int iel = NumNode();
-  //coordinates in current configuration of all the nodes in two dimensions stored in 3 x iel matrices
+  //coordinates in current configuration of all the nodes in two dimensions stored in numdf x iel matrices
   LINALG::Matrix<3,2> xcurr;
 
   //current length of beam in physical space
-  double lcurr = 0;
+  double lcurr = 0.0;
 
-  //some geometric auxiliary variables according to Crisfield, Vol. 1
+  //some geometric auxiliary variables according to Crisfield, Vol. 1 section 7.4
   LINALG::Matrix<6,1> zcurr;
   LINALG::Matrix<6,1> rcurr;
+  LINALG::Matrix<6,1> s;
   LINALG::Matrix<3,6> Bcurr;
   //auxiliary matrix storing the product of constitutive matrix C and Bcurr
   LINALG::Matrix<3,6> aux_CB;
@@ -649,26 +506,44 @@ void DRT::ELEMENTS::Beam2r::nlnstiffmass( ParameterList& params,
   double sm; //shear modulus
   double density; //density
 
-  //calculating refenrence configuration xrefe and current configuration xcurr
+  //Inserting current configuration into xcurr
   for (int k=0; k<iel; ++k)
   {
-    xcurr(0,k) = Nodes()[k]->X()[0] + disp[k*numdf+0];
-    xcurr(1,k) = Nodes()[k]->X()[1] + disp[k*numdf+1];
+    xcurr(0,k) = Nodes()[k]->X()[0] + disp[k*numdf+0]; //x for each node in figure 7.9 
+    xcurr(1,k) = Nodes()[k]->X()[1] + disp[k*numdf+1]; //z for each node  in figure 7.9
 
-    /*note that xcurr(2,0),xcurr(2,1) are local angles; in Crisfield, Vol. 1, (7.98) they 
-     *are denoted by theta_{l1},theta_{l2} in contrast to the local  angles theta_{1},theta_{2};
-     *the global director angle is not used at all in the present element formulation*/
-    xcurr(2,k) = disp[k*numdf+2];
+    /*note that xcurr(2,0),xcurr(2,1) are local angles in Crisfield, Vol. 1. They refer to the
+     * reference configuration. The exact global angle is never used in the further description
+     * ,we will only need the difference. Therefore we do not store it. But we will be able to compute
+     * thetaav from thetaav0 and the inkrements xcurr(2,0),xcurr(2,1)  */
+    
+    xcurr(2,k) = disp[k*numdf+2]; //theta for each node  in figure 7.9
   }
 
   //current length
   lcurr = pow( pow(xcurr(0,1)-xcurr(0,0),2) + pow(xcurr(1,1)-xcurr(1,0),2) , 0.5 );
   
-  //update absolute rotation angle alpha of element frame
-  updatealpha(xcurr,lcurr);
+  //calculate average absolute angle thetaav in current configuration
+  double thetaav = thetaav0_ + 0.5 * (xcurr(2,0) + xcurr(2,1));
+  
+  //calculate sinus and cosinus beta for local_aux from (7.116) and (7.117)
+  double sin_beta = ((xcurr(1,1)-xcurr(1,0)) * cos(thetaav) - (xcurr(0,1) - xcurr(0,0)) * sin(thetaav)) / lcurr;
+  double cos_beta = ((xcurr(0,1)-xcurr(0,0)) * cos(thetaav) + (xcurr(1,1) - xcurr(1,0)) * sin(thetaav)) / lcurr;
+  
+  //vector s according to Crisfield, Vol. 1, (7.119)
+    s(0) = 0;
+    s(1) = 0;
+    s(2) = 1;
+    s(3) = 0;
+    s(4) = 0;
+    s(5) = 1;
+    
+  //calculation of factors needed for Bcurr; (7.120)  and (7.121)
+      double c1 = -0.5 * lcurr;
+      double c2 = 0.5 * lcurr * sin_beta;
 
   //calculation of local geometrically important matrices and vectors
-  local_aux(Bcurr,rcurr,zcurr,lcurr,lrefe_);
+  local_aux(Bcurr,rcurr,zcurr,s,lcurr,thetaav,c1,c2);
 
 
   // get the material law
@@ -688,68 +563,67 @@ void DRT::ELEMENTS::Beam2r::nlnstiffmass( ParameterList& params,
       dserror("unknown or improper type of material law");
  }
 
-  //Crisfield, Vol. 1, (7.52 - 7.55)
-  force_loc(0) = ym*crosssec_*(lcurr*lcurr - lrefe_*lrefe_)/(lrefe_*(lcurr + lrefe_));
+  //Crisfield, Vol. 1, (7.55) and (7.116)
+  force_loc(0) = ym * crosssec_ * ( lcurr * cos_beta - lrefe_ ) / lrefe_;
 
-  //local internal bending moment, Crisfield, Vol. 1, (7.97)
-  force_loc(1) = -ym*mominer_*(xcurr(2,1)-xcurr(2,0))/lrefe_;
+  //local internal bending moment, Crisfield, Vol. 1, (7.108). Note that for the difference we won`t need the exact thetas
+  //we can compute from from our delta_thetas
+  force_loc(1) = ym * mominer_ * (xcurr(2,1)-xcurr(2,0)) / lrefe_;
 
-  //local internal shear force, Crisfield, Vol. 1, (7.98)
-  /*in the following internal forces are computed; note that xcurr(2,0),xcurr(2,1) are global angles;
-   * in Crisfield, Vol. 1, (7.98) they are denoted by theta_{1},theta_{2} in contrast to the local
-   * angles theta_{l1},theta_{l2}; note also that these variables do not represent the absolute director
-   * angle (since they are zero in the beginning even for an initially rotated beam), but only
-   * the absolute director angle minus the reference angle alpha0_; as a consequence the shear force
-   * has to be computed by substraction of (alphanew_ - alpha0_)*/
-  force_loc(2) = -sm*crosssecshear_*( ( xcurr(2,1) + xcurr(2,0) )/2 - (alphanew_ - alpha0_) );
+  //local internal shear force, Crisfield, Vol. 1, (7.98) and gamma from (7.117)
+  /*gamma is  here given in (7.114)*/
+  force_loc(2) = sm * crosssecshear_ * ( lcurr * sin_beta / lrefe_ );
 
   if (force != NULL)
   {
   //declaration of global internal force
   LINALG::Matrix<6,1> force_glob;
-  //calculation of global internal forces from Crisfield, Vol. 1, (7.102): q_i = B^T q_{li}
-  force_glob.MultiplyTN(Bcurr,force_loc);
+  
+  //calculation of global internal forces from Crisfield, Vol. 1, (7.124): q_i = B^T q_{li}
+  force_glob.MultiplyTN(Bcurr,force_loc); //führt die o.g. Operation aus. Funktion der class LINALG::Matrix
 
     for(int k = 0; k<6; k++)
-      (*force)(k) = force_glob(k);
+      (*force)(k) = force_glob(k); // force Vektor ist hier fertig berechnet und wurde global übergeben
   }
 
 
   //calculating tangential stiffness matrix in global coordinates, Crisfield, Vol. 1, (7.107)
   if (stiffmatrix != NULL)
   {
-    //declaration of fixed size matrix for global tiffness
+    //declaration of fixed size matrix for global stiffness
     LINALG::Matrix<6,6> stiff_glob;
     
-    //linear elastic part including rotation: B^T C_t B / l_0
+    //linear elastic part of tangential stiffness matrix including rotation: K_t1 = B^T C_l B / l_0 (7.128)
     for(int id_col=0; id_col<6; id_col++)
     {
-      aux_CB(0,id_col) = Bcurr(0,id_col) * (ym*crosssec_/lrefe_);
+      aux_CB(0,id_col) = Bcurr(0,id_col) * (ym*crosssec_/lrefe_);// aux_CB oben definiert. Nur als Ablage für den Zwischenwert da (3x6)
       aux_CB(1,id_col) = Bcurr(1,id_col) * (ym*mominer_/lrefe_);
       aux_CB(2,id_col) = Bcurr(2,id_col) * (sm*crosssecshear_/lrefe_);
-    }
+    }//im Endeffekt C^T B
     
     stiff_glob.MultiplyTN(aux_CB,Bcurr);
-
-    //adding geometric stiffness by shear force: N z z^T / l_n
-    double aux_Q_fac = force_loc(2)*lrefe_ / pow(lcurr,2);
+    
+    //adding geometric stiffness by axial force: N (s z^T + z s^T) / 2 + N * c1 s s^T/2 (7.128)
+    double aux_N_fac = force_loc(0) / 2;
     for(int id_lin=0; id_lin<6; id_lin++)
         for(int id_col=0; id_col<6; id_col++)
         {
-          stiff_glob(id_lin,id_col) -= aux_Q_fac * rcurr(id_lin) * zcurr(id_col);
-          stiff_glob(id_lin,id_col) -= aux_Q_fac * rcurr(id_col) * zcurr(id_lin);
+          stiff_glob(id_lin,id_col) += aux_N_fac * ( s(id_lin) * zcurr(id_col) + zcurr(id_lin) * s(id_col));
+          stiff_glob(id_lin,id_col) += aux_N_fac * c1 * s(id_lin) * s(id_col);
         }
 
-    //adding geometric stiffness by axial force: Q l_0 (r z^T + z r^T) / (l_n)^2
-    double aux_N_fac = force_loc(0)/lcurr;
+    //adding geometric stiffness by shear force: -Q ( s r^T + r s^T ) / 2 - Q * c2 * s s^T / 2 (7.128)
+    double aux_Q_fac = force_loc(2)/2;
     for(int id_lin=0; id_lin<6; id_lin++)
         for(int id_col=0; id_col<6; id_col++)
-          stiff_glob(id_lin,id_col) += aux_N_fac * zcurr(id_lin) * zcurr(id_col);
-    
-    //shfting values from fixed size matrix to epetra matrix *stiffmatrix
+        {
+          stiff_glob(id_lin,id_col) -= aux_Q_fac * ( s(id_lin) * rcurr(id_col) + rcurr(id_lin) * s(id_col));
+          stiff_glob(id_lin,id_col) -= aux_Q_fac * c2 * s(id_lin) * s(id_col);
+        }
+    //shifting values from fixed size matrix to epetra matrix *stiffmatrix
     for(int i = 0; i < 6; i++)
       for(int j = 0; j < 6; j++)
-        (*stiffmatrix)(i,j) = stiff_glob(i,j);
+        (*stiffmatrix)(i,j) = stiff_glob(i,j);// Steifigkeitsmatrix ist hier vollständig berechnet und wird global übergeben
     
   }
   
@@ -758,7 +632,7 @@ void DRT::ELEMENTS::Beam2r::nlnstiffmass( ParameterList& params,
   //calculating mass matrix (local version = global version)
   if (massmatrix != NULL)
   {
-      //if lumped_flag == 0 a consistent mass Timoshenko beam mass matrix is applied
+      //if lumpedmass == 0 a consistent mass Timoshenko beam mass matrix is applied
       if (lumpedmass == 0)
       {
         //assignment of massmatrix by means of auxiliary diagonal matrix aux_E stored as an array
@@ -771,9 +645,9 @@ void DRT::ELEMENTS::Beam2r::nlnstiffmass( ParameterList& params,
               (*massmatrix)(id+3,id)   = aux_E[id];
         }
       }
-      /*if lumped_flag == 1 a lumped mass matrix is applied where the cross sectional moment of inertia is
+      
+      /*if lumpedmass == 1 a lumped mass matrix is applied where the cross sectional moment of inertia is
        * assumed to be approximately zero so that the 3,3 and 5,5 element are both zero */
-
       else if (lumpedmass == 1)
       {
         //note: this is not an exact lumped mass matrix, but it is modified in such a way that it leads
