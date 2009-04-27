@@ -247,7 +247,7 @@ IO::HDFReader::ReadCharData(std::string path, int start, int end) const
     case 1:
     {
       hsize_t dim,maxdim;
-      hsize_t res = H5Sget_simple_extent_dims(dataspace,&dim,&maxdim);
+      int res = H5Sget_simple_extent_dims(dataspace,&dim,&maxdim);
       if (res < 0)
         dserror("Failed to get size from dataspace in HDF-file %s",
                 filenames_[i].c_str());
@@ -306,7 +306,7 @@ IO::HDFReader::ReadIntData(std::string path, int start, int end) const
     case 1:
     {
       hsize_t dim,maxdim;
-      hsize_t res = H5Sget_simple_extent_dims(dataspace,&dim,&maxdim);
+      int res = H5Sget_simple_extent_dims(dataspace,&dim,&maxdim);
       if (res < 0)
         dserror("Failed to get size from dataspace in HDF-file %s",
                 filenames_[i].c_str());
@@ -362,7 +362,7 @@ IO::HDFReader::ReadDoubleData(std::string path, int start, int end, std::vector<
     case 1:
     {
       hsize_t dim,maxdim;
-      hsize_t res = H5Sget_simple_extent_dims(dataspace,&dim,&maxdim);
+      int res = H5Sget_simple_extent_dims(dataspace,&dim,&maxdim);
       if (res < 0)
         dserror("Failed to get size from dataspace in HDF-file %s",
                 filenames_[i].c_str());
