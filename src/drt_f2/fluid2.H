@@ -280,7 +280,6 @@ public:
 
   //@}
 
-
 private:
 
   //! action parameters recognized by fluid2
@@ -293,7 +292,8 @@ private:
     calc_fluid_genalpha_sysmat_and_residual,
     calc_fluid_genalpha_update_for_subscales,
     calc_fluid_genalpha_average_for_subscales_and_residual,
-    get_density
+    get_density,
+    integrate_shape
   };
 
   //! stabilisation actions recognized by fluid2 (genalpha implementation)
@@ -398,6 +398,20 @@ private:
 
   /// Residual based genalpha implementation class for fluid element
   Fluid2GenalphaResVMM* GenalphaResVMM();
+
+  /*!
+    \brief integrate shape functions over volume element
+
+    \param discretization (i) the discretisation (required in the nurbs case)
+    \param lm             (i) location vector (to get ale displacements from global vectors)
+    \param w              (o) shape functions integrated over element
+
+    \return 
+   */
+  void integrateShapefunction(
+    DRT::Discretization&      discretization,
+    vector<int>&              lm            ,
+    Epetra_SerialDenseVector& w             );
 
 }; // class Fluid2
 

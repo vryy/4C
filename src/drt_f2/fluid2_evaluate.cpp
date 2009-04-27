@@ -160,6 +160,8 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
     act = Fluid2::calc_fluid_genalpha_average_for_subscales_and_residual;
   else if (action == "get_density")
     act = Fluid2::get_density;
+  else if (action == "integrate_shape")
+    act = Fluid2::integrate_shape;
   else
   {
 
@@ -548,12 +550,221 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
         dserror("no fluid material found");
     }
     break;
+    case integrate_shape:
+    {
+      // integrate the shape function for this element
+      // the results are assembled into the element vector
+      this->integrateShapefunction(
+        discretization,
+        lm            ,
+        elevec1       );
+    }
+    break;
     default:
       dserror("Unknown type of action for Fluid2");
   } // end of switch(act)
 
   return 0;
 } // end of DRT::ELEMENTS::Fluid2::Evaluate
+
+void DRT::ELEMENTS::Fluid2::integrateShapefunction(
+    DRT::Discretization&      discretization,
+    vector<int>&              lm            ,
+    Epetra_SerialDenseVector& w             )
+{
+
+  const int iel=NumNode();
+
+
+  // --------------------------------------------------
+  // create matrix objects for nodal values
+  Epetra_SerialDenseMatrix  edispnp(2,iel);
+
+  if(is_ale_)
+  {
+    // get most recent displacements
+    RefCountPtr<const Epetra_Vector> dispnp
+      =
+      discretization.GetState("dispnp");
+      
+    if (dispnp==null)
+    {
+      dserror("Cannot get state vector 'dispnp'");
+    }
+    
+    vector<double> mydispnp(lm.size());
+    DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
+    
+    // extract velocity part from "mygridvelaf" and get
+    // set element displacements
+    for (int i=0;i<iel;++i)
+    {
+      int fi    =4*i;
+      int fip   =fi+1;
+      edispnp(0,i)    = mydispnp   [fi  ];
+      edispnp(1,i)    = mydispnp   [fip ];
+    }
+  }
+
+  // set element data
+  const DiscretizationType distype = Shape();
+
+  // gaussian points
+  const GaussRule2D          gaussrule = getOptimalGaussrule(distype);
+  const IntegrationPoints2D  intpoints(gaussrule);
+
+  //----------------------------------------------------------------------------
+  //                         ELEMENT GEOMETRY
+  //----------------------------------------------------------------------------
+  Epetra_SerialDenseMatrix  xye(2,iel);
+
+  // get node coordinates
+  DRT::Node** nodes = Nodes();
+  for (int inode=0; inode<iel; inode++)
+  {
+    const double* x = nodes[inode]->X();
+    xye(0,inode) = x[0];
+    xye(1,inode) = x[1];
+  }
+
+  // add displacement, when fluid nodes move in the ALE case
+  if (is_ale_)
+  {
+    for (int inode=0; inode<iel; inode++)
+    {
+      xye(0,inode) += edispnp(0,inode);
+      xye(1,inode) += edispnp(1,inode);
+    }
+  }
+ 
+  // --------------------------------------------------
+  // Now do the nurbs specific stuff
+  std::vector<Epetra_SerialDenseVector> myknots(2);
+  Epetra_SerialDenseVector              weights(iel);
+
+  // for isogeometric elements
+  if(Shape()==Fluid2::nurbs4 || Shape()==Fluid2::nurbs9)
+  {
+    DRT::NURBS::NurbsDiscretization* nurbsdis
+      =
+      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+
+    bool zero_size = false;
+    zero_size = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
+
+    // if we have a zero sized element due to a interpolated 
+    // point --- exit here
+    if(zero_size)
+    {
+      return;
+    }
+
+    // get node weights for nurbs elements
+    for (int inode=0; inode<iel; inode++)
+    {
+      DRT::NURBS::ControlPoint* cp
+        =
+        dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
+      
+      weights(inode) = cp->W();
+    }
+  }
+ 
+
+  //------------------------------------------------------------------
+  //                       INTEGRATION LOOP
+  //------------------------------------------------------------------
+  Epetra_SerialDenseVector  funct(iel);
+  Epetra_SerialDenseMatrix  xjm(2,2);
+  Epetra_SerialDenseMatrix  deriv(2,iel);
+
+  for (int iquad=0;iquad<intpoints.nquad;++iquad)
+  {
+    // set gauss point coordinates
+    Epetra_SerialDenseVector gp(2);
+
+    gp(0)=intpoints.qxg[iquad][0];
+    gp(1)=intpoints.qxg[iquad][1];
+    
+    if(!(distype == DRT::Element::nurbs4
+         ||
+         distype == DRT::Element::nurbs9))
+    {
+      // get values of shape functions and derivatives in the gausspoint
+      DRT::UTILS::shape_function_2D       (funct,gp(0),gp(1),distype);
+      DRT::UTILS::shape_function_2D_deriv1(deriv,gp(0),gp(1),distype);
+    }
+    else
+    {
+      DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
+	(funct  ,
+	 deriv  ,
+	 gp     ,
+	 myknots,
+	 weights,
+	 distype);
+    }
+    
+    // get transposed Jacobian matrix and determinant
+    //
+    //        +-       -+ T      +-       -+
+    //        | dx   dx |        | dx   dy |
+    //        | --   -- |        | --   -- |
+    //        | dr   ds |        | dr   dr |
+    //        |         |        |         |
+    //        | dy   dy |        | dx   dy |
+    //        | --   -- |   =    | --   -- |
+    //        | dr   ds |        | ds   ds |
+    //        +-       -+        +-       -+
+    //
+    // The Jacobian is computed using the formula
+    //
+    //            +-----
+    //   dx_j(r)   \      dN_k(r)
+    //   -------  = +     ------- * (x_j)_k
+    //    dr_i     /       dr_i       |
+    //            +-----    |         |
+    //            node k    |         |
+    //                  derivative    |
+    //                   of shape     |
+    //                   function     |
+    //                           component of
+    //                          node coordinate
+    //
+    for(int rr=0;rr<2;++rr)
+    {
+      for(int mm=0;mm<2;++mm)
+      {
+        xjm(rr,mm)=deriv(rr,0)*xye(mm,0);
+        for(int nn=1;nn<iel;++nn)
+        {
+          xjm(rr,mm)+=deriv(rr,nn)*xye(mm,nn);
+        }
+      }
+    }
+   
+    // The determinant ist computed using Sarrus's rule
+    const double det = xjm(0,0)*xjm(1,1)-xjm(0,1)*xjm(1,0);
+
+    // check for degenerated elements
+    if (det < 0.0)
+    {
+      dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", Id(), det);
+    }
+
+    // set total integration factor
+    double fac = intpoints.qwgt[iquad]*det;
+
+    for (int ui=0; ui<iel; ++ui) // loop rows  (test functions)
+    {
+      int fuipp=3*ui+2;
+
+      w(fuipp)+=fac*funct(ui);
+    }
+  }
+
+  return;
+} // DRT::ELEMENTS::Fluid2::integrateShapefunction
 
 
 /*----------------------------------------------------------------------*
