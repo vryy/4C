@@ -118,6 +118,9 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     dserror("Unknown type of definition for gamma parameter: %s",(*consistency).c_str());
   }
 
+  // apply weak dbcs only in normal direction
+  bool onlynormal = false/*true*/;
+
   // initialise Spaldings law with parameters chi=0.4 and B=5.5
   Fluid3SurfaceWeakDBCSpaldingsLaw::Fluid3SurfaceWeakDBCSpaldingsLaw SpaldingsLaw(0.4,5.5);
   
@@ -1428,6 +1431,20 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
                                                 Cb   ,
                                                 visc );
     }
+    
+    // ---------------------------------------------------
+    // velocities on boundary
+    //                 
+    //         n+af    
+    //        u    - u 
+    //                b
+    //
+    
+    LINALG::Matrix<3,1> bv;
+
+    bv(0)=(velintaf_(0)-(*val)[0]*functionfac(0)*curvefac);
+    bv(1)=(velintaf_(1)-(*val)[1]*functionfac(1)*curvefac);
+    bv(2)=(velintaf_(2)-(*val)[2]*functionfac(2)*curvefac);
 
     //--------------------------------------------------
     // partially integrated pressure term, rescaled by gamma*dt
@@ -1500,186 +1517,317 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
          (velintnp_(2)-(*val)[2]*functionfac(2)*curvefac)*n_(2));
     }
 
-    //--------------------------------------------------
-    // partially integrated viscous term
-    /*
-    // factor: 2*nu*afgdt
-    //
-    //    /                     \
-    //   |           s           |
-    // - |  v , nabla  Dacc * n  |
-    //   |                       |
-    //    \                     / boundaryele
-    //
-    */
     const double timefacnu=fac*2.0*visc*afgdt;
 
-    for (int ui=0; ui<piel; ++ui) 
+    if(!onlynormal)
     {
-      double nabla_u_o_n_lin[3][3];
+      //--------------------------------------------------
+      // partially integrated viscous term
+      /*
+      // factor: 2*nu*afgdt
+      //
+      //    /                     \
+      //   |           s           |
+      // - |  v , nabla  Dacc * n  |
+      //   |                       |
+      //    \                     / boundaryele
+      //
+      */
 
-      nabla_u_o_n_lin[0][0]=timefacnu*(    pderxy_(0,ui)*n_(0)
-                                       +
-                                       0.5*pderxy_(1,ui)*n_(1)
-                                       +
-                                       0.5*pderxy_(2,ui)*n_(2));
-      nabla_u_o_n_lin[0][1]=timefacnu*(0.5*pderxy_(0,ui)*n_(1));
-      nabla_u_o_n_lin[0][2]=timefacnu*(0.5*pderxy_(0,ui)*n_(2));
-
-      nabla_u_o_n_lin[1][0]=timefacnu*(0.5*pderxy_(1,ui)*n_(0));
-      nabla_u_o_n_lin[1][1]=timefacnu*(0.5*pderxy_(0,ui)*n_(0)
-                                       +
-                                           pderxy_(1,ui)*n_(1)
-                                       +
-                                       0.5*pderxy_(2,ui)*n_(2));
-      nabla_u_o_n_lin[1][2]=timefacnu*(0.5*pderxy_(1,ui)*n_(2));
-
-      nabla_u_o_n_lin[2][0]=timefacnu*(0.5*pderxy_(2,ui)*n_(0));
-      nabla_u_o_n_lin[2][1]=timefacnu*(0.5*pderxy_(2,ui)*n_(1));
-      nabla_u_o_n_lin[2][2]=timefacnu*(0.5*pderxy_(0,ui)*n_(0)
-                                       +
-                                       0.5*pderxy_(1,ui)*n_(1)
-                                       + 
-                                           pderxy_(2,ui)*n_(2));
-
-
-      for (int vi=0; vi<piel; ++vi) 
+      for (int ui=0; ui<piel; ++ui) 
       {
-	elemat(vi*4    ,ui*4    ) -= pfunct_(vi)*nabla_u_o_n_lin[0][0];
-        elemat(vi*4    ,ui*4 + 1) -= pfunct_(vi)*nabla_u_o_n_lin[0][1];
-        elemat(vi*4    ,ui*4 + 2) -= pfunct_(vi)*nabla_u_o_n_lin[0][2];
+        double nabla_u_o_n_lin[3][3];
+        
+        nabla_u_o_n_lin[0][0]=timefacnu*(    pderxy_(0,ui)*n_(0)
+                                         +
+                                         0.5*pderxy_(1,ui)*n_(1)
+                                         +
+                                         0.5*pderxy_(2,ui)*n_(2));
+        nabla_u_o_n_lin[0][1]=timefacnu*(0.5*pderxy_(0,ui)*n_(1));
+        nabla_u_o_n_lin[0][2]=timefacnu*(0.5*pderxy_(0,ui)*n_(2));
+        
+        nabla_u_o_n_lin[1][0]=timefacnu*(0.5*pderxy_(1,ui)*n_(0));
+        nabla_u_o_n_lin[1][1]=timefacnu*(0.5*pderxy_(0,ui)*n_(0)
+                                         +
+                                         pderxy_(1,ui)*n_(1)
+                                         +
+                                         0.5*pderxy_(2,ui)*n_(2));
+        nabla_u_o_n_lin[1][2]=timefacnu*(0.5*pderxy_(1,ui)*n_(2));
+        
+        nabla_u_o_n_lin[2][0]=timefacnu*(0.5*pderxy_(2,ui)*n_(0));
+        nabla_u_o_n_lin[2][1]=timefacnu*(0.5*pderxy_(2,ui)*n_(1));
+        nabla_u_o_n_lin[2][2]=timefacnu*(0.5*pderxy_(0,ui)*n_(0)
+                                         +
+                                         0.5*pderxy_(1,ui)*n_(1)
+                                         + 
+                                         pderxy_(2,ui)*n_(2));
 
-	elemat(vi*4 + 1,ui*4    ) -= pfunct_(vi)*nabla_u_o_n_lin[1][0];
-        elemat(vi*4 + 1,ui*4 + 1) -= pfunct_(vi)*nabla_u_o_n_lin[1][1];
-        elemat(vi*4 + 1,ui*4 + 2) -= pfunct_(vi)*nabla_u_o_n_lin[1][2];
 
-	elemat(vi*4 + 2,ui*4    ) -= pfunct_(vi)*nabla_u_o_n_lin[2][0];
-        elemat(vi*4 + 2,ui*4 + 1) -= pfunct_(vi)*nabla_u_o_n_lin[2][1];
-        elemat(vi*4 + 2,ui*4 + 2) -= pfunct_(vi)*nabla_u_o_n_lin[2][2];
+        for (int vi=0; vi<piel; ++vi) 
+        {
+          elemat(vi*4    ,ui*4    ) -= pfunct_(vi)*nabla_u_o_n_lin[0][0];
+          elemat(vi*4    ,ui*4 + 1) -= pfunct_(vi)*nabla_u_o_n_lin[0][1];
+          elemat(vi*4    ,ui*4 + 2) -= pfunct_(vi)*nabla_u_o_n_lin[0][2];
+          
+          elemat(vi*4 + 1,ui*4    ) -= pfunct_(vi)*nabla_u_o_n_lin[1][0];
+          elemat(vi*4 + 1,ui*4 + 1) -= pfunct_(vi)*nabla_u_o_n_lin[1][1];
+          elemat(vi*4 + 1,ui*4 + 2) -= pfunct_(vi)*nabla_u_o_n_lin[1][2];
+          
+          elemat(vi*4 + 2,ui*4    ) -= pfunct_(vi)*nabla_u_o_n_lin[2][0];
+          elemat(vi*4 + 2,ui*4 + 1) -= pfunct_(vi)*nabla_u_o_n_lin[2][1];
+          elemat(vi*4 + 2,ui*4 + 2) -= pfunct_(vi)*nabla_u_o_n_lin[2][2];
+        }
+      }
+      
+      /*
+      // factor: 2*nu
+      //
+      //    /                     \
+      //   |           s  n+af     |
+      // + |  v , nabla  u    * n  |
+      //   |                       |
+      //    \                     / boundaryele
+      //
+      */
+
+      {
+        double nabla_u_o_n[3];
+        nabla_u_o_n[0]=fac*2.0*visc*
+          (                     vderxyaf_(0,0) *n_(0)
+           +0.5*(vderxyaf_(0,1)+vderxyaf_(1,0))*n_(1)
+           +0.5*(vderxyaf_(0,2)+vderxyaf_(2,0))*n_(2));
+        nabla_u_o_n[1]=fac*2.0*visc*
+          ( 0.5*(vderxyaf_(1,0)+vderxyaf_(0,1))*n_(0) 
+            +                    vderxyaf_(1,1) *n_(1)
+            +0.5*(vderxyaf_(1,2)+vderxyaf_(2,1))*n_(2));
+        nabla_u_o_n[2]=fac*2.0*visc*
+          ( 0.5*(vderxyaf_(2,0)+vderxyaf_(0,2))*n_(0)
+           +0.5*(vderxyaf_(2,1)+vderxyaf_(1,2))*n_(1)
+           +                    vderxyaf_(2,2) *n_(2));
+        
+        for (int vi=0; vi<piel; ++vi) 
+        {
+          elevec(vi*4    ) += pfunct_(vi)*nabla_u_o_n[0];
+          elevec(vi*4 + 1) += pfunct_(vi)*nabla_u_o_n[1];
+          elevec(vi*4 + 2) += pfunct_(vi)*nabla_u_o_n[2];
+        }
       }
     }
-
-    /*
-    // factor: 2*nu
-    //
-    //    /                     \
-    //   |           s  n+af     |
-    // + |  v , nabla  u    * n  |
-    //   |                       |
-    //    \                     / boundaryele
-    //
-    */
-
+    else
     {
-      double nabla_u_o_n[3];
-      nabla_u_o_n[0]=fac*2.0*visc*
-        (                     vderxyaf_(0,0) *n_(0)
-         +0.5*(vderxyaf_(0,1)+vderxyaf_(1,0))*n_(1)
-         +0.5*(vderxyaf_(0,2)+vderxyaf_(2,0))*n_(2));
-      nabla_u_o_n[1]=fac*2.0*visc*
-        ( 0.5*(vderxyaf_(1,0)+vderxyaf_(0,1))*n_(0) 
-         +                    vderxyaf_(1,1) *n_(1)
-         +0.5*(vderxyaf_(1,2)+vderxyaf_(2,1))*n_(2));
-      nabla_u_o_n[2]=fac*2.0*visc*
-        ( 0.5*(vderxyaf_(2,0)+vderxyaf_(0,2))*n_(0)
-         +0.5*(vderxyaf_(2,1)+vderxyaf_(1,2))*n_(1)
-         +                    vderxyaf_(2,2) *n_(2));
- 
+
+      /*
+      // factor: 2*nu
+      //
+      //    /                             \
+      //   |                   s           |
+      // + |  v * n , n * nabla  Dacc * n  |
+      //   |                               |
+      //    \                             / boundaryele
+      //
+      */
+      for (int ui=0; ui<piel; ++ui) 
+      {
+
+        const double aux=timefacnu*(pderxy_(0,ui)*n_(0)+pderxy_(1,ui)*n_(1)+pderxy_(2,ui)*n_(2));
+        for (int vi=0; vi<piel; ++vi) 
+        {
+          elemat(vi*4    ,ui*4    ) -= pfunct_(vi)*n_(0)*n_(0)*aux;
+          elemat(vi*4    ,ui*4 + 1) -= pfunct_(vi)*n_(0)*n_(1)*aux;
+          elemat(vi*4    ,ui*4 + 2) -= pfunct_(vi)*n_(0)*n_(2)*aux;
+          
+          elemat(vi*4 + 1,ui*4    ) -= pfunct_(vi)*n_(1)*n_(0)*aux;
+          elemat(vi*4 + 1,ui*4 + 1) -= pfunct_(vi)*n_(1)*n_(1)*aux;
+          elemat(vi*4 + 1,ui*4 + 2) -= pfunct_(vi)*n_(1)*n_(2)*aux;
+          
+          elemat(vi*4 + 2,ui*4    ) -= pfunct_(vi)*n_(2)*n_(0)*aux;
+          elemat(vi*4 + 2,ui*4 + 1) -= pfunct_(vi)*n_(2)*n_(1)*aux;
+          elemat(vi*4 + 2,ui*4 + 2) -= pfunct_(vi)*n_(2)*n_(2)*aux;
+        }
+      }
+
+      /*
+      // factor: 2*nu
+      //
+      //    /                             \
+      //   |                   s  n+af     |
+      // + |  v * n , n * nabla  u    * n  |
+      //   |                               |
+      //    \                             / boundaryele
+      //
+      */
+      double n_o_nabla_u_o_n =
+        vderxyaf_(0,0)*n_(0)*n_(0)
+        +
+        vderxyaf_(1,1)*n_(1)*n_(1)
+        +
+        vderxyaf_(2,2)*n_(2)*n_(2)
+        +
+        (vderxyaf_(0,1)+vderxyaf_(1,0))*n_(0)*n_(1)
+        +
+        (vderxyaf_(0,2)+vderxyaf_(2,0))*n_(0)*n_(2)
+        +
+        (vderxyaf_(1,2)+vderxyaf_(2,1))*n_(2)*n_(1);
+
       for (int vi=0; vi<piel; ++vi) 
       {
-        elevec(vi*4    ) += pfunct_(vi)*nabla_u_o_n[0];
-        elevec(vi*4 + 1) += pfunct_(vi)*nabla_u_o_n[1];
-        elevec(vi*4 + 2) += pfunct_(vi)*nabla_u_o_n[2];
+        elevec(vi*4    ) += fac*2.0*visc*wd_gamma*pfunct_(vi)*n_(0)*n_o_nabla_u_o_n;
+        elevec(vi*4 + 1) += fac*2.0*visc*wd_gamma*pfunct_(vi)*n_(1)*n_o_nabla_u_o_n;
+        elevec(vi*4 + 2) += fac*2.0*visc*wd_gamma*pfunct_(vi)*n_(2)*n_o_nabla_u_o_n;
       }
     }
 
     //--------------------------------------------------
     // (adjoint) consistency term, viscous part
 
-    /*
-    // factor: 2*nu*gamma_wd*afgdt
-    //
-    //    /                     \
-    //   |        s              |
-    // - |   nabla  w * n , Dacc |
-    //   |                       |
-    //    \                     / boundaryele
-    //
-    */
     const double consistencytimefac=fac*2.0*visc*wd_gamma*afgdt;
 
-    for (int ui=0; ui<piel; ++ui) 
+    if(!onlynormal)
     {
+
+      /*
+      // factor: 2*nu*gamma_wd*afgdt
+      //
+      //    /                     \
+      //   |        s              |
+      // - |   nabla  w * n , Dacc |
+      //   |                       |
+      //    \                     / boundaryele
+      //
+      */                                        
+      
+      LINALG::Matrix<3,3> nabla_s_w_o_n;
       for (int vi=0; vi<piel; ++vi) 
       {
-
-	elemat(vi*4    ,ui*4    ) -= consistencytimefac*pfunct_(ui)*
-          (n_(0)*(    pderxy_(0,vi))+n_(1)*(0.5*pderxy_(1,vi))+n_(2)*(0.5*pderxy_(2,vi)));
-        elemat(vi*4    ,ui*4 + 1) -= consistencytimefac*pfunct_(ui)*
-          (n_(0)*(0.5*pderxy_(1,vi)));
-        elemat(vi*4    ,ui*4 + 2) -= consistencytimefac*pfunct_(ui)*
-          (n_(0)*(0.5*pderxy_(2,vi)));
+        nabla_s_w_o_n(0,0)=consistencytimefac*(n_(0)*(    pderxy_(0,vi))+n_(1)*(0.5*pderxy_(1,vi))+n_(2)*(0.5*pderxy_(2,vi)));
+        nabla_s_w_o_n(0,1)=consistencytimefac*(n_(0)*(0.5*pderxy_(1,vi)));
+        nabla_s_w_o_n(0,2)=consistencytimefac*(n_(0)*(0.5*pderxy_(2,vi)));
         
-        elemat(vi*4 + 1,ui*4    ) -= consistencytimefac*pfunct_(ui)*
-          (n_(1)*(0.5*pderxy_(0,vi)));
-        elemat(vi*4 + 1,ui*4 + 1) -= consistencytimefac*pfunct_(ui)*
-          (n_(0)*(0.5*pderxy_(0,vi))+n_(1)*(    pderxy_(1,vi))+n_(2)*(0.5*pderxy_(2,vi)));
-        elemat(vi*4 + 1,ui*4 + 2) -= consistencytimefac*pfunct_(ui)*
-          (n_(1)*(0.5*pderxy_(2,vi)));
+        nabla_s_w_o_n(1,0)=consistencytimefac*(n_(1)*(0.5*pderxy_(0,vi)));
+        nabla_s_w_o_n(1,1)=consistencytimefac*(n_(0)*(0.5*pderxy_(0,vi))+n_(1)*(    pderxy_(1,vi))+n_(2)*(0.5*pderxy_(2,vi)));
+        nabla_s_w_o_n(1,2)=consistencytimefac*(n_(1)*(0.5*pderxy_(2,vi)));
+        
+        nabla_s_w_o_n(2,0)=consistencytimefac*(n_(2)*(0.5*pderxy_(0,vi)));
+        nabla_s_w_o_n(2,1)=consistencytimefac*(n_(2)*(0.5*pderxy_(1,vi)));
+        nabla_s_w_o_n(2,2)=consistencytimefac*(n_(0)*(0.5*pderxy_(0,vi))+n_(1)*(0.5*pderxy_(1,vi))+n_(2)*(    pderxy_(2,vi)));
+        
 
-	elemat(vi*4 + 2,ui*4    ) -= consistencytimefac*pfunct_(ui)*
-          (n_(2)*(0.5*pderxy_(0,vi)));
-        elemat(vi*4 + 2,ui*4 + 1) -= consistencytimefac*pfunct_(ui)*
-          (n_(2)*(0.5*pderxy_(1,vi)));
-        elemat(vi*4 + 2,ui*4 + 2) -= consistencytimefac*pfunct_(ui)*
-          (n_(0)*(0.5*pderxy_(0,vi))+n_(1)*(0.5*pderxy_(1,vi))+n_(2)*(    pderxy_(2,vi)));
+        for (int ui=0; ui<piel; ++ui) 
+        {
+          elemat(vi*4    ,ui*4    ) -= pfunct_(ui)*nabla_s_w_o_n(0,0);
+          elemat(vi*4    ,ui*4 + 1) -= pfunct_(ui)*nabla_s_w_o_n(0,1);
+          elemat(vi*4    ,ui*4 + 2) -= pfunct_(ui)*nabla_s_w_o_n(0,2);
+                                                                           
+          elemat(vi*4 + 1,ui*4    ) -= pfunct_(ui)*nabla_s_w_o_n(1,0);
+          elemat(vi*4 + 1,ui*4 + 1) -= pfunct_(ui)*nabla_s_w_o_n(1,1);
+          elemat(vi*4 + 1,ui*4 + 2) -= pfunct_(ui)*nabla_s_w_o_n(1,2);
+          
+          elemat(vi*4 + 2,ui*4    ) -= pfunct_(ui)*nabla_s_w_o_n(2,0);
+          elemat(vi*4 + 2,ui*4 + 1) -= pfunct_(ui)*nabla_s_w_o_n(2,1);
+          elemat(vi*4 + 2,ui*4 + 2) -= pfunct_(ui)*nabla_s_w_o_n(2,2);
+        }
+      }
+     /*
+      // factor: 2*nu*gamma_wd
+      //
+      //    /                           \
+      //   |        s          n+af      |
+      // + |   nabla  w * n , u    - u   |
+      //   |                          b  |
+      //    \                           / boundaryele
+      //
+      */
+
+      for (int vi=0; vi<piel; ++vi) 
+      {
+        elevec(vi*4    ) += fac*2.0*visc*wd_gamma*(
+          n_(0)*bv(0)*(    pderxy_(0,vi))
+          +
+          n_(1)*bv(0)*(0.5*pderxy_(1,vi))
+          +
+          n_(2)*bv(0)*(0.5*pderxy_(2,vi))
+          +
+          n_(0)*bv(1)*(0.5*pderxy_(1,vi))
+          +
+          n_(0)*bv(2)*(0.5*pderxy_(2,vi)));
+        
+        elevec(vi*4 + 1) += fac*2.0*visc*wd_gamma*(
+          n_(1)*bv(0)*(0.5*pderxy_(0,vi))
+          +
+          n_(0)*bv(1)*(0.5*pderxy_(0,vi))
+          +
+          n_(1)*bv(1)*(    pderxy_(1,vi))
+          +
+          n_(2)*bv(1)*(0.5*pderxy_(2,vi))
+          +
+          n_(1)*bv(2)*(0.5*pderxy_(2,vi)));
+        
+        elevec(vi*4 + 2) += fac*2.0*visc*wd_gamma*(
+          n_(2)*bv(0)*(0.5*pderxy_(0,vi))
+          +
+          n_(2)*bv(1)*(0.5*pderxy_(1,vi))
+          +
+          n_(0)*bv(2)*(0.5*pderxy_(0,vi))
+          +
+          n_(1)*bv(2)*(0.5*pderxy_(1,vi))
+          +
+          n_(2)*bv(2)*(    pderxy_(2,vi)));
       }
     }
-
-    /*
-    // factor: 2*nu*gamma_wd
-    //
-    //    /                           \
-    //   |        s          n+af      |
-    // + |   nabla  w * n , u    - u   |
-    //   |                          b  |
-    //    \                           / boundaryele
-    //
-    */
-    for (int vi=0; vi<piel; ++vi) 
+    else
     {
-      elevec(vi*4    ) += fac*2.0*visc*wd_gamma*(
-        n_(0)*(velintaf_(0)-(*val)[0]*functionfac(0)*curvefac)*(    pderxy_(0,vi))
-        +
-        n_(1)*(velintaf_(0)-(*val)[0]*functionfac(0)*curvefac)*(0.5*pderxy_(1,vi))
-        +
-        n_(2)*(velintaf_(0)-(*val)[0]*functionfac(0)*curvefac)*(0.5*pderxy_(2,vi))
-        +
-        n_(0)*(velintaf_(1)-(*val)[1]*functionfac(1)*curvefac)*(0.5*pderxy_(1,vi))
-        +
-        n_(0)*(velintaf_(2)-(*val)[2]*functionfac(2)*curvefac)*(0.5*pderxy_(2,vi)));
+      /*
+      // factor: 2*nu*gamma_wd
+      //
+      //    /                               \
+      //   |            s                    |
+      // + |   n * nabla  w * n ,  Dacc * n  |
+      //   |                                 |
+      //    \                               / boundaryele
+      //
+      */
 
-      elevec(vi*4 + 1) += fac*2.0*visc*wd_gamma*(
-        n_(1)*(velintaf_(0)-(*val)[0]*functionfac(0)*curvefac)*(0.5*pderxy_(0,vi))
-        +
-        n_(0)*(velintaf_(1)-(*val)[1]*functionfac(1)*curvefac)*(0.5*pderxy_(0,vi))
-        +
-        n_(1)*(velintaf_(1)-(*val)[1]*functionfac(1)*curvefac)*(    pderxy_(1,vi))
-        +
-        n_(2)*(velintaf_(1)-(*val)[1]*functionfac(1)*curvefac)*(0.5*pderxy_(2,vi))
-        +
-        n_(1)*(velintaf_(2)-(*val)[2]*functionfac(2)*curvefac)*(0.5*pderxy_(2,vi)));
+      for (int vi=0; vi<piel; ++vi) 
+      {
+        for (int ui=0; ui<piel; ++ui) 
+        {
+          const double aux=pderxy_(0,vi)*n_(0)+pderxy_(1,vi)*n_(1)+pderxy_(2,vi)*n_(2);
 
-      elevec(vi*4 + 2) += fac*2.0*visc*wd_gamma*(
-        n_(2)*(velintaf_(0)-(*val)[0]*functionfac(0)*curvefac)*(0.5*pderxy_(0,vi))
-        +
-        n_(2)*(velintaf_(1)-(*val)[1]*functionfac(1)*curvefac)*(0.5*pderxy_(1,vi))
-        +
-        n_(0)*(velintaf_(2)-(*val)[2]*functionfac(2)*curvefac)*(0.5*pderxy_(0,vi))
-        +
-        n_(1)*(velintaf_(2)-(*val)[2]*functionfac(2)*curvefac)*(0.5*pderxy_(1,vi))
-        +
-        n_(2)*(velintaf_(2)-(*val)[2]*functionfac(2)*curvefac)*(    pderxy_(2,vi)));
+          elemat(vi*4    ,ui*4    ) -= aux*n_(0)*n_(0)*pfunct_(ui)*consistencytimefac;
+          elemat(vi*4    ,ui*4 + 1) -= aux*n_(0)*n_(1)*pfunct_(ui)*consistencytimefac;
+          elemat(vi*4    ,ui*4 + 2) -= aux*n_(0)*n_(2)*pfunct_(ui)*consistencytimefac;
+                                       
+          elemat(vi*4 + 1,ui*4    ) -= aux*n_(1)*n_(0)*pfunct_(ui)*consistencytimefac;
+          elemat(vi*4 + 1,ui*4 + 1) -= aux*n_(1)*n_(1)*pfunct_(ui)*consistencytimefac;
+          elemat(vi*4 + 1,ui*4 + 2) -= aux*n_(1)*n_(2)*pfunct_(ui)*consistencytimefac;
+                                                        
+          elemat(vi*4 + 2,ui*4    ) -= aux*n_(2)*n_(0)*pfunct_(ui)*consistencytimefac;
+          elemat(vi*4 + 2,ui*4 + 1) -= aux*n_(2)*n_(1)*pfunct_(ui)*consistencytimefac;
+          elemat(vi*4 + 2,ui*4 + 2) -= aux*n_(2)*n_(2)*pfunct_(ui)*consistencytimefac;
+        }
+      }
+      /*
+      // factor: 2*nu*gamma_wd
+      //
+      //    /                                        \
+      //   |            s          / n+af     \       |
+      // + |   n * nabla  w * n , | u    - u   | * n  |
+      //   |                       \        b /       |
+      //    \                                        / boundaryele
+      //
+      */
+
+      double bv_o_n=bv(0)*n_(0)+bv(1)*n_(1)+bv(2)*n_(2);
+
+      for (int vi=0; vi<piel; ++vi) 
+      {
+        double aux=(pderxy_(0,vi)*n_(0)+pderxy_(1,vi)*n_(1)+pderxy_(2,vi)*n_(2));
+
+        elevec(vi*4    ) += fac*2.0*visc*wd_gamma*aux*n_(0)*bv_o_n;
+        elevec(vi*4 + 1) += fac*2.0*visc*wd_gamma*aux*n_(1)*bv_o_n;
+        elevec(vi*4 + 2) += fac*2.0*visc*wd_gamma*aux*n_(2)*bv_o_n;
+      }
+
     }
 
     //--------------------------------------------------
@@ -1710,26 +1858,17 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
         {
           for (int vi=0; vi<piel; ++vi) 
           {
-            elemat(vi*4    ,ui*4    ) -= timefac*pfunct_(vi)*n_(0)*
-              (velintaf_(0)-(*val)[0]*functionfac(0)*curvefac);
-            elemat(vi*4    ,ui*4 + 1) -= timefac*pfunct_(vi)*n_(1)*
-              (velintaf_(0)-(*val)[0]*functionfac(0)*curvefac);
-            elemat(vi*4    ,ui*4 + 2) -= timefac*pfunct_(vi)*n_(2)*
-              (velintaf_(0)-(*val)[0]*functionfac(0)*curvefac);
+            elemat(vi*4    ,ui*4    ) -= timefac*pfunct_(vi)*n_(0)*bv(0);
+            elemat(vi*4    ,ui*4 + 1) -= timefac*pfunct_(vi)*n_(1)*bv(0);
+            elemat(vi*4    ,ui*4 + 2) -= timefac*pfunct_(vi)*n_(2)*bv(0);
             
-            elemat(vi*4 + 1,ui*4    ) -= timefac*pfunct_(vi)*n_(0)*
-              (velintaf_(1)-(*val)[1]*functionfac(1)*curvefac);
-            elemat(vi*4 + 1,ui*4 + 1) -= timefac*pfunct_(vi)*n_(1)*
-              (velintaf_(1)-(*val)[1]*functionfac(1)*curvefac);
-            elemat(vi*4 + 1,ui*4 + 2) -= timefac*pfunct_(vi)*n_(2)*
-              (velintaf_(1)-(*val)[1]*functionfac(1)*curvefac);
+            elemat(vi*4 + 1,ui*4    ) -= timefac*pfunct_(vi)*n_(0)*bv(1);
+            elemat(vi*4 + 1,ui*4 + 1) -= timefac*pfunct_(vi)*n_(1)*bv(1);
+            elemat(vi*4 + 1,ui*4 + 2) -= timefac*pfunct_(vi)*n_(2)*bv(1);
             
-            elemat(vi*4 + 2,ui*4    ) -= timefac*pfunct_(vi)*n_(0)*
-              (velintaf_(2)-(*val)[2]*functionfac(2)*curvefac);
-            elemat(vi*4 + 2,ui*4 + 1) -= timefac*pfunct_(vi)*n_(1)*
-              (velintaf_(2)-(*val)[2]*functionfac(2)*curvefac);
-            elemat(vi*4 + 2,ui*4 + 2) -= timefac*pfunct_(vi)*n_(2)*
-              (velintaf_(2)-(*val)[2]*functionfac(2)*curvefac);
+            elemat(vi*4 + 2,ui*4    ) -= timefac*pfunct_(vi)*n_(0)*bv(2);
+            elemat(vi*4 + 2,ui*4 + 1) -= timefac*pfunct_(vi)*n_(1)*bv(2);
+            elemat(vi*4 + 2,ui*4 + 2) -= timefac*pfunct_(vi)*n_(2)*bv(2);
           }
         }
         
@@ -1758,24 +1897,51 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
         }
       } // end if full_linearisation
 
-      /*
-      // factor: 1
-      //
-      //    /                             \
-      //   |    / n+af   \       n+af      |
-      // - |   | u    * n | w , u    - u   |
-      //   |    \        /              b  |
-      //    \  |          |               / boundaryele, inflow
-      //       +----------+
-      //           <0
-      */
       const double fluxfac =fac*flux;
       
-      for (int vi=0; vi<piel; ++vi) 
+      if(!onlynormal)
       {
-        elevec(vi*4    ) += fluxfac*pfunct_(vi)*(velintaf_(0)-(*val)[0]*functionfac(0)*curvefac);
-        elevec(vi*4 + 1) += fluxfac*pfunct_(vi)*(velintaf_(1)-(*val)[1]*functionfac(1)*curvefac);
-        elevec(vi*4 + 2) += fluxfac*pfunct_(vi)*(velintaf_(2)-(*val)[2]*functionfac(2)*curvefac);
+
+        /*
+        // factor: 1
+        //
+        //    /                             \
+        //   |    / n+af   \       n+af      |
+        // - |   | u    * n | w , u    - u   |
+        //   |    \        /              b  |
+        //    \  |          |               / boundaryele, inflow
+        //       +----------+
+        //           <0
+        */
+        for (int vi=0; vi<piel; ++vi) 
+        {
+          elevec(vi*4    ) += fluxfac*pfunct_(vi)*bv(0);
+          elevec(vi*4 + 1) += fluxfac*pfunct_(vi)*bv(1);
+          elevec(vi*4 + 2) += fluxfac*pfunct_(vi)*bv(2);
+        }
+      }
+      else
+      {
+
+        /*
+        // factor: 1
+        //
+        //    /                                     \
+        //   |    / n+af   \       / n+af     \      |
+        // - |   | u    * n | w , | u    - u   | o n |
+        //   |    \        /       \        b /      |
+        //    \  |          |                       / boundaryele, inflow
+        //       +----------+
+        //           <0
+        */
+        double bv_o_n=bv(0)*n_(0)+bv(1)*n_(1)+bv(2)*n_(2);
+
+        for (int vi=0; vi<piel; ++vi) 
+        {
+          elevec(vi*4    ) += fluxfac*pfunct_(vi)*n_(0)*bv_o_n;
+          elevec(vi*4 + 1) += fluxfac*pfunct_(vi)*n_(1)*bv_o_n;
+          elevec(vi*4 + 2) += fluxfac*pfunct_(vi)*n_(2)*bv_o_n;
+        }
       }
 
     } // end if flux<0, i.e. boundary is an inflow boundary
@@ -1795,38 +1961,96 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     */
 
     const double penaltytimefac=afgdt*tau_B*fac;
-    for (int ui=0; ui<piel; ++ui) 
+
+    if(!onlynormal)
     {
-      for (int vi=0; vi<piel; ++vi) 
+      for (int ui=0; ui<piel; ++ui) 
       {
-        const double temp=penaltytimefac*pfunct_(ui)*pfunct_(vi);
-        
-        elemat(vi*4    ,ui*4    ) += temp;
-        elemat(vi*4 + 1,ui*4 + 1) += temp;
-        elemat(vi*4 + 2,ui*4 + 2) += temp;
+        for (int vi=0; vi<piel; ++vi) 
+        {
+          const double temp=penaltytimefac*pfunct_(ui)*pfunct_(vi);
+          
+          elemat(vi*4    ,ui*4    ) += temp;
+          elemat(vi*4 + 1,ui*4 + 1) += temp;
+          elemat(vi*4 + 2,ui*4 + 2) += temp;
+        }
+      }
+    }
+    else
+    {
+    
+    /*
+    // factor: nu*Cb/h*afgdt
+    //
+    //    /                  \
+    //   |                    |
+    // + |  w o n , Dacc o n  |
+    //   |                    |
+    //    \                  / boundaryele
+    //
+    */
+      for (int ui=0; ui<piel; ++ui) 
+      {
+        for (int vi=0; vi<piel; ++vi) 
+        {
+          elemat(vi*4    ,ui*4    ) += penaltytimefac*pfunct_(vi)*n_(0)*n_(0)*pfunct_(ui);
+          elemat(vi*4    ,ui*4 + 1) += penaltytimefac*pfunct_(vi)*n_(0)*n_(1)*pfunct_(ui);
+          elemat(vi*4    ,ui*4 + 2) += penaltytimefac*pfunct_(vi)*n_(0)*n_(2)*pfunct_(ui);
+          
+          elemat(vi*4 + 1,ui*4    ) += penaltytimefac*pfunct_(vi)*n_(1)*n_(0)*pfunct_(ui);
+          elemat(vi*4 + 1,ui*4 + 1) += penaltytimefac*pfunct_(vi)*n_(1)*n_(1)*pfunct_(ui);
+          elemat(vi*4 + 1,ui*4 + 2) += penaltytimefac*pfunct_(vi)*n_(1)*n_(2)*pfunct_(ui);
+          
+          elemat(vi*4 + 2,ui*4    ) += penaltytimefac*pfunct_(vi)*n_(2)*n_(0)*pfunct_(ui);
+          elemat(vi*4 + 2,ui*4 + 1) += penaltytimefac*pfunct_(vi)*n_(2)*n_(1)*pfunct_(ui);
+          elemat(vi*4 + 2,ui*4 + 2) += penaltytimefac*pfunct_(vi)*n_(2)*n_(2)*pfunct_(ui);
+        }
       }
     }
     
-    /*
-    // factor: nu*Cb/h
-    //
-    //    /                \
-    //   |        n+af      |
-    // + |   w , u    - u   |
-    //   |               b  |
-    //    \                / boundaryele
-    //
-    */
 
     const double penaltyfac=tau_B*fac;
-    for (int vi=0; vi<piel; ++vi) 
+    if(!onlynormal)
     {
-      elevec(vi*4    ) -= penaltyfac*pfunct_(vi)*
-        (velintaf_(0)-(*val)[0]*functionfac(0)*curvefac);
-      elevec(vi*4 + 1) -= penaltyfac*pfunct_(vi)*
-        (velintaf_(1)-(*val)[1]*functionfac(1)*curvefac);
-      elevec(vi*4 + 2) -= penaltyfac*pfunct_(vi)*
-        (velintaf_(2)-(*val)[2]*functionfac(2)*curvefac);
+      /*
+      // factor: nu*Cb/h
+      //
+      //    /                \
+      //   |        n+af      |
+      // + |   w , u    - u   |
+      //   |               b  |
+      //    \                / boundaryele
+      //
+      */
+
+      for (int vi=0; vi<piel; ++vi) 
+      {
+        elevec(vi*4    ) -= penaltyfac*pfunct_(vi)*bv(0);
+        elevec(vi*4 + 1) -= penaltyfac*pfunct_(vi)*bv(1);
+        elevec(vi*4 + 2) -= penaltyfac*pfunct_(vi)*bv(2);
+      }
+    }
+    else
+    {
+      /*
+      // factor: nu*Cb/h
+      //
+      //    /                           \
+      //   |            / n+af   \       |
+      // + |   w o n , | u    - u | o n  |
+      //   |            \  b     /       |
+      //    \                           / boundaryele
+      //
+      */
+
+      double bv_o_n=bv(0)*n_(0)+bv(1)*n_(1)+bv(2)*n_(2);
+
+      for (int vi=0; vi<piel; ++vi) 
+      {
+        elevec(vi*4    ) -= penaltyfac*pfunct_(vi)*n_(0)*bv_o_n;
+        elevec(vi*4 + 1) -= penaltyfac*pfunct_(vi)*n_(1)*bv_o_n;
+        elevec(vi*4 + 2) -= penaltyfac*pfunct_(vi)*n_(2)*bv_o_n;
+      }
     }
   } // end gaussloop
 
