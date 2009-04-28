@@ -713,14 +713,19 @@ void f3_calc_smag_const_LijMij_and_MijMij(
     );
 
   /*!
-   * \brief integrate shape functions over volume element
-   * \return 
+    \brief integrate shape functions over volume element
+
+    \param discretization (i) the discretisation (required in the nurbs case)
+    \param lm             (i) location vector (to get ale displacements from global vectors)
+    \param w              (o) shape functions integrated over element (a so called 'weight' vector)
+
+    \return 
    */
   template<int iel> 
   void integrateShapefunction(
     DRT::Discretization&      discretization,
     vector<int>&              lm            ,
-    Epetra_SerialDenseVector& elevec1       );
+    Epetra_SerialDenseVector& w             );
 
   /*!
    * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary

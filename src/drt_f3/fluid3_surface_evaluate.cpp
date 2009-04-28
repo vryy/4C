@@ -524,7 +524,12 @@ void DRT::ELEMENTS::Fluid3Surface::SurfaceConservativeOutflowConsistency(
 
     RefCountPtr<DRT::NURBS::Knotvector> knots=(*nurbsdis).GetKnotVector();
 
-    knots->GetEleKnots(mypknots,parent_->Id());
+    bool zero_size=knots->GetEleKnots(mypknots,parent_->Id());
+
+    if(zero_size)
+    {
+      return;
+    }
 
     switch(surfaceid)
     {
