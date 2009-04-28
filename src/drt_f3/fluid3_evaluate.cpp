@@ -2623,7 +2623,6 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
 template<int iel> 
 void DRT::ELEMENTS::Fluid3::integrateShapefunction(
     DRT::Discretization&      discretization,
- 
     vector<int>&              lm            ,
     Epetra_SerialDenseVector& elevec1       )
 {
