@@ -21,7 +21,6 @@ Maintainer: Christian Cyron
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/linalg_fixedsizematrix.H"
 
-
 #ifdef D_BEAM3
 #include "../drt_beam3/beam3.H"
 #endif  // #ifdef D_BEAM3
@@ -32,6 +31,9 @@ Maintainer: Christian Cyron
 #include <iostream>
 #include <iomanip>
 #include <cstdio>
+
+//MEASURETIME activates measurement of computation time for certain parts of the code
+#define MEASURETIME
 
 
 /*----------------------------------------------------------------------*
@@ -443,40 +445,54 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
       endold_   = endnew;
     }
     break;
-    //measurement of viscoelastic properties should be carried out by means of force sensors
     case INPAR::STATMECH::statout_viscoelasticity:
-    {   
-      //pointer to file into which each processor writes the output related with the dof of which it is the row map owner
-      FILE* fp = NULL; 
-           
-      //content to be written into the output file
-      std::stringstream filecontent;
+     {   
+       //pointer to file into which each processor writes the output related with the dof of which it is the row map owner
+       FILE* fp = NULL; 
+            
+       //content to be written into the output file
+       std::stringstream filecontent;
+       
+       //name of file into which output is written
+       std::ostringstream outputfilename; 
+       outputfilename << "ViscoElOutputProc"<< discret_.Comm().MyPID() << ".dat";
       
-      //name of file into which output is written
-      std::ostringstream outputfilename; 
-      outputfilename << "ViscoElOutputProc"<< discret_.Comm().MyPID() << ".dat";
-     
-      fp = fopen(outputfilename.str().c_str(), "a");
+       fp = fopen(outputfilename.str().c_str(), "a");
+       
+       /*the output to be written consists of internal forces at exactly those degrees of freedom
+        * marked in *forcesensor_ by a one entry*/
+       
+       filecontent << scientific << setprecision(10) << time;//changed
+       
+ #ifdef DEBUG
+       if(forcesensor_ == null)
+         dserror("forcesensor_ is NULL pointer; possible reason: dynamic crosslinkers not activated and forcesensor applicable in this case only");
+ #endif  // #ifdef DEBUG
+       
+         double f=0;//Mittlere Kraft
+         double s=0;//Standardabweichung
+         double f2=0;//Quadratsumme von f
+         double d=0;//Displacement
+         int n=0; //Num of Forcesensors at the Top of the cube
+       for(int i = 0; i < forcesensor_->MyLength(); i++)//changed
+         {if( (*forcesensor_)[i] == 1)
+             {
+           f+=fint[i];
+           f2+=pow(fint[i], 2);//neu sum f^2
+           d=dis[i];
+           n++;
+             }
+          }
+       s=pow(f2/n, 0.5);
+       f=f/n;//<f>
       
-      /*the output to be written consists of internal forces at exactly those degrees of freedom
-       * marked in *forcesensor_ by a one entry*/
-      
-      filecontent << endl << endl << endl << scientific << setprecision(10) << "measurement data in timestep " << istep << ", time = " << time << endl << endl;
-      
-#ifdef DEBUG
-      if(forcesensor_ == null)
-        dserror("forcesensor_ is NULL pointer; possible reason: dynamic crosslinkers not activated and forcesensor applicable in this case only");
-#endif  // #ifdef DEBUG
-      
-      for(int i = 0; i < forcesensor_->MyLength(); i++)
-        if( (*forcesensor_)[i] == 1)
-          filecontent << "displacement = "<< dis[i] << "  internal force = "<< fint[i] << endl; 
-         
-      //writing filecontent into output file and closing it
-      fprintf(fp,filecontent.str().c_str());
-      fclose(fp);
+       //Putting time, displacement, meanforce and meanderiation in Filestream
+       filecontent << "   "<< d << "   " << f << "   " << s << "   "<< discret_.NumMyRowElements() << endl; //changed
+       //writing filecontent into output file and closing it
+       fprintf(fp,filecontent.str().c_str());
+       fclose(fp);
 
-    }
+     }
     break;
     //writing data for generating a Gmsh video of the simulation
     case INPAR::STATMECH::statout_gmsh:
@@ -752,6 +768,10 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& disro
 {  
   #ifdef D_BEAM3
   
+#ifdef MEASURETIME
+    const double t_start = ds_cputime();
+#endif // #ifdef MEASURETIME
+  
   //if dynamic crosslinkers are used update comprises adding and deleting crosslinkers
   if(Teuchos::getIntegralValue<int>(statmechparams_,"DYN_CROSSLINKERS"))
   {
@@ -872,68 +892,72 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& disro
         delcrosslinkercol[i] = 0;
     }  
     
-    
+#ifdef MEASURETIME
+    const double t_search = ds_cputime();
+#endif // #ifdef MEASURETIME   
     
     //after having determined for which nodes crosslinkers may be set or deleted we search for each node all its neighbours
     for(int i = 0; i < discret_.NumMyColNodes(); i++)
     { 
-      //for each node the set of all potential neighbours consists of all column map LIDs
-      std::vector<int> idvector;
-      for(int id = 0; id < discret_.NumMyColNodes(); id++)
-        idvector.push_back(id);
       
-      //the brute force way to determine possible neighbours is to consider all the other nodes as potential neighbours
-      //neighbours.insert(make_pair(i,idvector));
-      
-      //the clever way to determine possible neighbours is using a search tree
-      neighbours.insert(make_pair(i,octTree_->searchPointsInRadius(currentpositions,(currentpositions.find(i))->second,rlink)));
-
+      /*only for those nodes having passed the probability check a crosslinker may be established (if some other criteria
+       * are met by this node, too); thus, only for these nodes we have to check which is the nearest neighbour with which
+       * they could be crosslinked*/
+      if(setcrosslinkercol[i] ==1)
+      {     
+        /*for each node we look for potential neighbours, i.e. for neighbours withint distance rlink; the LIDs of such
+         * neighbours are stored in the variable idvector*/
+        std::vector<int> neighboursLIDs;
+       
+        //the brute force way to determine potential neighbours is to just consider all nodes
+        for(int id = 0; id < discret_.NumMyColNodes(); id++)
+          neighboursLIDs.push_back(id);
+        
+        //the clever way to determine possible neighbours is using a search tree
+        //neighboursLIDs = octTree_->searchPointsInRadius(currentpositions,(currentpositions.find(i))->second,rlink);
+          
+        //distance of the so far nearest neighbour (initialized with rlink) 
+        double rneighbour = rlink;
+        
+        //getting current position of node i from map currentpositions
+        map< int,LINALG::Matrix<3,1> >::iterator posi = currentpositions.find(i);
+                        
+        for(int j = 0; j < (int)neighboursLIDs.size(); j++) //iterating through set ineighbourset
+        {    
+          //getting current position of node ineighbourvector[j] from map currentpositions
+          map< int,LINALG::Matrix<3,1> >::iterator posj = currentpositions.find(neighboursLIDs[j]);
+          
+          
+          /*crosslinkers are established only if either two nodes belong to the same filament or if the filament
+           * numbering is deactivated (-> all filamentnumbers set to -1); furthermore the node with the higher
+           * global Id decides whether a crosslinker is established between two nodes so that we search only the
+           * nodes with lower global Ids whether they are close to a certain node */
+           if( (*filamentnumber_)[i] != (*filamentnumber_)[ neighboursLIDs[j] ] || (*filamentnumber_)[i] == -1)
+           {
+             //difference vector between node i and j
+             LINALG::Matrix<3,1> difference;                
+             for(int k = 0; k<3; k++)
+               difference(k) = (posi->second)(k) - (posj->second)(k);
+  
+             
+             if(difference.Norm2() < rneighbour)
+             {
+               nearestneighbour[i] = neighboursLIDs[j];
+               rneighbour = difference.Norm2();
+             }           
+            }
+          } 
+      }
       
     }
     
-    //from the above preselection of neighbours we select the nearest neighbour which is not on the same filament
-    for(int i = 0; i < discret_.NumMyColNodes(); i++) //iterating through all the elements of the map neighbours
-    {  
-      /*declaring constant iterator for access to elements of map "neighbours" related with number i; this iterator
-       * hast two components which can be addressed by "->first" and "->second", where the first component is the
-       * number i itself and the second one the set at which number i points*/
-      map< int,std::vector<int> >::iterator mapit = neighbours.find(i);
-      
-      //getting set at which number i points in map neighbours;
-      std::vector<int> ineighbourvector = mapit->second;
-      
-      //distance of the so far nearest neighbour (initialized with rlink) 
-      double rneighbour = rlink;
-      
-      //getting current position of node i from map currentpositions
-      map< int,LINALG::Matrix<3,1> >::iterator posi = currentpositions.find(i);
-                      
-      for(int j = 0; j < (int)ineighbourvector.size(); j++) //iterating through set ineighbourset
-      {    
-        //getting current position of node ineighbourvector[j] from map currentpositions
-        map< int,LINALG::Matrix<3,1> >::iterator posj = currentpositions.find(ineighbourvector[j]);
-        
-        
-        /*crosslinkers are established only if either two nodes belong to the same filament or if the filament
-         * numbering is deactivated (-> all filamentnumbers set to -1); furthermore the node with the higher
-         * global Id decides whether a crosslinker is established between two nodes so that we search only the
-         * nodes with lower global Ids whether they are close to a certain node */
-         if( (*filamentnumber_)[i] != (*filamentnumber_)[ ineighbourvector[j] ] || (*filamentnumber_)[i] == -1)
-         {
-           //difference vector between node i and j
-           LINALG::Matrix<3,1> difference;                
-           for(int k = 0; k<3; k++)
-             difference(k) = (posi->second)(k) - (posj->second)(k);
+#ifdef MEASURETIME
+    cout << "\n***\nsearch time: " << ds_cputime() - t_search<< " seconds\n***\n";
+#endif // #ifdef MEASURETIME
 
-           
-           if(difference.Norm2() < rneighbour)
-           {
-             nearestneighbour[i] = ineighbourvector[j];
-             rneighbour = difference.Norm2();
-           }           
-          }
-        }
-      } //for(int i = 0; i < discret_.NumMyColNodes(); i++)
+#ifdef MEASURETIME
+    const double t_admin = ds_cputime();
+#endif // #ifdef MEASURETIME 
     
     //setting the crosslinkers of nodes marked by a one entry in vector delcrosslinkercol
     SetCrosslinkers(setcrosslinkercol,nodecolmap,nearestneighbour,currentpositions,currentrotations);
@@ -941,8 +965,7 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& disro
      
     //deleting the crosslinkers of all nodes marked by a one entry in vector delcrosslinkercol
     DelCrosslinkers(delcrosslinkercol,nodecolmap);
-        
-  
+      
     /*settling administrative stuff in order to make the discretization ready for the next time step: the following
      * commmand generates or deletes ghost elements if necessary and calls FillCompete() method of discretization; 
      * this is enough as long as only elements, but no nodes are added in a time step; finally Crs matrices stiff_ and
@@ -951,9 +974,18 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& disro
     discret_.FillComplete(true,false,false);
     stiff_->Reset();
     damp_->Reset();
+    
+#ifdef MEASURETIME
+    cout << "\n***\nadministration time: " << ds_cputime() - t_admin<< " seconds\n***\n";
+#endif // #ifdef MEASURETIME
       
 
   }//if(Teuchos::getIntegralValue<int>(statmechparams_,"DYN_CROSSLINKERS"))
+  
+#ifdef MEASURETIME
+    const double Delta_t = ds_cputime()-t_start;
+    cout << "\n***\ntotal time: " << Delta_t<< " seconds\n***\n";
+#endif // #ifdef MEASURETIME
   
   #endif
   
@@ -1047,6 +1079,8 @@ void StatMechManager::SetCrosslinkers(const Epetra_Vector& setcrosslinkercol,con
        //only at the same time a unique global Id can be found by taking the number of elemnts in the discretization
        //before starting dealing with crosslinkers and adding to the smaller one of the two involved global nodal Ids     
        newcrosslinker->SetId( basiselements_ + min(nodecolmap.GID(i),nodecolmap.GID((int)nearestneighbour[i])) ); 
+       
+       std::cout<<"\ncrosslinker Id = "<< basiselements_ + min(nodecolmap.GID(i),nodecolmap.GID((int)nearestneighbour[i]));
        
        
        //nodes are assigned to the new crosslinker element by first assigning global node Ids and then assigning nodal pointers
