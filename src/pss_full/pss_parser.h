@@ -59,4 +59,7 @@ DOUBLE pss_evaluate_curve(struct _ST_NODE* funct, DOUBLE t);
 /* print the parsed function */
 void pss_parser_print(FILE* out, struct _ST_NODE* node);
 
+/* a Heaviside function */
+double heaviside();
+
 #endif

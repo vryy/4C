@@ -72,32 +72,68 @@ typedef struct _FUNCTAB
 
 FUNCTAB function[] =
 {
-  { "acos", acos },
-  { "asin", asin },
-  { "atan", atan },
+  { "acos"     , acos      },
+  { "asin"     , asin      },
+  { "atan"     , atan      },
   /*atan2*/
 
-  { "cos", cos },
-  { "sin", sin },
-  { "tan", tan },
+  { "cos"      , cos       },
+  { "sin"      , sin       },
+  { "tan"      , tan       },
 
-  { "cosh", cosh },
-  { "sinh", sinh },
-  { "tanh", tanh },
+  { "cosh"     , cosh      },
+  { "sinh"     , sinh      },
+  { "tanh"     , tanh      },
 
-  { "exp", exp },
-  { "log", log },
-  { "log10", log10 },
+  { "exp"      , exp       },
+  { "log"      , log       },
+  { "log10"    , log10     },
 
-  { "sqrt", sqrt },
+  { "sqrt"     , sqrt      },
 
-  { "ceil", ceil },
-  { "fabs", fabs },
-  { "floor", floor },
+  { "ceil"     , ceil      },
+  { "fabs"     , fabs      },
+  { "floor"    , floor     },
+  { "heaviside", heaviside },
 
   { NULL, NULL }
 };
 
+/*----------------------------------------------------------------------*/
+/*!
+  \brief A Heaviside jump function 
+
+  <pre>
+
+                               ^ heaviside(x)
+                               |
+                               |
+                           1.0 +----------------
+                               |
+              -----------------c      ------------>
+                                0.0               x
+            
+  </pre>
+
+  \author gammi
+  \date 04/09
+*/
+/*----------------------------------------------------------------------*/
+
+double heaviside(double x)
+{
+  double rv;
+  if(x>0)
+  {
+    rv=1.0;
+  }
+  else
+  {
+    rv=0.0;
+  }
+
+  return(rv);
+}
 
 /*----------------------------------------------------------------------*/
 /*!
