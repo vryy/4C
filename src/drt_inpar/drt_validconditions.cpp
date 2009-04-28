@@ -342,6 +342,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                                                        Teuchos::tuple<std::string>("default","OriginRadialSliding","FunctionEvaluation"),
                                                                        Teuchos::tuple<std::string>("default","OriginRadialSliding","FunctionEvaluation"),
                                                                        true)));
+  locsyscomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("(axis,angle)-funct",2,false,false,true)));
  
   Teuchos::RCP<ConditionDefinition> pointlocsys =
     Teuchos::rcp(new ConditionDefinition("DESIGN POINT LOCSYS CONDITIONS",

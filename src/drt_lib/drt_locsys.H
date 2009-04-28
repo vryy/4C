@@ -173,6 +173,84 @@ protected:
   LocsysManager operator = (const LocsysManager& old);
   LocsysManager(const LocsysManager& old);
 
+  /// @name Methods for Local coordinate systems varying in space
+                   
+  /*!
+
+  \brief Construct rotation matrix around given axis
+
+  \param x     (i) first coordinate of rotation axis
+  \param y     (i) second coordinate of rotation axis
+  \param z     (i) third coordinate of rotation axis
+  \param angle (i) rotation angle
+
+  */
+  void SetAxisRotation(const double x,const double y,const double z,const double angle)
+  {
+    // norm axis vector
+
+    const double norm=sqrt(x*x+y*y+z*z);
+
+    if(norm<1e-9)
+    {
+      dserror("rotation axis specified incorrectly (length near zero)\n");
+    }
+
+    LINALG::Matrix<3,1> n;
+    n(0)=x/norm;
+    n(1)=y/norm;
+    n(2)=z/norm;
+
+    // set up rotation
+    const double sa  =sin(angle);
+    const double ca  =cos(angle);
+    const double omca=1-ca;
+
+    /*
+
+ +--                                            |                                             |                                             --+
+ |                                              |                                             |                                               |
+ |             cos(a)    + n_x*n_x*(1.0-cos(a)) | n_x*n_y*(1.0-cos(a)) +     n_z*sin(a)       | n_x*n_z*(1.0-cos(a)) +     n_y*sin(a)         |
+ |                                              |                                             |                                               |
+ |                                              |                                             |                                               |
+ |  n_y*n_x*(1.0-cos(a)) +     n_z*sin(a)       |            cos(a)    + n_y*n_y*(1.0-cos(a)) | n_y*n_z*(1.0-cos(a)) -     n_x*sin(a)         |
+ |                                              |                                             |                                               |
+ |                                              |                                             |                                               |
+ |  n_z*n_x*(1.0-cos(a)) -     n_y*sin(a)       | n_z*n_y*(1.0-cos(a)) -     n_x*sin(a)       |            cos(a)    + n_z*n_z*(1.0-cos(a))   |
+ |                                              |                                             |                                               |
+ +--                                            |                                             |                                             --+
+
+    */
+
+    R_(0,0)=            ca + n(0)*n(0)*omca;
+    R_(1,0)=n(1)*n(0)*omca +      n(2)*sa;
+    R_(2,0)=n(2)*n(0)*omca -      n(1)*sa;
+
+    R_(0,1)=n(0)*n(1)*omca -      n(2)*sa;
+    R_(1,1)=            ca + n(1)*n(1)*omca;
+    R_(2,1)=n(2)*n(1)*omca +      n(0)*sa;
+
+    R_(0,2)=n(0)*n(2)*omca +      n(1)*sa;
+    R_(1,2)=n(1)*n(2)*omca -      n(0)*sa;
+    R_(2,2)=            ca + n(2)*n(2)*omca;
+    
+    return;
+  }
+  /*
+  \brief Rotate a given vector using rotation matrix R_
+
+  \param vec (i/o) vector to rotate
+  */
+  void LocalRotation(LINALG::Matrix<3,1> & vec)
+  {
+    LINALG::Matrix<3,1> old(vec);
+
+    vec.Multiply(R_,old);
+
+    return;
+  }  
+  // @}
+
   /// @name Private Attributes
   //@{
   
@@ -202,6 +280,10 @@ protected:
   
   /// number of local systems
   int                                      numlocsys_;
+
+  /// Rotation matrix for coordinate systems varying in space
+  LINALG::Matrix<3,3>                      R_;
+
   
   /// types of local systems conditions
   vector<DRT::Condition::ConditionType>    typelocsys_;

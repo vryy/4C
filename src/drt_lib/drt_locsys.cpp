@@ -18,6 +18,7 @@ Maintainer: Alexander Popp
 #include "drt_locsys.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_function.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -465,6 +466,15 @@ void DRT::UTILS::LocsysManager::Setup()
   // get dof row layout of discretization
   const Epetra_Map* dofrowmap = discret_.DofRowMap();
 
+  // we need to make sure that two nodes sharing the same dofs are not 
+  // transformed twice. This is a NURBS/periodic boundary feature.
+  RCP<Epetra_Vector> already_processed = LINALG::CreateVector(*dofrowmap,true);
+  already_processed->PutScalar(0.0);
+
+  // for transformleftonly_ option, perform a check for zero diagonal
+  // elements. They will crash the SGS-like preconditioners
+  bool sanity_check=false;
+
   // number of nodes subjected to local co-ordinate systems
   set<int> locsysdofset;
     
@@ -479,6 +489,22 @@ void DRT::UTILS::LocsysManager::Setup()
     int numdof = (int)dofs.size();
     int locsysindex = (int)(*locsystoggle_)[i];
     
+    // skip nodes whos dofs have already been processed
+    bool skip=false;
+
+    for(int rr=0;rr<numdof;++rr)
+    {
+      if((*already_processed)[dofrowmap->LID(dofs[rr])]>1e-9)
+      {
+        skip=true;
+      }
+    }
+    
+    if(skip)
+    {
+      continue;
+    }
+
     // unity matrix for non-locsys node (programmed late at night)
     if (locsysindex<0)
     {
@@ -488,41 +514,165 @@ void DRT::UTILS::LocsysManager::Setup()
     // trafo matrix for locsys node
     else
     {
+
+      // first create an identity matrix of size numdof --- the default node
+      // trafo, applying in particular to pressure dofs in fluid problems
       Epetra_SerialDenseMatrix nodetrafo(numdof,numdof);
-      
-      // first create an identity matrix of size numdof
+
       for (int k=0;k<numdof;++k) nodetrafo(k,k)=1.0;
+       
+      // ---------------------------------------------------
+      //
+      // tnb-vectors (tangent, normal, binormal)
+      //
+      // o in the default case without a spatial function, they are just 
+      //   copies of the vectors stored in the condition
+      // o in the case of spatial functions applied to the local coordinate 
+      //   system, they are rotated according to the prescribed function
+      //
+      LINALG::Matrix<3,1> n;
+      LINALG::Matrix<3,1> t;
+      LINALG::Matrix<3,1> b;
+
+      n.Clear();
+      t.Clear();
+      b.Clear();
+
+      for (int k=0;k<Dim();++k)
+      {
+        n(k)=normals_ (locsysindex,k);
+        t(k)=tangents_(locsysindex,k);
+      }
+      if (Dim()==3)
+      {
+        for (int k=0;k<Dim();++k)
+        {
+          b(k)=thirddir_(locsysindex,k);
+        }
+      }
+
+      DRT::Condition* currlocsys = locsysconds_[locsysindex];
+      const vector<int>*   funct = currlocsys->Get<vector<int> >("(axis,angle)-funct");
+      if(funct)
+      { 
+        // sanity checks
+        if(funct->size()!=2)
+        {
+          dserror("two functions are required. One three-component vector valued (axis), one scalar (angle)\n");
+        }
+
+        if((*funct)[0]>0 && (*funct)[1]>0)
+        {
+          // check number of components in both spatial functions
+          if((DRT::UTILS::FunctionManager::Instance().Funct((*funct)[0]-1)).NumberComponents()!=3)
+          {
+            dserror("expecting vector-valued function for rotation axis of local coordinate system, but got %d components\n",(DRT::UTILS::FunctionManager::Instance().Funct((*funct)[0]-1)).NumberComponents());
+          }
+          if((DRT::UTILS::FunctionManager::Instance().Funct((*funct)[1]-1)).NumberComponents()!=1)
+          {
+            dserror("expecting scalar function for rotation angle of local coordinate system, got %d components\n",(DRT::UTILS::FunctionManager::Instance().Funct((*funct)[1]-1)).NumberComponents());
+          }
+          
+          // if necessary, the local coordinate system is rotated according to 
+          // a given spatial functions (for curved surfaces etc.)
+          const double time =0.0;
+  
+          
+          const double angle=(DRT::UTILS::FunctionManager::Instance().Funct((*funct)[1]-1)).Evaluate(
+            0        ,
+            node->X(),
+            time     ,
+            &discret_);
+          const double x=(DRT::UTILS::FunctionManager::Instance().Funct((*funct)[0]-1)).Evaluate(
+            0        ,
+            node->X(),
+            time     ,
+            &discret_);
+          const double y=(DRT::UTILS::FunctionManager::Instance().Funct((*funct)[0]-1)).Evaluate(
+            1        ,
+            node->X(),
+            time     ,
+            &discret_);
+          const double z=(DRT::UTILS::FunctionManager::Instance().Funct((*funct)[0]-1)).Evaluate(
+            2        ,
+            node->X(),
+            time     ,
+            &discret_);
       
+          // set rotation matrix R_
+          SetAxisRotation(x,y,z,angle);      
+          
+          // compute rotated local coordinate system according to precomputed 
+          // rotation matrix R_
+          LocalRotation(n);
+          LocalRotation(t);
+          LocalRotation(b);
+        } // end if(funct)
+
+        if(transformleftonly_)
+        {
+          // sanity check
+          if(fabs(n(0))<1e-9 || fabs(t(1))<1e-9 || fabs(b(2))<1e-9)
+          {
+            sanity_check=true;
+          }
+        }
+      }
+      // ---------------------------------------------------
+      // set rotation of this nodes dofs ('nodetrafo') 
+
       // trafo for 2D and 3D case
-      nodetrafo(0,0)=normals_(locsysindex,0);
-      nodetrafo(0,1)=normals_(locsysindex,1);
-      nodetrafo(1,0)=tangents_(locsysindex,0);
-      nodetrafo(1,1)=tangents_(locsysindex,1);
+      nodetrafo(0,0)=n(0);
+      nodetrafo(0,1)=n(1);
+      nodetrafo(1,0)=t(0);
+      nodetrafo(1,1)=t(1);
       
       // additional trafo for 3D case
       if (Dim()==3)
       {
-        nodetrafo(0,2)=normals_(locsysindex,2);
-        nodetrafo(1,2)=tangents_(locsysindex,2);
-        nodetrafo(2,0)=thirddir_(locsysindex,0);
-        nodetrafo(2,1)=thirddir_(locsysindex,1);
-        nodetrafo(2,2)=thirddir_(locsysindex,2);
+        nodetrafo(0,2)=n(2);
+        nodetrafo(1,2)=t(2);
+        nodetrafo(2,0)=b(0);
+        nodetrafo(2,1)=b(1);
+        nodetrafo(2,2)=b(2);
       }
-      
+
+      // Assemble the rotation of this dofs ('nodetrafo') into the global matrix
       for (int r=0;r<numdof;++r)
+      {
         for (int c=0;c<numdof;++c)
+        {
           trafo_->Assemble(nodetrafo(r,c),dofs[r],dofs[c]);
+        }
+      }
 
       // store the DOF with locsys
       if (transformleftonly_)
         for (int r=0;r<numdof;++r)
           locsysdofset.insert(dofs[r]);
+    }
 
+    // node dofs are marked now as already processed
+    for (int rr=0;rr<numdof;++rr)
+    {
+      (*already_processed)[dofrowmap->LID(dofs[rr])]=1.0;
     }
   }
 
   // complete transformation matrix
   trafo_->Complete();
+
+  // throw warning if transformation matrix has zero diagonal elements since
+  // they end up on the diagonal of the system matrix in the fast 
+  // transformleftonly_ case
+  if(sanity_check && transformleftonly_)
+  {
+    printf("Locsys warning:\n");
+    printf("A zero diagonal element on the transformation matrix occured on proc %d.\n",Comm().MyPID());
+    printf("This will probably cause a crash in the AZTEC preconditioner.\n");
+    printf("Try not to rotate your local coordinate system by 90 degrees \n");
+    printf("or more or use the slow version.\n");
+  }
 
   //**********************************************************************
   // Build map holding DOFs linked to nodes with local co-ordinate system

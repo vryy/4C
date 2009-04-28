@@ -100,6 +100,19 @@ namespace UTILS {
 
     /*!
 
+    \brief Return the number of components of this spatial function
+    (1 for scalar functions, dim for vector-valued functions)
+
+    \return number of components
+
+    */
+    virtual int NumberComponents()
+      {
+        return(-1);
+      };
+
+    /*!
+
     \brief output operator
 
     */
@@ -174,6 +187,18 @@ namespace UTILS {
     
     */
     void AddExpr(char* buf, double x, double y, double z);
+    /*!
+
+    \brief Return the number of components of this spatial function
+    (1 for scalar functions, dim for vector-valued functions)
+
+    \return number of components
+
+    */
+    virtual int NumberComponents()
+      {
+        return(expr_.size());
+      };
 
   private:
 
@@ -231,6 +256,20 @@ namespace UTILS {
 
     */
     double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+
+    /*!
+
+    \brief Return the number of components of this spatial function
+    (This is a vector-valued function)
+
+    \return number of components (u,v,w,p)
+
+    */
+    virtual int NumberComponents()
+      {
+        return(4);
+      };
+
   };
 
 
@@ -249,6 +288,20 @@ namespace UTILS {
 
     */
     double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+
+    /*!
+
+    \brief Return the number of components of this spatial function
+    (this is a vector-valued functions)
+
+    \return number of components (u,v,p)
+
+    */
+    virtual int NumberComponents()
+      {
+        return(3);
+      };
+
   };
 
 
@@ -263,7 +316,7 @@ namespace UTILS {
     
     /// evaluate function at given position in space
     double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
-  
+
   private:
   
     bool                 isinit_;
