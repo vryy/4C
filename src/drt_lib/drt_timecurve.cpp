@@ -284,19 +284,18 @@ std::vector<double> DRT::UTILS::PolygonalTimeSlice::FctDer(const double t,
   // resulting vector holding
   std::vector<double> res(deg+1);
 
-  if (deg >= 0)
-  {
-    // value of time curve f at time t (0th derivative)
-    res[0] = f(t);
-  } 
+  // value of time curve f at time t (0th derivative)
+  res[0] = f(t);
+
+  // 1st derivative of time curve f at time t
   if (deg >= 1)
   {
-    // 1st derivative of time curve f at time t
     res[1] = (value_end_-value_begin_)/(end()-begin());
   }
+
+  // 2nd derivative of time curve f at time t  
   if (deg >= 2)
   {
-    // 2nd derivative of time curve f at time t
     res[2] = 0;
   }
   
@@ -445,10 +444,7 @@ std::vector<double> DRT::UTILS::ExplicitTimeSlice::FctDer(const double t,
   std::vector<double> res(deg+1);
 
   // function
-  if (deg >= 0)
-  {
-    res[0] = f(t);
-  }
+  res[0] = f(t);
 
   // derivatives
   if (deg >= 1)
@@ -529,11 +525,8 @@ std::vector<double> DRT::UTILS::LungTimeSlice::FctDer(const double t,
   std::vector<double> res(deg+1);
 
   // function
-  if (deg >= 0)
-  {
-    res[0] = f(t);
-  }
-
+  res[0] = f(t);
+  
   // derivatives
   if (deg >= 1)
   {
@@ -650,10 +643,7 @@ std::vector<double> DRT::UTILS::BloodTimeSlice::FctDer(const double t,
   std::vector<double> res(deg+1);
 
   // function
-  if (deg >= 0)
-  {
-    res[0] = f(t);
-  }
+  res[0] = f(t);
 
   // derivatives
   if (deg >= 1)
@@ -720,10 +710,7 @@ std::vector<double> DRT::UTILS::ExprTimeSlice::FctDer(const double t,
   std::vector<double> res(deg+1);
 
   // function
-  if (deg >= 0)
-  {
-    res[0] = f(t);
-  }
+  res[0] = f(t);
 
   // derivatives
   if (deg >= 1)
@@ -791,7 +778,8 @@ std::vector<double> DRT::UTILS::TimeCurve::FctDer(const double t,
                                                   const unsigned deg)
 {
   // verify
-  dsassert(deg>=0 && deg<=2, "Highest degree of differentation must be in [0,2]");
+  if (deg > 2)
+    dserror("Highest degree of differentation must be in [0,2]");
 
   if (slices_.size()==0)
     dserror("No time slices defined. Fix input.");
