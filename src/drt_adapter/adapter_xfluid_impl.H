@@ -205,7 +205,7 @@ namespace ADAPTER {
     //LINALG::MapExtractor                   meshmap_;
 
     //! @name local copies of input parameters
-    Teuchos::RCP<DRT::Discretization>      dis_;
+//    Teuchos::RCP<DRT::Discretization>      dis_;
     Teuchos::RCP<DRT::Discretization>      boundarydis_;
     Teuchos::RCP<Teuchos::ParameterList>   params_;
     Teuchos::RCP<IO::DiscretizationWriter> boundaryoutput_;

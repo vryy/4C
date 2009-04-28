@@ -42,7 +42,6 @@ ADAPTER::XFluidImpl::XFluidImpl(
         const Teuchos::RCP<DRT::Discretization> soliddis,
         Teuchos::RCP<ParameterList> params)
   : fluid_(dis, *params),
-    dis_(dis),
     params_(params)
 {
           
@@ -164,8 +163,8 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::Dispnp()
 Teuchos::RCP<const Epetra_Map> ADAPTER::XFluidImpl::DofRowMap()
 {
   dserror("not implemented");
-  const Epetra_Map* dofrowmap = dis_->DofRowMap();
-  return Teuchos::rcp(dofrowmap, false);
+//  const Epetra_Map* dofrowmap = dis_->DofRowMap();
+  return Teuchos::null;
 }
 
 
@@ -249,7 +248,7 @@ void ADAPTER::XFluidImpl::Update()
 
   // compute acceleration at timestep n+1
   Teuchos::RCP<Epetra_Vector> iaccnp = rcp(new Epetra_Vector(iaccn_->Map()));
-  Teuchos::RCP<Epetra_Vector> ivelnp = rcp(new Epetra_Vector(iveln_->Map()));
+//  Teuchos::RCP<Epetra_Vector> ivelnp = rcp(new Epetra_Vector(iveln_->Map()));
   const double theta = 1.0;
   iaccnp->Update(-(1.0-theta)/(theta),*iaccn_,0.0);
   iaccnp->Update(1.0/(theta*dt),*ivelnp_,-1.0/(theta*dt),*iveln_,1.0);
@@ -473,7 +472,6 @@ void ADAPTER::XFluidImpl::NonlinearSolve()
   Teuchos::RCP<Epetra_Export> conimpo = Teuchos::rcp (new Epetra_Export(itruerescol->Map(),itrueresnp_->Map()));
   itrueresnp_->PutScalar(0.0);
   itrueresnp_->Export(*itruerescol,*conimpo,Add); 
-  //LINALG::Export(*itruerescol,*itrueresnp_);
   
   if (TimIntScheme() == timeint_stationary)
   {
@@ -676,7 +674,7 @@ void ADAPTER::XFluidImpl::RemoveInternalSurfElements(
     // center in local coordinates
     const LINALG::Matrix<2,1> localcenterpos(DRT::UTILS::getLocalCenterPosition<2>(surfele->Shape()));
     // center in physical coordinates
-    static LINALG::Matrix<3,1> physicalcenterpos;
+    LINALG::Matrix<3,1> physicalcenterpos;
     GEO::elementToCurrentCoordinates(surfele->Shape(), xyze_surf, localcenterpos, physicalcenterpos);
     
     LINALG::Matrix<3,1> unitnormalvec;
