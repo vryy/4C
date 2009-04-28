@@ -3965,6 +3965,7 @@ template<unsigned int rows, unsigned int cols>
 Matrix<rows, cols>::Matrix(const Matrix<rows,cols>& source) :
   data_(0), isview_(false)
 {
+  DENSEERROR::Checker<(rows != 0) and cols != 0>::Matrix_dimensions_cannot_be_zero();
   data_ = new double[rows*cols];
   std::memcpy(data_, source.data_, rows*cols*sizeof(double));
 }
@@ -4054,9 +4055,9 @@ void Matrix<rows,cols>::Print(std::ostream& out) const
     if (i!=0) out << ' ';
     for (unsigned int j = 0; j < cols; ++j) {
       out << data_[i+rows*j];
-      if (j < cols-1) out << ", ";
+      if (j+1 < cols) out << ", ";
     }
-    if (i < rows-1) out << ",\n";
+    if (i+1 < rows) out << ",\n";
     else out << "]\n";
   }
 }
@@ -4114,7 +4115,7 @@ template<unsigned int rows, unsigned int cols>
 inline double& Matrix<rows, cols>::operator()(unsigned int r, unsigned int c)
 {
 #ifdef DEBUG
-    if (r < 0 or r >= rows or c < 0 or c >= cols)
+    if (r >= rows or c >= cols)
       dserror("Indices %i,%i out of range in Matrix<%i,%i>.",r,c,rows,cols);
 #endif
   return data_[r+c*rows];
@@ -4146,7 +4147,7 @@ inline const double& Matrix<rows, cols>::operator()(unsigned int r) const
 {
     DENSEERROR::Checker<(cols==1) or (rows==1)>::Cannot_call_1D_access_function_on_2D_matrix();
 #ifdef DEBUG
-    if (r < 0 or r >= (cols == 1 ? rows : cols))
+    if (r >= (cols == 1 ? rows : cols))
       dserror("Index %i out of range in Matrix<%i,%i>.",r,rows,cols);
 #endif
     return data_[r];
@@ -4337,6 +4338,7 @@ FixedSizeSerialDenseSolver<rows,cols,dim_rhs>::FixedSizeSerialDenseSolver() :
   inverted_(false),
   solved_(false)
 {
+  DENSEERROR::Checker<(rows != 0) and (cols != 0)>::Matrix_dimensions_cannot_be_zero();
   DENSEERROR::Checker<rows==cols>::Matrix_size_in_solver_must_be_square();
 }
 
