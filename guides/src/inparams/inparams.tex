@@ -1204,7 +1204,9 @@ Available solvers and solver packages.
 \end{center}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsubsection{Special AZTEC solver variables}
+\subsubsection{Special AZTEC solver and ML variables}
+
+\noindent\rule{0.5\textwidth}{0.5pt}Aztec-options
 
 \noindent\kw{AZSOLVE (}
 \begin{tabular}[t]{lc}
@@ -1217,6 +1219,24 @@ Available solvers and solver packages.
 \end{tabular}
 
 Available iterative solution algorithms.
+
+\noindent\kw{AZPREC (}
+\begin{tabular}[t]{lc}
+\kw{none} &{\kor}\\
+\kw{ML} &{\kor}\\
+\kw{MLFLUID} &{\kor}\\
+\kw{MLFLUID2} &{\kor}\\
+\kw{ILU} &{\kor}\\
+\kw{ILUT} &{\kor}\\
+\kw{ICC} &{\kor}\\
+\kw{LU} &{\kor}\\
+\kw{Jacobi} &{\kor}\\
+\kw{SymmGaussSeidel} &{\kor}\\
+\kw{Least_Squares} &{\kor}\\
+\kw{Neumann} &\kw{)}
+\end{tabular}
+
+Available AZTEC preconditioners
 
 \noindent\kw{AZCONV (}
 \begin{tabular}[t]{lc}
@@ -1233,8 +1253,10 @@ Available iterative solution algorithms.
 
 Convergence check for iterative AZTEC solver. Remarks:
 \begin{itemize}
-\item The default \kw{AZ_noscaled} is not suitable for 
-      \kw{FLUID_INCREMENTAL} problems
+\item The default \kw{AZ_noscaled} may be problematic for 
+      \kw{FLUID_INCREMENTAL} problems (since the precision is sometimes 
+      required for Newton's iteration). Be careful if you use this option
+      in combination with this kind of problems!
 \item In such cases try for example \kw{AZ_rhs}
 \item Detailed explanations in the AZTEC manual
 \end{itemize}
@@ -1264,446 +1286,71 @@ Maximum number of iterations\slash restarts for AZTEC GMRES?
 
 Dimension of Krylov subspace for AZTEC GMRES.
 
+\noindent\rule{0.5\textwidth}{0.5pt}ML-options
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsubsection{Special AZTEC preconditioner variables}
+\noindent\kw{ML_PRINT} $int$
 
-\noindent\kw{AZPREC (}
-\begin{tabular}[t]{lc}
-\kw{none} &{\kor}\\
-\kw{ML} &{\kor}\\
-\kw{MLFLUID} &{\kor}\\
-\kw{MLFLUID2} &{\kor}\\
-\kw{ILU} &{\kor}\\
-\kw{ILUT} &{\kor}\\
-\kw{ICC} &{\kor}\\
-\kw{LU} &{\kor}\\
-\kw{Jacobi} &{\kor}\\
-\kw{SymmGaussSeidel} &{\kor}\\
-\kw{Least_Squares} &{\kor}\\
-\kw{Neumann} &\kw{)}
-\end{tabular}
+ML print-out level (0-10)
 
+\noindent\kw{ML_MAXCOARSESIZE} $int$
 
+ML stop coarsening when coarse ndof smaller then this
 
-% *if(strcmp(GenData(Flu_Solver),"Aztec_MSR")==0)
-% SOLVER         Aztec_MSR          // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-% AZOUTPUT       0                  // output every so often, 0 no output
-% AZSOLVE        BiCGSTAB           // CG GMRES CGS BiCGSTAB LU TFQMR
-% AZPREC         ILU                // none ML MLFLUID MLFLUID2 ILU ILUT ICC LU Jacobi SymmGaussSeidel Least_Squares Neumann
-% AZREUSE        0                  // how often to recompute some preconditioners
-% AZDROP         0.0                // drop tolerance for ILUT
-% AZFILL         1.0                // fill-in for ILUT
-% AZGFILL        0                  // graph fill for ILU
-% AZTOL          1.0E-8             // tolerance in unscaled residual
-% AZITER         1000               // max iterations
-% AZSUB          50                 // size of krylov space for gmres
-% AZOMEGA        1.0                // unused
-% AZGRAPH        1                  // unused
-% AZPOLY         5                  // polynomial order for Neumann
-% AZOVERLAP      0                  // amount of ASM overlap for ILU, ILU, ICC, LU
-% AZSCAL         none               // none sym infnorm scaling of the system
-% ML_PRINT          0               // ML print-out level (0-10)
-% ML_MAXCOARSESIZE  1               // ML stop coarsening when coarse ndof smaller then this
-% ML_MAXLEVEL       3               // ML max number of levels
-% ML_COARSEN        UC              // UC MIS METIS VBMETIS
-% ML_AGG_SIZE       27              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-% ML_PROLONG_SMO    1.33            // damping factor for prolongator smoother (usually 1.33 or 0.0)
-% ML_PROLONG_THRES  0.0             // threshold for prolongator smoother/aggregation
-% ML_SMOOTHERFINE   SGS             // SGS Jacobi Chebychev MLS ILU KLU
-% ML_SMOOTHERMED    ILU             // SGS Jacobi Chebychev MLS ILU KLU 
-% ML_SMOOTHERCOARSE KLU             // SGS Jacobi Chebychev MLS KLU Superlu
-% ML_SMOTIMES       1 0 1           // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-% ML_DAMPFINE       1.0             // damping fine grid
-% ML_DAMPMED        1.0             // damping med grids
-% ML_DAMPCOARSE     1.0             // damping coarse grid
-% *endif
-% *if(strcmp(GenData(Flu_Solver),"Aztec_VBR")==0)
-% AZSOLVE        *GenData(Flu_Aztec_Azsol)
-% AZPREC         *GenData(Flu_Aztec_AzPrec)
-% AZREUSE        *GenData(Flu_REUSE)  
-% AZDROP         *GenData(Flu_AZDROP)  
-% AZFILL         *GenData(Flu_DFILL)  
-% AZGFILL        *GenData(Flu_IFILL)  
-% AZTOL          *GenData(Flu_TOL)  
-% AZITER         *GenData(Flu_MAXITER)  
-% AZSUB          *GenData(Flu_AZSUB)  
-% AZOMEGA        *GenData(Flu_AZOMEGA)  
-% AZGRAPH        *GenData(Flu_AZGRAPH)  
-% AZPOLY         *GenData(Flu_AZPOLY)  
-% *endif
-% *if(strcmp(GenData(Flu_Solver),"HYPRE_BoomerAMG")==0)
-% HYPRE_PREC     *GenData(Flu_HYPRE_Prec)
-% HYPRE_IO       *GenData(Flu_HYPRE_IO)
-% HYPRE_ITER     *GenData(Flu_MAXITER)
-% HYPRE_TOL      *GenData(Flu_TOL)
-% HYPRE_THREAS   *GenData(Flu_AMGThresh)
-% HYPRE_SFINE    *GenData(Flu_AMGnsweepFine)
-% HYPRE_SDOWN    *GenData(Flu_AMGnsweepDown)
-% HYPRE_SUP      *GenData(Flu_AMGnsweepUp)
-% HYPRE_SCOARS   *GenData(Flu_AMGnsweepCoarse)
-% *endif
-% *if(strcmp(GenData(Flu_Solver),"HYPRE_PCG")==0)
-% HYPRE_PREC     *GenData(Flu_HYPRE_Prec)
-% HYPRE_IO       *GenData(Flu_HYPRE_IO)
-% HYPRE_ITER     *GenData(Flu_MAXITER)
-% HYPRE_TOL      *GenData(Flu_TOL)
-% HYPRE_DFILL    *GenData(Flu_DFILL) 
-% HYPRE_IFILL    *GenData(Flu_IFILL)  
-% HYPRE_PARASY   *GenData(Flu_Parasymm)
-% HYPRE_PARALEV  *GenData(Flu_Paranlevel)
-% HYPRE_PARATHR  *GenData(Flu_Parathresh)
-% HYPRE_PARAFILT *GenData(Flu_Parafilter)
-% HYPRE_THREAS   *GenData(Flu_AMGThresh)
-% HYPRE_SFINE    *GenData(Flu_AMGnsweepFine)
-% HYPRE_SDOWN    *GenData(Flu_AMGnsweepDown)
-% HYPRE_SUP      *GenData(Flu_AMGnsweepUp)
-% HYPRE_SCOARS   *GenData(Flu_AMGnsweepCoarse)
-% *endif
-% *if(strcmp(GenData(Flu_Solver),"HYPRE_GMRES")==0)
-% HYPRE_PREC     *GenData(Flu_HYPRE_Prec)
-% HYPRE_IO       *GenData(Flu_HYPRE_IO)
-% HYPRE_ITER     *GenData(Flu_MAXITER)
-% HYPRE_TOL      *GenData(Flu_TOL)
-% HYPRE_KRYDIM   *GenData(Flu_GMRESKrylovdim)
-% HYPRE_DFILL    *GenData(Flu_DFILL) 
-% HYPRE_IFILL    *GenData(Flu_IFILL)  
-% HYPRE_SYMM     *GenData(Flu_Parasymm)
-% HYPRE_PARALEV  *GenData(Flu_Paranlevel)
-% HYPRE_PARATHR  *GenData(Flu_Parathresh)
-% HYPRE_PARAFILT *GenData(Flu_Parafilter)
-% HYPRE_THREAS   *GenData(Flu_AMGThresh)
-% HYPRE_SFINE    *GenData(Flu_AMGnsweepFine)
-% HYPRE_SDOWN    *GenData(Flu_AMGnsweepDown)
-% HYPRE_SUP      *GenData(Flu_AMGnsweepUp)
-% HYPRE_SCOARS   *GenData(Flu_AMGnsweepCoarse)
-% *endif
-% *if(strcmp(GenData(Flu_Solver),"HYPRE_BiCGStab")==0)
-% HYPRE_PREC     *GenData(Flu_HYPRE_Prec)
-% HYPRE_IO       *GenData(Flu_HYPRE_IO)
-% HYPRE_ITER     *GenData(Flu_MAXITER)
-% HYPRE_TOL      *GenData(Flu_TOL)
-% HYPRE_DFILL    *GenData(Flu_DFILL) 
-% HYPRE_IFILL    *GenData(Flu_IFILL)  
-% HYPRE_SYMM     *GenData(Flu_Parasymm)
-% HYPRE_PARALEV  *GenData(Flu_Paranlevel)
-% HYPRE_PARATHR  *GenData(Flu_Parathresh)
-% HYPRE_PARAFILT *GenData(Flu_Parafilter)
-% HYPRE_THREAS   *GenData(Flu_AMGThresh)
-% HYPRE_SFINE    *GenData(Flu_AMGnsweepFine)
-% HYPRE_SDOWN    *GenData(Flu_AMGnsweepDown)
-% HYPRE_SUP      *GenData(Flu_AMGnsweepUp)
-% HYPRE_SCOARS   *GenData(Flu_AMGnsweepCoarse)
-% *endif
-% *if(strcmp(GenData(Flu_Solver),"ParSuperLU")==0)
-% *endif
-% *if(strcmp(GenData(Flu_Solver),"LAPACK_sym")==0)
-% *endif
-% *if(strcmp(GenData(Flu_Solver),"LAPACK_nonsym")==0)
-% *endif
-% *if(strcmp(GenData(Flu_Solver),"MUMPS_sym")==0)
-% *endif
-% *if(strcmp(GenData(Flu_Solver),"MUMPS_nonsym")==0)
-% *endif
-% *if(strcmp(GenData(Flu_Matrix_Format),"OLL")==0)
-% MATRIXTYP      *GenData(Flu_Matrix_Format)
-% *endif
-% PARTITION      *GenData(Fluid_Typ_of_Partitioning)
+\noindent\kw{ML_MAXLEVEL} $int$
+
+ML max number of levels
+
+\noindent\kw{ML_SMOOTHERFINE} $string$
+
+Type of fine grid smoother.
+
+\noindent\kw{ML_SMOOTHERMED} $string$
+
+Type of medium grid smoothers.
+
+\noindent\kw{ML_SMOOTHERCOARSE} $string$
+
+Type of coarse grid solver/smoother.
+
+\noindent\kw{ML_SMOTIMES} $int$(\kw{ML_MAXLEVEL})
+
+For smoothers like SGS: no. smoothing steps or polynomial order on each level (at least \kw{ML_MAXLEVEL} numbers)
+For ILU type smoothers: Level of fill
+
+\noindent\kw{ML_DAMPFINE} $double$
+
+Damping on fine grid. Values close to one should be useful for faster convergence, but often 
+the value has to be decreased to obtain convergence at all.
+For example, some NURBS problems require damping down to 0.3.
+
+\noindent\kw{ML_DAMPMED} $double$
+
+See above.
+
+\noindent\kw{ML_DAMPCOARSE} $double$
+
+See above.
 
 \subsection{STRUCT SOLVER}
 \begin{verbatim}
 -----------------------------------------------------STRUCT SOLVER
 \end{verbatim}
 
-% SOLVER         *GenData(Str_Solver)
-% *if(strcmp(GenData(Str_Solver),"Aztec_MSR")==0)
-% SOLVER         Aztec_MSR    // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-% AZOUTPUT       0            // output every so often, 0 no output
-% AZSOLVE        CG           // CG GMRES CGS BiCGSTAB LU TFQMR
-% AZPREC         ILU          // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
-% AZREUSE        0            // how often to recompute some preconditioners
-% AZDROP         0.0          // drop tolerance for ILUT
-% AZFILL         1.0          // fill-in for ILUT
-% AZGFILL        0            // graph fill for ILU
-% AZTOL          1.0E-8       // tolerance in unscaled residual
-% AZITER         1000         // max iterations
-% AZSUB          40           // size of krylov space for gmres
-% AZOMEGA        1.0          // unused
-% AZGRAPH        1            // unused
-% AZPOLY         5            // polynomial order for Neumann
-% AZOVERLAP      0            // amount of ASM overlap for ILU, ILU, ICC, LU
-% AZSCAL         infnorm      // none sym infnorm scaling of the system
-% ML_PRINT          0         // ML print-out level (0-10)
-% ML_MAXCOARSESIZE  1000      // ML stop coarsening when coarse ndof smaller then this
-% ML_MAXLEVEL       3         // ML max number of levels
-% ML_COARSEN        UC        // UC MIS METIS VBMETIS
-% ML_AGG_SIZE       27              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-% ML_PROLONG_SMO    1.33      // damping factor for prolongator smoother (usually 0.0 or 1.33)
-% ML_PROLONG_THRES  0.0       // threshold for prolongator smoother/aggregation
-% ML_SMOOTHERFINE   Chebychev // SGS Jacobi Chebychev MLS ILU KLU
-% ML_SMOOTHERMED    Chebychev // SGS Jacobi Chebychev MLS ILU KLU 
-% ML_SMOOTHERCOARSE KLU       // SGS Jacobi Chebychev MLS KLU Superlu
-% ML_SMOTIMES       3 3 1     // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-% ML_DAMPFINE       1.0       // damping fine grid
-% ML_DAMPMED        1.0       // damping med grids
-% ML_DAMPCOARSE     1.0       // damping coarse grid
-% *endif
-% *if(strcmp(GenData(Str_Solver),"HYPRE_BoomerAMG")==0)
-% HYPRE_PREC     *GenData(Str_HYPRE_Prec)
-% HYPRE_IO       *GenData(Str_HYPRE_IO)
-% HYPRE_ITER     *GenData(Str_MAXITER)
-% HYPRE_TOL      *GenData(Str_TOL)
-% HYPRE_THREAS   *GenData(Str_AMGThresh)
-% HYPRE_SFINE    *GenData(Str_AMGnsweepFine)
-% HYPRE_SDOWN    *GenData(Str_AMGnsweepDown)
-% HYPRE_SUP      *GenData(Str_AMGnsweepUp)
-% HYPRE_SCOARS   *GenData(Str_AMGnsweepCoarse)
-% *endif
-% *if(strcmp(GenData(Str_Solver),"HYPRE_PCG")==0)
-% HYPRE_PREC     *GenData(Str_HYPRE_Prec)
-% HYPRE_IO       *GenData(Str_HYPRE_IO)
-% HYPRE_ITER     *GenData(Str_MAXITER)
-% HYPRE_TOL      *GenData(Str_TOL)
-% HYPRE_DFILL    *GenData(Str_DFILL) 
-% HYPRE_IFILL    *GenData(Str_IFILL)  
-% HYPRE_PARASY   *GenData(Str_Parasymm)
-% HYPRE_PARALEV  *GenData(Str_Paranlevel)
-% HYPRE_PARATHR  *GenData(Str_Parathresh)
-% HYPRE_PARAFILT *GenData(Str_Parafilter)
-% HYPRE_THREAS   *GenData(Str_AMGThresh)
-% HYPRE_SFINE    *GenData(Str_AMGnsweepFine)
-% HYPRE_SDOWN    *GenData(Str_AMGnsweepDown)
-% HYPRE_SUP      *GenData(Str_AMGnsweepUp)
-% HYPRE_SCOARS   *GenData(Str_AMGnsweepCoarse)
-% *endif
-% *if(strcmp(GenData(Str_Solver),"HYPRE_GMRES")==0)
-% HYPRE_PREC     *GenData(Str_HYPRE_Prec)
-% HYPRE_IO       *GenData(Str_HYPRE_IO)
-% HYPRE_ITER     *GenData(Str_MAXITER)
-% HYPRE_TOL      *GenData(Str_TOL)
-% HYPRE_KRYDIM   *GenData(Str_GMRESKrylovdim)
-% HYPRE_DFILL    *GenData(Str_DFILL) 
-% HYPRE_IFILL    *GenData(Str_IFILL)  
-% HYPRE_SYMM     *GenData(Str_Parasymm)
-% HYPRE_PARALEV  *GenData(Str_Paranlevel)
-% HYPRE_PARATHR  *GenData(Str_Parathresh)
-% HYPRE_PARAFILT *GenData(Str_Parafilter)
-% HYPRE_THREAS   *GenData(Str_AMGThresh)
-% HYPRE_SFINE    *GenData(Str_AMGnsweepFine)
-% HYPRE_SDOWN    *GenData(Str_AMGnsweepDown)
-% HYPRE_SUP      *GenData(Str_AMGnsweepUp)
-% HYPRE_SCOARS   *GenData(Str_AMGnsweepCoarse)
-% *endif
-% *if(strcmp(GenData(Str_Solver),"HYPRE_BiCGStab")==0)
-% HYPRE_PREC     *GenData(Str_HYPRE_Prec)
-% HYPRE_IO       *GenData(Str_HYPRE_IO)
-% HYPRE_ITER     *GenData(Str_MAXITER)
-% HYPRE_TOL      *GenData(Str_TOL)
-% HYPRE_DFILL    *GenData(Str_DFILL) 
-% HYPRE_IFILL    *GenData(Str_IFILL)  
-% HYPRE_SYMM     *GenData(Str_Parasymm)
-% HYPRE_PARALEV  *GenData(Str_Paranlevel)
-% HYPRE_PARATHR  *GenData(Str_Parathresh)
-% HYPRE_PARAFILT *GenData(Str_Parafilter)
-% HYPRE_THREAS   *GenData(Str_AMGThresh)
-% HYPRE_SFINE    *GenData(Str_AMGnsweepFine)
-% HYPRE_SDOWN    *GenData(Str_AMGnsweepDown)
-% HYPRE_SUP      *GenData(Str_AMGnsweepUp)
-% HYPRE_SCOARS   *GenData(Str_AMGnsweepCoarse)
-% *endif
-% *if(strcmp(GenData(Str_Solver),"ParSuperLU")==0)
-% *endif
-% *if(strcmp(GenData(Str_Solver),"LAPACK_sym")==0)
-
-% \kw{*endif
-% *if(strcmp(GenData(Str_Solver),"LAPACK_nonsym")==0)
-% *if(GenData(Commented_Inputfile,int)==1)
-% // unsymmetric dense matrix direct (factorization based) solver for small problems)}\\
-% symmetric dense matrix direct (factorization based) solver for small problems)
-% *endif
-% *endif
-% *if(strcmp(GenData(Str_Solver),"MUMPS_sym")==0)
-% *endif
-% *if(strcmp(GenData(Str_Solver),"MUMPS_nonsym")==0)
-% *endif
-% *if(strcmp(GenData(Str_Solver),"SPOOLES_nonsym")==0)
-% *if(GenData(Commented_Inputfile,int)==1)
-% // Parallel direct solver for unsymmetric systems (reliable and fast)
-% // necessary for contact problems
-% *endif
-% *endif
-% *if(strcmp(GenData(Str_Solver),"MLPCG")==0)
-% *if(GenData(Commented_Inputfile,int)==1)
-% // Multigrid preconditioned CG iterative solver for structural problems
-% // REUSE offset how many solver calls the coarse grid preconditioners shall be reused: (<int>)
-% // NUMLEV number of levels (at least 2): (<int>)
-% // PROLONGSMODAMP relaxation parameter for damped jacobi smoothing of the intergrid transfer operators: (<real>)
-% // COARSENUMDF degrees of freedom per supernode on coarse grid, with 'Vanek' has to be 6, with 'Fish' >= 6: (<int>)
-% // TYPE type of coarse grid approach Vanek rigid body modes (only shell8) or Fish eigenmodes: (Vanek,Fish)
-% // MAXITER max number of iterations of iterative solver: (<int>)
-% // TOLERANCE accuracy in absolute l2-norm of solution: (<real>)
-% // COARSESOLV solver on coarsest grid: (LAPACK,SPOOLES,ILU)
-% // COARSEILULEV level of ilu(k) on coarsest grid in case of COARSESOLV = ILU: (<int>)
-% // PRESMO type of presmoother: (ILU,Jacobi)
-% // POSTSMO type of postsmoother: (ILU,Jacobi)
-% // PRESWEEP level for ilu(k) of or iterations for Jacobi as presmoother: (<int>)
-% // POSTSWEEP level for ilu(k) of or iterations for Jacobi as postsmoother: (<int>)
-% // OVERLAP number of rows of elements for overlapping schwartz method on finest grid (does not work properly): (<int>)
-% *endif
-% REUSE          *GenData(Str_REUSE)                 
-% NUMLEV         *GenData(Str_MLPCG_numlev)          
-% PROLONGSMODAMP *GenData(Str_MLPCG_prolong_omega)   
-% COARSENUMDF    *GenData(Str_MLPCG_coarsenumdf)     
-% TYPE           *GenData(Str_MLPCG_Type)            // Vanek Fish
-% MAXITER        *GenData(Str_MAXITER)  
-% TOLERANCE      *GenData(Str_TOL)
-% COARSESOLV     *GenData(Str_MLPCG_coarsest)        // LAPACK SPOOLES ILU
-% COARSEILULEV   *GenData(Str_MLPCG_coarseilulev)
-% PRESMO         *GenData(Str_MLPCG_presmo)          // ILU Jacobi
-% POSTSMO        *GenData(Str_MLPCG_postsmo)         // ILU Jacobi
-% PRESWEEP       *GenData(Str_MLPCG_presmo_sweep)
-% POSTSWEEP      *GenData(Str_MLPCG_postsmo_sweep)
-% OVERLAP        *GenData(Str_MLPCG_overlap)         
-% *endif
-% *if(strcmp(GenData(Str_Matrix_Format),"OLL")==0)
-% MATRIXTYP      *GenData(Str_Matrix_Format)
-% *endif
-% PARTITION      *GenData(Struct_Typ_of_Partitioning)
+See fluid solver.
 
 \subsection{ALE SOLVER}
 \begin{verbatim}
 --------------------------------------------------------ALE SOLVER
 \end{verbatim}
 
-% SOLVER         *GenData(ALE_Solver)
-% *if(strcmp(GenData(ALE_Solver),"Aztec_MSR")==0)
-% SOLVER         Aztec_MSR    // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-% AZOUTPUT       0            // output every so often, 0 no output
-% AZSOLVE        CG           // CG GMRES CGS BiCGSTAB LU TFQMR
-% AZPREC         ILU          // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
-% AZREUSE        0            // how often to recompute some preconditioners
-% AZDROP         0.0          // drop tolerance for ILUT
-% AZFILL         1.0          // fill-in for ILUT
-% AZGFILL        0            // graph fill for ILU
-% AZTOL          1.0E-8       // tolerance in unscaled residual
-% AZITER         1000         // max iterations
-% AZSUB          40           // size of krylov space for gmres
-% AZOMEGA        1.0          // unused
-% AZGRAPH        1            // unused
-% AZPOLY         5            // polynomial order for Neumann
-% AZOVERLAP      0            // amount of ASM overlap for ILU, ILU, ICC, LU
-% AZSCAL         infnorm      // none sym infnorm scaling of the system
-% ML_PRINT          0         // ML print-out level (0-10)
-% ML_MAXCOARSESIZE  1000      // ML stop coarsening when coarse ndof smaller then this
-% ML_MAXLEVEL       3         // ML max number of levels
-% ML_COARSEN        UC        // UC MIS METIS VBMETIS
-% ML_AGG_SIZE       27              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-% ML_PROLONG_SMO    1.33      // damping factor for prolongator smoother (usually 0.0 or 1.33)
-% ML_PROLONG_THRES  0.0       // threshold for prolongator smoother/aggregation
-% ML_SMOOTHERFINE   Chebychev // SGS Jacobi Chebychev MLS ILU KLU
-% ML_SMOOTHERMED    Chebychev // SGS Jacobi Chebychev MLS ILU KLU 
-% ML_SMOOTHERCOARSE KLU       // SGS Jacobi Chebychev MLS KLU Superlu
-% ML_SMOTIMES       3 3 1     // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-% ML_DAMPFINE       1.0       // damping fine grid
-% ML_DAMPMED        1.0       // damping med grids
-% ML_DAMPCOARSE     1.0       // damping coarse grid
-% *endif
-% *if(strcmp(GenData(Flu_Solver),"Aztec_VBR")==0)
-% AZSOLVE        *GenData(Flu_Aztec_Azsol)
-% AZPREC         *GenData(Flu_Aztec_AzPrec)
-% AZREUSE        *GenData(Flu_REUSE)  
-% AZDROP         *GenData(Flu_AZDROP)  
-% AZFILL         *GenData(Flu_DFILL)  
-% AZGFILL        *GenData(Flu_IFILL)  
-% AZTOL          *GenData(Flu_TOL)  
-% AZITER         *GenData(Flu_MAXITER)  
-% AZSUB          *GenData(Flu_AZSUB)  
-% AZOMEGA        *GenData(Flu_AZOMEGA)  
-% AZGRAPH        *GenData(Flu_AZGRAPH)  
-% AZPOLY         *GenData(Flu_AZPOLY)  
-% *endif
-% *if(strcmp(GenData(ALE_Solver),"HYPRE_BoomerAMG")==0)
-% HYPRE_PREC     *GenData(ALE_HYPRE_Prec)
-% HYPRE_IO       *GenData(ALE_HYPRE_IO)
-% HYPRE_ITER     *GenData(ALE_MAXITER)
-% HYPRE_TOL      *GenData(ALE_TOL)
-% HYPRE_THREAS   *GenData(ALE_AMGThresh)
-% HYPRE_SFINE    *GenData(ALE_AMGnsweepFine)
-% HYPRE_SDOWN    *GenData(ALE_AMGnsweepDown)
-% HYPRE_SUP      *GenData(ALE_AMGnsweepUp)
-% HYPRE_SCOARS   *GenData(ALE_AMGnsweepCoarse)
-% *endif
-% *if(strcmp(GenData(ALE_Solver),"HYPRE_PCG")==0)
-% HYPRE_PREC     *GenData(ALE_HYPRE_Prec)
-% HYPRE_IO       *GenData(ALE_HYPRE_IO)
-% HYPRE_ITER     *GenData(ALE_MAXITER)
-% HYPRE_TOL      *GenData(ALE_TOL)
-% HYPRE_DFILL    *GenData(ALE_DFILL) 
-% HYPRE_IFILL    *GenData(ALE_IFILL)  
-% HYPRE_PARASY   *GenData(ALE_Parasymm)
-% HYPRE_PARALEV  *GenData(ALE_Paranlevel)
-% HYPRE_PARATHR  *GenData(ALE_Parathresh)
-% HYPRE_PARAFILT *GenData(ALE_Parafilter)
-% HYPRE_THREAS   *GenData(ALE_AMGThresh)
-% HYPRE_SFINE    *GenData(ALE_AMGnsweepFine)
-% HYPRE_SDOWN    *GenData(ALE_AMGnsweepDown)
-% HYPRE_SUP      *GenData(ALE_AMGnsweepUp)
-% HYPRE_SCOARS   *GenData(ALE_AMGnsweepCoarse)
-% *endif
-% *if(strcmp(GenData(ALE_Solver),"HYPRE_GMRES")==0)
-% HYPRE_PREC     *GenData(ALE_HYPRE_Prec)
-% HYPRE_IO       *GenData(ALE_HYPRE_IO)
-% HYPRE_ITER     *GenData(ALE_MAXITER)
-% HYPRE_TOL      *GenData(ALE_TOL)
-% HYPRE_KRYDIM   *GenData(ALE_GMRESKrylovdim)
-% HYPRE_DFILL    *GenData(ALE_DFILL) 
-% HYPRE_IFILL    *GenData(ALE_IFILL)  
-% HYPRE_SYMM     *GenData(ALE_Parasymm)
-% HYPRE_PARALEV  *GenData(ALE_Paranlevel)
-% HYPRE_PARATHR  *GenData(ALE_Parathresh)
-% HYPRE_PARAFILT *GenData(ALE_Parafilter)
-% HYPRE_THREAS   *GenData(ALE_AMGThresh)
-% HYPRE_SFINE    *GenData(ALE_AMGnsweepFine)
-% HYPRE_SDOWN    *GenData(ALE_AMGnsweepDown)
-% HYPRE_SUP      *GenData(ALE_AMGnsweepUp)
-% HYPRE_SCOARS   *GenData(ALE_AMGnsweepCoarse)
-% *endif
-% *if(strcmp(GenData(ALE_Solver),"HYPRE_BiCGStab")==0)
-% HYPRE_PREC     *GenData(ALE_HYPRE_Prec)
-% HYPRE_IO       *GenData(ALE_HYPRE_IO)
-% HYPRE_ITER     *GenData(ALE_MAXITER)
-% HYPRE_TOL      *GenData(ALE_TOL)
-% HYPRE_DFILL    *GenData(ALE_DFILL) 
-% HYPRE_IFILL    *GenData(ALE_IFILL)  
-% HYPRE_SYMM     *GenData(ALE_Parasymm)
-% HYPRE_PARALEV  *GenData(ALE_Paranlevel)
-% HYPRE_PARATHR  *GenData(ALE_Parathresh)
-% HYPRE_PARAFILT *GenData(ALE_Parafilter)
-% HYPRE_THREAS   *GenData(ALE_AMGThresh)
-% HYPRE_SFINE    *GenData(ALE_AMGnsweepFine)
-% HYPRE_SDOWN    *GenData(ALE_AMGnsweepDown)
-% HYPRE_SUP      *GenData(ALE_AMGnsweepUp)
-% HYPRE_SCOARS   *GenData(ALE_AMGnsweepCoarse)
-% *endif
-% *if(strcmp(GenData(ALE_Solver),"ParSuperLU")==0)
-% *endif
-% *if(strcmp(GenData(ALE_Solver),"LAPACK_sym")==0)
-% *endif
-% *if(strcmp(GenData(ALE_Solver),"LAPACK_nonsym")==0)
-% *endif
-% *if(strcmp(GenData(ALE_Solver),"MUMPS_sym")==0)
-% *endif
-% *if(strcmp(GenData(ALE_Solver),"MUMPS_nonsym")==0)
-% *endif
-% *if(strcmp(GenData(ALE_Matrix_Format),"OLL")==0)
-% MATRIXTYP      *GenData(ALE_Matrix_Format)
-% *endif
-% PARTITION      *GenData(Ale_Typ_of_Partitioning)
+See fluid solver.
 
 \subsection{THERMAL SOLVER}
 \begin{verbatim}
 ----------------------------------------------------THERMAL SOLVER
 \end{verbatim}
+
+See fluid solver.
 
 % SOLVER         *GenData(The_Solver)
 % *if(strcmp(GenData(The_Solver),"Aztec_MSR")==0)
@@ -1815,20 +1462,14 @@ Dimension of Krylov subspace for AZTEC GMRES.
 \subsection{DESIGN DESCRIPTION}
 \begin{verbatim}
 ------------------------------------------------DESIGN DESCRIPTION
+NDPOINT W
+NDLINE  X
+NDSURF  Y
+NDVOL   Z
 \end{verbatim}
 
-% \kw{NDPOINT *tcl(NumDesignPoints)}\\
-% NDPOINT number of design nodes in gid geometry description, written by tcl script
-
-% \kw{NDLINE *tcl(NumDesignLines)}\\
-% NDLINE number of design lines in gid geometry description, written by tcl script
-
-% \kw{NDSURF *tcl(NumDesignSurfs)}\\
-% NDSURF number of design surfaces in gid geometry description, written by tcl script
-
-% \kw{NDVOL *tcl(NumDesignVols)}\\
-% NDVOL number of design volumes in gid geometry description, written by tcl script
-
+Numbers of design objects used to define the problem. Note that for every
+object, the NODE to object topology has to be provided as a 'nodal cloud'.
 \subsection{DESIGN POINTS}
 \begin{verbatim}
 -----------------------------------------------------DESIGN POINTS
@@ -1839,6 +1480,9 @@ Dimension of Krylov subspace for AZTEC GMRES.
 
 \subsection{DESIGN LINES}
 gid design points written by tcl script
+
+OBSOLETE for baci input, read only in ccarat.
+
 \begin{verbatim}
 ------------------------------------------------------DESIGN LINES
 \end{verbatim}
@@ -1848,6 +1492,9 @@ gid design points written by tcl script
 
 \subsection{DESIGN SURFACES}
 gid design lines written by tcl script
+
+OBSOLETE for baci input.
+
 \begin{verbatim}
 ---------------------------------------------------DESIGN SURFACES
 \end{verbatim}
@@ -1857,6 +1504,9 @@ gid design lines written by tcl script
 
 \subsection{DESIGN VOLUMES}
 gid design surfaces written by tcl script
+
+OBSOLETE for baci input, read only in ccarat.
+
 \begin{verbatim}
 ----------------------------------------------------DESIGN VOLUMES
 \end{verbatim}
@@ -1865,11 +1515,36 @@ gid design surfaces written by tcl script
 % \kw{*tcl(PrintDesignVols)*\
 
 \subsection{DESIGN POINT DIRICH CONDITIONS}
-gid design volumes written by tcl script
 \begin{verbatim}
 ------------------------------------DESIGN POINT DIRICH CONDITIONS 
+DPOINT num
+E X - FLAG(6) VAL(6) CURVE(6) FUNCT(6)
 \end{verbatim}
+\begin{center}
+\begin{tabular}{c||l}
+$X$                           & design point id                                                  \\ \hline
+FLAG                          & six (0/1) flags switching the Dirichletboundary condition off/on \\ \hline
+VAL                           & six boundary values (double)                                     \\ \hline
+CURVE                         & six time-curve ids specifing the corresponding time curves       \\ \hline
+FUNCT                         & six function-ids for corresponding spatial functions             \\ 
+\end{tabular}
+\end{center}
 
+Note:
+\begin{itemize}
+\item The number of flags, boundary values etc. actually considered in the code depedends on problem type.
+\item Functions and curves corresponding to the supplied numbers have to specified seperatly in the 
+respective input  section.
+\end{itemize}
+
+Example:
+
+\begin{verbatim}
+------------------------------------DESIGN POINT DIRICH CONDITIONS 
+// DOBJECT FLAG(6) VAL(6) CURVE(6)FUNCT(6)
+DPOINT 1
+E 9 - 1 1 0 1 0 0 0.0 -1.0 0.0 0.0 0.0 0.0   1   none none none none none 3 2 0 0 0 0
+\end{verbatim}
 
 % \kw{// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE}\\
 % point dirich conditions written by tcl script
@@ -1880,7 +1555,7 @@ gid design volumes written by tcl script
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 \end{verbatim}
 
-
+See corresponding point condition.
 % \kw{// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE}\\
 % line dirich conditions written by tcl script
 % *tcl(Dlinedirich)*\
@@ -1889,7 +1564,7 @@ gid design volumes written by tcl script
 \begin{verbatim}
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 \end{verbatim}
-
+See corresponding point condition.
 
 % \kw{// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE}\\
 % surface dirich conditions written by tcl script
@@ -1899,7 +1574,7 @@ gid design volumes written by tcl script
 \begin{verbatim}
 --------------------------------------DESIGN VOL DIRICH CONDITIONS
 \end{verbatim}
-
+See corresponding point condition.
 
 % \kw{// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE}\\
 % volume dirich conditions written by tcl script
@@ -1910,6 +1585,7 @@ gid design volumes written by tcl script
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
 \end{verbatim}
 
+See corresponding volume condition.
 
 % \kw{// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL  NSURF}\\
 % point neumann conditions written by tcl script
@@ -1919,6 +1595,8 @@ gid design volumes written by tcl script
 \begin{verbatim}
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
 \end{verbatim}
+
+See corresponding volume condition.
 
 
 % \kw{// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL  TYPE  NSURF}\\
@@ -1930,6 +1608,7 @@ gid design volumes written by tcl script
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 \end{verbatim}
 
+See corresponding volume condition.
 
 % \kw{// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL  TYPE  NSURF}\\
 % surface neumann conditions written by tcl script
@@ -1938,12 +1617,18 @@ gid design volumes written by tcl script
 \subsection{DESIGN VOL NEUMANN CONDITIONS}
 \begin{verbatim}
 -------------------------------------DESIGN VOL NEUMANN CONDITIONS
+E X - CURVE ONOFF(6) VAL(6) loadtype
 \end{verbatim}
 
-
-% \kw{// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL}\\
-% volume neumann conditions written by tcl script
-% *tcl(Dvolneum)*\
+\begin{center}
+\begin{tabular}{c||l}
+$X$                           & design point id                                                  \\ \hline
+CURVE                         & one time-curve ids specifing the corresponding time curve        \\ \hline
+ONOFF                         & six (0/1) flags switching the boundary condition off/on in the   \\
+                              & respective direction                                             \\ \hline
+VAL                           & six boundary values (double)                                     \\ \hline
+\end{tabular}
+\end{center}
 
 \subsection{DESIGN COUPLING POINT CONDITIONS}
 \begin{verbatim}
@@ -2063,26 +1748,78 @@ contact conditions needed for the wall1  master slave contact (selfcontact not i
 
 % *tcl(Daxishellcospoint)*\
 
+\subsection{DESIGN SURFACE CONSERVATIVE OUTFLOW CONSISTENCY}
+
+\begin{verbatim}
+--------------------------DESIGN SURFACE CONSERVATIVE OUTFLOW CONSISTENCY
+DSURF num
+E X -
+\end{verbatim}
+
+Required for outflows of conservative fluid implementations with
+partially integrated convective term.
+No additional parameters but the design surface id.
+
+\subsection{DESIGN SURFACE WEAK DIRICHLET CONDITIONS}
+\begin{verbatim}
+--------------------------DESIGN SURFACE WEAK DIRICHLET CONDITIONS
+DSURF num
+E X - gamma-parameter tau_B-definition linearisation  bv(x,y,z) CURVE(x,y,z) FUNCT(x,y,z)
+\end{verbatim}
+
+\begin{center}
+\begin{tabular}{c||l}
+$X$                           & design surface id             \\ \hline
+gamma-parameter               & apply adjoint viscous term \emph{adjoint-consistent} or \\
+                              & \emph{diffusive-optimal}       \\ \hline
+$\tau_B$-definition           & Definition of $\tau_B$ either \emph{constant} or according to \\
+                              &\emph{Spalding}'s law \\ \hline
+linearisation                 & include convective inflow term in linearisation (\verb1lin_all1)\\
+                              &  or omit it (\verb1no_lin_conv_inflow1)\\\hline
+$\left(bv_x,bv_y,bv_z\right)$ & three doubles defining the axis direction \\\hline
+CURVE                         & Three curve ids specifing the corresponding time curves \\ \hline
+FUNCT                         & Three function ids for corresponding spatial fcts \\ 
+\end{tabular}
+\end{center}
+
+Example:
+
+\begin{verbatim}
+--------------------------DESIGN SURFACE WEAK DIRICHLET CONDITIONS
+DSURF 1
+E 2 - adjoint-consistent constant no_lin_conv_inflow  0.0 0.0 0.0 none none none 0 0 0     
+\end{verbatim}
+
 \subsection{DESIGN FLUID LINE LIFT}
 \begin{verbatim}
----------------------------------------DESIGN FLUID LINE LIFT
+---------------------------------------DESIGN FLUID LINE LIFT&DRAG
 \end{verbatim}
-% &DRAG
-% // DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER
-% *tcl(Dliftdragline)*\
+
+See corresponding surface condition.
 
 \subsection{DESIGN FLUID SURF LIFT}
 \begin{verbatim}
----------------------------------------DESIGN FLUID SURF LIFT
+---------------------------------------DESIGN FLUID SURF LIFT&DRAG
+// DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER Z_CENTER ALE_LINE
+E X - ID c_x c_y c_z axis n_x n_y n_z
 \end{verbatim}
-% &DRAG
-% // DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER Z_CENTER ALE_LINE
-% *tcl(Dliftdragsurf)*\
+
+\begin{center}
+\begin{tabular}{c||l}
+$X$                        & design surface id \\ \hline
+$ID$                       & lift-drag surface id \\ \hline
+$\left(c_x,c_y,c_z\right)$ & three doubles defining one point on an axis. The momentum  \\
+                           & is computed with respect to this axis. \\\hline
+$\left(n_x,n_y,n_z\right)$ & three doubles defining the axis direction \\\hline
+\end{tabular}
+\end{center}
 
 \subsection{DESIGN FLUID SURFACE STABILISING CONDITIONS}
 \begin{verbatim}
 -----------------------DESIGN FLUID SURFACE STABILISING CONDITIONS
 \end{verbatim}
+
+OBSOLETE in baci, only valid for ccarat!
 
 There are three available stabilisation procedures: GLS, USFEM and TDS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2137,6 +1874,7 @@ The meaning of the single parameters:
 \end{verbatim}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{USFEM}
+
 \begin{verbatim}
 E X - USFEM
 \end{verbatim}
@@ -2148,59 +1886,63 @@ E X - TDS
 \end{verbatim}
 Like USFEM with time dependent subscales --- only 2d up to now
 
-% // DOBJECT STABTYPE IADVEC IPRES IVISC ICONT ISTAPA NORM_P MK IHELEM NINTHS ISTAPC C_LAMB
-% *tcl(Dsurfstab)*\
-
 \subsection{DESIGN FLUID VOLUME STABILISING CONDITIONS}
 \begin{verbatim}
 ------------------------DESIGN FLUID VOLUME STABILISING CONDITIONS
 \end{verbatim}
 
-See \kw{DESIGN FLUID SURFACE STABILISING CONDITIONS}
+OBSOLETE in baci, only valid for ccarat!
 
-% // DOBJECT STABTYPE IADVEC IPRES IVISC ICONT ISTAPA NORM_P MK IHELEM NINTHS ISTAPC C_LAMB
-% *tcl(Dvolstab)*\
+See \kw{DESIGN FLUID SURFACE STABILISING CONDITIONS}
 
 \subsection{DESIGN POINT LOCSYS CONDITIONS}
 \begin{verbatim}
 ------------------------------------DESIGN POINT LOCSYS CONDITIONS
 \end{verbatim}
-
-% // DOBJECT Id
-% *tcl(DLocsyspoint)*\
+See corresponding surface condition.
 
 \subsection{DESIGN LINE LOCSYS CONDITIONS}
 \begin{verbatim}
 -------------------------------------DESIGN LINE LOCSYS CONDITIONS
 \end{verbatim}
-
-% // DOBJECT Id
-% *tcl(DLocsysline)*\
+See corresponding surface condition.
 
 \subsection{DESIGN SURF LOCSYS CONDITIONS}
 \begin{verbatim}
 -------------------------------------DESIGN SURF LOCSYS CONDITIONS
+DSURF NUM
+E X - normal n_x n_y n_z tangent t_x t_y t_z origin O_x O_y O_z Type cosytype F_axis F_angle
 \end{verbatim}
 
-% // DOBJECT Id
-% *tcl(DLocsyssurf)*\
+\begin{center}
+\begin{tabular}{c||l}
+$X$                        & design surface id \\ \hline
+$\left(n_x,n_y,n_z\right)$ & three doubles defininig the cosy's normal vector \\\hline
+$\left(t_x,t_y,t_z\right)$ & three doubles defininig the cosy's tangent vector \\\hline
+$\left(O_x,O_y,O_z\right)$ & three doubles defininig the cosy's origin \\\hline
+cosytype                   & type of coordinate system. Options are: \\
+                           & default (rotation of dofs) \\
+                           & OriginRadialSliding \\
+                           & FunctionEvaluation (used to evaluate functions in local coordinates)\\ \hline
+$F_{axis}$                 & int number of a vector valued function defining the \\
+                           & axis of rotation for locally rotated local coordinate \\
+                           & systems (for example along a circle) \\ \hline
+$F_{angle}$                & int number of a scalar valued function defining the \\
+                           & angle of rotation for locally rotated local coordinate \\
+                           & systems (for example along a circle) \\
+\end{tabular}
+\end{center}
 
 \subsection{DESIGN VOL LOCSYS CONDITIONS}
 \begin{verbatim}
 --------------------------------------DESIGN VOL LOCSYS CONDITIONS
 \end{verbatim}
-
-% // DOBJECT Id
-% *tcl(DLocsysvol)*\
+See corresponding surface condition.
 
 \subsection{DESIGN LINE PERIODIC BOUNDARY CONDITIONS}
 
 \begin{verbatim}
 --------------------------DESIGN LINE PERIODIC BOUNDARY CONDITIONS
-// DOBJECT PBC_ID ORIENTATION
-DLINE 2
-E 2 - 1 PLANE yz
-E 4 - 1 PLANE yz
 \end{verbatim}
 
 Details see corresponding surface condition.
@@ -2209,24 +1951,82 @@ Details see corresponding surface condition.
 
 \begin{verbatim}
 --------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
-// DOBJECT PBC_ID ORIENTATION
-DSURF 6
-E 1 - 1 PLANE yz
-E 2 - 2 PLANE xy
-E 3 - 1 PLANE yz
-E 4 - 2 PLANE xy
-E 5 - 3 PLANE xz
-E 6 - 3 PLANE xz
+E X -  ID  MStoggle  PLANE plane LAYER num_layer
 \end{verbatim}
 
-\verb$DSURF$ must be twice the number of \verb$PBC_ID$s. \verb$PBC_ID$s have
-to be assigned succesively from 1 to the number of pairs of periodic boundary
-conditions. The orientation has to be specified by the coordinate plane
-parallel to the design surface.
-You are only allowed to specify pairs of matching periodic boundary
-conditions (parallel planes, difference only a offset in direction of the
-plane normal).
-The meshes on both corresponding surfaces have to match exactly.
+\begin{center}
+\begin{tabular}{c||l}
+$X$            & design surface id of periodic bc                      \\ \hline
+$ID$           & the id of the periodic boundary condition this surface\\
+               & belongs to                                            \\ \hline
+MStoggle       & Master or Slave surface                               \\ \hline
+plane          & xy: couple parallel planes, shifted along z-direction \\ 
+               & xz: couple parallel planes, shifted along y-direction \\ 
+               & yz: couple parallel planes, shifted along x-direction \\ 
+               & xyz for coupling of nodes in identical locations.     \\ \hline
+$num_{layer}$  & periodic boundary conditions for second order nurbs   \\
+               & elements require several layers of control points to  \\
+               & couple. This is the layer's ID
+\end{tabular}
+\end{center}
+
+Remarks:
+\begin{itemize}
+\item The meshes on corresponding surfaces have to match exactly to be connected. 
+\item One Master may have several Slaves (interesting especially for patch 
+coupling in a NURBS context)
+\end{itemize}
+
+Example (quadratic NURBS mesh, periodic z-direction, several patches):
+
+\begin{verbatim}
+--------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
+// DOBJECT PBC_ID ORIENTATION
+DSURF 6
+E 7 -  1 Master  PLANE xyz LAYER 1
+E 8 -  1 Slave   PLANE xyz LAYER 1
+E 3 -  2 Master  PLANE xy  LAYER 1
+E 5 -  2 Slave   PLANE xy  LAYER 1
+E 4 -  2 Master  PLANE xy  LAYER 2
+E 6 -  2 Slave   PLANE xy  LAYER 2
+\end{verbatim}
+
+\subsection{DESIGN SURF MODE FOR KRYLOV SPACE PROJECTION}
+See corresponding volume section.
+
+\subsection{DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION}
+
+\begin{verbatim}
+-----------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
+DVOL 1
+E X - MODE(6) averaging
+\end{verbatim}
+
+\begin{center}
+\begin{tabular}{c||l}
+$X$            & Design surface id of periodic bc                        \\ \hline
+MODE           & Six double values defining the mode to be projected out.\\
+               & The number of doubles actually read depends on the      \\ 
+               & problem type                                            \\ \hline
+averaging      & solution average is computed using \verb1integration1 or\\
+               & \verb1pointvalues1                                      \\
+\end{tabular}
+\end{center}
+
+Remarks:
+\begin{itemize}
+\item For integration based averaging, the elements must implement the
+required integration over the shape function.
+\item Works only in combination with an iterative Kryloc solver (i.e. with AZTEC)
+\end{itemize}
+
+Example:
+
+\begin{verbatim}
+-----------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
+DVOL 1
+E 1 - 0.0 0.0 0.0 1.0 0.0 0.0 integration
+\end{verbatim}
 
 
 \subsection{DESIGN SURF IMPEDANCE CONDITIONS}
@@ -3601,496 +3401,62 @@ controlled NODE $int_1$ with $int_2$ the DOF to control
 % *end
 
 \subsection{FUNCT1}
+
+Functions could be defined vector-valued (for example for initial flow-fields)
+or scalar-valued (for Dirichlet values)
+
+Example of a vector-valued function:
+
 \begin{verbatim}
 ------------------------------------------------------------FUNCT1
+FUNCT1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION y*(1-y)/2
+FUNCT1 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 0 
+FUNCT1 COMPONENT 2 EXPR 0.0 0.0 0.0 FUNCTION 0
+FUNCT1 COMPONENT 3 EXPR 0.0 0.0 0.0 FUNCTION 0
 \end{verbatim}
 
-% *if(strcmp(GenData(F1_onoff),"on")==0)
-% FUNCT1 *GenData(F1_typ) *\
-% *if(strcmp(GenData(F1_typ),"LINE_LIN")==0)
-% *GenData(F1_linelin_x1) *\
-% *GenData(F1_linelin_y1) *\
-% *GenData(F1_linelin_z1) *\
-% *GenData(F1_linelin_v1) *\
-% *GenData(F1_linelin_x2) *\
-% *GenData(F1_linelin_y2) *\
-% *GenData(F1_linelin_z2) *\
-% *GenData(F1_linelin_v2) *\
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT1 LINE_LIN x1 y1 z1 val1 x2 y2 z2 val2
-% *endif
-% *endif
-% *if(strcmp(GenData(F1_typ),"LINE_QUAD")==0)
-% *GenData(F1_linequad_x1) *\
-% *GenData(F1_linequad_y1) *\
-% *GenData(F1_linequad_z1) *\
-% *GenData(F1_linequad_x2) *\
-% *GenData(F1_linequad_y2) *\
-% *GenData(F1_linequad_z2) *\
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT1 LINE_QUAD x1 y1 z1 x2 y2 z2
-% *endif
-% *endif
-% *if(strcmp(GenData(F1_typ),"RADIUS_LIN")==0)
-% *GenData(F1_radlin_x1) *\
-% *GenData(F1_radlin_y1) *\
-% *GenData(F1_radlin_z1) *\
-% *GenData(F1_radlin_v1) *\
-% *GenData(F1_radlin_x2) *\
-% *GenData(F1_radlin_y2) *\
-% *GenData(F1_radlin_z2) *\
-% *GenData(F1_radlin_v2) *\
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT1 LINE_LIN x1 y1 z1 val1 x2 y2 z2 val2
-% *endif
-% *endif
-% *if(strcmp(GenData(F1_typ),"RADIUS_QUAD")==0)
-% *GenData(F1_radquad_x1) *\
-% *GenData(F1_radquad_y1) *\
-% *GenData(F1_radquad_z1) *\
-% *GenData(F1_radquad_x2) *\
-% *GenData(F1_radquad_y2) *\
-% *GenData(F1_radquad_z2) *\
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT1 LINE_QUAD x1 y1 z1 x2 y2 z2
-% *endif
-% *endif
-% *if(strcmp(GenData(F1_typ),"BELTRAMI")==0)
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT1 BELTRAMI
-% *endif
-% *endif
-% *if(strcmp(GenData(F1_typ),"KIM-MOIN")==0)
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT1 KIM-MOIN
-% *endif
-% *endif
-% *if(strcmp(GenData(F1_typ),"NONE")==0)
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT1 NONE
-% *endif
-% *endif
-% *if(strcmp(GenData(F1_typ),"EXPR")==0)
-% *GenData(F1_x) *\
-% *GenData(F1_y) *\
-% *GenData(F1_z) *\
-% FUNCTION *GenData(F1_expression) *\
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT1 EXPR x y z FUNCTION expression
-% *endif
-% *endif
+\begin{itemize}
+\item The \kw{COMPONENT}-keyword defines the u/v/w/p- or x/y/z-component 
+of the function.
+\item The \kw{EXPR}-keyword indicates a function expression definition.
+The expression is parsed and evaluated in the code. Possible functions
+are 
 
-% *endif
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|}\hline
+acos & asin      & atan & cos  & sin  \\\hline
+tan  & cosh      & sinh & tanh & exp  \\\hline
+log  & log10     & sqrt & ceil & fabs \\\hline
+floor& heaviside &      &      &      \\\hline
+\end{tabular}
+\end{center}
+\item The three doubles after the \kw{EXPR}-keyword define the origin of
+the coordinate system. The function is evaluated with respect to this origin.
+\end{itemize}
+
+Example of a scalar-valued function:
+
+\begin{verbatim}
+------------------------------------------------------------FUNCT1
+FUNCT1 EXPR O_x O_y O_z FUNCTION y*(1-y)/2
+\end{verbatim}
+
+Keywords, origin and function definition as described above for vector-valued
+functions. In addition to expression based functions, there exist some special
+functions in the code. These BELTRAMI/KIM-MOIN functions can be seen in the
+corresponding fluid test files.
 
 \subsection{FUNCT2}
 \begin{verbatim}
 ------------------------------------------------------------FUNCT2
 \end{verbatim}
-
-% *if(strcmp(GenData(F2_onoff),"on")==0)
-% FUNCT2 *GenData(F2_typ) *\
-% *if(strcmp(GenData(F2_typ),"LINE_LIN")==0)
-% *GenData(F2_linelin_x1) *\
-% *GenData(F2_linelin_y1) *\
-% *GenData(F2_linelin_z1) *\
-% *GenData(F2_linelin_v1) *\
-% *GenData(F2_linelin_x2) *\
-% *GenData(F2_linelin_y2) *\
-% *GenData(F2_linelin_z2) *\
-% *GenData(F2_linelin_v2) *\
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT2 LINE_LIN x1 y1 z1 val1 x2 y2 z2 val2
-% *endif
-% *endif
-% *if(strcmp(GenData(F2_typ),"LINE_QUAD")==0)
-% *GenData(F2_linequad_x1) *\
-% *GenData(F2_linequad_y1) *\
-% *GenData(F2_linequad_z1) *\
-% *GenData(F2_linequad_x2) *\
-% *GenData(F2_linequad_y2) *\
-% *GenData(F2_linequad_z2) *\
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT2 LINE_QUAD x1 y1 z1 x2 y2 z2
-% *endif
-% *endif
-% *if(strcmp(GenData(F2_typ),"RADIUS_LIN")==0)
-% *GenData(F2_radlin_x1) *\
-% *GenData(F2_radlin_y1) *\
-% *GenData(F2_radlin_z1) *\
-% *GenData(F2_radlin_v1) *\
-% *GenData(F2_radlin_x2) *\
-% *GenData(F2_radlin_y2) *\
-% *GenData(F2_radlin_z2) *\
-% *GenData(F2_radlin_v2) *\
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT2 LINE_LIN x1 y1 z1 val1 x2 y2 z2 val2
-% *endif
-% *endif
-% *if(strcmp(GenData(F2_typ),"RADIUS_QUAD")==0)
-% *GenData(F2_radquad_x1) *\
-% *GenData(F2_radquad_y1) *\
-% *GenData(F2_radquad_z1) *\
-% *GenData(F2_radquad_x2) *\
-% *GenData(F2_radquad_y2) *\
-% *GenData(F2_radquad_z2) *\
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT2 LINE_QUAD x1 y1 z1 x2 y2 z2
-% *endif
-% *endif
-% *if(strcmp(GenData(F2_typ),"BELTRAMI")==0)
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT2 BELTRAMI
-% *endif
-% *endif
-% *if(strcmp(GenData(F2_typ),"KIM-MOIN")==0)
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT2 KIM-MOIN
-% *endif
-% *endif
-% *if(strcmp(GenData(F2_typ),"NONE")==0)
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT2 NONE
-% *endif
-% *endif
-% *if(strcmp(GenData(F2_typ),"EXPR")==0)
-% *GenData(F2_x) *\
-% *GenData(F2_y) *\
-% *GenData(F2_z) *\
-% FUNCTION *GenData(F2_expression) *\
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT2 EXPR x y z FUNCTION expression
-% *endif
-% *endif
-
-% *endif
+See definition of \kw{FUNCT1}
 
 \subsection{FUNCT3}
 \begin{verbatim}
 ------------------------------------------------------------FUNCT3
 \end{verbatim}
-
-% *if(strcmp(GenData(F3_onoff),"on")==0)
-% FUNCT3 *GenData(F3_typ) *\
-% *if(strcmp(GenData(F3_typ),"LINE_LIN")==0)
-% *GenData(F3_linelin_x1) *\
-% *GenData(F3_linelin_y1) *\
-% *GenData(F3_linelin_z1) *\
-% *GenData(F3_linelin_v1) *\
-% *GenData(F3_linelin_x2) *\
-% *GenData(F3_linelin_y2) *\
-% *GenData(F3_linelin_z2) *\
-% *GenData(F3_linelin_v2) *\
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT3 LINE_LIN x1 y1 z1 val1 x2 y2 z2 val2
-% *endif
-% *endif
-% *if(strcmp(GenData(F3_typ),"LINE_QUAD")==0)
-% *GenData(F3_linequad_x1) *\
-% *GenData(F3_linequad_y1) *\
-% *GenData(F3_linequad_z1) *\
-% *GenData(F3_linequad_x2) *\
-% *GenData(F3_linequad_y2) *\
-% *GenData(F3_linequad_z2) *\
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT3 LINE_QUAD x1 y1 z1 x2 y2 z2
-% *endif
-% *endif
-% *if(strcmp(GenData(F3_typ),"RADIUS_LIN")==0)
-% *GenData(F3_radlin_x1) *\
-% *GenData(F3_radlin_y1) *\
-% *GenData(F3_radlin_z1) *\
-% *GenData(F3_radlin_v1) *\
-% *GenData(F3_radlin_x2) *\
-% *GenData(F3_radlin_y2) *\
-% *GenData(F3_radlin_z2) *\
-% *GenData(F3_radlin_v2) *\
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT3 LINE_LIN x1 y1 z1 val1 x2 y2 z2 val2
-% *endif
-% *endif
-% *if(strcmp(GenData(F3_typ),"RADIUS_QUAD")==0)
-% *GenData(F3_radquad_x1) *\
-% *GenData(F3_radquad_y1) *\
-% *GenData(F3_radquad_z1) *\
-% *GenData(F3_radquad_x2) *\
-% *GenData(F3_radquad_y2) *\
-% *GenData(F3_radquad_z2) *\
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT3 LINE_QUAD x1 y1 z1 x2 y2 z2
-% *endif
-% *endif
-% *if(strcmp(GenData(F3_typ),"BELTRAMI")==0)
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT3 BELTRAMI
-% *endif
-% *endif
-% *if(strcmp(GenData(F3_typ),"KIM-MOIN")==0)
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT3 KIM-MOIN
-% *endif
-% *endif
-% *if(strcmp(GenData(F3_typ),"NONE")==0)
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT3 NONE
-% *endif
-% *endif
-% *if(strcmp(GenData(F3_typ),"EXPR")==0)
-% *GenData(F3_x) *\
-% *GenData(F3_y) *\
-% *GenData(F3_z) *\
-% FUNCTION *GenData(F3_expression) *\
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT3 EXPR x y z FUNCTION expression
-% *endif
-% *endif
-
-% *endif
-
-\subsection{FUNCT4}
-\begin{verbatim}
-------------------------------------------------------------FUNCT4
-\end{verbatim}
-
-% *if(strcmp(GenData(F4_onoff),"on")==0)
-% FUNCT4 *GenData(F4_typ) *\
-% *if(strcmp(GenData(F4_typ),"LINE_LIN")==0)
-% *GenData(F4_linelin_x1) *\
-% *GenData(F4_linelin_y1) *\
-% *GenData(F4_linelin_z1) *\
-% *GenData(F4_linelin_v1) *\
-% *GenData(F4_linelin_x2) *\
-% *GenData(F4_linelin_y2) *\
-% *GenData(F4_linelin_z2) *\
-% *GenData(F4_linelin_v2) *\
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT4 LINE_LIN x1 y1 z1 val1 x2 y2 z2 val2
-% *endif
-% *endif
-% *if(strcmp(GenData(F4_typ),"LINE_QUAD")==0)
-% *GenData(F4_linequad_x1) *\
-% *GenData(F4_linequad_y1) *\
-% *GenData(F4_linequad_z1) *\
-% *GenData(F4_linequad_x2) *\
-% *GenData(F4_linequad_y2) *\
-% *GenData(F4_linequad_z2) *\
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT4 LINE_QUAD x1 y1 z1 x2 y2 z2
-% *endif
-% *endif
-% *if(strcmp(GenData(F4_typ),"RADIUS_LIN")==0)
-% *GenData(F4_radlin_x1) *\
-% *GenData(F4_radlin_y1) *\
-% *GenData(F4_radlin_z1) *\
-% *GenData(F4_radlin_v1) *\
-% *GenData(F4_radlin_x2) *\
-% *GenData(F4_radlin_y2) *\
-% *GenData(F4_radlin_z2) *\
-% *GenData(F4_radlin_v2) *\
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT4 LINE_LIN x1 y1 z1 val1 x2 y2 z2 val2
-% *endif
-% *endif
-% *if(strcmp(GenData(F4_typ),"RADIUS_QUAD")==0)
-% *GenData(F4_radquad_x1) *\
-% *GenData(F4_radquad_y1) *\
-% *GenData(F4_radquad_z1) *\
-% *GenData(F4_radquad_x2) *\
-% *GenData(F4_radquad_y2) *\
-% *GenData(F4_radquad_z2) *\
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT4 LINE_QUAD x1 y1 z1 x2 y2 z2
-% *endif
-% *endif
-% *if(strcmp(GenData(F4_typ),"BELTRAMI")==0)
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT4 BELTRAMI
-% *endif
-% *endif
-% *if(strcmp(GenData(F4_typ),"KIM-MOIN")==0)
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT4 KIM-MOIN
-% *endif
-% *endif
-% *if(strcmp(GenData(F4_typ),"NONE")==0)
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT4 NONE
-% *endif
-% *endif
-% *if(strcmp(GenData(F4_typ),"EXPR")==0)
-% *GenData(F4_x) *\
-% *GenData(F4_y) *\
-% *GenData(F4_z) *\
-% FUNCTION *GenData(F4_expression) *\
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT4 EXPR x y z FUNCTION expression
-% *endif
-% *endif
-
-% *endif
-
-\subsection{FUNCT5}
-\begin{verbatim}
-------------------------------------------------------------FUNCT5
-\end{verbatim}
-
-% *if(strcmp(GenData(F5_onoff),"on")==0)
-% FUNCT5 *GenData(F5_typ) *\
-% *if(strcmp(GenData(F5_typ),"LINE_LIN")==0)
-% *GenData(F5_linelin_x1) *\
-% *GenData(F5_linelin_y1) *\
-% *GenData(F5_linelin_z1) *\
-% *GenData(F5_linelin_v1) *\
-% *GenData(F5_linelin_x2) *\
-% *GenData(F5_linelin_y2) *\
-% *GenData(F5_linelin_z2) *\
-% *GenData(F5_linelin_v2) *\
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT5 LINE_LIN x1 y1 z1 val1 x2 y2 z2 val2
-% *endif
-% *endif
-% *if(strcmp(GenData(F5_typ),"LINE_QUAD")==0)
-% *GenData(F5_linequad_x1) *\
-% *GenData(F5_linequad_y1) *\
-% *GenData(F5_linequad_z1) *\
-% *GenData(F5_linequad_x2) *\
-% *GenData(F5_linequad_y2) *\
-% *GenData(F5_linequad_z2) *\
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT5 LINE_QUAD x1 y1 z1 x2 y2 z2
-% *endif
-% *endif
-% *if(strcmp(GenData(F5_typ),"RADIUS_LIN")==0)
-% *GenData(F5_radlin_x1) *\
-% *GenData(F5_radlin_y1) *\
-% *GenData(F5_radlin_z1) *\
-% *GenData(F5_radlin_v1) *\
-% *GenData(F5_radlin_x2) *\
-% *GenData(F5_radlin_y2) *\
-% *GenData(F5_radlin_z2) *\
-% *GenData(F5_radlin_v2) *\
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT5 LINE_LIN x1 y1 z1 val1 x2 y2 z2 val2
-% *endif
-% *endif
-% *if(strcmp(GenData(F5_typ),"RADIUS_QUAD")==0)
-% *GenData(F5_radquad_x1) *\
-% *GenData(F5_radquad_y1) *\
-% *GenData(F5_radquad_z1) *\
-% *GenData(F5_radquad_x2) *\
-% *GenData(F5_radquad_y2) *\
-% *GenData(F5_radquad_z2) *\
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT5 LINE_QUAD x1 y1 z1 x2 y2 z2
-% *endif
-% *endif
-% *if(strcmp(GenData(F5_typ),"BELTRAMI")==0)
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT5 BELTRAMI
-% *endif
-% *endif
-% *if(strcmp(GenData(F5_typ),"KIM-MOIN")==0)
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT5 KIM-MOIN
-% *endif
-% *endif
-% *if(strcmp(GenData(F5_typ),"NONE")==0)
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT5 NONE
-% *endif
-% *endif
-% *if(strcmp(GenData(F5_typ),"EXPR")==0)
-% *GenData(F5_x) *\
-% *GenData(F5_y) *\
-% *GenData(F5_z) *\
-% FUNCTION *GenData(F5_expression) *\
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT5 EXPR x y z FUNCTION expression
-% *endif
-% *endif
-
-% *endif
-
-\subsection{FUNCT6}
-\begin{verbatim}
-------------------------------------------------------------FUNCT6
-\end{verbatim}
-
-% *if(strcmp(GenData(F6_onoff),"on")==0)
-% FUNCT6 *GenData(F6_typ) *\
-% *if(strcmp(GenData(F6_typ),"LINE_LIN")==0)
-% *GenData(F6_linelin_x1) *\
-% *GenData(F6_linelin_y1) *\
-% *GenData(F6_linelin_z1) *\
-% *GenData(F6_linelin_v1) *\
-% *GenData(F6_linelin_x2) *\
-% *GenData(F6_linelin_y2) *\
-% *GenData(F6_linelin_z2) *\
-% *GenData(F6_linelin_v2) *\
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT6 LINE_LIN x1 y1 z1 val1 x2 y2 z2 val2
-% *endif
-% *endif
-% *if(strcmp(GenData(F6_typ),"LINE_QUAD")==0)
-% *GenData(F6_linequad_x1) *\
-% *GenData(F6_linequad_y1) *\
-% *GenData(F6_linequad_z1) *\
-% *GenData(F6_linequad_x2) *\
-% *GenData(F6_linequad_y2) *\
-% *GenData(F6_linequad_z2) *\
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT6 LINE_QUAD x1 y1 z1 x2 y2 z2
-% *endif
-% *endif
-% *if(strcmp(GenData(F6_typ),"RADIUS_LIN")==0)
-% *GenData(F6_radlin_x1) *\
-% *GenData(F6_radlin_y1) *\
-% *GenData(F6_radlin_z1) *\
-% *GenData(F6_radlin_v1) *\
-% *GenData(F6_radlin_x2) *\
-% *GenData(F6_radlin_y2) *\
-% *GenData(F6_radlin_z2) *\
-% *GenData(F6_radlin_v2) *\
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT6 LINE_LIN x1 y1 z1 val1 x2 y2 z2 val2
-% *endif
-% *endif
-% *if(strcmp(GenData(F6_typ),"RADIUS_QUAD")==0)
-% *GenData(F6_radquad_x1) *\
-% *GenData(F6_radquad_y1) *\
-% *GenData(F6_radquad_z1) *\
-% *GenData(F6_radquad_x2) *\
-% *GenData(F6_radquad_y2) *\
-% *GenData(F6_radquad_z2) *\
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT6 LINE_QUAD x1 y1 z1 x2 y2 z2
-% *endif
-% *endif
-% *if(strcmp(GenData(F6_typ),"BELTRAMI")==0)
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT6 BELTRAMI
-% *endif
-% *endif
-% *if(strcmp(GenData(F6_typ),"KIM-MOIN")==0)
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT6 KIM-MOIN
-% *endif
-% *endif
-% *if(strcmp(GenData(F6_typ),"NONE")==0)
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT6 NONE
-% *endif
-% *endif
-% *if(strcmp(GenData(F6_typ),"EXPR")==0)
-% *GenData(F6_x) *\
-% *GenData(F6_y) *\
-% *GenData(F6_z) *\
-% FUNCTION *GenData(F6_expression) *\
-% *if(GenData(Commented_Inputfile,int)==1)
-% // FUNCT6 EXPR x y z FUNCTION expression
-% *endif
-% *endif
-
-% *endif
+\ldots
 
 \subsection{LOCSYS1}
 \begin{verbatim}
