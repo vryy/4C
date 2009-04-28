@@ -110,14 +110,15 @@ bool NOX::FSI::AitkenRelaxation::compute(Abstract::Group& grp, double& step,
   {
     del_  = F.clone(ShapeCopy);
     del2_ = F.clone(ShapeCopy);
-    del_->init(1e20);
+    del_->init(1.0e20);
+    del2_->init(0.0);
   }
 
   del2_->update(1,*del_,1,F);
   del_ ->update(-1,F);
 
-  double top = del2_->innerProduct(*del_);
-  double den = del2_->innerProduct(*del2_);
+  const double top = del2_->innerProduct(*del_);
+  const double den = del2_->innerProduct(*del2_);
 
   nu_ = nu_ + (nu_ - 1.)*top/den;
   step = 1. - nu_;
