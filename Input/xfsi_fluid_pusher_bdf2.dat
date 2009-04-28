@@ -112,6 +112,7 @@ ITEMAX       100
 CONVTOL      1.0E-6
 COUPMETHOD   conforming
 SECONDORDER  Yes
+COUPVARIABLE Displacement
 ------------------------------------------------------FLUID SOLVER
 SOLVER         UMFPACK          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 -----------------------------------------------------STRUCT SOLVER

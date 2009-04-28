@@ -45,7 +45,7 @@ FILESTEPS              1000
 LINEAR
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP   Gen_Alfa
+DYNAMICTYP   GenAlpha
 EIGEN        0
 RESEVRYDISP  1
 RESEVRYSTRS  1
@@ -54,10 +54,6 @@ NLNSOL       fullnewton // fullnewton modnewton nlncg ptc
 TIMESTEP     0.05
 NUMSTEP      200
 MAXTIME      5.0
-BETA         0.25
-GAMMA        0.5
-ALPHA_M      0.5
-ALPHA_F      0.5
 DAMPING      No
 M_DAMP       0.5
 K_DAMP       0.5
@@ -69,6 +65,12 @@ TOLCONSTR    1.0E-06
 ADAPTCONV        No
 ADAPTCONV_BETTER 0.1
 MAXITER      50
+---------------------------------------STRUCTURAL DYNAMIC/GENALPHA
+GENAVG       ImrLike
+BETA         0.25
+GAMMA        0.5
+ALPHA_M      0.5
+ALPHA_F      0.5
 -----------------------------------------------------FLUID DYNAMIC
 DYNAMICTYP       Nlin_Time_Int
 INITIALFIELD     zero_field
