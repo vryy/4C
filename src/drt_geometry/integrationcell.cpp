@@ -124,9 +124,10 @@ GEO::DomainIntCell::DomainIntCell(
 /*----------------------------------------------------------------------*
  * assignment operator                                                  *
  *----------------------------------------------------------------------*/
-GEO::DomainIntCell& GEO::DomainIntCell::operator=(const GEO::DomainIntCell& domainintcell)
+GEO::DomainIntCell& GEO::DomainIntCell::operator=(
+    const GEO::DomainIntCell& domainintcell)
 {
-  distype_ = domainintcell.distype_;
+  this->GEO::IntCell::operator = (domainintcell);
   nodalpos_xi_domain_ = domainintcell.nodalpos_xi_domain_;
   nodalpos_xyz_domain_ = domainintcell.nodalpos_xyz_domain_;
   phys_center_ = domainintcell.phys_center_;
@@ -284,12 +285,13 @@ GEO::BoundaryIntCell::~BoundaryIntCell()
 
 
 
+
 /*----------------------------------------------------------------------*
  * assignment operator                                                  *
  *----------------------------------------------------------------------*/
 GEO::BoundaryIntCell& GEO::BoundaryIntCell::operator=(const GEO::BoundaryIntCell& boundaryintcell)
 { 
-  distype_ = boundaryintcell.distype_;
+  this->GEO::IntCell::operator = (boundaryintcell);
   surface_ele_gid_ = boundaryintcell.surface_ele_gid_;
   nodalpos_xi_domain_ = boundaryintcell.nodalpos_xi_domain_;
   nodalpos_xi_boundary_ = boundaryintcell.nodalpos_xi_boundary_;
