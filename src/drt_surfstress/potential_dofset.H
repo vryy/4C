@@ -55,6 +55,10 @@ namespace UTILS
   
   private:
     
+    // no copy constructor and assignment operator
+    PotentialDofSet operator = (const PotentialDofSet& old);
+    PotentialDofSet(const PotentialDofSet& old);
+    
     RCP<DRT::Discretization> sourcedis_; ///< source discretization
   
   
