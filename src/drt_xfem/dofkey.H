@@ -66,7 +66,7 @@ namespace XFEM
       //! standard constructor
       explicit DofKey(
           const int             gid,      ///< global id
-          const FieldEnr        fieldenr  ///< enriched field
+          const FieldEnr&       fieldenr  ///< enriched field
       ) :
         DRT::ParObject(),
         gid_(gid),
