@@ -483,7 +483,7 @@ void GEO::SearchTree::TreeNode::setNearestObject(
 /*----------------------------------------------------------------------*
  | get center of treenode                                  peder   07/08|
  *----------------------------------------------------------------------*/
-const LINALG::Matrix<3,1> GEO::SearchTree::TreeNode::getCenterCoord() const
+LINALG::Matrix<3,1> GEO::SearchTree::TreeNode::getCenterCoord() const
 {
   LINALG::Matrix<3,1> centerCoord;
 
@@ -844,7 +844,7 @@ void GEO::SearchTree::TreeNode::setXFEMLabelAndNearestObjectOfEmptyChildren(
  | classifies point, i.e. returns for each point the index of the child |
  | node in whose node box it is situated                   peder   07/08|
  *----------------------------------------------------------------------*/
-inline const int GEO::SearchTree::TreeNode::classifyPoint(
+inline int GEO::SearchTree::TreeNode::classifyPoint(
     const LINALG::Matrix<3,1>&   point) const
 {
   

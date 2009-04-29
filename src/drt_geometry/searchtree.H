@@ -143,7 +143,7 @@ private:
    \param point                point
    \return index
    */ 
-  const int classifyPoint(
+  int classifyPoint(
       const LINALG::Matrix<3,1>&  point
       ) const;
 
@@ -383,14 +383,14 @@ public:
    \brief returns tree node type INNER_NODE or LEAF_NODE
    \return returns tree node type INNER_NODE or LEAF_NODE
    */
-  const TreeNodeType getTreeNodeType() const {return treeNodeType_;};
+  TreeNodeType getTreeNodeType() const {return treeNodeType_;};
   
   
   /*!
   \brief returns tree type OCTTREE or QUADTREE
   \return returns tree type OCTTREE or QUADTREE
   */
-  const TreeType getTreeType() const {return treeType_;};
+  TreeType getTreeType() const {return treeType_;};
 
 
   /*!
@@ -414,7 +414,7 @@ public:
    \brief return pointer to the parent node 
    \return pointer to parent tree node
    */
-  const TreeNode* const getParent() const {if (this->hasParent())
+  const TreeNode* getParent() const {if (this->hasParent())
                                                   return parent_;
                                                return NULL;};
 
@@ -423,7 +423,7 @@ public:
    \brief returns the center of this tree node
    \return returns the center of this tree node
    */
-  const LINALG::Matrix<3,1> getCenterCoord() const;
+  LINALG::Matrix<3,1> getCenterCoord() const;
 
 
   /*!

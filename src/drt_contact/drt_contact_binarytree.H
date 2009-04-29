@@ -268,7 +268,7 @@ private:
     \brief Return layer of current TreeNode
 
     */
-    virtual inline const int Layer() const { return layer_; }
+    virtual inline int Layer() const { return layer_; }
     
     /*!
     \brief Return pointer to element list of TreeNode

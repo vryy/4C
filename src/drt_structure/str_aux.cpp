@@ -21,7 +21,7 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* Calculate vector norm */
-const double STR::AUX::CalculateVectorNorm
+double STR::AUX::CalculateVectorNorm
 (
   const enum INPAR::STR::VectorNorm norm,
   const Teuchos::RCP<Epetra_Vector> vect

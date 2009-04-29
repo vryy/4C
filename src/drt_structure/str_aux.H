@@ -39,7 +39,7 @@ namespace STR
   {
 
     /// Determine norm of force residual
-    const double CalculateVectorNorm
+    double CalculateVectorNorm
     (
       const enum INPAR::STR::VectorNorm norm,  ///< norm to use
       const Teuchos::RCP<Epetra_Vector> vect  ///< the vector of interest
