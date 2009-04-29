@@ -29,11 +29,12 @@ Maintainer: Georg Bauer
 #include "../drt_geometry/position_array.H"
 #include "../drt_lib/linalg_serialdensematrix.H"
 
-//#define VISUALIZE_ELEMENT_DATA
+#define VISUALIZE_ELEMENT_DATA
 #include "scatra_element.H" // only for visualization of element data
 #define MIGRATIONSTAB  //activate convective stabilization with migration term
 //#define PRINT_ELCH_DEBUG
 //#define TAU_EXACT
+//#define EVAL_TAU_AT_INTPOINT
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -822,9 +823,25 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
   // get material constants
   GetMaterialParams(material,temperature,ephinp);
 
-  /*----------------------------------------------------------------------*/
-  // calculation of stabilization parameter(s) tau
-  /*----------------------------------------------------------------------*/
+  // use one-point Gauss rule to do calculations at the element center
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
+
+  // evaluate shape functions and derivatives at element center
+  EvalShapeFuncAndDerivsAtIntPoint(intpoints_tau,0,ele->Id());
+
+  // volume of the element (2D: element surface area; 1D: element length)
+  // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
+  const double vol = fac_;
+
+#ifndef EVAL_TAU_AT_INTPOINT
+  //----------------------------------------------------------------------
+  // calculation of stabilization parameter(s) tau at element center
+  //----------------------------------------------------------------------
+
+  // get velocity at element center
+  velint_.Multiply(evelnp,funct_);
+
+  // calculation of tau at element center
   CalTau(ele,
          subgrdiff,
          evelnp,
@@ -839,11 +856,13 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
          turbmodel,
          is_incremental,
          is_stationary,
-         frt);
+         frt,
+         vol);
+#endif
 
-  /*----------------------------------------------------------------------*/
+  //----------------------------------------------------------------------
   // integration loop for one element
-  /*----------------------------------------------------------------------*/
+  //----------------------------------------------------------------------
 
   // integrations points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
@@ -860,6 +879,26 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
 
       // convective part in convective form: u_x*N,x+ u_y*N,y
       conv_.MultiplyTN(derxy_,velint_);
+
+#ifdef EVAL_TAU_AT_INTPOINT
+      // calculation of stabilization parameter(s) tau at integration point
+      CalTau(ele,
+             subgrdiff,
+             evelnp,
+             edensnp,
+             epotnp,
+             esubgrdiff,
+             dt,
+             timefac,
+             whichtau,
+             assgd,
+             fssgd,
+             turbmodel,
+             is_incremental,
+             is_stationary,
+             frt,
+             vol);
+#endif
 
       // momentum divergence required for conservative form
       //if (conservative) GetMomentumDivergence(mdiv_,evelnp,edensnp,derxy_);
@@ -1146,36 +1185,12 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     const bool                          turbmodel,
     const bool                          is_incremental,
     const bool                          is_stationary,
-    const double                        frt
+    const double                        frt,
+    const double                        vol
   )
 {
   // get element-type constant for tau
   const double mk = SCATRA::MK<distype>();
-
-  // use one-point Gauss rule to calculate tau at element center
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
-
-  // coordinates of the integration point
-  const double* gpcoord = (intpoints_tau.IP().qxg)[0];
-  for (int idim = 0; idim < nsd_; idim++)
-    {xsi_(idim) = gpcoord[idim];}
-
-  // integration weight
-  const double wquad = intpoints_tau.IP().qwgt[0];
-
-  // shape functions and their first derivatives
-  DRT::UTILS::shape_function<distype>(xsi_,funct_);
-  DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
-
-  // get Jacobian matrix and determinant
-  xjm_.MultiplyNT(deriv_,xyze_);
-  const double det = xij_.Invert(xjm_);
-
-  if (det < 1E-16)
-    dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f",ele->Id(), det);
-
-  // get velocity at element center
-  velint_.Multiply(evel,funct_);
 
   // get density at element center
   const double dens = funct_.Dot(edens);
@@ -1287,11 +1302,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     case SCATRA::tau_franca_valentin:
     // stabilization parameter definition according to Franca and Valentin (2000)
     {
-      // volume of the element (2D: element surface area; 1D: element length)
-      // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
-      const double vol = wquad*det;
-
-      // get number of dimensions
+      // get number of dimensions (convert from int to double)
       const double dim = (double) nsd_;
 
       // get characteristic element length
@@ -1300,7 +1311,23 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
       // const double h = pow((6.*vol/PI),(1.0/3.0));
 
       // 2) streamlength (based on velocity vector at element centre) -> not default
+/*
+      // normed velocity at element centre
+      LINALG::Matrix<nsd_,1> velino;
+      if (vel_norm>=1e-6)
+        velino.Update(1.0/vel_norm,velint_);
+      else
+      {
+        velino.Clear();
+        velino(0,0) = 1;
+      }
 
+      // get streamlength using the normed velocity at element centre
+      LINALG::Matrix<iel,1> tmp;
+      tmp.MultiplyTN(derxy_,velino);
+      const double val = tmp.Norm1();
+      const double h = 2.0/val; // h=streamlength
+*/
       // 3) use cubic root of the element volume as characteristic length -> default
       //    2D case: characterisitc length is the square root of the element area
       //    1D case: characteristic length is the element length
@@ -1420,10 +1447,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     //----------------------------------------------------------------------
     if (assgd or (not is_incremental and fssgd))
     {
-      // element volume (2D: element surface area; 1D: element length)
-      // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
-      const double vol = wquad*det;
-
       // get number of dimensions
       const double dim = (double) nsd_;
 
