@@ -143,7 +143,7 @@ public:
   \return weight
   
   */
-  virtual inline const double W() const { return w_; }
+  virtual inline double W() const { return w_; }
 
   /*!
   \brief Print this node
