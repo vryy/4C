@@ -496,7 +496,7 @@ void DRT::Discretization::SetState(const string& name,RefCountPtr<const Epetra_V
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::SetState");
 
-  if (!Filled()) dserror("FillComplete() was not called");
+  if (!HaveDofs()) dserror("FillComplete() was not called");
   const Epetra_Map* colmap = DofColMap();
   const Epetra_BlockMap& vecmap = state->Map();
 
