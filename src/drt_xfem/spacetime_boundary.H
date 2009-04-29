@@ -44,22 +44,15 @@ namespace XFEM
         const LINALG::SerialDenseMatrix&       posn      ///< nodal positions at n
     );
 
-//    //! Copy Constructor
-//    SpaceTimeBoundaryCell(
-//            const SpaceTimeBoundaryCell& old);
+    //! Copy Constructor
+    SpaceTimeBoundaryCell(
+            const SpaceTimeBoundaryCell& old);
     
     //! Default Constructor
     explicit SpaceTimeBoundaryCell();
     
-//    /*!  = operator
-//     * create true copy
-//     */
-//    SpaceTimeBoundaryCell& operator = (const SpaceTimeBoundaryCell& old)
-//    {
-//      SpaceTimeBoundaryCell cell(old.bele_id_, posnp_, posn_);
-//      SpaceTimeBoundaryCell& ref = cell;
-//      return ref;
-//    };
+    //! operator
+    SpaceTimeBoundaryCell& operator = (const SpaceTimeBoundaryCell& old);
     
     //! return position array
     const LINALG::SerialDenseMatrix& get_xyzt() const {return xyzt_;};
@@ -71,7 +64,7 @@ namespace XFEM
     std::string toString() const;
     
   private:
-    
+     
     /// id of boundary element we want to track
     int bele_id_;
     

@@ -69,9 +69,16 @@ class SearchTree{
   
   
   //! data node for tree
-private: class TreeNode{
+private: 
+  
+    
+  class TreeNode{
      
 private:
+  
+  //! no copy constructor and assignment operator wanted
+  TreeNode(const TreeNode& old);
+  TreeNode& operator=(const TreeNode& old);
 
   //! pointer to the parent node
   const TreeNode* const parent_; 
@@ -809,13 +816,18 @@ public:
   
 private:
   
+  //! no copy constructor and assignment operator wanted
+  SearchTree(const SearchTree& old);
+  
+  SearchTree& operator =(const SearchTree& old);
+    
   //! maximum search depth
   const int max_depth_;   
 
   //! pointer to the root of the tree
   Teuchos::RCP< GEO::SearchTree::TreeNode > treeRoot_;
 
-}; 
+}; // class tree
 } // namespace GEO
 
 

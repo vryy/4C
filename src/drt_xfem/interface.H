@@ -124,6 +124,15 @@ namespace XFEM
 
     //! SearchTree octtree for timestep n
     const Teuchos::RCP<GEO::SearchTree>       octTreen_;
+    
+    
+  private:
+    
+    //! don't want copy constructor
+    explicit InterfaceHandle(const InterfaceHandle&);
+    
+    //! disabled assignment operator
+    InterfaceHandle operator = (const InterfaceHandle& old);  
 
   }; // class InterfaceHandle
   

@@ -86,8 +86,12 @@ class Intersection
 
 
   private:
-
     
+  //! no copy constructor and assignment operator wanted
+  Intersection(const Intersection& old);
+  
+  Intersection& operator =(const Intersection& old);
+        
   class CompareVecInt
   {
     public :

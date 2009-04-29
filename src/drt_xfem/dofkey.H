@@ -96,7 +96,7 @@ namespace XFEM
           assert(&other != this);
           return;
       }
-      
+     
       //! return string representation of this class
       std::string toString() const
       {
@@ -211,6 +211,9 @@ namespace XFEM
       
       //! don't want default constructor
       explicit DofKey();
+      
+      // no asignment operator implemented
+      DofKey& operator = (const DofKey& old);
       //    :
       //        gid_(-1),
       //        fieldenr_(FieldEnr())

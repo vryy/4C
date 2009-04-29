@@ -216,6 +216,8 @@ void GEO::Intersection::initializeXFEM(
 {
   xfemDistype_ = xfemElement->Shape();
   
+  // cout << "xfemLid = " << xfemLid << endl;
+  
   if(xfemLid == 0)
     xfemOldDistype_ = xfemDistype_;
   
@@ -261,6 +263,7 @@ void GEO::Intersection::initializeXFEM(
   intersectionpointinoutmap_ = rcp(new std::map< std::vector<int>, bool, CompareVecInt >(CompareVecInt()) ); 
   nodeInOut_.clear();
   nodemap_.clear();
+  // cout << "finish initialization of xfem element" << endl;
 }
 
 
@@ -1747,15 +1750,15 @@ void GEO::Intersection::computeCDT(
   // if(labelcount > 1)
   // quickFixForIntersectingStructures(in);
   
-  //in.save_nodes("tetin");
-  //in.save_poly("tetin");
+ // in.save_nodes("tetin");
+ // in.save_poly("tetin");
 
   //  Tetrahedralize the PLC. Switches are chosen to read a PLC (p),
   //  do quality mesh generation (q) with a specified quality bound
   //  (1.414), and apply a maximum volume constraint (a0.1)
-  //printf("tetgen start\n");
+  // printf("tetgen start\n");
   tetrahedralize(switches, &in, &out);
-  //printf("tetgen end\n");
+  // printf("tetgen end\n");
 
   //Debug
   //vector<int> elementIds;

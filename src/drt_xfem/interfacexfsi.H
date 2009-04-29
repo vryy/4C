@@ -109,6 +109,9 @@ namespace XFEM
     //! don't want copy constructor
     explicit InterfaceHandleXFSI(const InterfaceHandleXFSI&);
     
+    //! disabled assignment operator
+    InterfaceHandleXFSI operator = (const InterfaceHandleXFSI& old);    
+    
     //! put a position into the map for each nodal id
     void FillCurrentCutterPositionMap(
         const Teuchos::RCP<DRT::Discretization>& cutterdis,              ///< dis containing nodes

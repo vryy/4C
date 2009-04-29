@@ -84,6 +84,9 @@ namespace XFEM
         assert(&other != this);
         return;
       }
+          
+      //!assignment operator
+      Enrichment& operator = (const Enrichment& old) ;
       
       //! return string representation of the Enrichment
       std::string toString() const;

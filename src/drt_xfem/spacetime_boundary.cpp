@@ -40,6 +40,7 @@ XFEM::SpaceTimeBoundaryCell::SpaceTimeBoundaryCell(
     dserror("SpaceTimeBoundaryCell implemented only for surfaces of hex8 solid elements.");
   return;
 }
+  
     
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -51,18 +52,34 @@ XFEM::SpaceTimeBoundaryCell::SpaceTimeBoundaryCell() :
   return;
 }
 
+
 /*----------------------------------------------------------------------*
+ * copy constructor
  *----------------------------------------------------------------------*/
-//XFEM::SpaceTimeBoundaryCell::SpaceTimeBoundaryCell(
-//    const SpaceTimeBoundaryCell& old
-//    ) :
-//      bele_id_(old.bele_id_),
-//      posnp_(old.posnp_),
-//      posn_(old.posn_),
-//      xyzt_(old.xyzt_)
-//{
-//    return;
-//}
+XFEM::SpaceTimeBoundaryCell::SpaceTimeBoundaryCell(
+    const SpaceTimeBoundaryCell& old
+    ) :
+      bele_id_(old.bele_id_),
+      surf_distype_(old.surf_distype_),
+      num_timestep_(old.num_timestep_),
+      xyzt_(old.xyzt_)
+{
+    return;
+}
+   
+    
+/*----------------------------------------------------------------------*
+ |  assignment operatur                                      u.may 04/09|
+ *----------------------------------------------------------------------*/
+XFEM::SpaceTimeBoundaryCell& XFEM::SpaceTimeBoundaryCell::operator = (const XFEM::SpaceTimeBoundaryCell& old)
+{  
+  bele_id_ = old.bele_id_;
+  surf_distype_ = old.surf_distype_;
+  num_timestep_ = old.num_timestep_;
+  xyzt_ = old.xyzt_;
+  return *this;
+}
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -91,6 +108,7 @@ LINALG::SerialDenseMatrix XFEM::SpaceTimeBoundaryCell::getLinearPositionArray(
   }
   return xyzt;
 }
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

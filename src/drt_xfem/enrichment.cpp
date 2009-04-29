@@ -22,6 +22,19 @@ Maintainer: Axel Gerstenberger
 
 
 
+
+/*----------------------------------------------------------------------*
+ | ASSIGNMENT OPERATOR                                       u.may 04/09|
+ *----------------------------------------------------------------------*/
+XFEM::Enrichment& XFEM::Enrichment::operator = (const XFEM::Enrichment& old) 
+{
+  xfemconditionlabel_ = old.xfemconditionlabel_;
+  type_ = old.type_;
+  return *this;
+}
+
+
+
 /*----------------------------------------------------------------------*
  |  create string                                                       |
  *----------------------------------------------------------------------*/

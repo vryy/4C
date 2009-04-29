@@ -83,7 +83,10 @@ namespace XFEM
 
     //! disabled copy constructor
     explicit DofDistributionSwitcher(const XFEM::DofDistributionSwitcher& dofdist);
-    
+
+    //! disabled assignment operator
+    DofDistributionSwitcher operator = (const DofDistributionSwitcher& old);    
+
     //! disabled default constructor
     explicit DofDistributionSwitcher();
 

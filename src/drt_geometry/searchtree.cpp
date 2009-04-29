@@ -78,6 +78,8 @@ void GEO::SearchTree::initializeTree(
     treeRoot_->insertElement(-1, dis.lColElement(i)->Id());
 }
 
+
+
 /*-----------------------------------------------------------------------*
  | initialize or rebuild tree with possibly new              cyron 04/09 | 
  | discretization, nodes are taken unsortedly from discretization; note: |

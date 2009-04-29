@@ -116,7 +116,7 @@ std::string XFEM::InterfaceHandle::toString() const
  *----------------------------------------------------------------------*/
 GEO::DomainIntCells XFEM::InterfaceHandle::GetDomainIntCells(
     const DRT::Element* xfemElement) const
-{
+{ 
   std::map<int,GEO::DomainIntCells>::const_iterator tmp = elementalDomainIntCells_.find(xfemElement->Id());
   if (tmp == elementalDomainIntCells_.end())
   {   
@@ -177,6 +177,9 @@ bool XFEM::InterfaceHandle::ElementHasLabel(
     const int element_gid,
     const int label) const
 {
+  if(elementalBoundaryIntCells_.empty())
+    dserror("boundary intcells are empty");
+  
   const GEO::BoundaryIntCells& bcells = elementalBoundaryIntCells_.find(element_gid)->second;
   bool has_label = false;
   for (GEO::BoundaryIntCells::const_iterator bcell = bcells.begin(); bcell != bcells.end(); ++bcell)
@@ -199,6 +202,9 @@ std::set<int> XFEM::InterfaceHandle::LabelsPerElement(
     const int element_gid) const
 {
   std::set<int> labelset;
+  if(elementalBoundaryIntCells_.empty())
+    return labelset;
+  
   const GEO::BoundaryIntCells& bcells = elementalBoundaryIntCells_.find(element_gid)->second;
   for (GEO::BoundaryIntCells::const_iterator bcell = bcells.begin(); bcell != bcells.end(); ++bcell)
   {

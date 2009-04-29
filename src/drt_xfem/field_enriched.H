@@ -62,6 +62,9 @@ class FieldEnr
     {
       return;
     }
+    
+    //! assignment operator
+    FieldEnr& operator = (const FieldEnr& old);
 
     //! return string representation
     std::string toString() const;
@@ -107,7 +110,7 @@ class FieldEnr
     
 
   private:
-    
+   
     //! physical field variable to be enriched
     PHYSICS::Field    field_;
     //! specific enrichment for this physical field

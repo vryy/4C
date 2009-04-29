@@ -44,6 +44,22 @@ physcoord_(old.physcoord_)
 { 
   return;
 }
+    
+ 
+    
+/*----------------------------------------------------------------------*
+ * assignment operator                                       u.may 08/08|
+ *----------------------------------------------------------------------*/
+GEO::NearestObject& GEO::NearestObject::operator=(const GEO::NearestObject& old)
+{
+  objectType_ = old.objectType_;
+  nodeId_ = old.nodeId_;
+  lineId_ = old.lineId_;
+  surfId_ = old.surfId_;
+  label_ = old.label_;
+  physcoord_ = old.physcoord_;
+  return *this;
+}
 
 
 /*----------------------------------------------------------------------*

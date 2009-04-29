@@ -79,6 +79,11 @@ class NearestObject
     NearestObject(
         const GEO::NearestObject& old
         );
+    
+    /*!
+    \brief assignment operator
+    */
+    GEO::NearestObject& operator=(const GEO::NearestObject& old);
 
     /*!
     \brief Set node object type

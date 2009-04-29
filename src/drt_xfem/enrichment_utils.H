@@ -245,6 +245,12 @@ namespace XFEM
     
   private:
     
+    //! don't want copy constructor
+    explicit ElementEnrichmentValues(const ElementEnrichmentValues&);
+    
+    //! don't want assignement operator
+    ElementEnrichmentValues& operator = (const ElementEnrichmentValues& old);
+    
     //! don't want default constructor
     explicit ElementEnrichmentValues();
     

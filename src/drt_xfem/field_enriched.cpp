@@ -14,6 +14,18 @@ Maintainer: Axel Gerstenberger
 
 #include "field_enriched.H"
 
+
+/*----------------------------------------------------------------------*
+ |  assignment operatur                                      u.may 04/09|
+ *----------------------------------------------------------------------*/
+XFEM::FieldEnr& XFEM::FieldEnr::operator = (const XFEM::FieldEnr& old)
+{
+  field_ = old.field_;
+  enr_  = old.enr_;
+  return *this;
+}
+
+
 /*----------------------------------------------------------------------*
  |  transform to a string                                       ag 11/07|
  *----------------------------------------------------------------------*/
