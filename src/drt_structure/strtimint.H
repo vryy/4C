@@ -452,19 +452,19 @@ namespace STR
     const Epetra_Map& GetDomainMap() { return mass_->DomainMap(); }
 
     //! Return current step number map
-    const double GetTime() const { return (*time_)[0]; }
+    double GetTime() const { return (*time_)[0]; }
 
     //! Get upper limit of time range of interest
-    const double GetTimeEnd() const { return timemax_; }
+    double GetTimeEnd() const { return timemax_; }
 
     //! Get time step size \f$\Delta t_n\f$
-    const double GetTimeStepSize() const { return (*dt_)[0]; }
+    double GetTimeStepSize() const { return (*dt_)[0]; }
 
     //! Return current step number map
-    const int GetStep() const { return step_; }
+    int GetStep() const { return step_; }
 
     //! Get number of time steps
-    const int GetTimeNumStep() const { return stepmax_; }
+    int GetTimeNumStep() const { return stepmax_; }
 
 
     //! Return MapExtractor for Dirichlet boundary conditions
