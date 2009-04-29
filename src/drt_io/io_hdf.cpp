@@ -224,7 +224,7 @@ IO::HDFReader::ReadCharData(std::string path, int start, int end) const
 {
   if (end == -1)
     end = num_output_proc_;
-  int offset = 0;
+  hsize_t offset = 0;
   Teuchos::RCP<std::vector<char> > data = Teuchos::rcp(new std::vector<char>);
   for (int i = start; i < end; ++i)
   {
