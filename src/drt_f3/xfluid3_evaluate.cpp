@@ -99,7 +99,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
   if (mat->MaterialType()!=INPAR::MAT::m_fluid)
     dserror("newtonian fluid material expected but got type %d", mat->MaterialType());
 
-  const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
+  const MAT::NewtonianFluid* actmat = dynamic_cast<const MAT::NewtonianFluid*>(mat.get());
 
   switch(act)
   {
@@ -529,7 +529,7 @@ void DRT::ELEMENTS::XFluid3::f3_int_beltrami_err(
   double  visc = 0.0;
   if(material->MaterialType() == INPAR::MAT::m_fluid)
   {
-    const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());
+    const MAT::NewtonianFluid* actmat = dynamic_cast<const MAT::NewtonianFluid*>(material.get());
     visc = actmat->Viscosity();
   }
   else
