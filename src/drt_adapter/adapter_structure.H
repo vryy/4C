@@ -145,19 +145,19 @@ namespace ADAPTER {
     //@{
 
     /// Get the current time
-    virtual const double GetTime() const = 0;
+    virtual double GetTime() const = 0;
     
     /// Get upper limit of time range of interest
-    virtual const double GetTimeEnd() const = 0;
+    virtual double GetTimeEnd() const = 0;
 
     /// Get time step size \f$\Delta t_n\f$
-    virtual const double GetTimeStepSize() const = 0;
+    virtual double GetTimeStepSize() const = 0;
 
     /// Get current time step \f$n\f$ (sometimes called \f$k\f$ [but not in Baci])
-    virtual const int GetTimeStep() const = 0;
+    virtual int GetTimeStep() const = 0;
 
     /// Get number of time steps
-    virtual const int GetTimeNumStep() const = 0;
+    virtual int GetTimeNumStep() const = 0;
 
     /// Take the time and integrate (time loop)
     /// \date 11/08

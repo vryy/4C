@@ -86,19 +86,19 @@ namespace ADAPTER {
     RCP<const Epetra_Vector> FRobin();
 
     /// Get the current time
-    virtual const double GetTime() const { return structure_->GetTime(); }
+    virtual double GetTime() const { return structure_->GetTime(); }
     
     /// Get upper limit of time range of interest
-    virtual const double GetTimeEnd() const { return structure_->GetTimeEnd(); }
+    virtual double GetTimeEnd() const { return structure_->GetTimeEnd(); }
 
     /// Get time step size \f$\Delta t_n\f$
-    virtual const double GetTimeStepSize() const { return structure_->GetTimeStepSize(); }
+    virtual double GetTimeStepSize() const { return structure_->GetTimeStepSize(); }
 
     /// Get current time step \f$n\f$ (sometimes called \f$k\f$ [but not in Baci])
-    virtual const int GetTimeStep() const { return structure_->GetTimeStep(); }
+    virtual int GetTimeStep() const { return structure_->GetTimeStep(); }
 
     /// Get number of time steps
-    virtual const int GetTimeNumStep() const { return structure_->GetTimeNumStep(); }
+    virtual int GetTimeNumStep() const { return structure_->GetTimeNumStep(); }
 
     /// start new time step
     void PrepareTimeStep();
