@@ -113,7 +113,7 @@ int PBCDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const int 
         dserror("master not ghosted on proc but in connectivity");
       }
 
-      for(vector<int>::iterator slave=curr->second.begin();
+      for(vector<int>::const_iterator slave=curr->second.begin();
           slave!=curr->second.end();
           ++slave)
       {
@@ -121,14 +121,12 @@ int PBCDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const int 
         if((!dis.NodeColMap()->MyGID(*slave)) &&
            (dis.NodeRowMap()->MyGID(curr->first)))
         {
-          char *string;
-          sprintf(string,"slave %d to master %d  expected to be on that proc %d\n",*slave,curr->first,dis.Comm().MyPID());
-          cout << string;
-          dserror(string);
+          cout << "slave " << *slave << " to master " << curr->first << " expected to be on that proc "<< dis.Comm().MyPID() << endl;
+          dserror("");
         }
 #endif
         // get the number of dofs associated with this slave
-        int numdf = sredundantnodes[nidx[*slave]];
+        const int numdf = sredundantnodes[nidx[*slave]];
         // reset them to zero
         sredundantnodes[nidx[*slave]] =0;
         // reduce the number of local degrees of freedom
