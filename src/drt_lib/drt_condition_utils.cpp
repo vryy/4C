@@ -104,7 +104,7 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
   // make sure connectivity is all set
   // we don't care, whether dofs exist or not
   if (!sourcedis->Filled())
-    sourcedis->FillComplete(false,true,true);
+    dserror("sourcedis is not filled");
 
   const int myrank = conditiondis->Comm().MyPID();
   const Epetra_Map* sourcenoderowmap = sourcedis->NodeRowMap();
@@ -118,11 +118,11 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
   set<int> colnodeset;
 
   // construct new elements
-  for (map<int, RCP<DRT::Element> >::const_iterator cuttereleiter = sourceelements.begin();
-       cuttereleiter != sourceelements.end();
-       ++cuttereleiter)
+  for (map<int, RCP<DRT::Element> >::const_iterator sourceele_iter = sourceelements.begin();
+       sourceele_iter != sourceelements.end();
+       ++sourceele_iter)
   {
-    const RCP<DRT::Element> sourceele = cuttereleiter->second;
+    const RCP<DRT::Element> sourceele = sourceele_iter->second;
 
     // get global node ids
     vector<int> nids;
@@ -144,7 +144,7 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
     copy(nids.begin(), nids.end(),
          inserter(colnodeset, colnodeset.begin()));
 
-    // copy node ids of cutterele to rownodeset but leave those that do
+    // copy node ids of condition ele to rownodeset but leave those that do
     // not belong to this processor
     remove_copy_if(nids.begin(), nids.end(),
                    inserter(rownodeset, rownodeset.begin()),
@@ -157,10 +157,10 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
       // create an element with the same global element id
       RCP<DRT::Element> condele = DRT::UTILS::Factory(element_name, "Polynomial", sourceele->Id(), myrank);
 
-      // set the same global node ids to the ale element
+      // set the same global node ids to the new element
       condele->SetNodeIds(nids.size(), &nids[0]);
 
-      // add boundary element
+      // add element
       conditiondis->AddElement(condele);
     }
   }
