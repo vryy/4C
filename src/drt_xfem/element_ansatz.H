@@ -20,16 +20,18 @@ Maintainer: Axel Gerstenberger
 
 namespace XFEM
 {
-  //! Implement this abstract class to tell the dofmanangers,
+  //! Implement this abstract class to tell the dofmanagers,
   //! what stress ansatz you want to use for Distributed Lagrange multipliers
   class ElementAnsatz
   {
     public:
-    //! for a given velocity/displacement interpolation, a map is produced which has the number of element unknowns per physical field
-    virtual map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> getElementAnsatz(DRT::Element::DiscretizationType eledistype) const = 0;
+      //! default constructor
+      explicit ElementAnsatz(){};
+      //! for a given velocity/displacement interpolation, a map is produced which has the number of element unknowns per physical field
+      virtual map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> getElementAnsatz(DRT::Element::DiscretizationType eledistype) const = 0;
     protected:
-    //! no data to delete, but this way the compiler does not warn
-    virtual ~ElementAnsatz(){};
+      //! no data to delete, but this way the compiler does not warn
+      virtual ~ElementAnsatz(){};
   };
 
 

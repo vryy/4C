@@ -129,6 +129,13 @@ namespace XFLUID
   class FluidElementAnsatz : public XFEM::ElementAnsatz 
   {
   public:
+    //! default constructor
+    explicit FluidElementAnsatz()
+    :XFEM::ElementAnsatz()
+    {
+    };
+    //! destructor
+    virtual ~FluidElementAnsatz(){};
     //! for a given velocity interpolation, a map is produced which has the number of element unknowns per physical field
     virtual map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> getElementAnsatz(DRT::Element::DiscretizationType eledistype) const
     {
