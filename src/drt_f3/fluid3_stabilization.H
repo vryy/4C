@@ -95,18 +95,18 @@ namespace XFLUID
     const DRT::UTILS::IntegrationPoints3D intpoints(integrationrule_stabili);
     
     // shape functions and derivs at element center
-    static LINALG::Matrix<3,1> e;
+    LINALG::Matrix<3,1> e;
     e(0) = intpoints.qxg[0][0];
     e(1) = intpoints.qxg[0][1];
     e(2) = intpoints.qxg[0][2];
     const double wquad = intpoints.qwgt[0];
     
-    static LINALG::Matrix<3,numnode> deriv;
+    LINALG::Matrix<3,numnode> deriv;
     DRT::UTILS::shape_function_3D_deriv1(deriv, e(0), e(1), e(2), DISTYPE);
     
     // get Jacobian matrix and determinant
     // xjm_ = deriv_(i,k)*xyze(j,k);
-    static LINALG::Matrix<3,3> xjm;
+    LINALG::Matrix<3,3> xjm;
     xjm.MultiplyNT(deriv,xyze);
 
     const double vol = wquad * xjm.Determinant();
@@ -138,7 +138,7 @@ namespace XFLUID
     const double vel_norm = std::sqrt(gpvelnp(0)*gpvelnp(0)+gpvelnp(1)*gpvelnp(1)+gpvelnp(2)*gpvelnp(2));
 
     // normed velocity at element centre
-    static LINALG::Matrix<3,1> velino;
+    LINALG::Matrix<3,1> velino;
     if (vel_norm>=1e-6)
     {
         for (int isd = 0; isd < nsd; ++isd)
