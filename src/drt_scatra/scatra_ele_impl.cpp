@@ -29,7 +29,7 @@ Maintainer: Georg Bauer
 #include "../drt_geometry/position_array.H"
 #include "../drt_lib/linalg_serialdensematrix.H"
 
-#define VISUALIZE_ELEMENT_DATA
+//#define VISUALIZE_ELEMENT_DATA
 #include "scatra_element.H" // only for visualization of element data
 #define MIGRATIONSTAB  //activate convective stabilization with migration term
 //#define PRINT_ELCH_DEBUG
