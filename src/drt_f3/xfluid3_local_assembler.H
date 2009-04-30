@@ -25,9 +25,11 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/linalg_fixedsizematrix.H"
 
 
+const static unsigned errorCheckValue = 77777777;
+
 //! for non-xfem elements, figure out the order of unknowns per node in the array
 template<XFEM::PHYSICS::Field field>
-struct FieldNum {static const unsigned pos = 7777;};
+struct FieldNum {static const unsigned pos = errorCheckValue;};
 template<> struct FieldNum<XFEM::PHYSICS::Velx> {static const unsigned pos = 0;};
 template<> struct FieldNum<XFEM::PHYSICS::Vely> {static const unsigned pos = 1;};
 template<> struct FieldNum<XFEM::PHYSICS::Velz> {static const unsigned pos = 2;};
@@ -310,7 +312,7 @@ public:
             )
     {
 #ifdef DEBUG
-      if (FieldNum<trialfield>::pos == 7777 or FieldNum<testfield>::pos == 7777)
+      if (FieldNum<trialfield>::pos == errorCheckValue or FieldNum<testfield>::pos == errorCheckValue)
         dserror("no stress allowed here");
 #endif
       const unsigned numparam = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
@@ -334,6 +336,10 @@ public:
             const double&       fac
             )
     {
+#ifdef DEBUG
+      if (FieldNum<testfield>::pos == errorCheckValue)
+        dserror("no stress allowed here");
+#endif
         const unsigned numparam = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
         for (unsigned vi=0; vi<numparam; ++vi)
         {
