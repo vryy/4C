@@ -49,7 +49,11 @@ Maintainer: Ursula Mayer
  | constructor intersection                                  u.may 07/08|
  *----------------------------------------------------------------------*/
 GEO::Intersection::Intersection()     
-{}
+{
+  intersectionpointmap_ =  Teuchos::null; 
+  intersectionpointinoutmap_ = Teuchos::null;
+  return;
+}
 
 
 /*----------------------------------------------------------------------*
@@ -83,6 +87,7 @@ void GEO::Intersection::computeIntersection(
     std::cout << std::endl << "GEO::Intersection:" << std::flush;
   
   countMissedPoints_ = 0;
+  facetMarkerOffset_ = 11;
   const double t_start = ds_cputime();
   
   // stop intersection if cutterdis is empty
@@ -93,7 +98,8 @@ void GEO::Intersection::computeIntersection(
   const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofDis(*cutterdis, currentcutterpositions);
   Teuchos::RCP<GEO::SearchTree> octTree = rcp(new GEO::SearchTree(20));
   octTree->initializeTree(rootBox, *cutterdis, GEO::TreeType(GEO::OCTTREE));
-  std::vector< LINALG::Matrix<3,2> > structure_AABBs = GEO::computeXAABBForLabeledStructures(*cutterdis, currentcutterpositions, octTree->getRoot()->getElementList());
+  std::vector< LINALG::Matrix<3,2> > structure_AABBs
+      = GEO::computeXAABBForLabeledStructures(*cutterdis, currentcutterpositions, octTree->getRoot()->getElementList());
   
   // xfemdis->NumMyColElements()
   for(int k = 0; k < xfemdis->NumMyColElements(); ++k)
@@ -182,7 +188,10 @@ void GEO::Intersection::computeIntersection(
         dserror("Set QHULL flag to use XFEM intersections!!!");
 #endif 
       }  
+      
+
     }// for-loop over all cutter elements
+
 
     if(checkIfCDT())
     {
@@ -195,6 +204,7 @@ void GEO::Intersection::computeIntersection(
     }
   }// for-loop over all  actdis->NumMyColElements()
   
+ 
   //debugDomainIntCells(domainintcells,2);
   const double t_end = ds_cputime()-t_start;
   if(countMissedPoints_ > 0)
@@ -1182,6 +1192,8 @@ void GEO::Intersection::computeConvexHull(
   // points[1] is the second coordinate of the first point
   // points[dim] is the first coordinate of the second point
   coordT* coordinates = (coordT *)malloc((2*interfacePoints.size())*sizeof(coordT));
+  //int size_coord = 2*interfacePoints.size();
+  //coordT coordinates[size_coord];
   int fill = 0;
   for(std::map< LINALG::Matrix<3,1>, InterfacePoint, ComparePoint>::iterator ipoint = interfacePoints.begin(); ipoint != interfacePoints.end(); ++ipoint)
   {
@@ -1193,7 +1205,7 @@ void GEO::Intersection::computeConvexHull(
     //cout << endl;
 
     // transform interface points into current coordinates
-    static LINALG::Matrix<3,1> curCoordVol;
+    LINALG::Matrix<3,1> curCoordVol;
     elementToCurrentCoordinates(cutterElement->Shape(), xyze_cutterElement, (ipoint->second).getCoord(), curCoordVol);
     const LINALG::Matrix<3,1> eleCoordVol(currentToVolumeElementCoordinatesExact(xfemDistype_, xyze_xfemElement_, curCoordVol, TOL7));
     (ipoint->second).setCoord(eleCoordVol);
@@ -1211,10 +1223,10 @@ void GEO::Intersection::computeConvexHull(
     {
       double* point  = SETelemt_(facet->vertices, j, vertexT)->point;
       
-      static LINALG::Matrix<2,1>  eleCoordSurf;
+      LINALG::Matrix<2,1>  eleCoordSurf;
       for(int m = 0; m < 2; m++)
         eleCoordSurf(m)  = point[m];
-      static LINALG::Matrix<3,1> curCoordVol;
+      LINALG::Matrix<3,1> curCoordVol;
       elementToCurrentCoordinates(cutterElement->Shape(), xyze_cutterElement, eleCoordSurf, curCoordVol);
       const LINALG::Matrix<3,1> eleCoordVol(currentToVolumeElementCoordinatesExact(xfemDistype_, xyze_xfemElement_, curCoordVol, TOL7));
       vertices.push_back(eleCoordVol);
@@ -1634,7 +1646,7 @@ void GEO::Intersection::computeCDT(
   const int dim = 3; 
   tetgenio in;
   tetgenio out;
-  char switches[] = "pnnQ";    //o2 Y R
+  char switches[] = "pQ";    //o2 Y R nn
   tetgenio::facet *f;
   tetgenio::polygon *p;
 
@@ -1757,6 +1769,7 @@ void GEO::Intersection::computeCDT(
   //  do quality mesh generation (q) with a specified quality bound
   //  (1.414), and apply a maximum volume constraint (a0.1)
   // printf("tetgen start\n");
+
   tetrahedralize(switches, &in, &out);
   // printf("tetgen end\n");
 
@@ -1797,7 +1810,6 @@ void GEO::Intersection::computeCDT(
   //printTetViewOutput(element->Id(), out);
   // store domain integration cells
   addCellsToDomainIntCellsMap(xfemElement, domainintcells, out, higherorder);
-  
   
   // debugTetVolumes(xfemElement, out);
  

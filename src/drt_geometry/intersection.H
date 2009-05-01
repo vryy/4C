@@ -142,7 +142,7 @@ class Intersection
 
   
   //! offset in facet marker list
-  static const int                    facetMarkerOffset_ = 11;
+  int                    facetMarkerOffset_ ;
 
   //! discretization type of the xfem element
   DRT::Element::DiscretizationType     xfemDistype_;
