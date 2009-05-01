@@ -44,35 +44,44 @@ namespace MAT {
 	    /// @name material parameters
 	    //@{
 	    
-	    /// origin evaluation
+	    /// \b ORIGIN: boolean (1/0) to decide if F is computed at the element origin
 	    const int origin_;
-	    /// first characteristic (fc) length
+	    /// \b FCL: first characteristic (fc) length (double) [AKMA]
 	    const double fcl_;
-	    /// type of the fc direction
+	    /// \b FCD_Type type of the fc direction (string) (principal/vector/none)
 	    const string* fcd_type_;
-	    /// direction of fc
-	    const vector<double>* fcd_; 
+	    /// \b FCD: direction of fc direction if fcd_type_ is vector (unit vector)
+	    const vector<double>* fcd_;
+	    /// \b FCD_Space: directional space of fc (unit vector)
 	    const vector<double>* fcds_;
 
-	    /// second characteristic length
+	    /// \b SCL: second characteristic (sc) length [AKMA]
 	    const double scl_;
+	    /// \b SCD_Type: type of the sc direction (string) (principal/vector/none)
 	    const string* scd_type_;
+	    /// \b SCD: direction of sc direction if scd_type_ is vector (unit vector)
 	    const vector<double>* scd_;
+	    /// \b SCD_Space: directional space of sc (unit vector)
 	    const vector<double>* scds_;
 
-	    /// time coupling
+	    /// \b FCD_Acceleration: boolean (1/0) if F'' in fcd is computed and as force given to MD
 	    const int fcdacc_;
+	    /// \b AtomicMass: Atomic mass of the moving part of the protein [AKMA]
 	    const double atomicmass_;
+	    /// \b Facc_Scale: Scale factor from whatever force unit used in FE to pN
 	    const double facc_scale_;
+	    /// \b Time_AKMA: Scale factor from FE delta t time to AKMA time
 	    const double timeakma_;
+	    /// \b Time_Scale: Linear scaling between FE and MD delta t time
 	    const double timescale_;
 
-	    /// MD call and results
+	    /// \b HARD: Use hard coded results e.g. for testing or external run MD
 	    const int hard_;
+	    /// \b c_Scale: Scale factor for material parameter c1 (Neo-Hookean) depending on used FE units
 	    const double c_scale_;
 
 
-	    /// mass density
+	    /// \b DENS: mass density
 	    const double density_;
 
 	    //@}
@@ -219,9 +228,27 @@ namespace MAT {
 		LINALG::SerialDenseVector& lambda
 	);
 
+	/*!
+	 \brief Compute second time derivative of F in diretcion of the first characteristic direction
+
+	 Here the acceleration in the first characteritic direction is computed.
+	 This force may be later used for pulling on the atom or as force in various
+	 constraints in MD. This addes a dynamic information to the coupling.
+
+	 \param STARTD (in) : length of the last timestep
+	 \param ENDD (in) : length at the current timestep
+	 \param time_STARTD (in) : time at last timestep
+	 \param time_ENDD (in) : time at current timestep
+	 \param v_his (in) : v at last timestep
+	 \param atomic_mass (in) : Atomic mass of moving part
+	 \param Facc_scale (in) : Scale your force down to pN
+	 \param FCD_v (out) : current v
+	 \param a (out) : acceleration of the moving molecule
+	 \param Force (out) : Force on the moving part
+	 */
 	void EvalAccForce(
-		const double& FCD_STARTD,
-		const double& FCD_ENDD,
+		const double& STARTD,
+		const double& ENDD,
 		const double& time_STARTD,
 		const double& time_ENDD,
 		const double& v_his,
@@ -289,41 +316,52 @@ namespace MAT {
 		LINALG::SerialDenseVector& charmm_result
 	);
 
-	/// origin evaluation
+	/// \b ORIGIN: boolean (1/0) to decide if F is computed at the element origin
 	inline bool Origin() const {
 	    if (params_->origin_ == 1) return true;
 	    return false;
 	}
-	/// first characteristic stuff
+	/// \b FCL: first characteristic (fc) length (double) [AKMA]
 	inline double FCL() const { return params_->fcl_; }
+	/// \b FCD_Type: type of the fc direction (string) (principal/vector/none)
 	inline string FCDType() { return (*params_->fcd_type_); }
+	/// \b FCD: direction of fc direction if fcd_type_ is vector (unit vector)
 	inline vector<double> FCD() { return (*params_->fcd_); }
+	/// \b FCD_Space: directional space of fc (unit vector)
 	inline vector<double> FCDS() { return (*params_->fcds_); }
 
-	/// second characteristic stuff
+	/// second characteristic (sc) length [AKMA]
 	inline double SCL() const { return params_->scl_; }
+	/// \b SCD_Type: type of the sc direction (string) (principal/vector/none)
 	inline string SCDType() { return (*params_->scd_type_); }
+	/// \b SCD: direction of sc direction if scd_type_ is vector (unit vector)
 	inline vector<double> SCD() { return (*params_->scd_); }
+	/// \b SCD_Space: directional space of sc (unit vector)
 	inline vector<double> SCDS() { return (*params_->scds_); }
 
-	/// time coupling
+	/// \b FCD_Acceleration: boolean (1/0) if F'' in fcd is computed and as force given to MD
 	inline bool FCDAcc() const {
 		if (params_->fcdacc_ == 1) return true;
 		return false;
 	}
+	/// \b AtomicMass: Atomic mass of the moving part of the protein [AKMA]
 	inline double AtomicMass() const { return params_->atomicmass_; }
+	/// \b Facc_Scale: Scale factor from whatever force unit used in FE to pN
 	inline double FaccScale() const { return params_->facc_scale_; }
+	/// \b Time_AKMA: Scale factor from FE delta t time to AKMA time
 	inline double TimeAKMA() const { return params_->timeakma_; }
+	/// \b Time_Scale: Linear scaling between FE and MD delta t time
 	inline double TimeScale() const { return params_->timescale_; }
 
-	// MD
+	// \b HARD: Use hard coded results e.g. for testing or external run MD
 	inline bool HARD() const {
 		if (params_->hard_ == 1) return true;
 		return false;
 	}
+	/// \b c_Scale: Scale factor for material parameter c1 (Neo-Hookean) depending on used FE units
 	inline double CScale() const { return params_->c_scale_; }
 
-	/// density
+	/// \b DENS: density
 	inline double Density() const {
 	    return params_->density_;
 	}
