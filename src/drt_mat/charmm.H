@@ -43,6 +43,34 @@ namespace MAT {
 
 	    /// @name material parameters
 	    //@{
+	    
+	    /// origin evaluation
+	    const int origin_;
+	    /// first characteristic (fc) length
+	    const double fcl_;
+	    /// type of the fc direction
+	    const string* fcd_type_;
+	    /// direction of fc
+	    const vector<double>* fcd_; 
+	    const vector<double>* fcds_;
+
+	    /// second characteristic length
+	    const double scl_;
+	    const string* scd_type_;
+	    const vector<double>* scd_;
+	    const vector<double>* scds_;
+
+	    /// time coupling
+	    const int fcdacc_;
+	    const double atomicmass_;
+	    const double facc_scale_;
+	    const double timeakma_;
+	    const double timescale_;
+
+	    /// MD call and results
+	    const int hard_;
+	    const double c_scale_;
+
 
 	    /// mass density
 	    const double density_;
@@ -219,13 +247,7 @@ namespace MAT {
 	 \param charmm_result (out) : The CHARMm result vector
 	*/
 	void CHARMmfileapi(
-		const double FCD_STARTD,
-		const double FCD_ENDD,
-		const LINALG::SerialDenseVector FCD_direction,
-		const double FCD_Force,
-		const double SCD_STARTD,
-		const double SCD_ENDD,
-		const LINALG::SerialDenseVector SCD_direction,
+		map<string, double>& CHARMmPar,
 		LINALG::SerialDenseVector& charmm_result);
 
 	/*!
@@ -266,6 +288,40 @@ namespace MAT {
 		const double ENDD,
 		LINALG::SerialDenseVector& charmm_result
 	);
+
+	/// origin evaluation
+	inline bool Origin() const {
+	    if (params_->origin_ == 1) return true;
+	    return false;
+	}
+	/// first characteristic stuff
+	inline double FCL() const { return params_->fcl_; }
+	inline string FCDType() { return (*params_->fcd_type_); }
+	inline vector<double> FCD() { return (*params_->fcd_); }
+	inline vector<double> FCDS() { return (*params_->fcds_); }
+
+	/// second characteristic stuff
+	inline double SCL() const { return params_->scl_; }
+	inline string SCDType() { return (*params_->scd_type_); }
+	inline vector<double> SCD() { return (*params_->scd_); }
+	inline vector<double> SCDS() { return (*params_->scds_); }
+
+	/// time coupling
+	inline bool FCDAcc() const {
+		if (params_->fcdacc_ == 1) return true;
+		return false;
+	}
+	inline double AtomicMass() const { return params_->atomicmass_; }
+	inline double FaccScale() const { return params_->facc_scale_; }
+	inline double TimeAKMA() const { return params_->timeakma_; }
+	inline double TimeScale() const { return params_->timescale_; }
+
+	// MD
+	inline bool HARD() const {
+		if (params_->hard_ == 1) return true;
+		return false;
+	}
+	inline double CScale() const { return params_->c_scale_; }
 
 	/// density
 	inline double Density() const {

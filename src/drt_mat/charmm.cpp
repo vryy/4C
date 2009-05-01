@@ -23,6 +23,7 @@ Maintainer: Robert Metzke
 #include "sys/types.h"
 #include "sys/stat.h"
 #include <math.h>
+#include <string>
 #include "charmm.H"
 #include "../drt_so3/so_hex8.H"
 
@@ -30,7 +31,24 @@ Maintainer: Robert Metzke
 /*----------------------------------------------------------------------*/
 MAT::PAR::CHARMM::CHARMM(Teuchos::RCP<MAT::PAR::Material> matdata)
 : Parameter(matdata),
-density_(matdata->GetDouble("DENS")) {
+origin_(matdata->GetInt("ORIGIN")),
+fcl_(matdata->GetDouble("FCL")),
+fcd_type_(matdata->Get<string>("FCD_TYPE")),
+fcd_(matdata->Get<vector<double> >("FCD")),
+fcds_(matdata->Get<vector<double> >("FCD_Space")),
+scl_(matdata->GetDouble("SCL")),
+scd_type_(matdata->Get<string>("SCD_TYPE")),
+scd_(matdata->Get<vector<double> >("SCD")),
+scds_(matdata->Get<vector<double> >("SCD_Space")),
+fcdacc_(matdata->GetInt("FCD_Acceleration")),
+atomicmass_(matdata->GetDouble("AtomicMass")),
+facc_scale_(matdata->GetDouble("Facc_Scale")),
+timeakma_(matdata->GetDouble("Time_AKMA")),
+timescale_(matdata->GetDouble("Time_Scale")),
+hard_(matdata->GetInt("HARD")),
+c_scale_(matdata->GetDouble("c_Scale")),
+density_(matdata->GetDouble("DENS"))
+{
 }
 
 /*----------------------------------------------------------------------*/
@@ -145,56 +163,62 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
 	dserror("Data missing upon input in material CHARMm");
 #endif
 
+    //////////////////////////////////////////////////////////////////////////
     // Parameter collection
     // evaluate lamda at origin or at gp
-    bool origin = false; // change only of xref and xcurr really working!!!!
+    bool origin = Origin(); // change only of xref and xcurr really working!!!!
     // length of the protein in the main pulling direction [A]
     vector<double> characteristic_length(2);
     // Integrin length !!!!
-    characteristic_length[0] = 40.625; //50; //originally 44
+    characteristic_length[0] = FCL(); //40.625; //50; //originally 44
     // Collagen length !!!!
-    characteristic_length[1] = 100.0;
+    characteristic_length[1] = SCL();
     // characteristic direction of the protein
     // Possible selcetions:
     // principal = main strain direction (biggest eigenvalue)
     // vector = using the given vector
     // none = don't use the direction
     vector<string> strain_type;
-    strain_type.push_back("principal");
-    strain_type.push_back("vector");
+    strain_type.push_back(FCDType());
+    strain_type.push_back(SCDType());
     vector<LINALG::SerialDenseVector> d;
     LINALG::SerialDenseVector d_1(3);
     LINALG::SerialDenseVector d_2(3);
-    d_1(0) = 0;
-    d_1(1) = 1;
-    d_1(2) = 0;
-    d_2(0) = 1;
-    d_2(1) = 0;
-    d_2(2) = 0;
+    d_1(0) = FCD()[0];
+    d_1(1) = FCD()[1];
+    d_1(2) = FCD()[2];
+    d_2(0) = SCD()[0];
+    d_2(1) = SCD()[1];
+    d_2(2) = SCD()[2];
     d.push_back(d_1);
     d.push_back(d_2);
     // Add the directional space in case of principal direction
     vector<LINALG::SerialDenseVector> ds;
     LINALG::SerialDenseVector ds_1(3);
     LINALG::SerialDenseVector ds_2(3);
-    ds_1(0) = 0;
-    ds_1(1) = -1;
-    ds_1(2) = 0;
-    ds_2(0) = 0;
-    ds_2(1) = 0;
-    ds_2(2) = 0;
+    ds_1(0) = FCDS()[0];
+    ds_1(1) = FCDS()[1];
+    ds_1(2) = FCDS()[2];
+    ds_2(0) = SCDS()[0];
+    ds_2(1) = SCDS()[1];
+    ds_2(2) = SCDS()[2];
     ds.push_back(ds_1);
     ds.push_back(ds_2);
     // Use FCD to compute the acceleration in that direction to compute the
     // pulling force in CHARMm
-    bool FCDAcc = true;
-    double atomic_mass = 18; // amu; water
-    double Facc_scale = 1E26;
+    bool FCD_Acceleration = FCDAcc();
+    double atomic_mass = AtomicMass(); // 18.2354; // amu; water
+    double Facc_scale = FaccScale(); // 1E26;
+    // The basic coupling over the timescales; must be scaled to AKMA
+    bool movetime = true;
+    double time_to_AKMA = TimeAKMA();
+    double time_scale = TimeScale();
     // Use the hard coded charmm results (charmmfakeapi == true) or call charmm really (charmmfakeapi == false)
-    bool charmmhard = true;
+    bool charmmhard = HARD();
     // Scale factor (by default c_CHARMm will be in N/m^2. This should be revised)
-    const double c_scale = 1E-9;
-
+    const double c_scale = CScale(); //1E-9;
+    //////////////////////////////////////////////////////////////////////////
+    
     // Identity Matrix
     LINALG::Matrix < 3, 3 > I(true);
     for (int i = 0; i < 3; ++i) I(i, i) = 1.0;
@@ -238,31 +262,31 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
 	// go through number of directions
 	for (int i = 0; i < (int) strain_type.size(); i++) {
 	    if (strain_type[i].compare("principal") == 0) {
-		V.SetCopy(C);
-		EvalStrain(origin, xrefe, xcurr, V, lambda);
-		// flip the unit vector in case it's showing not in the right direction.
-		for (int j = 0; j < 3; j++) {
-		    if (ds[i](j) != 0 && ((ds[i](j) < 0 && V(j, 2) > 0) || (ds[i](j) > 0 && V(j, 2) < 0))) {
-			V(0, 2) *= -1;
-			V(1, 2) *= -1;
-			V(2, 2) *= -1;
-		    }
-		}
-		dir_lambdas.push_back(lambda);
-		dir_eigenv.push_back(V);
+			V.SetCopy(C);
+			EvalStrain(origin, xrefe, xcurr, V, lambda);
+			// flip the unit vector in case it's showing not in the right direction.
+			for (int j = 0; j < 3; j++) {
+		    	if (ds[i](j) != 0 && ((ds[i](j) < 0 && V(j, 2) > 0) || (ds[i](j) > 0 && V(j, 2) < 0))) {
+					V(0, 2) *= -1;
+					V(1, 2) *= -1;
+					V(2, 2) *= -1;
+		    	}
+			}
+			dir_lambdas.push_back(lambda);
+			dir_eigenv.push_back(V);
 	    } else if (strain_type[i].compare("vector") == 0) {
-		V.SetCopy(C);
-		for (int k = 0; k < 3; k++) for (int l = 0; l < 3; l++) V(k, l) = d[i](k) * V(k, l) * d[i](l);
-		EvalStrain(origin, xrefe, xcurr, V, lambda);
-		dir_lambdas.push_back(lambda);
-		dir_eigenv.push_back(V);
+			V.SetCopy(C);
+			for (int k = 0; k < 3; k++) for (int l = 0; l < 3; l++) V(k, l) = d[i](k) * V(k, l) * d[i](l);
+			EvalStrain(origin, xrefe, xcurr, V, lambda);
+			dir_lambdas.push_back(lambda);
+			dir_eigenv.push_back(V);
 	    } else if (strain_type[i].compare("none") == 0) {
-		V.Clear();
-		lambda.Zero();
-		dir_lambdas.push_back(lambda);
-		dir_eigenv.push_back(V);
+			V.Clear();
+			lambda.Zero();
+			dir_lambdas.push_back(lambda);
+			dir_eigenv.push_back(V);
 	    } else {
-		dserror("No valid strain type given for CHARMm!");
+			dserror("No valid strain type given for CHARMm!");
 	    }
 	}
 	//cout << dir_lambdas[1](0) << " : " << dir_lambdas[1](1) << " : " << dir_lambdas[1](2) << endl;
@@ -295,7 +319,7 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
 	//            << (*his)[4+(i*8)] << " : " << (*his)[5+(i*8)] << " : "
 	//            << (*his)[6+(i*8)] << " : " << (*his)[7+(i*8)] << " : "
 	//            << (*his)[8+(i*8)] << " : " << (*his)[9+(i*8)] << " : "
-	//	      << (*his)[8+(i*8)] << " : " << (*his)[9+(i*8)] << " : ";
+	//	    << (*his)[10+(i*8)] << " : " << (*his)[11+(i*8)] << " : ";
 	//}
 	//cout <<  endl;
 
@@ -303,7 +327,7 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
 	// get lambda t-dt information
 	vector<double> lambda_his;
 	for (int i = 0; i < (int) strain_type.size(); i++) {
-	    lambda_his.push_back((*his)[7 + (i * 8)]);
+	    lambda_his.push_back((*his)[7 + (i * 10)]);
 	}
 
 	// Data preparation for CHARMm
@@ -322,7 +346,7 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
 	double FCD_v;
 	double FCD_a;
 	double FCD_Force;
-	if (FCDAcc) {
+	if (FCD_Acceleration) {
 	    EvalAccForce(FCD_STARTD,FCD_ENDD,(*his)[1],time,(*his)[11],atomic_mass,Facc_scale,FCD_v,FCD_a,FCD_Force);
 	    (*his)[10] = FCD_v;
 	}
@@ -338,6 +362,10 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
 	SCD_direction(2) = dir_eigenv[1](2, 2);
 	//cout << "SCD: " << "STARTD: " << SCD_STARTD << " ENDD: " << SCD_ENDD << SCD_direction << endl;
 
+	// Compute the appropriate timestep for the moving time in MD
+	double time_move = 0.0;
+	if (movetime) time_move = time_scale * time_to_AKMA * (time - (*his)[1]);
+	//cout << "Time: " << time_move << endl;
 
 	// Check if results actually can be computed by CHARMm
 	//if (STARTD != ENDD) dserror("STARTD and ENDD identical! CHARMm will not produce any results.");
@@ -347,12 +375,25 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
 	// (Energy STARTD, Energy ENDD, #Atoms STARTD, #Atoms ENDD, Volume STARTD, Volume ENDD)
 	LINALG::SerialDenseVector direction(3);
 	LINALG::SerialDenseVector charmm_result(6);
+	map<string, double> CHARMmPar;
+	CHARMmPar["FCD_STARTD"] = FCD_STARTD;
+	CHARMmPar["FCD_ENDD"] = FCD_ENDD;
+	CHARMmPar["FCD_dir_x"] = FCD_direction(0);
+	CHARMmPar["FCD_dir_y"] = FCD_direction(1);
+	CHARMmPar["FCD_dir_z"] = FCD_direction(2);
+	CHARMmPar["FCD_Force"] = FCD_Force;
+	CHARMmPar["SCD_STARTD"] = SCD_STARTD;
+	CHARMmPar["SCD_ENDD"] = SCD_ENDD;
+	CHARMmPar["SCD_dir_x"] = SCD_direction(0);
+	CHARMmPar["SCD_dir_y"] = SCD_direction(1);
+	CHARMmPar["SCD_dir_z"] = SCD_direction(2);
+	CHARMmPar["movetime"] = time_move;
 	if (charmmhard) {
 	    // Just give the starting and ending strain in hard coded case
 	    CHARMmfakeapi(FCD_STARTD, FCD_ENDD, charmm_result);
 	} else {
 	    if (FCD_STARTD != FCD_ENDD) {
-		CHARMmfileapi(	FCD_STARTD, FCD_ENDD, FCD_direction, FCD_Force, SCD_STARTD, SCD_ENDD, SCD_direction, charmm_result);
+		CHARMmfileapi(CHARMmPar, charmm_result);
 	    }
 	}
 
@@ -554,8 +595,8 @@ void MAT::CHARMM::EvalStrain(const bool& origin,
 //! Compute acceleration and force in characteristic direction
 /*----------------------------------------------------------------------*/
 void MAT::CHARMM::EvalAccForce(
-	const double& FCD_STARTD,
-	const double& FCD_ENDD,
+	const double& STARTD,
+	const double& ENDD,
 	const double& time_STARTD,
 	const double& time_ENDD,
 	const double& v_his,
@@ -569,7 +610,8 @@ void MAT::CHARMM::EvalAccForce(
     double v_0 = v_his;
     v = 0.0;
     // Compute velocity
-    v = abs(FCD_ENDD - FCD_STARTD) / (time_ENDD - time_STARTD);
+    if (time_ENDD != time_STARTD) v = abs(ENDD - STARTD) / (time_ENDD - time_STARTD);
+    else v = 0.0;
     // Round v and v_0 off, otherwise comparison is not working
     int d = 5;
     double n = v;
@@ -578,13 +620,14 @@ void MAT::CHARMM::EvalAccForce(
     v_0 = floor(n * pow(10., d) + .5) / pow(10., d);
     if (v == v_his) v_0 = 0.0; // Switch between tangent and secant?? Sure to do that??
     // Compute acceleration and Force
-    a = (v - v_0) / (time_ENDD - time_STARTD);
+    if (time_ENDD != time_STARTD) a = (v - v_0) / (time_ENDD - time_STARTD);
+    else a = 0.0;
     Force = atomic_mass * amu_to_kg * a * Facc_scale;
 
-    cout    << "ACC: " << a << " " << Force << " "
-	    << FCD_STARTD << " " << FCD_ENDD << " "
-	    << time_STARTD << " " << time_ENDD << " "
-	    << v << " " << v_his << endl;
+    //cout    << "ACC: " << a << " " << Force << " "
+	//    << STARTD << " " << ENDD << " "
+	//    << time_STARTD << " " << time_ENDD << " "
+	//    << v << " " << v_his << endl;
 
 }
 
@@ -592,13 +635,7 @@ void MAT::CHARMM::EvalAccForce(
 //! File based API to CHARMM
 /*----------------------------------------------------------------------*/
 void MAT::CHARMM::CHARMmfileapi(
-	const double FCD_STARTD,
-	const double FCD_ENDD,
-	const LINALG::SerialDenseVector FCD_direction,
-	const double FCD_Force,
-	const double SCD_STARTD,
-	const double SCD_ENDD,
-	const LINALG::SerialDenseVector SCD_direction,
+	map<string, double>& CHARMmPar,
 	LINALG::SerialDenseVector& charmm_result) {
 
     FILE* tty;
@@ -630,9 +667,9 @@ void MAT::CHARMM::CHARMmfileapi(
     //char* energy = "output/energy_coupling_0kbt.out";
     //char* volume = "output/volume_coupling_0kbt.out";
     const string mdnature = "cold"; // cold = minimization; hot = fully dynamic with thermal energy; pert = pertubation
-    output << "output/ACEcold_" << FCD_STARTD << "_" << FCD_ENDD << ".out";
-    energy << "output/energy_" << FCD_STARTD << "_" << FCD_ENDD << ".out";
-    volume << "output/volume_" << FCD_STARTD << "_" << FCD_ENDD << ".out";
+    output << "output/ACEcold_" << CHARMmPar["FCD_STARTD"] << "_" << CHARMmPar["FCD_ENDD"] << ".out";
+    energy << "output/energy_" << CHARMmPar["FCD_STARTD"] << "_" << CHARMmPar["FCD_ENDD"] << ".out";
+    volume << "output/volume_" << CHARMmPar["FCD_STARTD"] << "_" << CHARMmPar["FCD_ENDD"] << ".out";
     ////////////////////////////////////////////////////////////////////////////
 
     // Assemble all file and path names first
@@ -644,7 +681,7 @@ void MAT::CHARMM::CHARMmfileapi(
     volumefile << path << volume.str();
 
     // Print out the beginning of the CHARMM info line
-    if (debug == 0) cout << setw(4) << left << "MD (" << showpoint << FCD_STARTD << setw(2) << "->" << FCD_ENDD << setw(3) << "): " << flush;
+    if (debug == 0) cout << setw(4) << left << "MD (" << showpoint << CHARMmPar["FCD_STARTD"] << setw(2) << "->" << CHARMmPar["FCD_ENDD"] << setw(3) << "): " << flush;
 
     // Check if the results files already exists
     // In that case skip the charmm call
@@ -653,19 +690,21 @@ void MAT::CHARMM::CHARMmfileapi(
 	ostringstream command(ios_base::out);
 	if (serpar.compare("ser") == 0) {
 	    command << "cd " << path << " && "
-		    << charmm << " FCDSTARTD=" << FCD_STARTD << " FCDENDD=" << FCD_ENDD
-		    << " FCDX=" << FCD_direction(0) << " FCDY=" << FCD_direction(1) << " FCDZ=" << FCD_direction(2)
-		    << " FCDForce=" << FCD_Force
-		    << " SCDSTARTD=" << SCD_STARTD << " SCDENDD=" << SCD_ENDD
-		    << " SCDX=" << SCD_direction(0) << " SCDY=" << SCD_direction(1) << " SCDZ=" << SCD_direction(2)
+		    << charmm << " FCDSTARTD=" << CHARMmPar["FCD_STARTD"] << " FCDENDD=" << CHARMmPar["FCD_ENDD"]
+		    << " FCDX=" << CHARMmPar["FCD_dir_x"] << " FCDY=" << CHARMmPar["FCD_dir_y"] << " FCDZ=" << CHARMmPar["FCD_dir_z"]
+		    << " FCDForce=" << CHARMmPar["FCD_Force"]
+		    << " SCDSTARTD=" << CHARMmPar["SCD_STARTD"] << " SCDENDD=" << CHARMmPar["SCD_ENDD"]
+		    << " SCDX=" << CHARMmPar["SCD_dir_x"] << " SCDY=" << CHARMmPar["SCD_dir_y"] << " SCDZ=" << CHARMmPar["SCD_dir_z"]
+		    << " MTIME=" << CHARMmPar["movetime"]
 		    << " < " << input << " > " << output.str();
 	} else if (serpar.compare("par") == 0) {
 	    command << "cd " << path << " && "
-		    << "openmpirun -np 2 " << mpicharmm << " FCDSTARTD=" << FCD_STARTD << " FCDENDD=" << FCD_ENDD
-		    << " FCDX=" << FCD_direction(0) << " FCDY=" << FCD_direction(1) << " FCDZ=" << FCD_direction(2)
-		    << " FCDForce=" << FCD_Force
-		    << " SCDSTARTD=" << SCD_STARTD << " SCDENDD=" << SCD_ENDD
-		    << " SCDX=" << SCD_direction(0) << " SCDY=" << SCD_direction(1) << " SCDZ=" << SCD_direction(2)
+		    << "openmpirun -np 2 " << mpicharmm << " FCDSTARTD=" << CHARMmPar["FCD_STARTD"] << " FCDENDD=" << CHARMmPar["FCD_ENDD"]
+		    << " FCDX=" << CHARMmPar["FCD_dir_x"] << " FCDY=" << CHARMmPar["FCD_dir_y"] << " FCDZ=" << CHARMmPar["FCD_dir_z"]
+		    << " FCDForce=" << CHARMmPar["FCD_Force"]
+		    << " SCDSTARTD=" << CHARMmPar["SCD_STARTD"] << " SCDENDD=" << CHARMmPar["SCD_ENDD"]
+		    << " SCDX=" << CHARMmPar["SCD_dir_x"] << " SCDY=" << CHARMmPar["SCD_dir_y"] << " SCDZ=" << CHARMmPar["SCD_dir_z"]
+		    << " MTIME=" << CHARMmPar["movetime"]
 		    << " INPUTFILE=" << input
 		    << " < " << "stream.inp" << " > " << output.str();
 	} else dserror("What you want now? Parallel or not!");

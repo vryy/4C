@@ -324,7 +324,22 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
       = Teuchos::rcp(new MaterialDefinition("MAT_CHARMM",
                                             "CHARmm API",
                                             INPAR::MAT::m_charmm));
-
+    AddNamedInt(m,"ORIGIN","Evaluation at origin");
+    AddNamedReal(m,"FCL","First characteristic length");
+    AddNamedString(m,"FCD_TYPE","Type of the first characteristic direction","none");
+    AddNamedRealVector(m,"FCD","First characteristic direction",3);
+    AddNamedRealVector(m,"FCD_Space","First characteristic directional space",3);
+    AddNamedReal(m,"SCL","Second characteristic length");
+    AddNamedString(m,"SCD_TYPE","Type of the second charateristic direction","none");
+    AddNamedRealVector(m,"SCD","Second characteristic direction",3);
+    AddNamedRealVector(m,"SCD_Space","Second characteristic directional space",3);
+    AddNamedInt(m,"FCD_Acceleration","Acceleration computation in FCD");
+    AddNamedReal(m,"AtomicMass","Atomic mass [amu] of the moving part");
+    AddNamedReal(m,"Facc_Scale","Scale factor from FE force to pN"); 
+    AddNamedReal(m,"Time_AKMA","Scale factor from FE time to AKMA time");
+    AddNamedReal(m,"Time_Scale","Linear scale factor for time span");
+    AddNamedInt(m,"HARD","Use hard coded results");
+    AddNamedReal(m,"c_Scale","Scale factor for c (Neo-Hookean)");
     AddNamedReal(m,"DENS","mass density");
     
     AppendMaterialDefinition(matlist,m);
