@@ -25,6 +25,7 @@ Maintainer: Robert Metzke
 #include <math.h>
 #include <string>
 #include "charmm.H"
+#include <time.h>
 #include "../drt_so3/so_hex8.H"
 
 /*----------------------------------------------------------------------*/
@@ -333,8 +334,8 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
 	// Data preparation for CHARMm
 	// First charateristic direction (FCD)
 	// calculate STARTD and ENDD for CHARMm (integrin)
-	double FCD_STARTD = characteristic_length[0] * (1 - lambda_his[0]);
-	double FCD_ENDD = characteristic_length[0] * (1 - dir_lambdas[0](2)); // Check for better way to choose!!!!
+	double FCD_STARTD = characteristic_length[0] * (lambda_his[0] - 1);
+	double FCD_ENDD = characteristic_length[0] * (dir_lambdas[0](2) - 1); // Check for better way to choose!!!!
 	// get direction for FCD (integrin)
 	LINALG::SerialDenseVector FCD_direction(3);
 	FCD_direction(0) = dir_eigenv[0](0, 2);
@@ -432,7 +433,7 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
     ///////////////////////////////////////////////////////////////////////////
 
     // Material Constants c1 and beta
-    double ym = 1000; // intermediate for testing purpose only
+    double ym = 1; // intermediate for testing purpose only
     double nu = 0.3; // intermediate for testing purpose only
     double c1 = 0.5 * ym / (2 * (1 + nu)); // intermediate for testing purpose only
     double beta = nu / (1 - 2 * nu);
@@ -652,22 +653,23 @@ void MAT::CHARMM::CHARMmfileapi(
     // Variables needed for CHARMM and getting the results
     // Decide if parallel or seriell
     const bool dont_use_old_results = true;
-    const string serpar = "par"; // ser = seriell; par = mpirun; pbs = PBS Torque
+    const string serpar = "ser"; // ser = seriell; par = mpirun; pbs = PBS Torque
     // FC6 setup
     //const char* path = "/home/metzke/ccarat.dev/codedev/charmm.fe.codedev/";
     //const char* charmm = "/home/metzke/bin/charmm";
     //const char* mpicharmm = "/home/metzke/bin/mpicharmm";
     // Mac setup
-    const char* path = "/Users/rmetzke/research/baci.dev/codedev/charmm.fe.codedev/";
+    //const char* path = "/Users/rmetzke/research/baci.dev/codedev/charmm.fe.codedev/";
+    const char* path = "/Users/rmetzke/research/projects/water/";
     const char* charmm = "/Users/rmetzke/bin/charmm";
     const char* mpicharmm = "/Users/rmetzke/bin/mpicharmm";
     //char* input = "1dzi_fem.inp";
-    const char* input = "1dzi_fem_min.inp";
+    const char* input = "water_fem_dyna.inp";
     //char* output = "output/FE_cold.out";
     //char* energy = "output/energy_coupling_0kbt.out";
     //char* volume = "output/volume_coupling_0kbt.out";
     const string mdnature = "cold"; // cold = minimization; hot = fully dynamic with thermal energy; pert = pertubation
-    output << "output/ACEcold_" << CHARMmPar["FCD_STARTD"] << "_" << CHARMmPar["FCD_ENDD"] << ".out";
+    output << "output/ACE_" << CHARMmPar["FCD_STARTD"] << "_" << CHARMmPar["FCD_ENDD"] << "_" << time(NULL) << ".out";
     energy << "output/energy_" << CHARMmPar["FCD_STARTD"] << "_" << CHARMmPar["FCD_ENDD"] << ".out";
     volume << "output/volume_" << CHARMmPar["FCD_STARTD"] << "_" << CHARMmPar["FCD_ENDD"] << ".out";
     ////////////////////////////////////////////////////////////////////////////
@@ -726,7 +728,7 @@ void MAT::CHARMM::CHARMmfileapi(
     } else {
 	dserror("No included MD Simulation technique given!.");
     }
-
+    //cout << endl;
     cout.flags(flags); // Set the flags to the way they were
 }
 
