@@ -447,6 +447,14 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
         Teuchos::tuple<std::string>("adjoint-consistent","diffusive-optimal"),
         Teuchos::tuple<std::string>("adjoint-consistent","diffusive-optimal"))));
 
+  // weak DBCs can be imposed adjoint consistent or adjoint inconsistent
+  weakDirichletcomponents.push_back(
+    Teuchos::rcp(
+      new StringConditionComponent(
+        "Directions to apply weak dbc","all_directions",
+        Teuchos::tuple<std::string>("all_directions","only_in_normal_direction"),
+        Teuchos::tuple<std::string>("all_directions","only_in_normal_direction"))));
+
   // the penalty parameter could be computed dynamically (using Spaldings 
   // law of the wall) or using a fixed value
   weakDirichletcomponents.push_back(
@@ -456,6 +464,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
         Teuchos::tuple<std::string>("constant","Spalding"),
         Teuchos::tuple<std::string>("constant","Spalding"))));
 
+  // scaling factor for penalty parameter tauB
+  weakDirichletcomponents.push_back(Teuchos::rcp(new RealConditionComponent("TauBscaling")));
 
   // linearisation strategies --- the linearisation (i.e. the matrix 
   // contribution) of the convective term on the inflow could be

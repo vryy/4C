@@ -1764,7 +1764,8 @@ No additional parameters but the design surface id.
 \begin{verbatim}
 --------------------------DESIGN SURFACE WEAK DIRICHLET CONDITIONS
 DSURF num
-E X - gamma-parameter tau_B-definition linearisation  bv(x,y,z) CURVE(x,y,z) FUNCT(x,y,z)
+E X - gamma-parameter active-components tau_B-definition scaling linearisation \
+ bv(x,y,z) CURVE(x,y,z) FUNCT(x,y,z)
 \end{verbatim}
 
 \begin{center}
@@ -1772,8 +1773,11 @@ E X - gamma-parameter tau_B-definition linearisation  bv(x,y,z) CURVE(x,y,z) FUN
 $X$                           & design surface id             \\ \hline
 gamma-parameter               & apply adjoint viscous term \emph{adjoint-consistent} or \\
                               & \emph{diffusive-optimal}       \\ \hline
+active components             & apply weak dbc in \verb1all_directions1 or only 
+                                \verb1only_in_normal_direction1 \\ \hline
 $\tau_B$-definition           & Definition of $\tau_B$ either \emph{constant} or according to \\
-                              &\emph{Spalding}'s law \\ \hline
+                              & \emph{Spalding}'s law \\ \hline
+scaling                       & scaling value (double) for constant $\tau_B$ \\\hline
 linearisation                 & include convective inflow term in linearisation (\verb1lin_all1)\\
                               &  or omit it (\verb1no_lin_conv_inflow1)\\\hline
 $\left(bv_x,bv_y,bv_z\right)$ & three doubles defining the axis direction \\\hline
@@ -1787,7 +1791,8 @@ Example:
 \begin{verbatim}
 --------------------------DESIGN SURFACE WEAK DIRICHLET CONDITIONS
 DSURF 1
-E 2 - adjoint-consistent constant no_lin_conv_inflow  0.0 0.0 0.0 none none none 0 0 0     
+E 1 - adjoint-consistent only_in_normal_direction constant 1.0 no_lin_conv_inflow  \
+ 0.0 0.0 0.0 none none none 0 0 0     
 \end{verbatim}
 
 \subsection{DESIGN FLUID LINE LIFT}

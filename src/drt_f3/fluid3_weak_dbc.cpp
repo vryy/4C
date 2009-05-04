@@ -118,9 +118,6 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     dserror("Unknown type of definition for gamma parameter: %s",(*consistency).c_str());
   }
 
-  // apply weak dbcs only in normal direction
-  bool onlynormal = false/*true*/;
-
   // initialise Spaldings law with parameters chi=0.4 and B=5.5
   Fluid3SurfaceWeakDBCSpaldingsLaw::Fluid3SurfaceWeakDBCSpaldingsLaw SpaldingsLaw(0.4,5.5);
   
@@ -190,9 +187,40 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   // try it as well)
   if(surfele->parent_->Shape()!=Fluid3::hex8 && surfele->parent_->Shape()!=Fluid3::nurbs27)
   {
-    dserror("Cb up to now only implemented for trilinear elements");
+    dserror("Cb up to now only implemented for trilinear orb nurbs elements");
   }
-  const double Cb    = 4.0;
+
+  // find out whether to apply weak dbcs only in normal direction
+  bool onlynormal = false;
+
+  const string* active_components
+    =
+    (*wdbc_cond).Get<string>("Directions to apply weak dbc");
+
+  if(*active_components=="all_directions")
+  {
+     onlynormal=false;
+  }
+  else if(*active_components=="only_in_normal_direction")
+  {
+     onlynormal=true;
+  }
+  else
+  {
+    dserror("Unknown definition of active components: %s",(*active_components).c_str());
+  }
+
+  // optional scaling of penalty parameter
+  const double scaling
+    =
+    (*wdbc_cond).GetDouble("TauBscaling");
+
+  if(spalding && fabs(scaling-1.0)>1e-9)
+  {
+    dserror("tauB computed according to Spaldings law. Do not apply scaling!=1.0 !!!\n");
+  }
+
+  const double Cb = 4.0*scaling;
 
   // get value for boundary condition
   const vector<double>* val = (*wdbc_cond).Get<vector<double> >("val");
@@ -420,317 +448,20 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   // the gausspoints above have to be mapped to the 
   // parent element to be able to evaluate one sided
   // derivatives on the boundary
+  //
+  // in addition, get information on the orientation of the
+  // outward normal
+  
   Epetra_SerialDenseMatrix pqxg(intpoints.nquad,3);
-
-  if(distype==DRT::Element::quad4)
-  {
-    switch(surfaceid)
-    {
-    case 0:
-    {
-      // t=-1
-      /*
-                parent               surface
-
-                 r|                    s|                    
-                  |                     |                    
-             1         2           3         2               
-              +-------+             +-------+                
-	      |   |   |      s      |   |   |      r  
-              |   +-- |  -----      |   +-- |  -----  
-              |       |             |       |                
-              +-------+             +-------+                
-             0         3           0         1               
-      */
-
-      for (int iquad=0;iquad<intpoints.nquad;++iquad)
-      { 
-	pqxg(iquad,0)= intpoints.qxg[iquad][1];
-	pqxg(iquad,1)= intpoints.qxg[iquad][0];
-	pqxg(iquad,2)=-1.0;
-      }
-      break;
-    }
-    case 1:
-    {
-      // s=-1
-      /*
-                parent               surface
-
-                 t|                    s|                    
-                  |                     |                    
-             4         5           3         2               
-              +-------+             +-------+                
-	      |   |   |      r      |   |   |      r  
-              |   +-- |  -----      |   +-- |  -----  
-              |       |             |       |                
-              +-------+             +-------+                
-             0         1           0         1               
-      */
-      for (int iquad=0;iquad<intpoints.nquad;++iquad)
-      { 
-	pqxg(iquad,0)= intpoints.qxg[iquad][0];
-	pqxg(iquad,1)=-1.0;
-	pqxg(iquad,2)= intpoints.qxg[iquad][1];
-      }
-      break;
-    }
-    case 2:
-    {
-      // r= 1
-      /*
-                parent               surface
-
-                 t|                    s|                    
-                  |                     |                    
-             5         6           3         2               
-              +-------+             +-------+                
-	      |   |   |      s      |   |   |      r  
-              |   +-- |  -----      |   +-- |  -----  
-              |       |             |       |                
-              +-------+             +-------+                
-             1         2           0         1               
-      */
-      for (int iquad=0;iquad<intpoints.nquad;++iquad)
-      { 
-	pqxg(iquad,0)= 1.0;
-	pqxg(iquad,1)= intpoints.qxg[iquad][0];
-	pqxg(iquad,2)= intpoints.qxg[iquad][1];
-      }
-      break;
-    }
-    case 3:
-    {
-      // s= 1
-      /*
-                parent               surface
-
-                 t|                    s|                    
-                  |                     |                    
-             6         7           3         2               
-              +-------+             +-------+                
-	r     |   |   |             |   |   |      r  
-        ----  |   +-- |             |   +-- |  -----  
-              |       |             |       |                
-              +-------+             +-------+                
-             2         3           0         1               
-      */
-      for (int iquad=0;iquad<intpoints.nquad;++iquad)
-      { 
-	pqxg(iquad,0)=-intpoints.qxg[iquad][0];
-	pqxg(iquad,1)= 1.0;
-	pqxg(iquad,2)= intpoints.qxg[iquad][1];
-      }
-      break;
-    }
-    case 4:
-    {
-      // r=-1
-      /*
-                parent               surface
-
-                 s|                    s|                    
-                  |                     |                    
-             3         7           3         2               
-              +-------+             +-------+                
-	      |   |   |      t      |   |   |      r  
-              |   +-- |  -----      |   +-- |  -----  
-              |       |             |       |                
-              +-------+             +-------+                
-             0         4           0         1               
-      */
-      for (int iquad=0;iquad<intpoints.nquad;++iquad)
-      { 
-	pqxg(iquad,0)=-1.0;
-	pqxg(iquad,1)= intpoints.qxg[iquad][1];
-	pqxg(iquad,2)= intpoints.qxg[iquad][0];
-      }
-      break;
-    }
-    case 5:
-    {
-      // t=1
-      /*
-                parent               surface
-
-                 s|                    s|                    
-                  |                     |                    
-             7         6           3         2               
-              +-------+             +-------+                
-	      |   |   |      r      |   |   |      r  
-              |   +-- |  -----      |   +-- |  -----  
-              |       |             |       |                
-              +-------+             +-------+                
-             4         5           0         1               
-      */
-      for (int iquad=0;iquad<intpoints.nquad;++iquad)
-      { 
-	pqxg(iquad,0)= intpoints.qxg[iquad][0];
-	pqxg(iquad,1)= intpoints.qxg[iquad][1];
-	pqxg(iquad,2)= 1.0;
-      }
-      break;
-    }
-    default:
-      dserror("invalid number of surfaces, unable to determine intpoint in parent");
-    }
-  }
-  else if(distype==DRT::Element::nurbs9)
-  {
-    switch(surfaceid)
-    {
-    case 0:
-    {
-      // t=-1
-      /*
-                parent               surface
-
-                 s|                    s|                    
-                  |                     |                    
-              +---+---+             +---+---+                
-	     6|  7|  8|      r     6|  7|  8|      r  
-              +   +-- +  -----      +   +-- +  -----  
-             3|  4   5|            3|  4   5|                
-              +---+---+             +---+---+                
-             0   1   2             0   1   2                 
-      */
-      for (int iquad=0;iquad<intpoints.nquad;++iquad)
-      { 
-	pqxg(iquad,0)= intpoints.qxg[iquad][0];
-	pqxg(iquad,1)= intpoints.qxg[iquad][1];
-	pqxg(iquad,2)=-1.0;
-      }
-      break;
-    }
-    case 1:
-    {
-      // t=+1
-      /*
-                parent               surface
-
-                 s|                    s|                    
-                  |                     |                    
-              +---+---+             +---+---+                
-	    24| 25| 26|      r     6|  7|  8|      r  
-              +   +-- +  -----      +   +-- +  -----  
-            21| 22  23|            3|  4   5|                
-              +---+---+             +---+---+                
-            18  19  20             0   1   2                 
-      */
-      for (int iquad=0;iquad<intpoints.nquad;++iquad)
-      { 
-	pqxg(iquad,0)= intpoints.qxg[iquad][0];
-	pqxg(iquad,1)= intpoints.qxg[iquad][1];
-	pqxg(iquad,2)= 1.0;
-      }
-      break;
-    }
-    case 2:
-    {
-      // s=-1
-      /*
-                parent               surface
-
-                 t|                    s|                    
-                  |                     |                    
-              +---+---+             +---+---+                
-	    18| 19| 20|      r     6|  7|  8|      r  
-              +   +-- +  -----      +   +-- +  -----  
-             9| 10  11|            3|  4   5|                
-              +---+---+             +---+---+                
-             0   1   2             0   1   2                 
-      */
-
-      for (int iquad=0;iquad<intpoints.nquad;++iquad)
-      { 
-	pqxg(iquad,0)= intpoints.qxg[iquad][0];
-	pqxg(iquad,1)=-1.0;
-	pqxg(iquad,2)= intpoints.qxg[iquad][1];
-      }
-      break;
-    }
-    case 3:
-    {
-      // s=+1
-      /*
-                parent               surface
-
-                 t|                    s|                    
-                  |                     |                    
-              +---+---+             +---+---+                
- 	    24| 25| 26|    r       6|  7|  8|      r  
-              +   +-- + ----        +   +-- +  -----  
-            15| 16  17|            3|  4   5|                
-              +---+---+             +---+---+                
-             6   7   8             0   1   2                 
-      */
-      for (int iquad=0;iquad<intpoints.nquad;++iquad)
-      { 
-	pqxg(iquad,0)= intpoints.qxg[iquad][0];
-	pqxg(iquad,1)= 1.0;
-	pqxg(iquad,2)= intpoints.qxg[iquad][1];
-      }
-      break;
-    }
-    case 4:
-    {
-      // r=+1
-      /*
-                parent               surface
-
-                 t|                    s|                    
-                  |                     |                    
-              +---+---+             +---+---+                
-	    20| 23| 26|      s     6|  7|  8|      r  
-              +   +-- +  -----      +   +-- +  -----  
-            11| 14  17|            3|  4   5|                
-              +---+---+             +---+---+                
-             2   5   8             0   1   2                 
-      */
-      for (int iquad=0;iquad<intpoints.nquad;++iquad)
-      { 
-	pqxg(iquad,0)= 1.0;
-	pqxg(iquad,1)= intpoints.qxg[iquad][0];
-	pqxg(iquad,2)= intpoints.qxg[iquad][1];
-      }
-      break;
-    }
-    case 5:
-    {
-      // r=-1
-      /*
-                parent               surface
-
-                 t|                    s|                    
-                  |                     |                    
-              +---+---+             +---+---+                
-	    18| 21| 24|      s     6|  7|  8|      r  
-              +   +-- +  -----      +   +-- +  -----  
-             9| 12  15|            3|  4   5|                
-              +---+---+             +---+---+                
-             0   3   6             0   1   2                 
-      */
-      for (int iquad=0;iquad<intpoints.nquad;++iquad)
-      { 
-	pqxg(iquad,0)=-1.0;
-	pqxg(iquad,1)= intpoints.qxg[iquad][0];
-	pqxg(iquad,2)= intpoints.qxg[iquad][1];
-      }
-      break;
-    }
-    default:
-      dserror("invalid number of surfaces, unable to determine intpoint in parent");
-    }
-  }
-  else
-  {
-      dserror("only quad4 and nurbs9 weak dbc implementations up to now\n");
-  }
-
+  
+  SurfaceGPToParentGP(pqxg     ,
+                      intpoints,
+                      pdistype ,
+                      distype  ,
+                      surfaceid);
 
   // --------------------------------------------------
   // Now do the nurbs specific stuff
-  double normalfac=0.0;
 
   std::vector<Epetra_SerialDenseVector> mypknots(3);
   std::vector<Epetra_SerialDenseVector> myknots (2);
@@ -738,6 +469,8 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   Epetra_SerialDenseVector weights(iel);
   LINALG::Matrix<piel,1>   pweights;
 
+  // orientation of outward normal
+  double normalfac=0.0;
 
   // for isogeometric elements --- get knotvectors for parent
   // element and surface element, get weights
@@ -752,155 +485,16 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
     RefCountPtr<DRT::NURBS::Knotvector> knots=(*nurbsdis).GetKnotVector();
 
-    bool zero_sized_parent=knots->GetEleKnots(mypknots,surfele->parent_->Id());
+    bool zero_sized_parent
+      =knots->GetBoundaryEleAndParentKnots(mypknots              ,
+                                           myknots               ,
+                                           normalfac             ,
+                                           surfele->parent_->Id(),
+                                           surfaceid             );
+
     if(zero_sized_parent)
     {
       return 0;
-    }
-
-
-    switch(surfaceid)
-    {
-    case 0:
-    {
-      // t=-1
-      /*
-                parent               surface
-
-                 s|                    s|                    
-                  |                     |                    
-              +---+---+             +---+---+                
-	     6|  7|  8|      r     6|  7|  8|      r  
-              +   +-- +  -----      +   +-- +  -----  
-             3|  4   5|            3|  4   5|                
-              +---+---+             +---+---+                
-             0   1   2             0   1   2                 
-      */
-      myknots[0].Size(mypknots[0].Length());
-      myknots[1].Size(mypknots[1].Length());
-      myknots[0]=mypknots[0];
-      myknots[1]=mypknots[1];
-
-      normalfac=-1.0;
-      break;
-    }
-    case 1:
-    {
-      // t=+1
-      /*
-                parent               surface
-
-                 s|                    s|                    
-                  |                     |                    
-              +---+---+             +---+---+                
-	    24| 25| 26|      r     6|  7|  8|      r  
-              +   +-- +  -----      +   +-- +  -----  
-            21| 22  23|            3|  4   5|                
-              +---+---+             +---+---+                
-            18  19  20             0   1   2                 
-      */
-      myknots[0].Size(mypknots[0].Length());
-      myknots[1].Size(mypknots[1].Length());
-      myknots[0]=mypknots[0];
-      myknots[1]=mypknots[1];
-
-      normalfac= 1.0;
-      break;
-    }
-    case 2:
-    {
-      // s=-1
-      /*
-                parent               surface
-
-                 t|                    s|                    
-                  |                     |                    
-              +---+---+             +---+---+                
-	    18| 19| 20|      r     6|  7|  8|      r  
-              +   +-- +  -----      +   +-- +  -----  
-             9| 10  11|            3|  4   5|                
-              +---+---+             +---+---+                
-             0   1   2             0   1   2                 
-      */
-      myknots[0].Size(mypknots[0].Length());
-      myknots[1].Size(mypknots[2].Length());
-      myknots[0]=mypknots[0];
-      myknots[1]=mypknots[2];
-
-      normalfac= 1.0;
-      break;
-    }
-    case 3:
-    {
-      // s=+1
-      /*
-                parent               surface
-
-                 t|                    s|                    
-                  |                     |                    
-              +---+---+             +---+---+                
- 	    24| 25| 26|    r       6|  7|  8|      r  
-              +   +-- + ----        +   +-- +  -----  
-            15| 16  17|            3|  4   5|                
-              +---+---+             +---+---+                
-             6   7   8             0   1   2                 
-      */
-      myknots[0].Size(mypknots[0].Length());
-      myknots[1].Size(mypknots[2].Length());
-      myknots[0]=mypknots[0];
-      myknots[1]=mypknots[2];
-
-      normalfac=-1.0;
-      break;
-    }
-    case 4:
-    {
-      // r=+1
-      /*
-                parent               surface
-
-                 t|                    s|                    
-                  |                     |                    
-              +---+---+             +---+---+                
-	    20| 23| 26|      s     6|  7|  8|      r  
-              +   +-- +  -----      +   +-- +  -----  
-            11| 14  17|            3|  4   5|                
-              +---+---+             +---+---+                
-             2   5   8             0   1   2                 
-      */
-      myknots[0].Size(mypknots[1].Length());
-      myknots[1].Size(mypknots[2].Length());
-      myknots[0]=mypknots[1];
-      myknots[1]=mypknots[2];
-
-      normalfac= 1.0;
-      break;
-    }
-    case 5:
-    {
-      // r=-1
-      /*
-                parent               surface
-
-                 t|                    s|                    
-                  |                     |                    
-              +---+---+             +---+---+                
-	    18| 21| 24|      s     6|  7|  8|      r  
-              +   +-- +  -----      +   +-- +  -----  
-             9| 12  15|            3|  4   5|                
-              +---+---+             +---+---+                
-             0   3   6             0   1   2                 
-      */
-      myknots[0].Size(mypknots[1].Length());
-      myknots[1].Size(mypknots[2].Length());
-      myknots[0]=mypknots[1];
-      myknots[1]=mypknots[2];
-
-      normalfac=-1.0;
-      break;
-    }
-    default:
-      dserror("invalid number of surfaces, unable to determine intpoint in parent");
     }
 
     // --------------------------------------------------
@@ -914,7 +508,6 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       weights(inode) = cp->W();
     }
 
-
     // extract node coords
     for(int i=0;i<piel;++i)
     {
@@ -925,7 +518,6 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       pweights(i) = cp->W();
     }
   }
-
 
   //------------------------------------------------------------------
   //                       INTEGRATION LOOP
@@ -1440,11 +1032,17 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     //                b
     //
     
-    LINALG::Matrix<3,1> bv;
+    LINALG::Matrix<3,1> bvres;
 
-    bv(0)=(velintaf_(0)-(*val)[0]*functionfac(0)*curvefac);
-    bv(1)=(velintaf_(1)-(*val)[1]*functionfac(1)*curvefac);
-    bv(2)=(velintaf_(2)-(*val)[2]*functionfac(2)*curvefac);
+    bvres(0)=(velintaf_(0)-(*val)[0]*functionfac(0)*curvefac);
+    bvres(1)=(velintaf_(1)-(*val)[1]*functionfac(1)*curvefac);
+    bvres(2)=(velintaf_(2)-(*val)[2]*functionfac(2)*curvefac);
+
+
+    // ---------------------------------------------------
+    // momentum flux over boundary
+    
+    const double flux=velintaf_(0)*n_(0)+velintaf_(1)*n_(1)+velintaf_(2)*n_(2);
 
     //--------------------------------------------------
     // partially integrated pressure term, rescaled by gamma*dt
@@ -1517,10 +1115,15 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
          (velintnp_(2)-(*val)[2]*functionfac(2)*curvefac)*n_(2));
     }
 
-    const double timefacnu=fac*2.0*visc*afgdt;
-
+    //---------------------------------------------------------------------
+    //---------------------------------------------------------------------
+    //           weak boundary conditions in all directions
+    //---------------------------------------------------------------------
+    //---------------------------------------------------------------------
     if(!onlynormal)
     {
+      const double timefacnu=fac*2.0*visc*afgdt;
+
       //--------------------------------------------------
       // partially integrated viscous term
       /*
@@ -1612,9 +1215,247 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
           elevec(vi*4 + 2) += pfunct_(vi)*nabla_u_o_n[2];
         }
       }
-    }
+    
+      //--------------------------------------------------
+      // (adjoint) consistency term, viscous part
+      
+      const double consistencytimefac=fac*2.0*visc*wd_gamma*afgdt;
+
+
+      /*
+      // factor: 2*nu*gamma_wd*afgdt
+      //
+      //    /                     \
+      //   |        s              |
+      // - |   nabla  w * n , Dacc |
+      //   |                       |
+      //    \                     / boundaryele
+      //
+      */                                        
+      
+      LINALG::Matrix<3,3> nabla_s_w_o_n;
+      for (int vi=0; vi<piel; ++vi) 
+      {
+        nabla_s_w_o_n(0,0)=consistencytimefac*(n_(0)*(    pderxy_(0,vi))+n_(1)*(0.5*pderxy_(1,vi))+n_(2)*(0.5*pderxy_(2,vi)));
+        nabla_s_w_o_n(0,1)=consistencytimefac*(n_(0)*(0.5*pderxy_(1,vi)));
+        nabla_s_w_o_n(0,2)=consistencytimefac*(n_(0)*(0.5*pderxy_(2,vi)));
+        
+        nabla_s_w_o_n(1,0)=consistencytimefac*(n_(1)*(0.5*pderxy_(0,vi)));
+        nabla_s_w_o_n(1,1)=consistencytimefac*(n_(0)*(0.5*pderxy_(0,vi))+n_(1)*(    pderxy_(1,vi))+n_(2)*(0.5*pderxy_(2,vi)));
+        nabla_s_w_o_n(1,2)=consistencytimefac*(n_(1)*(0.5*pderxy_(2,vi)));
+        
+        nabla_s_w_o_n(2,0)=consistencytimefac*(n_(2)*(0.5*pderxy_(0,vi)));
+        nabla_s_w_o_n(2,1)=consistencytimefac*(n_(2)*(0.5*pderxy_(1,vi)));
+        nabla_s_w_o_n(2,2)=consistencytimefac*(n_(0)*(0.5*pderxy_(0,vi))+n_(1)*(0.5*pderxy_(1,vi))+n_(2)*(    pderxy_(2,vi)));
+        
+
+        for (int ui=0; ui<piel; ++ui) 
+        {
+          elemat(vi*4    ,ui*4    ) -= pfunct_(ui)*nabla_s_w_o_n(0,0);
+          elemat(vi*4    ,ui*4 + 1) -= pfunct_(ui)*nabla_s_w_o_n(0,1);
+          elemat(vi*4    ,ui*4 + 2) -= pfunct_(ui)*nabla_s_w_o_n(0,2);
+                                                                           
+          elemat(vi*4 + 1,ui*4    ) -= pfunct_(ui)*nabla_s_w_o_n(1,0);
+          elemat(vi*4 + 1,ui*4 + 1) -= pfunct_(ui)*nabla_s_w_o_n(1,1);
+          elemat(vi*4 + 1,ui*4 + 2) -= pfunct_(ui)*nabla_s_w_o_n(1,2);
+          
+          elemat(vi*4 + 2,ui*4    ) -= pfunct_(ui)*nabla_s_w_o_n(2,0);
+          elemat(vi*4 + 2,ui*4 + 1) -= pfunct_(ui)*nabla_s_w_o_n(2,1);
+          elemat(vi*4 + 2,ui*4 + 2) -= pfunct_(ui)*nabla_s_w_o_n(2,2);
+        }
+      }
+      /*
+      // factor: 2*nu*gamma_wd
+      //
+      //    /                           \
+      //   |        s          n+af      |
+      // + |   nabla  w * n , u    - u   |
+      //   |                          b  |
+      //    \                           / boundaryele
+      //
+      */
+
+      for (int vi=0; vi<piel; ++vi) 
+      {
+        elevec(vi*4    ) += fac*2.0*visc*wd_gamma*(
+          n_(0)*bvres(0)*(    pderxy_(0,vi))
+          +
+          n_(1)*bvres(0)*(0.5*pderxy_(1,vi))
+          +
+          n_(2)*bvres(0)*(0.5*pderxy_(2,vi))
+          +
+          n_(0)*bvres(1)*(0.5*pderxy_(1,vi))
+          +
+          n_(0)*bvres(2)*(0.5*pderxy_(2,vi)));
+        
+        elevec(vi*4 + 1) += fac*2.0*visc*wd_gamma*(
+          n_(1)*bvres(0)*(0.5*pderxy_(0,vi))
+          +
+          n_(0)*bvres(1)*(0.5*pderxy_(0,vi))
+          +
+          n_(1)*bvres(1)*(    pderxy_(1,vi))
+          +
+          n_(2)*bvres(1)*(0.5*pderxy_(2,vi))
+          +
+          n_(1)*bvres(2)*(0.5*pderxy_(2,vi)));
+        
+        elevec(vi*4 + 2) += fac*2.0*visc*wd_gamma*(
+          n_(2)*bvres(0)*(0.5*pderxy_(0,vi))
+          +
+          n_(2)*bvres(1)*(0.5*pderxy_(1,vi))
+          +
+          n_(0)*bvres(2)*(0.5*pderxy_(0,vi))
+          +
+          n_(1)*bvres(2)*(0.5*pderxy_(1,vi))
+          +
+          n_(2)*bvres(2)*(    pderxy_(2,vi)));
+      }
+
+      //--------------------------------------------------
+      // adjoint consistency term, convective part (only on inflow)
+      
+      if(flux<0)
+      {
+        if(complete_linearisation)
+        {
+          /*
+          // This linearisation has only to be included if
+          // u*n is negative --- otherwise it's nonesense
+          //
+          // factor: afgdt
+          //
+          //    /                             \
+          //   |    /        \       n+af      |
+          // - |   | Dacc * n | w , u    - u   |
+          //   |    \        /              b  |
+          //    \                             / boundaryele, inflow
+          //               
+          */
+          const double timefac=fac*afgdt;
+      
+          for (int ui=0; ui<piel; ++ui) 
+          {
+            for (int vi=0; vi<piel; ++vi) 
+            {
+              elemat(vi*4    ,ui*4    ) -= timefac*pfunct_(vi)*n_(0)*bvres(0);
+              elemat(vi*4    ,ui*4 + 1) -= timefac*pfunct_(vi)*n_(1)*bvres(0);
+              elemat(vi*4    ,ui*4 + 2) -= timefac*pfunct_(vi)*n_(2)*bvres(0);
+            
+              elemat(vi*4 + 1,ui*4    ) -= timefac*pfunct_(vi)*n_(0)*bvres(1);
+              elemat(vi*4 + 1,ui*4 + 1) -= timefac*pfunct_(vi)*n_(1)*bvres(1);
+              elemat(vi*4 + 1,ui*4 + 2) -= timefac*pfunct_(vi)*n_(2)*bvres(1);
+            
+              elemat(vi*4 + 2,ui*4    ) -= timefac*pfunct_(vi)*n_(0)*bvres(2);
+              elemat(vi*4 + 2,ui*4 + 1) -= timefac*pfunct_(vi)*n_(1)*bvres(2);
+              elemat(vi*4 + 2,ui*4 + 2) -= timefac*pfunct_(vi)*n_(2)*bvres(2);
+            }
+          }
+        
+          /*
+          // factor: afgdt
+          //
+          //    /                       \
+          //   |    / n+af   \           |
+          // - |   | u    * n | w , Dacc |
+          //   |    \        /           |
+          //    \  |          |         / boundaryele, inflow
+          //       +----------+
+          //           <0
+          */
+        
+          const double fluxtimefac =fac*afgdt*flux;
+        
+          for (int ui=0; ui<piel; ++ui) 
+          {
+            for (int vi=0; vi<piel; ++vi) 
+            {
+              elemat(vi*4    ,ui*4    ) -= fluxtimefac*pfunct_(ui)*pfunct_(vi);
+              elemat(vi*4 + 1,ui*4 + 1) -= fluxtimefac*pfunct_(ui)*pfunct_(vi);
+              elemat(vi*4 + 2,ui*4 + 2) -= fluxtimefac*pfunct_(ui)*pfunct_(vi);
+            }
+          }
+        } // end if full_linearisation
+
+        const double fluxfac =fac*flux;
+
+        /*
+        // factor: 1
+        //
+        //    /                             \
+        //   |    / n+af   \       n+af      |
+        // - |   | u    * n | w , u    - u   |
+        //   |    \        /              b  |
+        //    \  |          |               / boundaryele, inflow
+        //       +----------+
+        //           <0
+        */
+        for (int vi=0; vi<piel; ++vi) 
+        {
+          elevec(vi*4    ) += fluxfac*pfunct_(vi)*bvres(0);
+          elevec(vi*4 + 1) += fluxfac*pfunct_(vi)*bvres(1);
+          elevec(vi*4 + 2) += fluxfac*pfunct_(vi)*bvres(2);
+        }
+      } // end if flux<0, i.e. boundary is an inflow boundary
+
+      //--------------------------------------------------
+      // penalty term
+    
+      /*
+      // factor: nu*Cb/h*afgdt
+      //
+      //    /          \
+      //   |            |
+      // + |  w , Dacc  |
+      //   |            |
+      //    \          / boundaryele
+      //
+      */
+
+      const double penaltytimefac=afgdt*tau_B*fac;
+
+      for (int ui=0; ui<piel; ++ui) 
+      {
+        for (int vi=0; vi<piel; ++vi) 
+        {
+          const double temp=penaltytimefac*pfunct_(ui)*pfunct_(vi);
+          
+          elemat(vi*4    ,ui*4    ) += temp;
+          elemat(vi*4 + 1,ui*4 + 1) += temp;
+          elemat(vi*4 + 2,ui*4 + 2) += temp;
+        }
+      }
+
+      const double penaltyfac=tau_B*fac;
+      
+      /*
+      // factor: nu*Cb/h
+      //
+      //    /                \
+      //   |        n+af      |
+      // + |   w , u    - u   |
+      //   |               b  |
+      //    \                / boundaryele
+      //
+      */
+
+      for (int vi=0; vi<piel; ++vi) 
+      {
+        elevec(vi*4    ) -= penaltyfac*pfunct_(vi)*bvres(0);
+        elevec(vi*4 + 1) -= penaltyfac*pfunct_(vi)*bvres(1);
+        elevec(vi*4 + 2) -= penaltyfac*pfunct_(vi)*bvres(2);
+      }
+    } // !onlynormal
+    //---------------------------------------------------------------------
+    //---------------------------------------------------------------------
+    //          weak boundary conditions only in normal direction
+    //---------------------------------------------------------------------
+    //---------------------------------------------------------------------
     else
     {
+      //--------------------------------------------------
+      // partially integrated viscous term
+
+      const double timefacnu=fac*2.0*visc*afgdt;
 
       /*
       // factor: 2*nu
@@ -1675,107 +1516,12 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
         elevec(vi*4 + 1) += fac*2.0*visc*wd_gamma*pfunct_(vi)*n_(1)*n_o_nabla_u_o_n;
         elevec(vi*4 + 2) += fac*2.0*visc*wd_gamma*pfunct_(vi)*n_(2)*n_o_nabla_u_o_n;
       }
-    }
 
-    //--------------------------------------------------
-    // (adjoint) consistency term, viscous part
-
-    const double consistencytimefac=fac*2.0*visc*wd_gamma*afgdt;
-
-    if(!onlynormal)
-    {
-
-      /*
-      // factor: 2*nu*gamma_wd*afgdt
-      //
-      //    /                     \
-      //   |        s              |
-      // - |   nabla  w * n , Dacc |
-      //   |                       |
-      //    \                     / boundaryele
-      //
-      */                                        
+      //--------------------------------------------------
+      // (adjoint) consistency term, viscous part
       
-      LINALG::Matrix<3,3> nabla_s_w_o_n;
-      for (int vi=0; vi<piel; ++vi) 
-      {
-        nabla_s_w_o_n(0,0)=consistencytimefac*(n_(0)*(    pderxy_(0,vi))+n_(1)*(0.5*pderxy_(1,vi))+n_(2)*(0.5*pderxy_(2,vi)));
-        nabla_s_w_o_n(0,1)=consistencytimefac*(n_(0)*(0.5*pderxy_(1,vi)));
-        nabla_s_w_o_n(0,2)=consistencytimefac*(n_(0)*(0.5*pderxy_(2,vi)));
-        
-        nabla_s_w_o_n(1,0)=consistencytimefac*(n_(1)*(0.5*pderxy_(0,vi)));
-        nabla_s_w_o_n(1,1)=consistencytimefac*(n_(0)*(0.5*pderxy_(0,vi))+n_(1)*(    pderxy_(1,vi))+n_(2)*(0.5*pderxy_(2,vi)));
-        nabla_s_w_o_n(1,2)=consistencytimefac*(n_(1)*(0.5*pderxy_(2,vi)));
-        
-        nabla_s_w_o_n(2,0)=consistencytimefac*(n_(2)*(0.5*pderxy_(0,vi)));
-        nabla_s_w_o_n(2,1)=consistencytimefac*(n_(2)*(0.5*pderxy_(1,vi)));
-        nabla_s_w_o_n(2,2)=consistencytimefac*(n_(0)*(0.5*pderxy_(0,vi))+n_(1)*(0.5*pderxy_(1,vi))+n_(2)*(    pderxy_(2,vi)));
-        
-
-        for (int ui=0; ui<piel; ++ui) 
-        {
-          elemat(vi*4    ,ui*4    ) -= pfunct_(ui)*nabla_s_w_o_n(0,0);
-          elemat(vi*4    ,ui*4 + 1) -= pfunct_(ui)*nabla_s_w_o_n(0,1);
-          elemat(vi*4    ,ui*4 + 2) -= pfunct_(ui)*nabla_s_w_o_n(0,2);
-                                                                           
-          elemat(vi*4 + 1,ui*4    ) -= pfunct_(ui)*nabla_s_w_o_n(1,0);
-          elemat(vi*4 + 1,ui*4 + 1) -= pfunct_(ui)*nabla_s_w_o_n(1,1);
-          elemat(vi*4 + 1,ui*4 + 2) -= pfunct_(ui)*nabla_s_w_o_n(1,2);
-          
-          elemat(vi*4 + 2,ui*4    ) -= pfunct_(ui)*nabla_s_w_o_n(2,0);
-          elemat(vi*4 + 2,ui*4 + 1) -= pfunct_(ui)*nabla_s_w_o_n(2,1);
-          elemat(vi*4 + 2,ui*4 + 2) -= pfunct_(ui)*nabla_s_w_o_n(2,2);
-        }
-      }
-     /*
-      // factor: 2*nu*gamma_wd
-      //
-      //    /                           \
-      //   |        s          n+af      |
-      // + |   nabla  w * n , u    - u   |
-      //   |                          b  |
-      //    \                           / boundaryele
-      //
-      */
-
-      for (int vi=0; vi<piel; ++vi) 
-      {
-        elevec(vi*4    ) += fac*2.0*visc*wd_gamma*(
-          n_(0)*bv(0)*(    pderxy_(0,vi))
-          +
-          n_(1)*bv(0)*(0.5*pderxy_(1,vi))
-          +
-          n_(2)*bv(0)*(0.5*pderxy_(2,vi))
-          +
-          n_(0)*bv(1)*(0.5*pderxy_(1,vi))
-          +
-          n_(0)*bv(2)*(0.5*pderxy_(2,vi)));
-        
-        elevec(vi*4 + 1) += fac*2.0*visc*wd_gamma*(
-          n_(1)*bv(0)*(0.5*pderxy_(0,vi))
-          +
-          n_(0)*bv(1)*(0.5*pderxy_(0,vi))
-          +
-          n_(1)*bv(1)*(    pderxy_(1,vi))
-          +
-          n_(2)*bv(1)*(0.5*pderxy_(2,vi))
-          +
-          n_(1)*bv(2)*(0.5*pderxy_(2,vi)));
-        
-        elevec(vi*4 + 2) += fac*2.0*visc*wd_gamma*(
-          n_(2)*bv(0)*(0.5*pderxy_(0,vi))
-          +
-          n_(2)*bv(1)*(0.5*pderxy_(1,vi))
-          +
-          n_(0)*bv(2)*(0.5*pderxy_(0,vi))
-          +
-          n_(1)*bv(2)*(0.5*pderxy_(1,vi))
-          +
-          n_(2)*bv(2)*(    pderxy_(2,vi)));
-      }
-    }
-    else
-    {
+      const double consistencytimefac=fac*2.0*visc*wd_gamma*afgdt;
+    
       /*
       // factor: 2*nu*gamma_wd
       //
@@ -1817,178 +1563,32 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       //
       */
 
-      double bv_o_n=bv(0)*n_(0)+bv(1)*n_(1)+bv(2)*n_(2);
+      double bvres_o_n=bvres(0)*n_(0)+bvres(1)*n_(1)+bvres(2)*n_(2);
 
       for (int vi=0; vi<piel; ++vi) 
       {
         double aux=(pderxy_(0,vi)*n_(0)+pderxy_(1,vi)*n_(1)+pderxy_(2,vi)*n_(2));
 
-        elevec(vi*4    ) += fac*2.0*visc*wd_gamma*aux*n_(0)*bv_o_n;
-        elevec(vi*4 + 1) += fac*2.0*visc*wd_gamma*aux*n_(1)*bv_o_n;
-        elevec(vi*4 + 2) += fac*2.0*visc*wd_gamma*aux*n_(2)*bv_o_n;
+        elevec(vi*4    ) += fac*2.0*visc*wd_gamma*aux*n_(0)*bvres_o_n;
+        elevec(vi*4 + 1) += fac*2.0*visc*wd_gamma*aux*n_(1)*bvres_o_n;
+        elevec(vi*4 + 2) += fac*2.0*visc*wd_gamma*aux*n_(2)*bvres_o_n;
       }
 
-    }
+      //--------------------------------------------------
+      // penalty term
 
-    //--------------------------------------------------
-    // adjoint consistency term, convective part (only on inflow)
+      const double penaltytimefac=afgdt*tau_B*fac;
     
-    double flux=velintaf_(0)*n_(0)+velintaf_(1)*n_(1)+velintaf_(2)*n_(2);
-
-    if(flux<0)
-    {
-      if(complete_linearisation)
-      {
-        /*
-	// This linearisation has only to be included if
-	// u*n is negative --- otherwise it's nonesense
-	//
-	// factor: afgdt
-	//
-	//    /                             \
-	//   |    /        \       n+af      |
-	// - |   | Dacc * n | w , u    - u   |
-	//   |    \        /              b  |
-	//    \                             / boundaryele, inflow
-	//               
-        */
-        const double timefac=fac*afgdt;
-      
-        for (int ui=0; ui<piel; ++ui) 
-        {
-          for (int vi=0; vi<piel; ++vi) 
-          {
-            elemat(vi*4    ,ui*4    ) -= timefac*pfunct_(vi)*n_(0)*bv(0);
-            elemat(vi*4    ,ui*4 + 1) -= timefac*pfunct_(vi)*n_(1)*bv(0);
-            elemat(vi*4    ,ui*4 + 2) -= timefac*pfunct_(vi)*n_(2)*bv(0);
-            
-            elemat(vi*4 + 1,ui*4    ) -= timefac*pfunct_(vi)*n_(0)*bv(1);
-            elemat(vi*4 + 1,ui*4 + 1) -= timefac*pfunct_(vi)*n_(1)*bv(1);
-            elemat(vi*4 + 1,ui*4 + 2) -= timefac*pfunct_(vi)*n_(2)*bv(1);
-            
-            elemat(vi*4 + 2,ui*4    ) -= timefac*pfunct_(vi)*n_(0)*bv(2);
-            elemat(vi*4 + 2,ui*4 + 1) -= timefac*pfunct_(vi)*n_(1)*bv(2);
-            elemat(vi*4 + 2,ui*4 + 2) -= timefac*pfunct_(vi)*n_(2)*bv(2);
-          }
-        }
-        
-        /*
-        // factor: afgdt
-        //
-        //    /                       \
-        //   |    / n+af   \           |
-        // - |   | u    * n | w , Dacc |
-        //   |    \        /           |
-        //    \  |          |         / boundaryele, inflow
-        //       +----------+
-        //           <0
-        */
-        
-        const double fluxtimefac =fac*afgdt*flux;
-        
-        for (int ui=0; ui<piel; ++ui) 
-        {
-          for (int vi=0; vi<piel; ++vi) 
-          {
-            elemat(vi*4    ,ui*4    ) -= fluxtimefac*pfunct_(ui)*pfunct_(vi);
-            elemat(vi*4 + 1,ui*4 + 1) -= fluxtimefac*pfunct_(ui)*pfunct_(vi);
-            elemat(vi*4 + 2,ui*4 + 2) -= fluxtimefac*pfunct_(ui)*pfunct_(vi);
-          }
-        }
-      } // end if full_linearisation
-
-      const double fluxfac =fac*flux;
-      
-      if(!onlynormal)
-      {
-
-        /*
-        // factor: 1
-        //
-        //    /                             \
-        //   |    / n+af   \       n+af      |
-        // - |   | u    * n | w , u    - u   |
-        //   |    \        /              b  |
-        //    \  |          |               / boundaryele, inflow
-        //       +----------+
-        //           <0
-        */
-        for (int vi=0; vi<piel; ++vi) 
-        {
-          elevec(vi*4    ) += fluxfac*pfunct_(vi)*bv(0);
-          elevec(vi*4 + 1) += fluxfac*pfunct_(vi)*bv(1);
-          elevec(vi*4 + 2) += fluxfac*pfunct_(vi)*bv(2);
-        }
-      }
-      else
-      {
-
-        /*
-        // factor: 1
-        //
-        //    /                                     \
-        //   |    / n+af   \       / n+af     \      |
-        // - |   | u    * n | w , | u    - u   | o n |
-        //   |    \        /       \        b /      |
-        //    \  |          |                       / boundaryele, inflow
-        //       +----------+
-        //           <0
-        */
-        double bv_o_n=bv(0)*n_(0)+bv(1)*n_(1)+bv(2)*n_(2);
-
-        for (int vi=0; vi<piel; ++vi) 
-        {
-          elevec(vi*4    ) += fluxfac*pfunct_(vi)*n_(0)*bv_o_n;
-          elevec(vi*4 + 1) += fluxfac*pfunct_(vi)*n_(1)*bv_o_n;
-          elevec(vi*4 + 2) += fluxfac*pfunct_(vi)*n_(2)*bv_o_n;
-        }
-      }
-
-    } // end if flux<0, i.e. boundary is an inflow boundary
-
-    //--------------------------------------------------
-    // penalty term
-    
-    /*
-    // factor: nu*Cb/h*afgdt
-    //
-    //    /          \
-    //   |            |
-    // + |  w , Dacc  |
-    //   |            |
-    //    \          / boundaryele
-    //
-    */
-
-    const double penaltytimefac=afgdt*tau_B*fac;
-
-    if(!onlynormal)
-    {
-      for (int ui=0; ui<piel; ++ui) 
-      {
-        for (int vi=0; vi<piel; ++vi) 
-        {
-          const double temp=penaltytimefac*pfunct_(ui)*pfunct_(vi);
-          
-          elemat(vi*4    ,ui*4    ) += temp;
-          elemat(vi*4 + 1,ui*4 + 1) += temp;
-          elemat(vi*4 + 2,ui*4 + 2) += temp;
-        }
-      }
-    }
-    else
-    {
-    
-    /*
-    // factor: nu*Cb/h*afgdt
-    //
-    //    /                  \
-    //   |                    |
-    // + |  w o n , Dacc o n  |
-    //   |                    |
-    //    \                  / boundaryele
-    //
-    */
+      /*
+      // factor: nu*Cb/h*afgdt
+      //
+      //    /                  \
+      //   |                    |
+      // + |  w o n , Dacc o n  |
+      //   |                    |
+      //    \                  / boundaryele
+      //
+      */
       for (int ui=0; ui<piel; ++ui) 
       {
         for (int vi=0; vi<piel; ++vi) 
@@ -2006,32 +1606,9 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
           elemat(vi*4 + 2,ui*4 + 2) += penaltytimefac*pfunct_(vi)*n_(2)*n_(2)*pfunct_(ui);
         }
       }
-    }
-    
 
-    const double penaltyfac=tau_B*fac;
-    if(!onlynormal)
-    {
-      /*
-      // factor: nu*Cb/h
-      //
-      //    /                \
-      //   |        n+af      |
-      // + |   w , u    - u   |
-      //   |               b  |
-      //    \                / boundaryele
-      //
-      */
+      const double penaltyfac=tau_B*fac;
 
-      for (int vi=0; vi<piel; ++vi) 
-      {
-        elevec(vi*4    ) -= penaltyfac*pfunct_(vi)*bv(0);
-        elevec(vi*4 + 1) -= penaltyfac*pfunct_(vi)*bv(1);
-        elevec(vi*4 + 2) -= penaltyfac*pfunct_(vi)*bv(2);
-      }
-    }
-    else
-    {
       /*
       // factor: nu*Cb/h
       //
@@ -2043,15 +1620,108 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       //
       */
 
-      double bv_o_n=bv(0)*n_(0)+bv(1)*n_(1)+bv(2)*n_(2);
-
       for (int vi=0; vi<piel; ++vi) 
       {
-        elevec(vi*4    ) -= penaltyfac*pfunct_(vi)*n_(0)*bv_o_n;
-        elevec(vi*4 + 1) -= penaltyfac*pfunct_(vi)*n_(1)*bv_o_n;
-        elevec(vi*4 + 2) -= penaltyfac*pfunct_(vi)*n_(2)*bv_o_n;
+        elevec(vi*4    ) -= penaltyfac*pfunct_(vi)*n_(0)*bvres_o_n;
+        elevec(vi*4 + 1) -= penaltyfac*pfunct_(vi)*n_(1)*bvres_o_n;
+        elevec(vi*4 + 2) -= penaltyfac*pfunct_(vi)*n_(2)*bvres_o_n;
       }
-    }
+
+      //--------------------------------------------------
+      // adjoint consistency term, convective part (only on inflow)
+
+      if(flux<0)
+      {
+        if(complete_linearisation)
+        {
+          /*
+          // These linearisations have only to be included if
+          // u*n is negative --- otherwise they're nonesense
+          //
+          // factor: afgdt
+          //
+          //    /                                              \
+          //   |    /        \    /     \     / n+af     \      |
+          // - |   | Dacc * n |  | w o n | , | u    - u   | o n |
+          //   |    \        /    \     /     \        b /      |
+          //    \                                              / boundaryele, inflow
+          //               
+          */
+          const double timefac=fac*afgdt;
+      
+          for (int ui=0; ui<piel; ++ui) 
+          {
+            for (int vi=0; vi<piel; ++vi) 
+            {
+              elemat(vi*4    ,ui*4    ) -= timefac*bvres_o_n*pfunct_(vi)*n_(0)*n_(0)*pfunct_(ui);
+              elemat(vi*4    ,ui*4 + 1) -= timefac*bvres_o_n*pfunct_(vi)*n_(0)*n_(1)*pfunct_(ui);
+              elemat(vi*4    ,ui*4 + 2) -= timefac*bvres_o_n*pfunct_(vi)*n_(0)*n_(2)*pfunct_(ui);
+              
+              elemat(vi*4 + 1,ui*4    ) -= timefac*bvres_o_n*pfunct_(vi)*n_(1)*n_(0)*pfunct_(ui);
+              elemat(vi*4 + 1,ui*4 + 1) -= timefac*bvres_o_n*pfunct_(vi)*n_(1)*n_(1)*pfunct_(ui);
+              elemat(vi*4 + 1,ui*4 + 2) -= timefac*bvres_o_n*pfunct_(vi)*n_(1)*n_(2)*pfunct_(ui);
+              
+              elemat(vi*4 + 2,ui*4    ) -= timefac*bvres_o_n*pfunct_(vi)*n_(2)*n_(0)*pfunct_(ui);
+              elemat(vi*4 + 2,ui*4 + 1) -= timefac*bvres_o_n*pfunct_(vi)*n_(2)*n_(1)*pfunct_(ui);
+              elemat(vi*4 + 2,ui*4 + 2) -= timefac*bvres_o_n*pfunct_(vi)*n_(2)*n_(2)*pfunct_(ui);
+            }
+          }
+      
+          const double fluxtimefac =fac*afgdt*flux;
+          
+          /*
+          // factor: afgdt
+          //
+          //    /                                   \
+          //   |    / n+af   \   /     \             |
+          // - |   | u    * n | | w o n | , Dacc o n |
+          //   |    \        /   \     /             |
+          //    \  |          |                     / boundaryele, inflow
+          //       +----------+
+          //           <0
+          */
+          for (int ui=0; ui<piel; ++ui) 
+          {
+            for (int vi=0; vi<piel; ++vi) 
+            {
+              elemat(vi*4    ,ui*4    ) -= fluxtimefac*pfunct_(vi)*n_(0)*n_(0)*pfunct_(ui);
+              elemat(vi*4    ,ui*4 + 1) -= fluxtimefac*pfunct_(vi)*n_(0)*n_(1)*pfunct_(ui);
+              elemat(vi*4    ,ui*4 + 2) -= fluxtimefac*pfunct_(vi)*n_(0)*n_(2)*pfunct_(ui);
+              
+              elemat(vi*4 + 1,ui*4    ) -= fluxtimefac*pfunct_(vi)*n_(1)*n_(0)*pfunct_(ui);
+              elemat(vi*4 + 1,ui*4 + 1) -= fluxtimefac*pfunct_(vi)*n_(1)*n_(1)*pfunct_(ui);
+              elemat(vi*4 + 1,ui*4 + 2) -= fluxtimefac*pfunct_(vi)*n_(1)*n_(2)*pfunct_(ui);
+              
+              elemat(vi*4 + 2,ui*4    ) -= fluxtimefac*pfunct_(vi)*n_(2)*n_(0)*pfunct_(ui);
+              elemat(vi*4 + 2,ui*4 + 1) -= fluxtimefac*pfunct_(vi)*n_(2)*n_(1)*pfunct_(ui);
+              elemat(vi*4 + 2,ui*4 + 2) -= fluxtimefac*pfunct_(vi)*n_(2)*n_(2)*pfunct_(ui);
+            }
+          }
+
+        } // end complete_linearisation
+
+        const double fluxfac =fac*flux;
+
+        /*
+        // factor: 1
+        //
+        //    /                                            \
+        //   |    / n+af   \   /     \    / n+af     \      |
+        // - |   | u    * n | | w o n |, | u    - u   | o n |
+        //   |    \        /   \     /    \        b /      |
+        //    \  |          |                              / boundaryele, inflow
+        //       +----------+
+        //           <0
+        */
+        for (int vi=0; vi<piel; ++vi) 
+        {
+          elevec(vi*4    ) += fluxfac*pfunct_(vi)*n_(0)*bvres_o_n;
+          elevec(vi*4 + 1) += fluxfac*pfunct_(vi)*n_(1)*bvres_o_n;
+          elevec(vi*4 + 2) += fluxfac*pfunct_(vi)*n_(2)*bvres_o_n;
+        }
+      } // end if flux<0, i.e. boundary is an inflow boundary
+    } // onlynormal
+
   } // end gaussloop
 
   return 0;
