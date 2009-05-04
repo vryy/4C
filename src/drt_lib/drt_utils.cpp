@@ -1436,9 +1436,9 @@ void DRT::UTILS::ExtractMyValues(const Epetra_Vector& global,
                                  vector<double>& local,
                                  const vector<int>& lm)
 {
-  const int ldim = (int)lm.size();
+  const size_t ldim = lm.size();
   local.resize(ldim);
-  for (int i=0; i<ldim; ++i)
+  for (size_t i=0; i<ldim; ++i)
   {
     const int lid = global.Map().LID(lm[i]);
     if (lid<0) dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",global.Comm().MyPID(),lm[i]);
@@ -1755,20 +1755,20 @@ void DRT::UTILS::SetupExtractor(const DRT::Discretization& dis,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> DRT::UTILS::ConditionNodeMap(const DRT::Discretization& dis,
-                                                          std::string condname)
+                                                      const std::string& condname)
 {
   std::set<int> condnodeset;
 
   std::vector<DRT::Condition*> conds;
   dis.GetCondition(condname, conds);
 
-  int numrownodes = dis.NumMyRowNodes();
+  const int numrownodes = dis.NumMyRowNodes();
   for (int i=0; i<numrownodes; ++i)
   {
-    DRT::Node* node = dis.lRowNode(i);
+    const DRT::Node* node = dis.lRowNode(i);
 
     // test if node is covered by condition
-    for (unsigned j=0; j<conds.size(); ++j)
+    for (size_t j=0; j<conds.size(); ++j)
     {
       const vector<int>* n = conds[j]->Nodes();
 
@@ -1800,30 +1800,30 @@ Teuchos::RCP<Epetra_Map> DRT::UTILS::ConditionNodeMap(const DRT::Discretization&
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<std::set<int> > DRT::UTILS::ConditionElementMap(const DRT::Discretization& dis,
-                                                                 std::string condname)
+                                                             const std::string& condname)
 {
   std::vector<DRT::Condition*> conds;
   dis.GetCondition(condname, conds);
 
   std::set<int> condelementset;
-  int nummyelements = dis.NumMyColElements();
+  const int nummyelements = dis.NumMyColElements();
   for (int i=0; i<nummyelements; ++i)
   {
-    DRT::Element* actele = dis.lColElement(i);
-    int numnodes = actele->NumNode();
-    DRT::Node** nodes = actele->Nodes();
-    for (int n=0; n<numnodes; ++n)
+    const DRT::Element* actele = dis.lColElement(i);
+    const size_t numnodes = actele->NumNode();
+    const DRT::Node*const* nodes = actele->Nodes();
+    for (size_t n=0; n<numnodes; ++n)
     {
-      DRT::Node* actnode = nodes[n];
+      const DRT::Node* actnode = nodes[n];
 
       // test if node is covered by condition
-      for (unsigned j=0; j<conds.size(); ++j)
+      for (size_t j=0; j<conds.size(); ++j)
       {
-        const vector<int>* n = conds[j]->Nodes();
+        const vector<int>* nids = conds[j]->Nodes();
 
         // DRT::Condition nodes are ordered by design! So we can perform a
         // binary search here.
-        if (std::binary_search(n->begin(), n->end(), actnode->Id()))
+        if (std::binary_search(nids->begin(), nids->end(), actnode->Id()))
         {
           condelementset.insert(actele->Id());
           break;
