@@ -774,7 +774,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
   // get interface velocity
   const Teuchos::RCP<const Epetra_Vector> ivelcolnp = cutterdiscret->GetState("ivelcolnp");
-  const Teuchos::RCP<const Epetra_Vector> ivelcoln  = cutterdiscret->GetState("ivelcoln");
+//  const Teuchos::RCP<const Epetra_Vector> ivelcoln  = cutterdiscret->GetState("ivelcoln");
 
   // action for elements
   if (timealgo_!=timeint_stationary and theta_ < 1.0)
@@ -789,8 +789,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     printf("|- step/max -|- tol      [norm] -|-- vel-res ---|-- pre-res ---|-- fullres ---|-- vel-inc ---|-- pre-inc ---|-- fullinc ---|\n");
   }
 
-  const Epetra_Map* fluidsurface_dofcolmap = cutterdiscret->DofColMap();
-  const Teuchos::RCP<Epetra_Vector> iforcecolnp = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+  const Teuchos::RCP<Epetra_Vector> iforcecolnp = LINALG::CreateVector(*cutterdiscret->DofColMap(),true);
 
   incvel_->PutScalar(0.0);
   residual_->PutScalar(0.0);
@@ -1031,7 +1030,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     // estimate condition number of the tangent stiffness matrix
     if (xparams_.get<bool>("CONDEST"))
     {
-      const double cond_number = LINALG::Condest(static_cast<LINALG::SparseMatrix&>(*sysmat_),Ifpack_GMRES, 100);
+      const double cond_number = LINALG::Condest(dynamic_cast<LINALG::SparseMatrix&>(*sysmat_),Ifpack_GMRES, 100);
       // computation of significant digits might be completely bogus, so don't take it serious
       const double tmp = std::abs(std::log10(cond_number*1.11022e-16));
       const int sign_digits = (int)std::floor(tmp);
@@ -2085,8 +2084,6 @@ void FLD::XFluidImplicitTimeInt::SetInitialFlowField(
     // add random perturbation
     if(whichinitialfield==3)
     {
-      const int numdim = params_.get<int>("number of velocity degrees of freedom");
-
       const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
       int err =0;
@@ -2277,7 +2274,6 @@ void FLD::XFluidImplicitTimeInt::SolveStationaryProblem(
   const Teuchos::RCP<Epetra_Vector> ivelcoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   const Teuchos::RCP<Epetra_Vector> ivelcolnm   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   const Teuchos::RCP<Epetra_Vector> iacccoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  const Teuchos::RCP<Epetra_Vector> itruerescol = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
 
   cutterdiscret->SetState("idispcolnp", idispcolnp);
   cutterdiscret->SetState("idispcoln", idispcoln);
