@@ -242,14 +242,17 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
   // set number of nodes
   const int iel = this->NumNode();
 
+  // local surface id
+  const int surfaceid =lsurface_;
+
   // Gaussian points
   GaussRule2D  gaussrule = intrule2D_undefined;
   switch(distype)
   {
-  case quad4:
+  case quad4: case nurbs4:
       gaussrule = intrule_quad_4point;
       break;
-  case quad8: case quad9:
+  case quad8: case quad9: case nurbs9:
       gaussrule = intrule_quad_9point;
       break;
   case tri3 :
@@ -282,6 +285,191 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
     xyze(2,i)=this->Nodes()[i]->X()[2];
   }
 
+  // --------------------------------------------------
+  // Now do the nurbs specific stuff
+  double normalfac=1.0;
+
+  std::vector<Epetra_SerialDenseVector> mypknots(3);
+  std::vector<Epetra_SerialDenseVector> myknots (2);
+
+  Epetra_SerialDenseVector weights(iel);
+
+  // for isogeometric elements --- get knotvectors for parent
+  // element and surface element, get weights
+  if(Shape()==Fluid3::nurbs4 || Shape()==Fluid3::nurbs9)
+  {
+    // --------------------------------------------------
+    // get knotvector
+
+    DRT::NURBS::NurbsDiscretization* nurbsdis
+      =
+      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+
+    RefCountPtr<DRT::NURBS::Knotvector> knots=(*nurbsdis).GetKnotVector();
+
+    bool zero_size=knots->GetEleKnots(mypknots,parent_->Id());
+
+    if(zero_size)
+    {
+      return 0;
+    }
+
+    switch(surfaceid)
+    {
+    case 0:
+    {
+      // t=-1
+      /*
+                parent               surface
+
+                 s|                    s|                    
+                  |                     |                    
+              +---+---+             +---+---+                
+	     6|  7|  8|      r     6|  7|  8|      r  
+              +   +-- +  -----      +   +-- +  -----  
+             3|  4   5|            3|  4   5|                
+              +---+---+             +---+---+                
+             0   1   2             0   1   2                 
+      */
+      myknots[0].Size(mypknots[0].Length());
+      myknots[1].Size(mypknots[1].Length());
+      myknots[0]=mypknots[0];
+      myknots[1]=mypknots[1];
+
+      normalfac=-1.0;
+      break;
+    }
+    case 1:
+    {
+      // t=+1
+      /*
+                parent               surface
+
+                 s|                    s|                    
+                  |                     |                    
+              +---+---+             +---+---+                
+	    24| 25| 26|      r     6|  7|  8|      r  
+              +   +-- +  -----      +   +-- +  -----  
+            21| 22  23|            3|  4   5|                
+              +---+---+             +---+---+                
+            18  19  20             0   1   2                 
+      */
+      myknots[0].Size(mypknots[0].Length());
+      myknots[1].Size(mypknots[1].Length());
+      myknots[0]=mypknots[0];
+      myknots[1]=mypknots[1];
+
+      normalfac= 1.0;
+      break;
+    }
+    case 2:
+    {
+      // s=-1
+      /*
+                parent               surface
+
+                 t|                    s|                    
+                  |                     |                    
+              +---+---+             +---+---+                
+	    18| 19| 20|      r     6|  7|  8|      r  
+              +   +-- +  -----      +   +-- +  -----  
+             9| 10  11|            3|  4   5|                
+              +---+---+             +---+---+                
+             0   1   2             0   1   2                 
+      */
+      myknots[0].Size(mypknots[0].Length());
+      myknots[1].Size(mypknots[2].Length());
+      myknots[0]=mypknots[0];
+      myknots[1]=mypknots[2];
+
+      normalfac= 1.0;
+      break;
+    }
+    case 3:
+    {
+      // s=+1
+      /*
+                parent               surface
+
+                 t|                    s|                    
+                  |                     |                    
+              +---+---+             +---+---+                
+ 	    24| 25| 26|    r       6|  7|  8|      r  
+              +   +-- + ----        +   +-- +  -----  
+            15| 16  17|            3|  4   5|                
+              +---+---+             +---+---+                
+             6   7   8             0   1   2                 
+      */
+      myknots[0].Size(mypknots[0].Length());
+      myknots[1].Size(mypknots[2].Length());
+      myknots[0]=mypknots[0];
+      myknots[1]=mypknots[2];
+
+      normalfac=-1.0;
+      break;
+    }
+    case 4:
+    {
+      // r=+1
+      /*
+                parent               surface
+
+                 t|                    s|                    
+                  |                     |                    
+              +---+---+             +---+---+                
+	    20| 23| 26|      s     6|  7|  8|      r  
+              +   +-- +  -----      +   +-- +  -----  
+            11| 14  17|            3|  4   5|                
+              +---+---+             +---+---+                
+             2   5   8             0   1   2                 
+      */
+      myknots[0].Size(mypknots[1].Length());
+      myknots[1].Size(mypknots[2].Length());
+      myknots[0]=mypknots[1];
+      myknots[1]=mypknots[2];
+
+      normalfac= 1.0;
+      break;
+    }
+    case 5:
+    {
+      // r=-1
+      /*
+                parent               surface
+
+                 t|                    s|                    
+                  |                     |                    
+              +---+---+             +---+---+                
+	    18| 21| 24|      s     6|  7|  8|      r  
+              +   +-- +  -----      +   +-- +  -----  
+             9| 12  15|            3|  4   5|                
+              +---+---+             +---+---+                
+             0   3   6             0   1   2                 
+      */
+      myknots[0].Size(mypknots[1].Length());
+      myknots[1].Size(mypknots[2].Length());
+      myknots[0]=mypknots[1];
+      myknots[1]=mypknots[2];
+
+      normalfac=-1.0;
+      break;
+    }
+    default:
+      dserror("invalid number of surfaces, unable to determine intpoint in parent");
+    }
+
+    // --------------------------------------------------
+    // get node weights for nurbs elements
+    for (int inode=0; inode<iel; inode++)
+    {
+      DRT::NURBS::ControlPoint* cp
+        =
+        dynamic_cast<DRT::NURBS::ControlPoint* > (Nodes()[inode]);
+      
+      weights(inode) = cp->W();
+    }
+  }
+
   // get velocity/density vector
   RCP<const Epetra_Vector> vedenp = discretization.GetState("vedenp");
   if (vedenp==null) dserror("Cannot get state vector 'vedenp'");
@@ -308,8 +496,28 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
     const double e1 = intpoints.qxg[gpid][1];
 
     // get shape functions and derivatives in the plane of the element
-    shape_function_2D(funct, e0, e1, distype);
-    shape_function_2D_deriv1(deriv, e0, e1, distype);
+    if(!(distype == DRT::Element::nurbs9))
+    {
+      // ------------------------------------------------
+      // shape function derivs of boundary element at gausspoint
+      DRT::UTILS::shape_function_2D       (funct,e0,e1,distype);
+      DRT::UTILS::shape_function_2D_deriv1(deriv,e0,e1,distype);
+    }
+    else
+    {
+      // this is just a temporary work-around
+      Epetra_SerialDenseVector gp(2);
+      gp(0)=e0;
+      gp(1)=e1;
+
+      DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
+        (funct  ,
+         deriv  ,
+         gp     ,
+         myknots,
+         weights,
+         distype);
+    }
 
     // compute measure tensor for surface element and the infinitesimal
     // area element drs for the integration
@@ -354,7 +562,6 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
           else
             functfac = 1.0;
         }
-
         elevec1[node*numdf+dim]+= edensnp(node)*funct[node]*(*onoff)[dim]*(*val)[dim]*fac*functfac;
       }
     }
