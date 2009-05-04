@@ -32,7 +32,7 @@ namespace PHYSICS
  */
 enum Field
 {
-    undefinedField,     ///< default vaue if nothing particular is defined
+    undefinedField,     ///< default value if nothing particular is defined
     Dispx,              ///< x displacement
     Dispy,              ///< y displacement
     Dispz,              ///< z displacement
@@ -41,7 +41,7 @@ enum Field
     Velz,               ///< z velocity
     Temp,               ///< temperature
     Pres,               ///< pressure
-    DiscPres,           ///< discontinous pressure on element level
+    DiscPres,           ///< discontinuous pressure on element level
     ConcentrationH2O,   ///< concentration of H2O
     ConcentrationNO2,   ///< concentration of NO2
     LMPLambdax,         ///< Lagrange multiplier unknown in x-direction
