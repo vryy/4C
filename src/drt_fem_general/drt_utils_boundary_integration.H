@@ -3,6 +3,12 @@
 
 \brief methods for the integration over boundary elements
 
+1) computation of kovariant metric tensor for surface element
+2) mapping of gausspoints on surface element to 3d space of parent element
+   (required for integrations of parent-element shape functions
+    over boundary elements, required for example in weak 
+    dirichlet boundary conditions).
+
 <pre>
 Maintainer: Georg Bauer
             bauer@lnm.mw.tum.de
@@ -19,12 +25,40 @@ Maintainer: Georg Bauer
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/linalg_fixedsizematrix.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "../drt_fem_general/drt_utils_integration.H"
 
 
 namespace DRT
 {
 namespace UTILS
 {
+/*-----------------------------------------------------------------
+
+\brief Transform Gausspoints on surface element to 3d space of 
+       parent element (required for integrations of parent-element 
+       shape functions over boundary elements, required for example 
+       in weak dirichlet boundary conditions).
+
+
+\param pqxg      (o) transformed integration points of surface 
+                     elements in parent elements reference 
+                     coordinates
+\param intpoints (i) integration points of surface element in its 
+                     reference coordinates
+\param pdistype  (i) discretisation type of parent element
+\param distype   (i) discretisation type of surface element
+\param surfaceid (i) local id of surface element
+
+\author gammi (gamnitzer@lnm.mw.tum.de), 05/09
+
+  -----------------------------------------------------------------*/
+void SurfaceGPToParentGP(
+  Epetra_SerialDenseMatrix              & pqxg     ,
+  const DRT::UTILS::IntegrationPoints2D & intpoints,
+  const DRT::Element::DiscretizationType  pdistype ,
+  const DRT::Element::DiscretizationType  distype  ,
+  const int                               surfaceid);
+
 
 //! compute kovariant metric tensor for surface element
 void ComputeMetricTensorForSurface(
@@ -33,7 +67,6 @@ void ComputeMetricTensorForSurface(
   Epetra_SerialDenseMatrix&       metrictensor,
   double*                         sqrtdetg
   );
-
 
 //! compute kovariant metric tensor for surface/line element (template)
 template<DRT::Element::DiscretizationType DISTYPE>
