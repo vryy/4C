@@ -105,7 +105,7 @@ bool XFEM::ApplyNodalEnrichments(
     for (int inen = 0; inen<nen; ++inen)
     {
       const int node_gid = nodeidptrs[inen];
-      const LINALG::Matrix<3,1> nodalpos(ih.xfemdis()->gNode(node_gid)->X());
+      const LINALG::Matrix<3,1> nodalpos(xfemele->Nodes()[inen]->X());
       const int label = ih.PositionWithinConditionNP(nodalpos);
       const bool in_fluid = (0 == label);
 
@@ -337,7 +337,7 @@ void XFEM::ApplyVoidEnrichmentForElement(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-static void fillNodalDofKeySet(
+void XFEM::fillNodalDofKeySet(
     const XFEM::InterfaceHandle& ih,
     const std::map<int, std::set<XFEM::FieldEnr> >&  nodalDofSet,
     std::set<XFEM::DofKey<XFEM::onNode> >&      nodaldofkeyset
@@ -368,7 +368,7 @@ static void fillNodalDofKeySet(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-static void updateNodalDofMap(
+void XFEM::updateNodalDofMap(
     const XFEM::InterfaceHandle& ih,
     std::map<int, std::set<XFEM::FieldEnr> >&  nodalDofSet,
     const std::set<XFEM::DofKey<XFEM::onNode> >&      nodaldofkeyset
@@ -388,10 +388,9 @@ static void updateNodalDofMap(
 }
 
 
-#ifdef PARALLEL
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-static void packDofKeys(
+void XFEM::packDofKeys(
     const set<XFEM::DofKey<XFEM::onNode> >&     dofkeyset,
     vector<char>&                               dataSend )
 {
@@ -408,7 +407,7 @@ static void packDofKeys(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-static void unpackDofKeys(
+void XFEM::unpackDofKeys(
     const vector<char>&                     dataRecv,
     set<XFEM::DofKey<XFEM::onNode> >&       dofkeyset )
 {
@@ -422,18 +421,20 @@ static void unpackDofKeys(
 }
 
 
+#ifdef PARALLEL
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-static void syncNodalDofs(
+void XFEM::syncNodalDofs(
     const XFEM::InterfaceHandle& ih,
     std::map<int, std::set<XFEM::FieldEnr> >&  nodalDofSet)
 {
-  const int myrank = ih.xfemdis()->Comm().MyPID();
-  const int numproc = ih.xfemdis()->Comm().NumProc();
+  const Epetra_Comm& comm = ih.xfemdis()->Comm();
+  const int myrank = comm.MyPID();
+  const int numproc = comm.NumProc();
 
   int size_one = 1;
 
-  DRT::Exporter exporter(ih.xfemdis()->Comm());
+  DRT::Exporter exporter(comm);
 
   int dest = myrank+1;
   if(myrank == (numproc-1))
@@ -444,7 +445,7 @@ static void syncNodalDofs(
     source = numproc-1;
 
   set<XFEM::DofKey<XFEM::onNode> >  original_dofkeyset;
-  fillNodalDofKeySet(ih, nodalDofSet, original_dofkeyset);
+  XFEM::fillNodalDofKeySet(ih, nodalDofSet, original_dofkeyset);
 
   set<XFEM::DofKey<XFEM::onNode> >  new_dofkeyset;
   //  new_dofkeyset = original_dofkeyset;
@@ -455,7 +456,7 @@ static void syncNodalDofs(
 
   // pack date for initial send
   vector<char> dataSend;
-  packDofKeys(original_dofkeyset, dataSend);
+  XFEM::packDofKeys(original_dofkeyset, dataSend);
 
   // send data in a circle
   for(int num = 0; num < numproc-1; num++)
@@ -492,7 +493,7 @@ static void syncNodalDofs(
 
     // unpack dofkeys from char array
     set<XFEM::DofKey<XFEM::onNode> >       dofkeyset;
-    unpackDofKeys(dataRecv, dofkeyset);
+    XFEM::unpackDofKeys(dataRecv, dofkeyset);
 #ifdef DEBUG
     cout << "proc " << myrank << ": receiving"<< lengthRecv[0] << "bytes from proc " << source << endl;
     cout << "proc " << myrank << ": receiving"<< dofkeyset.size() << " dofkeys from proc " << source << endl;
@@ -514,12 +515,12 @@ static void syncNodalDofs(
     //    {
     //      dataSend.clear();
     //    }
-    ih.xfemdis()->Comm().Barrier();
+    comm.Barrier();
   }   // loop over procs
 
   cout << "sync nodal dofs on proc " << myrank << ": before/after -> " << original_dofkeyset.size()<< "/" << new_dofkeyset.size() << endl;
 
-  updateNodalDofMap(ih, nodalDofSet,new_dofkeyset);
+  XFEM::updateNodalDofMap(ih, nodalDofSet, new_dofkeyset);
 
 }
 

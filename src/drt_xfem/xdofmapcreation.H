@@ -3,8 +3,6 @@
 
 \brief defines unknowns based on the intersection pattern from the xfem intersection
 
-this is related to the physics of the fluid problem and therefore not part of the standard xfem routines
-somehow this should work for each physical problem differently
 
 <pre>
 Maintainer: Axel Gerstenberger
@@ -20,7 +18,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/dof_management.H"
 #include "../drt_xfem/interface.H"
 #include "../drt_xfem/element_ansatz.H"
-// Der ist hier nur drin, damit ich auf die FlameFront im InterfaceHandle zugreifen kann
+// Der ist hier nur drin, damit ich (Florian Henke) auf die FlameFront im InterfaceHandle zugreifen kann
 #include "../drt_combust/combust_interface.H"
 
 namespace XFEM
@@ -152,7 +150,61 @@ namespace XFEM
       std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet
       );
 
+  /*! 
+   * \brief apply standard dofs to nodes
+   * \note this is 3d fluid specific and should somehow be generalized
+   */
+  void applyStandardEnrichmentInWholeDomain(
+      const Teuchos::RCP<DRT::Discretization>       xfemdis,
+      const std::set<XFEM::PHYSICS::Field>&         fieldset,
+      std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet
+      );
+  
 
+  /*! 
+   * \brief create dofkeyset from nodal dofmap
+   */
+  void fillNodalDofKeySet(
+      const XFEM::InterfaceHandle& ih,
+      const std::map<int, std::set<XFEM::FieldEnr> >&  nodalDofSet,
+      std::set<XFEM::DofKey<XFEM::onNode> >&      nodaldofkeyset
+  );
+
+
+  void updateNodalDofMap(
+      const XFEM::InterfaceHandle& ih,
+      std::map<int, std::set<XFEM::FieldEnr> >&      nodalDofSet,
+      const std::set<XFEM::DofKey<XFEM::onNode> >&   nodaldofkeyset
+      );
+
+
+  /*! 
+   * \brief pack dofkeys from set into char array
+   */
+  void packDofKeys(
+      const set<XFEM::DofKey<XFEM::onNode> >&     dofkeyset,
+      vector<char>&                               dataSend
+      );
+        
+
+  /*! 
+   * \brief unpack dofkeys from char array
+   */
+  void unpackDofKeys(
+      const vector<char>&                     dataRecv, 
+      set<XFEM::DofKey<XFEM::onNode> >&       dofkeyset
+      );
+
+#ifdef PARALLEL
+  /*! 
+   * \brief parallel syncronization
+   */
+  void syncNodalDofs(
+      const XFEM::InterfaceHandle& ih,
+      std::map<int, std::set<XFEM::FieldEnr> >&  nodalDofSet
+      );
+#endif
+  
 } // namespace XFEM
 
 #endif  // #ifndef XDOFMAPCREATION_H
