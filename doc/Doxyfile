@@ -496,9 +496,10 @@ INPUT                  = index.doc \
                          ../src/drt_surfstress \
                          ../src/drt_constraint \
                          ../src/drt_inv_analysis \
-		         ../src/drt_statmech \
+                         ../src/drt_statmech \
                          ../src/drt_fem_general \
                          ../src/drt_combust \
+                         ../src/drt_loma \
                          ../src/drt_scatra \
                          ../src/drt_geometry
 
