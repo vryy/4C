@@ -239,9 +239,11 @@ void DRT::Problem::InputControl()
     break;
   }
   case prb_fsi_xfem:
+  case prb_fluid_xfem:
   {
     genprob.numsf=0;
     genprob.numff=1;
+    genprob.numaf=2;
     break;
   }
   case prb_fluid:
@@ -249,14 +251,6 @@ void DRT::Problem::InputControl()
     genprob.numff=0;
     if (genprob.numfld==2)
       genprob.numaf=1;
-    break;
-  }
-  case prb_fluid_xfem:
-  {
-    genprob.numsf=0;
-    genprob.numff=1;
-    if (genprob.numfld==3)
-      genprob.numaf=2;
     break;
   }
   case prb_fluid_ale:
@@ -702,10 +696,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     break;
   }
   case prb_fsi_xfem:
+  case prb_fluid_xfem:
   {
-    // allocate and input general old stuff....
-    dsassert(genprob.numfld==2, "numfld != 2 for fluid problem with XFEM interfaces (solid,fluid)");
-
     structdis = rcp(new DRT::Discretization("structure",reader.Comm()));
     fluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
 
@@ -782,25 +774,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
-    nodereader.Read();
-    break;
-  }
-  case prb_fluid_xfem:
-  {
-    // allocate and input general old stuff....
-    dsassert(genprob.numfld==2, "numfld != 2 for fluid problem with XFEM interfaces");
-
-    structdis = rcp(new DRT::Discretization("structure",reader.Comm()));
-    fluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
-
-    AddDis(genprob.numsf, structdis);
-    AddDis(genprob.numff, fluiddis);
-
-    DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
-
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
-
     nodereader.Read();
     break;
   }
