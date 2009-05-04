@@ -260,6 +260,37 @@ public:
     int                                gid
     );
 
+
+
+  /*
+    \brief extract element surface's knot vectors out of the 
+           knot vector of the parent element. On the fly, get
+           orientation of normal vector.
+
+    \param eleknots  (o) knot vector of parent element
+    \param surfknots (o) extracted knot vector of surface element
+    \param normalfac (o) orientation of normal vector
+    \param pgid      (i) global id of parent element
+    \param surfaceid (i) element local id of surface
+
+    \return bool zero_size
+
+    If the integration elements size in the knotspace 
+    is zero, this value will be returned true (and
+    otherwise false)
+    Zero sized elements are simply to be skipped during 
+    integration
+  */
+
+  bool GetBoundaryEleAndParentKnots(
+    std::vector<Epetra_SerialDenseVector> & eleknots ,
+    std::vector<Epetra_SerialDenseVector> & surfknots,
+    double                                & normalfac,
+    int                                     pgid     ,
+    const int                               surfaceid
+    );
+
+
   //@}
 
   //! @name Insert methods
@@ -432,6 +463,34 @@ public:
       return(offsets_);
     };
 
+  /*!
+    \brief Return the id of the patch containing the actual global 
+         node
+         
+    \param gid (i) global node id
+
+    \return npatch  --- The number of the patch
+
+  */
+  int ReturnPatchId(const int gid)
+  {
+    // gid is at least in patch 0 (or higher)
+    int npatch=0;
+    
+    for(int np=1;np<npatches_;++np)
+    {
+      // if this is true, gid is in this patch (or higher)
+      if(gid>=offsets_[np])
+      {
+        npatch++;
+      }
+      else
+      {
+        break;
+      }
+    }
+    return(npatch);
+  };
 
   /*!
   \brief Return the number of patches

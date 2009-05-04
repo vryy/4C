@@ -29,7 +29,7 @@ DRT::NURBS::Knotvector::Knotvector() :
   knot_values_           (0        )
 {
   return;
-}
+} // DRT::NURBS::Knotvector::Knotvector (empty)
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            gammi 05/08|
@@ -89,7 +89,7 @@ DRT::NURBS::Knotvector::Knotvector(
   }
 
   return;
-}
+} // DRT::NURBS::Knotvector::Knotvector (standard)
 
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            gammi 05/08|
@@ -97,7 +97,7 @@ DRT::NURBS::Knotvector::Knotvector(
 DRT::NURBS::Knotvector::~Knotvector()
 {
   return;
-}
+} // DRT::NURBS::Knotvector::~Knotvector
 
 /*----------------------------------------------------------------------*
  |  copy ctor (public)                                       gammi 05/08|
@@ -126,7 +126,7 @@ DRT::NURBS::Knotvector::Knotvector(const DRT::NURBS::Knotvector & old)
     }
   }
   return;
-}
+} // DRT::NURBS::Knotvector::Knotvector (copy)
 
 
 /*----------------------------------------------------------------------*
@@ -149,21 +149,8 @@ void DRT::NURBS::Knotvector::ConvertEleGidToKnotIds(
     dserror("cannot convert ele ids when filled is false\n");
   }
 
-  // gid is at least in patch 0 (or higher)
-  npatch=0;
-
-  for(int np=1;np<npatches_;++np)
-  {
-    // if this is true, gid is in this patch (or higher)
-    if(gid>=offsets_[np])
-    {
-      npatch++;
-    }
-    else
-    {
-      break;
-    }
-  }
+  // get number of patch containing the node
+  npatch=ReturnPatchId(gid);
 
   // reduce gid by patchoffset to get patch local id
   const int locid = gid-offsets_[npatch];
@@ -203,7 +190,7 @@ void DRT::NURBS::Knotvector::ConvertEleGidToKnotIds(
   }
 
   return;
-}
+} // ConvertEleGidToKnotIds
 
 
 /*----------------------------------------------------------------------*
@@ -274,7 +261,196 @@ bool DRT::NURBS::Knotvector::GetEleKnots(
   }
 
   return(zero_size);
-}
+} // DRT::NURBS::Knotvector::GetEleKnots
+
+
+/*----------------------------------------------------------------------*
+ | extract element surface's knot vectors out of the knot vector of the |
+ | parent element. On the fly, get orientation of normal vector.        |
+ |                                                  (public) gammi 05/09|
+ *----------------------------------------------------------------------*/
+bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
+    std::vector<Epetra_SerialDenseVector> & eleknots ,
+    std::vector<Epetra_SerialDenseVector> & surfknots,
+    double                                & normalfac,
+    int                                     pgid     ,
+    const int                               surfaceid
+    )
+{
+  // get parent element local knotspan to extract the surface's knotspan 
+  // from
+  //
+  // immediately, check for multiple knots indicating zero sized elements
+  bool zero_size=GetEleKnots(eleknots,pgid);
+
+  // locate patch containing parent element
+  const int np = ReturnPatchId(pgid);
+
+  if(dim_==3)
+  {
+    // check for nurbs27 elements to get apply numbering
+    if((degree_[np])[0]==2
+       &&                
+       (degree_[np])[1]==2 
+       &&                
+       (degree_[np])[2]==2)
+    {
+      switch(surfaceid)
+      {
+      case 0:
+      {
+        // t=-1
+        /*
+                parent               surface
+
+                 s|                    s|                    
+                  |                     |                    
+              +---+---+             +---+---+                
+	     6|  7|  8|      r     6|  7|  8|      r  
+              +   +-- +  -----      +   +-- +  -----  
+             3|  4   5|            3|  4   5|                
+              +---+---+             +---+---+                
+             0   1   2             0   1   2                 
+        */
+        surfknots[0].Size(eleknots[0].Length());
+        surfknots[1].Size(eleknots[1].Length());
+        surfknots[0]=eleknots[0];
+        surfknots[1]=eleknots[1];
+        
+        normalfac=-1.0;
+        break;
+      }
+      case 1:
+      {
+        // t=+1
+        /*
+                parent               surface
+
+                 s|                    s|                    
+                  |                     |                    
+              +---+---+             +---+---+                
+	    24| 25| 26|      r     6|  7|  8|      r  
+              +   +-- +  -----      +   +-- +  -----  
+            21| 22  23|            3|  4   5|                
+              +---+---+             +---+---+                
+            18  19  20             0   1   2                 
+        */
+        surfknots[0].Size(eleknots[0].Length());
+        surfknots[1].Size(eleknots[1].Length());
+        surfknots[0]=eleknots[0];
+        surfknots[1]=eleknots[1];
+
+        normalfac= 1.0;
+        break;
+      }
+      case 2:
+      {
+        // s=-1
+        /*
+                parent               surface
+
+                 t|                    s|                    
+                  |                     |                    
+              +---+---+             +---+---+                
+	    18| 19| 20|      r     6|  7|  8|      r  
+              +   +-- +  -----      +   +-- +  -----  
+             9| 10  11|            3|  4   5|                
+              +---+---+             +---+---+                
+             0   1   2             0   1   2                 
+        */
+        surfknots[0].Size(eleknots[0].Length());
+        surfknots[1].Size(eleknots[2].Length());
+        surfknots[0]=eleknots[0];
+        surfknots[1]=eleknots[2];
+
+        normalfac= 1.0;
+        break;
+      }
+      case 3:
+      {
+        // s=+1
+        /*
+                parent               surface
+
+                 t|                    s|                    
+                  |                     |                    
+              +---+---+             +---+---+                
+ 	    24| 25| 26|    r       6|  7|  8|      r  
+              +   +-- + ----        +   +-- +  -----  
+            15| 16  17|            3|  4   5|                
+              +---+---+             +---+---+                
+             6   7   8             0   1   2                 
+        */
+        surfknots[0].Size(eleknots[0].Length());
+        surfknots[1].Size(eleknots[2].Length());
+        surfknots[0]=eleknots[0];
+        surfknots[1]=eleknots[2];
+
+        normalfac=-1.0;
+        break;
+      }
+      case 4:
+      {
+        // r=+1
+        /*
+                parent               surface
+
+                 t|                    s|                    
+                  |                     |                    
+              +---+---+             +---+---+                
+	    20| 23| 26|      s     6|  7|  8|      r  
+              +   +-- +  -----      +   +-- +  -----  
+            11| 14  17|            3|  4   5|                
+              +---+---+             +---+---+                
+             2   5   8             0   1   2                 
+        */
+        surfknots[0].Size(eleknots[1].Length());
+        surfknots[1].Size(eleknots[2].Length());
+        surfknots[0]=eleknots[1];
+        surfknots[1]=eleknots[2];
+
+        normalfac= 1.0;
+        break;
+      }
+      case 5:
+      {
+        // r=-1
+        /*
+                parent               surface
+
+                 t|                    s|                    
+                  |                     |                    
+              +---+---+             +---+---+                
+	    18| 21| 24|      s     6|  7|  8|      r  
+              +   +-- +  -----      +   +-- +  -----  
+             9| 12  15|            3|  4   5|                
+              +---+---+             +---+---+                
+             0   3   6             0   1   2                 
+        */
+        surfknots[0].Size(eleknots[1].Length());
+        surfknots[1].Size(eleknots[2].Length());
+        surfknots[0]=eleknots[1];
+        surfknots[1]=eleknots[2];
+
+        normalfac=-1.0;
+        break;
+      }
+      default:
+        dserror("invalid number of surfaces, unable to determine intpoint in parent");
+      }
+    } //if(degree_[0]==2 && degree_[1]==2 && degree_[2]==2)
+    else
+    {
+      dserror("surface knot vector extraction not available for this degree\n");
+    }
+  } // if(dim_==3)
+  else
+  {
+    dserror("surface knot vector extraction only in 3d\n");
+  }
+
+  return(zero_size);
+} // DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots
 
 
 /*----------------------------------------------------------------------*
@@ -326,7 +502,7 @@ void DRT::NURBS::Knotvector::SetKnots(
   (knot_values_[npatch])[direction]=directions_knots;
 
   return;
-}
+} // DRT::NURBS::Knotvector::SetKnots
 
 /*----------------------------------------------------------------------*
  | finish                                           (public) gammi 05/08|
@@ -488,7 +664,7 @@ void DRT::NURBS::Knotvector::FinishKnots()
   filled_=true;
 
   return;
-}
+} // DRT::NURBS::Knotvector::FinishKnots
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
@@ -549,9 +725,7 @@ void DRT::NURBS::Knotvector::Pack(vector<char>& data) const
   }
 
   return;
-}
-
-
+} // DRT::NURBS::Knotvector::Pack
 
 /*----------------------------------------------------------------------*
  |  Unpack Knotvectors data                                    (public) |
@@ -635,7 +809,7 @@ void DRT::NURBS::Knotvector::Unpack(const vector<char>& data)
   }
 
   return;
-}
+} // DRT::NURBS::Knotvector::Unpack
 
 
 /*----------------------------------------------------------------------*
