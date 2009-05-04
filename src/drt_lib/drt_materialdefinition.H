@@ -441,6 +441,59 @@ namespace DRT
     };
 
 
+    /// material line part that is a single Boolean
+    class BoolMaterialComponent : public MaterialComponent
+    {
+    public:
+
+      /// constuct a material component that reads a int variable
+      ///
+      ///  A int value is expected in the dat file.
+      explicit BoolMaterialComponent(
+        std::string name,  ///< variable name in DRT::Material
+        const bool defaultvalue=false,  ///< a default value
+        bool optional=false
+        );
+
+      virtual void DefaultLine(
+        std::ostream& stream
+        );
+
+      virtual void Print(
+        std::ostream& stream, 
+        const MAT::PAR::Material* cond
+        );
+
+      virtual void Describe(
+        std::ostream& stream
+        );
+
+      virtual Teuchos::RCP<std::stringstream> Read(
+        MaterialDefinition* def,
+        Teuchos::RCP<std::stringstream> condline,
+        Teuchos::RCP<MAT::PAR::Material> material
+        );
+
+    private:
+
+      /// transcribe Boolean to Yes/No
+      void PrintYesNo(
+        std::ostream& stream,  ///< stream to add output
+        const bool value  ///< the Boolean value to transcribe
+        ) const;
+
+      /// string constant which is identified with 'true'
+      static const std::string lineTrue_;
+
+      /// string constant which is identified with 'false'
+      static const std::string lineFalse_;
+
+      /// a default value
+      bool defaultvalue_;
+
+    };
+
+
     /// Definition of a valid material in BACI input
     ///
     /// This is basically a clone of \see ConditionDefinition which
@@ -623,6 +676,21 @@ namespace DRT
     {
       matdef->AddComponent(Teuchos::rcp(new SeparatorMaterialComponent(name,description,optional)));
       matdef->AddComponent(Teuchos::rcp(new StringMaterialComponent(name,defaultvalue,optional)));
+    }
+
+
+    /// add a separator followed by a single Boolean value
+    ///
+    /// The name on the input line becomes the name used to put the bool value into MAT::PAR::Material.
+    inline void AddNamedBool(
+      Teuchos::RCP<MaterialDefinition> matdef,  ///< a material defintion to which named integer is added
+      const std::string name,  ///< name of Boolean to add
+      const std::string description,  ///< description about value
+      const bool optional=false  ///< optional parameter if true
+      )
+    {
+      matdef->AddComponent(Teuchos::rcp(new SeparatorMaterialComponent(name,description,optional)));
+      matdef->AddComponent(Teuchos::rcp(new BoolMaterialComponent(name,optional)));
     }
 
     /// add material definition to list of defined materials

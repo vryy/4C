@@ -530,8 +530,91 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealVectorMaterialComponent::Read(
   return condline;
 }
 
+
+/*======================================================================*/
+/*======================================================================*/
+const std::string DRT::INPUT::BoolMaterialComponent::lineTrue_ = "Yes";
+const std::string DRT::INPUT::BoolMaterialComponent::lineFalse_ = "No";
+DRT::INPUT::BoolMaterialComponent::BoolMaterialComponent(
+  std::string name,
+  const bool defaultvalue,
+  bool optional
+  )
+: MaterialComponent(name,optional),
+  defaultvalue_(defaultvalue)
+{
+}
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void DRT::INPUT::BoolMaterialComponent::DefaultLine(
+  std::ostream& stream
+  )
+{
+  PrintYesNo(stream,defaultvalue_);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::INPUT::BoolMaterialComponent::Print(
+  std::ostream& stream,
+  const MAT::PAR::Material* cond
+  )
+{
+  const bool value = (bool)cond->GetInt(Name());
+  PrintYesNo(stream,value);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::INPUT::BoolMaterialComponent::PrintYesNo(
+  std::ostream& stream,
+  const bool value
+  ) const
+{
+  if (value)
+    stream << lineTrue_;
+  else
+    stream << lineFalse_;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::INPUT::BoolMaterialComponent::Describe(
+  std::ostream& stream
+  )
+{
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<std::stringstream> DRT::INPUT::BoolMaterialComponent::Read(
+  DRT::INPUT::MaterialDefinition* def,
+  Teuchos::RCP<std::stringstream> condline,
+  Teuchos::RCP<MAT::PAR::Material> material
+  )
+{
+  std::string sval;
+  (*condline) >> sval;
+  
+  int ival = -1;
+  if (sval == lineTrue_)
+    ival = 1;
+  else if (sval == lineFalse_)
+    ival = 0;
+  else
+    dserror("Failed to read Boolean value '%s' while reading Boolean variable '%s' in '%s'",
+            sval.c_str(),Name().c_str(),def->Name().c_str());
+
+  material->Add(Name(),ival);
+  return condline;
+}
+
+
+/*======================================================================*/
+/*======================================================================*/
 DRT::INPUT::MaterialDefinition::MaterialDefinition(
   std::string materialname,
   std::string description,
@@ -542,7 +625,6 @@ DRT::INPUT::MaterialDefinition::MaterialDefinition(
   mattype_(mattype)
 {
 }
-
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
