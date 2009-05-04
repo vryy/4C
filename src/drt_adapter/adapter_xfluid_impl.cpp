@@ -728,7 +728,7 @@ void ADAPTER::XFluidImpl::RemoveInternalSurfElements(
   {
     boundarydis_->DeleteElement(*ele);
   }
-  const int err2 = boundarydis_->FillComplete();
+  const int err2 = boundarydis_->FillComplete(false,true,true);
   if (err2) dserror("FillComplete() returned err=%d",err2);
 }
 }
