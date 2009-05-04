@@ -94,8 +94,17 @@ public:
    *
    */
   inline DRT::Condition* Conditions(int k) const
-  { if (k>=numlocsys_) dserror("Invalid vector index");
-    else return locsysconds_[k];};
+  { 
+    if (k>=numlocsys_)
+    {
+      dserror("Invalid vector index");
+      return NULL;
+    }
+    else
+    {
+      return locsysconds_[k];
+    }
+  };
                                                    
   /*!
    * \brief Get number of local system conditions
