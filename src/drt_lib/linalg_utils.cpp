@@ -71,14 +71,8 @@ RefCountPtr<Epetra_Vector> LINALG::CreateVector(const Epetra_Map& rowmap, const 
  *----------------------------------------------------------------------*/
 void LINALG::Export(const Epetra_MultiVector& source, Epetra_MultiVector& target)
 {
-  bool sourceunique = false;
-  bool targetunique = false;
-  if (source.Map().UniqueGIDs()) sourceunique = true;
-  if (target.Map().UniqueGIDs()) targetunique = true;
-
-  // Note:
-  // source map of an import must be unique
-  // target map of an export must be unique
+  const bool sourceunique = source.Map().UniqueGIDs();
+  const bool targetunique = target.Map().UniqueGIDs();
 
   // both are unique, does not matter whether ex- or import
   if (sourceunique && targetunique)
@@ -105,7 +99,7 @@ void LINALG::Export(const Epetra_MultiVector& source, Epetra_MultiVector& target
   else if (!sourceunique && !targetunique)
   {
     // Neither target nor source are unique - this is a problem.
-    // We need a unique in between stage which we have to create artifically.
+    // We need a unique in between stage which we have to create artificially.
     // That's nasty.
     // As it is unclear whether this will ever be needed - do it later.
     dserror("Neither target nor source maps are unique - cannot export");
@@ -1425,7 +1419,7 @@ Teuchos::RCP<Epetra_Map> LINALG::SplitMap(const Epetra_Map& Amap,
   int gcount;
   Comm.SumAll(&count,&gcount,1);
   Teuchos::RCP<Epetra_Map> Aunknown = Teuchos::rcp(new Epetra_Map(gcount,count,&myaugids[0],0,Comm));
-  myaugids.clear();
+  
   return Aunknown;
 }
 
@@ -1540,9 +1534,8 @@ int LINALG::FindMyPos(int nummyelements, const Epetra_Comm& comm)
   const int myrank  = comm.MyPID();
   const int numproc = comm.NumProc();
 
-  vector<int> snum(numproc);
+  vector<int> snum(numproc,0);
   vector<int> rnum(numproc);
-  fill(snum.begin(), snum.end(), 0);
   snum[myrank] = nummyelements;
 
   comm.SumAll(&snum[0],&rnum[0],numproc);
@@ -1555,10 +1548,14 @@ int LINALG::FindMyPos(int nummyelements, const Epetra_Comm& comm)
 /*----------------------------------------------------------------------*/
 void LINALG::AllreduceEMap(vector<int>& rredundant, const Epetra_Map& emap)
 {
-  int mynodepos = FindMyPos(emap.NumMyElements(), emap.Comm());
+#ifdef DEBUG
+  if (not emap.UniqueGIDs())
+    dserror("works only for unique Epetra_Maps");
+#endif
+  
+  const int mynodepos = FindMyPos(emap.NumMyElements(), emap.Comm());
 
-  vector<int> sredundant(emap.NumGlobalElements());
-  fill(sredundant.begin(), sredundant.end(), 0);
+  std::vector<int> sredundant(emap.NumGlobalElements(),0);
 
   int* gids = emap.MyGlobalElements();
   copy(gids, gids+emap.NumMyElements(), &sredundant[mynodepos]);
@@ -1572,12 +1569,17 @@ void LINALG::AllreduceEMap(vector<int>& rredundant, const Epetra_Map& emap)
 /*----------------------------------------------------------------------*/
 void LINALG::AllreduceEMap(map<int,int>& idxmap, const Epetra_Map& emap)
 {
+#ifdef DEBUG
+  if (not emap.UniqueGIDs())
+    dserror("works only for unique Epetra_Maps");
+#endif
+  
   idxmap.clear();
 
-  vector<int> rredundant(emap.NumGlobalElements());
+  vector<int> rredundant;
   AllreduceEMap(rredundant, emap);
 
-  for (unsigned i=0; i<rredundant.size(); ++i)
+  for (std::size_t i=0; i<rredundant.size(); ++i)
   {
     idxmap[rredundant[i]] = i;
   }

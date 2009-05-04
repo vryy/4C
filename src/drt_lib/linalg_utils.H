@@ -897,20 +897,18 @@ namespace LINALG
 
   /// Create an allreduced vector of gids from the given Epetra_Map
   /*!
-    We have nodes and elements with unique but otherwise arbitrary
-    global ids. On rare occations, however, we need to allreduce a
-    particular map to one or more processors. This is a building block
-    for such occations. We allreduce the gids of the given Epetra_Map
-    into a vector ordered by processor number.
-
-    It is assumed that the given map does not overlap!
+    We have nodes and elements with unique (tested in DEBUG mode) 
+    but otherwise arbitrary global ids. On rare occasions, however,
+    we need to allreduce a particular map to one or more processors.
+    This is a building block for such occasions. We allreduce the gids
+    of the given Epetra_Map into a vector ordered by processor number.
 
     \note You are not supposed to use redundant vectors in normal
     situations. If you happen to need this method you are probably
     about to do something illegal.
 
     \param rredundant (o) redundant vector of global ids
-    \param emap (i) distributed Epetra_Map
+    \param emap (i) unique distributed Epetra_Map
 
     \author u.kue
     \date 05/07
@@ -930,7 +928,7 @@ namespace LINALG
     about to do something illegal.
 
     \param idxmap (o) map from global ids to (redundant) vector indexes
-    \param emap (i) distributed Epetra_Map
+    \param emap (i) unique distributed Epetra_Map
 
     \author u.kue
     \date 05/07
