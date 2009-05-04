@@ -167,7 +167,7 @@ void FSI::UTILS::CreateAleDiscretization()
     =
     dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*(fluiddis)));
 
-  if (!fluiddis->Filled()) fluiddis->FillComplete();
+  if (!fluiddis->Filled()) fluiddis->FillComplete(false,true,true);
 
   if (aledis->NumGlobalElements() or aledis->NumGlobalNodes())
   {
@@ -175,7 +175,7 @@ void FSI::UTILS::CreateAleDiscretization()
             aledis->NumGlobalElements(), aledis->NumGlobalNodes());
   }
 
-  int myrank = aledis->Comm().MyPID();
+  const int myrank = aledis->Comm().MyPID();
 
   vector<int> egid;
   egid.reserve(fluiddis->NumMyRowElements());
@@ -193,7 +193,7 @@ void FSI::UTILS::CreateAleDiscretization()
 
   // We need to test for all elements (including ghosted ones) to
   // catch all nodes attached to ale elements
-  int numelements = fluiddis->NumMyColElements();
+  const int numelements = fluiddis->NumMyColElements();
 
   for (int i=0; i<numelements; ++i)
   {
@@ -248,11 +248,11 @@ void FSI::UTILS::CreateAleDiscretization()
   {
     for (int i=0; i<noderowmap->NumMyElements(); ++i)
     {
-      int gid = noderowmap->GID(i);
+      const int gid = noderowmap->GID(i);
       if (rownodeset.find(gid)!=rownodeset.end())
       {
-	DRT::Node* fluidnode = fluiddis->lRowNode(i);
-	aledis->AddNode(rcp(new DRT::Node(gid, fluidnode->X(), myrank)));
+        DRT::Node* fluidnode = fluiddis->lRowNode(i);
+        aledis->AddNode(rcp(new DRT::Node(gid, fluidnode->X(), myrank)));
       }
     }
   }
@@ -260,13 +260,13 @@ void FSI::UTILS::CreateAleDiscretization()
   {
     for (int i=0; i<noderowmap->NumMyElements(); ++i)
     {
-      int gid = noderowmap->GID(i);
+      const int gid = noderowmap->GID(i);
       if (rownodeset.find(gid)!=rownodeset.end())
       {
-	DRT::NURBS::ControlPoint* fluidnode 
-	  =
-	  dynamic_cast<DRT::NURBS::ControlPoint* >(fluiddis->lRowNode(i));
-	aledis->AddNode(rcp(new DRT::NURBS::ControlPoint(gid, fluidnode->X(),fluidnode->W(),myrank)));
+        DRT::NURBS::ControlPoint* fluidnode 
+        =
+          dynamic_cast<DRT::NURBS::ControlPoint* >(fluiddis->lRowNode(i));
+          aledis->AddNode(rcp(new DRT::NURBS::ControlPoint(gid, fluidnode->X(),fluidnode->W(),myrank)));
       }
     }
   }
@@ -299,7 +299,7 @@ void FSI::UTILS::CreateAleDiscretization()
   // have a pointer to that vector. Too bad.
   // So we search for a StVenantKirchhoff material and take the first
   // one we find.
-  int matnr = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_stvenant);
+  const int matnr = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_stvenant);
   if (matnr==-1)
     dserror("No StVenantKirchhoff material defined. Cannot generate ale mesh.");
 
@@ -307,31 +307,30 @@ void FSI::UTILS::CreateAleDiscretization()
   // The order of the ale elements might be different from that of the
   // fluid elements. We don't care. There are not dofs to these
   // elements.
-  string eletype="Polynomial";
 
-  for (unsigned i=0; i<egid.size(); ++i)
+  for (std::size_t i=0; i<egid.size(); ++i)
   {
-    DRT::Element* fluidele = fluiddis->gElement(egid[i]);
+    const DRT::Element* fluidele = fluiddis->gElement(egid[i]);
 
 
-    string eletype;
+    string eletype = "Polynomial";
     if(nurbsdis!=NULL)
     {
       if(fluidele->NumNode()==9)
       {
-	eletype="NURBS9";
+        eletype="NURBS9";
       }
       else if(fluidele->NumNode()==4)
       {
-	eletype="NURBS4";
+        eletype="NURBS4";
       }
       else if(fluidele->NumNode()==27)
       {
-	eletype="NURBS27";
+        eletype="NURBS27";
       }
       else
       {
-	dserror("unknown type of nurbs element\n");
+        dserror("unknown type of nurbs element\n");
       }
     }
 
@@ -357,19 +356,19 @@ void FSI::UTILS::CreateAleDiscretization()
       DRT::ELEMENTS::Ale2* ale2 = dynamic_cast<DRT::ELEMENTS::Ale2*>(aleele.get());
       if (ale2!=NULL)
       {
-	ale2->SetMaterial(matnr);
+        ale2->SetMaterial(matnr);
       }
       else
       {
-	DRT::ELEMENTS::Ale3* ale3 = dynamic_cast<DRT::ELEMENTS::Ale3*>(aleele.get());
-	if (ale3!=NULL)
-	{
-	  ale3->SetMaterial(matnr);
-	}
-	else
-	{
-	  dserror("unsupported ale element type '%s'", typeid(*aleele).name());
-	}
+        DRT::ELEMENTS::Ale3* ale3 = dynamic_cast<DRT::ELEMENTS::Ale3*>(aleele.get());
+        if (ale3!=NULL)
+        {
+          ale3->SetMaterial(matnr);
+        }
+        else
+        {
+          dserror("unsupported ale element type '%s'", typeid(*aleele).name());
+        }
       }
     }
     else
@@ -377,13 +376,11 @@ void FSI::UTILS::CreateAleDiscretization()
       DRT::ELEMENTS::NURBS::Ale2Nurbs* ale2 = dynamic_cast<DRT::ELEMENTS::NURBS::Ale2Nurbs*>(aleele.get());
       if (ale2!=NULL)
       {
-	ale2->SetMaterial(matnr);
+        ale2->SetMaterial(matnr);
       }
       else
       {
-	{
-	  dserror("unsupported ale element type '%s'", typeid(*aleele).name());
-	}
+        dserror("unsupported ale element type '%s'", typeid(*aleele).name());
       }
     }
 #endif
@@ -398,7 +395,7 @@ void FSI::UTILS::CreateAleDiscretization()
   // copy the conditions to the ale discretization
   vector<DRT::Condition*> cond;
   fluiddis->GetCondition("FSICoupling", cond);
-  for (unsigned i=0; i<cond.size(); ++i)
+  for (std::size_t i=0; i<cond.size(); ++i)
   {
     // We use the same nodal ids and therefore we can just copy the
     // conditions.
@@ -407,7 +404,7 @@ void FSI::UTILS::CreateAleDiscretization()
 
   cond.clear();
   fluiddis->GetCondition("FREESURFCoupling", cond);
-  for (unsigned i=0; i<cond.size(); ++i)
+  for (std::size_t i=0; i<cond.size(); ++i)
   {
     // We use the same nodal ids and therefore we can just copy the
     // conditions.
@@ -416,7 +413,7 @@ void FSI::UTILS::CreateAleDiscretization()
 
   cond.clear();
   fluiddis->GetCondition("ALEDirichlet", cond);
-  for (unsigned i=0; i<cond.size(); ++i)
+  for (std::size_t i=0; i<cond.size(); ++i)
   {
     // We use the same nodal ids and therefore we can just copy the
     // conditions. But here we rename it. So we have nice dirichlet
@@ -426,7 +423,7 @@ void FSI::UTILS::CreateAleDiscretization()
 
   cond.clear();
   fluiddis->GetCondition("SurfacePeriodic", cond);
-  for (unsigned i=0; i<cond.size(); ++i)
+  for (std::size_t i=0; i<cond.size(); ++i)
   {
     // We use the same nodal ids and therefore we can just copy the
     // conditions.
@@ -435,7 +432,7 @@ void FSI::UTILS::CreateAleDiscretization()
 
   cond.clear();
   fluiddis->GetCondition("SurfacePeriodic", cond);
-  for (unsigned i=0; i<cond.size(); ++i)
+  for (std::size_t i=0; i<cond.size(); ++i)
   {
     // We use the same nodal ids and therefore we can just copy the
     // conditions.
