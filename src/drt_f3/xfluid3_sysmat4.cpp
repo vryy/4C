@@ -20,6 +20,7 @@ Maintainer: Axel Gerstenberger
 
 #include "xfluid3_sysmat.H"
 #include "xfluid3_utils.H"
+#include "xfluid3_spacetime_utils.H"
 #include "fluid3_stabilization.H"
 #include "xfluid3_local_assembler.H"
 #include "xfluid3_interpolation.H"
@@ -33,7 +34,7 @@ Maintainer: Axel Gerstenberger
 
 /// hold arrays for all - potentially enriched - shape functions and their derivatives
 /// with respect to the physical coordinates
-template <int shpVecSize>
+template <size_t shpVecSize>
 struct Shp
 {
   LINALG::Matrix<shpVecSize,1>  d0;
@@ -51,7 +52,7 @@ struct Shp
   LINALG::Matrix<shpVecSize,1>  dzdz;
 };
 
-template <int shpVecSize>
+template <size_t shpVecSize>
 struct EnrViscs2
 {
   LINALG::Matrix<shpVecSize,1> xx;
@@ -74,120 +75,11 @@ struct EnrViscs2
   template<XFEM::AssemblyType ASSTYPE>
   struct SizeFac {};
   /// specialization of SizeFac for XFEM::standard_assembly
-  template<> struct SizeFac<XFEM::standard_assembly> {static const unsigned int fac = 1;};
+  template<> struct SizeFac<XFEM::standard_assembly> {static const std::size_t fac = 1;};
   /// specialization of SizeFac for XFEM::xfem_assembly
-  template<> struct SizeFac<XFEM::xfem_assembly>     {static const unsigned int fac = 3;};
+  template<> struct SizeFac<XFEM::xfem_assembly>     {static const std::size_t fac = 3;};
 
-  /// generate old velocity/acceleration values, if integration point was in a void during the last time step
-  template<DRT::Element::DiscretizationType DISTYPE, class M>
-  bool modifyOldTimeStepsValues(
-      const DRT::Element*                        ele,           ///< the element those matrix is calculated
-      const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,   ///< connection to the interface handler
-      const M&                                   xyze,
-      const LINALG::Matrix<3,1>&                 posXiDomain,
-      const int                                  labelnp,
-      const Epetra_Vector&                       ivelcoln,
-      const Epetra_Vector&                       ivelcolnm,
-      const Epetra_Vector&                       iacccoln,
-      LINALG::Matrix<3,1>&                       gpveln,
-      LINALG::Matrix<3,1>&                       gpvelnm,
-      LINALG::Matrix<3,1>&                       gpaccn
-      )
-  {
-    const unsigned nsd = 3;
-    const int numnodefix_boundary = 9;
-    LINALG::Matrix<nsd,1> posx_gp;
-    GEO::elementToCurrentCoordinatesT<DISTYPE>(xyze, posXiDomain, posx_gp);
-    
-    const bool is_in_fluid = (0 == labelnp);
-    
-    if (not is_in_fluid)
-    {
-      //std::cout << "should I arrive here?" << std::endl;
-      return false;
-    }
 
-    const bool was_in_fluid = (ih->PositionWithinConditionN(posx_gp) == 0);
-    
-    const bool in_space_time_slab_area = (is_in_fluid and (not was_in_fluid));
-    
-    if (in_space_time_slab_area)
-    {
-      XFEM::SpaceTimeBoundaryCell slab;
-      LINALG::Matrix<nsd,1> rst(true);
-      
-      const bool found_cell = ih->FindSpaceTimeLayerCell(posx_gp,slab,rst);
-      
-      if (found_cell)
-      {
-        
-        const double delta_slab = -(rst(2)-1.0)*0.5;
-  
-        if (delta_slab > (1.0+1.0e-7) or -1.0e-7 > delta_slab)
-        {
-          cout << rst(2) <<  "  " << delta_slab << endl;
-          cout << slab.toString() << endl << endl;
-          dserror("wrong value of delta_slab");
-        }
-//              theta_dt = theta_dt_pure;// * delta_slab;
-      
-        const DRT::Element* boundaryele = ih->cutterdis()->gElement(slab.getBeleId());
-        const int numnode_boundary = boundaryele->NumNode();
-        if (numnode_boundary != 4)
-          dserror("needs more generalizashun!");
-        if (ivelcoln.GlobalLength() > 3)
-        {
-          //LINALG::SerialDenseVector funct_ST(numnode_boundary*2);
-          static LINALG::Matrix<numnodefix_boundary*2,1> funct_ST;
-          DRT::UTILS::shape_function_3D(funct_ST,rst(0),rst(1),rst(2),DRT::Element::hex8);
-          
-          // get interface velocities at the boundary element nodes
-          static LINALG::Matrix<3,numnodefix_boundary*2> veln_boundary;
-          static LINALG::Matrix<3,numnodefix_boundary*2> velnm_boundary;
-          static LINALG::Matrix<3,numnodefix_boundary*2> accn_boundary;
-//          LINALG::SerialDenseMatrix veln_boundary( nsd,numnode_boundary*2);
-//          LINALG::SerialDenseMatrix velnm_boundary(nsd,numnode_boundary*2);
-//          LINALG::SerialDenseMatrix accn_boundary( nsd,numnode_boundary*2);
-
-          const DRT::Node*const* nodes = boundaryele->Nodes();
-          
-          std::vector<double> myval(3);
-          for (int inode = 0; inode < numnode_boundary; ++inode)
-          {
-            const DRT::Node* node = nodes[inode];
-            const std::vector<int> lm = ih->cutterdis()->Dof(node);
-            
-            DRT::UTILS::ExtractMyValues(ivelcoln,myval,lm);
-            for (unsigned isd = 0; isd < nsd; ++isd) veln_boundary(isd,inode  ) = myval[isd];
-            DRT::UTILS::ExtractMyValues(ivelcoln,myval,lm);
-            for (unsigned isd = 0; isd < nsd; ++isd) veln_boundary(isd,inode+4) = myval[isd];
-            
-            DRT::UTILS::ExtractMyValues(ivelcolnm,myval,lm);
-            for (unsigned isd = 0; isd < nsd; ++isd) velnm_boundary(isd,inode  ) = myval[isd];
-            DRT::UTILS::ExtractMyValues(ivelcolnm,myval,lm);
-            for (unsigned isd = 0; isd < nsd; ++isd) velnm_boundary(isd,inode+4) = myval[isd];
-            
-            DRT::UTILS::ExtractMyValues(iacccoln,myval,lm);
-            for (unsigned isd = 0; isd < nsd; ++isd) accn_boundary(isd,inode)   = myval[isd];
-            DRT::UTILS::ExtractMyValues(iacccoln,myval,lm);
-            for (unsigned isd = 0; isd < nsd; ++isd) accn_boundary(isd,inode+4) = myval[isd];
-          }
-
-          gpveln  = XFLUID::interpolateVectorFieldToIntPoint(veln_boundary , funct_ST, 8);
-          gpvelnm = XFLUID::interpolateVectorFieldToIntPoint(velnm_boundary, funct_ST, 8);
-          gpaccn  = XFLUID::interpolateVectorFieldToIntPoint(accn_boundary , funct_ST, 8);
-        }
-        else
-        {
-          gpveln.Clear();
-          gpvelnm.Clear();
-          gpaccn.Clear();
-        }
-      }
-    }
-    return true;
-  }
-  
   //! fill a number of arrays with unknown values from the unknown vector given by the discretization
   template <DRT::Element::DiscretizationType DISTYPE,
             XFEM::AssemblyType ASSTYPE,
@@ -204,21 +96,21 @@ struct EnrViscs2
           )
   {
       
-      const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+      const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
       
       // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
       //const int numparamvelx = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Velx, numnode);
-      const int numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
-      const int numparamvely = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Vely);
-      const int numparamvelz = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velz);
-      const int numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
+      const size_t numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
+      const size_t numparamvely = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Vely);
+      const size_t numparamvelz = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velz);
+      const size_t numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
       // put one here to create arrays of size 1, since they are not needed anyway
       // in the xfem assembly, the numparam is determined by the dofmanager
-      const int numparamtauxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Sigmaxx);
+      const size_t numparamtauxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Sigmaxx);
       
-      const int shpVecSize       = SizeFac<ASSTYPE>::fac*numnode;
+      const size_t shpVecSize       = SizeFac<ASSTYPE>::fac*numnode;
       const DRT::Element::DiscretizationType stressdistype = XFLUID::StressInterpolation3D<DISTYPE>::distype;
-      const int shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
+      const size_t shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
       
       if (numparamvelx > shpVecSize)
       {
@@ -234,7 +126,7 @@ struct EnrViscs2
       const std::vector<int>& velzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Velz>());
       const std::vector<int>& presdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Pres>());
       
-      for (int iparam=0; iparam<numparamvelx; ++iparam)
+      for (size_t iparam=0; iparam<numparamvelx; ++iparam)
       {
           evelnp(0,iparam) = mystate.velnp[velxdof[iparam]];
           if (mystate.instationary)
@@ -244,7 +136,7 @@ struct EnrViscs2
               eaccn( 0,iparam) = mystate.accn[ velxdof[iparam]];
           }
       }
-      for (int iparam=0; iparam<numparamvely; ++iparam)
+      for (size_t iparam=0; iparam<numparamvely; ++iparam)
       {
           evelnp(1,iparam) = mystate.velnp[velydof[iparam]];
           if (mystate.instationary)
@@ -254,7 +146,7 @@ struct EnrViscs2
               eaccn( 1,iparam) = mystate.accn[ velydof[iparam]];
           }
       }
-      for (int iparam=0; iparam<numparamvelz; ++iparam)
+      for (size_t iparam=0; iparam<numparamvelz; ++iparam)
       {
           evelnp(2,iparam) = mystate.velnp[velzdof[iparam]];
           if (mystate.instationary)
@@ -264,36 +156,36 @@ struct EnrViscs2
               eaccn( 2,iparam) = mystate.accn[ velzdof[iparam]];
           }
       }
-      for (int iparam=0; iparam<numparampres; ++iparam)
+      for (size_t iparam=0; iparam<numparampres; ++iparam)
           eprenp(iparam) = mystate.velnp[presdof[iparam]];
       const bool tauele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmaxx, 0) > 0);
       if (tauele_unknowns_present)
       {
-          const int numparamtauyy = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmayy, 1);
-          const int numparamtauzz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmazz, 1);
-          const int numparamtauxy = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmaxy, 1);
-          const int numparamtauxz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmaxz, 1);
-          const int numparamtauyz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmayz, 1);
+          const size_t numparamtauyy = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmayy, 1);
+          const size_t numparamtauzz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmazz, 1);
+          const size_t numparamtauxy = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmaxy, 1);
+          const size_t numparamtauxz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmaxz, 1);
+          const size_t numparamtauyz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmayz, 1);
           const std::vector<int>& tauxxdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmaxx>());
           const std::vector<int>& tauyydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmayy>());
           const std::vector<int>& tauzzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmazz>());
           const std::vector<int>& tauxydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmaxy>());
           const std::vector<int>& tauxzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmaxz>());
           const std::vector<int>& tauyzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmayz>());
-          for (int iparam=0; iparam<numparamtauxx; ++iparam)   etau(0,iparam) = mystate.velnp[tauxxdof[iparam]];
-          for (int iparam=0; iparam<numparamtauyy; ++iparam)   etau(1,iparam) = mystate.velnp[tauyydof[iparam]];
-          for (int iparam=0; iparam<numparamtauzz; ++iparam)   etau(2,iparam) = mystate.velnp[tauzzdof[iparam]];
-          for (int iparam=0; iparam<numparamtauxy; ++iparam)   etau(3,iparam) = mystate.velnp[tauxydof[iparam]];
-          for (int iparam=0; iparam<numparamtauxz; ++iparam)   etau(4,iparam) = mystate.velnp[tauxzdof[iparam]];
-          for (int iparam=0; iparam<numparamtauyz; ++iparam)   etau(5,iparam) = mystate.velnp[tauyzdof[iparam]];
+          for (size_t iparam=0; iparam<numparamtauxx; ++iparam)   etau(0,iparam) = mystate.velnp[tauxxdof[iparam]];
+          for (size_t iparam=0; iparam<numparamtauyy; ++iparam)   etau(1,iparam) = mystate.velnp[tauyydof[iparam]];
+          for (size_t iparam=0; iparam<numparamtauzz; ++iparam)   etau(2,iparam) = mystate.velnp[tauzzdof[iparam]];
+          for (size_t iparam=0; iparam<numparamtauxy; ++iparam)   etau(3,iparam) = mystate.velnp[tauxydof[iparam]];
+          for (size_t iparam=0; iparam<numparamtauxz; ++iparam)   etau(4,iparam) = mystate.velnp[tauxzdof[iparam]];
+          for (size_t iparam=0; iparam<numparamtauyz; ++iparam)   etau(5,iparam) = mystate.velnp[tauyzdof[iparam]];
       }
   }
   
   template <DRT::Element::DiscretizationType DISTYPE,
             XFEM::AssemblyType ASSTYPE,
-            int NUMDOF,
-            int shpVecSize,
-            int shpVecSizeStress>
+            size_t NUMDOF,
+            size_t shpVecSize,
+            size_t shpVecSizeStress>
   void BuildStiffnessMatrixEntries(
       LocalAssembler<DISTYPE,ASSTYPE,NUMDOF>&           assembler,
       const Shp<shpVecSize>&                     shp,
@@ -883,10 +775,10 @@ void SysmatDomain4(
 )
 {
     // number of nodes for element
-    const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+    const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     
-    // dimension for 3d fluid element
-    const int nsd = 3;
+    // space dimension for 3d fluid element
+    const size_t nsd = 3;
     
     // time integration constant
     const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dt, theta);
@@ -906,7 +798,7 @@ void SysmatDomain4(
     // get viscosity
     // check here, if we really have a fluid !!
     dsassert(material->MaterialType() == INPAR::MAT::m_fluid, "Material law is not of type m_fluid.");
-    const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());
+    const MAT::NewtonianFluid* actmat = dynamic_cast<const MAT::NewtonianFluid*>(material.get());
     const double visc = actmat->Viscosity();
 
     // flag for higher order elements
@@ -931,11 +823,11 @@ void SysmatDomain4(
     
     // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
     //const int numparamvelx = getNumParam<ASSTYPE>(dofman, Velx, numnode);
-    const int numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
-    const int numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
+    const size_t numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
+    const size_t numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
     // put one here to create arrays of size 1, since they are not needed anyway
     // in the xfem assembly, the numparam is determined by the dofmanager
-    const int numparamtauxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Sigmaxx);
+    const size_t numparamtauxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Sigmaxx);
     
     // stabilization parameter
     const double hk = XFLUID::HK<DISTYPE>(evelnp,xyze);
@@ -947,14 +839,14 @@ void SysmatDomain4(
     // loop over integration cells
     for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
     {
-        const LINALG::Matrix<3,1> cellcenter(cell->GetPhysicalCenterPosition());
+        const LINALG::Matrix<nsd,1> cellcenter_xyz(cell->GetPhysicalCenterPosition());
         
         int labelnp = 0;
         
         if (ASSTYPE == XFEM::xfem_assembly)
         {
           // integrate only in fluid integration cells (works well only with void enrichments!!!)
-          labelnp = ih->PositionWithinConditionNP(cellcenter);
+          labelnp = ih->PositionWithinConditionNP(cellcenter_xyz);
           const std::set<int> xlabelset(dofman.getUniqueEnrichmentLabels());
           bool compute = false;
           if (labelnp == 0) // fluid
@@ -971,7 +863,7 @@ void SysmatDomain4(
               *ele,
               ih,
               dofman,
-              cellcenter,
+              cellcenter_xyz,
               XFEM::Enrichment::approachUnknown);
         
         const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape());
@@ -983,19 +875,19 @@ void SysmatDomain4(
         for (int iquad=0; iquad<intpoints.nquad; ++iquad)
         {
             // coordinates of the current integration point in cell coordinates \eta
-            LINALG::Matrix<3,1> pos_eta_domain;
+            LINALG::Matrix<nsd,1> pos_eta_domain;
             pos_eta_domain(0) = intpoints.qxg[iquad][0];
             pos_eta_domain(1) = intpoints.qxg[iquad][1];
             pos_eta_domain(2) = intpoints.qxg[iquad][2];
 
             // coordinates of the current integration point in element coordinates \xi
-            LINALG::Matrix<3,1> posXiDomain;
+            LINALG::Matrix<nsd,1> posXiDomain;
             GEO::mapEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain, posXiDomain);
             const double detcell = GEO::detEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain);
             
             // shape functions and their first derivatives
             static LINALG::Matrix<numnode,1> funct;
-            static LINALG::Matrix<3,numnode> deriv;
+            static LINALG::Matrix<nsd,numnode> deriv;
             DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
             DRT::UTILS::shape_function_3D_deriv1(deriv,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
       
@@ -1014,7 +906,7 @@ void SysmatDomain4(
             }
             // get transposed of the jacobian matrix d x / d \xi
             // xjm(i,j) = deriv(i,k)*xyze(j,k)
-            static LINALG::Matrix<3,3> xjm;
+            static LINALG::Matrix<nsd,nsd> xjm;
             xjm.MultiplyNT(deriv,xyze);
 
             const double det = xjm.Determinant();
@@ -1026,7 +918,7 @@ void SysmatDomain4(
             }
 
             // inverse of jacobian
-            static LINALG::Matrix<3,3> xji;
+            static LINALG::Matrix<nsd,nsd> xji;
             xji.Invert(xjm);
 
             // compute global derivates
@@ -1048,8 +940,8 @@ void SysmatDomain4(
                 derxy2.Clear();
             }
 
-            const int shpVecSize       = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-            const int shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
+            const size_t shpVecSize       = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+            const size_t shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
             
             static Shp<shpVecSize> shp;
             
@@ -1078,7 +970,7 @@ void SysmatDomain4(
                         enr_derxy,
                         enr_derxy2);
           
-                for (int iparam = 0; iparam != numparamvelx; ++iparam)
+                for (size_t iparam = 0; iparam != numparamvelx; ++iparam)
                 {
                   shp.d0(iparam) = enr_funct(iparam);
                   shp.dx(iparam) = enr_derxy(0,iparam);
@@ -1099,7 +991,7 @@ void SysmatDomain4(
                 
                 if (tauele_unknowns_present)
                 {
-                    static LINALG::Matrix<shpVecSizeStress,1> enr_funct_stress;
+                    LINALG::Matrix<shpVecSizeStress,1> enr_funct_stress;
                   
                     // shape functions for element dofs
                     enrvals.ComputeEnrichedElementShapefunction(
@@ -1107,7 +999,7 @@ void SysmatDomain4(
                             funct_stress,
                             enr_funct_stress);
                     
-                    for (int iparam = 0; iparam < numparamtauxx; ++iparam)
+                    for (size_t iparam = 0; iparam < numparamtauxx; ++iparam)
                     {
                       shp_tau(iparam) = enr_funct_stress(iparam);
                     }
@@ -1119,7 +1011,7 @@ void SysmatDomain4(
             }
             else
             {
-              for (int iparam = 0; iparam != numnode; ++iparam)
+              for (size_t iparam = 0; iparam < numnode; ++iparam)
               {
                 shp.d0(iparam) = funct(iparam);
                 shp.dx(iparam) = derxy(0,iparam);
@@ -1143,15 +1035,15 @@ void SysmatDomain4(
             }
             
             // get velocities and accelerations at integration point
-            const LINALG::Matrix<3,1> gpvelnp = XFLUID::interpolateVectorFieldToIntPoint(evelnp, shp.d0, numparamvelx);
-            LINALG::Matrix<3,1> gpveln  = XFLUID::interpolateVectorFieldToIntPoint(eveln , shp.d0, numparamvelx);
-            LINALG::Matrix<3,1> gpvelnm = XFLUID::interpolateVectorFieldToIntPoint(evelnm, shp.d0, numparamvelx);
-            LINALG::Matrix<3,1> gpaccn  = XFLUID::interpolateVectorFieldToIntPoint(eaccn , shp.d0, numparamvelx);
+            const LINALG::Matrix<nsd,1> gpvelnp = XFLUID::interpolateVectorFieldToIntPoint(evelnp, shp.d0, numparamvelx);
+            LINALG::Matrix<nsd,1> gpveln  = XFLUID::interpolateVectorFieldToIntPoint(eveln , shp.d0, numparamvelx);
+            LINALG::Matrix<nsd,1> gpvelnm = XFLUID::interpolateVectorFieldToIntPoint(evelnm, shp.d0, numparamvelx);
+            LINALG::Matrix<nsd,1> gpaccn  = XFLUID::interpolateVectorFieldToIntPoint(eaccn , shp.d0, numparamvelx);
             
             
             if (ASSTYPE == XFEM::xfem_assembly and timealgo != timeint_stationary)
             {
-              const bool valid_spacetime_cell_found = modifyOldTimeStepsValues<DISTYPE>(ele, ih, xyze, posXiDomain, labelnp, ivelcoln, ivelcolnm, iacccoln, gpveln, gpvelnm, gpaccn);
+              const bool valid_spacetime_cell_found = XFLUID::modifyOldTimeStepsValues<DISTYPE>(ele, ih, xyze, posXiDomain, labelnp, ivelcoln, ivelcolnm, iacccoln, gpveln, gpvelnm, gpaccn);
               if (not valid_spacetime_cell_found)
                 continue;
             }
@@ -1168,16 +1060,16 @@ void SysmatDomain4(
 //                for (int iparam = 0; iparam < numparamvelx; ++iparam)
 //                    histvec(isd) += evelnp_hist(isd,iparam)*shp.d0(iparam);
 //            }
-            const LINALG::Matrix<3,1> histvec = FLD::TIMEINT_THETA_BDF2::GetOldPartOfRighthandside(
+            const LINALG::Matrix<nsd,1> histvec = FLD::TIMEINT_THETA_BDF2::GetOldPartOfRighthandside(
                 gpveln, gpvelnm, gpaccn, timealgo, dt, theta);
             
             // get velocity (np,i) derivatives at integration point
-            static LINALG::Matrix<3,3> vderxy;
-            //vderxy = enr_derxy(j,k)*evelnp(i,k);
+            // vderxy = enr_derxy(j,k)*evelnp(i,k);
+            static LINALG::Matrix<3,nsd> vderxy;
             vderxy.Clear();
-            for (int iparam = 0; iparam < numparamvelx; ++iparam)
+            for (size_t iparam = 0; iparam < numparamvelx; ++iparam)
             {
-              for (int isd = 0; isd < nsd; ++isd)
+              for (size_t isd = 0; isd < nsd; ++isd)
               {
                 vderxy(isd,0) += evelnp(isd,iparam) * shp.dx(iparam);
                 vderxy(isd,1) += evelnp(isd,iparam) * shp.dy(iparam);
@@ -1193,9 +1085,9 @@ void SysmatDomain4(
             {
               //vderxy2 = evelnp(i,k)*enr_derxy2(j,k);
               vderxy2.Clear();
-              for (int iparam = 0; iparam < numparamvelx; ++iparam)
+              for (size_t iparam = 0; iparam < numparamvelx; ++iparam)
               {
-                for (int isd = 0; isd != nsd; ++isd)
+                for (size_t isd = 0; isd < nsd; ++isd)
                 {
                   vderxy2(isd,0) += evelnp(isd,iparam)*shp.dxdx(iparam);
                   vderxy2(isd,1) += evelnp(isd,iparam)*shp.dydy(iparam);
@@ -1212,10 +1104,9 @@ void SysmatDomain4(
             }
 
             // get pressure gradients
-            LINALG::Matrix<3,1> gradp;
-            //gradp = enr_derxy(i,j)*eprenp(j);
-            gradp.Clear();
-            for (int iparam = 0; iparam != numparampres; ++iparam)
+            // gradp = enr_derxy(i,j)*eprenp(j);
+            LINALG::Matrix<nsd,1> gradp(true);
+            for (size_t iparam = 0; iparam != numparampres; ++iparam)
             {
               gradp(0) += shp.dx(iparam)*eprenp(iparam);
               gradp(1) += shp.dy(iparam)*eprenp(iparam);
@@ -1234,11 +1125,11 @@ void SysmatDomain4(
             
             // get pressure
             double pres = 0.0;
-            for (int iparam = 0; iparam != numparampres; ++iparam)
+            for (size_t iparam = 0; iparam != numparampres; ++iparam)
               pres += shp.d0(iparam)*eprenp(iparam);
             
             // get viscous stress unknowns
-            LINALG::Matrix<3,3> tau;
+            static LINALG::Matrix<nsd,nsd> tau;
             if (tauele_unknowns_present)
             {
               XFLUID::fill_tau(numparamtauxx, shp_tau, etau, tau);
@@ -1268,29 +1159,29 @@ void SysmatDomain4(
             const double timefacfac = timefac * fac;
 
             /*------------------------- evaluate rhs vector at integration point ---*/
-            LINALG::Matrix<3,1> rhsint;
-            LINALG::Matrix<3,1> bodyforce;
+            LINALG::Matrix<nsd,1> rhsint;
+            LINALG::Matrix<nsd,1> bodyforce;
             bodyforce.Clear();
             //bodyforce(0) = 1.0;
-            for (int isd = 0; isd < nsd; ++isd)
+            for (size_t isd = 0; isd < nsd; ++isd)
                 rhsint(isd) = histvec(isd) + bodyforce(isd)*timefac;
 
             /*----------------- get numerical representation of single operators ---*/
 
             /* Convective term  u_old * grad u_old: */
-            LINALG::Matrix<3,1> conv_old;
+            LINALG::Matrix<nsd,1> conv_old;
             //conv_old = vderxy(i, j)*gpvelnp(j);
             conv_old.Multiply(vderxy,gpvelnp);
             
             /* Viscous term  div epsilon(u_old) */
-            LINALG::Matrix<3,1> visc_old;
+            LINALG::Matrix<nsd,1> visc_old;
             visc_old(0) = vderxy2(0,0) + 0.5 * (vderxy2(0,1) + vderxy2(1,3) + vderxy2(0,2) + vderxy2(2,4));
             visc_old(1) = vderxy2(1,1) + 0.5 * (vderxy2(1,0) + vderxy2(0,3) + vderxy2(1,2) + vderxy2(2,5));
             visc_old(2) = vderxy2(2,2) + 0.5 * (vderxy2(2,0) + vderxy2(0,4) + vderxy2(2,1) + vderxy2(1,5));
             
             // evaluate residual once for all stabilisation right hand sides
-            LINALG::Matrix<3,1> res_old;
-            for (int isd = 0; isd < nsd; ++isd)
+            LINALG::Matrix<nsd,1> res_old;
+            for (size_t isd = 0; isd < nsd; ++isd)
                 res_old(isd) = -rhsint(isd)+timefac*(conv_old(isd)+gradp(isd)-2.0*visc*visc_old(isd));  
             
             if (instationary)
@@ -1305,7 +1196,7 @@ void SysmatDomain4(
             //const LINALG::SerialDenseVector enr_conv_c_(enr_derxy(j,i)*gpvelnp(j));
             static LINALG::Matrix<shpVecSize,1> enr_conv_c_;
             enr_conv_c_.Clear();
-            for (int iparam = 0; iparam != numparamvelx; ++iparam)
+            for (size_t iparam = 0; iparam != numparamvelx; ++iparam)
             {
                 enr_conv_c_(iparam) += shp.dx(iparam)*gpvelnp(0);
                 enr_conv_c_(iparam) += shp.dy(iparam)*gpvelnp(1);
@@ -1331,7 +1222,7 @@ void SysmatDomain4(
                N_y .. y-line of N                                             */
             static EnrViscs2<shpVecSize> enr_viscs2;
 
-            for (int iparam = 0; iparam != numparamvelx; ++iparam)
+            for (size_t iparam = 0; iparam != numparamvelx; ++iparam)
             {
               enr_viscs2.xx(iparam) = 0.5 * (2.0 * shp.dxdx(iparam) + shp.dydy(iparam) + shp.dzdz(iparam));
               enr_viscs2.xy(iparam) = 0.5 *  shp.dxdy(iparam);
@@ -1387,22 +1278,22 @@ void SysmatBoundary4(
 {
     if (ASSTYPE != XFEM::xfem_assembly) dserror("works only with xfem assembly");
     
-    const int nsd = 3;
-    const int numnodefix_boundary = 9;
+    const size_t nsd = 3;
+    const size_t numnodefix_boundary = 9;
     
     // time integration constant
     const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dt, theta);
     
     // number of nodes for element
-    const int numnode_xele = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+    const size_t numnode_xele = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     
     // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
-    const int numparamvelx = XFEM::NumParam<numnode_xele,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
+    const size_t numparamvelx = XFEM::NumParam<numnode_xele,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
     //const int numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
     // put one here to create arrays of size 1, since they are not needed anyway
     // in the xfem assembly, the numparam is determined by the dofmanager
     //const int numparamtauxx = getNumParam<ASSTYPE>(dofman, Sigmaxx, 1);
-    const int numparamtauxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Sigmaxx);
+    const size_t numparamtauxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Sigmaxx);
     
     
     const bool tauele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, Sigmaxx, 0) > 0);
@@ -1423,30 +1314,33 @@ void SysmatBoundary4(
         
         // get the right boundary element
         const DRT::Element* boundaryele = ih->GetBoundaryEle(cell->GetSurfaceEleGid());
-        const int numnode_boundary = boundaryele->NumNode();
+        const std::size_t numnode_boundary = boundaryele->NumNode();
         
         // get current node coordinates
-//        LINALG::SerialDenseMatrix xyze_boundary(3,numnode_boundary);
-        static LINALG::Matrix<3,numnodefix_boundary> xyze_boundary;
+//        LINALG::SerialDenseMatrix xyze_boundary(nsd,numnode_boundary);
+        static LINALG::Matrix<nsd,numnodefix_boundary> xyze_boundary;
         ih->fillBoundaryNodalPositionsNP(boundaryele, xyze_boundary);
         
         // get interface velocities at the boundary element nodes
-//        LINALG::SerialDenseMatrix vel_boundary(3,numnode_boundary);
-        static LINALG::Matrix<3,numnodefix_boundary> vel_boundary;
+//        LINALG::SerialDenseMatrix vel_boundary(nsd,numnode_boundary);
+        LINALG::Matrix<nsd,numnodefix_boundary> vel_boundary;
         const DRT::Node*const* nodes = boundaryele->Nodes();
-        for (int inode = 0; inode < numnode_boundary; ++inode)
         {
-          const DRT::Node* node = nodes[inode];
-          std::vector<int> lm = ih->cutterdis()->Dof(node);
-          static std::vector<double> myvel(3);
-          DRT::UTILS::ExtractMyValues(*ivelcol,myvel,lm);
-          vel_boundary(0,inode) = myvel[0];
-          vel_boundary(1,inode) = myvel[1];
-          vel_boundary(2,inode) = myvel[2];
+          std::vector<double> myvel(nsd);
+          std::vector<int> gdofs(nsd);
+          for (std::size_t inode = 0; inode < numnode_boundary; ++inode)
+          {
+            const DRT::Node* node = nodes[inode];
+            ih->cutterdis()->Dof(nodes[inode],0,gdofs);
+            DRT::UTILS::ExtractMyValues(*ivelcol,myvel,gdofs);
+            vel_boundary(0,inode) = myvel[0];
+            vel_boundary(1,inode) = myvel[1];
+            vel_boundary(2,inode) = myvel[2];
+          }
         }
         
 //        LINALG::SerialDenseMatrix force_boundary(3,numnode_boundary,true);
-        static LINALG::Matrix<3,numnodefix_boundary> force_boundary;
+        LINALG::Matrix<nsd,numnodefix_boundary> force_boundary;
         force_boundary = 0.0;
         
         // integration loop
@@ -1462,7 +1356,7 @@ void SysmatBoundary4(
             mapEtaBToXiB(*cell, pos_eta_boundary, posXiBoundary);
             
             // coordinates of the current integration point in element coordinates \xi^\domain
-            LINALG::Matrix<3,1> posXiDomain;
+            LINALG::Matrix<nsd,1> posXiDomain;
             mapEtaBToXiD(*cell, pos_eta_boundary, posXiDomain);
 
             const double detcell = fabs(detEtaBToXiB(*cell, pos_eta_boundary)); //TODO: check normals
@@ -1479,8 +1373,8 @@ void SysmatBoundary4(
             static LINALG::Matrix<numnodefix_boundary,1> funct_boundary;
             DRT::UTILS::shape_function_2D(funct_boundary, posXiBoundary(0),posXiBoundary(1),boundaryele->Shape());
             
-            //LINALG::SerialDenseMatrix deriv_boundary(3, DRT::UTILS::getNumberOfElementNodes(boundaryele->Shape()));
-            static LINALG::Matrix<3,numnodefix_boundary> deriv_boundary;
+            //LINALG::SerialDenseMatrix deriv_boundary(nsd, DRT::UTILS::getNumberOfElementNodes(boundaryele->Shape()));
+            static LINALG::Matrix<nsd,numnodefix_boundary> deriv_boundary;
             DRT::UTILS::shape_function_2D_deriv1(deriv_boundary, posXiBoundary(0),posXiBoundary(1),boundaryele->Shape());
             
             // shape functions and their first derivatives
@@ -1494,20 +1388,22 @@ void SysmatBoundary4(
             
             // position of the gausspoint in physical coordinates
             // gauss_pos_xyz = funct_boundary(j)*xyze_boundary(i,j);
-            const LINALG::Matrix<3,1> gauss_pos_xyz = XFLUID::interpolateVectorFieldToIntPoint(xyze_boundary,funct_boundary,numnode_boundary);
+            const LINALG::Matrix<nsd,1> gauss_pos_xyz = XFLUID::interpolateVectorFieldToIntPoint(xyze_boundary,funct_boundary,numnode_boundary);
       
             // get jacobian matrix d x / d \xi  (3x2)
             // dxyzdrs(i,j) = xyze_boundary(i,k)*deriv_boundary(j,k);
-            static LINALG::Matrix<3,2> dxyzdrs;
-            dxyzdrs = 0.0;
+            static LINALG::Matrix<nsd,2> dxyzdrs;
+            dxyzdrs.Clear();
             //blas.GEMM('N','T',3,2,numnode_boundary,1.0,xyze_boundary.A(),xyze_boundary.LDA(),deriv_boundary.A(),0,0.0,dxyzdrs.A(),dxyzdrs.M());
-            for (int k=0;k!=numnode_boundary;++k)
-              for (int i=0;i!=3;++i)
-                for (int j=0;j!=2;++j)
+            for (std::size_t k=0; k!=numnode_boundary; ++k)
+              for (std::size_t i=0; i!=nsd; ++i)
+                for (std::size_t j=0; j!=2; ++j)
                   dxyzdrs(i,j) += xyze_boundary(i,k)*deriv_boundary(j,k);
+            
             // compute covariant metric tensor G for surface element (2x2)
             // metric = dxyzdrs(k,i)*dxyzdrs(k,j);
             static LINALG::Matrix<2,2> metric;
+            metric.Clear();
             metric.MultiplyTN(dxyzdrs,dxyzdrs);
             
             // compute global derivates
@@ -1522,8 +1418,8 @@ void SysmatBoundary4(
               dserror("negative fac! should be a bug!");
             }
             
-            const int shpVecSize       = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-            const int shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
+            const std::size_t shpVecSize       = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+            const std::size_t shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
             
             // temporary arrays
             static LINALG::Matrix<shpVecSize,1>       enr_funct;
@@ -1552,40 +1448,40 @@ void SysmatBoundary4(
                 
             // perform integration for entire matrix and rhs
             static LINALG::Matrix<shpVecSize,1> shp;
-            for (int iparam = 0; iparam < numparamvelx; ++iparam)
+            for (std::size_t iparam = 0; iparam < numparamvelx; ++iparam)
             {
               shp(iparam) = enr_funct(iparam);
             }
             static LINALG::Matrix<shpVecSizeStress,1> shp_tau;
-            for (int iparam = 0; iparam < numparamtauxx; ++iparam)
+            for (std::size_t iparam = 0; iparam < numparamtauxx; ++iparam)
             {
               shp_tau(iparam) = enr_funct_stress(iparam);
             }
             
             // get normal vector (in physical coordinates) to surface element at integration point
-            LINALG::Matrix<3,1> normalvec_solid;
+            LINALG::Matrix<nsd,1> normalvec_solid;
             GEO::computeNormalToSurfaceElement(boundaryele->Shape(), xyze_boundary, posXiBoundary, normalvec_solid);
-            LINALG::Matrix<3,1> normalvec_fluid(true);
+            LINALG::Matrix<nsd,1> normalvec_fluid(true);
             normalvec_fluid.Update(-1.0,normalvec_solid,0.0);
       
             // get velocities (n+g,i) at integration point
             // gpvelnp = evelnp(i,j)*shp(j);
-            LINALG::Matrix<3,1> gpvelnp;
+            LINALG::Matrix<nsd,1> gpvelnp;
             gpvelnp.Clear();
-            for (int iparam = 0; iparam < numparamvelx; ++iparam)
-                for (int isd = 0; isd < nsd; ++isd)
+            for (std::size_t iparam = 0; iparam < numparamvelx; ++iparam)
+                for (std::size_t isd = 0; isd < nsd; ++isd)
                     gpvelnp(isd) += evelnp(isd,iparam)*shp(iparam);
             
             // get interface velocity
-            LINALG::Matrix<3,1> interface_gpvelnp;
+            LINALG::Matrix<nsd,1> interface_gpvelnp;
             interface_gpvelnp.Clear();
             if (timealgo != timeint_stationary)
-                for (int inode = 0; inode < numnode_boundary; ++inode)
-                    for (int isd = 0; isd < 3; ++isd)
+                for (std::size_t inode = 0; inode < numnode_boundary; ++inode)
+                    for (std::size_t isd = 0; isd < nsd; ++isd)
                         interface_gpvelnp(isd) += vel_boundary(isd,inode)*funct_boundary(inode);
 
             // get viscous stress unknowns
-            static LINALG::Matrix<3,3> tau;
+            static LINALG::Matrix<nsd,nsd> tau;
             XFLUID::fill_tau(numparamtauxx, shp_tau, etau, tau);
             
             // integration factors and coefficients of single terms
@@ -1648,7 +1544,7 @@ void SysmatBoundary4(
             assembler.template Matrix<Velz,Sigmazy>(shp, -timefacfac*normalvec_fluid(1), shp_tau);
             assembler.template Matrix<Velz,Sigmazz>(shp, -timefacfac*normalvec_fluid(2), shp_tau);
             
-            LINALG::Matrix<3,1> disctau_times_n;
+            LINALG::Matrix<nsd,1> disctau_times_n;
             disctau_times_n.Multiply(tau,normalvec_fluid);
             //cout << "sigmaijnj : " << disctau_times_n << endl;
             assembler.template Vector<Velx>(shp, timefacfac*disctau_times_n(0));
@@ -1658,7 +1554,7 @@ void SysmatBoundary4(
             // here the interface force is integrated
             // this is done using test shape functions of the boundary mesh
             // hence, we can't use the local assembler here
-            for (int inode = 0; inode < numnode_boundary; ++inode)
+            for (size_t inode = 0; inode < numnode_boundary; ++inode)
             {
               force_boundary(0,inode) += funct_boundary(inode) * (disctau_times_n(0) * timefacfac);
               force_boundary(1,inode) += funct_boundary(inode) * (disctau_times_n(1) * timefacfac);
@@ -1674,7 +1570,7 @@ void SysmatBoundary4(
         {
           const Epetra_Map* dofcolmap = ih->cutterdis()->DofColMap();
           std::vector<int> gdofs(3);
-          for (int inode = 0; inode < numnode_boundary; ++inode)
+          for (std::size_t inode = 0; inode < numnode_boundary; ++inode)
           {
             ih->cutterdis()->Dof(nodes[inode],0,gdofs);
             (*iforcecol)[dofcolmap->LID(gdofs[0])] += force_boundary(0,inode);

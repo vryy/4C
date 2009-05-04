@@ -72,8 +72,8 @@ void XFEM::ElementDofManager::ComputeDependentInfo(
   {
     const std::set<XFEM::FieldEnr> lenrfieldset = tmp->second;
     for (set<XFEM::FieldEnr>::const_iterator enrfield = lenrfieldset.begin();
-    enrfield != lenrfieldset.end();
-    ++enrfield)
+         enrfield != lenrfieldset.end();
+         ++enrfield)
     {
       const XFEM::PHYSICS::Field field = enrfield->getField();
       numParamsPerField_[field] = 0;
@@ -95,7 +95,7 @@ void XFEM::ElementDofManager::ComputeDependentInfo(
   // define local position of unknown by looping first over nodes and then over its unknowns!
   std::size_t dofcounter = 0;
   const int* nodeids = ele.NodeIds();
-  for (std::size_t inode=0; inode<ele.NumNode(); ++inode)
+  for (std::size_t inode=0; inode<(size_t)ele.NumNode(); ++inode)
   {
     const int gid = nodeids[inode];
     map<int, const set <XFEM::FieldEnr> >::const_iterator entry = nodalDofSet.find(gid);
@@ -165,7 +165,7 @@ XFEM::ElementDofManager::ElementDofManager(
 {
   // nodal dofs for ele
   nodalDofSet_.clear();
-  for (std::size_t inode = 0; inode < ele.NumNode(); ++inode)
+  for (std::size_t inode = 0; inode < (size_t)ele.NumNode(); ++inode)
   {
     const int gid = ele.NodeIds()[inode];
     nodalDofSet_.insert(make_pair(gid,dofman.getNodeDofSet(gid)));

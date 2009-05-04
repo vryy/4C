@@ -20,6 +20,7 @@ Maintainer: Axel Gerstenberger
 
 #include "xfluid3_sysmat.H"
 #include "xfluid3_utils.H"
+#include "xfluid3_spacetime_utils.H"
 #include "fluid3_stabilization.H"
 #include "xfluid3_local_assembler.H"
 #include "xfluid3_interpolation.H"
@@ -67,9 +68,9 @@ struct EnrViscs2
 
   using namespace XFEM::PHYSICS;
 
-  //! size factor to allow static arrays
+  //! size factor to allow fixed size arrays
   ///
-  /// to allow static arrays for a unknown number of unknowns, we make them bigger than necessary
+  /// to allow fixed size arrays for a unknown number of unknowns, we make them bigger than necessary
   /// this factor is multiplied times numnode(distype) to get the size of many arrays
   template<XFEM::AssemblyType ASSTYPE>
   struct SizeFac {};
@@ -78,135 +79,7 @@ struct EnrViscs2
   /// specialization of SizeFac for XFEM::xfem_assembly
   template<> struct SizeFac<XFEM::xfem_assembly>     {static const int fac = 3;};
 
-  /// generate old velocity/acceleration values, if integration point was in a void during the last time step
-  template<class M>
-  bool modifyOldTimeStepsValues(
-      const DRT::Element*                        ele,           ///< the element those matrix is calculated
-      const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,   ///< connection to the interface handler
-      const M&                                   xyze,
-      const LINALG::Matrix<3,1>&                 posXiDomain,
-      const int                                  labelnp,
-      const Epetra_Vector&                       ivelcoln,
-      const Epetra_Vector&                       ivelcolnm,
-      const Epetra_Vector&                       iacccoln,
-      LINALG::Matrix<3,1>&                       gpveln,
-      LINALG::Matrix<3,1>&                       gpvelnm,
-      LINALG::Matrix<3,1>&                       gpaccn
-      )
-  {
-    static LINALG::Matrix<3,1> posx_gp;
-    GEO::elementToCurrentCoordinates(ele->Shape(), xyze, posXiDomain, posx_gp);
-    
-    const bool is_in_fluid = (labelnp == 0);
-    
-    if (not is_in_fluid)
-    {
-      //std::cout << "should I arrive here?" << std::endl;
-      return false;
-    }
 
-    const bool was_in_fluid = (ih->PositionWithinConditionN(posx_gp) == 0);
-    
-    const bool in_space_time_slab_area = (is_in_fluid and (not was_in_fluid));
-    
-    if (in_space_time_slab_area)
-    {
-      XFEM::SpaceTimeBoundaryCell slab;
-      static LINALG::Matrix<3,1> rst;
-      
-      const bool found_cell = ih->FindSpaceTimeLayerCell(posx_gp,slab,rst);
-      
-      if (found_cell)
-      {
-        
-        const double delta_slab = -(rst(2)-1.0)*0.5;
-  
-        if (delta_slab > (1.0+1.0e-7) or -1.0e-7 > delta_slab)
-        {
-          cout << rst(2) <<  "  " << delta_slab << endl;
-          cout << slab.toString() << endl << endl;
-          dserror("wrong value of delta_slab");
-        }
-//              theta_dt = theta_dt_pure;// * delta_slab;
-      
-        const DRT::Element* boundaryele = ih->cutterdis()->gElement(slab.getBeleId());
-        const int numnode_boundary = boundaryele->NumNode();
-        
-        static LINALG::Matrix<3,1> iveln;
-        static LINALG::Matrix<3,1> ivelnm;
-        static LINALG::Matrix<3,1> iaccn;
-        
-        if (ivelcoln.GlobalLength() > 3)
-        {
-          // get interface velocities at the boundary element nodes
-          LINALG::SerialDenseMatrix veln_boundary( 3,numnode_boundary*2);
-          LINALG::SerialDenseMatrix velnm_boundary(3,numnode_boundary*2);
-          LINALG::SerialDenseMatrix accn_boundary( 3,numnode_boundary*2);
-          if (numnode_boundary != 4)
-            dserror("needs more generalizashun!");
-          const DRT::Node*const* nodes = boundaryele->Nodes();
-          
-          for (int inode = 0; inode < numnode_boundary; ++inode)
-          {
-            const DRT::Node* node = nodes[inode];
-            const std::vector<int> lm = ih->cutterdis()->Dof(node);
-            static std::vector<double> myvel(3);
-            DRT::UTILS::ExtractMyValues(ivelcoln,myvel,lm);
-            veln_boundary(0,inode) = myvel[0];
-            veln_boundary(1,inode) = myvel[1];
-            veln_boundary(2,inode) = myvel[2];
-            DRT::UTILS::ExtractMyValues(ivelcoln,myvel,lm);
-            veln_boundary(0,inode+4) = myvel[0];
-            veln_boundary(1,inode+4) = myvel[1];
-            veln_boundary(2,inode+4) = myvel[2];
-            
-            static std::vector<double> myvelnm(3);
-            DRT::UTILS::ExtractMyValues(ivelcolnm,myvelnm,lm);
-            velnm_boundary(0,inode) = myvelnm[0];
-            velnm_boundary(1,inode) = myvelnm[1];
-            velnm_boundary(2,inode) = myvelnm[2];
-            DRT::UTILS::ExtractMyValues(ivelcolnm,myvelnm,lm);
-            velnm_boundary(0,inode+4) = myvelnm[0];
-            velnm_boundary(1,inode+4) = myvelnm[1];
-            velnm_boundary(2,inode+4) = myvelnm[2];
-            
-            static std::vector<double> myacc(3);
-            DRT::UTILS::ExtractMyValues(iacccoln,myacc,lm);
-            accn_boundary(0,inode) = myacc[0];
-            accn_boundary(1,inode) = myacc[1];
-            accn_boundary(2,inode) = myacc[2];
-            DRT::UTILS::ExtractMyValues(iacccoln,myacc,lm);
-            accn_boundary(0,inode+4) = myacc[0];
-            accn_boundary(1,inode+4) = myacc[1];
-            accn_boundary(2,inode+4) = myacc[2];
-          }
-  //                cout << "veln_boundary: " << veln_boundary << endl;
-  //                cout << "accn_boundary: " << accn_boundary << endl;
-          
-          LINALG::SerialDenseVector funct_ST(numnode_boundary*2);
-          DRT::UTILS::shape_function_3D(funct_ST,rst(0),rst(1),rst(2),DRT::Element::hex8);
-          iveln  = XFLUID::interpolateVectorFieldToIntPoint(veln_boundary , funct_ST, 8);
-          ivelnm = XFLUID::interpolateVectorFieldToIntPoint(velnm_boundary, funct_ST, 8);
-          iaccn  = XFLUID::interpolateVectorFieldToIntPoint(accn_boundary , funct_ST, 8);
-  //                cout << "iveln " << iveln << endl;
-  //                cout << "iaccn " << iaccn << endl;
-        }
-        else
-        {
-          iveln.Clear();
-          ivelnm.Clear();
-          iaccn.Clear();
-        }
-      
-        //cout << "using space time boundary values " << ele->Id() << endl; 
-        gpveln  = iveln;
-        gpvelnm = ivelnm;
-        gpaccn  = iaccn;
-      }
-    }
-    return true;
-  }
-  
   //! fill a number of arrays with unknown values from the unknown vector given by the discretization
   template <DRT::Element::DiscretizationType DISTYPE,
             XFEM::AssemblyType ASSTYPE,
@@ -987,12 +860,10 @@ void SysmatDomainTP1(
     LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&   assembler
 )
 {
-    TEUCHOS_FUNC_TIME_MONITOR(" - evaluate - SysmatTP1 - domain");
-   
     // number of nodes for element
     const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     
-    // dimension for 3d fluid element
+    // space dimension for 3d fluid element
     const int nsd = 3;
     
     // time integration constant
@@ -1013,7 +884,7 @@ void SysmatDomainTP1(
     // get viscosity
     // check here, if we really have a fluid !!
     dsassert(material->MaterialType() == INPAR::MAT::m_fluid, "Material law is not of type m_fluid.");
-    const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());
+    const MAT::NewtonianFluid* actmat = dynamic_cast<const MAT::NewtonianFluid*>(material.get());
     const double visc = actmat->Viscosity();
 
     // flag for higher order elements
@@ -1059,14 +930,14 @@ void SysmatDomainTP1(
     // loop over integration cells
     for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
     {
-        const LINALG::Matrix<3,1> cellcenter(cell->GetPhysicalCenterPosition());
+        const LINALG::Matrix<nsd,1> cellcenter_xyz(cell->GetPhysicalCenterPosition());
         
         int labelnp = 0;
         
         if (ASSTYPE == XFEM::xfem_assembly)
         {
-          // shortcut for intersected elements: if cell is only in solid domains for all influencing enrichments, skip it
-          labelnp = ih->PositionWithinConditionNP(cellcenter);
+          // integrate only in fluid integration cells (works well only with void enrichments!!!)
+          labelnp = ih->PositionWithinConditionNP(cellcenter_xyz);
           const std::set<int> xlabelset(dofman.getUniqueEnrichmentLabels());
           bool compute = false;
           if (labelnp == 0) // fluid
@@ -1091,7 +962,7 @@ void SysmatDomainTP1(
               *ele,
               ih,
               dofman,
-              cellcenter,
+              cellcenter_xyz,
               XFEM::Enrichment::approachUnknown);
         
         const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape());
@@ -1312,7 +1183,7 @@ void SysmatDomainTP1(
             
             if (ASSTYPE == XFEM::xfem_assembly and timealgo != timeint_stationary)
             {
-              const bool valid_spacetime_cell_found = modifyOldTimeStepsValues(ele, ih, xyze, posXiDomain, labelnp, ivelcoln, ivelcolnm, iacccoln, gpveln, gpvelnm, gpaccn);
+              const bool valid_spacetime_cell_found = XFLUID::modifyOldTimeStepsValues<DISTYPE>(ele, ih, xyze, posXiDomain, labelnp, ivelcoln, ivelcolnm, iacccoln, gpveln, gpvelnm, gpaccn);
               if (not valid_spacetime_cell_found)
                 continue;
             }
@@ -1333,8 +1204,8 @@ void SysmatDomainTP1(
                 gpveln, gpvelnm, gpaccn, timealgo, dt, theta);
             
             // get velocity (np,i) derivatives at integration point
-            static LINALG::Matrix<3,3> vderxy;
-            //vderxy = enr_derxy(j,k)*evelnp(i,k);
+            // vderxy = enr_derxy(j,k)*evelnp(i,k);
+            static LINALG::Matrix<3,nsd> vderxy;
             vderxy.Clear();
             for (int iparam = 0; iparam < numparamvelx; ++iparam)
             {
@@ -1369,12 +1240,12 @@ void SysmatDomainTP1(
             }
             else
             {
-                vderxy2.Clear();
+              vderxy2.Clear();
             }
 
             // get pressure gradients
-            static LINALG::Matrix<3,1> gradp;
-            //gradp = enr_derxy(i,j)*eprenp(j);
+            // gradp = enr_derxy(i,j)*eprenp(j);
+            LINALG::Matrix<nsd,1> gradp;
             gradp.Clear();
             for (int iparam = 0; iparam != numparampres; ++iparam)
             {
@@ -1384,7 +1255,7 @@ void SysmatDomainTP1(
             }
     
 //            // get discont. pressure gradients
-//            static LINALG::Matrix<3,1> graddiscp;
+//            LINALG::Matrix<3,1> graddiscp;
 //            //gradp = enr_derxy(i,j)*eprenp(j);
 //            for (int isd = 0; isd < nsd; ++isd)
 //            {
@@ -1552,8 +1423,8 @@ void SysmatBoundaryTP1(
     const bool                        ifaceForceContribution
 )
 {
-    TEUCHOS_FUNC_TIME_MONITOR(" - evaluate - SysmatTP - boundary");
-  
+    if (ASSTYPE != XFEM::xfem_assembly) dserror("works only with xfem assembly");
+
     const Epetra_BLAS blas; 
     
     const int nsd = 3;

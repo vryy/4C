@@ -60,6 +60,9 @@ namespace XFEM
     //! get global id of boundary element for which this space-time cell is constructed
     int getBeleId() const {return bele_id_;};
     
+    //! get global id of boundary element for which this space-time cell is constructed
+    DRT::Element::DiscretizationType Shape() const {return DRT::Element::hex8;};
+    
     //! return string representation
     std::string toString() const;
     

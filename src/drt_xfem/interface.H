@@ -21,8 +21,6 @@ Maintainer: Axel Gerstenberger
 namespace XFEM
 {
 
-  class DRT::Discretization;
-
   /*!
  * It knows everything about the XFEM interface geometry
  * 

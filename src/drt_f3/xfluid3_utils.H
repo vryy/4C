@@ -21,11 +21,15 @@ namespace XFLUID
 {
 
 template<class M1, class M2>
-void fill_tau(const int numparamtau, const M1&  shp_tau, const M2& etau,
-    LINALG::Matrix<3,3>& tau)
+void fill_tau(
+    const size_t         numparamtau,
+    const M1&            shp_tau,
+    const M2&            etau,
+    LINALG::Matrix<3,3>& tau
+    )
 {
     tau.Clear();
-    for (int i = 0; i < numparamtau; ++i)
+    for (size_t i = 0; i < numparamtau; ++i)
     {
         const double fac = shp_tau(i);
         tau(0,0) += fac*etau(0,i);
@@ -55,10 +59,10 @@ LINALG::SerialDenseMatrix BodyForce(DRT::Node** nodes, const double pseudotime)
   dserror("not adapted to xfem (, yet)!!!");
     
   std::vector<DRT::Condition*> myneumcond;
-  const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+  const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
   // check whether all nodes have a unique VolumeNeumann condition
-  int nodecount = 0;
-  for (int inode=0;inode<numnode;++inode)
+  size_t nodecount = 0;
+  for (size_t inode=0;inode<numnode;++inode)
   {
     nodes[inode]->GetCondition("VolumeNeumann",myneumcond);
 
@@ -105,7 +109,7 @@ LINALG::SerialDenseMatrix BodyForce(DRT::Node** nodes, const double pseudotime)
     }
 
     // set this condition to the edeadng array
-    for (int jnode=0; jnode<numnode; ++jnode)
+    for (size_t jnode=0; jnode<numnode; ++jnode)
     {
       nodes[jnode]->GetCondition("VolumeNeumann",myneumcond);
 
@@ -113,7 +117,7 @@ LINALG::SerialDenseMatrix BodyForce(DRT::Node** nodes, const double pseudotime)
       const std::vector<int>*    onoff = myneumcond[0]->Get<vector<int> >   ("onoff");
       const std::vector<double>* val   = myneumcond[0]->Get<vector<double> >("val"  );
 
-      for(int isd=0;isd<3;++isd)
+      for(size_t isd=0;isd<3;++isd)
       {
         edeadng_(isd,jnode) = (*onoff)[isd]*(*val)[isd]*curvefac;
       }
