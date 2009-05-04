@@ -57,39 +57,23 @@ namespace XFEM
        * 
        * \return std::set with enriched fields
        */
-      const std::set<FieldEnr>& FieldEnrSetPerNode(
+      const std::set<XFEM::FieldEnr>& FieldEnrSetPerNode(
           const int  gid    ///< unique global node id
-          ) const
-      {
-        map<int, const std::set<FieldEnr> >::const_iterator tmp = nodalDofSet_.find(gid);
-        if (tmp == nodalDofSet_.end())
-        {
-          std::cout << gid << endl;
-          // let this always be here so we can recognize errors early
-          dserror("FieldEnrSetPerNode: global node id not found!");
-          //return std::set<FieldEnr>();
-        }
-        return tmp->second;
-      };
+          ) const;
       
       //! function that returns node specific number of dofs or the given default number
-      int NumDofPerNode(
+      std::size_t NumDofPerNode(
           const int gid             ///< unique global node id
-      ) const
-      {
-        map<int,int>::const_iterator tmp = nodalNumDof_.find(gid);
-        dsassert(tmp != nodalNumDof_.end(), "node not found");
-        return tmp->second;
-      };
+      ) const;
       
       //! return number of dofs at nodes
-      int NumNodeDof() const { return numNodeDof_; };
+      std::size_t NumNodeDof() const { return numNodeDof_; };
 
       //! return number of dofs at elements
-      int NumElemDof() const { return numElemDof_; };
+      std::size_t NumElemDof() const { return numElemDof_; };
       
       //! return number of dofs at nodes + elements
-      int NumDofElemAndNode() const { return numNodeDof_ + numElemDof_; };
+      std::size_t NumDofElemAndNode() const { return numNodeDof_ + numElemDof_; };
       
       //! function that returns dofs for each node of this particular element
       const std::map<int, const std::set<XFEM::FieldEnr> >& getNodalDofSet() const { return nodalDofSet_; };
@@ -98,17 +82,9 @@ namespace XFEM
        *  standard x displacements at each node and 2 enriched x displacements, this function will return 6
        *  we do not distinguish between nodal and element dofs
        */
-      int NumDofPerField(
+      std::size_t NumDofPerField(
           const XFEM::PHYSICS::Field  field  ///< field for which we seek the number of DOFs
-      ) const
-      {
-        map<XFEM::PHYSICS::Field, int>::const_iterator tmp = numParamsPerField_.find(field);
-        if (tmp == numParamsPerField_.end()){
-          //cout << XFEM::PHYSICS::physVarToString(field) << endl;
-          return 0;
-        }
-        return tmp->second;
-      };
+      ) const;
       
       //! return reference to list of local positions in a array of dofs
       const std::vector<int>& LocalDofPosPerField(const XFEM::PHYSICS::Field field) const
@@ -124,17 +100,7 @@ namespace XFEM
       const std::set<XFEM::Enrichment>& getUniqueEnrichments() const {return unique_enrichments_;}
       
       //! return unique enrichments for this proc
-      std::set<int> getUniqueEnrichmentLabels() const
-      {
-        std::set<int> xlabelset;
-        for(std::set<XFEM::Enrichment>::const_iterator enr = unique_enrichments_.begin();
-        enr != unique_enrichments_.end();
-        ++enr)
-        {
-          xlabelset.insert(enr->XFEMConditionLabel());
-        }
-        return xlabelset;
-      }
+      std::set<int> getUniqueEnrichmentLabels() const;
       
       //! access to map
       DRT::Element::DiscretizationType getDisTypePerField(XFEM::PHYSICS::Field field) const
@@ -168,19 +134,19 @@ namespace XFEM
     private:
       
       //! total number of nodal degrees of freedom
-      int numNodeDof_;
+      std::size_t numNodeDof_;
       
       //! total number of element degrees of freedom
-      int numElemDof_;
+      std::size_t numElemDof_;
       
       //! unknowns for each global node id (gid)
       std::map<int, const std::set<XFEM::FieldEnr> > nodalDofSet_;
       
       //! number of unknowns for each global node id (gid)
-      std::map<int, int> nodalNumDof_;
+      std::map<int, std::size_t> nodalNumDof_;
       
       //! number of parameters for each field
-      std::map<XFEM::PHYSICS::Field, int> numParamsPerField_;
+      std::map<XFEM::PHYSICS::Field, std::size_t> numParamsPerField_;
       
       //! number of parameters for each field
       std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> DisTypePerElementField_;

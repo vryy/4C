@@ -32,7 +32,7 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
   if (vector == null)
   {
 #ifdef DEBUG
-    std::cout << "created new vector with all zeros" << endl;
+    std::cout << "  created new vector with all zeros" << endl;
 #endif
   }
   else
@@ -173,13 +173,15 @@ void XFEM::DofDistributionSwitcher::generateTransferInformation(
     const RCP<Epetra_Vector>&             vector
 ) const
 {
+  
+  dserror("not ready, yet!");
   // create new vector with new number of dofs
   RCP<Epetra_Vector> newVector = LINALG::CreateVector(newdofrowmap_,true);
 
   if (vector == null)
   {
 #ifdef DEBUG
-    std::cout << "created new vector with all zeros" << endl;
+    std::cout << "  created new vector with all zeros" << endl;
 #endif
   }
   else

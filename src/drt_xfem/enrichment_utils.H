@@ -60,10 +60,10 @@ namespace XFEM
     ) const
     {
       const int* nodeids = ele_.NodeIds();
-      const int numnode = ele_.NumNode();
+      const std::size_t numnode = ele_.NumNode();
       
-      int dofcounter = 0;
-      for (int inode=0; inode < numnode; ++inode)
+      std::size_t dofcounter = 0;
+      for (std::size_t inode=0; inode < numnode; ++inode)
       {
         const int gid = nodeids[inode];
         const std::set<XFEM::FieldEnr>& enrfieldset = dofman_.FieldEnrSetPerNode(gid);
@@ -98,10 +98,10 @@ namespace XFEM
     ) const
     {
       const int* nodeids = ele_.NodeIds();
-      const int numnode = ele_.NumNode();
+      const std::size_t numnode = ele_.NumNode();
       
-      int dofcounter = 0;
-      for (int inode=0; inode < numnode; ++inode)
+      std::size_t dofcounter = 0;
+      for (std::size_t inode=0; inode < numnode; ++inode)
       {
         const int gid = nodeids[inode];
         const std::set<XFEM::FieldEnr>& enrfieldset = dofman_.FieldEnrSetPerNode(gid);
@@ -112,7 +112,7 @@ namespace XFEM
           {
             const double enrval = enrvals_.find(enrfield->getEnrichment())->second;
             enr_funct(dofcounter) = funct(inode) * enrval;
-            for (int isd = 0; isd < 3; ++isd)
+            for (std::size_t isd = 0; isd < 3; ++isd)
             {
               enr_derxy(isd,dofcounter) = derxy(isd,inode) * enrval;
             }
@@ -142,10 +142,10 @@ namespace XFEM
     ) const
     {
       const int* nodeids = ele_.NodeIds();
-      const int numnode = ele_.NumNode();
+      const std::size_t numnode = ele_.NumNode();
       
-      int dofcounter = 0;
-      for (int inode=0; inode < numnode; ++inode)
+      std::size_t dofcounter = 0;
+      for (std::size_t inode=0; inode < numnode; ++inode)
       {
         const int gid = nodeids[inode];
         const std::set<XFEM::FieldEnr>& enrfieldset = dofman_.FieldEnrSetPerNode(gid);
@@ -156,11 +156,11 @@ namespace XFEM
           {
             const double enrval = enrvals_.find(enrfield->getEnrichment())->second;
             enr_funct(dofcounter) = funct(inode) * enrval;
-            for (int isd = 0; isd < 3; ++isd)
+            for (std::size_t isd = 0; isd < 3; ++isd)
             {
               enr_derxy(isd,dofcounter) = derxy(isd,inode) * enrval;
             }
-            for (int isd = 0; isd < 6; ++isd)
+            for (std::size_t isd = 0; isd < 6; ++isd)
             {
               enr_derxy2(isd,dofcounter) = derxy2(isd,inode) * enrval;
             }
@@ -185,23 +185,23 @@ namespace XFEM
         VO&                        enr_funct
     ) const
     {
-        int dofcounter = 0;
-        
-        const std::set<XFEM::FieldEnr>& enrfieldset(dofman_.getEnrichedFieldsPerEleField(field));
-        const DRT::Element::DiscretizationType distype = dofman_.getDisTypePerField(field);
-        const int numvirtualnode = DRT::UTILS::getNumberOfElementNodes(distype);
-        dsassert(enrfieldset.size() > 0, "empty enrfieldset not allowed at this point!");
-        for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
-                enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
+      std::size_t dofcounter = 0;
+      
+      const std::set<XFEM::FieldEnr>& enrfieldset(dofman_.getEnrichedFieldsPerEleField(field));
+      const DRT::Element::DiscretizationType distype = dofman_.getDisTypePerField(field);
+      const std::size_t numvirtualnode = DRT::UTILS::getNumberOfElementNodes(distype);
+      dsassert(enrfieldset.size() > 0, "empty enrfieldset not allowed at this point!");
+      for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
+        enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
+      {
+        for (std::size_t inode = 0; inode < numvirtualnode; ++inode)
         {
-          for (int inode = 0; inode < numvirtualnode; ++inode)
-          {
-            const double enrval = enrvals_.find(enrfield->getEnrichment())->second;
-            enr_funct(dofcounter) = funct(inode) * enrval;
-            dofcounter += 1;
-          }
+          const double enrval = enrvals_.find(enrfield->getEnrichment())->second;
+          enr_funct(dofcounter) = funct(inode) * enrval;
+          dofcounter += 1;
         }
-        dsassert(dofcounter == dofman_.NumDofPerField(field), "mismatch in information from eledofmanager!");
+      }
+      dsassert(dofcounter == dofman_.NumDofPerField(field), "mismatch in information from eledofmanager!");
     }
     
     /*!
@@ -220,27 +220,27 @@ namespace XFEM
         MO1&                       enr_derxy
     ) const
     {
-        int dofcounter = 0;
-
-        const std::set<XFEM::FieldEnr>& enrfieldset(dofman_.getEnrichedFieldsPerEleField(field));
-        const DRT::Element::DiscretizationType distype = dofman_.getDisTypePerField(field);
-        const int numvirtualnode = DRT::UTILS::getNumberOfElementNodes(distype);
-        dsassert(enrfieldset.size() > 0, "empty enrfieldset not allowed at this point!");
-        for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
-                enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
+      std::size_t dofcounter = 0;
+      
+      const std::set<XFEM::FieldEnr>& enrfieldset(dofman_.getEnrichedFieldsPerEleField(field));
+      const DRT::Element::DiscretizationType distype = dofman_.getDisTypePerField(field);
+      const std::size_t numvirtualnode = DRT::UTILS::getNumberOfElementNodes(distype);
+      dsassert(enrfieldset.size() > 0, "empty enrfieldset not allowed at this point!");
+      for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
+        enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
+      {
+        for (std::size_t inode = 0; inode < numvirtualnode; ++inode)
         {
-          for (int inode = 0; inode < numvirtualnode; ++inode)
+          const double enrval = enrvals_.find(enrfield->getEnrichment())->second;
+          enr_funct(dofcounter) = funct(inode) * enrval;
+          for (std::size_t isd = 0; isd < 3; ++isd)
           {
-            const double enrval = enrvals_.find(enrfield->getEnrichment())->second;
-            enr_funct(dofcounter) = funct(inode) * enrval;
-            for (int isd = 0; isd < 3; ++isd)
-            {
-              enr_derxy(isd,dofcounter) = derxy(isd,inode) * enrval;
-            }
-            dofcounter += 1;
+            enr_derxy(isd,dofcounter) = derxy(isd,inode) * enrval;
           }
+          dofcounter += 1;
         }
-        dsassert(dofcounter == dofman_.NumDofPerField(field), "mismatch in information from eledofmanager!");
+      }
+      dsassert(dofcounter == dofman_.NumDofPerField(field), "mismatch in information from eledofmanager!");
     }
     
   private:
@@ -362,7 +362,7 @@ std::vector<double> DomainIntCellCoverageRatio(
 //! return assembly type depending on the DOF distribution
 XFEM::AssemblyType CheckForStandardEnrichmentsOnly(
     const ElementDofManager&   eleDofManager,
-    const int                  numnode,
+    const std::size_t          numnode,
     const int*                 nodeids
 );
 
@@ -371,27 +371,27 @@ XFEM::AssemblyType CheckForStandardEnrichmentsOnly(
  * otherwise use a given number numnode
  */
 template<XFEM::AssemblyType>
-inline int getNumParam(
+inline std::size_t getNumParam(
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field     field,
-        const int)
+        const std::size_t)
 {
     return dofman.NumDofPerField(field);
 }
 template<> 
-inline int getNumParam<XFEM::standard_assembly>(
+inline std::size_t getNumParam<XFEM::standard_assembly>(
         const XFEM::ElementDofManager&,
         const XFEM::PHYSICS::Field,
-        const int numnode)
+        const std::size_t numnode)
 {
     return numnode;
 }
 
 //! determine number of parameter
-template<int NUMNODE, XFEM::AssemblyType ASSTYPE>
+template<std::size_t NUMNODE, XFEM::AssemblyType ASSTYPE>
 struct NumParam
 {
-  static int get(
+  static std::size_t get(
      const XFEM::ElementDofManager& dofman,
      const XFEM::PHYSICS::Field     field
      )
@@ -401,9 +401,9 @@ struct NumParam
 };
 
 /// determine number of parameter for standard_assembly
-template<int NUMNODE> struct NumParam<NUMNODE,XFEM::standard_assembly>
+template<std::size_t NUMNODE> struct NumParam<NUMNODE,XFEM::standard_assembly>
 {
-  static int get(
+  static std::size_t get(
       const XFEM::ElementDofManager& ,
       const XFEM::PHYSICS::Field     
       )

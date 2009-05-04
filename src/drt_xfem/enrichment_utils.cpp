@@ -123,12 +123,12 @@ void XFEM::computeScalarCellNodeValuesFromElementUnknowns(
   cellvalues.Zero();
   for (int incn = 0; incn < cell.NumNode(); ++incn)
   {
-    const int numparam  = dofman.NumDofPerField(field);
+    const std::size_t numparam  = dofman.NumDofPerField(field);
     if (numparam == 0)
       continue;
     
     const DRT::Element::DiscretizationType eleval_distype = dofman.getDisTypePerField(field);
-    const int numvirtnode = DRT::UTILS::getNumberOfElementNodes(eleval_distype);
+    const std::size_t numvirtnode = DRT::UTILS::getNumberOfElementNodes(eleval_distype);
     if (numvirtnode != numparam) dserror("bug");
     
     LINALG::SerialDenseVector funct(numparam);
@@ -142,7 +142,7 @@ void XFEM::computeScalarCellNodeValuesFromElementUnknowns(
     LINALG::SerialDenseVector enr_funct(numparam);
     enrvals.ComputeEnrichedElementShapefunction(field, funct, enr_funct);
     // interpolate value
-    for (int iparam = 0; iparam < numparam; ++iparam)
+    for (std::size_t iparam = 0; iparam < numparam; ++iparam)
       cellvalues(incn) += elementvalues(iparam) * enr_funct(iparam);
   }
   return;
@@ -216,8 +216,8 @@ void XFEM::computeVectorCellNodeValues(
   const LINALG::SerialDenseMatrix&    elementvalues,
   LINALG::SerialDenseMatrix&          cellvalues)
 {
-  const int nen_cell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
-  const int numparam  = dofman.NumDofPerField(field);
+  const std::size_t nen_cell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
+  const std::size_t numparam  = dofman.NumDofPerField(field);
   const LINALG::SerialDenseMatrix& nodalPosXiDomain(cell.CellNodalPosXiDomain());
 
   // if cell node is on the interface, the value is not defined for a jump.
@@ -235,9 +235,9 @@ void XFEM::computeVectorCellNodeValues(
   // cell corner nodes
   LINALG::SerialDenseVector enr_funct(numparam);
   //LINALG::SerialDenseVector funct(DRT::UTILS::getNumberOfElementNodes(ele.Shape()));
-  static LINALG::SerialDenseVector funct(27);
+  LINALG::SerialDenseVector funct(27);
   cellvalues.Zero();
-  for (int inen = 0; inen < nen_cell; ++inen)
+  for (std::size_t inen = 0; inen < nen_cell; ++inen)
   {
     // fill shape functions
     DRT::UTILS::shape_function_3D(funct,
@@ -247,8 +247,8 @@ void XFEM::computeVectorCellNodeValues(
       ele.Shape());
     enrvals.ComputeEnrichedNodalShapefunction(field, funct, enr_funct);
     // interpolate value
-    for (int iparam = 0; iparam < numparam; ++iparam)
-      for (int isd = 0; isd < 3; ++isd)
+    for (std::size_t iparam = 0; iparam < numparam; ++iparam)
+      for (std::size_t isd = 0; isd < 3; ++isd)
         cellvalues(isd,inen) += elementvalues(isd,iparam) * enr_funct(iparam);        
   }
   return;
@@ -267,8 +267,8 @@ void XFEM::computeVectorCellNodeValues(
   const LINALG::SerialDenseMatrix&    elementvalues,
   LINALG::SerialDenseMatrix&          cellvalues)
 {
-  const int nen_cell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
-  const int numparam  = dofman.NumDofPerField(field);
+  const std::size_t nen_cell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
+  const std::size_t numparam  = dofman.NumDofPerField(field);
   const LINALG::SerialDenseMatrix& nodalPosXiDomain(cell.CellNodalPosXiDomain());
 
   // if cell node is on the interface, the value is not defined for a jump.
@@ -286,9 +286,9 @@ void XFEM::computeVectorCellNodeValues(
   
   LINALG::SerialDenseVector enr_funct(numparam);
   //LINALG::SerialDenseVector funct(DRT::UTILS::getNumberOfElementNodes(ele.Shape()));
-  static LINALG::SerialDenseVector funct(27);
+  LINALG::SerialDenseVector funct(27);
   cellvalues.Zero();
-  for (int inen = 0; inen < nen_cell; ++inen)
+  for (std::size_t inen = 0; inen < nen_cell; ++inen)
   {
     // fill shape functions
     DRT::UTILS::shape_function_3D(funct,
@@ -299,8 +299,8 @@ void XFEM::computeVectorCellNodeValues(
 
     enrvals.ComputeEnrichedNodalShapefunction(field, funct, enr_funct);
     // interpolate value
-    for (int iparam = 0; iparam < numparam; ++iparam)
-      for (int isd = 0; isd < 3; ++isd)
+    for (std::size_t iparam = 0; iparam < numparam; ++iparam)
+      for (std::size_t isd = 0; isd < 3; ++isd)
         cellvalues(isd,inen) += elementvalues(isd,iparam) * enr_funct(iparam);        
   }
   return;
@@ -320,7 +320,7 @@ double DomainCoverageRatioT(
   // number of nodes for element
   const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
   // get node coordinates of the current element
-  static LINALG::Matrix<3,numnode> xyze;
+  LINALG::Matrix<3,numnode> xyze;
   GEO::fillInitialPositionArray<DISTYPE>(&ele, xyze);
   
   //double 
@@ -358,25 +358,25 @@ double DomainCoverageRatioT(
     for (int iquad=0; iquad<intpoints.nquad; ++iquad)
     {
       // coordinates of the current integration point in cell coordinates \eta
-      static LINALG::Matrix<3,1> pos_eta_domain;
+      LINALG::Matrix<3,1> pos_eta_domain;
       pos_eta_domain(0) = intpoints.qxg[iquad][0];
       pos_eta_domain(1) = intpoints.qxg[iquad][1];
       pos_eta_domain(2) = intpoints.qxg[iquad][2];
 
       // coordinates of the current integration point in element coordinates \xi
-      static LINALG::Matrix<3,1> posXiDomain;
+      LINALG::Matrix<3,1> posXiDomain;
       GEO::mapEtaToXi3D<XFEM::xfem_assembly>(*cell, pos_eta_domain, posXiDomain);
       const double detcell = GEO::detEtaToXi3D<XFEM::xfem_assembly>(*cell, pos_eta_domain);
       
       // shape functions and their first derivatives
-      static LINALG::Matrix<numnode,1> funct;
-      static LINALG::Matrix<3,numnode> deriv;
+      LINALG::Matrix<numnode,1> funct;
+      LINALG::Matrix<3,numnode> deriv;
       DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
       DRT::UTILS::shape_function_3D_deriv1(deriv,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
 
       // get transposed of the jacobian matrix d x / d \xi
       //xjm = deriv(i,k)*xyze(j,k);
-      static LINALG::Matrix<3,3> xjm;
+      LINALG::Matrix<3,3> xjm;
       xjm.MultiplyNT(deriv,xyze);
 
       const double det = xjm.Determinant();
@@ -474,18 +474,18 @@ vector<double> DomainCoverageRatioPerNodeT(
     for (int iquad=0; iquad<intpoints.nquad; ++iquad)
     {
       // coordinates of the current integration point in cell coordinates \eta
-      static LINALG::Matrix<3,1> pos_eta_domain;
+      LINALG::Matrix<3,1> pos_eta_domain;
       pos_eta_domain(0) = intpoints.qxg[iquad][0];
       pos_eta_domain(1) = intpoints.qxg[iquad][1];
       pos_eta_domain(2) = intpoints.qxg[iquad][2];
 
       // coordinates of the current integration point in element coordinates \xi
-      static LINALG::Matrix<3,1> posXiDomain;
+      LINALG::Matrix<3,1> posXiDomain;
       GEO::mapEtaToXi3D<XFEM::xfem_assembly>(*cell, pos_eta_domain, posXiDomain);
       const double detcell = GEO::detEtaToXi3D<XFEM::xfem_assembly>(*cell, pos_eta_domain);
       
       // shape functions and their first derivatives
-      static LINALG::Matrix<numnode,1> funct;
+      LINALG::Matrix<numnode,1> funct;
       DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
 
       const double fac = intpoints.qwgt[iquad]*detcell;
@@ -601,17 +601,17 @@ template <DRT::Element::DiscretizationType DISTYPE>
       DRT::UTILS::shape_function_2D_deriv1(deriv_boundary, pos_eta_boundary(0),pos_eta_boundary(1),cell->Shape());
       
       // shape functions and their first derivatives
-      static LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement,1> funct;
+      LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement,1> funct;
       DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
       
       // get jacobian matrix d x / d \xi  (3x2)
       // dxyzdrs = xyze_boundary(i,k)*deriv_boundary(j,k);
-      static LINALG::Matrix<3,2> dxyzdrs;
+      LINALG::Matrix<3,2> dxyzdrs;
       blas.GEMM('N','T',3,2,numnode_cell,1.0,nodalpos_xi_domain.A(),nodalpos_xi_domain.LDA(),deriv_boundary.A(),deriv_boundary.LDA(),0.0,dxyzdrs.A(),dxyzdrs.M());
       
       // compute covariant metric tensor G for surface element (2x2)
       // metric = dxyzdrs(k,i)*dxyzdrs(k,j);
-      static LINALG::Matrix<2,2> metric;
+      LINALG::Matrix<2,2> metric;
       metric.MultiplyTN(dxyzdrs,dxyzdrs);
       
       const double detmetric = sqrt(metric.Determinant());
@@ -713,18 +713,18 @@ vector<double> DomainIntCellCoverageRatioT(
     for (int iquad=0; iquad<intpoints.nquad; ++iquad)
     {
       // coordinates of the current integration point in cell coordinates \eta
-      static LINALG::Matrix<3,1> pos_eta_domain;
+      LINALG::Matrix<3,1> pos_eta_domain;
       pos_eta_domain(0) = intpoints.qxg[iquad][0];
       pos_eta_domain(1) = intpoints.qxg[iquad][1];
       pos_eta_domain(2) = intpoints.qxg[iquad][2];
 
       // coordinates of the current integration point in element coordinates \xi
-      static LINALG::Matrix<3,1> posXiDomain;
+      LINALG::Matrix<3,1> posXiDomain;
       GEO::mapEtaToXi3D<XFEM::xfem_assembly>(*cell, pos_eta_domain, posXiDomain);
       const double detcell = GEO::detEtaToXi3D<XFEM::xfem_assembly>(*cell, pos_eta_domain);
       
       // shape functions and their first derivatives
-      static LINALG::Matrix<numnode,1> funct;
+      LINALG::Matrix<numnode,1> funct;
       DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
       
       const double fac = intpoints.qwgt[iquad]*detcell;
@@ -776,7 +776,7 @@ std::vector<double> XFEM::DomainIntCellCoverageRatio(
  *----------------------------------------------------------------------*/
 XFEM::AssemblyType XFEM::CheckForStandardEnrichmentsOnly(
     const ElementDofManager&   eleDofManager,
-    const int                  numnode,
+    const std::size_t          numnode,
     const int*                 nodeids)
 {
   // find out whether we can use standard assembly or need xfem assembly
@@ -802,7 +802,7 @@ XFEM::AssemblyType XFEM::CheckForStandardEnrichmentsOnly(
       };
   };
   
-  const int eledof = eleDofManager.NumElemDof();
+  const std::size_t eledof = eleDofManager.NumElemDof();
   if (eledof != 0)
     assembly_type = XFEM::xfem_assembly;
   
