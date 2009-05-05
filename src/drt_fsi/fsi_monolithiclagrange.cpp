@@ -167,7 +167,7 @@ void FSI::MonolithicLagrange::SetupRHS(Epetra_Vector& f, bool firstcall)
     Extractor().AddVector(*rhs,3,f);
 
     // shape derivatives (#1): (F^G,gg + F^G,ig) * u,gamma,n
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().MeshMoveMatrix();
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().ShapeDerivatives();
     if (mmm!=Teuchos::null)
     {
       LINALG::SparseMatrix& fmig = mmm->Matrix(0,1);
@@ -222,7 +222,7 @@ void FSI::MonolithicLagrange::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& m
   double resscale  = FluidField().ResidualScaling();	// theta
 
   // mesh move matrix (needed for shape derivatives)
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().MeshMoveMatrix();
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().ShapeDerivatives();
 
   // ... and assemble the matrices into the combined block matrix
   // note: we have to make sure that the maps of the blocks we want to insert

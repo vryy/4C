@@ -240,7 +240,7 @@ public:
   /// Expand the Dirichlet DOF set
   ///
   /// The method expands the DOF set (map) which contains the DOFs
-  /// subjected to Dirichlet boundary conditions. For instance, the method is 
+  /// subjected to Dirichlet boundary conditions. For instance, the method is
   /// called by the staggered FSI in which the velocities on the FSI
   /// interface are prescribed by the other fields.
   void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd);
@@ -263,7 +263,7 @@ public:
   Teuchos::RCP<Epetra_Vector> Dispn() { return dispn_; }
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_); }
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> MeshMoveMatrix() { return meshmovematrix_; }
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives() { return shapederivatives_; }
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
   Teuchos::RCP<Epetra_Vector> RobinRHS() { return robinrhs_; }
 
@@ -366,7 +366,7 @@ protected:
   FluidImplicitTimeInt (const FluidImplicitTimeInt& old);
 
   /*!
-  \brief compute values at intermediate time steps for gen.-alpha 
+  \brief compute values at intermediate time steps for gen.-alpha
 
   */
   void GenAlphaIntermediateValues();
@@ -479,7 +479,7 @@ protected:
   RCP<LINALG::SparseOperator> sysmat_;
 
   /// linearization with respect to mesh motion
-  RCP<LINALG::BlockSparseMatrixBase> meshmovematrix_;
+  RCP<LINALG::BlockSparseMatrixBase> shapederivatives_;
 
   /// maps for extracting Dirichlet and free DOF sets
   RCP<LINALG::MapExtractor> dbcmaps_;
@@ -552,10 +552,10 @@ protected:
   RCP<Epetra_Vector>    hist_;
 
 
-  //! manager for turbulence statistics 
+  //! manager for turbulence statistics
   RCP<TurbulenceStatisticManager> statisticsmanager_;
 
-  //! @name Dynamic Smagorinsky model: methods and variables 
+  //! @name Dynamic Smagorinsky model: methods and variables
   //        -------------------------
 
   //! one instance of the filter object

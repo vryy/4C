@@ -117,7 +117,7 @@ namespace ADAPTER {
     virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() = 0;
 
     /// linearization of Navier-Stokes with respect to mesh movement
-    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> MeshMoveMatrix() = 0;
+    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives() = 0;
 
     /// direct access to discretization
     virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
@@ -219,7 +219,7 @@ namespace ADAPTER {
 
     /// communication object at the free surface
     virtual const LINALG::MapExtractor& FreeSurface() const = 0;
-    
+
     /// return type of time integration scheme
     virtual const FLUID_TIMEINTTYPE TimIntScheme() const = 0;
 
@@ -273,7 +273,7 @@ namespace ADAPTER {
 
     /// extract fluid velocity at the interface
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceFluidVelocity() = 0;
-    
+
     /// extract fluid velocity at the interface from time step n
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln() = 0;
 

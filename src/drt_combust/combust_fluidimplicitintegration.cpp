@@ -2198,7 +2198,7 @@ void FLD::CombustFluidImplicitTimeInt::UseBlockMatrix(
     // allocate special mesh moving matrix
     mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
     mat->SetCondElements(condelements);
-    //meshmovematrix_ = mat;
+    //shapederivatives_ = mat;
   }
 }
 

@@ -107,7 +107,7 @@ FSI::MonolithicStructureSplit::MonolithicStructureSplit(Epetra_Comm& comm)
     while (pcomegastream >> word2)
       pcomega.push_back(std::atof(word2.c_str()));
   }
-  
+
   // create block system matrix
   switch(linearsolverstrategy_)
   {
@@ -209,7 +209,7 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
     Extractor().AddVector(*veln,1,f);
 
     // shape derivatives
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().MeshMoveMatrix();
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().ShapeDerivatives();
     if (mmm!=Teuchos::null)
     {
       LINALG::SparseMatrix& fmig = mmm->Matrix(0,1);
@@ -314,7 +314,7 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
   /*----------------------------------------------------------------------*/
   // add optional fluid linearization with respect to mesh motion block
 
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().MeshMoveMatrix();
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().ShapeDerivatives();
   if (mmm!=Teuchos::null)
   {
     LINALG::SparseMatrix& fmii = mmm->Matrix(0,0);
@@ -518,7 +518,7 @@ FSI::MonolithicStructureSplit::CreateLinearSystem(ParameterList& nlParams,
   Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
   Teuchos::ParameterList& newtonParams = dirParams.sublist("Newton");
   Teuchos::ParameterList* lsParams = NULL;
-  
+
   // in case of nonlinCG the linear solver list is somewhere else
   if (dirParams.get("Method","User Defined")=="User Defined")
     lsParams = &(newtonParams.sublist("Linear Solver"));
@@ -530,7 +530,7 @@ FSI::MonolithicStructureSplit::CreateLinearSystem(ParameterList& nlParams,
   NOX::Epetra::Interface::Preconditioner* iPrec = this;
   const Teuchos::RCP< Epetra_Operator > J = systemmatrix_;
   const Teuchos::RCP< Epetra_Operator > M = systemmatrix_;
-  
+
   switch (linearsolverstrategy_)
   {
   case INPAR::FSI::PreconditionedKrylov:

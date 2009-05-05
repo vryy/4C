@@ -200,7 +200,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
     w_       = Teuchos::null;
     c_       = Teuchos::null;
   }
-  
+
   // -------------------------------------------------------------------
   // create empty vectors
   // -------------------------------------------------------------------
@@ -1278,22 +1278,22 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         currresidual = max(currresidual,incprenorm_L2/prenorm_L2);
         solver_.AdaptTolerance(ittol,currresidual,adaptolbetter);
       }
-      
+
       if (project_)
       {
         DRT::Condition* KSPcond=discret_->GetCondition("KrylovSpaceProjection");
 
-        // in this case, we want to project out some zero pressure modes 
+        // in this case, we want to project out some zero pressure modes
         const string* definition = KSPcond->Get<string>("weight vector definition");
         const int numdim = params_.get<int>("number of velocity degrees of freedom");
-        
+
         if(*definition == "pointvalues")
         {
           // zero w and c
           w_->PutScalar(0.0);
           c_->PutScalar(0.0);
-          
-          // get pressure 
+
+          // get pressure
           const vector<double>* mode = KSPcond->Get<vector<double> >("mode");
 
           for(int rr=0;rr<numdim;++rr)
@@ -1305,20 +1305,20 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           }
 
           int predof = numdim;
-          
+
           Teuchos::RCP<Epetra_Vector> presmode = velpressplitter_.ExtractCondVector(*w_);
-          
+
           presmode->PutScalar((*mode)[predof]);
 
           /* export to vector to normalize against
           //
           // Note that in the case of definition pointvalue based,
-          // the average pressure will vanish in a pointwise sense 
+          // the average pressure will vanish in a pointwise sense
           //
           //    +---+
-          //     \   
+          //     \
           //      +   p_i  = 0
-          //     / 
+          //     /
           //    +---+
           */
           LINALG::Export(*presmode,*w_);
@@ -1342,20 +1342,20 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           {
             discret_->SetState("dispnp",dispnp_);
           }
-          
+
           /* evaluate KrylovSpaceProjection condition in order to get
           // integrated nodal basis functions w_
           // Note that in the case of definition integration based,
-          // the average pressure will vanish in an integral sense 
+          // the average pressure will vanish in an integral sense
           //
           //                    /              /                      /
           //   /    \          |              |  /          \        |  /    \
           //  | w_*p | = p_i * | N_i(x) dx =  | | N_i(x)*p_i | dx =  | | p(x) | dx = 0
-          //   \    /          |              |  \          /        |  \    / 
-          //                   /              /                      /  
+          //   \    /          |              |  \          /        |  \    /
+          //                   /              /                      /
           */
 
-         
+
           discret_->EvaluateCondition
           (mode_params        ,
            Teuchos::null      ,
@@ -1364,8 +1364,8 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
            Teuchos::null      ,
            Teuchos::null      ,
            "KrylovSpaceProjection");
-         
-          // get pressure 
+
+          // get pressure
           const vector<double>* mode = KSPcond->Get<vector<double> >("mode");
 
           for(int rr=0;rr<numdim;++rr)
@@ -1375,9 +1375,9 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
               dserror("expecting only an undetermined pressure");
             }
           }
-          
+
           Teuchos::RCP<Epetra_Vector> presmode = velpressplitter_.ExtractCondVector(*w_);
-          
+
           // export to vector of ones
           presmode->PutScalar(1.0);
           LINALG::Export(*presmode,*c_);
@@ -1387,7 +1387,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           dserror("unknown definition of weight vector w for restriction of Krylov space");
         }
       }
-      
+
       solver_.Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1, w_, c_, project_);
       solver_.ResetTolerance();
 
@@ -1786,17 +1786,17 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
       {
         DRT::Condition* KSPcond=discret_->GetCondition("KrylovSpaceProjection");
 
-        // in this case, we want to project out some zero pressure modes 
+        // in this case, we want to project out some zero pressure modes
         const string* definition = KSPcond->Get<string>("weight vector definition");
         const int numdim = params_.get<int>("number of velocity degrees of freedom");
-        
+
         if(*definition == "pointvalues")
         {
           // zero w and c
           w_->PutScalar(0.0);
           c_->PutScalar(0.0);
-          
-          // get pressure 
+
+          // get pressure
           const vector<double>* mode = KSPcond->Get<vector<double> >("mode");
 
           for(int rr=0;rr<numdim;++rr)
@@ -1808,20 +1808,20 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
           }
 
           int predof = numdim;
-          
+
           Teuchos::RCP<Epetra_Vector> presmode = velpressplitter_.ExtractCondVector(*w_);
-          
+
           presmode->PutScalar((*mode)[predof]);
 
           /* export to vector to normalize against
           //
           // Note that in the case of definition pointvalue based,
-          // the average pressure will vanish in a pointwise sense 
+          // the average pressure will vanish in a pointwise sense
           //
           //    +---+
-          //     \   
+          //     \
           //      +   p_i  = 0
-          //     / 
+          //     /
           //    +---+
           */
           LINALG::Export(*presmode,*w_);
@@ -1845,20 +1845,20 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
           {
             discret_->SetState("dispnp",dispnp_);
           }
-          
+
           /* evaluate KrylovSpaceProjection condition in order to get
           // integrated nodal basis functions w_
           // Note that in the case of definition integration based,
-          // the average pressure will vanish in an integral sense 
+          // the average pressure will vanish in an integral sense
           //
           //                    /              /                      /
           //   /    \          |              |  /          \        |  /    \
           //  | w_*p | = p_i * | N_i(x) dx =  | | N_i(x)*p_i | dx =  | | p(x) | dx = 0
-          //   \    /          |              |  \          /        |  \    / 
-          //                   /              /                      /  
+          //   \    /          |              |  \          /        |  \    /
+          //                   /              /                      /
           */
 
-         
+
           discret_->EvaluateCondition
           (mode_params        ,
            Teuchos::null      ,
@@ -1867,8 +1867,8 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
            Teuchos::null      ,
            Teuchos::null      ,
            "KrylovSpaceProjection");
-         
-          // get pressure 
+
+          // get pressure
           const vector<double>* mode = KSPcond->Get<vector<double> >("mode");
 
           for(int rr=0;rr<numdim;++rr)
@@ -1878,9 +1878,9 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
               dserror("expecting only an undetermined pressure");
             }
           }
-          
+
           Teuchos::RCP<Epetra_Vector> presmode = velpressplitter_.ExtractCondVector(*w_);
-          
+
           // export to vector of ones
           presmode->PutScalar(1.0);
           LINALG::Export(*presmode,*c_);
@@ -1890,7 +1890,7 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
           dserror("unknown definition of weight vector w for restriction of Krylov space");
         }
       }
-      
+
       solver_.Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1, w_, c_, project_);
 
       solver_.ResetTolerance();
@@ -2286,8 +2286,8 @@ void FLD::FluidImplicitTimeInt::GenAlphaUpdateAcceleration()
 void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 {
   sysmat_->Zero();
-  if (meshmovematrix_ != Teuchos::null)
-    meshmovematrix_->Zero();
+  if (shapederivatives_ != Teuchos::null)
+    shapederivatives_->Zero();
 
   // set the new solution we just got
   if (vel!=Teuchos::null)
@@ -2356,18 +2356,18 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   }
 
   // call loop over elements
-  discret_->Evaluate(eleparams,sysmat_,meshmovematrix_,residual_,Teuchos::null,Teuchos::null);
+  discret_->Evaluate(eleparams,sysmat_,shapederivatives_,residual_,Teuchos::null,Teuchos::null);
   discret_->ClearState();
 
   // finalize the system matrix
   sysmat_->Complete();
 
-  if (meshmovematrix_ != Teuchos::null)
+  if (shapederivatives_ != Teuchos::null)
   {
-    meshmovematrix_->Complete();
+    shapederivatives_->Complete();
     // apply Dirichlet conditions to a non-diagonal matrix
     // (The Dirichlet rows will become all zero, no diagonal one.)
-    meshmovematrix_->ApplyDirichlet(*(dbcmaps_->CondMap()),false);
+    shapederivatives_->ApplyDirichlet(*(dbcmaps_->CondMap()),false);
   }
 
   trueresidual_->Update(ResidualScaling(),*residual_,0.0);
@@ -3665,7 +3665,7 @@ void FLD::FluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> > cond
     // allocate special mesh moving matrix
     mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
     mat->SetCondElements(condelements);
-    meshmovematrix_ = mat;
+    shapederivatives_ = mat;
   }
 }
 

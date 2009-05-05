@@ -75,7 +75,7 @@ namespace ADAPTER
                                                                return fluid_.SystemMatrix(); };
     virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix(){ dserror("not implemented");
                                                                              return Teuchos::null; };
-    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> MeshMoveMatrix(){ dserror("not implemented");
+    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives(){ dserror("not implemented");
                                                                           return Teuchos::null; };
     virtual const LINALG::MapExtractor& FreeSurface() const { dserror("not implemented!");
             // this is a hack to compile the code! danger of dangling reference!

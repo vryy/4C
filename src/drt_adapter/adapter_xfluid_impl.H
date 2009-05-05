@@ -80,7 +80,7 @@ namespace ADAPTER {
     virtual Teuchos::RCP<const Epetra_Map>    DofRowMap();
     virtual Teuchos::RCP<LINALG::SparseMatrix>SystemMatrix();
     virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
-    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> MeshMoveMatrix();
+    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives();
     virtual Teuchos::RCP<DRT::Discretization> Discretization();
 
     //virtual Teuchos::RCP<Epetra_Vector> StructCondRHS() const;
@@ -188,7 +188,7 @@ namespace ADAPTER {
         const std::string filestr,
         const std::string name_in_gmsh
         ) const;
-    
+
     void RemoveInternalSurfElements(
         Teuchos::RCP<DRT::Discretization> soliddis
         );

@@ -44,12 +44,12 @@ ADAPTER::XFluidImpl::XFluidImpl(
   : fluid_(dis, *params),
     params_(params)
 {
-          
+
   //if (!soliddis->Filled()) cout << " solid dis is not filled"<< endl;
   // test intersection without XFEM
   //Teuchos::RCP< UTILS::PotentialManager > pot_man =rcp(new UTILS::PotentialManager(dis, soliddis, *soliddis));
-  // test intersection without XFEM     
-               
+  // test intersection without XFEM
+
   vector<string> conditions_to_copy;
   conditions_to_copy.push_back("FSICoupling");
   conditions_to_copy.push_back("XFEMCoupling");
@@ -58,7 +58,7 @@ ADAPTER::XFluidImpl::XFluidImpl(
   {
     cout << "Empty boundary discretization detected. No FSI coupling will be performed..." << endl;
   }
-  
+
   // sanity check
   vector< DRT::Condition * >      conditions;
   boundarydis_->GetCondition ("XFEMCoupling", conditions);
@@ -67,18 +67,18 @@ ADAPTER::XFluidImpl::XFluidImpl(
   const std::size_t numfsicond = conditions.size();
   if (numxfemcond != numfsicond)
     dserror("number of xfem conditions has to match number of fsi conditions");
-  
+
   // remove internal surface elements that occur for flat 3D hex8 meshes
   RemoveInternalSurfElements(soliddis);
 
   // create node and element distribution with elements and nodes ghosted on all processors
   const Epetra_Map noderowmap = *boundarydis_->NodeRowMap();
   const Epetra_Map elemrowmap = *boundarydis_->ElementRowMap();
-  
+
   // put all boundary nodes and elements onto all processors
   const Epetra_Map nodecolmap = *LINALG::AllreduceEMap(noderowmap);
   const Epetra_Map elemcolmap = *LINALG::AllreduceEMap(elemrowmap);
-  
+
   // redistribute nodes and elements to column (ghost) map
   boundarydis_->ExportColumnNodes(nodecolmap);
   boundarydis_->ExportColumnElements(elemcolmap);
@@ -86,16 +86,16 @@ ADAPTER::XFluidImpl::XFluidImpl(
   // Now we are done. :)
   const int err = boundarydis_->FillComplete();
   if (err) dserror("FillComplete() returned err=%d",err);
-  
+
   DRT::UTILS::PrintParallelDistribution(*boundarydis_);
-  
+
   boundaryoutput_ = rcp(new IO::DiscretizationWriter(boundarydis_));
   // mesh output is only needed for post processing in paraview
   // or if element date is read during restart
   // if some procs have no row elements, this WriteMesh() call fails currently
 //  if (boundarydis_->NumMyRowElements() > 0)
 //    boundaryoutput_->WriteMesh(0,0.0);
-  
+
   DRT::UTILS::SetupNDimExtractor(*boundarydis_,"FSICoupling",interface_);
   DRT::UTILS::SetupNDimExtractor(*boundarydis_,"FREESURFCoupling",freesurface_);
 
@@ -188,7 +188,7 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> ADAPTER::XFluidImpl::BlockSystemMatr
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::BlockSparseMatrixBase> ADAPTER::XFluidImpl::MeshMoveMatrix()
+Teuchos::RCP<LINALG::BlockSparseMatrixBase> ADAPTER::XFluidImpl::ShapeDerivatives()
 {
   dserror("nope");
   return Teuchos::null;
@@ -266,25 +266,25 @@ void ADAPTER::XFluidImpl::Update()
 //    gamma = 1.0;
 //    beta = gamma/2.0;
 //  }
-//  
+//
 //  // compute acceleration at timestep n+1
 //  iaccnp->Update(-(1.0-(2.0*beta))/(2.0*beta),*iaccn_,0.0);
 //  iaccnp->Update(-1.0/(beta*dt),*iveln_,1.0);
 //  iaccnp->Update(1.0/(beta*dt*dt),*idispnp_,-1.0/(beta*dt*dt),*idispn_,1.0);
-//  
+//
 //  // compute velocity at timestep n+1
 //  ivelnp->Update(1.0,*iveln_,0.0);
 //  ivelnp->Update(gamma*dt,*iaccnp,(1-gamma)*dt,*iaccn_,1.0);
-  
+
   // update acceleration n
   iaccn_->Update(1.0,*iaccnp,0.0);
 
   // update velocity n-1
   ivelnm_->Update(1.0,*iveln_,0.0);
-  
+
   // update velocity n
   iveln_->Update(1.0,*ivelnp_,0.0);
-  
+
   // update displacement n
   idispn_->Update(1.0,*idispnp_,0.0);
 }
@@ -311,29 +311,29 @@ void ADAPTER::XFluidImpl::Output()
   boundaryoutput_->WriteVector("ivelnm", ivelnm_);
   boundaryoutput_->WriteVector("iaccn", iaccn_);
   boundaryoutput_->WriteVector("itrueresnp", itrueresnp_);
-  
+
   // first fluid output
   fluid_.StatisticsAndOutput();
-  
+
 
 //  boundaryoutput_->WriteVector("interface force", itrueres_);
 
   // now interface gmsh output
-  
+
   // create interface DOF vectors using the fluid parallel distribution
   Teuchos::RCP<Epetra_Vector> ivelnpcol   = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
 //  Teuchos::RCP<Epetra_Vector> ivelncol    = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
 //  Teuchos::RCP<Epetra_Vector> iaccncol    = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
   Teuchos::RCP<Epetra_Vector> idispnpcol  = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
   Teuchos::RCP<Epetra_Vector> itruerescol = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
-  
+
   // map to fluid parallel distribution
   LINALG::Export(*idispnp_ ,*idispnpcol);
   LINALG::Export(*ivelnp_  ,*ivelnpcol);
 //  LINALG::Export(*iveln_   ,*ivelncol);
 //  LINALG::Export(*iaccn_   ,*iaccncol);
   LINALG::Export(*itrueresnp_,*itruerescol);
-  
+
   // print redundant arrays on proc 0
   if (boundarydis_->Comm().MyPID() == 0)
   {
@@ -343,7 +343,7 @@ void ADAPTER::XFluidImpl::Output()
 //    PrintInterfaceVectorField(idispnpcol, ivelncol , ".solution_iveln_" , "interface velocity n");
 //    PrintInterfaceVectorField(idispnpcol, iaccncol , ".solution_iaccn_" , "interface acceleration n");
   }
-  
+
   if (boundarydis_->Comm().MyPID() == 0 && itruerescol->MyLength() >= 3)
   {
     std::ofstream f;
@@ -381,7 +381,7 @@ void ADAPTER::XFluidImpl::PrintInterfaceVectorField(
     std::remove(filenamedel.str().c_str());
     if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
-    
+
     {
       stringstream gmshfilecontent;
       gmshfilecontent << "View \" " << name_in_gmsh << " \" {\n";
@@ -391,14 +391,14 @@ void ADAPTER::XFluidImpl::PrintInterfaceVectorField(
         vector<int> lm;
         vector<int> lmowner;
         actele->LocationVector(*boundarydis_, lm, lmowner);
-        
+
         // extract local values from the global vector
         vector<double> myvelnp(lm.size());
         DRT::UTILS::ExtractMyValues(*vectorfield, myvelnp, lm);
-        
+
         vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*displacementfield, mydisp, lm);
-        
+
         const int nsd = 3;
         const int numnode = actele->NumNode();
         LINALG::SerialDenseMatrix elementvalues(nsd,numnode);
@@ -415,7 +415,7 @@ void ADAPTER::XFluidImpl::PrintInterfaceVectorField(
             counter++;
           }
         }
-        
+
         gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
             actele->Shape(), elementvalues, elementpositions) << "\n";
       }
@@ -456,28 +456,28 @@ void ADAPTER::XFluidImpl::NonlinearSolve()
 
   boundarydis_->SetState("idispcolnp",idispcolnp);
   boundarydis_->SetState("idispcoln" ,idispcoln);
-  
+
   boundarydis_->SetState("ivelcolnp" ,ivelcolnp);
   boundarydis_->SetState("ivelcoln"  ,ivelcoln);
   boundarydis_->SetState("ivelcolnm" ,ivelcolnm);
   boundarydis_->SetState("iacccoln"  ,iacccoln);
-  
+
   fluid_.NonlinearSolve(boundarydis_);
-  
+
   Teuchos::RCP<const Epetra_Vector> itruerescol = boundarydis_->GetState("iforcenp");
-  
+
   boundarydis_->ClearState();
 
   // map back to solid parallel distribution
   Teuchos::RCP<Epetra_Export> conimpo = Teuchos::rcp (new Epetra_Export(itruerescol->Map(),itrueresnp_->Map()));
   itrueresnp_->PutScalar(0.0);
-  itrueresnp_->Export(*itruerescol,*conimpo,Add); 
-  
+  itrueresnp_->Export(*itruerescol,*conimpo,Add);
+
   if (TimIntScheme() == timeint_stationary)
   {
     LiftDrag();
   }
-  
+
 }
 
 
@@ -564,14 +564,14 @@ void ADAPTER::XFluidImpl::ReadRestart(int step)
   reader.ReadVector(ivelnm_, "ivelnm");
   reader.ReadVector(iaccn_, "iaccn");
   reader.ReadVector(itrueresnp_, "itrueresnp");
-  
+
   // map to fluid parallel distribution
   LINALG::Export(*idispnp_,*idispcolnp);
   LINALG::Export(*idispn_ ,*idispcoln);
 
   boundarydis_->SetState("idispcolnp",idispcolnp);
   boundarydis_->SetState("idispcoln" ,idispcoln);
-  
+
   fluid_.ReadRestart(step,boundarydis_);
 }
 
@@ -602,8 +602,8 @@ void ADAPTER::XFluidImpl::LiftDrag()
 
   // map to fluid parallel distribution
   LINALG::Export(*itrueresnp_,*iforcecol);
-  
-  
+
+
   if (boundarydis_->Comm().MyPID() == 0)
   {
     // compute force components
@@ -619,8 +619,8 @@ void ADAPTER::XFluidImpl::LiftDrag()
         // minus to get correct sign of lift and drag (force acting on the body)
         c(isd) -= (*iforcecol)[dofcolmap->LID(dof[isd])];
       }
-    } 
-    
+    }
+
     // print to file
     std::stringstream s;
     std::stringstream header;
@@ -651,7 +651,7 @@ void ADAPTER::XFluidImpl::LiftDrag()
 
     std::cout << header.str() << endl << s.str() << endl;
   }
-  
+
   fluid_.LiftDrag();
 }
 
@@ -667,23 +667,23 @@ void ADAPTER::XFluidImpl::RemoveInternalSurfElements(
   for (int isurf=0; isurf<boundarydis_->NumMyRowElements(); ++isurf)
   {
     const DRT::Element* surfele = boundarydis_->lRowElement(isurf);
-    
+
     LINALG::SerialDenseMatrix          xyze_surf(3,surfele->NumNode());
     GEO::fillInitialPositionArray(surfele,xyze_surf);
-   
+
     // center in local coordinates
     const LINALG::Matrix<2,1> localcenterpos(DRT::UTILS::getLocalCenterPosition<2>(surfele->Shape()));
     // center in physical coordinates
     LINALG::Matrix<3,1> physicalcenterpos;
     GEO::elementToCurrentCoordinates(surfele->Shape(), xyze_surf, localcenterpos, physicalcenterpos);
-    
+
     LINALG::Matrix<3,1> unitnormalvec;
     GEO::computeNormalToSurfaceElement(surfele->Shape(), xyze_surf, localcenterpos, unitnormalvec);
-    
+
     for (int ivol=0; ivol<soliddis->NumMyColElements(); ++ivol)
     {
       const DRT::Element* solidele = soliddis->lColElement(ivol);
-      
+
       // check if solid ele is connected with surf
       bool connected = false;
       for (int inode = 0; inode < surfele->NumNode(); ++inode)
@@ -693,22 +693,22 @@ void ADAPTER::XFluidImpl::RemoveInternalSurfElements(
             connected = true;
             break;
           }
-      
-      
+
+
       if (connected)
       {
         LINALG::SerialDenseMatrix          solidxyze(3,solidele->NumNode());
         GEO::fillInitialPositionArray(solidele,solidxyze);
         const double volume = GEO::ElementVolume(solidele->Shape(), solidxyze);
         const double length = pow(volume,1.0/3.0);
-        
+
         LINALG::Matrix<3,1> normalvector = unitnormalvec;
         normalvector.Scale(length/10.0);
-        
+
         LINALG::Matrix<3,1> testpos(true);
         testpos += physicalcenterpos;
         testpos += normalvector;
-              
+
         const bool inside = GEO::checkPositionWithinElement(solidele, solidxyze, testpos);
         if (inside)
         {
@@ -718,7 +718,7 @@ void ADAPTER::XFluidImpl::RemoveInternalSurfElements(
       }
     }
   }
-  
+
   if (not internal_surfeles.empty())
     cout << RED_LIGHT << "Found " << internal_surfeles.size() << " internal surface elements! Removing them..." << END_COLOR << endl;
   // remove internal elements

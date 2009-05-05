@@ -89,7 +89,7 @@ namespace ADAPTER {
     virtual Teuchos::RCP<const Epetra_Map>    DofRowMap();
     virtual Teuchos::RCP<LINALG::SparseMatrix>SystemMatrix();
     virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
-    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> MeshMoveMatrix();
+    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives();
     virtual Teuchos::RCP<DRT::Discretization> Discretization();
 
     //virtual Teuchos::RCP<Epetra_Vector> StructCondRHS() const;
