@@ -180,14 +180,11 @@ void DRT::Element::Pack(vector<char>& data) const
   int type = UniqueParObjectId();
   AddtoPack(data,type);
   // add id
-  int id = Id();
-  AddtoPack(data,id);
+  AddtoPack(data,id_);
   // add owner
-  int owner = Owner();
-  AddtoPack(data,owner);
+  AddtoPack(data,owner_);
   // add type of element
-  ElementType etype = Type();
-  AddtoPack(data,etype);
+  AddtoPack(data,etype_);
   // add vector nodeid_
   AddtoPack(data,nodeid_);
   // add material
