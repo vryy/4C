@@ -212,7 +212,7 @@ const std::set<XFEM::FieldEnr>& XFEM::ElementDofManager::FieldEnrSetPerNode(
     //return std::set<FieldEnr>();
   }
   return tmp->second;
-};
+}
 
 
 /*----------------------------------------------------------------------*
@@ -224,7 +224,7 @@ std::size_t XFEM::ElementDofManager::NumDofPerNode(
   map<int,std::size_t>::const_iterator tmp = nodalNumDof_.find(gid);
   dsassert(tmp != nodalNumDof_.end(), "node not found");
   return tmp->second;
-};
+}
 
 
 /*----------------------------------------------------------------------*
@@ -239,7 +239,7 @@ std::size_t XFEM::ElementDofManager::NumDofPerField(
     return 0;
   }
   return tmp->second;
-};
+}
 
 
 /*----------------------------------------------------------------------*
