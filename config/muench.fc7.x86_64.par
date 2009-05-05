@@ -18,7 +18,7 @@ MPIHALT=lamhalt
 BASEDIR=/lnm/lib/$LINUX_DIST/$MPI_VERSION
 
 INCLUDEDIRS="-I$BASEDIR/include -I/usr/include/openmpi -I/usr/include/openmpi/openmpi -I/usr/include/netcdf-3"
-LIBDIRS="-L$BASEDIR/lib -L/usr/lib/gcc/i386-redhat-linux/3.4.6/"
+LIBDIRS="-L$BASEDIR/lib -L/usr/lib/gcc/x86_64-redhat-linux/4.1.2/include -L/usr/lib/gcc/i386-redhat-linux/3.4.6/"
 
 #=========================================================== Trilinos
 TRILINOS_HOME=$BASEDIR/trilinos
@@ -54,7 +54,7 @@ UMFPACK_LIB="-lumfpack -lamd"
 
 # qhull
 QHULL_INC=
-QHULL_LIB="-lqhull -ltet"
+QHULL_LIB="-L/usr/lib64 -lqhull -ltet"
 
 # super_lu
 SUPERLU_LIB="-lsuperlu_dist"
@@ -87,7 +87,7 @@ LDFLAGS_OPT="-O3"
 #FFLAGS_OPT="-g"
 #LDFLAGS_OPT="-g"
 
-CFLAGS="-Wall -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
-CPFLAGS="-Wall -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
+CFLAGS="-Wall -Wextra -Wconversion -Wno-unused-parameter -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
+CPFLAGS="-Wall -Wextra -Wconversion -Wno-unused-parameter -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
 FFLAGS="-Wall -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
-LDFLAGS="-Xlinker -defsym -Xlinker MAIN__=main"
+LDFLAGS="-Wall -Wextra -Wconversion -Xlinker -defsym -Xlinker MAIN__=main"

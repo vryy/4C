@@ -25,7 +25,8 @@ TRILINOS_HOME=$BASEDIR/trilinos
 TRILINOS_INCDIR=$TRILINOS_HOME/include
 TRILINOS_LIBDIR=$TRILINOS_HOME/lib
 TRILINOS_DEFINES="-DHAVE_CONFIG_H -DTRILINOS_HAVE_FORTRAN_UNDERSCORE"
-TRILINOS_LIB="-lmoertel \
+TRILINOS_LIB="\
+        -lmoertel \
 	-ltrilinoscouplings \
 	-lnoxepetra \
 	-lnox \
@@ -85,7 +86,7 @@ LDFLAGS_OPT="-O2"
 
 # Alle Bibliotheken neu uebersetzen?!
 # -malign-double
-CFLAGS="-Wall -msse3 -mfpmath=sse -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
-CPFLAGS="-pedantic -Wall -msse3 -mfpmath=sse -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
+CFLAGS="-Wall -Wextra -Wconversion -Wno-unused-parameter -msse3 -mfpmath=sse -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
+CPFLAGS="-Wall -Wextra -Wconversion -Wno-unused-parameter -pedantic -msse3 -mfpmath=sse -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
 FFLAGS="-Wall -msse3 -mfpmath=sse -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
-LDFLAGS="-pedantic -Xlinker -defsym -Xlinker MAIN__=main"
+LDFLAGS="-Wall -Wextra -Wconversion -pedantic -Xlinker -defsym -Xlinker MAIN__=main"
