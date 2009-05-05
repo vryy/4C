@@ -253,7 +253,7 @@ Teuchos::RCP<Epetra_Vector> XFEM::DofManager::fillPhysicalOutputVector(
 {
   Teuchos::RCP<Epetra_Vector> outvec = LINALG::CreateVector(*dofset_out.DofRowMap(),true);
 
-  const int numdof = fields_out.size();
+  const std::size_t numdof = fields_out.size();
 
   const Epetra_Map* dofrowmap = dofset_out.DofRowMap();
   const Epetra_Map* xdofrowmap = ih_->xfemdis()->DofRowMap();
@@ -270,7 +270,7 @@ Teuchos::RCP<Epetra_Vector> XFEM::DofManager::fillPhysicalOutputVector(
     {
       // no dofs for this node... must be a hole or somethin'
       //cout << "hole" << endl;
-      for (int idof = 0; idof < numdof; ++idof)
+      for (std::size_t idof = 0; idof < numdof; ++idof)
       {
         //cout << dofrowmap->LID(gdofs[idof]) << endl;
         (*outvec)[dofrowmap->LID(gdofs[idof])] = 0.0;
@@ -360,7 +360,7 @@ void XFEM::DofManager::toGmsh(
       gmshfilecontent << "View \" " << "Element->Id() \" {" << endl;
       for (int i=0; i<ih_->xfemdis()->NumMyColElements(); ++i)
       {
-        DRT::Element* actele = ih_->xfemdis()->lColElement(i);
+        const DRT::Element* actele = ih_->xfemdis()->lColElement(i);
         gmshfilecontent << IO::GMSH::elementAtInitialPositionToString(double(actele->Id()), actele);
       };
       gmshfilecontent << "};" << endl;
@@ -377,7 +377,7 @@ void XFEM::DofManager::toGmsh(
         if (iter != elementalDofs_.end())
         {
           const std::set<XFEM::FieldEnr> fieldenrset = iter->second;
-          const double val = fieldenrset.size();
+          const double val = (double)fieldenrset.size();
           gmshfilecontent << IO::GMSH::elementAtInitialPositionToString(val, actele);
         }
       }

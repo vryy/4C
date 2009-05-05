@@ -413,6 +413,7 @@ public:
   {}
   
   LightWeightOperator(const LightWeightOperator& old) :
+  LightWeightOperatorBase(old),
   op_(old.op_) 
   {}
   
@@ -479,6 +480,7 @@ public:
   {}
   
   OperatorTransposed(const OperatorTransposed& old) :
+  LightWeightOperatorBase(old),
   op_(old.op_) 
   {}
 
@@ -563,6 +565,7 @@ public:
   {}
   
   OperatorScaled(const OperatorScaled& old) :
+  LightWeightOperatorBase(old),
   op_(old.op_),
   scalar_(old.scalar_)
   {}
@@ -646,6 +649,7 @@ public:
   {}
   
   OperatorProduct(const OperatorProduct& old) :
+  LightWeightOperatorBase(old),
   usetransposed_(old.usetransposed_),
   left_(old.left_),
   right_(old.right_)
@@ -730,6 +734,7 @@ public:
   }
   
   OperatorSum(const OperatorSum& old) :
+  LightWeightOperatorBase(old),
   sign_(old.sign_),
   usetransposed_(old.usetransposed_),
   left_(old.left_),
@@ -839,6 +844,7 @@ public:
   {}
 
   OperatorInverse(const OperatorInverse& old) :
+  LightWeightOperatorBase(old),
   reset_(old.reset_),
   defaultsolver_(old.defaultsolver_),
   solver_(old.solver_),
@@ -918,7 +924,10 @@ public:
   Vector(const Epetra_BlockMap& m, bool init = true) : Epetra_Vector(m,init) {}
 
   /// Implements Epetra_Vector ctor
-  Vector(const Vector& Source) : Epetra_Vector(Source) {}
+  Vector(const Vector& Source) :
+  Epetra_SrcDistObject(Source),
+  Epetra_Vector(Source)
+  {}
 
   /// Implements Epetra_Vector ctor
   Vector(Epetra_DataAccess CV, const Epetra_BlockMap& m, double* V) : 

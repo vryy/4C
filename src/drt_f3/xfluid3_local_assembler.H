@@ -157,8 +157,8 @@ public:
         const std::vector<int>& testdof (dofman_.LocalDofPosPerField<SymmetryMangle<testfield>::name>());
         const std::vector<int>& trialdof(dofman_.LocalDofPosPerField<SymmetryMangle<trialfield>::name>());
         
-        const unsigned numparamtest  = testdof.size();
-        const unsigned numparamtrial = trialdof.size();
+        const std::size_t numparamtest  = testdof.size();
+        const std::size_t numparamtrial = trialdof.size();
         
         bool found_template = true;
         switch (numparamtest)
@@ -221,7 +221,7 @@ public:
     {
         const std::vector<int>& testdof(dofman_.LocalDofPosPerField<SymmetryMangle<testfield>::name>());
         
-        const unsigned numparamtest  = testdof.size();
+        const std::size_t numparamtest  = testdof.size();
         
         bool found_template = true;
         switch (numparamtest)

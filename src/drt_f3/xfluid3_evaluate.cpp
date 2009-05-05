@@ -380,7 +380,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
               const double disturbance = 1.0e-4;
 
               // initialize locval
-              for (unsigned i = 0;i < locval.size(); ++i)
+              for (std::size_t i = 0;i < locval.size(); ++i)
               {
                   locval[i] = 0.0;
                   locval_hist[i] = 0.0;
@@ -392,14 +392,14 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
                       mat, pseudotime, 1.0, newton, pstab, supg, cstab, false);
 
               LINALG::SerialDensevector eforce_0(locval.size());
-              for (unsigned i = 0;i < locval.size(); ++i)
+              for (std::size_t i = 0;i < locval.size(); ++i)
               {
                   eforce_0(i) = eforce(i);
               }
               
               // create disturbed vector
               vector<double> locval_disturbed(locval.size());
-              for (unsigned i = 0;i < locval.size(); ++i)
+              for (std::size_t i = 0;i < locval.size(); ++i)
               {
                   if (i == entry)
                   {
@@ -423,7 +423,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
               
               // compare
               std::cout << "sekante" << endl;
-              for (int i = 0;i < locval.size(); ++i)
+              for (std::size_t i = 0;i < locval.size(); ++i)
               {
                   //cout << i << endl;
                   const double matrixentry = (eforce_0(i) - eforce(i))/disturbance;

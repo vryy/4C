@@ -1330,7 +1330,6 @@ void SysmatBoundary4(
           std::vector<int> gdofs(nsd);
           for (std::size_t inode = 0; inode < numnode_boundary; ++inode)
           {
-            const DRT::Node* node = nodes[inode];
             ih->cutterdis()->Dof(nodes[inode],0,gdofs);
             DRT::UTILS::ExtractMyValues(*ivelcol,myvel,gdofs);
             vel_boundary(0,inode) = myvel[0];
@@ -1367,7 +1366,7 @@ void SysmatBoundary4(
             }
 
             // shape functions and their first derivatives
-            dsassert(numnodefix_boundary >= DRT::UTILS::getNumberOfElementNodes(boundaryele->Shape()),"More than 9 nodes for boundary element - change size of fixed size array!");
+            dsassert((int)numnodefix_boundary >= DRT::UTILS::getNumberOfElementNodes(boundaryele->Shape()),"More than 9 nodes for boundary element - change size of fixed size array!");
             
             //LINALG::SerialDenseVector funct_boundary(DRT::UTILS::getNumberOfElementNodes(boundaryele->Shape()));
             static LINALG::Matrix<numnodefix_boundary,1> funct_boundary;

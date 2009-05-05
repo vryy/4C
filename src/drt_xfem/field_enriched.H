@@ -37,8 +37,8 @@ class FieldEnr
         const PHYSICS::Field  physvar,  ///< physical variable
         const Enrichment&     enr       ///< enrichment
     ) :
-      field_(physvar),
-      enr_(enr)
+      enr_(enr),
+      field_(physvar)
     {
       return;
     }
@@ -47,8 +47,8 @@ class FieldEnr
     FieldEnr(
         const FieldEnr& other           ///< source
         ) :
-        field_(other.field_), 
-        enr_(other.enr_)
+          enr_(other.enr_),
+          field_(other.field_) 
     {
       assert(&other != this);
       return;
@@ -57,8 +57,8 @@ class FieldEnr
     //! default constructor
     explicit FieldEnr(
     ) :
-      field_(XFEM::PHYSICS::undefinedField), 
-      enr_(XFEM::Enrichment())
+      enr_(XFEM::Enrichment()),
+      field_(XFEM::PHYSICS::undefinedField) 
     {
       return;
     }
@@ -111,10 +111,11 @@ class FieldEnr
 
   private:
    
-    //! physical field variable to be enriched
-    PHYSICS::Field    field_;
     //! specific enrichment for this physical field
     Enrichment        enr_;
+    
+    //! physical field variable to be enriched
+    PHYSICS::Field    field_;
 
 }; // class FieldEnr
 

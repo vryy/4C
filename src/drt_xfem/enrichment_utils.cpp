@@ -736,7 +736,7 @@ vector<double> DomainIntCellCoverageRatioT(
     cellcount++;
   } // end loop over integration cells
 
-  for (unsigned icell = 0; icell < domainIntCells.size(); ++icell)
+  for (std::size_t icell = 0; icell < domainIntCells.size(); ++icell)
     portions[icell] /= area_ele;
   
   
@@ -781,7 +781,7 @@ XFEM::AssemblyType XFEM::CheckForStandardEnrichmentsOnly(
 {
   // find out whether we can use standard assembly or need xfem assembly
   XFEM::AssemblyType assembly_type = XFEM::standard_assembly;
-  for (int inode = 0; inode < numnode; ++inode)
+  for (std::size_t inode = 0; inode < numnode; ++inode)
   {
     if (assembly_type == XFEM::xfem_assembly)
       break;

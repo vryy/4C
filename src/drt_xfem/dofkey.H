@@ -69,8 +69,8 @@ namespace XFEM
           const FieldEnr&       fieldenr  ///< enriched field
       ) :
         DRT::ParObject(),
-        gid_(gid),
-        fieldenr_(fieldenr)
+        fieldenr_(fieldenr),
+        gid_(gid)
         {
             return;
         }
@@ -90,8 +90,9 @@ namespace XFEM
           const DofKey& other           ///< source
       ) :
         DRT::ParObject(other),
-        gid_(other.gid_),
-        fieldenr_(other.fieldenr_)
+        fieldenr_(other.fieldenr_),
+        gid_(other.gid_)
+        
       {
           assert(&other != this);
           return;
@@ -212,7 +213,7 @@ namespace XFEM
       //! don't want default constructor
       explicit DofKey();
       
-      // no asignment operator implemented
+      //! no assignment operator implemented
       DofKey& operator = (const DofKey& old);
       //    :
       //        gid_(-1),
@@ -222,10 +223,11 @@ namespace XFEM
       //        return;
       //    }
       
-      //! unique id among the choosen type of dof (for example: nodal global id)
-      int             gid_;
       //! specific enriched field
       XFEM::FieldEnr  fieldenr_;
+      
+      //! unique id among the choosen type of dof (for example: nodal global id)
+      int             gid_;
       
   };
   

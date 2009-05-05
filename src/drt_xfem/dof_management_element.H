@@ -133,12 +133,6 @@ namespace XFEM
       
     private:
       
-      //! total number of nodal degrees of freedom
-      std::size_t numNodeDof_;
-      
-      //! total number of element degrees of freedom
-      std::size_t numElemDof_;
-      
       //! unknowns for each global node id (gid)
       std::map<int, const std::set<XFEM::FieldEnr> > nodalDofSet_;
       
@@ -159,6 +153,12 @@ namespace XFEM
       
       //! set of all enrichments that are available on this proc.
       std::set<XFEM::Enrichment> unique_enrichments_;
+      
+      //! total number of nodal degrees of freedom
+      std::size_t numNodeDof_;
+      
+      //! total number of element degrees of freedom
+      std::size_t numElemDof_;
       
       //! used in constructor
       void ComputeDependentInfo(
