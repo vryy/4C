@@ -52,7 +52,7 @@ Maintainer: Ulrrich Kuettler
 #include "linalg_utils.H"
 
 // list of all dof sets
-std::list<DRT::DofSetBase*> DRT::DofSetBase::dofsets_;
+std::list<DRT::DofSetBase*> DRT::DofSetBase::static_dofsets_;
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             ukue 04/07|
@@ -68,18 +68,81 @@ DRT::DofSetBase::DofSetBase()
  *----------------------------------------------------------------------*/
 DRT::DofSetBase::~DofSetBase()
 {
-  dofsets_.remove(this);
+  static_dofsets_.remove(this);
   return;
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int DRT::DofSetBase::MaxGIDinList()
+int DRT::DofSetBase::NumGlobalElements() const 
+{
+  if (dofrowmap_ == Teuchos::null)
+    dserror("DRT::DofSetBase::NumGlobalElements(): dofrowmap_ not initialized, yet");
+  return dofrowmap_->NumGlobalElements();
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int DRT::DofSetBase::MaxAllGID() const
+{
+  if (dofrowmap_ == Teuchos::null)
+    dserror("DRT::DofSetBase::MaxAllGID(): dofrowmap_ not initialized, yet");
+  return dofrowmap_->MaxAllGID();
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+const Epetra_Map* DRT::DofSetBase::DofRowMap() const
+{
+  if (dofrowmap_ == Teuchos::null)
+    dserror("DRT::DofSetBase::DofRowMap(): dofrowmap_ not initialized, yet");
+  return dofrowmap_.get();
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+const Epetra_Map* DRT::DofSetBase::DofColMap() const
+{
+  if (dofcolmap_ == Teuchos::null)
+    dserror("DRT::DofSetBase::DofColMap(): dofcolmap_ not initialized, yet");
+  return dofcolmap_.get();
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::DofSetBase::AddDofSettoList() 
+{ 
+  if (std::find(static_dofsets_.begin(),static_dofsets_.end(),this)==static_dofsets_.end())
+  {
+    static_dofsets_.push_back(this);      
+  }
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool DRT::DofSetBase::Initialized() const 
+{ 
+  if (dofcolmap_ == Teuchos::null or dofrowmap_ == Teuchos::null)
+    return false;
+  else
+    return true;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int DRT::DofSetBase::MaxGIDinList() const
 {
   int count = 0;
-  for (std::list<DofSetBase*>::const_iterator i=dofsets_.begin();
-       i!=dofsets_.end();
+  for (std::list<DofSetBase*>::const_iterator i=static_dofsets_.begin();
+       i!=static_dofsets_.end();
        ++i)
   {
     if (*i==this)

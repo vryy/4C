@@ -43,19 +43,10 @@ Maintainer: Thomas Kloeppel
 #ifndef DOFSETBASE_H
 #define DOFSETBASE_H
 
-#include <vector>
 #include <list>
 
-#include <Epetra_IntVector.h>
 #include <Teuchos_RefCountPtr.hpp>
-#include <Epetra_Comm.h>
 #include <Epetra_Map.h>
-
-using namespace std;
-
-#include "drt_dserror.H"
-#include "drt_element.H"
-#include "drt_node.H"
 
 namespace DRT
 {
@@ -92,33 +83,30 @@ public:
   //! @name Access methods
 
   ///Get Number of Global Elements of degree of freedom row map
-  virtual const int NumGlobalElements() const { return dofrowmap_->NumGlobalElements(); }
+  virtual int NumGlobalElements() const;
   
-  virtual const int MaxAllGID() const { return dofrowmap_->MaxAllGID(); }
+  /// Get maximum GID of degree of freedom row map
+  virtual int MaxAllGID() const;
   
   /// Get degree of freedom row map
-  virtual const Epetra_Map* DofRowMap() const { return dofrowmap_.get(); }
+  virtual const Epetra_Map* DofRowMap() const;
 
   /// Get degree of freedom column map
-  virtual const Epetra_Map* DofColMap() const { return dofcolmap_.get(); }
-
-  /// Add Dof Set to list #dofsets_ 
-  virtual void AddDofSettoList() 
-  { 
-    if (std::find(dofsets_.begin(),dofsets_.end(),this)==dofsets_.end())
-    {
-      dofsets_.push_back(this);      
-    }
-    return;
-  } 
+  virtual const Epetra_Map* DofColMap() const;
   
-  /// Get Max of all GID assigned in the DofSets in front of current one in the list #dofsets_  
-  virtual int MaxGIDinList();
+  /// are the dof maps already initialized? 
+  virtual bool Initialized() const;
+
+  /// Get Max of all GID assigned in the DofSets in front of current one in the list #static_dofsets_  
+  virtual int MaxGIDinList() const;
   
   //@}
 
   //! @name Construction
 
+  /// Add Dof Set to list #static_dofsets_ 
+  virtual void AddDofSettoList();
+  
   /// reset all internal variables
   virtual void Reset()=0;
 
@@ -127,18 +115,18 @@ public:
 protected:
 
   /// unique row map of degrees of freedom (node and element dofs))
-  RefCountPtr<Epetra_Map>                       dofrowmap_;
+  Teuchos::RCP<Epetra_Map>                       dofrowmap_;
 
   /// unique column map of degrees of freedom (node and element dofs))
-  RefCountPtr<Epetra_Map>                       dofcolmap_;
+  Teuchos::RCP<Epetra_Map>                       dofcolmap_;
 
-  /// store all dofset ever created
+  /// store dofset in static list, if derived class chooses so using AddDofSettoList()
   /*!
     This is hack to get unique dof numbers on all dof sets. With this in place
     we can combine the maps from any dof sets to form block systems and the
     like.
    */
-  static std::list<DofSetBase*>                     dofsets_;
+  static std::list<DofSetBase*>                 static_dofsets_;
 
 }; // class DofSetBase
 } // namespace DRT

@@ -57,6 +57,7 @@ Maintainer: Thomas Kloeppel
  |  ctor (public)                                             ukue 04/07|
  *----------------------------------------------------------------------*/
 UTILS::ConstraintDofSet::ConstraintDofSet()
+: DRT::DofSetBase()
 {
   return;
 }
@@ -67,7 +68,7 @@ UTILS::ConstraintDofSet::ConstraintDofSet()
  *----------------------------------------------------------------------*/
 UTILS::ConstraintDofSet::~ConstraintDofSet()
 {
-  dofsets_.remove(this);
+  static_dofsets_.remove(this);
   return;
 }
 

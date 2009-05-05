@@ -55,12 +55,10 @@ using namespace std;
 
 #include "../drt_lib/drt_dofset_base.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_discret.H"
 
 namespace UTILS
 {
-
-class Discretization;
-
 
 /*!
 \brief A set of degrees of freedom

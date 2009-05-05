@@ -58,6 +58,7 @@ Maintainer: Ulrrich Kuettler
  |  ctor (public)                                             ukue 04/07|
  *----------------------------------------------------------------------*/
 DRT::DofSet::DofSet()
+ : DRT::DofSetBase()
 {
   return;
 }
@@ -68,7 +69,7 @@ DRT::DofSet::DofSet()
  *----------------------------------------------------------------------*/
 DRT::DofSet::~DofSet()
 {
-  dofsets_.remove(this);
+  static_dofsets_.remove(this);
   return;
 }
 
