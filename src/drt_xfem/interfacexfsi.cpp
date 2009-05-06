@@ -80,9 +80,13 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
   DRT::UTILS::CollectElementsByConditionLabel(*cutterdis, boundaryElementsByLabel_, "XFEMCoupling");
   InvertElementsPerLabel();
   
-  Teuchos::RCP<GEO::Intersection> is = rcp(new GEO::Intersection());
-  is->computeIntersection(xfemdis, cutterdis, cutterposnp_, currentXAABBs_, elementalDomainIntCells_, elementalBoundaryIntCells_, labelPerBoundaryElementId_);  
-  is = Teuchos::null;
+  if(cutterdis_->NumMyColElements()!=0)
+  {
+    Teuchos::RCP<GEO::Intersection> is = rcp(new GEO::Intersection());
+    is->computeIntersection(xfemdis, cutterdis, cutterposnp_, currentXAABBs_, elementalDomainIntCells_, elementalBoundaryIntCells_, labelPerBoundaryElementId_);  
+    is = Teuchos::null;
+  }
+  
   
   xfemdis->Comm().Barrier();
    
