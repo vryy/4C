@@ -215,7 +215,7 @@ void EXODUS::ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs,
       condefs.push_back(cdef);
     }
     else
-      dserror("Undefined mesh_type");
+      dserror("Cannot identify marker. Use *el (element block), *ns (nodeset) or *ss (sideset)");
 
   }
   
@@ -253,7 +253,7 @@ EXODUS::cond_def EXODUS::ReadCdef(const string& mesh_entity,const int id, const 
   if (mesh_entity.compare(1,2,"eb")==0) cdef.me = EXODUS::bceb;
   else if (mesh_entity.compare(1,2,"ns")==0) cdef.me = EXODUS::bcns;
   else if (mesh_entity.compare(1,2,"ss")==0) cdef.me = EXODUS::bcss;
-  else dserror("Undefined mesh_type");
+  else dserror("Cannot identify marker. Use *el (element block), *ns (nodeset) or *ss (sideset)");
   
   // read sectionname
   size_t left = actcond.find("sectionname=\"");  // 13 chars
