@@ -97,24 +97,24 @@ struct EnrViscs2
           )
   {
       
-      const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+      const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
       
       // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
       //const int numparamvelx = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Velx, numnode);
-      const int numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
-      const int numparamvely = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Vely);
-      const int numparamvelz = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velz);
-      const int numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
+      const size_t numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
+      const size_t numparamvely = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Vely);
+      const size_t numparamvelz = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velz);
+      const size_t numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
       // put one here to create arrays of size 1, since they are not needed anyway
       // in the xfem assembly, the numparam is determined by the dofmanager
-      const int numparamtauxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Tauxx);
-      const int numparamdiscpres = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::DiscPres);
+      const size_t numparamtauxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Tauxx);
+      const size_t numparamdiscpres = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::DiscPres);
       
-      const int shpVecSize       = SizeFac<ASSTYPE>::fac*numnode;
+      const size_t shpVecSize       = SizeFac<ASSTYPE>::fac*numnode;
       const DRT::Element::DiscretizationType stressdistype = XFLUID::StressInterpolation3D<DISTYPE>::distype;
-      const int shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
+      const size_t shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
       const DRT::Element::DiscretizationType discpresdistype = XFLUID::DiscPressureInterpolation3D<DISTYPE>::distype;
-      const int shpVecSizeDiscPres = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<discpresdistype>::numNodePerElement;
+      const size_t shpVecSizeDiscPres = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<discpresdistype>::numNodePerElement;
       
       if (numparamvelx > shpVecSize)
       {
@@ -134,7 +134,7 @@ struct EnrViscs2
       const std::vector<int>& velzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Velz>());
       const std::vector<int>& presdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Pres>());
       
-      for (int iparam=0; iparam<numparamvelx; ++iparam)
+      for (size_t iparam=0; iparam<numparamvelx; ++iparam)
       {
           evelnp(0,iparam) = mystate.velnp[velxdof[iparam]];
           if (mystate.instationary)
@@ -144,7 +144,7 @@ struct EnrViscs2
               eaccn( 0,iparam) = mystate.accn[ velxdof[iparam]];
           }
       }
-      for (int iparam=0; iparam<numparamvely; ++iparam)
+      for (size_t iparam=0; iparam<numparamvely; ++iparam)
       {
           evelnp(1,iparam) = mystate.velnp[velydof[iparam]];
           if (mystate.instationary)
@@ -154,7 +154,7 @@ struct EnrViscs2
               eaccn( 1,iparam) = mystate.accn[ velydof[iparam]];
           }
       }
-      for (int iparam=0; iparam<numparamvelz; ++iparam)
+      for (size_t iparam=0; iparam<numparamvelz; ++iparam)
       {
           evelnp(2,iparam) = mystate.velnp[velzdof[iparam]];
           if (mystate.instationary)
@@ -164,34 +164,34 @@ struct EnrViscs2
               eaccn( 2,iparam) = mystate.accn[ velzdof[iparam]];
           }
       }
-      for (int iparam=0; iparam<numparampres; ++iparam)
+      for (size_t iparam=0; iparam<numparampres; ++iparam)
           eprenp(iparam) = mystate.velnp[presdof[iparam]];
       const bool tauele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxx, 0) > 0);
       if (tauele_unknowns_present)
       {
-          const int numparamtauyy = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauyy, 1);
-          const int numparamtauzz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauzz, 1);
-          const int numparamtauxy = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxy, 1);
-          const int numparamtauxz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxz, 1);
-          const int numparamtauyz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauyz, 1);
+          const std::size_t numparamtauyy = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauyy, 1);
+          const std::size_t numparamtauzz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauzz, 1);
+          const std::size_t numparamtauxy = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxy, 1);
+          const std::size_t numparamtauxz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxz, 1);
+          const std::size_t numparamtauyz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauyz, 1);
           const std::vector<int>& tauxxdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauxx>());
           const std::vector<int>& tauyydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauyy>());
           const std::vector<int>& tauzzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauzz>());
           const std::vector<int>& tauxydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauxy>());
           const std::vector<int>& tauxzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauxz>());
           const std::vector<int>& tauyzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauyz>());
-          for (int iparam=0; iparam<numparamtauxx; ++iparam)   etau(0,iparam) = mystate.velnp[tauxxdof[iparam]];
-          for (int iparam=0; iparam<numparamtauyy; ++iparam)   etau(1,iparam) = mystate.velnp[tauyydof[iparam]];
-          for (int iparam=0; iparam<numparamtauzz; ++iparam)   etau(2,iparam) = mystate.velnp[tauzzdof[iparam]];
-          for (int iparam=0; iparam<numparamtauxy; ++iparam)   etau(3,iparam) = mystate.velnp[tauxydof[iparam]];
-          for (int iparam=0; iparam<numparamtauxz; ++iparam)   etau(4,iparam) = mystate.velnp[tauxzdof[iparam]];
-          for (int iparam=0; iparam<numparamtauyz; ++iparam)   etau(5,iparam) = mystate.velnp[tauyzdof[iparam]];
+          for (std::size_t iparam=0; iparam<numparamtauxx; ++iparam)   etau(0,iparam) = mystate.velnp[tauxxdof[iparam]];
+          for (std::size_t iparam=0; iparam<numparamtauyy; ++iparam)   etau(1,iparam) = mystate.velnp[tauyydof[iparam]];
+          for (std::size_t iparam=0; iparam<numparamtauzz; ++iparam)   etau(2,iparam) = mystate.velnp[tauzzdof[iparam]];
+          for (std::size_t iparam=0; iparam<numparamtauxy; ++iparam)   etau(3,iparam) = mystate.velnp[tauxydof[iparam]];
+          for (std::size_t iparam=0; iparam<numparamtauxz; ++iparam)   etau(4,iparam) = mystate.velnp[tauxzdof[iparam]];
+          for (std::size_t iparam=0; iparam<numparamtauyz; ++iparam)   etau(5,iparam) = mystate.velnp[tauyzdof[iparam]];
       }
       const bool discpres_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::DiscPres, 0) > 0);
       if (discpres_unknowns_present)
       {
           const vector<int>& discpresdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::DiscPres>());
-          for (int iparam=0; iparam<numparamdiscpres; ++iparam)   ediscprenp(iparam) = mystate.velnp[discpresdof[iparam]];
+          for (std::size_t iparam=0; iparam<numparamdiscpres; ++iparam)   ediscprenp(iparam) = mystate.velnp[discpresdof[iparam]];
       }
   }
   

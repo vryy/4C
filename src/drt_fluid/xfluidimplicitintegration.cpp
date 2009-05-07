@@ -574,7 +574,7 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   discret_->FillComplete();
   const Epetra_Map& newdofrowmap = *discret_->DofRowMap();
 
-  solver_ = rcp(new LINALG::Solver(DRT::Problem::Instance()->FluidSolverParams(),
+  solver_ = rcp(new LINALG::Solver(fluidsolverparams_,
                                    discret_->Comm(),
                                    DRT::Problem::Instance()->ErrorFile()->Handle()));
   discret_->ComputeNullSpaceIfNecessary(solver_->Params());

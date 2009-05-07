@@ -25,15 +25,15 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/linalg_fixedsizematrix.H"
 
 
-const static unsigned errorCheckValue = 77777777;
+const static std::size_t errorCheckValue = 77777777;
 
 //! for non-xfem elements, figure out the order of unknowns per node in the array
 template<XFEM::PHYSICS::Field field>
-struct FieldNum {static const unsigned pos = errorCheckValue;};
-template<> struct FieldNum<XFEM::PHYSICS::Velx> {static const unsigned pos = 0;};
-template<> struct FieldNum<XFEM::PHYSICS::Vely> {static const unsigned pos = 1;};
-template<> struct FieldNum<XFEM::PHYSICS::Velz> {static const unsigned pos = 2;};
-template<> struct FieldNum<XFEM::PHYSICS::Pres> {static const unsigned pos = 3;};
+struct FieldNum {static const std::size_t pos = errorCheckValue;};
+template<> struct FieldNum<XFEM::PHYSICS::Velx> {static const std::size_t pos = 0;};
+template<> struct FieldNum<XFEM::PHYSICS::Vely> {static const std::size_t pos = 1;};
+template<> struct FieldNum<XFEM::PHYSICS::Velz> {static const std::size_t pos = 2;};
+template<> struct FieldNum<XFEM::PHYSICS::Pres> {static const std::size_t pos = 3;};
 
 //! for the viscous stress, replace shear stress components with symmetric part
 template <XFEM::PHYSICS::Field FIELD>
@@ -75,7 +75,7 @@ template<> struct ShapeMangle<XFEM::PHYSICS::Tauzz>   {static const XFEM::PHYSIC
 //! class that assembles one after another integral of the weak form into the stiffness matrix
 template <DRT::Element::DiscretizationType DISTYPE, 
           XFEM::AssemblyType ASSEMBLYTYPE,
-          int NUMDOF>
+          std::size_t NUMDOF>
 class LocalAssembler
 {
 public:
@@ -98,8 +98,8 @@ public:
     }
     
 private:
-    template<unsigned numparamtest,
-             unsigned numparamtrial,
+    template<std::size_t numparamtest,
+    std::size_t numparamtrial,
              class V1,
              class V2>
     void IntegrateMatrix(
@@ -111,13 +111,13 @@ private:
         ) const
     {
       vector<int>::const_iterator trialpos = trialdof.begin();
-      for (unsigned ui=0; ui!=numparamtrial; ++ui)
+      for (std::size_t ui=0; ui!=numparamtrial; ++ui)
       {
         const double multiply = fac * trialshape(ui);
         vector<int>::const_iterator testpos = testdof.begin();
-        for (unsigned vi=0; vi!=numparamtest; ++vi)
+        for (std::size_t vi=0; vi!=numparamtest; ++vi)
         {
-//          const unsigned testpos = testdof[vi];
+//          const std::size_t testpos = testdof[vi];
           estif_(*testpos, *trialpos) += testshape(vi)*multiply ;
           ++testpos;
         }
@@ -125,7 +125,7 @@ private:
       }
     }
     
-    template<unsigned numparamtest,
+    template<std::size_t numparamtest,
              class V1>
     void IntegrateVector(
         const V1&                 testshape,
@@ -134,7 +134,7 @@ private:
         ) const
     {
       vector<int>::const_iterator testpos = testdof.begin();
-      for (unsigned vi=0; vi!=numparamtest; ++vi)
+      for (std::size_t vi=0; vi!=numparamtest; ++vi)
       {
           eforce_(*testpos) += fac*testshape(vi);
           ++testpos;
@@ -186,21 +186,21 @@ public:
         if (not found_template)
         {
 //          cout << numparamtest << "   " << numparamtrial << endl;
-//          for (unsigned ui=0; ui<numparamtrial; ++ui)
+//          for (std::size_t ui=0; ui<numparamtrial; ++ui)
 //          {
-//              const unsigned trialpos = trialdof[ui];
+//              const std::size_t trialpos = trialdof[ui];
 //              const double multiply = fac * trialshape(ui);
-//              for (unsigned vi=0; vi<numparamtest; ++vi)
+//              for (std::size_t vi=0; vi<numparamtest; ++vi)
 //              {
-//                  const unsigned testpos = testdof[vi];
+//                  const std::size_t testpos = testdof[vi];
 //                  estif_(testpos, trialpos) += testshape(vi)*multiply ;
 //              }
 //          }
-        unsigned ui = 0;
+        std::size_t ui = 0;
         for (std::vector<int>::const_iterator trialpos = trialdof.begin(); trialpos != trialdof.end(); ++trialpos)
         {
             const double multiply = fac * trialshape(ui);
-            unsigned vi = 0;
+            std::size_t vi = 0;
             for (std::vector<int>::const_iterator testpos = testdof.begin(); testpos != testdof.end(); ++testpos)
             {
                 estif_(*testpos, *trialpos) += testshape(vi)*multiply;
@@ -238,14 +238,14 @@ public:
           found_template = false;
         }
 //        
-//        for (unsigned vi=0; vi<numparamtest; ++vi)
+//        for (std::size_t vi=0; vi<numparamtest; ++vi)
 //        {
 //            const int testpos = testdof[vi];
 //            eforce_(testpos) += fac*testshape(vi);
 //        }
         if (not found_template)
         {
-        unsigned vi = 0;
+        std::size_t vi = 0;
         for (std::vector<int>::const_iterator testpos = testdof.begin(); testpos != testdof.end(); ++testpos)
         {
             eforce_(*testpos) += fac*testshape(vi);
@@ -315,14 +315,14 @@ public:
       if (FieldNum<trialfield>::pos == errorCheckValue or FieldNum<testfield>::pos == errorCheckValue)
         dserror("no stress allowed here");
 #endif
-      const unsigned numparam = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-        for (unsigned ui=0; ui!=numparam; ++ui)
+      const std::size_t numparam = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+        for (std::size_t ui=0; ui!=numparam; ++ui)
         {
-            const unsigned trialpos = NUMDOF*ui + FieldNum<trialfield>::pos;
+            const std::size_t trialpos = NUMDOF*ui + FieldNum<trialfield>::pos;
             const double multiply = fac*trialshape(ui);
-            for (unsigned vi=0; vi!=numparam; ++vi)
+            for (std::size_t vi=0; vi!=numparam; ++vi)
             {
-                const unsigned testpos = NUMDOF*vi + FieldNum<testfield>::pos;
+                const std::size_t testpos = NUMDOF*vi + FieldNum<testfield>::pos;
                 estif_(testpos, trialpos) += testshape(vi)*multiply ;
             }
         }
@@ -340,10 +340,10 @@ public:
       if (FieldNum<testfield>::pos == errorCheckValue)
         dserror("no stress allowed here");
 #endif
-        const unsigned numparam = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-        for (unsigned vi=0; vi<numparam; ++vi)
+        const std::size_t numparam = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+        for (std::size_t vi=0; vi<numparam; ++vi)
         {
-            const unsigned testpos = NUMDOF*vi + FieldNum<testfield>::pos;
+            const std::size_t testpos = NUMDOF*vi + FieldNum<testfield>::pos;
             eforce_(testpos) += fac*testshape(vi);
         }
     }
