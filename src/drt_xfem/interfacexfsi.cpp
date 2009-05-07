@@ -106,7 +106,8 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
   GenerateSpaceTimeLayer(cutterdis_, cutterposnp_, cutterposn_);
 
   xfemdis->Comm().Barrier();
-  cout << "Interfacehandle constructed" << endl;
+  if (xfemdis->Comm().MyPID() == 0)
+    cout << "Interfacehandle constructed" << endl;
 }
 
     
