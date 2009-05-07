@@ -70,6 +70,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   fssgd_    (params_->get<string>("fs subgrid diffusivity")),
   frt_      (96485.3399/(8.314472 * params_->get<double>("TEMPERATURE",298.15))),
   errfile_  (params_->get<FILE*>("err file")),
+  initialvelset_(false),
   lastfluxoutputstep_(-1)
 {
   // -------------------------------------------------------------------
@@ -396,7 +397,15 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   // -------------------------------------------------------------------
   //                       initialization
   // -------------------------------------------------------------------
-  if (step_==0) PrepareFirstTimeStep();
+  if (step_ == 0)
+  {
+    // if initial velocity field has not been set here, the initial time derivative of phi will be 
+    // calculated wrongly for some time integration schemes
+    if (initialvelset_)
+      PrepareFirstTimeStep();
+    else
+      dserror("Initial velocity field has not been set");
+  }
 
   // -------------------------------------------------------------------
   //              set time dependent parameters
@@ -1068,6 +1077,9 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField()
   else
     dserror("Wrong SetVelocity() action for velocity field type %d!",cdvel_);
 
+  // initial velocity field has now been set
+  if (step_ == 0) initialvelset_ = true;
+
   return;
 
 } // ScaTraImplicitTimeInt::SetVelocityField
@@ -1104,6 +1116,9 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField(RCP<const Epetra_Vector> extvel)
       }
     }
   }
+
+  // initial velocity field has now been set
+  if (step_ == 0) initialvelset_ = true;
 
   return;
 

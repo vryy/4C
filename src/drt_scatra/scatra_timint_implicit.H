@@ -379,6 +379,7 @@ protected:
   /// time step size
   double dtp_;
 
+  /// type of velocity field
   int cdvel_;
 
   /// maximum number of nonlinear iterations
@@ -504,7 +505,10 @@ protected:
 
   /// number of transported scalars
   int numscal_;
-  
+
+  /// boolean indicating if initial velocity field has been set
+  bool initialvelset_;
+
   /// the last step number when fluxes have been computed
   int lastfluxoutputstep_;
 
