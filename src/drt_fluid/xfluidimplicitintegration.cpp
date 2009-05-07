@@ -57,6 +57,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
     ) :
   // call constructor for "nontrivial" objects
   discret_(actdis),
+  fluidsolverparams_(DRT::Problem::Instance()->FluidSolverParams()),
   solver_ (rcp(new LINALG::Solver(DRT::Problem::Instance()->FluidSolverParams(),
                                   actdis->Comm(),
                                   DRT::Problem::Instance()->ErrorFile()->Handle()))),
@@ -531,6 +532,8 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
 {
   // dump old matrix to save memory while we construct a new matrix
   sysmat_ = Teuchos::null;
+  // since number of dofs can change, we don't allow reuse of preconditioners over timestep borders
+  solver_ = Teuchos::null;
   {
     ParameterList eleparams;
     eleparams.set("action","reset");
@@ -571,6 +574,9 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   discret_->FillComplete();
   const Epetra_Map& newdofrowmap = *discret_->DofRowMap();
 
+  solver_ = rcp(new LINALG::Solver(DRT::Problem::Instance()->FluidSolverParams(),
+                                   discret_->Comm(),
+                                   DRT::Problem::Instance()->ErrorFile()->Handle()));
   discret_->ComputeNullSpaceIfNecessary(solver_->Params());
 
   {

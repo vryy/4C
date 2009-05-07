@@ -353,7 +353,8 @@ protected:
   //! @name general algorithm parameters
   //! fluid discretization
   const Teuchos::RCP<DRT::Discretization>      discret_;
-  const Teuchos::RCP<LINALG::Solver>           solver_;
+  const ParameterList&                         fluidsolverparams_;
+  Teuchos::RCP<LINALG::Solver>                 solver_;
   const ParameterList&                         params_;
   const ParameterList&                         xparams_;
   const Teuchos::RCP<IO::DiscretizationWriter> output_;
