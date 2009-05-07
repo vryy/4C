@@ -248,6 +248,12 @@ void DRT::UTILS::FunctionManager::ReadInput()
         functions_.push_back(rcp(new ExprFunction(const_cast<char*>(expr.str().c_str()), 0, 0, 0)));
       }
 
+      frchk("ZALESAKSDISK",&ierr);
+      if (ierr==1)
+      {
+        functions_.push_back(rcp(new ZalesaksDiskFunction(-1.0)));
+      }
+
       frchk("EXPR",&ierr);
       if (ierr==1)
       {
@@ -514,6 +520,26 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
   return 0.0;
 }
 
+/*----------------------------------------------------------------------*
+ | constructor                                              henke 05/09 |
+ *----------------------------------------------------------------------*/
+DRT::UTILS::ZalesaksDiskFunction::ZalesaksDiskFunction(double radius) :
+Function(),
+radius_(radius)
+{
+  /* 
+   * parameter "radius" is just an example for possible input parameters
+   */
+}
+
+/*----------------------------------------------------------------------*
+ | evaluation of level set test function "Zalesak's disk"   henke 05/09 |
+ *----------------------------------------------------------------------*/
+double DRT::UTILS::ZalesaksDiskFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+{
+  dserror("Zalesak's disk function is not yet implemented");
+  return 0.0;
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

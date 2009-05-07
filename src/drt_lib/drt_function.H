@@ -338,6 +338,22 @@ namespace UTILS {
     std::vector<double>  origin_;
   };
 
+  /// special implementation for a level set test function
+  class ZalesaksDiskFunction : public Function
+  {
+  public:
+    
+    /// ctor
+    ZalesaksDiskFunction(double radius);
+
+    /// evaluate function at given position in space
+    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+
+  private:
+
+    double radius_;
+  };
+
   /// Singleton class that manages all defined spatial functions
   class FunctionManager
   {
