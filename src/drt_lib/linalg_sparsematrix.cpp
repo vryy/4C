@@ -130,7 +130,8 @@ LINALG::SparseMatrix::SparseMatrix(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 LINALG::SparseMatrix::SparseMatrix(const SparseMatrix& mat, Epetra_DataAccess access)
-  : explicitdirichlet_(mat.explicitdirichlet_),
+  : LINALG::SparseOperator(mat),
+    explicitdirichlet_(mat.explicitdirichlet_),
     savegraph_(mat.savegraph_),
     maxnumentries_(0),
     matrixtype_(mat.matrixtype_)
@@ -572,7 +573,7 @@ void LINALG::SparseMatrix::UnComplete()
 
   const Epetra_CrsGraph& graph = sysmat_->Graph();
   std::vector<int> nonzeros(graph.NumMyRows());
-  for (unsigned i=0; i<nonzeros.size(); ++i)
+  for (std::size_t i=0; i<nonzeros.size(); ++i)
   {
     nonzeros[i] = graph.NumMyIndices(i);
   }
