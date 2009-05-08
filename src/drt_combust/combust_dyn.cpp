@@ -69,9 +69,9 @@ Maintainer: Florian Henke
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
 
-/*----------------------------------------------------------------------*
- | main  control routine for dynamic combustion analysis    henke 06/08 |
- *----------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------------------*
+ | main  control routine for dynamic combustion analysis                              henke 06/08 |
+ *------------------------------------------------------------------------------------------------*/
 void combust_dyn()
 {
   // create a communicator
@@ -81,20 +81,19 @@ void combust_dyn()
   Epetra_SerialComm comm;
 #endif
 
-  /*----------------------------------------------------------------------------------------------*
-   * print COMBUST-Logo on screen
-   *----------------------------------------------------------------------------------------------*/
+  //------------------------------------------------------------------------------------------------
+  // print COMBUST-Logo on screen
+  //------------------------------------------------------------------------------------------------
   if (comm.MyPID()==0) COMBUST::printlogo();
 
-  /*----------------------------------------------------------------------------------------------*
-   * create G-function discretization and set degrees of freedom in fluid and gfunc discretization
-   *----------------------------------------------------------------------------------------------*/
+  //------------------------------------------------------------------------------------------------
+  // create G-function discretization by copying the fluid discretization (fill with scatra elements)
+  //------------------------------------------------------------------------------------------------
   // get discretization ids
   int disnumff = genprob.numff; // discretization number fluid; typically 0
   int disnumgff = genprob.numscatra; // discretization number G-function; typically 1
-  /* remark: precisely here the ScaTra discretization (genprob.numscatra) is named according to its
-   * physical meaning in the combustion context, (namely the G-function (disnumgff)).
-   * -> Here ScaTra becomes Combustion! */
+  /* remark: here the ScaTra discretization (genprob.numscatra) is renamed according to its physical
+   * meaning in the combustion context, namely the G-function (disnumgff).*/
 
   // access fluid discretization
   RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(disnumff,0);
@@ -106,7 +105,6 @@ void combust_dyn()
   RCP<DRT::Discretization> gfuncdis = DRT::Problem::Instance()->Dis(disnumgff,0);
   if (!gfuncdis->Filled()) gfuncdis->FillComplete();
 
-  // create G-function discretization (fill with scatra elements)
   if (gfuncdis->NumGlobalNodes()==0)
   {
     Epetra_Time time(comm);
@@ -132,36 +130,37 @@ void combust_dyn()
   else
     dserror("G-function discretization is not empty. Fluid and G-function already present!");
 
-  /*----------------------------------------------------------------------------------------------*
-   * create a combustion algorithm
-   *----------------------------------------------------------------------------------------------*/
+  //------------------------------------------------------------------------------------------------
+  // create a combustion algorithm
+  //------------------------------------------------------------------------------------------------
   // get the combustion parameter list
   const Teuchos::ParameterList combustdyn = DRT::Problem::Instance()->CombustionDynamicParams();
   // create a COMBUST::Algorithm instance
   Teuchos::RCP<COMBUST::Algorithm> combust_ = Teuchos::rcp(new COMBUST::Algorithm(comm, combustdyn));
 
-  /*----------------------------------------------------------------------------------------------*
-   * restart stuff; what exactly does this do?; comment has to be completed
-   *----------------------------------------------------------------------------------------------*/
+  //------------------------------------------------------------------------------------------------
+  // restart
+  //------------------------------------------------------------------------------------------------
   if (genprob.restart)
   {
     // read the restart information, set vectors and variables
     combust_->ReadRestart(genprob.restart);
   }
-  /*----------------------------------------------------------------------------------------------*
-   * call one of the available time integration schemes
-   *----------------------------------------------------------------------------------------------*/
+  //------------------------------------------------------------------------------------------------
+  // call one of the available time integration schemes
+  //------------------------------------------------------------------------------------------------
   FLUID_TIMEINTTYPE timeintscheme = Teuchos::getIntegralValue<FLUID_TIMEINTTYPE>(combustdyn,"TIMEINTEGR");
 
   if (timeintscheme == timeint_one_step_theta)
   {
     // solve a dynamic combustion problem
     combust_->TimeLoop();
-    /* Hier kann auch z.B. Genalpha mit combust->TimeLoop() gerufen werden, weil der combustion
-     * Algorithmus ja schon weiss welche Zeitintegration er hat. Es muss dann eine Klasse
+    /* remark: Hier kann auch z.B. Genalpha mit combust->TimeLoop() gerufen werden, weil der 
+     * combustion Algorithmus ja schon weiss welche Zeitintegration er hat. Es muss dann eine Klasse
      * "GenalphaTimeInt" existieren, die eine Funktion TimeLoop() hat. Dann muss allerdings auch
      * das ADAPTER::FluidCombust ein entsprechendes Object GenalphaTimeInt haben. Momentan hat ein
-     * FluidCombust immer ein CombustFluidImplicitTimeInt! */
+     * FluidCombust immer ein CombustFluidImplicitTimeInt!
+     */
   }
   else if (timeintscheme == timeint_stationary)
   {
@@ -170,14 +169,14 @@ void combust_dyn()
   }
   else
   {
-    // error: impossible, every time integration scheme is static or dynamic
+    // every time integration scheme must be either static or dynamic
     dserror("the combustion module can not handle this type of time integration scheme");
   }
 
-  /*----------------------------------------------------------------------------------------------*
-   * validate the results
-   *----------------------------------------------------------------------------------------------*/
-  // summarize the performance measurements
+  //------------------------------------------------------------------------------------------------
+  // validate the results
+  //------------------------------------------------------------------------------------------------
+    // summarize the performance measurements
   Teuchos::TimeMonitor::summarize();
 
   // perform the result test

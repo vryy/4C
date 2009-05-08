@@ -34,6 +34,8 @@ Maintainer: Florian Henke
    *
    * Zusammenfassend kann an sagen, dass alles was in der Verbrennungsrechnung vor der Zeitschleife
    * passieren soll, hier passieren muss, weil die combust dyn gleich die Zeitschleife ruft.
+   * 
+   * scalar transport velocity field has been initialized in ScaTraFluidCouplingAlgorithm()
   */
 COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& combustdyn)
 : ScaTraFluidCouplingAlgorithm(comm, combustdyn),
@@ -51,13 +53,9 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
   flamefront_(Teuchos::null)
   {
 
-  // transfer the initial convective velocity from initial fluid field to scalar transport field
-  ScaTraField().SetVelocityField(ConvectiveVelocity());
-//  std::cout << "initial convection velocity: " << *(ScaTraField().Convel()) << endl;
-
   // get pointers to the discretizations from the time integration scheme of each field
   /* remark: fluiddis cannot be of type "const Teuchos::RCP<const DRT::Dis...>", because parent
-   * class. InterfaceHandle only accepts "const Teuchos::RCP<DRT::Dis...>"            henke 01/09.*/
+   * class. InterfaceHandle only accepts "const Teuchos::RCP<DRT::Dis...>"            henke 01/09 */
   const Teuchos::RCP<DRT::Discretization> fluiddis = FluidField().Discretization();
   const Teuchos::RCP<DRT::Discretization> gfuncdis = ScaTraField().Discretization();
 
@@ -247,11 +245,11 @@ void COMBUST::Algorithm::PrepareTimeStep()
 
   FluidField().PrepareTimeStep();
 
-  // transfer the initial(!!) convective velocity
-  // (fluid initial field was set inside the constructor of fluid base class)
-  if (Step()==1) ScaTraField().SetVelocityField(ConvectiveVelocity());
-
-  // prepare time step (+ initialize one-step-theta scheme correctly with velocity given above)
+  // prepare time step
+  /* remark: initial velocity field has been transfered to scalar transport field in constructor of 
+   * ScaTraFluidCouplingAlgorithm (initialvelset_ == true). Time integration schemes, such as 
+   * the one-step-theta scheme, are thus initialized correctly.
+   */
   ScaTraField().PrepareTimeStep();
 
   // synchronicity check between combust algorithm and base algorithms
