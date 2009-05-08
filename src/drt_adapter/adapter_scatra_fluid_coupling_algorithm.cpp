@@ -46,7 +46,7 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
   velocitynp_=FluidField().ExtractVelocityPart(FluidField().Velnp());
 
   // transfer the initial convective velocity from initial fluid field to scalar transport field
-//  ScaTraField().SetVelocityField(ConvectiveVelocity());
+  ScaTraField().SetVelocityField(ConvectiveVelocity());
 
   // ensure that both single field solvers use the same 
   // time integration scheme

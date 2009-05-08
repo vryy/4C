@@ -78,13 +78,11 @@ void SCATRA::PassiveScaTraAlgorithm::PrepareTimeStep()
 
   FluidField().PrepareTimeStep();
 
-  // transfer the initial(!!) convective velocity
-  //(fluid initial field was set inside the constructor of fluid base class)
-  if (Step()==1)
-    ScaTraField().SetVelocityField(ConvectiveVelocity());
-
-  // prepare time step (+ initialize one-step-theta scheme correctly with 
-  // velocity given above)
+  // prepare time step
+  /* remark: initial velocity field has been transfered to scalar transport field in constructor of 
+   * ScaTraFluidCouplingAlgorithm (initialvelset_ == true). Time integration schemes, such as 
+   * the one-step-theta scheme, are thus initialized correctly.
+   */
   ScaTraField().PrepareTimeStep();
 
   return;
