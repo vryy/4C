@@ -104,10 +104,6 @@ void MAT::StVenantKirchhoff::Unpack(const vector<char>& data)
  *----------------------------------------------------------------------*/
 void MAT::StVenantKirchhoff::SetupCmat2d(Epetra_SerialDenseMatrix* cmat)
 {
-/*
-  const double ym  = matdata_->m.stvenant->youngs;
-  const double pv  = matdata_->m.stvenant->possionratio;
-*/
   const double ym  = params_->youngs_;
   const double pv  = params_->poissonratio_;
 
@@ -143,38 +139,61 @@ void MAT::StVenantKirchhoff::SetupCmat2d(Epetra_SerialDenseMatrix* cmat)
 void MAT::StVenantKirchhoff::SetupCmat(LINALG::Matrix<6,6>& cmat)
 {
   // get material parameters
-/*
-  double Emod = matdata_->m.stvenant->youngs;    // Young's modulus (modulus of elasticity)
-  double nu = matdata_->m.stvenant->possionratio;// Poisson's ratio (Querdehnzahl)
-*/
-  double Emod = params_->youngs_;    // Young's modulus (modulus of elasticity)
-  double nu = params_->poissonratio_;// Poisson's ratio (Querdehnzahl)
+  const double Emod = params_->youngs_;    // Young's modulus (modulus of elasticity)
+  const double nu = params_->poissonratio_;// Poisson's ratio (Querdehnzahl)
 
-  /*--------------------------------------------------------------------*/
-  /* isotropic elasticity tensor C in matrix notion */
-  /*                       [ 1-nu     nu     nu |          0    0    0 ]
-   *                       [        1-nu     nu |          0    0    0 ]
-   *           E           [               1-nu |          0    0    0 ]
-   *   C = --------------- [ ~~~~   ~~~~   ~~~~   ~~~~~~~~~~  ~~~  ~~~ ]
-   *       (1+nu)*(1-2*nu) [                    | (1-2*nu)/2    0    0 ]
-   *                       [                    |      (1-2*nu)/2    0 ]
-   *                       [ symmetric          |           (1-2*nu)/2 ]
-   */
-  double mfac = Emod/((1.0+nu)*(1.0-2.0*nu));  /* factor */
-  /* write non-zero components */
-  cmat(0,0) = mfac*(1.0-nu);
-  cmat(0,1) = mfac*nu;
-  cmat(0,2) = mfac*nu;
-  cmat(1,0) = mfac*nu;
-  cmat(1,1) = mfac*(1.0-nu);
-  cmat(1,2) = mfac*nu;
-  cmat(2,0) = mfac*nu;
-  cmat(2,1) = mfac*nu;
-  cmat(2,2) = mfac*(1.0-nu);
-  /* ~~~ */
-  cmat(3,3) = mfac*0.5*(1.0-2.0*nu);
-  cmat(4,4) = mfac*0.5*(1.0-2.0*nu);
-  cmat(5,5) = mfac*0.5*(1.0-2.0*nu);
+/*
+  if (nu == 0.5) {
+    // linearly isochoric. i.e. deviatoric, isotropic elasticity tensor C in Voigt matrix notation
+    //                       [  2/3   -1/3   -1/3 |   0    0    0 ]
+    //                       [         2/3   -1/3 |   0    0    0 ]
+    //           E           [                2/3 |   0    0    0 ]
+    //   C = --------------- [ ~~~~   ~~~~   ~~~~   ~~~  ~~~  ~~~ ]
+    //       (1+nu)          [                    | 1/2    0    0 ]
+    //                       [                    |      1/2    0 ]
+    //                       [ symmetric          |           1/2 ]
+    //
+    const double mfac = Emod/(1.0+nu);  // 2x shear modulus
+    cmat(0,0) = mfac*2.0/3.0;
+    cmat(0,1) = -mfac*1.0/3.0;
+    cmat(0,2) = -mfac*1.0/3.0;
+    cmat(1,0) = -mfac*1.0/3.0;
+    cmat(1,1) = mfac*2.0/3.0;
+    cmat(1,2) = -mfac*1.0/3.0;
+    cmat(2,0) = -mfac*1.0/3.0;
+    cmat(2,1) = -mfac*1.0/3.0;
+    cmat(2,2) = mfac*2.0/3.0;
+    // ~~~
+    cmat(3,3) = mfac*0.5;
+    cmat(4,4) = mfac*0.5;
+    cmat(5,5) = mfac*0.5;
+  }
+  else */ {
+    // isotropic elasticity tensor C in Voigt matrix notation
+    //                       [ 1-nu     nu     nu |          0    0    0 ]
+    //                       [        1-nu     nu |          0    0    0 ]
+    //           E           [               1-nu |          0    0    0 ]
+    //   C = --------------- [ ~~~~   ~~~~   ~~~~   ~~~~~~~~~~  ~~~  ~~~ ]
+    //       (1+nu)*(1-2*nu) [                    | (1-2*nu)/2    0    0 ]
+    //                       [                    |      (1-2*nu)/2    0 ]
+    //                       [ symmetric          |           (1-2*nu)/2 ]
+    //
+    const double mfac = Emod/((1.0+nu)*(1.0-2.0*nu));  // factor
+    // write non-zero components
+    cmat(0,0) = mfac*(1.0-nu);
+    cmat(0,1) = mfac*nu;
+    cmat(0,2) = mfac*nu;
+    cmat(1,0) = mfac*nu;
+    cmat(1,1) = mfac*(1.0-nu);
+    cmat(1,2) = mfac*nu;
+    cmat(2,0) = mfac*nu;
+    cmat(2,1) = mfac*nu;
+    cmat(2,2) = mfac*(1.0-nu);
+    // ~~~
+    cmat(3,3) = mfac*0.5*(1.0-2.0*nu);
+    cmat(4,4) = mfac*0.5*(1.0-2.0*nu);
+    cmat(5,5) = mfac*0.5*(1.0-2.0*nu);
+  }
 }
 
 
