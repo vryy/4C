@@ -582,11 +582,12 @@ namespace DRT
       Teuchos::RCP<MaterialDefinition> matdef,  ///< a material defintion to which named integer is added
       const std::string name,  ///< name of integer to add
       const std::string description,  ///< description about value
+      const int defaultvalue=0,  ///< default value
       const bool optional=false  ///< optional parameter if true
       )
     {
       matdef->AddComponent(Teuchos::rcp(new SeparatorMaterialComponent(name,description,optional)));
-      matdef->AddComponent(Teuchos::rcp(new IntMaterialComponent(name,optional)));
+      matdef->AddComponent(Teuchos::rcp(new IntMaterialComponent(name,defaultvalue,optional)));
     }
 
     /// add a separator followed by a number integer values
@@ -683,7 +684,7 @@ namespace DRT
     ///
     /// The name on the input line becomes the name used to put the bool value into MAT::PAR::Material.
     inline void AddNamedBool(
-      Teuchos::RCP<MaterialDefinition> matdef,  ///< a material defintion to which named integer is added
+      Teuchos::RCP<MaterialDefinition> matdef,  ///< a material defintion to which named Boolean is added
       const std::string name,  ///< name of Boolean to add
       const std::string description,  ///< description about value
       const bool optional=false  ///< optional parameter if true

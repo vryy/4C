@@ -251,6 +251,11 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntMaterialComponent::Read(
   (*condline) >> number;
 
   int n;
+  if ( (number=="") and (optional_) )
+  {
+    n = defaultvalue_;
+  }
+  else
   {
     char* ptr;
     n = strtol(number.c_str(),&ptr,10);
