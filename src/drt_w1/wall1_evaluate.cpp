@@ -109,7 +109,14 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
 	=
 	dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
 
-      (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
+      bool zero_sized=(*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
+
+      // skip zero sized elements in knot span --- they correspond to interpolated nodes
+      if(zero_sized)
+      {
+        return(0);
+      }
+
       break;
     }
     default :
@@ -877,7 +884,7 @@ void DRT::ELEMENTS::Wall1::w1_jacobianmatrix(
 /*------------------------------------------ determinant of jacobian ---*/
    *det = xjm[0][0]* xjm[1][1] - xjm[1][0]* xjm[0][1];
 
-   if (*det<0.0) dserror("NEGATIVE JACOBIAN DETERMINANT %8.5f in ELEMENT %d\n",*det,Id());
+   //   if (*det<0.0) dserror("NEGATIVE JACOBIAN DETERMINANT %8.5f in ELEMENT %d\n",*det,Id());
 /*----------------------------------------------------------------------*/
 
    return;

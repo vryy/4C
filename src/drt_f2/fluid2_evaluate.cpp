@@ -415,7 +415,12 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
             =
           dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
 
-        (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
+        bool zero_size=(*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
+
+        if(zero_size)
+        {
+          return(0);
+        }
       }
 
       // --------------------------------------------------
