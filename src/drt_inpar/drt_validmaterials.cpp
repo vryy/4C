@@ -300,6 +300,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"YOUNG","Young's modulus");
     AddNamedReal(m,"NUE","Poisson's ratio");
     AddNamedReal(m,"DENS","mass density");
+    AddNamedInt(m,"MODEL","sub model: 0=Bonet&Wood, 1=Volumetrically-isochorically decomposed",0,true);
     
     AppendMaterialDefinition(matlist,m);
   }

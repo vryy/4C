@@ -32,7 +32,8 @@ MAT::PAR::LogNeoHooke::LogNeoHooke(
 : Parameter(matdata),
   youngs_(matdata->GetDouble("YOUNG")),
   nue_(matdata->GetDouble("NUE")),
-  density_(matdata->GetDouble("DENS"))
+  density_(matdata->GetDouble("DENS")),
+  model_(matdata->GetInt("MODEL"))
 {
 }
 
@@ -104,10 +105,26 @@ void MAT::LogNeoHooke::Unpack(const std::vector<char>& data)
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::LogNeoHooke::Evaluate(
+  const LINALG::Matrix<6,1>& glstrain,
+  LINALG::Matrix<6,6>& cmat,
+  LINALG::Matrix<6,1>& stress
+  )
+{
+  const int model = params_->model_;
+  if (model == 0)
+    EvaluateModelZero(glstrain, cmat, stress);
+  else if (model == 1)
+    EvaluateModelOne(glstrain, cmat, stress);
+  else
+    dserror("Cannot handle submodel of type %d", model);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::LogNeoHooke::EvaluateModelZero(
   const LINALG::Matrix<6,1>& glstrain,
   LINALG::Matrix<6,6>& cmat,
   LINALG::Matrix<6,1>& stress
@@ -170,12 +187,101 @@ void MAT::LogNeoHooke::Evaluate(
     const double delta7 = 2.0*(mue - lambda*std::log(detf));
     
     // contribution: Cinv \otimes Cinv
-    for (int j=0; j<6; j++)
-      for (int i=0; i<6; i++)
-        cmat(i,j) += delta6 * invc(i)*invc(j);
-    
-    // contribution: boeppel-product
+    cmat.MultiplyNT(delta6, invc, invc, 1.0);
+
+    // contribution: Cinv \odot Cinv
     AddtoCmatHolzapfelProduct(cmat, invc, delta7);
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::LogNeoHooke::EvaluateModelOne(
+  const LINALG::Matrix<6,1>& glstrain,
+  LINALG::Matrix<6,6>& cmat,
+  LINALG::Matrix<6,1>& stress
+  )
+{
+  // material parameters for isochoric part
+  const double youngs = params_->youngs_;  // Young's modulus
+  const double nue = params_->nue_;  // Poisson's ratio
+  const double lambda = (nue==0.5) ? 0.0 : youngs*nue/((1.0+nue)*(1.0-2.0*nue));  // Lame coeff.
+  const double mue1 = youngs/(2.0*(1.0+nue));  // shear modulus at I_C-proportional term
+  const double mue3 = (nue==0.5) ? 0.0 : mue1;  // shear modulus at III_C-proportional term
+  
+  // build identity tensor I
+  LINALG::Matrix<6,1> identity(true);
+  for (int i = 0; i < 3; i++)
+    identity(i) = 1.0;
+
+  // right Cauchy-Green Tensor  C = 2 * E + I
+  // REMARK: strain-like 6-Voigt vector
+  LINALG::Matrix<6,1> rcg(glstrain);
+  rcg.Scale(2.0);
+  rcg.Update(1.0, identity, 1.0);
+
+  // invariants
+  // 1st invariant, trace
+  const double inv = rcg(0) + rcg(1) + rcg(2);
+  // 3rd invariant, determinant
+  const double iiinv = rcg(0)*rcg(1)*rcg(2)
+                     + 0.25 * rcg(3)*rcg(4)*rcg(5)
+                     - 0.25 * rcg(1)*rcg(5)*rcg(5)
+                     - 0.25 * rcg(2)*rcg(3)*rcg(3)
+                     - 0.25 * rcg(0)*rcg(4)*rcg(4);
+  if (iiinv < 0.0)
+    dserror("fatal failure in logarithmic neo-Hooke material");
+
+  // convenience
+  const double iiinvpowthird = std::pow(iiinv,1.0/3.0);
+
+  // invert right Cauchy-Green tensor
+  // REMARK: stress-like 6-Voigt vector
+  LINALG::Matrix<6,1> icg(false);
+  {
+    icg(0) = ( rcg(1)*rcg(2) - 0.25*rcg(4)*rcg(4) ) / iiinv;
+    icg(1) = ( rcg(0)*rcg(2) - 0.25*rcg(5)*rcg(5) ) / iiinv;
+    icg(2) = ( rcg(0)*rcg(1) - 0.25*rcg(3)*rcg(3) ) / iiinv;
+    icg(3) = ( 0.25*rcg(5)*rcg(4) - 0.5*rcg(3)*rcg(2) ) / iiinv;
+    icg(4) = ( 0.25*rcg(3)*rcg(5) - 0.5*rcg(0)*rcg(4) ) / iiinv;
+    icg(5) = ( 0.25*rcg(3)*rcg(4) - 0.5*rcg(5)*rcg(1) ) / iiinv;
+  }
+
+  // 2nd Piola Kirchhoff stresses
+  {
+    LINALG::Matrix<6,1> pk2(false);
+    const double gamma1 = mue1/iiinvpowthird;
+    pk2.Update(gamma1, identity);
+    //pk2.Update(-mue3+lambda*std::log(detf), icg, 1.0);
+    const double gamma3 = -mue1*inv/(3.0*iiinvpowthird)
+                        - mue3
+                        + lambda/2.0*std::log(iiinv);
+    pk2.Update(gamma3, icg, 1.0);
+    stress.Update(pk2);
+  }
+
+  // constitutive tensor
+  // It is an implicit law that cmat is zero upon input
+  {
+    // deltas (see also Holzapfel [2] at p.261)
+    const double delta3 = -2.0*mue1/(3.0*iiinvpowthird);
+    const double delta6 = 2.0*mue1*inv/(9.0*iiinvpowthird)
+                        + lambda;
+    const double delta7 = 2.0*mue1*inv/(3.0*iiinvpowthird)
+                        + 2.0*mue3 
+                        - lambda*std::log(iiinv);
+
+    // contribution Id \otimes Cinv + Cinv \otimes Id
+    cmat.MultiplyNT(delta3, identity, icg);
+    cmat.MultiplyNT(delta3, icg, identity, 1.0);
+
+    // contribution: Cinv \otimes Cinv
+    cmat.MultiplyNT(delta6, icg, icg, 1.0);
+    
+    // contribution: Cinv \odot Cinv
+    AddtoCmatHolzapfelProduct(cmat, icg, delta7);
   }
 
   return;

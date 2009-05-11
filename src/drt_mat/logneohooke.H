@@ -56,6 +56,8 @@ namespace MAT
       const double nue_;
       /// mass density
       const double density_;
+      /// model type
+      const int model_;
 
       //@}
 
@@ -141,7 +143,7 @@ namespace MAT
 
     //@}
 
-    /// Main material call to determine 2nd PK stress and material constitutive tensor
+    /// Main <i>0-type</i> material call to determine  2nd PK stress and material constitutive tensor
     ///
     /// The material strain energy density function is
     ///\f[
@@ -151,12 +153,23 @@ namespace MAT
     ///\f]
     /// which was taken from [1].
     ///
-    ///
-    /// here is \f$I_{\boldsymbol{C}}\f$ the first principal invariant
+    /// Here is \f$I_{\boldsymbol{C}}\f$ the first principal invariant
     /// of the right Cauchy--Green strain tensor \f$\boldsymbol{C}\f$ 
     /// and \f$I\!I\!I_{\boldsymbol{C}}\f$ its third.
     /// The isochoric part is proportional to \f$\mu\f$,
     /// whereas the \f$\lambda\f$-proportional part constitutes the volumetric contribution.
+    ///
+    /// The parameters are the shear modulus
+    ///\f[
+    /// \mu = \frac{E}{2(1+\nu)}
+    ///\f]
+    /// and Lame's coefficient
+    ///\f[
+    /// \lambda = \left\{\begin{array}{ll}
+    ///      \frac{E \nu}{(1+\nu) (1-2\nu)} & \text{if $\nu \neq 1/2$}
+    ///   \\ 0                              & \text{else}
+    /// \end{array}\right.
+    ///\f]
     ///
     /// The 2nd Piola--Kirchhoff stress is
     ///\f[
@@ -181,6 +194,81 @@ namespace MAT
     /// + 2\big(\mu-\lambda \log(\sqrt{I\!I\!I_{\boldsymbol{C}}})\big)
     ///   \, \boldsymbol{C}^{-1} \odot \boldsymbol{C}^{-1}
     ///\f]
+    void EvaluateModelZero(
+      const LINALG::Matrix<6,1>& glstrain,  ///< Green-Lagrange strain tensor
+      LINALG::Matrix<6,6>& cmat,  ///< constitutive matrix
+      LINALG::Matrix<6,1>& stress  ///< 2nd PK stress
+      );
+
+    /// Main <i>1-type</i> material call to determine 2nd PK stress and material constitutive tensor
+    ///
+    /// The material strain energy density function is
+    ///\f[
+    /// \Psi = \frac{\mu_1}{2} \Big(
+    ///         \frac{I_{\boldsymbol{C}}}{\sqrt[3]{I\!I\!I_{\boldsymbol{C}}}} - 3
+    ///      \Big)
+    ///      - \mu_3 \log(\sqrt{I\!I\!I_{\boldsymbol{C}}})
+    ///      + \frac{\lambda}{2} \big( \log(\sqrt{I\!I\!I_{\boldsymbol{C}}}) \big)^2
+    ///\f]
+    /// which was taken from [1] and adapted to a clean volumetric-isochoric decomposition.
+    ///
+    /// Here \f$I_{\boldsymbol{C}}\f$ is the first principal invariant
+    /// of the right Cauchy--Green strain tensor \f$\boldsymbol{C}\f$ 
+    /// and \f$I\!I\!I_{\boldsymbol{C}}\f$ its third.
+    /// The isochoric part is proportional to \f$\mu_1\f$,
+    /// whereas the \f$\mu_3,\lambda\f$-proportional parts constitute the volumetric contribution.
+    ///
+    /// The parameters are the '1st shear modulus'
+    ///\f[
+    /// \mu_1 = \frac{E}{2(1+\nu)}
+    ///\f]
+    /// and '3rd shear modulus'
+    ///\f[
+    /// \mu_3 = \left\{\begin{array}{ll}
+    ///      \mu_1 & \text{if $\nu \neq 1/2$}
+    ///   \\ 0     & \text{else}
+    /// \end{array}\right.
+    ///\f]
+    /// and Lame's coefficient
+    ///\f[
+    /// \lambda = \left\{\begin{array}{ll}
+    ///      \frac{E \nu}{(1+\nu) (1-2\nu)} & \text{if $\nu \neq 1/2$}
+    ///   \\ 0                              & \text{else}
+    /// \end{array}\right.
+    ///\f]
+    ///
+    /// The 2nd Piola--Kirchhoff stress is
+    ///\f[
+    /// \boldsymbol{S} = \frac{\mu_1}{\sqrt[3]{I\!I\!I_{\boldsymbol{C}}}} \Big( 
+    ///                  \boldsymbol{1} - \frac{I_{\boldsymbol{C}}}{3} \boldsymbol{C}^{-1}
+    ///                \Big)
+    ///                - \Big( 
+    ///                  \mu_3 - \frac{\lambda}{2} \, \log(I\!I\!I_{\boldsymbol{C}})
+    ///                \Big) \,  \boldsymbol{C}^{-1}
+    ///\f]
+    ///
+    /// The material constitutive 4-tensor
+    ///\f[
+    /// \boldsymbol{C}_\text{m}
+    /// = -\frac{2 \mu_1 I_{\boldsymbol{C}}}{3 \sqrt[3]{I\!I\!I_{\boldsymbol{C}}}} \Big(
+    ///    \boldsymbol{1} \otimes \boldsymbol{C}^{-1}
+    ///    + \boldsymbol{C}^{-1} \otimes \boldsymbol{I}
+    /// \Big)
+    /// + \Big( \frac{2 \mu_1 I_{\boldsymbol{C}}}{9 \sqrt[3]{I\!I\!I_{\boldsymbol{C}}}} + \lambda \Big)
+    ///    \, \boldsymbol{C}^{-1} \otimes  \boldsymbol{C}^{-1}
+    /// + \Big( \frac{2 \mu_1 I_{\boldsymbol{C}}}{3 \sqrt[3]{I\!I\!I_{\boldsymbol{C}}}}
+    ///    + 2 \mu_3 - \lambda\log(I\!I\!I_{\boldsymbol{C}}) \Big)
+    ///    \, \boldsymbol{C}^{-1} \odot \boldsymbol{C}^{-1}
+    ///\f]
+    void EvaluateModelOne(
+      const LINALG::Matrix<6,1>& glstrain,  ///< Green-Lagrange strain tensor
+      LINALG::Matrix<6,6>& cmat,  ///< constitutive matrix
+      LINALG::Matrix<6,1>& stress  ///< 2nd PK stress
+      );
+
+    /// Main material call to determine 2nd PK stress and material constitutive tensor
+    ///
+    /// The method branches according to material sub-model #model_.
     void Evaluate(
       const LINALG::Matrix<6,1>& glstrain,  ///< Green-Lagrange strain tensor
       LINALG::Matrix<6,6>& cmat,  ///< constitutive matrix
