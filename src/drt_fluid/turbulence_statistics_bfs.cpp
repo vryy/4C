@@ -289,7 +289,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
   // define locations in x1-direction for statistical evaluation
   // (coarse discretization)
   //----------------------------------------------------------------------
-  if (numx1coor_ < 100)
+  if (numx1coor_ < 80)
   {
     x1statlocations_(0)  = 0.0;
     x1statlocations_(1)  = 0.040169;

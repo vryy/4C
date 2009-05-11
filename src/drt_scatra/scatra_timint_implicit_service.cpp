@@ -658,6 +658,9 @@ void SCATRA::ScaTraTimIntImpl::SetLomaVelocity(
     }
   }
 
+  // initial velocity field has now been set
+  if (step_ == 0) initialvelset_ = true;
+
   return;
 }
 
