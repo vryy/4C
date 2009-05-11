@@ -312,9 +312,9 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
  For more details see Holzapfel p. 254
 
  */
-void MAT::AddtoCmatHolzapfelProduct( Epetra_SerialDenseMatrix& cmat,
-                                     Epetra_SerialDenseVector& invc,
-                                     const double scalar)
+void MAT::AddtoCmatHolzapfelProduct(Epetra_SerialDenseMatrix& cmat,
+                                    const Epetra_SerialDenseVector& invc,
+                                    const double scalar)
 {
 #ifdef DEBUG
   if (cmat.M()!=6 or cmat.N()!=6 or invc.Length()!=6)
@@ -394,9 +394,9 @@ void MAT::AddtoCmatHolzapfelProduct( Epetra_SerialDenseMatrix& cmat,
  For more details see Holzapfel p. 254
 
  */
-void MAT::AddtoCmatHolzapfelProduct( LINALG::Matrix<6,6>& cmat,
-                                     LINALG::Matrix<6,1>& invc,
-                                     const double scalar)
+void MAT::AddtoCmatHolzapfelProduct(LINALG::Matrix<6,6>& cmat,
+                                    const LINALG::Matrix<6,1>& invc,
+                                    const double scalar)
 {
 #ifdef DEBUG
   if (cmat.M()!=6 or cmat.N()!=6 or invc.M()!=6)
@@ -888,5 +888,90 @@ void MAT::ElastSymTensor_o_Multiply(LINALG::Matrix<6,6>& C,
 
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::Isochorify(LINALG::Matrix<6,1>* pk2vol,
+                     LINALG::Matrix<6,6>* cvol,
+                     LINALG::Matrix<6,1>* pk2iso,
+                     LINALG::Matrix<6,6>* ciso,
+                     const LINALG::Matrix<6,1>& gl,
+                     const LINALG::Matrix<6,1>& pk2,
+                     const LINALG::Matrix<6,6>& cmat)
+{
+  // useful call?
+#ifdef DEBUG
+  if ( (cvol == NULL) and (ciso == NULL) and (pk2vol == NULL) and (pk2iso == NULL) )
+    dserror("Useful call? Apparently you do not want to compute anything"); 
+#endif
+
+  // right Cauchy--Green tensor
+  LINALG::Matrix<6,1> rcg(gl);
+  rcg.Scale(2.0);
+  for (int i=0; i<3; i++)
+    rcg(i) -= 1.0;
+
+  // third invariant (determinant) of right Cauchy--Green strains
+  const double rcg3rd = rcg(0)*rcg(1)*rcg(2)
+                      + 0.25 * rcg(3)*rcg(4)*rcg(5)
+                      - 0.25 * rcg(1)*rcg(5)*rcg(5)
+                      - 0.25 * rcg(2)*rcg(3)*rcg(3)
+                      - 0.25 * rcg(0)*rcg(4)*rcg(4);
+
+  // inverse right Cauchy--Green tensor C^{-1}
+  // REMARK: stored in as _stress_ 6-Voigt vector
+  LINALG::Matrix<6,1> icg(false);
+  icg(0) = rcg(1)*rcg(2) - 0.25*rcg(4)*rcg(4);  // det(C) * (C^{-1})^{11}
+  icg(1) = rcg(0)*rcg(2) - 0.25*rcg(5)*rcg(5);  // det(C) * (C^{-1})^{22}
+  icg(2) = rcg(0)*rcg(1) - 0.25*rcg(3)*rcg(3);  // det(C) * (C^{-1})^{33}
+  icg(3) = 0.25*rcg(5)*rcg(4) - 0.5*rcg(3)*rcg(2);  // det(C) * (C^{-1})^{12}
+  icg(4) = 0.25*rcg(3)*rcg(5) - 0.5*rcg(0)*rcg(4);  // det(C) * (C^{-1})^{23}
+  icg(5) = 0.25*rcg(3)*rcg(4) - 0.5*rcg(5)*rcg(1);  // det(C) * (C^{-1})^{31}
+  icg.Scale(1.0/rcg3rd);  // divide by determinant of C
+
+  // double contraction of 2nd Piola--Kirchhoff stress and right Cauchy--Green strain,
+  // i.e. in index notation S^{AB} C_{AB}
+  const double pk2rcg = pk2.Dot(rcg);
+
+  // stress splitting
+  {
+    // volumetric 2nd Piola--Kirchhoff stress
+    LINALG::Matrix<6,1> pk2vol_(false);
+    if (pk2vol != NULL)
+      pk2vol_.SetView(*pk2vol);
+    pk2vol_.Update(pk2rcg/3.0, icg);
+    
+    // isochoric 2nd Piola--Kirchhoff stress
+    // S^{AB}_vol = 1/3 (S^{CD} C_{CD}) (C^{-1})^{AB}
+    if (pk2iso != NULL)
+      pk2iso->Update(1.0, pk2, -1.0, pk2vol_);
+  }
+
+  // elasticity tensor splitting
+  {
+    // 'linearised' 2nd Piola--Kirchhoff stress
+    // S^{CD}_lin = S^{CD} + 1/2 C_{AB} C^{ABCD}
+    LINALG::Matrix<6,1> pk2lin(pk2);
+    pk2lin.MultiplyTN(0.5, cmat, rcg, 1.0);  // transpose on purpose
+    
+    // volumetric part of constitutive tensor
+    // C^{ABCD}_vol = 2/3 (C^{-1})^{AB} S^{CD}_lin
+    //              + 2/3 (S^{EF} C_{EF}) ( -1/2*(
+    //                (C^{-1})^{AC} (C^{-1})^{BD} + (C^{-1})^{AD} (C^{-1})^{BC}
+    //              ) )
+    LINALG::Matrix<6,6> cvol_(false);
+    if (cvol != NULL)
+      cvol_.SetView(*cvol);
+    cvol_.MultiplyNT(2.0/3.0, icg, pk2lin);
+    AddtoCmatHolzapfelProduct(cvol_, icg, 2.0/3.0*pk2rcg);
+
+    // isochoric part of constitutive tensor
+    // C^{ABCD}_iso = C^{ABCD} - C^{ABCD}_vol
+    if (ciso != NULL)
+      ciso->Update(1.0, cmat, -1.0, cvol_);
+  }
+
+  // 
+  return;
+}
 
 #endif

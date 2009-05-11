@@ -35,7 +35,6 @@ namespace MAT
 
   /// Interface class for materials in elements
   /*!
-   *
    * The Material class provides a general way to store material history
    * variables in elements. Each element owns one object derived from
    * this class. Each derived class implements a specific material and
@@ -71,9 +70,8 @@ namespace MAT
       );
   };
 
-  /*!
-   * \brief Multiply two 2nd order tensors A x B and add the result to a
-   * 4th order symmetric material tensor in matrix notation
+  /*! \brief Multiply two 2nd order tensors A x B and add the result to a
+   *         4th order symmetric material tensor in matrix notation
    * 
    * In tensor index notation this method does
    * \f[
@@ -99,9 +97,8 @@ namespace MAT
                                    const Epetra_SerialDenseMatrix& B,
                                    const double ScalarThis);
 
-  /*!
-   * \brief Multiply two 2nd order tensors A x B and add the result to a
-   * 4th order symmetric material tensor in matrix notation
+  /*! \brief Multiply two 2nd order tensors A x B and add the result to a
+   *         4th order symmetric material tensor in matrix notation
    * 
    * In tensor index notation this method does
    * \f[
@@ -127,9 +124,8 @@ namespace MAT
                               const LINALG::Matrix<3,3>& B,
                               const double ScalarThis);
 
-  /*!
-   * \brief Multiply two 2nd order tensors (A x B + B x A) and add the result to a
-   * 4th order symmetric material tensor in matrix notation
+  /*! \brief Multiply two 2nd order tensors (A x B + B x A) and add the result to a
+   *         4th order symmetric material tensor in matrix notation
    * 
    * In tensor index notation this method does
    * \f[
@@ -149,14 +145,13 @@ namespace MAT
    * \param ScalarThis (in): Scalar to multiply with C before adding (A x B + B x A)
   */
   void ElastSymTensorMultiplyAddSym(Epetra_SerialDenseMatrix& C,
-                                   const double ScalarAB,
-                                   const Epetra_SerialDenseMatrix& A,
-                                   const Epetra_SerialDenseMatrix& B,
-                                   const double ScalarThis);
+                                    const double ScalarAB,
+                                    const Epetra_SerialDenseMatrix& A,
+                                    const Epetra_SerialDenseMatrix& B,
+                                    const double ScalarThis);
 
-  /*!
-   * \brief Multiply two 2nd order tensors (A x B + B x A) and add the result to a
-   * 4th order symmetric material tensor in matrix notation
+  /*! \brief Multiply two 2nd order tensors (A x B + B x A) and add the result to a
+   *         4th order symmetric material tensor in matrix notation
    *
    * In tensor index notation this method does
    * \f[
@@ -177,14 +172,13 @@ namespace MAT
    * \param ScalarThis (in): Scalar to multiply with C before adding (A x B + B x A)
   */
   void ElastSymTensorMultiplyAddSym(LINALG::Matrix<6,6>& C,
-          const double ScalarAB,
-          const LINALG::Matrix<3,3>& A,
-          const LINALG::Matrix<3,3>& B,
-          const double ScalarThis);
+                                    const double ScalarAB,
+                                    const LINALG::Matrix<3,3>& A,
+                                    const LINALG::Matrix<3,3>& B,
+                                    const double ScalarThis);
   
-  /*!
-   * \brief Multiply two 2nd order tensors A o B and add the result to a
-   * 4th order symmetric material tensor in matrix notation
+  /*! \brief Multiply two 2nd order tensors A o B and add the result to a
+   *         4th order symmetric material tensor in matrix notation
    * 
    * In tensor index notation this method does
    * \f[
@@ -199,15 +193,14 @@ namespace MAT
    * \param ScalarThis (in): Scalar to multiply with C before adding A o B
    */
   void ElastSymTensor_o_Multiply(Epetra_SerialDenseMatrix& C,
-                                   const double ScalarAB,
-                                   const Epetra_SerialDenseMatrix& A,
-                                   const Epetra_SerialDenseMatrix& B,
-                                   const double ScalarThis);
+                                 const double ScalarAB,
+                                 const Epetra_SerialDenseMatrix& A,
+                                 const Epetra_SerialDenseMatrix& B,
+                                 const double ScalarThis);
 
-  /*!
-   * \brief Multiply two 2nd order tensors A o B and add the result to a
-   * 4th order symmetric material tensor in matrix notation
-   * This is another version of this function using the fixed size matrix.
+  /*! \brief Multiply two 2nd order tensors A o B and add the result to a
+   *         4th order symmetric material tensor in matrix notation
+   *         This is another version of this function using the fixed size matrix.
    *
    * In tensor index notation this method does
    * \f[
@@ -228,9 +221,8 @@ namespace MAT
                                  const double ScalarThis);
 
 
-  /*!
-   * \brief Add 'Holzapfel product' contribution to constitutive tensor
-   * using Voigt notation
+  /*! \brief Add 'Holzapfel product' contribution to constitutive tensor
+   *         using Voigt notation
    *
    * This function adds the following contribution to the given constitutive
    * matrix cmat(6,6) based on the inverse of the right Cauchy-Green vector
@@ -260,25 +252,114 @@ namespace MAT
    * \param invc   (in)  : Inverse right Cauchy-Green vector(6)
    * \param scalar (in)  : scalar corresponding to delta7
    */
-  void AddtoCmatHolzapfelProduct( Epetra_SerialDenseMatrix& cmat,
-                                  Epetra_SerialDenseVector& invc,
-                                  const double scalar);
+  void AddtoCmatHolzapfelProduct(Epetra_SerialDenseMatrix& cmat,
+                                 const Epetra_SerialDenseVector& invc,
+                                 const double scalar);
 
-  /*!
-  \brief Add 'Holzapfel product' contribution to constitutive tensor
-  using Voigt notation
-
+  /*! \brief Add 'Holzapfel product' contribution to constitutive tensor
+   *         using Voigt notation
+   * 
+   * This function adds the following contribution to the given constitutive
+   * matrix #cmat based on the inverse of the right Cauchy-Green vector
+   * #invc.
+   *
+   * In compact tensor notation this method performs
+   * \f[
+   * \boldsymbol{C}_\text{m} := \boldsymbol{C}_\text{m}
+   *                + scalar \cdot \boldsymbol{C}^{-1} \odot \boldsymbol{C}^{-1}
+   * \f]
+   * which is related to the derivative of the inverse right Cauchy--Green tensor
+   * with respect to its non-inverted sibling, i.e.
+   * \f[
+   * \frac{\partial \boldsymbol{C}^{-1}}{\partial \boldsymbol{C}}
+   * = - \boldsymbol{C}^{-1} \odot \boldsymbol{C}^{-1}
+   * \f]
+   * as written by Holzapfel [1], p. 254.
+   *
+   * In tensor index notation this \f$\odot\f$-product means
+   * \f[
+   * C^{ABCD} := C^{ABCD} 
+   *          + scalar ( (C^{-1})^{AC} (C^{-1})^{BD} 
+   *                     + (C^{-1})^{AD} (C^{-1})^{BC} )
+   * \f]
+   *
+   * References:
+   * [1] G.A. Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
+   *
+   * \param cmat (in/out): Material tangent matrix(6x6) to be modified,
+   *                       its rows are denoted stress 6-Voigt, i.e.
+   *                       \f$[ ()_{11}, \; ()_{22}, \; ()_{33},
+   *                       \; ()_{12}, \; ()_{23}, \; ()_{31} ]\f$
+   *                       and its columns strain 6-Voigt, i.e.
+   *                       \f$[ ()_{11}, \; ()_{22}, \; ()_{33},
+   *                       \; 2*()_{12}, \; 2*()_{23}, \; 2*()_{31} ]\f$
+   *                       
+   * \param invc   (in)  : inverse right Cauchy-Green vector
+   *                       in stress 6-Voigt notation 
+   *                       \f$[ C^{-1}_{11} \; C^{-1}_{22} \; C^{-1}_{33}
+   *                       \; C^{-1}_{12} \; C^{-1}_{23} \; C^{-1}_{31}]\f$
+   * \param scalar (in)  : scalar, corresponding to \f$\delta_7\f$ in Holzapfel [1], p.261
+   */
+  void AddtoCmatHolzapfelProduct(LINALG::Matrix<6,6>& cmat,
+                                 const LINALG::Matrix<6,1>& invc,
+                                 const double scalar);
   
 
-  \param cmat (in/out): Material tangent matrix(6x6) to be modified
-  \param invc   (in)  : Inverse right Cauchy-Green vector(6)
-  \param scalar (in)  : scalar corresponding to delta7
-  */
-  void AddtoCmatHolzapfelProduct( LINALG::Matrix<6,6>& cmat,
-                                  LINALG::Matrix<6,1>& invc,
-                                  const double scalar);
-
-
+  /*! \brief Put apart the volumetric and isochoric part
+   *         of the 2nd Piola--Kirchhoff stress and the
+   *         material constitutive tensor
+   *
+   * The volumetric 2nd Piola--Kirchhof stress \f$S^{AB}_\text{vol}\f$ 
+   * are obtained by
+   * \f[
+   *   S^{AB}_\text{vol}
+   *   = \frac{1}{3} \big( S^{CD} \, C_{CD} \big) \, (C^{-1})^{AB}
+   * \f]
+   * and its corresponding contribution to the constitutive tensor 
+   * \f$C^{ABCD}_\text{vol}\f$ is
+   * \f[
+   *   C^{ABCD}_\text{vol}
+   *   = \frac{2}{3} (C^{-1})^{AB} \, S^{CD}_\text{lin}
+   *   + \frac{2}{3} \big(S^{EF} C_{EF}\big) \, \Big( -\frac{1}{2} \big(
+   *     (C^{-1})^{AC} (C^{-1})^{BD} + (C^{-1})^{AD} (C^{-1})^{BC}
+   *   \big) \Big)
+   * \f]
+   * with the 'linearised' 2nd Piola--Kirchhoff stresses
+   * \f[
+   *   S^{CD}_\text{lin} = S^{CD} + \frac{1}{2} C_{AB} C^{ABCD} .
+   * \f]
+   *
+   * The isochoric 2nd Piola--Kirchhoff stress \f$S^{AB}_\text{iso}\f$
+   * and and the isochoric constribution \f$C^{ABCD}_\text{iso}\f$
+   * to the constitutive tensor are 
+   * \f[
+   *   S^{AB}_\text{iso} = S^{AB} - S^{AB}_\text{vol}
+   * \f]
+   * and
+   * \f[
+   *   C^{ABCD}_\text{iso} = C^{ABCD} - C^{ABCD}_\text{vol}
+   * \f]
+   *
+   * \author bborn
+   * \date 05/09
+   */
+  void Isochorify(
+    LINALG::Matrix<6,1>* pk2vol,  ///< volumetric 2nd Piola--Kirchhoff 6-Voigt stress, i.e.
+                                  ///< \f$[ S^{11}\; S^{22}\; S^{33}\; S^{12}\; S^{23}\; S^{31} ]_\text{vol}\f$,
+                                  ///< if != NULL
+    LINALG::Matrix<6,6>* cvol,  ///< volumetric contribution to constitutive tensor,
+                                ///< if != NULL
+    LINALG::Matrix<6,1>* pk2iso,  ///< isochoric 2nd Piola--Kirchhoff 6-Voigt stress, i.e.
+                                  ///< \f$[ S^{11}\; S^{22}\; S^{33}\; S^{12}\; S^{23}\; S^{31} ]_\text{iso}\f$,
+                                  ///< if != NULL
+    LINALG::Matrix<6,6>* ciso,  ///< isochoric contribution to constitutive tensor,
+                                ///< if != NULL
+    const LINALG::Matrix<6,1>& gl,  ///< Green--Lagrange 6-Voigt strain, i.e.
+                                    ///< \f$[ E_{11}\; E_{22}\; E_{33}\; 2E_{12}\; 2E_{23}\; 2E_{31} ]\f$
+    const LINALG::Matrix<6,1>& pk2,  ///< 2nd Piola--Kirchhoff 6-Voigt stress, i.e.
+                                     ///< \f$[ S^{11}\; S^{22}\; S^{33}\; S^{12}\; S^{23}\; S^{31} ]\f$
+    const LINALG::Matrix<6,6>& cmat  ///< constitutive tensor
+    );
 }
 
 #endif
