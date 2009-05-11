@@ -114,6 +114,16 @@ STR::TimInt::TimInt
     dserror("Discretisation is not complete!");
   }
 
+  // connect degrees of freedom for periodic boundary conditions
+  // (i.e. for multi-patch nurbs computations)
+  {
+    PeriodicBoundaryConditions::PeriodicBoundaryConditions pbc(actdis);
+    pbc.UpdateDofsForPeriodicBoundaryConditions();
+
+    actdis->ComputeNullSpaceIfNecessary(solver->Params(),true);
+
+    dofrowmap_=actdis->DofRowMap();
+  }
 
   // time state
   time_ = Teuchos::rcp(new TimIntMStep<double>(0, 0, 0.0));  // HERE SHOULD BE SOMETHING LIKE (sdynparams.get<double>("TIMEINIT"))
