@@ -890,25 +890,25 @@ void MAT::ElastSymTensor_o_Multiply(LINALG::Matrix<6,6>& C,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Isochorify(LINALG::Matrix<6,1>* pk2vol,
-                     LINALG::Matrix<6,6>* cvol,
-                     LINALG::Matrix<6,1>* pk2iso,
-                     LINALG::Matrix<6,6>* ciso,
-                     const LINALG::Matrix<6,1>& gl,
-                     const LINALG::Matrix<6,1>& pk2,
-                     const LINALG::Matrix<6,6>& cmat)
+void MAT::VolumetrifyAndIsochorify(LINALG::Matrix<6,1>* pk2vol,
+                                   LINALG::Matrix<6,6>* cvol,
+                                   LINALG::Matrix<6,1>* pk2iso,
+                                   LINALG::Matrix<6,6>* ciso,
+                                   const LINALG::Matrix<6,1>& gl,
+                                   const LINALG::Matrix<6,1>& pk2,
+                                   const LINALG::Matrix<6,6>& cmat)
 {
   // useful call?
 #ifdef DEBUG
-  if ( (cvol == NULL) and (ciso == NULL) and (pk2vol == NULL) and (pk2iso == NULL) )
+  if ( (pk2vol == NULL) and (cvol == NULL) and (pk2iso == NULL) and (ciso == NULL) )
     dserror("Useful call? Apparently you do not want to compute anything"); 
 #endif
 
   // right Cauchy--Green tensor
+  // REMARK: stored in as _strain_ 6-Voigt vector
   LINALG::Matrix<6,1> rcg(gl);
   rcg.Scale(2.0);
-  for (int i=0; i<3; i++)
-    rcg(i) -= 1.0;
+  for (int i=0; i<3; i++) rcg(i) += 1.0;
 
   // third invariant (determinant) of right Cauchy--Green strains
   const double rcg3rd = rcg(0)*rcg(1)*rcg(2)
@@ -930,6 +930,7 @@ void MAT::Isochorify(LINALG::Matrix<6,1>* pk2vol,
 
   // double contraction of 2nd Piola--Kirchhoff stress and right Cauchy--Green strain,
   // i.e. in index notation S^{AB} C_{AB}
+  // REMARK: equal to S^T C, because S is stress-like and C is strain-like 6-Voigt vector
   const double pk2rcg = pk2.Dot(rcg);
 
   // stress splitting
@@ -941,7 +942,7 @@ void MAT::Isochorify(LINALG::Matrix<6,1>* pk2vol,
     pk2vol_.Update(pk2rcg/3.0, icg);
     
     // isochoric 2nd Piola--Kirchhoff stress
-    // S^{AB}_vol = 1/3 (S^{CD} C_{CD}) (C^{-1})^{AB}
+    // S^{AB}_iso = S^{AB} - S^{AB}_{vol}
     if (pk2iso != NULL)
       pk2iso->Update(1.0, pk2, -1.0, pk2vol_);
   }
@@ -955,14 +956,14 @@ void MAT::Isochorify(LINALG::Matrix<6,1>* pk2vol,
     
     // volumetric part of constitutive tensor
     // C^{ABCD}_vol = 2/3 (C^{-1})^{AB} S^{CD}_lin
-    //              + 2/3 (S^{EF} C_{EF}) ( -1/2*(
+    //              - 2/3 (S^{EF} C_{EF}) ( 1/2 (
     //                (C^{-1})^{AC} (C^{-1})^{BD} + (C^{-1})^{AD} (C^{-1})^{BC}
     //              ) )
     LINALG::Matrix<6,6> cvol_(false);
     if (cvol != NULL)
       cvol_.SetView(*cvol);
     cvol_.MultiplyNT(2.0/3.0, icg, pk2lin);
-    AddtoCmatHolzapfelProduct(cvol_, icg, 2.0/3.0*pk2rcg);
+    AddtoCmatHolzapfelProduct(cvol_, icg, -2.0/3.0*pk2rcg);
 
     // isochoric part of constitutive tensor
     // C^{ABCD}_iso = C^{ABCD} - C^{ABCD}_vol

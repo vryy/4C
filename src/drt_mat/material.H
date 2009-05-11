@@ -343,7 +343,7 @@ namespace MAT
    * \author bborn
    * \date 05/09
    */
-  void Isochorify(
+  void VolumetrifyAndIsochorify(
     LINALG::Matrix<6,1>* pk2vol,  ///< volumetric 2nd Piola--Kirchhoff 6-Voigt stress, i.e.
                                   ///< \f$[ S^{11}\; S^{22}\; S^{33}\; S^{12}\; S^{23}\; S^{31} ]_\text{vol}\f$,
                                   ///< if != NULL
