@@ -438,9 +438,6 @@ protected:
   RCP<Epetra_Vector>  phidtnp_;
   RCP<Epetra_Vector>  phidtn_;
 
-  /// inverse values of phi at time n+1
-  RCP<Epetra_Vector>    invphinp_;
-
   /// true (rescaled) residual vector without zeros at Dirichlet conditions
   RCP<Epetra_Vector>    trueresidual_;
 

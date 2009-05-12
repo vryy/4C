@@ -1086,7 +1086,7 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField()
 
 
 /*----------------------------------------------------------------------*
- | set the actual velocity fields and sugrid diffusivities    gjb 04/08 |
+ | set the actual velocity fields and subgrid diffusivities   gjb 04/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::SetVelocityField(
 RCP<const Epetra_Vector> extvel,
