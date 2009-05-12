@@ -187,7 +187,7 @@ void MAT::LogNeoHooke::EvaluateModelZero(
     const double delta7 = 2.0*(mue - lambda*std::log(detf));
     
     // contribution: Cinv \otimes Cinv
-    cmat.MultiplyNT(delta6, invc, invc, 1.0);
+    cmat.MultiplyNT(delta6, invc, invc);
 
     // contribution: Cinv \odot Cinv
     AddtoCmatHolzapfelProduct(cmat, invc, delta7);
