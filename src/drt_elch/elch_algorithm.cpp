@@ -118,11 +118,13 @@ void ELCH::Algorithm::DoTransportStep()
     cout<<"\n******************\n TRANSPORT SOLVER \n******************\n";
   }
 
-  // get new velocity from Navier-Stokes solver
-  GetCurrentFluidVelocity();
-
-  // transfer convective velocity
-  ScaTraField().SetVelocityField(ConvectiveVelocity());
+  // transfer actual velocity fields
+  ScaTraField().SetVelocityField(
+      FluidField().Velnp(),
+      FluidField().SubgrVisc(),
+      FluidField().TrueResidual(),
+      FluidField().Discretization()
+  );
 
   // solve coupled transport equations for ion concentrations and electric 
   // potential

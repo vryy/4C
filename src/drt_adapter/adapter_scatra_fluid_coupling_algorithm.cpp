@@ -42,11 +42,13 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
   // time step size
   dt_ = prbdyn.get<double>("TIMESTEP");
 
-  // get RCP to actual velocity field (time n+1)
-  velocitynp_=FluidField().ExtractVelocityPart(FluidField().Velnp());
-
   // transfer the initial convective velocity from initial fluid field to scalar transport field
-  ScaTraField().SetVelocityField(ConvectiveVelocity());
+  ScaTraField().SetVelocityField(
+      FluidField().Velnp(),
+      FluidField().SubgrVisc(),
+      FluidField().TrueResidual(),
+      FluidField().Discretization()
+  );
 
   // ensure that both single field solvers use the same 
   // time integration scheme

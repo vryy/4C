@@ -107,12 +107,14 @@ void SCATRA::PassiveScaTraAlgorithm::DoTransportStep()
   {
     cout<<"\n******************\n TRANSPORT SOLVER \n******************\n";
   }
-  
-  // get new velocity from Navier-Stokes solver
-  GetCurrentFluidVelocity();
 
   // transfer convective velocity to scalar transport field solver
-  ScaTraField().SetVelocityField(ConvectiveVelocity());
+  ScaTraField().SetVelocityField(
+      FluidField().Velnp(),
+      FluidField().SubgrVisc(),
+      FluidField().TrueResidual(),
+      FluidField().Discretization()
+  );
 
   // solve the linear convection-diffusion equation(s)
   ScaTraField().Solve();

@@ -137,19 +137,17 @@ public:
   void SetVelocityField();
 
   /// set the velocity field (Navier-Stokes solution)
-  void SetVelocityField(RCP<const Epetra_Vector> extvel);
+  void SetVelocityField(
+      RCP<const Epetra_Vector> extvel,
+      RCP<const Epetra_Vector> extsubgrvisc,
+      RCP<const Epetra_Vector> extresidual,
+      RCP<DRT::Discretization> fluiddis);
 
   /// set the initial scalar field phi
   void SetInitialField(int init,int startfuncno);
 
   /// compute values at intermediate time steps (required for generalized-alpha)
   virtual void ComputeIntermediateValues()=0;
-
-  /// set velocity field for low-Mach-number flow
-  void SetLomaVelocity(RCP<const Epetra_Vector> extvel,
-                       RCP<const Epetra_Vector> extsubgrvisc,
-                       RCP<const Epetra_Vector> extresidual,
-                       RCP<DRT::Discretization> fluiddis);
 
   /// set initial thermodynamic pressure and time derivative for low-Mach-number flow
   void SetInitialThermPressure(const double thermpress);

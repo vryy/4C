@@ -308,11 +308,13 @@ void COMBUST::Algorithm::DoGfuncField()
    * Geschwindigkeit.
    */
 
-  // exract new velocity from fluid field as provided by the Navier-Stokes solver
-  GetCurrentFluidVelocity();
-
   // assign the fluid velocity to the G-function field as convective velocity
-  ScaTraField().SetVelocityField(ConvectiveVelocity());
+  ScaTraField().SetVelocityField(
+      FluidField().Velnp(),
+      FluidField().SubgrVisc(),
+      FluidField().TrueResidual(),
+      FluidField().Discretization()
+  );
 
   // solve nonlinear convection-diffusion equation
   ScaTraField().NonlinearSolve();

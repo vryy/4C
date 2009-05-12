@@ -87,7 +87,7 @@ void loma_dyn(int disnumff,int disnumscatra, int restart)
   const Teuchos::ParameterList& lomacontrol = DRT::Problem::Instance()->LOMAControlParams();
 
   // create a LOMA::Algorithm instance
-  Teuchos::RCP<LOMA::Algorithm> loma = Teuchos::rcp(new LOMA::Algorithm(comm,fluiddis,lomacontrol));
+  Teuchos::RCP<LOMA::Algorithm> loma = Teuchos::rcp(new LOMA::Algorithm(comm,lomacontrol));
 
   // read the restart information, set vectors and variables
   if (restart) loma->ReadRestart(restart);
