@@ -223,6 +223,7 @@ Input/sohex8_surfactant.dat                             x        x        x     
 Input/soweg6_disp_patchtest.dat                         x        x        x        -        -        -
 Input/sotet4_patchtest.dat                              x        x        x        -        -        -
 Input/sotet10_patchtest.dat                             x        x        x        -        -        -
+Input/loma_2d_heated_chan_30x100.dat                    x        x        x        x        -        -
 Input/scatra_graetz_problem_system.dat                  x        x        x        -        -        -
 Input/scatra_gaussian_hill_pbc.dat                      x        x        x        -        -        -
 Input/scatra_gaussian_hill_pbc_genalpha.dat             x        x        x        -        -        -
