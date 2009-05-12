@@ -177,6 +177,19 @@ bool DRT::ELEMENTS::So_sh8p8::ReadElement()
       dserror("Reading of SO_SH8P8 LIN type failed");
   }
 
+  // Isochoric way
+  iso_ = iso_material;
+  frchar("ISO",buffer,&ierr);
+  if (ierr)
+  {
+    if (strncmp(buffer,"Mat",3)==0)
+      iso_ = iso_material;
+    else if (strncmp(buffer,"Enf",3)==0)
+      iso_ = iso_enforced;
+    else
+      dserror("Reading of SO_SH8P8 ISO type failed");
+  }
+
   return true;
 } // So_sh8p8::ReadElement()
 

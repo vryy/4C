@@ -711,7 +711,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
       // Ert = (1-s)/2 * Ert(SP A) + (1+s)/2 * Ert(SP C)
       lstrain(5) = 0.5*(1.0-s[gp]) * (dydt_A - dYdt_A) + 0.5*(1.0+s[gp]) * (dydt_C - dYdt_C);
     }
-    // ANS modification of strains ************************************** ANS
+    // ANS modification of strains
 
     // push local/natural/parametric glstrains forward to global/material space
     LINALG::Matrix<NUMSTR_,1> glstrain;
@@ -735,19 +735,24 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
     if (iostrain != INPAR::STR::strain_none)
       Strain(elestrain,iostrain,gp,detdefgrad,defgrad,invdefgrad,glstrain);
 
-    /* call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
-    ** Here all possible material laws need to be incorporated,
-    ** the stress vector, a C-matrix, and a density must be retrieved,
-    ** every necessary data must be passed.
-    */
-    double density = 0.0;
-    LINALG::Matrix<NUMSTR_,NUMSTR_> cmat(true);
-    LINALG::Matrix<NUMSTR_,1> stress(true);
-    soh8_mat_sel(&stress,&cmat,&density,&glstrain,&defgrad,gp,params);
-    // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
-
     // linearly interpolated pressure at Gauss point
     const double pressure = (shapefcts[gp]).Dot(pres);
+
+    // call material law
+    //
+    // Here all possible material laws need to be incorporated,
+    // the stress vector, a C-matrix, and a density must be retrieved,
+    // every necessary data must be passed.
+    double density = 0.0;
+    LINALG::Matrix<NUMSTR_,1> stress(true);
+    LINALG::Matrix<NUMSTR_,NUMSTR_> cmat(true);
+    soh8_mat_sel(&stress,&cmat,&density,&glstrain,&defgrad,gp,params);
+    if (iso_ == iso_enforced) {
+      LINALG::Matrix<NUMSTR_,1> pk2gen(stress);  // may contain non-isochoric material response
+      LINALG::Matrix<NUMSTR_,NUMSTR_> cgen(cmat);  // may contain non-isochoric material response
+      MAT::VolumetrifyAndIsochorify(NULL,NULL,&stress,&cmat,glstrain,pk2gen,cgen);
+    }
+    // end of call material law
 
     // return Gauss point stresses if necessary
     if (iostress != INPAR::STR::stress_none)

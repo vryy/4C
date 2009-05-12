@@ -66,7 +66,8 @@ class So_sh8;
 /// - [6] T. Vu-Quoc, "Optimal solid shells for non-linear analyses
 ///     of multilayer composites", CMAME 2003
 /// - [7] S. Klinkel, Gruttmann, W. Wagner, "A robust non-linear solid shell element
-///     based on a mixed variational fromulation"
+///     based on a mixed variational fromulation", Comp. Meth. in Appl. Mech. and Engrg.,
+///     195:1-3, p. 179-201, 2006.
 ///
 /// \author bborn
 /// \date 03/09
@@ -100,6 +101,13 @@ private:
   {
     ans_none,  ///< DEBUG ONLY: ANS switched off
     ans_lateral  ///< ANS active in t-/out-of-plane/thickness direction
+  };
+
+  /// way to obtain isochoric material stress response
+  enum IsochoricType
+  {
+    iso_material,  ///< done completely by material model
+    iso_enforced  ///< volumetric contribution is split of material stress reponse
   };
 
   /// Type of Voigt vector
@@ -301,6 +309,9 @@ private:
 
   /// kind of linearization
   LinearizationType lin_;
+
+  /// kind of isotropic material response handling
+  IsochoricType iso_;
 
   /// @name Evaluate force and stiffness
   //@{
