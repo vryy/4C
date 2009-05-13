@@ -28,28 +28,11 @@ namespace MAT
   {
 
     /*----------------------------------------------------------------------*/
-    /// Collection of hyperelastic materials
+    /// Interface for hyperelastic potentials
     ///
-    /// This collection offers to additively compose a stress response
-    /// based on summands defined separately.  This is possible, because
-    /// we deal with hyperelastic materials, which are composed
-    /// of potentials.  Effectively, we want
-    ///\f[
-    ///  \Psi(\boldsymbol{C}) = \sum_i \Psi_i(\boldsymbol{C})
-    ///\f]
-    /// in which the individual \f$\Psi_i\f$ is implemented as #MAT::ELAST::Summand.
-    ///
-    /// Quite often the right Cauchy-Green 2-tensor \f$\boldsymbol{C}\f$
-    /// is replaced by its various invariant forms as argument.
-    ///
-    /// The task of ElastHyper is the storage or organisation of the different
-    /// potential energies and their derivatives to obtain the actual
-    /// stress response and the elasticity tensor.
-    ///
-    /// <h3>References</h3>
-    /// <ul>
-    /// <li> [1] GA Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
-    /// </ul>
+    /// The interface defines the way how MAT::ElastHyper can access
+    /// coefficients to build the actual stress response and 
+    /// elasticity tensor.
     ///
     /// \author rausch,tk,bborn
     /// \date 05/09
