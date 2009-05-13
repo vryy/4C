@@ -80,6 +80,9 @@ namespace MAT {
 	    /// \b c_Scale: Scale factor for material parameter c1 (Neo-Hookean) depending on used FE units
 	    const double c_scale_;
 
+	    /// \b PATH: Path to the folder structre for CHARMm problem type
+	    const string* path_;
+
 
 	    /// \b DENS: mass density
 	    const double density_;
@@ -277,6 +280,15 @@ namespace MAT {
 		map<string, double>& CHARMmPar,
 		LINALG::SerialDenseVector& charmm_result);
 
+	void Readresults(
+		map<string, double>& CHARMmPar,
+		LINALG::SerialDenseVector& charmm_result);
+
+	void Reader(
+		const ostringstream& file,
+		map<string, double>& content);
+	
+
 	/*!
 	 \brief Function to read results from the minimized CHARMm output
 
@@ -360,7 +372,8 @@ namespace MAT {
 	}
 	/// \b c_Scale: Scale factor for material parameter c1 (Neo-Hookean) depending on used FE units
 	inline double CScale() const { return params_->c_scale_; }
-
+	/// \b PATH: Path to the folder structre for CHARMm problem type
+	inline string Path() { return (*params_->path_); }
 	/// \b DENS: density
 	inline double Density() const {
 	    return params_->density_;

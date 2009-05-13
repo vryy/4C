@@ -48,6 +48,7 @@ timeakma_(matdata->GetDouble("Time_AKMA")),
 timescale_(matdata->GetDouble("Time_Scale")),
 hard_(matdata->GetInt("HARD")),
 c_scale_(matdata->GetDouble("c_Scale")),
+path_(matdata->Get<string>("PATH")),
 density_(matdata->GetDouble("DENS"))
 {
 }
@@ -341,6 +342,7 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
 	FCD_direction(0) = dir_eigenv[0](0, 2);
 	FCD_direction(1) = dir_eigenv[0](1, 2);
 	FCD_direction(2) = dir_eigenv[0](2, 2);
+	//printf("%f",FCD_ENDD);
 	//cout << "FCD: " << time << " STARTD: " << FCD_STARTD << " ENDD: " << FCD_ENDD << endl;
 	
 	// Compute the acceleration in FCD direction
@@ -406,19 +408,22 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
 	//double Volume = 1 * 1E-27; // nm^3 *  (10^-9)^3
 	double noAtoms = charmm_result[3];
 	double I1_lastt = (*his)[9];
-	double c = 1 / (I1 - I1_lastt + 3) * 1 / Volume * E_MD * 1000 * 4.1868 * (noAtoms / 6.02214E23);
+	double c;
+	c = (1 / (I1 - I1_lastt + 3)) * (1 / Volume) * E_MD * 1000 * 4.1868 * (noAtoms / 6.02214E23);
+	c = (1 / (I1 - I1_lastt)) * (1 / Volume) * E_MD * 1000 * 4.1868 * ( 1 / 6.02214E23);
+
 	if (isnan(c)) c = 0;
 	if (isinf(c)) c = 0;
 	// c is in N/m^2 -> scaling necessary
 	c = c_scale * c;
-	//c = 1E-12 * c;
+	//c = 1E-10 * c;
 	vector<double>* his_mat;
 	his_mat = data_.GetMutable<vector<double> >("his_mat");
 	if (FCD_STARTD != FCD_ENDD) {
 	    if (I1 == 3) (*his_mat)[0] = c;
 	    else (*his_mat)[0] = c * ((I1 - I1_lastt) / (I1 - 3));
-	    //cout << "c = " << (*his_mat)[0] << " I1_lastt = " << I1_lastt <<  endl
-	    //<< "-------------------------------------------------------" << endl;
+	    cout << "c = " << (*his_mat)[0] << " I1_lastt = " << I1_lastt <<  endl
+	    << "-------------------------------------------------------" << endl;
 	} else {
 	    (*his_mat)[0] = 0.0;
 	}
@@ -434,7 +439,7 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
 
     // Material Constants c1 and beta
     double ym = 1; // intermediate for testing purpose only
-    double nu = 0.3; // intermediate for testing purpose only
+    double nu = 0.45; // intermediate for testing purpose only
     double c1 = 0.5 * ym / (2 * (1 + nu)); // intermediate for testing purpose only
     double beta = nu / (1 - 2 * nu);
     if (time > 0.0) {
@@ -668,7 +673,7 @@ void MAT::CHARMM::CHARMmfileapi(
     //char* output = "output/FE_cold.out";
     //char* energy = "output/energy_coupling_0kbt.out";
     //char* volume = "output/volume_coupling_0kbt.out";
-    const string mdnature = "cold"; // cold = minimization; hot = fully dynamic with thermal energy; pert = pertubation
+    const string mdnature = "thermal"; // cold = minimization; thermal = fully dynamic with thermal energy; pert = pertubation
     output << "output/ACE_" << CHARMmPar["FCD_STARTD"] << "_" << CHARMmPar["FCD_ENDD"] << "_" << time(NULL) << ".out";
     energy << "output/energy_" << CHARMmPar["FCD_STARTD"] << "_" << CHARMmPar["FCD_ENDD"] << ".out";
     volume << "output/volume_" << CHARMmPar["FCD_STARTD"] << "_" << CHARMmPar["FCD_ENDD"] << ".out";
@@ -690,24 +695,19 @@ void MAT::CHARMM::CHARMmfileapi(
     if (stat(outputfile.str().c_str(), &outfileinfo) != 0 || stat(energyfile.str().c_str(), &energyfileinfo) != 0 || stat(volumefile.str().c_str(), &volumefileinfo) != 0 || dont_use_old_results) {
 	// Assemble the command line for charmm
 	ostringstream command(ios_base::out);
-	if (serpar.compare("ser") == 0) {
-	    command << "cd " << path << " && "
-		    << charmm << " FCDSTARTD=" << CHARMmPar["FCD_STARTD"] << " FCDENDD=" << CHARMmPar["FCD_ENDD"]
-		    << " FCDX=" << CHARMmPar["FCD_dir_x"] << " FCDY=" << CHARMmPar["FCD_dir_y"] << " FCDZ=" << CHARMmPar["FCD_dir_z"]
-		    << " FCDForce=" << CHARMmPar["FCD_Force"]
-		    << " SCDSTARTD=" << CHARMmPar["SCD_STARTD"] << " SCDENDD=" << CHARMmPar["SCD_ENDD"]
-		    << " SCDX=" << CHARMmPar["SCD_dir_x"] << " SCDY=" << CHARMmPar["SCD_dir_y"] << " SCDZ=" << CHARMmPar["SCD_dir_z"]
-		    << " MTIME=" << CHARMmPar["movetime"]
-		    << " < " << input << " > " << output.str();
-	} else if (serpar.compare("par") == 0) {
-	    command << "cd " << path << " && "
-		    << "openmpirun -np 2 " << mpicharmm << " FCDSTARTD=" << CHARMmPar["FCD_STARTD"] << " FCDENDD=" << CHARMmPar["FCD_ENDD"]
-		    << " FCDX=" << CHARMmPar["FCD_dir_x"] << " FCDY=" << CHARMmPar["FCD_dir_y"] << " FCDZ=" << CHARMmPar["FCD_dir_z"]
-		    << " FCDForce=" << CHARMmPar["FCD_Force"]
-		    << " SCDSTARTD=" << CHARMmPar["SCD_STARTD"] << " SCDENDD=" << CHARMmPar["SCD_ENDD"]
-		    << " SCDX=" << CHARMmPar["SCD_dir_x"] << " SCDY=" << CHARMmPar["SCD_dir_y"] << " SCDZ=" << CHARMmPar["SCD_dir_z"]
-		    << " MTIME=" << CHARMmPar["movetime"]
-		    << " INPUTFILE=" << input
+	if (serpar.compare("ser") == 0) command << "cd " << path << " && " << charmm;
+	else if (serpar.compare("par") == 0) command << "cd " << path << " && " << "openmpirun -np 2 " << mpicharmm;
+	else dserror("What you want now? Parallel or not!");
+	command << " FCDSTARTD=" << CHARMmPar["FCD_STARTD"] << " FCDENDD=" << CHARMmPar["FCD_ENDD"]
+		<< " FCDX=" << CHARMmPar["FCD_dir_x"] << " FCDY=" << CHARMmPar["FCD_dir_y"] << " FCDZ=" << CHARMmPar["FCD_dir_z"]
+		<< " FCDForce=" << CHARMmPar["FCD_Force"]
+		<< " SCDSTARTD=" << CHARMmPar["SCD_STARTD"] << " SCDENDD=" << CHARMmPar["SCD_ENDD"]
+		<< " SCDX=" << CHARMmPar["SCD_dir_x"] << " SCDY=" << CHARMmPar["SCD_dir_y"] << " SCDZ=" << CHARMmPar["SCD_dir_z"]
+		<< " MTIME=" << CHARMmPar["movetime"];
+	if (serpar.compare("ser") == 0)
+	    command << " < " << input << " > " << output.str();
+	else if (serpar.compare("par") == 0) {
+	    command << " INPUTFILE=" << input
 		    << " < " << "stream.inp" << " > " << output.str();
 	} else dserror("What you want now? Parallel or not!");
 	if (debug == 1) cout << "CHARMM command:" << endl << command.str() << endl;
@@ -725,11 +725,92 @@ void MAT::CHARMM::CHARMmfileapi(
     // Read the results
     if (mdnature.compare("cold") == 0) {
 	Readcoldresults(outputfile, energyfile, volumefile, debug, charmm_result);
+    } else if (mdnature.compare("thermal") == 0) {
+	Readresults(CHARMmPar, charmm_result);
     } else {
 	dserror("No included MD Simulation technique given!.");
     }
     //cout << endl;
     cout.flags(flags); // Set the flags to the way they were
+}
+
+//*----------------------------------------------------------------------*/
+//! Read results from thermal CHARMm results files
+/*----------------------------------------------------------------------*/
+void MAT::CHARMM::Readresults(map<string, double>& CHARMmPar,
+	LINALG::SerialDenseVector& charmm_result) {
+
+    // Check the status of CHARMm and if it run through
+    ostringstream status(ios_base::out);
+    status << Path() << "output/status_" << CHARMmPar["FCD_ENDD"] << ".out";
+    map<string, double> md_status;
+    md_status.clear();
+    Reader(status, md_status);
+    if (!md_status["CHARMMEND"]) dserror("CHARMm API: Run not successful till end.");
+    else cout << setw(5) << left << "0" << flush;
+
+    // Get the results at STARTD + ENDD
+    ostringstream results(ios_base::out);
+    map<string, double> md_STARTD;
+    md_STARTD.clear();
+    results << Path() << "output/results_" << CHARMmPar["FCD_STARTD"] << ".out";
+    Reader(results, md_STARTD);
+    results.str("");
+    map<string, double> md_ENDD;
+    md_ENDD.clear();
+    results << Path() << "output/results_" << CHARMmPar["FCD_ENDD"] << ".out";
+    Reader(results, md_ENDD);
+
+    // Print out Information line
+    cout << setw(4) << "dV:" << setw(15) << left << scientific << setprecision(6) << (md_ENDD["E"] - md_STARTD["E"]);
+    cout << setw(8) << "#Atoms:" << setw(10) << left << fixed << setprecision(0) << md_ENDD["NUM"];
+    cout << setw(8) << "Volume:" << setw(12) << left << setprecision(3) << md_ENDD["VOL"] << endl;
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // Results vector: charmm_result
+    // (Energy STARTD, Energy ENDD, #Atoms STARTD, #Atoms ENDD, Volume STARTD, Volume ENDD)
+    charmm_result[0] = md_STARTD["E"];
+    charmm_result[1] = md_ENDD["E"];
+    charmm_result[2] = md_STARTD["NUM"];
+    charmm_result[3] = md_ENDD["NUM"];
+    charmm_result[4] = md_STARTD["VOL"];
+    charmm_result[5] = md_ENDD["VOL"];
+    ////////////////////////////////////////////////////////////////////////////
+
+}
+
+
+/*----------------------------------------------------------------------*/
+//! Read status and results files and make results map
+/*----------------------------------------------------------------------*/
+void MAT::CHARMM::Reader(const ostringstream& file,
+	map<string, double>& content) {
+
+    ifstream filestream(file.str().c_str());
+    string line;
+    if (filestream.is_open()) {
+	while (!filestream.eof()) {
+	    getline(filestream,line);
+	    if (line.compare(0,1,"P") == 0) {
+		vector<string> token;
+		string buf;
+		stringstream linestream(line);
+		while (linestream >> buf)
+		    token.push_back(buf);
+		content[token[1].c_str()] = atof(token[2].c_str());
+		token.clear();
+	    }
+	}
+	filestream.close();
+    } else dserror("CHARMM API READER: File cannot be opened: ");
+
+    
+    //cout << endl << "File Content: " << endl;
+    //for( map<string, double>::iterator ii=content.begin(); ii!=content.end(); ++ii) {
+    //	cout << (*ii).first << ": " << (*ii).second << endl;
+    //}
+    //cout << endl;
+
 }
 
 
@@ -858,15 +939,24 @@ void MAT::CHARMM::CHARMmfakeapi(const double STARTD,
 
     ////////////////////////////////////////////////////////////////////////////
     // Hard coded results from MD
-    MD(0, 0) = 0.0;
-    MD(0, 1) = -330.912;
-    MD(0, 2) = 1202;
-    MD(0, 3) = 9954.29;
+    //MD(0, 0) = 0.0;
+    //MD(0, 1) = -330.912;
+    //MD(0, 2) = 1202;
+    //MD(0, 3) = 9954.29;
 
-    MD(1, 0) = -0.8125;
-    MD(1, 1) = -321.671;
-    MD(1, 2) = 1141;
-    MD(1, 3) = 9441.08;
+    //MD(1, 0) = -0.8125;
+    //MD(1, 1) = -321.671;
+    //MD(1, 2) = 1141;
+    //MD(1, 3) = 9441.08;
+    MD(0, 0) = 0.0;
+    MD(0, 1) = -1.0;
+    MD(0, 2) = 6;
+    MD(0, 3) = 45.4763;
+
+    MD(1, 0) = 0.0;
+    MD(1, 1) = -0.0;
+    MD(1, 2) = 6;
+    MD(1, 3) = 46.3414;
     //
     ////////////////////////////////////////////////////////////////////////////
 

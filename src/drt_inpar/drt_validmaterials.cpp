@@ -341,6 +341,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"Time_Scale","Linear scale factor for time span");
     AddNamedInt(m,"HARD","Use hard coded results");
     AddNamedReal(m,"c_Scale","Scale factor for c (Neo-Hookean)");
+    AddNamedString(m,"PATH","Location of CHARMm problem case","none");    
     AddNamedReal(m,"DENS","mass density");
     
     AppendMaterialDefinition(matlist,m);
