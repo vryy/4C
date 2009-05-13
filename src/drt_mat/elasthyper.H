@@ -24,6 +24,7 @@ Maintainer: Burkhard Bornemann
 
 namespace MAT
 {
+
   // forward declaration
   class ElastHyper;
 
@@ -32,26 +33,7 @@ namespace MAT
     /*----------------------------------------------------------------------*/
     /// Collection of hyperelastic materials
     ///
-    /// This collection offers to additively compose a stress response
-    /// based on summands defined separately.  This is possible, because
-    /// we deal with hyperelastic materials, which are composed
-    /// of potentials.  Effectively, we want
-    ///\f[
-    ///  \Psi(\boldsymbol{C}) = \sum_i \Psi_i(\boldsymbol{C})
-    ///\f]
-    /// in which the individual \f$\Psi_i\f$ is implemented as #MAT::ELAST::Summand.
-    ///
-    /// Quite often the right Cauchy-Green 2-tensor \f$\boldsymbol{C}\f$
-    /// is replaced by its various invariant forms as argument.
-    ///
-    /// The task of ElastHyper is the storage or organisation of the different
-    /// potential energies and their derivatives to obtain the actual
-    /// stress response and the elasticity tensor.
-    ///
-    /// <h3>References</h3>
-    /// <ul>
-    /// <li> [1] GA Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
-    /// </ul>
+    /// Storage map of hyperelastic summands.
     ///
     /// \author rausch,tk,bborn
     /// \date 05/09
@@ -63,6 +45,9 @@ namespace MAT
     public:
 
       /// standard constructor
+      ///
+      /// This constructor recursively calls the constructors of the
+      /// parameter sets of the hyperelastic summands.
       ElastHyper(
         Teuchos::RCP<MAT::PAR::Material> matdata
         );
@@ -110,6 +95,28 @@ namespace MAT
 
   /*----------------------------------------------------------------------*/
   /// collection hyperelastic materials
+  ///
+  /// This collection offers to additively compose a stress response
+  /// based on summands defined separately.  This is possible, because
+  /// we deal with hyperelastic materials, which are composed
+  /// of (Helmholtz free energy density) potentials.  Effectively, we want
+  ///\f[
+  ///  \Psi(\boldsymbol{C}) = \sum_i \Psi_i(\boldsymbol{C})
+  ///\f]
+  /// in which the individual \f$\Psi_i\f$ is implemented as #MAT::ELAST::Summand.
+  ///
+  /// Quite often the right Cauchy-Green 2-tensor \f$\boldsymbol{C}\f$
+  /// is replaced by its various invariant forms as argument.
+  ///
+  /// The task of ElastHyper is the evaluation of the
+  /// potential energies and their derivatives to obtain the actual
+  /// stress response and the elasticity tensor. The storage is located
+  /// at the associated member #params_.
+  ///
+  /// <h3>References</h3>
+  /// <ul>
+  /// <li> [1] GA Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
+  /// </ul>
   ///
   /// \author rausch,tk,bborn
   /// \date 05/09

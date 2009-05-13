@@ -27,12 +27,21 @@ namespace MAT
   namespace ELAST
   {
 
+    /// This namespace contains the input data -- parameter -- for
+    /// hyperelastic summands 
+    namespace PAR { }
+
     /*----------------------------------------------------------------------*/
     /// Interface for hyperelastic potentials
     ///
     /// The interface defines the way how MAT::ElastHyper can access
     /// coefficients to build the actual stress response and 
     /// elasticity tensor.
+    ///
+    /// <h3>References</h3>
+    /// <ul>
+    /// <li> [1] GA Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
+    /// </ul>
     ///
     /// \author rausch,tk,bborn
     /// \date 05/09
