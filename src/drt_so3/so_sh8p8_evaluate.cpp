@@ -735,9 +735,6 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
     if (iostrain != INPAR::STR::strain_none)
       Strain(elestrain,iostrain,gp,detdefgrad,defgrad,invdefgrad,glstrain);
 
-    // linearly interpolated pressure at Gauss point
-    const double pressure = (shapefcts[gp]).Dot(pres);
-
     // call material law
     //
     // Here all possible material laws need to be incorporated,
@@ -753,6 +750,9 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
       MAT::VolumetrifyAndIsochorify(NULL,NULL,&stress,&cmat,glstrain,pk2gen,cgen);
     }
     // end of call material law
+
+    // linearly interpolated pressure at Gauss point
+    const double pressure = (shapefcts[gp]).Dot(pres);
 
     // return Gauss point stresses if necessary
     if (iostress != INPAR::STR::stress_none)
