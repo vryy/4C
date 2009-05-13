@@ -483,6 +483,7 @@ INPUT                  = index.doc \
                          ../src/drt_ale2 \
                          ../src/drt_ale3 \
                          ../src/drt_mat \
+                         ../src/drt_matelast \
                          ../src/drt_stru_multi \
                          ../src/post_drt_common \ 
                          ../src/post_ensight \

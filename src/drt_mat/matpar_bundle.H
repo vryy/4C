@@ -21,7 +21,6 @@ Maintainer: Burkhard Bornemann
 /* headers */
 #include "../drt_inpar/inpar_material.H"
 #include "matpar_material.H"
-#include "material.H"
 #include <Epetra_SerialDenseVector.h>
 #include <Epetra_SerialDenseMatrix.h>
 #include <Teuchos_RCP.hpp>

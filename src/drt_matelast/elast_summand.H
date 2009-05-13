@@ -1,0 +1,129 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file elast_summand.H
+
+<pre>
+Maintainer: Burkhard Bornemann
+            bornemann@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15237
+</pre>
+*/
+/*----------------------------------------------------------------------*/
+#ifndef ELAST_SUMMAND_H
+#define ELAST_SUMMAND_H
+
+#ifdef CCADISCRET
+
+#include "../drt_inpar/inpar_material.H"
+#include "../drt_mat/matpar_parameter.H"
+#include "../drt_mat/material.H"
+
+namespace MAT
+{
+
+  /// This namespace contains hyperelastic summands 
+  /// and their derivatives with respect to invariants
+  namespace ELAST
+  {
+
+    /*----------------------------------------------------------------------*/
+    /// collection hyperelastic materials
+    ///
+    /// \author rausch,tk,bborn
+    /// \date 05/09
+    class Summand
+    {
+    public:
+
+      /// standard constructor
+      Summand() { ; }
+
+      /// destructor
+      virtual ~Summand() { ; }
+
+      virtual INPAR::MAT::MaterialType MaterialType() const = 0;
+
+      /// Create summand object by input parameter ID
+      static Teuchos::RCP<MAT::ELAST::Summand> Factory(
+        int matnum  ///< material ID
+        );
+
+      /// retrieve coefficients of first and second derivative
+      /// of summand with respect to principal invariants
+      ///
+      /// The coefficients \f$\gamma_i\f$ and \f$\delta_j\f$ are based
+      /// on the summand \f$\Psi(I_{\boldsymbol{C}},II_{\boldsymbol_{C}},III_{\boldsymbol{C}})\f$
+      /// in which the principal invariants of the right Cauchy-Green tensor \f$\boldsymbol{C}\f$
+      /// are the arguments, cf. Holzapfel [1], 
+      ///\f[
+      ///  I_{\boldsymbol{C}} = C_{AA}
+      ///  \quad
+      ///  II_{\boldsymbol{C}} = 1/2 \big( \mathrm{trace}^2(\boldsymbol{C}) - \mathrm{trace}(\boldsymbol{C}^2) \big)
+      ///  \quad
+      ///  III_{\boldsymbol{C}} = \det(\boldsymbol{C})
+      ///\f]
+      /// 
+      /// cf. Holzapfel [1], p. 216 (6.32) and p. 248
+      ///\f[
+      /// \gamma_1 = 2*( \frac{\partial \Psi}{\partial Ic} 
+      ///          + Ic*\frac{\partial \Psi}{\partial IIc} );
+      ///\f]
+      ///\f[
+      /// \gamma_2 = -2*\frac{\partial \Psi}{\partial IIc};
+      ///\f]
+      ///\f[
+      /// \gamma_3 = 2*IIIc*\frac{\partial \Psi}{\partial IIIc};
+      ///\f]
+      ///
+      /// material constitutive tensor coefficients
+      /// cf. Holzapfel [1], p. 261
+      ///\f[
+      /// \delta_1 = 4*( \frac{\partial^2 \Psi}{\partial Ic^2} 
+      ///          + 2*Ic*\frac{\partial^2 diff(\Psi}{\partial Ic \partial IIc}
+      ///          + \frac{\partial \Psi}{\partial IIc} 
+      ///          + Ic^2*\frac{\partial^2 \Psi}{\partial IIc^2} )
+      ///\f]
+      ///\f[
+      /// \delta_2 = -4*( \frac{\partial^2 diff(\Psi}{\partial Ic \partial IIc}
+      ///          + Ic*\frac{\partial^2 \Psi}{\partial IIc^2} )
+      ///\f]
+      ///\f[
+      /// \delta_3 = 4*( IIIc*\frac{\partial^2 \Psi}{\partial Ic \partial IIIc} 
+      ///          + Ic*IIIc*\frac{\partial^2 diff(\Psi}{\partial IIc \partial IIIc} )
+      ///\f]
+      ///\f[
+      /// \delta_4 = 4*\frac{\partial^2 \Psi}{\partial IIc^2}
+      ///\f]
+      ///\f[
+      /// \delta_5 = -4*IIIc*\frac{\partial^2 \Psi}{\partial IIc \partial IIIc}
+      ///\f]
+      ///\f[
+      /// \delta_6 = 4*( IIIc*\frac{\partial \Psi}{\partial IIIc} 
+      ///          + IIIc^2*\frac{\partial^2 \Psi}{\partial IIIc^2} )
+      ///\f]
+      ///\f[
+      /// \delta_7 = -4*IIIc*\frac{\partial \Psi}{\partial IIIc}
+      ///\f]
+      ///\f[
+      /// \delta_8 = -4*\frac{\partial \Psi}{\partial IIc}
+      ///\f]
+      virtual void AddCoefficientsPrincipal(
+        bool& havecoefficients,  ///< non-zero coefficients of this type are provided
+        LINALG::Matrix<3,1>& gamma,  ///< see above
+        LINALG::Matrix<8,1>& delta,  ///< see above
+        const LINALG::Matrix<3,1>& prinv  ///< principal invariants of right Cauchy-Green tensor
+        ) = 0;
+
+    private:
+      
+
+    };  // class Summand
+
+  }  // namespace ELAST
+
+}
+
+#endif
+
+#endif

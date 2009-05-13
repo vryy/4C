@@ -785,6 +785,35 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
 
+  /*----------------------------------------------------------------------*/
+  // collection of hyperelastic materials
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_ElastHyper",
+                                            "list/collection of hyperelastic materials, i.e. material IDs",
+                                            INPAR::MAT::m_elasthyper));
+    
+    AddNamedInt(m,"NUMMAT","number of materials/potentials in list");
+    AddNamedIntVector(m,"MATIDS","the list material/potential IDs","NUMMAT");
+    AddNamedReal(m,"DENS","material mass density");
+    
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*--------------------------------------------------------------------*/
+  // logarithmic neo-Hooke material acc. to Bonet and Wood
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_LogNeoHooke",
+                                            "logarithmic neo-Hooke material acc. to Bonet and Wood",
+                                            INPAR::MAT::mes_logneohooke));
+
+    AddNamedReal(m,"YOUNG","Young's modulus");
+    AddNamedReal(m,"NUE","Poisson's ratio");
+    
+    AppendMaterialDefinition(matlist,m);
+  }
+
 
   /*----------------------------------------------------------------------*/
   // deliver

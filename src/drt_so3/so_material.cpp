@@ -54,6 +54,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/charmm.H"
 #include "../drt_mat/itskov.H"
 #include "../drt_mat/protein.H"
+#include "../drt_mat/elasthyper.H"
 
 
 using namespace std; // cout etc.
@@ -337,7 +338,14 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       return;
       break;
     }
-
+    case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
+    {
+      MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
+      hyper->Evaluate(*glstrain,*cmat,*stress);
+      *density = hyper->Density();
+      return;
+      break;
+    }
     default:
       dserror("Unknown type of material");
     break;
@@ -444,6 +452,14 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(mat.get());
       remo->Evaluate(glstrain,gp,params,cmat,stress,*defgrd);
       *density = remo->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic material */
+    {
+      MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
+      hyper->Evaluate(*glstrain,*cmat,*stress);
+      *density = hyper->Density();
       return;
       break;
     }
@@ -663,6 +679,14 @@ void DRT::ELEMENTS::So_hex27::soh27_mat_sel(
       return;
       break;
     }
+    case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic material */
+    {
+      MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
+      hyper->Evaluate(*glstrain,*cmat,*stress);
+      *density = hyper->Density();
+      return;
+      break;
+    }
     default:
       dserror("Unknown type of material");
     break;
@@ -837,6 +861,14 @@ void DRT::ELEMENTS::So_hex20::soh20_mat_sel(
       return;
       break;
     }
+    case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic material */
+    {
+      MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
+      hyper->Evaluate(*glstrain,*cmat,*stress);
+      *density = hyper->Density();
+      return;
+      break;
+    }
     default:
       dserror("Unknown type of material");
     break;
@@ -934,6 +966,14 @@ void DRT::ELEMENTS::SoDisp::sodisp_mat_sel(
       return;
       break;
     }
+    case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic material */
+    {
+      MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
+      hyper->Evaluate(*glstrain,*cmat,*stress);
+      *density = hyper->Density();
+      return;
+      break;
+    }
     default:
     break;
   } // switch (mat->MaterialType())
@@ -1016,6 +1056,14 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
       return;
       break;
     }
+    case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic material */
+    {
+      MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
+      hyper->Evaluate(*glstrain,*cmat,*stress);
+      *density = hyper->Density();
+      return;
+      break;
+    }
     default:
       dserror("Unknown material to tet4 element");
     break;
@@ -1093,6 +1141,14 @@ void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
       MAT::Yeoh* yeoh = static_cast <MAT::Yeoh*>(mat.get());
       yeoh->Evaluate(glstrain,cmat,stress);
       *density = yeoh->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic material */
+    {
+      MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
+      hyper->Evaluate(*glstrain,*cmat,*stress);
+      *density = hyper->Density();
       return;
       break;
     }

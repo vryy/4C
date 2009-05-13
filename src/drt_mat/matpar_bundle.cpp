@@ -17,6 +17,8 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "matpar_bundle.H"
+#include "material.H"
+#include "../drt_matelast/elast_summand.H"
 
 /*----------------------------------------------------------------------*/
 MAT::PAR::Bundle::Bundle()
@@ -59,11 +61,29 @@ void MAT::PAR::Bundle::MakeParameters()
        ++m)
   {
     int matid = m->first;
-    // indirectly add quick access parameter members
-    Teuchos::RCP<MAT::Material> elemat = MAT::Material::Factory(matid);
-    // check if allocation was successful
-    Teuchos::RCP<MAT::PAR::Material> mat = m->second;
-    if (mat->Parameter()==NULL) dserror("Allocation of quick access parameters failed for material MAT %d", matid);
+
+    // 1st try
+    {
+      // indirectly add quick access parameter members
+      Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(matid);
+      // check if allocation was successful
+      Teuchos::RCP<MAT::PAR::Material> matpar = m->second;
+      if (matpar->Parameter() != NULL)
+        continue;
+    }
+
+    // 2nd try
+    {
+      // indirectly add quick access parameter members
+      Teuchos::RCP<MAT::ELAST::Summand> mat = MAT::ELAST::Summand::Factory(matid);
+      // check if allocation was successful
+      Teuchos::RCP<MAT::PAR::Material> matpar = m->second;
+      if (matpar->Parameter() != NULL)
+        continue;
+    }
+
+    // trials failed
+    dserror("Allocation of quick access parameters failed for material MAT %d", matid);
   }
 }
 

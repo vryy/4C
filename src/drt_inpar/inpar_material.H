@@ -85,6 +85,8 @@ namespace INPAR
       m_charmm,		///< CHARMm API
       m_logneohooke,   ///< logarithmic Neo-Hooke material
       m_protein,        ///< CHARMm API to compute proteins
+      m_elasthyper,    ///< collection of hyperelastic materials
+      mes_logneohooke,  ///< logarithmic Neo-Hooke material as hyperelastic potential summand
       m_none          ///< undefined
     };
 

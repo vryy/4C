@@ -287,15 +287,15 @@ namespace MAT
    * [1] G.A. Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
    *
    * \param cmat (in/out): Material tangent matrix(6x6) to be modified,
-   *                       its rows are denoted stress 6-Voigt, i.e.
+   *                       its rows are denoted stress-like 6-Voigt, i.e.
    *                       \f$[ ()_{11}, \; ()_{22}, \; ()_{33},
    *                       \; ()_{12}, \; ()_{23}, \; ()_{31} ]\f$
-   *                       and its columns strain 6-Voigt, i.e.
+   *                       and its columns strain-like 6-Voigt, i.e.
    *                       \f$[ ()_{11}, \; ()_{22}, \; ()_{33},
    *                       \; 2*()_{12}, \; 2*()_{23}, \; 2*()_{31} ]\f$
    *                       
    * \param invc   (in)  : inverse right Cauchy-Green vector
-   *                       in stress 6-Voigt notation 
+   *                       in stress-like 6-Voigt notation 
    *                       \f$[ C^{-1}_{11} \; C^{-1}_{22} \; C^{-1}_{33}
    *                       \; C^{-1}_{12} \; C^{-1}_{23} \; C^{-1}_{31}]\f$
    * \param scalar (in)  : scalar, corresponding to \f$\delta_7\f$ in Holzapfel [1], p.261

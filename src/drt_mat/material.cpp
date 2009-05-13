@@ -45,6 +45,7 @@ Maintainer: Lena Wiechert
 #include "charmm.H"
 #include "itskov.H"
 #include "protein.H"
+#include "elasthyper.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -253,6 +254,17 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
       curmat->SetParameter(new MAT::PAR::Itskov(curmat));
     MAT::PAR::Itskov* params = static_cast<MAT::PAR::Itskov*>(curmat->Parameter());
     return Teuchos::rcp(new Itskov(params));
+  }
+  case INPAR::MAT::m_elasthyper:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::ElastHyper(curmat));
+    MAT::PAR::ElastHyper* params = static_cast<MAT::PAR::ElastHyper*>(curmat->Parameter());
+    return Teuchos::rcp(new ElastHyper(params));
+  }
+  case INPAR::MAT::mes_logneohooke:
+  {
+    return Teuchos::null;
   }
   case INPAR::MAT::m_pl_mises_3D:
   case INPAR::MAT::m_pl_mises:
@@ -905,7 +917,7 @@ void MAT::VolumetrifyAndIsochorify(LINALG::Matrix<6,1>* pk2vol,
 #endif
 
   // right Cauchy--Green tensor
-  // REMARK: stored in as _strain_ 6-Voigt vector
+  // REMARK: stored in _strain_-like 6-Voigt vector
   LINALG::Matrix<6,1> rcg(gl);
   rcg.Scale(2.0);
   for (int i=0; i<3; i++) rcg(i) += 1.0;
@@ -920,13 +932,12 @@ void MAT::VolumetrifyAndIsochorify(LINALG::Matrix<6,1>* pk2vol,
   // inverse right Cauchy--Green tensor C^{-1}
   // REMARK: stored in as _stress_ 6-Voigt vector
   LINALG::Matrix<6,1> icg(false);
-  icg(0) = rcg(1)*rcg(2) - 0.25*rcg(4)*rcg(4);  // det(C) * (C^{-1})^{11}
-  icg(1) = rcg(0)*rcg(2) - 0.25*rcg(5)*rcg(5);  // det(C) * (C^{-1})^{22}
-  icg(2) = rcg(0)*rcg(1) - 0.25*rcg(3)*rcg(3);  // det(C) * (C^{-1})^{33}
-  icg(3) = 0.25*rcg(5)*rcg(4) - 0.5*rcg(3)*rcg(2);  // det(C) * (C^{-1})^{12}
-  icg(4) = 0.25*rcg(3)*rcg(5) - 0.5*rcg(0)*rcg(4);  // det(C) * (C^{-1})^{23}
-  icg(5) = 0.25*rcg(3)*rcg(4) - 0.5*rcg(5)*rcg(1);  // det(C) * (C^{-1})^{31}
-  icg.Scale(1.0/rcg3rd);  // divide by determinant of C
+  icg(0) = (rcg(1)*rcg(2) - 0.25*rcg(4)*rcg(4))/rcg3rd;  // (C^{-1})^{11}
+  icg(1) = (rcg(0)*rcg(2) - 0.25*rcg(5)*rcg(5))/rcg3rd;  // (C^{-1})^{22}
+  icg(2) = (rcg(0)*rcg(1) - 0.25*rcg(3)*rcg(3))/rcg3rd;  // (C^{-1})^{33}
+  icg(3) = (0.25*rcg(5)*rcg(4) - 0.5*rcg(3)*rcg(2))/rcg3rd;  // (C^{-1})^{12}
+  icg(4) = (0.25*rcg(3)*rcg(5) - 0.5*rcg(0)*rcg(4))/rcg3rd;  // (C^{-1})^{23}
+  icg(5) = (0.25*rcg(3)*rcg(4) - 0.5*rcg(5)*rcg(1))/rcg3rd;  // (C^{-1})^{31}
 
   // double contraction of 2nd Piola--Kirchhoff stress and right Cauchy--Green strain,
   // i.e. in index notation S^{AB} C_{AB}

@@ -157,13 +157,14 @@ using namespace std;
 #define ParObject_So_Nurbs27_Register   (int)144
 #define ParObject_Beam2r                (int)145
 #define ParObject_Beam2rRegister        (int)146
-#define ParObject_Protein		            (int)147
+#define ParObject_Protein               (int)147
 #define ParObject_Truss2                (int)148
 #define ParObject_Truss2Register        (int)149
 #define ParObject_Torsion2              (int)150
 #define ParObject_Torsion2Register      (int)151
 #define ParObject_Torsion3              (int)152
 #define ParObject_Torsion3Register      (int)153
+#define ParObject_ElastHyper            (int)154
 
 namespace DRT
 {
