@@ -114,8 +114,11 @@ void elch_dyn(int disnumff,int disnumscatra, int restart)
         conditions_to_copy.insert(pair<string,string>("TransportLineNeumann","LineNeumann"));
         conditions_to_copy.insert(pair<string,string>("TransportSurfaceNeumann","SurfaceNeumann"));
         conditions_to_copy.insert(pair<string,string>("TransportVolumeNeumann","VolumeNeumann"));
+        // when the fluid problem is periodic we also expect the mass transport to be so:
+        conditions_to_copy.insert(pair<string,string>("LinePeriodic","LinePeriodic"));
         conditions_to_copy.insert(pair<string,string>("SurfacePeriodic","SurfacePeriodic"));
-        conditions_to_copy.insert(pair<string,string>("FluidStressCalc","FluxCalculation")); // a hack
+        // a hack:
+        conditions_to_copy.insert(pair<string,string>("FluidStressCalc","FluxCalculation"));
 
         // fetch the desired material id for the transport elements
         const int matid = scatradyn.get<int>("MATID");

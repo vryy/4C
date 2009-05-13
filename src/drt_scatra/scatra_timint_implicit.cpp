@@ -1104,151 +1104,60 @@ RCP<DRT::Discretization> fluiddis)
     //velincnp_->Update(1.0,*convel_,0.0);
   }
 
-  // check vector compatibility and determine space dimension
-  int numdim =-1;
-  if (extvel->MyLength()<= (4* convel_->MyLength()) and
-      extvel->MyLength() > (3* convel_->MyLength()))
-    numdim = 3;
-  else if (extvel->MyLength()<= (3* convel_->MyLength()))
-    numdim = 2;
-  else
-    dserror("fluid velocity vector too large");
-
-  // get noderowmap of scatra discretization
-  const Epetra_Map* scatranoderowmap = discret_->NodeRowMap();
-
   // get dofrowmap of fluid discretization
   const Epetra_Map* fluiddofrowmap = fluiddis->DofRowMap();
 
   vector<int>    Indices(1);
   vector<double> Values(1);
 
-  // loop over local nodes of scatra discretization
+  // loop over all local nodes of scatra discretization
   for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
   {
-    // first of all, assume the present node is not a slavenode
-    bool slavenode=false;
+    // Now, we rely on the fact that the scatra discretization
+    // is a clone of the fluid mesh. => a scatra node has the same 
+    // local (and global) ID as its corresponding fluid node!!
 
-    // get the processor-local scatra node
-    DRT::Node*  scatralnode = discret_->lRowNode(lnodeid);
+    // get the processor-local fluid node with the same lnodeid
+    DRT::Node* fluidlnode = fluiddis->lRowNode(lnodeid);
 
-    // get the processor-local fluid node
-    DRT::Node*  fluidlnode = fluiddis->lRowNode(lnodeid);
+    // the degrees of freedom associated with this fluid node
+    vector<int> fluidnodedofs = fluiddis->Dof(fluidlnode);
 
-    // the set of degrees of freedom associated with the fluid node
-    vector<int> fluidnodedofset = fluiddis->Dof(fluidlnode);
+    // determine number of space dimensions (ndof - pressure dof)
+    const int numdim = ((int) fluidnodedofs.size()) -1;
 
-    // check whether we have a pbc condition on this scatra node
-    vector<DRT::Condition*> mypbc;
-    scatralnode->GetCondition("SurfacePeriodic",mypbc);
-
-    // yes, we have a periodic boundary condition on this scatra node
-    if (mypbc.size()>0)
-    {
-      // get master and list of all his slavenodes
-      map<int, vector<int> >::iterator master = pbcmapmastertoslave_->find(scatralnode->Id());
-
-      // check whether this is a slavenode
-      if (master == pbcmapmastertoslave_->end())
-      {
-        // indeed a slavenode
-        slavenode = true;
-      }
-      else
-      {
-        // we have a masternode: set values for all slavenodes
-        vector<int>::iterator i;
-        for(i=(master->second).begin();i!=(master->second).end();++i)
-        {
-          // global and processor-local scatra node ID for slavenode
-          int globalslaveid = *i;
-          int localslaveid  = scatranoderowmap->LID(globalslaveid);
-
-          // get the processor-local fluid slavenode
-          DRT::Node*  fluidlslavenode = fluiddis->lRowNode(localslaveid);
-
-          // the set of degrees of freedom associated with the node
-          vector<int> slavenodedofset = fluiddis->Dof(fluidlslavenode);
-
-          // global and processor-local fluid dof ID
-          int fgid = slavenodedofset[0];
-          int flid = fluiddofrowmap->LID(fgid);
-
-          // get velocity for this processor-local fluid dof
-          double velocity = (*extvel)[flid];
-          // insert velocity value in vector
-          convel_->ReplaceMyValue(lnodeid, 0, velocity);
-
-          // get (negative) fluid residual value for this processor-local fluid dof
-          double residual = (*extresidual)[flid];
-          // insert fluid residual value in vector
-          fluidres_->ReplaceMyValue(lnodeid, 0, residual);
-
-          // get subgrid viscosity for this processor-local fluid dof
-          // and divide by turbulent Prandtl number to get diffusivity
-          Indices[0] = localslaveid;
-          Values[0]  = (*extsubgrvisc)[flid]/tpn_;
-          subgrdiff_->ReplaceMyValues(1,&Values[0],&Indices[0]);
-
-          for(int index=1;index<numdim;++index)
-          {
-            // global and processor-local fluid dof ID
-            fgid = slavenodedofset[index];
-            flid = fluiddofrowmap->LID(fgid);
-
-            // get velocity for this processor-local fluid dof
-            double velocity =(*extvel)[flid];
-            // insert velocity value in vector
-            convel_->ReplaceMyValue(localslaveid, index, velocity);
-
-            // get (negative) fluid residual value for this processor-local fluid dof
-            double residual = (*extresidual)[flid];
-            // insert fluid residual value in vector
-            fluidres_->ReplaceMyValue(lnodeid, index, residual);
-          }
-        }
-      }
-    }
-
-    // do this for all nodes other than slavenodes
-    if (slavenode == false)
+    // now we transfer velocity dofs only
+    for(int index=0;index < numdim; ++index)
     {
       // global and processor-local fluid dof ID
-      int fgid = fluidnodedofset[0];
-      int flid = fluiddofrowmap->LID(fgid);
+      const int fgid = fluidnodedofs[index];
+      const int flid = fluiddofrowmap->LID(fgid);
 
-      // get velocity for this processor-local fluid dof
+      // get corresponding velocity component
       double velocity = (*extvel)[flid];
-      // insert velocity value in vector
-      convel_->ReplaceMyValue(lnodeid, 0, velocity);
+      // insert this velocity value in the node-based vector
+      convel_->ReplaceMyValue(lnodeid, index, velocity);
 
-      // get (negative) fluid residual value for this processor-local fluid dof
+      // get (negative) fluid residual value
       double residual = (*extresidual)[flid];
-      // insert fluid residual value in vector
-      fluidres_->ReplaceMyValue(lnodeid, 0, residual);
+      // insert this fluid residual value in the node-based vector
+      fluidres_->ReplaceMyValue(lnodeid, index, residual);
 
-      // get subgrid viscosity for this processor-local fluid dof
-      // and divide by turbulent Prandtl number to get diffusivity
-      Indices[0] = lnodeid;
-      Values[0]  = (*extsubgrvisc)[flid]/tpn_;
-      subgrdiff_->ReplaceMyValues(1,&Values[0],&Indices[0]);
-
-      for(int index=1;index<numdim;++index)
+      if (index == 0)
       {
-        // global and processor-local fluid dof ID
-        fgid = fluidnodedofset[index];
-        flid = fluiddofrowmap->LID(fgid);
-
-        // get velocity for this processor-local fluid dof
-        double velocity = (*extvel)[flid];
-        // insert velocity value in vector
-        convel_->ReplaceMyValue(lnodeid, index, velocity);
-
-        // get (negative) fluid residual value for this processor-local fluid dof
-        double residual = (*extresidual)[flid];
-        // insert fluid residual value in vector
-        fluidres_->ReplaceMyValue(lnodeid, index, residual);
+        // get subgrid viscosity for this processor-local fluid dof
+        // and divide by turbulent Prandtl number to get diffusivity
+        Indices[0] = lnodeid;
+        Values[0]  = (*extsubgrvisc)[flid]/tpn_;
+        subgrdiff_->ReplaceMyValues(1,&Values[0],&Indices[0]);
       }
+    }
+    for(int index=numdim;index < 3; ++index)
+    {
+      // 1D or 2D problems:
+      // for security reasons set zeros for all unused velocity components
+      convel_->ReplaceMyValue(lnodeid, index, 0.0);
+      fluidres_->ReplaceMyValue(lnodeid, index, 0.0);
     }
   }
 
