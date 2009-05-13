@@ -28,7 +28,28 @@ namespace MAT
   {
 
     /*----------------------------------------------------------------------*/
-    /// collection hyperelastic materials
+    /// Collection of hyperelastic materials
+    ///
+    /// This collection offers to additively compose a stress response
+    /// based on summands defined separately.  This is possible, because
+    /// we deal with hyperelastic materials, which are composed
+    /// of potentials.  Effectively, we want
+    ///\f[
+    ///  \Psi(\boldsymbol{C}) = \sum_i \Psi_i(\boldsymbol{C})
+    ///\f]
+    /// in which the individual \f$\Psi_i\f$ is implemented as #MAT::ELAST::Summand.
+    ///
+    /// Quite often the right Cauchy-Green 2-tensor \f$\boldsymbol{C}\f$
+    /// is replaced by its various invariant forms as argument.
+    ///
+    /// The task of ElastHyper is the storage or organisation of the different
+    /// potential energies and their derivatives to obtain the actual
+    /// stress response and the elasticity tensor.
+    ///
+    /// <h3>References</h3>
+    /// <ul>
+    /// <li> [1] GA Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
+    /// </ul>
     ///
     /// \author rausch,tk,bborn
     /// \date 05/09
@@ -80,17 +101,17 @@ namespace MAT
       /// cf. Holzapfel [1], p. 261
       ///\f[
       /// \delta_1 = 4*( \frac{\partial^2 \Psi}{\partial Ic^2} 
-      ///          + 2*Ic*\frac{\partial^2 diff(\Psi}{\partial Ic \partial IIc}
+      ///          + 2*Ic*\frac{\partial^2 \Psi}{\partial Ic \partial IIc}
       ///          + \frac{\partial \Psi}{\partial IIc} 
       ///          + Ic^2*\frac{\partial^2 \Psi}{\partial IIc^2} )
       ///\f]
       ///\f[
-      /// \delta_2 = -4*( \frac{\partial^2 diff(\Psi}{\partial Ic \partial IIc}
+      /// \delta_2 = -4*( \frac{\partial^2 \Psi}{\partial Ic \partial IIc}
       ///          + Ic*\frac{\partial^2 \Psi}{\partial IIc^2} )
       ///\f]
       ///\f[
       /// \delta_3 = 4*( IIIc*\frac{\partial^2 \Psi}{\partial Ic \partial IIIc} 
-      ///          + Ic*IIIc*\frac{\partial^2 diff(\Psi}{\partial IIc \partial IIIc} )
+      ///          + Ic*IIIc*\frac{\partial^2 \Psi}{\partial IIc \partial IIIc} )
       ///\f]
       ///\f[
       /// \delta_4 = 4*\frac{\partial^2 \Psi}{\partial IIc^2}
