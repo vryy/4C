@@ -88,6 +88,9 @@ namespace ADAPTER {
     /// true residual
     virtual Teuchos::RCP<const Epetra_Vector> TrueResidual() = 0;
 
+    /// true residual with zero Dirichlet boundary conditions
+    virtual Teuchos::RCP<const Epetra_Vector> TrueResidualWithZeroDBC() = 0;
+
     /// unknown velocities (and pressures) at t(n+1)
     virtual Teuchos::RCP<const Epetra_Vector> Velnp() = 0;
 

@@ -259,6 +259,11 @@ public:
   /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
   const Teuchos::RCP<const Epetra_Vector> InvDirichlet();
 
+  /// get true residual vector with zero Dirichlet boundary conditions
+  /// (for transfer to coupled scalar transport problems to
+  ///  obtain subgrid-scale velocity part)
+  Teuchos::RCP<Epetra_Vector> TrueResidualWithZeroDBC();
+
   Teuchos::RCP<Epetra_Vector> Dispnp() { return dispnp_; }
   Teuchos::RCP<Epetra_Vector> Dispn() { return dispn_; }
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }

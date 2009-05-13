@@ -80,6 +80,14 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidImpl::TrueResidual()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidImpl::TrueResidualWithZeroDBC()
+{
+  return fluid_.TrueResidualWithZeroDBC();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidImpl::Velnp()
 {
   return fluid_.Velnp();

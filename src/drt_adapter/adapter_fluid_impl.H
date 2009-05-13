@@ -81,6 +81,7 @@ namespace ADAPTER {
     virtual Teuchos::RCP<const Epetra_Vector> InitialGuess();
     virtual Teuchos::RCP<const Epetra_Vector> RHS();
     virtual Teuchos::RCP<const Epetra_Vector> TrueResidual();
+    virtual Teuchos::RCP<const Epetra_Vector> TrueResidualWithZeroDBC();
     virtual Teuchos::RCP<const Epetra_Vector> Velnp();
     virtual Teuchos::RCP<const Epetra_Vector> Velaf();
     virtual Teuchos::RCP<const Epetra_Vector> Veln();

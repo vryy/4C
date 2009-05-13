@@ -46,7 +46,7 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
   ScaTraField().SetVelocityField(
       FluidField().Velnp(),
       FluidField().SubgrVisc(),
-      FluidField().TrueResidual(),
+      FluidField().TrueResidualWithZeroDBC(),
       FluidField().Discretization()
   );
 

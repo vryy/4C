@@ -229,6 +229,14 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::FluidCombust::PressureRowMap()
   return fluid_.PressureRowMap();
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/*Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidCombust::TrueResidualWithZeroDBC()
+{
+  return fluid_.TrueResidualWithZeroDBC();
+}*/
+
+
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
  *------------------------------------------------------------------------------------------------*/

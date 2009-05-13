@@ -122,7 +122,7 @@ void ELCH::Algorithm::DoTransportStep()
   ScaTraField().SetVelocityField(
       FluidField().Velnp(),
       FluidField().SubgrVisc(),
-      FluidField().TrueResidual(),
+      FluidField().TrueResidualWithZeroDBC(),
       FluidField().Discretization()
   );
 

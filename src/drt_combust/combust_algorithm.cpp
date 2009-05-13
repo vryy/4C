@@ -312,7 +312,7 @@ void COMBUST::Algorithm::DoGfuncField()
   ScaTraField().SetVelocityField(
       FluidField().Velnp(),
       FluidField().SubgrVisc(),
-      FluidField().TrueResidual(),
+      FluidField().TrueResidualWithZeroDBC(),
       FluidField().Discretization()
   );
 

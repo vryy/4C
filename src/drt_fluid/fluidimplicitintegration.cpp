@@ -2278,6 +2278,35 @@ void FLD::FluidImplicitTimeInt::GenAlphaUpdateAcceleration()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
+ | apply zero Dirichlet boundary conditions to true residual   vg 05/09 |
+ | and return resulting vector (for transfer to coupled scalar          |
+ | transport problems to obtain subgrid-scale velocity part)            |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::TrueResidualWithZeroDBC()
+{
+  // define new vector based on dofrowmap
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  RCP<Epetra_Vector>  trueresidualzerodbc = LINALG::CreateVector(*dofrowmap,true);
+  // used as dummy here
+  incvel_->PutScalar(0.0);
+
+  // copy true residual vector on new vector
+  trueresidualzerodbc->Update(1.0,*trueresidual_,0.0);
+
+  // set zero values at vector locations for Dirichlet boundary conditions
+  LINALG::ApplyDirichlettoSystem(incvel_,trueresidualzerodbc,zeros_,*(dbcmaps_->CondMap()));
+
+  return trueresidualzerodbc;
+} // FluidImplicitTimeInt::TrueResidualWithZeroDBC
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
  | build linear system matrix and rhs                        u.kue 11/07|
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

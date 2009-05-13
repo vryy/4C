@@ -59,6 +59,8 @@ namespace ADAPTER
                                                                return fluid_.Residual(); };
     virtual Teuchos::RCP<const Epetra_Vector> TrueResidual() { dserror("not implemented");
                                                                return null; };
+    virtual Teuchos::RCP<const Epetra_Vector> TrueResidualWithZeroDBC() { dserror("not implemented");
+                                                               return null; };
     virtual Teuchos::RCP<const Epetra_Vector> Veln();
     virtual Teuchos::RCP<const Epetra_Vector> Velnp();
     virtual Teuchos::RCP<const Epetra_Vector> Velaf()        { dserror("not implemented");

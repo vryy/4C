@@ -181,7 +181,7 @@ void LOMA::Algorithm::InitialCalculations()
   ScaTraField().SetVelocityField(
       FluidField().Velnp(),
       FluidField().SubgrVisc(),
-      FluidField().TrueResidual(),
+      FluidField().TrueResidualWithZeroDBC(),
       FluidField().Discretization()
   );
 
@@ -309,7 +309,7 @@ void LOMA::Algorithm::GenAlphaOuterLoop()
     ScaTraField().SetVelocityField(
         FluidField().Velaf(),
         FluidField().SubgrVisc(),
-        FluidField().TrueResidual(),
+        FluidField().TrueResidualWithZeroDBC(),
         FluidField().Discretization()
     );
 
@@ -377,7 +377,7 @@ void LOMA::Algorithm::OSTBDF2OuterLoop()
     ScaTraField().SetVelocityField(
         FluidField().Velnp(),
         FluidField().SubgrVisc(),
-        FluidField().TrueResidual(),
+        FluidField().TrueResidualWithZeroDBC(),
         FluidField().Discretization()
     );
 
