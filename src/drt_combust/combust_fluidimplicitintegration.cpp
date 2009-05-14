@@ -1,6 +1,19 @@
 /*!----------------------------------------------------------------------
 \file combust_fluidimplicitintegration.cpp
-\brief not documented yet!
+\brief class holding implicit time integration schemes for combustion problems
+
+This class is a merger of the standard fluid time integration and the XFSI time integration classes.
+Thus, a mayor part of the code is a duplicate, but the class also contains some new and modified
+member functions. Maybe it will not be kept as a stand-alone class until the end of days, but
+unified with a generalized XFEM time integration class.
+
+For the time being, the only available time integration scheme for combustion problems is the
+One-step-theta scheme.
+
+Since a combustion problem is always a coupled multi-field problem, this class is remote-controlled
+by the combustion algorithm. It does not have a TimeLoop() on its own. This class is only in charge
+of finding the solution to the fluid field in a nonlinear iterative procedure in the context of a
+combustion problem.
 
 <pre>
 Maintainer: Florian Henke
@@ -180,7 +193,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
 } // CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt
 
 /*------------------------------------------------------------------------------------------------*
- | destructor: Steht in xfluidimplicitintegration.cpp weiter unten!                   henke 08/08 |
+ | destructor                                                                         henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
 FLD::CombustFluidImplicitTimeInt::~CombustFluidImplicitTimeInt()
 {
@@ -188,182 +201,23 @@ FLD::CombustFluidImplicitTimeInt::~CombustFluidImplicitTimeInt()
 }
 
 /*------------------------------------------------------------------------------------------------*
- | Don't use! Switch over transient/stationary is in combust_dyn!                     henke 08/08 |
+ | out of order!                                                                      henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::Integrate()
 {
-  dserror("Don't use this function! Its switch over transient/stationary scheme is in dynamic routine!");
-/*
-  // bound for the number of startsteps
-  const int    numstasteps         =params_.get<int>   ("number of start steps");
-
-  // output of stabilization details
-  ParameterList *  stabparams=&(params_.sublist("STABILIZATION"));
-
-  cout0_ << "Stabilization type         : " << stabparams->get<string>("STABTYPE") << "\n";
-  cout0_ << "                             " << stabparams->get<string>("TDS")<< "\n";
-  cout0_ << "\n";
-
-  if(stabparams->get<string>("TDS") == "quasistatic")
-  {
-    if(stabparams->get<string>("TRANSIENT")=="yes_transient")
-    {
-      dserror("The quasistatic version of the residual-based stabilization currently does not support the incorporation of the transient term.");
-    }
-  }
-  cout0_ <<  "                             " << "TRANSIENT       = " << stabparams->get<string>("TRANSIENT")      <<"\n";
-  cout0_ <<  "                             " << "SUPG            = " << stabparams->get<string>("SUPG")           <<"\n";
-  cout0_ <<  "                             " << "PSPG            = " << stabparams->get<string>("PSPG")           <<"\n";
-  cout0_ <<  "                             " << "VSTAB           = " << stabparams->get<string>("VSTAB")          <<"\n";
-  cout0_ <<  "                             " << "CSTAB           = " << stabparams->get<string>("CSTAB")          <<"\n";
-  cout0_ <<  "                             " << "CROSS-STRESS    = " << stabparams->get<string>("CROSS-STRESS")   <<"\n";
-  cout0_ <<  "                             " << "REYNOLDS-STRESS = " << stabparams->get<string>("REYNOLDS-STRESS")<<"\n";
-  cout0_ << "\n";
-
-  if (timealgo_==timeint_stationary)
-    // stationary case
-    SolveStationaryProblem(cutterdiscret);
-
-  else  // instationary case
-  {
-    // start procedure
-    if (step_<numstasteps)
-    {
-      if (numstasteps>stepmax_)
-      {
-        dserror("more startsteps than steps");
-      }
-
-      dserror("no starting steps supported");
-    }
-
-    // continue with the final time integration
-    TimeLoop(cutterdiscret);
-  }
-
-  // print the results of time measurements
-  TimeMonitor::summarize();
-
-  return;
-*/
-} // FluidImplicitTimeInt::Integrate
+  dserror("Thou shalt not use this function! Switch over transient/stationary scheme is in combust_dyn!");
+}
 
 /*------------------------------------------------------------------------------------------------*
- | henke 08/08 |
+ | out of order!                                                                      henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::TimeLoop()
 {
-
-/*
- * This function is commented out because it should not be used by any combustion simulation.
- * The time loop to be called is the one in the class COMBUST::Algorithm. It accesses directly e.g.
- * NonlinearSolve in this class CombustFluidImplicitTimeInt.
- */
-
-  dserror("Don't use this function! Use COMBUST::Algorithm::TimeLoop()");
-/*
-  // time measurement: time loop
-  TEUCHOS_FUNC_TIME_MONITOR(" + time loop");
-
-  // how do we want to solve or fluid equations?
-  const int dyntype    =params_.get<int>   ("type of nonlinear solve");
-
-  if (dyntype==1)
-  {
-//    if (alefluid_)
-//      dserror("no ALE possible with linearised fluid");
-//      additionally it remains to mention that for the linearised
-//       fluid the stbilisation is hard coded to be SUPG/PSPG
-  }
-
-  const Epetra_Map* fluidsurface_dofcolmap = cutterdiscret->DofColMap();
-  Teuchos::RCP<Epetra_Vector> idispcolnp  = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  Teuchos::RCP<Epetra_Vector> ivelcolnp   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-
-  Teuchos::RCP<Epetra_Vector> idispcoln   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  Teuchos::RCP<Epetra_Vector> ivelcoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  Teuchos::RCP<Epetra_Vector> ivelcolnm   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  Teuchos::RCP<Epetra_Vector> iacccoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-
-  cutterdiscret->SetState("idispcolnp",idispcolnp);
-  cutterdiscret->SetState("ivelcolnp",ivelcolnp);
-
-  cutterdiscret->SetState("idispcoln",idispcoln);
-  cutterdiscret->SetState("ivelcoln",ivelcoln);
-  cutterdiscret->SetState("iacccoln",iacccoln);
-
-  while (step_<stepmax_ and time_<maxtime_)
-  {
-    PrepareTimeStep();
-    // -------------------------------------------------------------------
-    //                         out to screen
-    // -------------------------------------------------------------------
-    if (myrank_==0)
-    {
-      switch (timealgo_)
-      {
-      case timeint_one_step_theta:
-        printf("TIME: %11.4E/%11.4E  DT = %11.4E  One-Step-Theta  STEP = %4d/%4d \n",
-              time_,maxtime_,dta_,step_,stepmax_);
-        break;
-      case timeint_bdf2:
-        printf("TIME: %11.4E/%11.4E  DT = %11.4E     BDF2         STEP = %4d/%4d \n",
-               time_,maxtime_,dta_,step_,stepmax_);
-        break;
-      default:
-        dserror("parameter out of range: IOP\n");
-      } // end of switch(timealgo)
-    }
-
-    switch (dyntype)
-    {
-    case 0:
-      // -----------------------------------------------------------------
-      //                     solve nonlinear equation
-      // -----------------------------------------------------------------
-      NonlinearSolve(cutterdiscret);
-      break;
-    case 1:
-      // -----------------------------------------------------------------
-      //                     solve linearised equation
-      // -----------------------------------------------------------------
-      //LinearSolve(cutterdiscret,idispcol);
-      break;
-    default:
-      dserror("Type of dynamics unknown!!");
-    }
-
-    // -------------------------------------------------------------------
-    //                         update solution
-    //        current solution becomes old solution of next timestep
-    // -------------------------------------------------------------------
-    TimeUpdate();
-
-    // -------------------------------------------------------------------
-    //  lift'n'drag forces, statistics time sample and output of solution
-    //  and statistics
-    // -------------------------------------------------------------------
-    StatisticsAndOutput();
-
-    // -------------------------------------------------------------------
-    // evaluate error for test flows with analytical solutions
-    // -------------------------------------------------------------------
-    EvaluateErrorComparedToAnalyticalSol();
-
-    // -------------------------------------------------------------------
-    //                       update time step sizes
-    // -------------------------------------------------------------------
-    dtp_ = dta_;
-
-    // -------------------------------------------------------------------
-    //                    stop criterium for timeloop
-    // -------------------------------------------------------------------
-  }
-*/
-} // FluidImplicitTimeInt::TimeLoop
+  dserror("Thou shalt not use this function! Use COMBUST::Algorithm::TimeLoop() instead");
+}
 
 /*------------------------------------------------------------------------------------------------*
- | henke 08/08 |
+ | prepare a fluid time step                                                          henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::PrepareTimeStep()
 {
@@ -400,7 +254,7 @@ void FLD::CombustFluidImplicitTimeInt::PrepareTimeStep()
 }
 
 /*------------------------------------------------------------------------------------------------*
- | henke 08/08 |
+ | prepare a fluid nonlinear iteration                                                henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
 {
@@ -460,6 +314,9 @@ void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
 
 }
 
+/*------------------------------------------------------------------------------------------------*
+ | hand over information about (XFEM) degrees of freedom to elements                     ag 04/09 |
+ *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::TransferDofInformationToElements(
     const Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandle,
     const Teuchos::RCP<XFEM::DofManager> dofmanager
@@ -475,10 +332,11 @@ void FLD::CombustFluidImplicitTimeInt::TransferDofInformationToElements(
 }
 
 /*------------------------------------------------------------------------------------------------*
- | henke 08/08 |
+ | import geometrical information about the interface (integration cells) from the combustion     |
+ | algorithm and incorporate it into the fluid field                                  henke 03/09 |
  |
- | Within this routine, no parallel re-distribution is allowed to take place. Before and after this
- | function, it's ok to do that.
+ | remark: Within this routine, no parallel re-distribution is allowed to take place. Before and  |
+ | after this function, it's ok to do so.                                                    axel |
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
        const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandle)
@@ -586,7 +444,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
 }
 
 /*------------------------------------------------------------------------------------------------*
- | henke 08/08 |
+ | solve the nonlinear fluid problem                                                  henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 {
@@ -766,6 +624,9 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 
         // get physical surface force
         iforcecolnp->Scale(ResidualScaling());
+
+        // scaling to get true residual vector for all other schemes
+        trueresidual_->Update(ResidualScaling(),*residual_,0.0);
 
         // finalize the complete matrix
         sysmat_->Complete();
@@ -971,7 +832,18 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 
 //  cutterdiscret->SetState("iforcenp", iforcecolnp);
 
-} // FluidImplicitTimeInt::NonlinearSolve
+} // CombustImplicitTimeInt::NonlinearSolve
+
+/*------------------------------------------------------------------------------------------------*
+ | not available yet!                                                                 henke 05/09 |
+ *------------------------------------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FLD::CombustFluidImplicitTimeInt::SgVelVisc()
+{
+  // -> see comment for ADAPTER::FluidCombust::SgVelVisc()
+  dserror("Variable sgvelvisc_ does not exist in CombustFluidImplicitTimeInt yet!");
+  // -> see FLD::FluidImplicitTimeInt::SgVelVisc() to implement this function
+  return Teuchos::null;
+}
 
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
@@ -1039,11 +911,10 @@ void FLD::CombustFluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector
 }
 
 /*------------------------------------------------------------------------------------------------*
- | henke 08/08 |
+ | update a fluid time step                                                           henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::TimeUpdate()
 {
-
   // compute acceleration
   TIMEINT_THETA_BDF2::CalculateAcceleration(
       state_.velnp_, state_.veln_, state_.velnm_, state_.accn_,
@@ -1062,7 +933,7 @@ void FLD::CombustFluidImplicitTimeInt::TimeUpdate()
 }// FluidImplicitTimeInt::TimeUpdate
 
 /*------------------------------------------------------------------------------------------------*
- | gammi 11/08 |
+ | lift'n'drag forces, statistics time sample and output of solution and statistics   gammi 11/08 |
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::StatisticsAndOutput()
 {
@@ -1693,7 +1564,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 }
 
 /*------------------------------------------------------------------------------------------------*
- | henke 08/08 |
+ | various options to initialize the fluid field                                      henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
     int whichinitialfield,
@@ -1906,7 +1777,7 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
   }
 
   return;
-} // end SetInitialFlowField
+} // CombustFluidImplicitTimeInt::SetInitialFlowField()
 
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |

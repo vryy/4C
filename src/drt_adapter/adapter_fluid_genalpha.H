@@ -32,7 +32,7 @@ Maintainer: Ulrich Kuettler
 #include "adapter_fluid.H"
 
 
-/// Algorithm adapter classes for use in multi-field problems
+// Algorithm adapter classes for use in multi-field problems
 namespace ADAPTER {
 
   /// adapter to generalized alpha fluid algorithm

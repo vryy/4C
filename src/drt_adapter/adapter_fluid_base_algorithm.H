@@ -28,7 +28,7 @@ Maintainer: Ulrich Kuettler
 #include "adapter_fluid.H"
 
 
-/// Algorithm adapter classes for use in multi-field problems
+// Algorithm adapter classes for use in multi-field problems
 namespace ADAPTER {
 
   /// fluid field solver
@@ -44,6 +44,7 @@ namespace ADAPTER {
 
     /// fluid field solver
     Fluid& FluidField() { return *fluid_; }
+    /// return instance of fluid time integration class
     const Fluid& FluidField() const { return *fluid_; }
 
   private:

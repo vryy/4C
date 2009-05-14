@@ -92,12 +92,16 @@ namespace COMBUST
     /// capture flame front within one refinement cell to provide integration cells
     void CaptureFlameFront(const Teuchos::RCP<const COMBUST::RefinementCell> cell);
 
+    /// not documented yet
     void TriangulateFlameFront();
 
     // these 3 should be moved to a class accepting the 2D flame front as an input and producing 3D
     // integration cells as an output
+    /// not documented yet
     void buildPLC();
+    /// not documented yet
     void CreateIntegrationCells();
+    /// not documented yet
     void TransformIntegrationCells();
 
     /// pointer to fluid discretization

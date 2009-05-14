@@ -1,18 +1,8 @@
 /*!-----------------------------------------------------------------------------------------------*
 \file combust_algorithm.H
 
-\brief base combustion algorithm
+  \brief combustion algorithm
 
-	This algorithm handles the interaction between the different fields 
-	involved in a combustion problem.
-	So far there is only one algorithm. Others might follow in the future.
-	This is why there are no further sub-routines of this algorithm.
-	
-	The interaction between the fluid field and the convection-diffusion 
-	field (level-set/G-function) is controlled by this 	FGI algorithm 
-	(Fluid-G-funcion-Interaction). It uses an implicit time integration 
-	scheme.
-	
 <pre>
 Maintainer: Florian Henke
             henke@lnm.mw.tum.de
@@ -32,19 +22,25 @@ Maintainer: Florian Henke
 #include "combust_flamefront.H"
 
 
-/*!
-\brief namespace of the combustion module in BACI
-
-*/
+/// namespace of the combustion module in BACI
 namespace COMBUST
 {
 
-  /// COMBUST algorithm base
   /*!
 
-    Base class of COMBUST algorithms. Derives from the Scatra-Fluid Coupling Algorithm. Therefore it
-    has a Fluid Base Algorithm and a Scatra Base Algorithm.
-    There can (and will) be different subclasses that implement different coupling schemes.
+    \brief combustion algorithm class
+
+    \detailed
+
+    This combustion algorithm derives from the Scatra-Fluid Coupling Algorithm. Therefore it has
+    both a Fluid Base Algorithm and a Scatra Base Algorithm.
+
+    This algorithm handles the interaction between the different fields involved in a combustion
+    problem, namely a fluid field and and a scalar transport field (level set/G-function). So far
+    there is only one coupling algorithm.
+
+    Until now there is only the implicit One-step-theta time integration scheme available for both
+    fields.
 
     \author henke
     \date 06/08
@@ -116,11 +112,14 @@ namespace COMBUST
     /// options for reinitialization of G-function;
     INPAR::COMBUST::ReInitialActionGfunc reinitializationaction_;
 
+    /// combustion input parameter list
     const Teuchos::ParameterList& combustdyn_;
 //    const Teuchos::ParameterList& xparams_;
 
+    /// pointer to interfacehandle holding information about interface (3D integration cells)
     Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandle_;
 
+    /// pointer to flame front holding information about interface (2D surface)
     Teuchos::RCP<COMBUST::FlameFront> flamefront_;
 
   };

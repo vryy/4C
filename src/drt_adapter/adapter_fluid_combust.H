@@ -57,13 +57,7 @@ namespace ADAPTER
                                                                return fluid_.InitialGuess(); };
     virtual Teuchos::RCP<const Epetra_Vector> RHS()          { dserror("not implemented");
                                                                return fluid_.Residual(); };
-    virtual Teuchos::RCP<const Epetra_Vector> TrueResidual() { dserror("not implemented");
-                                                               return null; };
-    virtual Teuchos::RCP<const Epetra_Vector> Veln();
-    virtual Teuchos::RCP<const Epetra_Vector> Velnp();
     virtual Teuchos::RCP<const Epetra_Vector> Velaf()        { dserror("not implemented");
-                                                               return null; };
-    virtual Teuchos::RCP<const Epetra_Vector> SgVelVisc()    { dserror("not implemented");
                                                                return null; };
     virtual Teuchos::RCP<const Epetra_Vector> Dispnp()       { dserror("not implemented");
                                                                return Teuchos::null; };
@@ -152,6 +146,11 @@ namespace ADAPTER
      * These are the used member functions                                               henke 08/08
      *------------------------------------------------------------------------------------------- */
 
+    virtual Teuchos::RCP<const Epetra_Vector> TrueResidual();
+    virtual Teuchos::RCP<const Epetra_Vector> Veln();
+    virtual Teuchos::RCP<const Epetra_Vector> Velnp();
+    virtual Teuchos::RCP<const Epetra_Vector> SgVelVisc();
+
     /// set initial flow field
     virtual void SetInitialFlowField(int whichinitialfield, int startfuncno);
 
@@ -206,7 +205,7 @@ namespace ADAPTER
 
   private:
 
-    // vielleicht kann ich die Funktion auch verwenden?
+    /// print vector field at interface
     void PrintInterfaceVectorField(
         const Teuchos::RCP<Epetra_Vector>   displacementfield,
         const Teuchos::RCP<Epetra_Vector>   vectorfield,
@@ -214,7 +213,7 @@ namespace ADAPTER
         const std::string name_in_gmsh
         );
 
-    /// the fluid time integration scheme
+    /// implicit fluid time integration scheme
     FLD::CombustFluidImplicitTimeInt             fluid_;
 
     /// the interface map setup for interface <-> full translation

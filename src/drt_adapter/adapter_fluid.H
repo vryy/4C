@@ -306,7 +306,9 @@ namespace ADAPTER {
     //! For simplified FD MFNK solve we want to temporally limit the
     /// number of Newton steps inside the fluid solver
 
+    /// return maximum for iteration steps
     virtual int Itemax() const = 0;
+    /// set maximum for iteration steps
     virtual void SetItemax(int itemax) = 0;
 
     //@}

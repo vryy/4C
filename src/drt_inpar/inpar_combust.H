@@ -2,6 +2,8 @@
 /*!
 \file inpar_combust.H
 
+\brief Input parameters for combustion
+
 <pre>
 Maintainer: Florian Henke
             henke@lnm.mw.tum.de
@@ -18,7 +20,6 @@ Maintainer: Florian Henke
 namespace INPAR
 {
 
-  /// Input parameters for combustion
   namespace COMBUST
   {
     /// Type of reinitialization for level set function (G-function)

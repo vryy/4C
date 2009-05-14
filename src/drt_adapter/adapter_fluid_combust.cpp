@@ -48,6 +48,11 @@ void ADAPTER::FluidCombust::SetInitialFlowField(int whichinitialfield, int start
   return fluid_.SetInitialFlowField(whichinitialfield, startfuncno);
 }
 
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidCombust::TrueResidual()
+{
+  return fluid_.TrueResidual();
+}
+
 Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidCombust::Veln()
 {
   return fluid_.Veln();
@@ -58,6 +63,22 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidCombust::Velnp()
   return fluid_.Velnp();
 }
 
+/*------------------------------------------------------------------------------------------------*
+ | this is a hack which should be fixed as soon as possible!
+ |                                      |
+ | This function is merely required to be able to call SetVelocityField(), because there the      |
+ | sgvelvisc_ vector is expected to be tranferred to the scalar transport field. This vector      |
+ | contains the subgrid velocity and the subgrid viscosity. Because I don't have this vector, I   |
+ | create a zero vector here to transfer this dummy.                                  henke 05/09 |
+ *------------------------------------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidCombust::SgVelVisc()
+{
+  const Epetra_Map* dofrowmap = fluid_.Discretization()->DofRowMap();
+  Teuchos::RCP<Epetra_Vector>  sgvelvisc = LINALG::CreateVector(*dofrowmap,true);
+  sgvelvisc->PutScalar(0.0);
+  // return zero vector - makes no sense! see comment above
+  return sgvelvisc;
+}
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
@@ -228,14 +249,6 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::FluidCombust::PressureRowMap()
 {
   return fluid_.PressureRowMap();
 }
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-/*Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidCombust::TrueResidualWithZeroDBC()
-{
-  return fluid_.TrueResidualWithZeroDBC();
-}*/
-
 
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |

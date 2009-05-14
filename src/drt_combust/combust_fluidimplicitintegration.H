@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file combust_fluidimplicitintegration.H
-\brief not documented yet!
+\brief class holding implicit time integration schemes for combustion problems
 
 <pre>
 Maintainer: Florian Henke
@@ -25,7 +25,7 @@ Maintainer: Florian Henke
 namespace FLD
 {
 /*!
-\brief implicit time integration for combustion problems (at the moment there is no other one!)
+\brief implicit time integration for combustion problems
 
 \author henke (henke@lnm.mw.tum.de)
 */
@@ -65,6 +65,7 @@ public:
   /// prepare a nonlinear iteration
   void PrepareNonlinearSolve();
 
+  /// import geometrical information about the interface and incorporate it into the fluid field
   void IncorporateInterface(const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandle);
 
   /*!
@@ -154,14 +155,17 @@ public:
 
 
   /*!
-  \brief not used, relict from Axels XFSI -> remove
+  \brief out of use
   */
   void Integrate();
 
   /*!
-  \brief not used, relict from Axels XFSI -> remove
+  \brief out of use
   */
   void TimeLoop();
+
+  /// not available yet! henke 05/09 (return vector sgvelvisc_)
+  Teuchos::RCP<Epetra_Vector> SgVelVisc();
 
   /*!
   \brief not used in combustion or XFEM -> remove

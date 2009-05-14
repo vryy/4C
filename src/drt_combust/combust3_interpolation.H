@@ -24,7 +24,7 @@ Maintainer: Florian Henke
 #include "../drt_xfem/element_ansatz.H"
 
 
-//! support routines for the combust3 element
+// support routines for the combust3 element
 namespace COMBUST
 {
   
