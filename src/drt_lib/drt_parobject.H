@@ -165,6 +165,11 @@ using namespace std;
 #define ParObject_Torsion3              (int)152
 #define ParObject_Torsion3Register      (int)153
 #define ParObject_ElastHyper            (int)154
+#define ParObject_Vele3                 (int)155
+#define ParObject_Vele3Register         (int)156
+#define ParObject_Vele3Surface          (int)157
+#define ParObject_Vele3Line             (int)158
+
 
 namespace DRT
 {

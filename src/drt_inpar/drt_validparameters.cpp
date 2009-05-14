@@ -32,6 +32,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_inpar/inpar_scatra.H"
 #include "../drt_inpar/inpar_structure.H"
+#include "../drt_inpar/inpar_potential.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -715,6 +716,37 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   
   setStringToIntegralParameter<int>("COUPLING_AUXPLANE","Yes","If chosen auxiliary planes are used for 3D coupling",
                                yesnotuple,yesnovalue,&scontact);
+
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& interaction_potential = list->sublist("INTERACTION POTENTIALS",false,"");
+  
+  // read if surfaces , volumes or both including fluid should be considered
+  setStringToIntegralParameter<INPAR::POTENTIAL::PotentialType>("POTENTIAL_TYPE","surface","Type of interaction potential",
+                                tuple<std::string>("surface",
+                                                   "volume",
+                                                   "surfacevolume",
+                                                   "surface_fsi",
+                                                   "volume_fsi",
+                                                   "surfacevolume_fsi"),
+                                tuple<INPAR::POTENTIAL::PotentialType>(
+                                   INPAR::POTENTIAL::potential_surface,
+                                   INPAR::POTENTIAL::potential_volume,
+                                   INPAR::POTENTIAL::potential_surfacevolume,
+                                   INPAR::POTENTIAL::potential_surface_fsi,
+                                   INPAR::POTENTIAL::potential_volume_fsi,
+                                   INPAR::POTENTIAL::potential_surfacevolume_fsi),
+                                &interaction_potential);
+                                
+  // approximation method
+  setStringToIntegralParameter<INPAR::POTENTIAL::ApproximationType>("APPROXIMATION_TYPE","none","Type of approximation",
+                                tuple<std::string>("none",
+                                                   "surface_approx",
+                                                   "point_approx"),
+                                tuple<INPAR::POTENTIAL::ApproximationType>(
+                                           INPAR::POTENTIAL::approximation_none,
+                                           INPAR::POTENTIAL::approximation_surface,
+                                           INPAR::POTENTIAL::approximation_point),
+                                &interaction_potential);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& bromotion = list->sublist("BROWNIAN MOTION",false,"");

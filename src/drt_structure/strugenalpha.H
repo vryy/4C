@@ -487,7 +487,7 @@ protected:
   RCP<UTILS::SurfStressManager>   surf_stress_man_;
 
   /// stresses due to molecular interaction potentials between structural surfaces
-  RCP<UTILS::PotentialManager>    pot_man_;
+  RCP<POTENTIAL::PotentialManager>    pot_man_;
 
   /// local coordinate systems
   RCP<DRT::UTILS::LocsysManager>   locsysmanager_;

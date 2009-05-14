@@ -20,7 +20,7 @@ Maintainer: Ursula Mayer
 #include "../drt_lib/drt_discret.H"
 
 
-namespace UTILS
+namespace POTENTIAL
 {
   /*!
   \brief A set of degrees of freedom for potential discretization

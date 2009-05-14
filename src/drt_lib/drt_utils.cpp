@@ -91,6 +91,7 @@ extern "C"
 #include "../drt_ale2/ale2_nurbs.H"
 #include "../drt_ale3/ale3.H"
 #include "../drt_bele3/bele3.H"
+#include "../drt_bele3/vele3.H"
 #include "../drt_constraint/constraint_element2.H"
 #include "../drt_constraint/constraint_element3.H"
 #include "../drt_w1/wall1.H"
@@ -482,6 +483,21 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
     {
       DRT::ELEMENTS::Bele3Register* object =
                   new DRT::ELEMENTS::Bele3Register(DRT::Element::element_bele3);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_Vele3:
+    {
+      DRT::ELEMENTS::Vele3* object = new DRT::ELEMENTS::Vele3(-1,-1);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_Vele3Register:
+    {
+      DRT::ELEMENTS::Vele3Register* object =
+                  new DRT::ELEMENTS::Vele3Register(DRT::Element::element_vele3);
       object->Unpack(data);
       return object;
     }
@@ -886,6 +902,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     ale2,
     ale3,
     bele3,
+    vele3,
     so_hex8,
     so_sh8,
     so_sh8p8,
@@ -922,6 +939,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
   else if (eletype=="ALE2") type = ale2;
   else if (eletype=="ALE3") type = ale3;
   else if (eletype=="BELE3") type = bele3;
+  else if (eletype=="VELE3") type = vele3;
   else if (eletype=="SOLIDH8") type = so_hex8;
   else if (eletype=="SOLIDSH8") type = so_sh8;
   else if (eletype=="SOLIDSH8P8") type = so_sh8p8;

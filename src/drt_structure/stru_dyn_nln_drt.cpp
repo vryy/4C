@@ -32,6 +32,7 @@ Maintainer: Michael Gee
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_statmech.H"
 #include "../drt_inpar/inpar_structure.H"
+#include "../drt_inpar/inpar_potential.H"
 #include "stru_resulttest.H"
 
 #include "str_invanalysis.H"
@@ -82,6 +83,8 @@ void caldyn_drt()
     case INPAR::STR::dyna_onesteptheta:
     case INPAR::STR::dyna_gemm:
     case INPAR::STR::dyna_ab2:
+    case INPAR::STR::dyna_euma :
+    case INPAR::STR::dyna_euimsto :
       // direct time integration
       STR::strudyn_direct();
       break;
@@ -120,6 +123,7 @@ void dyn_nlnstructural_drt()
   const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->StructuralContactParams();
   const Teuchos::ParameterList& statmech = DRT::Problem::Instance()->StatisticalMechanicsParams();
   const Teuchos::ParameterList& iap      = DRT::Problem::Instance()->InverseAnalysisParams();
+  const Teuchos::ParameterList& intpot   = DRT::Problem::Instance()->InteractionPotentialParams();
 
   if (actdis->Comm().MyPID()==0)
     DRT::INPUT::PrintDefaultParameters(std::cout, sdyn);
@@ -210,6 +214,49 @@ void dyn_nlnstructural_drt()
       genalphaparams.set<double>("measured_curve1",iap.get<double>("MEASURED_CURVE1"));
       genalphaparams.set<double>("measured_curve2",iap.get<double>("MEASURED_CURVE2"));
       genalphaparams.set<double>("inv_ana_tol",iap.get<double>("INV_ANA_TOL"));
+      
+      // parameters for interaction potential
+      switch (Teuchos::getIntegralValue<INPAR::POTENTIAL::PotentialType>(intpot,"POTENTIAL_TYPE"))
+      {
+        case INPAR::POTENTIAL::potential_surface:
+          genalphaparams.set<string>("potential type","surface");
+        break;
+        case INPAR::POTENTIAL::potential_volume:
+          genalphaparams.set<string>("potential type","volume");
+        break;
+        case INPAR::POTENTIAL::potential_surfacevolume:
+          genalphaparams.set<string>("potential type","surfacevolume");
+        break;
+        case INPAR::POTENTIAL::potential_surface_fsi:
+          genalphaparams.set<string>("potential type","surface_fsi");
+        break;
+        case INPAR::POTENTIAL::potential_volume_fsi:
+          genalphaparams.set<string>("potential type","volume_fsi");
+        break;
+        case INPAR::POTENTIAL::potential_surfacevolume_fsi:
+          genalphaparams.set<string>("potential type","surfacevolume_fsi");
+        break;
+        default:
+          genalphaparams.set<string>("potential type","surface");
+        break;
+      }
+      
+      // set approximation method for volume potentials
+      switch (Teuchos::getIntegralValue<INPAR::POTENTIAL::ApproximationType>(intpot,"APPROXIMATION_TYPE"))
+      {
+        case INPAR::POTENTIAL::approximation_none:
+          genalphaparams.set<string>("approximation type","none");
+        break;
+        case INPAR::POTENTIAL::approximation_surface:
+          genalphaparams.set<string>("approximation type","surface_approx");
+        break;
+        case INPAR::POTENTIAL::approximation_point:
+          genalphaparams.set<string>("approximation type","point_approx");
+        break;
+        default:
+          genalphaparams.set<string>("approximation type","none");
+        break;
+      }
 
       // non-linear solution technique
       switch (Teuchos::getIntegralValue<INPAR::STR::NonlinSolTech>(sdyn,"NLNSOL"))

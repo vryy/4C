@@ -27,7 +27,7 @@ Maintainer: Michael Gee
 #include "../drt_statmech/bromotion_manager.H"
 
 using UTILS::SurfStressManager;
-using UTILS::PotentialManager;
+using POTENTIAL::PotentialManager;
 
 /*----------------------------------------------------------------------*
  * Integrate a Surface Neumann boundary condition (public)     gee 04/08|
@@ -531,11 +531,11 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
 
         if (cond->Type()==DRT::Condition::LJ_Potential_3D) // Lennard-Jones potential
         {
-          potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule_, params,lm, elematrix1, elevector1);
+          potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule_, params,lm, elematrix1, elevector1, true);
         }
         else if (cond->Type()==DRT::Condition::Zeta_Potential_3D) // Zeta potential
         {
-        	potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule_, params,lm, elematrix1, elevector1);
+        	potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule_, params,lm, elematrix1, elevector1, true);
         }
         else
           dserror("Unknown condition type %d",cond->Type());
@@ -545,7 +545,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
       // compute stochastical forces due to Brownian Motion
       case calc_brownian_motion:
       {
-          dserror("not yet comitted");
+        dserror("not commited");
       }
       break;
 

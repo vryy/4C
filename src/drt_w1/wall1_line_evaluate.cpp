@@ -23,7 +23,7 @@ Maintainer: Markus Gitterle
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_surfstress/drt_potential_manager.H"
 
-using UTILS::PotentialManager;
+using POTENTIAL::PotentialManager;
 
 /*----------------------------------------------------------------------*
  |  Integrate a Line Neumann boundary condition (public)      mgit 03/07|
@@ -339,11 +339,11 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(ParameterList& params,
 
       if (cond->Type()==DRT::Condition::LJ_Potential_2D) // Lennard-Jones potential
       {
-        potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule, params,lm, elematrix1, elevector1);
+        potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule, params,lm, elematrix1, elevector1, true);
       }
       else if (cond->Type()==DRT::Condition::Zeta_Potential_2D) // Zeta potential
       {
-     	  potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule, params,lm, elematrix1, elevector1);
+     	  potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule, params,lm, elematrix1, elevector1, true);
       }
       else
         dserror("Unknown condition type %d",cond->Type());

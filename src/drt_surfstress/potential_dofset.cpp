@@ -16,14 +16,18 @@ Maintainer: Ursula Mayer
 #include "potential_dofset.H"
 #include "../drt_lib/linalg_utils.H"
 
-UTILS::PotentialDofSet::PotentialDofSet (RCP<DRT::Discretization> sourcedis) :
+
+/// constructor
+POTENTIAL::PotentialDofSet::PotentialDofSet (RCP<DRT::Discretization> sourcedis) :
 DRT::DofSet(),
 sourcedis_(sourcedis)
 {
   return;
 }
 
-int UTILS::PotentialDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const int start)
+
+/// Assign dof numbers for new discretization using dof numbering from source discretization.
+int POTENTIAL::PotentialDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const int start)
 {
   
   // first, we call the standard AssignDegreesOfFreedom from the base class
@@ -34,8 +38,8 @@ int UTILS::PotentialDofSet::AssignDegreesOfFreedom(const DRT::Discretization& di
   return count;
 }
 
-/// Assign dof numbers for new discretization using dof numbering from source discretization.
-void UTILS::PotentialDofSet::TransferDegreesOfFreedom(
+/// Transfer degrees of freedom
+void POTENTIAL::PotentialDofSet::TransferDegreesOfFreedom(
         const DRT::Discretization& sourcedis,
         const DRT::Discretization& newdis,
         const int start

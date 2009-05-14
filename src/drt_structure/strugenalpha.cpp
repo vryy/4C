@@ -172,7 +172,7 @@ fsisurface_(NULL)
   discret_.GetCondition("Potential",potentialcond);
   if (potentialcond.size())
   {
-    pot_man_=rcp(new UTILS::PotentialManager(Discretization(),discret_));
+    pot_man_=rcp(new POTENTIAL::PotentialManager(Discretization(),discret_, params));
     // if potential conditions exist, the stiffness matrix has to be based on an Epetra_FECrsMatrix
     // and savegraph_ has to be set false
     stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,true,false, LINALG::SparseMatrix::FE_MATRIX));
@@ -3377,7 +3377,8 @@ void StruGenAlpha::SetDefaults(ParameterList& params)
   params.set<string>("predictor"              ,"constant");
   // takes values "full newton" , "modified newton" , "nonlinear cg", "ptc"
   params.set<string>("equilibrium iteration"  ,"full newton");
-
+  params.set<string>("potential type"  ,"surface");
+  params.set<string>("approximation type"  ,"none");
   params.set<bool>  ("ADAPTCONV",false);
   params.set<double>("ADAPTCONV_BETTER",0.1);
 
