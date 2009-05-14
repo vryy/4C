@@ -540,7 +540,7 @@ namespace STR
     Teuchos::RCP<UTILS::SurfStressManager> surfstressman_;
 
     //! potential conditions
-    Teuchos::RCP<UTILS::PotentialManager> potman_;
+    Teuchos::RCP<POTENTIAL::PotentialManager>   potman_;
 
     //! Dirichlet BCs with local co-ordinate system
     Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;
