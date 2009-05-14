@@ -61,9 +61,9 @@ namespace MAT
       /// provide access to material by its ID
       Teuchos::RCP<const MAT::ELAST::Summand> MaterialById(const int id) const
       {
-        std::map<int,Teuchos::RCP<MAT::ELAST::Summand> >::const_iterator m = pot_.find(id);
+        std::map<int,Teuchos::RCP<MAT::ELAST::Summand> >::const_iterator m = potsum_.find(id);
 
-        if (m == pot_.end())
+        if (m == potsum_.end())
         {
           dserror("Material %d could not be found", id);
           return Teuchos::null;
@@ -84,7 +84,7 @@ namespace MAT
     private:
 
       /// map to materials/potentials
-      std::map<int,Teuchos::RCP<MAT::ELAST::Summand> > pot_;
+      std::map<int,Teuchos::RCP<MAT::ELAST::Summand> > potsum_;
 
       //@}
 
@@ -208,7 +208,13 @@ namespace MAT
       LINALG::Matrix<3,1>& prinv,  ///< principal invariants
       const LINALG::Matrix<6,1>& rcg  ///< symmetric Cartesian 2-tensor in strain-like 6-Voigt notation
       );
-
+    
+    /// calculate modified invariants
+    static void InvariantsModified(
+      LINALG::Matrix<3,1>& modinv,  ///< modified invariants
+      const LINALG::Matrix<3,1>& prinv  ///< principal invariants
+      );
+    
     /// my material parameters
     MAT::PAR::ElastHyper* params_;
 

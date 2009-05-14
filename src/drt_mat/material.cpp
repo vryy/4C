@@ -262,7 +262,11 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     MAT::PAR::ElastHyper* params = static_cast<MAT::PAR::ElastHyper*>(curmat->Parameter());
     return Teuchos::rcp(new ElastHyper(params));
   }
-  case INPAR::MAT::mes_logneohooke:
+  case INPAR::MAT::mes_logneohooke: 
+  case INPAR::MAT::mes_isoneohooke: 
+  case INPAR::MAT::mes_isoyeoh: 
+  case INPAR::MAT::mes_isomooneyrivlin:
+  case INPAR::MAT::mes_volsussmanbathe: 
   {
     return Teuchos::null;
   }

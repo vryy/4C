@@ -263,8 +263,8 @@ void MAT::ViscoAnisotropic::Setup(const int numgp)
 void MAT::ViscoAnisotropic::Setup(const int numgp, const vector<double> thickvec)
 {
  
-  /*fiber directions can be defined by element thickness direction if specified 
-    in material definition */
+  //fiber directions can be defined by element thickness direction if specified 
+  //in material definition
   if (params_->elethick_==1)
   {
     a1_ = rcp(new vector<vector<double> > (numgp));
@@ -272,7 +272,7 @@ void MAT::ViscoAnisotropic::Setup(const int numgp, const vector<double> thickvec
     if (abs(params_->gamma_)>=1.0E-6) dserror("Fibers can only be aligned in thickness direction for gamma = 0.0!");
     const double gamma = (params_->gamma_*PI)/180.; //convert
     
-    /* Fibers are related to the element thickness direction */
+    // Fibers are related to the element thickness direction
     vector<double> rad = thickvec;
     vector<double> axi = thickvec;
     vector<double> cir = thickvec;
@@ -309,8 +309,11 @@ void MAT::ViscoAnisotropic::Setup(const int numgp, const vector<double> thickvec
  *----------------------------------------------------------------------*/
 void MAT::ViscoAnisotropic::Update()
 {
+  // make current values to values of last step 
   histstresslast_=histstresscurr_;
   artstresslast_=artstresscurr_;
+  
+  // empty vectors of current data 
   const LINALG::Matrix<NUM_STRESS_3D,1> emptyvec(true);
   histstresscurr_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
   artstresscurr_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
@@ -437,27 +440,29 @@ void MAT::ViscoAnisotropic::Evaluate
                     + 1.*(A1(3)*C(3) + A1(4)*C(4) + A1(5)*C(5))); //J4 = trace(A1:C^dev)
   double J6 = incJ * ( A2(0)*C(0) + A2(1)*C(1) + A2(2)*C(2)
                     + 1.*(A2(3)*C(3) + A2(4)*C(4) + A2(5)*C(5))); //J6 = trace(A2:C^dev)
-  const double exp1 = exp(k2*(J4-1.)*(J4-1.));
-  const double exp2 = exp(k2*(J6-1.)*(J6-1.));
-
-  // 'tensonly' determines if fibers can only take tension or not
+ 
+  // fibers can only stretch/compress down to a minimal value 
   double fib1_tension = 1.;
   double fib2_tension = 1.;
 
   if (J4 < minstretch) 
   {
+//    cout<<"Fiber compression exceeded minstretch! J4 = " << J4 <<endl;
     J4 = minstretch;
     fib1_tension = 0.;
   }
   if (J6 < minstretch)
   {
+    //cout<<"Fiber compression exceeded minstretch! J6 = " << J6 <<endl;
     J6 = minstretch;
     fib2_tension = 0.;
   }
-
+  
   // PK2 fiber part in splitted formulation, see Holzapfel p. 271
   LINALG::Matrix<NUM_STRESS_3D,1> SisoEla_fib1(A1); // first compute Sfbar1 = dWf/dJ4 A1
   LINALG::Matrix<NUM_STRESS_3D,1> SisoEla_fib2(A2); // first compute Sfbar2 = dWf/dJ6 A2
+  const double exp1 = exp(k2*(J4-1.)*(J4-1.));
+  const double exp2 = exp(k2*(J6-1.)*(J6-1.));
   const double fib1 = 2.*(k1*(J4-1.)*exp1);  // 2 dWf/dJ4
   const double fib2 = 2.*(k1*(J6-1.)*exp2);  // 2 dWf/dJ6
   SisoEla_fib1.Scale(fib1);

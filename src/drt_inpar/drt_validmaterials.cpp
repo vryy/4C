@@ -815,6 +815,62 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
 
+  /*--------------------------------------------------------------------*/
+  // isochoric contribution of Neo-Hooke
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_IsoNeoHooke",
+                                            "isochoric part of  neo-Hooke material acc. to Holzapfel",
+                                            INPAR::MAT::mes_isoneohooke));
+
+    AddNamedReal(m,"MUE","Shear modulus");
+    
+    AppendMaterialDefinition(matlist,m);
+  }
+  
+  
+  /*--------------------------------------------------------------------*/
+  // isochoric contribution of Yeoh
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_IsoYeoh",
+                                            "isochoric part of  Yeoh material acc. to Holzapfel",
+                                            INPAR::MAT::mes_isoyeoh));
+
+    AddNamedReal(m,"C1","Linear modulus");
+    AddNamedReal(m,"C2","Quadratic modulus");
+    AddNamedReal(m,"C3","Cubic modulus");
+    
+    AppendMaterialDefinition(matlist,m);
+  }
+  
+  /*--------------------------------------------------------------------*/
+  // isochoric contribution of neohooke
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_IsoMooneyRivlin",
+                                            "isochoric part of  Mooney-Rivlin material acc. to Holzapfel",
+                                            INPAR::MAT::mes_isomooneyrivlin));
+
+    AddNamedReal(m,"C1","Linear modulus for first invariant");
+    AddNamedReal(m,"C2","Linear modulus for second invariant");
+    AppendMaterialDefinition(matlist,m);
+  }
+ 
+
+  /*--------------------------------------------------------------------*/
+  // volumetric contribution of Sussman Bathe
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_VolSussmanBathe",
+                                            "volumetric part of  SussmanBathe material",
+                                            INPAR::MAT::mes_volsussmanbathe));
+
+    AddNamedReal(m,"KAPPA","dilatation modulus");
+    
+    AppendMaterialDefinition(matlist,m);
+  }
+
   /*----------------------------------------------------------------------*/
   // deliver
   return vm;

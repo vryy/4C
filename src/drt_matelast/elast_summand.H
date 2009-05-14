@@ -66,7 +66,7 @@ namespace MAT
       /// of summand with respect to principal invariants
       ///
       /// The coefficients \f$\gamma_i\f$ and \f$\delta_j\f$ are based
-      /// on the summand \f$\Psi(I_{\boldsymbol{C}},II_{\boldsymbol_{C}},III_{\boldsymbol{C}})\f$
+      /// on the summand \f$\Psi(I_{\boldsymbol{C}},II_{\boldsymbol_{\boldsymbol{C}}},III_{\boldsymbol{C}})\f$
       /// in which the principal invariants of the right Cauchy-Green tensor \f$\boldsymbol{C}\f$
       /// are the arguments, cf. Holzapfel [1], 
       ///\f[
@@ -121,6 +121,8 @@ namespace MAT
       ///\f[
       /// \delta_8 = -4*\frac{\partial \Psi}{\partial IIc}
       ///\f]
+      
+      
       virtual void AddCoefficientsPrincipal(
         bool& havecoefficients,  ///< non-zero coefficients of this type are provided
         LINALG::Matrix<3,1>& gamma,  ///< see above
@@ -128,6 +130,63 @@ namespace MAT
         const LINALG::Matrix<3,1>& prinv  ///< principal invariants of right Cauchy-Green tensor
         ) = 0;
 
+      /// retrieve coefficients of first and second derivative
+      /// of summand (decoupled form) with respect to modified invariants
+      ///
+      /// The coefficients \f$\bar\gamma_i\f$ and \f$\bar\delta_j\f$ are based
+      /// on the summand \f$\Psi(\overline{I}_{\boldsymbol{C}},\overline{II}_{\boldsymbol_{C}})\f$
+      /// in which the principal invariants of the modified right Cauchy-Green tensor \f$\overline{\boldsymbol{C}}=(\det\boldsymbol{C})^{-1/3}*\boldsymbol{C}\f$
+      /// are the arguments, cf. Holzapfel [1], 
+      ///\f[
+      ///  \overline{I}_{\boldsymbol{C}} = J^{-2/3}*C_{AA}
+      ///  \quad
+      ///  \overline{II}_{\boldsymbol{C}} = 1/2 \big( \mathrm{trace}^2(\boldsymbol{C}) - \mathrm{trace}(\boldsymbol{C}^2) \big)
+      ///  \quad
+      ///  J = \sqrt{\det(\boldsymbol{C})}
+      ///\f]
+      /// 
+      /// cf. Holzapfel [1], p. 234 and p. 262
+      
+      ///\f[
+      /// \bar\gamma_1 = 2*( \frac{\partial \Psi}{\partial Ic} 
+      ///          + Ic*\frac{\partial \Psi}{\partial IIc} );
+      ///\f]
+      ///\f[
+      /// \bar\gamma_2 = -2*\frac{\partial \Psi}{\partial IIc};
+      ///\f]
+      ///\f[
+      /// p = 2*IIIc*\frac{\partial \Psi}{\partial IIIc};
+      ///\f]
+      ///
+      /// material constitutive tensor coefficients
+      /// cf. Holzapfel [1], p. 261
+      ///\f[
+      /// \bar\delta_1 = 4*( \frac{\partial^2 \Psi}{\partial Ic^2} 
+      ///          + 2*Ic*\frac{\partial^2 \Psi}{\partial Ic \partial IIc}
+      ///          + \frac{\partial \Psi}{\partial IIc} 
+      ///          + Ic^2*\frac{\partial^2 \Psi}{\partial IIc^2} )
+      ///\f]
+      ///\f[
+      /// \bar\delta_2 = -4*( \frac{\partial^2 \Psi}{\partial Ic \partial IIc}
+      ///          + Ic*\frac{\partial^2 \Psi}{\partial IIc^2} )
+      ///\f]
+      ///\f[
+      /// \bar\delta_3 = 4*( IIIc*\frac{\partial^2 \Psi}{\partial Ic \partial IIIc} 
+      ///          + Ic*IIIc*\frac{\partial^2 \Psi}{\partial IIc \partial IIIc} )
+      ///\f]
+      ///\f[
+      /// \bar\delta_4 = 4*\frac{\partial^2 \Psi}{\partial IIc^2}
+      ///\f]
+      ///\f[
+      /// \tilde{p} = -4*\frac{\partial \Psi}{\partial IIc}
+      ///\f]
+      virtual void AddCoefficientsModified(
+        bool& havecoefficients,  ///< non-zero coefficients of this type are provided
+        LINALG::Matrix<3,1>& gamma,  ///< see above
+        LINALG::Matrix<5,1>& delta,  ///< see above
+        const LINALG::Matrix<3,1>& prinv  ///< principal invariants of right Cauchy-Green tensor
+        ) = 0;
+      
     private:
       
 

@@ -38,7 +38,7 @@ MAT::PAR::ElastHyper::ElastHyper(
     const int matid = *m;
     Teuchos::RCP<MAT::ELAST::Summand> potsum = MAT::ELAST::Summand::Factory(matid);
     if (potsum == Teuchos::null) dserror("Failed to allocate");
-    pot_.insert(std::pair<int,Teuchos::RCP<MAT::ELAST::Summand> >(matid,potsum));
+    potsum_.insert(std::pair<int,Teuchos::RCP<MAT::ELAST::Summand> >(matid,potsum));
   }
 }
 
@@ -132,6 +132,24 @@ void MAT::ElastHyper::InvariantsPrincipal(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void MAT::ElastHyper::InvariantsModified(
+  LINALG::Matrix<3,1>& modinv,
+  const LINALG::Matrix<3,1>& prinv
+  )
+{
+  // 1st invariant, trace
+  modinv(0) = prinv(0)*std::pow(prinv(2),-1./3.);
+  // 2nd invariant
+  modinv(1) = prinv(1)*std::pow(prinv(2),-2./3.);
+  // J
+  modinv(2) = std::pow(prinv(2),1./2.);
+    
+  
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void MAT::ElastHyper::Evaluate(
   const LINALG::Matrix<6,1>& glstrain,
   LINALG::Matrix<6,6>& cmat,
@@ -151,7 +169,7 @@ void MAT::ElastHyper::Evaluate(
   // principal invariants of right Cauchy-Green strain
   LINALG::Matrix<3,1> prinv;
   InvariantsPrincipal(prinv, rcg);
-
+  
   // invert right Cauchy-Green tensor
   // REMARK: stress-like 6-Voigt vector
   LINALG::Matrix<6,1> icg(false);
@@ -164,28 +182,57 @@ void MAT::ElastHyper::Evaluate(
     icg(5) = ( 0.25*rcg(3)*rcg(4) - 0.5*rcg(5)*rcg(1) ) / prinv(2);
   }
 
+  
   // principal coefficients
   bool havecoeffprinc = false;
   LINALG::Matrix<3,1> gamma(true);
   LINALG::Matrix<8,1> delta(true);
-
-  // loop map of associated potentials
-  std::map<int,Teuchos::RCP<MAT::ELAST::Summand> >& pot = params_->pot_;
-  std::map<int,Teuchos::RCP<MAT::ELAST::Summand> >::iterator p;
-  for (p=pot.begin(); p!=pot.end(); ++p)
   {
-    p->second->AddCoefficientsPrincipal(havecoeffprinc,gamma,delta,prinv);
+    
+    // loop map of associated potential summands
+    std::map<int,Teuchos::RCP<MAT::ELAST::Summand> >& pot = params_->potsum_;
+    std::map<int,Teuchos::RCP<MAT::ELAST::Summand> >::iterator p;
+    for (p=pot.begin(); p!=pot.end(); ++p)
+    {
+      p->second->AddCoefficientsPrincipal(havecoeffprinc,gamma,delta,prinv);
+    }
+  
   }
+  
+  // principal invariants of right Cauchy-Green strain
+  LINALG::Matrix<3,1> modinv;
+  InvariantsModified(modinv, prinv);
 
+  
+  // modified coefficients
+  bool havecoeffmodi = false;
+  LINALG::Matrix<3,1> modgamma(true);
+  LINALG::Matrix<5,1> moddelta(true);
+  {
+    
+    // loop map of associated potential summands
+    std::map<int,Teuchos::RCP<MAT::ELAST::Summand> >& pot = params_->potsum_;
+    std::map<int,Teuchos::RCP<MAT::ELAST::Summand> >::iterator p;
+    for (p=pot.begin(); p!=pot.end(); ++p)
+    {
+      p->second->AddCoefficientsModified(havecoeffmodi,modgamma,moddelta,modinv);
+    }
+  
+  }
+  
   // we make right Cauchy-Green 6-Voigt vector _stress_-like
   // needed for dyadic products underneath
   for (int i=3; i<6; i++) rcg(i) *= 0.5;
-
-  // set Cartesian identity 4-tensor in 6x6-Voigt matrix notation
+  
+  // set Cartesian identity 4-tensor in 6-Voigt matrix notation
   LINALG::Matrix<6,6> id4(true);
   for (int i=0; i<3; i++) id4(i,i) = 1.0;
   for (int i=3; i<6; i++) id4(i,i) = 0.5;
-
+  
+  // set Cartesian identity 4-tensor in 6x6-matrix notation (stress-like)
+  LINALG::Matrix<6,6> id4a(true);
+  for (int i=0; i<6; i++) id4a(i,i) = 1.0;
+    
   // blank resulting quantities
   // ... even if it is an implicit law that cmat is zero upon input
   stress.Clear();
@@ -220,6 +267,75 @@ void MAT::ElastHyper::Evaluate(
     AddtoCmatHolzapfelProduct(cmat, icg, delta(6));
     // contribution: Id4
     cmat.Update(delta(7), id4, 1.0);
+  }
+  
+  if (havecoeffmodi)
+  {
+    //define necessary variables
+    const double modscale = std::pow(prinv(2),-1./3.);
+    //modified right Cauhy-Green
+    LINALG::Matrix<6,1> modrcg(true);
+    modrcg.Update(modscale, rcg);
+    
+    // 2nd Piola Kirchhoff stresses
+    
+    // isochoric contribution
+    LINALG::Matrix<6,1> modstress(true);
+    modstress.Update(modgamma(0), id2);
+    modstress.Update(modgamma(1), modrcg, 1.0);
+    // build 4-tensor for projection as 6x6 tensor
+    LINALG::Matrix<6,6> Projection;
+    // we make right Cauchy-Green 6-Voigt vector _strain_-like again
+    LINALG::Matrix<6,1> realrcg(rcg); 
+    for (int i=3; i<6; i++) realrcg(i) *= 2.0;
+    Projection.MultiplyNT(1./3., icg, realrcg);
+    Projection.Update(1.0,id4a,-1.0);
+    // isochoric stress
+    LINALG::Matrix<6,1> isostress(true);
+    isostress.MultiplyNN(modscale,Projection,modstress,1.0);
+    stress.Update(1.0,isostress,1.0);
+    
+    // volumetric contribution
+    stress.Update(modgamma(2)*modinv(2), icg, 1.0);
+
+    
+    // constitutive tensor
+    
+    //isochoric contribution
+    // modified constitutive tensor
+    LINALG::Matrix<6,6> modcmat;
+    LINALG::Matrix<6,6> modcmat2(true);
+    // contribution: Id \otimes Id
+    modcmat.MultiplyNT(moddelta(0), id2, id2);
+    // contribution: Id \otimes C + C \otimes Id
+    modcmat.MultiplyNT(moddelta(1), id2, modrcg, 1.0);
+    modcmat.MultiplyNT(moddelta(1), rcg, id2, 1.0);
+    // contribution: C \otimes C
+    modcmat.MultiplyNT(moddelta(2), rcg, modrcg, 1.0);
+    // contribution: Id4
+    modcmat.Update(moddelta(3), id4, 1.0);
+    //scaling
+    modcmat.Scale(std::pow(modinv(2),-4./3.));
+    //constribution: P:modC:P 
+    modcmat2.MultiplyNN(Projection,modcmat);
+    cmat.MultiplyNT(1.0,modcmat2,Projection,1.0);
+    // constribution: 2/3*Tr(J^(-2/3)modstress) (Cinv \odot Cinv - 1/3 Cinv \otimes Cinv)
+    modcmat.Clear();
+    modcmat.MultiplyNT(-1.0/3.0,icg,icg);
+    AddtoCmatHolzapfelProduct(modcmat, icg, 1.0);
+    LINALG::Matrix<1,1> tracemat;
+    tracemat.MultiplyTN(2./3.*std::pow(modinv(2),-2./3.),modstress,realrcg);
+    cmat.Update(tracemat(0,0),modcmat,1.0);
+    //contribution: -2/3 (Cinv \otimes S_iso + S_iso \otimes Cinv)
+    cmat.MultiplyNT(-2./3.,icg,isostress,1.0);
+    cmat.MultiplyNT(-2./3.,isostress,icg,1.0);
+    
+    //volumentric contribution
+    //contribution: 2 \tilde p Cinv \otimes Cinv
+    cmat.MultiplyNT(modinv(2)* moddelta(4),icg,icg,1.0);
+    //contribution: -2 J*p Cinv \odot Cinv
+    AddtoCmatHolzapfelProduct(cmat, icg, -2*modinv(2)*modgamma(2));
+    
   }
   
   return;

@@ -183,11 +183,24 @@ namespace ELAST
     ///   \, \boldsymbol{C}^{-1} \odot \boldsymbol{C}^{-1}
     ///\f]
     void AddCoefficientsPrincipal(
-      bool& havecoefficients,
-      LINALG::Matrix<3,1>& gamma,
-      LINALG::Matrix<8,1>& delta,
-      const LINALG::Matrix<3,1>& prinv
-      );
+        bool& havecoefficients,  ///< non-zero coefficients of this type are provided
+        LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
+        LINALG::Matrix<8,1>& delta,  ///< necessary coefficients for second derivative
+        const LINALG::Matrix<3,1>& prinv  ///< principal invariants of right Cauchy-Green tensor
+    );
+    
+    /// Add modified coeffiencts.
+    /// Nothing to do for this (coupled) material!
+    void AddCoefficientsModified(
+        bool& havecoefficients,  ///< non-zero coefficients of this type are provided
+         LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
+         LINALG::Matrix<5,1>& delta,  ///< necessary coefficients for second derivative
+         const LINALG::Matrix<3,1>& prinv  ///< principal invariants of right Cauchy-Green tensor
+     )
+    {
+      havecoefficients = havecoefficients or false;
+    };
+    
 
   private:
 
