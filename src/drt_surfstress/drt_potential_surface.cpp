@@ -317,7 +317,7 @@ void POTENTIAL::SurfacePotential::computeFandK(
 
   // number of atoms (~0.2 nm) per surface area in reference configuration
   // here equal for all bodies in n/µm^2
-  const double beta = 25000000;
+  const double beta = cond->GetDouble("beta"); // = 25000000;
   const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule);
   
   //----------------------------------------------------------------------
@@ -374,33 +374,32 @@ void POTENTIAL::SurfacePotential::computeFandK(
            LINALG::Matrix<3,1>  potderiv1;
            LINALG::Matrix<3,3>  potderiv2;
          
-           bool contact = false;
-           bool valid = true;
-           if(contact)
+           bool validContribution = false;
+           // contact
+           if(fabs(cond->GetDouble("exvollength")) > 1e-7)
            {
-             double welldepth = 0.02;
+             double exvollength = cond->GetDouble("exvollength");
              LINALG::Matrix<3,1> x_gp_con(true);
              x_gp_con = x_gp;
            
              //Add: this = scalarThis * this + scalarOther * other. 
-             x_gp_con.Update( (-1.0)*welldepth, n_gp, 1.0);
-             x_pot_gp.Update( (-1.0)*welldepth, n_pot_gp, 1.0);
+             x_gp_con.Update( (-1.0)*exvollength, n_gp, 1.0);
+             x_pot_gp.Update( (-1.0)*exvollength, n_pot_gp, 1.0);
            
              EvaluatePotentialfromCondition(cond, x_gp_con, x_pot_gp, potderiv1, potderiv2);
-             valid = DetermineValidContribution(x_gp_con, x_pot_gp, n_gp, n_pot_gp);
+             validContribution = DetermineValidContribution(x_gp_con, x_pot_gp, n_gp, n_pot_gp);
            }
            else
            {
              EvaluatePotentialfromCondition(cond, x_gp, x_pot_gp, potderiv1, potderiv2);
-             valid = DetermineValidContribution(x_gp, x_pot_gp, n_gp, n_pot_gp);
+             validContribution = DetermineValidContribution(x_gp, x_pot_gp, n_gp, n_pot_gp);
            }
            
           // if valid contribution
-          if(true)
+          if(validContribution)
           {
              //cout << "potderiv1 = " << potderiv1 << endl;
              //cout << "potderiv2 = " << potderiv2 << endl;
-          
              const int numdof = 3;
               
              // computation of internal forces (possibly with non-local values)

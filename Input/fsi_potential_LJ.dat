@@ -477,8 +477,8 @@ FUNCT2 EXPR 0 0 0 FUNCTION -0.00005*(150-x)*x
 ------------------------------------------------------------FUNCT4
 
 ------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 1 POSITION dispx NAME dispx VALUE -6.069928699e-04 TOLERANCE 1e-6
-STRUCTURE DIS 1 NODE 1 POSITION dispy NAME dispy VALUE -2.513221807e-04 TOLERANCE 1e-6
+STRUCTURE DIS 1 NODE 1 POSITION dispx NAME dispx VALUE -6.910231727e-04 TOLERANCE 1e-6
+STRUCTURE DIS 1 NODE 1 POSITION dispy NAME dispy VALUE -2.764611251e-04 TOLERANCE 1e-6
 STRUCTURE DIS 1 NODE 1 POSITION dispz NAME dispz VALUE 0.0 TOLERANCE 1e-14
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 28
@@ -714,9 +714,9 @@ DSURF  0
 -------------------------------DESIGN SURF LJ_POTENTIAL CONDITIONS
 DSURF  2
 // hydrogel left mantel
-E 2 - 1 label 1 depth 0.00000000000007 rootDist 1.0 cutOff 50.0
+E 2 - 1 label 1 depth 0.00000000000007 rootDist 1.0 cutOff 50.0 exvollength 0.0 beta 25000000
 // hydrogel right mantel
-E 5 - 1 label 2 depth 0.00000000000007 rootDist 1.0 cutOff 50.0
+E 5 - 1 label 2 depth 0.00000000000007 rootDist 1.0 cutOff 50.0 exvollength 0.0 beta 25000000
 ---------------------------------------------MICROSCALE CONDITIONS
 DSURF  0
 --------------------------DESIGN FLUID STRESS CALC LINE CONDITIONS

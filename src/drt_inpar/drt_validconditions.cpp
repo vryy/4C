@@ -741,6 +741,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(lj_potential_3D,"depth");
   AddNamedReal(lj_potential_3D,"rootDist");
   AddNamedReal(lj_potential_3D,"cutOff");
+  AddNamedReal(lj_potential_3D,"exvollength");
+  AddNamedReal(lj_potential_3D,"beta");
 
   condlist.push_back(lj_potential_3D);
   
@@ -760,6 +762,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(zeta_potential_3D,"zeta_param_1");
   AddNamedReal(zeta_potential_3D,"zeta_param_2");
   AddNamedReal(zeta_potential_3D,"cutOff");
+  AddNamedReal(zeta_potential_3D,"exvollength");
+  AddNamedReal(zeta_potential_3D,"beta");
 
   condlist.push_back(zeta_potential_3D);
   
@@ -779,6 +783,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(lj_potential_2D,"depth");
   AddNamedReal(lj_potential_2D,"rootDist");
   AddNamedReal(lj_potential_2D,"cutOff");
+  AddNamedReal(lj_potential_2D,"exvollength");
+  AddNamedReal(lj_potential_2D,"beta");
 
   condlist.push_back(lj_potential_2D);
 
@@ -799,6 +805,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(zeta_potential_2D,"zeta_param_1");
   AddNamedReal(zeta_potential_2D,"zeta_param_2");
   AddNamedReal(zeta_potential_2D,"cutOff");
+  AddNamedReal(zeta_potential_2D,"exvollength");
+  AddNamedReal(zeta_potential_2D,"beta");
 
   condlist.push_back(zeta_potential_2D);
   
