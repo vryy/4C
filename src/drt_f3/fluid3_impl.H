@@ -108,11 +108,8 @@ namespace ELEMENTS
     //! number of nodes
     static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
-    /// Evaluate
     /*!
-      The evaluate function for the general fluid case.
-      Why doesn't someone who actually knows what this function does
-      write a useful comment?
+      \brief evaluate function for Fluid3 element
      */
     virtual int Evaluate(Fluid3*                    ele,
                          ParameterList&             params,
@@ -125,11 +122,8 @@ namespace ELEMENTS
                          Epetra_SerialDenseVector&  elevec3_epetra,
                          RefCountPtr<MAT::Material> mat);
 
-    /// calculating element matrix and rhs
     /*!
-      Calculate matrix and rhs. Here the whole thing is hidden.
-
-      \note Stationary calculations are not (yet) supported.
+      \brief calculate element matrix and rhs
 
       \param ele              (i) the element those matrix is calculated
       \param evelnp           (i) nodal velocities at n+1
@@ -146,13 +140,17 @@ namespace ELEMENTS
       \param estif            (o) element matrix to calculate
       \param emesh            (o) linearization wrt mesh motion
       \param eforce           (o) element rhs to calculate
-      \param subgrvisc        (o) subgrid-viscosity vector
+      \param sgvelvisc        (o) subgrid-velocity/viscosity vector
       \param material         (i) fluid material
       \param time             (i) current simulation time
       \param dt               (i) timestep
       \param timefac          (i) time discretization factor
+      \param eosfac           (i) equation-of-state factor
       \param newton           (i) boolean flag for linearisation
       \param loma             (i) boolean flag for potential low-Mach-number solver
+      \param conservative     (i) boolean flag for conservative form
+      \param sgvel            (i) boolean flag for subgrid-scale velocity
+      \param is_genalpha      (i) boolean flag for generalized-alpha time integration
       \param higher_order_ele (i) keep or drop second derivatives
       \param fssgv            (i) flag for type of fine-scale subgrid viscosity
       \param pspg             (i) boolean flag for stabilisation
@@ -168,7 +166,7 @@ namespace ELEMENTS
       \param Cs               (i) Smagorinsky model parameter
       \param Cs_delta_sq      (i) Model parameter computed by dynamic Smagorinsky
                                   approach (Cs*h*h)
-      \param visceff          (i) nu+nu_turbulent
+      \param visceff          (i) viscosity + subgrid viscosity
       \param l_tau            (i) viscous length scale, required for van driest
                                   damping function and defined on input
       */
@@ -187,7 +185,7 @@ namespace ELEMENTS
                 LINALG::Matrix<4*iel,4*iel>&             estif,
                 LINALG::Matrix<4*iel,4*iel>&             emesh,
                 LINALG::Matrix<4*iel,    1>&             eforce,
-                LINALG::Matrix<4*iel,    1>&             subgrvisc,
+                LINALG::Matrix<4*iel,    1>&             sgvelvisc,
                 Teuchos::RCP<const MAT::Material>        material,
                 double                                   time,
                 double                                   dt,
@@ -196,6 +194,7 @@ namespace ELEMENTS
                 const bool                               newton,
                 const bool                               loma,
                 const bool                               conservative,
+                const bool                               sgvel,
                 const bool                               is_genalpha,
                 const bool                               higher_order_ele,
                 const enum Fluid3::FineSubgridVisc       fssgv,
@@ -216,9 +215,12 @@ namespace ELEMENTS
   private:
 
     /*!
-      \brief calculate stabilization parameter
+      \brief calculate various values at element center: stabilization parameter,
+             (non-linear) viscosity, subgrid viscosity, subgrid velocity
 
-      o Standard:
+      Options for tau:
+
+      o Franca-Barrenechea-Valentin-Wall:
            tauMp: Barrenechea, Valentin
            tauMu: Franca, Valentin
            tauC : Wall
@@ -232,65 +234,87 @@ namespace ELEMENTS
            tauMu: Franca, Valentin
            tauC : Codina
 
+      \param ele              (i) the element those matrix is calculated
       \param evelnp           (i) nodal velocities at n+1
       \param fsevelnp         (i) fine-scale nodal velocities at n+1
-      \param distype          (i) hex8, tet4 etc.
-      \param whichtau         (i) selecting available tau definition
-      \param visc             (i) material viscosity
-      \param timefac          (i) time discretization factor
+      \param eprenp           (i) nodal pressure
+      \param edensnp          (i) nodal density
+      \param eaccam           (i) nodal accelerations at n+alpha_M
+      \param edensam          (i) nodal densities at n+alpha_M
+      \param emhist           (i) time rhs for momentum equation
+      \param sgvelvisc        (o) subgrid-velocity/viscosity vector
+      \param material         (i) fluid material
       \param dt               (i) timestep
+      \param timefac          (i) time discretization factor
+      \param loma             (i) boolean flag for potential low-Mach-number solver
+      \param conservative     (i) boolean flag for conservative form
+      \param sgvel            (i) boolean flag for subgrid-scale velocity
+      \param is_genalpha      (i) boolean flag for generalized-alpha time integration
+      \param higher_order_ele (i) keep or drop second derivatives
+      \param fssgv            (i) flag for type of fine-scale subgrid viscosity
+      \param whichtau         (i) selecting available tau definition
       \param turb_mod_action  (i) selecting turbulence model (none, Smagorisky,
                                   dynamic Smagorinsky, Smagorinsky with van Driest
                                   damping for channel flows)
       \param Cs               (i) Smagorinsky model parameter
       \param Cs_delta_sq      (i) Model parameter computed by dynamic Smagorinsky
                                   approach (Cs*h*h)
-      \param visceff          (i) nu+nu_turbulent
+      \param visc             (i) viscosity
+      \param visceff          (i) viscosity + subgrid viscosity
       \param l_tau            (i) viscous length scale, required for van driest
                                   damping function and defined on input
-      \param fssgv            (i) flag for type of fine-scale subgrid viscosity
-
     */
     void Caltau(Fluid3*                                 ele,
-                LINALG::Matrix<4*iel,1>&                subgrvisc,
                 const LINALG::Matrix<3,iel>&            evelnp,
                 const LINALG::Matrix<3,iel>&            fsevelnp,
+                const LINALG::Matrix<iel,1>&            eprenp,
                 const LINALG::Matrix<iel,1>&            edensnp,
-                const enum Fluid3::TauType              whichtau,
+                const LINALG::Matrix<3,iel>&            eaccam,
+                const LINALG::Matrix<iel,1>&            edensam,
+                const LINALG::Matrix<3,iel>&            emhist,
+                LINALG::Matrix<4*iel,1>&                sgvelvisc,
                 Teuchos::RCP<const MAT::Material>       material,
-                double&                                 visc,
-                const double                            timefac,
                 const double                            dt,
+                const double                            timefac,
                 const double                            eosfac,
+                const bool                              loma,
+                const bool                              conservative,
+                const bool                              sgvel,
+                const bool                              is_genalpha,
+                const bool                              higher_order_ele,
+                const enum Fluid3::FineSubgridVisc      fssgv,
+                const enum Fluid3::TauType              whichtau,
                 const enum Fluid3::TurbModelAction      turb_mod_action,
                 double&                                 Cs,
                 double&                                 Cs_delta_sq,
+                double&                                 visc,
                 double&                                 visceff,
-                double&                                 l_tau,
-                const enum Fluid3::FineSubgridVisc      fssgv);
+                double&                                 l_tau);
 
 
     /*!
-       \brief calculates viscosity at a given point (element center or Gaussian point)
+       \brief calculate viscosity at element center
 
        \param material     (i) material
        \param visc         (o) kinematic material viscosity
        \param rateofshear  (i) shear rate
+       \param dens         (i) density
+       \param eosfac       (i) equation-of-state factor
      */
     void CalVisc(Teuchos::RCP<const MAT::Material> material,
-                 double&                   visc,
-                 const double &            rateofshear,
-                 const double &            dens,
-                 const double &            eosfac);
+                 double&                           visc,
+                 const double &                    rateofshear,
+                 const double &                    dens,
+                 const double &                    eosfac);
 
     /*!
-     * \brief calculate the body force from the nodes condition
+     * \brief calculate body force from node condition
      */
     void BodyForce(Fluid3*      ele,
                    const double time);
 
     /*!
-      \brief Compute rate of strain of (fine-scale) velocity
+      \brief calculate rate of strain of (fine-scale) velocity
 
       \param evel       (i) nodal velocity values
       \param derxy      (i) shape function derivatives

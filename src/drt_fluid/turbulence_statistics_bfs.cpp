@@ -635,7 +635,7 @@ Teuchos::RefCountPtr<Epetra_Vector> subgrvisc
         velnp->Dot(*togglep_,&p);
 
         double sv;
-        subgrvisc->Dot(*toggleu_,&sv);
+        subgrvisc->Dot(*togglep_,&sv);
 
         //----------------------------------------------------------------------
         // calculate spatial means on this line
@@ -848,7 +848,7 @@ const double                        eosfac)
         velnp->Dot(*togglep_,&p);
 
         double sv;
-        subgrvisc->Dot(*toggleu_,&sv);
+        subgrvisc->Dot(*togglep_,&sv);
 
         double rho;
         vedenp->Dot(*togglep_,&rho);

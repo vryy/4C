@@ -874,7 +874,7 @@ const double                        eosfac)
       vedenp->Dot(*togglep_,&rho);
 
       double sv;
-      subgrvisc->Dot(*toggleu_,&sv);
+      subgrvisc->Dot(*togglep_,&sv);
 
       //----------------------------------------------------------------------
       // calculate spatial means for vel., press., dens., temp., and 
@@ -984,7 +984,7 @@ const double                        eosfac)
       vedenp->Dot(*togglep_,&rho);
 
       double sv;
-      subgrvisc->Dot(*toggleu_,&sv);
+      subgrvisc->Dot(*togglep_,&sv);
 
       //----------------------------------------------------------------------
       // calculate spatial means for vel., press., dens., temp., and 
@@ -1093,7 +1093,7 @@ const double                        eosfac)
       vedenp->Dot(*togglep_,&rho);
 
       double sv;
-      subgrvisc->Dot(*toggleu_,&sv);
+      subgrvisc->Dot(*togglep_,&sv);
 
       //----------------------------------------------------------------------
       // calculate spatial means for vel., press., dens., temp., and 

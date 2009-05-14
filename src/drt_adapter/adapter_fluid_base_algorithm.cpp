@@ -213,7 +213,12 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
   // -----------------------sublist containing stabilization parameters
   fluidtimeparams->sublist("STABILIZATION")=fdyn.sublist("STABILIZATION");
-  
+
+  // -----------------------------get also scatra stabilization sublist
+  const Teuchos::ParameterList& scatradyn =
+    DRT::Problem::Instance()->ScalarTransportDynamicParams();
+  fluidtimeparams->sublist("SCATRA STABILIZATION")=scatradyn.sublist("STABILIZATION");
+
   fluidtimeparams->set<bool>("Use reaction terms for linearisation",
                            Teuchos::getIntegralValue<int>(fdyn,"NONLINITER")==2);
 

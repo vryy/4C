@@ -136,11 +136,10 @@ public:
   /// set the velocity field (zero or field by function)
   void SetVelocityField();
 
-  /// set the velocity field (Navier-Stokes solution)
+  /// set the velocity + subgrid-velocity/viscosity field (Navier-Stokes solution)
   void SetVelocityField(
       RCP<const Epetra_Vector> extvel,
-      RCP<const Epetra_Vector> extsubgrvisc,
-      RCP<const Epetra_Vector> extresidual,
+      RCP<const Epetra_Vector> extsgvelvisc,
       RCP<DRT::Discretization> fluiddis);
 
   /// set the initial scalar field phi
@@ -461,8 +460,8 @@ protected:
   /// actual convective velocity
   RCP<Epetra_MultiVector>    convel_;
 
-  /// (negative) fluid momentum residual (for obtaining subgrid-scale velocity)
-  RCP<Epetra_MultiVector>    fluidres_;
+  /// subgrid-scale velocity
+  RCP<Epetra_MultiVector>    sgvel_;
 
   /// Nonlinear iteration increment vector
   RCP<Epetra_Vector>    increment_;

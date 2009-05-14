@@ -170,13 +170,13 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   hist_ = LINALG::CreateVector(*dofrowmap,true);
 
   // convective velocity (always three velocity components per node)
-  // (get noderowmap of discretization for creating this multivector9
+  // (get noderowmap of discretization for creating this multivector)
   const Epetra_Map* noderowmap = discret_->NodeRowMap();
   convel_ = rcp(new Epetra_MultiVector(*noderowmap,3,true));
 
-  // (negative) fluid momentum residual (always three velocity components per node)
-  // (get noderowmap of discretization for creating this multivector9
-  fluidres_ = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+  // subgrid-scale velocity (always three velocity components per node)
+  // (get noderowmap of discretization for creating this multivector)
+  sgvel_ = rcp(new Epetra_MultiVector(*noderowmap,3,true));
 
   // -------------------------------------------------------------------
   // create vectors associated to boundary conditions
@@ -500,14 +500,10 @@ void SCATRA::ScaTraTimIntImpl::AddVelocityToParameterList(Teuchos::ParameterList
   LINALG::Export(*convel_,*tmp);
   p.set("velocity field",tmp);
 
-  // for low-Mach-number flow, also provide (negative) fluid momentum residual for
-  // obtaining subgrid-scale velocity field for usage on element level
-  if (prbtype_ == "loma")
-  {
-    RefCountPtr<Epetra_MultiVector> tmp2 = rcp(new Epetra_MultiVector(*nodecolmap,3));
-    LINALG::Export(*fluidres_,*tmp2);
-    p.set("fluid momentum residual",tmp2);
-  }
+  // also provide subgrid-scale velocity field for usage on element level
+  RefCountPtr<Epetra_MultiVector> tmp2 = rcp(new Epetra_MultiVector(*nodecolmap,3));
+  LINALG::Export(*sgvel_,*tmp2);
+  p.set("subgrid-scale velocity field",tmp2);
 
   return;
 }
@@ -1090,8 +1086,7 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::SetVelocityField(
 RCP<const Epetra_Vector> extvel,
-RCP<const Epetra_Vector> extsubgrvisc,
-RCP<const Epetra_Vector> extresidual,
+RCP<const Epetra_Vector> extsgvelvisc,
 RCP<DRT::Discretization> fluiddis)
 {
   if (cdvel_ != 2)
@@ -1138,26 +1133,30 @@ RCP<DRT::Discretization> fluiddis)
       // insert this velocity value in the node-based vector
       convel_->ReplaceMyValue(lnodeid, index, velocity);
 
-      // get (negative) fluid residual value
-      double residual = (*extresidual)[flid];
-      // insert this fluid residual value in the node-based vector
-      fluidres_->ReplaceMyValue(lnodeid, index, residual);
-
-      if (index == 0)
-      {
-        // get subgrid viscosity for this processor-local fluid dof
-        // and divide by turbulent Prandtl number to get diffusivity
-        Indices[0] = lnodeid;
-        Values[0]  = (*extsubgrvisc)[flid]/tpn_;
-        subgrdiff_->ReplaceMyValues(1,&Values[0],&Indices[0]);
-      }
+      // get subgrid-scale velocity
+      double sgvelocity = (*extsgvelvisc)[flid];
+      // insert subgrid-scale velocity in the node-based vector
+      sgvel_->ReplaceMyValue(lnodeid, index, sgvelocity);
     }
+
+    // now we transfer "pressure" dofs
+    // global and processor-local fluid dof ID
+    const int fgid = fluidnodedofs[numdim];
+    const int flid = fluiddofrowmap->LID(fgid);
+
+    // get subgrid viscosity for this processor-local fluid dof
+    // and divide by turbulent Prandtl number to get diffusivity
+    Indices[0] = lnodeid;
+    Values[0]  = (*extsgvelvisc)[flid]/tpn_;
+    // insert subgrid diffusivity in the node-based vector
+    subgrdiff_->ReplaceMyValues(1,&Values[0],&Indices[0]);
+
+    // 1D or 2D problems:
+    // for security reason: set zeros for all unused velocity components
     for(int index=numdim;index < 3; ++index)
     {
-      // 1D or 2D problems:
-      // for security reasons set zeros for all unused velocity components
       convel_->ReplaceMyValue(lnodeid, index, 0.0);
-      fluidres_->ReplaceMyValue(lnodeid, index, 0.0);
+      sgvel_->ReplaceMyValue(lnodeid, index, 0.0);
     }
   }
 

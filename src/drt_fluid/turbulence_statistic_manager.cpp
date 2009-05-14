@@ -218,7 +218,7 @@ namespace FLD
     mydispn_    (fluid.dispn_       ),
     mygridveln_ (fluid.gridv_       ),
     mygridvelaf_(null               ),
-    mysubgrvisc_(fluid.subgrvisc_   ),
+    mysubgrvisc_(fluid.sgvelvisc_   ),
     myforce_    (fluid.trueresidual_)
   {
     // get density

@@ -45,8 +45,7 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
   // transfer the initial convective velocity from initial fluid field to scalar transport field
   ScaTraField().SetVelocityField(
       FluidField().Velnp(),
-      FluidField().SubgrVisc(),
-      FluidField().TrueResidualWithZeroDBC(),
+      FluidField().SgVelVisc(),
       FluidField().Discretization()
   );
 

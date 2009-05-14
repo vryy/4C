@@ -180,8 +180,7 @@ void LOMA::Algorithm::InitialCalculations()
   // at n+1, since density at n was set equal to n+1 above.)
   ScaTraField().SetVelocityField(
       FluidField().Velnp(),
-      FluidField().SubgrVisc(),
-      FluidField().TrueResidualWithZeroDBC(),
+      FluidField().SgVelVisc(),
       FluidField().Discretization()
   );
 
@@ -308,8 +307,7 @@ void LOMA::Algorithm::GenAlphaOuterLoop()
     // set field vectors: velocity, subgrid viscosity, (negative) fluid trueresidual
     ScaTraField().SetVelocityField(
         FluidField().Velaf(),
-        FluidField().SubgrVisc(),
-        FluidField().TrueResidualWithZeroDBC(),
+        FluidField().SgVelVisc(),
         FluidField().Discretization()
     );
 
@@ -376,8 +374,7 @@ void LOMA::Algorithm::OSTBDF2OuterLoop()
     // set field vectors: velocity, subgrid viscosity, (negative) fluid trueresidual
     ScaTraField().SetVelocityField(
         FluidField().Velnp(),
-        FluidField().SubgrVisc(),
-        FluidField().TrueResidualWithZeroDBC(),
+        FluidField().SgVelVisc(),
         FluidField().Discretization()
     );
 

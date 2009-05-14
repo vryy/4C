@@ -111,8 +111,7 @@ void SCATRA::PassiveScaTraAlgorithm::DoTransportStep()
   // transfer convective velocity to scalar transport field solver
   ScaTraField().SetVelocityField(
       FluidField().Velnp(),
-      FluidField().SubgrVisc(),
-      FluidField().TrueResidual(),
+      FluidField().SgVelVisc(),
       FluidField().Discretization()
   );
 

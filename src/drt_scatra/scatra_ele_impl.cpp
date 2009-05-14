@@ -169,7 +169,7 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(int numdofpernode, int numscal)
     numscal_(numscal),
     iselch_((numdofpernode_ - numscal_) == 1),
     evelnp_(true),   // initialize to zero
-    efresnp_(true),
+    esgvelnp_(true),
     ephinp_(numscal_),
     ehist_(numdofpernode_),
     edensnp_(true),
@@ -327,12 +327,11 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
     DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,velocity,nsd_);
 
-    // for low-Mach-number flow, also get (negative) fluid momentum residual for
-    // obtaining subgrid-scale velocity field
-    if (scaltypestr =="loma" and sgvel)
+    // also get subgrid-scale velocity field if required
+    if (sgvel)
     {
-      const RCP<Epetra_MultiVector> fluidres = params.get< RCP<Epetra_MultiVector> >("fluid momentum residual",null);
-      DRT::UTILS::ExtractMyNodeBasedValues(ele,efresnp_,fluidres,nsd_);
+      const RCP<Epetra_MultiVector> sgvel = params.get< RCP<Epetra_MultiVector> >("subgrid-scale velocity field",null);
+      DRT::UTILS::ExtractMyNodeBasedValues(ele,esgvelnp_,sgvel,nsd_);
     }
 
     // extract local values from the global vectors
@@ -450,7 +449,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         timefac,
         alphaF,
         evelnp_,
-        efresnp_,
+        esgvelnp_,
         fsphinp_,
         temperature,
         conservative,
@@ -795,7 +794,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
     const double                          timefac, ///< time discretization factor
     const double                          alphaF, ///< factor for generalized-alpha time integration
     const LINALG::Matrix<nsd_,iel>&       evelnp,///< nodal velocities at t_{n+1}
-    const LINALG::Matrix<nsd_,iel>&       efresnp,///< nodal (negative) fluid residual values at t_{n+1}
+    const LINALG::Matrix<nsd_,iel>&       esgvelnp,///< nodal subgrid-scale velocities at t_{n+1}
     const vector<LINALG::Matrix<iel,1> >& fsphinp,///< fine-scale part of current scalar field
     const bool                            temperature, ///< temperature flag
     const bool                            conservative, ///< flag for conservative form
@@ -942,15 +941,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         // computations for including subgrid-scale velocity
         if (sgvel)
         {
-          // get density
-          const double dens = funct_.Dot(edensnp);
-
-          // multiply density by tau
-          const double denstau = dens*tau_[k];
-
-          // compute subgrid-scale velocity using negative fluid residual
-          sgvelint_.Multiply(efresnp,funct_);
-          sgvelint_.Scale(denstau);
+          // get (density-weighted) subgrid-scale velocity
+          sgvelint_.Multiply(esgvelnp,funct_);
 
           // subgrid-scale convective part
           sgconv_.MultiplyTN(derxy_,sgvelint_);

@@ -121,8 +121,7 @@ void ELCH::Algorithm::DoTransportStep()
   // transfer actual velocity fields
   ScaTraField().SetVelocityField(
       FluidField().Velnp(),
-      FluidField().SubgrVisc(),
-      FluidField().TrueResidualWithZeroDBC(),
+      FluidField().SgVelVisc(),
       FluidField().Discretization()
   );
 

@@ -181,7 +181,7 @@ public:
         const double                          timefac, ///< time discretization factor
         const double                          alphaF, ///< factor for generalized-alpha time integration
         const LINALG::Matrix<nsd_,iel>&       evelnp,///< nodal velocities at t_{n+1}
-        const LINALG::Matrix<nsd_,iel>&       efresnp,///< nodal (negative) fluid residual values at t_{n+1}
+        const LINALG::Matrix<nsd_,iel>&       esgvelnp,///< nodal subgrid-scale velocities at t_{n+1}
         const vector<LINALG::Matrix<iel,1> >& fsphinp,///< fine-scale part of current scalar field
         const bool                            temperature, ///< temperature flag
         const bool                            conservative, ///< flag for conservative form
@@ -464,8 +464,8 @@ public:
 
     //! nodal velocity values
     LINALG::Matrix<nsd_,iel> evelnp_;
-    //! nodal (negative) fluid residual values
-    LINALG::Matrix<nsd_,iel> efresnp_;
+    //! nodal subgrid-scale velocity values
+    LINALG::Matrix<nsd_,iel> esgvelnp_;
     //! actual values of transported scalars
     vector<LINALG::Matrix<iel,1> > ephinp_;
     //! history vector of transported scalars

@@ -231,7 +231,7 @@ public:
   Teuchos::RCP<Epetra_Vector> Velnp() { return velnp_; }
   Teuchos::RCP<Epetra_Vector> Velaf() { return velaf_; }
   Teuchos::RCP<Epetra_Vector> Veln() { return veln_; }
-  Teuchos::RCP<Epetra_Vector> SubgrVisc() { return subgrvisc_; }
+  Teuchos::RCP<Epetra_Vector> SgVelVisc();
   Teuchos::RCP<Epetra_Vector> GridVel() { return gridv_; }
 
   /// provide access to the Dirichlet map
@@ -258,11 +258,6 @@ public:
   /// were handled with the Dirichlet toggle vector. Now, they are stored and applied
   /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
   const Teuchos::RCP<const Epetra_Vector> InvDirichlet();
-
-  /// get true residual vector with zero Dirichlet boundary conditions
-  /// (for transfer to coupled scalar transport problems to
-  ///  obtain subgrid-scale velocity part)
-  Teuchos::RCP<Epetra_Vector> TrueResidualWithZeroDBC();
 
   Teuchos::RCP<Epetra_Vector> Dispnp() { return dispnp_; }
   Teuchos::RCP<Epetra_Vector> Dispn() { return dispn_; }
@@ -469,6 +464,9 @@ protected:
   /// flag for potential Neumann inflow
   bool neumanninflow_;
 
+  /// flag for evaluation of subgrid-scale velocity
+  bool sgvel_;
+
   /// form of convective term
   string convform_;
 
@@ -541,7 +539,7 @@ protected:
   //@}
 
   /// subgrid-viscosity vector
-  RCP<Epetra_Vector>    subgrvisc_;
+  RCP<Epetra_Vector>    sgvelvisc_;
 
   /// only necessary for AVM3: scale-separation matrix
   RCP<LINALG::SparseMatrix> Sep_;

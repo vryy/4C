@@ -311,8 +311,7 @@ void COMBUST::Algorithm::DoGfuncField()
   // assign the fluid velocity to the G-function field as convective velocity
   ScaTraField().SetVelocityField(
       FluidField().Velnp(),
-      FluidField().SubgrVisc(),
-      FluidField().TrueResidualWithZeroDBC(),
+      FluidField().SgVelVisc(),
       FluidField().Discretization()
   );
 

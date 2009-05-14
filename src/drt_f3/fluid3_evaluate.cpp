@@ -1270,11 +1270,11 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
 	{
           int finode=inode*4;
 
-	  svgp += funct(inode)*sv (finode  );
 	  ugp  += funct(inode)*sol(finode++);
           vgp  += funct(inode)*sol(finode++);
 	  wgp  += funct(inode)*sol(finode++);
 	  pgp  += funct(inode)*sol(finode  );
+	  svgp += funct(inode)*sv (finode  );
 	}
 
 	// add contribution to integral
@@ -1904,11 +1904,11 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
           int finode=inode*4;
 
           usave  = velpre(finode);
-          svgp   += funct(inode)*sv(finode  );
           ugp    += funct(inode)*velpre(finode++);
           vgp    += funct(inode)*velpre(finode++);
           wgp    += funct(inode)*velpre(finode++);
           pgp    += funct(inode)*velpre(finode  );
+          svgp   += funct(inode)*sv(finode  );
           rhogp  += funct(inode)*dens(finode  );
           rhougp += funct(inode)*dens(finode  )*usave;
         }
