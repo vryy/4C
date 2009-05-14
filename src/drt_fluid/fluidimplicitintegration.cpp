@@ -2305,8 +2305,14 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::SgVelVisc()
   // used as dummy here
   incvel_->PutScalar(0.0);
 
+  // extract subgrid-viscosity values before applying zero Dirichlet bc
+  Teuchos::RCP<Epetra_Vector> onlysgvisc = velpressplitter_.ExtractCondVector(sgvelvisc_);
+
   // set zero values at vector locations for Dirichlet boundary conditions
   LINALG::ApplyDirichlettoSystem(incvel_,sgvelvisc_,zeros_,*(dbcmaps_->CondMap()));
+
+  // insert subgrid-viscosity values again
+  velpressplitter_.InsertCondVector(onlysgvisc,sgvelvisc_);
 
   return sgvelvisc_;
 } // FluidImplicitTimeInt::SgVelVisc
