@@ -1175,8 +1175,8 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
 {
   if (init == 0) // zero_field
   {
-    phin_-> PutScalar(0);
-    phinp_-> PutScalar(0);
+    phin_-> PutScalar(0.0);
+    phinp_-> PutScalar(0.0);
   }
   else if (init == 1 || init == 3)  // (disturbed_)field_by_function
   {
@@ -1207,7 +1207,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
     // add random perturbation for initial field of turbulent flows
     if(init==3)
     {
-      int err =0;
+      int err = 0;
 
       // random noise is relative to difference of max-min values of initial profile
       double perc = params_->sublist("TURBULENCE PARAMETERS").get<double>("CHAN_AMPL_INIT_DIST",0.1);
@@ -1219,81 +1219,28 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
         cout << "\n\n";
       }
 
-      double thisphi=0;
-      double mymaxphi=0;
-      double myminphi=10000000.0;
-      double maxphi=0;
-      double minphi=10000000.0;
-      // loop all nodes on the processor
-      for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
-      {
-        // get the processor local node
-        DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
-        // the set of degrees of freedom associated with the node
-        vector<int> nodedofset = discret_->Dof(lnode);
-
-        int numdofs = nodedofset.size();
-        for (int k=0;k< numdofs;++k)
-        {
-          const int dofgid = nodedofset[0];
-          int doflid = dofrowmap->LID(dofgid);
-
-          thisphi=(*phinp_)[doflid];
-          if (mymaxphi*mymaxphi < thisphi*thisphi) mymaxphi=thisphi;
-          if (myminphi*myminphi > thisphi*thisphi) myminphi=thisphi;
-        }
-      }
-
       // get overall max and min values and range between min and max
-      discret_->Comm().MaxAll(&mymaxphi,&maxphi,1);
-      discret_->Comm().MaxAll(&myminphi,&minphi,1);
+      double maxphi(0.0);
+      double minphi(0.0);
+      err = phinp_->MaxValue(&maxphi);
+      if (err > 0) dserror("Error during evaluation of maximum value.");
+      err = phinp_->MinValue(&minphi);
+      if (err > 0) dserror("Error during evaluation of minimum value.");
       double range = abs(maxphi - minphi);
 
-      // loop all nodes on the processor
-      for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();++lnodeid)
+      // disturb initial field for all degrees of freedom
+      for (int k=0; k < phinp_->MyLength(); ++k)
       {
-        // get the processor local node
-        DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
-        // the set of degrees of freedom associated with the node
-        vector<int> nodedofset = discret_->Dof(lnode);
-
-        // check whether we have a pbc condition on this node
-        vector<DRT::Condition*> mypbc;
-
-        lnode->GetCondition("SurfacePeriodic",mypbc);
-
-        // check whether a periodic boundary condition is active on this node
-        if (mypbc.size()>0)
-        {
-          // yes, we have one
-
-          // get the list of all his slavenodes
-          map<int, vector<int> >::iterator master = pbcmapmastertoslave_->find(lnode->Id());
-
-          // slavenodes are ignored
-          if(master == pbcmapmastertoslave_->end()) continue;
-        }
-
-        int numdofs = nodedofset.size();
-        for (int k=0;k< numdofs;++k)
-        {
-          int dofgid = nodedofset[k];
-
-          double randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
-
-          double noise = perc * range * randomnumber;
-
-          err += phinp_->SumIntoGlobalValues(1,&noise,&dofgid);
-          err += phin_ ->SumIntoGlobalValues(1,&noise,&dofgid);
-        }
-
-        if(err!=0) dserror("dof not on proc");
+        double randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
+        double noise = perc * range * randomnumber;
+        err += phinp_->SumIntoMyValues(1,&noise,&k);
+        err += phin_ ->SumIntoMyValues(1,&noise,&k);
+        if (err!=0) dserror("Error while disturbing initial field.");
       }
     }
   }
   else if (init==2) // field_by_condition
   {
-    dserror("Initialfield by condition not finished yet;");
     // access the initial field condition
     vector<DRT::Condition*> cond;
     discret_->GetCondition("InitialField", cond);
@@ -1321,8 +1268,8 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
           int numdofs = nodedofset.size();
           for (int k=0;k< numdofs;++k)
           {
-            // get initial value from condition
-            double phi0 = 2.0;
+            // set 1.0 as initial value if node belongs to condition
+            double phi0 = 1.0;
             // set initial value
             const int dofgid = nodedofset[k];
             int doflid = dofrowmap->LID(dofgid);
@@ -1336,7 +1283,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(int init, int startfuncno)
     }
   }
   else
-    dserror("unknown option for initial field: %d", init);
+    dserror("Unknown option for initial field: %d", init);
 
   return;
 } // ScaTraTimIntImpl::SetInitialField
