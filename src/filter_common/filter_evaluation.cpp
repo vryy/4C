@@ -136,7 +136,7 @@ void DRT::ELEMENTS::Shell8::VisNames(map<string,int>& names)
 {
 }
 
-void DRT::ELEMENTS::Shell8::VisData(const string& name, vector<double>& data)
+bool DRT::ELEMENTS::Shell8::VisData(const string& name, vector<double>& data)
 {
 }
 
