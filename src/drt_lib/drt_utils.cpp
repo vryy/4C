@@ -130,6 +130,7 @@ extern "C"
 #include "../drt_mat/biocell.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_mat/charmm.H"
+#include "../drt_mat/elasthyper.H"
 #include "../drt_contact/drt_cnode.H"
 #include "../drt_contact/drt_celement.H"
 #include "drt_dserror.H"
@@ -816,6 +817,12 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       MAT::MatList* matlist = new MAT::MatList();
       matlist->Unpack(data);
       return matlist;
+    }
+    case ParObject_ElastHyper:
+    {
+      MAT::ElastHyper* elhy = new MAT::ElastHyper();
+      elhy->Unpack(data);
+      return elhy;
     }
     case ParObject_CNode:
     {
