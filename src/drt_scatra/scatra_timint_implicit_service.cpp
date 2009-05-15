@@ -15,19 +15,8 @@ Maintainer: Georg Bauer
 
 #include "scatra_timint_implicit.H"
 #include "../drt_lib/drt_timecurve.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/linalg_utils.H"
-#include "../drt_lib/linalg_solver.H"
 #include <Teuchos_TimeMonitor.hpp>
 // for AVM3 solver:
-#include <ml_common.h>
-#include <ml_include.h>
-#include <ml_epetra_utils.h>
-#include <ml_epetra.h>
-#include <ml_epetra_operator.h>
-#include <ml_MultiLevelPreconditioner.h>
-#include <ml_agg_genP.h>
-#include <ml_operator.h>
 #include <MLAPI_Error.h>
 #include <MLAPI_CompObject.h>
 #include <MLAPI_TimeObject.h>

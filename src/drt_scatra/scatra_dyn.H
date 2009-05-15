@@ -25,18 +25,6 @@ Maintainer: Volker Gravemeier
 #include "Epetra_SerialComm.h"
 #endif /* PARALLEL */
 
-#include "Epetra_Time.h"
-#include "Teuchos_RefCountPtr.hpp"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/linalg_utils.H"
-#include "../drt_lib/linalg_solver.H"
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_io/io.H"
-
-extern "C" /* stuff which is c and is accessed from c++ */
-{
-#include "../fluid_full/fluid_prototypes.h"
-}
 
 using namespace std;
 using namespace Teuchos;
@@ -44,8 +32,6 @@ using namespace Teuchos;
 
 #endif /* end of #ifdef __cplusplus */
 /* END     C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++*/
-
-
 
 
 /* BEGIN   C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++*/

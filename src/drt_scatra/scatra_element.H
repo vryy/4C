@@ -20,17 +20,12 @@ Maintainer: Georg Bauer
 #define DRT_SCATRA_ELEMENT_H
 
 
-#include "Teuchos_RefCountPtr.hpp"
 using namespace std;
-using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
-#include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
-// forward declarations
-//struct _MATERIAL;
 
 namespace DRT
 {
