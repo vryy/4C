@@ -438,17 +438,21 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
     }
   }
 
-  // -------------------------------------------------------------------
-  // set parameters associated to potential statistical flux evaluations
-  // -------------------------------------------------------------------
-  // get fluid turbulence sublist
-  ParameterList * scatrastabparams =&(params_.sublist("SCATRA STABILIZATION"));
-
-  // flag for evaluation of subgrid-scale velocity
+  // ---------------------------------------------------------------------
+  // set subgrid-scale velocity if required by a coupled scalar transport
+  // problem (currently only for low-Mach-number flow)
+  // ---------------------------------------------------------------------
   sgvel_ = false;
-  if (scatrastabparams->get<string>("STABTYPE") == "residual_based_plus_sgvel" or
-      scatrastabparams->get<string>("STABTYPE") == "residual_based_plus_sgvel_and_dc")
-    sgvel_ = true;
+  if (loma_ != "No")
+  {
+    // get fluid turbulence sublist
+    ParameterList * scatrastabparams =&(params_.sublist("SCATRA STABILIZATION"));
+
+    // flag for evaluation of subgrid-scale velocity
+    if (scatrastabparams->get<string>("STABTYPE") == "residual_based_plus_sgvel" or
+        scatrastabparams->get<string>("STABTYPE") == "residual_based_plus_sgvel_and_dc")
+      sgvel_ = true;
+  }
 
   // construct impedance bc wrapper
   impedancebc_ = rcp(new UTILS::FluidImpedanceWrapper(discret_, output_, dta_) );
