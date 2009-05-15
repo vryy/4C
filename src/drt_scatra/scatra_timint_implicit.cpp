@@ -1082,81 +1082,86 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField()
 
 
 /*----------------------------------------------------------------------*
- | set the actual velocity fields and subgrid diffusivities   gjb 04/08 |
+ | set convective velocity field, (subgrid velocity field and subgrid   |
+ | viscosity field)                                           gjb 05/09 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::SetVelocityField(
-RCP<const Epetra_Vector> extvel,
-RCP<const Epetra_Vector> extsgvelvisc,
-RCP<DRT::Discretization> fluiddis)
+Teuchos::RCP<const Epetra_Vector> fluidvel,
+Teuchos::RCP<const Epetra_Vector> fluidsgvelvisc,
+Teuchos::RCP<DRT::Discretization> fluiddis)
 {
   if (cdvel_ != 2)
-    dserror("Wrong SetVelocity() called for velocity field type %d!",cdvel_);
+    dserror("Wrong SetVelocityField() called for velocity field type %d!",cdvel_);
 
-  if (prbtype_ == "loma")
-  {
-    // store temperature and velocity of previous iteration for convergence check
-    tempincnp_->Update(1.0,*phinp_,0.0);
-    //velincnp_->Update(1.0,*convel_,0.0);
-  }
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA: set convective velocity field");
+
+  // boolean indicating whether subgrid velocity-diffusivity vector does exist
+  bool subgridswitch = fluidsgvelvisc!=Teuchos::null;
+
+  // variable to store subgrid diffusivity temporarily
+  double subgriddiff;
 
   // get dofrowmap of fluid discretization
   const Epetra_Map* fluiddofrowmap = fluiddis->DofRowMap();
 
-  vector<int>    Indices(1);
-  vector<double> Values(1);
-
   // loop over all local nodes of scatra discretization
-  for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+  for (int lnodeid=0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
   {
-    // Now, we rely on the fact that the scatra discretization
+    // Here we rely on the fact that the scatra discretization
     // is a clone of the fluid mesh. => a scatra node has the same 
-    // local (and global) ID as its corresponding fluid node!!
+    // local (and global) ID as its corresponding fluid node!
 
-    // get the processor-local fluid node with the same lnodeid
+    // get the processor's local fluid node with the same lnodeid
     DRT::Node* fluidlnode = fluiddis->lRowNode(lnodeid);
-
-    // the degrees of freedom associated with this fluid node
+    // get the degrees of freedom associated with this fluid node
     vector<int> fluidnodedofs = fluiddis->Dof(fluidlnode);
-
-    // determine number of space dimensions (ndof - pressure dof)
+    // determine number of space dimensions (numdof - pressure dof)
     const int numdim = ((int) fluidnodedofs.size()) -1;
 
     // now we transfer velocity dofs only
     for(int index=0;index < numdim; ++index)
     {
-      // global and processor-local fluid dof ID
+      // global and processor's local fluid dof ID
       const int fgid = fluidnodedofs[index];
       const int flid = fluiddofrowmap->LID(fgid);
 
-      // get corresponding velocity component
-      double velocity = (*extvel)[flid];
-      // insert this velocity value in the node-based vector
+      // get value of corresponding velocity component
+      double velocity = (*fluidvel)[flid];
+      // insert velocity value into node-based vector
       convel_->ReplaceMyValue(lnodeid, index, velocity);
 
-      // get subgrid-scale velocity
-      double sgvelocity = (*extsgvelvisc)[flid];
-      // insert subgrid-scale velocity in the node-based vector
-      sgvel_->ReplaceMyValue(lnodeid, index, sgvelocity);
+      if (subgridswitch)
+      {
+        // get subgrid-scale velocity component
+        double sgvelocity = (*fluidsgvelvisc)[flid];
+        // insert subgrid-scale velocity value into node-based vector
+        sgvel_->ReplaceMyValue(lnodeid, index, sgvelocity);
+      }
     }
 
-    // now we transfer "pressure" dofs
-    // global and processor-local fluid dof ID
-    const int fgid = fluidnodedofs[numdim];
-    const int flid = fluiddofrowmap->LID(fgid);
+    if (subgridswitch)
+    {
+      // now we transfer "pressure" dofs
+      // remark: the "pressure" dof is used to store the nodal values of
+      // the subgrid viscosity
 
-    // get subgrid viscosity for this processor-local fluid dof
-    // and divide by turbulent Prandtl number to get diffusivity
-    Indices[0] = lnodeid;
-    Values[0]  = (*extsgvelvisc)[flid]/tpn_;
-    // insert subgrid diffusivity in the node-based vector
-    subgrdiff_->ReplaceMyValues(1,&Values[0],&Indices[0]);
+      // global and processor's local fluid dof ID
+      const int fgid = fluidnodedofs[numdim];
+      const int flid = fluiddofrowmap->LID(fgid);
 
-    // 1D or 2D problems:
-    // for security reason: set zeros for all unused velocity components
-    for(int index=numdim;index < 3; ++index)
+      // get subgrid viscosity for this processor's local fluid dof and
+      // divide by turbulent Prandtl number to get subgrid diffusivity
+      subgriddiff  = (*fluidsgvelvisc)[flid]/tpn_;
+      // insert subgrid diffusivity value into node-based vector
+      subgrdiff_->ReplaceMyValues(1,&subgriddiff,&lnodeid);
+    }
+
+    // for security reasons in 1D or 2D problems:
+    // set zeros for all unused velocity components
+    for (int index=numdim; index < 3; ++index)
     {
       convel_->ReplaceMyValue(lnodeid, index, 0.0);
-      sgvel_->ReplaceMyValue(lnodeid, index, 0.0);
+      if (subgridswitch) sgvel_->ReplaceMyValue(lnodeid, index, 0.0);
     }
   }
 

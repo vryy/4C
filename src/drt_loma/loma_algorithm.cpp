@@ -173,11 +173,16 @@ void LOMA::Algorithm::InitialCalculations()
   // furthermore, set density at -1 (i.e., densnm) for BDF2 (zero vector)
   ScaTraField().UpdateDensity();
 
+  // store temperature and velocity of previous iteration for convergence check
+  ScaTraField().TempIncNp()->Update(1.0,*ScaTraField().Phinp(),0.0);
+  //ScaTraField().VelIncNp()->Update(1.0,*ConVel(),0.0);
+
   // compute initial convective velocity field for scalar transport solver
   // using initial fluid velocity (and pressure) field
   // (For generalized-alpha time-integration scheme, velocity at n+1
   // is weighted by density at n+alpha_F, which is identical to density
   // at n+1, since density at n was set equal to n+1 above.)
+  // store temperature and velocity of previous iteration for convergence check
   ScaTraField().SetVelocityField(
       FluidField().Velnp(),
       FluidField().SgVelVisc(),
@@ -304,6 +309,9 @@ void LOMA::Algorithm::GenAlphaOuterLoop()
     // compute values at intermediate time steps
     ScaTraField().ComputeIntermediateValues();
 
+    // store temperature and velocity of previous iteration for convergence check
+    ScaTraField().TempIncNp()->Update(1.0,*ScaTraField().Phinp(),0.0);
+    //ScaTraField().VelIncNp()->Update(1.0,*ConVel(),0.0);
     // set field vectors: velocity, subgrid viscosity, (negative) fluid trueresidual
     ScaTraField().SetVelocityField(
         FluidField().Velaf(),
@@ -371,6 +379,9 @@ void LOMA::Algorithm::OSTBDF2OuterLoop()
   {
     itnum++;
 
+    // store temperature and velocity of previous iteration for convergence check
+    ScaTraField().TempIncNp()->Update(1.0,*ScaTraField().Phinp(),0.0);
+    //ScaTraField().VelIncNp()->Update(1.0,*ConVel(),0.0);
     // set field vectors: velocity, subgrid viscosity, (negative) fluid trueresidual
     ScaTraField().SetVelocityField(
         FluidField().Velnp(),

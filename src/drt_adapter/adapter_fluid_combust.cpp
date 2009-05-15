@@ -64,20 +64,16 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidCombust::Velnp()
 }
 
 /*------------------------------------------------------------------------------------------------*
- | this is a hack which should be fixed as soon as possible!
- |                                      |
- | This function is merely required to be able to call SetVelocityField(), because there the      |
- | sgvelvisc_ vector is expected to be tranferred to the scalar transport field. This vector      |
- | contains the subgrid velocity and the subgrid viscosity. Because I don't have this vector, I   |
- | create a zero vector here to transfer this dummy.                                  henke 05/09 |
+ | return null pointer instead of subgrid velocity/viscosity vector                   henke 05/09 |
  *------------------------------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidCombust::SgVelVisc()
 {
-  const Epetra_Map* dofrowmap = fluid_.Discretization()->DofRowMap();
-  Teuchos::RCP<Epetra_Vector>  sgvelvisc = LINALG::CreateVector(*dofrowmap,true);
-  sgvelvisc->PutScalar(0.0);
-  // return zero vector - makes no sense! see comment above
-  return sgvelvisc;
+  /* This function is merely required to be able to call SetVelocityField(), in the constructor of
+   * ScaTraFluidCouplingAlgorithm. There, a vector sgvelvisc_ is transferred to the initial scalar
+   * transport field by default. The combustion fluid does not have this vector and thus this
+   * function returns a null pointer
+   */
+  return Teuchos::null;
 }
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |

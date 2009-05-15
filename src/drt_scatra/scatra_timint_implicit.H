@@ -136,11 +136,11 @@ public:
   /// set the velocity field (zero or field by function)
   void SetVelocityField();
 
-  /// set the velocity + subgrid-velocity/viscosity field (Navier-Stokes solution)
+  /// set the convective velocity + subgrid velocity/viscosity field (Navier-Stokes solution)
   void SetVelocityField(
-      RCP<const Epetra_Vector> extvel,
-      RCP<const Epetra_Vector> extsgvelvisc,
-      RCP<DRT::Discretization> fluiddis);
+      Teuchos::RCP<const Epetra_Vector> fluidvel,       ///< fluid velocity vector 
+      Teuchos::RCP<const Epetra_Vector> fluidsgvelvisc, ///< fluid subgrid velocity/viscosity vector
+      Teuchos::RCP<DRT::Discretization> fluiddis);    ///< fluid discretization
 
   /// set the initial scalar field phi
   void SetInitialField(int init,int startfuncno);
@@ -220,6 +220,9 @@ public:
 
   /// routine to return trueresidual at time step n+1 for low-Mach-number flow
   Teuchos::RCP<Epetra_Vector> TrueResidual() { return trueresidual_; }
+
+  /// routine to return temperature increment at time step n+1 for low-Mach-number flow
+  Teuchos::RCP<Epetra_Vector> TempIncNp() { return tempincnp_; }
 
   /// routine to return discretization
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
