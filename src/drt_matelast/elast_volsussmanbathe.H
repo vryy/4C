@@ -63,6 +63,13 @@ namespace ELAST
 
   /*----------------------------------------------------------------------*/
   /// Volumetric SussmanBathe material according to [1]
+  /// Strain energy function is given by
+  ///
+  ///
+  /// \f[
+  ///   \Psi = \kappa (J-1)^2
+  /// \f]
+  ///
   ///
   /// [1] Doll, S. and Schweizerhof, K. On the Development of Volumetric Strain Energy Functions
   ///     Journal of Applied Mechanics, 2000
@@ -77,39 +84,6 @@ namespace ELAST
 
     /// constructor with given material parameters
     VolSussmanBathe(MAT::ELAST::PAR::VolSussmanBathe* params);
-
-    /// @name Packing and Unpacking
-    //@{
-
-    /// Return unique ParObject id
-    ///
-    ///  every class implementing ParObject needs a unique id defined at the
-    ///  top of drt_parobject.H (this file) and should return it in this method.
-//    virtual int UniqueParObjectId() const { return ParObject_VolSussmanBathe; }
-
-    /// Pack this class so it can be communicated
-    ///
-    /// Resizes the vector data and stores all information of a class in it.
-    /// The first information to be stored in data has to be the
-    /// unique parobject id delivered by UniqueParObjectId() which will then
-    /// identify the exact class on the receiving processor.
-//    virtual void Pack(
-//      std::vector<char>& data  ///< (in/out): char vector to store class information
-//      ) const;
-
-    /// \brief Unpack data from a char vector into this class
-    ///
-    /// The vector data contains all information to rebuild the
-    /// exact copy of an instance of a class on a different processor.
-    /// The first entry in data has to be an integer which is the unique
-    /// parobject id defined at the top of this file and delivered by
-    /// UniqueParObjectId().
-    ///
-//    virtual void Unpack(
-//      const std::vector<char>& data  ///< vector storing all data to be unpacked into this
-//      );
-
-    //@}
 
     /// @name Access material constants
     //@{
@@ -138,7 +112,7 @@ namespace ELAST
         bool& havecoefficients,  ///< non-zero coefficients of this type are provided
         LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
         LINALG::Matrix<5,1>& delta,  ///< necessary coefficients for second derivative
-        const LINALG::Matrix<3,1>& prinv  ///< principal invariants of right Cauchy-Green tensor
+        const LINALG::Matrix<3,1>& modinv  ///< modified invariants of right Cauchy-Green tensor
     );
 
   private:

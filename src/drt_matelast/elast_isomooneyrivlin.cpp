@@ -50,59 +50,6 @@ MAT::ELAST::IsoMooneyRivlin::IsoMooneyRivlin(MAT::ELAST::PAR::IsoMooneyRivlin* p
 {
 }
 
-/*----------------------------------------------------------------------*
- |  Pack                                          (public)  bborn 04/09 |
- *----------------------------------------------------------------------*/
-/*
-void MAT::ELAST::IsoMooneyRivlin::Pack(std::vector<char>& data) const
-{
-  data.resize(0);
-
-  // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
-  AddtoPack(data,type);
-
-  // matid
-  int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
-  AddtoPack(data,matid);
-}
-*/
-
-/*----------------------------------------------------------------------*
- |  Unpack                                        (public)  bborn 04/09 |
- *----------------------------------------------------------------------*/
-/*
-void MAT::ELAST::IsoMooneyRivlin::Unpack(const std::vector<char>& data)
-{
-  int position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
-
-  // matid
-  int matid;
-  ExtractfromPack(position,data,matid);
-  // in post-process mode we do not have any instance of DRT::Problem
-  if (DRT::Problem::NumInstances() > 0)
-  {
-    const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
-    MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-    if (mat->Type() == MaterialType())
-      params_ = static_cast<MAT::ELAST::PAR::IsoMooneyRivlin*>(mat);
-    else
-      dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
-  }
-  else
-  {
-    params_ = NULL;
-  }
-
-  if (position != (int)data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
-}
-*/
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

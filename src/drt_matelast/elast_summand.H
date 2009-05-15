@@ -155,7 +155,7 @@ namespace MAT
       /// \bar\gamma_2 = -2*\frac{\partial \Psi}{\partial IIc};
       ///\f]
       ///\f[
-      /// p = 2*IIIc*\frac{\partial \Psi}{\partial IIIc};
+      /// \bar\gamma_3 = p = 2*IIIc*\frac{\partial \Psi}{\partial IIIc};
       ///\f]
       ///
       /// material constitutive tensor coefficients
@@ -178,13 +178,13 @@ namespace MAT
       /// \bar\delta_4 = 4*\frac{\partial^2 \Psi}{\partial IIc^2}
       ///\f]
       ///\f[
-      /// \tilde{p} = -4*\frac{\partial \Psi}{\partial IIc}
+      /// \bar\delta_5 = \tilde{p} = -4*\frac{\partial \Psi}{\partial IIc}
       ///\f]
       virtual void AddCoefficientsModified(
         bool& havecoefficients,  ///< non-zero coefficients of this type are provided
         LINALG::Matrix<3,1>& gamma,  ///< see above
         LINALG::Matrix<5,1>& delta,  ///< see above
-        const LINALG::Matrix<3,1>& prinv  ///< principal invariants of right Cauchy-Green tensor
+        const LINALG::Matrix<3,1>& modinv  ///< modified invariants of right Cauchy-Green tensor
         ) = 0;
       
     private:
