@@ -66,63 +66,61 @@ namespace MAT
       /// of summand with respect to principal invariants
       ///
       /// The coefficients \f$\gamma_i\f$ and \f$\delta_j\f$ are based
-      /// on the summand \f$\Psi(I_{\boldsymbol{C}},II_{\boldsymbol_{\boldsymbol{C}}},III_{\boldsymbol{C}})\f$
+      /// on the summand \f$\Psi(I_{\boldsymbol{C}},II_{\boldsymbol{C}},III_{\boldsymbol{C}})\f$
       /// in which the principal invariants of the right Cauchy-Green tensor \f$\boldsymbol{C}\f$
       /// are the arguments, cf. Holzapfel [1], 
       ///\f[
-      ///  I_{\boldsymbol{C}} = C_{AA}
+      ///  I_{\boldsymbol{C}} = C_{AA},
       ///  \quad
-      ///  II_{\boldsymbol{C}} = 1/2 \big( \mathrm{trace}^2(\boldsymbol{C}) - \mathrm{trace}(\boldsymbol{C}^2) \big)
+      ///  II_{\boldsymbol{C}} = 1/2 \big( \mathrm{trace}^2(\boldsymbol{C}) - \mathrm{trace}(\boldsymbol{C}^2) \big),
       ///  \quad
       ///  III_{\boldsymbol{C}} = \det(\boldsymbol{C})
       ///\f]
       /// 
       /// cf. Holzapfel [1], p. 216 (6.32) and p. 248
       ///\f[
-      /// \gamma_1 = 2*( \frac{\partial \Psi}{\partial Ic} 
-      ///          + Ic*\frac{\partial \Psi}{\partial IIc} );
+      /// \gamma_1 = 2\left( \frac{\partial \Psi}{\partial I_{\boldsymbol{C}}} 
+      ///          + I_{\boldsymbol{C}}\frac{\partial \Psi}{\partial II_{\boldsymbol{C}}} \right);
       ///\f]
       ///\f[
-      /// \gamma_2 = -2*\frac{\partial \Psi}{\partial IIc};
+      /// \gamma_2 = -2\frac{\partial \Psi}{\partial II_{\boldsymbol{C}}};
       ///\f]
       ///\f[
-      /// \gamma_3 = 2*IIIc*\frac{\partial \Psi}{\partial IIIc};
+      /// \gamma_3 = 2III_{\boldsymbol{C}} \frac{\partial \Psi}{\partial III_{\boldsymbol{C}}};
       ///\f]
       ///
       /// material constitutive tensor coefficients
       /// cf. Holzapfel [1], p. 261
       ///\f[
-      /// \delta_1 = 4*( \frac{\partial^2 \Psi}{\partial Ic^2} 
-      ///          + 2*Ic*\frac{\partial^2 \Psi}{\partial Ic \partial IIc}
-      ///          + \frac{\partial \Psi}{\partial IIc} 
-      ///          + Ic^2*\frac{\partial^2 \Psi}{\partial IIc^2} )
+      /// \delta_1 = 4\left( \frac{\partial^2 \Psi}{\partial I_{\boldsymbol{C}}^2} 
+      ///          + 2 Ic \frac{\partial^2 \Psi}{\partial I_{\boldsymbol{C}} \partial II_{\boldsymbol{C}}}
+      ///          + \frac{\partial \Psi}{\partial II_{\boldsymbol{C}}} 
+      ///          + I_{\boldsymbol{C}}^2 \frac{\partial^2 \Psi}{\partial II_{\boldsymbol{C}}^2} \right)
       ///\f]
       ///\f[
-      /// \delta_2 = -4*( \frac{\partial^2 \Psi}{\partial Ic \partial IIc}
-      ///          + Ic*\frac{\partial^2 \Psi}{\partial IIc^2} )
+      /// \delta_2 = -4\left( \frac{\partial^2 \Psi}{\partial I_{\boldsymbol{C}} \partial II_{\boldsymbol{C}}}
+      ///          + I_{\boldsymbol{C}}\frac{\partial^2 \Psi}{\partial II_{\boldsymbol{C}}^2} \right)
       ///\f]
       ///\f[
-      /// \delta_3 = 4*( IIIc*\frac{\partial^2 \Psi}{\partial Ic \partial IIIc} 
-      ///          + Ic*IIIc*\frac{\partial^2 \Psi}{\partial IIc \partial IIIc} )
+      /// \delta_3 = 4\left( III_{\boldsymbol{C}} \frac{\partial^2 \Psi}{\partial I_{\boldsymbol{C}} \partial III_{\boldsymbol{C}}} 
+      ///          + I_{\boldsymbol{C}} III_{\boldsymbol{C}} \frac{\partial^2 \Psi}{\partial IIc \partial III_{\boldsymbol{C}}} \right)
       ///\f]
       ///\f[
-      /// \delta_4 = 4*\frac{\partial^2 \Psi}{\partial IIc^2}
+      /// \delta_4 = 4\frac{\partial^2 \Psi}{\partial II_{\boldsymbol{C}}^2}
       ///\f]
       ///\f[
-      /// \delta_5 = -4*IIIc*\frac{\partial^2 \Psi}{\partial IIc \partial IIIc}
+      /// \delta_5 = -4 III_{\boldsymbol{C}}\frac{\partial^2 \Psi}{\partial II_{\boldsymbol{C}} \partial III_{\boldsymbol{C}}}
       ///\f]
       ///\f[
-      /// \delta_6 = 4*( IIIc*\frac{\partial \Psi}{\partial IIIc} 
-      ///          + IIIc^2*\frac{\partial^2 \Psi}{\partial IIIc^2} )
+      /// \delta_6 = 4\left( III_{\boldsymbol{C}} \frac{\partial \Psi}{\partial III_{\boldsymbol{C}}} 
+      ///          + III_{\boldsymbol{C}}^2 \frac{\partial^2 \Psi}{\partial III_{\boldsymbol{C}}^2} \right)
       ///\f]
       ///\f[
-      /// \delta_7 = -4*IIIc*\frac{\partial \Psi}{\partial IIIc}
+      /// \delta_7 = -4 III_{\boldsymbol{C}} \frac{\partial \Psi}{\partial III_{\boldsymbol{C}}}
       ///\f]
       ///\f[
-      /// \delta_8 = -4*\frac{\partial \Psi}{\partial IIc}
+      /// \delta_8 = -4 \frac{\partial \Psi}{\partial II_{\boldsymbol{C}}}
       ///\f]
-      
-      
       virtual void AddCoefficientsPrincipal(
         bool& havecoefficients,  ///< non-zero coefficients of this type are provided
         LINALG::Matrix<3,1>& gamma,  ///< see above
@@ -134,51 +132,50 @@ namespace MAT
       /// of summand (decoupled form) with respect to modified invariants
       ///
       /// The coefficients \f$\bar\gamma_i\f$ and \f$\bar\delta_j\f$ are based
-      /// on the summand \f$\Psi(\overline{I}_{\boldsymbol{C}},\overline{II}_{\boldsymbol_{C}})\f$
-      /// in which the principal invariants of the modified right Cauchy-Green tensor \f$\overline{\boldsymbol{C}}=(\det\boldsymbol{C})^{-1/3}*\boldsymbol{C}\f$
+      /// on the summand \f$\Psi(\overline{I}_{\boldsymbol{C}},\overline{II}_{\boldsymbol_{C}},J)=\Psi_{iso}(\overline{I}_{\boldsymbol{C}},\overline{II}_{\boldsymbol_{C}})+\Psi_{vol}(J)\f$
+      /// in which the principal invariants of the modified right Cauchy-Green tensor \f$\overline{\boldsymbol{C}}=(\det\boldsymbol{C})^{-1/3} \boldsymbol{C}\f$
       /// are the arguments, cf. Holzapfel [1], 
       ///\f[
-      ///  \overline{I}_{\boldsymbol{C}} = J^{-2/3}*C_{AA}
+      ///  \overline{I}_{\boldsymbol{C}} = J^{-2/3} C_{AA},
       ///  \quad
-      ///  \overline{II}_{\boldsymbol{C}} = 1/2 \big( \mathrm{trace}^2(\boldsymbol{C}) - \mathrm{trace}(\boldsymbol{C}^2) \big)
+      ///  \overline{II}_{\boldsymbol{C}} = 1/2 \big( \mathrm{trace}^2(\boldsymbol{C}) - 
+      ///         \mathrm{trace}(\boldsymbol{C}^2) \big),
       ///  \quad
       ///  J = \sqrt{\det(\boldsymbol{C})}
       ///\f]
       /// 
       /// cf. Holzapfel [1], p. 234 and p. 262
-      
       ///\f[
-      /// \bar\gamma_1 = 2*( \frac{\partial \Psi}{\partial Ic} 
-      ///          + Ic*\frac{\partial \Psi}{\partial IIc} );
+      /// \bar\gamma_1 = 2\left( \frac{\partial \Psi_{iso}}{\partial \overline{I}_{\boldsymbol{C}}} 
+      ///          + \overline{I}_{\boldsymbol{C}} \frac{\partial \Psi_{iso}}{\partial \overline{II}_{\boldsymbol{C}}} \right);
       ///\f]
       ///\f[
-      /// \bar\gamma_2 = -2*\frac{\partial \Psi}{\partial IIc};
+      /// \bar\gamma_2 = -2 \frac{\partial \Psi_{iso}}{\partial \overline{II}_{\boldsymbol{C}}};
       ///\f]
       ///\f[
-      /// \bar\gamma_3 = p = 2*IIIc*\frac{\partial \Psi}{\partial IIIc};
+      /// \bar\gamma_3 = p = \frac{\partial \Psi_{vol}}{\partial J};
       ///\f]
       ///
       /// material constitutive tensor coefficients
       /// cf. Holzapfel [1], p. 261
       ///\f[
-      /// \bar\delta_1 = 4*( \frac{\partial^2 \Psi}{\partial Ic^2} 
-      ///          + 2*Ic*\frac{\partial^2 \Psi}{\partial Ic \partial IIc}
-      ///          + \frac{\partial \Psi}{\partial IIc} 
-      ///          + Ic^2*\frac{\partial^2 \Psi}{\partial IIc^2} )
+      /// \bar\delta_1 = 4 \left( \frac{\partial^2 \Psi_{iso}}{\partial \overline{I}_{\boldsymbol{C}}^2} 
+      ///          + 2 \overline{I}_{\boldsymbol{C}} \frac{\partial^2 \Psi_{iso}}{\partial \overline{I}_{\boldsymbol{C}} \partial \overline{II}_{\boldsymbol{C}}}
+      ///          + \frac{\partial \Psi_{iso}}{\partial \overline{II}_{\boldsymbol{C}}} 
+      ///          + \overline{I}_{\boldsymbol{C}}^2 \frac{\partial^2 \Psi_{sio}}{\partial \overline{II}_{\boldsymbol{C}}^2} \right)
       ///\f]
       ///\f[
-      /// \bar\delta_2 = -4*( \frac{\partial^2 \Psi}{\partial Ic \partial IIc}
-      ///          + Ic*\frac{\partial^2 \Psi}{\partial IIc^2} )
+      /// \bar\delta_2 = -4 \left( \frac{\partial^2 \Psi_{iso}}{\partial \overline{I}_{\boldsymbol{C}} \partial \overline{II}_{\boldsymbol{C}}}
+      ///          + \overline{I}_{\boldsymbol{C}} \frac{\partial^2 \Psi_{iso}}{\partial \overline{II}_{\boldsymbol{C}}^2} \right)
       ///\f]
       ///\f[
-      /// \bar\delta_3 = 4*( IIIc*\frac{\partial^2 \Psi}{\partial Ic \partial IIIc} 
-      ///          + Ic*IIIc*\frac{\partial^2 \Psi}{\partial IIc \partial IIIc} )
+      /// \bar\delta_3 = 4 \frac{\partial^2 \Psi_{iso}}{\partial \overline{II}_{\boldsymbol{C}}^2} 
       ///\f]
       ///\f[
-      /// \bar\delta_4 = 4*\frac{\partial^2 \Psi}{\partial IIc^2}
+      /// \bar\delta_4 = -4 \frac{\partial \Psi_{iso}}{\partial \overline{II}_{\boldsymbol{C}}}
       ///\f]
       ///\f[
-      /// \bar\delta_5 = \tilde{p} = -4*\frac{\partial \Psi}{\partial IIc}
+      /// \bar\delta_5 = \tilde{p} = J \frac{\partial^2 \Psi_{vol}}{\partial J^2} + p
       ///\f]
       virtual void AddCoefficientsModified(
         bool& havecoefficients,  ///< non-zero coefficients of this type are provided

@@ -8,7 +8,7 @@ element analysis", Cambridge, 1997.
 
 <pre>
 Maintainer: Sophie Rausch & Thomas Kloeppel
-            {rausch,kloeppel}@lnm.mw.tum.de
+            rausch,kloeppel@lnm.mw.tum.de
             089/289 15255
 </pre>
 
@@ -62,18 +62,20 @@ namespace ELAST
   }  // namespace PAR
 
   /*----------------------------------------------------------------------*/
-  /// Volumetric SussmanBathe material according to [1]
+  /// Volumetric SussmanBathe material according to [1].
+  ///
   /// Strain energy function is given by
   ///
   ///
-  /// \f[
-  ///   \Psi = \kappa (J-1)^2
-  /// \f]
+  ///\f[
+  ///   \Psi = \frac \kappa 2 (J-1)^2
+  ///\f]
   ///
   ///
   /// [1] Doll, S. and Schweizerhof, K. On the Development of Volumetric Strain Energy Functions
   ///     Journal of Applied Mechanics, 2000
-  /// 
+  /// \author rausch/tk
+  /// \date 04/09
   class VolSussmanBathe : public Summand
   {
 

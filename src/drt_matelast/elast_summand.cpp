@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file summand.cpp
+\file elast_summand.cpp
 
 \brief Interface class for complex materials at Gauss points
 

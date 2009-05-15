@@ -2,12 +2,13 @@
 /*!
 \file elast_isomooneyrivlin.H
 \brief
+
 This file contains the routines required to calculate the isochoric contribution 
 of a Mooney-Rivlin-type material
 
 <pre>
 Maintainer: Sophie Rausch & Thomas Kloeppel
-            {rausch,kloeppel}@lnm.mw.tum.de
+            rausch,kloeppel@lnm.mw.tum.de
             089/289 15255
 </pre>
 
@@ -66,9 +67,9 @@ namespace ELAST
   ///
   ///
   /// Strain energy function is given by
-  /// \f[
-  ///   \Psi = C1 (\overline{I}_{\boldsymbol{C}}-3) + C2 (\overline{II}_{\boldsymbol{C}}-3)^2.
-  /// \f]
+  ///\f[
+  ///   \Psi = C1 (\overline{I}_{\boldsymbol{C}}-3) + C2 (\overline{II}_{\boldsymbol{C}}-3).
+  ///\f]
   ///
   /// 
   /// <h3>References</h3>
@@ -76,7 +77,7 @@ namespace ELAST
   /// <li> [1] GA Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
   /// </ul>
   ///
-  /// \author bborn
+  /// \author rausch,tk
   /// \date 04/09
   class IsoMooneyRivlin : public Summand
   {

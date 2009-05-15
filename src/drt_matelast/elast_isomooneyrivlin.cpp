@@ -2,12 +2,13 @@
 /*!
 \file elast_isomooneyrivlin.cpp
 \brief
+
 This file contains the routines required to calculate the isochoric contribution 
 of a Mooney-Rivlin-type material
 
 <pre>
 Maintainer: Sophie Rausch & Thomas Kloeppel
-            {rausch,kloeppel}@lnm.mw.tum.de
+            rausch,kloeppel@lnm.mw.tum.de
             089/289 15255
 </pre>
 

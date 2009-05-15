@@ -7,7 +7,7 @@ of a Yeoh-type material.
 
 <pre>
 Maintainer: Sophie Rausch & Thomas Kloeppel
-            {rausch,kloeppel}@lnm.mw.tum.de
+            rausch,kloeppel@lnm.mw.tum.de
             089/289 15255
 </pre>
 
@@ -64,20 +64,21 @@ namespace ELAST
   /// Isochoric Yeoh material according to [1]
   ///
   /// This is the isochoric part of a third order hyperelastic, isotropic 
-  /// material modified trace of the right Cauchy-Green tensor.
+  /// material depending on the modified trace of the right Cauchy-Green tensor.
   ///
   /// Strain energy function is given by
-  /// \f[
-  ///   \Psi = C1 (\overline{I}_{\boldsymbol{C}}-3) + C2 (\overline{I}_{\boldsymbol{C}}-3)^2 + C3 (\overline{I}_{\boldsymbol{C}}-3)^3.
-  /// \f]
+  ///\f[
+  ///   \Psi = C1 (\overline{I}_{\boldsymbol{C}}-3) + C2 (\overline{I}_{\boldsymbol{C}}-3)^2 + 
+  ///          C3 (\overline{I}_{\boldsymbol{C}}-3)^3.
+  ///\f]
   ///
   ///
   /// <h3>References</h3>
   /// <ul>
- /// <li> [1] GA Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
+  /// <li> [1] GA Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
   /// </ul>
   ///
-  /// \author rausch / tk
+  /// \author rausch/tk
   /// \date 04/09
   class IsoYeoh : public Summand
   {

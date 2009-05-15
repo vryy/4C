@@ -9,7 +9,7 @@ the input line should read
 
 <pre>
 Maintainer: Sophie Rausch & Thomas Kloeppel
-            {rausch,kloeppel}@lnm.mw.tum.de
+            rausch,kloeppel@lnm.mw.tum.de
             089/289 15255
 </pre>
 */
