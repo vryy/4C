@@ -314,10 +314,11 @@ void DRT::ELEMENTS::Transport::VisNames(map<string,int>& names)
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                         gjb 01/09|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Transport ::VisData(const string& name, vector<double>& data)
+bool DRT::ELEMENTS::Transport ::VisData(const string& name, vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
-  DRT::Element::VisData(name,data);
+  if(DRT::Element::VisData(name,data))
+    return true;
 
   for (int k = 0 ;k<numdofpernode_; k++)
   {
@@ -332,10 +333,11 @@ void DRT::ELEMENTS::Transport ::VisData(const string& name, vector<double>& data
       if ((int)data.size()!=1) dserror("size mismatch");
       const double value = data_.GetDouble(name);
       data[0] = value;
+      return true;
     }
   } // loop over transported scalars
 
-  return;
+  return false;
 }
 
 

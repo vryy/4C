@@ -640,21 +640,22 @@ void DRT::ELEMENTS::Shell8::VisNames(map<string,int>& names)
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                       mwgee 01/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Shell8::VisData(const string& name, vector<double>& data)
+bool DRT::ELEMENTS::Shell8::VisData(const string& name, vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
-  DRT::Element::VisData(name,data);
+  if(DRT::Element::VisData(name,data)) 
+    return true;
 
   // these are the names shell8 recognizes, do nothing for everything else
   if (name != "ForcesXYZ"      && name != "MomentsXYZ" &&
       name != "ForcesRST"      && name != "MomentsRST" &&
-      name != "ForcesRST_Orth" && name != "MomentsRST_Orth") return;
+      name != "ForcesRST_Orth" && name != "MomentsRST_Orth") return false;
 
   if ((int)data.size()!=9) dserror("size mismatch");
 
   // see whether we have Forces and Moments
   const Epetra_SerialDenseMatrix* gp_stress = data_.Get<Epetra_SerialDenseMatrix>("Forces");
-  if (!gp_stress) return; // no stresses present, do nothing
+  if (!gp_stress) return false; // no stresses present, do nothing
 
   // Need to average the values of the gaussian point
   const int nforce = gp_stress->M(); // first dimension is # of forces and moments
@@ -694,7 +695,7 @@ void DRT::ELEMENTS::Shell8::VisData(const string& name, vector<double>& data)
   }
   else dserror("weirdo impossible case????");
 
-  return;
+  return true;
 }
 
 /*----------------------------------------------------------------------*

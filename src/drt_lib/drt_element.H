@@ -474,7 +474,10 @@ public:
                       of that data.
   */
   virtual void VisNames(map<string,int>& names)
-  { names.insert(pair<string,int>("Owner",1)); return; }
+  { 
+    names.insert(pair<string,int>("Owner",1));
+    //names.insert(pair<string,int>("EleGId",1));
+    return; }
 
   /*!
   \brief Query data to be visualized using BINIO of a given name
@@ -491,14 +494,21 @@ public:
   \param name (in):   Name of data that is currently processed for visualization
   \param data (out):  data to be filled by element if it recognizes the name
   */
-  virtual void VisData(const string& name, vector<double>& data)
+  virtual bool VisData(const string& name, vector<double>& data)
   {
     if (name=="Owner")
     {
       if ((int)data.size()<1) dserror("Size mismatch");
       data[0] = Owner();
+      return true;
     }
-    return;
+    if (name=="EleGId")
+    {
+      if ((int)data.size()<1) dserror("Size mismatch");
+      data[0] = Id();
+      return true;
+    }
+    return false;
   }
 
   //@}

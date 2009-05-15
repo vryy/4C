@@ -311,7 +311,7 @@ public:
   \param name (in):   Name of data that is currently processed for visualization
   \param data (out):  data to be filled by element if element recognizes the name
   */
-  virtual void VisData(const string& name, vector<double>& data); 
+  virtual bool VisData(const string& name, vector<double>& data); 
 
   /*!
   \brief Add values to the data_ container

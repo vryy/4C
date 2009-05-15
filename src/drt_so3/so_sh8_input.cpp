@@ -110,7 +110,7 @@ bool DRT::ELEMENTS::So_sh8::ReadElement()
     }
     // no EAS technology
     else if (strncmp(buffer,"none",4)==0){
-      cout << "Warning: Solid-Shell8 without EAS" << endl;
+//      cout << "Warning: Solid-Shell8 without EAS" << endl;
       eastype_ = soh8_easnone;
     }
     else dserror("Reading of SO_SH8 EAS technology failed");

@@ -251,7 +251,7 @@ public:
   \warning The method must not change size of data
 
   */
-  virtual void VisData
+  virtual bool VisData
   (
     const string& name, ///< Name of data that is currently processed for visualization
     vector<double>& data   ///<d ata to be filled by element if element recognizes the name

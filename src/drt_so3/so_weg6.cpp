@@ -297,10 +297,12 @@ void DRT::ELEMENTS::So_weg6::VisNames(map<string,int>& names)
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                         maf 07/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_weg6::VisData(const string& name, vector<double>& data)
+bool DRT::ELEMENTS::So_weg6::VisData(const string& name, vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
-  DRT::Element::VisData(name,data);
+  if(DRT::Element::VisData(name,data))
+    return true;
+  
   if (Material()->MaterialType() == INPAR::MAT::m_artwallremod){
     MAT::ArtWallRemod* art = static_cast <MAT::ArtWallRemod*>(Material().get());
     vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
@@ -321,7 +323,7 @@ void DRT::ELEMENTS::So_weg6::VisData(const string& name, vector<double>& data)
  }
 
 
-  return;
+  return true;
 }
 
 

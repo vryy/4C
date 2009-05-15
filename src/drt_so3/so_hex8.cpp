@@ -457,10 +457,11 @@ void DRT::ELEMENTS::So_hex8::VisNames(map<string,int>& names)
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                         maf 01/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
+bool DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
-  DRT::Element::VisData(name,data);
+  if (DRT::Element::VisData(name,data))
+    return true;
 
   if (Material()->MaterialType() == INPAR::MAT::m_contchainnetw){
     RefCountPtr<MAT::Material> mat = Material();
@@ -552,12 +553,8 @@ void DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
 //        data[0] = centerli_0[1];
 //      } else if (name == "l3_0"){
 //        data[0] = centerli_0[2];
-      } else if (name == "Owner"){
-        if ((int)data.size()<1) dserror("Size mismatch");
-        data[0] = Owner();
       } else {
-        cout << name << endl;
-        dserror("Unknown VisData!");
+        return false;
       }
     }
   }
@@ -571,12 +568,8 @@ void DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
     } else if (name == "Fiber2"){
       if ((int)data.size()!=3) dserror("size mismatch");
       data[0] = a2[0]; data[1] = a2[1]; data[2] = a2[2];
-    } else if (name == "Owner"){
-      if ((int)data.size()<1) dserror("Size mismatch");
-      data[0] = Owner();
     } else {
-      cout << name << endl;
-      dserror("Unknown VisData!");
+     return false;
     }
   }
   if (Material()->MaterialType() == INPAR::MAT::m_viscoanisotropic){
@@ -589,12 +582,8 @@ void DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
     } else if (name == "Fiber2"){
       if ((int)data.size()!=3) dserror("size mismatch");
       data[0] = a2[0]; data[1] = a2[1]; data[2] = a2[2];
-    } else if (name == "Owner"){
-      if ((int)data.size()<1) dserror("Size mismatch");
-      data[0] = Owner();
     } else {
-      cout << name << endl;
-      dserror("Unknown VisData!");
+      return false;
     }
   }
   if (Material()->MaterialType() == INPAR::MAT::m_anisotropic_balzani){
@@ -605,17 +594,12 @@ void DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
     } else if (name == "Fiber2"){
       if ((int)data.size()!=3) dserror("size mismatch");
       data[0] = balz->Geta2().at(0); data[1] = balz->Geta2().at(1); data[2] = balz->Geta2().at(2);
-    } else if (name == "Owner"){
-      if ((int)data.size()<1) dserror("Size mismatch");
-      data[0] = Owner();
     } else {
-      cout << name << endl;
-      dserror("Unknown VisData!");
+      return false;
     }
   }
 
-
-  return;
+  return true;
 }
 
 
