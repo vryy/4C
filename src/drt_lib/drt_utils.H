@@ -178,7 +178,7 @@ namespace UTILS
   /*!
 
     Loop all conditions of the given discretization, find the ones with the
-    specified name and collect the locally owned node ids in the suppied
+    specified name and collect the locally owned node ids in the supplied
     set. The nodes vector is unique and ordered on output.
 
     \param dis : (in) Discretization
