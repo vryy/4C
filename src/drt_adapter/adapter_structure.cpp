@@ -297,7 +297,6 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   
   if(contact)
   {
-    cout << "HALLO CONTACT "<< endl;
     structure_ = Teuchos::rcp(new ContactStructureGenAlpha(genalphaparams,actdis,solver,output));
   }
   else
