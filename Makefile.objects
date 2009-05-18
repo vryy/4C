@@ -316,6 +316,7 @@ OBJS_DRT_ADAPT= src/drt_adapter/ale_dyn.o \
                 src/drt_adapter/adapter_fluid.o \
                 src/drt_adapter/adapter_structure.o \
                 src/drt_adapter/adapter_structure_strugenalpha.o \
+                src/drt_adapter/adapter_structure_contactstrugenalpha.o \
                 src/drt_adapter/adapter_structure_timint.o \
                 src/drt_adapter/adapter_structure_constrained.o \
                 src/drt_adapter/adapter_fluid_base_algorithm.o \

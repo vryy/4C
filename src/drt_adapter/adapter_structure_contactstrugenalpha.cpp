@@ -5,17 +5,17 @@
 \brief Structure field adapter
 
 <pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
+Maintainer: Ursula Mayer
+            mayer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15238
+            089 - 289-15257
 </pre>
 */
 /*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
 #include "adapter_structure.H"
-#include "adapter_structure_strugenalpha.H"
+#include "adapter_structure_contactstrugenalpha.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -29,10 +29,10 @@ Maintainer: Ulrich Kuettler
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::StructureGenAlpha::StructureGenAlpha(Teuchos::RCP<Teuchos::ParameterList> params,
-                                              Teuchos::RCP<DRT::Discretization> dis,
-                                              Teuchos::RCP<LINALG::Solver> solver,
-                                              Teuchos::RCP<IO::DiscretizationWriter> output)
+ADAPTER::ContactStructureGenAlpha::ContactStructureGenAlpha(Teuchos::RCP<Teuchos::ParameterList> params,
+                                                            Teuchos::RCP<DRT::Discretization> dis,
+                                                            Teuchos::RCP<LINALG::Solver> solver,
+                                                            Teuchos::RCP<IO::DiscretizationWriter> output)
   : structure_(*params, *dis, *solver, *output),
     dis_(dis),
     params_(params),
@@ -46,7 +46,7 @@ ADAPTER::StructureGenAlpha::StructureGenAlpha(Teuchos::RCP<Teuchos::ParameterLis
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::InitialGuess()
+Teuchos::RCP<const Epetra_Vector> ADAPTER::ContactStructureGenAlpha::InitialGuess()
 {
 #if defined(INVERSEDESIGNCREATE) || defined(PRESTRESS)
   return Teuchos::rcp(new Epetra_Vector(structure_.Getdu().Map(),true));
@@ -59,7 +59,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::InitialGuess()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::RHS()
+Teuchos::RCP<const Epetra_Vector> ADAPTER::ContactStructureGenAlpha::RHS()
 {
   return structure_.Residual();
 }
@@ -67,7 +67,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::RHS()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::Dispnp()
+Teuchos::RCP<const Epetra_Vector> ADAPTER::ContactStructureGenAlpha::Dispnp()
 {
 #if defined(INVERSEDESIGNCREATE) || defined(PRESTRESS)
   return Teuchos::rcp(new Epetra_Vector(*dis_->DofRowMap(),true));
@@ -82,7 +82,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::Dispnp()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::Dispn()
+Teuchos::RCP<const Epetra_Vector> ADAPTER::ContactStructureGenAlpha::Dispn()
 {
 #if defined(INVERSEDESIGNCREATE) || defined(PRESTRESS)
   return Teuchos::rcp(new Epetra_Vector(*dis_->DofRowMap(),true));
@@ -94,7 +94,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::Dispn()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::Dispnm()
+Teuchos::RCP<const Epetra_Vector> ADAPTER::ContactStructureGenAlpha::Dispnm()
 {
 #if defined(INVERSEDESIGNCREATE) || defined(PRESTRESS)
   return Teuchos::rcp(new Epetra_Vector(*dis_->DofRowMap(),true));
@@ -106,7 +106,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::Dispnm()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> ADAPTER::StructureGenAlpha::DofRowMap()
+Teuchos::RCP<const Epetra_Map> ADAPTER::ContactStructureGenAlpha::DofRowMap()
 {
   const Epetra_Map* dofrowmap = dis_->DofRowMap();
   return Teuchos::rcp(new Epetra_Map(*dofrowmap));
@@ -115,7 +115,7 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::StructureGenAlpha::DofRowMap()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::StructureGenAlpha::SystemMatrix()
+Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::ContactStructureGenAlpha::SystemMatrix()
 {
   return structure_.SystemMatrix();
 }
@@ -123,7 +123,7 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::StructureGenAlpha::SystemMatrix()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Discretization> ADAPTER::StructureGenAlpha::Discretization()
+Teuchos::RCP<DRT::Discretization> ADAPTER::ContactStructureGenAlpha::Discretization()
 {
   return structure_.Discretization();
 }
@@ -131,14 +131,14 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::StructureGenAlpha::Discretization()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::FRobin()
+Teuchos::RCP<const Epetra_Vector> ADAPTER::ContactStructureGenAlpha::FRobin()
 {
   return structure_.FRobin();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::FExtn()
+Teuchos::RCP<const Epetra_Vector> ADAPTER::ContactStructureGenAlpha::FExtn()
 {
   return structure_.FExtn();
 }
@@ -146,7 +146,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::FExtn()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-// Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::FluidCondRHS() const
+// Teuchos::RCP<Epetra_Vector> ADAPTER::ContactStructureGenAlpha::FluidCondRHS() const
 // {
 //   // structure part of the rhs to enforce
 //   // u(n+1) dt = d(n+1) - d(n)
@@ -164,7 +164,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::FExtn()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-// Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::MeshCondRHS() const
+// Teuchos::RCP<Epetra_Vector> ADAPTER::ContactStructureGenAlpha::MeshCondRHS() const
 // {
 //   // structure part of the rhs to enforce
 //   // d(G,n+1) = d(n+1)
@@ -182,7 +182,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::FExtn()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureGenAlpha::PrepareTimeStep()
+void ADAPTER::ContactStructureGenAlpha::PrepareTimeStep()
 {
   // Note: MFSI requires a constant predictor. Otherwise the fields will get
   // out of sync.
@@ -206,7 +206,7 @@ void ADAPTER::StructureGenAlpha::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
+void ADAPTER::ContactStructureGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
 {
   // Yes, this is complicated. But we have to be very careful
   // here. The field solver always expects an increment only. And
@@ -236,7 +236,7 @@ void ADAPTER::StructureGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureGenAlpha::Update()
+void ADAPTER::ContactStructureGenAlpha::Update()
 {
   structure_.Update();
 }
@@ -244,7 +244,7 @@ void ADAPTER::StructureGenAlpha::Update()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureGenAlpha::Output()
+void ADAPTER::ContactStructureGenAlpha::Output()
 {
   structure_.Output();
 }
@@ -252,7 +252,7 @@ void ADAPTER::StructureGenAlpha::Output()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const Epetra_Map& ADAPTER::StructureGenAlpha::DomainMap()
+const Epetra_Map& ADAPTER::ContactStructureGenAlpha::DomainMap()
 {
   return structure_.DomainMap();
 }
@@ -260,7 +260,7 @@ const Epetra_Map& ADAPTER::StructureGenAlpha::DomainMap()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureGenAlpha::ReadRestart(int step)
+void ADAPTER::ContactStructureGenAlpha::ReadRestart(int step)
 {
   structure_.ReadRestart(step);
 }
@@ -268,7 +268,7 @@ void ADAPTER::StructureGenAlpha::ReadRestart(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureGenAlpha::Solve()
+void ADAPTER::ContactStructureGenAlpha::Solve()
 {
   std::string equil = params_->get<string>("equilibrium iteration","undefined solution algorithm");
 
@@ -303,7 +303,7 @@ void ADAPTER::StructureGenAlpha::Solve()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::RelaxationSolve(Teuchos::RCP<Epetra_Vector> iforce)
+Teuchos::RCP<Epetra_Vector> ADAPTER::ContactStructureGenAlpha::RelaxationSolve(Teuchos::RCP<Epetra_Vector> iforce)
 {
   Teuchos::RCP<Epetra_Vector> relax = interface_.InsertCondVector(iforce);
   Teuchos::RCP<Epetra_Vector> idisi = structure_.LinearRelaxationSolve(relax);
@@ -316,7 +316,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::RelaxationSolve(Teuchos:
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::ExtractInterfaceDispn()
+Teuchos::RCP<Epetra_Vector> ADAPTER::ContactStructureGenAlpha::ExtractInterfaceDispn()
 {
 #if defined(INVERSEDESIGNCREATE) || defined(PRESTRESS)
   return Teuchos::rcp(new Epetra_Vector(*interface_.CondMap(),true));
@@ -329,7 +329,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::ExtractInterfaceDispn()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::ExtractInterfaceDispnp()
+Teuchos::RCP<Epetra_Vector> ADAPTER::ContactStructureGenAlpha::ExtractInterfaceDispnp()
 {
 #if defined(INVERSEDESIGNCREATE) || defined(PRESTRESS)
   return Teuchos::rcp(new Epetra_Vector(*interface_.CondMap(),true));
@@ -346,7 +346,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::ExtractInterfaceDispnp()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::ExtractInterfaceForces()
+Teuchos::RCP<Epetra_Vector> ADAPTER::ContactStructureGenAlpha::ExtractInterfaceForces()
 {
   Teuchos::RCP<Epetra_Vector> iforce = interface_.ExtractCondVector(structure_.FExtn());
 
@@ -357,7 +357,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::ExtractInterfaceForces()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::PredictInterfaceDispnp()
+Teuchos::RCP<Epetra_Vector> ADAPTER::ContactStructureGenAlpha::PredictInterfaceDispnp()
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 
@@ -422,7 +422,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::PredictInterfaceDispnp()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureGenAlpha::ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce)
+void ADAPTER::ContactStructureGenAlpha::ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce)
 {
   // Play it save. In the first iteration everything is already set up
   // properly. However, all following iterations need to calculate the
@@ -436,7 +436,7 @@ void ADAPTER::StructureGenAlpha::ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureGenAlpha::ApplyInterfaceRobinValue(Teuchos::RCP<Epetra_Vector> iforce,
+void ADAPTER::ContactStructureGenAlpha::ApplyInterfaceRobinValue(Teuchos::RCP<Epetra_Vector> iforce,
                                                           Teuchos::RCP<Epetra_Vector> ifluidvel)
 {
   // get robin parameter and timestep
@@ -473,10 +473,10 @@ void ADAPTER::StructureGenAlpha::ApplyInterfaceRobinValue(Teuchos::RCP<Epetra_Ve
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ResultTest> ADAPTER::StructureGenAlpha::CreateFieldTest()
+Teuchos::RCP<DRT::ResultTest> ADAPTER::ContactStructureGenAlpha::CreateFieldTest()
 {
   return Teuchos::rcp(new StruResultTest(structure_));
 }
 
-
 #endif
+

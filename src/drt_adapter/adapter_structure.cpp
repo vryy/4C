@@ -16,6 +16,7 @@ Maintainer: Ulrich Kuettler
 
 #include "adapter_structure.H"
 #include "adapter_structure_strugenalpha.H"
+#include "adapter_structure_contactstrugenalpha.H"
 #include "adapter_structure_timint.H"
 #include "adapter_structure_constrained.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -296,6 +297,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   
   if(contact)
   {
+    cout << "HALLO CONTACT "<< endl;
     structure_ = Teuchos::rcp(new ContactStructureGenAlpha(genalphaparams,actdis,solver,output));
   }
   else

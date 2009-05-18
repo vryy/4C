@@ -1,21 +1,21 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_structure_strugenalpha.H
+\file adapter_structure_contactstrugenalpha.H
 
 \brief Structure field adapter
 
 <pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
+Maintainer: Ursula Mayer
+            mayer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15238
+            089 - 289-15257
 </pre>
 */
 /*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#ifndef ADAPTER_STRUCTURE_STRUGENALPHA_H
-#define ADAPTER_STRUCTURE_STRUGENALPHA_H
+#ifndef ADAPTER_STRUCTURE_CONTACTSTRUGENALPHA_H
+#define ADAPTER_STRUCTURE_CONTACTSTRUGENALPHA_H
 
 #include <Teuchos_RefCountPtr.hpp>
 #include <Teuchos_ParameterList.hpp>
@@ -25,19 +25,19 @@ Maintainer: Ulrich Kuettler
 #include <Epetra_Operator.h>
 
 #include "../drt_lib/drt_utils.H"
-#include "../drt_structure/strugenalpha.H"
+#include "../drt_contact/contactstrugenalpha.H"
 #include "../drt_structure/stru_resulttest.H"
 
 
 
 namespace ADAPTER {
 
-  /// adapter to generalized alpha algorithm
-  class StructureGenAlpha : public Structure
+  /// adapter to contact generalized alpha algorithm
+  class ContactStructureGenAlpha : public Structure
   {
   public:
 
-    StructureGenAlpha(Teuchos::RCP<Teuchos::ParameterList> params,
+    ContactStructureGenAlpha(Teuchos::RCP<Teuchos::ParameterList> params,
                      Teuchos::RCP<DRT::Discretization> dis,
                      Teuchos::RCP<LINALG::Solver> solver,
                      Teuchos::RCP<IO::DiscretizationWriter> output);
@@ -165,7 +165,7 @@ namespace ADAPTER {
   private:
 
     /// the actual structure algorithm
-    StruGenAlpha structure_;
+    CONTACT::ContactStruGenAlpha structure_;
 
     /// the interface map setup for interface <-> full translation
     LINALG::MapExtractor interface_;
@@ -182,7 +182,6 @@ namespace ADAPTER {
 
     //@}
   };
-
 }
 
 #endif
