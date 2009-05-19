@@ -2784,6 +2784,7 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
   eleparams.set("Linearisation",newton_);
   eleparams.set("low-Mach-number solver",loma_);
   eleparams.set("eos factor",eosfac_);
+  eleparams.set("subgrid-scale velocity",sgvel_);
 
   // parameters for stabilization
   eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
