@@ -503,7 +503,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "RelRes_Or_RelDis",
                                  "RelRes_And_RelDis",
                                  "MixRes_Or_MixDis",
-                                 "MixRes_And_MixDis"),
+                                 "MixRes_And_MixDis",
+                                 "None"),
                                tuple<INPAR::STR::ConvCheck>(
                                  INPAR::STR::convcheck_absres_or_absdis,
                                  INPAR::STR::convcheck_absres_and_absdis,
@@ -512,15 +513,85 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::STR::convcheck_relres_or_reldis,
                                  INPAR::STR::convcheck_relres_and_reldis,
                                  INPAR::STR::convcheck_mixres_or_mixdis,
-                                 INPAR::STR::convcheck_mixres_and_mixdis),
+                                 INPAR::STR::convcheck_mixres_and_mixdis,
+                                 INPAR::STR::convcheck_vague),
                                &sdyn);
 
   DoubleParameter("TOLDISP",1.0E-10,
                   "tolerance in the displacement norm for the newton iteration",
                   &sdyn);
+  setStringToIntegralParameter<INPAR::STR::ConvNorm>("NORM_DISP","Abs","type of norm for displacement convergence check",
+                               tuple<std::string>(
+                                 "Abs",
+                                 "Rel",
+                                 "Mix"),
+                               tuple<INPAR::STR::ConvNorm>(
+                                 INPAR::STR::convnorm_abs,
+                                 INPAR::STR::convnorm_rel,
+                                 INPAR::STR::convnorm_mix),
+                               &sdyn);
+
   DoubleParameter("TOLRES",1.0E-08,
                   "tolerance in the residual norm for the newton iteration",
                   &sdyn);
+  setStringToIntegralParameter<INPAR::STR::ConvNorm>("NORM_RESF","Abs","type of norm for residual convergence check",
+                               tuple<std::string>(
+                                 "Abs",
+                                 "Rel",
+                                 "Mix"),
+                               tuple<INPAR::STR::ConvNorm>(
+                                 INPAR::STR::convnorm_abs,
+                                 INPAR::STR::convnorm_rel,
+                                 INPAR::STR::convnorm_mix),
+                               &sdyn);
+  
+  DoubleParameter("TOLPRE",1.0E-08,
+                  "tolerance in pressure norm for the newton iteration",
+                  &sdyn);
+  setStringToIntegralParameter<INPAR::STR::ConvNorm>("NORM_PRES","Abs","type of norm for pressure convergence check",
+                               tuple<std::string>(
+                                 "Abs"),
+                               tuple<INPAR::STR::ConvNorm>(
+                                 INPAR::STR::convnorm_abs),
+                               &sdyn);
+  
+  DoubleParameter("TOLINCO",1.0E-08,
+                  "tolerance in the incompressible residual norm for the newton iteration",
+                  &sdyn);
+  setStringToIntegralParameter<INPAR::STR::ConvNorm>("NORM_INCO","Abs","type of norm for incompressible residual convergence check",
+                               tuple<std::string>(
+                                 "Abs"),
+                               tuple<INPAR::STR::ConvNorm>(
+                                 INPAR::STR::convnorm_abs),
+                               &sdyn);
+  
+  setStringToIntegralParameter<INPAR::STR::BinaryOp>("NORMCOMBI_DISPPRES","And","binary operator to combine pressure and displacement values",
+                               tuple<std::string>(
+                                 "And",
+                                 "Or"),
+                               tuple<INPAR::STR::BinaryOp>(
+                                 INPAR::STR::bop_and,
+                                 INPAR::STR::bop_or),
+                               &sdyn);
+  
+  setStringToIntegralParameter<INPAR::STR::BinaryOp>("NORMCOMBI_RESFINCO","And","binary operator to combine force and incompressible residual",
+                               tuple<std::string>(
+                                 "And",
+                                 "Or"),
+                               tuple<INPAR::STR::BinaryOp>(
+                                 INPAR::STR::bop_and,
+                                 INPAR::STR::bop_or),
+                               &sdyn);
+  
+  setStringToIntegralParameter<INPAR::STR::BinaryOp>("NORMCOMBI_RESFDISP","And","binary operator to combine displacement and residual force values",
+                               tuple<std::string>(
+                                 "And",
+                                 "Or"),
+                               tuple<INPAR::STR::BinaryOp>(
+                                 INPAR::STR::bop_and,
+                                 INPAR::STR::bop_or),
+                               &sdyn);
+  
   DoubleParameter("TOLCONSTR",1.0E-08,
                   "tolerance in the constr error norm for the newton iteration",
                   &sdyn);

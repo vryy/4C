@@ -399,6 +399,13 @@ namespace STR
     (
       FILE* ofile  //!< output file handle
     );
+    
+    //! Contains header to PrintNewtonIter
+    //! \author lw (originally) \date 12/07
+    void PrintNewtonIterHeader
+    (
+        FILE* ofile  //!< output file handle
+    );
 
     //! print statistics of converged Newton-Raphson iteration
     void PrintNewtonConv();
@@ -550,6 +557,9 @@ namespace STR
 
     //! copy constructor is NOT wanted
     TimIntImpl(const TimIntImpl& old);
+    
+    //! convert old-style convergence check
+    void ConvertConvCheck(INPAR::STR::ConvCheck convcheck);
 
     //! @name FSI stuff
     //@{
@@ -567,7 +577,15 @@ namespace STR
     //@{
     enum INPAR::STR::NonlinSolTech itertype_;  //!< kind of iteration technique
                                                //!< or non-linear solution technique
-    enum INPAR::STR::ConvCheck itercnvchk_;  //!< convergence check
+    enum INPAR::STR::ConvNorm normtypedisi_; //!< convergence check for residual displacements
+    enum INPAR::STR::ConvNorm normtypefres_; //!< convergence check for residual forces
+    enum INPAR::STR::ConvNorm normtypepres_; //!< convergence check for residual pressure
+    enum INPAR::STR::ConvNorm normtypepfres_; //!< convergence check for residual pressure forces
+    
+    enum INPAR::STR::BinaryOp combdispre_; //!< binary operator to combine field norms
+    enum INPAR::STR::BinaryOp combfrespfres_; //!< binary operator to combine field norms
+    enum INPAR::STR::BinaryOp combdisifres_; //!< binary operator to combine displacement and forces
+    
     enum INPAR::STR::VectorNorm iternorm_;  //!< vector norm to
     //!< check with
     int itermax_;  //!< maximally permitted iterations
@@ -576,6 +594,9 @@ namespace STR
                           //!< even if Newton-Raphson iteration failed
     double toldisi_;  //!< tolerance residual displacements
     double tolfres_;  //!< tolerance force residual
+    double tolpfres_; //!< norm of residual pressure forces
+    double tolpres_; //!< norm of residual pressures
+
     double uzawaparam_;  //!< Parameter for Uzawa algorithm dealing
                          //!< with Lagrange multipliers
     int uzawaitermax_;  //!< maximally permitted Uzawa iterations
@@ -586,7 +607,9 @@ namespace STR
     double normfres_;  //!< norm of residual forces
     double normdisi_;  //!< norm of residual displacements
     double normcon_;  //!< norm of constraint
-    Teuchos::RCP<Epetra_Vector> disi_;  //!< residual displacements
+    double normpfres_; //!< norm of residual pressure forces
+    double normpres_; //!< norm of residual pressures
+    Teuchos::RCP<Epetra_Vector> disi_;  //!< residual displacements (and pressure)
                                         //!< \f$\Delta{D}^{<k>}_{n+1}\f$
     Epetra_Time timer_;  //!< timer for solution technique
     //@}

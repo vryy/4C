@@ -578,6 +578,9 @@ void STR::TimInt::OutputRestart
   if ( (myrank_ == 0) and printscreen_)
   {
     printf("====== Restart written in step %d\n", step_);
+    // print a beautiful line made exactly of 80 dashes
+    printf("--------------------------------------------------------------"
+            "------------------\n");
     fflush(stdout);
   }
 
@@ -585,6 +588,8 @@ void STR::TimInt::OutputRestart
   if (printerrfile_)
   {
     fprintf(errfile_, "====== Restart written in step %d\n", step_);
+    fprintf(errfile_,"--------------------------------------------------------------"
+            "------------------\n");
     fflush(errfile_);
   }
 

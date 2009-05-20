@@ -289,6 +289,21 @@ namespace INPAR
       }
     }
 
+    /// type of norm to check for convergence
+    enum ConvNorm
+    {
+      convnorm_abs,         ///< absolute norm 
+      convnorm_rel,         ///< relative norm
+      convnorm_mix         ///< mixed absolute-relative norm
+    };
+    
+    /// type of norm to check for convergence
+    enum BinaryOp
+    {
+      bop_or,         ///<  or 
+      bop_and         ///<  and
+    };
+    
     //@}
 
     /// @name Constraints (global, geometric)
@@ -297,8 +312,8 @@ namespace INPAR
     /// possible constraint solvers
     enum ConSolveAlgo
     {
-      consolve_direct,  ///< ???
-      consolve_iterative  ///< ???
+      consolve_direct,  ///< build monolythic system for Lagrange multipliers
+      consolve_iterative  ///< solve linear system iteratively (partitioned)
     };
 
     //@}

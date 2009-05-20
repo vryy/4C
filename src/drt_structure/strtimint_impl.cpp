@@ -47,13 +47,21 @@ STR::TimIntImpl::TimIntImpl
   fsisurface_(NULL),
   pred_(Teuchos::getIntegralValue<INPAR::STR::PredEnum>(sdynparams,"PREDICT")),
   itertype_(Teuchos::getIntegralValue<INPAR::STR::NonlinSolTech>(sdynparams,"NLNSOL")),
-  itercnvchk_(Teuchos::getIntegralValue<INPAR::STR::ConvCheck>(sdynparams,"CONV_CHECK")),
   iternorm_(Teuchos::getIntegralValue<INPAR::STR::VectorNorm>(sdynparams,"ITERNORM")),
   itermax_(sdynparams.get<int>("MAXITER")),
   itermin_(sdynparams.get<int>("MINITER")),
   iterdivercont_(Teuchos::getIntegralValue<int>(sdynparams,"DIVERCONT")==1),
   toldisi_(sdynparams.get<double>("TOLDISP")),
   tolfres_(sdynparams.get<double>("TOLRES")),
+  tolpres_(sdynparams.get<double>("TOLPRE")),
+  tolpfres_(sdynparams.get<double>("TOLINCO")),
+  normtypedisi_(Teuchos::getIntegralValue<INPAR::STR::ConvNorm>(sdynparams,"NORM_DISP")),
+  normtypefres_(Teuchos::getIntegralValue<INPAR::STR::ConvNorm>(sdynparams,"NORM_RESF")),
+  normtypepres_(Teuchos::getIntegralValue<INPAR::STR::ConvNorm>(sdynparams,"NORM_PRES")),
+  normtypepfres_(Teuchos::getIntegralValue<INPAR::STR::ConvNorm>(sdynparams,"NORM_INCO")),
+  combdispre_(Teuchos::getIntegralValue<INPAR::STR::BinaryOp>(sdynparams,"NORMCOMBI_DISPPRES")),
+  combfrespfres_(Teuchos::getIntegralValue<INPAR::STR::BinaryOp>(sdynparams,"NORMCOMBI_RESFINCO")),
+  combdisifres_(Teuchos::getIntegralValue<INPAR::STR::BinaryOp>(sdynparams,"NORMCOMBI_RESFDISP")),
   uzawaparam_(sdynparams.get<double>("UZAWAPARAM")),
   uzawaitermax_(sdynparams.get<int>("UZAWAMAXITER")),
   tolcon_(sdynparams.get<double>("TOLCONSTR")),
@@ -68,6 +76,16 @@ STR::TimIntImpl::TimIntImpl
   freact_(Teuchos::null),
   fifc_(Teuchos::null)
 {
+
+  // verify: Old-style convergence check has to be 'vague' to
+  if(Teuchos::getIntegralValue<INPAR::STR::ConvCheck>(sdynparams,"CONV_CHECK")!=INPAR::STR::convcheck_vague)
+  {
+    if (pressure_!=Teuchos::null)
+      dserror("For new structural time integration and pressure formulation, please choose CONV_CHECK = None");
+    else
+      ConvertConvCheck(Teuchos::getIntegralValue<INPAR::STR::ConvCheck>(sdynparams,"CONV_CHECK"));      
+  }
+
   // verify: if system has constraints, then Uzawa-type solver is used
   if ( conman_->HaveConstraint())
   {
@@ -178,8 +196,18 @@ void STR::TimIntImpl::Predict()
   if (locsysman_ != Teuchos::null)
     locsysman_->RotateLocalToGlobal(fres_);
 
-  // determine residual norm of predictor
-  normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
+  // split norms
+  if (pressure_ != Teuchos::null)
+  {
+    Teuchos::RCP<Epetra_Vector> fres = pressure_->ExtractOtherVector(fres_);
+    normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres);
+
+  }
+  else
+  {
+    // build residual force norm
+    normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
+  }
  
   // determine characteristic norms
   // we set the minumum of CalcRefNormForce() and #tolfres_, because
@@ -188,6 +216,7 @@ void STR::TimIntImpl::Predict()
   if (normcharforce_ == 0.0) normcharforce_ = tolfres_;
   normchardis_ = CalcRefNormDisplacement();
   if (normchardis_ == 0.0) normchardis_ = toldisi_;
+
 
   // output
   PrintPredictor();
@@ -387,9 +416,7 @@ void STR::TimIntImpl::ApplyForceStiffConstraint
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* check convergence
- * originally by lw 12/07 and tk 01/08 */
+
 bool STR::TimIntImpl::Converged()
 {
   // verify: #normcharforce_ has been delivered strictly larger than zero
@@ -405,55 +432,106 @@ bool STR::TimIntImpl::Converged()
             normchardis_);
   }
 
-  // check force and displacement residuals
-  bool fdc = false;
-  switch (itercnvchk_)
+
+  // check for single norms
+  bool convdis = false;
+  bool convfres = false;
+    
+  // residual displacement
+  switch (normtypedisi_)
   {
-  case INPAR::STR::convcheck_absres_or_absdis:
-    fdc = ( (normdisi_ < toldisi_) or (normfres_ < tolfres_) );
+  case INPAR::STR::convnorm_abs:
+    convdis = normdisi_ < toldisi_;
     break;
-  case INPAR::STR::convcheck_absres_and_absdis:
-    fdc = ( (normdisi_ < toldisi_) and (normfres_ < tolfres_) );
+  case INPAR::STR::convnorm_rel:
+    convdis = normdisi_/normchardis_ < toldisi_;
     break;
-  case INPAR::STR::convcheck_relres_or_absdis:
-    fdc = ( (normdisi_ < toldisi_)
-            or (normfres_/normcharforce_ < tolfres_) );
-    break;
-  case INPAR::STR::convcheck_relres_and_absdis:
-    fdc = ( (normdisi_ < toldisi_)
-            and (normfres_/normcharforce_ < tolfres_) );
-    break;
-  case INPAR::STR::convcheck_relres_or_reldis:
-    fdc = ( (normdisi_/normchardis_ < toldisi_)
-            or (normfres_/normcharforce_ < tolfres_) );
-    break;
-  case INPAR::STR::convcheck_relres_and_reldis:
-    fdc = ( (normdisi_/normchardis_ < toldisi_)
-            and (normfres_/normcharforce_ < tolfres_) );
-    break;
-  case INPAR::STR::convcheck_mixres_or_mixdis:
-    fdc = ( ( (normdisi_ < toldisi_) or (normdisi_/normchardis_ < toldisi_) )
-            or ( (normfres_ < tolfres_) or (normfres_/normcharforce_ < tolfres_) ) );
-    break;
-  case INPAR::STR::convcheck_mixres_and_mixdis:
-    fdc = ( ( (normdisi_ < toldisi_) or (normdisi_/normchardis_ < toldisi_) )
-            and ( (normfres_ < tolfres_) or (normfres_/normcharforce_ < tolfres_) ) );
+  case INPAR::STR::convnorm_mix:
+    convdis = ( (normdisi_ < toldisi_) or (normdisi_/normchardis_ < toldisi_) );
     break;
   default:
-    dserror("Requested convergence check %i is not (yet) implemented",
-            itercnvchk_);
-    fdc = true;
+    dserror("Cannot check for convergence of residual displacements!");
   }
-
+  
+  // residual forces
+  switch (normtypefres_)
+  {
+  case INPAR::STR::convnorm_abs:
+    convfres = normfres_ < tolfres_;
+    break;
+  case INPAR::STR::convnorm_rel:
+    convfres = normfres_/normcharforce_ < tolfres_;
+    break;
+  case INPAR::STR::convnorm_mix:
+    convfres = ( (normfres_ < tolfres_) or (normfres_/normcharforce_ < tolfres_) );
+    break;
+  default:
+    dserror("Cannot check for convergence of residual forces!");
+  }
+  
   // check constraint
   bool cc = true;
   if (conman_->HaveConstraint())
   {
     cc = normcon_ < tolcon_;
   }
+  
+  //pressure related stuff
+  if (pressure_ != Teuchos::null)
+  {
+    bool convpre = false;
+    bool convfpre = false;
+    
+    //pressure
+    switch (normtypepres_)
+    {
+    case INPAR::STR::convnorm_abs:
+      convpre = normpres_ < tolpres_;
+      break;
+     default:
+      dserror("Cannot check for convergence of residual pressures! Only for absolute residuals implemeted so far!");
+    }
+    
+    // incompressible residual
+    switch (normtypepfres_)
+    {
+    case INPAR::STR::convnorm_abs:
+      convfpre = normpfres_ < tolpfres_;
+      break;
+    default:
+      dserror("Cannot check for convergence of incompressible force residuals!");
+    }
+    
+    
+    // combine fields
+    if (combdispre_==INPAR::STR::bop_and)
+      convdis = convdis and convpre;
+    else if (combdispre_==INPAR::STR::bop_or)
+      convdis = convdis or convpre;
+    else
+      dserror("Something went terribly wrong with binary operator!");
+    
+    if (combfrespfres_==INPAR::STR::bop_and)
+      convfres = convfres and convfpre;
+    else if (combfrespfres_==INPAR::STR::bop_or)
+      convfres = convfres or convfpre;
+    else
+      dserror("Something went terribly wrong with binary operator!");
+    
+  }
+  
+  // combine displacement-like and force-like residuals
+  bool conv = false;
+  if (combdisifres_ == INPAR::STR::bop_and)
+     conv = convdis and convfres;
+   else if (combdisifres_ == INPAR::STR::bop_or)
+     conv = convdis or convfres;
+   else
+     dserror("Something went terribly wrong with binary operator!");
 
+  
   // return things
-  return (fdc and cc);
+  return (conv and cc);
 }
 
 /*----------------------------------------------------------------------*/
@@ -572,29 +650,26 @@ void STR::TimIntImpl::NewtonFull()
     if (locsysman_ != Teuchos::null)
       locsysman_->RotateLocalToGlobal(fres_);
 
-    // build residual force norm
-    normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
-    // build residual displacement norm
-    normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
 
-#if 0
     if (pressure_ != Teuchos::null)
     {
       Teuchos::RCP<Epetra_Vector> pres = pressure_->ExtractCondVector(fres_);
       Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector(fres_);
-      double normpres = STR::AUX::CalculateVectorNorm(iternorm_, pres);
-      double normdisp = STR::AUX::CalculateVectorNorm(iternorm_, disp);
-      if (myrank_ == 0)
-        cout <<  std::scientific << " ForceResid=" << normdisp << " IncompResid=" << normpres;
+      normpfres_ = STR::AUX::CalculateVectorNorm(iternorm_, pres);
+      normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, disp);
 
       pres = pressure_->ExtractCondVector(disi_);
       disp = pressure_->ExtractOtherVector(disi_);
-      normpres = STR::AUX::CalculateVectorNorm(iternorm_, pres);
-      normdisp = STR::AUX::CalculateVectorNorm(iternorm_, disp);
-      if (myrank_ == 0)
-        cout <<  std::scientific << " DispResid=" << normdisp << " PresResid=" << normpres << endl;
+      normpres_ = STR::AUX::CalculateVectorNorm(iternorm_, pres);
+      normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disp);
     }
-#endif
+    else
+    {
+      // build residual force norm
+      normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
+      // build residual displacement norm
+      normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+    }
 
     // print stuff
     PrintNewtonIter();
@@ -723,7 +798,6 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
 
   // equilibrium iteration loop
   while ( ( (not Converged()) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
-  while ( (not Converged()) and (iter_ <= itermax_) )
   {
     // make negative residual
     fres_->Scale(-1.0);
@@ -789,24 +863,25 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
     // build residual Lagrange multiplier norm
     normcon_ = conman_->GetErrorNorm();
     
-#if 0
     if (pressure_ != Teuchos::null)
     {
       Teuchos::RCP<Epetra_Vector> pres = pressure_->ExtractCondVector(fres_);
       Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector(fres_);
-      double normpres = STR::AUX::CalculateVectorNorm(iternorm_, pres);
-      double normdisp = STR::AUX::CalculateVectorNorm(iternorm_, disp);
-      if (myrank_ == 0) 
-        cout << "ForceResid=" << normdisp << " IncompResid=" << normpres << endl;
+      normpfres_ = STR::AUX::CalculateVectorNorm(iternorm_, pres);
+      normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, disp);
 
       pres = pressure_->ExtractCondVector(disi_);
       disp = pressure_->ExtractOtherVector(disi_);
-      normpres = STR::AUX::CalculateVectorNorm(iternorm_, pres);
-      normdisp = STR::AUX::CalculateVectorNorm(iternorm_, disp);
-      if (myrank_ == 0)
-        cout << "DispResid=" << normdisp << " PresResid=" << normpres << endl;
+      normpres_ = STR::AUX::CalculateVectorNorm(iternorm_, pres);
+      normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disp);
     }
-#endif
+    else
+    {
+      // build residual force norm
+      normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
+      // build residual displacement norm
+      normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+    }
 
     // print stuff
     PrintNewtonIter();
@@ -838,11 +913,14 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
   {
     // compute and print monitor values
     if (conman_->HaveMonitor())
+    {
       conman_->ComputeMonitorValues(disn_);
+    }
+    
     
     // print newton message on proc 0
     if (myrank_ == 0)
-      PrintNewtonConv();
+      conman_->PrintMonitorValues();
     
   }
   
@@ -905,26 +983,21 @@ void STR::TimIntImpl::PrintPredictor()
   if ( (myrank_ == 0) and printscreen_ )
   {
     // relative check of force residual
-    if ( (itercnvchk_ == INPAR::STR::convcheck_relres_or_reldis)
-         or (itercnvchk_ == INPAR::STR::convcheck_relres_and_reldis)
-         or (itercnvchk_ == INPAR::STR::convcheck_relres_or_absdis)
-         or (itercnvchk_ == INPAR::STR::convcheck_relres_and_absdis) )
+    if ( normtypefres_ == INPAR::STR::convnorm_rel )
     {
       std::cout << "Predictor scaled res-norm "
                 << normfres_/normcharforce_
                 << std::endl;
     }
     // absolute check of force residual
-    else if ( (itercnvchk_ == INPAR::STR::convcheck_absres_or_absdis)
-              or (itercnvchk_ == INPAR::STR::convcheck_absres_and_absdis) )
+    else if ( normtypefres_ == INPAR::STR::convnorm_abs )
     {
       std::cout << "Predictor absolute res-norm "
                 << normfres_
                 << std::endl;
     }
     // mixed absolute-relative check of force residual
-    else if ( (itercnvchk_ == INPAR::STR::convcheck_mixres_or_mixdis)
-              or (itercnvchk_ == INPAR::STR::convcheck_mixres_and_mixdis) )
+    else if ( normtypefres_ == INPAR::STR::convnorm_mix )
     {
       std::cout << "Predictor mixed res-norm "
                 << min(normfres_, normfres_/normcharforce_)
@@ -951,12 +1024,16 @@ void STR::TimIntImpl::PrintNewtonIter()
   // print to standard out
   if ( (myrank_ == 0) and printscreen_ and printiter_ )
   {
+    if (iter_== 1)
+      PrintNewtonIterHeader(stdout);
     PrintNewtonIterText(stdout);
   }
 
   // print to error file
   if ( printerrfile_ and printiter_ )
   {
+    if (iter_== 1)
+      PrintNewtonIterHeader(errfile_);
     PrintNewtonIterText(errfile_);
   }
 
@@ -964,10 +1041,7 @@ void STR::TimIntImpl::PrintNewtonIter()
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* print Newton-Raphson iteration to screen
- * originally by lw 12/07, tk 01/08 */
-void STR::TimIntImpl::PrintNewtonIterText
+void STR::TimIntImpl::PrintNewtonIterHeader
 (
   FILE* ofile
 )
@@ -976,66 +1050,72 @@ void STR::TimIntImpl::PrintNewtonIterText
   std::ostringstream oss;
 
   // enter converged state etc
-  oss << " numiter " << std::setw(2) << iter_;
-
+  oss << std::setw(6)<< "numiter";
+  
   // different style due relative or absolute error checking
-  switch (itercnvchk_)
+  // displacement
+  switch ( normtypefres_ )
   {
-  // relative residual forces AND displacements
-  case INPAR::STR::convcheck_relres_and_reldis:
-  case INPAR::STR::convcheck_relres_or_reldis:
-    oss << " rel-res-norm "
-        << std::setw(10) << std::setprecision(5) << std::scientific
-        << normfres_/normcharforce_
-        << " rel-dis-norm "
-        << std::setw(10) << std::setprecision(5) << std::scientific
-        << normdisi_/normchardis_;
+  case INPAR::STR::convnorm_rel:
+    oss <<std::setw(18)<< "rel-res-norm";
     break;
-  // relative residual forces
-  case INPAR::STR::convcheck_relres_and_absdis:
-  case INPAR::STR::convcheck_relres_or_absdis:
-    oss << " rel-res-norm "
-        << std::setw(10) << std::setprecision(5) << std::scientific
-        << normfres_/normcharforce_
-        << " abs-dis-norm "
-        << std::setw(10) << std::setprecision(5) << std::scientific
-        << normdisi_;
+  case INPAR::STR::convnorm_abs :
+    oss <<std::setw(18)<< "abs-res-norm";
     break;
-  // absolute forces and displacements
-  case INPAR::STR::convcheck_absres_and_absdis:
-  case INPAR::STR::convcheck_absres_or_absdis:
-    oss << " abs-res-norm "
-        << std::setw(10) << std::setprecision(5) << std::scientific
-        << normfres_
-        << " abs-dis-norm "
-        << std::setw(10) << std::setprecision(5) << std::scientific
-        << normdisi_;
-    break;
-  // mixed absolute-relative forces and displacements
-  case INPAR::STR::convcheck_mixres_and_mixdis:
-  case INPAR::STR::convcheck_mixres_or_mixdis:
-    oss << " mix-res-norm "
-        << std::setw(10) << std::setprecision(5) << std::scientific
-        << min(normfres_, normfres_/normcharforce_)
-        << " mix-dis-norm "
-        << std::setw(10) << std::setprecision(5) << std::scientific
-        << min(normdisi_, normdisi_/normchardis_);
+  case INPAR::STR::convnorm_mix :
+    oss <<std::setw(18)<< "mix-res-norm";
     break;
   default:
-    dserror("Cannot handle requested convergence check %i", itercnvchk_);
+    dserror("You should not turn up here.");
+  }
+  
+  if (pressure_ != Teuchos::null)
+  {
+    switch (normtypepfres_)
+    {
+    case INPAR::STR::convnorm_abs :
+      oss <<std::setw(18)<< "abs-pre-res-norm";
+      break;
+    default:
+      dserror("You should not turn up here.");
+    }
+  }
+  
+  switch ( normtypedisi_ )
+  {
+  case INPAR::STR::convnorm_rel:
+    oss <<std::setw(18)<< "rel-dis-norm";
     break;
-  }  // end switch
-
+  case INPAR::STR::convnorm_abs :
+    oss <<std::setw(18)<< "abs-dis-norm";
+    break;
+  case INPAR::STR::convnorm_mix :
+    oss <<std::setw(18)<< "mix-dis-norm";
+    break;
+  default:
+    dserror("You should not turn up here.");
+  }
+  
+  if (pressure_ != Teuchos::null)
+  {
+    switch (normtypepfres_)
+    {
+    case INPAR::STR::convnorm_abs :
+      oss <<std::setw(18)<< "abs-pre-norm";
+      break;
+    default:
+      dserror("You should not turn up here.");
+    }
+  }
+  
   // add constraint norm
   if (conman_->HaveConstraint())
   {
-    oss << " abs-constr-norm "
-        << std::setw(10) << std::setprecision(5) << std::scientific
-        << normcon_;
+    oss << std::setw(18)<< "abs-constr-norm";
   }
 
   // add solution time
-  oss << " time " <<  timer_.ElapsedTime();
+  oss << std::setw(14)<< "wct";
 
   // finish oss
   oss << std::ends;
@@ -1051,67 +1131,108 @@ void STR::TimIntImpl::PrintNewtonIterText
 }
 
 /*----------------------------------------------------------------------*/
-/* print statistics of converged NRI */
-void STR::TimIntImpl::PrintNewtonConv()
+/* print Newton-Raphson iteration to screen
+ * originally by lw 12/07, tk 01/08 */
+void STR::TimIntImpl::PrintNewtonIterText
+(
+  FILE* ofile
+)
 {
-  // print constraint manager
-  if (conman_->HaveMonitor())
-  {
-    conman_->PrintMonitorValues();
-  }
-
   // open outstringstream
   std::ostringstream oss;
 
   // enter converged state etc
-  oss << "Newton iteration converged:"
-      << " numiter " << iter_;
-
-  switch (itercnvchk_)
+  oss << std::setw(7)<< iter_;
+  
+  // different style due relative or absolute error checking
+  // displacement
+  switch ( normtypefres_ )
   {
-  // relative residual forces AND displacements
-  case INPAR::STR::convcheck_relres_and_reldis:
-  case INPAR::STR::convcheck_relres_or_reldis:
-    oss << " scaled res-norm " << normfres_/normcharforce_
-        << " scaled dis-norm " << normdisi_/normchardis_;
+  case INPAR::STR::convnorm_rel:
+    oss << std::setw(18) << std::setprecision(5) << std::scientific << normfres_/normcharforce_;
     break;
-  // relative residual forces
-  case INPAR::STR::convcheck_relres_and_absdis:
-  case INPAR::STR::convcheck_relres_or_absdis:
-    oss << " scaled res-norm " << normfres_/normcharforce_
-        << " absolute dis-norm " << normdisi_;
+  case INPAR::STR::convnorm_abs :
+    oss << std::setw(18) << std::setprecision(5) << std::scientific << normfres_;
     break;
-  // absolute forces and displacements
-  case INPAR::STR::convcheck_absres_and_absdis:
-  case INPAR::STR::convcheck_absres_or_absdis:
-    oss << " absolute res-norm " << normfres_
-        << " absolute dis-norm " << normdisi_;
-    break;
-  // absolute-relative forces and displacements
-  case INPAR::STR::convcheck_mixres_and_mixdis:
-  case INPAR::STR::convcheck_mixres_or_mixdis:
-    oss << " mixed res-norm " << min(normfres_, normfres_/normcharforce_)
-        << " mixed dis-norm " << min(normdisi_, normdisi_/normchardis_);
+  case INPAR::STR::convnorm_mix :
+    oss << std::setw(18) << std::setprecision(5) << std::scientific << min(normfres_, normfres_/normcharforce_);
     break;
   default:
-    dserror("Cannot handle requested convergence check %i", itercnvchk_);
+    dserror("You should not turn up here.");
+  }
+  
+  if (pressure_ != Teuchos::null)
+  {
+    switch (normtypepfres_)
+    {
+    case INPAR::STR::convnorm_abs :
+      oss << std::setw(18) << std::setprecision(5) << std::scientific << normpfres_;
+      break;
+    default:
+      dserror("You should not turn up here.");
+    }
+  }
+  
+  switch ( normtypedisi_ )
+  {
+  case INPAR::STR::convnorm_rel:
+    oss << std::setw(18) << std::setprecision(5) << std::scientific << normdisi_/normchardis_;
     break;
-  }  // end switch
-
+  case INPAR::STR::convnorm_abs :
+    oss << std::setw(18) << std::setprecision(5) << std::scientific << normdisi_;
+    break;
+  case INPAR::STR::convnorm_mix :
+    oss << std::setw(18) << std::setprecision(5) << std::scientific << min(normdisi_, normdisi_/normchardis_);
+    break;
+  default:
+    dserror("You should not turn up here.");
+  }
+  
+  if (pressure_ != Teuchos::null)
+  {
+    switch (normtypepfres_)
+    {
+    case INPAR::STR::convnorm_abs :
+      oss << std::setw(18) << std::scientific << normpres_;
+      break;
+    default:
+      dserror("You should not turn up here.");
+    }
+  }
+  
   // add constraint norm
   if (conman_->HaveConstraint())
   {
-    oss << " absolute constr_norm " << normcon_;
+    oss << std::setw(18) << std::setprecision(5) << std::scientific << normcon_;
   }
 
   // add solution time
-  oss << " time " <<  timer_.ElapsedTime();
+  oss << std::setw(14) << std::setprecision(2) << std::scientific << timer_.ElapsedTime();
 
   // finish oss
   oss << std::ends;
 
   // print to screen (could be done differently...)
-  printf("%s\n", oss.str().c_str());
+  fprintf(ofile, "%s\n", oss.str().c_str());
+
+  // print it, now
+  fflush(ofile);
+
+  // nice to have met you
+  return;
+  
+}
+
+
+/*----------------------------------------------------------------------*/
+/* print statistics of converged NRI */
+void STR::TimIntImpl::PrintNewtonConv()
+{
+  // print constraint manager's lore
+  if (conman_->HaveMonitor())
+  {
+    conman_->PrintMonitorValues();
+  }
 
   // somebody did the door
   return;
@@ -1246,6 +1367,96 @@ void STR::TimIntImpl::PrepareSystemForNewtonSolve()
                                  GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
 
   // final sip
+  return;
+}
+
+void STR::TimIntImpl::ConvertConvCheck
+(
+    INPAR::STR::ConvCheck convcheck 
+)
+{
+  if (myrank_ == 0)
+  {
+    // print a beautiful line made exactly of 80 dashes
+    std::cout << endl << "--------------------------------------------------------------------------------" << endl;
+    std::cout << "WARNING! Duplicated input!"<<endl;
+    std::cout << "For new structural time integration input variable 'CONV_CHECK' should be set to 'None',"<<endl;
+    std::cout << "and convergence check should be defined via 'NORM_DISP', 'NORM_FRES' and 'NORMCOMBI_RESFDISP'. "<<endl;
+    std::cout << "These values will now be overwritten as you can see below! "<<endl<<endl;
+  }
+  
+  // conversion
+  switch (convcheck)  
+  {
+  case INPAR::STR::convcheck_absres_or_absdis:
+    normtypefres_ = INPAR::STR::convnorm_abs;
+    std::cout << "NORM_RESF                Abs"<<endl;
+    normtypedisi_ = INPAR::STR::convnorm_abs;
+    std::cout << "NORM_DISP                Abs"<<endl;
+    combdisifres_ = INPAR::STR::bop_or;
+    std::cout << "NORMCOMBI_RESFDISP       Or"<<endl;
+    break;
+  case INPAR::STR::convcheck_absres_and_absdis:
+    normtypefres_ = INPAR::STR::convnorm_abs;
+    std::cout << "NORM_RESF                Abs"<<endl;
+    normtypedisi_ = INPAR::STR::convnorm_abs;
+    std::cout << "NORM_DISP                Abs"<<endl;
+    combdisifres_ = INPAR::STR::bop_and;
+    std::cout << "NORMCOMBI_RESFDISP       And"<<endl;
+    break;
+  case INPAR::STR::convcheck_relres_or_absdis:
+    normtypefres_ = INPAR::STR::convnorm_rel;
+    std::cout << "NORM_RESF                Rel"<<endl;
+    normtypedisi_ = INPAR::STR::convnorm_abs;
+    std::cout << "NORM_DISP                Abs"<<endl;
+    combdisifres_ = INPAR::STR::bop_or;
+    std::cout << "NORMCOMBI_RESFDISP       Or"<<endl;
+    break;
+  case INPAR::STR::convcheck_relres_and_absdis:
+    normtypefres_ = INPAR::STR::convnorm_rel;
+    std::cout << "NORM_RESF                Rel"<<endl;
+    normtypedisi_ = INPAR::STR::convnorm_abs;
+    std::cout << "NORM_DISP                Abs"<<endl;
+    combdisifres_ = INPAR::STR::bop_and;
+    std::cout << "NORMCOMBI_RESFDISP       And"<<endl;
+    break;
+  case INPAR::STR::convcheck_relres_or_reldis:
+    normtypefres_ = INPAR::STR::convnorm_abs;
+    std::cout << "NORM_RESF                Rel"<<endl;
+    normtypedisi_ = INPAR::STR::convnorm_abs;
+    std::cout << "NORM_DISP                Abs"<<endl;
+    combdisifres_ = INPAR::STR::bop_or;
+    std::cout << "NORMCOMBI_RESFDISP       And"<<endl;
+    break;
+  case INPAR::STR::convcheck_relres_and_reldis:
+    normtypefres_ = INPAR::STR::convnorm_rel;
+    std::cout << "NORM_RESF                Rel"<<endl;
+    normtypedisi_ = INPAR::STR::convnorm_rel;
+    std::cout << "NORM_DISP                Rel"<<endl;
+    combdisifres_ = INPAR::STR::bop_or;
+    std::cout << "NORMCOMBI_RESFDISP       Or"<<endl;
+    break;
+  case INPAR::STR::convcheck_mixres_or_mixdis:
+    normtypefres_ = INPAR::STR::convnorm_mix;
+    std::cout << "NORM_RESF                Mix"<<endl;
+    normtypedisi_ = INPAR::STR::convnorm_mix;
+    std::cout << "NORM_DISP                Mix"<<endl;
+    combdisifres_ = INPAR::STR::bop_or;
+    std::cout << "NORMCOMBI_RESFDISP       Or"<<endl;
+    break;
+  case INPAR::STR::convcheck_mixres_and_mixdis:
+    normtypefres_ = INPAR::STR::convnorm_mix;
+    std::cout << "NORM_RESF                Mix"<<endl;
+    normtypedisi_ = INPAR::STR::convnorm_mix;
+    std::cout << "NORM_DISP                Mix"<<endl;
+    combdisifres_ = INPAR::STR::bop_and;
+    std::cout << "NORMCOMBI_RESFDISP       And"<<endl;
+    break;
+  default:
+    dserror("Requested convergence check %i cannot (yet) be converted",
+            convcheck);
+  }
+  std::cout << "--------------------------------------------------------------------------------" << endl << endl;
   return;
 }
 

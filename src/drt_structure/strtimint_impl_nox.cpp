@@ -139,17 +139,11 @@ Teuchos::RCP<NOX::StatusTest::Combo> STR::TimIntImpl::NoxCreateStatusTest
 
   // combined residual force and displacement test
   Teuchos::RCP<NOX::StatusTest::Combo> combo2 = Teuchos::null;
-  if ( (itercnvchk_ == INPAR::STR::convcheck_absres_and_absdis)
-       or (itercnvchk_ == INPAR::STR::convcheck_relres_and_absdis)
-       or (itercnvchk_ == INPAR::STR::convcheck_relres_and_reldis)
-       or (itercnvchk_ == INPAR::STR::convcheck_mixres_and_mixdis) )
+  if ( combdisifres_ == INPAR::STR::bop_and )
   {
     combo2 = Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::AND));
   }
-  else if ( (itercnvchk_ == INPAR::STR::convcheck_absres_or_absdis)
-            or (itercnvchk_ == INPAR::STR::convcheck_relres_or_absdis)
-            or (itercnvchk_ == INPAR::STR::convcheck_relres_or_reldis)
-            or (itercnvchk_ == INPAR::STR::convcheck_mixres_or_mixdis) )
+  else if ( combdisifres_ == INPAR::STR::bop_or )
   {
     combo2 = Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
   }
@@ -160,26 +154,21 @@ Teuchos::RCP<NOX::StatusTest::Combo> STR::TimIntImpl::NoxCreateStatusTest
 
 
   // convergence tests for force residual
-  if ( (itercnvchk_ == INPAR::STR::convcheck_absres_or_absdis)
-       or (itercnvchk_ == INPAR::STR::convcheck_absres_and_absdis) )
+  if ( normtypefres_ == INPAR::STR::convnorm_abs )
   {
     // absolute test
     Teuchos::RCP<NOX::StatusTest::NormF> statusTestNormFres 
       = Teuchos::rcp(new NOX::StatusTest::NormF(tolfres_, norm, scalefres));
     combo2->addStatusTest(statusTestNormFres);
   }
-  else if ( (itercnvchk_ == INPAR::STR::convcheck_relres_or_absdis)
-            or (itercnvchk_ == INPAR::STR::convcheck_relres_and_absdis)
-            or (itercnvchk_ == INPAR::STR::convcheck_relres_or_reldis)
-            or (itercnvchk_ == INPAR::STR::convcheck_relres_and_reldis) )
+  else if ( normtypefres_ == INPAR::STR::convnorm_rel )
   {
     // relative
     Teuchos::RCP<NOX::StatusTest::NormF> statusTestNormFres 
       = Teuchos::rcp(new NOX::StatusTest::NormF(*grp, tolfres_, norm, scalefres));
     combo2->addStatusTest(statusTestNormFres);
   }
-  else if ( (itercnvchk_ == INPAR::STR::convcheck_mixres_or_mixdis)
-            or (itercnvchk_ == INPAR::STR::convcheck_mixres_and_mixdis) )
+  else if ( normtypefres_ == INPAR::STR::convnorm_mix )
   {
     // mixed
     Teuchos::RCP<NOX::StatusTest::Combo> combo3
@@ -200,25 +189,20 @@ Teuchos::RCP<NOX::StatusTest::Combo> STR::TimIntImpl::NoxCreateStatusTest
   }
 
   // convergence tests for residual displacements
-  if ( (itercnvchk_ == INPAR::STR::convcheck_absres_or_absdis)
-       or (itercnvchk_ == INPAR::STR::convcheck_absres_and_absdis)
-       or (itercnvchk_ == INPAR::STR::convcheck_relres_or_absdis)
-       or (itercnvchk_ == INPAR::STR::convcheck_relres_and_absdis) )
+  if ( normtypedisi_ == INPAR::STR::convnorm_abs )
   {
     // absolute test
     Teuchos::RCP<NOX::StatusTest::NormUpdate> statusTestNormDisi
       = Teuchos::rcp(new NOX::StatusTest::NormUpdate(toldisi_, norm, scaledisi));
     combo2->addStatusTest(statusTestNormDisi);
   }
-  else if ( (itercnvchk_ == INPAR::STR::convcheck_relres_or_reldis)
-            or (itercnvchk_ == INPAR::STR::convcheck_relres_and_reldis) )
+  else if ( normtypedisi_ == INPAR::STR::convnorm_rel )
   {
     // relative test
     // NOT AVAILABLE
     dserror("Not available");
   }
-  else if ( (itercnvchk_ == INPAR::STR::convcheck_mixres_or_mixdis)
-            or (itercnvchk_ == INPAR::STR::convcheck_mixres_and_mixdis) )
+  else if ( normtypedisi_ == INPAR::STR::convnorm_mix )
   {
     // mixed
     //Teuchos::RCP<NOX::StatusTest::Combo> combo3

@@ -255,8 +255,14 @@ double STR::TimIntGEMM::CalcRefNormDisplacement()
   // points within the timestep (end point, generalized midpoint).
 
   double charnormdis = 0.0;
-  charnormdis = STR::AUX::CalculateVectorNorm(iternorm_, (*dis_)(0));
-
+  if (pressure_ != Teuchos::null)
+  {
+    Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector((*dis_)(0));
+    charnormdis = STR::AUX::CalculateVectorNorm(iternorm_, disp);
+  }
+  else
+    charnormdis = STR::AUX::CalculateVectorNorm(iternorm_, (*dis_)(0));
+  
   // rise your hat
   return charnormdis;
 }
