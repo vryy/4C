@@ -157,6 +157,7 @@ void DRT::Condition::Print(ostream& os) const
   else if (Type()==FlowRateThroughSurface_3D)   os << "Monitor flow rate through a interface";
   else if (Type()==ImpulsRateThroughSurface_3D) os << "Monitor impuls rate through a interface";
   else if (Type()==FluidNeumannInflow)          os << "Fluid Neumann inflow ";
+  else if (Type()==ElectrodeKinetics)           os << "ElectrodeKinetics boundary condition";
   else dserror("no output string for condition defined in DRT::Condition::Print");
 
   Container::Print(os);
