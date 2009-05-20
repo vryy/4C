@@ -57,7 +57,7 @@ RESTARTEVRY  20
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Statics
-CONV_CHECK                      AbsRes_And_AbsDis
+CONV_CHECK                      None
 EIGEN        0
 RESEVRYDISP  1
 RESEVRYSTRS  1
@@ -74,7 +74,17 @@ M_DAMP       0.5
 K_DAMP       0.5
 ITERATION    full 
 TOLDISP      1.0E-6
+TOLRES       1.0E-6
 MAXITER      100
+TOLPRE                          1e-06
+TOLINCO                         1e-06
+NORM_RESF                       Abs
+NORM_PRES                       Abs
+NORM_DISP                       Abs
+NORM_INCO                       Abs
+NORMCOMBI_RESFDISP              And
+NORMCOMBI_DISPPRES              And
+NORMCOMBI_RESFINCO              And
 -----------------------------------------------------FLUID DYNAMIC
 DYNAMICTYP   Nlin_Time_Int
 TIMEINTEGR   One_Step_Theta
