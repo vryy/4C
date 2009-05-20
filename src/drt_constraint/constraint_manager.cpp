@@ -134,7 +134,6 @@ actdisc_(discr)
     initialmonvalues_=rcp(new Epetra_Vector(*monitormap_));
     
     RCP<Epetra_Vector> initialmonredundant = rcp(new Epetra_Vector(*redmonmap_));
-    LINALG::Export(*initialmonvalues_,*initialmonredundant);
     p1.set("OffsetID",minMonitorID_);
     volmonitor3d_->Evaluate(p1,initialmonredundant);
     areamonitor3d_->Evaluate(p1,initialmonredundant);
@@ -142,6 +141,8 @@ actdisc_(discr)
 
     // Export redundant vector into distributed one
     initialmonvalues_->Export(*initialmonredundant,*monimpo_,Add);
+    monitortypes_ = rcp(new Epetra_Vector(*redmonmap_));
+    BuildMoniType();
   }
   return;
 }
@@ -354,9 +355,70 @@ void UTILS::ConstrManager::ComputeMonitorValues(RCP<Epetra_Vector> disp)
 *-----------------------------------------------------------------------*/
 void UTILS::ConstrManager::PrintMonitorValues() const
 {
+  if (numMonitorID_ == 1)
+      printf("Monitor value:\n");
+  else if (numMonitorID_>1) 
+    printf("Monitor values:\n");
+  
   for (int i = 0; i < numMonitorID_; ++i)
   {
-    printf("Monitor value %2d: %10.5e (%5.2f%% of initial value)\n",i+minMonitorID_,(*monitorvalues_)[i],((*monitorvalues_)[i])*100/((*initialmonvalues_)[i]));
+    if ((*monitortypes_)[i] == 1.0)
+      printf("%2d (volume): %10.5e (%5.2f%% of initial value)\n",i+minMonitorID_,abs((*monitorvalues_)[i]),((*monitorvalues_)[i])*100/((*initialmonvalues_)[i]));
+    else if ((*monitortypes_)[i] == 2.0)
+      printf("%2d   (area): %10.5e (%5.2f%% of initial value)\n",i+minMonitorID_,abs((*monitorvalues_)[i]),((*monitorvalues_)[i])*100/((*initialmonvalues_)[i]));
+    else if ((*monitortypes_)[i] == 2.0)
+      printf("%2d   (area): %10.5e (%5.2f%% of initial value)\n",i+minMonitorID_,abs((*monitorvalues_)[i]),((*monitorvalues_)[i])*100/((*initialmonvalues_)[i]));
+  }
+
+  return;
+}
+
+void UTILS::ConstrManager::BuildMoniType()
+{
+  ParameterList p1;
+  // build distributed and redundant dummy monitor vector
+  RCP<Epetra_Vector> dummymonredundant = rcp(new Epetra_Vector(*redmonmap_));
+  RCP<Epetra_Vector> dummymondist = rcp(new Epetra_Vector(*monitormap_));
+  p1.set("OffsetID",minMonitorID_);
+  
+  // do the volumes
+  volmonitor3d_->Evaluate(p1,dummymonredundant);
+  // Export redundant vector into distributed one
+  dummymondist->Export(*dummymonredundant,*monimpo_,Add);
+  // Now export back
+  LINALG::Export(*dummymondist,*dummymonredundant);
+  for (int i=0;i<dummymonredundant->MyLength();i++)
+  {
+    if ((*dummymonredundant)[i] != 0.0)
+      (*monitortypes_)[i] = 1.0;
+  }
+  
+  //do the area in 3D
+  dummymonredundant->Scale(0.0);
+  dummymondist->Scale(0.0);
+  areamonitor3d_->Evaluate(p1,dummymonredundant);
+  // Export redundant vector into distributed one
+  dummymondist->Export(*dummymonredundant,*monimpo_,Add);
+  // Now export back
+  LINALG::Export(*dummymondist,*dummymonredundant);
+  for (int i=0;i<dummymonredundant->MyLength();i++)
+  {
+    if ((*dummymonredundant)[i] != 0.0)
+      (*monitortypes_)[i] = 2.0;
+  }
+  
+  //do the area in 2D
+  dummymonredundant->Scale(0.0);
+  dummymondist->Scale(0.0);
+  areamonitor2d_->Evaluate(p1,dummymonredundant);
+  // Export redundant vector into distributed one
+  dummymondist->Export(*dummymonredundant,*monimpo_,Add);
+  // Now export back
+  LINALG::Export(*dummymondist,*dummymonredundant);
+  for (int i=0;i<dummymonredundant->MyLength();i++)
+  {
+    if ((*dummymonredundant)[i] != 0.0)
+      (*monitortypes_)[i] = 3.0;
   }
 
   return;

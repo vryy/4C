@@ -262,10 +262,12 @@ namespace UTILS
     
   private:
   
-      // don't want = operator, cctor and destructor
-  
+    // don't want = operator, cctor and destructor
     ConstrManager operator = (const ConstrManager& old);
     ConstrManager(const ConstrManager& old);
+    
+    ///Build Monitor type Vector
+    void BuildMoniType();
   
     RCP<DRT::Discretization> actdisc_; ///< discretization, elements to constraint live in 
     RCP<ConstraintDofSet> constrdofset_; ///< degrees of freedom of lagrange multipliers
@@ -281,6 +283,7 @@ namespace UTILS
     RCP<Epetra_Vector> constrainterr_;   ///< vector with deflection between reference and current values
     RCP<Epetra_Vector> monitorvalues_;  ///< current values of monitored structures
     RCP<Epetra_Vector> initialmonvalues_;   ///< initial values of monitored structures
+    RCP<Epetra_Vector> monitortypes_;  ///< vector containing type of monitors
     int offsetID_;  ///< smallest constraint boundary condition ID
     int numConstrID_;  ///< number of constraint boundary conditions
     int numMonitorID_;  ///< smallest monitor boundary condition ID
@@ -304,11 +307,6 @@ namespace UTILS
     RCP<Monitor> areamonitor3d_;  ///< 3d area monitors defined on surfaces
     RCP<Monitor> areamonitor2d_;  ///< 2d area monitors defined on lines
     
-    
-    
-    
-  
-  
   }; //class
 }
 #endif /*CONSTRAINTMANAGER_H*/
