@@ -1390,67 +1390,91 @@ void STR::TimIntImpl::ConvertConvCheck
   {
   case INPAR::STR::convcheck_absres_or_absdis:
     normtypefres_ = INPAR::STR::convnorm_abs;
-    std::cout << "NORM_RESF                Abs"<<endl;
     normtypedisi_ = INPAR::STR::convnorm_abs;
-    std::cout << "NORM_DISP                Abs"<<endl;
     combdisifres_ = INPAR::STR::bop_or;
-    std::cout << "NORMCOMBI_RESFDISP       Or"<<endl;
+    if (myrank_ == 0)
+    {
+      std::cout << "NORM_RESF                Abs"<<endl;
+      std::cout << "NORM_DISP                Abs"<<endl;
+      std::cout << "NORMCOMBI_RESFDISP       Or"<<endl;
+    }
     break;
   case INPAR::STR::convcheck_absres_and_absdis:
     normtypefres_ = INPAR::STR::convnorm_abs;
-    std::cout << "NORM_RESF                Abs"<<endl;
     normtypedisi_ = INPAR::STR::convnorm_abs;
-    std::cout << "NORM_DISP                Abs"<<endl;
     combdisifres_ = INPAR::STR::bop_and;
-    std::cout << "NORMCOMBI_RESFDISP       And"<<endl;
+    if (myrank_ == 0)
+    {
+      std::cout << "NORM_RESF                Abs"<<endl;
+      std::cout << "NORM_DISP                Abs"<<endl;
+      std::cout << "NORMCOMBI_RESFDISP       And"<<endl;
+    }
     break;
   case INPAR::STR::convcheck_relres_or_absdis:
     normtypefres_ = INPAR::STR::convnorm_rel;
-    std::cout << "NORM_RESF                Rel"<<endl;
     normtypedisi_ = INPAR::STR::convnorm_abs;
-    std::cout << "NORM_DISP                Abs"<<endl;
     combdisifres_ = INPAR::STR::bop_or;
-    std::cout << "NORMCOMBI_RESFDISP       Or"<<endl;
+    if (myrank_ == 0)
+    {
+      std::cout << "NORM_RESF                Rel"<<endl;
+      std::cout << "NORM_DISP                Abs"<<endl;
+      std::cout << "NORMCOMBI_RESFDISP       Or"<<endl;
+    }
     break;
   case INPAR::STR::convcheck_relres_and_absdis:
     normtypefres_ = INPAR::STR::convnorm_rel;
-    std::cout << "NORM_RESF                Rel"<<endl;
     normtypedisi_ = INPAR::STR::convnorm_abs;
-    std::cout << "NORM_DISP                Abs"<<endl;
     combdisifres_ = INPAR::STR::bop_and;
-    std::cout << "NORMCOMBI_RESFDISP       And"<<endl;
+    if (myrank_ == 0)
+    {
+      std::cout << "NORM_RESF                Rel"<<endl;
+      std::cout << "NORM_DISP                Abs"<<endl;
+      std::cout << "NORMCOMBI_RESFDISP       And"<<endl;
+    }
     break;
   case INPAR::STR::convcheck_relres_or_reldis:
-    normtypefres_ = INPAR::STR::convnorm_abs;
-    std::cout << "NORM_RESF                Rel"<<endl;
-    normtypedisi_ = INPAR::STR::convnorm_abs;
-    std::cout << "NORM_DISP                Abs"<<endl;
+    normtypefres_ = INPAR::STR::convnorm_rel;
+    normtypedisi_ = INPAR::STR::convnorm_rel;
     combdisifres_ = INPAR::STR::bop_or;
-    std::cout << "NORMCOMBI_RESFDISP       And"<<endl;
+    if (myrank_ == 0)
+    {
+      std::cout << "NORM_RESF                Rel"<<endl;
+      std::cout << "NORM_DISP                Rel"<<endl;
+      std::cout << "NORMCOMBI_RESFDISP       Or"<<endl;
+    }
     break;
   case INPAR::STR::convcheck_relres_and_reldis:
     normtypefres_ = INPAR::STR::convnorm_rel;
-    std::cout << "NORM_RESF                Rel"<<endl;
     normtypedisi_ = INPAR::STR::convnorm_rel;
-    std::cout << "NORM_DISP                Rel"<<endl;
-    combdisifres_ = INPAR::STR::bop_or;
-    std::cout << "NORMCOMBI_RESFDISP       Or"<<endl;
+    combdisifres_ = INPAR::STR::bop_and;
+    if (myrank_ == 0)
+    {
+      std::cout << "NORM_RESF                Rel"<<endl;
+      std::cout << "NORM_DISP                Rel"<<endl;
+      std::cout << "NORMCOMBI_RESFDISP       And"<<endl;
+    }
     break;
   case INPAR::STR::convcheck_mixres_or_mixdis:
     normtypefres_ = INPAR::STR::convnorm_mix;
-    std::cout << "NORM_RESF                Mix"<<endl;
     normtypedisi_ = INPAR::STR::convnorm_mix;
-    std::cout << "NORM_DISP                Mix"<<endl;
     combdisifres_ = INPAR::STR::bop_or;
-    std::cout << "NORMCOMBI_RESFDISP       Or"<<endl;
+    if (myrank_ == 0)
+    {
+      std::cout << "NORM_RESF                Mix"<<endl;
+      std::cout << "NORM_DISP                Mix"<<endl;
+      std::cout << "NORMCOMBI_RESFDISP       Or"<<endl;
+    }
     break;
   case INPAR::STR::convcheck_mixres_and_mixdis:
     normtypefres_ = INPAR::STR::convnorm_mix;
-    std::cout << "NORM_RESF                Mix"<<endl;
     normtypedisi_ = INPAR::STR::convnorm_mix;
-    std::cout << "NORM_DISP                Mix"<<endl;
     combdisifres_ = INPAR::STR::bop_and;
-    std::cout << "NORMCOMBI_RESFDISP       And"<<endl;
+    if (myrank_ == 0)
+    {
+      std::cout << "NORM_RESF                Mix"<<endl;
+      std::cout << "NORM_DISP                Mix"<<endl;
+      std::cout << "NORMCOMBI_RESFDISP       And"<<endl;
+    }
     break;
   default:
     dserror("Requested convergence check %i cannot (yet) be converted",
