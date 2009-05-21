@@ -18,36 +18,22 @@ Maintainer: Florian Henke
 #ifndef COMBUST3_LOCAL_ASSEMBLER_H
 #define COMBUST3_LOCAL_ASSEMBLER_H
 
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_xfem/physics.H"
 #include "../drt_xfem/dof_management_element.H"
 #include <Epetra_SerialDenseMatrix.h>
 #include <Epetra_SerialDenseVector.h>
+#include "../drt_lib/linalg_fixedsizematrix.H"
 
-enum DerivDir
-{
-  D0 = 0,
-  Dx = 1,
-  Dy = 2,
-  Dz = 3,
-  DxDx = 4,
-  DyDy = 5,
-  DzDz = 6,
-  DxDy = 7,
-  DxDz = 8,
-  DyDz = 9,
-  DyDx = 7,
-  DzDx = 8,
-  DzDy = 9
-};
+
+const static std::size_t errorCheckValue = 77777777;
 
 //! for non-xfem elements, figure out the order of unknowns per node in the array
 template<XFEM::PHYSICS::Field field>
-struct FieldNum {static const int pos = -1;};
-template<> struct FieldNum<XFEM::PHYSICS::Velx> {static const int pos = 0;};
-template<> struct FieldNum<XFEM::PHYSICS::Vely> {static const int pos = 1;};
-template<> struct FieldNum<XFEM::PHYSICS::Velz> {static const int pos = 2;};
-template<> struct FieldNum<XFEM::PHYSICS::Pres> {static const int pos = 3;};
+struct FieldNum {static const std::size_t pos = errorCheckValue;};
+template<> struct FieldNum<XFEM::PHYSICS::Velx> {static const std::size_t pos = 0;};
+template<> struct FieldNum<XFEM::PHYSICS::Vely> {static const std::size_t pos = 1;};
+template<> struct FieldNum<XFEM::PHYSICS::Velz> {static const std::size_t pos = 2;};
+template<> struct FieldNum<XFEM::PHYSICS::Pres> {static const std::size_t pos = 3;};
 
 //! for the viscous stress, replace shear stress components with symmetric part
 template <XFEM::PHYSICS::Field FIELD>
@@ -86,18 +72,10 @@ template<> struct ShapeMangle<XFEM::PHYSICS::Tauzx>   {static const XFEM::PHYSIC
 template<> struct ShapeMangle<XFEM::PHYSICS::Tauzy>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxx;};
 template<> struct ShapeMangle<XFEM::PHYSICS::Tauzz>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxx;};
 
-template <XFEM::PHYSICS::Field FIELD>
-struct ShapeSelector {static Epetra_SerialDenseMatrix shp;};
-//template<> struct ShapeSelector<XFEM::PHYSICS::Velx> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxy;};
-//template<> struct ShapeSelector<XFEM::PHYSICS::Vely> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxz;};
-//template<> struct ShapeSelector<XFEM::PHYSICS::Velz> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmayz;};
-//template<> struct ShapeSelector<XFEM::PHYSICS::Pres> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxy;};
-//template<> struct ShapeSelector<XFEM::PHYSICS::Tauzx>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxz;};
-//template<> struct ShapeSelector<XFEM::PHYSICS::Tauzy>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauyz;};
-
 //! class that assembles one after another integral of the weak form into the stiffness matrix
 template <DRT::Element::DiscretizationType DISTYPE, 
-          XFEM::AssemblyType ASSEMBLYTYPE>
+          XFEM::AssemblyType ASSEMBLYTYPE,
+          std::size_t NUMDOF>
 class LocalAssembler
 {
 public:
@@ -119,7 +97,51 @@ public:
         return;
     }
     
+private:
+    template<std::size_t numparamtest,
+    std::size_t numparamtrial,
+             class V1,
+             class V2>
+    void IntegrateMatrix(
+        const V1&                 testshape,
+        const std::vector<int>&   testdof,
+        const double&             fac,
+        const V2&                 trialshape,
+        const std::vector<int>&   trialdof
+        ) const
+    {
+      vector<int>::const_iterator trialpos = trialdof.begin();
+      for (std::size_t ui=0; ui!=numparamtrial; ++ui)
+      {
+        const double multiply = fac * trialshape(ui);
+        vector<int>::const_iterator testpos = testdof.begin();
+        for (std::size_t vi=0; vi!=numparamtest; ++vi)
+        {
+//          const std::size_t testpos = testdof[vi];
+          estif_(*testpos, *trialpos) += testshape(vi)*multiply ;
+          ++testpos;
+        }
+        ++trialpos;
+      }
+    }
     
+    template<std::size_t numparamtest,
+             class V1>
+    void IntegrateVector(
+        const V1&                 testshape,
+        const std::vector<int>&   testdof,
+        const double&             fac
+        ) const
+    {
+      vector<int>::const_iterator testpos = testdof.begin();
+      for (std::size_t vi=0; vi!=numparamtest; ++vi)
+      {
+          eforce_(*testpos) += fac*testshape(vi);
+          ++testpos;
+      }
+    }
+    
+public:
     //! assemble one expression for the element stiffness matrix for a given test and trial field
     template <XFEM::PHYSICS::Field testfield,
               XFEM::PHYSICS::Field trialfield,
@@ -131,58 +153,61 @@ public:
             const V2&           trialshape
             ) const
     {
-        const std::vector<int>& testdof( dofman_.LocalDofPosPerField(SymmetryMangle<testfield>::name));
-        const std::vector<int>& trialdof(dofman_.LocalDofPosPerField(SymmetryMangle<trialfield>::name));
         
-//        const unsigned numparamtest  = testdof.size();
-//        const unsigned numparamtrial = trialdof.size();
-//        
-//        for (unsigned ui=0; ui<numparamtrial; ++ui)
-//        {
-//            const unsigned trialpos = trialdof[ui];
-//            const double multiply = fac * trialshape(ui);
-//            for (unsigned vi=0; vi<numparamtest; ++vi)
-//            {
-//                const unsigned testpos = testdof[vi];
-//                estif_(testpos, trialpos) += testshape(vi)*multiply ;
-//            }
-//        }
-        unsigned ui = 0;
+        const std::vector<int>& testdof (dofman_.LocalDofPosPerField<SymmetryMangle<testfield>::name>());
+        const std::vector<int>& trialdof(dofman_.LocalDofPosPerField<SymmetryMangle<trialfield>::name>());
+        
+        const std::size_t numparamtest  = testdof.size();
+        const std::size_t numparamtrial = trialdof.size();
+        
+        bool found_template = true;
+        switch (numparamtest)
+        {
+        case 20:
+        {
+          switch (numparamtrial) {
+          case 20: this->template IntegrateMatrix<20,20>(testshape,testdof,fac,trialshape,trialdof); break;
+          default: found_template = false;
+          }
+          break;
+        }
+        case 8:
+        {
+          switch (numparamtrial) {
+          case 8: this->template IntegrateMatrix<8,8>(testshape,testdof,fac,trialshape,trialdof); break;
+          default: found_template = false;
+          }
+          break;
+        }
+        default:
+          found_template = false;
+        }
+        
+        if (not found_template)
+        {
+//          cout << numparamtest << "   " << numparamtrial << endl;
+//          for (std::size_t ui=0; ui<numparamtrial; ++ui)
+//          {
+//              const std::size_t trialpos = trialdof[ui];
+//              const double multiply = fac * trialshape(ui);
+//              for (std::size_t vi=0; vi<numparamtest; ++vi)
+//              {
+//                  const std::size_t testpos = testdof[vi];
+//                  estif_(testpos, trialpos) += testshape(vi)*multiply ;
+//              }
+//          }
+        std::size_t ui = 0;
         for (std::vector<int>::const_iterator trialpos = trialdof.begin(); trialpos != trialdof.end(); ++trialpos)
         {
             const double multiply = fac * trialshape(ui);
-            unsigned vi = 0;
+            std::size_t vi = 0;
             for (std::vector<int>::const_iterator testpos = testdof.begin(); testpos != testdof.end(); ++testpos)
             {
                 estif_(*testpos, *trialpos) += testshape(vi)*multiply;
-                vi++;
+                ++vi;
             }
-            ui++;
+            ++ui;
         }
-    }
-    
-    //! assemble one expression for the element stiffness matrix for a given test and trial field
-    template <XFEM::PHYSICS::Field testfield,
-              DerivDir testDerivId,
-              XFEM::PHYSICS::Field trialfield,
-              DerivDir trialDerivId>
-    void Matrix(
-            const double&       fac
-            ) const
-    {
-        const std::vector<int>& testdof  = dofman_.LocalDofPosPerField<SymmetryMangle<testfield>::name>();
-        const std::vector<int>& trialdof = dofman_.LocalDofPosPerField<SymmetryMangle<trialfield>::name>();
-        
-        unsigned ui = 0;
-        for (std::vector<int>::const_iterator trialpos = trialdof.begin(); trialpos != trialdof.end(); ++trialpos)
-        {
-            unsigned vi = 0;
-            for (std::vector<int>::const_iterator testpos = testdof.begin(); testpos != testdof.end(); ++testpos)
-            {
-                estif_(*testpos, *trialpos) += fac*ShapeSelector<ShapeMangle<SymmetryMangle<testfield>::name>::name >::shp(testDerivId,vi)*ShapeSelector<trialfield>::shp(trialDerivId,ui) ;
-                vi++;
-            }
-            ui++;
         }
     }
     
@@ -194,20 +219,38 @@ public:
             const double&       fac
             ) const
     {
-        const std::vector<int>& testdof = dofman_.LocalDofPosPerField<SymmetryMangle<testfield>::name>();
+        const std::vector<int>& testdof(dofman_.LocalDofPosPerField<SymmetryMangle<testfield>::name>());
         
-//        const unsigned numparamtest  = testdof.size();
+        const std::size_t numparamtest  = testdof.size();
+        
+        bool found_template = true;
+        switch (numparamtest)
+        {
+        case 20:
+        {
+          this->template IntegrateVector<20>(testshape,testdof,fac); break;
+        }
+        case 8:
+        {
+          this->template IntegrateVector<8>(testshape,testdof,fac); break;
+        }
+        default:
+          found_template = false;
+        }
 //        
-//        for (unsigned vi=0; vi<numparamtest; ++vi)
+//        for (std::size_t vi=0; vi<numparamtest; ++vi)
 //        {
 //            const int testpos = testdof[vi];
 //            eforce_(testpos) += fac*testshape(vi);
 //        }
-        unsigned vi = 0;
+        if (not found_template)
+        {
+        std::size_t vi = 0;
         for (std::vector<int>::const_iterator testpos = testdof.begin(); testpos != testdof.end(); ++testpos)
         {
             eforce_(*testpos) += fac*testshape(vi);
             vi++;
+        }
         }
     }
     
@@ -226,8 +269,8 @@ private:
  * 
  * specialization for standard assembly
  */
-template <DRT::Element::DiscretizationType DISTYPE>
-class LocalAssembler<DISTYPE, XFEM::standard_assembly>
+template <DRT::Element::DiscretizationType DISTYPE, int NUMDOF>
+class LocalAssembler<DISTYPE, XFEM::standard_assembly, NUMDOF>
 {
 public:
     
@@ -236,8 +279,8 @@ public:
             Epetra_SerialDenseMatrix&                         estif,
             Epetra_SerialDenseVector&                         eforce
             ) :
-        estif_(estif),
-        eforce_(eforce)
+        estif_(LINALG::Matrix<NUMDOF*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement,NUMDOF*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>(estif,true)),
+        eforce_(LINALG::Matrix<NUMDOF*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement,1>(eforce,true))
     {
         return;
     }
@@ -246,8 +289,8 @@ public:
             Epetra_SerialDenseMatrix&                         estif,
             Epetra_SerialDenseVector&                         eforce
             ) :
-        estif_(estif),
-        eforce_(eforce)
+              estif_(LINALG::Matrix<NUMDOF*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement,NUMDOF*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>(estif,true)),
+              eforce_(LINALG::Matrix<NUMDOF*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement,1>(eforce,true))
     {
         return;
     }
@@ -266,16 +309,20 @@ public:
             const V1&           testshape,
             const double&       fac,
             const V2&           trialshape
-            ) const
+            )
     {
-        const unsigned numparam = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-        for (unsigned ui=0; ui<numparam; ++ui)
+#ifdef DEBUG
+      if (FieldNum<trialfield>::pos == errorCheckValue or FieldNum<testfield>::pos == errorCheckValue)
+        dserror("no stress allowed here");
+#endif
+      const std::size_t numparam = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+        for (std::size_t ui=0; ui!=numparam; ++ui)
         {
-            const unsigned trialpos = 4*ui + FieldNum<trialfield>::pos;
+            const std::size_t trialpos = NUMDOF*ui + FieldNum<trialfield>::pos;
             const double multiply = fac*trialshape(ui);
-            for (unsigned vi=0; vi<numparam; ++vi)
+            for (std::size_t vi=0; vi!=numparam; ++vi)
             {
-                const unsigned testpos = 4*vi + FieldNum<testfield>::pos;
+                const std::size_t testpos = NUMDOF*vi + FieldNum<testfield>::pos;
                 estif_(testpos, trialpos) += testshape(vi)*multiply ;
             }
         }
@@ -287,12 +334,16 @@ public:
     void Vector(
             const V1&           testshape,
             const double&       fac
-            ) const
+            )
     {
-        const unsigned numparam = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-        for (unsigned vi=0; vi<numparam; ++vi)
+#ifdef DEBUG
+      if (FieldNum<testfield>::pos == errorCheckValue)
+        dserror("no stress allowed here");
+#endif
+        const std::size_t numparam = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+        for (std::size_t vi=0; vi<numparam; ++vi)
         {
-            const unsigned testpos = 4*vi + FieldNum<testfield>::pos;
+            const std::size_t testpos = NUMDOF*vi + FieldNum<testfield>::pos;
             eforce_(testpos) += fac*testshape(vi);
         }
     }
@@ -302,8 +353,8 @@ private:
     LocalAssembler operator = (const LocalAssembler& old);
     LocalAssembler(const LocalAssembler& old);
     
-    Epetra_SerialDenseMatrix& estif_;
-    Epetra_SerialDenseVector& eforce_;
+    LINALG::Matrix<NUMDOF*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement,NUMDOF*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement> estif_;
+    LINALG::Matrix<NUMDOF*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement,1> eforce_;
 };
 
   

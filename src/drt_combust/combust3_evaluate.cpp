@@ -93,9 +93,6 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
                                      Epetra_SerialDenseVector&,
                                      Epetra_SerialDenseVector&)
 {
-  // This is a temporary security abort for the Combust3 element  henke 08/08
-//  dserror("Das Combust3 Element geht noch nicht! henke 08/08");
-
   // get the action required
   const string action(params.get<string>("action","none"));
   const DRT::ELEMENTS::Combust3::ActionType act = convertStringToActionType(action);
