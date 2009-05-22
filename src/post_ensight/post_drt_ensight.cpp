@@ -163,11 +163,24 @@ int main(
     {
       string basename = problem.outname();
       int numfield = problem.num_discr();
-      // do we have a fluid discretization?
-      if(numfield==2)
+      if(numfield==3)
       {
-        string basename = problem.outname();
+        // Fluid, ScaTra and ALE fields are present
+        PostField* fluidfield = problem.get_discretization(0);
+        FluidEnsightWriter fluidwriter(fluidfield, basename);
+        fluidwriter.WriteFiles();
 
+        PostField* scatrafield = problem.get_discretization(1);
+        ElchEnsightWriter elchwriter(scatrafield, basename);
+        elchwriter.WriteFiles();
+
+        PostField* alefield = problem.get_discretization(2);
+        AleEnsightWriter alewriter(alefield, basename);
+        alewriter.WriteFiles();
+      }
+      else if(numfield==2)
+      {
+        // Fluid and ScaTra fields are present
         PostField* fluidfield = problem.get_discretization(0);
         FluidEnsightWriter fluidwriter(fluidfield, basename);
         fluidwriter.WriteFiles();
@@ -179,6 +192,7 @@ int main(
       }
       else if (numfield==1)
       {
+        // only a ScaTra field is present
         PostField* scatrafield = problem.get_discretization(0);
         ElchEnsightWriter elchwriter(scatrafield, basename);
         elchwriter.WriteFiles();
