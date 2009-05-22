@@ -431,12 +431,22 @@ void FSI::UTILS::CreateAleDiscretization()
   }
 
   cond.clear();
-  fluiddis->GetCondition("SurfacePeriodic", cond);
+  fluiddis->GetCondition("LinePeriodic", cond);
   for (std::size_t i=0; i<cond.size(); ++i)
   {
     // We use the same nodal ids and therefore we can just copy the
     // conditions.
     aledis->SetCondition("LinePeriodic", rcp(new DRT::Condition(*cond[i])));
+  }
+
+  cond.clear();
+  fluiddis->GetCondition("ElectrodeKinetics", cond);
+  for (std::size_t i=0; i<cond.size(); ++i)
+  {
+    // We use the same nodal ids and therefore we can just copy the
+    // conditions. 
+    // Needed for Electrochemistry simulations with moving boundaries
+    aledis->SetCondition("ElectrodeKinetics", rcp(new DRT::Condition(*cond[i])));
   }
 
   // now care about the parallel distribution
