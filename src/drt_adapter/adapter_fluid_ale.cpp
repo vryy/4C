@@ -26,7 +26,7 @@ Maintainer: Ulrich Kuettler
 ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn,
                             std::string condname)
   : fluid_(prbdyn,true),
-    ale_()
+    ale_(prbdyn)
 {
   icoupfa_.SetupConditionCoupling(*FluidField().Discretization(),
                                    FluidField().Interface(),

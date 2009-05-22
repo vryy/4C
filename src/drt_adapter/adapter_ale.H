@@ -160,7 +160,7 @@ class AleBaseAlgorithm
 public:
 
   /// constructor
-  explicit AleBaseAlgorithm();
+  explicit AleBaseAlgorithm(const Teuchos::ParameterList& prbdyn);
 
   /// virtual destructor to support polymorph destruction
   virtual ~AleBaseAlgorithm();
@@ -171,10 +171,11 @@ public:
 
 private:
 
-  /// setup ale algorithm
-  void SetupAle();
+  /// setup ale algorithm (overriding some parameters with
+  /// values specified in given problem-dependent ParameterList)
+  void SetupAle(const Teuchos::ParameterList& prbdyn);
 
-  /// fluid field solver
+  /// ale field solver
   Teuchos::RCP<Ale> ale_;
 };
 

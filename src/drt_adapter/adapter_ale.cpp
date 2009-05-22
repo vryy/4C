@@ -45,9 +45,9 @@ extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::AleBaseAlgorithm::AleBaseAlgorithm()
+ADAPTER::AleBaseAlgorithm::AleBaseAlgorithm(const Teuchos::ParameterList& prbdyn)
 {
-  SetupAle();
+  SetupAle(prbdyn);
 }
 
 
@@ -60,7 +60,7 @@ ADAPTER::AleBaseAlgorithm::~AleBaseAlgorithm()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::AleBaseAlgorithm::SetupAle()
+void ADAPTER::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn)
 {
   Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("ADAPTER::AleBaseAlgorithm::SetupAle");
   Teuchos::TimeMonitor monitor(*t);
@@ -93,7 +93,6 @@ void ADAPTER::AleBaseAlgorithm::SetupAle()
   // set some pointers and variables
   // -------------------------------------------------------------------
   const Teuchos::ParameterList& adyn     = DRT::Problem::Instance()->AleDynamicParams();
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 
   // -------------------------------------------------------------------
   // create a solver
@@ -105,15 +104,15 @@ void ADAPTER::AleBaseAlgorithm::SetupAle()
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
   RCP<ParameterList> params = rcp(new ParameterList());
-  params->set<int>("numstep",    fsidyn.get<int>("NUMSTEP"));
-  params->set<double>("maxtime", fsidyn.get<double>("MAXTIME"));
-  params->set<double>("dt",      fsidyn.get<double>("TIMESTEP"));
+  params->set<int>("numstep",    prbdyn.get<int>("NUMSTEP"));
+  params->set<double>("maxtime", prbdyn.get<double>("MAXTIME"));
+  params->set<double>("dt",      prbdyn.get<double>("TIMESTEP"));
 
   // ----------------------------------------------- restart and output
   // restart
-  params->set<int>("write restart every", fsidyn.get<int>("RESTARTEVRY"));
+  params->set<int>("write restart every", prbdyn.get<int>("RESTARTEVRY"));
 
-  params->set<int>("ALE_TYPE",      Teuchos::getIntegralValue<int>(adyn,"ALE_TYPE"));
+  params->set<int>("ALE_TYPE",Teuchos::getIntegralValue<int>(adyn,"ALE_TYPE"));
 
   
   bool dirichletcond = true;

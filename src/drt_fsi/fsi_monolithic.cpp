@@ -33,7 +33,7 @@
 FSI::MonolithicBase::MonolithicBase(Epetra_Comm& comm)
   : StructureBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams()),
     FluidBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams(),true),
-    AleBaseAlgorithm(),
+    AleBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams()),
     comm_(comm)
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
