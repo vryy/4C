@@ -467,6 +467,33 @@ void FSI::UTILS::CreateAleDiscretization()
   // redistribute nodes to column (ghost) map
   DRT::UTILS::RedistributeWithNewNodalDistribution(*aledis, *alenoderowmap, *alenodecolmap);
   aledis->FillComplete();
+
+  // finally do knot vectors in the nurbs case
+
+  if(nurbsdis!=NULL)
+  {
+    DRT::NURBS::NurbsDiscretization* nurbsaledis
+      =
+      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*(aledis)));
+
+    if(nurbsaledis==NULL)
+    {
+      dserror("Nurbs fluid discretisation but no nurbs ALE discretisation\n");
+    }
+    
+    Teuchos::RCP<DRT::NURBS::Knotvector> knots
+      =
+      Teuchos::rcp(new DRT::NURBS::Knotvector(*(nurbsdis->GetKnotVector())));
+
+    // reset offsets
+    int smallest_gid_in_dis=nurbsaledis->ElementRowMap()->MinAllGID();
+    knots->FinishKnots(smallest_gid_in_dis);
+
+
+    nurbsaledis->SetKnotVector(knots);
+  }
+
+
 }
 
 #endif
