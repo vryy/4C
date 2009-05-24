@@ -464,6 +464,11 @@ void PostProblem::read_meshes()
       // read knot vectors for nurbs discretisations
       if(spatial_approx_=="Nurbs")
       {
+        // try a dynamic cast of the discretisation to a nurbs discretisation
+        DRT::NURBS::NurbsDiscretization* nurbsdis
+        =
+          dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*currfield.discretization()));
+
         RCP<vector<char> > packed_knots =
           reader.ReadKnotvector(step);
         
@@ -471,14 +476,23 @@ void PostProblem::read_meshes()
         
         knots->Unpack(*packed_knots);
         
-        knots->FinishKnots();
-        
-        // try a dynamic cast of the discretisation to a nurbs discretisation
-        DRT::NURBS::NurbsDiscretization* nurbsdis
-        =
-          dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*currfield.discretization()));
-          
-          nurbsdis->SetKnotVector(knots);
+        if(nurbsdis==NULL)
+        {
+          dserror("expected a nurbs discretisation for spatial approx. Nurbs\n");
+        }
+
+        nurbsdis->FillComplete();
+
+        if(!(nurbsdis->Filled()))
+        {
+          dserror("nurbsdis was not fc\n");
+        }
+
+        int smallest_gid_in_dis=nurbsdis->ElementRowMap()->MinAllGID();
+
+        knots->FinishKnots(smallest_gid_in_dis);
+                  
+        nurbsdis->SetKnotVector(knots);
       }
 
       // setup of parallel layout: create ghosting of already distributed nodes+elems
