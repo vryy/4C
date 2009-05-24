@@ -113,6 +113,19 @@ public:
   }
   //@}
 
+
+  bool HasPBC()
+    {
+      if(numpbcpairs_>0)
+      {
+        return(true);
+      }
+      else
+      {
+        return(false);
+      }
+    }
+
 protected:
   //! @name handling of all pbc pairs
 

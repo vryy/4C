@@ -117,12 +117,16 @@ STR::TimInt::TimInt
   // connect degrees of freedom for periodic boundary conditions
   // (i.e. for multi-patch nurbs computations)
   {
-    PeriodicBoundaryConditions::PeriodicBoundaryConditions pbc(actdis);
-    pbc.UpdateDofsForPeriodicBoundaryConditions();
+    PeriodicBoundaryConditions pbc(discret_);
 
-    actdis->ComputeNullSpaceIfNecessary(solver->Params(),true);
+    if (pbc.HasPBC())
+    {
+      pbc.UpdateDofsForPeriodicBoundaryConditions();
+      
+      discret_->ComputeNullSpaceIfNecessary(solver->Params(),true);
 
-    dofrowmap_=actdis->DofRowMap();
+      dofrowmap_ = discret_->DofRowMap();
+    }
   }
 
   // time state
