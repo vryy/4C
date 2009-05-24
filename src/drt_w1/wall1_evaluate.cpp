@@ -369,11 +369,11 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
  |  Integrate a Surface Neumann boundary condition (public)  mgit 05/07|
  *----------------------------------------------------------------------*/
 
-int DRT::ELEMENTS::Wall1::EvaluateNeumann(ParameterList& params,
-                                           DRT::Discretization&      discretization,
-                                           DRT::Condition&           condition,
-                                           vector<int>&              lm,
-                                           Epetra_SerialDenseVector& elevec1)
+int DRT::ELEMENTS::Wall1::EvaluateNeumann(ParameterList&            params,
+                                          DRT::Discretization&      discretization,
+                                          DRT::Condition&           condition,
+                                          vector<int>&              lm,
+                                          Epetra_SerialDenseVector& elevec1)
 {
   RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp==null) dserror("Cannot get state vector 'displacement'");
@@ -393,13 +393,43 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(ParameterList& params,
   if (curvenum>=0 && usetime)
     curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
 
+  // no. of nodes on this surface
+  const int iel = NumNode();
+
+  // do the isogeometric extras --- get knots and weights
+  std::vector<Epetra_SerialDenseVector> myknots(2);
+  Epetra_SerialDenseVector weights(iel);
+
+  if(Shape()==DRT::Element::nurbs4
+     ||
+     Shape()==DRT::Element::nurbs9)
+  {
+    DRT::NURBS::NurbsDiscretization* nurbsdis
+      =
+      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+
+      bool zero_sized=(*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
+
+      // skip zero sized elements in knot span --- they correspond to interpolated nodes
+      if(zero_sized)
+      {
+        return(0);
+      }
+
+      for (int inode=0; inode<iel; ++inode)
+      {
+        DRT::NURBS::ControlPoint* cp
+          =
+          dynamic_cast<DRT::NURBS::ControlPoint* > (Nodes()[inode]);
+        
+        weights(inode) = cp->W();
+      }
+  }
+
   // general arrays
   int ngauss = 0;  // total number of Gauss points
   Epetra_SerialDenseMatrix xjm(2,2);  // iso-parametric Jacobian
   double det;  // determinant of iso-parametric Jacobian
-
-  // no. of nodes on this surface
-  const int iel = NumNode();
 
   // quad, tri, etc
   const DiscretizationType distype = Shape();
@@ -448,9 +478,29 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(ParameterList& params,
     const double wgt = intpoints.qwgt[ip];
 
     /*-------------------- shape functions at gp e1,e2 on mid surface */
-    //w1_shapefunctions(funct,deriv,e1,e2,iel,1);
-    DRT::UTILS::shape_function_2D(funct,e1,e2,distype);
-    DRT::UTILS::shape_function_2D_deriv1(deriv,e1,e2,distype);
+    if(distype != DRT::Element::nurbs4
+       &&
+       distype != DRT::Element::nurbs9)
+    {
+      // shape functions and their derivatives for polynomials
+      DRT::UTILS::shape_function_2D       (funct,e1,e2,distype);
+      DRT::UTILS::shape_function_2D_deriv1(deriv,e1,e2,distype);
+    }
+    else
+    {
+      // nurbs version
+      Epetra_SerialDenseVector gp(2);
+      gp(0)=e1;
+      gp(1)=e2;
+
+      DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
+	(funct  ,
+	 deriv  ,
+	 gp     ,
+	 myknots,
+	 weights,
+	 distype);
+    }
 
     /*--------------------------------------- compute jacobian Matrix */
     w1_jacobianmatrix(xrefe,deriv,xjm,&det,iel);

@@ -46,6 +46,17 @@ DRT::ELEMENTS::NURBS::Wall1Nurbs::~Wall1Nurbs()
 
 
 /*----------------------------------------------------------------------*
+ |  Deep copy this instance of Wall1 and return pointer to it (public) |
+ |                                                          gammi 05/09|
+ *----------------------------------------------------------------------*/
+DRT::Element* DRT::ELEMENTS::NURBS::Wall1Nurbs::Clone() const
+{
+  DRT::ELEMENTS::NURBS::Wall1Nurbs* newelement = new DRT::ELEMENTS::NURBS::Wall1Nurbs(*this);
+  return newelement;
+}
+
+
+/*----------------------------------------------------------------------*
  |  print this element (public)                              gammi 02/09|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::NURBS::Wall1Nurbs::Print(ostream& os) const
@@ -72,6 +83,32 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::NURBS::Wall1Nurbs::Shape() const
 
   return dis_none;
 }
+
+/*----------------------------------------------------------------------*
+ |  get vector of lines (public)                             gammi 05/09|
+ *----------------------------------------------------------------------*/
+vector<RCP<DRT::Element> > DRT::ELEMENTS::NURBS::Wall1Nurbs::Lines()
+{
+  // do NOT store line or surface elements inside the parent element
+  // after their creation.
+  // Reason: if a Redistribute() is performed on the discretization,
+  // stored node ids and node pointers owned by these boundary elements might
+  // have become illegal and you will get a nice segmentation fault ;-)
+
+  // so we have to allocate new line elements:
+  return DRT::UTILS::ElementBoundaryFactory<Wall1Line,Wall1>(DRT::UTILS::buildLines,this);
+}
+
+/*----------------------------------------------------------------------*
+ |  get vector of surfaces (public)                          gammi 05/09|
+ *----------------------------------------------------------------------*/
+vector<RCP<DRT::Element> >  DRT::ELEMENTS::NURBS::Wall1Nurbs::Surfaces()
+{
+  vector<RCP<Element> > surfaces(1);
+  surfaces[0]= rcp(this, false);
+  return surfaces;
+}
+
 
 #endif // CCADISCRET
 

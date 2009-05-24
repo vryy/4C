@@ -17,7 +17,7 @@ Maintainer: Peter Gamnitzer
 #include "wall1.H"
 #include "../drt_nurbs_discret/drt_control_point.H"
 #include "../drt_fem_general/drt_utils_bspline.H"
-
+#include "../drt_lib/drt_utils.H"
 
 /*!
   \brief DRT: namespace of the ccarat discretization module
@@ -69,6 +69,12 @@ public:
   */
   virtual ~Wall1Nurbs();
 
+  /*!
+  \brief Deep copy this instance of Wall1 and return pointer to it
+  */
+
+  virtual DRT::Element* Clone() const;
+
 
   /*!
   \brief Return unique ParObject id
@@ -108,6 +114,18 @@ public:
       return -1;
     }
   }
+
+
+  /*!
+  \brief Get vector of RefCountPtrs to the lines of this element
+  */
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
+
+
+  /*!
+  \brief Get vector of RefCountPtrs to the surfaces of this element
+  */
+  virtual vector<Teuchos::RCP<DRT::Element> > Surfaces();
 
   
 private:
