@@ -338,8 +338,12 @@ public:
     access methods.
     
     An unfinished knotvector can not be accessed!
+
+    \param smallest_gid_in_dis (i)
+           The gid of the first element to be stired in the offset array
+    
   */
-  void FinishKnots();
+  void FinishKnots(const int smallest_gid_in_dis);
 
   //@}
 

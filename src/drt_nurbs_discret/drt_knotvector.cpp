@@ -104,15 +104,16 @@ DRT::NURBS::Knotvector::~Knotvector()
  *----------------------------------------------------------------------*/
 DRT::NURBS::Knotvector::Knotvector(const DRT::NURBS::Knotvector & old)
 :
-  ParObject     (old               ),
-  dim_          (old.dim_          ),
-  npatches_     (old.npatches_     ),
-  filled_       (old.filled_       ),
-  degree_       (old.degree_       ),
-  n_x_m_x_l_    (old.n_x_m_x_l_    ),
-  interpolation_(old.interpolation_),
-  offsets_      (old.offsets_      ),
-  knot_values_  (old.npatches_     )
+  ParObject          (old                    ),
+  dim_               (old.dim_               ),
+  npatches_          (old.npatches_          ),
+  filled_            (false                  ),
+  degree_            (old.degree_            ),
+  n_x_m_x_l_         (old.n_x_m_x_l_         ),
+  nele_x_mele_x_lele_(old.nele_x_mele_x_lele_),
+  interpolation_     (old.interpolation_     ),
+  offsets_           (old.offsets_           ),
+  knot_values_       (old.npatches_          )
 {
   // deep copy knot vectors
 
@@ -507,15 +508,21 @@ void DRT::NURBS::Knotvector::SetKnots(
 /*----------------------------------------------------------------------*
  | finish                                           (public) gammi 05/08|
  *----------------------------------------------------------------------*/ 
-void DRT::NURBS::Knotvector::FinishKnots()
+void DRT::NURBS::Knotvector::FinishKnots(const int smallest_gid_in_dis)
 {
   //--------------------------------------------------
   // plausibility checks
 
+  // empty knot vector --- do not finish or set
+  if(npatches_==0)
+  {
+    return;
+  }
+
   // check if there are any patches
   if(npatches_<0)
   {
-    dserror("we need at least one patch\n");
+    dserror("we need at least  patch\n");
   }
 
   // check degrees
@@ -648,7 +655,7 @@ void DRT::NURBS::Knotvector::FinishKnots()
   }
 
   // get element ordering among patches
-  offsets_[0]=0;
+  offsets_[0]=smallest_gid_in_dis;
   for(int rr=1;rr<npatches_;++rr)
   {
     int nele_inpatch=1;
