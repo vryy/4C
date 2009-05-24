@@ -574,25 +574,29 @@ void DRT::Problem::ReadKnots(const DRT::INPUT::DatFileReader& reader)
 
       if(distype == "Nurbs")
       {
-	// get the number of nurbs patches
-	int npatches = psize.get<int>("NPATCHES");
-
         // cast discretisation to nurbs variant to be able
         // to add the knotvector
         DRT::NURBS::NurbsDiscretization* nurbsdis
           =
           dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*actdis));
 
-        // allocate a knot vector object
-        Teuchos::RCP<DRT::NURBS::Knotvector> disknots
-	  =
-          Teuchos::rcp (new DRT::NURBS::Knotvector(dim,npatches));
+        // define an empty knot vector object
+        Teuchos::RCP<DRT::NURBS::Knotvector> disknots=Teuchos::null;
 
         // read the knotvector data from the input
-        reader.ReadKnots(npatches,dim,disknots);
+        reader.ReadKnots(dim,actdis->Name(),disknots);
+
+        if(disknots==Teuchos::null)
+        {
+          dserror("Knotvector read failed in Nurbs discretisation\n");
+        }
+
+        // the smallest gid in the discretisation determines the access
+        // pattern via the element offset
+        int smallest_gid_in_dis=actdis->ElementRowMap()->MinAllGID();
 
         // consistency checks
-        disknots->FinishKnots();
+        disknots->FinishKnots(smallest_gid_in_dis);
 
         // add knots to discretisation
         nurbsdis->SetKnotVector(disknots);

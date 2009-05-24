@@ -132,15 +132,15 @@ public:
   /*!
     \brief read the knotvector section (for isogeometric analysis)
 
-    \param  npatches       (in ): number of patches in thos nurbs discretisation
     \param  dim            (in ): dimension, i.e. number of knotvectors in one patch 
+    \param  name           (in ): Name/type of discretisation
     \param  disknots       (out): node vector coordinates
 
   */
   void ReadKnots(
-    const int                            npatches,
-    const int                            dim     ,
-    Teuchos::RCP<DRT::NURBS::Knotvector> disknots
+    const int                              dim     ,
+    const string                           name    ,
+    Teuchos::RCP<DRT::NURBS::Knotvector> & disknots
     ) const;
 
 private:

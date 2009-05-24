@@ -293,185 +293,422 @@ void DatFileReader::ReadDesign(const std::string& name, std::vector<std::vector<
 /// read a knotvector section (for isogeometric analysis)
 //----------------------------------------------------------------------
 void DatFileReader::ReadKnots(
-  const int                            npatches,
-  const int                            dim     ,
-  Teuchos::RCP<DRT::NURBS::Knotvector> disknots
+  const int                              dim     ,
+  const string                           name    ,
+  Teuchos::RCP<DRT::NURBS::Knotvector> & disknots
   ) const
 {
-  // make sure that we have some Knotvector obeject to fill
+
+  // io to shell
+  const int myrank  = comm_->MyPID();
+
+  Epetra_Time time(*comm_);
+
+  if (myrank==0)
+  {
+    if (!MyOutputFlag())
+    {
+      cout << "Reading knot vectors for " << name << " discretization :\n";
+      fflush(stdout);
+    }
+  }
+
+  // number of patches to be determined
+  int  npatches  = 0;
+
+  //--------------------------------------------------------------------
+  //--------------------------------------------------------------------
+  //             first, determine number of patches
+  //--------------------------------------------------------------------
+  //--------------------------------------------------------------------
+  {
+    // open input file --- this is done on all procs
+    ifstream file;
+    file.open(filename_.c_str());
+
+    // temporary string
+    string tmp;
+
+    // flag indicating knot vector section in input
+    bool knotvectorsection=false;
+
+    // loop lines in file
+    for (; file;)
+    {
+      // read piece of file until next seperator (whitespace, newline)
+      file >> tmp;
+
+      // if this a new section, i.e. starts like ------
+      if((tmp[0]=='-'&&tmp[1]=='-'))
+      {
+        // check whether it is the knotvectorsection
+        string::size_type loc=string::npos;
+        
+        // only the knotvector section of this discretisation 
+        // type is of interest
+        if(name=="fluid")
+        {
+          loc= tmp.rfind("FLUID");
+        }
+        else if(name=="structure")
+        {
+          loc= tmp.rfind("STRUCTURE");
+        }
+        else if(name=="ale")
+        {
+          loc= tmp.rfind("ALE");
+        }
+        else if(name=="scatra")
+        {
+          loc= tmp.rfind("TRANSPORT");
+        }
+        else
+        {
+          dserror("Unknown discretization name for knotvector input\n");
+        }
+        if (loc == string::npos)
+        {
+          knotvectorsection=false;
+
+          // there is nothing more to be done in this line
+          continue;
+        }
+        else
+        {
+          // continue reading of second keyword
+          file >> tmp;
+
+          // check whether second keyword is knotvector
+          loc= tmp.rfind("KNOTVECTORS");
+
+          if (loc != string::npos)
+          {
+            // if this is true, we are at the beginning of a 
+            // knot section
+            knotvectorsection=true;
+            // there is nothing more to be done in this line
+            continue;
+          }
+          else
+          {
+            knotvectorsection=false;
+          
+            // there is nothing more to be done in this line
+            continue;
+          }
+        }
+      }
+      
+      // count number of patches in knotvector section of 
+      // this discretisation
+      if(knotvectorsection)
+      {
+        // check for a new patch
+        string::size_type loc;
+        
+        loc = tmp.rfind("ID");
+        if (loc != string::npos)
+        {
+          // increase number of patches
+          npatches++;
+          
+          continue;
+        }
+      }
+    } // end loop through file
+  }
+
+  if (myrank==0)
+  {
+    if (!MyOutputFlag())
+    {
+      printf("                        %8d patches",npatches);
+      fflush(stdout);
+    }
+  }
+
+
+  //--------------------------------------------------------------------
+  //--------------------------------------------------------------------
+  //                alloc knotvector object to fill
+  //--------------------------------------------------------------------
+  //--------------------------------------------------------------------
+
+  // allocate knotvector for this dis
+  disknots=Teuchos::rcp (new DRT::NURBS::Knotvector(dim,npatches));
+
+  // make sure that we have some Knotvector object to fill
   if (disknots==Teuchos::null)
   {
     dserror("disknots should have been allocated before");
   }
 
-  // this is a pointer to the knots of one patch in one direction
-  // we will read them and put them
-  vector<Teuchos::RCP<vector<double> > > patch_knots(dim);
-
-  // open input file --- this is done on all procs
-  ifstream file;
-
-  file.open(filename_.c_str());
-
-  // temporary strings
-  string tmp;
-
-
-  int filecount=0;
-
-  // start to read something when read is true
-  bool read=false;
-
-
-  bool knotvectorsection=false;
-
-  // index for number of patch
-  int            npatch          = 0;
-  // index for u/v/w
-  int            actdim          =-1;
-  // ints for the number of knots
-  vector<int>    n_x_m_x_l(dim);
-  // ints for patches degrees
-  vector<int>    degree(dim);
-  // a vector of strings holding the knotvectortypes read
-  vector<string> knotvectortype(dim);
-
-  // loop lines in file
-  for (; file; ++filecount)
+  //--------------------------------------------------------------------
+  //--------------------------------------------------------------------
+  //                finally read knotvector section  
+  //--------------------------------------------------------------------
+  //--------------------------------------------------------------------
   {
-    file >> tmp;
+    // this is a pointer to the knots of one patch in one direction
+    // we will read them and put them
+    vector<Teuchos::RCP<vector<double> > > patch_knots(dim);
 
-    // if this a new section
-    if((tmp[0]=='-'&&tmp[1]=='-'))
+    // open input file --- this is done on all procs
+    ifstream file;
+
+    file.open(filename_.c_str());
+    
+    // temporary string
+    string tmp;
+ 
+    // start to read something when read is true
+    bool read=false;
+    
+    // flag indicating knot vector section in input
+    bool knotvectorsection=false;
+
+    // index for number of patch
+    int            npatch          = 0;
+    // index for u/v/w
+    int            actdim          =-1;
+    // ints for the number of knots
+    vector<int>    n_x_m_x_l(dim);
+    // ints for patches degrees
+    vector<int>    degree(dim);
+    // a vector of strings holding the knotvectortypes read
+    vector<string> knotvectortype(dim);
+
+    // count for sanity check
+    int            count_read=0;
+    vector<int>    count_vals(dim);
+
+    // loop lines in file
+    for (; file;)
     {
+      file >> tmp;
 
-      // check whether it is the knotvectorsection
-      string::size_type loc = tmp.rfind("KNOTVECTORS");
-
-      if (loc != string::npos)
+      // if this a new section
+      if((tmp[0]=='-'&&tmp[1]=='-'))
       {
-        // if this is true, we are at the beginning of a knot section
-	knotvectorsection=true;
-	// there is nothing more to be done in this line
-	continue;
+        // check whether it is the knotvectorsection
+        string::size_type loc=string::npos;
+
+        // only the knotvector section of this discretisation 
+        // type is of interest
+        if(name=="fluid")
+        {
+          loc= tmp.rfind("FLUID");
+        }
+        else if(name=="structure")
+        {
+          loc= tmp.rfind("STRUCTURE");
+        }
+        else if(name=="ale")
+        {
+          loc= tmp.rfind("ALE");
+        }
+        else if(name=="scatra")
+        {
+          loc= tmp.rfind("TRANSPORT");
+        }
+        else
+        {
+          dserror("Unknown discretization name for knotvector input\n");
+        }
+        if (loc == string::npos)
+        {
+          knotvectorsection=false;
+
+          // there is nothing more to be done in this line
+          continue;
+        }
+        else
+        {
+          // continue reading of second keyword
+          file >> tmp;
+
+          // check whether second keyword is knotvector
+          loc= tmp.rfind("KNOTVECTORS");
+
+          if (loc != string::npos)
+          {
+            // if this is true, we are at the beginning of a 
+            // knot section
+            knotvectorsection=true;
+            // there is nothing more to be done in this line
+            continue;
+          }
+          else
+          {
+            knotvectorsection=false;
+          
+            // there is nothing more to be done in this line
+            continue;
+          }
+        }
       }
-      else
+
+      // do reading in knotvecor section
+      if(knotvectorsection)
       {
-	knotvectorsection=false;
+        // check for a new patch
+        string::size_type loc=string::npos;
 
-	// there is nothing more to be done in this line
-	continue;
+        loc = tmp.rfind("BEGIN");
+        if (loc != string::npos)
+        {
+          file >> tmp;
+
+          // activate reading
+          read=true;
+
+          actdim=-1;
+
+          // create vectors for knots in this patch
+          for(int rr=0;rr<dim;++rr)
+          {
+            patch_knots[rr]=rcp(new vector<double>);
+            (*(patch_knots[rr])).clear();
+          }
+
+          // reset counter for knot values
+          for(int rr=0;rr<dim;rr++)
+          {
+            count_vals[rr]=0;
+          }
+
+          continue;
+        }
+
+        // get ID of patch we are currently reading
+        loc = tmp.rfind("ID");
+        if (loc != string::npos)
+        {
+          string str_npatch;
+          file >> str_npatch;
+
+          char* endptr = NULL;
+          npatch=strtol(str_npatch.c_str(),&endptr,10);
+          npatch--;
+
+          continue;
+        }
+
+        // get number of knots in the knotvector direction 
+        // we are currently reading
+        loc = tmp.rfind("NUMKNOTS");
+        if (loc != string::npos)
+        {
+          string str_numknots;
+          file >> str_numknots;
+
+          // increase dimesion for knotvector (i.e. next time 
+          // we'll fill the following knot vector)
+          actdim++;
+          if(actdim>dim)
+          {
+            dserror("too many knotvectors (we only need dim)\n");
+          }
+
+          char* endptr = NULL;
+          n_x_m_x_l[actdim]=strtol(str_numknots.c_str(),&endptr,10);
+
+          continue;
+        }
+
+        // get number of bspline polinomial associated with 
+        // knots in this direction 
+        loc = tmp.rfind("DEGREE");
+        if (loc != string::npos)
+        {
+          string str_degree;
+          file >> str_degree;
+
+          char* endptr = NULL;
+          degree[actdim]=strtol(str_degree.c_str(),&endptr,10);
+
+          continue;
+        }
+
+        // get type of knotvector (interpolated or periodic)
+        loc = tmp.rfind("TYPE");
+        if (loc != string::npos)
+        {
+          string type;
+
+          file >> type;
+          knotvectortype[actdim]=type;
+
+          continue;
+        }
+
+        // locate end of patch
+        loc = tmp.rfind("END");
+        if (loc != string::npos)
+        {
+          for (int rr=0;rr<dim;++rr)
+          {
+            disknots->SetKnots(
+              rr                ,
+              npatch            ,
+              degree[rr]        ,
+              n_x_m_x_l[rr]     ,
+              knotvectortype[rr],
+              patch_knots[rr]   );
+          }
+          file >> tmp;
+          // stop reading of knot values if we are here
+          read=false;
+
+          for(int rr=0;rr<dim;rr++)
+          {
+            if(n_x_m_x_l[rr]!=count_vals[rr])
+            {
+              dserror("not enough knots read in dim %d (%d!=NUMKNOTS=%d)\n",
+                      rr            ,
+                      count_vals[rr],
+                      n_x_m_x_l[rr]);
+            }
+          }
+
+          // count for sanity check
+          count_read++;
+
+          continue;
+        }
+
+        //  reading of knot values if read is true and no 
+        // other keyword was found
+        if(read)
+        {
+          char* endptr = NULL;
+
+          double dv = strtod(tmp.c_str(), &endptr);
+
+          // count for sanity check
+          count_vals[actdim]++;
+
+          (*(patch_knots[actdim])).push_back(dv);
+        }
       }
-    }
+    } // end loop through file
 
-    if(knotvectorsection)
+    if(count_read!=npatches)
     {
-      // check for a new patch
-      string::size_type loc;
-
-      loc = tmp.rfind("BEGIN");
-      if (loc != string::npos)
-      {
-	file >> tmp;
-	read=true;
-
-	actdim=-1;
-
-	for(int rr=0;rr<dim;++rr)
-	{
-	  patch_knots[rr]=rcp(new vector<double>);
-	  (*(patch_knots[rr])).clear();
-	}
-
-	continue;
-      }
-
-      loc = tmp.rfind("ID");
-      if (loc != string::npos)
-      {
-	// get ID of patch we are currently reading
-	string str_npatch;
-	file >> str_npatch;
-
-	char* endptr = NULL;
-	npatch=strtol(str_npatch.c_str(),&endptr,10);
-	npatch--;
-
-	continue;
-      }
-
-      loc = tmp.rfind("NUMKNOTS");
-      if (loc != string::npos)
-      {
-	string str_numknots;
-	file >> str_numknots;
-
-	// new dimesion for knotvector
-	actdim++;
-	if(actdim>dim)
-	{
-	  dserror("too many knotvectors for (we only need dim)\n");
-	}
-
-	char* endptr = NULL;
-	n_x_m_x_l[actdim]=strtol(str_numknots.c_str(),&endptr,10);
-
-	continue;
-      }
-
-      loc = tmp.rfind("DEGREE");
-      if (loc != string::npos)
-      {
-	string str_degree;
-	file >> str_degree;
-
-	char* endptr = NULL;
-	degree[actdim]=strtol(str_degree.c_str(),&endptr,10);
-
-	continue;
-      }
-
-      loc = tmp.rfind("TYPE");
-      if (loc != string::npos)
-      {
-	string type;
-
-	file >> type;
-        knotvectortype[actdim]=type;
-
-	continue;
-      }
-
-      loc = tmp.rfind("END");
-      if (loc != string::npos)
-      {
-	for (int rr=0;rr<dim;++rr)
-	{
-	  disknots->SetKnots(
-	    rr                ,
-	    npatch            ,
-	    degree[rr]        ,
-	    n_x_m_x_l[rr]     ,
-	    knotvectortype[rr],
-	    patch_knots[rr]   );
-	}
-	file >> tmp;
-	read=false;
-	continue;
-      }
-
-      if(read)
-      {
-	char* endptr = NULL;
-
-        double dv = strtod(tmp.c_str(), &endptr);
-
-	(*(patch_knots[actdim])).push_back(dv);
-      }
+      dserror("wasn't able to read enough patches\n");
     }
+  }
 
-  } // end loop through file
+  if (myrank==0)
+  {
+    if (!MyOutputFlag())
+    {
+      cout << " in...." << time.ElapsedTime() << " secs\n";
 
+      time.ResetStartTime();
+      fflush(stdout);
+    }
+  }
   return;
 }
 
