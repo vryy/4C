@@ -32,39 +32,6 @@ Maintainer: Florian Henke
 #include "../drt_lib/drt_utils.H"
 #include "../drt_fem_general/drt_utils_gder2.H"
 
-/// hold arrays for all - potentially enriched - shape functions and their derivatives
-/// with respect to the physical coordinates
-template <size_t shpVecSize>
-struct Shp
-{
-  LINALG::Matrix<shpVecSize,1>  d0;
-  LINALG::Matrix<shpVecSize,1>  dx;
-  LINALG::Matrix<shpVecSize,1>  dy;
-  LINALG::Matrix<shpVecSize,1>  dz;
-  LINALG::Matrix<shpVecSize,1>  dxdx;
-  LINALG::Matrix<shpVecSize,1>  dxdy;
-  LINALG::Matrix<shpVecSize,1>  dxdz;
-  LINALG::Matrix<shpVecSize,1>  dydx;
-  LINALG::Matrix<shpVecSize,1>  dydy;
-  LINALG::Matrix<shpVecSize,1>  dydz;
-  LINALG::Matrix<shpVecSize,1>  dzdx;
-  LINALG::Matrix<shpVecSize,1>  dzdy;
-  LINALG::Matrix<shpVecSize,1>  dzdz;
-};
-
-template <size_t shpVecSize>
-struct EnrViscs2
-{
-  LINALG::Matrix<shpVecSize,1> xx;
-  LINALG::Matrix<shpVecSize,1> xy;
-  LINALG::Matrix<shpVecSize,1> xz;
-  LINALG::Matrix<shpVecSize,1> yx;
-  LINALG::Matrix<shpVecSize,1> yy;
-  LINALG::Matrix<shpVecSize,1> yz;
-  LINALG::Matrix<shpVecSize,1> zx;
-  LINALG::Matrix<shpVecSize,1> zy;
-  LINALG::Matrix<shpVecSize,1> zz;
-};
 
   using namespace XFEM::PHYSICS;
 
@@ -188,7 +155,7 @@ struct EnrViscs2
             size_t shpVecSizeStress>
   void BuildStiffnessMatrixEntries(
       LocalAssembler<DISTYPE,ASSTYPE,NUMDOF>&           assembler,
-      const Shp<shpVecSize>&                     shp,
+      const XFLUID::ApproxFunc<shpVecSize>&                     shp,
       const LINALG::Matrix<shpVecSizeStress,1>&  shp_tau,
       const double& fac,
       const double& timefac,
@@ -203,7 +170,7 @@ struct EnrViscs2
       const LINALG::Matrix<3,1>& visc_old,
       const LINALG::Matrix<3,3>& tau,
       const LINALG::Matrix<shpVecSize,1>& enr_conv_c_,
-      const EnrViscs2<shpVecSize>& enr_viscs2,
+      const XFLUID::EnrViscs2<shpVecSize>& enr_viscs2,
       const bool tauele_unknowns_present,
       const bool instationary,
       const bool newton,
@@ -945,7 +912,7 @@ void SysmatDomain4(
             const size_t shpVecSize       = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
             const size_t shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
             
-            static Shp<shpVecSize> shp;
+            static XFLUID::ApproxFunc<shpVecSize> shp;
             
             static LINALG::Matrix<shpVecSizeStress,1>   shp_tau;
             
@@ -1222,7 +1189,7 @@ void SysmatDomain4(
     
                with N_x .. x-line of N
                N_y .. y-line of N                                             */
-            static EnrViscs2<shpVecSize> enr_viscs2;
+            static XFLUID::EnrViscs2<shpVecSize> enr_viscs2;
 
             for (size_t iparam = 0; iparam != numparamvelx; ++iparam)
             {
