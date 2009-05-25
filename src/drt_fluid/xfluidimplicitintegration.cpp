@@ -647,7 +647,7 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   // create empty system matrix --- stiffness and mass are assembled in
   // one system matrix!
   // -------------------------------------------------------------------
-  cout0_ << " Initialize system matrix..." << endl;
+  cout0_ << " ->  Initialize system matrix..." << endl;
 
   // initialize system matrix
   sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(newdofrowmap,0,false,true));
