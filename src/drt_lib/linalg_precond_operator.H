@@ -24,6 +24,7 @@ Maintainer: Peter Gamnitzer
 #include "Epetra_CrsMatrix.h"
 #include "Epetra_MultiVector.h"
 #include "Epetra_Vector.h"
+#include "Epetra_SerialDenseMatrix.h"
 
 #include "Teuchos_RefCountPtr.hpp"
 #include "Teuchos_ParameterList.hpp"
@@ -73,9 +74,8 @@ public:
   /*!
 
   \brief Set kernel space and weight vectors.
-    
-                 T
-  The projector P  is completely defined by w and c.
+                 
+  The projector P is completely defined by w and c.
 
   \param w vector(s) of weights 
   \param c kernel basis vector(s)
@@ -86,16 +86,37 @@ public:
     Teuchos::RCP<Epetra_MultiVector> c
     )
   {
+    w_=w;
+    c_=c;
+
     if(project_)
     {
-      if(w==Teuchos::null || c==Teuchos::null)
+      if(w_==Teuchos::null || c_==Teuchos::null)
       {
         dserror("no kernel supplied for projection (but projection flag was set)");
       }
-    }
 
-    w_=w;
-    c_=c;
+      cTw_.Shape(c_->NumVectors(),w_->NumVectors());
+
+      for(int mm=0;mm<c_->NumVectors();++mm)
+      {
+        // loop all weight vectors 
+        for(int rr=0;rr<w_->NumVectors();++rr)
+        {
+
+          /*
+                   T
+                  w * c
+          */
+          ((*c_)(mm))->Dot(*((*w_)(rr)),&(cTw_(mm,rr)));
+          
+          if(fabs(cTw_(mm,rr))<1e-14)
+          {
+            dserror("weight vector must not be orthogonal to c");
+          }
+        }
+      }
+    }
     return;
   }
   //! @}
@@ -158,17 +179,10 @@ public:
     (Modified) ApplyInverse call
 
     This method calls ApplyInverse on the actual preconditioner and, the 
-    solution is orthogonalized against a set of vectors provided in a
-    multivector, for example rigid body modes etc., using the projectors
-    defined by
+    solution is orthogonalized against a set of weight vectors provided in a
+    multivector.
 
-                                        T
-                         T         w * c
-                        P  x = x - ------ x
-                                    T
-                                   w * c
-                                   
-    and
+    This is done using a projector P defined by
 
                                     T   
                                    x * w
@@ -176,29 +190,61 @@ public:
                                     T
                                    w * c
 
-    w is the vector of weights, c a vector of ones (in the dofs under consideration).
+    w is the vector of weights, c a vector of ones (in the dofs under 
+    consideration) corresponding to the matrix kernel.
 
-    The system we are solving with this procedure is not Au=f for u (since A 
+    The system we are solving with this procedure is not Au=b for u (since A 
     might be singular), but we are solving 
 
                         / T \         T
-                       | P A | P u = P f ,
+                       | P A | P u = P b ,
                         \   /          
 
     for the projection of the solution Pu, i.e. in the preconditioned case
   
-                   T                    /             \ 
-                  P * InversePrecond * | A * P * u -f  | = 0
-                  |                |    \             / 
-                  +----------------+
-                   included in the 
-                  preconditioner's
-                   modified apply
-                    inverse call
 
-             T
-    Hence, P  is always associated with the apply inverse call of the 
-    preconditioner.
+                                                          -+
+           / T   \     /      -1 \          T              |
+          | P * A | * |  P * M    | * xi = P  * b          |
+           \     /     \         /                         |
+                                                -1         |
+                                       x = P * M  * xi     |
+                                                          -+
+          
+
+    Hence, P is always associated with the apply inverse call of the 
+    preconditioner (the right bracket) and always called after the call 
+    to ApplyInverse.
+
+
+    Properties of P are:
+
+    1) c defines the kernel of P, i.e. P projects out the matrix kernel
+
+                          T   
+                         c * w
+              P c = c - ------- c = c - c = 0
+                          T
+                         w * c
+
+    2) The space spanned by P x is orthogonal to the weight vector
+    
+                       /      T      \              T
+     T   /   \     T  |      x * w    |    T       x * w     T       T       T      
+    w * | P x | = w * | x - ------- c | = w * x - ------- * w * c = w * x - w * x = 0
+         \   /        |       T       |             T    
+                       \     w * c   /             w * c
+
+
+    This modified Apply call is for singular matrices A when c is
+    a vector defining A's nullspace. The preceding projection
+    operator ensures 
+                            |           |
+                           -+-         -+-T
+                  A u = A u     where u    * c =0,
+
+    even if A*c != 0 (for numerical inaccuracies during the computation 
+    of A)
 
     See the following article for further reading:
 
@@ -233,6 +279,9 @@ private:
   //! a set of vectors defining the vectors of ones (in the respective components) 
   //! for the matrix kernel
   Teuchos::RCP<Epetra_MultiVector>   c_;
+
+  //! values for scalar products c_i o w_j, computed once after setting c_ and w_
+  Epetra_SerialDenseMatrix           cTw_;
 
 };
 

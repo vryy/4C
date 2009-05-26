@@ -19,34 +19,67 @@ Maintainer: Peter Gamnitzer
 #include "Epetra_MultiVector.h"
 #include "Epetra_Vector.h"
 #include "Epetra_Operator.h"
+#include "Epetra_CrsMatrix.h"
 
 #include "Teuchos_RefCountPtr.hpp"
 #include "Teuchos_ParameterList.hpp"
 #include "drt_dserror.H"
 
+#include "linalg_sparsematrix.H"
 
 namespace LINALG
 {
   /*! 
   \brief A slightly modified Epetra_Operator class allowing the 
-         application of a 'rank 1' projector P before applying the 
+         application of a 'rank 1' projector P^T after applying the 
          underlying operator
 
-  Only the Apply method is modified. All other calls a 'pass-through'.
+  Only the Apply method is modified. All other calls are 'pass-through'.
   The modification of the apply call is such that for singular matrices
-  the matrix kernel can be projected out before the apply call in order
-  to become independent of numerical errors, i.e. in the iterative 
-  solution process for a singular matrix A this modified apply call
-  appears in the following equation:  
-  
-                   T                    /             \ 
-                  P * InversePrecond * | A * P * u -f  | = 0
-                                        \             / 
-                                         |   |
-                                         +---+
-                                      included in
-                                     the  modified 
-                                       Apply call
+  the result after the apply call is orthogonal to the matrix kernel c.
+
+  System of equations to solve:
+
+                         A * x = b
+                         
+  (Right-) preconditioned system:
+                                                -+
+                              -1                 |
+                         A * M  xi = b           |
+                                                 |
+                                      -1         |
+                                 x = M  * xi     |
+                                                -+
+
+  A is singular, so use projectors for singular matrices; for the right 
+  preconditioned system we solve:
+
+                                                -+
+           T           -1         T              |
+          P * A * P * M   * xi = P  * b          |
+                                                 |
+                                      -1         |
+                             x = P * M  * xi     |
+                                                -+
+
+  P^T makes resulting Krylov vectors orthogonal to the kernel c of A.
+  P ensures A * P * c = 0 even if for numerical errors A * c != 0 and
+  defines a solution x with zero mean.
+
+  The whole operator is split in matrix and preconditioner part:
+ 
+           / T   \     /      -1 \  
+          | P * A | * |  P * M    | 
+           \     /     \         /  
+ 
+  This class deals with the first brackets via a modified Apply call, the 
+  right bracket is done in the corresponding preconditioner class.
+                                  
+  Abbreviations:
+
+  A     : operator (singular matrix) 
+  M^{-1}: inverse preconditioner
+  P, P^T: projectors
 
   \author gammi
   \date 04/09
@@ -73,7 +106,7 @@ public:
 
   \brief Set kernel space and weight vectors.
   
-  The projector P is completely defined by w and c.
+  The projector P^T is completely defined by w and c.
 
   \param w vector(s) of weights 
   \param c kernel basis vector(s)
@@ -84,16 +117,39 @@ public:
     Teuchos::RCP<Epetra_MultiVector> c
     )
   {
+    w_=w;
+    c_=c;
+
     if(project_)
     {
-      if(w==Teuchos::null || c==Teuchos::null)
+      if(w_==Teuchos::null || c_==Teuchos::null)
       {
         dserror("no kernel/weight supplied for projection (but projection flag was set)");
       }
+
+      // resize 
+      cTw_.Shape(c_->NumVectors(),w_->NumVectors());
+
+      for(int mm=0;mm<c_->NumVectors();++mm)
+      {
+        // loop all weight vectors 
+        for(int rr=0;rr<w_->NumVectors();++rr)
+        {
+
+          /*
+                   T
+                  w * c
+          */
+          ((*c_)(mm))->Dot(*((*w_)(rr)),&(cTw_(mm,rr)));
+          
+          if(fabs(cTw_(mm,rr))<1e-14)
+          {
+            dserror("weight vector must not be orthogonal to c");
+          }
+        }
+      }
     }
 
-    w_=w;
-    c_=c;
     return;
   }
   //! @}
@@ -110,45 +166,17 @@ public:
   /*!
     \brief (Modified) Apply call
 
-    Given the underlying Epetra_Operator A, we apply AP using 
+    Given the underlying Epetra_Operator A, we apply P^T*A using 
 
-                                    T   
-                                   x * w
-                        P x = x - ------- c
+                                        T
+                         T         w * c
+                        P  x = x - ------ x
                                     T
-                                   w * c
+                                   w * c                                    T   
 
-    instead of A if projetion_ flag is set. If projetion_ is false,
+    instead of A if projetion_ flag is set. If projection_ is false,
     this is just the standard Apply call.
 
-    Properties of P are:
-
-    1) c defines the kernel of P, i.e. P projects out the matrix kernel
-
-                          T   
-                         c * w
-              P c = c - ------- c = c - c = 0
-                          T
-                         w * c
-
-    2) The space spanned by P x is orthogonal to the weight vector
-    
-                       /      T      \              T
-     T   /   \     T  |      x * w    |    T       x * w     T       T       T      
-    w * | P x | = w * | x - ------- c | = w * x - ------- * w * c = w * x - w * x = 0
-         \   /        |       T       |             T    
-                       \     w * c   /             w * c
-
-
-    This modified Apply call is for singular matrices A when c is
-    a vector defining A's nullspace. The preceding projection
-    operator ensures 
-                            |           |
-                           -+-         -+-T
-                  A u = A u     where u    * c =0,
-
-    even if A*c != 0 (for numerical inaccuracies during the computation 
-    of A)
                        
     See the following article for further reading
 
@@ -233,6 +261,9 @@ private:
   //! a set of vectors defining the vectors of ones (in the respective components) 
   //! for the matrix kernel
   Teuchos::RCP<Epetra_MultiVector>   c_;
+
+  //! values for scalar products c_i o w_j, computed once after setting c_ and w_
+  Epetra_SerialDenseMatrix           cTw_;
 
 };
 

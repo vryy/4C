@@ -20,7 +20,8 @@ LINALG::LinalgProjectedOperator::LinalgProjectedOperator(
   Teuchos::RCP<Epetra_Operator> A      ,
   bool                          project) :
   project_(project),
-  A_      (A)
+  A_      (A)      ,
+  cTw_    (0,0)
 {
   return;
 } // LINALG::LinalgProjectedOperator::LinalgProjectedOperator
@@ -56,56 +57,54 @@ int LINALG::LinalgProjectedOperator::Apply(
       dserror("kernel vector has not been set\n");
     }
 
-    // get a copy of the input vector to apply projector P
-    Epetra_MultiVector PX(X);
+    // Apply the operator
+    ierr=A_->Apply(X,Y);
 
-    // loop all solution vectors
-    for(int v=0;v<PX.NumVectors();++v)
+    // if necessary, orthogonalize to matrix kernel in 
+    // order to get suitable new basis vectors for the 
+    // restricted Krylov space
+
+    // there is only one solution vector --- so solution 
+    // vector index is zero
+    if(Y.NumVectors()!=1)
     {
-      // loop all basis vectors of kernel
-      for(int mm=0;mm<c_->NumVectors();++mm)
-      {
-        // loop all weight vectors and orthogonalize against them
+      dserror("expecting only one solution vector during AZTEC Apply call\n");
+    }
+
+    int sv=0;
+    
+    // loop all basis vectors of kernel and orthogonalize 
+    // against them
+    for(int mm=0;mm<c_->NumVectors();++mm)
+    {
+      /*
+                   T
+                  c * Y
+      */
+      double cTY=0.0;
+          
+      ((*c_)(mm))->Dot(*(Y(sv)),&cTY);
+
+        // loop all weight vectors 
         for(int rr=0;rr<w_->NumVectors();++rr)
         {
           /*
                    T
                   w * c
           */
-          double wTc=0.0;
-
-          ((*c_)(mm))->Dot(*((*w_)(rr)),&wTc);
-
-          if(fabs(wTc)<1e-14)
-          {
-            dserror("weight vector must not be orthogonal to c");
-          }
+          double cTw=cTw_(mm,rr);
 
           /*
-                   T
-                  w * X
+                                  T
+                       T         c * Y
+                      P Y = Y - ------- * w
+                                  T
+                                 w * c
           */
-          double wTX=0.0;
- 
-          (PX(v))->Dot(*((*w_)(rr)),&wTX);
-
-          /*
-
-                                    T   
-                                   x * w
-                        P x = x - ------- c
-                                    T
-                                   w * c
-
-          */
-          (PX(v))->Update(-wTX/wTc,*((*c_)(mm)),1.0);
-        } // rr
-      } // mm
-    } // v
-
-    // Apply the operator to the projected input vector in order 
-    // to get new basis vector for the Krylov space
-    ierr=A_->Apply(PX,Y);
+          (Y(sv))->Update(-cTY/cTw,*((*w_)(rr)),1.0);
+          
+        } // loop all weight vectors
+      } // loop kernel basis vectors
   }
   else
   {
@@ -114,6 +113,5 @@ int LINALG::LinalgProjectedOperator::Apply(
 
   return(ierr);
 } // LINALG::LinalgProjectedOperator::Apply
-
 
 #endif // CCADISCRET

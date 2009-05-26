@@ -1666,7 +1666,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaCalcIncrement(const double nlnres)
   // the preconditioner does the job on its own according to the AZreuse
   // parameter
   bool reset=false;
-  if(step_==1)
+  if(step_==1 && itenum_ == 1)
   {
     reset=true;
   }
