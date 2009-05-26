@@ -22,30 +22,28 @@ Maintainer: Georg Bauer
 /*----------------------------------------------------------------------*/
 ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
     Epetra_Comm& comm, 
-    const Teuchos::ParameterList& prbdyn
+    const Teuchos::ParameterList& prbdyn,
+    bool isale
     )
-:  FluidBaseAlgorithm(prbdyn,false), // false -> no ALE in fluid algorithm
-   ScaTraBaseAlgorithm(prbdyn),
+:  FluidBaseAlgorithm(prbdyn,isale), // false -> no ALE in fluid algorithm
+   ScaTraBaseAlgorithm(prbdyn,isale), // false -> no ALE in scatra algorithm
    comm_(comm),
    params_(prbdyn),
    step_(0),
-   time_(0.0)
+   nstep_(prbdyn.get<int>("NUMSTEP")),
+   time_(0.0),
+   maxtime_(prbdyn.get<double>("MAXTIME")),
+   dt_(prbdyn.get<double>("TIMESTEP"))
 {
   //print default parameters of parameter list
   if (comm_.MyPID()==0)
     DRT::INPUT::PrintDefaultParameters(std::cout, prbdyn);
 
-  // maximum simulation time
-  maxtime_=prbdyn.get<double>("MAXTIME");
-  // maximum number of timesteps
-  nstep_ = prbdyn.get<int>("NUMSTEP");
-  // time step size
-  dt_ = prbdyn.get<double>("TIMESTEP");
-
   // transfer the initial convective velocity from initial fluid field to scalar transport field
+  // subgrid scales not transferred since they are zero at time t=0.0
   ScaTraField().SetVelocityField(
       FluidField().Velnp(),
-      FluidField().SgVelVisc(),
+      Teuchos::null,
       FluidField().Discretization()
   );
 

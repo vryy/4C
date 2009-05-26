@@ -24,11 +24,11 @@ Maintainer: Georg Bauer
 
 #include "elch_dyn.H"
 #include "elch_algorithm.H"
+#include "elch_moving_boundary_algorithm.H"
 #include "../drt_scatra/scatra_utils.H"
+#include "../drt_fsi/fsi_utils.H"
 #include <Teuchos_TimeMonitor.hpp>
-//#include <Teuchos_Time.hpp>
 #include "../drt_lib/drt_globalproblem.H"
-//#include <Epetra_Time.h>
 #if 0
 #include "../drt_io/io_gmsh.H"
 #endif
@@ -37,7 +37,7 @@ Maintainer: Georg Bauer
 /*----------------------------------------------------------------------*/
 // entry point for ELCH in DRT
 /*----------------------------------------------------------------------*/
-void elch_dyn(int disnumff,int disnumscatra, int restart)
+void elch_dyn(int disnumff,int disnumscatra,int disnumale,int restart)
 {
   // create a communicator
 #ifdef PARALLEL
@@ -79,7 +79,7 @@ void elch_dyn(int disnumff,int disnumscatra, int restart)
         dserror("No elements in the ---TRANSPORT ELEMENTS section");
 
       // create instance of scalar transport basis algorithm (empty fluid discretization)
-      Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly = rcp(new ADAPTER::ScaTraBaseAlgorithm(elchcontrol));
+      Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly = rcp(new ADAPTER::ScaTraBaseAlgorithm(elchcontrol,false));
 
       // read the restart information, set vectors and variables
       if (restart) scatraonly->ScaTraField().ReadRestart(restart);
@@ -133,6 +133,55 @@ void elch_dyn(int disnumff,int disnumscatra, int restart)
       else
         dserror("Fluid AND ScaTra discretization present. This is not supported.");
 
+      // create ALE field if fluid elements require to do so
+      RefCountPtr<DRT::Discretization> aledis = DRT::Problem::Instance()->Dis(disnumale,0);
+      if (!aledis->Filled()) aledis->FillComplete();
+
+      // create ale elements if the ale discretization is empty
+      if (aledis->NumGlobalNodes()==0)
+      {
+        Epetra_Time time(comm);
+        FSI::UTILS::CreateAleDiscretization();
+
+        if(comm.MyPID()==0)
+        {
+          cout << "\n\nCreated ALE discretization from fluid field in........"
+          <<time.ElapsedTime() << " secs\n\n";
+        }
+      }
+      else
+        dserror("Providing an ALE mesh is not supported for problemtype Electrochemistry.");
+
+      // is ALE needed or not?
+      if (!aledis->Filled()) aledis->FillComplete();
+      const bool withale = (aledis->NumGlobalNodes()>0);
+
+      if (withale)
+      {
+        // create an ELCH::MovingBoundaryAlgorithm instance
+        Teuchos::RCP<ELCH::MovingBoundaryAlgorithm> elch 
+          = Teuchos::rcp(new ELCH::MovingBoundaryAlgorithm(comm,elchcontrol));
+ 
+        if (restart)
+        {
+          // read the restart information, set vectors and variables
+          elch->ReadRestart(restart);
+        }
+
+        // solve the whole electrochemistry problem
+        elch->TimeLoop();
+
+        // summarize the performance measurements
+        Teuchos::TimeMonitor::summarize();
+
+        // perform the result test
+        DRT::ResultTestManager testmanager(comm);
+        testmanager.AddFieldTest(elch->FluidField().CreateFieldTest());
+        testmanager.AddFieldTest(elch->CreateScaTraFieldTest());
+        testmanager.TestAll();
+      }
+      else
+      {
       // create an ELCH::Algorithm instance
       Teuchos::RCP<ELCH::Algorithm> elch = Teuchos::rcp(new ELCH::Algorithm(comm,elchcontrol));
 
@@ -153,6 +202,7 @@ void elch_dyn(int disnumff,int disnumscatra, int restart)
       testmanager.AddFieldTest(elch->FluidField().CreateFieldTest());
       testmanager.AddFieldTest(elch->CreateScaTraFieldTest());
       testmanager.TestAll();
+      }
 
       break;
     } // case 2

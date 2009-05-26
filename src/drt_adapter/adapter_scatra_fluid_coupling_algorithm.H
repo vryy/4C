@@ -20,7 +20,9 @@ Maintainer: Georg Bauer
 #define ADAPTER_SCATRA_FLUID_COUPLING_ALGORITHM_H
 
 #include "../drt_adapter/adapter_fluid_base_algorithm.H"
+#include "../drt_adapter/adapter_ale.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
+#include "adapter_coupling.H"
 
 namespace ADAPTER
 {
@@ -46,7 +48,8 @@ namespace ADAPTER
     /// constructor using a Epetra_Comm
     explicit ScaTraFluidCouplingAlgorithm(
         Epetra_Comm& comm,              ///< communicator
-        const Teuchos::ParameterList& prbdyn  ///< problem-specific parameters
+        const Teuchos::ParameterList& prbdyn, ///< problem-specific parameters
+        bool isale  ///< do we need an ALE formulation of the fields?
         );
 
     /// virtual destructor to support polymorph destruction
@@ -59,7 +62,7 @@ namespace ADAPTER
     const Epetra_Comm& Comm() const { return comm_; }
 
     /// read restart data
-    void ReadRestart(
+    virtual void ReadRestart(
         int step ///< step number where the calculation is continued
         );
 

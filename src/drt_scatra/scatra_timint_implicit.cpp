@@ -56,6 +56,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   step_   (0),
   prbtype_  (params_->get<string>("problem type")),
   solvtype_ (params_->get<string>("solver type")),
+  isale_    (params_->get<bool>("isale")),
   stepmax_  (params_->get<int>("max number timesteps")),
   maxtime_  (params_->get<double>("total time")),
   timealgo_ (params_->get<INPAR::SCATRA::TimeIntegrationScheme>("time int algo")),
@@ -69,6 +70,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   neumannin_(params_->get<string>("Neumann inflow")),
   fssgd_    (params_->get<string>("fs subgrid diffusivity")),
   frt_      (96485.3399/(8.314472 * params_->get<double>("TEMPERATURE",298.15))),
+  tpn_      (1.0),
   errfile_  (params_->get<FILE*>("err file")),
   initialvelset_(false),
   lastfluxoutputstep_(-1)
@@ -177,6 +179,13 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // subgrid-scale velocity (always three velocity components per node)
   // (get noderowmap of discretization for creating this multivector)
   sgvel_ = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+
+  if (isale_)
+  {
+    // displacement field for moving mesh applications using ALE
+    // (get noderowmap of discretization for creating this multivector)
+    dispnp_ = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+  }
 
   // -------------------------------------------------------------------
   // create vectors associated to boundary conditions
@@ -1171,6 +1180,63 @@ Teuchos::RCP<DRT::Discretization> fluiddis)
   return;
 
 } // ScaTraTimIntImpl::SetVelocityField
+
+
+/*----------------------------------------------------------------------*
+ | set displacement field for applications using ALE          gjb 05/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::SetDisplacementField(
+    Teuchos::RCP<const Epetra_Vector> dispnp,
+    Teuchos::RCP<DRT::Discretization> fluiddis
+)
+{
+  if (isale_)
+  {
+    TEUCHOS_FUNC_TIME_MONITOR("SCATRA: set displacement field");
+
+    // get dofrowmap of fluid discretization
+    const Epetra_Map* fluiddofrowmap = fluiddis->DofRowMap();
+
+    // loop over all local nodes of scatra discretization
+    for (int lnodeid=0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
+    {
+      // Here we rely on the fact that the scatra discretization
+      // is a clone of the fluid mesh. => a scatra node has the same 
+      // local (and global) ID as its corresponding fluid node!
+
+      // get the processor's local fluid node with the same lnodeid
+      DRT::Node* fluidlnode = fluiddis->lRowNode(lnodeid);
+      // get the degrees of freedom associated with this fluid node
+      vector<int> fluidnodedofs = fluiddis->Dof(fluidlnode);
+      // determine number of space dimensions (numdof - pressure dof)
+      const int numdim = ((int) fluidnodedofs.size()) -1;
+
+      // now we transfer velocity dofs only
+      for(int index=0;index < numdim; ++index)
+      {
+        // global and processor's local fluid dof ID
+        const int fgid = fluidnodedofs[index];
+        const int flid = fluiddofrowmap->LID(fgid);
+
+        // get value of corresponding velocity component
+        double disp = (*dispnp)[flid];
+        // insert velocity value into node-based vector
+        dispnp_->ReplaceMyValue(lnodeid, index, disp);
+      }
+
+      // for security reasons in 1D or 2D problems:
+      // set zeros for all unused velocity components
+      for (int index=numdim; index < 3; ++index)
+      {
+        dispnp_->ReplaceMyValue(lnodeid, index, 0.0);
+      }
+
+    } // for lnodid
+  } // if (isale_)
+
+  return;
+
+} // ScaTraTimIntImpl::SetDisplacementField
 
 
 /*----------------------------------------------------------------------*

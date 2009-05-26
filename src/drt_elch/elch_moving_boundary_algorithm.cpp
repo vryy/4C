@@ -1,8 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file passive_scatra_algorithm.cpp
+\file elch_moving_boundary_algorithm.cpp
 
-\brief Transport of passive scalars in Navier-Stokes velocity field
+\brief Basis of all ELCH algorithms with moving boundaries
 
 <pre>
 Maintainer: Georg Bauer
@@ -15,21 +15,16 @@ Maintainer: Georg Bauer
 
 #ifdef CCADISCRET
 
-#include "passive_scatra_algorithm.H"
+#include "elch_moving_boundary_algorithm.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-SCATRA::PassiveScaTraAlgorithm::PassiveScaTraAlgorithm(Epetra_Comm& comm, const Teuchos::ParameterList& prbdyn)
-:  ScaTraFluidCouplingAlgorithm(comm,prbdyn,false)
-{
- // no stuff to add here at the moment
-  return;
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-SCATRA::PassiveScaTraAlgorithm::~PassiveScaTraAlgorithm()
+ELCH::MovingBoundaryAlgorithm::MovingBoundaryAlgorithm(
+    Epetra_Comm& comm, 
+    const Teuchos::ParameterList& prbdyn
+    )
+:  ScaTraFluidAleCouplingAlgorithm(comm,prbdyn,"FSICoupling"),
+   outmean_(Teuchos::getIntegralValue<int>(prbdyn,"OUTMEAN"))
 {
   return;
 }
@@ -37,25 +32,39 @@ SCATRA::PassiveScaTraAlgorithm::~PassiveScaTraAlgorithm()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::PassiveScaTraAlgorithm::TimeLoop()
+ELCH::MovingBoundaryAlgorithm::~MovingBoundaryAlgorithm()
+{
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ELCH::MovingBoundaryAlgorithm::TimeLoop()
 {
   // write out inital state
   // Output();
 
-  // time loop (no-subcycling at the moment)
+  // compute error for problems with analytical solution
+  ScaTraField().EvaluateErrorComparedToAnalyticalSol();
+
+  // time loop
   while (NotFinished())
   {
     // prepare next time step
     PrepareTimeStep();
 
-    // solve nonlinear Navier-Stokes system
+    // solve nonlinear Navier-Stokes system on a deforming mesh
     DoFluidStep();
 
-    // solve transport (convection-diffusion) equations for passive scalar 
+    // solve transport equations for ion concentrations and electric potential
     DoTransportStep();
 
-    // update all field solvers
+    // update all single field solvers
     Update();
+
+    // compute error for problems with analytical solution
+    ScaTraField().EvaluateErrorComparedToAnalyticalSol();
 
     // write output to screen and files
     Output();
@@ -68,19 +77,20 @@ return;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::PassiveScaTraAlgorithm::PrepareTimeStep()
+void ELCH::MovingBoundaryAlgorithm::PrepareTimeStep()
 {
   IncrementTimeAndStep();
   if (Comm().MyPID()==0)
   {
-    cout<<"\n******************\n   FLUID SOLVER  \n******************\n";
+    cout<<"\n******************\n FLUID-ALE SOLVER \n******************\n";
   }
 
   FluidField().PrepareTimeStep();
+  AleField().PrepareTimeStep();
 
   // prepare time step
   /* remark: initial velocity field has been transfered to scalar transport field in constructor of 
-   * ScaTraFluidCouplingAlgorithm (initialvelset_ == true). Time integration schemes, such as 
+   * ScaTraFluidCouplingMovingBoundaryAlgorithm (initialvelset_ == true). Time integration schemes, such as 
    * the one-step-theta scheme, are thus initialized correctly.
    */
   ScaTraField().PrepareTimeStep();
@@ -91,41 +101,64 @@ void SCATRA::PassiveScaTraAlgorithm::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::PassiveScaTraAlgorithm::DoFluidStep()
+void ELCH::MovingBoundaryAlgorithm::DoFluidStep()
 {
-  // solve nonlinear Navier-Stokes system
-  FluidField().NonlinearSolve();
+  
+  Teuchos::RCP<Epetra_Vector> iveln_ = FluidField().ExtractInterfaceVeln();
+//  Teuchos::RCP<Epetra_Vector> idisp_ = new FluidField().ExtractInterfaceVeln();
+  const Teuchos::RCP<Epetra_Vector> idispn_ = rcp(new Epetra_Vector(*(FluidField().ExtractInterfaceVeln())));
+
+  for (int lid = 0; lid < iveln_->MyLength(); ++lid)
+  {
+    if ((lid%3 == 0))
+    {
+      iveln_->ReplaceMyValue(lid+1,0,0.0025);
+      double disp = 0.0025*Time();
+      idispn_->ReplaceMyValue(lid+1,0,disp);
+    }
+    else
+    {
+      //idispn_->ReplaceMyValue(lid+1,0,0.0);
+      //iveln_->ReplaceMyValue(lid+1,0,0.0);
+    }
+  }
+  //cout << *idisp_;
+
+  // solve nonlinear Navier-Stokes system on a moving mesh
+  FluidAleNonlinearSolve(idispn_,iveln_);
+
   return;
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::PassiveScaTraAlgorithm::DoTransportStep()
+void ELCH::MovingBoundaryAlgorithm::DoTransportStep()
 {
+  
   if (Comm().MyPID()==0)
   {
     cout<<"\n******************\n TRANSPORT SOLVER \n******************\n";
   }
 
-  // transfer convective velocity to scalar transport field solver
+  // transfer actual velocity fields
   ScaTraField().SetVelocityField(
       FluidField().Velnp(),
       FluidField().SgVelVisc(),
       FluidField().Discretization()
   );
-
-  // solve the linear convection-diffusion equation(s)
-  ScaTraField().Solve();
+  // solve coupled transport equations for ion concentrations and electric 
+  // potential
+  ScaTraField().NonlinearSolve();
   return;
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::PassiveScaTraAlgorithm::Update()
+void ELCH::MovingBoundaryAlgorithm::Update()
 {
   FluidField().Update();
+  AleField().Update();
   ScaTraField().Update();
   return;
 }
@@ -133,15 +166,20 @@ void SCATRA::PassiveScaTraAlgorithm::Update()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::PassiveScaTraAlgorithm::Output()
+void ELCH::MovingBoundaryAlgorithm::Output()
 {
   // Note: The order is important here! In here control file entries are
   // written. And these entries define the order in which the filters handle
   // the Discretizations, which in turn defines the dof number ordering of the
   // Discretizations.
-  FluidField().Output();
-  FluidField().LiftDrag();
+  FluidField().StatisticsAndOutput();
   ScaTraField().Output();
+  if (outmean_) 
+  {
+    ScaTraField().OutputElectrodeInfo();
+    ScaTraField().OutputMeanTempAndDens();
+  }
+  AleField().Output();
 
   return;
 }

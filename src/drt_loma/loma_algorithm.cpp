@@ -23,7 +23,7 @@ LOMA::Algorithm::Algorithm(
     Epetra_Comm&                  comm,
     const Teuchos::ParameterList& prbdyn
     )
-:  ScaTraFluidCouplingAlgorithm(comm,prbdyn)
+:  ScaTraFluidCouplingAlgorithm(comm,prbdyn,false)
 {
   // (preliminary) maximum number of iterations and tolerance for outer iteration
   ittol_    = prbdyn.get<double>("CONVTOL");

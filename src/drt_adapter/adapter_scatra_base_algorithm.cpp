@@ -33,7 +33,10 @@ extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& prbdyn)
+ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
+    const Teuchos::ParameterList& prbdyn,
+    bool isale
+)
 {
   /// setup scalar transport algorithm (overriding some dynamic parameters with
   /// values specified in given problem-dependent ParameterList prbdyn)
@@ -89,6 +92,9 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
 
   // ----solver type (linear full, linear incremental or nonlinear (incremental))
   scatratimeparams->set<string>("solver type",scatradyn.get<string>("SOLVERTYPE"));
+
+  // ----Eulerian or ALE formulation of transport equation(s)
+  scatratimeparams->set<bool>("isale",isale);
 
   // --------------------type of time-integration (or stationary) scheme
   INPAR::SCATRA::TimeIntegrationScheme timintscheme =

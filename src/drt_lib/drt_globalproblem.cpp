@@ -296,6 +296,7 @@ void DRT::Problem::InputControl()
   {
     genprob.numff = 0;  /* fluid field index */
     genprob.numscatra = 1; /* scalar transport field index */
+    genprob.numaf=2; /* ALE field index */
     break;
   }
   case prb_combust:
@@ -965,7 +966,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
   case prb_elch:
   {
     // allocate and input general old stuff....
-    if (genprob.numfld!=2) dserror("numfld != 2 for Electrochemistry problem");
+    if (genprob.numfld>3) dserror("numfld != 2 for Electrochemistry problem");
 
     // create empty discretizations
     fluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
@@ -974,9 +975,13 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     scatradis = rcp(new DRT::Discretization("scatra",reader.Comm()));
     AddDis(genprob.numscatra, scatradis);
 
+    aledis = rcp(new DRT::Discretization("ale",reader.Comm()));
+    AddDis(genprob.numaf, aledis);
+
     DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(scatradis,reader, "--TRANSPORT ELEMENTS")));
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis,   reader, "--ALE ELEMENTS")));
     nodereader.Read();
 
     break;

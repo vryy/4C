@@ -69,7 +69,7 @@ void scatra_dyn(int disnumff, int disnumscatra, int restart)
         dserror("No elements in the ---TRANSPORT ELEMENTS section");
 
       // create instance of scalar transport basis algorithm (empty fluid discretization)
-      Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly = rcp(new ADAPTER::ScaTraBaseAlgorithm(scatradyn));
+      Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly = rcp(new ADAPTER::ScaTraBaseAlgorithm(scatradyn,false));
 
       // read the restart information, set vectors and variables
       if (restart) scatraonly->ScaTraField().ReadRestart(restart);

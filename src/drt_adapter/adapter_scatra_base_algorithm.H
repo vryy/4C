@@ -38,7 +38,8 @@ namespace ADAPTER {
 
     /// constructor
     explicit ScaTraBaseAlgorithm(
-        const Teuchos::ParameterList& prbdyn ///< problem-dependent parameters
+        const Teuchos::ParameterList& prbdyn, ///< problem-dependent parameters
+        const bool isale                      ///< do we need the ALE formulation?
         );
 
     /// virtual destructor to support polymorph destruction

@@ -23,7 +23,7 @@ ELCH::Algorithm::Algorithm(
     Epetra_Comm& comm, 
     const Teuchos::ParameterList& prbdyn
     )
-:  ScaTraFluidCouplingAlgorithm(comm,prbdyn),
+:  ScaTraFluidCouplingAlgorithm(comm,prbdyn,false),
    outmean_(Teuchos::getIntegralValue<int>(prbdyn,"OUTMEAN"))
 {
   return;

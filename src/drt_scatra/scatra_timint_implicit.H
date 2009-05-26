@@ -142,6 +142,11 @@ public:
       Teuchos::RCP<const Epetra_Vector> fluidsgvelvisc, ///< fluid subgrid velocity/viscosity vector
       Teuchos::RCP<DRT::Discretization> fluiddis);    ///< fluid discretization
 
+ /// set displacement field for applications using ALE
+ void SetDisplacementField(
+     Teuchos::RCP<const Epetra_Vector> dispnp,     ///< displacement vector
+     Teuchos::RCP<DRT::Discretization> fluiddis ); ///< fluid discretization
+
   /// set the initial scalar field phi
   void SetInitialField(int init,int startfuncno);
 
@@ -355,6 +360,9 @@ protected:
   bool nonlinear_;
   bool incremental_;
 
+  /// flag for Eulerian or ALE formulation of equation(s)
+  bool isale_;
+
   /// maximum number of steps
   int stepmax_;
 
@@ -465,6 +473,9 @@ protected:
 
   /// subgrid-scale velocity
   RCP<Epetra_MultiVector>    sgvel_;
+
+  /// displacements at time n+1 for ALE formulation
+  RCP<Epetra_MultiVector>    dispnp_;
 
   /// Nonlinear iteration increment vector
   RCP<Epetra_Vector>    increment_;

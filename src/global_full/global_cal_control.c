@@ -356,7 +356,7 @@ case prb_elch:
 #ifndef CCADISCRET
   dserror("Electrochemistry module not available in CCARAT");
 #else
-  elch_dyn(genprob.numff,genprob.numscatra,genprob.restart);
+  elch_dyn(genprob.numff,genprob.numscatra,genprob.numaf,genprob.restart);
 #endif
   break;
 
