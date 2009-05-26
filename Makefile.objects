@@ -329,6 +329,7 @@ OBJS_DRT_ADAPT= src/drt_adapter/ale_dyn.o \
                 src/drt_adapter/adapter_ale_resulttest.o \
                 src/drt_adapter/adapter_scatra_base_algorithm.o \
                 src/drt_adapter/adapter_scatra_fluid_coupling_algorithm.o \
+                src/drt_adapter/adapter_scatra_fluid_ale_coupling_algo.o \
                 src/drt_adapter/adapter_coupling.o \
                 src/drt_adapter/adapter_coupling_mortar.o \
                 src/drt_adapter/adapter_fluid_combust.o
@@ -1323,7 +1324,8 @@ OBJS_DRT_LOMA = src/drt_loma/loma_dyn.o \
                 src/drt_loma/loma_algorithm.o
 #               electrochemistry
 OBJS_DRT_ELCH = src/drt_elch/elch_dyn.o \
-                src/drt_elch/elch_algorithm.o
+                src/drt_elch/elch_algorithm.o \
+                src/drt_elch/elch_moving_boundary_algorithm.o
 #------------------------------------------------ combustion (drt version)
 OBJS_DRT_COMBUST =  src/drt_combust/combust_dyn.o \
                     src/drt_combust/combust_algorithm.o \
