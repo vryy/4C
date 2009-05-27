@@ -71,73 +71,76 @@ void elch_dyn(int disnumff,int disnumscatra,int disnumale,int restart)
   // choose algorithm depending on velocity field type
   switch (veltype)
   {
-    case 0:  // zero  (see case 1)
-    case 1:  // function
+  case 0:  // zero  (see case 1)
+  case 1:  // function
+  {
+    // we directly use the elements from the scalar transport elements section
+    if (scatradis->NumGlobalNodes()==0)
+      dserror("No elements in the ---TRANSPORT ELEMENTS section");
+
+    // create instance of scalar transport basis algorithm (empty fluid discretization)
+    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly = rcp(new ADAPTER::ScaTraBaseAlgorithm(elchcontrol,false));
+
+    // read the restart information, set vectors and variables
+    if (restart) scatraonly->ScaTraField().ReadRestart(restart);
+
+    // set velocity field 
+    //(this is done only once. Time-dependent velocity fields are not supported)
+    (scatraonly->ScaTraField()).SetVelocityField();
+
+    // enter time loop to solve problem with given convective velocity
+    (scatraonly->ScaTraField()).TimeLoop();
+
+    // perform the result test if required
+    DRT::ResultTestManager testmanager(comm);
+    testmanager.AddFieldTest(scatraonly->CreateScaTraFieldTest());
+    testmanager.TestAll();
+
+    break;
+  }
+  case 2:  // Navier_Stokes
+  {
+    // we use the fluid discretization as layout for the scalar transport discretization
+    if (fluiddis->NumGlobalNodes()==0) dserror("Fluid discretization is empty!");
+
+    // create scatra elements if the scatra discretization is empty
+    if (scatradis->NumGlobalNodes()==0)
     {
-      // we directly use the elements from the scalar transport elements section
-      if (scatradis->NumGlobalNodes()==0)
-        dserror("No elements in the ---TRANSPORT ELEMENTS section");
+      Epetra_Time time(comm);
+      std::map<string,string> conditions_to_copy;
+      conditions_to_copy.insert(pair<string,string>("TransportDirichlet","Dirichlet"));
+      conditions_to_copy.insert(pair<string,string>("ElectrodeKinetics","ElectrodeKinetics"));
+      conditions_to_copy.insert(pair<string,string>("TransportPointNeumann","PointNeumann"));
+      conditions_to_copy.insert(pair<string,string>("TransportLineNeumann","LineNeumann"));
+      conditions_to_copy.insert(pair<string,string>("TransportSurfaceNeumann","SurfaceNeumann"));
+      conditions_to_copy.insert(pair<string,string>("TransportVolumeNeumann","VolumeNeumann"));
+      // when the fluid problem is periodic we also expect the mass transport to be so:
+      conditions_to_copy.insert(pair<string,string>("LinePeriodic","LinePeriodic"));
+      conditions_to_copy.insert(pair<string,string>("SurfacePeriodic","SurfacePeriodic"));
+      // a hack:
+      conditions_to_copy.insert(pair<string,string>("FluidStressCalc","FluxCalculation"));
 
-      // create instance of scalar transport basis algorithm (empty fluid discretization)
-      Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly = rcp(new ADAPTER::ScaTraBaseAlgorithm(elchcontrol,false));
+      // fetch the desired material id for the transport elements
+      const int matid = scatradyn.get<int>("MATID");
 
-      // read the restart information, set vectors and variables
-      if (restart) scatraonly->ScaTraField().ReadRestart(restart);
+      // create the scatra discretization
+      SCATRA::CreateScaTraDiscretization(fluiddis,scatradis,conditions_to_copy,matid,false);
 
-      // set velocity field 
-      //(this is done only once. Time-dependent velocity fields are not supported)
-      (scatraonly->ScaTraField()).SetVelocityField();
-
-      // enter time loop to solve problem with given convective velocity
-      (scatraonly->ScaTraField()).TimeLoop();
-
-      // perform the result test if required
-      DRT::ResultTestManager testmanager(comm);
-      testmanager.AddFieldTest(scatraonly->CreateScaTraFieldTest());
-      testmanager.TestAll();
-
-      break;
+      if (comm.MyPID()==0)
+        cout<<"Created scalar transport discretization from fluid field in...."
+        <<time.ElapsedTime() << " secs\n\n";
     }
-    case 2:  // Navier_Stokes
+    else
+      dserror("Fluid AND ScaTra discretization present. This is not supported.");
+
+    RefCountPtr<DRT::Discretization> aledis = DRT::Problem::Instance()->Dis(disnumale,0);
+    if (!aledis->Filled()) aledis->FillComplete();
+    // is ALE needed or not?
+    const int withale = Teuchos::getIntegralValue<int>(elchcontrol,"MOVINGBOUNDARY");
+
+    if (withale==1)
     {
-      // we use the fluid discretization as layout for the scalar transport discretization
-      if (fluiddis->NumGlobalNodes()==0) dserror("Fluid discretization is empty!");
-
-      // create scatra elements if the scatra discretization is empty
-      if (scatradis->NumGlobalNodes()==0)
-      {
-        Epetra_Time time(comm);
-        std::map<string,string> conditions_to_copy;
-        conditions_to_copy.insert(pair<string,string>("TransportDirichlet","Dirichlet"));
-        conditions_to_copy.insert(pair<string,string>("ElectrodeKinetics","ElectrodeKinetics"));
-        conditions_to_copy.insert(pair<string,string>("TransportPointNeumann","PointNeumann"));
-        conditions_to_copy.insert(pair<string,string>("TransportLineNeumann","LineNeumann"));
-        conditions_to_copy.insert(pair<string,string>("TransportSurfaceNeumann","SurfaceNeumann"));
-        conditions_to_copy.insert(pair<string,string>("TransportVolumeNeumann","VolumeNeumann"));
-        // when the fluid problem is periodic we also expect the mass transport to be so:
-        conditions_to_copy.insert(pair<string,string>("LinePeriodic","LinePeriodic"));
-        conditions_to_copy.insert(pair<string,string>("SurfacePeriodic","SurfacePeriodic"));
-        // a hack:
-        conditions_to_copy.insert(pair<string,string>("FluidStressCalc","FluxCalculation"));
-
-        // fetch the desired material id for the transport elements
-        const int matid = scatradyn.get<int>("MATID");
-
-        // create the scatra discretization
-        SCATRA::CreateScaTraDiscretization(fluiddis,scatradis,conditions_to_copy,matid,false);
-
-        if (comm.MyPID()==0)
-          cout<<"Created scalar transport discretization from fluid field in...."
-          <<time.ElapsedTime() << " secs\n\n";
-      }
-      else
-        dserror("Fluid AND ScaTra discretization present. This is not supported.");
-
-      // create ALE field if fluid elements require to do so
-      RefCountPtr<DRT::Discretization> aledis = DRT::Problem::Instance()->Dis(disnumale,0);
-      if (!aledis->Filled()) aledis->FillComplete();
-
-      // create ale elements if the ale discretization is empty
+      // create ale elements only if the ale discretization is empty
       if (aledis->NumGlobalNodes()==0)
       {
         Epetra_Time time(comm);
@@ -152,44 +155,12 @@ void elch_dyn(int disnumff,int disnumscatra,int disnumale,int restart)
       else
         dserror("Providing an ALE mesh is not supported for problemtype Electrochemistry.");
 
-      // is ALE needed or not?
-      if (!aledis->Filled()) aledis->FillComplete();
-      const bool withale = (aledis->NumGlobalNodes()>0);
+      // create an ELCH::MovingBoundaryAlgorithm instance
+      Teuchos::RCP<ELCH::MovingBoundaryAlgorithm> elch 
+      = Teuchos::rcp(new ELCH::MovingBoundaryAlgorithm(comm,elchcontrol));
 
-      if (withale)
-      {
-        // create an ELCH::MovingBoundaryAlgorithm instance
-        Teuchos::RCP<ELCH::MovingBoundaryAlgorithm> elch 
-          = Teuchos::rcp(new ELCH::MovingBoundaryAlgorithm(comm,elchcontrol));
- 
-        if (restart)
-        {
-          // read the restart information, set vectors and variables
-          elch->ReadRestart(restart);
-        }
-
-        // solve the whole electrochemistry problem
-        elch->TimeLoop();
-
-        // summarize the performance measurements
-        Teuchos::TimeMonitor::summarize();
-
-        // perform the result test
-        DRT::ResultTestManager testmanager(comm);
-        testmanager.AddFieldTest(elch->FluidField().CreateFieldTest());
-        testmanager.AddFieldTest(elch->CreateScaTraFieldTest());
-        testmanager.TestAll();
-      }
-      else
-      {
-      // create an ELCH::Algorithm instance
-      Teuchos::RCP<ELCH::Algorithm> elch = Teuchos::rcp(new ELCH::Algorithm(comm,elchcontrol));
-
-      if (restart)
-      {
-        // read the restart information, set vectors and variables
-        elch->ReadRestart(restart);
-      }
+      // read the restart information, set vectors and variables
+      if (restart) elch->ReadRestart(restart);
 
       // solve the whole electrochemistry problem
       elch->TimeLoop();
@@ -202,15 +173,35 @@ void elch_dyn(int disnumff,int disnumscatra,int disnumale,int restart)
       testmanager.AddFieldTest(elch->FluidField().CreateFieldTest());
       testmanager.AddFieldTest(elch->CreateScaTraFieldTest());
       testmanager.TestAll();
-      }
+    }
+    else
+    {
+      // create an ELCH::Algorithm instance
+      Teuchos::RCP<ELCH::Algorithm> elch = Teuchos::rcp(new ELCH::Algorithm(comm,elchcontrol));
 
-      break;
-    } // case 2
+      // read the restart information, set vectors and variables
+      if (restart) elch->ReadRestart(restart);
+
+      // solve the whole electrochemistry problem
+      elch->TimeLoop();
+
+      // summarize the performance measurements
+      Teuchos::TimeMonitor::summarize();
+
+      // perform the result test
+      DRT::ResultTestManager testmanager(comm);
+      testmanager.AddFieldTest(elch->FluidField().CreateFieldTest());
+      testmanager.AddFieldTest(elch->CreateScaTraFieldTest());
+      testmanager.TestAll();
+    }
+
+    break;
+  } // case 2
   default:
     dserror("Unknown velocity field type for transport of passive scalar: %d",veltype);
-}
+  }
 
-return;
+  return;
 
 } // elch_dyn()
 
