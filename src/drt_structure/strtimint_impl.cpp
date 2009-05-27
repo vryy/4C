@@ -47,14 +47,6 @@ STR::TimIntImpl::TimIntImpl
   fsisurface_(NULL),
   pred_(Teuchos::getIntegralValue<INPAR::STR::PredEnum>(sdynparams,"PREDICT")),
   itertype_(Teuchos::getIntegralValue<INPAR::STR::NonlinSolTech>(sdynparams,"NLNSOL")),
-  iternorm_(Teuchos::getIntegralValue<INPAR::STR::VectorNorm>(sdynparams,"ITERNORM")),
-  itermax_(sdynparams.get<int>("MAXITER")),
-  itermin_(sdynparams.get<int>("MINITER")),
-  iterdivercont_(Teuchos::getIntegralValue<int>(sdynparams,"DIVERCONT")==1),
-  toldisi_(sdynparams.get<double>("TOLDISP")),
-  tolfres_(sdynparams.get<double>("TOLRES")),
-  tolpres_(sdynparams.get<double>("TOLPRE")),
-  tolpfres_(sdynparams.get<double>("TOLINCO")),
   normtypedisi_(Teuchos::getIntegralValue<INPAR::STR::ConvNorm>(sdynparams,"NORM_DISP")),
   normtypefres_(Teuchos::getIntegralValue<INPAR::STR::ConvNorm>(sdynparams,"NORM_RESF")),
   normtypepres_(Teuchos::getIntegralValue<INPAR::STR::ConvNorm>(sdynparams,"NORM_PRES")),
@@ -62,6 +54,14 @@ STR::TimIntImpl::TimIntImpl
   combdispre_(Teuchos::getIntegralValue<INPAR::STR::BinaryOp>(sdynparams,"NORMCOMBI_DISPPRES")),
   combfrespfres_(Teuchos::getIntegralValue<INPAR::STR::BinaryOp>(sdynparams,"NORMCOMBI_RESFINCO")),
   combdisifres_(Teuchos::getIntegralValue<INPAR::STR::BinaryOp>(sdynparams,"NORMCOMBI_RESFDISP")),
+  iternorm_(Teuchos::getIntegralValue<INPAR::STR::VectorNorm>(sdynparams,"ITERNORM")),
+  itermax_(sdynparams.get<int>("MAXITER")),
+  itermin_(sdynparams.get<int>("MINITER")),
+  iterdivercont_(Teuchos::getIntegralValue<int>(sdynparams,"DIVERCONT")==1),
+  toldisi_(sdynparams.get<double>("TOLDISP")),
+  tolfres_(sdynparams.get<double>("TOLRES")),
+  tolpfres_(sdynparams.get<double>("TOLINCO")),
+  tolpres_(sdynparams.get<double>("TOLPRE")),
   uzawaparam_(sdynparams.get<double>("UZAWAPARAM")),
   uzawaitermax_(sdynparams.get<int>("UZAWAMAXITER")),
   tolcon_(sdynparams.get<double>("TOLCONSTR")),
@@ -145,11 +145,13 @@ void STR::TimIntImpl::Predict()
   {
     PredictConstDisConsistVelAcc();
     normdisi_ = 1.0e6;
+    normpres_ = 1.0e6;
   }
   else if (pred_ == INPAR::STR::pred_constdisvelacc)
   {
     PredictConstDisVelAcc();
     normdisi_ = 1.0e6;
+    normpres_ = 1.0e6;
   }
   else if (pred_ == INPAR::STR::pred_tangdis)
   {
@@ -201,6 +203,8 @@ void STR::TimIntImpl::Predict()
   {
     Teuchos::RCP<Epetra_Vector> fres = pressure_->ExtractOtherVector(fres_);
     normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres);
+    Teuchos::RCP<Epetra_Vector> fpres = pressure_->ExtractCondVector(fres_);
+    normpfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fpres);
 
   }
   else
@@ -315,7 +319,18 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
   solver_->Reset();
 
   // extract norm of disi_
-  normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+  if (pressure_ != Teuchos::null)
+  {
+    Teuchos::RCP<Epetra_Vector> pres = pressure_->ExtractCondVector(disi_);
+    Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector(disi_);
+    normpres_ = STR::AUX::CalculateVectorNorm(iternorm_, pres);
+    normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disp);
+  }
+  else
+  {
+    // build residual displacement norm
+    normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+  }
 
   // set Dirichlet increments in displacement increments
   disi_->Update(1.0, *dbcinc, 1.0);
@@ -589,6 +604,7 @@ void STR::TimIntImpl::NewtonFull()
   // equilibrium iteration loop
   while ( ( (not Converged()) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
   {
+
     // make negative residual
     fres_->Scale(-1.0);
 
