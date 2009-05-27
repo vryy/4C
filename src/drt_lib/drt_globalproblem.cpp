@@ -591,6 +591,13 @@ void DRT::Problem::ReadKnots(const DRT::INPUT::DatFileReader& reader)
         {
           dserror("Knotvector read failed in Nurbs discretisation\n");
         }
+        
+        // make sure atdis is fillcompleted, to be able to call 
+        // ElementRowMap() on it
+        if(!actdis->Filled())
+        {
+          actdis->FillComplete();
+        }
 
         // the smallest gid in the discretisation determines the access
         // pattern via the element offset
