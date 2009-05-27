@@ -629,9 +629,10 @@ int DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
 {
   //get PTC dti parameter
   double dti = params.get<double>("dti",0.0);
+  dti = dti*1; //dti = dti*5 for A = 1.9e-5 in Actin3D_10.dat
   
-  double isotorsdamp = 0.0005;
-  double anisotorsdamp = 0.0005;  
+  double isotorsdamp = 0.005;   //5e-3
+  double anisotorsdamp = 0.05;  //5e-2
   
   //computing angle increment from current position in comparison with last converged position for damping
   LINALG::Matrix<4,1> deltaQ;
@@ -668,13 +669,13 @@ int DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
   {
     for(int j=0;j<3;j++)
     {
-      
+      /*
       //translational damping
       elemat1(  i,   j) += dti*0.5;
       elemat1(6+i, 6+j) += dti*0.5;
       elemat1(6+i,   j) += dti*0.5;
       elemat1(  i, 6+j) += dti*0.5;
-      
+      */
       
       //rotational damping
       elemat1(3+i, 3+j) += artstiff(i,j);
@@ -1387,7 +1388,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
     //the following block adds artificial rotation damping to force vector and stiffness matrix
     {
       double isotorsdamp = 0; //0.0005 seems a good choice for merely isotropic damping
-      double anisotorsdamp = 0.0005;  //0.0005 seems a good choice with isotorsdamp = 0;
+      double anisotorsdamp = 8e-6;  //5e-4, 5e-5 seems a good choice with isotorsdamp = 0; however, even 8e-6 works well if a slightly increased number of iteration steps is accepted for almost straight filaments
       
       //computing angle increment from current position in comparison with last converged position for damping
       LINALG::Matrix<4,1> deltaQ;
