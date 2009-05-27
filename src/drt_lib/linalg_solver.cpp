@@ -366,6 +366,14 @@ void LINALG::Solver::Solve_aztec(
     // loop all basis vectors of kernel
     for(int mm=0;mm<kernel_c->NumVectors();++mm)
     {
+  
+      /*
+                   T
+                  c * b
+      */
+      double cTb=0.0;
+      ((*kernel_c)(mm))->Dot(*(b_),&cTb);
+
       // loop all weight vectors
       for(int rr=0;rr<weighted_basis_mean->NumVectors();++rr)
       {
@@ -384,13 +392,6 @@ void LINALG::Solver::Solve_aztec(
         {
           dserror("weight vector must not be orthogonal to c");
         }
-  
-        /*
-                   T
-                  c * b
-        */
-        double cTb=0.0;
-        ((*kernel_c)(mm))->Dot(*(b_),&cTb);
 
         /*
                                   T

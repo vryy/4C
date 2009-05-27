@@ -20,7 +20,8 @@ LINALG::LinalgPrecondOperator::LinalgPrecondOperator(
   Teuchos::RCP<Epetra_Operator> precond,
   bool                          project) :
   project_(project),
-  precond_(precond)
+  precond_(precond),
+  cTw_    (0,0)
 {
   return;
 } // LINALG::LinalgPrecondOperator::LinalgPrecondOperator
@@ -44,7 +45,8 @@ int LINALG::LinalgPrecondOperator::ApplyInverse(
 
   int ierr=0;
 
-  // if necessary, project out matrix kernel
+  // if necessary, project out matrix kernel to maintain well-posedness
+  // of problem
   if(project_)
   {
     // Apply the inverse preconditioner to get new basis vector for the
@@ -57,48 +59,49 @@ int LINALG::LinalgPrecondOperator::ApplyInverse(
       dserror("no c_ and w_ supplied");
     }
 
-    // loop all solution vectors
-    for(int sv=0;sv<Y.NumVectors();++sv)
+    // there is only one solution vector --- so solution 
+    // vector index is zero
+    if(Y.NumVectors()!=1)
     {
-      // loop all basis vectors of kernel and orthogonalize against them
+      dserror("expecting only one solution vector during AZTEC Apply call\n");
+    }
+
+    int v=0;
+
+    // loop all weight vectors and orthogonalize against them
+    for(int rr=0;rr<w_->NumVectors();++rr)
+    {
+ 
+      /*
+                   T
+                  w * Y
+      */
+      double wTY=0.0;
+ 
+      (Y(v))->Dot(*((*w_)(rr)),&wTY);
+       
+      // loop all basis vectors of kernel
       for(int mm=0;mm<c_->NumVectors();++mm)
       {
-        // loop all weight vectors 
-        for(int rr=0;rr<w_->NumVectors();++rr)
-        {
-          /*
+
+        /*
                    T
                   w * c
-          */
-          double wTc=0.0;
+        */
+        double cTw=cTw_(mm,rr);
+    
+        /*
 
-          ((*c_)(mm))->Dot(*((*w_)(rr)),&wTc);
-          
-          if(fabs(wTc)<1e-14)
-          {
-            dserror("weight vector must not be orthogonal to c");
-          }
+                                    T   
+                                   x * w
+                        P x = x - ------- c
+                                    T
+                                   w * c
 
-          /*
-                   T
-                  c * Y
-          */
-          double cTY=0.0;
-
-          ((*c_)(mm))->Dot(*(Y(sv)),&cTY);
-
-          /*
-                                  T
-                       T         c * Y
-                      P Y = Y - ------- * w
-                                  T
-                                 w * c
-          */
-          (Y(sv))->Update(-cTY/wTc,*((*w_)(rr)),1.0);
-          
-        } // loop all weight vectors
-      } // loop kernel basis vectors
-    } // loop all solution vectors
+        */
+        (Y(v))->Update(-wTY/cTw,*((*c_)(mm)),1.0);
+      } // loop all weight vectors
+    } // loop kernel basis vectors
   }
   else
   {
