@@ -21,6 +21,7 @@ Maintainer: Christian Cyron
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/linalg_fixedsizematrix.H"
 
+
 #ifdef D_BEAM3
 #include "../drt_beam3/beam3.H"
 #endif  // #ifdef D_BEAM3
@@ -31,10 +32,10 @@ Maintainer: Christian Cyron
 #include <iostream>
 #include <iomanip>
 #include <cstdio>
+#include <math.h>
 
 //MEASURETIME activates measurement of computation time for certain parts of the code
-#define MEASURETIME
-
+//#define MEASURETIME
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             cyron 09/08|
@@ -182,8 +183,7 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
         if(nodenumber > -1)
           (*filamentnumber_)[nodenumber] = filamentnumber;     
       }
-     } 
-    
+     }  
     
     /*Young's modulus and loss modulus are to be measured by means of the reaction forces at certain sensor points; example: if for a
      * an actin network between two rheometer plates the stiffness is to be deterimined this can be done by measuring the forces exerted
@@ -204,13 +204,11 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
       //get a pointer to nodal cloud coverd by the current condition
       const vector<int>* nodeids = forcesensorconditions[i]->Nodes();
       
-           
       //loop through all the nodes of the nodal cloud
       for(int j = 0; j < (int)nodeids->size() ; j++)
       {
         //get the node's global id
         int nodenumber = (*nodeids)[j];
-                
         
         //testing whether current nodedofnumber makes sense for current node
         if( nodedofnumber < 0 || nodedofnumber >= discret_.NumDof(discret_.gNode(nodenumber)) )
@@ -226,7 +224,6 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
           (*forcesensor_)[dofnumber] = 1;   
       }
      } 
-    
   
       //we construct a search tree with maximal depth of 8 (different numbers might be tried out, too)
       octTree_ = rcp(new GEO::SearchTree(8));
@@ -262,7 +259,6 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
 
   return;
 } // StatMechManager::StatMechManager
-
 
 /*----------------------------------------------------------------------*
  | write special output for statistical mechanics (public)    cyron 09/08|
@@ -327,28 +323,33 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
       }
     }
     break;
-    case INPAR::STATMECH::statout_endtoendergodicity:
-    {
+    case INPAR::STATMECH::statout_endtoendconst:
+    {          
+      /*in the following we assume that there is only a pulling force point Neumann condition of equal absolute
+      *value on either filament length; we get the absolute value of the first one of these two conditions */
+      double neumannforce;
+      vector<DRT::Condition*> pointneumannconditions(0);
+      discret_.GetCondition("PointNeumann",pointneumannconditions);     
+      if(pointneumannconditions.size() > 0)
+        neumannforce = fabs( pointneumannconditions[0]->GetDouble("Point Neumann") );
+      else
+       neumannforce = 0;
+   
       FILE* fp = NULL; //file pointer for statistical output file
-      double endtoend = 0; //end to end length at a certain time step in single filament dynamics
-       
+         
+      //name of output file
+      std::ostringstream outputfilename;
+      outputfilename << "E2E_"<< discret_.NumMyRowElements() <<'_'<< dt <<'_'<< neumannforce << ".dat";
+     
+      double endtoend = 0.0; //end to end length at a certain time step in single filament dynamics
+           
       //as soon as system is equilibrated (after time START_FACTOR*maxtime_) a new file for storing output is generated
       if ( (time >= maxtime_ * statmechparams_.get<double>("START_FACTOR",0.0))  && (starttimeoutput_ == -1.0) )
-      {
-        //end to end vector at reference point of time
-        LINALG::Matrix<3,1> endtoendvectorref(true);     
-        for(int i = 0; i<ndim; i++)
-        {
-          endtoendvectorref(i) -= ( discret_.gNode(0)                            )->X()[i] + dis[i];
-          endtoendvectorref(i) += ( discret_.gNode(discret_.NumMyRowNodes() - 1) )->X()[i] + dis[num_dof - discret_.NumDof(discret_.gNode(discret_.NumMyRowNodes() - 1)) + i];
-        }
-        
-        endtoendref_ = endtoendvectorref.Norm2();
-
+      {       
        starttimeoutput_ = time;
        istart_ = istep;   
       }
-       
+           
       if (time > starttimeoutput_ && starttimeoutput_ > -1.0)
       { 
         //end to end vector
@@ -360,12 +361,12 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
         }
         
         endtoend = endtoendvector.Norm2();
-    
-        //writing output: current time and end to end distance are stored without any further postprocessing
+          
+        //writing output: current time and end to end distance are stored at each 100th time step
         if ( (istep - istart_) % 100 == 0 )
           {
           // open file and append new data line
-          fp = fopen("EndToEndErgo.dat", "a");
+          fp = fopen(outputfilename.str().c_str(), "a");
           //defining temporary stringstream variable
           std::stringstream filecontent;
           filecontent << scientific << setprecision(15) << time << "  " << endtoend << endl;
@@ -383,27 +384,33 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
       
       //name of output file
       std::ostringstream outputfilename;
-      outputfilename << "AnisotropicDiffusion"<< ".dat";
-             
-      //positions of first and last node in current time step (note: always 3D variables used; in case of 2D third compoenent just constantly zero)
-      LINALG::Matrix<3,1> beginnew(true);
-      LINALG::Matrix<3,1> endnew(true);
-
-           
+      outputfilename << "AnisotropicDiffusion"<< outputfilenumber_ << ".dat";
+              
+      //positions of first and last node in current time step (note: always 3D variables used; in case of 2D third compoenent just constantly zero)   
+      LINALG::Matrix<3,1> beginnew;
+      LINALG::Matrix<3,1> endnew;
+      beginnew.PutScalar(0);
+      endnew.PutScalar(0);
+      
       for(int i = 0; i<ndim; i++)
       {
         beginnew(i) = ( discret_.gNode(0)                            )->X()[i] + dis[i];
         endnew(i)   = ( discret_.gNode(discret_.NumMyRowNodes() - 1) )->X()[i] + dis[num_dof - discret_.NumDof(discret_.gNode(discret_.NumMyRowNodes() - 1)) + i];
       }
       
-     
+      
       //unit direction vector for filament axis in last time step
       LINALG::Matrix<3,1> axisold;
       axisold  = endold_;
       axisold -= beginold_;
       axisold.Scale(1/axisold.Norm2());
+     
+      //unit direction vector for filament axis in actual time step
+      LINALG::Matrix<3,1> axisnew;
+      axisnew = endnew;
+      axisnew -= beginnew;
+      axisnew.Scale(1/axisnew.Norm2());
       
- 
       //displacement of first and last node between last time step and current time step
       LINALG::Matrix<3,1> dispbegin;
       LINALG::Matrix<3,1> dispend;
@@ -420,7 +427,6 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
      
       //displacement of middle point parallel to old filament axis (computed by scalar product)
       double disppar_square = pow(axisold(0)*dispmiddle(0) + axisold(1)*dispmiddle(1) + axisold(2)*dispmiddle(2), 2);
-
   
       //displacement of middle point orthogonal to old filament axis (computed by crossproduct)
       LINALG::Matrix<3,1> aux;
@@ -429,16 +435,59 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
       aux(2) = dispmiddle(0)*axisold(1) - dispmiddle(1)*axisold(0);
       double disport_square = aux.Norm2()*aux.Norm2();
       
-      // open file and append new data line
-      fp = fopen(outputfilename.str().c_str(), "a");
+      //
+      // angle of rotation around normal of filament axis relative to previous time step
+      double cosangle=0.0;
+      double angle=0.0;
+      double dispangle_square=0;
       
-      //defining temporary stringstream variable
-      std::stringstream filecontent;
-      filecontent << scientific << setprecision(15) << dt << "  " << disppar_square << "  " << disport_square<< endl;
+      std::cout<<"\nangle = "<< angle;
       
-      // move temporary stringstream to file and close it
-      fprintf(fp,filecontent.str().c_str());
-      fclose(fp);
+      cosangle = axisold(0)*axisnew(0)+axisold(1)*axisnew(1)+axisold(2)*axisnew(2);
+      angle = acos(cosangle);
+      dispangle_square=angle*angle;
+      
+      std::cout<<"\nangle = "<< angle;
+      
+      // absolute angle of rotation around normal of filament axis  (0 degree ~ horizontal)
+      // only for 2D
+      double cosangleAbs=0.0;
+      double angleAbs=0.0;
+      LINALG::Matrix<3,1> horizont;
+      
+      horizont(0)=1;
+      horizont(1)=0;
+      horizont(2)=0;
+      
+      cosangleAbs = horizont(0)*axisnew(0)+horizont(1)*axisnew(1)+horizont(2)*axisnew(2);
+      std::cout<<"\ncosangle = "<< cosangleAbs;
+      
+      
+      angleAbs=acos(cosangleAbs);
+      
+      std::cout<<"\naxisnew0 = "<< axisnew(0);
+      
+      if(axisnew(1)<0.0)  // changes sign if slope of axisnew is negative
+            {
+              angleAbs = (-1)*angleAbs;
+            }
+      // write when system is equilibrated
+      if(time >= maxtime_ * statmechparams_.get<double>("START_FACTOR",0.0))
+      {
+        // open file and append new data line
+        fp = fopen(outputfilename.str().c_str(), "a");
+      
+      
+        std::cout<<"\nangle = "<< angle;
+      
+        //defining temporary stringstream variable
+        std::stringstream filecontent;
+        filecontent << scientific << setprecision(15) << dt << "  " << disppar_square << "  " << disport_square<< " " << dispangle_square <<" "<< angleAbs << endl;
+      
+        // move temporary stringstream to file and close it
+        fprintf(fp,filecontent.str().c_str());
+        fclose(fp);
+      }
       
       //new positions in this time step become old positions in last time step     
       beginold_ = beginnew;
@@ -618,7 +667,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
 /*----------------------------------------------------------------------*
  | initialize special output for statistical mechanics(public)cyron 12/08|
  *----------------------------------------------------------------------*/
-void StatMechManager::StatMechInitOutput(const int ndim)
+void StatMechManager::StatMechInitOutput(const int ndim,const double& dt)
 {
   //initializing special output for statistical mechanics by looking for a suitable name of the outputfile and setting up an empty file with this name
   
@@ -638,7 +687,7 @@ void StatMechManager::StatMechInitOutput(const int ndim)
        std::ostringstream numberingfilename;
        
        //look for a numbering file where number of already existing output files is stored:
-       numberingfilename.str("NumberOfRealizations");
+       numberingfilename.str("NumberOfRealizationsLog");
        fpnumbering = fopen(numberingfilename.str().c_str(), "r");
        
        //if there is no such numbering file: look for a not yet existing output file name (numbering upwards)
@@ -689,45 +738,160 @@ void StatMechManager::StatMechInitOutput(const int ndim)
 
     }
     break;
-    case INPAR::STATMECH::statout_endtoendergodicity:
+    case INPAR::STATMECH::statout_endtoendconst:
     {
-      //defining name of output file
-      std::ostringstream outputfilename;
-      outputfilename.str("");
-      outputfilename << "EndToEndErgo.dat";
-      
       FILE* fp = NULL; //file pointer for statistical output file
-      
-      //making sure that there exists an now empty file named by outputfilename_
-      fp = fopen(outputfilename.str().c_str(), "w");
-      
-      fclose(fp);
+             
+       //defining name of output file
+       std::ostringstream outputfilename;
+       outputfilename.str("");
+       outputfilenumber_ = 0; 
+
+       //file pointer for operating with numbering file
+       FILE* fpnumbering = NULL;
+       std::ostringstream numberingfilename;
+       
+       //look for a numbering file where number of already existing output files is stored:
+       numberingfilename.str("NumberOfRealizationsConst");
+       fpnumbering = fopen(numberingfilename.str().c_str(), "r");
+       
+       /*in the following we assume that there is only a pulling force point Neumann condition of equal absolute
+       *value on either filament length; we get the absolute value of the first one of these two conditions */
+       double neumannforce;
+       vector<DRT::Condition*> pointneumannconditions(0);
+       discret_.GetCondition("PointNeumann",pointneumannconditions);     
+       if(pointneumannconditions.size() > 0)
+         neumannforce = fabs( pointneumannconditions[0]->GetDouble("Point Neumann") );
+       else
+        neumannforce = 0;
+       
+       //if there is no such numbering file: look for a not yet existing output file name (numbering upwards)
+       if(fpnumbering == NULL)
+       {
+         do
+         {              
+          //defining name of output file        
+           outputfilenumber_++;
+           outputfilename.str("");
+           outputfilename << "E2E_"<< discret_.NumMyRowElements() <<'_'<< dt <<'_'<< neumannforce << '_'<<outputfilenumber_ << ".dat";
+           fp = fopen(outputfilename.str().c_str(), "r");
+         } while(fp != NULL);
+         
+         //set up new file with name "outputfilename" without writing anything into this file
+         fp = fopen(outputfilename.str().c_str(), "w");
+         fclose(fp);
+      }         
+      //if there already exists a numbering file
+      else
+      {
+        fclose(fpnumbering);
+        
+        //read the number of the next realization out of the file into the variable testnumber
+        std::fstream f(numberingfilename.str().c_str());            
+        while (f)
+        {
+          std::string tok;
+          f >> tok;
+          if (tok=="Next")
+          {
+            f >> tok; 
+            if (tok=="Number:")     
+              f >> outputfilenumber_;
+          }
+        } //while(f)
+        
+        //defining outputfilename by means of new testnumber
+        outputfilename.str("");
+        outputfilename << "E2E_"<< discret_.NumMyRowElements() <<'_'<< dt <<'_'<< neumannforce << '_'<<outputfilenumber_ << ".dat";
+      }
+       
+      //increasing the number in the numbering file by one
+      fpnumbering = fopen(numberingfilename.str().c_str(), "w");
+      std::stringstream filecontent;
+      filecontent << "Next Number: "<< (outputfilenumber_ + 1);
+      //write fileconent into file!
+      fprintf(fpnumbering,filecontent.str().c_str());
+      //close file
+      fclose(fpnumbering);
       
     }
     break;
     //simulating diffusion coefficient for anisotropic friction
     case INPAR::STATMECH::statout_anisotropic:
-    {
-      //defining name of output file
-      std::ostringstream outputfilename;
-      outputfilename << "AnisotropicDiffusion"<< ".dat";
-      
-      FILE* fp = NULL; //file pointer for statistical output file
-      
-      //making sure that there exists an now empty file named by outputfilename_
-      fp = fopen(outputfilename.str().c_str(), "w");     
-      fclose(fp);
-      
+    {     
+       FILE* fp = NULL; //file pointer for statistical output file
+         
+       //defining name of output file
+       std::ostringstream outputfilename;
+  
+       outputfilenumber_ = 0; 
+  
+       //file pointer for operating with numbering file
+       FILE* fpnumbering = NULL;
+       std::ostringstream numberingfilename;
+       
+       //look for a numbering file where number of already existing output files is stored:
+       numberingfilename.str("NumberOfRealizationsAniso");
+       fpnumbering = fopen(numberingfilename.str().c_str(), "r");
+       
+       //if there is no such numbering file: look for a not yet existing output file name (numbering upwards)
+       if(fpnumbering == NULL)
+       {
+         do
+         {
+           outputfilenumber_++;
+           outputfilename.str("");
+           outputfilename << "AnisotropicDiffusion"<< outputfilenumber_ << ".dat";
+           fp = fopen(outputfilename.str().c_str(), "r");
+         } while(fp != NULL);
+         
+         //set up new file with name "outputfilename" without writing anything into this file
+         fp = fopen(outputfilename.str().c_str(), "w");
+         fclose(fp);
+      }         
+      //if there already exists a numbering file
+      else
+      {
+        fclose(fpnumbering);
+        
+        //read the number of the next realization out of the file into the variable testnumber
+        std::fstream f(numberingfilename.str().c_str());            
+        while (f)
+        {
+          std::string tok;
+          f >> tok;
+          if (tok=="Next")
+          {
+            f >> tok; 
+            if (tok=="Number:")     
+              f >> outputfilenumber_;
+          }
+        } //while(f)
+        
+        //defining outputfilename by means of new testnumber
+        outputfilename.str("");
+        outputfilename <<"AnisotropicDiffusion"<< outputfilenumber_ << ".dat";
+      }
+       
+      //increasing the number in the numbering file by one
+      fpnumbering = fopen(numberingfilename.str().c_str(), "w");
+      std::stringstream filecontent;
+      filecontent << "Next Number: "<< (outputfilenumber_ + 1);
+      //write fileconent into file!
+      fprintf(fpnumbering,filecontent.str().c_str());
+      //close file
+      fclose(fpnumbering);
+  
       //initializing variables for positions of first and last node at the beginning
       beginold_.PutScalar(0);
       endold_.PutScalar(0);
       for(int i = 0; i<ndim; i++)
-      {
-        beginold_(i) = ( discret_.gNode(0)                            )->X()[i];
-        endold_(i)   = ( discret_.gNode(discret_.NumMyRowNodes() - 1) )->X()[i];
+       {
+         beginold_(i) = ( discret_.gNode(0)                            )->X()[i];
+         endold_(i)   = ( discret_.gNode(discret_.NumMyRowNodes() - 1) )->X()[i];
+       }  
+        
       }
-      
-    }
     break;
     //measurement of viscoelastic properties should be carried out by means of force sensors
     case INPAR::STATMECH::statout_viscoelasticity:
@@ -1078,10 +1242,7 @@ void StatMechManager::SetCrosslinkers(const Epetra_Vector& setcrosslinkercol,con
        //assigning correct global Id to new crosslinker element: since each node can have one crosslinker element
        //only at the same time a unique global Id can be found by taking the number of elemnts in the discretization
        //before starting dealing with crosslinkers and adding to the smaller one of the two involved global nodal Ids     
-       newcrosslinker->SetId( basiselements_ + min(nodecolmap.GID(i),nodecolmap.GID((int)nearestneighbour[i])) ); 
-       
-       std::cout<<"\ncrosslinker Id = "<< basiselements_ + min(nodecolmap.GID(i),nodecolmap.GID((int)nearestneighbour[i]));
-       
+       newcrosslinker->SetId( basiselements_ + min(nodecolmap.GID(i),nodecolmap.GID((int)nearestneighbour[i])) );        
        
        //nodes are assigned to the new crosslinker element by first assigning global node Ids and then assigning nodal pointers
        int globalnodeids[] = {nodecolmap.GID(i), nodecolmap.GID((int)nearestneighbour[i])};      

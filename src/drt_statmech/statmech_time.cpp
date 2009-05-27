@@ -132,12 +132,11 @@ void StatMechTime::Integrate()
     /*in the very first step and in case that special output for statistical mechanics is requested we have
      * to initialized the related output method*/
     if(i == 0)
-      statmechmanager_->StatMechInitOutput(ndim);
+      statmechmanager_->StatMechInitOutput(ndim,dt);
         
     std::cout<<"\nAnzahl der Elemente am Beginn des Zeitschritts: "<<discret_.NumMyRowElements()<<"\n";
     
     
-
     //pay attention: for a constant predictor an incremental velocity update is necessary, which has
     //been deleted out of the code in oder to simplify it
     
@@ -151,8 +150,7 @@ void StatMechTime::Integrate()
 
     FullNewton();
     //PTC();
-
-       
+          
     UpdateandOutput();
    
     /*special update for statistical mechanics; this output has to be handled seperately from the time integration scheme output
@@ -234,6 +232,7 @@ void StatMechTime::Integrate()
   return;
 } // void StatMechTime::Integrate()
 
+
 /*----------------------------------------------------------------------*
  |  do consistent predictor step (public)                    mwgee 07/07|
  *----------------------------------------------------------------------*/
@@ -310,14 +309,10 @@ void StatMechTime::ConsistentPredictor()
   // V_{n+1} := gamma/(beta*dt) * (D_{n+1} - D_n)
   //          + (beta-gamma)/beta * V_n
   //          + (2.*beta-gamma)/(2.*beta) * A_n
-  veln_->Update(1.0,*disn_,-1.0,*dis_,0.0);
-#ifdef STRUGENALPHA_BE
-  veln_->Update((delta-gamma)/delta,*vel_,
-                (-gamma-2.*delta*gamma+2.*beta*gamma+2.*delta)*dt/(2.*delta),*acc_,gamma/(delta*dt));
-#else
-  veln_->Update((beta-gamma)/beta,*vel_,
-                (2.*beta-gamma)*dt/(2.*beta),*acc_,gamma/(beta*dt));
-#endif
+  
+  //backward Euler 
+  veln_->Update(1.0/dt,*disn_,-1.0/dt,*dis_,0.0);
+
 
 
 #ifdef STRUGENALPHA_STRONGDBC
@@ -757,11 +752,12 @@ void StatMechTime::PTC()
     RCP<Epetra_Vector> xm = rcp(new Epetra_Vector(*x0));
     x0->Update(1.0,*disi_,0.0);
 
-
+    //backward Euler
     stiff_->Add(*damp_,false,1/(dt),1.0);
     stiff_->Complete();
 
 
+    //the following part was especially introduced for Brownian dynamics
     {
       // create the parameters for the discretization
       ParameterList p;
@@ -799,6 +795,7 @@ void StatMechTime::PTC()
 
     // velocities
 
+    //backward Euler
     // incremental (required for constant predictor)
     velm_->Update(1.0/dt,*dism_,-1.0/dt,*dis_,0.0);
     //velm_->Update((delta-(1.0-alphaf)*gamma)/delta,*vel_,gamma/(delta*dt));

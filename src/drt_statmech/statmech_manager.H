@@ -55,7 +55,7 @@ public:
   void SetCrosslinkers(const Epetra_Vector& setcrosslinkercol,const Epetra_Map& nodecolmap,const Epetra_Vector& nearestneighbour,const std::map<int,LINALG::Matrix<3,1> >& currentpositions,const std::map<int,LINALG::Matrix<3,1> >& currentrotations);
   
   //! \brief initializing special output for statistical mechanics by looking for a suitable name of the outputfile and setting up an empty file with this name
-  void StatMechInitOutput(const int ndim);
+  void StatMechInitOutput(const int ndim, const double& dt);
   
   //! \brief write output for Gmsh postprocessing
   void GmshOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& step);

@@ -35,11 +35,11 @@ namespace INPAR
     enum StatOutput
     {
       statout_none,  ///< no special output
-      statout_endtoendlog,  ///< measuring end-to-end length of a single filament
+      statout_endtoendlog,  ///< measuring end-to-end length of a single filament at time steps with exponentially increasing distance
+      statout_endtoendconst,  ///< measuring end-to-end length of a single filament at time steps with constant distance
       statout_anisotropic,  ///< measuring anisotropic diffusion of filament
-      statout_endtoendergodicity,  ///< measuring ergodicity of single filament simulations
       statout_viscoelasticity, ///< measuring viscoelastic properties of filament networks
-      statout_gmsh///< writing special output in order to generate a Gmsh movie
+      statout_gmsh, ///< writing special output in order to generate a Gmsh movie
     };
 
   }  // namespace STATMECH

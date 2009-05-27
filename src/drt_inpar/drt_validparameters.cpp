@@ -846,14 +846,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  tuple<std::string>("None","none",
                                                     "EndToEnd_Log","endtoend_log","EndtoEnd_log",
                                                     "anisotropic","Anisotropic",
-                                                    "EndToEnd_Ergodicity","endtoend_ergodicity",
+                                                    "endtoend_const",
                                                     "Viscoelasticity","viscoelasticity","ViscoElasticity",
                                                     "Gmsh","gmsh"),
                                  //translating input strings into BACI input parameters
                                  tuple<INPAR::STATMECH::StatOutput>(INPAR::STATMECH::statout_none,INPAR::STATMECH::statout_none,
                                             INPAR::STATMECH::statout_endtoendlog,INPAR::STATMECH::statout_endtoendlog,INPAR::STATMECH::statout_endtoendlog,
                                             INPAR::STATMECH::statout_anisotropic,INPAR::STATMECH::statout_anisotropic,
-                                            INPAR::STATMECH::statout_endtoendergodicity,INPAR::STATMECH::statout_endtoendergodicity,
+                                            INPAR::STATMECH::statout_endtoendconst,INPAR::STATMECH::statout_endtoendconst,
                                             INPAR::STATMECH::statout_viscoelasticity,INPAR::STATMECH::statout_viscoelasticity,INPAR::STATMECH::statout_viscoelasticity,
                                             INPAR::STATMECH::statout_gmsh,INPAR::STATMECH::statout_gmsh),
                                  &statmech);
