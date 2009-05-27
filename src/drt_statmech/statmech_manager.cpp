@@ -331,15 +331,19 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
       vector<DRT::Condition*> pointneumannconditions(0);
       discret_.GetCondition("PointNeumann",pointneumannconditions);     
       if(pointneumannconditions.size() > 0)
-        neumannforce = fabs( pointneumannconditions[0]->GetDouble("Point Neumann") );
+      {
+        const vector<double>* val  =pointneumannconditions[0]->Get<vector<double> >("val");
+        neumannforce = fabs((*val)[0]);
+      }
       else
        neumannforce = 0;
+
    
       FILE* fp = NULL; //file pointer for statistical output file
          
       //name of output file
       std::ostringstream outputfilename;
-      outputfilename << "E2E_"<< discret_.NumMyRowElements() <<'_'<< dt <<'_'<< neumannforce << ".dat";
+      outputfilename << "E2E_"<< discret_.NumMyRowElements() <<'_'<< dt <<'_'<< neumannforce << '_'<< outputfilenumber_ << ".dat";
      
       double endtoend = 0.0; //end to end length at a certain time step in single filament dynamics
            
@@ -761,7 +765,10 @@ void StatMechManager::StatMechInitOutput(const int ndim,const double& dt)
        vector<DRT::Condition*> pointneumannconditions(0);
        discret_.GetCondition("PointNeumann",pointneumannconditions);     
        if(pointneumannconditions.size() > 0)
-         neumannforce = fabs( pointneumannconditions[0]->GetDouble("Point Neumann") );
+       {
+         const vector<double>* val  =pointneumannconditions[0]->Get<vector<double> >("val");
+         neumannforce = fabs((*val)[0]);
+       }
        else
         neumannforce = 0;
        
@@ -773,7 +780,7 @@ void StatMechManager::StatMechInitOutput(const int ndim,const double& dt)
           //defining name of output file        
            outputfilenumber_++;
            outputfilename.str("");
-           outputfilename << "E2E_"<< discret_.NumMyRowElements() <<'_'<< dt <<'_'<< neumannforce << '_'<<outputfilenumber_ << ".dat";
+           outputfilename << "E2E_"<< discret_.NumMyRowElements() <<'_'<< dt <<'_'<< neumannforce << '_'<< outputfilenumber_ << ".dat";
            fp = fopen(outputfilename.str().c_str(), "r");
          } while(fp != NULL);
          
@@ -803,7 +810,12 @@ void StatMechManager::StatMechInitOutput(const int ndim,const double& dt)
         //defining outputfilename by means of new testnumber
         outputfilename.str("");
         outputfilename << "E2E_"<< discret_.NumMyRowElements() <<'_'<< dt <<'_'<< neumannforce << '_'<<outputfilenumber_ << ".dat";
+        
+        //set up new file with name "outputfilename" without writing anything into this file
+        fp = fopen(outputfilename.str().c_str(), "w");
+        fclose(fp);
       }
+
        
       //increasing the number in the numbering file by one
       fpnumbering = fopen(numberingfilename.str().c_str(), "w");
