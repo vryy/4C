@@ -93,7 +93,7 @@ Input/f3_channel_modpowerlaw_impl_drt.dat               x        x        x     
 Input/f3_channel_carreauyasuda_genalpha_drt.dat         x        x        x        -        -        -
 Input/f3_drivencavity_stat_drt.dat                      x        x        x        -        -        -
 Input/f3_drt_genalpha_initialfield_volforce_pbc.dat     x        x        x        -        -        -
-Input/f3_drt_impl_initialfield_volforce_pbc.dat     x        x        x        -        -        -
+Input/f3_drt_impl_initialfield_volforce_pbc.dat         x        x        x        -        -        -
 Input/f3_bel_tet4_drt_afgenalpha.dat                    x        x        x        -        -        -
 Input/f3_bel_tet4_drt_afg_cons.dat                      x        x        x        -        -        -
 Input/f3_beltrami_tet4_drt.dat                          x        x        x        -        -        -
