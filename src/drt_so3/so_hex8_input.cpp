@@ -18,6 +18,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/viscoanisotropic.H"
 #include "../drt_mat/visconeohooke.H"
 #include "../drt_mat/charmm.H"
+#include "../drt_mat/elasthyper.H"
 
 /*----------------------------------------------------------------------*
  |  read element input (public)                                maf 04/07|
@@ -62,6 +63,9 @@ bool DRT::ELEMENTS::So_hex8::ReadElement()
   } else if (Material()->MaterialType() == INPAR::MAT::m_charmm){
     MAT::CHARMM* charmm = static_cast <MAT::CHARMM*>(Material().get());
     charmm->Setup(data_);
+  } else if (Material()->MaterialType() == INPAR::MAT::m_elasthyper){
+    MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(Material().get());
+    elahy->Setup();
   }
 
   // read possible gaussian points, obsolete for computation

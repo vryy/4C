@@ -29,6 +29,7 @@ Maintainer: Burkhard Bornemann
 #include "../drt_mat/anisotropic_balzani.H"
 #include "../drt_mat/viscoanisotropic.H"
 #include "../drt_mat/visconeohooke.H"
+#include "../drt_mat/elasthyper.H"
 
 /*----------------------------------------------------------------------*
  |  read element input (public)                                         |
@@ -76,7 +77,11 @@ bool DRT::ELEMENTS::So_sh8p8::ReadElement()
   } else if (Material()->MaterialType() == INPAR::MAT::m_visconeohooke){
     MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(Material().get());
     visco->Setup(NUMGPT_SOH8);
+  } else if (Material()->MaterialType() == INPAR::MAT::m_elasthyper){
+    MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(Material().get());
+    elahy->Setup();
   }
+  
 
   // read possible gaussian points, obsolete for computation
   {

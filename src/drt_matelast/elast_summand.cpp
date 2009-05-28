@@ -19,11 +19,12 @@ Maintainer: Burkhard Bornemann
 #include "../drt_mat/matpar_parameter.H"
 #include "../drt_mat/material.H"
 #include "../drt_mat/elasthyper.H"
-#include "elast_logneohooke.H"
+#include "elast_couplogneohooke.H"
 #include "elast_isoneohooke.H"
 #include "elast_isoyeoh.H"
 #include "elast_isomooneyrivlin.H"
 #include "elast_volsussmanbathe.H"
+#include "elast_coupanisoexpotwo.H"
 
 
 /*----------------------------------------------------------------------*
@@ -45,12 +46,12 @@ Teuchos::RCP<MAT::ELAST::Summand> MAT::ELAST::Summand::Factory(int matnum)
 
   switch (curmat->Type())
   {
-  case INPAR::MAT::mes_logneohooke:
+  case INPAR::MAT::mes_couplogneohooke:
   {
     if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::ELAST::PAR::LogNeoHooke(curmat));
-    MAT::ELAST::PAR::LogNeoHooke* params = static_cast<MAT::ELAST::PAR::LogNeoHooke*>(curmat->Parameter());
-    return Teuchos::rcp(new LogNeoHooke(params));
+      curmat->SetParameter(new MAT::ELAST::PAR::CoupLogNeoHooke(curmat));
+    MAT::ELAST::PAR::CoupLogNeoHooke* params = static_cast<MAT::ELAST::PAR::CoupLogNeoHooke*>(curmat->Parameter());
+    return Teuchos::rcp(new CoupLogNeoHooke(params));
   }
   case INPAR::MAT::mes_isoneohooke:
   {
@@ -79,6 +80,13 @@ Teuchos::RCP<MAT::ELAST::Summand> MAT::ELAST::Summand::Factory(int matnum)
       curmat->SetParameter(new MAT::ELAST::PAR::VolSussmanBathe(curmat));
     MAT::ELAST::PAR::VolSussmanBathe* params = static_cast<MAT::ELAST::PAR::VolSussmanBathe*>(curmat->Parameter());
     return Teuchos::rcp(new VolSussmanBathe(params));
+  }
+  case INPAR::MAT::mes_coupanisoexpotwo:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELAST::PAR::CoupAnisoExpoTwo(curmat));
+    MAT::ELAST::PAR::CoupAnisoExpoTwo* params = static_cast<MAT::ELAST::PAR::CoupAnisoExpoTwo*>(curmat->Parameter());
+    return Teuchos::rcp(new CoupAnisoExpoTwo(params));
   }
   default:
     dserror("cannot deal with type %d", curmat->Type());

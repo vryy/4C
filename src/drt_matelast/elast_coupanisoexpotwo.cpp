@@ -1,17 +1,16 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_logneohooke.cpp
+\file elast_isoneohooke.cpp
 \brief
 
 
 the input line should read
-  MAT 1 ELAST_LogNeoHooke YOUNG 1.044E7 NUE 0.3
+  MAT 1 ELAST_CoupAnisoExpoTwo MUE 100 
 
 <pre>
-Maintainer: Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
+Maintainer: Sophie Rausch & Thomas Kloeppel
+            rausch,kloeppel@lnm.mw.tum.de
+            089/289 15255
 </pre>
 */
 
@@ -21,17 +20,19 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "elast_logneohooke.H"
+#include "elast_coupanisoexpotwo.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-MAT::ELAST::PAR::LogNeoHooke::LogNeoHooke(
+MAT::ELAST::PAR::CoupAnisoExpoTwo::CoupAnisoExpoTwo(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
-  youngs_(matdata->GetDouble("YOUNG")),
-  nue_(matdata->GetDouble("NUE"))
+  k1_(matdata->GetDouble("K1")),
+  k2_(matdata->GetDouble("K2")),
+  k3_(matdata->GetDouble("K3")),
+  k4_(matdata->GetDouble("K4"))
 {
 }
 
@@ -39,7 +40,7 @@ MAT::ELAST::PAR::LogNeoHooke::LogNeoHooke(
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)  bborn 04/09 |
  *----------------------------------------------------------------------*/
-MAT::ELAST::LogNeoHooke::LogNeoHooke()
+MAT::ELAST::CoupAnisoExpoTwo::CoupAnisoExpoTwo()
   : Summand(),
     params_(NULL)
 {
@@ -49,39 +50,33 @@ MAT::ELAST::LogNeoHooke::LogNeoHooke()
 /*----------------------------------------------------------------------*
  |  Constructor                             (public)   bborn 04/09 |
  *----------------------------------------------------------------------*/
-MAT::ELAST::LogNeoHooke::LogNeoHooke(MAT::ELAST::PAR::LogNeoHooke* params)
+MAT::ELAST::CoupAnisoExpoTwo::CoupAnisoExpoTwo(MAT::ELAST::PAR::CoupAnisoExpoTwo* params)
   : params_(params)
 {
 }
 
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELAST::LogNeoHooke::AddCoefficientsPrincipal(
+void MAT::ELAST::CoupAnisoExpoTwo::AddCoefficientsPrincipalAniso(
   bool& havecoefficients,
   LINALG::Matrix<3,1>& gamma,
-  LINALG::Matrix<8,1>& delta,
-  const LINALG::Matrix<3,1>& prinv
+  LINALG::Matrix<15,1>& delta,
+  const LINALG::Matrix<6,1>& prinv
   )
 {
   havecoefficients = havecoefficients or true;
-
-  // material parameters for isochoric part
-  const double youngs = params_->youngs_;  // Young's modulus
-  const double nue = params_->nue_;  // Poisson's ratio
-  const double lambda = (nue==0.5) ? 0.0 : youngs*nue/((1.0+nue)*(1.0-2.0*nue));  // Lame coeff.
-  const double mue = youngs/(2.0*(1.0+nue));  // shear modulus
-
-  // determinant of deformation gradient
-  const double detf = std::sqrt(prinv(2));
-
-  // gammas
-  gamma(0) += mue;
-  gamma(1) += 0.0;
-  gamma(2) += -mue+lambda*std::log(detf);
-
-  // deltas
-  delta(5) += lambda;
-  delta(6) += 2.0*(mue - lambda*std::log(detf));
+  
+  double k1=params_->k1_;
+  double k2=params_->k2_;
+  double k3=params_->k3_;
+  double k4=params_->k4_;
+  
+  gamma(0) +=  2.*(k1*(prinv(3)-1.)* exp(k2*(prinv(3)-1.)*(prinv(3)-1.)));
+  gamma(1) +=  2.*(k3*(prinv(4)-1.)* exp(k4*(prinv(4)-1.)*(prinv(4)-1.)));
+  
+  delta(0) += 2.*(1. + 2.*k2*(prinv(3)-1.)*(prinv(3)-1.))*2.*k1* exp(k2*(prinv(3)-1.)*(prinv(3)-1.));
+  delta(1) += 2.*(1. + 2.*k4*(prinv(4)-1.)*(prinv(4)-1.))*2.*k3* exp(k4*(prinv(4)-1.)*(prinv(4)-1.));
 
   return;
 }

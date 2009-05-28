@@ -184,7 +184,89 @@ namespace MAT
         const LINALG::Matrix<3,1>& modinv  ///< modified invariants of right Cauchy-Green tensor
         ) = 0;
       
-      
+      /// retrieve coefficients of first and second derivative
+      /// of summand for fiber directions with respect to principal invariants
+      ///
+      /// The coefficients \f$\gamma_i\f$ and \f$\delta_j\f$ are based
+      /// on the summand \f$\Psi(I_{\boldsymbol{C}},II_{\boldsymbol{C}},III_{\boldsymbol{C}},IV_{\boldsymbol{C}},VI_{\boldsymbol{C}},VIII_{\boldsymbol{C}})\f$
+      /// in which the principal invariants of the right Cauchy-Green tensor \f$\boldsymbol{C}\f$
+      /// are the arguments,  
+      ///\f[
+      ///  I_{\boldsymbol{C}} = C_{AA},
+      ///  \quad
+      ///  II_{\boldsymbol{C}} = 1/2 \big( \mathrm{trace}^2(\boldsymbol{C}) - \mathrm{trace}(\boldsymbol{C}^2) \big),
+      ///  \quad
+      ///  III_{\boldsymbol{C}} = \det(\boldsymbol{C})
+      ///\f]
+      ///\f[
+      ///  IV_{\boldsymbol{C}} = \boldsymbol{C} : \boldsymbol{A}_1
+      ///  \quad
+      ///  VI_{\boldsymbol{C}} = \boldsymbol{C} : \boldsymbol{A}_2
+      ///  \quad
+      ///  VIII_{\boldsymbol{C}} = \boldsymbol{a}_1*\boldsymbol{C}\boldsymbol{a}_2
+      ///\f]
+      /// 
+      ///where \f$ \boldsymbol{a}_i \f$ is one fiber direction and \f$ \boldsymbol A_i= \boldsymbol a_i \otimes \boldsymbol a_i\f$.
+      ///  
+      ///
+      /// cf. Holzapfel [1], p. 274
+      ///\f[
+      /// \gamma^{aniso}_1 = 2\frac{\partial \Psi}{\partial IV_{\boldsymbol{C}}} 
+      ///\f]
+      ///\f[
+      /// \gamma^{aniso}_2 = 2\frac{\partial \Psi}{\partial VI_{\boldsymbol{C}}};
+      ///\f]
+      ///\f[
+      /// \gamma^{aniso}_3 = 2\frac{\partial \Psi}{\partial VIII_{\boldsymbol{C}}};
+      ///\f]
+      ///
+      /// material constitutive tensor coefficients
+      /// cf. Holzapfel [1], p. 261
+      ///\f[
+      /// \delta^{aniso}_1 = 4\frac {\partial^2\Psi}{\partial IV_{\boldsymbol C}^2}
+      ///\f]
+      ///\f[
+      /// \delta^{aniso}_2 = 4\frac {\partial^2\Psi}{\partial VI_{\boldsymbol C}^2}
+      ///\f]
+      ///\f[
+      /// \delta^{aniso}_3 = 4\frac {\partial^2\Psi}{\partial I_{\boldsymbol C}\partial IV_{\boldsymbol C}} + 4\frac {\partial^2\Psi}{\partial II_{\boldsymbol C}\partial IV_{\boldsymbol C}}I_\boldsymbol C
+      ///\f]
+      ///\f[
+      /// \delta^{aniso}_4 = 4\frac {\partial^2\Psi}{\partial I_{\boldsymbol C}\partial VI_{\boldsymbol C}} + 4\frac {\partial^2\Psi}{\partial II_{\boldsymbol C}\partial VI_{\boldsymbol C}}I_\boldsymbol C
+      ///\f]
+      ///\f[
+      /// \delta^{aniso}_5 = -4\frac {\partial^2\Psi}{\partial II_{\boldsymbol C}\partial IV_{\boldsymbol C}}
+      ///\f]
+      ///\f[
+      /// \delta^{aniso}_6 = -4\frac {\partial^2\Psi}{\partial II_{\boldsymbol C}\partial VI_{\boldsymbol C}}
+      ///\f]
+      ///\f[
+      /// \delta^{aniso}_7 = 4\frac {\partial^2\Psi}{\partial III_{\boldsymbol C}\partial VI_{\boldsymbol C}} III_\boldsymbol C
+      ///\f]
+      ///\f[
+      /// \delta^{aniso}_8 = 4\frac {\partial^2\Psi}{\partial III_{\boldsymbol C}\partial VI_{\boldsymbol C}} III_\boldsymbol C
+      ///\f]      
+      ///\f[
+      /// \delta^{aniso}_9 = 4\frac {\partial^2\Psi}{\partial IV_{\boldsymbol C}\partial VI_{\boldsymbol C}}
+      ///\f]
+      ///\f[
+      /// \delta^{aniso}_{10} = 2\frac {\partial^2\Psi}{\partial I_{\boldsymbol C}\partial VIII_{\boldsymbol C}} + 2\frac {\partial^2\Psi}{\partial II_{\boldsymbol C}\partial VIII_{\boldsymbol C}}I_{\boldsymbol C}
+      ///\f]
+      ///\f[
+      /// \delta^{aniso}_{11} = -2\frac {\partial^2\Psi}{\partial II_{\boldsymbol C}\partial VIII_{\boldsymbol C}}
+      ///\f]
+      ///\f[
+      /// \delta^{aniso}_{12} = 2\frac {\partial^2\Psi}{\partial III_{\boldsymbol C}\partial VIII_{\boldsymbol C}} III_\boldsymbol C
+      ///\f]
+      ///\f[
+      /// \delta^{aniso}_{13} = 2\frac {\partial^2\Psi}{\partial IV_{\boldsymbol C}\partial VIII_{\boldsymbol C}}
+      ///\f]
+      ///\f[
+      /// \delta^{aniso}_{14} = 2\frac {\partial^2\Psi}{\partial VI_{\boldsymbol C}\partial VIII_{\boldsymbol C}}
+      ///\f]
+      ///\f[
+      /// \delta^{aniso}_{15} = \frac {\partial^2\Psi}{\partial VIII_{\boldsymbol C}\partial VIII_{\boldsymbol C}}
+      ///\f]
       virtual void AddCoefficientsPrincipalAniso
       (
           bool& havecoefficients,  ///< non-zero coefficients of this type are provided
@@ -193,7 +275,7 @@ namespace MAT
           const LINALG::Matrix<6,1>& inv  ///< modified invariants of right Cauchy-Green tensor         
       ) = 0;
       
-      
+      /// To be done and commented by Moritz :-)      
       virtual void AddCoefficientsModifiedAniso
       (
           bool& havecoefficients,  ///< non-zero coefficients of this type are provided

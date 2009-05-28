@@ -1032,10 +1032,11 @@ OBJS_DRT_MAT_LIB = src/drt_mat/matpar_bundle.o \
                 src/drt_mat/itskov.o \
                 src/drt_mat/elasthyper.o \
                 src/drt_matelast/elast_summand.o \
-                src/drt_matelast/elast_logneohooke.o \
+                src/drt_matelast/elast_couplogneohooke.o \
                 src/drt_matelast/elast_isoneohooke.o \
                 src/drt_matelast/elast_isomooneyrivlin.o \
                 src/drt_matelast/elast_isoyeoh.o \
+                src/drt_matelast/elast_coupanisoexpotwo.o \
                 src/drt_matelast/elast_volsussmanbathe.o
 #
 OBJS_DRT_MAT  = src/drt_mat/micromaterialgp_static.o \

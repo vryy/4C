@@ -796,6 +796,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedInt(m,"NUMMAT","number of materials/potentials in list");
     AddNamedIntVector(m,"MATIDS","the list material/potential IDs","NUMMAT");
     AddNamedReal(m,"DENS","material mass density");
+    AddNamedReal(m,"GAMMA","fiber angle");
     
     AppendMaterialDefinition(matlist,m);
   }
@@ -804,9 +805,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   // logarithmic neo-Hooke material acc. to Bonet and Wood
   {
     Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("ELAST_LogNeoHooke",
+      = Teuchos::rcp(new MaterialDefinition("ELAST_CoupLogNeoHooke",
                                             "logarithmic neo-Hooke material acc. to Bonet and Wood",
-                                            INPAR::MAT::mes_logneohooke));
+                                            INPAR::MAT::mes_couplogneohooke));
 
     AddNamedReal(m,"YOUNG","Young's modulus");
     AddNamedReal(m,"NUE","Poisson's ratio");
@@ -867,6 +868,23 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             INPAR::MAT::mes_volsussmanbathe));
 
     AddNamedReal(m,"KAPPA","dilatation modulus");
+    
+    AppendMaterialDefinition(matlist,m);
+  }
+  
+  
+  /*--------------------------------------------------------------------*/
+  // coupled anisotropic material with two exponential fiber families
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_CoupAnisoExpoTwo",
+                                            "anisotropic part with two exp. fibers",
+                                            INPAR::MAT::mes_coupanisoexpotwo));
+
+    AddNamedReal(m,"K1","linear constant fiber 1");
+    AddNamedReal(m,"K2","exponential constant fiber 1");
+    AddNamedReal(m,"K3","linear constant fiber 2");
+    AddNamedReal(m,"K4","exponential constant fiber 2");
     
     AppendMaterialDefinition(matlist,m);
   }

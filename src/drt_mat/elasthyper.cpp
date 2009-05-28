@@ -127,7 +127,6 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*/
 void MAT::ElastHyper::Setup()
 {
-    
   anisotropic_ = true; 
   // fibers aligned in local element cosy with gamma_i around circumferential direction
   vector<double> rad(3);
@@ -139,17 +138,23 @@ void MAT::ElastHyper::Setup()
   frdouble_n("AXI",&axi[0],3,&ierr);
   frdouble_n("CIR",&cir[0],3,&ierr);
   if (ierr!=1) 
-  {//dserror("Reading of element local cosy failed");
+  {
+    dserror("Reading of element local cosy failed");
     anisotropic_=false;
     return;
   }
   Epetra_SerialDenseMatrix locsys(3,3);
   // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
+  double radnorm=0.; double axinorm=0.; double cirnorm=0.;
+  for (int i = 0; i < 3; ++i) {
+     radnorm += rad[i]*rad[i]; axinorm += axi[i]*axi[i]; cirnorm += cir[i]*cir[i];
+   }
+   radnorm = sqrt(radnorm); axinorm = sqrt(axinorm); cirnorm = sqrt(cirnorm);
   for (int i=0; i<3; ++i)
   {
-    locsys(i,0) = rad[i];
-    locsys(i,1) = axi[i];
-    locsys(i,2) = cir[i];
+    locsys(i,0) = rad[i]/radnorm;
+    locsys(i,1) = axi[i]/axinorm;
+    locsys(i,2) = cir[i]/cirnorm;
   }
 
   // alignment angles gamma_i are read from first entry of then unnecessary vectors a1 and a2
@@ -496,53 +501,53 @@ void MAT::ElastHyper::Evaluate(
       A1A2sym(5)=A1A2_(0,2)+A1A2_(2,0);
       
       // 2nd Piola Kirchhoff stresses
-      stress.Update(gamma(0), A1_, 1.0);
-      stress.Update(gamma(1), A2_, 1.0);
-      stress.Update(gamma(2), A1A2sym, 1.0);
+      stress.Update(anisogamma(0), A1_, 1.0);
+      stress.Update(anisogamma(1), A2_, 1.0);
+      stress.Update(anisogamma(2), A1A2sym, 1.0);
       
       // constitutive tensor
       // contribution: A1_ \otimes A1_
-      cmat.MultiplyNT(delta(0), A1_, A1_, 1.0);
+      cmat.MultiplyNT(anisodelta(0), A1_, A1_, 1.0);
       // contribution: A2_ \otimes A2_
-      cmat.MultiplyNT(delta(1), A2_, A2_, 1.0);
+      cmat.MultiplyNT(anisodelta(1), A2_, A2_, 1.0);
       // contribution: A1_ \otimes Id + Id \otimes A1_
-      cmat.MultiplyNT(delta(2), A1_, id2, 1.0);
-      cmat.MultiplyNT(delta(2), id2, A1_, 1.0);
+      cmat.MultiplyNT(anisodelta(2), A1_, id2, 1.0);
+      cmat.MultiplyNT(anisodelta(2), id2, A1_, 1.0);
       // contribution: A2_ \otimes Id + Id \otimes A2_
-      cmat.MultiplyNT(delta(3), A2_, id2, 1.0);
-      cmat.MultiplyNT(delta(3), id2, A2_, 1.0);
+      cmat.MultiplyNT(anisodelta(3), A2_, id2, 1.0);
+      cmat.MultiplyNT(anisodelta(3), id2, A2_, 1.0);
       // contribution: A1_ \otimes C + C \otimes A1_
-      cmat.MultiplyNT(delta(4), A1_, scg, 1.0);
-      cmat.MultiplyNT(delta(4), scg, A1_, 1.0);
+      cmat.MultiplyNT(anisodelta(4), A1_, scg, 1.0);
+      cmat.MultiplyNT(anisodelta(4), scg, A1_, 1.0);
       // contribution: A2_ \otimes C + C \otimes A2_
-      cmat.MultiplyNT(delta(5), A2_, scg, 1.0);
-      cmat.MultiplyNT(delta(5), scg, A2_, 1.0);
+      cmat.MultiplyNT(anisodelta(5), A2_, scg, 1.0);
+      cmat.MultiplyNT(anisodelta(5), scg, A2_, 1.0);
       // contribution: A1_ \otimes Cinv + Cinv \otimes A1_
-      cmat.MultiplyNT(delta(6), A1_, icg, 1.0);
-      cmat.MultiplyNT(delta(6), icg, A1_, 1.0);
+      cmat.MultiplyNT(anisodelta(6), A1_, icg, 1.0);
+      cmat.MultiplyNT(anisodelta(6), icg, A1_, 1.0);
       // contribution: A2_ \otimes Cinv + Cinv \otimes A2_
-      cmat.MultiplyNT(delta(7), A2_, icg, 1.0);
-      cmat.MultiplyNT(delta(7), icg, A2_, 1.0);
+      cmat.MultiplyNT(anisodelta(7), A2_, icg, 1.0);
+      cmat.MultiplyNT(anisodelta(7), icg, A2_, 1.0);
       // contribution: A1_ \otimes A2 + Cinv \otimes A2_
-      cmat.MultiplyNT(delta(8), A1_, A2_, 1.0);
-      cmat.MultiplyNT(delta(8), A2_, A1_, 1.0);
+      cmat.MultiplyNT(anisodelta(8), A1_, A2_, 1.0);
+      cmat.MultiplyNT(anisodelta(8), A2_, A1_, 1.0);
       // contribution: A1A2sym \otimes Id + Id \otimes A1A2sym
-      cmat.MultiplyNT(delta(9), A1A2sym, id2, 1.0);
-      cmat.MultiplyNT(delta(9), id2, A1A2sym, 1.0);
+      cmat.MultiplyNT(anisodelta(9), A1A2sym, id2, 1.0);
+      cmat.MultiplyNT(anisodelta(9), id2, A1A2sym, 1.0);
       // contribution: A1A2sym \otimes C + C \otimes A1A2sym
-      cmat.MultiplyNT(delta(10), A1A2sym, scg, 1.0);
-      cmat.MultiplyNT(delta(10), scg, A1A2sym, 1.0);
+      cmat.MultiplyNT(anisodelta(10), A1A2sym, scg, 1.0);
+      cmat.MultiplyNT(anisodelta(10), scg, A1A2sym, 1.0);
       // contribution: A1A2sym \otimes Cinv + Cinv \otimes A1A2sym
-      cmat.MultiplyNT(delta(11), A1A2sym, icg, 1.0);
-      cmat.MultiplyNT(delta(11), icg, A1A2sym, 1.0);
+      cmat.MultiplyNT(anisodelta(11), A1A2sym, icg, 1.0);
+      cmat.MultiplyNT(anisodelta(11), icg, A1A2sym, 1.0);
       // contribution: A1A2sym \otimes A1_ + A1_ \otimes A1A2sym
-      cmat.MultiplyNT(delta(12), A1A2sym, A1_, 1.0);
-      cmat.MultiplyNT(delta(12), A1_, A1A2sym, 1.0);
+      cmat.MultiplyNT(anisodelta(12), A1A2sym, A1_, 1.0);
+      cmat.MultiplyNT(anisodelta(12), A1_, A1A2sym, 1.0);
       // contribution: A1A2sym \otimes A2_ + A2_ \otimes A1A2sym
-      cmat.MultiplyNT(delta(13), A1A2sym, A2_, 1.0);
-      cmat.MultiplyNT(delta(13), A2_, A1A2sym, 1.0);
+      cmat.MultiplyNT(anisodelta(13), A1A2sym, A2_, 1.0);
+      cmat.MultiplyNT(anisodelta(13), A2_, A1A2sym, 1.0);
       // contribution: A1A2sym \otimes A1A2sym
-      cmat.MultiplyNT(delta(14), A1A2sym, A1A2sym, 1.0);
+      cmat.MultiplyNT(anisodelta(14), A1A2sym, A1A2sym, 1.0);
       
     }
     

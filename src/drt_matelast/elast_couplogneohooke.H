@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_logneohooke.H
+\file elast_couplogneohooke.H
 \brief
 This file contains the routines required for logarithmic neo-Hooke material
 according to Bonet and Wood, "Nonlinear continuum mechanics for finite 
@@ -37,18 +37,18 @@ namespace ELAST
     /// material parameters for logarithmic neo-Hooke material
     ///
     /// <h3>Input line</h3>
-    /// MAT 1 ELAST_LogNeoHooke YOUNG 1.044E7 NUE 0.3
-    class LogNeoHooke : public MAT::PAR::Parameter
+    /// MAT 1 ELAST_CoupLogNeoHooke YOUNG 1.044E7 NUE 0.3
+    class CoupLogNeoHooke : public MAT::PAR::Parameter
     {
     public:
 
       /// standard constructor
-      LogNeoHooke(
+     CoupLogNeoHooke(
         Teuchos::RCP<MAT::PAR::Material> matdata
         );
 
       /// destructor
-      virtual ~LogNeoHooke() { ; }
+      virtual ~CoupLogNeoHooke() { ; }
 
       /// @name material parameters
       //@{
@@ -60,7 +60,7 @@ namespace ELAST
 
       //@}
 
-    };  // class LogNeoHooke
+    };  // class CoupLogNeoHooke
 
   }  // namespace PAR
 
@@ -79,22 +79,22 @@ namespace ELAST
   ///
   /// \author bborn
   /// \date 04/09
-  class LogNeoHooke : public Summand
+  class CoupLogNeoHooke : public Summand
   {
 
   public:
 
     /// empty constructor
-    LogNeoHooke();
+    CoupLogNeoHooke();
 
     /// constructor with given material parameters
-    LogNeoHooke(MAT::ELAST::PAR::LogNeoHooke* params);
+    CoupLogNeoHooke(MAT::ELAST::PAR::CoupLogNeoHooke* params);
 
     /// @name Access material constants
     //@{
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_logneohooke; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_couplogneohooke; }
 
     //@}
 
@@ -196,7 +196,7 @@ namespace ELAST
   private:
 
     /// my material parameters
-    MAT::ELAST::PAR::LogNeoHooke* params_;
+    MAT::ELAST::PAR::CoupLogNeoHooke* params_;
 
   };
 
