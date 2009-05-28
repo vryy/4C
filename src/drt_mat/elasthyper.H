@@ -71,8 +71,10 @@ namespace MAT
  
       /// material mass density
       const double density_;
-
-    private:
+      
+      double gamma_;
+      
+   private:
 
       /// map to materials/potential summands
       std::map<int,Teuchos::RCP<MAT::ELAST::Summand> > potsum_;
@@ -178,23 +180,39 @@ namespace MAT
       LINALG::Matrix<6,1>& stress  ///< 2nd Piola--Kirchhoff stress
       );
 
+    void Setup();
+    
   private:
 
     /// calculate principal invariants
-    static void InvariantsPrincipal(
+    void InvariantsPrincipal(
       LINALG::Matrix<3,1>& prinv,  ///< principal invariants
       const LINALG::Matrix<6,1>& rcg  ///< symmetric Cartesian 2-tensor in strain-like 6-Voigt notation
       );
     
+    /// calculate principal invariants
+    void InvariantsPrincipalAniso(
+      LINALG::Matrix<6,1>& prinv,  ///< principal invariants
+      const LINALG::Matrix<6,1>& rcg  ///< symmetric Cartesian 2-tensor in strain-like 6-Voigt notation
+      );
+    
     /// calculate modified invariants
-    static void InvariantsModified(
+    void InvariantsModified(
       LINALG::Matrix<3,1>& modinv,  ///< modified invariants
       const LINALG::Matrix<3,1>& prinv  ///< principal invariants
       );
     
     /// my material parameters
     MAT::PAR::ElastHyper* params_;
+    
+    /// Am I anisotropic?
+    bool anisotropic_;
 
+    /// structural tensors in voigt notation for anisotropy
+    LINALG::Matrix<6,1>  A1_;
+    LINALG::Matrix<6,1>  A2_;
+    /// mixed structural tensor (asymmetric) \f$a1 \otimes a2\f$
+    LINALG::Matrix<3,3>  A1A2_;
   };
 
 }

@@ -158,7 +158,6 @@ namespace ELAST
     
     /// Add modified coeffiencts.
     /// Nothing to do for this (coupled) material!
-    /// Add modified coeffiencts.
     void AddCoefficientsModified(
         bool& havecoefficients,  ///< non-zero coefficients of this type are provided
         LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
@@ -168,6 +167,30 @@ namespace ELAST
     {
       havecoefficients = havecoefficients or false;
     };
+        
+    /// Add anisotropic principal coeffiencts.
+    /// Nothing to do for this (isotropic) material!
+    void AddCoefficientsPrincipalAniso(
+        bool& havecoefficients,  ///< non-zero coefficients of this type are provided
+        LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
+        LINALG::Matrix<15,1>& delta,  ///< necessary coefficients for second derivative
+        const LINALG::Matrix<6,1>& inv  ///< modified invariants of right Cauchy-Green tensor
+    )
+    {
+      havecoefficients = havecoefficients or false;
+    };
+        
+    /// Add anisotropic modified coeffiencts.
+    /// Nothing to do for this (isotropic) material!
+    void AddCoefficientsModifiedAniso(
+        bool& havecoefficients,  ///< non-zero coefficients of this type are provided
+        LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
+        LINALG::Matrix<15,1>& delta,  ///< necessary coefficients for second derivative
+        const LINALG::Matrix<6,1>& inv  ///< modified invariants of right Cauchy-Green tensor
+    )
+    {
+      havecoefficients = havecoefficients or false;
+    };        
     
 
   private:

@@ -25,7 +25,8 @@ MAT::PAR::ElastHyper::ElastHyper(
 : Parameter(matdata),
   nummat_(matdata->GetInt("NUMMAT")),
   matids_(matdata->Get<std::vector<int> >("MATIDS")),
-  density_(matdata->GetDouble("DENS"))
+  density_(matdata->GetDouble("DENS")),
+  gamma_(matdata->GetDouble("GAMMA"))
 {
   // check if sizes fit
   if (nummat_ != (int)matids_->size())
@@ -124,6 +125,59 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void MAT::ElastHyper::Setup()
+{
+    
+  anisotropic_ = true; 
+  // fibers aligned in local element cosy with gamma_i around circumferential direction
+  vector<double> rad(3);
+  vector<double> axi(3);
+  vector<double> cir(3);
+  int ierr=0;
+  // read local (cylindrical) cosy-directions at current element
+  frdouble_n("RAD",&rad[0],3,&ierr);
+  frdouble_n("AXI",&axi[0],3,&ierr);
+  frdouble_n("CIR",&cir[0],3,&ierr);
+  if (ierr!=1) 
+  {//dserror("Reading of element local cosy failed");
+    anisotropic_=false;
+    return;
+  }
+  Epetra_SerialDenseMatrix locsys(3,3);
+  // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
+  for (int i=0; i<3; ++i)
+  {
+    locsys(i,0) = rad[i];
+    locsys(i,1) = axi[i];
+    locsys(i,2) = cir[i];
+  }
+
+  // alignment angles gamma_i are read from first entry of then unnecessary vectors a1 and a2
+  const double gamma = (params_->gamma_*PI)/180.; //convert
+  vector<double> a1(3);
+  vector<double> a2(3);
+  
+  for (int i = 0; i < 3; ++i) {
+    // a1 = cos gamma e3 + sin gamma e2
+    a1[i] = cos(gamma)*locsys(i,2) + sin(gamma)*locsys(i,1);
+    // a2 = cos gamma e3 - sin gamma e2
+    a2[i] = cos(gamma)*locsys(i,2) - sin(gamma)*locsys(i,1);
+  }
+  for (int i = 0; i < 3; ++i) {
+    A1_(i) = a1[i]*a1[i];
+    A2_(i) = a2[i]*a2[i];
+    for (int j=0; j<3; j++)
+    {
+      A1A2_(j,i) = a1[j]*a2[i];
+    }
+  }
+  A1_(3) = a1[0]*a1[1]; A1_(4) = a1[1]*a1[2]; A1_(5) = a1[0]*a1[2];
+  A2_(3) = a2[0]*a2[1]; A2_(4) = a2[1]*a2[2]; A2_(5) = a2[0]*a2[2];
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 int MAT::ElastHyper::MatID(
   const unsigned index
 ) const
@@ -175,6 +229,39 @@ void MAT::ElastHyper::InvariantsModified(
   modinv(2) = std::pow(prinv(2),1./2.);
     
   
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ElastHyper::InvariantsPrincipalAniso(
+  LINALG::Matrix<6,1>& prinv,
+  const LINALG::Matrix<6,1>& rcg
+  )
+{
+  // 1st invariant, trace
+  prinv(0) = rcg(0) + rcg(1) + rcg(2);
+  // 2nd invariant
+  prinv(1) = 0.5*( prinv(0)*prinv(0)
+                   - rcg(0)*rcg(0) - rcg(1)*rcg(1) - rcg(2)*rcg(2)
+                   - 2.0*rcg(3)*rcg(3) - 2.0*rcg(4)*rcg(4) - 2.0*rcg(5)*rcg(5) );
+  // 3rd invariant, determinant
+  prinv(2) = rcg(0)*rcg(1)*rcg(2)
+    + 0.25 * rcg(3)*rcg(4)*rcg(5)
+    - 0.25 * rcg(1)*rcg(5)*rcg(5)
+    - 0.25 * rcg(2)*rcg(3)*rcg(3)
+    - 0.25 * rcg(0)*rcg(4)*rcg(4);
+
+  prinv(3) =  A1_(0)*rcg(0) + A1_(1)*rcg(1) + A1_(2)*rcg(2)
+            + A1_(3)*rcg(3) + A1_(4)*rcg(4) + A1_(5)*rcg(5);
+
+  prinv(4) =  A2_(0)*rcg(0) + A2_(1)*rcg(1) + A2_(2)*rcg(2)
+            + A2_(3)*rcg(3) + A2_(4)*rcg(4) + A2_(5)*rcg(5);
+  
+  prinv(5) =  A1A2_(0,0)*rcg(0) + A1A2_(1,1)*rcg(1) + A1A2_(2,2)*rcg(2)
+            + 0.5*(A1A2_(0,1)*rcg(3) + A1A2_(1,2)*rcg(4) + A1A2_(0,2)*rcg(5))
+            + 0.5*(A1A2_(1,0)*rcg(3) + A1A2_(2,1)*rcg(4) + A1A2_(2,0)*rcg(5));
+
   return;
 }
 
@@ -238,7 +325,6 @@ void MAT::ElastHyper::Evaluate(
   LINALG::Matrix<3,1> modinv;
   InvariantsModified(modinv, prinv);
 
-  
   // modified coefficients
   bool havecoeffmodi = false;
   LINALG::Matrix<3,1> modgamma(true);
@@ -372,6 +458,96 @@ void MAT::ElastHyper::Evaluate(
     
   }
   
-  return;
+  /*----------------------------------------------------------------------*/
+  //Do all the anisotropic stuff!
+  if (anisotropic_)
+  {
+    // principal anisotropic invariants of right Cauchy-Green strain
+    // we only use the set {I1,I2,I3,I4,I6,I8}, 
+    // because the quadratic invariants I5 and I7 don't give any new info, I9 is constant
+    LINALG::Matrix<6,1> pranisoinv;
+    InvariantsPrincipalAniso(pranisoinv,rcg);
+
+    // modified coefficients
+    bool havecoeffpraniso = false;
+    LINALG::Matrix<3,1> anisogamma(true);
+    LINALG::Matrix<15,1> anisodelta(true);
+    {
+       
+      // loop map of associated potential summands
+      std::map<int,Teuchos::RCP<MAT::ELAST::Summand> >& pot = params_->potsum_;
+      std::map<int,Teuchos::RCP<MAT::ELAST::Summand> >::iterator p;
+      for (p=pot.begin(); p!=pot.end(); ++p)
+      {
+        p->second->AddCoefficientsPrincipalAniso(havecoeffpraniso,anisogamma,anisodelta,pranisoinv);
+      }
+     
+    }
+    
+    if(havecoeffpraniso)
+    {
+      // build Voigt (stress-like) version of a1 \otimes a2 + a2 \otimes a1
+      LINALG::Matrix<6,1> A1A2sym;
+      A1A2sym(0)=2*A1A2_(0,0);
+      A1A2sym(1)=2*A1A2_(1,1);
+      A1A2sym(2)=2*A1A2_(2,2);
+      A1A2sym(3)=A1A2_(0,1)+A1A2_(1,0);
+      A1A2sym(4)=A1A2_(1,2)+A1A2_(2,1);
+      A1A2sym(5)=A1A2_(0,2)+A1A2_(2,0);
+      
+      // 2nd Piola Kirchhoff stresses
+      stress.Update(gamma(0), A1_, 1.0);
+      stress.Update(gamma(1), A2_, 1.0);
+      stress.Update(gamma(2), A1A2sym, 1.0);
+      
+      // constitutive tensor
+      // contribution: A1_ \otimes A1_
+      cmat.MultiplyNT(delta(0), A1_, A1_, 1.0);
+      // contribution: A2_ \otimes A2_
+      cmat.MultiplyNT(delta(1), A2_, A2_, 1.0);
+      // contribution: A1_ \otimes Id + Id \otimes A1_
+      cmat.MultiplyNT(delta(2), A1_, id2, 1.0);
+      cmat.MultiplyNT(delta(2), id2, A1_, 1.0);
+      // contribution: A2_ \otimes Id + Id \otimes A2_
+      cmat.MultiplyNT(delta(3), A2_, id2, 1.0);
+      cmat.MultiplyNT(delta(3), id2, A2_, 1.0);
+      // contribution: A1_ \otimes C + C \otimes A1_
+      cmat.MultiplyNT(delta(4), A1_, scg, 1.0);
+      cmat.MultiplyNT(delta(4), scg, A1_, 1.0);
+      // contribution: A2_ \otimes C + C \otimes A2_
+      cmat.MultiplyNT(delta(5), A2_, scg, 1.0);
+      cmat.MultiplyNT(delta(5), scg, A2_, 1.0);
+      // contribution: A1_ \otimes Cinv + Cinv \otimes A1_
+      cmat.MultiplyNT(delta(6), A1_, icg, 1.0);
+      cmat.MultiplyNT(delta(6), icg, A1_, 1.0);
+      // contribution: A2_ \otimes Cinv + Cinv \otimes A2_
+      cmat.MultiplyNT(delta(7), A2_, icg, 1.0);
+      cmat.MultiplyNT(delta(7), icg, A2_, 1.0);
+      // contribution: A1_ \otimes A2 + Cinv \otimes A2_
+      cmat.MultiplyNT(delta(8), A1_, A2_, 1.0);
+      cmat.MultiplyNT(delta(8), A2_, A1_, 1.0);
+      // contribution: A1A2sym \otimes Id + Id \otimes A1A2sym
+      cmat.MultiplyNT(delta(9), A1A2sym, id2, 1.0);
+      cmat.MultiplyNT(delta(9), id2, A1A2sym, 1.0);
+      // contribution: A1A2sym \otimes C + C \otimes A1A2sym
+      cmat.MultiplyNT(delta(10), A1A2sym, scg, 1.0);
+      cmat.MultiplyNT(delta(10), scg, A1A2sym, 1.0);
+      // contribution: A1A2sym \otimes Cinv + Cinv \otimes A1A2sym
+      cmat.MultiplyNT(delta(11), A1A2sym, icg, 1.0);
+      cmat.MultiplyNT(delta(11), icg, A1A2sym, 1.0);
+      // contribution: A1A2sym \otimes A1_ + A1_ \otimes A1A2sym
+      cmat.MultiplyNT(delta(12), A1A2sym, A1_, 1.0);
+      cmat.MultiplyNT(delta(12), A1_, A1A2sym, 1.0);
+      // contribution: A1A2sym \otimes A2_ + A2_ \otimes A1A2sym
+      cmat.MultiplyNT(delta(13), A1A2sym, A2_, 1.0);
+      cmat.MultiplyNT(delta(13), A2_, A1A2sym, 1.0);
+      // contribution: A1A2sym \otimes A1A2sym
+      cmat.MultiplyNT(delta(14), A1A2sym, A1A2sym, 1.0);
+      
+    }
+    
+  }
+  
 }
+
 #endif

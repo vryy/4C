@@ -184,6 +184,24 @@ namespace MAT
         const LINALG::Matrix<3,1>& modinv  ///< modified invariants of right Cauchy-Green tensor
         ) = 0;
       
+      
+      virtual void AddCoefficientsPrincipalAniso
+      (
+          bool& havecoefficients,  ///< non-zero coefficients of this type are provided
+          LINALG::Matrix<3,1>& gamma,  ///< see above
+          LINALG::Matrix<15,1>& delta,  ///< see above
+          const LINALG::Matrix<6,1>& inv  ///< modified invariants of right Cauchy-Green tensor         
+      ) = 0;
+      
+      
+      virtual void AddCoefficientsModifiedAniso
+      (
+          bool& havecoefficients,  ///< non-zero coefficients of this type are provided
+          LINALG::Matrix<3,1>& gamma,  ///< see above
+          LINALG::Matrix<15,1>& delta,  ///< see above
+          const LINALG::Matrix<6,1>& inv  ///< modified invariants of right Cauchy-Green tensor         
+      ) = 0;
+      
     private:
       
 
