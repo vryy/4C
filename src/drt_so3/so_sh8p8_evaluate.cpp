@@ -100,11 +100,11 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
       LINALG::Matrix<NUMDISP_,1> force(true);
       LINALG::Matrix<NUMPRES_,1> incomp(true);
       if (stab_ == stab_spatial) {
-        LINALG::Matrix<NUMPRES_,NUMDISP_> dragmatrix;
+        LINALG::Matrix<NUMPRES_,NUMDISP_> dargmatrix;
         ForceStiffMass(lm,mydisp,mypres,
                        NULL,&stiffmatrix,&gradmatrix,NULL,&stabmatrix,&force,&incomp,
                        NULL,NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
-        BuildElementMatrix(&elemat1,&stiffmatrix,&gradmatrix,&dragmatrix,&stabmatrix);
+        BuildElementMatrix(&elemat1,&stiffmatrix,&gradmatrix,&dargmatrix,&stabmatrix);
       }
       else {
         ForceStiffMass(lm,mydisp,mypres,
@@ -134,11 +134,11 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
       LINALG::Matrix<NUMPRES_,1> incomp(true);
       double volume = 0.0;
       if (stab_ == stab_spatial) {
-        LINALG::Matrix<NUMPRES_,NUMDISP_> dragmatrix;        
+        LINALG::Matrix<NUMPRES_,NUMDISP_> dargmatrix;        
         ForceStiffMass(lm,mydisp,mypres,
-                       NULL,&stiffmatrix,&gradmatrix,&dragmatrix,&stabmatrix,&force,&incomp,
+                       NULL,&stiffmatrix,&gradmatrix,&dargmatrix,&stabmatrix,&force,&incomp,
                        NULL,NULL,&volume,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
-        BuildElementMatrix(&elemat1,&stiffmatrix,&gradmatrix,&dragmatrix,&stabmatrix);
+        BuildElementMatrix(&elemat1,&stiffmatrix,&gradmatrix,&dargmatrix,&stabmatrix);
       }
       else {
         ForceStiffMass(lm,mydisp,mypres,
@@ -202,11 +202,11 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
       LINALG::Matrix<NUMPRES_,1> incomp(true);
       double volume = 0.0;
       if (stab_ == stab_spatial) {
-        LINALG::Matrix<NUMPRES_,NUMDISP_> dragmatrix;        
+        LINALG::Matrix<NUMPRES_,NUMDISP_> dargmatrix;        
         ForceStiffMass(lm,mydisp,mypres,
-                       &massmatrix,&stiffmatrix,&gradmatrix,&dragmatrix,&stabmatrix,&force,&incomp,
+                       &massmatrix,&stiffmatrix,&gradmatrix,&dargmatrix,&stabmatrix,&force,&incomp,
                        NULL,NULL,&volume,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
-        BuildElementMatrix(&elemat1,&stiffmatrix,&gradmatrix,&dragmatrix,&stabmatrix);
+        BuildElementMatrix(&elemat1,&stiffmatrix,&gradmatrix,&dargmatrix,&stabmatrix);
       }
       else {
         ForceStiffMass(lm,mydisp,mypres,
@@ -443,7 +443,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
   LINALG::Matrix<NUMDISP_,NUMDISP_>* massmatrix,  // element mass matrix
   LINALG::Matrix<NUMDISP_,NUMDISP_>* stiffmatrix, // element stiffness matrix
   LINALG::Matrix<NUMDISP_,NUMPRES_>* gradmatrix, // element gradient matrix
-  LINALG::Matrix<NUMPRES_,NUMDISP_>* dragmatrix,  // 'transposed' element gradient matrix
+  LINALG::Matrix<NUMPRES_,NUMDISP_>* dargmatrix,  // 'transposed' element gradient matrix
   LINALG::Matrix<NUMPRES_,NUMPRES_>* stabmatrix,  // element stabilisation matrix
   LINALG::Matrix<NUMDISP_,1>* force,                 // element internal force vector
   LINALG::Matrix<NUMPRES_,1>* incomp,   // incompressibility residual
@@ -717,7 +717,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
     LINALG::Matrix<NUMSTR_,1> glstrain;
     glstrain.Multiply(TinvT,lstrain);
 
-    // recover deformation gradient incoperating assumed natural GL strain
+    // recover deformation gradient incoperating assumed GL strain
     double detdefgrad;  // determinant of assumed def.grad.
     LINALG::Matrix<NUMDIM_,NUMDIM_> defgrad;  // assumed def.grad.
     LINALG::Matrix<NUMDIM_,NUMDIM_> invdefgrad; // inverse of deformation gradient and its derivative
@@ -831,7 +831,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
             G_ij(5) = 0.5*((1.0-s[gp]) * ((*deriv_sp)[0](0,inod) * (*deriv_sp)[0](2,jnod)
                                          +(*deriv_sp)[0](2,inod) * (*deriv_sp)[0](0,jnod))
                           +(1.0+s[gp]) * ((*deriv_sp)[2](0,inod) * (*deriv_sp)[2](2,jnod)
-                                       +(*deriv_sp)[2](2,inod) * (*deriv_sp)[2](0,jnod)));
+                                         +(*deriv_sp)[2](2,inod) * (*deriv_sp)[2](0,jnod)));
           }
 
           // transformation of local(parameter) space 'back' to global(material) space
@@ -1289,7 +1289,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
         // double contracted with transposed inverted deformation gradient
         // (dFv'*fvT) = dFv'*fvT
         LINALG::Matrix<NUMDISP_,1> defgradbydisptimestinvdefgrad;
-        if ( (gradmatrix != NULL) or (dragmatrix != NULL) )
+        if ( (gradmatrix != NULL) or (dargmatrix != NULL) )
           defgradbydisptimestinvdefgrad.MultiplyTN(defgradbydisp,tinvdefgrad);
 
         // derivative of pressure contribution in internal force with respect to pressure
@@ -1300,7 +1300,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
         }
 
         // derivatives of spatially evaluated stabilisation matrix
-        if (dragmatrix != NULL) {
+        if (dargmatrix != NULL) {
           if (stab_ == stab_spatial) {
             // Mem_,d . ep
             stabHHbydisp->MultiplyNT(pressure*vol_w,shapefcts[gp],defgradbydisptimestinvdefgrad,1.0);
@@ -1361,9 +1361,9 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
   // derivative of incompressibility residual with respect to displacements
   // (-G^T) = -pN * fvT'*dFv * Fdet*detJ*wp(i)  // same as gradmatrix
   //        + ((-Ce) . ep)_{,d}  // will be done later
-  if ( (dragmatrix != NULL) and (gradmatrix != NULL) ) {
+  if ( (dargmatrix != NULL) and (gradmatrix != NULL) ) {
     // copy ordinary part from gradmatrix by transposing
-    dragmatrix->UpdateT(*gradmatrix);
+    dargmatrix->UpdateT(*gradmatrix);
     // spatially described stabilisation matrix
     if (stab_ == stab_spatial) {
       // shear modulus
@@ -1371,19 +1371,19 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
       // (-Cem . ep)_{,d} = -1./shearmod*( (Mem . ep)_{,d} - (Eem.inv(Dem).Eem')_{,d} . ep )
       // which is
       // -1./shearmod * (Mem . ep)_{,d} 
-      dragmatrix->Update(-1.0/shearmod,*stabHHbydisp,1.0);
+      dargmatrix->Update(-1.0/shearmod,*stabHHbydisp,1.0);
       // -1./shearmod * Eem_{,d} . (-inv(Dem).Eem'.ep)
-      dragmatrix->Update(+1.0/shearmod/stabAA(0,0)*stabHA.Dot(pres),*stabHAbydisp,1.0);
+      dargmatrix->Update(+1.0/shearmod/stabAA(0,0)*stabHA.Dot(pres),*stabHAbydisp,1.0);
       // Eem . inv(Dem)_,d = Eem . (-inv(Dem)^{-2}) . Dem_,d
       LINALG::Matrix<NUMPRES_,NUMDISP_> stabHAtimesinvstabAAbydisp;
       stabHAtimesinvstabAAbydisp.MultiplyNN(-1.0/stabAA(0,0)/stabAA(0,0),stabHA,*stabAAbydisp);
       // -1./shearmod * (Eem_ . inv(Dem)_,d) . (-Eem' . ep)
-      dragmatrix->Update(+1.0/shearmod*stabHA.Dot(pres),stabHAtimesinvstabAAbydisp,1.0);
+      dargmatrix->Update(+1.0/shearmod*stabHA.Dot(pres),stabHAtimesinvstabAAbydisp,1.0);
       // (ep^T . Eem_{,d})^T = Eem_{,d}^T . ep
       LINALG::Matrix<1,NUMDISP_> prestimesstabHAbydisp;
       prestimesstabHAbydisp.MultiplyTN(pres,*stabHAbydisp);
       // -1./shearmod * (-Eem . inv(Dem)) . (ep^T . Eem_{,d})^T
-      dragmatrix->MultiplyNN(+1.0/shearmod/stabAA(0,0),stabHA,prestimesstabHAbydisp,1.0);
+      dargmatrix->MultiplyNN(+1.0/shearmod/stabAA(0,0),stabHA,prestimesstabHAbydisp,1.0);
     }
   }
 
@@ -1391,8 +1391,8 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
   if (stab_ == stab_puredisp) {
     if (gradmatrix != NULL)
       gradmatrix->Clear();
-    if (dragmatrix != NULL)
-      dragmatrix->Clear();
+    if (dargmatrix != NULL)
+      dargmatrix->Clear();
     if (stabmatrix != NULL) {
       stabmatrix->Clear();
       for (int i=0; i<NUMPRES_; ++i) (*stabmatrix)(i,i) = 1.0;

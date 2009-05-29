@@ -324,7 +324,7 @@ private:
     LINALG::Matrix<NUMDISP_,NUMDISP_>* massmatrix,  ///< element mass matrix
     LINALG::Matrix<NUMDISP_,NUMDISP_>* stiffmatrix,  ///< element stiffness matrix
     LINALG::Matrix<NUMDISP_,NUMPRES_>* gradmatrix,  ///< element gradient matrix
-    LINALG::Matrix<NUMPRES_,NUMDISP_>* dragmatrix,  ///< element 'transposed' gradient matrix
+    LINALG::Matrix<NUMPRES_,NUMDISP_>* dargmatrix,  ///< element 'transposed' gradient matrix
     LINALG::Matrix<NUMPRES_,NUMPRES_>* stabmatrix,  ///< element stabilisation matrix
     LINALG::Matrix<NUMDISP_,1>* force,  ///< element internal force vector
     LINALG::Matrix<NUMPRES_,1>* incomp,  ///< incompressibility residual
