@@ -53,9 +53,9 @@ void PrintValidParameters()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::PrintDatHeader(std::ostream& stream, 
-                                const Teuchos::ParameterList& list, 
-                                std::string parentname, 
+void DRT::INPUT::PrintDatHeader(std::ostream& stream,
+                                const Teuchos::ParameterList& list,
+                                std::string parentname,
                                 bool color)
 {
   std::string blue2light = "";
@@ -544,7 +544,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::STR::convnorm_rel,
                                  INPAR::STR::convnorm_mix),
                                &sdyn);
-  
+
   DoubleParameter("TOLPRE",1.0E-08,
                   "tolerance in pressure norm for the newton iteration",
                   &sdyn);
@@ -554,7 +554,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<INPAR::STR::ConvNorm>(
                                  INPAR::STR::convnorm_abs),
                                &sdyn);
-  
+
   DoubleParameter("TOLINCO",1.0E-08,
                   "tolerance in the incompressible residual norm for the newton iteration",
                   &sdyn);
@@ -564,7 +564,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<INPAR::STR::ConvNorm>(
                                  INPAR::STR::convnorm_abs),
                                &sdyn);
-  
+
   setStringToIntegralParameter<INPAR::STR::BinaryOp>("NORMCOMBI_DISPPRES","And","binary operator to combine pressure and displacement values",
                                tuple<std::string>(
                                  "And",
@@ -573,7 +573,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::STR::bop_and,
                                  INPAR::STR::bop_or),
                                &sdyn);
-  
+
   setStringToIntegralParameter<INPAR::STR::BinaryOp>("NORMCOMBI_RESFINCO","And","binary operator to combine force and incompressible residual",
                                tuple<std::string>(
                                  "And",
@@ -582,7 +582,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::STR::bop_and,
                                  INPAR::STR::bop_or),
                                &sdyn);
-  
+
   setStringToIntegralParameter<INPAR::STR::BinaryOp>("NORMCOMBI_RESFDISP","And","binary operator to combine displacement and residual force values",
                                tuple<std::string>(
                                  "And",
@@ -591,7 +591,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::STR::bop_and,
                                  INPAR::STR::bop_or),
                                &sdyn);
-  
+
   DoubleParameter("TOLCONSTR",1.0E-08,
                   "tolerance in the constr error norm for the newton iteration",
                   &sdyn);
@@ -617,7 +617,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                     "Go on with time integration even if Newton-Raphson iteration failed",
                                     yesnotuple,yesnovalue,&sdyn);
 
-  setStringToIntegralParameter<INPAR::STR::NonlinSolTech>("NLNSOL","fullnewton","",
+  setStringToIntegralParameter<INPAR::STR::NonlinSolTech>("NLNSOL","fullnewton","Nonlinear solution technique",
                                tuple<std::string>(
                                  "vague",
                                  "fullnewton",
@@ -782,15 +782,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                           INPAR::CONTACT::search_binarytree,INPAR::CONTACT::search_binarytree,
                                           INPAR::CONTACT::search_binarytree),
                                &scontact);
-  
+
   DoubleParameter("SEARCH_PARAM",0.3,"Radius / Bounding volume inflation for contact search",&scontact);
-  
+
   setStringToIntegralParameter<int>("COUPLING_AUXPLANE","Yes","If chosen auxiliary planes are used for 3D coupling",
                                yesnotuple,yesnovalue,&scontact);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& interaction_potential = list->sublist("INTERACTION POTENTIALS",false,"");
-  
+
   // read if surfaces , volumes or both including fluid should be considered
   setStringToIntegralParameter<INPAR::POTENTIAL::PotentialType>("POTENTIAL_TYPE","surface","Type of interaction potential",
                                 tuple<std::string>("surface",
@@ -807,7 +807,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    INPAR::POTENTIAL::potential_volume_fsi,
                                    INPAR::POTENTIAL::potential_surfacevolume_fsi),
                                 &interaction_potential);
-                                
+
   // approximation method
   setStringToIntegralParameter<INPAR::POTENTIAL::ApproximationType>("APPROXIMATION_TYPE","none","Type of approximation",
                                 tuple<std::string>("none",
@@ -1305,7 +1305,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       "rotating_circular_cylinder_nurbs",
       "loma_channel_flow_of_height_2",
       "loma_lid_driven_cavity",
-      "loma_backward_facing_step"),     
+      "loma_backward_facing_step"),
     tuple<std::string>(
       "The flow is not further specified, so spatial averaging \nand hence the standard sampling procedure is not possible",
       "For this flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow.",
@@ -1888,7 +1888,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   //DoubleParameter("PCOMEGA",1.,
   //                "Relaxation factor for Richardson iteration on whole MFSI block preconditioner",
   //                &fsidyn);
-  
+
   setNumericStringParameter("PCOMEGA","1.0 1.0 1.0",
                             "Relaxation factor for Richardson iteration on whole MFSI block preconditioner",
                             &fsidyn);
@@ -2483,7 +2483,7 @@ bool DRT::INPUT::NeedToPrintEqualSign(const Teuchos::ParameterList& list)
 {
   const std::string printequalsign = PrintEqualSign();
   bool pes = false;
-  try 
+  try
   {
     pes = list.get<bool>(printequalsign);
   }
