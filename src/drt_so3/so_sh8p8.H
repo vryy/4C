@@ -475,6 +475,23 @@ private:
     );
 
   /// 2nd derivative of inverse of symmetric 2-tensor with respect to itself
+  ///
+  /// In index notation:
+  ///\f[
+  ///   \begin{array}{rl}
+  ///      \dfrac{\partial (C^{-1})^{CD}}{\partial C_{EF} \, \partial C_{GH}}
+  ///      = \frac{1}{4} \Big(
+  ///    & \big( (C^{-1})^{CG}(C^{-1})^{HE} + (C^{-1})^{CH}(C^{-1})^{GE} \big)(C^{-1})^{FD}
+  ///    \\
+  ///    &  + (C^{-1})^{CE}\big( (C^{-1})^{FG}(C^{-1})^{HD} + (C^{-1})^{FH}(C^{-1})^{GD} \big)
+  ///    \\
+  ///    &  + \big( (C^{-1})^{CG}(C^{-1})^{HF} + (C^{-1})^{CH}(C^{-1})^{GF} \big)(C^{-1})^{ED}
+  ///    \\
+  ///    &  + (C^{-1})^{CF}\big( (C^{-1})^{EG}(C^{-1})^{HD} + (C^{-1})^{EH}(C^{-1})^{GD} \big)
+  ///       \Big)
+  ///   \end{array}
+  ///\f]
+  ///
   static void InvVector6VoigtTwiceDiffByItself(
     LINALG::Matrix<NUMSTR_,NUMSTR_*NUMSTR_>& invbvdderb,  ///< 6x36 matrix
     const LINALG::Matrix<NUMDIM_,NUMDIM_>& ibt  ///< 3x3 inverted symmetric 2-tensor
@@ -485,7 +502,7 @@ private:
   /// In index notation:
   ///\f[
   ///   \frac{\partial F_{im} F_{mj}}{\partial F_{kl}}
-  ///   = \delta_{ik}\cdot F_{il} + \delta_{jl}\cdot F_{ik}
+  ///   = \delta_{ik}\cdot F_{lj} + \delta_{jl}\cdot F_{ik}
   ///\f]
   static void SqVector6VoigtDiffByItself(
     LINALG::Matrix<NUMSTR_,NUMSTR_>& sqfderf,  ///< diff. squared matrix 
@@ -508,16 +525,31 @@ private:
     );
 
   /// 2nd derivative of square of symmetric 2-tensor with respect to itself
+  ///
+  /// In index notation
+  ///\f[
+  /// \begin{array}{rl}
+  ///    \dfrac{\partial (U_{EA} U_{AF})}{\partial U_{GH}\, \partial U_{IJ}}
+  ///    = \frac{1}{4}\Big(
+  /// &  \delta_E{}^G\delta^{HI}\delta_F{}^J+\delta_F{}^H\delta_E{}^I\delta^{GJ}
+  ///    +\delta_E{}^G\delta^{HJ}\delta_F{}^I+\delta_F{}^H\delta_E{}^J\delta^{GI}
+  /// \\
+  /// &  +\delta_E{}^H\delta^{GI}\delta_F{}^J+\delta_F{}^G\delta_E{}^I\delta^{HJ}
+  ///    +\delta_E{}^H\delta^{GJ}\delta_F{}^I+\delta_F{}^G\delta_E{}^J\delta^{HI}
+  ///     \Big)
+  /// \end{array}
+  ///\f]
   static void SqVector6VoigtTwiceDiffByItself(
     LINALG::Matrix<NUMSTR_,NUMSTR_*NUMSTR_>& sqfdderf,  ///< 2nd derivative
     const LINALG::Matrix<NUMDIM_,NUMDIM_>& fmat  ///< symmetric 2-tensor (not needed)
     );
 
   /// 2nd derivative of square of symmetric 2-tensor with respect to itself
+  /// -- sparse storage version
   ///
   /// cf. #SqVector6VoigtTwiceDiffByItself bit with sparse storage of 6-tensor
   static void SqVector6VoigtTwiceDiffByItself(
-    int* isqfdderf,  ///< indices
+    int* isqfdderf,  ///< indices of non-zero entries
     LINALG::Matrix<NUMSTR_,6>& sqfdderf  ///< 2nd derivative data (sparsely stored)
     );
 
@@ -626,6 +658,25 @@ private:
 
   /// Extract 24x1 displacement and 8x1 pressure 
   /// of 32x1 displacement-pressure vector
+  ///
+  /// From 32x1 general element state vector
+  ///\f[
+  ///   \left[\begin{array}{cccccc}
+  ///   \ldots & u_X^k & u_Y^k & u_Z^k & p^k & \ldots
+  ///   \end{array}\right]
+  ///\f]
+  /// to 24x1 element displacements
+  ///\f[
+  ///   \left[\begin{array}{ccccc}
+  ///   \ldots & u_X^k & u_Y^k & u_Z^k & \ldots
+  ///   \end{array}\right]
+  ///\f]
+  /// and to 8x1 element pressures
+  ///\f[
+  ///   \left[\begin{array}{ccc}
+  ///   \ldots & p^k & \ldots
+  ///   \end{array}\right]
+  ///\f]
   static void ExtractDispAndPres(
     std::vector<double>& mystat,  ///< 32x1 element displacement-pressure vector
     LINALG::Matrix<NUMDISP_,1>& mydisp,  ///< 24x1 element displacement vector
@@ -633,6 +684,8 @@ private:
     );
 
   /// Build 32x32 element matrix
+  /// 
+  /// Following the pattern given at #ExtractDispAndPres()
   static void BuildElementMatrix(
     LINALG::Matrix<NUMDOF_,NUMDOF_>* mat,  ///< 32x32 matrix
     const LINALG::Matrix<NUMDISP_,NUMDISP_>* matdd,  ///< 24x24 sub-matrix, if NULL then 0s are inserted
@@ -642,6 +695,8 @@ private:
     );
 
   /// Build 32x1 element vector
+  ///
+  /// Following the pattern given at #ExtractDispAndPres()
   static void BuildElementVector(
     LINALG::Matrix<NUMDOF_,1>* vct,  ///< 32x1 vector
     const LINALG::Matrix<NUMDISP_,1>* vctd,  ///< 24x1 sub-vector, if NULL then 0s are inserted
