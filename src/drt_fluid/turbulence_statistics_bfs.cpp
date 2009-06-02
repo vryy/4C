@@ -1038,8 +1038,8 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step,
 
     (*log) << "\n";
     (*log) << "# lower wall behind step\n";
-    (*log) << "#     x1";
-    (*log) << "           duxdy         pmean       rhomean         Tmean\n";
+    (*log) << "#        x1";
+    (*log) << "                 duxdy               pmean             rhomean              Tmean\n";
 
     // distance from wall to first node off wall
     double dist = x2supplocations_(0) - x2statlocations_(0);
@@ -1055,19 +1055,19 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step,
         double lwx1rho  = (*x1sumrho_)(0,i)/numsamp_;
         double lwx1T    = (*x1sumT_)(0,i)/numsamp_;
 
-        (*log) <<  " "  << setw(11) << setprecision(4) << (*x1coordinates_)[i];
-        (*log) << "   " << setw(11) << setprecision(4) << lwx1duxdy;
-        (*log) << "   " << setw(11) << setprecision(4) << lwx1p;
-        (*log) << "   " << setw(11) << setprecision(4) << lwx1rho;
-        (*log) << "   " << setw(11) << setprecision(4) << lwx1T;
+        (*log) <<  " "  << setw(17) << setprecision(10) << (*x1coordinates_)[i];
+        (*log) << "   " << setw(17) << setprecision(10) << lwx1duxdy;
+        (*log) << "   " << setw(17) << setprecision(10) << lwx1p;
+        (*log) << "   " << setw(17) << setprecision(10) << lwx1rho;
+        (*log) << "   " << setw(17) << setprecision(10) << lwx1T;
         (*log) << "\n";
       }
     }
 
     (*log) << "\n";
     (*log) << "# upper wall\n";
-    (*log) << "#     x1";
-    (*log) << "           duxdy         pmean       rhomean         Tmean\n";
+    (*log) << "#        x1";
+    (*log) << "                 duxdy               pmean             rhomean              Tmean\n";
 
     // distance from wall to first node off wall
     dist = x2statlocations_(1) - x2supplocations_(1);
@@ -1081,22 +1081,22 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step,
       double uwx1rho  = (*x1sumrho_)(1,i)/numsamp_;
       double uwx1T    = (*x1sumT_)(1,i)/numsamp_;
 
-      (*log) <<  " "  << setw(11) << setprecision(4) << (*x1coordinates_)[i];
-      (*log) << "   " << setw(11) << setprecision(4) << uwx1duxdy;
-      (*log) << "   " << setw(11) << setprecision(4) << uwx1p;
-      (*log) << "   " << setw(11) << setprecision(4) << uwx1rho;
-      (*log) << "   " << setw(11) << setprecision(4) << uwx1T;
+      (*log) <<  " "  << setw(17) << setprecision(10) << (*x1coordinates_)[i];
+      (*log) << "   " << setw(17) << setprecision(10) << uwx1duxdy;
+      (*log) << "   " << setw(17) << setprecision(10) << uwx1p;
+      (*log) << "   " << setw(17) << setprecision(10) << uwx1rho;
+      (*log) << "   " << setw(17) << setprecision(10) << uwx1T;
       (*log) << "\n";
     }
 
     for (int i=0; i<numx1statlocations_; ++i)
     {
       (*log) << "\n";
-      (*log) << "# line in x2-direction at x1 = " << setw(11) << setprecision(4) << x1statlocations_(i) << "\n";
-      (*log) << "#     x2";
-      (*log) << "           umean         vmean         wmean         pmean        svmean       rhomean         Tmean      rhoumean     rhouTmean      rhovmean     rhovTmean";
-      (*log) << "         urms          vrms          wrms          prms         svrms        rhorms          Trms";
-      (*log) << "          u'v'          u'w'          v'w'\n";
+      (*log) << "# line in x2-direction at x1 = " << setw(11) << setprecision(10) << x1statlocations_(i) << "\n";
+      (*log) << "#        x2";
+      (*log) << "                 umean               vmean               wmean               pmean              svmean             rhomean               Tmean            rhoumean           rhouTmean            rhovmean           rhovTmean";
+      (*log) << "               urms                vrms                wrms                prms               svrms              rhorms                Trms";
+      (*log) << "                u'v'                u'w'                v'w'             rhou'T'             rhov'T'\n";
 
       for (unsigned j=0; j<x2coordinates_->size(); ++j)
       {
@@ -1129,30 +1129,30 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step,
         double x2rhouppTpp = x2rhouT-eosfac*x2rhou/x2rho;
         double x2rhovppTpp = x2rhovT-eosfac*x2rhov/x2rho;
 
-        (*log) <<  " "  << setw(11) << setprecision(4) << (*x2coordinates_)[j];
-        (*log) << "   " << setw(11) << setprecision(4) << x2u;
-        (*log) << "   " << setw(11) << setprecision(4) << x2v;
-        (*log) << "   " << setw(11) << setprecision(4) << x2w;
-        (*log) << "   " << setw(11) << setprecision(4) << x2p;
-        (*log) << "   " << setw(11) << setprecision(4) << x2sv;
-        (*log) << "   " << setw(11) << setprecision(4) << x2rho;
-        (*log) << "   " << setw(11) << setprecision(4) << x2T;
-        (*log) << "   " << setw(11) << setprecision(4) << x2rhou;
-        (*log) << "   " << setw(11) << setprecision(4) << x2rhouT;
-        (*log) << "   " << setw(11) << setprecision(4) << x2rhov;
-        (*log) << "   " << setw(11) << setprecision(4) << x2rhovT;
-        (*log) << "   " << setw(11) << setprecision(4) << x2urms;
-        (*log) << "   " << setw(11) << setprecision(4) << x2vrms;
-        (*log) << "   " << setw(11) << setprecision(4) << x2wrms;
-        (*log) << "   " << setw(11) << setprecision(4) << x2prms;
-        (*log) << "   " << setw(11) << setprecision(4) << x2svrms;
-        (*log) << "   " << setw(11) << setprecision(4) << x2rhorms;
-        (*log) << "   " << setw(11) << setprecision(4) << x2Trms;
-        (*log) << "   " << setw(11) << setprecision(4) << x2uv;
-        (*log) << "   " << setw(11) << setprecision(4) << x2uw;
-        (*log) << "   " << setw(11) << setprecision(4) << x2vw;
-        (*log) << "   " << setw(11) << setprecision(4) << x2rhouppTpp;
-        (*log) << "   " << setw(11) << setprecision(4) << x2rhovppTpp;
+        (*log) <<  " "  << setw(17) << setprecision(10) << (*x2coordinates_)[j];
+        (*log) << "   " << setw(17) << setprecision(10) << x2u;
+        (*log) << "   " << setw(17) << setprecision(10) << x2v;
+        (*log) << "   " << setw(17) << setprecision(10) << x2w;
+        (*log) << "   " << setw(17) << setprecision(10) << x2p;
+        (*log) << "   " << setw(17) << setprecision(10) << x2sv;
+        (*log) << "   " << setw(17) << setprecision(10) << x2rho;
+        (*log) << "   " << setw(17) << setprecision(10) << x2T;
+        (*log) << "   " << setw(17) << setprecision(10) << x2rhou;
+        (*log) << "   " << setw(17) << setprecision(10) << x2rhouT;
+        (*log) << "   " << setw(17) << setprecision(10) << x2rhov;
+        (*log) << "   " << setw(17) << setprecision(10) << x2rhovT;
+        (*log) << "   " << setw(17) << setprecision(10) << x2urms;
+        (*log) << "   " << setw(17) << setprecision(10) << x2vrms;
+        (*log) << "   " << setw(17) << setprecision(10) << x2wrms;
+        (*log) << "   " << setw(17) << setprecision(10) << x2prms;
+        (*log) << "   " << setw(17) << setprecision(10) << x2svrms;
+        (*log) << "   " << setw(17) << setprecision(10) << x2rhorms;
+        (*log) << "   " << setw(17) << setprecision(10) << x2Trms;
+        (*log) << "   " << setw(17) << setprecision(10) << x2uv;
+        (*log) << "   " << setw(17) << setprecision(10) << x2uw;
+        (*log) << "   " << setw(17) << setprecision(10) << x2vw;
+        (*log) << "   " << setw(17) << setprecision(10) << x2rhouppTpp;
+        (*log) << "   " << setw(17) << setprecision(10) << x2rhovppTpp;
         (*log) << "\n";
       }
     }
