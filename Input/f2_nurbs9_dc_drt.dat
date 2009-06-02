@@ -41,7 +41,7 @@ CONVTOL      1.0E-6
 INITIALFIELD zero_field
 ------------------------------------FLUID DYNAMIC/STABILIZATION
 STABTYPE              residual_based
-DEFINITION_TAU        Bazilevs
+DEFINITION_TAU        Barrenechea_Franca_Valentin_Wall
 TDS                   time_dependent
 TRANSIENT             yes_transient
 SUPG                  yes_supg
