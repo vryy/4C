@@ -2,8 +2,10 @@
 /*!
 \file fluid3_genalpha_resVMM.H
 
-\brief Internal implementation of Fluid3 element with a generalisbed alpha
-       time integration.
+\brief Internal implementation of Fluid3 element with a generalised alpha
+       time integration. The major difference to the standard 
+       one-step-theta/BDF2 implementation is that the pressure and the
+       continuity equation are treated fully implicitly.
 
        This element is designed for the solution of the Navier-Stokes
        equations using a residual based stabilised method. The
@@ -12,7 +14,9 @@
        Subscales are either treated as quasi-static or time dependent.
 
        Both versions provide a conservative and an advective form. ALE
-       is fully supported. 
+       is fully supported.
+
+       There are options for Smagorinsky-type turbulence models.
 
 <pre>
 Maintainer: Peter Gamnitzer
@@ -32,7 +36,6 @@ Maintainer: Peter Gamnitzer
 #include "fluid3_nurbs.H"
 
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
-
 
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H" 
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
@@ -90,6 +93,13 @@ namespace DRT
       static Fluid3GenalphaResVMMInterface* Impl(DRT::ELEMENTS::Fluid3* f3);
       
     };
+
+
+    /*----------------------------------------------------------------------*/
+    /*----------------------------------------------------------------------*/
+    /*----------------------------------------------------------------------*/
+    /*----------------------------------------------------------------------*/
+
     
     /// Internal Fluid3 implementation (genalpha version)
     /*!
@@ -144,11 +154,11 @@ namespace DRT
 
       o Cross stress (ResVMM)
         ---------------------
-        Fix point treatment, no linearisation
+        Optional: Fix point treatment, no linearisation
 
       o Reynolds stress (ResVMM)
         ------------------------
-        Fix point treatment, no linearisation
+        Optional: Fix point treatment, no linearisation
 
       </pre>
 
@@ -269,11 +279,10 @@ namespace DRT
                                     global vectors
         \param elemat1_epetra (i/o) element matrix
         \param elemat2_epetra (-)   dummy
-        \param elevec1_epetra (i/o) element residual
+        \param elevec1_epetra (i/o) (negative) element residual
         \param elevec2_epetra (-)   dummy
         \param elevec3_epetra (-)   dummy
         \param mat            (i)   interface class for materials in elements 
-        \param actmat         (i/o) actual material storing density
 
       */
       virtual int Evaluate(Fluid3*                    ele,
