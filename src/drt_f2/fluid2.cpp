@@ -36,8 +36,6 @@ data_()
   saccn_ .Shape(0,0);
   svelnp_.Shape(0,0);
   sveln_ .Shape(0,0);
-  sprenp_.Size(0);
-  spren_. Size(0);
   
   return;
 }
@@ -53,9 +51,7 @@ is_ale_     (old.is_ale_   ),
 data_       (old.data_     ),
 saccn_      (old.saccn_    ),
 svelnp_     (old.svelnp_   ),
-sveln_      (old.sveln_    ),
-sprenp_     (old.sprenp_   ),
-spren_      (old.spren_    ) 
+sveln_      (old.sveln_    ) 
 {
   return;
 }
@@ -118,11 +114,6 @@ void DRT::ELEMENTS::Fluid2::Pack(vector<char>& data) const
   AddtoPack(data,svelnp_.A(),size);
   AddtoPack(data,sveln_ .A(),size);
 
-  size = spren_.Length()*sizeof(double);
-  AddtoPack(data,sprenp_.A(),size);
-  AddtoPack(data,spren_ .A(),size);
-
-
   // data_
   vector<char> tmp(0);
   data_.Pack(tmp);
@@ -171,12 +162,6 @@ void DRT::ELEMENTS::Fluid2::Unpack(const vector<char>& data)
     ExtractfromPack(position,data,&(saccn_ .A()[0]),size);
     ExtractfromPack(position,data,&(svelnp_.A()[0]),size);
     ExtractfromPack(position,data,&(sveln_ .A()[0]),size);
-
-    sprenp_.Size(secondim);
-    spren_ .Size(secondim);
-
-    ExtractfromPack(position,data,&(sprenp_.A()[0]),secondim*sizeof(double));
-    ExtractfromPack(position,data,&(spren_ .A()[0]),secondim*sizeof(double));
   }
 
   // data_

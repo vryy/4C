@@ -40,10 +40,11 @@ namespace ELEMENTS
 // forward declarations
 class Fluid2Line;
 class Fluid2ImplInterface;
+class Fluid2GenalphaResVMMInterface;
 template <DRT::Element::DiscretizationType distype> class Fluid2Impl;
 class Fluid2StationaryInterface;
 template <DRT::Element::DiscretizationType distype> class Fluid2Stationary;
-class Fluid2GenalphaResVMM;
+template <DRT::Element::DiscretizationType distype> class Fluid2GenalphaResVMM;
 class Fluid2Register;
 
 /*!
@@ -59,6 +60,7 @@ public:
   friend class Fluid2Register;
   friend class Fluid2Line;
   friend class Fluid2ImplInterface;
+  friend class Fluid2GenalphaResVMMInterface;
   friend class Fluid2Impl<DRT::Element::tri3>;
   friend class Fluid2Impl<DRT::Element::tri6>;
   friend class Fluid2Impl<DRT::Element::quad4>;
@@ -70,7 +72,13 @@ public:
   friend class Fluid2Stationary<DRT::Element::quad4>;
   friend class Fluid2Stationary<DRT::Element::quad8>;
   friend class Fluid2Stationary<DRT::Element::quad9>;
-  friend class Fluid2GenalphaResVMM;
+  friend class Fluid2GenalphaResVMM<DRT::Element::tri3>;
+  friend class Fluid2GenalphaResVMM<DRT::Element::tri6>;
+  friend class Fluid2GenalphaResVMM<DRT::Element::quad4>;
+  friend class Fluid2GenalphaResVMM<DRT::Element::quad8>;
+  friend class Fluid2GenalphaResVMM<DRT::Element::quad9>;
+  friend class Fluid2GenalphaResVMM<DRT::Element::nurbs4>;
+  friend class Fluid2GenalphaResVMM<DRT::Element::nurbs9>;
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -296,6 +304,15 @@ private:
     integrate_shape
   };
 
+  //! linearisation actions recognized by fluid3 (genalpha implementation)
+  enum LinearisationAction
+  {
+    no_linearisation,
+    Newton          ,
+    fixed_point_like,
+    minimal
+  };
+
   //! stabilisation actions recognized by fluid2 (genalpha implementation)
   enum StabilisationAction
   {
@@ -304,6 +321,7 @@ private:
     subscales_time_dependent,
     inertia_stab_drop,
     inertia_stab_keep,
+    inertia_stab_keep_complete,
     pstab_assume_inf_sup_stable,
     pstab_use_pspg,
     convective_stab_none,
@@ -315,7 +333,6 @@ private:
     viscous_stab_usfem_only_rhs,
     continuity_stab_none,
     continuity_stab_yes,
-    continuity_stab_td,
     cross_stress_stab_none,
     cross_stress_stab,
     cross_stress_stab_only_rhs,
@@ -327,9 +344,13 @@ private:
   //! possible options for the stabilisation parameter
   enum TauType
   {
-    franca_barrenechea_valentin_wall,
-    codina                          ,
-    bazilevs                        ,
+    smoothed_franca_barrenechea_valentin_wall,
+    franca_barrenechea_valentin_wall         ,
+    franca_barrenechea_valentin_codina       ,
+    fbvw_gradient_based_hk                   ,
+    codina                                   ,
+    bazilevs                                 ,
+    fbvw_wo_dt                               ,
     tau_not_defined
   };
 
@@ -368,16 +389,10 @@ private:
 
   //! matrices of subscale acceleration values in gausspoints of this element
   Epetra_SerialDenseMatrix                        saccn_;
-
   //! matrices of subscale velocity values, current iteration value, in gausspoints of this element
   Epetra_SerialDenseMatrix                        svelnp_;
   //! matrices of subscale velocity values, last timestep, in gausspoints of this element
   Epetra_SerialDenseMatrix                        sveln_;
-
-  //! vector of subscale pressure values, current iteration value, in gausspoints
-  Epetra_SerialDenseVector                        sprenp_;
-  //! vector of subscale pressure values (history values) in gausspoints
-  Epetra_SerialDenseVector                        spren_;
 
   // internal calculation methods
 
@@ -395,9 +410,6 @@ private:
   bool isHigherOrderElement(
     const DRT::Element::DiscretizationType  distype  ///< discretization type
     ) const;
-
-  /// Residual based genalpha implementation class for fluid element
-  Fluid2GenalphaResVMM* GenalphaResVMM();
 
   /*!
     \brief integrate shape functions over volume element

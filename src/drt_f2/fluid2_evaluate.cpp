@@ -42,69 +42,6 @@ Maintainer: Peter Gamnitzer
 
 using namespace DRT::UTILS;
 
-
-
-/* ----------------------------------------------------------------------
- |                                                            gammi 02/08|
-
-  Depending on the type of the algorithm (the implementation) and the
-  element type (tri, quad etc.), the elements allocate common static
-  arrays.
-
-  That means that for example all quad4 fluid elements of the stationary
-  implementation have a pointer f4 to the same 'implementation class'
-  containing all the element arrays for eight noded elements, and all
-  tri3 fluid elements of the same problem have a pointer f3 to
-  the 'implementation class' containing all the element arrays for the
-  3 noded element.
-
-  */
-
-DRT::ELEMENTS::Fluid2GenalphaResVMM* DRT::ELEMENTS::Fluid2::GenalphaResVMM()
-{
-  switch (NumNode())
-  {
-  case 4:
-  {
-    static Fluid2GenalphaResVMM* f4;
-    if (f4==NULL)
-      f4 = new Fluid2GenalphaResVMM(4);
-    return f4;
-  }
-  case 8:
-  {
-    static Fluid2GenalphaResVMM* f8;
-    if (f8==NULL)
-      f8 = new Fluid2GenalphaResVMM(8);
-    return f8;
-  }
-  case 9:
-  {
-    static Fluid2GenalphaResVMM* f9;
-    if (f9==NULL)
-      f9 = new Fluid2GenalphaResVMM(9);
-    return f9;
-  }
-  case 3:
-  {
-    static Fluid2GenalphaResVMM* f3;
-    if (f3==NULL)
-      f3 = new Fluid2GenalphaResVMM(3);
-    return f3;
-  }
-  case 6:
-  {
-    static Fluid2GenalphaResVMM* f6;
-    if (f6==NULL)
-      f6 = new Fluid2GenalphaResVMM(6);
-    return f6;
-  }
-  default:
-    dserror("node number %d not supported", NumNode());
-  }
-  return NULL;
-}
-
 /*----------------------------------------------------------------------*
  // converts a string into an stabilisation action for this element
  //                                                          gammi 02/08
@@ -251,6 +188,47 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
     break;
     case calc_fluid_genalpha_sysmat_and_residual:
     {
+
+      // if not available, define map from string to action
+      if(stabstrtoact_.empty())
+      {
+        stabstrtoact_["quasistatic"            ]=subscales_quasistatic;
+        stabstrtoact_["time_dependent"         ]=subscales_time_dependent;
+        stabstrtoact_["no_transient"           ]=inertia_stab_drop;
+        stabstrtoact_["yes_transient"          ]=inertia_stab_keep;
+        stabstrtoact_["transient_complete"     ]=inertia_stab_keep_complete;
+        stabstrtoact_["no_pspg"                ]=pstab_assume_inf_sup_stable;
+        stabstrtoact_["yes_pspg"               ]=pstab_use_pspg;
+        stabstrtoact_["no_supg"                ]=convective_stab_none;
+        stabstrtoact_["yes_supg"               ]=convective_stab_supg;
+        stabstrtoact_["no_vstab"               ]=viscous_stab_none;
+        stabstrtoact_["vstab_gls"              ]=viscous_stab_gls;
+        stabstrtoact_["vstab_gls_rhs"          ]=viscous_stab_gls_only_rhs;
+        stabstrtoact_["vstab_usfem"            ]=viscous_stab_usfem;
+        stabstrtoact_["vstab_usfem_rhs"        ]=viscous_stab_usfem_only_rhs;
+        stabstrtoact_["no_cstab"               ]=continuity_stab_none;
+        stabstrtoact_["cstab_qs"               ]=continuity_stab_yes;
+        stabstrtoact_["no_cross"               ]=cross_stress_stab_none;
+        stabstrtoact_["cross_complete"         ]=cross_stress_stab;
+        stabstrtoact_["cross_rhs"              ]=cross_stress_stab_only_rhs;
+        stabstrtoact_["no_reynolds"            ]=reynolds_stress_stab_none;
+        stabstrtoact_["reynolds_complete"      ]=reynolds_stress_stab;
+        stabstrtoact_["reynolds_rhs"           ]=reynolds_stress_stab_only_rhs;
+      }
+
+      return DRT::ELEMENTS::Fluid2GenalphaResVMMInterface::Impl(this)->Evaluate(
+        this,
+        params,
+        discretization,
+        lm,
+        elemat1,
+        elemat2,
+        elevec1,
+        elevec2,
+        elevec3,
+        mat);
+#if 0
+
       // --------------------------------------------------
       // extract velocities, pressure and accelerations from the
       // global distributed vectors
@@ -383,7 +361,6 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
         stabstrtoact_["vstab_usfem_rhs"]=viscous_stab_usfem_only_rhs;
         stabstrtoact_["no_ctab"        ]=continuity_stab_none;
         stabstrtoact_["cstab_qs"       ]=continuity_stab_yes;
-        stabstrtoact_["cstab_td"       ]=continuity_stab_td;
         stabstrtoact_["no_cross"       ]=cross_stress_stab_none;
         stabstrtoact_["cross_complete" ]=cross_stress_stab;
         stabstrtoact_["cross_rhs"      ]=cross_stress_stab_only_rhs;
@@ -452,43 +429,11 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
                                reynolds,
                                compute_elemat
         );
-
-      // This is a very poor way to transport the density to the
-      // outside world. Is there a better one?
-      double dens = 0.0;
-      if(mat->MaterialType()== INPAR::MAT::m_fluid)
-      {
-        MAT::NewtonianFluid* actmat = static_cast<MAT::NewtonianFluid*>(mat.get());
-        dens = actmat->Density();
-      }
-      else if(mat->MaterialType()== INPAR::MAT::m_carreauyasuda)
-      {
-        MAT::CarreauYasuda* actmat = static_cast<MAT::CarreauYasuda*>(mat.get());
-        dens = actmat->Density();
-      }
-      else if(mat->MaterialType()== INPAR::MAT::m_modpowerlaw)
-      {
-        MAT::ModPowerLaw* actmat = static_cast<MAT::ModPowerLaw*>(mat.get());
-        dens = actmat->Density();
-      }
-      else
-        dserror("no fluid material found");
-
-      params.set("density", dens);
+#endif
     }
     break;
     case calc_fluid_genalpha_update_for_subscales:
     {
-      // most recent subscale pressure becomes the old subscale pressure
-      // for the next timestep
-      //
-      //  ~n   ~n+1
-      //  p <- p
-      //
-      for(int rr=0;rr<spren_.Length();++rr)
-      {
-	spren_(rr) = sprenp_(rr);
-      }
       // the old subscale acceleration for the next timestep is calculated
       // on the fly, not stored on the element
       /*
@@ -504,7 +449,7 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
 
       for(int rr=0;rr<2;++rr)
       {
-	for(int mm=0;mm<spren_.Length();++mm)
+	for(int mm=0;mm<svelnp_.N();++mm)
 	{
 	  saccn_(rr,mm) =
 	  (svelnp_(rr,mm)-sveln_(rr,mm))/(gamma*dt)
@@ -521,7 +466,7 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
       //
       for(int rr=0;rr<2;++rr)
       {
-	for(int mm=0;mm<spren_.Length();++mm)
+	for(int mm=0;mm<svelnp_.N();++mm)
 	{
 	  sveln_(rr,mm)=svelnp_(rr,mm);
 	}
