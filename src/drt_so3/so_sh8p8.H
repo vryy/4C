@@ -595,7 +595,7 @@ private:
   ///    \mathbf{E} = \mathbf{B} \; \mathbf{e}
   ///\f]
   ///
-  /// This operation is also known as 'pull back'
+  /// This operation is also known as 'pull back' or 'base transformation', respectively.
   static void Matrix2TensorToLeftRightProductMatrix6x6Voigt(
     LINALG::Matrix<NUMSTR_,NUMSTR_>& bm,  ///< (out) 6x6 Voigt matrix
     const LINALG::Matrix<NUMDIM_,NUMDIM_>& bt,  ///< (in) 3x3 matrix of 2-tensor
