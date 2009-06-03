@@ -8623,18 +8623,18 @@ double DRT::ELEMENTS::Fluid2GenalphaResVMM<distype>::ShapeFunctionsFirstAndSecon
       |
       |
       |                                        +-           -+
-      |  	   	    	    	        | d^2x   d^2y |
-      |  	   	    	    	        | ----   ---- |
-      | 	   	   	   	        | dr^2   dr^2 |
-      | 	   	   	   	        |             |
-      | 	   	   	   	        | d^2x   d^2y |
+      |  	   	    	   	       | d^2x   d^2y |
+      |  	   	    	    	       | ----   ---- |
+      | 	   	   	   	       | dr^2   dr^2 |
+      | 	   	   	   	       |             |
+      | 	   	   	   	       | d^2x   d^2y |
       |                    yields    xder2  =  | ----   ---- |
-      | 	   	   	   	        | ds^2   ds^2 |
-      | 	   	   	   	        |             |
-      | 	   	   	   	        | d^2x   d^2y |
-      | 	   	   	   	        | ----   ---- |
-      | 	   	   	   	        | drds   drds |
-      | 	   	   	   	        +-           -+
+      | 	   	   	   	       | ds^2   ds^2 |
+      | 	   	   	   	       |             |
+      | 	   	   	   	       | d^2x   d^2y |
+      | 	   	   	   	       | ----   ---- |
+      | 	   	   	   	       | drds   drds |
+      | 	   	   	   	       +-           -+
     */
     for(int rr=0;rr<3;++rr)
     {
