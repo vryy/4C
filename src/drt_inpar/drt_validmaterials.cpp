@@ -815,6 +815,22 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
 
+  /*--------------------------------------------------------------------*/
+  // coupled Blatz and Ko material acc. to Holzapfel
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_CoupBlatzKo",
+                                            "Blatz and Ko material acc. to Holtzapfel",
+                                            INPAR::MAT::mes_coupblatzko));
+
+    AddNamedReal(m,"MUE","Shear modulus");
+    AddNamedReal(m,"NUE","Poisson's ratio");
+    AddNamedReal(m,"F","interpolation parameter");
+    AddNamedReal(m,"BETA","empirical parameter");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
 
   /*--------------------------------------------------------------------*/
   // isochoric contribution of Neo-Hooke

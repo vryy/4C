@@ -20,6 +20,7 @@ Maintainer: Burkhard Bornemann
 #include "../drt_mat/material.H"
 #include "../drt_mat/elasthyper.H"
 #include "elast_couplogneohooke.H"
+#include "elast_coupblatzko.H"
 #include "elast_isoneohooke.H"
 #include "elast_isoyeoh.H"
 #include "elast_isomooneyrivlin.H"
@@ -53,6 +54,13 @@ Teuchos::RCP<MAT::ELAST::Summand> MAT::ELAST::Summand::Factory(int matnum)
       curmat->SetParameter(new MAT::ELAST::PAR::CoupLogNeoHooke(curmat));
     MAT::ELAST::PAR::CoupLogNeoHooke* params = static_cast<MAT::ELAST::PAR::CoupLogNeoHooke*>(curmat->Parameter());
     return Teuchos::rcp(new CoupLogNeoHooke(params));
+  }
+  case INPAR::MAT::mes_coupblatzko:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELAST::PAR::CoupBlatzKo(curmat));
+    MAT::ELAST::PAR::CoupBlatzKo* params = static_cast<MAT::ELAST::PAR::CoupBlatzKo*>(curmat->Parameter());
+    return Teuchos::rcp(new CoupBlatzKo(params));
   }
   case INPAR::MAT::mes_isoneohooke:
   {
