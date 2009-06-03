@@ -721,8 +721,8 @@ void CONTACT::Interface::Evaluate()
     // we only do this on a slave element basis in the case with
     // two separate Mortar loops for D and M. If CONTACTONEMORTARLOOP
     // is applied, we combine the construction of D with the construction
-    // of M in the method Integrator::AssembleM() and linearization of D
-    // with the linearization of M in Integrator::IntegrateDerivSegment2D()! 
+    // of M and linearization of D with the linearization of M in
+    // Integrator::IntegrateDerivSegment2D()! 
     //********************************************************************
 #ifndef CONTACTONEMORTARLOOP
     IntegrateSlave(*selement);
