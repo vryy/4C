@@ -49,7 +49,8 @@ namespace ELEMENTS
 {
 // forward declarations
 class Fluid3Surface;
-  template<DRT::Element::DiscretizationType distype,DRT::Element::DiscretizationType pdistype> class Fluid3SurfaceWeakDBC;
+
+template<DRT::Element::DiscretizationType distype,DRT::Element::DiscretizationType pdistype> class Fluid3SurfaceWeakDBC;
 
 class Fluid3Line;
 template<DRT::Element::DiscretizationType distype> class Fluid3Impl;
