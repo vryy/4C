@@ -443,4 +443,288 @@ void DRT::UTILS::SurfaceGPToParentGP(
   return;
 }
 
+
+/*-----------------------------------------------------------------
+
+\brief Transform Gausspoints on line element to 2d space of 
+       parent element (required for integrations of parent-element 
+       shape functions over boundary elements, for example 
+       in weak dirichlet boundary conditions).
+
+  -----------------------------------------------------------------*/
+void DRT::UTILS::LineGPToParentGP(
+  Epetra_SerialDenseMatrix              & pqxg     ,
+  const DRT::UTILS::IntegrationPoints1D & intpoints,
+  const DRT::Element::DiscretizationType  pdistype ,
+  const DRT::Element::DiscretizationType  distype  ,
+  const int                               lineid   )
+{
+  // resize output array
+  pqxg.Shape(intpoints.nquad,2);
+
+  if(distype==DRT::Element::line2 && pdistype==DRT::Element::quad4)
+  {
+    switch(lineid)
+    {
+    case 0:
+    {
+    /*                s|
+                       | 
+
+             3                   2
+              +-----------------+
+              |                 |
+              |                 |
+	      |                 |
+	      |        |        |             r
+              |        +--      |         -----
+              |                 |
+              |                 |
+              |                 |
+              |                 |
+              +-----------*-----+
+             0                   1
+                    -->|gp|<--               */
+
+
+      // s=-1
+      /*
+
+                parent                line  
+
+                             r                     r
+              +---+---+  -----      +---+---+ ------         
+             0   1   2             0   1   2                 
+
+      */
+      for (int iquad=0;iquad<intpoints.nquad;++iquad)
+      { 
+	pqxg(iquad,0)= intpoints.qxg[iquad][0];
+	pqxg(iquad,1)=-1.0;
+      }
+      break;
+    }
+    case 1:
+    {
+    /*                s|
+                       | 
+
+             3                   2
+              +-----------------+
+              |                 | |
+              |                 | v
+	      |                 *---
+	      |        |        | gp          r
+              |        +--      |---      -----
+              |                 | ^
+              |                 | |
+              |                 |
+              |                 |
+              +-----------------+
+             0                   1
+                                             */
+
+      // r=+1
+      /*
+                parent               surface
+
+                 s|                        r|                    
+                  |                         |                    
+                      +                     +                
+	             8|                    2|         
+                      +                     +         
+                     5|                    1|                
+                      +                     +                
+                     2                     0                 
+      */
+      for (int iquad=0;iquad<intpoints.nquad;++iquad)
+      { 
+	pqxg(iquad,0)= 1.0;
+	pqxg(iquad,1)= intpoints.qxg[iquad][0];
+      }
+      break;
+    }
+    case 2:
+    {
+    /*                s|
+                       | 
+
+             3   -->|gp|<--       
+              +-----*-----------+
+              |                 |  
+              |                 |  
+	      |                 |   
+	      |        |        |             r
+              |        +--      |         -----
+              |                 |  
+              |                 |  
+              |                 |
+              |                 |
+              +-----------------+
+             0                   1
+                                             */
+
+      // s=+1
+      /*
+
+                parent                line  
+
+                             r                           r
+              +---+---+  -----             +---+---+ -----
+             6   7   8                    0   1   2
+
+      */
+
+      for (int iquad=0;iquad<intpoints.nquad;++iquad)
+      { 
+	pqxg(iquad,0)=-intpoints.qxg[iquad][0];
+	pqxg(iquad,1)= 1.0;
+      }
+      break;
+    }
+    case 3:
+    {
+    /*                s|
+                       | 
+
+             3                    
+              +-----*-----------+
+              |                 |  
+              |                 |  
+	    | |                 |   
+	    v |        |        |             r
+           ---|        +--      |         -----
+            gp|                 |  
+           ---*                 |  
+            ^ |                 |
+            | |                 |
+              +-----------------+
+             0                   1
+                                             */
+
+      // r=-1
+      /*
+                parent               surface
+
+                 s|                        r|                    
+                  |                         |                    
+               +                            +                
+	      6|                           2|         
+               +                            +         
+              3|                           1|                
+               +                            +                
+              0                            0                 
+      */
+      for (int iquad=0;iquad<intpoints.nquad;++iquad)
+      { 
+	pqxg(iquad,0)=-1.0;
+	pqxg(iquad,1)=-intpoints.qxg[iquad][0];
+      }
+      break;
+    }
+    default:
+      dserror("invalid number of lines, unable to determine intpoint in parent");
+    }
+
+  }
+  else if(distype==DRT::Element::nurbs3 && pdistype==DRT::Element::nurbs9)
+  {
+    switch(lineid)
+    {
+    case 0:
+    {
+      // s=-1
+      /*
+
+                parent                line  
+
+                             r                     r
+              +---+---+  -----      +---+---+ ------         
+             0   1   2             0   1   2                 
+
+      */
+      for (int iquad=0;iquad<intpoints.nquad;++iquad)
+      { 
+	pqxg(iquad,0)= intpoints.qxg[iquad][0];
+	pqxg(iquad,1)=-1.0;
+      }
+      break;
+    }
+    case 1:
+    {
+      // r=+1
+      /*
+                parent               surface
+
+                 s|                        r|                    
+                  |                         |                    
+                      +                     +                
+	             8|                    2|         
+                      +                     +         
+                     5|                    1|                
+                      +                     +                
+                     2                     0                 
+      */
+      for (int iquad=0;iquad<intpoints.nquad;++iquad)
+      { 
+	pqxg(iquad,0)= 1.0;
+	pqxg(iquad,1)= intpoints.qxg[iquad][0];
+      }
+      break;
+    }
+    case 2:
+    {
+      // s=+1
+      /*
+
+                parent                line  
+
+                             r                           r
+              +---+---+  -----             +---+---+ -----
+             6   7   8                    0   1   2
+
+      */
+
+      for (int iquad=0;iquad<intpoints.nquad;++iquad)
+      { 
+	pqxg(iquad,0)= intpoints.qxg[iquad][0];
+	pqxg(iquad,1)= 1.0;
+      }
+      break;
+    }
+    case 3:
+    {
+      // r=-1
+      /*
+                parent               surface
+
+                 s|                        r|                    
+                  |                         |                    
+               +                            +                
+	      6|                           2|         
+               +                            +         
+              3|                           1|                
+               +                            +                
+              0                            0                 
+      */
+      for (int iquad=0;iquad<intpoints.nquad;++iquad)
+      { 
+	pqxg(iquad,0)=-1.0;
+	pqxg(iquad,1)= intpoints.qxg[iquad][0];
+      }
+      break;
+    }
+    default:
+      dserror("invalid number of lines, unable to determine intpoint in parent");
+    }
+  }
+  else
+  {
+      dserror("only line2/quad4 and nurbs3/nurbs9 mappings of surface gausspoint to parent element implemented up to now\n");
+  }
+
+  return;
+}
+
+
 #endif  // #ifdef CCADISCRET

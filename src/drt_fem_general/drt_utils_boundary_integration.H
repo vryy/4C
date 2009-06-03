@@ -59,6 +59,33 @@ void SurfaceGPToParentGP(
   const DRT::Element::DiscretizationType  distype  ,
   const int                               surfaceid);
 
+/*-----------------------------------------------------------------
+
+\brief Transform Gausspoints on line element to 2d space of 
+       parent element (required for integrations of parent-element 
+       shape functions over boundary elements, for example 
+       in weak dirichlet boundary conditions).
+
+
+\param pqxg      (o) transformed integration points of surface 
+                     elements in parent elements reference 
+                     coordinates
+\param intpoints (i) integration points of surface element in its 
+                     reference coordinates
+\param pdistype  (i) discretisation type of parent element
+\param distype   (i) discretisation type of surface element
+\param lineid    (i) local id of surface element
+
+\author gammi (gamnitzer@lnm.mw.tum.de), 05/09
+
+  -----------------------------------------------------------------*/
+void LineGPToParentGP(
+  Epetra_SerialDenseMatrix              & pqxg     ,
+  const DRT::UTILS::IntegrationPoints1D & intpoints,
+  const DRT::Element::DiscretizationType  pdistype ,
+  const DRT::Element::DiscretizationType  distype  ,
+  const int                               lineid   );
+
 
 //! compute kovariant metric tensor for surface element
 void ComputeMetricTensorForSurface(
