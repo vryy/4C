@@ -47,6 +47,8 @@ template <DRT::Element::DiscretizationType distype> class Fluid2Stationary;
 template <DRT::Element::DiscretizationType distype> class Fluid2GenalphaResVMM;
 class Fluid2Register;
 
+template<DRT::Element::DiscretizationType distype,DRT::Element::DiscretizationType pdistype> class Fluid2LineWeakDBC;
+
 /*!
 \brief A C++ wrapper for the fluid2 element
 
@@ -546,6 +548,10 @@ private:
 class Fluid2Line : public DRT::Element
 {
 public:
+
+  friend class Fluid2LineWeakDBC<DRT::Element::line2 ,DRT::Element::quad4 >;
+  friend class Fluid2LineWeakDBC<DRT::Element::nurbs3,DRT::Element::nurbs9>;
+  friend class Fluid2LineWeakDBCInterface;
 
   //! @name Constructors and destructors and related methods
 
