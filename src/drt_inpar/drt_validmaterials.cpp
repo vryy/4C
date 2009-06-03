@@ -92,12 +92,12 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"VISCOSITY","kinematic or dynamic viscosity");
     AddNamedReal(m,"DENSITY","spatial mass density");
     AddNamedReal(m,"GAMMA","surface tension coeficient",true);
-    
-    AppendMaterialDefinition(matlist,m);    
+
+    AppendMaterialDefinition(matlist,m);
   }
 
   /*----------------------------------------------------------------------*/
-  // fluid material according to Sutherland law 
+  // fluid material according to Sutherland law
   {
     Teuchos::RCP<MaterialDefinition> m
       = Teuchos::rcp(new MaterialDefinition("MAT_sutherland_fluid",
@@ -107,12 +107,12 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"REFVISC","reference dynamic viscosity (kg/(m*s))");
     AddNamedReal(m,"REFTEMP","reference temperature (K)");
     AddNamedReal(m,"SUTHTEMP","Sutherland temperature (K)");
-    
-    AppendMaterialDefinition(matlist,m);    
+
+    AppendMaterialDefinition(matlist,m);
   }
 
   /*----------------------------------------------------------------------*/
-  // fluid with non-linear viscosity according to Carreau-Yasuda 
+  // fluid with non-linear viscosity according to Carreau-Yasuda
   {
     Teuchos::RCP<MaterialDefinition> m
       = Teuchos::rcp(new MaterialDefinition("MAT_carreauyasuda",
@@ -125,12 +125,12 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"APARAM","constant parameter");
     AddNamedReal(m,"BPARAM","constant parameter");
     AddNamedReal(m,"DENSITY","density");
-    
-    AppendMaterialDefinition(matlist,m);    
+
+    AppendMaterialDefinition(matlist,m);
   }
 
   /*----------------------------------------------------------------------*/
-  // fluid with nonlinear viscosity according to a modified power law 
+  // fluid with nonlinear viscosity according to a modified power law
   {
     Teuchos::RCP<MaterialDefinition> m
       = Teuchos::rcp(new MaterialDefinition("MAT_modpowerlaw",
@@ -141,12 +141,12 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"DELTA","safety factor");
     AddNamedReal(m,"AEXP","exponent");
     AddNamedReal(m,"DENSITY","density");
-    
-    AppendMaterialDefinition(matlist,m);    
+
+    AppendMaterialDefinition(matlist,m);
   }
 
   /*----------------------------------------------------------------------*/
-  // convection-diffusion material 
+  // convection-diffusion material
   {
     Teuchos::RCP<MaterialDefinition> m
       = Teuchos::rcp(new MaterialDefinition("MAT_condif",
@@ -155,7 +155,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AddNamedReal(m,"DIFFUSIVITY","kinematic diffusivity");
     AddNamedReal(m,"SHC","specific heat capacity",true);
-    
+
     AppendMaterialDefinition(matlist,m);
   }
 
@@ -172,8 +172,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"SUTHTEMP","Sutherland temperature (K)");
     AddNamedReal(m,"SHC","specific heat capacity");
     AddNamedReal(m,"PRANUM","Prandtl number");
-    
-    AppendMaterialDefinition(matlist,m);    
+
+    AppendMaterialDefinition(matlist,m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -186,8 +186,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AddNamedReal(m,"DIFFUSIVITY","kinematic diffusivity");
     AddNamedReal(m,"VALENCE","valence (= charge number)");
-    
-    AppendMaterialDefinition(matlist,m);    
+
+    AppendMaterialDefinition(matlist,m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -197,10 +197,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
       = Teuchos::rcp(new MaterialDefinition("MAT_matlist",
                                             "list/collection of materials, i.e. material IDs",
                                             INPAR::MAT::m_matlist));
-    
+
     AddNamedInt(m,"NUMMAT","number of materials in list");
     AddNamedIntVector(m,"MATIDS","the list material IDs","NUMMAT");
-    
+
     AppendMaterialDefinition(matlist,m);
   }
 
@@ -216,7 +216,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"NUE","Poisson's ratio");
     AddNamedReal(m,"DENS","mass density");
     AddNamedReal(m,"THEXPANS","coefficient of linear thermal expansion",true);
-    
+
     AppendMaterialDefinition(matlist,m);
   }
 
@@ -237,7 +237,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"XNUE12","???");
     AddNamedReal(m,"XNUE13","???");
     AddNamedReal(m,"XNUE23","???");
-    
+
     AppendMaterialDefinition(matlist,m);
   }
 
@@ -254,7 +254,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"DENS","mass density");
     AddNamedReal(m,"REFDENS","reference density");
     AddNamedReal(m,"EXPO","material parameter");
-    
+
     AppendMaterialDefinition(matlist,m);
   }
 
@@ -269,7 +269,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"YOUNG","Young's modulus");
     AddNamedReal(m,"NUE","Poisson's ratio");
     AddNamedReal(m,"DENS","mass density");
-    
+
     AppendMaterialDefinition(matlist,m);
   }
 
@@ -285,7 +285,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"BETA","2nd parameter");
     AddNamedReal(m,"NUE","Poisson's ratio");
     AddNamedReal(m,"DENS","mass density");
-    
+
     AppendMaterialDefinition(matlist,m);
   }
 
@@ -301,7 +301,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"NUE","Poisson's ratio");
     AddNamedReal(m,"DENS","mass density");
     AddNamedInt(m,"MODEL","sub model: 0=Bonet&Wood, 1=Volumetrically-isochorically decomposed",0,true);
-    
+
     AppendMaterialDefinition(matlist,m);
   }
 
@@ -314,7 +314,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             INPAR::MAT::m_biocell));
 
     AddNamedReal(m,"DENS","mass density");
-    
+
     AppendMaterialDefinition(matlist,m);
   }
 
@@ -336,14 +336,14 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedRealVector(m,"SCD_Space","Second characteristic directional space",3);
     AddNamedInt(m,"FCD_Acceleration","Acceleration computation in FCD");
     AddNamedReal(m,"AtomicMass","Atomic mass [amu] of the moving part");
-    AddNamedReal(m,"Facc_Scale","Scale factor from FE force to pN"); 
+    AddNamedReal(m,"Facc_Scale","Scale factor from FE force to pN");
     AddNamedReal(m,"Time_AKMA","Scale factor from FE time to AKMA time");
     AddNamedReal(m,"Time_Scale","Linear scale factor for time span");
     AddNamedInt(m,"HARD","Use hard coded results");
     AddNamedReal(m,"c_Scale","Scale factor for c (Neo-Hookean)");
-    AddNamedString(m,"PATH","Location of CHARMm problem case","none");    
+    AddNamedString(m,"PATH","Location of CHARMm problem case","none");
     AddNamedReal(m,"DENS","mass density");
-    
+
     AppendMaterialDefinition(matlist,m);
   }
   /*--------------------------------------------------------------------*/
@@ -355,7 +355,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             INPAR::MAT::m_protein));
 
     AddNamedReal(m,"DENS","mass density");
-    
+
     AppendMaterialDefinition(matlist,m);
   }
   /*--------------------------------------------------------------------*/
@@ -393,7 +393,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"ocf","factor");
     AddNamedReal(m,"densmin","min. dens. foam (opti.)");
     AddNamedReal(m,"densmax","max. dens. foam (opti.)");
-    
+
     AppendMaterialDefinition(matlist,m);
   }
 
@@ -413,7 +413,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"ccf","factor");
     AddNamedReal(m,"densmin","min. dens. foam (opti.)");
     AddNamedReal(m,"densmax","max. dens. foam (opti.)");
-    
+
     AppendMaterialDefinition(matlist,m);
   }
 
@@ -433,7 +433,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"ccf","???");
     AddNamedReal(m,"densmin","???");
     AddNamedReal(m,"densmax","???");
-    
+
     AppendMaterialDefinition(matlist,m);
   }
 
@@ -454,7 +454,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"NU2","???");
     AddNamedReal(m,"NU3","???");
     AddNamedReal(m,"DENS","???");
-    
+
     AppendMaterialDefinition(matlist,m);
   }
 
@@ -484,7 +484,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"BETA2","???");
     AddNamedReal(m,"BETA3","???");
     AddNamedReal(m,"BETA4","???");
-   
+
     AppendMaterialDefinition(matlist,m);
   }
 
@@ -792,12 +792,12 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
       = Teuchos::rcp(new MaterialDefinition("MAT_ElastHyper",
                                             "list/collection of hyperelastic materials, i.e. material IDs",
                                             INPAR::MAT::m_elasthyper));
-    
+
     AddNamedInt(m,"NUMMAT","number of materials/potentials in list");
     AddNamedIntVector(m,"MATIDS","the list material/potential IDs","NUMMAT");
     AddNamedReal(m,"DENS","material mass density");
     AddNamedReal(m,"GAMMA","fiber angle");
-    
+
     AppendMaterialDefinition(matlist,m);
   }
 
@@ -811,7 +811,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AddNamedReal(m,"YOUNG","Young's modulus");
     AddNamedReal(m,"NUE","Poisson's ratio");
-    
+
     AppendMaterialDefinition(matlist,m);
   }
 
@@ -825,11 +825,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             INPAR::MAT::mes_isoneohooke));
 
     AddNamedReal(m,"MUE","Shear modulus");
-    
+
     AppendMaterialDefinition(matlist,m);
   }
-  
-  
+
+
   /*--------------------------------------------------------------------*/
   // isochoric contribution of Yeoh
   {
@@ -841,10 +841,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"C1","Linear modulus");
     AddNamedReal(m,"C2","Quadratic modulus");
     AddNamedReal(m,"C3","Cubic modulus");
-    
+
     AppendMaterialDefinition(matlist,m);
   }
-  
+
   /*--------------------------------------------------------------------*/
   // isochoric contribution of neohooke
   {
@@ -857,7 +857,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"C2","Linear modulus for second invariant");
     AppendMaterialDefinition(matlist,m);
   }
- 
+
 
   /*--------------------------------------------------------------------*/
   // volumetric contribution of Sussman Bathe
@@ -868,11 +868,26 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             INPAR::MAT::mes_volsussmanbathe));
 
     AddNamedReal(m,"KAPPA","dilatation modulus");
-    
+
     AppendMaterialDefinition(matlist,m);
   }
-  
-  
+
+
+  /*--------------------------------------------------------------------*/
+  // volumetric contribution of Ogden
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_VolOgden",
+                                            "Ogden formulation for the volumetric part",
+                                            INPAR::MAT::mes_vologden));
+
+    AddNamedReal(m,"KAPPA","dilatation modulus");
+    AddNamedReal(m,"BETA","empiric constant");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+
   /*--------------------------------------------------------------------*/
   // coupled anisotropic material with two exponential fiber families
   {
@@ -885,7 +900,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"K2","exponential constant fiber 1");
     AddNamedReal(m,"K3","linear constant fiber 2");
     AddNamedReal(m,"K4","exponential constant fiber 2");
-    
+
     AppendMaterialDefinition(matlist,m);
   }
 

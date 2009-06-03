@@ -24,6 +24,7 @@ Maintainer: Burkhard Bornemann
 #include "elast_isoyeoh.H"
 #include "elast_isomooneyrivlin.H"
 #include "elast_volsussmanbathe.H"
+#include "elast_vologden.H"
 #include "elast_coupanisoexpotwo.H"
 
 
@@ -66,20 +67,27 @@ Teuchos::RCP<MAT::ELAST::Summand> MAT::ELAST::Summand::Factory(int matnum)
       curmat->SetParameter(new MAT::ELAST::PAR::IsoYeoh(curmat));
     MAT::ELAST::PAR::IsoYeoh* params = static_cast<MAT::ELAST::PAR::IsoYeoh*>(curmat->Parameter());
     return Teuchos::rcp(new IsoYeoh(params));
-  }  
+  }
   case INPAR::MAT::mes_isomooneyrivlin:
   {
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::ELAST::PAR::IsoMooneyRivlin(curmat));
     MAT::ELAST::PAR::IsoMooneyRivlin* params = static_cast<MAT::ELAST::PAR::IsoMooneyRivlin*>(curmat->Parameter());
     return Teuchos::rcp(new IsoMooneyRivlin(params));
-  }  
+  }
   case INPAR::MAT::mes_volsussmanbathe:
   {
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::ELAST::PAR::VolSussmanBathe(curmat));
     MAT::ELAST::PAR::VolSussmanBathe* params = static_cast<MAT::ELAST::PAR::VolSussmanBathe*>(curmat->Parameter());
     return Teuchos::rcp(new VolSussmanBathe(params));
+  }
+  case INPAR::MAT::mes_vologden:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELAST::PAR::VolOgden(curmat));
+    MAT::ELAST::PAR::VolOgden* params = static_cast<MAT::ELAST::PAR::VolOgden*>(curmat->Parameter());
+    return Teuchos::rcp(new VolOgden(params));
   }
   case INPAR::MAT::mes_coupanisoexpotwo:
   {

@@ -127,7 +127,7 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*/
 void MAT::ElastHyper::Setup()
 {
-  anisotropic_ = true; 
+  anisotropic_ = true;
   // fibers aligned in local element cosy with gamma_i around circumferential direction
   vector<double> rad(3);
   vector<double> axi(3);
@@ -137,9 +137,9 @@ void MAT::ElastHyper::Setup()
   frdouble_n("RAD",&rad[0],3,&ierr);
   frdouble_n("AXI",&axi[0],3,&ierr);
   frdouble_n("CIR",&cir[0],3,&ierr);
-  if (ierr!=1) 
+  if (ierr!=1)
   {
-    dserror("Reading of element local cosy failed");
+    //dserror("Reading of element local cosy failed");
     anisotropic_=false;
     return;
   }
@@ -161,7 +161,7 @@ void MAT::ElastHyper::Setup()
   const double gamma = (params_->gamma_*PI)/180.; //convert
   vector<double> a1(3);
   vector<double> a2(3);
-  
+
   for (int i = 0; i < 3; ++i) {
     // a1 = cos gamma e3 + sin gamma e2
     a1[i] = cos(gamma)*locsys(i,2) + sin(gamma)*locsys(i,1);
@@ -186,7 +186,7 @@ void MAT::ElastHyper::Setup()
 int MAT::ElastHyper::MatID(
   const unsigned index
 ) const
-{ 
+{
   if ((int)index < params_->nummat_)
     return params_->matids_->at(index);
   else
@@ -232,8 +232,8 @@ void MAT::ElastHyper::InvariantsModified(
   modinv(1) = prinv(1)*std::pow(prinv(2),-2./3.);
   // J
   modinv(2) = std::pow(prinv(2),1./2.);
-    
-  
+
+
   return;
 }
 
@@ -262,7 +262,7 @@ void MAT::ElastHyper::InvariantsPrincipalAniso(
 
   prinv(4) =  A2_(0)*rcg(0) + A2_(1)*rcg(1) + A2_(2)*rcg(2)
             + A2_(3)*rcg(3) + A2_(4)*rcg(4) + A2_(5)*rcg(5);
-  
+
   prinv(5) =  A1A2_(0,0)*rcg(0) + A1A2_(1,1)*rcg(1) + A1A2_(2,2)*rcg(2)
             + 0.5*(A1A2_(0,1)*rcg(3) + A1A2_(1,2)*rcg(4) + A1A2_(0,2)*rcg(5))
             + 0.5*(A1A2_(1,0)*rcg(3) + A1A2_(2,1)*rcg(4) + A1A2_(2,0)*rcg(5));
@@ -296,7 +296,7 @@ void MAT::ElastHyper::Evaluate(
   // principal invariants of right Cauchy-Green strain
   LINALG::Matrix<3,1> prinv;
   InvariantsPrincipal(prinv, rcg);
-  
+
   // invert right Cauchy-Green tensor
   // REMARK: stress-like 6-Voigt vector
   LINALG::Matrix<6,1> icg(false);
@@ -309,13 +309,13 @@ void MAT::ElastHyper::Evaluate(
     icg(5) = ( 0.25*rcg(3)*rcg(4) - 0.5*rcg(5)*rcg(1) ) / prinv(2);
   }
 
-  
+
   // principal coefficients
   bool havecoeffprinc = false;
   LINALG::Matrix<3,1> gamma(true);
   LINALG::Matrix<8,1> delta(true);
   {
-    
+
     // loop map of associated potential summands
     std::map<int,Teuchos::RCP<MAT::ELAST::Summand> >& pot = params_->potsum_;
     std::map<int,Teuchos::RCP<MAT::ELAST::Summand> >::iterator p;
@@ -323,9 +323,9 @@ void MAT::ElastHyper::Evaluate(
     {
       p->second->AddCoefficientsPrincipal(havecoeffprinc,gamma,delta,prinv);
     }
-  
+
   }
-  
+
   // principal invariants of right Cauchy-Green strain
   LINALG::Matrix<3,1> modinv;
   InvariantsModified(modinv, prinv);
@@ -335,7 +335,7 @@ void MAT::ElastHyper::Evaluate(
   LINALG::Matrix<3,1> modgamma(true);
   LINALG::Matrix<5,1> moddelta(true);
   {
-    
+
     // loop map of associated potential summands
     std::map<int,Teuchos::RCP<MAT::ELAST::Summand> >& pot = params_->potsum_;
     std::map<int,Teuchos::RCP<MAT::ELAST::Summand> >::iterator p;
@@ -343,9 +343,9 @@ void MAT::ElastHyper::Evaluate(
     {
       p->second->AddCoefficientsModified(havecoeffmodi,modgamma,moddelta,modinv);
     }
-  
+
   }
-  
+
   // set Cartesian identity 4-tensor in 6-Voigt matrix notation
   // this is fully 'contra-variant' identity tensor, ie I^{ABCD}
   // REMARK: rows are stress-like 6-Voigt
@@ -353,14 +353,14 @@ void MAT::ElastHyper::Evaluate(
   LINALG::Matrix<6,6> id4sharp(true);
   for (int i=0; i<3; i++) id4sharp(i,i) = 1.0;
   for (int i=3; i<6; i++) id4sharp(i,i) = 0.5;
-  
+
   // set Cartesian identity 4-tensor in 6x6-matrix notation (stress-like)
   // this is a 'mixed co- and contra-variant' identity 4-tensor, ie I^{AB}_{CD}
   // REMARK: rows are stress-like 6-Voigt
   //         columns are strain-like 6-Voigt
   LINALG::Matrix<6,6> id4(true);
   for (int i=0; i<6; i++) id4(i,i) = 1.0;
-    
+
   // blank resulting quantities
   // ... even if it is an implicit law that cmat is zero upon input
   stress.Clear();
@@ -396,7 +396,7 @@ void MAT::ElastHyper::Evaluate(
     // contribution: Id4^#
     cmat.Update(delta(7), id4sharp, 1.0);
   }
-  
+
   if (havecoeffmodi)
   {
     // define necessary variables
@@ -404,9 +404,9 @@ void MAT::ElastHyper::Evaluate(
     // modified right Cauchy-Green
     LINALG::Matrix<6,1> modrcg(true);
     modrcg.Update(modscale, rcg);
-    
+
     // 2nd Piola Kirchhoff stresses
-    
+
     // isochoric contribution
     LINALG::Matrix<6,1> modstress(true);
     modstress.Update(modgamma(0), id2);
@@ -419,13 +419,13 @@ void MAT::ElastHyper::Evaluate(
     LINALG::Matrix<6,1> isostress(true);
     isostress.MultiplyNN(modscale,Projection,modstress,1.0);
     stress.Update(1.0,isostress,1.0);
-    
+
     // volumetric contribution
     stress.Update(modgamma(2)*modinv(2), icg, 1.0);
 
-    
+
     // constitutive tensor
-    
+
     //isochoric contribution
     // modified constitutive tensor
     LINALG::Matrix<6,6> modcmat;
@@ -441,7 +441,7 @@ void MAT::ElastHyper::Evaluate(
     modcmat.Update(moddelta(3), id4sharp, 1.0);
     //scaling
     modcmat.Scale(std::pow(modinv(2),-4./3.));
-    //constribution: P:modC:P 
+    //constribution: P:modC:P
     modcmat2.MultiplyNN(Projection,modcmat);
     cmat.MultiplyNT(1.0,modcmat2,Projection,1.0);
     // constribution: 2/3*Tr(J^(-2/3)modstress) (Cinv \odot Cinv - 1/3 Cinv \otimes Cinv)
@@ -454,21 +454,21 @@ void MAT::ElastHyper::Evaluate(
     //contribution: -2/3 (Cinv \otimes S_iso + S_iso \otimes Cinv)
     cmat.MultiplyNT(-2./3.,icg,isostress,1.0);
     cmat.MultiplyNT(-2./3.,isostress,icg,1.0);
-    
+
     //volumentric contribution
     //contribution: 2 \tilde p Cinv \otimes Cinv
     cmat.MultiplyNT(modinv(2)* moddelta(4),icg,icg,1.0);
     //contribution: -2 J*p Cinv \odot Cinv
     AddtoCmatHolzapfelProduct(cmat, icg, -2*modinv(2)*modgamma(2));
-    
+
   }
-  
+
   /*----------------------------------------------------------------------*/
   //Do all the anisotropic stuff!
   if (anisotropic_)
   {
     // principal anisotropic invariants of right Cauchy-Green strain
-    // we only use the set {I1,I2,I3,I4,I6,I8}, 
+    // we only use the set {I1,I2,I3,I4,I6,I8},
     // because the quadratic invariants I5 and I7 don't give any new info, I9 is constant
     LINALG::Matrix<6,1> pranisoinv;
     InvariantsPrincipalAniso(pranisoinv,rcg);
@@ -478,7 +478,7 @@ void MAT::ElastHyper::Evaluate(
     LINALG::Matrix<3,1> anisogamma(true);
     LINALG::Matrix<15,1> anisodelta(true);
     {
-       
+
       // loop map of associated potential summands
       std::map<int,Teuchos::RCP<MAT::ELAST::Summand> >& pot = params_->potsum_;
       std::map<int,Teuchos::RCP<MAT::ELAST::Summand> >::iterator p;
@@ -486,9 +486,9 @@ void MAT::ElastHyper::Evaluate(
       {
         p->second->AddCoefficientsPrincipalAniso(havecoeffpraniso,anisogamma,anisodelta,pranisoinv);
       }
-     
+
     }
-    
+
     if(havecoeffpraniso)
     {
       // build Voigt (stress-like) version of a1 \otimes a2 + a2 \otimes a1
@@ -499,12 +499,12 @@ void MAT::ElastHyper::Evaluate(
       A1A2sym(3)=A1A2_(0,1)+A1A2_(1,0);
       A1A2sym(4)=A1A2_(1,2)+A1A2_(2,1);
       A1A2sym(5)=A1A2_(0,2)+A1A2_(2,0);
-      
+
       // 2nd Piola Kirchhoff stresses
       stress.Update(anisogamma(0), A1_, 1.0);
       stress.Update(anisogamma(1), A2_, 1.0);
       stress.Update(anisogamma(2), A1A2sym, 1.0);
-      
+
       // constitutive tensor
       // contribution: A1_ \otimes A1_
       cmat.MultiplyNT(anisodelta(0), A1_, A1_, 1.0);
@@ -548,11 +548,11 @@ void MAT::ElastHyper::Evaluate(
       cmat.MultiplyNT(anisodelta(13), A2_, A1A2sym, 1.0);
       // contribution: A1A2sym \otimes A1A2sym
       cmat.MultiplyNT(anisodelta(14), A1A2sym, A1A2sym, 1.0);
-      
+
     }
-    
+
   }
-  
+
 }
 
 #endif

@@ -262,11 +262,12 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     MAT::PAR::ElastHyper* params = static_cast<MAT::PAR::ElastHyper*>(curmat->Parameter());
     return Teuchos::rcp(new ElastHyper(params));
   }
-  case INPAR::MAT::mes_couplogneohooke: 
-  case INPAR::MAT::mes_isoneohooke: 
-  case INPAR::MAT::mes_isoyeoh: 
+  case INPAR::MAT::mes_couplogneohooke:
+  case INPAR::MAT::mes_isoneohooke:
+  case INPAR::MAT::mes_isoyeoh:
   case INPAR::MAT::mes_isomooneyrivlin:
-  case INPAR::MAT::mes_volsussmanbathe: 
+  case INPAR::MAT::mes_volsussmanbathe:
+  case INPAR::MAT::mes_vologden:
   case INPAR::MAT::mes_coupanisoexpotwo:
   {
     return Teuchos::null;
@@ -918,7 +919,7 @@ void MAT::VolumetrifyAndIsochorify(LINALG::Matrix<6,1>* pk2vol,
   // useful call?
 #ifdef DEBUG
   if ( (pk2vol == NULL) and (cvol == NULL) and (pk2iso == NULL) and (ciso == NULL) )
-    dserror("Useful call? Apparently you do not want to compute anything"); 
+    dserror("Useful call? Apparently you do not want to compute anything");
 #endif
 
   // right Cauchy--Green tensor
@@ -956,7 +957,7 @@ void MAT::VolumetrifyAndIsochorify(LINALG::Matrix<6,1>* pk2vol,
     if (pk2vol != NULL)
       pk2vol_.SetView(*pk2vol);
     pk2vol_.Update(pk2rcg/3.0, icg);
-    
+
     // isochoric 2nd Piola--Kirchhoff stress
     // S^{AB}_iso = S^{AB} - S^{AB}_{vol}
     if (pk2iso != NULL)
@@ -969,7 +970,7 @@ void MAT::VolumetrifyAndIsochorify(LINALG::Matrix<6,1>* pk2vol,
     // S^{CD}_lin = S^{CD} + 1/2 C_{AB} C^{ABCD}
     LINALG::Matrix<6,1> pk2lin(pk2);
     pk2lin.MultiplyTN(0.5, cmat, rcg, 1.0);  // transpose on purpose
-    
+
     // volumetric part of constitutive tensor
     // C^{ABCD}_vol = 2/3 (C^{-1})^{AB} S^{CD}_lin
     //              - 2/3 (S^{EF} C_{EF}) ( 1/2 (
@@ -987,7 +988,7 @@ void MAT::VolumetrifyAndIsochorify(LINALG::Matrix<6,1>* pk2vol,
       ciso->Update(1.0, cmat, -1.0, cvol_);
   }
 
-  // 
+  //
   return;
 }
 
