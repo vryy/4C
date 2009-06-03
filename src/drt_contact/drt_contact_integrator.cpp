@@ -3569,10 +3569,6 @@ bool CONTACT::Integrator::AssembleD(const Epetra_Comm& comm,
  |  Assemble M contribution (2D / 3D)                         popp 01/08|
  |  This method assembles the contrubution of a 1D/2D slave and master  |
  |  overlap pair to the M map of the adjacent slave nodes.              |
- |  IMPORTANT NOTE:                                                     |
- |  If CONTACTONEMORTARLOOP is defined then this method also assembles  |
- |  the contribution of a 1D/2D slave element part to the D map of the  |
- |  adjacent slave nodes via the connection D = sum (M)                 |
  *----------------------------------------------------------------------*/
 bool CONTACT::Integrator::AssembleM(const Epetra_Comm& comm,
                                     CONTACT::CElement& sele,

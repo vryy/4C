@@ -127,8 +127,7 @@ public:
   
   This method is only called if the flag CONTACTONEMORTARLOOP is
   not set. Otherwise we obtain the D-matrix entries via a fundamental
-  Mortar equation from the M-matrix entries. Therefore, when AssembleM
-  is called, Assemble D is done too in that case.
+  Mortar equation from the M-matrix entries.
           
   */
   void IntegrateDerivSlave2D3D(
@@ -261,10 +260,6 @@ public:
   
   /*!
   \brief Assemble D contribution of current overlap into slave nodes
-  
-  This method is only called if the flag CONTACTONEMORTARLOOP
-  is not set. Otherwise, when AssembleM is called, Assemble D
-  is done there too.
   
   */
   bool AssembleD(const Epetra_Comm& comm,
