@@ -289,7 +289,7 @@ bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
 
   if(dim_==3)
   {
-    // check for nurbs27 elements to get apply numbering
+    // check for nurbs27 elements to get numbering
     if((degree_[np])[0]==2
        &&                
        (degree_[np])[1]==2 
@@ -445,9 +445,106 @@ bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
       dserror("surface knot vector extraction not available for this degree\n");
     }
   } // if(dim_==3)
+  else if(dim_==2)
+  {
+    // check for nurbs9 elements to apply numbering
+    if((degree_[np])[0]==2
+       &&                
+       (degree_[np])[1]==2)
+    {
+      switch(surfaceid)
+      {
+      case 0:
+      {
+        // s=-1
+        /*
+
+                parent                line  
+
+                             r                     r
+              +---+---+  -----      +---+---+ ------         
+             0   1   2             0   1   2                 
+
+        */
+        surfknots[0].Size(eleknots[0].Length());
+        surfknots[0]=eleknots[0];
+        
+        normalfac= 1.0;
+        break;
+      }
+      case 1:
+      {
+        // r=+1
+        /*
+                parent               surface
+
+                 s|                        r|                    
+                  |                         |                    
+                      +                     +                
+	             8|                    2|         
+                      +                     +         
+                     5|                    1|                
+                      +                     +                
+                     2                     0                 
+        */
+        surfknots[0].Size(eleknots[1].Length());
+        surfknots[0]=eleknots[1];
+
+        normalfac= 1.0;
+        break;
+      }
+      case 2:
+      {
+        // s=+1
+        /*
+
+                parent                line  
+
+                             r                           r
+              +---+---+  -----             +---+---+ -----
+             6   7   8                    0   1   2
+
+        */
+        surfknots[0].Size(eleknots[0].Length());
+        surfknots[0]=eleknots[0];
+
+        normalfac=-1.0;
+        break;
+      }
+      case 3:
+      {
+        // r=-1
+        /*
+                parent               surface
+
+                 s|                        r|                    
+                  |                         |                    
+               +                            +                
+	      6|                           2|         
+               +                            +         
+              3|                           1|                
+               +                            +                
+              0                            0                 
+        */
+
+        surfknots[0].Size(eleknots[1].Length());
+        surfknots[0]=eleknots[1];
+
+        normalfac=-1.0;
+        break;
+      }
+      default:
+        dserror("invalid number of surfaces, unable to determine intpoint in parent");
+      }
+    } //if(degree_[0]==2 && degree_[1]==2)
+    else
+    {
+      dserror("line knot vector extraction not available for this degree\n");
+    }
+  } // if(dim_==2)
   else
   {
-    dserror("surface knot vector extraction only in 3d\n");
+    dserror("surface knot vector extraction only in 2d and 3d\n");
   }
 
   return(zero_size);
