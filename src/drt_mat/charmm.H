@@ -287,30 +287,7 @@ namespace MAT {
 	void Reader(
 		const ostringstream& file,
 		map<string, double>& content);
-	
 
-	/*!
-	 \brief Function to read results from the minimized CHARMm output
-
-	 Here the actual output from CHARMm is read and processed. The success
-	 of the run is checked as well. All read results are from a cold
-	 (minimized only) run from CHARMm.
-
-	 Example CHARMm input file: 1dzi_fem_min.inp
-
-	 \param outputfile (in) : Name of the CHARMm outputfile
-	 \param energyfile (in) : Name of the energy file
-	 \param volumefile (in) : Name of the volume file
-	 \param debug (in) : printout level
-	 \param charmm_result (out) : CHARMm result vector
-	 */
-	void Readcoldresults(
-		const ostringstream& outputfile,
-		const ostringstream& energyfile,
-		const ostringstream& volumefile,
-		const int debug,
-		LINALG::SerialDenseVector& charmm_result
-	);
 
 	/*!
 	 \brief Hardcoded CHARMm results for testing

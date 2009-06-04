@@ -409,9 +409,11 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
 	double noAtoms = charmm_result[3];
 	double I1_lastt = (*his)[9];
 	double c;
-	c = (1 / (I1 - I1_lastt + 3)) * (1 / Volume) * E_MD * 1000 * 4.1868 * (noAtoms / 6.02214E23);
-	c = (1 / (I1 - I1_lastt)) * (1 / Volume) * E_MD * 1000 * 4.1868 * ( 1 / 6.02214E23);
-
+        if (I1 != I1_lastt) {
+            c = (1 / (I1 - I1_lastt)) * (1 / Volume) * E_MD * 1000 * 4.1868 * (noAtoms / 6.02214E23);
+            //c = (1 / (I1 - I1_lastt)) * (1 / Volume) * E_MD * 1000 * 4.1868 * ( 1 / 6.02214E23);
+        } else { c = 0.0; }
+        
 	if (isnan(c)) c = 0;
 	if (isinf(c)) c = 0;
 	// c is in N/m^2 -> scaling necessary
@@ -420,9 +422,9 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
 	vector<double>* his_mat;
 	his_mat = data_.GetMutable<vector<double> >("his_mat");
 	if (FCD_STARTD != FCD_ENDD) {
-	    if (I1 == 3) (*his_mat)[0] = c;
+	    if (I1_lastt == 3) (*his_mat)[0] = c;
 	    else (*his_mat)[0] = c * ((I1 - I1_lastt) / (I1 - 3));
-	    cout << "c = " << (*his_mat)[0] << " I1_lastt = " << I1_lastt <<  endl
+            cout << "c = " << (*his_mat)[0] << " I1_lastt = " << I1_lastt << " I1 = " << I1<<  endl
 	    << "-------------------------------------------------------" << endl;
 	} else {
 	    (*his_mat)[0] = 0.0;
@@ -436,10 +438,9 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
 
     //
     ///////////////////////////////////////////////////////////////////////////
-
     // Material Constants c1 and beta
     double ym = 1; // intermediate for testing purpose only
-    double nu = 0.45; // intermediate for testing purpose only
+    double nu = 0.49; // intermediate for testing purpose only
     double c1 = 0.5 * ym / (2 * (1 + nu)); // intermediate for testing purpose only
     double beta = nu / (1 - 2 * nu);
     if (time > 0.0) {
@@ -645,58 +646,47 @@ void MAT::CHARMM::CHARMmfileapi(
 	LINALG::SerialDenseVector& charmm_result) {
 
     FILE* tty;
-    int debug = 0; // write more for debug output
-    ostringstream output(ios_base::out);
-    ostringstream energy(ios_base::out);
-    ostringstream volume(ios_base::out);
-    struct stat outfileinfo;
-    struct stat energyfileinfo;
-    struct stat volumefileinfo;
     ios_base::fmtflags flags = cout.flags(); // Save original flags
-
+    ostringstream output(ios_base::out);
     ////////////////////////////////////////////////////////////////////////////
     // Variables needed for CHARMM and getting the results
     // Decide if parallel or seriell
-    const bool dont_use_old_results = true;
+    const bool use_old_results = true;
     const string serpar = "ser"; // ser = seriell; par = mpirun; pbs = PBS Torque
     // FC6 setup
     //const char* path = "/home/metzke/ccarat.dev/codedev/charmm.fe.codedev/";
-    //const char* charmm = "/home/metzke/bin/charmm";
-    //const char* mpicharmm = "/home/metzke/bin/mpicharmm";
+    //const char* path = "/home/metzke/projects/water/";
+    const char* charmm = "/home/metzke/bin/charmm";
+    const char* mpicharmm = "/home/metzke/bin/mpicharmm";
     // Mac setup
     //const char* path = "/Users/rmetzke/research/baci.dev/codedev/charmm.fe.codedev/";
-    const char* path = "/Users/rmetzke/research/projects/water/";
-    const char* charmm = "/Users/rmetzke/bin/charmm";
-    const char* mpicharmm = "/Users/rmetzke/bin/mpicharmm";
+    //const char* path = "/Users/rmetzke/research/projects/water/";
+    //const char* charmm = "/Users/rmetzke/bin/charmm";
+    //const char* mpicharmm = "/Users/rmetzke/bin/mpicharmm";
     //char* input = "1dzi_fem.inp";
     const char* input = "water_fem_dyna.inp";
-    //char* output = "output/FE_cold.out";
-    //char* energy = "output/energy_coupling_0kbt.out";
-    //char* volume = "output/volume_coupling_0kbt.out";
     const string mdnature = "thermal"; // cold = minimization; thermal = fully dynamic with thermal energy; pert = pertubation
-    output << "output/ACE_" << CHARMmPar["FCD_STARTD"] << "_" << CHARMmPar["FCD_ENDD"] << "_" << time(NULL) << ".out";
-    energy << "output/energy_" << CHARMmPar["FCD_STARTD"] << "_" << CHARMmPar["FCD_ENDD"] << ".out";
-    volume << "output/volume_" << CHARMmPar["FCD_STARTD"] << "_" << CHARMmPar["FCD_ENDD"] << ".out";
+    output << "output/ACEcold_" << CHARMmPar["FCD_STARTD"] << "_" << CHARMmPar["FCD_ENDD"] << ".out";
     ////////////////////////////////////////////////////////////////////////////
 
     // Assemble all file and path names first
-    ostringstream outputfile(ios_base::out);
-    outputfile << path << output.str();
-    ostringstream energyfile(ios_base::out);
-    energyfile << path << energy.str();
-    ostringstream volumefile(ios_base::out);
-    volumefile << path << volume.str();
+    ostringstream statusfile(ios_base::out);
+    statusfile << Path() << "output/status_" << CHARMmPar["FCD_ENDD"] << ".out";
 
     // Print out the beginning of the CHARMM info line
-    if (debug == 0) cout << setw(4) << left << "MD (" << showpoint << CHARMmPar["FCD_STARTD"] << setw(2) << "->" << CHARMmPar["FCD_ENDD"] << setw(3) << "): " << flush;
+    cout << setw(4) << left << "MD (" << showpoint << CHARMmPar["FCD_STARTD"] << setw(2) << "->" << CHARMmPar["FCD_ENDD"] << setw(3) << "): " << flush;
 
-    // Check if the results files already exists
+    // Check if the status file already exists
     // In that case skip the charmm call
-    if (stat(outputfile.str().c_str(), &outfileinfo) != 0 || stat(energyfile.str().c_str(), &energyfileinfo) != 0 || stat(volumefile.str().c_str(), &volumefileinfo) != 0 || dont_use_old_results) {
+    struct stat statusFileInfo;
+    map<string, double> md_status;
+    md_status.clear();
+    if (stat(statusfile.str().c_str() ,&statusFileInfo) == 0) Reader(statusfile, md_status);
+    if ( (stat(statusfile.str().c_str(),&statusFileInfo) != 0 && !md_status["CHARMMEND"]) || !use_old_results) {
 	// Assemble the command line for charmm
 	ostringstream command(ios_base::out);
-	if (serpar.compare("ser") == 0) command << "cd " << path << " && " << charmm;
-	else if (serpar.compare("par") == 0) command << "cd " << path << " && " << "openmpirun -np 2 " << mpicharmm;
+	if (serpar.compare("ser") == 0) command << "cd " << Path() << " && " << charmm;
+	else if (serpar.compare("par") == 0) command << "cd " << Path() << " && " << "openmpirun -np 2 " << mpicharmm;
 	else dserror("What you want now? Parallel or not!");
 	command << " FCDSTARTD=" << CHARMmPar["FCD_STARTD"] << " FCDENDD=" << CHARMmPar["FCD_ENDD"]
 		<< " FCDX=" << CHARMmPar["FCD_dir_x"] << " FCDY=" << CHARMmPar["FCD_dir_y"] << " FCDZ=" << CHARMmPar["FCD_dir_z"]
@@ -710,21 +700,18 @@ void MAT::CHARMM::CHARMmfileapi(
 	    command << " INPUTFILE=" << input
 		    << " < " << "stream.inp" << " > " << output.str();
 	} else dserror("What you want now? Parallel or not!");
-	if (debug == 1) cout << "CHARMM command:" << endl << command.str() << endl;
-	// Open terminal and execute CHARMM
-	if (debug == 0) cout << "0|" << flush;
+	cout << "0|" << flush;
 	if ((tty = popen(command.str().c_str(), "r")) == NULL) dserror("CHARMM can not be started!");
 	int runresult = pclose(tty);
-	if (debug == 1) cout << "Run Result (popen): " << runresult << endl;
-	if (debug == 0) cout << runresult << "|";
+	cout << runresult << "|";
     } else {
-	if (debug == 0) cout << "-1|-1|" << flush;
+	cout << "-1|-1|" << flush;
     }
 
 
     // Read the results
     if (mdnature.compare("cold") == 0) {
-	Readcoldresults(outputfile, energyfile, volumefile, debug, charmm_result);
+        dserror("Cold currently not supported");
     } else if (mdnature.compare("thermal") == 0) {
 	Readresults(CHARMmPar, charmm_result);
     } else {
@@ -791,7 +778,7 @@ void MAT::CHARMM::Reader(const ostringstream& file,
     if (filestream.is_open()) {
 	while (!filestream.eof()) {
 	    getline(filestream,line);
-	    if (line.compare(0,1,"P") == 0) {
+	    if (line.compare(0,1,"R") == 0) {
 		vector<string> token;
 		string buf;
 		stringstream linestream(line);
@@ -810,114 +797,6 @@ void MAT::CHARMM::Reader(const ostringstream& file,
     //	cout << (*ii).first << ": " << (*ii).second << endl;
     //}
     //cout << endl;
-
-}
-
-
-/*----------------------------------------------------------------------*/
-//! Read results from cold CHARMm results files
-/*----------------------------------------------------------------------*/
-void MAT::CHARMM::Readcoldresults(const ostringstream& outputfile,
-	const ostringstream& energyfile,
-	const ostringstream& volumefile,
-	const int debug,
-	LINALG::SerialDenseVector& charmm_result) {
-
-    // Check charmm result file for success
-    string line;
-    // The text line in the outputfile, which shows that the CHARMm execution ended normal
-    string charmm_success("                    NORMAL TERMINATION BY NORMAL STOP");
-    int resultstatus = 1;
-    if (debug == 1) cout << "Outputfile path: " << endl << outputfile.str() << endl;
-    ifstream outputstream(outputfile.str().c_str());
-    if (outputstream.is_open()) {
-	while (!outputstream.eof()) {
-	    getline(outputstream, line);
-	    if (charmm_success.compare(line) == 0) resultstatus = 0;
-	}
-	outputstream.close();
-    } else dserror("CHARMM API: CHARMM Ouput cannot be read!");
-    if (debug == 1) cout << "Result File Check: " << resultstatus << endl;
-    if (debug == 0) cout << setw(5) << left << resultstatus << flush;
-    if (resultstatus == 1) dserror("CHARMM API: CHARMM run error!");
-
-    // Read energy results
-    double ene_old, ene_new;
-    vector<string> tokens;
-    if (debug == 1) cout << "Energyfile path: " << endl << energyfile.str().c_str() << endl;
-    ifstream energystream(energyfile.str().c_str());
-    if (energystream.is_open()) {
-	while (!energystream.eof()) {
-	    getline(energystream, line);
-	    if (line.compare(0, 5, "PRIN>") == 0) {
-		//cout << line << endl;
-		string buf;
-		stringstream linestream(line);
-		while (linestream >> buf)
-		    tokens.push_back(buf);
-	    }
-	}
-	energystream.close();
-    } else dserror("CHARMM API: Energy File cannot be opened!");
-    ene_old = atof(tokens[2].c_str());
-    ene_new = atof(tokens[7].c_str());
-    tokens.clear();
-    // Output for energy
-    if (debug == 1) cout << setw(35) << left << "Energy (string) old | new: " << tokens[2] << " | " << tokens[7] << endl;
-    if (debug == 1) cout << setw(35) << left << "Energy (double) old | new | dV: " << setprecision(10) << ene_old << " | " << ene_new << " | " << (ene_old - ene_new) << endl;
-    if (debug == 0) cout << setw(4) << "dV:" << setw(15) << left << scientific << setprecision(6) << (ene_new - ene_old);
-
-    // Read # of atoms and volume from file
-    double nofatoms_old, nofatoms_new, volume_old, volume_new;
-    vector<string> volutokens;
-    if (debug == 1) cout << "Volumefile path: " << endl << volumefile.str().c_str() << endl;
-    ifstream volumestream(volumefile.str().c_str());
-    if (volumestream.is_open()) {
-	while (!volumestream.eof()) {
-	    getline(volumestream, line);
-	    if (line.compare(0, 8, " SELRPN>") == 0) {
-		//cout << line << endl;
-		string buf;
-		stringstream linestream(line);
-		while (linestream >> buf)
-		    tokens.push_back(buf);
-	    }
-	    if (line.compare(0, 15, " TOTAL OCCUPIED") == 0) {
-		//cout << line << endl;
-		string buf;
-		stringstream linestream(line);
-		while (linestream >> buf)
-		    volutokens.push_back(buf);
-	    }
-	}
-	volumestream.close();
-    } else dserror("CHARMM API: Volume file can not be opened!");
-    // Check if enough text has been found. If not, then unbinding has taken place.
-    if (tokens.size() <= 11) tokens.resize(11, "NAN");
-    if (volutokens.size() <= 10) volutokens.resize(10, "NAN");
-    // Change string to double 
-    nofatoms_old = atof(tokens[1].c_str());
-    nofatoms_new = atof(tokens[10].c_str());
-    volume_old = atof(volutokens[4].c_str());
-    volume_new = atof(volutokens[9].c_str());
-    // Output for # of atoms and volume
-    if (debug == 1) cout << setw(35) << left << "# Atoms (string) old | new: " << tokens[1] << " | " << tokens[10] << endl;
-    if (debug == 1) cout << setw(35) << left << "# Atoms (double) old | new | d#: " << nofatoms_old << " | " << nofatoms_new << " | " << (nofatoms_old - nofatoms_new) << endl;
-    if (debug == 1) cout << setw(35) << left << "Volume (string) old | new: " << volutokens[4] << " | " << volutokens[9] << endl;
-    if (debug == 1) cout << setw(35) << left << "Volume (string) old | new | dVol: " << volume_old << " | " << volume_new << " | " << (volume_old - volume_new) << endl;
-    if (debug == 0) cout << setw(8) << "#Atoms:" << setw(10) << left << fixed << setprecision(0) << nofatoms_new << setw(8) << "Volume:" << setw(12) << left << setprecision(2) << volume_new << endl;
-    tokens.clear();
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Results vector: charmm_result
-    // (Energy STARTD, Energy ENDD, #Atoms STARTD, #Atoms ENDD, Volume STARTD, Volume ENDD)
-    charmm_result[0] = ene_old;
-    charmm_result[1] = ene_new;
-    charmm_result[2] = nofatoms_old;
-    charmm_result[3] = nofatoms_new;
-    charmm_result[4] = volume_old;
-    charmm_result[5] = volume_new;
-    ////////////////////////////////////////////////////////////////////////////
 
 }
 
@@ -949,7 +828,7 @@ void MAT::CHARMM::CHARMmfakeapi(const double STARTD,
     //MD(1, 2) = 1141;
     //MD(1, 3) = 9441.08;
     MD(0, 0) = 0.0;
-    MD(0, 1) = -1.0;
+    MD(0, 1) = -1.8;
     MD(0, 2) = 6;
     MD(0, 3) = 45.4763;
 
