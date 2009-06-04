@@ -268,22 +268,34 @@ namespace MAT {
 	 Here CHARMm gets actually called. The business of MPI for CHARMm is
 	 handeled here as well. In- and Output files are defined.
 
-	 \param FCD_STARTD (in) : First characteristic strain beginning
-	 \param FCD_ENDD (in) : First characteristic strain end
-	 \param FCD_direction (in) : First charteristic directional vector
-	 \param SCD_STARTD (in) : Second characteristic strain beginning
-	 \param SCD_ENDD (in) : Second characteristic strain end
-	 \param SCD_direction (in) : Second charteristic directional vector
+	 \param CHARMmPar (in) : Map with all necessary CHARMm parameter
 	 \param charmm_result (out) : The CHARMm result vector
 	*/
 	void CHARMmfileapi(
 		map<string, double>& CHARMmPar,
 		LINALG::SerialDenseVector& charmm_result);
 
+        /*!
+	 \brief Read CHARMm Results
+
+	 After CHARMm finished the results must be read in and the status of
+         the run must be checked. All this business is done here.
+
+	 \param CHARMmPar (in) : Map with all necessary CHARMm parameter
+	 \param charmm_result (out) : The CHARMm result vector
+	*/
 	void Readresults(
 		map<string, double>& CHARMmPar,
 		LINALG::SerialDenseVector& charmm_result);
 
+        /*!
+	 \brief The actual routine wich opens and reads the results and status
+
+	 Reader for status and result files written by CHARMm
+
+	 \param file (in) : output string stream of the file
+	 \param charmm_result (out) : content of the file as map
+	*/
 	void Reader(
 		const ostringstream& file,
 		map<string, double>& content);
