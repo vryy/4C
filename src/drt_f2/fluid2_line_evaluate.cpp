@@ -59,6 +59,8 @@ int DRT::ELEMENTS::Fluid2Line::Evaluate(        ParameterList&            params
         act = Fluid2Line::enforce_weak_dbc;
     else if (action == "calc_Neumann_inflow")
         act = Fluid2Line::calc_Neumann_inflow;
+    else if (action == "conservative_outflow_bc")
+        act = Fluid2Line::conservative_outflow_bc;
     else dserror("Unknown type of action for Fluid2_Line");
 
     switch(act)
@@ -147,176 +149,15 @@ int DRT::ELEMENTS::Fluid2Line::Evaluate(        ParameterList&            params
         elemat1,
         elevec1);
       break;
-
-#if 0
-      //--------------------------------------------------
-      // get the condition information
-      RefCountPtr<DRT::Condition> wdbc_cond 
-	= 
-	params.get<RefCountPtr<DRT::Condition> >("condition");
-
-      // default is adjoint consistent
-      const string* consistency  
-	=
-	(*wdbc_cond).Get<string>("Choice of gamma parameter");
-
-      double wd_gamma=0.0;
-      if(*consistency=="adjoint-consistent")
-      {
-	wd_gamma = 1.0;
-      }
-      else if(*consistency=="diffusive-optimal")
-      {
-	wd_gamma =-1.0;
-      }
-      else
-      {
-	dserror("Unknown type of definition for gamma parameter: %s",(*consistency).c_str());
-      }
-      
-      // there is only one definition of tauB available in 2d
-      const string* deftauB
-        =
-        (*wdbc_cond).Get<string>("Definition of penalty parameter");
-      
-      if(*deftauB!="constant")
-      {
-        dserror("Definition of penalty parameter tauB not supported in 2d: %s",(*deftauB).c_str());
-      }
-
-      // linearisation of adjoint convective flux
-      const string* linearisation_approach
-        =
-        (*wdbc_cond).Get<string>("Linearisation");
-      
-      bool complete_linearisation=false;
-      
-      if(*linearisation_approach=="lin_all")
-      {
-        complete_linearisation=true;
-      }
-      else if(*linearisation_approach=="no_lin_conv_inflow")
-      {
-        complete_linearisation=false;
-      }
-      else
-      {
-        dserror("Unknown definition of linearisation approach: %s",(*linearisation_approach).c_str());
-      }
-
-      // find out whether we will use a time curve
-      bool usetime = true;
-      const double time = params.get("total time",-1.0);
-      if (time<0.0) usetime = false;
-
-      // find out whether we will use a time curve and get the factor
-      const vector<int>* curve  = (*wdbc_cond).Get<vector<int> >("curve");
-      int curvenum = -1;
-      if (curve) curvenum = (*curve)[0];
-      double curvefac = 1.0;
-      if (curvenum>=0 && usetime)
-      curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
-      
-      // get values and switches from the condition
-      // (assumed to be constant on element boundary)
-      const vector<int>* functions = (*wdbc_cond).Get<vector<int> >   ("funct");
-
-      // I hope we have a linear element.
-      // Ciarlet PG. The ï¬nite element method for elliptic
-      // problems. Amsterdam: North-Holland; 1978.
-      if(parent_->Shape()!=Fluid2::quad4)
-      {
-	dserror("Cb up to now only implemented for (bi)linears");
-      }
-      double Cb       = 4.0;
-
-      // get value for boundary condition
-      const vector<double>* val = (*wdbc_cond).Get<vector<double> >("val");
-
-      // get time integration parameters
-      const double afgdt = params.get<double>("afgdt");
-
-      const double gdt   = params.get<double>("gdt");
-
-      //--------------------------------------------------
-      // get parent elements location vector and ownerships
-
-      // the vectors have been allocated outside in
-      // EvaluateConditionUsingParentData
-      RefCountPtr<vector<int> > plm      
-	=
-	params.get<RefCountPtr<vector<int> > >("plm");
-      RefCountPtr<vector<int> > plmowner 
-	=
-	params.get<RefCountPtr<vector<int> > >("plmowner");
-      
-      parent_->LocationVector(discretization,*plm,*plmowner);
-
-      // Reshape element matrices and vectors and init to zero
-      const int eledim = (int)(*plm).size();
-      elemat1.Shape(eledim,eledim);
-      elemat2.Shape(eledim,eledim);
-      elevec1.Size(eledim);
-      elevec2.Size(eledim);
-      elevec3.Size(eledim);
-
-      // --------------------------------------------------
-      // extract velocities from global distributed vectors
-
-      // velocities (intermediate time step, n+alpha_F)
-      RefCountPtr<const Epetra_Vector> velaf 
-	=
-	discretization.GetState("u and p (n+alpha_F,trial)");
-      RefCountPtr<const Epetra_Vector> velnp 
-	=
-	discretization.GetState("u and p (n+1      ,trial)");
-
-      if (velaf==null || velnp==null)
-      {
-        dserror("Cannot get state vector 'velaf', 'velnp'");
-      }
-      vector<double> mypvelaf((*plm).size());
-      DRT::UTILS::ExtractMyValues(*velaf,mypvelaf,*plm);
-
-      vector<double> mypvelnp((*plm).size());
-      DRT::UTILS::ExtractMyValues(*velnp,mypvelnp,*plm);
-
-      // create  matrix object for convenience
-      const int numnode = parent_->NumNode();
-      Epetra_SerialDenseMatrix pevelaf(2,numnode);
-      Epetra_SerialDenseMatrix pevelnp(2,numnode);
-      Epetra_SerialDenseVector peprenp(  numnode);
-
-      // extract velocities
-      for (int i=0;i<numnode;++i)
-      {
-	pevelaf(0,i) = mypvelaf[0+(i*3)];
-	pevelaf(1,i) = mypvelaf[1+(i*3)];
-
-	pevelnp(0,i) = mypvelnp[0+(i*3)];
-	pevelnp(1,i) = mypvelnp[1+(i*3)];
-        peprenp(i)   = mypvelnp[2+(i*3)];
-      }
-
-      // call the special evaluation method
-      EvaluateWeakDirichlet(lm                    ,
-			    *plm                  ,
-			    elemat1               ,
-			    elevec1               ,
-			    pevelaf               ,
-			    pevelnp               ,
-                            peprenp               ,
-			    *val                  ,
-			    functions             ,
-			    curvefac              ,
-			    Cb                    ,
-			    wd_gamma              ,
-			    afgdt                 ,
-                            gdt                   ,
-                            complete_linearisation
-        );
-
-#endif
+    }
+    case conservative_outflow_bc:
+    {
+      LineConservativeOutflowConsistency(
+        params,
+        discretization,
+        lm,
+        elemat1,
+        elevec1);
       break;
     }
     case calc_Neumann_inflow:
@@ -1182,6 +1023,431 @@ void DRT::ELEMENTS::Fluid2Line::ElementSurfaceTension(ParameterList& params,
   } //end of loop over integration points
 
 } // DRT::ELEMENTS::Fluid2Line::ElementSurfaceTension
+
+
+/*----------------------------------------------------------------------*
+ | apply outflow boundary condition which is necessary for the          |
+ | conservative element formulation (since the convective term was      |
+ | partially integrated)                                                |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Fluid2Line::LineConservativeOutflowConsistency(
+    ParameterList&             params,
+    DRT::Discretization&       discretization,
+    vector<int>&               lm,
+    Epetra_SerialDenseMatrix&  elemat1,
+    Epetra_SerialDenseVector&  elevec1)
+{
+
+  // ------------------------------------
+  //     GET TIME INTEGRATION DATA
+  // ------------------------------------
+  // we use two timefacs for matrix and right hand side to be able to
+  // use the method for both time integrations
+  const double timefac_mat = params.get<double>("timefac_mat");
+  const double timefac_rhs = params.get<double>("timefac_rhs");
+
+  // ------------------------------------
+  //     GET GENERAL ELEMENT DATA
+  // ------------------------------------
+
+  // local line id
+  int lineid =lline_;
+
+  // get distype
+  const DiscretizationType distype = this->Shape();
+
+  // set number of nodes
+  const int iel = this->NumNode();
+
+  // Gaussian points
+  GaussRule1D  gaussrule = intrule1D_undefined;
+  switch(distype)
+  {
+  case line2:
+      gaussrule = intrule_line_2point;
+      break;
+  case line3: case nurbs3:
+      gaussrule = intrule_line_3point;
+      break;
+  default:
+      dserror("shape type unknown!\n");
+  }
+  const IntegrationPoints1D  intpoints(gaussrule);
+
+  // vector for shape functions and matrix for derivatives
+  Epetra_SerialDenseVector  funct(iel);
+  Epetra_SerialDenseMatrix  deriv(1,iel);
+
+  // node coordinates
+  Epetra_SerialDenseMatrix  xyze(2,iel);
+
+  // the element's normal vector
+  Epetra_SerialDenseVector  norm(2);
+
+  // dyadic product of element's normal vector and velocity
+  Epetra_SerialDenseMatrix  n_x_u(2,2);
+
+  // velocity at gausspoint
+  Epetra_SerialDenseVector  velint(2);
+
+  // 3 temp vector
+  Epetra_SerialDenseVector  tempvec(2);
+
+  // 3x3 temp array
+  Epetra_SerialDenseMatrix  temp(2,2);
+
+  // the metric tensor and the area of an infintesimal surface element
+  double                    g;
+  Epetra_SerialDenseMatrix  dxydr(1,2);
+  double                    dr;
+
+  // get node coordinates
+  for(int i=0;i<iel;i++)
+  {
+    xyze(0,i)=this->Nodes()[i]->X()[0];
+    xyze(1,i)=this->Nodes()[i]->X()[1];
+  }
+
+  // ------------------------------------
+  // get statevectors from discretisation
+
+  // displacements
+  RCP<const Epetra_Vector>      dispnp;
+  vector<double>                mydispnp;
+
+  if (parent_->IsAle())
+  {
+    dispnp = discretization.GetState("dispnp");
+    if (dispnp!=null)
+    {
+      mydispnp.resize(lm.size());
+      DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
+    }
+
+    for (int i=0;i<iel;++i)
+    {
+      const int ti=3*i;
+
+      xyze(0,i)+=mydispnp[  ti];
+      xyze(1,i)+=mydispnp[1+ti];
+    }
+  }
+
+  // velocities
+  RCP<const Epetra_Vector> vel = discretization.GetState("u and p (trial)");
+  if (vel==null) dserror("Cannot get state vector 'u and p (trial)'");
+
+  // extract local values from the global vectors
+  vector<double> myvel(lm.size());
+  DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
+
+  // create object for element array and insert velocity into element array
+  Epetra_SerialDenseMatrix  evel(2,iel);
+
+  for (int i=0;i<iel;++i)
+  {
+    const int ti=3*i;
+    evel(0,i) = myvel[  ti];
+    evel(1,i) = myvel[1+ti];
+  }
+
+  // --------------------------------------------------
+  // Now do the nurbs specific stuff
+  double normalfac=0.0;
+
+  std::vector<Epetra_SerialDenseVector> mypknots(2);
+  std::vector<Epetra_SerialDenseVector> myknots (1);
+
+  const int piel= parent_->NumNode();
+
+  Epetra_SerialDenseVector weights(iel);
+  Epetra_SerialDenseVector pweights(piel);
+
+
+  // for isogeometric elements --- get knotvectors for parent
+  // element and surface element, get weights
+  if(Shape()==Fluid2::nurbs3)
+  {
+    // --------------------------------------------------
+    // get knotvector
+
+    DRT::NURBS::NurbsDiscretization* nurbsdis
+      =
+      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+
+    RefCountPtr<DRT::NURBS::Knotvector> knots=(*nurbsdis).GetKnotVector();
+
+    bool zero_size=knots->GetBoundaryEleAndParentKnots(mypknots     ,
+                                                       myknots      ,
+                                                       normalfac    ,
+                                                       parent_->Id(),
+                                                       lineid       );
+    if(zero_size)
+    {
+      return;
+    }
+
+    // --------------------------------------------------
+    // get node weights for nurbs elements
+    for (int inode=0; inode<iel; inode++)
+    {
+      DRT::NURBS::ControlPoint* cp
+        =
+        dynamic_cast<DRT::NURBS::ControlPoint* > (Nodes()[inode]);
+      
+      weights(inode) = cp->W();
+    }
+
+    // extract node coords
+    for(int i=0;i<piel;++i)
+    {
+      DRT::NURBS::ControlPoint* cp
+        =
+        dynamic_cast<DRT::NURBS::ControlPoint* > (parent_->Nodes()[i]);
+      
+      pweights(i) = cp->W();
+    }
+  }
+
+  /*----------------------------------------------------------------------*
+   |               start loop over integration points                     |
+   *----------------------------------------------------------------------*/
+  for (int gpid=0; gpid<intpoints.nquad; gpid++)
+  {
+    const double r = intpoints.qxg[gpid][0];
+
+    // get shape functions and derivatives in the plane of the element
+    if(!(distype == DRT::Element::nurbs3))
+    {
+      // ------------------------------------------------
+      // shape function derivs of boundary element at gausspoint
+      DRT::UTILS::shape_function_1D       (funct,r,distype);
+      DRT::UTILS::shape_function_1D_deriv1(deriv,r,distype);
+    }
+    else
+    {
+      Epetra_SerialDenseVector  deriv_temp(iel);
+
+      DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv
+        (funct     ,
+         deriv_temp,
+         r         ,
+         myknots[0],
+         weights   ,
+         distype   );
+
+      for(int rr=0;rr<iel;++rr)
+      {
+        deriv(0,rr)=deriv_temp(rr);
+      }
+    }
+
+    // ------------------------------------------------
+    // compute measure tensor for surface element and the infinitesimal
+    // area element drs for the integration
+
+    /*
+      |                       
+      |                                        0 1                                                
+      |                                       +-+-+               
+      |                                       | | | 0             
+      |         0 1             0...iel-1     +-+-+               
+      |        +-+-+            +-+-+-+-+     | | | .             
+      |        | | |      =     | | | | |  *  +-+-+ .             
+      |        +-+-+            +-+-+-+-+     | | | .             
+      |                                       +-+-+               
+      |                                       | | | iel-1         
+      |                                       +-+-+               
+      |                                                           
+      |       dxydr               deriv       xyze^T                               
+      |                    
+      |
+      |
+      |                                 
+      |                                 
+      |                                 +-        -+
+      |                                 | dx   dy  |
+      |     yields             dxydr =  | --   --  |
+      |                                 | dr   dr  |
+      |                                 +-        -+
+      |                                
+      |                                
+      |
+    */
+    dxydr.Multiply('N','T',1.0,deriv,xyze,0.0);
+    /*
+      |
+      |         +-       -+   +-       -+ T
+      |         | dx   dy |   | dx   dy |
+      |    g =  | --   -- | * | --   -- |
+      |         | dr   dr |   | dr   dr |
+      |         +-       -+   +-       -+
+      |
+    */
+    g = dxydr(0,0)*dxydr(0,0)+dxydr(0,1)*dxydr(0,1);
+
+    /*
+                         +-+
+              sqrtg =  \/ g
+                  
+    */
+
+    dr= sqrt(g);
+
+    // values are multiplied by the product from inf. area element,
+    // and the gauss weight
+    const double fac = intpoints.qwgt[gpid] * dr;
+
+    // compute this element's normal vector scaled by infinitesimal area
+    // element and gaussweight
+
+    // ------------------------------------------------
+
+    {
+      /*
+      |
+      |                      +-  -+     +-  -+
+      |                      | dx |     |    |
+      |                      | -- |     |  0 |
+      |                      | dr |     |    |
+      |                      |    |     |    |
+      |             1.0      | dy |     |    |
+      |    n  =  --------- * | -- |  X  |  0 |
+      |                      | dr |     |    |
+      |          ||.....||   |    |     |    |
+      |                      |    |     |    |
+      |                      |  0 |     |  1 |
+      |                      |    |     |    |
+      |                      +-  -+     +-  -+
+      |
+    */ 
+      norm(0) =  dxydr(0,1);
+      norm(1) = -dxydr(0,0);
+
+      const double length = norm.Norm2()*normalfac;
+  
+      for(int i=0;i<2;++i)
+      {
+        norm(i)/=length;
+      }
+    }
+
+    for(int rr=0;rr<2;++rr)
+    {
+      norm(rr) *= fac;
+    }
+
+
+    /* interpolate velocities to integration point
+    //
+    //                 +-----
+    //                  \
+    //        vel(x) =   +      N (x) * vel
+    //                  /        j         j
+    //                 +-----
+    //                 node j
+    */
+    for(int rr=0;rr<2;++rr)
+    {
+      velint(rr)=funct(0)*evel(rr,0);
+      for(int nn=1;nn<iel;++nn)
+      {
+        velint(rr)+=funct(nn)*evel(rr,nn);
+      }
+    }
+
+    // compute normal flux
+    const double u_o_n = velint(0)*norm(0)+velint(1)*norm(1);
+
+    // rescaled flux (according to time integration)
+    const double timefac_mat_u_o_n = timefac_mat*u_o_n;
+
+    // dyadic product of u and n
+    n_x_u(0,0) = timefac_mat*velint(0)*norm(0);
+    n_x_u(0,1) = timefac_mat*velint(0)*norm(1);
+
+    n_x_u(1,0) = timefac_mat*velint(1)*norm(0);
+    n_x_u(1,1) = timefac_mat*velint(1)*norm(1);
+
+
+    for (int ui=0; ui<iel; ++ui) // loop columns
+    {
+      const int tui   =3*ui;
+      const int tuip  =tui+1;
+
+      temp(0,0) = n_x_u(0,0)*funct(ui);
+      temp(0,1) = n_x_u(0,1)*funct(ui);
+
+      temp(1,0) = n_x_u(1,0)*funct(ui);
+      temp(1,1) = n_x_u(1,1)*funct(ui);
+
+      const double timefac_mat_u_o_n_funct_ui = timefac_mat_u_o_n*funct(ui);
+
+      for (int vi=0; vi<iel; ++vi)  // loop rows
+      {
+        const int tvi   =3*vi;
+        const int tvip  =tvi+1;
+
+        /*
+
+
+                  /                \
+                 |                  |
+               + |  Du o n , u o v  |
+                 |                  |
+                  \                /
+        */
+
+        elemat1(tvi  ,tui  ) += temp(0,0)*funct(vi);
+        elemat1(tvi  ,tuip ) += temp(0,1)*funct(vi);
+
+        elemat1(tvip ,tui  ) += temp(1,0)*funct(vi);
+        elemat1(tvip ,tuip ) += temp(1,1)*funct(vi);
+
+        /*
+
+
+                  /                \
+                 |                  |
+               + |  u o n , Du o v  |
+                 |                  |
+                  \                /
+        */
+
+        const double timefac_mat_u_o_n_funct_ui_funct_vi
+          =
+          timefac_mat_u_o_n_funct_ui*funct(vi);
+
+        elemat1(tvi  ,tui  ) += timefac_mat_u_o_n_funct_ui_funct_vi;
+        elemat1(tvip ,tuip ) += timefac_mat_u_o_n_funct_ui_funct_vi;
+
+      } // vi
+    } // ui
+
+    tempvec(0)=timefac_rhs*u_o_n*velint(0);
+    tempvec(1)=timefac_rhs*u_o_n*velint(1);
+
+    for (int ui=0; ui<iel; ++ui) // loop rows  (test functions)
+    {
+      int tui=3*ui;
+
+      /*
+
+
+                  /               \
+                 |                 |
+               + |  u o n , u o v  |
+                 |                 |
+                  \               /
+      */
+
+      elevec1(tui++) -= tempvec(0)*funct(ui);
+      elevec1(tui  ) -= tempvec(1)*funct(ui);
+    } // ui
+  } // end gaussloop
+
+  return;
+}// DRT::ELEMENTS::Fluid2Line::LineConservativeOutflowConsistency
 
 #endif  // #ifdef CCADISCRET
 #endif // #ifdef D_FLUID2

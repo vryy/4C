@@ -737,6 +737,7 @@ private:
      calc_node_normal,
      calc_surface_tension,
      enforce_weak_dbc,
+     conservative_outflow_bc,
      calc_Neumann_inflow
   };
 
@@ -842,6 +843,25 @@ private:
   const double               afgdt    ,
   const double               gdt      ,
   const bool                 comp_lin );
+
+
+  /*!
+  \brief apply outflow boundary condition which is necessary for the conservative
+         element formulation (since the convective term was partially integrated)
+
+  \param params (in)        : ParameterList for communication between control routine
+  \param discretization (in): A reference to the underlying discretization
+  \param lm (in)            : location vector of this element
+  \param elemat1 (out)      : matrix to be filled by element
+  \param elevec1 (out)      : vector to be filled by element
+
+  */
+  void LineConservativeOutflowConsistency(
+    ParameterList&             params,
+    DRT::Discretization&       discretization,
+    vector<int>&               lm,
+    Epetra_SerialDenseMatrix&  elemat1,
+    Epetra_SerialDenseVector&  elevec1);
 
 
   /*!
