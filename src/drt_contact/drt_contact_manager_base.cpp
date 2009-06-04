@@ -53,7 +53,7 @@ CONTACT::ManagerBase::ManagerBase() :
 dim_(0),
 alphaf_(0.0),
 activesetconv_(false),
-activesetsteps_(0),
+activesetsteps_(1),
 isincontact_(false)
 {
   //**********************************************************************

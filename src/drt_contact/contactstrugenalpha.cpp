@@ -1573,7 +1573,11 @@ void CONTACT::ContactStruGenAlpha::Update()
   zold->Update(1.0,*z,0.0);
   contactmanager_->StoreNodalQuantities(Manager::lmold);
   contactmanager_->StoreDM("old");
-
+  
+  //--------------------------- reset active set status for next time step
+  contactmanager_->ActiveSetConverged() = false;
+  contactmanager_->ActiveSetSteps() = 1;
+    
   //----------------------------------------friction: store history values
   // in the case of frictional contact we have to store several 
   // informations and quantities at the end of a time step (converged 
@@ -1854,10 +1858,6 @@ void CONTACT::ContactStruGenAlpha::Integrate()
 #ifdef CONTACTTIME
       const double t_start = ds_cputime();
 #endif // #ifdef CONTACTTIME
-       
-      // initialize convergence status and step no. for active set
-      contactmanager_->ActiveSetConverged() = false;
-      contactmanager_->ActiveSetSteps() = 1;
 
       // predictor step
       if      (predictor==1) ConstantPredictor();
@@ -1890,9 +1890,6 @@ void CONTACT::ContactStruGenAlpha::Integrate()
     // LOOP1: time steps
     for (int i=step; i<nstep; ++i)
     {
-      // initialize convergence status and step no. for active set
-      contactmanager_->ActiveSetConverged() = false;
-      contactmanager_->ActiveSetSteps() = 1;
 
       // LOOP2: active set strategy
       while (contactmanager_->ActiveSetConverged()==false)
