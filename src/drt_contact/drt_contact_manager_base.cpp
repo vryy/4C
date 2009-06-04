@@ -2464,6 +2464,28 @@ void CONTACT::ManagerBase::StoreDM(const string& state)
 }
 
 /*----------------------------------------------------------------------*
+ |  Update and output contact at end of time step             popp 06/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::ManagerBase::Update()
+{
+  // store Lagrange multipliers, D and M
+  // (we need this for interpolation of the next generalized mid-point)
+  RCP<Epetra_Vector> z = LagrMult();
+  RCP<Epetra_Vector> zold = LagrMultOld();
+  zold->Update(1.0,*z,0.0);
+  StoreNodalQuantities(ManagerBase::lmold);
+  StoreDM("old");
+  
+#ifdef CONTACTGMSH1
+  VisualizeGmsh(istep);
+#endif // #ifdef CONTACTGMSH1
+  
+  // reset active set status for next time step
+  ActiveSetConverged() = false;
+  ActiveSetSteps() = 1;
+}
+
+/*----------------------------------------------------------------------*
  |  Print current active set to screen                        popp 06/08|
  *----------------------------------------------------------------------*/
 void CONTACT::ManagerBase::PrintActiveSet()
@@ -2472,7 +2494,10 @@ void CONTACT::ManagerBase::PrintActiveSet()
   // get input parameter ctype
   string ctype   = scontact_.get<string>("contact type","none");
   string ftype   = scontact_.get<string>("friction type","none");
-    
+  
+  if (Comm().MyPID()==0)
+    cout << "Active contact set--------------------------------------------------------------\n";
+  
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
   {

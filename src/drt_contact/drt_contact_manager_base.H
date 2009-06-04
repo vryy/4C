@@ -403,6 +403,12 @@ public:
   void StoreDM(const string& state);
   
   /*!
+  \brief Update contact at end of time step
+  
+  */
+  void Update();
+
+  /*!
   \brief Print current active set to screen
   
   */

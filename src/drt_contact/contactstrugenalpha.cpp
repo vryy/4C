@@ -1559,25 +1559,9 @@ void CONTACT::ContactStruGenAlpha::Update()
   fint_->Update(1.0,*fintn_,0.0);
 #endif
 
-  //---------------------------------------------- print contact to screen
-  contactmanager_->PrintActiveSet();
-
-#ifdef CONTACTGMSH1
-  contactmanager_->VisualizeGmsh(istep);
-#endif // #ifdef CONTACTGMSH1
-
-  //---------------------------------- store Lagrange multipliers, D and M
-  // (we need this for interpolation of the next generalized mid-point)
-  RCP<Epetra_Vector> z = contactmanager_->LagrMult();
-  RCP<Epetra_Vector> zold = contactmanager_->LagrMultOld();
-  zold->Update(1.0,*z,0.0);
-  contactmanager_->StoreNodalQuantities(Manager::lmold);
-  contactmanager_->StoreDM("old");
+  // update contact
+  contactmanager_->Update();
   
-  //--------------------------- reset active set status for next time step
-  contactmanager_->ActiveSetConverged() = false;
-  contactmanager_->ActiveSetSteps() = 1;
-    
   //----------------------------------------friction: store history values
   // in the case of frictional contact we have to store several 
   // informations and quantities at the end of a time step (converged 
@@ -1783,6 +1767,9 @@ void CONTACT::ContactStruGenAlpha::Output()
     }
   }
 
+  // print active set
+  contactmanager_->PrintActiveSet();
+  
   //---------------------------------------------------------- print out
   if (!myrank_)
   {
