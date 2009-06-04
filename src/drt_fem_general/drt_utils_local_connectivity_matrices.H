@@ -171,25 +171,25 @@ namespace UTILS
   //!
   //! \verbatim
   //!
-  //!            (2)
+  //!            (2) -->
   //!          6    7    8
   //!           +---+---+
   //!           |       | (1)
   //!       (3) |       |
-  //!           +   +   +
-  //!          3|   4   |5
-  //!           |       |
+  //!           +   +   +  ^
+  //!        ^ 3|   4   |5 |
+  //!        |  |       |   
   //!           +---+---+
   //!          0    1    2
-  //!            (0)
+  //!            (0) -->
   //!
   //! \endverbatim
 
   const int eleNodeNumbering_nurbs9_lines[4][3] = {
           {0,  1,  2},
           {2,  5,  8},
-          {8,  7,  6},
-          {6,  3,  0}};
+          {6,  7,  8},
+          {0,  3,  6}};
 
   //! 3 Lines of a Tri6 element with 3 nodes per line
   const int eleNodeNumbering_tri6_lines[3][3] = {
