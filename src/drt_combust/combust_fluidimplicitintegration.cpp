@@ -90,7 +90,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   //------------------------------------------------------------------------------------------------
 
   //------------------------------------------------------------------------------------------------
-  // prepare XFEM (degree of freedom management)
+  // prepare XFEM (initial degree of freedom management)
   //------------------------------------------------------------------------------------------------
 
   // declare physical fields to be enriched (XFEM fields)
@@ -104,18 +104,12 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   // create dummy instance of dof manager assigning standard enrichments to all nodes
   const Teuchos::RCP<XFEM::DofManager> dofmanagerdummy = rcp(new XFEM::DofManager(ihdummy,xfemfields_,xparams_));
 
-  // pass dof information to elements
+  // pass dof information to elements (no enrichments yet, standard FEM!)
   TransferDofInformationToElements(ihdummy, dofmanagerdummy);
 
   // ensure that degrees of freedom in the discretization have been set
   discret_->FillComplete();
 
-/*
-  for (int inode = 0; inode < discret_->NumMyColNodes(); ++inode)
-  {
-    const DRT::Node* node = discret_->lColNode(inode);
-  }
-*/
   output_.WriteMesh(0,0.0);
 
   //------------------------------------------------------------------------------------------------
@@ -341,15 +335,15 @@ void FLD::CombustFluidImplicitTimeInt::TransferDofInformationToElements(
 void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
        const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandle)
 {
-  // import information about interface from Adapter class ADAPTER::FluidCombust::ImportInterface()
+  // information about interface is imported via ADAPTER::FluidCombust::ImportInterface()
 
   /* momentan gebe ich den ElementAnsatz (Lagrange Multiplier Zeug) nicht an den DofManager weiter,
    * vielleicht brauche ich es aber. Hängt das hier eigentlich nicht direkt von InputParametern ab? */
 //  const COMBUST::CombustElementAnsatz elementAnsatz;
 
-  /* ich baue den DofManager in jedem Zeitschritt neu, weil sich die Freiheitsgrade dauernd in
-   * Position und Anzahl verändern*/
-
+  // build instance of DofManager with information about the interface from the interfacehandle
+  // remark: DofManager is rebuilt in every inter-field iteration step, because number and position
+  // of enriched degrees of freedom change constantly.
   const Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(interfacehandle,xfemfields_,xparams_));
 
   // save dofmanager to be able to plot Gmsh stuff in Output()
@@ -457,7 +451,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
   // ---------------------------------------------- nonlinear iteration
   // ------------------------------- stop nonlinear iteration when both
   //                                 increment-norms are below this bound
-  const double  ittol     =params_.get<double>("tolerance for nonlin iter");
+  const double  ittol     = params_.get<double>("tolerance for nonlin iter");
 
   //------------------------------ turn adaptive solver tolerance on/off
   const bool   isadapttol    = params_.get<bool>("ADAPTCONV");
@@ -476,12 +470,8 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 // const Teuchos::RCP<const Epetra_Vector> ivelcolnp = cutterdiscret->GetState("ivelcolnp");
 // const Teuchos::RCP<const Epetra_Vector> ivelcoln  = cutterdiscret->GetState("ivelcoln");
 
-  // rausgenommen, damit es kompiliert henke 14.11.08
-  //if (myrank_ == 0 && ivelcolnp->MyLength() >= 3)
+/*
   {
-//    std::cout << "applying interface velocity ivelcolnp[0] = " << (*ivelcolnp)[0] << std::endl;
-//    std::cout << "applying interface velocity ivelcolnp[1] = " << (*ivelcolnp)[1] << std::endl;
-//    std::cout << "applying interface velocity ivelcolnp[2] = " << (*ivelcolnp)[2] << std::endl;
     std::ofstream f;
     const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
                             + ".outifacevelnp.txt";
@@ -490,46 +480,11 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
     else
       f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
 
-//    f << time_ << " " << (*ivelcolnp)[0] << "  " << "\n";
+    f << time_ << " " << (*ivelcolnp)[0] << "  " << "\n";
 
     f.close();
   }
-
-  // rausgenommen, damit es kompiliert henke 14.11.08
-  //if (myrank_ == 0 && ivelcoln->MyLength() >= 3)
-  {
-//    std::cout << "applying interface velocity ivelcoln[0] = " << (*ivelcoln)[0] << std::endl;
-//    std::cout << "applying interface velocity ivelcoln[1] = " << (*ivelcoln)[1] << std::endl;
-//    std::cout << "applying interface velocity ivelcoln[2] = " << (*ivelcoln)[2] << std::endl;
-    std::ofstream f;
-    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
-                            + ".outifaceveln.txt";
-    if (step_ <= 1)
-      f.open(fname.c_str(),std::fstream::trunc);
-    else
-      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-
-//    f << time_ << " " << (*ivelcoln)[0] << "  " << "\n";
-
-    f.close();
-  }
-
-  // rausgenommen, damit es kompiliert henke 14.11.08
-  //if (myrank_ == 0 && ivelcolnp->MyLength() >= 3)
-  {
-    std::ofstream f;
-    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
-                            + ".outifaceanalytischvel.txt";
-    if (step_ <= 1)
-      f.open(fname.c_str(),std::fstream::trunc);
-    else
-      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-
-    const double periodendauer = 10.0;
-    f << time_ << " " << (-1.5*std::sin(2.0*time_* PI/periodendauer) * PI/periodendauer) << "\n";
-
-    f.close();
-  }
+*/
 
   // action for elements
   if (timealgo_!=timeint_stationary)
@@ -545,13 +500,6 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
     printf("+------------+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+\n");
     printf("|- step/max -|- tol      [norm] -|-- vel-res ---|-- pre-res ---|-- fullres ---|-- vel-inc ---|-- pre-inc ---|-- fullinc ---|\n");
   }
-
-  // this is a hack to make the code compile! There should be no cutterdis in here! henke 10/08
-  Teuchos::RCP<DRT::Discretization>      cutterdiscret;
-  cutterdiscret = null;
-  // this line causes a segmentation fault!
-  const Epetra_Map* fluidsurface_dofcolmap = cutterdiscret->DofColMap();
-  const Teuchos::RCP<Epetra_Vector> iforcecolnp = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
 
   while (stopnonliniter==false)
   {
@@ -602,13 +550,6 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       discret_->SetState("velnm",state_.velnm_);
       discret_->SetState("accn" ,state_.accn_);
 
-      // give interface velocity to elements
-//      eleparams.set("interface velocity",ivelcolnp);
-
-      // reset interface force and let the elements fill it
-      iforcecolnp->PutScalar(0.0);
-      eleparams.set("interface force",iforcecolnp);
-
       // convergence check at itemax is skipped for speedup if
       // CONVCHECK is set to L_2_norm_without_residual_at_itemax
       if ((itnum != itemax)
@@ -621,9 +562,6 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
         discret_->Evaluate(eleparams,sysmat_,residual_);
 
         discret_->ClearState();
-
-        // get physical surface force
-        iforcecolnp->Scale(ResidualScaling());
 
         // scaling to get true residual vector for all other schemes
         trueresidual_->Update(ResidualScaling(),*residual_,0.0);
@@ -692,18 +630,9 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 
     // care for the case that nothing really happens in the velocity
     // or pressure field
-    if (velnorm_L2 < 1e-5)
-    {
-      velnorm_L2 = 1.0;
-    }
-    if (prenorm_L2 < 1e-5)
-    {
-      prenorm_L2 = 1.0;
-    }
-    if (fullnorm_L2 < 1e-5)
-    {
-      fullnorm_L2 = 1.0;
-    }
+    if (velnorm_L2 < 1e-5) velnorm_L2 = 1.0;
+    if (prenorm_L2 < 1e-5) prenorm_L2 = 1.0;
+    if (fullnorm_L2 < 1e-5) fullnorm_L2 = 1.0;
 
     //-------------------------------------------------- output to screen
     /* special case of very first iteration step:
@@ -823,14 +752,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
     //------------------------------------------------ update (u,p) trial
     state_.velnp_->Update(1.0,*incvel_,1.0);
 
-    //cout << "*iforcecol" << endl;
-    //cout << *iforcecol << endl;
   }
-
-  // macht der FSI algorithmus
-  iforcecolnp->Scale(-1.0);
-
-//  cutterdiscret->SetState("iforcenp", iforcecolnp);
 
 } // CombustImplicitTimeInt::NonlinearSolve
 

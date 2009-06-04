@@ -57,6 +57,7 @@ namespace DRT
           std::vector<double> veln;
           std::vector<double> velnm;
           std::vector<double> accn;
+          std::vector<double> phinp;
         };
         
         //! @name Constructors and destructors and related methods

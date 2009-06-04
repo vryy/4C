@@ -339,7 +339,7 @@ void COMBUST::Algorithm::UpdateFGIteration()
 }
 
 /*------------------------------------------------------------------------------------------------*
- * protected: update                                                                  henke 06/08 |
+ | protected: update                                                                  henke 06/08 |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::Algorithm::UpdateTimeStep()
 {

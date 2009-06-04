@@ -35,10 +35,11 @@ namespace XFEM
        */
       enum EnrType
       {
-        typeUndefined,   ///< a default value, for which all functions should fail/crash
-        typeStandard,    ///< standard enrichment  - corresponds to the standard finite element method
-        typeJump,        ///< jump enrichment - Heaviside function from +1 (in Omega+) to -1 (in Omega-)
-        typeVoid         ///< void enrichment - Heaviside function from +1 (in Omega+) to  0 (in Omega-)
+        typeUndefined, ///< a default value, for which all functions should fail/crash
+        typeStandard,  ///< standard enrichment  - corresponds to the standard finite element method
+        typeJump,      ///< jump enrichment - Heaviside function from +1 (in Omega+) to -1 (in Omega-)
+        typeVoid,      ///< void enrichment - Heaviside function from +1 (in Omega+) to  0 (in Omega-)
+        typeKink       ///< kink enrichment - TODO: discription missing
       };
       
       /*!

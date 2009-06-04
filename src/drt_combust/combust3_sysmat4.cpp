@@ -2,7 +2,7 @@
 /*!
 \file combust3_sysmat4.cpp
 
-\brief element formulations for 3d Combustfluid element
+\brief element formulation for 3D combustion element
 
 <pre>
 Maintainer: Florian Henke
@@ -147,7 +147,7 @@ Maintainer: Florian Henke
           for (size_t iparam=0; iparam<numparamtauyz; ++iparam)   etau(5,iparam) = mystate.velnp[tauyzdof[iparam]];
       }
   }
-  
+
   template <DRT::Element::DiscretizationType DISTYPE,
             XFEM::AssemblyType ASSTYPE,
             size_t NUMDOF,
@@ -804,18 +804,23 @@ void SysmatDomain4(
     
     // information about domain integration cells
     const GEO::DomainIntCells&  domainIntCells(ih->GetDomainIntCells(ele));
-    //cout << "Element "<< ele->Id() << ": ";
+//    cout << "Element "<< ele->Id() << ": ";
+
     // loop over integration cells
     for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
     {
         const LINALG::Matrix<nsd,1> cellcenter_xyz(cell->GetPhysicalCenterPosition());
         
         int labelnp = 0;
-        
+
+// Das ist anders für combustion! Es müssen beide Seiten des Interfaces integriert werden
         if (ASSTYPE == XFEM::xfem_assembly)
         {
           // integrate only in fluid integration cells (works well only with void enrichments!!!)
+
+// Hier fliegt der Code raus! henke 25.5.09
           labelnp = ih->PositionWithinConditionNP(cellcenter_xyz);
+          std::cout << "position2" << std::endl;
           const std::set<int> xlabelset(dofman.getUniqueEnrichmentLabels());
           bool compute = false;
           if (labelnp == 0) // fluid
@@ -840,7 +845,7 @@ void SysmatDomain4(
         // gaussian points
         const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
 
-        // integration loop
+        // integration loop over Gauss points
         for (int iquad=0; iquad<intpoints.nquad; ++iquad)
         {
             // coordinates of the current integration point in cell coordinates \eta
@@ -859,7 +864,8 @@ void SysmatDomain4(
             static LINALG::Matrix<nsd,numnode> deriv;
             DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
             DRT::UTILS::shape_function_3D_deriv1(deriv,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
-      
+
+// Das is anders für combustion!
             // discontinuous stress shape functions
             static LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement,1> funct_stress;
             if (ASSTYPE == XFEM::xfem_assembly)
@@ -978,7 +984,7 @@ void SysmatDomain4(
                   shp_tau.Clear();
                 }
             }
-            else
+            else // not xfem_assembly
             {
               for (size_t iparam = 0; iparam < numnode; ++iparam)
               {
@@ -1608,7 +1614,7 @@ void Sysmat4(
     LINALG::Matrix<6,shpVecSizeStress> etau;
     
     fillElementUnknownsArrays4<DISTYPE,ASSTYPE>(dofman, mystate, evelnp, eveln, evelnm, eaccn, eprenp, etau);
-    
+
     SysmatDomain4<DISTYPE,ASSTYPE,NUMDOF>(
         ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, etau,
         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, assembler);
@@ -1652,7 +1658,7 @@ void COMBUST::callSysmat4(
         {
             case DRT::Element::hex8:
                 Sysmat4<DRT::Element::hex8,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
+                        ele, ih, eleDofManager, mystate, Teuchos::null, Teuchos::null, estif, eforce,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
                 break;
             case DRT::Element::hex20:
@@ -1685,7 +1691,7 @@ void COMBUST::callSysmat4(
         {
             case DRT::Element::hex8:
                 Sysmat4<DRT::Element::hex8,XFEM::xfem_assembly>(
-                        ele, ih, eleDofManager, mystate, ivelcol, iforcecol, estif, eforce,
+                        ele, ih, eleDofManager, mystate, Teuchos::null, Teuchos::null, estif, eforce,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, ifaceForceContribution);
                 break;
             case DRT::Element::hex20:

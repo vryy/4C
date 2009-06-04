@@ -42,15 +42,18 @@ COMBUST::InterfaceHandleCombust::InterfaceHandleCombust(
     std::cout << "Construct InterfaceHandleCombust" << std::endl;
 
 /* Ich muss erstmal schauen, ob die DomainIntCell für meine Zwecke sinnvoll ist. Falls nicht, steht
- * das ganze InterfaceHanlde in Frage. Es könnte auch alles in die FlameFront integriert werden.
+ * das ganze InterfaceHandle in Frage. Es könnte auch alles in die FlameFront integriert werden.
  * 
  * henke 03/09 */
 
-  std::cout << "Hier passiert absolut nichts" << std::endl;
+  std::cout << "Proc " << fluiddis->Comm().MyPID() << ": Hier passiert absolut nichts" << std::endl;
   // Dinge, die hier passieren müssen, sind in diesen Funktionen zu finden:
   // computeIntersection
   // computePLC
   // computeCDT
+  // Aufpassen! Die FlameFront enthält Infos über alle Fluid Col Elemente auf einem Proc!
+  // Die Triangulierung sollte aber Row-mässig, d.h. eindeutig durchgeführt werden!
+  // computeAverageGfuncValuePerIntCell   so wird bestimmt auf welcher Seite die Zelle liegt
 
   if (fluiddis->Comm().MyPID() == 0)
     std::cout << "Construct InterfaceHandleCombust done" << std::endl;

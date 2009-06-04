@@ -82,11 +82,12 @@ void COMBUST::RefinementCell::SetGfuncValues(std::vector<double> gfuncvalues)
 }
 
 /*------------------------------------------------------------------------------------------------*
- | find out, whether refinement cell is intersected by the zero iso-surface of the G-function by  |
- | looking for sign changes among the G-function values at the vertices               henke 03/09 |
+ | find out, whether refinement cell is intersected by the interface                  henke 03/09 |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::RefinementCell::IdentifyIntersectionStatus()
 {
+  // idea: Since the interface is defined by the zero iso-surface of the G-function, we look for
+  // sign changes among the G-function values at the vertices of the refinement cell.
   unsigned counter = 0;
 
   // advance to first non-zero G-function value

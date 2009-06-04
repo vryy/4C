@@ -31,7 +31,8 @@ COMBUST::FlameFront::FlameFront(
     const Teuchos::RCP<DRT::Discretization> gfuncdis
     ) :
     fluiddis_(fluiddis),
-    gfuncdis_(gfuncdis)
+    gfuncdis_(gfuncdis),
+    phinp_(Teuchos::null)
 {
   if (fluiddis->Comm().MyPID() == 0)
     std::cout << "Constructing FlameFront done" << std::endl;
@@ -129,20 +130,24 @@ void COMBUST::FlameFront::ProcessFlameFront(
   //------------------------------------------------------------------------------------------------
   const Teuchos::RCP<Epetra_Vector> phinpcol = rcp(new Epetra_Vector(*fluiddis_->NodeColMap()));
   LINALG::Export(*phinprow,*phinpcol);
+  
   // Jetzt hab ich einen Vektor auf der ColMap. Was mach ich jetzt damit? Muss an Elemente/Dis gehen!
   // eleparams.set("velocity field",tmp);
+  // store vector on fluiddis NodeColMap holding G-function values in member variable
+  phinp_ = phinpcol;
 
-  // loop over fluid (combustion) row elements
-  for (int iele=0; iele<fluiddis_->NumMyRowElements(); ++iele)
+  // loop over fluid (combustion) column elements
+  // remark: loop over row elements would be sufficient, but enrichment is done in column loop
+  for (int iele=0; iele<fluiddis_->NumMyColElements(); ++iele)
   {
     // get element from discretization
-    const DRT::Element *ele = fluiddis_->lRowElement(iele);
+    const DRT::Element *ele = fluiddis_->lColElement(iele);
 
-//#ifdef DEBUG
+#ifdef DEBUG
     if(ele->Type() != DRT::Element::element_combust3)
       // this is not compulsory, but combust3 elements are expected here!
       dserror("unexpected element type: this should be of combust3 type!");
-//#endif
+#endif
 
     // create refinement cell from a fluid element -> cell will have same geometry as element!
     const Teuchos::RCP<COMBUST::RefinementCell> rootcell = rcp(new COMBUST::RefinementCell(ele));
@@ -152,7 +157,7 @@ void COMBUST::FlameFront::ProcessFlameFront(
       RefineFlameFront(rootcell);
 
     else // refinement strategy is turned off
-      FindFlameFront(phinpcol,rootcell);
+      FindFlameFront(phinp_,rootcell);
 
     /* jetzt habe ich für jedes Element eine "rootcell", an der entweder (refinement on) ein ganzer
      * Baum von Zellen mit Interfaceinformationen hängt, oder (refinement off) eine einzige Zelle
@@ -257,10 +262,10 @@ void COMBUST::FlameFront::FindFlameFront(
       // get entries in "gfuncvalues" corresponding to node GIDs "lm" and store them in "mygfuncvalues"
       DRT::UTILS::ExtractMyValues(*gfuncvalues,mygfuncvalues,lm);
 
-  //#ifdef DEBUG
+#ifdef DEBUG
         if (lm.size() != mygfuncvalues.size() )
           dserror("unexpected number of nodes: there should be 8 nodes per element!");
-  //#endif
+#endif
 
       //--------------------------------------------------------------------------------------------
       // store G-function values in refinement cell and decide whether this cell is intersected
@@ -324,7 +329,7 @@ void COMBUST::FlameFront::FindFlameFront(
   }
   else
   {
-    // fertig (-> nächstes Fluidelement)
+    // done (-> next fluid element)
   }
 
   return;
@@ -381,8 +386,6 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
 
      TriangulateFlameFront()
      buildPLC()
-     CreateIntegrationCells()
-     TransformIntegrationCells()
   */
 
   // hier muss jetzt die map "flamefrontpatches_" mit Oberflächenstückchen gefüllt werden

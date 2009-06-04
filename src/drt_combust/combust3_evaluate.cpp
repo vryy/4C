@@ -145,6 +145,18 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*discretization.GetState("velnm"),mystate.velnm,lm);
       DRT::UTILS::ExtractMyValues(*discretization.GetState("accn") ,mystate.accn ,lm);
 
+#ifdef DEBUG
+      // get pointer to vector holding G-function values at the fluid nodes
+      const Teuchos::RCP<Epetra_Vector> phinp = ih_->FlameFront()->Phinp();
+      // get map of this vector
+      const Epetra_BlockMap& phimap = phinp->Map();
+      // check, whether this map is still identical with the current node map in the discretization
+      if (not phimap.SameAs(*discretization.NodeColMap())) dserror("node column map has changed!");
+#endif
+
+      // extract G-function values to element level (used kink enrichment)
+      DRT::UTILS::ExtractMyNodeBasedValues(this, mystate.phinp, *phinp);
+
       const bool newton = params.get<bool>("include reactive terms for linearisation",false);
 
       // stabilization terms
@@ -157,13 +169,13 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       const double            dt       = params.get<double>("dt");
       const double            theta    = params.get<double>("theta");
 
-      const Teuchos::RCP<const Epetra_Vector> ivelcol = params.get<Teuchos::RCP<const Epetra_Vector> >("interface velocity");
+//      const Teuchos::RCP<const Epetra_Vector> ivelcol = params.get<Teuchos::RCP<const Epetra_Vector> >("interface velocity");
 //      const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("interface force");
-      if (ivelcol==null)
-        dserror("Cannot get interface velocity from parameters");
-      const Teuchos::RCP<Epetra_Vector> iforcecol = null; //params.get<Teuchos::RCP<Epetra_Vector> >("interface force");
-      if (iforcecol==null)
-        dserror("Cannot get interface force from parameters");
+//      if (ivelcol==null)
+//        dserror("Cannot get interface velocity from parameters");
+//      const Teuchos::RCP<Epetra_Vector> iforcecol = null; //params.get<Teuchos::RCP<Epetra_Vector> >("interface force");
+//      if (iforcecol==null)
+//        dserror("Cannot get interface force from parameters");
 
       const bool ifaceForceContribution = discretization.ElementRowMap()->MyGID(this->Id());
 
@@ -172,7 +184,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
       // calculate element coefficient matrix and rhs
       COMBUST::callSysmat4(assembly_type,
-        this, ih_, *eleDofManager_, mystate, ivelcol, iforcecol, elemat1, elevec1,
+        this, ih_, *eleDofManager_, mystate, Teuchos::null, Teuchos::null, elemat1, elevec1,
         mat, timealgo, dt, theta, newton, pstab, supg, cstab, true, ifaceForceContribution);
     }
     break;
@@ -221,12 +233,12 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       mystate.instationary = false;
       DRT::UTILS::ExtractMyValues(*discretization.GetState("velnp"),mystate.velnp,lm);
 
-      const Teuchos::RCP<const Epetra_Vector> ivelcol = params.get<Teuchos::RCP<const Epetra_Vector> >("interface velocity");
-      if (ivelcol==null)
-        dserror("Cannot get interface velocity from parameters");
-      const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("interface force");
-      if (iforcecol==null)
-        dserror("Cannot get interface force from parameters");
+//      const Teuchos::RCP<const Epetra_Vector> ivelcol = params.get<Teuchos::RCP<const Epetra_Vector> >("interface velocity");
+//      if (ivelcol==null)
+//        dserror("Cannot get interface velocity from parameters");
+//      const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("interface force");
+//      if (iforcecol==null)
+//        dserror("Cannot get interface force from parameters");
 
       // time integration factors
       const FLUID_TIMEINTTYPE timealgo = params.get<FLUID_TIMEINTTYPE>("timealgo");
@@ -309,7 +321,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       {
         // calculate element coefficient matrix and rhs
         COMBUST::callSysmat4(assembly_type,
-                 this, ih_, *eleDofManager_, mystate, ivelcol, iforcecol, elemat1, elevec1,
+                 this, ih_, *eleDofManager_, mystate, Teuchos::null, Teuchos::null, elemat1, elevec1,
                  mat, timealgo, dt, theta, newton, pstab, supg, cstab, false, ifaceForceContribution);
       }
     }
@@ -319,7 +331,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       TEUCHOS_FUNC_TIME_MONITOR("COMBUST3 - evaluate - store_xfem_info");
 
       // store pointer to interface handle
-      ih_ = params.get< Teuchos::RCP< COMBUST::InterfaceHandleCombust > >("interfacehandle",null);
+      ih_ = params.get< Teuchos::RCP< COMBUST::InterfaceHandleCombust > >("interfacehandle",Teuchos::null);
 
       // get access to global dofman
       const Teuchos::RCP<XFEM::DofManager> globaldofman = params.get< Teuchos::RCP< XFEM::DofManager > >("dofmanager");

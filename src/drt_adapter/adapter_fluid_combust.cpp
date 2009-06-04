@@ -40,7 +40,7 @@ ADAPTER::FluidCombust::FluidCombust(Teuchos::RCP<DRT::Discretization> dis,
     params_(params),
     output_(output)
 {
-  std::cout << "ADAPTER::FluidCombust constructor done \n" << endl;
+  std::cout << "Proc " << fluiddis_->Comm().MyPID() << "ADAPTER::FluidCombust constructor done \n" << endl;
 }
 
 void ADAPTER::FluidCombust::SetInitialFlowField(int whichinitialfield, int startfuncno)
@@ -225,7 +225,7 @@ void ADAPTER::FluidCombust::PrintInterfaceVectorField(
 void ADAPTER::FluidCombust::NonlinearSolve()
 {
 
-  std::cout << "FluidCombust::NonlinearSolve()" << endl;
+  std::cout << "Proc " << fluiddis_->Comm().MyPID()<< "FluidCombust::NonlinearSolve()" << endl;
 
   fluid_.NonlinearSolve();
 }

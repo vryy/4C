@@ -44,7 +44,7 @@ namespace COMBUST
     ~InterfaceHandleCombust();
 
     //! return pointer to the intersecting discretization (does anyone need this?)
-    const Teuchos::RCP<const DRT::Discretization>& gfuncdis() const { return gfuncdis_; }
+    const Teuchos::RCP<const DRT::Discretization>& GfuncDis() const { return gfuncdis_; }
 
     //! return pointer to flame front (does anyone need this?)
     const Teuchos::RCP<const COMBUST::FlameFront>& FlameFront() const { return flamefront_; }

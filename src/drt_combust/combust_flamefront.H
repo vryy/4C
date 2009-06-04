@@ -61,6 +61,9 @@ namespace COMBUST
     /// destructor
     ~FlameFront();
 
+    /// remote access method to vector holding G-function values
+    const Teuchos::RCP<Epetra_Vector> Phinp() const { return phinp_; }
+
     /// remote access method to flame front patches
     const std::map< int,const Teuchos::RCP<const COMBUST::RefinementCell> > FlameFrontPatches() const
         { return flamefrontpatches_; }
@@ -110,10 +113,11 @@ namespace COMBUST
     /// pointer to level set (G-function) discretization that intersects the fluiddis_
     const Teuchos::RCP<DRT::Discretization> gfuncdis_;
 
-    /// vector on fluid NodeColMap holding G-function values originally stored in phinp
-    const Teuchos::RCP<Epetra_Vector> phinp_;
+    /// pointer to vector on fluid NodeColMap holding G-function values originally stored in phinp
+    Teuchos::RCP<Epetra_Vector> phinp_;
 
-    /// map containing for each fluid element flame front geometry to be exported to the interfacehandle
+    /// map containing, for each column fluid element on this processor, the flame front geometry to
+    /// be exported to the interfacehandle
     // this is preliminary, just to have a "flame front" for now: it should hold the interface information
     std::map< int,const Teuchos::RCP<const COMBUST::RefinementCell> > flamefrontpatches_;
 //    std::map< int, PLC_per_element > flamefrontpatches_;

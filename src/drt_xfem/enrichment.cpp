@@ -56,6 +56,7 @@ std::string XFEM::Enrichment::enrTypeToString(const EnrType type) const
         case typeStandard:  typetext = "Stnd"; break;
         case typeJump:      typetext = "Jump"; break;
         case typeVoid:      typetext = "Void"; break;
+        case typeKink:      typetext = "Kink"; break;
         default: dserror("no string defined for EnrType");
     };
     return typetext;
@@ -63,7 +64,7 @@ std::string XFEM::Enrichment::enrTypeToString(const EnrType type) const
 
 
 /*----------------------------------------------------------------------*
- |  get enrichment value                                        ag 11/07|
+ | get enrichment value                                        ag 11/07 |
  *----------------------------------------------------------------------*/
 double XFEM::Enrichment::EnrValue(
         const LINALG::Matrix<3,1>&            actpos,
@@ -82,6 +83,7 @@ double XFEM::Enrichment::EnrValue(
     }
     case XFEM::Enrichment::typeVoid:
     {
+        // standard Heaviside function
         switch (approachdirection)
         {
             case approachFromPlus:
@@ -110,6 +112,9 @@ double XFEM::Enrichment::EnrValue(
     }
     case XFEM::Enrichment::typeJump:
     {
+        // for the time being the standard jump enrichment function is not available   henke 05/09
+        dserror("Use modified enrichment function instead!");
+        // Heaviside function (jump height is 2!)
         switch (approachdirection)
         {
             case approachFromPlus:
@@ -134,17 +139,23 @@ double XFEM::Enrichment::EnrValue(
         }
         break;
     }
+    case XFEM::Enrichment::typeKink:
+    {
+      // for the time being the standard kink enrichment function is not available   henke 05/09
+      dserror("Use modified enrichment function instead!");
+    }
     default:
-        dserror("unsupported enrichment!");
+        dserror("unsupported type of enrichment!");
     }
     return enrval;
 }
 
 
-/*
- *  get modified enrichment value (satisfied interpolation property
- *                                                              ag 11/07
- */
+/*----------------------------------------------------------------------*
+ | get modified enrichment value                               ag 11/07 |
+ | remark: the enrichment function is 0 at nodes and hence the usual    |
+ | interpolation property of the standard FEM is satisfied              |
+ *----------------------------------------------------------------------*/
 double XFEM::Enrichment::ModifiedEnrValue(
         const LINALG::Matrix<3,1>&            actpos,
         const LINALG::Matrix<3,1>&            nodalpos,
@@ -152,6 +163,7 @@ double XFEM::Enrichment::ModifiedEnrValue(
         const XFEM::Enrichment::ApproachFrom  approachdirection
         ) const
 {
+    // TODO @ Axel: What does that mean?
     dserror("needs update for the approach variable");
     // return value
     double enrval = 1.0;
@@ -184,6 +196,11 @@ double XFEM::Enrichment::ModifiedEnrValue(
     }
     case XFEM::Enrichment::typeJump:
     {
+        /* literature (p. 1006, penultimate line):
+         * Belytschko, T., Moës, N., Usui, S. and Parimi, C.
+         * Arbitrary discontinuities in finite elements:
+         * "International Journal for Numerical Methods in Engineering", 50:993--1013,2001.
+         */
         double actpos_enr_val = 0.0;
         if (ih.PositionWithinConditionNP(actpos) == this->XFEMConditionLabel()) {
             actpos_enr_val = -1.0;
@@ -202,7 +219,16 @@ double XFEM::Enrichment::ModifiedEnrValue(
         
         break;
     }
-    
+    case XFEM::Enrichment::typeKink:
+    {
+        /* literature:
+         * Moës, N., Cloirec, M.,Cartraud, P. and Remacle, J. F.
+         * A computational approach to handle complex microstructure geometries:
+         * "Computer Methods in Applied Mechanics and Engineering", 192:3163--3177, 2003.
+         */
+        dserror("kink enrichment function not implemented yet");
+        // enrval = something involving the standard shape functions
+    }
     default:
         dserror("unsupported enrichment (modified)!");
     }

@@ -653,8 +653,16 @@ void XFEM::createDofMapCombust(
     // any regular call of DofManager (existing flame front) will end up here
     else
     {
-      // get the refinement cell belonging to a fluid element
+/*      for (int j=0; j < ih.xfemdis()->NumMyColElements(); ++j)
+      {
+        const DRT::Element* xfemele = ih.xfemdis()->lColElement(j);
+        std::map<int,const Teuchos::RCP<const COMBUST::RefinementCell> >::const_iterator iter = ih.FlameFront()->FlameFrontPatches().find(xfemele->Id());
+        std::cout << "Proc " << ih.xfemdis()->Comm().MyPID() << " found element: " << iter->first << xfemele->Id() << "in FlameFront" << endl;
+      }
+*/
+    // get the refinement cell belonging to a fluid element
       std::map<int,const Teuchos::RCP<const COMBUST::RefinementCell> >::const_iterator iter = ih.FlameFront()->FlameFrontPatches().find(xfemele->Id());
+
       // ask refinement cell if it is intersected
       if (iter->second->Intersected())
       {
@@ -703,6 +711,7 @@ void XFEM::ApplyStandardEnrichmentCombust(
   for (int inode = 0; inode<numnodes; ++inode)
   {
     const int nodeid = nodeidptrs[inode];
+//    std::cout << "element " << xfemele->Id() << " node ID: " << nodeid << endl;
     for (std::set<XFEM::PHYSICS::Field>::const_iterator field = fieldset.begin();field != fieldset.end();++field)
     {
       nodalDofSet[nodeid].insert(XFEM::FieldEnr(*field, stdenr));
