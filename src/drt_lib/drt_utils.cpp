@@ -1474,7 +1474,38 @@ void DRT::UTILS::ExtractMyValues(const Epetra_Vector& global,
 
 
 /*----------------------------------------------------------------------*
-|  extract local values from global node-based vector         gjb 08/08 |
+ | extract local values from global node-based (multi) vector           |
+ |                                                          henke 06/09 |
+ *----------------------------------------------------------------------*/
+void DRT::UTILS::ExtractMyNodeBasedValues(
+    const DRT::Element* ele,
+    std::vector<double>& local,
+    const Epetra_MultiVector& global)
+{
+  const int numnode = ele->NumNode();
+  const int numcol = global.NumVectors();
+  local.resize(numnode*numcol);
+
+  // loop over element nodes
+  for (int i=0; i<numnode; ++i)
+  {
+    const int nodegid = (ele->Nodes()[i])->Id();
+    const int lid = global.Map().LID(nodegid);
+    if (lid<0) dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",global.Comm().MyPID(),nodegid);
+
+    // loop over multi vector columns (numcol=1 for Epetra_Vector)
+    for (int col=0; col<numcol; col++)
+    {
+      double* globalcolumn = (global)[col];
+      local[col+(numcol*i)] = globalcolumn[lid];
+    }
+  }
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | extract local values from global node-based multi vector   gjb 08/08 |
  *----------------------------------------------------------------------*/
 void DRT::UTILS::ExtractMyNodeBasedValues(
     const DRT::Element* ele,

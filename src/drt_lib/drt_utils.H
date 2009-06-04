@@ -128,6 +128,18 @@ namespace UTILS
 
 
   /// Locally extract a subset of values from a (column)-nodemap-based Epetra_MultiVector
+  /*  \author henke
+   *  \date 06/09
+   */
+  void ExtractMyNodeBasedValues
+  (
+    const DRT::Element* ele,            ///< pointer to current element
+    std::vector<double>& local,         ///< local vector on element-level
+    const Epetra_MultiVector& global    ///< global (multi) vector
+    );
+
+
+  /// Locally extract a subset of values from a (column)-nodemap-based Epetra_MultiVector
   /*  \author g.bau 
    *  \date 08/08
    */
