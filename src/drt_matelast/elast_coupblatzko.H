@@ -36,7 +36,7 @@ namespace ELAST
     /// material parameters for Blatz and Ko material
     ///
     /// <h3>Input line</h3>
-    /// MAT 1 ELAST_CoupBlatzKo MUE 1.044E7 NUE 0.3 F 0.5 BETA -2.
+    /// MAT 1 ELAST_CoupBlatzKo MUE 1.044E7 NUE 0.3 F 0.5
     class CoupBlatzKo : public MAT::PAR::Parameter
     {
     public:
@@ -58,8 +58,6 @@ namespace ELAST
       const double nue_;
       /// interpolation parameter
       const double f_;
-      /// empiric parameter
-      const double beta_;
 
       //@}
 
@@ -75,9 +73,14 @@ namespace ELAST
   ///\f[
   ///   \Psi= f \frac {\mu} 2 \left[ (I_{\boldsymbol C}-3)+\frac 1
   ///         {\beta} ( III_{\boldsymbol C}^{-\beta} -1) \right]
-  ///+(1-f) \frac {\mu} 2 \left[\left( \frac {II_{\boldsymbol
-  ///C}}{III_{\boldsymbol C}}-3 \right) + \frac 1 {\beta} (III_{\boldsymbol C}^{\beta}-1)\right]
+  ///         +(1-f) \frac {\mu} 2 \left[\left( \frac {II_{\boldsymbol
+  ///         C}}{III_{\boldsymbol C}}-3 \right) + \frac 1 {\beta}
+  ///         (III_{\boldsymbol C}^{\beta}-1)\right]
   ///\f]
+  ///
+  /// \f[
+  ///    with \ \beta=\nue-0.5
+  /// \f]
   ///
   ///
   /// [1] Doll, S. and Schweizerhof, K. On the Development of Volumetric Strain Energy Functions

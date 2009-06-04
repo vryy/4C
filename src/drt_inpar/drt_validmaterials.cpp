@@ -826,7 +826,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"MUE","Shear modulus");
     AddNamedReal(m,"NUE","Poisson's ratio");
     AddNamedReal(m,"F","interpolation parameter");
-    AddNamedReal(m,"BETA","empirical parameter");
 
     AppendMaterialDefinition(matlist,m);
   }
