@@ -38,9 +38,9 @@ data_()
 
     Cs_delta_sq_=0;
 
-    sub_acc_old_.resize(0,0);
-    sub_vel_.resize(0,0);
-    sub_vel_old_.resize(0,0);
+    saccn_ .Shape(0,0);
+    svelnp_.Shape(0,0);
+    sveln_ .Shape(0,0);
 
     return;
 }
@@ -49,11 +49,14 @@ data_()
  |  copy-ctor (public)                                       gammi 02/08|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Fluid3::Fluid3(const DRT::ELEMENTS::Fluid3& old) :
-DRT::Element(old),
-gaussrule_(old.gaussrule_),
-is_ale_(old.is_ale_),
-data_(old.data_),
-Cs_delta_sq_(old.Cs_delta_sq_)
+DRT::Element(old             ),
+gaussrule_  (old.gaussrule_  ),
+is_ale_     (old.is_ale_     ),
+data_       (old.data_       ),
+Cs_delta_sq_(old.Cs_delta_sq_),
+saccn_      (old.saccn_      ),
+svelnp_     (old.svelnp_     ),
+sveln_      (old.sveln_      ) 
 {
     return;
 }
@@ -113,15 +116,14 @@ void DRT::ELEMENTS::Fluid3::Pack(vector<char>& data) const
   AddtoPack(data,Cs_delta_sq_);
 
   // history variables
-  AddtoPack(data,sub_acc_old_.extent(blitz::firstDim));
-  AddtoPack(data,sub_acc_old_.extent(blitz::secondDim));
+  AddtoPack(data,saccn_.M());
+  AddtoPack(data,saccn_.N());
 
-  int size = sub_acc_old_.extent(blitz::firstDim)
-             *sub_acc_old_.extent(blitz::secondDim)
-             *sizeof(double);
-  AddtoPack(data,sub_acc_old_.data(),size);
-  AddtoPack(data,sub_vel_.data()    ,size);
-  AddtoPack(data,sub_vel_old_.data(),size);
+  int size = saccn_.M()*saccn_.N()*sizeof(double);
+
+  AddtoPack(data,saccn_ .A(),size);
+  AddtoPack(data,svelnp_.A(),size);
+  AddtoPack(data,sveln_ .A(),size);
 
   // data_
   vector<char> tmp(0);
@@ -165,15 +167,15 @@ void DRT::ELEMENTS::Fluid3::Unpack(const vector<char>& data)
     ExtractfromPack(position,data,firstdim);
     ExtractfromPack(position,data,secondim);
 
-    sub_acc_old_.resize(firstdim,secondim);
-    sub_vel_    .resize(firstdim,secondim);
-    sub_vel_old_.resize(firstdim,secondim);
+    saccn_ .Shape(firstdim,secondim);
+    svelnp_.Shape(firstdim,secondim);
+    sveln_ .Shape(firstdim,secondim);
 
     int size = firstdim*secondim*sizeof(double);
 
-    ExtractfromPack(position,data,&(sub_acc_old_.data()[0]),size);
-    ExtractfromPack(position,data,&(sub_vel_    .data()[0]),size);
-    ExtractfromPack(position,data,&(sub_vel_old_.data()[0]),size);
+    ExtractfromPack(position,data,&(saccn_ .A()[0]),size);
+    ExtractfromPack(position,data,&(svelnp_.A()[0]),size);
+    ExtractfromPack(position,data,&(sveln_ .A()[0]),size);
   }
 
   vector<char> tmp(0);

@@ -577,9 +577,16 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         const double dt     = params.get<double>("dt");
         const double gamma  = params.get<double>("gamma");
 
-        sub_acc_old_ = (sub_vel_-sub_vel_old_)/(gamma*dt)
-                       -
-                       sub_acc_old_*(1.0-gamma)/gamma;
+        for(int rr=0;rr<3;++rr)
+        {
+          for(int mm=0;mm<svelnp_.N();++mm)
+          {
+            saccn_(rr,mm) =
+              (svelnp_(rr,mm)-sveln_(rr,mm))/(gamma*dt)
+              -
+              saccn_(rr,mm)*(1.0-gamma)/gamma;
+          }
+        }
 
         // most recent subscale velocity becomes the old subscale velocity
         // for the next timestep
@@ -587,7 +594,13 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         //  ~n   ~n+1
         //  u <- u
         //
-        sub_vel_old_=sub_vel_;
+        for(int rr=0;rr<3;++rr)
+        {
+          for(int mm=0;mm<svelnp_.N();++mm)
+          {
+            sveln_(rr,mm)=svelnp_(rr,mm);
+          }
+        }
       }
       break;
       case calc_fluid_genalpha_average_for_subscales_and_residual:

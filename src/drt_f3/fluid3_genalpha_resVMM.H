@@ -39,7 +39,6 @@ Maintainer: Peter Gamnitzer
 
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H" 
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include <blitz/array.h>
 
 namespace DRT
 {

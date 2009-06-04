@@ -2592,29 +2592,19 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_td(
 
   // if not available, the arrays for the subscale quantities have to
   // be resized and initialised to zero
-  if(ele->sub_acc_old_.extent(blitz::firstDim) != 3 
+  if(ele->saccn_.M() != 3 
      ||
-     ele->sub_acc_old_.extent(blitz::secondDim) != intpoints.nquad)
+     ele->saccn_.N() != intpoints.nquad)
   {
-    ele->sub_acc_old_ .resize(3,intpoints.nquad);
-    ele->sub_acc_old_  = 0.;
-  }
-  if(ele->sub_vel_old_.extent(blitz::firstDim) != 3 
-     || 
-     ele->sub_vel_old_.extent(blitz::secondDim) != intpoints.nquad)
-  {
-    ele->sub_vel_old_ .resize(3,intpoints.nquad);
-    ele->sub_vel_old_  = 0.;
+    ele->saccn_ .Shape(3,intpoints.nquad);
+    memset(ele->saccn_.A(),0,3*intpoints.nquad*sizeof(double));
+
+    ele->sveln_ .Shape(3,intpoints.nquad);
+    memset(ele->sveln_.A(),0,3*intpoints.nquad*sizeof(double));
     
-    ele->sub_vel_.resize(3,intpoints.nquad);
-    ele->sub_vel_ = 0.;
+    ele->svelnp_.Shape(3,intpoints.nquad);
+    memset(ele->svelnp_.A(),0,3*intpoints.nquad*sizeof(double));
   }
-  
-  // get subscale information from element --- this is just a reference
-  // to the element data
-  blitz::Array<double,2> saccn (ele->sub_acc_old_);
-  blitz::Array<double,2> sveln (ele->sub_vel_old_);
-  blitz::Array<double,2> svelnp(ele->sub_vel_    );
 
   //------------------------------------------------------------------
   //                       INTEGRATION LOOP
@@ -2721,7 +2711,12 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_td(
 
       for (int rr=0;rr<3;++rr)
       {
-        svelnp(rr,iquad)= fac1*sveln(rr,iquad)+fac2*saccn(rr,iquad)-fac3*resM_(rr);
+        ele->svelnp_(rr,iquad)= 
+          fac1*ele->sveln_(rr,iquad)
+          +
+          fac2*ele->saccn_(rr,iquad)
+          -
+          fac3*resM_(rr);
       }
     }
 
@@ -2740,7 +2735,10 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_td(
     */
     for (int rr=0;rr<3;++rr)
     {
-      svelaf_(rr)=alphaF*svelnp(rr,iquad)+(1.0-alphaF)*sveln(rr,iquad);
+      svelaf_(rr)=
+        alphaF      *ele->svelnp_(rr,iquad)
+        +
+        (1.0-alphaF)*ele->sveln_ (rr,iquad);
     }
 
     /* the intermediate value of subscale acceleration is not needed to be
@@ -4843,9 +4841,9 @@ N                   \                                                           
     if(pspg == Fluid3::pstab_use_pspg)
     {
       
-      const double fac_svelnpx                      = fac*svelnp(0,iquad);
-      const double fac_svelnpy                      = fac*svelnp(1,iquad);
-      const double fac_svelnpz                      = fac*svelnp(2,iquad);
+      const double fac_svelnpx                      = fac*ele->svelnp_(0,iquad);
+      const double fac_svelnpy                      = fac*ele->svelnp_(1,iquad);
+      const double fac_svelnpz                      = fac*ele->svelnp_(2,iquad);
 
       for (int ui=0; ui<iel; ++ui) // loop columns (solution for matrix, test function for vector)
       {
@@ -7085,29 +7083,19 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_td(
 
   // if not available, the arrays for the subscale quantities have to
   // be resized and initialised to zero
-  if(ele->sub_acc_old_.extent(blitz::firstDim) != 3 
+  if(ele->saccn_.M() != 3 
      ||
-     ele->sub_acc_old_.extent(blitz::secondDim) != intpoints.nquad)
+     ele->saccn_.N() != intpoints.nquad)
   {
-    ele->sub_acc_old_ .resize(3,intpoints.nquad);
-    ele->sub_acc_old_  = 0.;
-  }
-  if(ele->sub_vel_old_.extent(blitz::firstDim) != 3 
-     || 
-     ele->sub_vel_old_.extent(blitz::secondDim) != intpoints.nquad)
-  {
-    ele->sub_vel_old_ .resize(3,intpoints.nquad);
-    ele->sub_vel_old_  = 0.;
+    ele->saccn_ .Shape(3,intpoints.nquad);
+    memset(ele->saccn_.A(),0,3*intpoints.nquad*sizeof(double));
+
+    ele->sveln_ .Shape(3,intpoints.nquad);
+    memset(ele->sveln_.A(),0,3*intpoints.nquad*sizeof(double));
     
-    ele->sub_vel_.resize(3,intpoints.nquad);
-    ele->sub_vel_ = 0.;
+    ele->svelnp_.Shape(3,intpoints.nquad);
+    memset(ele->svelnp_.A(),0,3*intpoints.nquad*sizeof(double));
   }
-  
-  // get subscale information from element --- this is just a reference
-  // to the element data
-  blitz::Array<double,2> saccn (ele->sub_acc_old_);
-  blitz::Array<double,2> sveln (ele->sub_vel_old_);
-  blitz::Array<double,2> svelnp(ele->sub_vel_    );
 
   //------------------------------------------------------------------
   //                       INTEGRATION LOOP
@@ -7202,7 +7190,12 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_td(
     
     for (int rr=0;rr<3;++rr)
     {
-      svelnp(rr,iquad)= fac1*sveln(rr,iquad)+fac2*saccn(rr,iquad)-fac3*resM_(rr);
+      ele->svelnp_(rr,iquad)= 
+        fac1*ele->sveln_(rr,iquad)
+        +
+        fac2*ele->saccn_(rr,iquad)
+        -
+        fac3*resM_(rr);
     }
     
     /*-------------------------------------------------------------------*
@@ -7220,7 +7213,10 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_td(
     */
     for (int rr=0;rr<3;++rr)
     {
-      svelaf_(rr)=alphaF*svelnp(rr,iquad)+(1.0-alphaF)*sveln(rr,iquad);
+      svelaf_(rr)=
+        alphaF      *ele->svelnp_(rr,iquad)
+        +
+        (1.0-alphaF)*ele->sveln_ (rr,iquad);
     }
 
     /* the intermediate value of subscale acceleration is not needed to be
@@ -9540,9 +9536,9 @@ N                   \                                                           
     if(pspg == Fluid3::pstab_use_pspg)
     {
       
-      const double fac_svelnpx                      = fac*svelnp(0,iquad);
-      const double fac_svelnpy                      = fac*svelnp(1,iquad);
-      const double fac_svelnpz                      = fac*svelnp(2,iquad);
+      const double fac_svelnpx                      = fac*ele->svelnp_(0,iquad);
+      const double fac_svelnpy                      = fac*ele->svelnp_(1,iquad);
+      const double fac_svelnpz                      = fac*ele->svelnp_(2,iquad);
 
       for (int ui=0; ui<iel; ++ui) // loop columns (solution for matrix, test function for vector)
       {
@@ -9927,12 +9923,6 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   //
   //----------------------------------------------------------------------------
 
-  // get subscale information from element --- this is just a reference
-  // to the element data
-  blitz::Array<double,2> saccn (ele->sub_acc_old_);
-  blitz::Array<double,2> sveln (ele->sub_vel_old_);
-  blitz::Array<double,2> svelnp(ele->sub_vel_    );
-
   // gaussian points
   const DRT::UTILS::IntegrationPoints3D intpoints(ele->gaussrule_);
 
@@ -9979,7 +9969,10 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
       */
       for (int rr=0;rr<3;++rr)
       {
-        svelaf_(rr) = alphaF*svelnp(rr,iquad)+(1.0-alphaF)*sveln(rr,iquad);
+        svelaf_(rr) = 
+          alphaF      *ele->svelnp_(rr,iquad)
+          +
+          (1.0-alphaF)*ele->sveln_ (rr,iquad);
       }
     }
 
@@ -10302,11 +10295,11 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
       if(tds == Fluid3::subscales_time_dependent)
       {
         eps_pspg-=
-          (svelnp(0,iquad)*pderxynp_(0)
+          (ele->svelnp_(0,iquad)*pderxynp_(0)
            +
-           svelnp(1,iquad)*pderxynp_(1)
+           ele->svelnp_(1,iquad)*pderxynp_(1)
            +
-           svelnp(2,iquad)*pderxynp_(2))*fac;
+           ele->svelnp_(2,iquad)*pderxynp_(2))*fac;
       }
       else
       {

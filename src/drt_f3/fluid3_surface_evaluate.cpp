@@ -338,8 +338,8 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
   vector<double> myvedenp(lm.size());
   DRT::UTILS::ExtractMyValues(*vedenp,myvedenp,lm);
 
-  // create blitz object for density array
-  blitz::Array<double, 1> edensnp(iel);
+  // create vector for density array
+  Epetra_SerialDenseVector edensnp(iel);
 
   // insert density into element array
   for (int i=0;i<iel;++i)
@@ -993,7 +993,7 @@ void DRT::ELEMENTS::Fluid3Surface::NeumannInflow(
   DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
   DRT::UTILS::ExtractMyValues(*vedenp,myvedenp,lm);
 
-  // create blitz object for density array
+  // create Epetra objects for density array and velocities
   Epetra_SerialDenseMatrix evelnp(3,iel);
   Epetra_SerialDenseVector edensnp(iel);
 
@@ -1741,9 +1741,10 @@ void DRT::ELEMENTS::Fluid3Surface::FlowRateParameterCaculation(ParameterList& pa
 
   // create blitz objects for element arrays
   const int numnode = NumNode();
-  blitz::Array<double, 1> eprenp(numnode);
-  blitz::Array<double, 2> evelnp(3,numnode,blitz::ColumnMajorArray<2>());
-  blitz::Array<double, 2> evhist(3,numnode,blitz::ColumnMajorArray<2>());
+
+  Epetra_SerialDenseVector eprenp(numnode);
+  Epetra_SerialDenseMatrix evelnp(3,numnode);
+  Epetra_SerialDenseMatrix evhist(3,numnode);
 
   // split velocity and pressure, insert into element arrays
   for (int i=0;i<numnode;++i)

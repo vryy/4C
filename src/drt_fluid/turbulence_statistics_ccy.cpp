@@ -613,7 +613,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
     vector<double> myvelnp(lm.size());
     DRT::UTILS::ExtractMyValues(*(nurbsdis->GetState("velnp")),myvelnp,lm);
 
-    // create blitz object for density array
+    // create Matrix objects
     LINALG::Matrix<3,27> evelnp;
     LINALG::Matrix<27,1> eprenp;
 

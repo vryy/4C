@@ -499,7 +499,7 @@ void DRT::ELEMENTS::Fluid2Line::NeumannInflow(
   DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
   DRT::UTILS::ExtractMyValues(*vedenp,myvedenp,lm);
 
-  // create blitz object for density array
+  // create epetra object for density array
   Epetra_SerialDenseMatrix evelnp(2,iel);
   Epetra_SerialDenseVector edensnp(iel);
 

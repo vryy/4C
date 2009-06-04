@@ -23,7 +23,6 @@ Maintainer: Georg Bauer
 #ifndef DRT_FLUID3_H
 #define DRT_FLUID3_H
 
-#include <blitz/array.h>
 #include "../drt_lib/linalg_serialdensematrix.H"
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_Vector.h"
@@ -479,11 +478,11 @@ private:
   double                                          Cs_delta_sq_;
 
   //! matrices of subscale acceleration values in gausspoints of this element
-  blitz::Array<double,2>                          sub_acc_old_;
+  Epetra_SerialDenseMatrix                        saccn_;
   //! matrices of subscale velocity values, current iteration value, in gausspoints of this element
-  blitz::Array<double,2>                          sub_vel_;
+  Epetra_SerialDenseMatrix                        svelnp_;
   //! matrices of subscale velocity values, last timestep, in gausspoints of this element
-  blitz::Array<double,2>                          sub_vel_old_;
+  Epetra_SerialDenseMatrix                        sveln_;
 
   // internal calculation methods
 
