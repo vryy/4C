@@ -16,7 +16,6 @@ Maintainer: Florian Henke
 
 #include "combust_utils.H"
 
-#include <blitz/array.h>
 //#include "xfem_condition.H"
 #include "../drt_xfem/enrichment_utils.H"
 #include "../drt_xfem/field_enriched.H"

@@ -14,7 +14,6 @@ Maintainer: Lena Wiechert
 *--------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#include <blitz/array.h>
 #include "drt_surfstress_manager.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
