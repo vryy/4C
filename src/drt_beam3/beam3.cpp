@@ -35,7 +35,7 @@ crosssecshear_(0),
 Iyy_(0),
 Izz_(0),
 Irr_(0),
-zeta_(0),
+eta_(0),
 //note: for corotational approach integration for Neumann conditions only
 //hence enough to integrate 3rd order polynomials exactly
 gaussrule_(DRT::UTILS::intrule_line_2point)
@@ -68,7 +68,7 @@ DRT::ELEMENTS::Beam3::Beam3(const DRT::ELEMENTS::Beam3& old) :
  Iyy_(old.Iyy_),
  Izz_(old.Izz_),
  Irr_(old.Irr_),
- zeta_(old.zeta_),
+ eta_(old.eta_),
  gaussrule_(old.gaussrule_)
 {
   return;
@@ -165,7 +165,7 @@ void DRT::ELEMENTS::Beam3::Pack(vector<char>& data) const
   AddtoPack(data,Izz_);
   AddtoPack(data,Irr_);
   //viscosity of surrounding fluid
-  AddtoPack(data,zeta_);
+  AddtoPack(data,eta_);
   // gaussrule_
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   vector<char> tmp(0);
@@ -219,7 +219,7 @@ void DRT::ELEMENTS::Beam3::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,Izz_);
   ExtractfromPack(position,data,Irr_);
   //viscosity of surrounding fluid
-  ExtractfromPack(position,data,zeta_);
+  ExtractfromPack(position,data,eta_);
   // gaussrule_
   int gausrule_integer;
   ExtractfromPack(position,data,gausrule_integer);

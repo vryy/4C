@@ -85,7 +85,7 @@ void StatMechTime::Integrate()
     ranlib::Normal<double> seedgenerator(0,1);
     //seeding random generator
     int seedvariable = time(0);
-    seedvariable = 1;
+    //seedvariable = 1;
     seedgenerator.seed((unsigned int)seedvariable);
   }
   
@@ -106,8 +106,8 @@ void StatMechTime::Integrate()
     DRT::ELEMENTS::Beam3 *currele = dynamic_cast< DRT::ELEMENTS::Beam3* >(discret_.lColElement(num));
     if (!currele) dserror("cast to Beam3 failed");
 
-    //zeta denotes frictional coefficient per length (approximated by the one for an infinitely long staff)
-    currele->zeta_ = 4*PI*currele->lrefe_*( statmechmanager_->statmechparams_.get<double>("ETA",0.0) );
+    //zeta denotes viscosity of surrounding fluid
+    currele->eta_ = statmechmanager_->statmechparams_.get<double>("ETA",0.0);
   }
 
   #endif  // #ifdef D_BEAM3
@@ -116,7 +116,7 @@ void StatMechTime::Integrate()
   for (int i=step; i<nstep; ++i)
   {
     
-    
+    /*
     //the following block makes the random number generation dependent on the time step number
     {
       //random generator for seeding only (necessary for thermal noise)
@@ -126,6 +126,7 @@ void StatMechTime::Integrate()
       seedvariable = i;
       seedgenerator.seed((unsigned int)seedvariable);
     }
+    */
     
     double time = params_.get<double>("total time",0.0);
     
@@ -148,8 +149,8 @@ void StatMechTime::Integrate()
     ConsistentPredictor(); 
 
 
-    FullNewton();
-    //PTC();
+    //FullNewton();
+    PTC();
           
     UpdateandOutput();
    

@@ -385,8 +385,8 @@ private:
   //!polar moment of inertia of area
   double Irr_;
  
-  //! frictional coefficient (approximated by the one for an infinitely long staff, but with real element length)
-  double zeta_;
+  //! viscosity of surrounding fluid
+  double eta_;
 
   //! gaussrule_ will be initialized automatically to a 2 point integration rule 
   DRT::UTILS::GaussRule1D gaussrule_;

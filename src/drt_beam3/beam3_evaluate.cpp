@@ -259,8 +259,8 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
 
         if(outputflag ==1)
         {
-          //std::cout<<"\n\n acutally calculated stiffness matrix"<< elemat1;
-          //std::cout<<"\n\n approximated stiffness matrix"<< stiff_approx;
+          std::cout<<"\n\n acutally calculated stiffness matrix"<< elemat1;
+          std::cout<<"\n\n approximated stiffness matrix"<< stiff_approx;
           std::cout<<"\n\n rel error stiffness matrix"<< stiff_relerr;
         }
       }
@@ -653,12 +653,12 @@ int DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
      
   //isotropic artificial stiffness
   LINALG::Matrix<3,3> artstiff = Hinverse;
-  artstiff.Scale(zeta_*0.5*isotorsdamp / params.get<double>("delta time",0.01));    
+  artstiff.Scale(4*PI*eta_*lrefe_*0.5*isotorsdamp / params.get<double>("delta time",0.01));    
   
   //anisotropic artificial stiffness      
   LINALG::Matrix<3,3> auxstiff;
   auxstiff.Multiply(Theta,Hinverse);
-  auxstiff.Scale(anisotorsdamp*zeta_*0.5 / params.get<double>("delta time",0.01));
+  auxstiff.Scale(anisotorsdamp*4*PI*eta_*lrefe_*0.5 / params.get<double>("delta time",0.01));
   artstiff += auxstiff;
   
   //scale artificial damping with dti parameter for PTC method
@@ -1385,11 +1385,16 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
     (*stiffmatrix) += Ksig2;
 
     
-    //the following block adds artificial rotation damping to force vector and stiffness matrix
+    /*the following block adds a rotational damping and related internal forces; this damping goes along with the damping of a 
+     * rigid straight rod spinning around its own axis; analytically it is given by a damping coefficient
+     * gamma_a = 4*pi*eta_*r^2*lrefe_ where r is the radius of the crosssection; as this 
+     * coefficient is very small for thin rods it is increased artificially by a factor for numerical convencience*/
     {
-      double isotorsdamp = 0; //0.0005 seems a good choice for merely isotropic damping
-      double anisotorsdamp = 8e-6;  //5e-4, 5e-5 seems a good choice with isotorsdamp = 0; however, even 8e-6 works well if a slightly increased number of iteration steps is accepted for almost straight filaments
+      double rsquare = pow((4*Iyy_/PI),0.5);
+       //gamma_a artificially increased by factor 60; 60 or 6 or even 1 wprks well; depending on time step size with suitable PTC settings
+       double gammaa = 4*PI*eta_*(rsquare)*lrefe_*60; 
       
+     
       //computing angle increment from current position in comparison with last converged position for damping
       LINALG::Matrix<4,1> deltaQ;
       LINALG::Matrix<3,1> deltatheta;     
@@ -1410,26 +1415,16 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
       
       //inverse exponential map
       LINALG::Matrix<3,3> Hinverse = Hinv(deltatheta);
-         
-      //isotropic artificial stiffness
-      LINALG::Matrix<3,3> artstiff = Hinverse;
-      artstiff.Scale(zeta_*0.5*isotorsdamp / params.get<double>("delta time",0.01));    
-      
-      //anisotropic artificial stiffness      
-      LINALG::Matrix<3,3> auxstiff;
-      auxstiff.Multiply(Theta,Hinverse);
-      auxstiff.Scale(anisotorsdamp*zeta_*0.5 / params.get<double>("delta time",0.01));
-      artstiff += auxstiff;
-           
-      //isotropic artificial forces
-      LINALG::Matrix<3,1> artforce = omega;
-      artforce.Scale(isotorsdamp*zeta_);
+        
+      //stiffness due to rotational damping    
+      LINALG::Matrix<3,3> artstiff;
+      artstiff.Multiply(Theta,Hinverse);
+      artstiff.Scale(gammaa*0.5 / params.get<double>("delta time",0.01));
           
-      //anisotropic artificial forces  
-      LINALG::Matrix<3,1> auxforce;
-      auxforce.Multiply(Theta,omega);
-      auxforce.Scale(anisotorsdamp*zeta_);
-      artforce += auxforce;
+      //forces due to rotational damping 
+      LINALG::Matrix<3,1> artforce;
+      artforce.Multiply(Theta,omega);
+      artforce.Scale(gammaa);
       
       //adding artificial contributions to stifness matrix and force vector
       for(int i= 0; i<3; i++)

@@ -332,7 +332,7 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
       discret_.GetCondition("PointNeumann",pointneumannconditions);     
       if(pointneumannconditions.size() > 0)
       {
-        const vector<double>* val  =pointneumannconditions[0]->Get<vector<double> >("val");
+        const vector<double>* val  = pointneumannconditions[0]->Get<vector<double> >("val");
         neumannforce = fabs((*val)[0]);
       }
       else
@@ -373,7 +373,7 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
           fp = fopen(outputfilename.str().c_str(), "a");
           //defining temporary stringstream variable
           std::stringstream filecontent;
-          filecontent << scientific << setprecision(15) << time << "  " << endtoend << endl;
+          filecontent << scientific << setprecision(15) << time << "  " << endtoend << " " << fint[num_dof - discret_.NumDof(discret_.gNode(discret_.NumMyRowNodes() - 1))] << endl;
           // move temporary stringstream to file and close it
           fprintf(fp,filecontent.str().c_str());
           fclose(fp);
@@ -499,7 +499,7 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
     }
     break;
     case INPAR::STATMECH::statout_viscoelasticity:
-     {   
+    {   
        //pointer to file into which each processor writes the output related with the dof of which it is the row map owner
        FILE* fp = NULL; 
             
@@ -522,30 +522,29 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
          dserror("forcesensor_ is NULL pointer; possible reason: dynamic crosslinkers not activated and forcesensor applicable in this case only");
  #endif  // #ifdef DEBUG
        
-         double f=0;//Mittlere Kraft
-         double s=0;//Standardabweichung
-         double f2=0;//Quadratsumme von f
-         double d=0;//Displacement
-         int n=0; //Num of Forcesensors at the Top of the cube
-       for(int i = 0; i < forcesensor_->MyLength(); i++)//changed
-         {if( (*forcesensor_)[i] == 1)
+        double f = 0;//mean value of force
+        double d = 0;//Displacement
+        int n=0; //Num of Forcesensors at the Top of the cube
+        for(int i = 0; i < forcesensor_->MyLength(); i++)//changed
+        {
+          if( (*forcesensor_)[i] == 1)
              {
-           f+=fint[i];
-           f2+=pow(fint[i], 2);//neu sum f^2
-           d=dis[i];
-           n++;
+               f += fint[i];
+               d =  dis[i];
+               n++;
              }
-          }
-       s=pow(f2/n, 0.5);
-       f=f/n;//<f>
+         }
+        
+        //mean value over all force sensor nodes
+        f=f/n;//<f>
       
-       //Putting time, displacement, meanforce and meanderiation in Filestream
-       filecontent << "   "<< d << "   " << f << "   " << s << "   "<< discret_.NumMyRowElements() << endl; //changed
-       //writing filecontent into output file and closing it
-       fprintf(fp,filecontent.str().c_str());
-       fclose(fp);
+        //Putting time, displacement, meanforce  in Filestream
+        filecontent << "   "<< d << "   " << f << "   " << discret_.NumMyRowElements() << endl; //changed
+        //writing filecontent into output file and closing it
+        fprintf(fp,filecontent.str().c_str());
+        fclose(fp);
 
-     }
+    }
     break;
     //writing data for generating a Gmsh video of the simulation
     case INPAR::STATMECH::statout_gmsh:
@@ -1266,7 +1265,7 @@ void StatMechManager::SetCrosslinkers(const Epetra_Vector& setcrosslinkercol,con
        newcrosslinker->SetUpReferenceGeometry(xrefe,rotrefe); 
        
        //setting drag coefficient for new crosslinker element
-       newcrosslinker->zeta_ = 4*PI*newcrosslinker->lrefe_*( statmechparams_.get<double>("ETA",0.0) );
+       newcrosslinker->eta_ = statmechparams_.get<double>("ETA",0.0);
        
        //set material for new element
        newcrosslinker->SetMaterial(1);
