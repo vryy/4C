@@ -49,6 +49,11 @@ timescale_(matdata->GetDouble("Time_Scale")),
 hard_(matdata->GetInt("HARD")),
 c_scale_(matdata->GetDouble("c_Scale")),
 path_(matdata->Get<string>("PATH")),
+use_old_results_(matdata->GetInt("USE_OLD_RESULTS")),
+serpar_(matdata->Get<string>("SERPAR")),
+charmm_(matdata->Get<string>("CHARMM")),
+input_(matdata->Get<string>("INPUT")),
+nue_(matdata->GetDouble("NUE")),
 density_(matdata->GetDouble("DENS"))
 {
 }
@@ -439,16 +444,15 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
     //
     ///////////////////////////////////////////////////////////////////////////
     // Material Constants c1 and beta
-    double ym = 1; // intermediate for testing purpose only
-    double nu = 0.49; // intermediate for testing purpose only
-    double c1 = 0.5 * ym / (2 * (1 + nu)); // intermediate for testing purpose only
+    double c1;
+    double nu = NUE(); // intermediate for testing purpose only
     double beta = nu / (1 - 2 * nu);
     if (time > 0.0) {
 	vector<double>* his_mat = data_.GetMutable<vector<double> >("his_mat");
 	if ((*his_mat)[0] != 0.0) c1 = (*his_mat)[0];
 	//cout << time << " " << c1 << endl;
     } else {
-	//c1 = 0.05;
+	c1 = 1.0;
     }
 
     // Energy
@@ -651,20 +655,19 @@ void MAT::CHARMM::CHARMmfileapi(
     ////////////////////////////////////////////////////////////////////////////
     // Variables needed for CHARMM and getting the results
     // Decide if parallel or seriell
-    const bool use_old_results = true;
-    const string serpar = "ser"; // ser = seriell; par = mpirun; pbs = PBS Torque
+    const bool use_old_results = Use_old_Results();
+    const string serpar = Serpar(); // ser = seriell; par = mpirun; pbs = PBS Torque
+    const string charmm = CHARMMEXE();
+    const string input = INPUT();
     // FC6 setup
     //const char* path = "/home/metzke/ccarat.dev/codedev/charmm.fe.codedev/";
     //const char* path = "/home/metzke/projects/water/";
-    const char* charmm = "/home/metzke/bin/charmm";
-    const char* mpicharmm = "/home/metzke/bin/mpicharmm";
     // Mac setup
     //const char* path = "/Users/rmetzke/research/baci.dev/codedev/charmm.fe.codedev/";
     //const char* path = "/Users/rmetzke/research/projects/water/";
     //const char* charmm = "/Users/rmetzke/bin/charmm";
     //const char* mpicharmm = "/Users/rmetzke/bin/mpicharmm";
     //char* input = "1dzi_fem.inp";
-    const char* input = "water_fem_dyna.inp";
     const string mdnature = "thermal"; // cold = minimization; thermal = fully dynamic with thermal energy; pert = pertubation
     output << "output/ACEcold_" << CHARMmPar["FCD_STARTD"] << "_" << CHARMmPar["FCD_ENDD"] << ".out";
     ////////////////////////////////////////////////////////////////////////////
@@ -686,7 +689,7 @@ void MAT::CHARMM::CHARMmfileapi(
 	// Assemble the command line for charmm
 	ostringstream command(ios_base::out);
 	if (serpar.compare("ser") == 0) command << "cd " << Path() << " && " << charmm;
-	else if (serpar.compare("par") == 0) command << "cd " << Path() << " && " << "openmpirun -np 2 " << mpicharmm;
+	else if (serpar.compare("par") == 0) command << "cd " << Path() << " && " << "openmpirun -np 2 " << charmm;
 	else dserror("What you want now? Parallel or not!");
 	command << " FCDSTARTD=" << CHARMmPar["FCD_STARTD"] << " FCDENDD=" << CHARMmPar["FCD_ENDD"]
 		<< " FCDX=" << CHARMmPar["FCD_dir_x"] << " FCDY=" << CHARMmPar["FCD_dir_y"] << " FCDZ=" << CHARMmPar["FCD_dir_z"]

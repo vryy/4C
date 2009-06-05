@@ -342,6 +342,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedInt(m,"HARD","Use hard coded results");
     AddNamedReal(m,"c_Scale","Scale factor for c (Neo-Hookean)");
     AddNamedString(m,"PATH","Location of CHARMm problem case","none");
+    AddNamedInt(m,"USE_OLD_RESULTS","Reuse previously computed results from CHARMm");
+    AddNamedString(m,"SERPAR","Serial or parallel computations","ser");
+    AddNamedString(m,"CHARMM","CHARMm binary location","none");
+    AddNamedString(m,"INPUT","CHARMm input file","none");
+    AddNamedReal(m,"NUE","Poisson ratio");
     AddNamedReal(m,"DENS","mass density");
 
     AppendMaterialDefinition(matlist,m);

@@ -82,8 +82,17 @@ namespace MAT {
 
 	    /// \b PATH: Path to the folder structre for CHARMm problem type
 	    const string* path_;
+            /// \b USE_OLD_RSULTS: Use previously computed results from CHARMm
+	    const int use_old_results_;
+            /// \b SERPAR: Serial or parallel CHARMm execution
+	    const string* serpar_;
+            /// \b CHARMM: CHARMm executable
+	    const string* charmm_;
+            /// \b INPUT: CHARMm input file
+            const string* input_;
 
-
+            /// \b NUE: poisson ratio
+	    const double nue_;
 	    /// \b DENS: mass density
 	    const double density_;
 
@@ -363,6 +372,19 @@ namespace MAT {
 	inline double CScale() const { return params_->c_scale_; }
 	/// \b PATH: Path to the folder structre for CHARMm problem type
 	inline string Path() { return (*params_->path_); }
+	/// \b USE_OLD_RESULTS: boolean (1/0) if previously computed results from CHARMm should be used
+        inline bool Use_old_Results() const {
+	    if (params_->use_old_results_ == 1) return true;
+	    return false;
+	}
+	/// \b SERPAR: serial or parallel execution of CHARMm
+	inline string Serpar() { return (*params_->serpar_); }
+	/// \b CHARMM: CHARMm executable
+	inline string CHARMMEXE() { return (*params_->charmm_); }
+	/// \b INPUT: CHARMm input file
+	inline string INPUT() { return (*params_->input_); }
+	/// \b NUE: Poisson ratio
+	inline double NUE() const { return params_->nue_; }
 	/// \b DENS: density
 	inline double Density() const {
 	    return params_->density_;
