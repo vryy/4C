@@ -68,8 +68,7 @@ public:
     lmold,
     activeold,
     lmupdate,
-    jump,
-    dirichlet
+    jump
   };
   //@}
 
@@ -350,20 +349,29 @@ public:
   
   The enum input parameter defines, which quantity is be updated.
   Currently the possibilities "lmold", "lmcurrent", "lmupdate", "jump"
-  and "dirichlet" exist. Note that "lmold" means the converged value LM_n
+  and "activeold" exist. Note that "lmold" means the converged value LM_n
   of the last time / load step, whereas "lmcurrent" adresses the current
   (not necessarily converged) value of the LM_n+1 and "jump" the current
   (not necessarily converged) value of d_n+1-d_n. "lmupdate" is a special
   option called only in Recover() after the update of the Lagr. multipliers.
   It basically does the same as "lmcurrent", but also checks for D.B.C.
-  problems. Finally, "dirichlet" is called once at the beginning of the
-  simulation to set the D.B.C. status in each CNode.
+  problems.
   
   \param type (in): enum defining which quantity to store into CNodes
-  \param vec (in): optional, vector carrying global (only for "dirichlet")
   
   */
-  void StoreNodalQuantities(ManagerBase::QuantityType type, RCP<Epetra_Vector> vec = null);
+  void StoreNodalQuantities(ManagerBase::QuantityType type);
+  
+  /*!
+  \brief Get dirichlet B.C. status and store into CNodes
+  
+  This is called once at the beginning of the simulation
+  to set the D.B.C. status in each CNode.
+  
+  \param dbcmaps (in): MapExtractor carrying global dbc map
+  
+  */
+  void StoreDirichletStatus(RCP<LINALG::MapExtractor> dbcmaps);
   
   /*!
   \brief Correct slip status for nodes coming into contact

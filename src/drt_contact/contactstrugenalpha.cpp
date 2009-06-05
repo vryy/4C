@@ -69,10 +69,19 @@ StruGenAlpha(params,dis,solver,output)
     double alphaf = params_.get<double>("alpha f",0.459);
     contactmanager_ = rcp(new CONTACT::Manager(discret_,alphaf));
   }
-
+  
+  // map containing Dirichlet DOFs
+  Teuchos::ParameterList p;
+  double time = params_.get<double>("total time"     ,0.0);
+  p.set("total time", time);
+  RCP<LINALG::MapExtractor> dbcmaps = rcp(new LINALG::MapExtractor());
+  discret_.EvaluateDirichlet(p, zeros_, Teuchos::null, Teuchos::null,
+                              Teuchos::null, dbcmaps);
+  zeros_->PutScalar(0.0); // just in case of change
+  
   // save Dirichlet B.C. status in Contact Manager
   // all CNodes on all interfaces then know if D.B.C.s are applied on their dofs
-  contactmanager_->StoreNodalQuantities(Manager::dirichlet,dirichtoggle_);
+  contactmanager_->StoreDirichletStatus(dbcmaps);
 
   return;
 } // ContactStruGenAlpha::ContactStruGenAlpha

@@ -2234,8 +2234,7 @@ void CONTACT::ManagerBase::ContactForces(RCP<Epetra_Vector> fresm)
 /*----------------------------------------------------------------------*
  |  Store Lagrange mulitpliers and disp. jumps into CNode     popp 06/08|
  *----------------------------------------------------------------------*/
-void CONTACT::ManagerBase::StoreNodalQuantities(ManagerBase::QuantityType type,
-                                                RCP<Epetra_Vector> vec)
+void CONTACT::ManagerBase::StoreNodalQuantities(ManagerBase::QuantityType type)
 {
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
@@ -2269,12 +2268,6 @@ void CONTACT::ManagerBase::StoreNodalQuantities(ManagerBase::QuantityType type,
     case ManagerBase::jump:
     {
       vectorglobal = Jump();
-      break;
-    }
-    case ManagerBase::dirichlet:
-    {
-      if (vec==null) dserror("Dirichtoggle vector has to be applied on input");
-      vectorglobal = vec;
       break;
     }
     default:
@@ -2350,11 +2343,6 @@ void CONTACT::ManagerBase::StoreNodalQuantities(ManagerBase::QuantityType type,
           cnode->jump()[k] = (*vectorinterface)[locindex+k];
           break;
         }
-        case ManagerBase::dirichlet:
-        {
-          cnode->Dbc()[k] = (*vectorinterface)[locindex+k];
-          break;
-        }
         default:
           dserror("ERROR: StoreNodalQuantities: Unknown state string variable!");
         } // switch 
@@ -2362,6 +2350,40 @@ void CONTACT::ManagerBase::StoreNodalQuantities(ManagerBase::QuantityType type,
     }
   }
     
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Store dirichlet B.C. status into CNode                    popp 06/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::ManagerBase::StoreDirichletStatus(RCP<LINALG::MapExtractor> dbcmaps)
+{
+  // loop over all interfaces
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    // currently this only works safely for 1 interface
+    if (i>0) dserror("ERROR: StoreDirichletStatus: Double active node check needed for n interfaces!");
+    
+    // loop over all slave row nodes on the current interface
+    for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
+    {
+      int gid = interface_[i]->SlaveRowNodes()->GID(j);
+      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CNode* cnode = static_cast<CNode*>(node);
+      
+      // check if this node's dofs are in dbcmap
+      for (int k=0;k<cnode->NumDof();++k)
+      {
+        int currdof = cnode->Dofs()[k];
+        int lid = (dbcmaps->CondMap())->LID(currdof);
+        
+        // store dbc status if found
+        if (lid>=0) cnode->Dbc()[k] = true;     
+      }
+    }
+  }
+  
   return;
 }
 
@@ -2497,6 +2519,7 @@ void CONTACT::ManagerBase::PrintActiveSet()
   
   if (Comm().MyPID()==0)
     cout << "Active contact set--------------------------------------------------------------\n";
+  Comm().Barrier();
   
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
@@ -2571,6 +2594,8 @@ void CONTACT::ManagerBase::PrintActiveSet()
     }
   }
 
+  Comm().Barrier();
+  
   return;
 }
 
