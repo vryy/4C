@@ -187,9 +187,6 @@ public:
   /// update thermodynamic pressure and time derivative for low-Mach-number flow
   virtual void UpdateThermPressure() = 0;
 
-  /// update thermodynamic pressure from mass conservation for low-Mach-number flow
-  void UpdateThermPressureFromMassCons();
-
   /// update density field (and time derivative) for low-Mach-number flow
   virtual void UpdateDensity() = 0;
 

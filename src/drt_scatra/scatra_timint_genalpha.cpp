@@ -168,10 +168,6 @@ void SCATRA::TimIntGenAlpha::PredictThermPressure()
   // to be performed, since we just updated the time derivatives of density,
   // and thus, thermpressdtnp_ = thermpressdtn_)
 
-  // time derivative of thermodynamic pressure at n+alpha_F
-  // -> required as right-hand-side contribution to temperature equation
-  thermpressdtaf_ = alphaF_*thermpressdtnp_ + (1.0-alphaF_)*thermpressdtn_;
-
   return;
 }
 
@@ -233,6 +229,11 @@ void SCATRA::TimIntGenAlpha::ComputeIntermediateValues()
     // calculation of density fields at intermediate time steps
     densam_->Update(alphaM_,*densnp_,(1.0-alphaM_),*densn_,0.0);
     densaf_->Update(alphaF_,*densnp_,(1.0-alphaF_),*densn_,0.0);
+
+    // time derivative of thermodynamic pressure at n+alpha_F
+    // -> required as right-hand-side contribution to temperature equation,
+    // hence, evaluated at n+alpha_F
+    thermpressdtaf_ = alphaF_*thermpressdtnp_ + (1.0-alphaF_)*thermpressdtn_;
   }
 
   return;
@@ -427,10 +428,6 @@ double SCATRA::TimIntGenAlpha::ComputeThermPressure()
     cout << "Thermodynamic pressure: "                     << thermpressnp_ << endl;
     cout << "+--------------------------------------------------------------------------------------------+" << endl;
   }
-
-  // time derivative of thermodynamic pressure at n+alpha_F
-  // -> required as right-hand-side contribution to temperature equation
-  thermpressdtaf_ = alphaF_*thermpressdtnp_ + (1.0-alphaF_)*thermpressdtn_;
 
   return thermpressnp_;
 }

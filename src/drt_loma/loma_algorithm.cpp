@@ -352,6 +352,40 @@ void LOMA::Algorithm::GenAlphaOuterLoop()
     stopnonliniter = ScaTraField().LomaConvergenceCheck(itnum,itmax_,ittol_);
   }
 
+  // potential additional evaluation of temperature equation at the end of time step
+  // (currently not used)
+  // compute values at intermediate time steps
+  /*ScaTraField().ComputeIntermediateValues();
+
+  // set field vectors: velocity, subgrid viscosity, (negative) fluid trueresidual
+  ScaTraField().SetVelocityField(
+      FluidField().Velaf(),
+      FluidField().SgVelVisc(),
+      FluidField().Discretization()
+  );
+
+  // solve transport equation for temperature
+  if (Comm().MyPID()==0) cout<<"\n******************************************\n   GENERALIZED-ALPHA TEMPERATURE SOLVER\n******************************************\n";
+  ScaTraField().Solve();
+
+  // in case of non-constant thermodynamic pressure: compute
+  if (consthermpress_=="No_energy")
+  {
+    thermpress_ = ScaTraField().ComputeThermPressure();
+    eosfac_ = thermpress_/gasconstant_;
+  }
+  else if (consthermpress_=="No_mass")
+  {
+    thermpress_ = ScaTraField().ComputeThermPressureFromMassCons(initialmass_,gasconstant_);
+    eosfac_ = thermpress_/gasconstant_;
+  }
+
+  // compute density using current temperature + thermodynamic pressure
+  ScaTraField().ComputeDensity(thermpress_,gasconstant_);
+
+  // compute time derivative of density
+  ScaTraField().ComputeDensityDerivative();*/
+
   return;
 }
 
@@ -431,10 +465,8 @@ void LOMA::Algorithm::GenAlphaUpdate()
   ScaTraField().Update();
 
   // in case of non-constant thermodynamic pressure: update
-  if (consthermpress_=="No_energy")
+  if (consthermpress_=="No_energy" or consthermpress_=="No_mass")
     ScaTraField().UpdateThermPressure();
-  else if (consthermpress_=="No_mass")
-    ScaTraField().UpdateThermPressureFromMassCons();
 
   // update density
   ScaTraField().UpdateDensity();
@@ -463,10 +495,8 @@ void LOMA::Algorithm::OSTBDF2Update()
   ScaTraField().Update();
 
   // in case of non-constant thermodynamic pressure: update
-  if (consthermpress_=="No_energy")
+  if (consthermpress_=="No_energy" or consthermpress_=="No_mass")
     ScaTraField().UpdateThermPressure();
-  else if (consthermpress_=="No_mass")
-    ScaTraField().UpdateThermPressureFromMassCons();
 
   // update density
   ScaTraField().UpdateDensity();

@@ -553,17 +553,6 @@ bool SCATRA::ScaTraTimIntImpl::LomaConvergenceCheck(int          itnum,
 
 
 /*----------------------------------------------------------------------*
- | update thermodynamic pressure for mass conservation         vg 01/09 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::UpdateThermPressureFromMassCons()
-{
-  thermpressn_   = thermpressnp_;
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
  |  output of some mean values                               gjb   01/09|
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::OutputMeanTempAndDens()
