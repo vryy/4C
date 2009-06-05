@@ -65,11 +65,12 @@ CONTACT::Integrator::Integrator(DRT::Element::DiscretizationType eletype)
     dim_=2;
     const DRT::UTILS::IntegrationPoints1D intpoints(DRT::UTILS::intrule_line_5point);
     ngp_ = intpoints.nquad;
-    coords_.Reshape(nGP(),1);
+    coords_.Reshape(nGP(),2);
     weights_.resize(nGP());
     for (int i=0;i<nGP();++i)
     {
       coords_(i,0)=intpoints.qxg[i][0];
+      coords_(i,1)=0.0;
       weights_[i]=intpoints.qwgt[i];
     }
     break;
