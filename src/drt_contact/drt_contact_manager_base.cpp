@@ -266,14 +266,18 @@ void CONTACT::ManagerBase::EvaluateRelMov(RCP<Epetra_Vector> disi)
       
       // be aware of problem dimension
       int dim = Dim();
+      int numdof = cnode->NumDof();
+      if (dim!=numdof) dserror("ERROR: Inconsisteny Dim <-> NumDof");
       
-      // index for first DOF of current node in Epetra_Vector
-      int locindex = slaveconfiguration->Map().LID(dim*gid);
+      // find indices for DOFs of current node in Epetra_Vector
+      // and put node coordinates into slaveconfiguration at these DOFs
+      vector<int> locindex(dim);
       
-      // extract this node's quantity from vectorinterface
-      for (int k=0;k<dim;++k)
+      for (int dof=0;dof<dim;++dof)
       {
-         (*slaveconfiguration)[locindex+k] = cnode->xspatial()[k];
+        locindex[dof] = (slaveconfiguration->Map()).LID(cnode->Dofs()[dof]);
+        if (locindex[dof]<0) dserror("ERROR: StoreNodalQuantites: Did not find dof in map");
+        (*slaveconfiguration)[locindex[dof]] = cnode->xspatial()[dof];
       }
     }
   }
@@ -295,14 +299,18 @@ void CONTACT::ManagerBase::EvaluateRelMov(RCP<Epetra_Vector> disi)
       
       // be aware of problem dimension
       int dim = Dim();
+      int numdof = cnode->NumDof();
+      if (dim!=numdof) dserror("ERROR: Inconsisteny Dim <-> NumDof");
       
-      // index for first DOF of current node in Epetra_Vector
-      int locindex = masterconfiguration->Map().LID(dim*gid);
+      // find indices for DOFs of current node in Epetra_Vector
+      // and put node coordinates into masterconfiguration at these DOFs
+      vector<int> locindex(dim);
       
-      // extract this node's quantity from vectorinterface
-      for (int k=0;k<dim;++k)
+      for (int dof=0;dof<dim;++dof)
       {
-         (*masterconfiguration)[locindex+k] = cnode->xspatial()[k];
+        locindex[dof] = (masterconfiguration->Map()).LID(cnode->Dofs()[dof]);
+        if (locindex[dof]<0) dserror("ERROR: StoreNodalQuantites: Did not find dof in map");
+        (*masterconfiguration)[locindex[dof]] = cnode->xspatial()[dof];
       }
     }
   }
