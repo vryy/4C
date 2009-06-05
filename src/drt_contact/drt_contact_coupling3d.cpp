@@ -3408,17 +3408,20 @@ bool CONTACT::Coupling3d::IntegrateCells()
       integrator.IntegrateDerivCell3D(SlaveElement(),MasterElement(),Cells()[i],dseg,mseg,gseg);
     // *******************************************************************
     
-    // do the two assemblies into the slave nodes
+    // do the three assemblies into the slave nodes
 #ifdef CONTACTONEMORTARLOOP
     integrator.AssembleD(Comm(),SlaveElement(),*dseg);
 #endif // #ifdef CONTACTONEMORTARLOOP
     integrator.AssembleM(Comm(),SlaveElement(),MasterElement(),*mseg);
     
+    // for assembly of g we take into account the PetrovGalerkin idea
     if (CouplingInAuxPlane() && Quad())
     {
 #ifdef CONTACTPETROVGALERKIN
+      // gap interpolation is based on piecewise linear approach
       integrator.AssembleG(Comm(),SlaveIntElement(),*gseg);
 #else
+      // hap interpolation is based on truly quadratic approach
       integrator.AssembleG(Comm(),SlaveElement(),*gseg);
 #endif // #ifdef CONTACTPETROVGALERKIN
     }

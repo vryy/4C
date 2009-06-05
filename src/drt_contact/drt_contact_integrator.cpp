@@ -3026,6 +3026,11 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneQuad(
     // compute cell gap vector *******************************************
     // loop over all gseg vector entries
     // nrow represents the slave side dofs !!!  */
+    
+    // WATCH OUT!!!
+    // Applying a PetrovGalerkin scheme in the 3D quadratic case, means
+    // not only using standard instead of dual shape functions for the
+    // weighted gap interpolation, but also reducing polynomial order by one!
 #ifdef CONTACTPETROVGALERKIN
     for (int j=0;j<nintrow;++j)
     {

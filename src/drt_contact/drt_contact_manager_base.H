@@ -413,8 +413,10 @@ public:
   /*!
   \brief Update contact at end of time step
   
+  \param iter (in): step index for gmsh file creation
+  
   */
-  void Update();
+  void Update(int istep);
 
   /*!
   \brief Print current active set to screen

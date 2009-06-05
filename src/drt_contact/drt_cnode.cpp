@@ -441,13 +441,7 @@ void CONTACT::CNode::BuildAveragedNormal()
     
     // add (weighted) element normal to nodal normal n
     for (int j=0;j<3;++j)
-    {
-#ifdef CONTACTWNORMAL
-      n()[j]+=elens(5,i)*elens(j,i)/elens(4,i);
-#else
       n()[j]+=elens(j,i)/elens(4,i);
-#endif // #ifdef CONTACTWNORMAL
-    }
   }
   
   // create unit normal vector

@@ -1569,7 +1569,7 @@ void CONTACT::ContactStruGenAlpha::Update()
 #endif
 
   // update contact
-  contactmanager_->Update();
+  contactmanager_->Update(istep);
   
   //----------------------------------------friction: store history values
   // in the case of frictional contact we have to store several 

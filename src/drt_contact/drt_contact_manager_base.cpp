@@ -2291,23 +2291,28 @@ void CONTACT::ManagerBase::StoreNodalQuantities(ManagerBase::QuantityType type)
       
       // be aware of problem dimension
       int dim = Dim();
+      int numdof = cnode->NumDof();
+      if (dim!=numdof) dserror("ERROR: Inconsisteny Dim <-> NumDof");
       
-      // index for first DOF of current node in Epetra_Vector
-      int locindex = vectorinterface->Map().LID(dim*gid);
+      // find indices for DOFs of current node in Epetra_Vector
+      // and extract this node's quantity from vectorinterface
+      vector<int> locindex(dim);
       
-      // extract this node's quantity from vectorinterface
-      for (int k=0;k<dim;++k)
+      for (int dof=0;dof<dim;++dof)
       {
+        locindex[dof] = (vectorinterface->Map()).LID(cnode->Dofs()[dof]);
+        if (locindex[dof]<0) dserror("ERROR: StoreNodalQuantites: Did not find dof in map");
+      
         switch(type)
         {
         case ManagerBase::lmcurrent:
         {
-          cnode->lm()[k] = (*vectorinterface)[locindex+k];
+          cnode->lm()[dof] = (*vectorinterface)[locindex[dof]];
           break;
         }
         case ManagerBase::lmold:
         {
-          cnode->lmold()[k] = (*vectorinterface)[locindex+k];
+          cnode->lmold()[dof] = (*vectorinterface)[locindex[dof]];
           break;
         }
         case ManagerBase::activeold:
@@ -2320,27 +2325,27 @@ void CONTACT::ManagerBase::StoreNodalQuantities(ManagerBase::QuantityType type)
           // print a warning if a non-DBC inactive dof has a non-zero value
           // (only in semi-smooth Newton case, of course!)
           bool semismooth = scontact_.get<bool>("semismooth newton",false);
-          if (semismooth && !cnode->Dbc()[k] && !cnode->Active() && abs((*vectorinterface)[locindex+k])>1.0e-8)
+          if (semismooth && !cnode->Dbc()[dof] && !cnode->Active() && abs((*vectorinterface)[locindex[dof]])>1.0e-8)
             cout << "***WARNING***: Non-D.B.C. inactive node " << cnode->Id() << " has non-zero Lag. Mult.: dof "
-                 << cnode->Dofs()[k] << " lm " << (*vectorinterface)[locindex+k] << endl;
+                 << cnode->Dofs()[dof] << " lm " << (*vectorinterface)[locindex[dof]] << endl;
           
 #ifndef CONTACTPSEUDO2D
           // throw a dserror if node is Active and DBC
-          if (cnode->Dbc()[k] && cnode->Active())
+          if (cnode->Dbc()[dof] && cnode->Active())
             dserror("ERROR: Slave Node %i is active and at the same time carries D.B.C.s!", cnode->Id());
           
           // explicity set global Lag. Mult. to zero for D.B.C nodes
           if (cnode->IsDbc())
-            (*vectorinterface)[locindex+k] = 0.0;
+            (*vectorinterface)[locindex[dof]] = 0.0;
 #endif // #ifndef CONTACTPSEUDO2D
           
           // store updated LM into node
-          cnode->lm()[k] = (*vectorinterface)[locindex+k];
+          cnode->lm()[dof] = (*vectorinterface)[locindex[dof]];
           break;
         }
         case ManagerBase::jump:
         {
-          cnode->jump()[k] = (*vectorinterface)[locindex+k];
+          cnode->jump()[dof] = (*vectorinterface)[locindex[dof]];
           break;
         }
         default:
@@ -2488,7 +2493,7 @@ void CONTACT::ManagerBase::StoreDM(const string& state)
 /*----------------------------------------------------------------------*
  |  Update and output contact at end of time step             popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::ManagerBase::Update()
+void CONTACT::ManagerBase::Update(int istep)
 {
   // store Lagrange multipliers, D and M
   // (we need this for interpolation of the next generalized mid-point)

@@ -461,26 +461,7 @@ void CONTACT::CElement::DerivNormalAtXi(double* xi, int& i,
     }
   }
   
-  //**********************************************************************
-  // For the weighted normal case, the element lengths/areas enter the nodal
-  // tangent formulation. They have to be linearized as well, which is an
-  // element operation only. Thus, we can compute this part of the nodal
-  // normal derivative before looping over the element nodes!
-  //**********************************************************************
-#ifdef CONTACTWNORMAL
-  // add directional derivative of element area
-  typedef map<int,double>::const_iterator CI;
-  map<int,double> derivarea;
-  DerivArea(derivarea);
-  
-  for (CI p=derivarea.begin();p!=derivarea.end();++p)
-    for (int j=0;j<3;++j)
-      (derivn[j])[p->first] +=  1/elens(4,i)*elens(j,i)*(p->second);
-  
-  // multiply weighting matrix with element area
-  W.Scale(Area());
-#endif // #ifdef CONTACTWNORMAL
-  
+  // now loop over all element nodes for derivatives
   for (int n=0;n<nnodes;++n)
   {
     CNode* mycnode = static_cast<CNode*> (mynodes[n]);
