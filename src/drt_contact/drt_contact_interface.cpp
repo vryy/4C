@@ -437,6 +437,9 @@ void CONTACT::Interface::FillComplete()
     mdofcolmap_ = rcp(new Epetra_Map(-1,(int)mc.size(),&mc[0],0,Comm()));
   }
   
+  // get out of here if not participating in interface
+  if (!lComm()) return;
+  
   // warning 
 #ifdef CONTACTGMSHCTN
   if (Dim()==3 && Comm().MyPID()==0)
@@ -1100,6 +1103,9 @@ void CONTACT::Interface::EvaluateContactSearchBruteForce(const double& eps)
  *----------------------------------------------------------------------*/
 bool CONTACT::Interface::EvaluateContactSearchBinarytree()
 {
+  // get out of here if not participating in interface
+  if (!lComm()) return true;
+    
   // *********************************************************************
   // Possible versions:
   // *********************************************************************
