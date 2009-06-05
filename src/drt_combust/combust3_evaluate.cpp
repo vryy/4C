@@ -145,14 +145,14 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*discretization.GetState("velnm"),mystate.velnm,lm);
       DRT::UTILS::ExtractMyValues(*discretization.GetState("accn") ,mystate.accn ,lm);
 
-#ifdef DEBUG
+//#ifdef DEBUG
       // get pointer to vector holding G-function values at the fluid nodes
       const Teuchos::RCP<Epetra_Vector> phinp = ih_->FlameFront()->Phinp();
       // get map of this vector
       const Epetra_BlockMap& phimap = phinp->Map();
       // check, whether this map is still identical with the current node map in the discretization
       if (not phimap.SameAs(*discretization.NodeColMap())) dserror("node column map has changed!");
-#endif
+//#endif
 
       // extract G-function values to element level (used kink enrichment)
       DRT::UTILS::ExtractMyNodeBasedValues(this, mystate.phinp, *phinp);
