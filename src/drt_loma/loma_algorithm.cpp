@@ -352,10 +352,8 @@ void LOMA::Algorithm::GenAlphaOuterLoop()
     stopnonliniter = ScaTraField().LomaConvergenceCheck(itnum,itmax_,ittol_);
   }
 
-  // potential additional evaluation of temperature equation at the end of time step
-  // (currently not used)
   // compute values at intermediate time steps
-  /*ScaTraField().ComputeIntermediateValues();
+  ScaTraField().ComputeIntermediateValues();
 
   // set field vectors: velocity, subgrid viscosity, (negative) fluid trueresidual
   ScaTraField().SetVelocityField(
@@ -384,7 +382,7 @@ void LOMA::Algorithm::GenAlphaOuterLoop()
   ScaTraField().ComputeDensity(thermpress_,gasconstant_);
 
   // compute time derivative of density
-  ScaTraField().ComputeDensityDerivative();*/
+  ScaTraField().ComputeDensityDerivative();
 
   return;
 }
