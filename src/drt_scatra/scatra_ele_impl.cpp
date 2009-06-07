@@ -180,6 +180,7 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(int numdofpernode, int numscal)
     xyze_(true),
     bodyforce_(numdofpernode_),
     diffus_(numscal_),
+    reacoeff_(numscal_),
     valence_(numscal_),
     diffusvalence_(numscal_),
     shcacp_(0.0),
@@ -279,6 +280,12 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       // set flag for turbulence model
       turbmodel = params.get<bool>("turbulence model");
     }
+
+    // set flag and string for potential inclusion of reaction term
+    string reactiontype=params.get<string>("reaction");
+    bool reaction = false;
+    if (reactiontype == "constant_coefficient" or reactiontype == "Arrhenius_law")
+      reaction = true;
 
     // set flag for conservative form
     string convform = params.get<string>("form of convective term");
@@ -452,6 +459,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         esgvelnp_,
         fsphinp_,
         temperature,
+        reaction,
         conservative,
         whichtau,
         sgvel,
@@ -517,6 +525,12 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       thermpressdt = params.get<double>("time derivative of thermodynamic pressure");
     }
 
+    // set flag and string for potential inclusion of reaction term
+    string reactiontype=params.get<string>("reaction");
+    bool reaction = false;
+    if (reactiontype == "constant_coefficient" or reactiontype == "Arrhenius_law")
+      reaction = true;
+
     double frt(0.0);
     if(scaltypestr =="elch")
     {
@@ -543,6 +557,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         mat,
         evelnp_,
         temperature,
+        reaction,
         conservative,
         frt,
         thermpressdt);
@@ -797,6 +812,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
     const LINALG::Matrix<nsd_,iel>&       esgvelnp,///< nodal subgrid-scale velocities at t_{n+1}
     const vector<LINALG::Matrix<iel,1> >& fsphinp,///< fine-scale part of current scalar field
     const bool                            temperature, ///< temperature flag
+    const bool                            reaction, ///< flag for reaction term
     const bool                            conservative, ///< flag for conservative form
     const enum SCATRA::TauType            whichtau, ///< flag for stabilization parameter definition
     const bool                            sgvel, ///< subgrid-scale velocity flag
@@ -820,7 +836,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
   BodyForce(ele,time);
 
   // get material constants
-  GetMaterialParams(material,temperature,ephinp);
+  GetMaterialParams(material,temperature,reaction,ephinp);
 
   // use one-point Gauss rule to do calculations at the element center
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
@@ -853,6 +869,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
          assgd,
          fssgd,
          turbmodel,
+         reaction,
          is_incremental,
          is_stationary,
          frt,
@@ -893,6 +910,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
              assgd,
              fssgd,
              turbmodel,
+             reaction,
              is_incremental,
              is_stationary,
              frt,
@@ -973,7 +991,19 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         // gradient of current fine-scale part of scalar value
         if (is_incremental and fssgd) fsgradphi_.Multiply(derxy_,fsphinp[k]);
 
-        CalMatAndRHS(sys_mat,residual,ephinp,use2ndderiv_,conservative,fssgd,is_stationary,is_genalpha,is_incremental,timefac,alphaF,k);
+        CalMatAndRHS(sys_mat,
+                     residual,
+                     ephinp,
+                     use2ndderiv_,
+                     conservative,
+                     fssgd,
+                     reaction,
+                     is_stationary,
+                     is_genalpha,
+                     is_incremental,
+                     timefac,
+                     alphaF,
+                     k);
       } // loop over each scalar
     }
   } // integration loop
@@ -1075,6 +1105,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
   Teuchos::RCP<const MAT::Material>        material,
     const bool                             temperature,
+    const bool                             reaction,
     const vector<LINALG::Matrix<iel,1> >&  ephinp
 )
 {
@@ -1085,6 +1116,9 @@ if (material->MaterialType() == INPAR::MAT::m_matlist)
 
   for (int k = 0;k<numscal_;++k)
   {
+    // set reaction coefficient to zero
+    reacoeff_[k] = 0.0;
+
     const int matid = actmat->MatID(k);
     Teuchos::RCP<const MAT::Material> singlemat = actmat->MaterialById(matid);
 
@@ -1095,6 +1129,57 @@ if (material->MaterialType() == INPAR::MAT::m_matlist)
       diffus_[k] = actsinglemat->Diffusivity();
       diffusvalence_[k] = valence_[k]*diffus_[k];
     }
+    /*else if (singlemat->MaterialType() == INPAR::MAT::m_reactemp)
+    {
+      const MAT::ReacTemp* actsinglemat = static_cast<const MAT::ReacTemp*>(singlemat.get());
+
+      // use one-point Gauss rule to calculate temperature at element center
+      DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
+
+      // coordinates of the integration point
+      const double* gpcoord = (intpoints_tau.IP().qxg)[0];
+      for (int idim = 0; idim < nsd_; idim++)
+        {xsi_(idim) = gpcoord[idim];}
+
+      // shape functions
+      DRT::UTILS::shape_function<distype>(xsi_,funct_);
+
+      // compute diffusivity according to Sutherland law
+      const double s   = actsinglemat->SuthTemp();
+      const double rt  = actsinglemat->RefTemp();
+      const double phi = funct_.Dot(ephinp[0]);
+      diffus_[k] = pow((phi/rt),1.5)*((rt+s)/(phi+s))*actsinglemat->RefVisc()/actsinglemat->PraNum();
+
+      // get specific heat capacity at constant pressure, reaction heat and
+      // activation temperature
+      shcacp_   = actsinglemat->Shc();
+      reaheat_  = actsinglemat->ReaHeat();
+      actemp_   = actsinglemat->AcTemp();
+    }
+    else if (singlemat->MaterialType() == INPAR::MAT::m_reacspec)
+    {
+      const MAT::ReacSpec* actsinglemat = static_cast<const MAT::ReacSpec*>(singlemat.get());
+
+      // use one-point Gauss rule to calculate temperature at element center
+      DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
+
+      // coordinates of the integration point
+      const double* gpcoord = (intpoints_tau.IP().qxg)[0];
+      for (int idim = 0; idim < nsd_; idim++)
+        {xsi_(idim) = gpcoord[idim];}
+
+      // shape functions
+      DRT::UTILS::shape_function<distype>(xsi_,funct_);
+
+      // compute diffusivity according to Sutherland law
+      const double s   = actsinglemat->SuthTemp();
+      const double rt  = actsinglemat->RefTemp();
+      const double phi = funct_.Dot(ephinp[0]);
+      diffus_[k] = pow((phi/rt),1.5)*((rt+s)/(phi+s))*actsinglemat->RefVisc()/actsinglemat->PraNum();
+
+      // get pre-exponential factor or basic reaction coefficient
+      preexfac_ = actsinglemat->PreExFac();
+    }*/
     else if (singlemat->MaterialType() == INPAR::MAT::m_condif)
     {
       const MAT::ConvecDiffus* actsinglemat = static_cast<const MAT::ConvecDiffus*>(singlemat.get());
@@ -1126,6 +1211,10 @@ else if (material->MaterialType() == INPAR::MAT::m_condif)
     shcacp_ = 1.0;
     diffus_[0] = actmat->Diffusivity();
   }
+
+  // in case of reaction with constant coefficient, read coefficient
+  if (reaction) reacoeff_[0] = actmat->ReaCoeff();
+  else          reacoeff_[0] = 0.0;
 }
 else if (material->MaterialType() == INPAR::MAT::m_sutherland_condif)
 {
@@ -1150,6 +1239,9 @@ else if (material->MaterialType() == INPAR::MAT::m_sutherland_condif)
   const double rt  = actmat->RefTemp();
   const double phi = funct_.Dot(ephinp[0]);
   diffus_[0] = pow((phi/rt),1.5)*((rt+s)/(phi+s))*actmat->RefVisc()/actmat->PraNum();
+
+  // set reaction coefficient to zero
+  reacoeff_[0] = 0.0;
 }
 else
   dserror("Material type is not supported");
@@ -1175,6 +1267,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     const bool                          assgd,
     const bool                          fssgd,
     const bool                          turbmodel,
+    const bool                          reaction,
     const bool                          is_incremental,
     const bool                          is_stationary,
     const double                        frt,
@@ -1287,8 +1380,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
 
       // stabilization parameters for stationary and instationary case, respectively
       if (is_stationary == true)
-           tau_[k] = 1.0/(sqrt(Gnormu+CI*diffus_[k]*diffus_[k]*normG));
-      else tau_[k] = 1.0/(sqrt((4.0*dens_sqr)/(dt*dt)+Gnormu+CI*diffus_[k]*diffus_[k]*normG));
+           tau_[k] = 1.0/(sqrt(reacoeff_[k]*reacoeff_[k]+Gnormu+CI*diffus_[k]*diffus_[k]*normG));
+      else tau_[k] = 1.0/(sqrt((4.0*dens_sqr)/(dt*dt)+reacoeff_[k]*reacoeff_[k]+Gnormu+CI*diffus_[k]*diffus_[k]*normG));
     }
     break;
     case SCATRA::tau_franca_valentin:
@@ -1384,22 +1477,34 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
       }
 #endif
       // stabilization parameter for stationary and instationary case
-      if (is_stationary == true) 
+      if (is_stationary == true)
+      {
 #ifndef TAU_EXACT
-        tau_[k] = (DSQR(h)*mk)/(2.0*diffus_[k]*xi);
+        // parameter relating diffusive and reactive forces + respective switch
+        double epe1 = 0.0;
+        if (reacoeff_[k] > EPS15)
+          epe1 = 2.0 * diffus_[k] / (mk * dens * reacoeff_[k] * DSQR(h));
+        const double xi1 = DMAX(epe1,1.0);
+
+        tau_[k] = DSQR(h)/(DSQR(h)*dens*reacoeff_[k]*xi1 + (2.0*diffus_[k]/mk)*xi);
 #else
         if (vel_norm > 0.0)
           tau_[k] = 0.5*h*xi/vel_norm;
         else
           tau_[k] = 0.0;
 #endif
+      }
       else
       {
         // parameter relating diffusive and reactive forces + respective switch
-        const double epe1 = 2.0 * timefac * diffus_[k] / (mk * dens * DSQR(h));
+        double epe1 = 0.0;
+        if (reacoeff_[k] > EPS15)
+          epe1 = 2.0 * (timefac + 1.0/reacoeff_[k]) * diffus_[k] / (mk * dens * DSQR(h));
+        else
+          epe1 = 2.0 * timefac * diffus_[k] / (mk * dens * DSQR(h));
         const double xi1 = DMAX(epe1,1.0);
 
-        tau_[k] = DSQR(h)/((DSQR(h)*dens*xi1)/timefac + (2.0*diffus_[k]/mk)*xi);
+        tau_[k] = DSQR(h)/(DSQR(h)*dens*(reacoeff_[k]+1.0/timefac)*xi1 + (2.0*diffus_[k]/mk)*xi);
       }
 
 #ifdef VISUALIZE_ELEMENT_DATA 
@@ -1555,6 +1660,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
     const bool                            use2ndderiv,
     const bool                            conservative,
     const bool                            fssgd,
+    const bool                            reaction,
     const bool                            is_stationary,
     const bool                            is_genalpha,
     const bool                            is_incremental,
@@ -1750,13 +1856,117 @@ if (not is_stationary)
 }
 
 //----------------------------------------------------------------
-// 3) element right hand side
+// 3) element matrix: reactive terms
+//----------------------------------------------------------------
+if (reaction)
+{
+  const double fac_reac        = timefacfac*reacoeff_[dofindex];
+  const double timetaufac_reac = timetaufac*reacoeff_[dofindex];
+  //----------------------------------------------------------------
+  // standard Galerkin reactive term
+  //----------------------------------------------------------------
+  for (int vi=0; vi<iel; ++vi)
+  {
+    const double v = fac_reac*funct_(vi);
+    const int fvi = vi*numdofpernode_+dofindex;
+
+    for (int ui=0; ui<iel; ++ui)
+    {
+      const int fui = ui*numdofpernode_+dofindex;
+
+      emat(fvi,fui) += v*densfunct_(ui);
+    }
+  }
+
+  //----------------------------------------------------------------
+  // stabilization of reactive term
+  //----------------------------------------------------------------
+  // convective stabilization of reactive term (in convective form)
+  for (int vi=0; vi<iel; ++vi)
+  {
+    const double v = timetaufac_reac*(conv_(vi)+sgconv_(vi));
+    const int fvi = vi*numdofpernode_+dofindex;
+
+    for (int ui=0; ui<iel; ++ui)
+    {
+      const int fui = ui*numdofpernode_+dofindex;
+
+      emat(fvi,fui) += v*densfunct_(ui);
+    }
+  }
+
+  if (use2ndderiv)
+  {
+    // diffusive stabilization of reactive term
+    // (USFEM assumed here, sign change necessary for GLS)
+    for (int vi=0; vi<iel; ++vi)
+    {
+      const double v = timetaufac_reac*diff_(vi);
+      const int fvi = vi*numdofpernode_+dofindex;
+
+      for (int ui=0; ui<iel; ++ui)
+      {
+        const int fui = ui*numdofpernode_+dofindex;
+
+        emat(fvi,fui) += v*densfunct_(ui);
+      }
+    }
+  }
+
+  //----------------------------------------------------------------
+  // reactive stabilization
+  //----------------------------------------------------------------
+  // reactive stabilization of convective (in convective form) and reactive term
+  // (USFEM assumed here, sign change necessary for GLS)
+  for (int vi=0; vi<iel; ++vi)
+  {
+    const double v = -timetaufac_reac*funct_(vi);
+    const int fvi = vi*numdofpernode_+dofindex;
+
+    for (int ui=0; ui<iel; ++ui)
+    {
+      const int fui = ui*numdofpernode_+dofindex;
+
+      emat(fvi,fui) += v*(conv_(ui)+densfunct_(ui));
+    }
+  }
+
+  if (use2ndderiv)
+  {
+    // reactive stabilization of diffusive term
+    // (USFEM assumed here, sign change necessary for GLS)
+    for (int vi=0; vi<iel; ++vi)
+    {
+      const double v = -timetaufac_reac*funct_(vi);
+      const int fvi = vi*numdofpernode_+dofindex;
+
+      for (int ui=0; ui<iel; ++ui)
+      {
+        const int fui = ui*numdofpernode_+dofindex;
+
+        emat(fvi,fui) -= v*diff_(ui);
+      }
+    }
+  }
+}
+
+//----------------------------------------------------------------
+// 4) element right hand side
 //----------------------------------------------------------------
 // convective term using current scalar value
 double conv_phi = velint_.Dot(gradphi_);
-double diff_phi = 0.0;
 // diffusive term using current scalar value for higher-order elements
+double diff_phi = 0.0;
 if (use2ndderiv) diff_phi = diff_.Dot(ephinp[dofindex]);
+// reactive term using current scalar value
+double rea_phi = 0.0;
+if (reaction)
+{
+  // scalar at integration point
+  const double phi = funct_.Dot(ephinp[dofindex]);
+
+  rea_phi = reacoeff_[dofindex]*phi;
+}
 
 //----------------------------------------------------------------
 // computation of bodyforce (and potentially history) term,
@@ -1771,7 +1981,7 @@ double rhstaufac = 0.0;
 if (is_incremental and is_genalpha)
 {
   // density-weighted time derivative stored on history variable
-  residual  = hist_[dofindex] + conv_phi - diff_phi - rhsint;
+  residual  = hist_[dofindex] + conv_phi - diff_phi + rea_phi - rhsint;
   rhsfac    = timefacfac/alphaF;
   rhstaufac = timetaufac/alphaF;
   rhsint   *= (timefac/alphaF);
@@ -1787,7 +1997,7 @@ if (is_incremental and is_genalpha)
 else if (not is_incremental and is_genalpha)
 {
   rhsint   += hist_[dofindex]*(alphaF/timefac);
-  residual  = (1.0-alphaF) * (conv_phi - diff_phi) - rhsint;
+  residual  = (1.0-alphaF) * (conv_phi - diff_phi + rea_phi) - rhsint;
   rhsfac    = timefacfac*(1.0-alphaF)/alphaF;
   rhstaufac = timetaufac/alphaF;
   rhsint   *= (timefac/alphaF);
@@ -1801,7 +2011,7 @@ else if (is_incremental and not is_genalpha)
 
     rhsint  *= timefac;
     rhsint  += hist_[dofindex];
-    residual = dens_phi + timefac*(conv_phi - diff_phi) - rhsint;
+    residual = dens_phi + timefac*(conv_phi - diff_phi + rea_phi) - rhsint;
     rhsfac   = timefacfac;
 
     const double vtrans = fac_*dens_phi;
@@ -1814,7 +2024,7 @@ else if (is_incremental and not is_genalpha)
   }
   else
   {
-    residual = conv_phi - diff_phi - rhsint;
+    residual = conv_phi - diff_phi + rea_phi - rhsint;
     rhsfac   = fac_;
   }
   rhstaufac = taufac;
@@ -1906,6 +2116,31 @@ if (use2ndderiv)
 }
 
 //----------------------------------------------------------------
+// reactive terms (standard Galerkin and stabilization) on rhs
+//----------------------------------------------------------------
+// standard Galerkin term
+if (reaction)
+{
+  vrhs = rhsfac*rea_phi;
+  for (int vi=0; vi<iel; ++vi)
+  {
+    const int fvi = vi*numdofpernode_+dofindex;
+
+    erhs[fvi] -= vrhs*funct_(vi);
+  }
+
+  // reactive rhs stabilization
+  // (USFEM assumed here, sign change necessary for GLS)
+  vrhs = rhstaufac*reacoeff_[dofindex]*residual;
+  for (int vi=0; vi<iel; ++vi)
+  {
+    const int fvi = vi*numdofpernode_+dofindex;
+
+    erhs[fvi] += vrhs*funct_(vi);
+  }
+}
+
+//----------------------------------------------------------------
 // fine-scale subgrid-diffusivity term on right hand side
 //----------------------------------------------------------------
 if (is_incremental and fssgd)
@@ -1939,6 +2174,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
     Teuchos::RCP<const MAT::Material>     material,
     const LINALG::Matrix<nsd_,iel>&       evel0,
     const bool                            temperature,
+    const bool                            reaction,
     const bool                            conservative,
     const double                          frt,
     const double                          thermpressdt
@@ -1952,7 +2188,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
   BodyForce(ele,time);
 
   // get material constants
-  GetMaterialParams(material,temperature,ephi0);
+  GetMaterialParams(material,temperature,reaction,ephi0);
 
   /*----------------------------------------------------------------------*/
   // integration loop for one element
@@ -2054,13 +2290,29 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
         erhs[fvi] -= vrhs*laplawf;
       }
 
-      // nonlinear migration term
+      //----------------------------------------------------------------
+      // element right hand side: nonlinear migration term
+      //----------------------------------------------------------------
       vrhs = fac_diffus*conint_[k]*valence_[k];
       for (int vi=0; vi<iel; ++vi)
       {
         const int fvi = vi*numdofpernode_+k;
 
         erhs[fvi] += vrhs*migconv_(vi);
+      }
+
+      //----------------------------------------------------------------
+      // element right hand side: reactive term
+      //----------------------------------------------------------------
+      if (reaction)
+      {
+        vrhs = fac_*reacoeff_[k]*conint_[k];
+        for (int vi=0; vi<iel; ++vi)
+        {
+          const int fvi = vi*numdofpernode_+k;
+
+          erhs[fvi] -= vrhs*funct_(vi);
+        }
       }
 
       //----------------------------------------------------------------
@@ -2504,7 +2756,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
   const double frt = params.get<double>("frt");
 
   // get material constants
-  GetMaterialParams(material,false,ephinp);
+  GetMaterialParams(material,false,false,ephinp);
 
   // working arrays
   double                  potint;
@@ -2615,7 +2867,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
   double valence(0.0);
   double diffus_valence_frt(0.0);
 
-  //GetMaterialParams(material,temperature,ephinp);
+  //GetMaterialParams(material,temperature,false,ephinp);
 
   if (material->MaterialType() == INPAR::MAT::m_matlist)
   {

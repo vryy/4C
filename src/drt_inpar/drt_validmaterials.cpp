@@ -154,6 +154,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             INPAR::MAT::m_condif));
 
     AddNamedReal(m,"DIFFUSIVITY","kinematic diffusivity");
+    AddNamedReal(m,"REACOEFF","reaction coefficient",true);
     AddNamedReal(m,"SHC","specific heat capacity",true);
 
     AppendMaterialDefinition(matlist,m);

@@ -1399,6 +1399,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,1,2),
                                &scatradyn);
 
+  setStringToIntegralParameter<int>("REACTION","no",
+                               "potential inclusion of reaction term",
+                               tuple<std::string>(
+                                 "no",
+                                 "constant_coefficient",
+                                 "Arrhenius_law"
+                                 ),
+                               tuple<int>(0,1,2),
+                               &scatradyn);
+
   setStringToIntegralParameter<INPAR::SCATRA::TimeIntegrationScheme>("TIMEINTEGR","One_Step_Theta",
                                "Time Integration Scheme",
                                tuple<std::string>(

@@ -56,6 +56,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   step_   (0),
   prbtype_  (params_->get<string>("problem type")),
   solvtype_ (params_->get<string>("solver type")),
+  reaction_ (params_->get<string>("reaction")),
   isale_    (params_->get<bool>("isale")),
   stepmax_  (params_->get<int>("max number timesteps")),
   maxtime_  (params_->get<double>("total time")),
@@ -585,6 +586,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
       eleparams.set("time-step length",dta_);
       eleparams.set("problem type",prbtype_);
       eleparams.set("incremental solver",incremental_);
+      eleparams.set("reaction",reaction_);
       eleparams.set("form of convective term",convform_);
       eleparams.set("fs subgrid diffusivity",fssgd_);
       eleparams.set("turbulence model",turbmodel_);
@@ -881,6 +883,7 @@ void SCATRA::ScaTraTimIntImpl::Solve()
     eleparams.set("time-step length",dta_);
     eleparams.set("problem type",prbtype_);
     eleparams.set("incremental solver",incremental_);
+    eleparams.set("reaction",reaction_);
     eleparams.set("form of convective term",convform_);
     eleparams.set("fs subgrid diffusivity",fssgd_);
     eleparams.set("turbulence model",turbmodel_);

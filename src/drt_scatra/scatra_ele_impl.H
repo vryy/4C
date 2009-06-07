@@ -184,6 +184,7 @@ public:
         const LINALG::Matrix<nsd_,iel>&       esgvelnp,///< nodal subgrid-scale velocities at t_{n+1}
         const vector<LINALG::Matrix<iel,1> >& fsphinp,///< fine-scale part of current scalar field
         const bool                            temperature, ///< temperature flag
+        const bool                            reaction, ///< flag for reaction term
         const bool                            conservative, ///< flag for conservative form
         const enum SCATRA::TauType            whichtau, ///< flag for stabilization parameter definition
         const bool                            sgvel, ///< subgrid-scale velocity flag
@@ -208,6 +209,7 @@ public:
         Teuchos::RCP<const MAT::Material>     material, ///< material pointer
         const LINALG::Matrix<nsd_,iel>&       evel0, ///< initial nodal velocities
         const bool                            temperature, ///< temperature flag
+        const bool                            reaction, ///< flag for reaction term
         const bool                            conservative, ///< flag for conservative form
         const double                          frt, ///< factor F/RT needed for ELCH calculations
         const double                          thermpressdt ///< time deriv. of therm. press. (for temp. eq.)
@@ -231,6 +233,7 @@ public:
     virtual void GetMaterialParams(
         Teuchos::RCP<const MAT::Material>     material,    ///< material pointer
         const bool                            temperature,  ///< temperature flag
+        const bool                            reaction, ///< flag for reaction term
         const vector<LINALG::Matrix<iel,1> >& ephinp      /// scalar field
     );
 
@@ -248,6 +251,7 @@ public:
         const bool                          assgd,
         const bool                          fssgd,
         const bool                          turbmodel,
+        const bool                          reaction,
         const bool                          is_incremental,
         const bool                          is_stationary,
         const double                        frt,
@@ -269,6 +273,7 @@ public:
         const bool                            use2ndderiv,
         const bool                            conservative,
         const bool                            fssgd,
+        const bool                            reaction,
         const bool                            is_stationary,
         const bool                            is_genalpha,
         const bool                            is_incremental,
@@ -487,12 +492,20 @@ public:
     vector<LINALG::Matrix<iel,1> > bodyforce_;
     //! diffusivity / diffusivities (in case of systems) / thermal conductivity
     vector<double> diffus_;
+    //! reaction coefficient
+    vector<double> reacoeff_;
     //! charge numbers of all ion species (ELCH specific)
     vector<double> valence_;
     //! diffusivity times valence for each ion species (ELCH specific)
     vector<double> diffusvalence_;
-    //! specific heat capacity at constant pressure (in case of temperature eq.)
+    //! specific heat capacity at constant pressure (in case of temp. or react. eq.)
     double shcacp_;
+    //! reaction heat (in case of react. eq.)
+    //double reaheat_;
+    //! pre-exponential factor or reaction coefficient (in case of react. eq.)
+    //double preexfac_;
+    //! activation temperature (in case of react. eq.)
+    //double actemp_;
     //! coordinates of current integration point in reference coordinates
     LINALG::Matrix<nsd_,1> xsi_;
     //! array for shape functions

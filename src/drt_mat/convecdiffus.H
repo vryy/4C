@@ -36,8 +36,10 @@ namespace MAT
       /// @name material parameters
       //@{
 
-      /// diffusivity coefficient
+      /// kinematic diffusivity
       const double diffusivity_;
+      /// reaction coefficient
+      const double reacoeff_;
       /// specific heat capacity
       const double shc_;
 
@@ -101,8 +103,10 @@ namespace MAT
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_condif; }
 
-    /// diffusivity coefficient
+    /// diffusivity
     double Diffusivity() const { return params_->diffusivity_; }
+    /// reaction coefficient
+    double ReaCoeff() const { return params_->reacoeff_; }
     /// specific heat capacity
     double Shc() const { return params_->shc_; }
 

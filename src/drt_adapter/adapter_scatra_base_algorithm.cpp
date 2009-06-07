@@ -93,6 +93,9 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   // ----solver type (linear full, linear incremental or nonlinear (incremental))
   scatratimeparams->set<string>("solver type",scatradyn.get<string>("SOLVERTYPE"));
 
+  // ----potential inclusion of reaction term (constant coefficient or Arrhenius law)
+  scatratimeparams->set<string>("reaction",scatradyn.get<string>("REACTION"));
+
   // ----Eulerian or ALE formulation of transport equation(s)
   scatratimeparams->set<bool>("isale",isale);
 

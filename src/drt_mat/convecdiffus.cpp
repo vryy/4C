@@ -18,6 +18,7 @@ MAT::PAR::ConvecDiffus::ConvecDiffus(
   )
 : Parameter(matdata),
   diffusivity_(matdata->GetDouble("DIFFUSIVITY")),
+  reacoeff_(matdata->GetDouble("REACOEFF")),
   shc_(matdata->GetDouble("SHC"))
 {
 }

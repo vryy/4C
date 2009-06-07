@@ -357,6 +357,9 @@ protected:
   bool nonlinear_;
   bool incremental_;
 
+  /// flag for potential inclusion of reaction term
+  string reaction_;
+
   /// flag for Eulerian or ALE formulation of equation(s)
   bool isale_;
 
