@@ -31,6 +31,8 @@ Maintainer: Florian Henke
 #include "../drt_xfem/spacetime_boundary.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_fem_general/drt_utils_gder2.H"
+#include "../drt_mat/matlist.H" //URSULA
+#include "../drt_xfem/enrichment.H" //URSULA
 
 
   using namespace XFEM::PHYSICS;
@@ -709,9 +711,1062 @@ Maintainer: Florian Henke
       assembler.template Vector<Velz>(shp.dz, -timefac_timefac_tau_C_divunp);
   } // endif cstab
 }
-  
-  
-  
+
+
+/*!
+  Calculate matrix and rhs for stationary problem formulation
+  */
+template <DRT::Element::DiscretizationType DISTYPE,
+          XFEM::AssemblyType ASSTYPE,
+          int NUMDOF,
+          class M1, class V1, class M2>
+void SysmatTwoPhase(
+    const DRT::Element*                 ele,           ///< the element those matrix is calculated
+    const Teuchos::RCP<COMBUST::InterfaceHandleCombust>  ih,   ///< connection to the interface handler
+    const XFEM::ElementDofManager&      dofman,        ///< dofmanager of the current element
+    const M1&                           evelnp,
+    const M1&                           eveln,
+    const M1&                           evelnm,
+    const M1&                           eaccn,
+    const V1&                           eprenp,
+    const M2&                           etau,
+    Teuchos::RCP<const MAT::Material>   material,      ///< fluid material
+    const FLUID_TIMEINTTYPE             timealgo,      ///< time discretization type
+    const double                        dt,            ///< delta t (time step size)
+    const double                        theta,         ///< factor for one step theta scheme
+    const bool                          newton,        ///< full Newton or fixed-point-like
+    const bool                          pstab,         ///< flag for stabilization
+    const bool                          supg,          ///< flag for stabilization
+    const bool                          cstab,         ///< flag for stabilization
+    const bool                          instationary,  ///< switch between stationary and instationary formulation
+    LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&   assembler
+)
+{
+    TEUCHOS_FUNC_TIME_MONITOR(" - evaluate - Sysmat4 - domain");
+   
+    // number of nodes for element
+    const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+
+    // space dimension for 3d fluid element
+    const size_t nsd = 3;
+    
+    // time integration constant
+    const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dt, theta);
+    
+    // get node coordinates of the current element
+    static LINALG::Matrix<nsd,numnode> xyze;
+    GEO::fillInitialPositionArray<DISTYPE>(ele, xyze);
+
+    // get older interface velocities and accelerations
+//    const Epetra_Vector& ivelcoln  = *ih->cutterdis()->GetState("ivelcoln");
+//    const Epetra_Vector& ivelcolnm = *ih->cutterdis()->GetState("ivelcolnm");
+//    const Epetra_Vector& iacccoln  = *ih->cutterdis()->GetState("iacccoln");
+    
+    // dead load in element nodes
+    //////////////////////////////////////////////////// , LINALG::SerialDenseMatrix edeadng_(BodyForce(ele->Nodes(),time));
+
+    // check here, if we really have a two fluids !!
+    dsassert(material->MaterialType() == INPAR::MAT::m_matlist, "Material law is not of type m_matlist.");
+    const MAT::MatList* actmaterials = static_cast<const MAT::MatList*>(material.get());
+    //ORIGINAL
+//    dsassert(material->MaterialType() == INPAR::MAT::m_fluid, "Material law is not of type m_fluid.");
+//    const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());
+//    const double visc = actmat->Viscosity();
+
+    // flag for higher order elements
+    const bool higher_order_ele = XFLUID::secondDerivativesAvailable<DISTYPE>();
+    //true für hex8 - 20
+     
+    // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
+    //bei Zweiphasenströmungen nicht unbedingt bzw verschiedene Anreicherungen fuer
+    //vel und pres möglich
+
+//URSULA bei Zweiphasenströmungen nicht unbedingt bzw verschiedene Anreicherungen fuer vel und pres möglich
+
+    //const int numparamvelx = getNumParam<ASSTYPE>(dofman, Velx, numnode);
+    const size_t numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
+    const size_t numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
+    // put one here to create arrays of size 1, since they are not needed anyway
+    // in the xfem assembly, the numparam is determined by the dofmanager
+    
+    // stabilization parameter
+    const double hk = XFLUID::HK<DISTYPE>(evelnp,xyze);
+    const double mk = XFLUID::MK<DISTYPE>();
+    
+    // information about domain integration cells
+    const GEO::DomainIntCells&  domainIntCells(ih->GetDomainIntCells(ele));
+//    cout << "Element "<< ele->Id() << ": ";
+
+    // loop over integration cells
+    for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
+    {
+    	// für FSI: Intergrationszelle liegt im Fluid, wird geschnitten oder liegt vollständig in der Struktur
+    	// für Zweiphasenströmungen sollte hier geprüft werden, ob sich die Intergrationszelle im Gebiet +
+    	// oder - befindet -> Viskosität, Dichte(?)
+    	// man braucht also hier die Level Set Function
+    	// bestimmen ob phi groesser oder kleiner Null
+    	// entsprechend Viskosität und Dichte wählen
+    	
+    	//NEU
+        //steht oben: const MAT::MatList* actmaterials = static_cast<const MAT::MatList*>(material.get());
+    	bool in_fluid_plus = true;
+    	//hier fehlt noch der Test, ob man sich wirklich in positiven Teil der Level Set Funktion befindet
+    	//entweder durch überprüfen direkt
+    	//oder die Intergrationszelle weiß, auf welcher Seite des Interfaces sie sich befindet
+    	int matid = 3;
+    	XFEM::Enrichment::ApproachFrom   approachdirection = XFEM::Enrichment::approachFromPlus;
+    	if (not in_fluid_plus)
+    	{
+    		matid = 4;
+    		approachdirection = XFEM::Enrichment::approachFromMinus;
+    	}
+    	
+        Teuchos::RCP<const MAT::Material> mat = actmaterials->MaterialById(matid);
+        dsassert(mat->MaterialType() == INPAR::MAT::m_fluid, "Material law is not of type m_fluid.");
+        const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
+        const double visc = actmat->Viscosity();
+        // kinvisc statt visc?
+        // mit dyn Druck rechnen
+        // visc wird dann zur dynamischen Viskosität
+        // von was geht man im Datfile aus
+        // ggf const double visc = kinvisc * dens
+        const double dens = actmat->Density();
+        // Elementmatrizen mit Dichte multiplizieren
+    	
+    	
+    	
+//        const LINALG::Matrix<3,1> cellcenter(cell->GetPhysicalCenterPosition());
+//        
+//        int labelnp = 0;
+//        
+//        if (ASSTYPE == XFEM::xfem_assembly)
+//        {
+
+//        }
+         
+        // soweit ok, aber wie wird kink-enrichment behandelt
+    	// es wird der Mittelpunkt der aktuellen Zelle (Element oder Intergrationszelle übergeben
+    	// das macht hier aber nur Sinn, weil die Zelle ganz im Fluid oder ganz in der Struktur liegt
+    	// und die Enrichmentfunction ansonsten unabhängig vom Ort ist, also 1 oder 0
+    	// man benötigt aber eigentlich die Enrichmentfunction am Gausspunkt
+    	// da beim Kinkenrichment die Enrichmentfunction aber eine Funktion von x ist
+    	// muss dieser Aufruf in der Schleife über alle Gausspunkte erfolgen
+    	// anstelle des cellcenter's wird der Gausspunkt als actpos übergeben
+    	// da man für die Viskosität wissen muss auf welcher Seite des Interfaces man sich befindet
+    	// kann man diese Information auch für approch nutzen(bei JumpEnrichment)(Bem: Vorsicht bei mehrmals durch ein Element verlaufende Interfaces)
+       
+        // falls nicht geschnitten entsprechend Element, sonst entsprechend Tetraeder
+        // sollten mehr Gausspunkte gewählt werden , da man bei Kink-Enrichment wegen
+        // Multiplikation  von Psi mit N quadratische Funktionen erhält?
+        // GEO Eingabewerte
+        const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape());
+        
+        // gaussian points
+        const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+
+        // integration loop over Gauss points
+        for (int iquad=0; iquad<intpoints.nquad; ++iquad)
+        {
+            // coordinates of the current integration point in cell coordinates \eta
+            LINALG::Matrix<nsd,1> pos_eta_domain;
+            pos_eta_domain(0) = intpoints.qxg[iquad][0];
+            pos_eta_domain(1) = intpoints.qxg[iquad][1];
+            pos_eta_domain(2) = intpoints.qxg[iquad][2];
+
+            // coordinates of the current integration point in element coordinates \xi
+            LINALG::Matrix<nsd,1> posXiDomain;
+            GEO::mapEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain, posXiDomain);
+            const double detcell = GEO::detEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain);
+            
+            // shape functions and their first derivatives
+            static LINALG::Matrix<numnode,1> funct;
+            static LINALG::Matrix<nsd,numnode> deriv;
+            DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
+            DRT::UTILS::shape_function_3D_deriv1(deriv,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
+           
+            //Berechnung der Anreicherungen hierher verschoben und nun als Auswertepunkt
+            //den aktuellen Gausspunkt übergeben
+            //in Xi-Coordinaten?
+            const XFEM::ElementEnrichmentValues enrvals(
+                  *ele,
+                  ih,
+                  dofman,
+                  posXiDomain,
+                  approachdirection,
+                  true);
+//            const XFEM::ElementEnrichmentValues enrvals(
+//                  *ele,
+//                  ih,
+//                  dofman,
+//                  posXiDomain,
+//                  approachdirection,
+//                  ephi);
+      
+      
+            // get transposed of the jacobian matrix d x / d \xi
+            // xjm(i,j) = deriv(i,k)*xyze(j,k)
+            static LINALG::Matrix<nsd,nsd> xjm;
+            xjm.MultiplyNT(deriv,xyze);
+
+            const double det = xjm.Determinant();
+            const double fac = intpoints.qwgt[iquad]*det*detcell;
+
+            if (det < 0.0)
+            {
+                dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
+            }
+
+            // inverse of jacobian
+            static LINALG::Matrix<nsd,nsd> xji;
+            xji.Invert(xjm);
+
+            // compute global derivates
+            static LINALG::Matrix<3,numnode> derxy;
+            
+            // derxy(i,j) = xji(i,k) * deriv(k,j)
+            derxy.Multiply(xji,deriv);
+
+            // compute second global derivative
+            static LINALG::Matrix<6,numnode> derxy2;
+            if (higher_order_ele)
+            {
+                static LINALG::Matrix<6,numnode> deriv2;
+                DRT::UTILS::shape_function_3D_deriv2(deriv2,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
+                DRT::UTILS::gder2<DISTYPE>(xjm, derxy, deriv2, xyze, derxy2);
+            }
+            else
+            {
+                derxy2.Clear();
+            }
+
+            const size_t shpVecSize       = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+
+            
+            //static Shp<shpVecSize> shp;
+            //ICH
+            static COMBUST::ApproxFunc<shpVecSize> shpvel;
+            static COMBUST::ApproxFunc<shpVecSize> shppres;
+            
+            typedef LINALG::Matrix<shpVecSize,1> ShpVec;
+//            static ShpVec shp;
+//            static ShpVec shp_dx;
+//            static ShpVec shp_dy;
+//            static ShpVec shp_dz;
+//            static ShpVec shp_dxdx;
+//            static ShpVec shp_dxdy;
+//            static ShpVec shp_dxdz;
+//            static ShpVec shp_dydx;
+//            static ShpVec shp_dydy;
+//            static ShpVec shp_dydz;
+//            static ShpVec shp_dzdx;
+//            static ShpVec shp_dzdy;
+//            static ShpVec shp_dzdz;
+            
+            
+            if (ASSTYPE == XFEM::xfem_assembly)
+            {
+                // temporary arrays
+            	// vorsicht mit der 3
+            	// wahrscheinlich altes Problem, dass größe der Matrix bekannt sein muss
+            	// warum nicht numparamvelx bzw p
+            	//static LINALG::SerialDenseVector enr_funct(numparamvelx);
+//                static LINALG::SerialDenseVector enr_funct(3*numnode);//warum 3*, bis zu 3 Enrichment je Knoten, std mit gezählt
+//                static LINALG::SerialDenseMatrix enr_derxy(3,3*numnode);// muss man sich zusammen mit ComputeEnrichedNodalShapefunction noch mal anschauen
+//                static LINALG::SerialDenseMatrix enr_derxy2(6,3*numnode);
+            	//ICH
+                static LINALG::Matrix<shpVecSize,1> enr_funct_vel;
+                static LINALG::Matrix<3,shpVecSize> enr_derxy_vel;
+                static LINALG::Matrix<6,shpVecSize> enr_derxy2_vel;
+                
+//                const std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
+//                      ih,
+//                      dofman.getUniqueEnrichments(),
+//                      gauss_pos_xyz,
+//                      XFEM::Enrichment::approachUnknown));
+              
+                // shape function for nodal dofs
+                enrvals.ComputeKinkEnrichedNodalShapefunction(
+                        Velx,
+                        funct,
+                        derxy,
+                        derxy2, 
+                        enr_funct_vel,
+                        enr_derxy_vel,
+                        enr_derxy2_vel);
+          
+                for (size_t iparam = 0; iparam != numparamvelx; ++iparam)
+                {
+                  shpvel.d0(iparam) = enr_funct_vel(iparam);
+                  shpvel.dx(iparam) = enr_derxy_vel(0,iparam);
+                  shpvel.dy(iparam) = enr_derxy_vel(1,iparam);
+                  shpvel.dz(iparam) = enr_derxy_vel(2,iparam);
+                  shpvel.dxdx(iparam) = enr_derxy2_vel(0,iparam);
+                  shpvel.dxdy(iparam) = enr_derxy2_vel(3,iparam);
+                  shpvel.dxdz(iparam) = enr_derxy2_vel(4,iparam);
+                  shpvel.dydx(iparam) = shpvel.dxdy(iparam);
+                  shpvel.dydy(iparam) = enr_derxy2_vel(1,iparam);
+                  shpvel.dydz(iparam) = enr_derxy2_vel(5,iparam);
+                  shpvel.dzdx(iparam) = shpvel.dxdz(iparam);
+                  shpvel.dzdy(iparam) = shpvel.dydz(iparam);
+                  shpvel.dzdz(iparam) = enr_derxy2_vel(2,iparam);
+                }
+                
+//                static LINALG::SerialDenseVector enr_funct_pres(numparampres);
+//                static LINALG::SerialDenseMatrix enr_derxy_pres(3,numparampres);
+//                static LINALG::SerialDenseMatrix enr_derxy2_pres(6,numparampres);
+                static LINALG::Matrix<shpVecSize,1> enr_funct_pres;
+                static LINALG::Matrix<shpVecSize,3> enr_derxy_pres;
+                static LINALG::Matrix<shpVecSize,6> enr_derxy2_pres;
+                // shape function for nodal dofs pressure
+                enrvals.ComputeKinkEnrichedNodalShapefunction(
+                        Pres,
+                        funct,
+                        derxy,
+                        derxy2, 
+                        enr_funct_pres,
+                        enr_derxy_pres,
+                        enr_derxy2_pres);
+                for (size_t iparam = 0; iparam < numparampres; ++iparam)
+                {
+                  shppres.d0(iparam) = enr_funct_pres(iparam);
+                  shppres.dx(iparam) = enr_derxy_pres(0,iparam);
+                  shppres.dy(iparam) = enr_derxy_pres(1,iparam);
+                  shppres.dz(iparam) = enr_derxy_pres(2,iparam);
+                  shppres.dxdx(iparam) = enr_derxy2_pres(0,iparam);
+                  shppres.dxdy(iparam) = enr_derxy2_pres(3,iparam);
+                  shppres.dxdz(iparam) = enr_derxy2_pres(4,iparam);
+                  shppres.dydx(iparam) = shppres.dxdy(iparam);
+                  shppres.dydy(iparam) = enr_derxy2_pres(1,iparam);
+                  shppres.dydz(iparam) = enr_derxy2_pres(5,iparam);
+                  shppres.dzdx(iparam) = shppres.dxdz(iparam);
+                  shppres.dzdy(iparam) = shppres.dydz(iparam);
+                  shppres.dzdz(iparam) = enr_derxy2_pres(2,iparam);
+                }
+            }
+            else // not xfem_assembly
+            {
+              for (size_t iparam = 0; iparam < numnode; ++iparam)
+              {
+                shpvel.d0(iparam) = funct(iparam);
+                shpvel.dx(iparam) = derxy(0,iparam);
+                shpvel.dy(iparam) = derxy(1,iparam);
+                shpvel.dz(iparam) = derxy(2,iparam);
+                shpvel.dxdx(iparam) = derxy2(0,iparam);
+                shpvel.dxdy(iparam) = derxy2(3,iparam);
+                shpvel.dxdz(iparam) = derxy2(4,iparam);
+                shpvel.dydx(iparam) = shpvel.dxdy(iparam);
+                shpvel.dydy(iparam) = derxy2(1,iparam);
+                shpvel.dydz(iparam) = derxy2(5,iparam);
+                shpvel.dzdx(iparam) = shpvel.dxdz(iparam);
+                shpvel.dzdy(iparam) = shpvel.dydz(iparam);
+                shpvel.dzdz(iparam) = derxy2(2,iparam);
+                
+                shppres.d0(iparam) = funct(iparam);
+                shppres.dx(iparam) = derxy(0,iparam);
+                shppres.dy(iparam) = derxy(1,iparam);
+                shppres.dz(iparam) = derxy(2,iparam);
+                shppres.dxdx(iparam) = derxy2(0,iparam);
+                shppres.dxdy(iparam) = derxy2(3,iparam);
+                shppres.dxdz(iparam) = derxy2(4,iparam);
+                shppres.dydx(iparam) = shppres.dxdy(iparam);
+                shppres.dydy(iparam) = derxy2(1,iparam);
+                shppres.dydz(iparam) = derxy2(5,iparam);
+                shppres.dzdx(iparam) = shppres.dxdz(iparam);
+                shppres.dzdy(iparam) = shppres.dydz(iparam);
+                shppres.dzdz(iparam) = derxy2(2,iparam);
+              }
+              
+            }
+            
+            // get velocities and accelerations at integration point
+            const LINALG::Matrix<nsd,1> gpvelnp = COMBUST::interpolateVectorFieldToIntPoint(evelnp, shpvel.d0, numparamvelx);
+            LINALG::Matrix<nsd,1> gpveln  = COMBUST::interpolateVectorFieldToIntPoint(eveln , shpvel.d0, numparamvelx);
+            LINALG::Matrix<nsd,1> gpvelnm = COMBUST::interpolateVectorFieldToIntPoint(evelnm, shpvel.d0, numparamvelx);
+            LINALG::Matrix<nsd,1> gpaccn  = COMBUST::interpolateVectorFieldToIntPoint(eaccn , shpvel.d0, numparamvelx);
+            
+            // commenting this section out leads to problems with instationary calculations   henke 01/09 
+//            if (ASSTYPE == XFEM::xfem_assembly and timealgo != timeint_stationary)
+//            {
+//              const bool valid_spacetime_cell_found = COMBUST::modifyOldTimeStepsValues<DISTYPE>(ele, ih, xyze, posXiDomain, labelnp, ivelcoln, ivelcolnm, iacccoln, gpveln, gpvelnm, gpaccn);
+//              if (not valid_spacetime_cell_found)
+//                continue;
+//            }
+//            cout << gpvelnp << endl;
+//            cout << evelnp << endl;
+//            cout << shp << endl;
+
+            // get history data (n) at integration point
+//            LINALG::Matrix<3,1> histvec;
+//            //histvec = enr_funct(j)*evelnp_hist(i,j);
+//            for (int isd = 0; isd < nsd; ++isd)
+//            {
+//                histvec(isd) = 0.0;
+//                for (int iparam = 0; iparam < numparamvelx; ++iparam)
+//                    histvec(isd) += evelnp_hist(isd,iparam)*shp.d0(iparam);
+//            }
+            const LINALG::Matrix<nsd,1> histvec = FLD::TIMEINT_THETA_BDF2::GetOldPartOfRighthandside(
+                gpveln, gpvelnm, gpaccn, timealgo, dt, theta);
+            
+            // get velocity (np,i) derivatives at integration point
+            // vderxy = enr_derxy(j,k)*evelnp(i,k);
+            static LINALG::Matrix<3,nsd> vderxy;
+            vderxy.Clear();
+            for (size_t iparam = 0; iparam < numparamvelx; ++iparam)
+            {
+              for (size_t isd = 0; isd < nsd; ++isd)
+              {
+                vderxy(isd,0) += evelnp(isd,iparam) * shpvel.dx(iparam);
+                vderxy(isd,1) += evelnp(isd,iparam) * shpvel.dy(iparam);
+                vderxy(isd,2) += evelnp(isd,iparam) * shpvel.dz(iparam);
+              }
+            }
+            
+            //cout << "eps_xy" << (0.5*(vderxy(0,1)+vderxy(1,0))) << ", "<< endl;
+      
+            // calculate 2nd velocity derivatives at integration point
+            static LINALG::Matrix<3,6> vderxy2;
+            if (higher_order_ele)
+            {
+              //vderxy2 = evelnp(i,k)*enr_derxy2(j,k);
+              vderxy2.Clear();
+              for (size_t iparam = 0; iparam < numparamvelx; ++iparam)
+              {
+                for (size_t isd = 0; isd < nsd; ++isd)
+                {
+                  vderxy2(isd,0) += evelnp(isd,iparam)*shpvel.dxdx(iparam);
+                  vderxy2(isd,1) += evelnp(isd,iparam)*shpvel.dydy(iparam);
+                  vderxy2(isd,2) += evelnp(isd,iparam)*shpvel.dzdz(iparam);
+                  vderxy2(isd,3) += evelnp(isd,iparam)*shpvel.dxdy(iparam);
+                  vderxy2(isd,4) += evelnp(isd,iparam)*shpvel.dxdz(iparam);
+                  vderxy2(isd,5) += evelnp(isd,iparam)*shpvel.dydz(iparam);
+                }
+              }
+            }
+            else
+            {
+              vderxy2.Clear();
+            }
+
+            // get pressure gradients
+            // gradp = enr_derxy(i,j)*eprenp(j);
+            LINALG::Matrix<nsd,1> gradp(true);
+            for (size_t iparam = 0; iparam != numparampres; ++iparam)
+            {
+              gradp(0) += shppres.dx(iparam)*eprenp(iparam);
+              gradp(1) += shppres.dy(iparam)*eprenp(iparam);
+              gradp(2) += shppres.dz(iparam)*eprenp(iparam);
+            }
+    
+//            // get discont. pressure gradients
+//            LINALG::Matrix<3,1> graddiscp;
+//            //gradp = enr_derxy(i,j)*eprenp(j);
+//            for (int isd = 0; isd < nsd; ++isd)
+//            {
+//                graddiscp(isd) = 0.0;
+//                for (int iparam = 0; iparam < numparamdiscpres; ++iparam)
+//                    graddiscp(isd) += enr_derxy_discpres(isd,iparam)*ediscprenp(iparam);
+//            }
+            
+            // get pressure
+            double pres = 0.0;
+            for (size_t iparam = 0; iparam != numparampres; ++iparam)
+              pres += shppres.d0(iparam)*eprenp(iparam);
+            
+            // get bodyforce in gausspoint
+//            LINALG::Matrix<3,1> bodyforce;
+//            bodyforce = 0.0;
+//            cout << bodyforce << endl;
+            ///////////////LINALG::SerialDenseVector bodyforce_(enr_edeadng_(i,j)*enr_funct_(j));
+
+            // compute stabilization parameters (3 taus)
+            double tau_stab_M  = 0.0;
+            double tau_stab_Mp = 0.0;
+            double tau_stab_C  = 0.0;
+            //was passiert hier wenn numparamvelx != numparampres ist, nur numparamvel wird gebraucht
+            // Vorsicht bekommt Viskosität, man geht im Moment von der kinematischen aus
+            // also statt visc -> visc/dens übergeben???
+            XFLUID::computeStabilization(derxy, gpvelnp, numparamvelx, instationary, visc/dens, hk, mk, timefac,
+                tau_stab_M, tau_stab_Mp, tau_stab_C);
+            
+
+            
+            // integration factors and coefficients of single terms
+            const double timefacfac = timefac * fac;
+
+            /*------------------------- evaluate rhs vector at integration point ---*/
+            // bodyforce?
+            // bodyforce * dens und histvec, siehe Blatt
+            LINALG::Matrix<nsd,1> rhsint;
+            LINALG::Matrix<nsd,1> bodyforce;
+            bodyforce.Clear();
+            //bodyforce(0) = 1.0;
+            for (size_t isd = 0; isd < nsd; ++isd)
+                rhsint(isd) = dens*histvec(isd) + bodyforce(isd)*timefac*dens;
+
+            /*----------------- get numerical representation of single operators ---*/
+
+            /* Convective term  u_old * grad u_old: */
+            LINALG::Matrix<nsd,1> conv_old;
+            //conv_old = vderxy(i, j)*gpvelnp(j);
+            conv_old.Multiply(vderxy,gpvelnp);
+            
+            /* Viscous term  div epsilon(u_old) */
+            LINALG::Matrix<nsd,1> visc_old;
+            visc_old(0) = vderxy2(0,0) + 0.5 * (vderxy2(0,1) + vderxy2(1,3) + vderxy2(0,2) + vderxy2(2,4));
+            visc_old(1) = vderxy2(1,1) + 0.5 * (vderxy2(1,0) + vderxy2(0,3) + vderxy2(1,2) + vderxy2(2,5));
+            visc_old(2) = vderxy2(2,2) + 0.5 * (vderxy2(2,0) + vderxy2(0,4) + vderxy2(2,1) + vderxy2(1,5));
+            
+            // evaluate residual once for all stabilisation right hand sides
+            // pres?
+            LINALG::Matrix<nsd,1> res_old;
+            for (size_t isd = 0; isd < nsd; ++isd)
+                res_old(isd) = -rhsint(isd)+timefac*(dens*conv_old(isd)+gradp(isd)-2.0*visc*visc_old(isd));  
+            
+            if (instationary)
+            {
+            	for(size_t isd=0; isd<nsd; ++isd)
+            		res_old(isd) += dens * gpvelnp(isd);
+            }
+            
+            //res_old += gpvelnp;
+            
+      
+            /* Reactive term  u:  funct */
+            /* linearise convective term */
+
+            /*--- convective part u_old * grad (funct) --------------------------*/
+            /* u_old_x * N,x  +  u_old_y * N,y + u_old_z * N,z
+             with  N .. form function matrix                                   */
+            //const LINALG::SerialDenseVector enr_conv_c_(enr_derxy(j,i)*gpvelnp(j));
+            static LINALG::Matrix<shpVecSize,1> enr_conv_c_;
+            enr_conv_c_.Clear();
+            for (size_t iparam = 0; iparam != numparamvelx; ++iparam)
+            {
+                enr_conv_c_(iparam) += shpvel.dx(iparam)*gpvelnp(0);
+                enr_conv_c_(iparam) += shpvel.dy(iparam)*gpvelnp(1);
+                enr_conv_c_(iparam) += shpvel.dz(iparam)*gpvelnp(2);
+            }
+            
+
+//              /*--- convective grid part u_G * grad (funct) -----------------------*/
+//              /* u_old_x * N,x  +  u_old_y * N,y   with  N .. form function matrix */
+//              enr_conv_g_ = 0.0;
+
+
+          /*--- viscous term  - grad * epsilon(u): ----------------------------*/
+          /*   /                                                \
+               |  2 N_x,xx + N_x,yy + N_y,xy + N_x,zz + N_z,xz  |
+             1 |                                                |
+             - |  N_y,xx + N_x,yx + 2 N_y,yy + N_z,yz + N_y,zz  |
+             2 |                                                |
+               |  N_z,xx + N_x,zx + N_y,zy + N_z,yy + 2 N_z,zz  |
+               \                                                /
+    
+               with N_x .. x-line of N
+               N_y .. y-line of N                                             */
+            static XFLUID::EnrViscs2<shpVecSize> enr_viscs2;
+
+            for (size_t iparam = 0; iparam != numparamvelx; ++iparam)
+            {
+              enr_viscs2.xx(iparam) = 0.5 * (2.0 * shpvel.dxdx(iparam) + shpvel.dydy(iparam) + shpvel.dzdz(iparam));
+              enr_viscs2.xy(iparam) = 0.5 *  shpvel.dxdy(iparam);
+              enr_viscs2.xz(iparam) = 0.5 *  shpvel.dxdz(iparam);
+              enr_viscs2.yx(iparam) = 0.5 *  shpvel.dydx(iparam);
+              enr_viscs2.yy(iparam) = 0.5 * (shpvel.dxdx(iparam) + 2.0 * shpvel.dydy(iparam) + shpvel.dzdz(iparam));
+              enr_viscs2.yz(iparam) = 0.5 *  shpvel.dydz(iparam);
+              enr_viscs2.zx(iparam) = 0.5 *  shpvel.dzdx(iparam);
+              enr_viscs2.zy(iparam) = 0.5 *  shpvel.dzdy(iparam);
+              enr_viscs2.zz(iparam) = 0.5 * (shpvel.dxdx(iparam) + shpvel.dydy(iparam) + 2.0 * shpvel.dzdz(iparam));
+            }
+
+
+
+            //////////////////////////////////////
+            // now build single stiffness terms //
+            //////////////////////////////////////
+
+            //----------------------------------------------------------------------
+            //                            GALERKIN PART
+//genau aufpassen!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!?
+            if (instationary)
+            {
+                /* inertia (contribution to mass matrix) */
+                /*
+                                     /           \
+                                    |             |
+                                    | roh Du , v  |
+                                    |             |
+                                     \           /
+                */
+                assembler.template Matrix<Velx,Velx>(shpvel.d0, fac*dens, shpvel.d0);
+                assembler.template Matrix<Vely,Vely>(shpvel.d0, fac*dens, shpvel.d0);
+                assembler.template Matrix<Velz,Velz>(shpvel.d0, fac*dens, shpvel.d0);
+                
+                assembler.template Vector<Velx>(shpvel.d0, -fac*dens*gpvelnp(0));
+                assembler.template Vector<Vely>(shpvel.d0, -fac*dens*gpvelnp(1));
+                assembler.template Vector<Velz>(shpvel.d0, -fac*dens*gpvelnp(2));
+            }
+            
+            /* convection, convective part */
+            /*
+                         /                          \
+                        |         / n+1       \      |
+                        | v , roh| u   o nabla | Du  |
+                        |         \ (i)       /      |
+                         \                          /
+            */
+            assembler.template Matrix<Velx,Velx>(shpvel.d0, timefacfac*dens, enr_conv_c_);
+            assembler.template Matrix<Vely,Vely>(shpvel.d0, timefacfac*dens, enr_conv_c_);
+            assembler.template Matrix<Velz,Velz>(shpvel.d0, timefacfac*dens, enr_conv_c_);
+            
+            assembler.template Vector<Velx>(shpvel.d0, -timefacfac*dens*(gpvelnp(0)*vderxy(0,0) // check order
+                                                             +gpvelnp(1)*vderxy(0,1)
+                                                             +gpvelnp(2)*vderxy(0,2)));
+            assembler.template Vector<Vely>(shpvel.d0, -timefacfac*dens*(gpvelnp(0)*vderxy(1,0)
+                                                             +gpvelnp(1)*vderxy(1,1)
+                                                             +gpvelnp(2)*vderxy(1,2)));
+            assembler.template Vector<Velz>(shpvel.d0, -timefacfac*dens*(gpvelnp(0)*vderxy(2,0)
+                                                             +gpvelnp(1)*vderxy(2,1)
+                                                             +gpvelnp(2)*vderxy(2,2)));
+            
+            if (newton)
+            {
+                /*  convection, reactive part */
+                /*
+                       /                             \
+                      |         /          \   n+1   |
+                      | v ,roh | Du o nabla | u      |
+                      |         \          /   (i)   |
+                       \                             /
+                */
+                assembler.template Matrix<Velx,Velx>(shpvel.d0, timefacfac*dens*vderxy(0,0), shpvel.d0);
+                assembler.template Matrix<Velx,Vely>(shpvel.d0, timefacfac*dens*vderxy(0,1), shpvel.d0);
+                assembler.template Matrix<Velx,Velz>(shpvel.d0, timefacfac*dens*vderxy(0,2), shpvel.d0);
+                assembler.template Matrix<Vely,Velx>(shpvel.d0, timefacfac*dens*vderxy(1,0), shpvel.d0);
+                assembler.template Matrix<Vely,Vely>(shpvel.d0, timefacfac*dens*vderxy(1,1), shpvel.d0);
+                assembler.template Matrix<Vely,Velz>(shpvel.d0, timefacfac*dens*vderxy(1,2), shpvel.d0);
+                assembler.template Matrix<Velz,Velx>(shpvel.d0, timefacfac*dens*vderxy(2,0), shpvel.d0);
+                assembler.template Matrix<Velz,Vely>(shpvel.d0, timefacfac*dens*vderxy(2,1), shpvel.d0);
+                assembler.template Matrix<Velz,Velz>(shpvel.d0, timefacfac*dens*vderxy(2,2), shpvel.d0);
+            }
+            
+            /* Viskositaetsterm */
+            /*
+                          /                        \
+                         |       / \         /  \   |
+                         |  eps | v | , tau | Du |  |
+                         |       \ /         \  /   |
+                          \                        /
+            */
+            // visc ist jetzt die dynamische Viskosität
+            assembler.template Matrix<Velx,Velx>(shpvel.dx,   2*visc*timefacfac, shpvel.dx);
+            assembler.template Matrix<Velx,Velx>(shpvel.dy,     visc*timefacfac, shpvel.dy);
+            assembler.template Matrix<Velx,Vely>(shpvel.dy,     visc*timefacfac, shpvel.dx);
+            assembler.template Matrix<Velx,Velx>(shpvel.dz,     visc*timefacfac, shpvel.dz);
+            assembler.template Matrix<Velx,Velz>(shpvel.dz,     visc*timefacfac, shpvel.dx);
+            
+            assembler.template Matrix<Vely,Vely>(shpvel.dx,     visc*timefacfac, shpvel.dx);
+            assembler.template Matrix<Vely,Velx>(shpvel.dx,     visc*timefacfac, shpvel.dy);
+            assembler.template Matrix<Vely,Vely>(shpvel.dy,   2*visc*timefacfac, shpvel.dy);
+            assembler.template Matrix<Vely,Vely>(shpvel.dz,     visc*timefacfac, shpvel.dz);
+            assembler.template Matrix<Vely,Velz>(shpvel.dz,     visc*timefacfac, shpvel.dy);
+            
+            assembler.template Matrix<Velz,Velz>(shpvel.dx,     visc*timefacfac, shpvel.dx);
+            assembler.template Matrix<Velz,Velx>(shpvel.dx,     visc*timefacfac, shpvel.dz);
+            assembler.template Matrix<Velz,Velz>(shpvel.dy,     visc*timefacfac, shpvel.dy);
+            assembler.template Matrix<Velz,Vely>(shpvel.dy,     visc*timefacfac, shpvel.dz);
+            assembler.template Matrix<Velz,Velz>(shpvel.dz,   2*visc*timefacfac, shpvel.dz);
+            
+            assembler.template Vector<Velx>(shpvel.dx,     -visc*timefacfac*(vderxy(0, 0) + vderxy(0, 0)));
+            assembler.template Vector<Velx>(shpvel.dy,     -visc*timefacfac*(vderxy(0, 1) + vderxy(1, 0)));
+            assembler.template Vector<Velx>(shpvel.dz,     -visc*timefacfac*(vderxy(0, 2) + vderxy(2, 0)));
+            
+            assembler.template Vector<Vely>(shpvel.dx,     -visc*timefacfac*(vderxy(1, 0) + vderxy(0, 1)));
+            assembler.template Vector<Vely>(shpvel.dy,     -visc*timefacfac*(vderxy(1, 1) + vderxy(1, 1)));
+            assembler.template Vector<Vely>(shpvel.dz,     -visc*timefacfac*(vderxy(1, 2) + vderxy(2, 1)));
+            
+            assembler.template Vector<Velz>(shpvel.dx,     -visc*timefacfac*(vderxy(2, 0) + vderxy(0, 2)));
+            assembler.template Vector<Velz>(shpvel.dy,     -visc*timefacfac*(vderxy(2, 1) + vderxy(1, 2)));
+            assembler.template Vector<Velz>(shpvel.dz,     -visc*timefacfac*(vderxy(2, 2) + vderxy(2, 2)));
+            
+            /* Druckterm */
+            /*
+                            /                \
+                           |                  |
+                         - |  nabla o v , Dp  |
+                           |                  |
+                            \                /
+            */
+            // dynamischer Druck
+            assembler.template Matrix<Velx,Pres>(shpvel.dx, -timefacfac, shppres.d0);
+            assembler.template Matrix<Vely,Pres>(shpvel.dy, -timefacfac, shppres.d0);
+            assembler.template Matrix<Velz,Pres>(shpvel.dz, -timefacfac, shppres.d0);
+            
+            assembler.template Vector<Velx>(shpvel.dx, timefacfac*pres);
+            assembler.template Vector<Vely>(shpvel.dy, timefacfac*pres);
+            assembler.template Vector<Velz>(shpvel.dz, timefacfac*pres);
+            
+            /* Divergenzfreiheit - continuity equation*/
+            /*
+                           /              \
+                          |                |
+                          | q , nabla o Du |
+                          |                |
+                           \              /
+            */
+            assembler.template Matrix<Pres,Velx>(shppres.d0, timefacfac, shpvel.dx);
+            assembler.template Matrix<Pres,Vely>(shppres.d0, timefacfac, shpvel.dy);
+            assembler.template Matrix<Pres,Velz>(shppres.d0, timefacfac, shpvel.dz);
+            
+            //Residuum der Kontigl
+            const double trace_gamma = (vderxy(0, 0) + vderxy(1, 1) + vderxy(2, 2));
+            assembler.template Vector<Pres>(shppres.d0, -timefacfac*trace_gamma);
+            
+            // source term of the right hand side
+            // passt das so? jetzt schon, siehe Berechnung von rhsint
+            assembler.template Vector<Velx>(shpvel.d0, fac*rhsint(0));
+            assembler.template Vector<Vely>(shpvel.d0, fac*rhsint(1));
+            assembler.template Vector<Velz>(shpvel.d0, fac*rhsint(2));
+            
+            
+            //----------------------------------------------------------------------
+            //                 PRESSURE STABILISATION PART
+            if(pstab)
+            {
+                const double timetauMp  = timefac * tau_stab_Mp * fac;
+                if (instationary)
+                {
+                    /* pressure stabilisation: inertia */
+                    /*
+                                /                 \
+                               |                   |
+                               | roh Du , nabla q  |
+                               |                   |
+                                \                 /
+                    */
+                	//fac*dens
+                    assembler.template Matrix<Pres,Velx>(shppres.dx, timetauMp*dens, shpvel.d0);
+                    assembler.template Matrix<Pres,Vely>(shppres.dy, timetauMp*dens, shpvel.d0);
+                    assembler.template Matrix<Pres,Velz>(shppres.dz, timetauMp*dens, shpvel.d0);
+                }
+                const double ttimetauMp = timefac * timefac * tau_stab_Mp * fac;
+                /* pressure stabilisation: convection, convective part */
+                /*
+                          /                                \
+                         |                / n+1       \     |
+                         | nabla q ,roh  | u   o nabla | Du |
+                         |                \ i         /     |
+                          \                                /
+                */
+                assembler.template Matrix<Pres,Velx>(shppres.dx, ttimetauMp*dens, enr_conv_c_);
+                assembler.template Matrix<Pres,Vely>(shppres.dy, ttimetauMp*dens, enr_conv_c_);
+                assembler.template Matrix<Pres,Velz>(shppres.dz, ttimetauMp*dens, enr_conv_c_);
+                
+                if (newton)
+                {
+                    /*  pressure stabilisation: convection, reactive part
+                          /                                \
+                         |              /          \   n+1  |
+                         | grad q , roh| Du o nabla | u     |
+                         |              \          /   (i)  |
+                          \                                /
+                    */
+                    assembler.template Matrix<Pres,Velx>(shppres.dx, ttimetauMp*dens*vderxy(0,0), shpvel.d0);
+                    assembler.template Matrix<Pres,Velx>(shppres.dy, ttimetauMp*dens*vderxy(1,0), shpvel.d0);
+                    assembler.template Matrix<Pres,Velx>(shppres.dz, ttimetauMp*dens*vderxy(2,0), shpvel.d0);
+                    
+                    assembler.template Matrix<Pres,Vely>(shppres.dx, ttimetauMp*dens*vderxy(0,1), shpvel.d0);
+                    assembler.template Matrix<Pres,Vely>(shppres.dy, ttimetauMp*dens*vderxy(1,1), shpvel.d0);
+                    assembler.template Matrix<Pres,Vely>(shppres.dz, ttimetauMp*dens*vderxy(2,1), shpvel.d0);
+                    
+                    assembler.template Matrix<Pres,Velz>(shppres.dx, ttimetauMp*dens*vderxy(0,2), shpvel.d0);
+                    assembler.template Matrix<Pres,Velz>(shppres.dy, ttimetauMp*dens*vderxy(1,2), shpvel.d0);
+                    assembler.template Matrix<Pres,Velz>(shppres.dz, ttimetauMp*dens*vderxy(2,2), shpvel.d0);
+                }
+                
+                /* pressure stabilisation: viscosity (-L_visc_u) */
+                /*
+                           /                             \
+                          |                         /  \  |
+                        - |  nabla q , nabla o tau | Du | |
+                          |                         \  /  |
+                           \                             /
+                */
+                assembler.template Matrix<Pres,Velx>(shppres.dx, -2.0*visc*ttimetauMp, enr_viscs2.xx);
+                assembler.template Matrix<Pres,Vely>(shppres.dx, -2.0*visc*ttimetauMp, enr_viscs2.xy);
+                assembler.template Matrix<Pres,Velz>(shppres.dx, -2.0*visc*ttimetauMp, enr_viscs2.xz);
+                
+                assembler.template Matrix<Pres,Velx>(shppres.dy, -2.0*visc*ttimetauMp, enr_viscs2.xy);
+                assembler.template Matrix<Pres,Vely>(shppres.dy, -2.0*visc*ttimetauMp, enr_viscs2.yy);
+                assembler.template Matrix<Pres,Velz>(shppres.dy, -2.0*visc*ttimetauMp, enr_viscs2.yz);
+                
+                assembler.template Matrix<Pres,Velx>(shppres.dz, -2.0*visc*ttimetauMp, enr_viscs2.xz);
+                assembler.template Matrix<Pres,Vely>(shppres.dz, -2.0*visc*ttimetauMp, enr_viscs2.yz);
+                assembler.template Matrix<Pres,Velz>(shppres.dz, -2.0*visc*ttimetauMp, enr_viscs2.zz);
+                      
+                /* pressure stabilisation: pressure( L_pres_p) */
+                /*
+                          /                    \
+                         |                      |
+                         |  nabla q , nabla Dp  |
+                         |                      |
+                          \                    /
+                */
+                assembler.template Matrix<Pres,Pres>(shppres.dx, ttimetauMp, shppres.dx);
+                assembler.template Matrix<Pres,Pres>(shppres.dy, ttimetauMp, shppres.dy);
+                assembler.template Matrix<Pres,Pres>(shppres.dz, ttimetauMp, shppres.dz);
+                
+                // pressure stabilization
+                // res_old oben angepasst
+                assembler.template Vector<Pres>(shppres.dx, -timetauMp*res_old(0));
+                assembler.template Vector<Pres>(shppres.dy, -timetauMp*res_old(1));
+                assembler.template Vector<Pres>(shppres.dz, -timetauMp*res_old(2));
+                
+            }
+            
+            //----------------------------------------------------------------------
+            //                     SUPG STABILISATION PART
+            if(supg)
+            {
+                const double timetauM   = timefac * tau_stab_M * fac;
+                if (instationary)
+                {
+                    /* supg stabilisation: inertia  */
+                    /*
+                              /                               \
+                             |              / n+1       \     |
+                             | roh Du , roh| u   o nabla | v  |
+                             |              \ (i)       /     |
+                              \                               /
+                    */
+                	// timetauM * dens * dens, da einmal Dichte von Wichtungsfunktion und einmal von Testfunktion
+                	// vgl. Paper bzw FEFluid-Skript bzw Blatt
+                    assembler.template Matrix<Velx,Velx>(enr_conv_c_, timetauM*dens*dens, shpvel.d0);
+                    assembler.template Matrix<Vely,Vely>(enr_conv_c_, timetauM*dens*dens, shpvel.d0);
+                    assembler.template Matrix<Velz,Velz>(enr_conv_c_, timetauM*dens*dens, shpvel.d0);
+                    
+                    if (newton)
+                    {
+                        /* supg stabilisation: inertia, linearisation of testfunction  */
+                        /*
+                                   /                                  \
+                                  |      n+1          /          \     |
+                                  | roh u      , roh | Du o nabla | v  |
+                                  |      (i)          \          /     |
+                                   \                                   /
+    
+                        */
+                        assembler.template Matrix<Velx,Velx>(shpvel.dx, timetauM*dens*dens*gpvelnp(0), shpvel.d0);
+                        assembler.template Matrix<Velx,Vely>(shpvel.dy, timetauM*dens*dens*gpvelnp(0), shpvel.d0);
+                        assembler.template Matrix<Velx,Velz>(shpvel.dz, timetauM*dens*dens*gpvelnp(0), shpvel.d0);
+                        assembler.template Matrix<Vely,Velx>(shpvel.dx, timetauM*dens*dens*gpvelnp(1), shpvel.d0);
+                        assembler.template Matrix<Vely,Vely>(shpvel.dy, timetauM*dens*dens*gpvelnp(1), shpvel.d0);
+                        assembler.template Matrix<Vely,Velz>(shpvel.dz, timetauM*dens*dens*gpvelnp(1), shpvel.d0);
+                        assembler.template Matrix<Velz,Velx>(shpvel.dx, timetauM*dens*dens*gpvelnp(2), shpvel.d0);
+                        assembler.template Matrix<Velz,Vely>(shpvel.dy, timetauM*dens*dens*gpvelnp(2), shpvel.d0);
+                        assembler.template Matrix<Velz,Velz>(shpvel.dz, timetauM*dens*dens*gpvelnp(2), shpvel.d0);
+                    }
+                }
+                
+                const double ttimetauM  = timefac * timefac * tau_stab_M * fac;
+                /* supg stabilisation: convective part ( L_conv_u) */
+                /*
+                     /                                                \
+                    |     / n+1        \           / n+1        \      |
+                    | roh| u    o nabla | v , roh | u    o nabla | Du  |
+                    |     \ (i)        /           \ (i)        /      |
+                     \                                                /
+                */
+                assembler.template Matrix<Velx,Velx>(enr_conv_c_, ttimetauM*dens*dens, enr_conv_c_);
+                assembler.template Matrix<Vely,Vely>(enr_conv_c_, ttimetauM*dens*dens, enr_conv_c_);
+                assembler.template Matrix<Velz,Velz>(enr_conv_c_, ttimetauM*dens*dens, enr_conv_c_);
+                /* supg stabilisation: pressure part  ( L_pres_p) */
+                /*
+                          /                                \
+                         |      / n+1       \               |
+                         | roh | u   o nabla | v , nabla Dp |
+                         |      \ (i)       /               |
+                          \                                /
+                */
+                assembler.template Matrix<Velx,Pres>(enr_conv_c_, ttimetauM*dens, shppres.dx);
+                assembler.template Matrix<Vely,Pres>(enr_conv_c_, ttimetauM*dens, shppres.dy);
+                assembler.template Matrix<Velz,Pres>(enr_conv_c_, ttimetauM*dens, shppres.dz);
+
+                /* supg stabilisation: viscous part  (-L_visc_u) */
+                /*
+                      /                                           \
+                     |               /  \       / n+1        \     |
+                   - |  nabla o eps | Du |, roh| u    o nabla | v  |
+                     |               \  /       \ (i)        /     |
+                      \                                           /
+                */
+                assembler.template Matrix<Velx,Velx>(enr_conv_c_, -2.0*visc*ttimetauM*dens, enr_viscs2.xx);
+                assembler.template Matrix<Velx,Vely>(enr_conv_c_, -2.0*visc*ttimetauM*dens, enr_viscs2.xy);
+                assembler.template Matrix<Velx,Velz>(enr_conv_c_, -2.0*visc*ttimetauM*dens, enr_viscs2.xz);
+    
+                assembler.template Matrix<Vely,Velx>(enr_conv_c_, -2.0*visc*ttimetauM*dens, enr_viscs2.yx);
+                assembler.template Matrix<Vely,Vely>(enr_conv_c_, -2.0*visc*ttimetauM*dens, enr_viscs2.yy);
+                assembler.template Matrix<Vely,Velz>(enr_conv_c_, -2.0*visc*ttimetauM*dens, enr_viscs2.yz);
+    
+                assembler.template Matrix<Velz,Velx>(enr_conv_c_, -2.0*visc*ttimetauM*dens, enr_viscs2.zx);
+                assembler.template Matrix<Velz,Vely>(enr_conv_c_, -2.0*visc*ttimetauM*dens, enr_viscs2.zy);
+                assembler.template Matrix<Velz,Velz>(enr_conv_c_, -2.0*visc*ttimetauM*dens, enr_viscs2.zz);
+                
+                if (newton)
+                {
+                    /* supg stabilisation: reactive part of convection and linearisation of testfunction ( L_conv_u) */
+                    /*
+                               /                                                  |
+                              |      |            |   n+1     | n+1          |    |
+                              | roh  | Du o nabla | u    , roh| u    o nabla | v  |
+                              |      |            |   (i)     | (i)          |    |
+                               \                                                  |
+                    */
+                    assembler.template Matrix<Velx,Velx>(enr_conv_c_, ttimetauM*dens*dens*vderxy(0,0), shpvel.d0);
+                    assembler.template Matrix<Velx,Vely>(enr_conv_c_, ttimetauM*dens*dens*vderxy(0,1), shpvel.d0);
+                    assembler.template Matrix<Velx,Velz>(enr_conv_c_, ttimetauM*dens*dens*vderxy(0,2), shpvel.d0);
+                    
+                    assembler.template Matrix<Vely,Velx>(enr_conv_c_, ttimetauM*dens*dens*vderxy(1,0), shpvel.d0);
+                    assembler.template Matrix<Vely,Vely>(enr_conv_c_, ttimetauM*dens*dens*vderxy(1,1), shpvel.d0);                    
+                    assembler.template Matrix<Vely,Velz>(enr_conv_c_, ttimetauM*dens*dens*vderxy(1,2), shpvel.d0);                    
+                    
+                    assembler.template Matrix<Velz,Velx>(enr_conv_c_, ttimetauM*dens*dens*vderxy(2,0), shpvel.d0);
+                    assembler.template Matrix<Velz,Vely>(enr_conv_c_, ttimetauM*dens*dens*vderxy(2,1), shpvel.d0);
+                    assembler.template Matrix<Velz,Velz>(enr_conv_c_, ttimetauM*dens*dens*vderxy(2,2), shpvel.d0);
+                    
+                    /*
+                             /                                                  |
+                            |       / n+1         |   n+1      /           |    |
+                            |  roh | u    o nabla | u    ,roh | Du o nabla | v  |
+                            |      | (i)          |   (i)     |            |    |
+                             \                                                  |
+                    */
+                    const double con0 = ttimetauM*(gpvelnp(0)*vderxy(0,0) + gpvelnp(1)*vderxy(0,1) + gpvelnp(2)*vderxy(0,2));
+                    assembler.template Matrix<Velx,Velx>(shpvel.dx, con0*dens*dens, shpvel.d0);
+                    assembler.template Matrix<Velx,Vely>(shpvel.dy, con0*dens*dens, shpvel.d0);                        
+                    assembler.template Matrix<Velx,Velz>(shpvel.dz, con0*dens*dens, shpvel.d0); 
+                    
+                    const double con1 = ttimetauM*(gpvelnp(0)*vderxy(1,0) + gpvelnp(1)*vderxy(1,1) + gpvelnp(2)*vderxy(1,2));
+                    assembler.template Matrix<Vely,Velx>(shpvel.dx, con1*dens*dens, shpvel.d0);
+                    assembler.template Matrix<Vely,Vely>(shpvel.dy, con1*dens*dens, shpvel.d0);
+                    assembler.template Matrix<Vely,Velz>(shpvel.dz, con1*dens*dens, shpvel.d0);
+                    
+                    const double con2 = ttimetauM*(gpvelnp(0)*vderxy(2,0) + gpvelnp(1)*vderxy(2,1) + gpvelnp(2)*vderxy(2,2));
+                    assembler.template Matrix<Velz,Velx>(shpvel.dx, con2*dens*dens, shpvel.d0);
+                    assembler.template Matrix<Velz,Vely>(shpvel.dy, con2*dens*dens, shpvel.d0);
+                    assembler.template Matrix<Velz,Velz>(shpvel.dz, con2*dens*dens, shpvel.d0);
+                    
+                    /* supg stabilisation: pressure part, linearisation of test function  ( L_pres_p) */
+                    /*
+                                    /                                  \
+                                   |         n+1       /          \     |
+                                   |  nabla p    ,roh | Du o nabla | v  |
+                                   |         (i)       \          /     |
+                                    \                                  /
+                    */
+                    assembler.template Matrix<Velx,Velx>(shpvel.dx, ttimetauM*dens*gradp(0), shpvel.d0);
+                    assembler.template Matrix<Velx,Vely>(shpvel.dy, ttimetauM*dens*gradp(0), shpvel.d0);
+                    assembler.template Matrix<Velx,Velz>(shpvel.dz, ttimetauM*dens*gradp(0), shpvel.d0);
+
+                    assembler.template Matrix<Vely,Velx>(shpvel.dx, ttimetauM*dens*gradp(1), shpvel.d0);
+                    assembler.template Matrix<Vely,Vely>(shpvel.dy, ttimetauM*dens*gradp(1), shpvel.d0);
+                    assembler.template Matrix<Vely,Velz>(shpvel.dz, ttimetauM*dens*gradp(1), shpvel.d0);
+                        
+                    assembler.template Matrix<Velz,Velx>(shpvel.dx, ttimetauM*dens*gradp(2), shpvel.d0);
+                    assembler.template Matrix<Velz,Vely>(shpvel.dy, ttimetauM*dens*gradp(2), shpvel.d0);
+                    assembler.template Matrix<Velz,Velz>(shpvel.dz, ttimetauM*dens*gradp(2), shpvel.d0);
+
+                      /* supg stabilisation: viscous part, linearisation of test function  (-L_visc_u) */
+                      /*
+                              /                                            \
+                             |               / n+1 \       /          \     |
+                           - |  nabla o eps | u     |,roh | Du o nabla | v  |
+                             |               \ (i) /       \          /     |
+                              \                                            /
+                      */
+                    assembler.template Matrix<Velx,Velx>(shpvel.dx, -2.0*visc*ttimetauM*dens*visc_old(0), shpvel.d0);
+                    assembler.template Matrix<Velx,Vely>(shpvel.dy, -2.0*visc*ttimetauM*dens*visc_old(0), shpvel.d0);
+                    assembler.template Matrix<Velx,Velz>(shpvel.dz, -2.0*visc*ttimetauM*dens*visc_old(0), shpvel.d0);
+
+                    assembler.template Matrix<Vely,Velx>(shpvel.dx, -2.0*visc*ttimetauM*dens*visc_old(1), shpvel.d0);
+                    assembler.template Matrix<Vely,Vely>(shpvel.dy, -2.0*visc*ttimetauM*dens*visc_old(1), shpvel.d0);
+                    assembler.template Matrix<Vely,Velz>(shpvel.dz, -2.0*visc*ttimetauM*dens*visc_old(1), shpvel.d0);
+                        
+                    assembler.template Matrix<Velz,Velx>(shpvel.dx, -2.0*visc*ttimetauM*dens*visc_old(2), shpvel.d0);
+                    assembler.template Matrix<Velz,Vely>(shpvel.dy, -2.0*visc*ttimetauM*dens*visc_old(2), shpvel.d0);
+                    assembler.template Matrix<Velz,Velz>(shpvel.dz, -2.0*visc*ttimetauM*dens*visc_old(2), shpvel.d0);
+
+                    /* supg stabilisation: bodyforce part, linearisation of test function */
+
+                    /*
+                                  /                                \
+                                 |                 /          \     |
+                               - |  rhsint   , roh| Du o nabla | v  |
+                                 |                 \          /     |
+                                  \                                /
+
+                    */
+
+                    assembler.template Matrix<Velx,Velx>(shpvel.dx, -timetauM*dens*rhsint(0), shpvel.d0);
+                    assembler.template Matrix<Velx,Vely>(shpvel.dy, -timetauM*dens*rhsint(0), shpvel.d0);
+                    assembler.template Matrix<Velx,Velz>(shpvel.dz, -timetauM*dens*rhsint(0), shpvel.d0);
+                    
+                    assembler.template Matrix<Vely,Velx>(shpvel.dx, -timetauM*dens*rhsint(1), shpvel.d0);
+                    assembler.template Matrix<Vely,Vely>(shpvel.dy, -timetauM*dens*rhsint(1), shpvel.d0);
+                    assembler.template Matrix<Vely,Velz>(shpvel.dz, -timetauM*dens*rhsint(1), shpvel.d0);
+                    
+                    assembler.template Matrix<Velz,Velx>(shpvel.dx, -timetauM*dens*rhsint(2), shpvel.d0);
+                    assembler.template Matrix<Velz,Vely>(shpvel.dy, -timetauM*dens*rhsint(2), shpvel.d0);
+                    assembler.template Matrix<Velz,Velz>(shpvel.dz, -timetauM*dens*rhsint(2), shpvel.d0);
+                } // if newton
+                
+                // supg stabilisation
+                // dens ja, siehe Blatt
+                assembler.template Vector<Velx>(enr_conv_c_, -timetauM*dens*res_old(0));
+                assembler.template Vector<Vely>(enr_conv_c_, -timetauM*dens*res_old(1));
+                assembler.template Vector<Velz>(enr_conv_c_, -timetauM*dens*res_old(2));
+            }
+
+            
+            //----------------------------------------------------------------------
+            //                     STABILISATION, CONTINUITY PART
+            if(cstab)
+            {
+                const double timefac_timefac_tau_C=timefac*timefac*tau_stab_C * fac;
+                const double timefac_timefac_tau_C_divunp=timefac_timefac_tau_C*(vderxy(0, 0)+vderxy(1, 1)+vderxy(2, 2));
+                /* continuity stabilisation on left hand side */
+                /*
+                         /                        \
+                        |                          |
+                        | nabla o Du  , nabla o v  |
+                        |                          |
+                         \                        /
+                */
+                assembler.template Matrix<Velx,Velx>(shpvel.dx, timefac_timefac_tau_C, shpvel.dx);
+                assembler.template Matrix<Velx,Vely>(shpvel.dx, timefac_timefac_tau_C, shpvel.dy);
+                assembler.template Matrix<Velx,Velz>(shpvel.dx, timefac_timefac_tau_C, shpvel.dz);
+                
+                assembler.template Matrix<Vely,Velx>(shpvel.dy, timefac_timefac_tau_C, shpvel.dx);
+                assembler.template Matrix<Vely,Vely>(shpvel.dy, timefac_timefac_tau_C, shpvel.dy);
+                assembler.template Matrix<Vely,Velz>(shpvel.dy, timefac_timefac_tau_C, shpvel.dz);
+                
+                assembler.template Matrix<Velz,Velx>(shpvel.dz, timefac_timefac_tau_C, shpvel.dx);
+                assembler.template Matrix<Velz,Vely>(shpvel.dz, timefac_timefac_tau_C, shpvel.dy);
+                assembler.template Matrix<Velz,Velz>(shpvel.dz, timefac_timefac_tau_C, shpvel.dz);
+                
+                assembler.template Vector<Velx>(shpvel.dx, -timefac_timefac_tau_C_divunp);
+                assembler.template Vector<Vely>(shpvel.dy, -timefac_timefac_tau_C_divunp);
+                assembler.template Vector<Velz>(shpvel.dz, -timefac_timefac_tau_C_divunp);
+            } // endif cstab
+
+                
+        } // end loop over gauss points
+    } // end loop over integration cells
+
+    return;
+}
+
+
 /*!
   Calculate matrix and rhs for stationary problem formulation
   */
@@ -764,12 +1819,17 @@ void SysmatDomain4(
     // dead load in element nodes
     //////////////////////////////////////////////////// , LINALG::SerialDenseMatrix edeadng_(BodyForce(ele->Nodes(),time));
 
+    // check here, if we really have a two fluids !!
+    dsassert(material->MaterialType() == INPAR::MAT::m_matlist, "Material law is not of type m_matlist.");
+    const MAT::MatList* actmaterials = static_cast<const MAT::MatList*>(material.get());
+
     // get viscosity
     // check here, if we really have a fluid !!
-    dsassert(material->MaterialType() == INPAR::MAT::m_fluid, "Material law is not of type m_fluid.");
-    const MAT::NewtonianFluid* actmat = dynamic_cast<const MAT::NewtonianFluid*>(material.get());
-    const double visc = actmat->Viscosity();
+//    dsassert(material->MaterialType() == INPAR::MAT::m_fluid, "Material law is not of type m_fluid.");
+//    const MAT::NewtonianFluid* actmat = dynamic_cast<const MAT::NewtonianFluid*>(material.get());
+//    const double visc = actmat->Viscosity();
 
+    
     // flag for higher order elements
     const bool higher_order_ele = XFLUID::secondDerivativesAvailable<DISTYPE>();
     
@@ -791,6 +1851,9 @@ void SysmatDomain4(
     
     
     // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
+
+//URSULA bei Zweiphasenströmungen nicht unbedingt bzw verschiedene Anreicherungen fuer vel und pres möglich
+
     //const int numparamvelx = getNumParam<ASSTYPE>(dofman, Velx, numnode);
     const size_t numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
     const size_t numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
@@ -812,6 +1875,20 @@ void SysmatDomain4(
         const LINALG::Matrix<nsd,1> cellcenter_xyz(cell->GetPhysicalCenterPosition());
         
         int labelnp = 0;
+
+        // TODO: hack to compile - only one material is used! henke 06/09
+        int matid = 3;
+
+        Teuchos::RCP<const MAT::Material> mat = actmaterials->MaterialById(matid);
+        dsassert(mat->MaterialType() == INPAR::MAT::m_fluid, "Material law is not of type m_fluid.");
+        const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
+        const double visc = actmat->Viscosity();
+        // kinvisc statt visc?
+        // mit dyn Druck rechnen
+        // visc wird dann zur dynamischen Viskosität
+        // von was geht man im Datfile aus
+        // ggf const double visc = kinvisc * dens
+//          const double dens = actmat->Density();
 
 // Das ist anders für combustion! Es müssen beide Seiten des Interfaces integriert werden
         if (ASSTYPE == XFEM::xfem_assembly)
@@ -919,7 +1996,7 @@ void SysmatDomain4(
             const size_t shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
             
             static XFLUID::ApproxFunc<shpVecSize> shp;
-            
+
             static LINALG::Matrix<shpVecSizeStress,1>   shp_tau;
             
             if (ASSTYPE == XFEM::xfem_assembly)
@@ -928,7 +2005,7 @@ void SysmatDomain4(
                 static LINALG::Matrix<shpVecSize,1> enr_funct;
                 static LINALG::Matrix<3,shpVecSize> enr_derxy;
                 static LINALG::Matrix<6,shpVecSize> enr_derxy2;
-                
+
 //                const std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
 //                      ih,
 //                      dofman.getUniqueEnrichments(),
@@ -1227,8 +2304,10 @@ void SysmatDomain4(
     } // end loop over integration cells
 
     return;
+
 }
-  
+
+
 /*!
   Calculate matrix and rhs for stationary problem formulation
   */
@@ -1615,10 +2694,19 @@ void Sysmat4(
     
     fillElementUnknownsArrays4<DISTYPE,ASSTYPE>(dofman, mystate, evelnp, eveln, evelnm, eaccn, eprenp, etau);
 
-    SysmatDomain4<DISTYPE,ASSTYPE,NUMDOF>(
-        ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, etau,
-        material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, assembler);
-    
+    if (true) // if (jump enrichment) combustion problem
+    {
+      SysmatDomain4<DISTYPE,ASSTYPE,NUMDOF>(
+          ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, etau,
+          material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, assembler);
+    }
+    if (false) // if (kink enrichment) two-phase flow problem
+    {
+      SysmatTwoPhase<DISTYPE,ASSTYPE,NUMDOF>(
+          ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, etau,
+          material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, assembler);
+    }
+
 //    if (ASSTYPE == XFEM::xfem_assembly)
 //    {
 //      SysmatBoundary4<DISTYPE,ASSTYPE,NUMDOF>(

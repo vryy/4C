@@ -16,6 +16,7 @@
 
 
 #include "interfacexfsi.H"
+#include "../drt_combust/combust_interface.H" //URSULA
 
 //! namespace for all XFEM related stuff
 namespace XFEM
@@ -152,6 +153,34 @@ namespace XFEM
           const XFEM::Enrichment::ApproachFrom  approachdirection  ///< approach direction
       ) const;
       
+      //! working method for kink enrichments; to be merged with ModifiedEnrValue()
+      double ModifiedKinkEnrValue(
+          const LINALG::Matrix<3,1>&             actpos,            ///< \f$x\f$
+          const int                              nodelid,
+          const XFEM::InterfaceHandle&           ih,                ///< the ubiquitous interface handle with all geometry information
+          const XFEM::Enrichment::ApproachFrom   approachdirection,  ///< approach direction
+          const DRT::Element&                    ele
+      ) const;
+
+
+      //! calculate modified enrichment value derivative
+      std::vector<double> ModifiedEnrValue_derxy(
+              const LINALG::Matrix<3,1>&             actpos,
+              const XFEM::InterfaceHandle&           ih,
+              const DRT::Element&                    ele
+              //const LINALG::Matrix<1,8>&             phi
+              ) const;
+
+
+      //! calculate modified enrichment value second derivative
+      std::vector<double> ModifiedEnrValue_derxy2(
+              const LINALG::Matrix<3,1>&             actpos,
+              const XFEM::InterfaceHandle&           ih,
+              const DRT::Element&                    ele
+              //const LINALG::Matrix<1,8>&             phi
+              ) const;
+
+
       //! calculate enrichment value based on input \f$\psi(x)\f$
       double EnrValue(
           const LINALG::Matrix<3,1>&            actpos,            ///< \f$x\f$

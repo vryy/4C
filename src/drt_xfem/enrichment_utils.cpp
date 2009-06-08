@@ -26,16 +26,22 @@ Maintainer: Axel Gerstenberger
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 XFEM::ElementEnrichmentValues::ElementEnrichmentValues(
-        const DRT::Element&                   ele,
-        const RCP<XFEM::InterfaceHandle>&     ih,               ///< interface information
-        const XFEM::ElementDofManager&        dofman,
-        const LINALG::Matrix<3,1>&            actpos,
-        const XFEM::Enrichment::ApproachFrom  approachdirection
+        const DRT::Element&                    ele,
+        const RCP<XFEM::InterfaceHandle>&  ih,               ///< interface information
+        const XFEM::ElementDofManager&         dofman,
+        const LINALG::Matrix<3,1>&             actpos,
+        const XFEM::Enrichment::ApproachFrom   approachdirection
         ) :
           ele_(ele),
           dofman_(dofman) 
 {
     enrvals_.clear();
+
+    // mamber variables required for kink enrichment
+    enrvalnodes_.clear();
+    enrvalderxy_.clear();
+    enrvalderxy2_.clear();
+
     const std::set<XFEM::Enrichment>& enrset(dofman.getUniqueEnrichments());
     //TODO: achtung: bei mehreren enrichments ist approach from plus nicht mehr so einfach
     for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
@@ -44,6 +50,81 @@ XFEM::ElementEnrichmentValues::ElementEnrichmentValues(
 //        enrvals_.insert(make_pair((*enriter), enrval));
         enrvals_[*enriter] = enrval;
     }
+    return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | constructor called for two-phase flow problems (kink enrichment)     |
+ |                                              henke (rasthofer) 06/09 |
+ *----------------------------------------------------------------------*/
+XFEM::ElementEnrichmentValues::ElementEnrichmentValues(
+        const DRT::Element&                   ele,
+        const RCP<COMBUST::InterfaceHandleCombust>&     ih,               ///< interface information
+        const XFEM::ElementDofManager&        dofman,
+        const LINALG::Matrix<3,1>&            actpos,
+        const XFEM::Enrichment::ApproachFrom  approachdirection,
+        bool twophaseflow
+        //const LINALG::Matrix<1,8>&            phi
+        ) :
+        ele_(ele),
+        dofman_(dofman) 
+{
+
+    enrvals_.clear(); // not used for kink enrichment
+
+    enrvalnodes_.clear();
+    enrvalderxy_.clear();
+    enrvalderxy2_.clear();
+    
+    const std::set<XFEM::Enrichment>& enrset(dofman.getUniqueEnrichments());
+    
+    const int numnode = ele_.NumNode();
+    
+    for(int inode=0; inode<numnode; inode++)
+    {
+    	//nodalpos braucht man noch, globale oder lokale Koordinaten
+//    	LINALG::Matrix<3,1> nodalpos;
+//    	nodalpos(0,1) = ele_.Nodes()[inode]->X()[0];
+//    	nodalpos(1,1) = ele_.Nodes()[inode]->X()[1];
+//    	nodalpos(2,1) = ele_.Nodes()[inode]->X()[2];
+    	//jetzt sind es die globalen
+    	//eigentlich würde es reichen phi am Knoten zu verwenden
+    	//dann müsste man nur inode übergeben
+    	std::map<XFEM::Enrichment, double> enrvalues;
+    	for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
+    	{
+    		const double enrval = enriter->ModifiedKinkEnrValue(actpos, inode, *ih, approachdirection, ele_);
+    		//const double enrval = enriter->ModifiedEnrValue(actpos, inode, *ih, approachdirection, ele_, phi);
+    		enrvalues[*enriter] = enrval;
+    	}
+    	enrvalnodes_[inode] = enrvalues;
+    	enrvalues.clear();
+    }
+    
+    for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
+    {
+    	const std::vector<double> enrvalderxy = enriter->ModifiedEnrValue_derxy(actpos, *ih, ele_);
+    	//const std::vector<double> enrvalderxy = enriter->ModifiedEnrValue_derxy(actpos, *ih, ele_, phi);
+    	enrvalderxy_[*enriter] = enrvalderxy;
+    	
+//    	std::vector<double> enrvalderxy2;
+//    	switch(ele_.Shape())
+//    	{
+//    	case DRT::Element::hex8:
+//    		enrvalderxy2 = enriter->ModifiedEnrValue_derxy2<DRT::Element::hex8>(actpos, *ih, ele_);
+//    		break;
+////    	case DRT::Element::hex20:
+////    		enrvalderxy2 = enriter->ModifiedEnrValue_derxy2<DRT::Element::hex20>(actpos, *ih, approachdirection, ele_);
+////    		break;
+//    	default:
+//    		dserror("Element not templated in enrichment second derivatives yet");
+//    	};
+    	const std::vector<double> enrvalderxy2 = enriter->ModifiedEnrValue_derxy2(actpos, *ih, ele_);
+    	//const std::vector<double> enrvalderxy2 = enriter->ModifiedEnrValue_derxy2(actpos, *ih, ele_, phi);
+    	enrvalderxy2_[*enriter] = enrvalderxy2;
+    }
+    
     return;
 }
 

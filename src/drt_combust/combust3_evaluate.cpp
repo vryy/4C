@@ -24,6 +24,7 @@ Maintainer: Florian Henke
 #include "../drt_xfem/dof_management.H"
 #include "../drt_xfem/xdofmapcreation.H"
 #include "../drt_xfem/enrichment_utils.H"
+#include "../drt_mat/matlist.H" //URSULA
 
 
 // converts a string into an Action for this element
@@ -99,18 +100,41 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
   // get the material
   const Teuchos::RCP<MAT::Material> mat = Material();
-  if (mat->MaterialType()!=INPAR::MAT::m_fluid)
-    dserror("newtonian fluid material expected but got type %d", mat->MaterialType());
-
-  const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
+//URSULA  if (mat->MaterialType()!=INPAR::MAT::m_fluid)
+  // TODO: here, I should check the content of the list, too!
+  if (mat->MaterialType()!=INPAR::MAT::m_matlist)
+    dserror("material list with newtonian fluid material expected but got type %d", mat->MaterialType());
+  
+  //TEST
+//  const MAT::MatList* actmaterials = static_cast<const MAT::MatList*>(mat.get());
+//  Teuchos::RCP<const MAT::Material> mater = actmaterials->MaterialById(4);
+//  dsassert(mater->MaterialType() == INPAR::MAT::m_fluid, "Material law is not of type m_fluid.");
+//  const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mater.get());
+//  const double visc = actmat->Viscosity();
+//  std::cout << "Viskositaet Fluid 3 ist " << visc << std::endl;
+  
+  
+  // was macht man dann mit der Dichte
+//  if (mat->MaterialType()!=INPAR::MAT::m_fluid)
+//    dserror("newtonian fluid material expected but got type %d", mat->MaterialType());
+  // wird hier nur für Dichte benötigt kin Druck -> dyn Druck
+  // man sollte hier mit dem dyn Druck rechnen
+  // daher entfällt nachfolgende Zeile, actmat wird nur für die Rückgabe der Dichte verwendet
+  // damit wird der Output dyn Druck berechnet (Multiplikation)
+//  const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
 
   switch(act)
   {
     case get_density:
     {
-      // This is a very poor way to transport the density to the
-      // outside world. Is there a better one?
-      params.set("density", actmat->Density());
+      // This is a very poor way to transport the density to the outside world. Is there a better one?
+//      params.set("density", actmat->Density());
+//URSULA 
+      // einzige Stelle, die die Dichte benötigt ist Output von Fluid
+      // Druck ist schon mit Dichte skaliert -> Skalierung mit 1 ändert nichts
+      params.set("density", 1.0); 
+      cout << "Warning: two-phase flows have different densities, evaluate(get_density) returns 1.0" << endl;
+//URSULA
       break;
     }
     case reset:
@@ -145,14 +169,12 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*discretization.GetState("velnm"),mystate.velnm,lm);
       DRT::UTILS::ExtractMyValues(*discretization.GetState("accn") ,mystate.accn ,lm);
 
-//#ifdef DEBUG
       // get pointer to vector holding G-function values at the fluid nodes
       const Teuchos::RCP<Epetra_Vector> phinp = ih_->FlameFront()->Phinp();
       // get map of this vector
       const Epetra_BlockMap& phimap = phinp->Map();
       // check, whether this map is still identical with the current node map in the discretization
       if (not phimap.SameAs(*discretization.NodeColMap())) dserror("node column map has changed!");
-//#endif
 
       // extract G-function values to element level (used kink enrichment)
       DRT::UTILS::ExtractMyNodeBasedValues(this, mystate.phinp, *phinp);

@@ -15,6 +15,7 @@ Maintainer: Axel Gerstenberger
 #define ENRICHMENT_UTILS_H
 
 #include "interface.H"
+#include "../drt_combust/combust_interface.H"
 #include "dof_management_element.H"
 #include "xfem_enums.H"
 #include "../drt_lib/linalg_serialdensematrix.H"
@@ -43,6 +44,21 @@ namespace XFEM
         const XFEM::ElementDofManager&        dofman,
         const LINALG::Matrix<3,1>&            actpos,           ///< a 3d position
         const XFEM::Enrichment::ApproachFrom  approachdirection ///< is location with respect to interface is known or not
+    );
+    
+    /*!
+    * \brief for each given Enrichment in enrset, compute the enrichment value at actpos
+    * 
+    * if one already knows, an which side of the discontinuity one computes something,
+    * the information can be given via approachdirection
+    */
+    explicit ElementEnrichmentValues(
+        const DRT::Element&                   ele,
+        const RCP<COMBUST::InterfaceHandleCombust>&     ih,               ///< interface information
+        const XFEM::ElementDofManager&        dofman,
+        const LINALG::Matrix<3,1>&            actpos,           ///< a 3d position
+        const XFEM::Enrichment::ApproachFrom  approachdirection, ///< is location with respect to interface is known or not
+        bool twophaseflow
     );
     
     /*!
@@ -170,7 +186,72 @@ namespace XFEM
       }
       dsassert(dofcounter == dofman_.NumDofPerField(field), "mismatch in information from eledofmanager!");
     }
-    
+
+    /*!
+     * \brief For a given situation compute the enriched shape functions for kink enrichment
+     * 
+     * due to the kink enrichment, the chain rule is applied here
+     * 
+     * \author henke (rasthofer) 06/09
+     */
+    template<class VI, class MI1, class MI2, class VO, class MO1, class MO2 >
+    inline void ComputeKinkEnrichedNodalShapefunction(
+        const XFEM::PHYSICS::Field field,
+        const VI& funct,
+        const MI1& derxy,
+        const MI2& derxy2,
+        VO& enr_funct,
+        MO1& enr_derxy,
+        MO2& enr_derxy2
+    ) const
+    {
+      const int* nodeids = ele_.NodeIds();
+      const std::size_t numnode = ele_.NumNode();
+      
+      std::size_t dofcounter = 0;
+      for (std::size_t inode=0; inode < numnode; ++inode)
+      {
+        const int gid = nodeids[inode];
+        const std::set<XFEM::FieldEnr>& enrfieldset = dofman_.FieldEnrSetPerNode(gid);
+        const std::map<XFEM::Enrichment, double> enrvalues = enrvalnodes_.find(inode)->second;
+        
+        for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
+          enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
+        {
+          if (enrfield->getField() == field)
+          {
+            const double enrval = enrvalues.find(enrfield->getEnrichment())->second;
+            const std::vector<double> enrvalderxy = enrvalderxy_.find(enrfield->getEnrichment())->second;
+            const std::vector<double> enrvalderxy2 = enrvalderxy2_.find(enrfield->getEnrichment())->second;
+            
+            enr_funct(dofcounter) = funct(inode) * enrval;
+            
+            for (std::size_t isd = 0; isd < 3; ++isd)
+            {
+              //product rule
+              enr_derxy(isd,dofcounter) = derxy(isd,inode) * enrval + funct(inode) * enrvalderxy[isd];
+            }
+            
+//            for (std::size_t isd = 0; isd < 6; ++isd)
+//            {
+//              //product rule
+//              // da fehlt noch was
+//              enr_derxy2(isd,dofcounter) = derxy2(isd,inode) * enrval + funct(inode) * enrvalderxy2[isd];
+//            }
+            enr_derxy2(0,dofcounter) = derxy2(0,inode) * enrval + funct(inode) * enrvalderxy2[0] + derxy(0,inode) * enrvalderxy[0] + derxy(0,inode) * enrvalderxy[0];
+            enr_derxy2(1,dofcounter) = derxy2(1,inode) * enrval + funct(inode) * enrvalderxy2[1] + derxy(1,inode) * enrvalderxy[1] + derxy(1,inode) * enrvalderxy[1];
+            enr_derxy2(2,dofcounter) = derxy2(2,inode) * enrval + funct(inode) * enrvalderxy2[2] + derxy(2,inode) * enrvalderxy[2] + derxy(2,inode) * enrvalderxy[2];
+            enr_derxy2(3,dofcounter) = derxy2(3,inode) * enrval + funct(inode) * enrvalderxy2[3] + derxy(0,inode) * enrvalderxy[1] + derxy(1,inode) * enrvalderxy[0];
+            enr_derxy2(4,dofcounter) = derxy2(4,inode) * enrval + funct(inode) * enrvalderxy2[4] + derxy(0,inode) * enrvalderxy[2] + derxy(2,inode) * enrvalderxy[0];
+            enr_derxy2(5,dofcounter) = derxy2(5,inode) * enrval + funct(inode) * enrvalderxy2[5] + derxy(1,inode) * enrvalderxy[2] + derxy(2,inode) * enrvalderxy[1];
+            dofcounter += 1;
+          }
+        }
+      }
+      dsassert(dofcounter == dofman_.NumDofPerField(field), "mismatch in information from eledofmanager!");
+    }
+
+
     /*!
     * \brief For a given situation compute the enriched shape functions
     * 
@@ -260,6 +341,13 @@ namespace XFEM
     
     std::map<XFEM::Enrichment, double>        enrvals_;
     
+//URSULA
+    // member variables required for kink enrichment
+    std::map<int,std::map<XFEM::Enrichment, double> > enrvalnodes_;
+    std::map<XFEM::Enrichment, std::vector<double> > enrvalderxy_;
+    std::map<XFEM::Enrichment, std::vector<double> > enrvalderxy2_;
+//URSULA
+
   };
 
 
