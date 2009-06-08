@@ -192,6 +192,7 @@ Input/contact2D_patch_linstatic.dat                     x        x        x     
 Input/contact2D_hertz_linstatic.dat                     x        x        x        -        -        -
 Input/contact2D_quad.dat                                x        x        x        -        -        -
 Input/contact2D_lin.dat                                 x        x        x        -        -        -
+Input/contact2D_lin_sti.dat                             x        x        x        -        -        -
 Input/contact2D_friction_tresca.dat                     x        x        x        -        -        -
 Input/contact3D_lin.dat                                 x        x        x        -        -        -
 Input/contact3D_patch_linstatic.dat                     x        x        x        -        -        -
