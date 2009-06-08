@@ -72,6 +72,7 @@ typedef struct _MATERIAL
      struct _MATLIST             *matlist;       /* collection of any single materials (used for scalar transport problems)*/
      struct _BIOCELL             *biocell;       /* Biological Cell model */
      struct _ION                 *ion;           /* material properties of an ion species in an electrolyte solution */
+     struct _CNST_ART            *cnst_art;      /* 1D_Artery with constant material and geometric properties */
      }                           m;             /* union pointer to material specific structure */
 
 } MATERIAL;
@@ -872,5 +873,18 @@ typedef struct _ION
      INT         valence;     /* valence (= charge number) */
      DOUBLE      diffusivity; /* kinematic diffusivity     */
 } ION;
+/*----------------------------------------------------------------------*
+ | material parameters constant 1D_Artery                     ism 06/09 |
+ *----------------------------------------------------------------------*/
+typedef struct _CNST_ART
+{
+     DOUBLE                    viscosity;      /* Newtonian viscosity of blood */
+     DOUBLE                    density;        /* material specific weight */
+     DOUBLE                    youngs;         /* Young's modulus at the Inlet*/
+     DOUBLE                    possionratio;   /* Possion ratio */
+     DOUBLE                    diam;           /* initial diameter of an artery*/
+     DOUBLE                    th;             /* artery thickness */
+
+} CNST_ART;
 
 #endif

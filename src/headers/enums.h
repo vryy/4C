@@ -34,13 +34,14 @@ typedef enum _PROBLEM_TYP
                        prb_struct_multi, /*  multi-scale problem (structure) */
                        prb_loma,         /*  low-Mach-number flow problem */
                        prb_elch,         /*  electrochemical problem */
-                       prb_combust       /*  combustion problem */
+                       prb_combust,      /*  combustion problem */
+                       prb_art_net       /*  arterial network problem */ /*_1D_ARTERY_*/
 } PROBLEM_TYP;
 /* Mapping from problem type numbers to printable names. To be used to
  * initialize static variables. Keep in sync!
  * The trailing NULL is essential for the filters to read the problem
  * type! */
-#define PROBLEMNAMES { "none","fsi","fsi_xfem","ssi","structure","fluid","fluid_xfem","fluid_dgfem","fluid_ale","freesurf","opt","ale","tsi","fluid_pm","scatra","pfsi","struct_multi","loma","elch","combustion",NULL }
+#define PROBLEMNAMES { "none","fsi","fsi_xfem","ssi","structure","fluid","fluid_xfem","fluid_dgfem","fluid_ale","freesurf","opt","ale","tsi","fluid_pm","scatra","pfsi","struct_multi","loma","elch","combustion","art_net",NULL }
 /*----------------------------------------------------------------------*
  | TIME TYPES                                             m.gee 7/01    |
  *----------------------------------------------------------------------*/
@@ -63,11 +64,12 @@ typedef enum _FIELDTYP
                        thermal,     /* thermal field */
                        pressure,    /* pure pressure field */
                        boundary,    /* boundary field */
-                       scatra       /* scalar transport field */
+                       scatra,      /* scalar transport field */
+                       atrery       /* artery field*/
 } FIELDTYP;
 /* Mapping from fieldtyp numbers to printable names. To be used to
  * initialize static variables. Keep in sync! */
-#define FIELDNAMES {"none", "fluid", "ale", "structure", "thermal", "pressure", "boundary", "scatra", NULL}
+#define FIELDNAMES {"none", "fluid", "ale", "structure", "thermal", "pressure", "boundary", "scatra", "artery", NULL}
 
 
 
@@ -166,6 +168,7 @@ typedef enum _ELEMENT_TYP
                        el_therm3,      /* 3D thermal element
                                         * (spatial heat conduction) */
                        el_solid3,      /* 3D structural element */
+                       el_art_tg,      /* 1D_Artery Taylor-Galerkin element */
                        el_count        /* The number of known
                                         * elements. This must be the
                                         * last entry! */
@@ -197,6 +200,7 @@ typedef enum _ELEMENT_TYP
       "therm2",                                                         \
       "therm3",                                                         \
       "solid3",                                                         \
+      "artery_tg",                                                      \
       NULL  }
 
 
@@ -300,7 +304,8 @@ typedef enum _MATERIAL_TYP
                        m_struct_multiscale, /*  structural microscale approach */
                        m_matlist,       /* collection of single materials (used for scalar transport problems)*/
                        m_biocell,       /* biological cell model */
-                       m_ion           /* properties of an ion species in an electrolyte solution */
+                       m_ion,           /* properties of an ion species in an electrolyte solution */
+                       m_cnst_art,      /* 1D_Artery with constant material and geometric properties */
 } MATERIAL_TYP;
 #endif
 /*----------------------------------------------------------------------*
@@ -403,7 +408,18 @@ typedef enum _CALC_ACTION
                        calc_therm_heatforce,  /* internal heat force */
                        calc_therm_heatload,  /* external heat source + BC */
                        calc_therm_heatflux,  /* postproc. heat flux */
-                       calc_therm_final  /* finalise thermal calc. */
+                       calc_therm_final,  /* finalise thermal calc. */
+                       /* arterial network*/
+                       calc_art_net_v,  /* velocity inside arteries*/
+                       calc_art_net_p,  /* pressure inside arteries*/
+                       calc_art_net_a,  /* arteries' cross-sectonal area*/
+                       calc_art_net_q,  /* volumetric flow inside arteries*/
+                       calc_art_net_w1, /* forward characteristic wave*/
+                       calc_art_net_w2, /* backward characteristic wave*/
+                       calc_junc_bc,    /* Junction boundary values */
+                       calc_char_bc,    /* characteristic velocities at boundaries */    
+                       calc_in_bc,      /* inlet boundary values */
+                       calc_out_bc      /* outlet boundary values */
 } CALC_ACTION;
 /*----------------------------------------------------------------------*
  | enum _ASSEMBLE_ACTION                                  m.gee 1/02    |
@@ -747,3 +763,15 @@ typedef enum _TSI_COUPTYP
 } TSI_COUPTYP;
 
 
+/*!----------------------------------------------------------------------
+\brief enum of arterial network dynamic types
+
+<pre>                                                        mah 11/08
+This is the enumeration of all types of different stabilisation schemes
+</pre>
+
+*-----------------------------------------------------------------------*/
+typedef enum _ARTNET_DYNTYPE
+{
+  typ_tay_gal=0
+} _ARTNET_DYNTYPE;

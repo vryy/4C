@@ -304,7 +304,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Structure_Multiscale",
                                  "Low_Mach_Number_Flow",
                                  "Electrochemistry",
-                                 "Combustion"),
+                                 "Combustion",
+                                 "ArterialNetwork"),
                                tuple<PROBLEM_TYP>(
                                  prb_structure,
                                  prb_fluid,
@@ -319,7 +320,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  prb_struct_multi,
                                  prb_loma,
                                  prb_elch,
-                                 prb_combust),
+                                 prb_combust,
+                                 prb_art_net),
                                  &type);
 
   IntParameter("NUMFIELD",1,"",&type);
@@ -1093,7 +1095,23 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("CONVTOL",1e-6,"Tolerance for convergence check",&fdyn);
   DoubleParameter("STEADYTOL",1e-6,"Tolerance for steady state check",&fdyn);
   DoubleParameter("START_THETA",1.0,"Time integraton factor for starting scheme",&fdyn);
+ /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& andyn = list->sublist("ARTERIAL DYNAMIC",false,"");
 
+  setStringToIntegralParameter<int>("ART_TYPE","ExpTaylorGalerkin",
+                               "Explicit Taylor Galerkin Scheme",
+                               tuple<std::string>(
+                                 "ExpTaylorGalerkin"
+                                 ),
+                               tuple<int>(
+                                typ_tay_gal
+                                ),
+                               &andyn);
+
+  DoubleParameter("TIMESTEP",0.01,"Time increment dt",&andyn);
+  IntParameter("NUMSTEP",0,"Number of Time Steps",&andyn);
+  IntParameter("UPRES",1,"Increment for writing solution",&andyn);
+  IntParameter("RESTARTEVRY",1,"Increment for writing restart",&andyn);
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn_stab = fdyn.sublist("STABILIZATION",false,"");
 
@@ -1955,6 +1973,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   Teuchos::ParameterList& scatrapotsolver = list->sublist("SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER",false,"solver parameters for block-preconditioning");
   SetValidSolverParameters(scatrapotsolver);
 
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& artnetsolver = list->sublist("ARTERY NETWORK SOLVER",false,"");
+  SetValidSolverParameters(artnetsolver);
   return list;
 }
 

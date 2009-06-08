@@ -926,6 +926,25 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
+  /*--------------------------------------------------------------------*/
+  // 1D Artery material with constant properties
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_CNST_ART",
+                                            "artery with constant properties",
+                                            INPAR::MAT::m_cnst_art));
+
+    AddNamedReal(m,"VISCOSITY","viscosity of blood");
+    AddNamedReal(m,"DENS","density of blood");
+    AddNamedReal(m,"YOUNG","artery Youngs modulus of elasticity");
+    AddNamedReal(m,"NUE","Poissons ratio of artery fiber");
+    AddNamedReal(m,"DIAM","artery initial diameter");
+    AddNamedReal(m,"TH","artery thickness");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // deliver
   return vm;
 }

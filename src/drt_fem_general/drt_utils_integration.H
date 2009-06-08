@@ -112,7 +112,13 @@ enum GaussRule1D
     intrule_line_2point,           ///< degree of precision: 3  (open)
     intrule_line_3point,           ///< degree of precision: 5  (open)
     intrule_line_4point,           ///< degree of precision: 7  (open)
-    intrule_line_5point            ///< degree of precision: 9  (open)
+    intrule_line_5point,           ///< degree of precision: 9  (open)
+    intrule_line_6point,           ///< degree of precision: 11 (open)
+    intrule_line_7point,           ///< degree of precision: 13 (open)
+    intrule_line_8point,           ///< degree of precision: 15 (open)
+    intrule_line_9point,           ///< degree of precision: 17 (open)
+    intrule_line_10point           ///< degree of precision: 19 (open)
+
 };
 
 /*!

@@ -770,6 +770,7 @@ void DatFileReader::ReadDat()
   exclude.push_back("--STRUCTURE ELEMENTS");
   exclude.push_back("--FLUID ELEMENTS");
   exclude.push_back("--ALE ELEMENTS");
+  exclude.push_back("--ARTERY ELEMENTS");
   exclude.push_back("--TRANSPORT ELEMENTS");
 
   int arraysize = 0;
@@ -1848,6 +1849,7 @@ void ElementReader::Partition()
     ifstream file(inputfile_name.c_str());
     file.seekg(reader_.ExcludedSectionPosition(sectionname_));
 
+
     // loop all element lines
     // Comments in the element section are not supported!
 
@@ -2338,6 +2340,7 @@ std::vector<Teuchos::RCP<DRT::Discretization> > NodeReader::FindDisNode(int node
 /*----------------------------------------------------------------------*/
 void NodeReader::Read()
 {
+  //  cout<<"\n\nAm I even reaching here!!!!!!!!!\n\n";
   const int myrank  = comm_->MyPID();
   const int numproc = comm_->NumProc();
   string inputfile_name = reader_.MyInputfileName();

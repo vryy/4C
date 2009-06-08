@@ -133,6 +133,7 @@ extern "C"
 #include "../drt_mat/elasthyper.H"
 #include "../drt_contact/drt_cnode.H"
 #include "../drt_contact/drt_celement.H"
+#include "../drt_art_net/artery.H"
 #include "drt_dserror.H"
 #include "standardtypes_cpp.H"
 #include "../drt_mat/itskov.H"
@@ -666,6 +667,22 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
     }
     break;
 #endif
+#ifdef D_ARTNET //_1D_ARTERY_
+    case ParObject_Artery:
+    {
+      DRT::ELEMENTS::Artery* object = new DRT::ELEMENTS::Artery(-1,-1);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_ArteryRegister:
+    {
+      DRT::ELEMENTS::ArteryRegister* object = new DRT::ELEMENTS::ArteryRegister(DRT::Element::element_artery);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+#endif
     case ParObject_ElementRegister:
     {
       DRT::ElementRegister* object =
@@ -930,7 +947,8 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     torsion2,
     constrele2,
     constrele3,
-    transport
+    transport,
+    art_ele
   };
 
   TypeofElement type = none;
@@ -968,6 +986,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
   else if (eletype=="CONSTRELE2") type = constrele2;
   else if (eletype=="CONSTRELE3") type = constrele3;
   else if (eletype=="TRANSP") type = transport;
+  else if (eletype=="ART")    type = art_ele;
   // continue to add elements here....
   else
   {
@@ -1221,6 +1240,14 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     {
       RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Transport(id,owner));
       return ele;
+    }
+    break;
+#endif
+#ifdef D_ARTNET
+    case art_ele:
+    {
+       RefCountPtr<DRT::Element> ele =  rcp(new DRT::ELEMENTS::Artery(id,owner));
+       return ele;
     }
     break;
 #endif

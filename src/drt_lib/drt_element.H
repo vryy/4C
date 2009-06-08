@@ -142,7 +142,8 @@ public:
     element_constraintelement2,
     element_constraintelement3,
     element_transport,
-    element_transportboundary
+    element_transportboundary,
+    element_artery             //_1D_ARTERY_
   };
 
   /*!

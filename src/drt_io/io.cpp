@@ -863,6 +863,7 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
 {
 #ifdef BINIO
 
+
   bool write_file = false;
 
   if (step - meshfile_changed_ >= output_->FileSteps() or

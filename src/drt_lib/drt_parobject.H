@@ -169,7 +169,9 @@ using namespace std;
 #define ParObject_Vele3Register         (int)156
 #define ParObject_Vele3Surface          (int)157
 #define ParObject_Vele3Line             (int)158
-
+#define ParObject_ArteryRegister        (int)159
+#define ParObject_Artery                (int)160
+#define ParObject_Cnst_1d_art           (int)161
 
 namespace DRT
 {

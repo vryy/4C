@@ -170,6 +170,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC/STABILIZATION", *list);
   reader.ReadGidSection("--ALE DYNAMIC", *list);
   reader.ReadGidSection("--FSI DYNAMIC", *list);
+  reader.ReadGidSection("--ARTERIAL DYNAMIC", *list);
   reader.ReadGidSection("--XFEM GENERAL", *list);
   reader.ReadGidSection("--LOMA CONTROL", *list);
   reader.ReadGidSection("--ELCH CONTROL", *list);
@@ -193,6 +194,8 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--THERMAL SOLVER", *list);
   reader.ReadGidSection("--SCALAR TRANSPORT SOLVER", *list);
   reader.ReadGidSection("--SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER", *list);
+  reader.ReadGidSection("--ARTERY NETWORK SOLVER", *list);
+
 
   // a special section for condition names that contains a list of key-integer
   // pairs but is not validated since the keys are arbitrary.
@@ -303,6 +306,11 @@ void DRT::Problem::InputControl()
   {
     genprob.numff = 0;  /* fluid field index */
     genprob.numscatra = 1; /* scalar transport field (=G-function) index */
+    break;
+  }
+  case prb_art_net:
+  {
+    genprob.numartf = 0;  /* arterial network field index */
     break;
   }
   default:
@@ -555,7 +563,6 @@ void DRT::Problem::ReadKnots(const DRT::INPUT::DatFileReader& reader)
 {
   // decide which kind of spatial representation is required
   const Teuchos::ParameterList& ptype = ProblemTypeParams();
-
   // get information on the spatial approximation --- we only read knots
   // in the nurbs case
   std::string distype = ptype.get<std::string>("SHAPEFCT");
@@ -567,6 +574,7 @@ void DRT::Problem::ReadKnots(const DRT::INPUT::DatFileReader& reader)
 
   // Iterate through all discretizations and sort the appropiate condition
   // into the correct discretization it applies to
+  
   for (unsigned i=0; i<NumFields(); ++i)
   {
     for (unsigned j=0; j<NumDis(i); ++j)
@@ -631,6 +639,7 @@ void DRT::Problem::OpenControlFile(const Epetra_Comm& comm, std::string inputfil
                                                       genprob.ndim,
                                                       genprob.restart,
                                                       IOParams().get<int>("FILESTEPS")));
+
 }
 
 
@@ -668,6 +677,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
   RCP<DRT::Discretization> scatradis       = null;
   RCP<DRT::Discretization> structdis_macro = null;
   RCP<DRT::Discretization> structdis_micro = null;
+  RCP<DRT::Discretization> arterydis       = null; //_1D_ARTERY_
 
   // decide which kind of spatial representation is required
   const Teuchos::ParameterList& ptype = ProblemTypeParams();
@@ -1013,6 +1023,22 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     break;
   } // end of else if (genprob.probtyp==prb_combust)
 
+  case prb_art_net: // _1D_ARTERY_
+  {
+    // allocate and input general old stuff....
+    if (genprob.numfld!=1) dserror("numfld != 1 for arterial network problem");
+
+    // create empty discretizations
+    arterydis = rcp(new DRT::Discretization("artery",reader.Comm()));
+    AddDis(genprob.numartf, arterydis);
+
+
+    DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS")));
+    nodereader.Read();
+
+    break;
+  } // end of else if (genprob.probtyp==prb_art_net)
   default:
     dserror("Type of problem unknown");
   }
@@ -1055,6 +1081,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::Problem::getValidParameters() co
 /*----------------------------------------------------------------------*/
 RCP<DRT::Discretization> DRT::Problem::Dis(int fieldnum, int disnum) const
 {
+
   return discretizations_[fieldnum][disnum];
 }
 
