@@ -177,8 +177,12 @@ void dyn_fluid_drt()
   // ---------------------------------------------------- lift and drag
   fluidtimeparams.set<int> ("liftdrag", Teuchos::getIntegralValue<int>(fdyn,"LIFTDRAG"));
 
-  // -----------evaluate error for test flows with analytical solutions
+  // -----------define which initial field u(0)=u_0 to use (by explicit 
+  //            function, with random perturbation, etc)
   int init = Teuchos::getIntegralValue<int> (fdyn,"INITIALFIELD");
+
+  // -----------for special initial fields (beltrami), we are able to 
+  //            evaluate the error compared to an analytical solutions
   fluidtimeparams.set ("eval err for analyt sol"   ,init);
 
   // ------------------------------------------ form of convective term
