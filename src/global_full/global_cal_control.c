@@ -368,6 +368,7 @@ case prb_combust:
 #endif
   break;  
 
+#ifdef D_ARTNET
 case prb_art_net:
 #ifndef CCADISCRET
   dserror("arterial network module not available in CCARAT");
@@ -375,6 +376,7 @@ case prb_art_net:
   dyn_art_net_drt(); /* printf("arterial network must be defined\n")*/;
 #endif
   break;
+#endif
 
 default:
   dserror("solution of unknown problemtyp requested");
