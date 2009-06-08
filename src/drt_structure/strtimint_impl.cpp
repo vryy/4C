@@ -78,9 +78,9 @@ STR::TimIntImpl::TimIntImpl
 {
 
   // verify: Old-style convergence check has to be 'vague' to
-  if(Teuchos::getIntegralValue<INPAR::STR::ConvCheck>(sdynparams,"CONV_CHECK")!=INPAR::STR::convcheck_vague)
+  if (Teuchos::getIntegralValue<INPAR::STR::ConvCheck>(sdynparams,"CONV_CHECK") != INPAR::STR::convcheck_vague)
   {
-    if (pressure_!=Teuchos::null)
+    if (pressure_ != Teuchos::null)
       dserror("For new structural time integration and pressure formulation, please choose CONV_CHECK = None");
     else
       ConvertConvCheck(Teuchos::getIntegralValue<INPAR::STR::ConvCheck>(sdynparams,"CONV_CHECK"));      
@@ -90,17 +90,15 @@ STR::TimIntImpl::TimIntImpl
   if ( conman_->HaveConstraint())
   {
     if ( (itertype_ != INPAR::STR::soltech_newtonuzawalin)
-               and (itertype_ != INPAR::STR::soltech_newtonuzawanonlin) )
-    {
+         and (itertype_ != INPAR::STR::soltech_newtonuzawanonlin) )
       dserror("Chosen solution technique %s does not work constrained.",
               INPAR::STR::NonlinSolTechString(itertype_).c_str());
-    }
   }
   else if ( (itertype_ == INPAR::STR::soltech_newtonuzawalin)
             or (itertype_ == INPAR::STR::soltech_newtonuzawanonlin) )
   {
-      dserror("Chosen solution technique %s does only work constrained.",
-              INPAR::STR::NonlinSolTechString(itertype_).c_str());
+    dserror("Chosen solution technique %s does only work constrained.",
+            INPAR::STR::NonlinSolTechString(itertype_).c_str());
   }
 
   // create empty residual force vector
@@ -141,13 +139,15 @@ void STR::TimIntImpl::Predict()
 {
 
   // choose predictor
-  if (pred_ == INPAR::STR::pred_constdis)
+  if ( (pred_ == INPAR::STR::pred_constdis)
+       or (pred_ == INPAR::STR::pred_constdispres) )
   {
     PredictConstDisConsistVelAcc();
     normdisi_ = 1.0e6;
     normpres_ = 1.0e6;
   }
-  else if (pred_ == INPAR::STR::pred_constdisvelacc)
+  else if ( (pred_ == INPAR::STR::pred_constdisvelacc)
+            or (pred_ == INPAR::STR::pred_constdisvelaccpres) )
   {
     PredictConstDisVelAcc();
     normdisi_ = 1.0e6;
@@ -163,9 +163,17 @@ void STR::TimIntImpl::Predict()
     dserror("Trouble in determining predictor %i", pred_);
   }
 
-  // zerofy pressure DOFs
+  // zerofy pressure DOFs and time-derivatives
   if (pressure_ != Teuchos::null)
-    pressure_->InsertCondVector(pressure_->ExtractCondVector(zeros_), disn_);
+  {
+    if ( (pred_ != INPAR::STR::pred_constdispres)
+         and (pred_ != INPAR::STR::pred_constdisvelaccpres) )
+    {
+      pressure_->InsertCondVector(pressure_->ExtractCondVector(zeros_), disn_);
+    }
+    pressure_->InsertCondVector(pressure_->ExtractCondVector(zeros_), veln_);
+    pressure_->InsertCondVector(pressure_->ExtractCondVector(zeros_), accn_);
+  }
 
   // apply Dirichlet BCs
   ApplyDirichletBC(timen_, disn_, veln_, accn_, false);
@@ -445,7 +453,7 @@ void STR::TimIntImpl::ApplyForceStiffContact
     fres_->Scale(-1.0);
     
     // keep a copy of fresm for contact forces / equilibrium check
-    RCP<Epetra_Vector> frescopy= rcp(new Epetra_Vector(*fres_));
+    Teuchos::RCP<Epetra_Vector> frescopy = Teuchos::rcp(new Epetra_Vector(*fres_));
 
     // make contact modifications to lhs and rhs
     contactman_->SetState("displacement",disn_); 
@@ -466,7 +474,7 @@ void STR::TimIntImpl::ApplyForceStiffContact
   return;
 }
 
-
+/*----------------------------------------------------------------------*/
 bool STR::TimIntImpl::Converged()
 {
   // verify: #normcharforce_ has been delivered strictly larger than zero
@@ -677,18 +685,6 @@ void STR::TimIntImpl::NewtonFull()
     // update end-point displacements etc
     UpdateIter(iter_);
 
-#if 0
-    if (pressure_ != Teuchos::null)
-    {
-      Teuchos::RCP<Epetra_Vector> pres = pressure_->ExtractCondVector(disn_);
-      Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector(disn_);
-      double normpres = STR::AUX::CalculateVectorNorm(iternorm_, pres);
-      double normdisp = STR::AUX::CalculateVectorNorm(iternorm_, disp);
-      if (myrank_ == 0)
-        cout << std::scientific << "DispCurr=" << normdisp << " PresCurr=" << normpres;
-    }
-#endif
-
     // compute residual forces #fres_ and stiffness #stiff_
     // whose components are globally oriented
     EvaluateForceStiffResidual();
@@ -712,7 +708,7 @@ void STR::TimIntImpl::NewtonFull()
     if (locsysman_ != Teuchos::null)
       locsysman_->RotateLocalToGlobal(fres_);
 
-
+    // (trivial)
     if (pressure_ != Teuchos::null)
     {
       Teuchos::RCP<Epetra_Vector> pres = pressure_->ExtractCondVector(fres_);
@@ -1436,19 +1432,20 @@ void STR::TimIntImpl::PrepareSystemForNewtonSolve()
   return;
 }
 
+/*----------------------------------------------------------------------*/
 void STR::TimIntImpl::ConvertConvCheck
 (
-    INPAR::STR::ConvCheck convcheck 
+  const INPAR::STR::ConvCheck convcheck 
 )
 {
   if (myrank_ == 0)
   {
     // print a beautiful line made exactly of 80 dashes
-    std::cout << endl << "--------------------------------------------------------------------------------" << endl;
-    std::cout << "WARNING! Duplicated input!"<<endl;
-    std::cout << "For new structural time integration input variable 'CONV_CHECK' should be set to 'None',"<<endl;
-    std::cout << "and convergence check should be defined via 'NORM_DISP', 'NORM_FRES' and 'NORMCOMBI_RESFDISP'. "<<endl;
-    std::cout << "These values will now be overwritten as you can see below! "<<endl<<endl;
+    std::cout << std::endl << "--------------------------------------------------------------------------------" << std::endl;
+    std::cout << "WARNING! Duplicated input!"<<std::endl;
+    std::cout << "For new structural time integration input variable 'CONV_CHECK' should be set to 'None',"<<std::endl;
+    std::cout << "and convergence check should be defined via 'NORM_DISP', 'NORM_FRES' and 'NORMCOMBI_RESFDISP'. "<<std::endl;
+    std::cout << "These values will now be overwritten as you can see below! "<<std::endl<<std::endl;
   }
   
   // conversion
@@ -1460,9 +1457,9 @@ void STR::TimIntImpl::ConvertConvCheck
     combdisifres_ = INPAR::STR::bop_or;
     if (myrank_ == 0)
     {
-      std::cout << "NORM_RESF                Abs"<<endl;
-      std::cout << "NORM_DISP                Abs"<<endl;
-      std::cout << "NORMCOMBI_RESFDISP       Or"<<endl;
+      std::cout << "NORM_RESF                Abs"<<std::endl;
+      std::cout << "NORM_DISP                Abs"<<std::endl;
+      std::cout << "NORMCOMBI_RESFDISP       Or"<<std::endl;
     }
     break;
   case INPAR::STR::convcheck_absres_and_absdis:
@@ -1471,9 +1468,9 @@ void STR::TimIntImpl::ConvertConvCheck
     combdisifres_ = INPAR::STR::bop_and;
     if (myrank_ == 0)
     {
-      std::cout << "NORM_RESF                Abs"<<endl;
-      std::cout << "NORM_DISP                Abs"<<endl;
-      std::cout << "NORMCOMBI_RESFDISP       And"<<endl;
+      std::cout << "NORM_RESF                Abs"<<std::endl;
+      std::cout << "NORM_DISP                Abs"<<std::endl;
+      std::cout << "NORMCOMBI_RESFDISP       And"<<std::endl;
     }
     break;
   case INPAR::STR::convcheck_relres_or_absdis:
@@ -1482,9 +1479,9 @@ void STR::TimIntImpl::ConvertConvCheck
     combdisifres_ = INPAR::STR::bop_or;
     if (myrank_ == 0)
     {
-      std::cout << "NORM_RESF                Rel"<<endl;
-      std::cout << "NORM_DISP                Abs"<<endl;
-      std::cout << "NORMCOMBI_RESFDISP       Or"<<endl;
+      std::cout << "NORM_RESF                Rel"<<std::endl;
+      std::cout << "NORM_DISP                Abs"<<std::endl;
+      std::cout << "NORMCOMBI_RESFDISP       Or"<<std::endl;
     }
     break;
   case INPAR::STR::convcheck_relres_and_absdis:
@@ -1493,9 +1490,9 @@ void STR::TimIntImpl::ConvertConvCheck
     combdisifres_ = INPAR::STR::bop_and;
     if (myrank_ == 0)
     {
-      std::cout << "NORM_RESF                Rel"<<endl;
-      std::cout << "NORM_DISP                Abs"<<endl;
-      std::cout << "NORMCOMBI_RESFDISP       And"<<endl;
+      std::cout << "NORM_RESF                Rel"<<std::endl;
+      std::cout << "NORM_DISP                Abs"<<std::endl;
+      std::cout << "NORMCOMBI_RESFDISP       And"<<std::endl;
     }
     break;
   case INPAR::STR::convcheck_relres_or_reldis:
@@ -1504,9 +1501,9 @@ void STR::TimIntImpl::ConvertConvCheck
     combdisifres_ = INPAR::STR::bop_or;
     if (myrank_ == 0)
     {
-      std::cout << "NORM_RESF                Rel"<<endl;
-      std::cout << "NORM_DISP                Rel"<<endl;
-      std::cout << "NORMCOMBI_RESFDISP       Or"<<endl;
+      std::cout << "NORM_RESF                Rel"<<std::endl;
+      std::cout << "NORM_DISP                Rel"<<std::endl;
+      std::cout << "NORMCOMBI_RESFDISP       Or"<<std::endl;
     }
     break;
   case INPAR::STR::convcheck_relres_and_reldis:
@@ -1515,9 +1512,9 @@ void STR::TimIntImpl::ConvertConvCheck
     combdisifres_ = INPAR::STR::bop_and;
     if (myrank_ == 0)
     {
-      std::cout << "NORM_RESF                Rel"<<endl;
-      std::cout << "NORM_DISP                Rel"<<endl;
-      std::cout << "NORMCOMBI_RESFDISP       And"<<endl;
+      std::cout << "NORM_RESF                Rel"<<std::endl;
+      std::cout << "NORM_DISP                Rel"<<std::endl;
+      std::cout << "NORMCOMBI_RESFDISP       And"<<std::endl;
     }
     break;
   case INPAR::STR::convcheck_mixres_or_mixdis:
@@ -1526,9 +1523,9 @@ void STR::TimIntImpl::ConvertConvCheck
     combdisifres_ = INPAR::STR::bop_or;
     if (myrank_ == 0)
     {
-      std::cout << "NORM_RESF                Mix"<<endl;
-      std::cout << "NORM_DISP                Mix"<<endl;
-      std::cout << "NORMCOMBI_RESFDISP       Or"<<endl;
+      std::cout << "NORM_RESF                Mix"<<std::endl;
+      std::cout << "NORM_DISP                Mix"<<std::endl;
+      std::cout << "NORMCOMBI_RESFDISP       Or"<<std::endl;
     }
     break;
   case INPAR::STR::convcheck_mixres_and_mixdis:
@@ -1537,16 +1534,17 @@ void STR::TimIntImpl::ConvertConvCheck
     combdisifres_ = INPAR::STR::bop_and;
     if (myrank_ == 0)
     {
-      std::cout << "NORM_RESF                Mix"<<endl;
-      std::cout << "NORM_DISP                Mix"<<endl;
-      std::cout << "NORMCOMBI_RESFDISP       And"<<endl;
+      std::cout << "NORM_RESF                Mix"<<std::endl;
+      std::cout << "NORM_DISP                Mix"<<std::endl;
+      std::cout << "NORMCOMBI_RESFDISP       And"<<std::endl;
     }
     break;
   default:
     dserror("Requested convergence check %i cannot (yet) be converted",
             convcheck);
   }
-  std::cout << "--------------------------------------------------------------------------------" << endl << endl;
+  std::cout << "--------------------------------------------------------------------------------"
+            << std::endl << std::endl;
   return;
 }
 

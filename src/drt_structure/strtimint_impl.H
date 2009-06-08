@@ -108,7 +108,12 @@ namespace STR
     //! and its tangent with respect to the current
     //! displacements \f$D_{n+1}\f$
     //!
-    //! The residual #fres_ is determined readily negative
+    //! This is <i>the</i> central method which is different for each
+    //! derived implicit time integrator. The time integrator implementation
+    //! is expected to set members #fres_ and #stiff_.
+    //! The residual #fres_ is expected to follow the <i>same</i> sign 
+    //! convention like its tangent #stiff_, i.e. to use
+    //! Newton--Raphson's method the residual will be scaled by -1.
     virtual void EvaluateForceStiffResidual() = 0;
 
     //! Evaluate forces due to constraints
@@ -213,7 +218,7 @@ namespace STR
     //! DEAR SIRS AND MADAMS, PLEASE PROVIDE REFERENCE
     void UzawaLinearNewtonFull();
 
-    //! Do non-linear CG iteration using NOX
+    //! Do non-linear CG iteration using NOX ?
     //!
     //! \author mwgee (originally) \date 03/07
     void NonlinearCG() { dserror("Not impl."); }
@@ -380,7 +385,7 @@ namespace STR
     //! Update step for surface stress
     void UpdateStepSurfstress()
     {
-      if (surfstressman_ -> HaveSurfStress())  surfstressman_->Update();
+      if (surfstressman_ -> HaveSurfStress()) surfstressman_->Update();
     }
 
     //! Update step for constraints
@@ -417,7 +422,7 @@ namespace STR
     //! \author lw (originally) \date 12/07
     void PrintNewtonIterHeader
     (
-        FILE* ofile  //!< output file handle
+      FILE* ofile  //!< output file handle
     );
 
     //! print statistics of converged Newton-Raphson iteration
@@ -475,7 +480,7 @@ namespace STR
     //! Add residual increment to Lagrange multipliers stored in Constraint manager
     virtual void UpdateIterIncrConstr
     (
-        Teuchos::RCP<Epetra_Vector> lagrincr ///< Lagrange multiplier increment
+      Teuchos::RCP<Epetra_Vector> lagrincr ///< Lagrange multiplier increment
     )
     {
       conman_->UpdateLagrMult(lagrincr);
@@ -572,7 +577,10 @@ namespace STR
     TimIntImpl(const TimIntImpl& old);
     
     //! convert old-style convergence check
-    void ConvertConvCheck(INPAR::STR::ConvCheck convcheck);
+    void ConvertConvCheck
+    (
+      const INPAR::STR::ConvCheck convcheck  //!< integrated (and deprecated) convergence type flag
+    );
 
     //! @name FSI stuff
     //@{
@@ -599,8 +607,7 @@ namespace STR
     enum INPAR::STR::BinaryOp combfrespfres_; //!< binary operator to combine field norms
     enum INPAR::STR::BinaryOp combdisifres_; //!< binary operator to combine displacement and forces
     
-    enum INPAR::STR::VectorNorm iternorm_;  //!< vector norm to
-    //!< check with
+    enum INPAR::STR::VectorNorm iternorm_;  //!< vector norm to check with
     int itermax_;  //!< maximally permitted iterations
     int itermin_;  //!< minimally requested iterations
     bool iterdivercont_;  //!< if TRUE then go on with time integration

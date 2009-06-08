@@ -193,11 +193,15 @@ namespace INPAR
       pred_constdis,  ///< constant displacements
       pred_constdisvelacc,  ///< constant displacements, 
                            ///< velocities and accelerations
-      pred_tangdis  ///< linearised solution obeying DBC displacements via tangent
+      pred_tangdis, ///< linearised solution obeying DBC displacements via tangent
                     ///< D_{n+1}^{<0>} = D_{n} + Ktang_{n,eff}^{-1} . (- Ktang_{n} . (D_{n+1}^{DBC} - D_{n}))
                     ///< This looks hilarious, but remember Ktan_{n,eff}^{-1} is not
                     ///< the inverse of Ktan_{n} due to the application of the
                     ///< Dirichlet BCs (i.e. the reduction to the test space).
+      pred_constdispres,  ///< constant displacements and pressure
+      pred_constdisvelaccpres  ///< constant displacements, 
+                           ///< velocities and accelerations
+                           ///< and pressures
     };
 
     /// Map predictor enum term to string
@@ -219,6 +223,12 @@ namespace INPAR
         break;
       case pred_tangdis :
         return "TangDis";
+        break;
+      case pred_constdispres :
+        return "ConstDisPres";
+        break;
+      case pred_constdisvelaccpres :
+        return "ConstDisVelAccPres";
         break;
       default :
         dserror("Cannot make string for predictor %d", name);

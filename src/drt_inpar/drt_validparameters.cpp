@@ -644,17 +644,21 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::STR::soltech_noxgeneral),
                                &sdyn);
 
-  setStringToIntegralParameter<INPAR::STR::PredEnum>("PREDICT","ConstDis","",
+  setStringToIntegralParameter<INPAR::STR::PredEnum>("PREDICT","ConstDis","predictor to evaluate initial guess for Newton-Raphson method",
                                tuple<std::string>(
                                  "Vague",
                                  "ConstDis",
                                  "ConstDisVelAcc",
-                                 "TangDis"),
+                                 "TangDis",
+                                 "ConstDisPres",
+                                 "ConstDisVelAccPres"),
                                tuple<INPAR::STR::PredEnum>(
                                  INPAR::STR::pred_vague,
                                  INPAR::STR::pred_constdis,
-                                 INPAR::STR::pred_constdisvelacc,
-                                 INPAR::STR::pred_tangdis),
+                                 INPAR::STR::pred_constdisvelacc, 
+                                 INPAR::STR::pred_tangdis,
+                                 INPAR::STR::pred_constdispres,
+                                 INPAR::STR::pred_constdisvelaccpres),
                                &sdyn);
 
   // time adaptivity (old style)

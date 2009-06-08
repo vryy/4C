@@ -190,9 +190,9 @@ STR::TimInt::TimInt
   dofrowmap_ = discret_->DofRowMap();
 
   // Initialize SurfStressManager for handling surface stress conditions due to interfacial phenomena
-  surfstressman_=rcp(new UTILS::SurfStressManager(discret_,
-                                                  sdynparams,
-                                                  DRT::Problem::Instance()->OutputControlFile()->FileName()));
+  surfstressman_ = Teuchos::rcp(new UTILS::SurfStressManager(discret_,
+                                                             sdynparams,
+                                                             DRT::Problem::Instance()->OutputControlFile()->FileName()));
 
   // Check for potential conditions
   {
@@ -323,13 +323,25 @@ void STR::TimInt::DetermineMassDampConsistAccel()
     damp_->Complete();
   }
 
+  // in case of C0 pressure field, we need to get rid of 
+  // pressure equations
+  Teuchos::RCP<LINALG::SparseMatrix> mass = Teuchos::null;
+  if (pressure_ != Teuchos::null)
+  {
+    mass = Teuchos::rcp(new LINALG::SparseMatrix(*mass_,Copy));
+    mass->ApplyDirichlet(*(pressure_->CondMap()));
+  }
+  else
+  {
+    mass = mass_;
+  }
+
   // calculate consistent initial accelerations
   // WE MISS:
   //   - surface stress forces
   //   - potential forces
   {
-    Teuchos::RCP<Epetra_Vector> rhs
-      = LINALG::CreateVector(*dofrowmap_, true);
+    Teuchos::RCP<Epetra_Vector> rhs = LINALG::CreateVector(*dofrowmap_, true);
     if (damping_ == INPAR::STR::damp_rayleigh)
     {
       damp_->Multiply(false, (*vel_)[0], *rhs);
@@ -337,7 +349,9 @@ void STR::TimInt::DetermineMassDampConsistAccel()
     rhs->Update(-1.0, *fint, 1.0, *fext, -1.0);
     // blank RHS on DBC DOFs
     dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), rhs);
-    solver_->Solve(mass_->EpetraMatrix(), (*acc_)(0), rhs, true, true);
+    if (pressure_ != Teuchos::null)
+      pressure_->InsertCondVector(pressure_->ExtractCondVector(zeros_), rhs);
+    solver_->Solve(mass->EpetraMatrix(), (*acc_)(0), rhs, true, true);
   }
 
   // We need to reset the stiffness matrix because its graph (topology)
