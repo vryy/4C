@@ -414,6 +414,9 @@ namespace STR
 
     //! Read and set restart values for constraints
     void ReadRestartConstraint();
+    
+    //! Read and set restart values for contact
+    void ReadRestartContact();
 
     //! Read and set restart values for surface stresses
     void ReadRestartSurfstress();
@@ -541,6 +544,9 @@ namespace STR
 
     //! potential conditions
     Teuchos::RCP<POTENTIAL::PotentialManager>   potman_;
+    
+    //! contact
+    Teuchos::RCP<CONTACT::Manager>   contactman_;
 
     //! Dirichlet BCs with local co-ordinate system
     Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;

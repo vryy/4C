@@ -135,6 +135,9 @@ void STR::TimIntStatics::EvaluateForceStiffResidual()
   // i.e. do nothing here
   stiff_->Complete();  // close stiffness matrix
 
+  // apply forces and stiffness due to contact
+  ApplyForceStiffContact(stiff_,fres_);
+    
   // hallelujah
   return;
 }
@@ -268,6 +271,9 @@ void STR::TimIntStatics::UpdateStepState()
 
   // update constraints
   UpdateStepConstraint();
+  
+  // update contact
+  UpdateStepContact();
 
   // look out
   return;

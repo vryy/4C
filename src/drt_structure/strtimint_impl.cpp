@@ -431,6 +431,41 @@ void STR::TimIntImpl::ApplyForceStiffConstraint
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/* evaluate forces / stiffness due to contact */
+void STR::TimIntImpl::ApplyForceStiffContact
+(
+  Teuchos::RCP<LINALG::SparseMatrix>& stiff,
+  Teuchos::RCP<Epetra_Vector>& fint
+)
+{
+  if (contactman_ != Teuchos::null)
+  {
+    // contact modifications need -fres
+    fres_->Scale(-1.0);
+    
+    // keep a copy of fresm for contact forces / equilibrium check
+    RCP<Epetra_Vector> frescopy= rcp(new Epetra_Vector(*fres_));
+
+    // make contact modifications to lhs and rhs
+    contactman_->SetState("displacement",disn_); 
+    contactman_->InitializeMortar();
+    contactman_->EvaluateMortar();
+    contactman_->UpdateActiveSetSemiSmooth();
+    contactman_->Initialize();
+    contactman_->Evaluate(stiff_,fres_);
+
+    // evaluate contact forces
+    contactman_->ContactForces(frescopy);
+    
+    // scaling back
+    fres_->Scale(-1.0);
+  }
+
+  // wotcha
+  return;
+}
+
 
 bool STR::TimIntImpl::Converged()
 {
@@ -491,6 +526,13 @@ bool STR::TimIntImpl::Converged()
     cc = normcon_ < tolcon_;
   }
   
+  // check contact (active set)
+  bool ccontact = true;
+  if (contactman_!=Teuchos::null)
+  {
+    ccontact = contactman_->ActiveSetConverged();
+  }
+  
   //pressure related stuff
   if (pressure_ != Teuchos::null)
   {
@@ -546,7 +588,7 @@ bool STR::TimIntImpl::Converged()
 
   
   // return things
-  return (conv and cc);
+  return (conv and cc and ccontact);
 }
 
 /*----------------------------------------------------------------------*/
@@ -628,6 +670,10 @@ void STR::TimIntImpl::NewtonFull()
     solver_->Solve(stiff_->EpetraMatrix(), disi_, fres_, true, iter_==1);
     solver_->ResetTolerance();
 
+    // recover contact Lagrange multipliers
+    if (contactman_ != Teuchos::null)
+      contactman_->Recover(disi_);
+    
     // update end-point displacements etc
     UpdateIter(iter_);
 
@@ -1258,6 +1304,10 @@ void STR::TimIntImpl::PrintNewtonConv()
 /* print step summary */
 void STR::TimIntImpl::PrintStep()
 {
+  // print active contact set
+  if (contactman_ != Teuchos::null)
+    contactman_->PrintActiveSet();
+    
   // print out (only on master CPU)
   if ( (myrank_ == 0) and printscreen_ )
   {

@@ -298,6 +298,9 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual()
   }
   stiff_->Complete();  // close stiffness matrix
 
+  // apply forces and stiffness due to contact
+  ApplyForceStiffContact(stiff_,fres_);
+  
   // hallelujah
   return;
 }
@@ -512,6 +515,9 @@ void STR::TimIntGenAlpha::UpdateStepState()
 
   // update constraints
   UpdateStepConstraint();
+
+  // update contact
+  UpdateStepContact();
 
   // look out
   return;

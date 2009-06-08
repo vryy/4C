@@ -147,6 +147,13 @@ namespace STR
       Teuchos::RCP<LINALG::SparseMatrix>& stiff  //!< stiffness
     );
 
+    //! Evaluate forces / stiffness due to contact
+    void ApplyForceStiffContact
+    (
+      Teuchos::RCP<LINALG::SparseMatrix>& stiff,  //!< stiffness is modified
+      Teuchos::RCP<Epetra_Vector>& fres  //!< residual forces are modified
+    );
+        
     //@}
 
     //! @name Solution
@@ -381,7 +388,13 @@ namespace STR
     {
       if (conman_ -> HaveConstraint()) conman_->Update();
     }
-
+    
+    //! Update step for contact
+    void UpdateStepContact()
+    {
+      if (contactman_ != Teuchos::null) contactman_->Update(stepn_);
+    }
+        
     //! @name Output
     //@{
 
