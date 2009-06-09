@@ -133,6 +133,8 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
     }
     case store_xfem_info:
     {
+      // after this part the element can answer, how many DOFs it has
+      
       output_mode_ = false;
       
       // store pointer to interface handle
