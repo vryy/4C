@@ -154,7 +154,7 @@ private:
   /// number of modified ANS strains (E_rt,E_st,E_tt), here 3
   static const int NUMANS_ = 3;
 
-  /// Voigt index arrays
+  // Voigt index arrays
   static const int VOIGT6ROW_[];  ///< 6-Voigt row index of corresponding 2-tensor
   static const int VOIGT6COL_[];  ///< 6-Voigt column index of corresponding 2-tensor
   static const int VOIGT9ROW_[];  ///< 9-Voigt row index of corresponding 2-tensor
@@ -164,7 +164,7 @@ private:
   static const int VOIGT3X3SYM_[]; ///< go from symmtric 2-tensor index pair to 6-Voigt index
                                    ///< by [NUMDIM_*i+j] for any i,j=0,1,2
 
-  /// Ordering of element displacement and pressure DOFs
+  // Ordering of element displacement and pressure DOFs
   static const int DISPTODISPPRES_[];  ///< 24 displacement into 32 total DOFs
   static const int PRESTODISPPRES_[];  ///< 8 pressures into 32 total DOFs
 
@@ -481,13 +481,10 @@ private:
   ///   \begin{array}{rl}
   ///      \dfrac{\partial (C^{-1})^{CD}}{\partial C_{EF} \, \partial C_{GH}}
   ///      = \frac{1}{4} \Big(
-  ///    & \big( (C^{-1})^{CG}(C^{-1})^{HE} + (C^{-1})^{CH}(C^{-1})^{GE} \big)(C^{-1})^{FD}
-  ///    \\
-  ///    &  + (C^{-1})^{CE}\big( (C^{-1})^{FG}(C^{-1})^{HD} + (C^{-1})^{FH}(C^{-1})^{GD} \big)
-  ///    \\
-  ///    &  + \big( (C^{-1})^{CG}(C^{-1})^{HF} + (C^{-1})^{CH}(C^{-1})^{GF} \big)(C^{-1})^{ED}
-  ///    \\
-  ///    &  + (C^{-1})^{CF}\big( (C^{-1})^{EG}(C^{-1})^{HD} + (C^{-1})^{EH}(C^{-1})^{GD} \big)
+  ///       & \big( (C^{-1})^{CG}(C^{-1})^{HE} + (C^{-1})^{CH}(C^{-1})^{GE} \big)(C^{-1})^{FD}
+  ///    \\ &  + (C^{-1})^{CE}\big( (C^{-1})^{FG}(C^{-1})^{HD} + (C^{-1})^{FH}(C^{-1})^{GD} \big)
+  ///    \\ &  + \big( (C^{-1})^{CG}(C^{-1})^{HF} + (C^{-1})^{CH}(C^{-1})^{GF} \big)(C^{-1})^{ED}
+  ///    \\ &  + (C^{-1})^{CF}\big( (C^{-1})^{EG}(C^{-1})^{HD} + (C^{-1})^{EH}(C^{-1})^{GD} \big)
   ///       \Big)
   ///   \end{array}
   ///\f]
@@ -531,10 +528,11 @@ private:
   /// \begin{array}{rl}
   ///    \dfrac{\partial (U_{EA} U_{AF})}{\partial U_{GH}\, \partial U_{IJ}}
   ///    = \frac{1}{4}\Big(
-  /// &  \delta_E{}^G\delta^{HI}\delta_F{}^J+\delta_F{}^H\delta_E{}^I\delta^{GJ}
+  /// &  
+  ///    \delta_E{}^G\delta^{HI}\delta_F{}^J+\delta_F{}^H\delta_E{}^I\delta^{GJ}
   ///    +\delta_E{}^G\delta^{HJ}\delta_F{}^I+\delta_F{}^H\delta_E{}^J\delta^{GI}
-  /// \\
-  /// &  +\delta_E{}^H\delta^{GI}\delta_F{}^J+\delta_F{}^G\delta_E{}^I\delta^{HJ}
+  /// \\ &  
+  ///    +\delta_E{}^H\delta^{GI}\delta_F{}^J+\delta_F{}^G\delta_E{}^I\delta^{HJ}
   ///    +\delta_E{}^H\delta^{GJ}\delta_F{}^I+\delta_F{}^G\delta_E{}^J\delta^{HI}
   ///     \Big)
   /// \end{array}
