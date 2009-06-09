@@ -94,6 +94,7 @@ namespace INPAR
       mes_volsussmanbathe,  ///< volumetric SussmanBathe hyperelastic potential summand
       mes_vologden,  ///< Ogden volumetric part of the  hyperelastic potential summand
       mes_coupanisoexpotwo,  ///< anisotropic potential summand
+      mes_coupanisoneohooketwo,  ///< anisotropic potential summand
       m_cnst_art,            ///< 1D_Artery constant material properties
       m_none          ///< undefined
     };

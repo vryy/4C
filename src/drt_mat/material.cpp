@@ -271,6 +271,7 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
   case INPAR::MAT::mes_volsussmanbathe:
   case INPAR::MAT::mes_vologden:
   case INPAR::MAT::mes_coupanisoexpotwo:
+  case INPAR::MAT::mes_coupanisoneohooketwo:
   {
     return Teuchos::null;
   }

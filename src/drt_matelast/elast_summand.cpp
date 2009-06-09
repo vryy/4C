@@ -27,6 +27,7 @@ Maintainer: Burkhard Bornemann
 #include "elast_volsussmanbathe.H"
 #include "elast_vologden.H"
 #include "elast_coupanisoexpotwo.H"
+#include "elast_coupanisoneohooketwo.H"
 
 
 /*----------------------------------------------------------------------*
@@ -103,6 +104,13 @@ Teuchos::RCP<MAT::ELAST::Summand> MAT::ELAST::Summand::Factory(int matnum)
       curmat->SetParameter(new MAT::ELAST::PAR::CoupAnisoExpoTwo(curmat));
     MAT::ELAST::PAR::CoupAnisoExpoTwo* params = static_cast<MAT::ELAST::PAR::CoupAnisoExpoTwo*>(curmat->Parameter());
     return Teuchos::rcp(new CoupAnisoExpoTwo(params));
+  }
+  case INPAR::MAT::mes_coupanisoneohooketwo:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELAST::PAR::CoupAnisoNeoHookeTwo(curmat));
+    MAT::ELAST::PAR::CoupAnisoNeoHookeTwo* params = static_cast<MAT::ELAST::PAR::CoupAnisoNeoHookeTwo*>(curmat->Parameter());
+    return Teuchos::rcp(new CoupAnisoNeoHookeTwo(params));
   }
   default:
     dserror("cannot deal with type %d", curmat->Type());

@@ -925,6 +925,20 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
 
+  /*--------------------------------------------------------------------*/
+  // coupled anisotropic material with two exponential fiber families
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_CoupAnisoNeoHookeTwo",
+                                            "anisotropic part with two neo Hookean fibers",
+                                            INPAR::MAT::mes_coupanisoneohooketwo));
+
+    AddNamedReal(m,"C1","linear constant fiber 1");
+    AddNamedReal(m,"C2","linear constant fiber 2");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
   /*----------------------------------------------------------------------*/
   /*--------------------------------------------------------------------*/
   // 1D Artery material with constant properties
