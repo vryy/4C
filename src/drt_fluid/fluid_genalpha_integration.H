@@ -647,10 +647,10 @@ public:
   Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape(std::string condname);
 
   /// switch fluid field to block matrix
-  void UseBlockMatrix(Teuchos::RCP<std::set<int> > condelements,
-                      const LINALG::MultiMapExtractor& domainmaps,
-                      const LINALG::MultiMapExtractor& rangemaps,
-                      bool splitmatrix);
+  void UseBlockMatrix(Teuchos::RCP<std::set<int> >     condelements,
+                      const LINALG::MultiMapExtractor& domainmaps  ,
+                      const LINALG::MultiMapExtractor& rangemaps   ,
+                      bool                             splitmatrix);
 
   /// linear solve with prescribed dirichlet conditions and without history
   /*!
@@ -687,80 +687,80 @@ private:
   Teuchos::RCP<Epetra_Vector> c_;
 
   //! parameterlist including time params, stabilization params and turbulence sublist
-  ParameterList&            params_ ;
+  ParameterList&              params_ ;
   //! io writer/reader
-  IO::DiscretizationWriter& output_ ;
+  IO::DiscretizationWriter&   output_ ;
   //! decides whether we use an Eulerian or an ALE formulation
-  bool                      alefluid_;
+  bool                        alefluid_;
   //@}
 
   //! the dimension of the problem --- determines which dofs
   //are pressure dofs
-  int                       numdim_ ;
+  int                         numdim_ ;
 
   //! parallelism --- my processor id
-  int                       myrank_ ;
+  int                         myrank_ ;
 
   //! fluid density
-  double                    density_;
+  double                      density_;
 
   //! @name time integration parameters
   //
   //! max. number of time steps
-  int                       endstep_;
+  int                         endstep_;
   //! max. simulation time
-  double                    endtime_;
+  double                      endtime_;
   //! current time
-  double                    time_;
+  double                      time_;
   //! current time step
-  int                       step_;
+  int                         step_;
   //! current time step size
-  double                    dt_;
+  double                      dt_;
 
   //! parameter for generalised alpha --- alpha "momentum"
-  double                    alphaM_;
+  double                      alphaM_;
   //! parameter for generalised alpha --- alpha "force"
-  double                    alphaF_;
+  double                      alphaF_;
   //! parameter for generalised alpha --- computed from the latter
   //in order to achieve 2nd order accuracy
-  double                    gamma_;
+  double                      gamma_;
   //@}
 
   //! @name parameters for nonlinear iteration
   //
   //! parameter for linearisation
-  string                    newton_;
+  string                      newton_;
 
   //! predictor used in nonlinear iteration
-  string                    predictor_;
+  string                      predictor_;
 
   //! in the case of a constant incremnt predictor we need velnm. This bool 
   //! indicates whether it has been computed before or whether we need a
   //! different start predictor
-  bool                      velnm_available_;
+  bool                        velnm_available_;
 
   //! parameters governing the nonlinear iteration --- iteration counter
-  int                       itenum_      ;
+  int                         itenum_      ;
   //! parameters governing the nonlinear iteration --- upper bound for
   //! number of nonlinear iterations
-  int                       itemax_      ;
+  int                         itemax_      ;
   //! parameters governing the nonlinear iteration --- convergence criterion
-  double                    ittol_       ;
+  double                      ittol_       ;
 
   // these variables are storing error norms
   //! L2 error norm --- residual associated with pressure dofs, scaled by density
-  double                    L2preresnorm_;
+  double                      L2preresnorm_;
   //! L2 error norm --- residual associated with acceleration dofs, scaled by density
-  double                    L2velresnorm_;
+  double                      L2velresnorm_;
   //! L2 error norm --- normalized increment in iteration step (velocity dofs)
-  double                    L2incvelnorm_;
+  double                      L2incvelnorm_;
   //! L2 error norm --- normalized increment in iteration step (pressure dofs)
-  double                    L2incprenorm_;
+  double                      L2incprenorm_;
 
   //! skip the last element call (computation of residual) if
   //!  itemax_ is reached in order to get some speedup for turbulence
   //!  calculations
-  bool                      skiplastelecall_;
+  bool                        skiplastelecall_;
   //@}
 
   //! @name IO features
@@ -769,23 +769,23 @@ private:
   // the counter used for this purpose
 
   //! write restart every uprestart_ steps
-  int                       uprestart_;
+  int                         uprestart_;
   //! write result every upres_ steps
-  int                       upres_;
+  int                         upres_;
   //! compute and write traction vector
-  int                       writestresses_;
+  int                         writestresses_;
 
   //! @name Turbulence statistics evaluation
 
   //! parameters for sampling/dumping period
-  int samstart_;
+  int                         samstart_;
 
   //! flag for special flow: currently channel flow, flow in
   //! a lid-driven cavity and flow around a square cylinder
-  string special_flow_;
+  string                      special_flow_;
 
   //! flag for potential Neumann-type outflow stabilization
-  string outflow_stab_;
+  string                      outflow_stab_;
 
   //! manager for turbulence statistics
   RCP<TurbulenceStatisticManager> statisticsmanager_;
@@ -921,7 +921,7 @@ private:
   //        -------------------------
 
   //! one instance of the filter object
-  RCP<DynSmagFilter>          DynSmag_;
+  RCP<DynSmagFilter>                      DynSmag_;
 
   //@}
 

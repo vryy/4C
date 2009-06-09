@@ -1904,9 +1904,9 @@ void FLD::FluidGenAlphaIntegration::ReadRestart(int step)
 
   if (alefluid_)
   {
-       reader.ReadVector(dispnp_  ,"dispnp"  );
-       reader.ReadVector(dispn_   ,"dispn"   );
-       reader.ReadVector(gridveln_,"gridveln");
+    reader.ReadVector(dispnp_  ,"dispnp"  );
+    reader.ReadVector(dispn_   ,"dispn"   );
+    reader.ReadVector(gridveln_,"gridveln");
   }
 
   // read the previously written elements including the history data
@@ -2930,10 +2930,10 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidGenAlphaIntegration::IntegrateInterfaceSha
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::FluidGenAlphaIntegration::UseBlockMatrix(Teuchos::RCP<std::set<int> > condelements,
-                                                   const LINALG::MultiMapExtractor& domainmaps,
-                                                   const LINALG::MultiMapExtractor& rangemaps,
-                                                   bool splitmatrix)
+void FLD::FluidGenAlphaIntegration::UseBlockMatrix(Teuchos::RCP<std::set<int> >     condelements,
+                                                   const LINALG::MultiMapExtractor& domainmaps  ,
+                                                   const LINALG::MultiMapExtractor& rangemaps   ,
+                                                   bool                             splitmatrix )
 {
   if (splitmatrix)
   {
@@ -2942,6 +2942,8 @@ void FLD::FluidGenAlphaIntegration::UseBlockMatrix(Teuchos::RCP<std::set<int> > 
     mat->SetCondElements(condelements);
     sysmat_ = mat;
   }
+
+  return;
 }
 
 
@@ -2966,6 +2968,7 @@ void FLD::FluidGenAlphaIntegration::AddDirichCond(const Teuchos::RCP<const Epetr
   condmaps.push_back(dbcmaps_->CondMap());
   Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
   *dbcmaps_ = LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged);
+
   return;
 }
 
