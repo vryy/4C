@@ -87,6 +87,34 @@ void LINALG::MultiMapExtractor::Setup(const Epetra_Map& fullmap, const std::vect
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void LINALG::MultiMapExtractor::CheckForValidMapExtractor() const
+{
+  if (maps_.size()==0)
+  {
+    dserror("no maps_ available");
+  }
+
+  for (unsigned i=0; i<maps_.size(); ++i)
+  {
+    if (maps_[i]!=Teuchos::null)
+    {
+      if(maps_[i]->DataPtr()==NULL)
+      {
+        dserror("Got zero data pointer on setup of block %d of maps_\n",i);
+      }
+      if (not maps_[i]->UniqueGIDs())
+      {
+        dserror("map %d not unique", i);
+      }
+    }
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> LINALG::MultiMapExtractor::MergeMaps(const std::vector<Teuchos::RCP<const Epetra_Map> >& maps)
 {
   if (maps.size()==0)
