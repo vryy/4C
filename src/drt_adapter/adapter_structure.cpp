@@ -373,8 +373,10 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
          or (coupling == fsi_iter_monolithiclagrange)
          or (coupling == fsi_iter_monolithicstructuresplit) )
     {
-      if (Teuchos::getIntegralValue<INPAR::STR::PredEnum>(*sdyn,"PREDICT")
-          != INPAR::STR::pred_constdisvelacc)
+      if ((Teuchos::getIntegralValue<INPAR::STR::PredEnum>(*sdyn,"PREDICT")
+          != INPAR::STR::pred_constdisvelacc) and 
+          (Teuchos::getIntegralValue<INPAR::STR::PredEnum>(*sdyn,"PREDICT")
+          != INPAR::STR::pred_constdisvelaccpres))
       {
         dserror("only constant structure predictor with monolithic FSI possible");
       }
