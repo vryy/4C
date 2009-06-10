@@ -147,7 +147,15 @@ void MAT::CHARMM::Setup(DRT::Container& data_) {
     }
     data_.Add("his_charmm", his_charmm);
 
-    vector<double> his_mat(1);
+    // position 1: c1 for material computation
+    // position 2: energy at lambda = 0
+    // position 3: # of atoms at lambda = 0
+    // position 4: volume at lambda = 0
+    vector<double> his_mat(4);
+    his_mat.push_back(0.0);
+    his_mat.push_back(0.0);
+    his_mat.push_back(0.0);
+    his_mat.push_back(0.0);
     data_.Add("his_mat", his_mat); // material property from CHARMm
 
     return;
@@ -173,7 +181,11 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
     //////////////////////////////////////////////////////////////////////////
     // Parameter collection
     // evaluate lamda at origin or at gp
-    bool origin = Origin(); // change only of xref and xcurr really working!!!!
+    const bool origin = Origin(); // change only of xref and xcurr really working!!!!
+    // How to treat the energy difference from MD
+    // energy = store : store energy in element
+    // energy = diff : use the difference between current strain and last strain
+    const string energy = "store";
     // length of the protein in the main pulling direction [A]
     vector<double> characteristic_length(2);
     // Integrin length !!!!
@@ -213,15 +225,15 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
     ds.push_back(ds_2);
     // Use FCD to compute the acceleration in that direction to compute the
     // pulling force in CHARMm
-    bool FCD_Acceleration = FCDAcc();
-    double atomic_mass = AtomicMass(); // 18.2354; // amu; water
-    double Facc_scale = FaccScale(); // 1E26;
+    const bool FCD_Acceleration = FCDAcc();
+    const double atomic_mass = AtomicMass(); // 18.2354; // amu; water
+    const double Facc_scale = FaccScale(); // 1E26;
     // The basic coupling over the timescales; must be scaled to AKMA
-    bool movetime = true;
-    double time_to_AKMA = TimeAKMA();
-    double time_scale = TimeScale();
+    const bool movetime = true;
+    const double time_to_AKMA = TimeAKMA();
+    const double time_scale = TimeScale();
     // Use the hard coded charmm results (charmmfakeapi == true) or call charmm really (charmmfakeapi == false)
-    bool charmmhard = HARD();
+    const bool charmmhard = HARD();
     // Scale factor (by default c_CHARMm will be in N/m^2. This should be revised)
     const double c_scale = CScale(); //1E-9;
     //////////////////////////////////////////////////////////////////////////
@@ -405,36 +417,67 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
 	    }
 	}
 
-	// Calculate new c (Neo-Hooke) parameter
-	// c = E_FE / (I1 - 3) [N/m^2]
-	// E_FE = E_MD * 1000 * 4.1868 * ( #Atoms / N_a )
-	double E_MD = charmm_result[1] - charmm_result[0]; // kcal/mole
-	double Volume = (charmm_result[4]) * 1E-30; // A^3 *  (10^-10)^3
-	//double Volume = 1 * 1E-27; // nm^3 *  (10^-9)^3
-	double noAtoms = charmm_result[3];
-	double I1_lastt = (*his)[9];
-	double c;
-        if (I1 != I1_lastt) {
-            c = (1 / (I1 - I1_lastt)) * (1 / Volume) * E_MD * 1000 * 4.1868 * (noAtoms / 6.02214E23);
-            //c = (1 / (I1 - I1_lastt)) * (1 / Volume) * E_MD * 1000 * 4.1868 * ( 1 / 6.02214E23);
-        } else { c = 0.0; }
-        
-	if (isnan(c)) c = 0;
-	if (isinf(c)) c = 0;
-	// c is in N/m^2 -> scaling necessary
-	c = c_scale * c;
-	//c = 1E-10 * c;
-	vector<double>* his_mat;
-	his_mat = data_.GetMutable<vector<double> >("his_mat");
-	if (FCD_STARTD != FCD_ENDD) {
-	    if (I1_lastt == 3) (*his_mat)[0] = c;
-	    else (*his_mat)[0] = c * ((I1 - I1_lastt) / (I1 - 3));
-            cout << "c = " << (*his_mat)[0] << " I1_lastt = " << I1_lastt << " I1 = " << I1<<  endl
-	    << "-------------------------------------------------------" << endl;
-	} else {
-	    (*his_mat)[0] = 0.0;
-	}
+        vector<double>* his_mat;
+        his_mat = data_.GetMutable<vector<double> >("his_mat");
+        double I1_lastt = (*his)[9];
+        if (FCD_STARTD == 0.0) (*his_mat)[1] = charmm_result[0];
+        if (energy.compare("diff") == 0) {
+            // Calculate new c (Neo-Hooke) parameter
+            // c = E_FE / (I1(t_n) - I1(t_n-1)) [N/m^2]
+            // E_FE = (E_MD(t_n) - E_MD(t_n-1)) * 1000 * 4.1868 * ( #Atoms / N_a )
+            double E_MD = charmm_result[1] - charmm_result[0]; // kcal/mole
+            double Volume = 0.5 * (charmm_result[4] + charmm_result[5]) * 1E-30; // A^3 *  (10^-10)^3
+            double noAtoms = 0.5 * (charmm_result[3] + charmm_result[2]);
+            
+            double c;
+            if (I1 != I1_lastt) {
+                c = (1 / (I1 - I1_lastt)) * (1 / Volume) * E_MD * 1000 * 4.1868 * (noAtoms / 6.02214E23);
+                //c = (1 / (I1 - 3)) * (1 / Volume) * E_MD * 1000 * 4.1868 * (noAtoms / 6.02214E23);
+            } else { c = 0.0; }
 
+            if (isnan(c)) c = 0;
+            if (isinf(c)) c = 0;
+            c = c_scale * c;
+            
+            if (FCD_STARTD != FCD_ENDD) {
+                if (I1_lastt == 3) (*his_mat)[0] = c;
+                else (*his_mat)[0] = c * ((I1 - I1_lastt) / (I1 - 3));
+            } else {
+                (*his_mat)[0] = 0.0;
+            }
+            
+        } else if (energy.compare("store") == 0) {
+            // Calculate new c (Neo-Hooke) parameter
+            // c = E_FE / (I1(t_n) - 3) [N/m^2]
+            // E_FE = (E_MD(t_n) - E_MD(t_0)) * 1000 * 4.1868 * ( #Atoms / N_a )
+
+            if (FCD_STARTD == 0.0 || (*his_mat)[1] > charmm_result[0]) {
+                (*his_mat)[1] = charmm_result[0]; // energy
+                (*his_mat)[2] = charmm_result[2]; // noAtoms
+                (*his_mat)[3] = charmm_result[4]; // volume
+            }
+            double E_MD = charmm_result[1] - (*his_mat)[1]; // kcal/mole
+            double noAtoms = 0.5 * (charmm_result[3] + (*his_mat)[2]);
+            double Volume = 0.5 * ( (*his_mat)[3] + charmm_result[5]) * 1E-30; // A^3 *  (10^-10)^3
+
+            double c;
+            if (I1 != I1_lastt) {
+                c = (1 / (I1 - 3)) * (1 / Volume) * E_MD * 1000 * 4.1868 * (noAtoms / 6.02214E23);
+            } else { c = 0.0; }
+
+            if (isnan(c)) c = 0;
+            if (isinf(c)) c = 0;
+            c = c_scale * c;
+
+            if (FCD_STARTD != FCD_ENDD) {
+                (*his_mat)[0] = c;
+            } else {
+                (*his_mat)[0] = 0.0;
+            }
+        
+        }
+        if (FCD_STARTD != FCD_ENDD) cout << "ACE: c = " << (*his_mat)[0] << " I1(t_n-1) = " << I1_lastt << " I1(t_n) = " << I1<<  endl;
+        
 	//cout << "MD Result: " << charmm_result[0] << ":" << charmm_result[1] << " " 
 	//        << ( charmm_result[1] - charmm_result[0]) << " " 
 	//        << charmm_result[5] << endl;
