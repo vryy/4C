@@ -38,6 +38,18 @@ namespace FSI
   public:
     explicit PartitionedMonolithic(Epetra_Comm& comm);
 
+    /*! do the setup for the monolithic system
+
+    <pre>
+
+    1.) setup coupling; right now, we use matching meshes at the interface
+    2.) create combined map
+
+    </pre>
+
+    */
+    virtual void SetupSystem();
+
     virtual void SetupRHS(Epetra_Vector&, bool);
 
     virtual void SetupSystemMatrix() {}

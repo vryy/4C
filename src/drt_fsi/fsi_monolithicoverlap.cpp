@@ -15,6 +15,13 @@
 FSI::MonolithicOverlap::MonolithicOverlap(Epetra_Comm& comm)
   : BlockMonolithic(comm)
 {
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::MonolithicOverlap::SetupSystem()
+{
+
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
   linearsolverstrategy_ = Teuchos::getIntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
 

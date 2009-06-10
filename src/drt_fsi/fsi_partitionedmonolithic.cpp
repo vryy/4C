@@ -11,6 +11,12 @@
 FSI::PartitionedMonolithic::PartitionedMonolithic(Epetra_Comm& comm)
   : Monolithic(comm)
 {
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::PartitionedMonolithic::SetupSystem()
+{
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
   linearsolverstrategy_ = Teuchos::getIntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
 
@@ -82,7 +88,6 @@ FSI::PartitionedMonolithic::PartitionedMonolithic(Epetra_Comm& comm)
   // build ale system matrix in splitted system
   AleField().BuildSystemMatrix(true);
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

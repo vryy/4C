@@ -61,8 +61,8 @@ FSI::MonolithicBase::~MonolithicBase()
 void FSI::MonolithicBase::ReadRestart(int step)
 {
   StructureField().ReadRestart(step);
-  FluidField().ReadRestart(step);
-  AleField().ReadRestart(step);
+  FluidField()    .ReadRestart(step);
+  AleField()      .ReadRestart(step);
 
   time_ = FluidField().Time();
   step_ = FluidField().Step();
@@ -219,6 +219,9 @@ FSI::Monolithic::Monolithic(Epetra_Comm& comm)
 /*----------------------------------------------------------------------*/
 void FSI::Monolithic::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface)
 {
+  // make sure we didn't destroy the maps before we entered the timeloop
+  Extractor().CheckForValidMapExtractor();
+
   // Get the top level parameter list
   Teuchos::ParameterList& nlParams = NOXParameterList();
 

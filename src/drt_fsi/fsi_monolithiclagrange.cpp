@@ -13,6 +13,11 @@
 FSI::MonolithicLagrange::MonolithicLagrange(Epetra_Comm& comm)
   : BlockMonolithic(comm)
 {
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::MonolithicLagrange::SetupSystem()
+{
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
 
   SetDefaultParameters(fsidyn,NOXParameterList());
@@ -115,7 +120,6 @@ FSI::MonolithicLagrange::MonolithicLagrange(Epetra_Comm& comm)
                                *StructureField().DofRowMap(),
                                *FluidField().DofRowMap());
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

@@ -204,29 +204,41 @@ void fsi_ale_drt()
 
     INPAR::FSI::LinearBlockSolver linearsolverstrategy = Teuchos::getIntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
 
+    // call constructor to initialise the base class
     if (linearsolverstrategy==INPAR::FSI::PartitionedAitken or
         linearsolverstrategy==INPAR::FSI::PartitionedVectorExtrapolation or
         linearsolverstrategy==INPAR::FSI::PartitionedJacobianFreeNewtonKrylov)
+    {
       fsi = Teuchos::rcp(new FSI::PartitionedMonolithic(comm));
-
+    }
     else if (coupling==fsi_iter_monolithic)
+    {
       fsi = Teuchos::rcp(new FSI::MonolithicOverlap(comm));
-
+    }
     else if (coupling==fsi_iter_monolithicstructuresplit)
+    {
       fsi = Teuchos::rcp(new FSI::MonolithicStructureSplit(comm));
-
+    }
     else if (coupling==fsi_iter_monolithiclagrange)
+    {
       fsi = Teuchos::rcp(new FSI::MonolithicLagrange(comm));
-
+    }
     else
+    {
       dserror("Cannot find appropriate monolithic solver for coupling %d and linear strategy %d",coupling,linearsolverstrategy);
+    }
 
+    // read the restart information, set vectors and variables --- 
+    // be careful, dofmaps might be changed here in a Redistribute call
     if (genprob.restart)
     {
-      // read the restart information, set vectors and variables
       fsi->ReadRestart(genprob.restart);
     }
 
+    // now do the coupling setup an create the combined dofmap
+    fsi->SetupSystem();
+
+    // here we go...
     fsi->Timeloop(fsi);
 
     DRT::ResultTestManager testmanager(comm);

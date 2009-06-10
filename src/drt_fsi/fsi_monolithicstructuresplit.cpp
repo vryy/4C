@@ -1,4 +1,3 @@
-
 #ifdef CCADISCRET
 
 #include "fsi_monolithicstructuresplit.H"
@@ -16,6 +15,14 @@
 /*----------------------------------------------------------------------*/
 FSI::MonolithicStructureSplit::MonolithicStructureSplit(Epetra_Comm& comm)
   : BlockMonolithic(comm)
+{
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::MonolithicStructureSplit::SetupSystem()
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
   linearsolverstrategy_ = Teuchos::getIntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
@@ -147,9 +154,7 @@ FSI::MonolithicStructureSplit::MonolithicStructureSplit(Epetra_Comm& comm)
     dserror("Unsupported type of monolithic solver");
   break;
   }
-
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -204,6 +209,7 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
     veln = FluidField().Interface().InsertCondVector(StructToFluid(veln));
 
     double scale     = FluidField().ResidualScaling();
+
     veln->Scale(1./scale);
 
     Extractor().AddVector(*veln,1,f);
@@ -480,7 +486,6 @@ void FSI::MonolithicStructureSplit::SetupVector(Epetra_Vector &f,
                                                 Teuchos::RCP<const Epetra_Vector> av,
                                                 double fluidscale)
 {
-
   // extract the inner and boundary dofs of all three fields
 
   Teuchos::RCP<Epetra_Vector> sov = StructureField().Interface().ExtractOtherVector(sv);

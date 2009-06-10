@@ -168,6 +168,24 @@ namespace UTILS
   public:
     explicit Monolithic(Epetra_Comm& comm);
 
+    /// 
+    /*! do the setup for the monolithic system
+
+    <pre>
+
+    1.) setup coupling
+    2.) get maps for all blocks in the system (and for the whole system as well)
+    3.) if necessary, define system block matrix
+
+    </pre>
+
+    \note We want to do this setup after reading the restart information, not 
+    directly in the constructor. This is necessary since during restart (if 
+    ReadMesh is called), the dofmaps for the blocks might get invalid.
+
+    */
+    virtual void SetupSystem() = 0;
+
     /// outer level FSI time loop
     void Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
 
