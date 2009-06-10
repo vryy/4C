@@ -26,7 +26,7 @@ Maintainer: Sophie Rausch
 
 namespace MAT
 {
-namespace ELAST
+namespace ELASTIC
 {
 
   namespace PAR
@@ -96,7 +96,7 @@ namespace ELAST
     CoupBlatzKo();
 
     /// constructor with given material parameters
-    CoupBlatzKo(MAT::ELAST::PAR::CoupBlatzKo* params);
+    CoupBlatzKo(MAT::ELASTIC::PAR::CoupBlatzKo* params);
 
     /// @name Access material constants
     //@{
@@ -151,7 +151,7 @@ namespace ELAST
   private:
 
     /// my material parameters
-    MAT::ELAST::PAR::CoupBlatzKo* params_;
+    MAT::ELASTIC::PAR::CoupBlatzKo* params_;
 
   };
 

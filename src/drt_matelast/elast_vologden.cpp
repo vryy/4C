@@ -24,7 +24,7 @@ Maintainer: Sophie Rausch
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::ELAST::PAR::VolOgden::VolOgden(
+MAT::ELASTIC::PAR::VolOgden::VolOgden(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
@@ -36,7 +36,7 @@ MAT::ELAST::PAR::VolOgden::VolOgden(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::ELAST::VolOgden::VolOgden()
+MAT::ELASTIC::VolOgden::VolOgden()
   : Summand(),
     params_(NULL)
 {
@@ -45,7 +45,7 @@ MAT::ELAST::VolOgden::VolOgden()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::ELAST::VolOgden::VolOgden(MAT::ELAST::PAR::VolOgden* params)
+MAT::ELASTIC::VolOgden::VolOgden(MAT::ELASTIC::PAR::VolOgden* params)
   : params_(params)
 {
 }
@@ -53,7 +53,7 @@ MAT::ELAST::VolOgden::VolOgden(MAT::ELAST::PAR::VolOgden* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELAST::VolOgden::AddCoefficientsModified(
+void MAT::ELASTIC::VolOgden::AddCoefficientsModified(
   bool& havecoefficients,
   LINALG::Matrix<3,1>& gamma,
   LINALG::Matrix<5,1>& delta,

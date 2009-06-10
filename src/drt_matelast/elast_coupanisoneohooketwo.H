@@ -25,7 +25,7 @@ Maintainer: Sophie Rausch
 
 namespace MAT
 {
-namespace ELAST
+namespace ELASTIC
 {
 
   namespace PAR
@@ -91,7 +91,7 @@ namespace ELAST
     CoupAnisoNeoHookeTwo();
 
     /// constructor with given material parameters
-    CoupAnisoNeoHookeTwo(MAT::ELAST::PAR::CoupAnisoNeoHookeTwo* params);
+    CoupAnisoNeoHookeTwo(MAT::ELASTIC::PAR::CoupAnisoNeoHookeTwo* params);
 
 
     /// @name Access material constants
@@ -150,7 +150,7 @@ namespace ELAST
   private:
 
     /// my material parameters
-    MAT::ELAST::PAR::CoupAnisoNeoHookeTwo* params_;
+    MAT::ELASTIC::PAR::CoupAnisoNeoHookeTwo* params_;
 
   };
 

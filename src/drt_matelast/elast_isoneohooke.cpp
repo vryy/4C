@@ -25,7 +25,7 @@ Maintainer: Sophie Rausch & Thomas Kloeppel
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-MAT::ELAST::PAR::IsoNeoHooke::IsoNeoHooke(
+MAT::ELASTIC::PAR::IsoNeoHooke::IsoNeoHooke(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
@@ -37,7 +37,7 @@ MAT::ELAST::PAR::IsoNeoHooke::IsoNeoHooke(
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)  bborn 04/09 |
  *----------------------------------------------------------------------*/
-MAT::ELAST::IsoNeoHooke::IsoNeoHooke()
+MAT::ELASTIC::IsoNeoHooke::IsoNeoHooke()
   : Summand(),
     params_(NULL)
 {
@@ -47,7 +47,7 @@ MAT::ELAST::IsoNeoHooke::IsoNeoHooke()
 /*----------------------------------------------------------------------*
  |  Constructor                             (public)   bborn 04/09 |
  *----------------------------------------------------------------------*/
-MAT::ELAST::IsoNeoHooke::IsoNeoHooke(MAT::ELAST::PAR::IsoNeoHooke* params)
+MAT::ELASTIC::IsoNeoHooke::IsoNeoHooke(MAT::ELASTIC::PAR::IsoNeoHooke* params)
   : params_(params)
 {
 }
@@ -55,7 +55,7 @@ MAT::ELAST::IsoNeoHooke::IsoNeoHooke(MAT::ELAST::PAR::IsoNeoHooke* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELAST::IsoNeoHooke::AddCoefficientsModified(
+void MAT::ELASTIC::IsoNeoHooke::AddCoefficientsModified(
   bool& havecoefficients,
   LINALG::Matrix<3,1>& gamma,
   LINALG::Matrix<5,1>& delta,

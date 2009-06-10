@@ -37,17 +37,17 @@ MAT::PAR::ElastHyper::ElastHyper(
   for (m=matids_->begin(); m!=matids_->end(); ++m)
   {
     const int matid = *m;
-    Teuchos::RCP<MAT::ELAST::Summand> potsum = MAT::ELAST::Summand::Factory(matid);
+    Teuchos::RCP<MAT::ELASTIC::Summand> potsum = MAT::ELASTIC::Summand::Factory(matid);
     if (potsum == Teuchos::null) dserror("Failed to allocate");
-    potsum_.insert(std::pair<int,Teuchos::RCP<MAT::ELAST::Summand> >(matid,potsum));
+    potsum_.insert(std::pair<int,Teuchos::RCP<MAT::ELASTIC::Summand> >(matid,potsum));
   }
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const MAT::ELAST::Summand> MAT::PAR::ElastHyper::MaterialById(const int id) const
+Teuchos::RCP<const MAT::ELASTIC::Summand> MAT::PAR::ElastHyper::MaterialById(const int id) const
 {
-  std::map<int,Teuchos::RCP<MAT::ELAST::Summand> >::const_iterator m = potsum_.find(id);
+  std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::const_iterator m = potsum_.find(id);
   if (m == potsum_.end())
   {
     dserror("Material %d could not be found", id);
@@ -317,8 +317,8 @@ void MAT::ElastHyper::Evaluate(
   {
 
     // loop map of associated potential summands
-    std::map<int,Teuchos::RCP<MAT::ELAST::Summand> >& pot = params_->potsum_;
-    std::map<int,Teuchos::RCP<MAT::ELAST::Summand> >::iterator p;
+    std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >& pot = params_->potsum_;
+    std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
     for (p=pot.begin(); p!=pot.end(); ++p)
     {
       p->second->AddCoefficientsPrincipal(havecoeffprinc,gamma,delta,prinv);
@@ -337,8 +337,8 @@ void MAT::ElastHyper::Evaluate(
   {
 
     // loop map of associated potential summands
-    std::map<int,Teuchos::RCP<MAT::ELAST::Summand> >& pot = params_->potsum_;
-    std::map<int,Teuchos::RCP<MAT::ELAST::Summand> >::iterator p;
+    std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >& pot = params_->potsum_;
+    std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
     for (p=pot.begin(); p!=pot.end(); ++p)
     {
       p->second->AddCoefficientsModified(havecoeffmodi,modgamma,moddelta,modinv);
@@ -480,8 +480,8 @@ void MAT::ElastHyper::Evaluate(
     {
 
       // loop map of associated potential summands
-      std::map<int,Teuchos::RCP<MAT::ELAST::Summand> >& pot = params_->potsum_;
-      std::map<int,Teuchos::RCP<MAT::ELAST::Summand> >::iterator p;
+      std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >& pot = params_->potsum_;
+      std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
       for (p=pot.begin(); p!=pot.end(); ++p)
       {
         p->second->AddCoefficientsPrincipalAniso(havecoeffpraniso,anisogamma,anisodelta,pranisoinv);

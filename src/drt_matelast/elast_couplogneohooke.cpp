@@ -26,7 +26,7 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-MAT::ELAST::PAR::CoupLogNeoHooke::CoupLogNeoHooke(
+MAT::ELASTIC::PAR::CoupLogNeoHooke::CoupLogNeoHooke(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
@@ -39,7 +39,7 @@ MAT::ELAST::PAR::CoupLogNeoHooke::CoupLogNeoHooke(
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)  bborn 04/09 |
  *----------------------------------------------------------------------*/
-MAT::ELAST::CoupLogNeoHooke::CoupLogNeoHooke()
+MAT::ELASTIC::CoupLogNeoHooke::CoupLogNeoHooke()
   : Summand(),
     params_(NULL)
 {
@@ -49,14 +49,14 @@ MAT::ELAST::CoupLogNeoHooke::CoupLogNeoHooke()
 /*----------------------------------------------------------------------*
  |  Constructor                             (public)   bborn 04/09 |
  *----------------------------------------------------------------------*/
-MAT::ELAST::CoupLogNeoHooke::CoupLogNeoHooke(MAT::ELAST::PAR::CoupLogNeoHooke* params)
+MAT::ELASTIC::CoupLogNeoHooke::CoupLogNeoHooke(MAT::ELASTIC::PAR::CoupLogNeoHooke* params)
   : params_(params)
 {
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELAST::CoupLogNeoHooke::AddCoefficientsPrincipal(
+void MAT::ELASTIC::CoupLogNeoHooke::AddCoefficientsPrincipal(
   bool& havecoefficients,
   LINALG::Matrix<3,1>& gamma,
   LINALG::Matrix<8,1>& delta,

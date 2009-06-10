@@ -24,7 +24,7 @@ Maintainer: Sophie Rausch & Thomas Kloeppel
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::ELAST::PAR::IsoYeoh::IsoYeoh(
+MAT::ELASTIC::PAR::IsoYeoh::IsoYeoh(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
@@ -37,7 +37,7 @@ MAT::ELAST::PAR::IsoYeoh::IsoYeoh(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::ELAST::IsoYeoh::IsoYeoh()
+MAT::ELASTIC::IsoYeoh::IsoYeoh()
   : Summand(),
     params_(NULL)
 {
@@ -46,14 +46,14 @@ MAT::ELAST::IsoYeoh::IsoYeoh()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::ELAST::IsoYeoh::IsoYeoh(MAT::ELAST::PAR::IsoYeoh* params)
+MAT::ELASTIC::IsoYeoh::IsoYeoh(MAT::ELASTIC::PAR::IsoYeoh* params)
   : params_(params)
 {
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELAST::IsoYeoh::AddCoefficientsModified(
+void MAT::ELASTIC::IsoYeoh::AddCoefficientsModified(
   bool& havecoefficients,
   LINALG::Matrix<3,1>& gamma,
   LINALG::Matrix<5,1>& delta,

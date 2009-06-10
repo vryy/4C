@@ -26,7 +26,7 @@ Maintainer: Sophie Rausch & Thomas Kloeppel
 
 namespace MAT
 {
-namespace ELAST
+namespace ELASTIC
 {
 
   namespace PAR
@@ -88,7 +88,7 @@ namespace ELAST
     IsoMooneyRivlin();
 
     /// constructor with given material parameters
-    IsoMooneyRivlin(MAT::ELAST::PAR::IsoMooneyRivlin* params);
+    IsoMooneyRivlin(MAT::ELASTIC::PAR::IsoMooneyRivlin* params);
 
     /// @name Access material constants
     //@{
@@ -148,7 +148,7 @@ namespace ELAST
   private:
 
     /// my material parameters
-    MAT::ELAST::PAR::IsoMooneyRivlin* params_;
+    MAT::ELASTIC::PAR::IsoMooneyRivlin* params_;
 
   };
 

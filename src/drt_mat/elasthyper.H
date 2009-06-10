@@ -59,7 +59,7 @@ namespace MAT
       //@{
 
       /// provide access to material/summand by its ID
-      Teuchos::RCP<const MAT::ELAST::Summand> MaterialById(
+      Teuchos::RCP<const MAT::ELASTIC::Summand> MaterialById(
         const int id  ///< ID to look for in collection of summands
         ) const;
 
@@ -77,7 +77,7 @@ namespace MAT
    private:
 
       /// map to materials/potential summands
-      std::map<int,Teuchos::RCP<MAT::ELAST::Summand> > potsum_;
+      std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> > potsum_;
 
       //@}
 
@@ -168,7 +168,7 @@ namespace MAT
       ) const;
 
     /// provide access to material by its ID
-    Teuchos::RCP<const MAT::ELAST::Summand> MaterialById(const int id) const { return params_->MaterialById(id); }
+    Teuchos::RCP<const MAT::ELASTIC::Summand> MaterialById(const int id) const { return params_->MaterialById(id); }
 
     /// material mass density
     double Density() const { return params_->density_; }

@@ -75,7 +75,7 @@ void MAT::PAR::Bundle::MakeParameters()
     // 2nd try
     {
       // indirectly add quick access parameter members
-      Teuchos::RCP<MAT::ELAST::Summand> mat = MAT::ELAST::Summand::Factory(matid);
+      Teuchos::RCP<MAT::ELASTIC::Summand> mat = MAT::ELASTIC::Summand::Factory(matid);
       // check if allocation was successful
       Teuchos::RCP<MAT::PAR::Material> matpar = m->second;
       if (matpar->Parameter() != NULL)

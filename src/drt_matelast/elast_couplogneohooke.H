@@ -27,7 +27,7 @@ Maintainer: Burkhard Bornemann
 
 namespace MAT
 {
-namespace ELAST
+namespace ELASTIC
 {
 
   namespace PAR
@@ -88,7 +88,7 @@ namespace ELAST
     CoupLogNeoHooke();
 
     /// constructor with given material parameters
-    CoupLogNeoHooke(MAT::ELAST::PAR::CoupLogNeoHooke* params);
+    CoupLogNeoHooke(MAT::ELASTIC::PAR::CoupLogNeoHooke* params);
 
     /// @name Access material constants
     //@{
@@ -196,7 +196,7 @@ namespace ELAST
   private:
 
     /// my material parameters
-    MAT::ELAST::PAR::CoupLogNeoHooke* params_;
+    MAT::ELASTIC::PAR::CoupLogNeoHooke* params_;
 
   };
 

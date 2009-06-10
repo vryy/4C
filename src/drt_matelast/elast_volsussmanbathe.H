@@ -26,7 +26,7 @@ Maintainer: Sophie Rausch & Thomas Kloeppel
 
 namespace MAT
 {
-namespace ELAST
+namespace ELASTIC
 {
 
   namespace PAR
@@ -85,7 +85,7 @@ namespace ELAST
     VolSussmanBathe();
 
     /// constructor with given material parameters
-    VolSussmanBathe(MAT::ELAST::PAR::VolSussmanBathe* params);
+    VolSussmanBathe(MAT::ELASTIC::PAR::VolSussmanBathe* params);
 
     /// @name Access material constants
     //@{
@@ -146,7 +146,7 @@ namespace ELAST
   private:
 
     /// my material parameters
-    MAT::ELAST::PAR::VolSussmanBathe* params_;
+    MAT::ELASTIC::PAR::VolSussmanBathe* params_;
 
   };
 

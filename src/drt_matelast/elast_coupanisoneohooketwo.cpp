@@ -25,7 +25,7 @@ Maintainer: Sophie Rausch
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-MAT::ELAST::PAR::CoupAnisoNeoHookeTwo::CoupAnisoNeoHookeTwo(
+MAT::ELASTIC::PAR::CoupAnisoNeoHookeTwo::CoupAnisoNeoHookeTwo(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
@@ -38,7 +38,7 @@ MAT::ELAST::PAR::CoupAnisoNeoHookeTwo::CoupAnisoNeoHookeTwo(
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)  bborn 04/09 |
  *----------------------------------------------------------------------*/
-MAT::ELAST::CoupAnisoNeoHookeTwo::CoupAnisoNeoHookeTwo()
+MAT::ELASTIC::CoupAnisoNeoHookeTwo::CoupAnisoNeoHookeTwo()
   : Summand(),
     params_(NULL)
 {
@@ -48,7 +48,7 @@ MAT::ELAST::CoupAnisoNeoHookeTwo::CoupAnisoNeoHookeTwo()
 /*----------------------------------------------------------------------*
  |  Constructor                             (public)   bborn 04/09 |
  *----------------------------------------------------------------------*/
-MAT::ELAST::CoupAnisoNeoHookeTwo::CoupAnisoNeoHookeTwo(MAT::ELAST::PAR::CoupAnisoNeoHookeTwo* params)
+MAT::ELASTIC::CoupAnisoNeoHookeTwo::CoupAnisoNeoHookeTwo(MAT::ELASTIC::PAR::CoupAnisoNeoHookeTwo* params)
   : params_(params)
 {
 }
@@ -56,7 +56,7 @@ MAT::ELAST::CoupAnisoNeoHookeTwo::CoupAnisoNeoHookeTwo(MAT::ELAST::PAR::CoupAnis
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELAST::CoupAnisoNeoHookeTwo::AddCoefficientsPrincipalAniso(
+void MAT::ELASTIC::CoupAnisoNeoHookeTwo::AddCoefficientsPrincipalAniso(
   bool& havecoefficients,
   LINALG::Matrix<3,1>& gamma,
   LINALG::Matrix<15,1>& delta,

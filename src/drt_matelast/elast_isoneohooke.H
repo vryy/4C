@@ -26,7 +26,7 @@ Maintainer: Sophie Rausch & Thomas Kloeppel
 
 namespace MAT
 {
-namespace ELAST
+namespace ELASTIC
 {
 
   namespace PAR
@@ -89,7 +89,7 @@ namespace ELAST
     IsoNeoHooke();
 
     /// constructor with given material parameters
-    IsoNeoHooke(MAT::ELAST::PAR::IsoNeoHooke* params);
+    IsoNeoHooke(MAT::ELASTIC::PAR::IsoNeoHooke* params);
 
 
     /// @name Access material constants
@@ -148,7 +148,7 @@ namespace ELAST
   private:
 
     /// my material parameters
-    MAT::ELAST::PAR::IsoNeoHooke* params_;
+    MAT::ELASTIC::PAR::IsoNeoHooke* params_;
 
   };
 

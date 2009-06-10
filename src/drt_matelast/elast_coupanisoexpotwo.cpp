@@ -25,7 +25,7 @@ Maintainer: Sophie Rausch & Thomas Kloeppel
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-MAT::ELAST::PAR::CoupAnisoExpoTwo::CoupAnisoExpoTwo(
+MAT::ELASTIC::PAR::CoupAnisoExpoTwo::CoupAnisoExpoTwo(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
@@ -40,7 +40,7 @@ MAT::ELAST::PAR::CoupAnisoExpoTwo::CoupAnisoExpoTwo(
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)  bborn 04/09 |
  *----------------------------------------------------------------------*/
-MAT::ELAST::CoupAnisoExpoTwo::CoupAnisoExpoTwo()
+MAT::ELASTIC::CoupAnisoExpoTwo::CoupAnisoExpoTwo()
   : Summand(),
     params_(NULL)
 {
@@ -50,7 +50,7 @@ MAT::ELAST::CoupAnisoExpoTwo::CoupAnisoExpoTwo()
 /*----------------------------------------------------------------------*
  |  Constructor                             (public)   bborn 04/09 |
  *----------------------------------------------------------------------*/
-MAT::ELAST::CoupAnisoExpoTwo::CoupAnisoExpoTwo(MAT::ELAST::PAR::CoupAnisoExpoTwo* params)
+MAT::ELASTIC::CoupAnisoExpoTwo::CoupAnisoExpoTwo(MAT::ELASTIC::PAR::CoupAnisoExpoTwo* params)
   : params_(params)
 {
 }
@@ -58,7 +58,7 @@ MAT::ELAST::CoupAnisoExpoTwo::CoupAnisoExpoTwo(MAT::ELAST::PAR::CoupAnisoExpoTwo
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELAST::CoupAnisoExpoTwo::AddCoefficientsPrincipalAniso(
+void MAT::ELASTIC::CoupAnisoExpoTwo::AddCoefficientsPrincipalAniso(
   bool& havecoefficients,
   LINALG::Matrix<3,1>& gamma,
   LINALG::Matrix<15,1>& delta,

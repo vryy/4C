@@ -26,7 +26,7 @@ Maintainer: Sophie Rausch
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-MAT::ELAST::PAR::CoupBlatzKo::CoupBlatzKo(
+MAT::ELASTIC::PAR::CoupBlatzKo::CoupBlatzKo(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
@@ -40,7 +40,7 @@ MAT::ELAST::PAR::CoupBlatzKo::CoupBlatzKo(
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)  bborn 04/09 |
  *----------------------------------------------------------------------*/
-MAT::ELAST::CoupBlatzKo::CoupBlatzKo()
+MAT::ELASTIC::CoupBlatzKo::CoupBlatzKo()
   : Summand(),
     params_(NULL)
 {
@@ -50,14 +50,14 @@ MAT::ELAST::CoupBlatzKo::CoupBlatzKo()
 /*----------------------------------------------------------------------*
  |  Constructor                             (public)   bborn 04/09 |
  *----------------------------------------------------------------------*/
-MAT::ELAST::CoupBlatzKo::CoupBlatzKo(MAT::ELAST::PAR::CoupBlatzKo* params)
+MAT::ELASTIC::CoupBlatzKo::CoupBlatzKo(MAT::ELASTIC::PAR::CoupBlatzKo* params)
   : params_(params)
 {
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELAST::CoupBlatzKo::AddCoefficientsPrincipal(
+void MAT::ELASTIC::CoupBlatzKo::AddCoefficientsPrincipal(
   bool& havecoefficients,
   LINALG::Matrix<3,1>& gamma,
   LINALG::Matrix<8,1>& delta,

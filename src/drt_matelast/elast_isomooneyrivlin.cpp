@@ -23,7 +23,7 @@ Maintainer: Sophie Rausch & Thomas Kloeppel
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-MAT::ELAST::PAR::IsoMooneyRivlin::IsoMooneyRivlin(
+MAT::ELASTIC::PAR::IsoMooneyRivlin::IsoMooneyRivlin(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
@@ -36,7 +36,7 @@ MAT::ELAST::PAR::IsoMooneyRivlin::IsoMooneyRivlin(
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)  bborn 04/09 |
  *----------------------------------------------------------------------*/
-MAT::ELAST::IsoMooneyRivlin::IsoMooneyRivlin()
+MAT::ELASTIC::IsoMooneyRivlin::IsoMooneyRivlin()
   : Summand(),
     params_(NULL)
 {
@@ -46,7 +46,7 @@ MAT::ELAST::IsoMooneyRivlin::IsoMooneyRivlin()
 /*----------------------------------------------------------------------*
  |  Constructor                             (public)   bborn 04/09 |
  *----------------------------------------------------------------------*/
-MAT::ELAST::IsoMooneyRivlin::IsoMooneyRivlin(MAT::ELAST::PAR::IsoMooneyRivlin* params)
+MAT::ELASTIC::IsoMooneyRivlin::IsoMooneyRivlin(MAT::ELASTIC::PAR::IsoMooneyRivlin* params)
   : params_(params)
 {
 }
@@ -54,7 +54,7 @@ MAT::ELAST::IsoMooneyRivlin::IsoMooneyRivlin(MAT::ELAST::PAR::IsoMooneyRivlin* p
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELAST::IsoMooneyRivlin::AddCoefficientsModified(
+void MAT::ELASTIC::IsoMooneyRivlin::AddCoefficientsModified(
   bool& havecoefficients,
   LINALG::Matrix<3,1>& gamma,
   LINALG::Matrix<5,1>& delta,

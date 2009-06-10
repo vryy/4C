@@ -32,7 +32,7 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<MAT::ELAST::Summand> MAT::ELAST::Summand::Factory(int matnum)
+Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
 {
   // for the sake of safety
   // in post-process mode we do not have any instance of DRT::Problem
@@ -52,64 +52,64 @@ Teuchos::RCP<MAT::ELAST::Summand> MAT::ELAST::Summand::Factory(int matnum)
   case INPAR::MAT::mes_couplogneohooke:
   {
     if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::ELAST::PAR::CoupLogNeoHooke(curmat));
-    MAT::ELAST::PAR::CoupLogNeoHooke* params = static_cast<MAT::ELAST::PAR::CoupLogNeoHooke*>(curmat->Parameter());
+      curmat->SetParameter(new MAT::ELASTIC::PAR::CoupLogNeoHooke(curmat));
+    MAT::ELASTIC::PAR::CoupLogNeoHooke* params = static_cast<MAT::ELASTIC::PAR::CoupLogNeoHooke*>(curmat->Parameter());
     return Teuchos::rcp(new CoupLogNeoHooke(params));
   }
   case INPAR::MAT::mes_coupblatzko:
   {
     if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::ELAST::PAR::CoupBlatzKo(curmat));
-    MAT::ELAST::PAR::CoupBlatzKo* params = static_cast<MAT::ELAST::PAR::CoupBlatzKo*>(curmat->Parameter());
+      curmat->SetParameter(new MAT::ELASTIC::PAR::CoupBlatzKo(curmat));
+    MAT::ELASTIC::PAR::CoupBlatzKo* params = static_cast<MAT::ELASTIC::PAR::CoupBlatzKo*>(curmat->Parameter());
     return Teuchos::rcp(new CoupBlatzKo(params));
   }
   case INPAR::MAT::mes_isoneohooke:
   {
     if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::ELAST::PAR::IsoNeoHooke(curmat));
-    MAT::ELAST::PAR::IsoNeoHooke* params = static_cast<MAT::ELAST::PAR::IsoNeoHooke*>(curmat->Parameter());
+      curmat->SetParameter(new MAT::ELASTIC::PAR::IsoNeoHooke(curmat));
+    MAT::ELASTIC::PAR::IsoNeoHooke* params = static_cast<MAT::ELASTIC::PAR::IsoNeoHooke*>(curmat->Parameter());
     return Teuchos::rcp(new IsoNeoHooke(params));
   }
   case INPAR::MAT::mes_isoyeoh:
   {
     if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::ELAST::PAR::IsoYeoh(curmat));
-    MAT::ELAST::PAR::IsoYeoh* params = static_cast<MAT::ELAST::PAR::IsoYeoh*>(curmat->Parameter());
+      curmat->SetParameter(new MAT::ELASTIC::PAR::IsoYeoh(curmat));
+    MAT::ELASTIC::PAR::IsoYeoh* params = static_cast<MAT::ELASTIC::PAR::IsoYeoh*>(curmat->Parameter());
     return Teuchos::rcp(new IsoYeoh(params));
   }
   case INPAR::MAT::mes_isomooneyrivlin:
   {
     if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::ELAST::PAR::IsoMooneyRivlin(curmat));
-    MAT::ELAST::PAR::IsoMooneyRivlin* params = static_cast<MAT::ELAST::PAR::IsoMooneyRivlin*>(curmat->Parameter());
+      curmat->SetParameter(new MAT::ELASTIC::PAR::IsoMooneyRivlin(curmat));
+    MAT::ELASTIC::PAR::IsoMooneyRivlin* params = static_cast<MAT::ELASTIC::PAR::IsoMooneyRivlin*>(curmat->Parameter());
     return Teuchos::rcp(new IsoMooneyRivlin(params));
   }
   case INPAR::MAT::mes_volsussmanbathe:
   {
     if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::ELAST::PAR::VolSussmanBathe(curmat));
-    MAT::ELAST::PAR::VolSussmanBathe* params = static_cast<MAT::ELAST::PAR::VolSussmanBathe*>(curmat->Parameter());
+      curmat->SetParameter(new MAT::ELASTIC::PAR::VolSussmanBathe(curmat));
+    MAT::ELASTIC::PAR::VolSussmanBathe* params = static_cast<MAT::ELASTIC::PAR::VolSussmanBathe*>(curmat->Parameter());
     return Teuchos::rcp(new VolSussmanBathe(params));
   }
   case INPAR::MAT::mes_vologden:
   {
     if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::ELAST::PAR::VolOgden(curmat));
-    MAT::ELAST::PAR::VolOgden* params = static_cast<MAT::ELAST::PAR::VolOgden*>(curmat->Parameter());
+      curmat->SetParameter(new MAT::ELASTIC::PAR::VolOgden(curmat));
+    MAT::ELASTIC::PAR::VolOgden* params = static_cast<MAT::ELASTIC::PAR::VolOgden*>(curmat->Parameter());
     return Teuchos::rcp(new VolOgden(params));
   }
   case INPAR::MAT::mes_coupanisoexpotwo:
   {
     if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::ELAST::PAR::CoupAnisoExpoTwo(curmat));
-    MAT::ELAST::PAR::CoupAnisoExpoTwo* params = static_cast<MAT::ELAST::PAR::CoupAnisoExpoTwo*>(curmat->Parameter());
+      curmat->SetParameter(new MAT::ELASTIC::PAR::CoupAnisoExpoTwo(curmat));
+    MAT::ELASTIC::PAR::CoupAnisoExpoTwo* params = static_cast<MAT::ELASTIC::PAR::CoupAnisoExpoTwo*>(curmat->Parameter());
     return Teuchos::rcp(new CoupAnisoExpoTwo(params));
   }
   case INPAR::MAT::mes_coupanisoneohooketwo:
   {
     if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::ELAST::PAR::CoupAnisoNeoHookeTwo(curmat));
-    MAT::ELAST::PAR::CoupAnisoNeoHookeTwo* params = static_cast<MAT::ELAST::PAR::CoupAnisoNeoHookeTwo*>(curmat->Parameter());
+      curmat->SetParameter(new MAT::ELASTIC::PAR::CoupAnisoNeoHookeTwo(curmat));
+    MAT::ELASTIC::PAR::CoupAnisoNeoHookeTwo* params = static_cast<MAT::ELASTIC::PAR::CoupAnisoNeoHookeTwo*>(curmat->Parameter());
     return Teuchos::rcp(new CoupAnisoNeoHookeTwo(params));
   }
   default:

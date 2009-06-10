@@ -24,7 +24,7 @@ Maintainer: Sophie Rausch & Thomas Kloeppel
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::ELAST::PAR::VolSussmanBathe::VolSussmanBathe(
+MAT::ELASTIC::PAR::VolSussmanBathe::VolSussmanBathe(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
@@ -35,7 +35,7 @@ MAT::ELAST::PAR::VolSussmanBathe::VolSussmanBathe(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::ELAST::VolSussmanBathe::VolSussmanBathe()
+MAT::ELASTIC::VolSussmanBathe::VolSussmanBathe()
   : Summand(),
     params_(NULL)
 {
@@ -44,7 +44,7 @@ MAT::ELAST::VolSussmanBathe::VolSussmanBathe()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::ELAST::VolSussmanBathe::VolSussmanBathe(MAT::ELAST::PAR::VolSussmanBathe* params)
+MAT::ELASTIC::VolSussmanBathe::VolSussmanBathe(MAT::ELASTIC::PAR::VolSussmanBathe* params)
   : params_(params)
 {
 }
@@ -52,7 +52,7 @@ MAT::ELAST::VolSussmanBathe::VolSussmanBathe(MAT::ELAST::PAR::VolSussmanBathe* p
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELAST::VolSussmanBathe::AddCoefficientsModified(
+void MAT::ELASTIC::VolSussmanBathe::AddCoefficientsModified(
   bool& havecoefficients,
   LINALG::Matrix<3,1>& gamma,
   LINALG::Matrix<5,1>& delta,

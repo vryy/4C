@@ -27,7 +27,7 @@ Maintainer: Sophie Rausch
 
 namespace MAT
 {
-namespace ELAST
+namespace ELASTIC
 {
 
   namespace PAR
@@ -89,7 +89,7 @@ namespace ELAST
     VolOgden();
 
     /// constructor with given material parameters
-    VolOgden(MAT::ELAST::PAR::VolOgden* params);
+    VolOgden(MAT::ELASTIC::PAR::VolOgden* params);
 
     /// @name Access material constants
     //@{
@@ -150,7 +150,7 @@ namespace ELAST
   private:
 
     /// my material parameters
-    MAT::ELAST::PAR::VolOgden* params_;
+   MAT::ELASTIC::PAR::VolOgden* params_;
 
   };
 
