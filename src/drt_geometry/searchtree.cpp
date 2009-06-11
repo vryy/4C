@@ -1812,11 +1812,11 @@ std::map<int,std::set<int> > GEO::SearchTree::TreeNode::searchElementsInRadius(
 /*-----------------------------------------------------------------------*
  |currentpositions assings a unique Id to a point, respectively. If the  |
  |points in currentpositions are nodes of a finite element discretization|
- |this unique Id is typically the GID of the finite elment nodes.        |
+ |this unique Id is typically the GID or LID of the finite elment nodes. |
  |This method searches in the map currentpositions points at a distance  |
  |closer than radius to the querypoint and returns the Ids of these      |
  |points in a vector. Searching the tree is started by calling this      |
- |method for the tree itself; this method does not search itself. Rahter |
+ |method for the tree itself; this method does not search itself. Rather |
  |it starts a recursive search through all the nodes of the tree starting|
  |at the root node. The actual search is then carried out by the method  |
  |                                                            cyron 04/09|
@@ -1861,7 +1861,7 @@ std::vector<int> GEO::SearchTree::searchPointsInRadius(
 
 
 /*-------------------------------------------------------------------------------*
- |returns vector of Ids of points closer radius to querypoint. This method       |
+ |returns vector of IDs of points closer radius to querypoint. This method       |
  |searches elements assigned to this tree node only; these elements represent a  |
  |subset of the points in currentpositions. In this subset the method searches   |
  |for points closer than radius to the querypoint.                    cyron 04/09|
@@ -1884,7 +1884,9 @@ std::vector<int> GEO::SearchTree::TreeNode::searchPointsInRadius(
    * query; then again the case LEAF_NODE applies and the same procedure as throughout
    * the whole first query necessary is applied*/
   
-  //vector for GIDs of nodes in the radius of a given querypoint
+  /*vector for IDs of nodes in the radius of a given querypoint; the IDs are of the kind on
+   * which the map currentpositions is based on. Thus these IDs may be LIDs or GIDs of the
+   * nodes or also any other kind of IDs*/
   std::vector<int> points;
 
 

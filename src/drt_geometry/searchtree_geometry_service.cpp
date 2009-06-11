@@ -315,7 +315,10 @@ std::map<int,std::set<int> > GEO::getElementsInRadius(
 
 
 /*------------------------------------------------------------------------*
- | returns vector with GIDs of nodes within given radius around querypoint|                         
+ | returns vector with IDs of nodes within given radius around querypoint;| 
+ | the kind of ID is the same one as the one on which currentpositions is |
+ | based, thus typically node LIDs or node GIDs; however, also any other  |
+ | kind of ID may be used.                                                |                        
  |                                                             cyron 02/09|
  *------------------------------------------------------------------------*/
 std::vector<int> GEO::getPointsInRadius(  
