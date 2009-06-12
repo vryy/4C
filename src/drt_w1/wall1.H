@@ -51,6 +51,8 @@ class Wall1Line;
 /*!
  * \brief A C++ wrapper for the wall1 element
  *
+ * A planar solid element for geometrically non-linear analyses.
+ *
  * \author gitterle (gitterle@lnm.mw.tum.de)
  *
  * <b>Typical quantities and their storage pattern</b>
@@ -62,6 +64,8 @@ class Wall1Line;
  *   \f$C = \left[\begin{array}{ccc} C_{11} & C_{12} & C_{13} \\ C_{21} & C_{22} & C_{23} \\ C_{31} & C_{32} & C_{33} \end{array}\right]\f$
  * - Second Piola--Kirchhoff stress vector
  *   \f$S = \left[\begin{array}{c} S_{11} \\ S_{22} \\ S_{12} \end{array}\right]\f$
+ * - Second Piola--Kirchhoff stress matrix
+ *   \f$\bar{S} = \left[\begin{array}{cccc} S_{11} & 0 & S_{12} & 0 \\ 0 & S_{22} & 0 & S_{12} \\ S_{12} & 0 & S_{22} & 0 \\ 0 & S_{12} & 0 & S_{11} \end{array}\right]\f$
  * - First Piola-Kirchhoff stress vector
  *   \f$\tilde{P} = \left[\begin{array}{c} P_{11} \\ P_{22} \\ P_{12} \\ P_{21} \end{array}\right]\f$
  *
@@ -551,10 +555,29 @@ private:
   /// \author mgit \date 05/07
   void w1_call_matgeononl(
     const Epetra_SerialDenseVector& strain,  ///< Green-Lagrange strain vector
-    Epetra_SerialDenseMatrix& stress,  ///< stress vector
+    Epetra_SerialDenseMatrix& stress,  ///< stress matrix
     Epetra_SerialDenseMatrix& C,  ///< elasticity matrix
     const int numeps,  ///< number of strains
     Teuchos::RCP<const MAT::Material> material  ///< the material data
+  );
+
+  /// Stress and constitutive matrix mapper from 3d to 2d
+  /// due to dimensional reduction #wtype_
+  ///
+  /// \author bborn \date 06/09
+  void MaterialResponse3dPlane(
+    Epetra_SerialDenseMatrix& stress,  ///< stress matrix
+    Epetra_SerialDenseMatrix& C,  ///< elasticity matrix
+    const Epetra_SerialDenseVector& strain  ///< Green-Lagrange strain vector
+  );
+
+  /// Generic 3D stress response
+  ///
+  /// \author bborn \date 06/09
+  void MaterialResponse3d(
+    LINALG::Matrix<6,1>* stress,  ///< 3D 2nd Piola-Kirchhoff stress vector
+    LINALG::Matrix<6,6>* cmat,  ///< 3D elasticity matrix
+    const LINALG::Matrix<6,1>* glstrain  ///< 3D Green-Lagrange strain vector
   );
 
   /// (constant) density

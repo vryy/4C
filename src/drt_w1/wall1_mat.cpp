@@ -38,19 +38,12 @@ Maintainer: Markus Gitterle
 
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../drt_mat/neohooke.H"
+#include "../drt_mat/elasthyper.H"
 
 /*----------------------------------------------------------------------*/
 // namespaces
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
-
-
-/*----------------------------------------------------------------------*
- |                                                        mgit 03/07    |
- | vector of material laws                                              |
- | defined in global_control.c
- *----------------------------------------------------------------------*/
-//extern struct _MATERIAL  *mat;
 
 
 /*----------------------------------------------------------------------*
@@ -88,9 +81,9 @@ void DRT::ELEMENTS::Wall1::w1_call_matgeononl(
   /*---------------------------------material-tangente-- plane stress ---*/
         case plane_stress:
         {
-          double e1=ym/(1. - pv*pv);
-          double e2=pv*e1;
-          double e3=e1*(1. - pv)/2.;
+          const double e1=ym/(1. - pv*pv);
+          const double e2=pv*e1;
+          const double e3=e1*(1. - pv)/2.;
     
           C(0,0)=e1;
           C(0,1)=e2;
@@ -118,9 +111,9 @@ void DRT::ELEMENTS::Wall1::w1_call_matgeononl(
   /*----------- material-tangente - plane strain, rotational symmetry ---*/
         case plane_strain:
         {
-          double c1=ym/(1.0+pv);
-          double b1=c1*pv/(1.0-2.0*pv);
-          double a1=b1+c1;
+          const double c1=ym/(1.0+pv);
+          const double b1=c1*pv/(1.0-2.0*pv);
+          const double a1=b1+c1;
     
           C(0,0)=a1;
           C(0,1)=b1;
@@ -177,13 +170,13 @@ void DRT::ELEMENTS::Wall1::w1_call_matgeononl(
       
       break;
     }
-    
+
     case INPAR::MAT::m_neohooke: /*----- neo-Hookean material (popp 07/08) ---*/
     {
       const MAT::NeoHooke* actmat = static_cast<const MAT::NeoHooke*>(material.get());
       // get material parameters
-      double ym = actmat->Youngs();       // Young's modulus
-      double nu = actmat->PoissonRatio(); // Poisson's ratio
+      const double ym = actmat->Youngs();       // Young's modulus
+      const double nu = actmat->PoissonRatio(); // Poisson's ratio
           
       switch(wtype_)
       {
@@ -407,13 +400,195 @@ void DRT::ELEMENTS::Wall1::w1_call_matgeononl(
       //dserror("2D NeoHooke not yet implemented");
       break;
     }
+
+    case INPAR::MAT::m_elasthyper: // general hyperelastic matrial (bborn, 06/09)
+    //case INPAR::MAT::m_stvenant:  // st.venant-kirchhoff-material
+    {
+      MaterialResponse3dPlane(stress,C,strain);
+      break;
+    }
+
     default:
+    {
       dserror("Invalid type of material law for wall element");
       break;
+    }
   } // switch(material->mattyp)
     
   return;
 }  // DRT::ELEMENTS::Wall1::w1_call_matgeononl
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Wall1::MaterialResponse3dPlane(
+  Epetra_SerialDenseMatrix& stress,
+  Epetra_SerialDenseMatrix& C,
+  const Epetra_SerialDenseVector& strain)
+{
+  // make 3d equivalent of Green-Lagrange strain
+  LINALG::Matrix<6,1> gl(false);
+  gl(0) = strain(0);            // E_{11}
+  gl(1) = strain(1);            // E_{22}
+  gl(2) = 0.0;                  // E_{33}
+  gl(3) = strain(2)+strain(3);  // 2*E_{12}=E_{12}+E_{21}
+  gl(4) = 0.0;                  // 2*E_{23}
+  gl(5) = 0.0;                  // 2*E_{31}
+
+  // call 3d stress response
+  LINALG::Matrix<6,1> pk2(true);  // must be zerofied!!!
+  LINALG::Matrix<6,6> cmat(true);  // must be zerofied!!!
+  MaterialResponse3d(&pk2, &cmat, &gl);
+  
+  // dimension reduction type
+  if (wtype_ == plane_strain)
+  {
+    ;  // go on
+  }
+  else if (wtype_ == plane_stress)
+  {
+    // strain vector above bears final values on: E_{11},E_{22},E_{12}
+    // strain vector above bears initial guesses on: E_{33},E_{23},E_{31}
+
+    // initial plane stress error
+    double pserr = std::sqrt(pk2(2)*pk2(2) + pk2(4)*pk2(4) + pk2(5)*pk2(5));
+
+    // make Newton-Raphson iteration to identify 
+    // E_{33},E_{23},E_{31} which satisfy S_{33}=S_{23}=S_{31}=0
+    int i = 0;
+    const double tol = EPS6;
+    const int n = 10;
+    // working arrays
+    LINALG::Matrix<3,3> crr(false);  // LHS // constitutive matrix of restraint compo
+    LINALG::Matrix<3,1> rr(false);  // RHS // stress residual of restraint compo
+    LINALG::Matrix<3,1> ir(false);  // SOL  // restraint strain components
+    // the Newton-Raphson loop
+    while ( (pserr > tol) and (i < n) )
+    {
+      // build sub-system a.b=c to solve
+      crr(0,0) = cmat(2,2);  crr(0,1) = cmat(2,4);  crr(0,2) = cmat(2,5);
+      crr(1,0) = cmat(4,2);  crr(1,1) = cmat(4,4);  crr(1,2) = cmat(4,5);
+      crr(2,0) = cmat(5,2);  crr(2,1) = cmat(5,4);  crr(2,2) = cmat(5,5);
+      rr(0) = -pk2(2);
+      rr(1) = -pk2(4);
+      rr(2) = -pk2(5);
+      // solution
+      // an in-place inversion is used, 'coz the inverse is needed below
+      crr.Invert();
+      ir.Multiply(crr,rr);
+      // update
+      gl(2) += ir(0);
+      gl(4) += 2.0*ir(1);  // NOT SURE ABOUT 2.0, LACKED TESTING MATERIAL
+      gl(5) += 2.0*ir(2);  // NOT SURE ABOUT 2.0, LACKED TESTING MATERIAL
+
+      // call for new 3d stress response
+      pk2.Clear();  // must be blanked!!
+      cmat.Clear();  // must be blanked!!
+      MaterialResponse3d(&pk2, &cmat, &gl);
+
+      // current plane stress error
+      pserr = std::sqrt(pk2(2)*pk2(2) + pk2(4)*pk2(4) + pk2(5)*pk2(5));
+
+      // increment loop index
+      i += 1;
+    }
+
+    // check if convergence was reached
+    if ( (i >= n) and (pserr > tol) )
+    {
+      dserror("Failed to identify plane stress solution");
+    }
+    else
+    {
+      // static condensation
+      // The restraint strains E_{33},E_{23},E_{31} have been made
+      // dependent on free strains E_{11},E_{22},E_{12}
+      // --- with an implicit function.
+      // Thus the effect of the linearisation with respect to the
+      // dependent strains must be added onto the free strains.
+      LINALG::Matrix<3,3> cfr(false);
+      cfr(0,0) = cmat(0,2);  cfr(0,1) = cmat(0,4);  cfr(0,2) = cmat(0,5);
+      cfr(1,0) = cmat(1,2);  cfr(1,1) = cmat(1,4);  cfr(1,2) = cmat(1,5);
+      cfr(2,0) = cmat(3,2);  cfr(2,1) = cmat(3,4);  cfr(2,2) = cmat(3,5);
+      LINALG::Matrix<3,3> crrrf(false);
+      crrrf.MultiplyNT(crr,cfr);
+      LINALG::Matrix<3,3> cfrrrrf(false);
+      cfrrrrf.MultiplyNN(cfr,crrrf);
+      // update constitutive matrix of free components
+      cmat(0,0) -= cfrrrrf(0,0);  cmat(0,1) -= cfrrrrf(0,1);  cmat(0,3) -= cfrrrrf(0,2);
+      cmat(1,0) -= cfrrrrf(1,0);  cmat(1,1) -= cfrrrrf(1,1);  cmat(1,3) -= cfrrrrf(1,2);
+      cmat(3,0) -= cfrrrrf(2,0);  cmat(3,1) -= cfrrrrf(2,1);  cmat(3,3) -= cfrrrrf(2,2);
+    }
+  }
+  else
+  {
+    dserror("dimension reduction type wtype_=%d is not available", wtype_);
+  }
+
+  // transform 2nd Piola--Kirchhoff stress back to 2d stress matrix
+  memset(stress.A(), 0, stress.M()*stress.N()*sizeof(double));  // zerofy
+  stress(0,0) = stress(3,3) = pk2(0);  // S_{11}
+  stress(1,1) = stress(2,2) = pk2(1);  // S_{22}
+  stress(0,2) = stress(1,3) = stress(3,1) = stress(2,0) = pk2(3); // S_{12}
+
+  // transform elasticity matrix  back to 2d matrix
+  C(0,0) = cmat(0,0);  // C_{1111}
+  C(0,1) = cmat(0,1);  // C_{1122}
+  C(0,2) = cmat(0,3);  // C_{1112}
+  C(0,3) = cmat(0,3);  // C_{1112} = C_{1121}
+  
+  C(1,0) = cmat(1,0);  // C_{2211}
+  C(1,1) = cmat(1,1);  // C_{2222}
+  C(1,2) = cmat(1,3);  // C_{2212}
+  C(1,3) = cmat(1,3);  // C_{2221} = C_{2212}
+  
+  C(2,0) = cmat(3,0);  // C_{1211}
+  C(2,1) = cmat(3,1);  // C_{1222}
+  C(2,2) = cmat(3,3);  // C_{1212}
+  C(2,3) = cmat(3,3);  // C_{1221} = C_{1212}
+  
+  C(3,0) = cmat(3,0);  // C_{2111} = C_{1211}
+  C(3,1) = cmat(3,1);  // C_{2122} = C_{1222}
+  C(3,2) = cmat(3,3);  // C_{2112} = C_{1212}
+  C(3,3) = cmat(3,3);  // C_{2121} = C_{1212}
+
+  // leave this dump
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Wall1::MaterialResponse3d(
+  LINALG::Matrix<6,1>* stress,
+  LINALG::Matrix<6,6>* cmat,
+  const LINALG::Matrix<6,1>* glstrain
+  )
+{
+  Teuchos::RCP<MAT::Material> mat = Material();
+  switch (mat->MaterialType())
+  {
+    case INPAR::MAT::m_stvenant: /*------------------ st.venant-kirchhoff-material */
+    {
+      MAT::StVenantKirchhoff* stvk = static_cast <MAT::StVenantKirchhoff*>(mat.get());
+      stvk->Evaluate(*glstrain,*cmat,*stress);
+      return;
+      break;
+    }
+    case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
+    {
+      MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
+      hyper->Evaluate(*glstrain,*cmat,*stress);
+      return;
+      break;
+    }
+    default:
+    {
+      dserror("Unknown type of material %d", mat->MaterialType());
+      break;
+    }
+  }
+  return;
+}
 
 /*-----------------------------------------------------------------------------*
 | deliver density                                                   bborn 08/08|
@@ -437,7 +612,13 @@ double DRT::ELEMENTS::Wall1::Density(
     return actmat->Density();
     break;
   }
-  case INPAR::MAT::m_stvenpor :  //porous linear elastic
+  case INPAR::MAT::m_elasthyper: // general hyperelastic matrial
+  {
+    const MAT::ElastHyper* actmat = static_cast<const MAT::ElastHyper*>(material.get());
+    return actmat->Density();
+    break;
+  }
+  case INPAR::MAT::m_stvenpor :  // porous linear elastic
     dserror("Illegal typ of material for this element");
     return 0;
     break;
