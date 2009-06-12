@@ -1022,6 +1022,8 @@ OBJS_DRT_MAT_LIB = src/drt_mat/matpar_bundle.o \
                 src/drt_mat/biocell.o \
                 src/drt_mat/convecdiffus.o \
                 src/drt_mat/sutherland_condif.o \
+                src/drt_mat/arrhenius_spec.o \
+                src/drt_mat/arrhenius_temp.o \
                 src/drt_mat/carreauyasuda.o \
                 src/drt_mat/modpowerlaw.o \
                 src/drt_mat/material.o \

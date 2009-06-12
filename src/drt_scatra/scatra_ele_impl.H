@@ -500,12 +500,8 @@ public:
     vector<double> diffusvalence_;
     //! specific heat capacity at constant pressure (in case of temp. or react. eq.)
     double shcacp_;
-    //! reaction heat (in case of react. eq.)
-    //double reaheat_;
-    //! pre-exponential factor or reaction coefficient (in case of react. eq.)
-    //double preexfac_;
-    //! activation temperature (in case of react. eq.)
-    //double actemp_;
+    //! rhs of temperature equation in case of reactive equation system
+    vector<double> reatemprhs_;
     //! coordinates of current integration point in reference coordinates
     LINALG::Matrix<nsd_,1> xsi_;
     //! array for shape functions

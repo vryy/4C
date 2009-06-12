@@ -20,6 +20,8 @@ Maintainer: Georg Bauer
 #include "scatra_ele_impl.H"
 #include "../drt_mat/convecdiffus.H"
 #include "../drt_mat/sutherland_condif.H"
+#include "../drt_mat/arrhenius_spec.H"
+#include "../drt_mat/arrhenius_temp.H"
 #include "../drt_mat/ion.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_lib/drt_globalproblem.H"

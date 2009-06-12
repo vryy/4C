@@ -19,6 +19,8 @@ Maintainer: Georg Bauer
 #include "scatra_ele_impl.H"
 #include "../drt_mat/convecdiffus.H"
 #include "../drt_mat/sutherland_condif.H"
+#include "../drt_mat/arrhenius_spec.H"
+#include "../drt_mat/arrhenius_temp.H"
 #include "../drt_mat/ion.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -196,6 +198,7 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(int numdofpernode, int numscal)
     derxy2_(true),
     vderxy_(true),
     rhs_(numdofpernode_),
+    reatemprhs_(numdofpernode_),
     hist_(numdofpernode_),
     velint_(true),
     sgvelint_(true),
@@ -281,11 +284,16 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       turbmodel = params.get<bool>("turbulence model");
     }
 
-    // set flag and string for potential inclusion of reaction term
+    // set flag for potential inclusion of reaction term
     string reactiontype=params.get<string>("reaction");
     bool reaction = false;
-    if (reactiontype == "constant_coefficient" or reactiontype == "Arrhenius_law")
+    if (reactiontype == "constant_coefficient") reaction = true;
+    else if (reactiontype == "Arrhenius_law")
+    {
       reaction = true;
+      if (numscal_ != 2)
+        dserror("Only one-step global reaction (two scalars) so far!");
+    }
 
     // set flag for conservative form
     string convform = params.get<string>("form of convective term");
@@ -478,7 +486,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     // set flag for conservative form
     string convform = params.get<string>("form of convective term");
     bool conservative = false;
-    if(convform =="conservative") conservative = true;
+    if (convform =="conservative") conservative = true;
 
     // get initial velocity values at the nodes
     const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
@@ -519,17 +527,22 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     string scaltypestr=params.get<string>("problem type");
     bool temperature = false;
     double thermpressdt = 0.0;
-    if(scaltypestr =="loma")
+    if (scaltypestr =="loma")
     {
       temperature = true;
       thermpressdt = params.get<double>("time derivative of thermodynamic pressure");
     }
 
-    // set flag and string for potential inclusion of reaction term
+    // set flag for potential inclusion of reaction term
     string reactiontype=params.get<string>("reaction");
     bool reaction = false;
-    if (reactiontype == "constant_coefficient" or reactiontype == "Arrhenius_law")
+    if (reactiontype == "constant_coefficient") reaction = true;
+    else if (reactiontype == "Arrhenius_law")
+    {
       reaction = true;
+      if (numscal_ != 2)
+        dserror("Only one-step global reaction (two scalars) so far!");
+    }
 
     double frt(0.0);
     if(scaltypestr =="elch")
@@ -977,9 +990,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
 
         // get bodyforce in gausspoint (divided by shcacp)
         // (For temperature equation, time derivative of thermodynamic pressure
-        //  is added, if not constant.)
+        //  is added, if not constant, and for temperature equation of a reactive
+        //  equation system, a reaction-rate term is added.)
         rhs_[k] = bodyforce_[k].Dot(funct_) / shcacp_;
         rhs_[k] += thermpressdt / shcacp_;
+        rhs_[k] += reatemprhs_[k] / shcacp_;
       }
 
       //----------- perform integration for entire matrix and rhs
@@ -1116,8 +1131,9 @@ if (material->MaterialType() == INPAR::MAT::m_matlist)
 
   for (int k = 0;k<numscal_;++k)
   {
-    // set reaction coefficient to zero
-    reacoeff_[k] = 0.0;
+    // set reaction coeff. and temperature rhs for reactive equation system to zero
+    reacoeff_[k]   = 0.0;
+    reatemprhs_[k] = 0.0;
 
     const int matid = actmat->MatID(k);
     Teuchos::RCP<const MAT::Material> singlemat = actmat->MaterialById(matid);
@@ -1129,9 +1145,9 @@ if (material->MaterialType() == INPAR::MAT::m_matlist)
       diffus_[k] = actsinglemat->Diffusivity();
       diffusvalence_[k] = valence_[k]*diffus_[k];
     }
-    /*else if (singlemat->MaterialType() == INPAR::MAT::m_reactemp)
+    else if (singlemat->MaterialType() == INPAR::MAT::m_arrhenius_spec)
     {
-      const MAT::ReacTemp* actsinglemat = static_cast<const MAT::ReacTemp*>(singlemat.get());
+      const MAT::ArrheniusSpec* actsinglemat = static_cast<const MAT::ArrheniusSpec*>(singlemat.get());
 
       // use one-point Gauss rule to calculate temperature at element center
       DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
@@ -1147,18 +1163,23 @@ if (material->MaterialType() == INPAR::MAT::m_matlist)
       // compute diffusivity according to Sutherland law
       const double s   = actsinglemat->SuthTemp();
       const double rt  = actsinglemat->RefTemp();
-      const double phi = funct_.Dot(ephinp[0]);
-      diffus_[k] = pow((phi/rt),1.5)*((rt+s)/(phi+s))*actsinglemat->RefVisc()/actsinglemat->PraNum();
+      const double phi = funct_.Dot(ephinp[numscal_-1]);
+      diffus_[k] = pow((phi/rt),1.5)*((rt+s)/(phi+s))*actsinglemat->RefVisc()/actsinglemat->SchNum();
 
-      // get specific heat capacity at constant pressure, reaction heat and
-      // activation temperature
-      shcacp_   = actsinglemat->Shc();
-      reaheat_  = actsinglemat->ReaHeat();
-      actemp_   = actsinglemat->AcTemp();
+      // get pre-exponential constant, temperature exponent
+      // and activation temperature
+      const double preexcon = actsinglemat->PreExCon();
+      const double tempexp  = actsinglemat->TempExp();
+      const double actemp   = actsinglemat->AcTemp();
+
+      // compute reaction rate for species equation
+      reacoeff_[k] = -preexcon * pow(phi,tempexp) * exp(-actemp/phi);
     }
-    else if (singlemat->MaterialType() == INPAR::MAT::m_reacspec)
+    else if (singlemat->MaterialType() == INPAR::MAT::m_arrhenius_temp)
     {
-      const MAT::ReacSpec* actsinglemat = static_cast<const MAT::ReacSpec*>(singlemat.get());
+      if (k != numscal_-1) dserror("Temperature equation always needs to be the last variable for reactive equation system!");
+
+      const MAT::ArrheniusTemp* actsinglemat = static_cast<const MAT::ArrheniusTemp*>(singlemat.get());
 
       // use one-point Gauss rule to calculate temperature at element center
       DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
@@ -1174,12 +1195,23 @@ if (material->MaterialType() == INPAR::MAT::m_matlist)
       // compute diffusivity according to Sutherland law
       const double s   = actsinglemat->SuthTemp();
       const double rt  = actsinglemat->RefTemp();
-      const double phi = funct_.Dot(ephinp[0]);
+      const double phi = funct_.Dot(ephinp[k]);
       diffus_[k] = pow((phi/rt),1.5)*((rt+s)/(phi+s))*actsinglemat->RefVisc()/actsinglemat->PraNum();
 
-      // get pre-exponential factor or basic reaction coefficient
-      preexfac_ = actsinglemat->PreExFac();
-    }*/
+      // get specific heat capacity at constant pressure, heat of reaction
+      // per unit mass, pre-exponential constant, temperature exponent
+      // and activation temperature
+      shcacp_               = actsinglemat->Shc();
+      const double reaheat  = actsinglemat->ReaHeat();
+      const double preexcon = actsinglemat->PreExCon();
+      const double tempexp  = actsinglemat->TempExp();
+      const double actemp   = actsinglemat->AcTemp();
+
+      // compute sum of reaction rates for temperature equation
+      // -> will be considered a right-hand side contribution
+      const double spec = funct_.Dot(ephinp[0]);
+      reatemprhs_[k] = -reaheat * preexcon * pow(phi,tempexp) * exp(-actemp/phi) * spec;
+    }
     else if (singlemat->MaterialType() == INPAR::MAT::m_condif)
     {
       const MAT::ConvecDiffus* actsinglemat = static_cast<const MAT::ConvecDiffus*>(singlemat.get());
@@ -1215,6 +1247,9 @@ else if (material->MaterialType() == INPAR::MAT::m_condif)
   // in case of reaction with constant coefficient, read coefficient
   if (reaction) reacoeff_[0] = actmat->ReaCoeff();
   else          reacoeff_[0] = 0.0;
+
+  // set temperature rhs for reactive equation system to zero
+  reatemprhs_[0] = 0.0;
 }
 else if (material->MaterialType() == INPAR::MAT::m_sutherland_condif)
 {
@@ -1240,8 +1275,9 @@ else if (material->MaterialType() == INPAR::MAT::m_sutherland_condif)
   const double phi = funct_.Dot(ephinp[0]);
   diffus_[0] = pow((phi/rt),1.5)*((rt+s)/(phi+s))*actmat->RefVisc()/actmat->PraNum();
 
-  // set reaction coefficient to zero
+  // set reaction coeff. and temperature rhs for reactive equation system to zero
   reacoeff_[0] = 0.0;
+  reatemprhs_[0] = 0.0;
 }
 else
   dserror("Material type is not supported");

@@ -98,7 +98,7 @@ namespace LOMA
     double  ittol_;
 
     /// flag for printing out mean values of temperature and density
-    string outmean_;
+    bool outmean_;
 
     /// flag for constant thermodynamic pressure
     string consthermpress_;

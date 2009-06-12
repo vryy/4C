@@ -172,6 +172,8 @@ using namespace std;
 #define ParObject_ArteryRegister        (int)159
 #define ParObject_Artery                (int)160
 #define ParObject_Cnst_1d_art           (int)161
+#define ParObject_ArrheniusSpec         (int)162
+#define ParObject_ArrheniusTemp         (int)163
 
 namespace DRT
 {

@@ -125,6 +125,8 @@ extern "C"
 #include "../drt_mat/artwallremod.H"
 #include "../drt_mat/convecdiffus.H"
 #include "../drt_mat/sutherland_condif.H"
+#include "../drt_mat/arrhenius_spec.H"
+#include "../drt_mat/arrhenius_temp.H"
 #include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/modpowerlaw.H"
 #include "../drt_mat/biocell.H"
@@ -798,6 +800,18 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       MAT::SutherlandCondif* sutherland_condif = new MAT::SutherlandCondif();
       sutherland_condif->Unpack(data);
       return sutherland_condif;
+    }
+    case ParObject_ArrheniusSpec:
+    {
+      MAT::ArrheniusSpec* arrhenius_spec = new MAT::ArrheniusSpec();
+      arrhenius_spec->Unpack(data);
+      return arrhenius_spec;
+    }
+    case ParObject_ArrheniusTemp:
+    {
+      MAT::ArrheniusTemp* arrhenius_temp = new MAT::ArrheniusTemp();
+      arrhenius_temp->Unpack(data);
+      return arrhenius_temp;
     }
     case ParObject_CarreauYasuda:
     {

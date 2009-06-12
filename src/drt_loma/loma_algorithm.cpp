@@ -30,7 +30,9 @@ LOMA::Algorithm::Algorithm(
   itmaxpre_ = prbdyn.get<int>("ITEMAX");
 
   // flag for printing out mean values of temperature and density
-  outmean_ = prbdyn.get<string>("OUTMEAN");
+  string outmeanstring = prbdyn.get<string>("OUTMEAN");
+  if (outmeanstring=="Yes") outmean_ = true;
+  else                      outmean_ = false;
 
   // flag for constant thermodynamic pressure
   consthermpress_ = prbdyn.get<string>("CONSTHERMPRESS");
@@ -183,11 +185,9 @@ void LOMA::Algorithm::InitialCalculations()
   // is weighted by density at n+alpha_F, which is identical to density
   // at n+1, since density at n was set equal to n+1 above.)
   // store temperature and velocity of previous iteration for convergence check
-  ScaTraField().SetVelocityField(
-      FluidField().Velnp(),
-      FluidField().SgVelVisc(),
-      FluidField().Discretization()
-  );
+  ScaTraField().SetVelocityField(FluidField().Velnp(),
+                                 FluidField().SgVelVisc(),
+                                 FluidField().Discretization());
 
   // (if not constant) set initial value of thermodynamic pressure in SCATRA
   // and (if not based on mass conservation) compute also time derivative
@@ -233,12 +233,11 @@ void LOMA::Algorithm::GenAlphaPrepareTimeStep()
 
   // set density at n+1 and n, density time derivative at n, SCATRA trueresidual
   // and eos factor
-  FluidField().SetTimeLomaFields(
-      ScaTraField().DensNp(),
-      ScaTraField().DensN(),
-      ScaTraField().DensDtN(),
-      ScaTraField().TrueResidual(),
-      eosfac_);
+  FluidField().SetTimeLomaFields(ScaTraField().DensNp(),
+                                 ScaTraField().DensN(),
+                                 ScaTraField().DensDtN(),
+                                 ScaTraField().TrueResidual(),
+                                 eosfac_);
 
   // prepare fluid time step, particularly predict velocity field
   FluidField().PrepareTimeStep();
@@ -269,12 +268,11 @@ void LOMA::Algorithm::OSTBDF2PrepareTimeStep()
   ScaTraField().PredictDensity();
 
   // set density at n+1, n and n-1, SCATRA trueresidual and eos factor
-  FluidField().SetTimeLomaFields(
-      ScaTraField().DensNp(),
-      ScaTraField().DensN(),
-      ScaTraField().DensNm(),
-      ScaTraField().TrueResidual(),
-      eosfac_);
+  FluidField().SetTimeLomaFields(ScaTraField().DensNp(),
+                                 ScaTraField().DensN(),
+                                 ScaTraField().DensNm(),
+                                 ScaTraField().TrueResidual(),
+                                 eosfac_);
 
   // prepare fluid time step, particularly predict velocity field
   FluidField().PrepareTimeStep();
@@ -312,12 +310,11 @@ void LOMA::Algorithm::GenAlphaOuterLoop()
     // store temperature and velocity of previous iteration for convergence check
     ScaTraField().TempIncNp()->Update(1.0,*ScaTraField().Phinp(),0.0);
     //ScaTraField().VelIncNp()->Update(1.0,*ConVel(),0.0);
+
     // set field vectors: velocity, subgrid viscosity, (negative) fluid trueresidual
-    ScaTraField().SetVelocityField(
-        FluidField().Velaf(),
-        FluidField().SgVelVisc(),
-        FluidField().Discretization()
-    );
+    ScaTraField().SetVelocityField(FluidField().Velaf(),
+                                   FluidField().SgVelVisc(),
+                                   FluidField().Discretization());
 
     // solve transport equation for temperature
     if (Comm().MyPID()==0) cout<<"\n******************************************\n   GENERALIZED-ALPHA TEMPERATURE SOLVER\n******************************************\n";
@@ -342,7 +339,9 @@ void LOMA::Algorithm::GenAlphaOuterLoop()
     ScaTraField().ComputeDensityDerivative();
 
     // set density (and density time derivative) at n+1 as well as eos factor
-    FluidField().SetIterLomaFields(ScaTraField().DensNp(),ScaTraField().DensDtNp(),eosfac_);
+    FluidField().SetIterLomaFields(ScaTraField().DensNp(),
+                                   ScaTraField().DensDtNp(),
+                                   eosfac_);
 
     // solve low-Mach-number flow equations
     if (Comm().MyPID()==0) cout<<"\n******************************************\n      GENERALIZED-ALPHA FLOW SOLVER\n******************************************\n";
@@ -356,11 +355,9 @@ void LOMA::Algorithm::GenAlphaOuterLoop()
   ScaTraField().ComputeIntermediateValues();
 
   // set field vectors: velocity, subgrid viscosity, (negative) fluid trueresidual
-  ScaTraField().SetVelocityField(
-      FluidField().Velaf(),
-      FluidField().SgVelVisc(),
-      FluidField().Discretization()
-  );
+  ScaTraField().SetVelocityField(FluidField().Velaf(),
+                                 FluidField().SgVelVisc(),
+                                 FluidField().Discretization());
 
   // solve transport equation for temperature
   if (Comm().MyPID()==0) cout<<"\n******************************************\n   GENERALIZED-ALPHA TEMPERATURE SOLVER\n******************************************\n";
@@ -414,12 +411,11 @@ void LOMA::Algorithm::OSTBDF2OuterLoop()
     // store temperature and velocity of previous iteration for convergence check
     ScaTraField().TempIncNp()->Update(1.0,*ScaTraField().Phinp(),0.0);
     //ScaTraField().VelIncNp()->Update(1.0,*ConVel(),0.0);
+
     // set field vectors: velocity, subgrid viscosity, (negative) fluid trueresidual
-    ScaTraField().SetVelocityField(
-        FluidField().Velnp(),
-        FluidField().SgVelVisc(),
-        FluidField().Discretization()
-    );
+    ScaTraField().SetVelocityField(FluidField().Velnp(),
+                                   FluidField().SgVelVisc(),
+                                   FluidField().Discretization());
 
     // solve transport equation for temperature
     if (Comm().MyPID()==0) cout<<"\n******************************************\n  ONE-STEP-THETA/BDF2 TEMPERATURE SOLVER\n******************************************\n";
@@ -441,7 +437,9 @@ void LOMA::Algorithm::OSTBDF2OuterLoop()
     ScaTraField().ComputeDensity(thermpress_,gasconstant_);
 
     // set density (and density time derivative) at n+1 as well as eos factor
-    FluidField().SetIterLomaFields(ScaTraField().DensNp(),ScaTraField().DensDtNp(),eosfac_);
+    FluidField().SetIterLomaFields(ScaTraField().DensNp(),
+                                   ScaTraField().DensDtNp(),
+                                   eosfac_);
 
     // solve low-Mach-number flow equations
     if (Comm().MyPID()==0) cout<<"\n******************************************\n     ONE-STEP-THETA/BDF2 FLOW SOLVER\n******************************************\n";
@@ -450,6 +448,30 @@ void LOMA::Algorithm::OSTBDF2OuterLoop()
     // check convergence of temperature field
     stopnonliniter = ScaTraField().LomaConvergenceCheck(itnum,itmax_,ittol_);
   }
+
+  // set field vectors: velocity, subgrid viscosity, (negative) fluid trueresidual
+  ScaTraField().SetVelocityField(FluidField().Velnp(),
+                                 FluidField().SgVelVisc(),
+                                 FluidField().Discretization());
+
+  // solve transport equation for temperature
+  if (Comm().MyPID()==0) cout<<"\n******************************************\n  ONE-STEP-THETA/BDF2 TEMPERATURE SOLVER\n******************************************\n";
+  ScaTraField().Solve();
+
+  // in case of non-constant thermodynamic pressure: compute
+  if (consthermpress_=="No_energy")
+  {
+    thermpress_ = ScaTraField().ComputeThermPressure();
+    eosfac_ = thermpress_/gasconstant_;
+  }
+  else if (consthermpress_=="No_mass")
+  {
+    thermpress_ = ScaTraField().ComputeThermPressureFromMassCons(initialmass_,gasconstant_);
+    eosfac_ = thermpress_/gasconstant_;
+  }
+
+  // compute density using current temperature + thermodynamic pressure
+  ScaTraField().ComputeDensity(thermpress_,gasconstant_);
 
   return;
 }
@@ -471,12 +493,11 @@ void LOMA::Algorithm::GenAlphaUpdate()
 
   // set density at n+1 and n, density time derivative at n, SCATRA trueresidual
   // and eos factor
-  FluidField().SetTimeLomaFields(
-      ScaTraField().DensNp(),
-      ScaTraField().DensN(),
-      ScaTraField().DensDtN(),
-      ScaTraField().TrueResidual(),
-      eosfac_);
+  FluidField().SetTimeLomaFields(ScaTraField().DensNp(),
+                                 ScaTraField().DensN(),
+                                 ScaTraField().DensDtN(),
+                                 ScaTraField().TrueResidual(),
+                                 eosfac_);
 
   // update fluid
   FluidField().Update();
@@ -500,12 +521,11 @@ void LOMA::Algorithm::OSTBDF2Update()
   ScaTraField().UpdateDensity();
 
   // set density at n+1, n and n-1, SCATRA trueresidual and eos factor
-  FluidField().SetTimeLomaFields(
-      ScaTraField().DensNp(),
-      ScaTraField().DensN(),
-      ScaTraField().DensNm(),
-      ScaTraField().TrueResidual(),
-      eosfac_);
+  FluidField().SetTimeLomaFields(ScaTraField().DensNp(),
+                                 ScaTraField().DensN(),
+                                 ScaTraField().DensNm(),
+                                 ScaTraField().TrueResidual(),
+                                 eosfac_);
 
   // update fluid
   FluidField().Update();
@@ -526,7 +546,7 @@ void LOMA::Algorithm::Output()
 
   ScaTraField().Output();
 
-  if (outmean_=="Yes") ScaTraField().OutputMeanTempAndDens();
+  if (outmean_) ScaTraField().OutputMeanTempAndDens();
 
   return;
 }

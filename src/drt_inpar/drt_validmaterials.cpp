@@ -171,8 +171,50 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"REFVISC","reference dynamic viscosity (kg/(m*s))");
     AddNamedReal(m,"REFTEMP","reference temperature (K)");
     AddNamedReal(m,"SUTHTEMP","Sutherland temperature (K)");
-    AddNamedReal(m,"SHC","specific heat capacity");
+    AddNamedReal(m,"SHC","specific heat capacity at constant pressure");
     AddNamedReal(m,"PRANUM","Prandtl number");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // convection-diffusion material according to Sutherland law
+  // with Arrhenius-type chemical kinetics (species)
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_arrhenius_spec",
+                                            "Arrhenius-type chemical kinetics (species)",
+                                            INPAR::MAT::m_arrhenius_spec));
+
+    AddNamedReal(m,"REFVISC","reference dynamic viscosity (kg/(m*s))");
+    AddNamedReal(m,"REFTEMP","reference temperature (K)");
+    AddNamedReal(m,"SUTHTEMP","Sutherland temperature (K)");
+    AddNamedReal(m,"SCHNUM","Schmidt number");
+    AddNamedReal(m,"PREEXCON","pre-exponential constant");
+    AddNamedReal(m,"TEMPEXP","exponent of temperature dependence");
+    AddNamedReal(m,"ACTEMP","activation temperature");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // convection-diffusion material according to Sutherland law
+  // with Arrhenius-type chemical kinetics (temperature)
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_arrhenius_temp",
+                                            "Arrhenius-type chemical kinetics (temperature)",
+                                            INPAR::MAT::m_arrhenius_temp));
+
+    AddNamedReal(m,"REFVISC","reference dynamic viscosity (kg/(m*s))");
+    AddNamedReal(m,"REFTEMP","reference temperature (K)");
+    AddNamedReal(m,"SUTHTEMP","Sutherland temperature (K)");
+    AddNamedReal(m,"SHC","specific heat capacity at constant pressure");
+    AddNamedReal(m,"PRANUM","Prandtl number");
+    AddNamedReal(m,"REAHEAT","heat of reaction per unit mass");
+    AddNamedReal(m,"PREEXCON","pre-exponential constant");
+    AddNamedReal(m,"TEMPEXP","exponent of temperature dependence");
+    AddNamedReal(m,"ACTEMP","activation temperature");
 
     AppendMaterialDefinition(matlist,m);
   }

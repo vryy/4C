@@ -54,6 +54,8 @@ namespace INPAR
       m_modpowerlaw,  ///< fluid with nonlinear viscosity according to a modified power law
       m_condif,      ///< convection-diffusion
       m_sutherland_condif,  ///< convection-diffusion material with temperature dependence according to Sutherland law
+      m_arrhenius_spec, ///< convection-diffusion material according to Sutherland law with Arrhenius-type chemical kinetics (species)
+      m_arrhenius_temp, ///< convection-diffusion material according to Sutherland law with Arrhenius-type chemical kinetics (temperature)
       m_pl_hash,     ///< elpl. hashin delamination material
       m_el_orth,     ///< elastic orthotropic material
       m_mfoc,        ///< open cell metal foam

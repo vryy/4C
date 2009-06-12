@@ -51,58 +51,102 @@ void loma_dyn(int disnumff,int disnumscatra, int restart)
   // access the fluid discretization
   RefCountPtr<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(disnumff,0);
   if (!fluiddis->Filled()) fluiddis->FillComplete();
-  if (fluiddis->NumGlobalNodes()==0) dserror("No fluid discretization found!");
 
   // access the (typically empty) scatra discretization
   RefCountPtr<DRT::Discretization> scatradis = DRT::Problem::Instance()->Dis(disnumscatra,0);
   if (!scatradis->Filled()) scatradis->FillComplete();
 
-  // create scatra elements if the scatra discretization is empty (typical case)
-  if (scatradis->NumGlobalNodes()==0)
-  {
-    Epetra_Time time(comm);
-    std::map<string,string> conditions_to_copy;
-    conditions_to_copy.insert(pair<string,string>("TransportDirichlet","Dirichlet"));
-    conditions_to_copy.insert(pair<string,string>("TransportPointNeumann","PointNeumann"));
-    conditions_to_copy.insert(pair<string,string>("TransportLineNeumann","LineNeumann"));
-    conditions_to_copy.insert(pair<string,string>("TransportSurfaceNeumann","SurfaceNeumann"));
-    conditions_to_copy.insert(pair<string,string>("TransportVolumeNeumann","VolumeNeumann"));
-    conditions_to_copy.insert(pair<string,string>("SurfacePeriodic","SurfacePeriodic"));
-    conditions_to_copy.insert(pair<string,string>("TransportNeumannInflow","TransportNeumannInflow"));
-    conditions_to_copy.insert(pair<string,string>("FluidStressCalc","FluxCalculation"));
-
-    // access the scalar transport parameter list
-    const Teuchos::ParameterList& scatracontrol = DRT::Problem::Instance()->ScalarTransportDynamicParams();
-    const int matid = scatracontrol.get<int>("MATID");
-
-    SCATRA::CreateScaTraDiscretization(fluiddis,scatradis,conditions_to_copy,matid,false);
-    if (comm.MyPID()==0)
-    cout<<"Created scalar transport discretization from fluid field in...."
-    <<time.ElapsedTime() << " secs\n\n";
-  }
-  else
-    dserror("Fluid AND Scatra discretization present. This is not supported.");
-
   // access the problem-specific parameter list
   const Teuchos::ParameterList& lomacontrol = DRT::Problem::Instance()->LOMAControlParams();
 
-  // create a LOMA::Algorithm instance
-  Teuchos::RCP<LOMA::Algorithm> loma = Teuchos::rcp(new LOMA::Algorithm(comm,lomacontrol));
+  // access the scalar transport parameter list
+  const Teuchos::ParameterList& scatradyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();
+  int veltype = Teuchos::getIntegralValue<int>(scatradyn,"VELOCITYFIELD");
 
-  // read the restart information, set vectors and variables
-  if (restart) loma->ReadRestart(restart);
+  // choose algorithm depending on velocity field type
+  switch (veltype)
+  {
+  case 0:  // zero  (see case 1)
+  case 1:  // function
+  {
+    // we directly use the elements from the scalar transport elements section
+    if (scatradis->NumGlobalNodes()==0)
+      dserror("No elements in the ---TRANSPORT ELEMENTS section");
 
-  // enter LOMA algorithm
-  loma->TimeLoop();
+    // create instance of scalar transport basis algorithm (empty fluid discretization)
+    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly = rcp(new ADAPTER::ScaTraBaseAlgorithm(lomacontrol,false));
 
-  // summarize the performance measurements
-  Teuchos::TimeMonitor::summarize();
+    // read the restart information, set vectors and variables
+    if (restart) scatraonly->ScaTraField().ReadRestart(restart);
 
-  // perform the result test
-  DRT::ResultTestManager testmanager(comm);
-  testmanager.AddFieldTest(loma->FluidField().CreateFieldTest());
-  testmanager.AddFieldTest(loma->CreateScaTraFieldTest());
-  testmanager.TestAll();
+    // set velocity field
+    //(this is done only once. Time-dependent velocity fields are not supported)
+    (scatraonly->ScaTraField()).SetVelocityField();
+
+    // enter time loop to solve problem with given convective velocity
+    (scatraonly->ScaTraField()).TimeLoop();
+
+    // perform the result test if required
+    DRT::ResultTestManager testmanager(comm);
+    testmanager.AddFieldTest(scatraonly->CreateScaTraFieldTest());
+    testmanager.TestAll();
+
+    break;
+  }
+  case 2:  // Navier_Stokes
+  {
+    // we use the fluid discretization as layout for the scalar transport discretization
+    if (fluiddis->NumGlobalNodes()==0) dserror("Fluid discretization is empty!");
+
+    // create scatra elements if the scatra discretization is empty (typical case)
+    if (scatradis->NumGlobalNodes()==0)
+    {
+      Epetra_Time time(comm);
+      std::map<string,string> conditions_to_copy;
+      conditions_to_copy.insert(pair<string,string>("TransportDirichlet","Dirichlet"));
+      conditions_to_copy.insert(pair<string,string>("TransportPointNeumann","PointNeumann"));
+      conditions_to_copy.insert(pair<string,string>("TransportLineNeumann","LineNeumann"));
+      conditions_to_copy.insert(pair<string,string>("TransportSurfaceNeumann","SurfaceNeumann"));
+      conditions_to_copy.insert(pair<string,string>("TransportVolumeNeumann","VolumeNeumann"));
+      conditions_to_copy.insert(pair<string,string>("LinePeriodic","LinePeriodic"));
+      conditions_to_copy.insert(pair<string,string>("SurfacePeriodic","SurfacePeriodic"));
+      conditions_to_copy.insert(pair<string,string>("TransportNeumannInflow","TransportNeumannInflow"));
+      conditions_to_copy.insert(pair<string,string>("FluidStressCalc","FluxCalculation"));
+
+      // fetch the desired material id for the transport elements
+      const int matid = scatradyn.get<int>("MATID");
+
+      // create the scatra discretization
+      SCATRA::CreateScaTraDiscretization(fluiddis,scatradis,conditions_to_copy,matid,false);
+      if (comm.MyPID()==0)
+        cout<<"Created scalar transport discretization from fluid field in...."
+        <<time.ElapsedTime() << " secs\n\n";
+    }
+    else dserror("Fluid AND Scatra discretization present. This is not supported.");
+
+    // create a LOMA::Algorithm instance
+    Teuchos::RCP<LOMA::Algorithm> loma = Teuchos::rcp(new LOMA::Algorithm(comm,lomacontrol));
+
+    // read the restart information, set vectors and variables
+    if (restart) loma->ReadRestart(restart);
+
+    // enter LOMA algorithm
+    loma->TimeLoop();
+
+    // summarize the performance measurements
+    Teuchos::TimeMonitor::summarize();
+
+    // perform the result test
+    DRT::ResultTestManager testmanager(comm);
+    testmanager.AddFieldTest(loma->FluidField().CreateFieldTest());
+    testmanager.AddFieldTest(loma->CreateScaTraFieldTest());
+    testmanager.TestAll();
+
+    break;
+  } // case 2
+  default:
+    dserror("Unknown velocity field type for low-Mach-number flow: %d",veltype);
+  }
 
   return;
 
