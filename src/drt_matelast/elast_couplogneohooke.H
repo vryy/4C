@@ -37,7 +37,9 @@ namespace ELASTIC
     /// material parameters for logarithmic neo-Hooke material
     ///
     /// <h3>Input line</h3>
-    /// MAT 1 ELAST_CoupLogNeoHooke YOUNG 1.044E7 NUE 0.3
+    /// MAT 1 ELAST_CoupLogNeoHooke MUE 1.0 LAMBDA 1.0 [MODE 1 YOUNG 1.044E7 NUE 0.3]
+    /// in case of MODE=0 (default) MUE and LAMBDA are taken
+    /// in case of MODE=1 (optional) YOUNG and NUE (both optional) are taken
     class CoupLogNeoHooke : public MAT::PAR::Parameter
     {
     public:
@@ -53,6 +55,12 @@ namespace ELASTIC
       /// @name material parameters
       //@{
 
+      /// Shear modulus
+      const double mue_;
+      /// Lame's constant
+      const double lambda_;
+      /// Parameter mode
+      const int parmode_;
       /// Young's modulus
       const double youngs_;
       /// Possion's ratio
@@ -69,6 +77,14 @@ namespace ELASTIC
   ///
   /// This is a compressible, hyperelastic, isotropic material 
   /// of the most simple kind.
+  ///
+  /// The material strain energy density function is
+  ///\f[
+  /// \Psi = \frac{\mu}{2} (I_{\boldsymbol{C}} - 3)
+  ///       - \mu \log(\sqrt{I\!I\!I_{\boldsymbol{C}}})
+  ///      + \frac{\lambda}{2} \big( \log(\sqrt{I\!I\!I_{\boldsymbol{C}}}) \big)^2
+  ///\f]
+  /// which was taken from [1]. More details at #AddCoefficientsPrincipal()
   ///
   /// <h3>References</h3>
   /// <ul>
@@ -114,11 +130,12 @@ namespace ELASTIC
     /// The isochoric part is proportional to \f$\mu\f$,
     /// whereas the \f$\lambda\f$-proportional part constitutes the volumetric contribution.
     ///
-    /// The parameters are the shear modulus
+    /// The parameters are the shear modulus. In #params_->parmode_==0 it is set directly,
+    /// in #params_->parmode_==1 it is computed by
     ///\f[
     /// \mu = \frac{E}{2(1+\nu)}
     ///\f]
-    /// and Lame's coefficient
+    /// and Lame's coefficient, again for #params_->parmode_==1, otherwise set by user,
     ///\f[
     /// \lambda = \left\{\begin{array}{ll}
     ///      \frac{E \nu}{(1+\nu) (1-2\nu)} & \text{if $\nu \neq 1/2$}

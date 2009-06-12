@@ -815,8 +815,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             "logarithmic neo-Hooke material acc. to Bonet and Wood",
                                             INPAR::MAT::mes_couplogneohooke));
 
-    AddNamedReal(m,"YOUNG","Young's modulus");
-    AddNamedReal(m,"NUE","Poisson's ratio");
+    AddNamedReal(m,"MUE","shear modulus");
+    AddNamedReal(m,"LAMBDA","Lame's constant");
+    AddNamedInt(m,"MODE","parameter mode: 0=use MUE and LAMBDA (default); 1=use YOUNG and NUE",0,true);
+    AddNamedReal(m,"YOUNG","Young's modulus",true);
+    AddNamedReal(m,"NUE","Poisson's ratio",true);
 
     AppendMaterialDefinition(matlist,m);
   }

@@ -96,7 +96,7 @@ namespace MAT
   ///\f[
   ///  \Psi(\boldsymbol{C}) = \sum_i \Psi_i(\boldsymbol{C})
   ///\f]
-  /// in which the individual \f$\Psi_i\f$ is implemented as #MAT::ELAST::Summand.
+  /// in which the individual \f$\Psi_i\f$ is implemented as #MAT::ELASTIC::Summand.
   ///
   /// Quite often the right Cauchy-Green 2-tensor \f$\boldsymbol{C}\f$
   /// is replaced by its various invariant forms as argument.

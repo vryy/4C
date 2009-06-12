@@ -30,6 +30,9 @@ MAT::ELASTIC::PAR::CoupLogNeoHooke::CoupLogNeoHooke(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
+  mue_(matdata->GetDouble("MUE")),
+  lambda_(matdata->GetDouble("LAMBDA")),
+  parmode_(matdata->GetInt("MODE")),
   youngs_(matdata->GetDouble("YOUNG")),
   nue_(matdata->GetDouble("NUE"))
 {
@@ -66,10 +69,21 @@ void MAT::ELASTIC::CoupLogNeoHooke::AddCoefficientsPrincipal(
   havecoefficients = havecoefficients or true;
 
   // material parameters for isochoric part
-  const double youngs = params_->youngs_;  // Young's modulus
-  const double nue = params_->nue_;  // Poisson's ratio
-  const double lambda = (nue==0.5) ? 0.0 : youngs*nue/((1.0+nue)*(1.0-2.0*nue));  // Lame coeff.
-  const double mue = youngs/(2.0*(1.0+nue));  // shear modulus
+  double lambda = 0.0;
+  double mue = 0.0;
+  if (params_->parmode_ == 0) {
+    lambda = params_->lambda_;
+    mue = params_->mue_;
+  }
+  else if (params_->parmode_ == 1) {
+    const double youngs = params_->youngs_;  // Young's modulus
+    const double nue = params_->nue_;  // Poisson's ratio
+    lambda = (nue==0.5) ? 0.0 : youngs*nue/((1.0+nue)*(1.0-2.0*nue));  // Lame coeff.
+    mue = youngs/(2.0*(1.0+nue));  // shear modulus
+  }
+  else {
+    dserror("Cannot handle mode=%d", params_->parmode_);
+  }
 
   // determinant of deformation gradient
   const double detf = std::sqrt(prinv(2));
