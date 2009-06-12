@@ -119,4 +119,16 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
   return Teuchos::null;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::Summand::AddShearMod(
+  bool& haveshearmod,
+  double& shearmod
+  ) const
+{
+  haveshearmod = haveshearmod or false;
+  return;
+}
+
+
 #endif

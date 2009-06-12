@@ -173,6 +173,9 @@ namespace MAT
     /// material mass density
     double Density() const { return params_->density_; }
 
+    /// a shear modulus equivalent
+    double ShearMod() const;
+
     /// hyperelastic stress response plus elasticity tensor
     void Evaluate(
       const LINALG::Matrix<6,1>& glstrain,  ///< Green-Lagrange strain

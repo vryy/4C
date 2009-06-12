@@ -63,6 +63,12 @@ namespace MAT
         int matnum  ///< material ID
         );
 
+      /// add shear modulus equivalent
+      virtual void AddShearMod(
+        bool& haveshearmod,  ///< non-zero shear modulus was added
+        double& shearmod  ///< variable to add upon
+        ) const;
+
       /// retrieve coefficients of first and second derivative
       /// of summand with respect to principal invariants
       ///

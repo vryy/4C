@@ -41,7 +41,7 @@ Maintainer: Burkhard Bornemann
 #include "../drt_mat/viscoanisotropic.H"
 #include "../drt_mat/yeoh.H"
 #include "../drt_mat/logneohooke.H"
-
+#include "../drt_mat/elasthyper.H"
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            bborn 03/08|
@@ -1777,6 +1777,12 @@ double DRT::ELEMENTS::So_sh8p8::ShearMod() const
   {
     MAT::LogNeoHooke* logneo = static_cast <MAT::LogNeoHooke*>(Material().get());
     return logneo->ShearMod();
+    break;
+  }
+  case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
+  {
+    MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(Material().get());
+    return hyper->ShearMod();
     break;
   }
   default:

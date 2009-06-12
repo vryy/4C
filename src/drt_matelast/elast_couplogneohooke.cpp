@@ -59,6 +59,31 @@ MAT::ELASTIC::CoupLogNeoHooke::CoupLogNeoHooke(MAT::ELASTIC::PAR::CoupLogNeoHook
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void MAT::ELASTIC::CoupLogNeoHooke::AddShearMod(
+  bool& haveshearmod,  ///< non-zero shear modulus was added
+  double& shearmod  ///< variable to add upon
+  ) const
+{
+  haveshearmod = haveshearmod or true;
+
+  // material parameters for isochoric part
+  if (params_->parmode_ == 0) {
+    shearmod += params_->mue_;
+  }
+  else if (params_->parmode_ == 1) {
+    const double youngs = params_->youngs_;  // Young's modulus
+    const double nue = params_->nue_;  // Poisson's ratio
+    shearmod += youngs/(2.0*(1.0+nue));  // shear modulus
+  }
+  else {
+    dserror("Cannot handle mode=%d", params_->parmode_);
+  }
+  
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupLogNeoHooke::AddCoefficientsPrincipal(
   bool& havecoefficients,
   LINALG::Matrix<3,1>& gamma,

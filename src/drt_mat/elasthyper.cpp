@@ -125,6 +125,49 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+int MAT::ElastHyper::MatID(
+  const unsigned index
+) const
+{
+  if ((int)index < params_->nummat_)
+    return params_->matids_->at(index);
+  else
+  {
+    dserror("Index too large");
+    return -1;
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double MAT::ElastHyper::ShearMod() const
+{
+  // principal coefficients
+  bool haveshearmod = false;
+  double shearmod = 0.0;
+  {
+    // loop map of associated potential summands
+    std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >& pot = params_->potsum_;
+    std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
+    for (p=pot.begin(); p!=pot.end(); ++p)
+    {
+      p->second->AddShearMod(haveshearmod,shearmod);
+    }
+  }
+
+  if (haveshearmod)
+  {
+    return shearmod;
+  }
+  else
+  {
+    dserror("Cannot provide shear modulus equivalent");
+    return -1.0;
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void MAT::ElastHyper::Setup()
 {
   anisotropic_ = true;
@@ -181,20 +224,7 @@ void MAT::ElastHyper::Setup()
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-int MAT::ElastHyper::MatID(
-  const unsigned index
-) const
-{
-  if ((int)index < params_->nummat_)
-    return params_->matids_->at(index);
-  else
-  {
-    dserror("Index too large");
-    return -1;
-  }
-}
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
