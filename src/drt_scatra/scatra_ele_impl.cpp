@@ -33,7 +33,7 @@ Maintainer: Georg Bauer
 
 //#define VISUALIZE_ELEMENT_DATA
 #include "scatra_element.H" // only for visualization of element data
-#define MIGRATIONSTAB  //activate convective stabilization with migration term
+//#define MIGRATIONSTAB  //stabilization w.r.t migration term (obsolete!)
 //#define PRINT_ELCH_DEBUG
 //#define TAU_EXACT
 //#define EVAL_TAU_AT_INTPOINT
