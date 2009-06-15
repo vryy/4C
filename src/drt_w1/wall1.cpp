@@ -31,7 +31,8 @@ thickness_(0.0),
 gaussrule_(DRT::UTILS::intrule2D_undefined),
 wtype_(plane_none),
 stresstype_(w1_none),
-iseas_(false)
+iseas_(false),
+eastype_(eas_vague)
 
 {
 //  tsi_couptyp_ = tsi_coup_none;
@@ -49,9 +50,10 @@ thickness_(old.thickness_),
 gaussrule_(old.gaussrule_),
 wtype_(old.wtype_),
 stresstype_(old.stresstype_),
-iseas_(old.iseas_)
-
+iseas_(old.iseas_),
+eastype_(old.eas_vague)
 // tsi_couptyp_(old.tsi_couptyp_)
+
 {
   return;
 }
@@ -114,6 +116,8 @@ void DRT::ELEMENTS::Wall1::Pack(vector<char>& data) const
   AddtoPack(data,stresstype_);
   // eas
   AddtoPack(data,iseas_);
+  // eas type
+  AddtoPack(data,eastype_);
 //  //tsi
 //  AddtoPack(data,tsi_couptyp_);
   //data
@@ -154,6 +158,8 @@ void DRT::ELEMENTS::Wall1::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,stresstype_);
   // iseas_
   ExtractfromPack(position,data,iseas_);
+  // eastype_
+  ExtractfromPack(position,data,eastype_);
 //  // tsi_couptype
 //  ExtractfromPack(position,data,tsi_couptyp_);
   //data
