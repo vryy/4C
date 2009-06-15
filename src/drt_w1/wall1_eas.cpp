@@ -157,7 +157,7 @@ void DRT::ELEMENTS::Wall1::w1_call_defgrad_enh(
 
   // EAS
 
-  // EAS is the EAS interpolation of 4 modes, based on
+  // The interpolation functions for the 4 EAS modes are based on
   //
   // Q1E4:
   //     M1 = r 0    M2 = 0 s    M3 = 0 0    M4 = 0 0
