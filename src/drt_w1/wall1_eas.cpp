@@ -274,7 +274,7 @@ void DRT::ELEMENTS::Wall1::w1_call_defgrad_enh(
     (M_ges[2])(1,0) = e1;
     (M_ges[3])(1,1) = e2;
   }
-  if (eastype_ == eas_q1et4)
+  else if (eastype_ == eas_q1et4)
   {
     (M_ges[0])(0,0) = e1;
     (M_ges[1])(0,1) = e1;
