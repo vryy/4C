@@ -299,6 +299,14 @@ private:
     w1_rs  ///< local/parametric/natural
   };
 
+  /// EAS type
+  enum EasType
+  {
+    eas_vague,  ///< unknown type
+    eas_q1e4,  ///< Q1E4 formulation due to Simo and Armero [1]
+    eas_q1et4  ///< Q1ET4 formulation due to Glaser and Armero [2]
+  };
+
   /// container containing all kind of wall1 thisandthat
   DRT::Container data_;
 
@@ -314,6 +322,8 @@ private:
   StressType stresstype_;
   /// eas or not
   bool iseas_;
+  /// EAS type
+  enum EasType eastype_;
 
   /// @name Internal calculation methods
   //@{

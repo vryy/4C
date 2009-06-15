@@ -121,7 +121,7 @@ bool DRT::ELEMENTS::Wall1::ReadElement()
   frchk("EAS_Model",&ierr);
   if (ierr==1)
   {
-    iseas_=true;
+    iseas_ = true;
     
     if (nnode==9)
     {
@@ -129,15 +129,15 @@ bool DRT::ELEMENTS::Wall1::ReadElement()
     }
     else if (nnode==8)
     {
-    	dserror("eas-technology not necessary with 8 nodes");	
+      dserror("eas-technology not necessary with 8 nodes");	
     }
     else if (nnode==3)
     {
-      	dserror("eas-technology not implemented for tri3 elements");	
+      dserror("eas-technology not implemented for tri3 elements");	
     }
     else if (nnode==6)
     {
-     	dserror("eas-technology not implemented for tri6 elements");	
+      dserror("eas-technology not implemented for tri6 elements");	
     }
     else
     {	
@@ -151,7 +151,7 @@ bool DRT::ELEMENTS::Wall1::ReadElement()
       Epetra_SerialDenseMatrix invKaa(Wall1::neas_,Wall1::neas_);
       // EAS matrix K_{d alpha}
       Epetra_SerialDenseMatrix Kda(2*NumNode(),Wall1::neas_);
-      // EAS matrix K_{alpha d} // ONLY NEEDED FOR GENERALISED ENERGY-MOMEMTUM METHOD
+      // EAS matrix K_{alpha d} // ONLY NEEDED FOR GENERALISED ENERGY-MOMENTUM METHOD
       Epetra_SerialDenseMatrix Kad(Wall1::neas_,2*NumNode());
     
       // save EAS data into element container easdata_
@@ -160,8 +160,18 @@ bool DRT::ELEMENTS::Wall1::ReadElement()
       data_.Add("feas",feas);
       data_.Add("invKaa",invKaa);
       data_.Add("Kda",Kda);
-      data_.Add("Kad",Kad); // ONLY NEEDED FOR GENERALISED ENERGY-MOMEMTUM METHOD
+      data_.Add("Kad",Kad); // ONLY NEEDED FOR GENERALISED ENERGY-MOMENTUM METHOD
     }
+  }
+
+  // EAS type
+  if (iseas_)
+  {
+    eastype_ = eas_q1e4;
+  }
+  else
+  {
+    eastype_ = eas_vague;
   }
 
   //read lokal or global stresses
