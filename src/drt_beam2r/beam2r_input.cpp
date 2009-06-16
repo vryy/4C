@@ -15,37 +15,73 @@ Maintainer: Christian Cyron
 
 #include "beam2r.H"
 #include "../drt_lib/standardtypes_cpp.H"
+#include "../drt_lib/drt_utils.H"
+
+
 
 /*----------------------------------------------------------------------*
  |  read element input (public)                              cyron 01/08|
  *----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::Beam2r::ReadElement()
 {
-  // read element's nodes; in case of a beam element always LINE2 shape
-  int ierr=0;
-
-  //note: BACI intern type is LINE2, but gid input files work with LIN2
-  frchk("LIN2",&ierr);
-  // two figures have to be read by frint
-  int nnode=2;
-  // provide an array of length two in order to store the two figures read
-  int nodes[2];
-  frint_n("LIN2",nodes,nnode,&ierr);
+	/*
+	\The element is capable of using higher order functions from linear to quartic. Please make sure you put the nodes in the right order
+	\in the input file.
+	\LIN2    1---2
+	\LIN3	 1---3---2
+	\LIN4 	 1---4---2---3
+	\LIN5	 1---5---2---3---4
+	*/
+	
+  //function receives only one line of the input .dat file
+  int ierr=0;  //error-variable used throughout the function
+ 
+  //typedef for later conversion of string to distype
+  //note: GID gives LINX in the .dat file while pre_exodus gives LINEX
+  typedef map<string, DiscretizationType> Beam2rDisType;
+  Beam2rDisType beam2rdistype;
+  beam2rdistype["LIN2"]     = line2;
+  beam2rdistype["LINE2"]    = line2;
+  beam2rdistype["LIN3"]     = line3;
+  beam2rdistype["LINE3"]    = line3;
+  beam2rdistype["LIN4"]     = line4;
+  beam2rdistype["LINE4"]    = line4;
+  beam2rdistype["LIN5"]     = line5;
+  beam2rdistype["LINE5"]    = line5;
   
-  // if that does not work try LINE2, in case .dat file was created with pre_exodus
-  if (ierr != 1)
-  {
-    ierr=0;
-    frchk("LINE2",&ierr);
-    frint_n("LINE2",nodes,nnode,&ierr);
-  }
   
-  if (ierr != 1) dserror("Reading of ELEMENT Topology failed");
+  DiscretizationType distype = dis_none;
+  
+  //Iterator goes through all possibilities
+  Beam2rDisType::const_iterator iter;
+      for( iter = beam2rdistype.begin(); iter != beam2rdistype.end(); iter++ )
+      {
+          const string eletext = iter->first;
+          frchk(eletext.c_str(), &ierr);
+          if (ierr == 1)
+          {
+              //Get DiscretizationType
+        	  distype = beam2rdistype[eletext];
+              //Get Number of Nodes of DiscretizationType
+              int nnode = DRT::UTILS::getNumberOfElementNodes(distype);
+              
+              //Set the applied Gaussrule ( It can be proven that we need 1 GP less than nodes to integrate exact )
+              //note: we use a static cast for the enumeration here cf. Practical C++ Programming p.185
+              gaussrule_ = static_cast<enum DRT::UTILS::GaussRule1D>(nnode-1);
+              //Get an array for the global node numbers
+              int nodes[nnode];
+              //Read global node numbers
+              frint_n(eletext.c_str(), nodes, nnode, &ierr);
+              
+              dsassert(ierr==1, "Reading of ELEMENT Topology failed\n");
+              
+              // reduce global node numbers by one because BACI nodes begin with 0 and inputfile nodes begin with 1
+              for (int i=0; i<nnode; ++i) nodes[i]--;
 
-  // reduce node numbers by one
-  for (int i=0; i<nnode; ++i) nodes[i]--;
-
-  SetNodeIds(nnode,nodes);
+              SetNodeIds(nnode,nodes); // has to be executed in here because of the local scope of nodes
+              break;
+          }
+      }
 
   // read material parameters using structure _MATERIAL which is defined by inclusion of
   // "../drt_lib/drt_timecurve.H"
@@ -59,7 +95,7 @@ bool DRT::ELEMENTS::Beam2r::ReadElement()
   frdouble("CROSS",&crosssec_,&ierr);
   if (ierr!=1) dserror("Reading of Beam2r element failed");
 
-   // read beam cross section
+   // read beam cross section including shear correction factor
   double shear_correction = 0.0;
   frdouble("SHEARCORR",&shear_correction,&ierr);
   if (ierr!=1) dserror("Reading of Beam2r element failed");

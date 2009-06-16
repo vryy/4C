@@ -30,8 +30,10 @@ Input/b3_elast.dat                                      x        x        x     
 Input/b3_matnln.dat                                     x        x        -        -        -        -
 Input/beam2test1.dat                                    x        x        x        -        -        -
 Input/beam2test2.dat                                    x        x        x        -        -        -
-Input/beam2rtest1.dat                                   x        x        x        -        -        -
-Input/beam2rtest2.dat                                   x        x        x        -        -        -
+Input/beam2rlinear.dat                                  x        x        x        -        -        -
+Input/beam2rquadratic.dat                               x        x        x        -        -        -
+Input/beam2rcubic.dat                                   x        x        x        -        -        -
+Input/beam2rquartic.dat                                 x        x        x        -        -        -
 Input/beam3test1.dat                                    x        x        x        -        -        -
 Input/beam3test2.dat                                    x        x        x        -        -        -
 Input/truss3test1.dat                                   x        -        -        -        -        -

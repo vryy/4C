@@ -2015,6 +2015,33 @@ namespace UTILS
           funct(2) = 1 - r*r;
           break;
       }
+      case DRT::Element::line4:
+      {
+          funct(0) = -(9.0/16.0)*(1.0-r)*((1.0/9.0)-pow(r,2));
+          funct(1) = -(9.0/16.0)*(1.0+r)*((1.0/9.0)-pow(r,2));
+          funct(2) = (27.0/16.0)*((1.0/3.0)-r)*(1.0-pow(r,2));
+          funct(3) = (27.0/16.0)*((1.0/3.0)+r)*(1.0-pow(r,2));
+          break;
+      /*
+       *nodegeometry    x-------x-------x-------x-----> xi
+       * 
+       *nodenumbering   1   3   4   2
+      */          
+      }
+      case DRT::Element::line5:
+      {
+          funct(0)= (2.0/3.0) * r * (1.0 - r) * ( 0.25 - pow(r,2));
+          funct(1)= -(2.0/3.0) * r * (1.0 + r) * ( 0.25 - pow(r,2));
+          funct(2)= -(8.0/3.0) * r * (1.0 - pow(r,2)) * ( 0.5 - r);
+          funct(3)= 4 * (1.0 - pow(r,2)) * (0.25 - pow(r,2));
+          funct(4)= (8.0/3.0) * r * (1.0 - pow(r,2)) * ( 0.5 + r);
+          break;
+          /*
+           *nodegeometry    x-------x-------x-------x-------x-----> xi
+           * 
+           *nodenumbering   1   3   4   5   2
+          */
+      }   
       default:
           dserror("distype unknown\n");
       }
@@ -2054,6 +2081,33 @@ namespace UTILS
           deriv1(dr, 2)= -2.0*r;
           break;
       }
+      case DRT::Element::line4:
+      {
+          deriv1(dr, 0)= (1.0/16.0) + (9.0/8.0)*r -(27.0/16.0)*pow(r,2);
+          deriv1(dr, 1)= (-1.0/16.0) + (9.0/8.0)*r +(27.0/16.0)*pow(r,2);
+          deriv1(dr, 2)= (-27.0/16.0) - (9.0/8.0)*r + (81.0/16.0)*pow(r,2);
+          deriv1(dr, 3)= (27.0/16.0) - (9.0/8.0)*r - (81.0/16.0)*pow(r,2);
+          break;
+          /*
+           *nodegeometry    x-------x-------x-------x-----> xi
+           * 
+           *nodenumbering   1   3   4   2
+          */
+      }
+      case DRT::Element::line5:
+      {
+          deriv1(dr, 0)= (1.0/6.0) - (1.0/3.0)*r - 2.0*pow(r,2) + (8.0/3.0)*pow(r,3);
+          deriv1(dr, 1)= -(1.0/6.0) - (1.0/3.0)*r + 2.0*pow(r,2) + (8.0/3.0)*pow(r,3);
+          deriv1(dr, 2)= -(4.0/3.0) + (16.0/3.0)*r + 4.0*pow(r,2) - (32.0/3.0)*pow(r,3);
+          deriv1(dr, 3)= -10.0*r + 16.0*pow(r,3);
+          deriv1(dr, 4)= (4.0/3.0) + (16.0/3.0)*r - 4.0*pow(r,2) - (32.0/3.0)*pow(r,3);
+          break;
+          /*
+           *nodegeometry    x-------x-------x-------x-------x-----> xi
+           * 
+           *nodenumbering   1   3   4   5   2
+          */
+      }    
       default:
           dserror("distype unknown\n");
       }

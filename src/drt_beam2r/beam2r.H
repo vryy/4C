@@ -39,6 +39,7 @@ using namespace Teuchos;
 
 
 
+
 namespace DRT
 {
 
@@ -46,7 +47,12 @@ namespace ELEMENTS
 {
 /*!
 \brief two dimensional nonlinear beam element using Reissner`s beam theory according to Crisfield, Vol.1, section 7.4 
-
+\The element is capable of using higher order functions from linear to quartic. Please make sure you put the nodes in the right order
+\in the input file.
+\LIN2    1---2
+\LIN3	 1---3---2
+\LIN4 	 1---4---2---3
+\LIN5	 1---5---2---3---4
 \author cyron (cyron @lnm.mw.tum.de)
 */
 class Beam2r : public DRT::Element
@@ -309,15 +315,12 @@ private:
     calc_brownian_damp,
     calc_struct_ptcstiff
   };
-
+  
   //! container containing all kind of beam2r thisandthat
   DRT::Container data_;
   
   //! variable saving whether element has already been initialized (then isinit_ == true)
   bool isinit_;
-
-  //! length in reference configuration
-  double lrefe_;
 
   //! cross section area
   double crosssec_;
@@ -327,35 +330,56 @@ private:
 
   //! moment of inertia of area
   double mominer_;  
-  
-  //! average absolute angle in reference configuration according to Crisfield Vol.1 section 7.4 Figure 7.9
-  double thetaav0_;
 
-  //! gaussrule_ will be initialized automatically to a 2 point integration rule
+  //! Vector holding alpha for each gausspoint
+  vector<double> alpha_;
+  
+  //! Vector holding alpha for each gausspoint for complete integration of massmatrix
+  vector<double> alphamass_;
+  
+  //! Vector holding theta0 for each gausspoint. The current
+  //implementation sets the initial director angles to zero, which can be done without loss
+  //of generality since any initial rotation cancels out in the equations (7.131). As a consequence
+  //the current nodal directors do not appear in the element, but only the values of the current director
+  //at the GP 
+
+  vector<double> theta0_;
+
+  //! gaussrule_ will be initialized automatically to an underintegration rule in input.cpp
   DRT::UTILS::GaussRule1D gaussrule_;
 
   //!internal geometric calculations according to Crisfield Vol.1 (7.118)-(7.121)
-  void local_aux(LINALG::Matrix<3,6>& Bcurr,
-                                          LINALG::Matrix<6,1>& rcurr,
-                                          LINALG::Matrix<6,1>& zcurr,
-                                          LINALG::Matrix<6,1>& s,
-                                          const double& lcurr,
-                                          const double& thetaav,
-                                          const double& c1,
-                                          const double& c2);
+  //note: this and a few more functions are templated so we can use the same element as a
+  //	  higher order element. For templating cf. Practical C++ Programming p.419++
+  template<int nnode>
+  void local_aux(LINALG::Matrix<3,3*nnode>& Bcurr_gp,//rotation matrix
+          LINALG::Matrix<3*nnode,1>& rcurr_gp,//local vector
+          LINALG::Matrix<3*nnode,1>& zcurr_gp,//local vector at GP
+          LINALG::Matrix<3*nnode,1>& scurr_gp,//local vector
+          const double& theta_gp, //current angle theta at GP
+          const double& c1,// geometric variable
+          const double& c2,// geometric variable
+          LINALG::Matrix<1,nnode>& funct,//holds values of shape functions at GP
+          LINALG::Matrix<1,nnode>& deriv);//holds derivates of shape functions at GP
 
   //! calculation of nonlinear stiffness and mass matrix
+  template<int nnode>
   void nlnstiffmass(ParameterList& params,
                        vector<double>&           vel,  //!< element velocity vector
                        vector<double>&           disp,  //!< element displacement vector
                        Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                        Epetra_SerialDenseMatrix* massmatrix,  //!< element mass matrix
-                       Epetra_SerialDenseVector* force,  //!< element internal force vector
-                       int lumpedmass); //!< if set to one lumped mass matrix is calculated
+                       Epetra_SerialDenseVector* force);  //!< element internal force vector
+  
+  //!this function transforms the consistent massmatrix into a lumped massmatrix. Only called when needed
+  template<int nnode>
+  void lumpedmass(Epetra_SerialDenseMatrix* massmatrix);
+              
+  
   
   //!sets up element reference geometry for reference nodal position vector xrefe (may be used also after simulation start)
-  void SetUpReferenceGeometry(const LINALG::Matrix<4,1>& xrefe);
-  
+  template<int nnode>
+  void SetUpReferenceGeometry(const vector<double>& xrefe);
   
   // don't want = operator
   Beam2r& operator = (const Beam2r& old);

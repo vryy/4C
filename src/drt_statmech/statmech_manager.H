@@ -108,10 +108,10 @@ protected:
   //! \brief reference to current damping matrix
   RCP<LINALG::SparseMatrix>& damp_;
   
-  //! \brief storing for each node global Id of node with which it is crosslinked; -1 means: no crosslink
+  //! \brief storing for each node LID of node with which it is crosslinked; -1 means: no crosslink
   RCP<Epetra_Vector>  crosslinkerpartner_;
   
-  //! \brief storing for each node number of filament to which it belongs
+  //! \brief storing for each node LID number of filament to which it belongs
   RCP<Epetra_Vector> filamentnumber_;
   
   //! \brief storing for degree of freedom whether force has to be measured

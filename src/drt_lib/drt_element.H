@@ -167,6 +167,8 @@ public:
     pyramid5,                   // 5 noded pyramid
     line2,                      // 2 noded line
     line3,                      // 3 noded line
+    line4,                      // 4 noded line
+    line5,                      // 5 noded line
     point1,                     // 1 noded point
     nurbs2,                     // 2 control point first order nurbs line element
     nurbs3,                     // 3 control point second order nurbs line element

@@ -629,10 +629,14 @@ int DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
 {
   //get PTC dti parameter
   double dti = params.get<double>("dti",0.0);
-  dti = dti*1; //dti = dti*5 for A = 1.9e-5 in Actin3D_10.dat
+  dti = dti*20; //dti = dti*20 for A = 1.9e-7 in Actin3D_10.dat
   
-  double isotorsdamp = 0.005;   //5e-3
-  double anisotorsdamp = 0.05;  //5e-2
+  /*note: artificial damping in the frame of ptc depends on eigenvalues of elastic stiffness matrix, but
+   * not on mass or damping matrix or time step size; adjust ptc parameters depending on elastic parameters,
+   * but independent on time step size*/
+  
+  double isotorsdamp = 0.5e0;   //0.5e0
+  double anisotorsdamp = 0.5e1;  //0.5e1
   
   //computing angle increment from current position in comparison with last converged position for damping
   LINALG::Matrix<4,1> deltaQ;
@@ -653,12 +657,12 @@ int DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
      
   //isotropic artificial stiffness
   LINALG::Matrix<3,3> artstiff = Hinverse;
-  artstiff.Scale(4*PI*eta_*lrefe_*0.5*isotorsdamp / params.get<double>("delta time",0.01));    
+  artstiff.Scale(isotorsdamp*4*PI*eta_*lrefe_*0.5);    
   
   //anisotropic artificial stiffness      
   LINALG::Matrix<3,3> auxstiff;
   auxstiff.Multiply(Theta,Hinverse);
-  auxstiff.Scale(anisotorsdamp*4*PI*eta_*lrefe_*0.5 / params.get<double>("delta time",0.01));
+  auxstiff.Scale(anisotorsdamp*4*PI*eta_*lrefe_*0.5);
   artstiff += auxstiff;
   
   //scale artificial damping with dti parameter for PTC method
@@ -670,7 +674,7 @@ int DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
     for(int j=0;j<3;j++)
     {
       /*
-      //translational damping
+      //translational damping; seemingly not necessary, rather bad for convergence
       elemat1(  i,   j) += dti*0.5;
       elemat1(6+i, 6+j) += dti*0.5;
       elemat1(6+i,   j) += dti*0.5;
@@ -1391,8 +1395,9 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
      * coefficient is very small for thin rods it is increased artificially by a factor for numerical convencience*/
     {
       double rsquare = pow((4*Iyy_/PI),0.5);
-       //gamma_a artificially increased by factor 60; 60 or 6 or even 1 wprks well; depending on time step size with suitable PTC settings
-       double gammaa = 4*PI*eta_*(rsquare)*lrefe_*60; 
+      //gamma_a artificially increased by factor artificial; this factor should scale with lrefe_^2 and comprise a heuristically calculated constant (here 60)
+      double artificial = 60*(lrefe_*lrefe_);
+      double gammaa = 4*PI*eta_*(rsquare)*artificial; 
       
      
       //computing angle increment from current position in comparison with last converged position for damping

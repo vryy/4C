@@ -411,7 +411,7 @@ int DRT::ELEMENTS::Beam2::EvaluateBrownianDamp(ParameterList& params,
    
     //local damping matrix
     LINALG::Matrix<2,2> dampbasis(true);
-    dampbasis(0,0) = zeta/2;
+    dampbasis(0,0) = zeta; //note: here we apply an isotropic friciton as large as orthogonal friction
     dampbasis(1,1) = zeta;
     
     //turning local into global damping matrix (storing intermediate result in variable "aux")
@@ -486,7 +486,7 @@ int DRT::ELEMENTS::Beam2::EvaluateBrownianForces(ParameterList& params,
     LINALG::Matrix<2,1> force2g;
     
  
-    double stand_dev_par = pow(2 * kT * (zeta/12) / params.get<double>("delta time",0.01),0.5);
+    double stand_dev_par = pow(2 * kT * (zeta/ 6) / params.get<double>("delta time",0.01),0.5); //note: here we apply parallel friciton as large as orthogonal one
     double stand_dev_ort = pow(2 * kT * (zeta/ 6) / params.get<double>("delta time",0.01),0.5);
 
     //creating a random generator object which creates random numbers with mean = 0 and standard deviation

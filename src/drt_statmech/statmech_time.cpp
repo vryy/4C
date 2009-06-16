@@ -135,7 +135,9 @@ void StatMechTime::Integrate()
     if(i == 0)
       statmechmanager_->StatMechInitOutput(ndim,dt);
         
-    std::cout<<"\nAnzahl der Elemente am Beginn des Zeitschritts: "<<discret_.NumMyRowElements()<<"\n";
+    //processor 0 write total number of elements at the beginning of time step i to console:
+    if(!discret_.Comm().MyPID())
+      std::cout<<"\nNumber of elements at the beginning of time step "<<i<<" : "<<discret_.NumGlobalElements()<<"\n";
     
     
     //pay attention: for a constant predictor an incremental velocity update is necessary, which has

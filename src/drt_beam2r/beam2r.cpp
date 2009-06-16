@@ -21,7 +21,7 @@ Maintainer: Christian Cyron
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
-
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H" // for shape functions
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            cyron 01/08|
@@ -30,14 +30,11 @@ DRT::ELEMENTS::Beam2r::Beam2r(int id, int owner) :
 DRT::Element(id,element_beam2r,owner),
 data_(),
 isinit_(false),
-lrefe_(0),
 crosssec_(0),
 crosssecshear_(0),
 mominer_(0),
-thetaav0_(0),
-//note: for corotational approach integration for Neumann conditions only
-//hence enough to integrate 3rd order polynomials exactly
-gaussrule_(DRT::UTILS::intrule_line_2point)
+//note: intrule is set in beam2r_input
+gaussrule_(DRT::UTILS::intrule1D_undefined)
 {
   return;
 }
@@ -48,11 +45,12 @@ DRT::ELEMENTS::Beam2r::Beam2r(const DRT::ELEMENTS::Beam2r& old) :
 DRT::Element(old),
 data_(old.data_),
 isinit_(old.isinit_),
-lrefe_(old.lrefe_),
 crosssec_(old.crosssec_),
 crosssecshear_(old.crosssecshear_),
 mominer_(old.mominer_),
-thetaav0_(old.thetaav0_),
+alpha_(old.alpha_),
+alphamass_(old.alphamass_),
+theta0_(old.theta0_),
 gaussrule_(old.gaussrule_)
 
 {
@@ -99,12 +97,32 @@ RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Beam2r::ElementRegister() const
 
 
 /*----------------------------------------------------------------------*
- |                                                             (public) |
- |                                                          cyron 01/08 |
+ |  Checks the number of nodes and returns the  			   (public) |
+ |  DiscretizationType                                      cyron 01/08 |
  *----------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::ELEMENTS::Beam2r::Shape() const
 {
-  return line2;
+  int numnodes = NumNode();
+  switch(numnodes)
+  {
+  	case 2:
+  			return line2;
+  			break;
+  	case 3:
+  			return line3;
+  			break;
+  	case 4:
+  	  		return line4;
+  	  		break;
+  	case 5:
+  	  		return line5;
+  	  		break;
+  	default:
+  			dserror("Only Line2, Line3 and Line4 elements are implemented.");
+  			break;
+  	
+  }
+  return dis_none;
 }
 
 
@@ -125,16 +143,18 @@ void DRT::ELEMENTS::Beam2r::Pack(vector<char>& data) const
   AddtoPack(data,basedata);
   //whether element has already been initialized
   AddtoPack(data,isinit_);
-  //reference length
-  AddtoPack(data,lrefe_);
   //cross section
   AddtoPack(data,crosssec_);
    //cross section with shear correction
   AddtoPack(data,crosssecshear_);
   //moment of inertia of area
   AddtoPack(data,mominer_);
-  // average absolute angle in reference configuration
-  AddtoPack(data,thetaav0_);
+  // absolute angle in reference configuration at gausspoints
+  AddtoPack(data,theta0_);
+  // length factor in reference configuration at gausspoints
+  AddtoPack(data,alpha_);
+  // length factor in reference configuration at gausspoints for complete integration of massmatrix
+  AddtoPack(data,alphamass_);
   // gaussrule_
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   vector<char> tmp(0);
@@ -162,16 +182,18 @@ void DRT::ELEMENTS::Beam2r::Unpack(const vector<char>& data)
   Element::Unpack(basedata);
   //whether element has already been initialized
   ExtractfromPack(position,data,isinit_);
-  //reference length
-  ExtractfromPack(position,data,lrefe_);
   //cross section
   ExtractfromPack(position,data,crosssec_);
    //cross section with shear correction
   ExtractfromPack(position,data,crosssecshear_);
   //moment of inertia of area
   ExtractfromPack(position,data,mominer_);
-  //average absolute angle in reference configuration
-  ExtractfromPack(position,data,thetaav0_);
+  // absolute angle in reference configuration at gausspoints
+  ExtractfromPack(position,data,theta0_);
+  // length factor in reference configuration at gausspoints
+  ExtractfromPack(position,data,alpha_);
+  // length factor in reference configuration at gausspoints for complete integration of massmatrix
+  ExtractfromPack(position,data,alphamass_);
   // gaussrule_
   int gausrule_integer;
   ExtractfromPack(position,data,gausrule_integer);
@@ -186,7 +208,7 @@ void DRT::ELEMENTS::Beam2r::Unpack(const vector<char>& data)
 }
 
 /*----------------------------------------------------------------------*
- |  get vector of lines (public)                          cyron 01/08|
+ |  get vector of lines (public)                          cyron 01/08   |
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::Beam2r::Lines()
 {
@@ -195,8 +217,13 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Beam2r::Lines()
   return lines;
 }
 
-//sets up element reference geomtry for reference nodal position vector xrefe (may be used also after simulation start)
-void DRT::ELEMENTS::Beam2r::SetUpReferenceGeometry(const LINALG::Matrix<4,1>& xrefe)
+
+/*----------------------------------------------------------------------*
+ |  sets up element reference geometry for reference nodal position 	|
+ |  vector xrefe (may be used also after simulation start)  cyron 01/08 |
+ *----------------------------------------------------------------------*/
+template<int nnode>
+void DRT::ELEMENTS::Beam2r::SetUpReferenceGeometry(const vector<double>& xrefe)
 {
   /*this method initializes geometric variables of the element; such an initialization can only be done once when the element is
    * generated and never again (especially not in the frame of a restart); to make sure that this requirement is not violated this 
@@ -204,29 +231,113 @@ void DRT::ELEMENTS::Beam2r::SetUpReferenceGeometry(const LINALG::Matrix<4,1>& xr
    * isinit_ = true; if this method is called and finds alreday isinit_ == true it will just do nothing*/ 
   if(!isinit_)
   {
-    isinit_ = true;
 
-    //length in reference configuration
-    lrefe_  = pow( pow(xrefe(3)-xrefe(1),2) + pow(xrefe(2)-xrefe(0),2) , 0.5 );
-
-    /*note: thetaav0 is here chosen as if the beam has no curvature in reference configuration.
-     * This is an assumption but we can prove that this leads to no stresses in reference configuration. 
-     * The current thetaav can later be computed from thataav0 and the increments of theta1 and theta2 */
-    //thetaav0 in reference configuration
-    double cos_thetaav0 = (xrefe(2)-xrefe(0))/lrefe_;
-    double sin_thetaav0 = (xrefe(3)-xrefe(1))/lrefe_;
-
-    //we calculate thetaav0 in a range between -pi < thetaav0 <= pi, Crisfield Vol. 1 (7.60)
-    if (cos_thetaav0 >= 0)
-      thetaav0_ = asin(sin_thetaav0);
-    else
-    { if (sin_thetaav0 >= 0)
-    	thetaav0_ =  acos(cos_thetaav0);
-      else
-    	  thetaav0_ = -acos(cos_thetaav0);
-    }
+	  isinit_ = true;
     
-  }
+	  //create Matrix for the derivates of the shapefunctions at the GP
+	  LINALG::Matrix<1,nnode> shapefuncderiv;
+      
+	  //Get DiscretizationType
+	  DRT::Element::DiscretizationType distype = Shape();
+	  
+	  //Get the applied integrationpoints
+	  DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule_);
+	  
+	  //Loop through all GPs and calculate alpha and theta0
+	  for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+	  {
+    	
+		  //Get position xi of GP
+		  const double xi = gausspoints.qxg[numgp][0];
+		  
+		  //Get derivatives of shapefunctions at GP
+		  DRT::UTILS::shape_function_1D_deriv1(shapefuncderiv,xi,distype);
+		  			  
+		  double dxdxi_gp(0.0),dzdxi_gp(0.0);
+    	
+		  //calculate dx/dxi and dz/dxi
+		  for(int i=0; i<nnode; i++)
+		  {
+			  dxdxi_gp+=shapefuncderiv(i)*xrefe[2*i];
+			  dzdxi_gp+=shapefuncderiv(i)*xrefe[2*i+1];
+		  }//for(int i=0; i<nnode; i++)
+		  //Store length factor for every GP
+		  //note: the length factor alpha replaces the determinant and refers by definition always to the reference configuration
+		  alpha_[numgp]= pow(pow( dxdxi_gp ,2.0) + pow( dzdxi_gp ,2.0) ,0.5);
+    	
+		  /*calculate sin and cos theta0 for each gausspoint for a stress-free-reference-configuration
+		   *the formulas are derived from Crisfield Vol.1 (7.132) and (7.133) for no strain
+		   * Therfore we assume that we have no strain at each GP in ref. config. 
+		   */
+		  double cos_theta0 = alpha_[numgp]*dxdxi_gp/(pow(dxdxi_gp,2)+pow(dzdxi_gp,2));
+    	
+		  double sin_theta0 = alpha_[numgp]*dzdxi_gp/(pow(dxdxi_gp,2)+pow(dzdxi_gp,2));
+    	  
+		  //we calculate thetaav0 in a range between -pi < thetaav0 <= pi, Crisfield Vol. 1 (7.60)
+		  if (cos_theta0 >= 0)
+			  theta0_[numgp] = asin(sin_theta0);
+		  else
+		  {   
+			  if (sin_theta0 >= 0)
+				  theta0_[numgp] = acos(cos_theta0);
+			  else
+				  theta0_[numgp] = -acos(cos_theta0);
+		  }
+		  
+		  /* Here we force the triad to point in positive xi direction at every gausspoint.
+		   * We compare vector t1 [Crisfield Vol. 1 (7.110)] with the tangent on our element 
+		   * in positive xi direction via scalar product. If the difference is more than +/-90 degrees
+		   * we turn the triad with 180 degrees. Our stress free reference configuration is
+		   * unaffected by this modification.
+		   */
+		  double check = 0.0;
+		  
+		  check = (cos(theta0_[numgp])*dxdxi_gp+sin(theta0_[numgp])*dzdxi_gp);
+		  
+		  if (check<0)
+		  {
+			  if(theta0_[numgp]> 0 )
+			  theta0_[numgp]-=3.141592653589;
+			  else
+		      theta0_[numgp]+=3.141592653589;	  
+		  }
+	  
+	  }//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+	  
+	  //Now we get the integrationfactor alphamass_ for a complete integration of the massmatrix
+	  
+	  gaussrule_ = static_cast<enum DRT::UTILS::GaussRule1D>(nnode);
+	  
+	  //Get the applied integrationpoints
+	  DRT::UTILS::IntegrationPoints1D gausspointsmass(gaussrule_);
+	  
+	  //Loop through all GPs and calculate alpha and theta0
+	  for(int numgp=0; numgp < gausspointsmass.nquad; numgp++)
+	  {
+    	
+		  //Get position xi of GP
+		  const double xi = gausspointsmass.qxg[numgp][0];
+		  
+		  //Get derivatives of shapefunctions at GP
+		  DRT::UTILS::shape_function_1D_deriv1(shapefuncderiv,xi,distype);
+		  			  
+		  double dxdxi_gp(0.0),dzdxi_gp(0.0);
+    	
+		  //calculate dx/dxi and dz/dxi
+		  for(int i=0; i<nnode; i++)
+		  {
+			  dxdxi_gp+=shapefuncderiv(i)*xrefe[2*i];
+			  dzdxi_gp+=shapefuncderiv(i)*xrefe[2*i+1];
+		  }//for(int i=0; i<nnode; i++)
+		  //Store length factor for every GP
+		  //note: the length factor alpha replaces the determinant and refers by definition always to the reference configuration
+		  alphamass_[numgp]= pow(pow( dxdxi_gp ,2.0) + pow( dzdxi_gp ,2.0) ,0.5);
+    	
+	  }//for(int numgp=0; numgp < gausspointsmass.nquad; numgp++)
+	 
+	  gaussrule_ = static_cast<enum DRT::UTILS::GaussRule1D>(nnode-1);
+	 
+  }//if(!isinit_)
 
   return;
 } //DRT::ELEMENTS::Beam2r::SetUpReferenceGeometry()
@@ -322,37 +433,71 @@ void DRT::ELEMENTS::Beam2rRegister::Print(ostream& os) const
   ElementRegister::Print(os);
   return;
 }
-
-
+/*-----------------------------------------------------------------------*
+ | Initialize (public) Setting up geometric variables for beam2r elements|
+ *-----------------------------------------------------------------------*/ 
 int DRT::ELEMENTS::Beam2rRegister::Initialize(DRT::Discretization& dis)
 {
-  
-  //reference node position
-  LINALG::Matrix<4,1> xrefe;
- 
-  //setting up geometric variables for beam2r elements
-  for (int num=0; num<  dis.NumMyColElements(); ++num)
+
+ //loop through all elements
+ for (int num=0; num<  dis.NumMyColElements(); ++num)
   {    
     //in case that current element is not a beam2r element there is nothing to do and we go back
     //to the head of the loop
     if (dis.lColElement(num)->Type() != DRT::Element::element_beam2r) continue;
-    
     //if we get so far current element is a beam2r element and  we get a pointer at it
     DRT::ELEMENTS::Beam2r* currele = dynamic_cast<DRT::ELEMENTS::Beam2r*>(dis.lColElement(num));
     if (!currele) dserror("cast to Beam2r* failed");
     
+    //reference node position
+    vector<double> xrefe;
+    
+    int nnode= currele->NumNode();
+    //resize xrefe for the number of coordinates we need to store
+    xrefe.resize(2*nnode);
+
     //getting element's nodal coordinates and treating them as reference configuration
     if (currele->Nodes()[0] == NULL || currele->Nodes()[1] == NULL)
       dserror("Cannot get nodes in order to compute reference configuration'");
     else
     {   
-      for (int k=0; k<2; k++) //element has two nodes
-        for(int l= 0; l < 2; l++)
-          xrefe(k*2 + l) = currele->Nodes()[k]->X()[l];
+      for (int k=0; k<nnode; k++) //element has k nodes
+        for(int l= 0; l < 2; l++)// element node has two coordinates x and z
+          xrefe[k*2 + l] = currele->Nodes()[k]->X()[l];
     }
+    //resize alpha_, alphamass_ and theta0_ so they can each store 1 value at each GP
+    //it can be proven, that we will always need one GP less than nodes zu underintagrate in order to get rid of shear locking
+    currele->alpha_.resize(nnode-1);
+    currele->alphamass_.resize(nnode);
+    currele->theta0_.resize(nnode-1);
+    
+    //SetUpReferenceGeometry is a templated function
+    switch(nnode)
+    {
+  		case 2:  		
+  		{	
+  			currele->SetUpReferenceGeometry<2>(xrefe);
+  			break;
+  		}
+  		case 3:
+  		{
+  			currele->SetUpReferenceGeometry<3>(xrefe);
+  			break;
+  		}
+  		case 4:
+  		{
+  			currele->SetUpReferenceGeometry<4>(xrefe);
+  			break;
+  		} 
+  		case 5:
+  		{
+  			currele->SetUpReferenceGeometry<5>(xrefe);
+  			break;
+  		}   		
+  		default:
+  			dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");	
+  	} 
  
-    currele->SetUpReferenceGeometry(xrefe);
-       
   } //for (int num=0; num<dis_.NumMyColElements(); ++num)
 
   return 0;
