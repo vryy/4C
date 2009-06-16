@@ -186,8 +186,8 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
        * next iteration step is the configuration at the end of the current step */
       Qold_ = Qnew_;
       curvold_ = curvnew_;
-      betaplusalphaold_ = betaplusalphanew_;
-      betaminusalphaold_ = betaminusalphanew_;
+      thetaold_ = thetanew_;
+      thetaprimeold_ = thetaprimenew_;
 
 
 
@@ -276,11 +276,11 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
       /*the action calc_struct_update_istep is called in the very end of a time step when the new dynamic
        * equilibrium has finally been found; this is the point where the variable representing the geomatric
        * status of the beam have to be updated; the geometric status is represented by means of the triad Tnew_,
-       * the curvature curvnew_ and the angular values betaplusalphanew_ and betaminusalphanew_*/
+       * the curvature curvnew_ and the angular values thetaanew_ and thetaprimenew_*/
       Qconv_ = Qnew_;
       curvconv_ = curvnew_;
-      betaplusalphaconv_ = betaplusalphanew_;
-      betaminusalphaconv_ = betaminusalphanew_;
+      thetaconv_ = thetanew_;
+      thetaprimeconv_ = thetaprimenew_;
     }
     break;
     case calc_struct_reset_istep:
@@ -293,8 +293,8 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
        * beginning of the time step*/
       Qold_ = Qconv_;
       curvold_ = curvconv_;
-      betaplusalphaold_ = betaplusalphaconv_;
-      betaminusalphaold_ = betaminusalphaconv_;
+      thetaold_ = thetaconv_;
+      thetaprimeold_ = thetaprimeconv_;
     }
     break;
     case calc_struct_stress:
@@ -981,14 +981,11 @@ LINALG::Matrix<3,3> DRT::ELEMENTS::Beam3::Hinv(LINALG::Matrix<3,1> theta)
 
 /*this function performs an update of the central triad as in principle given in Crisfield, Vol. 2, equation (17.65), but by means of a
  * quaterion product and then calculation of the equivalent rotation matrix according to eq. (16.70*/
-inline void DRT::ELEMENTS::Beam3::updatetriad(LINALG::Matrix<3,1> deltabetaplusalpha, LINALG::Matrix<3,3>& Tnew)
-{
-  //calculating angle theta by which triad is rotated according to Crisfield, Vol. 2, equation (17.64)
-  deltabetaplusalpha.Scale(0.5);
-  
-  //computing quaternion equivalent rotation by angle deltabetaplusalpha/2
+inline void DRT::ELEMENTS::Beam3::updatetriad(LINALG::Matrix<3,1>& deltatheta, LINALG::Matrix<3,3>& Tnew)
+{ 
+  //computing quaternion equivalent to rotation by deltatheta
   LINALG::Matrix<4,1> Qrot;
-  angletoquaternion(deltabetaplusalpha,Qrot);
+  angletoquaternion(deltatheta,Qrot);
 
   //computing quaterion Qnew_ for new configuration of Qold_ for old configuration by means of a quaternion product
   quaternionproduct(Qold_,Qrot,Qnew_);
@@ -1031,131 +1028,81 @@ inline void DRT::ELEMENTS::Beam3::quaternionproduct(const LINALG::Matrix<4,1>& q
   q12(3) = q2(3)*q1(3) - q2(2)*q1(2) - q2(1)*q1(1) - q2(0)*q1(0);
 } //DRT::ELEMENTS::Beam3::quaternionproduct
 
-//updating local curvature according to Crisfield, Vol. 2, pages 209 - 210; not: an exact update of the curvature is computed by
-//means of equation (16.148) instead of an approximated one as given by equs. (17.72) and (17.73)
-inline void DRT::ELEMENTS::Beam3::updatecurvature(const LINALG::Matrix<3,3>& Tnew, LINALG::Matrix<3,1> deltabetaplusalpha,LINALG::Matrix<3,1> deltabetaminusalpha)
+/*updating local curvature according to Crisfield, Vol. 2, pages 209 - 210; not: an exact update of 
+ * the curvature is computed by means of equation (16.148) instead of an approximated one as given by 
+ * equs. (17.72) and (17.73); note that this function requires as input parameters the angle delta theta
+ * from (16.146), which is responsible for the rotation of the triad at the Gauss point as well as its
+ * derivative with respect to the curve parameter s, i.e. d(delta theta)/ds. This derivative is denoted
+ * as deltathetaprime*/
+
+inline void DRT::ELEMENTS::Beam3::updatecurvature(const LINALG::Matrix<3,3>& Tnew, LINALG::Matrix<3,1>& deltatheta,LINALG::Matrix<3,1>& deltathetaprime)
 {
-  //-------------------calculating omega-------------------------------------//
-
-  //applying proper scaling for rotation angle
-  deltabetaplusalpha.Scale(0.5);
+  //declaration of local variables: 
+  LINALG::Matrix<3,1> omega; //omega according to (16.146)
+  LINALG::Matrix<3,1> omegaprime; //omega' according to (16.147)
+  LINALG::Matrix<3,1> chignl; //chi_gnl according to (16.148)
   
-  //compute quaternion from angle deltabetaplusalpha/2
-  LINALG::Matrix<4,1> q;
-  angletoquaternion(deltabetaplusalpha,q);
-  quaterniontoangle(q,deltabetaplusalpha);
-
-  //absolute value of rotation vector theta
-  double abs_theta = deltabetaplusalpha.Norm2();
-
-  LINALG::Matrix<3,1> omega = deltabetaplusalpha;
-  LINALG::Matrix<3,1> omegaprime = deltabetaplusalpha;
+  //absolute value of rotation vector delta theta
+  double abs_theta = deltatheta.Norm2();
+  
+  //as in (16.147) division by delta theta arises we have to assume that this angle is unequal to zero 
   if (abs_theta > 0)
   {
+    //compute omega according to (16.146)
+    omega = deltatheta;
     omega.Scale(2*tan(0.5*abs_theta) / abs_theta);
+    
+    //in (16.147) the brackets contain a 3x3 matrix which is denoted as Aux here and computed now:
     LINALG::Matrix<3,3> Aux;
     for(int i = 0; i<3; i++)
     {
       for(int j = 0; j<3; j++)
       {
-        Aux(i,j) = 0;
-        Aux(i,j) -= (1 - abs_theta / sin(abs_theta) ) * deltabetaplusalpha(i)*deltabetaplusalpha(j) / pow(abs_theta,2);
+        Aux(i,j) = -(1 - abs_theta / sin(abs_theta) ) * deltatheta(i)*deltatheta(j) / pow(abs_theta,2);
         if(i==j)
           Aux(i,j) += 1;
-
-       Aux(i,j) *= 2*tan(abs_theta / 2) / abs_theta;
       }
     }
-    deltabetaminusalpha.Scale(1 / lrefe_);
-    omegaprime.Multiply(Aux,deltabetaminusalpha);
+
+    omegaprime.Multiply(Aux,deltathetaprime);
+    /*we apply the prefactor of (16.147); here we need an angle -PI < theta < PI; note that theta may be assumed to 
+     * lie within this domain as otherwise the element would rotate at a specific Gauss point by more that 180° within
+     * one single iteration step which would disrupt convergence anyway; note that one could ensure -PI < theta < PI
+     * easily by applying the three code lines
+     * 
+     *   LINALG::Matrix<4,1> q;
+     *   angletoquaternion(deltatheta,q);
+     *   quaterniontoangle(q,deltatheta); 
+     * 
+     * in the very beginning of this method. However, for the above reason we assume that theta lies always in the proper
+     * region and thus save the related compuational cost and just throw an error if this prerequesite is unexpectedly not
+     * satisfied */
+    if(abs_theta > PI)
+      dserror("delta theta exceeds region for which equation (16.147) is valid");
+    omegaprime.Scale(2*tan(abs_theta / 2) / abs_theta);
+  
+    //compute chignl from omega and omega' according to (16.148)
+    chignl(0) = 0.5*(omega(1)*omegaprime(2) - omega(2)*omegaprime(1)) ;
+    chignl(1) = 0.5*(omega(2)*omegaprime(0) - omega(0)*omegaprime(2)) ;
+    chignl(2) = 0.5*(omega(0)*omegaprime(1) - omega(1)*omegaprime(0)) ; 
+    chignl += omegaprime;
+    chignl.Scale( 1/(1 + pow(tan(abs_theta/2),2) ));
+    
   }
-
-  LINALG::Matrix<3,1> curvaux;
-  curvaux(0) = 0.5*(omega(1)*omegaprime(2) - omega(2)*omegaprime(1)) ;
-  curvaux(1) = 0.5*(omega(2)*omegaprime(0) - omega(0)*omegaprime(2)) ;
-  curvaux(2) = 0.5*(omega(0)*omegaprime(1) - omega(1)*omegaprime(0)) ;
-
-  curvaux += omegaprime;
-  curvaux.Scale( 1/(1 + pow(tan(abs_theta/2),2) ));
-
-  curvnew_.MultiplyTN(Tnew,curvaux);
-  curvnew_ += curvold_;
-
-  return;
-} //DRT::ELEMENTS::Beam3::updatecurvature
-
-/*
-//updating local curvature according to Crisfield, Vol. 2, pages 209 - 210; not: an exact update of the curvature is computed by
-//means of equation (16.148) instead of an approximated one as given by equs. (17.72) and (17.73)
-inline void DRT::ELEMENTS::Beam3::updatecurvature(const LINALG::Matrix<3,3>& Tnew, LINALG::Matrix<3,1> deltabetaplusalpha,LINALG::Matrix<3,1> deltabetaminusalpha)
-{
-  
-  //applying proper scaling for rotation angle
-  deltabetaplusalpha.Scale(0.5);
-  
-  //compute quaternion from angle deltabetaplusalpha/2
-  LINALG::Matrix<4,1> q;
-  angletoquaternion(deltabetaplusalpha,q);
-  
-  //compute Rodrigues parameters omega for deltabetaplusalpha/2:
-  LINALG::Matrix<3,1> omega;
-  quaterniontorodrigues(q,omega);
-  
-  //spatial derivative of Rodrigues parameters according to (16.147)
-  LINALG::Matrix<3,1> omegaprime; 
-  
-  //for use of formula (16.147) we need an angle -PI < theta < PI; an angle in this domain is gained by method quaterniontoangle;
-  //note that the resulting angle theta is not necessarily identical to deltabetaplusalpha/2, but that both may differ by a
-  //multiple of 2*PI
-  LINALG::Matrix<3,1> theta;
-  quaterniontoangle(q,theta);
-  
-  if(theta.Norm2() == 0)
-  {
-    omegaprime = deltabetaminusalpha;
-    omegaprime.Scale(1/lrefe_);
-  }
+  //with delta theta == 0 we get omega == 0 and thus according to (16.147) omega' = d(delta theta)/ds
   else
-  {
-    //compute unit vector e of rotation axis (cf. (16.146) )
-    LINALG::Matrix<3,1> e = theta;
-    e.Scale(1/theta.Norm2());
-      
-    //compute matrix e*e^T (cf. (16.147) )
-    LINALG::Matrix<3,3> eeT;
-    eeT.MultiplyNT(e,e);
-    
-    //in order to evaluate (16.147) we need to prepare the matrix given there in brackets:
-    LINALG::Matrix<3,3> aux = eeT;
-    aux.Scale(theta.Norm2() / sin(theta.Norm2()) - 1);
-    for(int i = 0; i<3; i++)
-      aux(i,i) += 1;
-    
-    omegaprime.Multiply(aux,deltabetaminusalpha);
-    //note: theta cannot be +/- PI/2 since in this case already quaterniontorodrigues would have failed
-    omegaprime.Scale( ( 2*tan(theta.Norm2() / 2) )/(lrefe_ * theta.Norm2() ) );   
-  }
+    chignl = deltathetaprime;
   
- 
-
-  LINALG::Matrix<3,1> curvaux;
-  curvaux(0) = 0.5*(omega(1)*omegaprime(2) - omega(2)*omegaprime(1)) ;
-  curvaux(1) = 0.5*(omega(2)*omegaprime(0) - omega(0)*omegaprime(2)) ;
-  curvaux(2) = 0.5*(omega(0)*omegaprime(1) - omega(1)*omegaprime(0)) ;
-
-  curvaux += omegaprime;
-  curvaux.Scale( 1/(1 + 0.25*omega.Norm2()*omega.Norm2() ));
-
-  curvnew_.MultiplyTN(Tnew,curvaux);
+  curvnew_.MultiplyTN(Tnew,chignl);
   curvnew_ += curvold_;
-
 
   return;
 } //DRT::ELEMENTS::Beam3::updatecurvature
-*/
 
-//updating local curvature according approximately to Crisfield, Vol. 2, eqs. (17.72) and (17.73)
-inline void DRT::ELEMENTS::Beam3::approxupdatecurvature(const LINALG::Matrix<3,3>& Tnew, LINALG::Matrix<3,1> deltabetaplusalpha,LINALG::Matrix<3,1> deltabetaminusalpha)
+
+/*updating local curvature according approximately to Crisfield, Vol. 2, eqs. (17.72) and (17.73); note:
+ * this update is suitable for beams with linear shape functions, only*/
+inline void DRT::ELEMENTS::Beam3::approxupdatecurvature(const LINALG::Matrix<3,3>& Tnew, LINALG::Matrix<3,1> deltatheta,LINALG::Matrix<3,1> deltathetaprime)
 {
   //old triad
   LINALG::Matrix<3,3> Told;
@@ -1163,7 +1110,7 @@ inline void DRT::ELEMENTS::Beam3::approxupdatecurvature(const LINALG::Matrix<3,3
   
   //compute spin matrix from eq. (17.73)
   LINALG::Matrix<3,3> spin;
-  computespin(spin, deltabetaplusalpha, 0.5);
+  computespin(spin, deltatheta, 1.0);
   
   //turning spin matrix to left right hand side matrix of eq. (17.73)
   for(int i = 0; i<3; i++)
@@ -1175,8 +1122,7 @@ inline void DRT::ELEMENTS::Beam3::approxupdatecurvature(const LINALG::Matrix<3,3
   Tmid.Multiply(spin,Told);
   
   //eq. (17.72)
-  curvnew_.MultiplyTN(Tmid,deltabetaminusalpha);
-  curvnew_.Scale(1/lrefe_);
+  curvnew_.MultiplyTN(Tmid,deltathetaprime);
 
   curvnew_ += curvold_;
 
@@ -1271,9 +1217,6 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
   Epetra_SerialDenseMatrix Ksig1;
   Epetra_SerialDenseMatrix Ksig2;
 
-  //auxiliary variables
-  LINALG::Matrix<3,1> deltabetaplusalpha;
-  LINALG::Matrix<3,1> deltabetaminusalpha;
   
   //midpoint triad, Crisfiel Vol. 2, equation (17.73)
   LINALG::Matrix<3,3> Tnew;
@@ -1284,22 +1227,41 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
   for (int j=0; j<3; ++j)
   {    
     x21(j)                = (Nodes()[1]->X()[j]  - Nodes()[0]->X()[j] ) + ( disp[6+j]  - disp[j] );
-    betaplusalphanew_(j)  = disp[9+j] + disp[3+j];
-    betaminusalphanew_(j) = disp[9+j] - disp[3+j];
+    /*compute interpolated angle displacemnt at specific Gauss point for linear beam element; angle displacement is
+     * taken from discretization and interpolated according to Crisfield, Vol. 2, (17.93); for higher order beam 
+     * elements here you have not only to take 2 values of the displacement vector and multiply it by 0.5, but rather
+     * take as many values as nodes in the element and multiply by the nodes' shape functions' values at a specific Gauss point*/
+    thetanew_(j)          = 0.5*disp[9+j] + 0.5*disp[3+j];
+    /*compute derivative of interpolated angle displacemnt with respect to curve parameter at specific Gauss point for linear beam element; angle displacement is
+     * taken from discretization and interpolated according to Crisfield, Vol. 2, (17.93); for higher order beam elements here you have not only
+     * to take 2 values of the displacement vector and devide by element length, but rather make use of the derivative of (17.93) with respect to zeta*/
+    thetaprimenew_(j)     = (1/lrefe_)*disp[9+j] - (1/lrefe_)*disp[3+j];
   }    
 
-  deltabetaplusalpha  = betaplusalphanew_;
-  deltabetaplusalpha -= betaplusalphaold_;
+ 
+  /*to perform a curvature update at a specific Gauss point we need to know the angle deltatheta by which the triad at that
+   * Gauss point is rotated and furthermore the derivative of this rotation angle along the curve. The latter one is
+   * denoted as d(delta theta)/ds in Crisfield, Vol. 2, page 209, and can be computed according to the comments in the bottom
+   * of this page*/
+  
+  //compute delta theta according to (17.64) for a beam with linear shape functions and one Gauss point only
+  LINALG::Matrix<3,1> deltatheta = thetanew_;
+  deltatheta -= thetaold_;
 
-  deltabetaminusalpha  = betaminusalphanew_;
-  deltabetaminusalpha -= betaminusalphaold_;
-    
-
-  //calculating current central triad like in Crisfield, Vol. 2, equation (17.65), but by a quaternion product
-  updatetriad(deltabetaplusalpha,Tnew);
+  
+  //compute d(delta theta)/ds from (16.147) according to remark in the bottom of page 209 for linear shape functions
+  LINALG::Matrix<3,1> deltathetaprime = thetaprimenew_;
+  deltathetaprime -= thetaprimeold_;
+  
+  /*update triad at Gauss point as shown in Crisfield, Vol. 2, equation (17.65) for an element with linear shape functions
+   *and one single Gauss point in the center of the element. Note: instead of the matrix multiplication of (17.65) we use
+   *a quaternion product*/
+  updatetriad(deltatheta,Tnew);
   
   //updating local curvature
-  updatecurvature(Tnew,deltabetaplusalpha,deltabetaminusalpha);
+  updatecurvature(Tnew,deltatheta,deltathetaprime);
+  
+  
 
   //computing current axial and shear strain epsilon, Crisfield, Vol. 2, equation (17.67)
   epsilonn.MultiplyTN(Tnew,x21);

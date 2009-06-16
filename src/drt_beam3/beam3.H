@@ -359,18 +359,18 @@ private:
   //!curvature during the current iteration step due to Crisfield, Vol. 2, equation (17.72)
   LINALG::Matrix<3,1> curvnew_;
   
-  //!auxiliary angle due to Crisfield, Vol. 2, equation (17.70) at the end of the preceeding time step
-  LINALG::Matrix<3,1> betaplusalphaconv_;
-  //!auxiliary angle due to Crisfield, Vol. 2, equation (17.70) at the end of the preceeding iteration step
-  LINALG::Matrix<3,1> betaplusalphaold_;
-  //!auxiliary angle due to Crisfield, Vol. 2, equation (17.70) during current iteration step
-  LINALG::Matrix<3,1> betaplusalphanew_;
-  //!auxiliary angle due to Crisfield, Vol. 2, equation (17.71) at the end of the preceeding time step
-  LINALG::Matrix<3,1> betaminusalphaconv_;
-  //!auxiliary angle due to Crisfield, Vol. 2, equation (17.71) at the end of the preceeding iteration step
-  LINALG::Matrix<3,1> betaminusalphaold_;
-  //!auxiliary angle due to Crisfield, Vol. 2, equation (17.71) during current iteration step
-  LINALG::Matrix<3,1> betaminusalphanew_;
+  //!angle displacement taken from discretization and interpolated for a specific Gauss point by Crisfield, Vol. 2, equation (17.93); relates to the end of the preceeding time step
+  LINALG::Matrix<3,1> thetaconv_;
+  //!angle displacement taken from discretization and interpolated for a specific Gauss point by Crisfield, Vol. 2, equation (17.93); relates to the end of the preceeding iteration step
+  LINALG::Matrix<3,1> thetaold_;
+  //!angle displacement taken from discretization and interpolated for a specific Gauss point by Crisfield, Vol. 2, equation (17.93); relates to current iteration step
+  LINALG::Matrix<3,1> thetanew_;
+  //!derivative of angle displacement taken from discretization with respect to curve parameter at a specific Gauss point; derivative due to Crisfield, Vol. 2, equation (17.93); relates to the end of the preceeding time step
+  LINALG::Matrix<3,1> thetaprimeconv_;
+  //!derivative of angle displacement taken from discretization with respect to curve parameter at a specific Gauss point; derivative due to Crisfield, Vol. 2, equation (17.93); relates to the end of the preceeding iteration step
+  LINALG::Matrix<3,1> thetaprimeold_;
+  //!derivative of angle displacement taken from discretization with respect to curve parameter at a specific Gauss point; derivative due to Crisfield, Vol. 2, equation (17.93); relates to the current iteration step
+  LINALG::Matrix<3,1> thetaprimenew_;
   
   //! cross section area
   double crosssec_;
@@ -435,10 +435,10 @@ private:
   
   /*!this function performs an update of the central triad as in principle given in Crisfield, Vol. 2, equation (17.65), 
    * but by means of a quaterion product and then multiplication of the rotation matrix in (16.69) with reference triad Tref_*/
-  void updatetriad(LINALG::Matrix<3,1> deltabetaplusalpha, LINALG::Matrix<3,3>& Tnew);
+  void updatetriad(LINALG::Matrix<3,1>& deltatheta, LINALG::Matrix<3,3>& Tnew);
   
   //!updating local curvature according to Crisfield, Vol. 2, pages 209 - 210
-  void updatecurvature(const LINALG::Matrix<3,3>& Tnew, LINALG::Matrix<3,1> deltabetaplusalpha,LINALG::Matrix<3,1> deltabetaminusalpha);
+  void updatecurvature(const LINALG::Matrix<3,3>& Tnew, LINALG::Matrix<3,1>& deltatheta,LINALG::Matrix<3,1>& deltathetaprime);
   
   //!updating local curvature approximately according to Crisfield, Vol. 2, eqs. (17.72) & (17.73)
   void approxupdatecurvature(const LINALG::Matrix<3,3>& Tnew, LINALG::Matrix<3,1> deltabetaplusalpha,LINALG::Matrix<3,1> deltabetaminusalpha);

@@ -57,12 +57,12 @@ DRT::ELEMENTS::Beam3::Beam3(const DRT::ELEMENTS::Beam3& old) :
  curvconv_(old.curvconv_),
  curvold_(old.curvold_),
  curvnew_(old.curvnew_),
- betaplusalphaconv_(old.betaplusalphaconv_),
- betaplusalphaold_(old.betaplusalphaold_),
- betaplusalphanew_(old.betaplusalphanew_),
- betaminusalphaconv_(old.betaminusalphaconv_),
- betaminusalphaold_(old.betaminusalphaold_),
- betaminusalphanew_(old.betaminusalphanew_),
+ thetaconv_(old.thetaconv_),
+ thetaold_(old.thetaold_),
+ thetanew_(old.thetanew_),
+ thetaprimeconv_(old.thetaprimeconv_),
+ thetaprimeold_(old.thetaprimeold_),
+ thetaprimenew_(old.thetaprimenew_),
  crosssec_(old.crosssec_),
  crosssecshear_(old.crosssecshear_),
  Iyy_(old.Iyy_),
@@ -150,12 +150,12 @@ void DRT::ELEMENTS::Beam3::Pack(vector<char>& data) const
   AddtoPack(data,curvconv_);
   AddtoPack(data,curvold_);
   AddtoPack(data,curvnew_);  
-  AddtoPack(data,betaplusalphaconv_);
-  AddtoPack(data,betaplusalphaold_);
-  AddtoPack(data,betaplusalphanew_);
-  AddtoPack(data,betaminusalphaconv_);
-  AddtoPack(data,betaminusalphaold_);
-  AddtoPack(data,betaminusalphanew_);
+  AddtoPack(data,thetaconv_);
+  AddtoPack(data,thetaold_);
+  AddtoPack(data,thetanew_);
+  AddtoPack(data,thetaprimeconv_);
+  AddtoPack(data,thetaprimeold_);
+  AddtoPack(data,thetaprimenew_);
   //cross section
   AddtoPack(data,crosssec_);
    //cross section with shear correction
@@ -204,12 +204,12 @@ void DRT::ELEMENTS::Beam3::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,curvconv_);
   ExtractfromPack(position,data,curvold_);
   ExtractfromPack(position,data,curvnew_); 
-  ExtractfromPack(position,data,betaplusalphaconv_);
-  ExtractfromPack(position,data,betaplusalphaold_);
-  ExtractfromPack(position,data,betaplusalphanew_);
-  ExtractfromPack(position,data,betaminusalphaconv_);
-  ExtractfromPack(position,data,betaminusalphaold_);
-  ExtractfromPack(position,data,betaminusalphanew_);   
+  ExtractfromPack(position,data,thetaconv_);
+  ExtractfromPack(position,data,thetaold_);
+  ExtractfromPack(position,data,thetanew_);
+  ExtractfromPack(position,data,thetaprimeconv_);
+  ExtractfromPack(position,data,thetaprimeold_);
+  ExtractfromPack(position,data,thetaprimenew_);   
   //cross section
   ExtractfromPack(position,data,crosssec_);
   //cross section with shear correction
@@ -311,9 +311,9 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const LINALG::Matrix<6,1>& xre
       Qold_ = Qconv_;
       Qnew_ = Qconv_;
    
-      //the here employed beam element does not need data about the current position of the nodal directors so that
-    //initilization of those can be skipped (the nodal displacements handeled in beam3_evaluate.cpp are not the actual angles,
-    //but only the differences between actual angles and angles in reference configuration, respectively. Thus the
+    //the here employed beam element does not need data about the current position of the nodal directors so that
+    //initilization of those can be skipped (the nodal displacements handeled in beam3_evaluate.cpp are not the current angles,
+    //but only the differences between current angles and angles in reference configuration, respectively. Thus the
     //director orientation in reference configuration cancels out and can be assumed to be zero without loss of 
     //generality
     for (int k=0; k<3; k++) 
@@ -321,12 +321,12 @@ void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const LINALG::Matrix<6,1>& xre
       curvconv_(k) = 0;
       curvold_(k)  = 0;
       curvnew_(k)  = 0;
-      betaplusalphaconv_(k)  = rotrefe(k+3) + rotrefe(k);
-      betaplusalphaold_(k)   = rotrefe(k+3) + rotrefe(k);   
-      betaplusalphanew_(k)   = rotrefe(k+3) + rotrefe(k);
-      betaminusalphaconv_(k) = rotrefe(k+3) - rotrefe(k);
-      betaminusalphaold_(k)  = rotrefe(k+3) - rotrefe(k);
-      betaminusalphaold_(k)  = rotrefe(k+3) - rotrefe(k);
+      thetaconv_(k)      = 0.5*rotrefe(k+3) + 0.5*rotrefe(k);
+      thetaold_(k)       = 0.5*rotrefe(k+3) + 0.5*rotrefe(k);   
+      thetanew_(k)       = 0.5*rotrefe(k+3) + 0.5*rotrefe(k);
+      thetaprimeconv_(k) = (1/lrefe_)*rotrefe(k+3) - (1/lrefe_)*rotrefe(k);
+      thetaprimeold_(k)  = (1/lrefe_)*rotrefe(k+3) - (1/lrefe_)*rotrefe(k);
+      thetaprimeold_(k)  = (1/lrefe_)*rotrefe(k+3) - (1/lrefe_)*rotrefe(k);
     }  
   }
 
