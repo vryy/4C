@@ -174,6 +174,8 @@ using namespace std;
 #define ParObject_Cnst_1d_art           (int)161
 #define ParObject_ArrheniusSpec         (int)162
 #define ParObject_ArrheniusTemp         (int)163
+#define ParObject_So_Hex8P1J1           (int)164
+#define ParObject_SoHex8P1J1Register    (int)165
 
 namespace DRT
 {

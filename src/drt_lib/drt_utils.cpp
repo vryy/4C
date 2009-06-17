@@ -107,6 +107,7 @@ extern "C"
 #include "../drt_so3/so_weg6.H"
 #include "../drt_so3/so_shw6.H"
 #include "../drt_so3/so_disp.H"
+#include "../drt_so3/so_hex8p1j1.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/sutherland_fluid.H"
 #include "../drt_mat/stvenantkirchhoff.H"
@@ -668,6 +669,21 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       return object;
     }
     break;
+    case ParObject_So_Hex8P1J1:
+    {
+      DRT::ELEMENTS::So_Hex8P1J1* object = new DRT::ELEMENTS::So_Hex8P1J1(-1,-1);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_SoHex8P1J1Register:
+    {
+      DRT::ELEMENTS::SoHex8P1J1Register* object =
+                new DRT::ELEMENTS::SoHex8P1J1Register(DRT::Element::element_so_hex8p1j1);
+      object->Unpack(data);
+      return object;
+    }
+    break;
 #endif
 #ifdef D_ARTNET //_1D_ARTERY_
     case ParObject_Artery:
@@ -962,7 +978,8 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     constrele2,
     constrele3,
     transport,
-    art_ele
+    art_ele,
+    so_hex8p1j1
   };
 
   TypeofElement type = none;
@@ -1001,6 +1018,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
   else if (eletype=="CONSTRELE3") type = constrele3;
   else if (eletype=="TRANSP") type = transport;
   else if (eletype=="ART")    type = art_ele;
+  else if (eletype=="SOLIDH8P1J1") type = so_hex8p1j1;
   // continue to add elements here....
   else
   {
@@ -1245,6 +1263,12 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     case so_tet10:
     {
       RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_tet10(id,owner));
+      return ele;
+    }
+    break;
+    case so_hex8p1j1:
+    {
+      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_Hex8P1J1(id,owner));
       return ele;
     }
     break;
