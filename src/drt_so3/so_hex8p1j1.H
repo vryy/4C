@@ -28,7 +28,6 @@ Maintainer: Lena Wiechert
 
 
 // forward declarations
-struct _MATERIAL;
 struct _SOH8_DATA;
 
 namespace DRT
@@ -49,7 +48,7 @@ class SoHex8P1J1Register;
 /// tri-linear Lagrangean polynomials. Secondly, the pressure #p_,
 /// which is discretised discontinuously across element boundaries
 /// in a constant manner, ie one pressure DOF per element. Thirdly,
-/// the determinant of the deformation gradient #t_, which is as 
+/// the determinant of the deformation gradient (Jacobian) #t_, which is as 
 /// well discretised discontinuously across element boundaries
 /// in a constant manner, ie one Jacobian DOF per element.
 ///   The approach tackles volumetric locking. However, it does
@@ -293,7 +292,7 @@ private:
   //@{
   LINALG::Matrix<1,1> p_;  ///< pressure at current time/load step
   LINALG::Matrix<1,1> p_o_;  ///< (old) pressure at last converged time/load step
-  LINALG::Matrix<1,1> t_;  ///< Jacobian of deformation gradient at current time/load step
+  LINALG::Matrix<1,1> t_;  ///< determinant of deformation gradient at current time/load step
   LINALG::Matrix<1,1> t_o_;  ///< (old) Jacobian of deformation gradient at last converged time/load step
   //@}
 
