@@ -659,6 +659,22 @@ void CONTACT::Interface::Evaluate()
 
   // get out of here if not participating in interface
   if (!lComm()) return;
+  
+  //**********************************************************************
+  // contact search algorithm
+  //**********************************************************************
+  //lComm()->Barrier();
+  //const double t_start = ds_cputime();
+  
+  if (SearchAlg()=="nodes")           EvaluateContactSearch();
+  else if (SearchAlg()=="elements")   EvaluateContactSearchBruteForce(SearchParam());
+  else if (SearchAlg()=="binarytree") EvaluateContactSearchBinarytree();
+  else                                dserror("ERROR: Invalid contact search algorithm");
+
+  //lComm()->Barrier();
+  //const double t_end = ds_cputime()-t_start;
+  //if (lComm()->MyPID()==0)
+  //  cout << "Search Time (overall): " << t_end << " seconds\n";
     
 #ifdef CONTACTFDNORMAL
   // FD check of normal derivatives
@@ -679,22 +695,6 @@ void CONTACT::Interface::Evaluate()
     cnode->BuildAveragedNormal();
   }
  
-  //**********************************************************************
-  // contact search algorithm
-  //**********************************************************************
-  //lComm()->Barrier();
-  //const double t_start = ds_cputime();
-  
-  if (SearchAlg()=="nodes")           EvaluateContactSearch();
-  else if (SearchAlg()=="elements")   EvaluateContactSearchBruteForce(SearchParam());
-  else if (SearchAlg()=="binarytree") EvaluateContactSearchBinarytree();
-  else                                dserror("ERROR: Invalid contact search algorithm");
-
-  //lComm()->Barrier();
-  //const double t_end = ds_cputime()-t_start;
-  //if (lComm()->MyPID()==0)
-  //  cout << "Search Time (overall): " << t_end << " seconds\n";
-
 #ifdef CONTACTFDVERTEX3D
   // define test variable for FDVertex
   vector<vector<double> > testv(0,vector<double>(6));

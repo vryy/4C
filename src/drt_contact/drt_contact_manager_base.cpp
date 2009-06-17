@@ -1484,6 +1484,10 @@ void CONTACT::ManagerBase::Recover(RCP<Epetra_Vector> disi)
   RCP<Epetra_Vector> disim = rcp(new Epetra_Vector(*gmdofrowmap_));
   LINALG::Export(*disi,*disim);
   
+  // extract other displacements from disi
+  RCP<Epetra_Vector> disin = rcp(new Epetra_Vector(*gndofrowmap_));
+  LINALG::Export(*disi,*disin);
+  
 //  // recover incremental jump (for active set)
 //  incrjump_ = rcp(new Epetra_Vector(*gsdofrowmap_));
 //  mhatmatrix_->Multiply(false,*disim,*incrjump_);
@@ -1509,8 +1513,6 @@ void CONTACT::ManagerBase::Recover(RCP<Epetra_Vector> disi)
   z_->Update(-1.0,*mod,1.0);
   ksm_->Multiply(false,*disim,*mod);
   z_->Update(-1.0,*mod,1.0);
-  RCP<Epetra_Vector> disin = rcp(new Epetra_Vector(*gndofrowmap_));
-  LINALG::Export(*disi,*disin);
   ksn_->Multiply(false,*disin,*mod);
   z_->Update(-1.0,*mod,1.0);
   dold_->Multiply(false,*zold_,*mod);
