@@ -1425,7 +1425,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
       const double CI = 12.0/mk;
 
       // stabilization parameters for stationary and instationary case, respectively
-      if (twoionsystem)
+      if (twoionsystem && (k<2))
       {// use resulting diffusion coefficient for binary electrolyte
         if (is_stationary == true)
           tau_[k] = 1.0/(sqrt(reacoeff_[k]*reacoeff_[k]+Gnormu+CI*diffus_[k]*resdiffus*normG));
@@ -1513,12 +1513,12 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
       // parameter relating convective and diffusive forces + respective switch
 #ifndef TAU_EXACT
       double epe = mk * dens * vel_norm * h / diffus_[k];
-      if (twoionsystem) epe *= (diffus_[k]/resdiffus);
+      if (twoionsystem && (k<2)) epe *= (diffus_[k]/resdiffus);
       const double xi = DMAX(epe,1.0);
 #else
       // optimal tau (stationary 1D problem using linear shape functions)
       double epe = 0.5 * dens * vel_norm * h / diffus_[k]
-      if (twoionsystem) epe*=(diffus_[k]/resdiffus);
+      if (twoionsystem && (k<2)) epe*=(diffus_[k]/resdiffus);
       const double pp = exp(epe);
       const double pm = exp(-epe);
       double xi = 0.0;
@@ -1541,10 +1541,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
         if (reacoeff_[k] > EPS15)
           epe1 = 2.0 * diffus_[k] / (mk * dens * reacoeff_[k] * DSQR(h));
 
-        if (twoionsystem) epe1*=(diffus_[k]/resdiffus);
+        if (twoionsystem && (k<2)) epe1*=(diffus_[k]/resdiffus);
         const double xi1 = DMAX(epe1,1.0);
 
-        if (twoionsystem)
+        if (twoionsystem && (k<2))
           tau_[k] = DSQR(h)/(DSQR(h)*dens*reacoeff_[k]*xi1 + (2.0*resdiffus/mk)*xi);
         else
           tau_[k] = DSQR(h)/(DSQR(h)*dens*reacoeff_[k]*xi1 + (2.0*diffus_[k]/mk)*xi);
@@ -1563,10 +1563,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
           epe1 = 2.0 * (timefac + 1.0/reacoeff_[k]) * diffus_[k] / (mk * dens * DSQR(h));
         else
           epe1 = 2.0 * timefac * diffus_[k] / (mk * dens * DSQR(h));
-        if (twoionsystem) epe1*=(diffus_[k]/resdiffus);
+        if (twoionsystem && (k<2)) epe1*=(diffus_[k]/resdiffus);
         const double xi1 = DMAX(epe1,1.0);
 
-        if (twoionsystem)
+        if (twoionsystem && (k<2))
           tau_[k] = DSQR(h)/(DSQR(h)*dens*(reacoeff_[k]+1.0/timefac)*xi1 + (2.0*resdiffus/mk)*xi);
         else
           tau_[k] = DSQR(h)/(DSQR(h)*dens*(reacoeff_[k]+1.0/timefac)*xi1 + (2.0*diffus_[k]/mk)*xi);
