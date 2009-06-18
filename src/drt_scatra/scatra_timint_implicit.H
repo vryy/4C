@@ -142,9 +142,10 @@ public:
       Teuchos::RCP<const Epetra_Vector> fluidsgvelvisc, ///< fluid subgrid velocity/viscosity vector
       Teuchos::RCP<DRT::Discretization> fluiddis);    ///< fluid discretization
 
- /// set displacement field for applications using ALE
- void SetDisplacementField(
+ /// apply moving mesh data
+ void ApplyMeshMovement(
      Teuchos::RCP<const Epetra_Vector> dispnp,     ///< displacement vector
+     Teuchos::RCP<const Epetra_Vector> gvel,       ///< grid velocity vector
      Teuchos::RCP<DRT::Discretization> fluiddis ); ///< fluid discretization
 
   /// set the initial scalar field phi

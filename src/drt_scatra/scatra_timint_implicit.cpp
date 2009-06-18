@@ -27,6 +27,7 @@ Maintainer: Georg Bauer
 #include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_fluid/fluid_utils.H" // for conpotsplitter
+#include "scatra_utils.H" // for conpotsplitstrategy
 
 // for the condition writer output
 /*
@@ -141,12 +142,20 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   if (params_->get<int>("BLOCKPRECOND",0) )
   {
     // we need a block sparse matrix here
-    if (prbtype_ != "elch") 
+    if (prbtype_ != "elch")
       dserror("Block-Preconditioning is only for ELCH problems");
     // initial guess for non-zeros per row: 27 neighboring nodes for hex8 times (numscal_+1) dofs
-    Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy> > blocksysmat =
-      Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy>(conpotsplitter_,conpotsplitter_,27*(numscal_+1),false,true));
-    blocksysmat->SetNumdim(numscal_);
+
+    Teuchos::RCP<LINALG::BlockSparseMatrix<SCATRA::ConPotSplitStrategy> > blocksysmat =
+      Teuchos::rcp(new LINALG::BlockSparseMatrix<SCATRA::ConPotSplitStrategy>(conpotsplitter_,conpotsplitter_,27*(numscal_+1),false,true));
+    blocksysmat->SetNumScal(numscal_);
+
+    // the fluid assembly strategy still works, but it does not make use
+    // of the ELCH-specific sparsity pattern
+    //Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy> > blocksysmat =
+    //Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy>(conpotsplitter_,conpotsplitter_,27*(numscal_+1),false,true));
+    //blocksysmat->SetNumdim(numscal_);
+
     sysmat_ = blocksysmat;
   }
   else
@@ -409,7 +418,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   // -------------------------------------------------------------------
   if (step_ == 0)
   {
-    // if initial velocity field has not been set here, the initial time derivative of phi will be 
+    // if initial velocity field has not been set here, the initial time derivative of phi will be
     // calculated wrongly for some time integration schemes
     if (initialvelset_)
       PrepareFirstTimeStep();
@@ -569,7 +578,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
       // zero out matrix entries
       sysmat_->Zero();
 
-      // reset the residual vector 
+      // reset the residual vector
       residual_->PutScalar(0.0);
 
       {
@@ -623,7 +632,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
 
     // scaling to get true residual vector for all time integration schemes
     // we store this vector BEFORE contributions due to further b.c. are added
-    // to the residual. This way, at Dirichlet-, Neumann- and ElektrodeKinetics 
+    // to the residual. This way, at Dirichlet-, Neumann- and ElektrodeKinetics
     // boundaries the boundary flux values can be computed form the trueresidual
     trueresidual_->Update(ResidualScaling(),*residual_,0.0);
 
@@ -870,7 +879,7 @@ void SCATRA::ScaTraTimIntImpl::Solve()
     // zero out matrix entries
     sysmat_->Zero();
 
-    // reset the residual vector 
+    // reset the residual vector
     residual_->PutScalar(0.0);
 
     // create the parameters for the discretization
@@ -1120,7 +1129,7 @@ Teuchos::RCP<DRT::Discretization> fluiddis)
   for (int lnodeid=0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
   {
     // Here we rely on the fact that the scatra discretization
-    // is a clone of the fluid mesh. => a scatra node has the same 
+    // is a clone of the fluid mesh. => a scatra node has the same
     // local (and global) ID as its corresponding fluid node!
 
     // get the processor's local fluid node with the same lnodeid
@@ -1186,16 +1195,20 @@ Teuchos::RCP<DRT::Discretization> fluiddis)
 
 
 /*----------------------------------------------------------------------*
- | set displacement field for applications using ALE          gjb 05/09 |
+ | apply moving mesh data                                     gjb 05/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::SetDisplacementField(
+void SCATRA::ScaTraTimIntImpl::ApplyMeshMovement(
     Teuchos::RCP<const Epetra_Vector> dispnp,
+    Teuchos::RCP<const Epetra_Vector> gvel,
     Teuchos::RCP<DRT::Discretization> fluiddis
 )
 {
   if (isale_)
   {
-    TEUCHOS_FUNC_TIME_MONITOR("SCATRA: set displacement field");
+    TEUCHOS_FUNC_TIME_MONITOR("SCATRA: apply mesh movement");
+
+    if (dispnp == Teuchos::null) dserror("Got null pointer for displacements");
+    if (gvel == Teuchos::null) dserror("Got null pointer for grid velocity");
 
     // get dofrowmap of fluid discretization
     const Epetra_Map* fluiddofrowmap = fluiddis->DofRowMap();
@@ -1204,7 +1217,7 @@ void SCATRA::ScaTraTimIntImpl::SetDisplacementField(
     for (int lnodeid=0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
     {
       // Here we rely on the fact that the scatra discretization
-      // is a clone of the fluid mesh. => a scatra node has the same 
+      // is a clone of the fluid mesh. => a scatra node has the same
       // local (and global) ID as its corresponding fluid node!
 
       // get the processor's local fluid node with the same lnodeid
@@ -1225,6 +1238,10 @@ void SCATRA::ScaTraTimIntImpl::SetDisplacementField(
         double disp = (*dispnp)[flid];
         // insert velocity value into node-based vector
         dispnp_->ReplaceMyValue(lnodeid, index, disp);
+
+        // subtract grid velocity from fluid velocity to get convective velocity
+        double neggridvel = -((*gvel)[flid]);
+        convel_->SumIntoMyValue(lnodeid, index, neggridvel);
       }
 
       // for security reasons in 1D or 2D problems:
