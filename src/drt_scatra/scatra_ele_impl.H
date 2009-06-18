@@ -92,8 +92,8 @@ public:
     different implementations of the Transport element, this is just one
     such implementation.
 
-    The Transport element will allocate exactly one object of this class 
-    for all transport elements with the same number of nodes in the mesh. 
+    The Transport element will allocate exactly one object of this class
+    for all transport elements with the same number of nodes in the mesh.
     This allows us to use exactly matching working arrays (and keep them
     around.)
 
@@ -419,7 +419,7 @@ public:
       // get velocity derivatives at integration point
       //
       //              +-----  dN (x)
-      //   dvel (x)    \        k        
+      //   dvel (x)    \        k
       //   -------- =   +     ------ * vel
       //      dx       /        dx        k
       //        j     +-----      j
@@ -434,8 +434,8 @@ public:
       //          +-                                 -+ 1
       //          |          /   \           /   \    | -
       //          | 2 * eps | vel |   * eps | vel |   | 2
-      //          |          \   / ij        \   / ij |  
-      //          +-                                 -+  
+      //          |          \   / ij        \   / ij |
+      //          +-                                 -+
       //
       LINALG::Matrix<nsd_,nsd_> two_epsilon;
       for(int rr=0;rr<nsd_;++rr)
@@ -480,7 +480,7 @@ public:
     //! density values at t_(n+alpham) (LOMA)
     LINALG::Matrix<iel,1> edensam_;
     //! actual electric potential (ELCH)
-    LINALG::Matrix<iel,1> epotnp_; 
+    LINALG::Matrix<iel,1> epotnp_;
     //! subgrid diffusivity
     LINALG::Matrix<iel,1> esubgrdiff_;
     //! fine-scale solution
@@ -500,8 +500,6 @@ public:
     vector<double> diffusvalence_;
     //! specific heat capacity at constant pressure (in case of temp. or react. eq.)
     double shcacp_;
-    //! rhs of temperature equation in case of reactive equation system
-    vector<double> reatemprhs_;
     //! coordinates of current integration point in reference coordinates
     LINALG::Matrix<nsd_,1> xsi_;
     //! array for shape functions
@@ -526,6 +524,8 @@ public:
     LINALG::Matrix<nsd_,nsd_> vderxy_;
     //! rhs force in Gauss point
     vector<double> rhs_;
+    //! rhs of temperature equation in case of reactive equation system
+    vector<double> reatemprhs_;
     //! vector containing all values from previous timelevel n in gausspoint
     vector<double> hist_;
     //! velocity vector in gausspoint
