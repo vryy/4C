@@ -40,7 +40,7 @@ namespace SCATRA
   //! decide, whether second derivatives are needed  (template version)
   /*! In convection-diffusion problems, ONLY N,xx , N,yy and N,zz are needed
    *  to evaluate the laplacian operator for the residual-based stabilization.
-   *  Hence, unlike to the Navier-Stokes equations, hex8, wedge6 and pyramid5 
+   *  Hence, unlike to the Navier-Stokes equations, hex8, wedge6 and pyramid5
    *  return false although they have non-zero MIXED second derivatives.*/
   template<DRT::Element::DiscretizationType DISTYPE>
   struct Use2ndDerivs {};
@@ -133,7 +133,7 @@ namespace SCATRA
       break;
     default:
       dserror("Element shape not supported.");
-    }   
+    }
     return -1.0;
   }
 
@@ -155,6 +155,15 @@ namespace SCATRA
   template<> struct DisTypeToStabGaussRule<DRT::Element::line2>   {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule_line_1point; };
   template<> struct DisTypeToStabGaussRule<DRT::Element::line3>   {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule_line_1point; };
 
+  //! determine whether there are only two charged species present or not
+  bool IsBinaryElectrolyte(const std::vector<double>& valence);
+
+  //! calculate resultant diffusion coefficient for stabilization of binary electrolyte systems
+  double CalResDiffCoeff(
+      const std::vector<double>& valence, ///< valences
+      const std::vector<double>& diffus,  ///< diffusivities
+      const std::vector<double>& diffusvalence  ///< valences*diffusivities
+  );
 
 } // namespace SCATRA
 

@@ -731,7 +731,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     vector<double> myphinp(lm.size());
     DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
 
-    if (numscal_ != 2) 
+    if (numscal_ != 2)
       dserror("Numscal_ != 2 for error calculation of Kwok & Wu example");
 
     // fill element arrays
@@ -1316,8 +1316,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
   // get density at element center
   const double dens = funct_.Dot(edens);
 
-  // get "migration velocity" divided by D_k*z_k at element center
 #ifdef MIGRATIONSTAB
+  // get "migration velocity" divided by D_k*z_k at element center
   if (iselch_) // ELCH
   {
     // compute global derivatives
@@ -1326,6 +1326,16 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     migvelint_.Multiply(-frt,derxy_,epot);
   } // if ELCH
 #endif
+
+  // ELCH: special stabilization in case of binary electrolytes
+  bool twoionsystem(false);
+  double resdiffus(diffus_[0]);
+  if (iselch_) // ELCH
+  {
+    twoionsystem = SCATRA::IsBinaryElectrolyte(valence_);
+    if (twoionsystem)
+      resdiffus = SCATRA::CalResDiffCoeff(valence_,diffus_,diffusvalence_);
+  }
 
   for(int k = 0;k<numscal_;++k) // loop over all transported scalars
   {
@@ -1415,9 +1425,18 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
       const double CI = 12.0/mk;
 
       // stabilization parameters for stationary and instationary case, respectively
-      if (is_stationary == true)
-           tau_[k] = 1.0/(sqrt(reacoeff_[k]*reacoeff_[k]+Gnormu+CI*diffus_[k]*diffus_[k]*normG));
-      else tau_[k] = 1.0/(sqrt((4.0*dens_sqr)/(dt*dt)+reacoeff_[k]*reacoeff_[k]+Gnormu+CI*diffus_[k]*diffus_[k]*normG));
+      if (twoionsystem)
+      {// use resulting diffusion coefficient for binary electrolyte
+        if (is_stationary == true)
+          tau_[k] = 1.0/(sqrt(reacoeff_[k]*reacoeff_[k]+Gnormu+CI*diffus_[k]*resdiffus*normG));
+        else tau_[k] = 1.0/(sqrt((4.0*dens_sqr)/(dt*dt)+reacoeff_[k]*reacoeff_[k]+Gnormu+CI*resdiffus*resdiffus*normG));
+      }
+      else
+      {
+        if (is_stationary == true)
+          tau_[k] = 1.0/(sqrt(reacoeff_[k]*reacoeff_[k]+Gnormu+CI*diffus_[k]*diffus_[k]*normG));
+        else tau_[k] = 1.0/(sqrt((4.0*dens_sqr)/(dt*dt)+reacoeff_[k]*reacoeff_[k]+Gnormu+CI*diffus_[k]*diffus_[k]*normG));
+      }
     }
     break;
     case SCATRA::tau_franca_valentin:
@@ -1484,7 +1503,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
         actele->AddToData(name,v);
 #endif
       }
-      else 
+      else
 #endif
         vel_norm = velint_.Norm2();
 
@@ -1493,12 +1512,13 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
 
       // parameter relating convective and diffusive forces + respective switch
 #ifndef TAU_EXACT
-      const double epe = mk * dens * vel_norm * h / diffus_[k];
+      double epe = mk * dens * vel_norm * h / diffus_[k];
+      if (twoionsystem) epe *= (diffus_[k]/resdiffus);
       const double xi = DMAX(epe,1.0);
 #else
       // optimal tau (stationary 1D problem using linear shape functions)
-      double resultantdiff = diffus_[0]*diffus_[1]*(valence_[0]-valence_[1])/(diffusvalence_[0]-diffusvalence_[1]);
-      double epe = 0.5 * dens * vel_norm * h / resultantdiff;
+      double epe = 0.5 * dens * vel_norm * h / diffus_[k]
+      if (twoionsystem) epe*=(diffus_[k]/resdiffus);
       const double pp = exp(epe);
       const double pm = exp(-epe);
       double xi = 0.0;
@@ -1520,9 +1540,14 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
         double epe1 = 0.0;
         if (reacoeff_[k] > EPS15)
           epe1 = 2.0 * diffus_[k] / (mk * dens * reacoeff_[k] * DSQR(h));
+
+        if (twoionsystem) epe1*=(diffus_[k]/resdiffus);
         const double xi1 = DMAX(epe1,1.0);
 
-        tau_[k] = DSQR(h)/(DSQR(h)*dens*reacoeff_[k]*xi1 + (2.0*diffus_[k]/mk)*xi);
+        if (twoionsystem)
+          tau_[k] = DSQR(h)/(DSQR(h)*dens*reacoeff_[k]*xi1 + (2.0*resdiffus/mk)*xi);
+        else
+          tau_[k] = DSQR(h)/(DSQR(h)*dens*reacoeff_[k]*xi1 + (2.0*diffus_[k]/mk)*xi);
 #else
         if (vel_norm > 0.0)
           tau_[k] = 0.5*h*xi/vel_norm;
@@ -1538,12 +1563,16 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
           epe1 = 2.0 * (timefac + 1.0/reacoeff_[k]) * diffus_[k] / (mk * dens * DSQR(h));
         else
           epe1 = 2.0 * timefac * diffus_[k] / (mk * dens * DSQR(h));
+        if (twoionsystem) epe1*=(diffus_[k]/resdiffus);
         const double xi1 = DMAX(epe1,1.0);
 
-        tau_[k] = DSQR(h)/(DSQR(h)*dens*(reacoeff_[k]+1.0/timefac)*xi1 + (2.0*diffus_[k]/mk)*xi);
+        if (twoionsystem)
+          tau_[k] = DSQR(h)/(DSQR(h)*dens*(reacoeff_[k]+1.0/timefac)*xi1 + (2.0*resdiffus/mk)*xi);
+        else
+          tau_[k] = DSQR(h)/(DSQR(h)*dens*(reacoeff_[k]+1.0/timefac)*xi1 + (2.0*diffus_[k]/mk)*xi);
       }
 
-#ifdef VISUALIZE_ELEMENT_DATA 
+#ifdef VISUALIZE_ELEMENT_DATA
       // visualize resultant Pe number
       DRT::ELEMENTS::Transport* actele = dynamic_cast<DRT::ELEMENTS::Transport*>(ele);
       if (!actele) dserror("cast to Transport* failed");
@@ -1564,7 +1593,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     default: dserror("Unknown definition of tau\n");
     } //switch (whichtau)
 
-#ifdef VISUALIZE_ELEMENT_DATA 
+#ifdef VISUALIZE_ELEMENT_DATA
     // visualize stabilization parameter
     DRT::ELEMENTS::Transport* actele = dynamic_cast<DRT::ELEMENTS::Transport*>(ele);
     if (!actele) dserror("cast to Transport* failed");
@@ -2365,9 +2394,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
 
     if (iselch_) // ELCH
     {
-      // we put a dummy mass matrix here in order to have a regular 
+      // we put a dummy mass matrix here in order to have a regular
       // matrix in the lower right block of the whole system-matrix
-      // A identity matrix would cause problems with ML solver in the SIMPLE 
+      // A identity matrix would cause problems with ML solver in the SIMPLE
       // schemes since ML needs to have off-diagonal entries for the aggregation!
       for (int vi=0; vi<iel; ++vi)
       {
@@ -2463,7 +2492,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
     conint_[k] = funct_.Dot(ephinp[k]);
 
     // when concentration becomes zero, the coupling terms in the system matrix get lost!
-    if (conint_[k] < 1e-18) 
+    if (conint_[k] < 1e-18)
       printf("WARNING: species concentration %d at GP is zero or negative: %g\n",k,conint_[k]);
   }
 
@@ -2601,7 +2630,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
 
           /* 1) convective stabilization */
 
-          // diffusive term 
+          // diffusive term
           emat(fvi, fui) += -timetaufac_conv_eff_vi*diff_(ui) ;
 
           // migration term (reactive part)
@@ -2641,7 +2670,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
     const double funct_ephinp_k = funct_.Dot(ephinp[k]);
     double diff_ephinp_k(0.0);
     double migrea_k(0.0);
-    if (use2ndderiv_) 
+    if (use2ndderiv_)
     { // only necessary for higher order elements
       diff_ephinp_k = diff_.Dot(ephinp[k]);   // diffusion
       migrea_k      = migrea_.Dot(ephinp[k]); // reactive part of migration term
