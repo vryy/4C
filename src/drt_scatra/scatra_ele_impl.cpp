@@ -2889,7 +2889,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
       c_0_0_0_t = A0 + (A_mnk*exp((-D)*(m*m)*t*PI*PI));
     }
     else
-      dserror("Illegal number of space dimenions for analyt. solution: %d",nsd_);
+      dserror("Illegal number of space dimensions for analyt. solution: %d",nsd_);
 
     // compute analytical solution for anion concentration
     c(1) = (-valence_[0]/valence_[1])* c(0);
