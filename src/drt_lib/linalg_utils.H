@@ -617,8 +617,8 @@ namespace LINALG
   The purpose is to set Dirichlet values at a subset of all Dirichlet
   boundaries.
 
-  Special in this routine is the ability to insert rows of general rotation 
-  matrices (stored in #trafo) rather than simply put ones and zeros 
+  Special in this routine is the ability to insert rows of general rotation
+  matrices (stored in #trafo) rather than simply put ones and zeros
   at the rows associated Dirichlet DOFs.
 
   \param A (in/out)         : Matrix of Ax=b
@@ -818,6 +818,16 @@ namespace LINALG
   void PrintSparsityToPostscript(const Epetra_RowMatrix& A);
 
   /*!
+  \brief Print content of a sparse matrix in Matlab format
+
+  The sparse matrix is printed in Matlab sparse format to
+  a file with specified file name
+
+  \note works in parallel and serial!
+  */
+  void PrintMatrixInMatlabFormat(std::string fname, const Epetra_CrsMatrix& A);
+
+  /*!
   \brief Gather information of type vector<T> on a subset of processors
 
   This template gathers information provided in sdata on a subset of
@@ -897,7 +907,7 @@ namespace LINALG
 
   /// Create an allreduced vector of gids from the given Epetra_Map
   /*!
-    We have nodes and elements with unique (tested in DEBUG mode) 
+    We have nodes and elements with unique (tested in DEBUG mode)
     but otherwise arbitrary global ids. On rare occasions, however,
     we need to allreduce a particular map to one or more processors.
     This is a building block for such occasions. We allreduce the gids

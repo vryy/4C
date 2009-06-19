@@ -1524,7 +1524,73 @@ void LINALG::PrintSparsityToPostscript(const Epetra_RowMatrix& A)
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void LINALG::PrintMatrixInMatlabFormat(std::string fname, const Epetra_CrsMatrix& A)
+{
+  // The following source code has been adapted from the Print() method
+  // of the Epetra_CrsMatrix class (see "Epetra_CrsMatrix.cpp").
 
+  int MyPID = A.RowMap().Comm().MyPID();
+  int NumProc = A.RowMap().Comm().NumProc();
+
+  std::ofstream os;
+
+  for (int iproc=0; iproc < NumProc; iproc++)
+  {
+    if (MyPID==iproc)
+    {
+      // open file for writing
+      if (iproc == 0)
+        os.open(fname.c_str(),std::fstream::trunc);
+      else
+        os.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+
+      int NumMyRows1 = A.NumMyRows();
+      int MaxNumIndices = A.MaxNumEntries();
+      int * Indices  = new int[MaxNumIndices];
+      double * Values  = new double[MaxNumIndices];
+      int NumIndices;
+      int i, j;
+
+      for (i=0; i<NumMyRows1; i++)
+      {
+        int Row = A.GRID(i); // Get global row number
+        A.ExtractGlobalRowCopy(Row, MaxNumIndices, NumIndices, Values, Indices);
+
+        for (j = 0; j < NumIndices ; j++) {
+          //os.width(8);
+          //os <<  MyPID ; os << "    ";
+          os.width(10);
+          os <<  Row+1 ; os << "    "; // increase index by one for matlab
+          os.width(10);
+          os <<  Indices[j]+1; os << "    "; // increase index by one for matlab
+          os.width(20);
+          os <<  Values[j]; os << "    ";
+          os << endl;
+        }
+      }
+
+      delete [] Indices;
+      delete [] Values;
+
+      os << flush;
+
+      // close file
+      os.close();
+    }
+    // Do a few global ops to give I/O a chance to complete
+    A.RowMap().Comm().Barrier();
+    A.RowMap().Comm().Barrier();
+    A.RowMap().Comm().Barrier();
+  }
+
+  // just to be sure
+  if (os.is_open()) os.close();
+
+  // have fun with your Matlab matrix
+  return;
+}
 
 
 /*----------------------------------------------------------------------*/
@@ -1552,7 +1618,7 @@ void LINALG::AllreduceEMap(vector<int>& rredundant, const Epetra_Map& emap)
   if (not emap.UniqueGIDs())
     dserror("works only for unique Epetra_Maps");
 #endif
-  
+
   const int mynodepos = FindMyPos(emap.NumMyElements(), emap.Comm());
 
   std::vector<int> sredundant(emap.NumGlobalElements(),0);
@@ -1573,7 +1639,7 @@ void LINALG::AllreduceEMap(map<int,int>& idxmap, const Epetra_Map& emap)
   if (not emap.UniqueGIDs())
     dserror("works only for unique Epetra_Maps");
 #endif
-  
+
   idxmap.clear();
 
   vector<int> rredundant;

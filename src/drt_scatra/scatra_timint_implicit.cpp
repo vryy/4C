@@ -682,9 +682,22 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
         solver_->AdaptTolerance(ittol,actresidual,adaptolbetter);
       }
 
-      // print (DEBUGGING!)
-      //LINALG::PrintSparsityToPostscript( *(SystemMatrix()->EpetraMatrix()) );
-      //(SystemMatrix()->EpetraMatrix())->Print(cout);
+      /*
+      // matrix printing options (DEBUGGING!)
+      RCP<LINALG::SparseMatrix> A = SystemMatrix();
+      if (A != Teuchos::null)
+      {
+        // print to file in matlab format
+        const std::string fname = "sparsematrix.mtl";
+        LINALG::PrintMatrixInMatlabFormat(fname,*(A->EpetraMatrix()));
+        // print to screen
+        (A->EpetraMatrix())->Print(cout);
+        // print sparsity pattern to file
+        LINALG::PrintSparsityToPostscript( *(A->EpetraMatrix()) );
+      }
+      else
+        dserror("No printing options for BlockSparseMatrix yet.");
+      */
 
       solver_->Solve(sysmat_->EpetraOperator(),increment_,residual_,true,itnum==1);
       solver_->ResetTolerance();
@@ -694,9 +707,6 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
     }
 
     //------------------------------------------------ update solution vector
-/*    if (itnum == 1)
-        phinp_->Update(0.25,*increment_,1.0);
-    else  */
     phinp_->Update(1.0,*increment_,1.0);
 
   } // nonlinear iteration
