@@ -179,17 +179,17 @@ void DRT::ELEMENTS::Wall1::w1_call_defgrad_enh(
   // fill up 4 EAS matrices at each GP
   if (eastype_ == eas_q1e4)
   {
-    M(0,0) = e1*alpha(0,0);  // xi
-    M(0,1) = e2*alpha(1,0);  // eta
-    M(1,0) = e1*alpha(2,0);  // xi
-    M(1,1) = e2*alpha(3,0);  // eta
+    M(0,0) = e1*alpha(0,0);  // r
+    M(0,1) = e2*alpha(1,0);  // s
+    M(1,0) = e1*alpha(2,0);  // r
+    M(1,1) = e2*alpha(3,0);  // s
   }
   else if (eastype_ == eas_q1et4)
   {
-    M(0,0) = e1*alpha(0,0);  // xi
-    M(0,1) = e1*alpha(1,0);  // xi
-    M(1,0) = e2*alpha(2,0);  // eta
-    M(1,1) = e2*alpha(3,0);  // eta
+    M(0,0) = e1*alpha(0,0);  // r
+    M(0,1) = e1*alpha(1,0);  // r
+    M(1,0) = e2*alpha(2,0);  // s
+    M(1,1) = e2*alpha(3,0);  // s
   }
   else
   {
