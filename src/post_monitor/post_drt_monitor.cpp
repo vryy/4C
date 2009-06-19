@@ -399,8 +399,13 @@ void StructMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::ve
   outfile << std::right << std::setw(16) << std::scientific << result.time();
 
   // check dimensions
-  if (gdof.size() < (unsigned)dim)
-    dserror("Number of DOFs %d at node smaller than dim=%d", gdof.size(), dim);
+  unsigned noddof = 0;
+  if (gdof.size() == (unsigned)dim)  // ordinary case: 3 displ DOFs
+    noddof = (unsigned)dim;
+  else if (gdof.size() == (unsigned)dim+1)  // displacement+pressure: 3+1 DOFs
+    noddof = (unsigned)dim;
+  else  // eg. shell with displacement+rotation: 3+3 DOFs
+    noddof = gdof.size();
 
   // displacement
   
@@ -412,7 +417,7 @@ void StructMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::ve
   int offset2 = dispmap.MinAllGID();
 
   // do output of displacement
-  for(unsigned i=0; i < (unsigned)dim; ++i)
+  for(unsigned i=0; i < noddof; ++i)
   {
     const int lid = dispmap.LID(gdof[i]+offset2);
     if (lid == -1) dserror("illegal gid %d at %d!",gdof[i],i);
@@ -429,7 +434,7 @@ void StructMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::ve
   offset2 = velmap.MinAllGID();
   
   // do output of velocity
-  for(unsigned i=0; i <  (unsigned)dim; ++i)
+  for(unsigned i=0; i <  noddof; ++i)
   {
     const int lid = velmap.LID(gdof[i]+offset2);
     if (lid == -1) dserror("illegal gid %d at %d!",gdof[i],i);
@@ -446,7 +451,7 @@ void StructMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::ve
   offset2 = accmap.MinAllGID();
   
   // do output for acceleration
-  for(unsigned i=0; i <  (unsigned)dim; ++i)
+  for(unsigned i=0; i <  noddof; ++i)
   {
     const int lid = accmap.LID(gdof[i]+offset2);
     if (lid == -1) dserror("illegal gid %d at %d!",gdof[i],i);
@@ -454,7 +459,7 @@ void StructMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::ve
   }
 
   // pressure 
-  if (gdof.size() >= (unsigned)dim+1)
+  if (gdof.size() == (unsigned)dim+1)
   {
     // get actual result vector displacement/pressure
     resvec = result.read_result("displacement");
