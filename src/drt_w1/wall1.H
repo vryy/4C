@@ -97,7 +97,7 @@ public:
   static const int noddof_ = 2;  ///< number of nodal DOFs
   static const int numstr_ = 4;  ///< number of (symmetric) strain/stress components --- THIS SHOULD BE 3
   static const int numnstr_ = 4;  ///< number of non-symmetric strain/stress components
-  static const int neas_ = 4;  ///< number of EAS parameters --- THIS SHOULD BE TEMPLATED
+  static const int neas_ = 4;  ///< number of EAS parameters
   //@}
 
   /// @name Constructors and destructors and related methods

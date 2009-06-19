@@ -167,7 +167,7 @@ bool DRT::ELEMENTS::Wall1::ReadElement()
   // EAS type
   if (iseas_)
   {
-    eastype_ = eas_q1e4;
+    eastype_ = eas_q1et4;
   }
   else
   {
