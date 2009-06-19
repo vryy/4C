@@ -400,12 +400,19 @@ void StructMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::ve
 
   // check dimensions
   unsigned noddof = 0;
-  if (gdof.size() == (unsigned)dim)  // ordinary case: 3 displ DOFs
-    noddof = (unsigned)dim;
-  else if (gdof.size() == (unsigned)dim+1)  // displacement+pressure: 3+1 DOFs
-    noddof = (unsigned)dim;
-  else  // eg. shell with displacement+rotation: 3+3 DOFs
+  if (dim == 2)
+  {
     noddof = gdof.size();
+  }
+  else if (dim == 3)
+  {
+    if (gdof.size() == (unsigned)dim)  // ordinary case: 3 displ DOFs
+      noddof = (unsigned)dim;
+    else if (gdof.size() == (unsigned)dim+1)  // displacement+pressure: 3+1 DOFs
+      noddof = (unsigned)dim;
+    else  // eg. shell with displacement+rotation: 3+3 DOFs
+      noddof = gdof.size();
+  }
 
   // displacement
   
