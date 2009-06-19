@@ -358,10 +358,32 @@ void StructMonWriter::WriteTableHead(ofstream& outfile, int dim)
   switch (dim)
   {
   case 2:
-    outfile << "# step   time     d_x      d_y      v_x      v_y      a_x      a_y\n";
+    outfile << "#"
+            << std::right << std::setw(9) << "step"
+            << std::right << std::setw(16) << "time"
+            << std::right << std::setw(16) << "d_x"
+            << std::right << std::setw(16) << "d_y"
+            << std::right << std::setw(16) << "v_x"
+            << std::right << std::setw(16) << "v_y"
+            << std::right << std::setw(16) << "a_x"
+            << std::right << std::setw(16) << "a_y"
+            << std::endl;
     break;
   case 3:
-   outfile << "# step   time     d_x      d_y      d_z      v_x      v_y      v_z      a_x      a_y      a_z\n";
+    outfile << "#"
+            << std::right << std::setw(9) << "step"
+            << std::right << std::setw(16) << "time"
+            << std::right << std::setw(16) << "d_x"
+            << std::right << std::setw(16) << "d_y"
+            << std::right << std::setw(16) << "d_z"
+            << std::right << std::setw(16) << "v_x"
+            << std::right << std::setw(16) << "v_y"
+            << std::right << std::setw(16) << "v_z"
+            << std::right << std::setw(16) << "a_x"
+            << std::right << std::setw(16) << "a_y"
+            << std::right << std::setw(16) << "a_z"
+            << std::right << std::setw(16) << "p"
+            << std::endl;
    break;
   default:
     dserror("Number of dimensions in space differs from 2 and 3!");
@@ -370,39 +392,51 @@ void StructMonWriter::WriteTableHead(ofstream& outfile, int dim)
 
 void StructMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
 {
+  // write front
+
+  // do output of general time step data
+  outfile << std::right << std::setw(10) << result.step();
+  outfile << std::right << std::setw(16) << std::scientific << result.time();
+
+  // check dimensions
+  if (gdof.size() < (unsigned)dim)
+    dserror("Number of DOFs %d at node smaller than dim=%d", gdof.size(), dim);
+
+  // displacement
+  
   // get actual result vector displacement
-  RCP< Epetra_Vector > resvec = result.read_result("displacement");
+  Teuchos::RCP<Epetra_Vector> resvec = result.read_result("displacement");
   const Epetra_BlockMap& dispmap = resvec->Map();
   
-  //compute second part of offset
+  // compute second part of offset
   int offset2 = dispmap.MinAllGID();
-  
-  // do output of general time step data
-  outfile << right << std::setw(10) << result.step();
-  outfile << right << std::setw(16) << scientific << result.time();
 
-  // do output for velocity and pressure
-  for(unsigned i=0; i < gdof.size(); ++i)
+  // do output of displacement
+  for(unsigned i=0; i < (unsigned)dim; ++i)
   {
     const int lid = dispmap.LID(gdof[i]+offset2);
     if (lid == -1) dserror("illegal gid %d at %d!",gdof[i],i);
-    outfile << right << std::setw(16) << scientific << (*resvec)[lid];
+    outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
   }
+
+  // velocity
 
   // get actual result vector velocity
   resvec = result.read_result("velocity");
   const Epetra_BlockMap& velmap = resvec->Map();
 
-  //compute second part of offset
+  // compute second part of offset
   offset2 = velmap.MinAllGID();
   
-  // do output for velocity
-  for(unsigned i=0; i < gdof.size(); ++i)
+  // do output of velocity
+  for(unsigned i=0; i <  (unsigned)dim; ++i)
   {
     const int lid = velmap.LID(gdof[i]+offset2);
     if (lid == -1) dserror("illegal gid %d at %d!",gdof[i],i);
-    outfile << right << std::setw(16) << scientific << (*resvec)[lid];
+    outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
   }
+
+  // acceleration
 
   // get actual result vector acceleration
   resvec = result.read_result("acceleration");
@@ -412,11 +446,30 @@ void StructMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::ve
   offset2 = accmap.MinAllGID();
   
   // do output for acceleration
-  for(unsigned i=0; i < gdof.size(); ++i)
+  for(unsigned i=0; i <  (unsigned)dim; ++i)
   {
     const int lid = accmap.LID(gdof[i]+offset2);
     if (lid == -1) dserror("illegal gid %d at %d!",gdof[i],i);
-    outfile << right << std::setw(16) << scientific << (*resvec)[lid];
+    outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
+  }
+
+  // pressure 
+  if (gdof.size() >= (unsigned)dim+1)
+  {
+    // get actual result vector displacement/pressure
+    resvec = result.read_result("displacement");
+    const Epetra_BlockMap& pressmap = resvec->Map();
+  
+    // compute second part of offset
+    offset2 = pressmap.MinAllGID();
+  
+    // do output of pressure
+    {
+      const unsigned i = (unsigned)dim;
+      const int lid = pressmap.LID(gdof[i]+offset2);
+      if (lid == -1) dserror("illegal gid %d at %d!",gdof[i],i);
+      outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
+    }
   }
 
   outfile << "\n";
