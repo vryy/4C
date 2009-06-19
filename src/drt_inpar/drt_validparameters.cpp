@@ -655,7 +655,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<INPAR::STR::PredEnum>(
                                  INPAR::STR::pred_vague,
                                  INPAR::STR::pred_constdis,
-                                 INPAR::STR::pred_constdisvelacc, 
+                                 INPAR::STR::pred_constdisvelacc,
                                  INPAR::STR::pred_tangdis,
                                  INPAR::STR::pred_constdispres,
                                  INPAR::STR::pred_constdisvelaccpres),
@@ -1585,12 +1585,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>(
                                  "Franca_Valentin",
                                  "Bazilevs",
+                                 "Exact_1D"
                                  "Zero"),
                                tuple<std::string>(
                                  "tau according to Franca and Valentin (2000)",
-                                 "tau according to Bazilevs et al. (2007) (based on G_ij and g_i)"
+                                 "tau according to Bazilevs et al. (2007) (based on G_ij and g_i)",
+                                 "exact tau for stationary 1d problems and linear shape functions"
                                  "zero tau (no stabilizing effect)")  ,
-                                tuple<int>(0,1,2),
+                                tuple<int>(0,1,2,3),
                                &scatradyn_stab);
 
   /*----------------------------------------------------------------------*/

@@ -26,6 +26,7 @@ namespace SCATRA
   {
     tau_franca_valentin,
     tau_bazilevs,
+    tau_exact_1d,
     tau_zero
   };
 

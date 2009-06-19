@@ -35,7 +35,6 @@ Maintainer: Georg Bauer
 #include "scatra_element.H" // only for visualization of element data
 //#define MIGRATIONSTAB  //stabilization w.r.t migration term (obsolete!)
 //#define PRINT_ELCH_DEBUG
-//#define TAU_EXACT
 //#define EVAL_TAU_AT_INTPOINT
 
 /*----------------------------------------------------------------------*
@@ -310,6 +309,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
 
       if      (taudef == "Zero")     whichtau = SCATRA::tau_zero;
       else if (taudef == "Bazilevs") whichtau = SCATRA::tau_bazilevs;
+      else if (taudef == "Exact_1D") whichtau = SCATRA::tau_exact_1d;
     }
 
     // set flags for subgrid-scale velocity and all-scale subgrid diffusivity
@@ -1350,6 +1350,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
       diffus_[k] += sgdiff;
     }
 
+    // we use a copy of the diffusivity that can be locally modified
+    double diffus_k = diffus_[k];
+    // use resulting diffusion coefficient for binary electrolyte solutions
+    if (twoionsystem && (k<2)) diffus_k = resdiffus;
+
     //----------------------------------------------------------------------
     // computation of stabilization parameter
     //----------------------------------------------------------------------
@@ -1377,7 +1382,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
                | dt            -                      -   - |
                +-                                          -+
 
-      */
+       */
 
       /*            +-           -+   +-           -+   +-           -+
                     |             |   |             |   |             |
@@ -1386,21 +1391,21 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
                ij   |  dx    dx   |   |  dx    dx   |   |  dx    dx   |
                     |    i     j  |   |    i     j  |   |    i     j  |
                     +-           -+   +-           -+   +-           -+
-      */
+       */
       /*            +----
                      \
             G : G =   +   G   * G
             -   -    /     ij    ij
             -   -   +----
                      i,j
-      */
+       */
       /*                      +----
              n+1       n+1     \     n+1          n+1
             u     * G u     =   +   u    * G   * u
                     -          /     i     -ij    j
                     -         +----        -
                                i,j
-      */
+       */
       double G;
       double normG(0.0);
       double Gnormu(0.0);
@@ -1425,18 +1430,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
       const double CI = 12.0/mk;
 
       // stabilization parameters for stationary and instationary case, respectively
-      if (twoionsystem && (k<2))
-      {// use resulting diffusion coefficient for binary electrolyte
-        if (is_stationary == true)
-          tau_[k] = 1.0/(sqrt(reacoeff_[k]*reacoeff_[k]+Gnormu+CI*diffus_[k]*resdiffus*normG));
-        else tau_[k] = 1.0/(sqrt((4.0*dens_sqr)/(dt*dt)+reacoeff_[k]*reacoeff_[k]+Gnormu+CI*resdiffus*resdiffus*normG));
-      }
+      if (is_stationary == true)
+        tau_[k] = 1.0/(sqrt(reacoeff_[k]*reacoeff_[k]+Gnormu+CI*diffus_k*diffus_k*normG));
       else
-      {
-        if (is_stationary == true)
-          tau_[k] = 1.0/(sqrt(reacoeff_[k]*reacoeff_[k]+Gnormu+CI*diffus_[k]*diffus_[k]*normG));
-        else tau_[k] = 1.0/(sqrt((4.0*dens_sqr)/(dt*dt)+reacoeff_[k]*reacoeff_[k]+Gnormu+CI*diffus_[k]*diffus_[k]*normG));
-      }
+        tau_[k] = 1.0/(sqrt((4.0*dens_sqr)/(dt*dt)+reacoeff_[k]*reacoeff_[k]+Gnormu+CI*diffus_k*diffus_k*normG));
     }
     break;
     case SCATRA::tau_franca_valentin:
@@ -1489,7 +1486,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
 #ifdef VISUALIZE_ELEMENT_DATA
         veleff.Update(diffusvalence_[k],migvelint_,0.0);
         double vel_norm_mig = veleff.Norm2();
-        double migepe2 = mk * vel_norm_mig * h / diffus_[k];
+        double migepe2 = mk * vel_norm_mig * h / diffus_k;
 
         DRT::ELEMENTS::Transport* actele = dynamic_cast<DRT::ELEMENTS::Transport*>(ele);
         if (!actele) dserror("cast to Transport* failed");
@@ -1508,68 +1505,36 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
         vel_norm = velint_.Norm2();
 
       // check whether there is zero diffusivity
-      if (diffus_[k] == 0.0) dserror("diffusivity is zero: Preventing division by zero at evaluation of stabilization parameter");
+      if (diffus_k == 0.0) dserror("diffusivity is zero: Preventing division by zero at evaluation of stabilization parameter");
 
       // parameter relating convective and diffusive forces + respective switch
-#ifndef TAU_EXACT
-      double epe = mk * dens * vel_norm * h / diffus_[k];
-      if (twoionsystem && (k<2)) epe *= (diffus_[k]/resdiffus);
+      double epe = mk * dens * vel_norm * h / diffus_k;
       const double xi = DMAX(epe,1.0);
-#else
-      // optimal tau (stationary 1D problem using linear shape functions)
-      double epe = 0.5 * dens * vel_norm * h / diffus_[k]
-      if (twoionsystem && (k<2)) epe*=(diffus_[k]/resdiffus);
-      const double pp = exp(epe);
-      const double pm = exp(-epe);
-      double xi = 0.0;
-      if (epe > EPS15)
-      {
-        // xi = coth(epe) - 1/epe
-        xi = (((pp+pm)/(pp-pm))-(1.0/epe));
-        cout<<"epe = "<<epe<<endl;
-        cout<<"xi_opt  = "<<xi<<endl;
-        cout<<"vel_norm  = "<<vel_norm<<endl;
-        cout<<"tau_opt = "<<0.5*h*xi/vel_norm<<endl<<endl;
-      }
-#endif
+
       // stabilization parameter for stationary and instationary case
       if (is_stationary == true)
       {
-#ifndef TAU_EXACT
         // parameter relating diffusive and reactive forces + respective switch
         double epe1 = 0.0;
         if (reacoeff_[k] > EPS15)
-          epe1 = 2.0 * diffus_[k] / (mk * dens * reacoeff_[k] * DSQR(h));
+          epe1 = 2.0 * diffus_k / (mk * dens * reacoeff_[k] * DSQR(h));
 
-        if (twoionsystem && (k<2)) epe1*=(diffus_[k]/resdiffus);
         const double xi1 = DMAX(epe1,1.0);
 
-        if (twoionsystem && (k<2))
-          tau_[k] = DSQR(h)/(DSQR(h)*dens*reacoeff_[k]*xi1 + (2.0*resdiffus/mk)*xi);
-        else
-          tau_[k] = DSQR(h)/(DSQR(h)*dens*reacoeff_[k]*xi1 + (2.0*diffus_[k]/mk)*xi);
-#else
-        if (vel_norm > 0.0)
-          tau_[k] = 0.5*h*xi/vel_norm;
-        else
-          tau_[k] = 0.0;
-#endif
+        tau_[k] = DSQR(h)/(DSQR(h)*dens*reacoeff_[k]*xi1 + (2.0*diffus_k/mk)*xi);
       }
       else
       {
         // parameter relating diffusive and reactive forces + respective switch
         double epe1 = 0.0;
         if (reacoeff_[k] > EPS15)
-          epe1 = 2.0 * (timefac + 1.0/reacoeff_[k]) * diffus_[k] / (mk * dens * DSQR(h));
+          epe1 = 2.0 * (timefac + 1.0/reacoeff_[k]) * diffus_k / (mk * dens * DSQR(h));
         else
-          epe1 = 2.0 * timefac * diffus_[k] / (mk * dens * DSQR(h));
-        if (twoionsystem && (k<2)) epe1*=(diffus_[k]/resdiffus);
+          epe1 = 2.0 * timefac * diffus_k / (mk * dens * DSQR(h));
+
         const double xi1 = DMAX(epe1,1.0);
 
-        if (twoionsystem && (k<2))
-          tau_[k] = DSQR(h)/(DSQR(h)*dens*(reacoeff_[k]+1.0/timefac)*xi1 + (2.0*resdiffus/mk)*xi);
-        else
-          tau_[k] = DSQR(h)/(DSQR(h)*dens*(reacoeff_[k]+1.0/timefac)*xi1 + (2.0*diffus_[k]/mk)*xi);
+        tau_[k] = DSQR(h)/(DSQR(h)*dens*(reacoeff_[k]+1.0/timefac)*xi1 + (2.0*diffus_k/mk)*xi);
       }
 
 #ifdef VISUALIZE_ELEMENT_DATA
@@ -1582,6 +1547,45 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
       string name = "Pe_"+temp.str();
       actele->AddToData(name,v);
 #endif
+    }
+    break;
+    case SCATRA::tau_exact_1d:
+    {
+      // optimal tau (stationary 1D-problem using linear shape functions)
+      if (is_stationary == false)
+        dserror("Exact stabilization parameter only available for stationary case");
+
+      // get number of dimensions (convert from int to double)
+      const double dim = (double) nsd_;
+
+      // get characteristic element length
+      const double h = pow(vol,(1.0/dim));
+
+      // get Euclidean norm of (weighted) velocity at element center
+      double vel_norm = velint_.Norm2();
+
+      // check whether there is zero diffusivity
+      if (diffus_k == 0.0) dserror("diffusivity is zero: Preventing division by zero at evaluation of stabilization parameter");
+
+      // element Peclet number relating convective and diffusive forces
+      double epe = 0.5 * dens * vel_norm * h / diffus_k;
+      const double pp = exp(epe);
+      const double pm = exp(-epe);
+      double xi = 0.0;
+      if (epe > EPS15)
+      {
+        xi = (((pp+pm)/(pp-pm))-(1.0/epe)); // xi = coth(epe) - 1/epe
+        // compute optimal stabilization parameter
+        tau_[k] = 0.5*h*xi/vel_norm;
+#if 0
+        cout<<"epe = "<<epe<<endl;
+        cout<<"xi_opt  = "<<xi<<endl;
+        cout<<"vel_norm  = "<<vel_norm<<endl;
+        cout<<"tau_opt = "<<0.5*h*xi/vel_norm<<endl<<endl;
+#endif
+      }
+      else
+        tau_[k] = 0.0;
     }
     break;
     case SCATRA::tau_zero:
