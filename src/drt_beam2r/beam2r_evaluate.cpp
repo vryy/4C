@@ -69,9 +69,16 @@ int DRT::ELEMENTS::Beam2r::Evaluate(ParameterList& params,
     //action type for evaluating statistical forces
     case Beam2r::calc_brownian_damp:
     {
-    	/*calculation of Brownian forces and damping is based on drag coefficient; this coefficient per unit
-    	 * length is approximated by the one of an infinitely long staff for friciton orthogonal to staff axis*/
-    	 // undo again! double zeta = 4 * PI * lrefe_ * params.get<double>("ETA",0.0);
+      /*calculation of Brownian forces and damping is based on drag coefficient; this coefficient per unit
+       * length is approximated by the one of an infinitely long staff for friciton orthogonal to staff axis*/
+      LINALG::Matrix<2,2> xrefe;
+      for (int k=0; k<2; ++k)
+      {
+        xrefe(0,k) = Nodes()[k]->X()[0];
+        xrefe(1,k) = Nodes()[k]->X()[1];
+      }
+      double lrefe  = pow( pow(xrefe(1,1)-xrefe(1,0),2) + pow(xrefe(0,1)-xrefe(0,0),2) , 0.5 );
+      double zeta = 4 * PI * lrefe * params.get<double>("ETA",0.0);
     	          
     	 // get element displacements (for use in shear flow fields)
     	 RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -81,7 +88,7 @@ int DRT::ELEMENTS::Beam2r::Evaluate(ParameterList& params,
     	      
     	      
     	 //first we evaluate the damping matrix
-    	 //EvaluateBrownianDamp(params,mydisp,zeta,elemat1);
+    	 EvaluateBrownianDamp(params,mydisp,zeta,elemat1);
     	      
     	/*in case of parallel computing the random forces have to be handled in a special way: normally
     	 * in the frame of evaluation each processor evaluates forces for its column elements (including
@@ -103,7 +110,7 @@ int DRT::ELEMENTS::Beam2r::Evaluate(ParameterList& params,
     	     
     	 //evaluation of statistical forces or displacements
     	 Epetra_SerialDenseVector brownian(lm.size());
-    	 //EvaluateBrownianForces(params,mydisp,zeta,brownian);
+    	 EvaluateBrownianForces(params,mydisp,zeta,brownian);
 
     	 /*all the above evaluated forces or movements are assembled*/
     	 //note carefully: a space between the two subsequal ">" signs is mandatory for the C++ parser in order to avoid confusion with ">>" for streams
@@ -492,24 +499,26 @@ int DRT::ELEMENTS::Beam2r::EvaluateBrownianDamp(ParameterList& params,
                                               double zeta,
                                               Epetra_SerialDenseMatrix& elemat1)
 {
-	// polynomial order for interpolation of stochastic line load (zero corresponds to bead spring model)
-	  int stochasticorder = params.get<int>("STOCH_ORDER",0);
-	  
-	  //simple model with isotropic Brownian motion and uncorrelated nodal forces (like bead-spring-model)
-	  if (stochasticorder == 0)
-	  {
-	    elemat1(0,0) += zeta/2.0;
-	    elemat1(1,1) += zeta/2.0;
-	    elemat1(3,3) += zeta/2.0;
-	    elemat1(4,4) += zeta/2.0;  
-	  }
+  // polynomial order for interpolation of stochastic line load (zero corresponds to bead spring model)
+  int stochasticorder = params.get<int>("STOCH_ORDER",0);
+  
+  //simple model with isotropic Brownian motion and uncorrelated nodal forces (like bead-spring-model)
+  if (stochasticorder == 0)
+  {
+    elemat1(0,0) += zeta/2.0;
+    elemat1(1,1) += zeta/2.0;
+    elemat1(3,3) += zeta/2.0;
+    elemat1(4,4) += zeta/2.0;  
+  }
 
-	  //in case of a consistent damping matrix stochastic nodal forces are calculated consistently by methods of weighted integrals
-	  else if (stochasticorder == 1)
-	  {     
-		  dserror("Consistent damp matrix called but not implemented. (stochasticorder=1)");
-	  }
-}
+  //in case of a consistent damping matrix stochastic nodal forces are calculated consistently by methods of weighted integrals
+  else if (stochasticorder == 1)
+  {     
+    dserror("stochasticorder == 1 not implemented for beam2r");
+  }
+
+  return 0;
+} //DRT::ELEMENTS::Beam3::EvaluateBrownianDamp
  //DRT::ELEMENTS::Beam2r::EvaluateBrownianDamp
 
 /*-----------------------------------------------------------------------------------------------------------*
@@ -543,11 +552,9 @@ int DRT::ELEMENTS::Beam2r::EvaluateBrownianForces(ParameterList& params,
 	    elevec1[3] += normalGen.random();
 	    elevec1[4] += normalGen.random(); 
 	  }
-
-	  //in case of a consistent damping matrix stochastic nodal forces are calculated consistently by methods of weighted integrals
 	  else if (stochasticorder == 1)
 	  {     
-		  dserror("Consistent damp matrix called but not implemented. (stochasticorder=1)");
+	    dserror("stochasticorder == 1 not implemented for beam2r");
 	  }
 
 	  return 0;
@@ -868,9 +875,7 @@ void DRT::ELEMENTS::Beam2r::nlnstiffmass( ParameterList& params,
 			 }
 		 }        	
 	  }
-	 
-	 //this block may be used to check wether the massmatrix has been calculated correctly
-	 std::cout << "consistent massmatrix: \n" << (*massmatrix) << "\n";
+
 	 //reset gaussrule
 	 gaussrule_ = static_cast<enum DRT::UTILS::GaussRule1D>(nnode-1);   
   }
@@ -920,9 +925,6 @@ inline void DRT::ELEMENTS::Beam2r::lumpedmass(Epetra_SerialDenseMatrix* massmatr
 			(*massmatrix)(3*i+1,3*i+1)= translational;
 			(*massmatrix)(3*i+2,3*i+2)= rotational;
 		}
-	
-	//This block can be used to check wether the massmatrix has been calculated correctly
-	std::cout << "lumped massmatrix: \n" << (*massmatrix) << "\n";
 		
 	}
 	  		

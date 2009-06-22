@@ -69,16 +69,16 @@ bool DRT::ELEMENTS::Beam2r::ReadElement()
               //note: we use a static cast for the enumeration here cf. Practical C++ Programming p.185
               gaussrule_ = static_cast<enum DRT::UTILS::GaussRule1D>(nnode-1);
               //Get an array for the global node numbers
-              int nodes[nnode];
+              vector<int> nodes(nnode,0);
               //Read global node numbers
-              frint_n(eletext.c_str(), nodes, nnode, &ierr);
+              frint_n(eletext.c_str(), &nodes[0], nnode, &ierr);
               
               dsassert(ierr==1, "Reading of ELEMENT Topology failed\n");
               
               // reduce global node numbers by one because BACI nodes begin with 0 and inputfile nodes begin with 1
               for (int i=0; i<nnode; ++i) nodes[i]--;
 
-              SetNodeIds(nnode,nodes); // has to be executed in here because of the local scope of nodes
+              SetNodeIds(nnode,&nodes[0]); // has to be executed in here because of the local scope of nodes
               break;
           }
       }

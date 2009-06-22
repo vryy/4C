@@ -246,45 +246,7 @@ public:
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
                               vector<int>&              lm,
-                              Epetra_SerialDenseVector& elevec1);
-
-  /*!
-  \brief Evaluate damping matrix for Brownian motion
-
-  An element derived from this class uses the Evaluate method to receive commands
-  and parameters from some control routine in params and evaluates a damping matrix
-  as used in the problem type STATISTICAL MECHANICS
-
-  \param params (in/out)       : ParameterList for communication between control routine and elements
-  \param vector<double> mydisp : current nodal displacement
-  \param elemat1 (out)         : damping matrix to be filled by element
-
-  \return 0 if successful, negative otherwise
-  */
-  virtual int EvaluateBrownianDamp(ParameterList& params,
-                                    vector<double> mydisp,
-                                    double zeta,
-                                    Epetra_SerialDenseMatrix& elemat1);  
-  
-  /*!
-  \brief Evaluate forces for Brownian motion
-
-  An element derived from this class uses the Evaluate method to receive commands
-  and parameters from some control routine in params and evaluates a  statistical Neumann boundary condition
-  as used in the problem type STATISTICAL MECHANICS
-
-  \param params (in/out)       : ParameterList for communication between control routine and elements
-  \param vector<double> mydisp : current nodal displacement
-  \param elevec1 (out)         : Force vector to be filled by element
-
-  \return 0 if successful, negative otherwise
-  */
-  virtual int EvaluateBrownianForces(ParameterList& params,
-                                    vector<double> mydisp,
-                                    double zeta,
-                                    Epetra_SerialDenseVector& elevec1);
-  
-  
+                              Epetra_SerialDenseVector& elevec1); 
   //@}
 
 
@@ -306,7 +268,7 @@ private:
     calc_struct_update_istep,
     calc_struct_update_imrlike,
     calc_struct_reset_istep, //!< reset elementwise internal variables during iteration to last converged state
-    calc_brownian_damp,
+    calc_brownian,
     calc_struct_ptcstiff
   };
 
@@ -367,15 +329,38 @@ private:
   
   //! calculation of nonlinear stiffness and mass matrix
   void nlnstiffmass(ParameterList& params,
-                       vector<double>&           vel,  //!< element velocity vector
-                       vector<double>&           disp,  //!< element displacement vector
-                       Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                       Epetra_SerialDenseMatrix* massmatrix,  //!< element mass matrix
-                       Epetra_SerialDenseVector* force,  //!< element internal force vector
-                       int lumpedmass); //!< if set to one lumped mass matrix is calculated
+                    vector<int>&              lm,
+                    vector<double>&           vel,  //!< element velocity vector
+                    vector<double>&           disp,  //!< element displacement vector
+                    Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+                    Epetra_SerialDenseMatrix* massmatrix,  //!< element mass matrix
+                    Epetra_SerialDenseVector* force,  //!< element internal force vector
+                    int lumpedmass); //!< if set to one lumped mass matrix is calculated
   
   //!sets up element reference geomtry for reference nodal position vector xrefe (may be used also after simulation start)
   void SetUpReferenceGeometry(const LINALG::Matrix<4,1>& xrefe);
+  
+  //!Compute statistical forces in local coordinate system and do not(!) yet assemble them
+
+  /*This function allows for computation of Brownian forces in a local coordinate system according to
+  fluctuation dissipation theorem; the forces are not yet added to either external or internal force
+  vector, but just computed in order to be applied later (e.g. during iteration steps of an implicit
+  time integration scheme
+
+  \param params (in/out)       : ParameterList for communication between control routine and elements
+  \param brownian        : Vector to store computed brownian forces
+
+  \return 0 if successful, negative otherwise
+  */
+  virtual int ComputeLocalBrownianForces(ParameterList& params,
+                                         Epetra_SerialDenseVector& brownian);
+  
+  //!coputed damping matrix and statistical forces according to fluctuation dissipation theorem
+  void CalcBrownian(ParameterList& params,
+                    vector<int>&              lm,
+                    vector<double>&           vel,  //!< element velocity vector
+                    Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+                    Epetra_SerialDenseVector* force);  //!< element internal force vector
   
   
   // don't want = operator
