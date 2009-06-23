@@ -150,10 +150,27 @@ bool DRT::ELEMENTS::Fluid2::ReadElement()
     else
         dserror("Reading of FLUID2 element net algorithm failed: NA\n");
 
+    // set discretization mode for non-equal or equal order elements
+    switch(distype)
+    {
+    case quad4: case tri3: case nurbs4:
+    {
+    	dismode_=dismod_equal;
+    	break;
+    }
+    case quad8: case quad9: case tri6: case nurbs9:
+    {
+    	dismode_ = dismod_nonequal;
+    	break;
+    }
+    default:
+    	dserror("distype not recognized? TO DO: more accurate distinction of discretization types necessary. => Fluid2::DiscretizationMode");
+    	break;
+    }
+
 
   // input of ale and free surface related stuff is not supported
   // at the moment. TO DO!
-
 
   return true;
 

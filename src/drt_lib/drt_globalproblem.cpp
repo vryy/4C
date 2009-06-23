@@ -574,7 +574,7 @@ void DRT::Problem::ReadKnots(const DRT::INPUT::DatFileReader& reader)
 
   // Iterate through all discretizations and sort the appropiate condition
   // into the correct discretization it applies to
-  
+
   for (unsigned i=0; i<NumFields(); ++i)
   {
     for (unsigned j=0; j<NumDis(i); ++j)
@@ -599,8 +599,8 @@ void DRT::Problem::ReadKnots(const DRT::INPUT::DatFileReader& reader)
         {
           dserror("Knotvector read failed in Nurbs discretisation\n");
         }
-        
-        // make sure atdis is fillcompleted, to be able to call 
+
+        // make sure atdis is fillcompleted, to be able to call
         // ElementRowMap() on it
         if(!actdis->Filled())
         {
@@ -831,8 +831,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
   }
   case prb_fluid_pm:
   {
-    dserror("prb_fluid_pm not yet impl.");
-    break;
+	dserror("prb_fluid_pm not supported by BACI. just use projection method as fluid-solver for fluid problems!");
+	break;
   }
   case prb_tsi:
   {
@@ -1048,7 +1048,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
 /*----------------------------------------------------------------------*/
 void DRT::Problem::setParameterList(Teuchos::RCP< Teuchos::ParameterList > const &paramList)
 {
-  try 
+  try
   {
 
     // Test parameter list against valid parameters, set default values

@@ -100,7 +100,7 @@ void fluid_xfem_drt()
   // make sure the solid dis is filled
   RCP<DRT::Problem> problem = DRT::Problem::Instance();
   problem->Dis(genprob.numsf,0)->FillComplete();
-  
+
   Teuchos::RCP<FSI::FluidXFEMAlgorithm> xfluid = Teuchos::rcp(new FSI::FluidXFEMAlgorithm(comm));
   if (genprob.restart)
   {

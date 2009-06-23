@@ -20,6 +20,7 @@ Maintainer: Ulrich Kuettler
 
 #include "../drt_lib/drt_resulttest.H"
 #include "fluidimplicitintegration.H"
+#include "fluid_projectionmethod.H"
 #include "fluid_genalpha_integration.H"
 
 namespace FLD
@@ -42,6 +43,11 @@ public:
   /*!
   \brief not documented yet
   */
+  FluidResultTest(FluidProjectionMethod& fluid);
+
+  /*!
+  \brief not documented yet
+  */
   FluidResultTest(FluidGenAlphaIntegration& fluid);
 
   /// our version of nodal value tests
@@ -58,7 +64,7 @@ private:
 
   /// pointer to fluid discretization
   RefCountPtr<DRT::Discretization> fluiddis_;
-  /// pointer to unknown vector with values 
+  /// pointer to unknown vector with values
   RefCountPtr<Epetra_Vector>       mysol_;
   /// pointer to traction vector with values
   RefCountPtr<Epetra_Vector>       mytraction_;

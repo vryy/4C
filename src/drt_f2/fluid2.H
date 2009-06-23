@@ -46,6 +46,8 @@ class Fluid2StationaryInterface;
 template <DRT::Element::DiscretizationType distype> class Fluid2Stationary;
 template <DRT::Element::DiscretizationType distype> class Fluid2GenalphaResVMM;
 class Fluid2Register;
+class Fluid2THInterface;	// for Taylor-Hood element
+template <DRT::Element::DiscretizationType distype> class Fluid2TH;
 
 template<DRT::Element::DiscretizationType distype,DRT::Element::DiscretizationType pdistype> class Fluid2LineWeakDBC;
 
@@ -81,6 +83,9 @@ public:
   friend class Fluid2GenalphaResVMM<DRT::Element::quad9>;
   friend class Fluid2GenalphaResVMM<DRT::Element::nurbs4>;
   friend class Fluid2GenalphaResVMM<DRT::Element::nurbs9>;
+  friend class Fluid2THInterface;	// Taylor-Hood element (only quad)
+  friend class Fluid2TH<DRT::Element::quad4>;
+  friend class Fluid2TH<DRT::Element::quad9>;
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -192,7 +197,7 @@ public:
   number of degrees of freedom per node along the way for each of it's nodes
   separately.
   */
-  virtual int NumDofPerNode(const DRT::Node& node) const {return 3;}
+  virtual int NumDofPerNode(const DRT::Node& node) const;
 
   /*!
   \brief Get number of degrees of freedom per element
@@ -292,6 +297,18 @@ public:
 
 private:
 
+  //! discretization layouts supported by fluid2 (equal-order or Taylor-Hood Q2Q1)
+  enum DiscretizationMode
+  {
+	  dismod_equal,		// equal-order elements (Q1Q1)
+	  dismod_nonequal	// non equal-order (by now only Taylor Hood Q2Q1)
+  };
+
+  /*
+   * \brief get discretization mode (dismod_equal or dismod_nonequal for Taylor-Hood)
+   */
+  inline DiscretizationMode DisMode() const {return dismode_; }
+
   //! action parameters recognized by fluid2
   enum ActionType
   {
@@ -303,7 +320,11 @@ private:
     calc_fluid_genalpha_update_for_subscales,
     calc_fluid_genalpha_average_for_subscales_and_residual,
     get_density,
-    integrate_shape
+    integrate_shape,
+    calc_gradop_and_massmatrix,
+    calc_impulseeqn_implicit,
+    calc_impulseeqn_semiimplicit,
+    calc_fluid_residual
   };
 
   //! linearisation actions recognized by fluid3 (genalpha implementation)
@@ -374,6 +395,9 @@ private:
     smagorinsky_small
   };
 
+  //! discretization mode: equal-order element or Taylor-Hood element (nonequal)
+  DiscretizationMode dismode_;
+
   //! map that converts strings to actions (stabilisation)
   static map<string,StabilisationAction>          stabstrtoact_;
 
@@ -420,7 +444,7 @@ private:
     \param lm             (i) location vector (to get ale displacements from global vectors)
     \param w              (o) shape functions integrated over element
 
-    \return 
+    \return
    */
   void integrateShapefunction(
     DRT::Discretization&      discretization,

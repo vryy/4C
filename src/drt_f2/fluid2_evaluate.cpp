@@ -21,6 +21,7 @@ Maintainer: Peter Gamnitzer
 
 #include "fluid2.H"
 #include "fluid2_impl.H"
+#include "fluid2_th.H"
 #include "fluid2_stationary.H"
 #include "fluid2_genalpha_resVMM.H"
 
@@ -99,9 +100,16 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
     act = Fluid2::get_density;
   else if (action == "integrate_shape")
     act = Fluid2::integrate_shape;
+  else if (action == "calc_gradop_and_massmatrix")
+	act = Fluid2::calc_gradop_and_massmatrix;
+  else if (action == "calc_impulseeqn_implicit")
+	act = Fluid2::calc_impulseeqn_implicit;
+  else if (action == "calc_impulseeqn_semiimplicit")
+	act = Fluid2::calc_impulseeqn_semiimplicit;
+  else if (action == "calc_fluid_residual")
+	act = Fluid2::calc_fluid_residual;
   else
   {
-
     char errorout[200];
     sprintf(errorout,"Unknown type of action (%s) for Fluid2",action.c_str());
 
@@ -141,16 +149,126 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
         stabstrtoact_["no_reynolds"    ]=reynolds_stress_stab_none;
         stabstrtoact_["yes_reynolds"   ]=reynolds_stress_stab;
       }
-      return DRT::ELEMENTS::Fluid2ImplInterface::Impl(this)->Evaluate(this,
-                                                                      params,
-                                                                      discretization,
-                                                                      lm,
-                                                                      elemat1,
-                                                                      elemat2,
-                                                                      elevec1,
-                                                                      elevec2,
-                                                                      elevec3,
-                                                                      mat);
+
+      // implicit 'standard' fluid solver
+      // distinction between element types (equal order <-> Taylor Hood)
+      if(DisMode()==dismod_equal || act==calc_fluid_afgenalpha_systemmat_and_residual)
+      {
+    	  // equal-order elements
+    	  return DRT::ELEMENTS::Fluid2ImplInterface::Impl(this)->Evaluate(this,
+    			  params,
+    			  discretization,
+    			  lm,
+    			  elemat1,
+    			  elemat2,
+    			  elevec1,
+    			  elevec2,
+    			  elevec3,
+    			  mat);
+      }
+      else if(DisMode()==dismod_nonequal)
+      {
+    	  // Taylor-Hood elements
+    	  return DRT::ELEMENTS::Fluid2THInterface::Impl(this)->CalcSysmatAndResidual(this,
+    			  params,
+    			  discretization,
+    			  lm,
+    			  elemat1,
+    			  elevec1,
+    			  mat);
+      }
+      else
+    	  dserror("this cannot be");
+    }
+    break;
+    case calc_gradop_and_massmatrix:
+    {
+    	// for pressure correction fluid solver
+    	return DRT::ELEMENTS::Fluid2THInterface::Impl(this)->CalcGradPAndMassMatrix(this,params,discretization,lm,elemat1,elemat2,elevec1);
+    }
+    break;
+    case calc_impulseeqn_implicit:
+    {
+    	// if not available, define map from string to action
+    	if(stabstrtoact_.empty())
+    	{
+            stabstrtoact_["no_pspg"        ]=pstab_assume_inf_sup_stable;
+            stabstrtoact_["yes_pspg"       ]=pstab_use_pspg;
+            stabstrtoact_["no_supg"        ]=convective_stab_none;
+            stabstrtoact_["yes_supg"       ]=convective_stab_supg;
+            stabstrtoact_["no_vstab"       ]=viscous_stab_none;
+            stabstrtoact_["vstab_gls"      ]=viscous_stab_gls;
+            stabstrtoact_["vstab_gls_rhs"  ]=viscous_stab_gls_only_rhs;
+            stabstrtoact_["vstab_usfem"    ]=viscous_stab_usfem;
+            stabstrtoact_["vstab_usfem_rhs"]=viscous_stab_usfem_only_rhs;
+            stabstrtoact_["no_cstab"       ]=continuity_stab_none;
+            stabstrtoact_["cstab_qs"       ]=continuity_stab_yes;
+            stabstrtoact_["no_cross"       ]=cross_stress_stab_none;
+            stabstrtoact_["yes_cross"      ]=cross_stress_stab;
+            stabstrtoact_["no_reynolds"    ]=reynolds_stress_stab_none;
+            stabstrtoact_["yes_reynolds"   ]=reynolds_stress_stab;
+    	}
+    	return DRT::ELEMENTS::Fluid2THInterface::Impl(this)->CalcImpulseEqnImplicit(this,
+    			params,
+    			discretization,
+    			lm,
+    			elemat1,
+    			elevec1,
+    			mat);
+    }
+    break;
+    case calc_impulseeqn_semiimplicit:
+    {
+		// if not available, define map from string to action
+		if(stabstrtoact_.empty())
+		{
+			stabstrtoact_["no_pspg"        ]=pstab_assume_inf_sup_stable;
+			stabstrtoact_["yes_pspg"       ]=pstab_use_pspg;
+			stabstrtoact_["no_supg"        ]=convective_stab_none;
+			stabstrtoact_["yes_supg"       ]=convective_stab_supg;
+			stabstrtoact_["no_vstab"       ]=viscous_stab_none;
+			stabstrtoact_["vstab_gls"      ]=viscous_stab_gls;
+			stabstrtoact_["vstab_gls_rhs"  ]=viscous_stab_gls_only_rhs;
+			stabstrtoact_["vstab_usfem"    ]=viscous_stab_usfem;
+			stabstrtoact_["vstab_usfem_rhs"]=viscous_stab_usfem_only_rhs;
+			stabstrtoact_["no_cstab"       ]=continuity_stab_none;
+			stabstrtoact_["cstab_qs"       ]=continuity_stab_yes;
+			stabstrtoact_["no_cross"       ]=cross_stress_stab_none;
+			stabstrtoact_["yes_cross"      ]=cross_stress_stab;
+			stabstrtoact_["no_reynolds"    ]=reynolds_stress_stab_none;
+			stabstrtoact_["yes_reynolds"   ]=reynolds_stress_stab;
+		}
+		return DRT::ELEMENTS::Fluid2THInterface::Impl(this)->CalcImpulseEqnSemiImplicit(this,
+				params,
+				discretization,
+				lm,
+				elemat1,
+				elevec1,
+				mat);
+    }
+    break;
+    case calc_fluid_residual:
+    {
+    	// if not available, define map from string to action
+    	if(stabstrtoact_.empty())
+    	{
+            stabstrtoact_["no_pspg"        ]=pstab_assume_inf_sup_stable;
+            stabstrtoact_["yes_pspg"       ]=pstab_use_pspg;
+            stabstrtoact_["no_supg"        ]=convective_stab_none;
+            stabstrtoact_["yes_supg"       ]=convective_stab_supg;
+            stabstrtoact_["no_vstab"       ]=viscous_stab_none;
+            stabstrtoact_["vstab_gls"      ]=viscous_stab_gls;
+            stabstrtoact_["vstab_gls_rhs"  ]=viscous_stab_gls_only_rhs;
+            stabstrtoact_["vstab_usfem"    ]=viscous_stab_usfem;
+            stabstrtoact_["vstab_usfem_rhs"]=viscous_stab_usfem_only_rhs;
+            stabstrtoact_["no_cstab"       ]=continuity_stab_none;
+            stabstrtoact_["cstab_qs"       ]=continuity_stab_yes;
+            stabstrtoact_["no_cross"       ]=cross_stress_stab_none;
+            stabstrtoact_["yes_cross"      ]=cross_stress_stab;
+            stabstrtoact_["no_reynolds"    ]=reynolds_stress_stab_none;
+            stabstrtoact_["yes_reynolds"   ]=reynolds_stress_stab;
+    	}
+    	return DRT::ELEMENTS::Fluid2THInterface::Impl(this)->CalcResidual(this,params,discretization,lm,elevec1,mat);
     }
     break;
     case calc_fluid_stationary_systemmat_and_residual:
@@ -333,15 +451,15 @@ void DRT::ELEMENTS::Fluid2::integrateShapefunction(
     RefCountPtr<const Epetra_Vector> dispnp
       =
       discretization.GetState("dispnp");
-      
+
     if (dispnp==null)
     {
       dserror("Cannot get state vector 'dispnp'");
     }
-    
+
     vector<double> mydispnp(lm.size());
     DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
-    
+
     // extract velocity part from "mygridvelaf" and get
     // set element displacements
     for (int i=0;i<iel;++i)
@@ -383,7 +501,7 @@ void DRT::ELEMENTS::Fluid2::integrateShapefunction(
       xye(1,inode) += edispnp(1,inode);
     }
   }
- 
+
   // --------------------------------------------------
   // Now do the nurbs specific stuff
   std::vector<Epetra_SerialDenseVector> myknots(2);
@@ -399,7 +517,7 @@ void DRT::ELEMENTS::Fluid2::integrateShapefunction(
     bool zero_size = false;
     zero_size = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
 
-    // if we have a zero sized element due to a interpolated 
+    // if we have a zero sized element due to a interpolated
     // point --- exit here
     if(zero_size)
     {
@@ -412,11 +530,11 @@ void DRT::ELEMENTS::Fluid2::integrateShapefunction(
       DRT::NURBS::ControlPoint* cp
         =
         dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
-      
+
       weights(inode) = cp->W();
     }
   }
- 
+
 
   //------------------------------------------------------------------
   //                       INTEGRATION LOOP
@@ -432,7 +550,7 @@ void DRT::ELEMENTS::Fluid2::integrateShapefunction(
 
     gp(0)=intpoints.qxg[iquad][0];
     gp(1)=intpoints.qxg[iquad][1];
-    
+
     if(!(distype == DRT::Element::nurbs4
          ||
          distype == DRT::Element::nurbs9))
@@ -451,7 +569,7 @@ void DRT::ELEMENTS::Fluid2::integrateShapefunction(
 	 weights,
 	 distype);
     }
-    
+
     // get transposed Jacobian matrix and determinant
     //
     //        +-       -+ T      +-       -+
@@ -489,7 +607,7 @@ void DRT::ELEMENTS::Fluid2::integrateShapefunction(
         }
       }
     }
-   
+
     // The determinant ist computed using Sarrus's rule
     const double det = xjm(0,0)*xjm(1,1)-xjm(0,1)*xjm(1,0);
 

@@ -909,6 +909,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                 ),
                                &fdyn);
 
+  setStringToIntegralParameter<int>("FLUID_SOLVER", "Implicit",
+							   "Solving strategy for fluid",
+							   tuple<std::string>("Implicit","Pressure Correction","Pressure Correction SemiImplicit"),
+							   tuple<int>(fluid_solver_implicit, fluid_solver_pressurecorrection, fluid_solver_pressurecorrection_semiimplicit),&fdyn);
+
   setStringToIntegralParameter<FLUID_TIMEINTTYPE>("TIMEINTEGR","One_Step_Theta",
                                "Time Integration Scheme",
                                tuple<std::string>(

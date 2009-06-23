@@ -33,6 +33,13 @@ FLD::FluidResultTest::FluidResultTest(FluidImplicitTimeInt& fluid)
   mytraction_ = fluid.CalcStresses();
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+FLD::FluidResultTest::FluidResultTest(FluidProjectionMethod& fluid)
+{
+  fluiddis_= fluid.discret_;
+  mysol_   = fluid.velnp_ ;
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

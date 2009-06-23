@@ -16,6 +16,9 @@ post_drt_monitor: $(OBJS_POST_DRT_MONITOR) $(FILTER_OBJECTS)
 post_drt_s8convert: $(OBJS_POST_DRT_S8CONVERT) $(FILTER_OBJECTS)
 	$(LD) $(LDFLAGS) $(OBJS_POST_DRT_S8CONVERT) $(FILTER_OBJECTS) $(FILTER_LIBS) -o post_drt_s8convert
 
+post_drt_q9neconvert: $(OBJS_POST_DRT_Q9NECONVERT) $(FILTER_OBJECTS)
+	$(LD) $(LDFLAGS) $(OBJS_POST_DRT_Q9NECONVERT) $(FILTER_OBJECTS) $(FILTER_LIBS) -o post_drt_q9neconvert
+	
 post_out: $(OBJS_POST_OUT) $(OBJS_POST_COMMON)
 	$(PLAIN_LD) $(LDFLAGS) $(PLAIN_LIBS) $(OBJS_POST_OUT) $(OBJS_POST_COMMON) -o post_out
 
@@ -545,6 +548,11 @@ $(OBJS_POST_DRT_S8CONVERT):
 	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
 	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr
 
+$(OBJS_POST_DRT_Q9NECONVERT):
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
+	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr
+	
 $(OBJS_POST_COMMON):
 	@mkdir -p ${DEST}/${@D}
 	@echo "$(PLAIN_CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"

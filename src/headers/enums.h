@@ -305,7 +305,7 @@ typedef enum _MATERIAL_TYP
                        m_matlist,       /* collection of single materials (used for scalar transport problems)*/
                        m_biocell,       /* biological cell model */
                        m_ion,           /* properties of an ion species in an electrolyte solution */
-                       m_cnst_art       /* 1D_Artery with constant material and geometric properties */
+                       m_cnst_art      /* 1D_Artery with constant material and geometric properties */
 } MATERIAL_TYP;
 #endif
 /*----------------------------------------------------------------------*
@@ -417,7 +417,7 @@ typedef enum _CALC_ACTION
                        calc_art_net_w1, /* forward characteristic wave*/
                        calc_art_net_w2, /* backward characteristic wave*/
                        calc_junc_bc,    /* Junction boundary values */
-                       calc_char_bc,    /* characteristic velocities at boundaries */    
+                       calc_char_bc,    /* characteristic velocities at boundaries */
                        calc_in_bc,      /* inlet boundary values */
                        calc_out_bc      /* outlet boundary values */
 } CALC_ACTION;
@@ -593,6 +593,15 @@ typedef enum _FLUID_DYNTYPE
   dyntyp_pm_cont_laplace=4
 } FLUID_DYNTYPE;
 
+/*----------------------------------------------------------------------*/
+/* The known solving strategies for fluids. */
+/*----------------------------------------------------------------------*/
+typedef enum _FLUID_SOLVINGSTRATEGIES
+{
+	fluid_solver_implicit=0,
+	fluid_solver_pressurecorrection=1,
+	fluid_solver_pressurecorrection_semiimplicit=2
+} FLUID_SOLVINGSTRATEGIES;
 
 /*----------------------------------------------------------------------*/
 /* The known time integration methods for fluids. */

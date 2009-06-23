@@ -217,11 +217,11 @@ if (par.myrank==0 && ioflags.output_gid)
 /*------------------------ program to control execution of optimization */
 /*------------------ call control programs of static or dynamic control */
 
-switch (genprob.probtyp) 
+switch (genprob.probtyp)
 {
 case prb_structure:
 
-  switch (genprob.timetyp) 
+  switch (genprob.timetyp)
   {
   case time_static:
     calsta();
@@ -259,10 +259,10 @@ case prb_structure:
   }
   break;
 #endif
-    
+
 #ifdef D_FLUID
-case prb_fluid:
 case prb_fluid_pm:
+case prb_fluid:
 #ifndef CCADISCRET
   dyn_fluid();
 #else
@@ -293,7 +293,7 @@ case prb_fluid_xfem:
     fluid_freesurf_drt();
     break;
 #endif
-  
+
 #ifdef D_FSI
 case prb_fsi:
 case prb_pfsi:
@@ -366,14 +366,14 @@ case prb_combust:
 #else
   combust_dyn();
 #endif
-  break;  
+  break;
 
 #ifdef D_ARTNET
 case prb_art_net:
 #ifndef CCADISCRET
   dserror("arterial network module not available in CCARAT");
 #else
-  dyn_art_net_drt(); /* printf("arterial network must be defined\n")*/;
+  dyn_art_net_drt(); //printf("arterial network must be defined\n");
 #endif
   break;
 #endif

@@ -29,14 +29,15 @@ map<string,DRT::ELEMENTS::Fluid2::StabilisationAction> DRT::ELEMENTS::Fluid2::st
 DRT::ELEMENTS::Fluid2::Fluid2(int id, int owner) :
 DRT::Element(id,element_fluid2,owner),
 is_ale_(false),
+dismode_(dismod_equal),
 data_()
 {
   gaussrule_ = intrule2D_undefined;
-  
+
   saccn_ .Shape(0,0);
   svelnp_.Shape(0,0);
   sveln_ .Shape(0,0);
-  
+
   return;
 }
 
@@ -48,10 +49,11 @@ DRT::ELEMENTS::Fluid2::Fluid2(const DRT::ELEMENTS::Fluid2& old) :
 DRT::Element(old           ),
 gaussrule_  (old.gaussrule_),
 is_ale_     (old.is_ale_   ),
+dismode_    (old.dismode_  ),
 data_       (old.data_     ),
 saccn_      (old.saccn_    ),
 svelnp_     (old.svelnp_   ),
-sveln_      (old.sveln_    ) 
+sveln_      (old.sveln_    )
 {
   return;
 }
@@ -119,6 +121,9 @@ void DRT::ELEMENTS::Fluid2::Pack(vector<char>& data) const
   data_.Pack(tmp);
   AddtoPack(data,tmp);
 
+  // discretization mode
+  AddtoPack(data,dismode_);
+
   return;
 }
 
@@ -169,6 +174,8 @@ void DRT::ELEMENTS::Fluid2::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
 
+  ExtractfromPack(position,data,dismode_);
+
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
@@ -209,9 +216,9 @@ RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Fluid2::ElementRegister() const
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> >  DRT::ELEMENTS::Fluid2::Lines()
 {
-  // do NOT store line or surface elements inside the parent element 
+  // do NOT store line or surface elements inside the parent element
   // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization, 
+  // Reason: if a Redistribute() is performed on the discretization,
   // stored node ids and node pointers owned by these boundary elements might
   // have become illegal and you will get a nice segmentation fault ;-)
 
@@ -230,6 +237,49 @@ vector<RCP<DRT::Element> >  DRT::ELEMENTS::Fluid2::Surfaces()
   return surfaces;
 }
 
+int DRT::ELEMENTS::Fluid2::NumDofPerNode(const DRT::Node& node) const
+{
+	// non-equal order elements
+	// distinguish type of node
+	switch(Shape())
+	{
+	case tri3:
+	case quad4:
+		// equal order elements
+		return 3;
+	case tri6:
+		// non equal-order triangle element
+		if(node.Id() == (NodeIds())[eleNodeNumbering_tri6_lines[0][2]] ||
+				node.Id() == (NodeIds())[eleNodeNumbering_tri6_lines[1][2]] ||
+				node.Id() == (NodeIds())[eleNodeNumbering_tri6_lines[2][2]])
+			return 2;   // no "corner"-node, but edge-node
+
+		break;
+	case quad8:
+		// non equal-order quad elements
+		if(node.Id() == (NodeIds())[4] ||
+				node.Id() == (NodeIds())[5] ||
+				node.Id() == (NodeIds())[6] ||
+				node.Id() == (NodeIds())[7])
+			return 2; // no "corner"-node, but edge-node
+		break;
+	case quad9:
+		if(node.Id() == (NodeIds())[4] ||
+				node.Id() == (NodeIds())[5] ||
+				node.Id() == (NodeIds())[6] ||
+				node.Id() == (NodeIds())[7] ||
+				node.Id() == (NodeIds())[8])
+		{
+			return 2; // no "corner"-node, but edge-node
+		}
+		break;
+	default:
+		dserror("Shape of Element not supported. (use tri or quad elements!)");
+	}
+	// default (2 velocity DOFs and 1 pressure DOF ("corner"-node))
+
+	return 3;
+}
 
 //=======================================================================
 //=======================================================================
