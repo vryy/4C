@@ -94,11 +94,11 @@ using namespace std;
 #define ParObject_Beam2	                (int)80
 #define ParObject_DGFluid2              (int)81
 #define ParObject_DGFluid2Register      (int)82
-#define ParObject_DGFluid2Interface 	(int)83
+#define ParObject_DGFluid2Interface     (int)83
 #define ParObject_DGFluid2InterfaceRegister  (int)84
 #define ParObject_DGFluid3              (int)85
 #define ParObject_DGFluid3Register      (int)86
-#define ParObject_DGFluid3Interface 	(int)87
+#define ParObject_DGFluid3Interface     (int)87
 #define ParObject_DGFluid3InterfaceRegister  (int)88
 #define ParObject_Beam2Register	        (int)89
 #define ParObject_Beam3	                (int)90
@@ -109,7 +109,7 @@ using namespace std;
 #define ParObject_Bele3Register         (int)95
 #define ParObject_Bele3Line             (int)96
 #define ParObject_ModPowerLaw           (int)97
-#define ParObject_ConstraintElement2     (int)98
+#define ParObject_ConstraintElement2    (int)98
 #define ParObject_ConstraintElement2Register (int)99
 #define ParObject_StructuralSurface     (int)100
 #define ParObject_StructuralLine        (int)101
@@ -136,7 +136,7 @@ using namespace std;
 #define ParObject_Combust3Line          (int)123
 #define ParObject_Ion                   (int)124
 #define ParObject_ViscoAnisotropic      (int)125
-#define ParObject_ConstraintElement3     (int)126
+#define ParObject_ConstraintElement3    (int)126
 #define ParObject_ConstraintElement3Register (int)127
 #define ParObject_Transport             (int)128
 #define ParObject_TransportBoundary     (int)129
@@ -144,7 +144,7 @@ using namespace std;
 #define ParObject_SutherlandCondif      (int)131
 #define ParObject_CompOgden             (int)132
 #define ParObject_ParMaterial           (int)133
-#define ParObject_CHARMM		(int)134
+#define ParObject_CHARMM                (int)134
 #define ParObject_Fluid3NurbsSurface    (int)135
 #define ParObject_Wall1Nurbs            (int)136
 #define ParObject_DofKey                (int)137
@@ -176,6 +176,10 @@ using namespace std;
 #define ParObject_ArrheniusTemp         (int)163
 #define ParObject_So_Hex8P1J1           (int)164
 #define ParObject_SoHex8P1J1Register    (int)165
+#define ParObject_XDiff3                (int)166
+#define ParObject_XDiff3Register        (int)167
+#define ParObject_XDiff3Surface         (int)168
+#define ParObject_XDiff3Line            (int)169
 
 namespace DRT
 {

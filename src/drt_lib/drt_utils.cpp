@@ -86,6 +86,7 @@ extern "C"
 #include "../drt_f3/fluid3.H"
 #include "../drt_f3/fluid3_nurbs.H"
 #include "../drt_f3/xfluid3.H"
+#include "../drt_xdiff3/xdiff3.H"
 #include "../drt_combust/combust3.H"
 #include "../drt_ale2/ale2.H"
 #include "../drt_ale2/ale2_nurbs.H"
@@ -416,6 +417,21 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
     {
       DRT::ELEMENTS::XFluid3Register* object =
                       new DRT::ELEMENTS::XFluid3Register(DRT::Element::element_xfluid3);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_XDiff3:
+    {
+      DRT::ELEMENTS::XDiff3* object = new DRT::ELEMENTS::XDiff3(-1,-1);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_XDiff3Register:
+    {
+      DRT::ELEMENTS::XDiff3Register* object =
+                      new DRT::ELEMENTS::XDiff3Register(DRT::Element::element_xdiff3);
       object->Unpack(data);
       return object;
     }
@@ -952,6 +968,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     fluid2,
     fluid3,
     xfluid3,
+    xdiff3,
     combust3,
     ale2,
     ale3,
@@ -991,6 +1008,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
   else if (eletype=="CONDIF3") type = transport; //backward compatibility
   else if (eletype=="FLUID3") type = fluid3;
   else if (eletype=="XFLUID3") type = xfluid3;
+  else if (eletype=="XDIFF3") type = xdiff3;
   else if (eletype=="COMBUST3") type = combust3;
   else if (eletype=="ALE2") type = ale2;
   else if (eletype=="ALE3") type = ale3;
@@ -1129,6 +1147,12 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     case xfluid3:
     {
       RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::XFluid3(id,owner));
+      return ele;
+    }
+    break;
+    case xdiff3:
+    {
+      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::XDiff3(id,owner));
       return ele;
     }
     break;

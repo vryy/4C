@@ -44,6 +44,9 @@ enum Field
     DiscPres,           ///< discontinuous pressure on element level
     ConcentrationH2O,   ///< concentration of H2O
     ConcentrationNO2,   ///< concentration of NO2
+    HeatFlux_x,         ///< heat flux in x direction
+    HeatFlux_y,         ///< heat flux in y direction
+    HeatFlux_z,         ///< heat flux in z direction
     LMPLambdax,         ///< Lagrange multiplier unknown in x-direction
     LMPLambday,         ///< Lagrange multiplier unknown in y-direction
     LMPLambdaz,         ///< Lagrange multiplier unknown in z-direction
