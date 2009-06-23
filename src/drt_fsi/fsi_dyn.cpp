@@ -86,7 +86,7 @@ void fluid_ale_drt()
 
 
 /*----------------------------------------------------------------------*/
-// entry point for Fluid on Ale in DRT
+// entry point for Fluid on XFEM in DRT
 /*----------------------------------------------------------------------*/
 void fluid_xfem_drt()
 {
