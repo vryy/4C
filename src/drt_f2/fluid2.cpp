@@ -273,6 +273,10 @@ int DRT::ELEMENTS::Fluid2::NumDofPerNode(const DRT::Node& node) const
 			return 2; // no "corner"-node, but edge-node
 		}
 		break;
+	case nurbs4:	// 4 control point first order nurbs surface element
+	case nurbs9:	// 9 control point second order nurbs surface element
+		return 3;
+		break;
 	default:
 		dserror("Shape of Element not supported. (use tri or quad elements!)");
 	}
