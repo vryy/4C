@@ -272,29 +272,21 @@ void ADAPTER::ContactStructureGenAlpha::Solve()
 {
   std::string equil = params_->get<string>("equilibrium iteration","undefined solution algorithm");
 
-  if (structure_.HaveConstraint())
+  if (equil=="full newton")
   {
-    structure_.FullNewtonLinearUzawa();
-  }
-  else if (equil=="full newton")
-  {
-    structure_.FullNewton();
-  }
-  else if (equil=="line search newton")
-  {
-    structure_.LineSearchNewton();
-  }
-  else if (equil=="modified newton")
-  {
-    structure_.ModifiedNewton();
-  }
-  else if (equil=="nonlinear cg")
-  {
-    structure_.NonlinearCG();
-  }
-  else if (equil=="ptc")
-  {
-    structure_.PTC();
+    RCP<CONTACT::Manager> contactmanager = structure_.getContactmanager();
+    bool semismooth = (contactmanager->Params()).get<bool>("semismooth newton",false);
+    
+    if(semismooth)
+    {  
+      // initialize convergence status and step no. for active set
+      contactmanager->ActiveSetConverged() = false;
+      contactmanager->ActiveSetSteps() = 1;
+      cout << "SEMISMOOTH" << endl;
+      structure_.SemiSmoothNewton();
+    }
+    else
+      dserror("only semismooth newton implemented");
   }
   else
     dserror("Unknown type of equilibrium iteration '%s'", equil.c_str());

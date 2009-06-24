@@ -149,20 +149,20 @@ const std::map<int,LINALG::Matrix<3,2> > GEO::getCurrentXAABBs(
  *----------------------------------------------------------------------*/
 const std::map<int,LINALG::Matrix<3,2> > GEO::getTriangleXAABBs(
     const std::vector<vector<int> >&                triangleList,
-    const std::vector<GEO::InterfacePoint>&       pointList)
+    const std::vector<GEO::InterfacePoint>&         pointList)
 {
   std::map<int,LINALG::Matrix<3,2> >  triangleXAABBs;
   // loop over elements and merge XAABB with their eXtendedAxisAlignedBoundingBox
   for (int i = 0; i < (int) triangleList.size(); ++i) 
   {
     LINALG::SerialDenseMatrix xyze_triElement(3,3);
-    for(int j = 0; j < 3; i++)
+    for(int j = 0; j < 3; j++)
     {
       LINALG::Matrix<3,1> node = pointList[triangleList[i][j]].getCoord();
       for(int k = 0; k < 3; k++)
-        xyze_triElement(j,k) = node(k);
+        xyze_triElement(k,j) = node(k);
     }
-    const LINALG::Matrix<3,2> xaabbEle = GEO::computeFastXAABB(DRT::Element::tri3, xyze_triElement, GEO::LINEAR);
+    LINALG::Matrix<3,2> xaabbEle = GEO::computeFastXAABB(DRT::Element::tri3, xyze_triElement, GEO::EleGeoType(LINEAR));
     triangleXAABBs[i] = xaabbEle;
   }
   return triangleXAABBs;

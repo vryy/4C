@@ -104,7 +104,7 @@ void GEO::Intersection::computeIntersection(
   // xfemdis->NumMyColElements()
   for(int k = 0; k < xfemdis->NumMyColElements(); ++k)
   {
-    // printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!eleid = %d\n", k);
+    //printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!eleid = %d\n", k);
     DRT::Element* xfemElement = xfemdis->lColElement(k);
     initializeXFEM(k, xfemElement);
     EleGeoType xfemGeoType = HIGHERORDER;
@@ -128,6 +128,9 @@ void GEO::Intersection::computeIntersection(
 
     for(set<int>::const_iterator id = cutterElementIds.begin(); id != cutterElementIds.end(); ++id )
     {
+      if(labelPerElementId.find(*id)->second < 1)
+	continue;
+
       DRT::Element* cutterElement = cutterdis->gElement(*id);
       cutterDistype_ = cutterElement->Shape();
   
@@ -195,8 +198,10 @@ void GEO::Intersection::computeIntersection(
 
     if(checkIfCDT())
     {
-      //quickFixForIntersectingStructures(xfemElement, labelPerElementId, currentcutterpositions);
+      
+      // quickFixForIntersectingStructures(xfemElement, labelPerElementId, currentcutterpositions);
       completePLC();
+      
       //debugTetgenDataStructure(xfemElement);
 #ifdef QHULL
       computeCDT(xfemElement, currentcutterpositions, domainintcells, boundaryintcells);
@@ -1534,6 +1539,7 @@ void GEO::Intersection::quickFixForIntersectingStructures(
     const std::map<int,int>&                        labelPerElementId,
     const std::map<int,LINALG::Matrix<3,1> >&       currentcutterpositions)
 {
+  cout << "quick fix start" << endl;
   std::set<int> labelList;
   // check if more than two labels so more than to structures 
   // are within a fluid element 
@@ -1544,26 +1550,35 @@ void GEO::Intersection::quickFixForIntersectingStructures(
   if(labelList.size() <= 1)
     return;
   
+  for (std::set<int>::const_iterator labelIter = labelList.begin(); labelIter != labelList.end(); labelIter++)
+    cout << "labelList = "<< *labelIter << endl;
+  
   // order triangle corner points such that normal points outward of the structure
   std::map<int,std::set<int> > triByLabel; 
+  //std::vector<int>             triByFace; 
+  std::vector<int> pointLabelList(((int)pointList_.size()-numXFEMCornerNodes_), -1);
   for(unsigned int i = 0; i < triangleList_.size(); i++)
   {
     // store for each label a set of triangle ids
-    int facemarker = faceMarker_[i] + facetMarkerOffset_;
-    triByLabel[facemarker].insert(i);
+    int facemarker = faceMarker_[i + numXFEMSurfaces_];
+    //triByFace.push_back(facemarker);
+    triByLabel[labelPerElementId.find(intersectingCutterElements_[facemarker]->Id())->second].insert(i);
     
     // obtain triangle coordinates and midpoint
     LINALG::Matrix<3,3> xyze_triElement;
     LINALG::Matrix<3,1> midpoint(true);
-    for(int j = 0; j < 3; j++)
-    {
-      int index = triangleList_[i][j];
-      for(int k = 0; k < 3; k++)
-        xyze_triElement(i,k) = (pointList_[index].getCoord())(k);
-      midpoint += pointList_[index].getCoord();
-    }
     
+    for(int jnode = 0; jnode < 3; jnode++)
+    {
+      int index = triangleList_[i][jnode];
+      for(int k = 0; k < 3; k++)
+        xyze_triElement(k,jnode) = (pointList_[index].getCoord())(k);
+      midpoint += pointList_[index].getCoord();
+      // fill face marker
+      pointLabelList[index-numXFEMCornerNodes_] = facemarker;
+    }
     midpoint.Scale(1.0/3.0);
+    
     LINALG::Matrix<2,1> eleMidpoint(true);
     CurrentToSurfaceElementCoordinates(DRT::Element::tri3, xyze_triElement, midpoint, eleMidpoint);
     
@@ -1576,14 +1591,16 @@ void GEO::Intersection::quickFixForIntersectingStructures(
     // compute triangle normal 
     LINALG::Matrix<3,1> triNormal;
     LINALG::Matrix<2,1> triMidpoint;
-    triMidpoint.PutScalar(0.5);
+    triMidpoint.PutScalar((1.0/3.0));
     computeNormalToSurfaceElement(DRT::Element::tri3, xyze_triElement, triMidpoint, triNormal);
     
     // compare normals in case that normals point in opposite directions renumber triangles
     // from 1 - 2 - 3 to 1 -3 - 2
     const double scalarproduct = triNormal(0)*eleNormal(0) + triNormal(1)*eleNormal(1) + triNormal(2)*eleNormal(2);
-    if(!(scalarproduct >= GEO::TOL7)) 
+    cout << "scalarproduct = " << scalarproduct << endl;
+    if(scalarproduct < 0.0) 
     {
+      cout << "renumber triangle" << endl;
       int index1 = triangleList_[i][1];
       triangleList_[i][1] = triangleList_[i][2];
       triangleList_[i][2] = index1;
@@ -1592,17 +1609,24 @@ void GEO::Intersection::quickFixForIntersectingStructures(
   
   // check for each point is it lies inside another structure,
   // if yes move it out of that structure
-  const LINALG::Matrix<3,2> rootBox = computeFastXAABB(xfemDistype_, xyze_xfemElement_, GEO::EleGeoType(HIGHERORDER));
-  Teuchos::RCP<GEO::SearchTree> triTree = rcp(new GEO::SearchTree(10));
+  const LINALG::Matrix<3,2> rootBox = computeFastXAABB(xfemDistype_, eleRefCoordinates_, GEO::EleGeoType(CARTESIAN));
+  Teuchos::RCP<GEO::SearchTree> triTree = rcp(new GEO::SearchTree(5));
   triTree->initializeTree(rootBox, triByLabel, GEO::TreeType(GEO::OCTTREE));
   std::map<int, LINALG::Matrix<3,2> >triangleXAABBs = GEO::getTriangleXAABBs(triangleList_, pointList_);
   
-  for(int i = 0; i < (int) pointList_.size(); i++)
+  // bool nodeMoved = true;
+  // while(nodeMoved)
+  // {
+  for(int i = numXFEMCornerNodes_; i < (int) pointList_.size(); i++)
   {
-    triTree->moveContactNodes( triangleList_, pointList_,
-                               triangleXAABBs,  pointList_[i].getCoord(), i);
+    // move only points of internal constraint boundary
+    const int face = pointLabelList[i - numXFEMCornerNodes_];
+    const int pointLabel = labelPerElementId.find(intersectingCutterElements_[face]->Id())->second;
+    cout << "pointLabel = " << pointLabel << endl;
+    // triTree->moveContactNodes(triangleList_, pointList_, triangleXAABBs,  pointList_[i].getCoord(), i, pointLabel);
   }  
-  
+  // }
+  cout << "quick fix end" << endl;
   return;
 }
 
@@ -1646,7 +1670,7 @@ void GEO::Intersection::computeCDT(
   const int dim = 3; 
   tetgenio in;
   tetgenio out;
-  char switches[] = "pQ";    //o2 Y R nn
+  char switches[] = "pQ";    // pQ o2 Y R nn
   tetgenio::facet *f;
   tetgenio::polygon *p;
 
@@ -1757,21 +1781,16 @@ void GEO::Intersection::computeCDT(
   // set facetmarkers
   for(int i = 0; i < in.numberoffacets; i ++)
       in.facetmarkerlist[i] = faceMarker_[i] + facetMarkerOffset_;
-
-  // check if structures are intersecting
-  // if(labelcount > 1)
-  // quickFixForIntersectingStructures(in);
   
- // in.save_nodes("tetin");
- // in.save_poly("tetin");
+  //in.save_nodes("tetin");
+  //in.save_poly("tetin");
 
   //  Tetrahedralize the PLC. Switches are chosen to read a PLC (p),
   //  do quality mesh generation (q) with a specified quality bound
   //  (1.414), and apply a maximum volume constraint (a0.1)
-  // printf("tetgen start\n");
-
+  //printf("tetgen start\n");
   tetrahedralize(switches, &in, &out);
-  // printf("tetgen end\n");
+  //printf("tetgen end\n");
 
   //Debug
   //vector<int> elementIds;
@@ -2236,7 +2255,7 @@ void GEO::Intersection::storeTriangles(
     triangle[2] = positions[positions.size()-1];      // add midpoint
 
     triangleList_.push_back(triangle);
-    faceMarker_.push_back(intersectingCutterElements_.size()-1);
+    faceMarker_.push_back(((int)intersectingCutterElements_.size()-1));
   }
 
   // last point and first point
@@ -2245,7 +2264,7 @@ void GEO::Intersection::storeTriangles(
   triangle[2] = positions[positions.size()-1];          // add midpoint
 
   triangleList_.push_back(triangle);
-  faceMarker_.push_back(intersectingCutterElements_.size()-1);
+  faceMarker_.push_back(((int)intersectingCutterElements_.size()-1));
 }
 
 
@@ -2266,7 +2285,7 @@ void GEO::Intersection::storePlaneFacets(
     facet.push_back(positions[i]);
   
   triangleList_.push_back(facet);
-  faceMarker_.push_back(intersectingCutterElements_.size()-1);
+  faceMarker_.push_back(((int)intersectingCutterElements_.size()-1));
 }
 
 
@@ -2290,7 +2309,7 @@ void GEO::Intersection::storePlaneFacetsInTriangles(
     triangle[2] = positions[i+1];      // add midpoint
 
     triangleList_.push_back(triangle);
-    faceMarker_.push_back(intersectingCutterElements_.size()-1);
+    faceMarker_.push_back(((int)intersectingCutterElements_.size()-1));
   }
 }
 
@@ -2327,7 +2346,7 @@ void GEO::Intersection::storeSurfaceTriangles(
     triangleList.push_back(triangle);
     
     // current element is always the last element in vector
-    const int cutterPosition = intersectingCutterElements_.size()-1;
+    const int cutterPosition = ((int) intersectingCutterElements_.size()-1);
     surfaceTriangleList_.insert(make_pair(cutterPosition,triangleList));
 }
 
@@ -2352,7 +2371,7 @@ void GEO::Intersection::storeSurfacePlaneFacets(
   
   facetList.push_back(facet); 
   // current element is always the last element in vector
-  const int cutterPosition = intersectingCutterElements_.size()-1;
+  const int cutterPosition = ((int)intersectingCutterElements_.size()-1);
   surfaceTriangleList_.insert(make_pair(cutterPosition,facetList));
 }
 
@@ -2382,7 +2401,7 @@ void GEO::Intersection::storeSurfacePlaneFacetsInTriangles(
   }
   
   // current element is always the last element in vector
-  const int cutterPosition = intersectingCutterElements_.size()-1;
+  const int cutterPosition = ((int)intersectingCutterElements_.size()-1);
   surfaceTriangleList_.insert(make_pair(cutterPosition,triangleList));
 }
 

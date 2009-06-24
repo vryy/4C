@@ -376,18 +376,21 @@ void POTENTIAL::SurfacePotential::computeFandK(
          
            bool validContribution = false;
            // contact
+           //fabs(cond->GetDouble("exvollength")) > 1e-7
            if(fabs(cond->GetDouble("exvollength")) > 1e-7)
            {
              double exvollength = cond->GetDouble("exvollength");
              LINALG::Matrix<3,1> x_gp_con(true);
+             LINALG::Matrix<3,1> x_pot_gp_con(true);
              x_gp_con = x_gp;
+             x_pot_gp_con = x_pot_gp;
            
              //Add: this = scalarThis * this + scalarOther * other. 
              x_gp_con.Update( (-1.0)*exvollength, n_gp, 1.0);
-             x_pot_gp.Update( (-1.0)*exvollength, n_pot_gp, 1.0);
+             x_pot_gp_con.Update( (-1.0)*exvollength, n_pot_gp, 1.0);
            
-             EvaluatePotentialfromCondition(cond, x_gp_con, x_pot_gp, potderiv1, potderiv2);
-             validContribution = DetermineValidContribution(x_gp_con, x_pot_gp, n_gp, n_pot_gp);
+             EvaluatePotentialfromCondition(cond, x_gp_con, x_pot_gp_con, potderiv1, potderiv2);
+             validContribution = DetermineValidContribution(x_gp_con, x_pot_gp_con, n_gp, n_pot_gp);
            }
            else
            {
@@ -406,7 +409,7 @@ void POTENTIAL::SurfacePotential::computeFandK(
              for (int inode = 0; inode < numnode; inode++)
                for(int dim = 0; dim < 3; dim++)    
                  F_int[inode*numdof+dim] += funct(inode)*beta*fac*(beta*potderiv1(dim)*fac_pot);
-                           
+                        
              // computation of stiffness matrix (possibly with non-local values)
              for (int inode = 0;inode < numnode; ++inode)
                for(int dim = 0; dim < 3; dim++)
@@ -716,16 +719,27 @@ bool POTENTIAL::SurfacePotential::DetermineValidContribution(
   
   LINALG::Matrix<3,1> radius_pot(true);
   radius_pot.Update(1.0, x_gp, -1.0, x_pot_gp);
+  
+  if((radius.Norm2()-radius_pot.Norm2()) > GEO::TOL7)
+    dserror("radius is not the same");
+    
  
   // compare normals 
   const double scalarproduct = radius(0)*normal_gp(0) + radius(1)*normal_gp(1) + radius(2)*normal_gp(2);
+  
   const double scalarproduct_pot =  radius_pot(0)*normal_pot_gp(0) + 
                                     radius_pot(1)*normal_pot_gp(1) + 
                                     radius_pot(2)*normal_pot_gp(2);
+  
+ 
  
   // if valid contribution
-  if(scalarproduct > (-1)*GEO::TOL13 && scalarproduct_pot > (-1)*GEO::TOL13 )
+  if(scalarproduct > (-1)*GEO::TOL7 && scalarproduct_pot > (-1)*GEO::TOL7 )
     return true;
+  
+  //cout << "scalarproduct =" <<  scalarproduct <<  endl;
+  //cout << "scalarproduct_pot =" <<  scalarproduct_pot <<  endl;
+  //cout << "radius.Norm2() ="<< radius.Norm2() << endl;
   
   return false;
 }

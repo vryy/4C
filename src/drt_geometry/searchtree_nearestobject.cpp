@@ -63,6 +63,22 @@ GEO::NearestObject& GEO::NearestObject::operator=(const GEO::NearestObject& old)
 
 
 /*----------------------------------------------------------------------*
+ * clear nearest object                                      u.may 05/09|
+ *----------------------------------------------------------------------*/
+void GEO::NearestObject::clear()
+{
+  
+  objectType_ = NOTYPE_OBJECT;
+  nodeId_=-1;
+  lineId_=-1;
+  surfId_=-1;
+  label_=-1;
+  physcoord_ .PutScalar(0.0);
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  |  set node object type                                     u.may 08/08|                                         
  *----------------------------------------------------------------------*/
 void GEO::NearestObject::setNodeObjectType(

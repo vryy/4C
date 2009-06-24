@@ -161,57 +161,28 @@ int GEO::getXFEMLabel(
  | returns a label for a given point                         u.may 07/08|
  | and element list                                                     |
  *----------------------------------------------------------------------*/
-int GEO::getXFEMLabel(
-    const std::vector<std::vector<int> >&         triangleList,    
-    const std::vector<GEO::InterfacePoint>&       pointList,
-    const LINALG::Matrix<3,1>&                    querypoint,
-    const std::map<int, std::set<int> >&          elementList)      
-{
-  LINALG::Matrix<3,1> minDistanceVec(true);
- 
-  GEO::NearestObject nearestObject;
-
-  // compute the distance to the nearest object (surface, line, node) return label of nearest object
-  // returns the label of the surface element structure the projection of the query point is lying on
-  int label = nearestObjectInNode(triangleList, pointList, elementList, querypoint, minDistanceVec, nearestObject);   
- 
-  // compute normal in the point found on or in the object 
-  LINALG::Matrix<3,1> normal = getNormalAtSurfacePoint(triangleList, pointList, nearestObject);  
-
-  // compare normals and set label 
-  const double scalarproduct = minDistanceVec(0)*normal(0) + minDistanceVec(1)*normal(1) + minDistanceVec(2)*normal(2);
-  
-  // if fluid
-  if(scalarproduct > (-1)*GEO::TOL13)
-    label = 0;
-  if(minDistanceVec.Norm2() < GEO::TOL7)
-    label = 0;
-
-  return label;
-}
-
-
-/*----------------------------------------------------------------------*
- | returns a label for a given point                         u.may 07/08|
- | and element list                                                     |
- *----------------------------------------------------------------------*/
 void GEO::moveNodeOutOfStructure(
     const vector<vector<int> >&                   triangleList,
     vector< GEO::InterfacePoint >&                pointList,
     const int                                     querypointId,
-    const std::map<int, std::set<int> >&          elementList)      
+    const GEO::NearestObject&                     nearestObject,
+    LINALG::Matrix<3,1>&                          minDistanceVec)      
 {
-  LINALG::Matrix<3,1> minDistanceVec(true);
  
-  GEO::NearestObject nearestObject;
   LINALG::Matrix<3,1> querypoint = pointList[querypointId].getCoord();
+  
+  // cout << "query point" << querypoint << endl;
 
   // compute the distance to the nearest object (surface, line, node) return label of nearest object
   // returns the label of the surface element structure the projection of the query point is lying on
-  nearestObjectInNode(triangleList, pointList, elementList, querypoint, minDistanceVec, nearestObject);   
+  // nearestObjectInNode(triangleList, pointList, elementList, querypoint, pointLabel, minDistanceVec, nearestObject);   
  
+  cout << "minDistanceVec" << minDistanceVec << endl;
+  
   // compute normal in the point found on or in the object 
   LINALG::Matrix<3,1> normal = getNormalAtSurfacePoint(triangleList, pointList, nearestObject);  
+  
+  cout << "normal" << normal << endl;
 
   // compare normals and set label 
   const double scalarproduct = minDistanceVec(0)*normal(0) + minDistanceVec(1)*normal(1) + minDistanceVec(2)*normal(2);
@@ -219,11 +190,22 @@ void GEO::moveNodeOutOfStructure(
   const double length = minDistanceVec.Norm2();
   minDistanceVec.Scale(1.0/length);
   
-  if(minDistanceVec.Norm2() < GEO::TOL7  || !(scalarproduct > (-1)*GEO::TOL13))
+  cout << "length =" << length <<  endl;
+  cout << "scalarproduct =" << scalarproduct << endl;
+  
+  // minDistanceVec.Norm2() < GEO::TOL7  && 
+  // !(scalarproduct > (-1)*GEO::TOL13)
+  if(scalarproduct < 0.0)
   {
-    minDistanceVec.Scale((-2.0)*length);
+    cout << "MOVE NODE = " << querypointId << endl;
+    cout << "length =" << length <<  endl;
+    
+    cout << "scalarproduct =" << scalarproduct << endl;
+    minDistanceVec.Scale((1.0 + 2*GEO::TOL7)*length);
     querypoint += minDistanceVec;
     pointList[querypointId].setCoord(querypoint);
+    // check if point now inside or outside the box adjust facemarker ...
+    // and interface point
   }
   // if point lies within another structure move
   // it our of that structure to enable contact
@@ -332,7 +314,7 @@ std::vector<int> GEO::getPointsInRadius(
   //get set of (unlabled) elements in elementList
   std::set<int> pointlist = elementList[-1];
   
-  /*looping through the set of points assigned to current tree node and checking for each
+  /* looping through the set of points assigned to current tree node and checking for each
    * whether it's closer to querypoint than radius*/
   for(std::set<int>::const_iterator pointIter = pointlist.begin(); pointIter != pointlist.end(); pointIter++)
   {
@@ -340,13 +322,12 @@ std::vector<int> GEO::getPointsInRadius(
     LINALG::Matrix<3,1> difference = querypoint;
     difference -= (currentpositions.find(*pointIter))->second;
     
-    /*if absolute value of difference is smaller than radius we add the GID of the node represented 
+    /* if absolute value of difference is smaller than radius we add the GID of the node represented 
      * by the i-th element of currentpositions to the vector with the GIDs of nodes within a given radius*/
     if(difference.Norm2() < radius)
       nodes.push_back(*pointIter);
     
   }
-  
   return nodes;
 }
 
@@ -488,6 +469,9 @@ int GEO::nearestObjectInNode(
       }
     }
 
+  if(nearestObject.getObjectType()== GEO::NOTYPE_OBJECT)
+      dserror("no nearest object obtained");
+  
   // compute distance vector pointing away from the surface element
   minDistanceVec.Update(1.0, point, -1.0, nearestObject.getPhysCoord());
 
@@ -505,6 +489,7 @@ int GEO::nearestObjectInNode(
     const std::vector<GEO::InterfacePoint>&     pointList,
     const std::map<int, std::set<int> >&        elementList,
     const LINALG::Matrix<3,1>&                  point,
+    const int                                   pointLabel,
     LINALG::Matrix<3,1>&                        minDistanceVec,
     GEO::NearestObject&                         nearestObject)
 {
@@ -514,61 +499,87 @@ int GEO::nearestObjectInNode(
   LINALG::Matrix<3,1> normal(true);
   LINALG::Matrix<3,1> x_surface(true);
   std::map< int, std::set<int> > nodeList;
-
+  
+  
+  if(elementList.empty() || (elementList.size()==1 && elementList.begin()->first==pointLabel ))
+    dserror("elelist empty");
+  
+  // clear nearest object
+  nearestObject.clear();
+  minDistanceVec.Clear();
+  
   // run over all surface elements
   for(std::map<int, std::set<int> >::const_iterator labelIter = elementList.begin(); labelIter != elementList.end(); labelIter++)
-    for(std::set<int>::const_iterator eleIter = (labelIter->second).begin(); eleIter != (labelIter->second).end(); eleIter++)
-    {    
-      // not const because otherwise no lines can be obtained
-      pointFound = GEO::getDistanceToSurface(triangleList[*eleIter], pointList, point, x_surface, distance);
-      if(pointFound && distance < min_distance)
-      {
-        pointFound = false;
-        min_distance = distance;
-        nearestObject.setSurfaceObjectType(*eleIter, labelIter->first, x_surface);
-      }
-
-      // run over all line elements
-      for(int i = 0; i < 3; i++)
-      {
-        std::vector<int> linePoints(2,0);
-        if(i < 2)
-        {
-          linePoints[0] = triangleList[*eleIter][i];
-          linePoints[1] = triangleList[*eleIter][i+1];
-        }
-        else
-        {
-          linePoints[0] = triangleList[*eleIter][i];
-          linePoints[1] = triangleList[*eleIter][0];
-        }
-        pointFound = GEO::getDistanceToLine(linePoints, pointList, point, x_surface, distance);     
+  {
+    if(labelIter->first!=pointLabel)
+    {
+      for(std::set<int>::const_iterator eleIter = (labelIter->second).begin(); eleIter != (labelIter->second).end(); eleIter++)
+      {    
+        // not const because otherwise no lines can be obtained
+        pointFound = GEO::getDistanceToSurface(triangleList[*eleIter], pointList, point, x_surface, distance);
         if(pointFound && distance < min_distance)
         {
           pointFound = false;
           min_distance = distance;
-          nearestObject.setLineObjectType(i, *eleIter, labelIter->first, x_surface);
+          nearestObject.setSurfaceObjectType(*eleIter, labelIter->first, x_surface);
         }
-      }
-      // collect nodes
-      for(int i = 0; i < DRT::UTILS::getNumberOfElementCornerNodes(DRT::Element::tri3); i++)
-        nodeList[labelIter->first].insert(triangleList[*eleIter][i]);
-    }
-
+    
+        // run over all line elements
+        for(int i = 0; i < 3; i++)
+        {
+          std::vector<int> linePoints(2,0);
+          if(i < 2)
+          {
+            linePoints[0] = triangleList[*eleIter][i];
+            linePoints[1] = triangleList[*eleIter][i+1];
+          }
+          else
+          {
+            linePoints[0] = triangleList[*eleIter][i];
+            linePoints[1] = triangleList[*eleIter][0];
+          }
+          pointFound = GEO::getDistanceToLine(linePoints, pointList, point, x_surface, distance);     
+          if(pointFound && distance < min_distance)
+          {
+            pointFound = false;
+            min_distance = distance;
+            nearestObject.setLineObjectType(i, *eleIter, labelIter->first, x_surface);
+          }
+        }
+        // collect nodes
+        for(int i = 0; i < DRT::UTILS::getNumberOfElementCornerNodes(DRT::Element::tri3); i++)
+          nodeList[labelIter->first].insert(triangleList[*eleIter][i]);
+      }// if(labelIter->first!=pointLabel) 
+    } // for element iter
+  } // for label iter
   // run over all nodes
+  
   for (std::map<int, std::set<int> >::const_iterator labelIter = nodeList.begin(); labelIter != nodeList.end(); labelIter++)
-    for (std::set<int>::const_iterator nodeIter = (labelIter->second).begin(); nodeIter != (labelIter->second).end(); nodeIter++)
-    {
-      GEO::getDistanceToPoint(*nodeIter, pointList, point, distance);
-      if (distance < min_distance)
+  {
+    if(labelIter->first != pointLabel)
+    {    
+      for (std::set<int>::const_iterator nodeIter = (labelIter->second).begin(); nodeIter != (labelIter->second).end(); nodeIter++)
       {
-        min_distance = distance;
-        nearestObject.setNodeObjectType(*nodeIter, labelIter->first, pointList[*nodeIter].getCoord());
-      }
+        GEO::getDistanceToPoint(*nodeIter, pointList, point, distance);
+        if (distance < min_distance)
+        {
+          min_distance = distance;
+          nearestObject.setNodeObjectType(*nodeIter, labelIter->first, pointList[*nodeIter].getCoord());
+        }
+      }// if(labelIter->first!=pointLabel) 
     }
-
+  }
+  
+  if(nearestObject.getObjectType()== GEO::NOTYPE_OBJECT)
+    dserror("no nearest object obtained");
+  
+   cout << "point = " << point << endl;
+   cout << "nearestObject.getPhysCoord() = " << nearestObject.getPhysCoord() << endl;
+  
+  
   // compute distance vector pointing away from the surface element
   minDistanceVec.Update(1.0, point, -1.0, nearestObject.getPhysCoord());
+  cout << "minDistanceVec = " << minDistanceVec << endl;
 
   return nearestObject.getLabel();
 }
@@ -873,18 +884,22 @@ std::vector<int> GEO::getAdjacentTriElementsToLine(
     const int                         node2)
 {
   std::vector<int> adjacentElements;
-
+  
+  const int trinode1 = triangleList[triangleId][node1];
+  const int trinode2 = triangleList[triangleId][node2];
+  
+  if(triangleList.empty())
+    dserror("triangle list is empty");
+  
   for(int i = 0; i < (int) triangleList.size(); i++)
   {
     int count = 0;
     for(int j = 0; j < 3; j++)
     {
-      if(triangleList[i][j] == node1)
-        count++;
-      if(triangleList[i][j] == node2)
+      if(triangleList[i][j] == trinode1 || triangleList[i][j] == trinode2)
         count++;
     }
-    if(count == 2 && i != triangleId)
+    if(count == 2)
       adjacentElements.push_back(i);
   }
   
@@ -900,19 +915,18 @@ std::vector<int> GEO::getAdjacentTriElementsToLine(
 
 
 /*----------------------------------------------------------------------*
- |  find adjacent elements                                   peder 07/08|
- |  for a line given by two end nodes                                   |
+ |  find adjacent elements                                   u.may 05/09|
+ |  for a given node                                                    |
  *----------------------------------------------------------------------*/
 std::vector<int> GEO::getAdjacentTriElementsToNode(
     const std::vector< vector<int> >& triangleList,
-    const int                         triangleId,
     const int                         node)
 {
   std::vector<int> adjacentElements;
 
   for(int i = 0; i < (int) triangleList.size(); i++)
     for(int j = 0; j < 3; j++)
-      if(triangleList[i][j] == node && i != triangleId)
+      if(triangleList[i][j] == node)
       {
         adjacentElements.push_back(i);
         break;
@@ -989,7 +1003,7 @@ LINALG::Matrix<3,1> GEO::getNormalAtSurfacePoint(
     break;
   }
   default:
-    dserror("distance type does not exist");
+    dserror("object type does not exist");
   }
   return normal;
 }
@@ -1004,82 +1018,81 @@ LINALG::Matrix<3,1> GEO::getNormalAtSurfacePoint(
 LINALG::Matrix<3,1> GEO::getNormalAtSurfacePoint(
     const std::vector< std::vector<int> >&      triangleList,
     const std::vector<GEO::InterfacePoint>&     pointList,
-    GEO::NearestObject&                         nearestObject)
+    const GEO::NearestObject&                   nearestObject)
 {
   LINALG::Matrix<3,1> normal(true);
-
+  
   switch (nearestObject.getObjectType()) 
   {
-  case GEO::SURFACE_OBJECT:
-  { 
-    LINALG::Matrix<2,1> elecoord(true);
-    LINALG::SerialDenseMatrix xyze_triElement(3,3);
-    for(int i = 0; i < 3; i++)
-    {
-      LINALG::Matrix<3,1> node = pointList[triangleList[nearestObject.getSurfaceId()][i]].getCoord();
-      for(int j = 0; j < 3; j++)
-        xyze_triElement(i,j) = node(j);
-    }
-    GEO::CurrentToSurfaceElementCoordinates(DRT::Element::tri3, xyze_triElement, nearestObject.getPhysCoord(), elecoord);
-    GEO::computeNormalToSurfaceElement(DRT::Element::tri3, xyze_triElement, elecoord, normal);
-    break;
-  }
-  case GEO::LINE_OBJECT:
-  {
-    int node1 = nearestObject.getLineId();
-    int node2 = nearestObject.getLineId() + 1;
-    if(nearestObject.getLineId() == 2)
-      node2 = 0;
-    
-    std::vector<int> adjacentElements = getAdjacentTriElementsToLine(triangleList, nearestObject.getSurfaceId(), node1, node2);
-    // run over all elements adjacent ot a line
-    for(std::vector<int>::const_iterator eleIter = adjacentElements.begin(); eleIter != adjacentElements.end(); ++eleIter)
-    {
+    case GEO::SURFACE_OBJECT:
+    { 
       LINALG::Matrix<2,1> elecoord(true);
-      LINALG::Matrix<3,1> tri_normal(true);
       LINALG::SerialDenseMatrix xyze_triElement(3,3);
       for(int i = 0; i < 3; i++)
       {
-        LINALG::Matrix<3,1> node = pointList[triangleList[*eleIter][i]].getCoord();
+        LINALG::Matrix<3,1> node = pointList[triangleList[nearestObject.getSurfaceId()][i]].getCoord();
         for(int j = 0; j < 3; j++)
           xyze_triElement(i,j) = node(j);
       }
       GEO::CurrentToSurfaceElementCoordinates(DRT::Element::tri3, xyze_triElement, nearestObject.getPhysCoord(), elecoord);
-      GEO::computeNormalToSurfaceElement(DRT::Element::tri3, xyze_triElement, elecoord, tri_normal);
-      
-      normal += tri_normal;
+      GEO::computeNormalToSurfaceElement(DRT::Element::tri3, xyze_triElement, elecoord, normal);
+      break;
     }
-    normal.Scale(1.0/((double) adjacentElements.size())); 
-    break;
-  }
-  case GEO::NODE_OBJECT:
-  {
-
-    // run over all elements adjacent ot a node
-    std::vector<int> adjacentElements = getAdjacentTriElementsToNode(triangleList, nearestObject.getSurfaceId(), nearestObject.getNodeId());
-
-    // run over all elements adjacent ot a line
-    for(std::vector<int>::const_iterator eleIter = adjacentElements.begin(); eleIter != adjacentElements.end(); ++eleIter)
-    {   
-      LINALG::Matrix<2,1> elecoord(true);
-      LINALG::Matrix<3,1> tri_normal(true);
-      LINALG::SerialDenseMatrix xyze_triElement(3,3);
-      for(int i = 0; i < 3; i++)
+    case GEO::LINE_OBJECT:
+    {
+      int node1 = nearestObject.getLineId();
+      int node2 = nearestObject.getLineId() + 1;
+      if(nearestObject.getLineId() == 2)
+        node2 = 0;
+      
+      std::vector<int> adjacentElements = getAdjacentTriElementsToLine(triangleList,nearestObject.getSurfaceId(),node1, node2);
+      // run over all elements adjacent ot a line
+      for(std::vector<int>::const_iterator eleIter = adjacentElements.begin(); eleIter != adjacentElements.end(); ++eleIter)
       {
-        LINALG::Matrix<3,1> node = pointList[triangleList[*eleIter][i]].getCoord();
-        for(int j = 0; j < 3; j++)
-          xyze_triElement(i,j) = node(j);
+        LINALG::Matrix<2,1> elecoord(true);
+        LINALG::Matrix<3,1> tri_normal(true);
+        LINALG::SerialDenseMatrix xyze_triElement(3,3);
+        for(int i = 0; i < 3; i++)
+        {
+          LINALG::Matrix<3,1> node = pointList[triangleList[*eleIter][i]].getCoord();
+          for(int j = 0; j < 3; j++)
+            xyze_triElement(i,j) = node(j);
+        }
+        GEO::CurrentToSurfaceElementCoordinates(DRT::Element::tri3, xyze_triElement, nearestObject.getPhysCoord(), elecoord);
+        GEO::computeNormalToSurfaceElement(DRT::Element::tri3, xyze_triElement, elecoord, tri_normal);
+        
+        normal += tri_normal;
       }
-      GEO::CurrentToSurfaceElementCoordinates(DRT::Element::tri3, xyze_triElement, nearestObject.getPhysCoord(), elecoord);
-      GEO::computeNormalToSurfaceElement(DRT::Element::tri3, xyze_triElement, elecoord, tri_normal);
-      
-      normal += tri_normal;
+      normal.Scale(1.0/((double) adjacentElements.size())); 
+      break;
     }
-    normal.Scale(1.0/((double) adjacentElements.size())); 
-    break;
-  }
-  default:
-    dserror("distance type does not exist");
+    case GEO::NODE_OBJECT:
+    {
+      // run over all elements adjacent ot a node
+      std::vector<int> adjacentElements = getAdjacentTriElementsToNode(triangleList, nearestObject.getNodeId());
+  
+      // run over all elements adjacent ot a line
+      for(std::vector<int>::const_iterator eleIter = adjacentElements.begin(); eleIter != adjacentElements.end(); ++eleIter)
+      {   
+        LINALG::Matrix<2,1> elecoord(true);
+        LINALG::Matrix<3,1> tri_normal(true);
+        LINALG::SerialDenseMatrix xyze_triElement(3,3);
+        for(int i = 0; i < 3; i++)
+        {
+          LINALG::Matrix<3,1> node = pointList[triangleList[*eleIter][i]].getCoord();
+          for(int j = 0; j < 3; j++)
+            xyze_triElement(i,j) = node(j);
+        }
+        GEO::CurrentToSurfaceElementCoordinates(DRT::Element::tri3, xyze_triElement, nearestObject.getPhysCoord(), elecoord);
+        GEO::computeNormalToSurfaceElement(DRT::Element::tri3, xyze_triElement, elecoord, tri_normal);
+        
+        normal += tri_normal;
+      }
+      normal.Scale(1.0/((double) adjacentElements.size())); 
+      break;
+    }
+    default:
+      dserror("object type does not exist");
   }
   return normal;
 }

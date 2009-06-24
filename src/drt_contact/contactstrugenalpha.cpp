@@ -742,6 +742,307 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
 } // ContactStruGenAlpha::ConstantPredictor()
 
 
+
+/*----------------------------------------------------------------------*
+ |  setup equilibrium with additional external forces        u.may 05/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::ContactStruGenAlpha::ApplyExternalForce(  const LINALG::MapExtractor& extractor,
+                                                        Teuchos::RCP<Epetra_Vector> iforce)
+{
+  // -------------------------------------------------------------------
+  // get some parameters from parameter list
+  // -------------------------------------------------------------------
+  double time        = params_.get<double>("total time"     ,0.0);
+  double dt          = params_.get<double>("delta time"     ,0.01);
+  double mdamp       = params_.get<double>("damping factor M",0.0);
+  int    step        = params_.get<int>   ("step"           ,0);
+  bool   damping     = params_.get<bool>  ("damping"        ,false);
+  double alphaf      = params_.get<double>("alpha f"        ,0.459);
+  double alpham      = params_.get<double>("alpha m"        ,0.378);
+  double beta        = params_.get<double>("beta"           ,0.292);
+#ifdef STRUGENALPHA_BE
+  double delta       = params_.get<double>("delta"          ,beta);
+#endif
+  double gamma       = params_.get<double>("gamma"          ,0.581);
+  bool   printscreen = params_.get<bool>  ("print to screen",false);
+  string convcheck   = params_.get<string>("convcheck"      ,"AbsRes_Or_AbsDis");
+  bool structrobin   = params_.get<bool>  ("structrobin", false);
+  bool   dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
+
+  // increment time and step
+  double timen = time + dt;
+
+  // get new external force vector
+  {
+    ParameterList p;
+    // action for elements
+    p.set("action","calc_struct_eleload");
+    // other parameters needed by the elements
+    p.set("total time",timen);
+    p.set("delta time",dt);
+    p.set("alpha f",alphaf);
+    p.set("damping factor M",mdamp);
+    // set vector values needed by elements
+    discret_.ClearState();
+    discret_.SetState("displacement",disn_);
+    // predicted dirichlet values
+    // disn then also holds prescribed new dirichlet displacements
+    // in the case of local systems we have to rotate forth and back
+    if (locsysmanager_ != null) locsysmanager_->RotateGlobalToLocal(disn_);
+    discret_.EvaluateDirichlet(p,disn_,null,null,dirichtoggle_);
+    if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(disn_);
+    discret_.ClearState();
+    discret_.SetState("displacement",disn_);
+    discret_.SetState("velocity",veln_);
+    fextn_->PutScalar(0.0);  // initialize external force vector (load vect)
+    discret_.EvaluateNeumann(p,*fextn_);
+    discret_.ClearState();
+  }
+
+  // Add iforce to fextn_
+  // there might already be (body) forces at the interface nodes
+  extractor.AddCondVector(iforce,fextn_);
+
+  //------------------------------- compute interpolated external forces
+  // external mid-forces F_{ext;n+1-alpha_f} (fextm)
+  //    F_{ext;n+1-alpha_f} := (1.-alphaf) * F_{ext;n+1}
+  //                         + alpha_f * F_{ext;n}
+  fextm_->Update(1.-alphaf,*fextn_,alphaf,*fext_,0.0);
+
+  // add frobin_ directly to fextm_, so we do not change fextn_ which
+  // is going to be used later
+  if (structrobin)
+    fextm_->Update(1.,*frobin_,1.);
+
+
+  //------------- eval fint at interpolated state, eval stiffness matrix
+  {
+    // zero out stiffness
+    stiff_->Zero();
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    p.set("action","calc_struct_nlnstiff");
+    // other parameters that might be needed by the elements
+    p.set("total time",timen);
+    p.set("delta time",dt);
+    p.set("alpha f",alphaf);
+    // set vector values needed by elements
+    discret_.ClearState();
+    discret_.SetState("residual displacement",disi_);
+#ifdef STRUGENALPHA_FINTLIKETR
+    discret_.SetState("displacement",disn_);
+    discret_.SetState("velocity",veln_);
+#else
+    discret_.SetState("displacement",dism_);
+    discret_.SetState("velocity",velm_);
+#endif
+    //discret_.SetState("velocity",velm_); // not used at the moment
+#ifdef STRUGENALPHA_FINTLIKETR
+    fintn_->PutScalar(0.0);  // initialise internal force vector
+    discret_.Evaluate(p,stiff_,null,fintn_,null,null);
+#else
+    fint_->PutScalar(0.0);  // initialise internal force vector
+    discret_.Evaluate(p,stiff_,null,fint_,null,null);
+#endif
+
+
+    discret_.ClearState();
+
+    if (surf_stress_man_->HaveSurfStress())  dserror("No surface stresses in 'ApplyExternalForce'");
+
+    if (pot_man_!=null)
+    {
+      p.set("pot_man", pot_man_);
+      pot_man_->EvaluatePotential(p,dism_,fint_,stiff_);
+    }
+
+    // do NOT finalize the stiffness matrix, add mass and damping to it later
+
+    // If we have a robin condition we need to modify both the rhs and the
+    // matrix diagonal corresponding to the dofs at the robin interface.
+    if (structrobin)
+    {
+      double alphas = params_.get<double>("alpha s",-1.);
+
+      // Add structural part of Robin force
+      fsisurface_->AddCondVector(alphas/dt,
+                                 fsisurface_->ExtractCondVector(dism_),
+                                 fint_);
+
+      double scale = alphas*(1.-alphaf)/dt;
+      const Epetra_Map& robinmap = *fsisurface_->CondMap();
+      int numrdofs = robinmap.NumMyElements();
+      int* rdofs = robinmap.MyGlobalElements();
+      for (int lid=0; lid<numrdofs; ++lid)
+      {
+        int gid = rdofs[lid];
+        // Note: This assemble might fail if we have a block matrix here.
+        stiff_->Assemble(scale,gid,gid);
+      }
+    }
+  }
+
+  //-------------------------------------------- compute residual forces
+  if (dynkindstat)
+  {
+    // static residual
+    // Res = F_int - F_ext
+    fresm_->PutScalar(0.0);
+  }
+  else
+  {
+    // dynamic residual
+    // Res = M . A_{n+1-alpha_m}
+    //     + C . V_{n+1-alpha_f}
+    //     + F_int(D_{n+1-alpha_f})
+    //     - F_{ext;n+1-alpha_f}
+    // add mid-inertial force
+    mass_->Multiply(false,*accm_,*finert_);
+    fresm_->Update(1.0,*finert_,0.0);
+    // add mid-viscous damping force
+    if (damping)
+    {
+      //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
+      damp_->Multiply(false,*velm_,*fvisc_);
+      fresm_->Update(1.0,*fvisc_,1.0);
+    }
+  }
+
+  // add static mid-balance
+#ifdef STRUGENALPHA_FINTLIKETR
+  fresm_->Update(1.0,*fextm_,-1.0);
+  fresm_->Update(-(1.0-alphaf),*fintn_,-alphaf,*fint_,1.0);
+#else
+  fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
+#endif
+
+  //---------------------------------------------- build effective lhs
+  // (using matrix stiff_ as effective matrix)
+  // (still without contact, this is just Gen-alpha stuff here)
+  if (dynkindstat); // do nothing, we have the ordinary stiffness matrix ready
+  else
+  {
+#ifdef STRUGENALPHA_BE
+    stiff_->Add(*mass_,false,(1.-alpham)/(delta*dt*dt),1.-alphaf);
+#else
+    stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
+#endif
+    if (damping)
+    {
+#ifdef STRUGENALPHA_BE
+      stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(delta*dt),1.0);
+#else
+      stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
+#endif
+    }
+  }
+  stiff_->Complete();
+
+  // keep a copy of fresm for contact forces / equilibrium check
+  RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
+
+//  // reset Lagrange multipliers to last converged state
+//  // this resetting is necessary due to multiple active set steps
+//  RCP<Epetra_Vector> z = contactmanager_->LagrMult();
+//  RCP<Epetra_Vector> zold = contactmanager_->LagrMultOld();
+//  z->Update(1.0,*zold,0.0);
+//  contactmanager_->StoreNodalQuantities(Manager::lmcurrent);
+
+  // friction
+  // reset displacement jumps (slave dofs)
+  RCP<Epetra_Vector> jump = contactmanager_->Jump();
+  jump->Scale(0.0);
+  contactmanager_->StoreNodalQuantities(Manager::jump);
+
+  //-------------------------- make contact modifications to lhs and rhs
+  contactmanager_->SetState("displacement",disn_);
+
+  contactmanager_->InitializeMortar();
+  contactmanager_->EvaluateMortar();
+
+  contactmanager_->Initialize();
+  contactmanager_->Evaluate(stiff_,fresm_);
+
+  //---------------------------------------------------- contact forces
+  contactmanager_->ContactForces(fresmcopy);
+
+#ifdef CONTACTGMSH2
+  int istep = step + 1;
+  contactmanager_->VisualizeGmsh(istep,0);
+#endif // #ifdef CONTACTGMSH2
+
+  // blank residual DOFs that are on Dirichlet BC
+  // in the case of local systems we have to rotate forth and back
+  {
+    if (locsysmanager_ != null) locsysmanager_->RotateGlobalToLocal(fresm_);
+    Epetra_Vector fresmdbc(*fresm_);
+    fresm_->Multiply(1.0,*invtoggle_,fresmdbc,0.0);
+    if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(fresm_);
+  }
+  
+  
+  //------------------------------------------------ build residual norm
+  double fresmnorm = 1.0;
+
+  // store norms of displacements and maximum of norms of internal,
+  // external and inertial forces if a relative convergence check
+  // is desired and we are in the first time step
+  if (step == 0 and (convcheck != "AbsRes_And_AbsDis" or convcheck != "AbsRes_Or_AbsDis"))
+  {
+    CalcRefNorms();
+  }
+
+  if (printscreen)
+    fresm_->Norm2(&fresmnorm);
+  if (!myrank_ and printscreen)
+  {
+    PrintPredictor(convcheck, fresmnorm);
+  }
+}
+
+
+/*----------------------------------------------------------------------*
+ |  compute residual to given state x (public)               u.may 05/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::ContactStruGenAlpha::computeF(const Epetra_Vector& x, Epetra_Vector& F)
+{
+  dserror("not yet impemented for contactstrugenalpha");
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  compute Jacobian at x (public)                           u.may 05/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::ContactStruGenAlpha::computeJacobian(const Epetra_Vector& x)
+{
+  dserror("not yet impemented for contactstrugenalpha");
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  build linear system matrix and rhs (public)              u.kue 03/07|
+ *----------------------------------------------------------------------*/
+void CONTACT::ContactStruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
+{
+  dserror("not yet impemented for contactstrugenalpha");
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | linear relaxation solve (public)                          u.kue 03/07|
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> CONTACT::ContactStruGenAlpha::LinearRelaxationSolve(
+      Teuchos::RCP<Epetra_Vector> relax)
+{
+  dserror("not yet impemented for contactstrugenalpha");
+  return Teuchos::null;
+}
+
+
 /*----------------------------------------------------------------------*
  |  do Newton iteration (public)                              popp 06/08|
  *----------------------------------------------------------------------*/

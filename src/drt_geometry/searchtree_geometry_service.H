@@ -103,23 +103,7 @@ namespace GEO
       const std::map<int,LINALG::Matrix<3,1> >&   currentpositions, 	
       const LINALG::Matrix<3,1>&                  querypoint,
       const std::map<int, std::set<int> >&        elementList
-      ); 
-      
-    
-    /*!
-  \brief Returns the label for a point and a given map of elements
-  \param triangleList         triangleList
-  \param currentpositions     current nodal positions in discretization
-  \param querypoint           point to be examined
-  \param elementList          map of elements label gid
-  \return                     label
-   */  
-  int getXFEMLabel(
-    const std::vector<std::vector<int> >&         triangleList,    
-    const std::vector<GEO::InterfacePoint>&       pointList,
-    const LINALG::Matrix<3,1>&                    querypoint,
-    const std::map<int, std::set<int> >&          elementList
-    );       	
+      );       	
   
   
   /*!
@@ -128,14 +112,14 @@ namespace GEO
   \param interfacePointList   list of interface points
   \param currentpositions     current nodal positions in discretization
   \param querypoint           point to be examined
-  \param elementList          map of elements label gid
   \return                     label
    */
   void moveNodeOutOfStructure(
     const vector<vector<int> >&                   triangleList,
     vector< GEO::InterfacePoint >&                pointList,
     const int                                     querypointId,
-    const std::map<int, std::set<int> >&          elementList
+    const GEO::NearestObject&                     nearestObject,
+    LINALG::Matrix<3,1>&                          minDistanceVec
     ); 
   
   
@@ -151,7 +135,7 @@ namespace GEO
   int getXFEMLabelAndNearestObject(
       const DRT::Discretization&                dis,              
       const std::map<int,LINALG::Matrix<3,1> >& currentpositions, 
-      const LINALG::Matrix<3,1>&                querypoint,      
+      const LINALG::Matrix<3,1>&                querypoint,  
       const std::map<int, std::set<int> >&      elementList,     
       GEO::NearestObject&                       nearestObject
       );
@@ -258,6 +242,7 @@ namespace GEO
     const std::vector<GEO::InterfacePoint>&     pointList,
     const std::map<int, std::set<int> >&        elementList,
     const LINALG::Matrix<3,1>&                  point,
+    const int                                   pointLabel,
     LINALG::Matrix<3,1>&                        minDistanceVec,
     GEO::NearestObject&                         nearestObject
     );
@@ -391,7 +376,7 @@ namespace GEO
   LINALG::Matrix<3,1> getNormalAtSurfacePoint(
     const std::vector< std::vector<int> >&      triangleList,
     const std::vector<GEO::InterfacePoint>&     pointList,
-    GEO::NearestObject&                         nearestObject
+    const GEO::NearestObject&                   nearestObject
     );
 
   
@@ -424,13 +409,11 @@ namespace GEO
   /*!
   \brief  Finds all elements adjacent to a node
   \param triangleList       list of trianglea
-  \param triangleId         triangle id
   \param node               node id
   \return list of common elements
    */  
   std::vector<int> getAdjacentTriElementsToNode(
     const std::vector< vector<int> >& triangleList,
-    const int                         triangleId,
     const int                         node
     );
 

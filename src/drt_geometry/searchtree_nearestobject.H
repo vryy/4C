@@ -85,6 +85,13 @@ class NearestObject
     */
     GEO::NearestObject& operator=(const GEO::NearestObject& old);
 
+    
+    /*!
+    \brief clear nearest object
+    */
+    void clear();
+    
+    
     /*!
     \brief Set node object type
     \param nodeId       (in)        : node gid

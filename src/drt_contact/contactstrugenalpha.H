@@ -87,7 +87,30 @@ public:
 
   */
   void ConsistentPredictor();
+  
+  
+  /// setup equilibrium with additional external forces
+  void ApplyExternalForce(  const LINALG::MapExtractor& extractor,
+                            Teuchos::RCP<Epetra_Vector> iforce
+                            );
+  
+  
+  /// compute F (FSI)
+  void computeF(  const Epetra_Vector& x, 
+                  Epetra_Vector& F);
+  
+  
+  /// compute J at x (FSI)
+  void computeJacobian(const Epetra_Vector& x);
 
+  
+  /// build linear system matrix and rhs (FSI)           
+  void Evaluate(Teuchos::RCP<const Epetra_Vector> disp);
+  
+  
+  /// linear relaxation solve (FSI)
+  Teuchos::RCP<Epetra_Vector> LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax);
+  
   /*!
   \brief do full Newton iteration
 
@@ -135,12 +158,16 @@ public:
 
   /// output to file/screen
   virtual void Output();
+ 
 
   /*!
   \brief restart calculation from a given step
 
   */
   void ReadRestart(int step);
+  
+  /// getContactManager
+  RCP<CONTACT::Manager> getContactmanager() {return contactmanager_; }
 
 protected:
 

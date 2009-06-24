@@ -347,14 +347,14 @@ void POTENTIAL::Potential::EvaluateZetaPotential(
   //----------------------------------------------------------------------
   // evaluate 1.derivative dphi/du_i
   //----------------------------------------------------------------------
-  const double dpotdr = zeta_param_1*exp((-1)*zeta_param_2*distance);
+  const double dpotdr = zeta_param_1* (-1)*zeta_param_2 *exp((-1)*zeta_param_2*distance);
   for(int i = 0; i < 3; i++)
     potderiv1(i) = dpotdr*distance_unit(i);
 
   //----------------------------------------------------------------------
   // evaluate 2.derivative dphi/du_i d_uiI  (this is not a mistake !!!!)
   //----------------------------------------------------------------------
-  const double dpotdrdr = (-1)*zeta_param_1*zeta_param_2*exp((-1)*zeta_param_2*distance);
+  const double dpotdrdr = (-1)*zeta_param_1*zeta_param_2* (-1)*zeta_param_2* exp((-1)*zeta_param_2*distance);
   for(int i = 0; i < 3; i++)
     for(int j = 0; j < 3; j++)
       potderiv2(i,j) = 0.0;

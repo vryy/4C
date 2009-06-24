@@ -509,7 +509,8 @@ public:
     vector< GEO::InterfacePoint >&                pointList, 
     const std::map<int,LINALG::Matrix<3,2> >&     triangleXAABBs,  
     const LINALG::Matrix<3,1>&                    querypoint,
-    const int                                     querypointId
+    const int                                     querypointId,
+    const int                                     querypointLabel
     );
   
   
@@ -730,7 +731,8 @@ public:
     vector< GEO::InterfacePoint >&                pointList, 
     const std::map<int,LINALG::Matrix<3,2> >&     triangleXAABBs,  
     const LINALG::Matrix<3,1>&                    querypoint,
-    const int                                     querypointId
+    const int                                     querypointId,
+    const int                                     querypointLabel
     );
     
   /*!
