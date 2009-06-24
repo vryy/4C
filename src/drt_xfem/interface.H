@@ -96,6 +96,12 @@ namespace XFEM
     //! get domain information at x_in at timestep n
     virtual int PositionWithinConditionN(const LINALG::Matrix<3,1>&     x_in,
                                          GEO::NearestObject&  nearestobject) const;
+    
+    //! get the label to which the boundary element belongs
+    virtual int GetLabelPerBoundaryElementId(const int boundaryEleId) const
+    {
+      return labelPerBoundaryElementId_.find(boundaryEleId)->second;
+    }
 
   protected:
   
