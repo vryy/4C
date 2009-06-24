@@ -88,6 +88,12 @@ void MAT::ElastHyper::Pack(vector<char>& data) const
   int matid = -1;
   if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data,matid);
+  AddtoPack(data,anisotropic_);
+  AddtoPack(data,a1_);
+  AddtoPack(data,a2_);
+  AddtoPack(data,A1_);
+  AddtoPack(data,A2_);
+  AddtoPack(data,A1A2_);
 }
 
 
@@ -118,6 +124,12 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
   {
     params_ = NULL;
   }
+  ExtractfromPack(position,data,anisotropic_);
+  ExtractfromPack(position,data,a1_);
+  ExtractfromPack(position,data,a2_);
+  ExtractfromPack(position,data,A1_);
+  ExtractfromPack(position,data,A2_);
+  ExtractfromPack(position,data,A1A2_);
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -202,25 +214,23 @@ void MAT::ElastHyper::Setup()
 
   // alignment angles gamma_i are read from first entry of then unnecessary vectors a1 and a2
   const double gamma = (params_->gamma_*PI)/180.; //convert
-  vector<double> a1(3);
-  vector<double> a2(3);
 
   for (int i = 0; i < 3; ++i) {
     // a1 = cos gamma e3 + sin gamma e2
-    a1[i] = cos(gamma)*locsys(i,2) + sin(gamma)*locsys(i,1);
+    a1_(i) = cos(gamma)*locsys(i,2) + sin(gamma)*locsys(i,1);
     // a2 = cos gamma e3 - sin gamma e2
-    a2[i] = cos(gamma)*locsys(i,2) - sin(gamma)*locsys(i,1);
+    a2_(i) = cos(gamma)*locsys(i,2) - sin(gamma)*locsys(i,1);
   }
   for (int i = 0; i < 3; ++i) {
-    A1_(i) = a1[i]*a1[i];
-    A2_(i) = a2[i]*a2[i];
+    A1_(i) = a1_(i)*a1_(i);
+    A2_(i) = a2_(i)*a2_(i);
     for (int j=0; j<3; j++)
     {
-      A1A2_(j,i) = a1[j]*a2[i];
+      A1A2_(j,i) = a1_(j)*a2_(i);
     }
   }
-  A1_(3) = a1[0]*a1[1]; A1_(4) = a1[1]*a1[2]; A1_(5) = a1[0]*a1[2];
-  A2_(3) = a2[0]*a2[1]; A2_(4) = a2[1]*a2[2]; A2_(5) = a2[0]*a2[2];
+  A1_(3) = a1_(0)*a1_(1); A1_(4) = a1_(1)*a1_(2); A1_(5) = a1_(0)*a1_(2);
+  A2_(3) = a2_(0)*a2_(1); A2_(4) = a2_(1)*a2_(2); A2_(5) = a2_(0)*a2_(2);
   return;
 }
 

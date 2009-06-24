@@ -21,6 +21,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/artwallremod.H"
 #include "../drt_mat/viscoanisotropic.H"
 #include "../drt_mat/anisotropic_balzani.H"
+#include "../drt_mat/elasthyper.H"
 
 // inverse design object
 #if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
@@ -437,18 +438,24 @@ void DRT::ELEMENTS::So_hex8::VisNames(map<string,int>& names)
 //    names[fiber] = 1;
   }
   if ((Material()->MaterialType() == INPAR::MAT::m_artwallremod) ||
-      (Material()->MaterialType() == INPAR::MAT::m_viscoanisotropic))
+      (Material()->MaterialType() == INPAR::MAT::m_viscoanisotropic)||
+      (Material()->MaterialType() == INPAR::MAT::m_anisotropic_balzani))
   {
     string fiber = "Fiber1";
     names[fiber] = 3; // 3-dim vector
     fiber = "Fiber2";
     names[fiber] = 3; // 3-dim vector
   }
-  if (Material()->MaterialType() == INPAR::MAT::m_anisotropic_balzani){
-    string fiber = "Fiber1";
-    names[fiber] = 3; // 3-dim vector
-    fiber = "Fiber2";
-    names[fiber] = 3; // 3-dim vector
+  if (Material()->MaterialType() == INPAR::MAT::m_elasthyper)
+  {
+    MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(Material().get());
+    if (elahy->Anisotropic())
+    {
+      string fiber = "Fiber1";
+      names[fiber] = 3; // 3-dim vector
+      fiber = "Fiber2";
+      names[fiber] = 3; // 3-dim vector
+    }
   }
 
   return;
@@ -596,6 +603,26 @@ bool DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
       data[0] = balz->Geta2().at(0); data[1] = balz->Geta2().at(1); data[2] = balz->Geta2().at(2);
     } else {
       return false;
+    }
+  }
+  if (Material()->MaterialType() == INPAR::MAT::m_elasthyper)
+  {
+    MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(Material().get());
+    if (elahy->Anisotropic())
+    {
+      if (name == "Fiber1"){
+      if ((int)data.size()!=3) dserror("size mismatch");
+      data[0] = (elahy->Geta1())(0); 
+      data[1] = (elahy->Geta1())(1);
+      data[2] = (elahy->Geta1())(2);
+    } else if (name == "Fiber2"){
+      if ((int)data.size()!=3) dserror("size mismatch");
+      data[0] = (elahy->Geta2())(0); 
+      data[1] = (elahy->Geta2())(1);
+      data[2] = (elahy->Geta2())(2);
+    } else {
+      return false;
+    }
     }
   }
 

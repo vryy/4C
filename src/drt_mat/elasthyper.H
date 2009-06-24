@@ -185,6 +185,15 @@ namespace MAT
 
     void Setup();
     
+    /// return if anisotropic
+    bool Anisotropic() const { return anisotropic_;}
+    
+    /// return a1s
+    LINALG::Matrix<3,1> Geta1() const {return a1_;}
+
+    /// return a2s
+    LINALG::Matrix<3,1> Geta2() const {return a2_;}
+    
   private:
 
     /// calculate principal invariants
@@ -214,6 +223,9 @@ namespace MAT
     /// structural tensors in voigt notation for anisotropy
     LINALG::Matrix<6,1>  A1_;
     LINALG::Matrix<6,1>  A2_;
+    /// vectors of local coordinate system
+    LINALG::Matrix<3,1>  a1_;
+    LINALG::Matrix<3,1>  a2_;
     /// mixed structural tensor (asymmetric) \f$a1 \otimes a2\f$
     LINALG::Matrix<3,3>  A1A2_;
   };
