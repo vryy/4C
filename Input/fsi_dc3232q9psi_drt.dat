@@ -1,4 +1,11 @@
-==================================================================
+//
+// Maintainer: Tobias Wiesner
+//             wiesner@lnm.mw.tum.de
+//             http://www.lnm.mw.tum.de
+// 
+// necessary defines: D_FLUID2 CCADISCRET BINIO D_ALE D_WALL1
+// driven cavity FSI
+=================================================================
 General Data File CCARAT
 ==================================================================
 -------------------------------------------------------------TITLE
