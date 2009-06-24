@@ -30,6 +30,9 @@ std::string XFEM::PHYSICS::physVarToString(const XFEM::PHYSICS::Field var)
   case Temp:             text = "Temp "; break;
   case Pres:             text = "Pres "; break;
   case DiscPres:         text = "DiscPres "; break;
+  case HeatFlux_x:       text = "HeatFlux_x"; break;
+  case HeatFlux_y:       text = "HeatFlux_y"; break;
+  case HeatFlux_z:       text = "HeatFlux_z"; break;
   case LMPLambdax:       text = "LMPLambdax"; break;
   case LMPLambday:       text = "LMPLambday"; break;
   case LMPLambdaz:       text = "LMPLambdaz"; break;
@@ -42,6 +45,15 @@ std::string XFEM::PHYSICS::physVarToString(const XFEM::PHYSICS::Field var)
   case Tauzx:            text = "Tauzx"; break;
   case Tauzy:            text = "Tauzy"; break;
   case Tauzz:            text = "Tauzz"; break;
+  case Sigmaxx:          text = "Sigmaxx"; break;
+  case Sigmaxy:          text = "Sigmaxy"; break;
+  case Sigmaxz:          text = "Sigmaxz"; break;
+  case Sigmayx:          text = "Sigmayx"; break;
+  case Sigmayy:          text = "Sigmayy"; break;
+  case Sigmayz:          text = "Sigmayz"; break;
+  case Sigmazx:          text = "Sigmazx"; break;
+  case Sigmazy:          text = "Sigmazy"; break;
+  case Sigmazz:          text = "Tauzz"; break;
   default:
     std::cout << var << std::endl;
     dserror("no string defined for Field");
