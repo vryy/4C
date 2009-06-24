@@ -153,12 +153,12 @@ bool DRT::ELEMENTS::Fluid2::ReadElement()
     // set discretization mode for non-equal or equal order elements
     switch(distype)
     {
-    case quad4: case tri3: case nurbs4:
+    case quad4: case tri3: case tri6: case nurbs9: case nurbs4: case quad8:
     {
     	dismode_=dismod_equal;
     	break;
     }
-    case quad8: case quad9: case tri6: case nurbs9:
+    case quad9:
     {
     	dismode_ = dismod_nonequal;
     	break;

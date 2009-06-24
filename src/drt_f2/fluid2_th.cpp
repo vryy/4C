@@ -419,10 +419,10 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcImpulseEqnImplicit(Fluid2* ele,
 
 	// stabilization
 	ParameterList& stablist = params.sublist("STABILIZATION");
-	Fluid2::StabilisationAction pspg     = ele->ConvertStringToStabAction(stablist.get<string>("PSPG"));
-	Fluid2::StabilisationAction supg     = ele->ConvertStringToStabAction(stablist.get<string>("SUPG"));
+	//Fluid2::StabilisationAction pspg     = ele->ConvertStringToStabAction(stablist.get<string>("PSPG"));
+	//Fluid2::StabilisationAction supg     = ele->ConvertStringToStabAction(stablist.get<string>("SUPG"));
 	Fluid2::StabilisationAction vstab    = ele->ConvertStringToStabAction(stablist.get<string>("VSTAB"));
-	Fluid2::StabilisationAction cstab    = ele->ConvertStringToStabAction(stablist.get<string>("CSTAB"));
+	//Fluid2::StabilisationAction cstab    = ele->ConvertStringToStabAction(stablist.get<string>("CSTAB"));
 	Fluid2::StabilisationAction cross    = ele->ConvertStringToStabAction(stablist.get<string>("CROSS-STRESS"));
 	Fluid2::StabilisationAction reynolds = ele->ConvertStringToStabAction(stablist.get<string>("REYNOLDS-STRESS"));
 
@@ -456,7 +456,7 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcImpulseEqnImplicit(Fluid2* ele,
 	// --------------------------------------------------
 	// set parameters for classical turbulence models
 	// --------------------------------------------------
-	ParameterList& turbmodelparams = params.sublist("TURBULENCE MODEL");
+	//ParameterList& turbmodelparams = params.sublist("TURBULENCE MODEL");
 
 	// initialise the Smagorinsky constant Cs to zero
 	double Cs            = 0.0;
@@ -627,23 +627,23 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcImpulseEqnImplicit(Fluid2* ele,
 		  gradp_.Multiply(pderxy_, epren);
 
 		  // get pressure at integration point
-		  double press = pfunct_.Dot(epren);
+		  //double press = pfunct_.Dot(epren);
 
 		  //--------------------------------------------------------------
 		  // perform integration for entire matrix and rhs
 		  //--------------------------------------------------------------
 
 		  // stabilisation parameter
-		  const double tau_M  = tau_(0)*fac;
-		  const double tau_Mp = tau_(1)*fac;
-		  const double tau_C  = tau_(2)*fac;
+		  //const double tau_M  = tau_(0)*fac;
+		  //const double tau_Mp = tau_(1)*fac;
+		  //const double tau_C  = tau_(2)*fac;
 
 		  // integration factors and coefficients of single terms
-		  const double timetauM   = timefac * tau_M;
-		  const double timetauMp  = timefac * tau_Mp;
+		  //const double timetauM   = timefac * tau_M;
+		  //const double timetauMp  = timefac * tau_Mp;
 
-		  const double ttimetauM  = timefac * timetauM;
-		  const double ttimetauMp = timefac * timetauMp;
+		  //const double ttimetauM  = timefac * timetauM;
+		  //const double ttimetauMp = timefac * timetauMp;
 		  const double timefacfac = timefac * fac;
 
 		  // get (density-weighted) bodyforce in gausspoint
@@ -1009,10 +1009,10 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcImpulseEqnSemiImplicit(Fluid2* ele,
 	if(lomastr=="Yes") loma = true;
 
 	ParameterList& stablist = params.sublist("STABILIZATION");
-	Fluid2::StabilisationAction pspg     = ele->ConvertStringToStabAction(stablist.get<string>("PSPG"));
-	Fluid2::StabilisationAction supg     = ele->ConvertStringToStabAction(stablist.get<string>("SUPG"));
+	//Fluid2::StabilisationAction pspg     = ele->ConvertStringToStabAction(stablist.get<string>("PSPG"));
+	//Fluid2::StabilisationAction supg     = ele->ConvertStringToStabAction(stablist.get<string>("SUPG"));
 	Fluid2::StabilisationAction vstab    = ele->ConvertStringToStabAction(stablist.get<string>("VSTAB"));
-	Fluid2::StabilisationAction cstab    = ele->ConvertStringToStabAction(stablist.get<string>("CSTAB"));
+	//Fluid2::StabilisationAction cstab    = ele->ConvertStringToStabAction(stablist.get<string>("CSTAB"));
 	Fluid2::StabilisationAction cross    = ele->ConvertStringToStabAction(stablist.get<string>("CROSS-STRESS"));
 	Fluid2::StabilisationAction reynolds = ele->ConvertStringToStabAction(stablist.get<string>("REYNOLDS-STRESS"));
 
@@ -1046,7 +1046,7 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcImpulseEqnSemiImplicit(Fluid2* ele,
 	// --------------------------------------------------
 	// set parameters for classical turbulence models
 	// --------------------------------------------------
-	ParameterList& turbmodelparams = params.sublist("TURBULENCE MODEL");
+	//ParameterList& turbmodelparams = params.sublist("TURBULENCE MODEL");
 
 	// initialise the Smagorinsky constant Cs to zero
 	double Cs            = 0.0;
@@ -1221,23 +1221,23 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcImpulseEqnSemiImplicit(Fluid2* ele,
 		  gradp_.Multiply(pderxy_, epren);
 
 		  // get pressure at integration point
-		  double press = pfunct_.Dot(epren);
+		  //double press = pfunct_.Dot(epren);
 
 		  //--------------------------------------------------------------
 		  // perform integration for entire matrix and rhs
 		  //--------------------------------------------------------------
 
 		  // stabilisation parameter
-		  const double tau_M  = tau_(0)*fac;
-		  const double tau_Mp = tau_(1)*fac;
-		  const double tau_C  = tau_(2)*fac;
+		  //const double tau_M  = tau_(0)*fac;
+		  //const double tau_Mp = tau_(1)*fac;
+		  //const double tau_C  = tau_(2)*fac;
 
 		  // integration factors and coefficients of single terms
-		  const double timetauM   = timefac * tau_M;
-		  const double timetauMp  = timefac * tau_Mp;
+		  //const double timetauM   = timefac * tau_M;
+		  //const double timetauMp  = timefac * tau_Mp;
 
-		  const double ttimetauM  = timefac * timetauM;
-		  const double ttimetauMp = timefac * timetauMp;
+		  //const double ttimetauM  = timefac * timetauM;
+		  //const double ttimetauMp = timefac * timetauMp;
 		  const double timefacfac = timefac * fac;
 
 		  // get (density-weighted) bodyforce in gausspoint
@@ -1599,10 +1599,10 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcSysmatAndResidual(Fluid2* ele,
 	if(lomastr=="Yes") loma = true;
 
 	ParameterList& stablist = params.sublist("STABILIZATION");
-	Fluid2::StabilisationAction pspg     = ele->ConvertStringToStabAction(stablist.get<string>("PSPG"));
-	Fluid2::StabilisationAction supg     = ele->ConvertStringToStabAction(stablist.get<string>("SUPG"));
+	//Fluid2::StabilisationAction pspg     = ele->ConvertStringToStabAction(stablist.get<string>("PSPG"));
+	//Fluid2::StabilisationAction supg     = ele->ConvertStringToStabAction(stablist.get<string>("SUPG"));
 	Fluid2::StabilisationAction vstab    = ele->ConvertStringToStabAction(stablist.get<string>("VSTAB"));
-	Fluid2::StabilisationAction cstab    = ele->ConvertStringToStabAction(stablist.get<string>("CSTAB"));
+	//Fluid2::StabilisationAction cstab    = ele->ConvertStringToStabAction(stablist.get<string>("CSTAB"));
 	Fluid2::StabilisationAction cross    = ele->ConvertStringToStabAction(stablist.get<string>("CROSS-STRESS"));
 	Fluid2::StabilisationAction reynolds = ele->ConvertStringToStabAction(stablist.get<string>("REYNOLDS-STRESS"));
 
@@ -1637,7 +1637,7 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcSysmatAndResidual(Fluid2* ele,
 	// --------------------------------------------------
 	// set parameters for classical turbulence models
 	// --------------------------------------------------
-	ParameterList& turbmodelparams = params.sublist("TURBULENCE MODEL");
+	//ParameterList& turbmodelparams = params.sublist("TURBULENCE MODEL");
 
 	// initialise the Smagorinsky constant Cs to zero
 	double Cs            = 0.0;
@@ -1817,16 +1817,16 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcSysmatAndResidual(Fluid2* ele,
 		  //--------------------------------------------------------------
 
 		  // stabilisation parameter
-		  const double tau_M  = tau_(0)*fac;
-		  const double tau_Mp = tau_(1)*fac;
-		  const double tau_C  = tau_(2)*fac;
+		  //const double tau_M  = tau_(0)*fac;
+		  //const double tau_Mp = tau_(1)*fac;
+		  //const double tau_C  = tau_(2)*fac;
 
 		  // integration factors and coefficients of single terms
-		  const double timetauM   = timefac * tau_M;
-		  const double timetauMp  = timefac * tau_Mp;
+		  //const double timetauM   = timefac * tau_M;
+		  //const double timetauMp  = timefac * tau_Mp;
 
-		  const double ttimetauM  = timefac * timetauM;
-		  const double ttimetauMp = timefac * timetauMp;
+		  //const double ttimetauM  = timefac * timetauM;
+		  //const double ttimetauMp = timefac * timetauMp;
 		  const double timefacfac = timefac * fac;
 
 		  // get (density-weighted) bodyforce in gausspoint
@@ -2226,10 +2226,10 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcResidual(Fluid2* ele,
 	if(lomastr=="Yes") loma = true;
 
 	ParameterList& stablist = params.sublist("STABILIZATION");
-	Fluid2::StabilisationAction pspg     = ele->ConvertStringToStabAction(stablist.get<string>("PSPG"));
+	/*Fluid2::StabilisationAction pspg     = ele->ConvertStringToStabAction(stablist.get<string>("PSPG"));
 	Fluid2::StabilisationAction supg     = ele->ConvertStringToStabAction(stablist.get<string>("SUPG"));
 	Fluid2::StabilisationAction vstab    = ele->ConvertStringToStabAction(stablist.get<string>("VSTAB"));
-	Fluid2::StabilisationAction cstab    = ele->ConvertStringToStabAction(stablist.get<string>("CSTAB"));
+	Fluid2::StabilisationAction cstab    = ele->ConvertStringToStabAction(stablist.get<string>("CSTAB"));*/
 	Fluid2::StabilisationAction cross    = ele->ConvertStringToStabAction(stablist.get<string>("CROSS-STRESS"));
 	Fluid2::StabilisationAction reynolds = ele->ConvertStringToStabAction(stablist.get<string>("REYNOLDS-STRESS"));
 
@@ -2263,7 +2263,7 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcResidual(Fluid2* ele,
 	// --------------------------------------------------
 	// set parameters for classical turbulence models
 	// --------------------------------------------------
-	ParameterList& turbmodelparams = params.sublist("TURBULENCE MODEL");
+	//ParameterList& turbmodelparams = params.sublist("TURBULENCE MODEL");
 
 	// initialise the Smagorinsky constant Cs to zero
 	double Cs            = 0.0;
@@ -2432,16 +2432,16 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcResidual(Fluid2* ele,
 		  //--------------------------------------------------------------
 
 		  // stabilisation parameter
-		  const double tau_M  = tau_(0)*fac;
-		  const double tau_Mp = tau_(1)*fac;
-		  const double tau_C  = tau_(2)*fac;
+		  //const double tau_M  = tau_(0)*fac;
+		  //const double tau_Mp = tau_(1)*fac;
+		  //const double tau_C  = tau_(2)*fac;
 
 		  // integration factors and coefficients of single terms
-		  const double timetauM   = timefac * tau_M;
-		  const double timetauMp  = timefac * tau_Mp;
+		  //const double timetauM   = timefac * tau_M;
+		  //const double timetauMp  = timefac * tau_Mp;
 
-		  const double ttimetauM  = timefac * timetauM;
-		  const double ttimetauMp = timefac * timetauMp;
+		  //const double ttimetauM  = timefac * timetauM;
+		  //const double ttimetauMp = timefac * timetauMp;
 		  const double timefacfac = timefac * fac;
 
 		  // get (density-weighted) bodyforce in gausspoint
@@ -2580,7 +2580,7 @@ int DRT::ELEMENTS::Fluid2TH<distype>::CalcResidual(Fluid2* ele,
 			  }
 
 			  {		// this term only here and not in CalcIntUsfem
-				  const double timefacfac_mdiv = timefacfac * mdiv_;
+				  //const double timefacfac_mdiv = timefacfac * mdiv_;
 				  for (int vi=0; vi<iel; ++vi)
 				  {
 					  // continuity equation

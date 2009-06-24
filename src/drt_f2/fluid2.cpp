@@ -245,25 +245,11 @@ int DRT::ELEMENTS::Fluid2::NumDofPerNode(const DRT::Node& node) const
 	{
 	case tri3:
 	case quad4:
-		// equal order elements
-		return 3;
 	case tri6:
-		// non equal-order triangle element
-		if(node.Id() == (NodeIds())[eleNodeNumbering_tri6_lines[0][2]] ||
-				node.Id() == (NodeIds())[eleNodeNumbering_tri6_lines[1][2]] ||
-				node.Id() == (NodeIds())[eleNodeNumbering_tri6_lines[2][2]])
-			return 2;   // no "corner"-node, but edge-node
-
-		break;
 	case quad8:
-		// non equal-order quad elements
-		if(node.Id() == (NodeIds())[4] ||
-				node.Id() == (NodeIds())[5] ||
-				node.Id() == (NodeIds())[6] ||
-				node.Id() == (NodeIds())[7])
-			return 2; // no "corner"-node, but edge-node
+		return 3;	// standard
 		break;
-	case quad9:
+	case quad9:		// we suppose quad9 = Taylor Hood
 		if(node.Id() == (NodeIds())[4] ||
 				node.Id() == (NodeIds())[5] ||
 				node.Id() == (NodeIds())[6] ||
@@ -280,7 +266,6 @@ int DRT::ELEMENTS::Fluid2::NumDofPerNode(const DRT::Node& node) const
 	default:
 		dserror("Shape of Element not supported. (use tri or quad elements!)");
 	}
-	// default (2 velocity DOFs and 1 pressure DOF ("corner"-node))
 
 	return 3;
 }

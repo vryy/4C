@@ -395,9 +395,6 @@ private:
     smagorinsky_small
   };
 
-  //! discretization mode: equal-order element or Taylor-Hood element (nonequal)
-  DiscretizationMode dismode_;
-
   //! map that converts strings to actions (stabilisation)
   static map<string,StabilisationAction>          stabstrtoact_;
 
@@ -409,6 +406,9 @@ private:
 
   //! flag for euler/ale net algorithm
   bool                                            is_ale_;
+
+  //! discretization mode: equal-order element or Taylor-Hood element (nonequal)
+  DiscretizationMode dismode_;
 
   //! container containing all kind of fluid2 thisandthat
   DRT::Container                                  data_;
