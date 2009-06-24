@@ -597,9 +597,9 @@ private:
   static void Matrix2TensorToLeftRightProductMatrix6x6Voigt(
     LINALG::Matrix<NUMSTR_,NUMSTR_>& bm,  ///< (out) 6x6 Voigt matrix
     const LINALG::Matrix<NUMDIM_,NUMDIM_>& bt,  ///< (in) 3x3 matrix of 2-tensor
-    const bool transpose = false, ///< 3x3 input matrix is transposed
-    const VoigtType outvoigt6 = voigt6_strain,  ///< 6-Voigt vector layout on rows of 6x6 matrix
-    const VoigtType invoigt6 = voigt6_strain  ///< 6-Voigt vector layout on columns of 6x6 matrix
+    const bool transpose, ///< 3x3 input matrix is transposed
+    const VoigtType rowvoigt6,  ///< 6-Voigt vector layout on rows of 6x6 matrix
+    const VoigtType colvoigt6  ///< 6-Voigt vector layout on columns of 6x6 matrix
     );
 
   //@}

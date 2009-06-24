@@ -188,15 +188,18 @@ public:
   //! definition of shell-thickness direction
   enum ThicknessDirection
   {
-    globx,    // global x
-    globy,    // global y
-    globz,    // global z
-    autoj,    // find automatically by Jacobian
-    autor,    // automatically set to x
-    autos,    // automatically set to y
-    autot,    // automatically set to z
-    undefined,// no clear direction identified
-    none      // no rearrangement
+    globx,    ///< global x
+    globy,    ///< global y
+    globz,    ///< global z   
+    autoj,    ///< find automatically by Jacobian
+    autor,    ///< automatically set to x
+    autos,    ///< automatically set to y
+    autot,    ///< automatically set to z
+    enfor,    ///< read-in r-direction is rearranged to t-dir
+    enfos,    ///< read-in s-direction is rearranged to t-dir
+    enfot,    ///< read-in t-direction stays t-dir
+    undefined,///< no clear direction identified
+    none      ///< no rearrangement
   };
 
 private:
@@ -253,6 +256,11 @@ protected:
 
   //! Find "thin"=thickness direction
   ThicknessDirection sosh8_findthickdir();
+
+  //! Find parametric co-ordinate which directs in enforced thickness direction
+  ThicknessDirection sosh8_enfthickdir(
+    LINALG::Matrix<NUMDIM_SOH8,1>& glothickdir  ///< global direction of enforced thickness direction
+    );
 
   //! return thickness direction
   const vector<double> GetThickvec(){return thickvec_;};

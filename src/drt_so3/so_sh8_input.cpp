@@ -140,6 +140,12 @@ bool DRT::ELEMENTS::So_sh8::ReadElement()
    else if (strncmp(buffer,"zdir",4)==0)    thickdir_ = globz;
    // find automatically through Jacobian of Xrefe
    else if (strncmp(buffer,"auto",4)==0)    thickdir_ = autoj;
+   // local r
+   else if (strncmp(buffer,"rdir",4)==0)    thickdir_ = enfor;
+   // local s
+   else if (strncmp(buffer,"sdir",4)==0)    thickdir_ = enfos;
+   // local t
+   else if (strncmp(buffer,"tdir",4)==0)    thickdir_ = enfot;
    // no noderearrangement
    else if (strncmp(buffer,"none",4)==0){
      thickdir_ = none;

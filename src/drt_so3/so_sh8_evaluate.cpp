@@ -571,21 +571,21 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
         // B_loc_tt = interpolation along (r x s) of ANS B_loc_tt
         //          = (1-r)(1-s)/4 * B_ans(SP E) + (1+r)(1-s)/4 * B_ans(SP F)
         //           +(1+r)(1+s)/4 * B_ans(SP G) + (1-r)(1+s)/4 * B_ans(SP H)
-        bop_loc(2,inode*3+dim) = 0.25*(1-r[gp])*(1-s[gp]) * B_ans_loc(0+4*num_ans,inode*3+dim)
-                                +0.25*(1+r[gp])*(1-s[gp]) * B_ans_loc(0+5*num_ans,inode*3+dim)
-                                +0.25*(1+r[gp])*(1+s[gp]) * B_ans_loc(0+6*num_ans,inode*3+dim)
-                                +0.25*(1-r[gp])*(1+s[gp]) * B_ans_loc(0+7*num_ans,inode*3+dim);
+        bop_loc(2,inode*3+dim) = 0.25*(1-r[gp])*(1-s[gp]) * B_ans_loc(0+4*num_ans,inode*3+dim)  // E
+                                +0.25*(1+r[gp])*(1-s[gp]) * B_ans_loc(0+5*num_ans,inode*3+dim)  // F
+                                +0.25*(1+r[gp])*(1+s[gp]) * B_ans_loc(0+6*num_ans,inode*3+dim)  // G
+                                +0.25*(1-r[gp])*(1+s[gp]) * B_ans_loc(0+7*num_ans,inode*3+dim);  // H
         // B_loc_rs = N_r.X_s + N_s.X_r
         bop_loc(3,inode*3+dim) = derivs[gp](0,inode) * jac_cur(1,dim)
                                 +derivs[gp](1,inode) * jac_cur(0,dim);
         // B_loc_st = interpolation along r of ANS B_loc_st
         //          = (1+r)/2 * B_ans(SP B) + (1-r)/2 * B_ans(SP D)
-        bop_loc(4,inode*3+dim) = 0.5*(1.0+r[gp]) * B_ans_loc(1+1*num_ans,inode*3+dim)
-                                +0.5*(1.0-r[gp]) * B_ans_loc(1+3*num_ans,inode*3+dim);
+        bop_loc(4,inode*3+dim) = 0.5*(1.0+r[gp]) * B_ans_loc(1+1*num_ans,inode*3+dim)  // B
+                                +0.5*(1.0-r[gp]) * B_ans_loc(1+3*num_ans,inode*3+dim);  // D
         // B_loc_rt = interpolation along s of ANS B_loc_rt
         //          = (1-s)/2 * B_ans(SP A) + (1+s)/2 * B_ans(SP C)
-        bop_loc(5,inode*3+dim) = 0.5*(1.0-s[gp]) * B_ans_loc(2+0*num_ans,inode*3+dim)
-                                +0.5*(1.0+s[gp]) * B_ans_loc(2+2*num_ans,inode*3+dim);
+        bop_loc(5,inode*3+dim) = 0.5*(1.0-s[gp]) * B_ans_loc(2+0*num_ans,inode*3+dim)  // A
+                                +0.5*(1.0+s[gp]) * B_ans_loc(2+2*num_ans,inode*3+dim);  // C
       }
     }
 
@@ -614,10 +614,11 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
        -(jac(0,0)*jac(1,0)         + jac(0,1)*jac(1,1)         + jac(0,2)*jac(1,2)));
 
     // ANS modification of strains ************************************** ANS
-    double dydt_A = 0.0; double dYdt_A = 0.0;
-    double dxdt_B = 0.0; double dXdt_B = 0.0;
-    double dydt_C = 0.0; double dYdt_C = 0.0;
-    double dxdt_D = 0.0; double dXdt_D = 0.0;
+    double dxdt_A = 0.0; double dXdt_A = 0.0;
+    double dydt_B = 0.0; double dYdt_B = 0.0;
+    double dxdt_C = 0.0; double dXdt_C = 0.0;
+    double dydt_D = 0.0; double dYdt_D = 0.0;
+
     double dzdt_E = 0.0; double dZdt_E = 0.0;
     double dzdt_F = 0.0; double dZdt_F = 0.0;
     double dzdt_G = 0.0; double dZdt_G = 0.0;
@@ -625,14 +626,14 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
 
     // vector product of rows of jacobians at corresponding sampling point    cout << jac_cur_sps;
     for (int dim = 0; dim < NUMDIM_SOH8; ++dim) {
-      dydt_A += jac_cur_sps[0](0,dim) * jac_cur_sps[0](2,dim);
-      dYdt_A += jac_sps[0](0,dim)     * jac_sps[0](2,dim);
-      dxdt_B += jac_cur_sps[1](1,dim) * jac_cur_sps[1](2,dim);
-      dXdt_B += jac_sps[1](1,dim)     * jac_sps[1](2,dim);
-      dydt_C += jac_cur_sps[2](0,dim) * jac_cur_sps[2](2,dim);
-      dYdt_C += jac_sps[2](0,dim)     * jac_sps[2](2,dim);
-      dxdt_D += jac_cur_sps[3](1,dim) * jac_cur_sps[3](2,dim);
-      dXdt_D += jac_sps[3](1,dim)     * jac_sps[3](2,dim);
+      dxdt_A += jac_cur_sps[0](0,dim) * jac_cur_sps[0](2,dim);  // g_13^A
+      dXdt_A += jac_sps[0](0,dim)     * jac_sps[0](2,dim);      // G_13^A
+      dydt_B += jac_cur_sps[1](1,dim) * jac_cur_sps[1](2,dim);  // g_23^B
+      dYdt_B += jac_sps[1](1,dim)     * jac_sps[1](2,dim);      // G_23^B
+      dxdt_C += jac_cur_sps[2](0,dim) * jac_cur_sps[2](2,dim);  // g_13^C
+      dXdt_C += jac_sps[2](0,dim)     * jac_sps[2](2,dim);      // G_13^C
+      dydt_D += jac_cur_sps[3](1,dim) * jac_cur_sps[3](2,dim);  // g_23^D
+      dYdt_D += jac_sps[3](1,dim)     * jac_sps[3](2,dim);      // G_23^D
 
       dzdt_E += jac_cur_sps[4](2,dim) * jac_cur_sps[4](2,dim);
       dZdt_E += jac_sps[4](2,dim)     * jac_sps[4](2,dim);
@@ -652,10 +653,10 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
       +0.25*(1-r[gp])*(1+s[gp]) * (dzdt_H - dZdt_H));
     // E23: remedy of transverse shear locking
     // Est = (1+r)/2 * Est(SP B) + (1-r)/2 * Est(SP D)
-    lstrain(4) = 0.5*(1+r[gp]) * (dxdt_B - dXdt_B) + 0.5*(1-r[gp]) * (dxdt_D - dXdt_D);
+    lstrain(4) = 0.5*(1+r[gp]) * (dydt_B - dYdt_B) + 0.5*(1-r[gp]) * (dydt_D - dYdt_D);
     // E13: remedy of transverse shear locking
     // Ert = (1-s)/2 * Ert(SP A) + (1+s)/2 * Ert(SP C)
-    lstrain(5) = 0.5*(1-s[gp]) * (dydt_A - dYdt_A) + 0.5*(1+s[gp]) * (dydt_C - dYdt_C);
+    lstrain(5) = 0.5*(1-s[gp]) * (dxdt_A - dXdt_A) + 0.5*(1+s[gp]) * (dxdt_C - dXdt_C);
     // ANS modification of strains ************************************** ANS
 
     // transformation of local glstrains 'back' to global(material) space
@@ -741,7 +742,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
       dserror("requested stress option not available");
     }
 
-    double detJ_w = detJ*gpweights[gp];
+    const double detJ_w = detJ*gpweights[gp];
     if (force != NULL && stiffmatrix != NULL) {
       // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
       force->MultiplyTN(detJ_w, bop, stress, 1.0);
@@ -780,7 +781,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
           G_ij_glob.Multiply(TinvT, G_ij);
 
           // Scalar Gij results from product of G_ij with stress, scaled with detJ*weights
-          double Gij = detJ_w * stress.Dot(G_ij_glob);
+          const double Gij = detJ_w * stress.Dot(G_ij_glob);
 
           // add "geometric part" Gij times detJ*weights to stiffness matrix
           (*stiffmatrix)(NUMDIM_SOH8*inod+0, NUMDIM_SOH8*jnod+0) += Gij;
@@ -894,6 +895,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_anssetup(
   /*====================================================================*/
     // (r,s,t) gp-locations of sampling points A,B,C,D,E,F,G,H
     // numsp = 8 here set explicitly to allow direct initializing
+    //                A,   B,   C,   D,   E,   F,   G,   H
     double r[8] = { 0.0, 1.0, 0.0,-1.0,-1.0, 1.0, 1.0,-1.0};
     double s[8] = {-1.0, 0.0, 1.0, 0.0,-1.0,-1.0, 1.0, 1.0};
     double t[8] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
@@ -937,7 +939,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_anssetup(
   }
 
   for (int sp=0; sp<num_sp; ++sp){
-    // compute Jacobian matrix at all sampling points
+    // compute (REFERENCE) Jacobian matrix at all sampling points
     jac_sps[sp].Multiply(df_sp[sp],xrefe);
     // compute CURRENT Jacobian matrix at all sampling points
     jac_cur_sps[sp].Multiply(df_sp[sp],xcurr);
@@ -1151,16 +1153,56 @@ int DRT::ELEMENTS::Sosh8Register::Initialize(DRT::Discretization& dis)
     if (!actele) dserror("cast to So_sh8* failed");
 
     if (!actele->nodes_rearranged_) {
+      bool altered = true;
+      switch (actele->thickdir_) {
       // check for automatic definition of thickness direction
-      if (actele->thickdir_ == DRT::ELEMENTS::So_sh8::autoj) {
+      case DRT::ELEMENTS::So_sh8::autoj: {
         actele->thickdir_ = actele->sosh8_findthickdir();
+        break;
+      }
+      // check for enforced definition of thickness direction
+      case DRT::ELEMENTS::So_sh8::globx: {
+        LINALG::Matrix<NUMDIM_SOH8,1> thickdirglo(true);
+        thickdirglo(0) = 1.0;
+        actele->thickdir_ = actele->sosh8_enfthickdir(thickdirglo);
+        break;
+      }
+      case DRT::ELEMENTS::So_sh8::globy: {
+        LINALG::Matrix<NUMDIM_SOH8,1> thickdirglo(true);
+        thickdirglo(1) = 1.0;
+        actele->thickdir_ = actele->sosh8_enfthickdir(thickdirglo);
+        break;
+      }
+      case DRT::ELEMENTS::So_sh8::globz: {
+        LINALG::Matrix<NUMDIM_SOH8,1> thickdirglo(true);
+        thickdirglo(2) = 1.0;
+        actele->thickdir_ = actele->sosh8_enfthickdir(thickdirglo);
+        break;
+      }
+      default:
+        altered = false;
+        break;
+      }
+
+      if (altered) {
+        // special element-dependent input of material parameters
+        if (actele->Material()->MaterialType() == INPAR::MAT::m_viscoanisotropic) {
+          MAT::ViscoAnisotropic* visco = static_cast<MAT::ViscoAnisotropic*>(actele->Material().get());
+          visco->Setup(NUMGPT_SOH8,actele->thickvec_);
+        }
       }
 
       int new_nodeids[NUMNOD_SOH8];
 
       switch (actele->thickdir_) {
+      case DRT::ELEMENTS::So_sh8::globx: 
+      case DRT::ELEMENTS::So_sh8::globy: 
+      case DRT::ELEMENTS::So_sh8::globz: {
+        dserror("This should have been replaced by auto(r|s|t)");
+        break;
+      }
       case DRT::ELEMENTS::So_sh8::autor:
-      case DRT::ELEMENTS::So_sh8::globx: {
+      case DRT::ELEMENTS::So_sh8::enfor: {
         // resorting of nodes to arrive at local t-dir for global x-dir
         new_nodeids[0] = actele->NodeIds()[7];
         new_nodeids[1] = actele->NodeIds()[4];
@@ -1177,7 +1219,7 @@ int DRT::ELEMENTS::Sosh8Register::Initialize(DRT::Discretization& dis)
         break;
       }
       case DRT::ELEMENTS::So_sh8::autos:
-      case DRT::ELEMENTS::So_sh8::globy: {
+      case DRT::ELEMENTS::So_sh8::enfos: {
         // resorting of nodes to arrive at local t-dir for global y-dir
         new_nodeids[0] = actele->NodeIds()[4];
         new_nodeids[1] = actele->NodeIds()[5];
@@ -1192,7 +1234,7 @@ int DRT::ELEMENTS::Sosh8Register::Initialize(DRT::Discretization& dis)
         break;
       }
       case DRT::ELEMENTS::So_sh8::autot:
-      case DRT::ELEMENTS::So_sh8::globz: {
+      case DRT::ELEMENTS::So_sh8::enfot: {
         // no resorting necessary
         for (int node = 0; node < 8; ++node) {
           new_nodeids[node] = actele->NodeIds()[node];

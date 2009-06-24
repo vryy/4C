@@ -38,14 +38,15 @@ using namespace LINALG; // our linear algebra
 DRT::ELEMENTS::So_sh8::ThicknessDirection DRT::ELEMENTS::So_sh8::sosh8_findthickdir()
 {
   // update element geometry
-  Epetra_SerialDenseMatrix xrefe(NUMNOD_SOH8,NUMDIM_SOH8); // material coord. of element
+  LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe(false); // material coord. of element
   for (int i=0; i<NUMNOD_SOH8; ++i) {
-    xrefe(i, 0) = this->Nodes()[i]->X()[0];
-    xrefe(i, 1) = this->Nodes()[i]->X()[1];
-    xrefe(i, 2) = this->Nodes()[i]->X()[2];
+    xrefe(i,0) = this->Nodes()[i]->X()[0];
+    xrefe(i,1) = this->Nodes()[i]->X()[1];
+    xrefe(i,2) = this->Nodes()[i]->X()[2];
   }
-  // vector of df(origin)
-  double df0_vector[NUMDOF_SOH8*NUMNOD_SOH8] =
+  // vector of df(origin), ie parametric derivatives of shape functions
+  // evaluated at the origin (r,s,t)=(0,0,0)
+  const double df0_vector[NUMDOF_SOH8*NUMNOD_SOH8] =
                {-0.125,-0.125,-0.125,
                 +0.125,-0.125,-0.125,
                 +0.125,+0.125,-0.125,
@@ -55,29 +56,27 @@ DRT::ELEMENTS::So_sh8::ThicknessDirection DRT::ELEMENTS::So_sh8::sosh8_findthick
                 +0.125,+0.125,+0.125,
                 -0.125,+0.125,+0.125};
   // shape function derivatives, evaluated at origin (r=s=t=0.0)
-  Epetra_DataAccess CV = Copy;
-  Epetra_SerialDenseMatrix df0(CV, df0_vector, NUMDIM_SOH8, NUMDIM_SOH8,
-  NUMNOD_SOH8);
+  LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> df0(df0_vector);
 
   // compute Jacobian, evaluated at element origin (r=s=t=0.0)
-  Epetra_SerialDenseMatrix jac0(NUMDIM_SOH8,NUMDIM_SOH8);
-  jac0.Multiply('N', 'N', 1.0, df0, xrefe, 0.0);
+  // (J0_i^A) = (X^A_{,i})^T
+  LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> jac0;
+  jac0.MultiplyNN(df0,xrefe);
   // compute inverse of Jacobian at element origin
-  Epetra_SerialDenseSolver solve_for_inverseJ0;
-  Epetra_SerialDenseMatrix iJ0(jac0);
-  solve_for_inverseJ0.SetMatrix(iJ0);
-  int err = solve_for_inverseJ0.Invert();
-  if (err != 0) dserror("Inversion of Jacobian0 failed");
+  // (Jinv0_A^i) = (X^A_{,i})^{-T}
+  LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> iJ0(jac0);
+  iJ0.Invert();
 
   // separate "stretch"-part of J-mapping between parameter and global space
-  Epetra_SerialDenseMatrix jac0stretch(3,3);
-  jac0stretch.Multiply('T','N',1.0,iJ0,iJ0,0.0); // jac0stretch = J^{-T}J
-  double r_stretch = sqrt(jac0stretch(0,0));
-  double s_stretch = sqrt(jac0stretch(1,1));
-  double t_stretch = sqrt(jac0stretch(2,2));
+  // (G0^ji) = (Jinv0^j_B) (krondelta^BA) (Jinv0_A^i)
+  LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> jac0stretch;
+  jac0stretch.MultiplyTN(iJ0,iJ0);
+  const double r_stretch = sqrt(jac0stretch(0,0));
+  const double s_stretch = sqrt(jac0stretch(1,1));
+  const double t_stretch = sqrt(jac0stretch(2,2));
 
   // minimal stretch equivalents with "thinnest" direction
-  double max_stretch = max(r_stretch, max(s_stretch, t_stretch));
+  const double max_stretch = max(r_stretch, max(s_stretch, t_stretch));
 
   ThicknessDirection thickdir = none; // of actual element
   int thick_index = -1;
@@ -117,26 +116,130 @@ DRT::ELEMENTS::So_sh8::ThicknessDirection DRT::ELEMENTS::So_sh8::sosh8_findthick
     dserror("Trouble with thick_index=%g", thick_index);
 
   // thickness-vector in parameter-space, has 1.0 in thickness-coord
-  Epetra_SerialDenseVector loc_thickvec(3);
-  Epetra_SerialDenseVector glo_thickvec(3);
+  LINALG::Matrix<NUMDIM_SOH8,1> loc_thickvec(true);
   loc_thickvec(thick_index) = 1.0;
   // thickness-vector in global coord is J times local thickness-vector
-  glo_thickvec.Multiply('T','N',1.0,jac0,loc_thickvec,0.0);
+  // (X^A) = (J0_i^A)^T . (xi_i)
+  LINALG::Matrix<NUMDIM_SOH8,1> glo_thickvec;
+  glo_thickvec.MultiplyTN(jac0,loc_thickvec);
   // return doubles of thickness-vector
   thickvec_.resize(3);
   thickvec_[0] = glo_thickvec(0); thickvec_[1] = glo_thickvec(1); thickvec_[2] = glo_thickvec(2);
-
-  // special element-dependent input of material parameters
-  if (Material()->MaterialType() ==  INPAR::MAT::m_viscoanisotropic){
-    MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(Material().get());
-    visco->Setup(NUMGPT_SOH8,thickvec_);
-  }
 
   return thickdir;
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+DRT::ELEMENTS::So_sh8::ThicknessDirection DRT::ELEMENTS::So_sh8::sosh8_enfthickdir(
+  LINALG::Matrix<NUMDIM_SOH8,1>& thickdirglo
+  )
+{
+  // update element geometry
+  LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe(false); // material coord. of element
+  for (int i=0; i<NUMNOD_SOH8; ++i) {
+    xrefe(i,0) = this->Nodes()[i]->X()[0];
+    xrefe(i,1) = this->Nodes()[i]->X()[1];
+    xrefe(i,2) = this->Nodes()[i]->X()[2];
+  }
+  // vector of df(origin), ie parametric derivatives of shape functions
+  // evaluated at the origin (r,s,t)=(0,0,0)
+  const double df0_vector[NUMDOF_SOH8*NUMNOD_SOH8] =
+               {-0.125,-0.125,-0.125,
+                +0.125,-0.125,-0.125,
+                +0.125,+0.125,-0.125,
+                -0.125,+0.125,-0.125,
+                -0.125,-0.125,+0.125,
+                +0.125,-0.125,+0.125,
+                +0.125,+0.125,+0.125,
+                -0.125,+0.125,+0.125};
+  // shape function derivatives, evaluated at origin (r=s=t=0.0)
+  LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> df0(df0_vector);
 
+  // compute Jacobian, evaluated at element origin (r=s=t=0.0)
+  // (J0_i^A) = (X^A_{,i})^T
+  LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> jac0(false);
+  jac0.MultiplyNN(df0,xrefe);
+
+  // compute inverse of Jacobian at element origin
+  // (Jinv0_A^i) = (X^A_{,i})^{-T}
+  LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> iJ0(jac0);
+  iJ0.Invert();
+
+  // make enforced global thickness direction a unit vector
+  const double thickdirglolength = thickdirglo.Norm2();
+  thickdirglo.Scale(1.0/thickdirglolength);
+
+  // pull thickness direction from global to contra-variant local
+  // (dxi^i) = (Jinv0_A^i)^T . (dX^A)
+  LINALG::Matrix<NUMDIM_SOH8,1> thickdirlocsharp(false);
+  thickdirlocsharp.MultiplyTN(iJ0,thickdirglo);
+
+#if 0
+  // metric tensor
+  // (G0_ji) = (J0_j^B) (delta_BA) (J0^A_i)
+  LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> metrflat(false);
+  metrflat.MultiplyNT(jac0,jac0);
+
+  // co-variant local enforced thickness direction
+  // (dxi_j) = (G0_ji) (dxi^i)
+  LINALG::Matrix<NUMDIM_SOH8,1> thickdirlocflat(false);
+  thickdirlocflat.MultiplyNN(metrflat,thickdirlocsharp);
+
+  // thickdirloclength
+  const double thickdirloclength = thickdirlocsharp.Dot(thickdirlocflat);
+
+  // check if transformation was successful
+  if (fabs(thickdirglolength-thickdirloclength)>EPS6)
+    dserror("Transformation erroneous: Vector length is not in-variant: %g!=%g",
+            thickdirglolength, thickdirloclength);
+#endif
+
+  // identify parametric co-ordinate closest to enforced thickness direction
+  int thick_index = -1;
+  double thickdirlocmax = 0.0;
+  for (int i=0; i<NUMDIM_SOH8; ++i) {
+    if (fabs(thickdirlocsharp(i)) > thickdirlocmax) {
+      thickdirlocmax = fabs(thickdirlocsharp(i));
+      thick_index = i;
+    }
+  }
+  const double tol = 0.9;  // should be larger than 1/sqrt(2)=0.707
+  // check if parametric co-ordinate is clear
+  if (thickdirlocmax < tol*thickdirlocsharp.Norm2())
+    dserror("could not clearly identify a parametric direction pointing along enforced thickness direction");
+
+  ThicknessDirection thickdir = none; // of actual element
+  if (thick_index == 0) {
+    thickdir = autor;
+  }
+  else if (thick_index == 1) {
+    thickdir = autos;
+  }
+  else if (thick_index == 2) {
+    thickdir = autot;
+  }
+  else {
+    dserror("Trouble with thick_index=%g", thick_index); 
+  }
+
+  // thickness-vector in parameter-space, has 1.0 in thickness-coord
+  LINALG::Matrix<NUMDIM_SOH8,1> loc_thickvec(true);
+  loc_thickvec(thick_index) = 1.0;
+  // thickness-vector in global coord is J times local thickness-vector
+  // (X^A) = (J0_i^A)^T . (xi_i)
+  LINALG::Matrix<NUMDIM_SOH8,1> glo_thickvec;
+  glo_thickvec.MultiplyTN(jac0,loc_thickvec);
+  // return doubles of thickness-vector
+  thickvec_.resize(3);
+  thickvec_[0] = glo_thickvec(0); thickvec_[1] = glo_thickvec(1); thickvec_[2] = glo_thickvec(2);
+
+  return thickdir;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_sh8::sosh8_gmshplotlabeledelement(const int LabelIds[NUMNOD_SOH8])
 {
   stringstream filename;

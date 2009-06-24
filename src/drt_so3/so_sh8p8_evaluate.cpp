@@ -1448,10 +1448,10 @@ void DRT::ELEMENTS::So_sh8p8::Stress(
   case INPAR::STR::stress_cauchy:  // true/Cauchy stress
     {
       if (elestress == NULL) dserror("stress data not available");
-      // pull back
+      // push forward
       LINALG::Matrix<NUMSTR_,NUMSTR_> defgraddefgradT;
       Matrix2TensorToLeftRightProductMatrix6x6Voigt(defgraddefgradT,defgrd,
-                                                    true,voigt6_stress,voigt6_stress);
+                                                    true,voigt6_stress,voigt6_strain);
       // (deviatoric) Cauchy stress vector
       LINALG::Matrix<NUMSTR_,1> cauchyv;
       cauchyv.MultiplyNN(1.0/detdefgrd,defgraddefgradT,stress);
@@ -1515,7 +1515,7 @@ void DRT::ELEMENTS::So_sh8p8::Strain(
       // create push forward 6x6 matrix
       LINALG::Matrix<NUMSTR_,NUMSTR_> invdefgradTdefgrad;
       Matrix2TensorToLeftRightProductMatrix6x6Voigt(invdefgradTdefgrad,invdefgrd,
-                                                    false,voigt6_strain,voigt6_strain);
+                                                    false,voigt6_strain,voigt6_stress);
       // push forward
       LINALG::Matrix<NUMSTR_,1> eastrain;
       eastrain.MultiplyNN(invdefgradTdefgrad,glstrain);
@@ -1822,16 +1822,56 @@ int DRT::ELEMENTS::Sosh8p8Register::Initialize(DRT::Discretization& dis)
     if (!actele) dserror("cast to So_sh8p8* failed");
 
     if (!actele->nodes_rearranged_) {
+      bool altered = true;
+      switch (actele->thickdir_) {
       // check for automatic definition of thickness direction
-      if (actele->thickdir_ == DRT::ELEMENTS::So_sh8p8::autoj) {
+      case DRT::ELEMENTS::So_sh8::autoj: {
         actele->thickdir_ = actele->sosh8_findthickdir();
+        break;
+      }
+      // check for enforced definition of thickness direction
+      case DRT::ELEMENTS::So_sh8::globx: {
+        LINALG::Matrix<NUMDIM_SOH8,1> thickdirglo(true);
+        thickdirglo(0) = 1.0;
+        actele->thickdir_ = actele->sosh8_enfthickdir(thickdirglo);
+        break;
+      }
+      case DRT::ELEMENTS::So_sh8::globy: {
+        LINALG::Matrix<NUMDIM_SOH8,1> thickdirglo(true);
+        thickdirglo(1) = 1.0;
+        actele->thickdir_ = actele->sosh8_enfthickdir(thickdirglo);
+        break;
+      }
+      case DRT::ELEMENTS::So_sh8::globz: {
+        LINALG::Matrix<NUMDIM_SOH8,1> thickdirglo(true);
+        thickdirglo(2) = 1.0;
+        actele->thickdir_ = actele->sosh8_enfthickdir(thickdirglo);
+        break;
+      }
+      default:
+        altered = false;
+        break;
+      }
+
+      if (altered) {
+        // special element-dependent input of material parameters
+        if (actele->Material()->MaterialType() == INPAR::MAT::m_viscoanisotropic) {
+          MAT::ViscoAnisotropic* visco = static_cast<MAT::ViscoAnisotropic*>(actele->Material().get());
+          visco->Setup(NUMGPT_SOH8,actele->thickvec_);
+        }
       }
 
       int new_nodeids[DRT::ELEMENTS::So_sh8p8::NUMNOD_];
 
       switch (actele->thickdir_) {
+      case DRT::ELEMENTS::So_sh8::globx: 
+      case DRT::ELEMENTS::So_sh8::globy: 
+      case DRT::ELEMENTS::So_sh8::globz: {
+        dserror("This should have been replaced by auto(r|s|t)");
+        break;
+      }
       case DRT::ELEMENTS::So_sh8::autor:
-      case DRT::ELEMENTS::So_sh8::globx: {
+      case DRT::ELEMENTS::So_sh8::enfor: {
         // resorting of nodes to arrive at local t-dir for global x-dir
         new_nodeids[0] = actele->NodeIds()[7];
         new_nodeids[1] = actele->NodeIds()[4];
@@ -1847,8 +1887,8 @@ int DRT::ELEMENTS::Sosh8p8Register::Initialize(DRT::Discretization& dis)
         actele->nodes_rearranged_ = true;
         break;
       }
-      case DRT::ELEMENTS::So_sh8::autos: 
-      case DRT::ELEMENTS::So_sh8::globy: {
+      case DRT::ELEMENTS::So_sh8::autos:
+      case DRT::ELEMENTS::So_sh8::enfos: {
         // resorting of nodes to arrive at local t-dir for global y-dir
         new_nodeids[0] = actele->NodeIds()[4];
         new_nodeids[1] = actele->NodeIds()[5];
@@ -1863,7 +1903,7 @@ int DRT::ELEMENTS::Sosh8p8Register::Initialize(DRT::Discretization& dis)
         break;
       }
       case DRT::ELEMENTS::So_sh8::autot:
-      case DRT::ELEMENTS::So_sh8::globz: {
+      case DRT::ELEMENTS::So_sh8::enfot: {
         // no resorting necessary
         for (int node = 0; node < 8; ++node) {
           new_nodeids[node] = actele->NodeIds()[node];

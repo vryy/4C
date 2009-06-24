@@ -636,8 +636,8 @@ void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToLeftRightProductMatrix6x6Voigt(
   LINALG::Matrix<NUMSTR_,NUMSTR_>& bm,  ///< (out) 6x6 Voigt matrix
   const LINALG::Matrix<NUMDIM_,NUMDIM_>& bt,  ///< (in) 3x3 matrix of 2-tensor
   const bool transpose, ///< 3x3 input matrix is transposed
-  const VoigtType outvoigt6,  ///< 6-Voigt vector layout on rows of 6x6 matrix
-  const VoigtType invoigt6  ///< 6-Voigt vector layout on columns of 6x6 matrix
+  const VoigtType rowvoigt6,  ///< 6-Voigt vector layout on rows of 6x6 matrix
+  const VoigtType colvoigt6  ///< 6-Voigt vector layout on columns of 6x6 matrix
   )
 {
   for (int ab=0; ab<NUMSTR_; ++ab)
@@ -658,10 +658,10 @@ void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToLeftRightProductMatrix6x6Voigt(
         bm(AB,ab) = bt(a,A)*bt(b,B);
         if (ab >= NUMSTR_) bm(AB,ab) += bt(b,A)*bt(a,B);
       }
-      if ( (invoigt6 == voigt6_stress) and (ab >= NUMSTR_) )
-        bm(AB,ab) *= 2.0;
-      if ( (outvoigt6 == voigt6_stress) and (AB >= NUMSTR_) )
+      if ( (colvoigt6 == voigt6_stress) and (ab >= NUMSTR_) )
         bm(AB,ab) *= 0.5;
+      if ( (rowvoigt6 == voigt6_strain) and (AB >= NUMSTR_) )
+        bm(AB,ab) *= 2.0;
     }
   }
 
