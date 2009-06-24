@@ -366,6 +366,8 @@ protected:
   
   //! do we move the fluid mesh and calculate the fluid on this moving mesh?
   const bool                          alefluid_;
+  
+  bool                                diffusion_problem_;
   //@}
 
   //! @name time stepping variables
@@ -472,6 +474,13 @@ protected:
     //@}
 
   } state_;
+  
+  /// this struct holds information about degrees of freedom for the problem
+  struct PhysProb
+  {
+    std::set<XFEM::PHYSICS::Field> fieldset_; ///< which physical fields are used in this problem
+    RCP<XFEM::ElementAnsatz> elementAnsatzp_; ///< element dofs for this problem
+  } physprob_;
 
   /// histvector --- a linear combination of velnm, veln (BDF)
   ///                or veln, accn (One-Step-Theta)

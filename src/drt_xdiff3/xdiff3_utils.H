@@ -1,5 +1,5 @@
 /*!
-\file xfluid3_utils.H
+\file xdiff3_utils.H
 
 <pre>
 Maintainer: Axel Gerstenberger
@@ -54,54 +54,33 @@ namespace XDIFF
     LINALG::Matrix<numparam,1>  dx;
     LINALG::Matrix<numparam,1>  dy;
     LINALG::Matrix<numparam,1>  dz;
-    LINALG::Matrix<numparam,1>  dxdx;
-    LINALG::Matrix<numparam,1>  dxdy;
-    LINALG::Matrix<numparam,1>  dxdz;
-    LINALG::Matrix<numparam,1>  dydx;
-    LINALG::Matrix<numparam,1>  dydy;
-    LINALG::Matrix<numparam,1>  dydz;
-    LINALG::Matrix<numparam,1>  dzdx;
-    LINALG::Matrix<numparam,1>  dzdy;
-    LINALG::Matrix<numparam,1>  dzdz;
+//    LINALG::Matrix<numparam,1>  dxdx;
+//    LINALG::Matrix<numparam,1>  dxdy;
+//    LINALG::Matrix<numparam,1>  dxdz;
+//    LINALG::Matrix<numparam,1>  dydx;
+//    LINALG::Matrix<numparam,1>  dydy;
+//    LINALG::Matrix<numparam,1>  dydz;
+//    LINALG::Matrix<numparam,1>  dzdx;
+//    LINALG::Matrix<numparam,1>  dzdy;
+//    LINALG::Matrix<numparam,1>  dzdz;
   };
-  
-  template <size_t numparam>
-  struct EnrViscs2
-  {
-    LINALG::Matrix<numparam,1> xx;
-    LINALG::Matrix<numparam,1> xy;
-    LINALG::Matrix<numparam,1> xz;
-    LINALG::Matrix<numparam,1> yx;
-    LINALG::Matrix<numparam,1> yy;
-    LINALG::Matrix<numparam,1> yz;
-    LINALG::Matrix<numparam,1> zx;
-    LINALG::Matrix<numparam,1> zy;
-    LINALG::Matrix<numparam,1> zz;
-  };
-  
   
 template<class M1, class M2>
 void fill_tau(
     const size_t         numparamtau,
     const M1&            shp_tau,
-    const M2&            etau,
-    LINALG::Matrix<3,3>& tau
+    const M2&            eflux,
+    LINALG::Matrix<3,1>& flux
     )
 {
-    tau.Clear();
+    flux.Clear();
     for (size_t i = 0; i < numparamtau; ++i)
     {
         const double fac = shp_tau(i);
-        tau(0,0) += fac*etau(0,i);
-        tau(1,1) += fac*etau(1,i);
-        tau(2,2) += fac*etau(2,i);
-        tau(0,1) += fac*etau(3,i);
-        tau(0,2) += fac*etau(4,i);
-        tau(1,2) += fac*etau(5,i);
+        flux(0,0) += fac*eflux(0,i);
+        flux(1,0) += fac*eflux(1,i);
+        flux(2,0) += fac*eflux(2,i);
     }
-    tau(1,0) = tau(0,1);
-    tau(2,0) = tau(0,2);
-    tau(2,1) = tau(1,2);
 }
 
 /*!
@@ -334,6 +313,20 @@ LINALG::Matrix<3,1> interpolateVectorFieldToIntPoint(
   for (int iparam = 0; iparam < numparam; ++iparam)
     for (int isd = 0; isd < nsd; ++isd)
       v(isd) += eleVectorField(isd,iparam)*shp(iparam);
+  return v;
+}
+
+//! interpolate from nodal vector array to integration point vector using the shape function
+template <class M, class VS>
+double interpolateScalarFieldToIntPoint(
+    const M&  eleVectorField,       ///< array with nodal vector values
+    const VS& shp,                  ///< array with nodal shape function
+    const int numparam              ///< number of parameters
+    )
+{
+  double v = 0.0;
+  for (int iparam = 0; iparam < numparam; ++iparam)
+      v += eleVectorField(iparam)*shp(iparam);
   return v;
 }
 

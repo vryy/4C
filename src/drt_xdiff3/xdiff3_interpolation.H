@@ -126,16 +126,16 @@ namespace XDIFF
   }
   
   //! implementation for xfluid3 element
-  class FluidElementAnsatz : public XFEM::ElementAnsatz 
+  class Diff3ElementAnsatz : public XFEM::ElementAnsatz 
   {
   public:
     //! default constructor
-    explicit FluidElementAnsatz()
+    explicit Diff3ElementAnsatz()
     :XFEM::ElementAnsatz()
     {
     };
     //! destructor
-    virtual ~FluidElementAnsatz(){};
+    virtual ~Diff3ElementAnsatz(){};
     //! for a given velocity interpolation, a map is produced which has the number of element unknowns per physical field
     virtual map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> getElementAnsatz(DRT::Element::DiscretizationType eledistype) const
     {

@@ -43,6 +43,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_geometry/position_array.H"
 #include "fluid_utils.H"
 #include "../drt_f3/xfluid3_interpolation.H"
+#include "../drt_xdiff3/xdiff3_interpolation.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_io/io_gmsh.H"
 #include <Teuchos_TimeMonitor.hpp>
@@ -189,11 +190,35 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   // print information about element shapes
   // (to double-check for reading the correct input)
   std::set<DRT::Element::DiscretizationType> distypeset;
+  diffusion_problem_ = false;
   for (int i=0; i<discret_->NumMyColElements(); ++i)
   {
     distypeset.insert(discret_->lColElement(i)->Shape());
+    if (discret_->lColElement(i)->Type() == DRT::Element::element_xdiff3)
+      diffusion_problem_ = true;
   }
 
+  if (diffusion_problem_);
+  {
+    cout0_ << endl<<endl << "Computing a diffusion problem!" << endl << endl;
+  }
+  
+  
+  physprob_.fieldset_.clear();
+  if (diffusion_problem_)
+  {
+    physprob_.fieldset_.insert(XFEM::PHYSICS::Temp);
+    physprob_.elementAnsatzp_ = rcp(new XDIFF::Diff3ElementAnsatz());
+  }
+  else
+  {
+    physprob_.fieldset_.insert(XFEM::PHYSICS::Velx);
+    physprob_.fieldset_.insert(XFEM::PHYSICS::Vely);
+    physprob_.fieldset_.insert(XFEM::PHYSICS::Velz);
+    physprob_.fieldset_.insert(XFEM::PHYSICS::Pres);
+    physprob_.elementAnsatzp_ = rcp(new XFLUID::FluidElementAnsatz());
+  }
+  
   cout0_ << "Element shapes in xfluid discretization: ";
   discret_->Comm().Barrier();
   bool moreThanOne = false;
@@ -550,14 +575,8 @@ void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   ih->toGmsh(step_);
 
   // apply enrichments
-  std::set<XFEM::PHYSICS::Field> fieldset;
-  fieldset.insert(XFEM::PHYSICS::Velx);
-  fieldset.insert(XFEM::PHYSICS::Vely);
-  fieldset.insert(XFEM::PHYSICS::Velz);
-  fieldset.insert(XFEM::PHYSICS::Pres);
-  const XFLUID::FluidElementAnsatz elementAnsatz;
   const Teuchos::RCP<XFEM::DofManager> dofmanager =
-    rcp(new XFEM::DofManager(ih, fieldset, elementAnsatz, xparams_));
+      rcp(new XFEM::DofManager(ih, physprob_.fieldset_, *physprob_.elementAnsatzp_, xparams_));
 
   // save dofmanager to be able to plot Gmsh stuff in Output()
   dofmanagerForOutput_ = dofmanager;
@@ -1452,7 +1471,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
   const bool gmshdebugout = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
 
-  const bool screen_out = false;
+  const bool screen_out = true;
 
   if (gmshdebugout)
   {
@@ -1480,10 +1499,8 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
         static LINALG::Matrix<3,27> xyze_xfemElement;
         GEO::fillInitialPositionArray(actele,xyze_xfemElement);
 
-        const XFLUID::FluidElementAnsatz elementAnsatz;
-
         // create local copy of information about dofs
-        const XFEM::ElementDofManager eledofman(*actele,elementAnsatz.getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
+        const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatzp_->getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
 
         vector<int> lm;
         vector<int> lmowner;
@@ -1538,6 +1555,67 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
     f_system.close();
     if (screen_out) std::cout << " done" << endl;
   }
+  if (gmshdebugout)
+  {
+    std::stringstream filename;
+    std::stringstream filenamedel;
+    filename    << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".solution_temperature_" << std::setw(5) << setfill('0') << step   << ".pos";
+    filenamedel << DRT::Problem::Instance()->OutputControlFile()->FileName() << ".solution_temperature_" << std::setw(5) << setfill('0') << step-5 << ".pos";
+    std::remove(filenamedel.str().c_str());
+    if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
+    std::ofstream f_system(filename.str().c_str());
+
+    {
+      const XFEM::PHYSICS::Field field = XFEM::PHYSICS::Temp;
+      stringstream gmshfilecontent;
+      gmshfilecontent << "View \" " << "Temperature Solution (Physical) \" {\n";
+      for (int i=0; i<discret_->NumMyColElements(); ++i)
+      {
+
+        const DRT::Element* actele = discret_->lColElement(i);
+        const int elegid = actele->Id();
+
+        static LINALG::Matrix<3,27> xyze_xfemElement;
+        GEO::fillInitialPositionArray(actele,xyze_xfemElement);
+
+        // create local copy of information about dofs
+        const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatzp_->getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
+
+        vector<int> lm;
+        vector<int> lmowner;
+        actele->LocationVector(*(discret_), lm, lmowner);
+
+        // extract local values from the global vector
+        vector<double> myvelnp(lm.size());
+        DRT::UTILS::ExtractMyValues(*state_.velnp_, myvelnp, lm);
+
+        const int numparam = eledofman.NumDofPerField(field);
+        const vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
+
+        LINALG::SerialDenseVector elementvalues(numparam);
+        for (int iparam=0; iparam<numparam; ++iparam)
+          elementvalues(iparam) = myvelnp[dofpos[iparam]];
+
+        const GEO::DomainIntCells& domainintcells =
+          dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(actele);
+        for (GEO::DomainIntCells::const_iterator cell =
+          domainintcells.begin(); cell != domainintcells.end(); ++cell)
+        {
+          LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+          XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
+              *cell, field, elementvalues, cellvalues);
+          const LINALG::SerialDenseMatrix& xyze_cell = cell->CellNodalPosXYZ();
+          gmshfilecontent << IO::GMSH::cellWithScalarFieldToString(
+              cell->Shape(), cellvalues, xyze_cell) << "\n";
+        }
+      }
+      gmshfilecontent << "};\n";
+      f_system << gmshfilecontent.str();
+    }
+    f_system.close();
+    if (screen_out) std::cout << " done" << endl;
+  }
+  
 #if 0
   if (gmshdebugout)
   {

@@ -28,7 +28,7 @@ map<string,DRT::ELEMENTS::XDiff3::StabilisationAction> DRT::ELEMENTS::XDiff3::st
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::XDiff3::XDiff3(int id, int owner) :
-DRT::Element(id,element_xfluid3,owner),
+DRT::Element(id,element_xdiff3,owner),
 eleDofManager_(Teuchos::null),
 eleDofManager_uncondensed_(Teuchos::null),
 output_mode_(false)

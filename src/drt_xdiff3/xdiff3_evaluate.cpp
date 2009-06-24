@@ -1,5 +1,5 @@
 /*!
-\file xfluid3_evaluate.cpp
+\file xdiff3_evaluate.cpp
 \brief
 
 <pre>
@@ -133,6 +133,8 @@ int DRT::ELEMENTS::XDiff3::Evaluate(ParameterList& params,
     }
     case store_xfem_info:
     {
+      // after this part the element can answer, how many DOFs it has
+      
       output_mode_ = false;
       
       // store pointer to interface handle
@@ -144,7 +146,7 @@ int DRT::ELEMENTS::XDiff3::Evaluate(ParameterList& params,
       const bool DLM_condensation = params.get<bool>("DLM_condensation");
       const double boundaryRatioLimit = params.get<double>("boundaryRatioLimit");
       
-      const XDIFF::FluidElementAnsatz elementAnsatz;
+      const XDIFF::Diff3ElementAnsatz elementAnsatz;
       const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_empty;
       const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_filled(elementAnsatz.getElementAnsatz(this->Shape()));
       
