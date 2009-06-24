@@ -668,10 +668,11 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
     }
     // ANS modification of strains ************************************** ANS
     else {
-      double dydt_A = 0.0; double dYdt_A = 0.0;
-      double dxdt_B = 0.0; double dXdt_B = 0.0;
-      double dydt_C = 0.0; double dYdt_C = 0.0;
-      double dxdt_D = 0.0; double dXdt_D = 0.0;
+      double dxdt_A = 0.0; double dXdt_A = 0.0;
+      double dydt_B = 0.0; double dYdt_B = 0.0;
+      double dxdt_C = 0.0; double dXdt_C = 0.0;
+      double dydt_D = 0.0; double dYdt_D = 0.0;
+
       double dzdt_E = 0.0; double dZdt_E = 0.0;
       double dzdt_F = 0.0; double dZdt_F = 0.0;
       double dzdt_G = 0.0; double dZdt_G = 0.0;
@@ -679,14 +680,14 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
 
       // vector product of rows of jacobians at corresponding sampling point    cout << jac_cur_sps;
       for (int dim = 0; dim < NUMDIM_; ++dim) {
-        dydt_A += jac_cur_sps[0](0,dim) * jac_cur_sps[0](2,dim);
-        dYdt_A += jac_sps[0](0,dim)     * jac_sps[0](2,dim);
-        dxdt_B += jac_cur_sps[1](1,dim) * jac_cur_sps[1](2,dim);
-        dXdt_B += jac_sps[1](1,dim)     * jac_sps[1](2,dim);
-        dydt_C += jac_cur_sps[2](0,dim) * jac_cur_sps[2](2,dim);
-        dYdt_C += jac_sps[2](0,dim)     * jac_sps[2](2,dim);
-        dxdt_D += jac_cur_sps[3](1,dim) * jac_cur_sps[3](2,dim);
-        dXdt_D += jac_sps[3](1,dim)     * jac_sps[3](2,dim);
+        dxdt_A += jac_cur_sps[0](0,dim) * jac_cur_sps[0](2,dim);  // g_13^A
+        dXdt_A += jac_sps[0](0,dim)     * jac_sps[0](2,dim);      // G_13^A
+        dydt_B += jac_cur_sps[1](1,dim) * jac_cur_sps[1](2,dim);  // g_23^B
+        dYdt_B += jac_sps[1](1,dim)     * jac_sps[1](2,dim);      // G_23^B
+        dxdt_C += jac_cur_sps[2](0,dim) * jac_cur_sps[2](2,dim);  // g_13^C
+        dXdt_C += jac_sps[2](0,dim)     * jac_sps[2](2,dim);      // G_13^C
+        dydt_D += jac_cur_sps[3](1,dim) * jac_cur_sps[3](2,dim);  // g_23^D
+        dYdt_D += jac_sps[3](1,dim)     * jac_sps[3](2,dim);      // G_23^D
 
         dzdt_E += jac_cur_sps[4](2,dim) * jac_cur_sps[4](2,dim);
         dZdt_E += jac_sps[4](2,dim)     * jac_sps[4](2,dim);
@@ -706,10 +707,10 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
         + 0.25*(1.0-r[gp])*(1.0+s[gp]) * (dzdt_H - dZdt_H));
       // E23: remedy of transverse shear locking
       // Est = (1+r)/2 * Est(SP B) + (1-r)/2 * Est(SP D)
-      lstrain(4) = 0.5*(1.0+r[gp]) * (dxdt_B - dXdt_B) + 0.5*(1.0-r[gp]) * (dxdt_D - dXdt_D);
+      lstrain(4) = 0.5*(1+r[gp]) * (dydt_B - dYdt_B) + 0.5*(1-r[gp]) * (dydt_D - dYdt_D);
       // E13: remedy of transverse shear locking
       // Ert = (1-s)/2 * Ert(SP A) + (1+s)/2 * Ert(SP C)
-      lstrain(5) = 0.5*(1.0-s[gp]) * (dydt_A - dYdt_A) + 0.5*(1.0+s[gp]) * (dydt_C - dYdt_C);
+      lstrain(5) = 0.5*(1-s[gp]) * (dxdt_A - dXdt_A) + 0.5*(1+s[gp]) * (dxdt_C - dXdt_C);
     }
     // ANS modification of strains
 
