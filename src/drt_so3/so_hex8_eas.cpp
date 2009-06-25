@@ -19,6 +19,7 @@ Maintainer: Moritz Frenzel
 #include "mpi.h"
 #endif
 #include "so_hex8.H"
+#include "so_sh8p8.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_exporter.H"
@@ -70,6 +71,7 @@ void DRT::ELEMENTS::So_hex8::soh8_reiniteas(const DRT::ELEMENTS::So_hex8::EASTyp
   case DRT::ELEMENTS::So_hex8::soh8_easfull:  neas_ = 21; break;
   case DRT::ELEMENTS::So_hex8::soh8_easmild:  neas_ =  9; break;
   case DRT::ELEMENTS::So_hex8::soh8_eassosh8: neas_ =  7; break;
+  case DRT::ELEMENTS::So_hex8::soh8_eassosh8p8: neas_ =  DRT::ELEMENTS::So_sh8p8::NUMEASSHL_; break;
   case DRT::ELEMENTS::So_hex8::soh8_easnone:  neas_ =  0; break;
   }
   eastype_ = EASType;
@@ -273,6 +275,55 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
           M_sosh8[i](2,2) = t[i]; M_sosh8[i](2,5) = r[i]*t[i]; M_sosh8[i](2,6) = s[i]*t[i];
 
           M_sosh8[i](3,3) = r[i]; M_sosh8[i](3,4) = s[i];
+        }
+        M_sosh8_eval = true;  // now the array is filled statically
+      }
+      // return adress of just evaluated matrix
+      *M_GP = &M_sosh8;            // return adress of static object to target of pointer
+    } else if (eastype_ == soh8_eassosh8p8) {
+      static vector<Epetra_SerialDenseMatrix> M_sosh8(NUMGPT_SOH8);
+      static bool M_sosh8_eval;
+      /* eassosh8 is the EAS interpolation for the Solid-Shell with t=thickness dir.
+      ** consisting of 7 modes, based on
+      **            r 0 0   0 0 0  0
+      **            0 s 0   0 0 0  0
+      **    M =     0 0 t   0 0 rt st
+      **            0 0 0   r s 0  0
+      **            0 0 0   0 0 0  0
+      **            0 0 0   0 0 0  0
+      */
+      if (!M_sosh8_eval){ // if true M already evaluated
+        // (r,s,t) gp-locations of fully integrated linear 8-node Hex
+        const double gploc    = 1.0/sqrt(3.0);    // gp sampling point value for linear fct
+        const double r[NUMGPT_SOH8] = {-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc,-gploc};
+        const double s[NUMGPT_SOH8] = {-gploc,-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc};
+        const double t[NUMGPT_SOH8] = {-gploc,-gploc,-gploc,-gploc, gploc, gploc, gploc, gploc};
+        // fill up M at each gp
+        if (neas_ == 7) {
+          for (int i=0; i<NUMGPT_SOH8; ++i) {
+            M_sosh8[i].Shape(NUMSTR_SOH8,neas_);
+            M_sosh8[i](0,0) = r[i];
+            M_sosh8[i](1,1) = s[i];
+            M_sosh8[i](2,2) = t[i]; M_sosh8[i](2,5) = r[i]*t[i]; M_sosh8[i](2,6) = s[i]*t[i];
+            
+            M_sosh8[i](3,3) = r[i]; M_sosh8[i](3,4) = s[i];
+          }
+        }
+        else if (neas_ == 5) {
+          for (int i=0; i<NUMGPT_SOH8; ++i) {
+            M_sosh8[i].Shape(NUMSTR_SOH8,neas_);
+            M_sosh8[i](0,0) = r[i];
+            M_sosh8[i](1,1) = s[i];
+            M_sosh8[i](2,2) = t[i]; 
+            //M_sosh8[i](2,0) = r[i]*t[i];
+            //M_sosh8[i](2,1) = s[i]*t[i];
+            
+            M_sosh8[i](3,3) = r[i];
+            M_sosh8[i](3,4) = s[i];
+          }
+        }
+        else {
+          dserror("Don't know what to do with %d EAS parameters", neas_);
         }
         M_sosh8_eval = true;  // now the array is filled statically
       }

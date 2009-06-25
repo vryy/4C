@@ -82,7 +82,7 @@ public:
   friend class Soh8Line;
   //@}
   
-private:
+public:
 
   /// @name Properties
   //@{
@@ -153,6 +153,9 @@ private:
   static const int NUMSP_ = 8;
   /// number of modified ANS strains (E_rt,E_st,E_tt), here 3
   static const int NUMANS_ = 3;
+
+  /// number of EAS parameters
+  static const int NUMEASSHL_ = 5;
 
   // Voigt index arrays
   static const int VOIGT6ROW_[];  ///< 6-Voigt row index of corresponding 2-tensor
@@ -321,6 +324,8 @@ private:
     const std::vector<int>& lm,  ///< location matrix
     const LINALG::Matrix<NUMDISP_,1>& disp, ///< current displacements
     const LINALG::Matrix<NUMPRES_,1>& pres, ///< current pressures
+    const LINALG::Matrix<NUMDISP_,1>& dispi,  ///< last residual displacements
+    const LINALG::Matrix<NUMPRES_,1>& presi,  //< last residual pressures
     LINALG::Matrix<NUMDISP_,NUMDISP_>* massmatrix,  ///< element mass matrix
     LINALG::Matrix<NUMDISP_,NUMDISP_>* stiffmatrix,  ///< element stiffness matrix
     LINALG::Matrix<NUMDISP_,NUMPRES_>* gradmatrix,  ///< element gradient matrix
@@ -380,15 +385,17 @@ private:
   /// Shear modulus is needed for stabilisation
   double ShearMod() const;
   
-  //! Extrapolate Gauss-point values (e.g. stresses) to nodes and store results in elevectors
-  void sosh8p8_expol
-  (
-      LINALG::Matrix<NUMGPT_,NUMSTR_>& stresses, ///< gp stresses
-      LINALG::Matrix<NUMDOF_,1>& elevec1, ///< nodal normal stresses
-      LINALG::Matrix<NUMDOF_,1>& elevec2  ///< nodal shear stresses
+  /// Extrapolate Gauss-point values (e.g. stresses) to nodes and store results in elevectors
+  void sosh8p8_expol(
+    LINALG::Matrix<NUMGPT_,NUMSTR_>& stresses, ///< gp stresses
+    LINALG::Matrix<NUMDOF_,1>& elevec1, ///< nodal normal stresses
+    LINALG::Matrix<NUMDOF_,1>& elevec2  ///< nodal shear stresses
   );
 
   //@}
+
+  /// set-up of EAS data
+  void EasInit();
 
   /// @name Voigt vector/matrix converters
   //@{

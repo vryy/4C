@@ -30,6 +30,9 @@ Maintainer: Burkhard Bornemann
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/linalg_serialdensematrix.H"
+#include "../drt_lib/linalg_serialdensevector.H"
+#include "Epetra_SerialDenseSolver.h"
 #include "../drt_io/io_gmsh.H"
 #include "Epetra_Time.h"
 #include "Teuchos_TimeMonitor.hpp"
@@ -94,6 +97,8 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
       // need zero current displacement and residual forces
       LINALG::Matrix<NUMDISP_,1> mydisp(true);
       LINALG::Matrix<NUMPRES_,1> mypres(true);
+      LINALG::Matrix<NUMDISP_,1> mydispi(true);
+      LINALG::Matrix<NUMPRES_,1> mypresi(true);
       LINALG::Matrix<NUMDISP_,NUMDISP_> stiffmatrix(true);
       LINALG::Matrix<NUMDISP_,NUMPRES_> gradmatrix(true);
       LINALG::Matrix<NUMPRES_,NUMPRES_> stabmatrix(true);
@@ -101,13 +106,13 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
       LINALG::Matrix<NUMPRES_,1> incomp(true);
       if (stab_ == stab_spatial) {
         LINALG::Matrix<NUMPRES_,NUMDISP_> dargmatrix;
-        ForceStiffMass(lm,mydisp,mypres,
+        ForceStiffMass(lm,mydisp,mypres,mydispi,mypresi,
                        NULL,&stiffmatrix,&gradmatrix,NULL,&stabmatrix,&force,&incomp,
                        NULL,NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
         BuildElementMatrix(&elemat1,&stiffmatrix,&gradmatrix,&dargmatrix,&stabmatrix);
       }
       else {
-        ForceStiffMass(lm,mydisp,mypres,
+        ForceStiffMass(lm,mydisp,mypres,mydispi,mypresi,
                        NULL,&stiffmatrix,NULL,NULL,&stabmatrix,&force,&incomp,
                        NULL,NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
         BuildElementMatrix(&elemat1,&stiffmatrix,NULL,NULL,&stabmatrix);
@@ -118,7 +123,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
 
     // nonlinear stiffness and internal force vector
     case calc_struct_nlnstiff: {
-      // need current displacement and residual forces
+      // need current displacement
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==Teuchos::null)
         dserror("Cannot get state vectors 'displacement' and/or residual");
@@ -127,6 +132,16 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
       LINALG::Matrix<NUMDISP_,1> mydisp;
       LINALG::Matrix<NUMPRES_,1> mypres;
       ExtractDispAndPres(mystat,mydisp,mypres);
+      // residual displacements
+      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      if (res == Teuchos::null)
+        dserror("Didn't get \"residual displacement\"");
+      std::vector<double> mystati(lm.size());
+      DRT::UTILS::ExtractMyValues(*res,mystati,lm);
+      LINALG::Matrix<NUMDISP_,1> mydispi;
+      LINALG::Matrix<NUMPRES_,1> mypresi;
+      ExtractDispAndPres(mystati,mydispi,mypresi);
+      // allocate element quantities
       LINALG::Matrix<NUMDISP_,NUMDISP_> stiffmatrix(true);
       LINALG::Matrix<NUMDISP_,NUMPRES_> gradmatrix(true);
       LINALG::Matrix<NUMPRES_,NUMPRES_> stabmatrix(true);
@@ -135,13 +150,13 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
       double volume = 0.0;
       if (stab_ == stab_spatial) {
         LINALG::Matrix<NUMPRES_,NUMDISP_> dargmatrix;        
-        ForceStiffMass(lm,mydisp,mypres,
+        ForceStiffMass(lm,mydisp,mypres,mydispi,mypresi,
                        NULL,&stiffmatrix,&gradmatrix,&dargmatrix,&stabmatrix,&force,&incomp,
                        NULL,NULL,&volume,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
         BuildElementMatrix(&elemat1,&stiffmatrix,&gradmatrix,&dargmatrix,&stabmatrix);
       }
       else {
-        ForceStiffMass(lm,mydisp,mypres,
+        ForceStiffMass(lm,mydisp,mypres,mydispi,mypresi,
                        NULL,&stiffmatrix,&gradmatrix,NULL,&stabmatrix,&force,&incomp,
                        NULL,NULL,&volume,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
         BuildElementMatrix(&elemat1,&stiffmatrix,&gradmatrix,NULL,&stabmatrix);
@@ -155,7 +170,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
 
     // internal force vector only
     case calc_struct_internalforce: {
-      // need current displacement and residual forces
+      // need current displacement
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==Teuchos::null)
         dserror("Cannot get state vectors 'displacement' and/or residual");
@@ -164,12 +179,22 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
       LINALG::Matrix<NUMDISP_,1> mydisp;
       LINALG::Matrix<NUMPRES_,1> mypres;
       ExtractDispAndPres(mystat,mydisp,mypres);
+      // residual displacements
+      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      if (res == Teuchos::null)
+        dserror("Didn't get \"residual displacement\"");
+      std::vector<double> mystati(lm.size());
+      DRT::UTILS::ExtractMyValues(*res,mystati,lm);
+      LINALG::Matrix<NUMDISP_,1> mydispi;
+      LINALG::Matrix<NUMPRES_,1> mypresi;
+      ExtractDispAndPres(mystati,mydispi,mypresi);
+      // allocate element quantities
       LINALG::Matrix<NUMDISP_,NUMPRES_> gradmatrix(true);
       LINALG::Matrix<NUMPRES_,NUMPRES_> stabmatrix(true);
       LINALG::Matrix<NUMDISP_,1> force(true);
       LINALG::Matrix<NUMPRES_,1> incomp(true);
       double volume = 0.0;
-      ForceStiffMass(lm,mydisp,mypres,
+      ForceStiffMass(lm,mydisp,mypres,mydispi,mypresi,
                      NULL,NULL,&gradmatrix,NULL,&stabmatrix,&force,&incomp,
                      NULL,NULL,&volume,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
       BuildElementVector(&elevec1,&force,&incomp);
@@ -185,7 +210,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
     // nonlinear stiffness, internal force vector, and consistent/lumped mass matrix
     case calc_struct_nlnstiffmass:
     case calc_struct_nlnstifflmass: {
-      // need current displacement and residual forces
+      // need current displacement
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==Teuchos::null)
         dserror("Cannot get state vectors 'displacement' and/or residual");
@@ -194,6 +219,16 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
       LINALG::Matrix<NUMDISP_,1> mydisp;
       LINALG::Matrix<NUMPRES_,1> mypres;
       ExtractDispAndPres(mystat,mydisp,mypres);
+      // residual displacements
+      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      if (res == Teuchos::null)
+        dserror("Didn't get \"residual displacement\"");
+      std::vector<double> mystati(lm.size());
+      DRT::UTILS::ExtractMyValues(*res,mystati,lm);
+      LINALG::Matrix<NUMDISP_,1> mydispi;
+      LINALG::Matrix<NUMPRES_,1> mypresi;
+      ExtractDispAndPres(mystati,mydispi,mypresi);
+      // allocate element quantities
       LINALG::Matrix<NUMDISP_,NUMDISP_> massmatrix(true);
       LINALG::Matrix<NUMDISP_,NUMDISP_> stiffmatrix(true);
       LINALG::Matrix<NUMDISP_,NUMPRES_> gradmatrix(true);
@@ -203,13 +238,13 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
       double volume = 0.0;
       if (stab_ == stab_spatial) {
         LINALG::Matrix<NUMPRES_,NUMDISP_> dargmatrix;        
-        ForceStiffMass(lm,mydisp,mypres,
+        ForceStiffMass(lm,mydisp,mypres,mydispi,mypresi,
                        &massmatrix,&stiffmatrix,&gradmatrix,&dargmatrix,&stabmatrix,&force,&incomp,
                        NULL,NULL,&volume,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
         BuildElementMatrix(&elemat1,&stiffmatrix,&gradmatrix,&dargmatrix,&stabmatrix);
       }
       else {
-        ForceStiffMass(lm,mydisp,mypres,
+        ForceStiffMass(lm,mydisp,mypres,mydispi,mypresi,
                        &massmatrix,&stiffmatrix,&gradmatrix,NULL,&stabmatrix,&force,&incomp,
                        NULL,NULL,&volume,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
         BuildElementMatrix(&elemat1,&stiffmatrix,&gradmatrix,NULL,&stabmatrix);
@@ -225,26 +260,39 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
 
     // evaluate stresses and strains at gauss points
     case calc_struct_stress:{
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      // data
       Teuchos::RCP<std::vector<char> > stressdata
         = params.get<Teuchos::RCP<std::vector<char> > >("stress", Teuchos::null);
       Teuchos::RCP<std::vector<char> > straindata 
         = params.get<Teuchos::RCP<std::vector<char> > >("strain", Teuchos::null);
-      if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       if (stressdata==Teuchos::null) dserror("Cannot get stress 'data'");
       if (straindata==Teuchos::null) dserror("Cannot get strain 'data'");
+      // current displacements
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp==Teuchos::null)
+        dserror("Cannot get state vectors 'displacement'");
       std::vector<double> mystat(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mystat,lm);
       LINALG::Matrix<NUMDISP_,1> mydisp;
       LINALG::Matrix<NUMPRES_,1> mypres;
       ExtractDispAndPres(mystat,mydisp,mypres);
+      // residual displacements
+      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      if (res == Teuchos::null)
+        dserror("Didn't get \"residual displacement\"");
+      std::vector<double> mystati(lm.size());
+      DRT::UTILS::ExtractMyValues(*res,mystati,lm);
+      LINALG::Matrix<NUMDISP_,1> mydispi;
+      LINALG::Matrix<NUMPRES_,1> mypresi;
+      ExtractDispAndPres(mystati,mydispi,mypresi);
+      // types
       LINALG::Matrix<NUMGPT_,NUMSTR_> stress;
       LINALG::Matrix<NUMGPT_,NUMSTR_> strain;
       INPAR::STR::StressType iostress 
         = params.get<INPAR::STR::StressType>("iostress", INPAR::STR::stress_none);
       INPAR::STR::StrainType iostrain 
         = params.get<INPAR::STR::StrainType>("iostrain", INPAR::STR::strain_none);
-      ForceStiffMass(lm,mydisp,mypres,
+      ForceStiffMass(lm,mydisp,mypres,mydispi,mypresi,
                      NULL,NULL,NULL,NULL,NULL,NULL,NULL,
                      &stress,&strain,NULL,params,iostress,iostrain);
       AddtoPack(*stressdata, stress);
@@ -330,7 +378,17 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
 
     case calc_struct_update_istep: {
       // do something with internal EAS, etc parameters
-
+      if (eastype_ != soh8_easnone) {
+        Epetra_SerialDenseMatrix* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1}
+        Epetra_SerialDenseMatrix* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
+        // alphao := alpha
+        if (eastype_ == soh8_eassosh8p8) {
+          LINALG::DENSEFUNCTIONS::update<NUMEASSHL_,1>(*alphao,*alpha);
+        }
+        else {
+          dserror("Not impl.");
+        }
+      }
       // Update of history for visco material
       Teuchos::RCP<MAT::Material> mat = Material();
       if (mat->MaterialType() == INPAR::MAT::m_visconeohooke)
@@ -350,7 +408,19 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
       // do something with internal EAS, etc parameters
       // this depends on the applied solution technique (static, generalised-alpha,
       // or other time integrators)
-
+      if (eastype_ != soh8_easnone) {
+        const double alphaf = params.get<double>("alpha f", 0.0);  // generalised-alpha TIS parameter alpha_f
+        Epetra_SerialDenseMatrix* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1-alphaf}
+        Epetra_SerialDenseMatrix* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
+        // alphao = (-alphaf/(1.0-alphaf))*alphao  + 1.0/(1.0-alphaf) * alpha
+        if (eastype_ == soh8_eassosh8p8) {
+          LINALG::DENSEFUNCTIONS::update<NUMEASSHL_,1>(-alphaf/(1.0-alphaf),*alphao,1.0/(1.0-alphaf),*alpha);
+          LINALG::DENSEFUNCTIONS::update<NUMEASSHL_,1>(*alpha,*alphao); // alpha := alphao
+        }
+        else {
+          dserror("Not impl.");
+        }
+      }
       // Update of history for visco material
       Teuchos::RCP<MAT::Material> mat = Material();
       if (mat->MaterialType() == INPAR::MAT::m_visconeohooke)
@@ -368,7 +438,17 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
 
     case calc_struct_reset_istep: {
       // do something with internal EAS, etc parameters
-
+      if (eastype_ != soh8_easnone) {
+        Epetra_SerialDenseMatrix* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1}
+        Epetra_SerialDenseMatrix* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
+        // alpha := alphao
+        if (eastype_ == soh8_eassosh8p8) {
+          LINALG::DENSEFUNCTIONS::update<NUMEASSHL_,1>(*alpha, *alphao);
+        }
+        else {
+          dserror("Not impl.");
+        }
+      }
       // Reset of history for visco material
       Teuchos::RCP<MAT::Material> mat = Material();
       if (mat->MaterialType() == INPAR::MAT::m_visconeohooke)
@@ -396,6 +476,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
     // done in the elements that know the number of EAS parameters
     case eas_init_multi:
     {
+      dserror("Meaningful?");
       if (eastype_ != soh8_easnone)
       {
         soh8_eas_init_multi(params);
@@ -409,6 +490,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
     // set accordingly
     case eas_set_multi:
     {
+      dserror("Meaningful?");
       if (eastype_ != soh8_easnone)
       {
         soh8_set_eas_multi(params);
@@ -440,6 +522,8 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
   const std::vector<int>& lm,             // location matrix
   const LINALG::Matrix<NUMDISP_,1>& disp,           // current displacements
   const LINALG::Matrix<NUMPRES_,1>& pres,       // current pressures
+  const LINALG::Matrix<NUMDISP_,1>& dispi,           // current residual displacements
+  const LINALG::Matrix<NUMPRES_,1>& presi,       // current residual pressures
   LINALG::Matrix<NUMDISP_,NUMDISP_>* massmatrix,  // element mass matrix
   LINALG::Matrix<NUMDISP_,NUMDISP_>* stiffmatrix, // element stiffness matrix
   LINALG::Matrix<NUMDISP_,NUMPRES_>* gradmatrix, // element gradient matrix
@@ -479,11 +563,90 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
     xcurr(i,2) = xrefe(i,2) + disp(i*NODDISP_+2,0);
   }
 
-  /*
-  ** ANS Element technology to remedy
-  *  - transverse-shear locking E_rt and E_st
-  *  - trapezoidal (curvature-thickness) locking E_tt
-  */
+  //
+  // EAS Technology: declare, intialize, set up, and alpha history
+  //
+
+  // in any case declare variables, sizes etc. only in EAS case
+  Epetra_SerialDenseMatrix* alpha = NULL;         // EAS alphas
+  std::vector<Epetra_SerialDenseMatrix>* M_GP = NULL;  // EAS matrix M at all GPs
+  Epetra_SerialDenseVector M; // EAS matrix M at current GP, fixed for sosh8
+  Epetra_SerialDenseVector feas;                  // EAS portion of internal forces
+  Epetra_SerialDenseMatrix Kaa;                   // EAS matrix Kaa
+  Epetra_SerialDenseMatrix Kap;                   // EAS matrix Kpa
+  Epetra_SerialDenseMatrix Kad;                   // EAS matrix Kda
+  double detJ0;                                   // detJ(origin)
+  Epetra_SerialDenseMatrix* oldfeas = NULL;       // EAS history
+  Epetra_SerialDenseMatrix* oldKaainv = NULL;     // EAS history
+  Epetra_SerialDenseMatrix* oldKad = NULL;        // EAS history
+  Epetra_SerialDenseMatrix* oldKap = NULL;        // EAS history
+
+  // transformation matrix T0, maps M-matrix evaluated at origin
+  // between local element coords and global coords
+  // here we already get the inverse transposed T0
+  LINALG::Matrix<NUMSTR_,NUMSTR_> T0invT;  // trafo matrix
+
+  // EAS Update of alphas:
+  // the current alphas are (re-)evaluated out of
+  // Kaa and Kda, Kpa of previous step to avoid additional element call.
+  // This corresponds to the (innermost) element update loop
+  // in the nonlinear FE-Skript page 120 (load-control alg. with EAS)
+  if (eastype_ == soh8_easnone) {
+    ;  // continue
+  } else if (eastype_ == soh8_eassosh8p8) {
+    // retrieve history
+    alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");   // get old alpha
+    // evaluate current (updated) EAS alphas (from history variables)
+    // get stored EAS history
+    oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
+    oldKaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
+    oldKad = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");  // actually k_ad
+    oldKap = data_.GetMutable<Epetra_SerialDenseMatrix>("Kap");
+    if (!alpha || !oldKaainv || !oldKad || !oldKap || !oldfeas)
+      dserror("Missing EAS history-data");
+    //cout << "oldfeas=" << *oldfeas << endl;
+    //cout << "oldKaainv=" << *oldKaainv << endl;
+    //cout << "oldKad=" << *oldKad << endl;
+    //cout << "oldKap=" << *oldKap << endl;
+
+    // feas^{k+1} := feas^k + k_ad^k . Ddisp^k + k_ap^k . Dpres^k
+    LINALG::DENSEFUNCTIONS::multiplyNN<NUMEASSHL_,NUMDISP_,1>(1.0,oldfeas->A(), 1.0,oldKad->A(),dispi.A());
+    LINALG::DENSEFUNCTIONS::multiplyNN<NUMEASSHL_,NUMPRES_,1>(1.0,oldfeas->A(), 1.0,oldKap->A(),presi.A());
+    //cout << "dispi=" << dispi << ", presi=" << presi << endl;
+
+    // alpha^{k+1} := alpha^k + Dalpha^k
+    //                alpha^k - k_aa^{k;-1} . feas^{k+1}
+    LINALG::DENSEFUNCTIONS::multiply<NUMEASSHL_,NUMEASSHL_,1>(1.0,*alpha, -1.0,*oldKaainv,*oldfeas);
+
+    // EAS portion of internal forces, also called enhacement vector s or Rtilde
+    feas.Size(NUMEASSHL_);
+    // EAS matrix K_{alpha alpha}, also called Dtilde
+    Kaa.Shape(NUMEASSHL_,NUMEASSHL_);
+    // EAS matrix K_{alpha disp}
+    Kad.Shape(NUMEASSHL_,NUMDISP_);
+    // EAS matrix K_{alpha pres}
+    Kap.Shape(NUMEASSHL_,NUMPRES_);
+    
+    // M-operator
+    M.Shape(NUMSTR_,NUMEASSHL_);
+
+    // evaluation of EAS variables (which are constant for the following):
+    // -> M defining interpolation of enhanced strains alpha, evaluated at GPs
+    // -> determinant of Jacobi matrix at element origin (r=s=t=0.0)
+    // -> T0^{-T}
+    soh8_eassetup(&M_GP,detJ0,T0invT,xrefe);
+  }
+  else {
+    dserror("EAS ain't easy");
+  }
+
+
+  //
+  // ANS Element technology to remedy
+  //  - transverse-shear locking E_rt and E_st
+  //  - trapezoidal (curvature-thickness) locking E_tt
+  //
+
   // modified B-operator in local(parameter) element space
 
   // ANS modified rows of bop in local(parameter) coords
@@ -712,11 +875,26 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
       // Ert = (1-s)/2 * Ert(SP A) + (1+s)/2 * Ert(SP C)
       lstrain(5) = 0.5*(1-s[gp]) * (dxdt_A - dXdt_A) + 0.5*(1+s[gp]) * (dxdt_C - dXdt_C);
     }
-    // ANS modification of strains
+    // end of ANS modification of strains
 
     // push local/natural/parametric glstrains forward to global/material space
     LINALG::Matrix<NUMSTR_,1> glstrain;
     glstrain.Multiply(TinvT,lstrain);
+
+    // EAS technology: "enhance the strains"
+    if (eastype_ == soh8_easnone) {
+      ;  // continue
+    }
+    else if (eastype_ == soh8_eassosh8p8) {
+      // map local M to global, also enhancement is refered to element origin
+      // M = detJ0/detJ T0^{-T} . M
+      LINALG::DENSEFUNCTIONS::multiply<NUMSTR_,NUMSTR_,NUMEASSHL_>(M.A(), detJ0/detJ,T0invT.A(),M_GP->at(gp).A());
+      // add enhanced strains = M . alpha to GL strains to "unlock" element
+      LINALG::DENSEFUNCTIONS::multiply<NUMSTR_,NUMEASSHL_,1>(1.0,glstrain.A(), 1.0,M.A(),(*alpha).A());
+    }
+    else {
+      dserror("EAS ain't easy.");
+    }  // end of EAS modification of strains
 
     // recover deformation gradient incoperating assumed GL strain
     double detdefgrad;  // determinant of assumed def.grad.
@@ -742,7 +920,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
     // the stress vector, a C-matrix, and a density must be retrieved,
     // every necessary data must be passed.
     double density = 0.0;
-    LINALG::Matrix<NUMSTR_,1> stress(true);
+    LINALG::Matrix<NUMSTR_,1> stress(true);  // 2nd PK stress
     LINALG::Matrix<NUMSTR_,NUMSTR_> cmat(true);
     soh8_mat_sel(&stress,&cmat,&density,&glstrain,&defgrad,gp,params);
     if (iso_ == iso_enforced) {
@@ -1021,7 +1199,100 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
                   defgradbydisp(aB,k) = defgradbydisp_aBk;
                 }
               }
+            }  // end block
+
+            // EAS technology: integrate matrices
+            if (eastype_ == soh8_easnone) {
+              ;  // continue
             }
+            else if (eastype_ == soh8_eassosh8p8) {
+              // derivative of assumed right stretch tensor w.r.t. EAS parameters
+              LINALG::Matrix<NUMSTR_,NUMEASSHL_> rgtstrbyalpha;
+              LINALG::DENSEFUNCTIONS::multiplyNN<NUMSTR_,NUMSTR_,NUMEASSHL_>(rgtstrbyalpha.A(), 2.0,rcgbyrgtstr.A(),M.A());
+
+              // derivative of pseudo identity with respect to EAS parameters
+              // I^{assd}_{CB,e} = U^{d;-1}_{CD} . U^{ass}_{DB,e}
+              // WARNING: I^{assd}_{CB} and I^{assd}_{CB,e} might be non-symmetric in CB
+              LINALG::Matrix<NUMDFGR_,NUMEASSHL_> pseudoidentity;
+              for (int e=0; e<NUMEASSHL_; ++e) {
+                for (int CB=0; CB<NUMDFGR_; ++CB) {
+                  const int C = VOIGT9ROW_[CB];
+                  const int B = VOIGT9COL_[CB];
+                  double pseudoidentity_CBe = 0.0;
+                  for (int D=0; D<NUMDIM_; ++D) {
+                    const int DB = VOIGT3X3SYM_[NUMDIM_*D+B];
+                    const double DBfact = (D==B) ? 1.0 : 0.5;
+                    pseudoidentity_CBe 
+                      += invrgtstrD(C,D) * DBfact*rgtstrbyalpha(DB,e);
+                  }
+                  pseudoidentity(CB,e) = pseudoidentity_CBe;
+                }
+              }
+
+              // derivative of def.grad. with respect to e EAS parameters alpha^e
+              // F_{aB,e} = F^d_{aC} . U^{d;-1}_{CD} . U^{ass}_{DB,e}
+              //            = F^d_{aC} . I^{assd}_{CB,e}
+              LINALG::Matrix<NUMDFGR_,NUMEASSHL_> defgradbyalpha;
+              for (int e=0; e<NUMEASSHL_; ++e) {
+                for (int aB=0; aB<NUMDFGR_; ++aB) {
+                  const int a = VOIGT9ROW_[aB];
+                  const int B = VOIGT9COL_[aB];
+                  double defgradbyalpha_aBe = 0.0;
+                  for (int C=0; C<NUMDIM_; ++C) {
+                    const int CB = VOIGT3X3_[NUMDIM_*C+B];
+                    defgradbyalpha_aBe
+                      += defgradD(a,C) * pseudoidentity(CB,e);
+                  }
+                  defgradbyalpha(aB,e) = defgradbyalpha_aBe;
+                }
+              }
+              
+              // M^T = M
+              // cmat = cmat
+              // detJ * w = detJ_w
+              // fv = tinvdefgrad
+              // B_F = defgradbydisp
+              // M_F = defgradbyalpha
+              // H = prshfct
+              // H.p = effpressure
+              // ( fv . fv^T + Wm ) = WmT
+              // B = bop
+              // cmat . B = cb
+              // sigma = stress
+
+              // temporary c . M
+              LINALG::Matrix<NUMSTR_,NUMEASSHL_> cM;
+              LINALG::DENSEFUNCTIONS::multiplyNN<NUMSTR_,NUMSTR_,NUMEASSHL_>(cM.A(), cmat.A(), M.A());
+              // temporary ( fv . fv^T + Wm ) . M_F
+              LINALG::Matrix<NUMDFGR_,NUMEASSHL_> ffwmf;
+              ffwmf.MultiplyNN(WmT,defgradbyalpha);
+              // temporary ( fv . fv^T + Wm ) . M_F with stress-like rows
+              LINALG::Matrix<NUMSTR_,NUMEASSHL_> ffwmf2;
+              for (int e=0; e<NUMEASSHL_; ++e)
+                for (int AB=0; AB<NUMSTR_; ++AB)
+                  ffwmf2(AB,e) = ffwmf(AB,e);
+              // temporary M_F^T . fv
+              LINALG::Matrix<NUMEASSHL_,1> mff;
+              mff.MultiplyTN(defgradbyalpha,tinvdefgrad);
+
+              // integrate Kaa: Kaa += (M^T . cmat . M) * detJ * w(gp)
+              //                     - (M_F^T . ( fv . fv^T + Wm ) . M_F) * (H . p) * detF * detJ * w
+              LINALG::DENSEFUNCTIONS::multiplyTN<NUMEASSHL_,NUMSTR_,NUMEASSHL_>(1.0,Kaa.A(), detJ_w,M.A(),cM.A());
+              LINALG::DENSEFUNCTIONS::multiplyTN<NUMEASSHL_,NUMDFGR_,NUMEASSHL_>(1.0,Kaa.A(), -effpressure*detdefgrad*detJ_w,defgradbyalpha.A(),ffwmf.A());
+              // integrate Kad: Kad += (M^T . cmat . B) * detJ * w(gp)
+              //                     - (M_F^T . ( fv . fv^T + Wm ) . B_F) * (H . p) * detF * detJ * w
+              LINALG::DENSEFUNCTIONS::multiplyTN<NUMEASSHL_,NUMSTR_,NUMDISP_>(1.0,Kad.A(), detJ_w,M.A(),cb.A());
+              LINALG::DENSEFUNCTIONS::multiplyTN<NUMEASSHL_,NUMDFGR_,NUMDISP_>(1.0,Kad.A(), -effpressure*detdefgrad*detJ_w,ffwmf.A(),defgradbydisp.A());
+              // integrate Kap: Kap += - (M_F^T . fv . H)  * detF * detJ * w
+              LINALG::DENSEFUNCTIONS::multiplyNT<NUMEASSHL_,1,NUMPRES_>(1.0,Kap.A(), -detdefgrad*detJ_w,mff.A(),prshfct.A());
+              // integrate feas: feas += (M^T . sigma) * detJ *wp(gp)
+              //                       - (M_F^T . fv) * (H . p)  * detF * detJ * w
+              LINALG::DENSEFUNCTIONS::multiplyTN<NUMEASSHL_,NUMSTR_,1>(1.0,feas.A(), detJ_w,M.A(),stress.A());
+              LINALG::DENSEFUNCTIONS::update<NUMEASSHL_,1>(1.0,feas.A(), -detdefgrad*effpressure*detJ_w,mff.A());
+            }
+            else {
+              dserror("EAS ain't easy.");
+            }  // if (eastype_ == ... )
 
             // ext(p)ensive computation to achieve full tangent
             if (lin_ > lin_half) {
@@ -1386,6 +1657,54 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
       // -1./shearmod * (-Eem . inv(Dem)) . (ep^T . Eem_{,d})^T
       dargmatrix->MultiplyNN(+1.0/shearmod/stabAA(0,0),stabHA,prestimesstabHAbydisp,1.0);
     }
+  }
+
+  // EAS static condensation
+  // subtract EAS matrices from disp-based Kdd to "soften" element
+  if (eastype_ == soh8_easnone) {
+    ;  // continue
+  }
+  else if (eastype_ == soh8_eassosh8p8) {
+    // we need the inverse of Kaa
+    Epetra_SerialDenseSolver solve_for_inverseKaa;
+    solve_for_inverseKaa.SetMatrix(Kaa);
+    solve_for_inverseKaa.Invert();
+
+    // temporary Kda.Kaa^{-1}
+    LINALG::Matrix<NUMDISP_,NUMEASSHL_> KdaKaa(false);
+    LINALG::DENSEFUNCTIONS::multiplyTN<NUMDISP_,NUMEASSHL_,NUMEASSHL_>(KdaKaa.A(), Kad.A(),Kaa.A());
+    // temporary Kpa.Kaa^{-1}
+    LINALG::Matrix<NUMPRES_,NUMEASSHL_> KpaKaa(false);
+    LINALG::DENSEFUNCTIONS::multiplyTN<NUMPRES_,NUMEASSHL_,NUMEASSHL_>(KpaKaa.A(), Kap.A(),Kaa.A());
+
+    // EAS stiffness matrix is: Kdd - Kda . Kaa^-1 . Kad
+    if (stiffmatrix != NULL)
+      LINALG::DENSEFUNCTIONS::multiplyNN<NUMDISP_,NUMEASSHL_,NUMDISP_>(1.0,stiffmatrix->A(), -1.0,KdaKaa.A(),Kad.A());
+    // EAS stiffness matrix is: Kdp - Kda . Kaa^-1 . Kap
+    if (gradmatrix != NULL)
+      LINALG::DENSEFUNCTIONS::multiplyNN<NUMDISP_,NUMEASSHL_,NUMPRES_>(1.0,gradmatrix->A(), -1.0,KdaKaa.A(),Kap.A());
+    // EAS stiffness matrix is: Kpd - Kpa . Kaa^-1 . Kad
+    if (dargmatrix != NULL)
+      LINALG::DENSEFUNCTIONS::multiplyNN<NUMPRES_,NUMEASSHL_,NUMDISP_>(1.0,dargmatrix->A(), -1.0,KpaKaa.A(),Kad.A());
+    // EAS stiffness matrix is: Kpp - Kpa . Kaa^-1 . Kap
+    if (stabmatrix != NULL)
+      LINALG::DENSEFUNCTIONS::multiplyNN<NUMPRES_,NUMEASSHL_,NUMPRES_>(1.0,stabmatrix->A(), -1.0,KpaKaa.A(),Kap.A());
+
+    // EAS internal force is: fint - Kda^T . Kaa^-1 . feas
+    if (force != NULL)
+      LINALG::DENSEFUNCTIONS::multiplyNN<NUMDISP_,NUMEASSHL_,1>(1.0,force->A(), -1.0,KdaKaa.A(),feas.A());
+    // EAS incompressibility is: fint - Kpa^T . Kaa^-1 . feas
+    if (incomp != NULL)
+      LINALG::DENSEFUNCTIONS::multiplyNN<NUMPRES_,NUMEASSHL_,1>(1.0,incomp->A(), -1.0,KpaKaa.A(),feas.A());
+
+    // store current EAS data in history
+    LINALG::DENSEFUNCTIONS::update<NUMEASSHL_,NUMEASSHL_>(*oldKaainv, Kaa);
+    LINALG::DENSEFUNCTIONS::update<NUMEASSHL_,NUMDISP_>(*oldKad, Kad);
+    LINALG::DENSEFUNCTIONS::update<NUMEASSHL_,NUMPRES_>(*oldKap, Kap);
+    LINALG::DENSEFUNCTIONS::update<NUMEASSHL_,1>(*oldfeas, feas);
+  }
+  else {
+    dserror("EAS ain't easy.");
   }
 
   // fake pure-disp based approach (ANS might be active)
@@ -1832,19 +2151,19 @@ int DRT::ELEMENTS::Sosh8p8Register::Initialize(DRT::Discretization& dis)
       }
       // check for enforced definition of thickness direction
       case DRT::ELEMENTS::So_sh8::globx: {
-        LINALG::Matrix<NUMDIM_SOH8,1> thickdirglo(true);
+        LINALG::Matrix<DRT::ELEMENTS::So_sh8p8::NUMDIM_,1> thickdirglo(true);
         thickdirglo(0) = 1.0;
         actele->thickdir_ = actele->sosh8_enfthickdir(thickdirglo);
         break;
       }
       case DRT::ELEMENTS::So_sh8::globy: {
-        LINALG::Matrix<NUMDIM_SOH8,1> thickdirglo(true);
+        LINALG::Matrix<DRT::ELEMENTS::So_sh8p8::NUMDIM_,1> thickdirglo(true);
         thickdirglo(1) = 1.0;
         actele->thickdir_ = actele->sosh8_enfthickdir(thickdirglo);
         break;
       }
       case DRT::ELEMENTS::So_sh8::globz: {
-        LINALG::Matrix<NUMDIM_SOH8,1> thickdirglo(true);
+        LINALG::Matrix<DRT::ELEMENTS::So_sh8p8::NUMDIM_,1> thickdirglo(true);
         thickdirglo(2) = 1.0;
         actele->thickdir_ = actele->sosh8_enfthickdir(thickdirglo);
         break;
@@ -1858,7 +2177,7 @@ int DRT::ELEMENTS::Sosh8p8Register::Initialize(DRT::Discretization& dis)
         // special element-dependent input of material parameters
         if (actele->Material()->MaterialType() == INPAR::MAT::m_viscoanisotropic) {
           MAT::ViscoAnisotropic* visco = static_cast<MAT::ViscoAnisotropic*>(actele->Material().get());
-          visco->Setup(NUMGPT_SOH8,actele->thickvec_);
+          visco->Setup(DRT::ELEMENTS::So_sh8p8::NUMGPT_,actele->thickvec_);
         }
       }
 

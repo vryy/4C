@@ -165,12 +165,34 @@ bool DRT::ELEMENTS::So_sh8p8::ReadElement()
   frchar("ANS",buffer,&ierr);
   if (ierr)
   {
-    if (strncmp(buffer,"Later",10)==0)
+    if (strncmp(buffer,"Later",5)==0)
       ans_ = ans_lateral;
     else if (strncmp(buffer,"None",4)==0)
       ans_ = ans_none;
     else
       dserror("Reading of SO_SH8P8 ANS type failed");
+  }
+
+  // EAS
+  eastype_ = soh8_easnone;
+  neas_ = 0;
+  frchar("EAS",buffer,&ierr);
+  if (ierr)
+  {
+    if (strncmp(buffer,"sosh8",5)==0) {
+      eastype_ = soh8_eassosh8p8;
+      neas_ = NUMEASSHL_;
+    }
+    else if (strncmp(buffer,"None",4)==0)
+      eastype_ = soh8_easnone;
+    else if (strncmp(buffer,"none",4)==0)
+      eastype_ = soh8_easnone;
+    else
+      dserror("Reading of SO_SH8P8 EAS type failed");
+  }
+  if (eastype_ != soh8_easnone)
+  {
+    EasInit();
   }
 
   // Linearization

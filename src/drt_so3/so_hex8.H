@@ -394,6 +394,7 @@ protected:
   enum EASType  // with meaningfull value for matrix size info
   {
     soh8_easnone = 0,
+    soh8_eassosh8p8 = 1,  ///< NOTE: not actual number of EAS parameters
     soh8_eassosh8 = 7,
     soh8_easmild = 9,
     soh8_easfull = 21
