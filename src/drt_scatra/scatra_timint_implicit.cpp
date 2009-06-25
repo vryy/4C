@@ -354,6 +354,9 @@ void SCATRA::ScaTraTimIntImpl::TimeLoop()
   // write out inital state
   // Output();
 
+  // compute error for problems with analytical solution (initial field!)
+  EvaluateErrorComparedToAnalyticalSol();
+
   // time measurement: time loop
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:  + time loop");
 
