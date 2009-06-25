@@ -466,6 +466,8 @@ public:
     const int numscal_;
     //! flag for electrochemistry problems (ELCH)
     const bool iselch_;
+    //! flag for using ALE formulation
+    bool isale_;
 
     //! nodal velocity values
     LINALG::Matrix<nsd_,iel> evelnp_;
@@ -485,6 +487,8 @@ public:
     LINALG::Matrix<iel,1> esubgrdiff_;
     //! fine-scale solution
     vector<LINALG::Matrix<iel,1> > fsphinp_;
+    //! nodal displacement values for ALE
+    LINALG::Matrix<nsd_,iel> edispnp_;
 
     //! node coordinates
     LINALG::Matrix<nsd_,iel> xyze_;

@@ -6,11 +6,11 @@
 -------------------------------------------------------------------------
                  BACI finite element library subsystem
             Copyright (2008) Technical University of Munich
-              
+
 Under terms of contract T004.008.000 there is a non-exclusive license for use
 of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
-This library is proprietary software. It must not be published, distributed, 
+This library is proprietary software. It must not be published, distributed,
 copied or altered in any form or any media without written permission
 of the copyright holder. It may be used under terms and conditions of the
 above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
@@ -22,11 +22,11 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de) 
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
-http://www.lnm.mw.tum.de                   
+http://www.lnm.mw.tum.de
 
 -------------------------------------------------------------------------
 </pre>
@@ -722,7 +722,7 @@ void LINALG::ApplyDirichlettoSystem(RCP<LINALG::SparseMatrix>   A,
   if (trafo != Teuchos::null)
     A->ApplyDirichletWithTrafo(trafo,dbcmap);
   else
-    A->ApplyDirichlet(dbcmap); 
+    A->ApplyDirichlet(dbcmap);
   ApplyDirichlettoSystem(x,b,dbcval,dbcmap);
 }
 
@@ -734,7 +734,7 @@ Teuchos::RCP<LINALG::MapExtractor> LINALG::ConvertDirichletToggleVectorToMaps(
   const Epetra_BlockMap& fullblockmap = dbctoggle->Map();
   // this copy is needed because the constructor of LINALG::MapExtractor
   // accepts only Epetra_Map and not Epetra_BlockMap
-  const Epetra_Map fullmap = Epetra_Map(fullblockmap.NumGlobalElements(), 
+  const Epetra_Map fullmap = Epetra_Map(fullblockmap.NumGlobalElements(),
                                         fullblockmap.NumMyElements(),
                                         fullblockmap.MyGlobalElements(),
                                         fullblockmap.IndexBase(),
@@ -1419,7 +1419,7 @@ Teuchos::RCP<Epetra_Map> LINALG::SplitMap(const Epetra_Map& Amap,
   int gcount;
   Comm.SumAll(&count,&gcount,1);
   Teuchos::RCP<Epetra_Map> Aunknown = Teuchos::rcp(new Epetra_Map(gcount,count,&myaugids[0],0,Comm));
-  
+
   return Aunknown;
 }
 
@@ -1526,7 +1526,9 @@ void LINALG::PrintSparsityToPostscript(const Epetra_RowMatrix& A)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void LINALG::PrintMatrixInMatlabFormat(std::string fname, const Epetra_CrsMatrix& A)
+void LINALG::PrintMatrixInMatlabFormat(std::string fname,
+    const Epetra_CrsMatrix& A,
+    const bool newfile)
 {
   // The following source code has been adapted from the Print() method
   // of the Epetra_CrsMatrix class (see "Epetra_CrsMatrix.cpp").
@@ -1541,7 +1543,7 @@ void LINALG::PrintMatrixInMatlabFormat(std::string fname, const Epetra_CrsMatrix
     if (MyPID==iproc)
     {
       // open file for writing
-      if (iproc == 0)
+      if ((iproc == 0) && (newfile))
         os.open(fname.c_str(),std::fstream::trunc);
       else
         os.open(fname.c_str(),std::fstream::ate | std::fstream::app);
@@ -1592,6 +1594,24 @@ void LINALG::PrintMatrixInMatlabFormat(std::string fname, const Epetra_CrsMatrix
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void LINALG::PrintBlockMatrixInMatlabFormat(
+    std::string fname,
+    const BlockSparseMatrixBase& A)
+{
+  // For each sub-matrix of A use the existing printing method
+  for (int r = 0; r < A.Rows(); r++)
+  {
+    for (int c = 0; c < A.Cols(); c++)
+    {
+      const LINALG::SparseMatrix& M = A.Matrix(r, c);
+      LINALG::PrintMatrixInMatlabFormat(fname,*(M.EpetraMatrix()), ((r==0) && (c==0)));
+    }
+  }
+
+  return;
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

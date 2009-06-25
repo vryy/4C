@@ -156,7 +156,7 @@ DRT::ELEMENTS::ScaTraImplInterface* DRT::ELEMENTS::ScaTraImplInterface::Impl(DRT
     return cl3;
   }*/
   default:
-    dserror("shape %d (%d nodes) not supported", ele->Shape(), ele->NumNode());
+    dserror("Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->NumNode());
   }
   return NULL;
 }
@@ -169,6 +169,7 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(int numdofpernode, int numscal)
   : numdofpernode_(numdofpernode),
     numscal_(numscal),
     iselch_((numdofpernode_ - numscal_) == 1),
+    isale_(false),
     evelnp_(true),   // initialize to zero
     esgvelnp_(true),
     ephinp_(numscal_),
@@ -178,6 +179,7 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(int numdofpernode, int numscal)
     epotnp_(true),
     esubgrdiff_(true),
     fsphinp_(numscal_),
+    edispnp_(true),
     xyze_(true),
     bodyforce_(numdofpernode_),
     diffus_(numscal_),
@@ -239,6 +241,17 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
 {
   // get the material
   RefCountPtr<MAT::Material> mat = ele->Material();
+
+  // get additional state vector for ALE case: grid displacement
+  isale_ = params.get<bool>("isale");
+  if (isale_)
+  {
+    const RCP<Epetra_MultiVector> dispnp = params.get< RCP<Epetra_MultiVector> >("dispnp",null);
+    if (dispnp==null) dserror("Cannot get state vector 'dispnp'");
+    DRT::UTILS::ExtractMyNodeBasedValues(ele,edispnp_,dispnp,nsd_);
+  }
+  else
+    edispnp_.Clear();
 
   // check for the action parameter
   const string action = params.get<string>("action","none");
@@ -364,7 +377,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     {
       for (int k = 0; k< numscal_; ++k)
       {
-        // split for each tranported scalar, insert into element arrays
+        // split for each transported scalar, insert into element arrays
         ephinp_[k](i,0) = myphinp[k+(i*numdofpernode_)];
       }
       for (int k = 0; k< numdofpernode_; ++k)
@@ -440,7 +453,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       {
         for (int k = 0; k< numscal_; ++k)
         {
-          // split for each tranported scalar, insert into element arrays
+          // split for each transported scalar, insert into element arrays
           fsphinp_[k](i,0) = myfsphinp[k+(i*numdofpernode_)];
         }
       }
@@ -506,7 +519,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     {
       for (int k = 0; k< numscal_; ++k)
       {
-        // split for each tranported scalar, insert into element arrays
+        // split for each transported scalar, insert into element arrays
         ephinp_[k](i,0) = myphi0[k+(i*numdofpernode_)];
       }
     } // for i
@@ -737,7 +750,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     // fill element arrays
     for (int i=0;i<iel;++i)
     {
-      // split for each tranported scalar, insert into element arrays
+      // split for each transported scalar, insert into element arrays
       for (int k = 0; k< numscal_; ++k)
       {
         ephinp_[k](i) = myphinp[k+(i*numdofpernode_)];
@@ -841,6 +854,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
 {
   // get node coordinates
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze_);
+
+  // in the ALE case add nodal displacements
+  if (isale_) xyze_ += edispnp_;
 
   // ---------------------------------------------------------------------
   // call routine for calculation of body force in element nodes
@@ -2252,6 +2268,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
   // get node coordinates
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze_);
 
+  // in the ALE case add nodal displacements
+  if (isale_) xyze_ += edispnp_;
+
   // dead load in element nodes at initial point in time
   const double time = 0.0;
   BodyForce(ele,time);
@@ -2436,6 +2455,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgridDiffMatrix(
 {
   // get node coordinates
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze_);
+
+  // in the ALE case add nodal displacements
+  if (isale_) xyze_ += edispnp_;
 
 /*----------------------------------------------------------------------*/
 // integration loop for one element
@@ -2820,6 +2842,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
   // get node coordinates
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze_);
 
+  // in the ALE case add nodal displacements
+  if (isale_) dserror("No ALE for Kwok & Wu error calculation allowed.");
+
   // set constants for analytical solution
   const double t = params.get<double>("total time");
   const double frt = params.get<double>("frt");
@@ -2930,6 +2955,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
 {
   // get node coordinates
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze_);
+
+  // in the ALE case add nodal displacements
+  if (isale_) xyze_ += edispnp_;
 
   // get material constants
   double diffus(0.0);
@@ -3097,6 +3125,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateTempAndDens(
   // get node coordinates
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze_);
 
+  // in the ALE case add nodal displacements
+  if (isale_) xyze_ += edispnp_;
+
   // integrations points and weights
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
@@ -3142,6 +3173,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateDomainAndBodyforce(
   /*------------------------------------------------- set element data */
   // get node coordinates
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze_);
+
+  // in the ALE case add nodal displacements
+  if (isale_) xyze_ += edispnp_;
 
   // integrations points and weights
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);

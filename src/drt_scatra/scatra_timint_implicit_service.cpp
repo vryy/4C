@@ -69,7 +69,13 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidt()
       eleparams.set("time derivative of thermodynamic pressure",thermpressdtn_);
 
     //provide velocity field (export to column map necessary for parallel evaluation)
-    AddVelocityToParameterList(eleparams);
+    AddMultiVectorToParameterList(eleparams,"velocity field",convel_);
+    AddMultiVectorToParameterList(eleparams,"subgrid-scale velocity field",sgvel_);
+
+    //provide displacement field in case of ALE
+    eleparams.set("isale",isale_);
+    if (isale_)
+      AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
     // set vector values needed by elements
     discret_->ClearState();
@@ -117,6 +123,11 @@ void SCATRA::ScaTraTimIntImpl::EvaluateElectrodeKinetics(
   condparams.set("total time",time_);
   condparams.set("iselch",(prbtype_=="elch")); // a boolean
 
+  //provide displacement field in case of ALE
+  condparams.set("isale",isale_);
+  if (isale_)
+    AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
+
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState("phinp",phinp_);
@@ -149,8 +160,14 @@ void SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow(
   condparams.set("action","calc_Neumann_inflow");
   condparams.set("incremental solver",incremental_);
 
-  // add velocity field (export to column map necessary for parallel evaluation)
-  AddVelocityToParameterList(condparams);
+  //provide velocity field (export to column map necessary for parallel evaluation)
+  AddMultiVectorToParameterList(condparams,"velocity field",convel_);
+  AddMultiVectorToParameterList(condparams,"subgrid-scale velocity field",sgvel_);
+
+  //provide displacement field in case of ALE
+  condparams.set("isale",isale_);
+  if (isale_)
+    AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
 
   // set vector values needed by elements
   discret_->ClearState();
@@ -330,7 +347,13 @@ void SCATRA::ScaTraTimIntImpl::SetInitialThermPressure(const double thermpress)
   ParameterList eleparams;
 
   //provide velocity field (export to column map necessary for parallel evaluation)
-  AddVelocityToParameterList(eleparams);
+  AddMultiVectorToParameterList(eleparams,"velocity field",convel_);
+  AddMultiVectorToParameterList(eleparams,"subgrid-scale velocity field",sgvel_);
+
+  //provide displacement field in case of ALE
+  eleparams.set("isale",isale_);
+  if (isale_)
+    AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
   // set action for elements
   eleparams.set("action","calc_domain_and_bodyforce");
@@ -357,7 +380,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialThermPressure(const double thermpress)
   eleparams.set("diffusive-flux integral",     diffint);
 
   // evaluate velocity-divergence and rhs on boundaries
-  // We may use the flux-calculation condition for calculation of fluxes for 
+  // We may use the flux-calculation condition for calculation of fluxes for
   // thermodynamic pressure, since it is usually at the same boundary.
   vector<std::string> condnames;
   condnames.push_back("FluxCalculation");
@@ -566,6 +589,11 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanTempAndDens()
   ParameterList eleparams;
   eleparams.set("action","calc_temp_and_dens");
 
+  //provide displacement field in case of ALE
+  eleparams.set("isale",isale_);
+  if (isale_)
+    AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+
   // evaluate integrals of temperature/concentrations, density and domain
   Teuchos::RCP<Epetra_SerialDenseVector> scalars
     = Teuchos::rcp(new Epetra_SerialDenseVector(numscal_+2));
@@ -641,7 +669,7 @@ void SCATRA::ScaTraTimIntImpl::OutputElectrodeInfo()
     // is there already a ConditionID?
     const vector<int>*    CondIDVec  = cond[condid]->Get<vector<int> >("ConditionID");
     if (CondIDVec)
-    { 
+    {
       if ((*CondIDVec)[0] != condid)
         dserror("Condition %s has non-matching ConditionID",condname.c_str());
     }
@@ -800,7 +828,13 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
     params.set("fluxtype",fluxtype);
 
     //provide velocity field (export to column map necessary for parallel evaluation)
-    AddVelocityToParameterList(params);
+    AddMultiVectorToParameterList(params,"velocity field",convel_);
+    AddMultiVectorToParameterList(params,"subgrid-scale velocity field",sgvel_);
+
+    //provide displacement field in case of ALE
+    params.set("isale",isale_);
+    if (isale_)
+      AddMultiVectorToParameterList(params,"dispnp",dispnp_);
 
     // set vector values needed by elements
     discret_->ClearState();
@@ -830,7 +864,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
     // determine the averaged normal vector field for indicated boundaries
     // used for the output of the normal flux as a vector field
     // is computed only once, since there is no ALE support at the moment
-    if (normals_ == Teuchos::null) 
+    if (normals_ == Teuchos::null)
       normals_ = ComputeNormalVectors(condnames);
 
     // was the residual already prepared? (Important only for
@@ -863,7 +897,13 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
       eleparams.set("frt",frt_);
 
       //provide velocity field (export to column map necessary for parallel evaluation)
-      AddVelocityToParameterList(eleparams);
+      AddMultiVectorToParameterList(eleparams,"velocity field",convel_);
+      AddMultiVectorToParameterList(eleparams,"subgrid-scale velocity field",sgvel_);
+
+      //provide displacement field in case of ALE
+      eleparams.set("isale",isale_);
+      if (isale_)
+        AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
       // parameters for stabilization
       eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
@@ -910,7 +950,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
         // is there already a ConditionID?
         const vector<int>*    CondIDVec  = cond[condid]->Get<vector<int> >("ConditionID");
         if (CondIDVec)
-        { 
+        {
           if ((*CondIDVec)[0] != condid)
             dserror("Condition %s has non-matching ConditionID",condnames[i].c_str());
         }
@@ -921,7 +961,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
         }
       }
 
-      // now we evaluate the conditions and seperate via ConditionID
+      // now we evaluate the conditions and separate via ConditionID
       for (int condid = 0; condid < (int) cond.size(); condid++)
       {
         ParameterList params;
@@ -929,6 +969,11 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
         // calculate integral of shape functions over indicated boundary and it's area
         params.set("boundaryint",0.0);
         params.set("action","integrate_shape_functions");
+
+        //provide displacement field in case of ALE
+        params.set("isale",isale_);
+        if (isale_)
+          AddMultiVectorToParameterList(params,"dispnp",dispnp_);
 
         // create vector (+ initialization with zeros)
         Teuchos::RCP<Epetra_Vector> integratedshapefunc = LINALG::CreateVector(*dofrowmap,true);
@@ -958,7 +1003,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
               {
                 normfluxintegral += (*trueresidual_)[doflid];
               }
-              // for visualization, we plot the normal flux with 
+              // for visualization, we plot the normal flux with
               // outward pointing normal vector
               for (int idim = 0; idim < 3; idim++)
               {
@@ -1026,7 +1071,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
 /*----------------------------------------------------------------------*
  | compute outward pointing unit normal vectors at given b.c.  gjb 01/09|
  *----------------------------------------------------------------------*/
-RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNormalVectors( 
+RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNormalVectors(
     const vector<string>& condnames
 )
 {
@@ -1041,6 +1086,11 @@ RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNormalVectors(
   ParameterList eleparams;
   eleparams.set("action","calc_normal_vectors");
   eleparams.set<RCP<Epetra_MultiVector> >("normal vectors",normal);
+
+  //provide displacement field in case of ALE
+  eleparams.set("isale",isale_);
+  if (isale_)
+    AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
   // loop over all intended types of conditions
   for (unsigned int i=0; i < condnames.size(); i++)
@@ -1091,7 +1141,8 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
     //------------------------------------------------- Kwok et Wu,1995
     //   Reference:
     //   Kwok, Yue-Kuen and Wu, Charles C. K.
-    //   "Fractional step algorithm for solving a multi-dimensional diffusion-migration equation"
+    //   "Fractional step algorithm for solving a multi-dimensional
+    //   diffusion-migration equation"
     //   Numerical Methods for Partial Differential Equations
     //   1995, Vol 11, 389-397
 
@@ -1102,6 +1153,11 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
     p.set("action","calc_elch_kwok_error");
     p.set("total time",time_);
     p.set("frt",frt_);
+
+    //provide displacement field in case of ALE
+    p.set("isale",isale_);
+    if (isale_)
+      AddMultiVectorToParameterList(p,"dispnp",dispnp_);
 
     // set vector values needed by elements
     discret_->ClearState();

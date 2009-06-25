@@ -77,7 +77,7 @@ public:
                               vector<int>&               lm,
                               Epetra_SerialDenseVector&  elevec1_epetra
                               ) = 0;
-  
+
   /// Internal implementation class for scalar transport elements
   static ScaTraBoundaryImplInterface* Impl(DRT::Element* ele);
 
@@ -96,8 +96,8 @@ public:
     different implementations of the Transport element, this is just one
     such implementation.
 
-    The Transport element will allocate exactly one object of this class 
-    for all transport elements with the same number of nodes in the mesh. 
+    The Transport element will allocate exactly one object of this class
+    for all transport elements with the same number of nodes in the mesh.
     This allows us to use exactly matching working arrays (and keep them
     around.)
 
@@ -230,8 +230,12 @@ public:
     const int numdofpernode_;
     //! number of transported scalars (numscal_ <= numdofpernode_)
     const int numscal_;
+    //! flag for using ALE formulation
+    bool isale_;
     //! node coordinates
     LINALG::Matrix<nsd_+1,iel> xyze_;
+    //! nodal displacement values for ALE
+    LINALG::Matrix<nsd_+1,iel> edispnp_;
     //! bodyforce in element nodes
     vector<LINALG::Matrix<iel,1> > bodyforce_;
     //! diffusivity / diffusivities (in case of systems) / thermal conductivity

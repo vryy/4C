@@ -108,11 +108,13 @@ DRT::ELEMENTS::ScaTraBoundaryImplInterface* DRT::ELEMENTS::ScaTraBoundaryImplInt
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ScaTraBoundaryImpl
-(int numdofpernode, 
+(int numdofpernode,
     int numscal)
     : numdofpernode_(numdofpernode),
     numscal_(numscal),
+    isale_(false),
     xyze_(true),  // initialize to zero
+    edispnp_(true),
     bodyforce_(numdofpernode_,0),
     diffus_(numscal_,0),
     valence_(numscal_,0),
@@ -151,6 +153,17 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
   DRT::ELEMENTS::Transport* parentele = ele->ParentElement();
   RefCountPtr<MAT::Material> mat = parentele->Material();
 
+  // get additional state vector for ALE case: grid displacement
+  isale_ = params.get<bool>("isale");
+  if (isale_)
+  {
+    const RCP<Epetra_MultiVector> dispnp = params.get< RCP<Epetra_MultiVector> >("dispnp",null);
+    if (dispnp==null) dserror("Cannot get state vector 'dispnp'");
+    DRT::UTILS::ExtractMyNodeBasedValues(ele,edispnp_,dispnp,nsd_);
+  }
+  else
+    edispnp_.Clear();
+
   // Now, check for the action parameter
   const string action = params.get<string>("action","none");
   if (action == "calc_normal_vectors")
@@ -161,6 +174,9 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
 
     // get node coordinates (we have a nsd_+1 dimensional domain!)
     GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,iel> >(ele,xyze_);
+
+    // in the ALE case add nodal displacements
+    if (isale_) xyze_ += edispnp_;
 
     // determine constant normal to this element
     GetConstNormal(normal_,xyze_);
@@ -173,7 +189,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
       { // OK, the node belongs to this processor
 
         // scaling to a unit vector is performed on the global level after
-        // assembly of nodal contributions since we have no reliable information 
+        // assembly of nodal contributions since we have no reliable information
         // about the number of boundary elements adjacent to a node
         for (int dim=0; dim<(nsd_+1); dim++)
         {
@@ -237,7 +253,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
         timefac *= alphaF;
         if (timefac < 0.0) dserror("time factor is negative.");
         // we multiply i0 with timefac. So we do not have to give down this paramater
-        // and perform autmatically the multiplication of matrix and rhs with timefac 
+        // and perform autmatically the multiplication of matrix and rhs with timefac
         i0 *= timefac;
       }
 
@@ -285,9 +301,9 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
             alphac,
             i0,
             frt,
-            iselch);} 
+            iselch);}
     }
-  } 
+  }
   else if (action =="calc_therm_press")
   {
     // we dont know the parent element's lm vector; so we have to build it here
@@ -308,7 +324,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     if (densnp==null || phinp==null)
       dserror("Cannot get state vector 'densnp' and/or 'phinp'");
 
-    // extract local values from the global vectors for the parent(!) element 
+    // extract local values from the global vectors for the parent(!) element
     vector<double> mydensnp(lmparent.size());
     vector<double> myphinp(lmparent.size());
     DRT::UTILS::ExtractMyValues(*densnp,mydensnp,lmparent);
@@ -323,6 +339,9 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
 
     // get node coordinates (we have a nsd_+1 dimensional domain!)
     GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,iel> >(ele,xyze_);
+
+    // in the ALE case add nodal displacements
+    if (isale_) xyze_ += edispnp_;
 
     // determine normal to this element
     GetConstNormal(normal_,xyze_);
@@ -416,7 +435,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     if (densnp==null || phinp==null)
       dserror("Cannot get state vector 'densnp' and/or 'phinp'");
 
-    // extract local values from the global vectors for the parent(!) element 
+    // extract local values from the global vectors for the parent(!) element
     vector<double> mydensnp(lmparent.size());
     vector<double> myphinp(lmparent.size());
     DRT::UTILS::ExtractMyValues(*densnp,mydensnp,lmparent);
@@ -477,6 +496,9 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
 {
   // get node coordinates (we have a nsd_+1 dimensional domain!)
   GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,iel> >(ele,xyze_);
+
+  // in the ALE case add nodal displacements
+  if (isale_) xyze_ += edispnp_;
 
   // integrations points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
@@ -574,6 +596,9 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
 {
   // get node coordinates (we have a nsd_+1 dimensional domain!)
   GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,iel> >(ele,xyze_);
+
+  // in the ALE case add nodal displacements
+  if (isale_) xyze_ += edispnp_;
 
   // integrations points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
@@ -709,6 +734,9 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
   // get node coordinates (we have a nsd_+1 dimensional domain!)
   GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,iel> >(ele,xyze_);
 
+  // in the ALE case add nodal displacements
+  if (isale_) xyze_ += edispnp_;
+
   if (iselch)
   {
     // get valence of the single(!) reactant
@@ -716,7 +744,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
     {
       const MAT::MatList* actmat = static_cast<const MAT::MatList*>(material.get());
 
-      if (actmat->MatID(0) != rctid) 
+      if (actmat->MatID(0) != rctid)
         dserror("active species is not first scalar in material list!");
       // the active species is the FIRST material in the material list. ALWAYS!
       Teuchos::RCP<const MAT::Material> singlemat = actmat->MaterialById(rctid);
@@ -791,7 +819,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
         // ---------------------matrix
         for (int ui=0; ui<iel; ++ui)
         {
-          emat(vi*numdofpernode_,ui*numdofpernode_) += fac_fz_i0_funct_vi*gammak*pow(conint,(gammak-1.0))*funct_(ui)*expterm; 
+          emat(vi*numdofpernode_,ui*numdofpernode_) += fac_fz_i0_funct_vi*gammak*pow(conint,(gammak-1.0))*funct_(ui)*expterm;
           emat(vi*numdofpernode_,ui*numdofpernode_+numscal_) += fac_fz_i0_funct_vi*pow_conint_gamma_k*(((-alphaa)*frt*exp(alphaa*frt*eta))+((-alphac)*frt*exp((-alphac)*frt*eta)))*funct_(ui);
         }
         // ------------right-hand-side
@@ -861,6 +889,9 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
 {
   // get node coordinates (we have a nsd_+1 dimensional domain!)
   GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,iel> >(ele,xyze_);
+
+  // in the ALE case add nodal displacements
+  if (isale_) xyze_ += edispnp_;
 
   // get variables with their current values
   double currentintegral  = params.get<double>("currentintegral");
@@ -960,7 +991,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::GetConstNormal(
   }
   break;
   case 1:
-  {  
+  {
     normal(0) = xyze(1,1) - xyze(1,0);
     normal(1) = (-1.0)*(xyze(0,1) - xyze(0,0));
   }
@@ -995,6 +1026,9 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::IntegrateShapeFunctions(
   // get node coordinates (we have a nsd_+1 dimensional domain!)
   GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,iel> >(ele,xyze_);
 
+  // in the ALE case add nodal displacements
+  if (isale_) xyze_ += edispnp_;
+
   // integrations points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
@@ -1018,7 +1052,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::IntegrateShapeFunctions(
       boundaryint += fac_;
     }
 
-  } //loop over integration points
+  } //loop ove r integration points
 
   // add contribution to the global value
   params.set<double>("boundaryint",boundaryint);

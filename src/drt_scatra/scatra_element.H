@@ -101,8 +101,8 @@ public:
   \brief set discretization type of element
   */
   virtual void SetDisType(DRT::Element::DiscretizationType shape)
-  { 
-    distype_ = shape; 
+  {
+    distype_ = shape;
     return;
   };
 
@@ -121,14 +121,14 @@ public:
   {
     switch(distype_)
     {
-    case DRT::Element::hex8: 
-    case DRT::Element::hex20: 
+    case DRT::Element::hex8:
+    case DRT::Element::hex20:
     case DRT::Element::hex27:
       return 6; break;
-    case DRT::Element::tet4: 
+    case DRT::Element::tet4:
     case DRT::Element::tet10:
       return 4; break;
-    case DRT::Element::wedge6: 
+    case DRT::Element::wedge6:
     case DRT::Element::wedge15:
     case DRT::Element::pyramid5:
       return 5; break;
@@ -150,21 +150,21 @@ public:
   }
 
   /*!
-  \brief Return number of volumes of this element (always 1)
+  \brief Return number of volumes of this element
   */
   virtual int NumVolume() const
 {
     switch(distype_)
     {
-    case DRT::Element::hex8: 
-    case DRT::Element::hex20: 
+    case DRT::Element::hex8:
+    case DRT::Element::hex20:
     case DRT::Element::hex27:
-    case DRT::Element::tet4: 
+    case DRT::Element::tet4:
     case DRT::Element::tet10:
-    case DRT::Element::wedge6: 
+    case DRT::Element::wedge6:
     case DRT::Element::wedge15:
     case DRT::Element::pyramid5:
-      return 1; 
+      return 1;
       break;
     case DRT::Element::quad4:
     case DRT::Element::quad8:
@@ -280,17 +280,17 @@ public:
   The element fills the provided map with key names of
   visualization data the element wants to visualize AT THE CENTER
   of the element geometry. The values is supposed to be dimension of the
-  data to be visualized. It can either be 1 (scalar), 3 (vector), 6 (sym. tensor) 
+  data to be visualized. It can either be 1 (scalar), 3 (vector), 6 (sym. tensor)
   or 9 (nonsym. tensor)
-  
+
   Example:
   \code
     // Name of data is 'Owner', dimension is 1 (scalar value)
-    names.insert(pair<string,int>("Owner",1));  
+    names.insert(pair<string,int>("Owner",1));
     // Name of data is 'StressesXYZ', dimension is 6 (sym. tensor value)
-    names.insert(pair<string,int>("StressesXYZ",6));  
-  \endcode  
-  
+    names.insert(pair<string,int>("StressesXYZ",6));
+  \endcode
+
   \param names (out): On return, the derived class has filled names with
                       key names of data it wants to visualize and with int dimensions
                       of that data.
@@ -301,17 +301,17 @@ public:
   \brief Query data to be visualized using BINIO of a given name
 
   The method is supposed to call this base method to visualize the owner of
-  the element. 
-  If the derived method recognizes a supported data name, it shall fill it 
+  the element.
+  If the derived method recognizes a supported data name, it shall fill it
   with corresponding data.
   If it does NOT recognizes the name, it shall do nothing.
-  
+
   \warning The method must not change size of data
-  
+
   \param name (in):   Name of data that is currently processed for visualization
   \param data (out):  data to be filled by element if element recognizes the name
   */
-  virtual bool VisData(const string& name, vector<double>& data); 
+  virtual bool VisData(const string& name, vector<double>& data);
 
   /*!
   \brief Add values to the data_ container
@@ -501,10 +501,10 @@ public:
    */
   virtual int NumSurface() const
   {
-    // get spatial dimension of boundary
-    const int nsd = DRT::UTILS::getDimension(parent_->Shape()) - 1;
+    // get spatial dimension of parent element
+    const int nsd = DRT::UTILS::getDimension(parent_->Shape());
 
-    if (nsd == 2) 
+    if (nsd == 3)
       return 1;
     else
       return 0;
@@ -596,7 +596,7 @@ public:
   Every implementation of DRT::Element must also implement
   an DRT::ElementRegister. This method allocates and returns
   an instance of a matching DRT::ElementRegister.
-  */ 
+  */
   virtual RCP<DRT::ElementRegister> ElementRegister() const
   { return rcp(new DRT::ElementRegister(Type())); }
 

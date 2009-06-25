@@ -821,11 +821,27 @@ namespace LINALG
   \brief Print content of a sparse matrix in Matlab format
 
   The sparse matrix is printed in Matlab sparse format to
-  a file with specified file name
+  a file with specified file name.
 
   \note works in parallel and serial!
   */
-  void PrintMatrixInMatlabFormat(std::string fname, const Epetra_CrsMatrix& A);
+  void PrintMatrixInMatlabFormat(
+      std::string fname,
+      const Epetra_CrsMatrix& A,
+      const bool newfile = true);
+
+  /*!
+  \brief Print content of a block sparse matrix in Matlab format
+
+  The block sparse matrix is printed in Matlab sparse format to
+  a file with specified file name.
+
+  \note works in parallel and serial!
+  */
+  void PrintBlockMatrixInMatlabFormat(
+      std::string fname,
+      const BlockSparseMatrixBase& A
+      );
 
   /*!
   \brief Gather information of type vector<T> on a subset of processors

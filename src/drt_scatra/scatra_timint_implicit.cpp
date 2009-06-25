@@ -507,22 +507,22 @@ void SCATRA::ScaTraTimIntImpl::ApplyNeumannBC
 
 
 /*----------------------------------------------------------------------*
- | export velocity to column map and add it to parameter list  gjb 03/09|
+ | export multivector to column map & add it to parameter list gjb 06/09|
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::AddVelocityToParameterList(Teuchos::ParameterList& p)
+void SCATRA::ScaTraTimIntImpl::AddMultiVectorToParameterList
+(Teuchos::ParameterList& p,
+    const std::string name,
+    Teuchos::RCP<Epetra_MultiVector> vec
+)
 {
-  //provide velocity field for usage on element level
+  //provide data in node-based multi-vector for usage on element level
   // -> export to column map is necessary for parallel evaluation
-  //SetState cannot be used since this Multivector is nodebased and not dofbased!
+  //SetState cannot be used since this multi-vector is nodebased and not dofbased!
   const Epetra_Map* nodecolmap = discret_->NodeColMap();
-  RefCountPtr<Epetra_MultiVector> tmp = rcp(new Epetra_MultiVector(*nodecolmap,3));
-  LINALG::Export(*convel_,*tmp);
-  p.set("velocity field",tmp);
-
-  // also provide subgrid-scale velocity field for usage on element level
-  RefCountPtr<Epetra_MultiVector> tmp2 = rcp(new Epetra_MultiVector(*nodecolmap,3));
-  LINALG::Export(*sgvel_,*tmp2);
-  p.set("subgrid-scale velocity field",tmp2);
+  int numcol = vec->NumVectors();
+  RefCountPtr<Epetra_MultiVector> tmp = rcp(new Epetra_MultiVector(*nodecolmap,numcol));
+  LINALG::Export(*vec,*tmp);
+  p.set(name,tmp);
 
   return;
 }
@@ -602,7 +602,13 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
       eleparams.set("frt",frt_);// ELCH specific factor F/RT
 
       //provide velocity field (export to column map necessary for parallel evaluation)
-      AddVelocityToParameterList(eleparams);
+      AddMultiVectorToParameterList(eleparams,"velocity field",convel_);
+      AddMultiVectorToParameterList(eleparams,"subgrid-scale velocity field",sgvel_);
+
+      //provide displacement field in case of ALE
+      eleparams.set("isale",isale_);
+      if (isale_)
+        AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
       // parameters for stabilization
       eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
@@ -682,7 +688,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
         solver_->AdaptTolerance(ittol,actresidual,adaptolbetter);
       }
 
-      /*
+/*
       // matrix printing options (DEBUGGING!)
       RCP<LINALG::SparseMatrix> A = SystemMatrix();
       if (A != Teuchos::null)
@@ -696,7 +702,11 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
         LINALG::PrintSparsityToPostscript( *(A->EpetraMatrix()) );
       }
       else
-        dserror("No printing options for BlockSparseMatrix yet.");
+      {
+        Teuchos::RCP<LINALG::BlockSparseMatrixBase> A = BlockSystemMatrix();
+        const std::string fname = "sparsematrix.mtl";
+        LINALG::PrintBlockMatrixInMatlabFormat(fname,*(A));
+      }
       */
 
       solver_->Solve(sysmat_->EpetraOperator(),increment_,residual_,true,itnum==1);
@@ -908,7 +918,13 @@ void SCATRA::ScaTraTimIntImpl::Solve()
     eleparams.set("turbulence model",turbmodel_);
 
     //provide velocity field (export to column map necessary for parallel evaluation)
-    AddVelocityToParameterList(eleparams);
+    AddMultiVectorToParameterList(eleparams,"velocity field",convel_);
+    AddMultiVectorToParameterList(eleparams,"subgrid-scale velocity field",sgvel_);
+
+    //provide displacement field in case of ALE
+    eleparams.set("isale",isale_);
+    if (isale_)
+      AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
     // parameters for stabilization
     eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
@@ -1074,6 +1090,9 @@ void SCATRA::ScaTraTimIntImpl::OutputState()
   // velocity
   output_->WriteVector("convec_velocity", convel_,IO::DiscretizationWriter::nodevector);
 
+  // displacement field
+  if (isale_) output_->WriteVector("dispnp", dispnp_);
+
   return;
 }
 
@@ -1209,7 +1228,6 @@ Teuchos::RCP<DRT::Discretization> fluiddis)
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::ApplyMeshMovement(
     Teuchos::RCP<const Epetra_Vector> dispnp,
-    Teuchos::RCP<const Epetra_Vector> gvel,
     Teuchos::RCP<DRT::Discretization> fluiddis
 )
 {
@@ -1218,7 +1236,6 @@ void SCATRA::ScaTraTimIntImpl::ApplyMeshMovement(
     TEUCHOS_FUNC_TIME_MONITOR("SCATRA: apply mesh movement");
 
     if (dispnp == Teuchos::null) dserror("Got null pointer for displacements");
-    if (gvel == Teuchos::null) dserror("Got null pointer for grid velocity");
 
     // get dofrowmap of fluid discretization
     const Epetra_Map* fluiddofrowmap = fluiddis->DofRowMap();
@@ -1248,10 +1265,6 @@ void SCATRA::ScaTraTimIntImpl::ApplyMeshMovement(
         double disp = (*dispnp)[flid];
         // insert velocity value into node-based vector
         dispnp_->ReplaceMyValue(lnodeid, index, disp);
-
-        // subtract grid velocity from fluid velocity to get convective velocity
-        double neggridvel = -((*gvel)[flid]);
-        convel_->SumIntoMyValue(lnodeid, index, neggridvel);
       }
 
       // for security reasons in 1D or 2D problems:

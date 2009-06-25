@@ -331,11 +331,12 @@ double SCATRA::TimIntGenAlpha::ComputeThermPressure()
   ParameterList eleparams;
 
   // provide velocity field (export to column map necessary for parallel evaluation)
-  // SetState cannot be used since this Multivector is nodebased and not dofbased
-  const Epetra_Map* nodecolmap = discret_->NodeColMap();
-  RefCountPtr<Epetra_MultiVector> tmp = rcp(new Epetra_MultiVector(*nodecolmap,3));
-  LINALG::Export(*convel_,*tmp);
-  eleparams.set("velocity field",tmp);
+  AddMultiVectorToParameterList(eleparams,"velocity field",convel_);
+
+  //provide displacement field in case of ALE
+  eleparams.set("isale",isale_);
+  if (isale_)
+    AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
   // set action for elements
   eleparams.set("action","calc_domain_and_bodyforce");
@@ -362,7 +363,7 @@ double SCATRA::TimIntGenAlpha::ComputeThermPressure()
   eleparams.set("diffusive-flux integral",     diffint);
 
   // evaluate velocity-divergence and rhs on boundaries
-  // We may use the flux-calculation condition for calculation of fluxes for 
+  // We may use the flux-calculation condition for calculation of fluxes for
   // thermodynamic pressure, since it is usually at the same boundary.
   vector<std::string> condnames;
   condnames.push_back("FluxCalculation");
@@ -418,7 +419,7 @@ double SCATRA::TimIntGenAlpha::ComputeThermPressure()
   thermpressdtnp_ = (thermpressnp_-thermpressn_)/dta_;*/
 
   // print out thermodynamic pressure
-  if (myrank_ == 0) 
+  if (myrank_ == 0)
   {
     cout << endl;
     cout << "+--------------------------------------------------------------------------------------------+" << endl;

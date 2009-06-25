@@ -138,14 +138,13 @@ public:
 
   /// set the convective velocity + subgrid velocity/viscosity field (Navier-Stokes solution)
   void SetVelocityField(
-      Teuchos::RCP<const Epetra_Vector> fluidvel,       ///< fluid velocity vector 
+      Teuchos::RCP<const Epetra_Vector> fluidvel,       ///< fluid velocity vector
       Teuchos::RCP<const Epetra_Vector> fluidsgvelvisc, ///< fluid subgrid velocity/viscosity vector
       Teuchos::RCP<DRT::Discretization> fluiddis);    ///< fluid discretization
 
  /// apply moving mesh data
  void ApplyMeshMovement(
      Teuchos::RCP<const Epetra_Vector> dispnp,     ///< displacement vector
-     Teuchos::RCP<const Epetra_Vector> gvel,       ///< grid velocity vector
      Teuchos::RCP<DRT::Discretization> fluiddis ); ///< fluid discretization
 
   /// set the initial scalar field phi
@@ -299,10 +298,12 @@ protected:
     Teuchos::RCP<Epetra_Vector>& neumann_loads ///< Neumann loads
   );
 
-  /// export velocity to column map and add it to a parameter list
-  void AddVelocityToParameterList(
-      Teuchos::ParameterList& p   ///< parameter list
-      );
+  /// export node-based multivector to column map and add it to a parameter list
+  void AddMultiVectorToParameterList(
+      Teuchos::ParameterList& p,           ///< parameter list
+      const std::string    name,           ///< naming string for added vector
+      Teuchos::RCP<Epetra_MultiVector> vec ///< Epetra_MultiVector to be added
+  );
 
   /// write state vectors (phinp and convective velocity) to BINIO
   void OutputState();
