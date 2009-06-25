@@ -37,7 +37,7 @@ D_TRUSS3
 #  =====================
 BINIO              # binary io
 QHULL              # needed for XFEM simulations
-D_EXODUS           # Pre_exodus (exodusII, netcdf)
+# D_EXODUS           # Pre_exodus (exodusII, netcdf)
 # PRESTRESS          # prestress a structure with Neumann loads only
 # POSTSTRESS         # restart with a prestressed structure
 
