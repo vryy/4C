@@ -97,29 +97,8 @@ void AleEnsightWriter::WriteAllResults(PostField* field)
 \*----------------------------------------------------------------------*/
 void ScaTraEnsightWriter::WriteAllResults(PostField* field)
 {
-  //get number of dofs
-  int numdof = field->discretization()->DofRowMap()->NumGlobalElements();
-  //get number of nodes
-  int numnodes = field->discretization()->NumGlobalNodes();
-
-  // compute number of dofs per node
-  int numdofpernode = 0;
-  if (numdof%numnodes == 0) // the standard case
-    numdofpernode = numdof/numnodes;
-  else
-  { 
-    // do we have any periodic boundary conditions?
-    int numperiodicbc = 0;
-    std::vector<DRT::Condition*> periodicbc;
-    field->discretization()->GetCondition("SurfacePeriodic",periodicbc);
-    numperiodicbc += periodicbc.size();
-    field->discretization()->GetCondition("LinePeriodic",periodicbc);
-    numperiodicbc += periodicbc.size();
-    if (numperiodicbc>0) // yes, we have periodic boundary conditions
-      numdofpernode =  (numdof/numnodes)+1; 
-    else // there are no periodic b.c. -> it is time for a dserror
-      dserror("could not determine dofs per node");
-  }
+  //compute number of dofs per node (ask the first node)
+  int numdofpernode = field->discretization()->NumDof(field->discretization()->lRowNode(0));
 
   // write results for each transported scalar
   if (numdofpernode == 1)
@@ -144,6 +123,9 @@ void ScaTraEnsightWriter::WriteAllResults(PostField* field)
   // write velocity field (always 3D)
   EnsightWriter::WriteResult("convec_velocity", "velocity", nodebased, 3);
 
+  // write displacement field (always 3D)
+  EnsightWriter::WriteResult("dispnp", "ale-displacement", nodebased, 3);
+
   // write element results (e.g. element owner)
   WriteElementResults(field);
 }
@@ -154,29 +136,8 @@ void ScaTraEnsightWriter::WriteAllResults(PostField* field)
 \*----------------------------------------------------------------------*/
 void ElchEnsightWriter::WriteAllResults(PostField* field)
 {
-  //get number of dofs
-  int numdof = field->discretization()->DofRowMap()->NumGlobalElements();
-  //get number of nodes
-  int numnodes = field->discretization()->NumGlobalNodes();
-
-  // compute number of dofs per node
-  int numdofpernode = 0;
-  if (numdof%numnodes == 0) // the standard case
-    numdofpernode = numdof/numnodes;
-  else
-  { 
-    // do we have any periodic boundary conditions?
-    int numperiodicbc = 0;
-    std::vector<DRT::Condition*> periodicbc;
-    field->discretization()->GetCondition("SurfacePeriodic",periodicbc);
-    numperiodicbc += periodicbc.size();
-    field->discretization()->GetCondition("LinePeriodic",periodicbc);
-    numperiodicbc += periodicbc.size();
-    if (numperiodicbc>0) // yes, we have periodic boundary conditions
-      numdofpernode =  (numdof/numnodes)+1; 
-    else // there are no periodic b.c. -> it is time for a dserror
-      dserror("could not determine dofs per node");
-  }
+  //compute number of dofs per node (ask the first node)
+  int numdofpernode = field->discretization()->NumDof(field->discretization()->lRowNode(0));
 
   // write results for each transported scalar
   if (numdofpernode < 3)
@@ -199,6 +160,9 @@ void ElchEnsightWriter::WriteAllResults(PostField* field)
 
   // write velocity field (always 3D)
   EnsightWriter::WriteResult("convec_velocity", "velocity", nodebased, 3);
+
+  // write displacement field (always 3D)
+  EnsightWriter::WriteResult("dispnp", "ale-displacement", nodebased, 3);
 
   // write element results (e.g. element owner)
   WriteElementResults(field);
