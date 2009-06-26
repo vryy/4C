@@ -216,6 +216,11 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
   // action for elements, time factor and stationary flag
   eleparams.set("action","calc_subgrid_diffusivity_matrix");
 
+  //provide displacement field in case of ALE
+  eleparams.set("isale",isale_);
+  if (isale_)
+    AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+
   // add element parameters and density state according to time-int. scheme
   AddSpecificTimeIntegrationParameters(eleparams);
 
@@ -642,6 +647,12 @@ void SCATRA::ScaTraTimIntImpl::OutputElectrodeInfo()
   eleparams.set("iselch",(prbtype_=="elch")); // a boolean
   eleparams.set("problem type",prbtype_);
   eleparams.set("frt",frt_);
+
+  //provide displacement field in case of ALE
+  eleparams.set("isale",isale_);
+  if (isale_)
+    AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+
   // add element parameters and density state according to time-int. scheme
   AddSpecificTimeIntegrationParameters(eleparams);
 
