@@ -404,11 +404,11 @@ private:
   /// retrieve EAS parameters and incremental update of them
   template<int NUMEAS_T>
   static void EasUpdateIncrementally(
-    Epetra_SerialDenseMatrix*& oldfeas,  ///< EAS constraint \$f_{EAS}^{k}\f$ of last iteration
+    Epetra_SerialDenseMatrix*& oldfeas,  ///< EAS constraint \f$f_{EAS}^{k}\f$ of last iteration
     Epetra_SerialDenseMatrix*& oldKaainv,  ///< inverted tangent k_aa^{-1} of last iteration
     Epetra_SerialDenseMatrix*& oldKad,  ///< tangent k_ad of last iteration
     Epetra_SerialDenseMatrix*& oldKap,  ///< tangent k_ap of last iteration
-    Teuchos::RCP<Epetra_SerialDenseVector>& feas,  ///< current EAS constraint \$f_{EAS}^{k+1}\f$
+    Teuchos::RCP<Epetra_SerialDenseVector>& feas,  ///< current EAS constraint \f$f_{EAS}^{k+1}\f$
     Teuchos::RCP<Epetra_SerialDenseMatrix>& Kaa,  ///< current tangent k_aa
     Teuchos::RCP<Epetra_SerialDenseMatrix>& Kad,  ///< current tangent k_ad
     Teuchos::RCP<Epetra_SerialDenseMatrix>& Kap,  ///< current tangent k_ap
@@ -440,7 +440,7 @@ private:
   /// build EAS constraint and its tangents
   template<int NUMEAS_T>
   static void EasConstraintAndTangent(
-    Teuchos::RCP<Epetra_SerialDenseVector>& feas,  ///< current EAS constraint \$f_{EAS}^{k+1}\f$
+    Teuchos::RCP<Epetra_SerialDenseVector>& feas,  ///< current EAS constraint \f$f_{EAS}^{k+1}\f$
     Teuchos::RCP<Epetra_SerialDenseMatrix>& Kaa,  ///< current tangent k_aa
     Teuchos::RCP<Epetra_SerialDenseMatrix>& Kad,  ///< current tangent k_ad
     Teuchos::RCP<Epetra_SerialDenseMatrix>& Kap,  ///< current tangent k_ap
@@ -449,7 +449,7 @@ private:
     const LINALG::Matrix<NUMSTR_,NUMSTR_>& rcgbyrgtstr,  ///< right stretch tensor diff'd w.r.t right CG
     const double& detdefgrad,  ///< determinant of deformation gradient
     const LINALG::Matrix<NUMDFGR_,1>& tinvdefgrad,  ///< vector of transposed inverse deformation gradient
-    const LINALG::Matrix<NUMDFGR_,NUMDFGR_>& WmT,  ///< 
+    const LINALG::Matrix<NUMDFGR_,NUMDFGR_>& WmT,  ///< the matrix ( fv . fv^T + Wm )
     const LINALG::Matrix<NUMSTR_,NUMSTR_>& cmat,  ///< (isotropic) elasticity matrix
     const LINALG::Matrix<NUMSTR_,1>& stress,  ///< 2nd Piola-Kirchhoff stress vector
     const double& effpressure,  ///< effective pressure at Gauss point
@@ -469,11 +469,11 @@ private:
     LINALG::Matrix<NUMPRES_,1>* incomp,  ///< incompressibility residual
     LINALG::Matrix<NUMPRES_,NUMDISP_>* dargmatrix,  ///< 'transposed' element gradient matrix
     LINALG::Matrix<NUMPRES_,NUMPRES_>* stabmatrix,  ///< element stabilisation matrix
-    Epetra_SerialDenseMatrix*& oldfeas,  ///< EAS constraint \$f_{EAS}^{k}\f$ of last iteration
+    Epetra_SerialDenseMatrix*& oldfeas,  ///< EAS constraint \f$f_{EAS}^{k}\f$ of last iteration
     Epetra_SerialDenseMatrix*& oldKaainv,  ///< inverted tangent k_aa^{-1} of last iteration
     Epetra_SerialDenseMatrix*& oldKad,  ///< tangent k_ad of last iteration
     Epetra_SerialDenseMatrix*& oldKap,  ///< tangent k_ap of last iteration
-    const Teuchos::RCP<Epetra_SerialDenseVector>& feas,  ///< current EAS constraint \$f_{EAS}^{k+1}\f$
+    const Teuchos::RCP<Epetra_SerialDenseVector>& feas,  ///< current EAS constraint \f$f_{EAS}^{k+1}\f$
     const Teuchos::RCP<Epetra_SerialDenseMatrix>& Kaa,  ///< current tangent k_aa
     const Teuchos::RCP<Epetra_SerialDenseMatrix>& Kad,  ///< current tangent k_ad
     const Teuchos::RCP<Epetra_SerialDenseMatrix>& Kap  ///< current tangent k_ap
