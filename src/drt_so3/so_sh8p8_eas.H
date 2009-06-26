@@ -11,7 +11,7 @@ Maintainer: Burkhard Bornemann
 */
 
 /*----------------------------------------------------------------------*/
-/* defintions */
+/* definitions */
 #ifdef D_SOLID3
 #ifdef CCADISCRET
 
@@ -207,21 +207,23 @@ void DRT::ELEMENTS::So_sh8p8::EasConstraintAndTangent(
   // temporary M_F^T . fv
   LINALG::Matrix<NUMEAS_T,1> mff;
   mff.MultiplyTN(defgradbyalpha,tinvdefgrad);
+  // temporary integration factor
+  const double fac = effpressure*detdefgrad*detJ_w;
 
   // integrate Kaa: Kaa += (M^T . cmat . M) * detJ * w(gp)
   //                     - (M_F^T . ( fv . fv^T + Wm ) . M_F) * (H . p) * detF * detJ * w
   LINALG::DENSEFUNCTIONS::multiplyTN<NUMEAS_T,NUMSTR_,NUMEAS_T>(1.0,Kaa->A(), detJ_w,M->A(),cM.A());
-  LINALG::DENSEFUNCTIONS::multiplyTN<NUMEAS_T,NUMDFGR_,NUMEAS_T>(1.0,Kaa->A(), -effpressure*detdefgrad*detJ_w,defgradbyalpha.A(),ffwmf.A());
+  LINALG::DENSEFUNCTIONS::multiplyTN<NUMEAS_T,NUMDFGR_,NUMEAS_T>(1.0,Kaa->A(), -fac,defgradbyalpha.A(),ffwmf.A());
   // integrate Kad: Kad += (M^T . cmat . B) * detJ * w(gp)
   //                     - (M_F^T . ( fv . fv^T + Wm ) . B_F) * (H . p) * detF * detJ * w
   LINALG::DENSEFUNCTIONS::multiplyTN<NUMEAS_T,NUMSTR_,NUMDISP_>(1.0,Kad->A(), detJ_w,M->A(),cb.A());
-  LINALG::DENSEFUNCTIONS::multiplyTN<NUMEAS_T,NUMDFGR_,NUMDISP_>(1.0,Kad->A(), -effpressure*detdefgrad*detJ_w,ffwmf.A(),defgradbydisp.A());
+  LINALG::DENSEFUNCTIONS::multiplyTN<NUMEAS_T,NUMDFGR_,NUMDISP_>(1.0,Kad->A(), -fac,ffwmf.A(),defgradbydisp.A());
   // integrate Kap: Kap += - (M_F^T . fv . H)  * detF * detJ * w
   LINALG::DENSEFUNCTIONS::multiplyNT<NUMEAS_T,1,NUMPRES_>(1.0,Kap->A(), -detdefgrad*detJ_w,mff.A(),prshfct.A());
   // integrate feas: feas += (M^T . sigma) * detJ *wp(gp)
   //                       - (M_F^T . fv) * (H . p)  * detF * detJ * w
   LINALG::DENSEFUNCTIONS::multiplyTN<NUMEAS_T,NUMSTR_,1>(1.0,feas->A(), detJ_w,M->A(),stress.A());
-  LINALG::DENSEFUNCTIONS::update<NUMEAS_T,1>(1.0,feas->A(), -detdefgrad*effpressure*detJ_w,mff.A());
+  LINALG::DENSEFUNCTIONS::update<NUMEAS_T,1>(1.0,feas->A(), -fac,mff.A());
 
   // bye
   return;
