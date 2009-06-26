@@ -31,7 +31,7 @@ class StatMechManager
 public:
 
   //! \brief Standard Constructor
-  explicit StatMechManager(ParameterList& params, DRT::Discretization& discret, RCP<LINALG::SparseMatrix>& stiff, RCP<LINALG::SparseMatrix>& damp);
+  explicit StatMechManager(ParameterList& params, DRT::Discretization& discret, RCP<LINALG::SparseMatrix>& stiff);
 
   //! \brief Destructor
   virtual ~StatMechManager() {};
@@ -49,7 +49,7 @@ public:
   void StatMechUpdate(const double dt, const Epetra_Vector& disrow);
 
   //! \brief updates system damping matrix and external force vector according to influence of thermal bath
-  void StatMechBrownian(ParameterList& params, RCP<Epetra_Vector> dis, RCP<Epetra_Vector> fext, RCP<LINALG::SparseMatrix> damp);
+  void StatMechBrownian(ParameterList& params, RCP<Epetra_Vector> dis, RCP<Epetra_Vector> browniancol);
   
   //! \brief set crosslinkers according to setcrosslinkercol (if entry for a node equals 1 a crosslinker may be set for this node)
   void SetCrosslinkers(const Epetra_Vector& setcrosslinkercol,const Epetra_Map& nodecolmap,const Epetra_Vector& nearestneighbour,const std::map<int,LINALG::Matrix<3,1> >& currentpositions,const std::map<int,LINALG::Matrix<3,1> >& currentrotations);
@@ -104,9 +104,6 @@ protected:
   
   //! \brief reference to current stiffness matrix
   RCP<LINALG::SparseMatrix>& stiff_;
-  
-  //! \brief reference to current damping matrix
-  RCP<LINALG::SparseMatrix>& damp_;
   
   //! \brief storing for each node LID of node with which it is crosslinked; -1 means: no crosslink
   RCP<Epetra_Vector>  crosslinkerpartner_;

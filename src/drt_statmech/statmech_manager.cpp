@@ -40,7 +40,7 @@ Maintainer: Christian Cyron
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             cyron 09/08|
  *----------------------------------------------------------------------*/
-StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& discret, RCP<LINALG::SparseMatrix>& stiff, RCP<LINALG::SparseMatrix>& damp):
+StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& discret, RCP<LINALG::SparseMatrix>& stiff):
   statmechparams_( DRT::Problem::Instance()->StatisticalMechanicsParams() ),
   maxtime_(params.get<double>("max time",0.0)),
   starttimeoutput_(-1.0),
@@ -50,8 +50,7 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
   basiselements_(0),
   outputfilenumber_(-1),
   discret_(discret),
-  stiff_(stiff),
-  damp_(damp)
+  stiff_(stiff)
 { 
   /*there are two ways for Brownian motion: either by statistical forces or by statistical displacement increments: the first one
    * is activated by setting the following parameter to zero, the latter one by setting it uneuqual zero; note: currently only the 
@@ -1144,12 +1143,11 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& disro
      
     /*settling administrative stuff in order to make the discretization ready for the next time step: the following
      * commmand generates or deletes ghost elements if necessary and calls FillCompete() method of discretization; 
-     * this is enough as long as only elements, but no nodes are added in a time step; finally Crs matrices stiff_ and
-     * damp_ have to be deleted completely and made ready for new assembly since their graph was changed*/     
+     * this is enough as long as only elements, but no nodes are added in a time step; finally Crs matrices stiff_ has
+     * to be deleted completely and made ready for new assembly since their graph was changed*/     
     DRT::UTILS::RedistributeWithNewNodalDistribution(discret_,noderowmap,nodecolmap);      
     discret_.FillComplete(true,false,false);
     stiff_->Reset();
-    damp_->Reset();
 
 
     
@@ -1331,26 +1329,20 @@ void StatMechManager::DelCrosslinkers(const Epetra_Vector& delcrosslinkercol,con
  | displacement vector according to influence of thermal bath (public)  |
  |                                                           cyron 10/08|
  *----------------------------------------------------------------------*/
-void StatMechManager::StatMechBrownian(ParameterList& params, RCP<Epetra_Vector> dis, RCP<Epetra_Vector> fext, RCP<LINALG::SparseMatrix> damp)
-{  
-  // zero out damping matrix
-  damp->Zero();
-  
+void StatMechManager::StatMechBrownian(ParameterList& params, RCP<Epetra_Vector> dis, RCP<Epetra_Vector> browniancol)
+{   
   /*declaration of a column and row map Epetra_Vector for evaluation of statistical forces or Brownian stets in space;
    *  note: zero initilization mandatory for correct computations later on*/
-  RCP<Epetra_Vector>    browniancol;
-  browniancol = LINALG::CreateVector(*discret_.DofColMap(),true);
   RCP<Epetra_Vector>    brownianrow;
   brownianrow = LINALG::CreateVector(*discret_.DofRowMap(),true);
   
   //defining parameter list passed down to the elements in order to evalute statistical forces down there
   ParameterList pstat;
-  pstat.set("action","calc_brownian_damp");
+  pstat.set("action","calc_brownian");
   pstat.set("delta time",params.get<double>("delta time",0.0));
   pstat.set("KT",statmechparams_.get<double>("KT",0.0));
   pstat.set("ETA",statmechparams_.get<double>("ETA",0.0));
   pstat.set("STOCH_ORDER",statmechparams_.get<int>("STOCH_ORDER",0));
-  
   
   /*note: the column map statistical force vector is passed down via the parameter list and not as a systemvector 
    * so that assembly is not done by the evaluate method itself, but elementwise; this is in order to account for the
@@ -1360,23 +1352,26 @@ void StatMechManager::StatMechBrownian(ParameterList& params, RCP<Epetra_Vector>
    * global column map vector is used*/
   pstat.set("statistical vector",browniancol);
   
-  //evaluation of statistical Brownian forces  on column map vecotor
+  //evaluation of statistical Brownian forces  on column map vector
   discret_.SetState("displacement",dis); //during evaluation of statistical forces or steps in space access to current displacement possible
-  discret_.Evaluate(pstat,damp,null,null,null,null);
+  discret_.Evaluate(pstat,null,null,null,null,null);
   discret_.ClearState();
+ 
   
-  
-  /*exporting col map statistical force/ displacement vector to a row map vector additively, i.e. in such a way that a 
+  /*exporting col map statistical force vector to a row map vector additively, i.e. in such a way that a 
    * vector element with a certain GID in the final row vector is the sum of all elements of the column 
    * vector related to the same GID*/
   Epetra_Export dofexporter(*discret_.DofColMap(),*discret_.DofRowMap());
   brownianrow->Export(*browniancol,dofexporter,Add);
   
-  //adding Brownian forces to external forces passed to this method 
-  fext->Update(1.0,*brownianrow,1.0);
+  /*In the end we need a column map vector of which we can be sure that the same DOFs always have the same entries; to this
+   * end we first exported the column map vector to a row map vector and now we reexport the rowmap vector in combine mode
+   * "Insert" to the column map vector*/ 
+  Epetra_Export dofreexporter(*discret_.DofRowMap(),*discret_.DofColMap());
+  browniancol->Export(*brownianrow,dofreexporter,Insert);
   
-  //complete damping matrix
-  damp->Complete();
+  
+
   
 
   return;

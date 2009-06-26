@@ -32,25 +32,10 @@ StatMechTime::StatMechTime(ParameterList& params,
                           IO::DiscretizationWriter& output) :
 StruGenAlpha(params,dis,solver,output)
 {
-  statmechmanager_ = rcp(new StatMechManager(params,dis,stiff_,damp_));
-
-
-  //if according to input file also Rayleigh damping is present exit the program (not allowed in Brownian dynamics)
-  if (params_.get<double>("damping factor K",0.0) != 0.0 || params_.get<double>("damping factor M",0.0) != 0.0)
-    dserror("No Rayleigh damping allowed in problem type STATISTICAL MECHANICS");
-
-  //if damping has not yet been activated activate it's always present in Brownian dynamics
-  if (!params_.get<bool>("damping",true))
-    params_.set("damping",true);
-
-  /*initialize damping matrix: the number 81 indicates the number of entries per row (which is not necessarily the
-   * bandwidth especially if some entries are far from the diagonal); the position of these entries is store in a
-   * graph; if the number passed to the algorithm is surpassed later in use new memory is allocated (but yet this
-   * slows down the process so that this situation should be avoided); if the number is too large more memory than
-   * actually needed is allocated and the computation time is non-optimal; yet if no more information about the
-   * problem is known at the moment 81 is a reasonable guess*/
-  damp_ = Teuchos::rcp(new LINALG::SparseMatrix(*(discret_.DofRowMap()),81,true,true));
-
+  statmechmanager_ = rcp(new StatMechManager(params,dis,stiff_));
+  
+  //create vector for statistical forces
+  browniancol_ = LINALG::CreateVector(*(discret_.DofRowMap()),true);
 
   return;
 } // StatMechTime::StatMechTime
@@ -151,8 +136,8 @@ void StatMechTime::Integrate()
     ConsistentPredictor(); 
 
 
-    //FullNewton();
-    PTC();
+    FullNewton();
+    //PTC();
           
     UpdateandOutput();
    
@@ -244,14 +229,12 @@ void StatMechTime::ConsistentPredictor()
   // -------------------------------------------------------------------
   // get some parameters from parameter list
   // -------------------------------------------------------------------
+	
+	
+	
   double time        = params_.get<double>("total time"     ,0.0);
   double dt          = params_.get<double>("delta time"     ,0.01);
   double alphaf      = params_.get<double>("alpha f"        ,0.459);
-  double beta        = params_.get<double>("beta"           ,0.292);
-#ifdef STRUGENALPHA_BE
-  double delta       = params_.get<double>("delta"          ,beta);
-#endif
-  double gamma       = params_.get<double>("gamma"          ,0.581);
   bool   printscreen = params_.get<bool>  ("print to screen",false);
   string convcheck   = params_.get<string>("convcheck"      ,"AbsRes_Or_AbsDis");
   bool   dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
@@ -301,7 +284,7 @@ void StatMechTime::ConsistentPredictor()
    * of an Ito integral by means of random numbers. Thus currently a semi-implicit time step scheme is applied (implicit in drift
    * term and explicit in noise term). The Brownian forces are evaluated in such a way that the resulting Langevin equation goes
    * along with the correct Fokker-Planck-Diffusion equation*/
-  statmechmanager_->StatMechBrownian(params_,dis_,fextn_,damp_);
+  statmechmanager_->StatMechBrownian(params_,dis_,browniancol_);
 
   
 
@@ -398,6 +381,14 @@ void StatMechTime::ConsistentPredictor()
     p.set("total time",timen);
     p.set("delta time",dt);
     p.set("alpha f",alphaf);
+    
+    //passing statistical mechanics parameters to elements
+    p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
+    p.set("STOCH_ORDER",(statmechmanager_->statmechparams_).get<int>("STOCH_ORDER",0));
+
+    //add statistical vector to parameter list for statistical forces and damping matrix computation
+    p.set("statistical vector",browniancol_);
+    
     // set vector values needed by elements
     discret_.ClearState();
     disi_->PutScalar(0.0);
@@ -440,14 +431,10 @@ void StatMechTime::ConsistentPredictor()
     //     - F_{ext;n+1-alpha_f}
     // add mid-inertial force
 
-    //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
-    damp_->Multiply(false,*velm_,*fvisc_);
-    fresm_->Update(1.0,*fvisc_,0.0);
-
   }
   // add static mid-balance
 
-  fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
+  fresm_->Update(-1.0,*fint_,1.0,*fextm_,0.0);
 
   
   
@@ -493,12 +480,6 @@ void StatMechTime::FullNewton()
   double dt        = params_.get<double>("delta time"             ,0.01);
   double timen     = time + dt;
   int    maxiter   = params_.get<int>   ("max iterations"         ,10);
-  //double beta      = params_.get<double>("beta"                   ,0.292);
-#ifdef STRUGENALPHA_BE
-  double delta     = params_.get<double>("delta"                  ,beta);
-#endif
-  //double gamma     = params_.get<double>("gamma"                  ,0.581);
-  //double alpham    = params_.get<double>("alpha m"                ,0.378);
   double alphaf    = params_.get<double>("alpha f"                ,0.459);
   string convcheck = params_.get<string>("convcheck"              ,"AbsRes_Or_AbsDis");
   double toldisp   = params_.get<double>("tolerance displacements",1.0e-07);
@@ -511,10 +492,6 @@ void StatMechTime::FullNewton()
   //------------------------------ turn adaptive solver tolerance on/off
   const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
   const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
-
-  // check whether damping is present
-  // note: the stiffness matrix might be filled already
-  if (!damp_->Filled()) dserror("damping matrix must be filled here");
 
 
 #ifndef STRUGENALPHA_BE
@@ -540,7 +517,6 @@ void StatMechTime::FullNewton()
     //stiff_->Complete();
     
     //backward Euler
-    stiff_->Add(*damp_,false,1/(dt),1.0);
     stiff_->Complete();
 
     //----------------------- apply dirichlet BCs to system of equations
@@ -590,6 +566,15 @@ void StatMechTime::FullNewton()
       p.set("total time",timen);
       p.set("delta time",dt);
       p.set("alpha f",alphaf);
+      
+      //passing statistical mechanics parameters to elements
+      p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
+      p.set("STOCH_ORDER",(statmechmanager_->statmechparams_).get<int>("STOCH_ORDER",0));
+
+      //add statistical vector to parameter list for statistical forces 
+      p.set("statistical vector",browniancol_);
+      
+      
       // set vector values needed by elements
       discret_.ClearState();
 
@@ -621,9 +606,7 @@ void StatMechTime::FullNewton()
     
 
     //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
-    damp_->Multiply(false,*velm_,*fvisc_);
-    fresm_->Update(1.0,*fvisc_,0.0);
-    fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
+    fresm_->Update(-1.0,*fint_,1.0,*fextm_,0.0);
      
 
     // blank residual DOFs that are on Dirichlet BC
@@ -696,8 +679,6 @@ void StatMechTime::PTC()
   double dt        = params_.get<double>("delta time"             ,0.01);
   double timen     = time + dt;
   int    maxiter   = params_.get<int>   ("max iterations"         ,10);
-  //double beta      = params_.get<double>("beta"                   ,0.292);
-  //double gamma     = params_.get<double>("gamma"                  ,0.581);
   double alphaf    = params_.get<double>("alpha f"                ,0.459);
   string convcheck = params_.get<string>("convcheck"              ,"AbsRes_Or_AbsDis");
   double toldisp   = params_.get<double>("tolerance displacements",1.0e-07);
@@ -718,9 +699,6 @@ void StatMechTime::PTC()
   const bool   dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
   if (dynkindstat) dserror("Static case not implemented");
 
-  // check whether damping is present
-
-  if (!damp_->Filled()) dserror("damping matrix must be filled here");
 
   // hard wired ptc parameters
   double ptcdt = 1.3e1; //1.3e1 
@@ -756,7 +734,6 @@ void StatMechTime::PTC()
     x0->Update(1.0,*disi_,0.0);
 
     //backward Euler
-    stiff_->Add(*damp_,false,1/(dt),1.0);
     stiff_->Complete();
 
 
@@ -768,6 +745,9 @@ void StatMechTime::PTC()
       p.set("action","calc_struct_ptcstiff");
       p.set("delta time",dt);
       p.set("dti",dti);
+      
+      //add statistical vector to parameter list for statistical forces and damping matrix computation
+      p.set("statistical vector",browniancol_);
 
       //evaluate ptc stiffness contribution in all the elements
       discret_.Evaluate(p,stiff_,null,null,null,null);
@@ -817,6 +797,14 @@ void StatMechTime::PTC()
       p.set("total time",timen);
       p.set("delta time",dt);
       p.set("alpha f",alphaf);
+      
+      //passing statistical mechanics parameters to elements
+      p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
+      p.set("STOCH_ORDER",(statmechmanager_->statmechparams_).get<int>("STOCH_ORDER",0));
+
+      //add statistical vector to parameter list for statistical forces and damping matrix computation
+      p.set("statistical vector",browniancol_);
+      
       // set vector values needed by elements
       discret_.ClearState();
 
@@ -848,9 +836,7 @@ void StatMechTime::PTC()
 
 
     //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
-    damp_->Multiply(false,*velm_,*fvisc_);
-    fresm_->Update(1.0,*fvisc_,0.0); 
-    fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
+    fresm_->Update(-1.0,*fint_,1.0,*fextm_,0.0);
     
 
     // blank residual DOFs that are on Dirichlet BC
